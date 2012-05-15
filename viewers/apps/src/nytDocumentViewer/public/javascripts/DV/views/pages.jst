@@ -1,0 +1,17 @@
+<div class="DV-set p<%= pageIndex %>" data-id="p<%= pageIndex %>" style="top:0;left:0px;height:893px;width:700px;">
+  <div class="DV-overlay"></div>
+  <div class="DV-pageNoteInsert" title="Click to Add a Page Note">
+    <div class="DV-annotationTab">
+      <div class="DV-annotationClose"></div>
+    </div>
+    <div class="DV-annotationDivider"></div>
+  </div>
+  <div class="DV-pageMeta"><span class="DV-pageNumber">p. <%= pageNumber %></span></div>
+  <div class="DV-annotations"></div>
+  <div class="DV-page" style="height:863px;width:700px;">
+    <span class="DV-loading-top">Loading</span>
+    <span class="DV-loading-bottom">Loading</span>
+    <div class="DV-cover"></div>
+    <img class="DV-pageImage" <%= pageImageSource ? 'src="' + pageImageSource + '"' : '' %> height="863" />
+  </div>
+</div>

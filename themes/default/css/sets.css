@@ -1,0 +1,89 @@
+.setItemEditor {
+	background: #fbfbfb;
+	padding: 0px;
+	border: 2px solid #e9e9e9;
+	margin:0px;
+	padding:0px;
+}
+.orderControls{
+	float:right;
+	margin:10px 10px 0px 20px;
+}
+.orderControls a{
+	color:#134959;
+	font-size:12px;
+	text-decoration:underline;
+}
+.orderControls a:hover{
+	color:#1FAA99;
+}
+.setEditorAddItemForm{
+	margin:10px;
+}
+.setItemList{
+	margin:0px 5px 0px 10px;
+	padding:0px;
+}
+.setItem {
+	position: relative;
+	display: block;
+	list-style-type: none;
+	border: solid 3px #e9e9e9;
+	margin: 5px 5px 5px 0px;
+	background: #fff;
+	text-align: left;
+}
+
+.setItem:hover {
+	border: solid 3px #ccc;
+}
+
+.setItems a{
+	cursor:move;
+}
+
+.setItems a{
+	color: #636363;
+}
+
+.setItems .remove{
+	float:right;
+	margin:5px;
+	width:7px;
+	padding: 0px 2px 1px 2px;
+	border: 1px solid #e4f0f5;
+	background: #dddddd;
+}
+
+.setItems .remove a{
+	font-size: 9px;
+	color: #333;
+	text-decoration:none;
+}
+a.setItemEditButton img{
+	margin-left:-1px;
+}
+.setItemThumbnail {
+	float:left;
+	padding: 10px;
+}
+
+.setItems .setItemCaption {
+	padding:10px;
+	font-size:11px;
+}
+
+.setItemIdentifierSortable {
+	display: none;
+}
+
+.colorbox { 
+	margin: 0px; 
+	padding: 10px 10px 10px 8px;
+	font-size: 12px;  
+	text-transform:uppercase; 
+	text-align: left;
+	display: block; 
+	color: #333;
+	font-family:Arial;
+}

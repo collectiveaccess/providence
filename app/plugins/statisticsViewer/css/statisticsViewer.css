@@ -1,0 +1,48 @@
+@CHARSET "UTF-8";
+#showLayoutOptions, 
+#showExports {
+	float:right;
+	margin: 1px 2px 0px 10px;
+	text-decoration:none;
+	text-transform:uppercase;	
+	color:#828282;
+	font-size:9px;
+}
+#hideLayoutOptions, 
+#hideExports {
+	float:right;
+	margin: 9px 0px 0px 0px;
+	text-decoration:none;
+	text-transform:uppercase;
+	color:#828282;
+	font-size:12px;
+}
+#saveLayoutOptions, 
+#saveExports {	
+	float:right;
+	margin: 2px 0px 0px 10px;
+	text-decoration:none;
+	text-transform:uppercase;
+	color:#333;
+	font-size:12px;
+}
+#layoutOptionsBox, 
+#exportsBox { 
+	clear:both;
+	margin: 0px 0px 0px 0px;
+	display:none;
+	font-size:11px;
+	color:#828282;
+}
+#layoutOptionsBox .col, 
+#exportsBox .col {
+	float:left;
+	margin-right:15px;
+	color:#333;
+}
+#layoutOptionsBox .bg, 
+#exportsBox .bg {
+	background-color: #E2E2E2;	
+	border:0px;
+	padding:5px 3px 3px 10px;
+}

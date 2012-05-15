@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="utf-8"?>
+<statistics>
+	<universe>chappuis</universe>
+	<statistics_group>
+		<title>Statistiques spécifiques</title>
+		<statistic>
+			<id>9001</id>
+			<title>Répartition des objets par terme générique</title>
+			<comment>Les termes génériques correspondent à une typologie des objets.</comment>	
+			<sql>SELECT lil.name_singular as "Terme generique", count(*) as "Nombre" FROM ca_metadata_elements me JOIN ca_attribute_values av ON av.element_id=me.element_id JOIN ca_list_items li ON li.list_id=me.list_id AND av.value_longtext1=li.item_id JOIN ca_list_item_labels lil ON li.item_id=lil.item_id WHERE element_code="objectTermeGenerique" GROUP BY 1 ORDER BY 1</sql>
+			<columns>Terme generique,Nombre</columns>
+			<total_columns>Nombre</total_columns>
+			<charting>pie</charting>
+			<charting_columns>Terme generique,Nombre</charting_columns>
+		</statistic>
+	</statistics_group>
+</statistics>

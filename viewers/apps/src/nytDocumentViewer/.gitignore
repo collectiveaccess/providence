@@ -1,0 +1,6 @@
+log/*
+*.pid
+*~
+.#*
+.DS_Store
+raw

@@ -1,0 +1,115 @@
+     ____            _    ___                       
+     / __ \____  ____| |  / (_)__ _      _____  _____
+    / / / / __ \/ ___/ | / / / _ \ | /| / / _ \/ ___/
+   / /_/ / /_/ / /__ | |/ / /  __/ |/ |/ /  __/ /    
+  /_____/\____/\___/ |___/_/\___/|__/|__/\___/_/
+
+
+== Newspapers and News Agencies
+If you're thinking of implementing this project, consider signing up for a DocumentCloud account instead -- we handle the document processing and indexing for search, and give you an easily embeddable version of this viewer.
+
+http://www.documentcloud.org/contact
+
+If you're not part of a news agency, read on for the technical details...
+
+== Browser Support
+All core functionality is supported as far back as IE7. However, users with modern browsers (Firefox 3.5, Safari 4, Chrome) will notice a much improved view.
+
+== Usage
+
+Take a peek at the viewer.html template to see how to load in a Document. All you really need to do is point to a Document Viewer JSON file and specify the target element to embed the viewer:
+
+  DV.load(JSON_FILE, { container: element_selector });
+
+*JSON_FILE*: Either an inline json object, or the path to a remote json object - https://www.documentcloud.org/documents/19864-goldman-sachs-internal-emails.json 
+
+* *container*: The element to contain the Document Viewer - '#DV-container'
+
+
+== Data Formats: Documents
+All data should be formatted as JSON. When provided a cross domain url, DV will attempt a JSONP request. 
+Examples of this in use can be found here:
+https://www.documentcloud.org/documents/19864-goldman-sachs-internal-emails.json
+
+  {
+    title       : DOCUMENT_TITLE,
+    description : DOCUMENT_DESCRIPTION,
+    id          : DOCUMENT_ID,
+    pages       : TOTAL_PAGES,
+    
+    annotations : 
+    [
+      {
+        title     : ANNOTATION_TITLE,
+        page      : PAGE_INDEX,
+        content   : ANNOTATION_DESCRIPTION
+        location  : { image: "x1, y1, x2, y2" },
+      } 
+    ],
+    
+    sections    : 
+    [
+      { title     : CHAPTER_TITLE, pages: "1-10" },
+      { title     : CHAPTER_TITLE, pages: "11-20" }
+    ],
+    
+    resources   : 
+    {
+      page          : { text: TEXT_URL_FORMAT, image: IMAGE_URL_FORMAT },
+      related_story : LINK_URL,
+      pdf           : ORIGINAL_PDF_URL,
+      search        : SEARCH_UTILITY_URL
+    }
+  }
+
+== Image Sizes and URLs
+Images should be created to match the three sizes required by the viewer:
+
+* *large*     : 1000px wide
+* *normal*    : 700px wide
+* *thumbnail* : 180px wide
+
+The document JSON data should have an image template string in the `resources.page.image` section. The template should include `{page}` and `{size}`.
+
+  http://s3.documentcloud.org/documents/19864/pages/goldman-sachs-internal-emails-p{page}-{size}.gif
+
+== Data Formats: Search
+All data should be formatted as JSON. When provided a cross domain url, the Document Viewer will attempt a JSONP request. 
+
+  {
+    matches : NUMBER_OF_PAGES_WITH_MATCHES,
+    results : [PAGE_NUMBER,PAGE_NUMBER,PAGE_NUMBER],
+    query   : SEARCH_QUERY
+  }
+
+
+* *matches*   : The number of pages with matches.
+* *results*   : An array of page numbers with matches. NOT zero based.
+* *query*     : Your search query.
+
+
+== Requirements
+=== Jammit
+
+We're using the excellent Jammit asset compression library from the DocumentCloud project to compress assets and render JS templates. Anytime you make a change to a template, you'll need to run jammit command to render out the views.  
+
+  jammit
+  
+
+Details on installing and using the Jammit library can be found at http://documentcloud.github.com/jammit/
+
+
+== Styling the Viewer
+The template provided comes in two forms:
+
+===viewer.html
+This is the production facing view that uses the latest compressed assets and views. Compressed assets in this repository are only updated each time we do a point release.
+
+===viewer-debug.html
+Should only be used for development and debugging purposes. You'll need to keep this up to date should add or remove new assets.
+
+All view templates can be found in javascripts/DV/views
+To see your changes you'll need to be sure to run the jammit command to re-render your views. 
+
+== Copyright
+Copyright © 2010 The New York Times. See LICENSE for details.

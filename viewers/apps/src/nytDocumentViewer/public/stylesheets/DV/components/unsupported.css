@@ -1,0 +1,35 @@
+.DV-unsupported {
+  text-align: center;
+  font: 16px Helvetica, Arial, sans-serif;
+  width: 400px;
+  margin: 30px;
+}
+.DV-unsupported .DV-intro {
+  font-weight: bold;
+}
+.DV-unsupported .DV-browsers {
+  margin: 20px 20px;
+  height: 90px;
+}
+.DV-unsupported .DV-browser {
+  float: left;
+  width: 70px;
+  margin: 0 20px;
+  line-height: 30px;
+}
+.DV-unsupported .DV-image {
+  width: 70px; height: 67px;
+  clear: both;
+}
+.DV-unsupported .DV-safari {
+  background: url(../../../images/DV/browsers/safari.gif);
+}
+.DV-unsupported .DV-chrome {
+  background: url(../../../images/DV/browsers/chrome.gif);
+}
+.DV-unsupported .DV-firefox {
+  background: url(../../../images/DV/browsers/firefox.gif);
+}
+.DV-unsupported .DV-after {
+  margin-top: 20px;
+}

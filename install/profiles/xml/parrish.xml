@@ -1,0 +1,5272 @@
+<?xml version="1.0" encoding="utf-8"?>
+<profile xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:noNamespaceSchemaLocation="profile.xsd" useForConfiguration="1" base="base"
+  infoUrl="http://providence.collectiveaccess.org/">
+  <profileName>[East End Stories, Parrish Art Museum, Southampton, NY] A custom art collection profile</profileName>
+  <profileDescription/>
+  <locales>
+    <locale lang="en" country="US">English</locale>
+  </locales>
+  <lists>
+    <list code="object_sources" hierarchical="1" system="0" vocabulary="0">
+      <labels>
+        <label locale="en_US">
+          <name>Object Source</name>
+        </label>
+      </labels>
+      <items>
+        <item idno="internal" enabled="1" default="1">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>Our collection</name_singular>
+              <name_plural>Our collections</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="external" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>External collection</name_singular>
+              <name_plural>External collections</name_plural>
+            </label>
+          </labels>
+        </item>
+      </items>
+    </list>
+    <list code="rights" hierarchical="1" system="0" vocabulary="1">
+      <labels>
+        <label locale="en_US">
+          <name>Rights Types</name>
+        </label>
+      </labels>
+      <items>
+        <item idno="first_round" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>Reproduction Rights - First Round</name_singular>
+              <name_plural>Reproduction Rights - First Round</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="second_round" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>Reproduction Rights - Second Round</name_singular>
+              <name_plural>Reproduction Rights - Second Round</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="source_unknown" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>Reproduction Rights - Source Unknown</name_singular>
+              <name_plural>Reproduction Rights - Source Unknown</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="do_not_request" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>Reproduction Rights - Do not request</name_singular>
+              <name_plural>Reproduction Rights - Do not request</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="rescan" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>Rescan Image</name_singular>
+              <name_plural>Rescan Image</name_plural>
+            </label>
+          </labels>
+        </item>
+         <item idno="check_source" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>Check Source</name_singular>
+              <name_plural>Check Source</name_plural>
+            </label>
+          </labels>
+        </item>
+         <item idno="rights_cleared_perm" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>Rights cleared perm</name_singular>
+              <name_plural>Rights cleared perm</name_plural>
+            </label>
+          </labels>
+        </item>
+         <item idno="rights_cleared_term" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>Rights cleared term</name_singular>
+              <name_plural>Rights cleared term</name_plural>
+            </label>
+          </labels>
+        </item>
+         <item idno="second_request" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>Aaa second request</name_singular>
+              <name_plural>Aaa second request</name_plural>
+            </label>
+          </labels>
+        </item>
+         <item idno="rights_pending" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>Rights pending</name_singular>
+              <name_plural>Rights pending</name_plural>
+            </label>
+          </labels>
+        </item>
+         <item idno="fair_use" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>Fair use</name_singular>
+              <name_plural>Fair use</name_plural>
+            </label>
+          </labels>
+        </item>
+         <item idno="rights_denied" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>Rights denied</name_singular>
+              <name_plural>Rights denied</name_plural>
+            </label>
+          </labels>
+        </item>
+         <item idno="query_remove" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>Query/remove?</name_singular>
+              <name_plural>Query/remove?</name_plural>
+            </label>
+          </labels>
+        </item>
+      </items>
+    </list>
+    <list code="object_types" hierarchical="1" system="0" vocabulary="1">
+      <labels>
+        <label locale="en_US">
+          <name>Object Types</name>
+        </label>
+      </labels>
+      <items>
+        
+      </items>
+    </list>
+    <list code="entity_types" hierarchical="1" system="0" vocabulary="0">
+      <labels>
+        <label locale="en_US">
+          <name>Entity Types</name>
+        </label>
+      </labels>
+      <items>
+        <item idno="individual" enabled="1" default="1">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>Individual</name_singular>
+              <name_plural>Individuals</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="corporation" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>Corporation</name_singular>
+              <name_plural>Corporations</name_plural>
+            </label>
+          </labels>
+        </item>
+      </items>
+    </list>
+    <list code="entity_sources" hierarchical="1" system="0" vocabulary="0">
+      <labels>
+        <label locale="en_US">
+          <name>Entity sources</name>
+        </label>
+      </labels>
+      <items>
+        <item idno="none" enabled="1" default="1">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>-NONE-</name_singular>
+              <name_plural>-NONE-</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="aoee" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>AOEE</name_singular>
+              <name_plural>AOEE</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="contextual" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>AOEE Contextual Persons</name_singular>
+              <name_plural>AOEE Contextual Persons</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="featured" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>AOEE Featured</name_singular>
+              <name_plural>AOEE Featured</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="priority" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>AOEE Priority Artists</name_singular>
+              <name_plural>AOEE Priority Artists</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="related_org" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>AOEE Related Organizations</name_singular>
+              <name_plural>AOEE Related Organizations</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="related_persons" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>AOEE Related Persons</name_singular>
+              <name_plural>AOEE Related Persons</name_plural>
+            </label>
+          </labels>
+        </item>
+      </items>
+    </list>
+    <list code="place_hierarchies" hierarchical="1" system="0" vocabulary="0">
+      <labels>
+        <label locale="en_US">
+          <name>Place hierarchies</name>
+        </label>
+      </labels>
+      <items>
+        <item idno="local" enabled="1" default="1">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>Local Authority</name_singular>
+              <name_plural>Local Authorities</name_plural>
+            </label>
+          </labels>
+        </item>
+      </items>
+    </list>
+    <list code="place_sources" hierarchical="1" system="0" vocabulary="0">
+      <labels>
+        <label locale="en_US">
+          <name>Place sources</name>
+        </label>
+      </labels>
+      <items>
+        <item idno="local" enabled="1" default="1">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>Coverage</name_singular>
+              <name_plural>Coverages</name_plural>
+            </label>
+          </labels>
+        </item>
+      </items>
+    </list>
+    <list code="place_types" hierarchical="1" system="0" vocabulary="0">
+      <labels>
+        <label locale="en_US">
+          <name>Place types</name>
+        </label>
+      </labels>
+      <items>
+        <item idno="none" enabled="1" default="1">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>-NONE-</name_singular>
+              <name_plural>-NONE-</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="continent" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>Continent</name_singular>
+              <name_plural>Continents</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="country" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>Country</name_singular>
+              <name_plural>Countries</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="state" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>State</name_singular>
+              <name_plural>States</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="province" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>Province</name_singular>
+              <name_plural>Provinces</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="county" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>County</name_singular>
+              <name_plural>Counties</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="city" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>City</name_singular>
+              <name_plural>Cities</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="township" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>Township</name_singular>
+              <name_plural>Townships</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="town" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>Town</name_singular>
+              <name_plural>Towns</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="village" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>Village</name_singular>
+              <name_plural>Villages</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="hamlet" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>Hamlet</name_singular>
+              <name_plural>Hamlets</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="unincorp" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>Unincorporated area</name_singular>
+              <name_plural>Unincorporated areas</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="borough" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>Borough</name_singular>
+              <name_plural>Boroughs</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="street" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>Street Address</name_singular>
+              <name_plural>Street Addresses</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="point" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>Point Location</name_singular>
+              <name_plural>Point Locations</name_plural>
+            </label>
+          </labels>
+        </item>
+      </items>
+    </list>
+    <list code="collection_types" hierarchical="1" system="0" vocabulary="0">
+      <labels>
+        <label locale="en_US">
+          <name>Collection types</name>
+        </label>
+      </labels>
+      <items>
+        <item idno="parrish" enabled="1" default="1">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>Parrish collection</name_singular>
+              <name_plural>Parrish collections</name_plural>
+            </label>
+          </labels>
+        </item>
+      </items>
+    </list>
+    <list code="collection_sources" hierarchical="1" system="0" vocabulary="0">
+      <labels>
+        <label locale="en_US">
+          <name>Collection sources</name>
+        </label>
+      </labels>
+      <items>
+        <item idno="local" enabled="1" default="1">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>Local</name_singular>
+              <name_plural>Local</name_plural>
+            </label>
+          </labels>
+        </item>
+      </items>
+    </list>
+    <list code="occurrence_types" hierarchical="1" system="0" vocabulary="0">
+      <labels>
+        <label locale="en_US">
+          <name>Occurrence types</name>
+        </label>
+      </labels>
+      <items>
+        <item idno="event" enabled="1" default="1">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>event</name_singular>
+              <name_plural>events</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="exhibition" enabled="1" default="1">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>exhibition</name_singular>
+              <name_plural>exhibitions</name_plural>
+            </label>
+          </labels>
+        </item>
+      </items>
+    </list>
+    <list code="occurrence_sources" hierarchical="1" system="0" vocabulary="0">
+      <labels>
+        <label locale="en_US">
+          <name>Occurrence sources</name>
+        </label>
+      </labels>
+      <items>
+        <item idno="local" enabled="1" default="1">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>Local</name_singular>
+              <name_plural>Local</name_plural>
+            </label>
+          </labels>
+        </item>
+      </items>
+    </list>
+    <list code="storage_location_types" hierarchical="1" system="0" vocabulary="0">
+      <labels>
+        <label locale="en_US">
+          <name>Storage location types</name>
+        </label>
+      </labels>
+      <items>
+        <item idno="building" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>building</name_singular>
+              <name_plural>buildings</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="floor" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>floor</name_singular>
+              <name_plural>floors</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="room" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>room</name_singular>
+              <name_plural>rooms</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="cabinet" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>cabinet</name_singular>
+              <name_plural>cabinets</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="drawer" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>drawer</name_singular>
+              <name_plural>drawers</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="shelf" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>shelf</name_singular>
+              <name_plural>shelves</name_plural>
+            </label>
+          </labels>
+        </item>
+      </items>
+    </list>
+    <list code="languages" hierarchical="0" system="0" vocabulary="1">
+      <labels>
+        <label locale="en_US">
+          <name>Languages</name>
+        </label>
+      </labels>
+      <items>
+        <item idno="option0" enabled="1" default="1">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>-NONE-</name_singular>
+              <name_plural>-NONE-</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="ara" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>Arabic</name_singular>
+              <name_plural>Arabic</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="ben" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>Bengali</name_singular>
+              <name_plural>Bengali</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="chi" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>Chinese</name_singular>
+              <name_plural>Chinese</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="eng" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>English</name_singular>
+              <name_plural>English</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="fre" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>French</name_singular>
+              <name_plural>French</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="ger" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>German</name_singular>
+              <name_plural>German</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="hin" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>Hindustani</name_singular>
+              <name_plural>Hindustani</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="ita" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>Italian</name_singular>
+              <name_plural>Italian</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="jpn" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>Japanese</name_singular>
+              <name_plural>Japanese</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="may" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>Malay</name_singular>
+              <name_plural>Malay</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="por" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>Portuguese</name_singular>
+              <name_plural>Portuguese</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="rus" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>Russian</name_singular>
+              <name_plural>Russian</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="spa" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>Spanish</name_singular>
+              <name_plural>Spanish</name_plural>
+            </label>
+          </labels>
+        </item>
+      </items>
+    </list>
+    <list code="workflow_statuses" hierarchical="0" system="0" vocabulary="0">
+      <labels>
+        <label locale="en_US">
+          <name>Object workflow statuses</name>
+        </label>
+      </labels>
+      <items>
+        <item idno="none" enabled="1" default="1" value="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>-</name_singular>
+              <name_plural>-</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="complete" enabled="1" default="0" value="1">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>Complete</name_singular>
+              <name_plural>Complete</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="quick" enabled="1" default="0" value="2">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>Quick added, needs attention</name_singular>
+              <name_plural>Quick added, needs attention</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="in_progress" enabled="1" default="0" value="3">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>In progress</name_singular>
+              <name_plural>In progress</name_plural>
+            </label>
+          </labels>
+        </item>
+      </items>
+    </list>
+    <list code="registrar_status" hierarchical="0" system="0" vocabulary="0">
+      <labels>
+        <label locale="en_US">
+          <name>Registrar Status</name>
+        </label>
+      </labels>
+      <items>
+        <item idno="none" enabled="1" default="1" value="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>-NONE-</name_singular>
+              <name_plural>-NONE-</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="loan" enabled="1" default="0" value="1">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>Loan</name_singular>
+              <name_plural>Loans</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="deacession" enabled="1" default="0" value="1">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>Deaccession candidate</name_singular>
+              <name_plural>Deaccession candidate</name_plural>
+            </label>
+          </labels>
+        </item>
+      </items>
+    </list>
+    <list code="number_type" hierarchical="0" system="0" vocabulary="0">
+      <labels>
+        <label locale="en_US">
+          <name>Number Type</name>
+        </label>
+      </labels>
+      <items>
+        <item idno="previous" enabled="1" default="1" value="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>previous number</name_singular>
+              <name_plural>previous number</name_plural>
+            </label>
+          </labels>
+        </item>
+      </items>
+    </list>
+    <list code="yes_no" hierarchical="0" system="0" vocabulary="0" defaultSort="1">
+      <labels>
+        <label locale="en_US">
+          <name>Yes and no</name>
+        </label>
+      </labels>
+      <items>
+        <item idno="yes" rank="1" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>Yes</name_singular>
+              <name_plural>Yes</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="no" rank="2" enabled="1" default="1">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>No</name_singular>
+              <name_plural>No</name_plural>
+            </label>
+          </labels>
+        </item>
+      </items>
+    </list>
+    <list code="condition" hierarchical="0" system="0" vocabulary="0">
+      <labels>
+        <label locale="en_US">
+          <name>Condition</name>
+        </label>
+      </labels>
+      <items>
+        <item idno="need_no" enabled="1" default="1" value="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>Needs no work</name_singular>
+              <name_plural>Needs no work</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="exhibitable" enabled="1" default="0" value="1">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>Exhibitable/Needs work</name_singular>
+              <name_plural>Exhibitable/Needs work</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="not_exhibitable" enabled="1" default="0" value="1">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>Not exhibitable/Stable</name_singular>
+              <name_plural>Not exhibitable/Stable</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="jeopardy" enabled="1" default="0" value="1">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>In jeopardy/Unstable</name_singular>
+              <name_plural>In jeopardy/Unstable</name_plural>
+            </label>
+          </labels>
+        </item>
+      </items>
+    </list>
+    <list code="parrish_terms" hierarchical="1" system="0" vocabulary="1">
+      <labels>
+        <label locale="en_US">
+          <name>Parrish terms</name>
+        </label>
+      </labels>
+      <items> </items>
+    </list>
+    <list code="image_status" hierarchical="0" system="0" vocabulary="0">
+      <labels>
+        <label locale="en_US">
+          <name>Image status</name>
+        </label>
+      </labels>
+      <items>
+        <item idno="display" enabled="1" default="1" value="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>Display</name_singular>
+              <name_plural>Display</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="private" enabled="1" default="0" value="1">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>Private</name_singular>
+              <name_plural>Private</name_plural>
+            </label>
+          </labels>
+        </item>
+      </items>
+    </list>
+    <list code="object_status" hierarchical="0" system="0" vocabulary="0">
+      <labels>
+        <label locale="en_US">
+          <name>Status</name>
+        </label>
+      </labels>
+      <items>
+        <item idno="new" enabled="1" default="1" value="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>New</name_singular>
+              <name_plural>New</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="first_edit" enabled="1" default="0" value="1">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>First edit</name_singular>
+              <name_plural>First edit</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="final_edit" enabled="1" default="0" value="1">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>Final edit</name_singular>
+              <name_plural>Final edit</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="completed_publish" enabled="1" default="0" value="1">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>Completed/Publish</name_singular>
+              <name_plural>Completed/Publish</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="completed_dont_publish" enabled="1" default="0" value="1">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>Completed/Do not publish</name_singular>
+              <name_plural>Completed/Do not publish</name_plural>
+            </label>
+          </labels>
+        </item>
+      </items>
+    </list>
+    <list code="license" hierarchical="0" system="0" vocabulary="0">
+      <labels>
+        <label locale="en_US">
+          <name>Image license</name>
+        </label>
+      </labels>
+      <items>
+        <item idno="none" enabled="1" default="1" value="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>-NONE-</name_singular>
+              <name_plural>-NONE-</name_plural>
+            </label>
+          </labels>
+        </item>
+      </items>
+    </list>
+    <list code="document_type" hierarchical="0" system="0" vocabulary="0">
+      <labels>
+        <label locale="en_US">
+          <name>Document type</name>
+        </label>
+      </labels>
+      <items>
+        <item idno="authentication" enabled="1" default="1" value="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>Authentication document</name_singular>
+              <name_plural>Authentication documents</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="example" enabled="1" default="0" value="1">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>Example student work</name_singular>
+              <name_plural>Example student work</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="lesson" enabled="1" default="0" value="1">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>Lesson plan</name_singular>
+              <name_plural>Lesson plans</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="oral_file" enabled="1" default="0" value="1">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>Oral history audio file</name_singular>
+              <name_plural>Oral history audio files</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="oral_transcript" enabled="1" default="0" value="1">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>Oral history transcript</name_singular>
+              <name_plural>Oral history transcript</name_plural>
+            </label>
+          </labels>
+        </item>
+      </items>
+    </list>
+  </lists>
+  <elementSets>
+    <metadataElement code="description" datatype="Text">
+      <labels>
+        <label locale="en_US">
+          <name>Description</name>
+          <description>description</description>
+        </label>
+      </labels>
+      <documentationUrl/>
+      <settings>
+        <setting name="usewysiwygeditor">1</setting>
+        <setting name="fieldWidth">80</setting>
+        <setting name="fieldHeight">5</setting>
+        <setting name="minChars">0</setting>
+        <setting name="maxChars">65535</setting>
+      </settings>
+      <typeRestrictions>
+        <restriction code="r1">
+          <table>ca_objects</table>
+          <settings>
+            <setting name="minAttributesPerRow">0</setting>
+            <setting name="maxAttributesPerRow">100</setting>
+            <setting name="minimumAttributeBundlesToDisplay">1</setting>
+          </settings>
+        </restriction>
+        <restriction code="r2">
+          <table>ca_places</table>
+          <settings>
+            <setting name="minAttributesPerRow">0</setting>
+            <setting name="maxAttributesPerRow">100</setting>
+            <setting name="minimumAttributeBundlesToDisplay">1</setting>
+          </settings>
+        </restriction>
+        <restriction code="r3">
+          <table>ca_occurrences</table>
+          <type>event</type>
+          <settings>
+            <setting name="minAttributesPerRow">0</setting>
+            <setting name="maxAttributesPerRow">100</setting>
+            <setting name="minimumAttributeBundlesToDisplay">1</setting>
+          </settings>
+        </restriction>
+        <restriction code="r4">
+          <table>ca_collections</table>
+          <settings>
+            <setting name="minAttributesPerRow">0</setting>
+            <setting name="maxAttributesPerRow">100</setting>
+            <setting name="minimumAttributeBundlesToDisplay">1</setting>
+          </settings>
+        </restriction>
+        <restriction code="r5">
+          <table>ca_storage_locations</table>
+          <settings>
+            <setting name="minAttributesPerRow">0</setting>
+            <setting name="maxAttributesPerRow">100</setting>
+            <setting name="minimumAttributeBundlesToDisplay">1</setting>
+          </settings>
+        </restriction>
+        <restriction code="r6">
+          <table>ca_object_lots</table>
+          <settings>
+            <setting name="minAttributesPerRow">0</setting>
+            <setting name="maxAttributesPerRow">100</setting>
+            <setting name="minimumAttributeBundlesToDisplay">1</setting>
+          </settings>
+        </restriction>
+        <restriction code="r7">
+          <table>ca_object_events</table>
+          <settings>
+            <setting name="minAttributesPerRow">0</setting>
+            <setting name="maxAttributesPerRow">100</setting>
+            <setting name="minimumAttributeBundlesToDisplay">1</setting>
+          </settings>
+        </restriction>
+      </typeRestrictions>
+    </metadataElement>
+    <metadataElement code="description_source" datatype="Text">
+      <labels>
+        <label locale="en_US">
+          <name>Description Sources</name>
+          <description/>
+        </label>
+      </labels>
+      <settings>
+        <setting name="fieldWidth">80</setting>
+        <setting name="fieldHeight">3</setting>
+        <setting name="minChars">0</setting>
+        <setting name="maxChars">65535</setting>
+      </settings>
+      <typeRestrictions>
+        <restriction code="r1">
+          <table>ca_objects</table>
+          <settings>
+            <setting name="minAttributesPerRow">1</setting>
+            <setting name="maxAttributesPerRow">1</setting>
+            <setting name="minimumAttributeBundlesToDisplay">1</setting>
+          </settings>
+        </restriction>
+        <restriction code="r2">
+          <table>ca_places</table>
+          <settings>
+            <setting name="minAttributesPerRow">1</setting>
+            <setting name="maxAttributesPerRow">1</setting>
+            <setting name="minimumAttributeBundlesToDisplay">1</setting>
+          </settings>
+        </restriction>
+        <restriction code="r3">
+          <table>ca_collections</table>
+          <settings>
+            <setting name="minAttributesPerRow">1</setting>
+            <setting name="maxAttributesPerRow">1</setting>
+            <setting name="minimumAttributeBundlesToDisplay">1</setting>
+          </settings>
+        </restriction>
+      </typeRestrictions>
+    </metadataElement>
+    <metadataElement code="caption" datatype="Text">
+      <labels>
+        <label locale="en_US">
+          <name>Label/caption</name>
+          <description>Label/caption</description>
+        </label>
+      </labels>
+      <settings>
+        <setting name="fieldWidth">80</setting>
+        <setting name="fieldHeight">3</setting>
+        <setting name="minChars">0</setting>
+        <setting name="maxChars">65535</setting>
+      </settings>
+      <typeRestrictions>
+        <restriction code="r1">
+          <table>ca_objects</table>
+          <settings>
+            <setting name="minAttributesPerRow">0</setting>
+            <setting name="maxAttributesPerRow">1</setting>
+            <setting name="minimumAttributeBundlesToDisplay">1</setting>
+          </settings>
+        </restriction>
+        <restriction code="r2">
+          <table>ca_object_representations</table>
+          <settings>
+            <setting name="minAttributesPerRow">0</setting>
+            <setting name="maxAttributesPerRow">1</setting>
+            <setting name="minimumAttributeBundlesToDisplay">1</setting>
+          </settings>
+        </restriction>
+        <restriction code="r3">
+          <table>ca_representation_annotations</table>
+          <settings>
+            <setting name="minAttributesPerRow">0</setting>
+            <setting name="maxAttributesPerRow">1</setting>
+            <setting name="minimumAttributeBundlesToDisplay">1</setting>
+          </settings>
+        </restriction>
+        <restriction code="r4">
+          <table>ca_set_items</table>
+          <settings>
+            <setting name="minAttributesPerRow">0</setting>
+            <setting name="maxAttributesPerRow">1</setting>
+            <setting name="minimumAttributeBundlesToDisplay">1</setting>
+          </settings>
+        </restriction>
+        <restriction code="r5">
+          <table>ca_places</table>
+          <settings>
+            <setting name="minAttributesPerRow">0</setting>
+            <setting name="maxAttributesPerRow">1</setting>
+            <setting name="minimumAttributeBundlesToDisplay">1</setting>
+          </settings>
+        </restriction>
+      </typeRestrictions>
+    </metadataElement>
+    <metadataElement code="georeference" datatype="Geocode">
+      <labels>
+        <label locale="en_US">
+          <name>Georeference</name>
+          <description>Coordinates documenting the location of the item</description>
+        </label>
+      </labels>
+      <settings>
+        <setting name="fieldWidth">80</setting>
+        <setting name="fieldHeight">3</setting>
+        <setting name="minChars">1</setting>
+        <setting name="maxChars">65535</setting>
+        <setting name="doesNotTakeLocale">1</setting>
+      </settings>
+      <typeRestrictions>
+        <restriction code="ca_objects">
+          <table>ca_objects</table>
+          <settings>
+            <setting name="minAttributesPerRow">0</setting>
+            <setting name="maxAttributesPerRow">100</setting>
+            <setting name="minimumAttributeBundlesToDisplay">1</setting>
+          </settings>
+        </restriction>
+        <restriction code="ca_places">
+          <table>ca_places</table>
+          <settings>
+            <setting name="minAttributesPerRow">0</setting>
+            <setting name="maxAttributesPerRow">100</setting>
+            <setting name="minimumAttributeBundlesToDisplay">1</setting>
+          </settings>
+        </restriction>
+      </typeRestrictions>
+    </metadataElement>
+    <metadataElement code="internal_notes" datatype="Text">
+      <labels>
+        <label locale="en_US">
+          <name>Notes (internal use only)</name>
+          <description>Notes regarding item</description>
+        </label>
+      </labels>
+      <settings>
+        <setting name="fieldWidth">80</setting>
+        <setting name="fieldHeight">3</setting>
+        <setting name="minChars">0</setting>
+        <setting name="maxChars">65535</setting>
+        <setting name="doesNotTakeLocale">1</setting>
+      </settings>
+      <typeRestrictions>
+        <restriction code="r1">
+          <table>ca_objects</table>
+          <settings>
+            <setting name="minAttributesPerRow">1</setting>
+            <setting name="maxAttributesPerRow">1</setting>
+            <setting name="minimumAttributeBundlesToDisplay">1</setting>
+          </settings>
+        </restriction>
+        <restriction code="r2">
+          <table>ca_entities</table>
+          <settings>
+            <setting name="minAttributesPerRow">1</setting>
+            <setting name="maxAttributesPerRow">1</setting>
+            <setting name="minimumAttributeBundlesToDisplay">1</setting>
+          </settings>
+        </restriction>
+        <restriction code="r3">
+          <table>ca_places</table>
+          <settings>
+            <setting name="minAttributesPerRow">1</setting>
+            <setting name="maxAttributesPerRow">1</setting>
+            <setting name="minimumAttributeBundlesToDisplay">1</setting>
+          </settings>
+        </restriction>
+        <restriction code="r4">
+          <table>ca_occurrences</table>
+          <type>event</type>
+          <settings>
+            <setting name="minAttributesPerRow">1</setting>
+            <setting name="maxAttributesPerRow">1</setting>
+            <setting name="minimumAttributeBundlesToDisplay">1</setting>
+          </settings>
+        </restriction>
+        <restriction code="r5">
+          <table>ca_collections</table>
+          <settings>
+            <setting name="minAttributesPerRow">1</setting>
+            <setting name="maxAttributesPerRow">1</setting>
+            <setting name="minimumAttributeBundlesToDisplay">1</setting>
+          </settings>
+        </restriction>
+        <restriction code="r6">
+          <table>ca_storage_locations</table>
+          <settings>
+            <setting name="minAttributesPerRow">1</setting>
+            <setting name="maxAttributesPerRow">1</setting>
+            <setting name="minimumAttributeBundlesToDisplay">1</setting>
+          </settings>
+        </restriction>
+      </typeRestrictions>
+    </metadataElement>
+    <metadataElement code="historical_notes" datatype="Text">
+      <labels>
+        <label locale="en_US">
+          <name>Historical notes</name>
+          <description>Historical notes</description>
+        </label>
+      </labels>
+      <documentationUrl/>
+      <settings>
+        <setting name="fieldWidth">80</setting>
+        <setting name="fieldHeight">3</setting>
+        <setting name="minChars">0</setting>
+        <setting name="maxChars">65535</setting>
+      </settings>
+      <typeRestrictions>
+        <restriction code="r1">
+          <table>ca_objects</table>
+          <settings>
+            <setting name="minAttributesPerRow">0</setting>
+            <setting name="maxAttributesPerRow">1</setting>
+            <setting name="minimumAttributeBundlesToDisplay">1</setting>
+          </settings>
+        </restriction>
+        <restriction code="r2">
+          <table>ca_entities</table>
+          <settings>
+            <setting name="minAttributesPerRow">0</setting>
+            <setting name="maxAttributesPerRow">1</setting>
+            <setting name="minimumAttributeBundlesToDisplay">1</setting>
+          </settings>
+        </restriction>
+        <restriction code="r3">
+          <table>ca_places</table>
+          <settings>
+            <setting name="minAttributesPerRow">1</setting>
+            <setting name="maxAttributesPerRow">1</setting>
+            <setting name="minimumAttributeBundlesToDisplay">1</setting>
+          </settings>
+        </restriction>
+        <restriction code="r4">
+          <table>ca_occurrences</table>
+          <settings>
+            <setting name="minAttributesPerRow">0</setting>
+            <setting name="maxAttributesPerRow">100</setting>
+            <setting name="minimumAttributeBundlesToDisplay">1</setting>
+          </settings>
+        </restriction>
+      </typeRestrictions>
+    </metadataElement>
+    <metadataElement code="historical_source" datatype="Text">
+      <labels>
+        <label locale="en_US">
+          <name>Historical source notes</name>
+          <description>Historical source notes</description>
+        </label>
+      </labels>
+      <documentationUrl/>
+      <settings>
+        <setting name="fieldWidth">80</setting>
+        <setting name="fieldHeight">3</setting>
+        <setting name="minChars">0</setting>
+        <setting name="maxChars">65535</setting>
+      </settings>
+      <typeRestrictions>
+        <restriction code="r1">
+          <table>ca_objects</table>
+          <settings>
+            <setting name="minAttributesPerRow">0</setting>
+            <setting name="maxAttributesPerRow">1</setting>
+            <setting name="minimumAttributeBundlesToDisplay">1</setting>
+          </settings>
+        </restriction>
+      </typeRestrictions>
+    </metadataElement>
+    <metadataElement code="lcsh_terms" datatype="LCSH">
+      <labels>
+        <label locale="en_US">
+          <name>Library of Congress Subject Headings</name>
+          <description>Library of Congress Subject headings describing this object. To add a new heading simply type the first few letters of the heading and choose the desired one from the displayed list of possible matches.</description>
+        </label>
+      </labels>
+      <settings>
+        <setting name="fieldWidth">50</setting>
+        <setting name="fieldHeight">1</setting>
+      </settings>
+      <typeRestrictions>
+        <restriction code="ca_objects">
+          <table>ca_objects</table>
+          <settings>
+            <setting name="minAttributesPerRow">0</setting>
+            <setting name="maxAttributesPerRow">100</setting>
+            <setting name="minimumAttributeBundlesToDisplay">1</setting>
+          </settings>
+        </restriction>
+        <restriction code="ca_entities">
+          <table>ca_entities</table>
+          <settings>
+            <setting name="minAttributesPerRow">0</setting>
+            <setting name="maxAttributesPerRow">100</setting>
+            <setting name="minimumAttributeBundlesToDisplay">1</setting>
+          </settings>
+        </restriction>
+        <restriction code="ca_places">
+          <table>ca_places</table>
+          <settings>
+            <setting name="minAttributesPerRow">0</setting>
+            <setting name="maxAttributesPerRow">100</setting>
+            <setting name="minimumAttributeBundlesToDisplay">1</setting>
+          </settings>
+        </restriction>
+        <restriction code="ca_occurrences">
+          <table>ca_occurrences</table>
+          <settings>
+            <setting name="minAttributesPerRow">0</setting>
+            <setting name="maxAttributesPerRow">100</setting>
+            <setting name="minimumAttributeBundlesToDisplay">1</setting>
+          </settings>
+        </restriction>
+        <restriction code="ca_collections">
+          <table>ca_collections</table>
+          <settings>
+            <setting name="minAttributesPerRow">0</setting>
+            <setting name="maxAttributesPerRow">100</setting>
+            <setting name="minimumAttributeBundlesToDisplay">1</setting>
+          </settings>
+        </restriction>
+      </typeRestrictions>
+    </metadataElement>
+    <metadataElement code="language" datatype="List" list="languages">
+      <labels>
+        <label locale="en_US">
+          <name>Locale</name>
+          <description></description>
+        </label>
+      </labels>
+      <documentationUrl></documentationUrl>
+      <settings>
+        <setting name="fieldWidth">80</setting>
+        <setting name="fieldHeight">1</setting>
+        <setting name="minChars">0</setting>
+        <setting name="maxChars">65535</setting>
+      </settings>
+      <typeRestrictions>
+        <restriction code="r1">
+          <table>ca_objects</table>
+          <settings>
+            <setting name="minAttributesPerRow">0</setting>
+            <setting name="maxAttributesPerRow">255</setting>
+            <setting name="minimumAttributeBundlesToDisplay">1</setting>
+          </settings>
+        </restriction>
+        <restriction code="r2">
+          <table>ca_places</table>
+          <settings>
+            <setting name="minAttributesPerRow">0</setting>
+            <setting name="maxAttributesPerRow">255</setting>
+            <setting name="minimumAttributeBundlesToDisplay">1</setting>
+          </settings>
+        </restriction>
+      </typeRestrictions>
+    </metadataElement>
+    <metadataElement code="provenance" datatype="Text">
+      <labels>
+        <label locale="en_US">
+          <name>Provenance</name>
+          <description/>
+        </label>
+      </labels>
+      <documentationUrl/>
+      <settings>
+        <setting name="fieldWidth">80</setting>
+        <setting name="fieldHeight">3</setting>
+        <setting name="minChars">0</setting>
+        <setting name="maxChars">65535</setting>
+      </settings>
+      <typeRestrictions>
+        <restriction code="r1">
+          <table>ca_objects</table>
+          <settings>
+            <setting name="minAttributesPerRow">0</setting>
+            <setting name="maxAttributesPerRow">255</setting>
+            <setting name="minimumAttributeBundlesToDisplay">1</setting>
+          </settings>
+        </restriction>
+        <restriction code="r2">
+          <table>ca_object_lots</table>
+          <settings>
+            <setting name="minAttributesPerRow">0</setting>
+            <setting name="maxAttributesPerRow">1</setting>
+            <setting name="minimumAttributeBundlesToDisplay">1</setting>
+          </settings>
+        </restriction>
+      </typeRestrictions>
+    </metadataElement>
+    <metadataElement code="admin_remarks" datatype="Text">
+      <labels>
+        <label locale="en_US">
+          <name>Administrative remarks</name>
+          <description/>
+        </label>
+      </labels>
+      <documentationUrl/>
+      <settings>
+        <setting name="fieldWidth">80</setting>
+        <setting name="fieldHeight">2</setting>
+        <setting name="minChars">0</setting>
+        <setting name="maxChars">65535</setting>
+      </settings>
+      <typeRestrictions>
+        <restriction code="r1">
+          <table>ca_objects</table>
+          <settings>
+            <setting name="minAttributesPerRow">0</setting>
+            <setting name="maxAttributesPerRow">255</setting>
+            <setting name="minimumAttributeBundlesToDisplay">1</setting>
+          </settings>
+        </restriction>
+        <restriction code="r2">
+          <table>ca_object_lots</table>
+          <settings>
+            <setting name="minAttributesPerRow">0</setting>
+            <setting name="maxAttributesPerRow">1</setting>
+            <setting name="minimumAttributeBundlesToDisplay">1</setting>
+          </settings>
+        </restriction>
+      </typeRestrictions>
+    </metadataElement>
+    <metadataElement code="geonames" datatype="GeoNames">
+      <labels>
+        <label locale="en_US">
+          <name>GeoNames</name>
+          <description>A Geographic lookup that takes search text, passes it to the GeoNames search service and provides a drop down with search results (ordered by score). Selected geoname is stored as both text (name, country, continent and ID) and the service URL identifier.</description>
+        </label>
+      </labels>
+      <settings>
+        <setting name="fieldWidth">70</setting>
+        <setting name="fieldHeight">1</setting>
+        <setting name="minChars">1</setting>
+        <setting name="maxChars">65535</setting>
+        <setting name="doesNotTakeLocale">1</setting>
+      </settings>
+      <typeRestrictions>
+        <restriction code="ca_objects">
+          <table>ca_objects</table>
+          <settings>
+            <setting name="minAttributesPerRow">0</setting>
+            <setting name="maxAttributesPerRow">100</setting>
+            <setting name="minimumAttributeBundlesToDisplay">1</setting>
+          </settings>
+        </restriction>
+        <restriction code="ca_places">
+          <table>ca_places</table>
+          <settings>
+            <setting name="minAttributesPerRow">0</setting>
+            <setting name="maxAttributesPerRow">100</setting>
+            <setting name="minimumAttributeBundlesToDisplay">1</setting>
+          </settings>
+        </restriction>
+      </typeRestrictions>
+    </metadataElement>
+     <metadataElement code="dimensions_as_text" datatype="Text">
+      <labels>
+        <label locale="en_US">
+          <name>Dimensions (display)</name>
+          <description/>
+        </label>
+      </labels>
+      <documentationUrl/>
+      <settings>
+        <setting name="fieldWidth">80</setting>
+        <setting name="fieldHeight">2</setting>
+        <setting name="minChars">0</setting>
+        <setting name="maxChars">65535</setting>
+      </settings>
+      <typeRestrictions>
+        <restriction code="r1">
+          <table>ca_objects</table>
+          <settings>
+            <setting name="minAttributesPerRow">1</setting>
+            <setting name="maxAttributesPerRow">1</setting>
+            <setting name="minimumAttributeBundlesToDisplay">1</setting>
+          </settings>
+        </restriction>
+      </typeRestrictions>
+    </metadataElement>
+    <metadataElement code="work_dimensions" datatype="Container">
+      <labels>
+        <label locale="en_US">
+          <name>Physical Dimensions</name>
+          <description>Physical dimensions of object</description>
+        </label>
+      </labels>
+      <settings>
+        <setting name="doesNotTakeLocale">1</setting>
+      </settings>
+      <elements>
+        <metadataElement code="dimensions_width" datatype="Length">
+          <labels>
+            <label locale="en_US">
+              <name>Width</name>
+              <description>Width of object; enter in your preferred units (eg. 10cm</description>
+            </label>
+          </labels>
+          <settings>
+            <setting name="fieldWidth">10</setting>
+            <setting name="fieldHeight">1</setting>
+          </settings>
+        </metadataElement>
+        <metadataElement code="dimensions_height" datatype="Length">
+          <labels>
+            <label locale="en_US">
+              <name>Height</name>
+              <description>Height of object; enter in your preferred units (eg. 10cm</description>
+            </label>
+          </labels>
+          <settings>
+            <setting name="fieldWidth">10</setting>
+            <setting name="fieldHeight">1</setting>
+          </settings>
+        </metadataElement>
+        <metadataElement code="dimensions_depth" datatype="Length">
+          <labels>
+            <label locale="en_US">
+              <name>Depth</name>
+              <description>Depth of object; enter in your preferred units (eg. 10cm</description>
+            </label>
+          </labels>
+          <settings>
+            <setting name="fieldWidth">10</setting>
+            <setting name="fieldHeight">1</setting>
+          </settings>
+        </metadataElement>
+      </elements>
+      <typeRestrictions>
+        <restriction code="ca_objects1">
+          <table>ca_objects</table>
+          <settings>
+            <setting name="minAttributesPerRow">1</setting>
+            <setting name="maxAttributesPerRow">100</setting>
+            <setting name="minimumAttributeBundlesToDisplay">0</setting>
+          </settings>
+        </restriction>
+      </typeRestrictions>
+    </metadataElement>
+    <metadataElement code="rights" datatype="List" list="rights">
+      <labels>
+        <label locale="en_US">
+          <name>Rights/Use</name>
+          <description/>
+        </label>
+      </labels>
+      <settings>
+        <setting name="doesNotTakeLocale">1</setting>
+        <setting name="render">checklist</setting>
+      </settings>
+      <typeRestrictions>
+        <restriction code="ca_objects">
+          <table>ca_objects</table>
+          <settings>
+            <setting name="minAttributesPerRow">0</setting>
+            <setting name="maxAttributesPerRow">100</setting>
+            <setting name="minimumAttributeBundlesToDisplay">0</setting>
+          </settings>
+        </restriction>
+      </typeRestrictions>
+    </metadataElement>
+    <metadataElement code="extent" datatype="Text">
+      <labels>
+        <label locale="en_US">
+          <name>Extent</name>
+          <description/>
+        </label>
+      </labels>
+      <documentationUrl/>
+      <settings>
+        <setting name="fieldWidth">80</setting>
+        <setting name="fieldHeight">1</setting>
+        <setting name="minChars">0</setting>
+        <setting name="maxChars">65535</setting>
+      </settings>
+      <typeRestrictions>
+        <restriction code="r1">
+          <table>ca_objects</table>
+          <settings>
+            <setting name="minAttributesPerRow">0</setting>
+            <setting name="maxAttributesPerRow">1</setting>
+            <setting name="minimumAttributeBundlesToDisplay">1</setting>
+          </settings>
+        </restriction>
+      </typeRestrictions>
+    </metadataElement>
+    <metadataElement code="registrar_status" datatype="List" list="registrar_status">
+      <labels>
+        <label locale="en_US">
+          <name>Registrar Status</name>
+        </label>
+      </labels>
+      <settings>
+        <setting name="fieldWidth">40</setting>
+        <setting name="doesNotTakeLocale">1</setting>
+      </settings>
+      <typeRestrictions>
+        <restriction code="r1">
+          <table>ca_objects</table>
+          <settings>
+            <setting name="minAttributesPerRow">1</setting>
+            <setting name="maxAttributesPerRow">1</setting>
+            <setting name="minimumAttributeBundlesToDisplay">1</setting>
+          </settings>
+        </restriction>
+      </typeRestrictions>
+    </metadataElement>
+    <metadataElement code="numbering" datatype="Container">
+      <labels>
+        <label locale="en_US">
+          <name>Numbering</name>
+        </label>
+      </labels>
+      <settings>
+        <setting name="doesNotTakeLocale">1</setting>
+      </settings>
+      <elements>
+        <metadataElement code="numbering1" datatype="Container">
+          <labels>
+            <label locale="en_US">
+              <name>Numbering line 1</name>
+            </label>
+          </labels>
+          <settings/>
+          <elements>
+            <metadataElement code="number" datatype="Text">
+              <labels>
+                <label locale="en_US">
+                  <name>Number</name>
+                </label>
+              </labels>
+              <settings>
+                <setting name="fieldWidth">40</setting>
+                <setting name="fieldHeight">1</setting>
+                <setting name="minChars">0</setting>
+                <setting name="maxChars">255</setting>
+              </settings>
+            </metadataElement>
+            <metadataElement code="number_type" datatype="List" list="number_type">
+              <labels>
+                <label locale="en_US">
+                  <name>Type</name>
+                </label>
+              </labels>
+              <settings>
+                <setting name="fieldWidth">40</setting>
+                <setting name="doesNotTakeLocale">1</setting>
+              </settings>
+            </metadataElement>
+          </elements>
+        </metadataElement>
+        <metadataElement code="numbering2" datatype="Container">
+          <labels>
+            <label locale="en_US">
+              <name>Numbering line 2</name>
+            </label>
+          </labels>
+          <settings/>
+          <elements>
+            <metadataElement code="number_description" datatype="Text">
+              <labels>
+                <label locale="en_US">
+                  <name>Description</name>
+                </label>
+              </labels>
+              <settings>
+                <setting name="fieldWidth">70</setting>
+                <setting name="fieldHeight">2</setting>
+                <setting name="minChars">0</setting>
+                <setting name="maxChars">255</setting>
+              </settings>
+            </metadataElement>
+          </elements>
+        </metadataElement>
+      </elements>
+      <typeRestrictions>
+        <restriction code="r1">
+          <table>ca_objects</table>
+          <settings>
+            <setting name="minAttributesPerRow">0</setting>
+            <setting name="maxAttributesPerRow">1</setting>
+            <setting name="minimumAttributeBundlesToDisplay">1</setting>
+          </settings>
+        </restriction>
+      </typeRestrictions>
+    </metadataElement>
+    <metadataElement code="creation_date" datatype="DateRange">
+      <labels>
+        <label locale="en_US">
+          <name>Creation Date</name>
+          <description/>
+        </label>
+      </labels>
+      <documentationUrl/>
+      <settings>
+        <setting name="fieldWidth">40</setting>
+        <setting name="fieldHeight">1</setting>
+      </settings>
+      <typeRestrictions>
+        <restriction code="r1">
+          <table>ca_objects</table>
+          <settings>
+            <setting name="minAttributesPerRow">0</setting>
+            <setting name="maxAttributesPerRow">1</setting>
+            <setting name="minimumAttributeBundlesToDisplay">1</setting>
+          </settings>
+        </restriction>
+      </typeRestrictions>
+    </metadataElement>
+    <metadataElement code="medium" datatype="Text">
+      <labels>
+        <label locale="en_US">
+          <name>Medium</name>
+          <description/>
+        </label>
+      </labels>
+      <documentationUrl/>
+      <settings>
+        <setting name="fieldWidth">80</setting>
+        <setting name="fieldHeight">2</setting>
+        <setting name="minChars">0</setting>
+        <setting name="maxChars">65535</setting>
+      </settings>
+      <typeRestrictions>
+        <restriction code="r1">
+          <table>ca_objects</table>
+          <settings>
+            <setting name="minAttributesPerRow">0</setting>
+            <setting name="maxAttributesPerRow">1</setting>
+            <setting name="minimumAttributeBundlesToDisplay">1</setting>
+          </settings>
+        </restriction>
+      </typeRestrictions>
+    </metadataElement>
+    <metadataElement code="custodial_notes" datatype="Text">
+      <labels>
+        <label locale="en_US">
+          <name>Custodial notes</name>
+          <description></description>
+        </label>
+      </labels>
+      <documentationUrl/>
+      <settings>
+        <setting name="fieldWidth">80</setting>
+        <setting name="fieldHeight">3</setting>
+        <setting name="minChars">0</setting>
+        <setting name="maxChars">65535</setting>
+      </settings>
+      <typeRestrictions>
+        <restriction code="r1">
+          <table>ca_objects</table>
+          <settings>
+            <setting name="minAttributesPerRow">0</setting>
+            <setting name="maxAttributesPerRow">255</setting>
+            <setting name="minimumAttributeBundlesToDisplay">1</setting>
+          </settings>
+        </restriction>
+      </typeRestrictions>
+    </metadataElement>
+    <metadataElement code="artifact_needs" datatype="Text">
+      <labels>
+        <label locale="en_US">
+          <name>Artifact needs</name>
+          <description></description>
+        </label>
+      </labels>
+      <documentationUrl/>
+      <settings>
+        <setting name="fieldWidth">80</setting>
+        <setting name="fieldHeight">3</setting>
+        <setting name="minChars">0</setting>
+        <setting name="maxChars">65535</setting>
+      </settings>
+      <typeRestrictions>
+        <restriction code="r1">
+          <table>ca_objects</table>
+          <settings>
+            <setting name="minAttributesPerRow">0</setting>
+            <setting name="maxAttributesPerRow">255</setting>
+            <setting name="minimumAttributeBundlesToDisplay">1</setting>
+          </settings>
+        </restriction>
+      </typeRestrictions>
+    </metadataElement>
+    <metadataElement code="special_handling" datatype="Text">
+      <labels>
+        <label locale="en_US">
+          <name>Special handling</name>
+          <description></description>
+        </label>
+      </labels>
+      <documentationUrl/>
+      <settings>
+        <setting name="fieldWidth">80</setting>
+        <setting name="fieldHeight">3</setting>
+        <setting name="minChars">0</setting>
+        <setting name="maxChars">65535</setting>
+      </settings>
+      <typeRestrictions>
+        <restriction code="r1">
+          <table>ca_objects</table>
+          <settings>
+            <setting name="minAttributesPerRow">0</setting>
+            <setting name="maxAttributesPerRow">255</setting>
+            <setting name="minimumAttributeBundlesToDisplay">1</setting>
+          </settings>
+        </restriction>
+      </typeRestrictions>
+    </metadataElement>
+  
+    <metadataElement code="accession_date" datatype="DateRange">
+      <labels>
+        <label locale="en_US">
+          <name>Accession Date</name>
+          <description/>
+        </label>
+      </labels>
+      <documentationUrl/>
+      <settings>
+        <setting name="fieldWidth">40</setting>
+        <setting name="fieldHeight">1</setting>
+      </settings>
+      <typeRestrictions>
+        <restriction code="r1">
+          <table>ca_objects</table>
+          <settings>
+            <setting name="minAttributesPerRow">0</setting>
+            <setting name="maxAttributesPerRow">1</setting>
+            <setting name="minimumAttributeBundlesToDisplay">1</setting>
+          </settings>
+        </restriction>
+      </typeRestrictions>
+    </metadataElement>
+    <metadataElement code="event_date" datatype="DateRange">
+      <labels>
+        <label locale="en_US">
+          <name>Event Date</name>
+          <description/>
+        </label>
+      </labels>
+      <documentationUrl/>
+      <settings>
+        <setting name="fieldWidth">40</setting>
+        <setting name="fieldHeight">1</setting>
+      </settings>
+      <typeRestrictions>
+        <restriction code="r1">
+          <table>ca_occurrences</table>
+          <settings>
+            <setting name="minAttributesPerRow">0</setting>
+            <setting name="maxAttributesPerRow">1</setting>
+            <setting name="minimumAttributeBundlesToDisplay">1</setting>
+          </settings>
+        </restriction>
+      </typeRestrictions>
+    </metadataElement>
+    <metadataElement code="condition" datatype="List" list="condition">
+      <labels>
+        <label locale="en_US">
+          <name>Condition</name>
+        </label>
+      </labels>
+      <settings>
+        <setting name="fieldWidth">40</setting>
+        <setting name="doesNotTakeLocale">1</setting>
+      </settings>
+      <typeRestrictions>
+        <restriction code="r1">
+          <table>ca_objects</table>
+          <settings>
+            <setting name="minAttributesPerRow">1</setting>
+            <setting name="maxAttributesPerRow">1</setting>
+            <setting name="minimumAttributeBundlesToDisplay">1</setting>
+          </settings>
+        </restriction>
+      </typeRestrictions>
+    </metadataElement>
+    <metadataElement code="term_date" datatype="DateRange">
+      <labels>
+        <label locale="en_US">
+          <name>Effective daterange</name>
+          <description/>
+        </label>
+      </labels>
+      <documentationUrl/>
+      <settings>
+        <setting name="fieldWidth">40</setting>
+        <setting name="fieldHeight">1</setting>
+      </settings>
+      <typeRestrictions>
+        <restriction code="r1">
+          <table>ca_list_items</table>
+          <settings>
+            <setting name="minAttributesPerRow">0</setting>
+            <setting name="maxAttributesPerRow">255</setting>
+            <setting name="minimumAttributeBundlesToDisplay">1</setting>
+          </settings>
+        </restriction>
+      </typeRestrictions>
+    </metadataElement>
+    <metadataElement code="source_notes" datatype="Text">
+      <labels>
+        <label locale="en_US">
+          <name>Source notes</name>
+          <description></description>
+        </label>
+      </labels>
+      <documentationUrl/>
+      <settings>
+        <setting name="fieldWidth">80</setting>
+        <setting name="fieldHeight">3</setting>
+        <setting name="minChars">0</setting>
+        <setting name="maxChars">65535</setting>
+      </settings>
+      <typeRestrictions>
+        <restriction code="r1">
+          <table>ca_list_items</table>
+          <settings>
+            <setting name="minAttributesPerRow">0</setting>
+            <setting name="maxAttributesPerRow">255</setting>
+            <setting name="minimumAttributeBundlesToDisplay">1</setting>
+          </settings>
+        </restriction>
+      </typeRestrictions>
+    </metadataElement>
+    <metadataElement code="current_location" datatype="Text">
+      <labels>
+        <label locale="en_US">
+          <name>Current location</name>
+          <description></description>
+        </label>
+      </labels>
+      <documentationUrl/>
+      <settings>
+        <setting name="fieldWidth">80</setting>
+        <setting name="fieldHeight">2</setting>
+        <setting name="minChars">0</setting>
+        <setting name="maxChars">65535</setting>
+      </settings>
+      <typeRestrictions>
+        <restriction code="r1">
+          <table>ca_object_representations</table>
+          <settings>
+            <setting name="minAttributesPerRow">0</setting>
+            <setting name="maxAttributesPerRow">1</setting>
+            <setting name="minimumAttributeBundlesToDisplay">1</setting>
+          </settings>
+        </restriction>
+      </typeRestrictions>
+    </metadataElement>
+    <metadataElement code="reference_number" datatype="Text">
+      <labels>
+        <label locale="en_US">
+          <name>Reference Number</name>
+          <description></description>
+        </label>
+      </labels>
+      <documentationUrl/>
+      <settings>
+        <setting name="fieldWidth">80</setting>
+        <setting name="fieldHeight">1</setting>
+        <setting name="minChars">0</setting>
+        <setting name="maxChars">65535</setting>
+      </settings>
+      <typeRestrictions>
+        <restriction code="r1">
+          <table>ca_object_representations</table>
+          <settings>
+            <setting name="minAttributesPerRow">0</setting>
+            <setting name="maxAttributesPerRow">255</setting>
+            <setting name="minimumAttributeBundlesToDisplay">1</setting>
+          </settings>
+        </restriction>
+      </typeRestrictions>
+    </metadataElement>
+    <metadataElement code="notes" datatype="Text">
+      <labels>
+        <label locale="en_US">
+          <name>Notes</name>
+          <description></description>
+        </label>
+      </labels>
+      <documentationUrl/>
+      <settings>
+        <setting name="fieldWidth">80</setting>
+        <setting name="fieldHeight">2</setting>
+        <setting name="minChars">0</setting>
+        <setting name="maxChars">65535</setting>
+      </settings>
+      <typeRestrictions>
+        <restriction code="r1">
+          <table>ca_object_representations</table>
+          <settings>
+            <setting name="minAttributesPerRow">0</setting>
+            <setting name="maxAttributesPerRow">1</setting>
+            <setting name="minimumAttributeBundlesToDisplay">1</setting>
+          </settings>
+        </restriction>
+      </typeRestrictions>
+    </metadataElement>
+    <metadataElement code="original" datatype="List" list="yes_no">
+      <labels>
+        <label locale="en_US">
+          <name>Is original media?</name>
+        </label>
+      </labels>
+      <settings>
+        <setting name="render">yes_no_checkboxes</setting>
+        <setting name="listWidth">40</setting>
+        <setting name="doesNotTakeLocale">1</setting>
+      </settings>
+      <typeRestrictions>
+        <restriction code="r1">
+          <table>ca_object_representations</table>
+          <settings>
+            <setting name="minAttributesPerRow">0</setting>
+            <setting name="maxAttributesPerRow">1</setting>
+            <setting name="minimumAttributeBundlesToDisplay">1</setting>
+          </settings>
+        </restriction>
+      </typeRestrictions>
+    </metadataElement>
+    <metadataElement code="license" datatype="List" list="license">
+      <labels>
+        <label locale="en_US">
+          <name>License</name>
+        </label>
+      </labels>
+      <settings>
+        <setting name="fieldWidth">40</setting>
+        <setting name="doesNotTakeLocale">1</setting>
+      </settings>
+      <typeRestrictions>
+        <restriction code="r1">
+          <table>ca_object_representations</table>
+          <settings>
+            <setting name="minAttributesPerRow">0</setting>
+            <setting name="maxAttributesPerRow">255</setting>
+            <setting name="minimumAttributeBundlesToDisplay">1</setting>
+          </settings>
+        </restriction>
+      </typeRestrictions>
+    </metadataElement>
+    <metadataElement code="image_status" datatype="List" list="image_status">
+      <labels>
+        <label locale="en_US">
+          <name>Status</name>
+        </label>
+      </labels>
+      <settings>
+        <setting name="fieldWidth">40</setting>
+        <setting name="doesNotTakeLocale">1</setting>
+      </settings>
+      <typeRestrictions>
+        <restriction code="r1">
+          <table>ca_object_representations</table>
+          <settings>
+            <setting name="minAttributesPerRow">0</setting>
+            <setting name="maxAttributesPerRow">1</setting>
+            <setting name="minimumAttributeBundlesToDisplay">1</setting>
+          </settings>
+        </restriction>
+      </typeRestrictions>
+    </metadataElement>
+    <metadataElement code="document" datatype="Container">
+      <labels>
+        <label locale="en_US">
+          <name>New document</name>
+        </label>
+      </labels>
+      <settings>
+        <setting name="doesNotTakeLocale">1</setting>
+      </settings>
+      <elements>
+        <metadataElement code="docline1" datatype="Container">
+          <labels>
+            <label locale="en_US">
+              <name>Document line 1</name>
+            </label>
+          </labels>
+          <settings/>
+          <elements>
+            <metadataElement code="document_type" datatype="List" list="document_type">
+              <labels>
+                <label locale="en_US">
+                  <name>Document type</name>
+                </label>
+              </labels>
+              <settings>
+                <setting name="fieldWidth">40</setting>
+                <setting name="doesNotTakeLocale">1</setting>
+              </settings>
+            </metadataElement>
+          </elements>
+        </metadataElement>
+        <metadataElement code="docline2" datatype="Container">
+          <labels>
+            <label locale="en_US">
+              <name>Document line 2</name>
+            </label>
+          </labels>
+          <settings/>
+          <elements>
+            <metadataElement code="file" datatype="File">
+              <labels>
+                <label locale="en_US">
+                  <name>Document upload</name>
+                </label>
+              </labels>
+              <documentationUrl/>
+              <settings>
+                <setting name="fieldWidth">80</setting>
+                <setting name="fieldHeight">1</setting>
+                <setting name="minChars">0</setting>
+                <setting name="maxChars">65535</setting>
+              </settings>
+            </metadataElement>
+          </elements>
+        </metadataElement>
+        <metadataElement code="docline3" datatype="Container">
+          <labels>
+            <label locale="en_US">
+              <name>Document line 3</name>
+            </label>
+          </labels>
+          <settings/>
+          <elements>
+            <metadataElement code="document_description" datatype="Text">
+              <labels>
+                <label locale="en_US">
+                  <name>Description</name>
+                </label>
+              </labels>
+              <settings>
+                <setting name="fieldWidth">80</setting>
+                <setting name="fieldHeight">3</setting>
+                <setting name="minChars">0</setting>
+                <setting name="maxChars">65535</setting>
+              </settings>
+            </metadataElement>
+          </elements>
+        </metadataElement>
+      </elements>
+      <typeRestrictions>
+        <restriction code="r1">
+          <table>ca_objects</table>
+          <settings>
+            <setting name="minAttributesPerRow">0</setting>
+            <setting name="maxAttributesPerRow">255</setting>
+            <setting name="minimumAttributeBundlesToDisplay">1</setting>
+          </settings>
+        </restriction>
+      </typeRestrictions>
+    </metadataElement>
+    <metadataElement code="credit_line" datatype="Text">
+      <labels>
+        <label locale="en_US">
+          <name>Credit line</name>
+          <description></description>
+        </label>
+      </labels>
+      <documentationUrl/>
+      <settings>
+        <setting name="fieldWidth">80</setting>
+        <setting name="fieldHeight">1</setting>
+        <setting name="minChars">0</setting>
+        <setting name="maxChars">65535</setting>
+      </settings>
+      <typeRestrictions>
+        <restriction code="r1">
+          <table>ca_object_lots</table>
+          <settings>
+            <setting name="minAttributesPerRow">0</setting>
+            <setting name="maxAttributesPerRow">1</setting>
+            <setting name="minimumAttributeBundlesToDisplay">1</setting>
+          </settings>
+        </restriction>
+      </typeRestrictions>
+    </metadataElement>
+    <metadataElement code="deed_date" datatype="DateRange">
+      <labels>
+        <label locale="en_US">
+          <name>Deed/Receipt Date</name>
+          <description/>
+        </label>
+      </labels>
+      <documentationUrl/>
+      <settings>
+        <setting name="fieldWidth">40</setting>
+        <setting name="fieldHeight">1</setting>
+      </settings>
+      <typeRestrictions>
+        <restriction code="r1">
+          <table>ca_object_lots</table>
+          <settings>
+            <setting name="minAttributesPerRow">0</setting>
+            <setting name="maxAttributesPerRow">1</setting>
+            <setting name="minimumAttributeBundlesToDisplay">1</setting>
+          </settings>
+        </restriction>
+      </typeRestrictions>
+    </metadataElement>
+    <metadataElement code="accession_method" datatype="Text">
+      <labels>
+        <label locale="en_US">
+          <name>Accession Method</name>
+          <description></description>
+        </label>
+      </labels>
+      <documentationUrl/>
+      <settings>
+        <setting name="fieldWidth">80</setting>
+        <setting name="fieldHeight">3</setting>
+        <setting name="minChars">0</setting>
+        <setting name="maxChars">65535</setting>
+      </settings>
+      <typeRestrictions>
+        <restriction code="r1">
+          <table>ca_object_lots</table>
+          <settings>
+            <setting name="minAttributesPerRow">0</setting>
+            <setting name="maxAttributesPerRow">1</setting>
+            <setting name="minimumAttributeBundlesToDisplay">1</setting>
+          </settings>
+        </restriction>
+      </typeRestrictions>
+    </metadataElement>
+    <metadataElement code="rights_notes" datatype="Text">
+      <labels>
+        <label locale="en_US">
+          <name>Rights Notes</name>
+          <description></description>
+        </label>
+      </labels>
+      <documentationUrl/>
+      <settings>
+        <setting name="fieldWidth">80</setting>
+        <setting name="fieldHeight">3</setting>
+        <setting name="minChars">0</setting>
+        <setting name="maxChars">65535</setting>
+      </settings>
+      <typeRestrictions>
+        <restriction code="r1">
+          <table>ca_object_lots</table>
+          <settings>
+            <setting name="minAttributesPerRow">0</setting>
+            <setting name="maxAttributesPerRow">1</setting>
+            <setting name="minimumAttributeBundlesToDisplay">1</setting>
+          </settings>
+        </restriction>
+      </typeRestrictions>
+    </metadataElement>
+    <metadataElement code="restrictions" datatype="Text">
+      <labels>
+        <label locale="en_US">
+          <name>Restrictions</name>
+          <description></description>
+        </label>
+      </labels>
+      <documentationUrl/>
+      <settings>
+        <setting name="fieldWidth">80</setting>
+        <setting name="fieldHeight">3</setting>
+        <setting name="minChars">0</setting>
+        <setting name="maxChars">65535</setting>
+      </settings>
+      <typeRestrictions>
+        <restriction code="r1">
+          <table>ca_object_lots</table>
+          <settings>
+            <setting name="minAttributesPerRow">0</setting>
+            <setting name="maxAttributesPerRow">1</setting>
+            <setting name="minimumAttributeBundlesToDisplay">1</setting>
+          </settings>
+        </restriction>
+      </typeRestrictions>
+    </metadataElement>
+    <metadataElement code="comments" datatype="Text">
+      <labels>
+        <label locale="en_US">
+          <name>Comments</name>
+          <description></description>
+        </label>
+      </labels>
+      <documentationUrl/>
+      <settings>
+        <setting name="fieldWidth">80</setting>
+        <setting name="fieldHeight">3</setting>
+        <setting name="minChars">0</setting>
+        <setting name="maxChars">65535</setting>
+      </settings>
+      <typeRestrictions>
+        <restriction code="r1">
+          <table>ca_objects</table>
+          <settings>
+            <setting name="minAttributesPerRow">0</setting>
+            <setting name="maxAttributesPerRow">1</setting>
+            <setting name="minimumAttributeBundlesToDisplay">1</setting>
+          </settings>
+        </restriction>
+      </typeRestrictions>
+    </metadataElement>
+    <metadataElement code="nationality" datatype="Text">
+      <labels>
+        <label locale="en_US">
+          <name>Nationality</name>
+          <description></description>
+        </label>
+      </labels>
+      <documentationUrl/>
+      <settings>
+        <setting name="fieldWidth">80</setting>
+        <setting name="fieldHeight">1</setting>
+        <setting name="minChars">0</setting>
+        <setting name="maxChars">65535</setting>
+      </settings>
+      <typeRestrictions>
+        <restriction code="r1">
+          <table>ca_entities</table>
+          <settings>
+            <setting name="minAttributesPerRow">0</setting>
+            <setting name="maxAttributesPerRow">1</setting>
+            <setting name="minimumAttributeBundlesToDisplay">1</setting>
+          </settings>
+        </restriction>
+      </typeRestrictions>
+    </metadataElement>
+    <metadataElement code="lifespans_date" datatype="DateRange">
+      <labels>
+        <label locale="en_US">
+          <name>Life span dates</name>
+          <description/>
+        </label>
+      </labels>
+      <documentationUrl/>
+      <settings>
+        <setting name="fieldWidth">40</setting>
+        <setting name="fieldHeight">1</setting>
+      </settings>
+      <typeRestrictions>
+        <restriction code="r1">
+          <table>ca_entities</table>
+          <settings>
+            <setting name="minAttributesPerRow">0</setting>
+            <setting name="maxAttributesPerRow">1</setting>
+            <setting name="minimumAttributeBundlesToDisplay">1</setting>
+          </settings>
+        </restriction>
+      </typeRestrictions>
+    </metadataElement>
+    <metadataElement code="arrival_date" datatype="DateRange">
+      <labels>
+        <label locale="en_US">
+          <name>Date individual arrived on the East End</name>
+          <description/>
+        </label>
+      </labels>
+      <documentationUrl/>
+      <settings>
+        <setting name="fieldWidth">40</setting>
+        <setting name="fieldHeight">1</setting>
+      </settings>
+      <typeRestrictions>
+        <restriction code="r1">
+          <table>ca_entities</table>
+          <settings>
+            <setting name="minAttributesPerRow">0</setting>
+            <setting name="maxAttributesPerRow">1</setting>
+            <setting name="minimumAttributeBundlesToDisplay">1</setting>
+          </settings>
+        </restriction>
+      </typeRestrictions>
+    </metadataElement>
+    <metadataElement code="scope_notes" datatype="Text">
+      <labels>
+        <label locale="en_US">
+          <name>Scope Notes</name>
+          <description></description>
+        </label>
+      </labels>
+      <documentationUrl/>
+      <settings>
+        <setting name="fieldWidth">80</setting>
+        <setting name="fieldHeight">3</setting>
+        <setting name="minChars">0</setting>
+        <setting name="maxChars">65535</setting>
+      </settings>
+      <typeRestrictions>
+        <restriction code="r1">
+          <table>ca_entities</table>
+          <settings>
+            <setting name="minAttributesPerRow">0</setting>
+            <setting name="maxAttributesPerRow">1</setting>
+            <setting name="minimumAttributeBundlesToDisplay">1</setting>
+          </settings>
+        </restriction>
+        <restriction code="r2">
+          <table>ca_places</table>
+          <settings>
+            <setting name="minAttributesPerRow">1</setting>
+            <setting name="maxAttributesPerRow">1</setting>
+            <setting name="minimumAttributeBundlesToDisplay">1</setting>
+          </settings>
+        </restriction>
+        <restriction code="r3">
+          <table>ca_collections</table>
+          <settings>
+            <setting name="minAttributesPerRow">0</setting>
+            <setting name="maxAttributesPerRow">100</setting>
+            <setting name="minimumAttributeBundlesToDisplay">1</setting>
+          </settings>
+        </restriction>
+        <restriction code="r4">
+          <table>ca_occurrences</table>
+          <settings>
+            <setting name="minAttributesPerRow">0</setting>
+            <setting name="maxAttributesPerRow">100</setting>
+            <setting name="minimumAttributeBundlesToDisplay">1</setting>
+          </settings>
+        </restriction>
+      </typeRestrictions>
+    </metadataElement>
+    <metadataElement code="indexing_notes" datatype="Text">
+      <labels>
+        <label locale="en_US">
+          <name>Indexing Notes</name>
+          <description></description>
+        </label>
+      </labels>
+      <documentationUrl/>
+      <settings>
+        <setting name="fieldWidth">80</setting>
+        <setting name="fieldHeight">3</setting>
+        <setting name="minChars">0</setting>
+        <setting name="maxChars">65535</setting>
+      </settings>
+      <typeRestrictions>
+        <restriction code="r1">
+          <table>ca_entities</table>
+          <settings>
+            <setting name="minAttributesPerRow">0</setting>
+            <setting name="maxAttributesPerRow">1</setting>
+            <setting name="minimumAttributeBundlesToDisplay">1</setting>
+          </settings>
+        </restriction>
+        <restriction code="r2">
+          <table>ca_places</table>
+          <settings>
+            <setting name="minAttributesPerRow">1</setting>
+            <setting name="maxAttributesPerRow">1</setting>
+            <setting name="minimumAttributeBundlesToDisplay">1</setting>
+          </settings>
+        </restriction>
+        <restriction code="r3">
+          <table>ca_occurrences</table>
+          <settings>
+            <setting name="minAttributesPerRow">0</setting>
+            <setting name="maxAttributesPerRow">100</setting>
+            <setting name="minimumAttributeBundlesToDisplay">1</setting>
+          </settings>
+        </restriction>
+      </typeRestrictions>
+    </metadataElement>
+    <metadataElement code="source_notes" datatype="Text">
+      <labels>
+        <label locale="en_US">
+          <name>Source Notes</name>
+          <description></description>
+        </label>
+      </labels>
+      <documentationUrl/>
+      <settings>
+        <setting name="fieldWidth">80</setting>
+        <setting name="fieldHeight">3</setting>
+        <setting name="minChars">0</setting>
+        <setting name="maxChars">65535</setting>
+      </settings>
+      <typeRestrictions>
+        <restriction code="r1">
+          <table>ca_entities</table>
+          <settings>
+            <setting name="minAttributesPerRow">0</setting>
+            <setting name="maxAttributesPerRow">1</setting>
+            <setting name="minimumAttributeBundlesToDisplay">1</setting>
+          </settings>
+        </restriction>
+        <restriction code="r2">
+          <table>ca_places</table>
+          <settings>
+            <setting name="minAttributesPerRow">1</setting>
+            <setting name="maxAttributesPerRow">1</setting>
+            <setting name="minimumAttributeBundlesToDisplay">1</setting>
+          </settings>
+        </restriction>
+        <restriction code="r3">
+          <table>ca_collections</table>
+          <settings>
+            <setting name="minAttributesPerRow">0</setting>
+            <setting name="maxAttributesPerRow">100</setting>
+            <setting name="minimumAttributeBundlesToDisplay">1</setting>
+          </settings>
+        </restriction>
+        <restriction code="r4">
+          <table>ca_occurrences</table>
+          <settings>
+            <setting name="minAttributesPerRow">0</setting>
+            <setting name="maxAttributesPerRow">100</setting>
+            <setting name="minimumAttributeBundlesToDisplay">1</setting>
+          </settings>
+        </restriction>
+      </typeRestrictions>
+    </metadataElement>
+    <metadataElement code="content_notes" datatype="Text">
+      <labels>
+        <label locale="en_US">
+          <name>Content Notes</name>
+          <description></description>
+        </label>
+      </labels>
+      <documentationUrl/>
+      <settings>
+        <setting name="fieldWidth">80</setting>
+        <setting name="fieldHeight">3</setting>
+        <setting name="minChars">0</setting>
+        <setting name="maxChars">65535</setting>
+      </settings>
+      <typeRestrictions>
+        <restriction code="r1">
+          <table>ca_collections</table>
+          <settings>
+            <setting name="minAttributesPerRow">0</setting>
+            <setting name="maxAttributesPerRow">100</setting>
+            <setting name="minimumAttributeBundlesToDisplay">1</setting>
+          </settings>
+        </restriction>
+      </typeRestrictions>
+    </metadataElement>
+    <metadataElement code="access_notes" datatype="Text">
+      <labels>
+        <label locale="en_US">
+          <name>Access Notes</name>
+          <description></description>
+        </label>
+      </labels>
+      <documentationUrl/>
+      <settings>
+        <setting name="fieldWidth">80</setting>
+        <setting name="fieldHeight">3</setting>
+        <setting name="minChars">0</setting>
+        <setting name="maxChars">65535</setting>
+      </settings>
+      <typeRestrictions>
+        <restriction code="r1">
+          <table>ca_collections</table>
+          <settings>
+            <setting name="minAttributesPerRow">0</setting>
+            <setting name="maxAttributesPerRow">100</setting>
+            <setting name="minimumAttributeBundlesToDisplay">1</setting>
+          </settings>
+        </restriction>
+      </typeRestrictions>
+    </metadataElement>
+    <metadataElement code="entity_note" datatype="Text">
+      <labels>
+        <label locale="en_US">
+          <name>Note</name>
+          <description/>
+        </label>
+      </labels>
+      <documentationUrl/>
+      <settings>
+        <setting name="fieldWidth">80</setting>
+        <setting name="fieldHeight">2</setting>
+        <setting name="minChars">0</setting>
+        <setting name="maxChars">65535</setting>
+      </settings>
+      <typeRestrictions>
+        <restriction code="r1">
+          <table>ca_entities</table>
+          <settings>
+            <setting name="minAttributesPerRow">0</setting>
+            <setting name="maxAttributesPerRow">1</setting>
+            <setting name="minimumAttributeBundlesToDisplay">1</setting>
+          </settings>
+        </restriction>
+      </typeRestrictions>
+    </metadataElement>
+    <metadataElement code="address" datatype="Container">
+      <labels>
+        <label locale="en_US">
+          <name>Address</name>
+        </label>
+      </labels>
+      <settings>
+        <setting name="doesNotTakeLocale">1</setting>
+      </settings>
+      <elements>
+        <metadataElement code="line1" datatype="Container">
+          <labels>
+            <label locale="en_US">
+              <name>Address line 1</name>
+            </label>
+          </labels>
+          <settings/>
+          <elements>
+            <metadataElement code="address1" datatype="Text">
+              <labels>
+                <label locale="en_US">
+                  <name>Description of address</name>
+                </label>
+              </labels>
+              <settings>
+                <setting name="fieldWidth">70</setting>
+                <setting name="fieldHeight">1</setting>
+                <setting name="minChars">0</setting>
+                <setting name="maxChars">255</setting>
+              </settings>
+            </metadataElement>
+          </elements>
+        </metadataElement>
+        <metadataElement code="line2" datatype="Container">
+          <labels>
+            <label locale="en_US">
+              <name>Address line 2</name>
+            </label>
+          </labels>
+          <settings/>
+          <elements>
+            <metadataElement code="address2" datatype="Text">
+              <labels>
+                <label locale="en_US">
+                  <name>Organization</name>
+                </label>
+              </labels>
+              <settings>
+                <setting name="fieldWidth">70</setting>
+                <setting name="fieldHeight">1</setting>
+                <setting name="minChars">0</setting>
+                <setting name="maxChars">255</setting>
+              </settings>
+            </metadataElement>
+          </elements>
+        </metadataElement>
+        <metadataElement code="line3" datatype="Container">
+          <labels>
+            <label locale="en_US">
+              <name>Address line 1</name>
+            </label>
+          </labels>
+          <settings/>
+          <elements>
+            <metadataElement code="address3" datatype="Text">
+              <labels>
+                <label locale="en_US">
+                  <name>Address line 1</name>
+                </label>
+              </labels>
+              <settings>
+                <setting name="fieldWidth">70</setting>
+                <setting name="fieldHeight">1</setting>
+                <setting name="minChars">0</setting>
+                <setting name="maxChars">255</setting>
+              </settings>
+            </metadataElement>
+          </elements>
+        </metadataElement>
+        <metadataElement code="line4" datatype="Container">
+          <labels>
+            <label locale="en_US">
+              <name>Address line 2</name>
+            </label>
+          </labels>
+          <settings/>
+          <elements>
+            <metadataElement code="address4" datatype="Text">
+              <labels>
+                <label locale="en_US">
+                  <name>Address line 2</name>
+                </label>
+              </labels>
+              <settings>
+                <setting name="fieldWidth">70</setting>
+                <setting name="fieldHeight">1</setting>
+                <setting name="minChars">0</setting>
+                <setting name="maxChars">255</setting>
+              </settings>
+            </metadataElement>
+          </elements>
+        </metadataElement>
+        <metadataElement code="line5" datatype="Container">
+          <labels>
+            <label locale="en_US">
+              <name>Address line 3</name>
+            </label>
+          </labels>
+          <settings/>
+          <elements>
+            <metadataElement code="city" datatype="Text">
+              <labels>
+                <label locale="en_US">
+                  <name>City</name>
+                </label>
+              </labels>
+              <settings>
+                <setting name="fieldWidth">20</setting>
+                <setting name="fieldHeight">1</setting>
+                <setting name="minChars">0</setting>
+                <setting name="maxChars">255</setting>
+              </settings>
+            </metadataElement>
+            <metadataElement code="stateprovince" datatype="Text">
+              <labels>
+                <label locale="en_US">
+                  <name>State/province</name>
+                </label>
+              </labels>
+              <settings>
+                <setting name="fieldWidth">15</setting>
+                <setting name="fieldHeight">1</setting>
+                <setting name="minChars">0</setting>
+                <setting name="maxChars">255</setting>
+              </settings>
+            </metadataElement>
+            <metadataElement code="postalcode" datatype="Text">
+              <labels>
+                <label locale="en_US">
+                  <name>Postal/zip code</name>
+                </label>
+              </labels>
+              <settings>
+                <setting name="fieldWidth">10</setting>
+                <setting name="fieldHeight">1</setting>
+                <setting name="minChars">0</setting>
+                <setting name="maxChars">255</setting>
+              </settings>
+            </metadataElement>
+            <metadataElement code="country" datatype="Text">
+              <labels>
+                <label locale="en_US">
+                  <name>Country</name>
+                </label>
+              </labels>
+              <settings>
+                <setting name="fieldWidth">15</setting>
+                <setting name="fieldHeight">1</setting>
+                <setting name="minChars">0</setting>
+                <setting name="maxChars">255</setting>
+              </settings>
+            </metadataElement>
+          </elements>
+        </metadataElement>
+      </elements>
+      <typeRestrictions>
+        <restriction code="ca_entities">
+          <table>ca_entities</table>
+          <settings>
+            <setting name="minAttributesPerRow">0</setting>
+            <setting name="maxAttributesPerRow">1</setting>
+            <setting name="minimumAttributeBundlesToDisplay">1</setting>
+          </settings>
+        </restriction>
+        <restriction code="ca_places">
+          <table>ca_places</table>
+          <settings>
+            <setting name="minAttributesPerRow">0</setting>
+            <setting name="maxAttributesPerRow">1</setting>
+            <setting name="minimumAttributeBundlesToDisplay">1</setting>
+          </settings>
+        </restriction>
+      </typeRestrictions>
+    </metadataElement>
+    <metadataElement code="telephone" datatype="Text">
+      <labels>
+        <label locale="en_US">
+          <name>Telephone/fax</name>
+        </label>
+      </labels>
+      <settings>
+        <setting name="fieldWidth">70</setting>
+        <setting name="fieldHeight">1</setting>
+        <setting name="minChars">0</setting>
+        <setting name="maxChars">65535</setting>
+        <setting name="doesNotTakeLocale">1</setting>
+      </settings>
+      <typeRestrictions>
+        <restriction code="ca_entities">
+          <table>ca_entities</table>
+          <settings>
+            <setting name="minAttributesPerRow">0</setting>
+            <setting name="maxAttributesPerRow">10</setting>
+            <setting name="minimumAttributeBundlesToDisplay">1</setting>
+          </settings>
+        </restriction>
+        <restriction code="ca_places">
+          <table>ca_places</table>
+          <settings>
+            <setting name="minAttributesPerRow">0</setting>
+            <setting name="maxAttributesPerRow">10</setting>
+            <setting name="minimumAttributeBundlesToDisplay">1</setting>
+          </settings>
+        </restriction>
+      </typeRestrictions>
+    </metadataElement>
+    <metadataElement code="email" datatype="Text">
+      <labels>
+        <label locale="en_US">
+          <name>Email address</name>
+        </label>
+      </labels>
+      <settings>
+        <setting name="fieldWidth">70</setting>
+        <setting name="fieldHeight">1</setting>
+        <setting name="minChars">0</setting>
+        <setting name="maxChars">65535</setting>
+        <setting name="doesNotTakeLocale">1</setting>
+      </settings>
+      <typeRestrictions>
+        <restriction code="ca_entities">
+          <table>ca_entities</table>
+          <settings>
+            <setting name="minAttributesPerRow">0</setting>
+            <setting name="maxAttributesPerRow">10</setting>
+            <setting name="minimumAttributeBundlesToDisplay">1</setting>
+          </settings>
+        </restriction>
+        <restriction code="ca_places">
+          <table>ca_places</table>
+          <settings>
+            <setting name="minAttributesPerRow">0</setting>
+            <setting name="maxAttributesPerRow">10</setting>
+            <setting name="minimumAttributeBundlesToDisplay">1</setting>
+          </settings>
+        </restriction>
+      </typeRestrictions>
+    </metadataElement>
+    <metadataElement code="object_status" datatype="List" list="object_status">
+      <labels>
+        <label locale="en_US">
+          <name>Status</name>
+        </label>
+      </labels>
+      <settings>
+        <setting name="fieldWidth">40</setting>
+        <setting name="doesNotTakeLocale">1</setting>
+      </settings>
+      <typeRestrictions>
+        <restriction code="r1">
+          <table>ca_objects</table>
+          <settings>
+            <setting name="minAttributesPerRow">0</setting>
+            <setting name="maxAttributesPerRow">100</setting>
+            <setting name="minimumAttributeBundlesToDisplay">1</setting>
+          </settings>
+        </restriction>
+        <restriction code="r2">
+          <table>ca_places</table>
+          <settings>
+            <setting name="minAttributesPerRow">0</setting>
+            <setting name="maxAttributesPerRow">100</setting>
+            <setting name="minimumAttributeBundlesToDisplay">1</setting>
+          </settings>
+        </restriction>
+        <restriction code="r3">
+          <table>ca_occurrences</table>
+          <type>event</type>
+          <settings>
+            <setting name="minAttributesPerRow">0</setting>
+            <setting name="maxAttributesPerRow">100</setting>
+            <setting name="minimumAttributeBundlesToDisplay">1</setting>
+          </settings>
+        </restriction>
+        <restriction code="r4">
+          <table>ca_collections</table>
+          <settings>
+            <setting name="minAttributesPerRow">0</setting>
+            <setting name="maxAttributesPerRow">100</setting>
+            <setting name="minimumAttributeBundlesToDisplay">1</setting>
+          </settings>
+        </restriction>
+        <restriction code="r5">
+          <table>ca_storage_locations</table>
+          <settings>
+            <setting name="minAttributesPerRow">0</setting>
+            <setting name="maxAttributesPerRow">100</setting>
+            <setting name="minimumAttributeBundlesToDisplay">1</setting>
+          </settings>
+        </restriction>
+        <restriction code="r6">
+          <table>ca_object_lots</table>
+          <settings>
+            <setting name="minAttributesPerRow">0</setting>
+            <setting name="maxAttributesPerRow">100</setting>
+            <setting name="minimumAttributeBundlesToDisplay">1</setting>
+          </settings>
+        </restriction>
+        <restriction code="r7">
+          <table>ca_object_events</table>
+          <settings>
+            <setting name="minAttributesPerRow">0</setting>
+            <setting name="maxAttributesPerRow">100</setting>
+            <setting name="minimumAttributeBundlesToDisplay">1</setting>
+          </settings>
+        </restriction>
+        <restriction code="r8">
+          <table>ca_entities</table>
+          <settings>
+            <setting name="minAttributesPerRow">0</setting>
+            <setting name="maxAttributesPerRow">100</setting>
+            <setting name="minimumAttributeBundlesToDisplay">1</setting>
+          </settings>
+        </restriction>
+      </typeRestrictions>
+    </metadataElement>
+  </elementSets>
+  <userInterfaces>
+    <userInterface code="standard_object_ui" type="ca_objects">
+      <labels>
+        <label locale="en_US">
+          <name>Standard object editor</name>
+        </label>
+      </labels>
+      <screens>
+        <screen idno="basic" default="1">
+          <labels>
+            <label locale="en_US">
+              <name>Basic</name>
+            </label>
+          </labels>
+          <bundlePlacements>
+            <placement code="preferred_labels">
+              <bundle>preferred_labels</bundle>
+              <settings>
+                <setting name="label" locale="en_US">Title</setting>
+                <setting name="add_label" locale="en_US">Add title</setting>
+              </settings>
+            </placement>
+            <placement code="idno">
+              <bundle>idno</bundle>
+            </placement>
+            <placement code="ca_attribute_object_status">
+              <bundle>ca_attribute_object_status</bundle>
+            </placement>
+            <placement code="source_id">
+              <bundle>source_id</bundle>
+            </placement>
+            <placement code="ca_attribute_dimensions_as_text">
+              <bundle>ca_attribute_dimensions_as_text</bundle>
+            </placement>
+            <placement code="ca_attribute_work_dimensions">
+              <bundle>ca_attribute_work_dimensions</bundle>
+            </placement>
+            <placement code="ca_attribute_description">
+              <bundle>ca_attribute_description</bundle>
+            </placement>
+            <placement code="ca_attribute_description_source">
+              <bundle>ca_attribute_description_source</bundle>
+            </placement>
+            <placement code="ca_attribute_caption">
+              <bundle>ca_attribute_caption</bundle>
+            </placement>
+            <placement code="ca_attribute_historical_notes">
+              <bundle>ca_attribute_historical_notes</bundle>
+            </placement>
+            <placement code="ca_attribute_historical_source">
+              <bundle>ca_attribute_historical_source</bundle>
+            </placement>
+            <placement code="ca_attribute_provenance">
+              <bundle>ca_attribute_provenance</bundle>
+            </placement>
+            <placement code="ca_attribute_admin_remarks">
+              <bundle>ca_attribute_admin_remarks</bundle>
+            </placement>
+            <placement code="ca_attribute_extent">
+              <bundle>ca_attribute_extent</bundle>
+            </placement>
+            <placement code="ca_attribute_registrar_status">
+              <bundle>ca_attribute_registrar_status</bundle>
+            </placement>
+            <placement code="ca_attribute_rights">
+              <bundle>ca_attribute_rights</bundle>
+            </placement>
+          </bundlePlacements>
+        </screen>
+        <screen idno="admin" default="0">
+          <labels>
+            <label locale="en_US">
+              <name>Admin info</name>
+            </label>
+          </labels>
+          <bundlePlacements>
+            <placement code="ca_attribute_numbering">
+              <bundle>ca_attribute_numbering</bundle>
+            </placement>
+             <placement code="ca_attribute_creation_date">
+              <bundle>ca_attribute_creation_date</bundle>
+             </placement>
+             <placement code="ca_attribute_medium">
+              <bundle>ca_attribute_medium</bundle>
+             </placement>
+             <placement code="nonpreferred_labels">
+              <bundle>nonpreferred_labels</bundle>
+             </placement>
+          </bundlePlacements>
+        </screen>
+        <screen idno="custodial" default="0">
+          <labels>
+            <label locale="en_US">
+              <name>Custodial</name>
+            </label>
+          </labels>
+          <bundlePlacements>
+            <placement code="ca_attribute_condition">
+              <bundle>ca_attribute_condition</bundle>
+            </placement>
+            <placement code="ca_attribute_custodial_notes">
+              <bundle>ca_attribute_custodial_notes</bundle>
+            </placement>
+            <placement code="ca_attribute_artifact_needs">
+              <bundle>ca_attribute_artifact_needs</bundle>
+            </placement>
+            <placement code="ca_attribute_special_handling">
+              <bundle>ca_attribute_special_handling</bundle>
+            </placement>
+          </bundlePlacements>
+        </screen>
+        <screen idno="subjects" default="0">
+          <labels>
+            <label locale="en_US">
+              <name>Subjects</name>
+            </label>
+          </labels>
+          <bundlePlacements>
+            <placement code="ca_list_items">
+              <bundle>ca_list_items</bundle>
+              <settings>
+                <setting name="label" locale="en_US">Parrish terms</setting>
+                <setting name="add_label" locale="en_US">Add new term</setting>
+              </settings>
+            </placement>
+          </bundlePlacements>
+        </screen>
+        <screen idno="media" default="0">
+          <labels>
+            <label locale="en_US">
+              <name>Media</name>
+            </label>
+          </labels>
+          <bundlePlacements>
+            <placement code="ca_object_representations">
+              <bundle>ca_object_representations</bundle>
+            </placement>
+          </bundlePlacements>
+        </screen>
+        <screen idno="docs" default="0">
+          <labels>
+            <label locale="en_US">
+              <name>Docs</name>
+            </label>
+          </labels>
+          <bundlePlacements>
+            <placement code="ca_attribute_document">
+              <bundle>ca_attribute_document</bundle>
+            </placement>
+          </bundlePlacements>
+        </screen>
+        <screen idno="relationships" default="0">
+          <labels>
+            <label locale="en_US">
+              <name>Relationships</name>
+            </label>
+          </labels>
+          <bundlePlacements>
+            <placement code="ca_objects">
+              <bundle>ca_objects</bundle>
+            </placement>
+            <placement code="ca_object_lots">
+              <bundle>ca_object_lots</bundle>
+            </placement>
+            <placement code="ca_entities">
+              <bundle>ca_entities</bundle>
+            </placement>
+            <placement code="ca_rights">
+              <bundle>ca_entities</bundle>
+              <settings>
+                <setting name="restrict_to_relationship_types">rights</setting>
+                <setting name="label" locale="en_US">Rights holder</setting>
+              </settings>
+            </placement>
+            <placement code="ca_events">
+              <bundle>ca_occurrences</bundle>
+              <settings>
+                <setting name="restrict_to_type">event</setting>
+                <setting name="label" locale="en_US">Related events</setting>
+              </settings>
+            </placement>
+            <placement code="ca_places">
+              <bundle>ca_places</bundle>
+            </placement>
+            <placement code="ca_collections">
+              <bundle>ca_collections</bundle>
+            </placement>
+          </bundlePlacements>
+        </screen>
+        <screen idno="comments" default="0">
+          <labels>
+            <label locale="en_US">
+              <name>Comments</name>
+            </label>
+          </labels>
+          <bundlePlacements>
+            <placement code="ca_attribute_comments">
+              <bundle>ca_attribute_comments</bundle>
+            </placement>
+          </bundlePlacements>
+        </screen>
+      </screens>
+    </userInterface>
+    <userInterface code="standard_entity_ui" type="ca_entities">
+      <labels>
+        <label locale="en_US">
+          <name>Standard entity editor</name>
+        </label>
+      </labels>
+      <screens>
+        <screen idno="s1" default="1">
+          <labels>
+            <label locale="en_US">
+              <name>Basic Info</name>
+            </label>
+          </labels>
+          <bundlePlacements>
+            <placement code="idno">
+              <bundle>idno</bundle>
+            </placement>
+            <placement code="source_id">
+              <bundle>source_id</bundle>
+            </placement>
+            <placement code="preferred_labels">
+              <bundle>preferred_labels</bundle>
+            </placement>
+             <placement code="ca_attribute_nationality">
+              <bundle>ca_attribute_nationality</bundle>
+             </placement>
+            <placement code="ca_attribute_lifespans_date">
+              <bundle>ca_attribute_lifespans_date</bundle>
+            </placement>
+            <placement code="ca_attribute_arrival_date">
+              <bundle>ca_attribute_arrival_date</bundle>
+            </placement>
+            <placement code="ca_attribute_scope_notes">
+              <bundle>ca_attribute_scope_notes</bundle>
+            </placement>
+             <placement code="ca_attribute_indexing_notes">
+              <bundle>ca_attribute_indexing_notes</bundle>
+             </placement>
+            <placement code="ca_attribute_historical_notes">
+              <bundle>ca_attribute_historical_notes</bundle>
+            </placement>
+            <placement code="ca_attribute_source_notes">
+              <bundle>ca_attribute_source_notes</bundle>
+            </placement>
+            <placement code="status">
+              <bundle>status</bundle>
+            </placement>
+          </bundlePlacements>
+        </screen>
+        <screen idno="altnames" default="0">
+          <labels>
+            <label locale="en_US">
+              <name>Alternate names</name>
+            </label>
+          </labels>
+          <bundlePlacements>
+            <placement code="nonpreferred_labels">
+              <bundle>nonpreferred_labels</bundle>
+              <settings>
+                <setting name="label" locale="en_US">Alternate names</setting>
+                <setting name="add_label" locale="en_US">Add name</setting>
+              </settings>
+            </placement>
+             <placement code="ca_attribute_source_notes">
+              <bundle>ca_attribute_source_notes</bundle>
+            </placement>
+          </bundlePlacements>
+        </screen>
+        <screen idno="contact" default="0">
+          <labels>
+            <label locale="en_US">
+              <name>Contact info</name>
+            </label>
+          </labels>
+          <bundlePlacements>
+            <placement code="ca_attribute_address">
+              <bundle>ca_attribute_address</bundle>
+            </placement>
+            <placement code="ca_attribute_telephone">
+              <bundle>ca_attribute_telephone</bundle>
+            </placement>
+            <placement code="ca_attribute_email">
+              <bundle>ca_attribute_email</bundle>
+            </placement>
+            <placement code="ca_attribute_entity_note">
+              <bundle>ca_attribute_entity_note</bundle>
+            </placement>
+          </bundlePlacements>
+        </screen>
+        <screen idno="subjects" default="0">
+          <labels>
+            <label locale="en_US">
+              <name>Subjects</name>
+            </label>
+          </labels>
+          <bundlePlacements>
+            <placement code="ca_list_items">
+              <bundle>ca_list_items</bundle>
+              <settings>
+                <setting name="label" locale="en_US">Parrish terms</setting>
+                <setting name="add_label" locale="en_US">Add new term</setting>
+              </settings>
+            </placement>
+          </bundlePlacements>
+        </screen>
+        <screen idno="relationships" default="0">
+          <labels>
+            <label locale="en_US">
+              <name>Relationships</name>
+            </label>
+          </labels>
+          <bundlePlacements>
+            <placement code="ca_objects">
+              <bundle>ca_objects</bundle>
+            </placement>
+            <placement code="ca_entities">
+              <bundle>ca_entities</bundle>
+            </placement>
+            <placement code="ca_events">
+              <bundle>ca_occurrences</bundle>
+              <settings>
+                <setting name="restrict_to_type">event</setting>
+                <setting name="label" locale="en_US">Related events</setting>
+              </settings>
+            </placement>
+            <placement code="ca_places">
+              <bundle>ca_places</bundle>
+            </placement>
+            <placement code="ca_collections">
+              <bundle>ca_collections</bundle>
+            </placement>
+          </bundlePlacements>
+        </screen>
+      </screens>
+    </userInterface>
+    <userInterface code="places_ui" type="ca_places">
+      <labels>
+        <label locale="en_US">
+          <name>Place editor</name>
+        </label>
+      </labels>
+      <screens>
+        <screen idno="basic" default="1">
+          <labels>
+            <label locale="en_US">
+              <name>Basic info</name>
+            </label>
+          </labels>
+          <bundlePlacements>
+            <placement code="hierarchy_navigation">
+              <bundle>hierarchy_navigation</bundle>
+            </placement>
+            <placement code="preferred_labels">
+              <bundle>preferred_labels</bundle>
+              <settings>
+                <setting name="label" locale="en_US">Name</setting>
+                <setting name="add_label" locale="en_US">Add name</setting>
+              </settings>
+            </placement>
+            <placement code="ca_attribute_language">
+              <bundle>ca_attribute_language</bundle>
+             </placement>
+            <placement code="idno">
+              <bundle>idno</bundle>
+            </placement>
+             <placement code="ca_attribute_scope_notes">
+              <bundle>ca_attribute_scope_notes</bundle>
+             </placement>
+            <placement code="ca_attribute_historical_notes">
+              <bundle>ca_attribute_historical_notes</bundle>
+            </placement>
+            <placement code="ca_attribute_source_notes">
+              <bundle>ca_attribute_source_notes</bundle>
+            </placement>
+             <placement code="ca_attribute_indexing_notes">
+              <bundle>ca_attribute_indexing_notes</bundle>
+             </placement>
+            <placement code="access">
+              <bundle>access</bundle>
+            </placement>
+            <placement code="status">
+              <bundle>status</bundle>
+            </placement>
+          </bundlePlacements>
+        </screen>
+        <screen idno="relationships" default="0">
+          <labels>
+            <label locale="en_US">
+              <name>Relationships</name>
+            </label>
+          </labels>
+          <bundlePlacements>
+             <placement code="ca_objects">
+              <bundle>ca_objects</bundle>
+            </placement>
+            <placement code="ca_entities">
+              <bundle>ca_entities</bundle>
+            </placement>
+            <placement code="ca_events">
+              <bundle>ca_occurrences</bundle>
+              <settings>
+                <setting name="restrict_to_type">event</setting>
+                <setting name="label" locale="en_US">Related events</setting>
+              </settings>
+            </placement>
+            <placement code="ca_places">
+              <bundle>ca_places</bundle>
+            </placement>
+            <placement code="ca_collections">
+              <bundle>ca_collections</bundle>
+            </placement>
+          </bundlePlacements>
+        </screen>
+        <screen idno="altnames" default="0">
+          <labels>
+            <label locale="en_US">
+              <name>Alternate names</name>
+            </label>
+          </labels>
+          <bundlePlacements>
+            <placement code="hierarchy_navigation">
+              <bundle>hierarchy_navigation</bundle>
+            </placement>
+             <placement code="nonpreferred_labels">
+              <bundle>nonpreferred_labels</bundle>
+             </placement>
+          </bundlePlacements>
+        </screen>
+        <screen idno="subjects" default="0">
+          <labels>
+            <label locale="en_US">
+              <name>Subjects</name>
+            </label>
+          </labels>
+          <bundlePlacements>
+            <placement code="ca_list_items">
+              <bundle>ca_list_items</bundle>
+              <settings>
+                <setting name="label" locale="en_US">Parrish terms</setting>
+                <setting name="add_label" locale="en_US">Add new term</setting>
+              </settings>
+            </placement>
+          </bundlePlacements>
+        </screen>
+        <screen idno="georef" default="0">
+          <labels>
+            <label locale="en_US">
+              <name>Georeferencing</name>
+            </label>
+          </labels>
+          <bundlePlacements>
+            <placement code="ca_attribute_georeference">
+              <bundle>ca_attribute_georeference</bundle>
+            </placement>
+            <placement code="ca_attribute_caption">
+              <bundle>ca_attribute_caption</bundle>
+            </placement>
+            <placement code="ca_attribute_description">
+              <bundle>ca_attribute_description</bundle>
+            </placement>
+            <placement code="ca_attribute_geonames">
+              <bundle>ca_attribute_geonames</bundle>
+            </placement>
+             <placement code="hierarchy_location">
+              <bundle>hierarchy_location</bundle>
+            </placement>
+          </bundlePlacements>
+        </screen>
+      </screens>
+    </userInterface>
+    <userInterface code="event_cataloguers_ui" type="ca_occurrences">
+      <labels>
+        <label locale="en_US">
+          <name>Event editor</name>
+        </label>
+      </labels>
+      <screens>
+        <screen idno="basic" default="1">
+          <labels>
+            <label locale="en_US">
+              <name>Basic info</name>
+            </label>
+          </labels>
+          <bundlePlacements>
+            <placement code="preferred_labels">
+              <bundle>preferred_labels</bundle>
+              <settings>
+                <setting name="label" locale="en_US">Event title</setting>
+                <setting name="add_label" locale="en_US">Add title</setting>
+              </settings>
+            </placement>
+            <placement code="idno">
+              <bundle>idno</bundle>
+            </placement>
+            <placement code="ca_attribute_event_date">
+              <bundle>ca_attribute_event_date</bundle>
+            </placement>
+            <placement code="ca_attribute_description">
+              <bundle>ca_attribute_description</bundle>
+            </placement>
+             <placement code="ca_attribute_scope_notes">
+              <bundle>ca_attribute_scope_notes</bundle>
+            </placement>
+             <placement code="ca_attribute_indexing_notes">
+              <bundle>ca_attribute_indexing_notes</bundle>
+             </placement>
+             <placement code="ca_attribute_historical_notes">
+              <bundle>ca_attribute_historical_notes</bundle>
+            </placement>
+            <placement code="ca_attribute_source_notes">
+              <bundle>ca_attribute_source_notes</bundle>
+            </placement>
+             <placement code="access">
+              <bundle>access</bundle>
+            </placement>
+            <placement code="status">
+              <bundle>status</bundle>
+            </placement>
+          </bundlePlacements>
+        </screen>
+        <screen idno="altnames" default="0">
+          <labels>
+            <label locale="en_US">
+              <name>Alternate names</name>
+            </label>
+          </labels>
+          <bundlePlacements>
+            <placement code="hierarchy_navigation">
+              <bundle>hierarchy_navigation</bundle>
+            </placement>
+             <placement code="nonpreferred_labels">
+              <bundle>nonpreferred_labels</bundle>
+             </placement>
+          </bundlePlacements>
+        </screen>
+        <screen idno="relationships" default="0">
+          <labels>
+            <label locale="en_US">
+              <name>Relationships</name>
+            </label>
+          </labels>
+          <bundlePlacements>
+            <placement code="ca_objects">
+              <bundle>ca_objects</bundle>
+            </placement>
+            <placement code="ca_entities">
+              <bundle>ca_entities</bundle>
+            </placement>
+            <placement code="ca_events">
+              <bundle>ca_occurrences</bundle>
+              <settings>
+                <setting name="restrict_to_type">event</setting>
+                <setting name="label" locale="en_US">Related events</setting>
+              </settings>
+            </placement>
+            <placement code="ca_places">
+              <bundle>ca_places</bundle>
+            </placement>
+            <placement code="ca_collections">
+              <bundle>ca_collections</bundle>
+            </placement>
+          </bundlePlacements>
+        </screen>
+        <screen idno="subjects" default="0">
+          <labels>
+            <label locale="en_US">
+              <name>Subjects</name>
+            </label>
+          </labels>
+          <bundlePlacements>
+            <placement code="ca_list_items">
+              <bundle>ca_list_items</bundle>
+              <settings>
+                <setting name="label" locale="en_US">Parrish terms</setting>
+                <setting name="add_label" locale="en_US">Add new term</setting>
+              </settings>
+            </placement>
+          </bundlePlacements>
+        </screen>
+      </screens>
+    </userInterface>
+    <userInterface code="standard_collection_ui" type="ca_collections">
+      <labels>
+        <label locale="en_US">
+          <name>Collection editor</name>
+        </label>
+      </labels>
+      <screens>
+        <screen idno="basic" default="1">
+          <labels>
+            <label locale="en_US">
+              <name>Basic info</name>
+            </label>
+          </labels>
+          <bundlePlacements>
+            <placement code="preferred_labels">
+              <bundle>preferred_labels</bundle>
+              <settings>
+                <setting name="label" locale="en_US">Title</setting>
+                <setting name="add_label" locale="en_US">Add title</setting>
+              </settings>
+            </placement>
+            <placement code="idno">
+              <bundle>idno</bundle>
+            </placement>
+            <placement code="ca_attribute_description">
+              <bundle>ca_attribute_description</bundle>
+            </placement>
+            <placement code="ca_attribute_content_notes">
+              <bundle>ca_attribute_content_notes</bundle>
+            </placement>
+            <placement code="ca_attribute_scope_notes">
+              <bundle>ca_attribute_scope_notes</bundle>
+            </placement>
+            <placement code="ca_attribute_source_notes">
+              <bundle>ca_attribute_source_notes</bundle>
+            </placement>
+            <placement code="ca_attribute_access_notes">
+              <bundle>ca_attribute_access_notes</bundle>
+            </placement>
+             <placement code="access">
+              <bundle>access</bundle>
+            </placement>
+            <placement code="status">
+              <bundle>status</bundle>
+            </placement>
+          </bundlePlacements>
+        </screen>
+        <screen idno="altnames" default="0">
+          <labels>
+            <label locale="en_US">
+              <name>Alternate names</name>
+            </label>
+          </labels>
+          <bundlePlacements>
+            <placement code="hierarchy_navigation">
+              <bundle>hierarchy_navigation</bundle>
+            </placement>
+             <placement code="nonpreferred_labels">
+              <bundle>nonpreferred_labels</bundle>
+             </placement>
+          </bundlePlacements>
+        </screen>
+        <screen idno="relationships" default="0">
+          <labels>
+            <label locale="en_US">
+              <name>Relationships</name>
+            </label>
+          </labels>
+          <bundlePlacements>
+            <placement code="ca_objects">
+              <bundle>ca_objects</bundle>
+            </placement>
+            <placement code="ca_entities">
+              <bundle>ca_entities</bundle>
+            </placement>
+            <placement code="ca_events">
+              <bundle>ca_occurrences</bundle>
+              <settings>
+                <setting name="restrict_to_type">event</setting>
+                <setting name="label" locale="en_US">Related events</setting>
+              </settings>
+            </placement>
+            <placement code="ca_places">
+              <bundle>ca_places</bundle>
+            </placement>
+            <placement code="ca_collections">
+              <bundle>ca_collections</bundle>
+            </placement>
+          </bundlePlacements>
+        </screen>
+        <screen idno="subjects" default="0">
+          <labels>
+            <label locale="en_US">
+              <name>Subjects</name>
+            </label>
+          </labels>
+          <bundlePlacements>
+            <placement code="ca_list_items">
+              <bundle>ca_list_items</bundle>
+              <settings>
+                <setting name="label" locale="en_US">Parrish terms</setting>
+                <setting name="add_label" locale="en_US">Add new term</setting>
+              </settings>
+            </placement>
+          </bundlePlacements>
+        </screen>
+       </screens>
+    </userInterface>
+    <userInterface code="standard_storage_locations_ui" type="ca_storage_locations">
+      <labels>
+        <label locale="en_US">
+          <name>Storage locations editor</name>
+        </label>
+      </labels>
+      <screens>
+        <screen idno="basic" default="1">
+          <labels>
+            <label locale="en_US">
+              <name>Basic info</name>
+            </label>
+          </labels>
+          <bundlePlacements>
+            <placement code="hierarchy_navigation">
+              <bundle>hierarchy_navigation</bundle>
+            </placement>
+            <placement code="preferred_labels">
+              <bundle>preferred_labels</bundle>
+              <settings>
+                <setting name="label" locale="en_US">Name</setting>
+                <setting name="add_label" locale="en_US">Add name</setting>
+              </settings>
+            </placement>
+            <placement code="idno">
+              <bundle>idno</bundle>
+            </placement>
+            <placement code="status">
+              <bundle>status</bundle>
+            </placement>
+            <placement code="ca_attribute_description">
+              <bundle>ca_attribute_description</bundle>
+            </placement>
+          </bundlePlacements>
+        </screen>
+        <screen idno="location" default="0">
+          <labels>
+            <label locale="en_US">
+              <name>Location</name>
+            </label>
+          </labels>
+          <bundlePlacements>
+            <placement code="hierarchy_location">
+              <bundle>hierarchy_navigation</bundle>
+            </placement>
+            <placement code="ca_attribute_georeference">
+              <bundle>ca_attribute_georeference</bundle>
+            </placement>
+          </bundlePlacements>
+        </screen>
+        <screen idno="contents" default="0">
+          <labels>
+            <label locale="en_US">
+              <name>Contents</name>
+            </label>
+          </labels>
+          <bundlePlacements>
+            <placement code="hierarchy_navigation">
+              <bundle>hierarchy_navigation</bundle>
+            </placement>
+            <placement code="ca_objects">
+              <bundle>ca_objects</bundle>
+            </placement>
+          </bundlePlacements>
+        </screen>
+        <screen idno="altnames" default="0">
+          <labels>
+            <label locale="en_US">
+              <name>Alternate names</name>
+            </label>
+          </labels>
+          <bundlePlacements>
+            <placement code="hierarchy_navigation">
+              <bundle>hierarchy_navigation</bundle>
+            </placement>
+            <placement code="nonpreferred_labels">
+              <bundle>nonpreferred_labels</bundle>
+              <settings>
+                <setting name="label" locale="en_US">Alternate names</setting>
+                <setting name="add_label" locale="en_US">Add name</setting>
+              </settings>
+            </placement>
+          </bundlePlacements>
+        </screen>
+      </screens>
+    </userInterface>
+    <userInterface code="standard_object_lots_ui" type="ca_object_lots">
+      <labels>
+        <label locale="en_US">
+          <name>Object lots editor</name>
+        </label>
+      </labels>
+      <screens>
+        <screen idno="basic" default="1">
+          <labels>
+            <label locale="en_US">
+              <name>Basic info</name>
+            </label>
+          </labels>
+          <bundlePlacements>
+            <placement code="preferred_labels">
+              <bundle>preferred_labels</bundle>
+              <settings>
+                <setting name="label" locale="en_US">Lot title</setting>
+                <setting name="add_label" locale="en_US">Add lot title</setting>
+              </settings>
+            </placement>
+            <placement code="idno_stub">
+              <bundle>idno_stub</bundle>
+              <settings>
+                <setting name="label" locale="en_US">Accession number prefix</setting>
+              </settings>
+            </placement>
+             <placement code="extent">
+              <bundle>extent</bundle>
+             </placement>
+            <placement code="ca_attribute_credit_line">
+              <bundle>ca_attribute_credit_line</bundle>
+            </placement>
+             <placement code="ca_attribute_deed_date">
+              <bundle>ca_attribute_deed_date</bundle>
+             </placement>
+            <placement code="ca_attribute_accession_method">
+              <bundle>ca_attribute_accession_method</bundle>
+            </placement>
+             <placement code="ca_attribute_admin_remarks">
+              <bundle>ca_attribute_admin_remarks</bundle>
+             </placement>
+            <placement code="ca_attribute_provenance">
+              <bundle>ca_attribute_provenance</bundle>
+            </placement>
+            <placement code="ca_attribute_rights_notes">
+              <bundle>ca_attribute_rights_notes</bundle>
+            </placement>
+            <placement code="ca_attribute_restrictions">
+              <bundle>ca_attribute_restrictions</bundle>
+            </placement>
+            <placement code="ca_attribute_valuation">
+              <bundle>ca_attribute_valuation</bundle>
+            </placement>
+            <placement code="ca_attribute_valuation_noted">
+              <bundle>ca_attribute_valuation_note</bundle>
+            </placement>
+            <placement code="lot_status_id">
+              <bundle>lot_status_id</bundle>
+            </placement>
+            <placement code="access">
+              <bundle>access</bundle>
+            </placement>
+            <placement code="status">
+              <bundle>status</bundle>
+            </placement>
+          </bundlePlacements>
+        </screen>
+        <screen idno="relationships" default="0">
+          <labels>
+            <label locale="en_US">
+              <name>Relationships</name>
+            </label>
+          </labels>
+          <bundlePlacements>
+            <placement code="ca_entities">
+              <bundle>ca_entities</bundle>
+            </placement>
+            <placement code="ca_places">
+              <bundle>ca_places</bundle>
+            </placement>
+            <placement code="ca_collections">
+              <bundle>ca_collections</bundle>
+            </placement>
+          </bundlePlacements>
+        </screen>
+        <screen idno="contents" default="0">
+          <labels>
+            <label locale="en_US">
+              <name>Contents</name>
+            </label>
+          </labels>
+          <bundlePlacements>
+            <placement code="ca_objects">
+              <bundle>ca_objects</bundle>
+            </placement>
+          </bundlePlacements>
+        </screen>
+        <screen idno="altnames" default="0">
+          <labels>
+            <label locale="en_US">
+              <name>Alternate names</name>
+            </label>
+          </labels>
+          <bundlePlacements>
+            <placement code="nonpreferred_labels">
+              <bundle>nonpreferred_labels</bundle>
+              <settings>
+                <setting name="label" locale="en_US">Alternate lot titles</setting>
+                <setting name="add_label" locale="en_US">Add lot title</setting>
+              </settings>
+            </placement>
+          </bundlePlacements>
+        </screen>
+      </screens>
+    </userInterface>
+    <userInterface code="set_cataloguers_ui" type="ca_sets">
+      <labels>
+        <label locale="en_US">
+          <name>Set editor</name>
+        </label>
+      </labels>
+      <screens>
+        <screen idno="basic" default="1">
+          <labels>
+            <label locale="en_US">
+              <name>Basic info</name>
+            </label>
+          </labels>
+          <bundlePlacements>
+            <placement code="preferred_labels">
+              <bundle>preferred_labels</bundle>
+              <settings>
+                <setting name="label" locale="en_US">Set title</setting>
+                <setting name="add_label" locale="en_US">Add set title</setting>
+              </settings>
+            </placement>
+            <placement code="set_code">
+              <bundle>set_code</bundle>
+            </placement>
+            <placement code="access">
+              <bundle>access</bundle>
+            </placement>
+            <placement code="status">
+              <bundle>status</bundle>
+            </placement>
+            <placement code="ca_attribute_description">
+              <bundle>ca_attribute_description</bundle>
+            </placement>
+          </bundlePlacements>
+        </screen>
+        <screen idno="items" default="1">
+          <labels>
+            <label locale="en_US">
+              <name>Items</name>
+            </label>
+          </labels>
+          <bundlePlacements>
+            <placement code="ca_set_items">
+              <bundle>ca_set_items</bundle>
+            </placement>
+          </bundlePlacements>
+        </screen>
+      </screens>
+    </userInterface>
+    <userInterface code="set_item_cataloguers_ui" type="ca_set_items">
+      <labels>
+        <label locale="en_US">
+          <name>Set item editor</name>
+        </label>
+      </labels>
+      <screens>
+        <screen idno="basic" default="1">
+          <labels>
+            <label locale="en_US">
+              <name>Basic info</name>
+            </label>
+          </labels>
+          <bundlePlacements>
+            <placement code="preferred_labels">
+              <bundle>preferred_labels</bundle>
+              <settings>
+                <setting name="label" locale="en_US">Set caption</setting>
+                <setting name="add_label" locale="en_US">Add caption</setting>
+              </settings>
+            </placement>
+            <placement code="ca_attribute_caption">
+              <bundle>ca_attribute_caption</bundle>
+            </placement>
+          </bundlePlacements>
+        </screen>
+      </screens>
+    </userInterface>
+    <userInterface code="standard_representation_ui" type="ca_object_representations">
+      <labels>
+        <label locale="en_US">
+          <name>Object representation editor</name>
+        </label>
+      </labels>
+      <screens>
+        <screen idno="basic" default="1">
+          <labels>
+            <label locale="en_US">
+              <name>Basic info</name>
+            </label>
+          </labels>
+          <bundlePlacements>
+            <placement code="preferred_labels">
+              <bundle>preferred_labels</bundle>
+              <settings>
+                <setting name="label" locale="en_US">Title</setting>
+                <setting name="add_label" locale="en_US">Add title</setting>
+              </settings>
+            </placement>
+            <placement code="ca_attribute_original">
+              <bundle>ca_attribute_original</bundle>
+            </placement>
+            <placement code="media">
+              <bundle>media</bundle>
+            </placement>
+            <placement code="access">
+              <bundle>access</bundle>
+            </placement>
+            <placement code="status">
+              <bundle>status</bundle>
+            </placement>
+            <placement code="ca_attribute_caption">
+              <bundle>ca_attribute_caption</bundle>
+            </placement>
+             <placement code="ca_attribute_license">
+              <bundle>ca_attribute_license</bundle>
+            </placement>
+            <placement code="ca_attribute_current_location">
+              <bundle>ca_attribute_current_location</bundle>
+            </placement>
+             <placement code="ca_attribute_reference_number">
+              <bundle>ca_attribute_reference_number</bundle>
+             </placement>
+            <placement code="ca_attribute_notes">
+              <bundle>ca_attribute_notes</bundle>
+            </placement>
+            <placement code="ca_attribute_image_status">
+              <bundle>ca_attribute_image_status</bundle>
+            </placement>
+          </bundlePlacements>
+        </screen>
+        <screen idno="annotations" default="0">
+          <labels>
+            <label locale="en_US">
+              <name>Annotations</name>
+            </label>
+          </labels>
+          <bundlePlacements>
+            <placement code="ca_representation_annotations">
+              <bundle>ca_representation_annotations</bundle>
+            </placement>
+          </bundlePlacements>
+        </screen>
+        <screen idno="relationships" default="0">
+          <labels>
+            <label locale="en_US">
+              <name>Relationships</name>
+            </label>
+          </labels>
+          <bundlePlacements>
+            <placement code="ca_entities">
+              <bundle>ca_entities</bundle>
+            </placement>
+            <placement code="ca_places">
+              <bundle>ca_places</bundle>
+            </placement>
+          </bundlePlacements>
+        </screen>
+        <screen idno="keywords" default="0">
+          <labels>
+            <label locale="en_US">
+              <name>Keywords</name>
+            </label>
+          </labels>
+          <bundlePlacements>
+            <placement code="ca_list_items">
+              <bundle>ca_list_items</bundle>
+            </placement>
+          </bundlePlacements>
+        </screen>
+        <screen idno="altnames" default="0">
+          <labels>
+            <label locale="en_US">
+              <name>Alternate names</name>
+            </label>
+          </labels>
+          <bundlePlacements>
+            <placement code="nonpreferred_labels">
+              <bundle>nonpreferred_labels</bundle>
+              <settings>
+                <setting name="label" locale="en_US">Alternate names</setting>
+                <setting name="add_label" locale="en_US">Add name</setting>
+              </settings>
+            </placement>
+          </bundlePlacements>
+        </screen>
+      </screens>
+    </userInterface>
+    <userInterface code="standard_representation_annotation_ui" type="ca_representation_annotations">
+      <labels>
+        <label locale="en_US">
+          <name>Representation annotation editor</name>
+        </label>
+      </labels>
+      <screens>
+        <screen idno="basic" default="1">
+          <labels>
+            <label locale="en_US">
+              <name>Basic info</name>
+            </label>
+          </labels>
+          <bundlePlacements>
+            <placement code="preferred_labels">
+              <bundle>preferred_labels</bundle>
+              <settings>
+                <setting name="label" locale="en_US">Title</setting>
+                <setting name="add_label" locale="en_US">Add title</setting>
+              </settings>
+            </placement>
+            <placement code="ca_representation_annotation_properties">
+              <bundle>ca_representation_annotation_properties</bundle>
+            </placement>
+            <placement code="access">
+              <bundle>access</bundle>
+            </placement>
+            <placement code="status">
+              <bundle>status</bundle>
+            </placement>
+            <placement code="ca_attribute_description">
+              <bundle>ca_attribute_description</bundle>
+            </placement>
+          </bundlePlacements>
+        </screen>
+        <screen idno="keywords" default="0">
+          <labels>
+            <label locale="en_US">
+              <name>Keywords</name>
+            </label>
+          </labels>
+          <bundlePlacements>
+            <placement code="ca_list_items">
+              <bundle>ca_list_items</bundle>
+            </placement>
+          </bundlePlacements>
+        </screen>
+        <screen idno="relationships" default="0">
+          <labels>
+            <label locale="en_US">
+              <name>Relationships</name>
+            </label>
+          </labels>
+          <bundlePlacements>
+            <placement code="ca_objects">
+              <bundle>ca_objects</bundle>
+            </placement>
+            <placement code="ca_entities">
+              <bundle>ca_entities</bundle>
+            </placement>
+            <placement code="ca_places">
+              <bundle>ca_places</bundle>
+            </placement>
+          </bundlePlacements>
+        </screen>
+        <screen idno="altnames" default="0">
+          <labels>
+            <label locale="en_US">
+              <name>Alternate names</name>
+            </label>
+          </labels>
+          <bundlePlacements>
+            <placement code="nonpreferred_labels">
+              <bundle>nonpreferred_labels</bundle>
+              <settings>
+                <setting name="label" locale="en_US">Alternate names</setting>
+                <setting name="add_label" locale="en_US">Add name</setting>
+              </settings>
+            </placement>
+          </bundlePlacements>
+        </screen>
+      </screens>
+    </userInterface>
+    <userInterface code="standard_object_event_ui" type="ca_object_events">
+      <labels>
+        <label locale="en_US">
+          <name>Object event editor</name>
+        </label>
+      </labels>
+      <screens>
+        <screen idno="basic" default="1">
+          <labels>
+            <label locale="en_US">
+              <name>Basic info</name>
+            </label>
+          </labels>
+          <bundlePlacements>
+            <placement code="ca_attribute_description">
+              <bundle>ca_attribute_description</bundle>
+            </placement>
+          </bundlePlacements>
+        </screen>
+        <screen idno="relationships" default="0">
+          <labels>
+            <label locale="en_US">
+              <name>Relationships</name>
+            </label>
+          </labels>
+          <bundlePlacements>
+            <placement code="ca_entities">
+              <bundle>ca_entities</bundle>
+            </placement>
+            <placement code="ca_places">
+              <bundle>ca_places</bundle>
+            </placement>
+            <placement code="ca_storage_locations">
+              <bundle>ca_storage_locations</bundle>
+            </placement>
+          </bundlePlacements>
+        </screen>
+      </screens>
+    </userInterface>
+    <userInterface code="list_item_cataloguers_ui" type="ca_list_items">
+      <labels>
+        <label locale="en_US">
+          <name>List item editor</name>
+        </label>
+      </labels>
+      <screens>
+        <screen idno="basic" default="1">
+          <labels>
+            <label locale="en_US">
+              <name>Basic info</name>
+            </label>
+          </labels>
+          <bundlePlacements>
+            <placement code="hier_location">
+              <bundle>hierarchy_location</bundle>
+            </placement>
+            <placement code="preferred_labels">
+              <bundle>preferred_labels</bundle>
+            </placement>
+            <placement code="ca_attribute_source_notes">
+              <bundle>ca_attribute_source_notes</bundle>
+            </placement>
+            <placement code="ca_attribute_term_date">
+              <bundle>ca_attribute_term_date</bundle>
+            </placement>
+            <placement code="idno">
+              <bundle>idno</bundle>
+            </placement>
+            <placement code="item_value">
+              <bundle>item_value</bundle>
+            </placement>
+            <placement code="is_enabled">
+              <bundle>is_enabled</bundle>
+            </placement>
+            <placement code="is_default">
+              <bundle>is_default</bundle>
+            </placement>
+            <placement code="rank">
+              <bundle>rank</bundle>
+            </placement>
+            <placement code="color">
+              <bundle>color</bundle>
+            </placement>
+            <placement code="icon">
+              <bundle>icon</bundle>
+            </placement>
+            <placement code="validation_format">
+              <bundle>validation_format</bundle>
+            </placement>
+            <placement code="access">
+              <bundle>access</bundle>
+            </placement>
+            <placement code="status">
+              <bundle>status</bundle>
+            </placement>
+          </bundlePlacements>
+        </screen>
+        <screen idno="altnames" default="0">
+          <labels>
+            <label locale="en_US">
+              <name>Alternate names</name>
+            </label>
+          </labels>
+          <bundlePlacements>
+            <placement code="nonpreferred_labels">
+              <bundle>nonpreferred_labels</bundle>
+            </placement>
+          </bundlePlacements>
+        </screen>
+        <screen idno="related" default="0">
+          <labels>
+            <label locale="en_US">
+              <name>Related list items</name>
+            </label>
+          </labels>
+          <bundlePlacements>
+            <placement code="ca_list_items">
+              <bundle>ca_list_items</bundle>
+            </placement>
+          </bundlePlacements>
+        </screen>
+      </screens>
+    </userInterface>
+  </userInterfaces>
+  <relationshipTypes>
+    <relationshipTable name="ca_objects_x_entities">
+      <types>
+        <type code="depicts" default="1">
+          <labels>
+            <label locale="en_US">
+              <typename>depicts</typename>
+              <typename_reverse>is depicted by</typename_reverse>
+            </label>
+          </labels>
+          <subTypeLeft> </subTypeLeft>
+          <subTypeRight/>
+        </type>
+        <type code="creator" default="0">
+          <labels>
+            <label locale="en_US">
+              <typename>was created by</typename>
+              <typename_reverse>creator of</typename_reverse>
+            </label>
+          </labels>
+          <subTypeLeft> </subTypeLeft>
+          <subTypeRight/>
+        </type>
+        <type code="owner" default="0">
+          <labels>
+            <label locale="en_US">
+              <typename>was owned by</typename>
+              <typename_reverse>owner of</typename_reverse>
+            </label>
+          </labels>
+          <subTypeLeft> </subTypeLeft>
+          <subTypeRight/>
+        </type>
+        <type code="artist" default="0">
+          <labels>
+            <label locale="en_US">
+              <typename>Artist</typename>
+              <typename_reverse>is Artist of</typename_reverse>
+            </label>
+          </labels>
+          <subTypeLeft> </subTypeLeft>
+          <subTypeRight/>
+        </type>
+        <type code="maker" default="0">
+          <labels>
+            <label locale="en_US">
+              <typename>Maker</typename>
+              <typename_reverse>is Maker of</typename_reverse>
+            </label>
+          </labels>
+          <subTypeLeft> </subTypeLeft>
+          <subTypeRight/>
+        </type>
+        <type code="architect" default="0">
+          <labels>
+            <label locale="en_US">
+              <typename>was architect of</typename>
+              <typename_reverse>was architect of</typename_reverse>
+            </label>
+          </labels>
+          <subTypeLeft> </subTypeLeft>
+          <subTypeRight/>
+        </type>
+        <type code="related" default="0">
+          <labels>
+            <label locale="en_US">
+              <typename>is related to</typename>
+              <typename_reverse>is related to</typename_reverse>
+            </label>
+          </labels>
+          <subTypeLeft> </subTypeLeft>
+          <subTypeRight/>
+        </type>
+        <type code="portrait" default="0">
+          <labels>
+            <label locale="en_US">
+              <typename>is a portrait of</typename>
+              <typename_reverse>is portrayed in</typename_reverse>
+            </label>
+          </labels>
+          <subTypeLeft> </subTypeLeft>
+          <subTypeRight/>
+        </type>
+        <type code="rights" default="0">
+          <labels>
+            <label locale="en_US">
+              <typename>current rights holder</typename>
+              <typename_reverse>current rights holder</typename_reverse>
+            </label>
+          </labels>
+          <subTypeLeft> </subTypeLeft>
+          <subTypeRight/>
+        </type>
+      </types>
+    </relationshipTable>
+    <relationshipTable name="ca_objects_x_occurrences">
+      <types>
+        <type code="depicts" default="1">
+          <labels>
+            <label locale="en_US">
+              <typename>depicts</typename>
+              <typename_reverse>is depicted by</typename_reverse>
+            </label>
+          </labels>
+          <subTypeLeft> </subTypeLeft>
+          <subTypeRight>event</subTypeRight>
+        </type>
+        <type code="used" default="0">
+          <labels>
+            <label locale="en_US">
+              <typename>was used in</typename>
+              <typename_reverse>used</typename_reverse>
+            </label>
+          </labels>
+          <subTypeLeft> </subTypeLeft>
+          <subTypeRight>event</subTypeRight>
+        </type>
+        <type code="describes" default="0">
+          <labels>
+            <label locale="en_US">
+              <typename>describes</typename>
+              <typename_reverse>is described by</typename_reverse>
+            </label>
+          </labels>
+          <subTypeLeft> </subTypeLeft>
+          <subTypeRight/>
+        </type>
+      </types>
+    </relationshipTable>
+    <relationshipTable name="ca_objects_x_collections">
+      <types>
+        <type code="part_of" default="1">
+          <labels>
+            <label locale="en_US">
+              <typename>is part of</typename>
+              <typename_reverse>contains</typename_reverse>
+            </label>
+          </labels>
+          <subTypeLeft> </subTypeLeft>
+          <subTypeRight/>
+        </type>
+      </types>
+    </relationshipTable>
+    <relationshipTable name="ca_objects_x_objects">
+      <types>
+        <type code="related" default="1">
+          <labels>
+            <label locale="en_US">
+              <typename>is related to</typename>
+              <typename_reverse>is related to</typename_reverse>
+            </label>
+          </labels>
+          <subTypeLeft> </subTypeLeft>
+          <subTypeRight/>
+        </type>
+        <type code="similar" default="0">
+          <labels>
+            <label locale="en_US">
+              <typename>is similar to</typename>
+              <typename_reverse>is similar to</typename_reverse>
+            </label>
+          </labels>
+          <subTypeLeft> </subTypeLeft>
+          <subTypeRight/>
+        </type>
+        <type code="duplicate" default="0">
+          <labels>
+            <label locale="en_US">
+              <typename>is duplicate of</typename>
+              <typename_reverse>is duplicate of</typename_reverse>
+            </label>
+          </labels>
+          <subTypeLeft> </subTypeLeft>
+          <subTypeRight/>
+        </type>
+        <type code="part_of" default="0">
+          <labels>
+            <label locale="en_US">
+              <typename>is part of</typename>
+              <typename_reverse>contains</typename_reverse>
+            </label>
+          </labels>
+          <subTypeLeft> </subTypeLeft>
+          <subTypeRight/>
+        </type>
+      </types>
+    </relationshipTable>
+    <relationshipTable name="ca_occurrences_x_occurrences">
+      <types>
+        <type code="related" default="1">
+          <labels>
+            <label locale="en_US">
+              <typename>is related to</typename>
+              <typename_reverse>is related to</typename_reverse>
+            </label>
+          </labels>
+          <subTypeLeft>event</subTypeLeft>
+          <subTypeRight>event</subTypeRight>
+        </type>
+      </types>
+    </relationshipTable>
+    <relationshipTable name="ca_occurrences_x_collections">
+      <types>
+        <type code="related" default="1">
+          <labels>
+            <label locale="en_US">
+              <typename>is related to</typename>
+              <typename_reverse>is related to</typename_reverse>
+            </label>
+          </labels>
+          <subTypeLeft/>
+          <subTypeRight/>
+        </type>
+      </types>
+    </relationshipTable>
+    <relationshipTable name="ca_objects_x_places">
+      <types>
+        <type code="created" default="0">
+          <labels>
+            <label locale="en_US">
+              <typename>was created at</typename>
+              <typename_reverse>was creation location of</typename_reverse>
+            </label>
+          </labels>
+          <subTypeLeft> </subTypeLeft>
+          <subTypeRight/>
+        </type>
+        <type code="original" default="0">
+          <labels>
+            <label locale="en_US">
+              <typename>originated from</typename>
+              <typename_reverse>is original location of</typename_reverse>
+            </label>
+          </labels>
+          <subTypeLeft>image</subTypeLeft>
+          <subTypeRight/>
+        </type>
+        <type code="depicts" default="1">
+          <labels>
+            <label locale="en_US">
+              <typename>depicts</typename>
+              <typename_reverse>is depicted by</typename_reverse>
+            </label>
+          </labels>
+          <subTypeLeft> </subTypeLeft>
+          <subTypeRight/>
+        </type>
+        <type code="related" default="0">
+          <labels>
+            <label locale="en_US">
+              <typename>is related to</typename>
+              <typename_reverse>is related to</typename_reverse>
+            </label>
+          </labels>
+          <subTypeLeft> </subTypeLeft>
+          <subTypeRight/>
+        </type>
+      </types>
+    </relationshipTable>
+    <relationshipTable name="ca_objects_x_vocabulary_terms">
+      <types>
+        <type code="described" default="1">
+          <labels>
+            <label locale="en_US">
+              <typename>is described by</typename>
+              <typename_reverse>describes</typename_reverse>
+            </label>
+          </labels>
+          <subTypeLeft> </subTypeLeft>
+          <subTypeRight/>
+        </type>
+        <type code="contains" default="0">
+          <labels>
+            <label locale="en_US">
+              <typename>contains</typename>
+              <typename_reverse>is contained in</typename_reverse>
+            </label>
+          </labels>
+          <subTypeLeft> </subTypeLeft>
+          <subTypeRight/>
+        </type>
+      </types>
+    </relationshipTable>
+    <relationshipTable name="ca_entities_x_entities">
+      <types>
+        <type code="married" default="1">
+          <labels>
+            <label locale="en_US">
+              <typename>is married to</typename>
+              <typename_reverse>is married to</typename_reverse>
+            </label>
+          </labels>
+          <subTypeLeft> </subTypeLeft>
+          <subTypeRight/>
+        </type>
+        <type code="child" default="0">
+          <labels>
+            <label locale="en_US">
+              <typename>is child of</typename>
+              <typename_reverse>is parent of</typename_reverse>
+            </label>
+          </labels>
+          <subTypeLeft></subTypeLeft>
+          <subTypeRight></subTypeRight>
+        </type>
+        <type code="sibling" default="0">
+          <labels>
+            <label locale="en_US">
+              <typename>is sibling of</typename>
+              <typename_reverse>is sibling of</typename_reverse>
+            </label>
+          </labels>
+          <subTypeLeft></subTypeLeft>
+          <subTypeRight></subTypeRight>
+        </type>
+        <type code="associate" default="0">
+          <labels>
+            <label locale="en_US">
+              <typename>is associate of</typename>
+              <typename_reverse>is associated with</typename_reverse>
+            </label>
+          </labels>
+          <subTypeLeft></subTypeLeft>
+          <subTypeRight></subTypeRight>
+        </type>
+        <type code="student" default="0">
+          <labels>
+            <label locale="en_US">
+              <typename>is student of</typename>
+              <typename_reverse>is teacher of</typename_reverse>
+            </label>
+          </labels>
+          <subTypeLeft></subTypeLeft>
+          <subTypeRight></subTypeRight>
+        </type>
+        <type code="neighbor" default="0">
+          <labels>
+            <label locale="en_US">
+              <typename>is neighbor of</typename>
+              <typename_reverse>is neighbor of</typename_reverse>
+            </label>
+          </labels>
+          <subTypeLeft></subTypeLeft>
+          <subTypeRight></subTypeRight>
+        </type>
+        <type code="friend" default="0">
+          <labels>
+            <label locale="en_US">
+              <typename>is friend of</typename>
+              <typename_reverse>is friend of</typename_reverse>
+            </label>
+          </labels>
+          <subTypeLeft></subTypeLeft>
+          <subTypeRight></subTypeRight>
+        </type>
+        <type code="guest" default="0">
+          <labels>
+            <label locale="en_US">
+              <typename>is guest of</typename>
+              <typename_reverse>is host of</typename_reverse>
+            </label>
+          </labels>
+          <subTypeLeft></subTypeLeft>
+          <subTypeRight></subTypeRight>
+        </type>
+        <type code="patron" default="0">
+          <labels>
+            <label locale="en_US">
+              <typename>is patron of</typename>
+              <typename_reverse>is grantee of</typename_reverse>
+            </label>
+          </labels>
+          <subTypeLeft></subTypeLeft>
+          <subTypeRight></subTypeRight>
+        </type>
+        <type code="lover" default="0">
+          <labels>
+            <label locale="en_US">
+              <typename>is lover of</typename>
+              <typename_reverse>is lover of</typename_reverse>
+            </label>
+          </labels>
+          <subTypeLeft></subTypeLeft>
+          <subTypeRight></subTypeRight>
+        </type>
+        <type code="collab" default="0">
+          <labels>
+            <label locale="en_US">
+              <typename>is collaborator with</typename>
+              <typename_reverse>is collaborator with</typename_reverse>
+            </label>
+          </labels>
+          <subTypeLeft></subTypeLeft>
+          <subTypeRight></subTypeRight>
+        </type>
+        <type code="classmate" default="0">
+          <labels>
+            <label locale="en_US">
+              <typename>is classmate of</typename>
+              <typename_reverse>is classmate of</typename_reverse>
+            </label>
+          </labels>
+          <subTypeLeft></subTypeLeft>
+          <subTypeRight></subTypeRight>
+        </type>
+        <type code="assistant" default="0">
+          <labels>
+            <label locale="en_US">
+              <typename>is the assistant of</typename>
+              <typename_reverse>is the assistant of</typename_reverse>
+            </label>
+          </labels>
+          <subTypeLeft></subTypeLeft>
+          <subTypeRight></subTypeRight>
+        </type>
+        <type code="peer" default="0">
+          <labels>
+            <label locale="en_US">
+              <typename>is peer of</typename>
+              <typename_reverse>is peer of</typename_reverse>
+            </label>
+          </labels>
+          <subTypeLeft></subTypeLeft>
+          <subTypeRight></subTypeRight>
+        </type>
+        <type code="painted_depicted" default="0">
+          <labels>
+            <label locale="en_US">
+              <typename>painted/depicted</typename>
+              <typename_reverse>was painted/depicted by</typename_reverse>
+            </label>
+          </labels>
+          <subTypeLeft></subTypeLeft>
+          <subTypeRight></subTypeRight>
+        </type>
+        <type code="attended" default="0">
+          <labels>
+            <label locale="en_US">
+              <typename>attended</typename>
+              <typename_reverse>was attended by</typename_reverse>
+            </label>
+          </labels>
+          <subTypeLeft></subTypeLeft>
+          <subTypeRight></subTypeRight>
+        </type>
+        <type code="taught" default="0">
+          <labels>
+            <label locale="en_US">
+              <typename>taught</typename>
+              <typename_reverse>employed faculty member</typename_reverse>
+            </label>
+          </labels>
+          <subTypeLeft></subTypeLeft>
+          <subTypeRight></subTypeRight>
+        </type>
+        <type code="owner" default="0">
+          <labels>
+            <label locale="en_US">
+              <typename>is owner of</typename>
+              <typename_reverse>is owned by</typename_reverse>
+            </label>
+          </labels>
+          <subTypeLeft></subTypeLeft>
+          <subTypeRight></subTypeRight>
+        </type>
+        <type code="teacher" default="0">
+          <labels>
+            <label locale="en_US">
+              <typename>is teacher of</typename>
+              <typename_reverse>is student of</typename_reverse>
+            </label>
+          </labels>
+          <subTypeLeft></subTypeLeft>
+          <subTypeRight></subTypeRight>
+        </type>
+        <type code="member" default="0">
+          <labels>
+            <label locale="en_US">
+              <typename>is a member of</typename>
+              <typename_reverse>has as a member</typename_reverse>
+            </label>
+          </labels>
+          <subTypeLeft></subTypeLeft>
+          <subTypeRight></subTypeRight>
+        </type>
+      </types>
+    </relationshipTable>
+    <relationshipTable name="ca_entities_x_places">
+      <types>
+        <type code="birthplace" default="1">
+          <labels>
+            <label locale="en_US">
+              <typename>was born at</typename>
+              <typename_reverse>was birthplace of</typename_reverse>
+            </label>
+          </labels>
+          <subTypeLeft> </subTypeLeft>
+          <subTypeRight/>
+        </type>
+        <type code="residence" default="0">
+          <labels>
+            <label locale="en_US">
+              <typename>lived in</typename>
+              <typename_reverse>was residence of</typename_reverse>
+            </label>
+          </labels>
+          <subTypeLeft> </subTypeLeft>
+          <subTypeRight/>
+        </type>
+        <type code="exhibited" default="0">
+          <labels>
+            <label locale="en_US">
+              <typename>exhibited at</typename>
+              <typename_reverse>was exhibition place of</typename_reverse>
+            </label>
+          </labels>
+          <subTypeLeft> </subTypeLeft>
+          <subTypeRight/>
+        </type>
+        <type code="visited" default="0">
+          <labels>
+            <label locale="en_US">
+              <typename>visited</typename>
+              <typename_reverse>was visited by</typename_reverse>
+            </label>
+          </labels>
+          <subTypeLeft> </subTypeLeft>
+          <subTypeRight/>
+        </type>
+        <type code="attended" default="0">
+          <labels>
+            <label locale="en_US">
+              <typename>attended</typename>
+              <typename_reverse>was attended by</typename_reverse>
+            </label>
+          </labels>
+          <subTypeLeft> </subTypeLeft>
+          <subTypeRight/>
+        </type>
+        <type code="studio" default="0">
+          <labels>
+            <label locale="en_US">
+              <typename>had a studio in</typename>
+              <typename_reverse>was studio of</typename_reverse>
+            </label>
+          </labels>
+          <subTypeLeft> </subTypeLeft>
+          <subTypeRight/>
+        </type>
+        <type code="located" default="0">
+          <labels>
+            <label locale="en_US">
+              <typename>is located at</typename>
+              <typename_reverse>is location of</typename_reverse>
+            </label>
+          </labels>
+          <subTypeLeft> </subTypeLeft>
+          <subTypeRight/>
+        </type>
+        <type code="designer" default="0">
+          <labels>
+            <label locale="en_US">
+              <typename>was the designer of</typename>
+              <typename_reverse>was designed by</typename_reverse>
+            </label>
+          </labels>
+          <subTypeLeft> </subTypeLeft>
+          <subTypeRight/>
+        </type>
+        <type code="frequented" default="0">
+          <labels>
+            <label locale="en_US">
+              <typename>frequented</typename>
+              <typename_reverse>was frequented by</typename_reverse>
+            </label>
+          </labels>
+          <subTypeLeft> </subTypeLeft>
+          <subTypeRight/>
+        </type>
+        <type code="teacher" default="0">
+          <labels>
+            <label locale="en_US">
+              <typename>was a teacher at</typename>
+              <typename_reverse>was teacher of</typename_reverse>
+            </label>
+          </labels>
+          <subTypeLeft> </subTypeLeft>
+          <subTypeRight/>
+        </type>
+        <type code="died" default="0">
+          <labels>
+            <label locale="en_US">
+              <typename>died at</typename>
+              <typename_reverse>is deathplace of</typename_reverse>
+            </label>
+          </labels>
+          <subTypeLeft> </subTypeLeft>
+          <subTypeRight/>
+        </type>
+        <type code="buried" default="0">
+          <labels>
+            <label locale="en_US">
+              <typename>is buried in</typename>
+              <typename_reverse>is buried in</typename_reverse>
+            </label>
+          </labels>
+          <subTypeLeft> </subTypeLeft>
+          <subTypeRight/>
+        </type>
+        <type code="map_point" default="0">
+          <labels>
+            <label locale="en_US">
+              <typename>map point</typename>
+              <typename_reverse>is map point of</typename_reverse>
+            </label>
+          </labels>
+          <subTypeLeft> </subTypeLeft>
+          <subTypeRight/>
+        </type>
+        <type code="owner" default="0">
+          <labels>
+            <label locale="en_US">
+              <typename>is owner of</typename>
+              <typename_reverse>is owned by</typename_reverse>
+            </label>
+          </labels>
+          <subTypeLeft> </subTypeLeft>
+          <subTypeRight/>
+        </type>
+        <type code="taught" default="0">
+          <labels>
+            <label locale="en_US">
+              <typename>taught at</typename>
+              <typename_reverse>employed faculty member</typename_reverse>
+            </label>
+          </labels>
+          <subTypeLeft> </subTypeLeft>
+          <subTypeRight/>
+        </type>
+        <type code="member" default="0">
+          <labels>
+            <label locale="en_US">
+              <typename>is a member of</typename>
+              <typename_reverse>has as a member</typename_reverse>
+            </label>
+          </labels>
+          <subTypeLeft> </subTypeLeft>
+          <subTypeRight/>
+        </type>
+      </types>
+    </relationshipTable>
+    <relationshipTable name="ca_entities_x_occurrences">
+      <types>
+        <type code="attended" default="1">
+          <labels>
+            <label locale="en_US">
+              <typename>attended</typename>
+              <typename_reverse>was attended by</typename_reverse>
+            </label>
+          </labels>
+          <subTypeLeft> </subTypeLeft>
+          <subTypeRight>event</subTypeRight>
+        </type>
+        <type code="related" default="0">
+          <labels>
+            <label locale="en_US">
+              <typename>is related to</typename>
+              <typename_reverse>is related to</typename_reverse>
+            </label>
+          </labels>
+          <subTypeLeft> </subTypeLeft>
+          <subTypeRight>event</subTypeRight>
+        </type>
+        <type code="included" default="0">
+          <labels>
+            <label locale="en_US">
+              <typename>was included in</typename>
+              <typename_reverse>included</typename_reverse>
+            </label>
+          </labels>
+          <subTypeLeft> </subTypeLeft>
+          <subTypeRight>event</subTypeRight>
+        </type>
+      </types>
+    </relationshipTable>
+    <relationshipTable name="ca_object_lots_x_entities">
+      <types>
+        <type code="donor" default="1">
+          <labels>
+            <label locale="en_US">
+              <typename>was donated by</typename>
+              <typename_reverse>is donor of</typename_reverse>
+            </label>
+          </labels>
+          <subTypeLeft> </subTypeLeft>
+          <subTypeRight/>
+        </type>
+        <type code="provider" default="0">
+          <labels>
+            <label locale="en_US">
+              <typename>was provided by</typename>
+              <typename_reverse>is provider of</typename_reverse>
+            </label>
+          </labels>
+          <subTypeLeft> </subTypeLeft>
+          <subTypeRight/>
+        </type>
+      </types>
+    </relationshipTable>
+    <relationshipTable name="ca_object_lots_x_places">
+      <types>
+        <type code="originates" default="1">
+          <labels>
+            <label locale="en_US">
+              <typename>originates from</typename>
+              <typename_reverse>is origination location of</typename_reverse>
+            </label>
+          </labels>
+          <subTypeLeft> </subTypeLeft>
+          <subTypeRight/>
+        </type>
+      </types>
+    </relationshipTable>
+    <relationshipTable name="ca_object_lots_x_collections">
+      <types>
+        <type code="part_of" default="1">
+          <labels>
+            <label locale="en_US">
+              <typename>is part of</typename>
+              <typename_reverse>contains</typename_reverse>
+            </label>
+          </labels>
+          <subTypeLeft> </subTypeLeft>
+          <subTypeRight/>
+        </type>
+      </types>
+    </relationshipTable>
+    <relationshipTable name="ca_entities_x_collections">
+      <types>
+        <type code="related" default="1">
+          <labels>
+            <label locale="en_US">
+              <typename>is related to</typename>
+              <typename_reverse>is related to</typename_reverse>
+            </label>
+          </labels>
+          <subTypeLeft> </subTypeLeft>
+          <subTypeRight/>
+        </type>
+      </types>
+    </relationshipTable>
+    <relationshipTable name="ca_entities_x_vocabulary_terms">
+      <types>
+        <type code="described" default="1">
+          <labels>
+            <label locale="en_US">
+              <typename>is described by</typename>
+              <typename_reverse>describes</typename_reverse>
+            </label>
+          </labels>
+          <subTypeLeft> </subTypeLeft>
+          <subTypeRight/>
+        </type>
+      </types>
+    </relationshipTable>
+    <relationshipTable name="ca_object_representations_x_vocabulary_terms">
+      <types>
+        <type code="described" default="1">
+          <labels>
+            <label locale="en_US">
+              <typename>is described by</typename>
+              <typename_reverse>describes</typename_reverse>
+            </label>
+          </labels>
+          <subTypeLeft> </subTypeLeft>
+          <subTypeRight/>
+        </type>
+      </types>
+    </relationshipTable>
+    <relationshipTable name="ca_places_x_places">
+      <types>
+        <type code="related" default="1">
+          <labels>
+            <label locale="en_US">
+              <typename>is related to</typename>
+              <typename_reverse>is related to</typename_reverse>
+            </label>
+          </labels>
+          <subTypeLeft> </subTypeLeft>
+          <subTypeRight/>
+        </type>
+        <type code="moved" default="1">
+          <labels>
+            <label locale="en_US">
+              <typename>was moved to</typename>
+              <typename_reverse>was moved to</typename_reverse>
+            </label>
+          </labels>
+          <subTypeLeft> </subTypeLeft>
+          <subTypeRight/>
+        </type>
+      </types>
+    </relationshipTable>
+    <relationshipTable name="ca_places_x_vocabulary_terms">
+      <types>
+        <type code="describes" default="1">
+          <labels>
+            <label locale="en_US">
+              <typename>is described by</typename>
+              <typename_reverse>describes</typename_reverse>
+            </label>
+          </labels>
+          <subTypeLeft> </subTypeLeft>
+          <subTypeRight/>
+        </type>
+      </types>
+    </relationshipTable>
+    <relationshipTable name="ca_occurrences_x_vocabulary_terms">
+      <types>
+        <type code="describes" default="1">
+          <labels>
+            <label locale="en_US">
+              <typename>is described by</typename>
+              <typename_reverse>describes</typename_reverse>
+            </label>
+          </labels>
+          <subTypeLeft> </subTypeLeft>
+          <subTypeRight/>
+        </type>
+      </types>
+    </relationshipTable>
+    <relationshipTable name="ca_places_x_occurrences">
+      <types>
+        <type code="site" default="1">
+          <labels>
+            <label locale="en_US">
+              <typename>was site of</typename>
+              <typename_reverse>occurred at</typename_reverse>
+            </label>
+          </labels>
+          <subTypeLeft> </subTypeLeft>
+          <subTypeRight>event</subTypeRight>
+        </type>
+        <type code="related" default="1">
+          <labels>
+            <label locale="en_US">
+              <typename>is realted to</typename>
+              <typename_reverse>is realted to</typename_reverse>
+            </label>
+          </labels>
+          <subTypeLeft> </subTypeLeft>
+          <subTypeRight>event</subTypeRight>
+        </type>
+      </types>
+    </relationshipTable>
+    <relationshipTable name="ca_collections_x_collections">
+      <types>
+        <type code="related" default="1">
+          <labels>
+            <label locale="en_US">
+              <typename>is related to</typename>
+              <typename_reverse>is related to</typename_reverse>
+            </label>
+          </labels>
+          <subTypeLeft> </subTypeLeft>
+          <subTypeRight/>
+        </type>
+      </types>
+    </relationshipTable>
+    <relationshipTable name="ca_collections_x_vocabulary_terms">
+      <types>
+        <type code="described" default="1">
+          <labels>
+            <label locale="en_US">
+              <typename>is described by</typename>
+              <typename_reverse>describes</typename_reverse>
+            </label>
+          </labels>
+          <subTypeLeft> </subTypeLeft>
+          <subTypeRight/>
+        </type>
+      </types>
+    </relationshipTable>
+    <relationshipTable name="ca_places_x_collections">
+      <types>
+        <type code="location" default="1">
+          <labels>
+            <label locale="en_US">
+              <typename>is location of</typename>
+              <typename_reverse>is located in</typename_reverse>
+            </label>
+          </labels>
+          <subTypeLeft> </subTypeLeft>
+          <subTypeRight/>
+        </type>
+      </types>
+    </relationshipTable>
+    <relationshipTable name="ca_list_items_x_list_items">
+      <types>
+        <type code="related" default="1">
+          <labels>
+            <label locale="en_US">
+              <typename>is related to</typename>
+              <typename_reverse>is related to</typename_reverse>
+            </label>
+          </labels>
+          <subTypeLeft> </subTypeLeft>
+          <subTypeRight/>
+        </type>
+      </types>
+    </relationshipTable>
+    <relationshipTable name="ca_representation_annotations_x_objects">
+      <types>
+        <type code="depicts" default="1">
+          <labels>
+            <label locale="en_US">
+              <typename>depicts</typename>
+              <typename_reverse>is depicted by</typename_reverse>
+            </label>
+          </labels>
+          <subTypeLeft> </subTypeLeft>
+          <subTypeRight/>
+        </type>
+        <type code="illustrated" default="1">
+          <labels>
+            <label locale="en_US">
+              <typename>is illustrated by</typename>
+              <typename_reverse>illustrates</typename_reverse>
+            </label>
+          </labels>
+          <subTypeLeft> </subTypeLeft>
+          <subTypeRight/>
+        </type>
+      </types>
+    </relationshipTable>
+    <relationshipTable name="ca_representation_annotations_x_entities">
+      <types>
+        <type code="depicts" default="1">
+          <labels>
+            <label locale="en_US">
+              <typename>depicts</typename>
+              <typename_reverse>is depicted by</typename_reverse>
+            </label>
+          </labels>
+          <subTypeLeft> </subTypeLeft>
+          <subTypeRight/>
+        </type>
+        <type code="describes" default="1">
+          <labels>
+            <label locale="en_US">
+              <typename>describes</typename>
+              <typename_reverse>is described by</typename_reverse>
+            </label>
+          </labels>
+          <subTypeLeft> </subTypeLeft>
+          <subTypeRight/>
+        </type>
+      </types>
+    </relationshipTable>
+    <relationshipTable name="ca_representation_annotations_x_places">
+      <types>
+        <type code="depicts" default="1">
+          <labels>
+            <label locale="en_US">
+              <typename>depicts</typename>
+              <typename_reverse>is depicted by</typename_reverse>
+            </label>
+          </labels>
+          <subTypeLeft> </subTypeLeft>
+          <subTypeRight/>
+        </type>
+        <type code="describes" default="1">
+          <labels>
+            <label locale="en_US">
+              <typename>describes</typename>
+              <typename_reverse>is described by</typename_reverse>
+            </label>
+          </labels>
+          <subTypeLeft> </subTypeLeft>
+          <subTypeRight/>
+        </type>
+      </types>
+    </relationshipTable>
+    <relationshipTable name="ca_representation_annotations_x_occurrences">
+      <types>
+        <type code="depicts" default="1">
+          <labels>
+            <label locale="en_US">
+              <typename>depicts</typename>
+              <typename_reverse>is depicted by</typename_reverse>
+            </label>
+          </labels>
+          <subTypeLeft> </subTypeLeft>
+          <subTypeRight>event</subTypeRight>
+        </type>
+        <type code="describes" default="1">
+          <labels>
+            <label locale="en_US">
+              <typename>describes</typename>
+              <typename_reverse>is described by</typename_reverse>
+            </label>
+          </labels>
+          <subTypeLeft> </subTypeLeft>
+          <subTypeRight>event</subTypeRight>
+        </type>
+      </types>
+    </relationshipTable>
+    <relationshipTable name="ca_representation_annotations_x_vocabulary_terms">
+      <types>
+        <type code="describes" default="1">
+          <labels>
+            <label locale="en_US">
+              <typename>is described by</typename>
+              <typename_reverse>describes</typename_reverse>
+            </label>
+          </labels>
+          <subTypeLeft> </subTypeLeft>
+          <subTypeRight/>
+        </type>
+      </types>
+    </relationshipTable>
+  </relationshipTypes>
+</profile>

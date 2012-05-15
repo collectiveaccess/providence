@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<config>
+	<updateHandler class="solr.DirectUpdateHandler2" />
+	<requestDispatcher handleSelect="true" >
+		<requestParsers enableRemoteStreaming="false" multipartUploadLimitInKB="2048" />
+	</requestDispatcher>
+	<requestHandler name="standard" class="solr.StandardRequestHandler" default="true" />
+	<requestHandler name="/update" class="solr.XmlUpdateRequestHandler" />
+	<requestHandler name="/admin/" class="org.apache.solr.handler.admin.AdminHandlers" />
+	<queryResponseWriter name="php" class="org.apache.solr.request.PHPResponseWriter"/>
+	<queryResponseWriter name="phps" class="org.apache.solr.request.PHPSerializedResponseWriter"/>
+	<admin>
+		<defaultQuery>solr</defaultQuery>
+	</admin>
+</config>
+

@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+
+<schema name="CORE_NAME" version="1.1">
+	<types>
+		<fieldType name="text" class="solr.TextField" positionIncrementGap="100">
+			<analyzer>
+				<tokenizer class="solr.WhitespaceTokenizerFactory"/>
+				<filter class="solr.LowerCaseFilterFactory"/>
+			</analyzer>
+		</fieldType>
+		<fieldType name="string" class="solr.StrField" />
+		<fieldtype name="ignored" stored="false" indexed="false" class="solr.StrField" /> 
+	</types>
+	<fields>
+		<!--FIELDS-->
+		<field name="text" type="text" indexed="true" stored="false" multiValued="true"/>
+		<dynamicField name="*" type="ignored" />
+	</fields>
+	<uniqueKey><!--KEY--></uniqueKey>
+	<defaultSearchField>text</defaultSearchField>
+	<solrQueryParser defaultOperator="AND"/>
+	<!--COPYFIELDS-->
+</schema>

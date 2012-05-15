@@ -1,0 +1,128 @@
+/* DocumentCloud overrides to the DocViewer CSS go here: */
+
+.DV-docViewer {
+  border: 1px solid #aaa;
+  line-height: normal;
+}
+.DV-headerHat, .DV-title, .DV-contentsHeader {
+  display: none !important;
+}
+.DV-header {
+  padding: 0;
+  border-bottom: 1px solid #777;
+  position: relative;
+  z-index: 20000;
+  box-shadow: 0 0 25px rgba(0,0,0,.35); -webkit-box-shadow: 0 0 25px rgba(0,0,0,.35); -moz-box-shadow: 0 0 25px rgba(0,0,0,.35);
+}
+  .DV-controls {
+    margin-top: 0;
+    border: 0;
+    background: url(../../../images/DV/embed/headerbg.png);
+    text-shadow: 0px 1px 0px #ddd;
+    color: #000;
+  }
+    .DV-searchInput {
+      border: 1px solid #999;
+      border-radius: 16px; -webkit-border-radius: 16px; -moz-border-radius: 16px;
+    }
+
+.DV-docViewer-Container {
+  margin: 0;
+  border: 0;
+}
+
+.DV-pages, .DV-paper {
+  background: #f5f6f7 url(../../../images/DV/embed/pagesbg.jpg);
+}
+  .DV-paper {
+    padding-top: 1px; /* needed to uncollapse the margin */
+  }
+
+.DV-privateLock, .DV-showEdit, .DV-permalink {
+  width: 16px; height: 16px;
+  float: left;
+  margin: -2px 0 0 10px;
+  margin-left: 10px;
+  background-repeat: no-repeat;
+  cursor: pointer;
+}
+.DV-privateLock {
+  cursor: default;
+}
+.DV-permalink {
+  display: block;
+  width: 16px; height: 16px;
+  float: left;
+  padding: 0;
+  margin-left: 10px;
+  left: 0; top: 0;
+}
+
+.DV-annotationTitleInput,
+.DV-annotationTextArea {
+  border: 1px solid #D0D0D0;
+  -webkit-border-radius: 3px; -moz-border-radius: 3px; border-radius: 3px;
+  font: 12px/15px Arial;
+  outline: 0;
+}
+  .DV-annotationTextArea {
+    padding: 7px;
+    margin: 10px 0;
+    height: 110px;
+    outline: 0;
+    resize: none;
+  }
+  .DV-annotationTitleInput {
+    padding: 4px;
+    width: 300px;
+  }
+.DV-annotationEditControls .minibutton {
+  width: 60px;
+}
+  .DV-cancelEdit {
+    margin-right: 10px;
+  }
+
+.DV-overlay {
+  left: 0; right: 282px; bottom: 0;
+}
+
+.DV-well {
+  padding-bottom: 16px;
+}
+.DV-descriptionHead {
+  text-transform: none;
+  color: black;
+}
+.DV-descriptionText {
+  background: white;
+  padding: 5px 14px 10px;
+}
+
+.DV-logo {
+  margin-top: 16px;
+}
+  .DV-logo a {
+    display: block;
+    width: 105px; height: 19px;
+    background: url(../../../images/DV/embed/dc_inline_logo.png);
+  }
+
+.DV-footerLogoLink {
+  display: block;
+  width: 33px; height: 24px;
+  background: url(../../../images/DV/embed/dc_mini_logo.png) no-repeat center center;
+  position: absolute;
+  right: 5px; top: 5px;
+}
+
+.DV-views {
+  position: relative;
+  z-index: 10;
+}
+  .DV-views .DV-first span {
+    -webkit-border-top-left-radius: 5px; -moz-border-radius-topleft: 5px;
+  }
+  .DV-views .DV-last span {
+    -webkit-border-top-right-radius: 5px; -moz-border-radius-topright: 5px;
+  }

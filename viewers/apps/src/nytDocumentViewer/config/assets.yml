@@ -1,0 +1,56 @@
+embed_images: datauri
+template_function: _.template
+#compress_assets: off
+
+javascripts:
+  viewer:
+#    - public/javascripts/DV/vendor/jquery-1.5.1.js
+#    - public/javascripts/DV/vendor/jquery-ui-1.8.1.custom.min.js
+    - public/javascripts/DV/vendor/underscore.js
+    - public/javascripts/DV/vendor/jquery.acceptInput.js
+    - public/javascripts/DV/vendor/jquery.placeholder.js
+    - public/javascripts/DV/lib/initializer.js
+    - public/javascripts/DV/lib/history.js
+    - public/javascripts/DV/lib/annotation.js
+    - public/javascripts/DV/lib/drag_reporter.js
+    - public/javascripts/DV/lib/elements.js
+    - public/javascripts/DV/lib/page.js
+    - public/javascripts/DV/lib/page_set.js
+    - public/javascripts/DV/lib/thumbnails.js
+    - public/javascripts/DV/schema/schema.js
+    - public/javascripts/DV/elements/elements.js
+    - public/javascripts/DV/models/annotation.js
+    - public/javascripts/DV/models/chapter.js
+    - public/javascripts/DV/models/document.js
+    - public/javascripts/DV/models/page.js
+    - public/javascripts/DV/events/events.js
+    - public/javascripts/DV/events/ViewAnnotation.js
+    - public/javascripts/DV/events/ViewDocument.js
+    - public/javascripts/DV/events/ViewSearch.js
+    - public/javascripts/DV/events/ViewText.js
+    - public/javascripts/DV/events/ViewThumbnails.js
+    - public/javascripts/DV/events/history.js
+    - public/javascripts/DV/events/navigation.js
+    - public/javascripts/DV/helpers/helpers.js
+    - public/javascripts/DV/helpers/annotations.js
+    - public/javascripts/DV/helpers/construction.js
+    - public/javascripts/DV/helpers/editor.js
+    - public/javascripts/DV/helpers/navigation.js
+    - public/javascripts/DV/helpers/search.js
+    - public/javascripts/DV/states/states.js
+    - public/javascripts/DV/controllers/document_viewer.js
+    - public/javascripts/DV/controllers/api.js
+
+  templates:
+    - public/javascripts/DV/views/*.jst
+
+stylesheets:
+  viewer:
+    - public/stylesheets/DV/components/reset.css
+    - public/stylesheets/DV/components/structure.css
+    - public/stylesheets/DV/components/ui.css
+    - public/stylesheets/DV/components/*.css
+    - public/stylesheets/DV/themes/plain.css
+
+  print:
+    - public/stylesheets/DV/print.css

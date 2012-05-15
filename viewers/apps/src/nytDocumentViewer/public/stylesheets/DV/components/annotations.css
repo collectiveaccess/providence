@@ -1,0 +1,588 @@
+
+ .DV-annotations{
+    position:relative;
+    left:1px;
+    top:1px;
+    z-index:10001;
+  }
+
+  .DV-annotation{
+    position:absolute;
+    left:0;
+    right:0;
+    padding:3px;
+    -webkit-border-radius: 3px;
+    -moz-border-radius:  3px;
+    border-radius:  3px;
+  }
+  .DV-annotationRegion {
+    background: rgb(255, 227, 37);
+    background: rgba(255, 227, 37, 0.2);
+
+    border:3px solid rgb(225, 200, 0);
+    border:3px solid rgba(255, 227, 37, 0.5);
+
+    -webkit-border-radius:3px;
+    -moz-border-radius:3px;
+    border-radius:3px;
+
+    position:relative;
+    left: -2px;
+    top: -1px;
+
+    z-index: 5;
+
+    cursor:pointer;
+  }
+  .DV-coverVisible .DV-annotationRegion {
+    background: rgb(255, 227, 37);
+    background: rgba(255, 227, 37, 0.1);
+    border:3px solid rgb(255, 227, 37);
+    border:3px solid rgba(255, 227, 37, 0.2);
+  }
+  .DV-coverVisible .DV-annotationTab {
+    opacity: 0.3;
+  }
+  .DV-coverVisible .DV-activeAnnotation .DV-annotationTab,
+  .DV-coverVisible .DV-annotation:hover .DV-annotationTab {
+    opacity: 1;
+  }
+  .DV-ie .DV-annotationRegion{
+    -ms-filter: "progid:DXImageTransform.Microsoft.Alpha(Opacity=30)";
+    filter: alpha(opacity=30);
+  }
+  .DV-accessPrivate .DV-annotationRegion, .DV-accessPrivate.DV-annotationRegion {
+    background: rgb(107, 194, 248);
+    background: rgba(107, 194, 248, 0.2);
+    border:3px solid rgb(95, 175, 235);
+    border:3px solid rgba(107, 194, 248, 0.5);
+  }
+  .DV-accessRedact .DV-annotationRegion, .DV-accessRedact.DV-annotationRegion {
+    background: #800;
+    border: 0;
+    border-radius: 0; -moz-border-radius: 0; -webkit-border-radius: 0;
+    filter: none;
+    -ms-filter: none;
+  }
+  .DV-coverVisible .DV-accessPrivate .DV-annotationRegion {
+    background: rgb(107, 194, 248);
+    background: rgba(107, 194, 248, 0.1);
+    border:3px solid rgb(107, 194, 248);
+    border:3px solid rgba(107, 194, 248, 0.2);
+  }
+  .DV-annotationRegion:hover{
+    border: 3px solid rgb(255, 227, 37);
+    -webkit-box-shadow: 1px 2px 7px rgb(0,0,0);
+    -webkit-box-shadow: 1px 2px 7px rgba(0,0,0,.2);
+
+    -moz-box-shadow: 1px 2px 7px rgb(0,0,0);
+    -moz-box-shadow: 1px 2px 7px rgba(0,0,0,.2);
+
+    box-shadow: 1px 2px 7px rgb(0,0,0);
+    box-shadow: 1px 2px 7px rgba(0,0,0,.2);
+  }
+  .DV-accessPrivate .DV-annotationRegion:hover,
+  .DV-accessPrivate.DV-annotationRegion:hover {
+    border: 3px solid rgb(107, 194, 248);
+  }
+  .DV-annotationContent{
+    display:none;
+    background-color:#fff;
+    border:1px solid #fff;
+    -webkit-border-radius:3px;
+    -moz-border-radius:3px;
+    border-radius:3px;
+    padding:10px;
+    cursor:default;
+    overflow: hidden;
+    position: relative;
+    z-index: 1;
+  }
+  .DV-annotationClose{
+    padding:7px 9px 0 10px;
+    color:#000;
+    text-transform:lowercase;
+    font-size:10px;
+    line-height:10px;
+    font-family:Arial,Helvetica,sans-serif;
+    width:15px;
+    height:19px;
+    text-indent:-1000em;
+  }
+  /* ---------------------------------------------------- annotations - active */
+  .DV-activeAnnotation .DV-annotationRegion{
+    display:none;
+  }
+  .DV-activeAnnotation .DV-annotationContent{
+    display:block;
+  }
+  .DV-activeAnnotation .DV-annotationClose{
+    display:block;
+    background: transparent url(../../../images/DV/embed/close_tab.png) no-repeat 6px 7px;
+  }
+
+  .DV-activeAnnotation.DV-annotation{
+    background: rgb(255, 227, 37);
+    padding:3px;
+    -webkit-border-radius: 3px;
+    -moz-border-radius:  3px;
+    border-radius:  3px;
+    margin: -37px -14px 0 -14px;
+    z-index:10003;
+
+    -webkit-box-shadow: 1px 1px 3px rgb(0,0,0);
+    -webkit-box-shadow: 1px 1px 3px rgba(0,0,0,.2);
+
+    -moz-box-shadow: 1px 1px 3px rgb(0,0,0);
+    -moz-box-shadow: 1px 1px 3px rgba(0,0,0,.2);
+
+    box-shadow: 1px 1px 3px rgb(0,0,0);
+    box-shadow: 1px 1px 3px rgba(0,0,0,.2);
+  }
+  .DV-activeAnnotation.DV-annotation.DV-accessPrivate {
+    background: rgb(107, 194, 248);
+  }
+  .DV-activeAnnotation.DV-annotation.DV-accessRedact {
+    background: #800;
+  }
+
+  /* ---------------------------------------------------- annotations - decoration */
+  .DV-annotationGoto{
+    float:right;
+    display:none;
+    width:15%;
+    text-align:right;
+    padding: 2px 0 0;
+    font-size:10px;
+    font-family:Arial,Helvetica,sans-serif;
+    font-weight:bold;
+    color:#004276;
+    text-decoration:none;
+  }
+  .DV-annotationTitle{
+    float:left;
+    display:inline;
+    font-weight:bold;
+    font-family:Arial,Helvetica,sans-serif;
+    font-size:12px;
+    color:#000;
+    padding:0;
+    max-width: 75%;
+    cursor: pointer;
+  }
+    .DV-annotationTitle:hover {
+      text-decoration: underline;
+    }
+
+  .DV-permalink {
+    zoom: 1;
+    font-size: 16px;
+    background: url(../../../images/DV/embed/link.png) no-repeat 0 0;
+    padding-left: 16px;
+    cursor: pointer;
+    position: relative;
+    visibility: hidden;
+    left: 7px; top: -2px;
+  }
+    .DV-annotation:hover .DV-permalink {
+      visibility: visible;
+    }
+    .DV-permalink:hover {
+      background-position: 0 -32px;
+    }
+
+  /* ---------------------------------------------------- excerpt */
+  .DV-annotationExcerpt{
+    -moz-box-shadow: inset 0 0 5px rgb(0,0,0);
+    -moz-box-shadow: inset 0 0 5px rgba(0,0,0,.3);
+
+    -webkit-box-shadow: inset 0 0 5px rgb(0,0,0);
+    -webkit-box-shadow: inset 0 0 5px rgba(0,0,0,.3);
+
+    box-shadow: inset 0 0 5px rgb(0,0,0);
+    box-shadow: inset 0 0 5px rgba(0,0,0,.3);
+    margin: 10px 0 10px;
+    border:1px solid #d0d0d0;
+    -webkit-border-radius: 2px;
+    -moz-border-radius:  2px;
+    border-radius:  2px;
+    background-color: white;
+
+    position:relative;
+    z-index:10000;
+    overflow:hidden;
+  }
+  .DV-annotationExcerptImage{
+    opacity:.2;
+
+    -moz-box-shadow: inset 0 0 5px rgb(0,0,0);
+    -moz-box-shadow: inset 0 0 5px rgba(0,0,0,.3);
+
+    -webkit-box-shadow: inset 0 0 5px rgb(0,0,0);
+    -webkit-box-shadow: inset 0 0 5px rgba(0,0,0,.3);
+
+    box-shadow: inset 0 0 5px rgb(0,0,0);
+    box-shadow: inset 0 0 5px rgba(0,0,0,.3);
+    z-index:10000;
+    overflow:hidden;
+  }
+  .DV-ie .DV-annotationExcerptImage img{
+    -ms-filter: "progid:DXImageTransform.Microsoft.Alpha(Opacity=20)";
+    filter: alpha(opacity=20);
+  }
+
+  .DV-annotationExcerptImageTop{
+    position:absolute;
+    top:0;
+    z-index:15000;
+    overflow:hidden;
+/*    margin-left:-10px;*/
+/*    -moz-box-shadow: inset 0 0 5px rgb(0,0,0);
+    -moz-box-shadow: inset 0 0 5px rgba(0,0,0,.3);
+*/
+/*    -webkit-box-shadow: inset 0 0 5px rgb(0,0,0);*/
+/*    -webkit-box-shadow: inset 0 0 5px #f00;    */
+/*    display:none;*/
+/*    box-shadow: 0 0 5px rgb(0,0,0);*/
+  border-left:1px solid #ddd;
+  border-left:1px solid rgba(221,221,221,.4);
+  border-right:1px solid #ddd;
+  border-right:1px solid rgba(221,221,221,.4);
+  -webkit-box-shadow: inset 0 0 5px #000;
+
+  }
+  .DV-annotationExcerptImageTop img{
+/*    margin-left:-16px;*/
+  }
+  .DV-annotationExcerptImage img{
+/*    left:-25px;*/
+      left: -1px;
+  }
+
+  .DV-annotationExcerptImage{
+    left:0;
+  }
+  .DV-annotationExcerptImage img,
+  .DV-annotationExcerptImageTop img{
+    -moz-box-shadow: inset 0 0 5px rgb(0,0,0);
+    -moz-box-shadow: inset 0 0 5px rgba(0,0,0,.3);
+
+    -webkit-box-shadow: inset 0 0 5px rgb(0,0,0);
+    -webkit-box-shadow: inset 0 0 5px rgba(0,0,0,.3);
+
+    box-shadow: inset 0 0 5px rgb(0,0,0);
+    box-shadow: inset 0 0 5px rgba(0,0,0,.3);
+    position:absolute;
+  }
+
+  .DV-annotationBody{
+    font: 13px/18px Georgia, Times, serif;
+    cursor:text;
+    color: #333;
+  }
+
+  .DV-annotationAuthor {
+    float: right;
+    color: #999;
+    padding: 10px 0 0;
+    line-height: 14px;
+    font-size: 10px;
+  }
+
+  .DV-annotationWarning {
+    color: #999;
+    font-size: 10px;
+    padding: 10px 0 0;
+    line-height: 14px;
+  }
+
+  .DV-annotationMeta {
+    display: none;
+    height: 24px;
+  }
+
+  .DV-annotationDraftLabel {
+    text-transform: uppercase;
+    font-weight: bold;
+    font-size: 9px;
+    padding: 0px 1px 0px 2px;
+    line-height: 11px;
+    border: 2px solid #b55;
+    color: #a33;
+    margin: -1px 2px 0 12px;
+    float: left;
+  }
+  /* ---------------------------------------------------- tabs */
+  .DV-annotationTab{
+    background: url(../../../images/DV/embed/tabs.png) no-repeat 0 0;
+    height:26px;
+    position:absolute;
+    left: -35px;
+    width: 50px;
+  }
+    .DV-accessPrivate .DV-annotationTab {
+      background-position: 0 -26px;
+    }
+  .DV-activeAnnotation .DV-annotationTab{
+    background-position: 0 -52px;
+    margin-top: 37px;
+    left: -30px;
+  }
+  .DV-activeAnnotation.DV-accessPrivate .DV-annotationTab {
+    background-position: 0 -78px;
+  }
+  .DV-annotationTab .DV-annotationDraftDot {
+    width: 11px;
+    height: 11px;
+    background: transparent url(../../../images/DV/embed/draft_dot.png) no-repeat 0 0;
+    margin: 0 0 0 -3px;
+  }
+    .DV-activeAnnotation .DV-annotationTab .DV-annotationDraftDot {
+      display: none;
+    }
+
+  /* ---------------------------------------------------- active annotation */
+  .DV-activeAnnotation .DV-page{
+    background-color:#555;
+  }
+  .DV-activeAnnotation .DV-pageImage{
+    opacity:.5;
+  }
+  .DV-ie .DV-activeAnnotation .DV-pageImage{
+    -ms-filter: "progid:DXImageTransform.Microsoft.Alpha(Opacity=50)";
+    filter: alpha(opacity=50);
+  }
+
+/* ---------------------------------------------------- pagination */
+
+.DV-pagination{
+  height: 18px;
+  text-align:center;
+  float:right;
+  display:inline;
+  color:#666;
+  text-decoration:uppercase;
+  background-color:#fff;
+  font-family:Arial,Helvetica,sans-serif;
+}
+  .DV-annotation .DV-pagination {
+    display: none;
+  }
+  .DV-activeAnnotation .DV-pagination {
+    display: block;
+  }
+
+.DV-pagination .DV-trigger
+{
+  color:#004276;
+  font-weight:bold;
+  text-decoration:none;
+  text-transform:uppercase;
+  font-size:10px;
+  position: relative;
+  top: -3px;
+}
+
+.DV-annotation .DV-trigger:hover{
+  text-decoration:underline;
+}
+
+.DV-resultPrevious,
+.DV-annotationPrevious {
+  background: url(../../../images/DV/embed/leftArrow.png) no-repeat left 1px;
+}
+
+.DV-annotationPrevious{
+  padding-left:16px;
+  padding-right:4px;
+}
+
+.DV-lastAnnotation .DV-annotationPrevious{
+  padding-right:0;
+}
+.DV-lastAnnotation .DV-annotationNext{
+  display:none;
+}
+
+
+.DV-annotationPrevious:hover{
+  text-decoration:underline;
+}
+
+.DV-resultNext,
+.DV-annotationNext {
+  background:transparent url(../../../images/DV/embed/rightArrow.png) no-repeat right 1px;
+}
+
+.DV-annotationNext{
+  padding-right:16px;
+  padding-left:8px;
+}
+
+.DV-annotationNext:hover{
+  text-decoration:underline;
+}
+
+.DV-firstAnnotation .DV-annotationPrevious,
+.DV-lastAnnotation .DV-annotationNext{
+  display:none;
+}
+/* ---------------------------------------------------- pageNote */
+
+.DV-pageNote{
+  z-index:1000;
+  position:relative;
+  left:0;
+  top:0;
+  cursor: default !important;
+  margin-left: 10px;
+  margin-right: 10px;
+  margin-bottom:20px;
+
+  background: rgb(255, 227, 37);
+  background: rgba(255, 227, 37, 0.9);
+
+  -webkit-border-radius:3px;
+  -moz-border-radius:3px;
+  border-radius:3px;
+
+  -webkit-box-shadow: 1px 1px 3px rgb(0,0,0);
+  -webkit-box-shadow: 1px 1px 3px rgba(0,0,0,.2);
+
+  -moz-box-shadow: 1px 1px 3px rgb(0,0,0);
+  -moz-box-shadow: 1px 1px 3px rgba(0,0,0,.2);
+
+  box-shadow: 1px 1px 3px rgb(0,0,0);
+  box-shadow: 1px 1px 3px rgba(0,0,0,.2);
+}
+.DV-pageNote.DV-accessPrivate {
+  background: rgb(107, 194, 248);
+  background: rgba(107, 194, 248, 0.9);
+}
+.DV-coverVisible .DV-pageNote {
+  opacity: 0.25;
+}
+.DV-activeAnnotation.DV-pageNote{
+  opacity: 1;
+  margin: 0 10px 20px;
+}
+.DV-pageNote .DV-annotationContent{
+  display:block;
+}
+.DV-pageNote .DV-annotationTitle{
+  margin-bottom:10px;
+}
+
+.DV-pageNote .DV-annotationTab{
+ display:none;
+}
+.DV-layer-page .DV-pageNumber{
+  margin-top:15px;
+}
+
+.DV-pageNoteInsert {
+  display: none;
+}
+
+/* ---------------------------------------------------- hack for load */
+.DV-getHeights{
+  display:block !important;
+}
+
+/*-------------------------- Annotation Borders ------------------------------*/
+.DV-annotationEdge, .DV-annotationCorner {
+  position: absolute;
+  width: 10px; height: 10px;
+  z-index: 10;
+}
+  .DV-annotationCorner {
+    z-index: 20;
+  }
+  .DV-annotationEdgeTop {
+    top: -7px;
+    width: 100%;
+    cursor: n-resize;
+  }
+  .DV-annotationEdgeRight {
+    right: -7px;
+    height: 100%;
+    cursor: e-resize;
+  }
+  .DV-annotationEdgeBottom {
+    bottom: -7px;
+    width: 100%;
+    cursor: s-resize;
+  }
+  .DV-annotationEdgeLeft {
+    left: -7px;
+    height: 100%;
+    cursor: w-resize;
+  }
+  .DV-annotationCornerTopLeft {
+    top: -7px; left: -7px;
+    cursor: nw-resize;
+  }
+  .DV-annotationCornerTopRight {
+    top: -7px; right: -7px;
+    cursor: ne-resize;
+  }
+  .DV-annotationCornerBottomLeft {
+    bottom: -7px; left: -7px;
+    cursor: sw-resize;
+  }
+  .DV-annotationCornerBottomRight {
+    bottom: -7px; right: -7px;
+    cursor: se-resize;
+  }
+
+/*------------------------ annotation controls ---------------------------------*/
+
+.DV-annotation .DV-annotationEditControls .DV-saveAnnotationDraft {
+  margin-right: 10px;
+  width: 80px;
+}
+
+/*------------------------ show/hide the edit UI ---------------------------------*/
+.DV-annotation .DV-editVisible {
+  display: none;
+}
+
+.DV-editing .DV-editVisible {
+  display: block;
+}
+
+.DV-editing .DV-editHidden {
+  display: none !important;
+}
+
+.DV-annotation .DV-saveAnnotationDraft {
+  display: none;
+}
+
+.DV-annotation .DV-accessExclusive,
+.DV-annotation .DV-accessPrivate,
+.DV-annotation .DV-accessPublic {
+  display: none;
+}
+
+.DV-isContributor .DV-annotation .DV-accessPrivate,
+.DV-isOwner .DV-annotation .DV-accessPrivate,
+.DV-isOwner .DV-annotation .DV-accessExclusive,
+.DV-isOwner .DV-annotation .DV-accessPublic,
+.DV-isReviewer .DV-annotation.DV-ownsAnnotation .DV-accessPrivate,
+.DV-isReviewer .DV-annotation.DV-ownsAnnotation .DV-accessExclusive,
+.DV-isReviewer .DV-annotation.DV-ownsAnnotation .DV-accessPublic {
+  display: block;
+}
+
+.DV-isContributor .DV-annotation.DV-accessPrivate .DV-annotationMeta,
+.DV-isOwner .DV-annotation .DV-annotationMeta,
+.DV-isReviewer .DV-annotation .DV-annotationMeta {
+  display: block;
+}
+
+.DV-isContributor .DV-annotation .DV-saveAnnotationDraft,
+.DV-isOwner .DV-annotation .DV-saveAnnotationDraft,
+.DV-isReviewer .DV-annotation .DV-saveAnnotationDraft {
+  display: block;
+}

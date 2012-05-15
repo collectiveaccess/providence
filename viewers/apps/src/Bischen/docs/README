@@ -1,0 +1,66 @@
+What is this?
+-------------
+
+Bischen is a viewer for Tilepic (http://elib.cs.berkeley.edu/tilepic/) format images that runs within the version 8 Adobe Flash browser plug-in or in the Flash standalone player. 
+
+Unlike image formats like JPEG or TIFF, Tilepic represents an image as a series of small chunks (or "tiles"). This means that with a suitable Tilepic server and a viewer, arbitrarily large images can be efficiently downloaded over a network displayed at any resolution. Only the chunks of the image actually being viewed are sent over the network, and only at the required resolution (which is often not the full resolution). Bischen handles the image display and provides a number of tools for navigating large images:
+
+	- Continuous zoom from 1% to 600% of original size
+	- Auto zooming to fill the screen or view the image at 100%
+	- Drag and drop panning of image
+	- Fine zoom (1% increments) and pan (1 pixel increments) using the keyboard
+	- "Navigator" overview display showing thumbnail of entire image with visible portion highlighted
+	- Annotation of images. Regions may be labeled with text and coordinates stored in a backend database. Labels are resolution independent and maintain proper position as image is zoomed. (EXPERIMENTAL)
+
+The viewer is small (about 35k) and reasonably fast. It will run on any platform that supports the Flash plug-in or standalone player. As of this writing (August 2006) this means Windows and Mac OS X. It is possible to compile Bischen to run under version 7 Flash, which is supported on Linux and Solaris as well. We are investigating this option. Also, Adobe has announced the newest version of the Flash plug-in (version 9) will support Linux.
+
+License
+-------
+
+Bischen is licensed under the GNU General Public License (GPL).
+
+Help!
+-----
+
+If you have questions or need support, send a message to bischen@opencollection.org. We will try our best to help you get the software up and running.
+
+
+Creating Tilepic format images
+------------------------------
+
+In order to use an image with Bischen it must be in Tilepic format. To convert an image you have two choices:
+	
+	- The Berkeley Tilepic conversion tools available at http://elib.cs.berkeley.edu/tilepic/download.html
+	- The PHP-based Tilepic converted included in this package. The PHP code is may be used on the command line or embedded into a web-application. In order to run it you will need PHP version 4.1 or better and ImageMagick and the MagickWand PHP extension *or* the PHP GD module. ImageMagick is preferred for speed, quality and a longer list of support input formats, but GD will work ok.
+
+
+Using the viewer on your web site
+---------------------------------
+
+To display a Tilepic on your web site you'll need to install a few files on your server:
+
+	- Put the Tilepic file(s) in on your web server and note the url(s).
+	- Put the Tilepic server (tile.php) on your web server. Your web server must support PHP for this to work. The Tilepic server script requires a supporting library (TilepicParser.inc) that you must put somewhere in the PHP include path. Typically you'll just put it in the same directory as tile.php.
+	- [OPTIONAL] Put the Bischen label server on your web server. [Configuration is of this feature is still in flux... more to come soon]
+
+You'll need some information about the Tilepic file you want to view:
+
+	- Width and height of the largest layer in the file. The largest layer will be the same size as the original image.
+	- The number of layers in the Tilepic file. This is usually 6 or 7 and can be set when you create the image.
+	- Tile width and height. This is set when you create the file and is usually either 200 or 256 for both width and height.
+	- The layer scaling ratio. Typically each layer is twice the size of the one before it, for a ratio of 2. This can be set when you create the file, but there is almost never a reason to deviate from the default of 2.
+
+
+Armed with this information and the urls to the image file, the Tilepic server and (optionally) the label server, place the following horrendously complicated tag in your web page, carefully replacing the various parameters with values for your image. Note that all parameters must be replaced in *TWO* places. The <param> tags within the <object> tag are used by Internet Explorer on Windows, the <embed> tag by most other browsers.
+
+
+<object classid="clsid:d27cdb6e-ae6d-11cf-96b8-444553540000" codebase="http://fpdownload.macromedia.com/pub/shockwave/cabs/flash/swflash.cab#version=8,0,0,0" width="1000" height="650" id="bischen" align="middle">
+
+			<param name="allowScriptAccess" value="sameDomain" />
+			<param name="FlashVars" value="tpViewerUrl=/tilepic/tile.php&tpLabelProcessorURL=labels.php&tpImageUrl=http://mysite.com/myfile.tpc&tpWidth=3000&tpHeight=6000&tpInitMagnification=&tpScales=7&tpRatio=2&tpTileWidth=256&tpTileHeight=256&tpUseLabels=1&tpEditLabels=1&tpParameterList=representation_id;user_id&image_id=640&user_id=1" />
+			<param name="movie" value="bischen.swf" />
+			<param name="quality" value="high" />
+			<param name="bgcolor" value="#ffffff" />
+			
+			<embed src="bischen.swf" quality="high" bgcolor="#ffffff" width="1000" height="650" name="bischen" align="middle" FlashVars="tpViewerUrl=/tilepic/tile.php&tpLabelProcessorURL=labels.php&tpImageUrl=http://mysite.com/myfile.tpc&tpWidth=3000&tpHeight=6000&tpInitMagnification=&tpScales=7&tpRatio=2&tpTileWidth=256&tpTileHeight=256&tpUseLabels=1&tpEditLabels=1&tpParameterList=representation_id;user_id&representation_id=640&user_id=" allowScriptAccess="sameDomain" type="application/x-shockwave-flash" pluginspage="http://www.macromedia.com/go/getflashplayer" />
+</object>

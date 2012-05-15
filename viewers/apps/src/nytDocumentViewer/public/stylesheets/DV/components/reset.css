@@ -1,0 +1,23 @@
+.DV-docViewer .DV-clearfix:after {
+    content: ".";
+    display: block;
+    height: 0;
+    clear: both;
+    visibility: hidden;
+}
+
+.DV-docViewer .DV-clearfix {display: inline-block;}
+
+/* Hides from IE-mac \*/
+* html .DV-docViewer .DV-clearfix {height: 1%;}
+.DV-docViewer .DV-clearfix {display: block;}
+/* End hide from IE-mac */  
+
+.DV-docViewer a,
+.DV-docViewer a:visited{
+  color:#004276;
+}
+
+.DV-docViewer{
+ overflow:hidden;  
+}

@@ -1,0 +1,293 @@
+body {
+	background-color: #FFFFFF;
+	font-family: Verdana, Arial, Helvetica, sans-serif;
+	font-size:11px;
+	color: #000000;
+}
+
+
+/* --- Content area --- */
+.contentWrapper {
+	text-align: center;
+	font-family: Verdana, Arial, Helvetica, sans-serif;
+	font-size:11px;
+	color: #333333;
+}
+
+.contentArea {
+	background-color: #ffffff;
+	width: 900px;
+	border: 1px solid #000000;
+	text-align: left;
+	padding: 0px 10px 0px 30px;
+}
+
+html>body .contentArea
+{
+height: auto;
+}
+
+
+/* Bug fix for wacky borders of section box in IE on PC*/
+/* Hides from IE5-mac \*/
+* html .content {height: 1%;}
+/* End hide from IE5-mac */
+
+.contentHighlight {
+	font-family: Verdana, Arial, Helvetica, sans-serif;
+	font-size:11px;
+	color: #660000;
+}
+
+a.content {
+	color: #1B3268;
+	text-decoration: none;
+	font-weight: bold;
+}
+
+.contentMessage {
+	font-family: Verdana, Arial, Helvetica, sans-serif;
+	font-size:13px;
+	color: #660000;
+	text-align: center;
+	font-weight: bold;
+}
+
+.contentError {
+	font-family: Verdana, Arial, Helvetica, sans-serif;
+	font-size:14px;
+	color: red;
+	text-align: center;
+	font-weight: bold;
+	text-decoration: none;
+	margin: 20px;
+}
+
+.contentSuccess {
+	font-family: Verdana, Arial, Helvetica, sans-serif;
+	font-size:14px;
+	color: green;
+	text-align: center;
+	font-weight: bold;
+	text-decoration: none;
+	margin: 20px;
+}
+
+.small {
+	font-family: Verdana, Arial, Helvetica, sans-serif;
+	font-size:10px;
+	color: #333333;
+}
+
+.title { 
+	font-family: Verdana, Arial, Helvetica, sans-serif;
+	font-size:24px;
+	color: #333333;
+	font-weight: bold;
+}
+
+.subtitle { 
+	font-family: Verdana, Arial, Helvetica, sans-serif;
+	font-size:18px;
+	color: #333333;
+	font-weight: bold;
+	text-align: center;
+	margin: 20px;
+}
+
+.subsubtitle { 
+	font-family: Verdana, Arial, Helvetica, sans-serif;
+	font-size:12px;
+	color: #333333;
+	font-weight: bold;
+	text-align: left;
+}
+
+a.button {
+	font-family: Verdana, Arial, Helvetica, sans-serif;
+	font-size: 11px;
+	color: #1B3268;
+	text-decoration: none;
+	border-top: solid 1px #1B3268;
+	border-bottom: solid 1px #1B3268;
+	border-right: solid 1px #1B3268;
+	border-left: solid 1px #1B3268;
+	background-color: #FFFFFF;
+	padding: 2px;
+	font-weight: bold;
+}
+a.button:hover{
+	background-color: #1B3268;
+	color: #FFFFFF;
+}
+
+/* --- form elements --- */
+
+input[type="text"] {
+	border: 1px solid #999999;
+	font-size:11px;
+	font-family: Verdana, Arial, Helvetica, sans-serif;
+	font-weight: normal;
+}
+input {
+	font-size:11px;
+	font-family: Verdana, Arial, Helvetica, sans-serif;
+	font-weight: normal;
+
+}
+input[type="textarea"] {
+	border: 1px solid #999999;
+	font-size:11px;
+	font-family: Verdana, Arial, Helvetica, sans-serif;
+	font-weight: normal;
+}
+textarea {
+	border: 1px solid #999999;
+	font-size:11px;
+	font-family: Verdana, Arial, Helvetica, sans-serif;
+	font-weight: normal;
+
+}
+
+input[type="password"] {
+	border: 1px solid #999999;
+}
+
+input[type="checkbox"] {
+	border: 1px solid #999999;
+}
+
+input[type="select"] {
+	border: 1px solid #999999;
+	font-size:11px;
+	font-family: Verdana, Arial, Helvetica, sans-serif;
+	font-weight: normal;
+}
+
+select  {
+	border: 1px solid #999999;
+	font-size:11px;
+	font-family: Verdana, Arial, Helvetica, sans-serif;
+	font-weight: normal;
+}
+
+/* Editing form */
+
+.formLabel {
+	font-family: Verdana, Arial, Helvetica, sans-serif;
+	font-size:11px;
+	color: #333333;
+	margin-bottom: 5px;
+	font-weight: bold;
+	text-align: left;
+}
+
+.formTab {
+	background-color: #D4DDDC;
+    border-color: #333333;
+    border-style: solid;
+    border-width: 1px 1px 1px 1px;
+    line-height: auto;
+    color: Black;
+    padding: 3px 1em 0 1em;
+    margin: 0;
+    text-align: left;
+    text-transform: lowercase;
+}
+
+.boxHeader {
+	background-color: #DDDDDD;
+	border-top: solid 1px #333333;
+	border-left: solid 1px #333333;
+	border-right: solid 1px #333333;
+	margin: 0;
+	padding: 2px;
+	font-weight: bold;
+	text-align: left;
+}
+
+.formOutline {
+	background-color: #FFFFFF;
+    border: 1px solid #333333;
+    color: #333333;
+    padding: 5px;
+    line-height: auto;
+}
+
+.relatedList {
+	margin: 10px; 
+	border-bottom: dashed 1px #DDDDDD;
+    line-height: auto;
+}
+
+.relatedButtons {
+	margin: 0;
+	float: right;
+	padding: 4px 0px 4px 0px;
+}
+
+.tableList {
+	margin: 10px; 
+	border-bottom: dashed 1px #DDDDDD;
+	position: relative;
+}
+
+.tableListButtons {
+	margin: 0;
+	float: right;
+	padding: 4px 0px 4px 0px;
+}
+
+
+/* Installer status styles */
+.installTaskText {
+	float: left;
+	font-size: 14px;
+	width: 400px;
+}
+
+.installTaskSuccess {
+	font-size: 14px;
+	color: green;
+}
+
+.installTaskFailure {
+	font-size: 14px;
+	color: red;
+}
+
+.installTaskFailureInfo {
+	font-size: 11px;
+	color: #666666;
+}
+
+.profileNotes {
+	font-size: 10px;
+	margin-top: 7px;
+	width: 600px;
+}
+
+a.profileNotes {
+	font-size: 10px;
+	font-weight: bold;
+	color: #000000;
+	text-decoration: underline;
+}
+
+a.profileNotes:hover {
+	font-size: 10px;
+	font-weight: bold;
+	color: #cc0000;
+	text-decoration: underline;
+}
+
+.permissionError {
+	padding: 10px;
+	font-size: 11px;
+	background-color: #dddddd;
+}
+
+.permissionErrorIcon {
+	float: left;
+	padding-right: 5px;
+}

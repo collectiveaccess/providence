@@ -1,0 +1,12 @@
+qt-faststart is a utility that rearranges a Quicktime file such that the moov atom
+is in front of the data, thus facilitating network streaming. If installed on your system
+CollectiveAccess can process incoming Quicktime files with it, allowing video playback of
+Quicktime to start before the entire file is downloaded.
+
+By default CollectiveAccess looks for qt-faststart in /usr/local/bin, but you can change the location
+by modifying the appropriate setting in app/conf/external_applications.conf
+
+The qt-faststart.c source file in this directory must be compiled with gcc or some other C compiler
+before it can be used. If you're on Linux the following should work:
+
+gcc qt-faststart.c -o qt-faststart

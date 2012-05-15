@@ -1,0 +1,12 @@
+Todo:
+-----
+
+1. Complete labeling features - right now they're somewhat buggy and incomplete.
+
+2. Eliminate .fla file containing user interface elements, and migrate to something like SWFMill, or to a completely Actionscript-based interface. Using a .fla file means that if you want to modify certain basic aspects of the user interface (but *not* the core image load and display functionality) you have to have a copy of Adobe Flash 8, which is not free software.
+
+3. Improve tile loading system to better prioritize the loading sequence.
+
+4. Add measurement and scaling features.
+
+5. Ability to zoom into specific labeled regions.

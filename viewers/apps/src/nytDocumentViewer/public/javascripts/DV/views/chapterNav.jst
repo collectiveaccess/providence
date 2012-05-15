@@ -1,0 +1,23 @@
+<div id="DV-chapter-<%= id %>" class="DV-chapter <%= navigationExpanderClass %>">
+  <div class="DV-first">
+    <%= navigationExpander %>
+    <span class="DV-trigger">
+<% if (sectionsAreSelectable) { %>
+      <input type="checkbox" name="selected" value="<%= representation_id %>" <% if (isSelected == 1) { %>checked="1"<% } %> class="DV-chapter-selector-control" />
+<% } %>
+      <span class="DV-navChapterTitle"><%= title %></span>&nbsp;
+<% if (editUrl || downloadUrl) { %>  
+      <div style='float: right;'>
+      	<% if (editUrl) { %>  
+    		<a href='<%= editUrl %>'><%= editButton %></a>
+    	<% } %>
+    	<% if (downloadUrl) { %>  
+  			<a href='<%= downloadUrl %>'><%= downloadButton %></a>
+  		<% } %>
+      </div>
+<% } %>
+      <!--<span class="DV-navPageNumber">p.&nbsp;<%= pageNumber %></span>-->
+    </span>
+  </div>
+  <%= noteViews %>
+</div>

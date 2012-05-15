@@ -1,0 +1,95 @@
+<div class="DV-annotation <%= orderClass %> <%= accessClass %> <% if (owns_note) { %>DV-ownsAnnotation<% } %>" style="top:<%= top %>px;" id="DV-annotation-<%= id %>" data-id="<%= id %>">
+
+  <div class="DV-annotationTab" style="top:<%= tabTop %>px;">
+    <div class="DV-annotationClose DV-trigger">
+      <% if (access == 'exclusive') { %>
+        <div class="DV-annotationDraftDot DV-editHidden"></div>
+      <% } %>
+    </div>
+  </div>
+
+  <div class="DV-annotationRegion" style="margin-left:<%= excerptMarginLeft - 4 %>px; height:<%= excerptHeight %>px; width:<%= excerptWidth - 1 %>px;">
+    <div class="<%= accessClass %>">
+      <div class="DV-annotationEdge DV-annotationEdgeTop"></div>
+      <div class="DV-annotationEdge DV-annotationEdgeRight"></div>
+      <div class="DV-annotationEdge DV-annotationEdgeBottom"></div>
+      <div class="DV-annotationEdge DV-annotationEdgeLeft"></div>
+      <div class="DV-annotationCorner DV-annotationCornerTopLeft"></div>
+      <div class="DV-annotationCorner DV-annotationCornerTopRight"></div>
+      <div class="DV-annotationCorner DV-annotationCornerBottomLeft"></div>
+      <div class="DV-annotationCorner DV-annotationCornerBottomRight"></div>
+    </div>
+    <div class="DV-annotationRegionExclusive"></div>
+  </div>
+
+
+  <div class="DV-annotationContent">
+
+    <div class="DV-annotationHeader DV-clearfix">
+      <div class="DV-pagination DV-editHidden">
+        <span class="DV-trigger DV-annotationPrevious" title="Previous Annotation">Previous</span>
+        <span class="DV-trigger DV-annotationNext" title="Next Annotation">Next</span>
+      </div>
+      <div class="DV-annotationGoto DV-editHidden"><div class="DV-trigger">p. <%= pageNumber %></div></div>
+      <div class="DV-annotationTitle DV-editHidden"><%= title %></div>
+      <input class="DV-annotationTitleInput DV-editVisible" type="text" placeholder="Annotation Title" value="<%= title.replace(/"/g, '&quot;') %>" />
+      <% if (access == 'exclusive') { %>
+        <div class="DV-annotationDraftLabel DV-editHidden DV-interface">Draft</div>
+      <% } else if (access == 'private') { %>
+        <div class="DV-privateLock DV-editHidden" title="Private note"></div>
+      <% } %>
+      <span class="DV-permalink DV-editHidden" title="Link to this note"></span>
+      <div class="DV-showEdit DV-editHidden <%= accessClass %>"></div>
+    </div>
+
+
+    <div class="DV-annotationExcerpt" style="height:<%= excerptHeight %>px;">
+      <div class="DV-annotationExcerptImageTop" style="height:<%= excerptHeight %>px; width:<%= excerptWidth %>px;left:<%= excerptMarginLeft - 1 %>px;">
+
+        <img class="DV-img" src="<%= image %>" style="left:<%= -(excerptMarginLeft + 1) %>px; top:-<%= imageTop %>px;" width="<%= imageWidth %>" />
+
+      </div>
+      <div class="DV-annotationExcerptImage" style="height:<%= excerptHeight %>px;">
+        <img class="DV-img" src="<%= image %>" style="top:-<%= imageTop %>px;" width="<%= imageWidth %>" />
+      </div>
+    </div>
+
+    <div class="DV-annotationBody DV-editHidden">
+      <%= text %>
+    </div>
+    <textarea class="DV-annotationTextArea DV-editVisible" style="width: <%= bWidth %>px;"><%= text %></textarea>
+
+    <div class="DV-annotationMeta <%= accessClass %>">
+      <% if (author) { %>
+        <div class="DV-annotationAuthor DV-interface DV-editHidden">
+          Annotated by: <%= author %><% if (author_organization) { %>, <i><%= author_organization %></i><% } %>
+        </div>
+      <% } %>
+      <% if (access == 'exclusive') { %>
+        <div class="DV-annotationWarning DV-interface DV-editHidden">
+          This draft is only visible to you and collaborators.
+        </div>
+      <% } else if (access == 'private') { %>
+        <div class="DV-annotationWarning DV-interface DV-editHidden">
+          This private note is only visible to you.
+        </div>
+      <% } %>
+      <div class="DV-annotationEditControls DV-editVisible">
+        <div class="DV-clearfix">
+          <div class="minibutton warn DV-deleteAnnotation float_left">Delete</div>
+          <div class="minibutton default DV-saveAnnotation float_right">
+            <% if (access == 'exclusive') { %>
+              Publish
+            <% } else { %>
+              Save
+            <% } %>
+          </div>
+          <% if (access == 'public' || access == 'exclusive') { %>
+            <div class="minibutton DV-saveAnnotationDraft float_right">Save as Draft</div>
+          <% } %>
+          <div class="minibutton DV-cancelEdit float_right">Cancel</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

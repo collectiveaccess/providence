@@ -1,0 +1,221 @@
+0   = No error
+
+# --- Database errors
+200 = Couldn't connect to database
+201 = Database does not exist
+202 = Couldn't close database connection
+205 = No connection in place
+207 = Access denied to database
+208 = No database selected
+210 = Database does not support transactions
+211 = Maximum number of nested transactions exceeded
+212 = Database does not support LIMIT'ing
+213 = Database does not support numRows()
+220 = Not in a transaction
+230 = Must specify a table name
+231 = Must specify columns for table
+240 = No query specified
+242 = Cannot create database item
+243 = Cannot drop database item
+244 = Database already exists
+245 = Database item already exists
+250 = Invalid SQL statement
+251 = The information already exists
+255 = End of result set reached
+260 = Seek failed
+265 = Table lock failed
+266 = Table unlock failed
+280 = Couldn't get table metadata
+282 = Table does not exist
+283 = Field does not exist
+284 = Database object does not exist
+285 = Invalid query parameters
+288 = Column count doesn't match value count
+290 = Constraint violation
+291 = Column cannot be null
+295 = Could not load database driver
+        
+# --- Application variable errors
+300 = Could not load application variables
+305 = Could not save application variables
+
+# --- Security errors
+400 = Operation failed; mode violation
+410 = Not allowed to use service
+
+# --- Task queue errors
+500 = Invalid task queue handler
+503 = Could not insert task queue record
+504 = Could not copy input file
+505 = Input file does not exist
+506 = Permission denied to input file
+507 = No file tmp directory is configured
+510 = No handler directory is configured
+515 = Error while closing task record
+550 = Could not process media; invalid table
+551 = Could not process media; invalid field
+560 = Could not cancel tasks
+570 = File does not exist
+580 = Could not connect to FTP server
+581 = Could not login to FTP server
+
+
+# --- Database object errors
+700 = Mode is invalid or not supported
+701 = Language is invalid or not supported
+705 = Can't set identity field
+710 = Property does not exist
+715 = Table does not exist
+716 = Field does not exist
+717 = No relation exists between tables
+720 = Related row does not exist
+750 = Record does not exist
+760 = Mandatory values are missing
+765 = Can't save empty object
+770 = Can't delete empty object
+780 = Record can't be deleted because it is in use
+790 = Record can't be deleted because it has sub-records
+795 = Data has been changed since load
+
+# --- Web sessions/auth errors
+800 = Couldn't add session_id to database
+
+# --- User errors
+900 = User does not exist
+901 = User already exists
+920 = Invalid preference
+921 = Invalid preference value
+930 = Couldn't add user role
+931 = Couldn't remove user role
+935 = Couldn't add user to group
+936 = Couldn't remove user from group
+940 = Role is invalid
+945 = Group does not exist
+950 = Group administrator does not exist
+960 = Can't delete system role
+
+# --- Auth errors
+1000 = Login failed
+1050 = Passwords do not match. Try again.
+
+# --- Content object errors
+1100 = Invalid input
+1101 = Value is out of bounds
+1102 = Length of input is out of bounds
+1103 = Value is not in choice list
+1104 = URL is invalid
+1105 = Date is invalid
+1125 = Label already exists
+1130 = Label must be set
+
+# --- Table editor errors
+1210 = Type is in use
+1220 = Invalid table parameter
+1230 = Parent must be specified
+1240 = Invalid table specification
+
+# --- File errors
+1500 = File not found
+
+# --- Media errors
+1600 = File type is not supported for this field
+1605 = File type is not supported
+1610 = Plug-in error
+1650 = Invalid property
+1655 = Invalid transformation
+1660 = External application configuration file could not be loaded
+1665 = External application is not installed
+
+# --- Search engine errors
+1700 = Specified search index is invalid
+1710 = Invalid search input
+
+# --- Date parsing errors
+1800 = No date to parse
+1805 = Invalid date
+1810 = Invalid time
+1815 = Invalid parse state
+1820 = Start date must be before end date
+1830 = Date is outside Unix timestamp domain
+
+# --- Metadata attribute errors
+1910 = Value does not belong to this element
+1920 = Rule does not exist
+1930 = Element is not root of element set
+1950 = Element does not exist
+1960 = Can't apply metadata attribute to this record; it does not exist
+1965 = Can't add attribute
+1966 = Can't edit attribute
+1967 = Can't delete attribute
+1969 = Invalid attribute_id
+1970 = Invalid attribute value
+1971 = Can't set attribute settings
+1972 = Can't add value to attribute
+1973 = Can't update attribute value
+1972 = Can't delete attribute
+1980 = Can't add element to restriction list
+1981 = Can't remove element from restriction list
+
+# --- Hierarchical processing errors
+2010 = Circular reference
+2020 = Could not create hierarchy root
+2030 = Could not update hierarchical indexing for sub-records
+2035 = Invalid attempt to set parent id to NULL
+2040 = Could not load parent record
+2045 = Parent record had invalid hierarchical indexing
+
+# --- PrintForm errors
+2200 = Form configuration file does not exist
+2210 = Form styles configuration file does not exist
+2220 = Form does not exist
+2230 = Invalid page element type
+2240 = Invalid subform element type
+2250 = Page element does not exist
+2255 = Subform element does not exist
+2260 = Could not load font
+2270 = Could not load image
+2275 = Invalid class
+2280 = Outline settings are invalid
+
+# --- Request dispatch errors
+2300 = Invalid controller path
+2310 = Action is not defined
+2320 = Access denied
+
+# --- View errors
+2400 = View does not exist
+
+# --- Editor errors
+2500 = Invalid item id
+2510 = Invalid type id
+2520 = Can't set type id after item is created
+2550 = Item has been deleted
+2560 = Item is not correct type
+
+# --- Object representation errors
+2700 = Could not update primary flag for representation
+2710 = No media specified for new representation
+2720 = File is not part of representation
+
+# --- User commenting/tagging errors
+2800 = Comment does not exist
+2810 = Comment is not part of current row
+2820 = Comment was not created by specified user
+2830 = Locale for tag must be set
+
+# --- Browse engine errors
+2900 = Invalid criteria
+2910 = Could not update browse cache
+
+# --- XML media plugin errors
+3000 = XML files does not exist
+3005 = File is not an XML document
+3010 = XML files does not specify a schema
+3015 = Specified XML schema is not available
+3020 = Validation of file failed
+
+# --- Generic application plugin errors
+3000 = Access denied
+
+# --- Summary printing errors
+3100 = Could not generate PDF

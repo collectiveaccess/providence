@@ -1,0 +1,37 @@
+/* ========== */
+/* = Header = */
+/* ========== */
+
+.DV-docViewer .DV-narrowControls .DV-searchBar {
+  right: 16px;
+}
+
+.DV-docViewer .DV-narrowControls .DV-searchInput {
+  width: 80px;
+}
+
+/* ================== */
+/* = Page Container = */
+/* ================== */
+
+.DV-autoZoom .DV-textPage {
+  margin-left: 35px;
+}
+
+.DV-autoZoom .p0,
+.DV-autoZoom .p1,
+.DV-autoZoom .p2 {
+  padding-left: 35px;
+}
+
+/* ================= */
+/* = Page Elements = */
+/* ================= */
+
+.DV-autoZoom .DV-pageNumber,
+.DV-autoZoom .DV-textCurrentPage {
+  text-align: center;
+  width: 30px;
+  padding-left: 0px;
+}
+

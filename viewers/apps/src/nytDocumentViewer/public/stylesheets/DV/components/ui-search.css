@@ -1,0 +1,236 @@
+.DV-searchPagination{
+  text-align:center;
+  float:none;
+  display:inline;
+  color:#666;
+  text-decoration:uppercase;
+  background-color:#fff;
+  font-family:Arial,Helvetica,sans-serif;
+  line-height: 22px;
+}
+
+.DV-searchBox.DV-clearfix {
+  position: absolute;
+  right: 8px; top: 7px;
+  display: none;
+}
+
+.DV-docViewer .DV-searchBox {
+  display: none;
+  position: static;
+  float: right;
+/*  width: 255px;*/
+  margin: 6px 6px 0 0;
+}
+
+.DV-docViewer.DV-searchable .DV-searchBox {
+  display:inline;
+}
+
+.DV-docViewer .DV-searchInput {
+  display: block;
+  border: 1px solid #777;
+  font-family: Arial;
+  margin: 2px 5px 0 0;
+  padding: 4px 20px 3px;
+  width:210px;
+  font-size: 11px;
+  line-height: 14px;
+  background: #FFF url(../../../images/DV/embed/search_icon.png) no-repeat 5px 5px;
+  outline: none;
+}
+
+.DV-searchInput[type="search"] {
+  margin: 4px 10px 0 0;
+}
+.DV-searchInput.placeholder {
+  color: #A0A0A0;
+}
+
+.DV-searchInput:focus{
+  border:1px solid #aaa;
+}
+
+.DV-searchInputWrap {
+  position: relative;
+}
+
+.DV-searchInput{
+  float: left;
+  display: block;
+}
+
+.DV-searchDocument .DV-searchInput-cancel {
+  visibility: hidden;
+  position: absolute;
+  right: 12px;
+  top: 8px;
+  background: transparent url(../../../images/DV/embed/close.png) no-repeat 0 0;
+  width: 11px;
+  height: 11px;
+  cursor: pointer;
+  z-index: 5;
+}
+  .DV-ie .DV-searchDocument .DV-searchInput-cancel {
+    top: 7px;
+  }
+
+.DV-searchDocument .DV-searchInputWrap.DV-searchInput-show-search-cancel .DV-searchInput-cancel {
+  visibility: visible;
+}
+
+.DV-searchBarWrapper {
+  position: absolute;
+  width: 100%;
+  z-index:10002;
+}
+
+.DV-searchBar{
+  position: absolute;
+  top: 0px; left: 0px; right: 282px;
+  height: 50px;
+  background: url(../../../images/DV/embed/shadow.png) repeat-x 0 bottom;
+  font-family: Arial,Helvetica,sans-serif;
+  display: none;
+}
+  .DV-hideSidebar .DV-searchBar {
+    right: 15px;
+  }
+  
+.DV-hideFooter .DV-footer {
+  display: none;
+}
+
+.DV-searchBar ::selection {
+  background: transparent;
+}
+
+.DV-searchBar ::-moz-selection {
+  background: transparent;
+}
+
+.DV-searchMatch{
+  background-color:#f5f5e5;
+  -moz-box-shadow: 0 1px 5px #999;
+  -webkit-box-shadow: 0 1px 5px #999;
+  padding: 1px;
+  border:1px solid #ffa;
+  color:#000;
+}
+
+.DV-highlightedMatch{
+  background: #f1e90f url(../../../images/DV/embed/highlight.gif) repeat-x 0 bottom;
+  padding: 3px 3px 2px;
+  -moz-border-radius: 3px;
+  background-color:#fff;
+  -moz-border-radius: 3px;
+  -webkit-border-radius: 3px;
+  -moz-box-shadow: 0 0 5px #666;
+  -webkit-box-shadow: 0 0 5px #666;
+  border: 1px solid #f5e800;
+  padding: 1px;
+  color:#000;
+}
+
+.DV-closeSearch{
+  float:right;
+  display:inline;
+  margin: 16px 15px 0 0;
+  font-size: 10px;
+  color:#777;
+  text-decoration:none;
+}
+
+.DV-resultPrevious,
+.DV-resultNext{
+  text-decoration:none;
+}
+
+.DV-closeSearch:hover,
+.DV-resultPrevious:hover,
+.DV-resultNext:hover{
+  text-decoration:underline;
+}
+
+.DV-noResult .DV-resultPrevious,
+.DV-noResult .DV-resultNext{
+  display:none;
+}
+
+.DV-foundResult .DV-resultPrevious,
+.DV-foundResult .DV-resultNext{
+  display:inline;
+}
+
+.DV-resultPrevious{
+  padding-left:19px;
+  padding-right:8px;
+  font-size:10px;
+  font-weight:bold;
+  text-transform:uppercase;
+  border-right:1px solid #ccc;
+  margin-right:10px;
+}
+
+.DV-resultNext{
+  padding-left:8px;
+  padding-right:19px;
+  font-size:10px;
+  font-weight:bold;
+  text-transform:uppercase;
+  border-left:1px solid #ccc;
+  margin-left:10px;
+}
+
+.DV-searchResults span{
+  font-weight:bold;
+  font-size:11px;
+  color:#000;
+}
+
+.DV-searchResults{
+  margin: 10px auto;
+  padding-left:45px;
+  text-align:center;
+  width:auto;
+}
+.DV-searchResults.DV-noResults .DV-resultPrevious,
+.DV-searchResults.DV-noResults .DV-resultNext{
+  display:none;
+}
+
+span.DV-searchItem{
+  background-color:#fff;
+  border:1px solid #bababa;
+  padding: 2px 1px;
+}
+
+span.DV-highlighted{
+  background-color:#fff;
+  border:1px solid #bababa;
+  padding: 2px 1px;
+  -moz-border-radius: 2px;
+  -webkit-border-radius: 2px;
+}
+
+.DV-textSearch{
+  display:none;
+}
+
+.DV-searchingText .DV-textSearch{
+  position:absolute;
+  display:block;
+  top:0;
+  left:0;
+  width:300px;
+  height:25px;
+  background-color:#fff;
+  opacity:.8;
+  -ms-filter:"progid:DXImageTransform.Microsoft.Alpha(Opacity=80)";
+  filter: alpha(opacity=80);
+  border-bottom:1px solid #ddd;
+}
+
+.DV-searchBox.DV-hide {
+  display: none !important;
+}

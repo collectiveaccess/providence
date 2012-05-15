@@ -1,0 +1,123 @@
+.DV-docViewer{
+  position: relative;
+  text-align: left;
+  line-height: normal;
+}
+
+.DV-docViewer-Container{
+  position:absolute;
+  top: 38px; bottom: 33px; left: 0px; right: 0px;
+  margin: 0;
+  overflow: hidden;
+  border: 1px solid #aaa; border-left: 0; border-right: 0;
+}
+
+.DV-printMessage {
+  display: none;
+}
+
+.DV-docViewer-Container.DV-hide-header{
+  top: 0;
+}
+.DV-hideFooter .DV-docViewer-Container {
+  bottom: 0;
+}
+.DV-hideFooter .DV-footer {
+  display: none;
+}
+
+.DV-bar{
+  width:1px;
+}
+
+.DV-docViewer table{
+  border-collapse:collapse;
+  position:relative;
+}
+
+.DV-docViewer td{
+  position:relative;
+  vertical-align:top;
+}
+
+.DV-allAnnotations {
+  padding: 0 32px;
+}
+
+.DV-well{
+  position:absolute;
+  top: 0; right: 0;
+  width: 265px; height: 100%;
+  border-left:1px solid #aaa;
+  overflow-y: auto; overflow-x: hidden;
+  background: white;
+}
+
+.DV-sidebarSpacer {
+  height: 10px;
+}
+
+.DV-well .DV-navControls{
+  background-color: #fff;
+  background-repeat: repeat-x;
+  background-image: url(../../../images/DV/embed/shadow-white.gif);
+}
+
+.DV-pages{
+  overflow: auto;
+  position: absolute;
+  left: 0; right: 266px; top: 0; bottom: 0;
+  z-index:10001;
+}
+
+.DV-pageCollection{
+  margin: 20px auto;
+  position:relative;
+  z-index:0;
+}
+
+.DV-pageCollection{
+  cursor: -moz-grab;
+  cursor: -webkit-grab;
+  cursor: grab;
+}
+
+.DV-pageCollection.DV-dragging {
+  cursor: -moz-grabbing;
+  cursor: -webkit-grabbing;
+  cursor: grabbing;
+}
+
+.DV-loadingDocument {
+  margin-top: 10px;
+  text-align:center;
+}
+
+.DV-loadingDocument span{
+  font-family:Arial,Helvetica,sans-serif;
+  font-weight:normal;
+  font-size:12px;
+  color:#666;
+  padding:10px;
+  font-style:oblique;
+  padding-left:24px;
+  margin: 10px auto;
+  background:url(../../../images/DV/embed/spinner.gif) no-repeat left 8px;
+}
+
+.DV-loadingDocument strong{
+  font-weight:normal;
+  color:#666;
+}
+
+.DV-sidebar.DV-hide {
+  display: none !important;
+}
+
+.DV-pages.DV-hide-sidebar {
+  right: 0;
+}
+
+.DV-interface {
+  font-family: "Lucida Grande", "Lucida Sans Unicode", Helvetica, Arial, sans-serif !important;
+}

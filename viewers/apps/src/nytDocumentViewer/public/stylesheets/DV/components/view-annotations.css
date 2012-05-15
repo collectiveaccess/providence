@@ -1,0 +1,109 @@
+.DV-viewAnnotations .DV-set,
+.DV-viewAnnotations .DV-text,
+.DV-viewAnnotations .DV-search,
+.DV-viewAnnotations .DV-bar{
+  display:none;
+}
+
+.DV-viewAnnotations .DV-allAnnotations,
+.DV-viewAnnotations .DV-annotationContent{
+  display:block;
+}
+
+.DV-viewAnnotations .DV-annotationRegion{
+  position: absolute;
+  left: -10000px;
+  width: 0; height: 0;
+}
+
+.DV-viewAnnotations .DV-annotationTab{
+
+  filter:none;
+  display:none !important;
+}
+
+.DV-viewAnnotations .DV-annotationGoto{
+  display:inline;
+}
+
+.DV-viewAnnotations .DV-pageNoteAnnotationTab{
+  display:none;
+}
+
+.DV-viewAnnotations .DV-annotationNext,
+.DV-viewAnnotations .DV-annotationPrevious{
+  display:none !important;
+}
+
+.DV-viewAnnotations .DV-annotationBG{
+  margin-top:0;
+  position:relative;
+  clear:left;
+}
+
+.DV-viewAnnotations .DV-annotation,
+.DV-getHeights .DV-annotation {
+  position:relative;
+  top:0 !important;
+  display: inline-block;
+  margin: 0 auto 25px;
+
+  background: #ffe300;
+
+  -webkit-border-radius:4px;
+  -moz-border-radius:4px;
+  border-radius:4px;
+
+  -webkit-box-shadow: 1px 1px 3px rgb(0,0,0);
+  -webkit-box-shadow: 1px 1px 3px rgba(0,0,0,.2);
+
+  -moz-box-shadow: 1px 1px 3px rgb(0,0,0);
+  -moz-box-shadow: 1px 1px 3px rgba(0,0,0,.2);
+
+  box-shadow: 1px 1px 3px rgb(0,0,0);
+  box-shadow: 1px 1px 3px rgba(0,0,0,.2);
+}
+.DV-viewAnnotations .DV-annotation.DV-accessPrivate {
+  background: rgb(107, 194, 248);
+  background: rgba(107, 194, 248, .9);
+}
+
+/*hack to control scrollbar width in webkit*/
+.DV-viewAnnotations .DV-annotation:after {
+    content: ".";
+    display: block;
+    height: 0;
+    clear: both;
+    visibility: hidden;
+}
+
+/* Hides from IE-mac \*/
+* html .DV-viewAnnotations .DV-annotation {height: 1%;}
+.DV-viewAnnotations .DV-annotation {display: block;}
+/* End hide from IE-mac */
+
+.DV-viewAnnotations .DV-currentPagePrefix,
+.DV-viewAnnotations .DV-totalPages{
+  display:none;
+}
+
+.DV-viewAnnotations .DV-currentAnnotationPrefix,
+.DV-viewAnnotations .DV-totalAnnotations{
+  display:inline;
+}
+
+
+.DV-ie .DV-viewAnnotations .DV-annotationLabel {
+  float:none;
+  left:0;
+  position:absolute;
+  top:7px;
+}
+
+.DV-viewAnnotations .DV-noChildren{
+  display:none !important;
+}
+
+.DV-viewAnnotations .DV-hasChildren{
+  display:block !important;
+}

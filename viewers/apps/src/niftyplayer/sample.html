@@ -1,0 +1,146 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en-US" xml:lang="en-US">
+
+	<head>
+			<title>Sample</title>
+			<link rel="stylesheet" type="text/css" href="main.css" />
+			<script type="text/javascript" language="javascript" src="niftyplayer.js"></script>
+	</head>
+	<body>
+
+		<h1>niftyPlayer 1.7</h1>
+
+		<ol>
+			<li>
+				<h2>The player</h2>
+
+				<object classid="clsid:D27CDB6E-AE6D-11cf-96B8-444553540000" codebase="http://download.macromedia.com/pub/shockwave/cabs/flash/swflash.cab#version=6,0,0,0" width="165" height="37" id="niftyPlayer1" align="">
+				 <param name=movie value="niftyplayer.swf?file=betty.mp3&as=0">
+				 <param name=quality value=high>
+				 <param name=bgcolor value=#FFFFFF>
+				 <embed src="niftyplayer.swf?file=betty.mp3&as=0" quality=high bgcolor=#FFFFFF width="165" height="37" name="niftyPlayer1" align="" type="application/x-shockwave-flash" swLiveConnect="true" pluginspage="http://www.macromedia.com/go/getflashplayer">
+				</embed>
+				</object>
+			</li>
+
+			<li>
+				<h2>And JavaScriptable!!</h2>
+				<p>This is <b>not required</b>, but nice to have:</p>
+
+				<a href="javascript:niftyplayer('niftyPlayer1').playToggle()">play toggle</a>
+				(or
+				<a href="javascript:niftyplayer('niftyPlayer1').play()">play</a>
+				|
+				<a href="javascript:niftyplayer('niftyPlayer1').pause()">pause</a>
+				)
+				<a href="javascript:niftyplayer('niftyPlayer1').stop()">stop</a>
+				<br />
+				<a href="javascript:niftyplayer('niftyPlayer1').load('betty.mp3')">load file 1</a>
+				|
+				<a href="javascript:niftyplayer('niftyPlayer1').load('creeeeak.mp3')">load file 2</a>
+				|
+				<a href="javascript:niftyplayer('niftyPlayer1').loadAndPlay('creeeeak.mp3')">load file 2 and play it</a>
+				<br />
+				<br />
+				<a href="javascript:niftyplayer('niftyPlayer1').registerEvent('onPlay', 'alert(\'Playing!\')')">register onPlay event</a> (then click the play button to see the result)
+				<br />
+				<a href="javascript:alert(niftyplayer('niftyPlayer1').getState())">get current file state</a>
+
+			</li>
+
+			<li>
+				<h2>Upsides</h2>
+				<ol>
+					<li>Small (~4kb)</li>
+					<li>Free, open-source</li>
+					<li>No Flash knowledge required: file URL is specified in HTML</li>
+					<li>JavaScript-ready! You may even bypass the Flash interface altogether!</li>
+					<li>Autostart capability</li>
+					<li>Draggable/Clickable seek bar</li>
+					<li>Simple operation with Play/Pause and Stop buttons</li>
+					<li>Buffering with progress bar</li>
+					<li>Buffering is stoppable! (through Stop button)</li>
+					<li>Volume control</li>
+					<li>Very verbal</li>
+					<li>Retries upon encountering errors</li>
+				</ol>
+			</li>
+
+			<li>
+				<h2>Downsides</h2>
+				<ol>
+					<li>No playlist capability (<a href="flashmp3alizer.html">but can be done in JavaScript!</a>)</li>
+					<li>No photo-slideshow or video capability</li>
+					<li>Sound must be MP3 (flash limitation)</li>
+					<li>I'm sure there's more, but I can't really think of any other. But, hey, did I mention it's open-source? You can always change the code :)</li>
+				</ol>
+			</li>
+
+			<li>
+				<h2>Usage</h2>
+				<p>Copy and paste the code below into your HTML file, then replace all values in red accordingly.</p>
+				<pre>
+&lt;object classid="clsid:D27CDB6E-AE6D-11cf-96B8-444553540000" codebase="http://download.macromedia.com/pub/shockwave/cabs/flash/swflash.cab#version=6,0,0,0" <font color="blue">width="165" height="38"</font> id="niftyPlayer1" align=""&gt;
+  &lt;param name=movie value="niftyplayer.swf?<font color="red">file=betty.mp3</font>&<font color="red">as=1</font>"&gt;
+  &lt;param name=quality value=high&gt;
+  &lt;param name=bgcolor value=#FFFFFF&gt;
+  &lt;embed src="niftyplayer.swf?<font color="red">file=betty.mp3</font>&<font color="red">as=1</font>" quality=high bgcolor=#FFFFFF <font color="blue">width="165" height="38"</font> name="niftyPlayer1" align="" type="application/x-shockwave-flash" pluginspage="http://www.macromedia.com/go/getflashplayer"&gt;
+  &lt;/embed&gt;
+&lt;/object&gt;</pre>
+
+				<p>If you'd like to use the JS extension, include the code below in your HTML file (it usually goes inside the <code>head</code> section). You may set the height and width of the Flash (in blue, above) to 0 to make it disappear -- or use CSS, alternatively.</p>
+
+				<pre>&lt;script type="text/javascript" language="javascript" src="niftyplayer.js"&gt;&lt;/script&gt;</pre>
+
+				<p>Also, you may want to check out the <a href="flashmp3alizer.html">FlashMP3alizer script</a> too.
+			</li>
+
+			<li>
+				<h2>Reference</h2>
+				<table cellpadding="10">
+					<tr>
+						<th align="left">Parameter
+						</th>
+						<th align="left">Explanation
+						</th>
+					</tr>
+					<tr>
+						<td><code>file=betty.mp3</code>
+						</td>
+						<td>substitute betty.mp3 for the file you want to play
+						</td>
+					</tr>
+					<tr>
+						<td><code>as=1</code>
+						</td>
+						<td>this specifies whether you want the file to auto-start playing. you may ommit <code>as</code> if you don't want it to auto-start.
+						</td>
+					</tr>
+				</table>
+			</li>
+
+			<li>
+				<h2>Download</h2>
+				<a href="niftyplayer.zip">zip file</a>
+			</li>
+
+			<li>
+				<h2>License</h2>
+				<p>This script is licensed under the <a href="http://www.opensource.org/licenses/mit-license.php">MIT License</a>, which, to put it in non-legal terms, allows you to share, use and modify it. Even for commercial purposes. Check out the <a href="http://en.wikipedia.org/wiki/Mit_license">Wikipedia article</a> on this license for more.</p>
+			</li>
+
+			<li>
+				<h2>Acknowldgements</h2>
+				<p>Part of the JavaScript code was pretty much copied from this website <a href="http://www.moock.org/webdesign/flash/fscommand/">http://www.moock.org/webdesign/flash/fscommand/</a>. They offer a great explanation of Flash/Javascript interoperation.</p>
+			</li>
+
+			<li>
+				<h2>News</h2>
+					<p>Version 1.7 is out: Bug-fix release. Introduces the <code>getState()</code> JavaScript function.</p>
+					<p>Now with "News" section!</p>
+			</li>
+
+		</ol>
+
+	</body>
+</html>

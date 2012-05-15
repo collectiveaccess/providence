@@ -1,0 +1,62 @@
+.DV-zoomControls{
+  font-family:Arial,Helvetica,sans-serif;
+  font-size:11px;
+  float: right;
+  margin: 7px 20px 0 0;
+  position: relative;
+}
+  .DV-narrowControls .DV-zoomControls {
+    margin-right: 15px;
+  }
+
+.DV-zoomLabel{
+  color: #333;
+  display:inline;
+  float:left;
+  font-family:Arial,Helvetica,sans-serif;
+  font-size:11px;
+  padding:3px 16px 0 0;
+  margin: 3px 0 0 6px;
+  position:relative;
+}
+
+.DV-zoomBox{
+  background: url(../../../images/DV/embed/bar.png) repeat-x 0 88%;
+  height:20px;
+  width:85px;
+  float: left;
+  position:relative;
+  cursor: pointer;
+}
+  .DV-narrowControls .DV-zoomBox {
+    background: url(../../../images/DV/embed/bar_small.png) repeat-x 0 88%;
+    width:49px;
+  }
+
+.DV-zoomBox .ui-slider-handle{
+  height:12px;
+  width:12px;
+  position:absolute;
+  left:0;
+  top:0;
+  margin-top:5px;
+  margin-left:-5px;
+  background: transparent url(../../../images/DV/embed/slider.png) no-repeat 0 0;
+  outline: none;
+}
+
+.DV-zoomControls .DV-trigger{
+  font-size:11px;
+  text-decoration:none;
+  font-family:Arial,Helvetica,sans-serif;
+  color:#004276;
+}
+
+.DV-triggers .DV-selected{
+  font-weight:bold;
+  color:#000;
+}
+
+.DV-zoomControls.DV-hide {
+  display: none !important;
+}

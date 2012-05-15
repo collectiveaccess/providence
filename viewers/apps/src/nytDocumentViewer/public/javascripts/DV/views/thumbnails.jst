@@ -1,0 +1,15 @@
+<% for (; page <= endPage; page++) { %>
+  <% var url = pageList[page-1]['thumbnail_url'] ? pageList[page-1]['thumbnail_url'] : imageUrl.replace(/\{page\}/, page); %>
+  <div class="DV-thumbnail" id="DV-thumbnail-<%= page %>" data-pageNumber="<%= page %>">
+    <div class="DV-overlay">
+      <div class='DV-caret'></div>
+    </div>
+    <div class="DV-thumbnail-page">
+      <div class="DV-thumbnail-select">
+        <div class="DV-thumbnail-shadow"></div>
+        <img class="DV-thumbnail-image" data-src="<%= url %>" />
+      </div>
+      <div class="DV-pageNumber DV-pageMeta"><span class="DV-pageNumberText"><span class="DV-pageNumberTextUnderline">p. <%= page %></span></span></div>
+    </div>
+  </div>
+<% } %>

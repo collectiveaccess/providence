@@ -1,0 +1,76 @@
+<?xml version="1.0" encoding="utf-8"?>
+<statistics>
+	<universe>loans</universe>
+	<statistics_group>
+		<title>Types</title>
+		<statistic>
+			<id>1</id>
+			<title>Loan distribution by types</title>
+			<comment></comment>	
+			<sql>select ca_l_i.item_value as "loan type", count(*) as "number" from ca_loans ca_lo left join ca_list_items ca_l_i on ca_lo.type_id=ca_l_i.item_id and ca_l_i.parent_id is not null left join ca_lists ca_l on ca_l.list_id=ca_l_i.list_id group by ca_l_i.item_id order by 2 desc</sql>
+			<columns>loan type,number</columns>
+			<total_columns>number</total_columns>
+			<charting>pie</charting>
+			<charting_columns>loan type,number</charting_columns>
+		</statistic>
+	</statistics_group>
+	<statistics_group>
+		<title>Creations</title>
+		<statistic>
+			<id>2</id>
+			<title>Loan creation by month this year</title>	
+			<comment></comment>	
+			<sql>SELECT year(FROM_UNIXTIME(cal.log_datetime)) AS year, monthname(FROM_UNIXTIME(cal.log_datetime)) as month, concat(count(DISTINCT logged_row_id)) as creation FROM `ca_change_log` cal where cal.logged_table_num=133 and changetype="I" and year(NOW()) = year(FROM_UNIXTIME(cal.log_datetime)) GROUP BY year,month ORDER BY year,month(FROM_UNIXTIME(cal.log_datetime))</sql>
+			<columns>year,month,creation</columns>
+			<total_columns>creation</total_columns>			
+			<charting>column</charting>
+			<charting_columns>month,creation</charting_columns>
+		</statistic>
+		<statistic>
+			<id>3</id>
+			<title>Loan creation by month last year</title>	
+			<comment></comment>	
+			<sql>SELECT year(FROM_UNIXTIME(cal.log_datetime)) AS year, monthname(FROM_UNIXTIME(cal.log_datetime)) as month, concat(count(DISTINCT logged_row_id)) as creation FROM `ca_change_log` cal where cal.logged_table_num=133 and changetype="I" and year(NOW()) - 1 = year(FROM_UNIXTIME(cal.log_datetime)) GROUP BY year,month ORDER BY year,month(FROM_UNIXTIME(cal.log_datetime))</sql>
+			<columns>year,month,creation</columns>
+			<total_columns>creation</total_columns>			
+			<charting>column</charting>
+			<charting_columns>month,creation</charting_columns>
+		</statistic>
+	</statistics_group>
+	<statistics_group>
+		<title>Access and status</title>
+		<statistic>
+			<id>4</id>
+			<title>Loans by status</title>	
+			<comment></comment>	
+			<sql>SELECT ca_li.idno as Status, count(loan_id) as Number FROM ca_loans LEFT JOIN ca_list_items ca_li ON ca_li.item_value = status LEFT JOIN ca_lists ca_l ON ca_li.list_id=ca_l.list_id WHERE ca_l.list_code='workflow_statuses' and ca_li.item_value!="Root" group by ca_li.item_value</sql>
+			<columns>Status,Number</columns>
+			<total_columns>Number</total_columns>			
+			<charting>column</charting>
+			<charting_columns>Status,Number</charting_columns>
+		</statistic>
+		<statistic>
+			<id>5</id>
+			<title>Loans by access</title>	
+			<comment></comment>	
+			<sql>SELECT ca_li.idno as Access, count(loan_id) as Number FROM ca_loans LEFT JOIN ca_list_items ca_li ON ca_li.item_value = access LEFT JOIN ca_lists ca_l ON ca_li.list_id=ca_l.list_id WHERE ca_l.list_code='access_statuses' and ca_li.item_value!="Root" group by ca_li.item_value</sql>
+			<columns>Access,Number</columns>
+			<total_columns>Number</total_columns>			
+			<charting>column</charting>
+			<charting_columns>Access,Number</charting_columns>
+		</statistic>
+	</statistics_group>
+	<statistics_group>
+		<title>Deleted loans</title>
+		<statistic>
+			<id>6</id>
+			<title>Deleted loans</title>	
+			<comment></comment>	
+			<sql>SELECT IF(deleted>0,"yes","no") as "Deleted", count(loan_id) as Number FROM ca_loans GROUP BY deleted</sql>
+			<columns>Deleted,Number</columns>
+			<total_columns>Number</total_columns>			
+			<charting>column</charting>
+			<charting_columns>Deleted,Number</charting_columns>
+		</statistic>
+	</statistics_group>	
+</statistics>

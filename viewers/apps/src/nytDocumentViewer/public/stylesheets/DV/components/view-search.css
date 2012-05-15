@@ -1,0 +1,45 @@
+.DV-viewSearch .DV-pageCollection{
+  cursor: text;
+}
+
+.DV-viewSearch .DV-allAnnotations,
+.DV-viewSearch .DV-bar{
+  display:none;
+}
+
+.DV-viewSearch .DV-search,
+.DV-viewSearch .DV-searchBar{
+  display:block;
+}
+
+.DV-viewSearch .DV-totalAnnotations,
+.DV-viewSearch .DV-currentAnnotationPrefix{
+  display:none;
+}
+
+.DV-viewSearch .DV-textPage{
+  margin-top:50px;
+}
+
+.DV-viewSearch .DV-textCurrentPage{
+  top:60px;
+}
+
+.DV-viewSearch .DV-sidebar .DV-well .DV-chaptersContainer div.DV-hasChildren div,
+.DV-viewSearch .DV-sidebar .DV-well .DV-chaptersContainer span.DV-expander,
+.DV-viewSearch .DV-annotationMarker{
+  display:none !important;
+}
+
+.DV-viewSearch .DV-sidebar .DV-well .DV-chaptersContainer div.DV-hasChildren div.DV-first{
+  display:block !important;
+}
+
+.DV-viewSearch .DV-sidebar .DV-well .DV-chaptersContainer div.DV-hasChildren div.DV-first span.DV-trigger{
+  margin-left:-1px;
+}
+
+.DV-viewSearch .DV-annotationMarker,
+.DV-viewSearch .DV-chapter{
+  margin-left:14px;
+}

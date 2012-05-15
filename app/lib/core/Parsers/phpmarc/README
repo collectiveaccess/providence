@@ -1,0 +1,15 @@
+This is a set of PHP classes for parsing and producing MARC data.
+It reads and writes both MARC (z39.2) format records and records in a
+mnemonic text format very similar to that used by Terry Reese's MarcEdit.
+It has been used pretty extensively in a custom version of the OpenBiblio
+automated library system (http://obiblio.sourceforge.net/) and will be
+included in OpenBiblio 1.0.
+
+There isn't really any documentation, but the tests in testMARC.php and
+the example.php program should give you an idea of how it can be used.
+
+Any feedback is appreciated!
+
+Micah Stetson
+micah@stetsonnet.org
+Jul 2, 2008

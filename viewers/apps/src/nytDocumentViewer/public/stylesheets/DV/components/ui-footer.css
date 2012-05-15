@@ -1,0 +1,49 @@
+.DV-footer {
+  position: absolute;
+  bottom: 0; left: 0; right: 0;
+  height: 33px;
+  border-top: 1px solid #B0B0B0;
+  z-index: 20000;
+  text-shadow: 0px 1px 0px #ddd;
+  color: #333;
+  overflow: hidden;
+  background: url(../../../images/DV/embed/headerbg.png);
+  box-shadow: 0 0 25px rgba(0,0,0,.05); -webkit-box-shadow: 0 0 25px rgba(0,0,0,.05); -moz-box-shadow: 0 0 25px rgba(0,0,0,.05);
+}
+  .DV-footer.DV-hide {
+    display: none;
+  }
+  .DV-footer .DV-trigger, .DV-fullscreen {
+    border: 1px solid #888; border-top-color: #999; border-bottom-color: #666;
+    -webkit-border-radius: 2px; -moz-border-radius: 2px; border-radius: 2px;
+  }
+  .DV-footer .DV-navControlsContainer {
+    position: relative;
+    width: 240px;
+    margin: 0 auto;
+  }
+    .DV-footer .DV-navControls {
+      right: 0; top: 0;
+    }
+      .DV-footer .DV-trigger {
+        top: 5px;
+      }
+      .DV-footer .DV-pageNumberContainer {
+        padding-top: 5px;
+      }
+  .DV-fullscreen {
+    cursor: pointer;
+    position: absolute;
+    left: 5px; top: 5px;
+    width: 22px; height: 22px;
+    background: url(../../../images/DV/embed/fullscreen.png) no-repeat 0 0;
+  }
+    .DV-header .DV-fullscreen {
+      left: 6px; top: 6px;
+    }
+    .DV-fullscreen:hover {
+      background-position: -22px 0;
+    }
+    .DV-fullscreen:active {
+      background-position: -44px 0;
+    }

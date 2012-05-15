@@ -1,0 +1,49 @@
+.DV-viewDocument .DV-allAnnotations,
+.DV-viewDocument .DV-text,
+.DV-viewDocument .DV-search,
+.DV-viewDocument .DV-thumbnails,
+.p0,
+.p1,
+.p2{
+  display:none;
+}
+
+.DV-viewDocument .p0,
+.DV-viewDocument .p1,
+.DV-viewDocument .p2{
+  display:block;
+}
+
+.DV-coverVisible .DV-viewDocument .p0,
+.DV-coverVisible .DV-viewDocument .p1,
+.DV-coverVisible .DV-viewDocument .p2{
+  background:none;
+}
+
+.DV-viewDocument .DV-annotation {
+  height: 0;
+}
+.DV-viewDocument .DV-pageNote {
+  height: auto;
+}
+.DV-viewDocument .DV-activeAnnotation {
+  height: auto;
+}
+
+.DV-viewDocument .DV-currentAnnotationPrefix,
+.DV-viewDocument .DV-totalAnnotations{
+  display:none;
+}
+
+.DV-viewDocument .DV-currentPagePrefix,
+.DV-viewDocument .DV-totalPages{
+  display:inline;
+}
+
+.DV-viewDocument .DV-coverVisible .DV-cover{
+  cursor:pointer !important;
+}
+
+.DV-viewDocument .DV-annotationRegionBorder {
+  display: block;
+}

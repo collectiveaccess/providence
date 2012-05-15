@@ -1,0 +1,68 @@
+<!--[if lte IE 8]><div class="DV-docViewer DV-clearfix DV-viewDocument DV-ie <% if (autoZoom) { %>DV-autoZoom<% } %> <% if (!options.sidebar) { %>DV-hideSidebar<% } else { %>DV-hideFooter<% } %>"><![endif]-->
+<!--[if (!IE)|(gte IE 9)]><!--><div class="DV-docViewer DV-clearfix DV-viewDocument <% if (autoZoom) { %>DV-autoZoom<% } %> <% if (!options.sidebar) { %>DV-hideSidebar<% } else { %>DV-hideFooter<% } %>"><!-- <![endif]-->
+  
+  <div class="DV-docViewerWrapper">
+  
+    <%= header %>
+    <div class="DV-docViewer-Container">
+    
+      <div class="DV-searchBarWrapper">
+        <div class="DV-searchBar">
+          <span class="DV-trigger DV-closeSearch">CLOSE</span>
+          <div class="DV-searchPagination DV-foundResult">
+            <div class="DV-searchResults">
+              <span class="DV-resultPrevious DV-trigger">Previous</span>
+              <span class="DV-currentSearchResult"></span>
+              <span class="DV-totalSearchResult"></span>
+              <span> for &ldquo;<span class="DV-searchQuery"></span>&rdquo;</span>
+              <span class="DV-resultNext DV-trigger">Next</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    
+      <div class="DV-pages <% if (!options.sidebar) { %>DV-hide-sidebar<% } %>">
+        <div class="DV-paper">
+          <div class="DV-thumbnails"></div>
+          <div class="DV-pageCollection">
+            <div class="DV-bar" style=""></div>
+            <div class="DV-allAnnotations">
+            </div>
+            <div class="DV-text">
+              <div class="DV-textSearch DV-clearfix">
+          
+              </div>
+              <div class="DV-textPage">
+                <span class="DV-textCurrentPage"></span>
+                <pre class="DV-textContents"></pre>
+              </div>
+            </div>
+            <%= pages %>
+          </div>
+        </div>
+      </div>
+    
+      <div width="265px" class="DV-sidebar <% if (!options.sidebar) { %>DV-hide<% } %>" style="display:none;">
+        <div class="DV-well">
+    
+          <div class="DV-sidebarSpacer"></div>
+          
+          <% if (options.sidebar) { %>
+            <div class="DV-navControlsContainer">
+            </div>
+          <% } %>
+              
+          <div class="DV-navigation">
+            <%= descriptionContainer %>
+            <div class="DV-contentsHeader">Contents</div>
+            <div class="DV-chaptersContainer">
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    
+    <%= footer %>
+    
+  </div>
+</div>

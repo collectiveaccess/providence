@@ -1,0 +1,24 @@
+We would like to cite the following projects whose code, fonts or graphics are included in the CollectiveAccess distribution:
+
+jQuery (http://www.jQuery.com)
+getid3 media format metadata parser library (http://getid3.org)
+Drupal Unicode functions (http://www.drupal.org)
+Archive_TAR PEAR module (http://pear.php.net)
+Zend Framework (http://framework.zend.com)
+SWFObject v2.1 (http://code.google.com/p/swfobject)
+JIT (http://thejit.org)
+DejaVu Fonts (http://dejavu.sourceforge.net/)
+JPlayer (http://www.happyworm.com/jquery/jplayer/)
+VideoJS (http://videojs.com/)
+FlowPlayer (http://www.flowplayer.org)
+CKEditor (http://www.ckeditor.org)
+HTMLpurifier (http://htmlpurifier.org)
+PHP QR Code (http://phpqrcode.sourceforge.net)
+HTML2PDF (http://html2pdf.fr)
+
+CollectiveAccess uses the following icons from The Noun Project (http://thenounproject.com) covered 
+under the Creative Commons - Attribution (CC BY 3.0) license:
+
+	"Download" (http://thenounproject.com/noun/download/)
+
+Thank you for sharing with us!

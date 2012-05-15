@@ -1,0 +1,32 @@
+<div class="DV-unsupported">
+  <div class="DV-intro">
+    <% if (viewer.schema.document.resources && viewer.schema.document.resources.pdf) { %>
+      <a href="<%= viewer.schema.document.resources.pdf %>">Download this document as a PDF</a>
+    <% } %>
+    <br />
+    <br />
+    To use the Document Viewer you need to<br /> upgrade your browser:
+  </div>
+  <div class="DV-browsers">
+    <div class="DV-browser">
+      <a href="http://www.google.com/chrome">
+        <div class="DV-image DV-chrome"> </div>Chrome
+      </a>
+    </div>
+    <div class="DV-browser">
+      <a href="http://www.apple.com/safari/download/">
+        <div class="DV-image DV-safari"> </div>Safari
+      </a>
+    </div>
+    <div class="DV-browser">
+      <a href="http://www.mozilla.com/en-US/firefox/firefox.html">
+        <div class="DV-image DV-firefox"> </div>Firefox
+      </a>
+    </div>
+    <br style="clear:both;" />
+  </div>
+  <div class="DV-after">
+    Or, if you'd like to continue using Internet Explorer 6,<br /> you can
+    <a href="http://www.google.com/chromeframe">install Google Chrome Frame</a>.
+  </div>
+</div>

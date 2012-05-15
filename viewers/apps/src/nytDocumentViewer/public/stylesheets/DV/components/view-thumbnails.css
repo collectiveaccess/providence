@@ -1,0 +1,142 @@
+.DV-viewThumbnails .DV-allAnnotations,
+.DV-viewThumbnails .DV-text,
+.DV-viewThumbnails .DV-search,
+.DV-viewThumbnails .DV-pageCollection,
+.p0,
+.p1,
+.p2{
+  display:none;
+}
+
+.DV-viewThumbnails .DV-currentAnnotationPrefix,
+.DV-viewThumbnails .DV-totalAnnotations{
+  display:none;
+}
+
+.DV-viewThumbnails .DV-thumbnails,
+.DV-viewThumbnails .DV-pages {
+  display: block;
+}
+
+.DV-thumbnails {
+  padding: 12px 4px;
+  overflow: hidden;
+  display: none;
+}
+  .DV-thumbnails .DV-thumbnail {
+    float: left;
+    padding: 8px 16px;
+    text-align: center;
+    position: relative;
+  }
+    .DV-thumbnails .DV-thumbnail .DV-overlay {
+      cursor: pointer;
+      z-index: 10002;
+      position: absolute;
+      top: 10px;
+      width: 0px;
+      height: 75%;
+      display: none;
+    }
+    .DV-thumbnails .DV-thumbnail .DV-pageNumber {
+      margin: 2px 0 0 0;
+      width: auto;
+      float: none;
+      display: block;
+      height: 14px;
+      z-index: 0;
+    }
+      .DV-thumbnails .DV-thumbnail .DV-pageNumber .DV-pageNumberText {
+        -moz-border-radius: 8px;
+        -webkit-border-radius: 8px;
+        border-radius: 8px;
+        padding: 2px 8px;
+      }
+      .DV-thumbnails .DV-thumbnail.DV-selected .DV-pageNumber .DV-pageNumberText {
+        background-color: #3875D7;
+        color: white;
+      }
+      .DV-thumbnails .DV-thumbnail-page .DV-pageNumber:hover {
+        text-decoration: none;
+      }
+      .DV-thumbnails .DV-thumbnail-page:hover .DV-pageNumber .DV-pageNumberTextUnderline {
+        text-decoration: underline;
+      }
+      .DV-thumbnails .DV-selected .DV-thumbnail-page:hover .DV-pageNumber .DV-pageNumberTextUnderline {
+        text-decoration: none;
+      }
+    .DV-thumbnails .DV-thumbnail-page {
+      cursor: pointer;
+    }
+    .DV-thumbnails .DV-thumbnail-select {
+      position: relative;
+      padding: 2px;
+      -moz-border-radius: 3px; -webkit-border-radius: 3px; border-radius: 3px;
+      position: relative;
+      top: -2px; left: -2px;
+    }
+      .DV-thumbnail.DV-selected .DV-thumbnail-select {
+        background: #09f;
+      }
+    .DV-thumbnails .DV-thumbnail .DV-thumbnail-shadow {
+      position: absolute;
+      top: 6px; left: 6px; right: 0px; bottom: 0px;
+      background-color: #cacaca;
+      margin: 0 auto;
+    }
+      .DV-thumbnails .DV-thumbnail-page:hover .DV-thumbnail-shadow {
+        background-color: #bababa;
+      }
+      .DV-thumbnails .DV-thumbnail.DV-selected .DV-thumbnail-shadow {
+        background-color: transparent;
+      }
+    .DV-thumbnails .DV-thumbnail-image {
+      position: relative;
+      border: 1px solid #b0b0b0;
+      border-top-color: #c0c0c0;
+      border-bottom-color: #999;
+      background: white;
+      display: block;
+      min-height: 40px;
+      padding: 0 !important;
+      z-index: 2;
+      margin: 0 auto;
+    }
+      .DV-thumbnails .DV-thumbnail-page:hover .DV-thumbnail-image {
+        border: 1px solid #a0a0a0;
+        border-top-color: #b0b0b0;
+        border-bottom-color: #888;
+      }
+      .DV-thumbnails .DV-thumbnail.DV-selected .DV-thumbnail-image {
+        border-color: #09f;
+      }
+    .DV-thumbnails.DV-zoom-0 .DV-thumbnail {
+      width: 66px; height: 103px;
+    }
+      .DV-thumbnails.DV-zoom-0 .DV-thumbnail-image {
+        width: 60px; height: 75px;
+      }
+    .DV-thumbnails.DV-zoom-1 .DV-thumbnail {
+      width: 96px; height: 138px;
+    }
+      .DV-thumbnails.DV-zoom-1 .DV-thumbnail-image {
+        width: 90px; height: 112px;
+      }
+    .DV-thumbnails.DV-zoom-2 .DV-thumbnail {
+      width: 126px; height: 178px;
+    }
+      .DV-thumbnails.DV-zoom-2 .DV-thumbnail-image {
+        width: 120px; height: 150px;
+      }
+    .DV-thumbnails.DV-zoom-3 .DV-thumbnail {
+      width: 156px; height: 216px;
+    }
+      .DV-thumbnails.DV-zoom-3 .DV-thumbnail-image {
+        width: 150px; height: 188px;
+      }
+    .DV-thumbnails.DV-zoom-4 .DV-thumbnail {
+      width: 186px; height: 253px;
+    }
+      .DV-thumbnails.DV-zoom-4 .DV-thumbnail-image {
+        width: 180px; height: 225px;
+      }

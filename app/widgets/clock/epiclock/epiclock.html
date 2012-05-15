@@ -1,0 +1,237 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.1//EN" "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en">
+    <head>
+        <title></title>
+        <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+        
+        <style type="text/css">
+            body
+                { font-family: Helvetica; }
+        
+            fieldset
+                { float: left; padding: 10px 15px; border: 1px solid #6F6F6F; }
+                
+            hr
+                { border-bottom: 1px solid #6F6F6F; width: 80%; margin: 20px auto; }
+              
+            dt
+                { font-weight: bold; margin-top: 10px; }
+                
+            dd
+                { padding: 2px 0; }
+                
+            .note
+                { font-size: .85em; color: #6F6F6F; font-style: italic; }
+        </style>
+        <link media="screen" rel="stylesheet" type="text/css" href="epiclock/stylesheet/jquery.epiclock.css"/>
+        <link media="screen" rel="stylesheet" type="text/css" href="epiclock/renderers/retro/epiclock.retro.css"/>
+        <link media="screen" rel="stylesheet" type="text/css" href="epiclock/renderers/retro-countdown/epiclock.retro-countdown.css"/>
+        
+        <script type="text/javascript" src="http://ajax.googleapis.com/ajax/libs/jquery/1.4.2/jquery.min.js"></script>
+        <script type="text/javascript" src="epiclock/javascript/jquery.dateformat.js"></script>
+        <script type="text/javascript" src="epiclock/javascript/jquery.epiclock.js"></script>
+        <script type="text/javascript" src="epiclock/renderers/retro/epiclock.retro.js"></script>
+        <script type="text/javascript" src="epiclock/renderers/retro-countdown/epiclock.retro-countdown.js"></script>
+        <script type="text/javascript">
+            
+            $(function ()
+            {
+                //------------------------------
+                //
+                //  Define the Clocks
+                //
+                //------------------------------
+              
+                //------------------------------
+                //  Clock
+                //------------------------------
+                
+                $('#clock').epiclock();
+                
+                //------------------------------
+                //  Explicit
+                //------------------------------
+                
+                $('#explicit').epiclock({mode: $.epiclock.modes.explicit, time: new Date('March 1 2010, 11:20:30 GMT'), utc: true});
+                
+                //------------------------------
+                //  Countdown
+                //------------------------------
+                
+                $('#countdown').epiclock({mode: $.epiclock.modes.countdown, offset: {days: 1}});
+                
+                //------------------------------
+                //  Countup
+                //------------------------------
+                
+                $('#countup').epiclock({mode: $.epiclock.modes.countup, offset: {days: 1}});
+                
+                //------------------------------
+                //  Rollover
+                //------------------------------
+                
+                $('#rollover').epiclock({mode: $.epiclock.modes.rollover, offset: {seconds: 10}}).bind('timer', function ()
+                {
+                    $('<span>Now a countup timer!</span>').css({color: '#00F600', display: 'none', paddingLeft: 10}).appendTo(this).fadeIn(250);
+                });
+                
+                //------------------------------
+                //  Expire
+                //------------------------------
+                
+                $('#expire').epiclock({mode: $.epiclock.modes.expire, offset: {seconds: 10}}).bind('timer', function ()
+                {
+                    $('<span>This timer has expired!</span>').css({color: '#F60000', display: 'none', paddingLeft: 10}).appendTo(this).fadeIn(250);
+                });
+                
+                //------------------------------
+                //  Loop
+                //------------------------------
+                
+                $('#loop').epiclock({mode: $.epiclock.modes.loop, offset: {seconds: 5}}).bind('timer', function ()
+                {
+                    $('#loopcounter').text(parseInt($('#loopcounter').text(), 10) + 1).css('color', '#0000F6');
+                });
+                
+                //------------------------------
+                //  Stopwatch
+                //------------------------------
+                
+                $('#stopwatch').epiclock({mode: $.epiclock.modes.stopwatch}); 
+                
+                $('#toggleStopwatch').click(function (event)
+                {
+                    event.preventDefault();
+                    
+                    $.epiclock('#stopwatch').toggle();
+                });
+                
+                $('#resetStopwatch').click(function (event)
+                {
+                    event.preventDefault();
+                    
+                    $.epiclock('#stopwatch').restart();
+                });
+                               
+                //------------------------------
+                //  Holdup
+                //------------------------------
+                
+                $('#holdup').epiclock({mode: $.epiclock.modes.holdup, offset: {seconds: -10}});
+                
+                //------------------------------
+                //  Timer
+                //------------------------------
+                
+                $('#timer').epiclock({mode: $.epiclock.modes.timer, offset: {seconds: 60}}).bind('timer', function ()
+                {
+                    $('<span>This timer has expired!</span>').css({color: '#F60000', display: 'none', paddingLeft: 10}).appendTo(this).fadeIn(250);
+                });
+                
+                $('#toggleTimer').click(function (event)
+                {
+                    event.preventDefault();
+                    
+                    if ($.epiclock('#timer'))
+                    {
+                        $.epiclock('#timer').toggle();
+                    }
+                });
+                
+                //------------------------------
+                //  Retro Clock
+                //------------------------------
+                
+                $('#clock-retro').epiclock({format: 'h:i:s a', renderer: 'retro'});
+                
+                //------------------------------
+                //  Retro Countdown
+                //------------------------------
+                
+                $('#countdown-retro').epiclock({mode: $.epiclock.modes.countdown, offset: {days: 1}, format: 'V:x:i:s', renderer: 'retro-countdown'});
+                
+                //------------------------------
+                //
+                //  Define the controls
+                //
+                //------------------------------
+                
+                $('#pause').click(function ()
+                {
+                    $.epiclock.pause();
+                });
+                
+                $('#resume').click(function ()
+                {
+                    $.epiclock.resume();
+                });
+                
+                $('#restart').click(function ()
+                {
+                    $.epiclock.restart();
+                });
+            });
+        </script>
+    </head>
+    <body>
+        <dl>
+            <dt>mode.clock</dt>
+            <dd class="note">Current time, based on the client's clock.</dd>
+            <dd id="clock"></dd>
+            
+            <dt>mode.explicit </dt>
+            <dd class="note">Time based on server settings. Demo always starts from: March 1, 2010 10:20:30 am</dd>
+            <dd id="explicit"></dd>
+            
+            <dt>mode.countdown</dt>
+            <dd class="note">Counting down to 1 day from the page load.</dd>
+            <dd id="countdown"></dd>
+            
+            <dt>mode.countup</dt>
+            <dd class="note">Counting up since 1 day before the page load.</dd>
+            <dd id="countup"></dd>
+            
+            <dt>mode.rollover</dt>
+            <dd class="note">Counting down till 10 seconds from page load, then counting up.</dd>
+            <dd id="rollover"></dd>
+            
+            <dt>mode.expire</dt>
+            <dd class="note">Counting down till 10 seconds from page load, then counting up.</dd>
+            <dd id="expire"></dd>
+            
+            <dt>mode.loop</dt>
+            <dd class="note">5 seconds timer, which has completed <span id="loopcounter">0</span> time(s).</dd>
+            <dd id="loop"></dd>
+            
+            <dt>mode.stopwatch</dt>
+            <dd class="note">Keeps track of the time the clock has been running while not paused. <a href="#" id="toggleStopwatch">Toggle paused status</a> or <a href="#" id="resetStopwatch">Restart</a>.</dd>
+            <dd id="stopwatch"></dd>
+            
+            <dt>mode.holdup</dt>
+            <dd class="note">Displays the number of seconds that have passed since 10 seconds after page load.</dd>
+            <dd id="holdup"></dd>
+            
+            <dt>mode.timer</dt>
+            <dd class="note">60 second counter, which can be paused. <a href="#" id="toggleTimer">Toggle paused status</a>.</dd>
+            <dd id="timer"></dd>
+            
+            <dt>mode.timer with retro renderer</dt>
+            <dd class="note">Current time, based on the client's clock.</dd>
+            <dd id="clock-retro"></dd>
+            
+            <dt>mode.countdown with retro renderer</dt>
+            <dd class="note">Counting down to 1 day from the page load.</dd>
+            <dd id="countdown-retro"></dd>
+        </dl>
+        
+        <hr />
+        
+        <fieldset>
+            <legend>Page Controls</legend>
+            
+            <button id="pause">Pause</button>
+            <button id="resume">Resume</button>
+            <button id="restart">Restart</button>
+        </fieldset>
+    </body>
+</html>

@@ -1,0 +1,66 @@
+.DV-controls {
+  background-color: #f0f4f5;
+  height: 37px;
+  border-bottom: 1px solid #aaa;
+  border-top: 1px solid #aaa;
+  margin-top: 10px;
+  position: relative;
+}
+  .DV-collapsibleControls {
+    height: 37px;
+    overflow: hidden;
+  }
+
+.DV-views{
+  list-style-type:none;
+  float:left;
+  display:inline;
+  margin:0 0 0 8px; padding:0;
+}
+.DV-views.DV-hide {
+  display: none;
+}
+.DV-views div{
+  float: left;
+  display: inline;
+  margin: 7px 0 0;
+  padding: 0;
+}
+.DV-views .DV-hide {
+  display: none;
+}
+.DV-ie6 .DV-views{
+  position:absolute;
+}
+
+.DV-views div span{
+  display: block;
+  padding: 9px 14px 8px;
+  background: #bfbfbf url(../../../images/DV/embed/tabbg.png);
+  border: 1px solid #777; border-top-color: #888;
+  font: 10px Arial, Helvetica, sans-serif;
+  text-decoration: none;
+  height: 12px;
+  border-left: none;
+  text-transform: uppercase;
+  color: #000;
+}
+
+.DV-views div.DV-first span{
+  border-left:1px solid #777;
+}
+
+.DV-views div a:focus{
+  outline:0;
+}
+
+.DV-viewDocument .DV-views .DV-documentView span,
+.DV-viewThumbnails .DV-views .DV-thumbnailsView span,
+.DV-viewAnnotations .DV-views .DV-annotationView span,
+.DV-viewText .DV-views .DV-textView span,
+.DV-viewSearch .DV-views .DV-textView span{
+  background-position: 0 -40px;
+  font-weight:bold;
+  text-shadow: 0px 1px 0px #fff;
+  border-bottom-color: #a0a0a0;
+}

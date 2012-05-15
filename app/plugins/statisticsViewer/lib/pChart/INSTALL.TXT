@@ -1,0 +1,3 @@
+To install pChart for CA StatisticsViewer plugin, unzip pchart in this folder, in order to have :
+statisticsViewer/lib/pChart/class/pDraw.class.php
+etc.
