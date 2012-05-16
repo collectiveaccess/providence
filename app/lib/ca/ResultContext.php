@@ -593,7 +593,7 @@
 				if(!is_array($va_context = $o_storage->getVar('result_context_'.$this->ops_table_name.'_'.$vs_find_type))) { 
 					$va_context = array();
 				}
-				$this->opa_context = array_merge($va_context, $va_semi); 
+				$this->opa_context = array_merge($va_semi, $va_context); 
 			}
 			return $this->opa_context;
 		}
