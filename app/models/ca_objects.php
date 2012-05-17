@@ -476,7 +476,7 @@ class ca_objects extends BundlableLabelableBaseModelWithAttributes implements IB
  		$o_db = $this->getDb();
  		
  		$qr_reps = $o_db->query("
- 			SELECT caor.representation_id, caor.media, caoor.is_primary, caor.access, caor.status, l.name, caor.locale_id, caor.media_metadata, caor.type_id, caor.idno, caor.idno_sort
+ 			SELECT caor.representation_id, caor.media, caoor.is_primary, caor.access, caor.status, l.name, caor.locale_id, caor.media_metadata, caor.type_id, caor.idno, caor.idno_sort, caor.md5, caor.mimetype, caor.original_filename
  			FROM ca_object_representations caor
  			INNER JOIN ca_objects_x_object_representations AS caoor ON caor.representation_id = caoor.representation_id
  			LEFT JOIN ca_locales AS l ON caor.locale_id = l.locale_id
@@ -1015,6 +1015,72 @@ class ca_objects extends BundlableLabelableBaseModelWithAttributes implements IB
  		return false;
  	}
  	# ------------------------------------------------------
+ 	/**
+ 	 * Returns number of representations attached to the current object of the specified class. 
+ 	 *
+ 	 * @param string $ps_class The class of representation to return a count for. Valid classes are "image", "audio", "video" and "document"
+ 	 * @param array $pa_options Options for selection of representations to count; same as options for ca_objects::getRepresentations()
+ 	 *
+ 	 * @return int Number of representations
+ 	 */
+ 	public function numberOfRepresentationsOfClass($ps_class, $pa_options=null) {
+ 		return sizeof($this->representationsOfClass($ps_class, $pa_options));
+ 	}
+ 	# ------------------------------------------------------
+ 	/**
+ 	 * Returns number of representations attached to the current object with the specified mimetype. 
+ 	 *
+ 	 * @param string $ps_mimetype The mimetype to return a count for. 
+ 	 * @param array $pa_options Options for selection of representations to count; same as options for ca_objects::getRepresentations()
+ 	 *
+ 	 * @return int Number of representations
+ 	 */
+ 	public function numberOfRepresentationsWithMimeType($ps_mimetype, $pa_options=null) {
+ 		return sizeof($this->representationsWithMimeType($ps_mimetype, $pa_options));
+ 	}
+ 	# ------------------------------------------------------
+ 	/**
+ 	 * Returns information for representations of the specified class attached to the current object. 
+ 	 *
+ 	 * @param string $ps_class The class of representation to return information for. Valid classes are "image", "audio", "video" and "document"
+ 	 * @param array $pa_options Options for selection of representations to return; same as options for ca_objects::getRepresentations()
+ 	 *
+ 	 * @return array An array with information about matching representations, in the same format as that returned by ca_objects::getRepresentations()
+ 	 */
+ 	public function representationsOfClass($ps_class, $pa_options=null) {
+ 		if (!($vs_mimetypes_regex = caGetMimetypesForClass($ps_class, array('returnAsRegex' => true)))) { return array(); }
+ 		
+ 		$va_rep_list = array();
+ 		if (is_array($va_reps = $this->getRepresentations($pa_options))) {
+ 			foreach($va_reps as $vn_rep_id => $va_rep) {
+ 				if (preg_match("!{$vs_mimetypes_regex}!", $va_rep['mimetype'])) {	
+ 					$va_rep_list[$vn_rep_id] = $va_rep;
+ 				}
+ 			}
+ 		}
+ 		return $va_rep_list;
+ 	}
+ 	# ------------------------------------------------------
+ 	/**
+ 	 * Returns information for representations attached to the current object with the specified mimetype. 
+ 	 *
+ 	 * @param string $ps_mimetype The mimetype to return representations for. 
+ 	 * @param array $pa_options Options for selection of representations to return; same as options for ca_objects::getRepresentations()
+ 	 *
+ 	 * @return array An array with information about matching representations, in the same format as that returned by ca_objects::getRepresentations()
+ 	 */
+ 	public function representationsWithMimeType($ps_mimetype, $pa_options=null) {
+ 		$va_rep_list = array();
+ 		if (is_array($va_reps = $this->getRepresentations($pa_options))) {
+ 			foreach($va_reps as $vn_rep_id => $va_rep) {
+ 				if ($ps_mimetype == $va_rep['mimetype']) {	
+ 					$va_rep_list[$vn_rep_id] = $va_rep;
+ 				}
+ 			}
+ 		}
+ 		return $va_rep_list;
+ 	}
+ 	# ------------------------------------------------------
  	#
  	# ------------------------------------------------------
 	/**
@@ -1155,6 +1221,38 @@ class ca_objects extends BundlableLabelableBaseModelWithAttributes implements IB
 			$va_media[$qr_res->get('object_id')] = $va_media_tags;
 		}
 		return $va_media;
+	}
+	# ------------------------------------------------------------------
+	/**
+	 * Returns number of representations attached to each object referenced by object_id in $pa_ids
+	 * 
+	 * @param array $pa_ids indexed array of object_id values to fetch labels for
+	 * @param array $pa_options
+	 * @return array List of representation counts indexed by object_id
+	 */
+	public function getMediaCountsForIDs($pa_ids, $pa_options = null) {
+		if (!is_array($pa_ids) || !sizeof($pa_ids)) { return array(); }
+		if (!is_array($pa_options)) { $pa_options = array(); }
+		$va_access_values = $pa_options["checkAccess"];
+		if (isset($va_access_values) && is_array($va_access_values) && sizeof($va_access_values)) {
+			$vs_access_where = ' AND orep.access IN ('.join(',', $va_access_values).')';
+		}
+		$o_db = $this->getDb();
+		
+		$qr_res = $o_db->query("
+			SELECT oxor.object_id, count(*) c
+			FROM ca_object_representations orep
+			INNER JOIN ca_objects_x_object_representations AS oxor ON oxor.representation_id = orep.representation_id
+			WHERE
+				(oxor.object_id IN (".join(',', $pa_ids).")) orep.deleted = 0 {$vs_access_where}
+			GROUP BY oxor.object_id
+		");
+		
+		$va_counts = array();
+		while($qr_res->nextRow()) {
+			$va_counts[$qr_res->get('object_id')] = (int)$qr_res->get('c');
+		}
+		return $va_counts;
 	}
 	# ------------------------------------------------------
 	/**

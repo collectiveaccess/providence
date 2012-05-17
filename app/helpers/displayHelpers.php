@@ -1510,7 +1510,7 @@ require_once(__CA_LIB_DIR__.'/core/Parsers/TimeExpressionParser.php');
 	 * @param array $pa_options Array of options, including:
 	 *		stripTags = default is false
 	 * 		exclude = list of primary key values to omit from returned list
-	 *		
+	 *		config = 
 	 
 	 * @return mixed 
 	 */
@@ -1527,7 +1527,11 @@ $ca_relationship_lookup_parse_cache = array();
 		$vs_rel_pk 						= $pt_rel->primaryKey();
 		$vs_rel_table						= $pt_rel->tableName();
 		
-		$o_config = Configuration::load();
+		if (!isset($pa_options['config']) || !is_object($pa_options['config'])) {
+			$o_config = Configuration::load();
+		} else {
+			$o_config = $pa_options['config'];
+		}
 		
 		$va_exclude = (isset($pa_options['exclude']) && is_array($pa_options['exclude'])) ? $pa_options['exclude'] : array();
 		
@@ -1601,6 +1605,7 @@ $ca_relationship_lookup_parse_cache = array();
 			} else {
 				$vs_display_value = $vs_display_format;
 			}
+			
 			foreach($va_bundles as $vs_bundle_name) {
 				if (in_array($vs_bundle_name, array('_parent', '_hierarchy'))) { continue;}
 				if (!($vs_value = trim($qr_rel_items->get($vs_bundle_name)))) { 

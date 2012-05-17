@@ -317,19 +317,25 @@ class ca_commerce_order_items extends BaseModel {
 	}
 	# ----------------------------------------
 	/**
-	 * Check if order can be edited by user (client)
+	 * Check if order item can be downloaded by user (client)
 	 * THIS FUNCTION SHOULD ONLY BE CALLED WHEN YOU KNOW THE USER HAS ALREADY PAID AND ORDER IS COMPLETE
 	 *
-	 * @return bool
+	 * @return bool Returns true if user can download, false if user cannot download but media exists and null if user could download but media doesn't exist yet
 	 */
 	public function userCanDownloadItem() {
 		if (!$this->getPrimaryKey()) { return null; }
 		
-		if (in_array($this->get('fullfillment_method'), array('DOWNLOAD'))) {
-			return true;
+		// It it intended for fulfillment by download?
+		if (!in_array($this->get('fullfillment_method'), array('DOWNLOAD'))) {
+			return false;
 		}
 		
-		return false;
+		// Is there actually media to download?
+		if (!$this->getRepresentationCount()) {
+			return null;
+		}
+		
+		return true;
 	}
 	# ----------------------------------------
 	/**
@@ -349,7 +355,12 @@ class ca_commerce_order_items extends BaseModel {
 		if (!($vn_item_id = $this->getPrimaryKey())) { return null; }
 		
 		$o_db = $this->getDb();
-		$qr_res = $o_db->query("SELECT * FROM ca_commerce_order_items_x_object_representations WHERE item_id = ?", (int)$vn_item_id);
+		$qr_res = $o_db->query("
+			SELECT * 
+			FROM ca_commerce_order_items_x_object_representations coixor
+			INNER JOIN ca_object_representations AS o_r ON o_r.representation_id = coixor.representation_id
+			WHERE 
+				coixor.item_id = ? and o_r.deleted = 0", (int)$vn_item_id);
 		
 		$va_representation_ids = $qr_res->getAllFieldValues('representation_id');
 		if (!is_array($va_representation_ids)) { $va_representation_ids = array(); }
