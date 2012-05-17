@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2004-2011 Whirl-i-Gig
+ * Copyright 2004-2012 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -509,6 +509,19 @@ class TaskQueue extends BaseObject {
 		",md5($ps_row_key));
 		
 		return true;
+	}
+	# ---------------------------------------------------------------------------
+	/**
+	 * Runs periodic tasks within task queue process
+	 * Periodic tasks are code that need to be run regularly, such as file cleanup processes or email alerts.
+	 * You can set up tasks as plugins implementing the "PeriodicTask" hook. The plugins will be invoked every 
+	 * time the TaskQueue::runPeriodicTasks() method is called. By calling this in the same cron job that runs
+	 * the task queue you can centralize all tasks into a single job. Note that there is no scheduling of periodic
+	 * tasks here. Every time you call runPeriodicTasks() all plugins implementing the PeriodicTask hook will be run.
+	 * You should use standard cron scheduling to control when and how often periodic tasks are run.
+	 */
+	function runPeriodicTasks() {
+		$this->opo_app_plugin_manager->hookPeriodicTask();
 	}
 	# ---------------------------------------------------------------------------
 	# Process management
