@@ -261,8 +261,15 @@
 			);
  		}
  		# ------------------------------------------------------------------
+ 		/**
+ 		 *
+ 		 */
  		public function htmlFormElement($pa_element_info, $pa_options=null) {
 			$va_settings = $this->getSettingValuesFromElementArray($pa_element_info, array('fieldWidth', 'suggestExistingValues', 'useDatePicker'));
+
+			if (isset($pa_options['useDatePicker'])) {
+ 				$va_settings['useDatePicker'] = $pa_options['useDatePicker'];
+ 			}
 
  			$vn_max_length = 255;
  			$vs_element .= caHTMLTextInput(

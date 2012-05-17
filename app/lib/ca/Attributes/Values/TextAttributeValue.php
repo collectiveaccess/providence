@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2008-2011 Whirl-i-Gig
+ * Copyright 2008-2012 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -215,8 +215,17 @@
  			);
  		}
  		# ------------------------------------------------------------------
+ 		/**
+ 		 * @param array $pa_element_info
+ 		 * @param array $pa_options Array of options:
+ 		 *		usewysiwygeditor = if set, overrides element level setting for visual text editor
+ 		 */
  		public function htmlFormElement($pa_element_info, $pa_options=null) {
  			$va_settings = $this->getSettingValuesFromElementArray($pa_element_info, array('fieldWidth', 'fieldHeight', 'minChars', 'maxChars', 'suggestExistingValues', 'usewysiwygeditor'));
+ 			
+ 			if (isset($pa_options['usewysiwygeditor'])) {
+ 				$va_settings['usewysiwygeditor'] = $pa_options['usewysiwygeditor'];
+ 			}
  			
  			$vs_width = trim((isset($pa_options['width']) && $pa_options['width'] > 0) ? $pa_options['width'] : $va_settings['fieldWidth']);
  			$vs_height = trim((isset($pa_options['height']) && $pa_options['height'] > 0) ? $pa_options['height'] : $va_settings['fieldHeight']);

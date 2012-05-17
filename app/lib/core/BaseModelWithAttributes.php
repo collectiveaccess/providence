@@ -901,14 +901,14 @@
 				if (!$this->hasField($va_tmp[1])) {
 					$va_tmp[1] = preg_replace('!^ca_attribute_!', '', $va_tmp[1]);	// if field space is a bundle placement-style bundlename (eg. ca_attribute_<element_code>) then strip it before trying to pull label
 					
-					return $this->htmlFormElementForAttributeSearch($po_request, $va_tmp[1], array(
+					return $this->htmlFormElementForAttributeSearch($po_request, $va_tmp[1], array_merge($pa_options, array(
 								'values' => (isset($pa_options['values']) && is_array($pa_options['values'])) ? $pa_options['values'] : array(),
 								'width' => (isset($pa_options['width']) && ($pa_options['width'] > 0)) ? $pa_options['width'] : 20, 
 								'height' => (isset($pa_options['height']) && ($pa_options['height'] > 0)) ? $pa_options['height'] : 1, 
 								
 								'format' => '^ELEMENT',
 								'multivalueFormat' => '<i>^LABEL</i><br/>^ELEMENT'
-							));
+							)));
 				}
 			}
 			return parent::htmlFormElementForSearch($po_request, $ps_field, $pa_options);
