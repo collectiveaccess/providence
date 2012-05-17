@@ -1538,9 +1538,11 @@ class ca_commerce_orders extends BaseModel {
 		$qr_res = $o_db->query("
 			SELECT 
 				SUM(i.fee) item_cost,
-				(SUM(o.shipping_cost) + SUM(i.shipping_cost)) shipping_cost, 
-				(SUM(o.handling_cost) + SUM(i.handling_cost)) handling_cost, 
-				SUM(i.tax) tax
+				(o.shipping_cost + SUM(i.shipping_cost)) shipping_cost, 
+				(o.handling_cost + SUM(i.handling_cost)) handling_cost, 
+				SUM(i.tax) tax,
+				o.additional_fees, 
+				o.order_id
 			FROM ca_commerce_orders o
 			INNER JOIN ca_commerce_order_items AS i ON o.order_id = i.order_id
 			WHERE
@@ -1552,14 +1554,14 @@ class ca_commerce_orders extends BaseModel {
 			// order additional fees
 			$vn_additional_order_fees = 0;
 			
-			if (is_array($va_additional_fees = $qr_res->get('additional_fees'))) {
+			if (is_array($va_additional_fees = caUnserializeForDatabase($qr_res->get('additional_fees')))) {
 				foreach($va_additional_fees as $vs_code => $vn_fee) {
 					$vn_additional_order_fees += $vn_fee;
 				}
 			}
 			if ($vb_return_individual_costs) {
 				return array(
-					'total' => sprintf("%4.2f", (float)$qr_res->get('item_cost') + (float)$qr_res->get('shipping_cost') + (float)$qr_res->get('handling_cost') + (float)$qr_res->get('tax')),
+					'total' => sprintf("%4.2f", (float)$qr_res->get('item_cost') + (float)$qr_res->get('shipping_cost') + (float)$qr_res->get('handling_cost') + (float)$qr_res->get('tax') + (float)$vn_additional_order_fees) + (float)$va_order_item_additional_fees[$qr_res->get('order_id')],
 					'item_cost' => sprintf("%4.2f", (float)$qr_res->get('item_cost')),
 					'shipping_cost' => sprintf("%4.2f", (float)$qr_res->get('shipping_cost')),
 					'handling_cost' => sprintf("%4.2f", (float)$qr_res->get('handling_cost')),
