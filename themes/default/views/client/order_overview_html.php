@@ -86,9 +86,18 @@
 			if ($t_order->requiresShipping()) {
 				TooltipManager::add("#commerceOrderStatusMessage", $vs_order_status_description = _t('Order has been paid for and is ready for fulfillment. When the order has shipped click on the "record shipment details" below and enter the ship date.'));
 				$vs_next_step = caNavLink($this->request, _t('Record shipment details')." &rsaquo;", 'caClientOrderOverviewButton',  'client', 'OrderEditor', 'Shipping', array('order_id' => $vn_order_id));
-			
 			} else {
 				TooltipManager::add("#commerceOrderStatusMessage", $vs_order_status_description = _t('Order has been paid for and is ready for fulfillment via user-initiated download. The order will be closed automatically after the period for downloads has elapsed.'));
+			}
+			break;
+		case 'PROCESSED_AWAITING_DIGITIZATION':
+			$vs_status_message = _t('Order status: %1', $vs_order_status_display);
+			
+			if ($t_order->requiresShipping()) {
+				TooltipManager::add("#commerceOrderStatusMessage", $vs_order_status_description = _t('Order has been paid for and is ready for fulfillment. When the order has shipped click on the "record shipment details" below and enter the ship date.'));
+				$vs_next_step = caNavLink($this->request, _t('Record shipment details')." &rsaquo;", 'caClientOrderOverviewButton',  'client', 'OrderEditor', 'Shipping', array('order_id' => $vn_order_id));
+			} else {
+				TooltipManager::add("#commerceOrderStatusMessage", $vs_order_status_description = _t('Order has been paid for and will be ready for fulfillment via user-initiated download once all items are digitized. You will be informed by email when the items are ready for download.'));
 			}
 			break;
 		case 'COMPLETED':
@@ -128,7 +137,8 @@
 		}
 		
 		switch($t_order->get('order_status')) {
-			case 'PROCESSED':	
+			case 'PROCESSED':
+			case 'PROCESSED_AWAITING_DIGITIZATION':	
 				if (!$t_order->get('shipped_on_date') && !$t_order->get('ship_date')) { 			// Order paid for but not shipped or estimate ship date set
 					$va_warnings[] = _t('Warning: order requires shipping!');
 				} 
@@ -145,6 +155,7 @@
 	// payment
 	switch($t_order->get('order_status')) {
 		case 'PROCESSED':	
+		case 'PROCESSED_AWAITING_DIGITIZATION':
 			if (!$t_order->get('payment_received_on')) { 			// no payment date for processed order?
 				$va_warnings[] = _t('Warning: no payment recorded!');
 			} 
@@ -207,7 +218,7 @@
 	<div class="overviewItem"><?php print _t("%1 items planned <a href='%5'>for shipment</a> to %2 via %3 is on %4", $va_item_counts_by_fulfillment_method['SHIPMENT'], $vs_shipping_destination, $vs_shipping_method, $vs_ship_date, caNavUrl($this->request, 'client', 'OrderEditor', 'Shipping', array('order_id' => $vn_order_id))); ?></div>
 <?php
 			} else {
-				if ($t_order->get('order_status') == 'PROCESSED') {
+				if (in_array($t_order->get('order_status'), array('PROCESSED', 'PROCESSED_AWAITING_DIGITIZATION'))) {
 					// needs to be shipped now
 ?>
 	<div class="overviewItem"><?php print _t("%1 items require <a href='%4'>shipping</a> to %2 via %3", $va_item_counts_by_fulfillment_method['SHIPMENT'], $vs_shipping_destination, $vs_shipping_method, caNavUrl($this->request, 'client', 'OrderEditor', 'Shipping', array('order_id' => $vn_order_id))); ?></div>
@@ -225,17 +236,25 @@
 
 	// download
 	if ($t_order->requiresDownload()) {
-		
-		if ($t_order->get('order_status') == 'PROCESSED') {
-			// can to be downloaded now
+		switch($t_order->get('order_status')) {
+			case 'PROCESSED':
+				// can to be downloaded now
 ?>
 <div class="overviewItem"><?php print _t("%1 items are available for download", $va_item_counts_by_fulfillment_method['DOWNLOAD']); ?></div>
-<?php		
-		} else {
-			// will need to be shipped after payment
+<?php				
+				break;
+			case 'PROCESSED_AWAITING_DIGITIZATION':
+				// download must wait until material is digitized
 ?>
-<div class="overviewItem"><?php print _t("%1 items will be available for download when order is paid for", $va_item_counts_by_fulfillment_method['DOWNLOAD']); ?></div>
-<?php			
+				<div class="overviewItem"><?php print _t("%1 items will be available for download once digitization is completed", $va_item_counts_by_fulfillment_method['DOWNLOAD']); ?></div>
+<?php				
+				break;
+			default:
+				// will need to be shipped after payment
+?>
+				<div class="overviewItem"><?php print _t("%1 items will be available for download when order is paid for", $va_item_counts_by_fulfillment_method['DOWNLOAD']); ?></div>
+<?php					
+				break;
 		}	
 	}
 ?>

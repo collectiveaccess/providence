@@ -68,6 +68,7 @@ BaseModel::$s_ca_models_definitions['ca_commerce_orders'] = array(
 					_t('open') => 'OPEN',							// in process of being created by user - all aspects may be modified by user
 					_t('submitted – awaiting quote') => 'SUBMITTED',		// user has submitted order for pricing - only address may be modified
 					_t('awaiting payment') => 'AWAITING_PAYMENT',	// order is awaiting payment before completion - only payment details can be submitted by user
+					_t('payment processed - awaiting digitization') => 'PROCESSED_AWAITING_DIGITIZATION',					// processing completed; awaiting digitization before fulfillment
 					_t('payment processed - ready for fulfillment') => 'PROCESSED',					// processing completed; awaiting fulfillment
 					_t('completed') => 'COMPLETED',					// order complete - user has been sent items
 					_t('reopened') => 'REOPENED'					// order reopened due to issue
@@ -551,14 +552,31 @@ class ca_commerce_orders extends BaseModel {
 				break;
 			case 'AWAITING_PAYMENT':
 				if ($this->get('payment_received_on') && $this->changed('payment_received_on')) {
-					// If it paid for then flip status to "PROCESSED"
-					$this->set('order_status', 'PROCESSED');
+					// If it paid for then flip status to "PROCESSED" (if it's all ready to go) or "PROCESSED_AWAITING_DIGITIZATION" if stuff needs to be digitized
+					$va_items_missing_media = $this->itemsMissingDownloadableMedia();
+					if(sizeof($va_items_missing_media) > 0) {
+						$this->set('order_status', 'PROCESSED_AWAITING_DIGITIZATION');
+					} else {
+						$this->set('order_status', 'PROCESSED');
+					}
 				}
 				break;
 		}
 		
 		if($vn_rc = parent::update($pa_options)) {
 			$this->sendStatusChangeEmailNotification($vn_old_status, $vn_old_ship_date, $vn_old_shipped_on_date);
+			
+			// Delete originating set if configured to do so
+			if($this->opo_client_services_config->get('set_disposal_policy') == 'DELETE_WHEN_ORDER_PROCESSED') {
+				$t_trans = new ca_commerce_transactions($this->get('transaction_id'));
+				if ($t_trans->getPrimaryKey()) {
+					$t_set = new ca_sets($t_trans->get('set_id'));
+					if ($t_set->getPrimaryKey()) {
+						$t_set->setMode(ACCESS_WRITE);
+						$t_set->delete(true);
+					}
+				}
+			}
 		}
 		return $vn_rc;
 	}
@@ -635,6 +653,10 @@ class ca_commerce_orders extends BaseModel {
 				case 'AWAITING_PAYMENT':
 					$vs_subject = _t('Your order (%2) posted on %1 requires payment', $vs_order_date, $this->getOrderNumber());
 					caSendMessageUsingView($g_request, $vs_to_email, $vs_sender_email, "[{$vs_app_name}] {$vs_subject}", "commerce_order_status_awaiting_payment.tpl", array('subject' => $vs_subject, 'from_user_id' => $g_request->getUserID(), 'sender_name' => $vs_sender_name, 'sender_email' => $vs_sender_email, 'sent_on' => time(), 'login_url' => $vs_login_url, 't_order' => $this), null, $va_admin_addresses);
+					break;
+				case 'PROCESSED_AWAITING_DIGITIZATION':
+					$vs_subject = _t('Payment for order (%2) posted on %1 has been processed; your downloads are now pending digitization of purchased items', $vs_order_date, $this->getOrderNumber());
+					caSendMessageUsingView($g_request, $vs_to_email, $vs_sender_email, "[{$vs_app_name}] {$vs_subject}", "commerce_order_status_processed_awaiting_digitization.tpl", array('subject' => $vs_subject, 'from_user_id' => $g_request->getUserID(), 'sender_name' => $vs_sender_name, 'sender_email' => $vs_sender_email, 'sent_on' => time(), 'login_url' => $vs_login_url, 't_order' => $this), null, $va_admin_addresses);
 					break;
 				case 'PROCESSED':
 					$vs_subject = _t('Payment for order (%2) posted on %1 has been processed', $vs_order_date, $this->getOrderNumber());
@@ -716,7 +738,7 @@ class ca_commerce_orders extends BaseModel {
 		foreach($pa_fields as $vs_f => $vs_v) { 
 			switch($vs_f) {
 				case 'shipped_on_date':
-					if ($this->get('order_status') != 'PROCESSED') {
+					if (!in_array($this->get('order_status'), array('PROCESSED', 'PROCESSED_AWAITING_DIGITIZATION'))) {
 						$this->postError(1101, _t('Cannot ship order until it is paid for'), 'ca_commerce_orders->set()');
 						return false;
 					}
@@ -1142,11 +1164,12 @@ class ca_commerce_orders extends BaseModel {
 	 	$va_item_to_rep_ids = array();
 	 	if (sizeof($va_item_ids)) {
 			$qr_rep_count = $o_db->query("
-				SELECT item_id, representation_id, count(*) c
-				FROM ca_commerce_order_items_x_object_representations
+				SELECT coixor.item_id, coixor.representation_id, count(*) c
+				FROM ca_commerce_order_items_x_object_representations coixor
+				INNER JOIN ca_object_representations AS o_r ON o_r.representation_id = coixor.representation_id
 				WHERE
-					item_id IN (?)
-				GROUP BY item_id
+					coixor.item_id IN (?) AND o_r.deleted = 0
+				GROUP BY coixor.item_id
 			", array($va_item_ids));
 			
 			while($qr_rep_count->nextRow()) {
@@ -1155,11 +1178,12 @@ class ca_commerce_orders extends BaseModel {
 			}
 			
 			$qr_rep_count = $o_db->query("
-				SELECT object_id, count(*) c
-				FROM ca_objects_x_object_representations
+				SELECT coixor.object_id, count(*) c
+				FROM ca_objects_x_object_representations coixor
+				INNER JOIN ca_object_representations AS o_r ON o_r.representation_id = coixor.representation_id
 				WHERE
-					object_id IN (?)
-				GROUP BY object_id
+					coixor.object_id IN (?) AND o_r.deleted = 0
+				GROUP BY coixor.object_id
 			", array($va_object_ids));
 			
 			while($qr_rep_count->nextRow()) {
@@ -1718,6 +1742,43 @@ class ca_commerce_orders extends BaseModel {
 		$qr_res->nextRow();
 		if ($qr_res->get('c') > 0) { return true; }
 		return false;
+	}
+	# ------------------------------------------------------
+	/**
+	 * 
+	 *
+	 * @return array 
+	 */
+	public function itemsMissingDownloadableMedia() {
+		if (!$this->getPrimaryKey()) { return null; }
+		
+		$o_db = $this->getDb();
+		$qr_res = $o_db->query("
+			SELECT item_id, object_id
+			FROM ca_commerce_order_items
+			WHERE
+				fullfillment_method = 'DOWNLOAD' AND order_id = ?
+		", (int)$this->getPrimaryKey());
+		
+		$va_object_ids = array();
+		while($qr_res->nextRow()) {
+			$va_object_ids[$qr_res->get('object_id')] = true;
+		}
+		$va_object_ids = array_keys($va_object_ids);
+		
+		$qr_res->seek(0);
+		
+		$t_object = new ca_objects();
+		$va_rep_counts = $t_object->getMediaCountsForIDs($va_object_ids);
+		
+		$va_items_missing_downloadable_media = array();
+		while($qr_res->nextRow()) {
+			$vn_object_id = $qr_res->get('object_id');
+			if (!isset($va_rep_counts[$vn_object_id]) || !$va_rep_counts[$vn_object_id]) {
+				$va_items_missing_downloadable_media[$qr_res->get('item_id')] = true;
+			}
+		}
+		return array_keys($va_items_missing_downloadable_media);
 	}
 	# ------------------------------------------------------
 	/**

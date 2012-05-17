@@ -1043,6 +1043,12 @@ class ca_object_representations extends BundlableLabelableBaseModelWithAttribute
  	# ------------------------------------------------------
  	/**
  	 * Matching method to ca_objects::getRepresentations(), except this one only returns a single representation - the currently loaded one
+ 	 *
+ 	 * @param array $pa_versions
+ 	 * @param array $pa_version_sizes
+ 	 * @param array $pa_options
+ 	 *
+ 	 * @return array
  	 */
  	public function getRepresentations($pa_versions=null, $pa_version_sizes=null, $pa_options=null) {
  		if (!($vn_object_id = $this->getPrimaryKey())) { return null; }
@@ -1177,9 +1183,36 @@ class ca_object_representations extends BundlableLabelableBaseModelWithAttribute
 		}
 		return $va_media;
 	}
+	# ------------------------------------------------------------------
+	/**
+	 * Checks if currently loaded representation is of specified media class. Valid media classes are 'image', 'audio', 'video' and 'document'
+	 * 
+	 * @param string The media class to check for
+	 * @return True if representation is of specified class, false if not
+	 */
+	public function representationIsOfClass($ps_class) {
+ 		if (!($vs_mimetypes_regex = caGetMimetypesForClass($ps_class, array('returnAsRegex' => true)))) { return array(); }
+		
+		return (preg_match("!{$vs_mimetypes_regex}!", $this->get('mimetype'))) ? true  : false;
+	}
+	# ------------------------------------------------------------------
+	/**
+	 * Checks if currently loaded representation has specified MIME type
+	 * 
+	 * @param string The MIME type to check for
+	 * @return bool True if representation has MIME type, false if not
+	 */
+	public function representationIsWithMimetype($ps_mimetype) {
+		return ($this->get('mimetype') == $ps_mimetype) ? true : false;
+	}
  	# ------------------------------------------------------
  	/**
  	 * 
+ 	 *
+ 	 * @param RequestHTTP $po_request
+ 	 * @param array $pa_options
+ 	 * @param array $pa_additional_display_options
+ 	 * @return string HTML output
  	 */
  	public function getRepresentationViewerHTMLBundle($po_request, $pa_options=null, $pa_additional_display_options=null) {
  		$va_access_values = (isset($pa_options['access']) && is_array($pa_options['access'])) ? $pa_options['access'] : array();	
@@ -1188,9 +1221,15 @@ class ca_object_representations extends BundlableLabelableBaseModelWithAttribute
  		$vn_object_id = (isset($pa_options['object_id']) && $pa_options['object_id']) ? $pa_options['object_id'] : null;
  		$vn_item_id = (isset($pa_options['item_id']) && $pa_options['item_id']) ? $pa_options['item_id'] : null;
  		$vn_order_item_id = (isset($pa_options['order_item_id']) && $pa_options['order_item_id']) ? $pa_options['order_item_id'] : null;
+ 		$vb_only_show_reps_in_order = (isset($pa_options['onlyShowRepresentationsInOrder']) && $pa_options['onlyShowRepresentationsInOrder']) ? $pa_options['onlyShowRepresentationsInOrder'] : null;
  		
  		$t_object = new ca_objects($vn_object_id);
  		if (!$t_object->getPrimaryKey()) { return false; }
+ 		
+ 		if(!$this->getPrimaryKey()) {
+ 			$this->load($t_object->getPrimaryRepresentationID(array('checkAccess' => $va_access_values)));
+ 		}
+ 		
 		$o_view = new View($po_request, $po_request->getViewsDirectoryPath().'/bundles/');
 		
 		$t_set_item = new ca_set_items();
@@ -1252,6 +1291,7 @@ class ca_object_representations extends BundlableLabelableBaseModelWithAttribute
  			$o_view->setVar('t_object', $t_object);
  			$o_view->setVar('t_set_item', $t_set_item);
  			$o_view->setVar('t_order_item', $t_order_item);
+ 			$o_view->setVar('only_show_reps_in_order', $vb_only_show_reps_in_order);
 		}
 		return $o_view->render('representation_viewer_html.php');
  	}
