@@ -1244,7 +1244,7 @@ class ca_objects extends BundlableLabelableBaseModelWithAttributes implements IB
 			FROM ca_object_representations orep
 			INNER JOIN ca_objects_x_object_representations AS oxor ON oxor.representation_id = orep.representation_id
 			WHERE
-				(oxor.object_id IN (".join(',', $pa_ids).")) orep.deleted = 0 {$vs_access_where}
+				(oxor.object_id IN (".join(',', $pa_ids).")) AND orep.deleted = 0 {$vs_access_where}
 			GROUP BY oxor.object_id
 		");
 		

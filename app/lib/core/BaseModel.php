@@ -1878,8 +1878,10 @@ class BaseModel extends BaseObject {
 							break;
 						# -----------------------------
 						case (FT_TIMESTAMP):	# insert on stamp
+							$t = time();
 							$vs_fields .= $vs_field.",";
-							$vs_values .= time().",";
+							$vs_values .= $t.",";
+							$this->_FIELD_VALUES[$vs_field] = $t;
 							break;
 						# -----------------------------
 						case (FT_DATERANGE):

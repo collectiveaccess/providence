@@ -194,8 +194,9 @@
 		);
 		
 		caSetPaymentFormDisplay(jQuery('#caPaymentMethod').val(), 0);
-		jQuery('input[name=check_date]').daterangepicker();
-		jQuery('input[name=purchase_order_date]').daterangepicker();
+		jQuery('input[name=check_date]').datepicker();
+		jQuery('input[name=purchase_order_date]').datepicker();
+		jQuery('input[name=payment_received_on]').datepicker();
 		
 		jQuery('#caClientOrderPaymentForm').submit(function() {
 			jQuery('#caClientOrderProcessingIndicator').css('display', 'block');

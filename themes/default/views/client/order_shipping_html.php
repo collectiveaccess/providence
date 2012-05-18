@@ -55,7 +55,7 @@
 			"shipping_method", "shipping_cost", "handling_cost", "shipping_notes", "shipping_date", "shipped_on_date"
 		);
 		foreach($va_shipping_fields as $vs_f) {
-			if (($vs_f == 'shipped_on_date') && (!in_array($t_order->get('order_status'), array('PROCESSED', 'PROCESSED_AWAITING_DIGITIZATION')))) { continue; }	// don't show shipped on field if order is not paid for
+			if (($vs_f == 'shipped_on_date') && (!in_array($t_order->get('order_status'), array('PROCESSED', 'PROCESSED_AWAITING_DIGITIZATION', 'COMPLETED')))) { continue; }	// don't show shipped on field if order is not paid for
 			$va_info = $t_order->getFieldInfo($vs_f);
 			if (($vn_width = $va_info['DISPLAY_WIDTH']) > $vn_max_field_width) { $vn_width = $vn_max_field_width; }
 			
@@ -111,8 +111,8 @@
 		jQuery('input[name=shipped_on_date]').attr('disabled', !available);
 	}
 	jQuery(document).ready(function() {
-		jQuery('input[name=shipping_date]').daterangepicker();
-		jQuery('input[name=shipped_on_date]').daterangepicker();
+		jQuery('input[name=shipping_date]').datepicker();
+		jQuery('input[name=shipped_on_date]').datepicker();
 		caUpdateFormAvailability();
 	});
 </script>

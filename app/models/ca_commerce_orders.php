@@ -1494,98 +1494,10 @@ class ca_commerce_orders extends BaseModel {
 	/**
 	 * Returns total due on current order
 	 * 
-	 * @param array $pa_options Options include:
-	 *		order_id =
-	 *		returnIndividualCosts =
 	 * @return float Total due on order, including items, shipping, handling and tax
 	 */
-	public function getTotal($pa_options=null) {
-		if (isset($pa_options['order_id']) && (int)$pa_options['order_id']) {
-			$vn_order_id = (int)$pa_options['order_id'];
-		} else {
-			$vn_order_id = (int)$this->getPrimaryKey();
-		}
-		if (!$vn_order_id) { return null; }
-		
-		$vb_return_individual_costs = (isset($pa_options['returnIndividualCosts'])) ? (bool)$pa_options['returnIndividualCosts'] : false; 
-		
-		$o_db = $this->getDb();
-		
-		// Get item additional fees
-	 	$qr_res = $o_db->query($vs_sql = "
-	 		SELECT 
-	 			o.order_id, i.item_id, i.additional_fees
-	 		FROM ca_commerce_orders o
-	 		LEFT JOIN ca_commerce_order_items AS i ON o.order_id = i.order_id
-	 		WHERE
-	 			o.deleted = 0 AND o.order_id = ?
-	 			
-	 	", $vn_order_id);
-	 	
-	 	$va_additional_fee_codes = $this->opo_client_services_config->getAssoc('additional_order_item_fees');
-	 	$va_order_item_additional_fees = array();
-	 	while($qr_res->nextRow()) {
-	 		$va_fees = caUnserializeForDatabase($qr_res->get('additional_fees'));
-	 		$vn_fee_total = 0;
-	 		foreach($va_additional_fee_codes as $vs_code => $va_info) {
-				if (isset($va_fees[$vs_code])) { 
-					$vn_fee_total += (float)$va_fees[$vs_code];
-				}
-			}
-			$va_order_item_additional_fees[$qr_res->get('order_id')] += $vn_fee_total;
-	 	}
-		
-		$qr_res = $o_db->query("
-			SELECT 
-				SUM(i.fee) item_cost,
-				(o.shipping_cost + SUM(i.shipping_cost)) shipping_cost, 
-				(o.handling_cost + SUM(i.handling_cost)) handling_cost, 
-				SUM(i.tax) tax,
-				o.additional_fees, 
-				o.order_id
-			FROM ca_commerce_orders o
-			INNER JOIN ca_commerce_order_items AS i ON o.order_id = i.order_id
-			WHERE
-				o.order_id = ?
-			GROUP BY o.order_id
-		", $vn_order_id);
-		
-		if ($qr_res->nextRow()) {
-			// order additional fees
-			$vn_additional_order_fees = 0;
-			
-			if (is_array($va_additional_fees = caUnserializeForDatabase($qr_res->get('additional_fees')))) {
-				foreach($va_additional_fees as $vs_code => $vn_fee) {
-					$vn_additional_order_fees += $vn_fee;
-				}
-			}
-			if ($vb_return_individual_costs) {
-				return array(
-					'total' => sprintf("%4.2f", (float)$qr_res->get('item_cost') + (float)$qr_res->get('shipping_cost') + (float)$qr_res->get('handling_cost') + (float)$qr_res->get('tax') + (float)$vn_additional_order_fees) + (float)$va_order_item_additional_fees[$qr_res->get('order_id')],
-					'item_cost' => sprintf("%4.2f", (float)$qr_res->get('item_cost')),
-					'shipping_cost' => sprintf("%4.2f", (float)$qr_res->get('shipping_cost')),
-					'handling_cost' => sprintf("%4.2f", (float)$qr_res->get('handling_cost')),
-					'additional_order_fees' => $vn_additional_order_fees,
-					'additional_item_fees' => (float)$va_order_item_additional_fees[$qr_res->get('order_id')],
-					'tax' => sprintf("%4.2f", (float)$qr_res->get('tax'))
-				);
-			} else {
-				return sprintf("%4.2f", (float)$qr_res->get('item_cost') + (float)$qr_res->get('shipping_cost') + (float)$qr_res->get('handling_cost') + (float)$qr_res->get('tax')) + (float)$vn_additional_order_fees + (float)$va_order_item_additional_fees[$qr_res->get('order_id')];
-			}
-		}
-		
-		if ($vb_return_individual_costs) {
-			return array(
-				'total' => 0.00,
-				'item_cost' => 0.00,
-				'shipping_cost' => 0.00,
-				'handling_cost' => 0.00,
-				'additional_order_fees' => 0.00,
-				'additional_item_fees' => 0.00,
-				'tax' => 0.00
-			);
-		}
-		return 0.00;
+	public function getTotal() {
+		return $this->getOrderTotals(array('sumOnly' => true));
 	}
 	# ------------------------------------------------------
 	/**
@@ -1596,7 +1508,7 @@ class ca_commerce_orders extends BaseModel {
 	public function paymentIsAllowed() {
 		if (!$this->getPrimaryKey()) { return null; }
 		if ($this->get('order_status') != 'AWAITING_PAYMENT') { return false; }
-		if (!in_array($this->get('payment_status'), array('xPROCESSING', 'xRECEIVED')) && ((int)$this->get('payment_received_on') == 0) && ($this->getTotal() > 0.00)) {
+		if (!in_array($this->get('payment_status'), array('PROCESSING', 'RECEIVED')) && ((int)$this->get('payment_received_on') == 0) && ($this->getTotal() > 0.00)) {
 			return true;
 		}
 		
