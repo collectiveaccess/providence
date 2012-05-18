@@ -39,6 +39,8 @@
 	$vb_read_only		=	((isset($va_settings['readonly']) && $va_settings['readonly'])  || ($this->request->user->getBundleAccessLevel($t_instance->tableName(), 'ca_list_items') == __CA_BUNDLE_ACCESS_READONLY__));
 	
 	$va_initial_values	= $this->getVar('initialValues');
+	
+	$vn_browse_last_id = (int)$this->request->session->getVar('ca_list_items_browse_last_id');
 
 	// params to pass during occurrence lookup
 	$va_lookup_params = (isset($va_settings['restrict_to_type']) && $va_settings['restrict_to_type']) ? array('type' => $va_settings['restrict_to_type'], 'noSubtypes' => (int)$va_settings['dont_include_subtypes_in_type_restriction']) : array();
@@ -117,6 +119,7 @@
 			
 			<script type='text/javascript'>
 				jQuery(document).ready(function() { 
+					var init = true;
 					var <?php print $vs_id_prefix; ?>oHierBrowser{n} = caUI.initHierBrowser('<?php print $vs_id_prefix; ?>_hierarchyBrowser{n}', {
 						uiStyle: 'horizontal',
 						levelDataUrl: '<?php print caNavUrl($this->request, 'lookup', 'ListItem', 'GetHierarchyLevel', array('noSymbols' => 1, 'voc' => 1, 'lists' => join(';', $va_settings['restrict_to_lists']))); ?>',
@@ -132,13 +135,16 @@
 						
 						editButtonIcon: '<img src="<?php print $this->request->getThemeUrlPath(); ?>/graphics/buttons/arrow_grey_right.gif" border="0" title="Edit"/>',
 						
-						initItemID: <?php print (int)$this->request->session->getVar('ca_list_items_browse_last_id'); ?>,
+						initItemID: <?php print $vn_browse_last_id; ?>,
 						useAsRootID: <?php print $vn_use_as_root_id; ?>,
 						indicatorUrl: '<?php print $this->request->getThemeUrlPath(); ?>/graphics/icons/indicator.gif',
 						
 						currentSelectionDisplayID: '<?php print $vs_id_prefix; ?>_browseCurrentSelectionText{n}',
 						onSelection: function(item_id, parent_id, name, display, type_id) {
-							caRelationBundle<?php print $vs_id_prefix; ?>.select('{n}', [0, item_id, type_id], display);
+							if (!init) {	// Don't actually select the init value, otherwise if you save w/no selection you get "phantom" relationships
+								caRelationBundle<?php print $vs_id_prefix; ?>.select('{n}', [0, item_id, type_id], display);
+							}
+							init = false;
 						}
 					});
 					
@@ -149,6 +155,7 @@
 					jQuery('#<?php print $vs_id_prefix; ?>_hierarchyBrowserSearch{n}').result(function(event, data, formatted) {
 						<?php print $vs_id_prefix; ?>oHierBrowser{n}.setUpHierarchy(data[1]);	// jump browser to selected item
 					});
+
 				});
 			</script>
 <?php
