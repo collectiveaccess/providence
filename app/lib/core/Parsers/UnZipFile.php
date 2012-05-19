@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2004 Whirl-i-Gig
+ * Copyright 2004-2012 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -36,31 +36,26 @@
 
 class UnZipFile {
 	# --------------------------------------------------------
-	var $ops_filepath;
-	var $opo_zip;
+	private $ops_filepath;
+	private $opo_zip;
 	
-	var $opn_read_packet_size = 256000;
-	
-	# 
-	# If the path to the unzip executable command is set
-	# then it is used instead of the ZZipLib support in PHP
-	#
-	var $ops_path_to_unzip = "/usr/bin/unzip";
+	private $opn_read_packet_size = 256000;
 	# --------------------------------------------------------
-	function UnZipFile($ps_filepath="") {
+	/** 
+	 *
+	 */
+	public function UnZipFile($ps_filepath="") {
 		if ($ps_filepath) {
 			$this->load($ps_filepath);
 		}
 	}
 	# --------------------------------------------------------
-	function load($ps_filepath) {
+	/** 
+	 *
+	 */
+	public function load($ps_filepath) {
 		if (!function_exists('zip_open')) {
-			if (file_exists($ps_filepath)) {
-				$this->opo_zip = $ps_filepath;
-				return true;
-			} else {
-				return false;
-			}
+			return null;
 		} else {
 			if ($this->opo_zip) {
 				zip_close($this->opo_zip);
@@ -70,14 +65,16 @@ class UnZipFile {
 			if (is_resource($this->opo_zip)) {
 				return $this->opo_zip;
 			} else {
-				//print "ZIP ERROR: ".$this->zipFileErrMsg($this->opo_zip);
 				$this->opo_zip = false;
 				return false;
 			}
 		}
 	}
 	# --------------------------------------------------------
-	function extract($ps_destpath, $ps_file_to_expand=null) {
+	/**
+	 *
+	 */
+	public function extract($ps_destpath, $ps_file_to_expand=null) {
 		if (!$this->opo_zip) {
 			return false;
 		} else {
@@ -86,12 +83,7 @@ class UnZipFile {
 			}
 			
 			if (!function_exists('zip_open')) {
-				exec(escapeshellcmd("unzip ".$this->opo_zip." $ps_file_to_expand -d ".$ps_destpath), $va_output, $vn_ret_val);
-				if ($vn_ret_val != 0) {
-					return false;
-				} else {
-					return true;
-				}
+				return null;
 			} else {
 				while($r_zip_entry = zip_read($this->opo_zip)) {
 					if (zip_entry_open($this->opo_zip, $r_zip_entry, "r")) {
@@ -108,7 +100,6 @@ class UnZipFile {
 								$va_dirpath = array_slice($va_dirs,0,$vn_i);
 								if (!file_exists($ps_destpath.join("/", $va_dirpath))) {
 									@mkdir($ps_destpath.join("/", $va_dirpath));
-									//print "mkdir ".$ps_destpath.join("/", $va_dirpath)."<br>";
 								}
 							}
 						} else {
@@ -137,7 +128,38 @@ class UnZipFile {
 		return true;
 	}
 	# --------------------------------------------------------
-	function zipFileErrMsg($errno) {
+	/**
+	 *
+	 */
+	public function getFileList() {
+		if (!$this->opo_zip) {
+			return false;
+		} else {
+			if (!function_exists('zip_open')) {
+				return null;
+			} else {
+				$va_files = array();
+				while($r_zip_entry = zip_read($this->opo_zip)) {
+					if (zip_entry_open($this->opo_zip, $r_zip_entry, "r")) {
+						
+						$vs_filepath = zip_entry_name($r_zip_entry);
+						
+						$vs_filesize = zip_entry_filesize($r_zip_entry);
+						$va_files[$vs_filepath] = $vs_filesize;
+						
+						zip_entry_close($r_zip_entry);
+					}
+				}
+				return $va_files;
+			}
+		}
+		return null;
+	}
+	# --------------------------------------------------------
+	/**
+	 *
+	 */
+	public function zipFileErrMsg($errno) {
 		// using constant name as a string to make this function PHP4 compatible
 		$zipFileFunctionsErrors = array(
 			'ZIPARCHIVE::ER_MULTIDISK' => 'Multi-disk zip archives not supported.',
