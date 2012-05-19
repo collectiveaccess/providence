@@ -51,7 +51,7 @@
 	if (sizeof($va_reps)) {
 		foreach ($va_reps as $va_rep) {
 			$vn_num_multifiles = $va_rep['num_multifiles'];
-			$vs_extracted_metadata = iconv('ISO-8859-15', 'UTF8', caFormatMediaMetadata(caUnserializeForDatabase($va_rep['media_metadata'])));
+			$vs_extracted_metadata = caFormatMediaMetadata(caUnserializeForDatabase($va_rep['media_metadata']));
 			$vs_md5 = isset($va_rep['info']['original']['MD5']) ? _t('MD5 signature').': '.$va_rep['info']['original']['MD5'] : '';
 
 			$va_inital_values[$va_rep['representation_id']] = array(
