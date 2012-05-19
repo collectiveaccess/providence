@@ -1,6 +1,6 @@
 <?php
 /** ---------------------------------------------------------------------
- * app/lib/core/Plugins/Media/MSWord.php :
+ * app/lib/core/Plugins/Media/Office.php :
  * ----------------------------------------------------------------------
  * CollectiveAccess
  * Open-source collections management software
@@ -14,7 +14,7 @@
  * This program is free software; you may redistribute it and/or modify it under
  * the terms of the provided license as published by Whirl-i-Gig
  *
- * CollectiveAccess is distributed in the hope that it will be useful, but
+ * CollectiveAccess is fdistributed in the hope that it will be useful, but
  * WITHOUT ANY WARRANTIES whatsoever, including any implied warranty of 
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  
  *
@@ -35,7 +35,7 @@
   */
  
 /**
- * Plugin for processing Microsoft Word documents
+ * Plugin for processing Microsoft Word and Excel documents
  */
  
 include_once(__CA_LIB_DIR__."/core/Plugins/WLPlug.php");
@@ -43,8 +43,14 @@ include_once(__CA_LIB_DIR__."/core/Plugins/IWLPlugMedia.php");
 include_once(__CA_LIB_DIR__."/core/Configuration.php");
 include_once(__CA_LIB_DIR__."/core/Media.php");
 include_once(__CA_APP_DIR__."/helpers/mediaPluginHelpers.php");
+include_once(__CA_LIB_DIR__."/core/Parsers/UnZipFile.php");
 
-class WLPlugMediaMSWord Extends WLPlug Implements IWLPlugMedia {
+include_once(__CA_LIB_DIR__."/core/Zend/Search/Lucene/Document/OpenXml.php");
+include_once(__CA_LIB_DIR__."/core/Zend/Search/Lucene/Document/Docx.php");
+include_once(__CA_LIB_DIR__."/core/Zend/Search/Lucene/Document/Xlsx.php");
+include_once(__CA_LIB_DIR__."/core/Zend/Search/Lucene/Document/Pptx.php");
+
+class WLPlugMediaOffice Extends WLPlug Implements IWLPlugMedia {
 	var $errors = array();
 	
 	var $filepath;
@@ -57,16 +63,26 @@ class WLPlugMediaMSWord Extends WLPlug Implements IWLPlugMedia {
 	var $ops_abiword_path;
 	var $ops_libreoffice_path;
 	
+	var $opa_metadata;
+	
 	var $info = array(
 		"IMPORT" => array(
 			"text/rtf" 								=> "rtf",
 			"application/msword" 					=> "doc",
-			"application/vnd.openxmlformats-officedocument.wordprocessingml.document" 					=> "docx"
+			"application/vnd.openxmlformats-officedocument.wordprocessingml.document" 					=> "docx",
+			"application/vnd.ms-excel" 				=> "xls",
+			"application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" 						=> "xlsx",
+			"application/vnd.ms-powerpoint"			=> "ppt",
+			"application/vnd.openxmlformats-officedocument.presentationml.presentation" 				=> "pptx"
 		),
 		
 		"EXPORT" => array(
 			"application/msword" 					=> "doc",
 			"application/vnd.openxmlformats-officedocument.wordprocessingml.document" => "docx",
+			"application/vnd.ms-excel" 				=> "xls",
+			"application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" 		=> "xlsx",
+			"application/vnd.ms-powerpoint"			=> "ppt",
+			"application/vnd.openxmlformats-officedocument.presentationml.presentation" => "pptx",
 			"application/pdf"						=> "pdf",
 			"text/html"								=> "html",
 			"text/plain"							=> "txt",
@@ -103,7 +119,7 @@ class WLPlugMediaMSWord Extends WLPlug Implements IWLPlugMedia {
 			'version'			=> 'W'	// required of all plug-ins
 		),
 		
-		"NAME" => "MSWord",
+		"NAME" => "Office",
 		
 		"MULTIPAGE_CONVERSION" => true, // if true, means plug-in support methods to transform and return all pages of a multipage document file (ex. a PDF)
 		"NO_CONVERSION" => false
@@ -112,12 +128,16 @@ class WLPlugMediaMSWord Extends WLPlug Implements IWLPlugMedia {
 	var $typenames = array(
 		"application/pdf" 				=> "PDF",
 		"application/msword" 			=> "Microsoft Word",
+		"application/vnd.openxmlformats-officedocument.wordprocessingml.document" => "Microsoft Word/OpenOffice",
+		"application/vnd.ms-excel" 		=> "Microsoft Excel",
+		"application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" => "Microsoft Excel/OpenOffice",
+		"application/vnd.ms-powerpoint"			=> "Microsoft PowerPoint",
+		"application/vnd.openxmlformats-officedocument.presentationml.presentation" 				=> "Microsoft PowerPoint/OpenOffice",
 		"text/html" 					=> "HTML",
 		"text/plain" 					=> "Plain text",
 		"image/jpeg"					=> "JPEG",
 		"image/png"						=> "PNG",
-		"text/rtf"						=> "RTF",
-		"application/vnd.openxmlformats-officedocument.wordprocessingml.document" => "Microsoft Office 2007"
+		"text/rtf"						=> "RTF"
 	);
 	
 	var $magick_names = array(
@@ -136,8 +156,10 @@ class WLPlugMediaMSWord Extends WLPlug Implements IWLPlugMedia {
 	
 	# ------------------------------------------------
 	public function __construct() {
-		$this->description = _t('Accepts and processes Microsoft Word 97, 2000 and 2007 format documents');
+		$this->description = _t('Accepts and processes Microsoft Word, Excel and PowerPoint format documents');
 		$this->opa_transformations = array();
+		
+		$this->opa_metadata = array();
 	}
 	# ------------------------------------------------
 	# Tell WebLib what kinds of media this plug-in supports
@@ -163,7 +185,7 @@ class WLPlugMediaMSWord Extends WLPlug Implements IWLPlugMedia {
 		}
 		
 		if (!($this->opb_abiword_installed)) { 
-			$va_status['warnings'][] = _t("ABIWord cannot be found: indexing of text in Microsoft Word files will not be performed; you can obtain ABIWord at http://www.abisource.com/");
+			$va_status['warnings'][] = _t("ABIWord cannot be found: indexing of text in non-XML Microsoft Word files will not be performed; you can obtain ABIWord at http://www.abisource.com/");
 		}
 		
 		if (!($this->opb_libre_office_installed)) { 
@@ -180,7 +202,7 @@ class WLPlugMediaMSWord Extends WLPlug Implements IWLPlugMedia {
 		
 		if ($r_fp = fopen($ps_filepath, "r")) {
 			$vs_sig = fgets($r_fp, 9);
-			if ($this->isWord2008doc($vs_sig) || $this->isWord972000doc($vs_sig, $r_fp)) {
+			if ($this->isWord972000doc($vs_sig, $r_fp)) {
 				$this->properties = $this->handle = $this->ohandle = array(
 					"mimetype" => 'application/msword',
 					"filesize" => filesize($ps_filepath),
@@ -190,8 +212,43 @@ class WLPlugMediaMSWord Extends WLPlug Implements IWLPlugMedia {
 				fclose($r_fp);
 				return "application/msword";
 			}
+			
+			fclose($r_fp);
+			
+			if ($vs_type = $this->isWordExcelorPPTXMLdoc($ps_filepath, $vs_sig)) {
+				switch($vs_type) {
+					case 'WORD':
+					default:
+						$this->properties = $this->handle = $this->ohandle = array(
+							"mimetype" => 'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+							"filesize" => filesize($ps_filepath),
+							"typename" => "Microsoft Word/OpenOffice",
+							"content" => ""
+						);
+						return "application/vnd.openxmlformats-officedocument.wordprocessingml.document";
+						break;
+					case 'EXCEL':
+						$this->properties = $this->handle = $this->ohandle = array(
+							"mimetype" => 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+							"filesize" => filesize($ps_filepath),
+							"typename" => "Microsoft Excel/OpenOffice",
+							"content" => ""
+						);
+						return "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet";
+						break;
+					case 'PPT':
+						$this->properties = $this->handle = $this->ohandle = array(
+							"mimetype" => 'application/vnd.openxmlformats-officedocument.presentationml.presentation',
+							"filesize" => filesize($ps_filepath),
+							"typename" => "Microsoft PowerPoint/OpenOffice",
+							"content" => ""
+						);
+						return "application/vnd.openxmlformats-officedocument.presentationml.presentation";
+						break;
+				}	
+			}
+			
 		}
-		fclose($r_fp);
 		return '';
 	}
 	# ----------------------------------------------------------
@@ -223,15 +280,77 @@ class WLPlugMediaMSWord Extends WLPlug Implements IWLPlugMedia {
 		return false;
 	}
 	# ----------------------------------------------------------
-	private function isWord2008doc($ps_sig) {
-		// ehh... this'll also consider any PK zip file or text field beginning
-		// with "PK" as a Word 2008 file... there has got to be a better way.
+	/**
+	 * Detect if document pointed to by $ps_filepath is a valid Word, Excel or PowerPoint XML (OpenOffice) document.
+	 *
+	 * @param string $ps_filepath The path to the file to analyze
+	 * @param string $ps_sig The signature (first 9 bytes) of the file
+	 * @return string WORD if the document is a Word doc, EXCEL if the document is an Excel doc, PPT if it is a PowerPoint doc or boolean false if it's not a valid Word or Excel XML (OpenOffice) file
+	 */
+	private function isWordExcelorPPTXMLdoc($ps_filepath, $ps_sig) {
+	
 		if (
-			substr($ps_sig, 0, 2) == 'PK'
+			substr($ps_sig, 0, 2) == 'PK'		// is a PKZip file... so open it up
 		) {
-			return true;
+			$o_unzip = new UnZipFile($ps_filepath);
+			if (is_array($va_list = $o_unzip->getFileList())) {
+				foreach($va_list as $vs_file => $vn_size) {
+					if (substr($vs_file, 0, 5) == 'word/') {
+						try {
+							$o_doc = Zend_Search_Lucene_Document_Docx::loadDocxFile($ps_filepath);
+							$this->opa_metadata = array('WORD' => array(
+									'title' => $o_doc->getFieldUtf8Value('title'),
+									'subject' => $o_doc->getFieldUtf8Value('subject'),
+									'creator' => $o_doc->getFieldUtf8Value('creator'),
+									'created' => $o_doc->getFieldUtf8Value('created'),
+									'modified' => $o_doc->getFieldUtf8Value('modified')
+								)
+							);
+							$this->handle['content'] = $o_doc->getFieldUtf8Value('body');
+							return 'WORD';
+						} catch (Exception $e) {
+							// noop
+						}
+					}
+					if (substr($vs_file, 0, 3) == 'xl/') {
+						try {
+							$o_doc = Zend_Search_Lucene_Document_Xlsx::loadXlsxFile($ps_filepath);
+							$this->opa_metadata = array('EXCEL' => array(
+									'title' => $o_doc->getFieldUtf8Value('title'),
+									'creator' => $o_doc->getFieldUtf8Value('creator'),
+									'created' => $o_doc->getFieldUtf8Value('created'),
+									'modified' => $o_doc->getFieldUtf8Value('modified')
+								)
+							);
+							$this->handle['content'] = $o_doc->getFieldUtf8Value('body');
+							return 'EXCEL';
+						} catch (Exception $e) {
+							// noop
+							
+						}
+					}
+					
+					if (substr($vs_file, 0, 4) == 'ppt/') {
+						try {
+							$o_doc = Zend_Search_Lucene_Document_Pptx::loadPptxFile($ps_filepath);
+							$this->opa_metadata = array('PPT' => array(
+									'title' => $o_doc->getFieldUtf8Value('title'),
+									'creator' => $o_doc->getFieldUtf8Value('creator'),
+									'created' => $o_doc->getFieldUtf8Value('created'),
+									'modified' => $o_doc->getFieldUtf8Value('modified')
+								)
+							);
+							$this->handle['content'] = $o_doc->getFieldUtf8Value('body');
+							return 'PPT';
+						} catch (Exception $e) {
+							// noop
+						}
+					}
+				}
+			}
+			return false;
 		}
-		
+			
 		return false;
 	}
 	# ----------------------------------------------------------
@@ -240,7 +359,6 @@ class WLPlugMediaMSWord Extends WLPlug Implements IWLPlugMedia {
 			if ($this->info["PROPERTIES"][$property]) {
 				return $this->properties[$property];
 			} else {
-				//print "Invalid property";
 				return '';
 			}
 		} else {
@@ -263,7 +381,7 @@ class WLPlugMediaMSWord Extends WLPlug Implements IWLPlugMedia {
 				}
 			} else {
 				# invalid property
-				$this->postError(1650, _t("Can't set property %1", $property), "WLPlugMediaMSWord->set()");
+				$this->postError(1650, _t("Can't set property %1", $property), "WLPlugMediaOffice->set()");
 				return '';
 			}
 		} else {
@@ -287,7 +405,7 @@ class WLPlugMediaMSWord Extends WLPlug Implements IWLPlugMedia {
 	 * @return Array Extracted metadata
 	 */
 	public function getExtractedMetadata() {
-		return array();
+		return $this->opa_metadata;
 	}
 	# ------------------------------------------------
 	public function read ($ps_filepath) {
@@ -295,13 +413,13 @@ class WLPlugMediaMSWord Extends WLPlug Implements IWLPlugMedia {
 			# noop
 		} else {
 			if (!file_exists($ps_filepath)) {
-				$this->postError(1650, _t("File %1 does not exist", $ps_filepath), "WLPlugMediaMSWord->read()");
+				$this->postError(1650, _t("File %1 does not exist", $ps_filepath), "WLPlugMediaOffice->read()");
 				$this->handle = "";
 				$this->filepath = "";
 				return false;
 			}
 			if (!($this->divineFileFormat($ps_filepath))) {
-				$this->postError(1650, _t("File %1 is not a Microsoft Word document", $ps_filepath), "WLPlugMediaMSWord->read()");
+				$this->postError(1650, _t("File %1 is not a Microsoft Word, Excel or PowerPoint document", $ps_filepath), "WLPlugMediaOffice->read()");
 				$this->handle = "";
 				$this->filepath = "";
 				return false;
@@ -322,6 +440,8 @@ class WLPlugMediaMSWord Extends WLPlug Implements IWLPlugMedia {
 			$this->handle['content'] = $this->ohandle['content'] = $vs_extracted_text;
 			@unlink($vs_tmp_filename);
 		}
+		
+		$this->ohandle = $this->handle = $this->properties;
 			
 		return true;	
 	}
@@ -332,7 +452,7 @@ class WLPlugMediaMSWord Extends WLPlug Implements IWLPlugMedia {
 		
 		if (!($this->info["TRANSFORMATIONS"][$ps_operation])) {
 			# invalid transformation
-			$this->postError(1655, _t("Invalid transformation %1", $ps_operation), "WLPlugMSWord->transform()");
+			$this->postError(1655, _t("Invalid transformation %1", $ps_operation), "WLPlugOffice->transform()");
 			return false;
 		}
 		
@@ -412,18 +532,18 @@ class WLPlugMediaMSWord Extends WLPlug Implements IWLPlugMedia {
 		
 		# is mimetype valid?
 		if (!($vs_ext = $this->info["EXPORT"][$ps_mimetype])) {
-			$this->postError(1610, _t("Can't convert file to %1", $ps_mimetype), "WLPlugMediaMSWord->write()");
+			$this->postError(1610, _t("Can't convert file to %1", $ps_mimetype), "WLPlugMediaOffice->write()");
 			return false;
 		} 
 		
 		# write the file
 		if ($ps_mimetype == "application/msword") {
 			if ( !copy($this->filepath, $ps_filepath.".doc") ) {
-				$this->postError(1610, _t("Couldn't write file to '%1'", $ps_filepath), "WLPlugMediaMSWord->write()");
+				$this->postError(1610, _t("Couldn't write file to '%1'", $ps_filepath), "WLPlugMediaOffice->write()");
 				return false;
 			}
 		} else {
-			if (!isset(WLPlugMediaMSWord::$s_pdf_conv_cache[$this->filepath]) && $this->opb_libre_office_installed) {
+			if (!isset(WLPlugMediaOffice::$s_pdf_conv_cache[$this->filepath]) && $this->opb_libre_office_installed) {
 				$vs_tmp_dir_path = caGetTempDirPath();
 				$va_tmp = explode("/", $this->filepath);
 				$vs_out_file = array_pop($va_tmp);
@@ -437,16 +557,16 @@ class WLPlugMediaMSWord Extends WLPlug Implements IWLPlugMedia {
 				$this->handle['content'] = strip_tags(file_get_contents("{$vs_tmp_dir_path}/".join(".", $va_out_file).".html"));
 				$va_out_file[] = 'pdf';
 				
-				WLPlugMediaMSWord::$s_pdf_conv_cache[$this->filepath] = "{$vs_tmp_dir_path}/".join(".", $va_out_file);
+				WLPlugMediaOffice::$s_pdf_conv_cache[$this->filepath] = "{$vs_tmp_dir_path}/".join(".", $va_out_file);
 				$o_media = new Media();
-				if ($o_media->read(WLPlugMediaMSWord::$s_pdf_conv_cache[$this->filepath])) {
+				if ($o_media->read(WLPlugMediaOffice::$s_pdf_conv_cache[$this->filepath])) {
 					$this->set('width', $this->ohandle["width"] = $o_media->get('width'));
 					$this->set('height', $this->ohandle["height"] = $o_media->get('height'));
 					$this->set('resolution', $this->ohandle["resolution"] = $o_media->get('resolution'));
 				}
 			}
 			
-			if ($vs_media = WLPlugMediaMSWord::$s_pdf_conv_cache[$this->filepath]) {
+			if ($vs_media = WLPlugMediaOffice::$s_pdf_conv_cache[$this->filepath]) {
 				switch($ps_mimetype) {
 					case 'application/pdf':
 						$o_media = new Media();
@@ -478,15 +598,15 @@ class WLPlugMediaMSWord Extends WLPlug Implements IWLPlugMedia {
 					if ($va_icon_info = $o_icon_info->getAssoc('application/msword')) {
 						$vs_icon_path = $o_icon_info->get("icon_folder_path");
 						if (!copy($vs_icon_path."/".trim($va_icon_info[$this->get("version")]),$ps_filepath.'.'.$vs_ext)) {
-							$this->postError(1610, _t("Can't copy icon file from %1 to %2", $vs_icon_path."/".trim($va_icon_info[$this->get("version")]), $ps_filepath.'.'.$vs_ext), "WLPlugMediaMSWord->write()");
+							$this->postError(1610, _t("Can't copy icon file from %1 to %2", $vs_icon_path."/".trim($va_icon_info[$this->get("version")]), $ps_filepath.'.'.$vs_ext), "WLPlugMediaOffice->write()");
 							return false;
 						}
 					} else {
-						$this->postError(1610, _t("No icon available for this media type (system misconfiguration)"), "WLPlugMediaMSWord->write()");
+						$this->postError(1610, _t("No icon available for this media type (system misconfiguration)"), "WLPlugMediaOffice->write()");
 						return false;
 					}
 				} else {
-					$this->postError(1610, _t("No icons available (system misconfiguration)"), "WLPlugMediaMSWord->write()");
+					$this->postError(1610, _t("No icons available (system misconfiguration)"), "WLPlugMediaOffice->write()");
 					return false;
 				}
 			}
@@ -504,7 +624,7 @@ class WLPlugMediaMSWord Extends WLPlug Implements IWLPlugMedia {
 	 *
 	 */
 	public function &writePreviews($ps_filepath, $pa_options) {
-		if ($vs_pdf_path = WLPlugMediaMSWord::$s_pdf_conv_cache[$this->filepath]) {
+		if ($vs_pdf_path = WLPlugMediaOffice::$s_pdf_conv_cache[$this->filepath]) {
 			$o_media = new Media();
 			if ($o_media->read($vs_pdf_path)) {
 				return $o_media->writePreviews($pa_options);	
@@ -617,9 +737,9 @@ class WLPlugMediaMSWord Extends WLPlug Implements IWLPlugMedia {
 	# ------------------------------------------------
 }
 
-function WLPlugMSWordShutdown() {
+function WLPlugOfficeShutdown() {
 	// Cleanup tmp files
-	foreach(WLPlugMediaMSWord::$s_pdf_conv_cache as $vs_filepath => $vs_pdf_path) {
+	foreach(WLPlugMediaOffice::$s_pdf_conv_cache as $vs_filepath => $vs_pdf_path) {
 		if(file_exists($vs_pdf_path)) {
 			@unlink($vs_pdf_path);
 			@unlink(preg_replace("!\.pdf$!", ".html", $vs_pdf_path));
@@ -627,5 +747,5 @@ function WLPlugMSWordShutdown() {
 	}
 }
 
-register_shutdown_function("WLPlugMSWordShutdown");
+register_shutdown_function("WLPlugOfficeShutdown");
 ?>
