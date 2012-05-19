@@ -229,6 +229,9 @@ jQuery.fn.daterangepicker = function(settings){
 			rp.find('.title-end').text(options.rangeEndTitle);
 			rp.find('.range-start').restoreDateFromData().css('opacity',1).show(400);
 			rp.find('.range-end').restoreDateFromData().css('opacity',1).show(400);
+			
+			if (options.earliestDate) { rp.find('.range-start').saveDateToData().datepicker('setDate', options.earliestDate); }
+			if (options.latestDate) { rp.find('.range-end').saveDateToData().datepicker('setDate', options.latestDate); }
 			setTimeout(function(){doneBtn.fadeIn();}, 400);
 		}
 		else {
