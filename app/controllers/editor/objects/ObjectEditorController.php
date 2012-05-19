@@ -252,7 +252,7 @@
  			}
  			$vn_rc = $this->render('object_representation_download_binary.php');
  			if ($vs_path) { unlink($vs_path); }
- 			return $vn_rc;
+ 			exit;
  		}
  		# -------------------------------------------------------
  		/**
