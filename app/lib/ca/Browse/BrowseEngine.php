@@ -411,6 +411,10 @@
 					
 					break;
 				# -----------------------------------------------------
+				case 'field':
+					return urldecode($pn_row_id);
+					break;
+				# -----------------------------------------------------
 				case 'normalizedDates':
 					return urldecode($pn_row_id);
 					break;
@@ -875,6 +879,43 @@
 													{$vs_label_table_name}.{$vs_item_pk} = ?";
 											//print "$vs_sql [".intval($this->opn_browse_table_num)."]<hr>";
 											$qr_res = $this->opo_db->query($vs_sql, $vn_row_id);
+											
+											
+											$qr_res = $this->opo_db->query("TRUNCATE TABLE ca_browses_acc");
+											$qr_res = $this->opo_db->query("INSERT IGNORE INTO ca_browses_acc SELECT row_id FROM ca_browses_tmp");
+										} 
+										
+										$vn_i++;
+									}
+									break;
+								# -----------------------------------------------------
+								case 'field':
+									$t_item = $this->opo_datamodel->getInstanceByTableName($this->ops_browse_table_name, true);
+									$vs_field_name = $va_facet_info['field'];
+									
+									foreach($va_row_ids as $vn_row_id) {
+										$vn_row_id = urldecode($vn_row_id);
+										if ($vn_i == 0) {
+											$vs_sql = "
+												INSERT IGNORE INTO ca_browses_acc
+												SELECT ".$this->ops_browse_table_name.'.'.$t_item->primaryKey()."
+												FROM ".$this->ops_browse_table_name."
+												WHERE
+													(".$this->ops_browse_table_name.".{$vs_field_name} = ?)";
+											//print "$vs_sql [".intval($this->opn_browse_table_num)."/".$vn_element_id."/".$vn_row_id."]<hr>";
+											$qr_res = $this->opo_db->query($vs_sql, (string)$vn_row_id);
+										} else {
+											
+											$qr_res = $this->opo_db->query("TRUNCATE TABLE ca_browses_tmp");
+											$vs_sql = "
+												INSERT IGNORE INTO ca_browses_tmp
+												SELECT ".$this->ops_browse_table_name.'.'.$t_item->primaryKey()."
+												FROM ".$this->ops_browse_table_name."
+												INNER JOIN ca_browses_acc ON ca_browses_acc.row_id = ".$this->ops_browse_table_name.'.'.$t_item->primaryKey()."
+												WHERE
+													(".$this->ops_browse_table_name.".{$vs_field_name} = ?)";
+											//print "$vs_sql [".intval($this->opn_browse_table_num)."/".$vn_element_id."/".$vn_row_id."]<hr>";
+											$qr_res = $this->opo_db->query($vs_sql, (string)$vn_row_id);
 											
 											
 											$qr_res = $this->opo_db->query("TRUNCATE TABLE ca_browses_acc");
@@ -2078,6 +2119,98 @@
 							}
 						}
 					}
+					return array();
+					break;
+				# -----------------------------------------------------
+				case 'field':
+					$t_item = $this->opo_datamodel->getInstanceByTableName($this->ops_browse_table_name, true);
+					$vs_field_name = $va_facet_info['field'];
+					$va_field_info = $t_item->getFieldInfo($vs_field_name);
+					
+					$vs_sort_field = null;
+					if (($t_item->getProperty('ID_NUMBERING_ID_FIELD') == $vs_field_name)) {
+						$vs_sort_field = $t_item->getProperty('ID_NUMBERING_SORT_FIELD');
+					}
+					
+					$t_list = new ca_lists();
+					$t_list_item = new ca_list_items();
+					
+					$va_joins = array();
+					$va_wheres = array();
+					$vs_where_sql = '';
+					
+					
+						if (sizeof($va_results) && ($this->numCriteria() > 0)) {
+							$va_wheres[] = "(".$this->ops_browse_table_name.'.'.$t_item->primaryKey()." IN (".join(',', $va_results)."))";
+						}
+						
+						if (isset($pa_options['checkAccess']) && is_array($pa_options['checkAccess']) && sizeof($pa_options['checkAccess']) && $t_item->hasField('access')) {
+							$va_wheres[] = "(".$this->ops_browse_table_name.".access IN (".join(',', $pa_options['checkAccess'])."))";
+						}
+						
+						if ($vs_browse_type_limit_sql) {
+							$va_wheres[] = $vs_browse_type_limit_sql;
+						}
+											
+						if ($t_item->hasField('deleted')) {
+							$va_wheres[] = "(".$this->ops_browse_table_name.".deleted = 0)";
+						}
+						
+						$vs_join_sql = join("\n", $va_joins);
+						
+						if (is_array($va_wheres) && sizeof($va_wheres) && ($vs_where_sql = join(' AND ', $va_wheres))) {
+							$vs_where_sql = '('.$vs_where_sql.')';
+						}
+						
+						if ($vb_check_availability_only) {
+							$vs_sql = "
+								SELECT count(*) c
+								FROM ".$this->ops_browse_table_name."
+								{$vs_join_sql}
+								WHERE
+									{$vs_where_sql}
+								LIMIT 1";
+							$qr_res = $this->opo_db->query($vs_sql);
+						
+							if ($qr_res->nextRow()) {
+								return ((int)$qr_res->get('c') > 1) ? true : false;
+							}
+							return false;
+						} else {
+							
+							$vs_pk = $t_item->primaryKey();
+							$vs_sql = "
+								SELECT DISTINCT {$vs_field_name}
+								FROM ".$this->ops_browse_table_name."
+								WHERE
+									{$vs_where_sql}";
+							if($vs_sort_field) {
+								$vs_sql .= " ORDER BY {$vs_sort_field}";
+							}
+							//print $vs_sql." [$vs_list_name]";
+							$qr_res = $this->opo_db->query($vs_sql);
+							
+							$va_values = array();
+							while($qr_res->nextRow()) {
+								if (!($vs_val = trim($qr_res->get($vs_field_name)))) { continue; }
+								if ($va_criteria[$vs_val]) { continue; }		// skip items that are used as browse critera - don't want to browse on something you're already browsing on
+							
+								$va_values[$vs_val] = array(
+									'id' => $vs_val,
+									'label' => $vs_val
+								);
+								if (!is_null($vs_single_value) && ($vs_val == $vs_single_value)) {
+									$vb_single_value_is_present = true;
+								}
+							}
+							
+							if (!is_null($vs_single_value) && !$vb_single_value_is_present) {
+								return array();
+							}
+							return $va_values;
+						}
+					
+				
 					return array();
 					break;
 				# -----------------------------------------------------
