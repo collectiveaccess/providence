@@ -11667,8 +11667,8 @@
                 <setting name="add_label" locale="en_US">Add title</setting>
               </settings>
             </placement>
-            <placement code="media">
-              <bundle>media</bundle>
+            <placement code="ca_object_representations_media_display">
+              <bundle>ca_object_representations_media_display</bundle>
             </placement>
             <placement code="access">
               <bundle>access</bundle>
