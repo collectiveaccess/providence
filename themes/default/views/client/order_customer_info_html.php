@@ -166,7 +166,7 @@
 	jQuery(document).ready(function() {
 		jQuery('#useBillingAsShipping').click(
 			function() {
-				caUseBillingAddressForShipping((jQuery('#useBillingAsShipping').attr('checked') == 1));
+				caUseBillingAddressForShipping((jQuery('#useBillingAsShipping').attr('checked')));
 			}
 		);
 	});
