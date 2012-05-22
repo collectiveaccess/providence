@@ -566,14 +566,16 @@ class ca_commerce_orders extends BaseModel {
 		if($vn_rc = parent::update($pa_options)) {
 			$this->sendStatusChangeEmailNotification($vn_old_status, $vn_old_ship_date, $vn_old_shipped_on_date);
 			
-			// Delete originating set if configured to do so
-			if($this->opo_client_services_config->get('set_disposal_policy') == 'DELETE_WHEN_ORDER_PROCESSED') {
-				$t_trans = new ca_commerce_transactions($this->get('transaction_id'));
-				if ($t_trans->getPrimaryKey()) {
-					$t_set = new ca_sets($t_trans->get('set_id'));
-					if ($t_set->getPrimaryKey()) {
-						$t_set->setMode(ACCESS_WRITE);
-						$t_set->delete(true);
+			if (in_array($this->get('order_status'), array('PROCESSED', 'PROCESSED_AWAITING_DIGITIZATION', 'COMPLETED'))) {
+				// Delete originating set if configured to do so
+				if($this->opo_client_services_config->get('set_disposal_policy') == 'DELETE_WHEN_ORDER_PROCESSED') {
+					$t_trans = new ca_commerce_transactions($this->get('transaction_id'));
+					if ($t_trans->getPrimaryKey()) {
+						$t_set = new ca_sets($t_trans->get('set_id'));
+						if ($t_set->getPrimaryKey()) {
+							$t_set->setMode(ACCESS_WRITE);
+							$t_set->delete(true);
+						}
 					}
 				}
 			}
