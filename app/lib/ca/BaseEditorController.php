@@ -619,6 +619,81 @@
  		}
  		# -------------------------------------------------------
  		/**
+ 		 * 
+ 		 *
+ 		 * @param array $pa_options Array of options passed through to _initView 
+ 		 */
+ 		public function Access($pa_options=null) {
+ 			JavascriptLoadManager::register('tableList');
+ 			list($vn_subject_id, $t_subject) = $this->_initView($pa_options);
+ 			
+ 			//
+ 			// Is record of correct type?
+ 			// 
+ 			$va_restrict_to_types = null;
+ 			if ($t_subject->getAppConfig()->get('perform_type_access_checking')) {
+ 				$va_restrict_to_types = caGetTypeRestrictionsForUser($this->ops_table_name, array('access' => __CA_BUNDLE_ACCESS_READONLY__));
+ 			}
+ 			if (is_array($va_restrict_to_types) && !in_array($t_subject->get('type_id'), $va_restrict_to_types)) {
+ 				$this->response->setRedirect($this->request->config->get('error_display_url').'/n/2560?r='.urlencode($this->request->getFullUrlPath()));
+ 				return;
+ 			}
+ 			
+ 			if ((!$this->request->user->canDoAction('can_change_acl_'.$t_subject->tableName()))) { 
+ 				$this->response->setRedirect($this->request->config->get('error_display_url').'/n/2570?r='.urlencode($this->request->getFullUrlPath()));
+ 				return; 
+ 			}
+ 			
+ 			$this->render('access_html.php');
+ 		}
+ 		# -------------------------------------------------------
+ 		/**
+ 		 * 
+ 		 *
+ 		 * @param array $pa_options Array of options passed through to _initView 
+ 		 */
+ 		public function SetAccess($pa_options=null) {
+ 			list($vn_subject_id, $t_subject) = $this->_initView($pa_options);
+ 			
+ 			if ((!$t_subject->isSaveable($this->request)) || (!$this->request->user->canDoAction('can_change_acl_'.$t_subject->tableName()))) { 
+ 				$this->response->setRedirect($this->request->config->get('error_display_url').'/n/2570?r='.urlencode($this->request->getFullUrlPath()));
+ 				return; 
+ 			}
+			$vs_form_prefix = $this->request->getParameter('_formName', pString);
+			
+			// Save user ACL's
+			$va_users_to_set = array();
+			foreach($_REQUEST as $vs_key => $vs_val) { 
+				if (preg_match("!^{$vs_form_prefix}_user_id(.*)$!", $vs_key, $va_matches)) {
+					$vn_user_id = (int)$this->request->getParameter($vs_form_prefix.'_user_id'.$va_matches[1], pInteger);
+					$vn_access = $this->request->getParameter($vs_form_prefix.'_user_access_'.$va_matches[1], pInteger);
+					if ($vn_access >= 0) {
+						$va_users_to_set[$vn_user_id] = $vn_access;
+					}
+				}
+			}
+			$t_subject->setACLUsers($va_users_to_set);
+ 			
+ 			// Save group ACL's
+ 			$va_groups_to_set = array();
+			foreach($_REQUEST as $vs_key => $vs_val) { 
+				if (preg_match("!^{$vs_form_prefix}_group_id(.*)$!", $vs_key, $va_matches)) {
+					$vn_group_id = (int)$this->request->getParameter($vs_form_prefix.'_group_id'.$va_matches[1], pInteger);
+					$vn_access = $this->request->getParameter($vs_form_prefix.'_group_access_'.$va_matches[1], pInteger);
+					if ($vn_access >= 0) {
+						$va_groups_to_set[$vn_group_id] = $vn_access;
+					}
+				}
+			}
+			$t_subject->setACLUserGroups($va_groups_to_set);
+			
+			// Save "world" ACL
+			$t_subject->setACLWorldAccess($x=$this->request->getParameter("{$vs_form_prefix}_access_world", pInteger));
+			
+ 			$this->Access();
+ 		}
+ 		# -------------------------------------------------------
+ 		/**
  		 * Initializes editor view with core set of values, loads model with record to be edited and selects user interface to use.
  		 *
  		 * @param $pa_options Array of options. Supported options are:

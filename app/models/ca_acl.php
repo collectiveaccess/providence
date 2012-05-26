@@ -77,7 +77,7 @@
 		),
 		'access' => array(
 				'FIELD_TYPE' => FT_NUMBER, 'DISPLAY_TYPE' => DT_SELECT, 
-				'DISPLAY_WIDTH' => 10, 'DISPLAY_HEIGHT' => 1,
+				'DISPLAY_WIDTH' => 40, 'DISPLAY_HEIGHT' => 1,
 				'IS_NULL' => false, 
 				'DEFAULT' => '',
 				'LABEL' => _t('Access'), 'DESCRIPTION' => _t('Access'),
@@ -114,7 +114,7 @@ class ca_acl extends BaseModel {
 	protected $TABLE = 'ca_acl';
 	      
 	# what is the primary key of the table?
-	protected $PRIMARY_KEY = 'aci_id';
+	protected $PRIMARY_KEY = 'acl_id';
 
 	# ------------------------------------------------------
 	# --- Properties used by standard editing scripts

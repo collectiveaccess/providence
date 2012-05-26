@@ -1207,6 +1207,45 @@ require_once(__CA_LIB_DIR__.'/core/Parsers/TimeExpressionParser.php');
 	}
 	# ------------------------------------------------------------------------------------------------
 	/**
+	 * Generates access control list (ACL) editor for item
+	 *
+	 * @param View $po_view Inspector view object
+	 * @param BaseModel $pt_instance Model instance representing the item for which ACL is being managed
+	 * @param array $pa_options None implemented yet
+	 *
+	 * @return string HTML implementing the inspector
+	 */
+	function caEditorACLEditor($po_view, $pt_instance, $pa_options=null) {
+		
+		$vb_can_edit	 	= $pt_instance->isSaveable($po_view->request);
+		$vb_can_delete		= $pt_instance->isDeletable($po_view->request);
+		
+		$vs_buf = '<div class="sectionBox">';
+
+		if ($vb_can_edit) {
+			$vs_buf .= $vs_control_box = caFormControlBox(
+				caFormSubmitButton($po_view->request, __CA_NAV_BUTTON_SAVE__, _t("Save"), 'caAccessControlList').' '.
+				caNavButton($po_view->request, __CA_NAV_BUTTON_CANCEL__, _t("Cancel"), $po_view->request->getModulePath(), $po_view->request->getController(), 'Access/'.$po_view->request->getActionExtra(), array($pt_instance->primaryKey() => $pt_instance->getPrimaryKey())),
+				'',
+				''
+			);
+		}
+		
+		$vs_buf .= caFormTag($po_view->request, 'SetAccess', 'caAccessControlList');
+		
+		$vs_buf .= "<h2>"._t('User access')."</h2>\n";
+		$vs_buf .= $pt_instance->getACLUserHTMLFormBundle($po_view->request, 'caAccessControlList');
+		$vs_buf .= "<h2>"._t('Group access')."</h2>\n";
+		$vs_buf .= $pt_instance->getACLGroupHTMLFormBundle($po_view->request, 'caAccessControlList');
+		$vs_buf .= "<h2>"._t('Everyone else')."</h2>\n";
+		$vs_buf .= $pt_instance->getACLWorldHTMLFormBundle($po_view->request, 'caAccessControlList');
+		$vs_buf .= caHTMLHiddenInput($pt_instance->primaryKey(), array('value' => $pt_instance->getPrimaryKey()));
+		$vs_buf .= '</form><div class="editorBottomPadding"><!-- empty --></div></div>';
+
+		return $vs_buf;
+	}
+	# ------------------------------------------------------------------------------------------------
+	/**
 	  *
 	  */
 	function caFilterTableList($pa_tables) {
@@ -1772,7 +1811,7 @@ $ca_relationship_lookup_parse_cache = array();
 	/**
 	 *
 	 */
-	function caobjectsDisplayDownloadLink($po_request) {
+	function caObjectsDisplayDownloadLink($po_request) {
 		$o_config = Configuration::load();
 		$vn_can_download = false;
 		if($o_config->get('allow_ca_objects_representation_download')){
