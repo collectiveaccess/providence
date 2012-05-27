@@ -450,7 +450,7 @@ class ca_sets extends BundlableLabelableBaseModelWithAttributes implements IBund
 			);
 		}
 		
-		if ($pn_user_id) {
+		if ($pn_user_id && !$this->getAppConfig()->get('dont_enforce_access_control_for_ca_sets')) {
 			$o_dm = $this->getAppDatamodel();
 			$t_user = $o_dm->getInstanceByTableName('ca_users', true);
 			$t_user->load($pn_user_id);
@@ -707,6 +707,7 @@ class ca_sets extends BundlableLabelableBaseModelWithAttributes implements IBund
 	 * @return bool True if user has access, false if not
 	 */
 	public function haveAccessToSet($pn_user_id, $pn_access, $pn_set_id=null) {
+		if ($this->getAppConfig()->get('dont_enforce_access_control_for_ca_sets')) { return true; }
 		if ($pn_set_id) { 
 			$vn_set_id = $pn_set_id; 
 			$t_set = new ca_sets($vn_set_id);

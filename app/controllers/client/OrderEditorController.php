@@ -610,7 +610,7 @@
 				$this->view->setVar('errors', $va_errors);
 				
  			}
-			$this->CustomerInfo();
+			$this->OrderOverview();
  		}
  		# -------------------------------------------------------
  		/**

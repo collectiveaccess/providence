@@ -381,7 +381,11 @@ require_once(__CA_LIB_DIR__.'/core/Parsers/TimeExpressionParser.php');
 		
 		$vs_buf = "<div style='width: 100%; overflow: auto;'><table style='margin-left: ".($pn_level * 10)."px;'>";
 		foreach($pa_array as $vs_key => $vs_val) {
-			if (in_array($vs_key, array('MakerNote', 'ImageResourceInformation', 'ICC_Profile'))) { continue; }
+			switch($ps_key) {
+				case 'EXIF':	// EXIF tags to skip output of
+					if (in_array($vs_key, array('MakerNote', 'ImageResourceInformation'))) { continue(2); }
+					break;
+			}
 			$vs_buf .= "<tr><td width='130'>{$vs_key}</td><td>"._caFormatMediaMetadataArray($vs_val, $pn_level + 1, $vs_key)."</td></tr>";
 		}
 		$vs_buf .= "</table></div>\n";

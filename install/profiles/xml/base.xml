@@ -5113,6 +5113,87 @@
       </types>
     </relationshipTable>
     
+    <relationshipTable name="ca_loans_x_object_representations">
+      <types>
+        <type code="lender" default="1">
+          <labels>
+            <label locale="en_US">
+              <typename>is lent from</typename>
+              <typename_reverse>is lender of</typename_reverse>
+            </label>
+            <label locale="en_CA">
+              <typename>is lent from</typename>
+              <typename_reverse>is lender of</typename_reverse>
+            </label>
+            <label locale="fr_FR">
+              <typename>est prêté par</typename>
+              <typename_reverse>a prêté</typename_reverse>
+            </label>
+            <label locale="sv_SE">
+              <typename>lånas ut från</typename>
+              <typename_reverse>är långivare av</typename_reverse>
+            </label>
+          </labels>
+          <subTypeLeft> </subTypeLeft>
+          <subTypeRight></subTypeRight>
+        </type>
+      </types>
+    </relationshipTable>
+    
+    <relationshipTable name="ca_movements_x_object_representations">
+      <types>
+        <type code="part" default="1">
+          <labels>
+            <label locale="en_US">
+              <typename>has as part of</typename>
+              <typename_reverse>is part of</typename_reverse>
+            </label>
+            <label locale="en_CA">
+              <typename>has as part of</typename>
+              <typename_reverse>is part of</typename_reverse>
+            </label>
+            <label locale="fr_FR">
+              <typename>a pour partie</typename>
+              <typename_reverse>est une partie de</typename_reverse>
+            </label>
+            <label locale="sv_SE">
+              <typename>har som en del av</typename>
+              <typename_reverse>är en del av</typename_reverse>
+            </label>
+          </labels>
+          <subTypeLeft> </subTypeLeft>
+          <subTypeRight></subTypeRight>
+        </type>
+      </types>
+    </relationshipTable>
+    
+    <relationshipTable name="ca_object_lots_x_object_representations">
+      <types>
+        <type code="part" default="1">
+          <labels>
+            <label locale="en_US">
+              <typename>has as part of</typename>
+              <typename_reverse>is part of</typename_reverse>
+            </label>
+            <label locale="en_CA">
+              <typename>has as part of</typename>
+              <typename_reverse>is part of</typename_reverse>
+            </label>
+            <label locale="fr_FR">
+              <typename>a pour partie</typename>
+              <typename_reverse>est une partie de</typename_reverse>
+            </label>
+            <label locale="sv_SE">
+              <typename>har som en del av</typename>
+              <typename_reverse>är en del av</typename_reverse>
+            </label>
+          </labels>
+          <subTypeLeft> </subTypeLeft>
+          <subTypeRight></subTypeRight>
+        </type>
+      </types>
+    </relationshipTable>
+    
     <relationshipTable name="ca_movements_x_vocabulary_terms">
       <types>
         <type code="related" default="1">
@@ -5140,7 +5221,7 @@
       </types>
     </relationshipTable>
     
-     <relationshipTable name="ca_movements_x_movements">
+    <relationshipTable name="ca_movements_x_movements">
       <types>
         <type code="related" default="1">
           <labels>
