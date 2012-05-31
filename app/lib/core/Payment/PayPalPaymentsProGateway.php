@@ -88,15 +88,19 @@
 			$state = urlencode($pa_customer_info['billing_zone']);
 			$zip = urlencode($pa_customer_info['billing_postalcode']);
 			$country = urlencode($pa_customer_info['billing_country']);				// US or other valid country code
+			$email = urlencode($pa_customer_info['billing_email']);
+			$phone = urlencode($pa_customer_info['billing_phone']);
 			$amount = urlencode($pn_transaction_amount);
 			$currencyID = urlencode($ps_currency);							// or other currency ('GBP', 'EUR', 'JPY', 'CAD', 'AUD')
+			$note = urlencode(isset($pa_options['note']) ? $pa_options['note'] : '');
+			$invoiceID =  date('mdY', $pa_payment_info['created_on']).'-'.$pa_payment_info['order_id'];
 			
-			$invoiceID = $pa_payment_info['order_id'];
+			
 			
 			// Add request-specific fields to the request string.
 			$nvpStr =	"&PAYMENTACTION=$paymentType&AMT=$amount&CREDITCARDTYPE=$creditCardType&ACCT=$creditCardNumber&IPADDRESS=".$_SERVER['REMOTE_ADDR'].
 						"&EXPDATE=$padDateMonth$expDateYear&CVV2=$cvv2Number&FIRSTNAME=$firstName&LASTNAME=$lastName".
-						"&STREET=$address1&CITY=$city&STATE=$state&ZIP=$zip&COUNTRYCODE=$country&CURRENCYCODE=$currencyID&INVNUM=$invoiceID";
+						"&STREET=$address1&CITY=$city&STATE=$state&ZIP=$zip&COUNTRYCODE=$country&CURRENCYCODE=$currencyID&INVNUM=$invoiceID&DESC=$note&EMAIL=$email&PHONENUM=$phone";
 		
 			// Execute the API operation; see the PPHttpPost function above.
 			$httpParsedResponseAr = PayPalPaymentsProGateway::PPHttpPost('DoDirectPayment', $nvpStr);
