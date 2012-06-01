@@ -353,8 +353,8 @@ require_once(__CA_LIB_DIR__.'/core/Parsers/TimeExpressionParser.php');
 			foreach($pa_metadata as $vs_metadata_type => $va_metadata_data) {
 				if (isset($va_metadata_data) && is_array($va_metadata_data)) {
 					$vs_buf .= "<tr><th>".preg_replace('!^METADATA_!', '', $vs_metadata_type)."</th><th colspan='2'><!-- empty --></th></tr>\n";
-					foreach($va_metadata_data as $vs_key => $vs_value) {
-						$vs_buf .=  "<tr valign='top'><td><!-- empty --></td><td>{$vs_key}</td><td>"._caFormatMediaMetadataArray($vs_value, 0, $vs_key)."</td></tr>\n";
+					foreach($va_metadata_data as $vs_key => $vm_value) {
+						$vs_buf .=  "<tr valign='top'><td><!-- empty --></td><td>{$vs_key}</td><td>"._caFormatMediaMetadataArray($vm_value, 0, $vs_key)."</td></tr>\n";
 						$vn_metadata_rows++;
 					}
 				}
@@ -381,15 +381,16 @@ require_once(__CA_LIB_DIR__.'/core/Parsers/TimeExpressionParser.php');
 		
 		$vs_buf = "<div style='width: 100%; overflow: auto;'><table style='margin-left: ".($pn_level * 10)."px;'>";
 		foreach($pa_array as $vs_key => $vs_val) {
-			switch($ps_key) {
-				case 'EXIF':	// EXIF tags to skip output of
-					if (in_array($vs_key, array('MakerNote', 'ImageResourceInformation'))) { continue(2); }
+			$vs_val = preg_replace('![^A-Za-z0-9 \-_\+\!\@\#\$\%\^\&\*\(\)\[\]\{\}\?\<\>\,\.\"\'\=]+!', '', $vs_val);
+			switch($vs_key) {
+				case 'MakerNote':	// EXIF tags to skip output of
+				case 'ImageResourceInformation':
+					continue(2);
 					break;
 			}
 			$vs_buf .= "<tr><td width='130'>{$vs_key}</td><td>"._caFormatMediaMetadataArray($vs_val, $pn_level + 1, $vs_key)."</td></tr>";
 		}
 		$vs_buf .= "</table></div>\n";
-		
 		return $vs_buf;
 	}
 	# ------------------------------------------------------------------------------------------------
