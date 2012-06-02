@@ -6,7 +6,7 @@ msgstr ""
 "Project-Id-Version: CollectiveAccess\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2012-05-28 11:19+0200\n"
-"PO-Revision-Date: 2012-06-02 21:43+0100\n"
+"PO-Revision-Date: 2012-06-02 22:17+0100\n"
 "Last-Translator: Gautier Michelin <gm@ideesculture.com>\n"
 "Language-Team: francais <ideesculture@gmail.com>\n"
 "Language: \n"
@@ -1272,7 +1272,7 @@ msgstr "Modifier le formulaire de recherche"
 #: app/conf/navigation.conf:1921
 #: app/conf/user_actions.conf:162
 msgid "User generated content"
-msgstr "Contenus des utilisateurs"
+msgstr "Contenu utilisateur"
 
 #: app/conf/navigation.conf:1931
 #: app/conf/navigation.conf:1987
@@ -1412,7 +1412,7 @@ msgstr "Import/export éditeur de groupe de correspondance"
 #: app/conf/navigation.conf:2492
 #: themes/default/views/client/list_orders_html.php:111
 msgid "Client"
-msgstr "Commentaire"
+msgstr "Client"
 
 #: app/conf/navigation.conf:2500
 #: app/conf/navigation.conf:2643
@@ -9808,7 +9808,7 @@ msgstr "premier en partant du bas"
 
 #: app/models/ca_bundle_displays.php:1109
 msgid "Order hierarchy"
-msgstr "Ordre de la hiérarchie"
+msgstr "Arborescence de la commande"
 
 #: app/models/ca_bundle_displays.php:1110
 msgid "Determines order in which hierarchy is displayed."
@@ -11036,7 +11036,7 @@ msgstr "List d'enregistrements dans l'ensemble lors du message de création."
 
 #: app/models/ca_commerce_communications.php:109
 msgid "Message created on"
-msgstr "Favori créé le"
+msgstr "Message créé le"
 
 #: app/models/ca_commerce_communications.php:109
 msgid "Date/time the message was created."
@@ -11580,7 +11580,7 @@ msgstr "Indique si la commande est supprimée ou non."
 
 #: app/models/ca_commerce_orders.php:415
 msgid "Order created on"
-msgstr "Commande créée le"
+msgstr "Date de création de la commande"
 
 #: app/models/ca_commerce_orders.php:415
 msgid "Date/time the order was created."
@@ -15563,7 +15563,7 @@ msgstr "Vous ne pouvez pas accéder à ce formulaire"
 #: themes/default/views/system/preferences_duplication_html.php:1
 #: themes/default/views/system/preferences_html.php:1
 msgid "Reset"
-msgstr "Réinitialiser"
+msgstr "Reset"
 
 #: app/widgets/clock/clockWidget.php:38
 msgid "Clock"
@@ -17669,7 +17669,7 @@ msgstr "Outils de duplication"
 
 #: themes/default/views/client/list_communications_html.php:49
 msgid "Read status"
-msgstr "Statut de lecture"
+msgstr "Lu"
 
 #: themes/default/views/client/list_communications_html.php:51
 msgid "Unread only"
@@ -17690,11 +17690,11 @@ msgstr "Cliquer sur un message à gauche pour afficher le message intégral et s
 
 #: themes/default/views/client/list_orders_html.php:76
 msgid "New order"
-msgstr "Ordre de la hiérarchie"
+msgstr "Nouvelle commande"
 
 #: themes/default/views/client/list_orders_html.php:105
 msgid "Order #"
-msgstr "Commande n°"
+msgstr "Commande"
 
 #: themes/default/views/client/list_orders_html.php:141
 #: themes/default/views/find/Results/ca_collections_pdf_results_html.php:70
@@ -18090,7 +18090,7 @@ msgstr "%1 fil a de nouveaux messages"
 
 #: themes/default/views/client/widget_communications_info_html.php:35
 msgid "%1 threads have new messages"
-msgstr "%1 fils ont de nouveaux messages"
+msgstr "%1 discussions comportent des nouveaux messages"
 
 #: themes/default/views/client/widget_orders_info_html.php:33
 msgid "Client orders"
