@@ -146,10 +146,10 @@ var caUI = caUI || {};
 			jQuery('#' + that.displayBundleListID).val(bundle_list.join(';'));
 			
 			jQuery('#' + that.availableListID + ' .' +  that.displayItemClass + ' ._displayElementSettingsControl').hide(0);
-			jQuery('#' + that.availableListID + ' input').attr('disabled', 1);
+			jQuery('#' + that.availableListID + ' input').attr('disabled', true);
 			
 			jQuery('#' + that.toDisplayListID + ' .' +  that.displayItemClass + ' ._displayElementSettingsControl').show(0);
-			jQuery('#' + that.toDisplayListID + ' input').attr('disabled', 0);
+			jQuery('#' + that.toDisplayListID + ' input').attr('disabled', false);
 		}
 		// ------------------------------------------------------------------------------------
 		
