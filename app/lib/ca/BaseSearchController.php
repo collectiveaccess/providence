@@ -158,6 +158,8 @@
  							$this->hookBeforeNewSearch($po_search);
  						}
  					}
+ 					
+ 					$this->opo_result_context->setParameter('show_type_id', null);
  				}
  				
  				if ($this->opn_type_restriction_id) {
