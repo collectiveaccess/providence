@@ -49,6 +49,11 @@
 	 * Contains list of Javascript libraries to load
 	 */
 	$g_javascript_load_list = null;
+	
+	/**
+	 * Contains array of complementary Javasscript code to load
+	 */
+	$g_javascript_complementary = null;
 
 	class JavascriptLoadManager {
 		# --------------------------------------------------------------------------------
@@ -117,6 +122,21 @@
 			return false;
 		}
 		# --------------------------------------------------------------------------------
+		/**
+		 * Causes the specified Javascript code to be loaded.
+		 *
+		 * @param $ps_scriptcontent (string) - script content to load
+		 * @return (bool) - false if empty code, true if load succeeded
+		 */
+		static function addComplementaryScript($ps_content=null) {
+			global $g_javascript_config, $g_javascript_load_list, $g_javascript_complementary;			
+
+			if (!$g_javascript_config) { JavascriptLoadManager::init(); }
+			if (!$ps_content) return false;
+			$g_javascript_complementary[]=$ps_content;			
+			return true;
+		}
+		# --------------------------------------------------------------------------------
 		/** 
 		 * Returns HTML to load registered libraries. Typically you'll output this HTML in the <head> of your page.
 		 * 
@@ -124,7 +144,7 @@
 		 * @return string - HTML loading registered libraries
 		 */
 		static function getLoadHTML($ps_baseurlpath) {
-			global $g_javascript_config, $g_javascript_load_list;
+			global $g_javascript_config, $g_javascript_load_list, $g_javascript_complementary;
 			
 			if (!$g_javascript_config) { JavascriptLoadManager::init(); }
 			$vs_buf = '';
@@ -138,7 +158,11 @@
 					$vs_buf .= "<script src='{$vs_url}' type='text/javascript'></script>\n";
 				}
 			}
-			
+			if (is_array($g_javascript_complementary)) {
+				foreach($g_javascript_complementary as $vs_code) { 
+					$vs_buf .= "<script type='text/javascript'>\n".$vs_code."</script>\n";
+				}
+			}
 			return $vs_buf;
 		}
 		# --------------------------------------------------------------------------------

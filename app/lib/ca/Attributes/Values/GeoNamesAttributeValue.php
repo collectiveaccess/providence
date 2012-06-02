@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2008-2009 Whirl-i-Gig
+ * Copyright 2008-2012 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -177,6 +177,14 @@ class GeoNamesAttributeValue extends AttributeValue implements IAttributeValue {
 
 			$vs_text = $va_tmp[0];
 			$vs_id = $va_tmp[1];
+			
+			if (!$vs_id) {
+				if(!$va_settings["canBeEmpty"]){
+					$this->postError(1970, _t('Entry was blank.'), 'GeoNamesAttributeValue->parseValue()');
+					return false;
+				}
+				return array();
+			}
 			$vs_url = "http://api.geonames.org/get?geonameId={$vs_id}&style=full&username={$vs_user}";
 
 			return array(

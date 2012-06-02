@@ -147,7 +147,7 @@
 					if($vn_id === '') {
 						$va_path[] = "<a href='#'>"._t('New %1', $t_subject->getTypeName())."</a>";
 					} else {
-						$vs_name = htmlspecialchars($va_item['name'], ENT_QUOTES, 'UTF-8');
+						$vs_name = $va_item['name'];
 						if ($va_item[$t_subject->primaryKey()] && ($va_item[$t_subject->primaryKey()] != $pn_id)) {
 							$va_path[] = '<a href="'.caEditorUrl($this->request, $t_subject->tableName(), $va_item[$t_subject->primaryKey()]).'">'.$vs_name.'</a>';
 						} else {

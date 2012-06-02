@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2008-2010 Whirl-i-Gig
+ * Copyright 2008-2012 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -64,7 +64,7 @@ BaseModel::$s_ca_models_definitions['ca_relationship_type_labels'] = array(
 		),
 		'typename' => array(
 				'FIELD_TYPE' => FT_TEXT, 'DISPLAY_TYPE' => DT_FIELD, 
-				'DISPLAY_WIDTH' => 88, 'DISPLAY_HEIGHT' => 1,
+				'DISPLAY_WIDTH' => 90, 'DISPLAY_HEIGHT' => 1,
 				'IS_NULL' => false, 
 				'DEFAULT' => '',
 				'LABEL' => _t('Typename (forward sense)'), 'DESCRIPTION' => _t('Relationship type used when relation is read left-to-right.'),
@@ -72,7 +72,7 @@ BaseModel::$s_ca_models_definitions['ca_relationship_type_labels'] = array(
 		),
 		'typename_reverse' => array(
 				'FIELD_TYPE' => FT_TEXT, 'DISPLAY_TYPE' => DT_FIELD, 
-				'DISPLAY_WIDTH' => 88, 'DISPLAY_HEIGHT' => 1,
+				'DISPLAY_WIDTH' => 90, 'DISPLAY_HEIGHT' => 1,
 				'IS_NULL' => false, 
 				'DEFAULT' => '',
 				'LABEL' => _t('Typename (reverse sense)'), 'DESCRIPTION' => _t('Relationship type used when relation is read right-to-left.'),
@@ -80,7 +80,7 @@ BaseModel::$s_ca_models_definitions['ca_relationship_type_labels'] = array(
 		),
 		'description' => array(
 				'FIELD_TYPE' => FT_TEXT, 'DISPLAY_TYPE' => DT_FIELD, 
-				'DISPLAY_WIDTH' => 70, 'DISPLAY_HEIGHT' => 3,
+				'DISPLAY_WIDTH' => 90, 'DISPLAY_HEIGHT' => 3,
 				'IS_NULL' => false, 
 				'DEFAULT' => '',
 				'LABEL' => _t('Description (forward sense)'), 'DESCRIPTION' => _t('Description for relationship type when relation is read left-to-right.'),
@@ -88,7 +88,7 @@ BaseModel::$s_ca_models_definitions['ca_relationship_type_labels'] = array(
 		),
 		'description_reverse' => array(
 				'FIELD_TYPE' => FT_TEXT, 'DISPLAY_TYPE' => DT_FIELD, 
-				'DISPLAY_WIDTH' => 70, 'DISPLAY_HEIGHT' => 3,
+				'DISPLAY_WIDTH' => 90, 'DISPLAY_HEIGHT' => 3,
 				'IS_NULL' => false, 
 				'DEFAULT' => '',
 				'LABEL' => _t('Description (reverse sense)'), 'DESCRIPTION' => _t('Description for relationship type when relation is read right-to-left.'),
