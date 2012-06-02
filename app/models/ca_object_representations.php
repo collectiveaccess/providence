@@ -1227,7 +1227,7 @@ class ca_object_representations extends BundlableLabelableBaseModelWithAttribute
  		$vb_only_show_reps_in_order = (isset($pa_options['onlyShowRepresentationsInOrder']) && $pa_options['onlyShowRepresentationsInOrder']) ? $pa_options['onlyShowRepresentationsInOrder'] : null;
  		
  		$t_object = new ca_objects($vn_object_id);
- 		if (!$t_object->getPrimaryKey()) { return false; }
+ 		//if (!$t_object->getPrimaryKey()) { return false; }
  		
  		if(!$this->getPrimaryKey()) {
  			$this->load($t_object->getPrimaryRepresentationID(array('checkAccess' => $va_access_values)));
