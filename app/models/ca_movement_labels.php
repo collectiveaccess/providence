@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2010 Whirl-i-Gig
+ * Copyright 2010-2012 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -73,7 +73,7 @@ BaseModel::$s_ca_models_definitions['ca_movement_labels'] = array(
 		),
 		'name' => array(
 				'FIELD_TYPE' => FT_TEXT, 'DISPLAY_TYPE' => DT_FIELD, 
-				'DISPLAY_WIDTH' => 80, 'DISPLAY_HEIGHT' => 2,
+				'DISPLAY_WIDTH' => 100, 'DISPLAY_HEIGHT' => 3,
 				'IS_NULL' => false, 
 				'DEFAULT' => '',
 				'LABEL' => _t('Name'), 'DESCRIPTION' => _t('Descriptive title for movement'),

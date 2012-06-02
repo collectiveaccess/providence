@@ -498,8 +498,7 @@ class ca_list_items extends BundlableLabelableBaseModelWithAttributes implements
 	 	} else {
 	 		$vn_hierarchy_id = $this->get('list_id');
 	 	}
-	 	$t_list = new ca_lists();
-	 	$t_list->load($vn_hierarchy_id);
+	 	$t_list = new ca_lists($vn_hierarchy_id);
 	 	
 	 	return $t_list->getLabelForDisplay(false);
 	 }

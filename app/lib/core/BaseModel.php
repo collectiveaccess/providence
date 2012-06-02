@@ -6728,20 +6728,47 @@ $pa_options["display_form_field_tips"] = true;
 							
 								$vs_element .= "<span id='".$pa_options["id"].'_uniqueness_status'."'></span>";
 								$vs_element .= "<script type='text/javascript'>
-						caUI.initUniquenessChecker({
-							errorIcon: '".$pa_options['error_icon']."',
-							processIndicator: '".$pa_options['progress_indicator']."',
-							statusID: '".$pa_options["id"]."_uniqueness_status',
-							lookupUrl: '".$pa_options['lookup_url']."',
-							formElementID: '".$pa_options["id"]."',
-							row_id: ".intval($this->getPrimaryKey()).",
-							table_num: ".$this->tableNum().",
-							field: '".$ps_field."',
-							withinFields: ".json_encode($va_within_fields).",
+	caUI.initUniquenessChecker({
+		errorIcon: '".$pa_options['error_icon']."',
+		processIndicator: '".$pa_options['progress_indicator']."',
+		statusID: '".$pa_options["id"]."_uniqueness_status',
+		lookupUrl: '".$pa_options['lookup_url']."',
+		formElementID: '".$pa_options["id"]."',
+		row_id: ".intval($this->getPrimaryKey()).",
+		table_num: ".$this->tableNum().",
+		field: '".$ps_field."',
+		withinFields: ".json_encode($va_within_fields).",
+		
+		alreadyInUseMessage: '".addslashes(_t('Value must be unique. Please try another.'))."'
+	});
+</script>";
+							}
 							
-							alreadyInUseMessage: '".addslashes(_t('Value must be unique. Please try another.'))."'
-						});
-					</script>";
+							if (isset($pa_options['usewysiwygeditor']) && $pa_options['usewysiwygeditor']) {
+								$vs_width = $vn_display_width;
+								$vs_height = $vn_display_height;
+								if (!preg_match("!^[\d\.]+px$!i", $vs_width)) {
+									$vs_width = ((int)$vs_width * 6)."px";
+								}
+								if (!preg_match("!^[\d\.]+px$!i", $vs_height)) {
+									$vs_height = ((int)$vs_height * 16)."px";
+								}
+								
+								$vs_element .= "<script type='text/javascript'>jQuery(document).ready(function() {
+		jQuery('#".$pa_options["id"]."').ckeditor(function() {
+				this.on( 'change', function(e) { 
+					if (caUI && caUI.utils) { caUI.utils.showUnsavedChangesWarning(true);  }
+				 });
+			},
+			{
+				toolbar: [['Bold','Italic','Underline','Strike','-','Subscript', 'Superscript'], ['-', 'NumberedList', 'BulletedList', 'Outdent', 'Indent', 'Blockquote', '-', 'Link', 'Unlink'],['Undo', 'Redo', '-', 'SpellChecker']],
+				width: '{$vs_width}',
+				height: '{$vs_height}',
+				toolbarLocation: 'top'
+			}
+		);
+ 	});									
+</script>";
 							}
 						}
 					}

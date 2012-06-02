@@ -396,7 +396,7 @@ class ca_collections extends BundlableLabelableBaseModelWithAttributes implement
 			return $t_collection->getLabelForDisplay(false);
 		} else {			
 			if ($pn_id == $this->getPrimaryKey()) {
-				return $this->getLabelForDisplay(false);
+				return $this->getLabelForDisplay(true);
 			} else {
 				$t_collection = new ca_collections($pn_id);
 				return $t_collection->getLabelForDisplay(false);
