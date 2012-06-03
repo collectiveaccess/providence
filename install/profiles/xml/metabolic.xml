@@ -1682,14 +1682,14 @@
         </label>
       </labels>
       <items>
-        <item idno="available" enabled="1" default="0">
+        <!--<item idno="available" enabled="1" default="0">
           <labels>
             <label locale="en_US" preferred="1">
               <name_singular>Date available</name_singular>
               <name_plural>Date available</name_plural>
             </label>
           </labels>
-        </item>
+        </item>-->
         <item idno="created" enabled="1" default="1">
           <labels>
             <label locale="en_US" preferred="1">
@@ -1698,14 +1698,14 @@
             </label>
           </labels>
         </item>
-        <item idno="dateAccepted" enabled="1" default="0">
+        <!-- <item idno="dateAccepted" enabled="1" default="0">
           <labels>
             <label locale="en_US" preferred="1">
               <name_singular>Date accepted</name_singular>
               <name_plural>Date accepted</name_plural>
             </label>
           </labels>
-        </item>
+        </item>-->
         <item idno="dateCopyrighted" enabled="1" default="0">
           <labels>
             <label locale="en_US" preferred="1">
@@ -1714,14 +1714,14 @@
             </label>
           </labels>
         </item>
-        <item idno="dateEdited" enabled="1" default="0">
+         <!--<item idno="dateEdited" enabled="1" default="0">
           <labels>
             <label locale="en_US" preferred="1">
               <name_singular>Date edited</name_singular>
               <name_plural>Date edited</name_plural>
             </label>
           </labels>
-        </item>
+        </item>-->
         <item idno="dateSubmitted" enabled="1" default="0">
           <labels>
             <label locale="en_US" preferred="1">
@@ -1730,30 +1730,30 @@
             </label>
           </labels>
         </item>
-        <item idno="issued" enabled="1" default="0">
+         <!--<item idno="issued" enabled="1" default="0">
           <labels>
             <label locale="en_US" preferred="1">
               <name_singular>Date issued</name_singular>
               <name_plural>Date issued</name_plural>
             </label>
           </labels>
-        </item>
-        <item idno="modified" enabled="1" default="0">
+        </item>-->
+        <!-- <item idno="modified" enabled="1" default="0">
           <labels>
             <label locale="en_US" preferred="1">
               <name_singular>Date modified</name_singular>
               <name_plural>Date modified</name_plural>
             </label>
           </labels>
-        </item>
-        <item idno="valid" enabled="1" default="0">
+        </item>-->
+       <!-- <item idno="valid" enabled="1" default="0">
           <labels>
             <label locale="en_US" preferred="1">
               <name_singular>Date valid</name_singular>
               <name_plural>Date valid</name_plural>
             </label>
           </labels>
-        </item>
+        </item>-->
         <item idno="recording" enabled="1" default="0">
           <labels>
             <label locale="en_US" preferred="1">
@@ -1767,6 +1767,15 @@
             <label locale="en_US" preferred="1">
               <name_singular>Date planted</name_singular>
               <name_plural>Date planted</name_plural>
+            </label>
+          </labels>
+        </item>
+      </items>
+       <item idno="harvested" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>Date harvested</name_singular>
+              <name_plural>Date harvested</name_plural>
             </label>
           </labels>
         </item>
