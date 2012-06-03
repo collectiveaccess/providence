@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2008-2011 Whirl-i-Gig
+ * Copyright 2008-2012 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -126,6 +126,93 @@ class ObjectSearchResult extends BaseSearchResult {
 			}
 		}
 		return parent::getMediaInfo($ps_field, $ps_version, $pa_option);
+	}
+	# ------------------------------------------------------
+ 	/**
+ 	 * Returns number of representations attached to the current row of the specified class. 
+ 	 *
+ 	 * @param string $ps_class The class of representation to return a count for. Valid classes are "image", "audio", "video" and "document"
+ 	 * @param array $pa_options Optional array of options. Options are:
+	 *						checkAccess = array of access values to restrict returned values to.
+	 *
+ 	 * @return int Number of representations
+ 	 */
+ 	public function numberOfRepresentationsOfClass($ps_class, $pa_options=null) {
+ 		return sizeof($this->representationsOfClass($ps_class, $pa_options));
+ 	}
+ 	# ------------------------------------------------------
+ 	/**
+ 	 * Returns number of representations attached to the current row with the specified mimetype. 
+ 	 *
+ 	 * @param string $ps_mimetype The mimetype to return a count for. 
+ 	 * @param array $pa_options Optional array of options. Options are:
+	 *						checkAccess = array of access values to restrict returned values to.
+ 	 *
+ 	 * @return int Number of representations
+ 	 */
+ 	public function numberOfRepresentationsWithMimeType($ps_mimetype, $pa_options=null) {
+ 		return sizeof($this->representationsWithMimeType($ps_mimetype, $pa_options));
+ 	}
+	# -------------------------------------
+	/**
+ 	 * Returns representation_ids for representations of the specified row attached to the current object. 
+ 	 *
+ 	 * @param string $ps_class The class of representation to return information for. Valid classes are "image", "audio", "video" and "document"
+ 	 * @param array $pa_options Optional array of options. Options are:
+	 *						checkAccess = array of access values to restrict returned values to.
+ 	 *
+ 	 * @return array A list of representation_ids
+ 	 */
+	public function representationsOfClass($ps_class, $pa_options=null) {
+		if (!isset($this->opa_class_cache[$this->get('object_id')])) {
+			$this->_prefetchMimeTypes($pa_options);
+		}
+		
+		return isset($this->opa_class_cache[$this->get('object_id')][$ps_class]) ? $this->opa_class_cache[$this->get('object_id')][$ps_class] : array();
+	}
+	# -------------------------------------
+	/**
+ 	 * Returns representation_ids of representations attached to the current row with the specified mimetype. 
+ 	 *
+ 	 * @param string $ps_mimetype The mimetype to return representations for. 
+ 	 * @param array $pa_options Optional array of options. Options are:
+	 *						checkAccess = array of access values to restrict returned values to.
+ 	 *
+ 	 * @return array An array with information about matching representations, in the same format as that returned by ca_objects::getRepresentations()
+ 	 */
+	public function representationsWithMimeType($ps_mimetype, $pa_options=null) {
+		if (!isset($this->opa_mimetype_cache[$this->get('object_id')])) {
+			$this->_prefetchMimeTypes($pa_options);
+		}
+		
+		return isset($this->opa_mimetype_cache[$this->get('object_id')][$ps_mimetype]) ? $this->opa_mimetype_cache[$this->get('object_id')][$ps_mimetype] : array();
+	}
+	# -------------------------------------
+	/**
+	 * Prefetch MIME types and media classes for representations attached to objects in this result set
+	 */
+	private function _prefetchMimeTypes($pa_options) {
+		$o_db = new Db();
+		
+		$va_check_access = isset($pa_options['checkAccess']) ? $pa_options['checkAccess'] : null;
+		
+		$vs_sql_access = '';
+		if (is_array($va_check_access) && sizeof($va_check_access)) { $vs_sql_access = ' AND caor.access IN ('.join(",", $va_check_access).')'; }
+
+		$va_ids = $this->getRowIDsToPrefetch('ca_objects', $this->currentIndex(), 5);
+		$qr_res = $o_db->query("
+			SELECT oxor.object_id, caor.representation_id, caor.mimetype
+			FROM ca_object_representations caor
+			INNER JOIN ca_objects_x_object_representations AS oxor ON caor.representation_id = oxor.representation_id
+			WHERE
+				oxor.object_id IN (".join(",", $va_ids).") {$vs_sql_access}
+		");
+		
+		while($qr_res->nextRow()) {
+			$this->opa_mimetype_cache[(int)$qr_res->get('object_id')][$qr_res->get('mimetype')][] = (int)$qr_res->get('representation_id');
+			$this->opa_class_cache[(int)$qr_res->get('object_id')][caGetMediaClass($qr_res->get('mimetype'))][] = (int)$qr_res->get('representation_id');
+		}
+		return true;
 	}
 	# -------------------------------------
 	/**

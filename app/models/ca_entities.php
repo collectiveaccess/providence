@@ -496,7 +496,7 @@ class ca_entities extends BundlableLabelableBaseModelWithAttributes implements I
 			return $t_entity->getLabelForDisplay(false);
 		} else {			
 			if ($pn_id == $this->getPrimaryKey()) {
-				return $this->getLabelForDisplay(false);
+				return $this->getLabelForDisplay(true);
 			} else {
 				$t_entity = new ca_entities($pn_id);
 				return $t_entity->getLabelForDisplay(false);

@@ -399,13 +399,42 @@ class ca_editor_ui_screens extends BundlableLabelableBaseModelWithAttributes {
 		$va_defined_bundles = $t_instance->getBundleList(array('includeBundleInfo' => true));		// these are the bundles defined for this type of editor
 		
 		$va_available_bundles = array();
+		
+		$va_elements = ca_metadata_elements::getElementsAsList(true, $pm_table_name_or_num, null, true, false, true);
 		foreach($va_defined_bundles as $vs_bundle => $va_info) {
 			$vs_bundle_proc = preg_replace('!^ca_attribute_!', '', $vs_bundle);
+			$va_additional_settings = array();
 			switch ($va_info['type']) {
 				case 'intrinsic':
 					$va_field_info = $t_instance->getFieldInfo($vs_bundle);
-					//if (isset($va_field_info['IDENTITY']) && $va_field_info['IDENTITY']) { continue(2); }
 					if (isset($va_field_info['DONT_ALLOW_IN_UI']) && $va_field_info['DONT_ALLOW_IN_UI']) { continue(2); }
+					break;
+				case 'preferred_label':
+				case 'nonpreferred_label':
+					$va_additional_settings = array(
+						'usewysiwygeditor' => array(
+							'formatType' => FT_NUMBER,
+							'displayType' => DT_CHECKBOXES,
+							'default' => 0,
+							'width' => 1, 'height' => 1,
+							'label' => _t('Use rich text editor'),
+							'description' => _t('Check this option if you want to use a word-processor like editor with this text field. If you expect users to enter rich text (italic, bold, underline) then you might want to enable this.')
+						)
+					);
+					break;
+				case 'attribute':
+					if ($va_elements[preg_replace('!ca_attribute_!', '', $vs_bundle)]['datatype'] == 1) {		// 1=text
+						$va_additional_settings = array(
+							'usewysiwygeditor' => array(
+								'formatType' => FT_NUMBER,
+								'displayType' => DT_CHECKBOXES,
+								'default' => 0,
+								'width' => 1, 'height' => 1,
+								'label' => _t('Use rich text editor'),
+								'description' => _t('Check this option if you want to use a word-processor like editor with this text field. If you expect users to enter rich text (italic, bold, underline) then you might want to enable this.')
+							)
+						);
+					}
 					break;
 				case 'related_table':
 					if (!($t_rel = $this->_DATAMODEL->getInstanceByTableName($vs_bundle, true))) { continue; }

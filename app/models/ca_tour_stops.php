@@ -374,7 +374,7 @@ class ca_tour_stops extends BundlableLabelableBaseModelWithAttributes {
 			return $t_stop->getLabelForDisplay(false);
 		} else {			
 			if ($pn_id == $this->getPrimaryKey()) {
-				return $this->getLabelForDisplay(false);
+				return $this->getLabelForDisplay(true);
 			} else {
 				$t_stop = new ca_tour_stops($pn_id);
 				return $t_stop->getLabelForDisplay(false);

@@ -1176,10 +1176,10 @@ class ca_objects extends BundlableLabelableBaseModelWithAttributes implements IB
 			return $t_object->getLabelForDisplay(false);
 		} else {			
 			if ($pn_id == $this->getPrimaryKey()) {
-				return $this->getLabelForDisplay(false);
+				return $this->getLabelForDisplay(true);
 			} else {
 				$t_object = new ca_objects($pn_id);
-				return $t_object->getLabelForDisplay(false);
+				return $t_object->getLabelForDisplay(true);
 			}
 		}
 	 }

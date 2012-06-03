@@ -353,8 +353,8 @@ require_once(__CA_LIB_DIR__.'/core/Parsers/TimeExpressionParser.php');
 			foreach($pa_metadata as $vs_metadata_type => $va_metadata_data) {
 				if (isset($va_metadata_data) && is_array($va_metadata_data)) {
 					$vs_buf .= "<tr><th>".preg_replace('!^METADATA_!', '', $vs_metadata_type)."</th><th colspan='2'><!-- empty --></th></tr>\n";
-					foreach($va_metadata_data as $vs_key => $vs_value) {
-						$vs_buf .=  "<tr valign='top'><td><!-- empty --></td><td>{$vs_key}</td><td>"._caFormatMediaMetadataArray($vs_value, 0, $vs_key)."</td></tr>\n";
+					foreach($va_metadata_data as $vs_key => $vm_value) {
+						$vs_buf .=  "<tr valign='top'><td><!-- empty --></td><td>{$vs_key}</td><td>"._caFormatMediaMetadataArray($vm_value, 0, $vs_key)."</td></tr>\n";
 						$vn_metadata_rows++;
 					}
 				}
@@ -381,15 +381,16 @@ require_once(__CA_LIB_DIR__.'/core/Parsers/TimeExpressionParser.php');
 		
 		$vs_buf = "<div style='width: 100%; overflow: auto;'><table style='margin-left: ".($pn_level * 10)."px;'>";
 		foreach($pa_array as $vs_key => $vs_val) {
-			switch($ps_key) {
-				case 'EXIF':	// EXIF tags to skip output of
-					if (in_array($vs_key, array('MakerNote', 'ImageResourceInformation'))) { continue(2); }
+			$vs_val = preg_replace('![^A-Za-z0-9 \-_\+\!\@\#\$\%\^\&\*\(\)\[\]\{\}\?\<\>\,\.\"\'\=]+!', '', $vs_val);
+			switch($vs_key) {
+				case 'MakerNote':	// EXIF tags to skip output of
+				case 'ImageResourceInformation':
+					continue(2);
 					break;
 			}
 			$vs_buf .= "<tr><td width='130'>{$vs_key}</td><td>"._caFormatMediaMetadataArray($vs_val, $pn_level + 1, $vs_key)."</td></tr>";
 		}
 		$vs_buf .= "</table></div>\n";
-		
 		return $vs_buf;
 	}
 	# ------------------------------------------------------------------------------------------------
@@ -524,7 +525,6 @@ require_once(__CA_LIB_DIR__.'/core/Parsers/TimeExpressionParser.php');
 				}
 				
 				if ($vs_get_spec = $po_view->request->config->get("{$vs_table_name}_inspector_display_title")) {
-					//$vs_label = $t_item->get($vs_get_spec);
 					$vs_label = caProcessTemplateForIDs($vs_get_spec, $vs_table_name, array($t_item->getPrimaryKey()));
 				} else {
 					if (method_exists($t_item, 'getLabelForDisplay')) {
@@ -534,12 +534,12 @@ require_once(__CA_LIB_DIR__.'/core/Parsers/TimeExpressionParser.php');
 							$vs_disp_fld = $t_item->getLabelDisplayField();
 							
 							if ($va_parent['NODE'][$vs_disp_fld] && ($vs_editor_link = caEditorLink($po_view->request, $va_parent['NODE'][$vs_disp_fld], '', $vs_table_name, $va_parent['NODE'][$t_item->primaryKey()]))) {
-								$vs_label = $vs_editor_link.' &gt; '.htmlentities($t_item->getLabelForDisplay(), ENT_COMPAT, 'utf-8', false);
+								$vs_label = $vs_editor_link.' &gt; '.$t_item->getLabelForDisplay();
 							} else {
-								$vs_label = ($va_parent['NODE'][$vs_disp_fld] ? htmlentities($va_parent['NODE'][$vs_disp_fld], ENT_COMPAT, 'utf-8', false).' &gt; ' : '').htmlentities($t_item->getLabelForDisplay(), ENT_COMPAT, 'utf-8', false);
+								$vs_label = ($va_parent['NODE'][$vs_disp_fld] ? $va_parent['NODE'][$vs_disp_fld].' &gt; ' : '').$t_item->getLabelForDisplay();
 							}
 						} else {
-							$vs_label = htmlentities($t_item->getLabelForDisplay(), ENT_COMPAT, 'utf-8', false);
+							$vs_label = $t_item->getLabelForDisplay();
 							if (($vs_table_name === 'ca_editor_uis') && (in_array($po_view->request->getAction(), array('EditScreen', 'DeleteScreen', 'SaveScreen')))) {
 								$t_screen = new ca_editor_ui_screens($po_view->request->getParameter('screen_id', pInteger));
 								if (!($vs_screen_name = $t_screen->getLabelForDisplay())) {
