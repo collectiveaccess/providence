@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2009-2010 Whirl-i-Gig
+ * Copyright 2009-2012 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -62,19 +62,32 @@ class GeoNamesController extends ActionController {
 			}
 
 			try {
-				$vo_xml = new SimpleXMLElement(@file_get_contents("$vs_base?$vs_query_string"));
-				//var_dump($vo_result);
-				foreach($vo_xml->children() as $vo_child){
-					if($vo_child->getName()!="totalResultsCount"){
-						$va_items[$vo_child->geonameId.""] = array(
-							'displayname' => $vo_child->name,
-							'country' => $vo_child->countryName ? $vo_child->countryName : null,
-							'continent' => $vo_child->continentCode ? $vo_child->continentCode : null,
-							'fcl' => $vo_child->fclName ? $vo_child->fclName : null,
-							'lat' => $vo_child->lat ? $vo_child->lat : null,
-							'lng' => $vo_child->lng ? $vo_child->lng : null,
-							'idno' => $vo_child->geonameId
-						);
+				$vo_xml = new SimpleXMLElement($x= @file_get_contents("{$vs_base}?$vs_query_string"));
+				
+				$va_attr = $vo_xml->status ? $vo_xml->status->attributes() : null;
+				if ($va_attr && isset($va_attr['value']) && ((int)$va_attr['value'] > 0)) { 
+					$va_items[0] = array(
+						'displayname' => _t('Connection to GeoNames with username "%1" was rejected with the message "%2". Check your configuration and make sure your GeoNames.org account is enabled for web services.', $vs_user, $va_attr['message']),
+						'country' => '',
+						'continent' => '',
+						'fcl' => '',
+						'lat' => '',
+						'lng' => '',
+						'idno' => ''
+					);
+				} else {
+					foreach($vo_xml->children() as $vo_child){
+						if($vo_child->getName()!="totalResultsCount"){
+							$va_items[(string)$vo_child->geonameId] = array(
+								'displayname' => $vo_child->name,
+								'country' => $vo_child->countryName ? $vo_child->countryName : null,
+								'continent' => $vo_child->continentCode ? $vo_child->continentCode : null,
+								'fcl' => $vo_child->fclName ? $vo_child->fclName : null,
+								'lat' => $vo_child->lat ? $vo_child->lat : null,
+								'lng' => $vo_child->lng ? $vo_child->lng : null,
+								'idno' => $vo_child->geonameId
+							);
+						}
 					}
 				}
 			} catch (Exception $e) {

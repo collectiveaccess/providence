@@ -217,7 +217,11 @@
 			}
 		}
 		# ------------------------------------------------------------------
-		public function removeAttribute($pn_attribute_id, $ps_error_source=null, $pa_extra_info=null) {
+		/**
+		 * 
+		 *
+		 */
+		public function removeAttribute($pn_attribute_id, $ps_error_source=null, $pa_extra_info=null, $pa_options=null) {
 			$t_attr = new ca_attributes($pn_attribute_id);
 			$t_attr->purify($this->purify());
 			if (!$t_attr->getPrimaryKey()) { return false; }
@@ -235,22 +239,24 @@
 			
 			
 			// check restriction min/max settings
-			if (!($t_element = $this->_getElementInstance($t_attr->get('element_id')))) { return false; }
-			$t_restriction = $t_element->getTypeRestrictionInstance($this->tableNum(), $this->getTypeID());
-			if (!$t_restriction) { return null; }		// attribute not bound to this type
-			$vn_min = $t_restriction->getSetting('minAttributesPerRow');
-			$vn_max = $t_restriction->getSetting('maxAttributesPerRow');
-			
-			
-			$vn_del_cnt = 0;
-			foreach($this->opa_attributes_to_remove as $va_attr) {
-				if ($va_attr['element_id'] == $vn_element_id) {
-					$vn_del_cnt++;
+			if (!isset($pa_options['dontCheckMinMax']) || !$pa_options['dontCheckMinMax']) { 
+				if (!($t_element = $this->_getElementInstance($t_attr->get('element_id')))) { return false; }
+				$t_restriction = $t_element->getTypeRestrictionInstance($this->tableNum(), $this->getTypeID());
+				if (!$t_restriction) { return null; }		// attribute not bound to this type
+				$vn_min = $t_restriction->getSetting('minAttributesPerRow');
+				$vn_max = $t_restriction->getSetting('maxAttributesPerRow');
+				
+				
+				$vn_del_cnt = 0;
+				foreach($this->opa_attributes_to_remove as $va_attr) {
+					if ($va_attr['element_id'] == $vn_element_id) {
+						$vn_del_cnt++;
+					}
 				}
+				
+				$vn_count = $this->getAttributeCountByElement($t_element->getPrimaryKey())  + $vn_add_cnt - $vn_del_cnt;
+				if ($vn_count <= $vn_min) { return null; }	// # attributes is at lower limit
 			}
-			
-			$vn_count = $this->getAttributeCountByElement($t_element->getPrimaryKey())  + $vn_add_cnt - $vn_del_cnt;
-			if ($vn_count <= $vn_min) { return null; }	// # attributes is at lower limit
 			
 			$this->opa_attributes_to_remove[] = array(
 				'attribute_id' => $pn_attribute_id,
@@ -291,7 +297,7 @@
 		 * Note that this method does not respect the minAttributesPerRow type restriction setting. It always
 		 * removes *all* attributes
 		 */
-		public function removeAttributes($pm_element_code_or_id=null) {
+		public function removeAttributes($pm_element_code_or_id=null, $pa_options=null) {
 			if(!$this->getPrimaryKey()) { return null; }
 			
 			if ($pm_element_code_or_id) {
@@ -1621,7 +1627,7 @@
  				INNER JOIN ca_metadata_elements AS came ON camtr.element_id = came.element_id
  				INNER JOIN ca_metadata_element_labels AS cmel ON cmel.element_id = came.element_id
  				WHERE
- 					$vs_type_sql (camtr.table_num = ?)
+ 					$vs_type_sql (camtr.table_num = ?) AND came.parent_id IS NULL
  			", (int)$this->tableNum());
  			$va_codes = array();
  			while($qr_res->nextRow()) {

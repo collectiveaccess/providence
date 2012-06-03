@@ -563,17 +563,20 @@ class ca_commerce_orders extends BaseModel {
 				break;
 		}
 		
+		$vb_status_changed = $this->changed('order_status');
 		if($vn_rc = parent::update($pa_options)) {
-			$this->sendStatusChangeEmailNotification($vn_old_status, $vn_old_ship_date, $vn_old_shipped_on_date);
+			if ($vb_status_changed) { $this->sendStatusChangeEmailNotification($vn_old_status, $vn_old_ship_date, $vn_old_shipped_on_date); }
 			
-			// Delete originating set if configured to do so
-			if($this->opo_client_services_config->get('set_disposal_policy') == 'DELETE_WHEN_ORDER_PROCESSED') {
-				$t_trans = new ca_commerce_transactions($this->get('transaction_id'));
-				if ($t_trans->getPrimaryKey()) {
-					$t_set = new ca_sets($t_trans->get('set_id'));
-					if ($t_set->getPrimaryKey()) {
-						$t_set->setMode(ACCESS_WRITE);
-						$t_set->delete(true);
+			if (in_array($this->get('order_status'), array('PROCESSED', 'PROCESSED_AWAITING_DIGITIZATION', 'COMPLETED'))) {
+				// Delete originating set if configured to do so
+				if($this->opo_client_services_config->get('set_disposal_policy') == 'DELETE_WHEN_ORDER_PROCESSED') {
+					$t_trans = new ca_commerce_transactions($this->get('transaction_id'));
+					if ($t_trans->getPrimaryKey()) {
+						$t_set = new ca_sets($t_trans->get('set_id'));
+						if ($t_set->getPrimaryKey()) {
+							$t_set->setMode(ACCESS_WRITE);
+							$t_set->delete(true);
+						}
 					}
 				}
 			}
@@ -769,7 +772,7 @@ class ca_commerce_orders extends BaseModel {
 		$o_config = caGetClientServicesConfiguration();
 		$vs_currency = $o_config->get('currency');
 		
-		$va_payment_info = array('order_id' => $this->getPrimaryKey());
+		$va_payment_info = array('order_id' => $this->getPrimaryKey(), 'created_on' => (int)$this->get('created_on', array('GET_DIRECT_DATE' => true)));
 		
 		$vb_dont_save_to_database = (isset($pa_options['dontSaveToDatabase']) && $pa_options['dontSaveToDatabase']) ? true : false;
 		$vb_dont_charge_credit_card = (isset($pa_options['dontChargeCreditCard']) && $pa_options['dontChargeCreditCard']) ? true : false;
@@ -894,7 +897,7 @@ class ca_commerce_orders extends BaseModel {
 			if (($vs_payment_method === 'CREDIT') && (!$vb_dont_charge_credit_card) && (!$this->get('payment_received_on'))) {
 				// if it's a credit card try to actually charge the card
 				if (!($o_payment = Payment::getProcessor())) { return null; }	// couldn't load processor
-				if ($va_payment_response = $o_payment->DoPayment($this->getTotal(), $va_payment_info, $this->getBillingInfo(), array('currency' => $vs_currency))) {
+				if ($va_payment_response = $o_payment->DoPayment($this->getTotal(), $va_payment_info, $this->getBillingInfo(), array('currency' => $vs_currency, 'note' => $o_config->get('payment_note')))) {
 					if ($va_payment_response['success'] === true) {
 						$this->set('payment_status', 'RECEIVED');
 						$this->set('payment_response', $va_payment_response);
@@ -1110,7 +1113,7 @@ class ca_commerce_orders extends BaseModel {
 	 	
 	 	while($qr_res->nextRow()) {
 	 		$va_order = $qr_res->getRow();
-	 		$va_order['order_number'] = date('dmY', $va_order['created_on']).'-'.$va_order['order_id'];
+	 		$va_order['order_number'] = date('mdY', $va_order['created_on']).'-'.$va_order['order_id'];
 	 		// order additional fees
 			$vn_additional_order_fees = 0;
 			

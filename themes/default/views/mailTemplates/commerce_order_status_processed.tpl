@@ -5,6 +5,8 @@
 	$va_fulfillment_methods = array();
 	if ($vb_requires_shipping = $t_order->requiresShipping()) { $va_fulfillment_methods[] = 'shipment'; }
 	if ($t_order->requiresDownload()) { $va_fulfillment_methods[] = 'download'; }
+	
+	$va_fulfillment_methods = array(); // TEMPORARY TO PREVENT DOWNLOAD IMAGES NOTIFICATION
 ?>
 You were sent the following message by <em><?php print $this->getVar('sender_name'); ?></em> on <em><?php print date('F j, Y g:i a', $this->getVar('sent_on')); ?></em>:
 
@@ -40,5 +42,6 @@ You were sent the following message by <em><?php print $this->getVar('sender_nam
 ?>
 
 <p>Log in at <?php print $this->getVar('login_url'); ?> to review your order under <em>My Account</em> and communicate with the R&R Associate.</p>
-  
-<p>If you have images ready to download, you may download them through your order overview screen under Account: <?php print $this->getVar('login_url'); ?></p>
+<?php
+//<p>If you have images ready to download, you may download them through your order overview screen under Account: ?php print $this->getVar('login_url'); ?</p>
+?>

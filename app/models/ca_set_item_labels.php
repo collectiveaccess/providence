@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2009-2010 Whirl-i-Gig
+ * Copyright 2009-2012 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -64,7 +64,7 @@ BaseModel::$s_ca_models_definitions['ca_set_item_labels'] = array(
 		),
 		'caption' => array(
 				'FIELD_TYPE' => FT_TEXT, 'DISPLAY_TYPE' => DT_FIELD, 
-				'DISPLAY_WIDTH' => 70, 'DISPLAY_HEIGHT' => 2,
+				'DISPLAY_WIDTH' => 100, 'DISPLAY_HEIGHT' => 3,
 				'IS_NULL' => false, 
 				'DEFAULT' => '',
 				'LABEL' => _t('Caption'), 'DESCRIPTION' => _t('Caption for the set item.'),

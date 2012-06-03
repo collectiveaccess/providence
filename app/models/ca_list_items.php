@@ -330,6 +330,7 @@ class ca_list_items extends BundlableLabelableBaseModelWithAttributes implements
 	protected function initLabelDefinitions() {
 		parent::initLabelDefinitions();
 		$this->BUNDLES['ca_objects'] = array('type' => 'related_table', 'repeating' => true, 'label' => _t('Related objects'));
+		$this->BUNDLES['ca_object_lots'] = array('type' => 'related_table', 'repeating' => true, 'label' => _t('Related lots'));
 		$this->BUNDLES['ca_entities'] = array('type' => 'related_table', 'repeating' => true, 'label' => _t('Related entities'));
 		$this->BUNDLES['ca_places'] = array('type' => 'related_table', 'repeating' => true, 'label' => _t('Related places'));
 		$this->BUNDLES['ca_occurrences'] = array('type' => 'related_table', 'repeating' => true, 'label' => _t('Related occurrences'));
@@ -497,8 +498,7 @@ class ca_list_items extends BundlableLabelableBaseModelWithAttributes implements
 	 	} else {
 	 		$vn_hierarchy_id = $this->get('list_id');
 	 	}
-	 	$t_list = new ca_lists();
-	 	$t_list->load($vn_hierarchy_id);
+	 	$t_list = new ca_lists($vn_hierarchy_id);
 	 	
 	 	return $t_list->getLabelForDisplay(false);
 	 }

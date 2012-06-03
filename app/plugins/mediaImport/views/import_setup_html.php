@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2010 Whirl-i-Gig
+ * Copyright 2010-2012 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -29,7 +29,7 @@
  	if (!sizeof($this->getVar('directory_list'))) {
  ?>
  	<h1><?php print _t("There is no media available for import"); ?></h1>
- 	<h2><?php print _t("Upload media for <em>%1</em> and then retry", $this->getVar('directory_path')); ?></h2>
+ 	<h2><?php print _t("Upload media into the <em>%1</em> server directory and retry", $this->getVar('directory_path')); ?></h2>
  <?php
  		return;
  	}
