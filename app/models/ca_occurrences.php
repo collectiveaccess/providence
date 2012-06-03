@@ -378,7 +378,7 @@ class ca_occurrences extends BundlableLabelableBaseModelWithAttributes implement
 			return $t_occ->getLabelForDisplay(false);
 		} else {			
 			if ($pn_id == $this->getPrimaryKey()) {
-				return $this->getLabelForDisplay(false);
+				return $this->getLabelForDisplay(true);
 			} else {
 				$t_occ = new ca_occurrences($pn_id);
 				return $t_occ->getLabelForDisplay(false);

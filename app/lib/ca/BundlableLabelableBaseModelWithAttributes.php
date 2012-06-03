@@ -1044,8 +1044,9 @@ class BundlableLabelableBaseModelWithAttributes extends LabelableBaseModelWithAt
 					));
 				}
 				$o_view->setVar('errors', $pa_options['request']->getActionErrors($ps_bundle_name));
-				$o_view->setVar('display_media', $this->getMediaTag($ps_bundle_name, $this->getDefaultMediaPreviewVersion($ps_bundle_name)));
-				
+				if (method_exists($this, "getDefaultMediaPreviewVersion")) {
+					$o_view->setVar('display_media', $this->getMediaTag($ps_bundle_name, $this->getDefaultMediaPreviewVersion($ps_bundle_name)));
+				}
 				
 				$vs_field_id = 'ca_intrinsic_'.$pa_options['formName'].'_'.$ps_placement_code;
 				$vs_label = '<span class="formLabelText" id="'.$vs_field_id.'">'.$pa_options['label'].'</span>'; 
@@ -1573,11 +1574,11 @@ class BundlableLabelableBaseModelWithAttributes extends LabelableBaseModelWithAt
  	 *		request = the current request object; used to apply user privs to bundle generation
  	 *		force = list of bundles to force onto form if they are not included in the UI; forced bundles will be included at the bottom of the form
  	 *		forceHidden = list of *intrinsic* fields to force onto form as hidden <input> elements if they are not included in the UI; NOTE: only intrinsic fields may be specified
- 	 *
+ 	 *		omit = list of bundles to omit from form in the event they are included in the UI
  	 *	@return array List of bundle HTML to display in form, keyed on placement code
  	 */
  	public function getBundleFormHTMLForScreen($pm_screen, $pa_options) {
- 		//if (!$pa_options['request']->isLoggedIn()) { return false; }
+ 		$va_omit_bundles = (isset($pa_options['omit']) && is_array($pa_options['omit'])) ? $pa_options['omit'] : array();
  		
  		if (isset($pa_options['ui_instance']) && ($pa_options['ui_instance'])) {
  			$t_ui = $pa_options['ui_instance'];
@@ -1598,6 +1599,7 @@ class BundlableLabelableBaseModelWithAttributes extends LabelableBaseModelWithAt
 			foreach($va_bundles as $va_bundle) {
 				if ($va_bundle['bundle_name'] === $vs_type_id_fld) { continue; }	// skip type_id
 				if ((!$vn_pk_id) && ($va_bundle['bundle_name'] === $vs_hier_parent_id_fld)) { continue; }
+				if (in_array($va_bundle['bundle_name'], $va_omit_bundles)) { continue; }
 				
 				// Test for user action restrictions on intrinsic fields
 				$vb_output_bundle = true;
