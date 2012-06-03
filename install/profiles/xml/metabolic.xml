@@ -15107,5 +15107,10 @@
       <role code="admin"/>
       <group code="admin"/>
     </login>
+     <login user_name="john" password="surfing" fname="John" lname="Yi"
+      email="jyi@annenbergfoundation.org">
+      <role code="admin"/>
+      <group code="admin"/>
+    </login>
   </logins>
 </profile>
