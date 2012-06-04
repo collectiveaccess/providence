@@ -1108,7 +1108,7 @@ class SearchEngine extends SearchBase {
 		
 		$vs_check_access_sql = '';
 		if (isset($pa_options['checkAccess']) && is_array($pa_options['checkAccess']) && sizeof($pa_options['checkAccess']) && $t_instance->hasField('access')) {
-			$vs_check_access_sql = ' AND (n.access IN '.join(", ", $pa_options['checkAccess']).')';
+			$vs_check_access_sql = ' AND (n.access IN ('.join(", ", $pa_options['checkAccess']).'))';
 		}
 		
 		$vs_limit_sql = '';
