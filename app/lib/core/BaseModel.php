@@ -676,7 +676,7 @@ class BaseModel extends BaseObject {
 						}
 						
 						if (($va_tmp[1] == 'parent') && ($this->isHierarchical()) && ($vn_parent_id = $this->get($this->getProperty('HIERARCHY_PARENT_ID_FLD')))) {
-							$t_instance = $this->getAppDatamodel()->getInstanceByTableNum($this->tableNum(), true);
+							$t_instance = $this->getAppDatamodel()->getInstanceByTableNum($this->tableNum());
 							if (!$t_instance->load($vn_parent_id)) {
 								return ($vb_return_as_array) ? array() : null;
 							} else {
@@ -714,64 +714,66 @@ class BaseModel extends BaseObject {
 								$va_data = array();
 								$va_children_ids = $this->getHierarchyChildren(null, array('idsOnly' => true));
 								
-								$t_instance = $this->getAppDatamodel()->getInstanceByTableNum($this->tableNum(), true);
-								
-								if (($va_tmp[1] == $this->primaryKey()) && !$vs_sort) {
-									foreach($va_children_ids as $vn_child_id) {
-										$va_data[$vn_child_id] = $vn_child_id;
-									}
-								} else {
-									if (method_exists($this, "makeSearchResult")) {
-										// Use SearchResult lazy loading when available
-										$vs_table = $this->tableName();
-										$vs_pk = $vs_table.'.'.$this->primaryKey();
-										$qr_children = $this->makeSearchResult($this->tableName(), $va_children_ids);
-										while($qr_children->nextHit()) {
-											if ($vb_check_access && !in_array($qr_children->get("{$vs_table}.access"), $pa_options['checkAccess'])) { continue; }
-								
-											$vn_child_id = $qr_children->get($vs_pk);
-											$vs_sort_key = ($vs_sort) ? $qr_children->get($vs_sort) : 0;
-											if(!is_array($va_data[$vs_sort_key])) { $va_data[$vs_sort_key] = array(); }
-											if ($vb_return_as_array) {
-												$va_data[$vs_sort_key][$vn_child_id]  = array_shift($qr_children->get($vs_childless_path, array_merge($pa_options, array('returnAsArray' => $vb_return_as_array, 'returnAllLocales' => $vb_return_all_locales))));
-											} else {
-												$va_data[$vs_sort_key][$vn_child_id]  = $qr_children->get($vs_childless_path, array_merge($pa_options, array('returnAsArray' => false, 'returnAllLocales' => false)));
-											}
-										}
-										ksort($va_data);
-										if ($vs_sort_direction && ($vs_sort_direction == 'desc')) { $va_data = array_reverse($va_data); }
-										$va_sorted_data = array();
-										foreach($va_data as $vs_sort_key => $va_items) {
-											foreach($va_items as $vs_k => $vs_v) {
-												$va_sorted_data[] = $vs_v;
-											}
-										}
-										$va_data = $va_sorted_data;
-									} else {
-										// Fall-back to loading records row-by-row (slow)
+								if (is_array($va_children_ids) && sizeof($va_children_ids)) {
+									$t_instance = $this->getAppDatamodel()->getInstanceByTableNum($this->tableNum());
+									
+									if (($va_tmp[1] == $this->primaryKey()) && !$vs_sort) {
 										foreach($va_children_ids as $vn_child_id) {
-											if ($t_instance->load($vn_child_id)) {
-												if ($vb_check_access && !in_array($t_instance->get("access"), $pa_options['checkAccess'])) { continue; }
-								
-												$vs_sort_key = ($vs_sort) ? $t_instance->get($vs_sort) : 0;
+											$va_data[$vn_child_id] = $vn_child_id;
+										}
+									} else {
+										if (method_exists($this, "makeSearchResult")) {
+											// Use SearchResult lazy loading when available
+											$vs_table = $this->tableName();
+											$vs_pk = $vs_table.'.'.$this->primaryKey();
+											$qr_children = $this->makeSearchResult($this->tableName(), $va_children_ids);
+											while($qr_children->nextHit()) {
+												if ($vb_check_access && !in_array($qr_children->get("{$vs_table}.access"), $pa_options['checkAccess'])) { continue; }
+									
+												$vn_child_id = $qr_children->get($vs_pk);
+												$vs_sort_key = ($vs_sort) ? $qr_children->get($vs_sort) : 0;
 												if(!is_array($va_data[$vs_sort_key])) { $va_data[$vs_sort_key] = array(); }
-											
 												if ($vb_return_as_array) {
-													$va_data[$vs_sort_key][$vn_child_id]  = array_shift($t_instance->get($vs_childless_path, array_merge($pa_options, array('returnAsArray' => $vb_return_as_array, 'returnAllLocales' => $vb_return_all_locales))));
+													$va_data[$vs_sort_key][$vn_child_id]  = array_shift($qr_children->get($vs_childless_path, array_merge($pa_options, array('returnAsArray' => $vb_return_as_array, 'returnAllLocales' => $vb_return_all_locales))));
 												} else {
-													$va_data[$vs_sort_key][$vn_child_id]  = $t_instance->get($vs_childless_path, array_merge($pa_options, array('returnAsArray' => false, 'returnAllLocales' => false)));
+													$va_data[$vs_sort_key][$vn_child_id]  = $qr_children->get($vs_childless_path, array_merge($pa_options, array('returnAsArray' => false, 'returnAllLocales' => false)));
 												}
 											}
-										}
-										ksort($va_data);
-										if ($vs_sort_direction && $vs_sort_direction == 'desc') { $va_data = array_reverse($va_data); }
-										$va_sorted_data = array();
-										foreach($va_data as $vs_sort_key => $va_items) {
-											foreach($va_items as $vs_k => $vs_v) {
-												$va_sorted_data[] = $vs_v;
+											ksort($va_data);
+											if ($vs_sort_direction && ($vs_sort_direction == 'desc')) { $va_data = array_reverse($va_data); }
+											$va_sorted_data = array();
+											foreach($va_data as $vs_sort_key => $va_items) {
+												foreach($va_items as $vs_k => $vs_v) {
+													$va_sorted_data[] = $vs_v;
+												}
 											}
+											$va_data = $va_sorted_data;
+										} else {
+											// Fall-back to loading records row-by-row (slow)
+											foreach($va_children_ids as $vn_child_id) {
+												if ($t_instance->load($vn_child_id)) {
+													if ($vb_check_access && !in_array($t_instance->get("access"), $pa_options['checkAccess'])) { continue; }
+									
+													$vs_sort_key = ($vs_sort) ? $t_instance->get($vs_sort) : 0;
+													if(!is_array($va_data[$vs_sort_key])) { $va_data[$vs_sort_key] = array(); }
+												
+													if ($vb_return_as_array) {
+														$va_data[$vs_sort_key][$vn_child_id]  = array_shift($t_instance->get($vs_childless_path, array_merge($pa_options, array('returnAsArray' => $vb_return_as_array, 'returnAllLocales' => $vb_return_all_locales))));
+													} else {
+														$va_data[$vs_sort_key][$vn_child_id]  = $t_instance->get($vs_childless_path, array_merge($pa_options, array('returnAsArray' => false, 'returnAllLocales' => false)));
+													}
+												}
+											}
+											ksort($va_data);
+											if ($vs_sort_direction && $vs_sort_direction == 'desc') { $va_data = array_reverse($va_data); }
+											$va_sorted_data = array();
+											foreach($va_data as $vs_sort_key => $va_items) {
+												foreach($va_items as $vs_k => $vs_v) {
+													$va_sorted_data[] = $vs_v;
+												}
+											}
+											$va_data = $va_sorted_data;
 										}
-										$va_data = $va_sorted_data;
 									}
 								}
 								

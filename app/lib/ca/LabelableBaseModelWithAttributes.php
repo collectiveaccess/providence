@@ -320,7 +320,7 @@
 				switch($va_tmp[1]) {
 					case 'parent':
 						if (($this->isHierarchical()) && ($vn_parent_id = $this->get($this->getProperty('HIERARCHY_PARENT_ID_FLD')))) {
-							$t_instance = $this->getAppDatamodel()->getInstanceByTableNum($this->tableNum(), true);
+							$t_instance = $this->getAppDatamodel()->getInstanceByTableNum($this->tableNum());
 							if (!$t_instance->load($vn_parent_id)) {
 								$t_instance = $this;
 							} else {
@@ -338,35 +338,37 @@
 							$va_data = array();
 							$va_children_ids = $this->getHierarchyChildren(null, array('idsOnly' => true));
 							
-							$t_instance = $this->getAppDatamodel()->getInstanceByTableNum($this->tableNum());
-							
-							$vb_check_access = is_array($pa_options['checkAccess']) && $t_instance->hasField('access');
-							$vs_sort = isset($pa_options['sort']) ? $pa_options['sort'] : null;
-							$vs_sort_direction = (isset($pa_options['sort_direction']) && in_array(strtolower($pa_options['sort_direction']), array('asc', 'desc'))) ? strtolower($pa_options['sort_direction']) : 'asc';
-							
-							$qr_children = $this->makeSearchResult($this->tableName(), $va_children_ids);
-							
-							$vs_table = $this->tableName();
-							while($qr_children->nextHit()) {
-								if ($vb_check_access && !in_array($qr_children->get("{$vs_table}.access"), $pa_options['checkAccess'])) { continue; }
+							if (is_array($va_children_ids) && sizeof($va_children_ids)) {
+								$t_instance = $this->getAppDatamodel()->getInstanceByTableNum($this->tableNum());
 								
-								$vs_sort_key = ($vs_sort) ? $qr_children->get($vs_sort) : 0;
-								if(!is_array($va_data[$vs_sort_key])) { $va_data[$vs_sort_key] = array(); }
-								$va_data[$vs_sort_key] = array_merge($va_data[$vs_sort_key], $qr_children->get($vs_childless_path, array_merge($pa_options, array('returnAsArray' => true))));
-							}
-							ksort($va_data);
-							if ($vs_sort_direction && $vs_sort_direction == 'desc') { $va_data = array_reverse($va_data); }
-							$va_sorted_data = array();
-							foreach($va_data as $vs_sort_key => $va_items) {
-								foreach($va_items as $vs_k => $vs_v) {
-									$va_sorted_data[] = $vs_v;
+								$vb_check_access = is_array($pa_options['checkAccess']) && $t_instance->hasField('access');
+								$vs_sort = isset($pa_options['sort']) ? $pa_options['sort'] : null;
+								$vs_sort_direction = (isset($pa_options['sort_direction']) && in_array(strtolower($pa_options['sort_direction']), array('asc', 'desc'))) ? strtolower($pa_options['sort_direction']) : 'asc';
+								
+								$qr_children = $this->makeSearchResult($this->tableName(), $va_children_ids);
+								
+								$vs_table = $this->tableName();
+								while($qr_children->nextHit()) {
+									if ($vb_check_access && !in_array($qr_children->get("{$vs_table}.access"), $pa_options['checkAccess'])) { continue; }
+									
+									$vs_sort_key = ($vs_sort) ? $qr_children->get($vs_sort) : 0;
+									if(!is_array($va_data[$vs_sort_key])) { $va_data[$vs_sort_key] = array(); }
+									$va_data[$vs_sort_key] = array_merge($va_data[$vs_sort_key], $qr_children->get($vs_childless_path, array_merge($pa_options, array('returnAsArray' => true))));
 								}
+								ksort($va_data);
+								if ($vs_sort_direction && $vs_sort_direction == 'desc') { $va_data = array_reverse($va_data); }
+								$va_sorted_data = array();
+								foreach($va_data as $vs_sort_key => $va_items) {
+									foreach($va_items as $vs_k => $vs_v) {
+										$va_sorted_data[] = $vs_v;
+									}
+								}
+								$va_data = $va_sorted_data;
 							}
-							
 							if ($vb_return_as_array) {
-								return $va_sorted_data;
+								return $va_data;
 							} else {
-								return join($vs_delimiter, $va_sorted_data);
+								return join($vs_delimiter, $va_data);
 							}
 						}
 						break;
