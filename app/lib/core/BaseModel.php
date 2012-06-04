@@ -4453,7 +4453,7 @@ class BaseModel extends BaseObject {
 		$this->clearErrors();
 		reset($this->FIELDS);
 		while (list($field, $attr) = each($this->FIELDS)) {
-			echo "$field = ".$this->_FIELD_VALUES[$field]."<BR>\n";
+			echo "{$field} = ".$this->_FIELD_VALUES[$field]."<BR>\n";
 		}
 	}
 	# --------------------------------------------------------------------------------
@@ -4465,7 +4465,7 @@ class BaseModel extends BaseObject {
 	 * @return bool
 	 */ 
 	public function hasField ($field) {
-		return (isset($this->FIELDS[$field]) && $this->FIELDS[$field]) ? 1 : 0;
+		return (isset($this->FIELDS[$field]) && $this->FIELDS[$field]) ? true : false;
 	}
 	# --------------------------------------------------------------------------------
 	/**
