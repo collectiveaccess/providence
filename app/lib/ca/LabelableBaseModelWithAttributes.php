@@ -288,7 +288,10 @@
  		 *		bottom - For hierarchy specifications (eg. ca_objects.hierarchy) this option, if set, will limit the returned hierarchy to the first X nodes from the lowest node up. Default is to not limit.
  		 * 		hierarchicalDelimiter - Text to place between items in a hierarchy for a hierarchical specification (eg. ca_objects.hierarchy) when returning as a string
  		 *		removeFirstItems - If set to a non-zero value, the specified number of items at the top of the hierarchy will be omitted. For example, if set to 2, the root and first child of the hierarchy will be omitted. Default is zero (don't delete anything).
- 		 */
+ 		 *		checkAccess = array of access values to filter results by; if defined only items with the specified access code(s) are returned. Only supported for <table_name>.hierarchy.preferred_labels and <table_name>.children.preferred_labels because these returns sets of items. For <table_name>.parent.preferred_labels, which returns a single row at most, you should do access checking yourself. (Everything here applies equally to nonpreferred_labels)
+ 	 	 *		sort = optional bundles to sort returned values on. Only supported for <table_name>.children.preferred_labels. The bundle specifiers are fields with or without tablename.
+ 	 	 *		sort_direction = direction to sort results by, either 'asc' for ascending order or 'desc' for descending order; default is 'asc'
+ 	 	 */
 		public function get($ps_field, $pa_options=null) {
 			$vs_template = 				(isset($pa_options['template'])) ? $pa_options['template'] : null;
 			$vb_return_as_array = 		(isset($pa_options['returnAsArray'])) ? (bool)$pa_options['returnAsArray'] : false;
@@ -317,7 +320,7 @@
 				switch($va_tmp[1]) {
 					case 'parent':
 						if (($this->isHierarchical()) && ($vn_parent_id = $this->get($this->getProperty('HIERARCHY_PARENT_ID_FLD')))) {
-							$t_instance = $this->getAppDatamodel()->getInstanceByTableNum($this->tableNum());
+							$t_instance = $this->getAppDatamodel()->getInstanceByTableNum($this->tableNum(), true);
 							if (!$t_instance->load($vn_parent_id)) {
 								$t_instance = $this;
 							} else {
@@ -337,16 +340,33 @@
 							
 							$t_instance = $this->getAppDatamodel()->getInstanceByTableNum($this->tableNum());
 							
-							foreach($va_children_ids as $vn_child_id) {
-								if ($t_instance->load($vn_child_id)) {
-									$va_data = array_merge($va_data, $t_instance->get($vs_childless_path, array_merge($pa_options, array('returnAsArray' => true))));
+							$vb_check_access = is_array($pa_options['checkAccess']) && $t_instance->hasField('access');
+							$vs_sort = isset($pa_options['sort']) ? $pa_options['sort'] : null;
+							$vs_sort_direction = (isset($pa_options['sort_direction']) && in_array(strtolower($pa_options['sort_direction']), array('asc', 'desc'))) ? strtolower($pa_options['sort_direction']) : 'asc';
+							
+							$qr_children = $this->makeSearchResult($this->tableName(), $va_children_ids);
+							
+							$vs_table = $this->tableName();
+							while($qr_children->nextHit()) {
+								if ($vb_check_access && !in_array($qr_children->get("{$vs_table}.access"), $pa_options['checkAccess'])) { continue; }
+								
+								$vs_sort_key = ($vs_sort) ? $qr_children->get($vs_sort) : 0;
+								if(!is_array($va_data[$vs_sort_key])) { $va_data[$vs_sort_key] = array(); }
+								$va_data[$vs_sort_key] = array_merge($va_data[$vs_sort_key], $qr_children->get($vs_childless_path, array_merge($pa_options, array('returnAsArray' => true))));
+							}
+							ksort($va_data);
+							if ($vs_sort_direction && $vs_sort_direction == 'desc') { $va_data = array_reverse($va_data); }
+							$va_sorted_data = array();
+							foreach($va_data as $vs_sort_key => $va_items) {
+								foreach($va_items as $vs_k => $vs_v) {
+									$va_sorted_data[] = $vs_v;
 								}
 							}
 							
 							if ($vb_return_as_array) {
-								return $va_data;
+								return $va_sorted_data;
 							} else {
-								return join($vs_delimiter, $va_data);
+								return join($vs_delimiter, $va_sorted_data);
 							}
 						}
 						break;
@@ -386,8 +406,10 @@
 							}
 						}
 						
+						$vb_check_access = is_array($pa_options['checkAccess']) && $this->hasField('access');
 						$va_tmp = array();
 						foreach($va_ancestor_list as $vn_i => $va_item) {
+							if ($vb_check_access && !in_array($va_item['access'], $pa_options['checkAccess'])) { continue; }
 							if ($vs_template) {
 								$va_tmp[$va_item['NODE'][$vs_pk]] = caProcessTemplate($vs_template, $va_item['NODE'], array('removePrefix' => 'preferred_labels.'));
 							} else {

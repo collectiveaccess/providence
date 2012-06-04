@@ -586,25 +586,28 @@ class BaseModel extends BaseObject {
 	 * @param array $pa_options options array; can be omitted.
 	 * It should be an associative array of boolean (except one of the options) flags. In case that some of the options are not set, they are treated as 'false'.
 	 * Possible options (keys) are:
-	 * -BINARY: return field value as is
-	 * -FILTER_HTML_SPECIAL_CHARS: convert all applicable chars to their html entities
-	 * -DONT_PROCESS_GLOSSARY_TAGS: ?
-	 * -CONVERT_HTML_BREAKS: similar to nl2br()
-	 * -convertLineBreaks: same as CONVERT_HTML_BREAKS
-	 * -GET_DIRECT_DATE: return raw date value from database if $ps_field adresses a date field, otherwise the value will be parsed using the TimeExpressionParser::getText() method
-	 * -GET_DIRECT_TIME: return raw time value from database if $ps_field adresses a time field, otherwise the value will be parsed using the TimeExpressionParser::getText() method
-	 * -TIMECODE_FORMAT: set return format for fields representing time ranges possible (string) values: COLON_DELIMITED, HOURS_MINUTES_SECONDS, RAW; data will be passed through floatval() by default
-	 * -QUOTE: set return value into quotes
-	 * -URL_ENCODE: value will be passed through urlencode()
-	 * -ESCAPE_FOR_XML: convert <, >, &, ' and " characters for XML use
-	 * -DONT_STRIP_SLASHES: if set to true, return value will not be passed through stripslashes()
-	 * -template: formatting string to use for returned value; ^<fieldname> placeholder is used to represent field value in template
-	 * -returnAsArray: if true, fields that can return multiple values [currently only <table_name>.children.<field>] will return values in an indexed array; default is false
-	 * -returnAllLocales:
-	 * -delimiter: if set, value is used as delimiter when fields that can return multiple fields are returned as strings; default is a single space
-	 * -convertCodesToDisplayText: if set, id values refering to foreign keys are returned as preferred label text in the current locale
-	 * -returnURL: if set then url is returned for media, otherwise an HTML tag for display is returned
-	 * -dateFormat: format to return created or lastModified dates in. Valid values are iso8601 or text
+	 * 		BINARY: return field value as is
+	 * 		FILTER_HTML_SPECIAL_CHARS: convert all applicable chars to their html entities
+	 * 		DONT_PROCESS_GLOSSARY_TAGS: ?
+	 * 		CONVERT_HTML_BREAKS: similar to nl2br()
+	 * 		convertLineBreaks: same as CONVERT_HTML_BREAKS
+	 * 		GET_DIRECT_DATE: return raw date value from database if $ps_field adresses a date field, otherwise the value will be parsed using the TimeExpressionParser::getText() method
+	 * 		GET_DIRECT_TIME: return raw time value from database if $ps_field adresses a time field, otherwise the value will be parsed using the TimeExpressionParser::getText() method
+	 * 		TIMECODE_FORMAT: set return format for fields representing time ranges possible (string) values: COLON_DELIMITED, HOURS_MINUTES_SECONDS, RAW; data will be passed through floatval() by default
+	 * 		QUOTE: set return value into quotes
+	 * 		URL_ENCODE: value will be passed through urlencode()
+	 * 		ESCAPE_FOR_XML: convert <, >, &, ' and " characters for XML use
+	 * 		DONT_STRIP_SLASHES: if set to true, return value will not be passed through stripslashes()
+	 * 		template: formatting string to use for returned value; ^<fieldname> placeholder is used to represent field value in template
+	 * 		returnAsArray: if true, fields that can return multiple values [currently only <table_name>.children.<field>] will return values in an indexed array; default is false
+	 * 		returnAllLocales:
+	 * 		delimiter: if set, value is used as delimiter when fields that can return multiple fields are returned as strings; default is a single space
+	 * 		convertCodesToDisplayText: if set, id values refering to foreign keys are returned as preferred label text in the current locale
+	 * 		returnURL: if set then url is returned for media, otherwise an HTML tag for display is returned
+	 * 		dateFormat: format to return created or lastModified dates in. Valid values are iso8601 or text
+	 *		checkAccess = array of access values to filter results by; if defined only items with the specified access code(s) are returned. Only supported for table that have an "access" field.
+ 	 *		sort = optional field to sort returned values on. The field specifiers are fields with or without table name specified.	 
+	 *		sort_direction = direction to sort results by, either 'asc' for ascending order or 'desc' for descending order; default is 'asc'	 
 	 */
 	public function get($ps_field, $pa_options=null) {
 		if (!$ps_field) return null;
@@ -700,7 +703,10 @@ class BaseModel extends BaseObject {
 							}
 						} else {
 							if (($va_tmp[1] == 'children') && ($this->isHierarchical())) {
-		
+								$vb_check_access = is_array($pa_options['checkAccess']) && $this->hasField('access');
+								$vs_sort = isset($pa_options['sort']) ? $pa_options['sort'] : null;
+								$vs_sort_direction = (isset($pa_options['sort_direction']) && in_array(strtolower($pa_options['sort_direction']), array('asc', 'desc'))) ? strtolower($pa_options['sort_direction']) : 'asc';
+							
 								unset($va_tmp[1]);					// remove 'children' from field path
 								$va_tmp = array_values($va_tmp);
 								$vs_childless_path = join('.', $va_tmp);
@@ -708,15 +714,64 @@ class BaseModel extends BaseObject {
 								$va_data = array();
 								$va_children_ids = $this->getHierarchyChildren(null, array('idsOnly' => true));
 								
-								$t_instance = $this->getAppDatamodel()->getInstanceByTableNum($this->tableNum());
+								$t_instance = $this->getAppDatamodel()->getInstanceByTableNum($this->tableNum(), true);
 								
-								foreach($va_children_ids as $vn_child_id) {
-									if ($t_instance->load($vn_child_id)) {
-										if ($vb_return_as_array) {
-											$va_data[$vn_child_id]  = array_shift($t_instance->get($vs_childless_path, array_merge($pa_options, array('returnAsArray' => $vb_return_as_array, 'returnAllLocales' => $vb_return_all_locales))));
-										} else {
-											$va_data[$vn_child_id]  = $t_instance->get($vs_childless_path, array_merge($pa_options, array('returnAsArray' => false, 'returnAllLocales' => false)));
+								if (($va_tmp[1] == $this->primaryKey()) && !$vs_sort) {
+									foreach($va_children_ids as $vn_child_id) {
+										$va_data[$vn_child_id] = $vn_child_id;
+									}
+								} else {
+									if (method_exists($this, "makeSearchResult")) {
+										// Use SearchResult lazy loading when available
+										$vs_table = $this->tableName();
+										$vs_pk = $vs_table.'.'.$this->primaryKey();
+										$qr_children = $this->makeSearchResult($this->tableName(), $va_children_ids);
+										while($qr_children->nextHit()) {
+											if ($vb_check_access && !in_array($qr_children->get("{$vs_table}.access"), $pa_options['checkAccess'])) { continue; }
+								
+											$vn_child_id = $qr_children->get($vs_pk);
+											$vs_sort_key = ($vs_sort) ? $qr_children->get($vs_sort) : 0;
+											if(!is_array($va_data[$vs_sort_key])) { $va_data[$vs_sort_key] = array(); }
+											if ($vb_return_as_array) {
+												$va_data[$vs_sort_key][$vn_child_id]  = array_shift($qr_children->get($vs_childless_path, array_merge($pa_options, array('returnAsArray' => $vb_return_as_array, 'returnAllLocales' => $vb_return_all_locales))));
+											} else {
+												$va_data[$vs_sort_key][$vn_child_id]  = $qr_children->get($vs_childless_path, array_merge($pa_options, array('returnAsArray' => false, 'returnAllLocales' => false)));
+											}
 										}
+										ksort($va_data);
+										if ($vs_sort_direction && ($vs_sort_direction == 'desc')) { $va_data = array_reverse($va_data); }
+										$va_sorted_data = array();
+										foreach($va_data as $vs_sort_key => $va_items) {
+											foreach($va_items as $vs_k => $vs_v) {
+												$va_sorted_data[] = $vs_v;
+											}
+										}
+										$va_data = $va_sorted_data;
+									} else {
+										// Fall-back to loading records row-by-row (slow)
+										foreach($va_children_ids as $vn_child_id) {
+											if ($t_instance->load($vn_child_id)) {
+												if ($vb_check_access && !in_array($t_instance->get("access"), $pa_options['checkAccess'])) { continue; }
+								
+												$vs_sort_key = ($vs_sort) ? $t_instance->get($vs_sort) : 0;
+												if(!is_array($va_data[$vs_sort_key])) { $va_data[$vs_sort_key] = array(); }
+											
+												if ($vb_return_as_array) {
+													$va_data[$vs_sort_key][$vn_child_id]  = array_shift($t_instance->get($vs_childless_path, array_merge($pa_options, array('returnAsArray' => $vb_return_as_array, 'returnAllLocales' => $vb_return_all_locales))));
+												} else {
+													$va_data[$vs_sort_key][$vn_child_id]  = $t_instance->get($vs_childless_path, array_merge($pa_options, array('returnAsArray' => false, 'returnAllLocales' => false)));
+												}
+											}
+										}
+										ksort($va_data);
+										if ($vs_sort_direction && $vs_sort_direction == 'desc') { $va_data = array_reverse($va_data); }
+										$va_sorted_data = array();
+										foreach($va_data as $vs_sort_key => $va_items) {
+											foreach($va_items as $vs_k => $vs_v) {
+												$va_sorted_data[] = $vs_v;
+											}
+										}
+										$va_data = $va_sorted_data;
 									}
 								}
 								
