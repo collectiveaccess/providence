@@ -35,6 +35,11 @@
    */
  
  
+define('__CA_ACL_NO_ACCESS__', 0);
+define('__CA_ACL_READ_ACCESS__', 1);
+define('__CA_ACL_EDIT_ACCESS__', 2);
+define('__CA_ACL_DELETE_ACCESS__', 3);
+ 
  BaseModel::$s_ca_models_definitions['ca_acl'] = array(
  	'NAME_SINGULAR' 	=> _t('access control list'),
  	'NAME_PLURAL' 		=> _t('access control lists'),
@@ -82,10 +87,10 @@
 				'DEFAULT' => '',
 				'LABEL' => _t('Access'), 'DESCRIPTION' => _t('Access'),
 				'BOUNDS_CHOICE_LIST' => array(
-					_t('none') => 0,
-					_t('can read') => 1,
-					_t('can edit') => 2,
-					_t('can edit + delete') => 3
+					_t('none') => __CA_ACL_NO_ACCESS__,
+					_t('can read') => __CA_ACL_READ_ACCESS__,
+					_t('can edit') => __CA_ACL_EDIT_ACCESS__,
+					_t('can edit + delete') => __CA_ACL_EDIT_DELETE_ACCESS__
 				)
 		),
 		'notes' => array(
@@ -198,6 +203,75 @@ class ca_acl extends BaseModel {
 	# ------------------------------------------------------
 	public function __construct($pn_id=null) {
 		parent::__construct($pn_id);	# call superclass constructor
+	}
+	# ------------------------------------------------------
+	/** 
+	 *
+	 */
+	public static function loadACLForRow($t_user, $pn_table_num, $pn_row_id) {
+		if (!is_object($t_user)) { $t_user = new ca_users(); }
+		$o_db = new Db();
+		
+		$vn_access = null;
+		
+		// try to load ACL for user
+		if ($vn_user_id = (int)$t_user->getPrimaryKey()) {
+			$qr_res = $o_db->query("
+				SELECT max(access) a
+				FROM ca_acl
+				WHERE
+					table_num = ? AND row_id = ? AND user_id = ?
+					
+			", (int)$pn_table_num, (int)$pn_row_id, $vn_user_id);
+			
+			if ($qr_res->nextRow()) {
+				if (strlen($vs_access = $qr_res->get('a'))) {
+					$vn_access = (int)$vs_access;
+					if ($vn_access >= 3) { return $vn_access; } // max access found so just return
+				}
+			}
+			
+			$va_groups = $t_user->getUserGroups();
+			if (is_array($va_groups)) {
+				$va_group_ids = array_keys($va_groups);
+				if (is_array($va_group_ids) && (sizeof($va_group_ids) > 0)) {
+					$qr_res = $o_db->query("
+						SELECT max(access) a 
+						FROM ca_acl
+						WHERE
+							table_num = ? AND row_id = ? AND group_id IN (?)
+							
+					", (int)$pn_table_num, (int)$pn_row_id, $va_group_ids);
+					
+					if ($qr_res->nextRow()) {
+						if (strlen($vs_access = $qr_res->get('a'))) {
+							$vn_acl_access = (int)$vs_access;
+							if ($vn_acl_access >= $vn_access) { $vn_access = $vn_acl_access; }
+							if ($vn_access >= 3) { return $vn_access; } // max access found so just return
+						}
+					}
+				}
+			}
+		}
+		
+		// Get world access
+		$qr_res = $o_db->query("
+			SELECT max(access) a 
+			FROM ca_acl
+			WHERE
+				table_num = ? AND row_id = ? AND group_id IS NULL AND user_id IS NULL
+				
+		", (int)$pn_table_num, (int)$pn_row_id);
+		if ($qr_res->nextRow()) {
+			if (strlen($vs_access = $qr_res->get('a')) && ((int)$vs_access > $vn_access)) {
+				return (int)$vs_access;
+			}
+		}
+		if (!is_null($vn_access)) { return $vn_access; }
+		
+		// If no ACL exists return default
+		$o_config = Configuration::load();
+		return (int)$o_config->get('default_item_access_level');
 	}
 	# ------------------------------------------------------
 }

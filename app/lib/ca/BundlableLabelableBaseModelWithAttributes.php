@@ -897,6 +897,14 @@ class BundlableLabelableBaseModelWithAttributes extends LabelableBaseModelWithAt
 			}
 		}
 		
+		// Check item level restrictions
+		if ((bool)$this->getAppConfig()->get('perform_item_level_access_checking')) {
+			$vn_item_access = $this->checkACLAccessForUser($po_request->user);
+			if ($vn_item_access < __CA_ACL_EDIT_ACCESS__) {
+				return false;
+			}
+		}
+		
  		// Check actions
  		if (!$this->getPrimaryKey() && !$po_request->user->canDoAction('can_create_'.$this->tableName())) {
  			return false;
@@ -919,6 +927,14 @@ class BundlableLabelableBaseModelWithAttributes extends LabelableBaseModelWithAt
  		if ((bool)$this->getAppConfig()->get('perform_type_access_checking')) {
 			$vn_type_access = $po_request->user->getTypeAccessLevel($this->tableName(), $this->getTypeID());
 			if ($vn_type_access != __CA_BUNDLE_ACCESS_EDIT__) {
+				return false;
+			}
+		}
+		
+		// Check item level restrictions
+		if ((bool)$this->getAppConfig()->get('perform_item_level_access_checking')) {
+			$vn_item_access = $this->checkACLAccessForUser($po_request->user);
+			if ($vn_item_access < __CA_ACL_EDIT_DELETE_ACCESS__) {
 				return false;
 			}
 		}
@@ -4080,6 +4096,17 @@ $pa_options["display_form_field_tips"] = true;
 		}
 		
 		return true;
+	}
+	# --------------------------------------------------------------------------------------------		
+	/**
+	 * 
+	 */
+	public function checkACLAccessForUser($t_user) {
+		if (!($vn_id = (int)$this->getPrimaryKey())) { return null; }
+		
+		require_once(__CA_MODELS_DIR__.'/ca_acl.php');
+		
+		return ca_acl::loadACLForRow($t_user, $this->tableNum(), $vn_id);
 	}
 	# ------------------------------------------------------
 }
