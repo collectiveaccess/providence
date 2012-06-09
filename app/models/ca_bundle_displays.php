@@ -1518,8 +1518,6 @@ class ca_bundle_displays extends BundlableLabelableBaseModelWithAttributes {
 				$va_tmp2 = $va_tmp;
 				if ((in_array($vs_tmp = array_pop($va_tmp2), array('related')))) {
 					$va_tmp2[] = $vs_tmp;
-				} else {
-					array_push($va_tmp2, $vs_tmp);
 				}
 				$va_tmp2[] = $t_instance->primaryKey();
 				
@@ -1532,11 +1530,11 @@ class ca_bundle_displays extends BundlableLabelableBaseModelWithAttributes {
 					foreach($va_display_texts as $vn_i => $va_text) {
 						
 						if (is_array($va_text)) {
-							if (in_array('hierarchy', $va_tmp)) {
+							if (in_array('hierarchy', $va_tmp2)) {
 								$vs_text = array_pop($va_text);
-								$vn_id = $po_result->get($va_tmp[0].'.'.$t_instance->primaryKey());
+								$vn_id = $po_result->get($va_tmp2[0].'.'.$t_instance->primaryKey());
 							} else {
-								if (in_array('related', $va_tmp)) {
+								if (in_array('related', $va_tmp2)) {
 									$vs_text = $va_text[$t_instance->getLabelDisplayField()];
 								} else {
 									if (is_array($va_text)) {
@@ -1550,7 +1548,7 @@ class ca_bundle_displays extends BundlableLabelableBaseModelWithAttributes {
 							$vs_text = $va_text;
 						}
 						
-						$va_links[] = caEditorLink($pa_options['request'], $vs_text, '', $va_tmp[0], $vn_id);
+						$va_links[] = caEditorLink($pa_options['request'], $vs_text, '', $va_tmp2[0], $vn_id);
 					}
 				}
 				$vs_val = join($pa_options['delimiter'], $va_links);
