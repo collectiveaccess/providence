@@ -35,7 +35,13 @@
  			JavascriptLoadManager::register('tableList');
  			$t_set = new ca_sets();
  			$this->view->setVar('t_set', $t_set);
- 			$this->view->setVar('set_list', $va_set_list = caExtractValuesByUserLocale($t_set->getSets(array('user_id' => $this->request->getUserID(), 'access' => __CA_SET_EDIT_ACCESS__)), null, null, array()));
+      $va_set_list = caExtractValuesByUserLocale($t_set->getSets(array('user_id' => $this->request->getUserID(), 'access' => __CA_SET_EDIT_ACCESS__)), null, null, array());
+ 			if ($va_set_list) {
+        foreach ($va_set_list as $id => $va_set) {
+          $va_set_list[$id]['can_delete'] = $this->UserCanDeleteSet($va_set['user_id']);
+        }
+      }
+      $this->view->setVar('set_list', $va_set_list);
  			
  			// get content types for sets
  			$this->view->setVar('table_list', caFilterTableList($t_set->getFieldInfo('table_num', 'BOUNDS_CHOICE_LIST')));
@@ -48,6 +54,22 @@
 				
  			$this->render('set_list_html.php');
  		}
+ 		# -------------------------------------------------------
+    private function UserCanDeleteSet($user_id) {
+      $can_delete = FALSE;
+      // If users can delete all sets, show Delete button
+      if ($this->request->user->canDoAction('can_delete_sets')) {
+        $can_delete = TRUE;
+      }
+
+      // If users can delete own sets, and this set belongs to them, show Delete button
+      if ($this->request->user->canDoAction('can_delete_own_sets')) {
+        if ($user_id == $this->request->getUserID()) {
+          $can_delete = TRUE;
+        }
+      }
+      return $can_delete;
+    }
  		# -------------------------------------------------------
  		/**
  		 * 
