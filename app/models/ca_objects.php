@@ -372,7 +372,11 @@ class ca_objects extends BundlableLabelableBaseModelWithAttributes implements IB
 	public function delete($pb_delete_related=false){
 		// nuke related representations
 		foreach($this->getRepresentations() as $va_rep){
-			$this->removeRepresentation($va_rep["representation_id"]);
+			// check if representation is in use anywhere else 
+			$qr_res = $this->getDb()->query("SELECT count(*) c FROM ca_objects_x_object_representations WHERE object_id <> ? AND representation_id = ?", (int)$this->getPrimaryKey(), (int)$va_rep["representation_id"]);
+			if ($qr_res->nextRow() && ($qr_res->get('c') == 0)) {
+				$this->removeRepresentation($va_rep["representation_id"]);
+			}
 		}
 
 		return parent::delete($pb_delete_related);

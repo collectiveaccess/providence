@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2009-2011 Whirl-i-Gig
+ * Copyright 2009-2012 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -321,6 +321,33 @@ class ItemInfoService extends BaseService {
 		}
 		
 		return $va_return;
+	}
+	# -------------------------------------------------------
+	/**
+	 * Get URLs to media versions using MD5 hash of original file
+	 *
+	 * @param string $md5 MD5 hash for media to fetch urls for
+	 * @param array $versions list of media versions that should be included in the result
+	 * @return array
+	 * @throws SoapFault
+	 */
+	public function getObjectRepresentationURLByMD5($md5,$versions){
+		if(!$versions) { return array(); }
+		if (!is_array($versions)) { $versions = array($versions); }
+		if(!($t_subject_instance = $this->getTableInstance("ca_object_representations", null))){
+			throw new SoapFault("Server", "Couldn't create instance");
+		}
+		if (!$t_subject_instance->load(array('md5' => $md5, 'deleted' => 0))) {
+			throw new SoapFault("Server", "Media with MD5 does not exist");
+		}
+		
+		$va_urls = array();
+		foreach($versions as $version) {
+			if ($vs_url = $t_subject_instance->getMediaUrl('media', $version)) {
+				$va_urls[$version] = $vs_url;
+			}
+		}
+		return $va_urls;
 	}
 	# -------------------------------------------------------
 	/**
