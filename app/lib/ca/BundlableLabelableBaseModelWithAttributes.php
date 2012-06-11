@@ -897,6 +897,14 @@ class BundlableLabelableBaseModelWithAttributes extends LabelableBaseModelWithAt
 			}
 		}
 		
+		// Check item level restrictions
+		if ((bool)$this->getAppConfig()->get('perform_item_level_access_checking')) {
+			$vn_item_access = $this->checkACLAccessForUser($po_request->user);
+			if ($vn_item_access < __CA_ACL_EDIT_ACCESS__) {
+				return false;
+			}
+		}
+		
  		// Check actions
  		if (!$this->getPrimaryKey() && !$po_request->user->canDoAction('can_create_'.$this->tableName())) {
  			return false;
@@ -923,6 +931,14 @@ class BundlableLabelableBaseModelWithAttributes extends LabelableBaseModelWithAt
 			}
 		}
 		
+		// Check item level restrictions
+		if ((bool)$this->getAppConfig()->get('perform_item_level_access_checking')) {
+			$vn_item_access = $this->checkACLAccessForUser($po_request->user);
+			if ($vn_item_access < __CA_ACL_EDIT_DELETE_ACCESS__) {
+				return false;
+			}
+		}
+		
  		// Check actions
  		if (!$this->getPrimaryKey() && !$po_request->user->canDoAction('can_delete_'.$this->tableName())) {
  			return false;
@@ -939,6 +955,7 @@ class BundlableLabelableBaseModelWithAttributes extends LabelableBaseModelWithAt
 	 *		config
 	 *		viewPath
 	 *		graphicsPath
+	 *		request
 	 */
 	public function getBundleFormHTML($ps_bundle_name, $ps_placement_code, $pa_bundle_settings, $pa_options) {
 		global $g_ui_locale;
@@ -958,6 +975,17 @@ class BundlableLabelableBaseModelWithAttributes extends LabelableBaseModelWithAt
 				$pa_bundle_settings['readonly'] = true;
 			}
 		}
+		
+		if ((bool)$this->getAppConfig()->get('perform_item_level_access_checking')) {
+			$vn_item_access = $this->checkACLAccessForUser($pa_options['request']->user);
+			if ($vn_item_access == __CA_ACL_NO_ACCESS__) {
+				return; 
+			}
+			if ($vn_item_access == __CA_ACL_READONLY_ACCESS__) {
+				$pa_bundle_settings['readonly'] = true;
+			}
+		}
+		
 		
 		$va_info = $this->getBundleInfo($ps_bundle_name);
 		if (!($vs_type = $va_info['type'])) { return null; }
@@ -2734,8 +2762,6 @@ class BundlableLabelableBaseModelWithAttributes extends LabelableBaseModelWithAt
 						if (!$po_request->user->canDoAction('is_administrator') && ($po_request->getUserID() != $this->get('user_id'))) { break; }	// don't save if user is not owner
 						require_once(__CA_MODELS_DIR__.'/ca_user_groups.php');
 	
-						$va_groups = $po_request->user->getGroupList($po_request->getUserID());
-						
 						$va_groups_to_set = $va_group_effective_dates = array();
 						foreach($_REQUEST as $vs_key => $vs_val) { 
 							if (preg_match("!^{$vs_form_prefix}_ca_user_groups_id(.*)$!", $vs_key, $va_matches)) {
@@ -2757,8 +2783,6 @@ class BundlableLabelableBaseModelWithAttributes extends LabelableBaseModelWithAt
 						if (!$po_request->user->canDoAction('is_administrator') && ($po_request->getUserID() != $this->get('user_id'))) { break; }	// don't save if user is not owner
 						require_once(__CA_MODELS_DIR__.'/ca_users.php');
 	
-						$va_users = $po_request->user->getUserList($po_request->getUserID());
-						
 						$va_users_to_set = $va_user_effective_dates = array();
 						foreach($_REQUEST as $vs_key => $vs_val) { 
 							if (preg_match("!^{$vs_form_prefix}_ca_users_id(.*)$!", $vs_key, $va_matches)) {
@@ -3608,7 +3632,13 @@ $pa_options["display_form_field_tips"] = true;
 	}
 	# ------------------------------------------------------------------
 	/**
+	 * Creates a search result instance for the specified table containing the specified keys as if they had been returned by a search or browse.
+	 * This method is useful when you need to efficiently retrieve data from an arbitrary set of records since you get all of the lazy loading functionality
+	 * of a standard search result without having to actually perform a search.
 	 *
+	 * @param mixed $pm_rel_table_name_or_num The name or table number of the table for which to create the result set. Must be a searchable/browsable table
+	 * @param array $pa_ids List of primary key values to create result set for. Result set will contain specified keys in the order in which that are passed in the array.
+	 * @return SearchResult A search result of for the specified table
 	 */
 	public function makeSearchResult($pm_rel_table_name_or_num, $pa_ids) {
 		if (!is_array($pa_ids) || !sizeof($pa_ids)) { return null; }
@@ -3623,6 +3653,481 @@ $pa_options["display_form_field_tips"] = true;
 		
 		return $o_res;
 	}
+	# ------------------------------------------------------------------
+	/**
+	 * Creates a search result instance for the specified table containing the specified keys as if they had been returned by a search or browse.
+	 * This method is useful when you need to efficiently retrieve data from an arbitrary set of records since you get all of the lazy loading functionality
+	 * of a standard search result without having to actually perform a search.
+	 *
+	 * Requires PHP 5.3 since it uses the get_called_class() function
+	 *
+	 * @param array $pa_ids List of primary key values to create result set for. Result set will contain specified keys in the order in which that are passed in the array.
+	 * @return SearchResult A search result of for the specified table
+	 */
+	static public function createResultSet($pa_ids) {
+		if (!is_array($pa_ids) || !sizeof($pa_ids)) { return null; }
+		$pn_table_num = $this->getAppDataModel()->getTableNum(get_called_class());
+		if (!($t_instance = $this->getAppDataModel()->getInstanceByTableNum($pn_table_num))) { return null; }
+	
+		if (!($vs_search_result_class = $t_instance->getProperty('SEARCH_RESULT_CLASSNAME'))) { return null; }
+		require_once(__CA_LIB_DIR__.'/ca/Search/'.$vs_search_result_class.'.php');
+		$o_data = new WLPlugSearchEngineCachedResult($pa_ids, array(), $t_instance->primaryKey());
+		$o_res = new $vs_search_result_class();
+		$o_res->init($t_instance->tableNum(), $o_data, array());
+	}
 	# --------------------------------------------------------------------------------------------
+	# Access control lists
+	# --------------------------------------------------------------------------------------------		
+	/**
+	 * 
+	 */
+	public function getACLUserHTMLFormBundle($po_request, $ps_form_name, $pa_options=null) {
+		require_once(__CA_MODELS_DIR__.'/ca_acl.php');
+		
+		$vs_view_path = (isset($pa_options['viewPath']) && $pa_options['viewPath']) ? $pa_options['viewPath'] : $po_request->getViewsDirectoryPath();
+		$o_view = new View($po_request, "{$vs_view_path}/bundles/");
+		
+		require_once(__CA_MODELS_DIR__.'/ca_users.php');
+		$t_user = new ca_users();
+		
+		$o_dm = Datamodel::load();
+		
+		$o_view->setVar('t_instance', $this);
+		$o_view->setVar('table_num', $pn_table_num);
+		$o_view->setVar('id_prefix', $ps_form_name);		
+		$o_view->setVar('request', $po_request);	
+		$o_view->setVar('t_user', $t_user);
+		$o_view->setVar('initialValues', $this->getACLUsers(array('returnAsInitialValuesForBundle' => true)));
+		
+		return $o_view->render('ca_acl_users.php');
+	}
+	# --------------------------------------------------------------------------------------------	
+	/**
+	 * Returns array of user-based ACL entries associated with the currently loaded row. The array
+	 * is key'ed on user user user_id; each value is an  array containing information about the user. Array keys are:
+	 *			user_id			[user_id for user]
+	 *			user_name		[name of user]
+	 *			email			[email address of user]
+	 *			fname			[first name of user]
+	 *			lname			[last name of user]
+	 *
+	 * @param array $pa_options Supported options:
+	 *		returnAsInitialValuesForBundle = if set array is returned suitable for use with the ACLUsers bundle; the array is key'ed by acl_id and includes the _display entry required by the bundle
+	 *
+	 * @return array List of user-base ACL entries associated with the currently loaded row
+	 */ 
+	public function getACLUsers($pa_options=null) {
+		if (!($vn_id = (int)$this->getPrimaryKey())) { return null; }
+		
+		if (!is_array($pa_options)) { $pa_options = array(); }
+		$vb_return_for_bundle =  (isset($pa_options['returnAsInitialValuesForBundle']) && $pa_options['returnAsInitialValuesForBundle']) ? true : false;
+
+		$o_db = $this->getDb();
+		
+		$qr_res = $o_db->query("
+			SELECT u.*, acl.*
+			FROM ca_acl acl
+			INNER JOIN ca_users AS u ON u.user_id = acl.user_id
+			WHERE
+				acl.table_num = ? AND acl.row_id = ? AND acl.user_id IS NOT NULL
+		", $this->tableNum(), $vn_id);
+		
+		$va_users = array();
+		$va_user_ids = $qr_res->getAllFieldValues("user_id");
+		if ($qr_users = $this->makeSearchResult('ca_users', $va_user_ids)) {
+			$va_initial_values = caProcessRelationshipLookupLabel($qr_users, new ca_users(), array('stripTags' => true));
+		} else {
+			$va_initial_values = array();
+		}
+		$qr_res->seek(0);
+		while($qr_res->nextRow()) {
+			$va_row = array();
+			foreach(array('user_id', 'fname', 'lname', 'email', 'access') as $vs_f) {
+				$va_row[$vs_f] = $qr_res->get($vs_f);
+			}
+			
+			if ($vb_return_for_bundle) {
+				$va_row['_display'] = $va_initial_values[$va_row['user_id']]['_display'];
+				$va_row['id'] = $va_row['user_id'];
+				$va_users[(int)$qr_res->get('acl_id')] = $va_row;
+			} else {
+				$va_users[(int)$qr_res->get('user_id')] = $va_row;
+			}
+		}
+		
+		return $va_users;
+	}
+	# ------------------------------------------------------------------
+	/**
+	 * 
+	 */ 
+	public function addACLUsers($pa_user_ids) {
+		if (!($vn_id = (int)$this->getPrimaryKey())) { return null; }
+		
+		require_once(__CA_MODELS_DIR__.'/ca_acl.php');
+		
+		$vn_table_num = $this->tableNum();
+		
+		$t_acl = new ca_acl();
+		foreach($pa_user_ids as $vn_user_id => $vn_access) {
+			$t_acl->clear();
+			$t_acl->load(array('user_id' => $vn_user_id, 'table_num' => $vn_table_num, 'row_id' => $vn_id));		// try to load existing record
+			
+			$t_acl->setMode(ACCESS_WRITE);
+			$t_acl->set('table_num', $vn_table_num);
+			$t_acl->set('row_id', $vn_id);
+			$t_acl->set('user_id', $vn_user_id);
+			$t_acl->set('access', $vn_access);
+			
+			if ($t_acl->getPrimaryKey()) {
+				$t_acl->update();
+			} else {
+				$t_acl->insert();
+			}
+			
+			if ($t_acl->numErrors()) {
+				$this->errors = $t_acl->errors;
+				print_R($t_acl->getErrors());
+				return false;
+			}
+		}
+		
+		return true;
+	}
+	# ------------------------------------------------------------------
+	/**
+	 * 
+	 */ 
+	public function setACLUsers($pa_user_ids) {
+		$this->removeAllACLUsers();
+		if (!$this->addACLUsers($pa_user_ids)) { return false; }
+		
+		return true;
+	}
+	# ------------------------------------------------------------------
+	/**
+	 * 
+	 */ 
+	public function removeACLUsers($pa_user_ids) {
+		if (!($vn_id = (int)$this->getPrimaryKey())) { return null; }
+		
+		require_once(__CA_MODELS_DIR__.'/ca_acl.php');
+		
+		$vn_table_num = $this->tableNum();
+		
+		$va_current_users = $this->getACLUsers();
+		
+		$t_acl = new ca_acl();
+		foreach($pa_user_ids as $vn_user_id) {
+			if (!isset($va_current_users[$vn_user_id]) && $va_current_users[$vn_user_id]) { continue; }
+			
+			$t_acl->setMode(ACCESS_WRITE);
+			if ($t_acl->load(array('table_num' => $vn_table_num, 'row_id' => $vn_id, 'user_id' => $vn_user_id))) {
+				$t_acl->delete(true);
+				
+				if ($t_acl->numErrors()) {
+					$this->errors = $t_acl->errors;
+					return false;
+				}
+			}
+		}
+		
+		return true;
+	}
+	# ------------------------------------------------------------------
+	/**
+	 * Removes all user-based ACL entries from currently loaded row
+	 *
+	 * @return bool True on success, false on failure
+	 */ 
+	public function removeAllACLUsers() {
+		if (!($vn_id = (int)$this->getPrimaryKey())) { return null; }
+		
+		$o_db = $this->getDb();
+		
+		$qr_res = $o_db->query("
+			DELETE FROM ca_acl
+			WHERE
+				table_num = ? AND row_id = ? AND user_id IS NOT NULL
+		", $this->tableNum(), $vn_id);
+		if ($o_db->numErrors()) {
+			$this->errors = $o_db->errors;
+			return false;
+		}
+		return true;
+	}
+	# --------------------------------------------------------------------------------------------		
+	/**
+	 * 
+	 */
+	public function getACLGroupHTMLFormBundle($po_request, $ps_form_name, $pa_options=null) {
+		$vs_view_path = (isset($pa_options['viewPath']) && $pa_options['viewPath']) ? $pa_options['viewPath'] : $po_request->getViewsDirectoryPath();
+		$o_view = new View($po_request, "{$vs_view_path}/bundles/");
+		
+		require_once(__CA_MODELS_DIR__.'/ca_user_groups.php');
+		$t_group = new ca_user_groups();
+		
+		$o_dm = Datamodel::load();
+		
+		$o_view->setVar('t_instance', $this);
+		$o_view->setVar('table_num', $pn_table_num);
+		$o_view->setVar('id_prefix', $ps_form_name);		
+		$o_view->setVar('request', $po_request);	
+		$o_view->setVar('t_group', $t_group);
+		$o_view->setVar('initialValues', $this->getACLUserGroups(array('returnAsInitialValuesForBundle' => true)));
+		
+		return $o_view->render('ca_acl_user_groups.php');
+	}
+	# ------------------------------------------------------------------
+	/**
+	 * Returns array of user group ACL entries associated with the currently loaded row. The array
+	 * is key'ed on user group group_id; each value is an  array containing information about the group. Array keys are:
+	 *			group_id		[group_id for group]
+	 *			name			[name of group]
+	 *			code			[short alphanumeric code identifying the group]
+	 *			description		[text description of group]
+	 *
+	 * @param array $pa_options Supported options:
+	 *		returnAsInitialValuesForBundle = if set array is returned suitable for use with the ACLUsers bundle; the array is key'ed by acl_id and includes the _display entry required by the bundle
+	 *
+	 * @return array List of user group ACL-entries associated with the currently loaded row
+	 */ 
+	public function getACLUserGroups($pa_options=null) {
+		if (!($vn_id = (int)$this->getPrimaryKey())) { return null; }
+		
+		if (!is_array($pa_options)) { $pa_options = array(); }
+		$vb_return_for_bundle =  (isset($pa_options['returnAsInitialValuesForBundle']) && $pa_options['returnAsInitialValuesForBundle']) ? true : false;
+		
+		$o_db = $this->getDb();
+		
+		$qr_res = $o_db->query("
+			SELECT g.*, acl.*
+			FROM ca_acl acl
+			INNER JOIN ca_user_groups AS g ON g.group_id = acl.group_id
+			WHERE
+				acl.table_num = ? AND acl.row_id = ? AND acl.group_id IS NOT NULL
+		", $this->tableNum(), $vn_id);
+		
+		$va_groups = array();
+		$va_group_ids = $qr_res->getAllFieldValues("group_id");
+		
+		if (($qr_groups = $this->makeSearchResult('ca_user_groups', $va_group_ids))) {
+			$va_initial_values = caProcessRelationshipLookupLabel($qr_groups, new ca_user_groups(), array('stripTags' => true));
+		} else {
+			$va_initial_values = array();
+		}
+		$qr_res->seek(0);
+		while($qr_res->nextRow()) {
+			$va_row = array();
+			foreach(array('group_id', 'name', 'code', 'description', 'access') as $vs_f) {
+				$va_row[$vs_f] = $qr_res->get($vs_f);
+			}
+			
+			if ($vb_return_for_bundle) {
+				$va_row['_display'] = $va_initial_values[$va_row['group_id']]['_display'];
+				$va_row['id'] = $va_row['group_id'];
+				$va_groups[(int)$qr_res->get('acl_id')] = $va_row;
+			} else {
+				$va_groups[(int)$qr_res->get('group_id')] = $va_row;
+			}
+		}
+		
+		return $va_groups;
+	}
+	# ------------------------------------------------------------------
+	/**
+	*
+	*
+	 * @param array $pa_group_ids
+	 * @param array $pa_options Supported options are:
+	 *		user_id - if set, only user groups owned by the specified user_id will be added
+	 */ 
+	public function addACLUserGroups($pa_group_ids, $pa_options=null) {
+		if (!($vn_id = (int)$this->getPrimaryKey())) { return null; }
+		
+		require_once(__CA_MODELS_DIR__.'/ca_acl.php');
+		
+		$vn_table_num = $this->tableNum();
+		
+		$vn_user_id = (isset($pa_options['user_id']) && $pa_options['user_id']) ? $pa_options['user_id'] : null;
+		
+		$va_current_groups = $this->getACLUserGroups();
+		
+		$t_acl = new ca_acl();
+		foreach($pa_group_ids as $vn_group_id => $vn_access) {
+			if ($vn_user_id) {	// verify that group we're linking to is owned by the current user
+				$t_group = new ca_user_groups($vn_group_id);
+				if (($t_group->get('user_id') != $vn_user_id) && $t_group->get('user_id')) { continue; }
+			}
+			$t_acl->clear();
+			$t_acl->load(array('group_id' => $vn_group_id, 'table_num' => $vn_table_num, 'row_id' => $vn_id));		// try to load existing record
+			
+			$t_acl->setMode(ACCESS_WRITE);
+			$t_acl->set('table_num', $vn_table_num);
+			$t_acl->set('row_id', $vn_id);
+			$t_acl->set('group_id', $vn_group_id);
+			$t_acl->set('access', $vn_access);
+			
+			if ($t_acl->getPrimaryKey()) {
+				$t_acl->update();
+			} else {
+				$t_acl->insert();
+			}
+			
+			if ($t_acl->numErrors()) {
+				$this->errors = $t_acl->errors;
+				return false;
+			}
+		}
+		
+		return true;
+	}
+	# ------------------------------------------------------------------
+	/**
+	 * 
+	 */ 
+	public function setACLUserGroups($pa_group_ids, $pa_options=null) {
+		if (is_array($va_groups = $this->getACLUserGroups())) {
+			$this->removeAllACLUserGroups();
+			if (!$this->addACLUserGroups($pa_group_ids, $pa_options)) { return false; }
+			
+			return true;
+		}
+		return null;
+	}
+	# ------------------------------------------------------------------
+	/**
+	 * 
+	 */ 
+	public function removeACLUserGroups($pa_group_ids) {
+		if (!($vn_id = (int)$this->getPrimaryKey())) { return null; }
+		
+		require_once(__CA_MODELS_DIR__.'/ca_acl.php');
+		
+		$vn_table_num = $this->tableNum();
+		
+		$va_current_groups = $this->getUserGroups();
+		
+		$t_acl = new ca_acl();
+		foreach($pa_group_ids as $vn_group_id) {
+			if (!isset($va_current_groups[$vn_group_id]) && $va_current_groups[$vn_group_id]) { continue; }
+			
+			$t_acl->setMode(ACCESS_WRITE);
+			if ($t_acl->load(array('table_num' => $vn_table_num, 'row_id' => $vn_id, 'group_id' => $vn_group_id))) {
+				$t_acl->delete(true);
+				
+				if ($t_acl->numErrors()) {
+					$this->errors = $t_acl->errors;
+					return false;
+				}
+			}
+		}
+		
+		return true;
+	}
+	# ------------------------------------------------------------------
+	/**
+	 * Removes all user group-based ACL entries from currently loaded row
+	 *
+	 * @return bool True on success, false on failure
+	 */ 
+	public function removeAllACLUserGroups() {
+		if (!($vn_id = (int)$this->getPrimaryKey())) { return null; }
+		
+		
+		$o_db = $this->getDb();
+		
+		$qr_res = $o_db->query("
+			DELETE FROM ca_acl
+			WHERE
+				table_num = ? AND row_id = ? AND group_id IS NOT NULL
+		", $this->tableNum(), (int)$vn_id);
+		
+		if ($o_db->numErrors()) {
+			$this->errors = $o_db->errors;
+			return false;
+		}
+		return true;
+	}
+	# --------------------------------------------------------------------------------------------		
+	/**
+	 * 
+	 */
+	public function getACLWorldHTMLFormBundle($po_request, $ps_form_name, $pa_options=null) {
+		$vs_view_path = (isset($pa_options['viewPath']) && $pa_options['viewPath']) ? $pa_options['viewPath'] : $po_request->getViewsDirectoryPath();
+		$o_view = new View($po_request, "{$vs_view_path}/bundles/");
+		
+		require_once(__CA_MODELS_DIR__.'/ca_acl.php');
+		$t_acl = new ca_acl();
+		
+		$vn_access = 0;
+		if ($t_acl->load(array('group_id' => null, 'user_id' => null, 'table_num' => $this->tableNum(), 'row_id' => $this->getPrimaryKey()))) {		// try to load existing record
+			$vn_access = $t_acl->get('access');
+		}
+		
+		$o_view->setVar('t_instance', $this);
+		$o_view->setVar('table_num', $pn_table_num);
+		$o_view->setVar('id_prefix', $ps_form_name);		
+		$o_view->setVar('request', $po_request);	
+		$o_view->setVar('t_group', $t_group);
+		$o_view->setVar('initialValue', $vn_access);
+		
+		return $o_view->render('ca_acl_world.php');
+	}
+	# --------------------------------------------------------------------------------------------		
+	/**
+	 * 
+	 */
+	public function setACLWorldAccess($pn_world_access) {
+		if (!($vn_id = (int)$this->getPrimaryKey())) { return null; }
+		
+		require_once(__CA_MODELS_DIR__.'/ca_acl.php');
+		
+		$vn_table_num = $this->tableNum();
+		
+		
+		$t_acl = new ca_acl();	
+		$t_acl->load(array('group_id' => null, 'user_id' => null, 'table_num' => $vn_table_num, 'row_id' => $vn_id));		// try to load existing record
+		
+		$t_acl->setMode(ACCESS_WRITE);
+		$t_acl->set('table_num', $vn_table_num);
+		$t_acl->set('row_id', $vn_id);
+		$t_acl->set('user_id', null);
+		$t_acl->set('group_id', null);
+		$t_acl->set('access', $pn_world_access);
+		
+		if ($t_acl->getPrimaryKey()) {
+			$t_acl->update();
+		} else {
+			$t_acl->insert();
+		}
+		
+		if ($t_acl->numErrors()) {
+			$this->errors = $t_acl->errors;
+			return false;
+		}
+		
+		return true;
+	}
+	# --------------------------------------------------------------------------------------------		
+	/**
+	 * Checks access control list for currently loaded row for the specified user and returns an access value. Values are:
+	 *
+	 * __CA_ACL_NO_ACCESS__   (0)
+	 * __CA_ACL_READONLY_ACCESS__ (1)
+     * __CA_ACL_EDIT_ACCESS__ (2)
+     * __CA_ACL_EDIT_DELETE_ACCESS__ (3)
+	 *
+	 * @param ca_users $t_user A ca_users object
+	 * @return int An access value 
+	 */
+	public function checkACLAccessForUser($t_user) {
+		if (!($vn_id = (int)$this->getPrimaryKey())) { return null; }
+		
+		require_once(__CA_MODELS_DIR__.'/ca_acl.php');
+		
+		return ca_acl::accessForRow($t_user, $this->tableNum(), $vn_id);
+	}
+	# ------------------------------------------------------
 }
 ?>

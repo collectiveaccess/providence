@@ -191,6 +191,8 @@
 2520 = Can't set type id after item is created
 2550 = Item has been deleted
 2560 = Item is not correct type
+2570 = Can't change access control list for this item
+2580 = You do not have access to this item
 
 # --- Object representation errors
 2700 = Could not update primary flag for representation

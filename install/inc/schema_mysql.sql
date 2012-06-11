@@ -2264,14 +2264,14 @@ create index i_label_right_id on ca_object_lots_x_places(label_right_id);
 /*==========================================================================*/
 create table ca_acl
 (
-   aci_id                         int unsigned                   not null AUTO_INCREMENT,
+   acl_id                         int unsigned                   not null AUTO_INCREMENT,
    group_id                       int unsigned,
    user_id                        int unsigned,
    table_num                      tinyint unsigned               not null,
    row_id                         int unsigned                   not null,
    access                         tinyint unsigned               not null default 0,
    notes                          char(10)                       not null,
-   primary key (aci_id),
+   primary key (acl_id),
    constraint fk_ca_acl_group_id foreign key (group_id)
       references ca_user_groups (group_id) on delete restrict on update restrict,
    constraint fk_ca_acl_user_id foreign key (user_id)
@@ -6560,5 +6560,5 @@ create table ca_schema_updates (
 ) engine=innodb CHARACTER SET utf8 COLLATE utf8_general_ci;
 
 /* Indicate up to what migration this schema definition covers */
-/* CURRENT MIGRATION: 63 */
-INSERT IGNORE INTO ca_schema_updates (version_num, datetime) VALUES (63, unix_timestamp());
+/* CURRENT MIGRATION: 64 */
+INSERT IGNORE INTO ca_schema_updates (version_num, datetime) VALUES (64, unix_timestamp());
