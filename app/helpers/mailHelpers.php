@@ -224,7 +224,9 @@
  	 * @return string True if send, false if error
 	 */
 	function caSendMessageUsingView($po_request, $pa_to, $pa_from, $ps_subject, $ps_view, $pa_values, $pa_cc=null, $pa_bcc=null) {
-		$o_view = new View(null, $po_request->getViewsDirectoryPath()."/mailTemplates");
+		$vs_view_path = (is_object($po_request)) ? $po_request->getViewsDirectoryPath() : __CA_BASE_DIR__.'/themes/default/views';
+		
+		$o_view = new View(null, $vs_view_path."/mailTemplates");
 		foreach($pa_values as $vs_key => $vm_val) {
 			$o_view->setVar($vs_key, $vm_val);
 		}
