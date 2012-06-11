@@ -62,11 +62,13 @@
  	 * 	$pa_bcc: 	Email address(es) of bcc'ed message recipients. Can be a string containing a single email address or
  	 *				an associative array with keys set to multiple addresses and corresponding values optionally set to
  	 *				a human-readable recipient name. (optional)
+ 	 * 	$pa_attachment: 	array containing file path, name and mime_type of file to attach.
+ 	 *				keys are "path", "name", "mime_type"
  	 *
  	 * While both $ps_body_text and $ps_html_text are optional, at least one should be set and both can be set for a 
  	 * combination text and HTML email
  	 */
-	function caSendmail($pa_to, $pa_from, $ps_subject, $ps_body_text, $ps_body_html='', $pa_cc=null, $pa_bcc=null) {
+	function caSendmail($pa_to, $pa_from, $ps_subject, $ps_body_text, $ps_body_html='', $pa_cc=null, $pa_bcc=null, $pa_attachment=null) {
 		$o_config = Configuration::load();
 		$o_log = new Eventlog();
 		
@@ -152,7 +154,19 @@
 				}
 			}
 			
-			
+			if(is_array($pa_attachment) && $pa_attachment["path"]){
+				$ps_attachment_url = $pa_attachment["path"];
+				$vs_file_contents = file_get_contents($ps_attachment_url);
+				
+				$o_attachment = $o_mail->createAttachment($vs_file_contents);
+				if($pa_attachment["name"]){
+					$o_attachment->filename = $pa_attachment["name"];
+				}
+				if($pa_attachment["mime_type"]){
+					$o_attachment->type = $pa_attachment["mime_type"];
+				}
+			}
+
 			$o_mail->setSubject($ps_subject);
 			if ($ps_body_text) {
 				$o_mail->setBodyText($ps_body_text);
