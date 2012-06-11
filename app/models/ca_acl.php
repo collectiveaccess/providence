@@ -36,9 +36,9 @@
  
  
 define('__CA_ACL_NO_ACCESS__', 0);
-define('__CA_ACL_READ_ACCESS__', 1);
+define('__CA_ACL_READONLY_ACCESS__', 1);
 define('__CA_ACL_EDIT_ACCESS__', 2);
-define('__CA_ACL_DELETE_ACCESS__', 3);
+define('__CA_ACL_EDIT_DELETE_ACCESS__', 3);
  
  BaseModel::$s_ca_models_definitions['ca_acl'] = array(
  	'NAME_SINGULAR' 	=> _t('access control list'),
@@ -88,7 +88,7 @@ define('__CA_ACL_DELETE_ACCESS__', 3);
 				'LABEL' => _t('Access'), 'DESCRIPTION' => _t('Access'),
 				'BOUNDS_CHOICE_LIST' => array(
 					_t('none') => __CA_ACL_NO_ACCESS__,
-					_t('can read') => __CA_ACL_READ_ACCESS__,
+					_t('can read') => __CA_ACL_READONLY_ACCESS__,
 					_t('can edit') => __CA_ACL_EDIT_ACCESS__,
 					_t('can edit + delete') => __CA_ACL_EDIT_DELETE_ACCESS__
 				)
@@ -190,6 +190,9 @@ class ca_acl extends BaseModel {
 	
 	protected $FIELDS;
 	
+	
+	static $s_acl_access_value_cache = array();
+	
 	# ------------------------------------------------------
 	# --- Constructor
 	#
@@ -205,17 +208,33 @@ class ca_acl extends BaseModel {
 		parent::__construct($pn_id);	# call superclass constructor
 	}
 	# ------------------------------------------------------
-	/** 
+	/**
+	 * Checks access control list for the specified row and user and returns an access value. Values are:
 	 *
+	 * __CA_ACL_NO_ACCESS__   (0)
+	 * __CA_ACL_READONLY_ACCESS__ (1)
+     * __CA_ACL_EDIT_ACCESS__ (2)
+     * __CA_ACL_EDIT_DELETE_ACCESS__ (3)
+	 *
+	 * @param ca_users $t_user A ca_users object
+	 * @param int $pn_table_num The table number for the row to check
+	 * @param int $pn_row_id The primary key value for the row to check.
+	 * @return int An access value 
 	 */
-	public static function loadACLForRow($t_user, $pn_table_num, $pn_row_id) {
+	public static function accessForRow($t_user, $pn_table_num, $pn_row_id) {
 		if (!is_object($t_user)) { $t_user = new ca_users(); }
 		$o_db = new Db();
+		
+		$vn_user_id = (int)$t_user->getPrimaryKey();
+		
+		if (isset(ca_acl::$s_acl_access_value_cache[$vn_user_id][$pn_table_num][$pn_row_id])) {
+			return ca_acl::$s_acl_access_value_cache[$vn_user_id][$pn_table_num][$pn_row_id];
+		}
 		
 		$vn_access = null;
 		
 		// try to load ACL for user
-		if ($vn_user_id = (int)$t_user->getPrimaryKey()) {
+		if ($vn_user_id) {
 			$qr_res = $o_db->query("
 				SELECT max(access) a
 				FROM ca_acl
@@ -227,7 +246,9 @@ class ca_acl extends BaseModel {
 			if ($qr_res->nextRow()) {
 				if (strlen($vs_access = $qr_res->get('a'))) {
 					$vn_access = (int)$vs_access;
-					if ($vn_access >= 3) { return $vn_access; } // max access found so just return
+					if ($vn_access >= __CA_ACL_EDIT_DELETE_ACCESS__) {
+						return ca_acl::$s_acl_access_value_cache[$vn_user_id][$pn_table_num][$pn_row_id] = $vn_access; 
+					} // max access found so just return
 				}
 			}
 			
@@ -247,7 +268,9 @@ class ca_acl extends BaseModel {
 						if (strlen($vs_access = $qr_res->get('a'))) {
 							$vn_acl_access = (int)$vs_access;
 							if ($vn_acl_access >= $vn_access) { $vn_access = $vn_acl_access; }
-							if ($vn_access >= 3) { return $vn_access; } // max access found so just return
+							if ($vn_access >= __CA_ACL_EDIT_DELETE_ACCESS__) { 
+								return ca_acl::$s_acl_access_value_cache[$vn_user_id][$pn_table_num][$pn_row_id] = $vn_access; 
+							} // max access found so just return
 						}
 					}
 				}
@@ -263,15 +286,17 @@ class ca_acl extends BaseModel {
 				
 		", (int)$pn_table_num, (int)$pn_row_id);
 		if ($qr_res->nextRow()) {
-			if (strlen($vs_access = $qr_res->get('a')) && ((int)$vs_access > $vn_access)) {
-				return (int)$vs_access;
+			if (strlen($vs_access = $qr_res->get('a')) && ((int)$vs_access >= $vn_access)) {
+				return ca_acl::$s_acl_access_value_cache[$vn_user_id][$pn_table_num][$pn_row_id] = (int)$vs_access;
 			}
 		}
-		if (!is_null($vn_access)) { return $vn_access; }
+		if (!is_null($vn_access)) { 
+			return ca_acl::$s_acl_access_value_cache[$vn_user_id][$pn_table_num][$pn_row_id] = $vn_access; 
+		}
 		
 		// If no ACL exists return default
 		$o_config = Configuration::load();
-		return (int)$o_config->get('default_item_access_level');
+		return ca_acl::$s_acl_access_value_cache[$vn_user_id][$pn_table_num][$pn_row_id] = (int)$o_config->get('default_item_access_level');
 	}
 	# ------------------------------------------------------
 }

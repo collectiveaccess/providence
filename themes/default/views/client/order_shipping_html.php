@@ -33,6 +33,8 @@
 	$vn_transaction_id = $this->getVar('transaction_id');
 	$va_errors = $this->getVar('errors');
 	
+	print_R($t_order->itemsMissingDownloadableMedia('original'));
+	
 	$vs_currency_symbol = $this->getVar('currency_symbol');
 	$vs_currency_input_format = "<div class='formLabel'>^LABEL<br/>{$vs_currency_symbol}^ELEMENT</div>";
 	
@@ -55,7 +57,7 @@
 			"shipping_method", "shipping_cost", "handling_cost", "shipping_notes", "shipping_date", "shipped_on_date"
 		);
 		foreach($va_shipping_fields as $vs_f) {
-			if (($vs_f == 'shipped_on_date') && (!in_array($t_order->get('order_status'), array('PROCESSED', 'PROCESSED_AWAITING_DIGITIZATION', 'COMPLETED')))) { continue; }	// don't show shipped on field if order is not paid for
+			if (($vs_f == 'shipped_on_date') && (!in_array($t_order->get('order_status'), array('PROCESSED', 'PROCESSED_AWAITING_DIGITIZATION', 'PROCESSED_AWAITING_MEDIA_ACCESS', 'COMPLETED')))) { continue; }	// don't show shipped on field if order is not paid for
 			$va_info = $t_order->getFieldInfo($vs_f);
 			if (($vn_width = $va_info['DISPLAY_WIDTH']) > $vn_max_field_width) { $vn_width = $vn_max_field_width; }
 			

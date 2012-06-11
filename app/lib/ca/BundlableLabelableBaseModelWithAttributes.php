@@ -955,6 +955,7 @@ class BundlableLabelableBaseModelWithAttributes extends LabelableBaseModelWithAt
 	 *		config
 	 *		viewPath
 	 *		graphicsPath
+	 *		request
 	 */
 	public function getBundleFormHTML($ps_bundle_name, $ps_placement_code, $pa_bundle_settings, $pa_options) {
 		global $g_ui_locale;
@@ -974,6 +975,17 @@ class BundlableLabelableBaseModelWithAttributes extends LabelableBaseModelWithAt
 				$pa_bundle_settings['readonly'] = true;
 			}
 		}
+		
+		if ((bool)$this->getAppConfig()->get('perform_item_level_access_checking')) {
+			$vn_item_access = $this->checkACLAccessForUser($pa_options['request']->user);
+			if ($vn_item_access == __CA_ACL_NO_ACCESS__) {
+				return; 
+			}
+			if ($vn_item_access == __CA_ACL_READONLY_ACCESS__) {
+				$pa_bundle_settings['readonly'] = true;
+			}
+		}
+		
 		
 		$va_info = $this->getBundleInfo($ps_bundle_name);
 		if (!($vs_type = $va_info['type'])) { return null; }
@@ -4099,14 +4111,22 @@ $pa_options["display_form_field_tips"] = true;
 	}
 	# --------------------------------------------------------------------------------------------		
 	/**
-	 * 
+	 * Checks access control list for currently loaded row for the specified user and returns an access value. Values are:
+	 *
+	 * __CA_ACL_NO_ACCESS__   (0)
+	 * __CA_ACL_READONLY_ACCESS__ (1)
+     * __CA_ACL_EDIT_ACCESS__ (2)
+     * __CA_ACL_EDIT_DELETE_ACCESS__ (3)
+	 *
+	 * @param ca_users $t_user A ca_users object
+	 * @return int An access value 
 	 */
 	public function checkACLAccessForUser($t_user) {
 		if (!($vn_id = (int)$this->getPrimaryKey())) { return null; }
 		
 		require_once(__CA_MODELS_DIR__.'/ca_acl.php');
 		
-		return ca_acl::loadACLForRow($t_user, $this->tableNum(), $vn_id);
+		return ca_acl::accessForRow($t_user, $this->tableNum(), $vn_id);
 	}
 	# ------------------------------------------------------
 }
