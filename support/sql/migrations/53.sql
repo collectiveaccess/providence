@@ -4,16 +4,15 @@
 	Description:
 */
 
-
-ALTER TABLE ca_commerce_fulfillment_events MODIFY COLUMN fulfillment_method varchar(40) not null;
-ALTER TABLE ca_commerce_fulfillment_events MODIFY COLUMN fulfillment_details blob not null;
+ALTER TABLE ca_commerce_fulfillment_events CHANGE COLUMN fullfillment_method fulfillment_method varchar(40) not null; 
+ALTER TABLE ca_commerce_fulfillment_events CHANGE COLUMN fullfillment_details fulfillment_details blob not null; 
 
 /*	If you updated from SVN in December 2011 you may have run a migration (since removed) on your database that */
 /*	incorrectly renames the fulfillment_method and fulfillment_details fields in the ca_commerce_fulfillment_events table. */
 /*	If the two lines above throw an error replace them with the two lines below, which will resolve the issue. */
 
-/*	ALTER TABLE ca_commerce_fulfillment_events CHANGE COLUMN fullfillment_method fulfillment_method varchar(40) not null; */
-/*	ALTER TABLE ca_commerce_fulfillment_events CHANGE COLUMN fullfillment_details fulfillment_details blob not null; */
+/* ALTER TABLE ca_commerce_fulfillment_events MODIFY COLUMN fulfillment_method varchar(40) not null; */
+/* ALTER TABLE ca_commerce_fulfillment_events MODIFY COLUMN fulfillment_details blob not null; */
 
 
 /*==========================================================================*/

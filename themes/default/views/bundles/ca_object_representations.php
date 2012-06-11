@@ -111,9 +111,6 @@
 	if (!$vb_read_only) {
 ?>
 						<div style="width:110px; ">
-								<div style="margin-top:0px; float:left; text-align:right;"><?php print "<div style='margin:2px 2px 0px 0px; float:left;'>".urldecode(caNavLink($this->request, caNavIcon($this->request, __CA_NAV_BUTTON_EDIT__).'</div>Edit Metadata', '', 'editor/object_representations', 'ObjectRepresentationEditor', 'Edit', array('representation_id' => "{n}"), array('id' => "{fieldNamePrefix}edit_{n}"))); ?></div>
-						</div>
-						<div style="width:110px; ">
 								<a href="#" onclick="jQuery('#{fieldNamePrefix}media_{n}').toggle(200); jQuery('#{fieldNamePrefix}media_show_update_{n}').hide(); return false;" id="{fieldNamePrefix}media_show_update_{n}"><div style="margin-top:2px; width:16px; float:left;"><?php print "<img src='".$this->request->getThemeUrlPath()."/graphics/icons/updatemedia.png' border='0' height='16px' width='16px'/>";?></div><?php print _t('Update media'); ?></a>
 						</div>
 						<div id="{fieldNamePrefix}media_{n}" style="display: none; width:210px; margin-top:5px; float:right; clear:right; text-align:left;">
@@ -150,12 +147,13 @@
 <?php 
 	if (!$vb_read_only) {
 ?>
-							<a href="#" class="caDeleteItemButton"><?php print caNavIcon($this->request, __CA_NAV_BUTTON_DEL_BUNDLE__); ?></a>
+							<div style="margin: 0 0 10px 0;"><a href="#" class="caDeleteItemButton"><?php print caNavIcon($this->request, __CA_NAV_BUTTON_DEL_BUNDLE__); ?></a></div>
 <?php
 	}
 ?>
-							<br/>
-							<?php print urldecode(caNavButton($this->request, __CA_NAV_BUTTON_DOWNLOAD__, 'Download', 'editor/objects', 'ObjectEditor', 'DownloadRepresentation', array('version' => 'original', 'representation_id' => "{n}", 'object_id' => $t_subject->getPrimaryKey(), 'download' => 1), array('id' => "{fieldNamePrefix}download_{n}"), array('no_background' => true, 'dont_show_content' => true))); ?>
+							<div style="margin: 10px 0 0 0;"><?php print urldecode(caNavButton($this->request, __CA_NAV_BUTTON_DOWNLOAD__, 'Download', 'editor/objects', 'ObjectEditor', 'DownloadRepresentation', array('version' => 'original', 'representation_id' => "{n}", 'object_id' => $t_subject->getPrimaryKey(), 'download' => 1), array('id' => "{fieldNamePrefix}download_{n}"), array('no_background' => true, 'dont_show_content' => true))); ?></div>
+						
+							<div style="margin: 10px 0 0 0;"><?php print urldecode(caNavLink($this->request, caNavIcon($this->request, __CA_NAV_BUTTON_EDIT__), '', 'editor/object_representations', 'ObjectRepresentationEditor', 'Edit', array('representation_id' => "{n}"), array('id' => "{fieldNamePrefix}edit_{n}"))); ?></div>
 						</div>
 					</td>
 

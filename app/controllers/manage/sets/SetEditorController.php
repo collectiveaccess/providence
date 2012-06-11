@@ -55,9 +55,39 @@
  			return $va_init;
  		}
  		# -------------------------------------------------------
- 		public function Edit() {
+ 		public function Edit($pa_values=null, $pa_options=null) {
+      list($vn_subject_id, $t_subject, $t_ui, $vn_parent_id, $vn_above_id) = $this->_initView($pa_options);
+      $this->view->setVar('can_delete', $this->UserCanDeleteSet($t_subject->get('user_id')));
  			parent::Edit();
  		}
+ 		# -------------------------------------------------------
+ 		public function Delete($pa_options=null) {
+ 			list($vn_subject_id, $t_subject, $t_ui) = $this->_initView($pa_options);
+
+ 			if (!$vn_subject_id) { return; }
+      if (!$this->UserCanDeleteSet($t_subject->get('user_id'))) {
+        $this->postError(2320, _t("Access denied here"), "RequestDispatcher->dispatch()");
+      }
+      else {
+        parent::Delete($pa_options);
+      }
+    }
+    # -------------------------------------------------------
+    private function UserCanDeleteSet($user_id) {
+      $can_delete = FALSE;
+      // If users can delete all sets, show Delete button
+      if ($this->request->user->canDoAction('can_delete_sets')) {
+        $can_delete = TRUE;
+      }
+
+      // If users can delete own sets, and this set belongs to them, show Delete button
+      if ($this->request->user->canDoAction('can_delete_own_sets')) {
+        if ($user_id == $this->request->getUserID()) {
+          $can_delete = TRUE;
+        }
+      }
+      return $can_delete;
+    }
  		# -------------------------------------------------------
  		# Ajax handlers
  		# -------------------------------------------------------
