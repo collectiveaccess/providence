@@ -6745,6 +6745,7 @@ $pa_options["display_form_field_tips"] = true;
 							}
 							
 							if (isset($pa_options['usewysiwygeditor']) && $pa_options['usewysiwygeditor']) {
+								JavascriptLoadManager::register("ckeditor");
 								$vs_width = $vn_display_width;
 								$vs_height = $vn_display_height;
 								if (!preg_match("!^[\d\.]+px$!i", $vs_width)) {
