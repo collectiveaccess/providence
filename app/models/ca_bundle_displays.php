@@ -1083,7 +1083,7 @@ class ca_bundle_displays extends BundlableLabelableBaseModelWithAttributes {
 					'displayType' => DT_CHECKBOXES,
 					'width' => 10, 'height' => 1,
 					'takesLocale' => false,
-					'default' => '1',
+					'default' => '0',
 					'label' => _t('Show hierarchy?'),
 					'description' => _t('If checked the full hierarchical path will be shown.')
 				),
