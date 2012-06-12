@@ -34,6 +34,7 @@
    *
    */
 require_once(__CA_MODELS_DIR__.'/ca_commerce_transactions.php');
+require_once(__CA_MODELS_DIR__.'/ca_sets.php');
 require_once(__CA_LIB_DIR__.'/core/Parsers/TimeExpressionParser.php');
 require_once(__CA_LIB_DIR__.'/ca/Search/CommerceOrderSearch.php');
 require_once(__CA_LIB_DIR__.'/core/Payment.php');
@@ -69,6 +70,7 @@ BaseModel::$s_ca_models_definitions['ca_commerce_orders'] = array(
 					_t('submitted – awaiting quote') => 'SUBMITTED',		// user has submitted order for pricing - only address may be modified
 					_t('awaiting payment') => 'AWAITING_PAYMENT',	// order is awaiting payment before completion - only payment details can be submitted by user
 					_t('payment processed - awaiting digitization') => 'PROCESSED_AWAITING_DIGITIZATION',					// processing completed; awaiting digitization before fulfillment
+					_t('payment processed - awaiting media access') => 'PROCESSED_AWAITING_MEDIA_ACCESS',					// processing completed; awaiting transfer of media before fulfillment
 					_t('payment processed - ready for fulfillment') => 'PROCESSED',					// processing completed; awaiting fulfillment
 					_t('completed') => 'COMPLETED',					// order complete - user has been sent items
 					_t('reopened') => 'REOPENED'					// order reopened due to issue
@@ -553,11 +555,15 @@ class ca_commerce_orders extends BaseModel {
 			case 'AWAITING_PAYMENT':
 				if ($this->get('payment_received_on') && $this->changed('payment_received_on')) {
 					// If it paid for then flip status to "PROCESSED" (if it's all ready to go) or "PROCESSED_AWAITING_DIGITIZATION" if stuff needs to be digitized
-					$va_items_missing_media = $this->itemsMissingDownloadableMedia();
-					if(sizeof($va_items_missing_media) > 0) {
+					if(sizeof($va_items_with_no_media = $this->itemsWithNoDownloadableMedia()) > 0) {
 						$this->set('order_status', 'PROCESSED_AWAITING_DIGITIZATION');
 					} else {
-						$this->set('order_status', 'PROCESSED');
+						// If "original" files are missing then mark as PROCESSED_AWAITING_MEDIA_ACCESS
+						if (sizeof($va_items_missing_media = $this->itemsMissingDownloadableMedia('original'))) {
+							$this->set('order_status', 'PROCESSED_AWAITING_MEDIA_ACCESS');
+						} else {
+							$this->set('order_status', 'PROCESSED');
+						}
 					}
 				}
 				break;
@@ -567,7 +573,7 @@ class ca_commerce_orders extends BaseModel {
 		if($vn_rc = parent::update($pa_options)) {
 			if ($vb_status_changed) { $this->sendStatusChangeEmailNotification($vn_old_status, $vn_old_ship_date, $vn_old_shipped_on_date); }
 			
-			if (in_array($this->get('order_status'), array('PROCESSED', 'PROCESSED_AWAITING_DIGITIZATION', 'COMPLETED'))) {
+			if (in_array($this->get('order_status'), array('PROCESSED', 'PROCESSED_AWAITING_DIGITIZATION', 'PROCESSED_AWAITING_MEDIA_ACCESS', 'COMPLETED'))) {
 				// Delete originating set if configured to do so
 				if($this->opo_client_services_config->get('set_disposal_policy') == 'DELETE_WHEN_ORDER_PROCESSED') {
 					$t_trans = new ca_commerce_transactions($this->get('transaction_id'));
@@ -618,7 +624,7 @@ class ca_commerce_orders extends BaseModel {
 	 */
 	public function sendStatusChangeEmailNotification($pn_old_status, $pn_old_ship_date, $pn_old_shipped_on_date) {
 		global $g_request;
-		if (!$g_request) { return null; }
+		$vn_user_id = is_object($g_request) ? $g_request->getUserID() : null;
 		
 		$vb_status_has_changed = (($vs_status = $this->get('order_status')) != $pn_old_status) ? true : false;
 		$vb_shipping_has_changed = (($this->get('shipped_on_date', array('GET_DIRECT_DATE' => true)) != $pn_old_shipped_on_date) || ($this->get('shipping_date', array('GET_DIRECT_DATE' => true)) != $pn_old_ship_date)) ? true : false;
@@ -647,31 +653,34 @@ class ca_commerce_orders extends BaseModel {
 		if ($vb_status_has_changed) {	// has status changed?
 			$va_admin_addresses = null;
 			if (in_array($vs_status, $va_administrative_email_on_order_status)) { $va_admin_addresses = $va_administrative_email_addresses; }
-			
 			switch($vs_status) {
 				case 'SUBMITTED':
 					$vs_subject = _t('Your order posted on %1 has been received', $vs_order_date);
-					caSendMessageUsingView($g_request, $vs_to_email, $vs_sender_email, "[{$vs_app_name}] {$vs_subject}", "commerce_order_status_submitted.tpl", array('subject' => $vs_subject, 'from_user_id' => $g_request->getUserID(), 'sender_name' => $vs_sender_name, 'sender_email' => $vs_sender_email, 'sent_on' => time(), 'login_url' => $vs_login_url, 't_order' => $this), null, $va_admin_addresses);
+					caSendMessageUsingView($g_request, $vs_to_email, $vs_sender_email, "[{$vs_app_name}] {$vs_subject}", "commerce_order_status_submitted.tpl", array('subject' => $vs_subject, 'from_user_id' => $vn_user_id, 'sender_name' => $vs_sender_name, 'sender_email' => $vs_sender_email, 'sent_on' => time(), 'login_url' => $vs_login_url, 't_order' => $this), null, $va_admin_addresses);
 					break;
 				case 'AWAITING_PAYMENT':
 					$vs_subject = _t('Your order (%2) posted on %1 requires payment', $vs_order_date, $this->getOrderNumber());
-					caSendMessageUsingView($g_request, $vs_to_email, $vs_sender_email, "[{$vs_app_name}] {$vs_subject}", "commerce_order_status_awaiting_payment.tpl", array('subject' => $vs_subject, 'from_user_id' => $g_request->getUserID(), 'sender_name' => $vs_sender_name, 'sender_email' => $vs_sender_email, 'sent_on' => time(), 'login_url' => $vs_login_url, 't_order' => $this), null, $va_admin_addresses);
+					caSendMessageUsingView($g_request, $vs_to_email, $vs_sender_email, "[{$vs_app_name}] {$vs_subject}", "commerce_order_status_awaiting_payment.tpl", array('subject' => $vs_subject, 'from_user_id' => $vn_user_id, 'sender_name' => $vs_sender_name, 'sender_email' => $vs_sender_email, 'sent_on' => time(), 'login_url' => $vs_login_url, 't_order' => $this), null, $va_admin_addresses);
 					break;
 				case 'PROCESSED_AWAITING_DIGITIZATION':
 					$vs_subject = _t('Payment for order (%2) posted on %1 has been processed; your downloads are now pending digitization of purchased items', $vs_order_date, $this->getOrderNumber());
-					caSendMessageUsingView($g_request, $vs_to_email, $vs_sender_email, "[{$vs_app_name}] {$vs_subject}", "commerce_order_status_processed_awaiting_digitization.tpl", array('subject' => $vs_subject, 'from_user_id' => $g_request->getUserID(), 'sender_name' => $vs_sender_name, 'sender_email' => $vs_sender_email, 'sent_on' => time(), 'login_url' => $vs_login_url, 't_order' => $this), null, $va_admin_addresses);
+					caSendMessageUsingView($g_request, $vs_to_email, $vs_sender_email, "[{$vs_app_name}] {$vs_subject}", "commerce_order_status_processed_awaiting_digitization.tpl", array('subject' => $vs_subject, 'from_user_id' => $vn_user_id, 'sender_name' => $vs_sender_name, 'sender_email' => $vs_sender_email, 'sent_on' => time(), 'login_url' => $vs_login_url, 't_order' => $this), null, $va_admin_addresses);
+					break;
+				case 'PROCESSED_AWAITING_MEDIA_ACCESS':
+					$vs_subject = _t('Payment for order (%2) posted on %1 has been processed; your downloads are now pending digitization of transfer of media to the server', $vs_order_date, $this->getOrderNumber());
+					caSendMessageUsingView($g_request, $vs_to_email, $vs_sender_email, "[{$vs_app_name}] {$vs_subject}", "commerce_order_status_processed_awaiting_media_access.tpl", array('subject' => $vs_subject, 'from_user_id' => $vn_user_id, 'sender_name' => $vs_sender_name, 'sender_email' => $vs_sender_email, 'sent_on' => time(), 'login_url' => $vs_login_url, 't_order' => $this), null, $va_admin_addresses);
 					break;
 				case 'PROCESSED':
 					$vs_subject = _t('Payment for order (%2) posted on %1 has been processed', $vs_order_date, $this->getOrderNumber());
-					caSendMessageUsingView($g_request, $vs_to_email, $vs_sender_email, "[{$vs_app_name}] {$vs_subject}", "commerce_order_status_processed.tpl", array('subject' => $vs_subject, 'from_user_id' => $g_request->getUserID(), 'sender_name' => $vs_sender_name, 'sender_email' => $vs_sender_email, 'sent_on' => time(), 'login_url' => $vs_login_url, 't_order' => $this), null, $va_admin_addresses);
+					caSendMessageUsingView($g_request, $vs_to_email, $vs_sender_email, "[{$vs_app_name}] {$vs_subject}", "commerce_order_status_processed.tpl", array('subject' => $vs_subject, 'from_user_id' => $vn_user_id, 'sender_name' => $vs_sender_name, 'sender_email' => $vs_sender_email, 'sent_on' => time(), 'login_url' => $vs_login_url, 't_order' => $this), null, $va_admin_addresses);
 					break;
 				case 'COMPLETED':
 					$vs_subject = _t('Your order (%2) posted on %1 is complete', $vs_order_date, $this->getOrderNumber());
-					caSendMessageUsingView($g_request, $vs_to_email, $vs_sender_email, "[{$vs_app_name}] {$vs_subject}", "commerce_order_status_completed.tpl", array('subject' => $vs_subject, 'from_user_id' => $g_request->getUserID(), 'sender_name' => $vs_sender_name, 'sender_email' => $vs_sender_email, 'sent_on' => time(), 'login_url' => $vs_login_url, 't_order' => $this), null, $va_admin_addresses);
+					caSendMessageUsingView($g_request, $vs_to_email, $vs_sender_email, "[{$vs_app_name}] {$vs_subject}", "commerce_order_status_completed.tpl", array('subject' => $vs_subject, 'from_user_id' => $vn_user_id, 'sender_name' => $vs_sender_name, 'sender_email' => $vs_sender_email, 'sent_on' => time(), 'login_url' => $vs_login_url, 't_order' => $this), null, $va_admin_addresses);
 					break;
 				case 'REOPENED':
 					$vs_subject = _t('Order (%2) posted on %1 has been reopened', $vs_order_date, $this->getOrderNumber());
-					caSendMessageUsingView($g_request, $vs_to_email, $vs_sender_email, "[{$vs_app_name}] {$vs_subject}", "commerce_order_status_reopened.tpl", array('subject' => $vs_subject, 'from_user_id' => $g_request->getUserID(), 'sender_name' => $vs_sender_name, 'sender_email' => $vs_sender_email, 'sent_on' => time(), 'login_url' => $vs_login_url, 't_order' => $this), null, $va_admin_addresses);
+					caSendMessageUsingView($g_request, $vs_to_email, $vs_sender_email, "[{$vs_app_name}] {$vs_subject}", "commerce_order_status_reopened.tpl", array('subject' => $vs_subject, 'from_user_id' => $vn_user_id, 'sender_name' => $vs_sender_name, 'sender_email' => $vs_sender_email, 'sent_on' => time(), 'login_url' => $vs_login_url, 't_order' => $this), null, $va_admin_addresses);
 					break;
 			}
 		} else {
@@ -683,14 +692,14 @@ class ca_commerce_orders extends BaseModel {
 				if (($vn_shipped_on_date > 0) && ($vn_shipped_on_date != $pn_old_shipped_on_date)) {
 					// Notify client that package has shipped
 					$vs_subject = _t('Order (%2) posted on %1 has shipped', $vs_order_date, $this->getOrderNumber());
-					caSendMessageUsingView($g_request, $vs_to_email, $vs_sender_email, "[{$vs_app_name}] {$vs_subject}", "commerce_order_shipped.tpl", array('subject' => $vs_subject, 'from_user_id' => $g_request->getUserID(), 'sender_name' => $vs_sender_name, 'sender_email' => $vs_sender_email, 'sent_on' => time(), 'login_url' => $vs_login_url, 't_order' => $this));
+					caSendMessageUsingView($g_request, $vs_to_email, $vs_sender_email, "[{$vs_app_name}] {$vs_subject}", "commerce_order_shipped.tpl", array('subject' => $vs_subject, 'from_user_id' => $vn_user_id, 'sender_name' => $vs_sender_name, 'sender_email' => $vs_sender_email, 'sent_on' => time(), 'login_url' => $vs_login_url, 't_order' => $this));
 					return true;
 				}
 				
 				if (($vn_ship_date > 0) && ($vn_ship_date != $pn_old_ship_date)) {
 					// Notify client that package has been schedule for shipping
 					$vs_subject = _t('Order (%2) posted on %1 has been scheduled for shipping', $vs_order_date, $this->getOrderNumber());
-					caSendMessageUsingView($g_request, $vs_to_email, $vs_sender_email, "[{$vs_app_name}] {$vs_subject}", "commerce_order_will_ship_on.tpl", array('subject' => $vs_subject, 'from_user_id' => $g_request->getUserID(), 'sender_name' => $vs_sender_name, 'sender_email' => $vs_sender_email, 'sent_on' => time(), 'login_url' => $vs_login_url, 't_order' => $this));
+					caSendMessageUsingView($g_request, $vs_to_email, $vs_sender_email, "[{$vs_app_name}] {$vs_subject}", "commerce_order_will_ship_on.tpl", array('subject' => $vs_subject, 'from_user_id' => $vn_user_id, 'sender_name' => $vs_sender_name, 'sender_email' => $vs_sender_email, 'sent_on' => time(), 'login_url' => $vs_login_url, 't_order' => $this));
 					return true;
 				}
 			}
@@ -741,7 +750,7 @@ class ca_commerce_orders extends BaseModel {
 		foreach($pa_fields as $vs_f => $vs_v) { 
 			switch($vs_f) {
 				case 'shipped_on_date':
-					if (!in_array($this->get('order_status'), array('PROCESSED', 'PROCESSED_AWAITING_DIGITIZATION'))) {
+					if (!in_array($this->get('order_status'), array('PROCESSED', 'PROCESSED_AWAITING_DIGITIZATION', 'PROCESSED_AWAITING_MEDIA_ACCESS'))) {
 						$this->postError(1101, _t('Cannot ship order until it is paid for'), 'ca_commerce_orders->set()');
 						return false;
 					}
@@ -1662,11 +1671,12 @@ class ca_commerce_orders extends BaseModel {
 	}
 	# ------------------------------------------------------
 	/**
-	 * 
+	 * Checks all items in order that are downloaded and returns a list of item_ids for items
+	 * that have no representations attached.
 	 *
-	 * @return array 
+	 * @return array A list of item_ids for which no representations are defined.
 	 */
-	public function itemsMissingDownloadableMedia() {
+	public function itemsWithNoDownloadableMedia() {
 		if (!$this->getPrimaryKey()) { return null; }
 		
 		$o_db = $this->getDb();
@@ -1688,14 +1698,70 @@ class ca_commerce_orders extends BaseModel {
 		$t_object = new ca_objects();
 		$va_rep_counts = $t_object->getMediaCountsForIDs($va_object_ids);
 		
-		$va_items_missing_downloadable_media = array();
+		$va_items_with_no_downloadable_media = array();
 		while($qr_res->nextRow()) {
 			$vn_object_id = $qr_res->get('object_id');
 			if (!isset($va_rep_counts[$vn_object_id]) || !$va_rep_counts[$vn_object_id]) {
-				$va_items_missing_downloadable_media[$qr_res->get('item_id')] = true;
+				$va_items_with_no_downloadable_media[$qr_res->get('item_id')] = true;
 			}
 		}
-		return array_keys($va_items_missing_downloadable_media);
+		return array_keys($va_items_with_no_downloadable_media);
+	}
+	# ------------------------------------------------------
+	/**
+	 * Checks all items in order that are downloadable and returns a list of object representation (organized by object)
+	 * for which the specified version of media is missing on the server. This can be useful in situations where you are
+	 * not keeping high-resolution media on the server. Rather than passing a dead media URL to the user it can be detected
+	 * and action, such as downloading the missing media, taken.
+	 *
+	 * @param string $ps_version Optional version to check media for. If omitted defaults to version "original" (by convention this is the original uploaded media)
+	 * @param array $pa_options Array of options. Support options are:
+	 *		returnRepresentationIDs = If set representation_id's for missing media are returned, otherwise MD5 hashes for missing representations are returned. Default is false.
+	 * @return array List of missing items, key'ed on object_id. Value for each is a list of MD5 hashes (or representation_ids if the returnRepresentationIDs option is set)
+	 */
+	public function itemsMissingDownloadableMedia($ps_version='original', $pa_options=null) {
+		if (!$this->getPrimaryKey()) { return null; }
+		
+		$o_db = $this->getDb();
+		
+		// Get items that require download
+		$qr_res = $o_db->query("
+			SELECT i.item_id, i.object_id, coxor.representation_id
+			FROM ca_commerce_order_items i
+			LEFT JOIN ca_commerce_order_items_x_object_representations AS coxor ON i.item_id = coxor.item_id
+			WHERE
+				i.fullfillment_method = 'DOWNLOAD' AND i.order_id = ?
+		", (int)$this->getPrimaryKey());
+		
+		$va_object_ids = array();
+		$va_representation_list = array();
+		while($qr_res->nextRow()) {
+			$vn_object_id = (int)$qr_res->get('object_id');
+			$vn_representation_id = (int)$qr_res->get('representation_id');
+			if ($vn_representation_id) {
+				$va_object_ids[$vn_object_id][$vn_representation_id] = true;
+				$va_representation_list[$vn_representation_id] = $vn_object_id;
+			} else {
+				// get all representations attached to this object
+				$qr_reps = $o_db->query("SELECT representation_id FROM ca_objects_x_object_representations WHERE object_id = ?", $vn_object_id);
+				while($qr_reps->nextRow()) {
+					$va_object_ids[$vn_object_id][$vn_representation_id = (int)$qr_reps->get('representation_id')] = true;
+					$va_representation_list[$vn_representation_id] = $vn_object_id;
+				}
+			}
+		}
+		
+		// Check if files are missing
+		$va_missing_items = array();
+		if (sizeof($va_representation_list)) {
+			$qr_rep_check = $o_db->query("SELECT representation_id, media, md5 FROM ca_object_representations WHERE representation_id IN (?)", array(array_keys($va_representation_list)));
+			while($qr_rep_check->nextRow()) {
+				if (!file_exists($qr_rep_check->getMediaPath('media', $ps_version))) {
+					$va_missing_items[$va_representation_list[(int)$qr_rep_check->get('representation_id')]][] = (isset($pa_options['returnRepresentationIDs']) && $pa_options['returnRepresentationIDs']) ? $qr_rep_check->get('representation_id') : $qr_rep_check->get('md5');
+				}
+			}
+		}
+		return $va_missing_items;
 	}
 	# ------------------------------------------------------
 	/**

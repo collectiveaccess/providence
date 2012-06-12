@@ -318,6 +318,8 @@ class BaseModel extends BaseObject {
 	 */
 	static $s_ca_models_definitions;
 	
+	static $s_instance_cache = array();
+	
 	/**
 	 * Constructor
 	 * In general you should not call this constructor directly. Any table in your database
@@ -327,8 +329,9 @@ class BaseModel extends BaseObject {
 	 * if omitted, an empty object is created which can be used to create a new row in the database.
 	 * @return BaseModel
 	 */
-	public function __construct($pn_id=null) {
+	public function __construct($pn_id=null, $pb_use_cache=true) {
 		$vs_table_name = $this->tableName();
+		
 		if (!$this->FIELDS =& BaseModel::$s_ca_models_definitions[$vs_table_name]['FIELDS']) {
 			die("Field definitions not found for {$vs_table_name}");
 		}
@@ -355,7 +358,7 @@ class BaseModel extends BaseObject {
 
 		$this->setMode(ACCESS_READ);
 
-		if ($pn_id) { $this->load($pn_id);}
+		if ($pn_id) { $this->load($pn_id, $pb_use_cache);}
 	}
 
 	/**
@@ -1532,8 +1535,15 @@ class BaseModel extends BaseObject {
 	 * @param mixed $pm_id primary key value of the record to load (assuming we have no composed primary key)
 	 * @return bool success state
 	 */
-	public function load ($pm_id=null) {
+	public function load($pm_id=null, $pb_use_cache=true) {
 		$this->clear();
+		$vs_table_name = $this->tableName();
+		if ($pb_use_cache && is_numeric($pm_id) && isset(BaseModel::$s_instance_cache[$vs_table_name][$pm_id]) && is_array(BaseModel::$s_instance_cache[$vs_table_name][$pm_id])) {
+			$this->_FIELD_VALUES = BaseModel::$s_instance_cache[$vs_table_name][$pm_id];
+			$this->_FIELD_VALUES_OLD = $this->_FIELD_VALUES;
+			$this->_FILES_CLEAR = array();
+			return true;
+		}
 		
 		if ($pm_id == null) {
 			//$this->postError(750,_t("Can't load record; key is blank"), "BaseModel->load()");
@@ -1626,6 +1636,8 @@ class BaseModel extends BaseObject {
 			
 			$this->_FIELD_VALUES_OLD = $this->_FIELD_VALUES;
 			$this->_FILES_CLEAR = array();
+			
+			if ($vn_id = $this->getPrimaryKey()) { BaseModel::$s_instance_cache[$vs_table_name][$vn_id] = $this->_FIELD_VALUES; }
 			return true;
 		} else {
 			if (!is_array($pm_id)) {
@@ -2123,7 +2135,11 @@ class BaseModel extends BaseObject {
 
 					if ($vb_we_set_transaction) { $this->removeTransaction(true); }
 					
-					$this->_FIELD_VALUE_CHANGED = array();
+					$this->_FIELD_VALUE_CHANGED = array();					
+						
+					// Update instance cache
+					BaseModel::$s_instance_cache[$this->tableName()][$vn_id] = $this->_FIELD_VALUES;
+					
 					return $vn_id;
 				} else {
 					foreach($o_db->errors() as $o_e) {
@@ -2668,6 +2684,9 @@ class BaseModel extends BaseObject {
 
 				if ($vb_we_set_transaction) { $this->removeTransaction(true); }
 				$this->_FIELD_VALUE_CHANGED = array();
+				
+				// Update instance cache
+				BaseModel::$s_instance_cache[$this->tableName()][$this->getPrimaryKey()] = $this->_FIELD_VALUES;
 				return true;
 			} else {
 				if ($vb_we_set_transaction) { $this->removeTransaction(false); }
@@ -6802,6 +6821,7 @@ $pa_options["display_form_field_tips"] = true;
 							}
 							
 							if (isset($pa_options['usewysiwygeditor']) && $pa_options['usewysiwygeditor']) {
+								JavascriptLoadManager::register("ckeditor");
 								$vs_width = $vn_display_width;
 								$vs_height = $vn_display_height;
 								if (!preg_match("!^[\d\.]+px$!i", $vs_width)) {

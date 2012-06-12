@@ -37,13 +37,15 @@
  	require_once(__CA_LIB_DIR__.'/core/BaseObject.php');
  	require_once(__CA_LIB_DIR__.'/core/Datamodel.php');
  	require_once(__CA_LIB_DIR__.'/core/Db.php');
- 	require_once(__CA_MODELS_DIR__.'/ca_metadata_elements.php');
-	require_once(__CA_MODELS_DIR__.'/ca_lists.php');
  	require_once(__CA_LIB_DIR__.'/ca/Browse/BrowseResult.php');
  	require_once(__CA_LIB_DIR__.'/ca/Browse/BrowseCache.php');
  	require_once(__CA_LIB_DIR__.'/core/Parsers/TimeExpressionParser.php');
  	require_once(__CA_APP_DIR__.'/helpers/searchHelpers.php');
 	require_once(__CA_APP_DIR__.'/helpers/accessHelpers.php');
+	
+ 	require_once(__CA_MODELS_DIR__.'/ca_metadata_elements.php');
+	require_once(__CA_MODELS_DIR__.'/ca_lists.php');
+	require_once(__CA_MODELS_DIR__.'/ca_acl.php');
  
 	class BrowseEngine extends BaseObject {
 		# ------------------------------------------------------
@@ -696,9 +698,12 @@
 		 *		no_cache = don't use cached browse results
 		 *		showDeleted = if set to true, related items that have been deleted are returned. Default is false.
 		 *		limitToModifiedOn = if set returned results will be limited to rows modified within the specified date range. The value should be a date/time expression parse-able by TimeExpressionParser
+		 *		user_id = If set item level access control is performed relative to specified user_id, otherwise defaults to logged in user
 		 */
 		public function execute($pa_options=null) {
+			global $AUTH_CURRENT_USER_ID;
 			if (!is_array($pa_options)) { $pa_options = array(); }
+			$vn_user_id = (isset($pa_options['user_id']) && (int)$pa_options['user_id']) ?  (int)$pa_options['user_id'] : (int)$AUTH_CURRENT_USER_ID;
 			if (!is_array($this->opa_browse_settings)) { return null; }
 			
 			$va_params = $this->opo_ca_browse_cache->getParameters();
@@ -1308,7 +1313,7 @@
 					$this->_dropTempTable('ca_browses_acc');
 					$this->_dropTempTable('ca_browses_tmp');
 					
-					$this->opo_ca_browse_cache->setResults($va_results);
+					$this->opo_ca_browse_cache->setResults(($this->opo_config->get('perform_item_level_access_checking')) ? array_keys($this->filterHitsByACL(array_flip($va_results), $vn_user_id, __CA_ACL_READONLY_ACCESS__)): $va_results);
 					$vb_need_to_save_in_cache = true;
 				}
 			} else {
@@ -1360,7 +1365,7 @@
 					");
 					$va_results = $qr_res->getAllFieldValues($vs_pk);
 					
-					$this->opo_ca_browse_cache->setResults($va_results);
+					$this->opo_ca_browse_cache->setResults(($this->opo_config->get('perform_item_level_access_checking')) ? array_keys($this->filterHitsByACL(array_flip($va_results), $vn_user_id, __CA_ACL_READONLY_ACCESS__)): $va_results);
 					$vb_need_to_save_in_cache = true;
 				}	
 			}
@@ -1440,8 +1445,20 @@
 		 * Options:
 		 *		checkAccess = array of access values to filter facets that have an 'access' field by
 		 *		checkAvailabilityOnly = if true then content is not actually fetch - only the availablility of content is verified
+		 *		user_id = If set item level access control is performed relative to specified user_id, otherwise defaults to logged in user
 		 */
 		public function getFacetContent($ps_facet_name, $pa_options=null) {
+			global $AUTH_CURRENT_USER_ID;
+			$vn_user_id = (isset($pa_options['user_id']) && (int)$pa_options['user_id']) ?  (int)$pa_options['user_id'] : (int)$AUTH_CURRENT_USER_ID;
+			$vb_show_if_no_acl = (bool)($this->opo_config->get('default_item_access_level') > __CA_ACL_NO_ACCESS__);
+			
+			$t_user = new ca_users($vn_user_id);
+			if (is_array($va_groups = $t_user->getUserGroups()) && sizeof($va_groups)) {
+				$va_group_ids = array_keys($va_groups);
+			} else {
+				$va_group_ids = array();
+			}
+			
 			if (!is_array($this->opa_browse_settings)) { return null; }
 			if (!isset($this->opa_browse_settings['facets'][$ps_facet_name])) { return null; }
 			if (!is_array($pa_options)) { $pa_options = array(); }
@@ -1531,11 +1548,11 @@
 					);
 					
 					$vs_cur_table = array_shift($va_path);
-					$va_joins = array();
+					$va_joins_init = array();
 					
 					foreach($va_path as $vs_join_table) {
 						$va_rel_info = $this->opo_datamodel->getRelationships($vs_cur_table, $vs_join_table);
-						$va_joins[] = ($vn_state ? 'INNER' : 'LEFT').' JOIN '.$vs_join_table.' ON '.$vs_cur_table.'.'.$va_rel_info[$vs_cur_table][$vs_join_table][0][0].' = '.$vs_join_table.'.'.$va_rel_info[$vs_cur_table][$vs_join_table][0][1]."\n";
+						$va_joins_init[] = ($vn_state ? 'INNER' : 'LEFT').' JOIN '.$vs_join_table.' ON '.$vs_cur_table.'.'.$va_rel_info[$vs_cur_table][$vs_join_table][0][0].' = '.$vs_join_table.'.'.$va_rel_info[$vs_cur_table][$vs_join_table][0][1]."\n";
 						$vs_cur_table = $vs_join_table;
 					}
 					
@@ -1543,8 +1560,7 @@
 					$va_counts = array();
 					foreach($va_facet_values as $vs_state_name => $va_state_info) {
 						$va_wheres = array();
-						
-						$vs_join_sql = join("\n", $va_joins);
+						$va_joins = $va_joins_init;
 						
 						if ((sizeof($va_restrict_to_relationship_types) > 0) && is_object($t_item_rel)) {
 							$va_wheres[] = "(".$t_item_rel->tableName().".type_id IN (".join(',', $va_restrict_to_relationship_types)."))";
@@ -1572,6 +1588,24 @@
 						if (sizeof($va_results)) {
 							$va_wheres[] = $this->ops_browse_table_name.".".$t_item->primaryKey()." IN (".join(",", $va_results).")";
 						}
+						
+						if ($this->opo_config->get('perform_item_level_access_checking')) {
+							if ($t_item = $this->opo_datamodel->getInstanceByTableName($this->ops_browse_table_name, true)) {
+								// Join to limit what browse table items are used to generate facet
+								$va_joins[] = 'LEFT JOIN ca_acl ON '.$this->ops_browse_table_name.'.'.$t_item->primaryKey().' = ca_acl.row_id AND ca_acl.table_num = '.$t_item->tableNum()."\n";
+								$va_wheres[] = "(
+									((
+										(ca_acl.user_id = ".(int)$vn_user_id.")
+										".((sizeof($va_group_ids) > 0) ? "OR
+										(ca_acl.group_id IN (".join(",", $va_group_ids)."))" : "")."
+										OR
+										(ca_acl.user_id IS NULL and ca_acl.group_id IS NULL)
+									) AND ca_acl.access >= ".__CA_ACL_READONLY_ACCESS__.")
+									".(($vb_show_if_no_acl) ? "OR ca_acl.acl_id IS NULL" : "")."
+								)";
+							}
+						}
+						$vs_join_sql = join("\n", $va_joins);
 						
 						$vs_where_sql = '';
 						if (sizeof($va_wheres) > 0) {
@@ -1632,6 +1666,8 @@
 					$vb_needs_join = false;
 					
 					$va_where_sql = array();
+					$va_joins = array();
+					
 					if (sizeof($va_results)) {
 						$va_where_sql[] = "l.{$vs_item_pk} IN (".join(",", $va_results).")";
 					}
@@ -1663,9 +1699,29 @@
 						}
 					}
 					
+					
 					if ($vb_needs_join) {
-						$vs_join_sql = "INNER JOIN ".$this->ops_browse_table_name." ON ".$this->ops_browse_table_name.".".$t_item->primaryKey()." = l.".$t_item->primaryKey();
+						$va_joins[] = "INNER JOIN ".$this->ops_browse_table_name." ON ".$this->ops_browse_table_name.".".$t_item->primaryKey()." = l.".$t_item->primaryKey();
 					}
+					
+					if ($this->opo_config->get('perform_item_level_access_checking')) {
+						if ($t_item = $this->opo_datamodel->getInstanceByTableName($this->ops_browse_table_name, true)) {
+							// Join to limit what browse table items are used to generate facet
+							$va_joins[] = 'LEFT JOIN ca_acl ON '.$this->ops_browse_table_name.'.'.$t_item->primaryKey().' = ca_acl.row_id AND ca_acl.table_num = '.$t_item->tableNum()."\n";
+							$va_where_sql[] = "(
+								((
+									(ca_acl.user_id = ".(int)$vn_user_id.")
+									".((sizeof($va_group_ids) > 0) ? "OR
+									(ca_acl.group_id IN (".join(",", $va_group_ids)."))" : "")."
+									OR
+									(ca_acl.user_id IS NULL and ca_acl.group_id IS NULL)
+								) AND ca_acl.access >= ".__CA_ACL_READONLY_ACCESS__.")
+								".(($vb_show_if_no_acl) ? "OR ca_acl.acl_id IS NULL" : "")."
+							)";
+						}
+					}
+					
+					$vs_join_sql = join("\n", $va_joins);
 					
 					if (sizeof($va_where_sql)) {
 						$vs_where_sql = "WHERE ".join(" AND ", $va_where_sql);
@@ -1766,6 +1822,23 @@
 					
 					if ($t_item->hasField('deleted')) {
 						$va_wheres[] = "(".$this->ops_browse_table_name.".deleted = 0)";
+					}
+					
+					if ($this->opo_config->get('perform_item_level_access_checking')) {
+						if ($t_item = $this->opo_datamodel->getInstanceByTableName($this->ops_browse_table_name, true)) {
+							// Join to limit what browse table items are used to generate facet
+							$va_joins[] = 'LEFT JOIN ca_acl ON '.$this->ops_browse_table_name.'.'.$t_item->primaryKey().' = ca_acl.row_id AND ca_acl.table_num = '.$t_item->tableNum()."\n";
+							$va_wheres[] = "(
+								((
+									(ca_acl.user_id = ".(int)$vn_user_id.")
+									".((sizeof($va_group_ids) > 0) ? "OR
+									(ca_acl.group_id IN (".join(",", $va_group_ids)."))" : "")."
+									OR
+									(ca_acl.user_id IS NULL and ca_acl.group_id IS NULL)
+								) AND ca_acl.access >= ".__CA_ACL_READONLY_ACCESS__.")
+								".(($vb_show_if_no_acl) ? "OR ca_acl.acl_id IS NULL" : "")."
+							)";
+						}
 					}
 					
 					$vs_join_sql = join("\n", $va_joins);
@@ -1912,6 +1985,23 @@
 							$va_wheres[] = "(".$this->ops_browse_table_name.".deleted = 0)";
 						}
 						
+						if ($this->opo_config->get('perform_item_level_access_checking')) {
+							if ($t_item = $this->opo_datamodel->getInstanceByTableName($this->ops_browse_table_name, true)) {
+								// Join to limit what browse table items are used to generate facet
+								$va_joins[] = 'LEFT JOIN ca_acl ON '.$this->ops_browse_table_name.'.'.$t_item->primaryKey().' = ca_acl.row_id AND ca_acl.table_num = '.$t_item->tableNum()."\n";
+								$va_wheres[] = "(
+									((
+										(ca_acl.user_id = ".(int)$vn_user_id.")
+										".((sizeof($va_group_ids) > 0) ? "OR
+										(ca_acl.group_id IN (".join(",", $va_group_ids)."))" : "")."
+										OR
+										(ca_acl.user_id IS NULL and ca_acl.group_id IS NULL)
+									) AND ca_acl.access >= ".__CA_ACL_READONLY_ACCESS__.")
+									".(($vb_show_if_no_acl) ? "OR ca_acl.acl_id IS NULL" : "")."
+								)";
+							}
+						}
+						
 						$vs_join_sql = join("\n", $va_joins);
 						
 						if (is_array($va_wheres) && sizeof($va_wheres) && ($vs_where_sql = join(' AND ', $va_wheres))) {
@@ -1987,6 +2077,24 @@
 							if ($vs_browse_type_limit_sql) {
 								$va_wheres[] = $vs_browse_type_limit_sql;
 							}
+							
+							if ($this->opo_config->get('perform_item_level_access_checking')) {
+								if ($t_item = $this->opo_datamodel->getInstanceByTableName($this->ops_browse_table_name, true)) {
+									// Join to limit what browse table items are used to generate facet
+									$va_joins[] = 'LEFT JOIN ca_acl ON '.$this->ops_browse_table_name.'.'.$t_item->primaryKey().' = ca_acl.row_id AND ca_acl.table_num = '.$t_item->tableNum()."\n";
+									$va_wheres[] = "(
+										((
+											(ca_acl.user_id = ".(int)$vn_user_id.")
+											".((sizeof($va_group_ids) > 0) ? "OR
+											(ca_acl.group_id IN (".join(",", $va_group_ids)."))" : "")."
+											OR
+											(ca_acl.user_id IS NULL and ca_acl.group_id IS NULL)
+										) AND ca_acl.access >= ".__CA_ACL_READONLY_ACCESS__.")
+										".(($vb_show_if_no_acl) ? "OR ca_acl.acl_id IS NULL" : "")."
+									)";
+								}
+							}
+							
 							
 							if (is_array($va_wheres) && sizeof($va_wheres) && ($vs_where_sql = join(' AND ', $va_wheres))) {
 								$vs_where_sql = '('.$vs_where_sql.')';
@@ -2064,6 +2172,23 @@
 								
 								if ($vs_browse_type_limit_sql) {
 									$va_wheres[] = $vs_browse_type_limit_sql;
+								}
+								
+								if ($this->opo_config->get('perform_item_level_access_checking')) {
+									if ($t_item = $this->opo_datamodel->getInstanceByTableName($this->ops_browse_table_name, true)) {
+										// Join to limit what browse table items are used to generate facet
+										$va_joins[] = 'LEFT JOIN ca_acl ON '.$this->ops_browse_table_name.'.'.$t_item->primaryKey().' = ca_acl.row_id AND ca_acl.table_num = '.$t_item->tableNum()."\n";
+										$va_wheres[] = "(
+											((
+												(ca_acl.user_id = ".(int)$vn_user_id.")
+												".((sizeof($va_group_ids) > 0) ? "OR
+												(ca_acl.group_id IN (".join(",", $va_group_ids)."))" : "")."
+												OR
+												(ca_acl.user_id IS NULL and ca_acl.group_id IS NULL)
+											) AND ca_acl.access >= ".__CA_ACL_READONLY_ACCESS__.")
+											".(($vb_show_if_no_acl) ? "OR ca_acl.acl_id IS NULL" : "")."
+										)";
+									}
 								}
 								
 								$vs_join_sql = join("\n", $va_joins);
@@ -2156,6 +2281,23 @@
 							$va_wheres[] = "(".$this->ops_browse_table_name.".deleted = 0)";
 						}
 						
+						if ($this->opo_config->get('perform_item_level_access_checking')) {
+							if ($t_item = $this->opo_datamodel->getInstanceByTableName($this->ops_browse_table_name, true)) {
+								// Join to limit what browse table items are used to generate facet
+								$va_joins[] = 'LEFT JOIN ca_acl ON '.$this->ops_browse_table_name.'.'.$t_item->primaryKey().' = ca_acl.row_id AND ca_acl.table_num = '.$t_item->tableNum()."\n";
+								$va_wheres[] = "(
+									((
+										(ca_acl.user_id = ".(int)$vn_user_id.")
+										".((sizeof($va_group_ids) > 0) ? "OR
+										(ca_acl.group_id IN (".join(",", $va_group_ids)."))" : "")."
+										OR
+										(ca_acl.user_id IS NULL and ca_acl.group_id IS NULL)
+									) AND ca_acl.access >= ".__CA_ACL_READONLY_ACCESS__.")
+									".(($vb_show_if_no_acl) ? "OR ca_acl.acl_id IS NULL" : "")."
+								)";
+							}
+						}
+						
 						$vs_join_sql = join("\n", $va_joins);
 						
 						if (is_array($va_wheres) && sizeof($va_wheres) && ($vs_where_sql = join(' AND ', $va_wheres))) {
@@ -2245,6 +2387,23 @@
 					
 					if ($t_item->hasField('deleted')) {
 						$va_wheres[] = "(".$this->ops_browse_table_name.".deleted = 0)";
+					}
+					
+					if ($this->opo_config->get('perform_item_level_access_checking')) {
+						if ($t_item = $this->opo_datamodel->getInstanceByTableName($this->ops_browse_table_name, true)) {
+							// Join to limit what browse table items are used to generate facet
+							$va_joins[] = 'LEFT JOIN ca_acl ON '.$this->ops_browse_table_name.'.'.$t_item->primaryKey().' = ca_acl.row_id AND ca_acl.table_num = '.$t_item->tableNum()."\n";
+							$va_wheres[] = "(
+								((
+									(ca_acl.user_id = ".(int)$vn_user_id.")
+									".((sizeof($va_group_ids) > 0) ? "OR
+									(ca_acl.group_id IN (".join(",", $va_group_ids)."))" : "")."
+									OR
+									(ca_acl.user_id IS NULL and ca_acl.group_id IS NULL)
+								) AND ca_acl.access >= ".__CA_ACL_READONLY_ACCESS__.")
+								".(($vb_show_if_no_acl) ? "OR ca_acl.acl_id IS NULL" : "")."
+							)";
+						}
 					}
 					
 					$vs_join_sql = join("\n", $va_joins);
@@ -2505,6 +2664,37 @@ if (!$va_facet_info['show_all_when_first_facet'] || ($this->numCriteria() > 0)) 
 								}
 							}
 							
+						}
+					}
+					
+					if ($this->opo_config->get('perform_item_level_access_checking')) {
+						if ($t_item = $this->opo_datamodel->getInstanceByTableName($this->ops_browse_table_name, true)) {
+							
+							// Join to limit what browse table items are used to generate facet
+							$va_joins[] = 'LEFT JOIN ca_acl ON '.$this->ops_browse_table_name.'.'.$t_item->primaryKey().' = ca_acl.row_id AND ca_acl.table_num = '.$t_item->tableNum()."\n";
+							$va_wheres[] = "(
+								((
+									(ca_acl.user_id = ".(int)$vn_user_id.")
+									".((sizeof($va_group_ids) > 0) ? "OR
+									(ca_acl.group_id IN (".join(",", $va_group_ids)."))" : "")."
+									OR
+									(ca_acl.user_id IS NULL and ca_acl.group_id IS NULL)
+								) AND ca_acl.access >= ".__CA_ACL_READONLY_ACCESS__.")
+								".(($vb_show_if_no_acl) ? "OR ca_acl.acl_id IS NULL" : "")."
+							)";
+							
+							// Join to limit what related items are used to generate facet
+							$va_joins[] = 'LEFT JOIN ca_acl AS rel_acl ON '.$t_rel_item->tableName().'.'.$t_rel_item->primaryKey().' = rel_acl.row_id AND rel_acl.table_num = '.$t_rel_item->tableNum()."\n";
+							$va_wheres[] = "(
+								((
+									(rel_acl.user_id = ".(int)$vn_user_id.")
+									".((sizeof($va_group_ids) > 0) ? "OR
+									(rel_acl.group_id IN (".join(",", $va_group_ids)."))" : "")."
+									OR
+									(rel_acl.user_id IS NULL and rel_acl.group_id IS NULL)
+								) AND rel_acl.access >= ".__CA_ACL_READONLY_ACCESS__.")
+								".(($vb_show_if_no_acl) ? "OR rel_acl.acl_id IS NULL" : "")."
+							)";
 						}
 					}
 					
@@ -2944,6 +3134,122 @@ if (!$va_facet_info['show_all_when_first_facet'] || ($this->numCriteria() > 0)) 
 			if ($ps_direction == 'desc') { $va_sorted_hits = array_reverse($va_sorted_hits, true); }
 			
 			return $va_sorted_hits;
+		}
+		# ------------------------------------------------------------------
+		/**
+		 * @param $pa_hits Array of row_ids to filter. *MUST HAVE row_ids AS KEYS, NOT VALUES*
+		 */
+		public function filterHitsByACL($pa_hits, $pn_user_id, $pn_access=__CA_ACL_READONLY_ACCESS__, $pa_options=null) {
+			if (!sizeof($pa_hits)) { return $pa_hits; }
+			if (!(int)$pn_user_id) { return $pa_hits; }
+			if (!($t_table = $this->opo_datamodel->getInstanceByTableNum($this->opn_browse_table_num, true))) { return $pa_hits; }
+			
+			$vs_table_name = $t_table->tableName();
+			$vs_table_pk = $t_table->primaryKey();
+			
+			$t_user = new ca_users($pn_user_id);
+			if (is_array($va_groups = $t_user->getUserGroups()) && sizeof($va_groups)) {
+				$va_group_ids = array_keys($va_groups);
+				$vs_group_sql = '
+						OR
+						(ca_acl.group_id IN (?))';
+				$va_params = array((int)$this->opn_browse_table_num, (int)$pn_user_id, $va_group_ids);
+			} else {
+				$va_group_ids = null;
+				$vs_group_sql = '';
+				$va_params = array((int)$this->opn_browse_table_num, (int)$pn_user_id);
+			}
+			
+			$o_db = new Db();
+			$qr_sort = $o_db->query($vs_sql = "
+				SELECT ca_acl.acl_id, {$vs_table_name}.{$vs_table_pk}, ca_acl.access
+				FROM {$vs_table_name}
+				INNER JOIN ca_acl ON ca_acl.row_id = {$vs_table_name}.{$vs_table_pk} AND ca_acl.table_num = ?
+				WHERE
+					{$vs_table_name}.{$vs_table_pk} IN (".join(", ", array_keys($pa_hits)).") AND
+					
+					(
+						(ca_acl.user_id = ?)
+						{$vs_group_sql}
+						OR 
+						(ca_acl.user_id IS NULL AND ca_acl.group_id IS NULL)
+					)
+			", $va_params);
+			$va_hits = array();
+			while($qr_sort->nextRow()) {
+				$vn_id = $qr_sort->get($vs_table_pk, array('binary' => true));
+				unset($pa_hits[$vn_id]);
+				if ($qr_sort->get('access', array('binary' => true)) < $pn_access) { continue; }
+				$va_hits[$vn_id] = true;
+			}
+			
+			// For row_ids that have no ACL entry
+			if ($this->opo_config->get('default_item_access_level') >= $pn_access) {
+				// Add row_ids that have no ACL entry because default access meets or exceeds requested access
+				foreach($pa_hits as $vn_id => $vb_dummy) {
+					$va_hits[$vn_id] = true;
+				}
+			}	
+			
+			return $va_hits;
+		}
+		# ------------------------------------------------------------------
+		/**
+		 * @param $pa_hits Array of row_ids to filter. *MUST HAVE row_ids AS KEYS, NOT VALUES*
+		 */
+		public function filterFacetByACL($pn_user_id, $pn_access=__CA_ACL_READONLY_ACCESS__, $pa_options=null) {
+			if (!sizeof($pa_hits)) { return $pa_hits; }
+			if (!(int)$pn_user_id) { return $pa_hits; }
+			if (!($t_table = $this->opo_datamodel->getInstanceByTableNum($this->opn_browse_table_num, true))) { return $pa_hits; }
+			
+			$vs_table_name = $t_table->tableName();
+			$vs_table_pk = $t_table->primaryKey();
+			
+			$t_user = new ca_users($pn_user_id);
+			if (is_array($va_groups = $t_user->getUserGroups()) && sizeof($va_groups)) {
+				$va_group_ids = array_keys($va_groups);
+				$vs_group_sql = '
+						OR
+						(ca_acl.group_id IN (?))';
+				$va_params = array((int)$this->opn_browse_table_num, (int)$pn_user_id, $va_group_ids);
+			} else {
+				$va_group_ids = null;
+				$vs_group_sql = '';
+				$va_params = array((int)$this->opn_browse_table_num, (int)$pn_user_id);
+			}
+			
+			$o_db = new Db();
+			$qr_sort = $o_db->query($vs_sql = "
+				SELECT ca_acl.acl_id, {$vs_table_name}.{$vs_table_pk}, ca_acl.access
+				FROM {$vs_table_name}
+				INNER JOIN ca_acl ON ca_acl.row_id = {$vs_table_name}.{$vs_table_pk} AND ca_acl.table_num = ?
+				WHERE
+					{$vs_table_name}.{$vs_table_pk} IN (".join(", ", array_keys($pa_hits)).") AND
+					
+					(
+						(ca_acl.user_id = ?)
+						{$vs_group_sql}
+						OR 
+						(ca_acl.user_id IS NULL AND ca_acl.group_id IS NULL)
+					)
+			", $va_params);
+			$va_hits = array();
+			while($qr_sort->nextRow()) {
+				$vn_id = $qr_sort->get($vs_table_pk, array('binary' => true));
+				unset($pa_hits[$vn_id]);
+				if ($qr_sort->get('access', array('binary' => true)) < $pn_access) { continue; }
+				$va_hits[$vn_id] = true;
+			}
+			
+			// For row_ids that have no ACL entry
+			if ($this->opo_config->get('default_item_access_level') >= $pn_access) {
+				// Add row_ids that have no ACL entry because default access meets or exceeds requested access
+				foreach($pa_hits as $vn_id => $vb_dummy) {
+					$va_hits[$vn_id] = true;
+				}
+			}	
+			
+			return $va_hits;
 		}
 		# ------------------------------------------------------------------
 		/**

@@ -58,6 +58,7 @@ class BundlableLabelableBaseModelWithAttributes extends LabelableBaseModelWithAt
 	# ------------------------------------------------------
 	public function __construct($pn_id=null) {
 		require_once(__CA_MODELS_DIR__."/ca_editor_uis.php");
+		require_once(__CA_MODELS_DIR__."/ca_acl.php");
 		parent::__construct($pn_id);	# call superclass constructor
 		
 		$this->initLabelDefinitions();
@@ -67,7 +68,16 @@ class BundlableLabelableBaseModelWithAttributes extends LabelableBaseModelWithAt
 	 * Overrides load() to initialize bundle specifications
 	 */
 	public function load ($pm_id=null) {
+		global $AUTH_CURRENT_USER_ID;
+		
 		$vn_rc = parent::load($pm_id);
+		
+		if ($this->getAppConfig()->get('perform_item_level_access_checking')) {
+			if ($this->checkACLAccessForUser(new ca_users($AUTH_CURRENT_USER_ID)) == __CA_ACL_NO_ACCESS__) {
+				$this->clear();
+				return false;
+			}
+		}
 		$this->initLabelDefinitions();
 		
 		return $vn_rc;
@@ -78,6 +88,13 @@ class BundlableLabelableBaseModelWithAttributes extends LabelableBaseModelWithAt
 	 * against the ca_lists list for the table (as defined by getTypeListCode())
 	 */ 
 	public function insert($pa_options=null) {
+		global $AUTH_CURRENT_USER_ID;
+		if ($this->getAppConfig()->get('perform_item_level_access_checking')) {
+			if ($this->checkACLAccessForUser(new ca_users($AUTH_CURRENT_USER_ID)) < __CA_ACL_EDIT_ACCESS__) {
+				$this->postError(2580, _t("You do not have edit access for this item: %1/%2", $this->tableName(), $this->getPrimaryKey()), "BundlableLabelableBaseModelWithAttributes->insert()");
+				return false;
+			}
+		}
 		$vb_we_set_transaction = false;
 		
 		if (!$this->inTransaction()) {
@@ -191,6 +208,13 @@ class BundlableLabelableBaseModelWithAttributes extends LabelableBaseModelWithAt
 	 * Override update() to generate sortable version of user-defined identifier field
 	 */ 
 	public function update($pa_options=null) {
+		global $AUTH_CURRENT_USER_ID;
+		if ($this->getAppConfig()->get('perform_item_level_access_checking')) {
+			if ($this->checkACLAccessForUser(new ca_users($AUTH_CURRENT_USER_ID)) < __CA_ACL_EDIT_ACCESS__) {
+				$this->postError(2580, _t("You do not have edit access for this item: %1/%2", $this->tableName(), $this->getPrimaryKey()), "BundlableLabelableBaseModelWithAttributes->update()");
+				return false;
+			}
+		}
 		$vb_we_set_transaction = false;
 		if (!$this->inTransaction()) {
 			$this->setTransaction(new Transaction($this->getDb()));
@@ -222,6 +246,21 @@ class BundlableLabelableBaseModelWithAttributes extends LabelableBaseModelWithAt
 		if ($vb_we_set_transaction) { $this->removeTransaction($vn_rc); }
 		return $vn_rc;
 	}	
+	# ------------------------------------------------------------------
+	/**
+	 * Check user's item level access before passing delete to lower level libraries
+	 *
+	 */
+	public function delete ($pb_delete_related=false, $pa_options=null, $pa_fields=null, $pa_table_list=null) {
+		global $AUTH_CURRENT_USER_ID;
+		if ($this->getAppConfig()->get('perform_item_level_access_checking')) {
+			if ($this->checkACLAccessForUser(new ca_users($AUTH_CURRENT_USER_ID)) < __CA_ACL_EDIT_DELETE_ACCESS__) {
+				$this->postError(2580, _t("You do not have delete access for this item"), "BundlableLabelableBaseModelWithAttributes->delete()");
+				return false;
+			}
+		}
+		return parent::delete($pb_delete_related, $pa_options, $pa_fields, $pa_table_list);
+	}
 	# ------------------------------------------------------------------
 	/**
 	 * Duplicates record, including labels, attributes and relationships. "Special" bundles - those
@@ -955,6 +994,7 @@ class BundlableLabelableBaseModelWithAttributes extends LabelableBaseModelWithAt
 	 *		config
 	 *		viewPath
 	 *		graphicsPath
+	 *		request
 	 */
 	public function getBundleFormHTML($ps_bundle_name, $ps_placement_code, $pa_bundle_settings, $pa_options) {
 		global $g_ui_locale;
@@ -974,6 +1014,17 @@ class BundlableLabelableBaseModelWithAttributes extends LabelableBaseModelWithAt
 				$pa_bundle_settings['readonly'] = true;
 			}
 		}
+		
+		if ((bool)$this->getAppConfig()->get('perform_item_level_access_checking')) {
+			$vn_item_access = $this->checkACLAccessForUser($pa_options['request']->user);
+			if ($vn_item_access == __CA_ACL_NO_ACCESS__) {
+				return; 
+			}
+			if ($vn_item_access == __CA_ACL_READONLY_ACCESS__) {
+				$pa_bundle_settings['readonly'] = true;
+			}
+		}
+		
 		
 		$va_info = $this->getBundleInfo($ps_bundle_name);
 		if (!($vs_type = $va_info['type'])) { return null; }
@@ -2968,9 +3019,14 @@ class BundlableLabelableBaseModelWithAttributes extends LabelableBaseModelWithAt
  	 *		sort = optional array of bundles to sort returned values on. Currently only supported when getting related values via simple related <table_name> and <table_name>.related invokations. Eg. from a ca_objects results you can use the 'sort' option got get('ca_entities'), get('ca_entities.related') or get('ca_objects.related'). The bundle specifiers are fields with or without tablename. Only those fields returned for the related tables (intrinsics, label fields and attributes) are sortable.
  	 *		showDeleted = if set to true, related items that have been deleted are returned. Default is false.
 	 *		where = optional array of fields and field values to filter returned values on. The fields must be intrinsic and in the same table as the field being "get()'ed" Can be used to filter returned values from primary and related tables. This option can be useful when you want to fetch certain values from a related table. For example, you want to get the relationship source_info values, but only for relationships going to a specific related record. Note that multiple fields/values are effectively AND'ed together - all must match for a row to be returned - and that only equivalence is supported (eg. field equals value).
+ 	 *		user_id = If set item level access control is performed relative to specified user_id, otherwise defaults to logged in user
  	 * @return array - list of related items
  	 */
 	 public function getRelatedItems($pm_rel_table_name_or_num, $pa_options=null) {
+		global $AUTH_CURRENT_USER_ID;
+		$vn_user_id = (isset($pa_options['user_id']) && $pa_options['user_id']) ? $pa_options['user_id'] : (int)$AUTH_CURRENT_USER_ID;
+		$vb_show_if_no_acl = (bool)($this->getAppConfig()->get('default_item_access_level') > __CA_ACL_NO_ACCESS__);
+			
 	 	// convert options
 	 	if(isset($pa_options['restrictToType']) && (!isset($pa_options['restrict_to_type']) || !$pa_options['restrict_to_type'])) { $pa_options['restrict_to_type'] = $pa_options['restrictToType']; }
 	 	if(isset($pa_options['restrictToTypes']) && (!isset($pa_options['restrict_to_types']) || !$pa_options['restrict_to_types'])) { $pa_options['restrict_to_types'] = $pa_options['restrictToTypes']; }
@@ -3039,7 +3095,8 @@ class BundlableLabelableBaseModelWithAttributes extends LabelableBaseModelWithAt
 		
 		$va_wheres = array();
 		$va_selects = array();
-
+		$va_joins_post_add = array();
+		
 		// TODO: get these field names from models
 		if ($t_item_rel) {
 			//define table names
@@ -3144,6 +3201,27 @@ class BundlableLabelableBaseModelWithAttributes extends LabelableBaseModelWithAt
 			}
 		}
 		
+		if ($this->getAppConfig()->get('perform_item_level_access_checking')) {
+			$t_user = new ca_users($vn_user_id, true);
+			if (is_array($va_groups = $t_user->getUserGroups()) && sizeof($va_groups)) {
+				$va_group_ids = array_keys($va_groups);
+			} else {
+				$va_group_ids = array();
+			}
+			
+			// Join to limit what browse table items are used to generate facet
+			$va_joins_post_add[] = 'LEFT JOIN ca_acl ON '.$t_rel_item->tableName().'.'.$t_rel_item->primaryKey().' = ca_acl.row_id AND ca_acl.table_num = '.$t_rel_item->tableNum()."\n";
+			$va_wheres[] = "(
+				((
+					(ca_acl.user_id = ".(int)$vn_user_id.")
+					".((sizeof($va_group_ids) > 0) ? "OR
+					(ca_acl.group_id IN (".join(",", $va_group_ids)."))" : "")."
+					OR
+					(ca_acl.user_id IS NULL and ca_acl.group_id IS NULL)
+				) AND ca_acl.access >= ".__CA_ACL_READONLY_ACCESS__.")
+				".(($vb_show_if_no_acl) ? "OR ca_acl.acl_id IS NULL" : "")."
+			)";
+		}
 				
 		if (is_array($va_get_where)) {
 			foreach($va_get_where as $vs_fld => $vm_val) {
@@ -3244,7 +3322,7 @@ class BundlableLabelableBaseModelWithAttributes extends LabelableBaseModelWithAt
 				$vs_sql = "
 					SELECT ".join(', ', $va_selects)."
 					FROM ".$va_path[0]."
-					".join("\n", $va_joins)."
+					".join("\n", array_merge($va_joins, $va_joins_post_add))."
 					WHERE
 						".join(' AND ', array_merge($va_wheres, array('('.$va_path[1].'.'.$vs_other_field .' IN ('.join(',', $va_row_ids).'))')))."
 					{$vs_order_by}";
@@ -3332,7 +3410,7 @@ class BundlableLabelableBaseModelWithAttributes extends LabelableBaseModelWithAt
 			$vs_sql = "
 				SELECT ".join(', ', $va_selects)."
 				FROM ".$this->tableName()."
-				".join("\n", $va_joins)."
+				".join("\n", array_merge($va_joins, $va_joins_post_add))."
 				WHERE
 					".join(' AND ', $va_wheres)."
 				{$vs_order_by}
@@ -4099,14 +4177,26 @@ $pa_options["display_form_field_tips"] = true;
 	}
 	# --------------------------------------------------------------------------------------------		
 	/**
-	 * 
+	 * Checks access control list for currently loaded row for the specified user and returns an access value. Values are:
+	 *
+	 * __CA_ACL_NO_ACCESS__   (0)
+	 * __CA_ACL_READONLY_ACCESS__ (1)
+     * __CA_ACL_EDIT_ACCESS__ (2)
+     * __CA_ACL_EDIT_DELETE_ACCESS__ (3)
+	 *
+	 * @param ca_users $t_user A ca_users object
+	 * @param int $pn_id Optional row_id to check ACL for; if omitted currently loaded row_id is used
+	 * @return int An access value 
 	 */
-	public function checkACLAccessForUser($t_user) {
-		if (!($vn_id = (int)$this->getPrimaryKey())) { return null; }
-		
+	public function checkACLAccessForUser($t_user, $pn_id=null) {
+		if (!$pn_id) { 
+			$pn_id = (int)$this->getPrimaryKey(); 
+			if (!$pn_id) { return null; }
+		}
+		if ($t_user->canDoAction('is_administrator')) { return __CA_ACL_EDIT_DELETE_ACCESS__; }
 		require_once(__CA_MODELS_DIR__.'/ca_acl.php');
 		
-		return ca_acl::loadACLForRow($t_user, $this->tableNum(), $vn_id);
+		return ca_acl::accessForRow($t_user, $this->tableNum(), $vn_id);
 	}
 	# ------------------------------------------------------
 }

@@ -37,13 +37,15 @@ require_once(__CA_LIB_DIR__."/core/Search/SearchResult.php");
 require_once(__CA_LIB_DIR__."/core/Search/SearchCache.php");
 require_once(__CA_LIB_DIR__."/core/Logging/Searchlog.php");
 require_once(__CA_LIB_DIR__."/core/Utils/Timer.php");
-require_once(__CA_MODELS_DIR__.'/ca_lists.php');
 require_once(__CA_APP_DIR__.'/helpers/accessHelpers.php');
 
 require_once(__CA_LIB_DIR__."/core/Search/Common/Parsers/LuceneSyntaxParser.php");
 require_once(__CA_LIB_DIR__."/core/Zend/Search/Lucene/Search/Query.php");
 require_once(__CA_LIB_DIR__."/core/Zend/Search/Lucene/Search/Query/Boolean.php");
 require_once(__CA_LIB_DIR__."/core/Zend/Search/Lucene/Search/Query/Term.php");
+
+require_once(__CA_MODELS_DIR__.'/ca_lists.php');
+require_once(__CA_MODELS_DIR__.'/ca_acl.php');
 
 # ----------------------------------------------------------------------
 class SearchEngine extends SearchBase {
@@ -110,11 +112,14 @@ class SearchEngine extends SearchBase {
 	 *		showDeleted = if set to true, related items that have been deleted are returned. Default is false.
 	 *		limitToModifiedOn = if set returned results will be limited to rows modified within the specified date range. The value should be a date/time expression parse-able by TimeExpressionParser
 	 *		sets = if value is a list of set_ids, only rows that are members of those sets will be returned
+	 *		user_id = If set item level access control is performed relative to specified user_id, otherwise defaults to logged in user
 	 *
 	 * @return SearchResult Results packages in a SearchResult object, or sub-class of SearchResult if an instance was passed in $po_result
 	 * @uses TimeExpressionParser::parse
 	 */
 	public function &search($ps_search, $po_result=null, $pa_options=null) {
+		global $AUTH_CURRENT_USER_ID;
+		
 		$t = new Timer();
 		if (!is_array($pa_options)) { $pa_options = array(); }
 		$vn_limit = (isset($pa_options['limit']) && ($pa_options['limit'] > 0)) ? (int)$pa_options['limit'] : null;
@@ -203,6 +208,11 @@ class SearchEngine extends SearchBase {
 				$va_hits = $this->filterHitsBySets($va_hits, $pa_options['sets']);
 			}
 			
+			$vn_user_id = (isset($pa_options['user_id']) && (int)$pa_options['user_id']) ?  (int)$pa_options['user_id'] : (int)$AUTH_CURRENT_USER_ID;
+			if ($this->opo_app_config->get('perform_item_level_access_checking')) {
+				$va_hits = $this->filterHitsByACL($va_hits, $vn_user_id, __CA_ACL_READONLY_ACCESS__);
+			}
+			
 			if (isset($pa_options['sort']) && $pa_options['sort'] && ($pa_options['sort'] != '_natural')) {
 				$va_hits = $this->sortHits($va_hits, $pa_options['sort'], (isset($pa_options['sort_direction']) ? $pa_options['sort_direction'] : null));
 			}
@@ -216,15 +226,13 @@ class SearchEngine extends SearchBase {
 			// log search
 			$o_log = new Searchlog();
 			
-			global $AUTH_CURRENT_USER_ID;
-			$vn_search_user_id = $AUTH_CURRENT_USER_ID ? $AUTH_CURRENT_USER_ID : null;
 			$vn_search_form_id = isset($pa_options['form_id']) ? $pa_options['form_id'] : null;
 			$vs_log_details = isset($pa_options['log_details']) ? $pa_options['log_details'] : '';
 			$vs_search_source = isset($pa_options['search_source']) ? $pa_options['search_source'] : '';
 				
 			$vn_execution_time = $t->getTime(4);
 			$o_log->log(array(
-				'user_id' => $vn_search_user_id, 
+				'user_id' => $vn_user_id, 
 				'table_num' => $this->opn_tablenum, 
 				'search_expression' => $ps_search, 
 				'num_hits' => sizeof($va_hit_values), 
@@ -390,6 +398,64 @@ class SearchEngine extends SearchBase {
 		while($qr_sort->nextRow()) {
 			$va_hits[$qr_sort->get($vs_table_pk, array('binary' => true))] = true;
 		}
+		return $va_hits;
+	}
+	# ------------------------------------------------------------------
+	/**
+	 * @param $pa_hits Array of row_ids to filter. *MUST HAVE row_ids AS KEYS, NOT VALUES*
+	 */
+	public function filterHitsByACL($pa_hits, $pn_user_id, $pn_access=__CA_ACL_READONLY_ACCESS__, $pa_options=null) {
+		if (!sizeof($pa_hits)) { return $pa_hits; }
+		if (!(int)$pn_user_id) { $pn_user_id = 0; }
+		if (!($t_table = $this->opo_datamodel->getInstanceByTableNum($this->opn_tablenum, true))) { return $pa_hits; }
+		
+		$vs_table_name = $t_table->tableName();
+		$vs_table_pk = $t_table->primaryKey();
+		
+		$t_user = new ca_users($pn_user_id);
+		if (is_array($va_groups = $t_user->getUserGroups()) && sizeof($va_groups)) {
+			$va_group_ids = array_keys($va_groups);
+			$vs_group_sql = '
+					OR
+					(ca_acl.group_id IN (?))';
+			$va_params = array((int)$this->opn_tablenum, (int)$pn_user_id, $va_group_ids);
+		} else {
+			$va_group_ids = null;
+			$vs_group_sql = '';
+			$va_params = array((int)$this->opn_tablenum, (int)$pn_user_id);
+		}
+		
+		$o_db = new Db();
+		$qr_sort = $o_db->query($vs_sql = "
+			SELECT ca_acl.acl_id, {$vs_table_name}.{$vs_table_pk}, ca_acl.access
+			FROM {$vs_table_name}
+			INNER JOIN ca_acl ON ca_acl.row_id = {$vs_table_name}.{$vs_table_pk} AND ca_acl.table_num = ?
+			WHERE
+				{$vs_table_name}.{$vs_table_pk} IN (".join(", ", array_keys($pa_hits)).") AND
+				
+				(
+					(ca_acl.user_id = ?)
+					{$vs_group_sql}
+					OR 
+					(ca_acl.user_id IS NULL AND ca_acl.group_id IS NULL)
+				)
+		", $va_params);
+		$va_hits = array();
+		while($qr_sort->nextRow()) {
+			$vn_id = $qr_sort->get($vs_table_pk, array('binary' => true));
+			unset($pa_hits[$vn_id]);
+			if ($qr_sort->get('access', array('binary' => true)) < $pn_access) { continue; }
+			$va_hits[$vn_id] = true;
+		}
+		
+		// For row_ids that have no ACL entry
+		if ($this->opo_app_config->get('default_item_access_level') >= $pn_access) {
+			// Add row_ids that have no ACL entry because default access meets or exceeds requested access
+			foreach($pa_hits as $vn_id => $vb_dummy) {
+				$va_hits[$vn_id] = true;
+			}
+		}	
+		
 		return $va_hits;
 	}
 	# ------------------------------------------------------------------
