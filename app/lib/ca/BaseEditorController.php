@@ -97,7 +97,7 @@
  			//
  			// Does user have access to row?
  			//
- 			if ($t_subject->getAppConfig()->get('perform_item_level_access_checking')) {
+ 			if ($t_subject->getAppConfig()->get('perform_item_level_access_checking') && $vn_subject_id) {
  				if ($t_subject->checkACLAccessForUser($this->request->user) == __CA_ACL_NO_ACCESS__) {
  					$this->response->setRedirect($this->request->config->get('error_display_url').'/n/2580?r='.urlencode($this->request->getFullUrlPath()));
  					return;
@@ -218,7 +218,7 @@
  			//
  			// Does user have access to row?
  			//
- 			if ($t_subject->getAppConfig()->get('perform_item_level_access_checking')) {
+ 			if ($t_subject->getAppConfig()->get('perform_item_level_access_checking') && $vn_subject_id) {
  				if ($t_subject->checkACLAccessForUser($this->request->user) < __CA_ACL_EDIT_ACCESS__) {
  					$this->response->setRedirect($this->request->config->get('error_display_url').'/n/2580?r='.urlencode($this->request->getFullUrlPath()));
  					return;
