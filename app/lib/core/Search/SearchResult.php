@@ -561,21 +561,11 @@ class SearchResult extends BaseObject {
 								case 'label':
 								case 'preferred_labels':
 								case $va_path_components['table_name'].'.preferred_labels':
-									$vs_field_val = $va_relation_info['label'];
+									
 									if ($vb_show_hierarachy) {
-										if ($va_ids_by_hier = $this->get($va_path_components['table_name'].'.hierarchy.'.$t_instance->primaryKey(), array_merge($pa_options, array('returnAsArray' => true)))) {
-										
-											$va_vals = array();
-											foreach($va_ids_by_hier as $va_ids) {
-												foreach($va_ids as $vn_id) {
-													if($t_instance->load($vn_id)) {
-														$va_vals[] = $t_instance->get($va_path_components['table_name'].".preferred_labels", $pa_options);
-													}
-												}
-											}
-											
-											$vs_field_val = join($vb_show_hierarachy ? $vs_hierarchical_delimiter : $vs_delimiter, $va_vals);
-										}
+										$vs_field_val = $qr_rel_items->get($va_path_components['table_name'].'.hierarchy.preferred_labels', array_merge($pa_options, array('delimiter' => $vs_hierarchical_delimiter)));
+									} else {
+										$vs_field_val = $va_relation_info['label'];
 									}
 									$vs_value = str_replace("^{$vs_tag}", $vs_field_val, $vs_value);
 									break;

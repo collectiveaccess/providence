@@ -34,6 +34,7 @@
    *
    */
 require_once(__CA_MODELS_DIR__.'/ca_commerce_transactions.php');
+require_once(__CA_MODELS_DIR__.'/ca_sets.php');
 require_once(__CA_LIB_DIR__.'/core/Parsers/TimeExpressionParser.php');
 require_once(__CA_LIB_DIR__.'/ca/Search/CommerceOrderSearch.php');
 require_once(__CA_LIB_DIR__.'/core/Payment.php');
@@ -623,7 +624,7 @@ class ca_commerce_orders extends BaseModel {
 	 */
 	public function sendStatusChangeEmailNotification($pn_old_status, $pn_old_ship_date, $pn_old_shipped_on_date) {
 		global $g_request;
-		if (!$g_request) { return null; }
+		$vn_user_id = is_object($g_request) ? $g_request->getUserID() : null;
 		
 		$vb_status_has_changed = (($vs_status = $this->get('order_status')) != $pn_old_status) ? true : false;
 		$vb_shipping_has_changed = (($this->get('shipped_on_date', array('GET_DIRECT_DATE' => true)) != $pn_old_shipped_on_date) || ($this->get('shipping_date', array('GET_DIRECT_DATE' => true)) != $pn_old_ship_date)) ? true : false;
@@ -652,35 +653,34 @@ class ca_commerce_orders extends BaseModel {
 		if ($vb_status_has_changed) {	// has status changed?
 			$va_admin_addresses = null;
 			if (in_array($vs_status, $va_administrative_email_on_order_status)) { $va_admin_addresses = $va_administrative_email_addresses; }
-			
 			switch($vs_status) {
 				case 'SUBMITTED':
 					$vs_subject = _t('Your order posted on %1 has been received', $vs_order_date);
-					caSendMessageUsingView($g_request, $vs_to_email, $vs_sender_email, "[{$vs_app_name}] {$vs_subject}", "commerce_order_status_submitted.tpl", array('subject' => $vs_subject, 'from_user_id' => $g_request->getUserID(), 'sender_name' => $vs_sender_name, 'sender_email' => $vs_sender_email, 'sent_on' => time(), 'login_url' => $vs_login_url, 't_order' => $this), null, $va_admin_addresses);
+					caSendMessageUsingView($g_request, $vs_to_email, $vs_sender_email, "[{$vs_app_name}] {$vs_subject}", "commerce_order_status_submitted.tpl", array('subject' => $vs_subject, 'from_user_id' => $vn_user_id, 'sender_name' => $vs_sender_name, 'sender_email' => $vs_sender_email, 'sent_on' => time(), 'login_url' => $vs_login_url, 't_order' => $this), null, $va_admin_addresses);
 					break;
 				case 'AWAITING_PAYMENT':
 					$vs_subject = _t('Your order (%2) posted on %1 requires payment', $vs_order_date, $this->getOrderNumber());
-					caSendMessageUsingView($g_request, $vs_to_email, $vs_sender_email, "[{$vs_app_name}] {$vs_subject}", "commerce_order_status_awaiting_payment.tpl", array('subject' => $vs_subject, 'from_user_id' => $g_request->getUserID(), 'sender_name' => $vs_sender_name, 'sender_email' => $vs_sender_email, 'sent_on' => time(), 'login_url' => $vs_login_url, 't_order' => $this), null, $va_admin_addresses);
+					caSendMessageUsingView($g_request, $vs_to_email, $vs_sender_email, "[{$vs_app_name}] {$vs_subject}", "commerce_order_status_awaiting_payment.tpl", array('subject' => $vs_subject, 'from_user_id' => $vn_user_id, 'sender_name' => $vs_sender_name, 'sender_email' => $vs_sender_email, 'sent_on' => time(), 'login_url' => $vs_login_url, 't_order' => $this), null, $va_admin_addresses);
 					break;
 				case 'PROCESSED_AWAITING_DIGITIZATION':
 					$vs_subject = _t('Payment for order (%2) posted on %1 has been processed; your downloads are now pending digitization of purchased items', $vs_order_date, $this->getOrderNumber());
-					caSendMessageUsingView($g_request, $vs_to_email, $vs_sender_email, "[{$vs_app_name}] {$vs_subject}", "commerce_order_status_processed_awaiting_digitization.tpl", array('subject' => $vs_subject, 'from_user_id' => $g_request->getUserID(), 'sender_name' => $vs_sender_name, 'sender_email' => $vs_sender_email, 'sent_on' => time(), 'login_url' => $vs_login_url, 't_order' => $this), null, $va_admin_addresses);
+					caSendMessageUsingView($g_request, $vs_to_email, $vs_sender_email, "[{$vs_app_name}] {$vs_subject}", "commerce_order_status_processed_awaiting_digitization.tpl", array('subject' => $vs_subject, 'from_user_id' => $vn_user_id, 'sender_name' => $vs_sender_name, 'sender_email' => $vs_sender_email, 'sent_on' => time(), 'login_url' => $vs_login_url, 't_order' => $this), null, $va_admin_addresses);
 					break;
 				case 'PROCESSED_AWAITING_MEDIA_ACCESS':
 					$vs_subject = _t('Payment for order (%2) posted on %1 has been processed; your downloads are now pending digitization of transfer of media to the server', $vs_order_date, $this->getOrderNumber());
-					caSendMessageUsingView($g_request, $vs_to_email, $vs_sender_email, "[{$vs_app_name}] {$vs_subject}", "commerce_order_status_processed_awaiting_media_access.tpl", array('subject' => $vs_subject, 'from_user_id' => $g_request->getUserID(), 'sender_name' => $vs_sender_name, 'sender_email' => $vs_sender_email, 'sent_on' => time(), 'login_url' => $vs_login_url, 't_order' => $this), null, $va_admin_addresses);
+					caSendMessageUsingView($g_request, $vs_to_email, $vs_sender_email, "[{$vs_app_name}] {$vs_subject}", "commerce_order_status_processed_awaiting_media_access.tpl", array('subject' => $vs_subject, 'from_user_id' => $vn_user_id, 'sender_name' => $vs_sender_name, 'sender_email' => $vs_sender_email, 'sent_on' => time(), 'login_url' => $vs_login_url, 't_order' => $this), null, $va_admin_addresses);
 					break;
 				case 'PROCESSED':
 					$vs_subject = _t('Payment for order (%2) posted on %1 has been processed', $vs_order_date, $this->getOrderNumber());
-					caSendMessageUsingView($g_request, $vs_to_email, $vs_sender_email, "[{$vs_app_name}] {$vs_subject}", "commerce_order_status_processed.tpl", array('subject' => $vs_subject, 'from_user_id' => $g_request->getUserID(), 'sender_name' => $vs_sender_name, 'sender_email' => $vs_sender_email, 'sent_on' => time(), 'login_url' => $vs_login_url, 't_order' => $this), null, $va_admin_addresses);
+					caSendMessageUsingView($g_request, $vs_to_email, $vs_sender_email, "[{$vs_app_name}] {$vs_subject}", "commerce_order_status_processed.tpl", array('subject' => $vs_subject, 'from_user_id' => $vn_user_id, 'sender_name' => $vs_sender_name, 'sender_email' => $vs_sender_email, 'sent_on' => time(), 'login_url' => $vs_login_url, 't_order' => $this), null, $va_admin_addresses);
 					break;
 				case 'COMPLETED':
 					$vs_subject = _t('Your order (%2) posted on %1 is complete', $vs_order_date, $this->getOrderNumber());
-					caSendMessageUsingView($g_request, $vs_to_email, $vs_sender_email, "[{$vs_app_name}] {$vs_subject}", "commerce_order_status_completed.tpl", array('subject' => $vs_subject, 'from_user_id' => $g_request->getUserID(), 'sender_name' => $vs_sender_name, 'sender_email' => $vs_sender_email, 'sent_on' => time(), 'login_url' => $vs_login_url, 't_order' => $this), null, $va_admin_addresses);
+					caSendMessageUsingView($g_request, $vs_to_email, $vs_sender_email, "[{$vs_app_name}] {$vs_subject}", "commerce_order_status_completed.tpl", array('subject' => $vs_subject, 'from_user_id' => $vn_user_id, 'sender_name' => $vs_sender_name, 'sender_email' => $vs_sender_email, 'sent_on' => time(), 'login_url' => $vs_login_url, 't_order' => $this), null, $va_admin_addresses);
 					break;
 				case 'REOPENED':
 					$vs_subject = _t('Order (%2) posted on %1 has been reopened', $vs_order_date, $this->getOrderNumber());
-					caSendMessageUsingView($g_request, $vs_to_email, $vs_sender_email, "[{$vs_app_name}] {$vs_subject}", "commerce_order_status_reopened.tpl", array('subject' => $vs_subject, 'from_user_id' => $g_request->getUserID(), 'sender_name' => $vs_sender_name, 'sender_email' => $vs_sender_email, 'sent_on' => time(), 'login_url' => $vs_login_url, 't_order' => $this), null, $va_admin_addresses);
+					caSendMessageUsingView($g_request, $vs_to_email, $vs_sender_email, "[{$vs_app_name}] {$vs_subject}", "commerce_order_status_reopened.tpl", array('subject' => $vs_subject, 'from_user_id' => $vn_user_id, 'sender_name' => $vs_sender_name, 'sender_email' => $vs_sender_email, 'sent_on' => time(), 'login_url' => $vs_login_url, 't_order' => $this), null, $va_admin_addresses);
 					break;
 			}
 		} else {
@@ -692,14 +692,14 @@ class ca_commerce_orders extends BaseModel {
 				if (($vn_shipped_on_date > 0) && ($vn_shipped_on_date != $pn_old_shipped_on_date)) {
 					// Notify client that package has shipped
 					$vs_subject = _t('Order (%2) posted on %1 has shipped', $vs_order_date, $this->getOrderNumber());
-					caSendMessageUsingView($g_request, $vs_to_email, $vs_sender_email, "[{$vs_app_name}] {$vs_subject}", "commerce_order_shipped.tpl", array('subject' => $vs_subject, 'from_user_id' => $g_request->getUserID(), 'sender_name' => $vs_sender_name, 'sender_email' => $vs_sender_email, 'sent_on' => time(), 'login_url' => $vs_login_url, 't_order' => $this));
+					caSendMessageUsingView($g_request, $vs_to_email, $vs_sender_email, "[{$vs_app_name}] {$vs_subject}", "commerce_order_shipped.tpl", array('subject' => $vs_subject, 'from_user_id' => $vn_user_id, 'sender_name' => $vs_sender_name, 'sender_email' => $vs_sender_email, 'sent_on' => time(), 'login_url' => $vs_login_url, 't_order' => $this));
 					return true;
 				}
 				
 				if (($vn_ship_date > 0) && ($vn_ship_date != $pn_old_ship_date)) {
 					// Notify client that package has been schedule for shipping
 					$vs_subject = _t('Order (%2) posted on %1 has been scheduled for shipping', $vs_order_date, $this->getOrderNumber());
-					caSendMessageUsingView($g_request, $vs_to_email, $vs_sender_email, "[{$vs_app_name}] {$vs_subject}", "commerce_order_will_ship_on.tpl", array('subject' => $vs_subject, 'from_user_id' => $g_request->getUserID(), 'sender_name' => $vs_sender_name, 'sender_email' => $vs_sender_email, 'sent_on' => time(), 'login_url' => $vs_login_url, 't_order' => $this));
+					caSendMessageUsingView($g_request, $vs_to_email, $vs_sender_email, "[{$vs_app_name}] {$vs_subject}", "commerce_order_will_ship_on.tpl", array('subject' => $vs_subject, 'from_user_id' => $vn_user_id, 'sender_name' => $vs_sender_name, 'sender_email' => $vs_sender_email, 'sent_on' => time(), 'login_url' => $vs_login_url, 't_order' => $this));
 					return true;
 				}
 			}
