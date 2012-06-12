@@ -4196,7 +4196,7 @@ $pa_options["display_form_field_tips"] = true;
 		if ($t_user->canDoAction('is_administrator')) { return __CA_ACL_EDIT_DELETE_ACCESS__; }
 		require_once(__CA_MODELS_DIR__.'/ca_acl.php');
 		
-		return ca_acl::accessForRow($t_user, $this->tableNum(), $vn_id);
+		return ca_acl::accessForRow($t_user, $this->tableNum(), $pn_id);
 	}
 	# ------------------------------------------------------
 }
