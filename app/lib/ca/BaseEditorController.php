@@ -214,6 +214,16 @@
  				$this->response->setRedirect($this->request->config->get('error_display_url').'/n/2560?r='.urlencode($this->request->getFullUrlPath()));
  				return;
  			}
+ 			
+ 			//
+ 			// Does user have access to row?
+ 			//
+ 			if ($t_subject->getAppConfig()->get('perform_item_level_access_checking')) {
+ 				if ($t_subject->checkACLAccessForUser($this->request->user) < __CA_ACL_EDIT_ACCESS__) {
+ 					$this->response->setRedirect($this->request->config->get('error_display_url').'/n/2580?r='.urlencode($this->request->getFullUrlPath()));
+ 					return;
+ 				}
+ 			}
  				
  			if($vn_above_id) {
  				// Convert "above" id (the id of the record we're going to make the newly created record parent of
@@ -360,6 +370,16 @@
  				$vs_type_name = $t_subject->getProperty('NAME_SINGULAR');
  			}
  			
+ 			//
+ 			// Does user have access to row?
+ 			//
+ 			if ($t_subject->getAppConfig()->get('perform_item_level_access_checking')) {
+ 				if ($t_subject->checkACLAccessForUser($this->request->user) < __CA_ACL_EDIT_DELETE_ACCESS__) {
+ 					$this->response->setRedirect($this->request->config->get('error_display_url').'/n/2580?r='.urlencode($this->request->getFullUrlPath()));
+ 					return;
+ 				}
+ 			}
+ 			
  			// get parent_id, if it exists, prior to deleting so we can
  			// set the browse_last_id parameter to something sensible
  			$vn_parent_id = null;
@@ -473,6 +493,16 @@
  				return;
  			}
  			
+ 			//
+ 			// Does user have access to row?
+ 			//
+ 			if ($t_subject->getAppConfig()->get('perform_item_level_access_checking')) {
+ 				if ($t_subject->checkACLAccessForUser($this->request->user) == __CA_ACL_NO_ACCESS__) {
+ 					$this->response->setRedirect($this->request->config->get('error_display_url').'/n/2580?r='.urlencode($this->request->getFullUrlPath()));
+ 					return;
+ 				}
+ 			}
+ 			
  			$t_display = new ca_bundle_displays();
  			$va_displays = $t_display->getBundleDisplays(array('table' => $t_subject->tableNum(), 'user_id' => $this->request->getUserID(), 'access' => __CA_BUNDLE_DISPLAY_READ_ACCESS__));
  			
@@ -541,6 +571,16 @@
  			if (is_array($va_restrict_to_types) && !in_array($t_subject->get('type_id'), $va_restrict_to_types)) {
  				$this->response->setRedirect($this->request->config->get('error_display_url').'/n/2560?r='.urlencode($this->request->getFullUrlPath()));
  				return;
+ 			}
+ 			
+ 			//
+ 			// Does user have access to row?
+ 			//
+ 			if ($t_subject->getAppConfig()->get('perform_item_level_access_checking')) {
+ 				if ($t_subject->checkACLAccessForUser($this->request->user) == __CA_ACL_NO_ACCESS__) {
+ 					$this->response->setRedirect($this->request->config->get('error_display_url').'/n/2580?r='.urlencode($this->request->getFullUrlPath()));
+ 					return;
+ 				}
  			}
  			
  			
@@ -625,6 +665,16 @@
  				return;
  			}
  			
+ 			//
+ 			// Does user have access to row?
+ 			//
+ 			if ($t_subject->getAppConfig()->get('perform_item_level_access_checking')) {
+ 				if ($t_subject->checkACLAccessForUser($this->request->user) == __CA_ACL_NO_ACCESS__) {
+ 					$this->response->setRedirect($this->request->config->get('error_display_url').'/n/2580?r='.urlencode($this->request->getFullUrlPath()));
+ 					return;
+ 				}
+ 			}
+ 			
  			$this->render('log_html.php');
  		}
  		# -------------------------------------------------------
@@ -647,6 +697,16 @@
  			if (is_array($va_restrict_to_types) && !in_array($t_subject->get('type_id'), $va_restrict_to_types)) {
  				$this->response->setRedirect($this->request->config->get('error_display_url').'/n/2560?r='.urlencode($this->request->getFullUrlPath()));
  				return;
+ 			}
+ 			
+ 			//
+ 			// Does user have access to row?
+ 			//
+ 			if ($t_subject->getAppConfig()->get('perform_item_level_access_checking')) {
+ 				if ($t_subject->checkACLAccessForUser($this->request->user) == __CA_ACL_NO_ACCESS__) {
+ 					$this->response->setRedirect($this->request->config->get('error_display_url').'/n/2580?r='.urlencode($this->request->getFullUrlPath()));
+ 					return;
+ 				}
  			}
  			
  			if ((!$this->request->user->canDoAction('can_change_acl_'.$t_subject->tableName()))) { 
@@ -777,6 +837,16 @@
  			list($vn_subject_id, $t_subject) = $this->_initView();
  			if (!($pn_value_id = $this->request->getParameter('value_id', pInteger))) { return; }
  			
+ 			//
+ 			// Does user have access to row?
+ 			//
+ 			if ($t_subject->getAppConfig()->get('perform_item_level_access_checking')) {
+ 				if ($t_subject->checkACLAccessForUser($this->request->user) == __CA_ACL_NO_ACCESS__) {
+ 					$this->response->setRedirect($this->request->config->get('error_display_url').'/n/2580?r='.urlencode($this->request->getFullUrlPath()));
+ 					return;
+ 				}
+ 			}
+ 			
  			$o_view = new View($this->request, $this->request->getViewsDirectoryPath().'/bundles/');
  			
  			// TODO: check that file is part of item user has access rights for
@@ -811,6 +881,16 @@
  			list($vn_subject_id, $t_subject) = $this->_initView($pa_options);
  			if (!($pn_value_id = $this->request->getParameter('value_id', pInteger))) { return; }
  			$ps_version = $this->request->getParameter('version', pString);
+ 			
+ 			//
+ 			// Does user have access to row?
+ 			//
+ 			if ($t_subject->getAppConfig()->get('perform_item_level_access_checking')) {
+ 				if ($t_subject->checkACLAccessForUser($this->request->user) == __CA_ACL_NO_ACCESS__) {
+ 					$this->response->setRedirect($this->request->config->get('error_display_url').'/n/2580?r='.urlencode($this->request->getFullUrlPath()));
+ 					return;
+ 				}
+ 			}
  			
  			// TODO: check that file is part of item user has access rights for
  			$t_attr_val = new ca_attribute_values($pn_value_id);
