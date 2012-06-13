@@ -429,12 +429,12 @@ class WLPlugMediaImageMagick Extends WLPlug Implements IWLPlugMedia {
 				$this->handle = "";
 				$this->filepath = "";
 				
+				$this->metadata = array();
 				
 				$handle = $this->_imageMagickRead($filepath);
 				if ($handle) {
 					$this->handle = $handle;
 					$this->filepath = $filepath;
-					$this->metadata = array();
 					
 					# load image properties
 					$this->properties["width"] = $this->handle['width'];
