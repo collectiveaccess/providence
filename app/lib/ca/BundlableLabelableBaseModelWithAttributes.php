@@ -4123,6 +4123,8 @@ $pa_options["display_form_field_tips"] = true;
 		$vn_access = 0;
 		if ($t_acl->load(array('group_id' => null, 'user_id' => null, 'table_num' => $this->tableNum(), 'row_id' => $this->getPrimaryKey()))) {		// try to load existing record
 			$vn_access = $t_acl->get('access');
+		} else {
+			$vn_access = $this->getAppConfig()->get('default_item_access_level');
 		}
 		
 		$o_view->setVar('t_instance', $this);
