@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2009-2011 Whirl-i-Gig
+ * Copyright 2009-2012 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -36,6 +36,6 @@
 	header("Cache-control: private");
 	
 	header("Content-Disposition: attachment; filename=".$this->getVar('version_download_name'));
-	ob_end_flush();	// need to do this in order to not have read file use request memory due to buffering
+	while(ob_get_level() > 0) { ob_end_flush(); }	// need to do this in order to not have read file use request memory due to buffering
 	readfile($vs_file_path);
 ?>
