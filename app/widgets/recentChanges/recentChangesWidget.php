@@ -123,7 +123,10 @@
 					_t('Objects') => 'ca_objects',
 					_t('Entities') => 'ca_entities',
 					_t('Places') => 'ca_places',
-					_t('Collections') => 'ca_collections'
+					_t('Occurrences') => 'ca_occurrences',
+					_t('Collections') => 'ca_collections',
+					_t('Loans') => 'ca_loans',
+					_t('Movements') => 'ca_movements',
 				),
 				'label' => _t('Display mode'),
 				'description' => _t('Type of changes to display')
