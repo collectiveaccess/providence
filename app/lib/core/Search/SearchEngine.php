@@ -1188,6 +1188,11 @@ class SearchEngine extends SearchBase {
 			$vs_type_restriction_sql = ' AND n.type_id IN ('.join(',', $va_types).')';
 		}
 		
+		$vs_delete_sql = '';
+		if ($t_instance->hasField('deleted')) {
+			$vs_delete_sql = ' AND (deleted = 0)';
+		}
+		
 		$o_db = new Db();
 		$qr_res = $o_db->query("
 			SELECT n.{$vs_pk}, l.{$vs_label_display_field}, l.locale_id, n.type_id
@@ -1198,6 +1203,7 @@ class SearchEngine extends SearchBase {
 				{$vs_is_preferred_sql}
 				{$vs_check_access_sql}
 				{$vs_type_restriction_sql}
+				{$vs_delete_sql}
 			{$vs_limit_sql}
 		");
 		$va_hits = array();
