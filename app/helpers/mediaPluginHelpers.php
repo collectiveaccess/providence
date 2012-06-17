@@ -244,7 +244,7 @@
 	 */
 	function caExtractMetadataWithMediaInfo($ps_mediainfo_path,$ps_filepath){
 		if (!trim($ps_mediainfo_path) || (preg_match("/[^\/A-Za-z0-9\.:]+/", $ps_mediainfo_path)) || !file_exists($ps_mediainfo_path)) { return false; }
-		exec($ps_mediainfo_path." ".$ps_filepath,$va_output,$vn_return);
+		exec($ps_mediainfo_path." ".caEscapeShellArg($ps_filepath),$va_output,$vn_return);
 		$vs_cat = "GENERIC";
 		$va_return = array();
 		foreach($va_output as $vs_line){

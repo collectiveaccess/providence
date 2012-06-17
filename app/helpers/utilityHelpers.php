@@ -1134,4 +1134,14 @@ function caFileIsIncludable($ps_file) {
 		return null;
 	}
 	# ---------------------------------------
+	/**
+	 * Escape argument for use with exec()
+	 *
+	 * @param string parameter value
+	 * @return string escaped parameter value, surrounded with single quotes and ready for use
+	 */
+	function caEscapeShellArg($ps_text) {
+		return escapeshellarg($ps_text);
+	}
+	# ---------------------------------------
 ?>
