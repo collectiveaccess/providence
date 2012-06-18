@@ -3726,14 +3726,17 @@ $pa_options["display_form_field_tips"] = true;
 	 */
 	static public function createResultSet($pa_ids) {
 		if (!is_array($pa_ids) || !sizeof($pa_ids)) { return null; }
-		$pn_table_num = $this->getAppDataModel()->getTableNum(get_called_class());
-		if (!($t_instance = $this->getAppDataModel()->getInstanceByTableNum($pn_table_num))) { return null; }
+		$o_dm = Datamodel::load();
+		$pn_table_num = $o_dm->getTableNum(get_called_class());
+		if (!($t_instance = $o_dm->getInstanceByTableNum($pn_table_num))) { return null; }
 	
 		if (!($vs_search_result_class = $t_instance->getProperty('SEARCH_RESULT_CLASSNAME'))) { return null; }
 		require_once(__CA_LIB_DIR__.'/ca/Search/'.$vs_search_result_class.'.php');
 		$o_data = new WLPlugSearchEngineCachedResult($pa_ids, array(), $t_instance->primaryKey());
 		$o_res = new $vs_search_result_class();
 		$o_res->init($t_instance->tableNum(), $o_data, array());
+		
+		return $o_res;
 	}
 	# --------------------------------------------------------------------------------------------
 	# Access control lists
