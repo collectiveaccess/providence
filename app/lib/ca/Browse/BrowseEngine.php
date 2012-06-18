@@ -1882,16 +1882,30 @@
 						$va_values = array();
 						
 						$vn_element_type = $t_element->get('datatype');
-						
 						$va_list_items = null;
+						
+						
+						$va_suppress_values = null;
+						if ($va_facet_info['suppress'] && !is_array($va_facet_info['suppress'])) {
+							$va_facet_info['suppress'] = array($va_facet_info['suppress']);
+						}
 						if ($vn_element_type == 3) { // list
 							$t_list = new ca_lists();
 							$va_list_items = caExtractValuesByUserLocale($t_list->getItemsForList($t_element->get('list_id')));
+							
+							if (isset($va_facet_info['suppress']) && is_array($va_facet_info['suppress'])) {
+								$va_suppress_values = ca_lists::getItemIDsFromList($t_element->get('list_id'), $va_facet_info['suppress']);
+							}
+						} else {
+							if (isset($va_facet_info['suppress']) && is_array($va_facet_info['suppress'])) {
+								$va_suppress_values = $va_facet_info['suppress'];
+							}
 						}
 						
 						while($qr_res->nextRow()) {
 							$o_attr = Attribute::getValueInstance($vn_element_type, $qr_res->getRow());
 							if (!($vs_val = trim($o_attr->getDisplayValue()))) { continue; }
+							if (is_array($va_suppress_values) && (in_array($vs_val, $va_suppress_values))) { continue; }
 							switch($vn_element_type) {
 								case 3:	// list
 									if ($va_criteria[$vs_val]) { continue; }		// skip items that are used as browse critera - don't want to browse on something you're already browsing on
