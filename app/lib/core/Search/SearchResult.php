@@ -618,7 +618,7 @@ class SearchResult extends BaseObject {
 				$vb_get_preferred_labels_only = ($va_path_components['field_name'] == 'preferred_labels') ? true : false;
 				$vb_get_nonpreferred_labels_only = ($va_path_components['field_name'] == 'nonpreferred_labels') ? true : false;
 				
-				if ($va_path_components['num_components'] == 2) {
+				if ($va_path_components['num_components'] == 2) {	// if it's just <table_name>.preferred_labels then return an array of fields from the label table
 					$vb_return_all_label_values = true;
 				}
 				
@@ -1068,7 +1068,7 @@ class SearchResult extends BaseObject {
 								
 								// do we need to translate foreign key and choice list codes to display text?
 								$t_instance = $this->opo_datamodel->getInstanceByTableName($va_path_components['table_name'], true);
-								$vs_prop = ($vb_return_all_label_values) ? $va_value[$t_instance->getProperty('LABEL_DISPLAY_FIELD')] : $va_value[$va_path_components['field_name']];
+								$vs_prop = ($vb_return_all_label_values) ? $va_value : $va_value[$va_path_components['field_name']];
 								
 								if ($vb_get_relationship_typename) {
 									if (!$t_rel_type) { $t_rel_type = $this->opo_datamodel->getInstanceByTableName('ca_relationship_types', true); }
