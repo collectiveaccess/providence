@@ -128,11 +128,11 @@
  		# ------------------------------------------------------------------
  		public function loadTypeSpecificValueFromRow($pa_value_array) {
  			$this->ops_text_value = $pa_value_array['value_longtext1'];
- 			$this->opn_duration = $pa_value_array['value_decimal1'];
+ 			$this->opn_duration = (float)$pa_value_array['value_decimal1'];
  		}
  		# ------------------------------------------------------------------
 		public function getDisplayValue($pa_options=null) {
-			if (!(float)$this->opn_duration) { return ''; }
+			if (!strlen($this->opn_duration)) { return ''; }
 			$o_tcp = new TimecodeParser();
 			$o_tcp->setParsedValueInSeconds($this->opn_duration);
 			
@@ -153,13 +153,13 @@
  			);
  			
  			$o_tcp = new TimecodeParser();
-			if ($ps_value) {
-				if (!$o_tcp->parse($ps_value)) { 
+			if (strlen($ps_value)) {
+				if ($o_tcp->parse($ps_value) === false) { 
 					// invalid timecode
 					$this->postError(1970, _t('%1 is invalid', $pa_element_info['displayLabel']), 'TimecodeAttributeValue->parseValue()');
 					return false;
 				}
-				$vn_seconds = $o_tcp->getParsedValueInSeconds();
+				$vn_seconds = (float)$o_tcp->getParsedValueInSeconds();
 				
 			} else {
 				if (isset($va_settings['requireValue']) && $va_settings['requireValue']) {
