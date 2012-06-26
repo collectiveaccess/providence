@@ -369,7 +369,7 @@ class SearchResult extends BaseObject {
 	 *		template = formats attribute values; precede element codes with a caret ("^"). Eg. "^address1<br/>^city, ^state ^postalcode ^country"; only used when returnAsArray is false and a scalar is therefore to be returned.
 	 *		delimiter = 
 	 *		returnAllLocales = 
-	 *		convertCodesToDisplayText = if true then list_ids are automatically converted to display text in the current locale; default is false (return list_ids raw)
+	 *		convertCodesToDisplayText = if true then item_ids are automatically converted to display text in the current locale; default is false (return item_ids raw)
 	 *
 	 * 		restrict_to_type = restricts returned items to those of the specified type; only supports a single type which can be specified as a list item_code or item_id
  	 *		restrictToType = synonym for restrict_to_type

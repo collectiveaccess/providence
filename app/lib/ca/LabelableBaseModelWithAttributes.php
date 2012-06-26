@@ -291,12 +291,14 @@
  		 *		checkAccess = array of access values to filter results by; if defined only items with the specified access code(s) are returned. Only supported for <table_name>.hierarchy.preferred_labels and <table_name>.children.preferred_labels because these returns sets of items. For <table_name>.parent.preferred_labels, which returns a single row at most, you should do access checking yourself. (Everything here applies equally to nonpreferred_labels)
  	 	 *		sort = optional bundles to sort returned values on. Only supported for <table_name>.children.preferred_labels. The bundle specifiers are fields with or without tablename.
  	 	 *		sort_direction = direction to sort results by, either 'asc' for ascending order or 'desc' for descending order; default is 'asc'
+ 	 	 *		convertCodesToDisplayText = if true then non-preferred label type_ids are automatically converted to display text in the current locale; default is false (return non-preferred label type_id raw)
  	 	 */
 		public function get($ps_field, $pa_options=null) {
 			$vs_template = 				(isset($pa_options['template'])) ? $pa_options['template'] : null;
 			$vb_return_as_array = 		(isset($pa_options['returnAsArray'])) ? (bool)$pa_options['returnAsArray'] : false;
 			$vb_return_all_locales =	(isset($pa_options['returnAllLocales'])) ? (bool)$pa_options['returnAllLocales'] : false;
 			$vs_delimiter =				(isset($pa_options['delimiter'])) ? $pa_options['delimiter'] : ' ';
+			$vb_convert_codes_to_display_text = (isset($pa_options['convertCodesToDisplayText'])) ? (bool)$pa_options['convertCodesToDisplayText'] : false;
 			if ($vb_return_all_locales && !$vb_return_as_array) { $vb_return_as_array = true; }
 		
 			// if desired try to return values in a preferred language/locale
@@ -554,10 +556,20 @@
 									}
 									$va_labels = caExtractValuesByUserLocale($t_instance->getNonPreferredLabels(), null, $va_preferred_locales);
 									
+									$t_list = new ca_lists();
+									
+									if ($vb_convert_codes_to_display_text) {
+										$va_types = $t_list->getItemsForList($this->getLabelTableInstance()->getFieldInfo('type_id', 'LIST_CODE'), array('extractValuesByUserLocale' => true));
+									}
+									
 									$va_values = array();
 									foreach($va_labels as $vn_row_id => $va_label_list) {
 										foreach($va_label_list as $vn_i => $va_label) {
-											$va_values[] = $va_label[$vs_disp_field];
+											if ($vb_convert_codes_to_display_text && ($vs_disp_field == 'type_id')) {
+												$va_values[] = $va_types[$va_label[$vs_disp_field]]['name_singular'];
+											} else {
+												$va_values[] = $va_label[$vs_disp_field];
+											}
 										}
 									}
 									return join($vs_delimiter, $va_values);
