@@ -11,6 +11,7 @@ You were sent the following message by <em><?php print $this->getVar('sender_nam
 <?php 
 	if ($vb_requires_download) {
 ?>
+
 	Some of your order requires transfer of media to the server. You will be informed by email when your items are ready for download. Note that transfer may take up to 24 hours.
 <?php
 	}
