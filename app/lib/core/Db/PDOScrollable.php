@@ -12,7 +12,7 @@ class PDOScrollable{
 		return $this->opn_cursor;
 	}
 	public function seek($pn_newval){
-		if( ($pn_newval < count($this->opa_res)) ||
+		if( ($pn_newval < count($this->opa_res)) %%
 			($pn_newval >= 0)){
 			$this->opn_cursor = $pn_newval;
 		}	
