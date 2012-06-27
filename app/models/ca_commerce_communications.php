@@ -60,6 +60,17 @@ BaseModel::$s_ca_models_definitions['ca_commerce_communications'] = array(
 				'DEFAULT' => '',
 				'LABEL' => _t('Transaction'), 'DESCRIPTION' => _t('Indicates the transaction to which the communication belongs.')
 		),
+		'communication_type' => array(
+				'FIELD_TYPE' => FT_TEXT, 'DISPLAY_TYPE' => DT_SELECT,
+				'DISPLAY_WIDTH' => "120px", 'DISPLAY_HEIGHT' => 1,
+				'IS_NULL' => false, 
+				'DEFAULT' => 'O',
+				'LABEL' => _t('Communication type'), 'DESCRIPTION' => _t('Indicates whether communication relates is a library loan or sale.'),
+				'BOUNDS_CHOICE_LIST' => array(
+					_t('sales order') => 'O',							
+					_t('library loan') => 'L'
+				)
+		),
 		'from_user_id' => array(
 				'FIELD_TYPE' => FT_NUMBER, 'DISPLAY_TYPE' => DT_HIDDEN, 
 				'DISPLAY_WIDTH' => 40, 'DISPLAY_HEIGHT' => 1,

@@ -76,6 +76,17 @@ BaseModel::$s_ca_models_definitions['ca_commerce_orders'] = array(
 					_t('reopened') => 'REOPENED'					// order reopened due to issue
 				)
 		),
+		'order_type' => array(
+				'FIELD_TYPE' => FT_TEXT, 'DISPLAY_TYPE' => DT_SELECT,
+				'DISPLAY_WIDTH' => "120px", 'DISPLAY_HEIGHT' => 1,
+				'IS_NULL' => false, 
+				'DEFAULT' => 'O',
+				'LABEL' => _t('Order type'), 'DESCRIPTION' => _t('Indicates whether order is a library loan or sale.'),
+				'BOUNDS_CHOICE_LIST' => array(
+					_t('sales order') => 'O',							
+					_t('library loan') => 'L'
+				)
+		),
 		'shipping_fname' => array(
 				'FIELD_TYPE' => FT_TEXT, 'DISPLAY_TYPE' => DT_FIELD, 
 				'DISPLAY_WIDTH' => 40, 'DISPLAY_HEIGHT' => 1,
@@ -1884,6 +1895,31 @@ class ca_commerce_orders extends BaseModel {
 		}
 		
 		return $va_events;
+	}
+	# ------------------------------------------------------
+	/**
+	 * Returns transaction instance for currently loaded order
+	 *
+	 * @return ca_commerce_transactions transaction instance or null if no order is loaded
+	 */
+	public function getOrderTransaction() {
+		if (!($vn_transaction_id = $this->get('transaction_id'))) { return null; }
+		return new ca_commerce_transactions($vn_transaction_id);
+	}
+	# ------------------------------------------------------
+	/**
+	 *
+	 */
+	public function getOrderTransactionUserName() {
+		if (!($t_trans = $this->getOrderTransaction())) { return null; }
+		if (!($t_user = $t_trans->getTransactionUser())) { return null; }
+		
+		$va_values = $t_user->getFieldValuesArray();
+		foreach($va_values as $vs_key => $vs_val) {
+			$va_values["ca_users.{$vs_key}"] = $vs_val;
+		}
+		
+		return caProcessTemplate(join($this->getAppConfig()->getList('ca_users_lookup_delimiter'), $this->getAppConfig()->getList('ca_users_lookup_settings')), $va_values, array());
 	}
 	# ------------------------------------------------------
 }

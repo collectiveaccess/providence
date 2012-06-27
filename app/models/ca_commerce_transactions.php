@@ -256,5 +256,15 @@ class ca_commerce_transactions extends BaseModel {
 	 	return false;
 	 }
 	 # ----------------------------------------
+	/**
+	 * Returns ca_users instance for user linked to currently loaded transaction
+	 *
+	 * @return ca_users ca_users instance or null if no transaction is loaded
+	 */
+	 public function getTransactionUser() {
+	 	if (!($vn_user_id = $this->get('user_id'))) { return null; }
+	 	return new ca_users($vn_user_id);
+	 }
+	 # ----------------------------------------
 }
 ?>

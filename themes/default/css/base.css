@@ -4207,6 +4207,11 @@ a.caClientOrderOverviewButton:hover {
 	width:100%;
 }   
 
+
+#caClientLibraryCustomerInfoForm {
+	display: none;
+}
+
 /* -------------------------------------------------*/
 /* "Searchlight" autocomplete search results styles */
 /* -------------------------------------------------*/
