@@ -33,8 +33,6 @@
 	$vn_transaction_id = $this->getVar('transaction_id');
 	$va_errors = $this->getVar('errors');
 	
-	print_R($t_order->itemsMissingDownloadableMedia('original'));
-	
 	$vs_currency_symbol = $this->getVar('currency_symbol');
 	$vs_currency_input_format = "<div class='formLabel'>^LABEL<br/>{$vs_currency_symbol}^ELEMENT</div>";
 	
