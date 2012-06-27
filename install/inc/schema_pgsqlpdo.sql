@@ -426,6 +426,7 @@ create table ca_object_representation_multifiles (
 	primary key (multifile_id)
 );
 
+/*create index i_resource_path_ca_object_representation_multifiles on ca_object_representation_multifiles(resource_path(255))SEMICOLON*/
 create index i_representation_id_ca_object_representation_multifiles on ca_object_representation_multifiles(representation_id);
 
 
@@ -505,6 +506,7 @@ create unique index u_all_ca_occurrence_labels on ca_occurrence_labels(
    locale_id
 );
 create index i_locale_id_ca_occurrence_labels on ca_occurrence_labels(locale_id);
+/*create index i_name_sort_ca_occurrence_labels on ca_occurrence_labels(name_sort(255))SEMICOLON*/
 create index i_type_id_ca_occurrence_labels on ca_occurrence_labels(type_id);
 
 
@@ -3980,6 +3982,14 @@ create index i_value_integer1_ca_attribute_values on ca_attribute_values(value_i
 create index i_value_decimal1_ca_attribute_values on ca_attribute_values(value_decimal1);
 create index i_value_decimal2_ca_attribute_values on ca_attribute_values(value_decimal2);
 create index i_item_id_ca_attribute_values on ca_attribute_values(item_id);
+/*create index i_value_text1_ca_attribute_values on ca_attribute_values
+(
+   value_text1(1024)
+)SEMICOLON
+create index i_value_text2_ca_attribute_values on ca_attribute_values
+(
+   value_text2(1024)
+)SEMICOLON*/
 
 
 /*==========================================================================*/
@@ -6235,4 +6245,3 @@ create table ca_schema_updates (
 	datetime		integer not null
 	
 );
-create	UNIQUE index u_version_num_ca_schema_updates on ca_schema_updates (version_num);

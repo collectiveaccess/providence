@@ -106,7 +106,7 @@ final class ConfigurationCheck {
 		self::PHPVersionQuickCheck();
 		self::PHPModuleRequirementQuickCheck();
 		self::memoryLimitExpensiveCheck();
-		self::DBInnoDBQuickCheck();
+		//self::DBInnoDBQuickCheck();
 		self::permissionInstallCheck();
 		self::DBLoginQuickCheck();
 		self::tmpDirQuickCheck();

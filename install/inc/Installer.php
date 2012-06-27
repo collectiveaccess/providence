@@ -278,8 +278,19 @@ class Installer {
 		}
 
 		$va_ca_tables = $vo_dm->getTableNames();
+		$vs_dbtype = $vo_config->get("db_type");
 
-		$qr_tables = $vo_db->query("SHOW TABLES");
+		switch($vs_dbtype){
+			case 'pgsqlpdo':
+				$qr_tables = $vo_db->query("SELECT tablename FROM pg_tables WHERE schemaname='public'");
+				break;
+			case 'mysql':
+				$qr_tables = $vo_db->query("SHOW TABLES");
+				break;
+			default:
+				die(_t("No valid database driver specified"));
+				exit;
+		}
 
 		$vb_found_schema = false;
 		while($qr_tables->nextRow()) {
@@ -292,7 +303,7 @@ class Installer {
 
 		// load schema
 
-		if (!($vs_schema = file_get_contents(__CA_BASE_DIR__."/install/inc/schema_mysql.sql"))) {
+		if (!($vs_schema = file_get_contents(__CA_BASE_DIR__."/install/inc/schema_{$vs_dbtype}.sql"))) {
 			$this->addError("Could not open schema definition file");
 			return false;
 		}

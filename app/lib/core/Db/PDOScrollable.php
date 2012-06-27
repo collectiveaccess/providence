@@ -67,7 +67,7 @@ class PDOScrollable{
 	public function __construct($po_stmt) {
 		if(is_object($po_stmt)){
 			$this->opo_stmt = $po_stmt;
-			$this->opa_res = $po_stmt->fetchAll();
+			$this->opa_res = $po_stmt->fetchAll(PDO::FETCH_ASSOC);
 			$this->opn_cursor = 0;
 		}
 	}
