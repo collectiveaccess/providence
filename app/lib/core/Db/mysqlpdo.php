@@ -290,8 +290,7 @@ class Db_mysqlpdo extends DbDriverBase {
 		if (Db::$monitor) {
 			$t = new Timer();
 		}
-		print __METHOD__ . "\n$vs_sql\n";
-		if (!($r_res = new PDOScrollable($this->opo_db->query($vs_sql)))) {
+		if (!($r_res = ($this->opo_db->query($vs_sql)))) {
 			print "<pre>".caPrintStacktrace()."</pre>\n";
 			print $vs_sql;
 			print $this->errorinfo();
