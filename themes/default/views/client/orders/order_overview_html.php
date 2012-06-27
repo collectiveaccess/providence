@@ -43,7 +43,7 @@
 	
 	print caFormTag($this->request, 'SaveOrderOverview', 'caClientOrderOverviewForm', null, 'post', 'multipart/form-data', '_top', array());
 
-	$vs_item_url = caNavUrl($this->request, 'client', 'OrderEditor', 'ItemList', array('order_id' => $vn_order_id));
+	$vs_item_url = caNavUrl($this->request, 'client/orders', 'OrderEditor', 'ItemList', array('order_id' => $vn_order_id));
 ?>
 <div id="caClientOrderOverview">
 	<div class="overrideButton"><a href="#" class="button" onclick="jQuery('#caCommerceOrderStatusOverride').toggle(150);"><?php print _t('Override current order status'); ?> &rsaquo;</a></div>
@@ -72,12 +72,12 @@
 		case 'SUBMITTED':
 			$vs_status_message = _t('Order status: %1', $vs_order_status_display);
 			TooltipManager::add("#commerceOrderStatusMessage", $vs_order_status_description = _t('Order has been submitted by the client for pricing. Please review the order, modify item pricing as required and then click the "return quote to user" button below.'));
-			$vs_next_step = caNavLink($this->request, _t('Return quote to user')." &rsaquo;", 'caClientOrderOverviewButton',  'client', 'OrderEditor', 'ReturnQuoteToUser', array('order_id' => $vn_order_id));
+			$vs_next_step = caNavLink($this->request, _t('Return quote to user')." &rsaquo;", 'caClientOrderOverviewButton',  'client/orders', 'OrderEditor', 'ReturnQuoteToUser', array('order_id' => $vn_order_id));
 			break;
 		case 'AWAITING_PAYMENT':
 			$vs_status_message = _t('Order status: %1', $vs_order_status_display);
 			TooltipManager::add("#commerceOrderStatusMessage", $vs_order_status_description = _t('Order is ready for payment by client. If you have payment details to enter for the client click on the "enter payment information" button below. Otherwise you must wait for the client to enter their payment information via the client interface.'));
-			$vs_next_step = caNavLink($this->request, _t('Enter payment information')." &rsaquo;", 'caClientOrderOverviewButton',  'client', 'OrderEditor', 'Payment', array('order_id' => $vn_order_id));
+			$vs_next_step = caNavLink($this->request, _t('Enter payment information')." &rsaquo;", 'caClientOrderOverviewButton',  'client/orders', 'OrderEditor', 'Payment', array('order_id' => $vn_order_id));
 			
 			break;
 		case 'PROCESSED':
@@ -85,7 +85,7 @@
 			
 			if ($t_order->requiresShipping()) {
 				TooltipManager::add("#commerceOrderStatusMessage", $vs_order_status_description = _t('Order has been paid for and is ready for fulfillment. When the order has shipped click on the "record shipment details" below and enter the ship date.'));
-				$vs_next_step = caNavLink($this->request, _t('Record shipment details')." &rsaquo;", 'caClientOrderOverviewButton',  'client', 'OrderEditor', 'Shipping', array('order_id' => $vn_order_id));
+				$vs_next_step = caNavLink($this->request, _t('Record shipment details')." &rsaquo;", 'caClientOrderOverviewButton',  'client/orders', 'OrderEditor', 'Shipping', array('order_id' => $vn_order_id));
 			} else {
 				TooltipManager::add("#commerceOrderStatusMessage", $vs_order_status_description = _t('Order has been paid for and is ready for fulfillment via user-initiated download. The order will be closed automatically after the period for downloads has elapsed.'));
 			}
@@ -95,7 +95,7 @@
 			
 			if ($t_order->requiresShipping()) {
 				TooltipManager::add("#commerceOrderStatusMessage", $vs_order_status_description = _t('Order has been paid for and is ready for fulfillment. When the order has shipped click on the "record shipment details" below and enter the ship date.'));
-				$vs_next_step = caNavLink($this->request, _t('Record shipment details')." &rsaquo;", 'caClientOrderOverviewButton',  'client', 'OrderEditor', 'Shipping', array('order_id' => $vn_order_id));
+				$vs_next_step = caNavLink($this->request, _t('Record shipment details')." &rsaquo;", 'caClientOrderOverviewButton',  'client/orders', 'OrderEditor', 'Shipping', array('order_id' => $vn_order_id));
 			} else {
 				TooltipManager::add("#commerceOrderStatusMessage", $vs_order_status_description = _t('Order has been paid for and will be ready for fulfillment via user-initiated download once all items are digitized. You will be informed by email when the items are ready for download.'));
 			}
@@ -105,7 +105,7 @@
 			
 			if ($t_order->requiresShipping()) {
 				TooltipManager::add("#commerceOrderStatusMessage", $vs_order_status_description = _t('Order has been paid for and is ready for fulfillment. When the order has shipped click on the "record shipment details" below and enter the ship date.'));
-				$vs_next_step = caNavLink($this->request, _t('Record shipment details')." &rsaquo;", 'caClientOrderOverviewButton',  'client', 'OrderEditor', 'Shipping', array('order_id' => $vn_order_id));
+				$vs_next_step = caNavLink($this->request, _t('Record shipment details')." &rsaquo;", 'caClientOrderOverviewButton',  'client/orders', 'OrderEditor', 'Shipping', array('order_id' => $vn_order_id));
 			} else {
 				TooltipManager::add("#commerceOrderStatusMessage", $vs_order_status_description = _t('Order has been paid for and will be ready for fulfillment via user-initiated download once all items have been transferred to the server. You will be informed by email when the items are ready for download.'));
 			}
@@ -221,24 +221,24 @@
 		if ($vs_shipped_on_date = $t_order->get('shipped_on_date', array('timeOmit' => true))) {
 			// order has already been shipped
 ?>
-	<div class="overviewItem"><?php print _t("%1 items were <a href='%5'>shipped</a> to %2 via %3 on %4", $vn_item_count, $vs_shipping_destination, $vs_shipping_method, $vs_shipped_on_date, caNavUrl($this->request, 'client', 'OrderEditor', 'Shipping', array('order_id' => $vn_order_id))); ?></div>
+	<div class="overviewItem"><?php print _t("%1 items were <a href='%5'>shipped</a> to %2 via %3 on %4", $vn_item_count, $vs_shipping_destination, $vs_shipping_method, $vs_shipped_on_date, caNavUrl($this->request, 'client/orders', 'OrderEditor', 'Shipping', array('order_id' => $vn_order_id))); ?></div>
 <?php			
 		} else {
 			if ($vs_ship_date = $t_order->get('shipping_date', array('timeOmit' => true))) {
 				// order has planned shipping date
 ?>
-	<div class="overviewItem"><?php print _t("%1 items planned <a href='%5'>for shipment</a> to %2 via %3 is on %4", $va_item_counts_by_fulfillment_method['SHIPMENT'], $vs_shipping_destination, $vs_shipping_method, $vs_ship_date, caNavUrl($this->request, 'client', 'OrderEditor', 'Shipping', array('order_id' => $vn_order_id))); ?></div>
+	<div class="overviewItem"><?php print _t("%1 items planned <a href='%5'>for shipment</a> to %2 via %3 is on %4", $va_item_counts_by_fulfillment_method['SHIPMENT'], $vs_shipping_destination, $vs_shipping_method, $vs_ship_date, caNavUrl($this->request, 'client/orders', 'OrderEditor', 'Shipping', array('order_id' => $vn_order_id))); ?></div>
 <?php
 			} else {
 				if (in_array($t_order->get('order_status'), array('PROCESSED', 'PROCESSED_AWAITING_DIGITIZATION', 'PROCESSED_AWAITING_MEDIA_ACCESS'))) {
 					// needs to be shipped now
 ?>
-	<div class="overviewItem"><?php print _t("%1 items require <a href='%4'>shipping</a> to %2 via %3", $va_item_counts_by_fulfillment_method['SHIPMENT'], $vs_shipping_destination, $vs_shipping_method, caNavUrl($this->request, 'client', 'OrderEditor', 'Shipping', array('order_id' => $vn_order_id))); ?></div>
+	<div class="overviewItem"><?php print _t("%1 items require <a href='%4'>shipping</a> to %2 via %3", $va_item_counts_by_fulfillment_method['SHIPMENT'], $vs_shipping_destination, $vs_shipping_method, caNavUrl($this->request, 'client/orders', 'OrderEditor', 'Shipping', array('order_id' => $vn_order_id))); ?></div>
 <?php		
 				} else {
 					// will need to be shipped after payment
 ?>
-	<div class="overviewItem"><?php print _t("%1 items will require <a href='%4'>shipping</a> to %2 via %3 when paid for", $va_item_counts_by_fulfillment_method['SHIPMENT'], $vs_shipping_destination, $vs_shipping_method, caNavUrl($this->request, 'client', 'OrderEditor', 'Shipping', array('order_id' => $vn_order_id))); ?></div>
+	<div class="overviewItem"><?php print _t("%1 items will require <a href='%4'>shipping</a> to %2 via %3 when paid for", $va_item_counts_by_fulfillment_method['SHIPMENT'], $vs_shipping_destination, $vs_shipping_method, caNavUrl($this->request, 'client/orders', 'OrderEditor', 'Shipping', array('order_id' => $vn_order_id))); ?></div>
 <?php			
 				}	
 			}
@@ -281,7 +281,7 @@
 	// messages
 	$va_messages = $t_transaction->getMessages();
 	$vn_num_messages = sizeof($va_messages);
-	$vs_communication_url = caNavUrl($this->request, 'client', 'Communications', 'Index', array('transaction_id' => $vn_transaction_id));
+	$vs_communication_url = caNavUrl($this->request, 'client/orders', 'Communications', 'Index', array('transaction_id' => $vn_transaction_id));
 ?>
 	<h3><?php print ($vn_num_messages == 1) ? _t("There has been <a href='%2'>%1 communication</a> regarding this order", $vn_num_messages, $vs_communication_url) :  _t("There have been <a href='%2'>%1 communications</a> regarding this order", $vn_num_messages, $vs_communication_url); ?></h3>
 <?php
