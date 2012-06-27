@@ -686,5 +686,27 @@
  			$this->response->addContent($vs_msg);
  		}
  		# -------------------------------------------------------
+ 		/**
+ 		 *
+ 		 */
+ 		public function GetCustomerAddress() {
+ 			if (!$this->request->user->canDoAction('can_manage_clients')) { return null; }
+ 			$pn_user_id = $this->request->getParameter('user_id', pInteger);
+ 			
+ 			$t_user = new ca_users($pn_user_id);
+ 			$va_profile_prefs = $t_user->getValidPreferences('profile');
+ 			if (is_array($va_profile_prefs) && sizeof($va_profile_prefs)) {
+ 				$va_elements = array();
+				foreach($va_profile_prefs as $vs_pref) {
+					$va_pref_info = $t_user->getPreferenceInfo($vs_pref);
+					$va_elements[$vs_pref] = array('value' => $t_user->getPreference($vs_pref), 'label' => $va_pref_info['label']);
+				}
+				
+				$this->view->setVar("profile_settings", $va_elements);
+			}
+ 			
+ 			$this->render('profile_html.php');
+ 		}
+ 		# -------------------------------------------------------
  	}
  ?>

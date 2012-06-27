@@ -686,5 +686,28 @@
  			$this->response->addContent($vs_msg);
  		}
  		# -------------------------------------------------------
+ 		/**
+ 		 *
+ 		 */
+ 		public function GetUserProfileInfo() {
+ 			if (!$this->request->user->canDoAction('can_manage_clients')) { return null; }
+ 			$pn_user_id = $this->request->getParameter('user_id', pInteger);
+ 			
+ 			$t_user = new ca_users($pn_user_id);
+ 			$va_profile_prefs = $t_user->getValidPreferences('profile');
+ 			if (is_array($va_profile_prefs) && sizeof($va_profile_prefs)) {
+ 				$va_elements = array();
+				foreach($va_profile_prefs as $vs_pref) {
+					$va_pref_info = $t_user->getPreferenceInfo($vs_pref);
+					$va_elements[str_replace('user_profile_', '', $vs_pref)] = array($t_user->getPreference($vs_pref));
+				}
+				
+				$this->view->setVar("profile_values", $va_elements);
+			}
+ 			
+ 			$this->view->setVar("user_id", $pn_user_id);
+ 			$this->render('ajax_user_profile_info_json.php');
+ 		}
+ 		# -------------------------------------------------------
  	}
  ?>

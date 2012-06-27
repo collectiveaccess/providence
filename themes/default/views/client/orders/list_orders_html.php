@@ -73,7 +73,7 @@
 			</td>
 			<td align="right" valign="top">
 <?php
-	print caNavHeaderButton($this->request, __CA_NAV_BUTTON_ADD_LARGE__, _t("New order"), 'client', 'OrderEditor', 'CustomerInfo', array('order_id' => 0))
+	print caNavHeaderButton($this->request, __CA_NAV_BUTTON_ADD_LARGE__, _t("New order"), 'client/orders', 'OrderEditor', 'CustomerInfo', array('order_id' => 0))
 ?>
 			</td>
 		</tr>
@@ -156,7 +156,7 @@
 				<?php print $t_order->getChoiceListValue('order_status', $va_order['order_status']); ?>
 			</td>
 			<td>
-				<?php print caNavButton($this->request, __CA_NAV_BUTTON_EDIT__, _t("Edit"), 'client', 'OrderEditor', 'Edit', array('order_id' => $va_order['order_id']), array(), array('icon_position' => __CA_NAV_BUTTON_ICON_POS_LEFT__, 'use_class' => 'list-button', 'no_background' => true, 'dont_show_content' => true)); ?>
+				<?php print caNavButton($this->request, __CA_NAV_BUTTON_EDIT__, _t("Edit"), 'client/orders', 'OrderEditor', 'Edit', array('order_id' => $va_order['order_id']), array(), array('icon_position' => __CA_NAV_BUTTON_ICON_POS_LEFT__, 'use_class' => 'list-button', 'no_background' => true, 'dont_show_content' => true)); ?>
 			</td>
 		</tr>
 <?php
