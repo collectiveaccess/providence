@@ -611,7 +611,6 @@ class SearchEngine extends SearchBase {
 					if ($t_rel->hasField('is_preferred')) {
 						$vs_is_preferred_sql = " AND ".$va_tmp[0].".is_preferred = 1";
 					}
-
 					if ($t_rel->hasField('locale_id')) {
 						$vs_locale_where = ", ".$va_tmp[0].".locale_id";
 					}
