@@ -302,10 +302,7 @@ class Db_mysqlpdo extends DbDriverBase {
 			Db::$monitor->logQuery($ps_sql, $pa_values, $t->getTime(4), is_bool($r_res) ? null : $r_res->rowCount());
 		}
 
-		$this->opo_ls = $r_res;
-		$this->opa_lres = $r_res->fetchAll(PDO::FETCH_ASSOC);
-		$this->opn_cursor = 0;
-		return new DbResult($this, $r_res);
+		return new DbResult($this, new PDOScrollable($r_res));
 	}
 
 	/**
