@@ -316,7 +316,7 @@
  			
  			if ($t_trans->haveAccessToTransaction($this->request->getUserID())) {
  				if($this->request->getParameter('message', pString)){
-					if ($t_trans->sendInstitutionMessage($this->request->getParameter('subject', pString), $this->request->getParameter('message', pString), $this->request->getUserID())) {	
+					if ($t_trans->sendInstitutionMessage('L', $this->request->getParameter('subject', pString), $this->request->getParameter('message', pString), $this->request->getUserID())) {	
 						$this->notification->addNotification(_t('Message has been sent'), __NOTIFICATION_TYPE_INFO__);
 					} else {
 						$this->notification->addNotification(_t('Errors occurred when sending message: %1', join('; ', $t_trans->getErrors())), __NOTIFICATION_TYPE_ERROR__);

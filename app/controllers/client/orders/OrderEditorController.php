@@ -258,9 +258,10 @@
 					}
  				}
  				$this->opt_order->set('transaction_id', $vn_transaction_id);
+ 				$this->opt_order->set('order_type', 'O');	// O=sales order
  					
  				$this->opt_order->insert();
- 				$this->request->setParameter('order_id', $x=$this->opt_order->getPrimaryKey());
+ 				$this->request->setParameter('order_id', $this->opt_order->getPrimaryKey());
  			}
  			
  			// set user profile if not already set
@@ -316,7 +317,7 @@
  			
  			if ($t_trans->haveAccessToTransaction($this->request->getUserID())) {
  				if($this->request->getParameter('message', pString)){
-					if ($t_trans->sendInstitutionMessage($this->request->getParameter('subject', pString), $this->request->getParameter('message', pString), $this->request->getUserID())) {	
+					if ($t_trans->sendInstitutionMessage('O', $this->request->getParameter('subject', pString), $this->request->getParameter('message', pString), $this->request->getUserID())) {	
 						$this->notification->addNotification(_t('Message has been sent'), __NOTIFICATION_TYPE_INFO__);
 					} else {
 						$this->notification->addNotification(_t('Errors occurred when sending message: %1', join('; ', $t_trans->getErrors())), __NOTIFICATION_TYPE_ERROR__);
@@ -572,6 +573,8 @@
 					}
 					
 				}
+				
+				$this->opt_order->set('order_type', 'O');	// O=sales order
  				$this->opt_order->insert();
  				
  				$this->request->setParameter('order_id', $this->opt_order->getPrimaryKey());
@@ -687,7 +690,7 @@
  		}
  		# -------------------------------------------------------
  		/**
- 		 *
+ 		 * Return user profile values for specified user
  		 */
  		public function GetUserProfileInfo() {
  			if (!$this->request->user->canDoAction('can_manage_clients')) { return null; }

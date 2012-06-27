@@ -996,6 +996,7 @@ class ca_commerce_orders extends BaseModel {
 	 *		shipping_method = 
 	 *		order_status = 
 	 *		search = 
+	 *		type = 
 	 */
 	 public function getOrders($pa_options=null) {
 	 	$o_db = $this->getDb();
@@ -1018,6 +1019,10 @@ class ca_commerce_orders extends BaseModel {
 				$va_sql_values[] = $pa_options['order_status'];
 			}
 		}
+	 	if (isset($pa_options['type']) && in_array($pa_options['type'], array('O', 'L'))) {
+	 		$va_sql_wheres[] = "(o.order_type = ?)";
+	 		$va_sql_values[] = (string)$pa_options['type'];
+	 	}
 	 	
 	 	if (isset($pa_options['shipping_method']) && strlen($pa_options['shipping_method'])) {
 	 		$va_sql_wheres[] = "(o.shipping_method = ?)";

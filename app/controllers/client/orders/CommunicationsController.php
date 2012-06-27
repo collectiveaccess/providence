@@ -145,7 +145,7 @@
  			$this->view->setVar('transaction_id', $pn_transaction_id);
  			
  			if ($t_trans->haveAccessToTransaction($this->request->getUserID())) {
- 				$t_trans->sendInstitutionMessage($this->request->getParameter('subject', pString), $this->request->getParameter('message', pString), $this->request->getUserID());
+ 				$t_trans->sendInstitutionMessage('O', $this->request->getParameter('subject', pString), $this->request->getParameter('message', pString), $this->request->getUserID());
  				$this->Index();
  			} else {
  				$this->view->setVar('transaction', null);
