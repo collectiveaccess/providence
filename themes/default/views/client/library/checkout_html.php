@@ -211,7 +211,7 @@
 	}
 ?>
 			</table>
-			<input type="hidden" name="<?php print $vs_id_prefix; ?>_id{n}" id="<?php print $vs_id_prefix; ?>_id{n}" value="{id}"/>
+			<input type="hidden" name="<?php print $vs_id_prefix; ?>_id{n}" id="<?php print $vs_id_prefix; ?>_id{n}" value="{id}" class="caCheckoutItemID"/>
 		</div>
 		<script type="text/javascript"><?php
 			//print 'caGetDefaultFee("'.$vs_id_prefix.'_service_{n}", "'.$vs_id_prefix.'_fee_{n}", "{n}")';
@@ -358,4 +358,24 @@
 			if (!(value = caDefaultFees[v])) { value = caDefaultFees['__default__']['base']; }
 			jQuery("#" + feeDOMID).val(caDefaultFees[v]['base']);
 	}
+	
+	jQuery("#caClientLibraryCheckoutForm").submit(function() {
+		if (!jQuery('#transaction_user_id').val()) {  // check if client has been selected
+			alert("Select a client");
+			return false;
+		}
+		
+		var hasItems = false;
+		jQuery.each(jQuery('input.caCheckoutItemID'), function(k,v) {
+			if (jQuery(v).val() > 0) { hasItems = true; return false; }
+		});
+		
+		if (!hasItems) {
+			alert("Add at least one item to checkout");
+			return false;
+		}
+		
+		// TODO: check dates of items
+		return true;
+	});
 </script>

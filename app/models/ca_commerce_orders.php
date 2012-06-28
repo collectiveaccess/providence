@@ -411,7 +411,7 @@ BaseModel::$s_ca_models_definitions['ca_commerce_orders'] = array(
 				'DEFAULT' => '',
 				'LABEL' => _t('Refund notes'), 'DESCRIPTION' => _t('Notes pertaining to the refund for this order.'),
 				'BOUNDS_LENGTH' => array(0,65535)
-		),	
+		),
 		'deleted' => array(
 				'FIELD_TYPE' => FT_BIT, 'DISPLAY_TYPE' => DT_OMIT, 
 				'DISPLAY_WIDTH' => 10, 'DISPLAY_HEIGHT' => 1,

@@ -148,74 +148,81 @@
 						} else {
 							$vn_transaction_id = $t_trans->getPrimaryKey();
 						}
+					} else {
+						$this->notification->addNotification(_t('You must specify a client'), __NOTIFICATION_TYPE_ERROR__);
+						$va_errors['general'][] = new Error(1100, _t('You must specify a client'), 'CheckOutController->Save()', false, false, false);
 					}
  				}
  				$this->opt_order->set('transaction_id', $vn_transaction_id);
  				
- 				$this->opt_order->set('order_type', 'L'); 	// L = loan (as opposed to 'O' for sales orders)	
- 				$this->opt_order->insert();
- 				$this->request->setParameter('order_id', $x=$this->opt_order->getPrimaryKey());
- 			}
- 			
- 			// set user profile if not already set
-			$t_trans = new ca_commerce_transactions($vn_transaction_id);
-			$t_user = new ca_users($t_trans->get('user_id'));
-			$t_user->setMode(ACCESS_WRITE);
-			foreach($va_mapping as $vs_field => $vs_pref) {
-				if (!strlen($t_user->getPreference($vs_pref))) {
-					$t_user->setPreference($vs_pref, $this->opt_order->get($vs_field));
+ 				if ($vn_transaction_id) {
+					$this->opt_order->set('order_type', 'L'); 	// L = loan (as opposed to 'O' for sales orders)	
+					$this->opt_order->insert();
+					$this->request->setParameter('order_id', $x=$this->opt_order->getPrimaryKey());
 				}
 			}
-			$t_user->update();
-			
-			$va_additional_fee_codes = $this->opo_client_services_config->getAssoc('additional_order_item_fees');
  			
- 			// Look for newly added items
- 			$vn_items_added = 0;
- 			foreach($_REQUEST as $vs_k => $vs_v) {
- 				if(preg_match("!^item_list_idnew_([\d]+)$!", $vs_k, $va_matches)) {
- 					if ($vn_object_id = (int)$vs_v) {
- 						// add item to order
- 						$va_values = array();
- 						foreach($_REQUEST as $vs_f => $vs_value) {
- 							if(preg_match("!^item_list_([A-Za-z0-9_]+)_new_".$va_matches[1]."$!", $vs_f, $va_matches2)) {
- 								$va_values[$va_matches2[1]] = $vs_value;
- 							}
- 						}
- 						
- 						// Set additional fees
- 						//
- 						$va_fee_values = array();
- 						foreach($va_additional_fee_codes as $vs_code => $va_info) {
- 							$va_fee_values[$vs_code] = $_REQUEST['additional_order_item_fee_'.$vs_code.'_new_'.$va_matches[1]];
- 						}
- 						
- 						$t_item = $this->opt_order->addItem($vn_object_id, $va_values, array('additional_fees' => $va_fee_values));
- 						
- 						if ($t_item && $t_item->getPrimaryKey()) {
- 							$vn_items_added++;
- 						}
- 					}
- 				}
- 			}
- 			
- 			if (!$this->opt_order->numErrors() && $vn_items_added) {
- 				$this->notification->addNotification(_t('Checked out %1 %2 for %3 (order %4)', $vn_items_added, ($vn_items_added == 1) ? _t('item') : _t('items'), $t_user->get('fname').' '.$t_user->get('lname'), $this->opt_order->getOrderNumber()), __NOTIFICATION_TYPE_INFO__);	
- 				$this->opt_order = new ca_commerce_orders();
- 				
- 				$this->request->setParameter('order_id', null);
-				$this->view->setVar('t_order', $this->opt_order);
-				$this->view->setVar('order_id', $this->opt_order->getPrimaryKey());
-				$this->view->setVar('t_item', $this->opt_order);
- 			} else {
- 				if ($vn_items_added == 0) {
- 					$vs_errors = _t('No items were specified');
- 				} else {
- 					$vs_errors = join('; ', $this->opt_order->getErrors());
- 				}
- 				$va_errors['general'] = $this->opt_order->errors();
- 				$this->notification->addNotification(_t('Errors occurred: %1', $vs_errors), __NOTIFICATION_TYPE_ERROR__);
- 			}
+ 			if ($vn_transaction_id) {
+				// set user profile if not already set
+				$t_trans = new ca_commerce_transactions($vn_transaction_id);
+				$t_user = new ca_users($t_trans->get('user_id'));
+				$t_user->setMode(ACCESS_WRITE);
+				foreach($va_mapping as $vs_field => $vs_pref) {
+					if (!strlen($t_user->getPreference($vs_pref))) {
+						$t_user->setPreference($vs_pref, $this->opt_order->get($vs_field));
+					}
+				}
+				$t_user->update();
+				
+				$va_additional_fee_codes = $this->opo_client_services_config->getAssoc('additional_order_item_fees');
+				
+				// Look for newly added items
+				$vn_items_added = 0;
+				foreach($_REQUEST as $vs_k => $vs_v) {
+					if(preg_match("!^item_list_idnew_([\d]+)$!", $vs_k, $va_matches)) {
+						if ($vn_object_id = (int)$vs_v) {
+							// add item to order
+							$va_values = array();
+							foreach($_REQUEST as $vs_f => $vs_value) {
+								if(preg_match("!^item_list_([A-Za-z0-9_]+)_new_".$va_matches[1]."$!", $vs_f, $va_matches2)) {
+									$va_values[$va_matches2[1]] = $vs_value;
+								}
+							}
+							
+							// Set additional fees
+							//
+							$va_fee_values = array();
+							foreach($va_additional_fee_codes as $vs_code => $va_info) {
+								$va_fee_values[$vs_code] = $_REQUEST['additional_order_item_fee_'.$vs_code.'_new_'.$va_matches[1]];
+							}
+							
+							$t_item = $this->opt_order->addItem($vn_object_id, $va_values, array('additional_fees' => $va_fee_values));
+							
+							if ($t_item && $t_item->getPrimaryKey()) {
+								$vn_items_added++;
+							}
+						}
+					}
+				}
+				
+				if (!$this->opt_order->numErrors() && $vn_items_added) {
+					$this->notification->addNotification(_t('Checked out %1 %2 for %3 (order %4)', $vn_items_added, ($vn_items_added == 1) ? _t('item') : _t('items'), $t_user->get('fname').' '.$t_user->get('lname'), $this->opt_order->getOrderNumber()), __NOTIFICATION_TYPE_INFO__);	
+					$this->opt_order = new ca_commerce_orders();
+					
+					$this->request->setParameter('order_id', null);
+					$this->view->setVar('t_order', $this->opt_order);
+					$this->view->setVar('order_id', $this->opt_order->getPrimaryKey());
+					$this->view->setVar('t_item', $this->opt_order);
+				} else {
+					if ($vn_items_added == 0) {
+						$vs_errors = _t('No items were specified');
+					} else {
+						$vs_errors = join('; ', $this->opt_order->getErrors());
+					}
+					$va_errors['general'] = $this->opt_order->errors();
+					$this->notification->addNotification(_t('Errors occurred: %1', $vs_errors), __NOTIFICATION_TYPE_ERROR__);
+				}
+			}
  			$this->view->setVar('errors', $va_errors);
  			
  		
