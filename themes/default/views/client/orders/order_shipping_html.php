@@ -39,9 +39,9 @@
 	if ($t_order->requiresShipping()) {
 		print $vs_control_box = caFormControlBox(
 			(caFormSubmitButton($this->request, __CA_NAV_BUTTON_SAVE__, _t("Save"), 'caClientOrderShippingForm')).' '.
-			(caNavButton($this->request, __CA_NAV_BUTTON_CANCEL__, _t("Cancel"), 'client', 'OrderEditor', 'Shipping', array('order_id' => $vn_order_id))),
+			(caNavButton($this->request, __CA_NAV_BUTTON_CANCEL__, _t("Cancel"), 'client/orders', 'OrderEditor', 'Shipping', array('order_id' => $vn_order_id))),
 			'', 
-			(caNavButton($this->request, __CA_NAV_BUTTON_DELETE__, _t("Delete"), 'client', 'OrderEditor', 'Delete', array('order_id' => $vn_order_id)))
+			(caNavButton($this->request, __CA_NAV_BUTTON_DELETE__, _t("Delete"), 'client/orders', 'OrderEditor', 'Delete', array('order_id' => $vn_order_id)))
 		);
 	}
 

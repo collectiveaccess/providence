@@ -116,7 +116,7 @@
 			jQuery('.caClientCommunicationsAdditionalMessageSummary, .caClientCommunicationsMessageSummaryContainer').css('background-color', '');
 			var id = jQuery(this).attr('id');
 			var bits = id.split(/_/);
-			jQuery("#caClientCommunicationsMessageDisplay").load("<?php print caNavUrl($this->request, 'client', 'Communications', 'ViewMessage'); ?>/communication_id/" + bits[1]);
+			jQuery("#caClientCommunicationsMessageDisplay").load("<?php print caNavUrl($this->request, 'client/orders', 'Communications', 'ViewMessage'); ?>/communication_id/" + bits[1]);
 			jQuery("#" + id).css('background-color', "#efefef");
 		});
 	});

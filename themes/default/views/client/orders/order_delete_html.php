@@ -32,7 +32,7 @@
 <?php
 	if (!$this->getVar('confirmed')) {
 		// show delete confirmation notice
-		print caDeleteWarningBox($this->request, $t_order, _t('order'), 'client', 'OrderEditor', 'CustomerInfo', array('order_id' => $vn_order_id));
+		print caDeleteWarningBox($this->request, $t_order, _t('order'), 'client/orders', 'OrderEditor', 'CustomerInfo', array('order_id' => $vn_order_id));
 	}
 ?>
 </div>

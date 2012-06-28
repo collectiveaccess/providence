@@ -1,13 +1,13 @@
 <?php
 /* ----------------------------------------------------------------------
- * app/controllers/logs/CommunicationsController.php :
+ * app/controllers/client/library/CommunicationsController.php :
  * ----------------------------------------------------------------------
  * CollectiveAccess
  * Open-source collections management software
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2011 Whirl-i-Gig
+ * Copyright 2011-2012 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -31,7 +31,7 @@
 	require_once(__CA_LIB_DIR__.'/ca/Search/UserSearch.php');
 	require_once(__CA_LIB_DIR__.'/ca/Search/CommerceCommunicationSearch.php');
  	require_once(__CA_APP_DIR__.'/helpers/clientServicesHelpers.php');
- 	
+
  	class CommunicationsController extends ActionController {
  		# -------------------------------------------------------
  		#

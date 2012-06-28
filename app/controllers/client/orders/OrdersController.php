@@ -40,7 +40,7 @@
 			
 			$o_result_context = new ResultContext($this->request, 'ca_commerce_orders', 'basic_search');
 			
- 			$va_options = array();
+ 			$va_options = array('type' => 'O');
  			$t_order = new ca_commerce_orders();
  			
  			// Set drop-down fields to be null-able here so we don't get them auto-setting to their defaults
@@ -101,7 +101,7 @@
  		 */
  		public function Info() {
  			$t_order = new ca_commerce_orders();
- 			$this->view->setVar('order_list', $va_order_list = $t_order->getOrders($va_options));
+ 			$this->view->setVar('order_list', $va_order_list = $t_order->getOrders(array('type' => 'O')));
  			return $this->render('widget_orders_info_html.php', true);
  		}
  		# -------------------------------------------------------

@@ -1,13 +1,13 @@
 <?php
 /* ----------------------------------------------------------------------
- * app/controllers/logs/CommunicationsController.php :
+ * app/controllers/client/orders/CommunicationsController.php :
  * ----------------------------------------------------------------------
  * CollectiveAccess
  * Open-source collections management software
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2011 Whirl-i-Gig
+ * Copyright 2011-2012 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *

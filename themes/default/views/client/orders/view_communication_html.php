@@ -31,7 +31,7 @@
  ?>
  	<div id="caClientCommunicationsMessage">
  <?php
-	print caClientServicesFormatMessage($this->request, $va_data = $t_message->getFieldValuesArray(), array('replyButton' => "<a href='#' class='caClientCommunicationsMessageReplyButton' onclick='jQuery(\"#caClientCommunicationsMessageDisplay\").load(\"".caNavUrl($this->request, 'client', 'Communications', 'Reply', array('transaction_id' => $va_data['transaction_id'], 'communication_id' => $va_data['communication_id']))."\");'>"._t("Reply")."</a>"));
+	print caClientServicesFormatMessage($this->request, $va_data = $t_message->getFieldValuesArray(), array('replyButton' => "<a href='#' class='caClientCommunicationsMessageReplyButton' onclick='jQuery(\"#caClientCommunicationsMessageDisplay\").load(\"".caNavUrl($this->request, 'client/orders', 'Communications', 'Reply', array('transaction_id' => $va_data['transaction_id'], 'communication_id' => $va_data['communication_id']))."\");'>"._t("Reply")."</a>"));
 	
 	if (is_array($va_snapshot) && is_array($va_snapshot['items']) && sizeof($va_snapshot['items'])) {
 		$va_ids = array();
@@ -43,7 +43,7 @@
 	<div class="caClientCommunicationsAttachedMediaContainer">
 <?php
 	if ($vn_communication_id = $t_message->get('communication_id')) {
-		print "<div>".caNavLink($this->request, _t('Create new order with attached media'), 'caClientCommunicationsNewOrderButton', 'client', 'OrderEditor', 'CreateNewOrderFromCommunication', array('communication_id' => $vn_communication_id))."</div>";
+		print "<div>".caNavLink($this->request, _t('Create new order with attached media'), 'caClientCommunicationsNewOrderButton', 'client/orders', 'OrderEditor', 'CreateNewOrderFromCommunication', array('communication_id' => $vn_communication_id))."</div>";
 	}
 ?>
 		<a href="#" onclick="showHideCommunicationAttachedMedia(); return false;" id="caClientCommunicationsAttachedMediaControl" class="caClientCommunicationsAttachedMediaControl"><?php print _t('Show attached media'); ?> &rsaquo;</a>

@@ -48,9 +48,9 @@
 	
 	print $vs_control_box = caFormControlBox(
 		(caFormSubmitButton($this->request, __CA_NAV_BUTTON_SAVE__, _t("Save"), 'caClientOrderItemListForm')).' '.
-		(caNavButton($this->request, __CA_NAV_BUTTON_CANCEL__, _t("Cancel"), 'client', 'OrderEditor', 'Shipping', array('order_id' => $vn_order_id))),
+		(caNavButton($this->request, __CA_NAV_BUTTON_CANCEL__, _t("Cancel"), 'client/orders', 'OrderEditor', 'Shipping', array('order_id' => $vn_order_id))),
 		'', 
-		(caNavButton($this->request, __CA_NAV_BUTTON_DELETE__, _t("Delete"), 'client', 'OrderEditor', 'Delete', array('order_id' => $vn_order_id)))
+		(caNavButton($this->request, __CA_NAV_BUTTON_DELETE__, _t("Delete"), 'client/orders', 'OrderEditor', 'Delete', array('order_id' => $vn_order_id)))
 	);
 	
 	print caFormTag($this->request, 'SaveItemList', 'caClientOrderItemListForm', null, 'post', 'multipart/form-data', '_top', array());
@@ -79,9 +79,9 @@
 					<td><?php print $t_order_item->htmlFormElement('service', null, array('value' => '{service}', 'name' => $vs_id_prefix.'_service_{n}', 'id' => $vs_id_prefix.'_service_{n}')); ?></td>
 					<td><?php print $t_order_item->htmlFormElement('fullfillment_method',  null, array('value' => '{fullfillment_method}', 'name' => $vs_id_prefix.'_fullfillment_method_{n}', 'id' => $vs_id_prefix.'_fullfillment_method_{n}')); ?></td>
 					<td rowspan='3' valign='top' width='125'>
-						<a href='#' onclick='caMediaPanel.showPanel("<?php print urldecode(caNavUrl($this->request, 'client', 'OrderEditor', 'SelectRepresentations', array('object_id' => "{object_id}", 'item_id' => "{item_id}"))); ?>", function() { jQuery("#orderItemRepresentationSelect{n}").load("<?php print urldecode(caNavUrl($this->request, 'client', 'OrderEditor', 'GetSelectedRepresentationCount', array('item_id' => '{item_id}'))); ?>"); }); return false;' >{thumbnail_tag}</a>
+						<a href='#' onclick='caMediaPanel.showPanel("<?php print urldecode(caNavUrl($this->request, 'client/orders', 'OrderEditor', 'SelectRepresentations', array('object_id' => "{object_id}", 'item_id' => "{item_id}"))); ?>", function() { jQuery("#orderItemRepresentationSelect{n}").load("<?php print urldecode(caNavUrl($this->request, 'client/orders', 'OrderEditor', 'GetSelectedRepresentationCount', array('item_id' => '{item_id}'))); ?>"); }); return false;' >{thumbnail_tag}</a>
 						<br/>
-						<span id="orderItemRepresentationSelect{n}"><a href='#' onclick='caMediaPanel.showPanel("<?php print urldecode(caNavUrl($this->request, 'client', 'OrderEditor', 'SelectRepresentations', array('object_id' => "{object_id}", 'item_id' => "{item_id}"))); ?>", function() { jQuery("#orderItemRepresentationSelect{n}").load("<?php print urldecode(caNavUrl($this->request, 'client', 'OrderEditor', 'GetSelectedRepresentationCount', array('item_id' => '{item_id}'))); ?>"); }); return false;' ><?php print _t('%1/%2 pages selected', "{selected_representation_count}", "{representation_count}"); ?></a></span>
+						<span id="orderItemRepresentationSelect{n}"><a href='#' onclick='caMediaPanel.showPanel("<?php print urldecode(caNavUrl($this->request, 'client/orders', 'OrderEditor', 'SelectRepresentations', array('object_id' => "{object_id}", 'item_id' => "{item_id}"))); ?>", function() { jQuery("#orderItemRepresentationSelect{n}").load("<?php print urldecode(caNavUrl($this->request, 'client/orders', 'OrderEditor', 'GetSelectedRepresentationCount', array('item_id' => '{item_id}'))); ?>"); }); return false;' ><?php print _t('%1/%2 pages selected', "{selected_representation_count}", "{representation_count}"); ?></a></span>
 					</td>
 				</tr>
 				<tr>

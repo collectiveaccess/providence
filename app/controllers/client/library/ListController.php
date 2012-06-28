@@ -40,7 +40,7 @@
 			
 			$o_result_context = new ResultContext($this->request, 'ca_commerce_orders', 'basic_search');
 			
- 			$va_options = array();
+ 			$va_options = array('type' => 'L');
  			$t_order = new ca_commerce_orders();
  			
  			// Set drop-down fields to be null-able here so we don't get them auto-setting to their defaults
@@ -87,13 +87,13 @@
  			$this->view->setVar('currency', $this->opo_client_services_config->get('currency'));
  			$this->view->setVar('currency_symbol', $this->opo_client_services_config->get('currency_symbol'));
  			
- 			$this->render('list_orders_html.php');
+ 			$this->render('list_loans_html.php');
  		}
  		# -------------------------------------------------------
  		public function ViewOrder() {
  			JavascriptLoadManager::register('tableList');
  			
- 			$this->render('view_orders_html.php');
+ 			$this->render('view_loans_html.php');
  		}
  		# -------------------------------------------------------
  		/**
@@ -101,8 +101,8 @@
  		 */
  		public function Info() {
  			$t_order = new ca_commerce_orders();
- 			$this->view->setVar('order_list', $va_order_list = $t_order->getOrders($va_options));
- 			return $this->render('widget_orders_info_html.php', true);
+ 			$this->view->setVar('order_list', $va_order_list = $t_order->getOrders(array('type' => 'L')));
+ 			return $this->render('widget_loan_info_html.php', true);
  		}
  		# -------------------------------------------------------
  	}

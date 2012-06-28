@@ -30,7 +30,7 @@
  	$pn_communication_id = $this->getVar('communication_id');
  ?>
  	<div id="caClientCommunicationsReply">
- 		<a href="#" class="button" style="float: right;" onclick="jQuery('#caClientCommunicationsMessageDisplay').load('<?php print caNavUrl($this->request, 'client', 'Communications', 'ViewMessage', array('communication_id' => $pn_communication_id)); ?>');"><?php print _t('Cancel'); ?> &rsaquo;</a>
+ 		<a href="#" class="button" style="float: right;" onclick="jQuery('#caClientCommunicationsMessageDisplay').load('<?php print caNavUrl($this->request, 'client/orders', 'Communications', 'ViewMessage', array('communication_id' => $pn_communication_id)); ?>');"><?php print _t('Cancel'); ?> &rsaquo;</a>
 <?php
 	print caFormTag($this->request, 'SendReply', 'caClientCommunicationsReplyForm');
 	$t_comm = new ca_commerce_communications($pn_communication_id);
