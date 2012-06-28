@@ -6445,6 +6445,10 @@ create table ca_commerce_order_items
    refund_notes                   text not null,
    refund_amount                  decimal(8,2) null,
    
+   loan_checkout_date             int unsigned null DEFAULT '0',
+   loan_due_date                  int unsigned null DEFAULT '0',
+   loan_return_date               int unsigned null DEFAULT '0',
+   
    additional_fees                longtext not null,
    
    rank                           int unsigned                   not null default 0,
@@ -6458,6 +6462,9 @@ create table ca_commerce_order_items
 
 create index i_object_id on ca_commerce_order_items(object_id);
 create index i_order_id on ca_commerce_order_items(order_id);
+create index i_loan_checkout_date on ca_commerce_order_items(loan_checkout_date);
+create index i_loan_due_date on ca_commerce_order_items(loan_due_date);
+create index i_loan_return_date on ca_commerce_order_items(loan_return_date);
 
 
 /*==========================================================================*/
@@ -6564,5 +6571,5 @@ create table ca_schema_updates (
 ) engine=innodb CHARACTER SET utf8 COLLATE utf8_general_ci;
 
 /* Indicate up to what migration this schema definition covers */
-/* CURRENT MIGRATION: 65 */
-INSERT IGNORE INTO ca_schema_updates (version_num, datetime) VALUES (65, unix_timestamp());
+/* CURRENT MIGRATION: 66 */
+INSERT IGNORE INTO ca_schema_updates (version_num, datetime) VALUES (66, unix_timestamp());
