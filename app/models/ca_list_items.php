@@ -451,7 +451,7 @@ class ca_list_items extends BundlableLabelableBaseModelWithAttributes implements
 			WHERE 
 				cli.parent_id IS NULL and cli.list_id IN (".join(',', $va_hierarchy_ids).") ".($pb_vocabularies ? " AND (l.use_as_vocabulary = 1)" : "")."
 			GROUP BY
-				cli.item_id
+				cli.item_id, cli.list_id
 		");
 		
 		while ($qr_res->nextRow()) {

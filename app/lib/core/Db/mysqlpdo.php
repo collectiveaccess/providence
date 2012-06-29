@@ -1,6 +1,6 @@
 <?php
 /** ---------------------------------------------------------------------
- * app/lib/core/Db/pdo-mysql.php :
+ * app/lib/core/Db/mysqlpdo.php :
  * ----------------------------------------------------------------------
  * CollectiveAccess
  * Open-source collections management software
@@ -57,6 +57,13 @@ class Db_mysqlpdo extends DbDriverBase {
 	 */
 	var $opo_db;
 
+	/**
+	 * PDOScrollable object containing last successful result
+	 *
+	 * @access private
+	 */
+	var $opo_lres;
+
 	/** List of features supported by this driver
 	 *
 	 * @access private
@@ -106,7 +113,7 @@ class Db_mysqlpdo extends DbDriverBase {
 		$this->opo_db = new PDO($vs_pdodsn, $pa_options["username"], $pa_options["password"]);
 
 		if (!$this->opo_db) {
-			$po_caller->postError(200, "Unnable to connect to database. Check database settings in setup.php", "Db->pdo-mysql->connect()");
+			$po_caller->postError(200, "Unnable to connect to database. Check database settings in setup.php", "Db->mysqlpdo->connect()");
 			return false;
 		}
 
@@ -254,7 +261,7 @@ class Db_mysqlpdo extends DbDriverBase {
 	 */
 	function execute($po_caller, $opo_statement, $ps_sql, $pa_values) {
 		if (!$ps_sql) {
-			$opo_statement->postError(240, _t("Query is empty"), "Db->pdo-mysql->execute()");
+			$opo_statement->postError(240, _t("Query is empty"), "Db->mysqlpdo->execute()");
 			return false;
 		}
 
@@ -263,7 +270,7 @@ class Db_mysqlpdo extends DbDriverBase {
 		$va_placeholder_map = $opo_statement->getOption('placeholder_map');
 		$vn_needed_values = sizeof($va_placeholder_map);
 		if ($vn_needed_values != sizeof($pa_values)) {
-			$opo_statement->postError(285, _t("Number of values passed (%1) does not equal number of values required (%2)", sizeof($pa_values), $vn_needed_values),"Db->pdo-mysql->execute()");
+			$opo_statement->postError(285, _t("Number of values passed (%1) does not equal number of values required (%2)", sizeof($pa_values), $vn_needed_values),"Db->mysqlpdo->execute()");
 			return false;
 		}
 
@@ -294,14 +301,14 @@ class Db_mysqlpdo extends DbDriverBase {
 			print "<pre>".caPrintStacktrace()."</pre>\n";
 			print $vs_sql;
 			print $this->errorinfo();
-			$opo_statement->postError($this->nativeToDbError($this->errorcode()), $this->errorinfo(), "Db->pdo-mysql->execute()");
+			$opo_statement->postError($this->nativeToDbError($this->errorcode()), $this->errorinfo(), "Db->mysqlpdo->execute()");
 			return false;
 		}
 		if (Db::$monitor) {
 			Db::$monitor->logQuery($ps_sql, $pa_values, $t->getTime(4), is_bool($r_res) ? null : $r_res->rowCount());
 		}
-
-		return new DbResult($this, new PDOScrollable($r_res));
+		$this->opo_lres = new PDOScrollable($r_res);
+		return new DbResult($this, $this->opo_lres);
 	}
 
 	/**
@@ -321,7 +328,7 @@ class Db_mysqlpdo extends DbDriverBase {
 	 * @return int number of rows
 	 */
 	function affectedRows($po_caller) {
-		return @$this->opo_db->rowCount();
+		return @$this->opo_lres->rowCount();
 	}
 
 	/**
@@ -335,10 +342,10 @@ class Db_mysqlpdo extends DbDriverBase {
 	 */
 	function createTemporaryTable($po_caller, $ps_table_name, $pa_field_list, $ps_type="") {
 		if (!$ps_table_name) {
-			$po_caller->postError(230, _t("No table name specified"), "Db->pdo-mysql->createTemporaryTable()");
+			$po_caller->postError(230, _t("No table name specified"), "Db->mysqlpdo->createTemporaryTable()");
 		}
 		if (!is_array($pa_field_list) || sizeof($pa_field_list) == 0) {
-			$po_caller->postError(231, _t("No fields specified"), "Db->pdo-mysql->createTemporaryTable()");
+			$po_caller->postError(231, _t("No fields specified"), "Db->mysqlpdo->createTemporaryTable()");
 		}
 
 
@@ -379,7 +386,7 @@ class Db_mysqlpdo extends DbDriverBase {
 		}
 
 		if (!($vb_res = $this->opo_db->query($vs_sql))) {
-			$po_caller->postError($this->nativeToDbError($this->errorcode()), $this->errorinfo(), "Db->pdo-mysql->createTemporaryTable()");
+			$po_caller->postError($this->nativeToDbError($this->errorcode()), $this->errorinfo(), "Db->mysqlpdo->createTemporaryTable()");
 		}
 		return $vb_res;
 	}
@@ -393,7 +400,7 @@ class Db_mysqlpdo extends DbDriverBase {
 	 */
 	function dropTemporaryTable($po_caller, $ps_table_name) {
 		if (!($vb_res = @$this->opo_db->query("DROP TABLE ".$ps_table_name))) {
-			$po_caller->postError($this->nativeToDbError($this->errorcode()), $this->errorinfo(), "Db->pdo-mysql->dropTemporaryTable()");
+			$po_caller->postError($this->nativeToDbError($this->errorcode()), $this->errorinfo(), "Db->mysqlpdo->dropTemporaryTable()");
 		}
 		return $vb_res;
 	}
@@ -422,7 +429,7 @@ class Db_mysqlpdo extends DbDriverBase {
 	 */
 	function beginTransaction($po_caller) {
 		if (!@$this->opo_db->beginTransaction()) {
-			$po_caller->postError(250, $this->errorinfo(), "Db->pdo-mysql->beginTransaction()");
+			$po_caller->postError(250, $this->errorinfo(), "Db->mysqlpdo->beginTransaction()");
 			return false;
 		}
 		return true;
@@ -435,7 +442,7 @@ class Db_mysqlpdo extends DbDriverBase {
 	 */
 	function commitTransaction($po_caller) {
 		if (!@$this->opo_db->commit()) {
-			$po_caller->postError(250, $this->errorinfo(), "Db->pdo-mysql->commitTransaction()");
+			$po_caller->postError(250, $this->errorinfo(), "Db->mysqlpdo->commitTransaction()");
 			return false;
 		}
 		return true;
@@ -448,7 +455,7 @@ class Db_mysqlpdo extends DbDriverBase {
 	 */
 	function rollbackTransaction($po_caller) {
 		if (!@$this->opo_db->rollBack()) {
-			$po_caller->postError(250, $this->errorinfo(), "Db->pdo-mysql->rollbackTransaction()");
+			$po_caller->postError(250, $this->errorinfo(), "Db->mysqlpdo->rollbackTransaction()");
 			return false;
 		}
 		return true;
@@ -518,7 +525,7 @@ class Db_mysqlpdo extends DbDriverBase {
 			}
 			return $va_tables;
 		} else {
-			$po_caller->postError(280, $this->errorinfo(), "Db->pdo-mysql->getTables()");
+			$po_caller->postError(280, $this->errorinfo(), "Db->mysqlpdo->getTables()");
 			return false;
 		}
 	}
@@ -581,7 +588,7 @@ class Db_mysqlpdo extends DbDriverBase {
 
 			return $va_tables;
 		} else {
-			$po_caller->postError(280, $this->errorinfo(), "Db->pdo-mysql->getTables()");
+			$po_caller->postError(280, $this->errorinfo(), "Db->mysqlpdo->getFieldsFromTable()");
 			return false;
 		}
 	}
@@ -628,7 +635,7 @@ class Db_mysqlpdo extends DbDriverBase {
 
 			return $va_keys;
 		} else {
-			$po_caller->postError(280, $this->errorinfo(), "Db->pdo-mysql->getKeys()");
+			$po_caller->postError(280, $this->errorinfo(), "Db->mysqlpdo->getKeys()");
 			return false;
 		}
 	}

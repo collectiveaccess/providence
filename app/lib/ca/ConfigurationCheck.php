@@ -195,6 +195,7 @@ final class ConfigurationCheck {
 	 * Check for innodb availabiliy
 	 */
 	public static function DBInnoDBQuickCheck() {
+		return true;
 		$va_mysql_errors = array();
 		$qr_engines = self::$opo_db->query("SHOW ENGINES");
 		$vb_innodb_available = false;

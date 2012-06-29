@@ -2074,7 +2074,7 @@ class BaseModel extends BaseObject {
 
 				$vs_sql = "INSERT INTO ".$this->TABLE." ($vs_fields) VALUES ($vs_values)";
 
-				if ($this->debug) echo $vs_sql;
+				if ($this->debug) echo __METHOD__ . ": $vs_sql\n\n";
 				$o_db->query($vs_sql);
 				
 				if ($o_db->numErrors() == 0) {
@@ -5716,7 +5716,7 @@ class BaseModel extends BaseObject {
 				if (is_null($pn_max_levels) || ($vn_cur_level < $pn_max_levels)) {
 					$va_field_values = $qr_hier->getRow();
 					foreach($va_field_values as $vs_key => $vs_val) {
-						$va_field_values[$vs_key] = stripSlashes($vs_val);
+						$va_field_values[$vs_key] = @stripSlashes($vs_val);
 					}
 					if ($pb_ids_only) {					
 						$va_hier[] = $vn_row_id;
@@ -5896,7 +5896,7 @@ class BaseModel extends BaseObject {
 		
 		if (!$pn_id) { $pn_id = $this->getPrimaryKey(); }
 		if (!$pn_id) { return null; }
-		$qr_children = $this->getHierarchyChildrenAsQuery($pn_id, $pa_options);
+		$qr_children = $this->getHierarchyChildrenAsQuery($pn_id == 'NULL' ? null : $pn_id, $pa_options);
 		
 		
 		$va_children = array();

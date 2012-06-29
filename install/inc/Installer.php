@@ -424,7 +424,6 @@ class Installer {
 			$t_list->set("is_hierarchical",$vb_hierarchical);
 			$t_list->set("use_as_vocabulary",$vb_voc);
 			if($vn_def_sort) $t_list->set("default_sort",(int)$vn_def_sort);
-
 			$t_list->insert();
 
 			if ($t_list->numErrors()) {
@@ -439,7 +438,6 @@ class Installer {
 				}
 			}
 		}
-
 		return true;
 	}
 	# --------------------------------------------------

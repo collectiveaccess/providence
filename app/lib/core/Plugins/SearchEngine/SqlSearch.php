@@ -333,7 +333,7 @@ class WLPlugSearchEngineSqlSearch extends BaseSearchPlugin implements IWLPlugSea
 				$vs_where_sql = " WHERE ".join(" AND ", $va_wheres);
 			}
 			$vs_sql = "
-				SELECT DISTINCT row_id
+				SELECT DISTINCT row_id, boost
 				FROM ca_sql_search_search_final
 				{$vs_join_sql}
 				{$vs_where_sql}
@@ -357,15 +357,22 @@ class WLPlugSearchEngineSqlSearch extends BaseSearchPlugin implements IWLPlugSea
 	}
 	# -------------------------------------------------------
 	private function _createTempTable($ps_name) {
+		$vb_mysql = preg_match("/mysql/",$this->opo_config->get("db_type"));
 		$this->opo_db->query("
 			CREATE TEMPORARY TABLE {$ps_name} (
-				row_id int unsigned not null,
-				boost int not null default 1,
+				row_id int not null,
+				boost int not null default 1
 				
-				unique key i_row_id (row_id),
-				key i_boost (boost)
-			) engine=memory;
-		");
+			)". ($vb_mysql ? " engine=memory;" : ";"));
+		if ($this->opo_db->numErrors()) {
+			return false;
+		}
+		$this->opo_db->query("create unique index i_row_id" . ($vb_mysql ? "" : "_{$ps_name}" . " on {$ps_name}(row_id);"));
+		if ($this->opo_db->numErrors()) {
+			return false;
+		}
+		$this->opo_db->query("create index i_boost" . ($vb_mysql ? "" : "_{$ps_name}" . " on {$ps_name}(boost);"));
+		
 		if ($this->opo_db->numErrors()) {
 			return false;
 		}
@@ -441,7 +448,7 @@ class WLPlugSearchEngineSqlSearch extends BaseSearchPlugin implements IWLPlugSea
 							
 							if ($vn_i == 0) {
 								$vs_sql = "
-									INSERT IGNORE INTO {$ps_dest_table}
+									INSERT INTO {$ps_dest_table}
 									SELECT DISTINCT row_id, boost
 									FROM ca_sql_search_temp_{$pn_level}
 								";
@@ -449,7 +456,7 @@ class WLPlugSearchEngineSqlSearch extends BaseSearchPlugin implements IWLPlugSea
 								$qr_res = $this->opo_db->query($vs_sql);
 							} else {
 								$vs_sql = "
-									INSERT IGNORE INTO {$ps_dest_table}_acc
+									INSERT INTO {$ps_dest_table}_acc
 									SELECT mfs.row_id, SUM(mfs.boost)
 									FROM {$ps_dest_table} mfs
 									INNER JOIN ca_sql_search_temp_{$pn_level} AS ftmp1 ON ftmp1.row_id = mfs.row_id
@@ -478,7 +485,7 @@ class WLPlugSearchEngineSqlSearch extends BaseSearchPlugin implements IWLPlugSea
 						case 'OR':
 							// or
 							$vs_sql = "
-								INSERT IGNORE INTO {$ps_dest_table}
+								INSERT INTO {$ps_dest_table}
 								SELECT row_id, SUM(boost)
 								FROM ca_sql_search_temp_{$pn_level}
 								GROUP BY row_id
@@ -1004,8 +1011,8 @@ class WLPlugSearchEngineSqlSearch extends BaseSearchPlugin implements IWLPlugSea
 						if ($vs_direct_sql_query) {
 							$vs_direct_sql_query = str_replace('^JOIN', "", $vs_direct_sql_query);
 						}
-						$vs_sql = ($vs_direct_sql_query) ? "INSERT IGNORE INTO {$ps_dest_table} {$vs_direct_sql_query}" : "
-							INSERT IGNORE INTO {$ps_dest_table}
+						$vs_sql = ($vs_direct_sql_query) ? "INSERT INTO {$ps_dest_table} {$vs_direct_sql_query}" : "
+							INSERT INTO {$ps_dest_table}
 							SELECT swi.row_id, SUM(swi.boost)
 							FROM ca_sql_search_word_index swi
 							INNER JOIN ca_sql_search_words AS sw ON sw.word_id = swi.word_id
@@ -1030,8 +1037,8 @@ class WLPlugSearchEngineSqlSearch extends BaseSearchPlugin implements IWLPlugSea
 									$vs_direct_sql_query = str_replace('^JOIN', "INNER JOIN {$ps_dest_table} AS ftmp1 ON ftmp1.row_id = ca.row_id", $vs_direct_sql_query);
 								}
 								$this->_createTempTable($ps_dest_table.'_acc');
-								$vs_sql = ($vs_direct_sql_query) ? "INSERT IGNORE INTO {$ps_dest_table}_acc {$vs_direct_sql_query}" : "
-									INSERT IGNORE INTO {$ps_dest_table}_acc
+								$vs_sql = ($vs_direct_sql_query) ? "INSERT INTO {$ps_dest_table}_acc {$vs_direct_sql_query}" : "
+									INSERT INTO {$ps_dest_table}_acc
 									SELECT swi.row_id, SUM(swi.boost)
 									FROM ca_sql_search_word_index swi
 									INNER JOIN ca_sql_search_words AS sw ON sw.word_id = swi.word_id
@@ -1084,8 +1091,8 @@ class WLPlugSearchEngineSqlSearch extends BaseSearchPlugin implements IWLPlugSea
 								if ($vs_direct_sql_query) {
 									$vs_direct_sql_query = str_replace('^JOIN', "", $vs_direct_sql_query);
 								}
-								$vs_sql = ($vs_direct_sql_query) ? "INSERT IGNORE INTO {$ps_dest_table} {$vs_direct_sql_query}" : "
-									INSERT IGNORE INTO {$ps_dest_table}
+								$vs_sql = ($vs_direct_sql_query) ? "INSERT INTO {$ps_dest_table} {$vs_direct_sql_query}" : "
+									INSERT INTO {$ps_dest_table}
 									SELECT swi.row_id, SUM(swi.boost)
 									FROM ca_sql_search_word_index swi
 									INNER JOIN ca_sql_search_words AS sw ON sw.word_id = swi.word_id

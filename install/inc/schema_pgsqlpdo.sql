@@ -28,6 +28,7 @@ create table ca_users
    active                         integer                        not null,
    confirmed_on                   integer,
    confirmation_key               char(32),
+   entity_id                      integer,
    primary key (user_id)
 );
 
@@ -159,9 +160,9 @@ create table ca_list_items
    validation_format              varchar(255)                   not null,
    color                          char(6)                            null,
    icon                           bytea                          not null,
-   access                         integer                        not null,
-   status                         integer                        not null,
-   deleted                        integer                        not null,
+   access                         integer                        not null default 0,
+   status                         integer                        not null default 0,
+   deleted                        integer                        not null default 0,
    primary key (item_id),
    
    constraint fk_ca_list_items_type_id foreign key (type_id)
@@ -291,8 +292,9 @@ create table ca_metadata_type_restrictions
    restriction_id                 serial,
    table_num                      integer               not null,
    type_id                        integer,
+   include_subtypes               smallint			    not null default 0,
    element_id                     smallint              not null,
-   settings                       text                       not null,
+   settings                       text                  not null,
    rank                           smallint              not null,
    primary key (restriction_id),
    
@@ -325,16 +327,16 @@ create table ca_object_lots
    lot_status_id                  integer                   not null,
    idno_stub                      varchar(255)                   not null,
    idno_stub_sort                 varchar(255)                   not null,
-   is_template                    integer               not null,
-   commenting_status              integer               not null,
-   tagging_status                 integer               not null,
-   rating_status                  integer               not null,
+   is_template                    integer               not null default 0,
+   commenting_status              integer               not null default 0,
+   tagging_status                 integer               not null default 0,
+   rating_status                  integer               not null default 0,
    extent                         smallint              not null,
    extent_units                   varchar(255)                   not null,
-   access                         integer                        not null,
-   status                         integer               not null,
+   access                         integer                        not null default 0,
+   status                         integer               not null default 0,
    source_info                    text                       not null,
-   deleted                        integer               not null,
+   deleted                        integer               not null default 0,
    rank                             integer                     not null,
    primary key (lot_id),
    
@@ -361,16 +363,18 @@ create table ca_object_representations
    idno                           varchar(255)                   not null,
    idno_sort                      varchar(255)                   not null,
    md5                            varchar(32)                    not null,
+   mimetype                       varchar(255)                   null,
    original_filename              varchar(1024)                  not null,
    media                          bytea                       not null,
    media_metadata                 bytea                       not null,
    media_content                  text                       not null,
-   is_template                    integer               not null,
-   commenting_status              integer               not null,
-   tagging_status                 integer               not null,
-   rating_status                  integer               not null,
-   access                         integer               not null,
-   status                         integer               not null,
+   deleted                    integer               not null default 0,
+   is_template                    integer               not null default 0,
+   commenting_status              integer               not null default 0,
+   tagging_status                 integer               not null default 0,
+   rating_status                  integer               not null default 0,
+   access                         integer               not null default 0,
+   status                         integer               not null default 0,
    rank                             integer                     not null,
    primary key (representation_id),
    constraint fk_ca_object_representations_type_id foreign key (type_id)
@@ -387,6 +391,8 @@ create index i_idno_ca_object_representations on ca_object_representations(idno)
 create index i_idno_sort_ca_object_representations on ca_object_representations(idno_sort);
 create index i_md5_ca_object_representations on ca_object_representations(md5);
 create index i_original_filename_ca_object_representations on ca_object_representations(original_filename);
+create index i_mimetype_ca_object_representations on ca_object_representations(mimetype);
+create index i_rank_ca_object_representations on ca_object_representations(rank);
 
 
 /*==========================================================================*/
@@ -439,18 +445,18 @@ create table ca_occurrences
    type_id                        integer                   not null,
    idno                           varchar(255)                   not null,
    idno_sort                      varchar(255)                   not null,
-   is_template                    integer               not null,
-   commenting_status              integer               not null,
-   tagging_status                 integer               not null,
-   rating_status                  integer               not null,
+   is_template                    integer               not null default 0,
+   commenting_status              integer               not null default 0,
+   tagging_status                 integer               not null default 0,
+   rating_status                  integer               not null default 0,
    source_id                      integer,
    source_info                    text                       not null,
    hier_occurrence_id             integer                   not null,
    hier_left                      decimal(30,20)                 not null,
    hier_right                     decimal(30,20)                 not null,
-   access                         integer               not null,
-   status                         integer               not null,
-   deleted                        integer               not null,
+   access                         integer               not null default 0,
+   status                         integer               not null default 0,
+   deleted                        integer               not null default 0,
    rank                             integer                     not null,
    primary key (occurrence_id),
    
@@ -519,18 +525,18 @@ create table ca_collections
    type_id                        integer                   not null,
    idno                           varchar(255)                   not null,
    idno_sort                      varchar(255)                   not null,
-   is_template                    integer               not null,
-   commenting_status              integer               not null,
-   tagging_status                 integer               not null,
-   rating_status                  integer               not null,
+   is_template                    integer               not null default 0,
+   commenting_status              integer               not null default 0,
+   tagging_status                 integer               not null default 0,
+   rating_status                  integer               not null default 0,
    source_id                      integer,
    source_info                    text                       not null,
    hier_collection_id             integer                   not null,
    hier_left                      decimal(30,20)                 not null,
    hier_right                     decimal(30,20)                 not null,
-   access                         integer               not null,
-   status                         integer               not null,
-   deleted                        integer               not null,
+   access                         integer               not null default 0,
+   status                         integer               not null default 0,
+   deleted                        integer               not null default 0,
    rank                             integer                     not null,
    primary key (collection_id),
    constraint fk_ca_collections_type_id foreign key (type_id)
@@ -602,16 +608,16 @@ create table ca_places
    hierarchy_id                   integer                   not null,
    idno                           varchar(255)                   not null,
    idno_sort                      varchar(255)                   not null,
-   is_template                    integer               not null,
-   commenting_status              integer               not null,
-   tagging_status                 integer               not null,
-   rating_status                  integer               not null,
+   is_template                    integer               not null default 0, 
+   commenting_status              integer               not null default 0, 
+   tagging_status                 integer               not null default 0, 
+   rating_status                  integer               not null default 0, 
    source_info                    text                       not null,
    lifespan_sdate                 decimal(30,20),
    lifespan_edate                 decimal(30,20),
-   access                         integer               not null,
-   status                         integer               not null,
-   deleted                        integer               not null,
+   access                         integer               not null default 0,
+   status                         integer               not null default 0,
+   deleted                        integer               not null default 0,
    hier_left                      decimal(30,20)                 not null,
    hier_right                     decimal(30,20)                 not null,
    rank                             integer                     not null,
@@ -683,12 +689,16 @@ create table ca_storage_locations
    location_id                    serial,
    parent_id                      integer,
    type_id                        integer,
-   is_template                    integer               not null,
+   idno                           varchar(255)                   not null,
+   idno_sort                      varchar(255)                   not null,
+   is_template                    integer               not null default 0,
    source_info                    text                       not null,
+   color                          char(6)                        null,
+   icon                           bytea                       not null,
    hier_left                      decimal(30,20)                 not null,
    hier_right                     decimal(30,20)                 not null,
-   status                         integer               not null,
-   deleted                        integer               not null,
+   status                         integer               not null default 0,
+   deleted                        integer               not null default 0,
    rank                             integer                     not null,
    primary key (location_id),
    constraint fk_ca_storage_locations_type_id foreign key (type_id)
@@ -746,13 +756,13 @@ create table ca_loans (
    locale_id                      smallint              null,
    idno                           varchar(255)                   not null,
    idno_sort                      varchar(255)                   not null,
-   is_template                    integer               not null,
+   is_template                    integer               not null default 0,
    source_info                    text                       not null,
    hier_left                      decimal(30,20)                 not null,
    hier_right                     decimal(30,20)                 not null,
    hier_loan_id                   integer                   not null,
-   status                         integer               not null,
-   deleted                        integer               not null,
+   status                         integer               not null default 0,
+   deleted                        integer               not null default 0,
    rank                             integer                     not null,
    primary key (loan_id),
    
@@ -814,10 +824,10 @@ create table ca_movements (
    locale_id                      smallint              null,
    idno                           varchar(255)                   not null,
    idno_sort                      varchar(255)                   not null,
-   is_template                    integer               not null,
+   is_template                    integer               not null default 0,
    source_info                    text                       not null,
-   status                         integer               not null,
-   deleted                        integer               not null,
+   status                         integer               not null default 0,
+   deleted                        integer               not null default 0,
    rank                             integer                     not null,
    primary key (movement_id),
    
@@ -1117,8 +1127,8 @@ create table ca_representation_annotations
    props                          text                       not null,
    preview                        text                       not null,
    source_info                    text                       not null,
-   status                         integer               not null,
-   access                         integer               not null,
+   status                         integer               not null default 0,
+   access                         integer               not null default 0,
    primary key (annotation_id),
    constraint fk_ca_rep_annot_locale_id foreign key (locale_id)
       references ca_locales (locale_id) on delete restrict on update restrict,
@@ -1243,7 +1253,7 @@ create table ca_object_lot_events
    event_id                       serial,
    lot_id                         integer                   not null,
    type_id                        integer                   not null,
-   is_template                    integer               not null,
+   is_template                    integer               not null default 0,
    planned_sdatetime              decimal(30,20)                 not null,
    planned_edatetime              decimal(30,20)                 not null,
    event_sdatetime                decimal(30,20),
@@ -1482,10 +1492,10 @@ create table ca_objects
    lot_id                         integer,
    locale_id                      smallint,
    source_id                      integer,
-   is_template                    integer               not null,
-   commenting_status              integer               not null,
-   tagging_status                 integer               not null,
-   rating_status                  integer               not null,
+   is_template                    integer               not null default 0,
+   commenting_status              integer               not null default 0,
+   tagging_status                 integer               not null default 0,
+   rating_status                  integer               not null default 0,
    type_id                        integer                   not null,
    idno                           varchar(255)                   not null,
    idno_sort                      varchar(255)                   not null,
@@ -1497,9 +1507,9 @@ create table ca_objects
    hier_right                     decimal(30,20)        not null,
    extent                         integer                   not null,
    extent_units                   varchar(255)                   not null,
-   access                         integer               not null,
-   status                         integer               not null,
-   deleted                        integer               not null,
+   access                         integer               not null default 0,
+   status                         integer               not null default 0,
+   deleted                        integer               not null default 0,
    rank                             integer                     not null,
    primary key (object_id),
    constraint fk_ca_objects_source_id foreign key (source_id)
@@ -1582,7 +1592,7 @@ create table ca_object_events
    event_id                       serial,
    type_id                        integer                   not null,
    object_id                      integer                   not null,
-   is_template                    integer               not null,
+   is_template                    integer               not null default 0,
    planned_sdatetime              decimal(30,20)                 not null,
    planned_edatetime              decimal(30,20)                 not null,
    event_sdatetime                decimal(30,20),
@@ -2197,14 +2207,14 @@ create index i_label_right_id_ca_object_lots_x_places on ca_object_lots_x_places
 /*==========================================================================*/
 create table ca_acl
 (
-   aci_id                         serial,
+   acl_id                         serial,
    group_id                       integer,
    user_id                        integer,
    table_num                      integer               not null,
    row_id                         integer                   not null,
-   access                         integer               not null,
+   access                         integer               not null default 0,
    notes                          char(10)                       not null,
-   primary key (aci_id),
+   primary key (acl_id),
    constraint fk_ca_acl_group_id foreign key (group_id)
       references ca_user_groups (group_id) on delete restrict on update restrict,
    constraint fk_ca_acl_user_id foreign key (user_id)
@@ -2316,19 +2326,19 @@ create table ca_entities
    type_id                        integer                   not null,
    idno                           varchar(255)                   not null,
    idno_sort                      varchar(255)                   not null,
-   is_template                    integer               not null,
-   commenting_status              integer               not null,
-   tagging_status                 integer               not null,
-   rating_status                  integer               not null,
+   is_template                    integer               not null default 0,
+   commenting_status              integer               not null default 0,
+   tagging_status                 integer               not null default 0,
+   rating_status                  integer               not null default 0,
    source_info                    text                       not null,
    life_sdatetime                 decimal(30,20),
    life_edatetime                 decimal(30,20),
    hier_entity_id                 integer                   not null,
    hier_left                      decimal(30,20)                 not null,
    hier_right                     decimal(30,20)                 not null,
-   access                         integer               not null,
-   status                         integer               not null,
-   deleted                        integer               not null,
+   access                         integer               not null default 0,
+   status                         integer               not null default 0,
+   deleted                        integer               not null default 0,
    rank                             integer                     not null,
    primary key (entity_id),
    constraint fk_ca_entities_source_id foreign key (source_id)
@@ -3960,8 +3970,8 @@ create table ca_attribute_values
    element_id                     smallint              not null,
    attribute_id                   integer                   not null,
    item_id                        integer,
-   value_text1                text,
-   value_text2                text,
+   value_longtext1                text,
+   value_longtext2                text,
    value_blob                     bytea,
    value_decimal1                 decimal(40,20),
    value_decimal2                 decimal(40,20),
@@ -4207,7 +4217,7 @@ create table ca_editor_uis_x_user_groups (
 	relation_id serial,
 	ui_id integer not null references ca_editor_uis(ui_id),
 	group_id integer not null references ca_user_groups(group_id),
-	access 			integer not null,
+	access 			integer not null default 0,
 	
 	primary key 				(relation_id)
 );
@@ -4220,7 +4230,7 @@ create table ca_editor_uis_x_users (
 	relation_id serial,
 	ui_id integer not null references ca_editor_uis(ui_id),
 	user_id integer not null references ca_users(user_id),
-	access 			integer not null,
+	access 			integer not null default 0,
 	
 	primary key 				(relation_id)
 );
@@ -4284,6 +4294,41 @@ create	unique index u_bundle_name_ca_editor_ui_bundle_placements on ca_editor_ui
 
 
 /*==========================================================================*/
+create table ca_editor_ui_type_restrictions (
+   restriction_id                 serial,
+   table_num                      smallint               not null,
+   type_id                        integer,
+   ui_id                          integer                not null,
+   include_subtypes               smallint                not null default 0,
+   settings                       text               not null,
+   rank                           smallint               not null default 0,
+   primary key (restriction_id),
+   
+   constraint fk_ca_editor_ui_type_restrictions_ui_id foreign key (ui_id)
+      references ca_editor_uis (ui_id) on delete restrict on update restrict
+);
+create index i_ui_id_ca_editor_ui_type_restrictions on ca_editor_ui_type_restrictions(ui_id);
+create index i_type_id_ca_editor_ui_type_restrictions on ca_editor_ui_type_restrictions(type_id);
+
+
+/*==========================================================================*/
+create table ca_editor_ui_bundle_placement_type_restrictions (
+   restriction_id                 serial,
+   table_num                      smallint                not null,
+   type_id                        integer,
+   placement_id                   integer                    not null,
+   include_subtypes               smallint                not null default 0,
+   settings                       text                       not null,
+   rank                           smallint               not null default 0,
+   primary key (restriction_id),
+   
+   constraint fk_ca_editor_ui_bundle_placement_type_restrictions_placement_id foreign key (placement_id)
+      references ca_editor_ui_bundle_placements (placement_id) on delete restrict on update restrict
+);
+create   index i_placement_id_ca_editor_ui_bundle_placement_type_restrictions on ca_editor_ui_bundle_placement_type_restrictions(placement_id);
+create   index i_type_id_ca_editor_ui_bundle_placement_type_restrictions on ca_editor_ui_bundle_placement_type_restrictions(type_id);
+
+/*==========================================================================*/
 create table ca_editor_ui_screen_type_restrictions (
    restriction_id                 serial,
    table_num                      integer               not null,
@@ -4304,13 +4349,15 @@ create table ca_sets (
 	hier_set_id integer not null,
 	user_id		integer null references ca_users(user_id),
     type_id     integer not null,
-    commenting_status integer not null,
-    tagging_status integer not null,
-    rating_status integer not null,
+    ui_id  		integer not null,
+    commenting_status integer not null default 0,
+    tagging_status integer not null default 0,
+    rating_status integer not null default 0,
 	set_code    varchar(100) null,
 	table_num	integer not null,
-	status		integer not null,
-	access		integer not null,	
+ status		integer not null default 0,
+	access		integer not null default 0,	
+	deleted		integer not null default 0,	
 	hier_left	decimal(30,20) not null,
 	hier_right	decimal(30,20) not null,
    rank                             integer                     not null,
@@ -4382,7 +4429,8 @@ create table ca_sets_x_user_groups (
 	relation_id serial,
 	set_id integer not null references ca_sets(set_id),
 	group_id integer not null references ca_user_groups(group_id),
-	access integer not null,
+	access integer not null default 0,
+	deleted integer not null default 0,
 	sdatetime integer null,
 	edatetime integer null,
 	
@@ -4397,7 +4445,8 @@ create table ca_sets_x_users (
 	relation_id serial,
 	set_id integer not null references ca_sets(set_id),
 	user_id integer not null references ca_users(user_id),
-	access integer not null,
+	access integer not null default 0,
+	deleted integer not null default 0,
 	sdatetime integer null,
 	edatetime integer null,
 	
@@ -4426,7 +4475,7 @@ create table ca_item_comments (
 	email		varchar(255),
 	name		varchar(255),
 	created_on	integer not null,
-	access		integer not null,
+	access		integer not null default 0,
 	ip_addr		varchar(39) null,
 	moderated_on integer null,
 	moderated_by_user_id integer null references ca_users(user_id),
@@ -4463,7 +4512,7 @@ create table ca_items_x_tags (
 	tag_id		integer not null references ca_item_tags(tag_id),
 	
 	user_id		integer null references ca_users(user_id),
-	access		integer not null,
+	access		integer not null default 0,
 	
 	ip_addr		char(39) null,
 	
@@ -4571,7 +4620,7 @@ create table ca_search_forms_x_user_groups (
 	relation_id 	serial,
 	form_id 		integer not null references ca_search_forms(form_id),
 	group_id 		integer not null references ca_user_groups(group_id),
-	access 			integer not null,
+	access 			integer not null default 0,
 	
 	primary key 				(relation_id)
 );
@@ -4582,7 +4631,7 @@ create table ca_search_forms_x_users (
 	relation_id 	serial,
 	form_id 		integer not null references ca_search_forms(form_id),
 	user_id 		integer not null references ca_users(user_id),
-	access 			integer not null,
+	access 			integer not null default 0,
 	
 	primary key 				(relation_id)
 );
@@ -4664,7 +4713,7 @@ create table ca_bundle_displays_x_user_groups (
 	relation_id 	serial,
 	display_id 		integer not null references ca_bundle_displays(display_id),
 	group_id 		integer not null references ca_user_groups(group_id),
-	access 			integer not null,
+	access 			integer not null default 0,
 	
 	primary key 				(relation_id)
 );
@@ -4677,7 +4726,7 @@ create table ca_bundle_displays_x_users (
 	relation_id 	serial,
 	display_id 	integer not null references ca_bundle_displays(display_id),
 	user_id 		integer not null references ca_users(user_id),
-	access 			integer not null,
+	access 			integer not null default 0,
 	
 	primary key 				(relation_id)
 );
@@ -4693,7 +4742,7 @@ create table ca_bundle_mappings (
 	table_num		integer not null,
 	mapping_code	varchar(100) null,
 	target			varchar(100) not null,
-    access          integer not null,
+    access          integer not null default 0,
 	settings		text not null
 	
 );
@@ -4780,8 +4829,8 @@ create table ca_tours
    rank                           integer              not null,
    color                          char(6)                        null,
    icon                           bytea                       not null,
-   access                        integer               not null,
-   status                         integer               not null,
+   access                        integer               not null default 0,
+   status                         integer               not null default 0,
    user_id                        integer                   null,
    primary key (tour_id),
    
@@ -4834,9 +4883,9 @@ create table ca_tour_stops
    hier_stop_id				integer 				not null,
    color                          char(6)                        null,
    icon                           bytea                       not null,
-   access                         integer               not null,
-   status                         integer               not null,
-   deleted                        integer               not null,
+   access                         integer               not null default 0,
+   status                         integer               not null default 0,
+   deleted                        integer               not null default 0,
    primary key (stop_id),
    
    constraint fk_ca_tour_stops_tour_id foreign key (tour_id)
@@ -6193,7 +6242,7 @@ create index i_item_id_ca_commerce_fulfillment_events on ca_commerce_fulfillment
 /*==========================================================================*/
 create table ca_sql_search_words 
 (
-  word_id integer not null,
+  word_id serial,
   word varchar(255) not null,
   stem varchar(255) not null,
   locale_id smallint default null,
@@ -6245,3 +6294,4 @@ create table ca_schema_updates (
 	datetime		integer not null
 	
 );
+INSERT INTO ca_schema_updates (version_num, datetime) VALUES (64, 1340902301);

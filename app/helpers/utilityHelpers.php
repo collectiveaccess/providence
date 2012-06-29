@@ -462,19 +462,19 @@ function caFileIsIncludable($ps_file) {
 	}
 	# ----------------------------------------
 	function caSerializeForDatabase($ps_data, $pb_compress=false) {
-		if ($pb_compress && function_exists('gzcompress')) {
+		/*if ($pb_compress && function_exists('gzcompress')) {
 			return gzcompress(serialize($ps_data));
-		} else {
+		} else {*/
 			return base64_encode(serialize($ps_data));
-		}
+	/*	}*/
 	}
 	# ----------------------------------------
 	function caUnserializeForDatabase($ps_data) {
 		if (is_array($ps_data)) { return $ps_data; }
-		if (function_exists('gzuncompress') && ($ps_uncompressed_data = @gzuncompress($ps_data))) {
+		/*if (function_exists('gzuncompress') && ($ps_uncompressed_data = @gzuncompress($ps_data))) {
 			return unserialize($ps_uncompressed_data);
-		}
-		return unserialize(base64_decode($ps_data));
+		}*/
+		return @unserialize(base64_decode($ps_data));
 	}
 	# ----------------------------------------
 	/**

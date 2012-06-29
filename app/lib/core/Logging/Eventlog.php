@@ -84,7 +84,7 @@ class Eventlog {
 				INSERT INTO ca_eventlog 
 				(date_time, code, message, source)
 				VALUES
-				(unix_timestamp(), ?, ?, ?)
+				(".time().", ?, ?, ?)
 			", $pa_entry["CODE"], $pa_entry["MESSAGE"], $pa_entry["SOURCE"]);
 			
 			return true;

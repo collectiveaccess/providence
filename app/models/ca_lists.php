@@ -288,7 +288,6 @@ class ca_lists extends BundlableLabelableBaseModelWithAttributes {
 	 */
 	public function addItem($ps_value, $pb_is_enabled=true, $pb_is_default=false, $pn_parent_id=null, $pn_type_id=null, $ps_idno=null, $ps_validation_format='', $pn_status=0, $pn_access=0, $pn_rank=null) {
 		if(!($vn_list_id = $this->getPrimaryKey())) { return null; }
-		
 		$t_item = new ca_list_items();
 		$t_item->setMode(ACCESS_WRITE);
 		
