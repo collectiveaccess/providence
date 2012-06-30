@@ -662,7 +662,7 @@ class WLPlugSearchEngineSqlSearch extends BaseSearchPlugin implements IWLPlugSea
 										// do stemming
 										if ($this->opb_do_stemming) {
 											$vs_to_stem = preg_replace('!\*$!u', '', $vs_term);
-											if (!preg_match('!y$!u', $vs_to_stem) && !preg_match('![^A-Za-z0-9\-]+!u', $vs_to_stem) && !preg_match('![0-9]+!', $vs_to_stem)) {	// don't stem things ending in 'y' as that can cause problems (eg "Bowery" becomes "Boweri")
+											if (!preg_match('!y$!u', $vs_to_stem) && !preg_match('![0-9]+!', $vs_to_stem)) {	// don't stem things ending in 'y' as that can cause problems (eg "Bowery" becomes "Boweri")
 												if (!($vs_stem = trim($this->opo_stemmer->stem($vs_to_stem)))) {
 													$vs_stem = (string)$vs_term;
 												}
