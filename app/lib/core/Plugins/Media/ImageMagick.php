@@ -920,7 +920,7 @@ class WLPlugMediaImageMagick Extends WLPlug Implements IWLPlugMedia {
 	# ------------------------------------------------
 	private function _imageMagickIdentify($ps_filepath) {
 		if (caMediaPluginImageMagickInstalled($this->ops_imagemagick_path)) {
-			exec($this->ops_imagemagick_path.'/identify -format "%m" "'.$ps_filepath."\" 2> /dev/null", $va_output, $vn_return);
+			exec($this->ops_imagemagick_path.'/identify -format "%m" '.caEscapeShellArg($ps_filepath)." 2> /dev/null", $va_output, $vn_return);
 			return $this->magickToMimeType($va_output[0]);
 		}
 		return null;
@@ -941,7 +941,7 @@ class WLPlugMediaImageMagick Extends WLPlug Implements IWLPlugMedia {
 				}
 			}
 			
-			exec($this->ops_imagemagick_path."/identify -format '%[DPX:*]' \"".$ps_filepath.'"', $va_output, $vn_return);
+			exec($this->ops_imagemagick_path."/identify -format '%[DPX:*]' ".caEscapeShellArg($ps_filepath), $va_output, $vn_return);
 			if ($va_output[0]) { $va_metadata['DPX'] = $va_output; }
 			
 			$va_iptc_tags = array(
@@ -974,7 +974,7 @@ class WLPlugMediaImageMagick Extends WLPlug Implements IWLPlugMedia {
 			$va_iptc = array();
 			foreach($va_iptc_tags as $vs_tag_name => $vs_tag_code) {
 				$va_output = array();
-				exec($this->ops_imagemagick_path."/identify -format '%[IPTC:".$vs_tag_code."]' \"".$ps_filepath.'"', $va_output, $vn_return);
+				exec($this->ops_imagemagick_path."/identify -format '%[IPTC:".$vs_tag_code."]' ".caEscapeShellArg($ps_filepath), $va_output, $vn_return);
 				if ($va_output[0]) {
 					$va_iptc[str_replace(":", ",", $vs_tag_code).' ['.$vs_tag_name.']'] = $va_output[0];
 				}
@@ -991,7 +991,7 @@ class WLPlugMediaImageMagick Extends WLPlug Implements IWLPlugMedia {
 	private function _imageMagickRead($ps_filepath) {
 		if (caMediaPluginImageMagickInstalled($this->ops_imagemagick_path)) {
 		
-			exec($this->ops_imagemagick_path.'/identify -format "%m;%w;%h;%[colorspace];%[depth];%[xresolution];%[yresolution]\n" "'.$ps_filepath."\" 2> /dev/null", $va_output, $vn_return);
+			exec($this->ops_imagemagick_path.'/identify -format "%m;%w;%h;%[colorspace];%[depth];%[xresolution];%[yresolution]\n" '.caEscapeShellArg($ps_filepath)." 2> /dev/null", $va_output, $vn_return);
 			
 			$va_tmp = explode(';', $va_output[0]);
 			
@@ -1118,11 +1118,11 @@ class WLPlugMediaImageMagick Extends WLPlug Implements IWLPlugMedia {
 					array_unshift($va_ops['convert'], '-quality '.intval($pn_quality));
 				}
 				array_unshift($va_ops['convert'], '-colorspace RGB');
-				exec($this->ops_imagemagick_path.'/convert "'.$vs_input_file.'[0]" '.join(' ', $va_ops['convert']).' "'.$ps_filepath.'"');
+				exec($this->ops_imagemagick_path.'/convert '.caEscapeShellArg($vs_input_file.'[0]').' '.join(' ', $va_ops['convert']).' '.caEscapeShellArg($ps_filepath));
 				$vs_input_file = $ps_filepath;
 			}
 			if (is_array($va_ops['composite']) && sizeof($va_ops['composite'])) {
-				exec($this->ops_imagemagick_path.'/composite '.join(' ', $va_ops['composite']).' "'.$vs_input_file.'[0]" "'.$ps_filepath.'"');
+				exec($this->ops_imagemagick_path.'/composite '.join(' ', $va_ops['composite']).' '.caEscapeShellArg($vs_input_file.'[0]').' '.caEscapeShellArg($ps_filepath));
 			}	
 			
 			return true;

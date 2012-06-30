@@ -244,7 +244,7 @@
 	 */
 	function caExtractMetadataWithMediaInfo($ps_mediainfo_path,$ps_filepath){
 		if (!trim($ps_mediainfo_path) || (preg_match("/[^\/A-Za-z0-9\.:]+/", $ps_mediainfo_path)) || !file_exists($ps_mediainfo_path)) { return false; }
-		exec($ps_mediainfo_path." ".$ps_filepath,$va_output,$vn_return);
+		exec($ps_mediainfo_path." ".caEscapeShellArg($ps_filepath),$va_output,$vn_return);
 		$vs_cat = "GENERIC";
 		$va_return = array();
 		foreach($va_output as $vs_line){
@@ -289,7 +289,7 @@
  		$va_date_elements = $o_metadata_config->getList('extract_embedded_exif_creation_date_to');
  		$va_date_containers = $o_metadata_config->getAssoc('extract_embedded_exif_creation_date_to_container');
  		
- 		if (isset($pa_metadata['EXIF']) && is_array($pa_metadata['EXIF']) && ((is_array($va_georef_elements) && sizeof($va_georef_elements)) || (is_array($va_date_elements) && sizeof($va_date_elements)))) {
+ 		if (isset($pa_metadata['EXIF']) && is_array($pa_metadata['EXIF']) && ((is_array($va_georef_elements) && sizeof($va_georef_elements)) || (is_array($va_georef_containers) && sizeof($va_georef_containers))  || (is_array($va_date_elements) && sizeof($va_date_elements))  || (is_array($va_date_containers) && sizeof($va_date_containers)))) {
 			$va_exif_data = $pa_metadata['EXIF'];
 			
 			if (is_array($va_georef_elements)) {
