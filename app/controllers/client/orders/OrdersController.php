@@ -38,7 +38,7 @@
  		public function Index() {
  			JavascriptLoadManager::register('tableList');
 			
-			$o_result_context = new ResultContext($this->request, 'ca_commerce_orders', 'basic_search');
+			$o_result_context = new ResultContext($this->request, 'ca_commerce_orders', 'basic_search_order');
 			
  			$va_options = array('type' => 'O');
  			$t_order = new ca_commerce_orders();

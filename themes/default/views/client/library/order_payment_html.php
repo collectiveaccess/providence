@@ -1,13 +1,13 @@
 <?php
 /* ----------------------------------------------------------------------
- * app/views/client/order_payment_html.php : 
+ * app/views/client/library/order_payment_html.php : 
  * ----------------------------------------------------------------------
  * CollectiveAccess
  * Open-source places management software
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2011 Whirl-i-Gig
+ * Copyright 2012 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -41,13 +41,13 @@
 	$vs_currency_input_format = "<div class='formLabel'>^LABEL<br/>{$vs_currency_symbol}^ELEMENT</div>";
 	
 	print $vs_control_box = caFormControlBox(
-		(caFormSubmitButton($this->request, __CA_NAV_BUTTON_SAVE__, _t("Save"), 'caClientOrderPaymentForm', array('preventDuplicateSubmits' => true))).' '.
-		(caNavButton($this->request, __CA_NAV_BUTTON_CANCEL__, _t("Cancel"), 'client/orders', 'OrderEditor', 'Payment', array('order_id' => $vn_order_id))),
+		(caFormSubmitButton($this->request, __CA_NAV_BUTTON_SAVE__, _t("Save"), 'caClientLoanPaymentForm', array('preventDuplicateSubmits' => true))).' '.
+		(caNavButton($this->request, __CA_NAV_BUTTON_CANCEL__, _t("Cancel"), 'client/library', 'OrderEditor', 'Payment', array('order_id' => $vn_order_id))),
 		'', 
-		(caNavButton($this->request, __CA_NAV_BUTTON_DELETE__, _t("Delete"), 'client/orders', 'OrderEditor', 'Delete', array('order_id' => $vn_order_id)))
+		(caNavButton($this->request, __CA_NAV_BUTTON_DELETE__, _t("Delete"), 'client/library', 'OrderEditor', 'Delete', array('order_id' => $vn_order_id)))
 	);
 	
-	print caFormTag($this->request, 'SavePayment', 'caClientOrderPaymentForm', null, 'post', 'multipart/form-data', '_top', array());
+	print caFormTag($this->request, 'SavePayment', 'caClientLoanPaymentForm', null, 'post', 'multipart/form-data', '_top', array());
 
 ?>
 	<h1><?php print _t('Payment information'); ?></h1>
@@ -63,7 +63,7 @@
 <?php
 	}
 ?>
-			<div id="caClientOrderCustomerCreditSubForm" style="display: none;">
+			<div id="caClientLoanCustomerCreditSubForm" style="display: none;">
 				<table>
 <?php
 					print "<tr><td>"._t('Credit card')."</td><td>".caHTMLSelect('credit_card_type', $va_credit_card_types, array(), array('value' => $va_payment_info['credit_card_type']))."</td></tr>\n";			
@@ -71,12 +71,12 @@
 					print "<tr><td>"._t('CCV')."</td><td>".caHTMLTextInput('credit_card_ccv', array('size' => 4, 'value' => $va_payment_info['credit_card_ccv']))."</td></tr>\n";
 					print "<tr><td>"._t('Expiration date')."</td><td>".caHTMLSelect('credit_card_exp_mon', $this->getVar('credit_card_exp_month_list'), array(), array('value' => $va_payment_info['credit_card_exp_mon']))." ".caHTMLSelect('credit_card_exp_yr', $this->getVar('credit_card_exp_year_list'), array(), array('value' => $va_payment_info['credit_card_exp_yr']))."</td></tr>\n";	
 					
-					print "<tr><td> </td><td><div id='caClientOrderProcessingIndicator'><img src='".$this->request->getThemeUrlPath()."/graphics/icons/indicator.gif'/> "._t('Please wait while order is processed (this may take up to 60 seconds to complete)')."</div></td></tr>\n";
+					print "<tr><td> </td><td><div id='caClientLoanProcessingIndicator'><img src='".$this->request->getThemeUrlPath()."/graphics/icons/indicator.gif'/> "._t('Please wait while client loan is processed (this may take up to 60 seconds to complete)')."</div></td></tr>\n";
 							
 ?>
 				</table>
 			</div>
-			<div id="caClientOrderCustomerPOSubForm" style="display: none;">
+			<div id="caClientLoanCustomerPOSubForm" style="display: none;">
 				<table>
 <?php
 					print "<tr><td>"._t('Purchase order date')."</td><td>".caHTMLTextInput('purchase_order_date', array('width' => 40, 'class' => 'dateBg', 'value' => $va_payment_info['purchase_order_date']))."</td></tr>\n";
@@ -84,7 +84,7 @@
 ?>
 				</table>
 			</div>
-			<div id="caClientOrderCustomerCheckSubForm" style="display: none;">
+			<div id="caClientLoanCustomerCheckSubForm" style="display: none;">
 				<table>
 <?php
 					print "<tr><td>"._t('Payee')."</td><td>".caHTMLTextInput('check_payee', array('width' => 60, 'value' => $va_payment_info['check_payee']))."</td></tr>\n";
@@ -109,7 +109,7 @@
 		
 		if (in_array($t_order->get('payment_status'), array('RECEIVED'))) { 
 ?>
-		<h2><?php print _t('Payment details – this order has been paid for'); ?></h2>
+		<h2><?php print _t('Payment details – fees for this client loan has been paid'); ?></h2>
 		<div id='caPaymentFields'>
 			<table>
 <?php
@@ -145,12 +145,12 @@
 		} else {
 			if ($t_order->getTotal() == 0) {
 ?>
-		<h2><?php print _t('Order does not require payment'); ?></h2>
+		<h2><?php print _t('Loan does not require payment'); ?></h2>
 <?php			
 			} else {
 				// order payment details cannot be set yet
 ?>
-		<h2><?php print _t('Order is not yet ready for payment'); ?></h2>
+		<h2><?php print _t('Loan is not yet ready for payment'); ?></h2>
 <?php
 			}
 		}
@@ -169,22 +169,22 @@
 <script type="text/javascript">
 	function caSetPaymentFormDisplay(payment_type, speed) {
 		if(payment_type == 'CREDIT') {
-			jQuery('#caClientOrderCustomerCreditSubForm').slideDown(speed);
+			jQuery('#caClientLoanCustomerCreditSubForm').slideDown(speed);
 			jQuery('#caPaymentStatusContainer').hide();
 		} else {
-			jQuery('#caClientOrderCustomerCreditSubForm').slideUp(speed);
+			jQuery('#caClientLoanCustomerCreditSubForm').slideUp(speed);
 		}
 		if(payment_type == 'PO') {
-			jQuery('#caClientOrderCustomerPOSubForm').slideDown(speed);
+			jQuery('#caClientLoanCustomerPOSubForm').slideDown(speed);
 			jQuery('#caPaymentStatusContainer').show();
 		} else {
-			jQuery('#caClientOrderCustomerPOSubForm').slideUp(speed);
+			jQuery('#caClientLoanCustomerPOSubForm').slideUp(speed);
 		}
 		if(payment_type == 'CHECK') {
-			jQuery('#caClientOrderCustomerCheckSubForm').slideDown(speed);
+			jQuery('#caClientLoanCustomerCheckSubForm').slideDown(speed);
 			jQuery('#caPaymentStatusContainer').show();
 		} else {
-			jQuery('#caClientOrderCustomerCheckSubForm').slideUp(speed);
+			jQuery('#caClientLoanCustomerCheckSubForm').slideUp(speed);
 		}
 		if (payment_type == 'NONE') {
 			jQuery('#caPaymentStatusContainer').hide();
@@ -204,8 +204,8 @@
 		jQuery('input[name=purchase_order_date]').datepicker();
 		jQuery('input[name=payment_received_on]').datepicker();
 		
-		jQuery('#caClientOrderPaymentForm').submit(function() {
-			jQuery('#caClientOrderProcessingIndicator').css('display', 'block');
+		jQuery('#caClientLoanPaymentForm').submit(function() {
+			jQuery('#caClientLoanProcessingIndicator').css('display', 'block');
 		});
 	});
 </script>

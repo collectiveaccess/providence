@@ -200,7 +200,9 @@
 				$va_output[] = _t("%1 {$vs_label}", $vs_currency_symbol.$va_order_totals[$vs_key]);
 			}
 		}
-		print "<b>"._t("Cost Breakdown").":</b> ".join(" + ", $va_output);
+		if (sizeof($va_output) {
+			print "<b>"._t("Cost Breakdown").":</b> ".join(" + ", $va_output);
+		}
 ?></div>
 	
 	<H3><?php print _t("Items"); ?></H3>

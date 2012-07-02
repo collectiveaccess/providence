@@ -66,14 +66,7 @@ BaseModel::$s_ca_models_definitions['ca_commerce_orders'] = array(
 				'DEFAULT' => 'SUBMITTED',
 				'LABEL' => _t('Order status'), 'DESCRIPTION' => _t('Status of order.'),
 				'BOUNDS_CHOICE_LIST' => array(
-					_t('open') => 'OPEN',							// in process of being created by user - all aspects may be modified by user
-					_t('submitted – awaiting quote') => 'SUBMITTED',		// user has submitted order for pricing - only address may be modified
-					_t('awaiting payment') => 'AWAITING_PAYMENT',	// order is awaiting payment before completion - only payment details can be submitted by user
-					_t('payment processed - awaiting digitization') => 'PROCESSED_AWAITING_DIGITIZATION',					// processing completed; awaiting digitization before fulfillment
-					_t('payment processed - awaiting media access') => 'PROCESSED_AWAITING_MEDIA_ACCESS',					// processing completed; awaiting transfer of media before fulfillment
-					_t('payment processed - ready for fulfillment') => 'PROCESSED',					// processing completed; awaiting fulfillment
-					_t('completed') => 'COMPLETED',					// order complete - user has been sent items
-					_t('reopened') => 'REOPENED'					// order reopened due to issue
+					
 				)
 		),
 		'order_type' => array(
@@ -325,7 +318,7 @@ BaseModel::$s_ca_models_definitions['ca_commerce_orders'] = array(
 		),
 		'payment_received_on' => array(
 				'FIELD_TYPE' => FT_DATETIME, 'DISPLAY_TYPE' => DT_FIELD, 
-				'DISPLAY_WIDTH' => 40, 'DISPLAY_HEIGHT' => 1,
+				'DISPLAY_WIDTH' => 20, 'DISPLAY_HEIGHT' => 1,
 				'IS_NULL' => true, 
 				'DEFAULT' => '',
 				'LABEL' => _t('Payment received on'), 'DESCRIPTION' => _t('Date/time payment was received.'),
@@ -516,7 +509,7 @@ class ca_commerce_orders extends BaseModel {
 	# ----------------------------------------
 	public function __construct($pn_id=null) {
 		parent::__construct($pn_id);
-		
+		$this->setOrderStatusDropDown();
 	 	$this->opo_client_services_config = caGetClientServicesConfiguration();
 		$va_configured_payment_options = $this->opo_client_services_config->getList('payment_methods');
 		$va_available_payment_methods = BaseModel::$s_ca_models_definitions['ca_commerce_orders']['FIELDS']['payment_method']['BOUNDS_CHOICE_LIST'];
@@ -564,16 +557,23 @@ class ca_commerce_orders extends BaseModel {
 				}
 				break;
 			case 'AWAITING_PAYMENT':
-				if ($this->get('payment_received_on') && $this->changed('payment_received_on')) {
-					// If it paid for then flip status to "PROCESSED" (if it's all ready to go) or "PROCESSED_AWAITING_DIGITIZATION" if stuff needs to be digitized
-					if(sizeof($va_items_with_no_media = $this->itemsWithNoDownloadableMedia()) > 0) {
-						$this->set('order_status', 'PROCESSED_AWAITING_DIGITIZATION');
+				if (($this->get('payment_received_on') && $this->changed('payment_received_on')) || ($this->getTotal() == 0)) {
+					if ($this->get('order_type') == 'L') {
+						// LOANS
+						$this->set('order_status', 'PROCESSED');
 					} else {
-						// If "original" files are missing then mark as PROCESSED_AWAITING_MEDIA_ACCESS
-						if (sizeof($va_items_missing_media = $this->itemsMissingDownloadableMedia('original'))) {
-							$this->set('order_status', 'PROCESSED_AWAITING_MEDIA_ACCESS');
+						// SALES ORDERS
+						
+						// If it paid for then flip status to "PROCESSED" (if it's all ready to go) or "PROCESSED_AWAITING_DIGITIZATION" if stuff needs to be digitized
+						if(sizeof($va_items_with_no_media = $this->itemsWithNoDownloadableMedia()) > 0) {
+							$this->set('order_status', 'PROCESSED_AWAITING_DIGITIZATION');
 						} else {
-							$this->set('order_status', 'PROCESSED');
+							// If "original" files are missing then mark as PROCESSED_AWAITING_MEDIA_ACCESS
+							if (sizeof($va_items_missing_media = $this->itemsMissingDownloadableMedia('original'))) {
+								$this->set('order_status', 'PROCESSED_AWAITING_MEDIA_ACCESS');
+							} else {
+								$this->set('order_status', 'PROCESSED');
+							}
 						}
 					}
 				}
@@ -784,8 +784,59 @@ class ca_commerce_orders extends BaseModel {
 					break;
 			}
 		}
-		
+		$this->setOrderStatusDropDown();
 		return parent::set($pa_fields, $pm_value, $pa_options);
+	}
+	# ----------------------------------------
+	/**
+	 *
+	 */
+	public function setOrderStatusDropDown() {
+		$vs_type = $this->get('order_type');
+	 	switch($vs_type) {
+	 		case 'L':
+	 			$this->FIELDS['order_status']['BOUNDS_CHOICE_LIST'] = array(
+	 				_t('open') => 'OPEN',							// in process of being created by user - all aspects may be modified by user
+					_t('submitted') => 'SUBMITTED',					// user has submitted order 
+					_t('awaiting payment') => 'AWAITING_PAYMENT',	// order is awaiting payment before completion - only payment details can be submitted by user
+					_t('processed') => 'PROCESSED',					// loan has been processed and user has items
+					_t('completed') => 'COMPLETED',					// loan complete - user returned all items
+					_t('reopened') => 'REOPENED'					// order reopened due to issue
+	 			);
+	 			$this->FIELDS['order_status']['LABEL'] = _t('Loan status');
+	 			$this->NAME_SINGULAR = _t('client loan');
+	 			$this->NAME_PLURAL = _t('client loans');
+	 			break;
+	 		default:
+	 		case 'O':
+	 			$this->FIELDS['order_status']['BOUNDS_CHOICE_LIST'] = array(
+	 				_t('open') => 'OPEN',							// in process of being created by user - all aspects may be modified by user
+					_t('submitted – awaiting quote') => 'SUBMITTED',		// user has submitted order for pricing - only address may be modified
+					_t('awaiting payment') => 'AWAITING_PAYMENT',	// order is awaiting payment before completion - only payment details can be submitted by user
+					_t('payment processed - awaiting digitization') => 'PROCESSED_AWAITING_DIGITIZATION',					// processing completed; awaiting digitization before fulfillment
+					_t('payment processed - awaiting media access') => 'PROCESSED_AWAITING_MEDIA_ACCESS',					// processing completed; awaiting transfer of media before fulfillment
+					_t('payment processed - ready for fulfillment') => 'PROCESSED',					// processing completed; awaiting fulfillment
+					_t('completed') => 'COMPLETED',					// order complete - user has been sent items
+					_t('reopened') => 'REOPENED'					// order reopened due to issue
+	 			);
+	 			$this->FIELDS['order_status']['LABEL'] = _t('Order status');
+	 			$this->NAME_SINGULAR = _t('order');
+	 			$this->NAME_PLURAL = _t('orders');
+	 			break;
+	 	}
+	 	
+	 	return true;
+	}
+	# ----------------------------------------
+	/**
+	 *
+	 */
+	public function load($pm_id=null, $pb_use_cache=true) {
+		$vn_rc = parent::load($pm_id, $pb_use_cache);
+		
+		$this->setOrderStatusDropDown();
+		
+		return $vn_rc;
 	}
 	# ----------------------------------------
 	/**
@@ -997,6 +1048,9 @@ class ca_commerce_orders extends BaseModel {
 	 *		order_status = 
 	 *		search = 
 	 *		type = 
+	 *		loan_checkout_date =
+	 *		loan_due_date =
+	 *		loan_return_date =
 	 */
 	 public function getOrders($pa_options=null) {
 	 	$o_db = $this->getDb();
@@ -1039,14 +1093,34 @@ class ca_commerce_orders extends BaseModel {
 	 		$va_sql_wheres[] = "(o.transaction_id = ?)";
 	 		$va_sql_values[] = (int)$pa_options['transaction_id'];
 	 	}
-	 	
-	 	
+	
 	 	if (isset($pa_options['created_on']) && strlen($pa_options['created_on'])) {
-	 		$o_tep = new TimeExpressionParser();
-	 		
-	 		if ($o_tep->parse($pa_options['created_on'])) {
-	 			$va_dates = $o_tep->getUnixTimestamps();
+	 		if (is_array($va_dates = caDateToUnixTimestamps($pa_options['created_on']))) {
 	 			$va_sql_wheres[] = "(o.created_on BETWEEN ? AND ?)";
+	 			$va_sql_values[] = (float)$va_dates['start'];
+	 			$va_sql_values[] = (float)$va_dates['end'];
+	 		}
+	 	}
+	 	
+	 	if (isset($pa_options['loan_checkout_date']) && strlen($pa_options['loan_checkout_date'])) {
+	 		if (is_array($va_dates = caDateToUnixTimestamps($pa_options['loan_checkout_date']))) {
+	 			$va_sql_wheres[] = "(i.loan_checkout_date BETWEEN ? AND ?)";
+	 			$va_sql_values[] = (float)$va_dates['start'];
+	 			$va_sql_values[] = (float)$va_dates['end'];
+	 		}
+	 	}
+	 	
+	 	if (isset($pa_options['loan_due_date']) && strlen($pa_options['loan_due_date'])) {
+	 		if (is_array($va_dates = caDateToUnixTimestamps($pa_options['loan_due_date']))) {
+	 			$va_sql_wheres[] = "(i.loan_due_date BETWEEN ? AND ?)";
+	 			$va_sql_values[] = (float)$va_dates['start'];
+	 			$va_sql_values[] = (float)$va_dates['end'];
+	 		}
+	 	}
+	 	
+	 	if (isset($pa_options['loan_return_date']) && strlen($pa_options['loan_return_date'])) {
+	 		if (is_array($va_dates = caDateToUnixTimestamps($pa_options['loan_return_date']))) {
+	 			$va_sql_wheres[] = "(i.loan_return_date BETWEEN ? AND ?)";
 	 			$va_sql_values[] = (float)$va_dates['start'];
 	 			$va_sql_values[] = (float)$va_dates['end'];
 	 		}
@@ -1634,6 +1708,7 @@ class ca_commerce_orders extends BaseModel {
 	 * @param HTTPRequest $po_request The current request
 	 * @param array $pa_options Array of options. Supported options are 
 	 *			noCache = If set to true then label cache is bypassed; default is true
+	 *			type = "O" = order; "L" = loan; default is "O"
 	 *
 	 * @return string Rendered HTML bundle
 	 */
@@ -1645,7 +1720,7 @@ class ca_commerce_orders extends BaseModel {
 		if(!is_array($pa_options)) { $pa_options = array(); }
 		
 		$o_view->setVar('options', $pa_options);
-		
+		$o_view->setVar('fee_list', (isset($pa_options['type']) && ($pa_options['type'] == 'L')) ? $this->opo_client_services_config->getAssoc('additional_loan_fees') : $this->opo_client_services_config->getAssoc('additional_order_fees'));
 		$o_view->setVar('t_subject', $this);
 		
 		
@@ -1925,6 +2000,68 @@ class ca_commerce_orders extends BaseModel {
 		}
 		
 		return caProcessTemplate(join($this->getAppConfig()->getList('ca_users_lookup_delimiter'), $this->getAppConfig()->getList('ca_users_lookup_settings')), $va_values, array());
+	}
+	# ------------------------------------------------------
+	/**
+	 *
+	 */
+	public function getLoanDueDates() {
+		if (!($vn_order_id = $this->getPrimaryKey())) { return null; }
+		$o_db = new Db();
+		
+		$qr_res = $o_db->query("
+			SELECT min(loan_due_date) mindate, max(loan_due_date) maxdate
+			FROM ca_commerce_order_items
+			WHERE order_id = ?
+		", (int)$vn_order_id);
+		if ($qr_res->nextRow()) {
+			$vn_min = $qr_res->get('mindate');
+			$vn_max = $qr_res->get('maxdate');
+			
+			if (!$vn_min) { $vn_min = $vn_max; }
+			if (!$vn_max) { $vn_max = $vn_min; }
+			if (!$vn_min || !$vn_max) { return null; }
+			
+			return array(
+				'min' => caGetLocalizedDate($vn_min, array('dateFormat' => 'delimited')),
+				'max' => caGetLocalizedDate($vn_max, array('dateFormat' => 'delimited')),
+				'min_raw' => $vn_min,
+				'max_raw' => $vn_max,
+				'range' => caGetLocalizedDateRange($vn_min, $vn_max, array('timeOmit' => true))
+			);
+		}
+		return null;
+	}
+	# ------------------------------------------------------
+	/**
+	 *
+	 */
+	public function getLoanReturnDates() {
+		if (!($vn_order_id = $this->getPrimaryKey())) { return null; }
+		$o_db = new Db();
+		
+		$qr_res = $o_db->query("
+			SELECT min(loan_return_date) mindate, max(loan_return_date) maxdate
+			FROM ca_commerce_order_items
+			WHERE order_id = ?
+		", (int)$vn_order_id);
+		if ($qr_res->nextRow()) {
+			$vn_min = $qr_res->get('mindate');
+			$vn_max = $qr_res->get('maxdate');
+			
+			if (!$vn_min) { $vn_min = $vn_max; }
+			if (!$vn_max) { $vn_max = $vn_min; }
+			if (!$vn_min || !$vn_max) { return null; }
+			
+			return array(
+				'min' => caGetLocalizedDate($vn_min, array('dateFormat' => 'delimited')),
+				'max' => caGetLocalizedDate($vn_max, array('dateFormat' => 'delimited')),
+				'min_raw' => $vn_min,
+				'max_raw' => $vn_max,
+				'range' => caGetLocalizedDateRange($vn_min, $vn_max, array('timeOmit' => true))
+			);
+		}
+		return null;
 	}
 	# ------------------------------------------------------
 }

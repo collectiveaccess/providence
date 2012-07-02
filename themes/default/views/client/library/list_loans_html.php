@@ -1,13 +1,13 @@
 <?php
 /* ----------------------------------------------------------------------
- * themes/default/views/client/list_orders_html.php : 
+ * themes/default/views/client/list_loans_html.php : 
  * ----------------------------------------------------------------------
  * CollectiveAccess
  * Open-source collections management software
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2011-2012 Whirl-i-Gig
+ * Copyright 2012 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -28,6 +28,7 @@
  
 	$va_order_list = $this->getVar('order_list');
  	$t_order = $this->getVar('t_order');
+ 	$t_item = $this->getVar('t_order_item');
  	$va_filter_options = $this->getVar('filter_options');
  	
  	$vs_currency_symbol = $this->getVar('currency_symbol');
@@ -53,36 +54,36 @@
 			print caFormTag($this->request, 'Index', 'caViewOptions', null, 'post', 'multipart/form-data', '_top', array('disableUnsavedChangesWarning' => true));
 ?>
 	<table width="100%">
-		<tr valign="top">
-			<td>
-<?php
-			print $t_order->htmlFormElement('order_status', null, array('nullOption' => '-'));
+		<tr valign="top"><td>
+<?php		
+			print $t_order->htmlFormElement('created_on', null, array('FIELD_TYPE' => 'FT_DATETIME', 'DISPLAY_TYPE' => DT_FIELD, 'value' => $va_filter_options['created_on'], 'classname'=> 'dateBg', 'width' => 15));			
 ?>
 			</td><td>
 <?php		
-			print $t_order->htmlFormElement('created_on', null, array('FIELD_TYPE' => 'FT_DATETIME', 'DISPLAY_TYPE' => DT_FIELD, 'value' => $va_filter_options['created_on']));			
+			print $t_item->htmlFormElement('loan_checkout_date', null, array('FIELD_TYPE' => 'FT_DATETIME', 'DISPLAY_TYPE' => DT_FIELD, 'value' => $va_filter_options['loan_checkout_date'], 'classname'=> 'dateBg', 'width' => 15));			
 ?>
 			</td><td>
 <?php		
-			print $t_order->htmlFormElement('shipping_date', null, array('FIELD_TYPE' => 'FT_DATETIME', 'DISPLAY_TYPE' => DT_FIELD, 'value' => $va_filter_options['shipping_date']));			
+			print $t_item->htmlFormElement('loan_due_date', null, array('FIELD_TYPE' => 'FT_DATETIME', 'DISPLAY_TYPE' => DT_FIELD, 'value' => $va_filter_options['loan_due_date'], 'classname'=> 'dateBg', 'width' => 15));			
 ?>
 			</td><td>
 <?php		
-			print $t_order->htmlFormElement('shipped_on_date', null, array('FIELD_TYPE' => 'FT_DATETIME', 'DISPLAY_TYPE' => DT_FIELD, 'value' => $va_filter_options['shipped_on_date']));			
+			print $t_item->htmlFormElement('loan_return_date', null, array('FIELD_TYPE' => 'FT_DATETIME', 'DISPLAY_TYPE' => DT_FIELD, 'value' => $va_filter_options['loan_return_date'], 'classname'=> 'dateBg', 'width' => 15));			
 ?>
 			</td>
 			<td align="right" valign="top">
 <?php
-	print caNavHeaderButton($this->request, __CA_NAV_BUTTON_ADD_LARGE__, _t("New order"), 'client/orders', 'OrderEditor', 'CustomerInfo', array('order_id' => 0))
+	print caNavHeaderButton($this->request, __CA_NAV_BUTTON_ADD_LARGE__, _t("New loan"), 'client/library', 'CheckOut', 'Index', array('order_id' => 0))
 ?>
 			</td>
 		</tr>
 		<tr>
 			<td colspan="3">
 				<div class="formLabel"><?php print _t('Search')."<br/>".caHTMLTextInput('search', array('value' => $va_filter_options['search']), array('width' => '400px')); ?></div>
-			</td><td>
-<?php		
-			print $t_order->htmlFormElement('shipping_method', null, array('nullOption' => '-'));		
+			</td>
+			<td>
+<?php
+			print $t_order->htmlFormElement('order_status', null, array('nullOption' => '-'));
 ?>
 			</td>
 			<td align="right" valign="bottom">
@@ -102,10 +103,10 @@
 		<thead>
 		<tr>
 			<th>
-				<?php _p('Order #'); ?>
+				<?php _p('Loan #'); ?>
 			</th>
 			<th>
-				<?php _p('Date/time'); ?>
+				<?php _p('Created on'); ?>
 			</th>
 			<th>
 				<?php _p('Client'); ?>
@@ -116,14 +117,12 @@
 			<th>
 				<?php _p('Status'); ?>
 			</th>
-			<th>
-				<?php _p('Total'); ?>
-			</th>
 			<th class="{sorter: false} list-header-nosort">&nbsp;</th>
 		</tr>
 		</thead>
 		<tbody>
 <?php
+	$t_order->set('order_type', 'L');
 	foreach($va_order_list as $va_order) {
 ?>
 		<tr>
@@ -150,13 +149,10 @@
 ?>
 			</td>
 			<td>
-				<?php print $vs_currency_symbol.sprintf("%4.2f", $va_order['order_total_item_fees'] + $va_order['order_total_item_tax'] + $va_order['shipping_cost'] + $va_order['handling_cost'])." ("._t('total').")"; ?>
-			</td>
-			<td>
 				<?php print $t_order->getChoiceListValue('order_status', $va_order['order_status']); ?>
 			</td>
 			<td>
-				<?php print caNavButton($this->request, __CA_NAV_BUTTON_EDIT__, _t("Edit"), 'client/orders', 'OrderEditor', 'Edit', array('order_id' => $va_order['order_id']), array(), array('icon_position' => __CA_NAV_BUTTON_ICON_POS_LEFT__, 'use_class' => 'list-button', 'no_background' => true, 'dont_show_content' => true)); ?>
+				<?php print caNavButton($this->request, __CA_NAV_BUTTON_EDIT__, _t("Edit"), 'client/library', 'OrderEditor', 'Edit', array('order_id' => $va_order['order_id']), array(), array('icon_position' => __CA_NAV_BUTTON_ICON_POS_LEFT__, 'use_class' => 'list-button', 'no_background' => true, 'dont_show_content' => true)); ?>
 			</td>
 		</tr>
 <?php

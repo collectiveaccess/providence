@@ -56,7 +56,7 @@
  			$this->view->setVar('currency', $this->opo_client_services_config->get('currency'));
  			$this->view->setVar('currency_symbol', $this->opo_client_services_config->get('currency_symbol'));
  			
- 			$this->opo_result_context = new ResultContext($this->request, 'ca_commerce_orders', 'basic_search');
+ 			$this->opo_result_context = new ResultContext($this->request, 'ca_commerce_orders', 'basic_search_library');
  		}
  		# -------------------------------------------------------
  		public function Index() {
@@ -74,6 +74,12 @@
  			$this->view->setVar('t_order_item', $t_order_item);
  			
  			//$this->view->setVar('default_item_prices', $va_default_prices);
+ 			
+ 			$this->view->setVar('additional_fees', $t_order_item->getAdditionalFeesHTMLFormBundle($this->request, array('config' => $this->opo_client_services_config, 'currency_symbol' => $this->opo_client_services_config->get('currency_symbol'), 'type' => 'L')));
+ 			$this->view->setVar('additional_fees_for_new_items', $t_order_item->getAdditionalFeesHTMLFormBundle($this->request, array('config' => $this->opo_client_services_config, 'currency_symbol' => $this->opo_client_services_config->get('currency_symbol'), 'use_defaults' => true, 'type' => 'L')));	
+ 			
+ 			$this->view->setVar('additional_fee_codes', $this->opo_client_services_config->getAssoc('additional_order_item_fees'));
+ 			
  			$this->render('checkout_html.php');
  		}
  		# -------------------------------------------------------
@@ -157,6 +163,7 @@
  				
  				if ($vn_transaction_id) {
 					$this->opt_order->set('order_type', 'L'); 	// L = loan (as opposed to 'O' for sales orders)	
+					$this->opt_order->set('order_status', 'OPEN');
 					$this->opt_order->insert();
 					$this->request->setParameter('order_id', $x=$this->opt_order->getPrimaryKey());
 				}
@@ -207,6 +214,8 @@
 				
 				if (!$this->opt_order->numErrors() && $vn_items_added) {
 					$this->notification->addNotification(_t('Checked out %1 %2 for %3 (order %4)', $vn_items_added, ($vn_items_added == 1) ? _t('item') : _t('items'), $t_user->get('fname').' '.$t_user->get('lname'), $this->opt_order->getOrderNumber()), __NOTIFICATION_TYPE_INFO__);	
+					$this->opt_order->set('order_status', 'PROCESSED');
+					$this->opt_order->update();
 					$this->opt_order = new ca_commerce_orders();
 					
 					$this->request->setParameter('order_id', null);

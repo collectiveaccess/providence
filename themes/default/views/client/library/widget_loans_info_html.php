@@ -30,8 +30,8 @@
  	
  	$vn_num_orders = is_array($va_orders) ? sizeof($va_orders) : 0;
 ?>
-	<h3><?php print _t('Client orders'); ?>:
+	<h3><?php print _t('Client loans'); ?>:
 	<div><?php
-		print ($vn_num_orders == 1) ? _t('%1 order', $vn_num_orders) : _t('%1 orders', $vn_num_orders);
+		print ($vn_num_orders == 1) ? _t('%1 loan', $vn_num_orders) : _t('%1 loans', $vn_num_orders);
 	?></div>
 	</h3>

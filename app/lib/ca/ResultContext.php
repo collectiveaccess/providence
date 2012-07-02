@@ -833,13 +833,7 @@
 		 */
 		static function getTableName($pm_table_name_or_num) {
 			$o_dm = Datamodel::load();
-			if (is_numeric($pm_table_name_or_num)) {
-				$t_instance = $o_dm->getInstanceByTableNum($pm_table_name_or_num, true);
-			} else {
-				$t_instance = $o_dm->getInstanceByTableName($pm_table_name_or_num, true);
-			}
-			if (!$t_instance) { return null; }
-			return $t_instance->tableName();
+			return $o_dm->getTableName($pm_table_name_or_num);
 		}
 		# ------------------------------------------------------------------
 	}

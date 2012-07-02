@@ -62,7 +62,7 @@ BaseModel::$s_ca_models_definitions['ca_commerce_order_items'] = array(
 		'service' => array(
 				'FIELD_TYPE' => FT_TEXT, 'DISPLAY_TYPE' => DT_SELECT,
 				'DISPLAY_WIDTH' => 40, 'DISPLAY_HEIGHT' => 1,
-				'IS_NULL' => false, 
+				'IS_NULL' => true, 
 				'DEFAULT' => '',
 				'LABEL' => _t('Service provided'), 'DESCRIPTION' => _t('Indicates the type of service that was provided.'),
 				'BOUNDS_CHOICE_LIST' => array(
@@ -76,7 +76,7 @@ BaseModel::$s_ca_models_definitions['ca_commerce_order_items'] = array(
 		'fullfillment_method' => array(
 				'FIELD_TYPE' => FT_TEXT, 'DISPLAY_TYPE' => DT_SELECT,
 				'DISPLAY_WIDTH' => 40, 'DISPLAY_HEIGHT' => 1,
-				'IS_NULL' => false, 
+				'IS_NULL' => true, 
 				'DEFAULT' => 'NONE',
 				'LABEL' => _t('Fulfillment method'), 'DESCRIPTION' => _t('Indicates manner in which fulfillment occurred.'),
 				'BOUNDS_CHOICE_LIST' => array(
@@ -166,13 +166,11 @@ BaseModel::$s_ca_models_definitions['ca_commerce_order_items'] = array(
 				'LABEL' => _t('Refund notes'), 'DESCRIPTION' => _t('Notes pertaining to the refund for this item.'),
 				'BOUNDS_LENGTH' => array(0,65535)
 		),
-		
-		
 		'loan_checkout_date' => array(
 				'FIELD_TYPE' => FT_DATETIME, 'DISPLAY_TYPE' => DT_FIELD, 
 				'DISPLAY_WIDTH' => 20, 'DISPLAY_HEIGHT' => 1,
 				'IS_NULL' => false, 
-				'DEFAULT' => _t('now'),
+				'DEFAULT' => _t(''),
 				'LABEL' => _t('Date received'), 'DESCRIPTION' => _t('Date/time the item was checked out.'),
 		),
 		'loan_due_date' => array(
@@ -184,12 +182,11 @@ BaseModel::$s_ca_models_definitions['ca_commerce_order_items'] = array(
 		),
 		'loan_return_date' => array(
 				'FIELD_TYPE' => FT_DATETIME, 'DISPLAY_TYPE' => DT_FIELD, 
-				'DISPLAY_WIDTH' => 20, 'DISPLAY_HEIGHT' => 1,
+				'DISPLAY_WIDTH' => 15, 'DISPLAY_HEIGHT' => 1,
 				'IS_NULL' => true, 
 				'DEFAULT' => '',
 				'LABEL' => _t('Date returned'), 'DESCRIPTION' => _t('Date/time the item was returned.'),
 		),
-		
 		'rank' => array(
 				'FIELD_TYPE' => FT_NUMBER, 'DISPLAY_TYPE' => DT_FIELD, 
 				'DISPLAY_WIDTH' => 10, 'DISPLAY_HEIGHT' => 1,
@@ -466,6 +463,7 @@ class ca_commerce_order_items extends BaseModel {
 	 * @param HTTPRequest $po_request The current request
 	 * @param array $pa_options Array of options. Supported options are 
 	 *			noCache = If set to true then label cache is bypassed; default is true
+	 *			type = "O" = order; "L" = loan; default is "O"
 	 *
 	 * @return string Rendered HTML bundle
 	 */
@@ -477,7 +475,7 @@ class ca_commerce_order_items extends BaseModel {
 		if(!is_array($pa_options)) { $pa_options = array(); }
 		
 		$o_view->setVar('options', $pa_options);
-		
+		$o_view->setVar('fee_list', (isset($pa_options['type']) && ($pa_options['type'] == 'L')) ? $this->opo_client_services_config->getAssoc('additional_loan_item_fees') : $this->opo_client_services_config->getAssoc('additional_order_item_fees'));
 		$o_view->setVar('t_subject', $this);
 		
 		

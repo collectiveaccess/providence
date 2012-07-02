@@ -40,7 +40,7 @@
  			JavascriptLoadManager::register('bundleableEditor');
  			$t_comm = new ca_commerce_communications();
  			$t_user = new ca_users();
- 			$o_result_context = new ResultContext($this->request, 'ca_commerce_communications', 'basic_search');
+ 			$o_result_context = new ResultContext($this->request, 'ca_commerce_communications', 'basic_search_order');
 			
  			$va_options = array();
  			$o_db = new Db();

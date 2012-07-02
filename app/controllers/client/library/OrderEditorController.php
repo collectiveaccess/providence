@@ -1,13 +1,13 @@
 <?php
 /* ----------------------------------------------------------------------
- * app/controllers/logs/OrderEditorController.php :
+ * app/controllers/logs/LoanEditorController.php :
  * ----------------------------------------------------------------------
  * CollectiveAccess
  * Open-source collections management software
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2011-2012 Whirl-i-Gig
+ * Copyright 2012 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -52,6 +52,7 @@
  			$this->opt_order = new ca_commerce_orders($this->request->getParameter('order_id', pInteger));
  			if (!$this->opt_order->getPrimaryKey()) { 
  				$this->request->setParameter('order_id', 0); 
+ 				$this->opt_order->set('order_type', 'L');
  			}
  			$this->view->setVar('t_order', $this->opt_order);
  			$this->view->setVar('order_id', $this->opt_order->getPrimaryKey());
@@ -61,7 +62,7 @@
  			$this->view->setVar('currency', $this->opo_client_services_config->get('currency'));
  			$this->view->setVar('currency_symbol', $this->opo_client_services_config->get('currency_symbol'));
  			
- 			$this->opo_result_context = new ResultContext($this->request, 'ca_commerce_orders', 'basic_search_order');
+ 			$this->opo_result_context = new ResultContext($this->request, 'ca_commerce_orders', 'basic_search_library');
  		}
  		# -------------------------------------------------------
  		public function Edit() {
@@ -77,7 +78,7 @@
  			$this->view->setVar('transaction_id', ($vn_transaction_id = $this->opt_order->get('transaction_id')) ? $vn_transaction_id : $this->request->getParameter('transaction_id', pInteger));
  			$this->view->setVar('t_transaction', new ca_commerce_transactions($vn_transaction_id));
  			$this->view->setVar('currency_symbol', $this->opo_client_services_config->get('currency_symbol'));
- 			$this->view->setVar('additional_fees', $this->opt_order->getAdditionalFeesHTMLFormBundle($this->request, array('config' => $this->opo_client_services_config, 'currency_symbol' => $this->opo_client_services_config->get('currency_symbol'), 'type' => 'O')));
+ 			$this->view->setVar('additional_fees', $this->opt_order->getAdditionalFeesHTMLFormBundle($this->request, array('config' => $this->opo_client_services_config, 'currency_symbol' => $this->opo_client_services_config->get('currency_symbol'), 'type' => 'L')));
  		
  			$this->render('order_overview_html.php');
  		}
@@ -85,7 +86,7 @@
  		public function CustomerInfo() {
  			$this->view->setVar('transaction_id', ($vn_transaction_id = $this->opt_order->get('transaction_id')) ? $vn_transaction_id : $this->request->getParameter('transaction_id', pInteger));
  			
- 			$this->view->setVar('additional_fees', $this->opt_order->getAdditionalFeesHTMLFormBundle($this->request, array('config' => $this->opo_client_services_config, 'currency_symbol' => $this->opo_client_services_config->get('currency_symbol'), 'type' => 'O')));
+ 			$this->view->setVar('additional_fees', $this->opt_order->getAdditionalFeesHTMLFormBundle($this->request, array('config' => $this->opo_client_services_config, 'currency_symbol' => $this->opo_client_services_config->get('currency_symbol'), 'type' => 'L')));
  			
  			$this->render('order_customer_info_html.php');
  		}
@@ -94,7 +95,7 @@
  			if (!$this->opt_order->getPrimaryKey()) { $this->Edit(); return; }
  			$this->view->setVar('transaction_id', ($vn_transaction_id = $this->opt_order->get('transaction_id')) ? $vn_transaction_id : $this->request->getParameter('transaction_id', pInteger));
  			
- 			$this->view->setVar('additional_fees', $this->opt_order->getAdditionalFeesHTMLFormBundle($this->request, array('config' => $this->opo_client_services_config, 'currency_symbol' => $this->opo_client_services_config->get('currency_symbol'), 'type' => 'O')));
+ 			$this->view->setVar('additional_fees', $this->opt_order->getAdditionalFeesHTMLFormBundle($this->request, array('config' => $this->opo_client_services_config, 'currency_symbol' => $this->opo_client_services_config->get('currency_symbol'), 'type' => 'L')));
  		
  			$this->render('order_additional_fees_html.php');
  		}
@@ -130,7 +131,14 @@
  		public function ItemList() {
  			if (!$this->opt_order->getPrimaryKey()) { $this->Edit(); return; }
  			
- 			$this->view->setVar('order_items', $this->opt_order->getItems());
+ 			$va_items = $this->opt_order->getItems();
+ 			foreach($va_items as $vn_item_id => $va_item) {
+ 				$va_items[$vn_item_id]['loan_checkout_date'] = $va_items[$vn_item_id]['loan_checkout_date'] ? caGetLocalizedDate($va_items[$vn_item_id]['loan_checkout_date'], array('dateFormat' => 'delimited')) : '';
+ 				$va_items[$vn_item_id]['loan_due_date'] = $va_items[$vn_item_id]['loan_due_date'] ? caGetLocalizedDate($va_items[$vn_item_id]['loan_due_date'], array('dateFormat' => 'delimited')) : '';
+ 				$va_items[$vn_item_id]['loan_return_date'] = $va_items[$vn_item_id]['loan_return_date'] ? caGetLocalizedDate($va_items[$vn_item_id]['loan_return_date'], array('dateFormat' => 'delimited')) : '';
+ 			}
+ 	
+ 			$this->view->setVar('order_items', $va_items);
  			
  			$va_service_groups = $this->opo_client_services_config->getAssoc('service_groups');
  			$va_default_prices = array();
@@ -140,11 +148,19 @@
  				}
  			}
  			
+ 			
  			$this->view->setVar('default_item_prices', $va_default_prices);
  			
- 			$t_item = new ca_commerce_order_items();
- 			$this->view->setVar('additional_fees', $t_item->getAdditionalFeesHTMLFormBundle($this->request, array('config' => $this->opo_client_services_config, 'currency_symbol' => $this->opo_client_services_config->get('currency_symbol'), 'type' => 'O')));
- 			$this->view->setVar('additional_fees_for_new_items', $t_item->getAdditionalFeesHTMLFormBundle($this->request, array('config' => $this->opo_client_services_config, 'currency_symbol' => $this->opo_client_services_config->get('currency_symbol'), 'use_defaults' => true, 'type' => 'O')));	
+ 			if (($vn_loan_period_in_days = $this->opo_client_services_config->get('default_library_loan_period')) <= 0) {
+				$vn_loan_period_in_days = 7;
+			}
+ 			$t_order_item = new ca_commerce_order_items();
+			$t_order_item->set('loan_checkout_date', time(), array('SET_DIRECT_DATE' => true));
+			$t_order_item->set('loan_due_date', time() + ($vn_loan_period_in_days * 24 * 60 * 60), array('SET_DIRECT_DATE' => true));
+			
+ 			$this->view->setVar('t_order_item', $t_order_item);
+ 			$this->view->setVar('additional_fees', $t_order_item->getAdditionalFeesHTMLFormBundle($this->request, array('config' => $this->opo_client_services_config, 'currency_symbol' => $this->opo_client_services_config->get('currency_symbol'), 'type' => 'L')));
+ 			$this->view->setVar('additional_fees_for_new_items', $t_order_item->getAdditionalFeesHTMLFormBundle($this->request, array('config' => $this->opo_client_services_config, 'currency_symbol' => $this->opo_client_services_config->get('currency_symbol'), 'use_defaults' => true, 'type' => 'L')));	
  			
  			$this->view->setVar('additional_fee_codes', $this->opo_client_services_config->getAssoc('additional_order_item_fees'));
  			$this->render('order_item_list_html.php');
@@ -224,7 +240,7 @@
  			}
  			
  			// Set additional fees for order
- 			$va_fees = $this->opo_client_services_config->getAssoc('additional_order_fees');
+ 			$va_fees = $this->opo_client_services_config->getAssoc('additional_loan_fees');
  	
  			if (is_array($va_fees)) {
  				if (!is_array($va_fee_values = $this->opt_order->get('additional_fees'))) { $va_fee_values = array(); }
@@ -257,10 +273,9 @@
 					}
  				}
  				$this->opt_order->set('transaction_id', $vn_transaction_id);
- 				$this->opt_order->set('order_type', 'O');	// O=sales order
  					
  				$this->opt_order->insert();
- 				$this->request->setParameter('order_id', $this->opt_order->getPrimaryKey());
+ 				$this->request->setParameter('order_id', $x=$this->opt_order->getPrimaryKey());
  			}
  			
  			// set user profile if not already set
@@ -316,7 +331,7 @@
  			
  			if ($t_trans->haveAccessToTransaction($this->request->getUserID())) {
  				if($this->request->getParameter('message', pString)){
-					if ($t_trans->sendInstitutionMessage('O', $this->request->getParameter('subject', pString), $this->request->getParameter('message', pString), $this->request->getUserID())) {	
+					if ($t_trans->sendInstitutionMessage('L', $this->request->getParameter('subject', pString), $this->request->getParameter('message', pString), $this->request->getUserID())) {	
 						$this->notification->addNotification(_t('Message has been sent'), __NOTIFICATION_TYPE_INFO__);
 					} else {
 						$this->notification->addNotification(_t('Errors occurred when sending message: %1', join('; ', $t_trans->getErrors())), __NOTIFICATION_TYPE_ERROR__);
@@ -572,8 +587,6 @@
 					}
 					
 				}
-				
-				$this->opt_order->set('order_type', 'O');	// O=sales order
  				$this->opt_order->insert();
  				
  				$this->request->setParameter('order_id', $this->opt_order->getPrimaryKey());
@@ -620,56 +633,7 @@
  		 */
  		public function Info() {
  			$this->view->setVar('result_context', $this->opo_result_context);
- 			return $this->render('widget_order_info_html.php', true);
- 		}
- 		# -------------------------------------------------------
- 		/**
- 		 *
- 		 */
- 		public function SelectRepresentations() {
- 			$pn_item_id = $this->request->getParameter('item_id', pInteger);
- 			$pn_object_id = $this->request->getParameter('object_id', pInteger);
-
- 			$t_item = new ca_commerce_order_items($pn_item_id);
- 			$t_object = new ca_objects($pn_object_id);
- 			if(!$vn_object_id) { $vn_object_id = 0; }
- 			$t_rep = new ca_object_representations($t_object->getPrimaryRepresentationID());
- 			
- 			$va_opts = array('use_book_viewer' => true, 'display' => 'media_overlay', 'object_id' => $pn_object_id, 'order_item_id' => $pn_item_id, 'containerID' => 'caMediaPanelContentArea', 'access' => caGetUserAccessValues($this->request));
-
- 			$this->response->addContent($t_rep->getRepresentationViewerHTMLBundle($this->request, $va_opts, array('sectionsAreSelectable' => true, 'use_book_viewer_when_number_of_representations_exceeds' => 0)));
- 		}
- 		# -------------------------------------------------------
- 		public function RecordRepresentationSelection() {
- 			$pn_item_id = $this->request->getParameter('item_id', pInteger);
- 			$pn_representation_id = $this->request->getParameter('representation_id', pInteger);
- 			$pn_selected = $this->request->getParameter('selected', pInteger);
- 			
- 			$va_errors = array();
- 			$t_order_item = new ca_commerce_order_items($pn_item_id);
- 			
- 			if (!$t_order_item->getPrimaryKey()) {
- 				$va_errors[] = _t("Invalid set item");
- 			}
- 			if (!sizeof($va_errors)) {
-				$t_order = new ca_commerce_orders($t_order_item->get('order_id'));
-				if (!$t_order->getPrimaryKey()) {
-					$va_errors[] = _t("Invalid order");
-				}
-				if (!sizeof($va_errors)) {
-					if ((bool)$pn_selected) {
-						$t_order_item->addRepresentations(array($pn_representation_id));
-					} else {
-						$t_order_item->removeRepresentations(array($pn_representation_id));
-					}
-					
-					$va_errors = $t_order_item->getErrors();
-				}
-			}
-			$this->view->setVar("errors", $va_errors);
- 			$this->view->setVar('representation_id', $pn_representation_id);
- 			$this->view->setVar('item_id', $pn_item_id);
- 			$this->render("ajax_select_representation_json.php");
+ 			return $this->render('widget_loan_info_html.php', true);
  		}
  		# -------------------------------------------------------
  		/**
@@ -686,29 +650,6 @@
  			$vs_msg = ($vn_num_reps == 1) ? _t("%1/%2 page selected", $vn_num_reps_selected, $vn_num_reps) : _t("%1/%2 pages selected", $vn_num_reps_selected, $vn_num_reps);
 							
  			$this->response->addContent($vs_msg);
- 		}
- 		# -------------------------------------------------------
- 		/**
- 		 * Return user profile values for specified user
- 		 */
- 		public function GetUserProfileInfo() {
- 			if (!$this->request->user->canDoAction('can_manage_clients')) { return null; }
- 			$pn_user_id = $this->request->getParameter('user_id', pInteger);
- 			
- 			$t_user = new ca_users($pn_user_id);
- 			$va_profile_prefs = $t_user->getValidPreferences('profile');
- 			if (is_array($va_profile_prefs) && sizeof($va_profile_prefs)) {
- 				$va_elements = array();
-				foreach($va_profile_prefs as $vs_pref) {
-					$va_pref_info = $t_user->getPreferenceInfo($vs_pref);
-					$va_elements[str_replace('user_profile_', '', $vs_pref)] = array($t_user->getPreference($vs_pref));
-				}
-				
-				$this->view->setVar("profile_values", $va_elements);
-			}
- 			
- 			$this->view->setVar("user_id", $pn_user_id);
- 			$this->render('ajax_user_profile_info_json.php');
  		}
  		# -------------------------------------------------------
  	}

@@ -1,6 +1,6 @@
 <?php
-/** ---------------------------------------------------------------------
- * themes/default/views/client/bundle/ca_commerce_orders_additional_fees.php
+/* ----------------------------------------------------------------------
+ * themes/default/views/client/library/order_log_html.php : 
  * ----------------------------------------------------------------------
  * CollectiveAccess
  * Open-source collections management software
@@ -22,28 +22,20 @@
  * GNU General Public License. (http://www.gnu.org/copyleft/gpl.html). See
  * the "license.txt" file for details, or visit the CollectiveAccess web site at
  * http://www.CollectiveAccess.org
- * 
- * @package CollectiveAccess
- * @subpackage models
- * @license http://www.gnu.org/copyleft/gpl.html GNU Public License version 3
- * 
+ *
  * ----------------------------------------------------------------------
  */
- 
- /**
-   *
-   */
- 	$t_subject = $this->getVar('t_subject');
- 	$va_options = $this->getVar('options');
- 	$vb_use_defaults = (isset($va_options['use_defaults']) && $va_options['use_defaults']) ? true : false;
- 	$o_config = $va_options['config'];
- 	$vs_currency_symbol = $va_options['currency_symbol'];
- 	
- 	$va_fees = $this->getVar('fee_list');
- 	
- 	if (is_array($va_fees)) {
- 		foreach($va_fees as $vs_code => $va_info) {
- 			print "<div class='formLabel' style='float: left; width: 180px;'>".$va_info['label']."<br/>{$vs_currency_symbol}".caHTMLTextInput('additional_order_item_fee_'.$vs_code.'_{n}', array('width' => 10, 'height' => 1, 'class'=>'currencyBg', 'value' => $vb_use_defaults ? $va_info['default_cost'] : '{ADDITIONAL_FEE_'.$vs_code.'}'))."</div>\n";
- 		}
- 	}
+ 	$t_order = $this->getVar('t_order');
+	$vn_order_id = $this->getVar('order_id');
 ?>
+<div class="sectionBox">
+<?php
+	print caFormControlBox(
+		'<div class="list-filter">'._t('Filter').': <input type="text" name="filter" value="" onkeyup="jQuery(\'#caLog\').caFilterTable(this.value); return false;" size="20"/></div>', 
+		'', 
+		''
+	); 
+	print $t_order->getChangeLogForDisplay('caLog');
+?>
+	<div class="editorBottomPadding"><!-- empty --></div>
+</div>

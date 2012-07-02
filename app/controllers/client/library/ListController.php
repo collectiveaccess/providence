@@ -38,17 +38,17 @@
  		public function Index() {
  			JavascriptLoadManager::register('tableList');
 			
-			$o_result_context = new ResultContext($this->request, 'ca_commerce_orders', 'basic_search');
-			
+			$o_result_context = new ResultContext($this->request, 'ca_commerce_orders', 'basic_search_library');
  			$va_options = array('type' => 'L');
  			$t_order = new ca_commerce_orders();
+ 			$t_order->set('order_type', 'L');
+ 			$t_order_item = new ca_commerce_order_items();
  			
  			// Set drop-down fields to be null-able here so we don't get them auto-setting to their defaults
  			$t_order->setFieldAttribute('order_status', 'IS_NULL', true);
- 			$t_order->setFieldAttribute('shipping_method', 'IS_NULL', true);
  			
  			// filtering options
- 			foreach(array('order_status' => 'string', 'created_on' => 'string', 'shipping_date' => 'string', 'shipping_method' => 'string', 'shipped_on_date' => 'string', 'search' => 'string', 'shipping_method' => 'string', 'transaction_id' => 'int') as $vs_f => $vs_type) {
+ 			foreach(array('order_status' => 'string', 'created_on' => 'string', 'loan_checkout_date' => 'string', 'loan_due_date' => 'string', 'loan_returned_date' => 'string', 'search' => 'string', 'transaction_id' => 'int') as $vs_f => $vs_type) {
 				if (array_key_exists($vs_f, $_REQUEST)) {
 					$vm_v = $this->request->getParameter($vs_f, pString);
 					$o_result_context->setParameter('caClientOrderList_'.$vs_f, $vm_v);
@@ -70,6 +70,7 @@
 				$va_options[$vs_f] = $vm_v;
 			}
  			$this->view->setVar('t_order', $t_order);
+ 			$this->view->setVar('t_order_item', $t_order_item);
  			$this->view->setVar('filter_options', $va_options);
  			$this->view->setVar('order_list', $va_order_list = $t_order->getOrders($va_options));
  	
@@ -101,8 +102,9 @@
  		 */
  		public function Info() {
  			$t_order = new ca_commerce_orders();
+ 			$t_order->set('order_type', 'L');
  			$this->view->setVar('order_list', $va_order_list = $t_order->getOrders(array('type' => 'L')));
- 			return $this->render('widget_loan_info_html.php', true);
+ 			return $this->render('widget_loans_info_html.php', true);
  		}
  		# -------------------------------------------------------
  	}

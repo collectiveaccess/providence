@@ -60,15 +60,15 @@
 ?>
 			</td><td>
 <?php		
-			print $t_order->htmlFormElement('created_on', null, array('FIELD_TYPE' => 'FT_DATETIME', 'DISPLAY_TYPE' => DT_FIELD, 'value' => $va_filter_options['created_on']));			
+			print $t_order->htmlFormElement('created_on', null, array('FIELD_TYPE' => 'FT_DATETIME', 'DISPLAY_TYPE' => DT_FIELD, 'value' => $va_filter_options['created_on'], 'classname'=> 'dateBg'));			
 ?>
 			</td><td>
 <?php		
-			print $t_order->htmlFormElement('shipping_date', null, array('FIELD_TYPE' => 'FT_DATETIME', 'DISPLAY_TYPE' => DT_FIELD, 'value' => $va_filter_options['shipping_date']));			
+			print $t_order->htmlFormElement('shipping_date', null, array('FIELD_TYPE' => 'FT_DATETIME', 'DISPLAY_TYPE' => DT_FIELD, 'value' => $va_filter_options['shipping_date'], 'classname'=> 'dateBg'));			
 ?>
 			</td><td>
 <?php		
-			print $t_order->htmlFormElement('shipped_on_date', null, array('FIELD_TYPE' => 'FT_DATETIME', 'DISPLAY_TYPE' => DT_FIELD, 'value' => $va_filter_options['shipped_on_date']));			
+			print $t_order->htmlFormElement('shipped_on_date', null, array('FIELD_TYPE' => 'FT_DATETIME', 'DISPLAY_TYPE' => DT_FIELD, 'value' => $va_filter_options['shipped_on_date'], 'classname'=> 'dateBg'));			
 ?>
 			</td>
 			<td align="right" valign="top">
