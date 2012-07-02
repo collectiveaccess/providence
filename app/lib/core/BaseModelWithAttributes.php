@@ -515,9 +515,7 @@
 				// Delete any associated attributes and attribute_values
 				if (!($qr_res = $this->getDb()->query("
 					DELETE FROM ca_attribute_values 
-					USING ca_attributes 
-					INNER JOIN ca_attribute_values ON ca_attribute_values.attribute_id = ca_attributes.attribute_id 
-					WHERE ca_attributes.table_num = ? AND ca_attributes.row_id = ?
+					WHERE attribute_id IN (SELECT attribute_id FROM ca_attributes WHERE table_num = ? AND row_id = ?)
 				", (int)$this->tableNum(), (int)$vn_id))) { 
 					$this->errors = $this->getDb()->errors();
 					if ($o_trans) { $o_trans->rollback(); }

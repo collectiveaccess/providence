@@ -319,18 +319,17 @@ class Db extends DbBase {
 		return $this->opo_db->escape($ps_text);
 	}
 
-
 	/**
-	 * Quotes the string (driver aware)
+	 * Quotes string for db use
 	 * 
+	 *
 	 * @param string $ps_text
 	 * @return string text with escaped characters; false on failure
 	 */
-	public function quote($ps_text) {
+	public function quoteescape($ps_text) {
 		if(!$this->connected(true, "Db->escape()")) { return false; }
 		return $this->opo_db->quote($ps_text);
 	}
-
 
 	/**
 	 * Creates a temporary table in the database

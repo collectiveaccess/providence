@@ -4455,29 +4455,18 @@ class BaseModel extends BaseObject {
 	 * @param string $val optional field value
 	 */
 	public function &quote ($field, $val=null) {
+		$o_db = $this->getDb();
 		if (is_null($val)) {	# just quote it!
-			$field = "'".$this->escapeForDatabase($field)."'";
-			return $field;# quote only if field needs it
-		} else {
+			$field = $o_db->quote($field);
+			return $field;
+		} else {# quote only if field needs it
 			if ($this->_getFieldTypeType($field) == 1) {
-				$val = "'".$this->escapeForDatabase($val)."'";
+				$val = $o_db->quote($val);
 			}
 			return $val;
 		}
 	}
-	# --------------------------------------------------------------------------------
-	/**
-	 * Escapes a string for SQL use
-	 * 
-	 * @access public
-	 * @param string $ps_value
-	 * @return string
-	 */
-	public function escapeForDatabase ($ps_value) {
-		$o_db = $this->getDb();
 
-		return $o_db->escape($ps_value);
-	}
 	# --------------------------------------------------------------------------------
 	/**
 	 * Make copy of BaseModel object with all fields information intact *EXCEPT* for the

@@ -1,6 +1,5 @@
 test.php
 dbtest.php
-setup.php
 setup-mysqlpdo.php
 setup-pgsqlpdo.php
 setup.php

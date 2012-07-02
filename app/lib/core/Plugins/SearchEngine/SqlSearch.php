@@ -357,21 +357,29 @@ class WLPlugSearchEngineSqlSearch extends BaseSearchPlugin implements IWLPlugSea
 	}
 	# -------------------------------------------------------
 	private function _createTempTable($ps_name) {
-		$vb_mysql = preg_match("/mysql/",$this->opo_config->get("db_type"));
-		$this->opo_db->query("
-			CREATE TEMPORARY TABLE {$ps_name} (
-				row_id int not null,
-				boost int not null default 1
-				
-			)". ($vb_mysql ? " engine=memory;" : ";"));
+		$this->opo_db->createTemporaryTable($ps_name, array(array("name" => "row_id", 
+															"type" => "int", 
+															"length" => 0, 
+															"primary_key" => false, 
+															"null" => false,
+															"default" => false),
+													array("name" => "boost", 
+															"type" => "int", 
+															"length" => 0, 
+															"primary_key" => false, 
+															"null" => false, 
+															"default" => true, 
+															"defaultval" => 1)),
+													"memory");
 		if ($this->opo_db->numErrors()) {
 			return false;
 		}
-		$this->opo_db->query("create unique index i_row_id" . ($vb_mysql ? "" : "_{$ps_name}" . " on {$ps_name}(row_id);"));
+		$this->opo_db->query("create unique index i_row_id on {$ps_name}(row_id)");
+
 		if ($this->opo_db->numErrors()) {
 			return false;
 		}
-		$this->opo_db->query("create index i_boost" . ($vb_mysql ? "" : "_{$ps_name}" . " on {$ps_name}(boost);"));
+		$this->opo_db->query("create index i_boost on {$ps_name}(boost)");
 		
 		if ($this->opo_db->numErrors()) {
 			return false;

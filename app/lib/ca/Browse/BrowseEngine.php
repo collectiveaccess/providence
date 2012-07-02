@@ -1237,7 +1237,7 @@
 											$va_ids[] = "({$vn_id})";
 										}
 					
-										$this->opo_db->query("INSERT IGNORE INTO ca_browses_acc VALUES ".join(",", $va_ids));
+										$this->opo_db->query("INSERT INTO ca_browses_acc VALUES ".join(",", $va_ids));
 						
 										$vn_i++;
 									}
@@ -3293,13 +3293,13 @@ if (!$va_facet_info['show_all_when_first_facet'] || ($this->numCriteria() > 0)) 
 		 * Created temporary table for use while performing browse
 		 */
 		private function _createTempTable($ps_name) {
-			$this->opo_db->query("
-				CREATE TEMPORARY TABLE {$ps_name} (
-					row_id int unsigned not null,
-					
-					primary key (row_id)
-				) engine=memory;
-			");
+		$this->opo_db->createTemporaryTable($ps_name, array(array("name" => "row_id", 
+															"type" => "int", 
+															"length" => 0, 
+															"primary_key" => true, 
+															"null" => false,
+															"default" => false)),
+													"memory");
 			if ($this->opo_db->numErrors()) {
 				return false;
 			}
