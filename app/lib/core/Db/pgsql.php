@@ -539,7 +539,7 @@ class Db_pgsql extends DbDriverBase {
 	 * @param int $pn_offset line number to seek
 	 * @return array array representation of the next row
 	 */
-	function seek($po_caller, $or_res, $pn_offset) {
+	function seek($po_caller, $po_res, $pn_offset) {
 		return $po_res->seek($pn_offset);
 	}
 

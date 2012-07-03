@@ -39,6 +39,9 @@ require_once(__CA_LIB_DIR__.'/core/Configuration.php');
 require_once(__CA_LIB_DIR__.'/core/Parsers/ZipFile.php');
 
 
+function caCheckNull($ps_location, $pm_isnull){
+	print caPrintStacktrace() . ": is " . (is_null($pm_isnull) ? "" : "not ") . "NULL";exit;
+}
 # ----------------------------------------------------------------------
 # String localization functions (getText)
 # ----------------------------------------------------------------------

@@ -374,12 +374,12 @@ class WLPlugSearchEngineSqlSearch extends BaseSearchPlugin implements IWLPlugSea
 		if ($this->opo_db->numErrors()) {
 			return false;
 		}
-		$this->opo_db->query("create unique index i_row_id on {$ps_name}(row_id)");
+		$this->opo_db->query("create unique index {$ps_name}_i_row_id on {$ps_name}(row_id)");
 
 		if ($this->opo_db->numErrors()) {
 			return false;
 		}
-		$this->opo_db->query("create index i_boost on {$ps_name}(boost)");
+		$this->opo_db->query("create index {$ps_name}_i_boost on {$ps_name}(boost)");
 		
 		if ($this->opo_db->numErrors()) {
 			return false;

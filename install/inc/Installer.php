@@ -291,11 +291,11 @@ class Installer {
 		$va_ca_tables = $vo_dm->getTableNames();
 
 		switch($vs_dbtype){
-			case 'pgsqlpdo':
+			case 'pgsql':
 				$qr_tables = $vo_db->query("SELECT tablename FROM pg_tables WHERE schemaname='public'");
 				break;
 			case 'mysql':
-			case 'mysqlpdo':
+			case 'mysqli':
 				$qr_tables = $vo_db->query("SHOW TABLES");
 				break;
 			default:

@@ -5849,7 +5849,7 @@ class BaseModel extends BaseObject {
 						(".$this->tableName().".{$vs_hier_parent_id_fld} = ?) ".((sizeof($va_additional_table_wheres) > 0) ? ' AND '.join(' AND ', $va_additional_table_wheres) : '')."
 					ORDER BY
 						".$vs_order_by."
-				", $pn_id);
+				", ($pn_id == 'NULL' ? null : $pn_id));
 			}
 			if ($o_db->numErrors()) {
 				$this->errors = array_merge($this->errors, $o_db->errors());
@@ -5885,7 +5885,7 @@ class BaseModel extends BaseObject {
 		
 		if (!$pn_id) { $pn_id = $this->getPrimaryKey(); }
 		if (!$pn_id) { return null; }
-		$qr_children = $this->getHierarchyChildrenAsQuery($pn_id == 'NULL' ? null : $pn_id, $pa_options);
+		$qr_children = $this->getHierarchyChildrenAsQuery($pn_id, $pa_options);
 		
 		
 		$va_children = array();
