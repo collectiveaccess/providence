@@ -1882,6 +1882,7 @@
 						$va_values = array();
 						
 						$vn_element_type = $t_element->get('datatype');
+						
 						$va_list_items = null;
 						
 						
@@ -2996,19 +2997,22 @@ if (!$va_facet_info['show_all_when_first_facet'] || ($this->numCriteria() > 0)) 
 			$vs_table_name = $this->ops_browse_table_name;
 			
 			$va_fields = explode(';', $ps_field);
-			$va_joins = array();
-			$va_orderbys = array();
-			$vs_locale_where = '';
-			$vs_is_preferred_sql = '';
+			$va_sorted_hits = array();
 			
-			foreach($va_fields as $vs_field) {
+			foreach($va_fields as $vs_field) {				
+				$va_joins = $va_orderbys = array();
+				$vs_locale_where = $vs_is_preferred_sql = '';
+				
 				$va_tmp = explode('.', $vs_field);
 				
 				if ($va_tmp[0] == $vs_table_name) {
+					//
 					// sort field is in search table
-					
+					//
 					if (!$t_table->hasField($va_tmp[1])) { 
+						//
 						// is it an attribute?
+						//
 						$t_element = new ca_metadata_elements();
 						$vs_sort_element_code = array_pop($va_tmp);
 						if ($t_element->load(array('element_code' => $vs_sort_element_code))) {
@@ -3018,6 +3022,7 @@ if (!$va_facet_info['show_all_when_first_facet'] || ($this->numCriteria() > 0)) 
 								return $pa_hits;
 							}
 							
+							$vs_locale_where = "attr.locale_id";
 							$vs_sql = "
 								SELECT t.{$vs_table_pk}, attr.locale_id, {$vs_sort_field}
 								FROM {$vs_table_name} t
@@ -3031,10 +3036,9 @@ if (!$va_facet_info['show_all_when_first_facet'] || ($this->numCriteria() > 0)) 
 							//print $vs_sql;
 							
 							$qr_sort = $this->opo_db->query($vs_sql, (int)$vn_element_id, (int)$this->opn_browse_table_num);
-			
-							$va_sorted_hits = array();
+	
 							while($qr_sort->nextRow()) {
-								$va_sorted_hits[$vn_id = $qr_sort->get($vs_table_pk, array('binary' => true))][$qr_sort->get('locale_id', array('binary' => true))] = $qr_sort->get($vs_sort_field);
+								$va_sorted_hits[$vn_id = $qr_sort->get($vs_table_pk, array('binary' => true))][$qr_sort->get('locale_id', array('binary' => true))] .= trim(preg_replace('![^A-Za-z0-9 ]+!', '', strip_tags(mb_strtolower($qr_sort->get($vs_sort_field)))));
 								unset($pa_hits[$vn_id]);
 							}
 							
@@ -3043,16 +3047,8 @@ if (!$va_facet_info['show_all_when_first_facet'] || ($this->numCriteria() > 0)) 
 								if (!is_array($va_row)) { $va_row = array(); }
 								$va_sorted_hits[$vn_id][1] = $va_row;
 							}
-							
-							$va_sorted_hits = caExtractValuesByUserLocale($va_sorted_hits);
-							asort($va_sorted_hits);
-							
-							if ($ps_direction == 'desc') { $va_sorted_hits = array_reverse($va_sorted_hits, true); }
-							
-							return $va_sorted_hits;
 						}
-					
-						return $pa_hits; 	// return hits unsorted if field is not valid
+						continue;
 					} else {	
 						$va_field_info = $t_table->getFieldInfo($va_tmp[1]);
 						if ($va_field_info['START'] && $va_field_info['END']) {
@@ -3116,30 +3112,36 @@ if (!$va_facet_info['show_all_when_first_facet'] || ($this->numCriteria() > 0)) 
 						$vs_sortable_value_fld = $vs_field;
 					}
 				}
-			}
-			$vs_join_sql = join("\n", $va_joins);
+				//
+				// Grab values and index for sorting later
+				//
+				$vs_join_sql = join("\n", $va_joins);
 			
-			$vs_sql = "
-				SELECT {$vs_table_name}.{$vs_table_pk}{$vs_locale_where}, {$vs_sortable_value_fld}
-				FROM {$vs_table_name}
-				{$vs_join_sql}
-				WHERE
-					{$vs_table_name}.{$vs_table_pk} IN (".join(", ", array_keys($pa_hits)).")
-					{$vs_is_preferred_sql}
-			";
-			//print $vs_sql;
-			$qr_sort = $this->opo_db->query($vs_sql);
-			$va_sorted_hits = array();
-			while($qr_sort->nextRow()) {
-				if (!($vs_sortable_value = mb_strtolower($qr_sort->get($vs_sortable_value_fld)))) {
-					$vs_sortable_value = ' ';
-				}
-				if ($vs_locale_where) {
-					$va_sorted_hits[$qr_sort->get($vs_table_pk, array('binary' => true))][$qr_sort->get('locale_id', array('binary' => true))] = $vs_sortable_value;
-				} else {
-					$va_sorted_hits[$qr_sort->get($vs_table_pk, array('binary' => true))] = $vs_sortable_value;
+				$vs_sql = "
+					SELECT {$vs_table_name}.{$vs_table_pk}{$vs_locale_where}, {$vs_sortable_value_fld}
+					FROM {$vs_table_name}
+					{$vs_join_sql}
+					WHERE
+						{$vs_table_name}.{$vs_table_pk} IN (".join(", ", array_keys($pa_hits)).")
+						{$vs_is_preferred_sql}
+				";
+				//print $vs_sql;
+				$qr_sort = $this->opo_db->query($vs_sql);
+				while($qr_sort->nextRow()) {
+					if (!($vs_sortable_value = trim(preg_replace('![^A-Za-z0-9 ]+!', '', strip_tags(mb_strtolower($qr_sort->get($vs_sortable_value_fld))))))) {
+						$vs_sortable_value = ' ';
+					}
+					if ($vs_locale_where) {
+						$va_sorted_hits[$qr_sort->get($vs_table_pk, array('binary' => true))][$qr_sort->get('locale_id', array('binary' => true))] .= $vs_sortable_value;
+					} else {
+						$va_sorted_hits[$qr_sort->get($vs_table_pk, array('binary' => true))] .= $vs_sortable_value;
+					}
 				}
 			}
+			
+			//
+			// Actually sort the hits here...
+			//
 			if ($vs_locale_where) { 
 				$va_sorted_hits = caExtractValuesByUserLocale($va_sorted_hits);
 			}

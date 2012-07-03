@@ -1501,7 +1501,7 @@
 			$vs_table = $this->tableName();
 			foreach($va_elements as $vn_element_id => $vs_element_code) {
 				$va_vals = $this->get("{$vs_table}.{$vs_element_code}", array("returnAsArray" => true, "returnAllLocales" => true));
-				
+				if (!is_array($va_vals)) { continue; }
 				foreach($va_vals as $vn_id => $va_vals_by_locale) {
 					foreach($va_vals_by_locale as $vn_locale_id => $va_vals_by_attr_id) {
 						foreach($va_vals_by_attr_id as $vn_attribute_id => $va_val) {

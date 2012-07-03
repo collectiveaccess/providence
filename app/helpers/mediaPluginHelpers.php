@@ -289,7 +289,7 @@
  		$va_date_elements = $o_metadata_config->getList('extract_embedded_exif_creation_date_to');
  		$va_date_containers = $o_metadata_config->getAssoc('extract_embedded_exif_creation_date_to_container');
  		
- 		if (isset($pa_metadata['EXIF']) && is_array($pa_metadata['EXIF']) && ((is_array($va_georef_elements) && sizeof($va_georef_elements)) || (is_array($va_date_elements) && sizeof($va_date_elements)))) {
+ 		if (isset($pa_metadata['EXIF']) && is_array($pa_metadata['EXIF']) && ((is_array($va_georef_elements) && sizeof($va_georef_elements)) || (is_array($va_georef_containers) && sizeof($va_georef_containers))  || (is_array($va_date_elements) && sizeof($va_date_elements))  || (is_array($va_date_containers) && sizeof($va_date_containers)))) {
 			$va_exif_data = $pa_metadata['EXIF'];
 			
 			if (is_array($va_georef_elements)) {

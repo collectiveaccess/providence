@@ -443,8 +443,10 @@ class Installer {
 				if ($t_list->numErrors()) {
 					$this->addError("There was an error while inserting list label for {$vs_list_code}: ".join(" ",$t_list->getErrors()));
 				}
-				if(!$this->processListItems($t_list, $vo_list->items, null)){
-					return false;
+				if($vo_list->items){
+					if(!$this->processListItems($t_list, $vo_list->items, null)){
+						return false;
+					}
 				}
 			}
 		}
