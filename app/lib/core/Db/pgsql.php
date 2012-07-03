@@ -102,8 +102,11 @@ class Db_pgsql extends DbDriverBase {
 	public static function serializeForDatabase($ps_data){
 		if(!mb_check_encoding($ps_data, "UTF-8")){  // Either gzipped data or other binary. Goes into a bytea.
 			$vs_hexs = "E'\\\\x";
-			foreach(str_split($ps_data) as $vs_c){
-				$vs_hexs .= sprintf("%02X", ord($vs_c));
+			for($i = 0 ; $i < strlen($ps_data) ; ++$i){
+				$vn_val = ord($ps_data[$i]);
+				$vn_lsb = $vn_val & 0x0f;
+				$vn_msb = ($vn_val >> 4) & 0x0f;
+				$vs_hexs .= dechex($vn_msb).dechex($vn_lsb);
 			}
 			$vs_hexs .= "'";	
 			return $vs_hexs;
@@ -406,7 +409,7 @@ class Db_pgsql extends DbDriverBase {
 	 * @param string $ps_table_name string representation of the table name
 	 * @param array $pa_field_list array containing the field names
 	 * @param string $ps_type ignored
-	 * @return mixed mysql resource
+	 * @return mixed DbResult object
 	 */
 	function createTemporaryTable($po_caller, $ps_table_name, $pa_field_list, $ps_type="") {
 		if (!$ps_table_name) {
@@ -454,7 +457,7 @@ class Db_pgsql extends DbDriverBase {
 	 *
 	 * @param mixed $po_caller object representation of calling class, usually Db
 	 * @param string $ps_table_name string representation of the table name
-	 * @return mixed mysql resource
+	 * @return mixed DbResult object
 	 */
 	function dropTemporaryTable($po_caller, $ps_table_name) {
 		if (!($vb_res = @$this->opo_db->query("DROP TABLE ".$ps_table_name))) {
@@ -746,7 +749,7 @@ class Db_pgsql extends DbDriverBase {
 	 * Converts native datatypes to db datatypes
 	 *
 	 * @param string string representation of the datatype
-	 * @return array array with more information about the type, specific to mysql
+	 * @return array array with more information about the type, specific to postgresql
 	 */
 	function nativeToDbDataType($ps_native_datatype_spec) {
 		if (preg_match("/^([A-Za-z]+)[\(]{0,1}([\d,]*)[\)]{0,1}[ ]*([A-Za-z]*)[\(]{0,1}([\d,]*)[\)]{0,1}/", $ps_native_datatype_spec, $va_matches)){
