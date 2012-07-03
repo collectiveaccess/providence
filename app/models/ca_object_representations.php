@@ -105,7 +105,6 @@ BaseModel::$s_ca_models_definitions['ca_object_representations'] = array(
 				'DISPLAY_WIDTH' => 88, 'DISPLAY_HEIGHT' => 15,
 				'IS_NULL' => false, 
 				'DEFAULT' => '',
-				'DONT_PROCESS_DURING_INSERT_UPDATE' => true,
 				
 				'ALLOW_BUNDLE_ACCESS_CHECK' => true,
 				
@@ -116,7 +115,6 @@ BaseModel::$s_ca_models_definitions['ca_object_representations'] = array(
 				'DISPLAY_WIDTH' => 88, 'DISPLAY_HEIGHT' => 15,
 				'IS_NULL' => false, 
 				'DEFAULT' => '',
-				'DONT_PROCESS_DURING_INSERT_UPDATE' => true,
 				
 				'ALLOW_BUNDLE_ACCESS_CHECK' => true,
 				

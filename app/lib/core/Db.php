@@ -324,7 +324,7 @@ class Db extends DbBase {
 	 * Quotes the string (driver aware)
 	 * 
 	 * @param string $ps_text
-	 * @return string text with escaped characters; false on failure
+	 * @return string quoted text with escaped characters; false on failure
 	 */
 	public function quote($ps_text) {
 		if(!$this->connected(true, "Db->escape()")) { return false; }

@@ -38,6 +38,10 @@ require_once(__CA_LIB_DIR__."/core/Db/DbDriverBase.php");
 require_once(__CA_LIB_DIR__."/core/Db/DbResult.php");
 require_once(__CA_LIB_DIR__."/core/Db/DbStatement.php");
 
+global $g_db_driver;
+
+$g_db_driver = "mysql";
+
 /**
  * Cache for prepared statements
  */
@@ -324,10 +328,10 @@ class Db_mysql extends DbDriverBase {
 	 */
 	function createTemporaryTable($po_caller, $ps_table_name, $pa_field_list, $ps_type="") {
 		if (!$ps_table_name) {
-			$po_caller->postError(230, _t("No table name specified"), "Db->mysql->createTemporaryTable()");
+			$po_caller->postError(230, _t("No table name specified"), "Db->pgsqlpdo->createTemporaryTable()");
 		}
 		if (!is_array($pa_field_list) || sizeof($pa_field_list) == 0) {
-			$po_caller->postError(231, _t("No fields specified"), "Db->mysql->createTemporaryTable()");
+			$po_caller->postError(231, _t("No fields specified"), "Db->pgsqlpdo->createTemporaryTable()");
 		}
 
 
@@ -345,9 +349,12 @@ class Db_mysql extends DbDriverBase {
 			}
 
 			if ($va_field["null"]) {
-				$vs_field .= "null";
+				$vs_field .= "null ";
 			} else {
-				$vs_field .= "not null";
+				$vs_field .= "not null ";
+			}
+			if ($va_field["default"]) {
+				$vs_field .= "default {$va_field["defaultval"]}";
 			}
 
 			$va_fields[] = $vs_field;

@@ -421,8 +421,8 @@ create table ca_object_representations
    mimetype                       varchar(255)                   null,
    original_filename              varchar(1024)                  not null,
    media                          longblob                       not null,
-   media_metadata                 longblob                       null,
-   media_content                  longtext                       null,
+   media_metadata                 longblob                       not null,
+   media_content                  longtext                       not null,
    deleted                        tinyint unsigned               not null default 0,
    is_template                    tinyint unsigned               not null default 0,
    commenting_status              tinyint unsigned               not null default 0,
@@ -487,7 +487,7 @@ create table ca_object_representation_multifiles (
 	primary key (multifile_id)
 ) engine=innodb CHARACTER SET utf8 COLLATE utf8_general_ci;
 
-create index i_resource_path on ca_object_representation_multifiles(resource_path);
+create index i_resource_path on ca_object_representation_multifiles(resource_path(255));
 create index i_representation_id on ca_object_representation_multifiles(representation_id);
 
 
@@ -567,7 +567,7 @@ create unique index u_all on ca_occurrence_labels(
    locale_id
 );
 create index i_locale_id on ca_occurrence_labels(locale_id);
-create index i_name_sort on ca_occurrence_labels(name_sort);
+create index i_name_sort on ca_occurrence_labels(name_sort(255));
 create index i_type_id on ca_occurrence_labels(type_id);
 
 

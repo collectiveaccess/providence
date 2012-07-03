@@ -92,8 +92,8 @@ class SchemaLoader{
         		}
         		$va_pgstatements[] = $vs_s;
     		}
-			else if(preg_match("/create[\s\n]+(unique|fulltext|)[\s\n]*(index|key)[\s\n]*([0-9a-z_]+)[\s\n]+on[\s\n]+([0-9a-z_]+)(\(.*\))/i", $vs_s, $va_matches)){
-					$va_index_statements[] = $this->getPostGreSQLIndexStatement($va_matches[1], $va_matches[3], $va_matches[4], $va_matches[5]);
+			else if(preg_match("/create[\s\n]+(unique|fulltext|)[\s\n]*(index|key)[\s\n]*([0-9a-z_]+)[\s\n]+on[\s\n]+([0-9a-z_]+)\(([a-z0-9_, ]+).*\)/i", $vs_s, $va_matches)){
+					$va_index_statements[] = $this->getPostGreSQLIndexStatement($va_matches[1], $va_matches[3], $va_matches[4], "(".$va_matches[5].")");
     		}	
     		else if(preg_match("/insert.*(into.*)/is", $vs_s, $va_matches)){
 					$va_pgstatements[] = "insert " . preg_replace("/unix_timestamp\(\)/", (string)time(), $va_matches[1]);

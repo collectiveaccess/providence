@@ -37,8 +37,6 @@
 require_once(__CA_LIB_DIR__.'/core/Datamodel.php');
 require_once(__CA_LIB_DIR__.'/core/Configuration.php');
 require_once(__CA_LIB_DIR__.'/core/Parsers/ZipFile.php');
-require_once(__CA_LIB_DIR__.'/core/Db/pgsqlpdo.php');
-require_once(__CA_LIB_DIR__.'/core/Db/mysql.php');
 
 
 # ----------------------------------------------------------------------
@@ -465,20 +463,26 @@ function caFileIsIncludable($ps_file) {
 	# ----------------------------------------
 	function caSerializeForDatabase($ps_data, $pb_compress=false) {
 		global $g_db_driver;
+		$vs_data = (($pb_compress && function_exists(gzcompress)) ? gzcompress(serialize($ps_data)) :
+																	base64_encode(serialize($ps_data)));
 		$vs_sf = "Db_{$g_db_driver}::serializeForDatabase";
-		return ($pb_compress ? call_user_func($vs_sf, gzcompress(serialize($ps_data))) : call_user_func($vs_sf, serialize($ps_data)));
+		return is_callable($vs_sf) ? call_user_func($vs_sf, $vs_data) : $vs_data;
 	}
 	# ----------------------------------------
 	function caUnserializeForDatabase($ps_data) {
 		global $g_db_driver;
 		if (is_array($ps_data)) { return $ps_data; }
-		$vs_data = call_user_func("Db_{$g_db_driver}::unserializeForDatabase", $ps_data);
-		if($vs_unc = @gzuncompress($vs_data)){
-			return unserialize($vs_unc);	
+		$vs_usf = "Db_{$g_db_driver}::unserializeForDatabase";
+		$vs_data = is_callable($vs_usf) ? call_user_func($vs_usf, $ps_data) : 
+												$ps_data;
+
+		if(function_exists(gzuncompress) && ($vs_unc = @gzuncompress($vs_data))){
+			return unserialize($vs_unc);
 		}
 		else{
-			return unserialize($vs_data);
+			return unserialize(base64_decode($vs_data));
 		}
+	
 	}
 	# ----------------------------------------
 	/**

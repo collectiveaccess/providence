@@ -1,6 +1,6 @@
 <?php
 /** ---------------------------------------------------------------------
- * app/lib/core/Db/PDOScrollable.php :
+ * app/lib/core/Db/PDOStatementWrapper.php
  * ----------------------------------------------------------------------
  * CollectiveAccess
  * Open-source collections management software
@@ -31,13 +31,13 @@
  */
  
 /**
- * Wrapper for PDOStatement objects making them scrollable.
+ * Wrapper for PDOStatement objects 
  * 
  * Requires the PDO driver to return the number of rows in a SELECT result in
  * PDOStatemment::rowCount()
  */
 
-class PDOScrollable{
+class PDOStatementWrapper{
 	/**
 	 * PDOStatement object
 	 *
@@ -65,6 +65,7 @@ class PDOScrollable{
 	 * 
 	 */
 	public function __construct($po_stmt) {
+		// TODO: make this a bit less resource intensive :)
 		if(is_object($po_stmt)){
 			$this->opo_stmt = $po_stmt;
 			$this->opa_res = $po_stmt->fetchAll(PDO::FETCH_ASSOC);
@@ -118,6 +119,7 @@ class PDOScrollable{
 	{
 		return $this->opa_res;
 	}
+
 	public function rowCount()
 	{
 		return count($this->opa_res);
