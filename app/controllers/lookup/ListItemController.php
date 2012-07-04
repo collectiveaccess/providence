@@ -148,21 +148,10 @@
  			$va_list_items['_primaryKey'] = $t_item->primaryKey();	// pass the name of the primary key so the hierbrowser knows where to look for item_id's
  			
  			$this->view->setVar('dontShowSymbols', (bool)$this->request->getParameter('noSymbols', pString));
- 			$this->view->setVar('list_item_list', $this->intsInArrayToStrings($va_list_items));
+ 			$this->view->setVar('list_item_list', caIntsInArrayToStrings($va_list_items));
  			
  			return $this->render('list_item_hierarchy_level_json.php');
  		}
  		# -------------------------------------------------------
-         private function intsInArrayToStrings($pm_val){
-             if(is_array($pm_val)){
-                 foreach($pm_val as $key => $val){
-                     $pm_val[$key] = $this->intsInArrayToStrings($val);
-                 }
-             return $pm_val;
-             }
-             else{
-                 return (string)$pm_val;
-             }
-         }
  	}
  ?>

@@ -1056,8 +1056,19 @@ function caFileIsIncludable($ps_file) {
 	  */
 	function caReturnDefaultIfBlank($ps_text) {
 		global $g_default_display_value;
-		
+
 		return trim($ps_text) ? $ps_text : $g_default_display_value;
+	}
+	function caIntsInArrayToStrings($pm_val){
+		if(is_array($pm_val)){
+			foreach($pm_val as $key => $val){
+				$pm_val[$key] = caIntsInArrayToStrings($val);
+			}
+			return $pm_val;
+		}
+		else{
+			return (string)$pm_val;
+		}
 	}
 	# ---------------------------------------
 	/**

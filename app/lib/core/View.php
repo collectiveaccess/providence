@@ -107,16 +107,6 @@ class View extends BaseObject {
 		$this->opa_view_vars[$ps_key] = $pm_value;
 	}
 	# -------------------------------------------------------
-	private function intsInArrayToStrings($pm_val){
-		if(is_array($pm_val)){
-			foreach($pm_val as $key => $val){
-				$pm_val[$key] = $this->intsInArrayToStrings($val);
-			}		
-		}
-		else{	
-			return (string)$pm_val;
-		}
-	}
 	public function getVar($ps_key) {
 		return isset($this->opa_view_vars[$ps_key]) ? $this->opa_view_vars[$ps_key] : null;
 	}

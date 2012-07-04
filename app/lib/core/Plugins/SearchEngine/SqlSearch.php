@@ -683,10 +683,10 @@ class WLPlugSearchEngineSqlSearch extends BaseSearchPlugin implements IWLPlugSea
 												}
 												$va_ft_stem_terms[] = "'".$this->opo_db->escape($vs_stem)."'";
 											} else {
-												$va_ft_terms[] = '"'.$this->opo_db->escape($vs_term).'"';
+												$va_ft_terms[] = "'".$this->opo_db->escape($vs_term)."'";
 											}
 										} else {
-											$va_ft_terms[] = '"'.$this->opo_db->escape($vs_term).'"';
+											$va_ft_terms[] = "'".$this->opo_db->escape($vs_term)."'";
 										}
 										$vb_output_term = true;	
 								}
