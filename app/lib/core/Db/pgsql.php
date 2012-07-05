@@ -606,7 +606,7 @@ class Db_pgsql extends DbDriverBase {
 		if ($ps_fieldname) {
 			$vs_fieldname_sql = " AND a.attname ~ '^(".$this->escape($ps_fieldname).")$'";
 		}
-		$r_show = $this->opo_db->query("SELECT c.oid,
+		$r_show = $this->opo_db->query("SELECT c.oid
 										FROM pg_catalog.pg_class c
      									LEFT JOIN pg_catalog.pg_namespace n ON n.oid = c.relnamespace
 										WHERE c.relname ~ '^($ps_table)$'
