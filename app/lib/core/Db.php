@@ -470,6 +470,17 @@ class Db extends DbBase {
 	 * @param string $ps_table name of the table
 	 * @return array
 	 */
+	public function getFieldNamesFromTable($ps_table) {
+		if(!$this->connected(true, "Db->getFieldsFromTable()")) { return false; }
+		return $this->opo_db->getFieldNamesFromTable($this, $ps_table);
+	}
+	/**
+	 * Returns an array with the names of all fields for a given table.
+	 * Returns false if you're not connected to a database.
+	 *
+	 * @param string $ps_table name of the table
+	 * @return array
+	 */
 	public function getFieldsFromTable($ps_table) {
 		if(!$this->connected(true, "Db->getFieldsFromTable()")) { return false; }
 		return $this->opo_db->getFieldsFromTable($this, $ps_table);

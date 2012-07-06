@@ -158,7 +158,7 @@ class Db_pgsql extends DbDriverBase {
 		$this->opo_db = new PDO($vs_pdodsn);
 
 		if (!$this->opo_db) {
-			$po_caller->postError(200, "Unnable to connect to database. Check database settings in setup.php", "Db->pgsqlpdo->connect()");
+			$po_caller->postError(200, "Unnable to connect to database. Check database settings in setup.php", "Db->pgsql->connect()");
 			return false;
 		}
 
@@ -299,7 +299,7 @@ class Db_pgsql extends DbDriverBase {
 	 */
 	function execute($po_caller, $opo_statement, $ps_sql, $pa_values) {
 		if (!$ps_sql) {
-			$opo_statement->postError(240, _t("Query is empty"), "Db->pgsqlpdo->execute()");
+			$opo_statement->postError(240, _t("Query is empty"), "Db->pgsql->execute()");
 			return false;
 		}
 
@@ -308,7 +308,8 @@ class Db_pgsql extends DbDriverBase {
 		$va_placeholder_map = $opo_statement->getOption('placeholder_map');
 		$vn_needed_values = sizeof($va_placeholder_map);
 		if ($vn_needed_values != sizeof($pa_values)) {
-			$opo_statement->postError(285, _t("Number of values passed (%1) does not equal number of values required (%2)", sizeof($pa_values), $vn_needed_values),"Db->pgsqlpdo->execute()");
+			print "<pre>".caPrintStacktrace()."</pre>" . "\n\n";
+			$opo_statement->postError(285, _t("Number of values passed (%1) does not equal number of values required (%2)", sizeof($pa_values), $vn_needed_values),"Db->pgsql->execute()");
 			return false;
 		}
 
@@ -339,7 +340,7 @@ class Db_pgsql extends DbDriverBase {
 			print "<pre>".caPrintStacktrace()."</pre>\n";
 			print $vs_sql;
 			print $this->errorinfo();
-			$opo_statement->postError($this->nativeToDbError($this->errorcode()), $this->errorinfo(), "Db->pgsqlpdo->execute()");
+			$opo_statement->postError($this->nativeToDbError($this->errorcode()), $this->errorinfo(), "Db->pgsql->execute()");
 			return false;
 		}
 		if (Db::$monitor) {
@@ -413,10 +414,10 @@ class Db_pgsql extends DbDriverBase {
 	 */
 	function createTemporaryTable($po_caller, $ps_table_name, $pa_field_list, $ps_type="") {
 		if (!$ps_table_name) {
-			$po_caller->postError(230, _t("No table name specified"), "Db->pgsqlpdo->createTemporaryTable()");
+			$po_caller->postError(230, _t("No table name specified"), "Db->pgsql->createTemporaryTable()");
 		}
 		if (!is_array($pa_field_list) || sizeof($pa_field_list) == 0) {
-			$po_caller->postError(231, _t("No fields specified"), "Db->pgsqlpdo->createTemporaryTable()");
+			$po_caller->postError(231, _t("No fields specified"), "Db->pgsql->createTemporaryTable()");
 		}
 
 
@@ -447,7 +448,7 @@ class Db_pgsql extends DbDriverBase {
 
 		$vs_sql .= "(".join(",\n", $va_fields).")";
 		if (!($vb_res = $this->opo_db->query($vs_sql))) {
-			$po_caller->postError($this->nativeToDbError($this->errorcode()), $this->errorinfo(), "Db->pgsqlpdo->createTemporaryTable()");
+			$po_caller->postError($this->nativeToDbError($this->errorcode()), $this->errorinfo(), "Db->pgsql->createTemporaryTable()");
 		}
 		return new DbResult($this, new PDOStatementWrapper($vb_res));
 	}
@@ -461,7 +462,7 @@ class Db_pgsql extends DbDriverBase {
 	 */
 	function dropTemporaryTable($po_caller, $ps_table_name) {
 		if (!($vb_res = @$this->opo_db->query("DROP TABLE ".$ps_table_name))) {
-			$po_caller->postError($this->nativeToDbError($this->errorcode()), $this->errorinfo(), "Db->pgsqlpdo->dropTemporaryTable()");
+			$po_caller->postError($this->nativeToDbError($this->errorcode()), $this->errorinfo(), "Db->pgsql->dropTemporaryTable()");
 		}
 		return $vb_res;
 	}
@@ -493,7 +494,7 @@ class Db_pgsql extends DbDriverBase {
 	 */
 	function beginTransaction($po_caller) {
 		if (!@$this->opo_db->beginTransaction()) {
-			$po_caller->postError(250, $this->errorinfo(), "Db->pgsqlpdo->beginTransaction()");
+			$po_caller->postError(250, $this->errorinfo(), "Db->pgsql->beginTransaction()");
 			return false;
 		}
 		return true;
@@ -506,7 +507,7 @@ class Db_pgsql extends DbDriverBase {
 	 */
 	function commitTransaction($po_caller) {
 		if (!@$this->opo_db->commit()) {
-			$po_caller->postError(250, $this->errorinfo(), "Db->pgsqlpdo->commitTransaction()");
+			$po_caller->postError(250, $this->errorinfo(), "Db->pgsql->commitTransaction()");
 			return false;
 		}
 		return true;
@@ -519,7 +520,7 @@ class Db_pgsql extends DbDriverBase {
 	 */
 	function rollbackTransaction($po_caller) {
 		if (!@$this->opo_db->rollBack()) {
-			$po_caller->postError(250, $this->errorinfo(), "Db->pgsqlpdo->rollbackTransaction()");
+			$po_caller->postError(250, $this->errorinfo(), "Db->pgsql->rollbackTransaction()");
 			return false;
 		}
 		return true;
@@ -589,11 +590,22 @@ class Db_pgsql extends DbDriverBase {
 			}
 			return $va_tables;
 		} else {
-			$po_caller->postError(280, $this->errorinfo(), "Db->pgsqlpdo->getTables()");
+			$po_caller->postError(280, $this->errorinfo(), "Db->pgsql->getTables()");
 			return false;
 		}
 	}
 
+	function getFieldNamesFromTable($po_caller, $ps_table){
+		$qr_res = $this->opo_db->query("
+			SELECT a.attname FROM pg_catalog.pg_attribute a
+			WHERE a.attrelid in (SELECT c.oid FROM pg_catalog.pg_class c WHERE c.relname ~ '^($ps_table)$')
+				AND a.attnum > 0");
+		$va_fields = array();
+		foreach($qr_res->fetchAll(PDO::FETCH_ASSOC) as $va_field){
+			$va_fields[] = $va_field['attname'];
+		};
+		return $va_fields;
+	}
 	/**
 	 * @see Db::getFieldsFromTable()
 	 * @param mixed $po_caller object representation of the calling class, usually Db
@@ -615,7 +627,7 @@ class Db_pgsql extends DbDriverBase {
 			$va_row = $r_show->fetchAll(PDO::FETCH_ASSOC);
 		}
 		else{
-			$po_caller->postError(280, $this->errorinfo(), "Db->pgsqlpdo->getTables()");
+			$po_caller->postError(280, $this->errorinfo(), "Db->pgsql->getTables()");
 			return false;
 		}
 		if(is_array($va_row)){
@@ -691,7 +703,7 @@ class Db_pgsql extends DbDriverBase {
 
 			return $va_tables;
 		} else {
-			$po_caller->postError(280, $this->errorinfo(), "Db->pgsqlpdo->getFieldFromTable()");
+			$po_caller->postError(280, $this->errorinfo(), "Db->pgsql->getFieldFromTable()");
 			return false;
 		}
 	}
@@ -740,7 +752,7 @@ class Db_pgsql extends DbDriverBase {
 
 			return $va_keys;
 		} else {
-			$po_caller->postError(280, $this->errorinfo(), "Db->pgsqlpdo->getKeys()");
+			$po_caller->postError(280, $this->errorinfo(), "Db->pgsql->getKeys()");
 			return false;
 		}*/
 	}

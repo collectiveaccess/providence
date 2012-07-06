@@ -1112,62 +1112,8 @@ class ca_commerce_orders extends BaseModel {
 	 		".($vb_join_transactions ? "INNER JOIN ca_commerce_transactions AS t ON t.transaction_id = o.transaction_id" : "")."
 	 		WHERE
 	 			o.deleted = 0 {$vs_sql_wheres}
-	 		GROUP BY o.order_id, o.transaction_id, o.created_on, o.order_status, o.shipping_fname, shipping_lname       ,
-o.shipping_organization,
-o.shipping_address1    ,
-o.shipping_address2    ,
-o.shipping_city        ,
-o.shipping_zone        ,
-o.shipping_postal_code ,
-o.shipping_country     ,
-o.shipping_phone       ,
-o.shipping_fax         ,
-o.shipping_email       ,
-o.billing_fname        ,
-o.billing_lname        ,
-o.billing_organization ,
-o.billing_address1     ,
-o.billing_address2     ,
-o.billing_city         ,
-o.billing_zone         ,
-o.billing_postal_code  ,
-o.billing_country      ,
-o.billing_phone        ,
-o.billing_fax          ,
-o.billing_email        ,
-o.payment_method       ,
-o.payment_status       ,
-o.payment_details      ,
-o.payment_response     ,
-o.payment_received_on  ,
-o.shipping_method      ,
-o.shipping_cost        ,
-o.handling_cost        ,
-o.shipping_notes       ,
-o.shipping_date        ,
-o.shipped_on_date      ,
-o.additional_fees      ,
-o.refund_date          ,
-o.refund_notes         ,
-o.refund_amount        ,
-o.deleted              ,
-i.item_id            ,
-i.order_id           ,
-i.object_id          ,
-i.service            ,
-i.fullfillment_method,
-i.fee                ,
-i.tax                ,
-i.notes              ,
-i.restrictions       ,
-i.shipping_cost      ,
-i.handling_cost      ,
-i.shipping_notes     ,
-i.refund_date        ,
-i.refund_notes       ,
-i.refund_amount      ,
-i.additional_fees    ,
-i.rank               
+	 		GROUP BY o.".join(', o.', $o_db->getFieldNamesFromTable("ca_commerce_orders")).", 
+						i.".join(', i.', $o_db->getFieldNamesFromTable("ca_commerce_order_items"))."
 	 		ORDER BY
 	 			o.created_on DESC
 	 			
@@ -1236,7 +1182,7 @@ i.rank
 				INNER JOIN ca_object_representations AS o_r ON o_r.representation_id = coixor.representation_id
 				WHERE
 					coixor.item_id IN (?) AND o_r.deleted = 0
-				GROUP BY coixor.item_id
+				GROUP BY coixor.item_id, coixor.representation_id
 			", array($va_item_ids));
 			
 			while($qr_rep_count->nextRow()) {

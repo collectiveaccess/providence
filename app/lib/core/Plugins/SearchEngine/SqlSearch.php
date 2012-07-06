@@ -464,7 +464,7 @@ class WLPlugSearchEngineSqlSearch extends BaseSearchPlugin implements IWLPlugSea
 								$qr_res_select = $this->opo_db->query("SELECT row_id FROM {$ps_dest_table}"); $qr_res_select->nextRow();
 								if(!($qr_res_select->get('row_id') == $va_row['row_id'])){
 									$vs_sql = "
-										INSERT INTO {$ps_dest_table} ({$va_row['row_id']}, {$va_row['boost']})";
+										INSERT INTO {$ps_dest_table} (row_id, boost) VALUES ({$va_row['row_id']}, {$va_row['boost']})";
 									$qr_res = $this->opo_db->query($vs_sql);
 								}
 							} else {
@@ -479,7 +479,7 @@ class WLPlugSearchEngineSqlSearch extends BaseSearchPlugin implements IWLPlugSea
 								$qr_res_select = $this->opo_db->query("SELECT row_id FROM {$ps_dest_table}_acc"); $qr_res_select->nextRow();
 								if(!($qr_res_select->get('row_id') == $va_row['row_id'])){
 									$vs_sql = "
-										INSERT INTO {$ps_dest_table}_acc ({$va_row['row_id']}, {$va_row['boost_sum']})";
+										INSERT INTO {$ps_dest_table}_acc (row_id, boost) VALUES ({$va_row['row_id']}, {$va_row['boost_sum']})";
 									$qr_res = $this->opo_db->query($vs_sql);
 								}
 								
@@ -503,7 +503,7 @@ class WLPlugSearchEngineSqlSearch extends BaseSearchPlugin implements IWLPlugSea
 						case 'OR':
 							// or
 							$vs_select_sql = "
-								SELECT row_id, SUM(boost) AS boost_sum
+								SELECT row_id, SUM(boost) boost_sum
 								FROM ca_sql_search_temp_{$pn_level}
 								GROUP BY row_id
 							";
@@ -513,7 +513,7 @@ class WLPlugSearchEngineSqlSearch extends BaseSearchPlugin implements IWLPlugSea
 							$qr_res_select = $this->opo_db->query("SELECT row_id FROM {$ps_dest_table}"); $qr_res_select->nextRow();
 							if(!($qr_res_select->get('row_id') == $va_row['row_id'])){
 								$vs_sql = "
-									INSERT INTO {$ps_dest_table} ({$va_row['row_id']}, {$va_row['boost_sum']})";
+									INSERT INTO {$ps_dest_table} (row_id, boost) VALUES ({$va_row['row_id']}, {$va_row['boost_sum']})";
 								$qr_res = $this->opo_db->query($vs_sql);
 							}
 							break;
@@ -1051,12 +1051,12 @@ class WLPlugSearchEngineSqlSearch extends BaseSearchPlugin implements IWLPlugSea
 							$vs_select_sql .= " HAVING count(distinct sw.word_id) = {$vn_num_terms}";
 						}
 						
-						$qr_res_select = $this->opo_db->query($vs_select_sql); $qr_res_select->nextRow();
+						$qr_res_select = $this->opo_db->query($vs_select_sql, (int)$pn_subject_tablenum); $qr_res_select->nextRow();
 						$va_row = $qr_res_select->getRow();
 						$qr_res_select = $this->opo_db->query("SELECT row_id FROM {$ps_dest_table}"); $qr_res_select->nextRow();
 						if(!($qr_res_select->get('row_id') == $va_row['row_id'])){
 							$vs_sql = "
-								INSERT INTO {$ps_dest_table} ({$va_row['row_id']}, {$va_row['boost_sum']})";
+								INSERT INTO {$ps_dest_table} (row_id, boost) VALUES ({$va_row['row_id']}, {$va_row['boost_sum']})";
 							$qr_res = $this->opo_db->query($vs_sql);
 						}
 					} else {
@@ -1089,7 +1089,7 @@ class WLPlugSearchEngineSqlSearch extends BaseSearchPlugin implements IWLPlugSea
 								$qr_res_select = $this->opo_db->query("SELECT row_id FROM {$ps_dest_table}"); $qr_res_select->nextRow();
 								if(!($qr_res_select->get('row_id') == $va_row['row_id'])){
 									$vs_sql = "
-										INSERT INTO {$ps_dest_table}_acc ({$va_row['row_id']}, {$va_row['boost_sum']})";
+										INSERT INTO {$ps_dest_table}_acc (row_id, boost) VALUES ({$va_row['row_id']}, {$va_row['boost_sum']})";
 									$qr_res = $this->opo_db->query($vs_sql);
 								}
 								$qr_res = $this->opo_db->query("TRUNCATE TABLE {$ps_dest_table}");
@@ -1140,7 +1140,7 @@ class WLPlugSearchEngineSqlSearch extends BaseSearchPlugin implements IWLPlugSea
 								$qr_res_select = $this->opo_db->query("SELECT row_id FROM {$ps_dest_table}"); $qr_res_select->nextRow();
 								if(!($qr_res_select->get('row_id') == $va_row['row_id'])){
 									$vs_sql = "
-										INSERT INTO {$ps_dest_table} ({$va_row['row_id']}, {$va_row['boost_sum']})";
+										INSERT INTO {$ps_dest_table} (row_id, boost) VALUES ({$va_row['row_id']}, {$va_row['boost_sum']})";
 									if ($this->debug) { print 'OR'.$vs_sql."<hr>\n"; }
 									$qr_res = $this->opo_db->query($vs_sql);
 								}

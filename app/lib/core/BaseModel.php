@@ -5828,20 +5828,26 @@ class BaseModel extends BaseObject {
 			}
 			
 			if ($pb_return_child_counts) {
-				$qr_hier = $o_db->query("
-					SELECT ".$this->tableName().".* ".(sizeof($va_additional_table_select_fields) ? ', '.join(', ', $va_additional_table_select_fields) : '').", count(*) child_count, p2.".$this->primaryKey()." has_children
+				$vs_fields = "{$this->tableName()}.".join(', '.$this->tableName().'.', $o_db->getFieldNamesFromTable($this->tableName())).
+					(sizeof($va_additional_table_select_fields) ? 
+						', '.join(', ', $va_additional_table_select_fields) : 
+						'').
+					", p2.".$this->primaryKey();
+				$vs_hier_sql = "
+					SELECT count(*) child_count, {$vs_fields} has_children 
 					FROM ".$this->tableName()."
 					{$vs_sql_joins}
 					LEFT JOIN ".$this->tableName()." AS p2 ON p2.".$vs_hier_parent_id_fld." = ".$this->tableName().".".$this->primaryKey()."
 					WHERE
 						(".$this->tableName().".{$vs_hier_parent_id_fld} = ?) ".((sizeof($va_additional_table_wheres) > 0) ? ' AND '.join(' AND ', $va_additional_table_wheres) : '')."
 					GROUP BY
-						".$this->tableName().".".$this->primaryKey()." {$vs_additional_table_to_join_group_by}
+						".$this->tableName().".".$this->primaryKey()." {$vs_additional_table_to_join_group_by}, {$vs_fields}
 					ORDER BY
 						".$vs_order_by."
-				", $pn_id);
+				";
+				$qr_hier = $o_db->query($vs_hier_sql, $pn_id);
 			} else {
-				$qr_hier = $o_db->query("
+				$vs_hier_sql = "
 					SELECT ".$this->tableName().".* ".(sizeof($va_additional_table_select_fields) ? ', '.join(', ', $va_additional_table_select_fields) : '')."
 					FROM ".$this->tableName()."
 					{$vs_sql_joins}
@@ -5849,7 +5855,8 @@ class BaseModel extends BaseObject {
 						(".$this->tableName().".{$vs_hier_parent_id_fld} = ?) ".((sizeof($va_additional_table_wheres) > 0) ? ' AND '.join(' AND ', $va_additional_table_wheres) : '')."
 					ORDER BY
 						".$vs_order_by."
-				", ($pn_id == 'NULL' ? null : $pn_id));
+				";
+				$qr_hier = $o_db->query($vs_hier_sql, $pn_id == 'NULL' ? null : $pn_id);
 			}
 			if ($o_db->numErrors()) {
 				$this->errors = array_merge($this->errors, $o_db->errors());
@@ -8557,14 +8564,15 @@ $pa_options["display_form_field_tips"] = true;
 		}
 		
 		
+		$vs_fields = 't.'.join(', t.', $o_db->getFieldNamesFromTable($this->tableName()));
 		$qr_res = $o_db->query("
-			SELECT t.*, count(*) cnt
+			SELECT {$vs_fields}, count(*) cnt
 			FROM ".$this->tableName()." t
 			INNER JOIN ca_item_views AS civ ON civ.row_id = t.".$this->primaryKey()."
 			WHERE
 				civ.table_num = ? AND row_id = ? {$vs_user_sql} {$vs_access_sql}
 			GROUP BY
-				civ.row_id
+				civ.row_id, {$vs_fields}
 			ORDER BY
 				cnt DESC
 			{$vs_limit_sql}

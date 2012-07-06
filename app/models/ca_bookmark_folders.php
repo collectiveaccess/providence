@@ -195,7 +195,7 @@ class ca_bookmark_folders extends BaseModel {
 			LEFT JOIN ca_bookmarks AS b ON b.folder_id = bf.folder_id
 			WHERE 
 				bf.user_id = ?
-			GROUP BY bf.folder_id
+			GROUP BY bf.".join(', bf.', $o_db->getFieldNamesFromTable("ca_bookmark_folders"))."
 		", (int)$pn_user_id);
 		
 		if ($o_db->numErrors()) {
