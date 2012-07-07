@@ -116,7 +116,7 @@ class ObjectSearchResult extends BaseSearchResult {
 	/**
 	 *
 	 */
-	public function getMediaInfo($ps_field, $ps_version, $ps_key, $pa_options=null) {
+	public function getMediaInfo($ps_field, $ps_version, $ps_key=null, $pa_options=null) {
 		$va_tmp = explode('.', $ps_field);
 		
 		if (($va_tmp[0] === 'ca_object_representations') && ($va_tmp[1] !== 'access')) {
