@@ -1637,7 +1637,12 @@ class BaseModel extends BaseObject {
 			$this->_FIELD_VALUES_OLD = $this->_FIELD_VALUES;
 			$this->_FILES_CLEAR = array();
 			
-			if ($vn_id = $this->getPrimaryKey()) { BaseModel::$s_instance_cache[$vs_table_name][$vn_id] = $this->_FIELD_VALUES; }
+			if ($vn_id = $this->getPrimaryKey()) {
+				if (sizeof(BaseModel::$s_instance_cache[$vs_table_name]) > 100) {		// Limit cache to 100 instances per table
+					array_pop(BaseModel::$s_instance_cache[$vs_table_name]);
+				}
+				BaseModel::$s_instance_cache[$vs_table_name][$vn_id] = $this->_FIELD_VALUES; 
+			}
 			return true;
 		} else {
 			if (!is_array($pm_id)) {

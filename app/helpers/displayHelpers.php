@@ -1550,7 +1550,7 @@ require_once(__CA_LIB_DIR__.'/core/Parsers/TimeExpressionParser.php');
 	 *		stripTags = default is false
 	 * 		exclude = list of primary key values to omit from returned list
 	 *		config = 
-	 
+	 *		limit = maximum number of items to return; if omitted all items are returned
 	 * @return mixed 
 	 */
 global $ca_relationship_lookup_parse_cache;
@@ -1571,6 +1571,8 @@ $ca_relationship_lookup_parse_cache = array();
 		} else {
 			$o_config = $pa_options['config'];
 		}
+		
+		$pn_limit = (isset($pa_options['limit']) && ((int)$pa_options['limit'] > 0)) ? (int)$pa_options['limit'] : null;
 		
 		$va_exclude = (isset($pa_options['exclude']) && is_array($pa_options['exclude'])) ? $pa_options['exclude'] : array();
 		
@@ -1626,6 +1628,7 @@ $ca_relationship_lookup_parse_cache = array();
 		$t_rel = $o_dm->getInstanceByTableName($vs_rel_table, true);
 		$vs_type_id_fld = method_exists($t_rel, 'getTypeFieldName') ? $t_rel->getTypeFieldName() : null;
 		
+		$vn_c = 0;
 		while($qr_rel_items->nextHit()) {
 			$vn_id = $qr_rel_items->get("{$vs_rel_table}.{$vs_rel_pk}");
 			if(in_array($vn_id, $va_exclude)) { continue; }
@@ -1692,6 +1695,11 @@ $ca_relationship_lookup_parse_cache = array();
 			}
 			
 			$va_items[$vn_id] = $va_item;
+			
+			$vn_c++;
+			if (($pn_limit) && ($pn_limit <= $vn_c)) {
+				break;
+			}
 		}
 		
 		$va_hierarchies = (method_exists($pt_rel, "getHierarchyList")) ? $pt_rel->getHierarchyList() : array();

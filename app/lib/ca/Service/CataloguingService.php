@@ -306,6 +306,31 @@ class CataloguingService extends BaseService {
 	}
 	# -------------------------------------------------------
 	/**
+	 * Remove all attributes with given element code from specified item
+	 *
+	 * @param string $type can be one of: [ca_objects, ca_entities, ca_places, ca_occurrences, ca_collections, ca_list_items]
+	 * @param int $item_id primary key identifier of the record to update
+	 * @param int $attribute_code_or_id element code of the attribute(s) to remove
+	 * @return boolean success state
+	 * @throws SoapFault
+	 */
+	public function removeAttributes($type, $item_id, $attribute_code_or_id){
+		if(!($t_subject_instance = $this->getTableInstance($type,$item_id))){
+			throw new SoapFault("Server", "Invalid type or item_id");
+		}
+		if($t_subject_instance instanceof BaseModelWithAttributes){
+			$t_subject_instance->removeAttributes($attribute_code_or_id);
+			if($t_subject_instance->numErrors()==0){
+				return true;
+			} else {
+				throw new SoapFault("Server", "There were errors while deleting attributes: ".join(";",$t_subject_instance->getErrors()));
+			}
+		} else {
+			throw new SoapFault("Server", "This type can't take attributes");
+		}
+	}
+	# -------------------------------------------------------
+	/**
 	 * Remove all attributes from specified item
 	 *
 	 * @param string $type can be one of: [ca_objects, ca_entities, ca_places, ca_occurrences, ca_collections, ca_list_items]
