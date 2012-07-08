@@ -404,7 +404,7 @@
 			return false;
 		}
 		
-		if ((parseInt(jQuery('#transaction_user_id').val()) == 0) && (!jQuery('#billing_email').val())) {  // check if new client email has beeb set
+		if ((parseInt(jQuery('#transaction_user_id').val()) == 0) && (!jQuery('#billing_email').val())) {  // check if new client email has been set
 			alert('<?php print htmlspecialchars(_t("Please specify a billing email address for the client. This will be used as the login name for their newly created account."), ENT_QUOTES, "UTF-8"); ?>');
 			return false;
 		}

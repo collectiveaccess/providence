@@ -39,6 +39,27 @@
  			JavascriptLoadManager::register('tableList');
 			
 			$o_result_context = new ResultContext($this->request, 'ca_commerce_orders', 'basic_search_library');
+ 			$this->_initView($o_result_context);
+ 			
+ 			$this->render('list_loans_html.php');
+ 		}
+ 		# -------------------------------------------------------
+ 		/**
+ 		 * 
+ 		 */
+ 		public function Calendar() {
+ 			JavascriptLoadManager::register('calendar');
+ 			
+ 			$o_result_context = new ResultContext($this->request, 'ca_commerce_orders', 'basic_search_calendar');
+ 			$this->_initView($o_result_context);
+ 			
+ 			$this->render('calendar_html.php');
+ 		}
+ 		# -------------------------------------------------------
+ 		/**
+ 		 * 
+ 		 */
+ 		private function _initView($o_result_context) {
  			$va_options = array('type' => 'L');
  			$t_order = new ca_commerce_orders();
  			$t_order->set('order_type', 'L');
@@ -87,14 +108,6 @@
  			$this->view->setVar('client_services_config', $this->opo_client_services_config = Configuration::load($this->request->config->get('client_services_config')));
  			$this->view->setVar('currency', $this->opo_client_services_config->get('currency'));
  			$this->view->setVar('currency_symbol', $this->opo_client_services_config->get('currency_symbol'));
- 			
- 			$this->render('list_loans_html.php');
- 		}
- 		# -------------------------------------------------------
- 		public function ViewOrder() {
- 			JavascriptLoadManager::register('tableList');
- 			
- 			$this->render('view_loans_html.php');
  		}
  		# -------------------------------------------------------
  		/**

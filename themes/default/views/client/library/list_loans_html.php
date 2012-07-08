@@ -117,6 +117,9 @@
 			<th>
 				<?php _p('Status'); ?>
 			</th>
+			<th>
+				<?php _p('Schedule'); ?>
+			</th>
 			<th class="{sorter: false} list-header-nosort">&nbsp;</th>
 		</tr>
 		</thead>
@@ -150,6 +153,17 @@
 			</td>
 			<td>
 				<?php print $t_order->getChoiceListValue('order_status', $va_order['order_status']); ?>
+			</td>
+			<td>
+<?php 
+	if ($va_order['overdue_period']) { 
+		print _t('Overdue %1', $va_order['overdue_period']); 
+	} else {
+		if (($va_order['order_status'] == 'PROCESSED') && $va_order['due_period']) {
+			print _t('Due in %1', $va_order['due_period']); 
+		}
+	}
+?>
 			</td>
 			<td>
 				<?php print caNavButton($this->request, __CA_NAV_BUTTON_EDIT__, _t("Edit"), 'client/library', 'OrderEditor', 'Edit', array('order_id' => $va_order['order_id']), array(), array('icon_position' => __CA_NAV_BUTTON_ICON_POS_LEFT__, 'use_class' => 'list-button', 'no_background' => true, 'dont_show_content' => true)); ?>

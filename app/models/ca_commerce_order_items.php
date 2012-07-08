@@ -336,10 +336,34 @@ class ca_commerce_order_items extends BaseModel {
 	 */
 	private function _preSaveActions() {
 		$t_order = $this->getOrder();
+		$vn_checkout_date = $this->get('loan_checkout_date', array('GET_DIRECT_DATE' => true));
 		$vn_return_date = $this->get('loan_return_date', array('GET_DIRECT_DATE' => true));
 		$vn_due_date = $this->get('loan_due_date', array('GET_DIRECT_DATE' => true));
 		
-		if (
+		//
+		// Is object available for checkout?
+		//
+		$o_db = $this->getDb();
+		
+		$qr_res = $o_db->query("
+			SELECT i.item_id, i.order_id
+			FROM ca_commerce_order_items i
+			INNER JOIN ca_commerce_orders AS o ON o.order_id = i.order_id
+			WHERE
+				i.object_id = ? AND i.item_id <> ? AND o.order_type = 'L' AND 
+				(
+					(i.loan_checkout_date <= ? AND i.loan_return_date IS NULL)
+				)
+		", array((int)$this->get('object_id'), (int)$this->getPrimaryKey(), time()));
+		
+		if ($qr_res->nextRow()) {
+			$this->postError(1101, _t('Item is already on loan'), 'ca_commerce_orders->_preSaveActions()');		
+		}
+		
+		//
+		// Check coherency of dates
+		//
+		if (		// checkout date should be prior to return date
 			($t_order->get('order_type') == 'L')
 			&&
 			($vn_return_date > 0)
@@ -349,7 +373,7 @@ class ca_commerce_order_items extends BaseModel {
 			$this->postError(1101, _t('Checkout date must be before return date'), 'ca_commerce_orders->_preSaveActions()');		
 		}
 		
-		if (
+		if (		// checkout date should be prior to due date
 			($t_order->get('order_type') == 'L')
 			&&
 			($vn_due_date > 0)
@@ -357,6 +381,22 @@ class ca_commerce_order_items extends BaseModel {
 			$this->get('loan_checkout_date', array('GET_DIRECT_DATE' => true)) > $vn_due_date
 		) {
 			$this->postError(1101, _t('Checkout date must be before due date'), 'ca_commerce_orders->_preSaveActions()');		
+		}
+		
+		if (		// checkout date should not be in the future
+			($t_order->get('order_type') == 'L')
+			&&
+			($vn_checkout_date > time())
+		) {
+			$this->postError(1101, _t('Checkout date must not be in the future'), 'ca_commerce_orders->_preSaveActions()');		
+		}
+		
+		if (		// return date should not be in the future
+			($t_order->get('order_type') == 'L')
+			&&
+			($vn_return_date > time())
+		) {
+			$this->postError(1101, _t('Return date must not be in the future'), 'ca_commerce_orders->_preSaveActions()');		
 		}
 		
 		if ($this->numErrors() > 0) {

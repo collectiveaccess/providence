@@ -318,7 +318,7 @@
  			
  			$va_object_ids = array();
  			while($qr_res->nextHit()) {
- 				$va_object_ids[$qr_res->get('object_id')] = true;
+ 				$va_object_ids[$qr_res->get('object_id')] = false;
  			}
  			
  			if (sizeof($va_object_ids)) {
@@ -326,7 +326,7 @@
 				$o_db = new Db();
 				
 				$qr_checked_out_items = $o_db->query("
-					SELECT DISTINCT i.object_id
+					SELECT DISTINCT i.object_id, i.loan_due_date
 					FROM ca_commerce_order_items i
 					WHERE
 						i.loan_return_date IS NULL and i.loan_checkout_date > 0 AND i.object_id IN (?)
@@ -334,7 +334,7 @@
 				
 				
 				while($qr_checked_out_items->nextRow()) {
-					unset($va_object_ids[$qr_checked_out_items->get('object_id')]);
+					$va_object_ids[$qr_checked_out_items->get('object_id')] = $qr_checked_out_items->get('loan_due_date');
 				}
 				
 				$t_object = new ca_objects();
@@ -342,10 +342,16 @@
 				
 				$va_items = caProcessRelationshipLookupLabel($qr_res, $t_object, array());
 		
+				foreach($va_items as $vn_object_id => $va_object) {
+					if ((int)$va_object_ids[$vn_object_id] > 0) {
+						$va_items[$vn_object_id]['_display'] .= ' [<em>'._t('on loan through %1', caGetLocalizedDate($va_object_ids[$vn_object_id], array('dateFormat' => 'delimited', 'timeOmit' => true))).'</em>]';
+					}
+				}
 			}
 			if (!is_array($va_items)) { $va_items = array(); }
 			
 			$this->view->setVar('object_list', $va_items);
+			$this->view->setVar('object_id_list', $va_object_ids);
  			return $this->render('ajax_object_list_html.php');
  		}
  		# -------------------------------------------------------
