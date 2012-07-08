@@ -79,6 +79,7 @@
 				
 			}
 			$va_initial_values[$o_attr->getAttributeID()]['locale_id'] = $o_attr->getLocaleID();
+
 			
 			// set errors for attribute
 			if(is_array($va_action_errors = $this->request->getActionErrors($vs_error_source_code, $o_attr->getAttributeID()))) {

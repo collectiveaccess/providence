@@ -31,6 +31,7 @@ require_once(__CA_LIB_DIR__."/core/Datamodel.php");
 require_once(__CA_LIB_DIR__."/core/Db.php");
 require_once(__CA_LIB_DIR__."/core/Media/MediaVolumes.php");
 require_once(__CA_APP_DIR__."/helpers/utilityHelpers.php");
+require_once(__CA_BASE_DIR__."/install/inc/SchemaLoader.php");
 
 class Installer {
 	# --------------------------------------------------
@@ -49,6 +50,8 @@ class Installer {
 	private $ops_base_name;
 	# --------------------------------------------------
 	private $opa_locales;
+	# --------------------------------------------------
+	private $opo_schemaLoader;
 	# --------------------------------------------------
 	/**
 	 * Constructor
@@ -73,6 +76,13 @@ class Installer {
 
 		if(!$this->validateProfile()){
 			$this->addError("Profile validation failed. Your profile doesn't conform to the required XML schema.");
+		}
+
+		$vs_baseschema = __CA_BASE_DIR__."/install/inc/schema_mysql.sql";
+
+		$this->opo_sl = new SchemaLoader($vs_baseschema);
+		if(!$this->opo_sl){
+			$this->addError("Could not load base SQL schema " . $vs_baseschema.".");
 		}
 	}
 	# --------------------------------------------------
@@ -271,15 +281,27 @@ class Installer {
 		$vo_config = Configuration::load();
 		$vo_dm = Datamodel::load();
 		$vo_db = new Db();
-		if (defined('__CA_ALLOW_INSTALLER_TO_OVERWRITE_EXISTING_INSTALLS__') && __CA_ALLOW_INSTALLER_TO_OVERWRITE_EXISTING_INSTALLS__ && ($this->opb_overwrite)) {
+		$vs_dbtype = $vo_config->get("db_type");
+		/*if (defined('__CA_ALLOW_INSTALLER_TO_OVERWRITE_EXISTING_INSTALLS__') && __CA_ALLOW_INSTALLER_TO_OVERWRITE_EXISTING_INSTALLS__ && ($this->opb_overwrite)) {
 			$vo_db->query('DROP DATABASE IF EXISTS '.__CA_DB_DATABASE__);
 			$vo_db->query('CREATE DATABASE '.__CA_DB_DATABASE__);
 			$vo_db->query('USE '.__CA_DB_DATABASE__);
-		}
+		}*/
 
 		$va_ca_tables = $vo_dm->getTableNames();
 
-		$qr_tables = $vo_db->query("SHOW TABLES");
+		switch($vs_dbtype){
+			case 'pgsql':
+				$qr_tables = $vo_db->query("SELECT tablename FROM pg_tables WHERE schemaname='public'");
+				break;
+			case 'mysql':
+			case 'mysqli':
+				$qr_tables = $vo_db->query("SHOW TABLES");
+				break;
+			default:
+				die(_t("No valid database driver specified"));
+				exit;
+		}
 
 		$vb_found_schema = false;
 		while($qr_tables->nextRow()) {
@@ -292,11 +314,10 @@ class Installer {
 
 		// load schema
 
-		if (!($vs_schema = file_get_contents(__CA_BASE_DIR__."/install/inc/schema_mysql.sql"))) {
-			$this->addError("Could not open schema definition file");
+		if (!($va_schema_statements = $this->opo_sl->getSchema($vs_dbtype))){
+			$this->addError("Could not get schema definition for driver " . $vs_dbtype);
 			return false;
 		}
-		$va_schema_statements = explode(';', $vs_schema);
 		
 		$vn_num_tables = 0;
 		foreach($va_schema_statements as $vs_statement) {
@@ -413,7 +434,6 @@ class Installer {
 			$t_list->set("is_hierarchical",$vb_hierarchical);
 			$t_list->set("use_as_vocabulary",$vb_voc);
 			if($vn_def_sort) $t_list->set("default_sort",(int)$vn_def_sort);
-
 			$t_list->insert();
 
 			if ($t_list->numErrors()) {
@@ -430,7 +450,6 @@ class Installer {
 				}
 			}
 		}
-
 		return true;
 	}
 	# --------------------------------------------------

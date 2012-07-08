@@ -288,7 +288,6 @@ class ca_lists extends BundlableLabelableBaseModelWithAttributes {
 	 */
 	public function addItem($ps_value, $pb_is_enabled=true, $pb_is_default=false, $pn_parent_id=null, $pn_type_id=null, $ps_idno=null, $ps_validation_format='', $pn_status=0, $pn_access=0, $pn_rank=null) {
 		if(!($vn_list_id = $this->getPrimaryKey())) { return null; }
-		
 		$t_item = new ca_list_items();
 		$t_item->setMode(ACCESS_WRITE);
 		
@@ -441,8 +440,13 @@ class ca_lists extends BundlableLabelableBaseModelWithAttributes {
 				}
 				if ((!isset($pa_options['includeSelf']) || !$pa_options['includeSelf']) && ($vn_item_id == $pn_item_id)) { continue; }
 				if ((isset($pa_options['directChildrenOnly']) && $pa_options['directChildrenOnly']) && ($qr_res->get('parent_id') != $pn_item_id)) { continue; }
-				
-				$va_items[$vn_item_id][$vn_locale_id = $qr_res->get('locale_id')] = $qr_res->getRow();
+				$va_tmp = $qr_res->getRow();
+				foreach($va_tmp as &$vm_data){
+					if(is_resource($vm_data)){
+						$vm_data = stream_get_contents($vm_data);
+					}
+				}
+				$va_items[$vn_item_id][$vn_locale_id = $qr_res->get('locale_id')] = $va_tmp;
 				$va_seen_locales[$vn_locale_id] = true;
 			}
 			
@@ -1414,7 +1418,8 @@ class ca_lists extends BundlableLabelableBaseModelWithAttributes {
 				".(sizeof($va_sql_wheres) ? " AND ".join(' AND ', $va_sql_wheres) : "")."
 				
 			GROUP BY
-				ca_list_item_labels.label_id
+				ca_list_item_labels.".  join(', ca_list_item_labels.', $o_db->getFieldNamesFromTable("ca_list_item_labels")).",
+				ca_list_items.item_id
 		";
 		
 		$qr_items = $o_db->query($vs_sql, (int)$vn_list_id);

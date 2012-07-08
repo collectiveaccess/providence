@@ -1112,7 +1112,8 @@ class ca_commerce_orders extends BaseModel {
 	 		".($vb_join_transactions ? "INNER JOIN ca_commerce_transactions AS t ON t.transaction_id = o.transaction_id" : "")."
 	 		WHERE
 	 			o.deleted = 0 {$vs_sql_wheres}
-	 		GROUP BY o.order_id
+	 		GROUP BY o.".join(', o.', $o_db->getFieldNamesFromTable("ca_commerce_orders")).", 
+						i.".join(', i.', $o_db->getFieldNamesFromTable("ca_commerce_order_items"))."
 	 		ORDER BY
 	 			o.created_on DESC
 	 			
@@ -1181,7 +1182,7 @@ class ca_commerce_orders extends BaseModel {
 				INNER JOIN ca_object_representations AS o_r ON o_r.representation_id = coixor.representation_id
 				WHERE
 					coixor.item_id IN (?) AND o_r.deleted = 0
-				GROUP BY coixor.item_id
+				GROUP BY coixor.item_id, coixor.representation_id
 			", array($va_item_ids));
 			
 			while($qr_rep_count->nextRow()) {

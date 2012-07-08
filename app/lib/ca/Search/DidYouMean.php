@@ -79,7 +79,7 @@
 							n.ngram IN (".join(',', $va_ngrams).") ".
 						(sizeof($va_sql) ? ' AND '.join(' AND ', $va_sql) : '')
 						."
-						GROUP BY p.phrase_id 
+						GROUP BY p.phrase_id, p.table_num, p.phrase, p.num_words
 						ORDER BY score DESC, p.num_words DESC, ABS(length(p.phrase) - ".$vn_len.") ASC
 						LIMIT ".intval($pn_max_suggestions));
 						

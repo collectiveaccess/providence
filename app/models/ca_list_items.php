@@ -451,7 +451,7 @@ class ca_list_items extends BundlableLabelableBaseModelWithAttributes implements
 			WHERE 
 				cli.parent_id IS NULL and cli.list_id IN (".join(',', $va_hierarchy_ids).") ".($pb_vocabularies ? " AND (l.use_as_vocabulary = 1)" : "")."
 			GROUP BY
-				cli.item_id
+				cli.item_id, cli.list_id
 		");
 		
 		while ($qr_res->nextRow()) {
@@ -575,7 +575,8 @@ class ca_list_items extends BundlableLabelableBaseModelWithAttributes implements
 				(ca_list_item_labels.is_preferred = 1)
 				".(sizeof($va_sql_wheres) ? " AND ".join(' AND ', $va_sql_wheres) : "")."
 			GROUP BY
-				ca_list_item_labels.label_id
+				ca_list_item_labels.".  join(', ca_list_item_labels.', $o_db->getFieldNamesFromTable("ca_list_item_labels")).",
+				ca_list_items.idno, ca_list_items.item_id
 			ORDER BY 
 				ca_list_item_labels.name_plural
 		";

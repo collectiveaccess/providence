@@ -156,7 +156,7 @@ class Db extends DbBase {
 		}
 		$vs_dbtype = $pa_options["type"];
 		if (!is_a($this->opo_db, "Db_".$vs_dbtype)) {
-			@require_once(__CA_LIB_DIR__."/core/Db/".$vs_dbtype.".php");
+			require_once(__CA_LIB_DIR__."/core/Db/".$vs_dbtype.".php");
 			if (class_exists("Db_".$vs_dbtype)) {
 				if ($this->opo_db = eval("return new Db_".$vs_dbtype."();")) {
 					if ($this->opo_db->connect($this, $pa_options)) {
@@ -319,6 +319,19 @@ class Db extends DbBase {
 		return $this->opo_db->escape($ps_text);
 	}
 
+
+	/**
+	 * Quotes the string (driver aware)
+	 * 
+	 * @param string $ps_text
+	 * @return string quoted text with escaped characters; false on failure
+	 */
+	public function quote($ps_text) {
+		if(!$this->connected(true, "Db->escape()")) { return false; }
+		return $this->opo_db->quote($ps_text);
+	}
+
+
 	/**
 	 * Creates a temporary table in the database
 	 *
@@ -457,6 +470,17 @@ class Db extends DbBase {
 	 * @param string $ps_table name of the table
 	 * @return array
 	 */
+	public function getFieldNamesFromTable($ps_table) {
+		if(!$this->connected(true, "Db->getFieldsFromTable()")) { return false; }
+		return $this->opo_db->getFieldNamesFromTable($this, $ps_table);
+	}
+	/**
+	 * Returns an array with the names of all fields for a given table.
+	 * Returns false if you're not connected to a database.
+	 *
+	 * @param string $ps_table name of the table
+	 * @return array
+	 */
 	public function getFieldsFromTable($ps_table) {
 		if(!$this->connected(true, "Db->getFieldsFromTable()")) { return false; }
 		return $this->opo_db->getFieldsFromTable($this, $ps_table);
@@ -471,6 +495,7 @@ class Db extends DbBase {
 	 * @return array
 	 */
 	public function getFieldInfo($ps_table, $ps_fieldname) {
+		//print __METHOD__ ."($ps_table, $ps_fieldname) = " . print_r($this->opo_db->getFieldInfo($this, $ps_table, $ps_fieldname));
 		if(!$this->connected(true, "Db->getFieldInfo()")) { return false; }
 		return $this->opo_db->getFieldInfo($this, $ps_table, $ps_fieldname);
 	}

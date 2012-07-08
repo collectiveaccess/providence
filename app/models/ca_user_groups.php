@@ -373,10 +373,10 @@ class ca_user_groups extends BaseModel {
 					
 				$o_db->query("
 					INSERT INTO ca_groups_x_roles 
-					(group_id, role_id)
+					(group_id, role_id, rank)
 					VALUES
-					(?, ?)
-				", (int)$pn_group_id, (int)$t_role->getPrimaryKey());
+					(?, ?, ?)
+				", (int)$pn_group_id, (int)$t_role->getPrimaryKey(), 0);
 				
 				if ($o_db->numErrors() == 0) {
 					$vn_roles_added++;
