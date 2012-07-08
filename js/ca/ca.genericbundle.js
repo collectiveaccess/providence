@@ -110,7 +110,9 @@ var caUI = caUI || {};
 						if (templateValues[v] == null) {  templateValues[v] = ''; }
 					});
 
-					this.errors[id] = initialValues['_errors'];
+					if (initialValues['_errors']) {
+						this.errors[id] = initialValues['_errors'];
+					}
 				}
 				templateValues.n = 'new_' + this.getCount();
 				templateValues.error = '';

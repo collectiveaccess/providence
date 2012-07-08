@@ -608,11 +608,14 @@ class ca_commerce_orders extends BaseModel {
 		if (($vs_shipped_on_date = $this->get('shipped_on_date', array('GET_DIRECT_DATE' => true))) && ($vs_shipping_date = $this->get('shipping_date', array('GET_DIRECT_DATE' => true)))) {
 			if ($vs_shipped_on_date < $vs_shipping_date) {
 				$this->postError(1101, _t('Shipped on date must not be before the shipping date'), 'ca_commerce_orders->_preSaveActions()');
-				return false;
 			}
 		}
+		
 		if (($this->get('payment_status') == 'RECEIVED') && (!$this->get('payment_received_on'))) {
 			$this->postError(1101, _t('Payment date must be set if payment status is set to received'), 'ca_commerce_orders->_preSaveActions()');
+		}
+		
+		if ($this->numErrors() > 0) {
 			return false;
 		}
 		
@@ -1051,6 +1054,8 @@ class ca_commerce_orders extends BaseModel {
 	 *		loan_checkout_date =
 	 *		loan_due_date =
 	 *		loan_return_date =
+	 *		is_overdue = 
+	 *		is_outstanding =
 	 */
 	 public function getOrders($pa_options=null) {
 	 	$o_db = $this->getDb();
@@ -1058,6 +1063,21 @@ class ca_commerce_orders extends BaseModel {
 	 	$vb_join_transactions = false;
 	 	
 	 	$va_sql_wheres = $va_sql_values = array();
+	 	
+	 	if (isset($pa_options['is_overdue']) && ((bool)$pa_options['is_overdue'])) {
+	 		$pa_options['type'] = 'L';
+	 		
+	 		$va_sql_wheres[] = "(i.loan_due_date < ?)";
+	 		$va_sql_values[] = time();
+	 		
+	 		$va_sql_wheres[] = "(i.loan_return_date IS NULL)";
+	 	}
+	 	
+	 	if (isset($pa_options['is_outstanding']) && ((bool)$pa_options['is_outstanding'])) {
+	 		$pa_options['type'] = 'L';
+	 		
+	 		$va_sql_wheres[] = "(i.loan_return_date IS NULL)";
+	 	}
 	 	
 	 	if (!is_array($pa_options['order_status'])) { 
 	 		if (isset($pa_options['order_status']) && strlen($pa_options['order_status'])) {
@@ -1183,7 +1203,8 @@ class ca_commerce_orders extends BaseModel {
 	 			
 	 	", $va_sql_values);
 	 	
-	 	$va_additional_fee_codes = $this->opo_client_services_config->getAssoc('additional_order_item_fees');
+	 	$va_additional_fee_codes = $this->opo_client_services_config->getAssoc(($this->get('order_type') == 'L') ? 'additional_loan_fees' : 'additional_order_item_fees');
+	 	
 	 	$va_order_item_additional_fees = array();
 	 	while($qr_res->nextRow()) {
 	 		$va_fees = caUnserializeForDatabase($qr_res->get('additional_fees'));
@@ -1251,10 +1272,10 @@ class ca_commerce_orders extends BaseModel {
 	 	
 	 	$o_db = $this->getDb();
 	 	
-	 	$va_additional_fee_codes = $this->opo_client_services_config->getAssoc('additional_order_item_fees');
+	 	$va_additional_fee_codes = $this->opo_client_services_config->getAssoc(($this->get('order_type') == 'L') ? 'additional_loan_fees' : 'additional_order_item_fees');
 	 	
 	 	$qr_res = $o_db->query("
-	 		SELECT o.*, i.*, objl.name, objl.name_sort, objl.locale_id, obj.idno, obj.idno_sort
+	 		SELECT i.*, objl.name, objl.name_sort, objl.locale_id, obj.idno, obj.idno_sort
 	 		FROM ca_commerce_order_items i
 	 		INNER JOIN ca_commerce_orders AS o ON o.order_id = i.order_id
 	 		INNER JOIN ca_objects AS obj ON obj.object_id = i.object_id
@@ -1417,6 +1438,9 @@ class ca_commerce_orders extends BaseModel {
 	 				break;
 	 			default:
 	 				$t_item->set($vs_f, $vs_v);
+	 				if ($t_item->numErrors()) {
+						$this->errors = array_merge($this->errors, $t_item->errors);
+					}
 	 				break;
 	 		}
 	 	}
@@ -1432,7 +1456,7 @@ class ca_commerce_orders extends BaseModel {
 	 	$t_item->update();
 	 	
 	 	if ($t_item->numErrors()) {
-	 		print_R($t_item->getErrors());
+	 		$this->errors = $t_item->errors;
 	 	}
 	 	
 	 	return $t_item;
@@ -1457,7 +1481,7 @@ class ca_commerce_orders extends BaseModel {
 	 	$t_item->delete(true);
 	 	
 	 	if ($t_item->numErrors()) {
-	 		print_R($t_item->getErrors());
+	 		$this->errors = $t_item->errors;
 	 		return false;
 	 	}
 	 	return true;
@@ -2000,6 +2024,16 @@ class ca_commerce_orders extends BaseModel {
 		}
 		
 		return caProcessTemplate(join($this->getAppConfig()->getList('ca_users_lookup_delimiter'), $this->getAppConfig()->getList('ca_users_lookup_settings')), $va_values, array());
+	}
+	# ------------------------------------------------------
+	/**
+	 *
+	 */
+	public function getOrderTransactionUserInstance() {
+		if (!($t_trans = $this->getOrderTransaction())) { return null; }
+		if (!($t_user = $t_trans->getTransactionUser())) { return null; }
+
+		return $t_user;	
 	}
 	# ------------------------------------------------------
 	/**

@@ -1,6 +1,6 @@
 <?php
 /* ----------------------------------------------------------------------
- * app/views/client/order_item_list_html.php : 
+ * app/views/client/orders/order_item_list_html.php : 
  * ----------------------------------------------------------------------
  * CollectiveAccess
  * Open-source places management software
@@ -26,18 +26,21 @@
  * ----------------------------------------------------------------------
  */
  
-	$t_order = $this->getVar('t_order');
-	$vn_order_id = (int)$t_order->getPrimaryKey();
-	$vn_transaction_id = $this->getVar('transaction_id');
-	$va_errors = $this->getVar('errors');
-	$t_order_item = new ca_commerce_order_items();
+	$t_order 			= $this->getVar('t_order');
+	$vn_order_id 		= (int)$t_order->getPrimaryKey();
+	$vn_transaction_id 	= $this->getVar('transaction_id');
+	$va_errors 			= $this->getVar('errors');
+	$t_order_item 		= $this->getVar('t_order_item');
+	
+	$va_failed_inserts 	= 	$this->getVar('failed_insert_list');		// List of values for items that failed on creation attempt
+	$va_default_values 	= 	$this->getVar('default_values');			// Default values for various item fields
 	
 	$vs_currency_symbol = $this->getVar('currency_symbol');
 	$vs_currency_input_format = "<div class='formLabel'>^LABEL<br/>{$vs_currency_symbol}^ELEMENT</div>";
 	
 	$vs_id_prefix = 'item_list';
 	
-	$va_initial_values = $this->getVar('order_items');
+	$va_initial_values = $this->getVar('order_items');					// List of items already attached to the current order
 	
 	$va_additional_fee_template_codes = array();
 	if (is_array($va_additional_fee_codes = $this->getVar('additional_fee_codes'))) {
@@ -48,7 +51,7 @@
 	
 	print $vs_control_box = caFormControlBox(
 		(caFormSubmitButton($this->request, __CA_NAV_BUTTON_SAVE__, _t("Save"), 'caClientOrderItemListForm')).' '.
-		(caNavButton($this->request, __CA_NAV_BUTTON_CANCEL__, _t("Cancel"), 'client/orders', 'OrderEditor', 'Shipping', array('order_id' => $vn_order_id))),
+		(caNavButton($this->request, __CA_NAV_BUTTON_CANCEL__, _t("Cancel"), 'client/orders', 'OrderEditor', 'ItemList', array('order_id' => $vn_order_id))),
 		'', 
 		(caNavButton($this->request, __CA_NAV_BUTTON_DELETE__, _t("Delete"), 'client/orders', 'OrderEditor', 'Delete', array('order_id' => $vn_order_id)))
 	);
@@ -67,6 +70,7 @@
 		<div id="<?php print $vs_id_prefix; ?>Item_{n}" class="labelInfo sortableOrderItem">
 			<a href="#" class="caDeleteItemButton" style="float: right;"><?php print caNavIcon($this->request, __CA_NAV_BUTTON_DEL_BUNDLE__); ?></a>
 								
+			<span class="formLabelError">{error}</span>
 			<table>
 				<tr>
 					<td colspan='2'>
@@ -119,11 +123,12 @@
 		<div id="<?php print $vs_id_prefix; ?>Item_{n}" class="labelInfo">
 			<a href="#" class="caDeleteItemButton" style="float: right;"><?php print caNavIcon($this->request, __CA_NAV_BUTTON_DEL_BUNDLE__); ?></a>
 			
+			<span class="formLabelError">{error}</span>
 			<table class="caListItem">
 				<tr>
 					<td colspan='2'>
 						<div class="formLabel"><?php print _t('Object'); ?>
-							<input type="text" size="100" name="<?php print $vs_id_prefix; ?>_autocomplete{n}" value="" id="<?php print $vs_id_prefix; ?>_autocomplete{n}" class="lookupBg"/>
+							<input type="text" size="100" name="<?php print $vs_id_prefix; ?>_autocomplete{n}" value="{autocomplete}" id="<?php print $vs_id_prefix; ?>_autocomplete{n}" class="lookupBg"/>
 						</div>
 					</td>
 				</tr>
@@ -183,9 +188,12 @@
 	jQuery(document).ready(function() {
 		caRelationBundle<?php print $vs_id_prefix; ?> = caUI.initRelationBundle('#<?php print $vs_id_prefix.'_item'; ?>', {
 			fieldNamePrefix: '<?php print $vs_id_prefix; ?>_',
-			templateValues: ['_display', 'id', 'object_id', 'item_id', 'name', 'name_sort', 'idno', 'idno_sort', 'service', 'fullfillment_method', 'fee', 'tax', 'notes', 'restrictions', 'thumbnail_tag', 'representation_count'<?php print (sizeof($va_additional_fee_template_codes)) ? ", ".join(", ", $va_additional_fee_template_codes) : ""; ?>],
+			templateValues: ['_display', 'id', 'object_id', 'item_id', 'name', 'name_sort', 'idno', 'idno_sort', 'service', 'fullfillment_method', 'fee', 'tax', 'notes', 'restrictions', 'thumbnail_tag', 'autocomplete', 'representation_count'<?php print (sizeof($va_additional_fee_template_codes)) ? ", ".join(", ", $va_additional_fee_template_codes) : ""; ?>],
 			initialValues: <?php print json_encode($va_initial_values); ?>,
+			forceNewValues: <?php print json_encode($va_failed_inserts); ?>,
+			defaultValues: <?php print json_encode($va_default_values); ?>,
 			itemID: '<?php print $vs_id_prefix; ?>Item_',
+			errors: <?php print json_encode($va_errors); ?>,
 			templateClassName: 'caNewItemTemplate',
 			initialValueTemplateClassName: 'caItemTemplate',
 			itemListClassName: 'caItemList',
@@ -202,10 +210,9 @@
 	var caDefaultFees = <?php print json_encode($this->getVar('default_item_prices')); ?>;
 	function caGetDefaultFee(serviceDOMID, feeDOMID, n) {
 			var v= jQuery("#" + serviceDOMID).val();
-			
-			var value;
-			if (!(value = caDefaultFees[v])) { value = caDefaultFees['__default__']['base']; }
-			jQuery("#" + feeDOMID).val(caDefaultFees[v]['base']);
+			var value = 0;
+			if (caDefaultFees[v]) { value = caDefaultFees[v]['base']; }
+			jQuery("#" + feeDOMID).val(value);
 	}
 	
 </script>

@@ -1,6 +1,6 @@
 <?php
 /* ----------------------------------------------------------------------
- * app/controllers/logs/OrderEditorController.php :
+ * app/controllers/client/orders/OrderEditorController.php :
  * ----------------------------------------------------------------------
  * CollectiveAccess
  * Open-source collections management software
@@ -52,6 +52,7 @@
  			$this->opt_order = new ca_commerce_orders($this->request->getParameter('order_id', pInteger));
  			if (!$this->opt_order->getPrimaryKey()) { 
  				$this->request->setParameter('order_id', 0); 
+ 				$this->opt_order->set('order_type', 'O');
  			}
  			$this->view->setVar('t_order', $this->opt_order);
  			$this->view->setVar('order_id', $this->opt_order->getPrimaryKey());
@@ -142,11 +143,22 @@
  			
  			$this->view->setVar('default_item_prices', $va_default_prices);
  			
- 			$t_item = new ca_commerce_order_items();
- 			$this->view->setVar('additional_fees', $t_item->getAdditionalFeesHTMLFormBundle($this->request, array('config' => $this->opo_client_services_config, 'currency_symbol' => $this->opo_client_services_config->get('currency_symbol'), 'type' => 'O')));
- 			$this->view->setVar('additional_fees_for_new_items', $t_item->getAdditionalFeesHTMLFormBundle($this->request, array('config' => $this->opo_client_services_config, 'currency_symbol' => $this->opo_client_services_config->get('currency_symbol'), 'use_defaults' => true, 'type' => 'O')));	
+ 			$t_order_item = new ca_commerce_order_items();
  			
- 			$this->view->setVar('additional_fee_codes', $this->opo_client_services_config->getAssoc('additional_order_item_fees'));
+ 			$va_default_values = array();
+ 			
+ 			$this->view->setVar('t_order_item', $t_order_item);
+ 			$this->view->setVar('additional_fees', $t_order_item->getAdditionalFeesHTMLFormBundle($this->request, array('config' => $this->opo_client_services_config, 'currency_symbol' => $this->opo_client_services_config->get('currency_symbol'), 'type' => 'O')));
+ 			$this->view->setVar('additional_fees_for_new_items', $t_order_item->getAdditionalFeesHTMLFormBundle($this->request, array('config' => $this->opo_client_services_config, 'currency_symbol' => $this->opo_client_services_config->get('currency_symbol'), 'type' => 'O')));	
+ 			
+ 			$this->view->setVar('additional_fee_codes', $va_additional_fee_codes = $this->opo_client_services_config->getAssoc('additional_order_item_fees'));
+ 			
+ 			foreach($va_additional_fee_codes as $vs_code => $va_info) {
+ 				$va_default_values['ADDITIONAL_FEE_'.$vs_code] = $va_info['default_cost'];
+ 			}
+ 			
+ 			$this->view->setVar('default_values', $va_default_values);
+ 			
  			$this->render('order_item_list_html.php');
  		}
  		# -------------------------------------------------------
@@ -380,6 +392,9 @@
  			
  			$va_additional_fee_codes = $this->opo_client_services_config->getAssoc('additional_order_item_fees');
  			
+ 			$va_errors = array();
+ 			$va_failed_insert_list = array();
+ 			
  			// Look for newly added items
  			foreach($_REQUEST as $vs_k => $vs_v) {
  				if(preg_match("!^item_list_idnew_([\d]+)$!", $vs_k, $va_matches)) {
@@ -400,6 +415,27 @@
  						}
  						
  						$t_item = $this->opt_order->addItem($vn_object_id, $va_values, array('additional_fees' => $va_fee_values));
+ 						if ($this->opt_order->numErrors() > 0) {
+							foreach($this->opt_order->errors() as $o_error) {
+								$va_errors['new_0'][] = array('errorDescription' => $o_error->getErrorDescription(), 'errorCode' => $o_error->getErrorNumber());
+							}
+							
+							$va_fee_values_proc = array();
+							foreach($va_fee_values as $vs_k => $vs_v) {
+								$va_fee_values_proc['ADDITIONAL_FEE_'.$vs_k] = $vs_v;
+							}
+							
+							$va_failed_insert_list[] = array_merge(
+								$va_values,
+								$va_fee_values_proc,
+								array(
+									'autocomplete' => $_REQUEST['item_list_autocompletenew_'.$va_matches[1]],
+									'id' => $vn_object_id
+								)
+							);
+							
+							$this->opt_order->clearErrors();
+						}
  					}
  				}
  			}
@@ -422,6 +458,13 @@
  							$va_fee_values[$vs_code] = $_REQUEST['additional_order_item_fee_'.$vs_code.'_'.$vn_item_id];
  						}
  						$t_item = $this->opt_order->editItem($vn_item_id, $va_values, array('additional_fees' => $va_fee_values));
+ 						
+						if ($this->opt_order->numErrors()) {
+							foreach($this->opt_order->errors() as $o_error) {
+								$va_errors[$vn_item_id][] = array('errorDescription' => $o_error->getErrorDescription(), 'errorCode' => $o_error->getErrorNumber());
+							}
+							$this->opt_order->clearErrors();
+						}
  					}
  				}
  			}
@@ -436,8 +479,14 @@
  				}
  			}
  			
+ 			if (sizeof($va_errors)) {
+ 				$this->notification->addNotification(_t("There are errors preventing information in specific fields from being saved as noted below."), __NOTIFICATION_TYPE_ERROR__);
+ 			}
+ 			$this->view->setVar('errors', $va_errors);
+ 			$this->view->setVar('failed_insert_list', $va_failed_insert_list);
+ 			
  			// reorder items?
- 			$this->opt_order->reorderItems($x=explode(';', $this->request->getParameter('item_listBundleList', pString)));
+ 			$this->opt_order->reorderItems(explode(';', $this->request->getParameter('item_listBundleList', pString)));
  			
  			$this->ItemList();
  		}

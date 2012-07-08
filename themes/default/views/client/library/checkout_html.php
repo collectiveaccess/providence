@@ -34,6 +34,10 @@
 	
 	$t_order_item = $this->getVar('t_order_item');
 	
+	$vb_loan_use_item_fee_and_tax = (bool)$this->getVar('loan_use_item_fee_and_tax');
+	$vb_loan_use_notes_and_restrictions = (bool)$this->getVar('loan_use_notes_and_restrictions');
+	$vb_loan_use_additional_fees = (bool)$this->getVar('loan_use_additional_fees');
+	
 	$vs_currency_symbol = $this->getVar('currency_symbol');
 	$vs_currency_input_format = "<div class='formLabel'>^LABEL<br/>{$vs_currency_symbol}^ELEMENT</div>";
 	
@@ -46,7 +50,7 @@
 <div class="sectionBox">
 <?php
 	print $vs_control_box = caFormControlBox(
-		(caFormSubmitButton($this->request, __CA_NAV_BUTTON_SAVE__, _t("Save"), 'caClientLibraryCheckoutForm')).' '.
+		(caFormSubmitButton($this->request, __CA_NAV_BUTTON_SAVE__, _t("Check-out"), 'caClientLibraryCheckoutForm')).' '.
 		(caNavButton($this->request, __CA_NAV_BUTTON_CANCEL__, _t("Cancel"), 'client/library', 'CheckOut', 'Index', array('order_id' => 0))),
 		'',
 		''
@@ -57,7 +61,7 @@
 		<div class="formLabel">
 			<?php print _t('Client name'); ?>:
 			<input type="text" size="60" name="client_autocomplete" value="<?php print $t_order->getOrderTransactionUserName(); ?>" id="client_autocomplete" class="lookupBg"/>
-			<input type="hidden" name="transaction_user_id" id="transaction_user_id" value=""/>
+			<input type="hidden" name="transaction_user_id" id="transaction_user_id" value="<?php print ($t_user = $t_order->getOrderTransactionUserInstance()) ? $t_user->getPrimaryKey() : ''; ?>"/>
 		
 			<a href="#" onclick="jQuery('#caClientLibraryCustomerInfoForm').slideToggle(300);" class='button' id='caClientLibraryCustomerInfoMoreButton'><?php print _t('Contact information'); ?> &rsaquo;</a>
 			<div class="formContainerBg " style="padding-top:0px;" id="caClientLibraryCustomerInfoForm">
@@ -68,8 +72,8 @@
 							<div id='caBillingFields'>
 			<?php
 					$va_billing_fields = array(
-						"billing_fname", "billing_lname", "billing_organization", "billing_address1", "billing_address2", "billing_city", 
-						"billing_zone", "billing_postal_code", "billing_country", "billing_phone", "billing_fax", "billing_email"  
+						"billing_email", "billing_fname", "billing_lname", "billing_organization", "billing_address1", "billing_address2", "billing_city", 
+						"billing_zone", "billing_postal_code", "billing_country", "billing_phone", "billing_fax"  
 					);
 					foreach($va_billing_fields as $vs_f) {
 						$va_info = $t_order->getFieldInfo($vs_f);
@@ -87,8 +91,8 @@
 							<div id='caShippingFields'>
 			<?php
 					$va_shipping_fields = array(
-						"shipping_fname", "shipping_lname", "shipping_organization", "shipping_address1", "shipping_address2", "shipping_city",
-						"shipping_zone", "shipping_postal_code", "shipping_country", "shipping_phone", "shipping_fax", "shipping_email"
+						"shipping_email", "shipping_fname", "shipping_lname", "shipping_organization", "shipping_address1", "shipping_address2", "shipping_city",
+						"shipping_zone", "shipping_postal_code", "shipping_country", "shipping_phone", "shipping_fax"
 					);
 					foreach($va_shipping_fields as $vs_f) {
 						$va_info = $t_order->getFieldInfo($vs_f);
@@ -144,16 +148,24 @@
 					<td><?php print $t_order_item->htmlFormElement('loan_checkout_date', null, array('dateFormat' => 'delimited', 'timeOmit' => true, 'classname' => 'dateBg', 'value' => '{loan_checkout_date}', 'name' => $vs_id_prefix.'_loan_checkout_date_{n}', 'id' => $vs_id_prefix.'_loan_checkout_date_{n}')); ?></td>
 					<td><?php print $t_order_item->htmlFormElement('loan_due_date',  null, array('dateFormat' => 'delimited', 'timeOmit' => true, 'classname' => 'dateBg', 'value' => '{loan_due_date}', 'name' => $vs_id_prefix.'_loan_due_date_{n}', 'id' => $vs_id_prefix.'_loan_due_date_{n}')); ?></td>
 				</tr>
+<?php
+	if ($vb_loan_use_item_fee_and_tax) {
+?>
 				<tr>
 					<td><?php print $t_order_item->htmlFormElement('fee', $vs_currency_input_format, array('classname' => 'currencyBg', 'value' => '{fee}', 'name' => $vs_id_prefix.'_fee_{n}', 'id' => $vs_id_prefix.'_fee_{n}')); ?></td>
 					<td><?php print $t_order_item->htmlFormElement('tax',  $vs_currency_input_format, array('classname' => 'currencyBg', 'value' => '{tax}', 'name' => $vs_id_prefix.'_tax_{n}', 'id' => $vs_id_prefix.'_tax_{n}')); ?></td>
 				</tr>
+<?php
+	}
+	if ($vb_loan_use_notes_and_restrictions) {
+?>
 				<tr>
 					<td width='260'><?php print str_replace('textarea', 'textentry', $t_order_item->htmlFormElement('notes', null, array('value' => '{notes}', 'name' => $vs_id_prefix.'_notes_{n}', 'id' => $vs_id_prefix.'_notes_{n}', 'width' => '250px'))); ?></td>
 					<td width='330'><?php print str_replace('textarea', 'textentry', $t_order_item->htmlFormElement('restrictions',  null, array('value' => '{restrictions}', 'name' => $vs_id_prefix.'_restrictions_{n}', 'id' => $vs_id_prefix.'_restrictions_{n}', 'width' => '250px'))); ?></td>
 				</tr>
 <?php
-	if ($vs_additional_fees = $this->getVar('additional_fees')) {
+	}
+	if ($vb_loan_use_additional_fees && ($vs_additional_fees = $this->getVar('additional_fees'))) {
 ?>
 				<tr>
 					<td colspan="2">
@@ -181,28 +193,41 @@
 			
 			<table class="caListItem">
 				<tr>
+					<td><div class="formLabel"><?php print _t('Item'); ?></div></td>
 					<td colspan='2'>
-						<div class="formLabel"><?php print _t('Object'); ?>
+						<div class="formLabel">
 							<input type="text" size="100" name="<?php print $vs_id_prefix; ?>_autocomplete{n}" value="" id="<?php print $vs_id_prefix; ?>_autocomplete{n}" class="lookupBg"/>
 						</div>
 					</td>
 				</tr>
 				<tr>
+					<td> </td>
 					<td><?php print $t_order_item->htmlFormElement('loan_checkout_date', null, array('dateFormat' => 'delimited', 'timeOmit' => true, 'classname' => 'dateBg', 'name' => $vs_id_prefix.'_loan_checkout_date_{n}', 'id' => $vs_id_prefix.'_loan_checkout_date_{n}')); ?></td>
 					<td><?php print $t_order_item->htmlFormElement('loan_due_date',  null, array('dateFormat' => 'delimited', 'timeOmit' => true, 'classname' => 'dateBg', 'name' => $vs_id_prefix.'_loan_due_date_{n}', 'id' => $vs_id_prefix.'_loan_due_date_{n}')); ?></td>
 				</tr>
+<?php
+	if ($vb_loan_use_item_fee_and_tax) {
+?>
 				<tr>
+					<td> </td>
 					<td><?php print $t_order_item->htmlFormElement('fee', $vs_currency_input_format, array('classname' => 'currencyBg', 'value' => '{fee}', 'name' => $vs_id_prefix.'_fee_{n}', 'id' => $vs_id_prefix.'_fee_{n}')); ?></td>
 					<td><?php print $t_order_item->htmlFormElement('tax',  $vs_currency_input_format, array('classname' => 'currencyBg', 'value' => '{tax}', 'name' => $vs_id_prefix.'_tax_{n}', 'id' => $vs_id_prefix.'_tax_{n}')); ?></td>
 				</tr>
+<?php
+	}
+	if ($vb_loan_use_notes_and_restrictions) {
+?>
 				<tr>
+					<td> </td>
 					<td><?php print str_replace('textarea', 'textentry', $t_order_item->htmlFormElement('notes', null, array('value' => '{notes}', 'name' => $vs_id_prefix.'_notes_{n}', 'id' => $vs_id_prefix.'_notes_{n}'))); ?></td>
 					<td><?php print str_replace('textarea', 'textentry', $t_order_item->htmlFormElement('restrictions',  null, array('value' => '{restrictions}', 'name' => $vs_id_prefix.'_restrictions_{n}', 'id' => $vs_id_prefix.'_restrictions_{n}'))); ?></td>
 				</tr>
 <?php
-	if ($vs_additional_fees = $this->getVar('additional_fees_for_new_items')) {
+	}
+	if ($vb_loan_use_additional_fees && ($vs_additional_fees = $this->getVar('additional_fees_for_new_items'))) {
 ?>
 				<tr>
+					<td> </td>
 					<td colspan="2">
 						<?php print $vs_additional_fees; ?>
 					</td>
@@ -242,7 +267,7 @@
 <script type="text/javascript">
 	jQuery(document).ready(function() {
 		jQuery('#client_autocomplete').autocomplete('<?php print caNavUrl($this->request, 'lookup', 'User', 'Get'); ?>', 
-			{ minChars: 3, matchSubset: 1, matchContains: 1, delay: 800, scroll: true, max: 100, extraParams: {},
+			{ minChars: 3, matchSubset: 1, matchContains: 1, delay: 800, scroll: true, max: 100, extraParams: { 'inlineCreate': true },
 				formatResult: function(data, value) {
 					return jQuery.trim(value.replace(/<\/?[^>]+>/gi, ''));
 				}
@@ -251,38 +276,52 @@
 		
 		jQuery('#client_autocomplete').result(function(event, data, formatted) {
 			var item_id = data[1];
-			jQuery('#transaction_user_id').val(item_id);
-			jQuery('#caClientLibraryCustomerInfoMoreButton').css('display', 'inline');
-			jQuery.getJSON('<?php print caNavUrl($this->request, "client/orders", "OrderEditor", "GetUserProfileInfo"); ?>', {user_id: item_id}, function(data) {
-				var n, k;
-				for(k in data) {
-					switch(k) {
-						case 'state':
-							n = 'zone_text';
-							break;
-						case 'postalcode':
-							n = 'postal_code';
-							break;
-						case 'country':
-							jQuery('#billing_zone_select').val(data['state']);
-							jQuery('#shipping_zone_select').val(data['state']);
-							break;
-						default:
-							n = k;
-							break;
-					}
-					jQuery('#caBillingFields input[name=billing_' + n + ']').val(data[k]);
-					jQuery('#caShippingFields input[name=shipping_' + n + ']').val(data[k]);
-				}
-			});
-			if(data[3]) {
-				jQuery('#caBillingFields input[name=billing_fname]').val(data[3]);
-				jQuery('#caBillingFields input[name=billing_lname]').val(data[4]);
-				jQuery('#caBillingFields input[name=billing_email]').val(data[5]);
+			if (!parseInt(item_id)) {
+				// Create new user
+				jQuery('#caClientLibraryCustomerInfoMoreButton').css('display', 'inline').click();
+				jQuery('#transaction_user_id').val(0);
+				jQuery('#client_autocomplete').val('');
 				
-				jQuery('#caShippingFields input[name=shipping_fname]').val(data[3]);
-				jQuery('#caShippingFields input[name=shipping_lname]').val(data[4]);
-				jQuery('#caShippingFields input[name=shipping_email]').val(data[5]);
+				var name_elements = data[3].split(new RegExp(/[ ]+/));
+				var lname = name_elements.pop();
+				var fname = name_elements.join(" ");
+				jQuery('#caBillingFields input[name=billing_fname]').val(fname);
+				jQuery('#caBillingFields input[name=billing_lname]').val(lname);
+			} else {
+				// Set existing user and get address info from server
+				jQuery('#transaction_user_id').val(item_id);
+				jQuery('#caClientLibraryCustomerInfoMoreButton').css('display', 'inline');
+				jQuery.getJSON('<?php print caNavUrl($this->request, "client/orders", "OrderEditor", "GetUserProfileInfo"); ?>', {user_id: item_id}, function(data) {
+					var n, k;
+					for(k in data) {
+						switch(k) {
+							case 'state':
+								n = 'zone_text';
+								break;
+							case 'postalcode':
+								n = 'postal_code';
+								break;
+							case 'country':
+								jQuery('#billing_zone_select').val(data['state']);
+								jQuery('#shipping_zone_select').val(data['state']);
+								break;
+							default:
+								n = k;
+								break;
+						}
+						jQuery('#caBillingFields input[name=billing_' + n + ']').val(data[k]);
+						jQuery('#caShippingFields input[name=shipping_' + n + ']').val(data[k]);
+					}
+				});
+				if(data[3]) {
+					jQuery('#caBillingFields input[name=billing_fname]').val(data[3]);
+					jQuery('#caBillingFields input[name=billing_lname]').val(data[4]);
+					jQuery('#caBillingFields input[name=billing_email]').val(data[5]);
+					
+					jQuery('#caShippingFields input[name=shipping_fname]').val(data[3]);
+					jQuery('#caShippingFields input[name=shipping_lname]').val(data[4]);
+					jQuery('#caShippingFields input[name=shipping_email]').val(data[5]);
+				}
 			}
 		});
 	});
@@ -340,7 +379,7 @@
 			addButtonClassName: 'caAddItemButton',
 			deleteButtonClassName: 'caDeleteItemButton',
 			showEmptyFormsOnLoad: 1,
-			autocompleteUrl: '<?php print caNavUrl($this->request, 'lookup', 'Object', 'Get', $va_lookup_params); ?>',
+			autocompleteUrl: '<?php print caNavUrl($this->request, 'client/library', 'CheckOut', 'Get'); ?>',
 			isSortable: true,
 			listSortOrderID: '<?php print $vs_id_prefix; ?>BundleList',
 			listSortItems: 'div.sortableOrderItem',
@@ -361,7 +400,12 @@
 	
 	jQuery("#caClientLibraryCheckoutForm").submit(function() {
 		if (!jQuery('#transaction_user_id').val()) {  // check if client has been selected
-			alert("Select a client");
+			alert('<?php print htmlspecialchars(_t("Please select a client", ENT_QUOTES, "UTF-8")); ?>');
+			return false;
+		}
+		
+		if ((parseInt(jQuery('#transaction_user_id').val()) == 0) && (!jQuery('#billing_email').val())) {  // check if new client email has beeb set
+			alert('<?php print htmlspecialchars(_t("Please specify a billing email address for the client. This will be used as the login name for their newly created account."), ENT_QUOTES, "UTF-8"); ?>');
 			return false;
 		}
 		
@@ -371,7 +415,7 @@
 		});
 		
 		if (!hasItems) {
-			alert("Add at least one item to checkout");
+			alert('<?php print htmlspecialchars(_t("Please add at least one item to checkout"), ENT_QUOTES, "UTF-8"); ?>');
 			return false;
 		}
 		

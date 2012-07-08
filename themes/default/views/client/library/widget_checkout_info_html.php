@@ -1,9 +1,9 @@
 <?php
-/** ---------------------------------------------------------------------
- * themes/default/views/client/bundle/ca_commerce_orders_additional_fees.php
+/* ----------------------------------------------------------------------
+ * app/views/manage/widget_checkout_info_html.php : 
  * ----------------------------------------------------------------------
  * CollectiveAccess
- * Open-source collections management software
+ * Open-source places management software
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
@@ -22,27 +22,28 @@
  * GNU General Public License. (http://www.gnu.org/copyleft/gpl.html). See
  * the "license.txt" file for details, or visit the CollectiveAccess web site at
  * http://www.CollectiveAccess.org
- * 
- * @package CollectiveAccess
- * @subpackage models
- * @license http://www.gnu.org/copyleft/gpl.html GNU Public License version 3
- * 
+ *
  * ----------------------------------------------------------------------
  */
- 
- /**
-   *
-   */
- 	$t_subject = $this->getVar('t_subject');
- 	$va_options = $this->getVar('options');
- 	$o_config = $va_options['config'];
- 	$vs_currency_symbol = $va_options['currency_symbol'];
- 	
- 	$va_fees = $this->getVar('fee_list');
- 	
- 	if (is_array($va_fees)) {
- 		foreach($va_fees as $vs_code => $va_info) {
- 			print "<div class='formLabel' style='float: left; width: 180px;'>".$va_info['label']."<br/>{$vs_currency_symbol}".caHTMLTextInput('additional_order_item_fee_'.$vs_code.'_{n}', array('width' => 10, 'height' => 1, 'class'=>'currencyBg', 'value' => '{ADDITIONAL_FEE_'.$vs_code.'}'))."</div>\n";
- 		}
- 	}
 ?>
+ 	<h3><?php print _t('Client checkout'); ?>:
+	<div><?php
+		$t_order = new ca_commerce_orders();
+		$va_outstanding_loans = $t_order->getOrders(array(
+			'type' => 'L',
+			'is_outstanding' => true 
+		));
+		$vn_num_outstanding_loans = sizeof($va_outstanding_loans);
+		
+		$va_overdue_loans = $t_order->getOrders(array(
+			'type' => 'L',
+			'is_overdue' => true 
+		));
+		
+		$vn_num_overdue_loans = sizeof($va_overdue_loans);
+		
+		print ($vn_num_outstanding_loans == 1) ? _t('%1 outstanding loan', $vn_num_outstanding_loans) : _t('%1 outstanding loans', $vn_num_outstanding_loans);
+		print "<br/>\n";
+		print ($vn_num_overdue_loans == 1) ? _t('%1 overdue loan', $vn_num_overdue_loans) : _t('%1 overdue loans', $vn_num_overdue_loans);
+	?></div>
+	</h3>

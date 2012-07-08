@@ -154,7 +154,7 @@
 				$qr_res->setOption('prefetch', $pn_limit);
 				$qr_res->setOption('dontPrefetchAttributes', true);
 				
-				$va_items = caProcessRelationshipLookupLabel($qr_res, $this->opo_item_instance, array('exclude' => $va_excludes, 'limit' => $pn_limit));
+				$va_items = caProcessRelationshipLookupLabel($qr_res, $this->opo_item_instance, array('exclude' => $va_excludes, 'limit' => $pn_limit, 'inlineCreateQuery' => $ps_query, 'inlineCreateMessage' => _t('<em>%1</em> does not exist. Create?', $ps_query)));
 			}
 			if (!is_array($va_items)) { $va_items = array(); }
 			$this->view->setVar(str_replace(' ', '_', $this->ops_name_singular).'_list', $va_items);

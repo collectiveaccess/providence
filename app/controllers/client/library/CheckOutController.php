@@ -26,6 +26,7 @@
  * ----------------------------------------------------------------------
  */
 
+	require_once(__CA_LIB_DIR__.'/ca/Search/ObjectSearch.php');
  	require_once(__CA_MODELS_DIR__.'/ca_commerce_orders.php');
 	require_once(__CA_LIB_DIR__.'/ca/ResultContext.php');
 
@@ -63,7 +64,9 @@
  			
  			$this->view->setVar('order_items', is_array($va_items = $this->opt_order->getItems()) ? $va_items : array());
  			
+ 			//
  			// Set default dates for order items
+ 			//
  			$t_order_item = new ca_commerce_order_items();
 			$t_order_item->set('loan_checkout_date', time(), array('SET_DIRECT_DATE' => true));
 			if (($vn_loan_period_in_days = $this->opo_client_services_config->get('default_library_loan_period')) <= 0) {
@@ -75,10 +78,20 @@
  			
  			//$this->view->setVar('default_item_prices', $va_default_prices);
  			
+ 			//
+ 			// Additional fees
+ 			//
  			$this->view->setVar('additional_fees', $t_order_item->getAdditionalFeesHTMLFormBundle($this->request, array('config' => $this->opo_client_services_config, 'currency_symbol' => $this->opo_client_services_config->get('currency_symbol'), 'type' => 'L')));
  			$this->view->setVar('additional_fees_for_new_items', $t_order_item->getAdditionalFeesHTMLFormBundle($this->request, array('config' => $this->opo_client_services_config, 'currency_symbol' => $this->opo_client_services_config->get('currency_symbol'), 'use_defaults' => true, 'type' => 'L')));	
  			
  			$this->view->setVar('additional_fee_codes', $this->opo_client_services_config->getAssoc('additional_order_item_fees'));
+ 			
+ 			//
+ 			// Functional options
+ 			//
+ 			$this->view->setVar('loan_use_item_fee_and_tax', (bool)$this->opo_client_services_config->get('loan_use_item_fee_and_tax'));
+ 			$this->view->setVar('loan_use_notes_and_restrictions', (bool)$this->opo_client_services_config->get('loan_use_notes_and_restrictions'));
+ 			$this->view->setVar('loan_use_additional_fees', (bool)$this->opo_client_services_config->get('loan_use_additional_fees'));
  			
  			$this->render('checkout_html.php');
  		}
@@ -141,7 +154,51 @@
  			} else {
  				// Set transaction
  				if (!($vn_transaction_id = $this->request->getParameter('transaction_id', pInteger))) {
- 					if (($vn_user_id = $this->request->getParameter('transaction_user_id', pInteger))) {
+ 					if (!($vn_user_id = $this->request->getParameter('transaction_user_id', pInteger))) {
+ 						if ($vs_user_name = $this->request->getParameter('billing_email', pString)) {
+							// Try to create user in-line
+							$t_user = new ca_users();
+							
+							if ($t_user->load(array('user_name' => $vs_user_name))) {
+								if ($t_user->get('active') == 1) { 					// user is active - if not active don't use
+									if ($t_user->get('userclass') == 255) { 		// user is deleted
+										$t_user->setMode(ACCESS_WRITE);
+										$t_user->set('userclass', 1);				// 1=public user (no back-end login)
+										$t_user->update();
+										if ($t_user->numErrors()) {
+											$this->notification->addNotification(_t('Errors occurred when undeleting user: %1', join('; ', $t_user->getErrors())), __NOTIFICATION_TYPE_ERROR__);
+										} else {
+											$vn_user_id = $t_user->getPrimaryKey();
+										}
+									} else {
+										$vn_user_id = $t_user->getPrimaryKey();
+									}
+								}
+							} else {
+								$t_user->setMode(ACCESS_WRITE);
+								$t_user->set('user_name', $vs_user_name);
+								$t_user->set('password', $vs_password = substr(md5(uniqid(microtime())), 0, 6));
+								$t_user->set('userclass', 1);		// 1=public user (no back-end login)
+								$t_user->set('fname', $vs_fname = $this->request->getParameter('billing_fname', pString));
+								$t_user->set('lname', $vs_lname = $this->request->getParameter('billing_lname', pString));
+								$t_user->set('email', $vs_user_name);
+								
+								$t_user->insert();
+								if ($t_user->numErrors()) {
+									$this->notification->addNotification(_t('Errors occurred when creating new user: %1', join('; ', $t_user->getErrors())), __NOTIFICATION_TYPE_ERROR__);
+								} else {
+									$vn_user_id = $t_user->getPrimaryKey();
+									
+									$this->notification->addNotification(_t('Created new client login for <em>%1</em>. Login name is <em>%2</em> and password is <em>%3</em>', $vs_fname.' '.$vs_lname, $vs_user_name, $vs_password), __NOTIFICATION_TYPE_INFO__);
+									
+									// Create related entity?
+								}
+							}
+						}
+						
+ 					}
+ 					
+ 					if ($vn_user_id) {
 						// try to create transaction
 						$t_trans = new ca_commerce_transactions();
 						$t_trans->setMode(ACCESS_WRITE);
@@ -185,6 +242,8 @@
 				
 				// Look for newly added items
 				$vn_items_added = 0;
+				$vn_item_errors = 0;
+				$vs_errors = '';
 				foreach($_REQUEST as $vs_k => $vs_v) {
 					if(preg_match("!^item_list_idnew_([\d]+)$!", $vs_k, $va_matches)) {
 						if ($vn_object_id = (int)$vs_v) {
@@ -207,6 +266,12 @@
 							
 							if ($t_item && $t_item->getPrimaryKey()) {
 								$vn_items_added++;
+							} else {
+								if ($this->opt_order->numErrors()) {
+									$t_object = new ca_objects($vn_object_id);
+									$this->notification->addNotification(_t('Could not check-out item <em>%1</em> (%2) due to errors: %3', $t_object->get('ca_objects.preferred_labels.name'), $t_object->get('idno'), join("; ", $this->opt_order->getErrors())), __NOTIFICATION_TYPE_ERROR__);
+									$vn_item_errors++;
+								}
 							}
 						}
 					}
@@ -223,19 +288,65 @@
 					$this->view->setVar('order_id', $this->opt_order->getPrimaryKey());
 					$this->view->setVar('t_item', $this->opt_order);
 				} else {
-					if ($vn_items_added == 0) {
+					if (($vn_items_added == 0) && ($this->opt_order->numErrors() == 0)) {
 						$vs_errors = _t('No items were specified');
 					} else {
-						$vs_errors = join('; ', $this->opt_order->getErrors());
+						if ($vn_item_errors == 0) {
+							$vs_errors = join('; ', $this->opt_order->getErrors());
+						}
 					}
-					$va_errors['general'] = $this->opt_order->errors();
-					$this->notification->addNotification(_t('Errors occurred: %1', $vs_errors), __NOTIFICATION_TYPE_ERROR__);
+					if ($vs_errors) {
+						$va_errors['general'] = $this->opt_order->errors();
+						$this->notification->addNotification(_t('Errors occurred: %1', $vs_errors), __NOTIFICATION_TYPE_ERROR__);
+					}
 				}
 			}
  			$this->view->setVar('errors', $va_errors);
  			
  		
  			$this->Index();
+ 		}
+ 		# -------------------------------------------------------
+ 		/**
+ 		 * 
+ 		 */
+ 		public function Get() {
+ 			$ps_query = $this->request->getParameter('q', pString);
+ 			$o_search = new ObjectSearch();
+ 			
+ 			$qr_res = $o_search->search($ps_query);
+ 			
+ 			$va_object_ids = array();
+ 			while($qr_res->nextHit()) {
+ 				$va_object_ids[$qr_res->get('object_id')] = true;
+ 			}
+ 			
+ 			if (sizeof($va_object_ids)) {
+				// get checked out items
+				$o_db = new Db();
+				
+				$qr_checked_out_items = $o_db->query("
+					SELECT DISTINCT i.object_id
+					FROM ca_commerce_order_items i
+					WHERE
+						i.loan_return_date IS NULL and i.loan_checkout_date > 0 AND i.object_id IN (?)
+				", array(array_keys($va_object_ids)));
+				
+				
+				while($qr_checked_out_items->nextRow()) {
+					unset($va_object_ids[$qr_checked_out_items->get('object_id')]);
+				}
+				
+				$t_object = new ca_objects();
+				$qr_res = $t_object->makeSearchResult('ca_objects', array_keys($va_object_ids));
+				
+				$va_items = caProcessRelationshipLookupLabel($qr_res, $t_object, array());
+		
+			}
+			if (!is_array($va_items)) { $va_items = array(); }
+			
+			$this->view->setVar('object_list', $va_items);
+ 			return $this->render('ajax_object_list_html.php');
  		}
  		# -------------------------------------------------------
  		/**
