@@ -321,6 +321,7 @@ class ca_commerce_order_items extends BaseModel {
 		if (!$this->_preSaveActions()) { return false; }
 	
 		$vn_rc = parent::insert($pa_options);
+		$this->_postSaveActions();
 		return $vn_rc;
 	}
 	# ----------------------------------------
@@ -328,6 +329,7 @@ class ca_commerce_order_items extends BaseModel {
 		if (!$this->_preSaveActions()) { return false; }
 		
 		$vn_rc = parent::update($pa_options);
+		$this->_postSaveActions();
 		return $vn_rc;
 	}
 	# ----------------------------------------
@@ -397,6 +399,31 @@ class ca_commerce_order_items extends BaseModel {
 			($vn_return_date > time())
 		) {
 			$this->postError(1101, _t('Return date must not be in the future'), 'ca_commerce_orders->_preSaveActions()');		
+		}
+		
+		if ($this->numErrors() > 0) {
+			return false;
+		}
+		
+		return true;
+	}
+	# ----------------------------------------
+	/**
+	 *
+	 */
+	private function _postSaveActions() {
+		$t_order = $this->getOrder();
+		
+		
+		if (($t_order->get('order_type') == 'L') && ($t_order->get('order_status') != 'COMPLETED')) {
+			if (!sizeof($t_order->unreturnedLoanItems())) {
+				$t_order->setMode(ACCESS_WRITE);
+				$t_order->set('order_status', 'COMPLETED');
+				$t_order->update();
+				if ($t_order->numErrors() > 0) {
+					$this->postError(1101, _t('Could not update status of order to COMPLETED: %1', join("; ", $t_order->getErrors())), 'ca_commerce_orders->_postSaveActions()');
+				}
+			}
 		}
 		
 		if ($this->numErrors() > 0) {

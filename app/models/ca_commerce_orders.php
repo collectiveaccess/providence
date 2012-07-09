@@ -630,6 +630,12 @@ class ca_commerce_orders extends BaseModel {
 			$this->set('handling_cost', 0);
 		}
 		
+		if (($this->get('order_type') == 'L') && ($this->get('order_status') != 'COMPLETED')) {
+			if (!sizeof($this->unreturnedLoanItems())) {
+				$this->set('order_status', 'COMPLETED');
+			}
+		}
+		
 		return true;
 	}
 	# ----------------------------------------
@@ -2137,6 +2143,26 @@ class ca_commerce_orders extends BaseModel {
 			);
 		}
 		return null;
+	}
+	# ------------------------------------------------------
+	/**
+	 *
+	 */
+	public function unreturnedLoanItems() {
+		if (!($vn_order_id = $this->getPrimaryKey())) { return null; }
+		$o_db = new Db();
+		
+		$qr_res = $o_db->query("
+			SELECT *
+			FROM ca_commerce_order_items
+			WHERE order_id = ? AND loan_return_date IS NULL
+		", (int)$vn_order_id);
+		
+		$va_unreturned_items = array();
+		while ($qr_res->nextRow()) {
+			$va_unreturned_items[$qr_res->get('item_id')] = $qr_res->getRow();
+		}
+		return $va_unreturned_items;
 	}
 	# ------------------------------------------------------
 }
