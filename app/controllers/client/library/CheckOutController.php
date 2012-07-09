@@ -73,6 +73,7 @@
 				$vn_loan_period_in_days = 7;
 			}
 			$t_order_item->set('loan_due_date', time() + ($vn_loan_period_in_days * 24 * 60 * 60), array('SET_DIRECT_DATE' => true));
+ 			$va_default_values = array('loan_checkout_date' => $t_order_item->get('loan_checkout_date', array('dateFormat' => 'delimited', 'timeOmit' => true)), 'loan_due_date' => $t_order_item->get('loan_due_date', array('dateFormat' => 'delimited', 'timeOmit' => true)));
  			
  			$this->view->setVar('t_order_item', $t_order_item);
  			
@@ -84,7 +85,12 @@
  			$this->view->setVar('additional_fees', $t_order_item->getAdditionalFeesHTMLFormBundle($this->request, array('config' => $this->opo_client_services_config, 'currency_symbol' => $this->opo_client_services_config->get('currency_symbol'), 'type' => 'L')));
  			$this->view->setVar('additional_fees_for_new_items', $t_order_item->getAdditionalFeesHTMLFormBundle($this->request, array('config' => $this->opo_client_services_config, 'currency_symbol' => $this->opo_client_services_config->get('currency_symbol'), 'use_defaults' => true, 'type' => 'L')));	
  			
- 			$this->view->setVar('additional_fee_codes', $this->opo_client_services_config->getAssoc('additional_order_item_fees'));
+ 			$this->view->setVar('additional_fee_codes', $va_additional_fee_codes = $this->opo_client_services_config->getAssoc('additional_loan_fees'));
+ 			
+ 			foreach($va_additional_fee_codes as $vs_code => $va_info) {
+ 				$va_default_values['ADDITIONAL_FEE_'.$vs_code] = $va_info['default_cost'];
+ 			}
+ 			$this->view->setVar('default_values', $va_default_values);
  			
  			//
  			// Functional options
@@ -118,8 +124,10 @@
 				'shipping_phone' => 'user_profile_phone',
 				'shipping_fax' => 'user_profile_fax'
 			);
-					
+		
  			$va_errors = array();
+ 			$va_failed_insert_list = array();
+ 			
  			$va_fields = $this->opt_order->getFormFields();
  			foreach($va_fields as $vs_f => $va_field_info) {
  				switch($vs_f) {
@@ -238,7 +246,7 @@
 				}
 				$t_user->update();
 				
-				$va_additional_fee_codes = $this->opo_client_services_config->getAssoc('additional_order_item_fees');
+				$va_additional_fee_codes = $this->opo_client_services_config->getAssoc('additional_loan_fees');
 				
 				// Look for newly added items
 				$vn_items_added = 0;
@@ -271,6 +279,17 @@
 									$t_object = new ca_objects($vn_object_id);
 									$this->notification->addNotification(_t('Could not check-out item <em>%1</em> (%2) due to errors: %3', $t_object->get('ca_objects.preferred_labels.name'), $t_object->get('idno'), join("; ", $this->opt_order->getErrors())), __NOTIFICATION_TYPE_ERROR__);
 									$vn_item_errors++;
+									
+									$va_fee_values_proc = array();
+									foreach($va_fee_values as $vs_k => $vs_v) {
+										$va_fee_values_proc['ADDITIONAL_FEE_'.$vs_k] = $vs_v;
+									}
+									$va_failed_insert_list[] = array_merge(
+										$va_values, $va_fee_values_proc, array(
+											'autocomplete' => $_REQUEST['item_list_autocompletenew_'.$va_matches[1]],
+											'id' => $vn_object_id
+										)
+									);
 								}
 							}
 						}
@@ -302,8 +321,8 @@
 				}
 			}
  			$this->view->setVar('errors', $va_errors);
+ 			$this->view->setVar('failed_insert_list', $va_failed_insert_list);
  			
- 		
  			$this->Index();
  		}
  		# -------------------------------------------------------
@@ -349,6 +368,14 @@
 				}
 			}
 			if (!is_array($va_items)) { $va_items = array(); }
+			
+			if (!sizeof($va_items)) {		// nothing found
+				$va_items[0] = array(
+					'_display' => _t('No matches found'),
+					'type_id' => null,
+					'object_id' => 0
+				);
+			}
 			
 			$this->view->setVar('object_list', $va_items);
 			$this->view->setVar('object_id_list', $va_object_ids);

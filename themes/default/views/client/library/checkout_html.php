@@ -25,14 +25,16 @@
  *
  * ----------------------------------------------------------------------
  */
-
  
-	$t_order = $this->getVar('t_order');
-	$vn_order_id = (int)$t_order->getPrimaryKey();
-	$vn_transaction_id = $this->getVar('transaction_id');
-	$va_errors = $this->getVar('errors');
+	$t_order 			= $this->getVar('t_order');
+	$vn_order_id		= (int)$t_order->getPrimaryKey();
+	$vn_transaction_id 	= $this->getVar('transaction_id');
+	$va_errors 			= $this->getVar('errors');
 	
-	$t_order_item = $this->getVar('t_order_item');
+	$t_order_item 		= $this->getVar('t_order_item');
+	
+	$va_failed_inserts 	= $this->getVar('failed_insert_list');		// List of values for items that failed on creation attempt
+	$va_default_values 	= $this->getVar('default_values');			// Default values for various item fields
 	
 	$vb_loan_use_item_fee_and_tax = (bool)$this->getVar('loan_use_item_fee_and_tax');
 	$vb_loan_use_notes_and_restrictions = (bool)$this->getVar('loan_use_notes_and_restrictions');
@@ -145,8 +147,8 @@
 					</td>
 				</tr>
 				<tr>
-					<td><?php print $t_order_item->htmlFormElement('loan_checkout_date', null, array('dateFormat' => 'delimited', 'timeOmit' => true, 'classname' => 'dateBg', 'value' => '{loan_checkout_date}', 'name' => $vs_id_prefix.'_loan_checkout_date_{n}', 'id' => $vs_id_prefix.'_loan_checkout_date_{n}')); ?></td>
-					<td><?php print $t_order_item->htmlFormElement('loan_due_date',  null, array('dateFormat' => 'delimited', 'timeOmit' => true, 'classname' => 'dateBg', 'value' => '{loan_due_date}', 'name' => $vs_id_prefix.'_loan_due_date_{n}', 'id' => $vs_id_prefix.'_loan_due_date_{n}')); ?></td>
+					<td><?php print $t_order_item->htmlFormElement('loan_checkout_date', null, array('value' => '{loan_checkout_date}', 'dateFormat' => 'delimited', 'timeOmit' => true, 'classname' => 'dateBg', 'value' => '{loan_checkout_date}', 'name' => $vs_id_prefix.'_loan_checkout_date_{n}', 'id' => $vs_id_prefix.'_loan_checkout_date_{n}')); ?></td>
+					<td><?php print $t_order_item->htmlFormElement('loan_due_date',  null, array('value' => '{loan_due_date}', 'dateFormat' => 'delimited', 'timeOmit' => true, 'classname' => 'dateBg', 'value' => '{loan_due_date}', 'name' => $vs_id_prefix.'_loan_due_date_{n}', 'id' => $vs_id_prefix.'_loan_due_date_{n}')); ?></td>
 				</tr>
 <?php
 	if ($vb_loan_use_item_fee_and_tax) {
@@ -191,19 +193,20 @@
 		<div id="<?php print $vs_id_prefix; ?>Item_{n}" class="labelInfo">
 			<a href="#" class="caDeleteItemButton" style="float: right;"><?php print caNavIcon($this->request, __CA_NAV_BUTTON_DEL_BUNDLE__); ?></a>
 			
+			<span class="formLabelError">{error}</span>
 			<table class="caListItem">
 				<tr>
 					<td><div class="formLabel"><?php print _t('Item'); ?></div></td>
 					<td colspan='2'>
 						<div class="formLabel">
-							<input type="text" size="100" name="<?php print $vs_id_prefix; ?>_autocomplete{n}" value="" id="<?php print $vs_id_prefix; ?>_autocomplete{n}" class="lookupBg"/>
+							<input type="text" size="100" name="<?php print $vs_id_prefix; ?>_autocomplete{n}" value="{autocomplete}" id="<?php print $vs_id_prefix; ?>_autocomplete{n}" class="lookupBg"/>
 						</div>
 					</td>
 				</tr>
 				<tr>
 					<td> </td>
-					<td><?php print $t_order_item->htmlFormElement('loan_checkout_date', null, array('dateFormat' => 'delimited', 'timeOmit' => true, 'classname' => 'dateBg', 'name' => $vs_id_prefix.'_loan_checkout_date_{n}', 'id' => $vs_id_prefix.'_loan_checkout_date_{n}')); ?></td>
-					<td><?php print $t_order_item->htmlFormElement('loan_due_date',  null, array('dateFormat' => 'delimited', 'timeOmit' => true, 'classname' => 'dateBg', 'name' => $vs_id_prefix.'_loan_due_date_{n}', 'id' => $vs_id_prefix.'_loan_due_date_{n}')); ?></td>
+					<td><?php print $t_order_item->htmlFormElement('loan_checkout_date', null, array('value' => '{loan_checkout_date}', 'dateFormat' => 'delimited', 'timeOmit' => true, 'classname' => 'dateBg', 'name' => $vs_id_prefix.'_loan_checkout_date_{n}', 'id' => $vs_id_prefix.'_loan_checkout_date_{n}')); ?></td>
+					<td><?php print $t_order_item->htmlFormElement('loan_due_date',  null, array('value' => '{loan_due_date}', 'dateFormat' => 'delimited', 'timeOmit' => true, 'classname' => 'dateBg', 'name' => $vs_id_prefix.'_loan_due_date_{n}', 'id' => $vs_id_prefix.'_loan_due_date_{n}')); ?></td>
 				</tr>
 <?php
 	if ($vb_loan_use_item_fee_and_tax) {
@@ -368,8 +371,10 @@
 	jQuery(document).ready(function() {
 		caRelationBundle<?php print $vs_id_prefix; ?> = caUI.initRelationBundle('#<?php print $vs_id_prefix.'_item'; ?>', {
 			fieldNamePrefix: '<?php print $vs_id_prefix; ?>_',
-			templateValues: ['_display', 'id', 'object_id', 'item_id', 'name', 'name_sort', 'idno', 'idno_sort', 'loan_checkout_date', 'loan_due_date', 'fee', 'tax', 'notes', 'restrictions', 'thumbnail_tag', 'representation_count'<?php print (sizeof($va_additional_fee_template_codes)) ? ", ".join(", ", $va_additional_fee_template_codes) : ""; ?>],
+			templateValues: ['_display', 'id', 'object_id', 'item_id', 'name', 'name_sort', 'idno', 'idno_sort', 'loan_checkout_date', 'loan_due_date', 'fee', 'tax', 'notes', 'restrictions', 'thumbnail_tag', 'autocomplete', 'representation_count'<?php print (sizeof($va_additional_fee_template_codes)) ? ", ".join(", ", $va_additional_fee_template_codes) : ""; ?>],
 			initialValues: <?php print json_encode($va_initial_values); ?>,
+			forceNewValues: <?php print json_encode($va_failed_inserts); ?>,
+			defaultValues: <?php print json_encode($va_default_values); ?>,
 			itemID: '<?php print $vs_id_prefix; ?>Item_',
 			templateClassName: 'caNewItemTemplate',
 			initialValueTemplateClassName: 'caItemTemplate',
@@ -384,6 +389,23 @@
 			addMode: 'prepend',
 			onItemCreate: function() {
 				jQuery('#<?php print $vs_id_prefix.'_item'; ?> .dateBg').datepicker();
+			},
+			autocompleteOptions: {
+				onSelect: function(autocompleter_id, data) {
+					if (data[1] == 0) {
+						jQuery('#' + autocompleter_id).val('');
+						return false;	
+					}
+					if(data[3] > 0) {
+						jQuery('#' + autocompleter_id).val('');
+						var msg = '<?php print addslashes(print _t("<em>%1</em> is currently on loan and is due to be returned on %2")); ?>';
+						msg = msg.replace("%1", data[0]);
+						msg = msg.replace("%2", data[4]);
+						jQuery.jGrowl(msg, { sticky: false, speed:'fast' });
+						return false;
+					}
+					return true;
+				}
 			}
 		});
 	});
@@ -399,12 +421,12 @@
 	
 	jQuery("#caClientLibraryCheckoutForm").submit(function() {
 		if (!jQuery('#transaction_user_id').val()) {  // check if client has been selected
-			alert('<?php print htmlspecialchars(_t("Please select a client", ENT_QUOTES, "UTF-8")); ?>');
+			jQuery.jGrowl('<?php print htmlspecialchars(_t("Please select a client", ENT_QUOTES, "UTF-8")); ?>', { sticky: false, speed:'fast' });
 			return false;
 		}
 		
 		if ((parseInt(jQuery('#transaction_user_id').val()) == 0) && (!jQuery('#billing_email').val())) {  // check if new client email has been set
-			alert('<?php print htmlspecialchars(_t("Please specify a billing email address for the client. This will be used as the login name for their newly created account."), ENT_QUOTES, "UTF-8"); ?>');
+			jQuery.jGrowl('<?php print htmlspecialchars(_t("Please specify a billing email address for the client. This will be used as the login name for their newly created account."), ENT_QUOTES, "UTF-8"); ?>', { sticky: false, speed:'fast' });
 			return false;
 		}
 		
@@ -414,7 +436,7 @@
 		});
 		
 		if (!hasItems) {
-			alert('<?php print htmlspecialchars(_t("Please add at least one item to checkout"), ENT_QUOTES, "UTF-8"); ?>');
+			jQuery.jGrowl('<?php print htmlspecialchars(_t("Please add at least one item to checkout"), ENT_QUOTES, "UTF-8"); ?>', { sticky: false, speed:'fast' });
 			return false;
 		}
 		

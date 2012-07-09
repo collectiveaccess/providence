@@ -25,8 +25,11 @@
  *
  * ----------------------------------------------------------------------
  */
- 
+ 	$va_object_id_list = $this->getVar('object_id_list');
+ 	
 	foreach($this->getVar('object_list') as $vn_item_id => $va_item) {
-		print str_replace("|", "-", $va_item['_display'])."|".$vn_item_id."|".$va_item['type_id']."\n";
+		$vn_due_date = (int)$va_object_id_list[$vn_item_id];	// unixtime stamp when item is due for return if already loaned
+		$vs_localized_due_date = caGetLocalizedDate($vn_due_date, array('format' => 'delimited', 'timeOmit' => true));
+		print str_replace("|", "-", $va_item['_display'])."|".$vn_item_id."|".$va_item['type_id']."|{$vn_due_date}|{$vs_localized_due_date}\n";
 	}
 ?>
