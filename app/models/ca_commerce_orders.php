@@ -1455,8 +1455,9 @@ class ca_commerce_orders extends BaseModel {
 	 	$t_object = new ca_objects($pn_object_id);
 	 	$vn_rep_id = $t_object->getPrimaryRepresentationID();
 	 	
-	 	$t_item->addRepresentations((isset($pa_options['representation_ids']) && is_array($pa_options['representation_ids'])) ? $pa_options['representation_ids'] : array($vn_rep_id));
-	 	
+	 	if ($this->get('order_type') == 'O') {
+	 		$t_item->addRepresentations((isset($pa_options['representation_ids']) && is_array($pa_options['representation_ids'])) ? $pa_options['representation_ids'] : array($vn_rep_id));
+	 	}
 	 	return $t_item;
 	}
 	# ----------------------------------------
