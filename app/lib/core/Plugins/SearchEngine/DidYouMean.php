@@ -85,17 +85,6 @@ class WLPlugSearchEngineDidYouMean extends WLPlug implements IWLPlugSearchEngine
 		$this->init();
 		$this->opo_db = new Db();
 		
-		$this->ops_insert_sql = "
-			INSERT IGNORE INTO  ca_did_you_mean_phrases
-			(table_num, phrase, num_words)
-			VALUES
-		";
-		
-		$this->ops_insert_ngram_sql = "
-			INSERT IGNORE INTO ca_did_you_mean_ngrams
-			(phrase_id, ngram, endpoint)
-			VALUES
-		";
 	}
 	# -------------------------------------------------------
 	# Initialization and capabilities
@@ -236,7 +225,7 @@ class WLPlugSearchEngineDidYouMean extends WLPlug implements IWLPlugSearchEngine
 					$va_slice = array_slice($va_content, $vn_i, $vn_c);
 					$vs_slice = trim(join(' ', $va_slice));
 					if ($vs_slice = trim(join(' ', $va_slice))) { 
-						$va_row_sql[$vs_slice] = '('.intval($this->opn_indexing_subject_tablenum).',\''.$this->opo_db->escape($vs_slice).'\','.sizeof($va_slice).')';	
+						$va_row_sql[$vs_slice] = array(intval($this->opn_indexing_subject_tablenum), $this->opo_db->escape($vs_slice), sizeof($va_slice));	
 					}
 					$vn_i++;
 				}
@@ -249,9 +238,11 @@ class WLPlugSearchEngineDidYouMean extends WLPlug implements IWLPlugSearchEngine
 		if ($this->debug) { print "[DidYouMean] ADD DOC [".$this->opn_indexing_subject_tablenum."/".$this->opn_indexing_subject_row_id."]<br>\n"; }
 		
 		if (sizeof($va_row_sql)) {
-			foreach($va_row_sql as $vs_content => $vs_row_data) {
-				$vs_sql = $this->ops_insert_sql." {$vs_row_data}";
-				$this->opo_db->query($vs_sql);
+			foreach($va_row_sql as $vs_content => $va_row_data) {
+		
+				caSQLInsertIgnore($this->opo_db, "ca_did_you_mean_phrases", "
+					SELECT {$va_row_data[0]} AS table_num, {$va_row_data[1]} AS phrase, {$va_row_data[2]} AS num_words
+					");
 				
 				$vn_phrase_id = $this->opo_db->getLastInsertID();
 				if ($vn_phrase_id) {
@@ -269,12 +260,15 @@ class WLPlugSearchEngineDidYouMean extends WLPlug implements IWLPlugSearchEngine
 					
 					for($i=0; $i < sizeof($va_ngrams); $i++) {
 						$vn_endpoint = (($i == 0) || ($i==($vn_num_ngrams-1))) ? 1 : 0;
-						$va_rows[] = "({$vn_phrase_id},'".$this->opo_db->escape($va_ngrams[$i])."', $vn_endpoint)";
+						$va_rows[] = array($vn_phrase_id, $this->opo_db->escape($va_ngrams[$i]), $vn_endpointi);
 					}
 					
 					if(sizeof($va_rows)) {
-						$vs_sql = $this->ops_insert_ngram_sql." ".join(', ', $va_rows);
-						$this->opo_db->query($vs_sql);
+						foreach($va_rows as $va_row){
+							caSQLInsertIgnore($this->opo_db, "ca_did_you_mean_ngrams", "
+							SELECT {$va_row[0]} AS phrase_id, {$va_row[1]} AS ngram, {$va_row[2]} AS endpoint
+						");
+						}
 					}
 				}
 			}

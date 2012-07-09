@@ -1,7 +1,7 @@
 test.php
 dbtest.php
-setup-mysqlpdo.php
-setup-pgsqlpdo.php
+setup-mysql.php
+setup-pgsql.php
 setup.php
 media/
 

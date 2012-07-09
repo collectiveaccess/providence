@@ -37,7 +37,7 @@
 require_once(__CA_LIB_DIR__."/core/Db/DbDriverBase.php");
 require_once(__CA_LIB_DIR__."/core/Db/DbResult.php");
 require_once(__CA_LIB_DIR__."/core/Db/DbStatement.php");
-require_once(__CA_LIB_DIR__."/core/Db/PDOStatementWrapper.php");
+require_once(__CA_LIB_DIR__."/core/Db/PDOStatement_pgsql.php");
 
 /**
  * Cache for prepared statements
@@ -63,7 +63,7 @@ class Db_pgsql extends DbDriverBase {
 	var $opo_db;
 
 	/**
-	 * PDOStatementWrapper object containing last successful result
+	 * PDOStatement_pgsql object containing last successful result
 	 *
 	 * @access private
 	 */
@@ -77,10 +77,10 @@ class Db_pgsql extends DbDriverBase {
 		'limit'         => true,
 		'numrows'       => true,
 		'pconnect'      => true,
-		'prepare'       => false,
+		'prepare'       => true,
 		'ssl'           => false,
-		'transactions'  => false,
-		'max_nested_transactions' => 1
+		'transactions'  => true,
+		'max_nested_transactions' => 0
 	);
 
 	/**
@@ -89,7 +89,6 @@ class Db_pgsql extends DbDriverBase {
 	 * @see DbDriverBase::DbDriverBase()
 	 */
 	function __construct() {
-		//print "Construct db driver\n";
 	}
 
 	/**
@@ -102,36 +101,17 @@ class Db_pgsql extends DbDriverBase {
 	public static function serializeForDatabase($ps_data){
 		if(!mb_check_encoding($ps_data, "UTF-8")){  // Either gzipped data or other binary. Goes into a bytea.
 			$vs_hexs = "E'\\\\x";
-			for($i = 0 ; $i < strlen($ps_data) ; ++$i){
+			for($i = 0 ; $i < strlen($ps_data) ; ++$i){ // strlen and [] assumes non multibyte strings
 				$vn_val = ord($ps_data[$i]);
-				$vn_lsb = $vn_val & 0x0f;
-				$vn_msb = ($vn_val >> 4) & 0x0f;
-				$vs_hexs .= dechex($vn_msb).dechex($vn_lsb);
+				$vs_hexs .= ($vn_val & 0xf0) ? dechex($vn_val) : "0".dechex($vn_val);
 			}
-			$vs_hexs .= "'";	
-			return $vs_hexs;
+			return $vs_hexs . "'";
 		}
 		else{
 			return $ps_data;
 		}
 	}
 
-	/**
-	 * Function called by unSerializeForDatabase() in utilityHelper.php in order to correctly
-	 * process byte array content
-	 *
-	 * @param $ps_data data to be processed. Can be PHP resource if $ps_data is the result of a select statement on a bytea column
-	 * @return string the result. Unchanged if $ps_data is not resource
-	 **/
-	public static function unSerializeForDatabase($ps_data){
-		if(is_resource($ps_data)){  // Stream resource from bytea column SELECT statement
-			return stream_get_contents($ps_data);
-		}
-		else{
-			return $ps_data;
-		}
-		
-	}
 	/**
 	 * Establishes a connection to the database
 	 *
@@ -346,7 +326,7 @@ class Db_pgsql extends DbDriverBase {
 		if (Db::$monitor) {
 			Db::$monitor->logQuery($ps_sql, $pa_values, $t->getTime(4), is_bool($r_res) ? null : $r_res->rowCount());
 		}
-		$this->opo_lres = new PDOStatementWrapper($r_res);
+		$this->opo_lres = new PDOStatement_pgsql($r_res);
 		return new DbResult($this, $this->opo_lres);
 	}
 
@@ -450,7 +430,7 @@ class Db_pgsql extends DbDriverBase {
 		if (!($vb_res = $this->opo_db->query($vs_sql))) {
 			$po_caller->postError($this->nativeToDbError($this->errorcode()), $this->errorinfo(), "Db->pgsql->createTemporaryTable()");
 		}
-		return new DbResult($this, new PDOStatementWrapper($vb_res));
+		return new DbResult($this, new PDOStatement_pgsql($vb_res));
 	}
 
 	/**
@@ -529,17 +509,26 @@ class Db_pgsql extends DbDriverBase {
 	/**
 	 * @see DbResult::nextRow()
 	 * @param mixed $po_caller object representation of the calling class, usually Db
-	 * @param mixed $po_res PDOStatementWrapper object
+	 * @param mixed $po_res PDOStatement Wrapper object
 	 * @return array array representation of the next row
 	 */
 	function nextRow($po_caller, $po_res) {
-		return $po_res->getRow();
+		$va_row = $po_res->getRow();
+		if(!is_array($va_row)){
+			return $va_row;
+		}
+		foreach($va_row as &$vm_data){
+			if(is_resource($vm_data)){ // If the PDO driver returns a bytea field as a stream resource 
+				$vm_data = stream_get_contents($vm_data);
+			}
+		}
+		return $va_row;
 	}
 
 	/**
 	 * @see DbResult::seek()
 	 * @param mixed $po_caller object representation of the calling class, usually Db
-	 * @param mixed $po_res PDOStatementWrapper object
+	 * @param mixed $po_res PDOStatement_pgsql object
 	 * @param int $pn_offset line number to seek
 	 * @return array array representation of the next row
 	 */
@@ -550,17 +539,17 @@ class Db_pgsql extends DbDriverBase {
 	/**
 	 * @see DbResult::numRows()
 	 * @param mixed $po_caller object representation of the calling class, usually Db
-	 * @param mixed $po_res PDOStatementWrapper object
+	 * @param mixed $po_res PDOStatement_pgsql object
 	 * @return int number of rows
 	 */
 	function numRows($po_caller, $po_res) {
-		return count($po_res->getAllRows());
+		return $po_res->rowCount();
 	}
 
 	/**
 	 * @see DbResult::free()
 	 * @param mixed $po_caller object representation of the calling class, usually Db
-	 * @param mixed $po_res PDOStatementWrapper object
+	 * @param mixed $po_res PDOStatement_pgsql object
 	 * @return bool success state
 	 */
 	function free($po_caller, $po_res) {
@@ -603,7 +592,7 @@ class Db_pgsql extends DbDriverBase {
 		$va_fields = array();
 		foreach($qr_res->fetchAll(PDO::FETCH_ASSOC) as $va_field){
 			$va_fields[] = $va_field['attname'];
-		};
+		}
 		return $va_fields;
 	}
 	/**
@@ -719,7 +708,7 @@ class Db_pgsql extends DbDriverBase {
 		$va_table_fields = $this->getFieldsFromTable($po_caller, $ps_table, $ps_fieldname);
 		return $va_table_fields[0];
 	}
-
+	
 	/**
 	 * TODO: Not implemented
 	 * @see Db::getIndices()
@@ -928,10 +917,6 @@ class Db_pgsql extends DbDriverBase {
 	 * Destructor
 	 */
 	function __destruct() {
-		// Disconnecting here can affect other classes that need
-		// to clean up by writing to the database so we disabled 
-		// disconnect-on-destruct
-		//$this->disconnect();
 	}
 }
 ?>

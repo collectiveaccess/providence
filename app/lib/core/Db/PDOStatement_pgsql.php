@@ -1,6 +1,6 @@
 <?php
 /** ---------------------------------------------------------------------
- * app/lib/core/Db/PDOStatementWrapper.php
+ * app/lib/core/Db/PDOStatement_pgsql.php
  * ----------------------------------------------------------------------
  * CollectiveAccess
  * Open-source collections management software
@@ -31,13 +31,13 @@
  */
  
 /**
- * Wrapper for PDOStatement objects 
+ * Wrapper for PDOStatement objects.
  * 
  * Requires the PDO driver to return the number of rows in a SELECT result in
  * PDOStatemment::rowCount()
  */
 
-class PDOStatementWrapper{
+class PDOStatement_pgsql{
 	/**
 	 * PDOStatement object
 	 *
@@ -65,10 +65,9 @@ class PDOStatementWrapper{
 	 * 
 	 */
 	public function __construct($po_stmt) {
-		// TODO: make this a bit less resource intensive :)
 		if(is_object($po_stmt)){
 			$this->opo_stmt = $po_stmt;
-			$this->opa_res = $po_stmt->fetchAll(PDO::FETCH_ASSOC);
+			$this->opa_res = array();
 			$this->opn_cursor = 0;
 		}
 	}
@@ -84,7 +83,7 @@ class PDOStatementWrapper{
 	/**
 	 * Sets new postition in result set
 	 * 
-	 * Next call to PDOScrollable::getRow() returns the row at position $pn_newval
+	 * Next call to PDOStatement_pgsql::getRow() returns the row at position $pn_newval
      *
      * @param int new cursor position 
 	 * @return bool success state
@@ -92,7 +91,15 @@ class PDOStatementWrapper{
 	public function seek($pn_newval){
 		if( ($pn_newval < $this->rowCount()) &&
 			($pn_newval >= 0)){
-			$this->opn_cursor = $pn_newval;
+			if($pn_newval >= count($opa_res)){ 
+				$this->opn_cursor = count($opa_res);
+				while($this->opn_cursor < $pn_newval){
+						$this->getRow();
+				}
+			}
+			else{
+				$this->opn_cursor = $pn_newval;
+			}
 			return true;
 		}	
 		return false;
@@ -105,24 +112,25 @@ class PDOStatementWrapper{
 	 */
 	public function getRow(){
 		if($this->opn_cursor < $this->rowCount()){
-			$va_row = $this->opa_res[$this->opn_cursor];
-			$this->opn_cursor++;
-			return $va_row;
+			if($this->opn_cursor == count($this->opa_res)){
+				$this->opa_res[] = $this->opo_stmt->fetch(PDO::FETCH_ASSOC);
+			}
+			return $this->opa_res[$this->opn_cursor++];
 		}
 		else{
 			return false;
 		}
-			
 	}
 	
 	public function getAllRows()
 	{
-		return $this->opa_res;
+		$this->seek($this->rowCount() - 1);
+		return $opa_res;
 	}
 
 	public function rowCount()
 	{
-		return count($this->opa_res);
+		return $this->opo_stmt->rowCount();
 	}
 
 }
