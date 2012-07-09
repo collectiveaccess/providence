@@ -3546,6 +3546,12 @@ body > div.jGrowl.center {
 	left: 				25%;
 }
 
+div.jGrowl > .ui-state-highlight {
+    background: inherit;
+    color: inherit;
+    border: inherit;
+}
+
 /** Cross Browser Styling **/
 div.center div.jGrowl-notification, div.center div.jGrowl-closer {
 	margin-left: 		auto;
@@ -4210,6 +4216,10 @@ a.caClientOrderOverviewButton:hover {
 
 #caClientLibraryCustomerInfoForm {
 	display: none;
+}
+
+.caClientLibraryLoadingIndicator {
+	background: white url('../graphics/icons/indicator.gif') right center no-repeat !important;
 }
 
 /* -------------------------------------------------*/

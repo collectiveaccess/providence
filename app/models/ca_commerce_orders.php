@@ -1225,18 +1225,27 @@ class ca_commerce_orders extends BaseModel {
 					min(i.loan_checkout_date) loan_checkout_date, min(i.loan_due_date) loan_due_date
 				FROM ca_commerce_orders o
 				INNER JOIN ca_commerce_order_items AS i ON o.order_id = i.order_id
+	 			".($vb_join_transactions ? "INNER JOIN ca_commerce_transactions AS t ON t.transaction_id = o.transaction_id" : "")."
 				WHERE
-					o.deleted = 0 AND i.loan_due_date < ? AND i.loan_return_date IS NULL
+					o.deleted = 0 AND i.loan_return_date IS NULL
+					{$vs_sql_wheres}
 				GROUP BY o.order_id
 					
-			", array(time()));
-			$va_over_due_orders = array();
+			", $va_sql_values);
+			
+			$va_due_dates = $va_overdue_dates = array();
+			$vn_t = time();
 			
 			while($qr_res->nextRow()) {
-				$va_over_due_orders[$qr_res->get('order_id')] = caFormatInterval(time() - $qr_res->get('loan_due_date'), 2);
+				$vn_due_date = $qr_res->get('loan_due_date');
+				if ($vn_due_date > $vn_t) {
+					$va_due_dates[$qr_res->get('order_id')] = caFormatInterval($vn_due_date - $vn_t, 2);
+				} else {
+					$va_overdue_dates[$qr_res->get('order_id')] = caFormatInterval($vn_t - $vn_due_date, 2);
+				}
 			}
 		}
-	 	
+		
 	 	// Get item totals
 	 	$qr_res = $o_db->query($vs_sql = "
 	 		SELECT 
@@ -1275,15 +1284,16 @@ class ca_commerce_orders extends BaseModel {
 			
 	 		$va_order['order_total'] = $va_order['order_total_item_fees'] + $va_order['order_total_item_tax'] + $va_order['order_total_shipping'] + $va_order['order_total_handling'] + $vn_additional_order_fees + (float)$va_order_item_additional_fees[$qr_res->get('order_id')];
 	 		
-	 		if (isset($va_over_due_orders[$va_order['order_id']])) {
+	 		if (isset($va_overdue_dates[$va_order['order_id']])) {
 	 			$va_order['is_overdue'] = true;
-	 			$va_order['overdue_period'] = $va_over_due_orders[$va_order['order_id']];
-	 		}
+	 			$va_order['overdue_period'] = $va_overdue_dates[$va_order['order_id']];
+	 		} else {
+				if (isset($va_due_dates[$va_order['order_id']])) {
+					$va_order['is_overdue'] = false;
+					$va_order['due_period'] = $va_due_dates[$va_order['order_id']];
+				}
+			}
 	 		
-	 		
-	 		if ($va_order['loan_due_date_start'] > time()) {
-	 			$va_order['due_period'] = caFormatInterval($va_order['loan_due_date_start'] - time(), 2);	// want closest due date
-	 		}
 	 		$va_orders[] = $va_order;
 	 	}
 	 	

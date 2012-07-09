@@ -245,20 +245,18 @@
 	</textarea>
 	
 	<div class="bundleContainer">
+		<div class='button labelInfo caAddItemButton'><a href='#'><?php print caNavIcon($this->request, __CA_NAV_BUTTON_ADD__); ?> <?php print _t("Add item to order"); ?></a></div>
 		<div class="caItemList">
 		
 		</div>
 		<input type="hidden" name="<?php print $vs_id_prefix; ?>BundleList" id="<?php print $vs_id_prefix; ?>BundleList" value=""/>
 		<div style="clear: both; width: 1px; height: 1px;"><!-- empty --></div>
-		<div class='button labelInfo caAddItemButton'><a href='#'><?php print caNavIcon($this->request, __CA_NAV_BUTTON_ADD__); ?> <?php print _t("Add item to order"); ?></a></div>
 	</div>
 </div>
 <div class="editorBottomPadding"><!-- empty --></div>
 <?php
 
 	print $t_order->htmlFormElement('order_id');
-
-	print $vs_control_box;
 ?>
 	</form>
 </div>
@@ -383,6 +381,7 @@
 			isSortable: true,
 			listSortOrderID: '<?php print $vs_id_prefix; ?>BundleList',
 			listSortItems: 'div.sortableOrderItem',
+			addMode: 'prepend',
 			onItemCreate: function() {
 				jQuery('#<?php print $vs_id_prefix.'_item'; ?> .dateBg').datepicker();
 			}

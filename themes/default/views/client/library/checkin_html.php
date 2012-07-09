@@ -33,18 +33,19 @@
 <div class="sectionBox">
 <?php
 print $vs_control_box = caFormControlBox(
-		(caFormSubmitButton($this->request, __CA_NAV_BUTTON_SAVE__, _t("Commit"), 'caClientLibraryCheckinForm')).' '.
-		(caNavButton($this->request, __CA_NAV_BUTTON_CANCEL__, _t("Cancel"), 'client/library', 'CheckIn', 'Save', array())),
+		(caFormSubmitButton($this->request, __CA_NAV_BUTTON_SAVE__, _t("Check-in"), 'caClientLibraryCheckinForm')).' '.
+		(caNavButton($this->request, __CA_NAV_BUTTON_CANCEL__, _t("Cancel"), 'client/library', 'CheckIn', 'Index', array())),
 		'',
 		''
 	);
 	
 	print caFormTag($this->request, 'Save', 'caClientLibraryCheckinForm', null, 'post', 'multipart/form-data', '_top', array());
-
-	print _t('Item: ').caHTMLTextInput('search', array('value' => '', 'width' => '100px', 'id' => 'caCheckInObjectSearch'));
-	print " <a href='#' id='caCheckInButton'>"._t('Check in')."</a>";
 ?>
-
+		<div class="formLabel">
+			<?php print _t('Item').': '.caHTMLTextInput('search', array('value' => '', 'width' => '300px', 'id' => 'caCheckInObjectSearch')); ?>
+			<a href="#" id='caCheckInButton' class='button' id='caClientLibraryCustomerInfoMoreButton'><?php print _t('Find'); ?> &rsaquo;</a>
+		</div>
+	
 		<div id="<?php print $vs_id_prefix.'_item'; ?>">
 		
 <?php
@@ -63,6 +64,8 @@ print $vs_control_box = caFormControlBox(
 								{order_number}/{item_id}
 								<br/>
 								<?php print _t('Borrowed by: %1', '{user}'); ?>
+								<br/><br/>
+								<?php print _t('Checked out: %1', '{loan_checkout_date}'); ?>
 								<br/>
 								<?php print _t('Due: %1', '{loan_due_date}'); ?>
 							</td>
@@ -77,7 +80,7 @@ print $vs_control_box = caFormControlBox(
 				</div>
 				<input type="hidden" name="<?php print $vs_id_prefix; ?>_item_id_{n}" id="<?php print $vs_id_prefix; ?>_item_id_{n}" value="{item_id}" class="caCheckoutItemID"/>
 			</textarea>
-			<div class="bundleContainer">
+			<div class="bundleContainer" style="display: none;">
 				<div class="caItemList">
 				
 				</div>
@@ -107,16 +110,41 @@ print $vs_control_box = caFormControlBox(
 			isSortable: false,
 			listSortOrderID: '<?php print $vs_id_prefix; ?>BundleList',
 			listSortItems: 'div.sortableOrderItem',
+			addMode: 'prepend',
 			onItemCreate: function() {
 				jQuery('#<?php print $vs_id_prefix.'_item'; ?> .dateBg').datepicker();
 			}
 		});
 				
 		jQuery('#caCheckInButton').click(function() {
-			jQuery.getJSON('<?php print caNavUrl($this->request, 'client/library', 'CheckIn', 'getItemInfo'); ?>', { search: jQuery('#caCheckInObjectSearch').val()}, function(d) {
-				if(!d['item_id']) { return false; }
-				if (jQuery('#<?php print $vs_id_prefix; ?>Item_' + d['item_id']).length > 0) { return false; }	// don't add the same thing twice
-				caRelationBundle<?php print $vs_id_prefix; ?>.addToBundle(d['item_id'], d);
+			var s = jQuery('#caCheckInObjectSearch').val();
+			if (!s) { return false; }
+			jQuery('#caCheckInObjectSearch').addClass('caClientLibraryLoadingIndicator');
+			jQuery.getJSON('<?php print caNavUrl($this->request, 'client/library', 'CheckIn', 'getItemInfo'); ?>', { search: s}, function(d) {
+				jQuery('#caCheckInObjectSearch').removeClass('caClientLibraryLoadingIndicator').val('');
+				if(!d['matches'] || (d['matches'].length == 0)) { 
+					var msg = '<?php print addslashes(_t("No matching items were found for <em>%1</em>")); ?>';
+					msg = msg.replace("%1", d['search']);
+					jQuery.jGrowl(msg, { sticky: false, speed:'fast' });
+					return false; 
+				}
+				
+				var dupeCount = 0;
+				for(var i in d['matches']) {
+					if (jQuery('#<?php print $vs_id_prefix; ?>Item_' + d['matches'][i]['item_id']).length > 0) { 
+						// don't add the same thing twice
+						dupeCount++;
+						continue;
+					}
+					jQuery('.bundleContainer').css('display', 'block');
+					caRelationBundle<?php print $vs_id_prefix; ?>.addToBundle(d['matches'][i]['item_id'], d['matches'][i]);
+				}
+			
+				if (dupeCount > 0) {
+					var msg = (dupeCount == 1) ? '<?php print addslashes(_t("Omitted %1 match that is already queued for check-in")); ?>' : '<?php print addslashes(_t("Omitted %1 matches that are already queued for check-in")); ?>'; 
+					msg = msg.replace("%1", dupeCount);
+					jQuery.jGrowl(msg, { sticky: false, speed:'fast' });
+				}
 			});
 		});
 	});

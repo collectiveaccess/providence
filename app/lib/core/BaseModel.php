@@ -1068,6 +1068,7 @@ class BaseModel extends BaseObject {
 					case (FT_HISTORIC_DATE):
 						if (($this->DIRECT_DATETIMES) || ($pa_options["SET_DIRECT_DATE"])) {
 							$this->_FIELD_VALUES[$vs_field] = $vm_value;
+							$this->_FIELD_VALUE_CHANGED[$vs_field] = true;
 						} else {
 							if (!$vm_value && $this->FIELDS[$vs_field]["IS_NULL"]) {
 								if ($vs_cur_value) {

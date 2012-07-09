@@ -77,6 +77,7 @@
 				$va_object_ids[] = (int)$qr_res->get('ca_objects.object_id'); 
 			}
 			
+			$va_items = array('search' => $ps_search, 'matches' => array());
 			if (sizeof($va_object_ids)) {
 				$o_db = new Db();
 				$qr_items = $o_db->query("
@@ -87,9 +88,7 @@
 						object_id IN (?) AND o.order_type = 'L' AND i.loan_return_date IS NULL
 				", array($va_object_ids));
 				
-				//if ($t_item->load(array('object_id' => $pn_object_id, 'loan_return_date' => null))) {
-					// get client name
-				if($qr_items->nextRow()) {
+				while($qr_items->nextRow()) {
 					$t_item = new ca_commerce_order_items($qr_items->get('item_id'));
 					$t_order = $t_item->getOrder();
 					$va_values = $t_item->getFieldValuesArray();
@@ -101,17 +100,24 @@
 					$va_values['idno'] = $t_object->get('ca_objects.idno');
 					
 					// generate display dates
+					$va_values['loan_checkout_date_raw'] = $va_values['loan_checkout_date'];
+					$va_values['loan_checkout_date'] = caGetLocalizedDate($va_values['loan_checkout_date'], array('dateFormat' => 'delimited', 'timeOmit' => true));
 					$va_values['loan_due_date_raw'] = $va_values['loan_due_date'];
-					$va_values['loan_due_date'] = caGetLocalizedDate($va_values['loan_due_date'], array('dateFormat' => 'delimited'));
+					$va_values['loan_due_date'] = caGetLocalizedDate($va_values['loan_due_date'], array('dateFormat' => 'delimited', 'timeOmit' => true));
+					if ($va_values['loan_due_date_raw'] < time()) {
+						$va_values['loan_due_date'] .= " (<em>"._t("Overdue by %1", caFormatInterval(time() - $va_values['loan_due_date_raw'], 2))."</em>)";
+					}
 					
 					$va_values['order_number'] = $t_order->getOrderNumber();
 					
 					$va_rep = $t_object->getPrimaryRepresentation(array('thumbnail'));
 					$va_values['thumbnail_tag'] = $va_rep['tags']['thumbnail'];
+					
+					
+					$va_items['matches'][] = $va_values;
 				}
 			}
-				
- 			$this->view->setVar('item_values', $va_values);
+ 			$this->view->setVar('items', $va_items);
  			return $this->render('ajax_order_item_info_json.php');
  		}
  		# -------------------------------------------------------
@@ -119,12 +125,13 @@
  			$vn_checkin_count = 0;
  			foreach($_REQUEST as $vs_k => $vs_v) {
  				if (preg_match('!^caClientLibraryCheckin_item_id_([\d]+)$!', $vs_k, $va_matches)) {
+ 					if (isset($_REQUEST['caClientLibraryCheckin_'.$va_matches[1].'_delete'])) { continue; }
  					$vn_item_id = $va_matches[1];
  					
  					$t_order_item = new ca_commerce_order_items($vn_item_id);
  					if ($t_order_item->getPrimaryKey()) {
  						$t_order_item->setMode(ACCESS_WRITE);
- 						$t_order_item->set('loan_return_date', 'now');
+ 						$t_order_item->set('loan_return_date', time(), array('SET_DIRECT_DATE' => true));
  						$t_order_item->set('notes', $this->request->getParameter('caClientLibraryCheckin_notes_'.$vn_item_id, pString));
  						$t_order_item->update();
  						

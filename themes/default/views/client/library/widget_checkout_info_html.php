@@ -26,7 +26,7 @@
  * ----------------------------------------------------------------------
  */
 ?>
- 	<h3><?php print _t('Client checkout'); ?>:
+ 	<h3><?php print _t('Client check-out'); ?>:
 	<div><?php
 		$t_order = new ca_commerce_orders();
 		$va_outstanding_loans = $t_order->getOrders(array(
