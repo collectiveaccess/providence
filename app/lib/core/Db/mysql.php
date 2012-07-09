@@ -549,6 +549,27 @@ class Db_mysql extends DbDriverBase {
 	}
 
 	/**
+	 * @see Db::getFieldNamesFromTable()
+	 * @param mixed $po_caller object representation of the calling class, usually Db
+	 * @param string $ps_table string representation of the table
+	 * @return array array containing the field names of the table
+	 */
+	function getFieldNamesFromTable($po_caller, $ps_table)
+	{
+		if ($r_show = mysql_query("SHOW COLUMNS FROM ".$ps_table, $this->opr_db)) {
+			$va_columns = array();
+			while($va_row = mysql_fetch_row($r_show)) {
+				$va_columns[] = $va_row[0];
+			}
+
+			return $va_columns;
+		} else {
+			$po_caller->postError(280, mysql_error($this->opr_db), "Db->mysql->getFieldNamesFromTable()");
+			return false;
+		}
+	}
+
+	/**
 	 * @see Db::getFieldsFromTable()
 	 * @param mixed $po_caller object representation of the calling class, usually Db
 	 * @param string $ps_table string representation of the table
