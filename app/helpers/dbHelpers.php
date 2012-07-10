@@ -57,6 +57,9 @@
 			$vo_res = $po_db->query($ps_select_sql, $va_args);
 		}
 		$va_select_res = $vo_res->getAllRows();
+		if(!is_array($va_select_res[0])){
+			return;
+		}
 		$va_fields = array_keys($va_select_res[0]);
 		foreach($va_select_res as $va_select_row){
 			$vs_select_sql = "SELECT * FROM {$ps_dest_table} WHERE {$va_fields[0]} = {$va_select_row[$va_fields[0]]}";

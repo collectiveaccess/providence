@@ -109,12 +109,12 @@ msgid "idno"
 msgstr "idnr"
 
 #: c:\providence/app/controllers/administrate/setup/ListsController.php:109
-msgid "list/vocabulary term"
-msgstr "lista/vokubulär term"
+msgid "list/vocabularyterm"
+msgstr "lista/vokabulärterm"
 
 #: c:\providence/app/controllers/administrate/setup/ListsController.php:109
-msgid "list/vocabulary terms"
-msgstr "lista/vokubulär termer"
+msgid "list/vocabularyterms"
+msgstr "lista/vokabulärtermer"
 
 #: c:\providence/app/controllers/administrate/setup/LocalesController.php:58
 msgid "Added locale"
