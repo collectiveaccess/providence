@@ -463,7 +463,7 @@ class WLPlugSearchEngineSqlSearch extends BaseSearchPlugin implements IWLPlugSea
 								$qr_res = caSQLInsertIgnore($this->opo_db, $ps_dest_table, $vs_select_sql);
 							} else {
 								$vs_sql_select = "
-									SELECT mfs.row_id, SUM(mfs.boost) AS boost_sum
+									SELECT mfs.row_id, SUM(mfs.boost) AS boost
 									FROM {$ps_dest_table} mfs
 									INNER JOIN ca_sql_search_temp_{$pn_level} AS ftmp1 ON ftmp1.row_id = mfs.row_id
 									GROUP BY mfs.row_id
@@ -490,12 +490,12 @@ class WLPlugSearchEngineSqlSearch extends BaseSearchPlugin implements IWLPlugSea
 						case 'OR':
 							// or
 							$vs_select_sql = "
-								SELECT row_id, SUM(boost) boost_sum
+								SELECT row_id, SUM(boost) AS boost
 								FROM ca_sql_search_temp_{$pn_level}
 								GROUP BY row_id
 							";
 							//print "$vs_sql<hr>";
-							$qr_res = caSQLInsertIgnore($ps_dest_table, $vs_select_sql);
+							$qr_res = caSQLInsertIgnore($this->opo_db, $ps_dest_table, $vs_select_sql);
 							break;
 					}
 					
@@ -1031,7 +1031,7 @@ class WLPlugSearchEngineSqlSearch extends BaseSearchPlugin implements IWLPlugSea
 							$vs_select_sql .= " HAVING count(distinct sw.word_id) = {$vn_num_terms}";
 						}
 						
-						$qr_res = caSQLInsertIgnore($this->opo_db, $ps_dest_table, $vs_select_sql);
+						$qr_res = caSQLInsertIgnore($this->opo_db, $ps_dest_table, $vs_select_sql, (int)$pn_subject_tablenum);
 					} else {
 						switch($vs_op) {
 							case 'AND':
