@@ -35,15 +35,14 @@
    */
  	$t_subject = $this->getVar('t_subject');
  	$va_options = $this->getVar('options');
- 	$vb_use_defaults = (isset($va_options['use_defaults']) && $va_options['use_defaults']) ? true : false;
  	$o_config = $va_options['config'];
  	$vs_currency_symbol = $va_options['currency_symbol'];
  	
- 	$va_fees = $o_config->getAssoc('additional_order_item_fees');
+ 	$va_fees = $this->getVar('fee_list');
  	
  	if (is_array($va_fees)) {
  		foreach($va_fees as $vs_code => $va_info) {
- 			print "<div class='formLabel' style='float: left; width: 180px;'>".$va_info['label']."<br/>{$vs_currency_symbol}".caHTMLTextInput('additional_order_item_fee_'.$vs_code.'_{n}', array('width' => 10, 'height' => 1, 'class'=>'currencyBg', 'value' => $vb_use_defaults ? $va_info['default_cost'] : '{ADDITIONAL_FEE_'.$vs_code.'}'))."</div>\n";
+ 			print "<div class='formLabel' style='float: left; width: 180px;'>".$va_info['label']."<br/>{$vs_currency_symbol}".caHTMLTextInput('additional_order_item_fee_'.$vs_code.'_{n}', array('width' => 10, 'height' => 1, 'class'=>'currencyBg', 'value' => '{ADDITIONAL_FEE_'.$vs_code.'}'))."</div>\n";
  		}
  	}
 ?>

@@ -3555,6 +3555,12 @@ body > div.jGrowl.center {
 	left: 				25%;
 }
 
+div.jGrowl > .ui-state-highlight {
+    background: inherit;
+    color: inherit;
+    border: inherit;
+}
+
 /** Cross Browser Styling **/
 div.center div.jGrowl-notification, div.center div.jGrowl-closer {
 	margin-left: 		auto;
@@ -4227,6 +4233,15 @@ a.caClientOrderOverviewButton:hover {
 #caClientOrderCommunicationForm input[type="text"], #caClientOrderCommunicationForm input[type="textarea"], #caClientOrderCommunicationForm textarea, #caClientOrderCommunicationForm input{
 	width:100%;
 }   
+
+
+#caClientLibraryCustomerInfoForm {
+	display: none;
+}
+
+.caClientLibraryLoadingIndicator {
+	background: white url('../graphics/icons/indicator.gif') right center no-repeat !important;
+}
 
 /* -------------------------------------------------*/
 /* "Searchlight" autocomplete search results styles */

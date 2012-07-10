@@ -6314,6 +6314,7 @@ create table ca_commerce_communications
   communication_id int(10) unsigned not null auto_increment,
   transaction_id int unsigned not null,
   source char(1) not null, 
+  communication_type char(1) not null default 'O', 
   created_on int unsigned not null,
   from_user_id int unsigned null,
   subject varchar(255) not null,
@@ -6334,6 +6335,7 @@ create table ca_commerce_communications
 create index i_transaction_id on ca_commerce_communications(transaction_id);
 create index i_read_on on ca_commerce_communications(read_on);
 create index i_from_user_id on ca_commerce_communications(from_user_id);
+create index i_communication_type on ca_commerce_communications(communication_type);
 
 
 /*==========================================================================*/
@@ -6365,6 +6367,7 @@ create table ca_commerce_orders
   created_on int unsigned not null,
   
   order_status varchar(40) not null,	
+  order_type char(1) not null default 'O',	
    
   shipping_fname varchar(255) not null,
   shipping_lname varchar(255) not null,
@@ -6419,6 +6422,7 @@ create table ca_commerce_orders
 ) engine=innodb CHARACTER SET utf8 COLLATE utf8_general_ci;
 
 create index i_transaction_id on ca_commerce_orders(transaction_id);
+create index i_order_type on ca_commerce_orders(order_type);
 
 
 /*==========================================================================*/
@@ -6441,6 +6445,10 @@ create table ca_commerce_order_items
    refund_notes                   text not null,
    refund_amount                  decimal(8,2) null,
    
+   loan_checkout_date             int unsigned null DEFAULT '0',
+   loan_due_date                  int unsigned null DEFAULT '0',
+   loan_return_date               int unsigned null DEFAULT '0',
+   
    additional_fees                longtext not null,
    
    rank                           int unsigned                   not null default 0,
@@ -6454,6 +6462,9 @@ create table ca_commerce_order_items
 
 create index i_object_id on ca_commerce_order_items(object_id);
 create index i_order_id on ca_commerce_order_items(order_id);
+create index i_loan_checkout_date on ca_commerce_order_items(loan_checkout_date);
+create index i_loan_due_date on ca_commerce_order_items(loan_due_date);
+create index i_loan_return_date on ca_commerce_order_items(loan_return_date);
 
 
 /*==========================================================================*/
@@ -6560,5 +6571,5 @@ create table ca_schema_updates (
 ) engine=innodb CHARACTER SET utf8 COLLATE utf8_general_ci;
 
 /* Indicate up to what migration this schema definition covers */
-/* CURRENT MIGRATION: 64 */
-INSERT IGNORE INTO ca_schema_updates (version_num, datetime) VALUES (64, unix_timestamp());
+/* CURRENT MIGRATION: 66 */
+INSERT IGNORE INTO ca_schema_updates (version_num, datetime) VALUES (66, unix_timestamp());
