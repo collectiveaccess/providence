@@ -2838,12 +2838,15 @@ class BaseModel extends BaseObject {
 			if (is_array($va_one_to_many_relations)) {
 				foreach($va_one_to_many_relations as $vs_many_table => $va_info) {
 					foreach($va_info as $va_relationship) {
-						if (isset($pa_table_list[$vs_many_table.'/'.$va_relationship["many_table_field"]]) && $pa_table_list[$vs_many_table.'/'.$va_relationship["many_table_field"]]) { continue; }
+						if (isset($pa_table_list[$vs_many_table.'/'.$va_relationship["many_table_field"]]) && $pa_table_list[$vs_many_table.'/'.$va_relationship["many_table_field"]]) { 
+							
+							continue; 
+						}
 
 						# do any records exist?
 						$t_related = $this->_DATAMODEL->getTableInstance($vs_many_table);
 						$t_related->setTransaction($this->getTransaction());
-						$qr_record_check = $o_db->query("
+						$qr_record_check = $o_db->query($x = "
 							SELECT ".$t_related->primaryKey()."
 							FROM ".$vs_many_table."
 							WHERE
