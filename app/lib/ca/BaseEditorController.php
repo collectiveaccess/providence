@@ -269,10 +269,11 @@
  				return;
  			}
  			
+ 			$vb_is_insert = !$t_subject->getPrimaryKey();
+ 			
  			# trigger "BeforeSaveItem" hook 
 			$this->opo_app_plugin_manager->hookBeforeSaveItem(array('id' => $vn_subject_id, 'table_num' => $t_subject->tableNum(), 'table_name' => $t_subject->tableName(), 'instance' => $t_subject, 'is_insert' => $vb_is_insert));
  			
- 			$vb_is_insert = !$t_subject->getPrimaryKey();
  			$vb_save_rc = $t_subject->saveBundlesForScreen($this->request->getActionExtra(), $this->request, array_merge($pa_options, array('ui_instance' => $t_ui)));
 			$this->view->setVar('t_ui', $t_ui);
 		
@@ -286,6 +287,11 @@
 					$this->view->setVar($t_subject->primaryKey(), $vn_subject_id);
 					$this->view->setVar('subject_id', $vn_subject_id);
 					$this->request->session->setVar($this->ops_table_name.'_browse_last_id', $vn_subject_id);	// set last edited
+					
+					// Set ACL for newly created record
+					if ($t_subject->getAppConfig()->get('perform_item_level_access_checking')) {
+						$t_subject->setACLUsers(array($this->request->getUserID() => __CA_ACL_EDIT_DELETE_ACCESS__));
+					}
 					
 					// If "above_id" is set then, we want to load the record pointed to by it and set its' parent to be the newly created record
 					// The newly created record's parent is already set to be the current parent of the "above_id"; the net effect of all of this

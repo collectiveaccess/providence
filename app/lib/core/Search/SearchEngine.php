@@ -495,133 +495,134 @@ class SearchEngine extends SearchBase {
 	 * @param $pa_hits Array of row_ids to sort. *MUST HAVE row_ids AS KEYS, NOT VALUES*
 	 */
 	public function sortHits(&$pa_hits, $ps_field, $ps_direction='asc') {
-			if (!in_array(strtolower($ps_direction), array('asc', 'desc'))) { $ps_direction = 'asc'; }
-			if (!is_array($pa_hits) || !sizeof($pa_hits)) { return $pa_hits; }
-				
-			$t_table = $this->opo_datamodel->getInstanceByTableNum($this->opn_tablenum, true);
-			$vs_table_pk = $t_table->primaryKey();
-			$vs_table_name = $this->ops_tablename;
+		if (!in_array(strtolower($ps_direction), array('asc', 'desc'))) { $ps_direction = 'asc'; }
+		if (!is_array($pa_hits) || !sizeof($pa_hits)) { return $pa_hits; }
 			
-			$va_fields = explode(';', $ps_field);
-			$va_joins = array();
-			$va_orderbys = array();
-			$vs_locale_where = '';
-			$vs_is_preferred_sql = '';
+		$t_table = $this->opo_datamodel->getInstanceByTableNum($this->opn_tablenum, true);
+		$vs_table_pk = $t_table->primaryKey();
+		$vs_table_name = $this->ops_tablename;
+		
+		$va_fields = explode(';', $ps_field);
+		$va_sorted_hits = array();
+		
+		foreach($va_fields as $vs_field) {				
+			$va_joins = $va_orderbys = array();
+			$vs_locale_where = $vs_is_preferred_sql = '';
 			
-			foreach($va_fields as $vs_field) {
-				$va_tmp = explode('.', $vs_field);
-				
-				if ($va_tmp[0] == $vs_table_name) {
-					// sort field is in search table
-					
-					if (!$t_table->hasField($va_tmp[1])) { 
-						// is it an attribute?
-						$t_element = new ca_metadata_elements();
-						$vs_sort_element_code = array_pop($va_tmp);
-						if ($t_element->load(array('element_code' => $vs_sort_element_code))) {
-							$vn_element_id = $t_element->getPrimaryKey();
-							
-							if (!($vs_sort_field = Attribute::getSortFieldForDatatype($t_element->get('datatype')))) {
-								return $pa_hits;
-							}
-							
-							$vs_sql = "
-								SELECT t.{$vs_table_pk}, attr.locale_id, {$vs_sort_field}
-								FROM {$vs_table_name} t
-								INNER JOIN ca_attributes AS attr ON attr.row_id = t.{$vs_table_pk}
-								INNER JOIN ca_attribute_values AS attr_vals ON attr_vals.attribute_id = attr.attribute_id
-								WHERE
-									(t.{$vs_table_pk} IN (".join(", ", array_keys($pa_hits))."))
-									AND
-									(attr_vals.element_id = ?) AND (attr.table_num = ?) AND (attr_vals.{$vs_sort_field} IS NOT NULL)
-							";
-							
-							$qr_sort = $this->opo_db->query($vs_sql, (int)$vn_element_id, (int)$this->opn_tablenum);
+			$va_tmp = explode('.', $vs_field);
 			
-							$va_sorted_hits = array();
-							while($qr_sort->nextRow()) {
-								$va_sorted_hits[$vn_id = $qr_sort->get($vs_table_pk, array('binary' => true))][$qr_sort->get('locale_id', array('binary' => true))] = $qr_sort->get($vs_sort_field);
-								unset($pa_hits[$vn_id]);
-							}
-							
-							foreach($pa_hits as $vn_id => $va_row) {
-								if(!is_array($va_row)) { $va_row = array(); }
-								$va_sorted_hits[$vn_id][1] = $va_row;
-							}
-							
-							$va_sorted_hits = caExtractValuesByUserLocale($va_sorted_hits);
-							asort($va_sorted_hits);
-							
-							if ($ps_direction == 'desc') { $va_sorted_hits = array_reverse($va_sorted_hits, true); }
-							
-							return $va_sorted_hits;
-						}
-					
-						return $pa_hits; 	// return hits unsorted if field is not valid
-					} else {	
-						$va_field_info = $t_table->getFieldInfo($va_tmp[1]);
-						if ($va_field_info['START'] && $va_field_info['END']) {
-							$va_orderbys[] = $va_field_info['START'].' '.$ps_direction;
-							$va_orderbys[] = $va_field_info['END'].' '.$ps_direction;
-						} else {
-							$va_orderbys[] = $vs_field.' '.$ps_direction;
+			if ($va_tmp[0] == $vs_table_name) {
+				//
+				// sort field is in search table
+				//
+				if (!$t_table->hasField($va_tmp[1])) { 
+					//
+					// is it an attribute?
+					//
+					$t_element = new ca_metadata_elements();
+					$vs_sort_element_code = array_pop($va_tmp);
+					if ($t_element->load(array('element_code' => $vs_sort_element_code))) {
+						$vn_element_id = $t_element->getPrimaryKey();
+						
+						if (!($vs_sort_field = Attribute::getSortFieldForDatatype($t_element->get('datatype')))) {
+							return $pa_hits;
 						}
 						
-						if ($t_table->hasField('locale_id')) {
-							$vs_locale_where = ", ".$vs_table_name.".locale_id";
+						$vs_locale_where = "attr.locale_id";
+						$vs_sql = "
+							SELECT t.{$vs_table_pk}, attr.locale_id, {$vs_sort_field}
+							FROM {$vs_table_name} t
+							INNER JOIN ca_attributes AS attr ON attr.row_id = t.{$vs_table_pk}
+							INNER JOIN ca_attribute_values AS attr_vals ON attr_vals.attribute_id = attr.attribute_id
+							WHERE
+								(t.{$vs_table_pk} IN (".join(", ", array_keys($pa_hits))."))
+								AND
+								(attr_vals.element_id = ?) AND (attr.table_num = ?) AND (attr_vals.{$vs_sort_field} IS NOT NULL)
+						";
+						//print $vs_sql;
+						
+						$qr_sort = $this->opo_db->query($vs_sql, (int)$vn_element_id, (int)$this->opn_browse_table_num);
+
+						while($qr_sort->nextRow()) {
+							$va_sorted_hits[$vn_id = $qr_sort->get($vs_table_pk, array('binary' => true))][$qr_sort->get('locale_id', array('binary' => true))] .= trim(preg_replace('![^A-Za-z0-9 ]+!', '', strip_tags(mb_strtolower($qr_sort->get($vs_sort_field)))));
+							unset($pa_hits[$vn_id]);
 						}
 						
-						$vs_sortable_value_fld = $vs_field;
+						// Add on hits that aren't sorted because they don't have an attribute associated
+						foreach($pa_hits as $vn_id => $va_row) {
+							if (!is_array($va_row)) { $va_row = array(); }
+							$va_sorted_hits[$vn_id][1] = $va_row;
+						}
 					}
-				} else {
-					// sort field is in related table
-					$va_path = $this->opo_datamodel->getPath($vs_table_name, $va_tmp[0]);
-					
-					if (sizeof($va_path) > 2) {
-						// many-many
-						$vs_last_table = null;
-						// generate related joins
-						foreach($va_path as $vs_table => $va_info) {
-							$t_table = $this->opo_datamodel->getInstanceByTableName($vs_table, true);
-							if ($vs_last_table) {
-								$va_rels = $this->opo_datamodel->getOneToManyRelations($vs_last_table, $vs_table);
-								if (!sizeof($va_rels)) {
-									$va_rels = $this->opo_datamodel->getOneToManyRelations($vs_table, $vs_last_table);
-								}
-    							if ($vs_table == $va_rels['one_table']) {
-									$va_joins[$vs_table] = "INNER JOIN ".$va_rels['one_table']." ON ".$va_rels['one_table'].".".$va_rels['one_table_field']." = ".$va_rels['many_table'].".".$va_rels['many_table_field'];
-								} else {
-									$va_joins[$vs_table] = "INNER JOIN ".$va_rels['many_table']." ON ".$va_rels['many_table'].".".$va_rels['many_table_field']." = ".$va_rels['one_table'].".".$va_rels['one_table_field'];
-								}
-							}
-							$t_last_table = $t_table;
-							$vs_last_table = $vs_table;
-						}
-						$va_orderbys[] = $vs_field.' '.$ps_direction;
-						
-						$vs_sortable_value_fld = $vs_field;
+					continue;
+				} else {	
+					$va_field_info = $t_table->getFieldInfo($va_tmp[1]);
+					if ($va_field_info['START'] && $va_field_info['END']) {
+						$va_orderbys[] = $va_field_info['START'].' '.$ps_direction;
+						$va_orderbys[] = $va_field_info['END'].' '.$ps_direction;
 					} else {
-						$va_rels = $this->opo_datamodel->getRelationships($vs_table_name, $va_tmp[0]);
-						if (!$va_rels) { return $pa_hits; }							// return hits unsorted if field is not valid
-						$t_rel = $this->opo_datamodel->getInstanceByTableName($va_tmp[0], true);
-						if (!$t_rel->hasField($va_tmp[1])) { return $pa_hits; }
-						$va_joins[$va_tmp[0]] = 'INNER JOIN '.$va_tmp[0].' ON '.$vs_table_name.'.'.$va_rels[$vs_table_name][$va_tmp[0]][0][0].' = '.$va_tmp[0].'.'.$va_rels[$vs_table_name][$va_tmp[0]][0][1]."\n";
 						$va_orderbys[] = $vs_field.' '.$ps_direction;
-						
-						// if the related supports preferred values (eg. *_labels tables) then only consider those in the sort
-						if ($t_rel->hasField('is_preferred')) {
-							$vs_is_preferred_sql = " AND ".$va_tmp[0].".is_preferred = 1";
-						}
-						if ($t_rel->hasField('locale_id')) {
-							$vs_locale_where = ", ".$va_tmp[0].".locale_id";
-						}
-						
-						$vs_sortable_value_fld = $vs_field;
 					}
+					
+					if ($t_table->hasField('locale_id')) {
+						$vs_locale_where = ", ".$vs_table_name.".locale_id";
+					}
+					
+					$vs_sortable_value_fld = $vs_field;
+				}
+			} else {
+				// sort field is in related table 
+				$va_path = $this->opo_datamodel->getPath($vs_table_name, $va_tmp[0]);
+				
+				if (sizeof($va_path) > 2) {
+					// many-many
+					$vs_last_table = null;
+					// generate related joins
+					foreach($va_path as $vs_table => $va_info) {
+						$t_table = $this->opo_datamodel->getInstanceByTableName($vs_table, true);
+						if (!$vs_last_table) {
+							//$va_joins[$vs_table] = "INNER JOIN ".$vs_table." ON ".$vs_table.".".$t_table->primaryKey()." = ca_sql_search_search_final.row_id";
+						} else {
+							$va_rels = $this->opo_datamodel->getOneToManyRelations($vs_last_table, $vs_table);
+							if (!sizeof($va_rels)) {
+								$va_rels = $this->opo_datamodel->getOneToManyRelations($vs_table, $vs_last_table);
+							}
+							if ($vs_table == $va_rels['one_table']) {
+								$va_joins[$vs_table] = "INNER JOIN ".$va_rels['one_table']." ON ".$va_rels['one_table'].".".$va_rels['one_table_field']." = ".$va_rels['many_table'].".".$va_rels['many_table_field'];
+							} else {
+								$va_joins[$vs_table] = "INNER JOIN ".$va_rels['many_table']." ON ".$va_rels['many_table'].".".$va_rels['many_table_field']." = ".$va_rels['one_table'].".".$va_rels['one_table_field'];
+							}
+						}
+						$t_last_table = $t_table;
+						$vs_last_table = $vs_table;
+					}
+					$va_orderbys[] = $vs_field.' '.$ps_direction;
+					
+					$vs_sortable_value_fld = $vs_field;
+				} else {
+					$va_rels = $this->opo_datamodel->getRelationships($vs_table_name, $va_tmp[0]);
+					if (!$va_rels) { return $pa_hits; }							// return hits unsorted if field is not valid
+					$t_rel = $this->opo_datamodel->getInstanceByTableName($va_tmp[0], true);
+					if (!$t_rel->hasField($va_tmp[1])) { return $pa_hits; }
+					$va_joins[$va_tmp[0]] = 'LEFT JOIN '.$va_tmp[0].' ON '.$vs_table_name.'.'.$va_rels[$vs_table_name][$va_tmp[0]][0][0].' = '.$va_tmp[0].'.'.$va_rels[$vs_table_name][$va_tmp[0]][0][1]."\n";
+					$va_orderbys[] = $vs_field.' '.$ps_direction;
+					
+					// if the related supports preferred values (eg. *_labels tables) then only consider those in the sort
+					if ($t_rel->hasField('is_preferred')) {
+						$vs_is_preferred_sql = " AND ".$va_tmp[0].".is_preferred = 1";
+					}
+					if ($t_rel->hasField('locale_id')) {
+						$vs_locale_where = ", ".$va_tmp[0].".locale_id";
+					}
+					
+					$vs_sortable_value_fld = $vs_field;
 				}
 			}
+			//
+			// Grab values and index for sorting later
+			//
 			$vs_join_sql = join("\n", $va_joins);
-			
+		
 			$vs_sql = "
 				SELECT {$vs_table_name}.{$vs_table_pk}{$vs_locale_where}, {$vs_sortable_value_fld}
 				FROM {$vs_table_name}
@@ -632,25 +633,30 @@ class SearchEngine extends SearchBase {
 			";
 			//print $vs_sql;
 			$qr_sort = $this->opo_db->query($vs_sql);
-			$va_sorted_hits = array();
 			while($qr_sort->nextRow()) {
-				if (!($vs_sortable_value = mb_strtolower($qr_sort->get($vs_sortable_value_fld)))) {
+				if (!($vs_sortable_value = trim(preg_replace('![^A-Za-z0-9 ]+!', '', strip_tags(mb_strtolower($qr_sort->get($vs_sortable_value_fld))))))) {
 					$vs_sortable_value = ' ';
 				}
 				if ($vs_locale_where) {
-					$va_sorted_hits[$qr_sort->get($vs_table_pk, array('binary' => true))][$qr_sort->get('locale_id', array('binary' => true))] = $vs_sortable_value;
+					$va_sorted_hits[$qr_sort->get($vs_table_pk, array('binary' => true))][$qr_sort->get('locale_id', array('binary' => true))] .= $vs_sortable_value;
 				} else {
-					$va_sorted_hits[$qr_sort->get($vs_table_pk, array('binary' => true))] = $vs_sortable_value;
+					$va_sorted_hits[$qr_sort->get($vs_table_pk, array('binary' => true))] .= $vs_sortable_value;
 				}
 			}
-			if ($vs_locale_where) { 
-				$va_sorted_hits = caExtractValuesByUserLocale($va_sorted_hits);
-			}
-			asort($va_sorted_hits);
-			if ($ps_direction == 'desc') { $va_sorted_hits = array_reverse($va_sorted_hits, true); }
-			
-			return $va_sorted_hits;
 		}
+		
+		//
+		// Actually sort the hits here...
+		//
+		if ($vs_locale_where) { 
+			$va_sorted_hits = caExtractValuesByUserLocale($va_sorted_hits);
+		}
+		asort($va_sorted_hits, SORT_STRING);
+		
+		if ($ps_direction == 'desc') { $va_sorted_hits = array_reverse($va_sorted_hits, true); }
+		
+		return $va_sorted_hits;
+	}
 	# ------------------------------------------------------------------
 	private function _rewriteQuery($po_query) {
 		$va_terms = array();
@@ -1188,6 +1194,11 @@ class SearchEngine extends SearchBase {
 			$vs_type_restriction_sql = ' AND n.type_id IN ('.join(',', $va_types).')';
 		}
 		
+		$vs_delete_sql = '';
+		if ($t_instance->hasField('deleted')) {
+			$vs_delete_sql = ' AND (deleted = 0)';
+		}
+
 		$o_db = new Db();
 		$qr_res = $o_db->query("
 			SELECT n.{$vs_pk}, l.{$vs_label_display_field}, l.locale_id, n.type_id
@@ -1198,6 +1209,7 @@ class SearchEngine extends SearchBase {
 				{$vs_is_preferred_sql}
 				{$vs_check_access_sql}
 				{$vs_type_restriction_sql}
+				{$vs_delete_sql}
 			{$vs_limit_sql}
 		");
 		$va_hits = array();

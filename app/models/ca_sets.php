@@ -1079,7 +1079,6 @@ class ca_sets extends BundlableLabelableBaseModelWithAttributes implements IBund
 		if (isset($pa_options['shuffle']) && $pa_options['shuffle'] && isset($va_row_ids) && is_array($va_row_ids)) {
 			$va_row_ids = array_keys($va_row_ids);
 			shuffle($va_row_ids);
-			$va_row_ids = array_flip($va_row_ids);
 		}
 		return $va_row_ids;
 	}

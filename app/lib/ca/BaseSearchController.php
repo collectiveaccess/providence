@@ -101,7 +101,7 @@
  			$vs_search 				= $this->opo_result_context->getSearchExpression();
  			$vb_is_new_search		= $this->opo_result_context->isNewSearch();
  			
- 			if ($this->request->getParameter('reset', pString) == 'clear') {
+ 			if ((bool)$this->request->getParameter('reset', pString) && ($this->request->getParameter('reset', pString) != 'save')) {
  				$vs_search = '';
  				$vb_is_new_search = true;
  			}

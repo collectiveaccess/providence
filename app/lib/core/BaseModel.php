@@ -152,7 +152,7 @@ class BaseModel extends BaseObject {
 	 *
 	 * @access private
 	 */
-	var $debug = 0;
+	var $debug = false;
 
 
 	/**
@@ -1068,6 +1068,7 @@ class BaseModel extends BaseObject {
 					case (FT_HISTORIC_DATE):
 						if (($this->DIRECT_DATETIMES) || ($pa_options["SET_DIRECT_DATE"])) {
 							$this->_FIELD_VALUES[$vs_field] = $vm_value;
+							$this->_FIELD_VALUE_CHANGED[$vs_field] = true;
 						} else {
 							if (!$vm_value && $this->FIELDS[$vs_field]["IS_NULL"]) {
 								if ($vs_cur_value) {
@@ -1637,7 +1638,12 @@ class BaseModel extends BaseObject {
 			$this->_FIELD_VALUES_OLD = $this->_FIELD_VALUES;
 			$this->_FILES_CLEAR = array();
 			
-			if ($vn_id = $this->getPrimaryKey()) { BaseModel::$s_instance_cache[$vs_table_name][$vn_id] = $this->_FIELD_VALUES; }
+			if ($vn_id = $this->getPrimaryKey()) {
+				if (sizeof(BaseModel::$s_instance_cache[$vs_table_name]) > 100) {		// Limit cache to 100 instances per table
+					array_pop(BaseModel::$s_instance_cache[$vs_table_name]);
+				}
+				BaseModel::$s_instance_cache[$vs_table_name][$vn_id] = $this->_FIELD_VALUES; 
+			}
 			return true;
 		} else {
 			if (!is_array($pm_id)) {
@@ -2384,7 +2390,7 @@ class BaseModel extends BaseObject {
 				}
 				
 				if (!isset($va_attr["IS_NULL"])) { $va_attr["IS_NULL"] = 0; }
-				if ($va_attr["IS_NULL"] && ($vs_field_value=="")) {
+				if ($va_attr["IS_NULL"] && (strlen($vs_field_value) == 0)) {
 					$vs_field_value_is_null = 1;
 				} else {
 					$vs_field_value_is_null = 0;

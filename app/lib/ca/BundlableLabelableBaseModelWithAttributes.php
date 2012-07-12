@@ -307,7 +307,7 @@ class BundlableLabelableBaseModelWithAttributes extends LabelableBaseModelWithAt
 		// Calculate identifier using numbering plugin
 		if ($vs_idno_fld) {
 			if (method_exists($this, "getIDNoPlugInInstance") && ($o_numbering_plugin = $this->getIDNoPlugInInstance())) {
-				if (!($vs_sep = $o_numbering_plugin->getSeparator())) { $vs_sep = ''; }
+				if (!($vs_sep = $o_numbering_plugin->getSeparator())) { $vs_sep = '-'; }
 				if (!is_array($va_idno_values = $o_numbering_plugin->htmlFormValuesAsArray($vs_idno_fld, $this->get($vs_idno_fld), false, false, true))) { $va_idno_values = array(); }
 
 				$t_dupe->set($vs_idno_fld, join($vs_sep, $va_idno_values));	// true=always set serial values, even if they already have a value; this let's us use the original pattern while replacing the serial value every time through
@@ -318,7 +318,8 @@ class BundlableLabelableBaseModelWithAttributes extends LabelableBaseModelWithAt
 			}
 			if ($vs_idno_stub) {
 				$t_lookup = $this->_DATAMODEL->getInstanceByTableName($this->tableName());
-				$va_tmp = preg_split("![{$vs_sep}]+!", $vs_idno_stub);
+				
+				$va_tmp = $vs_sep ? preg_split("![{$vs_sep}]+!", $vs_idno_stub) : array($vs_idno_stub);
 				$vs_suffix = is_array($va_tmp) ? array_pop($va_tmp) : '';
 				if (!is_numeric($vs_suffix)) { 
 					$vs_suffix = 0; 
@@ -327,7 +328,7 @@ class BundlableLabelableBaseModelWithAttributes extends LabelableBaseModelWithAt
 				}
 				do {
 					$vs_suffix = (int)$vs_suffix + 1;
-					$vs_idno = trim($vs_idno_stub).$vs_sep.trim($vs_suffix);
+					$vs_idno = trim($vs_idno_stub).$vs_sep.trim($vs_suffix);	// force separator if none defined otherwise you end up with agglutinative numbers
 				} while($t_lookup->load(array($vs_idno_fld => $vs_idno)));
 			} else {
 				$vs_idno = "???";
@@ -3726,14 +3727,17 @@ $pa_options["display_form_field_tips"] = true;
 	 */
 	static public function createResultSet($pa_ids) {
 		if (!is_array($pa_ids) || !sizeof($pa_ids)) { return null; }
-		$pn_table_num = $this->getAppDataModel()->getTableNum(get_called_class());
-		if (!($t_instance = $this->getAppDataModel()->getInstanceByTableNum($pn_table_num))) { return null; }
+		$o_dm = Datamodel::load();
+		$pn_table_num = $o_dm->getTableNum(get_called_class());
+		if (!($t_instance = $o_dm->getInstanceByTableNum($pn_table_num))) { return null; }
 	
 		if (!($vs_search_result_class = $t_instance->getProperty('SEARCH_RESULT_CLASSNAME'))) { return null; }
 		require_once(__CA_LIB_DIR__.'/ca/Search/'.$vs_search_result_class.'.php');
 		$o_data = new WLPlugSearchEngineCachedResult($pa_ids, array(), $t_instance->primaryKey());
 		$o_res = new $vs_search_result_class();
 		$o_res->init($t_instance->tableNum(), $o_data, array());
+		
+		return $o_res;
 	}
 	# --------------------------------------------------------------------------------------------
 	# Access control lists
@@ -4123,6 +4127,8 @@ $pa_options["display_form_field_tips"] = true;
 		$vn_access = 0;
 		if ($t_acl->load(array('group_id' => null, 'user_id' => null, 'table_num' => $this->tableNum(), 'row_id' => $this->getPrimaryKey()))) {		// try to load existing record
 			$vn_access = $t_acl->get('access');
+		} else {
+			$vn_access = $this->getAppConfig()->get('default_item_access_level');
 		}
 		
 		$o_view->setVar('t_instance', $this);

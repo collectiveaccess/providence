@@ -221,6 +221,9 @@ final class ConfigurationExporter {
 			$vo_item->setAttribute("idno", $this->makeIDNO($qr_items->get("idno")));
 			$vo_item->setAttribute("enabled", $qr_items->get("is_enabled"));
 			$vo_item->setAttribute("default", $qr_items->get("is_default"));
+			if(is_numeric($vn_value = $qr_items->get("item_value"))){
+				$vo_item->setAttribute("value", $vn_value);
+			}
 
 			$vo_labels = $this->opo_dom->createElement("labels");
 			$qr_list_item_labels = $this->opo_db->query("SELECT * FROM ca_list_item_labels WHERE item_id=?",$qr_items->get("item_id"));
