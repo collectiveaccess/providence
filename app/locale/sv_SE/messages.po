@@ -109,12 +109,12 @@ msgid "idno"
 msgstr "idnr"
 
 #: c:\providence/app/controllers/administrate/setup/ListsController.php:109
-msgid "list/vocabularyterm"
-msgstr "lista/vokabulärterm"
+msgid "list/vocabulary term"
+msgstr "lista/vokabulär term"
 
 #: c:\providence/app/controllers/administrate/setup/ListsController.php:109
-msgid "list/vocabularyterms"
-msgstr "lista/vokabulärtermer"
+msgid "list/vocabulary terms"
+msgstr "lista/vokabulär termer"
 
 #: c:\providence/app/controllers/administrate/setup/LocalesController.php:58
 msgid "Added locale"
@@ -273,7 +273,7 @@ msgid "tour stops"
 msgstr "tur stopp"
 
 #: c:\providence/app/controllers/find/QuickSearchController.php:68
-#, fuzzy
+
 msgid "Quick search"
 msgstr "Snabbsökning"
 
@@ -551,7 +551,7 @@ msgid "Reply"
 msgstr ""
 
 #: c:\providence/app/helpers/clientServicesHelpers.php:110
-#, fuzzy
+
 msgid "From"
 msgstr "Formulär"
 
@@ -572,7 +572,7 @@ msgid "Your MySQL installation doesn't support the InnoDB storage engine which i
 msgstr "Din MySQL-installation stöder inte InnoDB lagringsmotor som krävs av CollectiveAccess. För mer information se även %1."
 
 #: c:\providence/app/helpers/displayHelpers.php:245
-#, fuzzy
+
 msgid "Really delete \"%1\"?"
 msgstr "Vill du verkligen ta bort"
 
@@ -606,17 +606,17 @@ msgid "This %1 is referenced %2 times"
 msgstr ""
 
 #: c:\providence/app/helpers/displayHelpers.php:294
-#, fuzzy
+
 msgid "remove all references"
 msgstr "Sätt preferenser"
 
 #: c:\providence/app/helpers/displayHelpers.php:295
-#, fuzzy
+
 msgid "transfer references to"
 msgstr "Sätt preferenser"
 
 #: c:\providence/app/helpers/displayHelpers.php:296
-#, fuzzy
+
 msgid "Clear"
 msgstr "år"
 
@@ -739,7 +739,7 @@ msgid "Is %1"
 msgstr "Är %1"
 
 #: c:\providence/app/helpers/displayHelpers.php:741
-#, fuzzy
+
 msgid "Add a %1 to this list"
 msgstr "Lägg %1 till gruppering"
 
@@ -772,7 +772,7 @@ msgstr "Antal sidor"
 
 #: c:\providence/app/helpers/displayHelpers.php:799
 #: c:\providence/app/helpers/displayHelpers.php:801
-#, fuzzy
+
 msgid "Edits"
 msgstr "Ändra"
 
@@ -799,20 +799,20 @@ msgstr "Typ"
 #: c:\providence/app/helpers/displayHelpers.php:888
 #: c:\providence/app/helpers/displayHelpers.php:900
 #: c:\providence/app/helpers/displayHelpers.php:920
-#, fuzzy
+
 msgid "Target format"
 msgstr "Inmatningsformat"
 
 #: c:\providence/app/helpers/displayHelpers.php:891
 #: c:\providence/app/helpers/displayHelpers.php:902
-#, fuzzy
+
 msgid "Number of groups"
 msgstr "Antal stopp"
 
 #: c:\providence/app/helpers/displayHelpers.php:892
 #: c:\providence/app/helpers/displayHelpers.php:903
 #: c:\providence/app/helpers/displayHelpers.php:922
-#, fuzzy
+
 msgid "Number of rules"
 msgstr "Antal sidor"
 
@@ -822,7 +822,7 @@ msgstr "Lägg till en %1 under denna"
 
 #: c:\providence/app/helpers/displayHelpers.php:950
 #: c:\providence/app/helpers/displayHelpers.php:958
-#, fuzzy
+
 msgid "Duplicate this %1"
 msgstr "Uppdaterad vid %1"
 
@@ -832,7 +832,7 @@ msgstr ""
 
 #: c:\providence/app/helpers/displayHelpers.php:967
 #: c:\providence/app/helpers/displayHelpers.php:1111
-#, fuzzy
+
 msgid "Show media"
 msgstr "Ladda ner media"
 
@@ -867,7 +867,7 @@ msgid "Created on"
 msgstr "Skapad den"
 
 #: c:\providence/app/helpers/displayHelpers.php:1048
-#, fuzzy
+
 msgid "Created on %1"
 msgstr "Skapad den"
 
@@ -884,7 +884,7 @@ msgid "Last changed on"
 msgstr ""
 
 #: c:\providence/app/helpers/displayHelpers.php:1059
-#, fuzzy
+
 msgid "Last changed on %1"
 msgstr "Sparade ändringar för %1"
 
@@ -900,7 +900,7 @@ msgstr "Mindre info"
 
 #: c:\providence/app/helpers/displayHelpers.php:1105
 #: c:\providence/app/helpers/displayHelpers.php:1111
-#, fuzzy
+
 msgid "Hide media"
 msgstr "Uppdatera media"
 
@@ -984,7 +984,7 @@ msgid "Disabled"
 msgstr "Inaktiverad"
 
 #: c:\providence/app/lib/ca/BaseAdvancedSearchController.php:80
-#, fuzzy
+
 msgid "%1 advanced search"
 msgstr "Avancerad sökning"
 
@@ -994,7 +994,7 @@ msgid "search"
 msgstr "sök"
 
 #: c:\providence/app/lib/ca/BaseBrowseController.php:166
-#, fuzzy
+
 msgid "%1 browse"
 msgstr "bläddra"
 
@@ -1042,7 +1042,7 @@ msgid "Duplicated %1 \"%2\" (%3)"
 msgstr ""
 
 #: c:\providence/app/lib/ca/BaseEditorController.php:112
-#, fuzzy
+
 msgid "Could not duplicate %1: %2"
 msgstr "Kunde inte uppdatera %1.%2: %3"
 
@@ -1088,12 +1088,12 @@ msgid "Cannot delete root of hierarchy"
 msgstr "Kan inte ta bort roten till hierarki"
 
 #: c:\providence/app/lib/ca/BaseEditorController.php:355
-#, fuzzy
+
 msgid "Transferred %1 relationship to <em>%2</em> (%3)"
 msgstr "Top %1 resultat för <em>%2</em>"
 
 #: c:\providence/app/lib/ca/BaseEditorController.php:355
-#, fuzzy
+
 msgid "Transferred %1 relationships to <em>%2</em> (%3)"
 msgstr "Top %1 resultat för <em>%2</em>"
 
@@ -1102,17 +1102,17 @@ msgid "%1 was deleted"
 msgstr "%1 har tagits bort"
 
 #: c:\providence/app/lib/ca/BaseEditorController.php:530
-#, fuzzy
+
 msgid "Could not generate PDF: %1"
 msgstr "Det gick inte att generera PDF"
 
 #: c:\providence/app/lib/ca/BaseEditorController.php:592
-#, fuzzy
+
 msgid "new %1"
 msgstr "Ny %1"
 
 #: c:\providence/app/lib/ca/BaseEditorController.php:592
-#, fuzzy
+
 msgid "Editing %1 : %2"
 msgstr "Redigerar %1"
 
@@ -1154,7 +1154,7 @@ msgid "Search could not be saved"
 msgstr "Sökning kunde inte sparas"
 
 #: c:\providence/app/lib/ca/BaseSearchController.php:127
-#, fuzzy
+
 msgid "%1 search"
 msgstr "sök"
 
@@ -1163,17 +1163,17 @@ msgid "Error applying database migration %1: %2; error was at query %3; query wa
 msgstr "Fel vid databas migration %1: %2, fel var vid fråga %3, frågan var %4"
 
 #: c:\providence/app/lib/ca/BundlableLabelableBaseModelWithAttributes.php:95
-#, fuzzy
+
 msgid "<em>%1</em> is invalid"
 msgstr "%1 är ogiltigt"
 
 #: c:\providence/app/lib/ca/BundlableLabelableBaseModelWithAttributes.php:97
-#, fuzzy
+
 msgid "<em>%1</em> is not enabled"
 msgstr "Typ id %1 är inte aktiverat"
 
 #: c:\providence/app/lib/ca/BundlableLabelableBaseModelWithAttributes.php:115
-#, fuzzy
+
 msgid "<em>%1</em> is not a valid type for a child record of type <em>%2</em>"
 msgstr "Typen %1 är inte giltigt för en underpost av typen %2"
 
@@ -1182,7 +1182,7 @@ msgid "No parent was found when verifying type of new child"
 msgstr "Ingen förälder hittades vid kontroll av typ av nytt barn"
 
 #: c:\providence/app/lib/ca/BundlableLabelableBaseModelWithAttributes.php:129
-#, fuzzy
+
 msgid "<em>%1</em> is not a valid type for a top-level record"
 msgstr "Typen %1 är inte giltig för högsta nivå av poster"
 
@@ -1191,7 +1191,7 @@ msgid "DUP"
 msgstr ""
 
 #: c:\providence/app/lib/ca/BundlableLabelableBaseModelWithAttributes.php:330
-#, fuzzy
+
 msgid "Duplicate"
 msgstr "Datum"
 
@@ -1212,7 +1212,7 @@ msgid "REQUIRED"
 msgstr ""
 
 #: c:\providence/app/lib/ca/BundlableLabelableBaseModelWithAttributes.php:901
-#, fuzzy
+
 msgid "Not yet issued"
 msgstr "Används inte"
 
@@ -1267,7 +1267,7 @@ msgstr "En lista med besläktade mediafiler som använder standardversionen"
 
 #: c:\providence/app/lib/ca/BundlableLabelableBaseModelWithAttributes.php:2098
 #: c:\providence/app/lib/ca/BundlableLabelableBaseModelWithAttributes.php:2135
-#, fuzzy
+
 msgid "Value <em>%1</em> is already used and duplicates are not allowed"
 msgstr "Värde används redan och dubbletter tillåts inte"
 
@@ -1314,7 +1314,7 @@ msgstr "Din databas är föråldrad. Vänligen installera alla schema migreringa
 #: c:\providence/app/lib/ca/ConfigurationCheck.php:254
 #: c:\providence/app/lib/ca/ConfigurationCheck.php:570
 #: c:\providence/app/lib/ca/ConfigurationCheck.php:573
-#, fuzzy
+
 msgid "For migration %1"
 msgstr "för relaterade %1"
 
@@ -1331,7 +1331,7 @@ msgid "It looks like the media directory is not writable by the webserver. Pleas
 msgstr "Det ser ut som media katalogen inte är skrivbar av webbservern. Ändra behörigheterna för %1 (eller skapa den om den inte redan finns) och gör det möjligt för användaren som kör webbservern att skriva till den här katalogen."
 
 #: c:\providence/app/lib/ca/ConfigurationCheck.php:296
-#, fuzzy
+
 msgid "It looks like the directory for HTML filtering caches is not writable by the webserver. Please change the permissions of %1 and enable the user which runs the webserver to write this directory."
 msgstr "Det ser ut som att katalogen för temporära filer inte är skrivbar av webbservern. Ändra behörigheterna för %1 och aktivera användaren som kör webbservern att skriva till den här katalogen."
 
@@ -1376,7 +1376,7 @@ msgid "PHP PCRE module is required for CollectiveAccess to run. Please install i
 msgstr "PHP PCRE modul krävs för CollectiveAccess att köra. Vänligen installera den."
 
 #: c:\providence/app/lib/ca/ConfigurationCheck.php:357
-#, fuzzy
+
 msgid "PHP Document Object Model (DOM) module is required for CollectiveAccess to run. Please install it."
 msgstr "PHP iconv-modul krävs för CollectiveAccess att köra. Vänligen installera den."
 
@@ -1432,7 +1432,7 @@ msgid "In particular, you have to set the configuration value \"suhosin.request.
 msgstr "Framför allt måste du ställa in konfigurationsvärdet \"suhosin.request.max_totalname_length\" till 5012 eller högre för att säkerställa att CA fungerar korrekt. Ditt värde är %1"
 
 #: c:\providence/app/lib/ca/ConfigurationCheck.php:559
-#, fuzzy
+
 msgid "Could not apply database update for migration %1"
 msgstr "Tillämpad databas migration %1"
 
@@ -1441,7 +1441,7 @@ msgid "The following tasks did not complete: %1"
 msgstr ""
 
 #: c:\providence/app/lib/ca/ConfigurationCheck.php:575
-#, fuzzy
+
 msgid "Applied migration %1"
 msgstr "Tillämpad databas migration %1"
 
@@ -1454,7 +1454,7 @@ msgid "Index rebuild complete!"
 msgstr ""
 
 #: c:\providence/app/lib/ca/LabelableBaseModelWithAttributes.php:920
-#, fuzzy
+
 msgid "Label must not be blank"
 msgstr "Får inte vara tom"
 
@@ -1468,12 +1468,12 @@ msgid "Comment was not created by specified user"
 msgstr "Kommentar skapades inte av angiven användare"
 
 #: c:\providence/app/lib/ca/SortValueReloadingProgress.php:154
-#, fuzzy
+
 msgid "Representation"
 msgstr "Lägg till representation"
 
 #: c:\providence/app/lib/ca/SortValueReloadingProgress.php:171
-#, fuzzy
+
 msgid "Elapsed time: %1"
 msgstr "Förfluten tid"
 
@@ -1810,7 +1810,7 @@ msgid "Include date picker"
 msgstr "Inkludera datumväljaren"
 
 #: c:\providence/app/lib/ca/Attributes/Values/DateRangeAttributeValue.php:82
-#, fuzzy
+
 msgid "Check this option if you want a calendar-based date picker to be available for date entry. (The default is to not include a picker.)"
 msgstr "Markera det här alternativet om du vill ha en kalender baserad datumväljare att vara tillgänglig för datum posten.. (Standardinställningen är att inte inkludera en väljare.)"
 
@@ -2038,7 +2038,7 @@ msgid "%1 is not an integer value"
 msgstr "%1 är inte ett heltal"
 
 #: c:\providence/app/lib/ca/Attributes/Values/LCSHAttributeValue.php:116
-#, fuzzy
+
 msgid "Vocabulary"
 msgstr "Använd som vokabulär"
 
@@ -2047,12 +2047,12 @@ msgid "Selects which vocabulary will be searched."
 msgstr ""
 
 #: c:\providence/app/lib/ca/Attributes/Values/LCSHAttributeValue.php:119
-#, fuzzy
+
 msgid "All vocabularies"
 msgstr "Listor & vokabulärer"
 
 #: c:\providence/app/lib/ca/Attributes/Values/LCSHAttributeValue.php:120
-#, fuzzy
+
 msgid "LC Subject Headings"
 msgstr "Objekt redigering"
 
@@ -2089,7 +2089,7 @@ msgid "MARC Relators"
 msgstr ""
 
 #: c:\providence/app/lib/ca/Attributes/Values/LCSHAttributeValue.php:129
-#, fuzzy
+
 msgid "MARC Countries"
 msgstr "Antal"
 
@@ -2098,22 +2098,22 @@ msgid "MARC Geographic Areas"
 msgstr ""
 
 #: c:\providence/app/lib/ca/Attributes/Values/LCSHAttributeValue.php:131
-#, fuzzy
+
 msgid "MARC Languages"
 msgstr "Hantera"
 
 #: c:\providence/app/lib/ca/Attributes/Values/LCSHAttributeValue.php:132
-#, fuzzy
+
 msgid "ISO639-1 Languages"
 msgstr "ISO 639 språkkod"
 
 #: c:\providence/app/lib/ca/Attributes/Values/LCSHAttributeValue.php:133
-#, fuzzy
+
 msgid "ISO639-2 Languages"
 msgstr "ISO 639 språkkod"
 
 #: c:\providence/app/lib/ca/Attributes/Values/LCSHAttributeValue.php:134
-#, fuzzy
+
 msgid "ISO639-5 Languages"
 msgstr "ISO 639 språkkod"
 
@@ -2155,17 +2155,17 @@ msgid "Width of list in user interface"
 msgstr "Bredd på listan i användargränssnittet"
 
 #: c:\providence/app/lib/ca/Attributes/Values/ListAttributeValue.php:50
-#, fuzzy
+
 msgid "Width, in characters or pixels, of the list when displayed in a user interface. When list is rendered as a hierarchy browser width must be in pixels."
 msgstr "Bredd, i antal tecken, av listan när de visas i ett användargränssnitt."
 
 #: c:\providence/app/lib/ca/Attributes/Values/ListAttributeValue.php:57
-#, fuzzy
+
 msgid "Height of list in user interface (hierarchy browser only)"
 msgstr "Bredd på listan i användargränssnittet"
 
 #: c:\providence/app/lib/ca/Attributes/Values/ListAttributeValue.php:58
-#, fuzzy
+
 msgid "Height, in pixels, of the list when displayed in a user interface as a hierarchy browser."
 msgstr "Höjd, i tecken, av fältet när de visas i ett användargränssnitt."
 
@@ -2174,7 +2174,7 @@ msgid "Check this option if you don't want your list values to be locale-specifi
 msgstr "Markera detta alternativ om du inte vill att dina list värden ska vara språkspecifika. (Standardinställningen är att inte vara.)"
 
 #: c:\providence/app/lib/ca/Attributes/Values/ListAttributeValue.php:74
-#, fuzzy
+
 msgid "Check this option if you want to require that a list item be selected."
 msgstr "Markera det här alternativet om du vill att det varnas för ett fel om webbadressen är tomt."
 
@@ -2207,7 +2207,7 @@ msgid "Type-ahead lookup"
 msgstr ""
 
 #: c:\providence/app/lib/ca/Attributes/Values/ListAttributeValue.php:97
-#, fuzzy
+
 msgid "Horizontal hierarchy browser"
 msgstr "Öppna hierarki visningsprogram"
 
@@ -2216,7 +2216,7 @@ msgid "Horizontal hierarchy browser with search"
 msgstr ""
 
 #: c:\providence/app/lib/ca/Attributes/Values/ListAttributeValue.php:99
-#, fuzzy
+
 msgid "Vertical hierarchy browser"
 msgstr "Öppna hierarki visningsprogram"
 
@@ -2229,12 +2229,12 @@ msgid "Maximum number of columns to use when laying out radio buttons or checkli
 msgstr "Maximalt antal kolumner som ska användas vid utläggning av alternativknappar eller checklista."
 
 #: c:\providence/app/lib/ca/Attributes/Values/ListAttributeValue.php:209
-#, fuzzy
+
 msgid "%1 is not a valid list item_id for %2 [%3]"
 msgstr "%1 är inte en giltig lista item_id för %2"
 
 #: c:\providence/app/lib/ca/Attributes/Values/ListAttributeValue.php:211
-#, fuzzy
+
 msgid "Value %1 [%2] cannot be blank"
 msgstr "Får inte vara tom"
 
@@ -2255,7 +2255,7 @@ msgid "Sub-elements may not be used as checklists"
 msgstr "Under-element får inte användas som checklistor"
 
 #: c:\providence/app/lib/ca/Attributes/Values/MediaAttributeValue.php:214
-#, fuzzy
+
 msgid "Media details"
 msgstr "Media metadata"
 
@@ -2396,7 +2396,7 @@ msgid "Invalid criteria type"
 msgstr "Ogiltig kriterier typ"
 
 #: c:\providence/app/lib/ca/IDNumbering/MultipartIDNumber.php:246
-#, fuzzy
+
 msgid "'%1' is not valid for %2"
 msgstr "%1 är inte giltigt val för %2"
 
@@ -2405,40 +2405,40 @@ msgid "'%1' is not valid for %2; only letters and numbers are allowed"
 msgstr ""
 
 #: c:\providence/app/lib/ca/IDNumbering/MultipartIDNumber.php:258
-#, fuzzy
+
 msgid "%1 must be set to %2"
 msgstr "%1 måste vara minst %2"
 
 #: c:\providence/app/lib/ca/IDNumbering/MultipartIDNumber.php:268
 #: c:\providence/app/lib/ca/IDNumbering/MultipartIDNumber.php:293
 #: c:\providence/app/lib/ca/IDNumbering/MultipartIDNumber.php:312
-#, fuzzy
+
 msgid "%1 must not be shorter than %2 character"
 msgstr "%1 får inte vara större än %2 tecken"
 
 #: c:\providence/app/lib/ca/IDNumbering/MultipartIDNumber.php:270
 #: c:\providence/app/lib/ca/IDNumbering/MultipartIDNumber.php:295
 #: c:\providence/app/lib/ca/IDNumbering/MultipartIDNumber.php:314
-#, fuzzy
+
 msgid "%1 must not be shorter than %2 characters"
 msgstr "%1 får inte vara större än %2 tecken"
 
 #: c:\providence/app/lib/ca/IDNumbering/MultipartIDNumber.php:275
 #: c:\providence/app/lib/ca/IDNumbering/MultipartIDNumber.php:300
 #: c:\providence/app/lib/ca/IDNumbering/MultipartIDNumber.php:319
-#, fuzzy
+
 msgid "%1 must not be longer than %2 character"
 msgstr "%1 får inte vara större än %2 tecken"
 
 #: c:\providence/app/lib/ca/IDNumbering/MultipartIDNumber.php:277
 #: c:\providence/app/lib/ca/IDNumbering/MultipartIDNumber.php:302
 #: c:\providence/app/lib/ca/IDNumbering/MultipartIDNumber.php:321
-#, fuzzy
+
 msgid "%1 must not be longer than %2 characters"
 msgstr "%1 får inte vara större än %2 tecken"
 
 #: c:\providence/app/lib/ca/IDNumbering/MultipartIDNumber.php:283
-#, fuzzy
+
 msgid "%1 must be a number"
 msgstr "%1 måste vara ett tal"
 
@@ -2447,17 +2447,17 @@ msgid "%1 must not be less than %2"
 msgstr "%1 får inte vara mindre än %2"
 
 #: c:\providence/app/lib/ca/IDNumbering/MultipartIDNumber.php:289
-#, fuzzy
+
 msgid "%1 must not be more than %2"
 msgstr "%1 får inte vara mindre än %2"
 
 #: c:\providence/app/lib/ca/IDNumbering/MultipartIDNumber.php:308
-#, fuzzy
+
 msgid "%1 must consist only letters and numbers"
 msgstr "%1 får inte vara mindre än noll"
 
 #: c:\providence/app/lib/ca/IDNumbering/MultipartIDNumber.php:329
-#, fuzzy
+
 msgid "%1 must be a valid year"
 msgstr "%1 måste vara minst %2"
 
@@ -2525,37 +2525,37 @@ msgid "Start must be less than end"
 msgstr "Början måste vara mindre än slutet"
 
 #: c:\providence/app/lib/ca/Service/OAIPMHService.php:144
-#, fuzzy
+
 msgid "Invalid provider '%1'."
 msgstr "Ogiltig egenskap '%1'"
 
 #: c:\providence/app/lib/ca/Service/OAIPMHService.php:166
-#, fuzzy
+
 msgid "OAI provider is not enabled."
 msgstr "Typ id %1 är inte aktiverat"
 
 #: c:\providence/app/lib/ca/Service/OAIPMHService.php:175
-#, fuzzy
+
 msgid "No verb specified."
 msgstr "Ingen användare angiven"
 
 #: c:\providence/app/lib/ca/Service/OAIPMHService.php:203
-#, fuzzy
+
 msgid "Invalid verb specified."
 msgstr "Ingen användare angiven"
 
 #: c:\providence/app/lib/ca/Service/OAIPMHService.php:313
-#, fuzzy
+
 msgid "Identifier is empty"
 msgstr "Id"
 
 #: c:\providence/app/lib/ca/Service/OAIPMHService.php:326
-#, fuzzy
+
 msgid "Identifier is invalid"
 msgstr "Sluttid är ogiltig"
 
 #: c:\providence/app/lib/ca/Service/OAIPMHService.php:475
-#, fuzzy
+
 msgid "Query failed"
 msgstr "Fråga är tom"
 
@@ -2576,13 +2576,13 @@ msgid "Missing required parameter %1"
 msgstr ""
 
 #: c:\providence/app/lib/ca/Service/OAIPMHService.php:735
-#, fuzzy
+
 msgid "Unknown parameter %1"
 msgstr "Okänd ändringstyp '%1'"
 
 #: c:\providence/app/lib/ca/Service/OAIPMHService.php:745
 #: c:\providence/app/lib/ca/Service/OAIPMHService.php:748
-#, fuzzy
+
 msgid "Invalid date/time parameter"
 msgstr "Ogiltig direkt tidsvärden"
 
@@ -2910,18 +2910,18 @@ msgstr "%1 får inte vara större än %2 tecken"
 
 #: c:\providence/app/lib/core/BaseModel.php:4601
 #: c:\providence/app/lib/core/BaseModel.php:4607
-#, fuzzy
+
 msgid "'%1' is not valid choice for %2"
 msgstr "%1 är inte giltigt val för %2"
 
 #: c:\providence/app/lib/core/BaseModel.php:4745
 #: c:\providence/app/lib/core/BaseModel.php:4756
-#, fuzzy
+
 msgid "Creation date/time"
 msgstr "Moderationsdatum"
 
 #: c:\providence/app/lib/core/BaseModel.php:4748
-#, fuzzy
+
 msgid "Modification date/time"
 msgstr "Moderationsdatum"
 
@@ -2931,17 +2931,17 @@ msgstr ""
 
 #: c:\providence/app/lib/core/BaseModel.php:4772
 #: c:\providence/app/lib/core/BaseModel.php:4783
-#, fuzzy
+
 msgid "Date and time %1 was created"
 msgstr "Datum och tid loggpost skapades"
 
 #: c:\providence/app/lib/core/BaseModel.php:4775
-#, fuzzy
+
 msgid "Date and time %1 was modified"
 msgstr "Datum och tid loggpost skapades"
 
 #: c:\providence/app/lib/core/BaseModel.php:4786
-#, fuzzy
+
 msgid "Date and time %1 was last modified"
 msgstr "Datum och tid loggpost skapades"
 
@@ -3188,7 +3188,7 @@ msgid "Mimetype of file"
 msgstr ""
 
 #: c:\providence/app/lib/core/Parsers/MediaMetadata/XMPParser.php:113
-#, fuzzy
+
 msgid "Creation date"
 msgstr "Moderationsdatum"
 
@@ -3197,12 +3197,12 @@ msgid "Copyright Information URL"
 msgstr ""
 
 #: c:\providence/app/lib/core/Parsers/MediaMetadata/XMPParser.php:123
-#, fuzzy
+
 msgid "Document title"
 msgstr "förflyttning titel"
 
 #: c:\providence/app/lib/core/Parsers/MediaMetadata/XMPParser.php:128
-#, fuzzy
+
 msgid "Document description"
 msgstr "kort beskrivning"
 
@@ -3215,7 +3215,7 @@ msgid "Is under copyright?"
 msgstr ""
 
 #: c:\providence/app/lib/core/Parsers/MediaMetadata/XMPParser.php:143
-#, fuzzy
+
 msgid "Document creator"
 msgstr "Dokumentation"
 
@@ -3224,12 +3224,12 @@ msgid "Keywords"
 msgstr ""
 
 #: c:\providence/app/lib/core/Parsers/MediaMetadata/XMPParser.php:153
-#, fuzzy
+
 msgid "Creator address"
 msgstr "IP adress"
 
 #: c:\providence/app/lib/core/Parsers/MediaMetadata/XMPParser.php:158
-#, fuzzy
+
 msgid "Creator city"
 msgstr "Skapa person/organisation/folk"
 
@@ -3238,27 +3238,27 @@ msgid "Creator state/region"
 msgstr ""
 
 #: c:\providence/app/lib/core/Parsers/MediaMetadata/XMPParser.php:168
-#, fuzzy
+
 msgid "Creator postal code"
 msgstr "Skapa plats"
 
 #: c:\providence/app/lib/core/Parsers/MediaMetadata/XMPParser.php:173
-#, fuzzy
+
 msgid "Creator country"
 msgstr "Skapa turer"
 
 #: c:\providence/app/lib/core/Parsers/MediaMetadata/XMPParser.php:178
-#, fuzzy
+
 msgid "Creator phone"
 msgstr "Skapad den"
 
 #: c:\providence/app/lib/core/Parsers/MediaMetadata/XMPParser.php:183
-#, fuzzy
+
 msgid "Creator email"
 msgstr "Skapa"
 
 #: c:\providence/app/lib/core/Parsers/MediaMetadata/XMPParser.php:188
-#, fuzzy
+
 msgid "Creator website"
 msgstr "Projekt webbplats"
 
@@ -3961,7 +3961,7 @@ msgid "bookmark"
 msgstr ""
 
 #: c:\providence/app/models/ca_bookmarks.php:40
-#, fuzzy
+
 msgid "bookmarks"
 msgstr "Anmärkningar"
 
@@ -3969,7 +3969,7 @@ msgstr "Anmärkningar"
 #: c:\providence/app/models/ca_bookmark_folders.php:48
 #: c:\providence/app/models/ca_bundle_displays.php:58
 #: c:\providence/app/models/ca_collections.php:51
-#, fuzzy
+
 msgid "CollectiveAccess id"
 msgstr "Samlingssökningar"
 
@@ -3978,22 +3978,22 @@ msgid "Unique numeric identifier used by CollectiveAccess internally to identify
 msgstr ""
 
 #: c:\providence/app/models/ca_bookmarks.php:56
-#, fuzzy
+
 msgid "Folder"
 msgstr "Filtrera"
 
 #: c:\providence/app/models/ca_bookmarks.php:56
-#, fuzzy
+
 msgid "Indicates the folder to which the bookmark belongs."
 msgstr "Anger om samlingen är borttagen eller inte."
 
 #: c:\providence/app/models/ca_bookmarks.php:63
-#, fuzzy
+
 msgid "Bookmark type"
 msgstr "Låntyp"
 
 #: c:\providence/app/models/ca_bookmarks.php:63
-#, fuzzy
+
 msgid "Indicates type of item bookmark represents."
 msgstr "Anger typ av objekt display används till."
 
@@ -4028,12 +4028,12 @@ msgid "Notes pertaining to the bookmark and/or bookmarked item."
 msgstr ""
 
 #: c:\providence/app/models/ca_bookmarks.php:109
-#, fuzzy
+
 msgid "Bookmark created on"
 msgstr "Skapad den"
 
 #: c:\providence/app/models/ca_bookmarks.php:109
-#, fuzzy
+
 msgid "Date/time the bookmark was created."
 msgstr "Datum/tid objekt visades."
 
@@ -4050,12 +4050,12 @@ msgid "Unique numeric identifier used by CollectiveAccess internally to identify
 msgstr ""
 
 #: c:\providence/app/models/ca_bookmark_folders.php:55
-#, fuzzy
+
 msgid "Folder name"
 msgstr "Formulärnamn"
 
 #: c:\providence/app/models/ca_bookmark_folders.php:55
-#, fuzzy
+
 msgid "A name to display for the folder."
 msgstr "Feed-URL som ska visas i widgeten."
 
@@ -4096,7 +4096,7 @@ msgid "Display code"
 msgstr "Display ko"
 
 #: c:\providence/app/models/ca_bundle_displays.php:107
-#, fuzzy
+
 msgid "Unique alphanumeric identifier for this display."
 msgstr "En unik alfanumerisk identitet för detta lån."
 
@@ -4202,7 +4202,7 @@ msgid "Determines if value used is URL of media or the media itself."
 msgstr "Avgör om värdet som används är URL till mediet eller själva mediet."
 
 #: c:\providence/app/models/ca_bundle_displays.php:1023
-#, fuzzy
+
 msgid "Display as link to editor"
 msgstr "Visa gräns"
 
@@ -4280,7 +4280,7 @@ msgstr "Text att placera mellan element i ett hierarkiskt värde."
 
 #: c:\providence/app/models/ca_bundle_displays.php:1149
 #: c:\providence/app/models/ca_bundle_mapping_rules.php:234
-#, fuzzy
+
 msgid "Date format"
 msgstr "Display format"
 
@@ -4295,12 +4295,12 @@ msgid "General"
 msgstr ""
 
 #: c:\providence/app/models/ca_bundle_displays.php:1160
-#, fuzzy
+
 msgid "Date and time item was created"
 msgstr "Datum och tid loggpost skapades"
 
 #: c:\providence/app/models/ca_bundle_displays.php:1177
-#, fuzzy
+
 msgid "Date and time item was last modified"
 msgstr "Datum och tid import av objekt färdigställdes"
 
@@ -4445,23 +4445,23 @@ msgid "Direction of mapping. \"Import\" indicates the mapping is <i>from</i> an 
 msgstr "Riktning för mapningen. \"Import\" visar att mappningen är <i>från</i> en extern källa till CollectiveAccess, \"export\" betyder att mappningen är från CollectiveAccess till ett externt mål."
 
 #: c:\providence/app/models/ca_bundle_mappings.php:73
-#, fuzzy
+
 msgid "import"
 msgstr "Import"
 
 #: c:\providence/app/models/ca_bundle_mappings.php:74
-#, fuzzy
+
 msgid "export"
 msgstr "Export"
 
 #: c:\providence/app/models/ca_bundle_mappings.php:76
-#, fuzzy
+
 msgid "fragment"
 msgstr "Fragment"
 
 #: c:\providence/app/models/ca_bundle_mappings.php:86
 #: c:\providence/app/models/ca_bundle_mapping_rules.php:221
-#, fuzzy
+
 msgid "Format"
 msgstr "Formulär"
 
@@ -4478,12 +4478,12 @@ msgid "Unique identifer for this mapping."
 msgstr "Unik identifierare för denna mapning."
 
 #: c:\providence/app/models/ca_bundle_mappings.php:104
-#, fuzzy
+
 msgid "Item type"
 msgstr "Post Typ"
 
 #: c:\providence/app/models/ca_bundle_mappings.php:104
-#, fuzzy
+
 msgid "Type of item for which data is being imported or exported."
 msgstr "CollectiveAccess tabellen till vilken data importerad eller exporterad."
 
@@ -4493,7 +4493,7 @@ msgstr "objekt händelser"
 
 #: c:\providence/app/models/ca_bundle_mappings.php:129
 #: c:\providence/app/models/ca_collections.php:134
-#, fuzzy
+
 msgid "Not accessible to public"
 msgstr "Tillgänglig för allmänheten"
 
@@ -4512,18 +4512,18 @@ msgid "Mapping settings"
 msgstr "Mappning inställningar"
 
 #: c:\providence/app/models/ca_bundle_mappings.php:247
-#, fuzzy
+
 msgid "Mapping units"
 msgstr "Mappningstabell"
 
 #: c:\providence/app/models/ca_bundle_mappings.php:266
 #: c:\providence/app/models/ca_bundle_mapping_groups.php:302
-#, fuzzy
+
 msgid "Restrict use of mapping to specific types of item."
 msgstr "Om den är inställd, begränsar uppslagningar till en viss typ av objekt."
 
 #: c:\providence/app/models/ca_bundle_mappings.php:276
-#, fuzzy
+
 msgid "Default locale"
 msgstr "Standardvärde"
 
@@ -4540,7 +4540,7 @@ msgid "Specifies value in import data set to use as identifier when attempting t
 msgstr ""
 
 #: c:\providence/app/models/ca_bundle_mappings.php:292
-#, fuzzy
+
 msgid "Remove existing relationships on update?"
 msgstr "Redigerar relationstyp"
 
@@ -4553,37 +4553,37 @@ msgid "Remove existing data on update?"
 msgstr ""
 
 #: c:\providence/app/models/ca_bundle_mappings.php:302
-#, fuzzy
+
 msgid "If checked field values will be replaced with newly imported data when the record is updated."
 msgstr "Om markerad kommer alla värden visas, även om det finns innehåll för dem eller inte."
 
 #: c:\providence/app/models/ca_bundle_mappings.php:462
-#, fuzzy
+
 msgid "Could not reorder group %1: %2"
 msgstr "Kunde inte ordna stopp %1: %2"
 
 #: c:\providence/app/models/ca_bundle_mapping_groups.php:41
-#, fuzzy
+
 msgid "bundle mapping group"
 msgstr "paket mappning"
 
 #: c:\providence/app/models/ca_bundle_mapping_groups.php:42
-#, fuzzy
+
 msgid "bundle mapping groups"
 msgstr "paket mappningar"
 
 #: c:\providence/app/models/ca_bundle_mapping_groups.php:64
-#, fuzzy
+
 msgid "Unit code"
 msgstr "Listkod"
 
 #: c:\providence/app/models/ca_bundle_mapping_groups.php:64
-#, fuzzy
+
 msgid "Unique alphanumeric identifier for this unit."
 msgstr "En unikt alfanumerisk identifierare för denna person/organisation/folk."
 
 #: c:\providence/app/models/ca_bundle_mapping_groups.php:73
-#, fuzzy
+
 msgid "Base path for CollectiveAccess target"
 msgstr "Namn på CollectiveAccess paket att mappa."
 
@@ -4596,18 +4596,18 @@ msgid "Base path for external target"
 msgstr ""
 
 #: c:\providence/app/models/ca_bundle_mapping_groups.php:82
-#, fuzzy
+
 msgid "Path to element in external format being mapped by this unit. All elements in the external file format being mapped to by this unit will be created relative to this base path. The format of the base path is determined by the format. For XML-based formats this will typically be an XPath specification; for delimited targets this will be a column number."
 msgstr "Destination att koppla paketet till i målet. Formatet på destinationen specifieraren bestäms av målet. För XML-baserade format kommer detta normalt att vara en XPath-specifikation, för avgränsade mål kommer detta att vara ett kolumn nummer."
 
 #: c:\providence/app/models/ca_bundle_mapping_groups.php:90
 #: c:\providence/app/models/ca_bundle_mapping_groups.php:209
-#, fuzzy
+
 msgid "Unit settings"
 msgstr "Roll inställningar"
 
 #: c:\providence/app/models/ca_bundle_mapping_groups.php:97
-#, fuzzy
+
 msgid "Notes and remarks relating to the mapping unit"
 msgstr "Anmärkningar avseende förändring"
 
@@ -4621,7 +4621,7 @@ msgstr ""
 
 #: c:\providence/app/models/ca_bundle_mapping_groups.php:258
 #: c:\providence/app/models/ca_bundle_mapping_groups.php:315
-#, fuzzy
+
 msgid "Restrict use of mapping to specific types of relationships."
 msgstr "Typ begränsning för \"höger\" sida av relationen"
 
@@ -4630,7 +4630,7 @@ msgid "List"
 msgstr "Lista"
 
 #: c:\providence/app/models/ca_bundle_mapping_groups.php:271
-#, fuzzy
+
 msgid "List to add items to."
 msgstr "Listposter"
 
@@ -4655,42 +4655,42 @@ msgid "Base path for %1 target"
 msgstr ""
 
 #: c:\providence/app/models/ca_bundle_mapping_groups.php:528
-#, fuzzy
+
 msgid "Could not reorder rule %1: %2"
 msgstr "Kunde inte ändra ordning på sidor %1: %2"
 
 #: c:\providence/app/models/ca_bundle_mapping_group_labels.php:41
-#, fuzzy
+
 msgid "mapping unit name"
 msgstr "Mappningstabell"
 
 #: c:\providence/app/models/ca_bundle_mapping_group_labels.php:42
-#, fuzzy
+
 msgid "mapping unit names"
 msgstr "paket mappning namn"
 
 #: c:\providence/app/models/ca_bundle_mapping_group_labels.php:63
-#, fuzzy
+
 msgid "Name of mapping unit"
 msgstr "Namn på mappning"
 
 #: c:\providence/app/models/ca_bundle_mapping_group_labels.php:79
-#, fuzzy
+
 msgid "Description of mapping unit name"
 msgstr "Beskrivning av mappning"
 
 #: c:\providence/app/models/ca_bundle_mapping_group_labels.php:88
-#, fuzzy
+
 msgid "Locale of mapping unit name"
 msgstr "Språk för mappningsnamn"
 
 #: c:\providence/app/models/ca_bundle_mapping_labels.php:41
-#, fuzzy
+
 msgid "mapping name"
 msgstr "paket mappning namn"
 
 #: c:\providence/app/models/ca_bundle_mapping_labels.php:42
-#, fuzzy
+
 msgid "mapping names"
 msgstr "paket mappning namn"
 
@@ -4707,17 +4707,17 @@ msgid "Locale of mapping name"
 msgstr "Språk för mappningsnamn"
 
 #: c:\providence/app/models/ca_bundle_mapping_rules.php:40
-#, fuzzy
+
 msgid "mapping rule"
 msgstr "Mappningstabell"
 
 #: c:\providence/app/models/ca_bundle_mapping_rules.php:41
-#, fuzzy
+
 msgid "mapping rules"
 msgstr "Mappningstabell"
 
 #: c:\providence/app/models/ca_bundle_mapping_rules.php:63
-#, fuzzy
+
 msgid "CollectiveAccess bundle"
 msgstr "Namn på CollectiveAccess paket att mappa."
 
@@ -4726,22 +4726,22 @@ msgid "Name of CollectiveAccess bundle to map."
 msgstr "Namn på CollectiveAccess paket att mappa."
 
 #: c:\providence/app/models/ca_bundle_mapping_rules.php:71
-#, fuzzy
+
 msgid "External element"
 msgstr "metadata element"
 
 #: c:\providence/app/models/ca_bundle_mapping_rules.php:71
-#, fuzzy
+
 msgid "Destination in external format to map CollectiveAccess path to. The format of the external element  is determined by the target. For XML-based formats this will typically be an XPath specification; for delimited targets this will be a column number."
 msgstr "Destination att koppla paketet till i målet. Formatet på destinationen specifieraren bestäms av målet. För XML-baserade format kommer detta normalt att vara en XPath-specifikation, för avgränsade mål kommer detta att vara ett kolumn nummer."
 
 #: c:\providence/app/models/ca_bundle_mapping_rules.php:79
-#, fuzzy
+
 msgid "Rule settings"
 msgstr "Roll inställningar"
 
 #: c:\providence/app/models/ca_bundle_mapping_rules.php:86
-#, fuzzy
+
 msgid "Notes and remarks relating to the mapping rule"
 msgstr "Anmärkningar avseende förändring"
 
@@ -4754,7 +4754,7 @@ msgid "Delimiter to use when splitting value into pieces. Should be blank if val
 msgstr ""
 
 #: c:\providence/app/models/ca_bundle_mapping_rules.php:212
-#, fuzzy
+
 msgid "Part to use"
 msgstr "Del av gruppering"
 
@@ -4811,7 +4811,7 @@ msgid "change log subjects"
 msgstr "förändringslogg ämnen"
 
 #: c:\providence/app/models/ca_collections.php:51
-#, fuzzy
+
 msgid "Unique numeric identifier used by CollectiveAccess internally to identify this collection"
 msgstr "Ett unik alfanumerisk id för denna samling."
 
@@ -4986,39 +4986,39 @@ msgid "Name of collection"
 msgstr "Namn på samlingen"
 
 #: c:\providence/app/models/ca_commerce_communications.php:39
-#, fuzzy
+
 msgid "communication"
 msgstr "kommenterade"
 
 #: c:\providence/app/models/ca_commerce_communications.php:40
-#, fuzzy
+
 msgid "communications"
 msgstr "samlingar"
 
 #: c:\providence/app/models/ca_commerce_communications.php:56
 #: c:\providence/app/models/ca_commerce_orders.php:56
-#, fuzzy
+
 msgid "Transaction"
 msgstr "Användarens åtgärder"
 
 #: c:\providence/app/models/ca_commerce_communications.php:56
 #: c:\providence/app/models/ca_commerce_orders.php:56
-#, fuzzy
+
 msgid "Indicates the transaction to which the communication belongs."
 msgstr "Indikerar det aktuella läget för samlingsposten."
 
 #: c:\providence/app/models/ca_commerce_communications.php:63
-#, fuzzy
+
 msgid "Source of communication"
 msgstr "Förvaringsplats"
 
 #: c:\providence/app/models/ca_commerce_communications.php:63
-#, fuzzy
+
 msgid "Indicates who created the communication."
 msgstr "Användaren som skapade kommentaren."
 
 #: c:\providence/app/models/ca_commerce_communications.php:66
-#, fuzzy
+
 msgid "institution"
 msgstr "Administration"
 
@@ -5033,7 +5033,7 @@ msgid "Message"
 msgstr "Meddelande"
 
 #: c:\providence/app/models/ca_commerce_communications.php:82
-#, fuzzy
+
 msgid "Text of message."
 msgstr "Texten av taggen."
 
@@ -5047,12 +5047,12 @@ msgstr ""
 
 #: c:\providence/app/models/ca_commerce_fulfillment_events.php:54
 #: c:\providence/app/models/ca_commerce_order_items.php:53
-#, fuzzy
+
 msgid "Order"
 msgstr "Ägare"
 
 #: c:\providence/app/models/ca_commerce_fulfillment_events.php:54
-#, fuzzy
+
 msgid "Indicates the order which was fulfilled."
 msgstr "Anger om posten är raderad eller inte."
 
@@ -5062,7 +5062,7 @@ msgid "Item"
 msgstr "Post"
 
 #: c:\providence/app/models/ca_commerce_fulfillment_events.php:61
-#, fuzzy
+
 msgid "Indicates the item which was fulfilled."
 msgstr "Anger typen av listpost."
 
@@ -5103,42 +5103,42 @@ msgid "Notes pertaining to the fulfillment of the item."
 msgstr ""
 
 #: c:\providence/app/models/ca_commerce_orders.php:39
-#, fuzzy
+
 msgid "order"
 msgstr "Mer"
 
 #: c:\providence/app/models/ca_commerce_orders.php:40
-#, fuzzy
+
 msgid "orders"
 msgstr "Sorteringsordning"
 
 #: c:\providence/app/models/ca_commerce_orders.php:63
-#, fuzzy
+
 msgid "Order status"
 msgstr "Felstatus"
 
 #: c:\providence/app/models/ca_commerce_orders.php:63
-#, fuzzy
+
 msgid "Status of order."
 msgstr "Sorteringsordning"
 
 #: c:\providence/app/models/ca_commerce_orders.php:65
-#, fuzzy
+
 msgid "open"
 msgstr "Komponent"
 
 #: c:\providence/app/models/ca_commerce_orders.php:66
-#, fuzzy
+
 msgid "placed"
 msgstr "plats"
 
 #: c:\providence/app/models/ca_commerce_orders.php:67
-#, fuzzy
+
 msgid "fulfilled"
 msgstr "full"
 
 #: c:\providence/app/models/ca_commerce_orders.php:68
-#, fuzzy
+
 msgid "closed"
 msgstr "beslut"
 
@@ -5148,7 +5148,7 @@ msgid "First name"
 msgstr "Förnamn"
 
 #: c:\providence/app/models/ca_commerce_orders.php:77
-#, fuzzy
+
 msgid "Ship to: first name."
 msgstr "Förnamn"
 
@@ -5158,24 +5158,24 @@ msgid "Last name"
 msgstr "Efternamn"
 
 #: c:\providence/app/models/ca_commerce_orders.php:85
-#, fuzzy
+
 msgid "Ship to: last name."
 msgstr "turstopp namn"
 
 #: c:\providence/app/models/ca_commerce_orders.php:93
 #: c:\providence/app/models/ca_commerce_orders.php:190
-#, fuzzy
+
 msgid "Organization"
 msgstr "Efternamn/organisation"
 
 #: c:\providence/app/models/ca_commerce_orders.php:93
-#, fuzzy
+
 msgid "Ship to: organization."
 msgstr "Efternamn/organisation"
 
 #: c:\providence/app/models/ca_commerce_orders.php:101
 #: c:\providence/app/models/ca_commerce_orders.php:198
-#, fuzzy
+
 msgid "Address 1"
 msgstr "Lagt till %1"
 
@@ -5185,7 +5185,7 @@ msgstr ""
 
 #: c:\providence/app/models/ca_commerce_orders.php:109
 #: c:\providence/app/models/ca_commerce_orders.php:206
-#, fuzzy
+
 msgid "Address 2"
 msgstr "IP adress"
 
@@ -5195,7 +5195,7 @@ msgstr ""
 
 #: c:\providence/app/models/ca_commerce_orders.php:117
 #: c:\providence/app/models/ca_commerce_orders.php:214
-#, fuzzy
+
 msgid "City"
 msgstr "Person/Organisation/Folk"
 
@@ -5214,7 +5214,7 @@ msgstr ""
 
 #: c:\providence/app/models/ca_commerce_orders.php:133
 #: c:\providence/app/models/ca_commerce_orders.php:230
-#, fuzzy
+
 msgid "Postal code"
 msgstr "Listkod"
 
@@ -5224,7 +5224,7 @@ msgstr ""
 
 #: c:\providence/app/models/ca_commerce_orders.php:141
 #: c:\providence/app/models/ca_commerce_orders.php:238
-#, fuzzy
+
 msgid "Country"
 msgstr "Antal"
 
@@ -5234,7 +5234,7 @@ msgstr ""
 
 #: c:\providence/app/models/ca_commerce_orders.php:149
 #: c:\providence/app/models/ca_commerce_orders.php:246
-#, fuzzy
+
 msgid "Phone"
 msgstr "Ingen"
 
@@ -5256,12 +5256,12 @@ msgid "Ship to: email."
 msgstr ""
 
 #: c:\providence/app/models/ca_commerce_orders.php:174
-#, fuzzy
+
 msgid "Bill to: first name."
 msgstr "listnamn"
 
 #: c:\providence/app/models/ca_commerce_orders.php:182
-#, fuzzy
+
 msgid "Bill to: last name."
 msgstr "turstopp namn"
 
@@ -5306,12 +5306,12 @@ msgid "Bill to: email."
 msgstr ""
 
 #: c:\providence/app/models/ca_commerce_orders.php:271
-#, fuzzy
+
 msgid "Payment method"
 msgstr "Placeringskod"
 
 #: c:\providence/app/models/ca_commerce_orders.php:271
-#, fuzzy
+
 msgid "Method of payment."
 msgstr "Kommentarstext"
 
@@ -5324,7 +5324,7 @@ msgid "Credit card"
 msgstr ""
 
 #: c:\providence/app/models/ca_commerce_orders.php:275
-#, fuzzy
+
 msgid "Check"
 msgstr "Checklista"
 
@@ -5337,12 +5337,12 @@ msgid "Cash"
 msgstr ""
 
 #: c:\providence/app/models/ca_commerce_orders.php:285
-#, fuzzy
+
 msgid "Payment status"
 msgstr "Bearbetningsstatus"
 
 #: c:\providence/app/models/ca_commerce_orders.php:285
-#, fuzzy
+
 msgid "Status of payment."
 msgstr "Status att visa"
 
@@ -5351,7 +5351,7 @@ msgid "Awaiting payment"
 msgstr ""
 
 #: c:\providence/app/models/ca_commerce_orders.php:288
-#, fuzzy
+
 msgid "Processing"
 msgstr "Bearbetningsrapport"
 
@@ -5360,7 +5360,7 @@ msgid "Send invoice - awaiting reply"
 msgstr ""
 
 #: c:\providence/app/models/ca_commerce_orders.php:290
-#, fuzzy
+
 msgid "Declined"
 msgstr "Borttagen"
 
@@ -5373,12 +5373,12 @@ msgid "Payment received on"
 msgstr ""
 
 #: c:\providence/app/models/ca_commerce_orders.php:313
-#, fuzzy
+
 msgid "Date/time payment was received."
 msgstr "Datum/tid objekt visades."
 
 #: c:\providence/app/models/ca_commerce_orders.php:321
-#, fuzzy
+
 msgid "Shipping method"
 msgstr "Anskaffningsmetod"
 
@@ -5415,7 +5415,7 @@ msgid "UPS Overnight"
 msgstr ""
 
 #: c:\providence/app/models/ca_commerce_orders.php:337
-#, fuzzy
+
 msgid "Shipping cost"
 msgstr "Mappningskod"
 
@@ -5432,7 +5432,7 @@ msgid "Cost of handling charged for the order."
 msgstr ""
 
 #: c:\providence/app/models/ca_commerce_orders.php:351
-#, fuzzy
+
 msgid "Shipping notes"
 msgstr "Mappningskod"
 
@@ -5445,42 +5445,42 @@ msgid "Date order is scheduled to ship on"
 msgstr ""
 
 #: c:\providence/app/models/ca_commerce_orders.php:359
-#, fuzzy
+
 msgid "Date/time the order will be shipped."
 msgstr "Datum/tid objekt visades."
 
 #: c:\providence/app/models/ca_commerce_orders.php:366
-#, fuzzy
+
 msgid "Date order shipped on"
 msgstr "Datum händelse inträffade"
 
 #: c:\providence/app/models/ca_commerce_orders.php:366
-#, fuzzy
+
 msgid "Date/time the order was shipped."
 msgstr "Datum/tid objekt visades."
 
 #: c:\providence/app/models/ca_commerce_orders.php:373
-#, fuzzy
+
 msgid "Order created on"
 msgstr "Skapad den"
 
 #: c:\providence/app/models/ca_commerce_orders.php:373
-#, fuzzy
+
 msgid "Date/time the order was created."
 msgstr "Datum och tid anteckningen skapades."
 
 #: c:\providence/app/models/ca_commerce_order_items.php:39
-#, fuzzy
+
 msgid "order item"
 msgstr "Moderera"
 
 #: c:\providence/app/models/ca_commerce_order_items.php:40
-#, fuzzy
+
 msgid "order items"
 msgstr "gruppering objekt"
 
 #: c:\providence/app/models/ca_commerce_order_items.php:53
-#, fuzzy
+
 msgid "Indicates the order to which the item belongs."
 msgstr "Anger typen av listpost."
 
@@ -5489,7 +5489,7 @@ msgid "Object"
 msgstr "Objekt"
 
 #: c:\providence/app/models/ca_commerce_order_items.php:59
-#, fuzzy
+
 msgid "Indicates the collection object which the item represents."
 msgstr "Anger om samlingen är borttagen eller inte."
 
@@ -5498,7 +5498,7 @@ msgid "Service provided"
 msgstr ""
 
 #: c:\providence/app/models/ca_commerce_order_items.php:66
-#, fuzzy
+
 msgid "Indicates the type of service that was provided."
 msgstr "Anger typen av listpost."
 
@@ -5507,12 +5507,12 @@ msgid "Provision of digital copy"
 msgstr ""
 
 #: c:\providence/app/models/ca_commerce_order_items.php:69
-#, fuzzy
+
 msgid "Provision of print"
 msgstr "Beskrivning av mappning"
 
 #: c:\providence/app/models/ca_commerce_order_items.php:70
-#, fuzzy
+
 msgid "Use license (online only)"
 msgstr "Använd listan (listelement endast)"
 
@@ -5533,12 +5533,12 @@ msgid "Fee charged for item."
 msgstr ""
 
 #: c:\providence/app/models/ca_commerce_order_items.php:100
-#, fuzzy
+
 msgid "Tax"
 msgstr "Tagg"
 
 #: c:\providence/app/models/ca_commerce_order_items.php:100
-#, fuzzy
+
 msgid "Tax charged for item."
 msgstr "bevakade objekt"
 
@@ -5547,7 +5547,7 @@ msgid "Notes pertaining to the item."
 msgstr ""
 
 #: c:\providence/app/models/ca_commerce_order_items.php:115
-#, fuzzy
+
 msgid "Restrictions"
 msgstr "Typ restriktioner"
 
@@ -5556,32 +5556,32 @@ msgid "Notes pertaining to use restrictions on the item."
 msgstr ""
 
 #: c:\providence/app/models/ca_commerce_transactions.php:42
-#, fuzzy
+
 msgid "commerce transaction"
 msgstr "Inte just nu i en transaktion"
 
 #: c:\providence/app/models/ca_commerce_transactions.php:43
-#, fuzzy
+
 msgid "commerce transactions"
 msgstr "Användarens åtgärder"
 
 #: c:\providence/app/models/ca_commerce_transactions.php:57
-#, fuzzy
+
 msgid "Short description"
 msgstr "kort beskrivning"
 
 #: c:\providence/app/models/ca_commerce_transactions.php:57
-#, fuzzy
+
 msgid "Short description of transaction"
 msgstr "Inte just nu i en transaktion"
 
 #: c:\providence/app/models/ca_commerce_transactions.php:67
-#, fuzzy
+
 msgid "Customer"
 msgstr "användare"
 
 #: c:\providence/app/models/ca_commerce_transactions.php:67
-#, fuzzy
+
 msgid "Customer initiating transaction"
 msgstr "Kod som anger typ av anteckning."
 
@@ -5751,12 +5751,12 @@ msgid "Unique numeric identifier used by CollectiveAccess internally to identify
 msgstr ""
 
 #: c:\providence/app/models/ca_editor_uis.php:56
-#, fuzzy
+
 msgid "Editor code"
 msgstr "Editor typ"
 
 #: c:\providence/app/models/ca_editor_uis.php:56
-#, fuzzy
+
 msgid "Unique code for editor; used to identify the editor for configuration purposes."
 msgstr "Unik kod för tur, används för att identifiera turen för en konfiguration."
 
@@ -5886,7 +5886,7 @@ msgstr "Bredd"
 
 #: c:\providence/app/models/ca_editor_ui_bundle_placements.php:72
 #: c:\providence/app/models/ca_editor_ui_bundle_placements.php:81
-#, fuzzy
+
 msgid "Width, in characters or pixels, of search form elements."
 msgstr "Bredd, i antal tecken, av element i sökformuläret."
 
@@ -5899,7 +5899,7 @@ msgid "Read only?"
 msgstr "Endast läsning?"
 
 #: c:\providence/app/models/ca_editor_ui_bundle_placements.php:90
-#, fuzzy
+
 msgid "If checked, field will not be editable."
 msgstr "Om satt kommer inte paket att vara redigerbart."
 
@@ -5984,17 +5984,17 @@ msgid "Type restrictions"
 msgstr "Typ restriktioner"
 
 #: c:\providence/app/models/ca_editor_ui_screens.php:418
-#, fuzzy
+
 msgid "Restricts display to items related using the specified relationship type(s). Leave all unselected for no restriction."
 msgstr "Begränsar displayen till objekt som är relaterade med angiven relation(er). Lämna alla avmarkerad för ingen begränsning."
 
 #: c:\providence/app/models/ca_editor_ui_screens.php:428
-#, fuzzy
+
 msgid "Restricts display to items of the specified type(s). Leave all unselected for no restriction."
 msgstr "Begränsar visning av objekt till angiven typ(er). Lämna alla avmarkerad för ingen begränsning."
 
 #: c:\providence/app/models/ca_editor_ui_screens.php:436
-#, fuzzy
+
 msgid "Do not include sub-types in type restriction"
 msgstr "redigerare användargränssnitt sidtyp begränsning"
 
@@ -6003,17 +6003,17 @@ msgid "Normally restricting to type(s) automatically includes all sub-(child) ty
 msgstr ""
 
 #: c:\providence/app/models/ca_editor_ui_screens.php:448
-#, fuzzy
+
 msgid "Restrict to list"
 msgstr "Begränsa till typ"
 
 #: c:\providence/app/models/ca_editor_ui_screens.php:449
-#, fuzzy
+
 msgid "Restricts display to items from the specified list(s). Leave all unselected for no restriction."
 msgstr "Begränsar visning av objekt till angiven typ(er). Lämna alla avmarkerad för ingen begränsning."
 
 #: c:\providence/app/models/ca_editor_ui_screens.php:460
-#, fuzzy
+
 msgid "Use hierarchy browser?"
 msgstr "Stäng hierarki visningsprogram"
 
@@ -6030,12 +6030,12 @@ msgid "Height of hierarchical browser."
 msgstr ""
 
 #: c:\providence/app/models/ca_editor_ui_screens.php:494
-#, fuzzy
+
 msgid "Open hierarchy browser by default"
 msgstr "Öppna hierarki visningsprogram"
 
 #: c:\providence/app/models/ca_editor_ui_screens.php:495
-#, fuzzy
+
 msgid "If checked hierarchy browser will be open when form loads."
 msgstr "Om det är markerat kommer hela hierarkiska sökvägen att visas."
 
@@ -6176,12 +6176,12 @@ msgid "entity ⇔ place relationships"
 msgstr "person/organisation/folk ⇔ plats relationer"
 
 #: c:\providence/app/models/ca_entities_x_storage_locations.php:40
-#, fuzzy
+
 msgid "entity ⇔ storage location relationship"
 msgstr "objekt ⇔ förvaringsplats relation"
 
 #: c:\providence/app/models/ca_entities_x_storage_locations.php:41
-#, fuzzy
+
 msgid "entity ⇔ storage location relationships"
 msgstr "objekt ⇔ förvaringsplats relationer"
 
@@ -6549,7 +6549,7 @@ msgid "Set this if the list is to be used as a controlled vocabulary for catalog
 msgstr "Ställ in denna om listan ska användas som en kontrollerad vokabulär för katalogisering."
 
 #: c:\providence/app/models/ca_lists.php:1274
-#, fuzzy
+
 msgid "Current selection"
 msgstr "Här är du nu"
 
@@ -6586,12 +6586,12 @@ msgid "Unique identifier for this list item"
 msgstr "Unik identitet för denna lista"
 
 #: c:\providence/app/models/ca_list_items.php:92
-#, fuzzy
+
 msgid "Identifier sort"
 msgstr "Id"
 
 #: c:\providence/app/models/ca_list_items.php:92
-#, fuzzy
+
 msgid "Sortable value for identifier"
 msgstr "Sorterbara värde för id-nummer"
 
@@ -6756,12 +6756,12 @@ msgid "Related lots"
 msgstr "Relaterade beslut"
 
 #: c:\providence/app/models/ca_loans_x_collections.php:40
-#, fuzzy
+
 msgid "loans ⇔ collections relationship"
 msgstr "plats ⇔ samlingsrelation"
 
 #: c:\providence/app/models/ca_loans_x_collections.php:41
-#, fuzzy
+
 msgid "loans ⇔ collections relationships"
 msgstr "plats ⇔ samlingsrelationer"
 
@@ -6774,12 +6774,12 @@ msgid "loans ⇔ entities relationships"
 msgstr "lån ⇔ person/organisation/folk relationer"
 
 #: c:\providence/app/models/ca_loans_x_loans.php:40
-#, fuzzy
+
 msgid "loan ⇔ loan relationship"
 msgstr "lån ⇔ förflyttningar relation"
 
 #: c:\providence/app/models/ca_loans_x_loans.php:41
-#, fuzzy
+
 msgid "loan ⇔ loan relationships"
 msgstr "lån ⇔ förflyttningar relationer"
 
@@ -6804,52 +6804,52 @@ msgid "loans ⇔ objects relationships"
 msgstr "lån ⇔ objekt relationer"
 
 #: c:\providence/app/models/ca_loans_x_object_lots.php:40
-#, fuzzy
+
 msgid "loans ⇔ object lots relationship"
 msgstr "lån ⇔ objekt relation"
 
 #: c:\providence/app/models/ca_loans_x_object_lots.php:41
-#, fuzzy
+
 msgid "loans ⇔ object lots relationships"
 msgstr "lån ⇔ objekt relationer"
 
 #: c:\providence/app/models/ca_loans_x_occurrences.php:40
-#, fuzzy
+
 msgid "loans ⇔ occurrences relationship"
 msgstr "plats ⇔ förekomst relation"
 
 #: c:\providence/app/models/ca_loans_x_occurrences.php:41
-#, fuzzy
+
 msgid "loans ⇔ occurrences relationships"
 msgstr "plats ⇔ förekomst relationer"
 
 #: c:\providence/app/models/ca_loans_x_places.php:40
-#, fuzzy
+
 msgid "loans ⇔ places relationship"
 msgstr "plats ⇔ plats relation"
 
 #: c:\providence/app/models/ca_loans_x_places.php:41
-#, fuzzy
+
 msgid "loans ⇔ places relationships"
 msgstr "plats ⇔ plats relationer"
 
 #: c:\providence/app/models/ca_loans_x_storage_locations.php:40
-#, fuzzy
+
 msgid "loans ⇔ storage locations relationship"
 msgstr "samling ⇔ förvaringsplatsrelation"
 
 #: c:\providence/app/models/ca_loans_x_storage_locations.php:41
-#, fuzzy
+
 msgid "loans ⇔ storage locations relationships"
 msgstr "samling ⇔ förvaringsplatsrelationer"
 
 #: c:\providence/app/models/ca_loans_x_vocabulary_terms.php:40
-#, fuzzy
+
 msgid "loans ⇔ vocabulary terms relationship"
 msgstr "plats ⇔ vokabulär term relation"
 
 #: c:\providence/app/models/ca_loans_x_vocabulary_terms.php:41
-#, fuzzy
+
 msgid "loans ⇔ vocabulary terms relationships"
 msgstr "plats ⇔ vokabulär term relationer"
 
@@ -7055,12 +7055,12 @@ msgid "Indicates if the movement is deleted or not."
 msgstr "Anger om förflyttning är borttagen eller inte."
 
 #: c:\providence/app/models/ca_movements_x_collections.php:40
-#, fuzzy
+
 msgid "movements ⇔ collections relationship"
 msgstr "förflyttningar ⇔ objekt relation"
 
 #: c:\providence/app/models/ca_movements_x_collections.php:41
-#, fuzzy
+
 msgid "movements ⇔ collections relationships"
 msgstr "förflyttningar ⇔ objekt relationer"
 
@@ -7073,12 +7073,12 @@ msgid "movements ⇔ entities relationships"
 msgstr "förflyttningar ⇔ personer/organisationer/folk relationer"
 
 #: c:\providence/app/models/ca_movements_x_movements.php:40
-#, fuzzy
+
 msgid "movement ⇔ movement relationship"
 msgstr "förflyttningar ⇔ objekt relation"
 
 #: c:\providence/app/models/ca_movements_x_movements.php:41
-#, fuzzy
+
 msgid "movement ⇔ movement relationships"
 msgstr "förflyttningar ⇔ objekt relationer"
 
@@ -7099,42 +7099,42 @@ msgid "movements ⇔ object lots relationships"
 msgstr "förflyttningar ⇔ objekt beslut relationer"
 
 #: c:\providence/app/models/ca_movements_x_occurrences.php:40
-#, fuzzy
+
 msgid "movements ⇔ occurrences relationship"
 msgstr "person/organisation/folk ⇔ förekomst relation"
 
 #: c:\providence/app/models/ca_movements_x_occurrences.php:41
-#, fuzzy
+
 msgid "movements ⇔ occurrences relationships"
 msgstr "person/organisation/folk ⇔ förekomst relationer"
 
 #: c:\providence/app/models/ca_movements_x_places.php:40
-#, fuzzy
+
 msgid "movements ⇔ places relationship"
 msgstr "förflyttningar ⇔ objekt relation"
 
 #: c:\providence/app/models/ca_movements_x_places.php:41
-#, fuzzy
+
 msgid "movements ⇔ places relationships"
 msgstr "förflyttningar ⇔ objekt relationer"
 
 #: c:\providence/app/models/ca_movements_x_storage_locations.php:40
-#, fuzzy
+
 msgid "movements ⇔ storage locations relationship"
 msgstr "objekt ⇔ förvaringsplats relation"
 
 #: c:\providence/app/models/ca_movements_x_storage_locations.php:41
-#, fuzzy
+
 msgid "movements ⇔ storage locations relationships"
 msgstr "objekt ⇔ förvaringsplats relationer"
 
 #: c:\providence/app/models/ca_movements_x_vocabulary_terms.php:40
-#, fuzzy
+
 msgid "movements ⇔ vocabulary terms relationship"
 msgstr "person/organisation/folk ⇔ vokabulär term relation"
 
 #: c:\providence/app/models/ca_movements_x_vocabulary_terms.php:41
-#, fuzzy
+
 msgid "movements ⇔ vocabulary terms relationships"
 msgstr "person/organisation/folk ⇔ vokabulär term relationer"
 
@@ -7583,7 +7583,7 @@ msgid "Representation identifier"
 msgstr "Representation id"
 
 #: c:\providence/app/models/ca_object_representations.php:79
-#, fuzzy
+
 msgid "A unique alphanumeric identifier for this representation."
 msgstr "En unikt alfanumerisk identifierare för denna person/organisation/folk."
 
@@ -7606,7 +7606,7 @@ msgid "MD5-generated \"fingerprint\" for this media."
 msgstr ""
 
 #: c:\providence/app/models/ca_object_representations.php:129
-#, fuzzy
+
 msgid "Original filename"
 msgstr "Temporärt filnamn"
 
@@ -7639,12 +7639,12 @@ msgid "File is not part of this representation"
 msgstr "Filen är inte en del av denna representation"
 
 #: c:\providence/app/models/ca_object_representations_x_collections.php:32
-#, fuzzy
+
 msgid "representation ⇔ collection relationship"
 msgstr "representation ⇔ plats relation"
 
 #: c:\providence/app/models/ca_object_representations_x_collections.php:33
-#, fuzzy
+
 msgid "representation ⇔ collection relationships"
 msgstr "representation ⇔ plats relationer"
 
@@ -7657,12 +7657,12 @@ msgid "object representation ⇔ entity relationships"
 msgstr "objekt representation ⇔ person/organisation/folk relationer"
 
 #: c:\providence/app/models/ca_object_representations_x_object_representations.php:40
-#, fuzzy
+
 msgid "object representation ⇔ object representation relationship"
 msgstr "objekt ⇔ objekt representation relation"
 
 #: c:\providence/app/models/ca_object_representations_x_object_representations.php:41
-#, fuzzy
+
 msgid "object representation ⇔ object representation relationships"
 msgstr "objekt ⇔ objekt representation relationer"
 
@@ -7683,12 +7683,12 @@ msgid "representation ⇔ place relationships"
 msgstr "representation ⇔ plats relationer"
 
 #: c:\providence/app/models/ca_object_representations_x_storage_locations.php:40
-#, fuzzy
+
 msgid "representation ⇔ storage location relationship"
 msgstr "samling ⇔ förvaringsplatsrelation"
 
 #: c:\providence/app/models/ca_object_representations_x_storage_locations.php:41
-#, fuzzy
+
 msgid "representation ⇔ storage location relationships"
 msgstr "samling ⇔ förvaringsplatsrelationer"
 
@@ -7785,12 +7785,12 @@ msgid "occurrence ⇔ occurrence relationships"
 msgstr "förekomst ⇔ förekomst relationer"
 
 #: c:\providence/app/models/ca_occurrences_x_storage_locations.php:40
-#, fuzzy
+
 msgid "occurrences ⇔ storage locations relationship"
 msgstr "objekt ⇔ förvaringsplats relation"
 
 #: c:\providence/app/models/ca_occurrences_x_storage_locations.php:41
-#, fuzzy
+
 msgid "occurrences ⇔ storage locations relationships"
 msgstr "objekt ⇔ förvaringsplats relationer"
 
@@ -7883,12 +7883,12 @@ msgid "place ⇔ place relationships"
 msgstr "plats ⇔ plats relationer"
 
 #: c:\providence/app/models/ca_places_x_storage_locations.php:40
-#, fuzzy
+
 msgid "places ⇔ storage locations relationship"
 msgstr "objekt ⇔ förvaringsplats relation"
 
 #: c:\providence/app/models/ca_places_x_storage_locations.php:41
-#, fuzzy
+
 msgid "places ⇔ storage locations relationships"
 msgstr "objekt ⇔ förvaringsplats relationer"
 
@@ -8166,7 +8166,7 @@ msgstr "Bredd, i antal tecken, av element i sökformuläret."
 
 #: c:\providence/app/models/ca_search_forms.php:783
 #: c:\providence/app/models/ca_search_forms.php:1080
-#, fuzzy
+
 msgid "Full text"
 msgstr "Standardtext"
 
@@ -8175,7 +8175,7 @@ msgid "Searches on all content that has been indexed"
 msgstr ""
 
 #: c:\providence/app/models/ca_search_forms.php:925
-#, fuzzy
+
 msgid "Access point"
 msgstr "Åtkomstkontroll"
 
@@ -8372,22 +8372,22 @@ msgid "Indicates if the storage location is deleted or not."
 msgstr "Anger om förvaringsplats är borttagen eller inte."
 
 #: c:\providence/app/models/ca_storage_locations_x_storage_locations.php:40
-#, fuzzy
+
 msgid "storage locations ⇔ storage locations relationship"
 msgstr "samling ⇔ förvaringsplatsrelation"
 
 #: c:\providence/app/models/ca_storage_locations_x_storage_locations.php:41
-#, fuzzy
+
 msgid "storage locations ⇔ storage locations relationships"
 msgstr "samling ⇔ förvaringsplatsrelationer"
 
 #: c:\providence/app/models/ca_storage_locations_x_vocabulary_terms.php:40
-#, fuzzy
+
 msgid "storage locations ⇔ vocabulary terms relationship"
 msgstr "samling ⇔ vokabulär term relation"
 
 #: c:\providence/app/models/ca_storage_locations_x_vocabulary_terms.php:41
-#, fuzzy
+
 msgid "storage locations ⇔ vocabulary terms relationships"
 msgstr "samling ⇔ vokabulär term relationer"
 
@@ -8585,7 +8585,7 @@ msgid "users"
 msgstr "användare"
 
 #: c:\providence/app/models/ca_users.php:53
-#, fuzzy
+
 msgid "User id"
 msgstr "Användare"
 
@@ -8767,7 +8767,7 @@ msgid "user groups"
 msgstr "användargrupper"
 
 #: c:\providence/app/models/ca_user_groups.php:49
-#, fuzzy
+
 msgid "Group id"
 msgstr "Grupp"
 
@@ -8920,7 +8920,7 @@ msgid "Transforms OAI input as needed for the Oorlog in Blik project."
 msgstr "Förvandlas OAI ingång som behövs för Oorlog i Blik projektet."
 
 #: c:\providence/app/plugins/disabled/ProvenienzTitleGenerator/ProvenienzTitleGeneratorPlugin.php:38
-#, fuzzy
+
 msgid "Generates titles based upon project-specific rules."
 msgstr "Genererar titlar baserade på Kinemathek-specifika regler."
 
@@ -9205,7 +9205,7 @@ msgid "NS11mm MEMEX services plugin"
 msgstr ""
 
 #: c:\providence/app/plugins/ns11mmServices/ns11mmServicesPlugin.php:75
-#, fuzzy
+
 msgid "Actions for NS11mm MEMEX services plugin"
 msgstr "Åtgärder för media import plugin"
 
@@ -9924,7 +9924,7 @@ msgstr "Objekt Sökningar"
 
 #: c:\providence/app/widgets/savedSearches/views/main_html.php:48
 msgid "Entity Searches"
-msgstr "person/organisation/folk Sökningar"
+msgstr "Person/organisation/folk Sökningar"
 
 #: c:\providence/app/widgets/savedSearches/views/main_html.php:53
 msgid "Place Searches"
@@ -9968,7 +9968,7 @@ msgstr "Objekt Grupperingar"
 
 #: c:\providence/app/widgets/searchBySet/views/main_html.php:48
 msgid "Entity Sets"
-msgstr "person/organisation/folk Gruppering"
+msgstr "Person/organisation/folk Gruppering"
 
 #: c:\providence/app/widgets/searchBySet/views/main_html.php:53
 msgid "Place Sets"
@@ -10162,12 +10162,12 @@ msgid "Errors occurred while applying migration 49: %1"
 msgstr ""
 
 #: c:\providence/support/sql/migrations/VersionUpdate49.php:128
-#, fuzzy
+
 msgid "Could not create root for relationship %1: %2"
 msgstr "Kunde inte ordna stopp %1: %2"
 
 #: c:\providence/support/sql/migrations/VersionUpdate49.php:138
-#, fuzzy
+
 msgid "Could not add label to root for relationship %1: %2"
 msgstr "Kunde inte ordna stopp %1: %2"
 
@@ -10247,7 +10247,7 @@ msgstr "Senaste inloggning"
 
 #: c:\providence/themes/default/views/administrate/maintenance/hierarchical_reindex_landing_html.php:29
 #: c:\providence/themes/default/views/administrate/maintenance/hierarchical_reindex_status_html.php:30
-#, fuzzy
+
 msgid "Rebuild hierarchical indices"
 msgstr "Är hierarkiskt"
 
@@ -10264,7 +10264,7 @@ msgstr ""
 
 #: c:\providence/themes/default/views/administrate/maintenance/search_reindex_landing_html.php:29
 #: c:\providence/themes/default/views/administrate/maintenance/search_reindex_status_html.php:30
-#, fuzzy
+
 msgid "Rebuild search indices"
 msgstr "Sparade sökningar"
 
@@ -10282,7 +10282,7 @@ msgstr ""
 
 #: c:\providence/themes/default/views/administrate/maintenance/sort_values_reload_landing_html.php:29
 #: c:\providence/themes/default/views/administrate/maintenance/sort_values_reload_status_html.php:30
-#, fuzzy
+
 msgid "Reload sort values"
 msgstr "Relaterade beslut"
 
@@ -10295,7 +10295,7 @@ msgid ""
 msgstr ""
 
 #: c:\providence/themes/default/views/administrate/maintenance/sort_values_reload_status_html.php:58
-#, fuzzy
+
 msgid "Reloading %1/%2"
 msgstr "Relaterade %1"
 
@@ -10436,7 +10436,7 @@ msgid "New %1 %2 mapping for %3"
 msgstr ""
 
 #: c:\providence/themes/default/views/administrate/setup/mapping_list_html.php:98
-#, fuzzy
+
 msgid "No mappings have been configured"
 msgstr "Inga formulär har konfigurerats"
 
@@ -10470,12 +10470,12 @@ msgid "Editing import/export mappings"
 msgstr ""
 
 #: c:\providence/themes/default/views/administrate/setup/widget_mapping_info_html.php:37
-#, fuzzy
+
 msgid "1 mapping is defined"
 msgstr "1 element är definierat"
 
 #: c:\providence/themes/default/views/administrate/setup/widget_mapping_info_html.php:39
-#, fuzzy
+
 msgid "%1 mappings are defined"
 msgstr "%1 element är definierade"
 
@@ -10621,12 +10621,12 @@ msgid "item"
 msgstr "post"
 
 #: c:\providence/themes/default/views/administrate/setup/Search/search_controls_html.php:115
-#, fuzzy
+
 msgid "◉ = Default"
 msgstr "Standard"
 
 #: c:\providence/themes/default/views/administrate/setup/Search/search_controls_html.php:120
-#, fuzzy
+
 msgid "⨂ = Disabled"
 msgstr "Inaktiverad"
 
@@ -10635,7 +10635,7 @@ msgid "⧩ = Vocabulary list"
 msgstr ""
 
 #: c:\providence/themes/default/views/administrate/setup/Search/search_controls_html.php:124
-#, fuzzy
+
 msgid "⟗ = System list"
 msgstr "Är system lista"
 
@@ -10709,7 +10709,7 @@ msgid "The BookReader requires JavaScript to be enabled. Please check that your 
 msgstr ""
 
 #: c:\providence/themes/default/views/bundles/bookviewer_html.php:52
-#, fuzzy
+
 msgid "Close"
 msgstr "beslut"
 
@@ -10739,12 +10739,12 @@ msgid "Information to display"
 msgstr "Information som ska visas"
 
 #: c:\providence/themes/default/views/bundles/ca_bundle_mapping_groups.php:49
-#, fuzzy
+
 msgid "No rules are configured"
 msgstr "Inga roller har konfigurerats"
 
 #: c:\providence/themes/default/views/bundles/ca_bundle_mapping_groups.php:71
-#, fuzzy
+
 msgid "Unit name"
 msgstr "person/organisation/folksnamn"
 
@@ -10757,36 +10757,36 @@ msgid "Hide configured rules (%1)"
 msgstr ""
 
 #: c:\providence/themes/default/views/bundles/ca_bundle_mapping_groups.php:106
-#, fuzzy
+
 msgid "Edit unit"
 msgstr "Redigera person/organisation/folk"
 
 #: c:\providence/themes/default/views/bundles/ca_bundle_mapping_groups.php:122
-#, fuzzy
+
 msgid "Add unit"
 msgstr "Lägg till ny lista"
 
 #: c:\providence/themes/default/views/bundles/ca_bundle_mapping_rules.php:77
-#, fuzzy
+
 msgid "Edit settings"
 msgstr "Redigera gruppering"
 
 #: c:\providence/themes/default/views/bundles/ca_bundle_mapping_rules.php:113
-#, fuzzy
+
 msgid "Add rule"
 msgstr "Lagt till roll"
 
 #: c:\providence/themes/default/views/bundles/ca_collections.php:90
 #: c:\providence/themes/default/views/bundles/ca_entities.php:90
 #: c:\providence/themes/default/views/bundles/ca_list_items.php:158
-#, fuzzy
+
 msgid "Sort by"
 msgstr "Sortera på "
 
 #: c:\providence/themes/default/views/bundles/ca_collections.php:97
 #: c:\providence/themes/default/views/bundles/ca_entities.php:97
 #: c:\providence/themes/default/views/bundles/ca_list_items.php:165
-#, fuzzy
+
 msgid "entry"
 msgstr "person/organisation/folk"
 
@@ -10822,13 +10822,13 @@ msgstr "MD5 signatur"
 
 #: c:\providence/themes/default/views/bundles/ca_object_representations.php:61
 #: c:\providence/themes/default/views/bundles/ca_object_representations_media_display.php:33
-#, fuzzy
+
 msgid "+ 1 additional preview"
 msgstr "+ 1 ytterligare fil"
 
 #: c:\providence/themes/default/views/bundles/ca_object_representations.php:61
 #: c:\providence/themes/default/views/bundles/ca_object_representations_media_display.php:33
-#, fuzzy
+
 msgid "+ %1 additional previews"
 msgstr "+ %1 ytterligare filer"
 
@@ -10864,17 +10864,17 @@ msgid "Add representation"
 msgstr "Lägg till representation"
 
 #: c:\providence/themes/default/views/bundles/ca_object_representations_media_display.php:94
-#, fuzzy
+
 msgid "Modify preview images"
 msgstr "Kunde inte ändra storlek på bild"
 
 #: c:\providence/themes/default/views/bundles/ca_object_representations_media_display.php:97
-#, fuzzy
+
 msgid "Update source"
 msgstr "Datakälla"
 
 #: c:\providence/themes/default/views/bundles/ca_object_representations_media_display.php:102
-#, fuzzy
+
 msgid "Update with uploaded media"
 msgstr "Uppdatera media"
 
@@ -10977,7 +10977,7 @@ msgid "Click %1 names to explore. Click on an arrow icon to open a %1 for editin
 msgstr "Klicka på %1 namn att utforska. Klicka på en pil ikon för att öppna en %1 för redigering."
 
 #: c:\providence/themes/default/views/bundles/hierarchy_location.php:206
-#, fuzzy
+
 msgid "Click on an arrow to choose the location to move this record under."
 msgstr "Klicka på ett %1 namn för att flytta denna post under det."
 
@@ -11012,7 +11012,7 @@ msgid "Will be moved under <em>%1</em> after next save."
 msgstr "Kommer att flyttas under <em>%1</em> efter nästa sparning."
 
 #: c:\providence/themes/default/views/bundles/hierarchy_location.php:367
-#, fuzzy
+
 msgid "Extract from hierarchy"
 msgstr "Person/Organisation/Folkshierarki"
 
@@ -11043,12 +11043,12 @@ msgid "Edit metadata"
 msgstr "Redigera metadata"
 
 #: c:\providence/themes/default/views/bundles/representation_viewer_html.php:201
-#, fuzzy
+
 msgid "%1 of %2"
 msgstr "%1: %2"
 
 #: c:\providence/themes/default/views/bundles/settings.php:43
-#, fuzzy
+
 msgid "No settings"
 msgstr "Roll inställningar"
 
@@ -11172,7 +11172,7 @@ msgstr "Bläddra bland %1"
 #: c:\providence/themes/default/views/find/Results/ca_loans_pdf_results_html.php:70
 #: c:\providence/themes/default/views/find/Results/ca_movements_pdf_results_html.php:70
 #: c:\providence/themes/default/views/find/Results/ca_objects_pdf_results_html.php:70
-#, fuzzy
+
 msgid "%1 item"
 msgstr "post"
 
@@ -11181,7 +11181,7 @@ msgstr "post"
 #: c:\providence/themes/default/views/find/Results/ca_loans_pdf_results_html.php:70
 #: c:\providence/themes/default/views/find/Results/ca_movements_pdf_results_html.php:70
 #: c:\providence/themes/default/views/find/Results/ca_objects_pdf_results_html.php:70
-#, fuzzy
+
 msgid "%1 items"
 msgstr "gruppering objekt"
 
@@ -11620,12 +11620,12 @@ msgid "Updating your database..."
 msgstr "Uppdaterar din databas ..."
 
 #: c:\providence/themes/default/views/system/configuration_error_schema_update_html.php:80
-#, fuzzy
+
 msgid "Errors occurred while performing the update. <a href='%1/index.php'>Return to the login screen</a>."
 msgstr "uppstod när uppdateringen utfördes. <a href='index.php'>Återgå till inloggningsskärmen</a>."
 
 #: c:\providence/themes/default/views/system/configuration_error_schema_update_html.php:82
-#, fuzzy
+
 msgid "Update complete. You can now <a href='%1/index.php'>log into your system</a>"
 msgstr "Uppdatering klar. Du kan nu <a href='index.php'>logga in på ditt system</a>"
 
@@ -11638,27 +11638,27 @@ msgid "User Name"
 msgstr "Användarnamn"
 
 #: c:\providence/themes/default/views/system/monitor_html.php:45
-#, fuzzy
+
 msgid "Logged %1 queries"
 msgstr "Visar %1 användare"
 
 #: c:\providence/themes/default/views/system/monitor_html.php:47
-#, fuzzy
+
 msgid "Query"
 msgstr "användare"
 
 #: c:\providence/themes/default/views/system/monitor_html.php:47
-#, fuzzy
+
 msgid "Location"
 msgstr "Åtgärd"
 
 #: c:\providence/themes/default/views/system/monitor_html.php:47
-#, fuzzy
+
 msgid "Execution time"
 msgstr "samlingsnamn"
 
 #: c:\providence/themes/default/views/system/monitor_html.php:47
-#, fuzzy
+
 msgid "Hits"
 msgstr "listor"
 
@@ -11667,7 +11667,7 @@ msgid "No queries met logging requirements"
 msgstr ""
 
 #: c:\providence/themes/default/views/system/preferences_duplication_html.php:1
-#, fuzzy
+
 msgid "Settings for %1"
 msgstr "Inställningar för Gruppen #%1/%2"
 
@@ -11717,18 +11717,18 @@ msgid "Coordinate of lower right corner of rectangular region"
 msgstr ""
 
 #: c:\providence/app/conf/browse.conf:33
-#, fuzzy
+
 msgid "Has media"
 msgstr "Uppdatera media"
 
 #: c:\providence/app/conf/browse.conf:34
-#, fuzzy
+
 msgid "Has no media"
 msgstr "Ladda ner media"
 
 #: c:\providence/app/conf/browse.conf:36
 #: c:\providence/app/conf/browse.conf:37
-#, fuzzy
+
 msgid "has media"
 msgstr "Ladda ner media"
 
@@ -11736,13 +11736,13 @@ msgstr "Ladda ner media"
 #: c:\providence/app/conf/browse.conf:110
 #: c:\providence/app/conf/browse.conf:253
 #: c:\providence/app/conf/browse.conf:312
-#, fuzzy
+
 msgid "Role"
 msgstr "Roller"
 
 #: c:\providence/app/conf/browse.conf:111
 #: c:\providence/app/conf/browse.conf:313
-#, fuzzy
+
 msgid "Years"
 msgstr "år"
 
@@ -11758,7 +11758,7 @@ msgstr ""
 #: c:\providence/app/conf/browse.conf:642
 #: c:\providence/app/conf/browse.conf:730
 #: c:\providence/app/conf/browse.conf:804
-#, fuzzy
+
 msgid "term"
 msgstr "Post"
 
@@ -11769,7 +11769,7 @@ msgstr "Post"
 #: c:\providence/app/conf/browse.conf:643
 #: c:\providence/app/conf/browse.conf:731
 #: c:\providence/app/conf/browse.conf:805
-#, fuzzy
+
 msgid "terms"
 msgstr "Post"
 
@@ -11784,7 +11784,7 @@ msgstr "Post"
 #: c:\providence/app/conf/browse.conf:874
 #: c:\providence/app/conf/browse.conf:920
 #: c:\providence/app/conf/browse.conf:953
-#, fuzzy
+
 msgid "types"
 msgstr "typ"
 
@@ -11799,7 +11799,7 @@ msgstr "typ"
 #: c:\providence/app/conf/browse.conf:882
 #: c:\providence/app/conf/browse.conf:928
 #: c:\providence/app/conf/browse.conf:961
-#, fuzzy
+
 msgid "status"
 msgstr "Status"
 
@@ -11814,7 +11814,7 @@ msgstr "Status"
 #: c:\providence/app/conf/browse.conf:883
 #: c:\providence/app/conf/browse.conf:929
 #: c:\providence/app/conf/browse.conf:962
-#, fuzzy
+
 msgid "statuses"
 msgstr "Status"
 
@@ -11826,7 +11826,7 @@ msgstr "Status"
 #: c:\providence/app/conf/browse.conf:758
 #: c:\providence/app/conf/browse.conf:832
 #: c:\providence/app/conf/browse.conf:891
-#, fuzzy
+
 msgid "access status"
 msgstr "Förvärvsstatus"
 
@@ -11838,12 +11838,12 @@ msgstr "Förvärvsstatus"
 #: c:\providence/app/conf/browse.conf:759
 #: c:\providence/app/conf/browse.conf:833
 #: c:\providence/app/conf/browse.conf:892
-#, fuzzy
+
 msgid "access statuses"
 msgstr "Förvärvsstatus"
 
 #: c:\providence/app/conf/browse.conf:222
-#, fuzzy
+
 msgid "decade"
 msgstr "datum"
 
@@ -11852,30 +11852,30 @@ msgid "decades"
 msgstr ""
 
 #: c:\providence/app/conf/browse.conf:238
-#, fuzzy
+
 msgid "object representation title"
 msgstr "objekt representation multipel fil"
 
 #: c:\providence/app/conf/browse.conf:239
-#, fuzzy
+
 msgid "object representation titles"
 msgstr "objekt representation multipel filer"
 
 #: c:\providence/app/conf/browse.conf:937
 #: c:\providence/app/conf/browse.conf:970
-#, fuzzy
+
 msgid "access"
 msgstr "Tillgänglighet"
 
 #: c:\providence/app/conf/browse.conf:938
 #: c:\providence/app/conf/browse.conf:971
-#, fuzzy
+
 msgid "accesses"
 msgstr "Tillgänglighet"
 
 #: c:\providence/app/conf/bundle_types.conf:11
 #: c:\providence/app/conf/bundle_types.conf:53
-#, fuzzy
+
 msgid "If set bundle will not be editable."
 msgstr "Om satt kommer inte paket att vara redigerbart."
 
@@ -11896,7 +11896,7 @@ msgid "Restrict lookups to type"
 msgstr "Begränsa uppslagningar till typ"
 
 #: c:\providence/app/conf/bundle_types.conf:76
-#, fuzzy
+
 msgid "If set, restricts lookups to a specific type of item."
 msgstr "Om den är inställd, begränsar uppslagningar till en viss typ av objekt."
 
@@ -11965,14 +11965,14 @@ msgstr "Logg"
 
 #: c:\providence/app/conf/navigation.conf:172
 #: c:\providence/app/conf/navigation.conf:884
-#, fuzzy
+
 msgid "Representations"
 msgstr "Lägg till representation"
 
 #: c:\providence/app/conf/navigation.conf:240
-#, fuzzy
+
 msgid "Entity"
-msgstr "person/organisation/folk"
+msgstr "Person/organisation/folk"
 
 #: c:\providence/app/conf/navigation.conf:308
 msgid "Place"
@@ -11987,7 +11987,7 @@ msgid "Collection"
 msgstr "Samling"
 
 #: c:\providence/app/conf/navigation.conf:502
-#, fuzzy
+
 msgid "Storage location"
 msgstr "Förvaringsplatser"
 
@@ -12017,19 +12017,6 @@ msgstr "Beslut"
 msgid "Basic search"
 msgstr "Enkel sökning"
 
-#: c:\providence/app/conf/navigation.conf:800
-#: c:\providence/app/conf/navigation.conf:856
-#: c:\providence/app/conf/navigation.conf:912
-#: c:\providence/app/conf/navigation.conf:966
-#: c:\providence/app/conf/navigation.conf:1020
-#: c:\providence/app/conf/navigation.conf:1074
-#: c:\providence/app/conf/navigation.conf:1135
-#: c:\providence/app/conf/navigation.conf:1191
-#: c:\providence/app/conf/navigation.conf:1245
-#: c:\providence/app/conf/navigation.conf:1299
-#: c:\providence/app/conf/navigation.conf:1548
-#: c:\providence/app/conf/navigation.conf:1605
-#, fuzzy
 msgid "Advanced search"
 msgstr "Avancerat sökformulär"
 
@@ -12046,12 +12033,11 @@ msgid "Last QuickSearch"
 msgstr "Senaste snabbsökning"
 
 #: c:\providence/app/conf/navigation.conf:1380
-#, fuzzy
 msgid "Create"
 msgstr "Skapad den"
 
 #: c:\providence/app/conf/navigation.conf:1640
-#, fuzzy
+
 msgid "Manage"
 msgstr "Ändringar"
 
@@ -12072,7 +12058,7 @@ msgid "Units of measurement"
 msgstr "Måttenheter"
 
 #: c:\providence/app/conf/navigation.conf:1713
-#, fuzzy
+
 msgid "Duplication"
 msgstr "Datum"
 
@@ -12093,7 +12079,7 @@ msgid "My sets"
 msgstr "Mina grupperingar"
 
 #: c:\providence/app/conf/navigation.conf:1788
-#, fuzzy
+
 msgid "Edit set"
 msgstr "Redigera lista"
 
@@ -12121,12 +12107,12 @@ msgstr "Användargenererat innehåll"
 #: c:\providence/app/conf/navigation.conf:1957
 #: c:\providence/app/conf/navigation.conf:1986
 #: c:\providence/app/conf/navigation.conf:2013
-#, fuzzy
+
 msgid "Moderate"
 msgstr "Moderator"
 
 #: c:\providence/app/conf/navigation.conf:2034
-#, fuzzy
+
 msgid "Lists & vocabularies"
 msgstr "Listor & vokabulärer"
 
@@ -12139,7 +12125,7 @@ msgid "Edit list item"
 msgstr "Redigera listobjekt"
 
 #: c:\providence/app/conf/navigation.conf:2144
-#, fuzzy
+
 msgid "Access control"
 msgstr "Ställ åtkomstkontroll"
 
@@ -12168,7 +12154,7 @@ msgid "Search log"
 msgstr "Sök logg"
 
 #: c:\providence/app/conf/navigation.conf:2198
-#, fuzzy
+
 msgid "Administration"
 msgstr "System administration"
 
@@ -12273,7 +12259,7 @@ msgid "Configure import/export mappings"
 msgstr ""
 
 #: c:\providence/app/conf/user_actions.conf:36
-#, fuzzy
+
 msgid "Allow user to change import/export format mapping configuration"
 msgstr "Tillåt användare att ändra konfigurationen för metadataelement"
 
@@ -12314,7 +12300,7 @@ msgid "Initiate search reindexing"
 msgstr ""
 
 #: c:\providence/app/conf/user_actions.conf:56
-#, fuzzy
+
 msgid "Allow user recreate system search indicies"
 msgstr "Tillåt användaren att söka efter personer/organisationer/folk"
 
@@ -12327,7 +12313,7 @@ msgid "Actions allowing discovery of items using search and browse tools."
 msgstr "Åtgärder för att underlätta hitta objekt med sök och bläddra."
 
 #: c:\providence/app/conf/user_actions.conf:66
-#, fuzzy
+
 msgid "Quicksearch"
 msgstr "Snabbsökning"
 
@@ -12344,7 +12330,7 @@ msgid "Actions allowing personalization of the user's environment."
 msgstr "Åtgärder för att tillåta anpassning av användarens miljö."
 
 #: c:\providence/app/conf/user_actions.conf:77
-#, fuzzy
+
 msgid "Set preferences"
 msgstr "Mina inställningar"
 
@@ -12417,12 +12403,12 @@ msgid "Allow user to use existing custom data display formats"
 msgstr "Tillåt användare att använda befintliga special data visningsformat"
 
 #: c:\providence/app/conf/user_actions.conf:113
-#, fuzzy
+
 msgid "Duplicate displays"
 msgstr "Ta bort displayer"
 
 #: c:\providence/app/conf/user_actions.conf:114
-#, fuzzy
+
 msgid "Allow user to use duplicate custom data display formats"
 msgstr "Tillåt användare att använda befintliga special data visningsformat"
 
@@ -12475,12 +12461,12 @@ msgid "Allow user to view sets of objects or authority items for which they have
 msgstr "Tillåt användare att se grupperingar av objekt eller auktoritet objekt som de har behörighet till"
 
 #: c:\providence/app/conf/user_actions.conf:144
-#, fuzzy
+
 msgid "Duplicate sets"
 msgstr "Datum"
 
 #: c:\providence/app/conf/user_actions.conf:145
-#, fuzzy
+
 msgid "Allow user to duplicate sets"
 msgstr "Tillåt användare att ta bort listor"
 
@@ -12505,7 +12491,7 @@ msgid "Allow user to moderate user-provided tags"
 msgstr "Tillåt användare att moderera användarens egna taggar"
 
 #: c:\providence/app/conf/user_actions.conf:166
-#, fuzzy
+
 msgid "Object editing"
 msgstr "Objekt beslut redigering"
 
@@ -12554,7 +12540,7 @@ msgid "Allow user to browse objects"
 msgstr "Tillåt användare att ta bläddra bland objekt"
 
 #: c:\providence/app/conf/user_actions.conf:190
-#, fuzzy
+
 msgid "Download media"
 msgstr "Ladda ner"
 
@@ -12563,82 +12549,82 @@ msgid "Allow user to download media associated with the object"
 msgstr "Tillåt användare att ladda ner media associerade med objektet"
 
 #: c:\providence/app/conf/user_actions.conf:194
-#, fuzzy
+
 msgid "Duplicate objects"
 msgstr "Relaterade objekt"
 
 #: c:\providence/app/conf/user_actions.conf:195
-#, fuzzy
+
 msgid "Allow user to duplicate objects"
 msgstr "Tillåt användare att ta bort objekt"
 
 #: c:\providence/app/conf/user_actions.conf:201
-#, fuzzy
+
 msgid "Object representation editing"
 msgstr "objekt representation bildtext"
 
 #: c:\providence/app/conf/user_actions.conf:202
-#, fuzzy
+
 msgid "Actions allowing creation, editing and deletion of object representations."
 msgstr "Åtgärder för att tillåtta skapande, redigering och radering av objekt beslut."
 
 #: c:\providence/app/conf/user_actions.conf:205
-#, fuzzy
+
 msgid "Create object representation"
 msgstr "objekt representation"
 
 #: c:\providence/app/conf/user_actions.conf:206
-#, fuzzy
+
 msgid "Allow user to create new object representations"
 msgstr "Tillåt användare att skapa nya objekt beslut"
 
 #: c:\providence/app/conf/user_actions.conf:209
-#, fuzzy
+
 msgid "Edit object representation"
 msgstr "objekt representation"
 
 #: c:\providence/app/conf/user_actions.conf:210
-#, fuzzy
+
 msgid "Allow user to edit existing object representations"
 msgstr "Tillåt användare att redigera befintliga objekt beslut"
 
 #: c:\providence/app/conf/user_actions.conf:213
-#, fuzzy
+
 msgid "Delete object representation"
 msgstr "objekt representation"
 
 #: c:\providence/app/conf/user_actions.conf:214
-#, fuzzy
+
 msgid "Allow user to delete object representations"
 msgstr "Tillåt användare att radera objekt beslut"
 
 #: c:\providence/app/conf/user_actions.conf:217
-#, fuzzy
+
 msgid "Search object representations"
 msgstr "objekt representationer"
 
 #: c:\providence/app/conf/user_actions.conf:218
-#, fuzzy
+
 msgid "Allow user to search object representations"
 msgstr "Tillåt användaren att söka objekt beslut"
 
 #: c:\providence/app/conf/user_actions.conf:221
-#, fuzzy
+
 msgid "Browse object representations"
 msgstr "objekt representationer"
 
 #: c:\providence/app/conf/user_actions.conf:222
-#, fuzzy
+
 msgid "Allow user to browse object representations"
 msgstr "Tillåt användaren att bläddra objekt beslut"
 
 #: c:\providence/app/conf/user_actions.conf:225
-#, fuzzy
+
 msgid "Duplicate object representations"
 msgstr "objekt representationer"
 
 #: c:\providence/app/conf/user_actions.conf:226
-#, fuzzy
+
 msgid "Allow user to duplicate object representations"
 msgstr "Tillåt användare att radera objekt beslut"
 
@@ -12691,12 +12677,12 @@ msgid "Allow user to browse object lots"
 msgstr "Tillåt användaren att bläddra objekt beslut"
 
 #: c:\providence/app/conf/user_actions.conf:256
-#, fuzzy
+
 msgid "Duplicate object lots"
 msgstr "Ta bort objekt beslut"
 
 #: c:\providence/app/conf/user_actions.conf:257
-#, fuzzy
+
 msgid "Allow user to duplicate object lots"
 msgstr "Tillåt användare att radera objekt beslut"
 
@@ -12709,7 +12695,7 @@ msgid "Actions allowing creation, editing and deletion of entities."
 msgstr "Åtgärder för att tillåta skapande, redigering och radering av personer/organisationer/folk."
 
 #: c:\providence/app/conf/user_actions.conf:267
-#, fuzzy
+
 msgid "Create entity"
 msgstr "Ta bort person/organisation/folk"
 
@@ -12718,7 +12704,7 @@ msgid "Allow user to create new entities"
 msgstr "Tillåt användare att skapa nya personer/organisationer/folk"
 
 #: c:\providence/app/conf/user_actions.conf:271
-#, fuzzy
+
 msgid "Edit entity"
 msgstr "Redigera person/organisation/folk"
 
@@ -12751,12 +12737,12 @@ msgid "Allow user to browse entities"
 msgstr "Låt användaren bläddra efter personer/organisationer/folk"
 
 #: c:\providence/app/conf/user_actions.conf:287
-#, fuzzy
+
 msgid "Duplicate entities"
 msgstr "Relaterade personer/organisationer/folk"
 
 #: c:\providence/app/conf/user_actions.conf:288
-#, fuzzy
+
 msgid "Allow user to duplicate entities"
 msgstr "Tillåt användare att ta bort personer/organisationer/folk"
 
@@ -12769,7 +12755,7 @@ msgid "Actions allowing creation, editing and deletion of places."
 msgstr "Åtgärder för att tillåta skapande, redigering och radering av platser."
 
 #: c:\providence/app/conf/user_actions.conf:298
-#, fuzzy
+
 msgid "Create place"
 msgstr "Relaterade platser"
 
@@ -12810,12 +12796,12 @@ msgid "Allow user to browse places"
 msgstr "Tillåt användaren att bläddra platser"
 
 #: c:\providence/app/conf/user_actions.conf:318
-#, fuzzy
+
 msgid "Duplicate places"
 msgstr "Relaterade platser"
 
 #: c:\providence/app/conf/user_actions.conf:319
-#, fuzzy
+
 msgid "Allow user to duplicate places"
 msgstr "Tillåt användare att ta bort platser"
 
@@ -12868,12 +12854,12 @@ msgid "Allow user to browse occurrences"
 msgstr "Tillåt användaren att bläddra bland förekomster"
 
 #: c:\providence/app/conf/user_actions.conf:349
-#, fuzzy
+
 msgid "Duplicate occurrences"
 msgstr "Relaterade förekomster"
 
 #: c:\providence/app/conf/user_actions.conf:350
-#, fuzzy
+
 msgid "Allow user to duplicate occurrences"
 msgstr "Tillåt användare att ta bort förekomster"
 
@@ -12926,12 +12912,12 @@ msgid "Allow user to browse collections"
 msgstr "Tillåt användaren att bläddra bland samlingarna"
 
 #: c:\providence/app/conf/user_actions.conf:380
-#, fuzzy
+
 msgid "Duplicate collections"
 msgstr "Relaterade samlingar"
 
 #: c:\providence/app/conf/user_actions.conf:381
-#, fuzzy
+
 msgid "Allow user to duplicate collections"
 msgstr "Tillåt användaren att ta bort samlingar"
 
@@ -12984,12 +12970,12 @@ msgid "Allow user to browse storage locations"
 msgstr "Tillåt användaren att bläddra bland förvaringsplatser"
 
 #: c:\providence/app/conf/user_actions.conf:411
-#, fuzzy
+
 msgid "Duplicate storage locations"
 msgstr "Ta bort förvaringsplatser"
 
 #: c:\providence/app/conf/user_actions.conf:412
-#, fuzzy
+
 msgid "Allow user to duplicate storage locations"
 msgstr "Tillåt användare att radera förvaringsplatser"
 
@@ -13042,12 +13028,12 @@ msgid "Allow user to browse loans"
 msgstr "Tillåt användaren bläddra lån"
 
 #: c:\providence/app/conf/user_actions.conf:442
-#, fuzzy
+
 msgid "Duplicate loans"
 msgstr "Datum"
 
 #: c:\providence/app/conf/user_actions.conf:443
-#, fuzzy
+
 msgid "Allow user to duplicate loans"
 msgstr "Tillåt användare att radera lån"
 
@@ -13100,12 +13086,12 @@ msgid "Allow user to browse movements"
 msgstr "Tillåt användaren att bläddra bland förflyttningar"
 
 #: c:\providence/app/conf/user_actions.conf:473
-#, fuzzy
+
 msgid "Duplicate movements"
 msgstr "Radera förflyttningar"
 
 #: c:\providence/app/conf/user_actions.conf:474
-#, fuzzy
+
 msgid "Allow user to duplicate movements"
 msgstr "Tillåt användare att ta bort förflyttningar"
 
@@ -13118,7 +13104,7 @@ msgid "Actions allowing creation, editing and deletion of tours."
 msgstr "Åtgärder för att tillåta skapande, redigering och radering av turer."
 
 #: c:\providence/app/conf/user_actions.conf:484
-#, fuzzy
+
 msgid "Create tours"
 msgstr "Skapa grupperingar"
 
@@ -13159,12 +13145,12 @@ msgid "Allow user to browse tours"
 msgstr "Tillåt användare att bläddra bland turer"
 
 #: c:\providence/app/conf/user_actions.conf:504
-#, fuzzy
+
 msgid "Duplicate tours"
 msgstr "Uppdaterad vid %1"
 
 #: c:\providence/app/conf/user_actions.conf:505
-#, fuzzy
+
 msgid "Allow user to duplicate tours"
 msgstr "Tillåt användare att ta bort turer"
 
@@ -13201,22 +13187,22 @@ msgid "Allow user to delete lists"
 msgstr "Tillåt användare att ta bort listor"
 
 #: c:\providence/app/conf/user_actions.conf:527
-#, fuzzy
+
 msgid "Duplicate lists"
 msgstr "Uppdaterad vid %1"
 
 #: c:\providence/app/conf/user_actions.conf:528
-#, fuzzy
+
 msgid "Allow user to duplicate lists"
 msgstr "Tillåt användare att ta bort listor"
 
 #: c:\providence/app/conf/user_actions.conf:531
-#, fuzzy
+
 msgid "Duplicate list items"
 msgstr "Redigera listobjekt"
 
 #: c:\providence/app/conf/user_actions.conf:532
-#, fuzzy
+
 msgid "Allow user to duplicate list items"
 msgstr "Tillåt användare att ta bort listor"
 
@@ -13269,27 +13255,27 @@ msgid "Allow user to use usercontent web service (used for creation of sets, tag
 msgstr "Tillåt användaren att använda tjänsten usercontent webbtjänst (används för att skapa uppsättningar, taggar, kommentarer)."
 
 #: c:\providence/app/conf/user_actions.conf:565
-#, fuzzy
+
 msgid "Pawtucket Actions"
 msgstr "Batch åtgärder"
 
 #: c:\providence/app/conf/user_actions.conf:566
-#, fuzzy
+
 msgid "Actions allowing access and modification of content on the front-end interface."
 msgstr "Åtgärder för att tillåta åtkomst och ändring av innehåll via webbtjänst gränssnitt."
 
 #: c:\providence/app/conf/user_actions.conf:569
-#, fuzzy
+
 msgid "Can Download Media"
 msgstr "Ladda ner"
 
 #: c:\providence/app/conf/user_actions.conf:570
-#, fuzzy
+
 msgid "Allow user to download high resolution media in Pawtucket."
 msgstr "Tillåt användare att ladda ner media associerade med objektet"
 
 #: c:\providence/app/conf/user_pref_defs.conf:45
-#, fuzzy
+
 msgid "Duplication tools"
 msgstr "Program Plugins"
 
@@ -13342,7 +13328,7 @@ msgid "Determines if the last performed search, basic or advanced, or browse is 
 msgstr ""
 
 #: c:\providence/app/conf/user_pref_defs.conf:103
-#, fuzzy
+
 msgid "Clear previous search terms when performing a new search or browse"
 msgstr "Rensa sökord för en ny sökning"
 
@@ -13520,12 +13506,12 @@ msgstr "engelska enheter"
 #: c:\providence/app/conf/user_pref_defs.conf:670
 #: c:\providence/app/conf/user_pref_defs.conf:692
 #: c:\providence/app/conf/user_pref_defs.conf:730
-#, fuzzy
+
 msgid "Duplicate non-preferred labels?"
 msgstr "Titlar"
 
 #: c:\providence/app/conf/user_pref_defs.conf:246
-#, fuzzy
+
 msgid "If checked alternate names for the object will be duplicated."
 msgstr "Om det är markerat kommer totala antalet beslut i databasen att visas."
 
@@ -13543,12 +13529,12 @@ msgstr "Om det är markerat kommer totala antalet beslut i databasen att visas."
 #: c:\providence/app/conf/user_pref_defs.conf:681
 #: c:\providence/app/conf/user_pref_defs.conf:703
 #: c:\providence/app/conf/user_pref_defs.conf:741
-#, fuzzy
+
 msgid "Duplicate metadata?"
 msgstr "Redigera metadata"
 
 #: c:\providence/app/conf/user_pref_defs.conf:257
-#, fuzzy
+
 msgid "If checked all fields in the object will be duplicated."
 msgstr "Om det är markerat kommer totala antalet beslut i databasen att visas."
 
@@ -13563,7 +13549,7 @@ msgstr "Om det är markerat kommer totala antalet beslut i databasen att visas."
 #: c:\providence/app/conf/user_pref_defs.conf:586
 #: c:\providence/app/conf/user_pref_defs.conf:654
 #: c:\providence/app/conf/user_pref_defs.conf:714
-#, fuzzy
+
 msgid "Duplicate relationships?"
 msgstr "plats ⇔ plats relationer"
 
@@ -13582,172 +13568,172 @@ msgid "Checked relationships will be duplicated."
 msgstr ""
 
 #: c:\providence/app/conf/user_pref_defs.conf:286
-#, fuzzy
+
 msgid "Duplicate media?"
 msgstr "Datum"
 
 #: c:\providence/app/conf/user_pref_defs.conf:287
-#, fuzzy
+
 msgid "If checked all media associated with the object will be duplicated."
 msgstr "Om den är ibockad kommer totala antalet personer/organisationer/folk i databasen att visas."
 
 #: c:\providence/app/conf/user_pref_defs.conf:298
-#, fuzzy
+
 msgid "If checked alternate names for the lot will be duplicated."
 msgstr "Om det är markerat kommer totala antalet beslut i databasen att visas."
 
 #: c:\providence/app/conf/user_pref_defs.conf:309
-#, fuzzy
+
 msgid "If checked all fields in the lot will be duplicated."
 msgstr "Om det är markerat kommer totala antalet beslut i databasen att visas."
 
 #: c:\providence/app/conf/user_pref_defs.conf:337
-#, fuzzy
+
 msgid "If checked alternate names for the entity will be duplicated."
 msgstr "Om det är markerat kommer totala antalet beslut i databasen att visas."
 
 #: c:\providence/app/conf/user_pref_defs.conf:348
-#, fuzzy
+
 msgid "If checked all fields in the entity will be duplicated."
 msgstr "Om det är markerat kommer totala antalet beslut i databasen att visas."
 
 #: c:\providence/app/conf/user_pref_defs.conf:379
-#, fuzzy
+
 msgid "If checked alternate names for the place will be duplicated."
 msgstr "Om det är markerat kommer totala antalet beslut i databasen att visas."
 
 #: c:\providence/app/conf/user_pref_defs.conf:390
-#, fuzzy
+
 msgid "If checked all fields in the place will be duplicated."
 msgstr "Om det är markerat kommer totala antalet beslut i databasen att visas."
 
 #: c:\providence/app/conf/user_pref_defs.conf:417
-#, fuzzy
+
 msgid "If checked alternate names for the collection will be duplicated."
 msgstr "Om den är ibockad kommer totala antalet samlingar i databasen att visas."
 
 #: c:\providence/app/conf/user_pref_defs.conf:428
-#, fuzzy
+
 msgid "If checked all fields in the collection will be duplicated."
 msgstr "Om det är markerat kommer totala antalet beslut i databasen att visas."
 
 #: c:\providence/app/conf/user_pref_defs.conf:457
-#, fuzzy
+
 msgid "If checked alternate names for the occurrence will be duplicated."
 msgstr "Om den är ibockad kommer totala antalet förekomster i databasen att visas."
 
 #: c:\providence/app/conf/user_pref_defs.conf:468
-#, fuzzy
+
 msgid "If checked all fields in the occurrence will be duplicated."
 msgstr "Om det är markerat kommer totala antalet beslut i databasen att visas."
 
 #: c:\providence/app/conf/user_pref_defs.conf:496
-#, fuzzy
+
 msgid "If checked alternate names for the storage location will be duplicated."
 msgstr "Om den är ibockad kommer totala antalet lagerplatser i databasen att visas."
 
 #: c:\providence/app/conf/user_pref_defs.conf:507
-#, fuzzy
+
 msgid "If checked all fields in the storage location will be duplicated."
 msgstr "Om den är ibockad kommer totala antalet lagerplatser i databasen att visas."
 
 #: c:\providence/app/conf/user_pref_defs.conf:531
-#, fuzzy
+
 msgid "If checked alternate names for the loan will be duplicated."
 msgstr "Om det är markerat kommer totala antalet beslut i databasen att visas."
 
 #: c:\providence/app/conf/user_pref_defs.conf:542
-#, fuzzy
+
 msgid "If checked all fields in the loan will be duplicated."
 msgstr "Om det är markerat kommer totala antalet beslut i databasen att visas."
 
 #: c:\providence/app/conf/user_pref_defs.conf:565
-#, fuzzy
+
 msgid "If checked alternate names for the movement will be duplicated."
 msgstr "Om det är markerat kommer totala antalet förflyttningar i databasen att visas."
 
 #: c:\providence/app/conf/user_pref_defs.conf:576
-#, fuzzy
+
 msgid "If checked all fields in the movement will be duplicated."
 msgstr "Om det är markerat kommer totala antalet beslut i databasen att visas."
 
 #: c:\providence/app/conf/user_pref_defs.conf:600
-#, fuzzy
+
 msgid "If checked alternate names for the tour will be duplicated."
 msgstr "Om det är markerat kommer totala antalet beslut i databasen att visas."
 
 #: c:\providence/app/conf/user_pref_defs.conf:611
-#, fuzzy
+
 msgid "If checked all fields in the tour will be duplicated."
 msgstr "Om det är markerat kommer totala antalet beslut i databasen att visas."
 
 #: c:\providence/app/conf/user_pref_defs.conf:621
-#, fuzzy
+
 msgid "Duplicate tour stops?"
 msgstr "Relaterade turstopp"
 
 #: c:\providence/app/conf/user_pref_defs.conf:622
-#, fuzzy
+
 msgid "If checked all stops in the tour will be included."
 msgstr "Om den är ibockad kommer totala antalet platser i databasen att visas."
 
 #: c:\providence/app/conf/user_pref_defs.conf:633
-#, fuzzy
+
 msgid "If checked alternate names for the tour stop will be duplicated."
 msgstr "Om det är markerat kommer totala antalet beslut i databasen att visas."
 
 #: c:\providence/app/conf/user_pref_defs.conf:644
-#, fuzzy
+
 msgid "If checked all fields in the tour stop will be duplicated."
 msgstr "Om det är markerat kommer totala antalet beslut i databasen att visas."
 
 #: c:\providence/app/conf/user_pref_defs.conf:671
-#, fuzzy
+
 msgid "If checked alternate names for the list will be duplicated."
 msgstr "Om det är markerat kommer totala antalet beslut i databasen att visas."
 
 #: c:\providence/app/conf/user_pref_defs.conf:682
-#, fuzzy
+
 msgid "If checked all fields in the list will be duplicated."
 msgstr "Om det är markerat kommer totala antalet beslut i databasen att visas."
 
 #: c:\providence/app/conf/user_pref_defs.conf:693
-#, fuzzy
+
 msgid "If checked alternate names for the list item will be duplicated."
 msgstr "Om det är markerat kommer totala antalet beslut i databasen att visas."
 
 #: c:\providence/app/conf/user_pref_defs.conf:704
-#, fuzzy
+
 msgid "If checked all fields in the list item will be duplicated."
 msgstr "Om det är markerat kommer totala antalet beslut i databasen att visas."
 
 #: c:\providence/app/conf/user_pref_defs.conf:731
-#, fuzzy
+
 msgid "If checked alternate names for the set will be duplicated."
 msgstr "Om det är markerat kommer totala antalet beslut i databasen att visas."
 
 #: c:\providence/app/conf/user_pref_defs.conf:742
-#, fuzzy
+
 msgid "If checked all fields in the set will be duplicated."
 msgstr "Om det är markerat kommer totala antalet beslut i databasen att visas."
 
 #: c:\providence/app/conf/user_pref_defs.conf:752
-#, fuzzy
+
 msgid "Duplicate items?"
 msgstr "Uppdaterad vid %1"
 
 #: c:\providence/app/conf/user_pref_defs.conf:753
-#, fuzzy
+
 msgid "If checked all items in the set will be included in the duplicated set."
 msgstr "Om den är ibockad kommer totala antalet personer/organisationer/folk i databasen att visas."
 
 #: c:\providence/app/conf/user_pref_defs.conf:763
-#, fuzzy
+
 msgid "Duplicate placements?"
 msgstr "Användaregränssnittspaket placeringar"
 
 #: c:\providence/app/conf/user_pref_defs.conf:764
-#, fuzzy
+
 msgid "If checked all placements in the display will be included in the duplicated set."
 msgstr "Om den är ibockad kommer totala antalet platser i databasen att visas."
 

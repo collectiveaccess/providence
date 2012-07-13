@@ -25,12 +25,14 @@
  *
  * ----------------------------------------------------------------------
  */
+
 	define("__CA_MICROTIME_START_OF_REQUEST__", microtime());
 	define("__CA_BASE_MEMORY_USAGE__", memory_get_usage(true));
 	
 	if (!file_exists('./setup.php')) { print "No setup.php file found!"; exit; }
 	require('./setup.php');
 	
+	global $ca_translate;
 	// connect to database
 	$o_db = new Db(null, null, false);
 	$g_monitor = new ApplicationMonitor();
@@ -80,12 +82,11 @@
 	if(!file_exists($vs_locale_path = __CA_APP_DIR__.'/locale/user/'.$g_ui_locale.'/messages.mo')) {
 		$vs_locale_path = __CA_APP_DIR__.'/locale/'.$g_ui_locale.'/messages.mo';
 	}
-	$_ = new Zend_Translate('gettext',$vs_locale_path, $g_ui_locale);
+	$_ = new Zend_Translate(array('adapter'=>'gettext','content'=>$vs_locale_path, 'locale'=>$g_ui_locale));
 	$_locale = new Zend_Locale($g_ui_locale);
 	Zend_Registry::set('Zend_Locale', $_locale);
 	global $ca_translation_cache;
 	$ca_translation_cache = array();
-	
 	$req->reloadAppConfig();	// need to reload app config to reflect current locale
 	
 	//

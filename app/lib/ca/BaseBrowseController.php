@@ -523,7 +523,7 @@
 					break;
 			}
 			
- 			$this->view->setVar('ancestors', $va_ancestors);
+ 			$this->view->setVar('ancestors', caIntsInArrayToStrings($va_ancestors));
  			return $this->render('Browse/facet_hierarchy_ancestors_json.php');
  		}
  		# -------------------------------------------------------

@@ -1665,7 +1665,7 @@ class BaseModel extends BaseObject {
 	 	$o_db = $this->getDb();
 	 	
 	 	$qr_up = $o_db->query("
-			SELECT MAX({$vs_hier_right_fld}) maxChildRight
+			SELECT MAX({$vs_hier_right_fld}) maxchildright
 			FROM ".$this->tableName()."
 			WHERE
 				({$vs_hier_left_fld} > ?) AND
@@ -1674,7 +1674,7 @@ class BaseModel extends BaseObject {
 		", $pa_parent_info[$vs_hier_left_fld], $pa_parent_info[$vs_hier_right_fld], $pa_parent_info[$this->primaryKey()]);
 	 
 	 	if ($qr_up->nextRow()) {
-	 		if (!($vn_gap_start = $qr_up->get('maxChildRight'))) {
+	 		if (!($vn_gap_start = $qr_up->get('maxchildright'))) {
 	 			$vn_gap_start = $pa_parent_info[$vs_hier_left_fld];
 	 		}
 	 	

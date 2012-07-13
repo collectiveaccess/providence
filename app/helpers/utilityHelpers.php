@@ -53,8 +53,6 @@ global $ca_translation_cache;
 $ca_translation_cache = array();
 function _t($ps_key) {
 	global $ca_translation_cache, $_;
-	global $_;
-	
 	if (!sizeof(func_get_args()) && isset($ca_translation_cache[$ps_key])) { return $ca_translation_cache[$ps_key]; }
 	
 	if (is_array($_)) {

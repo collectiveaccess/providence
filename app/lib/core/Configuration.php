@@ -116,9 +116,7 @@ class Configuration {
  */
 	function Configuration ($ps_file_path="", $pb_die_on_error=true, $pb_dont_cache=false) {
 		global $g_ui_locale, $g_configuration_cache_suffix, $_CONFIG_CACHE;
-		
 		$this->ops_config_file_path = $ps_file_path ? $ps_file_path : __CA_APP_CONFIG__;	# path to configuration file
-		
 		#
 		# Is configuration file already cached?
 		#

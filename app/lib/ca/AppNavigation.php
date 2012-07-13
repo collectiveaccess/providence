@@ -301,7 +301,6 @@
 		 */
 		public function getHTMLMenuBar($ps_css_id) {
 			$va_nav_info = $this->getNavInfo(0);	// get top-level navigation
-			
 			// fire hook
 			$o_app_plugin_manager = new ApplicationPluginManager();
 			if ($va_revised_nav_info = $o_app_plugin_manager->hookRenderMenuBar($va_nav_info)) {

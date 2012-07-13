@@ -1,6 +1,7 @@
 <?php 
 	$va_menu_color = $this->request->config->get('menu_color');
 ?>
+
 <div><div id="topNavContainer">
 	<div id="topNav">
 		<div class="roundedNav" style="background-color:#<?php print $va_menu_color; ?>;">
