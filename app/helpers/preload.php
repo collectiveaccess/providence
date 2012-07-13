@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2008-2009 Whirl-i-Gig
+ * Copyright 2008-2012 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -53,6 +53,8 @@
 	require(__CA_LIB_DIR__."/ca/AppNavigation.php");
 	
 	require(__CA_LIB_DIR__."/core/Controller/ActionController.php");
+	
+	require(__CA_MODELS_DIR__."/ca_acl.php");
 	
 	// initialize Tooltip manager
 	TooltipManager::init();

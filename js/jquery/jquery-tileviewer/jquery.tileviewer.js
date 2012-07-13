@@ -426,7 +426,6 @@ var methods = {
                             if(this.level_loaded_for == layer.level) {
                                 view.needdraw = true;
                             }
-                            //console.log("done loading" + this.src);
                             layer.loader.loading--;
                             view.loader_load(null);
                         };
@@ -671,7 +670,6 @@ var methods = {
 
 						if(dist < factor) { // && level_dist < 0.1) {
 							//reached destination
-							console.log("reached");
 							view.pan.xdest = null;
 						}
 						
@@ -756,6 +754,7 @@ var methods = {
 				//set initial level/size to fit the entire view
 				var min = Math.min(w, h)/layer.info.tilesize; //number of tiles that can fit
 				layer.level = layer.info._maxlevel - Math.floor(min) - 1;
+				if (layer.level < 1) { layer.level = 0; }	// level can't be less than zero
 				layer.tilesize = layer.info.tilesize;
 
 				view.recalc_viewparams();
@@ -1015,7 +1014,7 @@ var methods = {
                     return false;
                 });
             } else {
-                console.log("already initialized");
+               // console.log("already initialized");
             }
 
                 methods.setmode.call($this, {mode: "pan"});
@@ -1067,7 +1066,6 @@ var methods = {
     ///////////////////////////////////////////////////////////////////////////////////
     // use this to animate the view (or zoom)
     pan: function (options) {
-        console.log("requested level " + options.level);
         return this.each(function() {
             var view = $(this).data("view");
             view.pan.xdest = options.x;

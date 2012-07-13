@@ -19,11 +19,36 @@
 	
 	$o_db = new Db();
 	
+	$qr_reps = $o_db->query("
+		SELECT * 
+		FROM ca_attribute_values
+		WHERE
+			element_id IN (
+					SELECT element_id FROM ca_metadata_elements WHERE datatype = 16
+				)
+	");
+	$vn_i = 0;
+	$vn_c = 0;
+	while($qr_reps->nextRow()) {
+		$va_versions = $qr_reps->getMediaVersions('value_blob');
+		foreach($va_versions as $vs_version) {
+			$vs_orig_path = $qr_reps->getMediaPath('value_blob', $vs_version);
+			$vs_path = str_replace(__CA_BASE_DIR__.'/media', '', $vs_orig_path);
+			//print "got $vs_path\n";
+			$va_tmp = explode('/', $vs_path);
+			$vs_filename = array_pop($va_tmp);
+			
+			createDirs($va_tmp, $vs_base_path);
+			
+			print "\tCOPY {$vs_orig_path} TO ".$vs_base_path.'/'.$vs_path."\n";
+			copy($vs_orig_path, $vs_base_path.'/'.$vs_path);
+		}
+	}
+	
 	$t_rep = new ca_object_representations();
 	$t_rep->setMode(ACCESS_WRITE);
 	
 	$qr_reps = $o_db->query("SELECT representation_id, media FROM ca_object_representations");
-	
 	$vn_i = 0;
 	$vn_c = 0;
 	while($qr_reps->nextRow()) {

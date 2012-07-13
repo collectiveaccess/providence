@@ -95,7 +95,7 @@ class ObjectSearchResult extends BaseSearchResult {
 				return null;
 			}
 		}
-		return parent::getMediaTag($ps_field, $ps_version, $pa_option);
+		return parent::getMediaTag($ps_field, $ps_version, $pa_options);
 	}
 	# -------------------------------------
 	/**
@@ -110,13 +110,13 @@ class ObjectSearchResult extends BaseSearchResult {
 				return null;
 			}
 		}
-		return parent::getMediaUrl($ps_field, $ps_version, $pa_option);
+		return parent::getMediaUrl($ps_field, $ps_version, $pa_options);
 	}
 	# -------------------------------------
 	/**
 	 *
 	 */
-	public function getMediaInfo($ps_field, $ps_version, $pa_options=null) {
+	public function getMediaInfo($ps_field, $ps_version, $ps_key=null, $pa_options=null) {
 		$va_tmp = explode('.', $ps_field);
 		
 		if (($va_tmp[0] === 'ca_object_representations') && ($va_tmp[1] !== 'access')) {
@@ -125,7 +125,7 @@ class ObjectSearchResult extends BaseSearchResult {
 				return null;
 			}
 		}
-		return parent::getMediaInfo($ps_field, $ps_version, $pa_option);
+		return parent::getMediaInfo($ps_field, $ps_version, $ps_key, 0, $pa_options);
 	}
 	# ------------------------------------------------------
  	/**

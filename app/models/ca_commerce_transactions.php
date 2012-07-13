@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2011 Whirl-i-Gig
+ * Copyright 2011-2012 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -187,45 +187,54 @@ class ca_commerce_transactions extends BaseModel {
 	/**
 	 *
 	 */
-	 public function sendMessage($pn_source, $pn_user_id, $ps_subject, $ps_message, $pa_options=null) {
+	 public function sendMessage($ps_type, $pn_source, $pn_user_id, $ps_subject, $ps_message, $pa_options=null) {
 	 	if (!($vn_transaction_id = $this->getPrimaryKey())) { return null; }
 	 	
-	 	return ca_commerce_communications::sendMessage($vn_transaction_id, $pn_source, $pn_user_id, $ps_subject, $ps_message, $pa_options);
+	 	return ca_commerce_communications::sendMessage($vn_transaction_id, $ps_type, $pn_source, $pn_user_id, $ps_subject, $ps_message, $pa_options);
 	 }
 	 # ----------------------------------------
 	/**
 	 *
 	 */
-	 public function sendUserMessage($ps_subject, $ps_message, $pn_user_id, $pa_options=null) {
-	 	return $this->sendMessage(__CA_COMMERCE_COMMUNICATION_SOURCE_USER__, $pn_user_id, $ps_subject, $ps_message, $pa_options);
+	 public function sendUserMessage($ps_type, $ps_subject, $ps_message, $pn_user_id, $pa_options=null) {
+	 	return $this->sendMessage($ps_type, __CA_COMMERCE_COMMUNICATION_SOURCE_USER__, $pn_user_id, $ps_subject, $ps_message, $pa_options);
 	 }
 	 # ----------------------------------------
 	/**
 	 *
 	 */
-	 public function sendInstitutionMessage($ps_subject, $ps_message, $pn_user_id, $pa_options=null) {
-	 	return $this->sendMessage(__CA_COMMERCE_COMMUNICATION_SOURCE_INSTITUTION__, $pn_user_id, $ps_subject, $ps_message, $pa_options);
+	 public function sendInstitutionMessage($ps_type, $ps_subject, $ps_message, $pn_user_id, $pa_options=null) {
+	 	return $this->sendMessage($ps_type, __CA_COMMERCE_COMMUNICATION_SOURCE_INSTITUTION__, $pn_user_id, $ps_subject, $ps_message, $pa_options);
 	 }
 	 # ----------------------------------------
 	 /**
 	 * Get all messages associated with the current transaction. Messages are returned sorted by date/time, with the earliest message first.
 	 * 
 	 * @param array $pa_options
+	 *		type = set to "O" to limit to sales orders or "L" to limit to library loans
+	 * @return array List of messages
 	 */
 	 public function getMessages($pa_options=null) {
 	 	$o_db = $this->getDb();
 	 	if (!($vn_transaction_id = $this->getPrimaryKey())) { return null; }
+	 	
+	 	$va_params = array((int)$vn_transaction_id);
+	 	
+	 	$vs_type_sql = '';
+	 	if (isset($pa_options['type']) && in_array($pa_options['type'], array('O', 'L'))) {
+	 		$va_params[] = $pa_options['type'];
+	 		$vs_type_sql = " AND comm.communications_type = ?";
+	 	}
 	 	
 	 	$qr_res = $o_db->query("
 	 		SELECT comm.*, tra.short_description, tra.transaction_id, tra.created_on transaction_created_on, tra.set_id
 	 		FROM ca_commerce_communications comm
 	 		INNER JOIN ca_commerce_transactions AS tra ON tra.transaction_id = comm.transaction_id
 	 		WHERE
-	 			tra.transaction_id = ?
+	 			tra.transaction_id = ? {$vs_type_sql}
 	 		ORDER BY
 	 			comm.created_on
-	 			
-	 	", (int)$vn_transaction_id);
+	 	", $va_params);
 	 	
 	 	$va_messages = array();
 	 	
@@ -237,6 +246,11 @@ class ca_commerce_transactions extends BaseModel {
 	 }
 	 # ----------------------------------------
 	/**
+	 * Checks if specified user is owner of transaction, or has privileges to manage user transactions
+	 *
+	 * @param int $pn_user_id User_id for user to check access for
+	 * @param int $pn_transaction_id Optional transaction_id. If omitted the currently loaded transaction is used
+	 * @return bool True if user has access
 	 *
 	 */
 	 public function haveAccessToTransaction($pn_user_id, $pn_transaction_id=null) {
@@ -254,6 +268,16 @@ class ca_commerce_transactions extends BaseModel {
 	 		}
 	 	}
 	 	return false;
+	 }
+	 # ----------------------------------------
+	/**
+	 * Returns ca_users instance for user linked to currently loaded transaction
+	 *
+	 * @return ca_users ca_users instance or null if no transaction is loaded
+	 */
+	 public function getTransactionUser() {
+	 	if (!($vn_user_id = $this->get('user_id'))) { return null; }
+	 	return new ca_users($vn_user_id);
 	 }
 	 # ----------------------------------------
 }

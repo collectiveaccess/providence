@@ -435,7 +435,7 @@ class WLPlugMediaOffice Extends WLPlug Implements IWLPlugMedia {
 		//try to extract text
 		if ($this->opb_abiword_installed && !$this->opb_libre_office_installed) {
 			$vs_tmp_filename = tempnam('/tmp', 'CA_MSWORD_TEXT');
-			exec($this->ops_abiword_path.' -t txt '.$ps_filepath.' -o '.$vs_tmp_filename);
+			exec($this->ops_abiword_path.' -t txt '.caEscapeShellArg($ps_filepath).' -o '.$vs_tmp_filename);
 			$vs_extracted_text = preg_replace('![^\w\d]+!u' , ' ', file_get_contents($vs_tmp_filename));	// ABIWord seems to dump Unicode...
 			$this->handle['content'] = $this->ohandle['content'] = $vs_extracted_text;
 			@unlink($vs_tmp_filename);
@@ -549,8 +549,8 @@ class WLPlugMediaOffice Extends WLPlug Implements IWLPlugMedia {
 				$vs_out_file = array_pop($va_tmp);
 				
 				putenv("HOME={$vs_tmp_dir_path}");		// libreoffice will fail silently if you don't set this environment variable to a directory it can write to. Nice way to waste a day debugging. Yay!
-				exec($this->ops_libreoffice_path." --nologo --nofirststartwizard --headless -convert-to pdf \"".$this->filepath."\"  -outdir {$vs_tmp_dir_path} 2>&1", $va_output, $vn_return);
-				exec($this->ops_libreoffice_path." --nologo --nofirststartwizard --headless -convert-to html \"".$this->filepath."\"  -outdir {$vs_tmp_dir_path} 2>&1", $va_output, $vn_return);
+				exec($this->ops_libreoffice_path." --nologo --nofirststartwizard --headless -convert-to pdf ".caEscapeShellArg($this->filepath)."  -outdir ".caEscapeShellArg($vs_tmp_dir_path)." 2>&1", $va_output, $vn_return);
+				exec($this->ops_libreoffice_path." --nologo --nofirststartwizard --headless -convert-to html ".caEscapeShellArg($this->filepath)."  -outdir ".caEscapeShellArg($vs_tmp_dir_path)." 2>&1", $va_output, $vn_return);
 			
 				$va_out_file = explode(".", $vs_out_file);
 				if (sizeof($va_out_file) > 1) { array_pop($va_out_file); }

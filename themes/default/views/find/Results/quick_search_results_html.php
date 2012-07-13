@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2009-2011 Whirl-i-Gig
+ * Copyright 2009-2012 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -117,14 +117,21 @@
 			<div class="quickSearchHalfWidthResults" id='<?php print $vs_table; ?>_results' style="display:none;">
 				<ul class='quickSearchList'>
 <?php
+					$o_dm = Datamodel::load();
+					$t_instance = $o_dm->getInstanceByTableName($vs_table, true);
+					$va_type_list = $t_instance->getTypeList();
 					while($o_res->nextHit()) {
 						if ($vs_idno_display = trim($o_res->get($va_info['displayidno']))) {
-							$vs_idno_display = ' ['.$vs_idno_display.']';
+							$vs_idno_display = ' ('.$vs_idno_display.')';
+						}
+						$vs_type_display = '';
+						if (($vn_type_id = trim($o_res->get($vs_table.'.type_id'))) && $va_type_list[$vn_type_id]) {
+							$vs_type_display = ' ['.$va_type_list[$vn_type_id]['name_singular'].']';
 						}
 						if($this->request->user->canAccess($va_info["module"],$va_info["controller"],$va_info["action"],array($va_info["primary_key"] => $o_res->get($va_info["primary_key"])))){
-							print '<li class="quickSearchList">'.caNavLink($this->request, $o_res->get($vs_table.'.preferred_labels'), null, $va_info['module'], $va_info['controller'], $va_info['action'], array($va_info['primary_key'] => $o_res->get($va_info['primary_key'])))." ".$vs_idno_display."</li>\n";
+							print '<li class="quickSearchList">'.caNavLink($this->request, $o_res->get($vs_table.'.preferred_labels'), null, $va_info['module'], $va_info['controller'], $va_info['action'], array($va_info['primary_key'] => $o_res->get($va_info['primary_key'])))." ".$vs_idno_display." {$vs_type_display}</li>\n";
 						} else {
-							print '<li class="quickSearchList">'.caNavLink($this->request, $o_res->get($vs_table.'.preferred_labels'), null, $va_info['module'], $va_info['controller'], "Summary", array($va_info['primary_key'] => $o_res->get($va_info['primary_key'])))." ".$vs_idno_display."</li>\n";
+							print '<li class="quickSearchList">'.caNavLink($this->request, $o_res->get($vs_table.'.preferred_labels'), null, $va_info['module'], $va_info['controller'], "Summary", array($va_info['primary_key'] => $o_res->get($va_info['primary_key'])))." ".$vs_idno_display." {$vs_type_display}</li>\n";
 						}
 					}
 ?>

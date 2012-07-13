@@ -208,6 +208,8 @@ class WLPlugMediaImagick Extends WLPlug Implements IWLPlugMedia {
 		"image/dng"		=> "image/x-adobe-dng"
 	);
 	
+	private $ops_CoreImage_path;
+	private $ops_dcraw_path;
 	
 	# ------------------------------------------------
 	public function __construct() {
@@ -221,6 +223,8 @@ class WLPlugMediaImagick Extends WLPlug Implements IWLPlugMedia {
 		$vs_external_app_config_path = $this->opo_config->get('external_applications');
 		$this->opo_external_app_config = Configuration::load($vs_external_app_config_path);
 		$this->ops_CoreImage_path = $this->opo_external_app_config->get('coreimagetool_app');
+		
+		$this->ops_dcraw_path = $this->opo_external_app_config->get('dcraw_app');
 		
 		if (caMediaPluginCoreImageInstalled($this->ops_CoreImage_path)) {
 			return null;	// don't use if CoreImage executable are available
@@ -249,10 +253,24 @@ class WLPlugMediaImagick Extends WLPlug Implements IWLPlugMedia {
 			} 
 		}
 		
+		if (!caMediaPluginDcrawInstalled($this->ops_dcraw_path)) {
+			$va_status['warnings'][] = _t("RAW image support is not enabled because DCRAW cannot be found");
+		}
+		
 		return $va_status;
 	}
 	# ------------------------------------------------
 	public function divineFileFormat($ps_filepath) {
+		# is it a camera raw image?
+		if (caMediaPluginDcrawInstalled($this->ops_dcraw_path)) {
+			exec($this->ops_dcraw_path." -i ".caEscapeShellArg($filepath)." 2> /dev/null", $va_output, $vn_return);
+			if ($vn_return == 0) {
+				if ((!preg_match("/^Cannot decode/", $va_output[0])) && (!preg_match("/Master/i", $va_output[0]))) {
+					return 'image/x-dcraw';
+				}
+			}
+		}
+		
 		$r_handle = new Imagick();
 		try {
 			if ($ps_filepath != '' && ($r_handle->pingImage($ps_filepath))) {
@@ -432,6 +450,31 @@ class WLPlugMediaImagick Extends WLPlug Implements IWLPlugMedia {
 				$this->handle = "";
 				$this->filepath = "";
 				$handle = new Imagick();
+				
+				if ($mimetype == 'image/x-dcraw') {
+					if (!caMediaPluginDcrawInstalled($this->ops_dcraw_path)) {
+						$this->postError(1610, _t("Could not convert Camera RAW format file because conversion tool (dcraw) is not installed"), "WLPlugImagick->read()");
+						return false;
+					}
+					
+					$vs_tmp_name = tempnam("/tmp", "rawtmp");
+					if (!copy($filepath, $vs_tmp_name)) {
+						$this->postError(1610, _t("Could not copy Camera RAW file to temporary directory"), "WLPlugImagick->read()");
+						return false;
+					}
+					exec($this->ops_dcraw_path." -T ".caEscapeShellArg($vs_tmp_name), $va_output, $vn_return);
+					if ($vn_return != 0) {
+						$this->postError(1610, _t("Camera RAW file conversion failed"), "WLPlugImagick->read()");
+						return false;
+					}
+					if (!(file_exists($vs_tmp_name.'.tiff') && (filesize($vs_tmp_name.'.tiff') > 0))) {
+						$this->postError(1610, _t("Translation from Camera RAW to TIFF failed"), "WLPlugImagick->read()");
+						return false;
+					}
+					@unlink($vs_tmp_name);
+					
+					$this->filepath_conv = $vs_tmp_name.'.tiff';
+				}
 				
 				if ($handle->readImage($ps_filepath)) {
 					$this->handle = $handle;

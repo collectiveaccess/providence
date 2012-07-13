@@ -288,12 +288,17 @@
  		 *		bottom - For hierarchy specifications (eg. ca_objects.hierarchy) this option, if set, will limit the returned hierarchy to the first X nodes from the lowest node up. Default is to not limit.
  		 * 		hierarchicalDelimiter - Text to place between items in a hierarchy for a hierarchical specification (eg. ca_objects.hierarchy) when returning as a string
  		 *		removeFirstItems - If set to a non-zero value, the specified number of items at the top of the hierarchy will be omitted. For example, if set to 2, the root and first child of the hierarchy will be omitted. Default is zero (don't delete anything).
- 		 */
+ 		 *		checkAccess = array of access values to filter results by; if defined only items with the specified access code(s) are returned. Only supported for <table_name>.hierarchy.preferred_labels and <table_name>.children.preferred_labels because these returns sets of items. For <table_name>.parent.preferred_labels, which returns a single row at most, you should do access checking yourself. (Everything here applies equally to nonpreferred_labels)
+ 	 	 *		sort = optional bundles to sort returned values on. Only supported for <table_name>.children.preferred_labels. The bundle specifiers are fields with or without tablename.
+ 	 	 *		sort_direction = direction to sort results by, either 'asc' for ascending order or 'desc' for descending order; default is 'asc'
+ 	 	 *		convertCodesToDisplayText = if true then non-preferred label type_ids are automatically converted to display text in the current locale; default is false (return non-preferred label type_id raw)
+ 	 	 */
 		public function get($ps_field, $pa_options=null) {
 			$vs_template = 				(isset($pa_options['template'])) ? $pa_options['template'] : null;
 			$vb_return_as_array = 		(isset($pa_options['returnAsArray'])) ? (bool)$pa_options['returnAsArray'] : false;
 			$vb_return_all_locales =	(isset($pa_options['returnAllLocales'])) ? (bool)$pa_options['returnAllLocales'] : false;
 			$vs_delimiter =				(isset($pa_options['delimiter'])) ? $pa_options['delimiter'] : ' ';
+			$vb_convert_codes_to_display_text = (isset($pa_options['convertCodesToDisplayText'])) ? (bool)$pa_options['convertCodesToDisplayText'] : false;
 			if ($vb_return_all_locales && !$vb_return_as_array) { $vb_return_as_array = true; }
 		
 			// if desired try to return values in a preferred language/locale
@@ -335,12 +340,32 @@
 							$va_data = array();
 							$va_children_ids = $this->getHierarchyChildren(null, array('idsOnly' => true));
 							
-							$t_instance = $this->getAppDatamodel()->getInstanceByTableNum($this->tableNum());
-							
-							foreach($va_children_ids as $vn_child_id) {
-								if ($t_instance->load($vn_child_id)) {
-									$va_data = array_merge($va_data, $t_instance->get($vs_childless_path, array_merge($pa_options, array('returnAsArray' => true))));
+							if (is_array($va_children_ids) && sizeof($va_children_ids)) {
+								$t_instance = $this->getAppDatamodel()->getInstanceByTableNum($this->tableNum());
+								
+								$vb_check_access = is_array($pa_options['checkAccess']) && $t_instance->hasField('access');
+								$vs_sort = isset($pa_options['sort']) ? $pa_options['sort'] : null;
+								$vs_sort_direction = (isset($pa_options['sort_direction']) && in_array(strtolower($pa_options['sort_direction']), array('asc', 'desc'))) ? strtolower($pa_options['sort_direction']) : 'asc';
+								
+								$qr_children = $this->makeSearchResult($this->tableName(), $va_children_ids);
+								
+								$vs_table = $this->tableName();
+								while($qr_children->nextHit()) {
+									if ($vb_check_access && !in_array($qr_children->get("{$vs_table}.access"), $pa_options['checkAccess'])) { continue; }
+									
+									$vs_sort_key = ($vs_sort) ? $qr_children->get($vs_sort) : 0;
+									if(!is_array($va_data[$vs_sort_key])) { $va_data[$vs_sort_key] = array(); }
+									$va_data[$vs_sort_key] = array_merge($va_data[$vs_sort_key], $qr_children->get($vs_childless_path, array_merge($pa_options, array('returnAsArray' => true))));
 								}
+								ksort($va_data);
+								if ($vs_sort_direction && $vs_sort_direction == 'desc') { $va_data = array_reverse($va_data); }
+								$va_sorted_data = array();
+								foreach($va_data as $vs_sort_key => $va_items) {
+									foreach($va_items as $vs_k => $vs_v) {
+										$va_sorted_data[] = $vs_v;
+									}
+								}
+								$va_data = $va_sorted_data;
 							}
 							
 							if ($vb_return_as_array) {
@@ -386,8 +411,10 @@
 							}
 						}
 						
+						$vb_check_access = is_array($pa_options['checkAccess']) && $this->hasField('access');
 						$va_tmp = array();
 						foreach($va_ancestor_list as $vn_i => $va_item) {
+							if ($vb_check_access && !in_array($va_item['access'], $pa_options['checkAccess'])) { continue; }
 							if ($vs_template) {
 								$va_tmp[$va_item['NODE'][$vs_pk]] = caProcessTemplate($vs_template, $va_item['NODE'], array('removePrefix' => 'preferred_labels.'));
 							} else {
@@ -425,7 +452,20 @@
 						# ---------------------------------------------
 						case 'preferred_labels':
 							if (!$vb_return_as_array) {
-								return $t_instance->getLabelForDisplay(false, $pa_options['locale']);
+								$va_labels = caExtractValuesByUserLocale($t_instance->getPreferredLabels(), null, $va_preferred_locales);
+								$vs_disp_field = $this->getLabelDisplayField();
+									
+								$va_values = array();
+								foreach($va_labels as $vn_row_id => $va_label_list) {
+									foreach($va_label_list as $vn_i => $va_label) {
+										if ($vs_template) {
+											$va_values[] = caProcessTemplate($vs_template, $va_label, array('removePrefix' => 'preferred_labels.'));
+										} else {
+											$va_values[] = $va_label[$vs_disp_field];
+										}
+									}
+								}
+								return join($vs_delimiter, $va_values);
 							} else {
 								$va_labels = $t_instance->getPreferredLabels(null, false);
 								if ($vb_return_all_locales) {
@@ -446,6 +486,37 @@
 						# ---------------------------------------------
 						case 'nonpreferred_labels':
 							if (!$vb_return_as_array) {
+								$vs_disp_field = $this->getLabelDisplayField();
+								$va_labels = caExtractValuesByUserLocale($t_instance->getNonPreferredLabels(), null, $va_preferred_locales);
+								
+								$t_list = new ca_lists();
+								if ($vb_convert_codes_to_display_text) {
+									$va_types = $t_list->getItemsForList($this->getLabelTableInstance()->getFieldInfo('type_id', 'LIST_CODE'), array('extractValuesByUserLocale' => true));
+								}
+							
+								$va_values = array();
+								foreach($va_labels as $vn_row_id => $va_label_list) {
+									foreach($va_label_list as $vn_i => $va_label) {
+										if ($vs_template) {
+											$va_label_values = $va_label;
+											$va_label_values['typename_singular'] = $va_types[$va_label['type_id']]['name_singular'];
+											$va_label_values['typename_plural'] = $va_types[$va_label['type_id']]['name_plural'];
+											
+											if ($vb_convert_codes_to_display_text) {
+												$va_label_values['type_id'] = $va_types[$va_label['type_id']]['name_singular'];
+											}
+											$va_values[] = caProcessTemplate($vs_template, $va_label_values, array('removePrefix' => 'nonpreferred_labels.'));
+										} else {
+											if ($vb_convert_codes_to_display_text && ($vs_disp_field == 'type_id')) {
+												$va_values[] = $va_types[$va_label[$vs_disp_field]]['name_singular'];
+											} else {
+												$va_values[] = $va_label[$vs_disp_field];
+											}
+										}
+									}
+								}
+								return join($vs_delimiter, $va_values);
+								
 								$va_labels = caExtractValuesByUserLocale($t_instance->getNonPreferredLabels(null, false));
 								$vs_disp_field = $this->getLabelDisplayField();
 								$va_processed_labels = array();
@@ -476,15 +547,23 @@
 							case 'preferred_labels':
 								if (!$vb_return_as_array) {
 									if (isset($va_tmp[2]) && ($va_tmp[2])) {
-										$va_labels = caExtractValuesByUserLocale($t_instance->getPreferredLabels(), null, $va_preferred_locales);
-										
-										foreach($va_labels as $vn_row_id => $va_label_list) {
-											return $va_label_list[0][$va_tmp[2]];
-										}
-										return null;
+										$vs_disp_field = $va_tmp[2];
 									} else {
-										return $t_instance->getLabelForDisplay(false, $pa_options['locale']);
+										$vs_disp_field = $this->getLabelDisplayField();
 									}
+									$va_labels = caExtractValuesByUserLocale($t_instance->getPreferredLabels(), null, $va_preferred_locales);
+									
+									$va_values = array();
+									foreach($va_labels as $vn_row_id => $va_label_list) {
+										foreach($va_label_list as $vn_i => $va_label) {
+											if ($vs_template) {
+												$va_values[] = caProcessTemplate($vs_template, $va_label, array('removePrefix' => 'preferred_labels.'));
+											} else {
+												$va_values[] = $va_label[$vs_disp_field];
+											}
+										}
+									}
+									return join($vs_delimiter, $va_values);
 								} else {
 									$va_labels = $t_instance->getPreferredLabels(null, false);
 									
@@ -530,10 +609,30 @@
 									}
 									$va_labels = caExtractValuesByUserLocale($t_instance->getNonPreferredLabels(), null, $va_preferred_locales);
 									
+									$t_list = new ca_lists();
+									if ($vb_convert_codes_to_display_text) {
+										$va_types = $t_list->getItemsForList($this->getLabelTableInstance()->getFieldInfo('type_id', 'LIST_CODE'), array('extractValuesByUserLocale' => true));
+									}
+								
 									$va_values = array();
 									foreach($va_labels as $vn_row_id => $va_label_list) {
 										foreach($va_label_list as $vn_i => $va_label) {
-											$va_values[] = $va_label[$vs_disp_field];
+											if ($vs_template) {
+												$va_label_values = $va_label;
+												$va_label_values['typename_singular'] = $va_types[$va_label['type_id']]['name_singular'];
+												$va_label_values['typename_plural'] = $va_types[$va_label['type_id']]['name_plural'];
+												
+												if ($vb_convert_codes_to_display_text) {
+													$va_label_values['type_id'] = $va_types[$va_label['type_id']]['name_singular'];
+												}
+												$va_values[] = caProcessTemplate($vs_template, $va_label_values, array('removePrefix' => 'nonpreferred_labels.'));
+											} else {
+												if ($vb_convert_codes_to_display_text && ($vs_disp_field == 'type_id')) {
+													$va_values[] = $va_types[$va_label[$vs_disp_field]]['name_singular'];
+												} else {
+													$va_values[] = $va_label[$vs_disp_field];
+												}
+											}
 										}
 									}
 									return join($vs_delimiter, $va_values);

@@ -3551,6 +3551,12 @@ body > div.jGrowl.center {
 	left: 				25%;
 }
 
+div.jGrowl > .ui-state-highlight {
+    background: inherit;
+    color: inherit;
+    border: inherit;
+}
+
 /** Cross Browser Styling **/
 div.center div.jGrowl-notification, div.center div.jGrowl-closer {
 	margin-left: 		auto;
@@ -4183,6 +4189,42 @@ a.caClientOrderOverviewButton:hover {
 	font-style: italic;
 	width: 100%;
 	margin-top: 25px;
+}
+
+#caClientOrderCommunicationForm{
+	margin-bottom:30px;
+}
+#caClientOrderCommunicationForm .caClientOrderCommunicationFormBg{
+	background-color:#e2e2e2;
+	-moz-border-radius: 10px; 
+	-webkit-border-radius: 10px;
+	padding:5px 20px 10px 15px;
+	margin:0px 0px 5px 0px;
+}
+#caClientOrdersComposeButton{
+	text-decoration:none;
+	font-size:12px;
+	color: #FFFFFF;
+	background-color: #134959;
+	font-weight:bold;
+	margin-right: 10px;
+	padding:3px 5px 4px 5px;
+	float:right;
+	-moz-border-radius: 4px; 
+	-webkit-border-radius: 4px;
+	margin-top:10px;
+}
+#caClientOrderCommunicationForm input[type="text"], #caClientOrderCommunicationForm input[type="textarea"], #caClientOrderCommunicationForm textarea, #caClientOrderCommunicationForm input{
+	width:100%;
+}   
+
+
+#caClientLibraryCustomerInfoForm {
+	display: none;
+}
+
+.caClientLibraryLoadingIndicator {
+	background: white url('../graphics/icons/indicator.gif') right center no-repeat !important;
 }
 
 /* -------------------------------------------------*/

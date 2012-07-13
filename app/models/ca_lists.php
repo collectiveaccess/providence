@@ -1454,6 +1454,50 @@ class ca_lists extends BundlableLabelableBaseModelWithAttributes {
 		
 		return $va_lists;
 	}
+	# ---------------------------------------------------------------------------------------------
+	/**
+	 * Converts the given list of list item idnos or item_ids into an expanded list of numeric item_ids. Processing
+	 * includes expansion of items to include sub-items and conversion of any idnos to item_ids.
+	 *
+	 * @param mixed $pm_table_name_or_num Table name or number to which types apply
+	 * @param array $pa_types List of item idnos and/or item_ids that are the basis of the list
+	 * @param array $pa_options Array of options:
+	 * 		dont_include_sub_items = if set, returned list is not expanded to include sub-items
+	 *		dontIncludeSubItems = synonym for dont_include_sub_items
+	 *
+	 * @return array List of numeric item_ids
+	 */
+	static public function getItemIDsFromList($pm_list_name_or_id, $pa_idnos, $pa_options=null) {
+		if(isset($pa_options['dontIncludeSubItems']) && (!isset($pa_options['dont_include_sub_items']) || !$pa_options['dont_include_sub_items'])) { $pa_options['dont_include_sub_items'] = $pa_options['dontIncludeSubItems']; }
+	 	
+		if (isset($pa_options['dont_include_sub_items']) && $pa_options['dont_include_sub_items']) {
+			$pa_options['noChildren'] = true;
+		}
+		$t_list = new ca_lists();
+		$t_item = new ca_list_items();
+		$va_item_ids = array();
+		foreach($pa_idnos as $vs_idno) {
+			$vn_item_id = null;
+			if (is_numeric($vs_idno)) { 
+				$vn_item_id = (int)$vs_idno; 
+			} else {
+				$vn_item_id = (int)$t_list->getItemIDFromList($pm_list_name_or_id, $vs_idno);
+			}
+			
+			if ($vn_item_id && !(isset($pa_options['noChildren']) || $pa_options['noChildren'])) {
+				if ($qr_children = $t_item->getHierarchy($vn_item_id, array())) {
+					while($qr_children->nextRow()) {
+						$va_item_ids[$qr_children->get('item_id')] = true;
+					}
+				}
+			} else {
+				if ($vn_item_id) {
+					$va_item_ids[$vn_item_id] = true;
+				}
+			}
+		}
+		return array_keys($va_item_ids);
+	}
 	# ------------------------------------------------------
 }
 ?>

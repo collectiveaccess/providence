@@ -1356,14 +1356,14 @@ class ca_object_representations extends BundlableLabelableBaseModelWithAttribute
 	 * Check it a file already exists in the database as a representation
 	 *
 	 * @param string $ps_filepath The full path to the file
-	 * @return bool True if representation exists with this file, false if not
+	 * @return mixed ca_object_representations instance representing the first representation that contains the file, if representation exists with this file, false if the file does not yet exist
 	 */
 	static function mediaExists($ps_filepath) {
 		if (!file_exists($ps_filepath)) { return null; }
 		$vs_md5 = md5_file($ps_filepath);
 		$t_rep = new ca_object_representations();
 		if ($t_rep->load(array('md5' => $vs_md5))) { 
-			return true;
+			return $t_rep;
 		}
 		
 		return false;

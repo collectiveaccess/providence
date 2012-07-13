@@ -369,7 +369,7 @@ class SearchResult extends BaseObject {
 	 *		template = formats attribute values; precede element codes with a caret ("^"). Eg. "^address1<br/>^city, ^state ^postalcode ^country"; only used when returnAsArray is false and a scalar is therefore to be returned.
 	 *		delimiter = 
 	 *		returnAllLocales = 
-	 *		convertCodesToDisplayText = if true then list_ids are automatically converted to display text in the current locale; default is false (return list_ids raw)
+	 *		convertCodesToDisplayText = if true then item_ids are automatically converted to display text in the current locale; default is false (return item_ids raw)
 	 *
 	 * 		restrict_to_type = restricts returned items to those of the specified type; only supports a single type which can be specified as a list item_code or item_id
  	 *		restrictToType = synonym for restrict_to_type
@@ -561,21 +561,11 @@ class SearchResult extends BaseObject {
 								case 'label':
 								case 'preferred_labels':
 								case $va_path_components['table_name'].'.preferred_labels':
-									$vs_field_val = $va_relation_info['label'];
+									
 									if ($vb_show_hierarachy) {
-										if ($va_ids_by_hier = $this->get($va_path_components['table_name'].'.hierarchy.'.$t_instance->primaryKey(), array_merge($pa_options, array('returnAsArray' => true)))) {
-										
-											$va_vals = array();
-											foreach($va_ids_by_hier as $va_ids) {
-												foreach($va_ids as $vn_id) {
-													if($t_instance->load($vn_id)) {
-														$va_vals[] = $t_instance->get($va_path_components['table_name'].".preferred_labels", $pa_options);
-													}
-												}
-											}
-											
-											$vs_field_val = join($vb_show_hierarachy ? $vs_hierarchical_delimiter : $vs_delimiter, $va_vals);
-										}
+										$vs_field_val = $qr_rel_items->get($va_path_components['table_name'].'.hierarchy.preferred_labels', array_merge($pa_options, array('delimiter' => $vs_hierarchical_delimiter)));
+									} else {
+										$vs_field_val = $va_relation_info['label'];
 									}
 									$vs_value = str_replace("^{$vs_tag}", $vs_field_val, $vs_value);
 									break;
@@ -628,7 +618,7 @@ class SearchResult extends BaseObject {
 				$vb_get_preferred_labels_only = ($va_path_components['field_name'] == 'preferred_labels') ? true : false;
 				$vb_get_nonpreferred_labels_only = ($va_path_components['field_name'] == 'nonpreferred_labels') ? true : false;
 				
-				if ($va_path_components['num_components'] == 2) {
+				if ($va_path_components['num_components'] == 2) {	// if it's just <table_name>.preferred_labels then return an array of fields from the label table
 					$vb_return_all_label_values = true;
 				}
 				
@@ -1078,7 +1068,7 @@ class SearchResult extends BaseObject {
 								
 								// do we need to translate foreign key and choice list codes to display text?
 								$t_instance = $this->opo_datamodel->getInstanceByTableName($va_path_components['table_name'], true);
-								$vs_prop = ($vb_return_all_label_values) ? $va_value[$t_instance->getProperty('LABEL_DISPLAY_FIELD')] : $va_value[$va_path_components['field_name']];
+								$vs_prop = ($vb_return_all_label_values) ? $va_value : $va_value[$va_path_components['field_name']];
 								
 								if ($vb_get_relationship_typename) {
 									if (!$t_rel_type) { $t_rel_type = $this->opo_datamodel->getInstanceByTableName('ca_relationship_types', true); }

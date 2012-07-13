@@ -58,7 +58,7 @@
 		<link href="<?php print $this->request->getBaseUrlPath(); ?>/plain.css" media="screen" rel="stylesheet" type="text/css" />
 		<![endif]-->
 		<link rel="stylesheet" href="<?php print $this->request->getBaseUrlPath(); ?>/js/jquery/jquery-tileviewer/jquery.tileviewer.css" type="text/css" media="screen" />
-
+		<link rel="stylesheet" href="<?php print $this->request->getBaseUrlPath(); ?>/js/jquery/fullcalendar/fullcalendar.css" type="text/css" media="screen" />
 <?php
 	print JavascriptLoadManager::getLoadHTML($this->request->getBaseUrlPath());
 	print MetaTagManager::getHTML();

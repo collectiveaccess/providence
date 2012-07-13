@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2009-2011 Whirl-i-Gig
+ * Copyright 2009-2012 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -182,9 +182,10 @@ class ItemInfoService extends BaseService {
 					"element_code" => $vo_value->getElementCode(),
 					"element_id" => $vo_value->getElementID(),
 					"attribute_info" => $t_subject_instance->getAttributeLabelAndDescription($vo_value->getElementCode()),
-					"datatype" => $va_element_type_cfg[$t_element->get("datatype")]				);
+					"datatype" => $va_element_type_cfg[$t_element->get("datatype")]
+				);
 			}
-			$va_return[] = $va_attr;
+			$va_return[$vo_attr->getAttributeID()] = $va_attr;
 		}
 		return $va_return;
 	}
@@ -202,20 +203,25 @@ class ItemInfoService extends BaseService {
 			throw new SoapFault("Server", "Invalid type or item_id");
 		}
 		$t_locale = new ca_locales();
-
+		$t_element = new ca_metadata_elements();
 		$va_attrs = $t_subject_instance->getAttributesByElement($attribute_code_or_id);
 		$va_return = array();
+		$va_element_type_cfg = ca_metadata_elements::getAttributeTypes();
 		foreach($va_attrs as $vo_attr){
 			$va_attr = array();
 			foreach($vo_attr->getValues() as $vo_value){
+				$t_element->load($vo_value->getElementID());
 				$va_attr[] = array(
-					"element_id" => $vo_value->getElementID(),
 					"value_id" => $vo_value->getValueID(),
 					"display_value" => $vo_value->getDisplayValue(),
+					"element_code" => $vo_value->getElementCode(),
+					"element_id" => $vo_value->getElementID(),
+					"attribute_info" => $t_subject_instance->getAttributeLabelAndDescription($vo_value->getElementCode()),
+					"datatype" => $va_element_type_cfg[$t_element->get("datatype")],
 					"locale" => $t_locale->localeIDToCode($vo_attr->getLocaleID()),
 				);
 			}
-			$va_return[] = $va_attr;
+			$va_return[$vo_attr->getAttributeID()] = $va_attr;
 		}
 		return $va_return;
 	}
@@ -321,6 +327,33 @@ class ItemInfoService extends BaseService {
 		}
 		
 		return $va_return;
+	}
+	# -------------------------------------------------------
+	/**
+	 * Get URLs to media versions using MD5 hash of original file
+	 *
+	 * @param string $md5 MD5 hash for media to fetch urls for
+	 * @param array $versions list of media versions that should be included in the result
+	 * @return array
+	 * @throws SoapFault
+	 */
+	public function getObjectRepresentationURLByMD5($md5,$versions){
+		if(!$versions) { return array(); }
+		if (!is_array($versions)) { $versions = array($versions); }
+		if(!($t_subject_instance = $this->getTableInstance("ca_object_representations", null))){
+			throw new SoapFault("Server", "Couldn't create instance");
+		}
+		if (!$t_subject_instance->load(array('md5' => $md5, 'deleted' => 0))) {
+			throw new SoapFault("Server", "Media with MD5 does not exist");
+		}
+		
+		$va_urls = array();
+		foreach($versions as $version) {
+			if ($vs_url = $t_subject_instance->getMediaUrl('media', $version)) {
+				$va_urls[$version] = $vs_url;
+			}
+		}
+		return $va_urls;
 	}
 	# -------------------------------------------------------
 	/**

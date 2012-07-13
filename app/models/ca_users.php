@@ -287,8 +287,8 @@ class ca_users extends BaseModel {
 	#    the record identified by the primary key value
 	#
 	# ------------------------------------------------------
-	public function __construct($pn_id=null) {
-		parent::__construct($pn_id);	# call superclass constructor	
+	public function __construct($pn_id=null, $pb_use_cache=false) {
+		parent::__construct($pn_id, $pb_use_cache);	# call superclass constructor	
 		
 		$this->opo_auth_config = Configuration::load($this->getAppConfig()->get("authentication_config"));
 	}
@@ -300,7 +300,7 @@ class ca_users extends BaseModel {
 	 * @param integer $pm_user_id User id to load. If you pass a string instead of an integer, the record with a user name matching the string will be loaded.
 	 * @return bool Returns true if no error, false if error occurred
 	 */	
-	public function load($pm_user_id=null) {
+	public function load($pm_user_id=null, $pb_use_cache=false) {
 		if (is_numeric($pm_user_id)) {
 			$vn_rc = parent::load($pm_user_id);
 		} else {

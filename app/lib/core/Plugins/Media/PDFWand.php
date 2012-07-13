@@ -226,7 +226,7 @@ class WLPlugMediaPDFWand Extends WLPlug implements IWLPlugMedia {
 	}
 	# ------------------------------------------------
 	private function _imageMagickIdentify($ps_filepath) {
-		exec($this->ops_imagemagick_path.'/identify -format "%m;%w;%h;%p\n" "'.$ps_filepath."\" 2> /dev/null", $va_output, $vn_return);
+		exec($this->ops_imagemagick_path.'/identify -format "%m;%w;%h;%p\n" '.caEscapeShellArg($ps_filepath)." 2> /dev/null", $va_output, $vn_return);
 		
 		array_pop($va_output); // last line is blank
 		if (is_array($va_output) && (sizeof($va_output) > 0)) {
@@ -334,7 +334,7 @@ class WLPlugMediaPDFWand Extends WLPlug implements IWLPlugMedia {
 		//try to extract text
 		if (caMediaPluginPdftotextInstalled($this->ops_pdftotext_path)) {
 			$vs_tmp_filename = tempnam('/tmp', 'CA_PDF_TEXT');
-			exec($this->ops_pdftotext_path.' -q -enc UTF-8 \''.$ps_filepath.'\' '.$vs_tmp_filename);
+			exec($this->ops_pdftotext_path.' -q -enc UTF-8 '.caEscapeShellArg($ps_filepath).' '.caEscapeShellArg($vs_tmp_filename));
 			$vs_extracted_text = file_get_contents($vs_tmp_filename);
 			$this->handle['content'] = $this->ohandle['content'] = $vs_extracted_text;
 			@unlink($vs_tmp_filename);
@@ -461,7 +461,7 @@ class WLPlugMediaPDFWand Extends WLPlug implements IWLPlugMedia {
 				$vb_processed_preview = false;
 				switch($ps_mimetype) {
 					case 'image/jpeg':
-						exec(escapeshellcmd($this->ops_ghostscript_path." -dNOPAUSE -dBATCH -sDEVICE=".($vn_scaling_correction ? "tiff24nc" : "jpeg")." $vs_antialiasing -dJPEGQ=".$vn_quality." -dFirstPage=".$vn_page." -dLastPage=".$vn_page." -sOutputFile=\"".$ps_filepath.".".$vs_ext."\" -r".$vs_res." \"".$this->handle["filepath"]."\""), $va_output, $vn_return);
+						exec($this->ops_ghostscript_path." -dNOPAUSE -dBATCH -sDEVICE=".($vn_scaling_correction ? "tiff24nc" : "jpeg")." $vs_antialiasing -dJPEGQ=".$vn_quality." -dFirstPage=".$vn_page." -dLastPage=".$vn_page." -sOutputFile=".caEscapeShellArg($ps_filepath.".".$vs_ext)." -r".$vs_res." ".caEscapeShellArg($this->handle["filepath"]), $va_output, $vn_return);
 						
 						if ($vn_return == 0) {
 							$vb_processed_preview = true;
@@ -470,7 +470,7 @@ class WLPlugMediaPDFWand Extends WLPlug implements IWLPlugMedia {
 					case 'image/tiff':
 					case 'image/png':
 					case 'image/gif':
-						exec(escapeshellcmd($this->ops_ghostscript_path." -dNOPAUSE -dBATCH -sDEVICE=tiff24nc $vs_antialiasing -dFirstPage=".$vn_page." -dLastPage=".$vn_page." -sOutputFile=\"".$ps_filepath.".".$vs_ext."\" -r".$vs_res." \"".$this->handle["filepath"]."\""), $va_output, $vn_return);
+						exec($this->ops_ghostscript_path." -dNOPAUSE -dBATCH -sDEVICE=tiff24nc $vs_antialiasing -dFirstPage=".$vn_page." -dLastPage=".$vn_page." -sOutputFile=".caEscapeShellArg($ps_filepath.".".$vs_ext)." -r".$vs_res." ".caEscapeShellArg($this->handle["filepath"]), $va_output, $vn_return);
 						if ($vn_return == 0) {
 							$vb_processed_preview = true;
 						}
