@@ -1,10 +1,10 @@
 <?xml version="1.0" encoding="utf-8"?>
 <profile xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="profile.xsd" useForConfiguration="1" base="base" infoUrl="http://providence.collectiveaccess.org/wiki/DefaultProfile">
-  <profileName>[DEFAULT] Visual resources collection</profileName>
-  <profileDescription>Profile for art gallery, art collection, or any type of visual resources collection</profileDescription>
+  <profileName>[SMHI]</profileName>
+  <profileDescription></profileDescription>
   <locales>
+    <locale lang="sv" country="SE">Svenska</locale>
     <locale lang="en" country="US">English</locale>
-    <locale lang="sv" country="SE">Français</locale>
   </locales>
   <lists>
     <list code="aat_vocabulary" hierarchical="1" system="0" vocabulary="1">
@@ -35,7 +35,7 @@
               <name_plural>Permanent Collections</name_plural>
             </label>
             <label locale="sv_SE" preferred="1">
-              <name_singular>Permanenta samling</name_singular>
+              <name_singular>Permanent samling</name_singular>
               <name_plural>Permanenta samlingar</name_plural>
             </label>
           </labels>
@@ -64,11 +64,11 @@
             </label>
           </labels>
         </item>
-        <item idno="film_media" enabled="1" default="1">
+        <item idno="film" enabled="1" default="1">
           <labels>
             <label locale="en_US" preferred="1">
-              <name_singular>Film &amp; Media</name_singular>
-              <name_plural>Film &amp; Media</name_plural>
+              <name_singular>Film</name_singular>
+              <name_plural>Film</name_plural>
             </label>
             <label locale="sv_SE" preferred="1">
               <name_singular>Film</name_singular>
@@ -175,12 +175,12 @@
         <item idno="gift" enabled="1" default="1">
           <labels>
             <label locale="en_US" preferred="1">
-              <name_singular>gift</name_singular>
-              <name_plural>gifts</name_plural>
+              <name_singular>Gift</name_singular>
+              <name_plural>Gifts</name_plural>
             </label>
             <label locale="sv_SE" preferred="1">
-              <name_singular>gåva</name_singular>
-              <name_plural>gåvor</name_plural>
+              <name_singular>Gåva</name_singular>
+              <name_plural>Gåvor</name_plural>
             </label>
           </labels>
         </item>
@@ -199,12 +199,12 @@
         <item idno="donation" enabled="1" default="0">
           <labels>
             <label locale="en_US" preferred="1">
-              <name_singular>donation</name_singular>
-              <name_plural>donations</name_plural>
+              <name_singular>Donation</name_singular>
+              <name_plural>Donations</name_plural>
             </label>
             <label locale="sv_SE" preferred="1">
-              <name_singular>donation</name_singular>
-              <name_plural>donationer</name_plural>
+              <name_singular>Donation</name_singular>
+              <name_plural>Donationer</name_plural>
             </label>
           </labels>
         </item>
@@ -343,24 +343,24 @@
         <item idno="individual" enabled="1" default="1">
           <labels>
             <label locale="en_US" preferred="1">
-              <name_singular>individual</name_singular>
-              <name_plural>individuals</name_plural>
+              <name_singular>Individual</name_singular>
+              <name_plural>Individuals</name_plural>
             </label>
             <label locale="sv_SE" preferred="1">
-              <name_singular>person</name_singular>
-              <name_plural>personer</name_plural>
+              <name_singular>Person</name_singular>
+              <name_plural>Personer</name_plural>
             </label>
           </labels>
         </item>
         <item idno="organization" enabled="1" default="0">
           <labels>
             <label locale="en_US" preferred="1">
-              <name_singular>organization</name_singular>
-              <name_plural>organizations</name_plural>
+              <name_singular>Organization</name_singular>
+              <name_plural>Organizations</name_plural>
             </label>
             <label locale="sv_SE" preferred="1">
-              <name_singular>organisation</name_singular>
-              <name_plural>organisationer</name_plural>
+              <name_singular>Organisation</name_singular>
+              <name_plural>Organisationer</name_plural>
             </label>
           </labels>
         </item>
@@ -379,12 +379,12 @@
         <item idno="alt" enabled="1" default="1">
           <labels>
             <label locale="en_US" preferred="1">
-              <name_singular>alternate</name_singular>
-              <name_plural>alternates</name_plural>
+              <name_singular>Alternate</name_singular>
+              <name_plural>Alternates</name_plural>
             </label>
             <label locale="sv_SE" preferred="1">
-              <name_singular>alternativ</name_singular>
-              <name_plural>alternativ</name_plural>
+              <name_singular>Alternativ</name_singular>
+              <name_plural>Alternativ</name_plural>
             </label>
           </labels>
         </item>
@@ -484,15 +484,15 @@
         </label>
       </labels>
       <items>
-        <item idno="exhibitions" enabled="1" default="1">
+        <item idno="fieldstudy" enabled="1" default="1">
           <labels>
             <label locale="en_US" preferred="1">
-              <name_singular>exhibition</name_singular>
-              <name_plural>exhibitions</name_plural>
+              <name_singular>Field study</name_singular>
+              <name_plural>Field studies</name_plural>
             </label>
             <label locale="sv_SE" preferred="1">
-              <name_singular>utställning</name_singular>
-              <name_plural>utställningar</name_plural>
+              <name_singular>Fältstudie</name_singular>
+              <name_plural>Fältstudier</name_plural>
             </label>
           </labels>
         </item>
@@ -535,48 +535,48 @@
         <item idno="building" enabled="1" default="1">
           <labels>
             <label locale="en_US" preferred="1">
-              <name_singular>building</name_singular>
-              <name_plural>buildings</name_plural>
+              <name_singular>Building</name_singular>
+              <name_plural>Buildings</name_plural>
             </label>
             <label locale="sv_SE" preferred="1">
-              <name_singular>byggnad</name_singular>
-              <name_plural>byggnader</name_plural>
+              <name_singular>Byggnad</name_singular>
+              <name_plural>Byggnader</name_plural>
             </label>
           </labels>
         </item>
         <item idno="floor" enabled="1" default="0">
           <labels>
             <label locale="en_US" preferred="1">
-              <name_singular>floor</name_singular>
-              <name_plural>floors</name_plural>
+              <name_singular>Floor</name_singular>
+              <name_plural>Floors</name_plural>
             </label>
             <label locale="sv_SE" preferred="1">
-              <name_singular>våning</name_singular>
-              <name_plural>våningar</name_plural>
+              <name_singular>Våning</name_singular>
+              <name_plural>Våningar</name_plural>
             </label>
           </labels>
         </item>
         <item idno="room" enabled="1" default="0">
           <labels>
             <label locale="en_US" preferred="1">
-              <name_singular>room</name_singular>
-              <name_plural>rooms</name_plural>
+              <name_singular>Room</name_singular>
+              <name_plural>Rooms</name_plural>
             </label>
             <label locale="sv_SE" preferred="1">
-              <name_singular>rum</name_singular>
-              <name_plural>rum</name_plural>
+              <name_singular>Rum</name_singular>
+              <name_plural>Rum</name_plural>
             </label>
           </labels>
         </item>
         <item idno="cabinet" enabled="1" default="0">
           <labels>
             <label locale="en_US" preferred="1">
-              <name_singular>cabinet</name_singular>
-              <name_plural>cabinets</name_plural>
+              <name_singular>Cabinet</name_singular>
+              <name_plural>Cabinets</name_plural>
             </label>
             <label locale="sv_SE" preferred="1">
-              <name_singular>skåp</name_singular>
-              <name_plural>skåp</name_plural>
+              <name_singular>Skåp</name_singular>
+              <name_plural>Skåp</name_plural>
             </label>
           </labels>
         </item>
@@ -807,7 +807,7 @@
           <description>Narrative description. This is the primary text used to document the item.</description>
         </label>
         <label locale="sv_SE">
-          <name>Description</name>
+          <name>Beskrivning</name>
           <description>Berättande beskrivning</description>
         </label>
       </labels>
@@ -884,8 +884,8 @@
           <description>Source of item description. This should be a formal citation if possible. For informal sources a narrative description is acceptable.</description>
         </label>
         <label locale="sv_SE">
-          <name>Source de la description</name>
-          <description>Beskrivningskälla</description>
+          <name>Beskrivningskälla</name>
+          <description>Formell källhänvisning (om det finns)</description>
         </label>
       </labels>
       <settings>
@@ -928,7 +928,7 @@
           <description>A point or period of time associated with an event in the lifecycle of the resource.</description>
         </label>
         <label locale="sv_SE">
-          <name>Dates</name>
+          <name>Datum</name>
           <description>En tidpunkt associerad med en händelse i tillgångens livscykel.</description>
         </label>
       </labels>
@@ -1432,7 +1432,7 @@
           <name>Condition</name>
         </label>
         <label locale="sv_SE">
-          <name>Condition</name>
+          <name>Tillstånd</name>
         </label>
       </labels>
       <settings>
@@ -1456,7 +1456,7 @@
           <name>Physical description</name>
         </label>
         <label locale="sv_SE">
-          <name>Description physique</name>
+          <name>Fysisk beskrivning</name>
         </label>
       </labels>
       <settings>
@@ -1481,7 +1481,7 @@
           <name>Medium</name>
         </label>
         <label locale="sv_SE">
-          <name>Médium</name>
+          <name>Medium</name>
         </label>
       </labels>
       <settings>
@@ -1508,7 +1508,7 @@
         </label>
         <label locale="sv_SE">
           <name>Dimensions</name>
-          <description>Dimensions physiques de l\'objet</description>
+          <description>Objektets fysiska dimensioner</description>
         </label>
       </labels>
       <settings>
@@ -1519,11 +1519,11 @@
           <labels>
             <label locale="en_US">
               <name>Width</name>
-              <description>Width of object; enter in your preferred units (eg. 10cm</description>
+              <description>Width of object; enter in your preferred units (eg. 10cm)</description>
             </label>
             <label locale="sv_SE">
-              <name>Largeur</name>
-              <description>Largeur de l\'objet ; saisissez la dans l\'unité de votre choix (par exemple 10cm</description>
+              <name>Bredd</name>
+              <description>Objektets bredd. Ange i relevant längdenhet (exempelvis 10cm)</description>
             </label>
           </labels>
           <settings>
@@ -1535,11 +1535,11 @@
           <labels>
             <label locale="en_US">
               <name>Height</name>
-              <description>Height of object; enter in your preferred units (eg. 10cm</description>
+              <description>Height of object; enter in your preferred units (eg. 10cm)</description>
             </label>
             <label locale="sv_SE">
-              <name>Hauteur</name>
-              <description>Hauteur de l\'objet ; saisissez la dans l\'unité de votre choix (par exemple 10cm</description>
+              <name>Höjd</name>
+              <description>Objektets höjd. Ange i relevant längdenhet (exempelvis 10cm)</description>
             </label>
           </labels>
           <settings>
@@ -1551,11 +1551,11 @@
           <labels>
             <label locale="en_US">
               <name>Depth</name>
-              <description>Depth of object; enter in your preferred units (eg. 10cm</description>
+              <description>Depth of object; enter in your preferred units (eg. 10cm)</description>
             </label>
             <label locale="sv_SE">
-              <name>Profondeur</name>
-              <description>Profondeur de l\'objet ; saisissez la dans l\'unité de votre choix (par exemple 10cm</description>
+              <name>Djup</name>
+              <description>Objektets djup. Ange i relevant längdenhet (exempelvis 10cm)</description>
             </label>
           </labels>
           <settings>
@@ -1570,8 +1570,8 @@
               <description>The type of measurement this is.</description>
             </label>
             <label locale="sv_SE">
-              <name>Type</name>
-              <description>Le type de mesure dont il s\'agit.</description>
+              <name>Typ</name>
+              <description>Dimensionstyp</description>
             </label>
           </labels>
           <settings>
@@ -1597,7 +1597,7 @@
           <name>Object date</name>
         </label>
         <label locale="sv_SE">
-          <name>Date de l\'objet</name>
+          <name>Objektsdatum</name>
         </label>
       </labels>
       <settings>
@@ -1620,7 +1620,7 @@
           <name>Accession date</name>
         </label>
         <label locale="sv_SE">
-          <name>Date d\'acquisition</name>
+          <name>Accessionsdatum</name>
         </label>
       </labels>
       <settings>
@@ -1643,7 +1643,7 @@
           <name>Administrative notes</name>
         </label>
         <label locale="sv_SE">
-          <name>Notes administratives</name>
+          <name>Administrativa anteckningar</name>
         </label>
       </labels>
       <settings>
@@ -1668,7 +1668,7 @@
           <name>Edition number</name>
         </label>
         <label locale="sv_SE">
-          <name>Mention d\'édition</name>
+          <name>Utgåva</name>
         </label>
       </labels>
       <settings>
@@ -1693,7 +1693,7 @@
           <name>Inscription</name>
         </label>
         <label locale="sv_SE">
-          <name>Inscription</name>
+          <name>Inskription</name>
         </label>
       </labels>
       <settings>
@@ -1718,7 +1718,7 @@
           <name>Provenance</name>
         </label>
         <label locale="sv_SE">
-          <name>Origine</name>
+          <name>Proviniens</name>
         </label>
       </labels>
       <settings>
@@ -1744,8 +1744,8 @@
           <description>Track the history of object storage and movement.</description>
         </label>
         <label locale="sv_SE">
-          <name>Précédents emplacements</name>
-          <description>Conserve l\'historique des emplacements et des mouvements d\'un objet.</description>
+          <name>Tidigare lagringsplatser</name>
+          <description>Följ objektets lagringsplatshistoria</description>
         </label>
       </labels>
       <settings/>
@@ -1756,7 +1756,7 @@
               <name>Storage Location</name>
             </label>
             <label locale="sv_SE">
-              <name>Emplacement</name>
+              <name>Förvaringsplats</name>
             </label>
           </labels>
           <settings/>
@@ -1767,7 +1767,7 @@
                   <name>Storage Location</name>
                 </label>
                 <label locale="sv_SE">
-                  <name>Emplacement</name>
+                  <name>Förvaringsplats</name>
                 </label>
               </labels>
               <settings>
@@ -1785,7 +1785,7 @@
               <name>Date of Move</name>
             </label>
             <label locale="sv_SE">
-              <name>Date de mouvement</name>
+              <name>Flyttdatum</name>
             </label>
           </labels>
           <settings/>
@@ -1796,7 +1796,7 @@
                   <name>Date of Move</name>
                 </label>
                 <label locale="sv_SE">
-                  <name>Date de mouvement</name>
+                  <name>Flyttdatum</name>
                 </label>
               </labels>
               <settings>
@@ -1814,7 +1814,7 @@
               <name>Authorization</name>
             </label>
             <label locale="sv_SE">
-              <name>Autorisation</name>
+              <name>Godkännande</name>
             </label>
           </labels>
           <settings/>
@@ -1825,7 +1825,7 @@
                   <name>Authorization</name>
                 </label>
                 <label locale="sv_SE">
-                  <name>Autorisation</name>
+                  <name>Godkännande</name>
                 </label>
               </labels>
               <settings>
@@ -1856,7 +1856,7 @@
           <name>Credit</name>
         </label>
         <label locale="sv_SE">
-          <name>Crédit</name>
+          <name>Credit</name>
         </label>
       </labels>
       <settings>
@@ -1890,7 +1890,7 @@
           <name>Condition notes</name>
         </label>
         <label locale="sv_SE">
-          <name>Etat de conservation</name>
+          <name>Anteckningar angående objektets fysiska tillstånd</name>
         </label>
       </labels>
       <settings>
@@ -1915,7 +1915,7 @@
           <name>Media license</name>
         </label>
         <label locale="sv_SE">
-          <name>Licence du média</name>
+          <name>Medialicens</name>
         </label>
       </labels>
       <settings>
@@ -1940,7 +1940,7 @@
           <name>Purchase price</name>
         </label>
         <label locale="sv_SE">
-          <name>Prix d\'achat</name>
+          <name>Inköpspris</name>
         </label>
       </labels>
       <settings>
@@ -1963,7 +1963,7 @@
           <name>Color type</name>
         </label>
         <label locale="sv_SE">
-          <name>Type de couleur</name>
+          <name>Färgtyp</name>
         </label>
       </labels>
       <settings>
@@ -1997,7 +1997,7 @@
           <name>Runtime</name>
         </label>
         <label locale="sv_SE">
-          <name>Durée</name>
+          <name>Längd</name>
         </label>
       </labels>
       <settings>
@@ -2022,7 +2022,7 @@
           <name>Media rights</name>
         </label>
         <label locale="sv_SE">
-          <name>Droits pour le média</name>
+          <name>Medias upphovsrätt</name>
         </label>
       </labels>
       <settings>
@@ -2044,7 +2044,7 @@
           <name>Nationality</name>
         </label>
         <label locale="sv_SE">
-          <name>Nationalité</name>
+          <name>Nationalitet</name>
         </label>
       </labels>
       <settings>
@@ -2069,7 +2069,7 @@
           <name>Biography</name>
         </label>
         <label locale="sv_SE">
-          <name>Biographie</name>
+          <name>Biografi</name>
         </label>
       </labels>
       <settings>
@@ -2094,7 +2094,7 @@
           <name>Life dates</name>
         </label>
         <label locale="sv_SE">
-          <name>Dates</name>
+          <name>Datum</name>
         </label>
       </labels>
       <settings>
@@ -2117,7 +2117,7 @@
           <name>Address</name>
         </label>
         <label locale="sv_SE">
-          <name>Adresse</name>
+          <name>Adress</name>
         </label>
       </labels>
       <settings/>
@@ -2128,7 +2128,7 @@
               <name>Address line 1</name>
             </label>
             <label locale="sv_SE">
-              <name>Adresse ligne 1</name>
+              <name>Adresslinje 1</name>
             </label>
           </labels>
           <settings/>
@@ -2139,7 +2139,7 @@
                   <name>Address line 1</name>
                 </label>
                 <label locale="sv_SE">
-                  <name>Adresse ligne 1</name>
+                  <name>Adresslinje 1</name>
                 </label>
               </labels>
               <settings>
@@ -2157,7 +2157,7 @@
               <name>Address line 2</name>
             </label>
             <label locale="sv_SE">
-              <name>Adresse ligne 2</name>
+              <name>Adresslinje 2</name>
             </label>
           </labels>
           <settings/>
@@ -2168,7 +2168,7 @@
                   <name>Address line 2</name>
                 </label>
                 <label locale="sv_SE">
-                  <name>Adresse ligne 2</name>
+                  <name>Adresslinje 2</name>
                 </label>
               </labels>
               <settings>
@@ -2186,7 +2186,7 @@
               <name>Address line 3</name>
             </label>
             <label locale="sv_SE">
-              <name>Adresse ligne 3</name>
+              <name>Adresslinje 3</name>
             </label>
           </labels>
           <settings/>
@@ -2197,7 +2197,7 @@
                   <name>City</name>
                 </label>
                 <label locale="sv_SE">
-                  <name>Ville</name>
+                  <name>Postadress</name>
                 </label>
               </labels>
               <settings>
@@ -2213,7 +2213,7 @@
                   <name>State/province</name>
                 </label>
                 <label locale="sv_SE">
-                  <name>Etat/province</name>
+                  <name>Delstat eller provins</name>
                 </label>
               </labels>
               <settings>
@@ -2229,7 +2229,7 @@
                   <name>Postal/zip code</name>
                 </label>
                 <label locale="sv_SE">
-                  <name>Code postal</name>
+                  <name>Postnummer</name>
                 </label>
               </labels>
               <settings>
@@ -2245,7 +2245,7 @@
                   <name>Country</name>
                 </label>
                 <label locale="sv_SE">
-                  <name>Pays</name>
+                  <name>Land</name>
                 </label>
               </labels>
               <settings>
@@ -2263,7 +2263,7 @@
               <name>Address type</name>
             </label>
             <label locale="sv_SE">
-              <name>Type d\'adresse</name>
+              <name>Adresstyp</name>
             </label>
           </labels>
           <settings/>
@@ -2274,7 +2274,7 @@
                   <name>Address type</name>
                 </label>
                 <label locale="sv_SE">
-                  <name>Type d\'adresse</name>
+                  <name>Adresstyp</name>
                 </label>
               </labels>
               <settings>
@@ -2304,7 +2304,7 @@
           <name>Telephone/fax</name>
         </label>
         <label locale="sv_SE">
-          <name>Téléphone/fax</name>
+          <name>Telefon/fax</name>
         </label>
       </labels>
       <settings>
@@ -2330,7 +2330,7 @@
           <name>Web site url</name>
         </label>
         <label locale="sv_SE">
-          <name>URL du site web</name>
+          <name>Webbplats URL</name>
         </label>
       </labels>
       <settings>
@@ -2356,7 +2356,7 @@
           <name>Email address</name>
         </label>
         <label locale="sv_SE">
-          <name>Adresse email</name>
+          <name>E-mail adress</name>
         </label>
       </labels>
       <settings>
@@ -2382,7 +2382,7 @@
           <name>Notes</name>
         </label>
         <label locale="sv_SE">
-          <name>Notes</name>
+          <name>Anteckningar</name>
         </label>
       </labels>
       <settings>
@@ -2408,8 +2408,8 @@
           <description>Information about rights held in and over the resource.</description>
         </label>
         <label locale="sv_SE">
-          <name>Droits</name>
-          <description>Informations sur les droits détenus sur la ressource et les droits dérivés.</description>
+          <name>Rättigheter</name>
+          <description>Information om rättigheter angående tillgången.</description>
         </label>
       </labels>
       <documentationUrl>http://dublincore.org/documents/dcmi-terms/#terms-rights</documentationUrl>
@@ -2437,8 +2437,8 @@
           <description>Add citation information related to the publication</description>
         </label>
         <label locale="sv_SE">
-          <name>Citation</name>
-          <description>Ajouter une information de citation dans une publication</description>
+          <name>Källhänvisning</name>
+          <description>Lägg till källhänvisning relaterad till publikationen</description>
         </label>
       </labels>
       <settings>
@@ -2466,8 +2466,8 @@
           <description>Information about the publication.</description>
         </label>
         <label locale="sv_SE">
-          <name>Information de publication</name>
-          <description>Information sur la publication.</description>
+          <name>Publikationsinformation</name>
+          <description>Information angående publikationen.</description>
         </label>
       </labels>
       <settings>
@@ -2480,7 +2480,7 @@
               <name>publication Container</name>
             </label>
             <label locale="sv_SE">
-              <name>Informations de publication</name>
+              <name>publikationens Container</name>
             </label>
           </labels>
           <settings>
@@ -2495,7 +2495,7 @@
                 </label>
                 <label locale="sv_SE">
                   <name>ISBN</name>
-                  <description>Le numéro ISBN de l\'ouvrage.</description>
+                  <description>Bokens ISBN.</description>
                 </label>
               </labels>
               <settings>
@@ -2514,7 +2514,7 @@
               <name>publication Container 2</name>
             </label>
             <label locale="sv_SE">
-              <name>Informations de publication 2</name>
+              <name>publikationens Container 2</name>
             </label>
           </labels>
           <settings>
@@ -2529,7 +2529,7 @@
                 </label>
                 <label locale="sv_SE">
                   <name>Nombre de pages</name>
-                  <description>Le nombre de pages du livre.</description>
+                  <description>Antal sidor i boken.</description>
                 </label>
               </labels>
               <settings>
@@ -2550,7 +2550,7 @@
             </label>
             <label locale="sv_SE">
               <name>Edition de</name>
-              <description>Combien de livres ont été publiés</description>
+              <description>Antal böcker som publicerades</description>
             </label>
           </labels>
           <settings>
@@ -2578,11 +2578,11 @@
       <labels>
         <label locale="en_US">
           <name>Alternate publication numbers</name>
-          <description>List alternate publication numbers (ISBN</description>
+          <description>List alternate publication numbers (ISBN)</description>
         </label>
         <label locale="sv_SE">
-          <name>Autres numéros de publication</name>
-          <description>Lister ici les autres numéros de publications (ISBN</description>
+          <name>Ytterligare publikationsnummer</name>
+          <description>Lista ytterligare eller alternativa ISBN</description>
         </label>
       </labels>
       <settings>
@@ -2593,11 +2593,11 @@
           <labels>
             <label locale="en_US">
               <name>Alternate publication numbers</name>
-              <description>List alternate publication numbers (ISBN</description>
+              <description>List alternate publication numbers (ISBN)</description>
             </label>
             <label locale="sv_SE">
-              <name>Autres numéros de publication</name>
-              <description>Lister ici les autres numéros de publications (ISBN</description>
+              <name>Ytterligare pulikationsnummer</name>
+              <description>Lista ytterligare eller alternativa ISBN</description>
             </label>
           </labels>
           <settings>
@@ -2642,7 +2642,7 @@
           <name>Standard object editor</name>
         </label>
         <label locale="sv_SE">
-          <name>Editeur d\'objet standard</name>
+          <name>Objektredigerare (Standard)</name>
         </label>
       </labels>
       <screens>
@@ -2652,7 +2652,7 @@
               <name>Basic info</name>
             </label>
             <label locale="sv_SE">
-              <name>Informations basiques</name>
+              <name>Grundläggande information</name>
             </label>
           </labels>
           <bundlePlacements>
@@ -2660,9 +2660,9 @@
               <bundle>preferred_labels</bundle>
               <settings>
                 <setting name="label" locale="en_US">Title</setting>
-                <setting name="label" option="sv_SE">Titre</setting>
+                <setting name="label" option="sv_SE">Titel</setting>
                 <setting name="add_label" locale="en_US">Add title</setting>
-                <setting name="add_label" option="sv_SE">Ajouter un titre</setting>
+                <setting name="add_label" option="sv_SE">Lägg till titel</setting>
               </settings>
             </placement>
             <placement code="idno">
@@ -2681,9 +2681,9 @@
               <bundle>nonpreferred_labels</bundle>
               <settings>
                 <setting name="label" locale="en_US">Alternate titles</setting>
-                <setting name="label" option="sv_SE">Autres titres</setting>
+                <setting name="label" option="sv_SE">Alternativa titlar</setting>
                 <setting name="add_label" locale="en_US">Add alternate title</setting>
-                <setting name="add_label" option="sv_SE">Ajouter un autre titre</setting>
+                <setting name="add_label" option="sv_SE">Lägg till alternativ titel</setting>
               </settings>
             </placement>
             <placement code="ca_attribute_work_description">
@@ -2724,7 +2724,7 @@
               <name>Administrative info</name>
             </label>
             <label locale="sv_SE">
-              <name>Informations administratives</name>
+              <name>Administrativ information</name>
             </label>
           </labels>
           <bundlePlacements>
@@ -2756,7 +2756,7 @@
               <bundle>ca_object_lots</bundle>
               <settings>
                 <setting name="label" locale="en_US">Part of lot:</setting>
-                <setting name="label" option="sv_SE">Partie du lot</setting>
+                <setting name="label" option="sv_SE">Del av lott</setting>
               </settings>
             </placement>
           </bundlePlacements>
@@ -2767,7 +2767,7 @@
               <name>Media</name>
             </label>
             <label locale="sv_SE">
-              <name>Média</name>
+              <name>Media</name>
             </label>
           </labels>
           <bundlePlacements>
@@ -2782,7 +2782,7 @@
               <name>Storage</name>
             </label>
             <label locale="sv_SE">
-              <name>Emplacement</name>
+              <name>Lagring</name>
             </label>
           </labels>
           <bundlePlacements>
@@ -2790,9 +2790,9 @@
               <bundle>ca_storage_locations</bundle>
               <settings>
                 <setting name="label" locale="en_US">Current storage location</setting>
-                <setting name="label" option="sv_SE">Emplacement courant</setting>
+                <setting name="label" option="sv_SE">Nuvarande lagringsplats</setting>
                 <setting name="add_label" locale="en_US">Add storage location</setting>
-                <setting name="add_label" option="sv_SE">Ajouter un emplacement</setting>
+                <setting name="add_label" option="sv_SE">Lägg till lagringsplats</setting>
               </settings>
             </placement>
             <placement code="ca_attribute_past_storage_locations">
@@ -2806,7 +2806,7 @@
               <name>Sets</name>
             </label>
             <label locale="sv_SE">
-              <name>Ensembles</name>
+              <name>Grupper</name>
             </label>
           </labels>
           <bundlePlacements>
@@ -2821,7 +2821,7 @@
               <name>Relationships</name>
             </label>
             <label locale="sv_SE">
-              <name>Relations</name>
+              <name>Relationer</name>
             </label>
           </labels>
           <bundlePlacements>
@@ -2854,7 +2854,7 @@
               <name>Keywords</name>
             </label>
             <label locale="sv_SE">
-              <name>Mots-clés</name>
+              <name>Nyckelord</name>
             </label>
           </labels>
           <bundlePlacements>
@@ -2865,9 +2865,9 @@
               <bundle>ca_attribute_lcsh_terms</bundle>
               <settings>
                 <setting name="label" locale="en_US">Library of Congress Subject Headings</setting>
-                <setting name="label" option="sv_SE">Vedettes matières Bibliothèque du Congrès</setting>
+                <setting name="label" option="sv_SE">Ämnen enligt USAs kongressbibliotek</setting>
                 <setting name="add_label" locale="en_US">Add new subject heading</setting>
-                <setting name="add_label" option="sv_SE">Ajouter une nouvelle vedette matière</setting>
+                <setting name="add_label" option="sv_SE">Lägg till ämne</setting>
               </settings>
             </placement>
           </bundlePlacements>
@@ -2880,7 +2880,7 @@
           <name>Standard entity editor</name>
         </label>
         <label locale="sv_SE">
-          <name>Editeur standard d\'entité</name>
+          <name>Entitetsredigerare (Standard)</name>
         </label>
       </labels>
       <screens>
@@ -2890,7 +2890,7 @@
               <name>Basic info</name>
             </label>
             <label locale="sv_SE">
-              <name>Informations basiques</name>
+              <name>Grundläggande information</name>
             </label>
           </labels>
           <bundlePlacements>
@@ -2898,9 +2898,9 @@
               <bundle>preferred_labels</bundle>
               <settings>
                 <setting name="label" locale="en_US">Name</setting>
-                <setting name="label" option="sv_SE">Nom</setting>
+                <setting name="label" option="sv_SE">Namn</setting>
                 <setting name="add_label" locale="en_US">Add name</setting>
-                <setting name="add_label" option="sv_SE">Ajouter un nom</setting>
+                <setting name="add_label" option="sv_SE">Lägg till namn</setting>
               </settings>
             </placement>
             <placement code="idno">
@@ -2916,9 +2916,9 @@
               <bundle>nonpreferred_labels</bundle>
               <settings>
                 <setting name="label" locale="en_US">Alternate name</setting>
-                <setting name="label" option="sv_SE">Autre nom</setting>
+                <setting name="label" option="sv_SE">Alternativt namn</setting>
                 <setting name="add_label" locale="en_US">Add alternate name</setting>
-                <setting name="add_label" option="sv_SE">Ajouter un autre nom</setting>
+                <setting name="add_label" option="sv_SE">Lägg till alternativt namn</setting>
               </settings>
             </placement>
             <placement code="ca_attribute_lifespan">
@@ -2941,7 +2941,7 @@
               <name>Contact info</name>
             </label>
             <label locale="sv_SE">
-              <name>Informations de contact</name>
+              <name>Kontaktinformation</name>
             </label>
           </labels>
           <bundlePlacements>
@@ -2965,7 +2965,7 @@
               <name>Relationships</name>
             </label>
             <label locale="sv_SE">
-              <name>Relations</name>
+              <name>Relationer</name>
             </label>
           </labels>
           <bundlePlacements>
@@ -2994,7 +2994,7 @@
           <name>Occurrences editor</name>
         </label>
         <label locale="sv_SE">
-          <name>Editeur d\'occurrences</name>
+          <name>Händeleseredigerare</name>
         </label>
       </labels>
       <screens>
@@ -3004,7 +3004,7 @@
               <name>Basic info</name>
             </label>
             <label locale="sv_SE">
-              <name>Informations basiques</name>
+              <name>Grundläggande information</name>
             </label>
           </labels>
           <bundlePlacements>
@@ -3012,7 +3012,7 @@
               <bundle>preferred_labels</bundle>
               <settings>
                 <setting name="label" locale="en_US">Title</setting>
-                <setting name="label" option="sv_SE">Titre</setting>
+                <setting name="label" option="sv_SE">Titel</setting>
               </settings>
             </placement>
             <placement code="idno">
@@ -3031,7 +3031,7 @@
               <bundle>nonpreferred_labels</bundle>
               <settings>
                 <setting name="label" locale="en_US">Alternate titles</setting>
-                <setting name="label" option="sv_SE">Autres titres</setting>
+                <setting name="label" option="sv_SE">Alternativa titlar</setting>
               </settings>
             </placement>
             <placement code="ca_attribute_date">
@@ -3065,7 +3065,7 @@
               <bundle>ca_attribute_external_link</bundle>
               <settings>
                 <setting name="add_label" locale="en_US">Add external link</setting>
-                <setting name="add_label" option="sv_SE">Ajouter un lien externe</setting>
+                <setting name="add_label" option="sv_SE">Lägg till extern länk</setting>
               </settings>
             </placement>
           </bundlePlacements>
@@ -3076,7 +3076,7 @@
               <name>Relationships</name>
             </label>
             <label locale="sv_SE">
-              <name>Relations</name>
+              <name>Relationer</name>
             </label>
           </labels>
           <bundlePlacements>
@@ -3100,7 +3100,7 @@
               <name>Location</name>
             </label>
             <label locale="sv_SE">
-              <name>Localisation</name>
+              <name>Plats</name>
             </label>
           </labels>
           <bundlePlacements>
@@ -3121,7 +3121,7 @@
               <name>Keywords</name>
             </label>
             <label locale="sv_SE">
-              <name>Mots-clés</name>
+              <name>Nyckelord</name>
             </label>
           </labels>
           <bundlePlacements>
@@ -3132,9 +3132,9 @@
               <bundle>ca_attribute_lcsh_terms</bundle>
               <settings>
                 <setting name="label" locale="en_US">Library of Congress Subject Headings</setting>
-                <setting name="label" option="sv_SE">Vedettes matières Bibliothèque du Congrès</setting>
+                <setting name="label" option="sv_SE">Ämne enligt USAs kongressbibliotek</setting>
                 <setting name="add_label" locale="en_US">Add new subject heading</setting>
-                <setting name="add_label" option="sv_SE">Ajouter une nouvelle vedette matière</setting>
+                <setting name="add_label" option="sv_SE">Lägg till nytt ämne</setting>
               </settings>
             </placement>
           </bundlePlacements>
@@ -3147,7 +3147,7 @@
           <name>Place editor</name>
         </label>
         <label locale="sv_SE">
-          <name>Editeur de lieu</name>
+          <name>Platsredigerare</name>
         </label>
       </labels>
       <screens>
@@ -3157,7 +3157,7 @@
               <name>Basic info</name>
             </label>
             <label locale="sv_SE">
-              <name>Informations basiques</name>
+              <name>Grundläggande information</name>
             </label>
           </labels>
           <bundlePlacements>
@@ -3168,9 +3168,9 @@
               <bundle>preferred_labels</bundle>
               <settings>
                 <setting name="label" locale="en_US">Name</setting>
-                <setting name="label" option="sv_SE">Nom</setting>
+                <setting name="label" option="sv_SE">Namn</setting>
                 <setting name="add_label" locale="en_US">Add name</setting>
-                <setting name="add_label" option="sv_SE">Ajouter un nom</setting>
+                <setting name="add_label" option="sv_SE">Lägg till namn</setting>
               </settings>
             </placement>
             <placement code="idno">
@@ -3193,7 +3193,7 @@
               <name>Relationships</name>
             </label>
             <label locale="sv_SE">
-              <name>Relations</name>
+              <name>Relationer</name>
             </label>
           </labels>
           <bundlePlacements>
@@ -3220,7 +3220,7 @@
               <name>Location</name>
             </label>
             <label locale="sv_SE">
-              <name>Localisation</name>
+              <name>Plats</name>
             </label>
           </labels>
           <bundlePlacements>
@@ -3235,7 +3235,7 @@
               <name>Alternate names</name>
             </label>
             <label locale="sv_SE">
-              <name>Autres noms</name>
+              <name>Alternativa namn</name>
             </label>
           </labels>
           <bundlePlacements>
@@ -3246,9 +3246,9 @@
               <bundle>nonpreferred_labels</bundle>
               <settings>
                 <setting name="label" locale="en_US">Alternate names</setting>
-                <setting name="label" option="sv_SE">Autres noms</setting>
+                <setting name="label" option="sv_SE">Alternativa namn</setting>
                 <setting name="add_label" locale="en_US">Add alternate name</setting>
-                <setting name="add_label" option="sv_SE">Ajouter un autre nom</setting>
+                <setting name="add_label" option="sv_SE">Lägg till alternativt namn</setting>
               </settings>
             </placement>
           </bundlePlacements>
@@ -3261,7 +3261,7 @@
           <name>Standard collection editor</name>
         </label>
         <label locale="sv_SE">
-          <name>Editeur standard de collection</name>
+          <name>Samlingsredigerare (Standard)</name>
         </label>
       </labels>
       <screens>
@@ -3271,7 +3271,7 @@
               <name>Basic info</name>
             </label>
             <label locale="sv_SE">
-              <name>Informations basiques</name>
+              <name>Grunläggande information</name>
             </label>
           </labels>
           <bundlePlacements>
@@ -3279,7 +3279,7 @@
               <bundle>preferred_labels</bundle>
               <settings>
                 <setting name="label" locale="en_US">Title</setting>
-                <setting name="label" option="sv_SE">Titre</setting>
+                <setting name="label" option="sv_SE">Titel</setting>
               </settings>
             </placement>
             <placement code="idno">
@@ -3295,7 +3295,7 @@
               <bundle>nonpreferred_labels</bundle>
               <settings>
                 <setting name="label" locale="en_US">Alternate titles</setting>
-                <setting name="label" option="sv_SE">Autres titres</setting>
+                <setting name="label" option="sv_SE">Alternativa titlar</setting>
               </settings>
             </placement>
             <placement code="ca_attribute_date">
@@ -3312,7 +3312,7 @@
               <name>Relationships</name>
             </label>
             <label locale="sv_SE">
-              <name>Relations</name>
+              <name>Relationer</name>
             </label>
           </labels>
           <bundlePlacements>
@@ -3339,7 +3339,7 @@
               <name>Keywords</name>
             </label>
             <label locale="sv_SE">
-              <name>Mots-clés</name>
+              <name>Nyckelord</name>
             </label>
           </labels>
           <bundlePlacements>
@@ -3350,9 +3350,9 @@
               <bundle>ca_attribute_lcsh_terms</bundle>
               <settings>
                 <setting name="label" locale="en_US">Library of Congress Subject Headings</setting>
-                <setting name="label" option="sv_SE">Vedettes matières Bibliothèque du Congrès</setting>
+                <setting name="label" option="sv_SE">Ämnen enligt USAs kongressbibliotek</setting>
                 <setting name="add_label" locale="en_US">Add new subject heading</setting>
-                <setting name="add_label" option="sv_SE">Ajouter une nouvelle vedette matière</setting>
+                <setting name="add_label" option="sv_SE">Lägg till ämne</setting>
               </settings>
             </placement>
           </bundlePlacements>
@@ -3363,7 +3363,7 @@
               <name>Links</name>
             </label>
             <label locale="sv_SE">
-              <name>Liens</name>
+              <name>Länkar</name>
             </label>
           </labels>
           <bundlePlacements>
@@ -3380,7 +3380,7 @@
           <name>Standard object lot editor</name>
         </label>
         <label locale="sv_SE">
-          <name>Editeur standard de lot d\'objets</name>
+          <name>Lottredigerare (Standard)</name>
         </label>
       </labels>
       <screens>
@@ -3390,7 +3390,7 @@
               <name>Basic info</name>
             </label>
             <label locale="sv_SE">
-              <name>Informations basiques</name>
+              <name>Grunläggande information</name>
             </label>
           </labels>
           <bundlePlacements>
@@ -3398,9 +3398,9 @@
               <bundle>preferred_labels</bundle>
               <settings>
                 <setting name="label" locale="en_US">Name</setting>
-                <setting name="label" option="sv_SE">Nom</setting>
+                <setting name="label" option="sv_SE">Namn</setting>
                 <setting name="add_label" locale="en_US">Add name</setting>
-                <setting name="add_label" option="sv_SE">Ajouter un nom</setting>
+                <setting name="add_label" option="sv_SE">Lägg till namn</setting>
               </settings>
             </placement>
             <placement code="idno_stub">
@@ -3413,9 +3413,9 @@
               <bundle>nonpreferred_labels</bundle>
               <settings>
                 <setting name="label" locale="en_US">Alternate names</setting>
-                <setting name="label" option="sv_SE">Autres noms</setting>
+                <setting name="label" option="sv_SE">Alternativa namn</setting>
                 <setting name="add_label" locale="en_US">Add alternate name</setting>
-                <setting name="add_label" option="sv_SE">Ajouter un autre nom</setting>
+                <setting name="add_label" option="sv_SE">Lägg till alternativa namn</setting>
               </settings>
             </placement>
             <placement code="extent">
@@ -3438,7 +3438,7 @@
               <name>Entities</name>
             </label>
             <label locale="sv_SE">
-              <name>Entités</name>
+              <name>Entiteter</name>
             </label>
           </labels>
           <bundlePlacements>
@@ -3453,7 +3453,7 @@
               <name>Objects</name>
             </label>
             <label locale="sv_SE">
-              <name>Objets</name>
+              <name>Objekt</name>
             </label>
           </labels>
           <bundlePlacements>
@@ -3470,7 +3470,7 @@
           <name>Storage locations editor</name>
         </label>
         <label locale="sv_SE">
-          <name>Editeur d\'emplacements</name>
+          <name>Förvaringsplatsredigerare</name>
         </label>
       </labels>
       <screens>
@@ -3480,7 +3480,7 @@
               <name>Basic info</name>
             </label>
             <label locale="sv_SE">
-              <name>Informations basiques</name>
+              <name>Grunläggande information</name>
             </label>
           </labels>
           <bundlePlacements>
@@ -3491,9 +3491,9 @@
               <bundle>preferred_labels</bundle>
               <settings>
                 <setting name="label" locale="en_US">Name</setting>
-                <setting name="label" option="sv_SE">Nom</setting>
+                <setting name="label" option="sv_SE">Namn</setting>
                 <setting name="add_label" locale="en_US">Add name</setting>
-                <setting name="add_label" option="sv_SE">Ajouter un nom</setting>
+                <setting name="add_label" option="sv_SE">Lägg till namn</setting>
               </settings>
             </placement>
             <placement code="idno">
@@ -3516,7 +3516,7 @@
               <name>Location</name>
             </label>
             <label locale="sv_SE">
-              <name>Localisation</name>
+              <name>Plats</name>
             </label>
           </labels>
           <bundlePlacements>
@@ -3534,7 +3534,7 @@
               <name>Contents</name>
             </label>
             <label locale="sv_SE">
-              <name>Contenu</name>
+              <name>Innehåll</name>
             </label>
           </labels>
           <bundlePlacements>
@@ -3552,7 +3552,7 @@
               <name>Alternate names</name>
             </label>
             <label locale="sv_SE">
-              <name>Autres noms</name>
+              <name>Alternativa namn</name>
             </label>
           </labels>
           <bundlePlacements>
@@ -3564,6 +3564,8 @@
               <settings>
                 <setting name="label" locale="en_US">Alternate names</setting>
                 <setting name="add_label" locale="en_US">Add alternate name</setting>
+                <setting name="label" locale="sv_SE">Alternativa namn</setting>
+                <setting name="add_label" locale="sv_SE">Lägg till alternativt namn</setting>
               </settings>
             </placement>
           </bundlePlacements>
@@ -3576,7 +3578,7 @@
           <name>Object representation editor</name>
         </label>
         <label locale="sv_SE">
-          <name>Editeur de représentation d\'objet</name>
+          <name>Objektrepresentationsredigerare</name>
         </label>
       </labels>
       <screens>
@@ -3586,7 +3588,7 @@
               <name>Basic info</name>
             </label>
             <label locale="sv_SE">
-              <name>Informations basiques</name>
+              <name>Grunläggande information</name>
             </label>
           </labels>
           <bundlePlacements>
@@ -3594,18 +3596,18 @@
               <bundle>preferred_labels</bundle>
               <settings>
                 <setting name="label" locale="en_US">Title</setting>
-                <setting name="label" option="sv_SE">Titre</setting>
+                <setting name="label" option="sv_SE">Titel</setting>
                 <setting name="add_label" locale="en_US">Add title</setting>
-                <setting name="add_label" option="sv_SE">Ajouter un titre</setting>
+                <setting name="add_label" option="sv_SE">Lägg till titel</setting>
               </settings>
             </placement>
             <placement code="nonpreferred_labels">
               <bundle>nonpreferred_labels</bundle>
               <settings>
                 <setting name="label" locale="en_US">Alternate names</setting>
-                <setting name="label" option="sv_SE">Autres noms</setting>
+                <setting name="label" option="sv_SE">Alternativa namn</setting>
                 <setting name="add_label" locale="en_US">Add alternate name</setting>
-                <setting name="add_label" option="sv_SE">Ajouter un autre nom</setting>
+                <setting name="add_label" option="sv_SE">Lägg till alternativa namn</setting>
               </settings>
             </placement>
             <placement code="media">
@@ -3637,7 +3639,7 @@
               <name>Annotations</name>
             </label>
             <label locale="sv_SE">
-              <name>Annotations</name>
+              <name>Annotationer</name>
             </label>
           </labels>
           <bundlePlacements>
@@ -3652,7 +3654,7 @@
               <name>Relationships</name>
             </label>
             <label locale="sv_SE">
-              <name>Relations</name>
+              <name>Relationer</name>
             </label>
           </labels>
           <bundlePlacements>
@@ -3678,7 +3680,7 @@
           <name>Representation annotation editor</name>
         </label>
         <label locale="sv_SE">
-          <name>Editeur d\'annotation de représentation</name>
+          <name>Represenationsannoteringsredigerare</name>
         </label>
       </labels>
       <screens>
@@ -3688,7 +3690,7 @@
               <name>Basic info</name>
             </label>
             <label locale="sv_SE">
-              <name>Informations basiques</name>
+              <name>Grunläggande information</name>
             </label>
           </labels>
           <bundlePlacements>
@@ -3696,9 +3698,9 @@
               <bundle>preferred_labels</bundle>
               <settings>
                 <setting name="label" locale="en_US">Title</setting>
-                <setting name="label" option="sv_SE">Titre</setting>
+                <setting name="label" option="sv_SE">Titel</setting>
                 <setting name="add_label" locale="en_US">Add title</setting>
-                <setting name="add_label" option="sv_SE">Ajouter un titre</setting>
+                <setting name="add_label" option="sv_SE">Lägg till titel</setting>
               </settings>
             </placement>
             <placement code="ca_representation_annotation_properties">
@@ -3721,7 +3723,7 @@
               <name>Keywords</name>
             </label>
             <label locale="sv_SE">
-              <name>Mots-clés</name>
+              <name>Nyckelord</name>
             </label>
           </labels>
           <bundlePlacements>
@@ -3736,7 +3738,7 @@
               <name>Relationships</name>
             </label>
             <label locale="sv_SE">
-              <name>Relations</name>
+              <name>Relationer</name>
             </label>
           </labels>
           <bundlePlacements>
@@ -3760,7 +3762,7 @@
               <name>Alternate names</name>
             </label>
             <label locale="sv_SE">
-              <name>Autres noms</name>
+              <name>Alternativa namn</name>
             </label>
           </labels>
           <bundlePlacements>
@@ -3768,9 +3770,9 @@
               <bundle>nonpreferred_labels</bundle>
               <settings>
                 <setting name="label" locale="en_US">Alternate titles</setting>
-                <setting name="label" option="sv_SE">Autres titres</setting>
+                <setting name="label" option="sv_SE">Alternativa titlar</setting>
                 <setting name="add_label" locale="en_US">Add alternate title</setting>
-                <setting name="add_label" option="sv_SE">Ajouter un autre titre</setting>
+                <setting name="add_label" option="sv_SE">Lägg till alternativa titlar</setting>
               </settings>
             </placement>
           </bundlePlacements>
@@ -3783,7 +3785,7 @@
           <name>Object event editor</name>
         </label>
         <label locale="sv_SE">
-          <name>Editeur d\'événement d\'objet</name>
+          <name>Objekthändelseredigerare</name>
         </label>
       </labels>
       <screens>
@@ -3793,7 +3795,7 @@
               <name>Basic info</name>
             </label>
             <label locale="sv_SE">
-              <name>Informations basiques</name>
+              <name>Grunläggande information</name>
             </label>
           </labels>
           <bundlePlacements>
@@ -3808,7 +3810,7 @@
               <name>Relationships</name>
             </label>
             <label locale="sv_SE">
-              <name>Relations</name>
+              <name>Relationer</name>
             </label>
           </labels>
           <bundlePlacements>
@@ -3832,215 +3834,159 @@
   <relationshipTypes>
     <relationshipTable name="ca_objects_x_entities">
       <types>
-        <type code="artist" default="1">
+        <type code="photographer" default="1">
           <labels>
             <label locale="en_US">
-              <typename>had as artist</typename>
-              <typename_reverse>was artist</typename_reverse>
+              <typename>had as photographer</typename>
+              <typename_reverse>was photographer</typename_reverse>
             </label>
             <label locale="sv_SE">
-              <typename>a eu pour artiste</typename>
-              <typename_reverse>était l\'artiste</typename_reverse>
+              <typename>fotograf</typename>
+              <typename_reverse>fotograf</typename_reverse>
             </label>
           </labels>
-          <subTypeLeft> </subTypeLeft>
-          <subTypeRight></subTypeRight>
-        </type>
-        <type code="curator" default="0">
-          <labels>
-            <label locale="en_US">
-              <typename>had as curator</typename>
-              <typename_reverse>was curator of</typename_reverse>
-            </label>
-            <label locale="sv_SE">
-              <typename>a eu pour commissaire d\'exposition</typename>
-              <typename_reverse>était le commissaire d\'exposition de</typename_reverse>
-            </label>
-          </labels>
-          <subTypeLeft> </subTypeLeft>
-          <subTypeRight></subTypeRight>
-        </type>
-        <type code="moderator" default="0">
-          <labels>
-            <label locale="en_US">
-              <typename>had as moderator</typename>
-              <typename_reverse>was moderator of</typename_reverse>
-            </label>
-            <label locale="sv_SE">
-              <typename>a eu pour modérateur</typename>
-              <typename_reverse>était le modérateur de</typename_reverse>
-            </label>
-          </labels>
-          <subTypeLeft> </subTypeLeft>
-          <subTypeRight></subTypeRight>
-        </type>
-        <type code="speaker" default="0">
-          <labels>
-            <label locale="en_US">
-              <typename>had as speaker</typename>
-              <typename_reverse>was speaker in</typename_reverse>
-            </label>
-            <label locale="sv_SE">
-              <typename>a eu pour orateur</typename>
-              <typename_reverse>était l\'orateur de</typename_reverse>
-            </label>
-          </labels>
-          <subTypeLeft> </subTypeLeft>
-          <subTypeRight></subTypeRight>
-        </type>
-        <type code="panelist" default="0">
-          <labels>
-            <label locale="en_US">
-              <typename>had as panelist</typename>
-              <typename_reverse>was panelist in</typename_reverse>
-            </label>
-            <label locale="sv_SE">
-              <typename>a eu pour critique</typename>
-              <typename_reverse>était le critique de</typename_reverse>
-            </label>
-          </labels>
-          <subTypeLeft> </subTypeLeft>
-          <subTypeRight></subTypeRight>
-        </type>
-        <type code="documentarian" default="0">
-          <labels>
-            <label locale="en_US">
-              <typename>had as documentarian</typename>
-              <typename_reverse>is documentarian of</typename_reverse>
-            </label>
-            <label locale="sv_SE">
-              <typename>a eu pour documentaliste</typename>
-              <typename_reverse>était le documentaliste de</typename_reverse>
-            </label>
-          </labels>
-          <subTypeLeft> </subTypeLeft>
-          <subTypeRight></subTypeRight>
-        </type>
-        <type code="architect" default="0">
-          <labels>
-            <label locale="en_US">
-              <typename>had as architect</typename>
-              <typename_reverse>was architect of</typename_reverse>
-            </label>
-            <label locale="sv_SE">
-              <typename>a eu pour architecte</typename>
-              <typename_reverse>était l\'architecte de</typename_reverse>
-            </label>
-          </labels>
-          <subTypeLeft> </subTypeLeft>
-          <subTypeRight></subTypeRight>
-        </type>
-        <type code="designer" default="0">
-          <labels>
-            <label locale="en_US">
-              <typename>had as designer</typename>
-              <typename_reverse>was designer of</typename_reverse>
-            </label>
-            <label locale="sv_SE">
-              <typename>a eu pour designer</typename>
-              <typename_reverse>était le designer de</typename_reverse>
-            </label>
-          </labels>
-          <subTypeLeft> </subTypeLeft>
-          <subTypeRight></subTypeRight>
+          <subTypeLeft>photograph</subTypeLeft>
+          <subTypeRight>individual</subTypeRight>
         </type>
         <type code="author" default="0">
           <labels>
             <label locale="en_US">
-              <typename>has as author</typename>
-              <typename_reverse>was author of</typename_reverse>
+              <typename>had as author</typename>
+              <typename_reverse>was author</typename_reverse>
             </label>
             <label locale="sv_SE">
-              <typename>a eu pour auteur</typename>
-              <typename_reverse>était l\'auteur</typename_reverse>
+              <typename>författare</typename>
+              <typename_reverse>författare</typename_reverse>
             </label>
           </labels>
-          <subTypeLeft>interview</subTypeLeft>
-          <subTypeRight></subTypeRight>
+          <subTypeLeft></subTypeLeft>
+          <subTypeRight>individual</subTypeRight>
         </type>
-        <type code="performer" default="0">
+        <type code="owner" default="0">
           <labels>
             <label locale="en_US">
-              <typename>had as performer</typename>
-              <typename_reverse>was performer in</typename_reverse>
+              <typename>owned by</typename>
+              <typename_reverse>is owner</typename_reverse>
             </label>
             <label locale="sv_SE">
-              <typename>a eu pour performer</typename>
-              <typename_reverse>était performer dans</typename_reverse>
+              <typename>ägare</typename>
+              <typename_reverse>ägare</typename_reverse>
+            </label>
+          </labels>
+          <subTypeLeft></subTypeLeft>
+          <subTypeRight></subTypeRight>
+        </type>
+        <type code="recorder" default="0">
+          <labels>
+            <label locale="en_US">
+              <typename>was recorded by</typename>
+              <typename_reverse>was recorder</typename_reverse>
+            </label>
+            <label locale="sv_SE">
+              <typename>ljudinspelare</typename>
+              <typename_reverse>ljudinspelare</typename_reverse>
+            </label>
+          </labels>
+          <subTypeLeft>recording</subTypeLeft>
+          <subTypeRight>individual</subTypeRight>
+        </type>
+        <type code="drawer" default="0">
+          <labels>
+            <label locale="en_US">
+              <typename>was drawn by</typename>
+              <typename_reverse>drawed</typename_reverse>
+            </label>
+            <label locale="sv_SE">
+              <typename>tecknare</typename>
+              <typename_reverse>tecknare</typename_reverse>
+            </label>
+          </labels>
+          <subTypeLeft>drawing</subTypeLeft>
+          <subTypeRight>individual</subTypeRight>
+        </type>
+        <type code="painter" default="0">
+          <labels>
+            <label locale="en_US">
+              <typename>was painted by</typename>
+              <typename_reverse>painted by</typename_reverse>
+            </label>
+            <label locale="sv_SE">
+              <typename>målare</typename>
+              <typename_reverse>målare</typename_reverse>
+            </label>
+          </labels>
+          <subTypeLeft>painting</subTypeLeft>
+          <subTypeRight>individual</subTypeRight>
+        </type>
+        <type code="maintainer" default="0">
+          <labels>
+            <label locale="en_US">
+              <typename>maintained by</typename>
+              <typename_reverse>maintains</typename_reverse>
+            </label>
+            <label locale="sv_SE">
+              <typename>förvaltare</typename>
+              <typename_reverse>förvaltare</typename_reverse>
+            </label>
+          </labels>
+          <subTypeLeft></subTypeLeft>
+          <subTypeRight></subTypeRight>
+        </type>
+        <type code="depicts" default="0">
+          <labels>
+            <label locale="en_US">
+              <typename>depicts</typename>
+              <typename_reverse>is depicted by</typename_reverse>
+            </label>
+            <label locale="sv_SE">
+              <typename>på bilden</typename>
+              <typename_reverse>förekommer på bild på</typename_reverse>
+            </label>
+          </labels>
+          <subTypeLeft>photograph</subTypeLeft>
+          <subTypeRight>individual</subTypeRight>
+        </type>
+        <type code="recorded" default="0">
+          <labels>
+            <label locale="en_US">
+              <typename>records audio of</typename>
+              <typename_reverse>is recorded on</typename_reverse>
+            </label>
+            <label locale="sv_SE">
+              <typename>inspelning av</typename>
+              <typename_reverse>inspelad på</typename_reverse>
+            </label>
+          </labels>
+          <subTypeLeft>recording</subTypeLeft>
+          <subTypeRight>individual</subTypeRight>
+        </type>
+        <type code="mentioned" default="0">
+          <labels>
+            <label locale="en_US">
+              <typename>mentions</typename>
+              <typename_reverse>is mentioned in</typename_reverse>
+            </label>
+            <label locale="sv_SE">
+              <typename>omnämns</typename>
+              <typename_reverse>omnämns</typename_reverse>
             </label>
           </labels>
           <subTypeLeft> </subTypeLeft>
           <subTypeRight></subTypeRight>
         </type>
-        <type code="staff_member" default="0">
+        <type code="organization" default="0">
           <labels>
             <label locale="en_US">
-              <typename>had as staff member</typename>
-              <typename_reverse>was staff member for</typename_reverse>
+              <typename>origin organization</typename>
+              <typename_reverse>is origin organization of</typename_reverse>
             </label>
             <label locale="sv_SE">
-              <typename>a comporté parmi l\'équipe</typename>
-              <typename_reverse>faisait partie de l\'équipe de</typename_reverse>
-            </label>
-          </labels>
-          <subTypeLeft>interview</subTypeLeft>
-          <subTypeRight></subTypeRight>
-        </type>
-        <type code="consultant" default="0">
-          <labels>
-            <label locale="en_US">
-              <typename>had as consultant</typename>
-              <typename_reverse>was consultant for</typename_reverse>
-            </label>
-            <label locale="sv_SE">
-              <typename>a eu pour consultant</typename>
-              <typename_reverse>était consultant pour</typename_reverse>
+              <typename>upphovsorganisation</typename>
+              <typename_reverse>upphovsorganisation</typename_reverse>
             </label>
           </labels>
           <subTypeLeft> </subTypeLeft>
-          <subTypeRight></subTypeRight>
-        </type>
-        <type code="publisher" default="0">
-          <labels>
-            <label locale="en_US">
-              <typename>had as publisher</typename>
-              <typename_reverse>was publisher for</typename_reverse>
-            </label>
-            <label locale="sv_SE">
-              <typename>a eu pour éditeur</typename>
-              <typename_reverse>était l\'éditeur de</typename_reverse>
-            </label>
-          </labels>
-          <subTypeLeft> </subTypeLeft>
-          <subTypeRight></subTypeRight>
-        </type>
-        <type code="sponsor" default="0">
-          <labels>
-            <label locale="en_US">
-              <typename>had as sponsor</typename>
-              <typename_reverse>was sponsor for</typename_reverse>
-            </label>
-            <label locale="sv_SE">
-              <typename>a eu pour sponsor</typename>
-              <typename_reverse>était le sponsor de</typename_reverse>
-            </label>
-          </labels>
-          <subTypeLeft> </subTypeLeft>
-          <subTypeRight></subTypeRight>
-        </type>
-        <type code="partner_museum" default="0">
-          <labels>
-            <label locale="en_US">
-              <typename>had as partner</typename>
-              <typename_reverse>was partner for</typename_reverse>
-            </label>
-            <label locale="sv_SE">
-              <typename>a eu pour partenaire</typename>
-              <typename_reverse>était le partenaire de</typename_reverse>
-            </label>
-          </labels>
-          <subTypeLeft> </subTypeLeft>
-          <subTypeRight></subTypeRight>
+          <subTypeRight>organization</subTypeRight>
         </type>
       </types>
     </relationshipTable>
@@ -4053,8 +3999,8 @@
               <typename_reverse>contains</typename_reverse>
             </label>
             <label locale="sv_SE">
-              <typename>fait partie de</typename>
-              <typename_reverse>contient</typename_reverse>
+              <typename>del av</typename>
+              <typename_reverse>del av</typename_reverse>
             </label>
           </labels>
           <subTypeLeft> </subTypeLeft>
@@ -4071,50 +4017,8 @@
               <typename_reverse>was creation location of</typename_reverse>
             </label>
             <label locale="sv_SE">
-              <typename>a créé à</typename>
-              <typename_reverse>était le lieu de création de</typename_reverse>
-            </label>
-          </labels>
-          <subTypeLeft> </subTypeLeft>
-          <subTypeRight></subTypeRight>
-        </type>
-        <type code="located" default="0">
-          <labels>
-            <label locale="en_US">
-              <typename>was located at</typename>
-              <typename_reverse>was location of</typename_reverse>
-            </label>
-            <label locale="sv_SE">
-              <typename>a été localisé à</typename>
-              <typename_reverse>était la localisation de</typename_reverse>
-            </label>
-          </labels>
-          <subTypeLeft>image</subTypeLeft>
-          <subTypeRight></subTypeRight>
-        </type>
-        <type code="depicts" default="1">
-          <labels>
-            <label locale="en_US">
-              <typename>depicts</typename>
-              <typename_reverse>is depicted by</typename_reverse>
-            </label>
-            <label locale="sv_SE">
-              <typename>représente</typename>
-              <typename_reverse>est représenté dans</typename_reverse>
-            </label>
-          </labels>
-          <subTypeLeft> </subTypeLeft>
-          <subTypeRight></subTypeRight>
-        </type>
-        <type code="describes" default="0">
-          <labels>
-            <label locale="en_US">
-              <typename>describes</typename>
-              <typename_reverse>is described by</typename_reverse>
-            </label>
-            <label locale="sv_SE">
-              <typename>décrit</typename>
-              <typename_reverse>est décrit dans</typename_reverse>
+              <typename>skapat/skapad i</typename>
+              <typename_reverse>ursprungsplats för</typename_reverse>
             </label>
           </labels>
           <subTypeLeft> </subTypeLeft>
@@ -4131,36 +4035,8 @@
               <typename_reverse>is depicted by</typename_reverse>
             </label>
             <label locale="sv_SE">
-              <typename>représente</typename>
-              <typename_reverse>est représenté dans</typename_reverse>
-            </label>
-          </labels>
-          <subTypeLeft> </subTypeLeft>
-          <subTypeRight></subTypeRight>
-        </type>
-        <type code="used" default="0">
-          <labels>
-            <label locale="en_US">
-              <typename>was used in</typename>
-              <typename_reverse>used</typename_reverse>
-            </label>
-            <label locale="sv_SE">
-              <typename>a été utilisé dans</typename>
-              <typename_reverse>utilise</typename_reverse>
-            </label>
-          </labels>
-          <subTypeLeft> </subTypeLeft>
-          <subTypeRight></subTypeRight>
-        </type>
-        <type code="describes" default="0">
-          <labels>
-            <label locale="en_US">
-              <typename>describes</typename>
-              <typename_reverse>is described by</typename_reverse>
-            </label>
-            <label locale="sv_SE">
-              <typename>décrit</typename>
-              <typename_reverse>est décrit dans</typename_reverse>
+              <typename>avbilar</typename>
+              <typename_reverse>avbildas av</typename_reverse>
             </label>
           </labels>
           <subTypeLeft> </subTypeLeft>
@@ -4177,8 +4053,8 @@
               <typename_reverse>is related to</typename_reverse>
             </label>
             <label locale="sv_SE">
-              <typename>est lié à</typename>
-              <typename_reverse>est lié à</typename_reverse>
+              <typename>relaterad/relaterat till</typename>
+              <typename_reverse>relaterad/relaterat till</typename_reverse>
             </label>
           </labels>
           <subTypeLeft> </subTypeLeft>
@@ -4191,8 +4067,8 @@
               <typename_reverse>is similar to</typename_reverse>
             </label>
             <label locale="sv_SE">
-              <typename>est similaire à</typename>
-              <typename_reverse>est similaire à</typename_reverse>
+              <typename>liknar</typename>
+              <typename_reverse>liknar</typename_reverse>
             </label>
           </labels>
           <subTypeLeft> </subTypeLeft>
@@ -4205,8 +4081,8 @@
               <typename_reverse>is duplicate of</typename_reverse>
             </label>
             <label locale="sv_SE">
-              <typename>est un doublon de</typename>
-              <typename_reverse>est un doublon de</typename_reverse>
+              <typename>dublett</typename>
+              <typename_reverse>dublett</typename_reverse>
             </label>
           </labels>
           <subTypeLeft> </subTypeLeft>
@@ -4219,8 +4095,8 @@
               <typename_reverse>contains</typename_reverse>
             </label>
             <label locale="sv_SE">
-              <typename>fait partie de</typename>
-              <typename_reverse>contient</typename_reverse>
+              <typename>del av</typename>
+              <typename_reverse>innehåller</typename_reverse>
             </label>
           </labels>
           <subTypeLeft> </subTypeLeft>
@@ -4237,8 +4113,8 @@
               <typename_reverse>describes</typename_reverse>
             </label>
             <label locale="sv_SE">
-              <typename>est décrit par</typename>
-              <typename_reverse>décrit</typename_reverse>
+              <typename>beskriver</typename>
+              <typename_reverse>beskrivs av</typename_reverse>
             </label>
           </labels>
           <subTypeLeft> </subTypeLeft>
@@ -4251,8 +4127,8 @@
               <typename_reverse>is depicted by</typename_reverse>
             </label>
             <label locale="sv_SE">
-              <typename>représente</typename>
-              <typename_reverse>est représenté dans</typename_reverse>
+              <typename>avbildar</typename>
+              <typename_reverse>avbildas av</typename_reverse>
             </label>
           </labels>
           <subTypeLeft> </subTypeLeft>
@@ -4269,8 +4145,8 @@
               <typename_reverse>is related to</typename_reverse>
             </label>
             <label locale="sv_SE">
-              <typename>est lié à</typename>
-              <typename_reverse>est lié à</typename_reverse>
+              <typename>släkt med</typename>
+              <typename_reverse>släkt med</typename_reverse>
             </label>
           </labels>
           <subTypeLeft> </subTypeLeft>
@@ -4283,8 +4159,8 @@
               <typename_reverse>is parent of</typename_reverse>
             </label>
             <label locale="sv_SE">
-              <typename>est un enfant de</typename>
-              <typename_reverse>est un parent de</typename_reverse>
+              <typename>är barn till</typename>
+              <typename_reverse>är förälder till</typename_reverse>
             </label>
           </labels>
           <subTypeLeft>individual</subTypeLeft>
@@ -4297,8 +4173,8 @@
               <typename_reverse>is spouse of</typename_reverse>
             </label>
             <label locale="sv_SE">
-              <typename>est l\'époux/l\'épouse de</typename>
-              <typename_reverse>est l\'époux/l\'épouse de</typename_reverse>
+              <typename>gift med</typename>
+              <typename_reverse>gift med</typename_reverse>
             </label>
           </labels>
           <subTypeLeft>individual</subTypeLeft>
@@ -4315,22 +4191,8 @@
               <typename_reverse>was birthplace of</typename_reverse>
             </label>
             <label locale="sv_SE">
-              <typename>est né à</typename>
-              <typename_reverse>est le lieu de naissance de</typename_reverse>
-            </label>
-          </labels>
-          <subTypeLeft> </subTypeLeft>
-          <subTypeRight></subTypeRight>
-        </type>
-        <type code="residence" default="0">
-          <labels>
-            <label locale="en_US">
-              <typename>resided at</typename>
-              <typename_reverse>was residence of</typename_reverse>
-            </label>
-            <label locale="sv_SE">
-              <typename>a habité à</typename>
-              <typename_reverse>était le lieu de résidence de</typename_reverse>
+              <typename>födelseplats</typename>
+              <typename_reverse>födelseplats</typename_reverse>
             </label>
           </labels>
           <subTypeLeft> </subTypeLeft>
@@ -4343,36 +4205,8 @@
               <typename_reverse>was workplace of</typename_reverse>
             </label>
             <label locale="sv_SE">
-              <typename>a travaillé à</typename>
-              <typename_reverse>était le lieu de travail de</typename_reverse>
-            </label>
-          </labels>
-          <subTypeLeft> </subTypeLeft>
-          <subTypeRight></subTypeRight>
-        </type>
-        <type code="ownership" default="0">
-          <labels>
-            <label locale="en_US">
-              <typename>owned</typename>
-              <typename_reverse>was owned by</typename_reverse>
-            </label>
-            <label locale="sv_SE">
-              <typename>était le propriétaire de</typename>
-              <typename_reverse>appartenait à</typename_reverse>
-            </label>
-          </labels>
-          <subTypeLeft> </subTypeLeft>
-          <subTypeRight></subTypeRight>
-        </type>
-        <type code="built_by" default="0">
-          <labels>
-            <label locale="en_US">
-              <typename>built</typename>
-              <typename_reverse>was built by</typename_reverse>
-            </label>
-            <label locale="sv_SE">
-              <typename>a construit</typename>
-              <typename_reverse>a été construit par</typename_reverse>
+              <typename>anställning</typename>
+              <typename_reverse>anställning</typename_reverse>
             </label>
           </labels>
           <subTypeLeft> </subTypeLeft>
@@ -4389,204 +4223,8 @@
               <typename_reverse>was artist</typename_reverse>
             </label>
             <label locale="sv_SE">
-              <typename>avait pour artiste</typename>
-              <typename_reverse>était l\'artiste de</typename_reverse>
-            </label>
-          </labels>
-          <subTypeLeft> </subTypeLeft>
-          <subTypeRight></subTypeRight>
-        </type>
-        <type code="curator" default="0">
-          <labels>
-            <label locale="en_US">
-              <typename>had as curator</typename>
-              <typename_reverse>was curator of</typename_reverse>
-            </label>
-            <label locale="sv_SE">
-              <typename>avait pour commissaire d\'exposition</typename>
-              <typename_reverse>était le commissaire d\'exposition de</typename_reverse>
-            </label>
-          </labels>
-          <subTypeLeft> </subTypeLeft>
-          <subTypeRight></subTypeRight>
-        </type>
-        <type code="moderator" default="0">
-          <labels>
-            <label locale="en_US">
-              <typename>had as moderator</typename>
-              <typename_reverse>was moderator of</typename_reverse>
-            </label>
-            <label locale="sv_SE">
-              <typename>avait pour modérateur</typename>
-              <typename_reverse>était le modérateur de</typename_reverse>
-            </label>
-          </labels>
-          <subTypeLeft> </subTypeLeft>
-          <subTypeRight></subTypeRight>
-        </type>
-        <type code="panelist" default="0">
-          <labels>
-            <label locale="en_US">
-              <typename>had as panelist</typename>
-              <typename_reverse>was panelist in</typename_reverse>
-            </label>
-            <label locale="sv_SE">
-              <typename>avait pour critique</typename>
-              <typename_reverse>était critique de</typename_reverse>
-            </label>
-          </labels>
-          <subTypeLeft> </subTypeLeft>
-          <subTypeRight></subTypeRight>
-        </type>
-        <type code="speaker" default="0">
-          <labels>
-            <label locale="en_US">
-              <typename>had as speaker</typename>
-              <typename_reverse>was speaker in</typename_reverse>
-            </label>
-            <label locale="sv_SE">
-              <typename>avait pour orateur</typename>
-              <typename_reverse>était orateur dans</typename_reverse>
-            </label>
-          </labels>
-          <subTypeLeft> </subTypeLeft>
-          <subTypeRight></subTypeRight>
-        </type>
-        <type code="documentarian" default="0">
-          <labels>
-            <label locale="en_US">
-              <typename>had as documentarian</typename>
-              <typename_reverse>is documentarian of</typename_reverse>
-            </label>
-            <label locale="sv_SE">
-              <typename>avait pour documentaliste</typename>
-              <typename_reverse>était le documentaliste de</typename_reverse>
-            </label>
-          </labels>
-          <subTypeLeft> </subTypeLeft>
-          <subTypeRight></subTypeRight>
-        </type>
-        <type code="architect" default="0">
-          <labels>
-            <label locale="en_US">
-              <typename>had as architect</typename>
-              <typename_reverse>was architect of</typename_reverse>
-            </label>
-            <label locale="sv_SE">
-              <typename>avait pour architecte</typename>
-              <typename_reverse>était l\'architecte de</typename_reverse>
-            </label>
-          </labels>
-          <subTypeLeft> </subTypeLeft>
-          <subTypeRight></subTypeRight>
-        </type>
-        <type code="designer" default="0">
-          <labels>
-            <label locale="en_US">
-              <typename>had as designer</typename>
-              <typename_reverse>was designer of</typename_reverse>
-            </label>
-            <label locale="sv_SE">
-              <typename>avait pour designer</typename>
-              <typename_reverse>était le designer de</typename_reverse>
-            </label>
-          </labels>
-          <subTypeLeft> </subTypeLeft>
-          <subTypeRight></subTypeRight>
-        </type>
-        <type code="author" default="0">
-          <labels>
-            <label locale="en_US">
-              <typename>has as author</typename>
-              <typename_reverse>was author of</typename_reverse>
-            </label>
-            <label locale="sv_SE">
-              <typename>avait pour auteur</typename>
-              <typename_reverse>était l\'auteur de</typename_reverse>
-            </label>
-          </labels>
-          <subTypeLeft>interview</subTypeLeft>
-          <subTypeRight></subTypeRight>
-        </type>
-        <type code="performer" default="0">
-          <labels>
-            <label locale="en_US">
-              <typename>had as performer</typename>
-              <typename_reverse>was performer in</typename_reverse>
-            </label>
-            <label locale="sv_SE">
-              <typename>avait pour performer</typename>
-              <typename_reverse>était le performer de</typename_reverse>
-            </label>
-          </labels>
-          <subTypeLeft> </subTypeLeft>
-          <subTypeRight></subTypeRight>
-        </type>
-        <type code="staff_member" default="0">
-          <labels>
-            <label locale="en_US">
-              <typename>had as staff member</typename>
-              <typename_reverse>was staff member fo</typename_reverse>
-            </label>
-            <label locale="sv_SE">
-              <typename>avait parmi l\'équipe</typename>
-              <typename_reverse>faisait partie de l\'équipe de</typename_reverse>
-            </label>
-          </labels>
-          <subTypeLeft>interview</subTypeLeft>
-          <subTypeRight></subTypeRight>
-        </type>
-        <type code="consultant" default="0">
-          <labels>
-            <label locale="en_US">
-              <typename>had as consultant</typename>
-              <typename_reverse>was consultant for</typename_reverse>
-            </label>
-            <label locale="sv_SE">
-              <typename>avait pour consultant</typename>
-              <typename_reverse>était le consultant de</typename_reverse>
-            </label>
-          </labels>
-          <subTypeLeft> </subTypeLeft>
-          <subTypeRight></subTypeRight>
-        </type>
-        <type code="publisher" default="0">
-          <labels>
-            <label locale="en_US">
-              <typename>had as publisher</typename>
-              <typename_reverse>was publisher for</typename_reverse>
-            </label>
-            <label locale="sv_SE">
-              <typename>avait pour éditeur</typename>
-              <typename_reverse>était l\'éditeur de</typename_reverse>
-            </label>
-          </labels>
-          <subTypeLeft> </subTypeLeft>
-          <subTypeRight></subTypeRight>
-        </type>
-        <type code="sponsor" default="0">
-          <labels>
-            <label locale="en_US">
-              <typename>had as sponsor</typename>
-              <typename_reverse>was sponsor for</typename_reverse>
-            </label>
-            <label locale="sv_SE">
-              <typename>avait pour sponsor</typename>
-              <typename_reverse>était le sponsor de</typename_reverse>
-            </label>
-          </labels>
-          <subTypeLeft> </subTypeLeft>
-          <subTypeRight></subTypeRight>
-        </type>
-        <type code="partner_museum" default="0">
-          <labels>
-            <label locale="en_US">
-              <typename>had as partner museum</typename>
-              <typename_reverse>was partner museum for</typename_reverse>
-            </label>
-            <label locale="sv_SE">
-              <typename>avait pour musée partenaire</typename>
-              <typename_reverse>était le musée partenaire de</typename_reverse>
+              <typename>upphovsman</typename>
+              <typename_reverse>upphovsman</typename_reverse>
             </label>
           </labels>
           <subTypeLeft> </subTypeLeft>
@@ -4603,8 +4241,8 @@
               <typename_reverse>is donor of</typename_reverse>
             </label>
             <label locale="sv_SE">
-              <typename>a été donné par</typename>
-              <typename_reverse>est le donateur de</typename_reverse>
+              <typename>donerat/donerad av</typename>
+              <typename_reverse>donerade</typename_reverse>
             </label>
           </labels>
           <subTypeLeft> </subTypeLeft>
@@ -4617,8 +4255,8 @@
               <typename_reverse>is provider of</typename_reverse>
             </label>
             <label locale="sv_SE">
-              <typename>a été fourni par</typename>
-              <typename_reverse>est le fournisseur de</typename_reverse>
+              <typename>tillhandahållet/tillhandahållen av</typename>
+              <typename_reverse>tillhandahöll/tillhandahåller</typename_reverse>
             </label>
           </labels>
           <subTypeLeft> </subTypeLeft>
@@ -4635,8 +4273,8 @@
               <typename_reverse>is origination location of</typename_reverse>
             </label>
             <label locale="sv_SE">
-              <typename>provient de</typename>
-              <typename_reverse>est la provenance de</typename_reverse>
+              <typename>ursprungligen från</typename>
+              <typename_reverse>ursprungsplats till</typename_reverse>
             </label>
           </labels>
           <subTypeLeft> </subTypeLeft>
@@ -4653,8 +4291,8 @@
               <typename_reverse>contains</typename_reverse>
             </label>
             <label locale="sv_SE">
-              <typename>fait partie de</typename>
-              <typename_reverse>contient</typename_reverse>
+              <typename>del av</typename>
+              <typename_reverse>innehåller</typename_reverse>
             </label>
           </labels>
           <subTypeLeft> </subTypeLeft>
@@ -4671,8 +4309,8 @@
               <typename_reverse>is related to</typename_reverse>
             </label>
             <label locale="sv_SE">
-              <typename>est lié à</typename>
-              <typename_reverse>est lié à</typename_reverse>
+              <typename>relaterad/relaterat till</typename>
+              <typename_reverse>relaterad/relaterat till</typename_reverse>
             </label>
           </labels>
           <subTypeLeft> </subTypeLeft>
@@ -4707,8 +4345,8 @@
               <typename_reverse>is related to</typename_reverse>
             </label>
             <label locale="sv_SE">
-              <typename>est lié à</typename>
-              <typename_reverse>est lié à</typename_reverse>
+              <typename>relaterad/relaterat till</typename>
+              <typename_reverse>relaterad/relaterat till</typename_reverse>
             </label>
           </labels>
           <subTypeLeft> </subTypeLeft>
@@ -4797,8 +4435,8 @@
               <typename_reverse>is related to</typename_reverse>
             </label>
             <label locale="sv_SE">
-              <typename>est lié à</typename>
-              <typename_reverse>est lié à</typename_reverse>
+              <typename>relaterad/relaterat till</typename>
+              <typename_reverse>relaterad/relaterat till</typename_reverse>
             </label>
           </labels>
           <subTypeLeft> </subTypeLeft>
@@ -4851,8 +4489,8 @@
               <typename_reverse>is related to</typename_reverse>
             </label>
             <label locale="sv_SE">
-              <typename>est lié à</typename>
-              <typename_reverse>est lié à</typename_reverse>
+              <typename>relaterad/relaterat till</typename>
+              <typename_reverse>relaterad/relaterat till</typename_reverse>
             </label>
           </labels>
           <subTypeLeft> </subTypeLeft>

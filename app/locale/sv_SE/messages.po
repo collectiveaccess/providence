@@ -16,6 +16,9 @@ msgstr ""
 "X-Poedit-KeywordsList: _t;_p;_\n"
 "X-Poedit-SearchPath-0: c:\\providence\n"
 
+msgid "User interfaces for %1"
+msgstr "Användargränssnitt för %1"
+
 #: c:\providence/app/controllers/administrate/access/GroupsController.php:58
 #: c:\providence/app/controllers/administrate/access/UsersController.php:56
 msgid "Password does not match confirmation. Please try again."
@@ -110,11 +113,11 @@ msgstr "idnr"
 
 #: c:\providence/app/controllers/administrate/setup/ListsController.php:109
 msgid "list/vocabulary term"
-msgstr "lista/vokabulär term"
+msgstr "lista/vokabulärterm"
 
 #: c:\providence/app/controllers/administrate/setup/ListsController.php:109
 msgid "list/vocabulary terms"
-msgstr "lista/vokabulär termer"
+msgstr "lista/vokabulärtermer"
 
 #: c:\providence/app/controllers/administrate/setup/LocalesController.php:58
 msgid "Added locale"
@@ -170,15 +173,15 @@ msgstr "samling"
 
 #: c:\providence/app/controllers/find/BrowseCollectionsController.php:89
 msgid "collections"
-msgstr "samlingar"
+msgstr "Samlingar"
 
 #: c:\providence/app/controllers/find/BrowseEntitiesController.php:89
 msgid "entity"
-msgstr "person/organisation/folk"
+msgstr "Entitet"
 
 #: c:\providence/app/controllers/find/BrowseEntitiesController.php:89
 msgid "entities"
-msgstr "personer/organisationer/folk"
+msgstr "Entiteter"
 
 #: c:\providence/app/controllers/find/BrowseLoansController.php:89
 msgid "loan"
@@ -186,7 +189,7 @@ msgstr "lån"
 
 #: c:\providence/app/controllers/find/BrowseLoansController.php:89
 msgid "loans"
-msgstr "lån"
+msgstr "Lån"
 
 #: c:\providence/app/controllers/find/BrowseMovementsController.php:73
 msgid "short description"
@@ -198,7 +201,7 @@ msgstr "flyttning"
 
 #: c:\providence/app/controllers/find/BrowseMovementsController.php:89
 msgid "movements"
-msgstr "flyttningar"
+msgstr "Förflyttningar"
 
 #: c:\providence/app/controllers/find/BrowseObjectLotsController.php:75
 msgid "lot idno"
@@ -254,7 +257,7 @@ msgstr "förvaringsplats"
 
 #: c:\providence/app/controllers/find/BrowseStorageLocationsController.php:88
 msgid "storage locations"
-msgstr "förvaringsplatser"
+msgstr "Förvaringsplatser"
 
 #: c:\providence/app/controllers/find/BrowseToursController.php:87
 msgid "tour"
@@ -262,7 +265,7 @@ msgstr "tur"
 
 #: c:\providence/app/controllers/find/BrowseToursController.php:87
 msgid "tours"
-msgstr "turer"
+msgstr "Turer"
 
 #: c:\providence/app/controllers/find/BrowseTourStopsController.php:87
 msgid "tour stop"
@@ -287,7 +290,7 @@ msgstr "Objekt beslut"
 
 #: c:\providence/app/controllers/find/QuickSearchController.php:87
 msgid "Entities"
-msgstr "Personer/Organisationer/Folk"
+msgstr "Entiteter"
 
 #: c:\providence/app/controllers/find/QuickSearchController.php:88
 msgid "Places"
@@ -335,11 +338,11 @@ msgstr "förnamn"
 
 #: c:\providence/app/controllers/find/SearchObjectLotsController.php:94
 msgid "object lot"
-msgstr "objekt beslut"
+msgstr "objektlott"
 
 #: c:\providence/app/controllers/find/SearchObjectLotsController.php:94
 msgid "object lots"
-msgstr "objekt beslut"
+msgstr "Objektlotter"
 
 #: c:\providence/app/controllers/lookup/AttributeValueController.php:48
 msgid "Invalid table name"
@@ -666,7 +669,7 @@ msgstr "%1 &gt; Ny %2"
 
 #: c:\providence/app/helpers/displayHelpers.php:578
 msgid "New %1"
-msgstr "Ny %1"
+msgstr "Ny/Nytt %1"
 
 #: c:\providence/app/helpers/displayHelpers.php:602
 msgid "Part of lot"
@@ -764,7 +767,7 @@ msgstr "Elementkod"
 
 #: c:\providence/app/helpers/displayHelpers.php:783
 msgid "Referenced by user interfaces"
-msgstr "Refereras av användargränssnitt"
+msgstr "Refereras av gränssnitt"
 
 #: c:\providence/app/helpers/displayHelpers.php:796
 msgid "Number of screens"
@@ -824,11 +827,11 @@ msgstr "Lägg till en %1 under denna"
 #: c:\providence/app/helpers/displayHelpers.php:958
 
 msgid "Duplicate this %1"
-msgstr "Uppdaterad vid %1"
+msgstr "Duplicera denna/detta %1"
 
 #: c:\providence/app/helpers/displayHelpers.php:959
 msgid "Click the [+] button to create and open for editing a duplicate of this %1. By default virtually all aspects of the %2 will be duplicated. You can exclude certain types of content from duplicates using settings in your user preferences under 'Duplication.'"
-msgstr ""
+msgstr "Klicka på [+]-knappen för att skapa och redigera en kopia av detta/denna %1. Grundinställningen är att nästan alla aspekter av dessa två %2 kommer överensstämma. Man kan exkludera vissa typer av innehåll vid duplicering genom inställningarna i 'Mina inställningar/Duplicering'."
 
 #: c:\providence/app/helpers/displayHelpers.php:967
 #: c:\providence/app/helpers/displayHelpers.php:1111
@@ -1039,7 +1042,7 @@ msgstr "Tack för ditt bidrag."
 
 #: c:\providence/app/lib/ca/BaseEditorController.php:103
 msgid "Duplicated %1 \"%2\" (%3)"
-msgstr ""
+msgstr "Gjorde kopia av %1 \"%2\" (%3)"
 
 #: c:\providence/app/lib/ca/BaseEditorController.php:112
 
@@ -1109,7 +1112,7 @@ msgstr "Det gick inte att generera PDF"
 #: c:\providence/app/lib/ca/BaseEditorController.php:592
 
 msgid "new %1"
-msgstr "Ny %1"
+msgstr "Ny/Nytt %1"
 
 #: c:\providence/app/lib/ca/BaseEditorController.php:592
 
@@ -1193,7 +1196,7 @@ msgstr ""
 #: c:\providence/app/lib/ca/BundlableLabelableBaseModelWithAttributes.php:330
 
 msgid "Duplicate"
-msgstr "Datum"
+msgstr "Gör kopia"
 
 #: c:\providence/app/lib/ca/BundlableLabelableBaseModelWithAttributes.php:376
 msgid "Type id cannot be set after insert"
@@ -1663,7 +1666,7 @@ msgstr "Det högsta tillåtna värdet. Inmatning större än det önskade värde
 #: c:\providence/app/lib/ca/Attributes/Values/LengthAttributeValue.php:50
 #: c:\providence/app/lib/ca/Attributes/Values/NumericAttributeValue.php:88
 msgid "Width of data entry field in user interface"
-msgstr "Bredd på datainmatningsfält i användargränssnittet"
+msgstr "Bredd på datainmatningsfält i gränssnittet"
 
 #: c:\providence/app/lib/ca/Attributes/Values/CurrencyAttributeValue.php:66
 #: c:\providence/app/lib/ca/Attributes/Values/DateRangeAttributeValue.php:58
@@ -1677,7 +1680,7 @@ msgstr "Bredd på datainmatningsfält i användargränssnittet"
 #: c:\providence/app/lib/ca/Attributes/Values/OccurrenceAttributeValue.php:49
 #: c:\providence/app/lib/ca/Attributes/Values/PlaceAttributeValue.php:49
 msgid "Width, in characters, of the field when displayed in a user interface."
-msgstr "Bredd, i antal tecken, av fältet när de visas i ett användargränssnitt."
+msgstr "Bredd, i antal tecken, av fältet när de visas i ett gränssnitt."
 
 #: c:\providence/app/lib/ca/Attributes/Values/CurrencyAttributeValue.php:73
 #: c:\providence/app/lib/ca/Attributes/Values/GeocodeAttributeValue.php:61
@@ -1688,7 +1691,7 @@ msgstr "Bredd, i antal tecken, av fältet när de visas i ett användargränssni
 #: c:\providence/app/lib/ca/Attributes/Values/LengthAttributeValue.php:58
 #: c:\providence/app/lib/ca/Attributes/Values/NumericAttributeValue.php:96
 msgid "Height of data entry field in user interface"
-msgstr "Höjd på datainmatningsfältet i användargränssnittet"
+msgstr "Höjd på datainmatningsfältet i gränssnittet"
 
 #: c:\providence/app/lib/ca/Attributes/Values/CurrencyAttributeValue.php:74
 #: c:\providence/app/lib/ca/Attributes/Values/GeocodeAttributeValue.php:62
@@ -1699,7 +1702,7 @@ msgstr "Höjd på datainmatningsfältet i användargränssnittet"
 #: c:\providence/app/lib/ca/Attributes/Values/LengthAttributeValue.php:59
 #: c:\providence/app/lib/ca/Attributes/Values/NumericAttributeValue.php:97
 msgid "Height, in characters, of the field when displayed in a user interface."
-msgstr "Höjd, i tecken, av fältet när de visas i ett användargränssnitt."
+msgstr "Höjd, i tecken, av fältet när de visas i ett gränssnitt."
 
 #: c:\providence/app/lib/ca/Attributes/Values/CurrencyAttributeValue.php:82
 msgid "Check this option if you don't want your currency values to be locale-specific. (The default is to not be.)"
@@ -2152,22 +2155,22 @@ msgstr "%1 är inte ett giltigt mått [%2]"
 
 #: c:\providence/app/lib/ca/Attributes/Values/ListAttributeValue.php:49
 msgid "Width of list in user interface"
-msgstr "Bredd på listan i användargränssnittet"
+msgstr "Bredd på listan i gränssnittet"
 
 #: c:\providence/app/lib/ca/Attributes/Values/ListAttributeValue.php:50
 
 msgid "Width, in characters or pixels, of the list when displayed in a user interface. When list is rendered as a hierarchy browser width must be in pixels."
-msgstr "Bredd, i antal tecken, av listan när de visas i ett användargränssnitt."
+msgstr "Bredd, i antal tecken, av listan när de visas i ett gränssnitt."
 
 #: c:\providence/app/lib/ca/Attributes/Values/ListAttributeValue.php:57
 
 msgid "Height of list in user interface (hierarchy browser only)"
-msgstr "Bredd på listan i användargränssnittet"
+msgstr "Bredd på listan i gränssnittet"
 
 #: c:\providence/app/lib/ca/Attributes/Values/ListAttributeValue.php:58
 
 msgid "Height, in pixels, of the list when displayed in a user interface as a hierarchy browser."
-msgstr "Höjd, i tecken, av fältet när de visas i ett användargränssnitt."
+msgstr "Höjd, i tecken, av fältet när de visas i ett gränssnitt."
 
 #: c:\providence/app/lib/ca/Attributes/Values/ListAttributeValue.php:66
 msgid "Check this option if you don't want your list values to be locale-specific. (The default is to not be.)"
@@ -2282,7 +2285,7 @@ msgstr "%1 är inte ett numeriskt värde"
 #: c:\providence/app/lib/ca/Attributes/Values/OccurrenceAttributeValue.php:48
 #: c:\providence/app/lib/ca/Attributes/Values/PlaceAttributeValue.php:48
 msgid "Width of field in user interface"
-msgstr "Bredd på fältet i användargränssnittet"
+msgstr "Bredd på fältet i gränssnittet"
 
 #: c:\providence/app/lib/ca/Attributes/Values/OccurrenceAttributeValue.php:57
 #: c:\providence/app/lib/ca/Attributes/Values/PlaceAttributeValue.php:57
@@ -2291,7 +2294,7 @@ msgstr "Markera detta alternativ om du inte vill att din fältvärden ska vara s
 
 #: c:\providence/app/lib/ca/Attributes/Values/OccurrenceAttributeValue.php:80
 msgid "Occurrence type restriction"
-msgstr "Förekomst typ restriktion"
+msgstr "Händelsetyprestriktion"
 
 #: c:\providence/app/lib/ca/Attributes/Values/OccurrenceAttributeValue.php:81
 msgid "Insert idno of a occurrence type here to restrict the lookup mechanism to that type. (The default is empty.)"
@@ -2299,7 +2302,7 @@ msgstr "Sätt idno av en händelsetyp här för att begränsa slå upp mekanisme
 
 #: c:\providence/app/lib/ca/Attributes/Values/PlaceAttributeValue.php:80
 msgid "Place type restriction"
-msgstr "Plats typ restriktion"
+msgstr "Plats typrestriktion"
 
 #: c:\providence/app/lib/ca/Attributes/Values/PlaceAttributeValue.php:81
 msgid "Insert idno of a place type here to restrict the lookup mechanism to a certain place type. (The default is empty.)"
@@ -2569,7 +2572,7 @@ msgstr ""
 
 #: c:\providence/app/lib/ca/Service/OAIPMHService.php:721
 msgid "Duplicate parameters in request"
-msgstr ""
+msgstr "Duplicera parametrar i request"
 
 #: c:\providence/app/lib/ca/Service/OAIPMHService.php:732
 msgid "Missing required parameter %1"
@@ -2834,7 +2837,7 @@ msgstr "Kan inte ta bort objekt, eftersom det används (%1)"
 #: c:\providence/app/lib/core/BaseModel.php:3719
 #: c:\providence/app/lib/core/BaseModel.php:3844
 msgid "Couldn't queue mirror using '%1' for version '%2' (handler '%3')"
-msgstr "Kunde inte köa spegling via '%1' för versionen '%2' (hanterare '%3')"
+msgstr "Kunde inte köa spegling via '%1' för versionen '%2' (redigerare '%3')"
 
 #: c:\providence/app/lib/core/BaseModel.php:3338
 #: c:\providence/app/lib/core/BaseModel.php:3346
@@ -3072,7 +3075,7 @@ msgstr "Okänd"
 
 #: c:\providence/app/lib/core/TaskQueue.php:184
 msgid "Could not create tmp directory for handler '%1'"
-msgstr "Kunde inte skapa tmp-katalog för hanterare '%1'"
+msgstr "Kunde inte skapa tmp-katalog för redigerare '%1'"
 
 #: c:\providence/app/lib/core/TaskQueue.php:190
 msgid "Could not copy '%1'"
@@ -3231,7 +3234,7 @@ msgstr "IP adress"
 #: c:\providence/app/lib/core/Parsers/MediaMetadata/XMPParser.php:158
 
 msgid "Creator city"
-msgstr "Skapa person/organisation/folk"
+msgstr "Skapa entitet"
 
 #: c:\providence/app/lib/core/Parsers/MediaMetadata/XMPParser.php:163
 msgid "Creator state/region"
@@ -3970,7 +3973,7 @@ msgstr "Anmärkningar"
 #: c:\providence/app/models/ca_bundle_displays.php:58
 #: c:\providence/app/models/ca_collections.php:51
 
-msgid "CollectiveAccess id"
+msgid "CollectiveAccess-id"
 msgstr "Samlingssökningar"
 
 #: c:\providence/app/models/ca_bookmarks.php:47
@@ -4001,7 +4004,7 @@ msgstr "Anger typ av objekt display används till."
 #: c:\providence/app/models/ca_bundle_displays.php:88
 #: c:\providence/app/models/ca_bundle_mappings.php:110
 msgid "occurrences"
-msgstr "förekomster"
+msgstr "Händelser"
 
 #: c:\providence/app/models/ca_bookmarks.php:77
 #: c:\providence/app/models/ca_bundle_displays.php:97
@@ -4011,8 +4014,9 @@ msgstr "representationskommentarer"
 #: c:\providence/app/models/ca_bookmarks.php:78
 #: c:\providence/app/models/ca_bundle_displays.php:99
 #: c:\providence/app/models/ca_bundle_mappings.php:119
+
 msgid "list items"
-msgstr "list poster"
+msgstr "listposter"
 
 #: c:\providence/app/models/ca_bookmarks.php:94
 #: c:\providence/app/models/ca_bookmark_folders.php:72
@@ -4069,7 +4073,7 @@ msgstr "display lista"
 
 #: c:\providence/app/models/ca_bundle_displays.php:51
 msgid "display lists"
-msgstr "display listor"
+msgstr "Displaylistor"
 
 #: c:\providence/app/models/ca_bundle_displays.php:58
 msgid "Unique numeric identifier used by CollectiveAccess internally to identify this display"
@@ -4580,7 +4584,7 @@ msgstr "Listkod"
 #: c:\providence/app/models/ca_bundle_mapping_groups.php:64
 
 msgid "Unique alphanumeric identifier for this unit."
-msgstr "En unikt alfanumerisk identifierare för denna person/organisation/folk."
+msgstr "En unikt alfanumerisk identifierare för denna entitet."
 
 #: c:\providence/app/models/ca_bundle_mapping_groups.php:73
 
@@ -4881,7 +4885,7 @@ msgstr "Anger om samlingen är borttagen eller inte."
 
 #: c:\providence/app/models/ca_collections.php:304
 msgid "Related entities"
-msgstr "Relaterade personer/organisationer/folk"
+msgstr "Relaterade entiteter"
 
 #: c:\providence/app/models/ca_collections.php:306
 msgid "Related places"
@@ -4893,7 +4897,7 @@ msgstr "Relaterade samlingar"
 
 #: c:\providence/app/models/ca_collections.php:308
 msgid "Related occurrences"
-msgstr "Relaterade förekomster"
+msgstr "Relaterade händelser"
 
 #: c:\providence/app/models/ca_collections.php:309
 msgid "Related lot"
@@ -4905,7 +4909,7 @@ msgstr "Relaterade förvaringsplatser"
 
 #: c:\providence/app/models/ca_collections.php:312
 msgid "Related vocabulary terms"
-msgstr "Relaterade vokabulär termer"
+msgstr "Relaterade vokabulärtermer"
 
 #: c:\providence/app/models/ca_collections.php:314
 msgid "Related loans"
@@ -4959,11 +4963,11 @@ msgstr "samling ⇔ förvaringsplatsrelationer"
 
 #: c:\providence/app/models/ca_collections_x_vocabulary_terms.php:40
 msgid "collection ⇔ vocabulary term relationship"
-msgstr "samling ⇔ vokabulär term relation"
+msgstr "samling ⇔ vokabulärterm relation"
 
 #: c:\providence/app/models/ca_collections_x_vocabulary_terms.php:41
 msgid "collection ⇔ vocabulary term relationships"
-msgstr "samling ⇔ vokabulär term relationer"
+msgstr "samling ⇔ vokabulärterm relationer"
 
 #: c:\providence/app/models/ca_collection_labels.php:41
 msgid "collection name"
@@ -4993,7 +4997,7 @@ msgstr "kommenterade"
 #: c:\providence/app/models/ca_commerce_communications.php:40
 
 msgid "communications"
-msgstr "samlingar"
+msgstr "Samlingar"
 
 #: c:\providence/app/models/ca_commerce_communications.php:56
 #: c:\providence/app/models/ca_commerce_orders.php:56
@@ -5059,7 +5063,7 @@ msgstr "Anger om posten är raderad eller inte."
 #: c:\providence/app/models/ca_commerce_fulfillment_events.php:61
 #: c:\providence/app/models/ca_data_import_event_log.php:60
 msgid "Item"
-msgstr "Post"
+msgstr "Vokabulärpost"
 
 #: c:\providence/app/models/ca_commerce_fulfillment_events.php:61
 
@@ -5197,7 +5201,7 @@ msgstr ""
 #: c:\providence/app/models/ca_commerce_orders.php:214
 
 msgid "City"
-msgstr "Person/Organisation/Folk"
+msgstr "Entitet"
 
 #: c:\providence/app/models/ca_commerce_orders.php:117
 msgid "Ship to: city."
@@ -5549,7 +5553,7 @@ msgstr ""
 #: c:\providence/app/models/ca_commerce_order_items.php:115
 
 msgid "Restrictions"
-msgstr "Typ restriktioner"
+msgstr "Typrestriktioner"
 
 #: c:\providence/app/models/ca_commerce_order_items.php:115
 msgid "Notes pertaining to use restrictions on the item."
@@ -5740,45 +5744,45 @@ msgstr "Framgång"
 
 #: c:\providence/app/models/ca_editor_uis.php:41
 msgid "editor UI"
-msgstr "redigerare användargränssnitt"
+msgstr "redigeringsgränssnitt"
 
 #: c:\providence/app/models/ca_editor_uis.php:42
 msgid "editor UIs"
-msgstr "redigerare användargränssnitt"
+msgstr "redigeringsgränssnitt"
 
 #: c:\providence/app/models/ca_editor_uis.php:49
 msgid "Unique numeric identifier used by CollectiveAccess internally to identify this user interface"
-msgstr ""
+msgstr "Unik numerisk indentitet som används intert av CA"
 
 #: c:\providence/app/models/ca_editor_uis.php:56
 
 msgid "Editor code"
-msgstr "Editor typ"
+msgstr "Redigerartyp"
 
 #: c:\providence/app/models/ca_editor_uis.php:56
 
 msgid "Unique code for editor; used to identify the editor for configuration purposes."
-msgstr "Unik kod för tur, används för att identifiera turen för en konfiguration."
+msgstr "Unik kod för redigerare, används för att identifiera redigeraren i en konfiguration."
 
 #: c:\providence/app/models/ca_editor_uis.php:72
 msgid "Is system UI?"
-msgstr "Är system användargränssnitt?"
+msgstr "Är systemgränssnitt?"
 
 #: c:\providence/app/models/ca_editor_uis.php:72
 msgid "If set, user interface will be available to all users."
-msgstr "Om satt, kommer användargränssnittet vara tillgänglig för alla användare."
+msgstr "Om satt så kommer gränssnittet vara tillgängligt för alla användare."
 
 #: c:\providence/app/models/ca_editor_uis.php:81
 msgid "Editor type"
-msgstr "Editor typ"
+msgstr "Redigerartyp"
 
 #: c:\providence/app/models/ca_editor_uis.php:81
 msgid "Type of item this editor UI operates on."
-msgstr "Typ av objekt denna redigerare användargränssnitt verkar på."
+msgstr "Typ av objekt detta redigerargränssnitt verkar på."
 
 #: c:\providence/app/models/ca_editor_uis.php:97
 msgid "object lot events"
-msgstr "objekt beslut händelse"
+msgstr "objektlottshändelse"
 
 #: c:\providence/app/models/ca_editor_uis.php:98
 msgid "sets"
@@ -5786,7 +5790,7 @@ msgstr "grupperingar"
 
 #: c:\providence/app/models/ca_editor_uis.php:99
 msgid "set items"
-msgstr "gruppering objekt"
+msgstr "grupperingsobjekt"
 
 #: c:\providence/app/models/ca_editor_uis.php:100
 msgid "lists"
@@ -5806,7 +5810,7 @@ msgstr "Användargränssnitt"
 
 #: c:\providence/app/models/ca_editor_uis.php:106
 msgid "user interface screens"
-msgstr "användargränssnitt sidor"
+msgstr "gränssnitt sidor"
 
 #: c:\providence/app/models/ca_editor_uis.php:107
 msgid "import/export mappings"
@@ -5842,19 +5846,19 @@ msgstr "Kunde inte ändra ordning på sidor %1: %2"
 
 #: c:\providence/app/models/ca_editor_uis_x_users.php:40
 msgid "editor UIs ⇔ user association"
-msgstr "redigerare användargränssnitt ⇔ användar associering"
+msgstr "redigerargränssnitt ⇔ användar associering"
 
 #: c:\providence/app/models/ca_editor_uis_x_users.php:41
 msgid "editor UIs ⇔ user associations"
-msgstr "redigerare användargränssnitt ⇔ användar associeringar"
+msgstr "redigerargränssnitt ⇔ användar associeringar"
 
 #: c:\providence/app/models/ca_editor_uis_x_user_groups.php:40
 msgid "editor UIs ⇔ group association"
-msgstr "redigerare användargränssnitt ⇔ grupptillhörighet"
+msgstr "redigerargränssnitt ⇔ grupptillhörighet"
 
 #: c:\providence/app/models/ca_editor_uis_x_user_groups.php:41
 msgid "editor UIs ⇔ group associations"
-msgstr "redigerare användargränssnitt ⇔ grupptillhörigheter"
+msgstr "redigerargränssnitt ⇔ grupptillhörigheter"
 
 #: c:\providence/app/models/ca_editor_ui_bundle_placements.php:46
 msgid "Alternate label to place on bundle"
@@ -5866,7 +5870,7 @@ msgstr "Anpassad etikett text som ska användas för placering av detta paket."
 
 #: c:\providence/app/models/ca_editor_ui_bundle_placements.php:54
 msgid "Alternate label to place on bundle add button"
-msgstr "Alternativ etikett att sätta på paket lägg till-knappe"
+msgstr "Alternativ etikett att sätta på lägg till-knappen"
 
 #: c:\providence/app/models/ca_editor_ui_bundle_placements.php:55
 msgid "Custom text to use for the add button for this placement of this bundle."
@@ -5921,11 +5925,11 @@ msgstr "Unik kod för placering av detta paket på den här sidan."
 
 #: c:\providence/app/models/ca_editor_ui_labels.php:41
 msgid "editor UI name"
-msgstr "redigerare användargränssnitt namn"
+msgstr "redigerargränssnittsnamn"
 
 #: c:\providence/app/models/ca_editor_ui_labels.php:42
 msgid "editor UI names"
-msgstr "redigerare användargränssnitt namn"
+msgstr "redigerargränssnittsnamn"
 
 #: c:\providence/app/models/ca_editor_ui_labels.php:63
 msgid "Name of editor"
@@ -5941,11 +5945,11 @@ msgstr "Språkversion redigerare namn"
 
 #: c:\providence/app/models/ca_editor_ui_screens.php:44
 msgid "editor UI screen"
-msgstr "redigerare användargränssnitt sida"
+msgstr "redigerarränssnittssida"
 
 #: c:\providence/app/models/ca_editor_ui_screens.php:45
 msgid "editor UI screens"
-msgstr "redigerare användargränssnitt sidor"
+msgstr "redigerargränssnittssidor"
 
 #: c:\providence/app/models/ca_editor_ui_screens.php:52
 msgid "Unique numeric identifier used by CollectiveAccess internally to identify this user interface screen"
@@ -5961,7 +5965,7 @@ msgstr "Unik alfanumerisk identifierare för denna sida"
 
 #: c:\providence/app/models/ca_editor_ui_screens.php:90
 msgid "Is default screen?"
-msgstr "Är standard sida?"
+msgstr "Är standardsida?"
 
 #: c:\providence/app/models/ca_editor_ui_screens.php:90
 msgid "Indicates if this screen should be used as the default screen when creating a new item."
@@ -5981,7 +5985,7 @@ msgstr "Sidinnehåll"
 
 #: c:\providence/app/models/ca_editor_ui_screens.php:219
 msgid "Type restrictions"
-msgstr "Typ restriktioner"
+msgstr "Typrestriktioner"
 
 #: c:\providence/app/models/ca_editor_ui_screens.php:418
 
@@ -5996,11 +6000,11 @@ msgstr "Begränsar visning av objekt till angiven typ(er). Lämna alla avmarkera
 #: c:\providence/app/models/ca_editor_ui_screens.php:436
 
 msgid "Do not include sub-types in type restriction"
-msgstr "redigerare användargränssnitt sidtyp begränsning"
+msgstr "Inkludera ej subtyper i typrestriktion"
 
 #: c:\providence/app/models/ca_editor_ui_screens.php:437
 msgid "Normally restricting to type(s) automatically includes all sub-(child) types. If this option is checked then the lookup results will include items with the selected type(s) <b>only</b>."
-msgstr ""
+msgstr "Typerestriktioner inkluderar annars subtyper."
 
 #: c:\providence/app/models/ca_editor_ui_screens.php:448
 
@@ -6041,27 +6045,27 @@ msgstr "Om det är markerat kommer hela hierarkiska sökvägen att visas."
 
 #: c:\providence/app/models/ca_editor_ui_screen_labels.php:41
 msgid "editor ui screen label"
-msgstr "redigerare användargränssnitt sida etikett"
+msgstr "redigerargränssnittssidsetikett"
 
 #: c:\providence/app/models/ca_editor_ui_screen_labels.php:42
 msgid "editor ui screen labels"
-msgstr "redigerare användargränssnitt sida etiketter"
+msgstr "redigerargränssnittssidsetiketter"
 
 #: c:\providence/app/models/ca_editor_ui_screen_labels.php:63
 msgid "Name of UI screen"
-msgstr "Namn på användargränssnitt sida"
+msgstr "Namn på gränssnittssida"
 
 #: c:\providence/app/models/ca_editor_ui_screen_labels.php:71
 msgid "Description of UI screen"
-msgstr "Beskrivning av användargränssnitt sida"
+msgstr "Beskrivning av gränssnittssida"
 
 #: c:\providence/app/models/ca_editor_ui_screen_type_restrictions.php:46
 msgid "editor ui screen type restriction"
-msgstr "redigerare användargränssnitt sidtyp begränsning"
+msgstr "restriktion på redigerarsidstyp"
 
 #: c:\providence/app/models/ca_editor_ui_screen_type_restrictions.php:47
 msgid "editor ui screen type restrictions"
-msgstr "redigerare användargränssnitt sidtyp begränsningar"
+msgstr "restriktioner på redigerarsidstyp"
 
 #: c:\providence/app/models/ca_editor_ui_screen_type_restrictions.php:61
 msgid "Table"
@@ -6069,7 +6073,7 @@ msgstr "Tabell"
 
 #: c:\providence/app/models/ca_editor_ui_screen_type_restrictions.php:61
 msgid "Table this restriction binds the UI screen to"
-msgstr "Tabell denna begränsning binder användargränssnitt sida till"
+msgstr "Tabell denna begränsning binder gränssnittssidan till"
 
 #: c:\providence/app/models/ca_editor_ui_screen_type_restrictions.php:83
 msgid "Restriction settings"
@@ -6085,27 +6089,27 @@ msgstr ""
 
 #: c:\providence/app/models/ca_entities.php:65
 msgid "The locale from which the entity originates."
-msgstr "Språket från vilken personen/organisationen/folket har sitt ursprung."
+msgstr "Språket från vilken entiteten har sitt ursprung."
 
 #: c:\providence/app/models/ca_entities.php:73
 msgid "Administrative source of the entity. This value is often used to indicate the administrative sub-division or legacy database from which the entity information originates, but can also be re-tasked for use as a simple classification tool if needed."
-msgstr "Administrativ källa till personen/organisationen/folket. Detta värde används ofta för att indikera den administrativa indelning eller äldre databas från vilken personens/enhetens information ursprungligen kom från, men kan också ändras till att användas som ett enkelt klassificeringsverktyg om det behövs."
+msgstr "Administrativ källa till entiteten. Detta värde används ofta för att indikera den administrativa indelning eller äldre databas från vilken personens/enhetens information ursprungligen kom från, men kan också ändras till att användas som ett enkelt klassificeringsverktyg om det behövs."
 
 #: c:\providence/app/models/ca_entities.php:81
 msgid "Entity type"
-msgstr "Person/Organisation/Folk typ"
+msgstr "Entitetstyp"
 
 #: c:\providence/app/models/ca_entities.php:81
 msgid "The type of the entity. eg. individual, organization, family, etc."
-msgstr "Typ av person/organisation/folk t.ex. person, organisation, familj etc."
+msgstr "Typ av entitet t.ex. person, organisation, familj etc."
 
 #: c:\providence/app/models/ca_entities.php:88
 msgid "Entity identifier"
-msgstr "Personens/Organisationens/Folkets id"
+msgstr "Entitetsid"
 
 #: c:\providence/app/models/ca_entities.php:88
 msgid "A unique alphanumeric identifier for this entity."
-msgstr "En unikt alfanumerisk identifierare för denna person/organisation/folk."
+msgstr "En unikt alfanumerisk identifierare för denna entitet."
 
 #: c:\providence/app/models/ca_entities.php:104
 msgid "Data source information"
@@ -6121,15 +6125,15 @@ msgstr "Livstid"
 
 #: c:\providence/app/models/ca_entities.php:112
 msgid "Lifetime of entity (date range)"
-msgstr "Livstid för personen/organisationen/folket (datumintervall)"
+msgstr "Livstid för entiteten (datumintervall)"
 
 #: c:\providence/app/models/ca_entities.php:119
 msgid "Entity hierarchy"
-msgstr "Person/Organisation/Folkshierarki"
+msgstr "Entitetshierarki"
 
 #: c:\providence/app/models/ca_entities.php:119
 msgid "Identifier of entity that is root of the entity hierarchy."
-msgstr "Identifierare av person/organisation/folk som är roten till denna person/organisation/folkshierarki."
+msgstr "Identifierare av entitet som är roten till denna entitetshierarki."
 
 #: c:\providence/app/models/ca_entities.php:145
 msgid "Indicates if entity information is accessible to the public or not. "
@@ -6137,43 +6141,43 @@ msgstr "Anger om personens/organisationens/folkets information är tillgänglig 
 
 #: c:\providence/app/models/ca_entities.php:160
 msgid "Indicates the current state of the entity record."
-msgstr "Anger aktuell status för person/organisation/folk posten."
+msgstr "Anger aktuell status för entitetsposten."
 
 #: c:\providence/app/models/ca_entities.php:167
 msgid "Indicates if the entity is deleted or not."
-msgstr "Anger om personen/organisationen/folket är borttagen eller inte."
+msgstr "Anger om entiteten är borttagen eller inte."
 
 #: c:\providence/app/models/ca_entities_x_collections.php:40
 msgid "entity ⇔ collection relationship"
-msgstr "person/organisation/folk ⇔ samling relation"
+msgstr "entitet ⇔ samling relation"
 
 #: c:\providence/app/models/ca_entities_x_collections.php:41
 msgid "entity ⇔ collection relationships"
-msgstr "person/organisation/folk ⇔ samling relationer"
+msgstr "entitet ⇔ samling relationer"
 
 #: c:\providence/app/models/ca_entities_x_entities.php:40
 msgid "entity ⇔ entity relationship"
-msgstr "person/organisation/folk ⇔ person/organisation/folk relation"
+msgstr "entitet ⇔ entitet relation"
 
 #: c:\providence/app/models/ca_entities_x_entities.php:41
 msgid "entity ⇔ entity relationships"
-msgstr "person/organisation/folk ⇔ person/organisation/folk relationer"
+msgstr "entitet ⇔ entitet relationer"
 
 #: c:\providence/app/models/ca_entities_x_occurrences.php:40
 msgid "entity ⇔ occurrence relationship"
-msgstr "person/organisation/folk ⇔ förekomst relation"
+msgstr "entitet ⇔ händelse relation"
 
 #: c:\providence/app/models/ca_entities_x_occurrences.php:41
 msgid "entity ⇔ occurrence relationships"
-msgstr "person/organisation/folk ⇔ förekomst relationer"
+msgstr "entitet ⇔ händelse relationer"
 
 #: c:\providence/app/models/ca_entities_x_places.php:40
 msgid "entity ⇔ place relationship"
-msgstr "person/organisation/folk ⇔ plats relation"
+msgstr "entitet ⇔ plats relation"
 
 #: c:\providence/app/models/ca_entities_x_places.php:41
 msgid "entity ⇔ place relationships"
-msgstr "person/organisation/folk ⇔ plats relationer"
+msgstr "entitet ⇔ plats relationer"
 
 #: c:\providence/app/models/ca_entities_x_storage_locations.php:40
 
@@ -6187,19 +6191,19 @@ msgstr "objekt ⇔ förvaringsplats relationer"
 
 #: c:\providence/app/models/ca_entities_x_vocabulary_terms.php:40
 msgid "entity ⇔ vocabulary term relationship"
-msgstr "person/organisation/folk ⇔ vokabulär term relation"
+msgstr "entitet ⇔ vokabulärtermrelation"
 
 #: c:\providence/app/models/ca_entities_x_vocabulary_terms.php:41
 msgid "entity ⇔ vocabulary term relationships"
-msgstr "person/organisation/folk ⇔ vokabulär term relationer"
+msgstr "entitet ⇔ vokabulärtermrelationer"
 
 #: c:\providence/app/models/ca_entity_labels.php:41
 msgid "entity name"
-msgstr "person/organisation/folksnamn"
+msgstr "entitetsnamn"
 
 #: c:\providence/app/models/ca_entity_labels.php:42
 msgid "entity names"
-msgstr "person/organisation/folksnamn"
+msgstr "entitetsnamn"
 
 #: c:\providence/app/models/ca_entity_labels.php:73
 msgid "Indicates type of label and how it should be employed."
@@ -6767,11 +6771,11 @@ msgstr "plats ⇔ samlingsrelationer"
 
 #: c:\providence/app/models/ca_loans_x_entities.php:40
 msgid "loans ⇔ entities relationship"
-msgstr "lån ⇔ person/organisation/folk relation"
+msgstr "lån ⇔ entitet relation"
 
 #: c:\providence/app/models/ca_loans_x_entities.php:41
 msgid "loans ⇔ entities relationships"
-msgstr "lån ⇔ person/organisation/folk relationer"
+msgstr "lån ⇔ entitet relationer"
 
 #: c:\providence/app/models/ca_loans_x_loans.php:40
 
@@ -6816,42 +6820,42 @@ msgstr "lån ⇔ objekt relationer"
 #: c:\providence/app/models/ca_loans_x_occurrences.php:40
 
 msgid "loans ⇔ occurrences relationship"
-msgstr "plats ⇔ förekomst relation"
+msgstr "lån ⇔ händelse relation"
 
 #: c:\providence/app/models/ca_loans_x_occurrences.php:41
 
 msgid "loans ⇔ occurrences relationships"
-msgstr "plats ⇔ förekomst relationer"
+msgstr "lån ⇔ händelse relationer"
 
 #: c:\providence/app/models/ca_loans_x_places.php:40
 
 msgid "loans ⇔ places relationship"
-msgstr "plats ⇔ plats relation"
+msgstr "lån ⇔ plats relation"
 
 #: c:\providence/app/models/ca_loans_x_places.php:41
 
 msgid "loans ⇔ places relationships"
-msgstr "plats ⇔ plats relationer"
+msgstr "lån ⇔ plats relationer"
 
 #: c:\providence/app/models/ca_loans_x_storage_locations.php:40
 
 msgid "loans ⇔ storage locations relationship"
-msgstr "samling ⇔ förvaringsplatsrelation"
+msgstr "lån ⇔ förvaringsplatsrelation"
 
 #: c:\providence/app/models/ca_loans_x_storage_locations.php:41
 
 msgid "loans ⇔ storage locations relationships"
-msgstr "samling ⇔ förvaringsplatsrelationer"
+msgstr "lån ⇔ förvaringsplatsrelationer"
 
 #: c:\providence/app/models/ca_loans_x_vocabulary_terms.php:40
 
 msgid "loans ⇔ vocabulary terms relationship"
-msgstr "plats ⇔ vokabulär term relation"
+msgstr "lån ⇔ vokabulärtermrelation"
 
 #: c:\providence/app/models/ca_loans_x_vocabulary_terms.php:41
 
 msgid "loans ⇔ vocabulary terms relationships"
-msgstr "plats ⇔ vokabulär term relationer"
+msgstr "lån ⇔ vokabulärtermrelationer"
 
 #: c:\providence/app/models/ca_loan_labels.php:40
 msgid "loan title"
@@ -6999,15 +7003,15 @@ msgstr "Minsta antal attribut paket att visa i en redigeringsformulär."
 
 #: c:\providence/app/models/ca_metadata_type_restrictions.php:63
 msgid "The minimum number of attribute bundles to show in an editing form. If the number of actual attributes is less than this number then the user interface will show empty form bundles to reach this number. This number should be less than or equal to the maximum number of attributes per row."
-msgstr "Det minsta antalet attribut paket att visa i en redigeringsformulär. Om antalet faktiska attribut är mindre än denna siffra då visar användargränssnittet tomma formulär paket för att nå detta antal. Detta antal bör vara mindre än eller lika med det maximala antalet attribut per rad."
+msgstr "Det minsta antalet attribut paket att visa i en redigeringsformulär. Om antalet faktiska attribut är mindre än denna siffra då visar gränssnittet tomma formulär paket för att nå detta antal. Detta antal bör vara mindre än eller lika med det maximala antalet attribut per rad."
 
 #: c:\providence/app/models/ca_metadata_type_restrictions.php:70
 msgid "metadata type restriction"
-msgstr "metadata typ restriktion"
+msgstr "metadatatypsrestriktion"
 
 #: c:\providence/app/models/ca_metadata_type_restrictions.php:71
 msgid "metadata type restrictions"
-msgstr "metadata typ restriktioner"
+msgstr "metadatatypsrestriktioner"
 
 #: c:\providence/app/models/ca_metadata_type_restrictions.php:85
 msgid "Bind attribute to"
@@ -7036,7 +7040,7 @@ msgstr "Typ av förflyttning. t ex. administrativa, utställning etc."
 
 #: c:\providence/app/models/ca_movements.php:65
 msgid "Movement identifier"
-msgstr "Förflyttning id"
+msgstr "Förflyttningsid"
 
 #: c:\providence/app/models/ca_movements.php:65
 msgid "A unique alphanumeric identifier for this movement."
@@ -7066,11 +7070,11 @@ msgstr "förflyttningar ⇔ objekt relationer"
 
 #: c:\providence/app/models/ca_movements_x_entities.php:40
 msgid "movements ⇔ entities relationship"
-msgstr "förflyttningar ⇔ personer/organisationer/folk relation"
+msgstr "förflyttningar ⇔ entiteter relation"
 
 #: c:\providence/app/models/ca_movements_x_entities.php:41
 msgid "movements ⇔ entities relationships"
-msgstr "förflyttningar ⇔ personer/organisationer/folk relationer"
+msgstr "förflyttningar ⇔ entiteter relationer"
 
 #: c:\providence/app/models/ca_movements_x_movements.php:40
 
@@ -7101,12 +7105,12 @@ msgstr "förflyttningar ⇔ objekt beslut relationer"
 #: c:\providence/app/models/ca_movements_x_occurrences.php:40
 
 msgid "movements ⇔ occurrences relationship"
-msgstr "person/organisation/folk ⇔ förekomst relation"
+msgstr "entitet ⇔ händelse relation"
 
 #: c:\providence/app/models/ca_movements_x_occurrences.php:41
 
 msgid "movements ⇔ occurrences relationships"
-msgstr "person/organisation/folk ⇔ förekomst relationer"
+msgstr "entitet ⇔ händelse relationer"
 
 #: c:\providence/app/models/ca_movements_x_places.php:40
 
@@ -7131,12 +7135,12 @@ msgstr "objekt ⇔ förvaringsplats relationer"
 #: c:\providence/app/models/ca_movements_x_vocabulary_terms.php:40
 
 msgid "movements ⇔ vocabulary terms relationship"
-msgstr "person/organisation/folk ⇔ vokabulär term relation"
+msgstr "entitet ⇔ vokabulär term relation"
 
 #: c:\providence/app/models/ca_movements_x_vocabulary_terms.php:41
 
 msgid "movements ⇔ vocabulary terms relationships"
-msgstr "person/organisation/folk ⇔ vokabulär term relationer"
+msgstr "entitet ⇔ vokabulär term relationer"
 
 #: c:\providence/app/models/ca_movement_labels.php:40
 msgid "movement title"
@@ -7180,7 +7184,7 @@ msgstr "Typen av objektet. I CollectiveAccess varje objekt har en enda \"inbyggd
 
 #: c:\providence/app/models/ca_objects.php:105
 msgid "Object identifier"
-msgstr "Objekt id"
+msgstr "Objektid"
 
 #: c:\providence/app/models/ca_objects.php:105
 msgid "A unique alphanumeric identifier for this object. This is usually equivalent to the \"accession number\" in museum settings."
@@ -7224,7 +7228,7 @@ msgstr "Anger om objektet beslut är tillgänglig för allmänheten eller inte."
 
 #: c:\providence/app/models/ca_objects.php:193
 msgid "Indicates the current state of the object record."
-msgstr "Anger aktuell status för objekt beslut post."
+msgstr "Anger aktuell status för objekt post."
 
 #: c:\providence/app/models/ca_objects.php:200
 msgid "Indicates if the object is deleted or not."
@@ -7261,11 +7265,11 @@ msgstr "objekt ⇔ samlingsrelationer"
 
 #: c:\providence/app/models/ca_objects_x_entities.php:40
 msgid "object ⇔ entity relationship"
-msgstr "objekt ⇔ person/organisation/folk relation"
+msgstr "objekt ⇔ entitet relation"
 
 #: c:\providence/app/models/ca_objects_x_entities.php:41
 msgid "object ⇔ entity relationships"
-msgstr "objekt ⇔ person/organisation/folk relationer"
+msgstr "objekt ⇔ entitet relationer"
 
 #: c:\providence/app/models/ca_objects_x_objects.php:40
 msgid "object ⇔ object relationship"
@@ -7311,11 +7315,11 @@ msgstr "Kunde inte ladda objekt-representation länk"
 
 #: c:\providence/app/models/ca_objects_x_occurrences.php:40
 msgid "object ⇔ occurrence relationship"
-msgstr "objekt ⇔ förekomst relation"
+msgstr "objekt ⇔ händelse relation"
 
 #: c:\providence/app/models/ca_objects_x_occurrences.php:41
 msgid "object ⇔ occurrence relationships"
-msgstr "objekt ⇔ förekomst relationer"
+msgstr "objekt ⇔ händelse relationer"
 
 #: c:\providence/app/models/ca_objects_x_places.php:40
 msgid "object ⇔ place relationship"
@@ -7363,19 +7367,19 @@ msgstr "Händelsedatum"
 
 #: c:\providence/app/models/ca_object_events_x_entities.php:40
 msgid "object event ⇔ entity relationship"
-msgstr "objekt händelse ⇔ person/organisation/folk relation"
+msgstr "objekt händelse ⇔ entitet relation"
 
 #: c:\providence/app/models/ca_object_events_x_entities.php:41
 msgid "object event ⇔ entity relationships"
-msgstr "objekt händelse ⇔ person/organisation/folk relationer"
+msgstr "objekt händelse ⇔ entitet relationer"
 
 #: c:\providence/app/models/ca_object_events_x_occurrences.php:40
 msgid "object event ⇔ occurrence relationship"
-msgstr "objekt händelse ⇔ förekomst relation"
+msgstr "objekt händelse ⇔ händelse relation"
 
 #: c:\providence/app/models/ca_object_events_x_occurrences.php:41
 msgid "object event ⇔ occurrence relationships"
-msgstr "objekt händelse ⇔ förekomst relationer"
+msgstr "objekt händelse ⇔ händelse relationer"
 
 #: c:\providence/app/models/ca_object_events_x_places.php:40
 msgid "object event ⇔ place relationship"
@@ -7440,7 +7444,7 @@ msgstr "Anger nyförvärv/samling status för beslut. (t.ex. nyförvärv, i avva
 
 #: c:\providence/app/models/ca_object_lots.php:74
 msgid "Lot identifier"
-msgstr "Beslut id"
+msgstr "Beslutsid"
 
 #: c:\providence/app/models/ca_object_lots.php:74
 msgid "Unique alphanumeric code identifying the lot."
@@ -7472,19 +7476,19 @@ msgstr "objekt beslut ⇔ samlingsrelationer"
 
 #: c:\providence/app/models/ca_object_lots_x_entities.php:40
 msgid "object lot ⇔ entity relationship"
-msgstr "objekt beslut ⇔ person/organisation/folk relation"
+msgstr "objekt beslut ⇔ entitet relation"
 
 #: c:\providence/app/models/ca_object_lots_x_entities.php:41
 msgid "object lot ⇔ entity relationships"
-msgstr "objekt beslut ⇔ person/organisation/folk relationer"
+msgstr "objekt beslut ⇔ entitet relationer"
 
 #: c:\providence/app/models/ca_object_lots_x_occurrences.php:40
 msgid "object lot ⇔ occurrence relationship"
-msgstr "objekt beslut ⇔ förekomst relation"
+msgstr "objekt beslut ⇔ händelse relation"
 
 #: c:\providence/app/models/ca_object_lots_x_occurrences.php:41
 msgid "object lot ⇔ occurrence relationships"
-msgstr "objekt beslut ⇔ förekomst relationer"
+msgstr "objekt beslut ⇔ händelse relationer"
 
 #: c:\providence/app/models/ca_object_lots_x_places.php:40
 msgid "object lot ⇔ place relationship"
@@ -7580,12 +7584,12 @@ msgstr "Anger vilken typ av representation. Typen kan bara ställas in när du s
 
 #: c:\providence/app/models/ca_object_representations.php:79
 msgid "Representation identifier"
-msgstr "Representation id"
+msgstr "Representationsid"
 
 #: c:\providence/app/models/ca_object_representations.php:79
 
 msgid "A unique alphanumeric identifier for this representation."
-msgstr "En unikt alfanumerisk identifierare för denna person/organisation/folk."
+msgstr "En unikt alfanumerisk identifierare för denna entitet."
 
 #: c:\providence/app/models/ca_object_representations.php:106
 #: c:\providence/app/models/ca_object_representation_multifiles.php:81
@@ -7650,11 +7654,11 @@ msgstr "representation ⇔ plats relationer"
 
 #: c:\providence/app/models/ca_object_representations_x_entities.php:40
 msgid "object representation ⇔ entity relationship"
-msgstr "objekt representation ⇔ person/organisation/folk relation"
+msgstr "objekt representation ⇔ entitet relation"
 
 #: c:\providence/app/models/ca_object_representations_x_entities.php:41
 msgid "object representation ⇔ entity relationships"
-msgstr "objekt representation ⇔ person/organisation/folk relationer"
+msgstr "objekt representation ⇔ entitet relationer"
 
 #: c:\providence/app/models/ca_object_representations_x_object_representations.php:40
 
@@ -7668,11 +7672,11 @@ msgstr "objekt ⇔ objekt representation relationer"
 
 #: c:\providence/app/models/ca_object_representations_x_occurrences.php:40
 msgid "representation ⇔ occurrence relationship"
-msgstr "representation ⇔ förekomst relation"
+msgstr "representation ⇔ händelse relation"
 
 #: c:\providence/app/models/ca_object_representations_x_occurrences.php:41
 msgid "representation ⇔ occurrence relationships"
-msgstr "representation ⇔ förekomst relationer"
+msgstr "representation ⇔ händelse relationer"
 
 #: c:\providence/app/models/ca_object_representations_x_places.php:40
 msgid "representation ⇔ place relationship"
@@ -7734,7 +7738,7 @@ msgstr "Anger hur multipla filer ska ordnas i en lista. Högre rank är lägre i
 
 #: c:\providence/app/models/ca_occurrences.php:42
 msgid "occurrence"
-msgstr "förekomst"
+msgstr "händelse"
 
 #: c:\providence/app/models/ca_occurrences.php:50
 msgid "Unique numeric identifier used by CollectiveAccess internally to identify this occurrence"
@@ -7746,7 +7750,7 @@ msgstr "Språket från vilken posten kommer."
 
 #: c:\providence/app/models/ca_occurrences.php:73
 msgid "The type of the occurrence. In CollectiveAccess every occurrence has a single \"instrinsic\" type that determines the set of descriptive and administrative metadata that can be applied to it."
-msgstr "Typen av förekomst. I CollectiveAccess varje händelse har en enda \"inbyggd\" typ som bestämmer uppsättningen av beskrivande och administrativa metadata som kan tillämpas på det"
+msgstr "Typen av händelse. I CollectiveAccess varje händelse har en enda \"inbyggd\" typ som bestämmer uppsättningen av beskrivande och administrativa metadata som kan tillämpas på det"
 
 #: c:\providence/app/models/ca_occurrences.php:80
 msgid "A unique alphanumeric identifier for this entry."
@@ -7770,19 +7774,19 @@ msgstr "Anger om posten är raderad eller inte."
 
 #: c:\providence/app/models/ca_occurrences_x_collections.php:40
 msgid "occurrence ⇔ collection relationship"
-msgstr "förekomst ⇔ samling relation"
+msgstr "händelse ⇔ samling relation"
 
 #: c:\providence/app/models/ca_occurrences_x_collections.php:41
 msgid "occurrence ⇔ collection relationships"
-msgstr "förekomst ⇔ samling relationer"
+msgstr "händelse ⇔ samling relationer"
 
 #: c:\providence/app/models/ca_occurrences_x_occurrences.php:40
 msgid "occurrence ⇔ occurrence relationship"
-msgstr "förekomst ⇔ förekomst relation"
+msgstr "händelse ⇔ händelse relation"
 
 #: c:\providence/app/models/ca_occurrences_x_occurrences.php:41
 msgid "occurrence ⇔ occurrence relationships"
-msgstr "förekomst ⇔ förekomst relationer"
+msgstr "händelse ⇔ händelse relationer"
 
 #: c:\providence/app/models/ca_occurrences_x_storage_locations.php:40
 
@@ -7796,23 +7800,23 @@ msgstr "objekt ⇔ förvaringsplats relationer"
 
 #: c:\providence/app/models/ca_occurrences_x_vocabulary_terms.php:40
 msgid "occurrence ⇔ vocabulary term relationship"
-msgstr "förekomst ⇔ vokabulär term relation"
+msgstr "händelse ⇔ vokabulär term relation"
 
 #: c:\providence/app/models/ca_occurrences_x_vocabulary_terms.php:41
 msgid "occurrence ⇔ vocabulary term relationships"
-msgstr "förekomst ⇔ vokabulär term relationer"
+msgstr "händelse ⇔ vokabulär term relationer"
 
 #: c:\providence/app/models/ca_occurrence_labels.php:40
 msgid "occurrence name"
-msgstr "förekomst namn"
+msgstr "händelse namn"
 
 #: c:\providence/app/models/ca_occurrence_labels.php:41
 msgid "occurrence names"
-msgstr "förekomst namn"
+msgstr "händelse namn"
 
 #: c:\providence/app/models/ca_occurrence_labels.php:79
 msgid "Name of occurrence"
-msgstr "Namn på förekomst"
+msgstr "Namn på händelse"
 
 #: c:\providence/app/models/ca_places.php:52
 msgid "Unique numeric identifier used by CollectiveAccess internally to identify this place"
@@ -7832,7 +7836,7 @@ msgstr "Administrativ källa till platsen. Detta värde används ofta för att i
 
 #: c:\providence/app/models/ca_places.php:98
 msgid "Place identifier"
-msgstr "Plats id"
+msgstr "Platsid"
 
 #: c:\providence/app/models/ca_places.php:98
 msgid "Unique identifier for place"
@@ -7868,11 +7872,11 @@ msgstr "plats ⇔ samlingsrelationer"
 
 #: c:\providence/app/models/ca_places_x_occurrences.php:40
 msgid "place ⇔ occurrence relationship"
-msgstr "plats ⇔ förekomst relation"
+msgstr "plats ⇔ händelse relation"
 
 #: c:\providence/app/models/ca_places_x_occurrences.php:41
 msgid "place ⇔ occurrence relationships"
-msgstr "plats ⇔ förekomst relationer"
+msgstr "plats ⇔ händelse relationer"
 
 #: c:\providence/app/models/ca_places_x_places.php:40
 msgid "place ⇔ place relationship"
@@ -7930,7 +7934,7 @@ msgstr "Typ begränsning för \"vänster\" sida av relationen"
 
 #: c:\providence/app/models/ca_relationship_types.php:56
 msgid "Type restriction for \"left\" side of relationship (eg. if relationship is object ⇔ entity, then the restriction controls for which types of objects this relationship type is valid."
-msgstr "Typ begränsning för \"vänster\" sida av relationen (t.ex. om relationen är objekt ⇔ person/organisation/folk, då kontrollerar begränsningen för vilka typer av objekt denna relationstypen är giltig."
+msgstr "Typ begränsning för \"vänster\" sida av relationen (t.ex. om relationen är objekt ⇔ entitet, då kontrollerar begränsningen för vilka typer av objekt denna relationstypen är giltig."
 
 #: c:\providence/app/models/ca_relationship_types.php:63
 msgid "Type restriction for \"right\" side of relationship"
@@ -7938,7 +7942,7 @@ msgstr "Typ begränsning för \"höger\" sida av relationen"
 
 #: c:\providence/app/models/ca_relationship_types.php:63
 msgid "Type restriction for \"right\" side of relationship (eg. if relationship is object ⇔ entity, then the restriction controls for which types of entities this relationship type is valid."
-msgstr "Typ begränsning för \"höger\" sida av relationen (t.ex. om relationen är objekt ⇔ person/organisation/folk, då kontrollerar begränsningen för vilka typer av enheter denna relationstypen är giltig."
+msgstr "Typ begränsning för \"höger\" sida av relationen (t.ex. om relationen är objekt ⇔ entitet, då kontrollerar begränsningen för vilka typer av enheter denna relationstypen är giltig."
 
 #: c:\providence/app/models/ca_relationship_types.php:78
 msgid "Relationship type hierarchy identifier"
@@ -8050,11 +8054,11 @@ msgstr "Anteckningsegenskaper"
 
 #: c:\providence/app/models/ca_representation_annotations_x_entities.php:40
 msgid "representation annotation ⇔ entity relationship"
-msgstr "representation anteckning ⇔ person/organisation/folk relation"
+msgstr "representation anteckning ⇔ entitet relation"
 
 #: c:\providence/app/models/ca_representation_annotations_x_entities.php:41
 msgid "representation annotation ⇔ entity relationships"
-msgstr "representation anteckning ⇔ person/organisation/folk relationer"
+msgstr "representation anteckning ⇔ entitet relationer"
 
 #: c:\providence/app/models/ca_representation_annotations_x_objects.php:40
 msgid "representation annotation ⇔ object relationship"
@@ -8066,11 +8070,11 @@ msgstr "representation anteckning ⇔ objekt relationer"
 
 #: c:\providence/app/models/ca_representation_annotations_x_occurrences.php:40
 msgid "representation annotation ⇔ occurrence relationship"
-msgstr "representation anteckning ⇔ förekomst relation"
+msgstr "representation anteckning ⇔ händelse relation"
 
 #: c:\providence/app/models/ca_representation_annotations_x_occurrences.php:41
 msgid "representation annotation ⇔ occurrence relationships"
-msgstr "representation anteckning ⇔ förekomst relationer"
+msgstr "representation anteckning ⇔ händelse relationer"
 
 #: c:\providence/app/models/ca_representation_annotations_x_places.php:40
 msgid "representation annotation ⇔ place relationship"
@@ -8138,7 +8142,7 @@ msgstr "Söktyp"
 
 #: c:\providence/app/models/ca_search_forms.php:94
 msgid "Determines what type of search (objects, entities, places, etc.) the form will conduct."
-msgstr "Bestämmer vilken typ av sökning (objekt, personer/organisationer/folk, platser, etc.) formuläret kommer att genomföra."
+msgstr "Bestämmer vilken typ av sökning (objekt, entiteter, platser, etc.) formuläret kommer att genomföra."
 
 #: c:\providence/app/models/ca_search_forms.php:115
 msgid "Search form settings."
@@ -8247,7 +8251,7 @@ msgstr "Gruppering innehåll"
 #: c:\providence/app/models/ca_sets.php:86
 #: c:\providence/app/models/ca_set_items.php:63
 msgid "Determines what kind of items (objects, entities, places, etc.) are stored by the set."
-msgstr "Avgör vilken typ av objekt (objekt, personer/organisationer/folk, platser, etc.) lagras av grupperingen."
+msgstr "Avgör vilken typ av objekt (objekt, entiteter, platser, etc.) lagras av grupperingen."
 
 #: c:\providence/app/models/ca_sets.php:105
 #: c:\providence/app/models/ca_set_items.php:88
@@ -8413,7 +8417,7 @@ msgstr "uppgiftskö poster"
 
 #: c:\providence/app/models/ca_task_queue.php:47
 msgid "Task id"
-msgstr ""
+msgstr "Uppgiftsid"
 
 #: c:\providence/app/models/ca_task_queue.php:47
 msgid "Identifier for queued task"
@@ -8526,11 +8530,11 @@ msgstr "turstopp ⇔ samling relationer"
 
 #: c:\providence/app/models/ca_tour_stops_x_entities.php:40
 msgid "tour stop ⇔ entity relationship"
-msgstr "turstopp ⇔ person/organisation/folk relation"
+msgstr "turstopp ⇔ entitet relation"
 
 #: c:\providence/app/models/ca_tour_stops_x_entities.php:41
 msgid "tour stop ⇔ entity relationships"
-msgstr "turstopp ⇔ person/organisation/folk relationer"
+msgstr "turstopp ⇔ entitet relationer"
 
 #: c:\providence/app/models/ca_tour_stops_x_objects.php:40
 msgid "tour stop ⇔ objects relationship"
@@ -8542,11 +8546,11 @@ msgstr "turstopp ⇔ objekt relationer"
 
 #: c:\providence/app/models/ca_tour_stops_x_occurrences.php:40
 msgid "tour stop ⇔ occurrence relationship"
-msgstr "turstopp ⇔ förekomst relation"
+msgstr "turstopp ⇔ händelse relation"
 
 #: c:\providence/app/models/ca_tour_stops_x_occurrences.php:41
 msgid "tour stop ⇔ occurrence relationships"
-msgstr "turstopp ⇔ förekomst relationer"
+msgstr "turstopp ⇔ händelse relationer"
 
 #: c:\providence/app/models/ca_tour_stops_x_places.php:40
 msgid "tour stop ⇔ place relationship"
@@ -8740,7 +8744,7 @@ msgstr "Värdet för %1 måste vara mellan %2 och %3 tecken"
 #: c:\providence/app/models/ca_users.php:2167
 #: c:\providence/app/models/ca_users.php:2185
 msgid "No default UI locale is available"
-msgstr "Inget standard användargränssnitt för språket är tillgängligt"
+msgstr "Inget standard gränssnitt för språket är tillgängligt"
 
 #: c:\providence/app/models/ca_users_x_groups.php:40
 msgid "user-group assocation"
@@ -8849,7 +8853,7 @@ msgstr "användarroller"
 
 #: c:\providence/app/models/ca_user_roles.php:51
 msgid "Role id"
-msgstr "Roll id"
+msgstr "Rollid"
 
 #: c:\providence/app/models/ca_user_roles.php:51
 msgid "Unique identifier for role"
@@ -8938,7 +8942,7 @@ msgstr ""
 
 #: c:\providence/app/plugins/duplicateMenu/duplicateMenuPlugin.php:210
 msgid "Duplicate from..."
-msgstr ""
+msgstr "Duplicera från..."
 
 #: c:\providence/app/plugins/historyMenu/historyMenuPlugin.php:32
 msgid "Adds a \"history\" menu listing all recently edited items"
@@ -9166,7 +9170,7 @@ msgstr "Ställ in identifierare för nyskapade objekt till"
 
 #: c:\providence/app/plugins/mediaImport/views/import_setup_html.php:82
 msgid "Option for object identifer"
-msgstr "Alternativ för objekt id"
+msgstr "Alternativ för objektid"
 
 #: c:\providence/app/plugins/mediaImport/views/import_setup_html.php:85
 msgid "Use filename as identifier rather than set value"
@@ -9355,11 +9359,11 @@ msgstr "Om det är markerat kommer totala antalet beslut i databasen att visas."
 
 #: c:\providence/app/widgets/count/countWidget.php:140
 msgid "Show count for entities?"
-msgstr "Visa antal för personer/organisationer/folk?"
+msgstr "Visa antal för entiteter?"
 
 #: c:\providence/app/widgets/count/countWidget.php:141
 msgid "If checked total number of entities in the database will be displayed."
-msgstr "Om den är ibockad kommer totala antalet personer/organisationer/folk i databasen att visas."
+msgstr "Om den är ibockad kommer totala antalet entiteter i databasen att visas."
 
 #: c:\providence/app/widgets/count/countWidget.php:149
 msgid "Show count for places?"
@@ -9371,11 +9375,11 @@ msgstr "Om den är ibockad kommer totala antalet platser i databasen att visas."
 
 #: c:\providence/app/widgets/count/countWidget.php:158
 msgid "Show count for occurrences?"
-msgstr "Visa antal för förekomster?"
+msgstr "Visa antal för händelser?"
 
 #: c:\providence/app/widgets/count/countWidget.php:159
 msgid "If checked total number of occurrences in the database will be displayed."
-msgstr "Om den är ibockad kommer totala antalet förekomster i databasen att visas."
+msgstr "Om den är ibockad kommer totala antalet händelser i databasen att visas."
 
 #: c:\providence/app/widgets/count/countWidget.php:167
 msgid "Show count for collections?"
@@ -9705,7 +9709,7 @@ msgstr "Användaren kan använda widget som visar nyligen skapade objekt till li
 
 #: c:\providence/app/widgets/recentlyCreated/recentlyCreatedWidget.php:200
 msgid "User can use widget that shows recently created items to list new entities in the dashboard."
-msgstr "Användaren kan använda widget som visar nyligen skapade objekt till listan nya personer/organisationer/folk på startsidan."
+msgstr "Användaren kan använda widget som visar nyligen skapade objekt till listan nya entiteter på startsidan."
 
 #: c:\providence/app/widgets/recentlyCreated/recentlyCreatedWidget.php:204
 msgid "User can use widget that shows recently created items to list new places in the dashboard."
@@ -9713,7 +9717,7 @@ msgstr "Användaren kan använda widget som visar nyligen skapade objekt till li
 
 #: c:\providence/app/widgets/recentlyCreated/recentlyCreatedWidget.php:208
 msgid "User can use widget that shows recently created items to list new occurrences in the dashboard."
-msgstr "Användaren kan använda widget som visar nyligen skapade objekt för att lista nya förekomster på startsidan."
+msgstr "Användaren kan använda widget som visar nyligen skapade objekt för att lista nya händelser på startsidan."
 
 #: c:\providence/app/widgets/recentlyCreated/recentlyCreatedWidget.php:212
 msgid "User can use widget that shows recently created items to list new sets in the dashboard."
@@ -9816,7 +9820,7 @@ msgstr "Användaren kan använda widget som visar poster av arbetsflödesstatus 
 
 #: c:\providence/app/widgets/recordsByStatus/recordsByStatusWidget.php:190
 msgid "User can use widget that shows records by workflow status to list new entities in the dashboard."
-msgstr "Användaren kan använda widget som visar poster av arbetsflödesstatus att lista nya personer/organisationer/folk på startsidan."
+msgstr "Användaren kan använda widget som visar poster av arbetsflödesstatus att lista nya entiteter på startsidan."
 
 #: c:\providence/app/widgets/recordsByStatus/recordsByStatusWidget.php:194
 msgid "User can use widget that shows records by workflow status to list new places in the dashboard."
@@ -9824,7 +9828,7 @@ msgstr "Användaren kan använda widget som visar poster av arbetsflödesstatus 
 
 #: c:\providence/app/widgets/recordsByStatus/recordsByStatusWidget.php:198
 msgid "User can use widget that shows records by workflow status to list new occurrences in the dashboard."
-msgstr "Användaren kan använda widget som visar poster av arbetsflödesstatus för att lista nya förekomster på startsidan."
+msgstr "Användaren kan använda widget som visar poster av arbetsflödesstatus för att lista nya händelser på startsidan."
 
 #: c:\providence/app/widgets/recordsByStatus/recordsByStatusWidget.php:202
 msgid "User can use widget that shows records by workflow status to list new sets in the dashboard."
@@ -9924,7 +9928,7 @@ msgstr "Objekt Sökningar"
 
 #: c:\providence/app/widgets/savedSearches/views/main_html.php:48
 msgid "Entity Searches"
-msgstr "Person/organisation/folk Sökningar"
+msgstr "entitet Sökningar"
 
 #: c:\providence/app/widgets/savedSearches/views/main_html.php:53
 msgid "Place Searches"
@@ -9944,7 +9948,7 @@ msgstr "Samlingssökningar"
 
 #: c:\providence/app/widgets/savedSearches/views/main_html.php:73
 msgid "Occurrence Searches"
-msgstr "Förekomst Sökningar"
+msgstr "HändelseSökningar"
 
 #: c:\providence/app/widgets/savedSearches/views/main_html.php:83
 msgid "advanced"
@@ -9968,7 +9972,7 @@ msgstr "Objekt Grupperingar"
 
 #: c:\providence/app/widgets/searchBySet/views/main_html.php:48
 msgid "Entity Sets"
-msgstr "Person/organisation/folk Gruppering"
+msgstr "entitet Gruppering"
 
 #: c:\providence/app/widgets/searchBySet/views/main_html.php:53
 msgid "Place Sets"
@@ -9988,7 +9992,7 @@ msgstr "Samlings Grupperingar"
 
 #: c:\providence/app/widgets/searchBySet/views/main_html.php:73
 msgid "Occurrence Sets"
-msgstr "Förekomst Grupperingar"
+msgstr "HändelseGrupperingar"
 
 #: c:\providence/app/widgets/trackProcessing/trackProcessingWidget.php:40
 msgid "Processing status"
@@ -10396,7 +10400,7 @@ msgstr "Streckkodsgenerering"
 
 #: c:\providence/themes/default/views/administrate/setup/config_check_html.php:258
 msgid "Application Plugins"
-msgstr "Program Plugins"
+msgstr "Applikations-plugins"
 
 #: c:\providence/themes/default/views/administrate/setup/elements_edit_html.php:48
 msgid "Labels"
@@ -10417,7 +10421,7 @@ msgstr "Lägg till sub-element"
 #: c:\providence/themes/default/views/administrate/setup/elements_list_html.php:44
 #: c:\providence/themes/default/views/administrate/setup/locale_list_html.php:43
 msgid "New"
-msgstr "Ny"
+msgstr "Ny/Nytt"
 
 #: c:\providence/themes/default/views/administrate/setup/elements_list_html.php:61
 msgid "Applies to"
@@ -10425,7 +10429,7 @@ msgstr "Gäller"
 
 #: c:\providence/themes/default/views/administrate/setup/elements_list_html.php:64
 msgid "Usage in UI"
-msgstr "Användning i användargränssnitt"
+msgstr "Användning i gränssnitt"
 
 #: c:\providence/themes/default/views/administrate/setup/locale_list_html.php:57
 msgid "Available for cataloguing?"
@@ -10481,15 +10485,15 @@ msgstr "%1 element är definierade"
 
 #: c:\providence/themes/default/views/administrate/setup/widget_ui_info_html.php:34
 msgid "Editing user interfaces"
-msgstr "Redigera användargränssnitt"
+msgstr "Redigera gränssnitt"
 
 #: c:\providence/themes/default/views/administrate/setup/widget_ui_info_html.php:37
 msgid "1 user interface is defined"
-msgstr "1 användargränssnitt är definierat"
+msgstr "1 gränssnitt är definierat"
 
 #: c:\providence/themes/default/views/administrate/setup/widget_ui_info_html.php:39
 msgid "%1 user interfaces are defined"
-msgstr "%1 användargränssnitt är definierade"
+msgstr "%1 gränssnitt är definierade"
 
 #: c:\providence/themes/default/views/administrate/setup/interface_editor/print_summary_html.php:51
 msgid "Summary"
@@ -10522,7 +10526,7 @@ msgstr "Tillbaka till bläddringssida"
 
 #: c:\providence/themes/default/views/administrate/setup/list_item_editor/print_summary_html.php:54
 msgid "Item identifier"
-msgstr "Post id"
+msgstr "Postid"
 
 #: c:\providence/themes/default/views/administrate/setup/Results/ca_list_items_list_html.php:87
 #: c:\providence/themes/default/views/administrate/setup/Results/ca_relationship_types_list_html.php:107
@@ -10614,7 +10618,7 @@ msgstr "Lägg till ny lista"
 #: c:\providence/themes/default/views/administrate/setup/Search/search_controls_html.php:97
 #: c:\providence/themes/default/views/administrate/setup/Search/search_controls_html.php:99
 msgid "Add under %2 new %1"
-msgstr "Lägg till under %2 en ny %1"
+msgstr "Lägg till under %2 en ny/ett nytt %1"
 
 #: c:\providence/themes/default/views/administrate/setup/Search/search_controls_html.php:99
 msgid "item"
@@ -10642,12 +10646,12 @@ msgstr "Är system lista"
 #: c:\providence/themes/default/views/administrate/setup/Search/search_controls_html.php:170
 #: c:\providence/themes/default/views/administrate/setup/Search/search_controls_html.php:176
 msgid "Close hierarchy viewer"
-msgstr "Stäng hierarki visningsprogram"
+msgstr "Stäng hierarkivisningsprogram"
 
 #: c:\providence/themes/default/views/administrate/setup/Search/search_controls_html.php:170
 #: c:\providence/themes/default/views/administrate/setup/Search/search_controls_html.php:179
 msgid "Open hierarchy viewer"
-msgstr "Öppna hierarki visningsprogram"
+msgstr "Öppna hierarkivisningsprogram"
 
 #: c:\providence/themes/default/views/administrate/setup/Search/search_refine_html.php:12
 msgid "Filter results by"
@@ -10746,7 +10750,7 @@ msgstr "Inga roller har konfigurerats"
 #: c:\providence/themes/default/views/bundles/ca_bundle_mapping_groups.php:71
 
 msgid "Unit name"
-msgstr "person/organisation/folksnamn"
+msgstr "entitetsnamn"
 
 #: c:\providence/themes/default/views/bundles/ca_bundle_mapping_groups.php:93
 msgid "Show configured rules (%1)"
@@ -10759,7 +10763,7 @@ msgstr ""
 #: c:\providence/themes/default/views/bundles/ca_bundle_mapping_groups.php:106
 
 msgid "Edit unit"
-msgstr "Redigera person/organisation/folk"
+msgstr "Redigera entitet"
 
 #: c:\providence/themes/default/views/bundles/ca_bundle_mapping_groups.php:122
 
@@ -10788,7 +10792,7 @@ msgstr "Sortera på "
 #: c:\providence/themes/default/views/bundles/ca_list_items.php:165
 
 msgid "entry"
-msgstr "person/organisation/folk"
+msgstr "rad"
 
 #: c:\providence/themes/default/views/bundles/ca_collections.php:108
 #: c:\providence/themes/default/views/bundles/ca_entities.php:107
@@ -10802,7 +10806,7 @@ msgstr "Dra ditt val från kolumn till kolumn att redigera innehållet på sidan
 
 #: c:\providence/themes/default/views/bundles/ca_editor_ui_bundle_placements.php:46
 msgid "Available editor elements"
-msgstr "Tillgängliga redigerare element"
+msgstr "Tillgängliga element"
 
 #: c:\providence/themes/default/views/bundles/ca_editor_ui_bundle_placements.php:51
 msgid "Elements to display on this screen"
@@ -11014,7 +11018,7 @@ msgstr "Kommer att flyttas under <em>%1</em> efter nästa sparning."
 #: c:\providence/themes/default/views/bundles/hierarchy_location.php:367
 
 msgid "Extract from hierarchy"
-msgstr "Person/Organisation/Folkshierarki"
+msgstr "Entitetshierarki"
 
 #: c:\providence/themes/default/views/bundles/hierarchy_location.php:368
 msgid "Will be placed at the top of its own hierarchy after next save."
@@ -11115,11 +11119,11 @@ msgstr "Objekt beslut identifierare"
 
 #: c:\providence/themes/default/views/editor/representation_annotations/print_summary_html.php:60
 msgid "Annotation identifier"
-msgstr "Anteckning id"
+msgstr "Anteckningsid"
 
 #: c:\providence/themes/default/views/editor/tours/print_summary_html.php:60
 msgid "Tour identifier"
-msgstr "Tur id"
+msgstr "Tur-id"
 
 #: c:\providence/themes/default/views/find/Browse/ajax_browse_facet_html.php:57
 msgid "No facet defined"
@@ -11581,7 +11585,7 @@ msgstr "Logga in"
 
 #: c:\providence/themes/default/views/pageFormat/pageFooter.php:18
 msgid "is a trademark of"
-msgstr "är ett varumärke"
+msgstr "är ett varumärke tillhörande"
 
 #: c:\providence/themes/default/views/pageFormat/pageHeader.php:69
 msgid "You have made changes in this form that you have not yet saved. If you navigate away from this form you will lose your unsaved changes."
@@ -11669,7 +11673,7 @@ msgstr ""
 #: c:\providence/themes/default/views/system/preferences_duplication_html.php:1
 
 msgid "Settings for %1"
-msgstr "Inställningar för Gruppen #%1/%2"
+msgstr "Inställningar för %1"
 
 #: c:\providence/app/conf/annotation_types.conf:11
 #: c:\providence/app/conf/annotation_types.conf:35
@@ -11972,7 +11976,7 @@ msgstr "Lägg till representation"
 #: c:\providence/app/conf/navigation.conf:240
 
 msgid "Entity"
-msgstr "Person/organisation/folk"
+msgstr "Entitet"
 
 #: c:\providence/app/conf/navigation.conf:308
 msgid "Place"
@@ -11980,7 +11984,7 @@ msgstr "Plats"
 
 #: c:\providence/app/conf/navigation.conf:317
 msgid "Place editor"
-msgstr "Platshanterare"
+msgstr "Platsredigerare"
 
 #: c:\providence/app/conf/navigation.conf:367
 msgid "Collection"
@@ -11989,7 +11993,7 @@ msgstr "Samling"
 #: c:\providence/app/conf/navigation.conf:502
 
 msgid "Storage location"
-msgstr "Förvaringsplatser"
+msgstr "Förvaringsplats"
 
 #: c:\providence/app/conf/navigation.conf:511
 msgid "Storage location editor"
@@ -12039,7 +12043,7 @@ msgstr "Skapad den"
 #: c:\providence/app/conf/navigation.conf:1640
 
 msgid "Manage"
-msgstr "Ändringar"
+msgstr "Administration"
 
 #: c:\providence/app/conf/navigation.conf:1674
 msgid "My preferences"
@@ -12060,7 +12064,7 @@ msgstr "Måttenheter"
 #: c:\providence/app/conf/navigation.conf:1713
 
 msgid "Duplication"
-msgstr "Datum"
+msgstr "Duplicering"
 
 #: c:\providence/app/conf/navigation.conf:1723
 msgid "My watched items"
@@ -12127,7 +12131,7 @@ msgstr "Redigera listobjekt"
 #: c:\providence/app/conf/navigation.conf:2144
 
 msgid "Access control"
-msgstr "Ställ åtkomstkontroll"
+msgstr "Åtkomstkontroll"
 
 #: c:\providence/app/conf/navigation.conf:2151
 msgid "User logins"
@@ -12156,7 +12160,7 @@ msgstr "Sök logg"
 #: c:\providence/app/conf/navigation.conf:2198
 
 msgid "Administration"
-msgstr "System administration"
+msgstr "Systemadministration"
 
 #: c:\providence/app/conf/navigation.conf:2211
 msgid "User interfaces"
@@ -12164,7 +12168,7 @@ msgstr "Användargränssnitt"
 
 #: c:\providence/app/conf/navigation.conf:2232
 msgid "Import/export mappings"
-msgstr ""
+msgstr "Importera/exportera mappningar"
 
 #: c:\providence/app/conf/navigation.conf:2239
 msgid "Locales"
@@ -12176,27 +12180,27 @@ msgstr "Konfigureringskontroll"
 
 #: c:\providence/app/conf/navigation.conf:2253
 msgid "Maintenance"
-msgstr ""
+msgstr "Underhåll"
 
 #: c:\providence/app/conf/navigation.conf:2288
 msgid "Relationship type editor"
-msgstr "Relationstyps hanterare"
+msgstr "Relationstypsredigerare"
 
 #: c:\providence/app/conf/navigation.conf:2324
 msgid "User interface editor"
-msgstr "Användargränssnitts hanterare"
+msgstr "Användargränssnittsredigerare"
 
 #: c:\providence/app/conf/navigation.conf:2359
 msgid "User interface screen editor"
-msgstr "Användargränssnitts sidhanterare"
+msgstr "Användargränssnittssidredigerare"
 
 #: c:\providence/app/conf/navigation.conf:2394
 msgid "Import/export mapping editor"
-msgstr ""
+msgstr "Import/export mappningsredigerare"
 
 #: c:\providence/app/conf/navigation.conf:2440
 msgid "Import/export mapping group editor"
-msgstr ""
+msgstr "Import/export mappningsgruppsredigerare"
 
 #: c:\providence/app/conf/user_actions.conf:7
 msgid "System administration"
@@ -12232,11 +12236,11 @@ msgstr "Tillåt användare att läsa systemloggar"
 
 #: c:\providence/app/conf/user_actions.conf:23
 msgid "Configure user interfaces"
-msgstr "Konfigurera användargränssnitt"
+msgstr "Konfigurera gränssnitt"
 
 #: c:\providence/app/conf/user_actions.conf:24
 msgid "Allow user to change user interface configuration"
-msgstr "Tillåt användare att redigera användargränssnitt"
+msgstr "Tillåt användare att redigera gränssnitt"
 
 #: c:\providence/app/conf/user_actions.conf:27
 msgid "Configure metadata elements"
@@ -12302,7 +12306,7 @@ msgstr ""
 #: c:\providence/app/conf/user_actions.conf:56
 
 msgid "Allow user recreate system search indicies"
-msgstr "Tillåt användaren att söka efter personer/organisationer/folk"
+msgstr "Tillåt användaren att söka efter entiteter"
 
 #: c:\providence/app/conf/user_actions.conf:62
 msgid "Searching and browsing"
@@ -12405,7 +12409,7 @@ msgstr "Tillåt användare att använda befintliga special data visningsformat"
 #: c:\providence/app/conf/user_actions.conf:113
 
 msgid "Duplicate displays"
-msgstr "Ta bort displayer"
+msgstr "Gör kopior av displayer"
 
 #: c:\providence/app/conf/user_actions.conf:114
 
@@ -12463,7 +12467,7 @@ msgstr "Tillåt användare att se grupperingar av objekt eller auktoritet objekt
 #: c:\providence/app/conf/user_actions.conf:144
 
 msgid "Duplicate sets"
-msgstr "Datum"
+msgstr "Gör kopior av grupperingar"
 
 #: c:\providence/app/conf/user_actions.conf:145
 
@@ -12551,7 +12555,7 @@ msgstr "Tillåt användare att ladda ner media associerade med objektet"
 #: c:\providence/app/conf/user_actions.conf:194
 
 msgid "Duplicate objects"
-msgstr "Relaterade objekt"
+msgstr "Gör kopior av objekt"
 
 #: c:\providence/app/conf/user_actions.conf:195
 
@@ -12621,7 +12625,7 @@ msgstr "Tillåt användaren att bläddra objekt beslut"
 #: c:\providence/app/conf/user_actions.conf:225
 
 msgid "Duplicate object representations"
-msgstr "objekt representationer"
+msgstr "Objektrepresentationer (dubletter)"
 
 #: c:\providence/app/conf/user_actions.conf:226
 
@@ -12688,63 +12692,63 @@ msgstr "Tillåt användare att radera objekt beslut"
 
 #: c:\providence/app/conf/user_actions.conf:263
 msgid "Entity authority editing"
-msgstr "Person/Organisation/Folk auktoritet redigering"
+msgstr "Entitet auktoritet redigering"
 
 #: c:\providence/app/conf/user_actions.conf:264
 msgid "Actions allowing creation, editing and deletion of entities."
-msgstr "Åtgärder för att tillåta skapande, redigering och radering av personer/organisationer/folk."
+msgstr "Åtgärder för att tillåta skapande, redigering och radering av entiteter."
 
 #: c:\providence/app/conf/user_actions.conf:267
 
 msgid "Create entity"
-msgstr "Ta bort person/organisation/folk"
+msgstr "Ta bort entitet"
 
 #: c:\providence/app/conf/user_actions.conf:268
 msgid "Allow user to create new entities"
-msgstr "Tillåt användare att skapa nya personer/organisationer/folk"
+msgstr "Tillåt användare att skapa nya entiteter"
 
 #: c:\providence/app/conf/user_actions.conf:271
 
 msgid "Edit entity"
-msgstr "Redigera person/organisation/folk"
+msgstr "Redigera entitet"
 
 #: c:\providence/app/conf/user_actions.conf:272
 msgid "Allow user to edit existing entities"
-msgstr "Tillåt användare att redigera befintliga personer/organisationer/folk"
+msgstr "Tillåt användare att redigera befintliga entiteter"
 
 #: c:\providence/app/conf/user_actions.conf:275
 msgid "Delete entity"
-msgstr "Ta bort person/organisation/folk"
+msgstr "Ta bort entitet"
 
 #: c:\providence/app/conf/user_actions.conf:276
 msgid "Allow user to delete entities"
-msgstr "Tillåt användare att ta bort personer/organisationer/folk"
+msgstr "Tillåt användare att ta bort entiteter"
 
 #: c:\providence/app/conf/user_actions.conf:279
 msgid "Search entities"
-msgstr "Sök personer/organisationer/folk"
+msgstr "Sök entiteter"
 
 #: c:\providence/app/conf/user_actions.conf:280
 msgid "Allow user to search entities"
-msgstr "Tillåt användaren att söka efter personer/organisationer/folk"
+msgstr "Tillåt användaren att söka efter entiteter"
 
 #: c:\providence/app/conf/user_actions.conf:283
 msgid "Browse entities"
-msgstr "Bläddra bland personer/organisationer/folk"
+msgstr "Bläddra bland entiteter"
 
 #: c:\providence/app/conf/user_actions.conf:284
 msgid "Allow user to browse entities"
-msgstr "Låt användaren bläddra efter personer/organisationer/folk"
+msgstr "Låt användaren bläddra efter entiteter"
 
 #: c:\providence/app/conf/user_actions.conf:287
 
 msgid "Duplicate entities"
-msgstr "Relaterade personer/organisationer/folk"
+msgstr "Relaterade entiteter"
 
 #: c:\providence/app/conf/user_actions.conf:288
 
 msgid "Allow user to duplicate entities"
-msgstr "Tillåt användare att ta bort personer/organisationer/folk"
+msgstr "Tillåt användare att ta bort entiteter"
 
 #: c:\providence/app/conf/user_actions.conf:294
 msgid "Place authority editing"
@@ -12811,57 +12815,57 @@ msgstr "Förekomst-baserade auktoritet redigering"
 
 #: c:\providence/app/conf/user_actions.conf:326
 msgid "Actions allowing creation, editing and deletion of occurrence (user-defined) based authorities."
-msgstr "Åtgärder för att tillåta skapande, redigering och radering av förekomst (användardefinierad) baserade auktoriteter."
+msgstr "Åtgärder för att tillåta skapande, redigering och radering av händelse (användardefinierad) baserade auktoriteter."
 
 #: c:\providence/app/conf/user_actions.conf:329
 msgid "Create occurrence"
-msgstr "Skapa förekomster"
+msgstr "Skapa händelser"
 
 #: c:\providence/app/conf/user_actions.conf:330
 msgid "Allow user to create new occurrences"
-msgstr "Tillåt användare att skapa nya förekomster"
+msgstr "Tillåt användare att skapa nya händelser"
 
 #: c:\providence/app/conf/user_actions.conf:333
 msgid "Edit occurrence"
-msgstr "Redigera förekomster"
+msgstr "Redigera händelser"
 
 #: c:\providence/app/conf/user_actions.conf:334
 msgid "Allow user to edit existing occurrences"
-msgstr "Tillåt användare att redigera befintliga förekomster"
+msgstr "Tillåt användare att redigera befintliga händelser"
 
 #: c:\providence/app/conf/user_actions.conf:337
 msgid "Delete occurrence"
-msgstr "Ta bort förekomster"
+msgstr "Ta bort händelser"
 
 #: c:\providence/app/conf/user_actions.conf:338
 msgid "Allow user to delete occurrences"
-msgstr "Tillåt användare att ta bort förekomster"
+msgstr "Tillåt användare att ta bort händelser"
 
 #: c:\providence/app/conf/user_actions.conf:341
 msgid "Search occurrences"
-msgstr "Sök förekomster"
+msgstr "Sök händelser"
 
 #: c:\providence/app/conf/user_actions.conf:342
 msgid "Allow user to search occurrences"
-msgstr "Tillåt användaren att söka förekomster"
+msgstr "Tillåt användaren att söka händelser"
 
 #: c:\providence/app/conf/user_actions.conf:345
 msgid "Browse occurrences"
-msgstr "Bläddra förekomster"
+msgstr "Bläddra händelser"
 
 #: c:\providence/app/conf/user_actions.conf:346
 msgid "Allow user to browse occurrences"
-msgstr "Tillåt användaren att bläddra bland förekomster"
+msgstr "Tillåt användaren att bläddra bland händelser"
 
 #: c:\providence/app/conf/user_actions.conf:349
 
 msgid "Duplicate occurrences"
-msgstr "Relaterade förekomster"
+msgstr "Relaterade händelser"
 
 #: c:\providence/app/conf/user_actions.conf:350
 
 msgid "Allow user to duplicate occurrences"
-msgstr "Tillåt användare att ta bort förekomster"
+msgstr "Tillåt användare att ta bort händelser"
 
 #: c:\providence/app/conf/user_actions.conf:356
 msgid "Collection authority editing"
@@ -13147,7 +13151,7 @@ msgstr "Tillåt användare att bläddra bland turer"
 #: c:\providence/app/conf/user_actions.conf:504
 
 msgid "Duplicate tours"
-msgstr "Uppdaterad vid %1"
+msgstr "Turdubletter"
 
 #: c:\providence/app/conf/user_actions.conf:505
 
@@ -13189,7 +13193,7 @@ msgstr "Tillåt användare att ta bort listor"
 #: c:\providence/app/conf/user_actions.conf:527
 
 msgid "Duplicate lists"
-msgstr "Uppdaterad vid %1"
+msgstr ""
 
 #: c:\providence/app/conf/user_actions.conf:528
 
@@ -13277,23 +13281,23 @@ msgstr "Tillåt användare att ladda ner media associerade med objektet"
 #: c:\providence/app/conf/user_pref_defs.conf:45
 
 msgid "Duplication tools"
-msgstr "Program Plugins"
+msgstr "Dupliceringsverktyg"
 
 #: c:\providence/app/conf/user_pref_defs.conf:61
 msgid "User interface locale"
-msgstr "Språk för användargränssnitt"
+msgstr "Språk för gränssnitt"
 
 #: c:\providence/app/conf/user_pref_defs.conf:62
 msgid "Locale in which to render the user interface; also controls localization of dates, numbers, etc."
-msgstr "Språk för användargränssnittet, kontrollerar även lokalisering av datum, nummer, etc."
+msgstr "Språk för gränssnittet, kontrollerar även lokalisering av datum, nummer, etc."
 
 #: c:\providence/app/conf/user_pref_defs.conf:68
 msgid "User interface theme"
-msgstr "Utseende för användargränssnittet"
+msgstr "Utseende för gränssnittet"
 
 #: c:\providence/app/conf/user_pref_defs.conf:69
 msgid "Theme set (views, CSS, graphics) to display UI in"
-msgstr "Tema uppsättning (vyer, CSS, grafik) för att visa användargränssnitt i"
+msgstr "Tema uppsättning (vyer, CSS, grafik) för att visa gränssnitt i"
 
 #: c:\providence/app/conf/user_pref_defs.conf:75
 msgid "Show current location as 'breadcrumb' trail"
@@ -13370,107 +13374,107 @@ msgstr "Språk som används som standard post och attribut språkinställning"
 
 #: c:\providence/app/conf/user_pref_defs.conf:135
 msgid "Object editor user interface"
-msgstr "Objekteditorns användargränssnitt"
+msgstr "Objekteditorns gränssnitt"
 
 #: c:\providence/app/conf/user_pref_defs.conf:136
 msgid "Selects which user interface to use when editing objects."
-msgstr "Väljer vilket användargränssnitt att använda vid redigering av objekt."
+msgstr "Väljer vilket gränssnitt att använda vid redigering av objekt."
 
 #: c:\providence/app/conf/user_pref_defs.conf:142
 msgid "Object lot editor user interface"
-msgstr "Objekt beslut redigerare användargränssnitt"
+msgstr "Objektlottsredigerargränssnitt"
 
 #: c:\providence/app/conf/user_pref_defs.conf:143
 msgid "Selects which user interface to use when editing object lots."
-msgstr "Väljer vilket användargränssnitt att använda vid redigering av objekt beslut."
+msgstr "Väljer vilket gränssnitt att använda vid redigering av objekt beslut."
 
 #: c:\providence/app/conf/user_pref_defs.conf:149
 msgid "Entity editor user interface"
-msgstr "Person/Organisation/Folk redigerare användargränssnitt"
+msgstr "Entitetsredigeraregränssnitt"
 
 #: c:\providence/app/conf/user_pref_defs.conf:150
 msgid "Selects which user interface to use when editing entities."
-msgstr "Väljer vilket användargränssnitt att använda vid redigering av personer/organisationer/folk."
+msgstr "Väljer vilket gränssnitt att använda vid redigering av entiteter."
 
 #: c:\providence/app/conf/user_pref_defs.conf:156
 msgid "Place editor user interface"
-msgstr "Plats hanterare användargränssnitt"
+msgstr "Platsredigeraregränssnitt"
 
 #: c:\providence/app/conf/user_pref_defs.conf:157
 msgid "Selects which user interface to use when editing places."
-msgstr "Väljer vilket användargränssnitt att använda vid redigering av platser."
+msgstr "Väljer vilket gränssnitt att använda vid redigering av platser."
 
 #: c:\providence/app/conf/user_pref_defs.conf:163
 msgid "Occurrence editor user interface"
-msgstr "Förekomst redigerare användargränssnitt"
+msgstr "Händelseredigeraregränssnitt"
 
 #: c:\providence/app/conf/user_pref_defs.conf:164
 msgid "Selects which user interface to use when editing occurrences."
-msgstr "Väljer vilket användargränssnitt att använda vid redigering av förekomster."
+msgstr "Väljer vilket gränssnitt att använda vid redigering av händelser."
 
 #: c:\providence/app/conf/user_pref_defs.conf:170
 msgid "Collection editor user interface"
-msgstr "Användargränssnitt för samlingshanterare"
+msgstr "Användargränssnitt för samlingsredigerare"
 
 #: c:\providence/app/conf/user_pref_defs.conf:171
 msgid "Selects which user interface to use when editing collections."
-msgstr "Väljer vilket användargränssnitt att använda vid redigering av samlingar."
+msgstr "Väljer vilket gränssnitt att använda vid redigering av samlingar."
 
 #: c:\providence/app/conf/user_pref_defs.conf:177
 msgid "Storage location editor user interface"
-msgstr "Förvaringsplats redigerare användargränssnitt"
+msgstr "Förvaringsplats redigerare gränssnitt"
 
 #: c:\providence/app/conf/user_pref_defs.conf:178
 msgid "Selects which user interface to use when editing storage locations."
-msgstr "Väljer vilket användargränssnitt att använda vid redigering av förvaringsplatser."
+msgstr "Väljer vilket gränssnitt att använda vid redigering av förvaringsplatser."
 
 #: c:\providence/app/conf/user_pref_defs.conf:184
 msgid "Object representation editor user interface"
-msgstr "Objekt representation redigerare användargränssnitt"
+msgstr "Objekt representation redigerare gränssnitt"
 
 #: c:\providence/app/conf/user_pref_defs.conf:185
 msgid "Selects which user interface to use when editing object representations."
-msgstr "Väljer vilket användargränssnitt att använda vid redigering av objekt representationer."
+msgstr "Väljer vilket gränssnitt att använda vid redigering av objekt representationer."
 
 #: c:\providence/app/conf/user_pref_defs.conf:191
 msgid "Representation annotation editor user interface"
-msgstr "Representation anteckning redigerare användargränssnitt"
+msgstr "Representation anteckning redigerare gränssnitt"
 
 #: c:\providence/app/conf/user_pref_defs.conf:192
 msgid "Selects which user interface to use when editing representation annotations."
-msgstr "Väljer vilket användargränssnitt att använda vid redigering av representation anteckningar."
+msgstr "Väljer vilket gränssnitt att använda vid redigering av representation anteckningar."
 
 #: c:\providence/app/conf/user_pref_defs.conf:198
 msgid "Sets editor user interface"
-msgstr "Gruppering redigerare användaregränssnitt"
+msgstr "Väljer redigerareanvändaregränssnitt"
 
 #: c:\providence/app/conf/user_pref_defs.conf:199
 msgid "Selects which user interface to use when editing sets."
-msgstr "Väljer vilket användargränssnitt som ska användas vid redigering av grupperingar."
+msgstr "Väljer vilket gränssnitt som ska användas vid redigering av grupperingar."
 
 #: c:\providence/app/conf/user_pref_defs.conf:205
 msgid "Set item editor user interface"
-msgstr "Gruppering objekt redigerare användargränssnitt"
+msgstr "Gruppering objekt redigerare gränssnitt"
 
 #: c:\providence/app/conf/user_pref_defs.conf:206
 msgid "Selects which user interface to use when editing set items."
-msgstr "Väljer vilket användargränssnitt som ska användas när du redigerar grupperingsobjekt."
+msgstr "Väljer vilket gränssnitt som ska användas när du redigerar grupperingsobjekt."
 
 #: c:\providence/app/conf/user_pref_defs.conf:212
 msgid "List editor user interface"
-msgstr "Lista redigerare användargränssnitt"
+msgstr "Lista redigerare gränssnitt"
 
 #: c:\providence/app/conf/user_pref_defs.conf:213
 msgid "Selects which user interface to use when editing list information."
-msgstr "Väljer vilket användargränssnitt att använda vid redigering av lista information."
+msgstr "Väljer vilket gränssnitt att använda vid redigering av lista information."
 
 #: c:\providence/app/conf/user_pref_defs.conf:219
 msgid "List item editor user interface"
-msgstr "Listpost redigerare användargränssnitt"
+msgstr "Listpost redigerare gränssnitt"
 
 #: c:\providence/app/conf/user_pref_defs.conf:220
 msgid "Selects which user interface to use when editing list items."
-msgstr "Väljer vilket användargränssnitt att använda vid redigering av listobjekt."
+msgstr "Väljer vilket gränssnitt att använda vid redigering av listobjekt."
 
 #: c:\providence/app/conf/user_pref_defs.conf:230
 msgid "Display measurements in"
@@ -13531,7 +13535,7 @@ msgstr "Om det är markerat kommer totala antalet beslut i databasen att visas."
 #: c:\providence/app/conf/user_pref_defs.conf:741
 
 msgid "Duplicate metadata?"
-msgstr "Redigera metadata"
+msgstr "Duplicera metadata?"
 
 #: c:\providence/app/conf/user_pref_defs.conf:257
 
@@ -13575,7 +13579,7 @@ msgstr "Datum"
 #: c:\providence/app/conf/user_pref_defs.conf:287
 
 msgid "If checked all media associated with the object will be duplicated."
-msgstr "Om den är ibockad kommer totala antalet personer/organisationer/folk i databasen att visas."
+msgstr "Om den är ibockad kommer totala antalet entiteter i databasen att visas."
 
 #: c:\providence/app/conf/user_pref_defs.conf:298
 
@@ -13620,7 +13624,7 @@ msgstr "Om det är markerat kommer totala antalet beslut i databasen att visas."
 #: c:\providence/app/conf/user_pref_defs.conf:457
 
 msgid "If checked alternate names for the occurrence will be duplicated."
-msgstr "Om den är ibockad kommer totala antalet förekomster i databasen att visas."
+msgstr "Om den är ibockad kommer totala antalet händelser i databasen att visas."
 
 #: c:\providence/app/conf/user_pref_defs.conf:468
 
@@ -13720,12 +13724,12 @@ msgstr "Om det är markerat kommer totala antalet beslut i databasen att visas."
 #: c:\providence/app/conf/user_pref_defs.conf:752
 
 msgid "Duplicate items?"
-msgstr "Uppdaterad vid %1"
+msgstr "Duplicera poster?"
 
 #: c:\providence/app/conf/user_pref_defs.conf:753
 
 msgid "If checked all items in the set will be included in the duplicated set."
-msgstr "Om den är ibockad kommer totala antalet personer/organisationer/folk i databasen att visas."
+msgstr "Om den är ibockad kommer totala antalet entiteter i databasen att visas."
 
 #: c:\providence/app/conf/user_pref_defs.conf:763
 
@@ -13885,7 +13889,7 @@ msgstr "Om den är ibockad kommer totala antalet platser i databasen att visas."
 #~ msgstr "Lägg till samlingsetikett"
 
 #~ msgid "Add entity label"
-#~ msgstr "Lägg till person/organisation/folksetikett"
+#~ msgstr "Lägg till entitetsetikett"
 
 #~ msgid "Add lot label"
 #~ msgstr "Lägg till beslut etikett"
@@ -14035,16 +14039,16 @@ msgstr "Om den är ibockad kommer totala antalet platser i databasen att visas."
 #~ msgstr "Föredragna etiketter för denna samling"
 
 #~ msgid "Alternate labels for this entity"
-#~ msgstr "Alternativa etiketter för denna person/organisation/folk"
+#~ msgstr "Alternativa etiketter för denna entitet"
 
 #~ msgid "Preferred labels for this entity"
-#~ msgstr "Föredragna etiketter för denna person/organisation/folk"
+#~ msgstr "Föredragna etiketter för denna entitet"
 
 #~ msgid "Alternate labels for this occurrence"
-#~ msgstr "Alternativa etiketter för denna förekomst"
+#~ msgstr "Alternativa etiketter för denna händelse"
 
 #~ msgid "Preferred labels for this occurrence"
-#~ msgstr "Föredragna etiketter för denna förekomst"
+#~ msgstr "Föredragna etiketter för denna händelse"
 
 #~ msgid "Preferred labels for this object"
 #~ msgstr "Föredragna etiketter för detta objekt"

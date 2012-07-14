@@ -3,6 +3,7 @@
   <profileName>Base system configuration</profileName>
   <profileDescription>This profile defines standard system values and is intended to be used as a base for other profiles.</profileDescription>
   <locales>
+    <locale lang="sv" country="SE">Svenska</locale>
     <locale lang="en" country="US">English (US)</locale>
     <locale lang="en" country="CA" dontUseForCataloguing="1">English (Canadian)</locale>
     <locale lang="de" country="DE" dontUseForCataloguing="1">Deutsch</locale>
@@ -14,7 +15,6 @@
     <locale lang="it" country="IT" dontUseForCataloguing="1">Italiano</locale>
     <locale lang="nl" country="NL" dontUseForCataloguing="1">Nederlands</locale>
     <locale lang="sr" country="RS" dontUseForCataloguing="1">Serbian</locale>
-    <locale lang="sv" country="SE" dontUseForCataloguing="1">Svenska</locale>
   </locales>
   <lists>
     <list code="list_item_types" hierarchical="0" system="0" vocabulary="0">
@@ -668,8 +668,8 @@
               <name_plural>utilise pour</name_plural>
             </label>
             <label locale="sv_SE" preferred="1">
-              <name_singular>använda för</name_singular>
-              <name_plural>använda för</name_plural>
+              <name_singular>använd</name_singular>
+              <name_plural>använd</name_plural>
             </label>
           </labels>
         </item>
@@ -1158,8 +1158,8 @@
               <name_plural>utiliser pour</name_plural>
             </label>
             <label locale="sv_SE" preferred="1">
-              <name_singular>använda för</name_singular>
-              <name_plural>använda för</name_plural>
+              <name_singular>använd</name_singular>
+              <name_plural>använd</name_plural>
             </label>
           </labels>
         </item>
@@ -1204,20 +1204,20 @@
         <item idno="in" enabled="1" default="0">
           <labels>
             <label locale="en_US" preferred="1">
-              <name_singular>loan in</name_singular>
-              <name_plural>loans in</name_plural>
+              <name_singular>Loan in</name_singular>
+              <name_plural>Loans in</name_plural>
             </label>
             <label locale="en_CA" preferred="1">
-              <name_singular>loan in</name_singular>
-              <name_plural>loans in</name_plural>
+              <name_singular>Loan in</name_singular>
+              <name_plural>Loans in</name_plural>
             </label>
             <label locale="fr_FR" preferred="1">
-              <name_singular>prêt</name_singular>
-              <name_plural>prêts</name_plural>
+              <name_singular>Prêt</name_singular>
+              <name_plural>Prêts</name_plural>
             </label>
             <label locale="sv_SE" preferred="1">
-              <name_singular>inlån</name_singular>
-              <name_plural>inlån</name_plural>
+              <name_singular>Inlån</name_singular>
+              <name_plural>Inlån</name_plural>
             </label>
           </labels>
         </item>
@@ -1236,8 +1236,8 @@
               <name_plural>retours</name_plural>
             </label>
             <label locale="sv_SE" preferred="1">
-              <name_singular>utlån</name_singular>
-              <name_plural>utlån</name_plural>
+              <name_singular>Utlån</name_singular>
+              <name_plural>Utlån</name_plural>
             </label>
           </labels>
         </item>
@@ -1293,7 +1293,7 @@
           <name>Libellés d\'entités</name>
         </label>
         <label locale="sv_SE">
-          <name>Person/organisation/folk typer</name>
+          <name>Entitetstyper</name>
         </label>
       </labels>
       <items/>
@@ -1310,7 +1310,7 @@
           <name>Sources d\'entités</name>
         </label>
         <label locale="sv_SE">
-          <name>Person/organisation/folk källor</name>
+          <name>Entitetskällor</name>
         </label>
       </labels>
       <items/>
@@ -1327,7 +1327,7 @@
           <name>Types de libellés d\'entité</name>
         </label>
         <label locale="sv_SE">
-          <name>Person/organisation/folk etikettyper</name>
+          <name>Entitetsetikettyper</name>
         </label>
       </labels>
       <items>
@@ -1346,8 +1346,8 @@
               <name_plural>utiliser pour</name_plural>
             </label>
             <label locale="sv_SE" preferred="1">
-              <name_singular>använda för</name_singular>
-              <name_plural>använda för</name_plural>
+              <name_singular>använd</name_singular>
+              <name_plural>använd</name_plural>
             </label>
           </labels>
         </item>
@@ -1385,7 +1385,7 @@
           <name>Types de lieux</name>
         </label>
         <label locale="sv_SE">
-          <name>Plats typer</name>
+          <name>Platstyper</name>
         </label>
       </labels>
       <items>
@@ -1404,8 +1404,8 @@
               <name_plural>continents</name_plural>
             </label>
             <label locale="sv_SE" preferred="1">
-              <name_singular>kontinent</name_singular>
-              <name_plural>kontinenter</name_plural>
+              <name_singular>Kontinent</name_singular>
+              <name_plural>Kontinenter</name_plural>
             </label>
           </labels>
         </item>
@@ -1424,8 +1424,8 @@
               <name_plural>pays</name_plural>
             </label>
             <label locale="sv_SE" preferred="1">
-              <name_singular>land</name_singular>
-              <name_plural>länder</name_plural>
+              <name_singular>Land</name_singular>
+              <name_plural>Länder</name_plural>
             </label>
           </labels>
         </item>
@@ -1444,8 +1444,8 @@
               <name_plural>état/région</name_plural>
             </label>
             <label locale="sv_SE" preferred="1">
-              <name_singular>län/region</name_singular>
-              <name_plural>län/regioner</name_plural>
+              <name_singular>Län/region</name_singular>
+              <name_plural>Län/regioner</name_plural>
             </label>
           </labels>
         </item>
@@ -1464,8 +1464,8 @@
               <name_plural>villes</name_plural>
             </label>
             <label locale="sv_SE" preferred="1">
-              <name_singular>kommun</name_singular>
-              <name_plural>kommuner</name_plural>
+              <name_singular>Kommun</name_singular>
+              <name_plural>Kommuner</name_plural>
             </label>
           </labels>
         </item>
@@ -1484,8 +1484,8 @@
               <name_plural>quartiers</name_plural>
             </label>
             <label locale="sv_SE" preferred="1">
-              <name_singular>kvarter</name_singular>
-              <name_plural>kvarter</name_plural>
+              <name_singular>Kvarter</name_singular>
+              <name_plural>Kvarter</name_plural>
             </label>
           </labels>
         </item>
@@ -1504,8 +1504,8 @@
               <name_plural>emplacements</name_plural>
             </label>
             <label locale="sv_SE" preferred="1">
-              <name_singular>plats</name_singular>
-              <name_plural>platser</name_plural>
+              <name_singular>Plats</name_singular>
+              <name_plural>Platser</name_plural>
             </label>
           </labels>
         </item>
@@ -1524,8 +1524,8 @@
               <name_plural>fleuves/rivières</name_plural>
             </label>
             <label locale="sv_SE" preferred="1">
-              <name_singular>flod</name_singular>
-              <name_plural>floder</name_plural>
+              <name_singular>Flod</name_singular>
+              <name_plural>Floder</name_plural>
             </label>
           </labels>
         </item>
@@ -1544,8 +1544,8 @@
               <name_plural>socknar</name_plural>
             </label>
             <label locale="sv_SE" preferred="1">
-              <name_singular>socken</name_singular>
-              <name_plural>socknar</name_plural>
+              <name_singular>Socken</name_singular>
+              <name_plural>Socknar</name_plural>
             </label>
           </labels>
         </item>
@@ -1564,8 +1564,8 @@
               <name_plural>autres caractéristiques</name_plural>
             </label>
             <label locale="sv_SE" preferred="1">
-              <name_singular>annan typ</name_singular>
-              <name_plural>andra typer</name_plural>
+              <name_singular>Annan typ</name_singular>
+              <name_plural>Andra typer</name_plural>
             </label>
           </labels>
         </item>
@@ -1583,7 +1583,7 @@
           <name>Valeurs de type libellés de lieux</name>
         </label>
         <label locale="sv_SE">
-          <name>Plats etikettyp värden</name>
+          <name>Platsetiketstypsvärden</name>
         </label>
       </labels>
       <items>
@@ -1602,8 +1602,8 @@
               <name_plural>utiliser pour</name_plural>
             </label>
             <label locale="sv_SE" preferred="1">
-              <name_singular>använda för</name_singular>
-              <name_plural>använda för</name_plural>
+              <name_singular>använd</name_singular>
+              <name_plural>använd</name_plural>
             </label>
           </labels>
         </item>
@@ -1641,7 +1641,7 @@
           <name>Sources de lieux</name>
         </label>
         <label locale="sv_SE">
-          <name>Plats källor</name>
+          <name>Platskällor</name>
         </label>
       </labels>
       <items/>
@@ -1658,7 +1658,7 @@
           <name>Types d\'occurences</name>
         </label>
         <label locale="sv_SE">
-          <name>Förekomst typer</name>
+          <name>Händelsetyper</name>
         </label>
       </labels>
       <items/>
@@ -1675,7 +1675,7 @@
           <name>Types de libellés d\'occurences</name>
         </label>
         <label locale="sv_SE">
-          <name>Förekomst etikettyper</name>
+          <name>Händelseetiketstyper</name>
         </label>
       </labels>
       <items>
@@ -1694,8 +1694,8 @@
               <name_plural>utiliser pour</name_plural>
             </label>
             <label locale="sv_SE" preferred="1">
-              <name_singular>använda för</name_singular>
-              <name_plural>använda för</name_plural>
+              <name_singular>använd</name_singular>
+              <name_plural>använd</name_plural>
             </label>
           </labels>
         </item>
@@ -1733,7 +1733,7 @@
           <name>Sources d\'occurences</name>
         </label>
         <label locale="sv_SE">
-          <name>Förekomst källor</name>
+          <name>Händelsekällor</name>
         </label>
       </labels>
       <items/>
@@ -1784,7 +1784,7 @@
           <name>Types de libellés de collection</name>
         </label>
         <label locale="sv_SE">
-          <name>Samling etikettyper</name>
+          <name>Samlingsetikettyper</name>
         </label>
       </labels>
       <items>
@@ -1803,8 +1803,8 @@
               <name_plural>utiliser pour</name_plural>
             </label>
             <label locale="sv_SE" preferred="1">
-              <name_singular>använda för</name_singular>
-              <name_plural>använda för</name_plural>
+              <name_singular>använd</name_singular>
+              <name_plural>använd</name_plural>
             </label>
           </labels>
         </item>
@@ -1842,7 +1842,7 @@
           <name>Types d\'emplacements de stockage</name>
         </label>
         <label locale="sv_SE">
-          <name>Lagringsplats typer</name>
+          <name>Förvaringsplatstyper</name>
         </label>
       </labels>
       <items/>
@@ -1859,7 +1859,7 @@
           <name>Valeurs de types de libellé d\'emplacements de stockage</name>
         </label>
         <label locale="sv_SE">
-          <name>Lagringsplats etikettypen värden</name>
+          <name>Förvaringsplatsetiketstypsvärden</name>
         </label>
       </labels>
       <items>
@@ -1878,8 +1878,8 @@
               <name_plural>utiliser pour</name_plural>
             </label>
             <label locale="sv_SE" preferred="1">
-              <name_singular>använda för</name_singular>
-              <name_plural>använda för</name_plural>
+              <name_singular>använd</name_singular>
+              <name_plural>använd</name_plural>
             </label>
           </labels>
         </item>
@@ -1917,7 +1917,7 @@
           <name>Types d\'événements d\'objet</name>
         </label>
         <label locale="sv_SE">
-          <name>Objekt händelsetyper</name>
+          <name>Objekthändelsetyper</name>
         </label>
       </labels>
       <items>
@@ -2962,7 +2962,7 @@
           <name>Editeur de prêt</name>
         </label>
         <label locale="sv_SE">
-          <name>Lån redigerare</name>
+          <name>Lånredigerare</name>
         </label>
       </labels>
       <screens>
@@ -3068,7 +3068,7 @@
           <name>Editeur de mouvement</name>
         </label>
         <label locale="sv_SE">
-          <name>Förflyttning redigerare</name>
+          <name>Förflyttningredigerare</name>
         </label>
       </labels>
       <screens>
@@ -3163,7 +3163,7 @@
           <name>Editeur de liste</name>
         </label>
         <label locale="sv_SE">
-          <name>List redigerare</name>
+          <name>Listredigerare</name>
         </label>
       </labels>
       <screens>
@@ -3217,7 +3217,7 @@
           <name>Editeur d\'item de liste</name>
         </label>
         <label locale="sv_SE">
-          <name>Listpost redigerare</name>
+          <name>Listpostredigerare</name>
         </label>
       </labels>
       <screens>
@@ -3331,7 +3331,7 @@
           <name>Editeur de configuration de types de relation</name>
         </label>
         <label locale="sv_SE">
-          <name>Relationstyper konfigurationsredigerare</name>
+          <name>Relationstypkonfigurationsredigerare</name>
         </label>
       </labels>
       <screens>
@@ -3398,7 +3398,7 @@
           <name>Editeur d\'ensemble</name>
         </label>
         <label locale="sv_SE">
-          <name>Gruppering redigerare</name>
+          <name>Grupperingsredigerare</name>
         </label>
       </labels>
       <screens>
@@ -3414,7 +3414,7 @@
               <name>Informations d\'ensemble</name>
             </label>
             <label locale="sv_SE">
-              <name>Gruppering info</name>
+              <name>Grupperingsinfo</name>
             </label>
           </labels>
           <bundlePlacements>
@@ -3424,7 +3424,7 @@
                 <setting name="label" locale="en_US">Set title</setting>
                 <setting name="label" locale="en_CA">Set title</setting>
                 <setting name="label" locale="fr_FR">Titre de l\'ensemble</setting>
-                <setting name="label" locale="sv_SE">Gruppering titel</setting>
+                <setting name="label" locale="sv_SE">Grupperingstitel</setting>
                 <setting name="add_label" locale="en_US">Add title</setting>
                 <setting name="add_label" locale="en_CA">Add title</setting>
                 <setting name="add_label" locale="fr_FR">Ajouter un titre</setting>
@@ -3486,7 +3486,7 @@
           <name>Editeur d\'ensemble d\'items</name>
         </label>
         <label locale="sv_SE">
-          <name>Grupperingsobjekt redigerare</name>
+          <name>Grupperingsobjektredigerare</name>
         </label>
       </labels>
       <screens>
@@ -3541,7 +3541,7 @@
           <name>Editeur de configuration de formulaires de recherche</name>
         </label>
         <label locale="sv_SE">
-          <name>Sök formulär konfigurationsredigerare</name>
+          <name>Sökformulärskonfigurationsredigerare</name>
         </label>
       </labels>
       <screens>
@@ -3611,7 +3611,7 @@
           <name>Editeur de configuration de liste</name>
         </label>
         <label locale="sv_SE">
-          <name>Display list konfigurationsredigerare</name>
+          <name>Visningslistskonfigurationsredigerare</name>
         </label>
       </labels>
       <screens>
@@ -3699,7 +3699,7 @@
           <name>Tour editor</name>
         </label>
         <label locale="sv_SE">
-          <name>Tur redigerare</name>
+          <name>Turredigerare</name>
         </label>
       </labels>
       <screens>
@@ -3793,7 +3793,7 @@
           <name>Tour stop editor</name>
         </label>
         <label locale="sv_SE">
-          <name>Tur stopp redigerare</name>
+          <name>Turstoppredigerare</name>
         </label>
       </labels>
       <screens>
@@ -3922,7 +3922,7 @@
           <name>Import/export mapping editor</name>
         </label>
         <label locale="sv_SE">
-          <name>Import/export mappning redigerare</name>
+          <name>Import/export mappningredigerare</name>
         </label>
       </labels>
       <screens>
@@ -3982,7 +3982,7 @@
           <name>Import/export mapping unit editor</name>
         </label>
         <label locale="sv_SE">
-          <name>Import/export mappning enhets redigerare</name>
+          <name>Import/export mappningsenhetsredigerare</name>
         </label>
       </labels>
       <screens>
