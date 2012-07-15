@@ -4244,6 +4244,59 @@ a.caClientOrderOverviewButton:hover {
 }
 
 /* -------------------------------------------------*/
+/* Record-level Access screen                       */
+/* -------------------------------------------------*/
+
+.globalAccess {
+	background-color:#eee;
+	-moz-border-radius: 10px; 
+	-webkit-border-radius: 10px;
+	border-radius: 10px;
+	padding:10px;
+	margin-bottom: 15px;
+}
+.globalAccess .title {
+	font-size: 18px;
+	font-family: arial;
+	font-weight: normal;
+}
+.globalAccess .bundleContainer {
+	border: 0px;
+	padding-left:0px;
+
+}
+.globalAccess .labelInfo {
+	background-color:#eee;
+	border-top: none;
+}
+.globalAccess h2 {
+	padding-top:10px;
+	border-top: dotted 1px #ccc;
+	font-family: arial;
+	font-weight: normal;
+}
+#editGlobalAccess {
+	display:none;
+}
+#editUserAccess {
+	display:none;
+}
+.editLink a{
+	text-decoration:none;	
+	font-size: 12px;
+}
+div.editLink {
+	padding-top:25px;
+	float:right;
+}
+.accessName {
+	font-weight: bold;
+	font-size: 12px;
+	color: #134959;
+	line-height:1.75em;
+}
+
+/* -------------------------------------------------*/
 /* "Searchlight" autocomplete search results styles */
 /* -------------------------------------------------*/
 div.searchlight-header{
