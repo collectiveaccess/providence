@@ -1216,33 +1216,11 @@ require_once(__CA_LIB_DIR__.'/core/Parsers/TimeExpressionParser.php');
 	 * @return string HTML implementing the inspector
 	 */
 	function caEditorACLEditor($po_view, $pt_instance, $pa_options=null) {
+		$vs_view_path = (isset($pa_options['viewPath']) && $pa_options['viewPath']) ? $pa_options['viewPath'] : $po_view->request->getViewsDirectoryPath();
+		$o_view = new View($po_view->request, "{$vs_view_path}/bundles/");
 		
-		$vb_can_edit	 	= $pt_instance->isSaveable($po_view->request);
-		$vb_can_delete		= $pt_instance->isDeletable($po_view->request);
-		
-		$vs_buf = '<div class="sectionBox">';
-
-		if ($vb_can_edit) {
-			$vs_buf .= $vs_control_box = caFormControlBox(
-				caFormSubmitButton($po_view->request, __CA_NAV_BUTTON_SAVE__, _t("Save"), 'caAccessControlList').' '.
-				caNavButton($po_view->request, __CA_NAV_BUTTON_CANCEL__, _t("Cancel"), $po_view->request->getModulePath(), $po_view->request->getController(), 'Access/'.$po_view->request->getActionExtra(), array($pt_instance->primaryKey() => $pt_instance->getPrimaryKey())),
-				'',
-				''
-			);
-		}
-		
-		$vs_buf .= caFormTag($po_view->request, 'SetAccess', 'caAccessControlList');
-		
-		$vs_buf .= "<h2>"._t('User access')."</h2>\n";
-		$vs_buf .= $pt_instance->getACLUserHTMLFormBundle($po_view->request, 'caAccessControlList');
-		$vs_buf .= "<h2>"._t('Group access')."</h2>\n";
-		$vs_buf .= $pt_instance->getACLGroupHTMLFormBundle($po_view->request, 'caAccessControlList');
-		$vs_buf .= "<h2>"._t('Everyone else')."</h2>\n";
-		$vs_buf .= $pt_instance->getACLWorldHTMLFormBundle($po_view->request, 'caAccessControlList');
-		$vs_buf .= caHTMLHiddenInput($pt_instance->primaryKey(), array('value' => $pt_instance->getPrimaryKey()));
-		$vs_buf .= '</form><div class="editorBottomPadding"><!-- empty --></div></div>';
-
-		return $vs_buf;
+		$o_view->setVar('t_instance', $pt_instance);
+		return $o_view->render('ca_acl_access.php');
 	}
 	# ------------------------------------------------------------------------------------------------
 	/**
