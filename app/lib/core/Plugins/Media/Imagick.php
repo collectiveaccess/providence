@@ -456,6 +456,7 @@ class WLPlugMediaImagick Extends WLPlug Implements IWLPlugMedia {
 				$handle = new Imagick();
 				
 				if ($mimetype == 'image/x-dcraw') {
+					if($this->filepath_conv) { @unlink($this->filepath_conv); }
 					if (!caMediaPluginDcrawInstalled($this->ops_dcraw_path)) {
 						$this->postError(1610, _t("Could not convert Camera RAW format file because conversion tool (dcraw) is not installed"), "WLPlugImagick->read()");
 						return false;
@@ -475,9 +476,9 @@ class WLPlugMediaImagick Extends WLPlug Implements IWLPlugMedia {
 						$this->postError(1610, _t("Translation from Camera RAW to TIFF failed"), "WLPlugImagick->read()");
 						return false;
 					}
-					@unlink($vs_tmp_name);
-					
 					$ps_filepath = $this->filepath_conv = $vs_tmp_name.'.tiff';
+
+					@unlink($vs_tmp_name);
 				}
 				
 				if ($handle->readImage($ps_filepath)) {
@@ -1120,6 +1121,10 @@ class WLPlugMediaImagick Extends WLPlug Implements IWLPlugMedia {
 	public function destruct() {
 		if(is_object($this->handle)) { $this->handle->destroy(); }
 		if(is_object($this->ohandle)) { $this->ohandle->destroy(); }
+		
+		if ($this->filepath_conv) {
+			@unlink($this->filepath_conv);
+		}
 	}
 	# ------------------------------------------------
 	public function htmlTag($ps_url, $pa_properties, $pa_options=null, $pa_volume_info=null) {
