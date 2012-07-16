@@ -82,6 +82,7 @@ class WLPlugMediaImagick Extends WLPlug Implements IWLPlugMedia {
 			"image/x-sony-sr2"	=> "sr2",
 			"image/x-sony-srf"	=> "srf",
 			"image/x-sigma-x3f"	=> "x3f",
+			"image/x-dcraw"	=> "raw",
 		),
 		"EXPORT" => array(
 			"image/jpeg" 		=> "jpg",
@@ -105,6 +106,7 @@ class WLPlugMediaImagick Extends WLPlug Implements IWLPlugMedia {
 			"image/x-sony-sr2"	=> "sr2",
 			"image/x-sony-srf"	=> "srf",
 			"image/x-sigma-x3f"	=> "x3f",
+			"image/x-dcraw"	=> "raw",
 		),
 		"TRANSFORMATIONS" => array(
 			"SCALE" 			=> array("width", "height", "mode", "antialiasing"),
@@ -166,6 +168,7 @@ class WLPlugMediaImagick Extends WLPlug Implements IWLPlugMedia {
 		"image/x-sony-sr2"	=> "Sony SR2 RAW Image",
 		"image/x-sony-srf"	=> "Sony SRF RAW Image",
 		"image/x-sigma-x3f"	=> "Sigma X3F RAW Image",
+		"image/x-dcraw"	=> "RAW Image",
 	);
 	
 	var $magick_names = array(
@@ -190,6 +193,7 @@ class WLPlugMediaImagick Extends WLPlug Implements IWLPlugMedia {
 		"image/x-sony-sr2"	=> "SR2",
 		"image/x-sony-srf"	=> "SRF",
 		"image/x-sigma-x3f"	=> "X3F",
+		"image/x-dcraw"	=> "RAW",
 	);
 	
 	#
@@ -263,7 +267,7 @@ class WLPlugMediaImagick Extends WLPlug Implements IWLPlugMedia {
 	public function divineFileFormat($ps_filepath) {
 		# is it a camera raw image?
 		if (caMediaPluginDcrawInstalled($this->ops_dcraw_path)) {
-			exec($this->ops_dcraw_path." -i ".caEscapeShellArg($filepath)." 2> /dev/null", $va_output, $vn_return);
+			exec($this->ops_dcraw_path." -i ".caEscapeShellArg($ps_filepath)." 2> /dev/null", $va_output, $vn_return);
 			if ($vn_return == 0) {
 				if ((!preg_match("/^Cannot decode/", $va_output[0])) && (!preg_match("/Master/i", $va_output[0]))) {
 					return 'image/x-dcraw';
@@ -458,13 +462,13 @@ class WLPlugMediaImagick Extends WLPlug Implements IWLPlugMedia {
 					}
 					
 					$vs_tmp_name = tempnam("/tmp", "rawtmp");
-					if (!copy($filepath, $vs_tmp_name)) {
+					if (!copy($ps_filepath, $vs_tmp_name)) {
 						$this->postError(1610, _t("Could not copy Camera RAW file to temporary directory"), "WLPlugImagick->read()");
 						return false;
 					}
 					exec($this->ops_dcraw_path." -T ".caEscapeShellArg($vs_tmp_name), $va_output, $vn_return);
 					if ($vn_return != 0) {
-						$this->postError(1610, _t("Camera RAW file conversion failed"), "WLPlugImagick->read()");
+						$this->postError(1610, _t("Camera RAW file conversion failed: %1", $vn_return), "WLPlugImagick->read()");
 						return false;
 					}
 					if (!(file_exists($vs_tmp_name.'.tiff') && (filesize($vs_tmp_name.'.tiff') > 0))) {
@@ -473,7 +477,7 @@ class WLPlugMediaImagick Extends WLPlug Implements IWLPlugMedia {
 					}
 					@unlink($vs_tmp_name);
 					
-					$this->filepath_conv = $vs_tmp_name.'.tiff';
+					$ps_filepath = $this->filepath_conv = $vs_tmp_name.'.tiff';
 				}
 				
 				if ($handle->readImage($ps_filepath)) {
