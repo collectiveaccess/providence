@@ -139,7 +139,7 @@ class SearchEngine extends SearchBase {
 		// This is useful, for example, to allow auto-wildcarding of accession numbers: if the search looks like an accession regex-wise we can append a "*"
 		//
 		$va_suffixes = $this->opo_search_config->getAssoc('search_suffixes');
-		if (is_array($va_suffixes) && sizeof($va_suffixes)) {
+		if (is_array($va_suffixes) && sizeof($va_suffixes) && (!preg_match('!"!', $ps_search))) {		// don't add suffix wildcards when quoting
 			foreach($va_suffixes as $vs_preg => $vs_suffix) {
 				if (preg_match("!{$vs_preg}!", $ps_search)) {
 					$ps_search = preg_replace("!({$vs_preg})[\*]*!", "$1{$vs_suffix}", $ps_search);
@@ -173,11 +173,12 @@ class SearchEngine extends SearchBase {
 			try {
 				$o_parsed_query = $o_query_parser->parse($ps_search, $vs_char_set);
 			} catch (Exception $e) {
-				$o_query_parser->parse('', $vs_char_set);
+				// Retry search with all non-alphanumeric characters removed
+				$o_parsed_query = $o_query_parser->parse(preg_replace("![^A-Za-z0-9 ]+!", " ", $ps_search), $vs_char_set);
 			}
 			$va_rewrite_results = $this->_rewriteQuery($o_parsed_query);
 			$o_rewritten_query = new Zend_Search_Lucene_Search_Query_Boolean($va_rewrite_results['terms'], $va_rewrite_results['signs']);
-	
+
 			$vs_search = $this->_queryToString($o_rewritten_query);
 			//print "<div style='background:#FFFFFF; padding: 5px; border: 1px dotted #666666;'><strong>DEBUG: </strong>".$ps_search.'/'.$vs_search."</div>";
 			
