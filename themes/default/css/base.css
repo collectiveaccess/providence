@@ -65,6 +65,8 @@ h2 { font-size: 13px; color: #666; }
 	-webkit-border-bottom-left-radius: 10px;
 	-moz-border-radius-bottomright: 10px; 
 	-webkit-border-bottom-right-radius: 10px;
+ 	 border-bottom-left-radius: 10px;
+ 	 border-bottom-right-radius: 10px;
 }
 *:first-child+html .roundedNav{padding-right:0px;} * html .roundedNav{padding-right:0px;}
 #topNav {
@@ -606,6 +608,8 @@ li.sfHover > a > .sf-sub-indicator {
 	-moz-border-radius-topright: 17px;
 	-webkit-border-top-right-radius: 17px;
 	-webkit-border-bottom-left-radius: 17px;
+	border-bottom-left-radius: 17px;
+	border-top-right-radius: 17px;
 	border:0px;
 }
 .sf-shadow ul.sf-shadow-off {
@@ -839,11 +843,12 @@ div.hint {
 	text-align: left;
 	background-color:#e6e6e6;
 	border: 2px solid #e6e6e6;
-
 	-moz-border-radius-topleft: 8px; 
 	-webkit-border-top-left-radius: 8px;
 	-moz-border-radius-topright: 8px; 
 	-webkit-border-top-right-radius: 8px;
+	border-top-right-radius: 8px;
+	border-top-left-radius: 8px;
 }
 
 .settingsBundle {
@@ -958,6 +963,7 @@ div.hint {
 	background: url('../graphics/backgrounds/tooltip_box.png');*/
 	-moz-border-radius: 10px; 
 	-webkit-border-top: 10px;
+	border-radius: 10px;
 	-moz-box-shadow: 2px 2px 5px #adadad;
 	-webkit-box-shadow: 2px 2px 5px #adadad;
 	box-shadow: 2px 2px 5px #adadad;
@@ -1179,6 +1185,7 @@ div.form-header-button {
 	-webkit-border-top-left-radius: 8px;
 	-moz-border-radius-topright: 8px; 
 	-webkit-border-top-right-radius: 8px;	
+	border-radius: 8px;
 }
 
 div.form-header-button a {
@@ -3113,6 +3120,7 @@ div.bundleDisplayEditorPlacement {
 	-webkit-border-bottom-left-radius: 8px;
 	-moz-border-radius-bottomright: 8px; 
 	-webkit-border-bottom-right-radius: 8px;
+	border-radius: 8px;
 }
 
 div.bundleDisplayEditorPlacementList {
@@ -3258,11 +3266,12 @@ a.dashboardControl {font-weight:bold; padding-right:10px; text-decoration:none;}
 	font-weight: bold;
 	text-align: left;
 	background-color:#828282;
-
 	-moz-border-radius-topleft: 8px; 
 	-webkit-border-top-left-radius: 8px;
 	-moz-border-radius-topright: 8px; 
 	-webkit-border-top-right-radius: 8px;
+	border-top-right-radius: 8px;
+	border-top-left-radius: 8px;
 }
 
 .portlet-content { 
@@ -3579,6 +3588,7 @@ div.jGrowl div.jGrowl-notification, div.jGrowl div.jGrowl-closer {
 	display: 				none;
 	-moz-border-radius: 	5px;
 	-webkit-border-radius:	5px;
+	border-radius: 			5px;
 }
 
 div.jGrowl div.jGrowl-notification {
@@ -3714,6 +3724,7 @@ div.roundedRel {
 	-webkit-border-radius: 10px;
 	-moz-border-radius: 10px; 
 	-webkit-border-bottom-right-radius: 10px;
+	border-radius: 10px;
 }
 
 .caItemList {
@@ -3749,6 +3760,7 @@ div.roundedRel {
 	-webkit-border-radius: 6px;
 	-moz-border-radius: 6px; 
 	-webkit-border-bottom-right-radius: 6px;
+	border-radius: 6px;
 }
 
 .roundedRel .caDeleteItemButton {
@@ -3813,6 +3825,7 @@ a.caDeleteLabelButton {
 	-webkit-border-radius: 10px;
 	-moz-border-radius: 10px; 
 	-webkit-border-radius: 10px;
+	border-radius: 10px;
 }
 
 
@@ -3878,6 +3891,7 @@ a.caDeleteLabelButton {
 	-webkit-border-top-left-radius: 3px;
 	-moz-border-radius-topright: 3px; 
 	-webkit-border-top-right-radius: 3px;
+	border-radius: 3px;
 }
 .caClientCommunicationsMessageSummaryHeading {
 	font-weight:bold;
@@ -3922,6 +3936,7 @@ a.caClientCommunicationsMessageReplyButton {
 	float:right;
 	-moz-border-radius: 4px; 
 	-webkit-border-radius: 4px;
+	border-radius: 4px;
 }
 a.caClientCommunicationsMessageReplyButton:hover {
 	background-color: #545454;
@@ -3934,6 +3949,7 @@ a.caClientCommunicationsMessageReplyButton:hover {
 	background-color:#e2e2e2;
 	-moz-border-radius: 10px; 
 	-webkit-border-radius: 10px;
+	border-radius: 10px;	
 }
 div.caClientCommunicationsMessageSummaryThreadButton {
 	text-align:right;
@@ -3943,7 +3959,7 @@ div.caClientCommunicationsMessageSummaryCounter {
 	background-color: #666666;
 	color: #F0F0F0;
 	padding: 3px;
-	
+	border-radius: 4px;	
 	-moz-border-radius: 4px; 
 	-webkit-border-radius: 4px;
 }
@@ -4046,6 +4062,7 @@ a.caClientCommunicationsNewOrderButton {
 	float:right;
 	-moz-border-radius: 4px; 
 	-webkit-border-radius: 4px;
+	border-radius: 4px;	
 }
 a.caClientCommunicationsNewOrderButton:hover {
 	background-color: #545454;
@@ -4123,6 +4140,7 @@ a.caClientCommunicationsNewOrderButton:hover {
 	background-color:#e2e2e2;
 	-moz-border-radius: 10px; 
 	-webkit-border-radius: 10px;
+	border-radius: 10px;
 	padding:10px;
 	margin:0px 0px 20px 0px;
 }
@@ -4143,7 +4161,7 @@ a.caClientCommunicationsNewOrderButton:hover {
 	text-align: left;
 	background-color:#e6e6e6;
 	padding:5px 10px 10px 10px;
-
+	border-radius: 8px;
 	-moz-border-radius: 8px; 
 	-webkit-border-radius: 8px;
 }
@@ -4174,6 +4192,7 @@ a.caClientOrderOverviewButton {
 	padding:3px 5px 4px 5px;
 	-moz-border-radius: 4px; 
 	-webkit-border-radius: 4px;
+	border-radius: 4px;
 }
 a.caClientOrderOverviewButton:hover {
 	background-color: #545454;
@@ -4198,6 +4217,7 @@ a.caClientOrderOverviewButton:hover {
 	background-color:#e2e2e2;
 	-moz-border-radius: 10px; 
 	-webkit-border-radius: 10px;
+	border-radius: 10px;	
 	padding:5px 20px 10px 15px;
 	margin:0px 0px 5px 0px;
 }
@@ -4212,6 +4232,7 @@ a.caClientOrderOverviewButton:hover {
 	float:right;
 	-moz-border-radius: 4px; 
 	-webkit-border-radius: 4px;
+	border-radius: 4px;	
 	margin-top:10px;
 }
 #caClientOrderCommunicationForm input[type="text"], #caClientOrderCommunicationForm input[type="textarea"], #caClientOrderCommunicationForm textarea, #caClientOrderCommunicationForm input{
@@ -4225,6 +4246,59 @@ a.caClientOrderOverviewButton:hover {
 
 .caClientLibraryLoadingIndicator {
 	background: white url('../graphics/icons/indicator.gif') right center no-repeat !important;
+}
+
+/* -------------------------------------------------*/
+/* Record-level Access screen                       */
+/* -------------------------------------------------*/
+
+.globalAccess {
+	background-color:#eee;
+	-moz-border-radius: 10px; 
+	-webkit-border-radius: 10px;
+	border-radius: 10px;
+	padding:10px;
+	margin-bottom: 15px;
+}
+.globalAccess .title {
+	font-size: 18px;
+	font-family: arial;
+	font-weight: normal;
+}
+.globalAccess .bundleContainer {
+	border: 0px;
+	padding-left:0px;
+
+}
+.globalAccess .labelInfo {
+	background-color:#eee;
+	border-top: none;
+}
+.globalAccess h2 {
+	padding-top:10px;
+	border-top: dotted 1px #ccc;
+	font-family: arial;
+	font-weight: normal;
+}
+#editGlobalAccess {
+	display:none;
+}
+#editUserAccess {
+	display:none;
+}
+.editLink a{
+	text-decoration:none;	
+	font-size: 12px;
+}
+div.editLink {
+	padding-top:25px;
+	float:right;
+}
+.accessName {
+	font-weight: bold;
+	font-size: 12px;
+	color: #134959;
+	line-height:1.75em;
 }
 
 /* -------------------------------------------------*/
