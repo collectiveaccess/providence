@@ -199,8 +199,12 @@
 					'code' => '_csv'
 				),
 				array(
-					'name' => _t('Printable PDF'),
+					'name' => _t('PDF (Chart)'),
 					'code' => '_pdf'
+				),
+				array(
+					'name' => _t('PDF (Thumbnails)'),
+					'code' => '_pdfthumb'
 				)
 			);
 			
@@ -531,6 +535,26 @@
 					}
 					return;
 					break;
+				case '_pdfthumb':
+					require_once(__CA_LIB_DIR__."/core/Print/html2pdf/html2pdf.class.php");
+					
+					try {
+						$vs_content = $this->render('Results/'.$this->ops_tablename.'_pdf_results_thumb_html.php');
+						$vo_html2pdf = new HTML2PDF('L','letter','en');
+						$vo_html2pdf->setDefaultFont("dejavusans");
+						$vo_html2pdf->WriteHTML($vs_content);
+						
+			header("Content-Disposition: attachment; filename=export_results.pdf");
+			header("Content-type: application/pdf");
+			
+						$vo_html2pdf->Output('thumb_results.pdf');
+						$vb_printed_properly = true;
+					} catch (Exception $e) {
+						$vb_printed_properly = false;
+						$this->postError(3100, _t("Could not generate PDF"),"BaseEditorController->PrintSummary()");
+					}
+					return;
+					break;	
 				case '_csv':
 					$vs_delimiter = ",";
 					$vs_output_file_name = mb_substr(preg_replace("/[^A-Za-z0-9\-]+/", '_', $ps_output_filename.'_csv'), 0, 30);
