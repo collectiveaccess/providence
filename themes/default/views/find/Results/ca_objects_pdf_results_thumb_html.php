@@ -41,7 +41,8 @@
 <style type="text/css">
 <!--
 /* commentaire dans un css */
-table, td { border: 1px solid #000000; color: #000000; text-wrap: normal; width: 135px; height: 130px; padding: 5px; font-size: 11px;}
+table, td { border: 1px solid #999; color: #000000; text-wrap: normal; min-width: 100px; min-height: 10px; max-width: 130px; padding: 5px; font-size: 11px; word-wrap: break-word; text-align:center;}
+table {padding: 0px; text-align:center;}
 td.odd   { color: #00AA00; }
 .displayHeader { background-color: #EEEEEE; padding: 5px; border: 1px solid #999999; font-size: 12px; }
 #pageHeader { background-color: #<?php print $this->request->config->get('report_color'); ?>; margin: 0px 5px 10px 5px; padding: 3px 5px 2px 10px; width: 100%; height: 45px; }
@@ -78,7 +79,7 @@ td.odd   { color: #00AA00; }
 		</div>
 	</page_header>
 
-	<table class="listtable" width="100%" border="0" cellpadding="0" cellspacing="0">
+	<table class="listtable" width="100%" border="0" cellpadding="0" cellspacing="0" align="center">
 
 <?php
 $tr_count = 0;
@@ -91,9 +92,9 @@ $tr_count = 0;
 <?php
 				
 				$vn_count = 0;
-				foreach($va_display_list as $vn_placement_id => $va_display_item) {
-				$t_object = new ca_objects($vn_object_id);
 				
+				$t_object = new ca_objects($vn_object_id);
+				$thumb_rep = $t_object->getPrimaryRepresentation(array('preview'));
 					// Skip first few columns as needed
 					if ($vn_count < $vn_start) { 
 						$vn_count++;
@@ -101,9 +102,9 @@ $tr_count = 0;
 					}
 					if ($tr_count == 0) {print "<tr>";}
 					$vs_display_value = $t_display->getDisplayValue($vo_result, $vn_placement_id, array('forReport' => true, 'purify' => true));
-					print "<td valign='bottom'><div style='height:120px; width: 120px; '>".(strlen($vs_display_value) > 1200 ? strip_tags(substr($vs_display_value, 0, 1197))."..." : $vs_display_value);
-					print "</div><br/> ".$t_object->get('ca_objects.preferred_labels')."<br/>".$t_object->get('ca_objects.idno');
-					print "</td>";
+					print "<td valign='bottom' align='center' width='100'><table cellpadding='0' cellspacing='0' width='100' height='100%' align='center' border='0'><tr align='center' border='0' valign='middle'><td align='center' border='0' valign='middle' style='text-align:center;'>".$thumb_rep["tags"]["preview"];
+					print "</td></tr><tr valign='bottom' align='center'><td nowrap='wrap' border='0' align='center' style='word-wrap: break-word; width: 150px; background-color:#eee;' border='1px solid #ccc;'>".$t_object->get('ca_objects.preferred_labels')."<br/>".$t_object->get('ca_objects.idno')."<br/>".$t_object->get('ca_collections.preferred_labels');
+					print "</td></tr></table></td>";
 					
 					$vn_count++;
 					
@@ -117,7 +118,7 @@ $tr_count = 0;
 					if ($vn_count >= ($vn_start + 6)) {
 						break;
 					}
-				}
+				
 ?>	
 		 	
 <?php
