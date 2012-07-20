@@ -760,14 +760,15 @@ class ca_attributes extends BaseModel {
 	static public function getAttributeValueForIDs($po_db, $pn_table_num, $pa_row_ids, $pn_element_id, $pa_options=null) {
 		$vb_is_cached = true;
 		foreach($pa_row_ids as $vn_row_id) {
-			if (!is_array(ca_attributes::$s_get_attributes_cache[$pn_table_num.'/'.$vn_row_id])) {
+			if (!is_array(ca_attributes::$s_get_attributes_cache[$pn_table_num.'/'.$vn_row_id][$pn_element_id])) {
 				$vb_is_cached = false;
 				break;
 			}
 		}
 		
 		if (!$vb_is_cached) {
-			if (!(ca_attributes::prefetchAttributes($po_db, $pn_table_num, array($pa_row_ids), array($pn_element_id)))) {
+			print "prefetch!\n";
+			if (!(ca_attributes::prefetchAttributes($po_db, $pn_table_num, $pa_row_ids, array($pn_element_id)))) {
 				return null;
 			}
 		}
