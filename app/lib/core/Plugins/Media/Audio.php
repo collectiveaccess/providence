@@ -766,6 +766,7 @@ class WLPlugMediaAudio Extends WLPlug Implements IWLPlugMedia {
 
 				switch($pa_options["player"]) {
 					case 'small':
+						JavascriptLoadManager::register("swfobject");
 						ob_start();
 						$vn_width = ($pa_properties["viewer_width"] > 0) ? $pa_properties["viewer_width"] : 165;
 						$vn_height = ($pa_properties["viewer_height"] > 0) ? $pa_properties["viewer_height"] : 38;
@@ -785,7 +786,8 @@ class WLPlugMediaAudio Extends WLPlug Implements IWLPlugMedia {
 					case 'text':
 						return "<a href='$ps_url'>".(($pa_options["text_only"]) ? $pa_options["text_only"] : "Listen to MP3")."</a>";
 						break;
-					default:
+					case 'jplayer':
+						JavascriptLoadManager::register("jplayer");
 						$vn_width = ($pa_properties["viewer_width"] > 0) ? $pa_properties["viewer_width"] : 400;
 						$vn_height = ($pa_properties["viewer_height"] > 0) ? $pa_properties["viewer_height"] : 95;
 						ob_start();
@@ -836,6 +838,23 @@ class WLPlugMediaAudio Extends WLPlug Implements IWLPlugMedia {
 				</script>
 <?php
 						return ob_get_clean();
+						break;
+					default:
+						JavascriptLoadManager::register("mediaelement");
+						
+						$vn_width = ($pa_properties["viewer_width"] > 0) ? $pa_properties["viewer_width"] : 400;
+						$vn_height = ($pa_properties["viewer_height"] > 0) ? $pa_properties["viewer_height"] : 95;
+?>
+					<div class="caAudioPlayer">
+						<audio id="<?php print $vs_id; ?>" src="<?php print $ps_url; ?>" type="audio/mp3" controls="controls"></audio>
+					</div>	
+
+<script type="text/javascript">
+	jQuery(document).ready(function() {
+		jQuery('#<?php print $vs_id; ?>').mediaelementplayer({showTimecodeFrameCount: true, framesPerSecond: 100, audioWidth: <?php print (int)$vn_width; ?>, audioHeight: <?php print (int)$vn_height; ?>  });
+	});
+</script>
+<?php
 						break;
 				}
 				break;
