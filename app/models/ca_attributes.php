@@ -767,7 +767,6 @@ class ca_attributes extends BaseModel {
 		}
 		
 		if (!$vb_is_cached) {
-			print "prefetch!\n";
 			if (!(ca_attributes::prefetchAttributes($po_db, $pn_table_num, $pa_row_ids, array($pn_element_id)))) {
 				return null;
 			}
