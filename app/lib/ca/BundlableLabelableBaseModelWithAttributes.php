@@ -4133,7 +4133,7 @@ $pa_options["display_form_field_tips"] = true;
 	 *
 	 * @return array Information about current ACL world setting
 	 */ 
-	public function getACLWorld($pa_options=null) {
+	public function getACLWorldAccess($pa_options=null) {
 		if (!($vn_id = (int)$this->getPrimaryKey())) { return null; }
 		
 		if (!is_array($pa_options)) { $pa_options = array(); }
