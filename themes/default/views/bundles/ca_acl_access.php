@@ -47,7 +47,7 @@
 	<div class='globalAccess'>
 		<div class='title'><?php print _t('Global Access'); ?></div>
 <?php 	
-		$va_global_access = $t_instance->getACLWorld(array('returnAsInitialValuesForBundle' => true));
+		$va_global_access = $t_instance->getACLWorldAccess(array('returnAsInitialValuesForBundle' => true));
 		$va_global_access_status = $va_global_access['access_display'];
 		print "<p>"._t('All groups and users ')." <b>"; 
 		print "<span class='accessName'>".$va_global_access_status."</span>";
