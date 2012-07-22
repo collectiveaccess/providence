@@ -398,33 +398,7 @@ class WLPlugMediaQuicktimeVR Extends WLPlug Implements IWLPlugMedia {
 				// if output file doesn't exist, ffmpeg failed or isn't installed
 				// so use default icons
 				if (!file_exists($filepath.".".$ext)) {
-					# use default media icons
-					if (file_exists($this->opo_config->get("default_media_icons"))) {
-						$o_icon_info = Configuration::load($this->opo_config->get("default_media_icons"));
-						if ($va_icon_info = $o_icon_info->getAssoc($this->handle["mime_type"])) {
-							$vs_icon_path = $o_icon_info->get("icon_folder_path");
-							
-							$vs_version = $this->get("version");
-							if (!$va_icon_info[$vs_version]) { $vs_version = 'small'; }
-							if (!copy($vs_icon_path."/".trim($va_icon_info[$vs_version]),$filepath.".".$ext)) {
-								$this->postError(1610, _t("Can't copy icon file for %1 to %2", $vs_version, $filepath.".".$ext), "WLPlugQuicktimeVR->write()");
-								return false;
-							}
-
-							if (!($this->properties["width"] = $this->get("version_width"))) {
-								$this->properties["width"] = $this->get("version_height");
-							}
-							if (!($this->properties["height"] = $this->get("version_height"))) {
-								$this->properties["height"] = $this->get("version_width");
-							}
-						} else {
-							$this->postError(1610, _t("No icon available for this media type [%1] (system misconfiguration)", $this->handle["mime_type"]), "WLPlugQuicktimeVR->write()");
-							return false;
-						}
-					} else {
-						$this->postError(1610, _t("No icons available (system misconfiguration)"), "WLPlugQuicktimeVR->write()");
-						return false;
-					}
+					return __CA_MEDIA_VIDEO_DEFAULT_ICON__;
 				}
 				$this->properties["mimetype"] = $mimetype;
 				$this->properties["typename"] = isset($this->typenames[$mimetype]) ? $this->typenames[$mimetype] : $mimetype;
