@@ -360,8 +360,9 @@ class ca_attributes extends BaseModel {
 			if(isset($pa_values[$vn_element_id])) {
 				$vm_value = $pa_values[$vn_element_id];
 			} else {
-				$vm_value = $pa_values[$va_element_info['element_code']];
+				$vm_value = $pa_values[$va_element['element_code']];
 			}
+			
 			if ($t_attr_val->addValue($vm_value, $va_element, $vn_attribute_id) === false) {
 				$this->postError(1972, join('; ', $t_attr_val->getErrors()), 'ca_attributes->editAttribute()');
 				break;
