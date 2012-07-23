@@ -531,7 +531,7 @@ class SearchEngine extends SearchBase {
 						
 						$vs_locale_where = "attr.locale_id";
 						$vs_sql = "
-							SELECT t.{$vs_table_pk}, attr.locale_id, {$vs_sort_field}
+							SELECT t.{$vs_table_pk}, attr.locale_id, attr_vals.{$vs_sort_field}
 							FROM {$vs_table_name} t
 							INNER JOIN ca_attributes AS attr ON attr.row_id = t.{$vs_table_pk}
 							INNER JOIN ca_attribute_values AS attr_vals ON attr_vals.attribute_id = attr.attribute_id
@@ -542,7 +542,7 @@ class SearchEngine extends SearchBase {
 						";
 						//print $vs_sql;
 						
-						$qr_sort = $this->opo_db->query($vs_sql, (int)$vn_element_id, (int)$this->opn_browse_table_num);
+						$qr_sort = $this->opo_db->query($vs_sql, (int)$vn_element_id, (int)$this->opn_tablenum);
 
 						while($qr_sort->nextRow()) {
 							$va_sorted_hits[$vn_id = $qr_sort->get($vs_table_pk, array('binary' => true))][$qr_sort->get('locale_id', array('binary' => true))] .= trim(preg_replace('![^A-Za-z0-9 ]+!', '', strip_tags(mb_strtolower($qr_sort->get($vs_sort_field)))));
