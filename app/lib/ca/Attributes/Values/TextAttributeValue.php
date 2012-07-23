@@ -238,7 +238,9 @@
  			}
  			
  			$vs_class = null;
+ 			
  			if ($va_settings['usewysiwygeditor']) {
+ 				$o_config = Configuration::load();
  				JavascriptLoadManager::register("ckeditor");
  				$vs_class = 'jqueryCkeditor';
  				
@@ -249,10 +251,11 @@
 				 });
 			},
 			{
-				toolbar: [['Bold','Italic','Underline','Strike','-','Subscript', 'Superscript'], ['-', 'NumberedList', 'BulletedList', 'Outdent', 'Indent', 'Blockquote', '-', 'Link', 'Unlink'],['Undo', 'Redo', '-', 'SpellChecker']],
+				toolbar: ".json_encode(array_values($o_config->getAssoc('wysiwyg_editor_toolbar'))).",
 				width: '{$vs_width}',
 				height: '{$vs_height}',
-				toolbarLocation: 'top'
+				toolbarLocation: 'top',
+				enterMode: CKEDITOR.ENTER_BR
 			}
 		);
  	});									

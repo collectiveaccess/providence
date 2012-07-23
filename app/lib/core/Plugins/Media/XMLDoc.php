@@ -329,24 +329,8 @@ class WLPlugMediaXMLDoc Extends WLPlug Implements IWLPlugMedia {
 				return false;
 			}
 		} else {
-			
 			# use default media icons
-			if (file_exists($this->opo_config->get("default_media_icons"))) {
-				$o_icon_info = Configuration::load($this->opo_config->get("default_media_icons"));
-				if ($va_icon_info = $o_icon_info->getAssoc('text/xml')) {
-					$vs_icon_path = $o_icon_info->get("icon_folder_path");
-					if (!copy($vs_icon_path."/".trim($va_icon_info[$this->get("version")]),$ps_filepath.'.'.$vs_ext)) {
-						$this->postError(1610, _t("Can't copy icon file from %1/%2 to %3", $vs_icon_path, trim($va_icon_info[$this->get("version")]), $ps_filepath.'.'.$vs_ext), "WLPlugMediaXMLDoc->write()");
-						return false;
-					}
-				} else {
-					$this->postError(1610, _t("No icon available for this media type (system misconfiguration)"), "WLPlugMediaXMLDoc->write()");
-					return false;
-				}
-			} else {
-				$this->postError(1610, _t("No icons available (system misconfiguration)"), "WLPlugMediaXMLDoc->write()");
-				return false;
-			}
+			return __CA_MEDIA_DOCUMENT_DEFAULT_ICON__;
 		}
 		
 		

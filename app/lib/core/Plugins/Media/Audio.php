@@ -605,32 +605,7 @@ class WLPlugMediaAudio Extends WLPlug Implements IWLPlugMedia {
 				}
 			} else {
 				# use default media icons
-				if (file_exists($o_config->get("default_media_icons"))) {
-					$o_icon_info = Configuration::load($o_config->get("default_media_icons"));
-					if ($va_icon_info = $o_icon_info->getAssoc($this->handle["mime_type"])) {
-						$vs_icon_path = $o_icon_info->get("icon_folder_path");
-						
-						$vs_version = $this->get("version");
-						if (!$va_icon_info[$vs_version]) { $vs_version = 'small'; }
-						if (!copy($vs_icon_path."/".trim($va_icon_info[$vs_version]),$filepath.".".$ext)) {
-							$this->postError(1610, _t("Can't copy icon file for [%1] from %2 to %3", $vs_version, $vs_icon_path."/".trim($va_icon_info[$this->get("version")]), $filepath.".".$ext), "WLPlugAudio->write()");
-							return false;
-						}
-
-						// set
-						$va_old_properties = $this->properties;
-						$this->properties = array();
-						$this->properties["width"] = $va_old_properties["version_width"];
-						$this->properties["height"] = $va_old_properties["version_height"];
-						$this->properties["quality"] = $va_old_properties["quality"];
-					} else {
-						$this->postError(1610, _t("No icon available for media type '%1' (system misconfiguration)", $this->handle["mime_type"]), "WLPlugAudio->write()");
-						return false;
-					}
-				} else {
-					$this->postError(1610, _t("No icons available (system misconfiguration)"), "WLPlugAudio->write()");
-					return false;
-				}
+				return __CA_MEDIA_AUDIO_DEFAULT_ICON__;
 			}
 		}
 
@@ -766,6 +741,7 @@ class WLPlugMediaAudio Extends WLPlug Implements IWLPlugMedia {
 
 				switch($pa_options["player"]) {
 					case 'small':
+						JavascriptLoadManager::register("swfobject");
 						ob_start();
 						$vn_width = ($pa_properties["viewer_width"] > 0) ? $pa_properties["viewer_width"] : 165;
 						$vn_height = ($pa_properties["viewer_height"] > 0) ? $pa_properties["viewer_height"] : 38;
@@ -785,7 +761,8 @@ class WLPlugMediaAudio Extends WLPlug Implements IWLPlugMedia {
 					case 'text':
 						return "<a href='$ps_url'>".(($pa_options["text_only"]) ? $pa_options["text_only"] : "Listen to MP3")."</a>";
 						break;
-					default:
+					case 'jplayer':
+						JavascriptLoadManager::register("jplayer");
 						$vn_width = ($pa_properties["viewer_width"] > 0) ? $pa_properties["viewer_width"] : 400;
 						$vn_height = ($pa_properties["viewer_height"] > 0) ? $pa_properties["viewer_height"] : 95;
 						ob_start();
@@ -834,6 +811,24 @@ class WLPlugMediaAudio Extends WLPlug Implements IWLPlugMedia {
 						});
 					});
 				</script>
+<?php
+						return ob_get_clean();
+						break;
+					default:
+						JavascriptLoadManager::register("mediaelement");
+						
+						$vn_width = ($pa_properties["viewer_width"] > 0) ? $pa_properties["viewer_width"] : 400;
+						$vn_height = ($pa_properties["viewer_height"] > 0) ? $pa_properties["viewer_height"] : 95;
+						ob_start();
+?>
+					<div class="caAudioPlayer">
+						<audio id="<?php print $vs_id; ?>" src="<?php print $ps_url; ?>" type="audio/mp3" controls="controls"></audio>
+					</div>	
+					<script type="text/javascript">
+						jQuery(document).ready(function() {
+							jQuery('#<?php print $vs_id; ?>').mediaelementplayer({showTimecodeFrameCount: true, framesPerSecond: 100, audioWidth: <?php print (int)$vn_width; ?>, audioHeight: <?php print (int)$vn_height; ?>  });
+						});
+					</script>
 <?php
 						return ob_get_clean();
 						break;

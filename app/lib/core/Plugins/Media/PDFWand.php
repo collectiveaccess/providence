@@ -421,8 +421,15 @@ class WLPlugMediaPDFWand Extends WLPlug implements IWLPlugMedia {
 		return true;
 	}
 	# ----------------------------------------------------------
-	public function write($ps_filepath, $ps_mimetype) {
+	/**
+	 * @param array $pa_options Options include:
+	 *		dontUseDefaultIcons = If set to true, write will fail rather than use default icons when preview can't be generated. Default is false – to use default icons.
+	 *
+	 */
+	public function write($ps_filepath, $ps_mimetype, $pa_options=null) {
 		if (!$this->handle) { return false; }
+		
+		$vb_dont_allow_default_icons = (isset($pa_options['dontUseDefaultIcons']) && $pa_options['dontUseDefaultIcons']) ? true : false;
 		
 		# is mimetype valid?
 		if (!($vs_ext = $this->info["EXPORT"][$ps_mimetype])) {
@@ -537,28 +544,7 @@ class WLPlugMediaPDFWand Extends WLPlug implements IWLPlugMedia {
 			}
 			
 			if ($vb_use_default_icon) {
-				# use default media icons
-				if (file_exists($this->opo_config->get("default_media_icons"))) {
-					$o_icon_info = Configuration::load($this->opo_config->get("default_media_icons"));
-					if ($va_icon_info = $o_icon_info->getAssoc('application/pdf')) {
-						$vs_icon_path = $o_icon_info->get("icon_folder_path");
-						if ($vs_icon_filename = trim($va_icon_info[$this->get("version")])) {
-							if (!copy($vs_icon_path."/".$vs_icon_filename,$ps_filepath.'.'.$vs_ext)) {
-								$this->postError(1610, _t("Can't copy icon file from %1 to %2", $vs_icon_path."/".trim($va_icon_info[$this->get("version")]), $ps_filepath.'.'.$vs_ext), "WLPlugPDFWand->write()");
-								return false;
-							}
-						} else {
-							$this->postError(1610, _t("Icon for version %1 available for this media type (system misconfiguration)", $this->get("version")), "WLPlugPDFWand->write()");
-							return false;
-						}
-					} else {
-						$this->postError(1610, _t("No icons available for this media type (system misconfiguration)"), "WLPlugPDFWand->write()");
-						return false;
-					}
-				} else {
-					$this->postError(1610, _t("No icons available (system misconfiguration)"), "WLPlugPDFWand->write()");
-					return false;
-				}
+				return $vb_dont_allow_default_icons ? null : __CA_MEDIA_DOCUMENT_DEFAULT_ICON__;
 			}
 		}
 		
@@ -626,7 +612,7 @@ class WLPlugMediaPDFWand Extends WLPlug implements IWLPlugMedia {
 				$vn_res = 72;
 			}
 			$this->set('resolution', $vn_res);
-			if ($vs_filename = $this->write($vs_output_file_prefix.sprintf("%05d", $vn_i), 'image/jpeg')) {
+			if ($vs_filename = $this->write($vs_output_file_prefix.sprintf("%05d", $vn_i), 'image/jpeg', array('dontUseDefaultIcons' => true))) {
 				$va_files[$vn_i] = $vs_filename;
 			}
 		}
