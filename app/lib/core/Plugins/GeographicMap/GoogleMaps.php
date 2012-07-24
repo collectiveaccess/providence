@@ -96,7 +96,39 @@ class WLPlugGeographicMapGoogleMaps Extends BaseGeographicMapPlugIn Implements I
 		}
 		if (!$vs_id = trim($this->get('id'))) { $vs_id = 'map'; }
 		
-		switch($ps_format) {
+		switch(strtoupper($ps_format)) {
+			# ---------------------------------
+			case 'JPEG':
+			case 'PNG':
+			case 'GIF':
+				$va_markers = array();
+				$va_paths = array();
+				$va_center = null;
+				foreach($va_map_items as $o_map_item) {
+					$va_coords = $o_map_item->getCoordinates();
+					if (sizeof($va_coords) > 1) {
+						// is path
+						$va_path = array();
+						foreach($va_coords as $va_coord) {
+							$va_path[] = $va_coord['latitude'].','.$va_coord['longitude'];
+						}
+						$va_paths[] = "paths=".urlencode("color:red|weight:5|".join("|", $va_path));
+						if (!$va_center) { $va_center = $va_coord; }
+					} else {
+						// is point
+						$va_coord = array_shift($va_coords);
+						$va_markers[] = "markers=".urlencode("color:red|label:".$o_map_item->getLabel()."|".$va_coord['latitude'].','.$va_coord['longitude']);
+						
+						if (!$va_center) { $va_center = $va_coord; }
+					}
+					
+				}
+				
+				$vs_format = strtolower($ps_format);
+				if ($vs_format == 'jpeg') { $vs_format = 'jpg'; }
+				return "<img src='http://maps.googleapis.com/maps/api/staticmap?format={$vs_format}&maptype=".strtolower($vs_type)."&zoom={$vn_zoom_level}&sensor=false&size={$vn_width}x{$vn_height}&".join("&", array_merge($va_markers, $va_paths))."'/>";
+			
+				break;
 			# ---------------------------------
 			case 'HTML':
 			default:

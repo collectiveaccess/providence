@@ -1265,7 +1265,7 @@ class ca_object_representations extends BundlableLabelableBaseModelWithAttribute
 			$o_view->setVar('version_type', $t_media->getMimetypeTypename($this->getMediaInfo('media', 'original', 'MIMETYPE')));
 		
 			if ($t_object->getPrimaryKey()) { 
-				$o_view->setVar('reps', $va_reps = $t_object->getRepresentations(array('icon')));
+				$o_view->setVar('reps', $va_reps = $t_object->getRepresentations(array('icon'), null, array("return_with_access" => $va_access_values)));
 				
 				$vn_next_rep = $vn_prev_rep = null;
 				
