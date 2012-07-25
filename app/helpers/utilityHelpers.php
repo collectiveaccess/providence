@@ -462,19 +462,27 @@ function caFileIsIncludable($ps_file) {
 	}
 	# ----------------------------------------
 	function caSerializeForDatabase($ps_data, $pb_compress=false) {
-		if ($pb_compress && function_exists('gzcompress')) {
-			return gzcompress(serialize($ps_data));
-		} else {
-			return base64_encode(serialize($ps_data));
-		}
+		global $g_db_driver;
+		$vs_data = (($pb_compress && function_exists(gzcompress)) ? gzcompress(serialize($ps_data)) :
+																	base64_encode(serialize($ps_data)));
+		$vs_sf = "Db_{$g_db_driver}::serializeForDatabase";
+		return is_callable($vs_sf) ? call_user_func($vs_sf, $vs_data) : $vs_data;
 	}
 	# ----------------------------------------
 	function caUnserializeForDatabase($ps_data) {
+		global $g_db_driver;
 		if (is_array($ps_data)) { return $ps_data; }
-		if (function_exists('gzuncompress') && ($ps_uncompressed_data = @gzuncompress($ps_data))) {
-			return unserialize($ps_uncompressed_data);
+		$vs_usf = "Db_{$g_db_driver}::unserializeForDatabase";
+		$vs_data = is_callable($vs_usf) ? call_user_func($vs_usf, $ps_data) : 
+												$ps_data;
+
+		if(function_exists(gzuncompress) && ($vs_unc = @gzuncompress($vs_data))){
+			return unserialize($vs_unc);
 		}
-		return unserialize(base64_decode($ps_data));
+		else{
+			return unserialize(base64_decode($vs_data));
+		}
+	
 	}
 	# ----------------------------------------
 	/**
@@ -1045,8 +1053,26 @@ function caFileIsIncludable($ps_file) {
 	  */
 	function caReturnDefaultIfBlank($ps_text) {
 		global $g_default_display_value;
-		
+
 		return trim($ps_text) ? $ps_text : $g_default_display_value;
+	}
+	# ---------------------------------------
+	/**
+	  * Recursively cast ints (and other types) in array tree to strings
+	  *
+	  * @param mixed $pm_val the current structure to process
+	  * @return mixed The processed data
+	  */
+	function caIntsInArrayToStrings($pm_val){
+		if(is_array($pm_val)){
+			foreach($pm_val as $key => $val){
+				$pm_val[$key] = caIntsInArrayToStrings($val);
+			}
+			return $pm_val;
+		}
+		else{
+			return (string)$pm_val;
+		}
 	}
 	# ---------------------------------------
 	/**
