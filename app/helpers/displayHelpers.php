@@ -385,6 +385,8 @@ require_once(__CA_LIB_DIR__.'/core/Parsers/TimeExpressionParser.php');
 			switch($vs_key) {
 				case 'MakerNote':	// EXIF tags to skip output of
 				case 'ImageResourceInformation':
+				case 'ImageSourceData':
+				case 'ICC_Profile':
 					continue(2);
 					break;
 			}
