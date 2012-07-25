@@ -160,12 +160,13 @@
 	</textarea>
 	
 	<div class="bundleContainer">
+		<div class='button labelInfo caAddItemButton'><a href='#'><?php print caNavIcon($this->request, __CA_NAV_BUTTON_ADD__); ?> <?php print _t("Add item to loan"); ?></a></div>
+		<div style="clear: both; width: 1px; height: 1px;"><!-- empty --></div>
 		<div class="caItemList">
 		
 		</div>
 		<input type="hidden" name="<?php print $vs_id_prefix; ?>BundleList" id="<?php print $vs_id_prefix; ?>BundleList" value=""/>
 		<div style="clear: both; width: 1px; height: 1px;"><!-- empty --></div>
-		<div class='button labelInfo caAddItemButton'><a href='#'><?php print caNavIcon($this->request, __CA_NAV_BUTTON_ADD__); ?> <?php print _t("Add item to loan"); ?></a></div>
 	</div>
 </div>
 <?php
@@ -198,6 +199,7 @@
 			showEmptyFormsOnLoad: 1,
 			autocompleteUrl: '<?php print caNavUrl($this->request, 'lookup', 'Object', 'Get', $va_lookup_params); ?>',
 			isSortable: true,
+			addMode: 'prepend',
 			listSortOrderID: '<?php print $vs_id_prefix; ?>BundleList',
 			listSortItems: 'div.sortableOrderItem',
 			onItemCreate: function() {

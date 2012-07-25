@@ -408,8 +408,10 @@
  			$va_failed_insert_list = array();
  			
  			// Look for newly added items
+ 			$va_seen_items = array();
  			foreach($_REQUEST as $vs_k => $vs_v) {
  				if(preg_match("!^item_list_idnew_([\d]+)$!", $vs_k, $va_matches)) {
+ 					$va_seen_items[$vs_k] = true;
  					if ($vn_object_id = (int)$vs_v) {
  						// add item to order
  						$va_values = array();
@@ -455,9 +457,11 @@
  			// Look for edited items
  			foreach($_REQUEST as $vs_k => $vs_v) {
  				if(preg_match("!^item_list_id([\d]+)$!", $vs_k, $va_matches)) {
+ 					if (isset($va_seen_items[$vs_k]) && $va_seen_items[$vs_k]) { continue; }
  					if ($vn_item_id = (int)$va_matches[1]) {
  						$va_values = array();
  						foreach($_REQUEST as $vs_f => $vs_value) {
+ 							if (preg_match("!new_[\d]+$!", $vs_f)) { continue; }
  							if(preg_match("!^item_list_([A-Za-z0-9_]+)_".$vn_item_id."$!", $vs_f, $va_matches2)) {
  								$va_values[$va_matches2[1]] = $vs_value;
  							}
