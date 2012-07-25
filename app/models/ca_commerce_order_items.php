@@ -62,7 +62,7 @@ BaseModel::$s_ca_models_definitions['ca_commerce_order_items'] = array(
 		'service' => array(
 				'FIELD_TYPE' => FT_TEXT, 'DISPLAY_TYPE' => DT_SELECT,
 				'DISPLAY_WIDTH' => 40, 'DISPLAY_HEIGHT' => 1,
-				'IS_NULL' => false, 
+				'IS_NULL' => true, 
 				'DEFAULT' => '',
 				'LABEL' => _t('Service provided'), 'DESCRIPTION' => _t('Indicates the type of service that was provided.'),
 				'BOUNDS_CHOICE_LIST' => array(
@@ -76,7 +76,7 @@ BaseModel::$s_ca_models_definitions['ca_commerce_order_items'] = array(
 		'fullfillment_method' => array(
 				'FIELD_TYPE' => FT_TEXT, 'DISPLAY_TYPE' => DT_SELECT,
 				'DISPLAY_WIDTH' => 40, 'DISPLAY_HEIGHT' => 1,
-				'IS_NULL' => false, 
+				'IS_NULL' => true, 
 				'DEFAULT' => 'NONE',
 				'LABEL' => _t('Fulfillment method'), 'DESCRIPTION' => _t('Indicates manner in which fulfillment occurred.'),
 				'BOUNDS_CHOICE_LIST' => array(
@@ -90,6 +90,7 @@ BaseModel::$s_ca_models_definitions['ca_commerce_order_items'] = array(
 				'DISPLAY_WIDTH' => 10, 'DISPLAY_HEIGHT' => 1,
 				'IS_NULL' => false, 
 				'DEFAULT' => '',
+				'BOUNDS_VALUE' => array(0, 1000000),
 				'LABEL' => _t('Fee'), 'DESCRIPTION' => _t('Fee charged for item.'),
 		),
 		'tax' => array(
@@ -97,6 +98,7 @@ BaseModel::$s_ca_models_definitions['ca_commerce_order_items'] = array(
 				'DISPLAY_WIDTH' => 10, 'DISPLAY_HEIGHT' => 1,
 				'IS_NULL' => false, 
 				'DEFAULT' => '',
+				'BOUNDS_VALUE' => array(0, 1000000),
 				'LABEL' => _t('Tax'), 'DESCRIPTION' => _t('Tax charged for item.'),
 		),
 		'notes' => array(
@@ -120,6 +122,7 @@ BaseModel::$s_ca_models_definitions['ca_commerce_order_items'] = array(
 				'DISPLAY_WIDTH' => 10, 'DISPLAY_HEIGHT' => 1,
 				'IS_NULL' => false, 
 				'DEFAULT' => '',
+				'BOUNDS_VALUE' => array(0, 1000000),
 				'LABEL' => _t('Shipping cost'), 'DESCRIPTION' => _t('Cost of shipping charged for the item.'),
 		),
 		'handling_cost' => array(
@@ -127,6 +130,7 @@ BaseModel::$s_ca_models_definitions['ca_commerce_order_items'] = array(
 				'DISPLAY_WIDTH' => 10, 'DISPLAY_HEIGHT' => 1,
 				'IS_NULL' => false, 
 				'DEFAULT' => '',
+				'BOUNDS_VALUE' => array(0, 1000000),
 				'LABEL' => _t('Handling cost'), 'DESCRIPTION' => _t('Cost of handling charged for the item.'),
 		),
 		'shipping_notes' => array(
@@ -156,6 +160,7 @@ BaseModel::$s_ca_models_definitions['ca_commerce_order_items'] = array(
 				'DISPLAY_WIDTH' => 10, 'DISPLAY_HEIGHT' => 1,
 				'IS_NULL' => true, 
 				'DEFAULT' => '',
+				'BOUNDS_VALUE' => array(0, 1000000),
 				'LABEL' => _t('Refund amount'), 'DESCRIPTION' => _t('Amount refunded to client for returned item.'),
 		),
 		'refund_notes' => array(
@@ -165,6 +170,27 @@ BaseModel::$s_ca_models_definitions['ca_commerce_order_items'] = array(
 				'DEFAULT' => '',
 				'LABEL' => _t('Refund notes'), 'DESCRIPTION' => _t('Notes pertaining to the refund for this item.'),
 				'BOUNDS_LENGTH' => array(0,65535)
+		),
+		'loan_checkout_date' => array(
+				'FIELD_TYPE' => FT_DATETIME, 'DISPLAY_TYPE' => DT_FIELD, 
+				'DISPLAY_WIDTH' => 20, 'DISPLAY_HEIGHT' => 1,
+				'IS_NULL' => true, 
+				'DEFAULT' => _t(''),
+				'LABEL' => _t('Date received'), 'DESCRIPTION' => _t('Date/time the item was checked out.'),
+		),
+		'loan_due_date' => array(
+				'FIELD_TYPE' => FT_DATETIME, 'DISPLAY_TYPE' => DT_FIELD, 
+				'DISPLAY_WIDTH' => 20, 'DISPLAY_HEIGHT' => 1,
+				'IS_NULL' => true, 
+				'DEFAULT' => '',
+				'LABEL' => _t('Date due'), 'DESCRIPTION' => _t('Date/time the item is due to be returned.'),
+		),
+		'loan_return_date' => array(
+				'FIELD_TYPE' => FT_DATETIME, 'DISPLAY_TYPE' => DT_FIELD, 
+				'DISPLAY_WIDTH' => 15, 'DISPLAY_HEIGHT' => 1,
+				'IS_NULL' => true, 
+				'DEFAULT' => '',
+				'LABEL' => _t('Date returned'), 'DESCRIPTION' => _t('Date/time the item was returned.'),
 		),
 		'rank' => array(
 				'FIELD_TYPE' => FT_NUMBER, 'DISPLAY_TYPE' => DT_FIELD, 
@@ -289,6 +315,122 @@ class ca_commerce_order_items extends BaseModel {
 		}
 		
 		parent::__construct($pn_id);
+	}
+	# ----------------------------------------
+	public function insert($pa_options=null) {
+		if (!$this->_preSaveActions()) { return false; }
+	
+		$vn_rc = parent::insert($pa_options);
+		$this->_postSaveActions();
+		return $vn_rc;
+	}
+	# ----------------------------------------
+	public function update($pa_options=null) {
+		if (!$this->_preSaveActions()) { return false; }
+		
+		$vn_rc = parent::update($pa_options);
+		$this->_postSaveActions();
+		return $vn_rc;
+	}
+	# ----------------------------------------
+	/**
+	 *
+	 */
+	private function _preSaveActions() {
+		$t_order = $this->getOrder();
+		$vn_checkout_date = $this->get('loan_checkout_date', array('GET_DIRECT_DATE' => true));
+		$vn_return_date = $this->get('loan_return_date', array('GET_DIRECT_DATE' => true));
+		$vn_due_date = $this->get('loan_due_date', array('GET_DIRECT_DATE' => true));
+		
+		//
+		// Is object available for checkout?
+		//
+		$o_db = $this->getDb();
+		
+		$qr_res = $o_db->query("
+			SELECT i.item_id, i.order_id
+			FROM ca_commerce_order_items i
+			INNER JOIN ca_commerce_orders AS o ON o.order_id = i.order_id
+			WHERE
+				i.object_id = ? AND i.item_id <> ? AND o.order_type = 'L' AND 
+				(
+					(i.loan_checkout_date <= ? AND i.loan_return_date IS NULL)
+				)
+		", array((int)$this->get('object_id'), (int)$this->getPrimaryKey(), time()));
+		
+		if ($qr_res->nextRow()) {
+			$this->postError(1101, _t('Item is already on loan'), 'ca_commerce_orders->_preSaveActions()');		
+		}
+		
+		//
+		// Check coherency of dates
+		//
+		if (		// checkout date should be prior to return date
+			($t_order->get('order_type') == 'L')
+			&&
+			($vn_return_date > 0)
+			&&
+			$this->get('loan_checkout_date', array('GET_DIRECT_DATE' => true)) > $vn_return_date
+		) {
+			$this->postError(1101, _t('Checkout date must be before return date'), 'ca_commerce_orders->_preSaveActions()');		
+		}
+		
+		if (		// checkout date should be prior to due date
+			($t_order->get('order_type') == 'L')
+			&&
+			($vn_due_date > 0)
+			&&
+			$this->get('loan_checkout_date', array('GET_DIRECT_DATE' => true)) > $vn_due_date
+		) {
+			$this->postError(1101, _t('Checkout date must be before due date'), 'ca_commerce_orders->_preSaveActions()');		
+		}
+		
+		if (		// checkout date should not be in the future
+			($t_order->get('order_type') == 'L')
+			&&
+			($vn_checkout_date > time())
+		) {
+			$this->postError(1101, _t('Checkout date must not be in the future'), 'ca_commerce_orders->_preSaveActions()');		
+		}
+		
+		if (		// return date should not be in the future
+			($t_order->get('order_type') == 'L')
+			&&
+			($vn_return_date > time())
+		) {
+			$this->postError(1101, _t('Return date must not be in the future'), 'ca_commerce_orders->_preSaveActions()');		
+		}
+		
+		if ($this->numErrors() > 0) {
+			return false;
+		}
+		
+		return true;
+	}
+	# ----------------------------------------
+	/**
+	 *
+	 */
+	private function _postSaveActions() {
+		$t_order = $this->getOrder();
+		
+		
+		if (($t_order->get('order_type') == 'L') && ($t_order->get('order_status') != 'COMPLETED')) {
+			if (!sizeof($t_order->unreturnedLoanItems())) {
+				$t_order->setMode(ACCESS_WRITE);
+				$t_order->set('order_status', 'COMPLETED');
+				$t_order->update();
+				if ($t_order->numErrors() > 0) {
+					$this->postError(1101, _t('Could not update status of order to COMPLETED: %1', join("; ", $t_order->getErrors())), 'ca_commerce_orders->_postSaveActions()');
+				}
+			}
+		}
+		
+		if ($this->numErrors() > 0) {
+			return false;
+		}
+		
+		return true;
 	}
 	# ----------------------------------------
 	private function _formatCostForDisplay($pa_service_info) {
@@ -442,6 +584,7 @@ class ca_commerce_order_items extends BaseModel {
 	 * @param HTTPRequest $po_request The current request
 	 * @param array $pa_options Array of options. Supported options are 
 	 *			noCache = If set to true then label cache is bypassed; default is true
+	 *			type = "O" = order; "L" = loan; default is "O"
 	 *
 	 * @return string Rendered HTML bundle
 	 */
@@ -453,7 +596,7 @@ class ca_commerce_order_items extends BaseModel {
 		if(!is_array($pa_options)) { $pa_options = array(); }
 		
 		$o_view->setVar('options', $pa_options);
-		
+		$o_view->setVar('fee_list', (isset($pa_options['type']) && ($pa_options['type'] == 'L')) ? $this->opo_client_services_config->getAssoc('additional_loan_fees') : $this->opo_client_services_config->getAssoc('additional_order_item_fees'));
 		$o_view->setVar('t_subject', $this);
 		
 		
@@ -524,6 +667,26 @@ class ca_commerce_order_items extends BaseModel {
 		}
 		
 		return null;
+	}
+	# ------------------------------------------------------
+	/**
+	 * Returns order instance for currently loaded item
+	 *
+	 * @return ca_commerce_orders instance or null if no item is loaded
+	 */
+	public function getOrder() {
+		if (!($vn_order_id = $this->get('order_id'))) { return null; }
+		return new ca_commerce_orders($vn_order_id);
+	}
+	# ------------------------------------------------------
+	/**
+	 * Returns ca_objects instance for currently loaded item
+	 *
+	 * @return ca_objects instance or null if no item is loaded
+	 */
+	public function getItemObject() {
+		if (!($vn_object_id = $this->get('object_id'))) { return null; }
+		return new ca_objects($vn_object_id);
 	}
 	# ----------------------------------------
 }

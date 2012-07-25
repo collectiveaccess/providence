@@ -1315,12 +1315,22 @@ LEFT JOIN ca_object_representations AS cor ON coxor.representation_id = cor.repr
 		if (!$this->haveAccessToSet($vn_user_id, __CA_SET_READ_ACCESS__)) { return 0; }
 		
 		$o_db = $this->getDb();
-	
+		$o_dm = Datamodel::load();
+		if (!($t_rel_table = $o_dm->getInstanceByTableNum($this->get('table_num'), true))) { return null; }
+		$vs_rel_table_name = $t_rel_table->tableName();
+		$vs_rel_table_pk = $t_rel_table->primaryKey();
+		
+		$vs_deleted_sql = '';
+		if ($t_rel_table->hasField('deleted')) {
+			$vs_deleted_sql = ' AND deleted = 0';
+		}
+		
 		$qr_res = $o_db->query("
 			SELECT count(*) c
 			FROM ca_set_items
+			INNER JOIN {$vs_rel_table_name} ON {$vs_rel_table_name}.{$vs_rel_table_pk} = ca_set_items.row_id
 			WHERE
-				set_id = ?
+				ca_set_items.set_id = ? {$vs_deleted_sql}
 		", (int)$vn_set_id);
 		
 		if ($qr_res->nextRow()) {

@@ -295,8 +295,8 @@
 	 */
 	function caHTMLImage($ps_url, $pa_options=null) {
 		if (!is_array($pa_options)) { $pa_options = array(); }
-		if (!isset($pa_options["width"])) $pa_options["width"] = 100;
-		if (!isset($pa_options["height"])) $pa_options["height"] = 100;
+		//if (!isset($pa_options["width"])) $pa_options["width"] = 100;
+		//if (!isset($pa_options["height"])) $pa_options["height"] = 100;
 		
 		$va_attributes = array('src' => $ps_url);
 		foreach(array('name', 'id',

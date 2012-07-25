@@ -38,6 +38,10 @@ require_once(__CA_LIB_DIR__."/core/Db/DbDriverBase.php");
 require_once(__CA_LIB_DIR__."/core/Db/DbResult.php");
 require_once(__CA_LIB_DIR__."/core/Db/DbStatement.php");
 
+global $g_db_driver;
+
+$g_db_driver = "mysql";
+
 /**
  * Cache for prepared statements
  */
@@ -345,9 +349,12 @@ class Db_mysql extends DbDriverBase {
 			}
 
 			if ($va_field["null"]) {
-				$vs_field .= "null";
+				$vs_field .= "null ";
 			} else {
-				$vs_field .= "not null";
+				$vs_field .= "not null ";
+			}
+			if ($va_field["default"]) {
+				$vs_field .= "default {$va_field["defaultval"]}";
 			}
 
 			$va_fields[] = $vs_field;
@@ -537,6 +544,27 @@ class Db_mysql extends DbDriverBase {
 			return $va_tables;
 		} else {
 			$po_caller->postError(280, mysql_error($this->opr_db), "Db->mysql->getTables()");
+			return false;
+		}
+	}
+
+	/**
+	 * @see Db::getFieldNamesFromTable()
+	 * @param mixed $po_caller object representation of the calling class, usually Db
+	 * @param string $ps_table string representation of the table
+	 * @return array array containing the field names of the table
+	 */
+	function getFieldNamesFromTable($po_caller, $ps_table)
+	{
+		if ($r_show = mysql_query("SHOW COLUMNS FROM ".$ps_table, $this->opr_db)) {
+			$va_columns = array();
+			while($va_row = mysql_fetch_row($r_show)) {
+				$va_columns[] = $va_row[0];
+			}
+
+			return $va_columns;
+		} else {
+			$po_caller->postError(280, mysql_error($this->opr_db), "Db->mysql->getFieldNamesFromTable()");
 			return false;
 		}
 	}

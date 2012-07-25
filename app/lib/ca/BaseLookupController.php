@@ -154,7 +154,7 @@
 				$qr_res->setOption('prefetch', $pn_limit);
 				$qr_res->setOption('dontPrefetchAttributes', true);
 				
-				$va_items = caProcessRelationshipLookupLabel($qr_res, $this->opo_item_instance, array('exclude' => $va_excludes));
+				$va_items = caProcessRelationshipLookupLabel($qr_res, $this->opo_item_instance, array('exclude' => $va_excludes, 'limit' => $pn_limit, 'inlineCreateQuery' => $ps_query, 'inlineCreateMessage' => _t('<em>%1</em> does not exist. Create?', $ps_query)));
 			}
 			if (!is_array($va_items)) { $va_items = array(); }
 			$this->view->setVar(str_replace(' ', '_', $this->ops_name_singular).'_list', $va_items);
@@ -253,7 +253,7 @@
  			if ($t_item->getPrimaryKey()) { 
  				$va_ancestors = array_reverse($t_item->getHierarchyAncestors(null, array('includeSelf' => true, 'idsOnly' => true)));
  			}
- 			$this->view->setVar('ancestors', $va_ancestors);
+ 			$this->view->setVar('ancestors', caIntsInArrayToStrings($va_ancestors));
  			return $this->render(str_replace(' ', '_', $this->ops_name_singular).'_hierarchy_ancestors_json.php');
  		}
  		# -------------------------------------------------------

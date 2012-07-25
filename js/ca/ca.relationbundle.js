@@ -81,15 +81,20 @@ var caUI = caUI || {};
 		
 		options.onAddItem = function(id, options, isNew) {
 			if (!isNew) { return; }
-			jQuery('#' + options.itemID + id + ' #' + options.fieldNamePrefix + 'autocomplete' + id).autocomplete(options.autocompleteUrl, 
-				{ minChars: ((parseInt(options.minChars) > 0) ? options.minChars : 3), matchSubset: 1, matchContains: 1, delay: 800, scroll: true, max: 100, extraParams: options.extraParams,
+			
+			var autocompleter_id = options.itemID + id + ' #' + options.fieldNamePrefix + 'autocomplete' + id;
+			jQuery('#' + autocompleter_id).autocomplete(options.autocompleteUrl, 
+				jQuery.extend({ minChars: ((parseInt(options.minChars) > 0) ? options.minChars : 3), matchSubset: 1, matchContains: 1, delay: 800, scroll: true, max: 100, extraParams: options.extraParams,
 					formatResult: function(data, value) {
 						return jQuery.trim(value.replace(/<\/?[^>]+>/gi, ''));
 					}
-				}
+				}, options.autocompleteOptions)
 			);
 			
-			jQuery('#' + options.itemID + id + ' #' + options.fieldNamePrefix + 'autocomplete' + id).result(function(event, data, formatted) {
+			jQuery('#' + autocompleter_id).result(function(event, data, formatted) {
+				if (options.autocompleteOptions && options.autocompleteOptions.onSelect) {
+					if (!options.autocompleteOptions.onSelect(autocompleter_id, data)) { return false; }
+				}
 				options.select(id, data, formatted);
 			});
 		}

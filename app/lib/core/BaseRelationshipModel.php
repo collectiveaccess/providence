@@ -250,6 +250,7 @@
 				WHERE
 					(crt.table_num = ?) AND (crt.parent_id IS NOT NULL)
 					{$vs_restrict_to_relationship_type_sql}
+				ORDER BY label_id
 			", $this->tableNum());			
 				
 			// Support hierarchical subtypes - if the subtype restriction is a type with parents then include those as well

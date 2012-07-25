@@ -60,6 +60,17 @@ BaseModel::$s_ca_models_definitions['ca_commerce_communications'] = array(
 				'DEFAULT' => '',
 				'LABEL' => _t('Transaction'), 'DESCRIPTION' => _t('Indicates the transaction to which the communication belongs.')
 		),
+		'communication_type' => array(
+				'FIELD_TYPE' => FT_TEXT, 'DISPLAY_TYPE' => DT_SELECT,
+				'DISPLAY_WIDTH' => "120px", 'DISPLAY_HEIGHT' => 1,
+				'IS_NULL' => false, 
+				'DEFAULT' => 'O',
+				'LABEL' => _t('Communication type'), 'DESCRIPTION' => _t('Indicates whether communication relates is a library loan or sale.'),
+				'BOUNDS_CHOICE_LIST' => array(
+					_t('sales order') => 'O',							
+					_t('library loan') => 'L'
+				)
+		),
 		'from_user_id' => array(
 				'FIELD_TYPE' => FT_NUMBER, 'DISPLAY_TYPE' => DT_HIDDEN, 
 				'DISPLAY_WIDTH' => 40, 'DISPLAY_HEIGHT' => 1,
@@ -243,6 +254,7 @@ class ca_commerce_communications extends BaseModel {
 	 *		user_id = 
 	 *		created_on = 
 	 *		transaction_id = 
+	 *		type = 
 	 * @return array
 	 */
 	 public function getMessages($pn_user_id, $pa_options=null) {
@@ -270,6 +282,11 @@ class ca_commerce_communications extends BaseModel {
 				$va_sql_params[] = $va_dates['start'];
 				$va_sql_params[] = $va_dates['end'];
 	 		}
+	 	}
+	 	
+	 	if (isset($pa_options['type']) && in_array($pa_options['type'], array('O', 'L'))) {
+	 		$va_sql_wheres[] = "(comm.communication_type = ?)";
+	 		$va_sql_params[] = (string)$pa_options['type'];
 	 	}
 	 	
 	 	if (isset($pa_options['search']) && strlen($pa_options['search'])) {
@@ -317,18 +334,20 @@ class ca_commerce_communications extends BaseModel {
 	 # ----------------------------------------
 	/**
 	 * @param int $pn_transaction_id, 
+	 * @param string $ps_type = "O" for sales order, "L" for library loans
 	 * @param int $pn_source
 	 * @param string $ps_subject
 	 * @param string $ps_message
 	 * @param array $pa_options
 	 */
-	 static public function sendMessage($pn_transaction_id, $pn_source, $pn_user_id, $ps_subject, $ps_message, $pa_options=null) {
+	 static public function sendMessage($pn_transaction_id, $ps_type, $pn_source, $pn_user_id, $ps_subject, $ps_message, $pa_options=null) {
 	 	global $g_request;
 	 	
 	 	$t_comm = new ca_commerce_communications();
 	 	
 	 	$t_comm->setMode(ACCESS_WRITE);
 	 	$t_comm->set('transaction_id', $pn_transaction_id);
+	 	$t_comm->set('communications_type', $ps_type);
 	 	$t_comm->set('source', $pn_source);
 	 	$t_comm->set('subject', $ps_subject);
 	 	$t_comm->set('message', $ps_message);

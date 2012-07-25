@@ -385,6 +385,8 @@ require_once(__CA_LIB_DIR__.'/core/Parsers/TimeExpressionParser.php');
 			switch($vs_key) {
 				case 'MakerNote':	// EXIF tags to skip output of
 				case 'ImageResourceInformation':
+				case 'ImageSourceData':
+				case 'ICC_Profile':
 					continue(2);
 					break;
 			}
@@ -559,9 +561,9 @@ require_once(__CA_LIB_DIR__.'/core/Parsers/TimeExpressionParser.php');
 					switch($vs_table_name) {
 						case 'ca_commerce_orders':
 							if ($vs_org = $t_item->get('billing_organization')) {
-								$vs_label = _t('Order #%4 on %1 from %2 (%3)', caGetLocalizedDate($t_item->get('created_on', array('GET_DIRECT_DATE' => true)), array('dateFormat' => 'delimited', 'timeOmit' => true)), $t_item->get('billing_fname').' '.$t_item->get('billing_lname'), $vs_org, $t_item->getOrderNumber());
+								$vs_label = _t('%5 #%4 on %1 from %2 (%3)', caGetLocalizedDate($t_item->get('created_on', array('GET_DIRECT_DATE' => true)), array('dateFormat' => 'delimited', 'timeOmit' => true)), $t_item->get('billing_fname').' '.$t_item->get('billing_lname'), $vs_org, $t_item->getOrderNumber(), caUcFirstUTF8Safe($t_item->getProperty('NAME_SINGULAR')));
 							} else {
-								$vs_label = _t('Order #%3 on %1 from %2', caGetLocalizedDate($t_item->get('created_on', array('GET_DIRECT_DATE' => true)), array('dateFormat' => 'delimited', 'timeOmit' => true)),$t_item->get('billing_fname').' '.$t_item->get('billing_lname'), $t_item->getOrderNumber());
+								$vs_label = _t('%4 #%3 on %1 from %2', caGetLocalizedDate($t_item->get('created_on', array('GET_DIRECT_DATE' => true)), array('dateFormat' => 'delimited', 'timeOmit' => true)),$t_item->get('billing_fname').' '.$t_item->get('billing_lname'), $t_item->getOrderNumber(), caUcFirstUTF8Safe($t_item->getProperty('NAME_SINGULAR')));
 							}
 							break;
 						default:
@@ -962,11 +964,11 @@ require_once(__CA_LIB_DIR__.'/core/Parsers/TimeExpressionParser.php');
 				$vs_buf .= "</table>";
 				
 				
-				$vs_buf .= "<strong>"._t('Order status')."</strong>: ".$t_item->getChoiceListValue('order_status', $t_item->get('order_status'))."<br/>\n";
-				$vs_buf .= "<strong>"._t('Payment status')."</strong>: ".$t_item->getChoiceListValue('payment_status', $t_item->get('payment_status'))."<br/>\n";
+				$vs_buf .= "<strong>".$t_item->getFieldInfo('order_status', 'LABEL')."</strong>: ".$t_item->getChoiceListValue('order_status', $t_item->get('order_status'))."<br/>\n";
+				$vs_buf .= "<strong>".$t_item->getFieldInfo('payment_status', 'LABEL')."</strong>: ".$t_item->getChoiceListValue('payment_status', $t_item->get('payment_status'))."<br/>\n";
 				
 				if ($vs_shipping_date = $t_item->get('shipping_date', array('dateFormat' => 'delimited', 'timeOmit' => true))) {
-					$vs_buf .= "<strong>"._t('Ship date')."</strong>: ".$vs_shipping_date;
+					$vs_buf .= "<strong>".$t_item->getFieldInfo('shipping_date', 'LABEL')."</strong>: ".$vs_shipping_date;
 					
 					if ($vs_shipped_on_date = $t_item->get('shipped_on_date', array('dateFormat' => 'delimited'))) {
 						$vs_buf .= " ("._t('shipped %1', $vs_shipped_on_date).")";
@@ -977,7 +979,7 @@ require_once(__CA_LIB_DIR__.'/core/Parsers/TimeExpressionParser.php');
 					$vs_buf .= "<br/>\n";
 				}
 				if ($vn_shipping_method = $t_item->get('shipping_method')) {
-					$vs_buf .= "<strong>"._t('Ship method')."</strong>: ".$t_item->getChoiceListValue('shipping_method', $vn_shipping_method)."<br/>\n";
+					$vs_buf .= "<strong>".$t_item->getFieldInfo('shipping_method', 'LABEL')."</strong>: ".$t_item->getChoiceListValue('shipping_method', $vn_shipping_method)."<br/>\n";
 				}
 			}
 			
@@ -1216,33 +1218,11 @@ require_once(__CA_LIB_DIR__.'/core/Parsers/TimeExpressionParser.php');
 	 * @return string HTML implementing the inspector
 	 */
 	function caEditorACLEditor($po_view, $pt_instance, $pa_options=null) {
+		$vs_view_path = (isset($pa_options['viewPath']) && $pa_options['viewPath']) ? $pa_options['viewPath'] : $po_view->request->getViewsDirectoryPath();
+		$o_view = new View($po_view->request, "{$vs_view_path}/bundles/");
 		
-		$vb_can_edit	 	= $pt_instance->isSaveable($po_view->request);
-		$vb_can_delete		= $pt_instance->isDeletable($po_view->request);
-		
-		$vs_buf = '<div class="sectionBox">';
-
-		if ($vb_can_edit) {
-			$vs_buf .= $vs_control_box = caFormControlBox(
-				caFormSubmitButton($po_view->request, __CA_NAV_BUTTON_SAVE__, _t("Save"), 'caAccessControlList').' '.
-				caNavButton($po_view->request, __CA_NAV_BUTTON_CANCEL__, _t("Cancel"), $po_view->request->getModulePath(), $po_view->request->getController(), 'Access/'.$po_view->request->getActionExtra(), array($pt_instance->primaryKey() => $pt_instance->getPrimaryKey())),
-				'',
-				''
-			);
-		}
-		
-		$vs_buf .= caFormTag($po_view->request, 'SetAccess', 'caAccessControlList');
-		
-		$vs_buf .= "<h2>"._t('User access')."</h2>\n";
-		$vs_buf .= $pt_instance->getACLUserHTMLFormBundle($po_view->request, 'caAccessControlList');
-		$vs_buf .= "<h2>"._t('Group access')."</h2>\n";
-		$vs_buf .= $pt_instance->getACLGroupHTMLFormBundle($po_view->request, 'caAccessControlList');
-		$vs_buf .= "<h2>"._t('Everyone else')."</h2>\n";
-		$vs_buf .= $pt_instance->getACLWorldHTMLFormBundle($po_view->request, 'caAccessControlList');
-		$vs_buf .= caHTMLHiddenInput($pt_instance->primaryKey(), array('value' => $pt_instance->getPrimaryKey()));
-		$vs_buf .= '</form><div class="editorBottomPadding"><!-- empty --></div></div>';
-
-		return $vs_buf;
+		$o_view->setVar('t_instance', $pt_instance);
+		return $o_view->render('ca_acl_access.php');
 	}
 	# ------------------------------------------------------------------------------------------------
 	/**
@@ -1551,6 +1531,8 @@ require_once(__CA_LIB_DIR__.'/core/Parsers/TimeExpressionParser.php');
 	 * 		exclude = list of primary key values to omit from returned list
 	 *		config = 
 	 *		limit = maximum number of items to return; if omitted all items are returned
+	 *		inlineCreateMessage = 
+	 *		inlineCreateQuery = 
 	 * @return mixed 
 	 */
 global $ca_relationship_lookup_parse_cache;
@@ -1559,8 +1541,8 @@ $ca_relationship_lookup_parse_cache = array();
 		global $ca_relationship_lookup_parse_cache;
 		
 		$vb_is_hierarchical 			= $pt_rel->isHierarchical();
-		$vs_hier_parent_id_fld 		= $pt_rel->getProperty('HIERARCHY_PARENT_ID_FLD');
-		$vs_hier_fld 						= $pt_rel->getProperty('HIERARCHY_ID_FLD');
+		$vs_hier_parent_id_fld 			= $pt_rel->getProperty('HIERARCHY_PARENT_ID_FLD');
+		$vs_hier_fld 					= $pt_rel->getProperty('HIERARCHY_ID_FLD');
 		$vs_idno_fld 					= $pt_rel->getProperty('ID_NUMBERING_ID_FIELD');
 		$vs_idno_sort_fld 				= $pt_rel->getProperty('ID_NUMBERING_SORT_FIELD');
 		$vs_rel_pk 						= $pt_rel->primaryKey();
@@ -1573,6 +1555,9 @@ $ca_relationship_lookup_parse_cache = array();
 		}
 		
 		$pn_limit = (isset($pa_options['limit']) && ((int)$pa_options['limit'] > 0)) ? (int)$pa_options['limit'] : null;
+		$ps_inline_create_message = (isset($pa_options['inlineCreateMessage'])) ? (string)$pa_options['inlineCreateMessage'] : null;
+		$ps_inline_create_query = (isset($pa_options['inlineCreateQuery'])) ? (string)$pa_options['inlineCreateQuery'] : null;
+		
 		
 		$va_exclude = (isset($pa_options['exclude']) && is_array($pa_options['exclude'])) ? $pa_options['exclude'] : array();
 		
@@ -1629,76 +1614,84 @@ $ca_relationship_lookup_parse_cache = array();
 		$vs_type_id_fld = method_exists($t_rel, 'getTypeFieldName') ? $t_rel->getTypeFieldName() : null;
 		
 		$vn_c = 0;
-		while($qr_rel_items->nextHit()) {
-			$vn_id = $qr_rel_items->get("{$vs_rel_table}.{$vs_rel_pk}");
-			if(in_array($vn_id, $va_exclude)) { continue; }
-			
-			$va_item = array(
-				'id' => $vn_id,
-				$vs_rel_pk => $vn_id
-			);
-			
-			if ($vs_type_id_fld) {
-				$va_item['type_id'] = $qr_rel_items->get("{$vs_rel_table}.{$vs_type_id_fld}");
-			}
-			
-			if ($vb_use_new_display_format) { 
-				$va_display_value = $va_display_format;
+		$vb_include_inline_add_message = false;
+		
+		if (is_object($qr_rel_items)) {
+			if ($ps_inline_create_message && !$qr_rel_items->numHits()) {
+				$vb_include_inline_add_message = true;	
 			} else {
-				$vs_display_value = $vs_display_format;
-			}
-			
-			foreach($va_bundles as $vs_bundle_name) {
-				if (in_array($vs_bundle_name, array('_parent', '_hierarchy'))) { continue;}
-				if (!($vs_value = trim($qr_rel_items->get($vs_bundle_name)))) { 
-					if ((!isset($pa_options['stripTags']) || !$pa_options['stripTags']) &&  (sizeof($va_tmp = explode('.', $vs_bundle_name)) == 3)) {		// is tag media?
-						$vs_value = trim($qr_rel_items->getMediaTag($va_tmp[0].'.'.$va_tmp[1], $va_tmp[2]));
+				while($qr_rel_items->nextHit()) {
+					$vn_id = $qr_rel_items->get("{$vs_rel_table}.{$vs_rel_pk}");
+					if(in_array($vn_id, $va_exclude)) { continue; }
+					
+					$va_item = array(
+						'id' => $vn_id,
+						$vs_rel_pk => $vn_id
+					);
+					
+					if ($vs_type_id_fld) {
+						$va_item['type_id'] = $qr_rel_items->get("{$vs_rel_table}.{$vs_type_id_fld}");
 					}
-				}
-				if ($vb_use_new_display_format) {
-					foreach($va_display_value as $vn_x => $vs_display_element) {
-						$va_display_value[$vn_x] = str_replace("^{$vs_bundle_name}", $vs_value, $vs_display_element);
-					}
-				} else {
-					if ($vs_display_format) {
-						$vs_display_value = str_replace("^{$vs_bundle_name}", htmlspecialchars($vs_value), $vs_display_value);
+					
+					if ($vb_use_new_display_format) { 
+						$va_display_value = $va_display_format;
 					} else {
-						$vs_display_value .= $vs_value.' ';
+						$vs_display_value = $vs_display_format;
+					}
+					
+					foreach($va_bundles as $vs_bundle_name) {
+						if (in_array($vs_bundle_name, array('_parent', '_hierarchy'))) { continue;}
+						if (!($vs_value = trim($qr_rel_items->get($vs_bundle_name)))) { 
+							if ((!isset($pa_options['stripTags']) || !$pa_options['stripTags']) &&  (sizeof($va_tmp = explode('.', $vs_bundle_name)) == 3)) {		// is tag media?
+								$vs_value = trim($qr_rel_items->getMediaTag($va_tmp[0].'.'.$va_tmp[1], $va_tmp[2]));
+							}
+						}
+						if ($vb_use_new_display_format) {
+							foreach($va_display_value as $vn_x => $vs_display_element) {
+								$va_display_value[$vn_x] = str_replace("^{$vs_bundle_name}", $vs_value, $vs_display_element);
+							}
+						} else {
+							if ($vs_display_format) {
+								$vs_display_value = str_replace("^{$vs_bundle_name}", htmlspecialchars($vs_value), $vs_display_value);
+							} else {
+								$vs_display_value .= $vs_value.' ';
+							}
+						}
+					}
+					
+					if ($vb_is_hierarchical) {
+						if ($vn_parent_id = $qr_rel_items->get("{$vs_rel_table}.{$vs_hier_parent_id_fld}")) {
+							$va_parent_ids[$vn_id] = $vn_parent_id;
+						} else {
+							if ($pt_rel->getHierarchyType() != __CA_HIER_TYPE_ADHOC_MONO__) {		// don't show root for hierarchies unless it's adhoc (where the root is a valid record)
+								continue;
+							}
+						}
+						
+						if ($vs_hier_fld) {
+							$va_hierarchy_ids[$vn_id] = $qr_rel_items->get("{$vs_rel_table}.{$vs_hier_fld}");
+						}
+					}
+					
+					if ($vs_rel_table == 'ca_users') {
+						$va_item['fname'] = $qr_rel_items->get('ca_users.fname');
+						$va_item['lname'] = $qr_rel_items->get('ca_users.lname');
+						$va_item['email'] = $qr_rel_items->get('ca_users.email');
+					}
+					
+					if ($vb_use_new_display_format) {
+						$va_related_item_info[$vn_id] = $va_display_value;
+					} else {
+						$va_related_item_info[$vn_id] = $vs_display_value;
+					}
+					
+					$va_items[$vn_id] = $va_item;
+					
+					$vn_c++;
+					if (($pn_limit) && ($pn_limit <= $vn_c)) {
+						break;
 					}
 				}
-			}
-			
-			if ($vb_is_hierarchical) {
-				if ($vn_parent_id = $qr_rel_items->get("{$vs_rel_table}.{$vs_hier_parent_id_fld}")) {
-					$va_parent_ids[$vn_id] = $vn_parent_id;
-				} else {
-					if ($pt_rel->getHierarchyType() != __CA_HIER_TYPE_ADHOC_MONO__) {		// don't show root for hierarchies unless it's adhoc (where the root is a valid record)
-						continue;
-					}
-				}
-				
-				if ($vs_hier_fld) {
-					$va_hierarchy_ids[$vn_id] = $qr_rel_items->get("{$vs_rel_table}.{$vs_hier_fld}");
-				}
-			}
-			
-			if ($vs_rel_table == 'ca_users') {
-				$va_item['fname'] = $qr_rel_items->get('ca_users.fname');
-				$va_item['lname'] = $qr_rel_items->get('ca_users.lname');
-				$va_item['email'] = $qr_rel_items->get('ca_users.email');
-			}
-			
-			if ($vb_use_new_display_format) {
-				$va_related_item_info[$vn_id] = $va_display_value;
-			} else {
-				$va_related_item_info[$vn_id] = $vs_display_value;
-			}
-			
-			$va_items[$vn_id] = $va_item;
-			
-			$vn_c++;
-			if (($pn_limit) && ($pn_limit <= $vn_c)) {
-				break;
 			}
 		}
 		
@@ -1791,6 +1784,16 @@ $ca_relationship_lookup_parse_cache = array();
 					'_display' => $vs_display
 				)
 			);
+		}
+		
+		if($vb_include_inline_add_message) {
+			$va_initial_values[0] = 
+				array(
+					'_display' => $ps_inline_create_message,
+					'id' => 0,
+					$vs_rel_pk => 0,
+					'_query' => $ps_inline_create_query
+				);
 		}
 		
 		return $va_initial_values;		

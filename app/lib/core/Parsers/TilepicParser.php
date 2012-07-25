@@ -72,7 +72,7 @@ class TilepicParser {
 		"image/x-bmp" 		=> "BMP",
 		"image/x-psd" 		=> "PDF",
 		"image/tilepic" 	=> "TPC",
-		"image/x-dcraw"		=> "cRAW"
+		"image/x-dcraw"		=> "RAW"
 	);
 	
 	var $apple_type_names = array(

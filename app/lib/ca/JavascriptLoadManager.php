@@ -155,7 +155,12 @@
 					} else {
 						$vs_url = "{$ps_baseurlpath}/js/{$vs_lib}";
 					}
-					$vs_buf .= "<script src='{$vs_url}' type='text/javascript'></script>\n";
+					
+					if (preg_match('!\.css$!', $vs_lib)) {
+						$vs_buf .= "<link rel='stylesheet' href='{$vs_url}' type='text/css' media='screen'/>\n";
+					} else {
+						$vs_buf .= "<script src='{$vs_url}' type='text/javascript'></script>\n";
+					}
 				}
 			}
 			if (is_array($g_javascript_complementary)) {
