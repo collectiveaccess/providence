@@ -185,13 +185,13 @@ BaseModel::$s_ca_models_definitions['ca_list_items'] = array(
 				'LIST' => 'workflow_statuses',
 				'LABEL' => _t('Status'), 'DESCRIPTION' => _t('Indicates the current state of the list item.')
 		),
-		// 'deleted' => array(
-// 				'FIELD_TYPE' => FT_BIT, 'DISPLAY_TYPE' => DT_OMIT, 
-// 				'DISPLAY_WIDTH' => 10, 'DISPLAY_HEIGHT' => 1,
-// 				'IS_NULL' => false, 
-// 				'DEFAULT' => 0,
-// 				'LABEL' => _t('Is deleted?'), 'DESCRIPTION' => _t('Indicates if list item is deleted or not.')
-// 		)
+		 'deleted' => array(
+ 				'FIELD_TYPE' => FT_BIT, 'DISPLAY_TYPE' => DT_OMIT, 
+ 				'DISPLAY_WIDTH' => 10, 'DISPLAY_HEIGHT' => 1,
+ 				'IS_NULL' => false, 
+ 				'DEFAULT' => 0,
+ 				'LABEL' => _t('Is deleted?'), 'DESCRIPTION' => _t('Indicates if list item is deleted or not.')
+ 		)
  	)
 );
 
@@ -451,7 +451,7 @@ class ca_list_items extends BundlableLabelableBaseModelWithAttributes implements
 			WHERE 
 				cli.parent_id IS NULL and cli.list_id IN (".join(',', $va_hierarchy_ids).") ".($pb_vocabularies ? " AND (l.use_as_vocabulary = 1)" : "")."
 			GROUP BY
-				cli.item_id
+				cli.item_id, cli.list_id
 		");
 		
 		while ($qr_res->nextRow()) {
@@ -569,13 +569,13 @@ class ca_list_items extends BundlableLabelableBaseModelWithAttributes implements
 		$vs_sql = "
 			SELECT ca_list_items.item_id, ca_list_items.idno, ca_list_item_labels.*, count(*) c
 			FROM ca_list_items
-			INNER JOIN ca_list_item_labels ON ca_list_item_labels.item_id = ca_list_items.item_id
+			INNER JOIN ca_list_item_labels clil ON ca_list_item_labels.item_id = ca_list_items.item_id
 			".join("\n", $va_joins)."
 			WHERE
 				(ca_list_item_labels.is_preferred = 1)
 				".(sizeof($va_sql_wheres) ? " AND ".join(' AND ', $va_sql_wheres) : "")."
 			GROUP BY
-				ca_list_item_labels.label_id
+				ca_list_item_labels.label_id, ca_list_items.idno, clil.".join(", clil.", $o_db->getFieldNamesFromTable("ca_list_item_labels"))."
 			ORDER BY 
 				ca_list_item_labels.name_plural
 		";

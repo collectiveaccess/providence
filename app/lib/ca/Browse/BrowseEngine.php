@@ -42,6 +42,7 @@
  	require_once(__CA_LIB_DIR__.'/core/Parsers/TimeExpressionParser.php');
  	require_once(__CA_APP_DIR__.'/helpers/searchHelpers.php');
 	require_once(__CA_APP_DIR__.'/helpers/accessHelpers.php');
+	require_once(__CA_APP_DIR__.'/helpers/dbHelpers.php');
 	
  	require_once(__CA_MODELS_DIR__.'/ca_metadata_elements.php');
 	require_once(__CA_MODELS_DIR__.'/ca_lists.php');
@@ -839,31 +840,29 @@
 										}
 
 										if ($vn_i == 0) {
-											$vs_sql = "
-												INSERT IGNORE INTO ca_browses_acc
-												SELECT ".$this->ops_browse_table_name.'.'.$t_item->primaryKey()."
+											$vs_select_sql = "
+												SELECT ".$this->ops_browse_table_name.'.'.$t_item->primaryKey()." AS row_id
 												FROM ".$this->ops_browse_table_name."
-												{$vs_relative_to_join}
 												{$vs_join_sql}
-												{$vs_where_sql}
+													{$vs_where_sql}
 											";
 											//print "$vs_sql<hr>";
-											$qr_res = $this->opo_db->query($vs_sql);
+											caSQLInsertIgnore($this->opo_db, "ca_browses_acc", $vs_select_sql);
+
 										} else {
 											$qr_res = $this->opo_db->query("TRUNCATE TABLE ca_browses_tmp");
 											$vs_sql = "
-												INSERT IGNORE INTO ca_browses_tmp
+												INSERT INTO ca_browses_tmp
 												SELECT ".$this->ops_browse_table_name.'.'.$t_item->primaryKey()."
 												FROM ".$this->ops_browse_table_name."
 												INNER JOIN ca_browses_acc ON ca_browses_acc.row_id = ".$this->ops_browse_table_name.'.'.$t_item->primaryKey()."
-												{$vs_relative_to_join}
 												{$vs_join_sql}
-												{$vs_where_sql}";
+													{$vs_where_sql}";
 											//print "$vs_sql<hr>";
 											$qr_res = $this->opo_db->query($vs_sql);
 											
 											$qr_res = $this->opo_db->query("TRUNCATE TABLE ca_browses_acc");
-											$qr_res = $this->opo_db->query("INSERT IGNORE INTO ca_browses_acc SELECT row_id FROM ca_browses_tmp");
+											$qr_res = $this->opo_db->query("INSERT INTO ca_browses_acc SELECT row_id FROM ca_browses_tmp");
 										}
 										$vn_i++;
 									
@@ -902,31 +901,32 @@
 									foreach($va_row_ids as $vn_row_id) {
 										
 										if ($vn_i == 0) {
-											$vs_sql = "
-												INSERT IGNORE INTO ca_browses_acc
-												SELECT ".$this->ops_browse_table_name.".".$t_item->primaryKey()."
-												FROM ".$this->ops_browse_table_name."
-												{$vs_relative_to_join}
+											$vs_select_sql = "
+												SELECT {$vs_label_table_name}.{$vs_item_pk} AS row_id
+												FROM {$vs_label_table_name}
+												INNER JOIN ".$this->ops_browse_table_name." ON ".$this->ops_browse_table_name.".{$vs_item_pk} = {$vs_label_table_name}.{$vs_item_pk}
+												
 												WHERE
-													{$vs_label_table_name}.{$vs_label_item_pk} = ?";
+													{$vs_label_table_name}.{$vs_item_pk} = ?";
 											//print "$vs_sql [".intval($this->opn_browse_table_num)."]<hr>";
-											$qr_res = $this->opo_db->query($vs_sql, $vn_row_id);
+											caSQLInsertIgnore($this->opo_db, "ca_browses_acc", $vs_select_sql, $vn_row_id);
 										} else {
+											
 											$qr_res = $this->opo_db->query("TRUNCATE TABLE ca_browses_tmp");
 											$vs_sql = "
-												INSERT IGNORE INTO ca_browses_tmp
-												SELECT ".$this->ops_browse_table_name.".".$t_item->primaryKey()."
-												FROM ".$this->ops_browse_table_name."
-												{$vs_relative_to_join}
-												INNER JOIN ca_browses_acc ON ca_browses_acc.row_id = ".$this->ops_browse_table_name.'.'.$t_item->primaryKey()."
+												INSERT INTO ca_browses_tmp
+												SELECT {$vs_label_table_name}.{$vs_item_pk}
+												FROM {$vs_label_table_name}
+												INNER JOIN ".$this->ops_browse_table_name." ON ".$this->ops_browse_table_name.".{$vs_item_pk} = {$vs_label_table_name}.{$vs_item_pk}
+												
 												WHERE
-													{$vs_label_table_name}.{$vs_label_item_pk} = ?";
+													{$vs_label_table_name}.{$vs_item_pk} = ?";
 											//print "$vs_sql [".intval($this->opn_browse_table_num)."]<hr>";
 											$qr_res = $this->opo_db->query($vs_sql, $vn_row_id);
 											
 											
 											$qr_res = $this->opo_db->query("TRUNCATE TABLE ca_browses_acc");
-											$qr_res = $this->opo_db->query("INSERT IGNORE INTO ca_browses_acc SELECT row_id FROM ca_browses_tmp");
+											$qr_res = $this->opo_db->query("INSERT INTO ca_browses_acc SELECT row_id FROM ca_browses_tmp");
 										} 
 										
 										$vn_i++;
@@ -950,32 +950,29 @@
 									foreach($va_row_ids as $vn_row_id) {
 										$vn_row_id = urldecode($vn_row_id);
 										if ($vn_i == 0) {
-											$vs_sql = "
-												INSERT IGNORE INTO ca_browses_acc
-												SELECT ".$this->ops_browse_table_name.'.'.$t_item->primaryKey()."
+											$vs_select_sql = "
+												SELECT ".$this->ops_browse_table_name.'.'.$t_item->primaryKey()." AS row_id
 												FROM ".$this->ops_browse_table_name."
-												{$vs_relative_to_join}
 												WHERE
-													({$vs_table_name}.{$vs_field_name} = ?)";
+													(".$this->ops_browse_table_name.".{$vs_field_name} = ?)";
 											//print "$vs_sql [".intval($this->opn_browse_table_num)."/".$vn_element_id."/".$vn_row_id."]<hr>";
-											$qr_res = $this->opo_db->query($vs_sql, (string)$vn_row_id);
+											caSQLInsertIgnore($this->opo_db, "ca_browses_acc", $vs_select_sql, (string)$vn_row_id);
 										} else {
 											
 											$qr_res = $this->opo_db->query("TRUNCATE TABLE ca_browses_tmp");
 											$vs_sql = "
-												INSERT IGNORE INTO ca_browses_tmp
+												INSERT INTO ca_browses_tmp
 												SELECT ".$this->ops_browse_table_name.'.'.$t_item->primaryKey()."
 												FROM ".$this->ops_browse_table_name."
-												{$vs_relative_to_join}
 												INNER JOIN ca_browses_acc ON ca_browses_acc.row_id = ".$this->ops_browse_table_name.'.'.$t_item->primaryKey()."
 												WHERE
-													({$vs_table_name}.{$vs_field_name} = ?)";
+													(".$this->ops_browse_table_name.".{$vs_field_name} = ?)";
 											//print "$vs_sql [".intval($this->opn_browse_table_num)."/".$vn_element_id."/".$vn_row_id."]<hr>";
 											$qr_res = $this->opo_db->query($vs_sql, (string)$vn_row_id);
 											
 											
 											$qr_res = $this->opo_db->query("TRUNCATE TABLE ca_browses_acc");
-											$qr_res = $this->opo_db->query("INSERT IGNORE INTO ca_browses_acc SELECT row_id FROM ca_browses_tmp");
+											$qr_res = $this->opo_db->query("INSERT INTO ca_browses_acc SELECT row_id FROM ca_browses_tmp");
 										} 
 										
 										$vn_i++;
@@ -1022,36 +1019,33 @@
 											$vs_attr_sql = " AND ".$vs_attr_sql;
 										}
 										if ($vn_i == 0) {
-											$vs_sql = "
-												INSERT IGNORE INTO ca_browses_acc
-												SELECT ".$this->ops_browse_table_name.'.'.$t_item->primaryKey()."
+											$vs_select_sql = "
+												SELECT ".$this->ops_browse_table_name.'.'.$t_item->primaryKey()." AS row_id AS row_id
 												FROM ".$this->ops_browse_table_name."
-												{$vs_relative_to_join}
-												INNER JOIN ca_attributes ON ca_attributes.row_id = {$vs_target_browse_table_name}.{$vs_target_browse_table_pk} AND ca_attributes.table_num = ?
+												INNER JOIN ca_attributes ON ca_attributes.row_id = ".$this->ops_browse_table_name.'.'.$t_item->primaryKey()." AND ca_attributes.table_num = ?
 												INNER JOIN ca_attribute_values ON ca_attribute_values.attribute_id = ca_attributes.attribute_id
 												WHERE
 													(ca_attribute_values.element_id = ?) {$vs_attr_sql}";
-											//print "$vs_sql [".intval($vs_target_browse_table_num)."/".$vn_element_id."/".$vn_row_id."]<hr>";print_R($va_attr_values);
-											$qr_res = $this->opo_db->query($vs_sql, $va_attr_values);
+											//print "$vs_sql [".intval($this->opn_browse_table_num)."/".$vn_element_id."/".$vn_row_id."]<hr>";print_R($va_attr_values);
+											caSQLInsertIgnore($this->opo_db, "ca_browses_acc", $vs_select_sql, $va_attr_values);
 										} else {
 											
 											$qr_res = $this->opo_db->query("TRUNCATE TABLE ca_browses_tmp");
 											$vs_sql = "
-												INSERT IGNORE INTO ca_browses_tmp
+												INSERT INTO ca_browses_tmp
 												SELECT ".$this->ops_browse_table_name.'.'.$t_item->primaryKey()."
 												FROM ".$this->ops_browse_table_name."
-												{$vs_relative_to_join}
-												INNER JOIN ca_attributes ON ca_attributes.row_id = {$vs_target_browse_table_name}.{$vs_target_browse_table_pk} AND ca_attributes.table_num = ?
+												INNER JOIN ca_attributes ON ca_attributes.row_id = ".$this->ops_browse_table_name.'.'.$t_item->primaryKey()." AND ca_attributes.table_num = ?
 												INNER JOIN ca_attribute_values ON ca_attribute_values.attribute_id = ca_attributes.attribute_id
 												INNER JOIN ca_browses_acc ON ca_browses_acc.row_id = ".$this->ops_browse_table_name.'.'.$t_item->primaryKey()."
 												WHERE
 													(ca_attribute_values.element_id = ?) {$vs_attr_sql}";
-											//print "$vs_sql [".intval($vs_target_browse_table_num)."/".$vn_element_id."/".$vn_row_id."]<hr>";print_R($va_attr_values);
+											//print "$vs_sql [".intval($this->opn_browse_table_num)."/".$vn_element_id."/".$vn_row_id."]<hr>";print_R($va_attr_values);
 											$qr_res = $this->opo_db->query($vs_sql, $va_attr_values);
 											
 											
 											$qr_res = $this->opo_db->query("TRUNCATE TABLE ca_browses_acc");
-											$qr_res = $this->opo_db->query("INSERT IGNORE INTO ca_browses_acc SELECT row_id FROM ca_browses_tmp");
+											$qr_res = $this->opo_db->query("INSERT INTO ca_browses_acc SELECT row_id FROM ca_browses_tmp");
 										} 
 										
 										$vn_i++;
@@ -1087,12 +1081,10 @@
 										$va_dates = $o_tep->getHistoricTimestamps();
 										
 										if ($vn_i == 0) {
-											$vs_sql = "
-												INSERT IGNORE INTO ca_browses_acc
-												SELECT ".$this->ops_browse_table_name.'.'.$t_item->primaryKey()."
+											$vs_select_sql = "
+												SELECT ".$this->ops_browse_table_name.'.'.$t_item->primaryKey()." AS row_id
 												FROM ".$this->ops_browse_table_name."
-												{$vs_relative_to_join}
-												INNER JOIN ca_attributes ON ca_attributes.row_id = ".$vs_target_browse_table_name.'.'.$vs_target_browse_table_pk." AND ca_attributes.table_num = ?
+												INNER JOIN ca_attributes ON ca_attributes.row_id = ".$this->ops_browse_table_name.'.'.$t_item->primaryKey()." AND ca_attributes.table_num = ?
 												INNER JOIN ca_attribute_values ON ca_attribute_values.attribute_id = ca_attributes.attribute_id
 												WHERE
 													(ca_attribute_values.element_id = ?) AND
@@ -1108,19 +1100,17 @@
 														(ca_attribute_values.value_decimal2 BETWEEN ? AND ?)
 													)
 											";
-											//print $vs_sql;
-											$qr_res = $this->opo_db->query($vs_sql, intval($vs_target_browse_table_num), $vn_element_id, $va_dates['start'], $va_dates['end'], $va_dates['start'], $va_dates['end'], $va_dates['start'], $va_dates['end']);
+											
+											caSQLInsertIgnore($this->opo_db, "ca_browses_acc", intval($this->opn_browse_table_num), $vn_element_id, $va_dates['start'], $va_dates['end'], $va_dates['start'], $va_dates['end'], $va_dates['start'], $va_dates['end']);
 										} else {
 											
 											$qr_res = $this->opo_db->query("TRUNCATE TABLE ca_browses_tmp");
-											$vs_sql = "
-												INSERT IGNORE INTO ca_browses_tmp
-												SELECT ".$this->ops_browse_table_name.'.'.$t_item->primaryKey()."
+											$vs_select_sql = "
+												SELECT ".$this->ops_browse_table_name.'.'.$t_item->primaryKey()." AS row_id
 												FROM ".$this->ops_browse_table_name."
-												{$vs_relative_to_join}
-												INNER JOIN ca_attributes ON ca_attributes.row_id = ".$vs_target_browse_table_name.'.'.$vs_target_browse_table_pk." AND ca_attributes.table_num = ?
+												INNER JOIN ca_attributes ON ca_attributes.row_id = ".$this->ops_browse_table_name.'.'.$t_item->primaryKey()." AND ca_attributes.table_num = ?
 												INNER JOIN ca_attribute_values ON ca_attribute_values.attribute_id = ca_attributes.attribute_id
-												INNER JOIN ca_browses_acc ON ca_browses_acc.row_id = ".$t_item->tableName().'.'.$t_item->primaryKey()."
+												INNER JOIN ca_browses_acc ON ca_browses_acc.row_id = ".$this->ops_browse_table_name.'.'.$t_item->primaryKey()."
 												WHERE
 													(ca_attribute_values.element_id = ?) AND
 													
@@ -1135,12 +1125,11 @@
 														(ca_attribute_values.value_decimal2 BETWEEN ? AND ?)
 													)
 											";
-											//print $vs_sql;
-											$qr_res = $this->opo_db->query($vs_sql, intval($vs_target_browse_table_num), $vn_element_id, $va_dates['start'], $va_dates['end'], $va_dates['start'], $va_dates['end'], $va_dates['start'], $va_dates['end']);
+											caSQLInsertIgnore($this->opo_db, "ca_browses_tmp", $vs_select_sql, intval($this->opn_browse_table_num), $vn_element_id, $va_dates['start'], $va_dates['end'], $va_dates['start'], $va_dates['end'], $va_dates['start'], $va_dates['end']);
 											
 											
 											$qr_res = $this->opo_db->query("TRUNCATE TABLE ca_browses_acc");
-											$qr_res = $this->opo_db->query("INSERT IGNORE INTO ca_browses_acc SELECT row_id FROM ca_browses_tmp");
+											$qr_res = $this->opo_db->query("INSERT INTO ca_browses_acc SELECT row_id FROM ca_browses_tmp");
 										} 
 										
 										$vn_i++;
@@ -1225,24 +1214,22 @@
 										}
 										
 										if ($vn_i == 0) {
-											$vs_sql = "
-												INSERT IGNORE INTO ca_browses_acc
-												SELECT ".$this->ops_browse_table_name.'.'.$t_item->primaryKey()."
+											$vs_select_sql = "
+												SELECT ".$this->ops_browse_table_name.'.'.$t_item->primaryKey()." AS row_id
 												FROM ".$this->ops_browse_table_name."
-												{$vs_relative_to_join}
 												{$vs_join_sql}
 												WHERE
 													{$vs_get_item_sql}
 													{$vs_where_sql}";
 											//print "$vs_sql<hr>";
-											$qr_res = $this->opo_db->query($vs_sql);
+											caSQLInsertIgnore($this->opo_db, "ca_browses_acc", $vs_select_sql);
+
 										} else {
 											$qr_res = $this->opo_db->query("TRUNCATE TABLE ca_browses_tmp");
 											$vs_sql = "
-												INSERT IGNORE INTO ca_browses_tmp
+												INSERT INTO ca_browses_tmp
 												SELECT ".$this->ops_browse_table_name.'.'.$t_item->primaryKey()."
 												FROM ".$this->ops_browse_table_name."
-												{$vs_relative_to_join}
 												{$vs_join_sql}
 												INNER JOIN ca_browses_acc ON ca_browses_acc.row_id = ".$this->ops_browse_table_name.'.'.$t_item->primaryKey()."
 												WHERE
@@ -1253,7 +1240,7 @@
 											
 											
 											$qr_res = $this->opo_db->query("TRUNCATE TABLE ca_browses_acc");
-											$qr_res = $this->opo_db->query("INSERT IGNORE INTO ca_browses_acc SELECT row_id FROM ca_browses_tmp");
+											$qr_res = $this->opo_db->query("INSERT INTO ca_browses_acc SELECT row_id FROM ca_browses_tmp");
 										} 
 										
 										$vn_i++;
@@ -1278,32 +1265,29 @@
 									foreach($va_row_ids as $vn_row_id) {
 										$vn_row_id = urldecode($vn_row_id);
 										if ($vn_i == 0) {
-											$vs_sql = "
-												INSERT IGNORE INTO ca_browses_acc
-												SELECT ".$this->ops_browse_table_name.'.'.$t_item->primaryKey()."
+											$vs_select_sql = "
+												SELECT ".$this->ops_browse_table_name.'.'.$t_item->primaryKey()." AS row_id
 												FROM ".$this->ops_browse_table_name."
-												{$vs_relative_to_join}
 												WHERE
-													({$vs_table_name}.{$vs_field_name} = ?)";
-											//print "$vs_sql [".intval($this->opn_browse_table_num)."/".$vn_row_id."]<hr>";
-											$qr_res = $this->opo_db->query($vs_sql, $vn_row_id);
+													(".$this->ops_browse_table_name.".{$vs_field_name} = ?)";
+											//print "$vs_sql [".intval($this->opn_browse_table_num)."/".$vn_element_id."/".$vn_row_id."]<hr>";
+											caSQLInsertIgnore($this->opo_db, "ca_browses_acc", $vs_sql, $vn_row_id);
 										} else {
 											
 											$qr_res = $this->opo_db->query("TRUNCATE TABLE ca_browses_tmp");
 											$vs_sql = "
-												INSERT IGNORE INTO ca_browses_tmp
+												INSERT INTO ca_browses_tmp
 												SELECT ".$this->ops_browse_table_name.'.'.$t_item->primaryKey()."
 												FROM ".$this->ops_browse_table_name."
-												{$vs_relative_to_join}
 												INNER JOIN ca_browses_acc ON ca_browses_acc.row_id = ".$this->ops_browse_table_name.'.'.$t_item->primaryKey()."
 												WHERE
-													({$vs_table_name}.{$vs_field_name} = ?)";
-											//print "$vs_sql [".intval($this->opn_browse_table_num)."/".$vn_row_id."]<hr>";
+													(".$this->ops_browse_table_name.".{$vs_field_name} = ?)";
+											//print "$vs_sql [".intval($this->opn_browse_table_num)."/".$vn_element_id."/".$vn_row_id."]<hr>";
 											$qr_res = $this->opo_db->query($vs_sql, $vn_row_id);
 											
 											
 											$qr_res = $this->opo_db->query("TRUNCATE TABLE ca_browses_acc");
-											$qr_res = $this->opo_db->query("INSERT IGNORE INTO ca_browses_acc SELECT row_id FROM ca_browses_tmp");
+											$qr_res = $this->opo_db->query("INSERT INTO ca_browses_acc SELECT row_id FROM ca_browses_tmp");
 										} 
 										
 										$vn_i++;
@@ -1336,7 +1320,7 @@
 											$va_ids[] = "({$vn_id})";
 										}
 					
-										$this->opo_db->query("INSERT IGNORE INTO ca_browses_acc VALUES ".join(",", $va_ids));
+										$this->opo_db->query("INSERT INTO ca_browses_acc VALUES ".join(",", $va_ids));
 						
 										$vn_i++;
 									}

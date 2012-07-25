@@ -195,16 +195,18 @@ final class ConfigurationCheck {
 	 * Check for innodb availabiliy
 	 */
 	public static function DBInnoDBQuickCheck() {
-		$va_mysql_errors = array();
-		$qr_engines = self::$opo_db->query("SHOW ENGINES");
-		$vb_innodb_available = false;
-		while($qr_engines->nextRow()){
-			if(strtolower($qr_engines->get("Engine"))=="innodb"){
-				$vb_innodb_available = true;
+		if(self::$opo_config->get("db_type") == "mysql"){
+			$va_mysql_errors = array();
+			$qr_engines = self::$opo_db->query("SHOW ENGINES");
+			$vb_innodb_available = false;
+			while($qr_engines->nextRow()){
+				if(strtolower($qr_engines->get("Engine"))=="innodb"){
+					$vb_innodb_available = true;
+				}
 			}
-		}
-		if(!$vb_innodb_available){
-			self::addError(_t("Your MySQL installation doesn't support the InnoDB storage engine which is required by CollectiveAccess. For more information also see %1.","<a href='http://dev.mysql.com/doc/refman/5.1/en/innodb.html' target='_blank'>http://dev.mysql.com/doc/refman/5.1/en/innodb.html</a>"));
+			if(!$vb_innodb_available){
+				self::addError(_t("Your MySQL installation doesn't support the InnoDB storage engine which is required by CollectiveAccess. For more information also see %1.","<a href='http://dev.mysql.com/doc/refman/5.1/en/innodb.html' target='_blank'>http://dev.mysql.com/doc/refman/5.1/en/innodb.html</a>"));
+			}
 		}
 
 		return true;
