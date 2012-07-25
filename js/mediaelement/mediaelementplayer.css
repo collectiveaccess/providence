@@ -220,7 +220,7 @@
 	cursor: pointer;
 }
 .mejs-controls .mejs-time-rail .mejs-time-total {
-	margin: 5px;
+	margin: 5px 0px 5px 0px;
 	background: #333;
 	background: rgba(50,50,50,0.8);
 	background: -webkit-gradient(linear, 0% 0%, 0% 100%, from(rgba(30,30,30,0.8)), to(rgba(60,60,60,0.8)));
@@ -256,14 +256,14 @@
 @keyframes buffering-stripes { from {background-position: 0 0;} to {background-position: 30px 0;} }
 
 .mejs-controls .mejs-time-rail .mejs-time-loaded {
-	background: #3caac8;
-	background: rgba(60,170,200,0.8);
-	background: -webkit-gradient(linear, 0% 0%, 0% 100%, from(rgba(44,124,145,0.8)), to(rgba(78,183,212,0.8))); 
-	background: -webkit-linear-gradient(top, rgba(44,124,145,0.8), rgba(78,183,212,0.8));
-	background: -moz-linear-gradient(top, rgba(44,124,145,0.8), rgba(78,183,212,0.8));
-	background: -o-linear-gradient(top, rgba(44,124,145,0.8), rgba(78,183,212,0.8));
-	background: -ms-linear-gradient(top, rgba(44,124,145,0.8), rgba(78,183,212,0.8));
-	background: linear-gradient(rgba(44,124,145,0.8), rgba(78,183,212,0.8));
+	background: #7d7d7d;
+	background: rgba(125,125,125,0.8);
+	background: -webkit-gradient(linear, 0% 0%, 0% 100%, from(rgba(180,180,180,0.8)), to(rgba(30,30,30,0.8))); 
+	background: -webkit-linear-gradient(top, rgba(180,180,180,0.8), rgba(30,30,30,0.8));
+	background: -moz-linear-gradient(top, rgba(180,180,180,0.8), rgba(30,30,30,0.8));
+	background: -o-linear-gradient(top, rgba(180,180,180,0.8), rgba(30,30,30,0.8));
+	background: -ms-linear-gradient(top, rgba(180,180,180,0.8), rgba(30,30,30,0.8));
+	background: linear-gradient(rgba(180,180,180,0.8), rgba(30,30,30,0.8));
 	width: 0;
 }
 .mejs-controls .mejs-time-rail .mejs-time-current {

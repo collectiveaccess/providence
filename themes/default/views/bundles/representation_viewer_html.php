@@ -284,74 +284,63 @@
 			print $o_view->render('bookviewer_html.php');
 		} else {
 ?>
-	<!-- Controls -->
+	<!-- Controls - only for media overlay -->
 	<div class="caMediaOverlayControls">
-			<table width="95%">
-				<tr valign="middle">
-					<td align="left">
+			<div class='close'><a href="#" onclick="caMediaPanel.hidePanel(); return false;" title="close">&nbsp;&nbsp;&nbsp;</a></div>
 <?php
-							$va_rep_info = $this->getVar('version_info');
+			if(caObjectsDisplayDownloadLink($this->request)){
+?>
 
-							if (($this->getVar('version_type')) && ($va_rep_info['WIDTH'] > 0) && ($va_rep_info['HEIGHT'] > 0)) {
-								print $this->getVar('version_type')."; ". $va_rep_info['WIDTH']." x ". $va_rep_info['HEIGHT']."px";
-							}
-?>
-					</td>
-<?php
-					if($this->request->user->canDoAction("can_edit_ca_objects")){
-?>
-						<td align="left" valign="middle">
-							<div><div style="float:left"><a href="<?php print caEditorUrl($this->request, 'ca_object_representations', $vn_representation_id)?>" ><?php print caNavIcon($this->request, __CA_NAV_BUTTON_EDIT__)?></a></div><div style="float:left; margin:2px 0px 0px 3px;"><?php print _t("Edit representation"); ?></div></div>
-						</td>
-<?php
-					}
-?>
-					<td align="middle" valign="middle">
-						<div>
-<?php
-	if ($vn_id = $this->getVar('previous_representation_id')) {
-		print "<a href='#' onClick='jQuery(\"#{$vs_container_id}\").load(\"".caNavUrl($this->request, 'editor/objects', 'ObjectEditor', 'GetRepresentationInfo', array('representation_id' => (int)$vn_id, 'object_id' => (int)$t_object->getPrimaryKey()))."\");'>←</a>";
-	}
-	if (sizeof($va_reps) > 1) {
-		print ' '._t("%1 of %2", $this->getVar('representation_index'), sizeof($va_reps)).' ';
-	}
-	if ($vn_id = $this->getVar('next_representation_id')) {
-		print "<a href='#' onClick='jQuery(\"#{$vs_container_id}\").load(\"".caNavUrl($this->request, 'editor/objects', 'ObjectEditor', 'GetRepresentationInfo', array('representation_id' => (int)$vn_id, 'object_id' => (int)$t_object->getPrimaryKey()))."\");'>→</a>";
-	}
-?>
-						</div>
-					</td>
-<?php
-					if($this->request->user->canDoAction("can_download_ca_object_representations")){
-?>
-					<td align="right" text-align="right">
+				<div class='download'>
 <?php 
-						print caFormTag($this->request, 'DownloadRepresentation', 'downloadRepresentationForm', 'editor/objects/ObjectEditor', 'get', 'multipart/form-data', null, array('disableUnsavedChangesWarning' => true));
-						print caHTMLSelect('version', $va_versions, array('id' => 'caMediaOverlayDownloadVersionControl', 'class' => 'caMediaOverlayControls'), array('value' => 'original'));
-						print ' '.caFormSubmitLink($this->request, caNavIcon($this->request, __CA_NAV_BUTTON_DOWNLOAD__, null, array('align' => 'middle')), '', 'downloadRepresentationForm');
-						print caHTMLHiddenInput('representation_id', array('value' => $t_rep->getPrimaryKey()));
-						print caHTMLHiddenInput('object_id', array('value' => $t_object->getPrimaryKey()));
-						print caHTMLHiddenInput('download', array('value' => 1));
-?>
-						</form>
-					</td>
+						# -- get version to download configured in media_display.conf
+						$va_download_display_info = caGetMediaDisplayInfo('download', $t_rep->getMediaInfo('media', 'INPUT', 'MIMETYPE'));
+						$vs_download_version = $va_download_display_info['display_version'];
+						print caNavLink($this->request, "<img src='".$this->request->getThemeUrlPath()."/graphics/buttons/downloadWhite.png' border='0' title='"._t("Download Media")."'>", '', 'Detail', 'Object', 'DownloadRepresentation', array('representation_id' => $t_rep->getPrimaryKey(), "object_id" => $t_object->getPrimaryKey(), "download" => 1, "version" => $vs_download_version));
+?>				
+				</div>
 <?php
-					}
+			}
 ?>
-				</tr>
-			</table>
+			<div class='objectInfo'>
+<?php
+				$vs_label = $t_object->getLabelForDisplay();
+				print (mb_strlen($vs_label) > 80) ? mb_substr($vs_label, 0, 80)."..." : $vs_label;
+				
+				if($t_object->get("idno")){
+					print " [".$t_object->get("idno")."]";
+				}
+?>			
+			</div>
+			<div class='repNav'>
+<?php
+				if ($vn_id = $this->getVar('previous_representation_id')) {
+					print "<a href='#' onClick='jQuery(\"#{$vs_container_id}\").load(\"".caNavUrl($this->request, 'editor/objects', 'ObjectEditor', 'GetRepresentationInfo', array('representation_id' => (int)$vn_id, 'object_id' => (int)$t_object->getPrimaryKey()))."\");'>←</a>";
+				}
+				if (sizeof($va_reps) > 1) {
+					print ' '._t("%1 of %2", $this->getVar('representation_index'), sizeof($va_reps)).' ';
+				}
+				if ($vn_id = $this->getVar('next_representation_id')) {
+					print "<a href='#' onClick='jQuery(\"#{$vs_container_id}\").load(\"".caNavUrl($this->request, 'editor/objects', 'ObjectEditor', 'GetRepresentationInfo', array('representation_id' => (int)$vn_id, 'object_id' => (int)$t_object->getPrimaryKey()))."\");'>→</a>";
+				}
+?>
+			</div>
 	</div><!-- end caMediaOverlayControls -->
-
-	<div id="caMediaOverlayContent">
+<?php
+			}
+?>
+	<div id="<?php print ($vs_display_type == 'media_overlay') ? 'caMediaOverlayContent' : 'caMediaDisplayContent'; ?>">
 <?php
 	// return standard tag
 	if (!is_array($va_display_options)) { $va_display_options = array(); }
-	print $t_rep->getMediaTag('media', $vs_show_version, array_merge($va_display_options, array(
-		'id' => 'caMediaOverlayContentMedia', 
+	$vs_tag = $t_rep->getMediaTag('media', $vs_show_version, array_merge($va_display_options, array(
+		'id' => ($vs_display_type == 'media_overlay') ? 'caMediaOverlayContentMedia' : 'caMediaDisplayContentMedia', 
 		'viewer_base_url' => $this->request->getBaseUrlPath()
 	)));
-?>
-	</div><!-- end caMediaOverlayContent -->
-<?php
+	# --- should the media be clickable to open the overlay?
+	if($va_display_options['no_overlay'] || $vs_display_type == 'media_overlay'){
+		print $vs_tag;
+	}else{
+		print "<a href='#' onclick='caMediaPanel.showPanel(\"".caNavUrl($this->request, 'Detail', 'Object', 'GetRepresentationInfo', array('object_id' => $t_object->getPrimaryKey(), 'representation_id' => $t_rep->getPrimaryKey()))."\"); return false;' >".$vs_tag."</a>";
 	}
 ?>
