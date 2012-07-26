@@ -594,7 +594,7 @@ class TimeExpressionParser {
 				break;
 			# -------------------------------------------------------
 			case TEP_STATE_DATE_RANGE_END_DATE:
-				if ($va_date = $this->_parseDateExpression()) {
+				if ($va_date = $this->_parseDateExpression(array('start' => $va_dates['start']))) {
 					$va_dates['end'] = $va_date;
 					if (isset($va_dates['start']['is_circa']) && $va_dates['start']['is_circa']) {
 						$va_dates['end']['is_circa'] = true;
@@ -786,7 +786,7 @@ class TimeExpressionParser {
 	# -------------------------------------------------------------------
 	# Productions (kinda sorta)
 	# -------------------------------------------------------------------
-	function &_parseDateElement() {
+	function &_parseDateElement($pa_options=null) {
 		$vn_state = TEP_STATE_BEGIN_DATE_ELEMENT;
 		
 		$vn_day = $vn_month = $vn_year = null;
@@ -893,6 +893,12 @@ class TimeExpressionParser {
 							break;
 						# ----------------------
 						default:
+							if (isset($pa_options['start']) && isset($pa_options['start']['month']) && $pa_options['start']['month']) {
+								$vn_month = $pa_options['start']['month'];
+								$vn_year = intval($va_token['value']);
+								$this->skipToken();
+								return array('day' => $vn_day, 'month' => $vn_month, 'year' => $vn_year);
+							}
 							$this->setParseError($va_token, TEP_ERROR_INVALID_DATE);
 							return false;
 							break;
@@ -903,11 +909,17 @@ class TimeExpressionParser {
 			}
 		}
 		
+		if ($vn_day && isset($pa_options['start']) && isset($pa_options['start']['month']) && $pa_options['start']['month']) {
+			$vn_month = $pa_options['start']['month'];
+			$vn_year = $pa_options['start']['year'];
+			$this->skipToken();
+			return array('day' => $vn_day, 'month' => $vn_month, 'year' => $vn_year);
+		}
 		$this->setParseError(null, TEP_ERROR_INVALID_DATE);
 		return false;
 	}
 	# -------------------------------------------------------------------
-	function &_parseDateExpression() {
+	function &_parseDateExpression($pa_options=null) {
 		$vn_state = TEP_STATE_BEGIN_DATE_EXPRESSION;
 		
 		$va_time = array();
@@ -986,7 +998,7 @@ class TimeExpressionParser {
 								break;
 							# ----------------------
 							default:
-								if ($va_date_element = $this->_parseDateElement()) {
+								if ($va_date_element = $this->_parseDateElement($pa_options)) {
 									$va_date = array(
 										'month' => $va_date_element['month'], 'day' => $va_date_element['day'], 
 										'year' => $va_date_element['year'],
