@@ -37,6 +37,9 @@
 require_once (__CA_LIB_DIR__."/core/Configuration.php");
 require_once (__CA_LIB_DIR__."/core/BaseObject.php");
 
+define("__CA_MEDIA_VIDEO_DEFAULT_ICON__", 'video');
+define("__CA_MEDIA_AUDIO_DEFAULT_ICON__", 'audio');
+define("__CA_MEDIA_DOCUMENT_DEFAULT_ICON__", 'document');
 
 class Media extends BaseObject {
 	# ----------------------------------------------------------

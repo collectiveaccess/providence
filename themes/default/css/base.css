@@ -65,6 +65,8 @@ h2 { font-size: 13px; color: #666; }
 	-webkit-border-bottom-left-radius: 10px;
 	-moz-border-radius-bottomright: 10px; 
 	-webkit-border-bottom-right-radius: 10px;
+ 	 border-bottom-left-radius: 10px;
+ 	 border-bottom-right-radius: 10px;
 }
 *:first-child+html .roundedNav{padding-right:0px;} * html .roundedNav{padding-right:0px;}
 #topNav {
@@ -606,6 +608,8 @@ li.sfHover > a > .sf-sub-indicator {
 	-moz-border-radius-topright: 17px;
 	-webkit-border-top-right-radius: 17px;
 	-webkit-border-bottom-left-radius: 17px;
+	border-bottom-left-radius: 17px;
+	border-top-right-radius: 17px;
 	border:0px;
 }
 .sf-shadow ul.sf-shadow-off {
@@ -839,11 +843,12 @@ div.hint {
 	text-align: left;
 	background-color:#e6e6e6;
 	border: 2px solid #e6e6e6;
-
 	-moz-border-radius-topleft: 8px; 
 	-webkit-border-top-left-radius: 8px;
 	-moz-border-radius-topright: 8px; 
 	-webkit-border-top-right-radius: 8px;
+	border-top-right-radius: 8px;
+	border-top-left-radius: 8px;
 }
 
 .settingsBundle {
@@ -958,6 +963,7 @@ div.hint {
 	background: url('../graphics/backgrounds/tooltip_box.png');*/
 	-moz-border-radius: 10px; 
 	-webkit-border-top: 10px;
+	border-radius: 10px;
 	-moz-box-shadow: 2px 2px 5px #adadad;
 	-webkit-box-shadow: 2px 2px 5px #adadad;
 	box-shadow: 2px 2px 5px #adadad;
@@ -1179,6 +1185,7 @@ div.form-header-button {
 	-webkit-border-top-left-radius: 8px;
 	-moz-border-radius-topright: 8px; 
 	-webkit-border-top-right-radius: 8px;	
+	border-radius: 8px;
 }
 
 div.form-header-button a {
@@ -1790,27 +1797,24 @@ table.representationAnnotationListItem {
 	padding: 5px;
 }
 
-/* overlays (for object representations) */
+/* overlay (for object representations) */
 #caMediaPanel {
 	position: fixed; 
-	top: 1.5%; 
-	left: 1.5%; 
-	border: 4px solid #ccc; 
-	background-color: #FFFFFF; 
-	width: 97%; 
-	height: 97%; 
-	overflow: hidden;
+	top: 0px; 
+	left: 0px;
+	width: 100%; 
+	height: 100%; 
 	display: none;
-	margin: 0 auto;
+	margin: 0px;
 	padding: 0px;
 	z-index: 31000;			/* needs to be on top of menu bar, which has z-index=30000 */
 }
 #caMediaPanel #close{
 	float: right;
-	width:16px;
+	width:15px;
 	height:16px;
-	margin:7px;
-	background-image:url("../graphics/buttons/delete.gif");
+	margin:10px;
+	background-image:url("../graphics/buttons/x.png");
 }
 #caMediaPanel #close a{
 	text-decoration:none;
@@ -1818,42 +1822,78 @@ table.representationAnnotationListItem {
 }
 #caMediaPanelContentArea {
 	width: 100%; 
-	height: 100%; 
+	height: 100%;
 }
 
 #caMediaOverlayContent {
-	margin-top: 0px;
-	margin-left: 0px;
+	margin: 0px;
 	width: 100%;
 	height: 100%;
 	overflow: auto;
 	text-align: center;
 }
-
 div.caMediaOverlayControls {
-	background-color: #FFFFFF;
-	padding: 3px;
-	font-size: 9px;
-	margin-left: 0px;
-	height: 22px;
-	border-bottom:2px solid #ededed;
+	background-color: #000;
+	color:#FFF;
+	font-size: 11px;
+	text-align:center;
+	position:absolute;
+	padding: 10px 0px 10px 0px;
+	width:100%;
+	bottom:0px;
+	left:0px;
+	z-index: 32000;			/* needs to be on top of caMediaPanel, which has z-index=31000 */
+	/* opacity:.1;	 */
+	opacity: 1.0;
+}
+/* div.caMediaOverlayControls:hover {
+	opacity:1.0;
+	background-color:rgba(0,0,0,0.8);
+} */
+div.caMediaOverlayControls a{
+	text-decoration:none;
+	font-weight:bold;
+	font-size:16px;
+	color:#FFF;
+}
+div.caMediaOverlayControls a:hover{
+	color:#FFF;
+}
+div.caMediaOverlayControls .close{
+	float:right;
+	width:15px;
+	height:16px;
+	background-image:url("../graphics/buttons/x_white.png");
+	margin: 0px 10px 0px 20px;
+}
+div.caMediaOverlayControls .download{
+	float:right;
+	margin-left:20px;
+}
+div.caMediaOverlayControls .objectInfo{
+	font-size:11px;
+	color:#FFF;
+	padding-left:10px;
+	text-align:left;
+	width:40%;
+	float:left;
+}
+div.caMediaOverlayControls .repNav {
+	float:left;
+	width:16%;
+	padding: 0px 2% 0px 2%;
+	text-align:center;
+	color:#FFF;
 }
 
-select.caMediaOverlayControls {
-	font-size: 9px;
-}
-#caMediaOverlayThumbnails{
-	padding: 10px 0px 0px 0px;
-	text-align:center;
-	height:90px;
-	width:840px;
-	overflow:auto;
-}
-#caMediaOverlayThumbnails img{
-	margin:0px 1px 0px 1px;
-}
-#caMediaOverlayThumbnails div{
-	margin:0px auto 0px auto;
+.caAudioPlayer {
+	position: absolute;
+	top: 50%;
+	left: 50%;
+	width: 600px;
+	height: 32px;
+	margin-top: 16px;
+	margin-left: -300px;
 }
 
 /* overlays (for search results QuickLook) */
@@ -3108,6 +3148,7 @@ div.bundleDisplayEditorPlacement {
 	-webkit-border-bottom-left-radius: 8px;
 	-moz-border-radius-bottomright: 8px; 
 	-webkit-border-bottom-right-radius: 8px;
+	border-radius: 8px;
 }
 
 div.bundleDisplayEditorPlacementList {
@@ -3253,11 +3294,12 @@ a.dashboardControl {font-weight:bold; padding-right:10px; text-decoration:none;}
 	font-weight: bold;
 	text-align: left;
 	background-color:#828282;
-
 	-moz-border-radius-topleft: 8px; 
 	-webkit-border-top-left-radius: 8px;
 	-moz-border-radius-topright: 8px; 
 	-webkit-border-top-right-radius: 8px;
+	border-top-right-radius: 8px;
+	border-top-left-radius: 8px;
 }
 
 .portlet-content { 
@@ -3574,6 +3616,7 @@ div.jGrowl div.jGrowl-notification, div.jGrowl div.jGrowl-closer {
 	display: 				none;
 	-moz-border-radius: 	5px;
 	-webkit-border-radius:	5px;
+	border-radius: 			5px;
 }
 
 div.jGrowl div.jGrowl-notification {
@@ -3709,6 +3752,7 @@ div.roundedRel {
 	-webkit-border-radius: 10px;
 	-moz-border-radius: 10px; 
 	-webkit-border-bottom-right-radius: 10px;
+	border-radius: 10px;
 }
 
 .caItemList {
@@ -3744,6 +3788,7 @@ div.roundedRel {
 	-webkit-border-radius: 6px;
 	-moz-border-radius: 6px; 
 	-webkit-border-bottom-right-radius: 6px;
+	border-radius: 6px;
 }
 
 .roundedRel .caDeleteItemButton {
@@ -3808,6 +3853,7 @@ a.caDeleteLabelButton {
 	-webkit-border-radius: 10px;
 	-moz-border-radius: 10px; 
 	-webkit-border-radius: 10px;
+	border-radius: 10px;
 }
 
 
@@ -3873,6 +3919,7 @@ a.caDeleteLabelButton {
 	-webkit-border-top-left-radius: 3px;
 	-moz-border-radius-topright: 3px; 
 	-webkit-border-top-right-radius: 3px;
+	border-radius: 3px;
 }
 .caClientCommunicationsMessageSummaryHeading {
 	font-weight:bold;
@@ -3917,6 +3964,7 @@ a.caClientCommunicationsMessageReplyButton {
 	float:right;
 	-moz-border-radius: 4px; 
 	-webkit-border-radius: 4px;
+	border-radius: 4px;
 }
 a.caClientCommunicationsMessageReplyButton:hover {
 	background-color: #545454;
@@ -3929,6 +3977,7 @@ a.caClientCommunicationsMessageReplyButton:hover {
 	background-color:#e2e2e2;
 	-moz-border-radius: 10px; 
 	-webkit-border-radius: 10px;
+	border-radius: 10px;	
 }
 div.caClientCommunicationsMessageSummaryThreadButton {
 	text-align:right;
@@ -3938,7 +3987,7 @@ div.caClientCommunicationsMessageSummaryCounter {
 	background-color: #666666;
 	color: #F0F0F0;
 	padding: 3px;
-	
+	border-radius: 4px;	
 	-moz-border-radius: 4px; 
 	-webkit-border-radius: 4px;
 }
@@ -4041,6 +4090,7 @@ a.caClientCommunicationsNewOrderButton {
 	float:right;
 	-moz-border-radius: 4px; 
 	-webkit-border-radius: 4px;
+	border-radius: 4px;	
 }
 a.caClientCommunicationsNewOrderButton:hover {
 	background-color: #545454;
@@ -4118,6 +4168,7 @@ a.caClientCommunicationsNewOrderButton:hover {
 	background-color:#e2e2e2;
 	-moz-border-radius: 10px; 
 	-webkit-border-radius: 10px;
+	border-radius: 10px;
 	padding:10px;
 	margin:0px 0px 20px 0px;
 }
@@ -4138,7 +4189,7 @@ a.caClientCommunicationsNewOrderButton:hover {
 	text-align: left;
 	background-color:#e6e6e6;
 	padding:5px 10px 10px 10px;
-
+	border-radius: 8px;
 	-moz-border-radius: 8px; 
 	-webkit-border-radius: 8px;
 }
@@ -4169,6 +4220,7 @@ a.caClientOrderOverviewButton {
 	padding:3px 5px 4px 5px;
 	-moz-border-radius: 4px; 
 	-webkit-border-radius: 4px;
+	border-radius: 4px;
 }
 a.caClientOrderOverviewButton:hover {
 	background-color: #545454;
@@ -4193,6 +4245,7 @@ a.caClientOrderOverviewButton:hover {
 	background-color:#e2e2e2;
 	-moz-border-radius: 10px; 
 	-webkit-border-radius: 10px;
+	border-radius: 10px;	
 	padding:5px 20px 10px 15px;
 	margin:0px 0px 5px 0px;
 }
@@ -4207,6 +4260,7 @@ a.caClientOrderOverviewButton:hover {
 	float:right;
 	-moz-border-radius: 4px; 
 	-webkit-border-radius: 4px;
+	border-radius: 4px;	
 	margin-top:10px;
 }
 #caClientOrderCommunicationForm input[type="text"], #caClientOrderCommunicationForm input[type="textarea"], #caClientOrderCommunicationForm textarea, #caClientOrderCommunicationForm input{
@@ -4220,6 +4274,59 @@ a.caClientOrderOverviewButton:hover {
 
 .caClientLibraryLoadingIndicator {
 	background: white url('../graphics/icons/indicator.gif') right center no-repeat !important;
+}
+
+/* -------------------------------------------------*/
+/* Record-level Access screen                       */
+/* -------------------------------------------------*/
+
+.globalAccess {
+	background-color:#eee;
+	-moz-border-radius: 10px; 
+	-webkit-border-radius: 10px;
+	border-radius: 10px;
+	padding:10px;
+	margin-bottom: 15px;
+}
+.globalAccess .title {
+	font-size: 18px;
+	font-family: arial;
+	font-weight: normal;
+}
+.globalAccess .bundleContainer {
+	border: 0px;
+	padding-left:0px;
+
+}
+.globalAccess .labelInfo {
+	background-color:#eee;
+	border-top: none;
+}
+.globalAccess h2 {
+	padding-top:10px;
+	border-top: dotted 1px #ccc;
+	font-family: arial;
+	font-weight: normal;
+}
+#editGlobalAccess {
+	display:none;
+}
+#editUserAccess {
+	display:none;
+}
+.editLink a{
+	text-decoration:none;	
+	font-size: 12px;
+}
+div.editLink {
+	padding-top:25px;
+	float:right;
+}
+.accessName {
+	font-weight: bold;
+	font-size: 12px;
+	color: #134959;
+	line-height:1.75em;
 }
 
 /* -------------------------------------------------*/

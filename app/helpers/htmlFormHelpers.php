@@ -295,8 +295,8 @@
 	 */
 	function caHTMLImage($ps_url, $pa_options=null) {
 		if (!is_array($pa_options)) { $pa_options = array(); }
-		if (!isset($pa_options["width"])) $pa_options["width"] = 100;
-		if (!isset($pa_options["height"])) $pa_options["height"] = 100;
+		//if (!isset($pa_options["width"])) $pa_options["width"] = 100;
+		//if (!isset($pa_options["height"])) $pa_options["height"] = 100;
 		
 		$va_attributes = array('src' => $ps_url);
 		foreach(array('name', 'id',
@@ -371,7 +371,7 @@
 
 			$vs_flash_vars = "tpViewerUrl={$vs_viewer_base_url}/viewers/apps/tilepic.php&tpLabelProcessorURL={$viewer_label_processor_url}&tpImageUrl={$ps_url}&tpWidth={$vn_width}&tpHeight={$vn_height}&tpInitMagnification={$vn_init_magnification}&tpScales={$vn_layers}&tpRatio={$vn_ratio}&tpTileWidth={$vn_tile_width}&tpTileHeight={$vn_tile_height}&tpUseLabels={$vb_use_labels}&tpEditLabels={$vb_edit_labels}&tpParameterList={$vs_parameter_list}{$vs_app_parameters}&labelTypecode={$vn_label_typecode}&labelDefaultTitle=".urlencode($vs_label_title)."&labelTitleReadOnly={$vn_label_title_readonly}";
 			
-			$vs_error_tag = ($pa_options['alt_image_tag']) ? $pa_options['alt_image_tag'] : "Flash version 8 or better required!!!";
+			$vs_error_tag = ($pa_options['alt_image_tag']) ? $pa_options['alt_image_tag'] : '';
 			
 			$vn_viewer_width_with_units = $vn_viewer_width;
 			$vn_viewer_height_with_units = $vn_viewer_height; 

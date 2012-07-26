@@ -47,6 +47,7 @@ var caUI = caUI || {};
 			mobileSafariDeviceWidth:  "device-width",
 			mobileSafariDeviceHeight:  "device-height",
 			mobileSafariUserScaleable: false,
+			onOpenCallback: null,
 			onCloseCallback: null,
 			
 			isChanging: false
@@ -75,12 +76,15 @@ var caUI = caUI || {};
 					that.hidePanel();
 				})
 			} : null);
+			
+			if (that.onOpenCallback) {
+				that.onOpenCallback(url);
+			}
 		}
 		
 		that.hidePanel = function() {
 			if (that.onCloseCallback) {
 				that.onCloseCallback();
-				that.onCloseCallback = null;
 			}
 			that.setZoom(false);
 			that.isChanging = true;
