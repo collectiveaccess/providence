@@ -600,6 +600,14 @@
             </label>
           </labels>
         </item>
+        <item idno="page" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>page</name_singular>
+              <name_plural>page</name_plural>
+            </label>
+          </labels>
+        </item>
       </items>
     </list>
     <list code="languages" hierarchical="0" system="0" vocabulary="0">
@@ -8624,6 +8632,31 @@
         </restriction>
       </typeRestrictions>
     </metadataElement>
+	<metadataElement code="deed_gift" datatype="List" list="yes_no">
+      <labels>
+        <label locale="en_US">
+          <name>Deed of gift</name>
+          <description></description>
+        </label>
+      </labels>
+      <documentationUrl></documentationUrl>
+      <settings>
+        <setting name="render">radio_buttons</setting>
+        <setting name="fieldWidth">90</setting>
+        <setting name="fieldHeight">1</setting>
+      </settings>
+      <typeRestrictions>
+        <restriction code="r1">
+          <table>ca_objects</table>
+          <type></type>
+          <settings>
+            <setting name="minAttributesPerRow">1</setting>
+            <setting name="maxAttributesPerRow">1</setting>
+            <setting name="minimumAttributeBundlesToDisplay">1</setting>
+          </settings>
+        </restriction>
+      </typeRestrictions>
+    </metadataElement>
     <metadataElement code="version" datatype="Text">
       <labels>
         <label locale="en_US">
@@ -8789,6 +8822,9 @@
              </placement>
             <placement code="ca_attribute_circulation">
               <bundle>ca_attribute_circulation</bundle>
+            </placement>
+            <placement code="ca_attribute_deed_gift">
+              <bundle>ca_attribute_deed_gift</bundle>
             </placement>
             <placement code="ca_attribute_date">
               <bundle>ca_attribute_date</bundle>
