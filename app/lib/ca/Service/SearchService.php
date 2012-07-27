@@ -86,7 +86,7 @@ class SearchService extends BaseService {
 
 			// add display label
 			if(is_array($va_display_labels = $vo_result->getDisplayLabels())){
-				$vo_display_label = $vo_dom->createElement("displayLabel",array_pop($va_display_labels));
+				$vo_display_label = $vo_dom->createElement("displayLabel",caEscapeForXML(array_pop($va_display_labels)));
 				$vo_item->appendChild($vo_display_label);
 			}
 			

@@ -1407,14 +1407,14 @@ class ca_lists extends BundlableLabelableBaseModelWithAttributes {
 		$vs_sql = "
 			SELECT ca_list_items.item_id, ca_list_item_labels.*
 			FROM ca_list_items
-			INNER JOIN ca_list_item_labels ON ca_list_item_labels.item_id = ca_list_items.item_id
+			INNER JOIN ca_list_item_labels clil ON ca_list_item_labels.item_id = ca_list_items.item_id
 			".join("\n", $va_joins)."
 			WHERE
 				(ca_list_items.list_id = ?) AND (ca_list_item_labels.is_preferred = 1)
 				".(sizeof($va_sql_wheres) ? " AND ".join(' AND ', $va_sql_wheres) : "")."
 				
 			GROUP BY
-				ca_list_item_labels.label_id
+				ca_list_item_labels.label_id clil.".join(", clil.",$o_db->getFieldNamesFromTable("ca_list_item_labels"))."
 		";
 		
 		$qr_items = $o_db->query($vs_sql, (int)$vn_list_id);

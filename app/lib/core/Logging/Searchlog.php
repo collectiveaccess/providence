@@ -61,7 +61,7 @@ class Searchlog {
 				INSERT INTO ca_search_log 
 				(log_datetime, user_id, table_num, search_expression, num_hits, form_id, ip_addr, details, execution_time, search_source)
 				VALUES
-				(unix_timestamp(), ?, ?, ?, ?, ?, ?, ?, ?, ?)
+				(".time().", ?, ?, ?, ?, ?, ?, ?, ?, ?)
 			", $pa_entry['user_id'], $pa_entry['table_num'], $pa_entry['search_expression'], $pa_entry['num_hits'], $pa_entry['form_id'], $pa_entry['ip_addr'], $pa_entry['details'], $pa_entry['execution_time'], $pa_entry['search_source']);
 			
 			return true;

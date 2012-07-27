@@ -91,6 +91,11 @@ define("__CA_HIER_TYPE_MULTI_MONO__", 2);
 define("__CA_HIER_TYPE_ADHOC_MONO__", 3);
 define("__CA_HIER_TYPE_MULTI_POLY__", 4);
 
+# ------------------------------------------------------------------------------------
+# --- Media icon constants
+# ------------------------------------------------------------------------------------
+define("__CA_MEDIA_QUEUED_ICON__", 'queued');
+
 # ----------------------------------------------------------------------
 # --- Import classes
 # ----------------------------------------------------------------------
@@ -1068,6 +1073,7 @@ class BaseModel extends BaseObject {
 					case (FT_HISTORIC_DATE):
 						if (($this->DIRECT_DATETIMES) || ($pa_options["SET_DIRECT_DATE"])) {
 							$this->_FIELD_VALUES[$vs_field] = $vm_value;
+							$this->_FIELD_VALUE_CHANGED[$vs_field] = true;
 						} else {
 							if (!$vm_value && $this->FIELDS[$vs_field]["IS_NULL"]) {
 								if ($vs_cur_value) {
@@ -1637,7 +1643,12 @@ class BaseModel extends BaseObject {
 			$this->_FIELD_VALUES_OLD = $this->_FIELD_VALUES;
 			$this->_FILES_CLEAR = array();
 			
-			if ($vn_id = $this->getPrimaryKey()) { BaseModel::$s_instance_cache[$vs_table_name][$vn_id] = $this->_FIELD_VALUES; }
+			if ($vn_id = $this->getPrimaryKey()) {
+				if (sizeof(BaseModel::$s_instance_cache[$vs_table_name]) > 100) {		// Limit cache to 100 instances per table
+					array_pop(BaseModel::$s_instance_cache[$vs_table_name]);
+				}
+				BaseModel::$s_instance_cache[$vs_table_name][$vn_id] = $this->_FIELD_VALUES; 
+			}
 			return true;
 		} else {
 			if (!is_array($pm_id)) {
@@ -1665,7 +1676,7 @@ class BaseModel extends BaseObject {
 	 	$o_db = $this->getDb();
 	 	
 	 	$qr_up = $o_db->query("
-			SELECT MAX({$vs_hier_right_fld}) maxChildRight
+			SELECT MAX({$vs_hier_right_fld}) maxchildright
 			FROM ".$this->tableName()."
 			WHERE
 				({$vs_hier_left_fld} > ?) AND
@@ -1674,7 +1685,7 @@ class BaseModel extends BaseObject {
 		", $pa_parent_info[$vs_hier_left_fld], $pa_parent_info[$vs_hier_right_fld], $pa_parent_info[$this->primaryKey()]);
 	 
 	 	if ($qr_up->nextRow()) {
-	 		if (!($vn_gap_start = $qr_up->get('maxChildRight'))) {
+	 		if (!($vn_gap_start = $qr_up->get('maxchildright'))) {
 	 			$vn_gap_start = $pa_parent_info[$vs_hier_left_fld];
 	 		}
 	 	
@@ -3063,18 +3074,34 @@ class BaseModel extends BaseObject {
 	 * @param string $ps_field field name
 	 * @param string $ps_version version of the media file, as defined in media_processing.conf
 	 * @param int $pn_page page number, defaults to 1
+	 * @param array $pa_options Supported options include:
+	 *		localOnly = if true url to locally hosted media is always returned, even if an external url is available
+	 *		externalOnly = if true url to externally hosted media is always returned, even if an no external url is available
 	 * @return string the url
 	 */
-	public function getMediaUrl($ps_field, $ps_version, $pn_page=1) {
+	public function getMediaUrl($ps_field, $ps_version, $pn_page=1, $pa_options=null) {
 		$va_media_info = $this->getMediaInfo($ps_field);
 		if (!is_array($va_media_info)) {
 			return "";
 		}
 
 		#
+		# Use icon
+		#
+		if (isset($va_media_info[$ps_version]['USE_ICON']) && ($vs_icon_code = $va_media_info[$ps_version]['USE_ICON'])) {
+			return caGetDefaultMediaIconUrl($vs_icon_code, $va_media_info[$ps_version]['WIDTH'], $va_media_info[$ps_version]['HEIGHT']);
+		}
+		
+		#
 		# Is this version externally hosted?
 		#
-		if (isset($va_media_info[$ps_version]["EXTERNAL_URL"]) && ($va_media_info[$ps_version]["EXTERNAL_URL"])) {
+		if (!isset($pa_options['localOnly']) || !$pa_options['localOnly']){
+			if (isset($va_media_info[$ps_version]["EXTERNAL_URL"]) && ($va_media_info[$ps_version]["EXTERNAL_URL"])) {
+				return $va_media_info[$ps_version]["EXTERNAL_URL"];
+			}
+		}
+		
+		if (isset($pa_options['externalOnly']) && $pa_options['externalOnly']) {
 			return $va_media_info[$ps_version]["EXTERNAL_URL"];
 		}
 		
@@ -3082,16 +3109,12 @@ class BaseModel extends BaseObject {
 		# Is this version queued for processing?
 		#
 		if (isset($va_media_info[$ps_version]["QUEUED"]) && ($va_media_info[$ps_version]["QUEUED"])) {
-			if ($va_media_info[$ps_version]["QUEUED_ICON"]["src"]) {
-				return $va_media_info[$ps_version]["QUEUED_ICON"]["src"];
-			} else {
-				return "";
-			}
+			return null;
 		}
 
 		$va_volume_info = $this->_MEDIA_VOLUMES->getVolumeInformation($va_media_info[$ps_version]["VOLUME"]);
 		if (!is_array($va_volume_info)) {
-			return "";
+			return null;
 		}
 
 		# is this mirrored?
@@ -3136,6 +3159,13 @@ class BaseModel extends BaseObject {
 		}
 
 		#
+		# Use icon
+		#
+		if (isset($va_media_info[$ps_version]['USE_ICON']) && ($vs_icon_code = $va_media_info[$ps_version]['USE_ICON'])) {
+			return caGetDefaultMediaIconPath($vs_icon_code, $va_media_info[$ps_version]['WIDTH'], $va_media_info[$ps_version]['HEIGHT']);
+		}
+
+		#
 		# Is this version externally hosted?
 		#
 		if (isset($va_media_info[$ps_version]["EXTERNAL_URL"]) && ($va_media_info[$ps_version]["EXTERNAL_URL"])) {
@@ -3146,11 +3176,7 @@ class BaseModel extends BaseObject {
 		# Is this version queued for processing?
 		#
 		if (isset($va_media_info[$ps_version]["QUEUED"]) && $va_media_info[$ps_version]["QUEUED"]) {
-			if ($va_media_info[$ps_version]["QUEUED_ICON"]["filepath"]) {
-				return $va_media_info[$ps_version]["QUEUED_ICON"]["filepath"];
-			} else {
-				return "";
-			}
+			return null;
 		}
 
 		$va_volume_info = $this->_MEDIA_VOLUMES->getVolumeInformation($va_media_info[$ps_version]["VOLUME"]);
@@ -3180,30 +3206,33 @@ class BaseModel extends BaseObject {
 	 * @param int $align align attribute of the img tag - note: deprecated in HTML 4.01, not supported in XHTML 1.0 Strict
 	 * @return string html tag
 	 */
-	public function getMediaTag($field, $version, $pa_options=null) {
-		$media_info = $this->getMediaInfo($field);
-		if (!is_array($media_info[$version])) {
+	public function getMediaTag($ps_field, $ps_version, $pa_options=null) {
+		$va_media_info = $this->getMediaInfo($ps_field);
+		if (!is_array($va_media_info[$ps_version])) {
 			return "";
 		}
 
 		#
+		# Use icon
+		#
+		if (isset($va_media_info[$ps_version]['USE_ICON']) && ($vs_icon_code = $va_media_info[$ps_version]['USE_ICON'])) {
+			return caGetDefaultMediaIconTag($vs_icon_code, $va_media_info[$ps_version]['WIDTH'], $va_media_info[$ps_version]['HEIGHT']);
+		}
+		
+		#
 		# Is this version queued for processing?
 		#
-		if (isset($media_info[$version]["QUEUED"]) && ($media_info[$version]["QUEUED"])) {
-			if ($media_info[$version]["QUEUED_ICON"]["src"]) {
-				return "<img src='".$media_info[$version]["QUEUED_ICON"]["src"]."' width='".$media_info[$version]["QUEUED_ICON"]["width"]."' height='".$media_info[$version]["QUEUED_ICON"]["height"]."' alt='".$media_info[$version]["QUEUED_ICON"]["alt"]."'>";
-			} else {
-				return $media_info[$version]["QUEUED_MESSAGE"];
-			}
+		if (isset($va_media_info[$ps_version]["QUEUED"]) && ($va_media_info[$ps_version]["QUEUED"])) {
+			return $va_media_info[$ps_version]["QUEUED_MESSAGE"];
 		}
 
-		$url = $this->getMediaUrl($field, $version, isset($options["page"]) ? $options["page"] : null);
+		$url = $this->getMediaUrl($ps_field, $ps_version, isset($options["page"]) ? $options["page"] : null);
 		$m = new Media();
 		
 		$o_vol = new MediaVolumes();
-		$va_volume = $o_vol->getVolumeInformation($media_info[$version]['VOLUME']);
+		$va_volume = $o_vol->getVolumeInformation($va_media_info[$ps_version]['VOLUME']);
 
-		return $m->htmlTag($media_info[$version]["MIMETYPE"], $url, $media_info[$version]["PROPERTIES"], $pa_options, $va_volume);
+		return $m->htmlTag($va_media_info[$ps_version]["MIMETYPE"], $url, $va_media_info[$ps_version]["PROPERTIES"], $pa_options, $va_volume);
 	}
 
 	/**
@@ -3225,20 +3254,44 @@ class BaseModel extends BaseObject {
 	 * -MD5
 	 * @return mixed media information
 	 */
-	public function &getMediaInfo($field, $version="", $property="") {
-		$media_info = $this->get($field, array('USE_MEDIA_FIELD_VALUES' => true));
-		if (!is_array($media_info)) {
+	public function &getMediaInfo($ps_field, $ps_version=null, $ps_property=null) {
+		$va_media_info = $this->get($ps_field, array('USE_MEDIA_FIELD_VALUES' => true));
+		if (!is_array($va_media_info)) {
 			return "";
 		}
-
-		if ($version) {
-			if (!$property) {
-				return $media_info[$version];
-			} else {
-				return $media_info[$version][$property];
+		
+		#
+		# Use icon
+		#
+		if ($ps_version && (!$ps_property || (in_array($ps_property, array('WIDTH', 'HEIGHT'))))) {
+			if (isset($va_media_info[$ps_version]['USE_ICON']) && ($vs_icon_code = $va_media_info[$ps_version]['USE_ICON'])) {
+				if ($va_icon_size = caGetMediaIconForSize($vs_icon_code, $va_media_info[$ps_version]['WIDTH'], $va_media_info[$ps_version]['HEIGHT'])) {
+					$va_media_info[$ps_version]['WIDTH'] = $va_icon_size['width'];
+					$va_media_info[$ps_version]['HEIGHT'] = $va_icon_size['height'];
+				}
 			}
 		} else {
-			return $media_info;
+			if (!$ps_property || (in_array($ps_property, array('WIDTH', 'HEIGHT')))) {
+				foreach(array_keys($va_media_info) as $vs_version) {
+					if (isset($va_media_info[$vs_version]['USE_ICON']) && ($vs_icon_code = $va_media_info[$vs_version]['USE_ICON'])) {
+						if ($va_icon_size = caGetMediaIconForSize($vs_icon_code, $va_media_info[$vs_version]['WIDTH'], $va_media_info[$vs_version]['HEIGHT'])) {
+							if (!$va_icon_size['size']) { continue; }
+							$va_media_info[$vs_version]['WIDTH'] = $va_icon_size['width'];
+							$va_media_info[$vs_version]['HEIGHT'] = $va_icon_size['height'];
+						}
+					}
+				} 
+			}
+		}
+
+		if ($ps_version) {
+			if (!$ps_property) {
+				return $va_media_info[$ps_version];
+			} else {
+				return $va_media_info[$ps_version][$ps_property];
+			}
+		} else {
+			return $va_media_info;
 		}
 	}
 
@@ -3684,6 +3737,8 @@ class BaseModel extends BaseObject {
 				
 				$vs_path_to_queue_media = null;
 				foreach ($va_versions as $v) {
+					$vs_use_icon = null;
+					
 					if (sizeof($va_process_these_versions_only) && (!in_array($v, $va_process_these_versions_only))) {
 						// only processing certain versions... and this one isn't it so skip
 						continue;
@@ -3896,9 +3951,6 @@ class BaseModel extends BaseObject {
 						}
 						$magic = rand(0,99999);
 						$filepath = $vi["absolutePath"]."/".$dirhash."/".$magic."_".$this->_genMediaName($ps_field)."_".$v;
-
-
-						$va_output_files = array();
 						
 						if (!($vs_output_file = $m->write($filepath, $output_mimetype, $va_media_write_options))) {
 							$this->postError(1600,_t("Couldn't write file: %1", join("; ", $m->getErrors())),"BaseModel->_processMedia()");
@@ -3908,11 +3960,19 @@ class BaseModel extends BaseObject {
 							return false;
 							break;
 						} else {
-							$va_output_files[] = $vs_output_file;
+							if (
+								($vs_output_file === __CA_MEDIA_VIDEO_DEFAULT_ICON__)
+								||
+								($vs_output_file === __CA_MEDIA_AUDIO_DEFAULT_ICON__)
+								||
+								($vs_output_file === __CA_MEDIA_DOCUMENT_DEFAULT_ICON__)
+							) {
+								$vs_use_icon = $vs_output_file;
+							}
 						}
-						
 						if ($v === $va_default_queue_settings['QUEUE_USING_VERSION']) {
 							$vs_path_to_queue_media = $vs_output_file;
+							$vs_use_icon = __CA_MEDIA_QUEUED_ICON__;
 						}
 
 						if (($pa_options['delete_old_media']) && (!$error)) {
@@ -3970,19 +4030,27 @@ class BaseModel extends BaseObject {
 						}
 
 						
-						$media_desc[$v] = array(
-							"VOLUME" => $volume,
-							"MIMETYPE" => $output_mimetype,
-							"WIDTH" => $m->get("width"),
-							"HEIGHT" => $m->get("height"),
-							"PROPERTIES" => $m->getProperties(),
-							"FILENAME" => $this->_genMediaName($ps_field)."_".$v.".".$ext,
-							"HASH" => $dirhash,
-							"MAGIC" => $magic,
-							"EXTENSION" => $ext,
-							"MD5" => md5_file($vi["absolutePath"]."/".$dirhash."/".$magic."_".$this->_genMediaName($ps_field)."_".$v.".".$ext)
-						);
-
+						if ($vs_use_icon) {
+							$media_desc[$v] = array(
+								"MIMETYPE" => $output_mimetype,
+								"USE_ICON" => $vs_use_icon,
+								"WIDTH" => $m->get("width"),
+								"HEIGHT" => $m->get("height")
+							);
+						} else {
+							$media_desc[$v] = array(
+								"VOLUME" => $volume,
+								"MIMETYPE" => $output_mimetype,
+								"WIDTH" => $m->get("width"),
+								"HEIGHT" => $m->get("height"),
+								"PROPERTIES" => $m->getProperties(),
+								"FILENAME" => $this->_genMediaName($ps_field)."_".$v.".".$ext,
+								"HASH" => $dirhash,
+								"MAGIC" => $magic,
+								"EXTENSION" => $ext,
+								"MD5" => md5_file($vi["absolutePath"]."/".$dirhash."/".$magic."_".$this->_genMediaName($ps_field)."_".$v.".".$ext)
+							);
+						}
 						$m->reset();
 					}
 				}
@@ -4455,28 +4523,16 @@ class BaseModel extends BaseObject {
 	 * @param string $val optional field value
 	 */
 	public function &quote ($field, $val=null) {
+		$o_db = $this->getDb();
 		if (is_null($val)) {	# just quote it!
-			$field = "'".$this->escapeForDatabase($field)."'";
-			return $field;# quote only if field needs it
-		} else {
+			$field = $o_db->quote($field);
+			return $field;
+		} else {# quote only if field needs it
 			if ($this->_getFieldTypeType($field) == 1) {
-				$val = "'".$this->escapeForDatabase($val)."'";
+				$val = $o_db->quote($val);
 			}
 			return $val;
 		}
-	}
-	# --------------------------------------------------------------------------------
-	/**
-	 * Escapes a string for SQL use
-	 * 
-	 * @access public
-	 * @param string $ps_value
-	 * @return string
-	 */
-	public function escapeForDatabase ($ps_value) {
-		$o_db = $this->getDb();
-
-		return $o_db->escape($ps_value);
 	}
 	# --------------------------------------------------------------------------------
 	/**
@@ -5839,20 +5895,26 @@ class BaseModel extends BaseObject {
 			}
 			
 			if ($pb_return_child_counts) {
-				$qr_hier = $o_db->query("
-					SELECT ".$this->tableName().".* ".(sizeof($va_additional_table_select_fields) ? ', '.join(', ', $va_additional_table_select_fields) : '').", count(*) child_count, p2.".$this->primaryKey()." has_children
+				$vs_fields = "{$this->tableName()}.".join(', '.$this->tableName().'.', $o_db->getFieldNamesFromTable($this->tableName())).
+					(sizeof($va_additional_table_select_fields) ? 
+						', '.join(', ', $va_additional_table_select_fields) : 
+						'').
+					", p2.".$this->primaryKey();
+				$vs_hier_sql = "
+					SELECT count(*) child_count, {$vs_fields} has_children 
 					FROM ".$this->tableName()."
 					{$vs_sql_joins}
 					LEFT JOIN ".$this->tableName()." AS p2 ON p2.".$vs_hier_parent_id_fld." = ".$this->tableName().".".$this->primaryKey()."
 					WHERE
 						(".$this->tableName().".{$vs_hier_parent_id_fld} = ?) ".((sizeof($va_additional_table_wheres) > 0) ? ' AND '.join(' AND ', $va_additional_table_wheres) : '')."
 					GROUP BY
-						".$this->tableName().".".$this->primaryKey()." {$vs_additional_table_to_join_group_by}
+						".$this->tableName().".".$this->primaryKey()." {$vs_additional_table_to_join_group_by}, {$vs_fields}
 					ORDER BY
 						".$vs_order_by."
-				", $pn_id);
+				";
+				$qr_hier = $o_db->query($vs_hier_sql, $pn_id);
 			} else {
-				$qr_hier = $o_db->query("
+				$vs_hier_sql = "
 					SELECT ".$this->tableName().".* ".(sizeof($va_additional_table_select_fields) ? ', '.join(', ', $va_additional_table_select_fields) : '')."
 					FROM ".$this->tableName()."
 					{$vs_sql_joins}
@@ -5860,7 +5922,8 @@ class BaseModel extends BaseObject {
 						(".$this->tableName().".{$vs_hier_parent_id_fld} = ?) ".((sizeof($va_additional_table_wheres) > 0) ? ' AND '.join(' AND ', $va_additional_table_wheres) : '')."
 					ORDER BY
 						".$vs_order_by."
-				", $pn_id);
+				";
+				$qr_hier = $o_db->query($vs_hier_sql, $pn_id == 'NULL' ? null : $pn_id);
 			}
 			if ($o_db->numErrors()) {
 				$this->errors = array_merge($this->errors, $o_db->errors());
@@ -6838,10 +6901,11 @@ $pa_options["display_form_field_tips"] = true;
 				 });
 			},
 			{
-				toolbar: [['Bold','Italic','Underline','Strike','-','Subscript', 'Superscript'], ['-', 'NumberedList', 'BulletedList', 'Outdent', 'Indent', 'Blockquote', '-', 'Link', 'Unlink'],['Undo', 'Redo', '-', 'SpellChecker']],
+				toolbar: ".json_encode(array_values($this->getAppConfig()->getAssoc('wysiwyg_editor_toolbar'))).",
 				width: '{$vs_width}',
 				height: '{$vs_height}',
-				toolbarLocation: 'top'
+				toolbarLocation: 'top',
+				enterMode: CKEDITOR.ENTER_BR
 			}
 		);
  	});									
@@ -8568,14 +8632,15 @@ $pa_options["display_form_field_tips"] = true;
 		}
 		
 		
+		$vs_fields = 't.'.join(', t.', $o_db->getFieldNamesFromTable($this->tableName()));
 		$qr_res = $o_db->query("
-			SELECT t.*, count(*) cnt
+			SELECT {$vs_fields}, count(*) cnt
 			FROM ".$this->tableName()." t
 			INNER JOIN ca_item_views AS civ ON civ.row_id = t.".$this->primaryKey()."
 			WHERE
 				civ.table_num = ? AND row_id = ? {$vs_user_sql} {$vs_access_sql}
 			GROUP BY
-				civ.row_id
+				civ.row_id, {$vs_fields}
 			ORDER BY
 				cnt DESC
 			{$vs_limit_sql}

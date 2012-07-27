@@ -38,7 +38,8 @@
 	table.page_footer {width: 100%; border: none; background-color: #<?php print $this->request->config->get('summary_footer_color')?>; color: #FFFFFF; padding: 1mm}
 	span.label {font-weight: bold }
 	div.data {border-bottom: 1px solid #cccccc; margin-top: 10px; }
-	.headerText { color: #FFFFFF; margin: 0px 0px 10px 35px; }
+	.headerText { color: #<?php print ($this->request->config->get('summary_text_color')) ? $this->request->config->get('summary_text_color') : "FFFFFF"; ?>; margin: 0px 0px 10px 35px; }
+	.footerText { color: #<?php print ($this->request->config->get('summary_footer_text_color')) ? $this->request->config->get('summary_footer_text_color') : "FFFFFF"; ?>; }
 -->
 </style>
 	<page backtop="14mm" backbottom="14mm" backleft="10mm" backright="10mm" style="font-size: 12pt">
@@ -48,9 +49,15 @@
 		<page_header>
 			<table class="page_header">
 				<tr>
+<?php
+				if(file_exists($this->request->getThemeDirectoryPath()."/graphics/logos/".$this->request->config->get('summary_img'))){
+?>
 					<td style="width: 50%; text-align: left;">
-						<img src="<?php print $this->request->getThemeDirectoryPath()."/graphics/logos/".$this->request->config->get('summary_img')?>"/>
+						<img src="<?php print $this->request->getThemeDirectoryPath()."/graphics/logos/".$this->request->config->get('summary_img'); ?>"/>
 					</td>
+<?php
+				}
+?>
 					<td style="width: 50%; text-align: right;">
 <?php  
 						if($this->request->config->get('summary_show_timestamp')) {
@@ -76,8 +83,8 @@
 					<td style="width: 33%; text-align: left;">
 						&nbsp;
 					</td>
-					<td style="width: 34%; text-align: center">
-						page [[page_cu]]/[[page_nb]]
+					<td style="width: 34%; text-align: center" class="footerText">
+						<?php print _t("page"); ?> [[page_cu]]/[[page_nb]]
 					</td>
 					<td style="width: 33%; text-align: right">
 						&nbsp;

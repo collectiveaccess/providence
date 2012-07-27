@@ -86,7 +86,9 @@
 	 * initializes an existing map with the given mapoptions
 	 */
 	function initExistingMap(mapdata,mapOptions){
+		if (!mapdata) { return; }
 		mapdata.map = new google.maps.Map(jQuery(mapdata.mapholder).find('.map:first').get(0), mapOptions);
+		if (!mapdata.coordinates) { initNewMap(mapdata, mapOptions); return; }
 		var re = /\[([\d\.\-,; ]+)\]/;
 		var latlong = re.exec(mapdata.coordinates)[1];
 		var pointList = latlong.split(';');

@@ -527,8 +527,15 @@ class WLPlugMediaOffice Extends WLPlug Implements IWLPlugMedia {
 		return true;
 	}
 	# ----------------------------------------------------------
-	public function write($ps_filepath, $ps_mimetype) {
+	/**
+	 * @param array $pa_options Options include:
+	 *		dontUseDefaultIcons = If set to true, write will fail rather than use default icons when preview can't be generated. Default is false – to use default icons.
+	 *
+	 */
+	public function write($ps_filepath, $ps_mimetype, $pa_options=null) {
 		if (!$this->handle) { return false; }
+		
+		$vb_dont_allow_default_icons = (isset($pa_options['dontUseDefaultIcons']) && $pa_options['dontUseDefaultIcons']) ? true : false;
 		
 		# is mimetype valid?
 		if (!($vs_ext = $this->info["EXPORT"][$ps_mimetype])) {
@@ -593,22 +600,7 @@ class WLPlugMediaOffice Extends WLPlug Implements IWLPlugMedia {
 			
 			# use default media icons
 			if (!file_exists($vs_filepath_with_extension)) {	// always jpegs
-				if (file_exists($this->opo_config->get("default_media_icons"))) {
-					$o_icon_info = Configuration::load($this->opo_config->get("default_media_icons"));
-					if ($va_icon_info = $o_icon_info->getAssoc('application/msword')) {
-						$vs_icon_path = $o_icon_info->get("icon_folder_path");
-						if (!copy($vs_icon_path."/".trim($va_icon_info[$this->get("version")]),$ps_filepath.'.'.$vs_ext)) {
-							$this->postError(1610, _t("Can't copy icon file from %1 to %2", $vs_icon_path."/".trim($va_icon_info[$this->get("version")]), $ps_filepath.'.'.$vs_ext), "WLPlugMediaOffice->write()");
-							return false;
-						}
-					} else {
-						$this->postError(1610, _t("No icon available for this media type (system misconfiguration)"), "WLPlugMediaOffice->write()");
-						return false;
-					}
-				} else {
-					$this->postError(1610, _t("No icons available (system misconfiguration)"), "WLPlugMediaOffice->write()");
-					return false;
-				}
+				return $vb_dont_allow_default_icons ? null : __CA_MEDIA_DOCUMENT_DEFAULT_ICON__;
 			}
 		}
 		
@@ -627,7 +619,7 @@ class WLPlugMediaOffice Extends WLPlug Implements IWLPlugMedia {
 		if ($vs_pdf_path = WLPlugMediaOffice::$s_pdf_conv_cache[$this->filepath]) {
 			$o_media = new Media();
 			if ($o_media->read($vs_pdf_path)) {
-				return $o_media->writePreviews($pa_options);	
+				return $o_media->writePreviews(array_merge($pa_options, array('dontUseDefaultIcons' => true)));	
 			}
 		
 		}

@@ -425,7 +425,9 @@ class ca_entities extends BundlableLabelableBaseModelWithAttributes implements I
 				(ca_entity_labels.is_preferred = 1)
 				".(sizeof($va_sql_wheres) ? " AND ".join(' AND ', $va_sql_wheres) : "")."
 			GROUP BY
-				ca_entity_labels.label_id
+				ca_entity_labels.label_id,
+				ca_entities.entity_id, ca_entities.idno, ca_entities.type_id, 
+			ca_entity_labels.forename, ca_entity_labels.middlename, ca_entity_labels.surname, ca_entity_labels.displayname
 			ORDER BY ca_entity_labels.surname, ca_entity_labels.forename
 		";
 		

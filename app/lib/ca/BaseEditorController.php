@@ -291,6 +291,7 @@
 					// Set ACL for newly created record
 					if ($t_subject->getAppConfig()->get('perform_item_level_access_checking')) {
 						$t_subject->setACLUsers(array($this->request->getUserID() => __CA_ACL_EDIT_DELETE_ACCESS__));
+						$t_subject->setACLWorldAccess($t_subject->getAppConfig()->get('default_item_access_level'));
 					}
 					
 					// If "above_id" is set then, we want to load the record pointed to by it and set its' parent to be the newly created record

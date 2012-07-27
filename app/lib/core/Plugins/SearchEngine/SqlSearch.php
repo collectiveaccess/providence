@@ -44,6 +44,7 @@
  require_once(__CA_LIB_DIR__.'/core/Parsers/TimeExpressionParser.php');
  require_once(__CA_MODELS_DIR__.'/ca_metadata_elements.php');
  require_once(__CA_APP_DIR__.'/helpers/gisHelpers.php');
+ require_once(__CA_APP_DIR__.'/helpers/dbHelpers.php');
  require_once(__CA_LIB_DIR__.'/core/Plugins/SearchEngine/BaseSearchPlugin.php');
 
 class WLPlugSearchEngineSqlSearch extends BaseSearchPlugin implements IWLPlugSearchEngine {
@@ -137,6 +138,10 @@ class WLPlugSearchEngineSqlSearch extends BaseSearchPlugin implements IWLPlugSea
 		}
 		if (!($this->ops_search_tokenizer_regex = trim($this->opo_search_config->get('search_tokenizer_regex')))) {
 			$this->ops_search_tokenizer_regex = "^\pL\pN\pNd/_#\@\&";
+		}
+		
+		if (!is_array($this->opa_asis_regexes = $this->opo_search_config->getList('asis_regexes'))) {
+			$this->opa_asis_regexes = array();
 		}
 		
 		
@@ -333,7 +338,7 @@ class WLPlugSearchEngineSqlSearch extends BaseSearchPlugin implements IWLPlugSea
 				$vs_where_sql = " WHERE ".join(" AND ", $va_wheres);
 			}
 			$vs_sql = "
-				SELECT DISTINCT row_id
+				SELECT DISTINCT row_id, boost
 				FROM ca_sql_search_search_final
 				{$vs_join_sql}
 				{$vs_where_sql}
@@ -357,15 +362,30 @@ class WLPlugSearchEngineSqlSearch extends BaseSearchPlugin implements IWLPlugSea
 	}
 	# -------------------------------------------------------
 	private function _createTempTable($ps_name) {
-		$this->opo_db->query("
-			CREATE TEMPORARY TABLE {$ps_name} (
-				row_id int unsigned not null,
-				boost int not null default 1,
-				
-				unique key i_row_id (row_id),
-				key i_boost (boost)
-			) engine=memory;
-		");
+		$this->opo_db->createTemporaryTable($ps_name, array(array("name" => "row_id", 
+															"type" => "int", 
+															"length" => 0, 
+															"primary_key" => false, 
+															"null" => false,
+															"default" => false),
+													array("name" => "boost", 
+															"type" => "int", 
+															"length" => 0, 
+															"primary_key" => false, 
+															"null" => false, 
+															"default" => true, 
+															"defaultval" => 1)),
+													"memory");
+		if ($this->opo_db->numErrors()) {
+			return false;
+		}
+		$this->opo_db->query("CREATE UNIQUE INDEX {$ps_name}_i_row_id ON {$ps_name}(row_id)");
+
+		if ($this->opo_db->numErrors()) {
+			return false;
+		}
+		$this->opo_db->query("CREATE INDEX {$ps_name}_i_boost ON {$ps_name}(boost)");
+		
 		if ($this->opo_db->numErrors()) {
 			return false;
 		}
@@ -440,23 +460,19 @@ class WLPlugSearchEngineSqlSearch extends BaseSearchPlugin implements IWLPlugSea
 							$this->_createTempTable($ps_dest_table.'_acc');
 							
 							if ($vn_i == 0) {
-								$vs_sql = "
-									INSERT IGNORE INTO {$ps_dest_table}
+								$vs_select_sql = "
 									SELECT DISTINCT row_id, boost
 									FROM ca_sql_search_temp_{$pn_level}
 								";
-								//print "$vs_sql<hr>";
-								$qr_res = $this->opo_db->query($vs_sql);
+								$qr_res = caSQLInsertIgnore($this->opo_db, $ps_dest_table, $vs_select_sql);
 							} else {
-								$vs_sql = "
-									INSERT IGNORE INTO {$ps_dest_table}_acc
-									SELECT mfs.row_id, SUM(mfs.boost)
+								$vs_sql_select = "
+									SELECT mfs.row_id, SUM(mfs.boost) AS boost
 									FROM {$ps_dest_table} mfs
 									INNER JOIN ca_sql_search_temp_{$pn_level} AS ftmp1 ON ftmp1.row_id = mfs.row_id
 									GROUP BY mfs.row_id
 								";
-								//print "$vs_sql<hr>";
-								$qr_res = $this->opo_db->query($vs_sql);
+								$qr_res = caSQLInsertIgnore($this->opo_db, $ps_dest_table, $vs_select_sql);
 								
 								$qr_res = $this->opo_db->query("TRUNCATE TABLE {$ps_dest_table}");
 								
@@ -477,14 +493,13 @@ class WLPlugSearchEngineSqlSearch extends BaseSearchPlugin implements IWLPlugSea
 						default:
 						case 'OR':
 							// or
-							$vs_sql = "
-								INSERT IGNORE INTO {$ps_dest_table}
-								SELECT row_id, SUM(boost)
+							$vs_select_sql = "
+								SELECT row_id, SUM(boost) AS boost
 								FROM ca_sql_search_temp_{$pn_level}
 								GROUP BY row_id
 							";
 							//print "$vs_sql<hr>";
-							$qr_res = $this->opo_db->query($vs_sql);
+							$qr_res = caSQLInsertIgnore($this->opo_db, $ps_dest_table, $vs_select_sql);
 							break;
 					}
 					
@@ -652,7 +667,7 @@ class WLPlugSearchEngineSqlSearch extends BaseSearchPlugin implements IWLPlugSea
 							$vs_access_point = $o_lucene_query_element->getTerm()->field;
 							$vs_term = $o_lucene_query_element->getTerm()->text;
 							
-							$va_terms = $this->_tokenize($vs_term, true);
+							$va_terms = $this->_tokenize($vs_term, true, $vn_i);
 							$vb_output_term = false;
 							foreach($va_terms as $vs_term) {
 								if (in_array(trim(mb_strtolower($vs_term, 'UTF-8')), WLPlugSearchEngineSqlSearch::$s_stop_words)) { continue; }
@@ -668,10 +683,10 @@ class WLPlugSearchEngineSqlSearch extends BaseSearchPlugin implements IWLPlugSea
 												}
 												$va_ft_stem_terms[] = "'".$this->opo_db->escape($vs_stem)."'";
 											} else {
-												$va_ft_terms[] = '"'.$this->opo_db->escape($vs_term).'"';
+												$va_ft_terms[] = "'".$this->opo_db->escape($vs_term)."'";
 											}
 										} else {
-											$va_ft_terms[] = '"'.$this->opo_db->escape($vs_term).'"';
+											$va_ft_terms[] = "'".$this->opo_db->escape($vs_term)."'";
 										}
 										$vb_output_term = true;	
 								}
@@ -995,7 +1010,7 @@ class WLPlugSearchEngineSqlSearch extends BaseSearchPlugin implements IWLPlugSea
 						}
 						
 						if (!sizeof($va_sql_where)) { continue; }
-						$vs_sql_where = join(' AND ', $va_sql_where);
+						$vs_sql_where = join(' OR ', $va_sql_where);
 					}
 					
 					
@@ -1004,9 +1019,8 @@ class WLPlugSearchEngineSqlSearch extends BaseSearchPlugin implements IWLPlugSea
 						if ($vs_direct_sql_query) {
 							$vs_direct_sql_query = str_replace('^JOIN', "", $vs_direct_sql_query);
 						}
-						$vs_sql = ($vs_direct_sql_query) ? "INSERT IGNORE INTO {$ps_dest_table} {$vs_direct_sql_query}" : "
-							INSERT IGNORE INTO {$ps_dest_table}
-							SELECT swi.row_id, SUM(swi.boost)
+						$vs_select_sql = ($vs_direct_sql_query) ? $vs_direct_sql_query : "
+							SELECT swi.row_id, SUM(swi.boost) AS boost
 							FROM ca_sql_search_word_index swi
 							INNER JOIN ca_sql_search_words AS sw ON sw.word_id = swi.word_id
 							WHERE
@@ -1018,11 +1032,10 @@ class WLPlugSearchEngineSqlSearch extends BaseSearchPlugin implements IWLPlugSea
 						";
 						
 						if ((($vn_num_terms = (sizeof($va_ft_terms) + sizeof($va_ft_like_terms) + sizeof($va_ft_stem_terms))) > 1) && (!$vs_direct_sql_query)){
-							$vs_sql .= " HAVING count(distinct sw.word_id) = {$vn_num_terms}";
+							$vs_select_sql .= " HAVING count(distinct sw.word_id) = {$vn_num_terms}";
 						}
 						
-						if ($this->debug) { print 'FIRST: '.$vs_sql." [$pn_subject_tablenum]<hr>\n"; }
-						$qr_res = $this->opo_db->query($vs_sql, (int)$pn_subject_tablenum);
+						$qr_res = caSQLInsertIgnore($this->opo_db, $ps_dest_table, $vs_select_sql, (int)$pn_subject_tablenum);
 					} else {
 						switch($vs_op) {
 							case 'AND':
@@ -1030,9 +1043,8 @@ class WLPlugSearchEngineSqlSearch extends BaseSearchPlugin implements IWLPlugSea
 									$vs_direct_sql_query = str_replace('^JOIN', "INNER JOIN {$ps_dest_table} AS ftmp1 ON ftmp1.row_id = ca.row_id", $vs_direct_sql_query);
 								}
 								$this->_createTempTable($ps_dest_table.'_acc');
-								$vs_sql = ($vs_direct_sql_query) ? "INSERT IGNORE INTO {$ps_dest_table}_acc {$vs_direct_sql_query}" : "
-									INSERT IGNORE INTO {$ps_dest_table}_acc
-									SELECT swi.row_id, SUM(swi.boost)
+								$vs_select_sql = ($vs_direct_sql_query) ? $vs_direct_sql_query : "
+									SELECT swi.row_id, SUM(swi.boost) AS boost
 									FROM ca_sql_search_word_index swi
 									INNER JOIN ca_sql_search_words AS sw ON sw.word_id = swi.word_id
 									INNER JOIN {$ps_dest_table} AS ftmp1 ON ftmp1.row_id = swi.row_id
@@ -1046,11 +1058,10 @@ class WLPlugSearchEngineSqlSearch extends BaseSearchPlugin implements IWLPlugSea
 								";
 								
 								if (($vn_num_terms = (sizeof($va_ft_terms) + sizeof($va_ft_like_terms) + sizeof($va_ft_stem_terms))) > 1) {
-									$vs_sql .= " HAVING count(distinct sw.word_id) = {$vn_num_terms}";
+									$vs_select_sql .= " HAVING count(distinct sw.word_id) = {$vn_num_terms}";
 								}
 	
-								if ($this->debug) { print 'AND:'.$vs_sql."<hr>\n"; }
-								$qr_res = $this->opo_db->query($vs_sql, (int)$pn_subject_tablenum);
+								$qr_res = caSQLInsertIgnore($this->opo_db, $ps_dest_table."_acc", $vs_select_sql, (int)$pn_subject_tablenum);
 								$qr_res = $this->opo_db->query("TRUNCATE TABLE {$ps_dest_table}");
 								$qr_res = $this->opo_db->query("INSERT INTO {$ps_dest_table} SELECT row_id, boost FROM {$ps_dest_table}_acc");
 								
@@ -1081,12 +1092,8 @@ class WLPlugSearchEngineSqlSearch extends BaseSearchPlugin implements IWLPlugSea
 								break;
 							default:
 							case 'OR':
-								if ($vs_direct_sql_query) {
-									$vs_direct_sql_query = str_replace('^JOIN', "", $vs_direct_sql_query);
-								}
-								$vs_sql = ($vs_direct_sql_query) ? "INSERT IGNORE INTO {$ps_dest_table} {$vs_direct_sql_query}" : "
-									INSERT IGNORE INTO {$ps_dest_table}
-									SELECT swi.row_id, SUM(swi.boost)
+								$vs_select_sql = ($vs_direct_sql_query) ? str_replace('^JOIN', "", $vs_direct_sql_query) : "
+									SELECT swi.row_id, SUM(swi.boost) AS boost
 									FROM ca_sql_search_word_index swi
 									INNER JOIN ca_sql_search_words AS sw ON sw.word_id = swi.word_id
 									WHERE
@@ -1097,9 +1104,8 @@ class WLPlugSearchEngineSqlSearch extends BaseSearchPlugin implements IWLPlugSea
 									GROUP BY
 										swi.row_id
 								";
-	
-								if ($this->debug) { print 'OR'.$vs_sql."<hr>\n"; }
-								$qr_res = $this->opo_db->query($vs_sql, (int)$pn_subject_tablenum);
+								
+								$qr_res = caSQLInsertIgnore($this->opo_db, $ps_dest_table, $vs_select_sql, (int)$pn_subject_tablenum);
 								break;
 						}
 					}
@@ -1389,9 +1395,18 @@ class WLPlugSearchEngineSqlSearch extends BaseSearchPlugin implements IWLPlugSea
 		return 'SqlSearch';
 	}
 	# --------------------------------------------------
-	private function _tokenize($ps_content, $pb_for_search=false) {
+	private function _tokenize($ps_content, $pb_for_search=false, $pn_index=0) {
 		$ps_content = preg_replace('![\']+!', '', $ps_content);		// strip apostrophes for compatibility with SearchEngine class, which does the same to all search expressions
+		
 		if ($pb_for_search) {
+			if ($pn_index == 0) {
+				foreach($this->opa_asis_regexes as $vs_asis_regex) {
+					if (preg_match('!'.$vs_asis_regex.'!', $ps_content)) {
+						return array($ps_content);
+					}
+				}
+			}
+		
 			return preg_split('![ ]+!', trim(preg_replace('!['.$this->ops_search_tokenizer_regex.']+!u', ' ', strip_tags($ps_content))));
 		} else {
 			return preg_split('![ ]+!', trim(preg_replace('!['.$this->ops_indexing_tokenizer_regex.']+!u', ' ', strip_tags($ps_content))));

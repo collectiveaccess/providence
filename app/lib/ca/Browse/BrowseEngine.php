@@ -42,6 +42,7 @@
  	require_once(__CA_LIB_DIR__.'/core/Parsers/TimeExpressionParser.php');
  	require_once(__CA_APP_DIR__.'/helpers/searchHelpers.php');
 	require_once(__CA_APP_DIR__.'/helpers/accessHelpers.php');
+	require_once(__CA_APP_DIR__.'/helpers/dbHelpers.php');
 	
  	require_once(__CA_MODELS_DIR__.'/ca_metadata_elements.php');
 	require_once(__CA_MODELS_DIR__.'/ca_lists.php');
@@ -381,7 +382,7 @@
 					break;
 				# -----------------------------------------------------
 				case 'label':
-					if (!($t_table = $this->opo_datamodel->getInstanceByTableName($this->ops_browse_table_name, true))) { break; }
+					if (!($t_table = $this->opo_datamodel->getInstanceByTableName((isset($va_facet_info['relative_to']) && $va_facet_info['relative_to']) ? $va_facet_info['relative_to'] : $this->ops_browse_table_name, true))) { break; }
 					if (!$t_table->load($pn_row_id)) { return '???'; }
 					
 					return $t_table->getLabelForDisplay();
@@ -754,15 +755,34 @@
 					$this->_createTempTable('ca_browses_acc');
 					$this->_createTempTable('ca_browses_tmp');	
 					
+					
 					$vn_i = 0;
-					foreach($va_criteria as $vs_facet_name => $va_row_ids) {
+					foreach($va_criteria as $vs_facet_name => $va_row_ids) {					
+						$vs_target_browse_table_name = $t_item->tableName();
+						$vs_target_browse_table_num = $t_item->tableNum();
+						$vs_target_browse_table_pk = $t_item->primaryKey();
+						
 						$va_facet_info = $this->getInfoForFacet($vs_facet_name);
 						$va_row_ids = array_keys($va_row_ids);
 						
+							$vs_relative_to_join = '';
 							switch($va_facet_info['type']) {
 								# -----------------------------------------------------
 								case 'has':
 									$vs_rel_table_name = $va_facet_info['table'];
+																		
+									$va_joins = array();
+									
+									if ($va_facet_info['relative_to']) {
+										if ($va_relative_execute_sql_data = $this->_getRelativeExecuteSQLData($va_facet_info['relative_to'], $pa_options)) {
+											$va_joins = array_merge($va_joins, $va_relative_execute_sql_data['relative_joins']);	
+											
+											$vs_target_browse_table_name = $va_relative_execute_sql_data['target_table_name'];
+											$vs_target_browse_table_num = $va_relative_execute_sql_data['target_table_num'];
+											$vs_target_browse_table_pk = $va_relative_execute_sql_data['target_table_pk'];
+										}
+									}
+									
 									if (!is_array($va_restrict_to_relationship_types = $va_facet_info['restrict_to_relationship_types'])) { $va_restrict_to_relationship_types = array(); }
 									$va_restrict_to_relationship_types = $this->_getRelationshipTypeIDs($va_restrict_to_relationship_types, $va_facet_info['relationship_table']);
 									
@@ -772,7 +792,7 @@
 									$vn_table_num = $this->opo_datamodel->getTableNum($vs_rel_table_name);
 									$vs_rel_table_pk = $this->opo_datamodel->getTablePrimaryKeyName($vn_table_num);
 										
-										switch(sizeof($va_path = array_keys($this->opo_datamodel->getPath($this->ops_browse_table_name, $vs_rel_table_name)))) {
+										switch(sizeof($va_path = array_keys($this->opo_datamodel->getPath($vs_target_browse_table_name, $vs_rel_table_name)))) {
 											case 3:
 												$t_item_rel = $this->opo_datamodel->getInstanceByTableName($va_path[1], true);
 												$t_rel_item = $this->opo_datamodel->getInstanceByTableName($va_path[2], true);
@@ -790,7 +810,6 @@
 										}
 										
 										$vs_cur_table = array_shift($va_path);
-										$va_joins = array();
 										
 										$vn_state = array_pop($va_row_ids);
 										
@@ -814,25 +833,26 @@
 											$va_wheres[] = "(".$t_rel_item->tableName().".".$t_rel_item->primaryKey()." IS NULL)";
 										}
 										
+										
 										$vs_where_sql = '';
 										if (sizeof($va_wheres) > 0) {
 											$vs_where_sql = ' WHERE '.join(' AND ', $va_wheres);	
 										}
 
 										if ($vn_i == 0) {
-											$vs_sql = "
-												INSERT IGNORE INTO ca_browses_acc
-												SELECT ".$this->ops_browse_table_name.'.'.$t_item->primaryKey()."
+											$vs_select_sql = "
+												SELECT ".$this->ops_browse_table_name.'.'.$t_item->primaryKey()." AS row_id
 												FROM ".$this->ops_browse_table_name."
 												{$vs_join_sql}
 													{$vs_where_sql}
 											";
 											//print "$vs_sql<hr>";
-											$qr_res = $this->opo_db->query($vs_sql);
+											caSQLInsertIgnore($this->opo_db, "ca_browses_acc", $vs_select_sql);
+
 										} else {
 											$qr_res = $this->opo_db->query("TRUNCATE TABLE ca_browses_tmp");
 											$vs_sql = "
-												INSERT IGNORE INTO ca_browses_tmp
+												INSERT INTO ca_browses_tmp
 												SELECT ".$this->ops_browse_table_name.'.'.$t_item->primaryKey()."
 												FROM ".$this->ops_browse_table_name."
 												INNER JOIN ca_browses_acc ON ca_browses_acc.row_id = ".$this->ops_browse_table_name.'.'.$t_item->primaryKey()."
@@ -842,40 +862,59 @@
 											$qr_res = $this->opo_db->query($vs_sql);
 											
 											$qr_res = $this->opo_db->query("TRUNCATE TABLE ca_browses_acc");
-											$qr_res = $this->opo_db->query("INSERT IGNORE INTO ca_browses_acc SELECT row_id FROM ca_browses_tmp");
+											$qr_res = $this->opo_db->query("INSERT INTO ca_browses_acc SELECT row_id FROM ca_browses_tmp");
 										}
 										$vn_i++;
 									
 									break;
 								# -----------------------------------------------------
 								case 'label':
-									if (!($t_item = $this->opo_datamodel->getInstanceByTableName($this->ops_browse_table_name, true))) { break; }
 									if (!($t_label = $t_item->getLabelTableInstance())) { break; }
 									
-									$vs_item_pk = $t_item->primaryKey();
+									$vs_label_item_pk = $vs_item_pk = $t_item->primaryKey();
 									$vs_label_table_name = $t_label->tableName();
 									$vs_label_pk = $t_label->primaryKey();
 									$vs_label_display_field = $t_item->getLabelDisplayField();
 									
+									if ($va_facet_info['relative_to']) {
+										if ($va_relative_execute_sql_data = $this->_getRelativeExecuteSQLData($va_facet_info['relative_to'], $pa_options)) {
+											$vs_target_browse_table_name = $va_relative_execute_sql_data['target_table_name'];
+											$vs_target_browse_table_num = $va_relative_execute_sql_data['target_table_num'];
+											$vs_target_browse_table_pk = $va_relative_execute_sql_data['target_table_pk'];
+											
+											$t_target = $this->opo_datamodel->getInstanceByTableName($va_facet_info['relative_to'], true);
+											$t_target_label = $t_target->getLabelTableInstance();
+											
+											$vs_item_pk = $t_target->primaryKey();
+											
+											$vs_label_table_name = $t_target_label->tableName();
+											$vs_label_item_pk = $t_target_label->primaryKey();
+											
+											$va_relative_to_join = $va_relative_execute_sql_data['relative_joins'];	
+											$va_relative_to_join[] = "INNER JOIN {$vs_label_table_name} ON {$vs_label_table_name}.{$vs_label_item_pk} = {$vs_target_browse_table_name}.{$vs_target_browse_table_pk}";
+										}
+									} else {
+										$va_relative_to_join = array("INNER JOIN {$vs_label_table_name} ON {$vs_label_table_name}.{$vs_label_item_pk} = {$vs_target_browse_table_name}.{$vs_target_browse_table_pk}");
+									}
+									$vs_relative_to_join = join("\n", $va_relative_to_join);
 									
 									foreach($va_row_ids as $vn_row_id) {
 										
 										if ($vn_i == 0) {
-											$vs_sql = "
-												INSERT IGNORE INTO ca_browses_acc
-												SELECT {$vs_label_table_name}.{$vs_item_pk}
+											$vs_select_sql = "
+												SELECT {$vs_label_table_name}.{$vs_item_pk} AS row_id
 												FROM {$vs_label_table_name}
 												INNER JOIN ".$this->ops_browse_table_name." ON ".$this->ops_browse_table_name.".{$vs_item_pk} = {$vs_label_table_name}.{$vs_item_pk}
 												
 												WHERE
 													{$vs_label_table_name}.{$vs_item_pk} = ?";
 											//print "$vs_sql [".intval($this->opn_browse_table_num)."]<hr>";
-											$qr_res = $this->opo_db->query($vs_sql, $vn_row_id);
+											caSQLInsertIgnore($this->opo_db, "ca_browses_acc", $vs_select_sql, $vn_row_id);
 										} else {
 											
 											$qr_res = $this->opo_db->query("TRUNCATE TABLE ca_browses_tmp");
 											$vs_sql = "
-												INSERT IGNORE INTO ca_browses_tmp
+												INSERT INTO ca_browses_tmp
 												SELECT {$vs_label_table_name}.{$vs_item_pk}
 												FROM {$vs_label_table_name}
 												INNER JOIN ".$this->ops_browse_table_name." ON ".$this->ops_browse_table_name.".{$vs_item_pk} = {$vs_label_table_name}.{$vs_item_pk}
@@ -887,7 +926,7 @@
 											
 											
 											$qr_res = $this->opo_db->query("TRUNCATE TABLE ca_browses_acc");
-											$qr_res = $this->opo_db->query("INSERT IGNORE INTO ca_browses_acc SELECT row_id FROM ca_browses_tmp");
+											$qr_res = $this->opo_db->query("INSERT INTO ca_browses_acc SELECT row_id FROM ca_browses_tmp");
 										} 
 										
 										$vn_i++;
@@ -895,25 +934,34 @@
 									break;
 								# -----------------------------------------------------
 								case 'field':
-									$t_item = $this->opo_datamodel->getInstanceByTableName($this->ops_browse_table_name, true);
 									$vs_field_name = $va_facet_info['field'];
+									$vs_table_name = $this->ops_browse_table_name;
+									
+									if ($va_facet_info['relative_to']) {
+										if ($va_relative_execute_sql_data = $this->_getRelativeExecuteSQLData($va_facet_info['relative_to'], $pa_options)) {
+											$va_relative_to_join = $va_relative_execute_sql_data['relative_joins'];	
+											$vs_relative_to_join = join("\n", $va_relative_to_join);
+											$vs_table_name = $vs_target_browse_table_name = $va_relative_execute_sql_data['target_table_name'];
+											$vs_target_browse_table_num = $va_relative_execute_sql_data['target_table_num'];
+											$vs_target_browse_table_pk = $va_relative_execute_sql_data['target_table_pk'];
+										}
+									}
 									
 									foreach($va_row_ids as $vn_row_id) {
 										$vn_row_id = urldecode($vn_row_id);
 										if ($vn_i == 0) {
-											$vs_sql = "
-												INSERT IGNORE INTO ca_browses_acc
-												SELECT ".$this->ops_browse_table_name.'.'.$t_item->primaryKey()."
+											$vs_select_sql = "
+												SELECT ".$this->ops_browse_table_name.'.'.$t_item->primaryKey()." AS row_id
 												FROM ".$this->ops_browse_table_name."
 												WHERE
 													(".$this->ops_browse_table_name.".{$vs_field_name} = ?)";
 											//print "$vs_sql [".intval($this->opn_browse_table_num)."/".$vn_element_id."/".$vn_row_id."]<hr>";
-											$qr_res = $this->opo_db->query($vs_sql, (string)$vn_row_id);
+											caSQLInsertIgnore($this->opo_db, "ca_browses_acc", $vs_select_sql, (string)$vn_row_id);
 										} else {
 											
 											$qr_res = $this->opo_db->query("TRUNCATE TABLE ca_browses_tmp");
 											$vs_sql = "
-												INSERT IGNORE INTO ca_browses_tmp
+												INSERT INTO ca_browses_tmp
 												SELECT ".$this->ops_browse_table_name.'.'.$t_item->primaryKey()."
 												FROM ".$this->ops_browse_table_name."
 												INNER JOIN ca_browses_acc ON ca_browses_acc.row_id = ".$this->ops_browse_table_name.'.'.$t_item->primaryKey()."
@@ -924,7 +972,7 @@
 											
 											
 											$qr_res = $this->opo_db->query("TRUNCATE TABLE ca_browses_acc");
-											$qr_res = $this->opo_db->query("INSERT IGNORE INTO ca_browses_acc SELECT row_id FROM ca_browses_tmp");
+											$qr_res = $this->opo_db->query("INSERT INTO ca_browses_acc SELECT row_id FROM ca_browses_tmp");
 										} 
 										
 										$vn_i++;
@@ -932,10 +980,19 @@
 									break;
 								# -----------------------------------------------------
 								case 'attribute':
-									$t_item = $this->opo_datamodel->getInstanceByTableName($this->ops_browse_table_name, true);
 									$t_element = new ca_metadata_elements();
 									if (!$t_element->load(array('element_code' => $va_facet_info['element_code']))) {
 										return array();
+									}
+									 
+									if ($va_facet_info['relative_to']) {
+										if ($va_relative_execute_sql_data = $this->_getRelativeExecuteSQLData($va_facet_info['relative_to'], $pa_options)) {
+											$va_relative_to_join = $va_relative_execute_sql_data['relative_joins'];	
+											$vs_relative_to_join = join("\n", $va_relative_to_join);
+											$vs_target_browse_table_name = $va_relative_execute_sql_data['target_table_name'];
+											$vs_target_browse_table_num = $va_relative_execute_sql_data['target_table_num'];
+											$vs_target_browse_table_pk = $va_relative_execute_sql_data['target_table_pk'];
+										}
 									}
 									
 									// TODO: check that it is a *single-value* (ie. no hierarchical ca_metadata_elements) Text or Number attribute
@@ -949,7 +1006,7 @@
 										$vn_row_id = str_replace('&#47;', '/', $vn_row_id);
 										$va_value = $o_attr->parseValue($vn_row_id, $t_element->getFieldValuesArray());
 										$va_attr_sql = array();
-										$va_attr_values = array(intval($this->opn_browse_table_num), $vn_element_id);
+										$va_attr_values = array(intval($vs_target_browse_table_num), $vn_element_id);
 										
 										if (is_array($va_value)) {
 											foreach($va_value as $vs_f => $vs_v) {
@@ -962,21 +1019,20 @@
 											$vs_attr_sql = " AND ".$vs_attr_sql;
 										}
 										if ($vn_i == 0) {
-											$vs_sql = "
-												INSERT IGNORE INTO ca_browses_acc
-												SELECT ".$this->ops_browse_table_name.'.'.$t_item->primaryKey()."
+											$vs_select_sql = "
+												SELECT ".$this->ops_browse_table_name.'.'.$t_item->primaryKey()." AS row_id AS row_id
 												FROM ".$this->ops_browse_table_name."
 												INNER JOIN ca_attributes ON ca_attributes.row_id = ".$this->ops_browse_table_name.'.'.$t_item->primaryKey()." AND ca_attributes.table_num = ?
 												INNER JOIN ca_attribute_values ON ca_attribute_values.attribute_id = ca_attributes.attribute_id
 												WHERE
 													(ca_attribute_values.element_id = ?) {$vs_attr_sql}";
 											//print "$vs_sql [".intval($this->opn_browse_table_num)."/".$vn_element_id."/".$vn_row_id."]<hr>";print_R($va_attr_values);
-											$qr_res = $this->opo_db->query($vs_sql, $va_attr_values);
+											caSQLInsertIgnore($this->opo_db, "ca_browses_acc", $vs_select_sql, $va_attr_values);
 										} else {
 											
 											$qr_res = $this->opo_db->query("TRUNCATE TABLE ca_browses_tmp");
 											$vs_sql = "
-												INSERT IGNORE INTO ca_browses_tmp
+												INSERT INTO ca_browses_tmp
 												SELECT ".$this->ops_browse_table_name.'.'.$t_item->primaryKey()."
 												FROM ".$this->ops_browse_table_name."
 												INNER JOIN ca_attributes ON ca_attributes.row_id = ".$this->ops_browse_table_name.'.'.$t_item->primaryKey()." AND ca_attributes.table_num = ?
@@ -989,7 +1045,7 @@
 											
 											
 											$qr_res = $this->opo_db->query("TRUNCATE TABLE ca_browses_acc");
-											$qr_res = $this->opo_db->query("INSERT IGNORE INTO ca_browses_acc SELECT row_id FROM ca_browses_tmp");
+											$qr_res = $this->opo_db->query("INSERT INTO ca_browses_acc SELECT row_id FROM ca_browses_tmp");
 										} 
 										
 										$vn_i++;
@@ -997,7 +1053,6 @@
 									break;
 								# -----------------------------------------------------
 								case 'normalizedDates':
-									$t_item = $this->opo_datamodel->getInstanceByTableName($this->ops_browse_table_name, true);
 									$t_element = new ca_metadata_elements();
 									if (!$t_element->load(array('element_code' => $va_facet_info['element_code']))) {
 										return array();
@@ -1009,6 +1064,16 @@
 									$vn_element_id = $t_element->getPrimaryKey();
 									$o_tep = new TimeExpressionParser();
 									
+									if ($va_facet_info['relative_to']) {
+										if ($va_relative_execute_sql_data = $this->_getRelativeExecuteSQLData($va_facet_info['relative_to'], $pa_options)) {
+											$va_relative_to_join = $va_relative_execute_sql_data['relative_joins'];	
+											$vs_relative_to_join = join("\n", $va_relative_to_join);
+											$vs_target_browse_table_name = $va_relative_execute_sql_data['target_table_name'];
+											$vs_target_browse_table_num = $va_relative_execute_sql_data['target_table_num'];
+											$vs_target_browse_table_pk = $va_relative_execute_sql_data['target_table_pk'];
+										}
+									}
+									
 									foreach($va_row_ids as $vn_row_id) {
 										$vn_row_id = urldecode($vn_row_id);
 										if (!$o_tep->parse($vn_row_id)) { continue; } // invalid date?
@@ -1016,9 +1081,8 @@
 										$va_dates = $o_tep->getHistoricTimestamps();
 										
 										if ($vn_i == 0) {
-											$vs_sql = "
-												INSERT IGNORE INTO ca_browses_acc
-												SELECT ".$this->ops_browse_table_name.'.'.$t_item->primaryKey()."
+											$vs_select_sql = "
+												SELECT ".$this->ops_browse_table_name.'.'.$t_item->primaryKey()." AS row_id
 												FROM ".$this->ops_browse_table_name."
 												INNER JOIN ca_attributes ON ca_attributes.row_id = ".$this->ops_browse_table_name.'.'.$t_item->primaryKey()." AND ca_attributes.table_num = ?
 												INNER JOIN ca_attribute_values ON ca_attribute_values.attribute_id = ca_attributes.attribute_id
@@ -1037,13 +1101,12 @@
 													)
 											";
 											
-											$qr_res = $this->opo_db->query($vs_sql, intval($this->opn_browse_table_num), $vn_element_id, $va_dates['start'], $va_dates['end'], $va_dates['start'], $va_dates['end'], $va_dates['start'], $va_dates['end']);
+											caSQLInsertIgnore($this->opo_db, "ca_browses_acc", intval($this->opn_browse_table_num), $vn_element_id, $va_dates['start'], $va_dates['end'], $va_dates['start'], $va_dates['end'], $va_dates['start'], $va_dates['end']);
 										} else {
 											
 											$qr_res = $this->opo_db->query("TRUNCATE TABLE ca_browses_tmp");
-											$vs_sql = "
-												INSERT IGNORE INTO ca_browses_tmp
-												SELECT ".$this->ops_browse_table_name.'.'.$t_item->primaryKey()."
+											$vs_select_sql = "
+												SELECT ".$this->ops_browse_table_name.'.'.$t_item->primaryKey()." AS row_id
 												FROM ".$this->ops_browse_table_name."
 												INNER JOIN ca_attributes ON ca_attributes.row_id = ".$this->ops_browse_table_name.'.'.$t_item->primaryKey()." AND ca_attributes.table_num = ?
 												INNER JOIN ca_attribute_values ON ca_attribute_values.attribute_id = ca_attributes.attribute_id
@@ -1062,11 +1125,11 @@
 														(ca_attribute_values.value_decimal2 BETWEEN ? AND ?)
 													)
 											";
-											$qr_res = $this->opo_db->query($vs_sql, intval($this->opn_browse_table_num), $vn_element_id, $va_dates['start'], $va_dates['end'], $va_dates['start'], $va_dates['end'], $va_dates['start'], $va_dates['end']);
+											caSQLInsertIgnore($this->opo_db, "ca_browses_tmp", $vs_select_sql, intval($this->opn_browse_table_num), $vn_element_id, $va_dates['start'], $va_dates['end'], $va_dates['start'], $va_dates['end'], $va_dates['start'], $va_dates['end']);
 											
 											
 											$qr_res = $this->opo_db->query("TRUNCATE TABLE ca_browses_acc");
-											$qr_res = $this->opo_db->query("INSERT IGNORE INTO ca_browses_acc SELECT row_id FROM ca_browses_tmp");
+											$qr_res = $this->opo_db->query("INSERT INTO ca_browses_acc SELECT row_id FROM ca_browses_tmp");
 										} 
 										
 										$vn_i++;
@@ -1083,9 +1146,20 @@
 					
 									$vn_table_num = $this->opo_datamodel->getTableNum($vs_rel_table_name);
 									$vs_rel_table_pk = $this->opo_datamodel->getTablePrimaryKeyName($vn_table_num);
+										
+									if ($va_facet_info['relative_to']) {
+										if ($va_relative_execute_sql_data = $this->_getRelativeExecuteSQLData($va_facet_info['relative_to'], $pa_options)) {
+											$va_relative_to_join = $va_relative_execute_sql_data['relative_joins'];	
+											$vs_relative_to_join = join("\n", $va_relative_to_join);
+											$vs_target_browse_table_name = $va_relative_execute_sql_data['target_table_name'];
+											$vs_target_browse_table_num = $va_relative_execute_sql_data['target_table_num'];
+											$vs_target_browse_table_pk = $va_relative_execute_sql_data['target_table_pk'];
+										}
+									}
+										
 									foreach($va_row_ids as $vn_row_id) {
 										
-										switch(sizeof($va_path = array_keys($this->opo_datamodel->getPath($this->ops_browse_table_name, $vs_rel_table_name)))) {
+										switch(sizeof($va_path = array_keys($this->opo_datamodel->getPath($vs_target_browse_table_name, $vs_rel_table_name)))) {
 											case 3:
 												$t_item_rel = $this->opo_datamodel->getInstanceByTableName($va_path[1], true);
 												$t_rel_item = $this->opo_datamodel->getInstanceByTableName($va_path[2], true);
@@ -1140,20 +1214,20 @@
 										}
 										
 										if ($vn_i == 0) {
-											$vs_sql = "
-												INSERT IGNORE INTO ca_browses_acc
-												SELECT ".$this->ops_browse_table_name.'.'.$t_item->primaryKey()."
+											$vs_select_sql = "
+												SELECT ".$this->ops_browse_table_name.'.'.$t_item->primaryKey()." AS row_id
 												FROM ".$this->ops_browse_table_name."
 												{$vs_join_sql}
 												WHERE
 													{$vs_get_item_sql}
 													{$vs_where_sql}";
 											//print "$vs_sql<hr>";
-											$qr_res = $this->opo_db->query($vs_sql);
+											caSQLInsertIgnore($this->opo_db, "ca_browses_acc", $vs_select_sql);
+
 										} else {
 											$qr_res = $this->opo_db->query("TRUNCATE TABLE ca_browses_tmp");
 											$vs_sql = "
-												INSERT IGNORE INTO ca_browses_tmp
+												INSERT INTO ca_browses_tmp
 												SELECT ".$this->ops_browse_table_name.'.'.$t_item->primaryKey()."
 												FROM ".$this->ops_browse_table_name."
 												{$vs_join_sql}
@@ -1166,7 +1240,7 @@
 											
 											
 											$qr_res = $this->opo_db->query("TRUNCATE TABLE ca_browses_acc");
-											$qr_res = $this->opo_db->query("INSERT IGNORE INTO ca_browses_acc SELECT row_id FROM ca_browses_tmp");
+											$qr_res = $this->opo_db->query("INSERT INTO ca_browses_acc SELECT row_id FROM ca_browses_tmp");
 										} 
 										
 										$vn_i++;
@@ -1175,25 +1249,34 @@
 								break;
 							# -----------------------------------------------------
 								case 'fieldList':
-									$t_item = $this->opo_datamodel->getInstanceByTableName($this->ops_browse_table_name, true);
 									$vs_field_name = $va_facet_info['field'];
+									$vs_table_name = $this->ops_browse_table_name;
+									
+									if ($va_facet_info['relative_to']) {
+										if ($va_relative_execute_sql_data = $this->_getRelativeExecuteSQLData($va_facet_info['relative_to'], $pa_options)) {
+											$va_relative_to_join = $va_relative_execute_sql_data['relative_joins'];	
+											$vs_relative_to_join = join("\n", $va_relative_to_join);
+											$vs_table_name = $vs_target_browse_table_name = $va_relative_execute_sql_data['target_table_name'];
+											$vs_target_browse_table_num = $va_relative_execute_sql_data['target_table_num'];
+											$vs_target_browse_table_pk = $va_relative_execute_sql_data['target_table_pk'];
+										}
+									}
 									
 									foreach($va_row_ids as $vn_row_id) {
 										$vn_row_id = urldecode($vn_row_id);
 										if ($vn_i == 0) {
-											$vs_sql = "
-												INSERT IGNORE INTO ca_browses_acc
-												SELECT ".$this->ops_browse_table_name.'.'.$t_item->primaryKey()."
+											$vs_select_sql = "
+												SELECT ".$this->ops_browse_table_name.'.'.$t_item->primaryKey()." AS row_id
 												FROM ".$this->ops_browse_table_name."
 												WHERE
 													(".$this->ops_browse_table_name.".{$vs_field_name} = ?)";
 											//print "$vs_sql [".intval($this->opn_browse_table_num)."/".$vn_element_id."/".$vn_row_id."]<hr>";
-											$qr_res = $this->opo_db->query($vs_sql, $vn_row_id);
+											caSQLInsertIgnore($this->opo_db, "ca_browses_acc", $vs_sql, $vn_row_id);
 										} else {
 											
 											$qr_res = $this->opo_db->query("TRUNCATE TABLE ca_browses_tmp");
 											$vs_sql = "
-												INSERT IGNORE INTO ca_browses_tmp
+												INSERT INTO ca_browses_tmp
 												SELECT ".$this->ops_browse_table_name.'.'.$t_item->primaryKey()."
 												FROM ".$this->ops_browse_table_name."
 												INNER JOIN ca_browses_acc ON ca_browses_acc.row_id = ".$this->ops_browse_table_name.'.'.$t_item->primaryKey()."
@@ -1204,7 +1287,7 @@
 											
 											
 											$qr_res = $this->opo_db->query("TRUNCATE TABLE ca_browses_acc");
-											$qr_res = $this->opo_db->query("INSERT IGNORE INTO ca_browses_acc SELECT row_id FROM ca_browses_tmp");
+											$qr_res = $this->opo_db->query("INSERT INTO ca_browses_acc SELECT row_id FROM ca_browses_tmp");
 										} 
 										
 										$vn_i++;
@@ -1237,7 +1320,7 @@
 											$va_ids[] = "({$vn_id})";
 										}
 					
-										$this->opo_db->query("INSERT IGNORE INTO ca_browses_acc VALUES ".join(",", $va_ids));
+										$this->opo_db->query("INSERT INTO ca_browses_acc VALUES ".join(",", $va_ids));
 						
 										$vn_i++;
 									}
@@ -1449,6 +1532,10 @@
 		 */
 		public function getFacetContent($ps_facet_name, $pa_options=null) {
 			global $AUTH_CURRENT_USER_ID;
+			
+			$vs_browse_table_name = $this->ops_browse_table_name;
+			$vs_browse_table_num = $this->opn_browse_table_num;
+			
 			$vn_user_id = (isset($pa_options['user_id']) && (int)$pa_options['user_id']) ?  (int)$pa_options['user_id'] : (int)$AUTH_CURRENT_USER_ID;
 			$vb_show_if_no_acl = (bool)($this->opo_config->get('default_item_access_level') > __CA_ACL_NO_ACCESS__);
 			
@@ -1472,10 +1559,16 @@
 			
 			$va_facet_info = $this->opa_browse_settings['facets'][$ps_facet_name];
 			
+			$t_subject = $this->getSubjectInstance();
+			
+			if ($va_facet_info['relative_to']) {
+				$vs_browse_table_name = $va_facet_info['relative_to'];
+				$vs_browse_table_num = $this->opo_datamodel->getTableNum($vs_browse_table_name);
+			}	
+			
 			$vs_browse_type_limit_sql = '';
 			if (($va_browse_type_ids = $this->getTypeRestrictionList()) && sizeof($va_browse_type_ids)) {		// type restrictions
-				$t_subject = $this->getSubjectInstance();
-				$vs_browse_type_limit_sql = '('.$this->ops_browse_table_name.'.'.$t_subject->getTypeFieldName().' IN ('.join(', ', $va_browse_type_ids).'))';
+				$vs_browse_type_limit_sql = '('.$vs_browse_table_name.'.'.$t_subject->getTypeFieldName().' IN ('.join(', ', $va_browse_type_ids).'))';
 				
 				if (is_array($va_facet_info['type_restrictions'])) { 		// facet type restrictions bind a facet to specific types; we check them here 
 					$va_restrict_to_types = $this->_convertTypeCodesToIDs($va_facet_info['type_restrictions']);
@@ -1497,12 +1590,13 @@
 			$vs_single_value = isset($va_facet_info['single_value']) ? $va_facet_info['single_value'] : null;
 			
 			$va_wheres = array();
+			
 			switch($va_facet_info['type']) {
 				# -----------------------------------------------------
 				case 'has':
 					if (isset($va_all_criteria[$ps_facet_name])) { break; }		// only one instance of this facet allowed per browse 
 					
-					if (!($t_item = $this->opo_datamodel->getInstanceByTableName($this->ops_browse_table_name, true))) { break; }
+					if (!($t_item = $this->opo_datamodel->getInstanceByTableName($vs_browse_table_name, true))) { break; }
 					
 					$vs_yes_text = (isset($va_facet_info['label_yes']) && $va_facet_info['label_yes']) ? $va_facet_info['label_yes'] : _t('Yes');
 					$vs_no_text = (isset($va_facet_info['label_no']) && $va_facet_info['label_no']) ? $va_facet_info['label_no'] : _t('No');
@@ -1519,7 +1613,7 @@
 					$vn_table_num = $this->opo_datamodel->getTableNum($vs_rel_table_name);
 					$vs_rel_table_pk = $this->opo_datamodel->getTablePrimaryKeyName($vn_table_num);
 					
-					switch(sizeof($va_path = array_keys($this->opo_datamodel->getPath($this->ops_browse_table_name, $vs_rel_table_name)))) {
+					switch(sizeof($va_path = array_keys($this->opo_datamodel->getPath($vs_browse_table_name, $vs_rel_table_name)))) {
 						case 3:
 							$t_item_rel = $this->opo_datamodel->getInstanceByTableName($va_path[1], true);
 							$t_rel_item = $this->opo_datamodel->getInstanceByTableName($va_path[2], true);
@@ -1578,21 +1672,31 @@
 						}
 						
 						if ($t_rel_item->hasField('deleted')) {
-							$va_wheres[] = "(".$t_rel_item->tableName().".deleted = 0)";
+							$va_wheres[] = "(".$t_rel_item->tableName().".deleted = 0 OR ".$t_rel_item->tableName().".deleted IS NULL)";
 						}
 											
 						if (isset($pa_options['checkAccess']) && is_array($pa_options['checkAccess']) && sizeof($pa_options['checkAccess']) && $t_item->hasField('access')) {
-							$va_wheres[] = "(".$this->ops_browse_table_name.".access IN (".join(',', $pa_options['checkAccess'])."))";
+							$va_wheres[] = "(".$vs_browse_table_name.".access IN (".join(',', $pa_options['checkAccess'])."))";
 						}
 						
 						if (sizeof($va_results)) {
-							$va_wheres[] = $this->ops_browse_table_name.".".$t_item->primaryKey()." IN (".join(",", $va_results).")";
+							$va_wheres[] = $vs_browse_table_name.".".$t_item->primaryKey()." IN (".join(",", $va_results).")";
+						}
+											
+						if ($va_facet_info['relative_to']) {
+							if ($t_subject->hasField('deleted')) {
+								$va_wheres[] = "(".$t_subject->tableName().".deleted = 0)";
+							}
+							if ($va_relative_sql_data = $this->_getRelativeFacetSQLData($va_facet_info['relative_to'], $pa_options)) {
+								$va_joins = array_merge($va_joins, $va_relative_sql_data['joins']);
+								$va_wheres = array_merge($va_wheres, $va_relative_sql_data['wheres']);
+							}
 						}
 						
 						if ($this->opo_config->get('perform_item_level_access_checking')) {
-							if ($t_item = $this->opo_datamodel->getInstanceByTableName($this->ops_browse_table_name, true)) {
+							if ($t_item = $this->opo_datamodel->getInstanceByTableName($vs_browse_table_name, true)) {
 								// Join to limit what browse table items are used to generate facet
-								$va_joins[] = 'LEFT JOIN ca_acl ON '.$this->ops_browse_table_name.'.'.$t_item->primaryKey().' = ca_acl.row_id AND ca_acl.table_num = '.$t_item->tableNum()."\n";
+								$va_joins[] = 'LEFT JOIN ca_acl ON '.$vs_browse_table_name.'.'.$t_item->primaryKey().' = ca_acl.row_id AND ca_acl.table_num = '.$t_item->tableNum()."\n";
 								$va_wheres[] = "(
 									((
 										(ca_acl.user_id = ".(int)$vn_user_id.")
@@ -1615,11 +1719,12 @@
 						if ($vb_check_availability_only) {
 							$vs_sql = "
 								SELECT count(*) c
-								FROM ".$this->ops_browse_table_name."
+								FROM ".$vs_browse_table_name."
 								{$vs_join_sql}
-									{$vs_where_sql}
+								{$vs_where_sql}
 								LIMIT 1
 							";
+							//print "$vs_sql<hr>";
 							$qr_res = $this->opo_db->query($vs_sql);
 							if ($qr_res->nextRow()) {
 								if ($vn_c = (int)$qr_res->get('c')) {
@@ -1628,10 +1733,10 @@
 							}
 						} else {
 							$vs_sql = "
-								SELECT ".$this->ops_browse_table_name.'.'.$t_item->primaryKey()."
-								FROM ".$this->ops_browse_table_name."
+								SELECT ".$vs_browse_table_name.'.'.$t_item->primaryKey()."
+								FROM ".$vs_browse_table_name."
 								{$vs_join_sql}
-									{$vs_where_sql}
+								{$vs_where_sql}
 							";
 							//print "$vs_sql<hr>";
 							$qr_res = $this->opo_db->query($vs_sql);
@@ -1651,7 +1756,7 @@
 					break;
 				# -----------------------------------------------------
 				case 'label':
-					if (!($t_item = $this->opo_datamodel->getInstanceByTableName($this->ops_browse_table_name, true))) { break; }
+					if (!($t_item = $this->opo_datamodel->getInstanceByTableName($vs_browse_table_name, true))) { break; }
 					if (!($t_label = $t_item->getLabelTableInstance())) { break; }
 					if (!is_array($va_restrict_to_types = $va_facet_info['restrict_to_types'])) { $va_restrict_to_types = array(); }
 					
@@ -1668,11 +1773,6 @@
 					$va_where_sql = array();
 					$va_joins = array();
 					
-					if (sizeof($va_results)) {
-						$va_where_sql[] = "l.{$vs_item_pk} IN (".join(",", $va_results).")";
-					}
-					
-					
 					if ($vs_browse_type_limit_sql) {
 						$va_where_sql[] = $vs_browse_type_limit_sql;
 					}
@@ -1683,31 +1783,50 @@
 					
 					
 					if (isset($pa_options['checkAccess']) && is_array($pa_options['checkAccess']) && sizeof($pa_options['checkAccess']) && $t_item->hasField('access')) {
-						$va_where_sql[] = "(".$this->ops_browse_table_name.".access IN (".join(',', $pa_options['checkAccess'])."))";
+						$va_where_sql[] = "(".$vs_browse_table_name.".access IN (".join(',', $pa_options['checkAccess'])."))";
 					}
 					
 					if ($t_item->hasField('deleted')) {
-						$va_where_sql[] = "(".$this->ops_browse_table_name.".deleted = 0)";
+						$va_where_sql[] = "(".$vs_browse_table_name.".deleted = 0)";
 						$vb_needs_join = true;
 					}
 					
 					if (sizeof($va_restrict_to_types)) {
-						$va_restrict_to_type_ids = caMakeTypeIDList($this->ops_browse_table_name, $va_restrict_to_types, array('dont_include_subtypes_in_type_restriction' => true));
+						$va_restrict_to_type_ids = caMakeTypeIDList($vs_browse_table_name, $va_restrict_to_types, array('dont_include_subtypes_in_type_restriction' => true));
 						if (sizeof($va_restrict_to_type_ids)) {
-							$va_where_sql[] = "(".$this->ops_browse_table_name.".".$t_item->getTypeFieldName()." IN (".join(", ", $va_restrict_to_type_ids)."))";
+							$va_where_sql[] = "(".$vs_browse_table_name.".".$t_item->getTypeFieldName()." IN (".join(", ", $va_restrict_to_type_ids)."))";
 							$vb_needs_join = true;
 						}
 					}
 					
-					
 					if ($vb_needs_join) {
-						$va_joins[] = "INNER JOIN ".$this->ops_browse_table_name." ON ".$this->ops_browse_table_name.".".$t_item->primaryKey()." = l.".$t_item->primaryKey();
+						$va_joins[] = "INNER JOIN ".$vs_browse_table_name." ON ".$vs_browse_table_name.".".$t_item->primaryKey()." = l.".$t_item->primaryKey();
 					}
 					
+					if ($va_facet_info['relative_to']) {
+						if ($t_subject->hasField('deleted')) {
+							$va_where_sql[] = "(".$t_subject->tableName().".deleted = 0)";
+						}
+						if ($va_relative_sql_data = $this->_getRelativeFacetSQLData($va_facet_info['relative_to'], $pa_options)) {
+							$va_joins = array_merge($va_joins, $va_relative_sql_data['joins']);
+							$va_where_sql = array_merge($va_where_sql, $va_relative_sql_data['wheres']);
+						}
+					}
+					
+					
+					if (sizeof($va_results)) {
+						if ($va_facet_info['relative_to']) {
+							$va_where_sql[] = $this->ops_browse_table_name.".".$t_subject->primaryKey()." IN (".join(",", $va_results).")";
+						} else {
+							$va_where_sql[] = "l.{$vs_item_pk} IN (".join(",", $va_results).")";
+						}
+					}
+					
+					
 					if ($this->opo_config->get('perform_item_level_access_checking')) {
-						if ($t_item = $this->opo_datamodel->getInstanceByTableName($this->ops_browse_table_name, true)) {
+						if ($t_item = $this->opo_datamodel->getInstanceByTableName($vs_browse_table_name, true)) {
 							// Join to limit what browse table items are used to generate facet
-							$va_joins[] = 'LEFT JOIN ca_acl ON '.$this->ops_browse_table_name.'.'.$t_item->primaryKey().' = ca_acl.row_id AND ca_acl.table_num = '.$t_item->tableNum()."\n";
+							$va_joins[] = 'LEFT JOIN ca_acl ON '.$vs_browse_table_name.'.'.$t_item->primaryKey().' = ca_acl.row_id AND ca_acl.table_num = '.$t_item->tableNum()."\n";
 							$va_where_sql[] = "(
 								((
 									(ca_acl.user_id = ".(int)$vn_user_id.")
@@ -1746,7 +1865,7 @@
 					} else {
 						$vs_parent_fld = $t_item->getProperty('HIERARCHY_PARENT_ID_FLD');
 						$vs_sql = "
-							SELECT  l.* ".(($vs_parent_fld) ? ", ".$this->ops_browse_table_name.".".$vs_parent_fld : '')." 
+							SELECT  l.* ".(($vs_parent_fld) ? ", ".$vs_browse_table_name.".".$vs_parent_fld : '')." 
 							FROM {$vs_label_table_name} l
 								{$vs_join_sql}
 								{$vs_where_sql}
@@ -1793,7 +1912,7 @@
 					break;
 				# -----------------------------------------------------
 				case 'attribute':
-					$t_item = $this->opo_datamodel->getInstanceByTableName($this->ops_browse_table_name, true);
+					$t_item = $this->opo_datamodel->getInstanceByTableName($vs_browse_table_name, true);
 					$t_element = new ca_metadata_elements();
 					if (!$t_element->load(array('element_code' => $va_facet_info['element_code']))) {
 						return array();
@@ -1803,17 +1922,17 @@
 					
 					$va_joins = array(
 						'INNER JOIN ca_attribute_values ON ca_attributes.attribute_id = ca_attribute_values.attribute_id',
-						'INNER JOIN '.$this->ops_browse_table_name.' ON '.$this->ops_browse_table_name.'.'.$t_item->primaryKey().' = ca_attributes.row_id AND ca_attributes.table_num = '.intval($this->opn_browse_table_num)
+						'INNER JOIN '.$vs_browse_table_name.' ON '.$vs_browse_table_name.'.'.$t_item->primaryKey().' = ca_attributes.row_id AND ca_attributes.table_num = '.intval($vs_browse_table_num)
 					);
 					
 					$va_wheres = array();
 					if (sizeof($va_results) && ($this->numCriteria() > 0)) {
-						$va_wheres[] = "(".$this->ops_browse_table_name.'.'.$t_item->primaryKey()." IN (".join(',', $va_results)."))";
+						$va_wheres[] = "(".$t_subject->tableName().'.'.$t_subject->primaryKey()." IN (".join(',', $va_results)."))";
 					}
 					
 					
 					if (isset($pa_options['checkAccess']) && is_array($pa_options['checkAccess']) && sizeof($pa_options['checkAccess']) && $t_item->hasField('access')) {
-						$va_wheres[] = "(".$this->ops_browse_table_name.".access IN (".join(',', $pa_options['checkAccess'])."))";
+						$va_wheres[] = "(".$vs_browse_table_name.".access IN (".join(',', $pa_options['checkAccess'])."))";
 					}
 					
 					if ($vs_browse_type_limit_sql) {
@@ -1821,13 +1940,23 @@
 					}
 					
 					if ($t_item->hasField('deleted')) {
-						$va_wheres[] = "(".$this->ops_browse_table_name.".deleted = 0)";
+						$va_wheres[] = "(".$vs_browse_table_name.".deleted = 0)";
+					}
+					
+					if ($va_facet_info['relative_to']) {
+						if ($t_subject->hasField('deleted')) {
+							$va_wheres[] = "(".$t_subject->tableName().".deleted = 0)";
+						}
+						if ($va_relative_sql_data = $this->_getRelativeFacetSQLData($va_facet_info['relative_to'], $pa_options)) {
+							$va_joins = array_merge($va_joins, $va_relative_sql_data['joins']);
+							$va_wheres = array_merge($va_wheres, $va_relative_sql_data['wheres']);
+						}
 					}
 					
 					if ($this->opo_config->get('perform_item_level_access_checking')) {
-						if ($t_item = $this->opo_datamodel->getInstanceByTableName($this->ops_browse_table_name, true)) {
+						if ($t_item = $this->opo_datamodel->getInstanceByTableName($vs_browse_table_name, true)) {
 							// Join to limit what browse table items are used to generate facet
-							$va_joins[] = 'LEFT JOIN ca_acl ON '.$this->ops_browse_table_name.'.'.$t_item->primaryKey().' = ca_acl.row_id AND ca_acl.table_num = '.$t_item->tableNum()."\n";
+							$va_joins[] = 'LEFT JOIN ca_acl ON '.$vs_browse_table_name.'.'.$t_item->primaryKey().' = ca_acl.row_id AND ca_acl.table_num = '.$t_item->tableNum()."\n";
 							$va_wheres[] = "(
 								((
 									(ca_acl.user_id = ".(int)$vn_user_id.")
@@ -1876,7 +2005,7 @@
 							{$vs_join_sql}
 							WHERE
 								ca_attribute_values.element_id = ? {$vs_where_sql}";
-						
+						//print $vs_sql;
 						$qr_res = $this->opo_db->query($vs_sql, $vn_element_id);
 						
 						$va_values = array();
@@ -1967,7 +2096,7 @@
 					break;
 				# -----------------------------------------------------
 				case 'fieldList':
-					$t_item = $this->opo_datamodel->getInstanceByTableName($this->ops_browse_table_name, true);
+					$t_item = $this->opo_datamodel->getInstanceByTableName($vs_browse_table_name, true);
 					$vs_field_name = $va_facet_info['field'];
 					$va_field_info = $t_item->getFieldInfo($vs_field_name);
 					
@@ -1981,15 +2110,15 @@
 					if (isset($va_field_info['LIST_CODE']) && ($vs_list_name = $va_field_info['LIST_CODE'])) {
 						// Handle fields containing ca_list_item.item_id's
 						$va_joins = array(
-							'INNER JOIN '.$this->ops_browse_table_name.' ON '.$this->ops_browse_table_name.'.'.$vs_field_name.' = li.item_id',
+							'INNER JOIN '.$vs_browse_table_name.' ON '.$vs_browse_table_name.'.'.$vs_field_name.' = li.item_id',
 							'INNER JOIN ca_lists ON ca_lists.list_id = li.list_id'
 						);
 						if (sizeof($va_results) && ($this->numCriteria() > 0)) {
-							$va_wheres[] = "(".$this->ops_browse_table_name.'.'.$t_item->primaryKey()." IN (".join(',', $va_results)."))";
+							$va_wheres[] = "(".$t_subject->tableName().'.'.$t_subject->primaryKey()." IN (".join(',', $va_results)."))";
 						}
 						
 						if (isset($pa_options['checkAccess']) && is_array($pa_options['checkAccess']) && sizeof($pa_options['checkAccess']) && $t_item->hasField('access')) {
-							$va_wheres[] = "(".$this->ops_browse_table_name.".access IN (".join(',', $pa_options['checkAccess'])."))";
+							$va_wheres[] = "(".$vs_browse_table_name.".access IN (".join(',', $pa_options['checkAccess'])."))";
 						}
 						
 						if ($vs_browse_type_limit_sql) {
@@ -1997,13 +2126,23 @@
 						}
 											
 						if ($t_item->hasField('deleted')) {
-							$va_wheres[] = "(".$this->ops_browse_table_name.".deleted = 0)";
+							$va_wheres[] = "(".$vs_browse_table_name.".deleted = 0)";
+						}
+						
+						if ($va_facet_info['relative_to']) {
+							if ($t_subject->hasField('deleted')) {
+								$va_wheres[] = "(".$t_subject->tableName().".deleted = 0)";
+							}
+							if ($va_relative_sql_data = $this->_getRelativeFacetSQLData($va_facet_info['relative_to'], $pa_options)) {
+								$va_joins = array_merge($va_joins, $va_relative_sql_data['joins']);
+								$va_wheres = array_merge($va_wheres, $va_relative_sql_data['wheres']);
+							}
 						}
 						
 						if ($this->opo_config->get('perform_item_level_access_checking')) {
-							if ($t_item = $this->opo_datamodel->getInstanceByTableName($this->ops_browse_table_name, true)) {
+							if ($t_item = $this->opo_datamodel->getInstanceByTableName($vs_browse_table_name, true)) {
 								// Join to limit what browse table items are used to generate facet
-								$va_joins[] = 'LEFT JOIN ca_acl ON '.$this->ops_browse_table_name.'.'.$t_item->primaryKey().' = ca_acl.row_id AND ca_acl.table_num = '.$t_item->tableNum()."\n";
+								$va_joins[] = 'LEFT JOIN ca_acl ON '.$vs_browse_table_name.'.'.$t_item->primaryKey().' = ca_acl.row_id AND ca_acl.table_num = '.$t_item->tableNum()."\n";
 								$va_wheres[] = "(
 									((
 										(ca_acl.user_id = ".(int)$vn_user_id.")
@@ -2086,17 +2225,27 @@
 							}
 							
 							if (sizeof($va_results) && ($this->numCriteria() > 0)) {
-								$va_wheres[] = "(".$this->ops_browse_table_name.'.'.$t_item->primaryKey()." IN (".join(',', $va_results)."))";
+								$va_wheres[] = "(".$t_subject->tableName().'.'.$t_subject->primaryKey()." IN (".join(',', $va_results)."))";
 							}
 							
 							if ($vs_browse_type_limit_sql) {
 								$va_wheres[] = $vs_browse_type_limit_sql;
 							}
 							
+							if ($va_facet_info['relative_to']) {
+								if ($t_subject->hasField('deleted')) {
+									$va_wheres[] = "(".$t_subject->tableName().".deleted = 0)";
+								}
+								if ($va_relative_sql_data = $this->_getRelativeFacetSQLData($va_facet_info['relative_to'], $pa_options)) {
+									$va_joins = array_merge($va_joins, $va_relative_sql_data['joins']);
+									$va_wheres = array_merge($va_wheres, $va_relative_sql_data['wheres']);
+								}
+							}
+							
 							if ($this->opo_config->get('perform_item_level_access_checking')) {
-								if ($t_item = $this->opo_datamodel->getInstanceByTableName($this->ops_browse_table_name, true)) {
+								if ($t_item = $this->opo_datamodel->getInstanceByTableName($vs_browse_table_name, true)) {
 									// Join to limit what browse table items are used to generate facet
-									$va_joins[] = 'LEFT JOIN ca_acl ON '.$this->ops_browse_table_name.'.'.$t_item->primaryKey().' = ca_acl.row_id AND ca_acl.table_num = '.$t_item->tableNum()."\n";
+									$va_joins[] = 'LEFT JOIN ca_acl ON '.$vs_browse_table_name.'.'.$t_item->primaryKey().' = ca_acl.row_id AND ca_acl.table_num = '.$t_item->tableNum()."\n";
 									$va_wheres[] = "(
 										((
 											(ca_acl.user_id = ".(int)$vn_user_id.")
@@ -2120,7 +2269,7 @@
 							if ($vb_check_availability_only) {
 								$vs_sql = "
 									SELECT count(*) c
-									FROM ".$this->ops_browse_table_name."
+									FROM ".$vs_browse_table_name."
 									{$vs_join_sql}
 									".($vs_where_sql ? 'WHERE' : '')."
 									{$vs_where_sql}
@@ -2133,8 +2282,8 @@
 								return false;
 							} else {
 								$vs_sql = "
-									SELECT DISTINCT ".$this->ops_browse_table_name.'.'.$vs_field_name."
-									FROM ".$this->ops_browse_table_name."
+									SELECT DISTINCT ".$vs_browse_table_name.'.'.$vs_field_name."
+									FROM ".$vs_browse_table_name."
 									{$vs_join_sql}
 									".($vs_where_sql ? 'WHERE' : '')."
 										{$vs_where_sql}";
@@ -2166,7 +2315,7 @@
 							if ($t_browse_table = $this->opo_datamodel->getInstanceByTableName($vs_facet_table = $va_facet_info['table'], true)) {
 								// Handle fields containing ca_list_item.item_id's
 								$va_joins = array(
-									'INNER JOIN '.$this->ops_browse_table_name.' ON '.$this->ops_browse_table_name.'.'.$vs_field_name.' = '.$vs_facet_table.'.'.$t_browse_table->primaryKey()
+									'INNER JOIN '.$vs_browse_table_name.' ON '.$vs_browse_table_name.'.'.$vs_field_name.' = '.$vs_facet_table.'.'.$t_browse_table->primaryKey()
 								);
 								
 								
@@ -2178,21 +2327,31 @@
 								}
 								
 								if (sizeof($va_results) && ($this->numCriteria() > 0)) {
-									$va_wheres[] = "(".$this->ops_browse_table_name.'.'.$t_item->primaryKey()." IN (".join(',', $va_results)."))";
+									$va_wheres[] = "(".$t_subject->tableName().'.'.$t_subject->primaryKey()." IN (".join(',', $va_results)."))";
 								}
 								
 								if (isset($pa_options['checkAccess']) && is_array($pa_options['checkAccess']) && sizeof($pa_options['checkAccess']) && $t_item->hasField('access')) {
-									$va_wheres[] = "(".$this->ops_browse_table_name.".access IN (".join(',', $pa_options['checkAccess'])."))";
+									$va_wheres[] = "(".$vs_browse_table_name.".access IN (".join(',', $pa_options['checkAccess'])."))";
 								}
 								
 								if ($vs_browse_type_limit_sql) {
 									$va_wheres[] = $vs_browse_type_limit_sql;
 								}
 								
+								if ($va_facet_info['relative_to']) {
+									if ($t_subject->hasField('deleted')) {
+										$va_wheres[] = "(".$t_subject->tableName().".deleted = 0)";
+									}
+									if ($va_relative_sql_data = $this->_getRelativeFacetSQLData($va_facet_info['relative_to'], $pa_options)) {
+										$va_joins = array_merge($va_joins, $va_relative_sql_data['joins']);
+										$va_wheres = array_merge($va_wheres, $va_relative_sql_data['wheres']);
+									}
+								}
+								
 								if ($this->opo_config->get('perform_item_level_access_checking')) {
-									if ($t_item = $this->opo_datamodel->getInstanceByTableName($this->ops_browse_table_name, true)) {
+									if ($t_item = $this->opo_datamodel->getInstanceByTableName($vs_browse_table_name, true)) {
 										// Join to limit what browse table items are used to generate facet
-										$va_joins[] = 'LEFT JOIN ca_acl ON '.$this->ops_browse_table_name.'.'.$t_item->primaryKey().' = ca_acl.row_id AND ca_acl.table_num = '.$t_item->tableNum()."\n";
+										$va_joins[] = 'LEFT JOIN ca_acl ON '.$vs_browse_table_name.'.'.$t_item->primaryKey().' = ca_acl.row_id AND ca_acl.table_num = '.$t_item->tableNum()."\n";
 										$va_wheres[] = "(
 											((
 												(ca_acl.user_id = ".(int)$vn_user_id.")
@@ -2263,7 +2422,7 @@
 					break;
 				# -----------------------------------------------------
 				case 'field':
-					$t_item = $this->opo_datamodel->getInstanceByTableName($this->ops_browse_table_name, true);
+					$t_item = $this->opo_datamodel->getInstanceByTableName($vs_browse_table_name, true);
 					$vs_field_name = $va_facet_info['field'];
 					$va_field_info = $t_item->getFieldInfo($vs_field_name);
 					
@@ -2281,11 +2440,11 @@
 					
 					
 						if (sizeof($va_results) && ($this->numCriteria() > 0)) {
-							$va_wheres[] = "(".$this->ops_browse_table_name.'.'.$t_item->primaryKey()." IN (".join(',', $va_results)."))";
+							$va_wheres[] = "(".$t_subject->tableName().'.'.$t_subject->primaryKey()." IN (".join(',', $va_results)."))";
 						}
 						
 						if (isset($pa_options['checkAccess']) && is_array($pa_options['checkAccess']) && sizeof($pa_options['checkAccess']) && $t_item->hasField('access')) {
-							$va_wheres[] = "(".$this->ops_browse_table_name.".access IN (".join(',', $pa_options['checkAccess'])."))";
+							$va_wheres[] = "(".$vs_browse_table_name.".access IN (".join(',', $pa_options['checkAccess'])."))";
 						}
 						
 						if ($vs_browse_type_limit_sql) {
@@ -2293,13 +2452,23 @@
 						}
 											
 						if ($t_item->hasField('deleted')) {
-							$va_wheres[] = "(".$this->ops_browse_table_name.".deleted = 0)";
+							$va_wheres[] = "(".$vs_browse_table_name.".deleted = 0)";
+						}
+						
+						if ($va_facet_info['relative_to']) {
+							if ($t_subject->hasField('deleted')) {
+								$va_wheres[] = "(".$t_subject->tableName().".deleted = 0)";
+							}
+							if ($va_relative_sql_data = $this->_getRelativeFacetSQLData($va_facet_info['relative_to'], $pa_options)) {
+								$va_joins = array_merge($va_joins, $va_relative_sql_data['joins']);
+								$va_wheres = array_merge($va_wheres, $va_relative_sql_data['wheres']);
+							}
 						}
 						
 						if ($this->opo_config->get('perform_item_level_access_checking')) {
-							if ($t_item = $this->opo_datamodel->getInstanceByTableName($this->ops_browse_table_name, true)) {
+							if ($t_item = $this->opo_datamodel->getInstanceByTableName($vs_browse_table_name, true)) {
 								// Join to limit what browse table items are used to generate facet
-								$va_joins[] = 'LEFT JOIN ca_acl ON '.$this->ops_browse_table_name.'.'.$t_item->primaryKey().' = ca_acl.row_id AND ca_acl.table_num = '.$t_item->tableNum()."\n";
+								$va_joins[] = 'LEFT JOIN ca_acl ON '.$vs_browse_table_name.'.'.$t_item->primaryKey().' = ca_acl.row_id AND ca_acl.table_num = '.$t_item->tableNum()."\n";
 								$va_wheres[] = "(
 									((
 										(ca_acl.user_id = ".(int)$vn_user_id.")
@@ -2322,7 +2491,7 @@
 						if ($vb_check_availability_only) {
 							$vs_sql = "
 								SELECT count(*) c
-								FROM ".$this->ops_browse_table_name."
+								FROM {$vs_browse_table_name}
 								{$vs_join_sql}
 								WHERE
 									{$vs_where_sql}
@@ -2337,8 +2506,9 @@
 							
 							$vs_pk = $t_item->primaryKey();
 							$vs_sql = "
-								SELECT DISTINCT {$vs_field_name}
-								FROM ".$this->ops_browse_table_name."
+								SELECT DISTINCT {$vs_browse_table_name}.{$vs_field_name}
+								FROM {$vs_browse_table_name}
+								{$vs_join_sql}
 								WHERE
 									{$vs_where_sql}";
 							if($vs_sort_field) {
@@ -2372,7 +2542,7 @@
 					break;
 				# -----------------------------------------------------
 				case 'normalizedDates':
-					$t_item = $this->opo_datamodel->getInstanceByTableName($this->ops_browse_table_name, true);
+					$t_item = $this->opo_datamodel->getInstanceByTableName($vs_browse_table_name, true);
 					$t_element = new ca_metadata_elements();
 					if (!$t_element->load(array('element_code' => $va_facet_info['element_code']))) {
 						return array();
@@ -2386,14 +2556,14 @@
 					
 					$va_joins = array(
 						'INNER JOIN ca_attribute_values ON ca_attributes.attribute_id = ca_attribute_values.attribute_id',
-						'INNER JOIN '.$this->ops_browse_table_name.' ON '.$this->ops_browse_table_name.'.'.$t_item->primaryKey().' = ca_attributes.row_id AND ca_attributes.table_num = '.intval($this->opn_browse_table_num)
+						'INNER JOIN '.$vs_browse_table_name.' ON '.$vs_browse_table_name.'.'.$t_item->primaryKey().' = ca_attributes.row_id AND ca_attributes.table_num = '.intval($vs_browse_table_num)
 					);
 					if (sizeof($va_results) && ($this->numCriteria() > 0)) {
-						$va_wheres[] = "(".$this->ops_browse_table_name.'.'.$t_item->primaryKey()." IN (".join(',', $va_results)."))";
+						$va_wheres[] = "(".$t_subject->tableName().'.'.$t_subject->primaryKey()." IN (".join(',', $va_results)."))";
 					}
 					
 					if (isset($pa_options['checkAccess']) && is_array($pa_options['checkAccess']) && sizeof($pa_options['checkAccess']) && $t_item->hasField('access')) {
-						$va_wheres[] = "(".$this->ops_browse_table_name.".access IN (".join(',', $pa_options['checkAccess'])."))";
+						$va_wheres[] = "(".$vs_browse_table_name.".access IN (".join(',', $pa_options['checkAccess'])."))";
 					}
 					
 					if ($vs_browse_type_limit_sql) {
@@ -2401,13 +2571,23 @@
 					}
 					
 					if ($t_item->hasField('deleted')) {
-						$va_wheres[] = "(".$this->ops_browse_table_name.".deleted = 0)";
+						$va_wheres[] = "(".$vs_browse_table_name.".deleted = 0)";
+					}
+					
+					if ($va_facet_info['relative_to']) {
+						if ($t_subject->hasField('deleted')) {
+							$va_wheres[] = "(".$t_subject->tableName().".deleted = 0)";
+						}
+						if ($va_relative_sql_data = $this->_getRelativeFacetSQLData($va_facet_info['relative_to'], $pa_options)) {
+							$va_joins = array_merge($va_joins, $va_relative_sql_data['joins']);
+							$va_wheres = array_merge($va_wheres, $va_relative_sql_data['wheres']);
+						}
 					}
 					
 					if ($this->opo_config->get('perform_item_level_access_checking')) {
-						if ($t_item = $this->opo_datamodel->getInstanceByTableName($this->ops_browse_table_name, true)) {
+						if ($t_item = $this->opo_datamodel->getInstanceByTableName($vs_browse_table_name, true)) {
 							// Join to limit what browse table items are used to generate facet
-							$va_joins[] = 'LEFT JOIN ca_acl ON '.$this->ops_browse_table_name.'.'.$t_item->primaryKey().' = ca_acl.row_id AND ca_acl.table_num = '.$t_item->tableNum()."\n";
+							$va_joins[] = 'LEFT JOIN ca_acl ON '.$vs_browse_table_name.'.'.$t_item->primaryKey().' = ca_acl.row_id AND ca_acl.table_num = '.$t_item->tableNum()."\n";
 							$va_wheres[] = "(
 								((
 									(ca_acl.user_id = ".(int)$vn_user_id.")
@@ -2452,7 +2632,6 @@
 						$vs_sql = "
 							SELECT count(*) c
 							FROM ca_attributes
-							
 							{$vs_join_sql}
 							WHERE
 								ca_attribute_values.element_id = ? 
@@ -2471,7 +2650,6 @@
 						$vs_sql = "
 							SELECT DISTINCT ca_attribute_values.value_decimal1, ca_attribute_values.value_decimal2
 							FROM ca_attributes
-							
 							{$vs_join_sql}
 							WHERE
 								ca_attribute_values.element_id = ? 
@@ -2479,6 +2657,7 @@
 								{$vs_max_sql}
 								{$vs_where_sql}
 						";
+						//print $vs_sql;
 						$qr_res = $this->opo_db->query($vs_sql, $vn_element_id);
 					
 						$va_values = array();
@@ -2524,13 +2703,13 @@
 					if (!is_array($va_restrict_to_relationship_types = $va_facet_info['restrict_to_relationship_types'])) { $va_restrict_to_relationship_types = array(); }
 					if (!is_array($va_exclude_relationship_types = $va_facet_info['exclude_relationship_types'])) { $va_exclude_relationship_types = array(); }
 					
-					$t_item = $this->opo_datamodel->getInstanceByTableName($this->ops_browse_table_name, true);
+					$t_item = $this->opo_datamodel->getInstanceByTableName($vs_browse_table_name, true);
 					
-					if ($this->ops_browse_table_name == $vs_rel_table_name) {
+					if ($vs_browse_table_name == $vs_rel_table_name) {
 						// browsing on self-relations not supported
 						break;
 					} else {
-						switch(sizeof($va_path = array_keys($this->opo_datamodel->getPath($this->ops_browse_table_name, $vs_rel_table_name)))) {
+						switch(sizeof($va_path = array_keys($this->opo_datamodel->getPath($vs_browse_table_name, $vs_rel_table_name)))) {
 							case 3:
 								$t_item_rel = $this->opo_datamodel->getInstanceByTableName($va_path[1], true);
 								$t_rel_item = $this->opo_datamodel->getInstanceByTableName($va_path[2], true);
@@ -2608,7 +2787,7 @@ if (!$va_facet_info['show_all_when_first_facet'] || ($this->numCriteria() > 0)) 
 }
 
 					if (sizeof($va_results) && ($this->numCriteria() > 0)) {
-						$va_wheres[] = "(".$this->ops_browse_table_name.'.'.$t_item->primaryKey()." IN (".join(',', $va_results)."))";
+						$va_wheres[] = "(".$t_subject->tableName().'.'.$t_subject->primaryKey()." IN (".join(',', $va_results)."))";
 					}
 					
 					if ((sizeof($va_restrict_to_types) > 0) && method_exists($t_rel_item, "getTypeList")) {
@@ -2625,7 +2804,7 @@ if (!$va_facet_info['show_all_when_first_facet'] || ($this->numCriteria() > 0)) 
 					if (isset($pa_options['checkAccess']) && is_array($pa_options['checkAccess']) && sizeof($pa_options['checkAccess']) && $t_rel_item->hasField('access')) {
 						$va_wheres[] = "(".$t_rel_item->tableName().".access IN (".join(',', $pa_options['checkAccess'])."))";				// exclude non-accessible authority items
 						if (!$va_facet_info['show_all_when_first_facet'] || ($this->numCriteria() > 0)) {	
-							$va_wheres[] = "(".$this->ops_browse_table_name.".access IN (".join(',', $pa_options['checkAccess'])."))";		// exclude non-accessible browse items
+							$va_wheres[] = "(".$vs_browse_table_name.".access IN (".join(',', $pa_options['checkAccess'])."))";		// exclude non-accessible browse items
 						}
 					}
 					
@@ -2682,11 +2861,21 @@ if (!$va_facet_info['show_all_when_first_facet'] || ($this->numCriteria() > 0)) 
 						}
 					}
 					
+					if ($va_facet_info['relative_to']) {
+						if ($t_subject->hasField('deleted')) {
+							$va_wheres[] = "(".$t_subject->tableName().".deleted = 0)";
+						}
+						if ($va_relative_sql_data = $this->_getRelativeFacetSQLData($va_facet_info['relative_to'], $pa_options)) {
+							$va_joins = array_merge($va_joins, $va_relative_sql_data['joins']);
+							$va_wheres = array_merge($va_wheres, $va_relative_sql_data['wheres']);
+						}
+					}
+					
 					if ($this->opo_config->get('perform_item_level_access_checking')) {
-						if ($t_item = $this->opo_datamodel->getInstanceByTableName($this->ops_browse_table_name, true)) {
+						if ($t_item = $this->opo_datamodel->getInstanceByTableName($vs_browse_table_name, true)) {
 							
 							// Join to limit what browse table items are used to generate facet
-							$va_joins[] = 'LEFT JOIN ca_acl ON '.$this->ops_browse_table_name.'.'.$t_item->primaryKey().' = ca_acl.row_id AND ca_acl.table_num = '.$t_item->tableNum()."\n";
+							$va_joins[] = 'LEFT JOIN ca_acl ON '.$vs_browse_table_name.'.'.$t_item->primaryKey().' = ca_acl.row_id AND ca_acl.table_num = '.$t_item->tableNum()."\n";
 							$va_wheres[] = "(
 								((
 									(ca_acl.user_id = ".(int)$vn_user_id.")
@@ -2720,7 +2909,7 @@ if (!$va_facet_info['show_all_when_first_facet'] || ($this->numCriteria() > 0)) 
 	if (!$va_facet_info['show_all_when_first_facet'] || ($this->numCriteria() > 0)) {	
 						$vs_sql = "
 							SELECT count(*) c
-							FROM ".$this->ops_browse_table_name."
+							FROM ".$vs_browse_table_name."
 							{$vs_join_sql}
 								".(sizeof($va_wheres) ? ' WHERE ' : '').join(" AND ", $va_wheres)." LIMIT 1";
 	} else {
@@ -2742,7 +2931,7 @@ if (!$va_facet_info['show_all_when_first_facet'] || ($this->numCriteria() > 0)) 
 	if (!$va_facet_info['show_all_when_first_facet'] || ($this->numCriteria() > 0)) {	
 						$vs_sql = "
 							SELECT DISTINCT ".join(', ', $va_selects)."
-							FROM ".$this->ops_browse_table_name."
+							FROM ".$vs_browse_table_name."
 							{$vs_join_sql}
 								".(sizeof($va_wheres) ? ' WHERE ' : '').join(" AND ", $va_wheres)."
 								".(sizeof($va_orderbys) ? "ORDER BY ".join(', ', $va_orderbys) : '');
@@ -3295,13 +3484,13 @@ if (!$va_facet_info['show_all_when_first_facet'] || ($this->numCriteria() > 0)) 
 		 * Created temporary table for use while performing browse
 		 */
 		private function _createTempTable($ps_name) {
-			$this->opo_db->query("
-				CREATE TEMPORARY TABLE {$ps_name} (
-					row_id int unsigned not null,
-					
-					primary key (row_id)
-				) engine=memory;
-			");
+			$this->opo_db->createTemporaryTable($ps_name, array(array("name" => "row_id", 
+															"type" => "int", 
+															"length" => 0, 
+															"primary_key" => true, 
+															"null" => false,
+															"default" => false)),
+													"memory");
 			if ($this->opo_db->numErrors()) {
 				return false;
 			}
@@ -3558,7 +3747,92 @@ if (!$va_facet_info['show_all_when_first_facet'] || ($this->numCriteria() > 0)) 
 		/**
 		 *
 		 */
-		
+		private function _getRelativeFacetSQLData($ps_relative_to_table, $pa_options) {
+			switch(sizeof($va_path = array_keys($this->opo_datamodel->getPath($ps_relative_to_table, $this->ops_browse_table_name)))) {
+				case 3:
+					$t_item_rel = $this->opo_datamodel->getInstanceByTableName($va_path[1], true);
+					$t_rel_item = $this->opo_datamodel->getInstanceByTableName($va_path[2], true);
+					$vs_key = 'relation_id';
+					break;
+				case 2:
+					$t_item_rel = null;
+					$t_rel_item = $this->opo_datamodel->getInstanceByTableName($va_path[1], true);
+					$vs_key = $t_rel_item->primaryKey();
+					break;
+				default:
+					// bad table
+					return null;
+					break;
+			}
+			
+			$va_joins = $va_wheres = array();
+			
+			$vs_cur_table = array_shift($va_path);
+			foreach($va_path as $vs_join_table) {
+				$va_rel_info = $this->opo_datamodel->getRelationships($vs_cur_table, $vs_join_table);
+				$va_joins[] = 'INNER JOIN '.$vs_join_table.' ON '.$vs_cur_table.'.'.$va_rel_info[$vs_cur_table][$vs_join_table][0][0].' = '.$vs_join_table.'.'.$va_rel_info[$vs_cur_table][$vs_join_table][0][1]."\n";
+				$vs_cur_table = $vs_join_table;
+			}
+			if (isset($pa_options['checkAccess']) && is_array($pa_options['checkAccess']) && sizeof($pa_options['checkAccess']) && $t_rel_item->hasField('access')) {
+				$va_wheres[] = "(".$this->ops_browse_table_name.".access IN (".join(',', $pa_options['checkAccess'])."))";
+			}
+			
+			return array('joins' => $va_joins, 'wheres' => $va_wheres);
+		}
+		# ------------------------------------------------------
+		/**
+		 *
+		 */
+		private function _getRelativeExecuteSQLData($ps_relative_to_table) {
+			if (!($t_target = $this->opo_datamodel->getInstanceByTableName($ps_relative_to_table, true))) { return null; }
+			$vs_target_browse_table_num = $t_target->tableNum();
+			$vs_target_browse_table_pk = $t_target->primaryKey();
+			$t_item = $this->opo_datamodel->getInstanceByTableName($this->ops_browse_table_name, true);
+			
+			switch(sizeof($va_path = array_keys($this->opo_datamodel->getPath($ps_relative_to_table, $this->ops_browse_table_name)))) {
+				case 3:
+					$t_item_rel = $this->opo_datamodel->getInstanceByTableName($va_path[1], true);
+					$t_rel_item = $this->opo_datamodel->getInstanceByTableName($va_path[2], true);
+					$vs_key = 'relation_id';
+					break;
+				case 2:
+					$t_item_rel = null;
+					$t_rel_item = $this->opo_datamodel->getInstanceByTableName($va_path[1], true);
+					$vs_key = $t_rel_item->primaryKey();
+					break;
+				default:
+					// bad table
+					return null;
+					break;
+			}
+			
+			$va_joins = $va_wheres = array();
+			
+			$vs_cur_table = array_shift($va_path);
+			foreach($va_path as $vs_join_table) {
+				$va_rel_info = $this->opo_datamodel->getRelationships($vs_cur_table, $vs_join_table);
+				$va_joins[] = 'INNER JOIN '.$vs_join_table.' ON '.$vs_cur_table.'.'.$va_rel_info[$vs_cur_table][$vs_join_table][0][0].' = '.$vs_join_table.'.'.$va_rel_info[$vs_cur_table][$vs_join_table][0][1]."\n";
+				$vs_cur_table = $vs_join_table;
+			}
+			if (isset($pa_options['checkAccess']) && is_array($pa_options['checkAccess']) && sizeof($pa_options['checkAccess']) && $t_rel_item->hasField('access')) {
+				$va_wheres[] = "(".$this->ops_browse_table_name.".access IN (".join(',', $pa_options['checkAccess'])."))";
+			}
+			
+			$va_relative_to_join = array();
+			if ($t_item_rel) {
+				$va_relative_to_join[] = "INNER JOIN ".$t_item_rel->tableName()." ON ".$t_item_rel->tableName().".".$t_item->primaryKey()." = ".$this->ops_browse_table_name.'.'.$t_item->primaryKey();
+			}
+			$va_relative_to_join[] = "INNER JOIN {$ps_relative_to_table} ON {$ps_relative_to_table}.{$vs_target_browse_table_pk} = ".$t_item_rel->tableName().".".$t_target->primaryKey();
+			
+			$vs_relative_to_join = join("\n", $va_relative_to_join);
+			
+			return array(
+				'joins' => $va_joins, 'wheres' => $va_wheres, 'relative_joins' => $va_relative_to_join,
+				'target_table_name' => $ps_relative_to_table,
+				'target_table_num' => $vs_target_browse_table_num,
+				'target_table_pk' => $vs_target_browse_table_pk
+			);
+		}
 		# ------------------------------------------------------
 	}
 ?>

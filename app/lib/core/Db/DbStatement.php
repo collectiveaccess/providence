@@ -112,10 +112,7 @@ class DbStatement extends DbBase {
 			$va_args = $va_args[0];
 		}
 		
-		if ($vb_res = $this->opo_db->execute($this, $this, $this->ops_sql, $va_args)) {
-			$this->opn_last_insert_id = $this->opo_db->getLastInsertID($this);
-		}
-		return $vb_res;
+		return $this->executeWithParamsAsArray($va_args);
 	}
 
 	/**
@@ -125,10 +122,16 @@ class DbStatement extends DbBase {
 	 * @return mixed result
 	 */
 	function executeWithParamsAsArray($pa_params) {
+		global $g_db_driver;
 		$this->clearErrors();
 
-		if ($vb_res = $this->opo_db->execute($this, $this,$this->ops_sql, $pa_params)) {
-			$this->opn_last_insert_id = $this->opo_db->getLastInsertID($this);
+		if ($vb_res = $this->opo_db->execute($this, $this, $this->ops_sql, $pa_params)) {
+			if($g_db_driver == "pgsql"){
+				$this->opn_last_insert_id = $this->opo_db->getLastInsertID($this, $this->ops_sql);
+			} else{
+				$this->opn_last_insert_id = $this->opo_db->getLastInsertID($this);
+			}
+			
 		}
 		return $vb_res;
 	}

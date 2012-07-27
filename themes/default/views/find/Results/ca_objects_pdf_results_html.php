@@ -44,9 +44,9 @@
 table, td { border: 1px solid #000000; color: #000000; text-wrap: normal; width: 135px; height: 120px; padding: 5px; font-size: 11px;}
 td.odd   { color: #00AA00; }
 .displayHeader { background-color: #EEEEEE; padding: 5px; border: 1px solid #999999; font-size: 12px; }
-#pageHeader { background-color: #<?php print $this->request->config->get('report_color')?>; margin: 0px 5px 10px 5px; padding: 3px 5px 2px 10px; width: 100%; height: 45px; }
-.headerText { color: #FFFFFF; margin: -5px 0px 10px 35px; }
-.pagingText { color: #FFFFFF; margin: -5px 0px 10px 35px; text-align: right; }
+#pageHeader { background-color: #<?php print $this->request->config->get('report_color'); ?>; margin: 0px 5px 10px 5px; padding: 3px 5px 2px 10px; width: 100%; height: 45px; }
+.headerText { color: #<?php print ($this->request->config->get('report_text_color')) ? $this->request->config->get('report_text_color') : "FFFFFF"; ?>; margin: -5px 0px 10px 35px; }
+.pagingText { color: #<?php print ($this->request->config->get('report_text_color')) ? $this->request->config->get('report_text_color') : "FFFFFF"; ?>; margin: -5px 0px 10px 35px; text-align: right; }
 -->
 </style>
 
@@ -60,9 +60,10 @@ td.odd   { color: #00AA00; }
 ?>
 	<page_header>
 		<div id='pageHeader'>
-
-			<img src="<?php print $this->request->getThemeDirectoryPath()."/graphics/logos/".$this->request->config->get('report_img')?>"/>
-<?php 
+<?php
+			if(file_exists($this->request->getThemeDirectoryPath()."/graphics/logos/".$this->request->config->get('report_img'))){
+				print '<img src="'.$this->request->getThemeDirectoryPath().'/graphics/logos/'.$this->request->config->get('report_img').'"/>';
+ 			}
 			if($this->request->config->get('report_show_timestamp')) {
 				print "<span class='headerText'>".caGetLocalizedDate(null, array('dateFormat' => 'delimited'))."</span>";
 			}
@@ -72,7 +73,7 @@ td.odd   { color: #00AA00; }
 			if($this->request->config->get('report_show_search_term')) {
 				print "<span class='headerText'>".$this->getVar('criteria_summary_truncated')."</span>";
 			}
-			print "<span class='pagingText'>"._t("Page [[page_cu]]/[[page_nb]]")."</span>";
+			print "<span class='pagingText'>"._t("Page [%1]/[%2]", "[page_cu]", "[page_nb]")."</span>";
 ?>
 		</div>
 	</page_header>

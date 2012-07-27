@@ -3804,6 +3804,8 @@ $pa_options["display_form_field_tips"] = true;
 			$va_initial_values = array();
 		}
 		$qr_res->seek(0);
+		
+		$t_acl = new ca_acl();
 		while($qr_res->nextRow()) {
 			$va_row = array();
 			foreach(array('user_id', 'fname', 'lname', 'email', 'access') as $vs_f) {
@@ -3813,6 +3815,7 @@ $pa_options["display_form_field_tips"] = true;
 			if ($vb_return_for_bundle) {
 				$va_row['_display'] = $va_initial_values[$va_row['user_id']]['_display'];
 				$va_row['id'] = $va_row['user_id'];
+				$va_row['access_display'] = $t_acl->getChoiceListValue('access', $va_row['access']);
 				$va_users[(int)$qr_res->get('acl_id')] = $va_row;
 			} else {
 				$va_users[(int)$qr_res->get('user_id')] = $va_row;
@@ -3980,6 +3983,9 @@ $pa_options["display_form_field_tips"] = true;
 		} else {
 			$va_initial_values = array();
 		}
+		
+		$t_acl = new ca_acl();
+		
 		$qr_res->seek(0);
 		while($qr_res->nextRow()) {
 			$va_row = array();
@@ -3990,6 +3996,8 @@ $pa_options["display_form_field_tips"] = true;
 			if ($vb_return_for_bundle) {
 				$va_row['_display'] = $va_initial_values[$va_row['group_id']]['_display'];
 				$va_row['id'] = $va_row['group_id'];
+				$va_row['access_display'] = $t_acl->getChoiceListValue('access', $va_row['access']);
+				
 				$va_groups[(int)$qr_res->get('acl_id')] = $va_row;
 			} else {
 				$va_groups[(int)$qr_res->get('group_id')] = $va_row;
@@ -4112,6 +4120,43 @@ $pa_options["display_form_field_tips"] = true;
 			return false;
 		}
 		return true;
+	}
+	# ------------------------------------------------------------------
+	/**
+	 * Returns an array containing the ACL world access setting for the currently load row. The array
+	 * Array keys are:
+	 *			access				[access level as integer value]
+	 *			access_display		[access level as display text]
+	 *
+	 * @param array $pa_options Supported options:
+	 *		No options currently supported
+	 *
+	 * @return array Information about current ACL world setting
+	 */ 
+	public function getACLWorldAccess($pa_options=null) {
+		if (!($vn_id = (int)$this->getPrimaryKey())) { return null; }
+		
+		if (!is_array($pa_options)) { $pa_options = array(); }
+		
+		$o_db = $this->getDb();
+		
+		$qr_res = $o_db->query("
+			SELECT acl.*
+			FROM ca_acl acl
+			WHERE
+				acl.table_num = ? AND acl.row_id = ? AND acl.group_id IS NULL AND acl.user_id IS NULL
+		", $this->tableNum(), $vn_id);
+		
+		$t_acl = new ca_acl();
+		$va_row = array();
+		if($qr_res->nextRow()) {
+			foreach(array('access') as $vs_f) {
+				$va_row[$vs_f] = $qr_res->get($vs_f);
+			}
+			$va_row['access_display'] = $t_acl->getChoiceListValue('access', $va_row['access']);
+		}
+		
+		return $va_row;
 	}
 	# --------------------------------------------------------------------------------------------		
 	/**
