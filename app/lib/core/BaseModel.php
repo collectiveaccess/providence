@@ -1358,7 +1358,7 @@ class BaseModel extends BaseObject {
 						break;
 				}
 			} else {
-				$this->postError(710,_t("%1' does not exist in this object", $vs_field),"BaseModel->set()");
+				$this->postError(710,_t("'%1' does not exist in this object", $vs_field),"BaseModel->set()");
 				return false;
 			}
 		}
@@ -7321,6 +7321,7 @@ $pa_options["display_form_field_tips"] = true;
 						$this->errors = $t_item_rel->errors;
 						return false;
 					}
+					break;
 				case 2:		// many-to-one relationship
 					if ($this->tableName() == $va_rel_info['rel_keys']['one_table']) {
 						if ($t_item_rel->load($pn_rel_id)) {
