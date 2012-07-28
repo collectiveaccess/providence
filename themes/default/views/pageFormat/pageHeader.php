@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2008-2011 Whirl-i-Gig
+ * Copyright 2008-2012 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -59,6 +59,11 @@
 <?php
 	print JavascriptLoadManager::getLoadHTML($this->request->getBaseUrlPath());
 	print MetaTagManager::getHTML();
+	
+	if (file_exists($this->request->getThemeDirectoryPath().'/css/local.css')) {
+		print '<link rel="stylesheet" href="'.$this->request->getThemeUrlPath().'/css/local.css" type="text/css" media="screen" />
+';
+	}
 ?>
 	</head>
 		<script type="text/javascript">
