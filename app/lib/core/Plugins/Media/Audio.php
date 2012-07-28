@@ -743,8 +743,8 @@ class WLPlugMediaAudio Extends WLPlug Implements IWLPlugMedia {
 					case 'small':
 						JavascriptLoadManager::register("swfobject");
 						ob_start();
-						$vn_width = ($pa_properties["viewer_width"] > 0) ? $pa_properties["viewer_width"] : 165;
-						$vn_height = ($pa_properties["viewer_height"] > 0) ? $pa_properties["viewer_height"] : 38;
+						$vn_width = ($pa_options["viewer_width"] > 0) ? $pa_options["viewer_width"] : 165;
+						$vn_height = ($pa_options["viewer_height"] > 0) ? $pa_options["viewer_height"] : 38;
 ?>
 						<div style='width: {$vn_width}px; height: {$vn_height}px;'>
 							<object classid="clsid:D27CDB6E-AE6D-11cf-96B8-444553540000" codebase="http://download.macromedia.com/pub/shockwave/cabs/flash/swflash.cab#version=6,0,0,0" width="<?php print $vn_viewer_width; ?>" height="<?php print $vn_viewer_height; ?>" id="<?php print $vs_id; ?>" align="">
@@ -763,8 +763,8 @@ class WLPlugMediaAudio Extends WLPlug Implements IWLPlugMedia {
 						break;
 					case 'jplayer':
 						JavascriptLoadManager::register("jplayer");
-						$vn_width = ($pa_properties["viewer_width"] > 0) ? $pa_properties["viewer_width"] : 400;
-						$vn_height = ($pa_properties["viewer_height"] > 0) ? $pa_properties["viewer_height"] : 95;
+						$vn_width = ($pa_options["viewer_width"] > 0) ? $pa_options["viewer_width"] : 400;
+						$vn_height = ($pa_options["viewer_height"] > 0) ? $pa_options["viewer_height"] : 95;
 						ob_start();
 ?>
 			<div style="width: <?php print $vn_width; ?>px; height: <?php print $vn_height; ?>px;">
@@ -817,8 +817,8 @@ class WLPlugMediaAudio Extends WLPlug Implements IWLPlugMedia {
 					default:
 						JavascriptLoadManager::register("mediaelement");
 						
-						$vn_width = ($pa_properties["viewer_width"] > 0) ? $pa_properties["viewer_width"] : 400;
-						$vn_height = ($pa_properties["viewer_height"] > 0) ? $pa_properties["viewer_height"] : 95;
+						$vn_width = ($pa_options["viewer_width"] > 0) ? $pa_options["viewer_width"] : 400;
+						$vn_height = ($pa_options["viewer_height"] > 0) ? $pa_options["viewer_height"] : 95;
 						ob_start();
 ?>
 					<div class="caAudioPlayer">
@@ -843,8 +843,8 @@ class WLPlugMediaAudio Extends WLPlug Implements IWLPlugMedia {
 				} else {
 					ob_start();
 					
-					$vn_width = ($pa_properties["viewer_width"] > 0) ? $pa_properties["viewer_width"] : 400;
-					$vn_height = ($pa_properties["viewer_height"] > 0) ? $pa_properties["viewer_height"] : 95;
+					$vn_width = ($pa_options["viewer_width"] > 0) ? $pa_options["viewer_width"] : 400;
+					$vn_height = ($pa_options["viewer_height"] > 0) ? $pa_options["viewer_height"] : 95;
 ?>
 					<div style="width: {$vn_width}px; height: {$vn_height}px;">
 						<table border="0" cellpadding="0" cellspacing="0">
@@ -869,8 +869,8 @@ class WLPlugMediaAudio Extends WLPlug Implements IWLPlugMedia {
 				} else {
 					ob_start();
 					
-					$vn_width = ($pa_properties["viewer_width"] > 0) ? $pa_properties["viewer_width"] : 400;
-					$vn_height = ($pa_properties["viewer_height"] > 0) ? $pa_properties["viewer_height"] : 95;
+					$vn_width = ($pa_options["viewer_width"] > 0) ? $pa_options["viewer_width"] : 400;
+					$vn_height = ($pa_options["viewer_height"] > 0) ? $pa_options["viewer_height"] : 95;
 ?>
 					<div style="width: {$vn_width}px; height: {$vn_height}px;">
 						<table border="0" cellpadding="0" cellspacing="0">
@@ -895,8 +895,8 @@ class WLPlugMediaAudio Extends WLPlug Implements IWLPlugMedia {
 				} else {
 					ob_start();
 					
-					$vn_width = ($pa_properties["viewer_width"] > 0) ? $pa_properties["viewer_width"] : 400;
-					$vn_height = ($pa_properties["viewer_height"] > 0) ? $pa_properties["viewer_height"] : 95;
+					$vn_width = ($pa_options["viewer_width"] > 0) ? $pa_options["viewer_width"] : 400;
+					$vn_height = ($pa_options["viewer_height"] > 0) ? $pa_options["viewer_height"] : 95;
 ?>
 					<div style="width: {$vn_width}px; height: {$vn_height}px;">
 						<table border="0" cellpadding="0" cellspacing="0">
@@ -920,8 +920,8 @@ class WLPlugMediaAudio Extends WLPlug Implements IWLPlugMedia {
 				$vs_flash_vars = 		$pa_options["viewer_parameters"];
 				$viewer_base_url =		$pa_options["viewer_base_url"];
 
-				$vn_width = ($pa_properties["viewer_width"] > 0) ? $pa_properties["viewer_width"] : 400;
-				$vn_height = ($pa_properties["viewer_height"] > 0) ? $pa_properties["viewer_height"] : 95;
+				$vn_width = ($pa_options["viewer_width"] > 0) ? $pa_options["viewer_width"] : 400;
+				$vn_height = ($pa_options["viewer_height"] > 0) ? $pa_options["viewer_height"] : 95;
 				
 				$vs_data_url =			$pa_options["data_url"];
 				$vs_poster_frame_url =	$pa_options["poster_frame_url"];

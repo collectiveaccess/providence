@@ -38,6 +38,7 @@
 		public function testQuarterCentryDates() {
 			$o_tep = new TimeExpressionParser();
 			$o_tep->setLanguage('en_US');
+			
 			$vb_res = $o_tep->parse('20 Q2');	// 2nd quarter of 20th century
 			$this->assertEquals($vb_res, true);
 			
@@ -624,6 +625,27 @@
 			$this->assertEquals($vb_res, true);
 			
 			$this->assertEquals($o_tep->getText(), '40000000 BCE');
+		}
+		
+		public function testIncompleteRanges() {
+			$o_tep = new TimeExpressionParser();
+			$o_tep->setLanguage('en_US');
+			$va_date = getDate();
+			
+			$vb_res = $o_tep->parse('August 20 - 27 2011');
+			$this->assertEquals($vb_res, true);
+			$va_parse = $o_tep->getHistoricTimestamps();
+			
+			$this->assertEquals($va_parse['start'], '2011.082000000000');
+			$this->assertEquals($va_parse['end'], '2011.082723595900');
+			
+			
+			$vb_res = $o_tep->parse('August 20 - 27');
+			$this->assertEquals($vb_res, true);
+			$va_parse = $o_tep->getHistoricTimestamps();
+			
+			$this->assertEquals($va_parse['start'], $va_date['year'].'.082000000000');
+			$this->assertEquals($va_parse['end'], $va_date['year'].'.082723595900');
 		}
 	}
 ?>
