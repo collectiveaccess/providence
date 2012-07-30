@@ -296,6 +296,19 @@ class BundlableLabelableBaseModelWithAttributes extends LabelableBaseModelWithAt
 		$t_dupe->purify($this->purify());
 		$t_dupe->setTransaction($o_t);
 		
+		if($this->isHierarchical()) {
+			if (!$this->get($this->getProperty('HIERARCHY_PARENT_ID_FLD'))) {
+				if ($this->getHierarchyType() == __CA_HIER_TYPE_ADHOC_MONO__) {	// If we're duping the root of an adhoc hierarchy then we need to set the HIERARCHY_ID_FLD to null
+					$this->set($this->getProperty('HIERARCHY_ID_FLD'), null);
+				} else {
+					// Don't allow duping of hierarchy roots for non-adhoc hierarchies
+					if ($vb_we_set_transaction) { $this->removeTransaction(false);}
+					$this->postError(2055, _t("Cannot duplicate root of hierarchy"), "BundlableLabelableBaseModelWithAttributes->duplicate()");
+					return null;
+				}
+			}
+		}
+
 		// duplicate primary record + intrinsics
 		$va_field_list = $this->getFormFields(true, true);
 		foreach($va_field_list as $vn_i => $vs_field) {
@@ -340,6 +353,7 @@ class BundlableLabelableBaseModelWithAttributes extends LabelableBaseModelWithAt
 		$t_dupe->setMode(ACCESS_WRITE);
 		
 		if (isset($pa_options['user_id']) && $pa_options['user_id'] && $t_dupe->hasField('user_id')) { $t_dupe->set('user_id', $pa_options['user_id']); }
+		
 		$t_dupe->insert();
 		
 		if ($t_dupe->numErrors()) {
