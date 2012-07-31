@@ -967,8 +967,13 @@ class WLPlugMediaImagick Extends WLPlug Implements IWLPlugMedia {
 			}
 			
 			# write the file
-			if ( !$this->handle->writeImage($ps_filepath.".".$ext ) ) {
-				$this->postError(1610, _t("Error writing file"), "WLPlugImagick->write()");
+			try {
+				if ( !$this->handle->writeImage($ps_filepath.".".$ext ) ) {
+					$this->postError(1610, _t("Error writing file"), "WLPlugImagick->write()");
+					return false;
+				}
+			} catch (Exception $e) {
+				$this->postError(1610, _t("Error writing file: %1", $e->getMessage()), "WLPlugImagick->write()");
 				return false;
 			}
 			
