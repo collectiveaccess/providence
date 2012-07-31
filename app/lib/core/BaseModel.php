@@ -2740,10 +2740,20 @@ class BaseModel extends BaseObject {
 	 * to specify which tables to omit when deleting related stuff
 	 */
 	public function delete ($pb_delete_related=false, $pa_options=null, $pa_fields=null, $pa_table_list=null) {
+		$vn_id = $this->getPrimaryKey();
 		if ($this->hasField('deleted') && (!isset($pa_options['hard']) || !$pa_options['hard'])) {
 			$this->setMode(ACCESS_WRITE);
 			$this->set('deleted', 1);
-			return $this->update(array('force' => true));
+			if ($vn_rc = $this->update(array('force' => true))) {
+				if(!defined('__CA_DONT_DO_SEARCH_INDEXING__')) {
+					if (!BaseModel::$search_indexer) {
+						BaseModel::$search_indexer = new SearchIndexer($this->getDb());
+					}
+					BaseModel::$search_indexer->startRowUnIndexing($this->tableNum(), $vn_id);
+					BaseModel::$search_indexer->commitRowUnIndexing($this->tableNum(), $vn_id);
+				}
+			}
+			return $vn_rc;
 		}
 		$this->clearErrors();
 		if ((!$this->getPrimaryKey()) && (!is_array($pa_fields))) {	# is there a record loaded?
@@ -2816,7 +2826,6 @@ class BaseModel extends BaseObject {
 			#
 			# --- delete search index entries
 			#
-			$vn_id = $this->getPrimaryKey();
 			
 			// TODO: FIX THIS ISSUE!
 			// NOTE: we delete the indexing here, before we actually do the 
