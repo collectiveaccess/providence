@@ -414,7 +414,7 @@
 						$vb_check_access = is_array($pa_options['checkAccess']) && $this->hasField('access');
 						$va_tmp = array();
 						foreach($va_ancestor_list as $vn_i => $va_item) {
-							if ($vb_check_access && !in_array($va_item['access'], $pa_options['checkAccess'])) { continue; }
+							if ($vb_check_access && !in_array($va_item['NODE']['access'], $pa_options['checkAccess'])) { continue; }
 							if ($vs_template) {
 								$va_tmp[$va_item['NODE'][$vs_pk]] = caProcessTemplate($vs_template, $va_item['NODE'], array('removePrefix' => 'preferred_labels.'));
 							} else {
