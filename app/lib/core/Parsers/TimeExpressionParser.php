@@ -1355,16 +1355,16 @@ class TimeExpressionParser {
 		}
 
 		// seasons
-		if (in_array($vs_token_lc, $this->opo_language_settings->getList("winterSeason"))) {
+		if (@in_array($vs_token_lc, $this->opo_language_settings->getList("winterSeason"))) {
 			return array('value' => $vs_token, 'type' => TEP_TOKEN_SEASON_WINTER);
 		}
-		if (in_array($vs_token_lc, $this->opo_language_settings->getList("springSeason"))) {
+		if (@in_array($vs_token_lc, $this->opo_language_settings->getList("springSeason"))) {
 			return array('value' => $vs_token, 'type' => TEP_TOKEN_SEASON_SPRING);
 		}
-		if (in_array($vs_token_lc, $this->opo_language_settings->getList("summerSeason"))) {
+		if (@in_array($vs_token_lc, $this->opo_language_settings->getList("summerSeason"))) {
 			return array('value' => $vs_token, 'type' => TEP_TOKEN_SEASON_SUMMER);
 		}
-		if (in_array($vs_token_lc, $this->opo_language_settings->getList("autumnSeason"))) {
+		if (@in_array($vs_token_lc, $this->opo_language_settings->getList("autumnSeason"))) {
 			return array('value' => $vs_token, 'type' => TEP_TOKEN_SEASON_AUTUMN);
 		}
 

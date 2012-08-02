@@ -344,7 +344,7 @@ class Db_pgsql extends DbDriverBase {
 			$vs_table = $va_matches[1];
 			$vo_res = $this->opo_db->query("SELECT c.oid
                                 				FROM pg_catalog.pg_class c
-                                				WHERE c.relname ~ '^($vs_table)$'
+                                				WHERE c.relname = '$vs_table'
                                     			AND pg_catalog.pg_table_is_visible(c.oid)");
 			$va_row = $vo_res->fetchAll(PDO::FETCH_ASSOC);
 			$vn_oid = $va_row[0]['oid'];
@@ -588,7 +588,7 @@ class Db_pgsql extends DbDriverBase {
 	function getFieldNamesFromTable($po_caller, $ps_table){
 		$qr_res = $this->opo_db->query("
 			SELECT a.attname FROM pg_catalog.pg_attribute a
-			WHERE a.attrelid in (SELECT c.oid FROM pg_catalog.pg_class c WHERE c.relname ~ '^($ps_table)$')
+			WHERE a.attrelid in (SELECT c.oid FROM pg_catalog.pg_class c WHERE c.relname = '$ps_table')
 				AND a.attnum > 0");
 		$va_fields = array();
 		foreach($qr_res->fetchAll(PDO::FETCH_ASSOC) as $va_field){
@@ -611,7 +611,7 @@ class Db_pgsql extends DbDriverBase {
 		$r_show = $this->opo_db->query("SELECT c.oid
 										FROM pg_catalog.pg_class c
      									LEFT JOIN pg_catalog.pg_namespace n ON n.oid = c.relnamespace
-										WHERE c.relname ~ '^($ps_table)$'
+										WHERE c.relname = '$ps_table'
   											AND pg_catalog.pg_table_is_visible(c.oid)");
 		if($r_show){
 			$va_row = $r_show->fetchAll(PDO::FETCH_ASSOC);
