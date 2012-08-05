@@ -9,6 +9,11 @@
 			</analyzer>
 		</fieldType>
 		<fieldType name="string" class="solr.StrField" />
+		<fieldType name="daterange" class="solr.DateField" multiValued="true" />
+		<fieldType name="int" class="solr.IntField" />
+		<fieldType name="float" class="solr.FloatField" />
+		<fieldType name="geocode" class="solr.LatLonType" multiValued="true"/>
+		<fieldType name="bool" class="solr.BoolField" />
 		<fieldtype name="ignored" stored="false" indexed="false" class="solr.StrField" /> 
 	</types>
 	<fields>

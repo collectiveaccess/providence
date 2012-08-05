@@ -2000,7 +2000,10 @@ class TimeExpressionParser {
 			$va_start_pieces = $this->getHistoricDateParts($va_dates['start']);
 			// start is same as end so just output start date
 			if ($va_dates['start'] == $va_dates['end']) {
-				if ($pa_options['start_as_iso8601'] || (isset($pa_options['dateFormat']) && ($pa_options['dateFormat'] == 'iso8601'))) { 
+				if ($pa_options['start_as_iso8601'] || $pa_options['end_as_iso8601']) {
+					return $this->getISODateTime($va_start_pieces, 'FULL');
+				}
+				if ((isset($pa_options['dateFormat']) && ($pa_options['dateFormat'] == 'iso8601'))) { 
 					return $this->getISODateTime($va_start_pieces, 'START');
 				} else {
 					return $this->_dateTimeToText($va_start_pieces, $pa_options);
@@ -2023,10 +2026,10 @@ class TimeExpressionParser {
 			}
 		
 			if ($pa_options['start_as_iso8601']) {
-				return $this->getISODateTime($va_start_pieces, 'START');
+				return $this->getISODateTime($va_start_pieces, 'FULL');
 			}
 			if ($pa_options['end_as_iso8601']) {
-				return $this->getISODateTime($va_end_pieces, 'END');
+				return $this->getISODateTime($va_end_pieces, 'FULL');
 			}
 			
 			
@@ -2681,6 +2684,9 @@ class TimeExpressionParser {
 	}
 	# -------------------------------------------------------------------
 	function getISODateTime($pa_date, $ps_mode='START') {
+		if ($ps_mode = 'FULL') {
+			return $pa_date['year'].'-'.sprintf("%02d", $pa_date['month']).'-'.sprintf("%02d", $pa_date['day']).'T'.sprintf("%02d", $pa_date['hours']).':'.sprintf("%02d", $pa_date['minutes']).':'.sprintf("%02d", $pa_date['seconds']).'Z';
+		}
 		if (
 			(!($pa_date['month'] == 1 && $pa_date['day'] == 1 && ($ps_mode == 'START'))) &&
 			(!($pa_date['month'] == 12 && $pa_date['day'] == 31 && ($ps_mode == 'END')))

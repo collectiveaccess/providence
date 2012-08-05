@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2011 Whirl-i-Gig
+ * Copyright 2011-2012 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -37,18 +37,12 @@
 include_once(__CA_LIB_DIR__."/ca/Search/BaseSearchResult.php");
 
 class UserGroupSearchResult extends BaseSearchResult {
-	
+	# -------------------------------------
 	/**
-	 * Name of labels table for this type of search subject (eg. for ca_objects, the label table is ca_object_labels)
+	 * Name of table for this type of search subject
 	 */
-	protected $ops_label_table_name = null;
-	
-	/**
-	 * Name of field in labels table to use for display for this type of search subject (eg. for ca_objects, the label display field is 'name')
-	 */
-	protected $ops_label_display_field = null;
-
-
+	protected $ops_table_name = 'ca_user_groups';
+	# -------------------------------------
 	/**
 	 * Constructor
 	 */
@@ -66,4 +60,5 @@ class UserGroupSearchResult extends BaseSearchResult {
 	public function getDisplayLabels($pb_has_preferred_flag=true) {
 		return array(1 => "_dummy");
 	}
+	# -------------------------------------
 }

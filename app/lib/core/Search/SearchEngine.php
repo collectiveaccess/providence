@@ -161,7 +161,7 @@ class SearchEngine extends SearchBase {
 			if (isset($pa_options['sort']) && $pa_options['sort'] && ($pa_options['sort'] != '_natural')) {
 				$va_hits = $this->sortHits($va_hits, $pa_options['sort'], (isset($pa_options['sort_direction']) ? $pa_options['sort_direction'] : null));
 			}
-			$o_res = new WLPlugSearchEngineCachedResult(array_keys($va_hits), array(), $vs_pk);
+			$o_res = new WLPlugSearchEngineCachedResult(array_keys($va_hits), $this->opn_tablenum);
 		} else {
 			$vs_char_set = $this->opo_app_config->get('character_set');
 	
@@ -219,7 +219,7 @@ class SearchEngine extends SearchBase {
 			}
 			
 			$va_hit_values = array_keys($va_hits);
-			$o_res = new WLPlugSearchEngineCachedResult($va_hit_values, $va_query_terms, $vs_pk);
+			$o_res = new WLPlugSearchEngineCachedResult($va_hit_values, $this->opn_tablenum);
 			
 			// cache for later use
 			$o_cache->save($ps_search, $this->opn_tablenum, array_flip($va_hit_values), null, null, array_merge($pa_options, array('filters' => $this->getResultFilters())));
@@ -245,11 +245,11 @@ class SearchEngine extends SearchBase {
 			));
 		}
 		if ($po_result) {
-			$po_result->init($this->opn_tablenum, $o_res, $this->opa_tables);
+			$po_result->init($o_res, $this->opa_tables);
 			
 			return $po_result;
 		} else {
-			return new SearchResult($this->opn_tablenum, $o_res, $this->opa_tables);
+			return new SearchResult($o_res, $this->opa_tables);
 		}
 	}
 	# ------------------------------------------------------------------
@@ -482,13 +482,13 @@ class SearchEngine extends SearchBase {
 			$va_hits[] = $qr_res->get($vs_table_pk, array('binary' => true));
 		}
 		
-		$o_res = new WLPlugSearchEngineCachedResult($va_hits, array(), $vs_table_pk);
+		$o_res = new WLPlugSearchEngineCachedResult($va_hits, $this->opn_tablenum);
 		
 		if ($po_result) {
-			$po_result->init($this->opn_tablenum, $o_res, array());
+			$po_result->init($o_res, array());
 			return $po_result;
 		} else {
-			return new SearchResult($this->opn_tablenum, $o_res);
+			return new SearchResult($o_res, array());
 		}
 	}
 	# ------------------------------------------------------------------

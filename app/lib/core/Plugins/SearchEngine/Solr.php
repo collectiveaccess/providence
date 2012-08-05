@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2008-2011 Whirl-i-Gig
+ * Copyright 2008-2012 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -44,27 +44,37 @@ require_once(__CA_LIB_DIR__.'/core/Zend/Http/Response.php');
 require_once(__CA_LIB_DIR__.'/core/Zend/Cache.php');
 require_once(__CA_LIB_DIR__.'/core/Search/Solr/SolrConfiguration.php');
 require_once(__CA_MODELS_DIR__.'/ca_metadata_elements.php');
- require_once(__CA_LIB_DIR__.'/core/Plugins/SearchEngine/BaseSearchPlugin.php');
+require_once(__CA_LIB_DIR__.'/core/Plugins/SearchEngine/BaseSearchPlugin.php');
+require_once(__CA_LIB_DIR__.'/ca/Attributes/Values/GeocodeAttributeValue.php');
 
 class WLPlugSearchEngineSolr extends BaseSearchPlugin implements IWLPlugSearchEngine {
 	# -------------------------------------------------------
-	private $opa_doc_content_buffer;
 	private $opn_indexing_subject_tablenum;
 	private $ops_indexing_subject_tablename;
 	private $opn_indexing_subject_row_id;
+	
+	static $s_doc_content_buffer = array();			// content buffer used when indexing
+	static $s_element_code_cache = array();
 	# -------------------------------------------------------
 	public function __construct(){
 		parent::__construct();
+		
+		//if($this->_SolrConfigIsOutdated()){
+		//	$this->_refreshSolrConfiguration();
+		//}
+		
+		$this->opo_geocode_parser = new GeocodeAttributeValue();
 	}
 	# -------------------------------------------------------
 	public function init(){
 		$this->opa_options = array(
 				'start' => 0,
-				'limit' => 2000	// maximum number of hits to return [default=2000]
+				'limit' => 10000,							// maximum number of hits to return [default=10000],
+				'maxContentBufferSize' => 2000				// maximum number of indexed content items to accumulate before writing to the database
 		);
 
 		$this->opa_capabilities = array(
-			'incremental_reindexing' => false // not sure
+			'incremental_reindexing' => false
 		);
 	}
 	# -------------------------------------------------------
@@ -74,9 +84,16 @@ class WLPlugSearchEngineSolr extends BaseSearchPlugin implements IWLPlugSearchEn
 	public function truncateIndex() {
 		return true;
 	}
+	
 	# -------------------------------------------------------
-	public function __destruct(){
-		
+	public function setTableNum($pn_table_num) {
+		$this->opn_subject_tablenum = $pn_table_num;
+	}
+	# -------------------------------------------------------
+	public function __destruct() {	
+		if (is_array(WLPlugSearchEngineSolr::$s_doc_content_buffer) && sizeof(WLPlugSearchEngineSolr::$s_doc_content_buffer)) {
+			$this->flushContentBuffer();
+		}
 	}
 	# -------------------------------------------------------
 	public function search($pn_subject_tablenum, $ps_search_expression, $pa_filters=array(), $po_rewritten_query=null){
@@ -84,23 +101,9 @@ class WLPlugSearchEngineSolr extends BaseSearchPlugin implements IWLPlugSearchEn
 			$ps_search_expression .= ' AND ('.$vs_filter_query.')';
 		}
 
-		// Try to convert qualifier (eg. ca_objects.description:"Search Text") to a SOLR field.
-		// In the SOLR index instrinsic fields (ie. actual fields in the datamodel) are indexed with <tablename>.<fieldname>
-		// which metadata attributes are indexed using <tablename>._ca_attribute_<element_id>; but users and advanced search
-		// forms use the more natural <tablename>.<element_code> syntax so we detect and convert them to element_ids here.
-		if (preg_match('!(ca_[a-z0-9]+\.[a-z0-9_]+):!', $ps_search_expression, $va_matches)) {
-			$vs_subject_tablename = $this->opo_datamodel->getTableName($pn_subject_tablenum);
-			array_shift($va_matches);
-			$t_element = new ca_metadata_elements();
-			$va_elements = $t_element->getElementsAsList(false, $pn_subject_tablenum, null, true, false, true);
-			foreach($va_matches as $vs_match) {
-				$va_tmp = explode('.', $vs_match);
-				if (($vs_subject_tablename == $va_tmp[0]) && ($vn_id = $va_elements[$va_tmp[1]]['element_id'])) {
-						$ps_search_expression = str_replace($vs_match, $va_tmp[0].'._ca_attribute_'.$vn_id, $ps_search_expression);
-				}
-			}
-		}
 		
+
+							
 		$vo_http_client = new Zend_Http_Client();
 		$vo_http_client->setUri(
 			$this->opo_search_config->get('search_solr_url')."/". /* general url */
@@ -119,8 +122,7 @@ class WLPlugSearchEngineSolr extends BaseSearchPlugin implements IWLPlugSearchEn
 		$vo_http_response = $vo_http_client->request();
 		$va_result = unserialize($vo_http_response->getBody());
 
-		// TODO: investigate what getQueryTerms is supposed to do and build it on my own
-		return new WLPlugSearchEngineSolrResult($va_result["response"]["docs"], array(), $this->opn_indexing_subject_tablenum);
+		return new WLPlugSearchEngineSolrResult($va_result["response"]["docs"], $pn_subject_tablenum);
 	}
 	# -------------------------------------------------------
 	private function _filterValueToQueryValue($pa_filters) {
@@ -173,6 +175,22 @@ class WLPlugSearchEngineSolr extends BaseSearchPlugin implements IWLPlugSearchEn
 		$this->opn_indexing_subject_tablenum = $pn_subject_tablenum;
 		$this->opn_indexing_subject_row_id = $pn_subject_row_id;
 		$this->ops_indexing_subject_tablename = $this->opo_datamodel->getTableName($pn_subject_tablenum);
+		$this->ops_indexing_subject_tablename_pk = $this->opo_datamodel->getTablePrimaryKeyName($pn_subject_tablenum);
+	}
+	# -------------------------------------------------------
+	private function _getMetadataElement($ps_element_code) {
+		if (isset(WLPlugSearchEngineSolr::$s_element_code_cache[$ps_element_code])) { return WLPlugSearchEngineSolr::$s_element_code_cache[$ps_element_code]; }
+		
+		$t_element = new ca_metadata_elements($ps_element_code);
+		if (!($vn_element_id = $t_element->getPrimaryKey())) { 
+			return WLPlugSearchEngineSolr::$s_element_code_cache[$ps_element_code] = null;
+		}
+		
+		return WLPlugSearchEngineSolr::$s_element_code_cache[$ps_element_code] = array(
+			'element_id' => $vn_element_id,
+			'element_code' => $t_element->get('element_code'),
+			'datatype' => $t_element->get('datatype')
+		);
 	}
 	# -------------------------------------------------------
 	public function indexField($pn_content_tablenum, $ps_content_fieldname, $pn_content_row_id, $pm_content, $pa_options){
@@ -184,71 +202,68 @@ class WLPlugSearchEngineSolr extends BaseSearchPlugin implements IWLPlugSearchEn
 			$ps_content_tablename = $this->opo_datamodel->getTableName($pn_content_tablenum);
 		} else {
 			$ps_content_tablename = $this->ops_indexing_subject_tablename;
+			if (preg_match('!^__ca_attribute_(.*)$!', $ps_content_fieldname, $va_matches)) {
+				if (!$va_element_info = $this->_getMetadataElement($va_matches[1])) { return null; }
+				switch($va_element_info['datatype']) {
+					case 1: // text
+					case 3:	// list
+					case 5:	// url
+					case 6: // currency
+					case 8: // length
+					case 9: // weight
+					case 13: // LCSH
+					case 14: // geonames
+					case 15: // file
+					case 16: // media
+					case 19: // taxonomy
+					case 20: // information service
+						// noop
+						break;
+					case 2:	// daterange
+						if (!is_array($pa_parsed_content = caGetISODates($pm_content))) { return null; }
+						$this->opa_doc_content_buffer[$ps_content_tablename.'.'.$va_element_info['element_code'].'_text'][] = $pm_content;
+						$pm_content = $pa_parsed_content;
+						break;
+					case 4:	// geocode
+						if ($va_coords = $this->opo_geocode_parser->parseValue($pm_content, $va_element_info)) {
+							if (isset($value_longtext2['value_longtext2']) && $value_longtext2['value_longtext2']) {
+								$this->opa_doc_content_buffer[$ps_content_tablename.'.'.$va_element_info['element_code'].'_text'][] = $pm_content;
+								$pm_content = explode(';', $value_longtext2['value_longtext2']);
+							} else {
+								return;
+							}
+						} else {
+							return;
+						}
+						break;
+					case 10:	// timecode
+					case 12:	// numeric/float
+						$pm_content = (float)$pm_content;
+						break;
+					case 11:	// integer
+						$pm_content = (int)$pm_content;
+						break;
+					default:
+						// noop
+						break;
+				}
+				$ps_content_fieldname = $va_element_info['element_code'];
+			}
 		}
 		$this->opa_doc_content_buffer[$ps_content_tablename.'.'.$ps_content_fieldname][] = $pm_content;
 	}
 	# -------------------------------------------------------
 	public function commitRowIndexing(){
-		if(!(count($this->opa_doc_content_buffer)>0)){
-				return;
+		if(sizeof($this->opa_doc_content_buffer) > 0){
+			WLPlugSearchEngineSolr::$s_doc_content_buffer[$this->ops_indexing_subject_tablename.'/'.$this->ops_indexing_subject_tablename_pk.'/'.$this->opn_indexing_subject_row_id] = $this->opa_doc_content_buffer;
 		}
-
-		if($this->_SolrConfigIsOutdated()){
-			$this->_refreshSolrConfiguration();
-		}
-
-		/* build Solr xml indexing format */
-		$vs_post_xml="";
-		$vs_post_xml.="<add>\n";
-			$vs_post_xml.="\t<doc>\n";
-				foreach($this->opa_doc_content_buffer as $vs_field_name => $vs_field_content){
-					$vs_post_xml.="\t\t".'<field name="';
-					$vs_post_xml.=$vs_field_name;
-					$vs_post_xml.='"><![CDATA[';
-					$vs_post_xml.=join("\n", $vs_field_content);
-					$vs_post_xml.=']]></field>'."\n";
-				}
-				/* add pk */
-				$vs_post_xml.= "\t\t".'<field name="';
-				$vs_post_xml.= $this->ops_indexing_subject_tablename.".";
-				/* this is definitely slow, we need a shorter way */
-				$vs_post_xml.= $this->opo_datamodel->getInstanceByTableName($this->ops_indexing_subject_tablename, true)->primaryKey();
-				$vs_post_xml.= '">'.$this->opn_indexing_subject_row_id.'</field>'."\n";
-
-			$vs_post_xml.="\t</doc>\n";
-		$vs_post_xml.="</add>\n";
-
-		/* No delete of the old stuff needed. If the pk (defined as uniqueKey) already exists, it is automatically updated */
-
-		/* send data */
-		$vo_http_client = new Zend_Http_Client();
-		$vo_http_client->setUri(
-			$this->opo_search_config->get('search_solr_url')."/". /* general url */
-			$this->ops_indexing_subject_tablename. /* core name (i.e. table name) */
-			"/update" /* updater */
-		);
-		$vo_http_client->setRawData($vs_post_xml)->setEncType('text/xml')->request('POST');
-		
-		try {
-			$vo_http_response = $vo_http_client->request();
-		} catch (Exception $e) {
-			print "\\INDEXING ERROR:\n";
-       		print $vo_http_response->getBody();
-		}
-       
-		/* commit */
-		$vs_post_xml = '<commit waitFlush="false" waitSearcher="false"/>';
-		$vo_http_client->setRawData($vs_post_xml)->setEncType('text/xml')->request('POST');
-		$vo_http_response = $vo_http_client->request();
-		/* we should probably check the response if everything went fine here */
-
-		/* clean up */
-		unset($vo_http_client);
-		unset($vs_post_xml);
 		unset($this->opn_indexing_subject_tablenum);
 		unset($this->opn_indexing_subject_row_id);
-		unset($this->opa_doc_content_buffer);
 		unset($this->ops_indexing_subject_tablename);
+
+		if (sizeof(WLPlugSearchEngineSolr::$s_doc_content_buffer) > $this->getOption('maxContentBufferSize')) {
+			$this->flushContentBuffer();
+		}
 	}
 	# -------------------------------------------------------
 	public function removeRowIndexing($pn_subject_tablenum, $pn_subject_row_id){
@@ -264,10 +279,112 @@ class WLPlugSearchEngineSolr extends BaseSearchPlugin implements IWLPlugSearchEn
 		$vo_http_client->request();
 
 		/* commit */
-		$vs_post_xml = '<commit waitFlush="false" waitSearcher="false"/>';
+		$vs_post_xml = '<commit waitFlush="false" waitSearcher="false" softCommit="true"/>';
 		$vo_http_client->setRawData($vs_post_xml)->setEncType('text/xml')->request('POST');
-		$vo_http_client->request();
-		/* we should probably check the response if everything went fine here */
+		
+		try {
+			$vo_http_client->request();
+		} catch (Exception $e) {
+			// Commit error
+			caLogEvent('ERR', _t('Commit of index delete failed: %1', $e->getMessage()), 'Solr->removeRowIndexing()');
+		}
+	}
+	# ------------------------------------------------
+	public function flushContentBuffer() {
+		/* build Solr xml indexing format for each core */
+		$va_post_xml = array();
+		foreach(WLPlugSearchEngineSolr::$s_doc_content_buffer as $vs_key => $va_doc_content_buffer) {
+			$va_key = explode('/', $vs_key);
+			$va_post_xml[$va_key[0]] .= "\t<doc>\n";
+			
+				foreach($va_doc_content_buffer as $vs_field_name => $va_field_content){
+					$va_acc = array();
+					foreach($va_field_content as $vs_field_content) {
+						if (is_array($vs_field_content)) {
+							foreach($vs_field_content as $vs_field_content_element) {
+								$va_post_xml[$va_key[0]].="\t\t".'<field name="';
+								$va_post_xml[$va_key[0]].= $vs_field_name;
+								$va_post_xml[$va_key[0]].='"><![CDATA[';
+								$va_post_xml[$va_key[0]].= caEscapeForXML($vs_field_content_element);
+								$va_post_xml[$va_key[0]].=']]></field>'."\n";
+							}
+						} else {
+							$va_acc[] = $vs_field_content;
+						}
+					}
+					
+					if (sizeof($va_acc)) {
+						$va_post_xml[$va_key[0]].="\t\t".'<field name="';
+						$va_post_xml[$va_key[0]].= $vs_field_name;
+						$va_post_xml[$va_key[0]].='"><![CDATA[';
+						$va_post_xml[$va_key[0]].= caEscapeForXML(join("\n", $va_acc));
+						$va_post_xml[$va_key[0]].=']]></field>'."\n";
+					}
+				}
+				
+				if (!isset($va_doc_content_buffer[$va_key[0].".".$va_key[1]])) { 
+					/* add pk */
+					$va_post_xml[$va_key[0]].= "\t\t".'<field name="'.$va_key[0].".".$va_key[1].'">'.$va_key[2].'</field>'."\n";
+				}
+
+			$va_post_xml[$va_key[0]] .= "\t</doc>\n";
+		}
+		
+		/* No delete of the old stuff needed. If the pk (defined as uniqueKey) already exists, it is automatically updated */
+
+		/* send data */
+		$vo_http_client = new Zend_Http_Client();
+		
+		foreach($va_post_xml as $vs_core => $vs_post_xml) {
+			$vo_http_client->setUri(
+				$this->opo_search_config->get('search_solr_url')."/". /* general url */
+				$vs_core. /* core name (i.e. table name) */
+				"/update" /* updater */
+			);
+			$vo_http_client->setRawData("<add>{$vs_post_xml}</add>")->setEncType('text/xml')->request('POST');
+			
+			try {
+				$vo_http_response = $vo_http_client->request();
+				if ($o_resp = @new SimpleXMLElement($vo_http_response->getBody())) {
+					$va_status = $o_resp->xpath("/response/lst/int[@name='status']");
+					$vn_status = (int)$va_status[0];
+					if ($vn_status > 0) { 
+						caLogEvent('ERR', _t('Indexing failed for %1: status %2', $vs_core, $vn_status), 'Solr->flushContentBuffer()');
+					}
+				} else {
+					caLogEvent('ERR', _t('Indexing failed for %1: invalid response from SOLR %2', $vs_core, $vo_http_response->getBody()), 'Solr->flushContentBuffer()');
+				}
+			} catch (Exception $e) {
+				// Indexing error
+				caLogEvent('ERR', _t('Indexing failed for %1: %2; response was %3', $vs_core, $e->getMessage(), $vo_http_response->getBody()), 'Solr->flushContentBuffer()');
+				print $vs_post_xml."\n\n\n";
+			}
+		}
+       
+		/* commit */
+		try {
+			$vs_post_xml = '<commit waitFlush="false" waitSearcher="false" softCommit="true"/>';
+			$vo_http_client->setRawData($vs_post_xml)->setEncType('text/xml')->request('POST');
+			$vo_http_response = $vo_http_client->request();
+			if ($o_resp = new SimpleXMLElement($vo_http_response->getBody())) {
+				$va_status = $o_resp->xpath("/response/lst/int[@name='status']");
+				$vn_status = (int)$va_status[0];
+				if ($vn_status > 0) { 
+					caLogEvent('ERR', _t('Indexing commit failed for %1: status %2', $vs_core, $vn_status), 'Solr->flushContentBuffer()');
+				}
+			} else {
+				caLogEvent('ERR', _t('Indexing commit failed for %1: invalid response from SOLR %2', $vs_core, $vo_http_response->getBody()), 'Solr->flushContentBuffer()');
+			}
+		} catch (Exception $e) {
+			// Commit error
+			caLogEvent('ERR', _t('Indexing commit failed: %1; response was %2', $e->getMessage(), $vo_http_response->getBody()), 'Solr->flushContentBuffer()');
+		}
+
+		/* clean up */
+		unset($vo_http_client);
+		unset($vs_post_xml);
+		$this->opa_doc_content_buffer = array();
+		WLPlugSearchEngineSolr::$s_doc_content_buffer = array();
 	}
 	# -------------------------------------------------------
 	public function optimizeIndex($pn_tablenum){
@@ -280,8 +397,13 @@ class WLPlugSearchEngineSolr extends BaseSearchPlugin implements IWLPlugSearchEn
 			"/update" /* updater */
 		);
 		$vo_http_client->setRawData($vs_post_xml)->setEncType('text/xml')->request('POST');
-		$vo_http_response = $vo_http_client->request();
-		/* we should probably check the response if everything went fine here */
+		
+		try {
+			$vo_http_response = $vo_http_client->request();
+		} catch (Exception $e) {
+			// Optimize error
+			caLogEvent('ERR', _t('Index optimize failed: %1', $e->getMessage()), 'Solr->optimizeIndex()');
+		}
 	}
 	# --------------------------------------------------
 	private function _refreshSolrConfiguration(){
@@ -364,7 +486,7 @@ class WLPlugSearchEngineSolr extends BaseSearchPlugin implements IWLPlugSearchEn
 			$va_table_fields[] = '_ca_attribute_'.$vn_element_id;
 		}
 
-		/* this is a very stupid way to find out if $va_table_fiels is a subset of $va_cache_data */
+		/* this is a very stupid way to find out if $va_table_fields is a subset of $va_cache_data */
 		/* it should be sufficient due to the invariants in the code above though */
 		if(count(array_unique(array_merge($va_table_fields,$va_cache_data))) > count($va_cache_data)){
 			return true;

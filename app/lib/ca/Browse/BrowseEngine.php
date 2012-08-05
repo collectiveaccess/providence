@@ -3166,12 +3166,12 @@ if (!$va_facet_info['show_all_when_first_facet'] || ($this->numCriteria() > 0)) 
 			if (!is_array($va_results)) { $va_results = array(); }
 			
 			if ($po_result) {
-				$po_result->init($this->opn_browse_table_num, new WLPlugSearchEngineBrowseEngine($va_results, $this->ops_browse_table_name), array());
+				$po_result->init(new WLPlugSearchEngineBrowseEngine($va_results, $this->opn_browse_table_num), array());
 				
 				return $po_result;
 			} else {
 				$o_results = new WLPlugSearchEngineBrowseEngine();
-				$o_results->init($this->opn_browse_table_num, new WLPlugSearchEngineBrowseEngine($va_results, $this->ops_browse_table_name), array());
+				$o_results->init(new WLPlugSearchEngineBrowseEngine($va_results, $this->opn_browse_table_num), array());
 				return $o_results;
 			}
 		}
