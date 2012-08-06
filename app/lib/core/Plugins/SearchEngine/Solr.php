@@ -63,6 +63,9 @@ class WLPlugSearchEngineSolr extends BaseSearchPlugin implements IWLPlugSearchEn
 		//	$this->_refreshSolrConfiguration();
 		//}
 		
+		$this->opo_db = new Db();
+		$this->opo_tep = new TimeExpressionParser();	
+		
 		$this->opo_geocode_parser = new GeocodeAttributeValue();
 	}
 	# -------------------------------------------------------
@@ -100,10 +103,184 @@ class WLPlugSearchEngineSolr extends BaseSearchPlugin implements IWLPlugSearchEn
 		if ($vs_filter_query = $this->_filterValueToQueryValue($pa_filters)) {
 			$ps_search_expression .= ' AND ('.$vs_filter_query.')';
 		}
-
 		
-
+		$vn_i = 0;
+		$va_old_signs = $po_rewritten_query->getSigns();
+		$va_terms = $va_signs = array();
+		foreach($po_rewritten_query->getSubqueries() as $o_lucene_query_element) {
+			if (is_null($va_old_signs)) {	// if array is null then according to Zend Lucene all subqueries should be "are required"... so we AND them
+				$vs_op = "AND";
+			} else {
+				if (is_null($va_old_signs[$vn_i])) {	// is the sign for a particular query is null then OR is (it is "neither required nor prohibited")
+					$vs_op = 'OR';
+				} else {
+					$vs_op = ($va_old_signs[$vn_i] === false) ? 'NOT' : 'AND';	// true sign indicated "required" (AND) operation, false indicated "prohibited" (NOT) operation
+				}
+			}
+			if ($vn_i == 0) { $vs_op = 'OR'; }
+			
+			switch(get_class($o_lucene_query_element)) {
+				case 'Zend_Search_Lucene_Search_Query_Term':
+				case 'Zend_Search_Lucene_Search_Query_MultiTerm':
+					$vs_rewritten_query_text = '';
+					$vs_access_point = $o_lucene_query_element->getTerm()->field;
+					$vs_term = $o_lucene_query_element->getTerm()->text;
+					if ($vs_access_point) {
+						list($vs_table, $vs_field, $vs_sub_field) = explode('.', $vs_access_point);
+						
+						if (in_array($vs_table, array('created', 'modified'))) {
 							
+							if (!$this->opo_tep->parse($vs_term)) { break; }
+							$va_range = $this->opo_tep->getUnixTimestamps();
+							$vn_user_id = null;
+							if ($vs_field = trim($vs_field)) {
+								if (!is_int($vs_field)) {
+									$t_user = new ca_users();
+									if ($t_user->load(array("user_name" => $vs_field))) {
+										$vn_user_id = (int)$t_user->getPrimaryKey();
+									}
+								} else {
+									$vn_user_id = (int)$vs_field;
+								}
+							}
+							$vs_user_sql = ($vn_user_id)  ? " AND (ccl.user_id = ".(int)$vn_user_id.")" : "";
+									
+							switch($vs_table) {
+								case 'created':
+									if ($vn_user_id) {
+										$o_lucene_query_element = new Zend_Search_Lucene_Search_Query_Boolean(
+											array(
+												new Zend_Search_Lucene_Index_Term('['.$this->opo_tep->getText(array('start_as_iso8601' => true))." TO ".$this->opo_tep->getText(array('end_as_iso8601' => true)).']', 'created'),
+												new Zend_Search_Lucene_Index_Term($vn_user_id, 'created_user_id')
+											),
+											array(
+												true, true
+											)
+										);
+									} else {
+										$o_lucene_query_element = new Zend_Search_Lucene_Search_Query_Term(new Zend_Search_Lucene_Index_Term('['.$this->opo_tep->getText(array('start_as_iso8601' => true))." TO ".$this->opo_tep->getText(array('end_as_iso8601' => true)).']', 'created'));
+									}
+									break;
+								case 'modified':
+									if ($vn_user_id) {
+										$o_lucene_query_element = new Zend_Search_Lucene_Search_Query_Boolean(
+											array(
+												new Zend_Search_Lucene_Index_Term('['.$this->opo_tep->getText(array('start_as_iso8601' => true))." TO ".$this->opo_tep->getText(array('end_as_iso8601' => true)).']', 'modified'),
+												new Zend_Search_Lucene_Index_Term($vn_user_id, 'modified_user_id')
+											),
+											array(
+												true, true
+											)
+										);
+									} else {
+										$o_lucene_query_element = new Zend_Search_Lucene_Search_Query_Term(new Zend_Search_Lucene_Index_Term('['.$this->opo_tep->getText(array('start_as_iso8601' => true))." TO ".$this->opo_tep->getText(array('end_as_iso8601' => true)).']', 'modified'));
+									}
+									break;
+							}
+						} else {
+							if ($vs_table && $vs_field) {
+								$t_table = $this->opo_datamodel->getInstanceByTableName($vs_table, true);
+								if ($t_table) {
+									$vs_table_num = $t_table->tableNum();
+									if (is_numeric($vs_field)) {
+										$vs_fld_num = $vs_field;
+									} else {
+										$vs_fld_num = $this->opo_datamodel->getFieldNum($vs_table, $vs_field);
+										
+										if (!$vs_fld_num) {
+											$t_element = new ca_metadata_elements();
+											if ($t_element->load(array('element_code' => ($vs_sub_field ? $vs_sub_field : $vs_field)))) {
+												$vs_fld_num = $t_element->getPrimaryKey();
+												
+												//
+												// For certain types of attributes we can directly query the
+												// attributes in the database rather than using the full text index
+												// This allows us to do "intelligent" querying... for example on date ranges
+												// parsed from natural language input and for length dimensions using unit conversion
+												//
+												switch($t_element->get('datatype')) {
+													case 2:		// dates	
+														$vb_exact = ($vs_term{0} == "#") ? true : false;	// dates prepended by "#" are considered "exact" or "contained - the matched dates must be wholly contained by the search term
+														if ($vb_exact) {
+															$vs_raw_term = substr($vs_term, 1);
+															if ($this->opo_tep->parse($vs_term)) {
+																$va_dates = $this->opo_tep->getHistoricTimestamps();
+																// TODO: fix date handling to reflect distinctions in ranges
+																$o_lucene_query_element = new Zend_Search_Lucene_Search_Query_Term(new Zend_Search_Lucene_Index_Term('['.$this->opo_tep->getText(array('start_as_iso8601' => true))." TO ".$this->opo_tep->getText(array('end_as_iso8601' => true)).']', $vs_access_point));
+															}
+														} else {
+															if ($this->opo_tep->parse($vs_term)) {
+																$va_dates = $this->opo_tep->getHistoricTimestamps();
+																// TODO: fix date handling to reflect distinctions in ranges
+																$o_lucene_query_element = new Zend_Search_Lucene_Search_Query_Term(new Zend_Search_Lucene_Index_Term('['.$this->opo_tep->getText(array('start_as_iso8601' => true))." TO ".$this->opo_tep->getText(array('end_as_iso8601' => true)).']', $vs_access_point));
+															}
+														}
+														break;
+													case 4:		// geocode
+														$t_geocode = new GeocodeAttributeValue();
+														// If it looks like a lat/long pair that has been tokenized by Lucene
+														// into oblivion rehydrate it here.
+														if ($va_coords = caParseGISSearch($vs_term)) {
+															
+															// TODO: handle geospatial here
+														}
+														break;
+													case 6:		// currency
+														$t_cur = new CurrencyAttributeValue();
+														$va_parsed_value = $t_cur->parseValue($vs_term, $t_element->getFieldValuesArray());
+														$vn_amount = (float)$va_parsed_value['value_decimal1'];
+														$vs_currency = preg_replace('![^A-Z0-9]+!', '', $va_parsed_value['value_longtext1']);
+														
+														$o_lucene_query_element = new Zend_Search_Lucene_Search_Query_Term(new Zend_Search_Lucene_Index_Term($vn_amount, $vs_access_point));
+														break;
+													case 8:		// length
+														$t_len = new LengthAttributeValue();
+														$va_parsed_value = $t_len->parseValue($vs_term, $t_element->getFieldValuesArray());
+														$vn_len = (float)$va_parsed_value['value_decimal1'];	// this is always in meters so we can compare this value to the one in the database
+														
+														$o_lucene_query_element = new Zend_Search_Lucene_Search_Query_Term(new Zend_Search_Lucene_Index_Term($vn_len, $vs_access_point));
+														break;
+													case 9:		// weight
+														$t_weight = new WeightAttributeValue();
+														$va_parsed_value = $t_weight->parseValue($vs_term, $t_element->getFieldValuesArray());
+														$vn_weight = (float)$va_parsed_value['value_decimal1'];	// this is always in kilograms so we can compare this value to the one in the database
+														
+														$o_lucene_query_element = new Zend_Search_Lucene_Search_Query_Term(new Zend_Search_Lucene_Index_Term($vn_weight, $vs_access_point));
+														break;
+													case 10:	// timecode
+														$t_timecode = new TimecodeAttributeValue();
+														$va_parsed_value = $t_timecode->parseValue($vs_term, $t_element->getFieldValuesArray());
+														$vn_timecode = (float)$va_parsed_value['value_decimal1'];
+														
+														$o_lucene_query_element = new Zend_Search_Lucene_Search_Query_Term(new Zend_Search_Lucene_Index_Term($vn_timecode, $vs_access_point));	
+														break;
+													case 11: 	// integer
+														$o_lucene_query_element = new Zend_Search_Lucene_Search_Query_Term(new Zend_Search_Lucene_Index_Term((float)$vs_term, $vs_access_point));
+														break;
+													case 12:	// decimal
+														$o_lucene_query_element = new Zend_Search_Lucene_Search_Query_Term(new Zend_Search_Lucene_Index_Term((float)$vs_term, $vs_access_point));
+														break;
+												}
+											}
+										}
+									}
+								}
+							}
+						}
+					}					
+					break;
+			}
+								
+			$va_terms[] = $o_lucene_query_element;
+			$va_signs[] = $va_old_signs[$vn_i] ? $va_old_signs[$vn_i] : true;
+
+			
+			$vn_i++;
+		}
+		
+		$o_rewritten_query = new Zend_Search_Lucene_Search_Query_Boolean($va_terms, $va_signs);	
+		$ps_search_expression = $this->_queryToString($o_rewritten_query);
+		
 		$vo_http_client = new Zend_Http_Client();
 		$vo_http_client->setUri(
 			$this->opo_search_config->get('search_solr_url')."/". /* general url */
@@ -124,6 +301,71 @@ class WLPlugSearchEngineSolr extends BaseSearchPlugin implements IWLPlugSearchEn
 
 		return new WLPlugSearchEngineSolrResult($va_result["response"]["docs"], $pn_subject_tablenum);
 	}
+	# ------------------------------------------------------------------
+	private function _queryToString($po_parsed_query) {
+		switch(get_class($po_parsed_query)) {
+			case 'Zend_Search_Lucene_Search_Query_Boolean':
+				$va_items = $po_parsed_query->getSubqueries();
+				$va_signs = $po_parsed_query->getSigns();
+				break;
+			case 'Zend_Search_Lucene_Search_Query_MultiTerm':
+				$va_items = $po_parsed_query->getTerms();
+				$va_signs = $po_parsed_query->getSigns();
+				break;
+			case 'Zend_Search_Lucene_Search_Query_Phrase':
+				//$va_items = $po_parsed_query->getTerms();
+				$va_items = $po_parsed_query;
+				$va_signs = null;
+				break;
+			case 'Zend_Search_Lucene_Search_Query_Range':
+				$va_items = $po_parsed_query;
+				$va_signs = null;
+				break;
+			default:
+				$va_items = array();
+				$va_signs = null;
+				break;
+		}
+		
+		$vs_query = '';
+		foreach ($va_items as $id => $subquery) {
+			if ($id != 0) {
+				$vs_query .= ' ';
+			}
+		
+			if (($va_signs === null || $va_signs[$id] === true) && ($id)) {
+				$vs_query .= ' AND ';
+			} else if (($va_signs[$id] === false) && $id) {
+				$vs_query .= ' NOT ';
+			} else {
+				if ($id) { $vs_query .= ' OR '; }
+			}
+			switch(get_class($subquery)) {
+				case 'Zend_Search_Lucene_Search_Query_Phrase':
+					$vs_query .= '(' . $subquery->__toString(). ')';
+					break;
+				case 'Zend_Search_Lucene_Index_Term':
+					$subquery = new Zend_Search_Lucene_Search_Query_Term($subquery);
+					// intentional fallthrough to next case here
+				case 'Zend_Search_Lucene_Search_Query_Term':
+					$vs_query .= '(' . $subquery->__toString() . ')';
+					break;	
+				case 'Zend_Search_Lucene_Search_Query_Range':
+					$vs_query = $subquery;
+					break;
+				default:
+					$vs_query .= '(' . $this->_queryToString($subquery) . ')';
+					break;
+			}
+			
+		
+			if ((method_exists($subquery, "getBoost")) && ($subquery->getBoost() != 1)) {
+				$vs_query .= '^' . round($subquery->getBoost(), 4);
+			}
+		}
+		
+		return $vs_query;
+    }
 	# -------------------------------------------------------
 	private function _filterValueToQueryValue($pa_filters) {
 		$va_terms = array();
@@ -326,8 +568,42 @@ class WLPlugSearchEngineSolr extends BaseSearchPlugin implements IWLPlugSearchEn
 					/* add pk */
 					$va_post_xml[$va_key[0]].= "\t\t".'<field name="'.$va_key[0].".".$va_key[1].'">'.$va_key[2].'</field>'."\n";
 				}
-
+				
 			$va_post_xml[$va_key[0]] .= "\t</doc>\n";
+			
+			// Output created on and modified on timestamps
+				$qr_res = $this->opo_db->query("	
+								SELECT ccl.log_id, ccl.log_datetime, ccl.changetype, ccl.user_id
+								FROM ca_change_log ccl
+								WHERE
+									(ccl.logged_table_num = ?) AND (ccl.logged_row_id = ?)
+									AND
+									(ccl.changetype <> 'D')
+				", $this->opo_datamodel->getTableNum($va_key[0]), (int)$va_key[2]);
+				while ($qr_res->nextRow()) {
+					$va_post_xml[$va_key[0]] .= "\t<doc>\n";
+					
+					// We "fake" the <table>.<primary key> value here to be the log_id of the change log entry to ensure that the log entry
+					// document has a different unique key than the entry for the actual record. If we didn't do this then we'd overwrite
+					// the indexing for the record itself with indexing for successful log entries. Since the SearchEngine is looking for
+					// just the primary key, sans table name, it's ok to do this hack.
+					$va_post_xml[$va_key[0]].= "\t\t".'<field name="'.$va_key[0].".".$va_key[1].'">'.$qr_res->get('log_id').'</field>'."\n";
+					$va_post_xml[$va_key[0]].= "\t\t".'<field name="'.$va_key[1].'">'.$va_key[2].'</field>'."\n";
+					if ($qr_res->get('changetype') == 'I') {
+						$va_post_xml[$va_key[0]].="\t\t".'<field name="created"';
+						$va_post_xml[$va_key[0]].='><![CDATA[';
+						$va_post_xml[$va_key[0]].= date("c", $qr_res->get('log_datetime')).'Z';
+						$va_post_xml[$va_key[0]].=']]></field>'."\n";
+						$va_post_xml[$va_key[0]].="\t\t".'<field name="created_user_id"><![CDATA['.$qr_res->get('user_id').']]></field>'."\n";
+					} else {
+						$va_post_xml[$va_key[0]].="\t\t".'<field name="modified"';
+						$va_post_xml[$va_key[0]].='><![CDATA[';
+						$va_post_xml[$va_key[0]].= date("c", $qr_res->get('log_datetime')).'Z';
+						$va_post_xml[$va_key[0]].=']]></field>'."\n";
+						$va_post_xml[$va_key[0]].="\t\t".'<field name="modified_user_id"><![CDATA['.$qr_res->get('user_id').']]></field>'."\n";
+					}
+					$va_post_xml[$va_key[0]] .= "\t</doc>\n";
+				}
 		}
 		
 		/* No delete of the old stuff needed. If the pk (defined as uniqueKey) already exists, it is automatically updated */
@@ -336,6 +612,7 @@ class WLPlugSearchEngineSolr extends BaseSearchPlugin implements IWLPlugSearchEn
 		$vo_http_client = new Zend_Http_Client();
 		
 		foreach($va_post_xml as $vs_core => $vs_post_xml) {
+			print $vs_post_xml;
 			$vo_http_client->setUri(
 				$this->opo_search_config->get('search_solr_url')."/". /* general url */
 				$vs_core. /* core name (i.e. table name) */
@@ -350,14 +627,16 @@ class WLPlugSearchEngineSolr extends BaseSearchPlugin implements IWLPlugSearchEn
 					$vn_status = (int)$va_status[0];
 					if ($vn_status > 0) { 
 						caLogEvent('ERR', _t('Indexing failed for %1: status %2', $vs_core, $vn_status), 'Solr->flushContentBuffer()');
+						//print $vs_post_xml."\n\n\n";
 					}
 				} else {
 					caLogEvent('ERR', _t('Indexing failed for %1: invalid response from SOLR %2', $vs_core, $vo_http_response->getBody()), 'Solr->flushContentBuffer()');
+					//print $vs_post_xml."\n\n\n";
 				}
 			} catch (Exception $e) {
 				// Indexing error
 				caLogEvent('ERR', _t('Indexing failed for %1: %2; response was %3', $vs_core, $e->getMessage(), $vo_http_response->getBody()), 'Solr->flushContentBuffer()');
-				print $vs_post_xml."\n\n\n";
+				//print $vs_post_xml."\n\n\n";
 			}
 		}
        
