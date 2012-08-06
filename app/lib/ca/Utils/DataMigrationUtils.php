@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2010 Whirl-i-Gig
+ * Copyright 2010-2012 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -247,12 +247,12 @@
 				$t_occurrence->set('access', isset($pa_values['access']) ? $pa_values['access'] : 0);
 				$t_occurrence->set('status', isset($pa_values['status']) ? $pa_values['status'] : 0);
 				$t_occurrence->set('idno', isset($pa_values['idno']) ? $pa_values['idno'] : null);
-				$t_occurrence->set('hierarchy_id', isset($pa_values['hierarchy_id']) ? $pa_values['hierarchy_id'] : null);
+				$t_occurrence->set('hier_occurrence_id', isset($pa_values['hier_occurrence_id']) ? $pa_values['hier_occurrence_id'] : null);
 				unset($pa_values['access']);	
 				unset($pa_values['status']);
 				unset($pa_values['idno']);
 				unset($pa_values['source_id']);
-				unset($pa_values['hierarchy_id']);
+				unset($pa_values['hier_occurrence_id']);
 				
 				if (is_array($pa_values)) {
 					foreach($pa_values as $vs_element => $va_value) { 					

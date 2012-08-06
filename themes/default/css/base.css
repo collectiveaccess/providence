@@ -4367,3 +4367,29 @@ div.searchlight-results div.searchlight-selected {
     background: #333;
     color: #fff;
 }
+#caClientOrderOverview .loanTitle {
+	font-size: 13px;
+	font-weight: bold;
+	color: #333;
+	padding: 0px 5px 0px 5px;
+}
+#caClientOrderOverview td {
+	border-bottom: 1px solid #666;
+	padding: 5px 10px 5px 10px;
+}
+#caClientOrderOverview table {
+	width: 100%;
+}
+.titleTd td{
+	border-left: 1px solid #333;
+}
+.orderTotal {
+	font-weight: bold;
+	text-transform: uppercase;
+	float:right;
+	padding: 5px 0px 0px 0px;
+	clear:both;
+}
+.overdue {
+	color: red;
+}

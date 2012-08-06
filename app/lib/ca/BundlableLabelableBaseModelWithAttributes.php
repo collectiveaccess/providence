@@ -109,10 +109,14 @@ class BundlableLabelableBaseModelWithAttributes extends LabelableBaseModelWithAt
 		if ($this->getTypeFieldName() && !(!$vn_type_id && $va_field_info['IS_NULL'])) {
 			if (!($vn_ret = $t_list->itemIsEnabled($this->getTypeListCode(), $vn_type_id))) {
 				$va_type_list = $this->getTypeList(array('directChildrenOnly' => false, 'returnHierarchyLevels' => true, 'item_id' => null));
-				if(is_null($vn_ret)) {
-					$this->postError(2510, _t("<em>%1</em> is invalid", $va_type_list[$vn_type_id]['name_singular']), "BundlableLabelableBaseModelWithAttributes->insert()");
+				if (!isset($va_type_list[$vn_type_id])) {
+					$this->postError(2510, _t("Type must be specified"), "BundlableLabelableBaseModelWithAttributes->insert()");
 				} else {
-					$this->postError(2510, _t("<em>%1</em> is not enabled", $va_type_list[$vn_type_id]['name_singular']), "BundlableLabelableBaseModelWithAttributes->insert()");
+					if(is_null($vn_ret)) {
+						$this->postError(2510, _t("<em>%1</em> is invalid", $va_type_list[$vn_type_id]['name_singular']), "BundlableLabelableBaseModelWithAttributes->insert()");
+					} else {
+						$this->postError(2510, _t("<em>%1</em> is not enabled", $va_type_list[$vn_type_id]['name_singular']), "BundlableLabelableBaseModelWithAttributes->insert()");
+					}
 				}
 				$vb_error = true;
 			}
@@ -416,6 +420,13 @@ class BundlableLabelableBaseModelWithAttributes extends LabelableBaseModelWithAt
 			$pa_fields = array($pa_fields => $pm_value);
 		}
 		
+		if (($vs_type_list_code = $this->getTypeListCode()) && ($vs_type_field_name = $this->getTypeFieldName())) {
+			if (isset($pa_fields[$vs_type_field_name]) && !is_numeric($pa_fields[$vs_type_field_name])) {
+				if ($vn_id = ca_lists::getItemID($vs_type_list_code, $pa_fields[$vs_type_field_name])) {
+					$pa_fields[$vs_type_field_name] = $vn_id;
+				}
+			}
+		}
 		if ($this->getPrimaryKey() && isset($pa_fields[$this->getTypeFieldName()]) && !defined('__CA_ALLOW_SETTING_OF_PRIMARY_KEYS__')) {
 			$this->postError(2520, _t("Type id cannot be set after insert"), "BundlableLabelableBaseModelWithAttributes->set()");
 			return false;
