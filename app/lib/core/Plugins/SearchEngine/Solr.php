@@ -104,6 +104,8 @@ class WLPlugSearchEngineSolr extends BaseSearchPlugin implements IWLPlugSearchEn
 			$ps_search_expression .= ' AND ('.$vs_filter_query.')';
 		}
 		
+		$va_solr_search_filters = array();
+		
 		$vn_i = 0;
 		$va_old_signs = $po_rewritten_query->getSigns();
 		$va_terms = $va_signs = array();
@@ -119,12 +121,24 @@ class WLPlugSearchEngineSolr extends BaseSearchPlugin implements IWLPlugSearchEn
 			}
 			if ($vn_i == 0) { $vs_op = 'OR'; }
 			
-			switch(get_class($o_lucene_query_element)) {
+			switch($vs_class = get_class($o_lucene_query_element)) {
 				case 'Zend_Search_Lucene_Search_Query_Term':
 				case 'Zend_Search_Lucene_Search_Query_MultiTerm':
-					$vs_rewritten_query_text = '';
-					$vs_access_point = $o_lucene_query_element->getTerm()->field;
-					$vs_term = $o_lucene_query_element->getTerm()->text;
+				case 'Zend_Search_Lucene_Search_Query_Phrase':
+					
+					if ($vs_class == 'Zend_Search_Lucene_Search_Query_Phrase') {
+						$va_raw_terms = array();
+						foreach($o_lucene_query_element->getQueryTerms() as $o_term) {
+							if (!$vs_access_point && ($vs_field = $o_term->field)) { $vs_access_point = $vs_field; }
+							
+							$va_raw_terms[] = $vs_text = (string)$o_term->text;
+						}
+						$vs_term = join(" ", $va_raw_terms);
+					} else {
+						$vs_access_point = $o_lucene_query_element->getTerm()->field;
+						$vs_term = $o_lucene_query_element->getTerm()->text;
+					}
+					
 					if ($vs_access_point) {
 						list($vs_table, $vs_field, $vs_sub_field) = explode('.', $vs_access_point);
 						
@@ -218,11 +232,8 @@ class WLPlugSearchEngineSolr extends BaseSearchPlugin implements IWLPlugSearchEn
 														break;
 													case 4:		// geocode
 														$t_geocode = new GeocodeAttributeValue();
-														// If it looks like a lat/long pair that has been tokenized by Lucene
-														// into oblivion rehydrate it here.
 														if ($va_coords = caParseGISSearch($vs_term)) {
-															
-															// TODO: handle geospatial here
+															$o_lucene_query_element = new Zend_Search_Lucene_Search_Query_Term(new Zend_Search_Lucene_Index_Term('['.$va_coords['min_latitude'].','.$va_coords['min_longitude']." TO ".$va_coords['max_latitude'].','.$va_coords['max_longitude'].']', $vs_access_point));
 														}
 														break;
 													case 6:		// currency
@@ -280,7 +291,7 @@ class WLPlugSearchEngineSolr extends BaseSearchPlugin implements IWLPlugSearchEn
 		
 		$o_rewritten_query = new Zend_Search_Lucene_Search_Query_Boolean($va_terms, $va_signs);	
 		$ps_search_expression = $this->_queryToString($o_rewritten_query);
-		
+
 		$vo_http_client = new Zend_Http_Client();
 		$vo_http_client->setUri(
 			$this->opo_search_config->get('search_solr_url')."/". /* general url */
@@ -612,7 +623,6 @@ class WLPlugSearchEngineSolr extends BaseSearchPlugin implements IWLPlugSearchEn
 		$vo_http_client = new Zend_Http_Client();
 		
 		foreach($va_post_xml as $vs_core => $vs_post_xml) {
-			print $vs_post_xml;
 			$vo_http_client->setUri(
 				$this->opo_search_config->get('search_solr_url')."/". /* general url */
 				$vs_core. /* core name (i.e. table name) */
@@ -627,16 +637,13 @@ class WLPlugSearchEngineSolr extends BaseSearchPlugin implements IWLPlugSearchEn
 					$vn_status = (int)$va_status[0];
 					if ($vn_status > 0) { 
 						caLogEvent('ERR', _t('Indexing failed for %1: status %2', $vs_core, $vn_status), 'Solr->flushContentBuffer()');
-						//print $vs_post_xml."\n\n\n";
 					}
 				} else {
 					caLogEvent('ERR', _t('Indexing failed for %1: invalid response from SOLR %2', $vs_core, $vo_http_response->getBody()), 'Solr->flushContentBuffer()');
-					//print $vs_post_xml."\n\n\n";
 				}
 			} catch (Exception $e) {
 				// Indexing error
 				caLogEvent('ERR', _t('Indexing failed for %1: %2; response was %3', $vs_core, $e->getMessage(), $vo_http_response->getBody()), 'Solr->flushContentBuffer()');
-				//print $vs_post_xml."\n\n\n";
 			}
 		}
        
@@ -645,7 +652,7 @@ class WLPlugSearchEngineSolr extends BaseSearchPlugin implements IWLPlugSearchEn
 			$vs_post_xml = '<commit waitFlush="false" waitSearcher="false" softCommit="true"/>';
 			$vo_http_client->setRawData($vs_post_xml)->setEncType('text/xml')->request('POST');
 			$vo_http_response = $vo_http_client->request();
-			if ($o_resp = new SimpleXMLElement($vo_http_response->getBody())) {
+			if ($o_resp = @new SimpleXMLElement($vo_http_response->getBody())) {
 				$va_status = $o_resp->xpath("/response/lst/int[@name='status']");
 				$vn_status = (int)$va_status[0];
 				if ($vn_status > 0) { 
