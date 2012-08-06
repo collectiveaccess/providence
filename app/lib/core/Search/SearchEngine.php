@@ -688,25 +688,17 @@ class SearchEngine extends SearchBase {
 					$va_signs[] = isset($va_old_signs[$vn_i]) ? $va_old_signs[$vn_i] : true;
 					break;
 				case 'Zend_Search_Lucene_Search_Query_Term':
-				//	if (preg_match('!\-!', $vs_term_text = $o_term->getTerm()->text)) {	// hack to force hyphenated terms to quoted strings with a space instead of hyphen; addresses issue where PHP Lucene parser seems to do the wrong thing
-				//		$vs_term_text = str_replace("-", " ", $vs_term_text);
-				//		$va_terms[] = new Zend_Search_Lucene_Search_Query_Phrase(array($vs_term_text), null, $o_term->getTerm()->field);
-				//		$va_signs[] = isset($va_old_signs[$vn_i]) ? $va_old_signs[$vn_i] : true;
-				//	} else {
-						$va_rewritten_terms = $this->_rewriteTerm($o_term, $va_old_signs[$vn_i]);
-						if (sizeof($va_rewritten_terms['terms']) == 1) {
-							$va_terms[] = new Zend_Search_Lucene_Search_Query_Term($va_rewritten_terms['terms'][0]);
-							$va_signs[] = $va_rewritten_terms['signs'][0];
-						} else { 
-							for($vn_i = 0; $vn_i < sizeof($va_rewritten_terms['terms']); $vn_i++) {
-								$va_terms[] = new Zend_Search_Lucene_Search_Query_MultiTerm(array($va_rewritten_terms['terms'][$vn_i]), array($va_rewritten_terms['signs'][$vn_i]));
-								$va_signs[] = $va_rewritten_terms['signs'][$vn_i] ? true : null;
-							}
-							//$o_mt = new Zend_Search_Lucene_Search_Query_MultiTerm($va_rewritten_terms['terms'], $va_rewritten_terms['signs']);
+					$va_rewritten_terms = $this->_rewriteTerm($o_term, $va_old_signs[$vn_i]);
+					if (sizeof($va_rewritten_terms['terms']) == 1) {
+						$va_terms[] = new Zend_Search_Lucene_Search_Query_Term($va_rewritten_terms['terms'][0]);
+						$va_signs[] = $va_rewritten_terms['signs'][0];
+					} else { 
+						for($vn_i = 0; $vn_i < sizeof($va_rewritten_terms['terms']); $vn_i++) {
+							$va_terms[] = new Zend_Search_Lucene_Search_Query_MultiTerm(array($va_rewritten_terms['terms'][$vn_i]), array($va_rewritten_terms['signs'][$vn_i]));
+							$va_signs[] = $va_rewritten_terms['signs'][$vn_i] ? true : null;
 						}
-						//$va_terms[] = $o_mt;
-						//$va_signs[] = sizeof($va_old_signs) ? array_shift($va_old_signs): true;
-					//}
+						//$o_mt = new Zend_Search_Lucene_Search_Query_MultiTerm($va_rewritten_terms['terms'], $va_rewritten_terms['signs']);
+					}
 					break;
 				case 'Zend_Search_Lucene_Index_Term':
 					$va_rewritten_terms = $this->_rewriteTerm(new Zend_Search_Lucene_Search_Query_Term($o_term), $va_old_signs[$vn_i]);
