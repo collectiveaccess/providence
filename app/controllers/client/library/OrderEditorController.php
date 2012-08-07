@@ -52,8 +52,9 @@
  			$this->opt_order = new ca_commerce_orders($this->request->getParameter('order_id', pInteger));
  			if (!$this->opt_order->getPrimaryKey()) { 
  				$this->request->setParameter('order_id', 0); 
- 				$this->opt_order->set('order_type', 'L');
  			}
+ 			$this->opt_order->set('order_type', 'L');
+ 			
  			$this->view->setVar('t_order', $this->opt_order);
  			$this->view->setVar('order_id', $this->opt_order->getPrimaryKey());
  			$this->view->setVar('t_item', $this->opt_order);
@@ -237,6 +238,9 @@
  					case 'transaction_id':
  						// noop
  						break;
+ 					case 'order_type':
+ 						// noop
+ 						break;
  					default:
  						if (isset($_REQUEST[$vs_f])) {
 							if (!$this->opt_order->set($vs_f, $this->request->getParameter($vs_f, pString))) {
@@ -260,6 +264,7 @@
  			
  			$this->opt_order->setMode(ACCESS_WRITE);
  			if ($this->opt_order->getPrimaryKey()) {
+ 				$this->opt_order->set('order_type', 'L');	// L=loan
  				$this->opt_order->update();
  				$vn_transaction_id = $this->opt_order->get('transaction_id');
  			} else {

@@ -32,6 +32,38 @@
         </item>
       </items>
     </list>
+    <list code="list_item_types" hierarchical="0" system="0" vocabulary="0">
+      <labels>
+        <label locale="en_US">
+          <name>List item types</name>
+        </label>
+         <label locale="de_DE">
+          <name>Typen für Listeneinträge</name>
+        </label>
+      </labels>
+      <items>
+        <item idno="collection" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>Collection</name_singular>
+              <name_plural>Collection</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="concept" enabled="1" default="1">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>Concept</name_singular>
+              <name_plural>Concept</name_plural>
+            </label>
+            <label locale="de_DE" preferred="1">
+              <name_singular>Begriff</name_singular>
+              <name_plural>Begriff</name_plural>
+            </label>
+          </labels>
+        </item>
+      </items>
+    </list>
     <list code="movement_types" hierarchical="0" system="0" vocabulary="0">
       <labels>
         <label locale="en_US">
@@ -7482,7 +7514,7 @@
         </label>
       </labels>
       <items>
-        <item idno="vorschlagsterme_altlasten" enabled="1" default="0">
+        <item idno="vorschlagsterme_altlasten" enabled="1" default="0" type="collection">
           <labels>
             <label locale="en_US" preferred="1">
               <name_singular>Vorschlagsterme und Altlasten</name_singular>
@@ -7490,7 +7522,7 @@
             </label>
           </labels>
           <items>
-            <item idno="kategorien_fernsehen" enabled="1" default="0">
+            <item idno="kategorien_fernsehen" enabled="1" default="0" type="collection">
               <labels>
                 <label locale="de_DE" preferred="1">
                   <name_singular>Kategorien Fernsehen</name_singular>
@@ -7498,7 +7530,7 @@
                 </label>
               </labels>
             </item>
-            <item idno="schlagwoerter_fernsehen" enabled="1" default="0">
+            <item idno="schlagwoerter_fernsehen" enabled="1" default="0" type="collection">
               <labels>
                 <label locale="de_DE" preferred="1">
                   <name_singular>Schlagwörter Fernsehen</name_singular>
@@ -7506,7 +7538,7 @@
                 </label>
               </labels>
               <items>
-                <item idno="kultur" enabled="1" default="0">
+                <item idno="kultur" enabled="1" default="0" type="concept">
                   <labels>
                     <label locale="en_US" preferred="1">
                       <name_singular>Kultur</name_singular>
@@ -7514,7 +7546,7 @@
                     </label>
                   </labels>
                 </item>
-                <item idno="halloffame" enabled="1" default="0">
+                <item idno="halloffame" enabled="1" default="0" type="concept">
                   <labels>
                     <label locale="en_US" preferred="1">
                       <name_singular>Hall of Fame</name_singular>
@@ -7522,7 +7554,7 @@
                     </label>
                   </labels>
                 </item>
-                <item idno="politik" enabled="1" default="0">
+                <item idno="politik" enabled="1" default="0" type="concept">
                   <labels>
                     <label locale="en_US" preferred="1">
                       <name_singular>Politik</name_singular>
@@ -7530,7 +7562,7 @@
                     </label>
                   </labels>
                 </item>
-                <item idno="kinder" enabled="1" default="0">
+                <item idno="kinder" enabled="1" default="0" type="concept">
                   <labels>
                     <label locale="en_US" preferred="1">
                       <name_singular>Kinder</name_singular>
@@ -7538,7 +7570,7 @@
                     </label>
                   </labels>
                 </item>
-                <item idno="fernsehpreise" enabled="1" default="0">
+                <item idno="fernsehpreise" enabled="1" default="0" type="concept">
                   <labels>
                     <label locale="en_US" preferred="1">
                       <name_singular>Fernseh-Preise</name_singular>
@@ -7546,7 +7578,7 @@
                     </label>
                   </labels>
                 </item>
-                <item idno="stationen" enabled="1" default="0">
+                <item idno="stationen" enabled="1" default="0" type="concept">
                   <labels>
                     <label locale="en_US" preferred="1">
                       <name_singular>Stationen der Fernsehgeschichte</name_singular>
@@ -7554,7 +7586,7 @@
                     </label>
                   </labels>
                 </item>
-                <item idno="musiksendung" enabled="1" default="0">
+                <item idno="musiksendung" enabled="1" default="0" type="concept">
                   <labels>
                     <label locale="en_US" preferred="1">
                       <name_singular>Musiksendung</name_singular>
@@ -7562,7 +7594,7 @@
                     </label>
                   </labels>
                 </item>
-                <item idno="atomkraft" enabled="1" default="0">
+                <item idno="atomkraft" enabled="1" default="0" type="concept">
                   <labels>
                     <label locale="en_US" preferred="1">
                       <name_singular>Atomkraft</name_singular>
@@ -7570,7 +7602,7 @@
                     </label>
                   </labels>
                 </item>
-                <item idno="1968_studentenrevolte" enabled="1" default="0">
+                <item idno="1968_studentenrevolte" enabled="1" default="0" type="concept">
                   <labels>
                     <label locale="en_US" preferred="1">
                       <name_singular>1968er Studentenrevolte</name_singular>
@@ -7578,7 +7610,7 @@
                     </label>
                   </labels>
                 </item>
-                <item idno="weimarer_republik" enabled="1" default="0">
+                <item idno="weimarer_republik" enabled="1" default="0" type="concept">
                   <labels>
                     <label locale="en_US" preferred="1">
                       <name_singular>Weimarer Republik</name_singular>
@@ -7586,7 +7618,7 @@
                     </label>
                   </labels>
                 </item>
-                <item idno="ww2" enabled="1" default="0">
+                <item idno="ww2" enabled="1" default="0" type="concept">
                   <labels>
                     <label locale="en_US" preferred="1">
                       <name_singular>2. Weltkrieg</name_singular>
@@ -7594,7 +7626,7 @@
                     </label>
                   </labels>
                 </item>
-                <item idno="ddr" enabled="1" default="0">
+                <item idno="ddr" enabled="1" default="0" type="concept">
                   <labels>
                     <label locale="en_US" preferred="1">
                       <name_singular>DDR</name_singular>
@@ -7602,7 +7634,7 @@
                     </label>
                   </labels>
                 </item>
-                <item idno="raf" enabled="1" default="0">
+                <item idno="raf" enabled="1" default="0" type="concept">
                   <labels>
                     <label locale="en_US" preferred="1">
                       <name_singular>RAF</name_singular>
@@ -7610,7 +7642,7 @@
                     </label>
                   </labels>
                 </item>
-                <item idno="neue_medien" enabled="1" default="0">
+                <item idno="neue_medien" enabled="1" default="0" type="concept">
                   <labels>
                     <label locale="en_US" preferred="1">
                       <name_singular>Neue Medien</name_singular>
@@ -7618,7 +7650,7 @@
                     </label>
                   </labels>
                 </item>
-                <item idno="berlin" enabled="1" default="0">
+                <item idno="berlin" enabled="1" default="0" type="concept">
                   <labels>
                     <label locale="en_US" preferred="1">
                       <name_singular>Berlin</name_singular>
@@ -14442,7 +14474,51 @@
             <setting name="minimumAttributeBundlesToDisplay">1</setting>
           </settings>
         </restriction>
-        <restriction code="r4">
+      </typeRestrictions>
+    </metadataElement>
+    <metadataElement code="note" datatype="Text">
+      <labels>
+        <label locale="de_DE">
+          <name>Anmerkung</name>
+        </label>
+        <label locale="en_US">
+          <name>Note</name>
+        </label>
+      </labels>
+      <settings>
+        <setting name="fieldWidth">70</setting>
+        <setting name="fieldHeight">6</setting>
+        <setting name="minChars">0</setting>
+        <setting name="maxChars">65535</setting>
+      </settings>
+      <typeRestrictions>
+        <restriction code="r1">
+          <table>ca_list_items</table>
+          <settings>
+            <setting name="minAttributesPerRow">0</setting>
+            <setting name="maxAttributesPerRow">10</setting>
+            <setting name="minimumAttributeBundlesToDisplay">1</setting>
+          </settings>
+        </restriction>
+      </typeRestrictions>
+    </metadataElement>
+    <metadataElement code="notation" datatype="Text">
+      <labels>
+        <label locale="de_DE">
+          <name>Notation</name>
+        </label>
+        <label locale="en_US">
+          <name>Notation</name>
+        </label>
+      </labels>
+      <settings>
+        <setting name="fieldWidth">70</setting>
+        <setting name="fieldHeight">6</setting>
+        <setting name="minChars">0</setting>
+        <setting name="maxChars">65535</setting>
+      </settings>
+      <typeRestrictions>
+        <restriction code="r1">
           <table>ca_list_items</table>
           <settings>
             <setting name="minAttributesPerRow">0</setting>
@@ -14999,6 +15075,14 @@
           <settings>
             <setting name="minAttributesPerRow">0</setting>
             <setting name="maxAttributesPerRow">1</setting>
+            <setting name="minimumAttributeBundlesToDisplay">1</setting>
+          </settings>
+        </restriction>
+        <restriction code="r3">
+          <table>ca_list_items</table>
+          <settings>
+            <setting name="minAttributesPerRow">0</setting>
+            <setting name="maxAttributesPerRow">10</setting>
             <setting name="minimumAttributeBundlesToDisplay">1</setting>
           </settings>
         </restriction>
@@ -17133,12 +17217,32 @@
             </placement>
             <placement code="preferred_labels">
               <bundle>preferred_labels</bundle>
+              <settings>
+                <setting name="label" locale="en_US">Preferred label</setting>
+                <setting name="label" locale="de_DE">Bevorzugte Bezeichnung</setting>
+              </settings>
+            </placement>
+            <placement code="nonpreferred_labels">
+              <bundle>nonpreferred_labels</bundle>
+              <settings>
+                <setting name="label" locale="en_US">Alternative label</setting>
+                <setting name="label" locale="de_DE">Alternative Bezeichnung</setting>
+              </settings>
             </placement>
             <placement code="idno">
               <bundle>idno</bundle>
             </placement>
-            <placement code="item_value">
-              <bundle>item_value</bundle>
+            <placement code="ca_attribute_note">
+              <bundle>ca_attribute_note</bundle>
+            </placement>
+            <placement code="ca_attribute_notation">
+              <bundle>ca_attribute_notation</bundle>
+            </placement>
+            <placement code="ca_attribute_source_notes">
+              <bundle>ca_attribute_source_notes</bundle>
+            </placement>
+            <placement code="status">
+              <bundle>status</bundle>
             </placement>
             <placement code="is_enabled">
               <bundle>is_enabled</bundle>
@@ -17146,35 +17250,8 @@
             <placement code="is_default">
               <bundle>is_default</bundle>
             </placement>
-            <placement code="rank">
-              <bundle>rank</bundle>
-            </placement>
-            <placement code="color">
-              <bundle>color</bundle>
-            </placement>
-            <placement code="icon">
-              <bundle>icon</bundle>
-            </placement>
-            <placement code="validation_format">
-              <bundle>validation_format</bundle>
-            </placement>
             <placement code="access">
               <bundle>access</bundle>
-            </placement>
-            <placement code="status">
-              <bundle>status</bundle>
-            </placement>
-          </bundlePlacements>
-        </screen>
-        <screen idno="altnames" default="0">
-          <labels>
-            <label locale="en_US">
-              <name>Alternate names</name>
-            </label>
-          </labels>
-          <bundlePlacements>
-            <placement code="nonpreferred_labels">
-              <bundle>nonpreferred_labels</bundle>
             </placement>
           </bundlePlacements>
         </screen>
@@ -18616,6 +18693,38 @@
         </type>
       </types>
     </relationshipTable>
+    <relationshipTable name="ca_objects_x_vocabulary_terms">
+      <types>
+        <type code="category" default="0">
+          <labels>
+            <label locale="de_DE">
+              <typename>Kategorie</typename>
+              <typename_reverse>ist Kategorie von</typename_reverse>
+            </label>
+            <label locale="en_US">
+              <typename>category</typename>
+              <typename_reverse>is category of</typename_reverse>
+            </label>
+          </labels>
+          <subTypeLeft>av_work</subTypeLeft>
+          <subTypeRight></subTypeRight>
+        </type>
+        <type code="related" default="0">
+          <labels>
+            <label locale="de_DE">
+              <typename>steht in Verbindung mit</typename>
+              <typename_reverse>steht in Verbindung mit</typename_reverse>
+            </label>
+            <label locale="en_US">
+              <typename>is related to</typename>
+              <typename_reverse>is related to</typename_reverse>
+            </label>
+          </labels>
+          <subTypeLeft>av_work</subTypeLeft>
+          <subTypeRight></subTypeRight>
+        </type>
+      </types>
+    </relationshipTable>
     <relationshipTable name="ca_occurrences_x_vocabulary_terms">
       <types>
         <type code="category" default="0">
@@ -18742,49 +18851,61 @@
     </relationshipTable>
     <relationshipTable name="ca_list_items_x_list_items">
       <types>
-        <type code="associated_with" default="1">
+        <type code="related_concept" default="0">
           <labels>
-            <label locale="de_DE">
-              <typename>steht in Beziehung zu</typename>
-              <typename_reverse>steht in Beziehung zu</typename_reverse>
-            </label>
             <label locale="en_US">
-              <typename>is associated with</typename>
-              <typename_reverse>is associated with</typename_reverse>
+              <typename>has related concept</typename>
+              <typename_reverse>has related concept</typename_reverse>
+            </label>
+            <label locale="de_DE">
+              <typename>verwandter Begriff</typename>
+              <typename_reverse>verwandter Begriff</typename_reverse>
             </label>
           </labels>
-          <subTypeLeft />
-          <subTypeRight></subTypeRight>
+          <subTypeLeft>concept</subTypeLeft>
+          <subTypeRight>concept</subTypeRight>
         </type>
-        <type code="bt_nt" default="0">
+        <type code="bt_nt" default="1">
           <labels>
             <label locale="en_US">
               <typename>has broader concept</typename>
               <typename_reverse>has narrower concept</typename_reverse>
             </label>
-          </labels>
-          <subTypeLeft />
-          <subTypeRight></subTypeRight>
-        </type>
-        <type code="category" default="0">
-          <labels>
-            <label locale="en_US">
-              <typename>has category member</typename>
-              <typename_reverse>is member of category</typename_reverse>
+            <label locale="de_DE">
+              <typename>übergeordneter Begriff</typename>
+              <typename_reverse>untergeordneter Begriff</typename_reverse>
             </label>
           </labels>
-          <subTypeLeft />
-          <subTypeRight></subTypeRight>
+          <subTypeLeft>concept</subTypeLeft>
+          <subTypeRight>concept</subTypeRight>
         </type>
-        <type code="is_part_of" default="0">
+        <type code="collection_member" default="0">
           <labels>
             <label locale="en_US">
-              <typename>is part of</typename>
-              <typename_reverse>is part of</typename_reverse>
+              <typename>has collection member</typename>
+              <typename_reverse>is member of collection</typename_reverse>
+            </label>
+            <label locale="de_DE">
+              <typename>hat zugeordnet</typename>
+              <typename_reverse>ist zugeordnet zu</typename_reverse>
             </label>
           </labels>
-          <subTypeLeft />
-          <subTypeRight></subTypeRight>
+          <subTypeLeft>collection</subTypeLeft>
+          <subTypeRight>concept</subTypeRight>
+        </type>
+        <type code="collection_member_collection" default="0">
+          <labels>
+            <label locale="en_US">
+              <typename>has collection member</typename>
+              <typename_reverse>is member of collection</typename_reverse>
+            </label>
+            <label locale="de_DE">
+              <typename>hat zugeordnet</typename>
+              <typename_reverse>ist zugeordnet zu</typename_reverse>
+            </label>
+          </labels>
+          <subTypeLeft>collection</subTypeLeft>
+          <subTypeRight>collection</subTypeRight>
         </type>
       </types>
     </relationshipTable>
@@ -18961,3 +19082,4 @@
     </login>
   </logins>
 </profile>
+

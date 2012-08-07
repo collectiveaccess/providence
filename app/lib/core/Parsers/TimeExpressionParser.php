@@ -594,7 +594,7 @@ class TimeExpressionParser {
 				break;
 			# -------------------------------------------------------
 			case TEP_STATE_DATE_RANGE_END_DATE:
-				if ($va_date = $this->_parseDateExpression()) {
+				if ($va_date = $this->_parseDateExpression(array('start' => $va_dates['start']))) {
 					$va_dates['end'] = $va_date;
 					if (isset($va_dates['start']['is_circa']) && $va_dates['start']['is_circa']) {
 						$va_dates['end']['is_circa'] = true;
@@ -786,7 +786,7 @@ class TimeExpressionParser {
 	# -------------------------------------------------------------------
 	# Productions (kinda sorta)
 	# -------------------------------------------------------------------
-	function &_parseDateElement() {
+	function &_parseDateElement($pa_options=null) {
 		$vn_state = TEP_STATE_BEGIN_DATE_ELEMENT;
 		
 		$vn_day = $vn_month = $vn_year = null;
@@ -893,6 +893,12 @@ class TimeExpressionParser {
 							break;
 						# ----------------------
 						default:
+							if (isset($pa_options['start']) && isset($pa_options['start']['month']) && $pa_options['start']['month']) {
+								$vn_month = $pa_options['start']['month'];
+								$vn_year = intval($va_token['value']);
+								$this->skipToken();
+								return array('day' => $vn_day, 'month' => $vn_month, 'year' => $vn_year);
+							}
 							$this->setParseError($va_token, TEP_ERROR_INVALID_DATE);
 							return false;
 							break;
@@ -903,11 +909,17 @@ class TimeExpressionParser {
 			}
 		}
 		
+		if ($vn_day && isset($pa_options['start']) && isset($pa_options['start']['month']) && $pa_options['start']['month']) {
+			$vn_month = $pa_options['start']['month'];
+			$vn_year = $pa_options['start']['year'];
+			$this->skipToken();
+			return array('day' => $vn_day, 'month' => $vn_month, 'year' => $vn_year);
+		}
 		$this->setParseError(null, TEP_ERROR_INVALID_DATE);
 		return false;
 	}
 	# -------------------------------------------------------------------
-	function &_parseDateExpression() {
+	function &_parseDateExpression($pa_options=null) {
 		$vn_state = TEP_STATE_BEGIN_DATE_EXPRESSION;
 		
 		$va_time = array();
@@ -986,7 +998,7 @@ class TimeExpressionParser {
 								break;
 							# ----------------------
 							default:
-								if ($va_date_element = $this->_parseDateElement()) {
+								if ($va_date_element = $this->_parseDateElement($pa_options)) {
 									$va_date = array(
 										'month' => $va_date_element['month'], 'day' => $va_date_element['day'], 
 										'year' => $va_date_element['year'],
@@ -2000,7 +2012,10 @@ class TimeExpressionParser {
 			$va_start_pieces = $this->getHistoricDateParts($va_dates['start']);
 			// start is same as end so just output start date
 			if ($va_dates['start'] == $va_dates['end']) {
-				if ($pa_options['start_as_iso8601'] || (isset($pa_options['dateFormat']) && ($pa_options['dateFormat'] == 'iso8601'))) { 
+				if ($pa_options['start_as_iso8601'] || $pa_options['end_as_iso8601']) {
+					return $this->getISODateTime($va_start_pieces, 'FULL');
+				}
+				if ((isset($pa_options['dateFormat']) && ($pa_options['dateFormat'] == 'iso8601'))) { 
 					return $this->getISODateTime($va_start_pieces, 'START');
 				} else {
 					return $this->_dateTimeToText($va_start_pieces, $pa_options);
@@ -2023,10 +2038,10 @@ class TimeExpressionParser {
 			}
 		
 			if ($pa_options['start_as_iso8601']) {
-				return $this->getISODateTime($va_start_pieces, 'START');
+				return $this->getISODateTime($va_start_pieces, 'FULL');
 			}
 			if ($pa_options['end_as_iso8601']) {
-				return $this->getISODateTime($va_end_pieces, 'END');
+				return $this->getISODateTime($va_end_pieces, 'FULL');
 			}
 			
 			
@@ -2681,6 +2696,9 @@ class TimeExpressionParser {
 	}
 	# -------------------------------------------------------------------
 	function getISODateTime($pa_date, $ps_mode='START') {
+		if ($ps_mode = 'FULL') {
+			return $pa_date['year'].'-'.sprintf("%02d", $pa_date['month']).'-'.sprintf("%02d", $pa_date['day']).'T'.sprintf("%02d", $pa_date['hours']).':'.sprintf("%02d", $pa_date['minutes']).':'.sprintf("%02d", $pa_date['seconds']).'Z';
+		}
 		if (
 			(!($pa_date['month'] == 1 && $pa_date['day'] == 1 && ($ps_mode == 'START'))) &&
 			(!($pa_date['month'] == 12 && $pa_date['day'] == 31 && ($ps_mode == 'END')))

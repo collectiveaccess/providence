@@ -350,37 +350,71 @@ class ca_collections extends BundlableLabelableBaseModelWithAttributes implement
 	 */
 	 public function getHierarchyList($pb_dummy=false) {
 	 	$vn_pk = $this->getPrimaryKey();
-	 	if (!$vn_pk) { return null; }		// have to load a row first
-	 	
-	 	$vs_label = $this->getLabelForDisplay(false);
-	 	$vs_hier_fld = $this->getProperty('HIERARCHY_ID_FLD');
-	 	$vs_parent_fld = $this->getProperty('PARENT_ID_FLD');
-	 	$vn_hier_id = $this->get($vs_hier_fld);
-	 	
-	 	if ($this->get($vs_parent_fld)) { 
-	 		// currently loaded row is not the root so get the root
-	 		$va_ancestors = $this->getHierarchyAncestors();
-	 		if (!is_array($va_ancestors) || sizeof($va_ancestors) == 0) { return null; }
-	 		$t_collection = new ca_collections($va_ancestors[0]);
+	 	if (!$vn_pk) { 
+	 		$o_db = new Db();
+	 		if (is_array($va_type_ids = caMergeTypeRestrictionLists($this, array())) && sizeof($va_type_ids)) {
+				$qr_res = $o_db->query("
+					SELECT o.collection_id, count(*) c
+					FROM ca_collections o
+					INNER JOIN ca_collections AS p ON p.parent_id = o.collection_id
+					WHERE o.parent_id IS NULL AND o.type_id IN (?)
+					GROUP BY o.collection_id
+				", array($va_type_ids));
+			} else {
+				$qr_res = $o_db->query("
+					SELECT o.collection_id, count(*) c
+					FROM ca_collections o
+					INNER JOIN ca_collections AS p ON p.parent_id = o.collection_id
+					WHERE o.parent_id IS NULL
+					GROUP BY o.collection_id
+				");
+			}
+	 		$va_hiers = array();
+	 		
+	 		$va_collection_ids = $qr_res->getAllFieldValues('collection_id');
+	 		$qr_res->seek(0);
+	 		$va_labels = $this->getPreferredDisplayLabelsForIDs($va_collection_ids);
+	 		while($qr_res->nextRow()) {
+	 			$va_hiers[$vn_collection_id = $qr_res->get('collection_id')] = array(
+	 				'collection_id' => $vn_collection_id,
+	 				'name' => $va_labels[$vn_collection_id],
+	 				'hierarchy_id' => $vn_collection_id,
+	 				'children' => (int)$qr_res->get('c')
+	 			);
+	 		}
+	 		return $va_hiers;
 	 	} else {
-	 		$t_collection =& $this;
-	 	}
-	 	
-	 	$va_children = $t_collection->getHierarchyChildren(null, array('idsOnly' => true));
-	 	$va_collection_hierarchy_root = array(
-	 		$t_collection->get($vs_hier_fld) => array(
-	 			'collection_id' => $vn_pk,
-	 			'name' => $vs_label,
-	 			'hierarchy_id' => $vn_hier_id,
-	 			'children' => sizeof($va_children)
-	 		),
-	 		'collection_id' => $vn_pk,
-			'name' => $vs_label,
-			'hierarchy_id' => $vn_hier_id,
-			'children' => sizeof($va_children)
-	 	);
-	 	
-	 	return $va_collection_hierarchy_root;
+	 		// return specific collection as root of hierarchy
+			$vs_label = $this->getLabelForDisplay(false);
+			$vs_hier_fld = $this->getProperty('HIERARCHY_ID_FLD');
+			$vs_parent_fld = $this->getProperty('PARENT_ID_FLD');
+			$vn_hier_id = $this->get($vs_hier_fld);
+			
+			if ($this->get($vs_parent_fld)) { 
+				// currently loaded row is not the root so get the root
+				$va_ancestors = $this->getHierarchyAncestors();
+				if (!is_array($va_ancestors) || sizeof($va_ancestors) == 0) { return null; }
+				$t_collection = new ca_collections($va_ancestors[0]);
+			} else {
+				$t_collection =& $this;
+			}
+			
+			$va_children = $t_collection->getHierarchyChildren(null, array('idsOnly' => true));
+			$va_collection_hierarchy_root = array(
+				$t_collection->get($vs_hier_fld) => array(
+					'collection_id' => $vn_pk,
+					'name' => $vs_label,
+					'hierarchy_id' => $vn_hier_id,
+					'children' => sizeof($va_children)
+				),
+				'collection_id' => $vn_pk,
+				'name' => $vs_label,
+				'hierarchy_id' => $vn_hier_id,
+				'children' => sizeof($va_children)
+			);
+				
+	 		return $va_collection_hierarchy_root;
+		}
 	}
 	# ------------------------------------------------------
 	/**

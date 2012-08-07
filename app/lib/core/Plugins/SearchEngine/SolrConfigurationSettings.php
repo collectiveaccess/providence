@@ -96,7 +96,7 @@ class SolrConfigurationSettings extends ASearchConfigurationSettings {
 		$this->opa_setting_descriptions[__CA_SOLR_SETTING_WEBSERVER_DIR_PERMISSIONS__] =
 			_t("The web server user (%1) must be able to read and write the whole Solr configuration. Please note that also your Java application server user (e.g. tomcat6) must be able to write to the Solr home and its subdirectories.",$this->ops_webserver_user);
 		$this->opa_setting_descriptions[__CA_SOLR_SETTING_CORES_RUNNING__] =
-			_t("CollectiveAccess uses seperate Solr indexes (lightweight instances) for each table that is indexed. These so called 'cores' must be running and ready for queries.");
+			_t("CollectiveAccess uses separate Solr indexes (lightweight instances) for each table that is indexed. These so called 'cores' must be running and ready for queries.");
 		$this->opa_setting_descriptions[__CA_SOLR_SETTING_CONFIGS_UP2DATE__] =
 			_t("The Solr configuration has to be rebuilt and synced with the CollectiveAccess search indexing configuration and metadata attributes setup from time to time. It's not critical if they're not in sync for the moment. They should be automatically synced on each event that causes some indexing (e.g. record save)");
 		$this->opa_setting_descriptions[__CA_SOLR_SETTING_CACHE__] =

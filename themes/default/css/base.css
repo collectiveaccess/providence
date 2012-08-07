@@ -1797,27 +1797,24 @@ table.representationAnnotationListItem {
 	padding: 5px;
 }
 
-/* overlays (for object representations) */
+/* overlay (for object representations) */
 #caMediaPanel {
 	position: fixed; 
-	top: 1.5%; 
-	left: 1.5%; 
-	border: 4px solid #ccc; 
-	background-color: #FFFFFF; 
-	width: 97%; 
-	height: 97%; 
-	overflow: hidden;
+	top: 0px; 
+	left: 0px;
+	width: 100%; 
+	height: 100%; 
 	display: none;
-	margin: 0 auto;
+	margin: 0px;
 	padding: 0px;
 	z-index: 31000;			/* needs to be on top of menu bar, which has z-index=30000 */
 }
 #caMediaPanel #close{
 	float: right;
-	width:16px;
+	width:15px;
 	height:16px;
-	margin:7px;
-	background-image:url("../graphics/buttons/delete.gif");
+	margin:10px;
+	background-image:url("../graphics/buttons/x.png");
 }
 #caMediaPanel #close a{
 	text-decoration:none;
@@ -1825,47 +1822,78 @@ table.representationAnnotationListItem {
 }
 #caMediaPanelContentArea {
 	width: 100%; 
-	height: 100%; 
+	height: 100%;
 }
 
 #caMediaOverlayContent {
-	margin-top: 0px;
-	margin-left: 0px;
+	margin: 0px;
 	width: 100%;
 	height: 100%;
 	overflow: auto;
 	text-align: center;
 }
-
-#caMediaOverlayContent div {
-	margin-left: auto;
-	margin-right: auto;
-}
-
 div.caMediaOverlayControls {
-	background-color: #FFFFFF;
-	padding: 3px;
-	font-size: 9px;
-	margin-left: 0px;
-	height: 22px;
-	border-bottom:2px solid #ededed;
+	background-color: #000;
+	color:#FFF;
+	font-size: 11px;
+	text-align:center;
+	position:absolute;
+	padding: 10px 0px 10px 0px;
+	width:100%;
+	bottom:0px;
+	left:0px;
+	z-index: 32000;			/* needs to be on top of caMediaPanel, which has z-index=31000 */
+	/* opacity:.1;	 */
+	opacity: 1.0;
+}
+/* div.caMediaOverlayControls:hover {
+	opacity:1.0;
+	background-color:rgba(0,0,0,0.8);
+} */
+div.caMediaOverlayControls a{
+	text-decoration:none;
+	font-weight:bold;
+	font-size:16px;
+	color:#FFF;
+}
+div.caMediaOverlayControls a:hover{
+	color:#FFF;
+}
+div.caMediaOverlayControls .close{
+	float:right;
+	width:15px;
+	height:16px;
+	background-image:url("../graphics/buttons/x_white.png");
+	margin: 0px 10px 0px 20px;
+}
+div.caMediaOverlayControls .download{
+	float:right;
+	margin-left:20px;
+}
+div.caMediaOverlayControls .objectInfo{
+	font-size:11px;
+	color:#FFF;
+	padding-left:10px;
+	text-align:left;
+	width:40%;
+	float:left;
+}
+div.caMediaOverlayControls .repNav {
+	float:left;
+	width:16%;
+	padding: 0px 2% 0px 2%;
+	text-align:center;
+	color:#FFF;
 }
 
-select.caMediaOverlayControls {
-	font-size: 9px;
-}
-#caMediaOverlayThumbnails{
-	padding: 10px 0px 0px 0px;
-	text-align:center;
-	height:90px;
-	width:840px;
-	overflow:auto;
-}
-#caMediaOverlayThumbnails img{
-	margin:0px 1px 0px 1px;
-}
-#caMediaOverlayThumbnails div{
-	margin:0px auto 0px auto;
+.caAudioPlayer {
+	position: absolute;
+	top: 50%;
+	left: 50%;
+	width: 600px;
+	height: 32px;
+	margin-top: 16px;
+	margin-left: -300px;
 }
 
 /* overlays (for search results QuickLook) */
@@ -4338,4 +4366,30 @@ div.searchlight-results-wrapper {
 div.searchlight-results div.searchlight-selected {
     background: #333;
     color: #fff;
+}
+#caClientOrderOverview .loanTitle {
+	font-size: 13px;
+	font-weight: bold;
+	color: #333;
+	padding: 0px 5px 0px 5px;
+}
+#caClientOrderOverview td {
+	border-bottom: 1px solid #666;
+	padding: 5px 10px 5px 10px;
+}
+#caClientOrderOverview table {
+	width: 100%;
+}
+.titleTd td{
+	border-left: 1px solid #333;
+}
+.orderTotal {
+	font-weight: bold;
+	text-transform: uppercase;
+	float:right;
+	padding: 5px 0px 0px 0px;
+	clear:both;
+}
+.overdue {
+	color: red;
 }

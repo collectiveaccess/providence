@@ -78,14 +78,16 @@
 			//
 			// Set up HTTP client for REST calls
 			//
-			$vs_base_url = $this->opo_client_services_config->get('remote_media_base_url'); //'http://dams.hsp.org/admin';
-			$o_client = new RestClient($vs_base_url."/service.php/iteminfo/ItemInfo/rest");
-			$o_res = $o_client->auth($this->opo_client_services_config->get('remote_media_username'), $this->opo_client_services_config->get('remote_media_password'))->get();
-			if (!$o_res->isSuccess()) {
-				$t_log->log(array('CODE' => 'ERR', 'MESSAGE' => _t('Could not authenticate to remote system %1', $vs_base_url), 'SOURCE' => 'clientServicesPlugin->hookPeriodicTask'));
-			}
+			if ($this->opo_client_services_config->get('remote_media_base_url')) {
+				$vs_base_url = $this->opo_client_services_config->get('remote_media_base_url'); 
+				$o_client = new RestClient($vs_base_url."/service.php/iteminfo/ItemInfo/rest");
+				try {
+					$o_res = $o_client->auth($this->opo_client_services_config->get('remote_media_username'), $this->opo_client_services_config->get('remote_media_password'))->get();
+					if (!$o_res->isSuccess()) {
+						$t_log->log(array('CODE' => 'ERR', 'MESSAGE' => _t('Could not authenticate to remote system %1', $vs_base_url), 'SOURCE' => 'clientServicesPlugin->hookPeriodicTask'));
+					}
 		
-			while($qr_orders->nextRow()) {
+					while($qr_orders->nextRow()) {
 				$t_order = new ca_commerce_orders($qr_orders->get('order_id'));
 				
 				$vb_download_errors = false;
@@ -135,6 +137,10 @@
 					if ($t_order->numErrors()) {
 						$t_log->log(array('CODE' => 'ERR', 'MESSAGE' => _t('Change of order status to PROCESSED from PROCESSED_AWAITING_MEDIA_ACCESS failed for order_id %1: %2', $t_order->getPrimaryKey(), join('; ', $t_order->getErrors())), 'SOURCE' => 'clientServicesPlugin->hookPeriodicTask'));	
 					}
+				}
+			}
+				} catch (Exception $e) {
+					// noop
 				}
 			}
 			
