@@ -842,14 +842,9 @@ class WLPlugMediaImagick Extends WLPlug Implements IWLPlugMedia {
 			case "ROTATE":
 				$angle = $parameters["angle"];
 				if (($angle > -360) && ($angle < 360)) {
-					$pixel = NewPixelWand("#FFFFFF");
-					if ( !$this->handle->rotateImage($pixel, $angle ) ) {
+					if ( !$this->handle->rotateImage("#FFFFFF", $angle ) ) {
 						$this->postError(1610, _t("Error during image rotate"), "WLPlugImagick->transform()");
-						
-						DestroyPixelWand($pixel);
 						return false;
-					} else {
-						DestroyPixelWand($pixel);
 					}
 				}
 				break;
