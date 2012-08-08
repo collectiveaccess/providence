@@ -42,6 +42,8 @@
 	$vs_original_filename 		= $va_media_info['ORIGINAL_FILENAME'];
 	
 	$vs_container_id 			= $this->getVar('containerID');
+	$vb_use_media_editor		= $this->getVar('use_media_editor');
+	$vb_no_controls				= $this->getVar('noControls');
 	
 	$va_pages = $va_sections = array();
 	$vb_use_book_reader = false;
@@ -283,11 +285,13 @@
 			
 			print $o_view->render('bookviewer_html.php');
 		} else {
+		
+			if (!$vb_no_controls) {
 ?>
 	<!-- Controls - only for media overlay -->
 	<div class="caMediaOverlayControls">
 			<div class='close'><a href="#" onclick="caMediaPanel.hidePanel(); return false;" title="close">&nbsp;&nbsp;&nbsp;</a></div>
-<?php
+<?php			
 			if(caObjectsDisplayDownloadLink($this->request)){
 ?>
 
@@ -315,16 +319,101 @@
 			<div class='repNav'>
 <?php
 				if ($vn_id = $this->getVar('previous_representation_id')) {
-					print "<a href='#' onClick='jQuery(\"#{$vs_container_id}\").load(\"".caNavUrl($this->request, 'editor/objects', 'ObjectEditor', 'GetRepresentationInfo', array('representation_id' => (int)$vn_id, 'object_id' => (int)$t_object->getPrimaryKey()))."\");'>←</a>";
+					print "<a href='#' onClick='jQuery(\"#{$vs_container_id}\").load(\"".caNavUrl($this->request, 'editor/objects', 'ObjectEditor', $this->request->getAction(), array('representation_id' => (int)$vn_id, 'object_id' => (int)$t_object->getPrimaryKey()))."\");'>←</a>";
 				}
 				if (sizeof($va_reps) > 1) {
 					print ' '._t("%1 of %2", $this->getVar('representation_index'), sizeof($va_reps)).' ';
 				}
 				if ($vn_id = $this->getVar('next_representation_id')) {
-					print "<a href='#' onClick='jQuery(\"#{$vs_container_id}\").load(\"".caNavUrl($this->request, 'editor/objects', 'ObjectEditor', 'GetRepresentationInfo', array('representation_id' => (int)$vn_id, 'object_id' => (int)$t_object->getPrimaryKey()))."\");'>→</a>";
+					print "<a href='#' onClick='jQuery(\"#{$vs_container_id}\").load(\"".caNavUrl($this->request, 'editor/objects', 'ObjectEditor', $this->request->getAction(), array('representation_id' => (int)$vn_id, 'object_id' => (int)$t_object->getPrimaryKey()))."\");'>→</a>";
 				}
 ?>
 			</div>
+<?php
+		if ($vb_use_media_editor) {
+?>
+			<!-- Controls - only for media editor -->
+			<div class="caRepTools">
+				<a href="#" id="caRepToolsButton">Tools</a>
+				<div id="caRepToolsPanel">
+					<div class="caRepToolsClose"> </div>
+					<div id="caRepToolsTabs">
+						<ul>
+							<li><a href="#caRepToolsTabs-1"><?php print _t('Rotate'); ?></a></li>
+						</ul>
+						<div id="caRepToolsTabs-1">
+							<div id='caRepToolsRotateProgress'>
+								<img src="<?php print $this->request->getThemeUrlPath()."/graphics/icons/indicator_bar.gif"; ?>" alt="<?php print htmlspecialchars(_t('Rotating...'), ENT_QUOTES, "utf8"); ?>" class="caRepToolsRotateProgress"/>
+								<div id='caRepToolsRotateProgressMessage'><?php print _t('Rotating...'); ?></div>
+							</div>
+							
+							<div id="caRepToolsRotateAngleControl">
+								<form>
+									<?php print caHTMLRadioButtonInput("angle", array('value' => '90', 'checked' => 1)); ?><?php print _t('90∘ CW'); ?><br/>
+									<?php print caHTMLRadioButtonInput("angle", array('value' => '180')); ?><?php print _t('180∘ CW'); ?><br/>
+									<?php print caHTMLRadioButtonInput("angle", array('value' => '-90')); ?><?php print _t('90∘ CCW'); ?><br/>
+								</form>
+							</div>
+							
+							<div id="caRepToolsRotateControlButtons">
+								<div><a href="#" id="caRepToolsRotateApplyButton"><?php print _t("Apply"); ?></a></div>
+								
+								<div><a href="#" id="caRepToolsRotateRevertButton" style="display: <?php print ($t_rep->mediaHasUndo('media') ? "block" : "none"); ?>;"><?php print _t("Revert"); ?></a></div>
+							</div>
+							<br style="clear: both;"/>
+						</div>
+					</div>
+				</div>
+			</div>
+			
+			<script type="text/javascript">
+				var repToolsIsOpen = false;
+				
+				jQuery(document).ready(function() {
+					jQuery('#caRepToolsButton').click(function() {
+						if (repToolsIsOpen) {
+							jQuery('#caRepToolsPanel').hide("slide", { direction: "down" }, 250, function() { repToolsIsOpen = false; });
+						} else {
+							jQuery('#caRepToolsPanel').show("slide", { direction: "down" }, 250, function() { repToolsIsOpen = true; });
+						}
+					});
+					
+					jQuery('#caRepToolsPanel .caRepToolsClose').click(function() {
+						jQuery('#caRepToolsPanel').hide("slide", { direction: "down" }, 250, function() { repToolsIsOpen = false; });
+					});
+					
+					jQuery("#caRepToolsTabs").tabs();
+			
+					function caPostProcessingHandler(d) {
+						jQuery('#caRepToolsRotateProgress').hide();
+						<?php print "jQuery(\"#".(($vs_display_type == 'media_overlay') ? 'caMediaOverlayContent' : 'caMediaDisplayContent')."\").load(\"".caNavUrl($this->request, 'editor/objects', 'ObjectEditor', 'GetRepresentationEditor', array('reload' => 1, 'representation_id' => (int)$vn_representation_id, 'object_id' => (int)$t_object->getPrimaryKey()))."\")"; ?>;
+						if (d['status'] == 0) {
+							if (d['action'] == 'process') {
+								jQuery('#caRepToolsRotateRevertButton').show();
+							} else {
+								jQuery('#caRepToolsRotateRevertButton').hide();
+							}
+						}
+					}
+					
+					jQuery("#caRepToolsRotateApplyButton").click(function() {
+						jQuery('#caRepToolsRotateProgressMessage').html("<?php print _t('Rotating...'); ?>");
+						jQuery('#caRepToolsRotateProgress').show();
+						var angle = jQuery('#caRepToolsRotateAngleControl form input[name="angle"]:checked').val();
+						jQuery.getJSON('<?php print caNavUrl($this->request, 'editor/objects', 'ObjectEditor', 'ProcessMedia'); ?>', { op: 'ROTATE', angle: angle, object_id: <?php print (int)$t_object->getPrimaryKey(); ?>, representation_id: <?php print (int)$vn_representation_id; ?> }, caPostProcessingHandler);
+					});
+					
+					jQuery("#caRepToolsRotateRevertButton").click(function() {
+						jQuery('#caRepToolsRotateProgressMessage').html("<?php print _t('Reverting...'); ?>");
+						jQuery('#caRepToolsRotateProgress').show();
+						jQuery.getJSON('<?php print caNavUrl($this->request, 'editor/objects', 'ObjectEditor', 'RevertMedia'); ?>', { object_id: <?php print (int)$t_object->getPrimaryKey(); ?>, representation_id: <?php print (int)$vn_representation_id; ?> }, caPostProcessingHandler);
+					});
+				});
+			</script>
+<?php
+			}
+		}
+?>
 	</div><!-- end caMediaOverlayControls -->
 <?php
 			}

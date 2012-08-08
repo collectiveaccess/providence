@@ -1225,6 +1225,7 @@ class ca_object_representations extends BundlableLabelableBaseModelWithAttribute
  		$vn_item_id = (isset($pa_options['item_id']) && $pa_options['item_id']) ? $pa_options['item_id'] : null;
  		$vn_order_item_id = (isset($pa_options['order_item_id']) && $pa_options['order_item_id']) ? $pa_options['order_item_id'] : null;
  		$vb_media_editor = (isset($pa_options['mediaEditor']) && $pa_options['mediaEditor']) ? true : false;
+ 		$vb_no_controls = (isset($pa_options['noControls']) && $pa_options['noControls']) ? true : false;
  		
  		$vn_item_id = (isset($pa_options['item_id']) && $pa_options['item_id']) ? $pa_options['item_id'] : null;
  		
@@ -1298,6 +1299,7 @@ class ca_object_representations extends BundlableLabelableBaseModelWithAttribute
  			$o_view->setVar('t_order_item', $t_order_item);
  			$o_view->setVar('only_show_reps_in_order', $vb_only_show_reps_in_order);
  			$o_view->setVar('use_media_editor', $vb_media_editor);
+ 			$o_view->setVar('noControls', $vb_no_controls);
 		}
 		return $o_view->render('representation_viewer_html.php');
  	}
