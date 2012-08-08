@@ -40,9 +40,8 @@
 
 	<!-- Overlay for media display triggered from left sidenav widget or quicklook-->
 	<div id="caMediaPanel" class="caMediaPanel"> 
-		<div id="caMediaPanelContentArea">
-		
-		</div>
+		<div id="caMediaPanelProgress"><?php print _t("Please wait..."); ?></div>
+		<div id="caMediaPanelContentArea"></div>
 	</div>
 	<script type="text/javascript">
 	/*
