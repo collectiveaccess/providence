@@ -104,7 +104,7 @@ class Media extends BaseObject {
 	public function getUnregisteredPlugin($ps_plugin_name) {
 		
 		if(!in_array($ps_plugin_name, $this->getPluginNames())) { return null; }
-		if (isset(Media::$WLMedia_unregistered_plugin_cache[$ps_plugin_name])) { return Media::$WLMedia_unregistered_plugin_cache[$ps_plugin_name]; }
+		//if (isset(Media::$WLMedia_unregistered_plugin_cache[$ps_plugin_name])) { return Media::$WLMedia_unregistered_plugin_cache[$ps_plugin_name]; }
 		
 		# get plugin directory from configuration
 		$o_config = Configuration::load();

@@ -357,7 +357,7 @@ class WLPlugSearchEngineSqlSearch extends BaseSearchPlugin implements IWLPlugSea
 			);
 		}
 
-		return new WLPlugSearchEngineSqlSearchResult($va_hits, array());
+		return new WLPlugSearchEngineSqlSearchResult($va_hits, $pn_subject_tablenum);
 	}
 	# -------------------------------------------------------
 	private function _createTempTable($ps_name) {

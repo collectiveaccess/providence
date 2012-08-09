@@ -570,7 +570,7 @@ class TilepicParser {
         	$image_width *= $pa_options["scale_factor"];
         	$image_height *= $pa_options["scale_factor"];
 			
-			$vs_tmp_basename = tempnam($vs_tilepic_tmpdir, 'tpc_');
+			$vs_tmp_basename = tempnam($vs_tilepic_tmpdir, 'tpc_scale_');
 			$vs_tmp_fname = $vs_tmp_basename.'.jpg';
 			if (!($this->_imageMagickProcess($vs_filepath, $vs_tmp_fname, array(
 					array(
@@ -605,7 +605,7 @@ class TilepicParser {
 					}
 					
 					if ($vn_orientation_rotate) {
-						$vs_tmp_basename = tempnam($vs_tilepic_tmpdir, 'tpc_');
+						$vs_tmp_basename = tempnam($vs_tilepic_tmpdir, 'tpc_rotate_');
 						$vs_tmp_fname = $vs_tmp_basename.'.jpg';
 						if (!($this->_imageMagickProcess($vs_filepath, $vs_tmp_fname, array(
 								array(
@@ -666,7 +666,7 @@ class TilepicParser {
 				if ($this->debug) { print "RESIZE layer $l TO $image_width x $image_height \n";}
 				
 				
-				$vs_tmp_basename = tempnam($vs_tilepic_tmpdir, 'tpc_');
+				$vs_tmp_basename = tempnam($vs_tilepic_tmpdir, 'tpc_layer_scale_');
 				$vs_tmp_fname = $vs_tmp_basename.'.jpg';
 				if (!($this->_imageMagickProcess($vs_filepath, $vs_tmp_fname, array(
 						array(
@@ -688,7 +688,7 @@ class TilepicParser {
 			
 			$layer_list[] = array();
 			while($y < $image_height) {
-				$vs_tmp_basename = tempnam($vs_tilepic_tmpdir, 'tpc_');
+				$vs_tmp_basename = tempnam($vs_tilepic_tmpdir, 'tpc_tile_');
 				$vs_tmp_fname = $vs_tmp_basename.'.jpg';
 				if (!($this->_imageMagickProcess($vs_filepath, $vs_tmp_fname, array(
 						array(
@@ -704,12 +704,15 @@ class TilepicParser {
 					),
 					$pa_options["quality"]
 				))) {
-					$this->error = "Couldn't scale image";
+					$this->error = "Couldn't tile image";
+					@unlink($vs_tmp_fname);
+					@unlink($vs_tmp_basename);
 					return false;
 				}
 				
 				$vs_tile = file_get_contents($vs_tmp_fname);
 				@unlink($vs_tmp_fname);
+				@unlink($vs_tmp_basename);
 				
 				$layer_list[sizeof($layer_list)-1][] = $vs_tile;
 				$x += $pa_options["tile_width"];
@@ -832,7 +835,7 @@ class TilepicParser {
         	$image_width *= $pa_options["scale_factor"];
         	$image_height *= $pa_options["scale_factor"];
 			
-			$vs_tmp_fname = tempnam($vs_tilepic_tmpdir, 'tpc_');
+			$vs_tmp_fname = tempnam($vs_tilepic_tmpdir, 'tpc_scale_');
 			if (!($this->_CoreImageProcess($vs_filepath, $vs_tmp_fname, array(
 					array(
 						'op' => 'size',
@@ -868,7 +871,7 @@ class TilepicParser {
 					}
 					
 					if ($vn_orientation_rotate) {
-						$vs_tmp_basename = tempnam($vs_tilepic_tmpdir, 'tpc_');
+						$vs_tmp_basename = tempnam($vs_tilepic_tmpdir, 'tpc_rotate_');
 						$vs_tmp_fname = $vs_tmp_basename.'.jpg';
 						if (!($this->_CoreImageProcess($vs_filepath, $vs_tmp_fname, array(
 								array(
@@ -1010,7 +1013,7 @@ class TilepicParser {
 					
 					foreach($tile_name_list as $vs_tmp_fname) {
 						$vs_tile = file_get_contents($vs_tmp_fname);
-						unlink($vs_tmp_fname);
+						@unlink($vs_tmp_fname);
 						$layer_list[sizeof($layer_list)-1][] = $vs_tile;
 						
 						$tile_name_list = array();

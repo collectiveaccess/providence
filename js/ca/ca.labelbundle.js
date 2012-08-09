@@ -116,7 +116,9 @@ var caUI = caUI || {};
 				}
 				
 				defaultLocaleSelectedIndex = i;
-				break;
+				if (isNew && localeList[i].value == options.defaultLocaleID) {
+					break;
+				}
 			}
 			
 			// set default values for <select> elements

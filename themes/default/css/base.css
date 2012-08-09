@@ -1831,7 +1831,18 @@ table.representationAnnotationListItem {
 	height: 100%;
 	overflow: auto;
 	text-align: center;
+	position: relative;
 }
+
+#caMediaPanelProgress {
+	display: none;
+	font-size:36px;
+	font-weight: bold;
+	text-align: center;
+	width: 300px;
+	height: 50px;
+}
+
 div.caMediaOverlayControls {
 	background-color: #000;
 	color:#FFF;
@@ -1878,12 +1889,85 @@ div.caMediaOverlayControls .objectInfo{
 	width:40%;
 	float:left;
 }
+
 div.caMediaOverlayControls .repNav {
+	font-size: 12px;
+	width: 80px;
 	float:left;
-	width:16%;
+}
+
+div.caMediaOverlayControls .caRepTools {
+	position: relative;
+	float: right;
 	padding: 0px 2% 0px 2%;
 	text-align:center;
 	color:#FFF;
+}
+#caRepToolsPanel {
+	background: #000;
+	display:none; 
+	width:540px; 
+	height: 160px; 
+	opacity: 0.75;
+	position: absolute;
+	bottom: 16px;
+	right: 0px;
+}
+
+#caRepToolsPanel .caRepToolsClose{
+	float:right;
+	width:15px;
+	height:16px;
+	background-image:url("../graphics/buttons/x_white.png");
+	margin: 10px 10px 0px 20px;
+}
+#caRepRotation90CCW, #caRepRotation180, #caRepRotation90CW {
+	color: #000000;
+}
+
+#caRepToolsRotateAngleControl {
+	float: left;
+	width: 100px;
+	
+	text-align: left;
+	font-size: 14px;
+	margin: 1px solid #cc0000;
+}
+
+#caRepToolsRotateControlButtons {
+	float: left;
+	width: 100px;
+	height: 75px; 
+}
+
+#caRepToolsRotateControlButtons a {
+	color: #000000;
+}
+
+#caRepToolsRotateControlButtons a:hover {
+	color: #cc0000;
+}
+
+#caRepToolsRotateProgress {
+	position: absolute;
+	top: 30px;
+	right: 10px;
+	width: 260px;
+	height: 80px;
+	opacity: 0.9;
+	
+	display: none;
+	padding: 20px;
+	
+	font-size:18px;
+	font-weight: bold;
+	text-align: center;
+}
+
+#caRepToolsRotateProgressMessage {
+	font-weight: bold;
+	font-size: 14px;
+	text-align: center;
 }
 
 .caAudioPlayer {
@@ -2219,7 +2303,7 @@ div.hierarchyBrowserLevel {
 	top: 0px;
 	width: 230px;
 	height: 100%;
-	padding: 0px;
+	padding: 0px 10px 0px 0px;
 	margin: 0px;
 	border: 1px solid #cccccc; 
 	background: #FFFFFF;
@@ -3828,10 +3912,6 @@ div.preferenceSectionDivider {
 
 .searchReindexTableProgressGroup {
 	margin-bottom: 10px;
-}
-
-.searchReindexRowProgressGroup {
-
 }
 
 a.caDeleteLabelButton {

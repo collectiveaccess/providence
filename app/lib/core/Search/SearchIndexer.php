@@ -233,14 +233,14 @@ class SearchIndexer extends SearchBase {
 			$this->opo_engine->optimizeIndex($vn_table_num);
 			
 			if ($pb_display_progress) {
-				print "\n".str_repeat(" ", 4)."Done! [Indexing for ".$vs_table." took ".((float)$t_table_timer->getTime(4))." seconds]\n";
+				print "\n".str_repeat(" ", 4)."Done! [Indexing for ".$vs_table." took ".caFormatInterval((float)$t_table_timer->getTime(4))."]\n";
 
 			}
 			$vn_tc++;
 		}
 		
 		if ($pb_display_progress) {
-			print "\n\nDone! [Indexing for ".join(", ", $va_names)." took ".((float)$t_timer->getTime(4))." seconds]\n";
+			print "\n\nDone! [Indexing for ".join(", ", $va_names)." took ".caFormatInterval((float)$t_timer->getTime(4))."]\n";
 		}
 		if ($ps_callback) { 
 			$ps_callback(
@@ -458,10 +458,11 @@ class SearchIndexer extends SearchBase {
 									// we should also index the text of sub-element lists, but it's not clear that it is a good idea yet. The list_id's of
 									// sub-elements *are* indexed however, so advanced search forms passing ids instead of text will work.
 									$va_tmp = array();
-									$va_attributes = $t_subject->getAttributesByElement($va_matches[1], array('row_id' => $pn_subject_row_id));
-									foreach($va_attributes as $vo_attribute) {
-										foreach($vo_attribute->getValues() as $vo_value) {
-											$va_tmp[$vo_attribute->getAttributeID()] = $vo_value->getDisplayValue();
+									if (is_array($va_attributes = $t_subject->getAttributesByElement($va_matches[1], array('row_id' => $pn_subject_row_id)))) {
+										foreach($va_attributes as $vo_attribute) {
+											foreach($vo_attribute->getValues() as $vo_value) {
+												$va_tmp[$vo_attribute->getAttributeID()] = $vo_value->getDisplayValue();
+											}
 										}
 									}
 									
@@ -485,6 +486,7 @@ class SearchIndexer extends SearchBase {
 									break;
 								default:
 									$va_attributes = $t_subject->getAttributesByElement($va_matches[1], array('row_id' => $pn_subject_row_id));
+									if (!is_array($va_attributes)) { break; }
 									foreach($va_attributes as $vo_attribute) {
 										foreach($vo_attribute->getValues() as $vo_value) {
 											//if the field is a daterange type get content from start and end fields

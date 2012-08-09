@@ -170,6 +170,9 @@ class WLPlugMediaAudio Extends WLPlug Implements IWLPlugMedia {
 			}
 		}
 		
+		if ($this->opb_mediainfo_available) { 
+			$va_status['notices'][] = _t("MediaInfo will be used to extract metadata from video files.");
+		}
 		return $va_status;
 	}
 	# ------------------------------------------------
@@ -186,11 +189,7 @@ class WLPlugMediaAudio Extends WLPlug Implements IWLPlugMedia {
 				$info["mime_type"] = 'audio/x-wav';
 			}
 			$this->handle = $this->ohandle = $info;
-			if($this->opb_mediainfo_available){
-				$this->metadata = caExtractMetadataWithMediaInfo($this->ops_mediainfo_path, $filepath);
-			} else {
-				$this->metadata = $info;
-			}
+			$this->metadata = $info;	// populate with getID3 data because it's handy
 			return $info["mime_type"];
 		} else {
 			// is it Ogg?
@@ -276,6 +275,12 @@ class WLPlugMediaAudio Extends WLPlug Implements IWLPlugMedia {
 			}
 			
 			$this->handle = $this->ohandle = $info;
+			
+			if($this->opb_mediainfo_available){
+				$this->metadata = caExtractMetadataWithMediaInfo($this->ops_mediainfo_path, $filepath);
+			} else {
+				$this->metadata = $this->handle;
+			}
 			
 			if (!$this->handle['mime_type']) {
 				// is it Ogg?
