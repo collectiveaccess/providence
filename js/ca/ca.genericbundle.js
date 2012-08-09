@@ -157,9 +157,9 @@ var caUI = caUI || {};
 			var jElement = jQuery(this.container + ' textarea.' + (isNew ? this.templateClassName : this.initialValueTemplateClassName)).template(templateValues); 
 			
 			if ((this.addMode == 'prepend') && isNew) {	// addMode only applies to newly created bundles
-				jQuery(this.container + " ." + this.itemListClassName).prepend(jQuery(jElement).html());
+				jQuery(this.container + " ." + this.itemListClassName).prepend(jElement);
 			} else {
-				jQuery(this.container + " ." + this.itemListClassName).append(jQuery(jElement).html());
+				jQuery(this.container + " ." + this.itemListClassName).append(jElement);
 			}
 
 			if (this.onInitializeItem && (initialValues && !initialValues['_handleAsNew'])) {
