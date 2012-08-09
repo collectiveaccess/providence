@@ -284,6 +284,7 @@
 			$this->request->session->setVar('caDocumentViewerSectionCache', $va_section_cache);
 			
 			print $o_view->render('bookviewer_html.php');
+			return;
 		} else {
 		
 			if (!$vb_no_controls) {
@@ -345,7 +346,7 @@
 ?>
 	</div><!-- end caMediaOverlayControls -->
 <?php
-			}
+	}
 ?>
 	<div id="<?php print ($vs_display_type == 'media_overlay') ? 'caMediaOverlayContent' : 'caMediaDisplayContent'; ?>">
 <?php
@@ -356,9 +357,10 @@
 		'viewer_base_url' => $this->request->getBaseUrlPath()
 	)));
 	# --- should the media be clickable to open the overlay?
-	if($va_display_options['no_overlay'] || $vs_display_type == 'media_overlay'){
+	if($va_display_options['no_overlay'] || ($vs_display_type == 'media_overlay') || ($vs_display_type == 'media_editor')){
 		print $vs_tag;
 	}else{
 		print "<a href='#' onclick='caMediaPanel.showPanel(\"".caNavUrl($this->request, 'Detail', 'Object', 'GetRepresentationInfo', array('object_id' => $t_object->getPrimaryKey(), 'representation_id' => $t_rep->getPrimaryKey()))."\"); return false;' >".$vs_tag."</a>";
 	}
 ?>
+	</div>

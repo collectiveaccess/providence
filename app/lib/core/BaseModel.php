@@ -4262,7 +4262,16 @@ class BaseModel extends BaseObject {
 	}
 	# --------------------------------------------------------------------------------
 	/**
-	 * Apply media transformation to media in specified field of current loaded row. The 
+	 * Apply media transformation to media in specified field of current loaded row. When a transformation is applied
+	 * it is applied to all versions, including the "original." A copy of the original is stashed in a "virtual" version named "_undo_"
+	 * to make it possible to recover the original media, if desired, by calling removeMediaTransformations().
+	 *
+	 * @param string $ps_field The name of the media field
+	 * @param string $ps_op A valid media transformation op code, as defined by the media plugin handling the media being transformed.
+	 * @param array $pa_params The parameters for the op code, as defined by the media plugin handling the media being transformed.
+	 * @param array $pa_options An array of options. No options are current implemented.
+	 *
+	 * @return bool True on success, false if an error occurred.
 	 */
 	public function applyMediaTransformation ($ps_field, $ps_op, $pa_params, $pa_options=null) {
 		$va_media_info = $this->getMediaInfo($ps_field);
@@ -4275,17 +4284,19 @@ class BaseModel extends BaseObject {
 		// TODO: Check if transformation valid for this media
 		
 		// Copy original into "undo" slot (if undo slot is empty)
-		$vs_undo_path = (!isset($va_media_info['_undo_'])) ? $vs_path : null;
+		$vs_undo_path = (!isset($va_media_info['_undo_'])) ? $vs_path : $this->getMediaPath($ps_field, '_undo_');
 		
 		// Apply transformation to original
 		$o_media = new Media();
 		$o_media->read($vs_path);
 		$o_media->transform($ps_op, $pa_params);
-		$o_media->write('/tmp/rottmp', $o_media->get('mimetype'), array());
+		
+		$vs_tmp_basename = tempnam(caGetTempDirPath(), 'ca_media_rotation_tmp');
+		$o_media->write($vs_tmp_basename, $o_media->get('mimetype'), array());
 		
 		// Regenerate derivatives 
 		$this->setMode(ACCESS_WRITE);
-		$this->set($ps_field, '/tmp/rottmp.'.$va_media_info['original']['EXTENSION'], $vs_undo_path ? array('undo' => $vs_undo_path) : null);
+		$this->set($ps_field, $vs_tmp_basename.".".$va_media_info['original']['EXTENSION'], $vs_undo_path ? array('undo' => $vs_undo_path) : null);
 		$this->setAsChanged($ps_field);
 		$this->update();
 		
@@ -4293,7 +4304,12 @@ class BaseModel extends BaseObject {
 	}
 	# --------------------------------------------------------------------------------
 	/**
-	 * Remove media transformation to media in specified field of current loaded row. 
+	 * Remove all media transformation to media in specified field of current loaded row by reverting to the unmodified media.
+	 *
+	 * @param string $ps_field The name of the media field
+	 * @param array $pa_options An array of options. No options are current implemented.
+	 *
+	 * @return bool True on success, false if an error occurred.
 	 */
 	public function removeMediaTransformations($ps_field, $pa_options=null) {
 		$va_media_info = $this->getMediaInfo($ps_field);
@@ -4313,11 +4329,16 @@ class BaseModel extends BaseObject {
 		$this->set($ps_field, $vs_undo_path ? $vs_undo_path : $vs_path);
 		$this->setAsChanged($ps_field);
 		$this->update();
+		
 		return $this->numErrors() ? false : true;
 	}
 	# --------------------------------------------------------------------------------
 	/**
-	 * 
+	 * Check if media in specified field of current loaded row has undoable transformation applied
+	 *
+	 * @param string $ps_field The name of the media field
+	 *
+	 * @return bool True on if there are undoable changes, false if not
 	 */
 	public function mediaHasUndo($ps_field) {
 		$va_media_info = $this->getMediaInfo($ps_field);
