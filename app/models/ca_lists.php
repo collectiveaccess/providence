@@ -217,9 +217,10 @@ class ca_lists extends BundlableLabelableBaseModelWithAttributes {
 	static $s_list_item_cache = array();
 	static $s_list_id_cache = array();
 	static $s_list_code_cache = array();
-	static $s_list_item_display_cache = array();				// cache for results of getItemFromListForDisplayByItemID()
+	static $s_list_item_display_cache = array();			// cache for results of getItemFromListForDisplayByItemID()
 	static $s_list_item_value_display_cache = array();		// cache for results of getItemFromListForDisplayByItemValue()
-	static $s_list_item_get_cache = array();						// cache for results of getItemFromList()
+	static $s_list_item_get_cache = array();				// cache for results of getItemFromList()
+	static $s_item_id_cache = array();						// cache for ca_lists::getItemID()
 	
 	# ------------------------------------------------------
 	# $FIELDS contains information about each field in the table. The order in which the fields
@@ -1497,6 +1498,27 @@ class ca_lists extends BundlableLabelableBaseModelWithAttributes {
 			}
 		}
 		return array_keys($va_item_ids);
+	}
+	# ------------------------------------------------------
+	/**
+	 *
+	 */
+	static public function getItemID($pm_list_name_or_id, $ps_idno, $pa_options=null) {
+		if ((!isset($pa_options['noCache']) || !isset($pa_options['noCache'])) && isset(ca_lists::$s_item_id_cache[$pm_list_name_or_id][$ps_idno])) {
+			return ca_lists::$s_item_id_cache[$pm_list_name_or_id][$ps_idno];
+		}
+		$vn_item_id = null;
+		if ($vn_list_id = ca_lists::getListID($pm_list_name_or_id)) {
+			$o_db = new Db();
+			$qr_res = $o_db->query("SELECT item_id FROM ca_list_items WHERE list_id = ? AND idno = ?", (int)$vn_list_id, (string)$ps_idno);
+			
+			if ($qr_res->nextRow()) {
+				$vn_item_id = (int)$qr_res->get('item_id');
+			}
+			ca_lists::$s_item_id_cache[$vn_list_id][$ps_idno] = $vn_item_id;
+		}
+		ca_lists::$s_item_id_cache[$pm_list_name_or_id][$ps_idno] = $vn_item_id;
+		return $vn_item_id;
 	}
 	# ------------------------------------------------------
 }

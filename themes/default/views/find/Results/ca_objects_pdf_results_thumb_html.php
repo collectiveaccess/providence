@@ -124,7 +124,7 @@ $tr_count = 0;
 <?php
 		}
 		
-		if (($tr_count < 4) && ($tr_count != 0)){print "</tr>";}
+		if (($tr_count <= 4) && ($tr_count != 0)){print "</tr>";}
 		$vn_start = $vn_start + 6;
 ?>
 

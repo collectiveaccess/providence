@@ -192,6 +192,9 @@ class WLPlugMediaVideo Extends WLPlug Implements IWLPlugMedia {
 			}
 		}
 		
+		if ($this->opb_mediainfo_available) { 
+			$va_status['notices'][] = _t("MediaInfo will be used to extract metadata from video files.");
+		}
 		return $va_status;
 	}
 	# ------------------------------------------------
@@ -216,11 +219,7 @@ class WLPlugMediaVideo Extends WLPlug Implements IWLPlugMedia {
 			}
 			
 			unset($info['quicktime']['moov']);	// remove voluminous parse of Quicktime files from metadata
-			if($this->opb_mediainfo_available){
-				$this->metadata = caExtractMetadataWithMediaInfo($this->ops_mediainfo_path, $filepath);
-			} else {
-				$this->metadata = $info;
-			}
+			$this->metadata = $info;	// populate with getID3 data because it's handy
 			
 			return $info["mime_type"];
 		} else {
@@ -332,6 +331,11 @@ class WLPlugMediaVideo Extends WLPlug Implements IWLPlugMedia {
 			$ID3->option_max_2gb_check = false;
 			$this->handle = $this->ohandle = $ID3->analyze($filepath);
 			
+			if($this->opb_mediainfo_available){
+				$this->metadata = caExtractMetadataWithMediaInfo($this->ops_mediainfo_path, $filepath);
+			} else {
+				$this->metadata = $this->handle;
+			}
 			if (!$this->handle['mime_type']) {
 				// is it Ogg?
 				$info = new OggParser($filepath);

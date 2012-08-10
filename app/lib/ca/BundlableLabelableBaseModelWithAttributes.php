@@ -109,10 +109,14 @@ class BundlableLabelableBaseModelWithAttributes extends LabelableBaseModelWithAt
 		if ($this->getTypeFieldName() && !(!$vn_type_id && $va_field_info['IS_NULL'])) {
 			if (!($vn_ret = $t_list->itemIsEnabled($this->getTypeListCode(), $vn_type_id))) {
 				$va_type_list = $this->getTypeList(array('directChildrenOnly' => false, 'returnHierarchyLevels' => true, 'item_id' => null));
-				if(is_null($vn_ret)) {
-					$this->postError(2510, _t("<em>%1</em> is invalid", $va_type_list[$vn_type_id]['name_singular']), "BundlableLabelableBaseModelWithAttributes->insert()");
+				if (!isset($va_type_list[$vn_type_id])) {
+					$this->postError(2510, _t("Type must be specified"), "BundlableLabelableBaseModelWithAttributes->insert()");
 				} else {
-					$this->postError(2510, _t("<em>%1</em> is not enabled", $va_type_list[$vn_type_id]['name_singular']), "BundlableLabelableBaseModelWithAttributes->insert()");
+					if(is_null($vn_ret)) {
+						$this->postError(2510, _t("<em>%1</em> is invalid", $va_type_list[$vn_type_id]['name_singular']), "BundlableLabelableBaseModelWithAttributes->insert()");
+					} else {
+						$this->postError(2510, _t("<em>%1</em> is not enabled", $va_type_list[$vn_type_id]['name_singular']), "BundlableLabelableBaseModelWithAttributes->insert()");
+					}
 				}
 				$vb_error = true;
 			}
@@ -296,6 +300,19 @@ class BundlableLabelableBaseModelWithAttributes extends LabelableBaseModelWithAt
 		$t_dupe->purify($this->purify());
 		$t_dupe->setTransaction($o_t);
 		
+		if($this->isHierarchical()) {
+			if (!$this->get($this->getProperty('HIERARCHY_PARENT_ID_FLD'))) {
+				if ($this->getHierarchyType() == __CA_HIER_TYPE_ADHOC_MONO__) {	// If we're duping the root of an adhoc hierarchy then we need to set the HIERARCHY_ID_FLD to null
+					$this->set($this->getProperty('HIERARCHY_ID_FLD'), null);
+				} else {
+					// Don't allow duping of hierarchy roots for non-adhoc hierarchies
+					if ($vb_we_set_transaction) { $this->removeTransaction(false);}
+					$this->postError(2055, _t("Cannot duplicate root of hierarchy"), "BundlableLabelableBaseModelWithAttributes->duplicate()");
+					return null;
+				}
+			}
+		}
+
 		// duplicate primary record + intrinsics
 		$va_field_list = $this->getFormFields(true, true);
 		foreach($va_field_list as $vn_i => $vs_field) {
@@ -340,6 +357,7 @@ class BundlableLabelableBaseModelWithAttributes extends LabelableBaseModelWithAt
 		$t_dupe->setMode(ACCESS_WRITE);
 		
 		if (isset($pa_options['user_id']) && $pa_options['user_id'] && $t_dupe->hasField('user_id')) { $t_dupe->set('user_id', $pa_options['user_id']); }
+		
 		$t_dupe->insert();
 		
 		if ($t_dupe->numErrors()) {
@@ -402,6 +420,13 @@ class BundlableLabelableBaseModelWithAttributes extends LabelableBaseModelWithAt
 			$pa_fields = array($pa_fields => $pm_value);
 		}
 		
+		if (($vs_type_list_code = $this->getTypeListCode()) && ($vs_type_field_name = $this->getTypeFieldName())) {
+			if (isset($pa_fields[$vs_type_field_name]) && !is_numeric($pa_fields[$vs_type_field_name])) {
+				if ($vn_id = ca_lists::getItemID($vs_type_list_code, $pa_fields[$vs_type_field_name])) {
+					$pa_fields[$vs_type_field_name] = $vn_id;
+				}
+			}
+		}
 		if ($this->getPrimaryKey() && isset($pa_fields[$this->getTypeFieldName()]) && !defined('__CA_ALLOW_SETTING_OF_PRIMARY_KEYS__')) {
 			$this->postError(2520, _t("Type id cannot be set after insert"), "BundlableLabelableBaseModelWithAttributes->set()");
 			return false;
@@ -3708,9 +3733,9 @@ $pa_options["display_form_field_tips"] = true;
 	
 		if (!($vs_search_result_class = $t_instance->getProperty('SEARCH_RESULT_CLASSNAME'))) { return null; }
 		require_once(__CA_LIB_DIR__.'/ca/Search/'.$vs_search_result_class.'.php');
-		$o_data = new WLPlugSearchEngineCachedResult($pa_ids, array(), $t_instance->primaryKey());
+		$o_data = new WLPlugSearchEngineCachedResult($pa_ids, $t_instance->tableNum());
 		$o_res = new $vs_search_result_class();
-		$o_res->init($t_instance->tableNum(), $o_data, array());
+		$o_res->init($o_data, array());
 		
 		return $o_res;
 	}
@@ -3733,9 +3758,9 @@ $pa_options["display_form_field_tips"] = true;
 	
 		if (!($vs_search_result_class = $t_instance->getProperty('SEARCH_RESULT_CLASSNAME'))) { return null; }
 		require_once(__CA_LIB_DIR__.'/ca/Search/'.$vs_search_result_class.'.php');
-		$o_data = new WLPlugSearchEngineCachedResult($pa_ids, array(), $t_instance->primaryKey());
+		$o_data = new WLPlugSearchEngineCachedResult($pa_ids, $t_instance->tableNum());
 		$o_res = new $vs_search_result_class();
-		$o_res->init($t_instance->tableNum(), $o_data, array());
+		$o_res->init($o_data, array());
 		
 		return $o_res;
 	}

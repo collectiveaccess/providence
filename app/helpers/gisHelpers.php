@@ -517,6 +517,7 @@
 						'max_latitude' =>  ($vn_lat1 < $vn_lat2) ? $vn_lat2 : $vn_lat1,
 						'min_longitude' =>  ($vn_long1 > $vn_long2) ? $vn_long2 : $vn_long1,
 						'max_longitude' =>  ($vn_long1 < $vn_long2) ? $vn_long2 : $vn_long1,
+						'distance' => $vn_length
 					);
 					
 					break;

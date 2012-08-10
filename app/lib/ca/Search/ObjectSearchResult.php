@@ -39,27 +39,22 @@ include_once(__CA_LIB_DIR__."/ca/Search/BaseSearchResult.php");
 class ObjectSearchResult extends BaseSearchResult {
 	# -------------------------------------
 	/**
-	 * Name of labels table for this type of search subject (eg. for ca_objects, the label table is ca_object_labels)
+	 * Name of table for this type of search subject
 	 */
-	protected $ops_label_table_name = 'ca_object_labels';
-	# -------------------------------------
-	/**
-	 * Name of field in labels table to use for display for this type of search subject (eg. for ca_objects, the label display field is 'name')
-	 */
-	protected $ops_label_display_field = 'name';
+	protected $ops_table_name = 'ca_objects';
 	# -------------------------------------
 	/**
 	 * Constructor
 	 */
-	public function __construct() {
-		parent::__construct();
+	public function __construct($po_engine_result=null, $pa_tables=null) {
+		parent::__construct($po_engine_result=null, $pa_tables=null);
 	}
 	# -------------------------------------
 	/**
 	 * Override init to set ca_representations join params
 	 */
-	public function init($pn_subject_table_num, $po_engine_result, $pa_tables) {
-		parent::init($pn_subject_table_num, $po_engine_result, $pa_tables);
+	public function init($po_engine_result, $pa_tables) {
+		parent::init($po_engine_result, $pa_tables);
 		$this->opa_tables['ca_object_representations'] = array(
 			'fieldList' => array('ca_object_representations.media', 'ca_object_representations.representation_id', 'ca_object_representations.access'),
 			'joinTables' => array('ca_objects_x_object_representations'),

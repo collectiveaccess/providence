@@ -203,6 +203,14 @@
 					'item_id' => null
 				);
  			} 
+ 			
+ 			if (!is_numeric($ps_value)) {
+ 				// try to convert idno to item_id
+ 				if ($vn_id = ca_lists::getItemID($pa_element_info['list_id'], $ps_value)) {
+ 					$ps_value = $vn_id;
+ 				}
+ 			}
+ 			
  			$t_item = new ca_list_items((int)$ps_value);
  			if (!$t_item->getPrimaryKey()) {
  				if ($ps_value) {

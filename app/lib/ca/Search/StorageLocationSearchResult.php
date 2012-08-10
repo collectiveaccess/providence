@@ -37,18 +37,12 @@
 include_once(__CA_LIB_DIR__."/ca/Search/BaseSearchResult.php");
 
 class StorageLocationSearchResult extends BaseSearchResult {
-	
+	# -------------------------------------
 	/**
-	 * Name of labels table for this type of search subject (eg. for ca_objects, the label table is ca_object_labels)
+	 * Name of table for this type of search subject
 	 */
-	protected $ops_label_table_name = 'ca_storage_location_labels';
-	
-	/**
-	 * Name of field in labels table to use for display for this type of search subject (eg. for ca_objects, the label display field is 'name')
-	 */
-	protected $ops_label_display_field = 'name';
-
-
+	protected $ops_table_name = 'ca_storage_locations';
+	# -------------------------------------
 	/**
 	 * Constructor
 	 */

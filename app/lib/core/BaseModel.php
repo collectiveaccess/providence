@@ -1051,11 +1051,17 @@ class BaseModel extends BaseObject {
 
 						if (($vm_value !== "") || ($this->getFieldInfo($vs_field, "IS_NULL") && ($vm_value == ""))) {
 							if ($vm_value) {
-								$vm_orig_value = $vm_value;
-								$vm_value = preg_replace("/[^\d-.]+/", "", $vm_value); # strip non-numeric characters
-								if (!preg_match("/^[\-]{0,1}[\d.]+$/", $vm_value)) {
-									$this->postError(1100,_t("'%1' for %2 is not numeric", $vm_orig_value, $vs_field),"BaseModel->set()");
-									return "";
+								if (($vs_list_code = $this->getFieldInfo($vs_field, "LIST_CODE")) && (!is_numeric($vm_value))) {	// translate ca_list_item idno's into item_ids if necessary
+									if ($vn_id = ca_lists::getItemID($vs_list_code, $vm_value)) {
+										$vm_value = $vn_id;
+									}
+								} else {
+									$vm_orig_value = $vm_value;
+									$vm_value = preg_replace("/[^\d-.]+/", "", $vm_value); # strip non-numeric characters
+									if (!preg_match("/^[\-]{0,1}[\d.]+$/", $vm_value)) {
+										$this->postError(1100,_t("'%1' for %2 is not numeric", $vm_orig_value, $vs_field),"BaseModel->set()");
+										return "";
+									}
 								}
 							}
 							$this->_FIELD_VALUES[$vs_field] = $vm_value;
@@ -1352,7 +1358,7 @@ class BaseModel extends BaseObject {
 						break;
 				}
 			} else {
-				$this->postError(710,_t("%1' does not exist in this object", $vs_field),"BaseModel->set()");
+				$this->postError(710,_t("'%1' does not exist in this object", $vs_field),"BaseModel->set()");
 				return false;
 			}
 		}
@@ -2734,10 +2740,20 @@ class BaseModel extends BaseObject {
 	 * to specify which tables to omit when deleting related stuff
 	 */
 	public function delete ($pb_delete_related=false, $pa_options=null, $pa_fields=null, $pa_table_list=null) {
+		$vn_id = $this->getPrimaryKey();
 		if ($this->hasField('deleted') && (!isset($pa_options['hard']) || !$pa_options['hard'])) {
 			$this->setMode(ACCESS_WRITE);
 			$this->set('deleted', 1);
-			return $this->update(array('force' => true));
+			if ($vn_rc = $this->update(array('force' => true))) {
+				if(!defined('__CA_DONT_DO_SEARCH_INDEXING__')) {
+					if (!BaseModel::$search_indexer) {
+						BaseModel::$search_indexer = new SearchIndexer($this->getDb());
+					}
+					BaseModel::$search_indexer->startRowUnIndexing($this->tableNum(), $vn_id);
+					BaseModel::$search_indexer->commitRowUnIndexing($this->tableNum(), $vn_id);
+				}
+			}
+			return $vn_rc;
 		}
 		$this->clearErrors();
 		if ((!$this->getPrimaryKey()) && (!is_array($pa_fields))) {	# is there a record loaded?
@@ -2810,7 +2826,6 @@ class BaseModel extends BaseObject {
 			#
 			# --- delete search index entries
 			#
-			$vn_id = $this->getPrimaryKey();
 			
 			// TODO: FIX THIS ISSUE!
 			// NOTE: we delete the indexing here, before we actually do the 
@@ -7310,6 +7325,7 @@ $pa_options["display_form_field_tips"] = true;
 						$this->errors = $t_item_rel->errors;
 						return false;
 					}
+					break;
 				case 2:		// many-to-one relationship
 					if ($this->tableName() == $va_rel_info['rel_keys']['one_table']) {
 						if ($t_item_rel->load($pn_rel_id)) {

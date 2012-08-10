@@ -529,5 +529,3 @@ class Db extends DbBase {
 		unset($this->opo_db);
 	}
 }
-?>
-

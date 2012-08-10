@@ -46,12 +46,10 @@ class WLPlugSearchEngineSqlSearchResult extends WLPlug implements IWLPlugSearchE
 	private $opn_current_row;
 	private $opo_subject_instance;
 	
-	private $opa_query_terms;
-	
 	# -------------------------------------------------------
-	public function __construct($pa_hits, $pa_query_terms) {
+	public function __construct($pa_hits, $pn_table_num) {
+		$this->opn_subject_tablenum = $pn_table_num;
 		$this->setHits($pa_hits);
-		$this->opa_query_terms = $pa_query_terms;
 	}
 	# -------------------------------------------------------
 	public function setHits($pa_hits) {
@@ -59,10 +57,9 @@ class WLPlugSearchEngineSqlSearchResult extends WLPlug implements IWLPlugSearchE
 		$this->opn_current_row = -1;
 		
 		if (sizeof($this->opa_hits)) {
-			$va_tmp = explode('/', $this->opa_hits[0]['subject_id']);
-			
 			$o_dm = Datamodel::load();
-			$this->opo_subject_instance = $o_dm->getInstanceByTableNum($va_tmp[0], true);
+			
+			$this->opo_subject_instance = $o_dm->getInstanceByTableNum($this->opn_subject_tablenum, true);
 			$this->ops_subject_primary_key = $this->opo_subject_instance->primaryKey();
 			$this->ops_subject_table_name = $this->opo_subject_instance->tableName();
 		}
@@ -112,13 +109,6 @@ class WLPlugSearchEngineSqlSearchResult extends WLPlug implements IWLPlugSearchE
 			if (!is_null($vn_limit) && ($vn_c >= $vn_limit)) { break; }
 		}
 		return $va_ids;
-	}
-	# -------------------------------------------------------
-	/**
-	 * Returns an array of terms used in the query (does *not* include access points, boolean, punctuation, etc.)
-	 */
-	public function getQueryTerms() {
-		return $this->opa_query_terms;
 	}
 	# -------------------------------------------------------
 	public function __destruct() {
