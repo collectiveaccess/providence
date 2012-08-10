@@ -1825,7 +1825,7 @@ table.representationAnnotationListItem {
 	height: 100%;
 }
 
-#caMediaOverlayContent {
+#caMediaDisplayContent, #caMediaOverlayContent {
 	margin: 0px;
 	width: 100%;
 	height: 100%;
