@@ -1341,18 +1341,35 @@ class ca_commerce_orders extends BaseModel {
 	 	
 	 	$va_item_to_rep_ids = array();
 	 	if (sizeof($va_item_ids)) {
-			$qr_rep_count = $o_db->query("
-				SELECT coixor.item_id, coixor.representation_id, count(*) c
-				FROM ca_commerce_order_items_x_object_representations coixor
-				INNER JOIN ca_object_representations AS o_r ON o_r.representation_id = coixor.representation_id
-				WHERE
-					coixor.item_id IN (?) AND o_r.deleted = 0
-				GROUP BY coixor.item_id
-			", array($va_item_ids));
-			
-			while($qr_rep_count->nextRow()) {
-				$va_rep_counts[(int)$qr_rep_count->get('item_id')] = (int)$qr_rep_count->get('c');
-				$va_item_to_rep_ids[(int)$qr_rep_count->get('item_id')] = (int)$qr_rep_count->get('representation_id');
+	 		if ($this->get('order_type') == 'O') {
+				$qr_rep_count = $o_db->query("
+					SELECT coixor.item_id, coixor.representation_id, count(*) c
+					FROM ca_commerce_order_items_x_object_representations coixor
+					INNER JOIN ca_object_representations AS o_r ON o_r.representation_id = coixor.representation_id
+					WHERE
+						coixor.item_id IN (?) AND o_r.deleted = 0
+					GROUP BY coixor.item_id
+				", array($va_item_ids));
+				
+				while($qr_rep_count->nextRow()) {
+					$va_rep_counts[(int)$qr_rep_count->get('item_id')] = (int)$qr_rep_count->get('c');
+					$va_item_to_rep_ids[(int)$qr_rep_count->get('item_id')] = (int)$qr_rep_count->get('representation_id');
+				}
+			} else {
+				$qr_rep_count = $o_db->query("
+					SELECT o.item_id, coixor.representation_id, count(*) c
+					FROM ca_commerce_order_items o
+					INNER JOIN ca_objects_x_object_representations AS coixor ON o.object_id = coixor.object_id
+					INNER JOIN ca_object_representations AS o_r ON o_r.representation_id = coixor.representation_id
+					WHERE
+						o.item_id IN (?) AND o_r.deleted = 0
+					GROUP BY o.item_id
+				", array($va_item_ids));
+				
+				while($qr_rep_count->nextRow()) {
+					$va_rep_counts[(int)$qr_rep_count->get('item_id')] = (int)$qr_rep_count->get('c');
+					$va_item_to_rep_ids[(int)$qr_rep_count->get('item_id')] = (int)$qr_rep_count->get('representation_id');
+				}
 			}
 			
 			$qr_rep_count = $o_db->query("
