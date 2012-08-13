@@ -123,7 +123,7 @@
 				$this->opo_view->setVar('item_link', $item->link());
 				
 				// Find the image URL in the encoded HTML content...
-				if (preg_match("!(http://icanhascheezburger.files.wordpress.com/[^\"']+)!i", $item->encoded(), $va_matches)) {
+				if (preg_match("!(https://i.chzbgr.com/completestore/[^\"']+)!i", $item->encoded(), $va_matches)) {
 					$vs_url = $va_matches[1];
 					
 					$vn_width = 430;							// force width of image to 430 pixels
