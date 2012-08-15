@@ -961,6 +961,8 @@ class WLPlugMediaImagick Extends WLPlug Implements IWLPlugMedia {
 				$this->handle->levelImage($this->properties['reference-black'], $this->properties['gamma'], $this->properties['reference-white']);
 			}
 			
+			$this->handle->stripImage();	// remove all lingering metadata
+			
 			# write the file
 			try {
 				if ( !$this->handle->writeImage($ps_filepath.".".$ext ) ) {

@@ -65,7 +65,7 @@
 			$t_log = new Eventlog();
 			$o_db = new Db();
 			
-			
+			if (!((bool)$this->opo_config->get('enable_client_services'))) { return true; }
 			
 			// Find any orders with status PROCESSED_AWAITING_MEDIA_ACCESS and fetch media
 			$qr_orders = $o_db->query("
@@ -202,6 +202,8 @@
 					}	
 				}
 			}
+			
+			return true;
 		}
 		# -------------------------------------------------------
 		/**

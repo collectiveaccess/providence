@@ -7426,6 +7426,15 @@ $pa_options["display_form_field_tips"] = true;
 			$pn_type_id = $pm_type_id;
 		}
 		
+		
+		if (!is_numeric($pn_rel_id)) {
+			if ($t_rel_item = $this->_DATAMODEL->getInstanceByTableName($va_rel_info['related_table_name'], true)) {
+				if (($vs_idno_fld = $t_rel_item->getProperty('ID_NUMBERING_ID_FIELD')) && $t_rel_item->load(array($vs_idno_fld => $pn_rel_id))) {
+					$pn_rel_id = $t_rel_item->getPrimaryKey();
+				}
+			}
+		}
+		
 
 		if ($va_rel_info['related_table_name'] == $this->tableName()) {
 			// is self relation

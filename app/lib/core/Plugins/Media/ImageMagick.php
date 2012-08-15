@@ -1034,7 +1034,7 @@ class WLPlugMediaImageMagick Extends WLPlug Implements IWLPlugMedia {
 					'x' => $va_tmp[5],
 					'y' => $va_tmp[6]
 				),
-				'ops' => array(),
+				'ops' => $this->properties["orientation_rotate"] ? array(0 => array('op' => 'strip')) : array(),
 				'faces' => $va_faces,
 				'filepath' => $ps_filepath
 			);
@@ -1044,10 +1044,12 @@ class WLPlugMediaImageMagick Extends WLPlug Implements IWLPlugMedia {
 	# ------------------------------------------------
 	private function _imageMagickWrite($pa_handle, $ps_filepath, $ps_mimetype, $pn_quality=null) {
 		if (caMediaPluginImageMagickInstalled($this->ops_imagemagick_path)) {
-			
 			$va_ops = array();	
 			foreach($pa_handle['ops'] as $va_op) {
 				switch($va_op['op']) {
+					case 'strip':
+						$va_ops['convert'][] = "-strip";
+						break;
 					case 'annotation':
 						$vs_op = '-gravity '.$va_op['position'].' -fill '.str_replace('#', '\\#', $va_op['color']).' -pointsize '.$va_op['size'].' -draw "text '.$va_op['inset'].','.$va_op['inset'].' \''.$va_op['text'].'\'"';
 						
