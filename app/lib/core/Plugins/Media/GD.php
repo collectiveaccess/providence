@@ -131,6 +131,9 @@ class WLPlugMediaGD Extends WLPlug Implements IWLPlugMedia {
 		if (caMediaPluginImagickInstalled()) {	
 			return null;	// don't use GD if Imagick is available
 		} 
+		if (caMediaPluginGmagickInstalled()) {	
+			return null;	// don't use GD if Gmagick is available
+		} 
 		if (caMediaPluginImageMagickInstalled($this->ops_imagemagick_path)) {
 			return null;	// don't use if ImageMagick executables are available
 		}
@@ -160,6 +163,10 @@ class WLPlugMediaGD Extends WLPlug Implements IWLPlugMedia {
 				$va_status['unused'] = true;
 				$va_status['warnings'][] = _t("Didn't load because ImageMagick (command-line) is available and preferred");
 			}
+			if (caMediaPluginGmagickInstalled()) {	
+				$va_status['unused'] = true;
+				$va_status['warnings'][] = _t("Didn't load because Gmagick is available and preferred");
+			} 
 			if (!caMediaPluginGDInstalled()) {
 				$va_status['errors'][] = _t("Didn't load because your PHP install lacks GD support");
 			}

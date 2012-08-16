@@ -204,6 +204,15 @@
 	}
 	# ------------------------------------------------------------------------------------------------
 	/**
+	 * Detects if Gmagick PHP extension is available
+	 * 
+	 * @return boolean - true if available, false if not
+	 */
+	function caMediaPluginGmagickInstalled() {
+		return class_exists('Gmagick') ? true : false;
+	}
+	# ------------------------------------------------------------------------------------------------
+	/**
 	 * Detects if GD PHP extension is available. Return false if GD is installed but lacks JPEG support unless "don't worry about JPEGs" parameter is set to true.
 	 *
 	 * @param boolean $pb_dont_worry_about_jpegs If set will return true if GD is installed without JPEG support; default is to consider JPEG-less GD worthless.

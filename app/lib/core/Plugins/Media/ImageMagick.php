@@ -232,6 +232,10 @@ class WLPlugMediaImageMagick Extends WLPlug Implements IWLPlugMedia {
 			return null;	// don't use if Imagick is available
 		} 
 		
+		if (caMediaPluginGmagickInstalled()) {	
+			return null;	// don't use if Gmagick is available
+		}
+		
 		if (!caMediaPluginImageMagickInstalled($this->ops_imagemagick_path)) {
 			return null;	// don't use if Imagemagick executables are unavailable
 		}
@@ -252,7 +256,11 @@ class WLPlugMediaImageMagick Extends WLPlug Implements IWLPlugMedia {
 			if (caMediaPluginImagickInstalled()) {	
 				$va_status['unused'] = true;
 				$va_status['warnings'][] = _t("Didn't load because Imagick is available and preferred");
-			} 
+			}
+			if (caMediaPluginGmagickInstalled()) {	
+				$va_status['unused'] = true;
+				$va_status['warnings'][] = _t("Didn't load because Gmagick is available and preferred");
+			}
 			if (!caMediaPluginImageMagickInstalled($this->ops_imagemagick_path)) {
 				$va_status['errors'][] = _t("Didn't load because ImageMagick executables cannot be found");
 			}
