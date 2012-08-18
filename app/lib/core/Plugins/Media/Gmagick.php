@@ -35,7 +35,7 @@
   */
  
 /**
- * Plugin for processing images using ImageMagick via the Gmagick PECL extension
+ * Plugin for processing images using GraphicsMagick via the Gmagick PECL extension
 */
 
 include_once(__CA_LIB_DIR__."/core/Plugins/WLPlug.php");
