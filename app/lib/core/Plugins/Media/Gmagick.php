@@ -890,7 +890,7 @@ class WLPlugMediaGmagick Extends WLPlug Implements IWLPlugMedia {
 			$this->handle->setimageformat($this->magick_names[$mimetype]);
 			# set quality
 			if (($this->properties["quality"]) && ($this->properties["mimetype"] != "image/tiff")){ 
-				
+				$this->handle->setcompressionquality($this->properties["quality"]);
 			}
 			
 			$this->handle->setimagebackgroundcolor(new GmagickPixel("#CC0000"));

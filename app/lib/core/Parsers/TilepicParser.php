@@ -1810,6 +1810,7 @@ class TilepicParser {
 				$slice = clone $h;
 				try {
 					$slice->cropimage($wx, $wy, $x, $y);
+					$slice->setcompressionquality($pa_options["quality"]);
 				} catch (Exception $e){
 					$this->error = "Couldn't create tile";
 					return false;
