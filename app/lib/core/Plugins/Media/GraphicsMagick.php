@@ -533,6 +533,7 @@ class WLPlugMediaGraphicsMagick Extends WLPlug Implements IWLPlugMedia {
 				break;
 			# -----------------------
 			case 'WATERMARK':
+				print "invoking watermark code\n";
 				if (!file_exists($parameters['image'])) { break; }
 				$vn_opacity_setting = $parameters['opacity'];
 				if (($vn_opacity_setting < 0) || ($vn_opacity_setting > 1)) {
@@ -550,40 +551,47 @@ class WLPlugMediaGraphicsMagick Extends WLPlug Implements IWLPlugMedia {
 					case 'north_east':
 						$vn_watermark_x = $cw - $vn_watermark_width;
 						$vn_watermark_y = 0;
+						$position = "NorthEast";
 						break;
 					case 'north_west':
 						$vn_watermark_x = 0;
 						$vn_watermark_y = 0;
+						$position = "NorthWest";
 						break;
 					case 'north':
 						$vn_watermark_x = ($cw - $vn_watermark_width)/2;
 						$vn_watermark_y = 0;
+						$position = "North";
 						break;
 					case 'south_east':
 						$vn_watermark_x = $cw - $vn_watermark_width;
 						$vn_watermark_y = $ch - $vn_watermark_height;
+						$position = "SouthEast";
 						break;
 					case 'south':
 						$vn_watermark_x = ($cw - $vn_watermark_width)/2;
 						$vn_watermark_y = $cw - $vn_watermark_width;
+						$position = "South";
 						break;
 					case 'center':
 						$vn_watermark_x = ($cw - $vn_watermark_width)/2;
 						$vn_watermark_y = ($ch - $vn_watermark_height)/2;
+						$position = "Center";
 						break;
 					case 'south_west':
 					default:
 						$vn_watermark_x = $cw - $vn_watermark_width;
 						$vn_watermark_y = $ch - $vn_watermark_height;
+						$position = "SouthWest";
 						break;
 				}
-				
+
 				$this->handle['ops'][] = array(
 					'op' => 'watermark',
 					'opacity' => $vn_opacity_setting,
 					'watermark_width' => $vn_watermark_width,
 					'watermark_height' => $vn_watermark_height,
-					'position' => $parameters['position'],
+					'position' => $position,
 					'position_x' => $vn_watermark_x,
 					'position_y' => $vn_watermark_y,
 					'watermark_image' => $parameters['image']
@@ -823,7 +831,7 @@ class WLPlugMediaGraphicsMagick Extends WLPlug Implements IWLPlugMedia {
 				return false;
 			} 
 					
-			if (!$this->_imageMagickWrite($this->handle, $filepath.".".$ext, $mimetype, $this->properties["quality"])) {
+			if (!$this->_graphicsMagickWrite($this->handle, $filepath.".".$ext, $mimetype, $this->properties["quality"])) {
 				$this->postError(1610, _t("%1: %2", $reason, $description), "WLPlugImageMagick->write()");
 				return false;
 			}
@@ -1004,7 +1012,7 @@ class WLPlugMediaGraphicsMagick Extends WLPlug Implements IWLPlugMedia {
 		return null;
 	}
 	# ------------------------------------------------
-	private function _imageMagickWrite($pa_handle, $ps_filepath, $ps_mimetype, $pn_quality=null) {
+	private function _graphicsMagickWrite($pa_handle, $ps_filepath, $ps_mimetype, $pn_quality=null) {
 		if (caMediaPluginGraphicsMagickInstalled($this->ops_graphicsmagick_path)) {
 			$va_ops = array();	
 			foreach($pa_handle['ops'] as $va_op) {
