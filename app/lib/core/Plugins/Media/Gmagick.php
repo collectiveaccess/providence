@@ -1,13 +1,13 @@
 <?php
 /** ---------------------------------------------------------------------
- * app/lib/core/Plugins/Media/Imagick.php :
+ * app/lib/core/Plugins/Media/Gmagick.php :
  * ----------------------------------------------------------------------
  * CollectiveAccess
  * Open-source collections management software
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2009-2012 Whirl-i-Gig
+ * Copyright 2012 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -35,7 +35,7 @@
   */
  
 /**
- * Plugin for processing images using ImageMagick via the Imagick PECL extension
+ * Plugin for processing images using GraphicsMagick via the Gmagick PECL extension
 */
 
 include_once(__CA_LIB_DIR__."/core/Plugins/WLPlug.php");
@@ -45,7 +45,7 @@ include_once(__CA_LIB_DIR__."/core/Configuration.php");
 include_once(__CA_APP_DIR__."/helpers/mediaPluginHelpers.php");
 include_once(__CA_LIB_DIR__."/core/Parsers/MediaMetadata/XMPParser.php");
 
-class WLPlugMediaImagick Extends WLPlug Implements IWLPlugMedia {
+class WLPlugMediaGmagick Extends WLPlug Implements IWLPlugMedia {
 	var $errors = array();
 	
 	var $ps_filepath;
@@ -143,7 +143,7 @@ class WLPlugMediaImagick Extends WLPlug Implements IWLPlugMedia {
 			'version'			=> 'W'	// required of all plug-ins
 		),
 		
-		"NAME" => "Imagick"
+		"NAME" => "Gmagick"
 	);
 	
 	var $typenames = array(
@@ -193,7 +193,7 @@ class WLPlugMediaImagick Extends WLPlug Implements IWLPlugMedia {
 		"image/x-sony-sr2"	=> "SR2",
 		"image/x-sony-srf"	=> "SRF",
 		"image/x-sigma-x3f"	=> "X3F",
-		"image/x-dcraw"	=> "RAW",
+		"image/x-dcraw"		=> "RAW",
 	);
 	
 	#
@@ -217,7 +217,7 @@ class WLPlugMediaImagick Extends WLPlug Implements IWLPlugMedia {
 	
 	# ------------------------------------------------
 	public function __construct() {
-		$this->description = _t('Provides image processing and conversion services using ImageMagick via the PECL Imagick PHP extension');
+		$this->description = _t('Provides image processing and conversion services using ImageMagick via the PECL Gmagick PHP extension');
 	}
 	# ------------------------------------------------
 	# Tell WebLib what kinds of media this plug-in supports
@@ -234,12 +234,8 @@ class WLPlugMediaImagick Extends WLPlug Implements IWLPlugMedia {
 			return null;	// don't use if CoreImage executable are available
 		}
 		
-		if (caMediaPluginGmagickInstalled()) {
-			return null;	// don't use if Gmagick extension is available
-		}
-		
-		if (!caMediaPluginImagickInstalled()) {
-			return null;	// don't use if Imagick functions are unavailable
+		if (!caMediaPluginGmagickInstalled()) {
+			return null;	// don't use if Gmagick functions are unavailable
 		}
 		
 		$this->info["INSTANCE"] = $this;
@@ -256,12 +252,8 @@ class WLPlugMediaImagick Extends WLPlug Implements IWLPlugMedia {
 				$va_status['unused'] = true;
 				$va_status['warnings'][] = _t("Didn't load because CoreImageTool is available and preferred");
 			} 
-			if (caMediaPluginGmagickInstalled()) {
-				$va_status['unused'] = true;
-				$va_status['warnings'][] = _t("Didn't load because Gmagick is available and preferred");
-			} 
-			if (!caMediaPluginImagickInstalled()) {	
-				$va_status['errors'][] = _t("Didn't load because Imagick is not available");
+			if (!caMediaPluginGmagickInstalled()) {	
+				$va_status['errors'][] = _t("Didn't load because Gmagick is not available");
 			} 
 		}
 		
@@ -283,9 +275,8 @@ class WLPlugMediaImagick Extends WLPlug Implements IWLPlugMedia {
 			}
 		}
 		
-		$r_handle = new Imagick();
 		try {
-			if ($ps_filepath != '' && ($r_handle->pingImage($ps_filepath))) {
+			if ($ps_filepath != '' && ($r_handle = new Gmagick($ps_filepath))) {
 				$mimetype = $this->_getMagickImageMimeType($r_handle);
 				if (($mimetype) && $this->info["IMPORT"][$mimetype]) {
 					return $mimetype;
@@ -294,24 +285,19 @@ class WLPlugMediaImagick Extends WLPlug Implements IWLPlugMedia {
 				}
 			} 
 		} catch (Exception $e) {
-			return '';
-		}
-			
-		# is it a tilepic?
-		$tp = new TilepicParser();
-		if ($tp->isTilepic($ps_filepath)) {
-			return 'image/tilepic';
-		} else {
-			# file format is not supported by this plug-in
-			return '';
+			# is it a tilepic?
+			$tp = new TilepicParser();
+			if ($tp->isTilepic($ps_filepath)) {
+				return 'image/tilepic';
+			} else {
+				# file format is not supported by this plug-in
+				return '';
+			}
 		}
 	}
 	# ----------------------------------------------------------
 	public function _getMagickImageMimeType($pr_handle) {
-		$va_info = $pr_handle->identifyImage();
-		$ps_format = $va_info['format'];
-		$va_tmp = explode(' ', $ps_format);
-		$ps_format = $va_tmp[0];
+		$ps_format = $pr_handle->getimageformat();
 		foreach($this->magick_names as $vs_mimetype => $vs_format) {
 			if ($ps_format == $vs_format) {
 				return $vs_mimetype;
@@ -337,7 +323,7 @@ class WLPlugMediaImagick Extends WLPlug Implements IWLPlugMedia {
 		if ($this->handle) {
 			if ($property == "tile_size") {
 				if (($value < 10) || ($value > 10000)) {
-					$this->postError(1650, _t("Tile size property must be between 10 and 10000"), "WLPlugImagick->set()");
+					$this->postError(1650, _t("Tile size property must be between 10 and 10000"), "WLPlugGmagick->set()");
 					return "";
 				}
 				$this->properties["tile_width"] = $value;
@@ -347,49 +333,49 @@ class WLPlugMediaImagick Extends WLPlug Implements IWLPlugMedia {
 					switch($property) {
 						case 'quality':
 							if (($value < 1) || ($value > 100)) {
-								$this->postError(1650, _t("Quality property must be between 1 and 100"), "WLPlugImagick->set()");
+								$this->postError(1650, _t("Quality property must be between 1 and 100"), "WLPlugGmagick->set()");
 								return "";
 							}
 							$this->properties["quality"] = $value;
 							break;
 						case 'tile_width':
 							if (($value < 10) || ($value > 10000)) {
-								$this->postError(1650, _t("Tile width property must be between 10 and 10000"), "WLPlugImagick->set()");
+								$this->postError(1650, _t("Tile width property must be between 10 and 10000"), "WLPlugGmagick->set()");
 								return "";
 							}
 							$this->properties["tile_width"] = $value;
 							break;
 						case 'tile_height':
 							if (($value < 10) || ($value > 10000)) {
-								$this->postError(1650, _t("Tile height property must be between 10 and 10000"), "WLPlugImagick->set()");
+								$this->postError(1650, _t("Tile height property must be between 10 and 10000"), "WLPlugGmagick->set()");
 								return "";
 							}
 							$this->properties["tile_height"] = $value;
 							break;
 						case 'antialiasing':
 							if (($value < 0) || ($value > 100)) {
-								$this->postError(1650, _t("Antialiasing property must be between 0 and 100"), "WLPlugImagick->set()");
+								$this->postError(1650, _t("Antialiasing property must be between 0 and 100"), "WLPlugGmagick->set()");
 								return "";
 							}
 							$this->properties["antialiasing"] = $value;
 							break;
 						case 'layer_ratio':
 							if (($value < 0.1) || ($value > 10)) {
-								$this->postError(1650, _t("Layer ratio property must be between 0.1 and 10"), "WLPlugImagick->set()");
+								$this->postError(1650, _t("Layer ratio property must be between 0.1 and 10"), "WLPlugGmagick->set()");
 								return "";
 							}
 							$this->properties["layer_ratio"] = $value;
 							break;
 						case 'layers':
 							if (($value < 1) || ($value > 25)) {
-								$this->postError(1650, _t("Layer property must be between 1 and 25"), "WLPlugImagick->set()");
+								$this->postError(1650, _t("Layer property must be between 1 and 25"), "WLPlugGmagick->set()");
 								return "";
 							}
 							$this->properties["layers"] = $value;
 							break;	
 						case 'tile_mimetype':
 							if ((!($this->info["EXPORT"][$value])) && ($value != "image/tilepic")) {
-								$this->postError(1650, _t("Tile output type '%1' is invalid", $value), "WLPlugImagick->set()");
+								$this->postError(1650, _t("Tile output type '%1' is invalid", $value), "WLPlugGmagick->set()");
 								return "";
 							}
 							$this->properties["tile_mimetype"] = $value;
@@ -408,7 +394,7 @@ class WLPlugMediaImagick Extends WLPlug Implements IWLPlugMedia {
 					}
 				} else {
 					# invalid property
-					$this->postError(1650, _t("Can't set property %1", $property), "WLPlugImagick->set()");
+					$this->postError(1650, _t("Can't set property %1", $property), "WLPlugGmagick->set()");
 					return "";
 				}
 			}
@@ -455,33 +441,32 @@ class WLPlugMediaImagick Extends WLPlug Implements IWLPlugMedia {
 					$this->properties["typename"] = "Tilepic";
 					return 1;
 				} else {
-					$this->postError(1610, $this->handle->error, "WLPlugImagick->read()");
+					$this->postError(1610, $this->handle->error, "WLPlugGmagick->read()");
 					return false;
 				}
 			} else {
 				$this->handle = "";
 				$this->filepath = "";
-				$handle = new Imagick();
 				
 				if ($mimetype == 'image/x-dcraw') {
 					if($this->filepath_conv) { @unlink($this->filepath_conv); }
 					if (!caMediaPluginDcrawInstalled($this->ops_dcraw_path)) {
-						$this->postError(1610, _t("Could not convert Camera RAW format file because conversion tool (dcraw) is not installed"), "WLPlugImagick->read()");
+						$this->postError(1610, _t("Could not convert Camera RAW format file because conversion tool (dcraw) is not installed"), "WLPlugGmagick->read()");
 						return false;
 					}
 					
 					$vs_tmp_name = tempnam(caGetTempDirPath(), "rawtmp");
 					if (!copy($ps_filepath, $vs_tmp_name)) {
-						$this->postError(1610, _t("Could not copy Camera RAW file to temporary directory"), "WLPlugImagick->read()");
+						$this->postError(1610, _t("Could not copy Camera RAW file to temporary directory"), "WLPlugGmagick->read()");
 						return false;
 					}
 					exec($this->ops_dcraw_path." -T ".caEscapeShellArg($vs_tmp_name), $va_output, $vn_return);
 					if ($vn_return != 0) {
-						$this->postError(1610, _t("Camera RAW file conversion failed: %1", $vn_return), "WLPlugImagick->read()");
+						$this->postError(1610, _t("Camera RAW file conversion failed: %1", $vn_return), "WLPlugGmagick->read()");
 						return false;
 					}
 					if (!(file_exists($vs_tmp_name.'.tiff') && (filesize($vs_tmp_name.'.tiff') > 0))) {
-						$this->postError(1610, _t("Translation from Camera RAW to TIFF failed"), "WLPlugImagick->read()");
+						$this->postError(1610, _t("Translation from Camera RAW to TIFF failed"), "WLPlugGmagick->read()");
 						return false;
 					}
 					$ps_filepath = $this->filepath_conv = $vs_tmp_name.'.tiff';
@@ -489,23 +474,12 @@ class WLPlugMediaImagick Extends WLPlug Implements IWLPlugMedia {
 					@unlink($vs_tmp_name);
 				}
 				
-				if ($handle->readImage($ps_filepath)) {
+				try {
+					$handle = new Gmagick($ps_filepath);
 					$this->handle = $handle;
 					$this->filepath = $ps_filepath;
 					
-					$va_raw_metadata = $this->handle->getImageProperties();
 					$this->metadata = array();
-					foreach($va_raw_metadata as $vs_tag => $vs_value) {
-						if (sizeof($va_tmp = explode(':', $vs_tag)) > 1) {
-							$vs_type = strtoupper($va_tmp[0]);
-							$vs_tag = $va_tmp[1];
-						} else {
-							$vs_type = 'GENERIC';
-						}
-						if ($vs_type == 'EXIF') { continue; }
-						
-						$this->metadata[$vs_type][$vs_tag] = $vs_value;
-					}
 					
 					// exif
 					if(function_exists('exif_read_data')) {
@@ -520,25 +494,25 @@ class WLPlugMediaImagick Extends WLPlug Implements IWLPlugMedia {
 								$vb_is_rotated = false;
 								switch($vn_orientation) {
 									case 3:
-										$this->handle->rotateImage("#FFFFFF", 180);
+										$this->handle->rotateimage("#FFFFFF", 180);
 										unset($va_exif['IFD0']['Orientation']);
 										$vb_is_rotated = true;
 										break;
 									case 6:
-										$this->handle->rotateImage("#FFFFFF", 90);
+										$this->handle->rotateimage("#FFFFFF", 90);
 										unset($va_exif['IFD0']['Orientation']);
 										$vb_is_rotated = true;
 										break;
 									case 8:
-										$this->handle->rotateImage("#FFFFFF", -90);
+										$this->handle->rotateimage("#FFFFFF", -90);
 										unset($va_exif['IFD0']['Orientation']);
 										$vb_is_rotated = true;
 										break;
 								}
 								
 								if($vb_is_rotated) {								
-									if ( $this->handle->writeImage($vs_tmp_basename) ) {
-										$va_tmp = $this->handle->getImageGeometry();
+									if ( $this->handle->writeimage($vs_tmp_basename) ) {
+										$va_tmp = $this->handle->getimagegeometry();
 										$this->properties["faces"] = $this->opa_faces = caDetectFaces($vs_tmp_basename, $va_tmp['width'], $va_tmp['height']);
 										@unlink($vs_tmp_basename);
 									}
@@ -557,20 +531,20 @@ class WLPlugMediaImagick Extends WLPlug Implements IWLPlugMedia {
 					}
 					
 					# load image properties
-					$va_tmp = $this->handle->getImageGeometry();
+					$va_tmp = $this->handle->getimagegeometry();
 					$this->properties["width"] = $va_tmp['width'];
 					$this->properties["height"] = $va_tmp['height'];
 					$this->properties["quality"] = "";
-					$this->properties["filesize"] = $this->handle->getImageLength();
-					$this->properties["bitdepth"] = $this->handle->getImageDepth();
-					$this->properties["resolution"] = $this->handle->getImageResolution();
-					$this->properties["colorspace"] = $this->_getColorspaceAsString($this->handle->getImageColorspace());
+					$this->properties["filesize"] = filesize($ps_filepath);
+					$this->properties["bitdepth"] = $this->handle->getimagedepth();
+					$this->properties["resolution"] = $this->handle->getimageresolution();
+					$this->properties["colorspace"] = $this->_getColorspaceAsString($this->handle->getimagecolorspace());
 					
 					// force all images to true color (takes care of GIF transparency for one thing...)
-					$this->handle->setImageType(imagick::IMGTYPE_TRUECOLOR);
+					$this->handle->setimagetype(Gmagick::IMGTYPE_TRUECOLOR);
 
-					if (!$this->handle->setImageColorspace(imagick::COLORSPACE_RGB)) {
-						$this->postError(1610, _t("Error during RGB colorspace transformation operation"), "WLPlugImagick->read()");
+					if (!$this->handle->setimagecolorspace(Gmagick::COLORSPACE_RGB)) {
+						$this->postError(1610, _t("Error during RGB colorspace transformation operation"), "WLPlugGmagick->read()");
 						return false;
 					}
 					
@@ -580,12 +554,12 @@ class WLPlugMediaImagick Extends WLPlug Implements IWLPlugMedia {
 					}
 					
 					$this->properties["mimetype"] = $this->_getMagickImageMimeType($this->handle);
-					$this->properties["typename"] = $this->handle->getImageFormat();
+					$this->properties["typename"] = $this->handle->getimageformat();
 					
-					$this->ohandle = $this->handle->clone();
+					$this->ohandle = clone $this->handle;
 					return 1;
-				} else {
-					$this->postError(1610, _t("Could not read image file"), "WLPlugImagick->read()");
+				} catch (Exception $e) {
+					$this->postError(1610, _t("Could not read image file"), "WLPlugGmagick->read()");
 					return false;
 				}
 			}
@@ -601,7 +575,7 @@ class WLPlugMediaImagick Extends WLPlug Implements IWLPlugMedia {
 		
 		if (!($this->info["TRANSFORMATIONS"][$operation])) {
 			# invalid transformation
-			$this->postError(1655, _t("Invalid transformation %1", $operation), "WLPlugImagick->transform()");
+			$this->postError(1655, _t("Invalid transformation %1", $operation), "WLPlugGmagick->transform()");
 			return false;
 		}
 		
@@ -624,51 +598,38 @@ class WLPlugMediaImagick Extends WLPlug Implements IWLPlugMedia {
 			switch($operation) {
 				# -----------------------
 				case 'ANNOTATE':
-					$d = new ImagickDraw();
-					if ($parameters['font']) { $d->setFont($parameters['font']); }
-					
+					$d = new GmagickDraw();
+					if ($parameters['font']) { 
+						try {
+							$d->setfont($parameters['font']);
+						} catch (Exception $e) {
+							$this->postError(1655, _t("Couldn't set font to %1. Gmagick error message: %2",$parameters['font'],$e->getMessage()), "WLPlugGmagick->transform()");
+							break;
+						}
+					}
 					$size = ($parameters['size'] > 0) ? $parameters['size']: 18;
-					$d->setFontSize($size);
+					$d->setfontsize($size);
 				
-					$inset = ($parameters['inset'] > 0) ? $parameters['inset']: 0;
-					$pw= new ImagickPixel();
-					$pw->setColor($parameters['color'] ? $parameters['color'] : "black");
-					$d->setFillColor($pw);
+					$inset = ($parameters['inset'] > 0) ? $parameters['inset'] : 0;
+					$pw= new GmagickPixel();
+					$pw->setcolor($parameters['color'] ? $parameters['color'] : "black");
+					$d->setfillcolor($pw);
 					
 					switch($parameters['position']) {
-						case 'north_east':
-							$d->setGravity(imagick::GRAVITY_NORTHEAST);
-							break;
-						case 'north_west':
-							$d->setGravity(imagick::GRAVITY_NORTHWEST);
-							break;
-						case 'north':
-							$d->setGravity(imagick::GRAVITY_NORTH);
-							break;
-						case 'south_east':
-							$d->setGravity(imagick::GRAVITY_SOUTHEAST);
-							break;
-						case 'south':
-							$d->setGravity(imagick::GRAVITY_SOUTH);
-							break;
-						case 'center':
-							$d->setGravity(imagick::GRAVITY_CENTER);
-							break;
-						case 'south_west':
 						default:
-							$d->setGravity(imagick::GRAVITY_SOUTHWEST);
 							break;
 					}
-					$this->handle->annotateImage($d,$inset, $size + $inset, 0, $parameters['text']);
+					$this->handle->annotateimage($d,$inset, $size + $inset, 0, $parameters['text']);
 					break;
 				# -----------------------
 				case 'WATERMARK':
 					if (!file_exists($parameters['image'])) { break; }
-					$vn_opacity_setting = $parameters['opacity'];
-					if (($vn_opacity_setting < 0) || ($vn_opacity_setting > 1)) {
-						$vn_opacity_setting = 0.5;
-					}
-					$d = new ImagickDraw();
+					
+					# gmagick can't handle opacity when compositing images
+					#$vn_opacity_setting = $parameters['opacity'];
+					#if (($vn_opacity_setting < 0) || ($vn_opacity_setting > 1)) {
+					#	$vn_opacity_setting = 0.5;
+					#}
 					
 					if (($vn_watermark_width = $parameters['width']) < 10) { 
 						$vn_watermark_width = $cw/2;
@@ -709,17 +670,14 @@ class WLPlugMediaImagick Extends WLPlug Implements IWLPlugMedia {
 							break;
 					}
 					
-					$w = new Imagick();
-					if (!$w->readImage($parameters['image'])) {
-						$this->postError(1610, _t("Couldn't load watermark image at %1", $parameters['image']), "WLPlugImagick->transform:WATERMARK()");
+					try {
+						$w = new Gmagick($parameters['image']);
+					} catch (Exception $e) {
+						$this->postError(1610, _t("Couldn't load watermark image at %1", $parameters['image']), "WLPlugGmagick->transform:WATERMARK()");
 						return false;
 					}
-					//$w->evaluateImage(imagick::COMPOSITE_MINUS, $vn_opacity, imagick::CHANNEL_OPACITY) ; [seems broken with latest imagick circa March 2010?]
-					if(method_exists($w, "setImageOpacity")){ // added in ImageMagick 6.3.1
-						$w->setImageOpacity($vn_opacity_setting);
-					}
-					$d->composite(imagick::COMPOSITE_DISSOLVE,$vn_watermark_x,$vn_watermark_y,$vn_watermark_width,$vn_watermark_height, $w);
-					$this->handle->drawImage($d);
+					$w->scaleimage($vn_watermark_width,$vn_watermark_height);
+					$this->handle->compositeimage($w,1,$vn_watermark_x,$vn_watermark_y);
 					break;
 				# -----------------------
 				case 'SCALE':
@@ -771,8 +729,8 @@ class WLPlugMediaImagick Extends WLPlug Implements IWLPlugMedia {
 								$crop_w_edge = $crop_h_edge = intval($parameters["trim_edges"]);
 							}
 						}
-						if (!$this->handle->resizeImage($w + ($crop_w_edge * 2), $h + ($crop_h_edge * 2), imagick::FILTER_CUBIC, $aa)) {
-								$this->postError(1610, _t("Error during resize operation"), "WLPlugImagick->transform()");
+						if (!$this->handle->resizeimage($w + ($crop_w_edge * 2), $h + ($crop_h_edge * 2), Gmagick::FILTER_CUBIC, $aa)) {
+								$this->postError(1610, _t("Error during resize operation"), "WLPlugGmagick->transform()");
 								return false;
 						}
 						if ($do_fill_box_crop) {
@@ -822,16 +780,16 @@ class WLPlugMediaImagick Extends WLPlug Implements IWLPlugMedia {
 										break;
 								}
 							}
-							if (!$this->handle->cropImage($parameters["width"], $parameters["height"], $crop_w_edge + $crop_from_offset_x, $crop_h_edge + $crop_from_offset_y )) {
-								$this->postError(1610, _t("Error during crop operation"), "WLPlugImagick->transform()");
+							if (!$this->handle->cropimage($parameters["width"], $parameters["height"], $crop_w_edge + $crop_from_offset_x, $crop_h_edge + $crop_from_offset_y )) {
+								$this->postError(1610, _t("Error during crop operation"), "WLPlugGmagick->transform()");
 								return false;
 							}
 							$this->properties["width"] = $parameters["width"];
 							$this->properties["height"] = $parameters["height"];
 						} else {
 							if ($crop_w_edge || $crop_h_edge) {
-								if (!$this->handle->cropImage($w, $h, $crop_w_edge, $crop_h_edge )) {
-									$this->postError(1610, _t("Error during crop operation"), "WLPlugImagick->transform()");
+								if (!$this->handle->cropimage($w, $h, $crop_w_edge, $crop_h_edge )) {
+									$this->postError(1610, _t("Error during crop operation"), "WLPlugGmagick->transform()");
 									return false;
 								}
 							}
@@ -844,17 +802,16 @@ class WLPlugMediaImagick Extends WLPlug Implements IWLPlugMedia {
 			case "ROTATE":
 				$angle = $parameters["angle"];
 				if (($angle > -360) && ($angle < 360)) {
-					if ( !$this->handle->rotateImage("#FFFFFF", $angle ) ) {
-						$this->postError(1610, _t("Error during image rotate"), "WLPlugImagick->transform()");
+					if ( !$this->handle->rotateimage("#FFFFFF", $angle) ) {
+						$this->postError(1610, _t("Error during image rotate"), "WLPlugGmagick->transform():ROTATE");
 						return false;
 					}
 				}
 				break;
 			# -----------------------
 			case "DESPECKLE":
-				$radius = $parameters["radius"];
-				if ( !$this->handle->despeckleImage() ) {
-					$this->postError(1610, _t("Error during image despeckle"), "WLPlugImagick->transform:DESPECKLE()");
+				if ( !$this->handle->despeckleimage() ) {
+					$this->postError(1610, _t("Error during image despeckle"), "WLPlugGmagick->transform:DESPECKLE()");
 					return false;
 				}
 				break;
@@ -862,36 +819,18 @@ class WLPlugMediaImagick Extends WLPlug Implements IWLPlugMedia {
 			case "MEDIAN":
 				$radius = $parameters["radius"];
 				if ($radius < .1) { $radius = 1; }
-				if ( !$this->handle->medianFilterImage($radius) ) {
-					$this->postError(1610, _t("Error during image median filter"), "WLPlugImagick->transform:MEDIAN()");
+				if ( !$this->handle->medianfilterimage($radius) ) {
+					$this->postError(1610, _t("Error during image median filter"), "WLPlugGmagick->transform:MEDIAN()");
 					return false;
 				}
 				break;
 			# -----------------------
 			case "SHARPEN":
-				$radius = $parameters["radius"];
-				if ($radius < .1) { $radius = 1; }
-				$sigma = $parameters["sigma"];
-				if ($sigma < .1) { $sigma = 1; }
-				if ( !$this->handle->sharpenImage( $radius, $sigma) ) {
-					$this->postError(1610, _t("Error during image sharpen"), "WLPlugImagick->transform:SHARPEN()");
-					return false;
-				}
+				# noop
 				break;
 			# -----------------------
 			case "UNSHARPEN_MASK":
-				$radius = $parameters["radius"];
-				if ($radius < .1) { $radius = 1; }
-				$sigma = $parameters["sigma"];
-				if ($sigma < .1) { $sigma = 1; }
-				$threshold = $parameters["threshold"];
-				if ($threshold < .1) { $threshold = 1; }
-				$amount = $parameters["amount"];
-				if ($amount < .1) { $amount = 1; }
-				if ( !$this->handle->unsharpMaskImage($radius, $sigma, $amount, $threshold) ) {
-					$this->postError(1610, _t("Error during image unsharp mask"), "WLPlugImagick->transform:UNSHARPEN_MASK()");
-					return false;
-				}
+				# noop
 				break;
 			# -----------------------
 			case "SET":
@@ -903,7 +842,7 @@ class WLPlugMediaImagick Extends WLPlug Implements IWLPlugMedia {
 			}
 			return 1;
 		} catch (Exception $e) {
-			$this->postError(1610, _t("Imagick exception"), "WLPlugImagick->transform");
+			$this->postError(1610, _t("Gmagick exception"), "WLPlugGmagick->transform");
 			return false;
 		}
 	}
@@ -911,7 +850,7 @@ class WLPlugMediaImagick Extends WLPlug Implements IWLPlugMedia {
 	public function write($ps_filepath, $mimetype) {
 		if (!$this->handle) { return false; }
 		if(strpos($ps_filepath, ':') && (caGetOSFamily() != OS_WIN32)) {
-			$this->postError(1610, _t("Filenames with colons (:) are not allowed"), "WLPlugImagick->write()");
+			$this->postError(1610, _t("Filenames with colons (:) are not allowed"), "WLPlugGmagick->write()");
 			return false;
 		}
 		if ($mimetype == "image/tilepic") {
@@ -948,37 +887,36 @@ class WLPlugMediaImagick Extends WLPlug Implements IWLPlugMedia {
 				return false;
 			} 
 			
-			$this->handle->setImageFormat($this->magick_names[$mimetype]);
+			$this->handle->setimageformat($this->magick_names[$mimetype]);
 			# set quality
 			if (($this->properties["quality"]) && ($this->properties["mimetype"] != "image/tiff")){ 
-				$this->handle->setCompressionQuality($this->properties["quality"]);
+				$this->handle->setcompressionquality($this->properties["quality"]);
 			}
 			
-			$this->handle->setImageBackgroundColor(new ImagickPixel("#CC0000"));
-			$this->handle->setImageMatteColor(new ImagickPixel("#CC0000"));
+			$this->handle->setimagebackgroundcolor(new GmagickPixel("#CC0000"));
 		
 			if ($this->properties['gamma']) {
 				if (!$this->properties['reference-black']) { $this->properties['reference-black'] = 0; }
 				if (!$this->properties['reference-white']) { $this->properties['reference-white'] = 65535; }
-				$this->handle->levelImage($this->properties['reference-black'], $this->properties['gamma'], $this->properties['reference-white']);
+				$this->handle->levelimage($this->properties['reference-black'], $this->properties['gamma'], $this->properties['reference-white']);
 			}
 			
-			$this->handle->stripImage();	// remove all lingering metadata
+			$this->handle->stripimage();	// remove all lingering metadata
 			
 			# write the file
 			try {
-				if ( !$this->handle->writeImage($ps_filepath.".".$ext ) ) {
-					$this->postError(1610, _t("Error writing file"), "WLPlugImagick->write()");
+				if ( !$this->handle->writeimage($ps_filepath.".".$ext ) ) {
+					$this->postError(1610, _t("Error writing file"), "WLPlugGmagick->write()");
 					return false;
 				}
 			} catch (Exception $e) {
-				$this->postError(1610, _t("Error writing file: %1", $e->getMessage()), "WLPlugImagick->write()");
+				$this->postError(1610, _t("Error writing file: %1", $e->getMessage()), "WLPlugGmagick->write()");
 				return false;
 			}
 			
 			# update mimetype
 			$this->properties["mimetype"] = $mimetype;
-			$this->properties["typename"] = $this->handle->getImageFormat();
+			$this->properties["typename"] = $this->handle->getimageformat();
 			
 			return $ps_filepath.".".$ext;
 		}
@@ -1020,64 +958,64 @@ class WLPlugMediaImagick Extends WLPlug Implements IWLPlugMedia {
 	# ------------------------------------------------
 	private function _getColorspaceAsString($pn_colorspace) {
 		switch($pn_colorspace) {
-			case imagick::COLORSPACE_UNDEFINED:
+			case Gmagick::COLORSPACE_UNDEFINED:
 				$vs_colorspace = 'UNDEFINED';
 				break;
-			case imagick::COLORSPACE_RGB:
+			case Gmagick::COLORSPACE_RGB:
 				$vs_colorspace = 'RGB';
 				break;
-			case imagick::COLORSPACE_GRAY:
+			case Gmagick::COLORSPACE_GRAY:
 				$vs_colorspace = 'GRAY';
 				break;
-			case imagick::COLORSPACE_TRANSPARENT:
+			case Gmagick::COLORSPACE_TRANSPARENT:
 				$vs_colorspace = 'TRANSPARENT';
 				break;
-			case imagick::COLORSPACE_OHTA:
+			case Gmagick::COLORSPACE_OHTA:
 				$vs_colorspace = 'OHTA';
 				break;
-			case imagick::COLORSPACE_LAB:
+			case Gmagick::COLORSPACE_LAB:
 				$vs_colorspace = 'LAB';
 				break;
-			case imagick::COLORSPACE_XYZ:
+			case Gmagick::COLORSPACE_XYZ:
 				$vs_colorspace = 'XYZ';
 				break;
-			case imagick::COLORSPACE_YCBCR:
+			case Gmagick::COLORSPACE_YCBCR:
 				$vs_colorspace = 'YCBCR';
 				break;
-			case imagick::COLORSPACE_YCC:
+			case Gmagick::COLORSPACE_YCC:
 				$vs_colorspace = 'YCC';
 				break;
-			case imagick::COLORSPACE_YIQ:
+			case Gmagick::COLORSPACE_YIQ:
 				$vs_colorspace = 'YIQ';
 				break;
-			case imagick::COLORSPACE_YPBPR:
+			case Gmagick::COLORSPACE_YPBPR:
 				$vs_colorspace = 'YPBPR';
 				break;
-			case imagick::COLORSPACE_YUV:
+			case Gmagick::COLORSPACE_YUV:
 				$vs_colorspace = 'YUV';
 				break;
-			case imagick::COLORSPACE_CMYK:
+			case Gmagick::COLORSPACE_CMYK:
 				$vs_colorspace = 'CMYK';
 				break;
-			case imagick::COLORSPACE_SRGB:
+			case Gmagick::COLORSPACE_SRGB:
 				$vs_colorspace = 'SRGB';
 				break;
-			case imagick::COLORSPACE_HSB:
+			case Gmagick::COLORSPACE_HSB:
 				$vs_colorspace = 'HSB';
 				break;
-			case imagick::COLORSPACE_HSL:
+			case Gmagick::COLORSPACE_HSL:
 				$vs_colorspace = 'HSL';
 				break;
-			case imagick::COLORSPACE_HWB:
+			case Gmagick::COLORSPACE_HWB:
 				$vs_colorspace = 'HWB';
 				break;
-			case imagick::COLORSPACE_REC601LUMA:
+			case Gmagick::COLORSPACE_REC601LUMA:
 				$vs_colorspace = 'REC601LUMA';
 				break;
-			case imagick::COLORSPACE_REC709LUMA:
+			case Gmagick::COLORSPACE_REC709LUMA:
 				$vs_colorspace = 'REC709LUMA';
 				break;
-			case imagick::COLORSPACE_LOG:
+			case Gmagick::COLORSPACE_LOG:
 				$vs_colorspace = 'LOG';
 				break;
 			default:
@@ -1093,14 +1031,14 @@ class WLPlugMediaImagick Extends WLPlug Implements IWLPlugMedia {
 	# ------------------------------------------------
 	public function reset() {
 		if ($this->ohandle) {
-			$this->handle = $this->ohandle->clone();
+			$this->handle = clone $this->ohandle;
 			# load image properties
-			$va_tmp = $this->handle->getImageGeometry();
+			$va_tmp = $this->handle->getimagegeometry();
 			$this->properties["width"] = $va_tmp['width'];
 			$this->properties["height"] = $va_tmp['height'];
 			$this->properties["quality"] = "";
 			$this->properties["mimetype"] = $this->_getMagickImageMimeType($this->handle);
-			$this->properties["typename"] = $this->handle->getImageFormat();
+			$this->properties["typename"] = $this->handle->getimageformat();
 			$this->properties["faces"] = $this->opa_faces;
 			return 1;
 		}
