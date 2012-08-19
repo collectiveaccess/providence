@@ -806,7 +806,7 @@ class TilepicParser {
 	# ------------------------------------------------------------------------------------
 	function encode_coreimage ($ps_filepath, $ps_output_path, $pa_options) {
 		if (!($vs_tilepic_tmpdir = $this->opo_config->get('tilepic_tmpdir'))) {
-			$vs_tilepic_tmpdir = '/tmp';
+			$vs_tilepic_tmpdir = caGetTempDirPath();
 		}
 		if (!($magick = $this->mimetype2magick[$pa_options["output_mimetype"]])) {
 			$this->error = "Invalid output format";
