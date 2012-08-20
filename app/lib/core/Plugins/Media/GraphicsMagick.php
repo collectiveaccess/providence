@@ -1003,7 +1003,7 @@ class WLPlugMediaGraphicsMagick Extends WLPlug Implements IWLPlugMedia {
 					'x' => $va_tmp[4],
 					'y' => $va_tmp[5]
 				),
-				'ops' => array(),
+				'ops' => $this->properties["orientation_rotate"] ? array(0 => array('op' => 'strip')) : array(),
 				'faces' => $va_faces,
 				'filepath' => $ps_filepath
 			);
