@@ -533,7 +533,6 @@ class WLPlugMediaGraphicsMagick Extends WLPlug Implements IWLPlugMedia {
 				break;
 			# -----------------------
 			case 'WATERMARK':
-				print "invoking watermark code\n";
 				if (!file_exists($parameters['image'])) { break; }
 				$vn_opacity_setting = $parameters['opacity'];
 				if (($vn_opacity_setting < 0) || ($vn_opacity_setting > 1)) {
