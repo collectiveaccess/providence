@@ -19,7 +19,7 @@
 	$t_rep = new ca_object_representations();
 	$t_rep->setMode(ACCESS_WRITE);
 	
-	$qr_reps = $o_db->query("SELECT * FROM ca_object_representations WHERE representation_id = 2064 ORDER BY representation_id");
+	$qr_reps = $o_db->query("SELECT * FROM ca_object_representations ORDER BY representation_id");
 	while($qr_reps->nextRow()) {
 		$va_media_info = $qr_reps->getMediaInfo('media');
 		$vs_original_filename = $va_media_info['ORIGINAL_FILENAME'];
