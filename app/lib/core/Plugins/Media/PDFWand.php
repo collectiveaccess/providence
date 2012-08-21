@@ -172,7 +172,7 @@ class WLPlugMediaPDFWand Extends WLPlug implements IWLPlugMedia {
 			return '';
 		}
 		
-		if (caMediaPluginGraphicsMagickInstalled($this->ops_graphicsmagick_path)) {
+		if ((!$this->opo_config->get('dont_use_graphicsmagick_to_identify_pdfs')) && caMediaPluginGraphicsMagickInstalled($this->ops_graphicsmagick_path)) {
 			if(is_array($va_info = $this->_graphicsMagickIdentify($ps_filepath)) && sizeof($va_info)) {
 				$vn_width = $va_info['width'];
 				$vn_height = $va_info['height'];
