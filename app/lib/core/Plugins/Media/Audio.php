@@ -608,7 +608,11 @@ class WLPlugMediaAudio Extends WLPlug Implements IWLPlugMedia {
 					$this->properties["duration"] = $va_mp3_output_info["playtime_seconds"];
 				}
 			} else {
-				# use default media icons for image variants
+				# use default media icons if ffmpeg is not present or the current version is an image
+				if(!$this->get("width") && !$this->get("height")){
+					$this->set("width",580);
+					$this->set("height",200);
+				}
 				return __CA_MEDIA_AUDIO_DEFAULT_ICON__;
 			}
 		}
