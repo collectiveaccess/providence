@@ -1641,7 +1641,7 @@ $ca_relationship_lookup_parse_cache = array();
 					
 					foreach($va_bundles as $vs_bundle_name) {
 						if (in_array($vs_bundle_name, array('_parent', '_hierarchy'))) { continue;}
-						if (!($vs_value = trim($qr_rel_items->get($vs_bundle_name)))) { 
+						if (!($vs_value = trim($qr_rel_items->get($vs_bundle_name, array('delimiter' => $vs_display_delimiter))))) { 
 							if ((!isset($pa_options['stripTags']) || !$pa_options['stripTags']) &&  (sizeof($va_tmp = explode('.', $vs_bundle_name)) == 3)) {		// is tag media?
 								$vs_value = trim($qr_rel_items->getMediaTag($va_tmp[0].'.'.$va_tmp[1], $va_tmp[2]));
 							}
