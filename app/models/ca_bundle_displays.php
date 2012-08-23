@@ -480,8 +480,7 @@ class ca_bundle_displays extends BundlableLabelableBaseModelWithAttributes {
 				$va_placements = $this->getAvailableBundles($this->get('table_num'));
 			}
 		}
-		ca_bundle_displays::$s_placement_list_cache[$vn_display_id] = $va_placements;
-		return $va_placements;
+		return ca_bundle_displays::$s_placement_list_cache[$vn_display_id] = $va_placements;
 	}
 	# ------------------------------------------------------
 	/**
@@ -1591,8 +1590,7 @@ class ca_bundle_displays extends BundlableLabelableBaseModelWithAttributes {
 				}
 			}
 			
-			$t_locale = new ca_locales();
-			$va_locale_list = $t_locale->getLocaleList(array('index_by_code' => true));
+			$va_locale_list = ca_locales::getLocaleList(array('index_by_code' => true));
 			
 			$va_available_bundles = $t_display->getAvailableBundles();
 			foreach($va_bundles as $vn_i => $vs_bundle) {

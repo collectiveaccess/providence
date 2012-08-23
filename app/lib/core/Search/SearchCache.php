@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2011 Whirl-i-Gig
+ * Copyright 2011-2012 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -158,6 +158,24 @@
 		 public function getCacheKey() {
 		 	return $this->ops_cache_key;
 		 }
+		# ------------------------------------------------------
+		/**
+		 *
+		 */
+		 public function getSearchID() {
+		 	$vs_cache_key = $this->getCacheKey();
+		 	
+		 	$o_db = new Db();
+		 	$qr_cache = $o_db->query("SELECT search_id FROM ca_search_cache WHERE md5 = ?", $vs_cache_key);
+			if ($qr_cache->nextRow()) {
+				$vn_search_id = $qr_cache->get('search_id');
+			} else {
+				$o_db->query("INSERT INTO ca_search_cache (md5) VALUES (?)", $vs_cache_key);
+				$vn_search_id = $o_db->getLastInsertID();
+			}
+			
+			return $vn_search_id;
+		}
 		# ------------------------------------------------------
 		/**
 		 *

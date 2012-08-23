@@ -34,12 +34,12 @@
   *
   */
 
-require_once(__CA_LIB_DIR__."/core/BaseObject.php");
+require_once(__CA_LIB_DIR__."/core/BaseFindEngine.php");
 require_once(__CA_LIB_DIR__.'/core/Configuration.php');
 require_once(__CA_LIB_DIR__."/core/Datamodel.php");
 require_once(__CA_LIB_DIR__."/core/Db.php");
 	
-	class SearchBase extends BaseObject {
+	class SearchBase extends BaseFindEngine {
 		# ------------------------------------------------
 		protected $opo_datamodel;
 		protected $opo_db;
