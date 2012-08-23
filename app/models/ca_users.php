@@ -125,6 +125,13 @@ BaseModel::$s_ca_models_definitions['ca_users'] = array(
 				'LABEL' => _t('Account is activated?'), "DESCRIPTION" => "If checked, indicates user account is active. Only active users are allowed to log into the system.",
 				'BOUNDS_VALUE' => array(0,1)
 		),
+		'registered_on' => array(
+				'FIELD_TYPE' => FT_TIMESTAMP, 'DISPLAY_TYPE' => DT_OMIT, 
+				'DISPLAY_WIDTH' => 10, 'DISPLAY_HEIGHT' => 1,
+				'IS_NULL' => true, 
+				'DEFAULT' => '',
+				'LABEL' => _t('Registered on'), 'DESCRIPTION' => _t('Registered on')
+		),
 		'confirmed_on' => array(
 				'FIELD_TYPE' => FT_DATETIME, 'DISPLAY_TYPE' => DT_OMIT, 
 				'DISPLAY_WIDTH' => 10, 'DISPLAY_HEIGHT' => 1,
