@@ -533,7 +533,6 @@ class WLPlugMediaGraphicsMagick Extends WLPlug Implements IWLPlugMedia {
 				break;
 			# -----------------------
 			case 'WATERMARK':
-				print "invoking watermark code\n";
 				if (!file_exists($parameters['image'])) { break; }
 				$vn_opacity_setting = $parameters['opacity'];
 				if (($vn_opacity_setting < 0) || ($vn_opacity_setting > 1)) {
@@ -1018,7 +1017,9 @@ class WLPlugMediaGraphicsMagick Extends WLPlug Implements IWLPlugMedia {
 			foreach($pa_handle['ops'] as $va_op) {
 				switch($va_op['op']) {
 					case 'strip':
-						$va_ops['convert'][] = "-strip";
+						// there is no such thing in graphicsmagick
+						// $va_ops['convert'][] = "-strip";
+						$va_ops['convert'][] = '+profile "*"';
 						break;
 					case 'annotation':
 						$vs_op = '-gravity '.$va_op['position'].' -fill '.str_replace('#', '\\#', $va_op['color']).' -pointsize '.$va_op['size'].' -draw "text '.$va_op['inset'].','.$va_op['inset'].' \''.$va_op['text'].'\'"';

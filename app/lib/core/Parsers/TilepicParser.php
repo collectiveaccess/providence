@@ -496,7 +496,9 @@ class TilepicParser {
 					$va_ops[] = $vs_tmp;
 					break;
 				case 'strip':
-					$va_ops[] = '-strip';
+					// option
+					//$va_ops[] = '-strip';
+					$va_ops[] = '+profile "*"';
 					break;
 			}
 		}
