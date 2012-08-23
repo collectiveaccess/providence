@@ -41,6 +41,7 @@
  	require_once(__CA_MODELS_DIR__."/ca_sets.php");
 	require_once(__CA_LIB_DIR__."/core/Parsers/ZipFile.php");
 	require_once(__CA_LIB_DIR__."/core/AccessRestrictions.php");
+ 	require_once(__CA_LIB_DIR__.'/core/Print/PrintForms.php');
  	
 	class BaseFindController extends ActionController {
 		# ------------------------------------------------------------------
@@ -77,6 +78,7 @@
 		 * Set up basic "find" action
 		 */
  		public function Index($po_search, $pa_options=null) {
+ 			$t = new Timer();
  			$t_model 				= $this->opo_datamodel->getInstanceByTableName($this->ops_tablename, true);
  			$vn_display_id 			= $this->opo_result_context->getCurrentBundleDisplay();
 			
@@ -221,7 +223,7 @@
  			// Available sets
  			//
  			$t_set = new ca_sets();
- 			$this->view->setVar('available_sets', caExtractValuesByUserLocale($t_set->getSets(array('table' => $this->ops_tablename, 'user_id' => $this->request->getUserID(), 'access' => __CA_SET_EDIT_ACCESS__))));
+ 			$this->view->setVar('available_sets', caExtractValuesByUserLocale($t_set->getSets(array('table' => $this->ops_tablename, 'user_id' => $this->request->getUserID(), 'access' => __CA_SET_EDIT_ACCESS__, 'omitCounts' => true))));
 
 			if(strlen($this->ops_tablename)>0){
 				if(!$this->request->user->canDoAction("can_edit_{$this->ops_tablename}")){
@@ -230,7 +232,7 @@
 					$this->view->setVar("default_action","Edit");
 				}
 			}
-
+			
 			$this->view->setVar('access_restrictions',AccessRestrictions::load());
  		}
 		# -------------------------------------------------------
@@ -247,7 +249,6 @@
  		 * Returns list of available label print formats
  		 */
  		public function getPrintForms() {
- 			require_once(__CA_LIB_DIR__.'/core/Print/PrintForms.php');
 			return PrintForms::getAvailableForms($this->request->config->get($this->ops_tablename.'_print_forms'));
 		}
 		# -------------------------------------------------------

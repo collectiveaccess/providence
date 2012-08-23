@@ -464,8 +464,7 @@ class TourService extends BaseService {
 	 * @return array List of available language
 	 */
 	public function getLocaleList($pa_options = null){
-		$t_locale = new ca_locales();
-		return $t_locale->getLocaleList($pa_options);
+		return ca_locales::getLocaleList($pa_options);
 	}
 	# -------------------------------------------------------
 	# Utilities
