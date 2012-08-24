@@ -52,6 +52,8 @@
 		 * @return string The name of the temporary table created
 		 */
 		public function loadListIntoTemporaryResultTable($pa_hits, $ps_key) {
+			global $g_mysql_has_file_priv;
+			
 			$ps_key = preg_replace('![^A-Za-z0-9_]+!', '_', $ps_key);
 			if ($this->ops_tmp_table_name == "caResultTmp{$ps_key}") {
 				return $this->ops_tmp_table_name;
@@ -69,11 +71,35 @@
 				) engine=memory;
 			");
 			
-			file_put_contents($this->ops_tmp_file_path, join("\n", array_keys($pa_hits)));
-			chmod($this->ops_tmp_file_path, 0755);
+			if (is_null($g_mysql_has_file_priv)) {	// Figure out if user has FILE priv
+				$qr_grants = $this->opo_db->query("
+					SHOW GRANTS;
+				");
+				$g_mysql_has_file_priv = false;
+				while($qr_grants->nextRow()) {
+					$vs_grant = array_shift(array_values($qr_grants->getRow()));
+					if (preg_match('!^GRANT FILE!', $vs_grant)) {
+						$g_mysql_has_file_priv = true;
+						break;
+					}
+				}
+			}
 			
-			$this->opo_db->query("LOAD DATA INFILE '{$this->ops_tmp_file_path}' INTO TABLE {$this->ops_tmp_table_name} (row_id)");
-			
+			if ($g_mysql_has_file_priv === true) {
+				// Benchmarking has show that using "LOAD DATA INFILE" with an on-disk tmp file performs best
+				// The downside is that it requires the MySQL global FILE priv, which often is not granted, especially in shared environments
+				file_put_contents($this->ops_tmp_file_path, join("\n", array_keys($pa_hits)));
+				chmod($this->ops_tmp_file_path, 0755);
+				
+				$this->opo_db->query("LOAD DATA INFILE '{$this->ops_tmp_file_path}' INTO TABLE {$this->ops_tmp_table_name} (row_id)");
+			} else {
+				// Fallback when database login does not have FILE priv
+				$vs_sql = "INSERT IGNORE INTO {$this->ops_tmp_table_name} (row_id) VALUES ";
+				foreach(array_keys($pa_hits) as $vn_row_id) {
+					$vs_sql .= "(".(int)$vn_row_id."),";
+				}
+				$this->opo_db->query(substr($vs_sql, 0, strlen($vs_sql)-1));
+			}
 			return $this->ops_tmp_table_name;
 		}
 		# ------------------------------------------------------------------
