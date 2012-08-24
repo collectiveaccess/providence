@@ -2150,15 +2150,12 @@
 						if ($vs_browse_type_limit_sql) {
 							$va_wheres[] = $vs_browse_type_limit_sql;
 						}
-											
-						if ($t_item->hasField('deleted')) {
-							$va_wheres[] = "(".$vs_browse_table_name.".deleted = 0)";
+						
+						if ($t_subject->hasField('deleted')) {
+							$va_wheres[] = "(".$t_subject->tableName().".deleted = 0)";
 						}
 						
 						if ($va_facet_info['relative_to']) {
-							if ($t_subject->hasField('deleted')) {
-								$va_wheres[] = "(".$t_subject->tableName().".deleted = 0)";
-							}
 							if ($va_relative_sql_data = $this->_getRelativeFacetSQLData($va_facet_info['relative_to'], $pa_options)) {
 								$va_joins = array_merge($va_joins, $va_relative_sql_data['joins']);
 								$va_wheres = array_merge($va_wheres, $va_relative_sql_data['wheres']);
@@ -2198,7 +2195,7 @@
 									ca_lists.list_code = ? {$vs_where_sql}
 								LIMIT 2";
 							$qr_res = $this->opo_db->query($vs_sql, $vs_list_name);
-						
+						//print $vs_sql." [$vs_list_name]";
 							return ((int)$qr_res->numRows() > 1) ? true : false;
 						} else {
 							$vs_sql = "
@@ -2254,11 +2251,11 @@
 							if ($vs_browse_type_limit_sql) {
 								$va_wheres[] = $vs_browse_type_limit_sql;
 							}
-							
+							if ($t_subject->hasField('deleted')) {
+								$va_wheres[] = "(".$t_subject->tableName().".deleted = 0)";
+							}
 							if ($va_facet_info['relative_to']) {
-								if ($t_subject->hasField('deleted')) {
-									$va_wheres[] = "(".$t_subject->tableName().".deleted = 0)";
-								}
+								
 								if ($va_relative_sql_data = $this->_getRelativeFacetSQLData($va_facet_info['relative_to'], $pa_options)) {
 									$va_joins = array_merge($va_joins, $va_relative_sql_data['joins']);
 									$va_wheres = array_merge($va_wheres, $va_relative_sql_data['wheres']);
@@ -3165,9 +3162,7 @@ if (!$va_facet_info['show_all_when_first_facet'] || ($this->numCriteria() > 0)) 
 				
 				return $po_result;
 			} else {
-				$o_results = new WLPlugSearchEngineBrowseEngine();
-				$o_results->init(new WLPlugSearchEngineBrowseEngine($va_results, $this->opn_browse_table_num), array());
-				return $o_results;
+				return new WLPlugSearchEngineBrowseEngine($va_results, $this->opn_browse_table_num);
 			}
 		}
 		# ------------------------------------------------------------------
