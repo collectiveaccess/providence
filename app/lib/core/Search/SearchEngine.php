@@ -407,7 +407,7 @@ class SearchEngine extends SearchBase {
 							SELECT attr.row_id, attr.locale_id, lower({$vs_sortable_value_fld}) {$vs_sort_field}
 							FROM ca_attributes attr
 							INNER JOIN ca_attribute_values AS attr_vals ON attr_vals.attribute_id = attr.attribute_id
-							INNER JOIN {$vs_browse_tmp_table} ON {$vs_browse_tmp_table}.row_id = attr.row_id
+							INNER JOIN {$vs_search_tmp_table} ON {$vs_search_tmp_table}.row_id = attr.row_id
 							WHERE
 								(attr_vals.element_id = ?) AND (attr.table_num = ?) AND (attr_vals.{$vs_sort_field} IS NOT NULL)
 						";
@@ -491,7 +491,7 @@ class SearchEngine extends SearchBase {
 					
 					// if the related supports preferred values (eg. *_labels tables) then only consider those in the sort
 					if ($t_rel->hasField('is_preferred')) {
-						$vs_is_preferred_sql = " AND ".$va_tmp[0].".is_preferred = 1";
+						$vs_is_preferred_sql = " ".$va_tmp[0].".is_preferred = 1";
 					}
 					if ($t_rel->hasField('locale_id')) {
 						$vs_locale_where = ", ".$va_tmp[0].".locale_id";
@@ -510,7 +510,7 @@ class SearchEngine extends SearchBase {
 				SELECT {$vs_table_name}.{$vs_table_pk}{$vs_locale_where}, lower({$vs_sortable_value_fld}) {$vs_sort_field}
 				FROM {$vs_table_name}
 				{$vs_join_sql}
-				INNER JOIN {$vs_browse_tmp_table} ON {$vs_browse_tmp_table}.row_id = {$vs_table_name}.{$vs_table_pk}
+				INNER JOIN {$vs_search_tmp_table} ON {$vs_search_tmp_table}.row_id = {$vs_table_name}.{$vs_table_pk}
 				".($vs_is_preferred_sql ? 'WHERE' : '')."
 					{$vs_is_preferred_sql}
 			";
