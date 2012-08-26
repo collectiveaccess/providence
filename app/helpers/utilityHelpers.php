@@ -667,7 +667,7 @@ function caFileIsIncludable($ps_file) {
 		}
 		
 		if(isset($pa_options['print']) && $pa_options['print']) {
-			print $vs_output;
+			print "<pre>{$vs_output}</pre>";
 		}
 		
 		return $vs_output;

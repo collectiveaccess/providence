@@ -54,7 +54,7 @@
 					//
 					// Get up to 50 suggestions as ATOM feed
 					//
-					$vs_data = @file_get_contents($x="http://id.loc.gov/search/?q=".urlencode($ps_query).$vs_voc_query.'&format=atom&count=50');
+					$vs_data = @file_get_contents($x="http://id.loc.gov/search/?q=".urlencode($ps_query).$vs_voc_query.'&format=atom&count=150');
 					if ($vs_data) {
 						$o_xml = @simplexml_load_string($vs_data);
 	

@@ -677,9 +677,11 @@
 			
 			if (is_array($va_facets_with_content)) {
 				$va_facets = $this->opa_browse_settings['facets'];	
+				$vs_facet_group = $this->getFacetGroup();
 				
 				$va_tmp = array();
 				foreach($va_facets_with_content as $vs_facet) {
+					if (($vs_facet_group && $va_facets[$vs_facet]['facet_groups'] && is_array($va_facets[$vs_facet]['facet_groups'])) && (!in_array($vs_facet_group, $va_facets[$vs_facet]['facet_groups']))) { continue; }
 					$va_tmp[$vs_facet] = $va_facets[$vs_facet];
 				}
 				return $va_tmp;
@@ -987,6 +989,8 @@
 									if (!$t_element->load(array('element_code' => $va_facet_info['element_code']))) {
 										return array();
 									}
+									
+									$vn_datatype = $t_element->get('datatype');
 									 
 									if ($va_facet_info['relative_to']) {
 										if ($va_relative_execute_sql_data = $this->_getRelativeExecuteSQLData($va_facet_info['relative_to'], $pa_options)) {
@@ -1013,8 +1017,18 @@
 										
 										if (is_array($va_value)) {
 											foreach($va_value as $vs_f => $vs_v) {
-												$va_attr_sql[] = "(ca_attribute_values.{$vs_f} = ?)";
-												$va_attr_values[] = $vs_v;
+												if ($vn_datatype == 3) {	// list
+													$t_list_item = new ca_list_items((int)$vs_v);
+													
+													// Include sub-items
+													$va_item_ids = $t_list_item->getHierarchyChildren(null, array('idsOnly' => true, 'includeSelf' => true));
+													$va_item_ids[] = (int)$vs_v;
+													$va_attr_sql[] = "(ca_attribute_values.{$vs_f} IN (?))";
+													$va_attr_values[] = $va_item_ids;
+												} else {
+													$va_attr_sql[] = "(ca_attribute_values.{$vs_f} = ?)";
+													$va_attr_values[] = $vs_v;
+												}
 											}
 										}
 										
@@ -1467,7 +1481,10 @@
 					
 					$this->opo_ca_browse_cache->setResults(($this->opo_config->get('perform_item_level_access_checking')) ? array_keys($this->filterHitsByACL(array_flip($va_results), $vn_user_id, __CA_ACL_READONLY_ACCESS__)): $va_results);
 					$vb_need_to_save_in_cache = true;
-				}	
+				} else {
+					$this->opo_ca_browse_cache->setResults(array());
+					$vb_need_to_save_in_cache = true;
+				}
 			}
 		
 			if ($vb_need_to_cache_facets) {
@@ -1549,7 +1566,6 @@
 			
 			// is facet cached?
 			if (isset($va_facet_cache[$ps_facet_name]) && is_array($va_facet_cache[$ps_facet_name])) { return $va_facet_cache[$ps_facet_name]; }
-			
 			return $this->getFacetContent($ps_facet_name, $pa_options);
 		}
 		# ------------------------------------------------------
@@ -1599,7 +1615,7 @@
 			
 			$vs_browse_type_limit_sql = '';
 			if (($va_browse_type_ids = $this->getTypeRestrictionList()) && sizeof($va_browse_type_ids)) {		// type restrictions
-				$vs_browse_type_limit_sql = '('.$t_subject->tableName().'.'.$t_subject->getTypeFieldName().' IN ('.join(', ', $va_browse_type_ids).'))';
+				$vs_browse_type_limit_sql = '('.$vs_browse_table_name.'.'.$t_subject->getTypeFieldName().' IN ('.join(', ', $va_browse_type_ids).'))';
 				
 				if (is_array($va_facet_info['type_restrictions'])) { 		// facet type restrictions bind a facet to specific types; we check them here 
 					$va_restrict_to_types = $this->_convertTypeCodesToIDs($va_facet_info['type_restrictions']);
@@ -1696,8 +1712,9 @@
 						
 						if (!(bool)$va_state_info['id']) {
 							$va_wheres[] = "(".$t_rel_item->tableName().".".$t_rel_item->primaryKey()." IS NULL)";
+						} else {
+							$va_wheres[] = "(".$t_rel_item->tableName().".".$t_rel_item->primaryKey()." IS NOT NULL)";
 						}
-						
 						if ($t_item->hasField('deleted')) {
 							$va_wheres[] = "(".$t_item->tableName().".deleted = 0)";
 						}
@@ -1705,9 +1722,12 @@
 						if ($t_rel_item->hasField('deleted')) {
 							$va_wheres[] = "(".$t_rel_item->tableName().".deleted = 0 OR ".$t_rel_item->tableName().".deleted IS NULL)";
 						}
-											
+									
 						if (isset($pa_options['checkAccess']) && is_array($pa_options['checkAccess']) && sizeof($pa_options['checkAccess']) && $t_item->hasField('access')) {
 							$va_wheres[] = "(".$vs_browse_table_name.".access IN (".join(',', $pa_options['checkAccess'])."))";
+						}
+						if (isset($pa_options['checkAccess']) && is_array($pa_options['checkAccess']) && sizeof($pa_options['checkAccess']) && $t_rel_item->hasField('access')) {
+							$va_wheres[] = "(".$t_rel_item->tableName().".access IN (".join(',', $pa_options['checkAccess'])."))";
 						}
 						
 						if (sizeof($va_results)) {

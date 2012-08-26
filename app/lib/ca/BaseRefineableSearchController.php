@@ -46,7 +46,8 @@
  		 *
  		 */
  		public function Facets() {
- 			$this->opo_browse->loadFacetContent(array());
+ 			$va_access_values = caGetUserAccessValues($this->request);
+ 			$this->opo_browse->loadFacetContent(array('checkAccess' => $va_access_values));
 			$this->view->setVar('browse', $this->opo_browse);
 			
  			$this->render("Search/ajax_refine_facets_html.php");
