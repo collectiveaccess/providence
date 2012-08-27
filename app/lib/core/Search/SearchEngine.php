@@ -110,6 +110,7 @@ class SearchEngine extends SearchBase {
 	 *		search_source = optional source indicator text to record in log for search
 	 *		checkAccess = optional array of access values to filter results on
 	 *		showDeleted = if set to true, related items that have been deleted are returned. Default is false.
+	 *		limitToModifiedOn = if set returned results will be limited to rows modified within the specified date range. The value should be a date/time expression parse-able by TimeExpressionParser
 	 *		sets = if value is a list of set_ids, only rows that are members of those sets will be returned
 	 *		user_id = If set item level access control is performed relative to specified user_id, otherwise defaults to logged in user
 	 *		dontFilterByACL = if true ACL checking is not performed on results

@@ -162,24 +162,6 @@
 		/**
 		 *
 		 */
-		 public function getSearchID() {
-		 	$vs_cache_key = $this->getCacheKey();
-		 	
-		 	$o_db = new Db();
-		 	$qr_cache = $o_db->query("SELECT search_id FROM ca_search_cache WHERE md5 = ?", $vs_cache_key);
-			if ($qr_cache->nextRow()) {
-				$vn_search_id = $qr_cache->get('search_id');
-			} else {
-				$o_db->query("INSERT INTO ca_search_cache (md5) VALUES (?)", $vs_cache_key);
-				$vn_search_id = $o_db->getLastInsertID();
-			}
-			
-			return $vn_search_id;
-		}
-		# ------------------------------------------------------
-		/**
-		 *
-		 */
 		 public function setParameter($ps_param, $pm_value) {
 		 	$this->opa_search['params'][$ps_param] = $pm_value;
 		 }
