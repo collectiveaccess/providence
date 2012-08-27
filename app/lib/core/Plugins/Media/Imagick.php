@@ -234,6 +234,10 @@ class WLPlugMediaImagick Extends WLPlug Implements IWLPlugMedia {
 			return null;	// don't use if CoreImage executable are available
 		}
 		
+		if (caMediaPluginGmagickInstalled()) {
+			return null;	// don't use if Gmagick extension is available
+		}
+		
 		if (!caMediaPluginImagickInstalled()) {
 			return null;	// don't use if Imagick functions are unavailable
 		}
@@ -251,6 +255,10 @@ class WLPlugMediaImagick Extends WLPlug Implements IWLPlugMedia {
 			if (caMediaPluginCoreImageInstalled($this->ops_CoreImage_path)) {
 				$va_status['unused'] = true;
 				$va_status['warnings'][] = _t("Didn't load because CoreImageTool is available and preferred");
+			} 
+			if (caMediaPluginGmagickInstalled()) {
+				$va_status['unused'] = true;
+				$va_status['warnings'][] = _t("Didn't load because Gmagick is available and preferred");
 			} 
 			if (!caMediaPluginImagickInstalled()) {	
 				$va_status['errors'][] = _t("Didn't load because Imagick is not available");
@@ -462,7 +470,7 @@ class WLPlugMediaImagick Extends WLPlug Implements IWLPlugMedia {
 						return false;
 					}
 					
-					$vs_tmp_name = tempnam("/tmp", "rawtmp");
+					$vs_tmp_name = tempnam(caGetTempDirPath(), "rawtmp");
 					if (!copy($ps_filepath, $vs_tmp_name)) {
 						$this->postError(1610, _t("Could not copy Camera RAW file to temporary directory"), "WLPlugImagick->read()");
 						return false;
@@ -702,20 +710,14 @@ class WLPlugMediaImagick Extends WLPlug Implements IWLPlugMedia {
 					}
 					
 					$w = new Imagick();
-					$qr = $w->getQuantumRange();
-					$vn_opacity = floatval($qr['quantumRangeLong']) - (floatval($qr['quantumRangeLong']) * $vn_opacity_setting );
-					if ($vn_opacity <= 0) {
-						$vn_opacity = 0.5;
-					} else {
-						if ($vn_opacity > 1) {
-							$vn_opacity = 0.5;
-						}
-					}
 					if (!$w->readImage($parameters['image'])) {
 						$this->postError(1610, _t("Couldn't load watermark image at %1", $parameters['image']), "WLPlugImagick->transform:WATERMARK()");
 						return false;
 					}
 					//$w->evaluateImage(imagick::COMPOSITE_MINUS, $vn_opacity, imagick::CHANNEL_OPACITY) ; [seems broken with latest imagick circa March 2010?]
+					if(method_exists($w, "setImageOpacity")){ // added in ImageMagick 6.3.1
+						$w->setImageOpacity($vn_opacity_setting);
+					}
 					$d->composite(imagick::COMPOSITE_DISSOLVE,$vn_watermark_x,$vn_watermark_y,$vn_watermark_width,$vn_watermark_height, $w);
 					$this->handle->drawImage($d);
 					break;
@@ -960,6 +962,8 @@ class WLPlugMediaImagick Extends WLPlug Implements IWLPlugMedia {
 				if (!$this->properties['reference-white']) { $this->properties['reference-white'] = 65535; }
 				$this->handle->levelImage($this->properties['reference-black'], $this->properties['gamma'], $this->properties['reference-white']);
 			}
+			
+			$this->handle->stripImage();	// remove all lingering metadata
 			
 			# write the file
 			try {

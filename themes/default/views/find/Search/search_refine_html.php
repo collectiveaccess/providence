@@ -1,35 +1,49 @@
 <?php
+/* ----------------------------------------------------------------------
+ * themes/default/views/find/Search/search_refine_html.php 
+ * ----------------------------------------------------------------------
+ * CollectiveAccess
+ * Open-source collections management software
+ * ----------------------------------------------------------------------
+ *
+ * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
+ * Copyright 2009-2012 Whirl-i-Gig
+ *
+ * For more information visit http://www.CollectiveAccess.org
+ *
+ * This program is free software; you may redistribute it and/or modify it under
+ * the terms of the provided license as published by Whirl-i-Gig
+ *
+ * CollectiveAccess is distributed in the hope that it will be useful, but
+ * WITHOUT ANY WARRANTIES whatsoever, including any implied warranty of 
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  
+ *
+ * This source code is free and modifiable under the terms of 
+ * GNU General Public License. (http://www.gnu.org/copyleft/gpl.html). See
+ * the "license.txt" file for details, or visit the CollectiveAccess web site at
+ * http://www.CollectiveAccess.org
+ *
+ * ----------------------------------------------------------------------
+ */
+ 
 	$o_browse 				= $this->getVar('browse');
 	$va_available_facets 	= $o_browse->getInfoForAvailableFacets();
 	$va_criteria 			= $o_browse->getCriteriaWithLabels();
 	$va_facet_info 			= $o_browse->getInfoForFacets();
 	
-	if (sizeof($va_available_facets)) { 
 ?>
 		<div id="searchRefineBox"><div class="bg">
-			<a href='#' id="hideRefine" onclick='$("#searchRefineBox").slideUp(250); $("#showRefine").show(); return false;'><img src="<?php print $this->request->getThemeUrlPath(); ?>/graphics/icons/collapse.gif" width="11" height="11" border="0"></a>
-<?php 
-			print _t('Filter results by').": ";
-			$c = 0;
-			foreach($va_available_facets as $vs_facet_code => $va_facet_info) {
-				$c++;
-				print "<a href='#' onclick='caUIBrowsePanel.showBrowsePanel(\"{$vs_facet_code}\");'>".$va_facet_info['label_plural']."</a>\n";
-				if($c < sizeof($va_available_facets)){
-					print ", ";
-				}
-			}
-?>
+			<a href='#' id="hideRefine" onclick='jQuery("#searchRefineBox").slideUp(250); jQuery("#showRefine").show(); return false;'><img src="<?php print $this->request->getThemeUrlPath(); ?>/graphics/icons/collapse.gif" width="11" height="11" border="0"></a>
+			<div id="searchRefineContent"><img src="<?php print $this->request->getThemeUrlPath(); ?>/graphics/icons/indicator.gif" alt="<?php print htmlspecialchars(_t('Loading...')); ?>"/></div>
 		</div><!-- end bg --></div><!-- end searchRefineBox -->
-		<?php
-	}else{
-		# if there are no criteria, hide the filter search button
-?>
+
 		<script type="text/javascript">
-			jQuery('#showRefine').hide(0);
+			jQuery(document).ready(function() {
+				// load facets
+				jQuery("#searchRefineContent").load("<?php print caNavUrl($this->request, $this->request->getModulePath(), $this->request->getController(), 'Facets');?>");
+			});
 		</script>
 <?php
-	}
-	
 	
 	if (sizeof($va_criteria) > 1) {
 ?>

@@ -339,13 +339,13 @@ class SearchResult extends BaseObject {
 	 *
 	 */
 	public function getPrimaryKeyValues($vn_limit=4000000000) {
-		$vs_pk = $this->opo_subject_instance->primaryKey();
-		$this->opo_engine_result->seek(0);
+		//$vs_pk = $this->opo_subject_instance->primaryKey();
+		return $this->opo_engine_result->getHits();
 		
 		$va_ids = array();
 		$vn_c = 0;
-		while($this->opo_engine_result->nextHit()) {
-			$va_ids[] = $this->opo_engine_result->get($vs_pk);
+		foreach($va_hits as $vn_id) {
+			$va_ids[] = $va_hit[$vs_pk];
 			$vn_c++;
 			if ($vn_c >= $vn_limit) { break; }
 		}
