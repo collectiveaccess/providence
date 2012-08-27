@@ -3224,7 +3224,7 @@ class BaseModel extends BaseObject {
 	 * @return string html tag
 	 */
 	public function getMediaTag($ps_field, $ps_version, $pa_options=null) {
-		$va_media_info = $this->getMediaInfo($ps_field);
+		if (!is_array($va_media_info = $this->getMediaInfo($ps_field))) { return ""; }
 		if (!is_array($va_media_info[$ps_version])) {
 			return "";
 		}
