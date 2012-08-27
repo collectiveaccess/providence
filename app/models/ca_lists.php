@@ -213,6 +213,10 @@ class ca_lists extends BundlableLabelableBaseModelWithAttributes {
 	# ------------------------------------------------------
 	protected $SELF_RELATION_TABLE_NAME = null;
 	
+	# ------------------------------------------------------
+	# ACL
+	# ------------------------------------------------------
+	protected $SUPPORTS_ACL = true;
 	
 	static $s_list_item_cache = array();
 	static $s_list_id_cache = array();

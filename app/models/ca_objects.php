@@ -327,6 +327,11 @@ class ca_objects extends BundlableLabelableBaseModelWithAttributes implements IB
 	protected $SEARCH_RESULT_CLASSNAME = 'ObjectSearchResult';
 	
 	# ------------------------------------------------------
+	# ACL
+	# ------------------------------------------------------
+	protected $SUPPORTS_ACL = true;
+	
+	# ------------------------------------------------------
 	# $FIELDS contains information about each field in the table. The order in which the fields
 	# are listed here is the order in which they will be returned using getFields()
 
