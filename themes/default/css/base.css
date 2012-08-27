@@ -4267,18 +4267,21 @@ a.caClientCommunicationsNewOrderButton:hover {
 	clear:right;
 	color: #333;
 	text-align: left;
-	background-color:#e6e6e6;
-	padding:5px 10px 10px 10px;
+	background-color:#fff;
+	padding:5px 10px 5px 10px;
+	border: 3px solid #ccc;
 	border-radius: 8px;
 	-moz-border-radius: 8px; 
 	-webkit-border-radius: 8px;
+	margin-bottom:15px;
 }
 #caClientOrderOverview .orderStatus .statusDesc {
 	background-color:#ffffff;
-	padding:10px;
+	padding:2px 0px 0px 5px;
 	line-height:1.3em;
 	font-size:12px;
 	margin: 0px 0px 15px 0px;
+	float:left;
 }
 #caClientOrderOverview .overrideButton {
 	float:right;
@@ -4287,7 +4290,7 @@ a.caClientCommunicationsNewOrderButton:hover {
 #caClientOrderOverview .orderStatus .statusWarning{
 	font-weight:bold;
 	background:	#FFFFFF url('../graphics/icons/warning.gif') no-repeat 10px 5px;
-	padding: 15px 0px 15px 50px;
+	padding: 15px 0px 8px 50px;
 	margin: 10px 0px 0px 0px;
 }
 a.caClientOrderOverviewButton {
@@ -4305,8 +4308,13 @@ a.caClientOrderOverviewButton {
 a.caClientOrderOverviewButton:hover {
 	background-color: #545454;
 }
+#commerceOrderStatusMessage {
+	width:500px;
+	float:left;
+	font-size:1.5em;
+}
 #caClientOrderOverview .overviewItem {
-	padding:0px 0px 10px 10px;
+	padding:0px 0px 10px 0px;
 	font-size:12px;
 }
 
@@ -4347,7 +4355,9 @@ a.caClientOrderOverviewButton:hover {
 	width:100%;
 }   
 
-
+#loanSummaryTable {
+	border-top:1px solid #ccc;
+}
 #caClientLibraryCustomerInfoForm {
 	display: none;
 }
@@ -4454,7 +4464,7 @@ div.searchlight-results div.searchlight-selected {
 	padding: 0px 5px 0px 5px;
 }
 #caClientOrderOverview td {
-	border-bottom: 1px solid #666;
+	border-bottom: 1px solid #ccc;
 	padding: 5px 10px 5px 10px;
 }
 #caClientOrderOverview table {
