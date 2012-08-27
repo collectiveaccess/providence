@@ -295,7 +295,7 @@
 							}
 						}
 						
-						if ($vs_locale != '_generic') {		// _generic means this setting doesn't take a locale
+						if (($vs_locale != '_generic') && (is_array($vs_value))) {		// _generic means this setting doesn't take a locale
 							if (!($vs_text_value = $vs_value[$va_locale_info['locale_id']])) {
 								$vs_text_value = $vs_value[$va_locale_info['code']];
 							}
