@@ -677,9 +677,11 @@
 			
 			if (is_array($va_facets_with_content)) {
 				$va_facets = $this->opa_browse_settings['facets'];	
+				$vs_facet_group = $this->getFacetGroup();
 				
 				$va_tmp = array();
 				foreach($va_facets_with_content as $vs_facet) {
+					if (($vs_facet_group && $va_facets[$vs_facet]['facet_groups'] && is_array($va_facets[$vs_facet]['facet_groups'])) && (!in_array($vs_facet_group, $va_facets[$vs_facet]['facet_groups']))) { continue; }
 					$va_tmp[$vs_facet] = $va_facets[$vs_facet];
 				}
 				return $va_tmp;
@@ -987,6 +989,8 @@
 									if (!$t_element->load(array('element_code' => $va_facet_info['element_code']))) {
 										return array();
 									}
+									
+									$vn_datatype = $t_element->get('datatype');
 									 
 									if ($va_facet_info['relative_to']) {
 										if ($va_relative_execute_sql_data = $this->_getRelativeExecuteSQLData($va_facet_info['relative_to'], $pa_options)) {
@@ -1013,8 +1017,18 @@
 										
 										if (is_array($va_value)) {
 											foreach($va_value as $vs_f => $vs_v) {
-												$va_attr_sql[] = "(ca_attribute_values.{$vs_f} = ?)";
-												$va_attr_values[] = $vs_v;
+												if ($vn_datatype == 3) {	// list
+													$t_list_item = new ca_list_items((int)$vs_v);
+													
+													// Include sub-items
+													$va_item_ids = $t_list_item->getHierarchyChildren(null, array('idsOnly' => true, 'includeSelf' => true));
+													$va_item_ids[] = (int)$vs_v;
+													$va_attr_sql[] = "(ca_attribute_values.{$vs_f} IN (?))";
+													$va_attr_values[] = $va_item_ids;
+												} else {
+													$va_attr_sql[] = "(ca_attribute_values.{$vs_f} = ?)";
+													$va_attr_values[] = $vs_v;
+												}
 											}
 										}
 										
@@ -1599,7 +1613,7 @@
 			
 			$vs_browse_type_limit_sql = '';
 			if (($va_browse_type_ids = $this->getTypeRestrictionList()) && sizeof($va_browse_type_ids)) {		// type restrictions
-				$vs_browse_type_limit_sql = '('.$t_subject->tableName().'.'.$t_subject->getTypeFieldName().' IN ('.join(', ', $va_browse_type_ids).'))';
+				$vs_browse_type_limit_sql = '('.$vs_browse_table_name.'.'.$t_subject->getTypeFieldName().' IN ('.join(', ', $va_browse_type_ids).'))';
 				
 				if (is_array($va_facet_info['type_restrictions'])) { 		// facet type restrictions bind a facet to specific types; we check them here 
 					$va_restrict_to_types = $this->_convertTypeCodesToIDs($va_facet_info['type_restrictions']);
