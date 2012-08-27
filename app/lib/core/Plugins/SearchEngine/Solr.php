@@ -72,7 +72,7 @@ class WLPlugSearchEngineSolr extends BaseSearchPlugin implements IWLPlugSearchEn
 	public function init(){
 		$this->opa_options = array(
 				'start' => 0,
-				'limit' => 10000,							// maximum number of hits to return [default=10000],
+				'limit' => 150000,							// maximum number of hits to return [default=10000],
 				'maxContentBufferSize' => 2000				// maximum number of indexed content items to accumulate before writing to the database
 		);
 
@@ -100,17 +100,15 @@ class WLPlugSearchEngineSolr extends BaseSearchPlugin implements IWLPlugSearchEn
 	}
 	# -------------------------------------------------------
 	public function search($pn_subject_tablenum, $ps_search_expression, $pa_filters=array(), $po_rewritten_query=null){
-		if ($vs_filter_query = $this->_filterValueToQueryValue($pa_filters)) {
-			$ps_search_expression .= ' AND ('.$vs_filter_query.')';
-		}
-		
+		$t = new Timer();
 		$va_solr_search_filters = array();
 		
 		$vn_i = 0;
 		$va_old_signs = $po_rewritten_query->getSigns();
+		
 		$va_terms = $va_signs = array();
 		foreach($po_rewritten_query->getSubqueries() as $o_lucene_query_element) {
-			if (is_null($va_old_signs)) {	// if array is null then according to Zend Lucene all subqueries should be "are required"... so we AND them
+			if (!$va_old_signs || !is_array($va_old_signs)) {	// if array is null then according to Zend Lucene all subqueries should be "are required"... so we AND them
 				$vs_op = "AND";
 			} else {
 				if (is_null($va_old_signs[$vn_i])) {	// is the sign for a particular query is null then OR is (it is "neither required nor prohibited")
@@ -281,9 +279,9 @@ class WLPlugSearchEngineSolr extends BaseSearchPlugin implements IWLPlugSearchEn
 					}					
 					break;
 			}
-								
+				
 			$va_terms[] = $o_lucene_query_element;
-			$va_signs[] = $va_old_signs[$vn_i] ? $va_old_signs[$vn_i] : true;
+			$va_signs[] = is_array($va_old_signs) ? (array_key_exists($vn_i, $va_old_signs) ? $va_old_signs[$vn_i] : true) : true;
 
 			
 			$vn_i++;
@@ -291,7 +289,10 @@ class WLPlugSearchEngineSolr extends BaseSearchPlugin implements IWLPlugSearchEn
 		
 		$o_rewritten_query = new Zend_Search_Lucene_Search_Query_Boolean($va_terms, $va_signs);	
 		$ps_search_expression = $this->_queryToString($o_rewritten_query);
-
+		if ($vs_filter_query = $this->_filterValueToQueryValue($pa_filters)) {
+			$ps_search_expression .= ' AND ('.$vs_filter_query.')';
+		}
+		
 		$vo_http_client = new Zend_Http_Client();
 		$vo_http_client->setUri(
 			$this->opo_search_config->get('search_solr_url')."/". /* general url */
@@ -301,15 +302,15 @@ class WLPlugSearchEngineSolr extends BaseSearchPlugin implements IWLPlugSearchEn
 		
 		$vo_http_client->setParameterGet(array(
 			'q'		=> utf8_decode($ps_search_expression),
-			'wt'	=> 'phps',						// php fetching mode
+			'wt'	=> 'json',						// php fetching mode
+			'fl'	=> $this->opo_datamodel->getTablePrimaryKeyName($pn_subject_tablenum),
 			'start'	=> $this->getOption('start'),	// where to start the result fetching
 			'rows'	=> $this->getOption('limit')	// how many results to fetch
 		));
 		
-		
 		$vo_http_response = $vo_http_client->request();
-		$va_result = unserialize($vo_http_response->getBody());
-
+		$va_result = json_decode($vo_http_response->getBody(), true);
+		
 		return new WLPlugSearchEngineSolrResult($va_result["response"]["docs"], $pn_subject_tablenum);
 	}
 	# ------------------------------------------------------------------
@@ -343,7 +344,7 @@ class WLPlugSearchEngineSolr extends BaseSearchPlugin implements IWLPlugSearchEn
 			if ($id != 0) {
 				$vs_query .= ' ';
 			}
-		
+			
 			if (($va_signs === null || $va_signs[$id] === true) && ($id)) {
 				$vs_query .= ' AND ';
 			} else if (($va_signs[$id] === false) && $id) {
@@ -383,32 +384,32 @@ class WLPlugSearchEngineSolr extends BaseSearchPlugin implements IWLPlugSearchEn
 		foreach($pa_filters as $va_filter) {
 			switch($va_filter['operator']) {
 				case '=':
-					$va_terms[] = $va_filter['access_point'].':'.$va_filter['value'];
+					$va_terms[] = $va_filter['field'].':'.$va_filter['value'];
 					break;
 				case '<':
-					$va_terms[] = $va_filter['access_point'].':{-'.pow(2,32).' TO '.$va_filter['value'].'}';
+					$va_terms[] = $va_filter['field'].':{-'.pow(2,32).' TO '.$va_filter['value'].'}';
 					break;
 				case '<=':
-					$va_terms[] = $va_filter['access_point'].':['.pow(2,32).' TO '.$va_filter['value'].']';
+					$va_terms[] = $va_filter['field'].':['.pow(2,32).' TO '.$va_filter['value'].']';
 					break;
 				case '>':
-					$va_terms[] = $va_filter['access_point'].':{'.$va_filter['value'].' TO '.pow(2,32).'}';
+					$va_terms[] = $va_filter['field'].':{'.$va_filter['value'].' TO '.pow(2,32).'}';
 					break;
 				case '>=':
-					$va_terms[] = $va_filter['access_point'].':['.$va_filter['value'].' TO '.pow(2,32).']';
+					$va_terms[] = $va_filter['field'].':['.$va_filter['value'].' TO '.pow(2,32).']';
 					break;
 				case '<>':
-					$va_terms[] = 'NOT '.$va_filter['access_point'].':'.$va_filter['value'];
+					$va_terms[] = 'NOT '.$va_filter['field'].':'.$va_filter['value'];
 					break;
 				case '-':
 					$va_tmp = explode(',', $va_filter['value']);
-					$va_terms[] = $va_filter['access_point'].':['.$va_tmp[0].' TO '.$va_tmp[1].']';
+					$va_terms[] = $va_filter['field'].':['.$va_tmp[0].' TO '.$va_tmp[1].']';
 					break;
 				case 'in':
 					$va_tmp = explode(',', $va_filter['value']);
 					$va_list = array();
 					foreach($va_tmp as $vs_item) {
-						$va_list[] = $va_filter['access_point'].':'.$vs_item;
+						$va_list[] = $va_filter['field'].':'.$vs_item;
 					}
 
 					$va_terms[] = '('.join(' OR ', $va_list).')';
@@ -826,5 +827,4 @@ class WLPlugSearchEngineSolr extends BaseSearchPlugin implements IWLPlugSearchEn
 	}
 	# --------------------------------------------------
 }
-
-
+?>

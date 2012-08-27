@@ -3879,7 +3879,6 @@ $pa_options["display_form_field_tips"] = true;
 			
 			if ($t_acl->numErrors()) {
 				$this->errors = $t_acl->errors;
-				print_R($t_acl->getErrors());
 				return false;
 			}
 		}

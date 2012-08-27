@@ -44,13 +44,14 @@ require_once(__CA_LIB_DIR__.'/core/Parsers/TimeExpressionParser.php');
 	 * @param $pa_preferred_locales -
 	 * @return Array - returns an associative array defining which locales should be used when displaying values; suitable for use with caExtractValuesByLocale()
 	 */
+	$g_user_locale_rules = array();
 	function caGetUserLocaleRules($ps_item_locale=null, $pa_preferred_locales=null) {
-		global $g_ui_locale, $g_ui_locale_id;
+		global $g_ui_locale, $g_ui_locale_id, $g_user_locale_rules;
+		
+		if (isset($g_user_locale_rules[$ps_item_locale])) { return $g_user_locale_rules[$ps_item_locale]; }
 		
 		$o_config = Configuration::load();
 		$va_default_locales = $o_config->getList('locale_defaults');
-		
-		//$vs_label_mode = $po_request->user->getPreference('cataloguing_display_label_mode');
 		
 		$va_preferred_locales = array();
 		if ($ps_item_locale) {
@@ -87,7 +88,7 @@ require_once(__CA_LIB_DIR__.'/core/Parsers/TimeExpressionParser.php');
 				$va_preferred_locales[$g_ui_locale] = true;
 			}
 		}
-		$va_rules = array(
+		$g_user_locale_rules[$ps_item_locale] = $va_rules = array(
 			'preferred' => $va_preferred_locales,	/* all of these locales will display if available */
 			'fallback' => $va_fallback_locales		/* the first of these that is available will display, but only if none of the preferred locales are available */
 		);
@@ -106,18 +107,18 @@ require_once(__CA_LIB_DIR__.'/core/Parsers/TimeExpressionParser.php');
 	 */
 	function caExtractValuesByLocale($pa_locale_rules, $pa_values, $pa_options=null) {
 		if (!is_array($pa_values)) { return array(); }
-		$t_locales = new ca_locales();
-		$va_locales = $t_locales->getLocaleList();
+		$va_locales = ca_locales::getLocaleList();
 		
 		if (!is_array($pa_options)) { $pa_options = array(); }
 		if (!isset($pa_options['returnList'])) { $pa_options['returnList'] = false; }
 		
-		if (isset($pa_options['debug']) && $pa_options['debug']) {
-			print_r($pa_values);
-		}
 		if (!is_array($pa_values)) { return array(); }
 		$va_values = array();
 		foreach($pa_values as $vm_id => $va_value_list_by_locale) {
+			if (sizeof($va_value_list_by_locale) == 1) {		// Don't bother looking if there's just a single value
+				$va_values[$vm_id] = array_shift($va_value_list_by_locale);
+				continue;
+			}
 			foreach($va_value_list_by_locale as $pm_locale => $vm_value) {
 				// convert locale_id to locale string
 				if (is_numeric($pm_locale)) {
@@ -148,11 +149,7 @@ require_once(__CA_LIB_DIR__.'/core/Parsers/TimeExpressionParser.php');
 	}
 	# ------------------------------------------------------------------------------------------------
 	function caExtractValuesByUserLocale($pa_values, $ps_item_locale=null, $pa_preferred_locales=null, $pa_options=null) {
-		$va_values = caExtractValuesByLocale(caGetUserLocaleRules($ps_item_locale, $pa_preferred_locales), $pa_values, $pa_options);
-		if (isset($pa_options['debug']) && $pa_options['debug']) {
-			//print_r($va_values);
-		}
-		return $va_values;
+		return caExtractValuesByLocale(caGetUserLocaleRules($ps_item_locale, $pa_preferred_locales), $pa_values, $pa_options);
 	}
 	# ------------------------------------------------------------------------------------------------
 	/**
@@ -1641,7 +1638,7 @@ $ca_relationship_lookup_parse_cache = array();
 					
 					foreach($va_bundles as $vs_bundle_name) {
 						if (in_array($vs_bundle_name, array('_parent', '_hierarchy'))) { continue;}
-						if (!($vs_value = trim($qr_rel_items->get($vs_bundle_name)))) { 
+						if (!($vs_value = trim($qr_rel_items->get($vs_bundle_name, array('delimiter' => $vs_display_delimiter))))) { 
 							if ((!isset($pa_options['stripTags']) || !$pa_options['stripTags']) &&  (sizeof($va_tmp = explode('.', $vs_bundle_name)) == 3)) {		// is tag media?
 								$vs_value = trim($qr_rel_items->getMediaTag($va_tmp[0].'.'.$va_tmp[1], $va_tmp[2]));
 							}

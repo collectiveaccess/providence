@@ -59,8 +59,7 @@
 			$this->opo_list = new ca_lists();
 			$this->opo_datamodel = Datamodel::load();
 			
-			$t_locale = new ca_locales();
-			$this->opa_locales = $t_locale->getLocaleList();
+			$this->opa_locales = ca_locales::getLocaleList();
 			$this->ops_label_table_name = method_exists($this->opo_subject_instance, "getLabelTableName") ? $this->opo_subject_instance->getLabelTableName() : null;
 			$this->ops_label_display_field = method_exists($this->opo_subject_instance, "getLabelDisplayField") ? $this->opo_subject_instance->getLabelDisplayField() : null;
 		}

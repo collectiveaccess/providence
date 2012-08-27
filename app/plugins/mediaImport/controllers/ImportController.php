@@ -72,8 +72,7 @@
 				}
 			}
 			
-			$t_locale = new ca_locales();
-			$this->opa_locales = $t_locale->getLocaleList(array('return_display_values' => true, 'index_by_code' => false, 'sort_field' => 'name', 'sort_direction' => 'asc'));
+			$this->opa_locales = ca_locales::getLocaleList(array('return_display_values' => true, 'index_by_code' => false, 'sort_field' => 'name', 'sort_direction' => 'asc'));
  		}
  		# -------------------------------------------------------
  		public function Index() {

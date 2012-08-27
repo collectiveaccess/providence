@@ -3224,7 +3224,7 @@ class BaseModel extends BaseObject {
 	 * @return string html tag
 	 */
 	public function getMediaTag($ps_field, $ps_version, $pa_options=null) {
-		$va_media_info = $this->getMediaInfo($ps_field);
+		if (!is_array($va_media_info = $this->getMediaInfo($ps_field))) { return ""; }
 		if (!is_array($va_media_info[$ps_version])) {
 			return "";
 		}
@@ -8005,8 +8005,7 @@ $pa_options["display_form_field_tips"] = true;
 			$va_locale_dedup[$g_ui_locale_id] = true;
 		}
 		
-		$t_locale = new ca_locales();
-		$va_locales = $t_locale->getLocaleList();
+		$va_locales = ca_locales::getLocaleList();
 		
 		if (is_array($va_locale_defaults = $this->getAppConfig()->getList('locale_defaults'))) {
 			foreach($va_locale_defaults as $vs_locale_default) {
