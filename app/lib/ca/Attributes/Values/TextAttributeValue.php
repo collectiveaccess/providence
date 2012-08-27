@@ -241,6 +241,7 @@
  			
  			if ($va_settings['usewysiwygeditor']) {
  				$o_config = Configuration::load();
+ 				if (!is_array($va_toolbar_config = $o_config->getAssoc('wysiwyg_editor_toolbar'))) { $va_toolbar_config = array(); }
  				JavascriptLoadManager::register("ckeditor");
  				$vs_class = 'jqueryCkeditor';
  				
@@ -251,7 +252,7 @@
 				 });
 			},
 			{
-				toolbar: ".json_encode(array_values($o_config->getAssoc('wysiwyg_editor_toolbar'))).",
+				toolbar: ".json_encode(array_values($va_toolbar_config)).",
 				width: '{$vs_width}',
 				height: '{$vs_height}',
 				toolbarLocation: 'top',
