@@ -297,7 +297,7 @@
 						
 						if ($vs_locale != '_generic') {		// _generic means this setting doesn't take a locale
 							if (!($vs_text_value = $vs_value[$va_locale_info['locale_id']])) {
-								$vs_text_value = $vs_value[$va_locale_info['code']];
+								$vs_text_value = (is_array($vs_value) && isset($vs_value[$va_locale_info['code']])) ? $vs_value[$va_locale_info['code']] : '';
 							}
 						} else {
 							$vs_text_value = $vs_value;
