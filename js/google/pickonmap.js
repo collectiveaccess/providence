@@ -6,7 +6,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2010 Whirl-i-Gig
+ * Copyright 2010-2012 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -90,6 +90,7 @@
 		mapdata.map = new google.maps.Map(jQuery(mapdata.mapholder).find('.map:first').get(0), mapOptions);
 		if (!mapdata.coordinates) { initNewMap(mapdata, mapOptions); return; }
 		var re = /\[([\d\.\-,; ]+)\]/;
+		if (!mapdata || !mapdata.coordinates) { return; }
 		var latlong = re.exec(mapdata.coordinates)[1];
 		var pointList = latlong.split(';');
 		
