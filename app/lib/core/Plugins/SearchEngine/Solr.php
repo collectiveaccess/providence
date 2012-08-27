@@ -827,5 +827,4 @@ class WLPlugSearchEngineSolr extends BaseSearchPlugin implements IWLPlugSearchEn
 	}
 	# --------------------------------------------------
 }
-
-
+?>

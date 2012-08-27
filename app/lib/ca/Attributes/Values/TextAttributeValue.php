@@ -278,7 +278,11 @@
  				$vs_bundle_name = $pa_options['t_subject']->tableName().'.'.$pa_element_info['element_code'];
  				
  				if ($pa_options['po_request']) {
- 					$vs_lookup_url	= caNavUrl($pa_options['po_request'], 'lookup', 'AttributeValue', 'Get', array());
+ 					if (isset($pa_options['lookupUrl']) && $pa_options['lookupUrl']) {
+ 						$vs_lookup_url = $pa_options['lookupUrl'];
+ 					} else {
+ 						$vs_lookup_url	= caNavUrl($pa_options['po_request'], 'lookup', 'AttributeValue', 'Get', array());
+ 					}
  				}
  			}
  			

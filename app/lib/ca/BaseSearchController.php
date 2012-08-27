@@ -86,7 +86,6 @@
  		 * 		hookBeforeNewSearch() is called just before executing a new search. The first parameter is the BrowseEngine object containing the search.
  		 */
  		public function Index($po_search, $pa_options=null) {
- 			$t = new Timer();
  			if (isset($pa_options['saved_search']) && $pa_options['saved_search']) {
  				$this->opo_result_context->setSearchExpression($pa_options['saved_search']['search']);
  				$this->opo_result_context->isNewSearch(true);

@@ -78,7 +78,6 @@
 		 * Set up basic "find" action
 		 */
  		public function Index($po_search, $pa_options=null) {
- 			$t = new Timer();
  			$t_model 				= $this->opo_datamodel->getInstanceByTableName($this->ops_tablename, true);
  			$vn_display_id 			= $this->opo_result_context->getCurrentBundleDisplay();
 			

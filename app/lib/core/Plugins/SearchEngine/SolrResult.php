@@ -112,3 +112,4 @@ class WLPlugSearchEngineSolrResult extends WLPlug implements IWLPlugSearchEngine
 	}
 	# -------------------------------------------------------
 }
+?>
