@@ -139,6 +139,10 @@ class WLPlugSearchEngineSqlSearch extends BaseSearchPlugin implements IWLPlugSea
 			$this->ops_search_tokenizer_regex = "^\pL\pN\pNd/_#\@\&";
 		}
 		
+		if (!is_array($this->opa_asis_regexes = $this->opo_search_config->getList('asis_regexes'))) {
+			$this->opa_asis_regexes = array();
+		}
+		
 		
 		//$this->opqr_insert_ngram = $this->opo_db->prepare($this->ops_insert_ngram_sql);
 		
@@ -318,9 +322,10 @@ class WLPlugSearchEngineSqlSearch extends BaseSearchPlugin implements IWLPlugSea
 						}
 						$va_wheres[] = "(".$va_filter['field']." ".$va_filter['operator']." ".$this->_filterValueToQueryValue($va_filter).")";
 					} else {
+						$t_table = $this->opo_datamodel->getInstanceByTableName($va_tmp[0], true);
 						// join in primary table
 						if (!isset($va_joins[$va_tmp[0]])) {
-							$va_joins[$va_tmp[0]] = "INNER JOIN ".$va_tmp[0]." ON ".$va_tmp[0].".".$t_instance->primaryKey()." = ca_sql_search_search_final.row_id";
+							$va_joins[$va_tmp[0]] = "INNER JOIN ".$va_tmp[0]." ON ".$va_tmp[0].".".$t_table->primaryKey()." = ca_sql_search_search_final.row_id";
 						}
 						$va_wheres[] = "(".$va_filter['field']." ".$va_filter['operator']." ".$this->_filterValueToQueryValue($va_filter).")";
 					}
@@ -353,7 +358,7 @@ class WLPlugSearchEngineSqlSearch extends BaseSearchPlugin implements IWLPlugSea
 			);
 		}
 
-		return new WLPlugSearchEngineSqlSearchResult($va_hits, array());
+		return new WLPlugSearchEngineSqlSearchResult($va_hits, $pn_subject_tablenum);
 	}
 	# -------------------------------------------------------
 	private function _createTempTable($ps_name) {
@@ -652,7 +657,7 @@ class WLPlugSearchEngineSqlSearch extends BaseSearchPlugin implements IWLPlugSea
 							$vs_access_point = $o_lucene_query_element->getTerm()->field;
 							$vs_term = $o_lucene_query_element->getTerm()->text;
 							
-							$va_terms = $this->_tokenize($vs_term, true);
+							$va_terms = $this->_tokenize($vs_term, true, $vn_i);
 							$vb_output_term = false;
 							foreach($va_terms as $vs_term) {
 								if (in_array(trim(mb_strtolower($vs_term, 'UTF-8')), WLPlugSearchEngineSqlSearch::$s_stop_words)) { continue; }
@@ -995,7 +1000,7 @@ class WLPlugSearchEngineSqlSearch extends BaseSearchPlugin implements IWLPlugSea
 						}
 						
 						if (!sizeof($va_sql_where)) { continue; }
-						$vs_sql_where = join(' AND ', $va_sql_where);
+						$vs_sql_where = join(' OR ', $va_sql_where);
 					}
 					
 					
@@ -1389,9 +1394,18 @@ class WLPlugSearchEngineSqlSearch extends BaseSearchPlugin implements IWLPlugSea
 		return 'SqlSearch';
 	}
 	# --------------------------------------------------
-	private function _tokenize($ps_content, $pb_for_search=false) {
+	private function _tokenize($ps_content, $pb_for_search=false, $pn_index=0) {
 		$ps_content = preg_replace('![\']+!', '', $ps_content);		// strip apostrophes for compatibility with SearchEngine class, which does the same to all search expressions
+		
 		if ($pb_for_search) {
+			if ($pn_index == 0) {
+				foreach($this->opa_asis_regexes as $vs_asis_regex) {
+					if (preg_match('!'.$vs_asis_regex.'!', $ps_content)) {
+						return array($ps_content);
+					}
+				}
+			}
+		
 			return preg_split('![ ]+!', trim(preg_replace('!['.$this->ops_search_tokenizer_regex.']+!u', ' ', strip_tags($ps_content))));
 		} else {
 			return preg_split('![ ]+!', trim(preg_replace('!['.$this->ops_indexing_tokenizer_regex.']+!u', ' ', strip_tags($ps_content))));

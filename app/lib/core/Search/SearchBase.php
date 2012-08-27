@@ -34,12 +34,12 @@
   *
   */
 
-require_once(__CA_LIB_DIR__."/core/BaseObject.php");
+require_once(__CA_LIB_DIR__."/core/BaseFindEngine.php");
 require_once(__CA_LIB_DIR__.'/core/Configuration.php');
 require_once(__CA_LIB_DIR__."/core/Datamodel.php");
 require_once(__CA_LIB_DIR__."/core/Db.php");
 	
-	class SearchBase extends BaseObject {
+	class SearchBase extends BaseFindEngine {
 		# ------------------------------------------------
 		protected $opo_datamodel;
 		protected $opo_db;
@@ -55,7 +55,7 @@ require_once(__CA_LIB_DIR__."/core/Db.php");
 			$this->opo_search_indexing_config = Configuration::load($this->opo_search_config->get("search_indexing_config"));			
 
 			// load search engine plugin as configured by the 'search_engine_plugin' directive in the main app config file
-			if (!($this->opo_engine = SearchBase::newSearchEngine($ps_engine))) {
+			if (!($this->opo_engine = SearchBase::newSearchEngine($ps_engine, 57))) {
 				die("Couldn't load configured search engine plugin. Check your application configuration and make sure 'search_engine_plugin' directive is set properly.");
 			}
 	
@@ -66,7 +66,7 @@ require_once(__CA_LIB_DIR__."/core/Db.php");
 		 * You pass this the ** plugin file name ** (eg. 'Lucene'), not the actual class name (eg. WLPlugSearchEngineLucene)
 		 * and you get back an instance of the plugin
 		 */
-		static public function newSearchEngine($ps_plugin_name=null) {		
+		static public function newSearchEngine($ps_plugin_name=null, $pn_table_num=null) {		
 			if (!$ps_plugin_name) {
 				$o_config = Configuration::load();
 				$ps_plugin_name = $o_config->get('search_engine_plugin');

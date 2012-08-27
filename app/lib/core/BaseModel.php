@@ -91,6 +91,11 @@ define("__CA_HIER_TYPE_MULTI_MONO__", 2);
 define("__CA_HIER_TYPE_ADHOC_MONO__", 3);
 define("__CA_HIER_TYPE_MULTI_POLY__", 4);
 
+# ------------------------------------------------------------------------------------
+# --- Media icon constants
+# ------------------------------------------------------------------------------------
+define("__CA_MEDIA_QUEUED_ICON__", 'queued');
+
 # ----------------------------------------------------------------------
 # --- Import classes
 # ----------------------------------------------------------------------
@@ -1046,11 +1051,17 @@ class BaseModel extends BaseObject {
 
 						if (($vm_value !== "") || ($this->getFieldInfo($vs_field, "IS_NULL") && ($vm_value == ""))) {
 							if ($vm_value) {
-								$vm_orig_value = $vm_value;
-								$vm_value = preg_replace("/[^\d-.]+/", "", $vm_value); # strip non-numeric characters
-								if (!preg_match("/^[\-]{0,1}[\d.]+$/", $vm_value)) {
-									$this->postError(1100,_t("'%1' for %2 is not numeric", $vm_orig_value, $vs_field),"BaseModel->set()");
-									return "";
+								if (($vs_list_code = $this->getFieldInfo($vs_field, "LIST_CODE")) && (!is_numeric($vm_value))) {	// translate ca_list_item idno's into item_ids if necessary
+									if ($vn_id = ca_lists::getItemID($vs_list_code, $vm_value)) {
+										$vm_value = $vn_id;
+									}
+								} else {
+									$vm_orig_value = $vm_value;
+									$vm_value = preg_replace("/[^\d-.]+/", "", $vm_value); # strip non-numeric characters
+									if (!preg_match("/^[\-]{0,1}[\d.]+$/", $vm_value)) {
+										$this->postError(1100,_t("'%1' for %2 is not numeric", $vm_orig_value, $vs_field),"BaseModel->set()");
+										return "";
+									}
 								}
 							}
 							$this->_FIELD_VALUES[$vs_field] = $vm_value;
@@ -1347,7 +1358,7 @@ class BaseModel extends BaseObject {
 						break;
 				}
 			} else {
-				$this->postError(710,_t("%1' does not exist in this object", $vs_field),"BaseModel->set()");
+				$this->postError(710,_t("'%1' does not exist in this object", $vs_field),"BaseModel->set()");
 				return false;
 			}
 		}
@@ -2729,10 +2740,20 @@ class BaseModel extends BaseObject {
 	 * to specify which tables to omit when deleting related stuff
 	 */
 	public function delete ($pb_delete_related=false, $pa_options=null, $pa_fields=null, $pa_table_list=null) {
+		$vn_id = $this->getPrimaryKey();
 		if ($this->hasField('deleted') && (!isset($pa_options['hard']) || !$pa_options['hard'])) {
 			$this->setMode(ACCESS_WRITE);
 			$this->set('deleted', 1);
-			return $this->update(array('force' => true));
+			if ($vn_rc = $this->update(array('force' => true))) {
+				if(!defined('__CA_DONT_DO_SEARCH_INDEXING__')) {
+					if (!BaseModel::$search_indexer) {
+						BaseModel::$search_indexer = new SearchIndexer($this->getDb());
+					}
+					BaseModel::$search_indexer->startRowUnIndexing($this->tableNum(), $vn_id);
+					BaseModel::$search_indexer->commitRowUnIndexing($this->tableNum(), $vn_id);
+				}
+			}
+			return $vn_rc;
 		}
 		$this->clearErrors();
 		if ((!$this->getPrimaryKey()) && (!is_array($pa_fields))) {	# is there a record loaded?
@@ -2805,7 +2826,6 @@ class BaseModel extends BaseObject {
 			#
 			# --- delete search index entries
 			#
-			$vn_id = $this->getPrimaryKey();
 			
 			// TODO: FIX THIS ISSUE!
 			// NOTE: we delete the indexing here, before we actually do the 
@@ -2906,6 +2926,8 @@ class BaseModel extends BaseObject {
 						foreach ($versions as $v) {
 							$this->_removeMedia($f, $v);
 						}
+						
+						$this->_removeMedia($f, '_undo_');
 						break;
 					case FT_FILE:
 						@unlink($this->getFilePath($f));
@@ -3069,18 +3091,34 @@ class BaseModel extends BaseObject {
 	 * @param string $ps_field field name
 	 * @param string $ps_version version of the media file, as defined in media_processing.conf
 	 * @param int $pn_page page number, defaults to 1
+	 * @param array $pa_options Supported options include:
+	 *		localOnly = if true url to locally hosted media is always returned, even if an external url is available
+	 *		externalOnly = if true url to externally hosted media is always returned, even if an no external url is available
 	 * @return string the url
 	 */
-	public function getMediaUrl($ps_field, $ps_version, $pn_page=1) {
+	public function getMediaUrl($ps_field, $ps_version, $pn_page=1, $pa_options=null) {
 		$va_media_info = $this->getMediaInfo($ps_field);
 		if (!is_array($va_media_info)) {
 			return "";
 		}
 
 		#
+		# Use icon
+		#
+		if (isset($va_media_info[$ps_version]['USE_ICON']) && ($vs_icon_code = $va_media_info[$ps_version]['USE_ICON'])) {
+			return caGetDefaultMediaIconUrl($vs_icon_code, $va_media_info[$ps_version]['WIDTH'], $va_media_info[$ps_version]['HEIGHT']);
+		}
+		
+		#
 		# Is this version externally hosted?
 		#
-		if (isset($va_media_info[$ps_version]["EXTERNAL_URL"]) && ($va_media_info[$ps_version]["EXTERNAL_URL"])) {
+		if (!isset($pa_options['localOnly']) || !$pa_options['localOnly']){
+			if (isset($va_media_info[$ps_version]["EXTERNAL_URL"]) && ($va_media_info[$ps_version]["EXTERNAL_URL"])) {
+				return $va_media_info[$ps_version]["EXTERNAL_URL"];
+			}
+		}
+		
+		if (isset($pa_options['externalOnly']) && $pa_options['externalOnly']) {
 			return $va_media_info[$ps_version]["EXTERNAL_URL"];
 		}
 		
@@ -3088,16 +3126,12 @@ class BaseModel extends BaseObject {
 		# Is this version queued for processing?
 		#
 		if (isset($va_media_info[$ps_version]["QUEUED"]) && ($va_media_info[$ps_version]["QUEUED"])) {
-			if ($va_media_info[$ps_version]["QUEUED_ICON"]["src"]) {
-				return $va_media_info[$ps_version]["QUEUED_ICON"]["src"];
-			} else {
-				return "";
-			}
+			return null;
 		}
 
 		$va_volume_info = $this->_MEDIA_VOLUMES->getVolumeInformation($va_media_info[$ps_version]["VOLUME"]);
 		if (!is_array($va_volume_info)) {
-			return "";
+			return null;
 		}
 
 		# is this mirrored?
@@ -3142,6 +3176,13 @@ class BaseModel extends BaseObject {
 		}
 
 		#
+		# Use icon
+		#
+		if (isset($va_media_info[$ps_version]['USE_ICON']) && ($vs_icon_code = $va_media_info[$ps_version]['USE_ICON'])) {
+			return caGetDefaultMediaIconPath($vs_icon_code, $va_media_info[$ps_version]['WIDTH'], $va_media_info[$ps_version]['HEIGHT']);
+		}
+
+		#
 		# Is this version externally hosted?
 		#
 		if (isset($va_media_info[$ps_version]["EXTERNAL_URL"]) && ($va_media_info[$ps_version]["EXTERNAL_URL"])) {
@@ -3152,11 +3193,7 @@ class BaseModel extends BaseObject {
 		# Is this version queued for processing?
 		#
 		if (isset($va_media_info[$ps_version]["QUEUED"]) && $va_media_info[$ps_version]["QUEUED"]) {
-			if ($va_media_info[$ps_version]["QUEUED_ICON"]["filepath"]) {
-				return $va_media_info[$ps_version]["QUEUED_ICON"]["filepath"];
-			} else {
-				return "";
-			}
+			return null;
 		}
 
 		$va_volume_info = $this->_MEDIA_VOLUMES->getVolumeInformation($va_media_info[$ps_version]["VOLUME"]);
@@ -3186,30 +3223,33 @@ class BaseModel extends BaseObject {
 	 * @param int $align align attribute of the img tag - note: deprecated in HTML 4.01, not supported in XHTML 1.0 Strict
 	 * @return string html tag
 	 */
-	public function getMediaTag($field, $version, $pa_options=null) {
-		$media_info = $this->getMediaInfo($field);
-		if (!is_array($media_info[$version])) {
+	public function getMediaTag($ps_field, $ps_version, $pa_options=null) {
+		if (!is_array($va_media_info = $this->getMediaInfo($ps_field))) { return ""; }
+		if (!is_array($va_media_info[$ps_version])) {
 			return "";
 		}
 
 		#
+		# Use icon
+		#
+		if (isset($va_media_info[$ps_version]['USE_ICON']) && ($vs_icon_code = $va_media_info[$ps_version]['USE_ICON'])) {
+			return caGetDefaultMediaIconTag($vs_icon_code, $va_media_info[$ps_version]['WIDTH'], $va_media_info[$ps_version]['HEIGHT']);
+		}
+		
+		#
 		# Is this version queued for processing?
 		#
-		if (isset($media_info[$version]["QUEUED"]) && ($media_info[$version]["QUEUED"])) {
-			if ($media_info[$version]["QUEUED_ICON"]["src"]) {
-				return "<img src='".$media_info[$version]["QUEUED_ICON"]["src"]."' width='".$media_info[$version]["QUEUED_ICON"]["width"]."' height='".$media_info[$version]["QUEUED_ICON"]["height"]."' alt='".$media_info[$version]["QUEUED_ICON"]["alt"]."'>";
-			} else {
-				return $media_info[$version]["QUEUED_MESSAGE"];
-			}
+		if (isset($va_media_info[$ps_version]["QUEUED"]) && ($va_media_info[$ps_version]["QUEUED"])) {
+			return $va_media_info[$ps_version]["QUEUED_MESSAGE"];
 		}
 
-		$url = $this->getMediaUrl($field, $version, isset($options["page"]) ? $options["page"] : null);
+		$url = $this->getMediaUrl($ps_field, $ps_version, isset($options["page"]) ? $options["page"] : null);
 		$m = new Media();
 		
 		$o_vol = new MediaVolumes();
-		$va_volume = $o_vol->getVolumeInformation($media_info[$version]['VOLUME']);
+		$va_volume = $o_vol->getVolumeInformation($va_media_info[$ps_version]['VOLUME']);
 
-		return $m->htmlTag($media_info[$version]["MIMETYPE"], $url, $media_info[$version]["PROPERTIES"], $pa_options, $va_volume);
+		return $m->htmlTag($va_media_info[$ps_version]["MIMETYPE"], $url, $va_media_info[$ps_version]["PROPERTIES"], $pa_options, $va_volume);
 	}
 
 	/**
@@ -3231,20 +3271,44 @@ class BaseModel extends BaseObject {
 	 * -MD5
 	 * @return mixed media information
 	 */
-	public function &getMediaInfo($field, $version="", $property="") {
-		$media_info = $this->get($field, array('USE_MEDIA_FIELD_VALUES' => true));
-		if (!is_array($media_info)) {
+	public function &getMediaInfo($ps_field, $ps_version=null, $ps_property=null) {
+		$va_media_info = $this->get($ps_field, array('USE_MEDIA_FIELD_VALUES' => true));
+		if (!is_array($va_media_info)) {
 			return "";
 		}
-
-		if ($version) {
-			if (!$property) {
-				return $media_info[$version];
-			} else {
-				return $media_info[$version][$property];
+		
+		#
+		# Use icon
+		#
+		if ($ps_version && (!$ps_property || (in_array($ps_property, array('WIDTH', 'HEIGHT'))))) {
+			if (isset($va_media_info[$ps_version]['USE_ICON']) && ($vs_icon_code = $va_media_info[$ps_version]['USE_ICON'])) {
+				if ($va_icon_size = caGetMediaIconForSize($vs_icon_code, $va_media_info[$ps_version]['WIDTH'], $va_media_info[$ps_version]['HEIGHT'])) {
+					$va_media_info[$ps_version]['WIDTH'] = $va_icon_size['width'];
+					$va_media_info[$ps_version]['HEIGHT'] = $va_icon_size['height'];
+				}
 			}
 		} else {
-			return $media_info;
+			if (!$ps_property || (in_array($ps_property, array('WIDTH', 'HEIGHT')))) {
+				foreach(array_keys($va_media_info) as $vs_version) {
+					if (isset($va_media_info[$vs_version]['USE_ICON']) && ($vs_icon_code = $va_media_info[$vs_version]['USE_ICON'])) {
+						if ($va_icon_size = caGetMediaIconForSize($vs_icon_code, $va_media_info[$vs_version]['WIDTH'], $va_media_info[$vs_version]['HEIGHT'])) {
+							if (!$va_icon_size['size']) { continue; }
+							$va_media_info[$vs_version]['WIDTH'] = $va_icon_size['width'];
+							$va_media_info[$vs_version]['HEIGHT'] = $va_icon_size['height'];
+						}
+					}
+				} 
+			}
+		}
+
+		if ($ps_version) {
+			if (!$ps_property) {
+				return $va_media_info[$ps_version];
+			} else {
+				return $va_media_info[$ps_version][$ps_property];
+			}
+		} else {
+			return $va_media_info;
 		}
 	}
 
@@ -3324,7 +3388,7 @@ class BaseModel extends BaseObject {
 	 * @param string $ps_mimetype optional mimetype restriction
 	 * @return array list of available media versions
 	 */
-	public function getMediaVersions($ps_field, $ps_mimetype="") {
+	public function getMediaVersions($ps_field, $ps_mimetype=null) {
 		if (!$ps_mimetype) {
 			# figure out mimetype from field content
 			$va_media_desc = $this->get($ps_field);
@@ -3340,7 +3404,16 @@ class BaseModel extends BaseObject {
 			if ($vs_media_type = $o_media_proc_settings->canAccept($ps_mimetype)) {
 				$va_version_list = $o_media_proc_settings->getMediaTypeVersions($vs_media_type);
 				if (is_array($va_version_list)) {
-					return array_keys($va_version_list);
+					// Re-arrange so any versions that are the basis for others are processed first
+					$va_basis_versions = array();
+					foreach($va_version_list as $vs_version => $va_version_info) {
+						if (isset($va_version_info['BASIS']) && isset($va_version_list[$va_version_info['BASIS']])) {
+							$va_basis_versions[$va_version_info['BASIS']] = true;
+							unset($va_version_list[$va_version_info['BASIS']]);
+						}
+					}
+					
+					return array_merge(array_keys($va_basis_versions), array_keys($va_version_list));
 				}
 			}
 		}
@@ -3548,7 +3621,8 @@ class BaseModel extends BaseObject {
 			foreach ($va_versions as $v) {
 				$this->_removeMedia($ps_field, $v);
 			}
-
+			$this->_removeMedia($ps_field, '_undo_');
+			
 			$this->_FILES[$ps_field] = null;
 			$this->_FIELD_VALUES[$ps_field] = null;
 			$vs_sql =  "{$ps_field} = ".$this->quote(caSerializeForDatabase($this->_FILES[$ps_field], true)).",";
@@ -3557,6 +3631,7 @@ class BaseModel extends BaseObject {
 			// Process incoming files
 			//
 			$m = new Media();
+			$va_media_objects = array();
 			
 			// is it a URL?
 			$vs_url_fetched_from = null;
@@ -3625,11 +3700,12 @@ class BaseModel extends BaseObject {
 				# ok process file...
 				if (!($m->read($this->_SET_FILES[$ps_field]['tmp_name']))) {
 					$this->errors = array_merge($this->errors, $m->errors());	// copy into model plugin errors
-					//$this->postError(1600, _t("File for %1 could not be read", $ps_field),"BaseModel->_processMedia()");
 					set_time_limit($vn_max_execution_time);
 					if ($vb_is_fetched_file) { @unlink($vs_tmp_file); }
 					return false;
 				}
+				
+				$va_media_objects['_original'] = $m;
 				
 				$media_desc = array(
 					"ORIGINAL_FILENAME" => $this->_SET_FILES[$ps_field]['original_filename'],
@@ -3663,6 +3739,28 @@ class BaseModel extends BaseObject {
 					$va_media_write_options = $this->_SET_FILES[$ps_field]['options'];
 				}
 				
+				# Is an "undo" version set in options?
+				if (isset($this->_SET_FILES[$ps_field]['options']['undo']) && file_exists($this->_SET_FILES[$ps_field]['options']['undo'])) {
+					if ($volume = $version_info['original']['VOLUME']) {
+						$vi = $this->_MEDIA_VOLUMES->getVolumeInformation($volume);
+						if ($vi["absolutePath"] && ($dirhash = $this->_getDirectoryHash($vi["absolutePath"], $this->getPrimaryKey()))) {
+							$magic = rand(0,99999);
+							$vs_filename = $this->_genMediaName($ps_field)."_undo_";
+							$filepath = $vi["absolutePath"]."/".$dirhash."/".$magic."_".$vs_filename;
+							if (copy($this->_SET_FILES[$ps_field]['options']['undo'], $filepath)) {
+								$media_desc['_undo_'] = array(
+									"VOLUME" => $volume,
+									"FILENAME" => $vs_filename,
+									"HASH" => $dirhash,
+									"MAGIC" => $magic,
+									"MD5" => md5_file($filepath)
+								);
+							}
+						}
+					}
+				}
+				
+				
 				$va_process_these_versions_only = array();
 				if (isset($pa_options['these_versions_only']) && is_array($pa_options['these_versions_only']) && sizeof($pa_options['these_versions_only'])) {
 					$va_tmp = $this->_FIELD_VALUES[$ps_field];
@@ -3690,6 +3788,8 @@ class BaseModel extends BaseObject {
 				
 				$vs_path_to_queue_media = null;
 				foreach ($va_versions as $v) {
+					$vs_use_icon = null;
+					
 					if (sizeof($va_process_these_versions_only) && (!in_array($v, $va_process_these_versions_only))) {
 						// only processing certain versions... and this one isn't it so skip
 						continue;
@@ -3700,6 +3800,25 @@ class BaseModel extends BaseObject {
 					$rule 				= isset($version_info[$v]['RULE']) ? $version_info[$v]['RULE'] : '';
 					$volume 			= isset($version_info[$v]['VOLUME']) ? $version_info[$v]['VOLUME'] : '';
 
+					$basis				= isset($version_info[$v]['BASIS']) ? $version_info[$v]['BASIS'] : '';
+
+					if (isset($media_desc[$basis]) && isset($media_desc[$basis]['FILENAME'])) {
+						if (!isset($va_media_objects[$basis])) {
+							$o_media = new Media();
+							$basis_vi = $this->_MEDIA_VOLUMES->getVolumeInformation($media_desc[$basis]['VOLUME']);
+							if ($o_media->read($p=$basis_vi['absolutePath']."/".$media_desc[$basis]['HASH']."/".$media_desc[$basis]['MAGIC']."_".$media_desc[$basis]['FILENAME'])) {
+								$va_media_objects[$basis] = $o_media;
+							} else {
+								$m = $va_media_objects['_original'];
+							}
+						} else {
+							$m = $va_media_objects[$basis];
+						}
+					} else {
+						$m = $va_media_objects['_original'];
+					}
+					$m->reset();
+				
 					# get volume
 					$vi = $this->_MEDIA_VOLUMES->getVolumeInformation($volume);
 
@@ -3708,7 +3827,7 @@ class BaseModel extends BaseObject {
 						exit;
 					}
 					
-					// Send to queue it it's too big to process here
+					// Send to queue if it's too big to process here
 					if (($queue_enabled) && ($queue) && ($queue_threshold > 0) && ($queue_threshold < (int)$media_desc["INPUT"]["FILESIZE"]) && ($va_default_queue_settings['QUEUE_USING_VERSION'] != $v)) {
 						$va_queued_versions[$v] = array(
 							'VOLUME' => $volume
@@ -3903,9 +4022,6 @@ class BaseModel extends BaseObject {
 						$magic = rand(0,99999);
 						$filepath = $vi["absolutePath"]."/".$dirhash."/".$magic."_".$this->_genMediaName($ps_field)."_".$v;
 
-
-						$va_output_files = array();
-						
 						if (!($vs_output_file = $m->write($filepath, $output_mimetype, $va_media_write_options))) {
 							$this->postError(1600,_t("Couldn't write file: %1", join("; ", $m->getErrors())),"BaseModel->_processMedia()");
 							$m->cleanup();
@@ -3914,11 +4030,20 @@ class BaseModel extends BaseObject {
 							return false;
 							break;
 						} else {
-							$va_output_files[] = $vs_output_file;
+							if (
+								($vs_output_file === __CA_MEDIA_VIDEO_DEFAULT_ICON__)
+								||
+								($vs_output_file === __CA_MEDIA_AUDIO_DEFAULT_ICON__)
+								||
+								($vs_output_file === __CA_MEDIA_DOCUMENT_DEFAULT_ICON__)
+							) {
+								$vs_use_icon = $vs_output_file;
+							}
 						}
 						
 						if ($v === $va_default_queue_settings['QUEUE_USING_VERSION']) {
 							$vs_path_to_queue_media = $vs_output_file;
+							$vs_use_icon = __CA_MEDIA_QUEUED_ICON__;
 						}
 
 						if (($pa_options['delete_old_media']) && (!$error)) {
@@ -3976,19 +4101,27 @@ class BaseModel extends BaseObject {
 						}
 
 						
-						$media_desc[$v] = array(
-							"VOLUME" => $volume,
-							"MIMETYPE" => $output_mimetype,
-							"WIDTH" => $m->get("width"),
-							"HEIGHT" => $m->get("height"),
-							"PROPERTIES" => $m->getProperties(),
-							"FILENAME" => $this->_genMediaName($ps_field)."_".$v.".".$ext,
-							"HASH" => $dirhash,
-							"MAGIC" => $magic,
-							"EXTENSION" => $ext,
-							"MD5" => md5_file($vi["absolutePath"]."/".$dirhash."/".$magic."_".$this->_genMediaName($ps_field)."_".$v.".".$ext)
-						);
-
+						if ($vs_use_icon) {
+							$media_desc[$v] = array(
+								"MIMETYPE" => $output_mimetype,
+								"USE_ICON" => $vs_use_icon,
+								"WIDTH" => $m->get("width"),
+								"HEIGHT" => $m->get("height")
+							);
+						} else {
+							$media_desc[$v] = array(
+								"VOLUME" => $volume,
+								"MIMETYPE" => $output_mimetype,
+								"WIDTH" => $m->get("width"),
+								"HEIGHT" => $m->get("height"),
+								"PROPERTIES" => $m->getProperties(),
+								"FILENAME" => $this->_genMediaName($ps_field)."_".$v.".".$ext,
+								"HASH" => $dirhash,
+								"MAGIC" => $magic,
+								"EXTENSION" => $ext,
+								"MD5" => md5_file($vi["absolutePath"]."/".$dirhash."/".$magic."_".$this->_genMediaName($ps_field)."_".$v.".".$ext)
+							);
+						}
 						$m->reset();
 					}
 				}
@@ -4082,6 +4215,11 @@ class BaseModel extends BaseObject {
 					foreach($va_files_to_delete as $va_file_to_delete) {
 						$this->_removeMedia($va_file_to_delete['field'], $va_file_to_delete['version'], $va_file_to_delete['dont_delete_path'], $va_file_to_delete['dont_delete_extension']);
 					}
+					
+					# Remove old _undo_ file if defined
+					if ($vs_undo_path = $this->getMediaPath($ps_field, '_undo_')) {
+						@unlink($vs_undo_path);
+					}
 
 					$this->_FILES[$ps_field] = $media_desc;
 					$this->_FIELD_VALUES[$ps_field] = $media_desc;
@@ -4121,6 +4259,93 @@ class BaseModel extends BaseObject {
 		set_time_limit($vn_max_execution_time);
 		if ($vb_is_fetched_file) { @unlink($vs_tmp_file); }
 		return $vs_sql;
+	}
+	# --------------------------------------------------------------------------------
+	/**
+	 * Apply media transformation to media in specified field of current loaded row. When a transformation is applied
+	 * it is applied to all versions, including the "original." A copy of the original is stashed in a "virtual" version named "_undo_"
+	 * to make it possible to recover the original media, if desired, by calling removeMediaTransformations().
+	 *
+	 * @param string $ps_field The name of the media field
+	 * @param string $ps_op A valid media transformation op code, as defined by the media plugin handling the media being transformed.
+	 * @param array $pa_params The parameters for the op code, as defined by the media plugin handling the media being transformed.
+	 * @param array $pa_options An array of options. No options are current implemented.
+	 *
+	 * @return bool True on success, false if an error occurred.
+	 */
+	public function applyMediaTransformation ($ps_field, $ps_op, $pa_params, $pa_options=null) {
+		$va_media_info = $this->getMediaInfo($ps_field);
+		if (!is_array($va_media_info)) {
+			return null;
+		}
+		
+		$vs_path = $this->getMediaPath($ps_field, 'original');
+		
+		// TODO: Check if transformation valid for this media
+		
+		// Copy original into "undo" slot (if undo slot is empty)
+		$vs_undo_path = (!isset($va_media_info['_undo_'])) ? $vs_path : $this->getMediaPath($ps_field, '_undo_');
+		
+		// Apply transformation to original
+		$o_media = new Media();
+		$o_media->read($vs_path);
+		$o_media->transform($ps_op, $pa_params);
+		
+		$vs_tmp_basename = tempnam(caGetTempDirPath(), 'ca_media_rotation_tmp');
+		$o_media->write($vs_tmp_basename, $o_media->get('mimetype'), array());
+		
+		// Regenerate derivatives 
+		$this->setMode(ACCESS_WRITE);
+		$this->set($ps_field, $vs_tmp_basename.".".$va_media_info['original']['EXTENSION'], $vs_undo_path ? array('undo' => $vs_undo_path) : null);
+		$this->setAsChanged($ps_field);
+		$this->update();
+		
+		return $this->numErrors() ? false : true;
+	}
+	# --------------------------------------------------------------------------------
+	/**
+	 * Remove all media transformation to media in specified field of current loaded row by reverting to the unmodified media.
+	 *
+	 * @param string $ps_field The name of the media field
+	 * @param array $pa_options An array of options. No options are current implemented.
+	 *
+	 * @return bool True on success, false if an error occurred.
+	 */
+	public function removeMediaTransformations($ps_field, $pa_options=null) {
+		$va_media_info = $this->getMediaInfo($ps_field);
+		if (!is_array($va_media_info)) {
+			return null;
+		}
+		// Copy "undo" media into "original" slot
+		if (!isset($va_media_info['_undo_'])) {
+			return false;
+		}
+		
+		$vs_path = $this->getMediaPath($ps_field, 'original');
+		$vs_undo_path = $this->getMediaPath($ps_field, '_undo_');
+		
+		// Regenerate derivatives 
+		$this->setMode(ACCESS_WRITE);
+		$this->set($ps_field, $vs_undo_path ? $vs_undo_path : $vs_path);
+		$this->setAsChanged($ps_field);
+		$this->update();
+		
+		return $this->numErrors() ? false : true;
+	}
+	# --------------------------------------------------------------------------------
+	/**
+	 * Check if media in specified field of current loaded row has undoable transformation applied
+	 *
+	 * @param string $ps_field The name of the media field
+	 *
+	 * @return bool True on if there are undoable changes, false if not
+	 */
+	public function mediaHasUndo($ps_field) {
+		$va_media_info = $this->getMediaInfo($ps_field);
+		if (!is_array($va_media_info)) {
+			return null;
+		}
+		return isset($va_media_info['_undo_']);
 	}
 	# --------------------------------------------------------------------------------
 	/**
@@ -6844,10 +7069,11 @@ $pa_options["display_form_field_tips"] = true;
 				 });
 			},
 			{
-				toolbar: [['Bold','Italic','Underline','Strike','-','Subscript', 'Superscript'], ['-', 'NumberedList', 'BulletedList', 'Outdent', 'Indent', 'Blockquote', '-', 'Link', 'Unlink'],['Undo', 'Redo', '-', 'SpellChecker']],
+				toolbar: ".json_encode(array_values($this->getAppConfig()->getAssoc('wysiwyg_editor_toolbar'))).",
 				width: '{$vs_width}',
 				height: '{$vs_height}',
-				toolbarLocation: 'top'
+				toolbarLocation: 'top',
+				enterMode: CKEDITOR.ENTER_BR
 			}
 		);
  	});									
@@ -7200,6 +7426,15 @@ $pa_options["display_form_field_tips"] = true;
 			$pn_type_id = $pm_type_id;
 		}
 		
+		
+		if (!is_numeric($pn_rel_id)) {
+			if ($t_rel_item = $this->_DATAMODEL->getInstanceByTableName($va_rel_info['related_table_name'], true)) {
+				if (($vs_idno_fld = $t_rel_item->getProperty('ID_NUMBERING_ID_FIELD')) && $t_rel_item->load(array($vs_idno_fld => $pn_rel_id))) {
+					$pn_rel_id = $t_rel_item->getPrimaryKey();
+				}
+			}
+		}
+		
 
 		if ($va_rel_info['related_table_name'] == $this->tableName()) {
 			// is self relation
@@ -7252,6 +7487,7 @@ $pa_options["display_form_field_tips"] = true;
 						$this->errors = $t_item_rel->errors;
 						return false;
 					}
+					break;
 				case 2:		// many-to-one relationship
 					if ($this->tableName() == $va_rel_info['rel_keys']['one_table']) {
 						if ($t_item_rel->load($pn_rel_id)) {
@@ -7769,8 +8005,7 @@ $pa_options["display_form_field_tips"] = true;
 			$va_locale_dedup[$g_ui_locale_id] = true;
 		}
 		
-		$t_locale = new ca_locales();
-		$va_locales = $t_locale->getLocaleList();
+		$va_locales = ca_locales::getLocaleList();
 		
 		if (is_array($va_locale_defaults = $this->getAppConfig()->getList('locale_defaults'))) {
 			foreach($va_locale_defaults as $vs_locale_default) {

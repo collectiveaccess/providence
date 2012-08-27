@@ -27,6 +27,7 @@
  */
  
 	$t_order = $this->getVar('t_order');
+	$t_order->set('order_type', 'L');
 	$vn_order_id = (int)$t_order->getPrimaryKey();
 	
 	$t_transaction = $this->getVar('t_transaction');
@@ -61,7 +62,6 @@
 <?php
 	// status
 	$vs_order_status = $t_order->get('order_status');
-	$t_order->set('order_type', 'L');
 	$vs_order_status_display = "<em>".$t_order->getChoiceListValue('order_status', $vs_order_status)."</em>";
 	$vs_order_status_description = '';
 	$vs_next_step = '';
@@ -159,15 +159,43 @@
 	if ($vs_next_step) { print "<h2 style='text-align:right;'>"._t("Next step").": $vs_next_step</h2>\n"; }
 ?>
 	</div><!-- end orderStatus -->
-
-
-
+<?php
+	$va_due_dates = $t_order->getLoanDueDates();
+	$va_return_dates = $t_order->getLoanReturnDates();
+?>
 	<h1><?php print _t('Loan Overview'); ?></h1>
-	<h2><?php print _t('Client loan #%1 – %2 – from %3', $t_order->getOrderNumber(), $t_order->get('created_on'), $t_order->get('billing_fname').' '.$t_order->get('billing_lname')); ?></h1>
-	<H3><?php print _t("Cost"); ?></H3>
-	<div class="overviewItem">
-		<?php print "<b>"._t("Total Cost").":</b> ".$vs_currency_symbol.$va_order_totals['sum']; ?>
-	</div>
+	<table cellspacing="0" >
+		<tr>
+			<td bgcolor="#f1f1f1"><span class='loanTitle'><?php print _t('Loan Number').": </span></td><td>".$t_order->getOrderNumber()."";?></td>
+			<td bgcolor="#f1f1f1"><span class='loanTitle'><?php print _t('Loaned To').": </span></td><td>".$t_order->get('billing_fname').' '.$t_order->get('billing_lname'); ?></td>
+		</tr>
+		<tr>
+			<td bgcolor="#f1f1f1"><span class='loanTitle'><?php print _t('Loan Date').": </span></td><td>".$t_order->get('created_on')."";?></td>
+			 
+<?php					
+				print "<td bgcolor='#f1f1f1'><span class='loanTitle'>"._t('Items Due').": </span></td><td>";
+				if (is_array($va_due_dates)) {
+					print $va_due_dates['range'];
+				}
+				print "</td>";			
+?>
+		</tr>
+<?php
+			
+				print "<tr><td bgcolor='#f1f1f1'><span class='loanTitle'>"._t("Total Cost")."</span></td><td>".$vs_currency_symbol.$va_order_totals['sum']."</td><td bgcolor='#f1f1f1'><span class='loanTitle'>"._t("Items returned").":</span></td><td> ".$va_return_dates['range']."</td></tr>"; 
+			
+?>
+			
+	</table>
+	
+	<?php # print _t('Client loan #%1 – %2 – from %3', $t_order->getOrderNumber(), $t_order->get('created_on'), $t_order->get('billing_fname').' '.$t_order->get('billing_lname')); 
+
+	// messages
+	$va_messages = $t_transaction->getMessages();
+	$vn_num_messages = sizeof($va_messages);
+	$vs_communication_url = caNavUrl($this->request, 'client/library', 'Communications', 'Index', array('transaction_id' => $vn_transaction_id));
+?>
+	<h3><?php print ($vn_num_messages == 1) ? _t("There has been <a href='%2'>%1 communication</a> regarding this loan request", $vn_num_messages, $vs_communication_url) :  _t("There have been <a href='%2'>%1 communications</a> regarding this loan request", $vn_num_messages, $vs_communication_url); ?></h3>
 	<div class="overviewItem">
 <?php 
 		$va_output = array();
@@ -184,36 +212,47 @@
 		}
 ?></div>
 	
-	<H3><?php print _t("Items"); ?></H3>
-	<div class="overviewItem">
-		<?php print "<b>"._t("Total Items").":</b> ".((($vn_item_count = sizeof($va_items)) != 1) ? _t("<a href='%2'>%1 items</a>", $vn_item_count, $vs_item_url) : _t("<a href='%2'>%1 item</a>", $vn_item_count, $vs_item_url)); ?>
+	<div >
+		<?php print "<h1>".((($vn_item_count = sizeof($va_items)) != 1) ? _t("%1 Items", $vn_item_count) : _t("%1 Item", $vn_item_count))." <span style='font-size:.65em;'><a href='".$vs_item_url."'>"._t('Manage')."</a></span></h1>"; ?>
 	</div>
 	
 <?php
-	$va_due_dates = $t_order->getLoanDueDates();
-	$va_return_dates = $t_order->getLoanReturnDates();
+print "<table cellspacing='0' style='padding: 0px 5px 0px 5px;'>";
+print "<tr style='font-weight:bold; text-transform: uppercase; background-color: #f1f1f1;'><td width='200'>"._t('Item Name')."</td><td>"._t('ID')."</td><td>"._t('Checkout Date')."</td><td>"._t('Due Date')."</td><td>"._t('Returned')."</td></tr>";
+$va_outstanding = 0;
+$va_overdue = 0;
+foreach ($va_items as $va_item) {
+	print "<tr>";
 	
-if (is_array($va_due_dates) || is_array($va_return_dates)) {	
-?>
-	<H3><?php print _t("Dates"); ?></H3>
-<?php
-	if (is_array($va_due_dates)) {
-?>	
-	<div class="overviewItem">
-		<?php print "<b>"._t("Items due").":</b> ".$va_due_dates['range']; ?>
-	</div>
-<?php
+	print "<td>".caNavLink($this->request, $va_item['name'], "", "editor", "objects/ObjectEditor", "Edit", array('object_id' => $va_item['object_id']))."</td>";
+	print "<td>".$va_item['idno']."</td>";
+	print "<td>".date( 'M j, Y', $va_item['loan_checkout_date'])."</td>";
+	if (($va_item['loan_due_date'] < time()) && (!$va_item['loan_return_date'])) {
+		print "<td style='color: red; font-weight:bold;'>";
+		$va_overdue++;
+	} else {
+		print "<td>";
 	}
-	
-	if (is_array($va_return_dates)) {
-?>	
-	<div class="overviewItem">
-		<?php print "<b>"._t("Items returned").":</b> ".$va_return_dates['range']; ?>
-	</div>
-<?php
-	}
+	if (!$va_item['loan_return_date']) {$va_outstanding++;}
+	print date( 'M j, Y', $va_item['loan_due_date'])."</td>";
+	print "<td>";
+		if ($va_item['loan_return_date']) {
+			print date( 'M j, Y', $va_item['loan_return_date']);
+		}
+	print "</td>";
+	print "</tr>";
 }
+print "</table>";
 
+if ($va_outstanding != 0) {
+	print "<div class='orderTotal'>".$va_outstanding." "._t('items still in circulation')."</div>";
+} else {
+	print "<div class='orderTotal'>"._t('All items have been returned')."</div>";
+}
+if ($va_overdue != 0) {
+	print "<div class='orderTotal overdue'>".$va_overdue." "._t('items overdue')."</div>";
+}
+print "<div style='height:70px; width: 100%; clear:both;'></div>";
 	// shipping
 	if ($t_order->requiresShipping()) {
 		$va_shipping_name_list = array();
@@ -250,16 +289,7 @@ if (is_array($va_due_dates) || is_array($va_return_dates)) {
 		}
 
 	}
-?>
 
-<?php
-	// messages
-	$va_messages = $t_transaction->getMessages();
-	$vn_num_messages = sizeof($va_messages);
-	$vs_communication_url = caNavUrl($this->request, 'client/library', 'Communications', 'Index', array('transaction_id' => $vn_transaction_id));
-?>
-	<h3><?php print ($vn_num_messages == 1) ? _t("There has been <a href='%2'>%1 communication</a> regarding this loan request", $vn_num_messages, $vs_communication_url) :  _t("There have been <a href='%2'>%1 communications</a> regarding this loan request", $vn_num_messages, $vs_communication_url); ?></h3>
-<?php
 
 	// Order_id used when saving "change status" form	
 	print $t_order->htmlFormElement('order_id');

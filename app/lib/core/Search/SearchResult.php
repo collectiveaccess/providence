@@ -53,7 +53,7 @@ class SearchResult extends BaseObject {
 	private $opo_search_config;
 	private $opo_db;
 	private $opn_table_num;
-	private $ops_table_name;
+	protected $ops_table_name;
 	private $ops_table_pk;
 	// ----
 	
@@ -62,7 +62,7 @@ class SearchResult extends BaseObject {
 	private $opo_engine_result;
 	protected $opa_tables;
 	
-	private $opo_row_instance;
+	protected $opo_subject_instance;
 	
 	private $opa_prefetch_cache;
 	private $opa_rel_prefetch_cache;
@@ -72,18 +72,18 @@ class SearchResult extends BaseObject {
 	private $opo_tep; // timeexpression parser
 	
 	# ------------------------------------------------------------------
-	public function __construct($pn_subject_table_num=null, $po_engine_result=null, $pa_tables=null) {
-		
+	public function __construct($po_engine_result=null, $pa_tables=null) {
 		$this->opo_db = new Db();
 		$this->opo_datamodel = Datamodel::load();
+		$this->opo_subject_instance = $this->opo_datamodel->getInstanceByTableName($this->ops_table_name, true);
 		
 		$this->opa_prefetch_cache = array();
 		$this->opa_rel_prefetch_cache = array();
 		$this->opa_timestamp_cache = array();
 		$this->opa_row_ids_to_prefetch_cache = array();
 		
-		if ($pn_subject_table_num) {
-			$this->init($pn_subject_table_num, $po_engine_result, $pa_tables);
+		if ($po_engine_result) {
+			$this->init($po_engine_result, $pa_tables);
 		}
 		
 		if (!$GLOBALS["_DbResult_time_expression_parser"]) { $GLOBALS["_DbResult_time_expression_parser"] = new TimeExpressionParser(); }
@@ -107,20 +107,20 @@ class SearchResult extends BaseObject {
 		);
 		
 		
-		$this->opo_tep = new TimeExpressionParser();
-
+		$this->opo_tep = $GLOBALS["_DbResult_time_expression_parser"];
 	}
 	# ------------------------------------------------------------------
-	public function init($pn_subject_table_num, $po_engine_result, $pa_tables) {
-		$this->opn_table_num = $pn_subject_table_num;
+	public function init($po_engine_result, $pa_tables) {
+		
+		$this->opn_table_num = $this->opo_subject_instance->tableNum();
+		$this->ops_table_name =  $this->opo_subject_instance->tableName();
+		$this->ops_table_pk = $this->opo_subject_instance->primaryKey();
+		
 		$this->opo_engine_result = $po_engine_result;
+		if (!is_array($pa_tables)) { print caPrintStackTrace(); }
 		$this->opa_tables = $pa_tables;
 		
 		$this->errors = array();
-	
-		$this->opo_row_instance = $this->opo_datamodel->getInstanceByTableNum($this->opn_table_num, true);
-		$this->ops_table_name =  $this->opo_row_instance->tableName();
-		$this->ops_table_pk = $this->opo_row_instance->primaryKey();
 	}
 	# ------------------------------------------------------------------
 	public function tableNum() {
@@ -248,7 +248,7 @@ class SearchResult extends BaseObject {
 		}
 	
 		$vb_has_locale_id = true;
-		if ($this->opo_row_instance->hasField('locale_id') && (!$t_rel_instance->hasField('locale_id'))) {
+		if ($this->opo_subject_instance->hasField('locale_id') && (!$t_rel_instance->hasField('locale_id'))) {
 			$va_fields[] = $this->ops_table_name.'.locale_id';
 			$vb_has_locale_id = true;
 		}
@@ -302,7 +302,7 @@ class SearchResult extends BaseObject {
 		if (sizeof($va_row_ids = $this->getRowIDsToPrefetch($ps_tablename, $pn_start, $pn_num_rows)) == 0) { return false; }
 		//print "PREFETCH RELATED (".join("; ", $va_row_ids)."): ".$ps_tablename.' - '. $pn_start.' - '. $pn_num_rows."<br>";
 		$vs_md5 = caMakeCacheKeyFromOptions($pa_options);
-		$va_rel_items = $this->opo_row_instance->getRelatedItems($ps_tablename, array_merge($pa_options, array('row_ids' => $va_row_ids, 'limit' => 100000)));		// if there are more than 100,000 then we have a problem
+		$va_rel_items = $this->opo_subject_instance->getRelatedItems($ps_tablename, array_merge($pa_options, array('row_ids' => $va_row_ids, 'limit' => 100000)));		// if there are more than 100,000 then we have a problem
 		foreach($va_rel_items as $vn_relation_id => $va_rel_item) {
 			$this->opa_rel_prefetch_cache[$ps_tablename][$va_rel_item['row_id']][$vs_md5][] = $va_rel_item;
 		}
@@ -339,13 +339,13 @@ class SearchResult extends BaseObject {
 	 *
 	 */
 	public function getPrimaryKeyValues($vn_limit=4000000000) {
-		$vs_pk = $this->opo_row_instance->primaryKey();
-		$this->opo_engine_result->seek(0);
+		//$vs_pk = $this->opo_subject_instance->primaryKey();
+		return $this->opo_engine_result->getHits();
 		
 		$va_ids = array();
 		$vn_c = 0;
-		while($this->opo_engine_result->nextHit()) {
-			$va_ids[] = $this->opo_engine_result->get($vs_pk);
+		foreach($va_hits as $vn_id) {
+			$va_ids[] = $va_hit[$vs_pk];
 			$vn_c++;
 			if ($vn_c >= $vn_limit) { break; }
 		}
@@ -1522,10 +1522,7 @@ class SearchResult extends BaseObject {
 	}
 	# ------------------------------------------------------------------
 	# Utilities
-	# ------------------------------------------------------------------
-	public function getQueryTerms() {
-		return $this->opo_engine_result->getQueryTerms();
-	}
+	
 	# ------------------------------------------------------------------
 	/**
 	 *

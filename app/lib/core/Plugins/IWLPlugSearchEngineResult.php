@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2008 Whirl-i-Gig
+ * Copyright 2008-2012 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -38,7 +38,7 @@
 		# -------------------------------------------------------
 		# Initialization and state
 		# -------------------------------------------------------
-		public function __construct($pa_results, $pa_query_terms);
+		public function __construct($pa_results, $pn_table_num);
 		
 		# -------------------------------------------------------
 		# 
@@ -48,7 +48,6 @@
 		public function get($ps_field, $pa_options=null);
 		public function seek($pn_index);
 		public function currentRow();
-		public function getQueryTerms();
 		# -------------------------------------------------------
 	}
 ?>

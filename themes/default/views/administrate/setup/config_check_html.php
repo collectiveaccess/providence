@@ -179,6 +179,9 @@ foreach($va_plugins as $vs_plugin_name => $va_plugin_info){
 					if (is_array($va_plugin_info['warnings']) && sizeof($va_plugin_info['warnings'])) {
 						print '<div style="color:GoldenRod;">'.join('<br/>', $va_plugin_info['warnings']).'</div>';
 					}
+					if (is_array($va_plugin_info['notices']) && sizeof($va_plugin_info['notices'])) {
+						print '<div style="color:green;">'.join('<br/>', $va_plugin_info['notices']).'</div>';
+					}
 				?></td>
 				<td>
 <?php

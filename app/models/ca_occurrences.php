@@ -333,37 +333,71 @@ class ca_occurrences extends BundlableLabelableBaseModelWithAttributes implement
 	 */
 	 public function getHierarchyList($pb_dummy=false) {
 	 	$vn_pk = $this->getPrimaryKey();
-	 	if (!$vn_pk) { return null; }		// have to load a row first
-	 	
-	 	$vs_label = $this->getLabelForDisplay(false);
-	 	$vs_hier_fld = $this->getProperty('HIERARCHY_ID_FLD');
-	 	$vs_parent_fld = $this->getProperty('PARENT_ID_FLD');
-	 	$vn_hier_id = $this->get($vs_hier_fld);
-	 	
-	 	if ($this->get($vs_parent_fld)) { 
-	 		// currently loaded row is not the root so get the root
-	 		$va_ancestors = $this->getHierarchyAncestors();
-	 		if (!is_array($va_ancestors) || sizeof($va_ancestors) == 0) { return null; }
-	 		$t_occ = new ca_occurrences($va_ancestors[0]);
+	 	if (!$vn_pk) { 
+	 		$o_db = new Db();
+	 		if (is_array($va_type_ids = caMergeTypeRestrictionLists($this, array())) && sizeof($va_type_ids)) {
+				$qr_res = $o_db->query("
+					SELECT o.occurrence_id, count(*) c
+					FROM ca_occurrences o
+					INNER JOIN ca_occurrences AS p ON p.parent_id = o.occurrence_id
+					WHERE o.parent_id IS NULL AND o.type_id IN (?)
+					GROUP BY o.occurrence_id
+				", array($va_type_ids));
+			} else {
+				$qr_res = $o_db->query("
+					SELECT o.occurrence_id, count(*) c
+					FROM ca_occurrences o
+					INNER JOIN ca_occurrences AS p ON p.parent_id = o.occurrence_id
+					WHERE o.parent_id IS NULL
+					GROUP BY o.occurrence_id
+				");
+			}
+	 		$va_hiers = array();
+	 		
+	 		$va_occurrence_ids = $qr_res->getAllFieldValues('occurrence_id');
+	 		$qr_res->seek(0);
+	 		$va_labels = $this->getPreferredDisplayLabelsForIDs($va_occurrence_ids);
+	 		while($qr_res->nextRow()) {
+	 			$va_hiers[$vn_occurrence_id = $qr_res->get('occurrence_id')] = array(
+	 				'occurrence_id' => $vn_occurrence_id,
+	 				'name' => $va_labels[$vn_occurrence_id],
+	 				'hierarchy_id' => $vn_occurrence_id,
+	 				'children' => (int)$qr_res->get('c')
+	 			);
+	 		}
+	 		return $va_hiers;
 	 	} else {
-	 		$t_occ =& $this;
-	 	}
-	 	
-	 	$va_children = $t_occ->getHierarchyChildren(null, array('idsOnly' => true));
-	 	$va_occurrence_hierarchy_root = array(
-	 		$t_occ->get($vs_hier_fld) => array(
-	 			'occurrence_id' => $vn_pk,
-	 			'name' => $vs_label,
-	 			'hierarchy_id' => $vn_hier_id,
-	 			'children' => sizeof($va_children)
-	 		),
-	 		'occurrence_id' => $vn_pk,
-			'name' => $vs_label,
-			'hierarchy_id' => $vn_hier_id,
-			'children' => sizeof($va_children)
-	 	);
-	 	
-	 	return $va_occurrence_hierarchy_root;
+	 		// return specific occurrence as root of hierarchy
+			$vs_label = $this->getLabelForDisplay(false);
+			$vs_hier_fld = $this->getProperty('HIERARCHY_ID_FLD');
+			$vs_parent_fld = $this->getProperty('PARENT_ID_FLD');
+			$vn_hier_id = $this->get($vs_hier_fld);
+			
+			if ($this->get($vs_parent_fld)) { 
+				// currently loaded row is not the root so get the root
+				$va_ancestors = $this->getHierarchyAncestors();
+				if (!is_array($va_ancestors) || sizeof($va_ancestors) == 0) { return null; }
+				$t_occurrence = new ca_occurrences($va_ancestors[0]);
+			} else {
+				$t_occurrence =& $this;
+			}
+			
+			$va_children = $t_occurrence->getHierarchyChildren(null, array('idsOnly' => true));
+			$va_occurrence_hierarchy_root = array(
+				$t_occurrence->get($vs_hier_fld) => array(
+					'occurrence_id' => $vn_pk,
+					'name' => $vs_label,
+					'hierarchy_id' => $vn_hier_id,
+					'children' => sizeof($va_children)
+				),
+				'occurrence_id' => $vn_pk,
+				'name' => $vs_label,
+				'hierarchy_id' => $vn_hier_id,
+				'children' => sizeof($va_children)
+			);
+				
+	 		return $va_occurrence_hierarchy_root;
+		}
 	}
 	# ------------------------------------------------------
 	/**

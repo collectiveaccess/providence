@@ -44,13 +44,14 @@ require_once(__CA_LIB_DIR__.'/core/Parsers/TimeExpressionParser.php');
 	 * @param $pa_preferred_locales -
 	 * @return Array - returns an associative array defining which locales should be used when displaying values; suitable for use with caExtractValuesByLocale()
 	 */
+	$g_user_locale_rules = array();
 	function caGetUserLocaleRules($ps_item_locale=null, $pa_preferred_locales=null) {
-		global $g_ui_locale, $g_ui_locale_id;
+		global $g_ui_locale, $g_ui_locale_id, $g_user_locale_rules;
+		
+		if (isset($g_user_locale_rules[$ps_item_locale])) { return $g_user_locale_rules[$ps_item_locale]; }
 		
 		$o_config = Configuration::load();
 		$va_default_locales = $o_config->getList('locale_defaults');
-		
-		//$vs_label_mode = $po_request->user->getPreference('cataloguing_display_label_mode');
 		
 		$va_preferred_locales = array();
 		if ($ps_item_locale) {
@@ -87,7 +88,7 @@ require_once(__CA_LIB_DIR__.'/core/Parsers/TimeExpressionParser.php');
 				$va_preferred_locales[$g_ui_locale] = true;
 			}
 		}
-		$va_rules = array(
+		$g_user_locale_rules[$ps_item_locale] = $va_rules = array(
 			'preferred' => $va_preferred_locales,	/* all of these locales will display if available */
 			'fallback' => $va_fallback_locales		/* the first of these that is available will display, but only if none of the preferred locales are available */
 		);
@@ -106,18 +107,18 @@ require_once(__CA_LIB_DIR__.'/core/Parsers/TimeExpressionParser.php');
 	 */
 	function caExtractValuesByLocale($pa_locale_rules, $pa_values, $pa_options=null) {
 		if (!is_array($pa_values)) { return array(); }
-		$t_locales = new ca_locales();
-		$va_locales = $t_locales->getLocaleList();
+		$va_locales = ca_locales::getLocaleList();
 		
 		if (!is_array($pa_options)) { $pa_options = array(); }
 		if (!isset($pa_options['returnList'])) { $pa_options['returnList'] = false; }
 		
-		if (isset($pa_options['debug']) && $pa_options['debug']) {
-			print_r($pa_values);
-		}
 		if (!is_array($pa_values)) { return array(); }
 		$va_values = array();
 		foreach($pa_values as $vm_id => $va_value_list_by_locale) {
+			if (sizeof($va_value_list_by_locale) == 1) {		// Don't bother looking if there's just a single value
+				$va_values[$vm_id] = array_shift($va_value_list_by_locale);
+				continue;
+			}
 			foreach($va_value_list_by_locale as $pm_locale => $vm_value) {
 				// convert locale_id to locale string
 				if (is_numeric($pm_locale)) {
@@ -148,11 +149,7 @@ require_once(__CA_LIB_DIR__.'/core/Parsers/TimeExpressionParser.php');
 	}
 	# ------------------------------------------------------------------------------------------------
 	function caExtractValuesByUserLocale($pa_values, $ps_item_locale=null, $pa_preferred_locales=null, $pa_options=null) {
-		$va_values = caExtractValuesByLocale(caGetUserLocaleRules($ps_item_locale, $pa_preferred_locales), $pa_values, $pa_options);
-		if (isset($pa_options['debug']) && $pa_options['debug']) {
-			//print_r($va_values);
-		}
-		return $va_values;
+		return caExtractValuesByLocale(caGetUserLocaleRules($ps_item_locale, $pa_preferred_locales), $pa_values, $pa_options);
 	}
 	# ------------------------------------------------------------------------------------------------
 	/**
@@ -385,6 +382,8 @@ require_once(__CA_LIB_DIR__.'/core/Parsers/TimeExpressionParser.php');
 			switch($vs_key) {
 				case 'MakerNote':	// EXIF tags to skip output of
 				case 'ImageResourceInformation':
+				case 'ImageSourceData':
+				case 'ICC_Profile':
 					continue(2);
 					break;
 			}
@@ -1216,33 +1215,11 @@ require_once(__CA_LIB_DIR__.'/core/Parsers/TimeExpressionParser.php');
 	 * @return string HTML implementing the inspector
 	 */
 	function caEditorACLEditor($po_view, $pt_instance, $pa_options=null) {
+		$vs_view_path = (isset($pa_options['viewPath']) && $pa_options['viewPath']) ? $pa_options['viewPath'] : $po_view->request->getViewsDirectoryPath();
+		$o_view = new View($po_view->request, "{$vs_view_path}/bundles/");
 		
-		$vb_can_edit	 	= $pt_instance->isSaveable($po_view->request);
-		$vb_can_delete		= $pt_instance->isDeletable($po_view->request);
-		
-		$vs_buf = '<div class="sectionBox">';
-
-		if ($vb_can_edit) {
-			$vs_buf .= $vs_control_box = caFormControlBox(
-				caFormSubmitButton($po_view->request, __CA_NAV_BUTTON_SAVE__, _t("Save"), 'caAccessControlList').' '.
-				caNavButton($po_view->request, __CA_NAV_BUTTON_CANCEL__, _t("Cancel"), $po_view->request->getModulePath(), $po_view->request->getController(), 'Access/'.$po_view->request->getActionExtra(), array($pt_instance->primaryKey() => $pt_instance->getPrimaryKey())),
-				'',
-				''
-			);
-		}
-		
-		$vs_buf .= caFormTag($po_view->request, 'SetAccess', 'caAccessControlList');
-		
-		$vs_buf .= "<h2>"._t('User access')."</h2>\n";
-		$vs_buf .= $pt_instance->getACLUserHTMLFormBundle($po_view->request, 'caAccessControlList');
-		$vs_buf .= "<h2>"._t('Group access')."</h2>\n";
-		$vs_buf .= $pt_instance->getACLGroupHTMLFormBundle($po_view->request, 'caAccessControlList');
-		$vs_buf .= "<h2>"._t('Everyone else')."</h2>\n";
-		$vs_buf .= $pt_instance->getACLWorldHTMLFormBundle($po_view->request, 'caAccessControlList');
-		$vs_buf .= caHTMLHiddenInput($pt_instance->primaryKey(), array('value' => $pt_instance->getPrimaryKey()));
-		$vs_buf .= '</form><div class="editorBottomPadding"><!-- empty --></div></div>';
-
-		return $vs_buf;
+		$o_view->setVar('t_instance', $pt_instance);
+		return $o_view->render('ca_acl_access.php');
 	}
 	# ------------------------------------------------------------------------------------------------
 	/**
@@ -1661,7 +1638,7 @@ $ca_relationship_lookup_parse_cache = array();
 					
 					foreach($va_bundles as $vs_bundle_name) {
 						if (in_array($vs_bundle_name, array('_parent', '_hierarchy'))) { continue;}
-						if (!($vs_value = trim($qr_rel_items->get($vs_bundle_name)))) { 
+						if (!($vs_value = trim($qr_rel_items->get($vs_bundle_name, array('delimiter' => $vs_display_delimiter))))) { 
 							if ((!isset($pa_options['stripTags']) || !$pa_options['stripTags']) &&  (sizeof($va_tmp = explode('.', $vs_bundle_name)) == 3)) {		// is tag media?
 								$vs_value = trim($qr_rel_items->getMediaTag($va_tmp[0].'.'.$va_tmp[1], $va_tmp[2]));
 							}

@@ -301,8 +301,8 @@ class ItemInfoService extends BaseService {
 		}
 		$va_reps = $t_subject_instance->getRepresentations($versions);
 		foreach($va_reps as &$va_rep){
-			$va_rep["media"] = caUnserializeForDatabase($va_rep["media"]);
-			$va_rep["media_metadata"] = caUnserializeForDatabase($va_rep["media_metadata"]);
+			$va_rep["media"] = "<[[CDATA[".caUnserializeForDatabase($va_rep["media"])."]]>";
+			$va_rep["media_metadata"] = "<[[CDATA[".caUnserializeForDatabase($va_rep["media_metadata"])."]]>";
 		}
 		return $va_reps;
 	}
@@ -640,8 +640,7 @@ class ItemInfoService extends BaseService {
 	 * @return array List of available language
 	 */
 	public function getLocaleList($pa_options = null){
-		$t_locale = new ca_locales();
-		return $t_locale->getLocaleList($pa_options);
+		return ca_locales::getLocaleList($pa_options);
 	}
 	# -------------------------------------------------------
 	# Utilities

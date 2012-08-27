@@ -52,8 +52,9 @@
  			$this->opt_order = new ca_commerce_orders($this->request->getParameter('order_id', pInteger));
  			if (!$this->opt_order->getPrimaryKey()) { 
  				$this->request->setParameter('order_id', 0); 
- 				$this->opt_order->set('order_type', 'L');
  			}
+ 			$this->opt_order->set('order_type', 'L');
+ 			
  			$this->view->setVar('t_order', $this->opt_order);
  			$this->view->setVar('order_id', $this->opt_order->getPrimaryKey());
  			$this->view->setVar('t_item', $this->opt_order);
@@ -237,6 +238,9 @@
  					case 'transaction_id':
  						// noop
  						break;
+ 					case 'order_type':
+ 						// noop
+ 						break;
  					default:
  						if (isset($_REQUEST[$vs_f])) {
 							if (!$this->opt_order->set($vs_f, $this->request->getParameter($vs_f, pString))) {
@@ -260,6 +264,7 @@
  			
  			$this->opt_order->setMode(ACCESS_WRITE);
  			if ($this->opt_order->getPrimaryKey()) {
+ 				$this->opt_order->set('order_type', 'L');	// L=loan
  				$this->opt_order->update();
  				$vn_transaction_id = $this->opt_order->get('transaction_id');
  			} else {
@@ -408,8 +413,10 @@
  			$va_failed_insert_list = array();
  			
  			// Look for newly added items
+ 			$va_seen_items = array();
  			foreach($_REQUEST as $vs_k => $vs_v) {
  				if(preg_match("!^item_list_idnew_([\d]+)$!", $vs_k, $va_matches)) {
+ 					$va_seen_items[$vs_k] = true;
  					if ($vn_object_id = (int)$vs_v) {
  						// add item to order
  						$va_values = array();
@@ -455,9 +462,11 @@
  			// Look for edited items
  			foreach($_REQUEST as $vs_k => $vs_v) {
  				if(preg_match("!^item_list_id([\d]+)$!", $vs_k, $va_matches)) {
+ 					if (isset($va_seen_items[$vs_k]) && $va_seen_items[$vs_k]) { continue; }
  					if ($vn_item_id = (int)$va_matches[1]) {
  						$va_values = array();
  						foreach($_REQUEST as $vs_f => $vs_value) {
+ 							if (preg_match("!new_[\d]+$!", $vs_f)) { continue; }
  							if(preg_match("!^item_list_([A-Za-z0-9_]+)_".$vn_item_id."$!", $vs_f, $va_matches2)) {
  								$va_values[$va_matches2[1]] = $vs_value;
  							}

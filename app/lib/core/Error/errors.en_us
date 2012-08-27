@@ -163,6 +163,7 @@
 2035 = Invalid attempt to set parent id to NULL
 2040 = Could not load parent record
 2045 = Parent record had invalid hierarchical indexing
+2055 = Cannot duplicate root of hierarchy
 
 # --- PrintForm errors
 2200 = Form configuration file does not exist
