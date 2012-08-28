@@ -1569,7 +1569,7 @@ $ca_relationship_lookup_parse_cache = array();
 		//
 		$vb_use_new_display_format = false;
 		$va_bundles = array();
-		
+		$vs_display_delimiter = '';
 		if (isset($ca_relationship_lookup_parse_cache[$vs_rel_table])) {
 			$va_bundles = $ca_relationship_lookup_parse_cache[$vs_rel_table]['bundles'];
 			$va_display_format = $ca_relationship_lookup_parse_cache[$vs_rel_table]['display_format'];
@@ -1746,14 +1746,17 @@ $ca_relationship_lookup_parse_cache = array();
 			if ($vb_use_new_display_format) {
 				$vs_parent = $va_parent_labels[$va_parent_ids[$vn_id]];
 				$vs_hier = $va_hierarchies[$va_hierarchy_ids[$vn_id]]['name_plural'] ? $va_hierarchies[$va_hierarchy_ids[$vn_id]]['name_plural'] : $va_hierarchies[$va_hierarchy_ids[$vn_id]]['name'];
-
-				foreach($va_related_item_info[$vn_id] as $vn_x => $vs_display_value) {
-					$vs_display_value = str_replace("^_parent", $vs_parent, $vs_display_value);
-					$va_tmp[$vn_id][$vn_x] = str_replace("^_hierarchy", $vs_hier, $vs_display_value);
-				
-					if (!strlen(trim($va_tmp[$vn_id][$vn_x]))) { unset($va_tmp[$vn_id][$vn_x]); }
+				if (is_array($va_related_item_info[$vn_id])) {
+					foreach($va_related_item_info[$vn_id] as $vn_x => $vs_display_value) {
+						$vs_display_value = str_replace("^_parent", $vs_parent, $vs_display_value);
+						$va_tmp[$vn_id][$vn_x] = str_replace("^_hierarchy", $vs_hier, $vs_display_value);
+					
+						if (!strlen(trim($va_tmp[$vn_id][$vn_x]))) { unset($va_tmp[$vn_id][$vn_x]); }
+					}
 				}
-				$va_tmp[$vn_id] = join($vs_display_delimiter, $va_tmp[$vn_id]);
+				if (is_array($va_tmp[$vn_id])) {
+					$va_tmp[$vn_id] = join($vs_display_delimiter, $va_tmp[$vn_id]);
+				}
 			} else {
 				$va_tmp[$vn_id] = str_replace('^_parent',  $va_parent_labels[$va_parent_ids[$vn_id]], $va_tmp[$vn_id]);
 				$va_tmp[$vn_id] = str_replace('^_hierarchy',  $va_hierarchies[$va_hierarchy_ids[$vn_id]]['name_plural'] ? $va_hierarchies[$va_hierarchy_ids[$vn_id]]['name_plural'] : $va_hierarchies[$va_hierarchy_ids[$vn_id]]['name'], $va_tmp[$vn_id]);
