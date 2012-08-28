@@ -307,6 +307,11 @@ class ca_list_items extends BundlableLabelableBaseModelWithAttributes implements
 	protected $SEARCH_RESULT_CLASSNAME = 'ListItemSearchResult';
 	
 	# ------------------------------------------------------
+	# ACL
+	# ------------------------------------------------------
+	protected $SUPPORTS_ACL = true;
+	
+	# ------------------------------------------------------
 	# $FIELDS contains information about each field in the table. The order in which the fields
 	# are listed here is the order in which they will be returned using getFields()
 

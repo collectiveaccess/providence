@@ -4258,6 +4258,7 @@ $pa_options["display_form_field_tips"] = true;
 	 * @return int An access value 
 	 */
 	public function checkACLAccessForUser($t_user, $pn_id=null) {
+		if (!$this->supportsACL()) { return __CA_ACL_EDIT_DELETE_ACCESS__; }
 		if (!$pn_id) { 
 			$pn_id = (int)$this->getPrimaryKey(); 
 			if (!$pn_id) { return null; }
@@ -4266,6 +4267,15 @@ $pa_options["display_form_field_tips"] = true;
 		require_once(__CA_MODELS_DIR__.'/ca_acl.php');
 		
 		return ca_acl::accessForRow($t_user, $this->tableNum(), $pn_id);
+	}
+	# --------------------------------------------------------------------------------------------		
+	/**
+	 * Checks if model supports ACL item-based access control
+	 *
+	 * @return bool True if model supports ACL, false if not
+	 */
+	public function supportsACL() {
+		return (bool)$this->getProperty('SUPPORTS_ACL');
 	}
 	# ------------------------------------------------------
 }
