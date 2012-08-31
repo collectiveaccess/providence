@@ -80,6 +80,12 @@ BaseModel::$s_ca_models_definitions['ca_commerce_orders'] = array(
 					_t('library loan') => 'L'
 				)
 		),
+		'order_number' => array(
+				'FIELD_TYPE' => FT_TEXT, 'DISPLAY_TYPE' => DT_OMIT,
+				'DISPLAY_WIDTH' => "120px", 'DISPLAY_HEIGHT' => 1,
+				'IS_NULL' => false, 
+				'LABEL' => _t('Order number'), 'DESCRIPTION' => _t('Unique identifying number for order.')
+		),
 		'shipping_fname' => array(
 				'FIELD_TYPE' => FT_TEXT, 'DISPLAY_TYPE' => DT_FIELD, 
 				'DISPLAY_WIDTH' => 40, 'DISPLAY_HEIGHT' => 1,
@@ -537,6 +543,9 @@ class ca_commerce_orders extends BaseModel {
 	
 		if ($vn_rc = parent::insert($pa_options)) {
 			$this->sendStatusChangeEmailNotification(null, null, null);
+			
+			$this->set('order_number', ca_commerce_orders::generateOrderNumber($this->getPrimaryKey(), $this->get('created_on', array('GET_DIRECT_DATE' => true))));
+			parent::update();
 		}
 		return $vn_rc;
 	}
@@ -581,6 +590,9 @@ class ca_commerce_orders extends BaseModel {
 		}
 		
 		$vb_status_changed = $this->changed('order_status');
+		
+		$this->set('order_number', ca_commerce_orders::generateOrderNumber($this->getPrimaryKey(), $this->get('created_on', array('GET_DIRECT_DATE' => true))));
+			
 		if($vn_rc = parent::update($pa_options)) {
 			if ($vb_status_changed) { $this->sendStatusChangeEmailNotification($vn_old_status, $vn_old_ship_date, $vn_old_shipped_on_date); }
 			
@@ -809,8 +821,7 @@ class ca_commerce_orders extends BaseModel {
 					_t('submitted') => 'SUBMITTED',					// user has submitted order 
 					_t('awaiting payment') => 'AWAITING_PAYMENT',	// order is awaiting payment before completion - only payment details can be submitted by user
 					_t('processed') => 'PROCESSED',					// loan has been processed and user has items
-					_t('completed') => 'COMPLETED',					// loan complete - user returned all items
-					_t('reopened') => 'REOPENED'					// order reopened due to issue
+					_t('completed') => 'COMPLETED'					// loan complete - user returned all items
 	 			);
 	 			$this->FIELDS['order_status']['LABEL'] = _t('Loan status');
 	 			$this->NAME_SINGULAR = _t('client loan');
@@ -1062,6 +1073,8 @@ class ca_commerce_orders extends BaseModel {
 	 *		loan_return_date =
 	 *		is_overdue = 
 	 *		is_outstanding =
+	 *		object_id =
+	 *		exclude = optional array of order_id's to omit from the returned list
 	 */
 	 public function getOrders($pa_options=null) {
 	 	$o_db = $this->getDb();
@@ -1077,6 +1090,11 @@ class ca_commerce_orders extends BaseModel {
 	 		$va_sql_values[] = time();
 	 		
 	 		$va_sql_wheres[] = "(i.loan_return_date IS NULL)";
+	 	}
+	 	
+	 	if (isset($pa_options['exclude']) && (is_array($pa_options['exclude']))) {
+	 		$va_sql_wheres[] = "(o.order_id NOT IN (?))";
+	 		$va_sql_values[] = $pa_options['exclude'];
 	 	}
 	 	
 	 	if (isset($pa_options['is_outstanding']) && ((bool)$pa_options['is_outstanding'])) {
@@ -1126,6 +1144,11 @@ class ca_commerce_orders extends BaseModel {
 	 			$va_sql_values[] = (float)$va_dates['start'];
 	 			$va_sql_values[] = (float)$va_dates['end'];
 	 		}
+	 	}
+	 	
+	 	if (isset($pa_options['object_id']) && strlen($pa_options['object_id'])) {
+	 		$va_sql_wheres[] = "(i.object_id = ?)";
+	 		$va_sql_values[] = (int)$pa_options['object_id'];
 	 	}
 	 	
 	 	if (isset($pa_options['loan_checkout_date']) && strlen($pa_options['loan_checkout_date'])) {
@@ -1988,6 +2011,15 @@ class ca_commerce_orders extends BaseModel {
 	}
 	# ------------------------------------------------------
 	/**
+	 * Formats order number (DDMMYYY date + "-" + order_id) for display
+	 *
+	 * @return string The order number
+	 */
+	static public function generateOrderNumber($pn_order_id, $pn_created_on) {
+		return date("mdY", $pn_created_on)."-".$pn_order_id;
+	}
+	# ------------------------------------------------------
+	/**
 	 * Returns a list of order_ids associated with a transaction
 	 *
 	 * @param int $pn_transaction_id A transaction_id
@@ -2019,7 +2051,7 @@ class ca_commerce_orders extends BaseModel {
 	 */
 	public function getFulfillmentLog($pa_options=null) {
 		if (!($vn_order_id = $this->getPrimaryKey())) { return null; }
-		$o_db = new Db();
+		$o_db = $this->getDb();
 		
 		$qr_res = $o_db->query("
 			SELECT e.*, i.*, o.idno item_idno
@@ -2094,6 +2126,16 @@ class ca_commerce_orders extends BaseModel {
 	/**
 	 *
 	 */
+	public function getOrderTransactionUserID() {
+		if (!($t_trans = $this->getOrderTransaction())) { return null; }
+		if (!($t_user = $t_trans->getTransactionUser())) { return null; }
+		
+		return $t_user->getPrimaryKey();
+	}
+	# ------------------------------------------------------
+	/**
+	 *
+	 */
 	public function getOrderTransactionUserInstance() {
 		if (!($t_trans = $this->getOrderTransaction())) { return null; }
 		if (!($t_user = $t_trans->getTransactionUser())) { return null; }
@@ -2106,7 +2148,7 @@ class ca_commerce_orders extends BaseModel {
 	 */
 	public function getLoanDueDates() {
 		if (!($vn_order_id = $this->getPrimaryKey())) { return null; }
-		$o_db = new Db();
+		$o_db = $this->getDb();
 		
 		$qr_res = $o_db->query("
 			SELECT min(loan_due_date) mindate, max(loan_due_date) maxdate
@@ -2137,7 +2179,7 @@ class ca_commerce_orders extends BaseModel {
 	 */
 	public function getLoanReturnDates() {
 		if (!($vn_order_id = $this->getPrimaryKey())) { return null; }
-		$o_db = new Db();
+		$o_db = $this->getDb();
 		
 		$qr_res = $o_db->query("
 			SELECT min(loan_return_date) mindate, max(loan_return_date) maxdate
@@ -2168,7 +2210,7 @@ class ca_commerce_orders extends BaseModel {
 	 */
 	public function unreturnedLoanItems() {
 		if (!($vn_order_id = $this->getPrimaryKey())) { return null; }
-		$o_db = new Db();
+		$o_db = $this->getDb();
 		
 		$qr_res = $o_db->query("
 			SELECT *
@@ -2181,6 +2223,37 @@ class ca_commerce_orders extends BaseModel {
 			$va_unreturned_items[$qr_res->get('item_id')] = $qr_res->getRow();
 		}
 		return $va_unreturned_items;
+	}
+	# ------------------------------------------------------
+	/**
+	 *
+	 */
+	static public function getUsageOfItemInOrders($pn_object_id, $pa_options=null) {
+		$o_db = new Db();
+		
+		$va_sql_wheres = $va_sql_params = array((int)$pn_object_id);
+		if (isset($pa_options['type']) && in_array($pa_options['type'], array('O', 'L'))) {
+			$va_sql_wheres[] = "(o.order_type = ?)";
+			$va_sql_params[] = $pa_options['type'];
+		}
+		
+		$vs_sql_wheres = '';
+		if (sizeof($va_sql_wheres)) {
+			$vs_sql_wheres = " AND ".join(" AND ", $va_sql_wheres);
+		}
+		
+		$qr_res = $o_db->query("
+			SELECT o.*, i.*
+			FROM ca_commerce_order_items i
+			INNER JOIN ca_commerce_orders AS o ON o.order_id = i.order_id
+			WHERE object_id = ? {$vs_sql_wheres}
+		", $va_sql_params);
+		
+		$va_usage_history = array();
+		while ($qr_res->nextRow()) {
+			$va_usage_history[$qr_res->get('item_id')] = $qr_res->getRow();
+		}
+		return $va_usage_history;
 	}
 	# ------------------------------------------------------
 }
