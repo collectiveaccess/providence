@@ -225,7 +225,7 @@
 		
 		jQuery('#user_id_autocomplete').result(function(event, data, formatted) {
 			var item_id = data[1];
-			if (!parseInt(item_id)) {
+			if (parseInt(item_id)) {
 				jQuery('#user_id').val(item_id);
 			}
 		});
