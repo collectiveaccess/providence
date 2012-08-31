@@ -398,7 +398,7 @@
 					}
 					if(data[3] > 0) {
 						jQuery('#' + autocompleter_id).val('');
-						var msg = '<?php print addslashes(print _t("<em>%1</em> is currently on loan and is due to be returned on %2")); ?>';
+						var msg = '<?php print addslashes(_t("<em>%1</em> is currently on loan and is due to be returned on %2")); ?>';
 						msg = msg.replace("%1", data[0]);
 						msg = msg.replace("%2", data[4]);
 						jQuery.jGrowl(msg, { sticky: false, speed:'fast' });

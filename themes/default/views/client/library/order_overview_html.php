@@ -44,7 +44,8 @@
 	
 	print caFormTag($this->request, 'SaveOrderOverview', 'caClientOrderOverviewForm', null, 'post', 'multipart/form-data', '_top', array());
 
-	$vs_item_url = caNavUrl($this->request, 'client/library', 'OrderEditor', 'ItemList', array('order_id' => $vn_order_id));
+	
+	$va_users_other_orders = $t_order->getOrders(array('user_id' => $vn_client_user_id = $t_order->getOrderTransactionUserID(), 'type' => 'L', 'is_outstanding' => true, 'exclude' => array($vn_order_id)));
 ?>
 <h1><?php print _t('Loan Overview'); ?></h1>
 <div id="caClientOrderOverview">
@@ -77,20 +78,15 @@
 			$vs_status_message = _t('Status: %1', $vs_order_status_display);
 			
 			if ($t_order->requiresShipping()) {
-				TooltipManager::add("#commerceOrderStatusMessage", $vs_order_status_description = _t('Loan is ready for fulfillment. If the load requires shipping click on the "record shipment details" below to enter shipping information.'));
+				TooltipManager::add("#commerceOrderStatusMessage", $vs_order_status_description = _t('Loan has been made. If the load requires shipping click on the "record shipment details" below to enter shipping information.'));
 				$vs_next_step = caNavLink($this->request, _t('Record shipment details')." &rsaquo;", 'caClientOrderOverviewButton',  'client/library', 'OrderEditor', 'Shipping', array('order_id' => $vn_order_id));
 			} else {
-				TooltipManager::add("#commerceOrderStatusMessage", $vs_order_status_description = _t('Loan is ready for fulfillment. It will be closed automatically when the last item is returned.'));
+				TooltipManager::add("#commerceOrderStatusMessage", $vs_order_status_description = _t('Loan has been made. It will be closed automatically when the last item is returned.'));
 			}
 			break;
 		case 'COMPLETED':
 			$vs_status_message = _t('Status: %1', $vs_order_status_display);
-			TooltipManager::add("#commerceOrderStatusMessage", $vs_order_status_description = _t('Loan has been fulfilled and is complete. No further action is required.'));
-			
-			break;
-		case 'REOPENED':
-			$vs_status_message = _t('Status: %1', $vs_order_status_display);
-			TooltipManager::add("#commerceOrderStatusMessage", $vs_order_status_description = _t('Loan has been reopened due to an issue.'));
+			TooltipManager::add("#commerceOrderStatusMessage", $vs_order_status_description = _t('Loan is complete. No further action is required.'));
 			
 			break;
 		default:
@@ -165,7 +161,7 @@
 		print "<div class='statusWarning'>".$vs_warning."</div>";
 	}
 	print "</div><!-- end statusDesc -->";
-	if ($vs_next_step) { print "<h2 style='text-align:right;'>"._t("Next step").": $vs_next_step</h2>\n"; }
+	if ($vs_next_step) { print "<h2 style='float: right; text-align:right;'>"._t("Next step").": $vs_next_step</h2>\n"; }
 ?>
 	<div style='width:100%; height:1px; clear:both;'></div>
 	</div><!-- end orderStatus -->
@@ -206,6 +202,15 @@
 	$vs_communication_url = caNavUrl($this->request, 'client/library', 'Communications', 'Index', array('transaction_id' => $vn_transaction_id));
 ?>
 	<h3><?php print ($vn_num_messages == 1) ? _t("There has been <a href='%2'>%1 communication</a> regarding this loan request", $vn_num_messages, $vs_communication_url) :  _t("There have been <a href='%2'>%1 communications</a> regarding this loan request", $vn_num_messages, $vs_communication_url); ?></h3>
+
+<?php
+	if (is_array($va_users_other_orders) && ($vn_num_other_orders = sizeof($va_users_other_orders))) {
+		$vs_other_order_url = caNavUrl($this->request, 'client/library', 'List', 'Index', array('user_id' => $vn_client_user_id));
+?>
+	<h3><?php print ($vn_num_other_orders == 1) ? _t("Client has <a href='%2'>%1 other outstanding loan</a>", $vn_num_other_orders, $vs_other_order_url) :  _t("Client has <a href='%2'>%1 other outstanding loans</a>", $vn_num_other_orders, $vs_other_order_url); ?></h3>
+<?php
+	}
+?>
 	<div class="overviewItem">
 <?php 
 		$va_output = array();
@@ -221,9 +226,11 @@
 			print "<b>"._t("Cost Breakdown").":</b> ".join(" + ", $va_output);
 		}
 ?></div>
-	
+<?php
+	;
+?>
 	<div >
-		<?php print "<h1>".((($vn_item_count = sizeof($va_items)) != 1) ? _t("%1 Items", $vn_item_count) : _t("%1 Item", $vn_item_count))." <span style='font-size:.65em;'><a href='".$vs_item_url."'>"._t('Manage')."</a></span></h1>"; ?>
+		<?php print "<h1>".((($vn_item_count = sizeof($va_items)) != 1) ? _t("%1 Items", $vn_item_count) : _t("%1 Item", $vn_item_count))." <span style='font-size:.65em;'>".caNavLink($this->request, _t('Manage'), '', 'client/library', 'OrderEditor', 'ItemList', array('order_id' => $vn_order_id))."</span> <span style='font-size:.65em;'>".caNavLink($this->request, _t('Print checklist'), '', 'client/library', 'OrderEditor', 'GetCheckList', array('order_id' => $vn_order_id))."</span></h1>"; ?>
 	</div>
 	
 <?php

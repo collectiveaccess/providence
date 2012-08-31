@@ -557,10 +557,18 @@ require_once(__CA_LIB_DIR__.'/core/Parsers/TimeExpressionParser.php');
 				if (!$vs_label) { 
 					switch($vs_table_name) {
 						case 'ca_commerce_orders':
-							if ($vs_org = $t_item->get('billing_organization')) {
-								$vs_label = _t('%5 #%4 on %1 from %2 (%3)', caGetLocalizedDate($t_item->get('created_on', array('GET_DIRECT_DATE' => true)), array('dateFormat' => 'delimited', 'timeOmit' => true)), $t_item->get('billing_fname').' '.$t_item->get('billing_lname'), $vs_org, $t_item->getOrderNumber(), caUcFirstUTF8Safe($t_item->getProperty('NAME_SINGULAR')));
+							if ($t_item->get('order_type') == 'L') {
+								if ($vs_org = $t_item->get('billing_organization')) {
+									$vs_label = _t('%5 #%4 on %1 to %2 (%3)', caGetLocalizedDate($t_item->get('created_on', array('GET_DIRECT_DATE' => true)), array('dateFormat' => 'delimited', 'timeOmit' => true)), $t_item->get('billing_fname').' '.$t_item->get('billing_lname'), $vs_org, $t_item->getOrderNumber(), caUcFirstUTF8Safe($t_item->getProperty('NAME_SINGULAR')));
+								} else {
+									$vs_label = _t('%4 #%3 on %1 to %2', caGetLocalizedDate($t_item->get('created_on', array('GET_DIRECT_DATE' => true)), array('dateFormat' => 'delimited', 'timeOmit' => true)),$t_item->get('billing_fname').' '.$t_item->get('billing_lname'), $t_item->getOrderNumber(), caUcFirstUTF8Safe($t_item->getProperty('NAME_SINGULAR')));
+								}
 							} else {
-								$vs_label = _t('%4 #%3 on %1 from %2', caGetLocalizedDate($t_item->get('created_on', array('GET_DIRECT_DATE' => true)), array('dateFormat' => 'delimited', 'timeOmit' => true)),$t_item->get('billing_fname').' '.$t_item->get('billing_lname'), $t_item->getOrderNumber(), caUcFirstUTF8Safe($t_item->getProperty('NAME_SINGULAR')));
+								if ($vs_org = $t_item->get('billing_organization')) {
+									$vs_label = _t('%5 #%4 on %1 from %2 (%3)', caGetLocalizedDate($t_item->get('created_on', array('GET_DIRECT_DATE' => true)), array('dateFormat' => 'delimited', 'timeOmit' => true)), $t_item->get('billing_fname').' '.$t_item->get('billing_lname'), $vs_org, $t_item->getOrderNumber(), caUcFirstUTF8Safe($t_item->getProperty('NAME_SINGULAR')));
+								} else {
+									$vs_label = _t('%4 #%3 on %1 from %2', caGetLocalizedDate($t_item->get('created_on', array('GET_DIRECT_DATE' => true)), array('dateFormat' => 'delimited', 'timeOmit' => true)),$t_item->get('billing_fname').' '.$t_item->get('billing_lname'), $t_item->getOrderNumber(), caUcFirstUTF8Safe($t_item->getProperty('NAME_SINGULAR')));
+								}
 							}
 							break;
 						default:
@@ -603,19 +611,7 @@ require_once(__CA_LIB_DIR__.'/core/Parsers/TimeExpressionParser.php');
 				$vs_buf .= "<strong>"._t("Creating new %1", $vs_type_name).": <div>".($vs_parent_name ?  _t("%1 &gt; New %2", $vs_parent_name, $vs_type_name) : _t("New %1", $vs_type_name))."</div></strong>\n";
 				$vs_buf .= "<br/>\n";
 			}
-		
-		// -------------------------------------------------------------------------------------
-		//
-		// Metabolic stuff goes here
-		//
-		
-		// $t_item contains the model for the record currently being edited. 
-		// To figure out what sort of record it is use $t_item->tableName()
-		//if ($t_item->tableName() == 'ca_objects') {
-		//	$vs_buf .= "<b>Project: </b>".$t_item->get("ca_collections.preferred_labels.name", array("restrict_to_types" => array("project"), "delimiter" => "<br/>"))."<br/>";
-		//	$vs_buf .= "<b>Silo: </b>".$t_item->get("ca_collections.preferred_labels.name", array("restrict_to_types" => array("silo"), "delimiter" => "<br/>"))."<br/>";
-		//}
-		
+	
 		// -------------------------------------------------------------------------------------
 		//
 		// Item-specific information
@@ -685,6 +681,15 @@ require_once(__CA_LIB_DIR__.'/core/Parsers/TimeExpressionParser.php');
 	});
 </script>\n";
 				
+			}
+			
+			//
+			// Output loan info for ca_objects
+			//
+			if ($vs_table_name === 'ca_objects') {
+				if ($po_view->request->user->canDoAction('can_manage_clients') && ($va_loan_details = $t_item->isOnLoan())) {
+					$vs_buf .= "<div>".caNavLink($po_view->request, _t('On loan to %1', $va_loan_details['billing_fname'].' '.$va_loan_details['billing_lname']), 'inspectorOnLoan', 'client/library', 'OrderEditor', 'Edit', array('order_id' => $va_loan_details['order_id']))."</div>";
+				}
 			}
 			
 			//
