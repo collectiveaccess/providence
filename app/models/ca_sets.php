@@ -412,6 +412,7 @@ class ca_sets extends BundlableLabelableBaseModelWithAttributes implements IBund
 	 *			checkAccess - Restricts returned sets to those with an public access level with the specified values. If omitted sets are returned regardless of public access (ca_sets.access) value. Can be a single value or array if you wish to filter on multiple public access values.
 	 *			row_id = if set to an integer only sets containing the specified row are returned
 	 *			setIDsOnly = if set to true only set_id values are returned, in a simple array
+	 *			omitCounts = 
 	 * @return array A list of sets keyed by set_id and then locale_id. Keys for the per-locale value array include: set_id, set_code, status, public access, owner user_id, content table_num, set type_id, set name, number of items in the set (item_count), set type name for display and set content type name for display. If setIDsOnly option is set then a simple array of set_id values is returned instead.
 	 */
 	public function getSets($pa_options=null) {
@@ -421,6 +422,7 @@ class ca_sets extends BundlableLabelableBaseModelWithAttributes implements IBund
 		$pn_user_id = isset($pa_options['user_id']) ? (int)$pa_options['user_id'] : null;
 		$pn_access = isset($pa_options['access']) ? $pa_options['access'] : null;
 		$pb_set_ids_only = isset($pa_options['setIDsOnly']) ? (bool)$pa_options['setIDsOnly'] : false;
+		$pb_omit_counts = isset($pa_options['omitCounts']) ? (bool)$pa_options['omitCounts'] : false;
 		
 		$pn_row_id = (isset($pa_options['row_id']) && ((int)$pa_options['row_id'])) ? (int)$pa_options['row_id'] : null;
 		
@@ -524,7 +526,7 @@ class ca_sets extends BundlableLabelableBaseModelWithAttributes implements IBund
 			$va_sql_selects[] = 'csi.item_id';
 		}
 		
-		if (!$pb_set_ids_only) {
+		if (!$pb_set_ids_only && !$pb_omit_counts) {
 			// get set item counts
 			$qr_table_nums = $o_db->query("
 				SELECT DISTINCT cs.table_num 
@@ -587,17 +589,42 @@ class ca_sets extends BundlableLabelableBaseModelWithAttributes implements IBund
 			}
 			return $va_sets;
 		} else {
+			if ($pb_set_ids_only) {
 			// get sets
-			$qr_res = $o_db->query("
-				SELECT ".join(', ', $va_sql_selects)."
-				FROM ca_sets cs
-				INNER JOIN ca_users AS u ON cs.user_id = u.user_id
-				".join("\n", $va_extra_joins)."
-				".(sizeof($va_sql_wheres) ? 'WHERE ' : '')."
-				".join(' AND ', $va_sql_wheres)."
-			");
+				$qr_res = $o_db->query("
+					SELECT ".join(', ', $va_sql_selects)."
+					FROM ca_sets cs
+					INNER JOIN ca_users AS u ON cs.user_id = u.user_id
+					".join("\n", $va_extra_joins)."
+					".(sizeof($va_sql_wheres) ? 'WHERE ' : '')."
+					".join(' AND ', $va_sql_wheres)."
+				");
+				return $qr_res->getAllFieldValues("set_id");
+			} else {
+				$qr_res = $o_db->query("
+					SELECT ".join(', ', $va_sql_selects)."
+					FROM ca_sets cs
+					INNER JOIN ca_users AS u ON cs.user_id = u.user_id
+					LEFT JOIN ca_set_labels AS csl ON cs.set_id = csl.set_id
+					LEFT JOIN ca_locales AS l ON csl.locale_id = l.locale_id
+					".join("\n", $va_extra_joins)."
+					".(sizeof($va_sql_wheres) ? 'WHERE ' : '')."
+					".join(' AND ', $va_sql_wheres)."
+				");
+				$t_list = new ca_lists();
+				while($qr_res->nextRow()) {
+					$vn_table_num = $qr_res->get('table_num');
+					if (!isset($va_type_name_cache[$vn_table_num]) || !($vs_set_type = $va_type_name_cache[$vn_table_num])) {
+						$vs_set_type = $va_type_name_cache[$vn_table_num] = $this->getSetContentTypeName($vn_table_num, array('number' => 'plural'));
+					}
+					
+					$vs_type = $t_list->getItemFromListForDisplayByItemID('set_types', $qr_res->get('type_id'));
+					
+					$va_sets[$qr_res->get('set_id')][$qr_res->get('locale_id')] = array_merge($qr_res->getRow(), array('item_count' => intval($va_item_counts[$qr_res->get('set_id')]), 'set_content_type' => $vs_set_type, 'set_type' => $vs_type));
+				}
+				return $va_sets;
+			}
 			
-			return $qr_res->getAllFieldValues("set_id");
 		}
 	}
 	# ------------------------------------------------------
@@ -1327,7 +1354,7 @@ LEFT JOIN ca_object_representations AS cor ON coxor.representation_id = cor.repr
 		}
 		
 		$qr_res = $o_db->query("
-			SELECT count(*) c
+			SELECT count(distinct row_id) c
 			FROM ca_set_items
 			INNER JOIN {$vs_rel_table_name} ON {$vs_rel_table_name}.{$vs_rel_table_pk} = ca_set_items.row_id
 			WHERE

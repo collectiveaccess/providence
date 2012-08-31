@@ -241,6 +241,7 @@
  			
  			if ($va_settings['usewysiwygeditor']) {
  				$o_config = Configuration::load();
+ 				if (!is_array($va_toolbar_config = $o_config->getAssoc('wysiwyg_editor_toolbar'))) { $va_toolbar_config = array(); }
  				JavascriptLoadManager::register("ckeditor");
  				$vs_class = 'jqueryCkeditor';
  				
@@ -251,7 +252,7 @@
 				 });
 			},
 			{
-				toolbar: ".json_encode(array_values($o_config->getAssoc('wysiwyg_editor_toolbar'))).",
+				toolbar: ".json_encode(array_values($va_toolbar_config)).",
 				width: '{$vs_width}',
 				height: '{$vs_height}',
 				toolbarLocation: 'top',
@@ -278,7 +279,11 @@
  				$vs_bundle_name = $pa_options['t_subject']->tableName().'.'.$pa_element_info['element_code'];
  				
  				if ($pa_options['po_request']) {
- 					$vs_lookup_url	= caNavUrl($pa_options['po_request'], 'lookup', 'AttributeValue', 'Get', array());
+ 					if (isset($pa_options['lookupUrl']) && $pa_options['lookupUrl']) {
+ 						$vs_lookup_url = $pa_options['lookupUrl'];
+ 					} else {
+ 						$vs_lookup_url	= caNavUrl($pa_options['po_request'], 'lookup', 'AttributeValue', 'Get', array());
+ 					}
  				}
  			}
  			

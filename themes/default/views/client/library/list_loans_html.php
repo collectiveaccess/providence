@@ -32,7 +32,9 @@
  	$va_filter_options = $this->getVar('filter_options');
  	
  	$vs_currency_symbol = $this->getVar('currency_symbol');
-
+ 	
+ 	$t_filter_user = new ca_users($va_filter_options['user_id']);
+	$vs_filter_user_id_name = $t_filter_user->getUserNameFormattedForLookup();
 ?>
 <script language="JavaScript" type="text/javascript">
 /* <![CDATA[ */
@@ -78,8 +80,14 @@
 			</td>
 		</tr>
 		<tr>
-			<td colspan="3">
-				<div class="formLabel"><?php print _t('Search')."<br/>".caHTMLTextInput('search', array('value' => $va_filter_options['search']), array('width' => '400px')); ?></div>
+			<td>
+				<div class="formLabel"><?php print _t('Search')."<br/>".caHTMLTextInput('search', array('value' => $va_filter_options['search']), array('width' => '15')); ?></div>
+			</td>
+			<td colspan="2">
+				<div class="formLabel">
+					<?php print _t('Client')."<br/>".caHTMLTextInput('user_id_autocomplete', array('value' => $vs_filter_user_id_name, 'class'=> 'lookupBg', 'id' => 'user_id_autocomplete'), array('width' => '40')); ?>
+					<input type="hidden" name="user_id" id="user_id" value="<?php print $va_filter_options['user_id']; ?>"/>
+				</div>
 			</td>
 			<td>
 <?php
@@ -90,6 +98,7 @@
 <?php
 				print caFormSubmitButton($this->request, __CA_NAV_BUTTON_GO__, _t('Filter'), 'caViewOptions', array());
 				print caJSButton($this->request, __CA_NAV_BUTTON_CANCEL__, _t('Reset'), 'caViewOptions', array('onclick' => 'jQuery("#searchToolsBox input").val("");'));
+				print caNavLink($this->request, _t('Export'), '', 'client/library', 'List', 'Export');
 
 ?>
 			</td>
@@ -204,4 +213,22 @@
 		}); 
 		return false;
 	});
+	
+	jQuery(document).ready(function() {
+		jQuery('#user_id_autocomplete').autocomplete('<?php print caNavUrl($this->request, 'lookup', 'User', 'Get'); ?>', 
+			{ minChars: 3, matchSubset: 1, matchContains: 1, delay: 800, scroll: true, max: 100, extraParams: { 'inlineCreate': false },
+				formatResult: function(data, value) {
+					return jQuery.trim(value.replace(/<\/?[^>]+>/gi, ''));
+				}
+			}
+		);
+		
+		jQuery('#user_id_autocomplete').result(function(event, data, formatted) {
+			var item_id = data[1];
+			if (!parseInt(item_id)) {
+				jQuery('#user_id').val(item_id);
+			}
+		});
+	});
+
 </script>

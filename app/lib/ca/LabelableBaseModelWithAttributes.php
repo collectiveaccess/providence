@@ -1014,8 +1014,7 @@
  			global $g_ui_locale_id;
  			
  			if (!$this->getPreferredLabelCount()) {
-				$t_locale = new ca_locales();
-				$va_locale_list = $t_locale->getLocaleList();
+				$va_locale_list = ca_locales::getLocaleList();
 				
 				if ($pn_locale_id && isset($va_locale_list[$pn_locale_id])) {
 					$vn_locale_id = $pn_locale_id;

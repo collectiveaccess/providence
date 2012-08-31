@@ -125,6 +125,13 @@ BaseModel::$s_ca_models_definitions['ca_users'] = array(
 				'LABEL' => _t('Account is activated?'), "DESCRIPTION" => "If checked, indicates user account is active. Only active users are allowed to log into the system.",
 				'BOUNDS_VALUE' => array(0,1)
 		),
+		'registered_on' => array(
+				'FIELD_TYPE' => FT_TIMESTAMP, 'DISPLAY_TYPE' => DT_OMIT, 
+				'DISPLAY_WIDTH' => 10, 'DISPLAY_HEIGHT' => 1,
+				'IS_NULL' => true, 
+				'DEFAULT' => '',
+				'LABEL' => _t('Registered on'), 'DESCRIPTION' => _t('Registered on')
+		),
 		'confirmed_on' => array(
 				'FIELD_TYPE' => FT_DATETIME, 'DISPLAY_TYPE' => DT_OMIT, 
 				'DISPLAY_WIDTH' => 10, 'DISPLAY_HEIGHT' => 1,
@@ -383,6 +390,22 @@ class ca_users extends BaseModel {
 		$this->clearErrors();
 		$this->set('userclass', 255);
 		return $this->update();
+	}
+	# ----------------------------------------
+	# --- Utility
+	# ----------------------------------------
+	/**
+	 *
+	 */
+	public function getUserNameFormattedForLookup() {
+		if (!($this->getPrimaryKey())) { return null; }
+		
+		$va_values = $this->getFieldValuesArray();
+		foreach($va_values as $vs_key => $vs_val) {
+			$va_values["ca_users.{$vs_key}"] = $vs_val;
+		}
+		
+		return caProcessTemplate(join($this->getAppConfig()->getList('ca_users_lookup_delimiter'), $this->getAppConfig()->getList('ca_users_lookup_settings')), $va_values, array());
 	}
 	# ----------------------------------------
 	# --- Authentication

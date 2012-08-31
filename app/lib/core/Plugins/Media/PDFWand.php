@@ -57,6 +57,9 @@ class WLPlugMediaPDFWand Extends WLPlug implements IWLPlugMedia {
 	var $ops_ghostscript_path;
 	var $ops_pdftotext_path;
 	
+	var $ops_imagemagick_path;
+	var $ops_graphicsmagick_path;
+	
 	var $info = array(
 		"IMPORT" => array(
 			"application/pdf" 					=> "pdf"
@@ -140,6 +143,7 @@ class WLPlugMediaPDFWand Extends WLPlug implements IWLPlugMedia {
 		$this->ops_ghostscript_path = $this->opo_external_app_config->get('ghostscript_app');
 		$this->ops_pdftotext_path = $this->opo_external_app_config->get('pdftotext_app');
 		$this->ops_imagemagick_path = $this->opo_external_app_config->get('imagemagick_path');
+		$this->ops_graphicsmagick_path = $this->opo_external_app_config->get('graphicsmagick_app');
 
 		
 		$this->info["INSTANCE"] = $this;
@@ -168,7 +172,16 @@ class WLPlugMediaPDFWand Extends WLPlug implements IWLPlugMedia {
 			return '';
 		}
 		
-		if ((!$this->opo_config->get('dont_use_imagemagick_to_identify_pdfs')) && caMediaPluginImageMagickInstalled($this->ops_imagemagick_path)) {
+		if ((!$this->opo_config->get('dont_use_graphicsmagick_to_identify_pdfs')) && caMediaPluginGraphicsMagickInstalled($this->ops_graphicsmagick_path)) {
+			if(is_array($va_info = $this->_graphicsMagickIdentify($ps_filepath)) && sizeof($va_info)) {
+				$vn_width = $va_info['width'];
+				$vn_height = $va_info['height'];
+				$vn_res = 72;
+				$vn_pages = $va_info['pages'];
+			} else {
+				return null;
+			}
+		} else if ((!$this->opo_config->get('dont_use_imagemagick_to_identify_pdfs')) && caMediaPluginImageMagickInstalled($this->ops_imagemagick_path)) {
 			if(is_array($va_info = $this->_imageMagickIdentify($ps_filepath)) && sizeof($va_info)) {
 				$vn_width = $va_info['width'];
 				$vn_height = $va_info['height'];
@@ -227,6 +240,23 @@ class WLPlugMediaPDFWand Extends WLPlug implements IWLPlugMedia {
 	# ------------------------------------------------
 	private function _imageMagickIdentify($ps_filepath) {
 		exec($this->ops_imagemagick_path.'/identify -format "%m;%w;%h;%p\n" '.caEscapeShellArg($ps_filepath)." 2> /dev/null", $va_output, $vn_return);
+		
+		array_pop($va_output); // last line is blank
+		if (is_array($va_output) && (sizeof($va_output) > 0)) {
+			$va_tmp = explode(';', $va_output[0]);
+			if ($va_tmp[0] === 'PDF') {
+				return array(
+					'width' => intval($va_tmp[1]),
+					'height' => intval($va_tmp[2]),
+					'pages' => sizeof($va_output)
+				);
+			}
+		}
+		return null;
+	}
+	# ----------------------------------------------------------
+	private function _graphicsMagickIdentify($ps_filepath) {
+		exec($this->ops_graphicsmagick_path.' identify -format "%m;%w;%h;%p\n" '.caEscapeShellArg($ps_filepath)." 2> /dev/null", $va_output, $vn_return);
 		
 		array_pop($va_output); // last line is blank
 		if (is_array($va_output) && (sizeof($va_output) > 0)) {

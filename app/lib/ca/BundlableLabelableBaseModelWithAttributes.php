@@ -300,6 +300,19 @@ class BundlableLabelableBaseModelWithAttributes extends LabelableBaseModelWithAt
 		$t_dupe->purify($this->purify());
 		$t_dupe->setTransaction($o_t);
 		
+		if($this->isHierarchical()) {
+			if (!$this->get($this->getProperty('HIERARCHY_PARENT_ID_FLD'))) {
+				if ($this->getHierarchyType() == __CA_HIER_TYPE_ADHOC_MONO__) {	// If we're duping the root of an adhoc hierarchy then we need to set the HIERARCHY_ID_FLD to null
+					$this->set($this->getProperty('HIERARCHY_ID_FLD'), null);
+				} else {
+					// Don't allow duping of hierarchy roots for non-adhoc hierarchies
+					if ($vb_we_set_transaction) { $this->removeTransaction(false);}
+					$this->postError(2055, _t("Cannot duplicate root of hierarchy"), "BundlableLabelableBaseModelWithAttributes->duplicate()");
+					return null;
+				}
+			}
+		}
+
 		// duplicate primary record + intrinsics
 		$va_field_list = $this->getFormFields(true, true);
 		foreach($va_field_list as $vn_i => $vs_field) {
@@ -344,6 +357,7 @@ class BundlableLabelableBaseModelWithAttributes extends LabelableBaseModelWithAt
 		$t_dupe->setMode(ACCESS_WRITE);
 		
 		if (isset($pa_options['user_id']) && $pa_options['user_id'] && $t_dupe->hasField('user_id')) { $t_dupe->set('user_id', $pa_options['user_id']); }
+		
 		$t_dupe->insert();
 		
 		if ($t_dupe->numErrors()) {
@@ -1357,6 +1371,13 @@ class BundlableLabelableBaseModelWithAttributes extends LabelableBaseModelWithAt
 					// This bundle is only available when editing objects of type ca_object_representations
 					case 'ca_object_representations_media_display':
 						$vs_element .= $this->getMediaDisplayHTMLFormBundle($pa_options['request'], $pa_options['formName'], $ps_placement_code, $pa_bundle_settings, $pa_options);
+						break;
+					# -------------------------------
+					// This bundle is only available for objects
+					case 'ca_commerce_order_history':
+						if (!$pa_options['request']->user->canDoAction('can_manage_clients')) { break; }
+						$vs_label_text = ($pa_bundle_settings['order_type'][0] == 'O') ? _t('Order history') : _t('Loan history');
+						$vs_element .= $this->getCommerceOrderHistoryHTMLFormBundle($pa_options['request'], $pa_options['formName'].'_'.$ps_bundle_name, $ps_placement_code, $pa_bundle_settings, $pa_options);
 						break;
 					# -------------------------------
 					default:
@@ -3719,9 +3740,9 @@ $pa_options["display_form_field_tips"] = true;
 	
 		if (!($vs_search_result_class = $t_instance->getProperty('SEARCH_RESULT_CLASSNAME'))) { return null; }
 		require_once(__CA_LIB_DIR__.'/ca/Search/'.$vs_search_result_class.'.php');
-		$o_data = new WLPlugSearchEngineCachedResult($pa_ids, array(), $t_instance->primaryKey());
+		$o_data = new WLPlugSearchEngineCachedResult($pa_ids, $t_instance->tableNum());
 		$o_res = new $vs_search_result_class();
-		$o_res->init($t_instance->tableNum(), $o_data, array());
+		$o_res->init($o_data, array());
 		
 		return $o_res;
 	}
@@ -3744,9 +3765,9 @@ $pa_options["display_form_field_tips"] = true;
 	
 		if (!($vs_search_result_class = $t_instance->getProperty('SEARCH_RESULT_CLASSNAME'))) { return null; }
 		require_once(__CA_LIB_DIR__.'/ca/Search/'.$vs_search_result_class.'.php');
-		$o_data = new WLPlugSearchEngineCachedResult($pa_ids, array(), $t_instance->primaryKey());
+		$o_data = new WLPlugSearchEngineCachedResult($pa_ids, $t_instance->tableNum());
 		$o_res = new $vs_search_result_class();
-		$o_res->init($t_instance->tableNum(), $o_data, array());
+		$o_res->init($o_data, array());
 		
 		return $o_res;
 	}
@@ -3865,7 +3886,6 @@ $pa_options["display_form_field_tips"] = true;
 			
 			if ($t_acl->numErrors()) {
 				$this->errors = $t_acl->errors;
-				print_R($t_acl->getErrors());
 				return false;
 			}
 		}
@@ -4245,6 +4265,7 @@ $pa_options["display_form_field_tips"] = true;
 	 * @return int An access value 
 	 */
 	public function checkACLAccessForUser($t_user, $pn_id=null) {
+		if (!$this->supportsACL()) { return __CA_ACL_EDIT_DELETE_ACCESS__; }
 		if (!$pn_id) { 
 			$pn_id = (int)$this->getPrimaryKey(); 
 			if (!$pn_id) { return null; }
@@ -4253,6 +4274,15 @@ $pa_options["display_form_field_tips"] = true;
 		require_once(__CA_MODELS_DIR__.'/ca_acl.php');
 		
 		return ca_acl::accessForRow($t_user, $this->tableNum(), $pn_id);
+	}
+	# --------------------------------------------------------------------------------------------		
+	/**
+	 * Checks if model supports ACL item-based access control
+	 *
+	 * @return bool True if model supports ACL, false if not
+	 */
+	public function supportsACL() {
+		return (bool)$this->getProperty('SUPPORTS_ACL');
 	}
 	# ------------------------------------------------------
 }

@@ -377,6 +377,8 @@
 			$vn_viewer_height_with_units = $vn_viewer_height; 
 			if (preg_match('!^[\d]+$!', $vn_viewer_width)) { $vn_viewer_width_with_units .= 'px'; }
 			if (preg_match('!^[\d]+$!', $vn_viewer_height)) { $vn_viewer_height_with_units .= 'px'; }
+			
+			JavascriptLoadManager::register("swf/swfobject");
 $vs_tag = "
 				<div id='{$vs_id_name}' style='width:{$vn_viewer_width_with_units}; height: {$vn_viewer_height_with_units};'>
 					{$vs_error_tag}

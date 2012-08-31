@@ -64,6 +64,7 @@ class WLPlugMediaAudio Extends WLPlug Implements IWLPlugMedia {
 	var $opo_config;
 	var $opo_external_app_config;
 	var $ops_path_to_ffmpeg;
+	var $opb_ffmpeg_available;
 
 	var $ops_mediainfo_path;
 	var $opb_mediainfo_available;
@@ -153,7 +154,7 @@ class WLPlugMediaAudio Extends WLPlug Implements IWLPlugMedia {
 		$this->ops_mediainfo_path = $this->opo_external_app_config->get('mediainfo_app');
 		$this->opb_mediainfo_available = caMediaInfoInstalled($this->ops_mediainfo_path);
 
-		if (!caMediaPluginFFfmpegInstalled($this->ops_path_to_ffmpeg)) { return null; }
+		$this->opb_ffmpeg_available = caMediaPluginFFfmpegInstalled($this->ops_path_to_ffmpeg);
 
 		$this->info["INSTANCE"] = $this;
 		return $this->info;
@@ -162,14 +163,15 @@ class WLPlugMediaAudio Extends WLPlug Implements IWLPlugMedia {
 	public function checkStatus() {
 		$va_status = parent::checkStatus();
 		
-		if ($this->register()) {
-			$va_status['available'] = true;
-		} else {
-			if (!caMediaPluginFFfmpegInstalled($this->ops_path_to_ffmpeg)) { 
-				$va_status['errors'][] = _t("Didn't load because ffmpeg is not installed");
-			}
+		$this->register();
+		$va_status['available'] = true;
+		if (!$this->opb_ffmpeg_available) { 
+			$va_status['errors'][] = _t("Incoming Audio files will not be transcoded because ffmpeg is not installed.");
 		}
 		
+		if ($this->opb_mediainfo_available) { 
+			$va_status['notices'][] = _t("MediaInfo will be used to extract metadata from video files.");
+		}
 		return $va_status;
 	}
 	# ------------------------------------------------
@@ -186,11 +188,7 @@ class WLPlugMediaAudio Extends WLPlug Implements IWLPlugMedia {
 				$info["mime_type"] = 'audio/x-wav';
 			}
 			$this->handle = $this->ohandle = $info;
-			if($this->opb_mediainfo_available){
-				$this->metadata = caExtractMetadataWithMediaInfo($this->ops_mediainfo_path, $filepath);
-			} else {
-				$this->metadata = $info;
-			}
+			$this->metadata = $info;	// populate with getID3 data because it's handy
 			return $info["mime_type"];
 		} else {
 			// is it Ogg?
@@ -276,6 +274,12 @@ class WLPlugMediaAudio Extends WLPlug Implements IWLPlugMedia {
 			}
 			
 			$this->handle = $this->ohandle = $info;
+			
+			if($this->opb_mediainfo_available){
+				$this->metadata = caExtractMetadataWithMediaInfo($this->ops_mediainfo_path, $filepath);
+			} else {
+				$this->metadata = $this->handle;
+			}
 			
 			if (!$this->handle['mime_type']) {
 				// is it Ogg?
@@ -523,7 +527,7 @@ class WLPlugMediaAudio Extends WLPlug Implements IWLPlugMedia {
 			}
 		} else {
 
-			if (($mimetype != "image/png") && ($mimetype != "image/jpeg")) {
+			if (($mimetype != "image/png") && ($mimetype != "image/jpeg") && ($this->opb_ffmpeg_available)) {
 				#
 				# Do conversion
 				#
@@ -604,7 +608,11 @@ class WLPlugMediaAudio Extends WLPlug Implements IWLPlugMedia {
 					$this->properties["duration"] = $va_mp3_output_info["playtime_seconds"];
 				}
 			} else {
-				# use default media icons
+				# use default media icons if ffmpeg is not present or the current version is an image
+				if(!$this->get("width") && !$this->get("height")){
+					$this->set("width",580);
+					$this->set("height",200);
+				}
 				return __CA_MEDIA_AUDIO_DEFAULT_ICON__;
 			}
 		}

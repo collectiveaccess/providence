@@ -42,6 +42,8 @@
 	$vs_original_filename 		= $va_media_info['ORIGINAL_FILENAME'];
 	
 	$vs_container_id 			= $this->getVar('containerID');
+	$vb_use_media_editor		= $this->getVar('use_media_editor');
+	$vb_no_controls				= $this->getVar('noControls');
 	
 	$va_pages = $va_sections = array();
 	$vb_use_book_reader = false;
@@ -282,19 +284,22 @@
 			$this->request->session->setVar('caDocumentViewerSectionCache', $va_section_cache);
 			
 			print $o_view->render('bookviewer_html.php');
+			return;
 		} else {
+		
+			if (!$vb_no_controls) {
 ?>
 	<!-- Controls - only for media overlay -->
 	<div class="caMediaOverlayControls">
 			<div class='close'><a href="#" onclick="caMediaPanel.hidePanel(); return false;" title="close">&nbsp;&nbsp;&nbsp;</a></div>
-<?php
+<?php			
 			if(caObjectsDisplayDownloadLink($this->request)){
 ?>
 
 				<div class='download'>
 <?php 
 						# -- get version to download configured in media_display.conf
-						$va_download_display_info = caGetMediaDisplayInfo('download', $t_rep->getMediaInfo('media', 'INPUT', 'MIMETYPE'));
+						$va_download_display_info = caGetMediaDisplayInfo($vs_display_type, $t_rep->getMediaInfo('media', 'INPUT', 'MIMETYPE'));
 						$vs_download_version = $va_download_display_info['display_version'];
 						print caNavLink($this->request, "<img src='".$this->request->getThemeUrlPath()."/graphics/buttons/downloadWhite.png' border='0' title='"._t("Download Media")."'>", '', 'Detail', 'Object', 'DownloadRepresentation', array('representation_id' => $t_rep->getPrimaryKey(), "object_id" => $t_object->getPrimaryKey(), "download" => 1, "version" => $vs_download_version));
 ?>				
@@ -315,19 +320,33 @@
 			<div class='repNav'>
 <?php
 				if ($vn_id = $this->getVar('previous_representation_id')) {
-					print "<a href='#' onClick='jQuery(\"#{$vs_container_id}\").load(\"".caNavUrl($this->request, 'editor/objects', 'ObjectEditor', 'GetRepresentationInfo', array('representation_id' => (int)$vn_id, 'object_id' => (int)$t_object->getPrimaryKey()))."\");'>←</a>";
+					print "<a href='#' onClick='jQuery(\"#{$vs_container_id}\").load(\"".caNavUrl($this->request, 'editor/objects', 'ObjectEditor', $this->request->getAction(), array('representation_id' => (int)$vn_id, 'object_id' => (int)$t_object->getPrimaryKey()))."\");'>←</a>";
 				}
 				if (sizeof($va_reps) > 1) {
 					print ' '._t("%1 of %2", $this->getVar('representation_index'), sizeof($va_reps)).' ';
 				}
 				if ($vn_id = $this->getVar('next_representation_id')) {
-					print "<a href='#' onClick='jQuery(\"#{$vs_container_id}\").load(\"".caNavUrl($this->request, 'editor/objects', 'ObjectEditor', 'GetRepresentationInfo', array('representation_id' => (int)$vn_id, 'object_id' => (int)$t_object->getPrimaryKey()))."\");'>→</a>";
+					print "<a href='#' onClick='jQuery(\"#{$vs_container_id}\").load(\"".caNavUrl($this->request, 'editor/objects', 'ObjectEditor', $this->request->getAction(), array('representation_id' => (int)$vn_id, 'object_id' => (int)$t_object->getPrimaryKey()))."\");'>→</a>";
 				}
 ?>
 			</div>
-	</div><!-- end caMediaOverlayControls -->
+<?php
+		if ($vb_use_media_editor) {
+			$va_display_info = caGetMediaDisplayInfo($vs_display_type, $t_rep->getMediaInfo('media', 'INPUT', 'MIMETYPE'));
+			
+			if (isset($va_display_info['editing_tools']) && ($vs_tool_view = $va_display_info['editing_tools'])) {
+				$this->addViewPath($this->request->getThemeDirectoryPath()."/views/editor/objects");
+				print $this->render("representation_media_editor/{$vs_tool_view}_html.php");
+			}
+?>
+
 <?php
 			}
+		}
+?>
+	</div><!-- end caMediaOverlayControls -->
+<?php
+	}
 ?>
 	<div id="<?php print ($vs_display_type == 'media_overlay') ? 'caMediaOverlayContent' : 'caMediaDisplayContent'; ?>">
 <?php
@@ -338,9 +357,10 @@
 		'viewer_base_url' => $this->request->getBaseUrlPath()
 	)));
 	# --- should the media be clickable to open the overlay?
-	if($va_display_options['no_overlay'] || $vs_display_type == 'media_overlay'){
+	if($va_display_options['no_overlay'] || ($vs_display_type == 'media_overlay') || ($vs_display_type == 'media_editor')){
 		print $vs_tag;
 	}else{
 		print "<a href='#' onclick='caMediaPanel.showPanel(\"".caNavUrl($this->request, 'Detail', 'Object', 'GetRepresentationInfo', array('object_id' => $t_object->getPrimaryKey(), 'representation_id' => $t_rep->getPrimaryKey()))."\"); return false;' >".$vs_tag."</a>";
 	}
 ?>
+	</div>

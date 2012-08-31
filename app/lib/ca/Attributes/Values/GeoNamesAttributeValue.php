@@ -77,6 +77,14 @@
 		'label' => _t('Can be used for sorting'),
 		'description' => _t('Check this option if this attribute value can be used for sorting of search results. (The default is not to be.)')
 	),
+	'disableMap' => array(
+		'formatType' => FT_NUMBER,
+		'displayType' => DT_CHECKBOXES,
+		'default' => 0,
+		'width' => 1, 'height' => 1,
+		'label' => _t('Disable map'),
+		'description' => _t('Check this option if you want to disable location map display.')
+	),
 	'canBeEmpty' => array(
 		'formatType' => FT_NUMBER,
 		'displayType' => DT_CHECKBOXES,
@@ -206,7 +214,7 @@ class GeoNamesAttributeValue extends AttributeValue implements IAttributeValue {
 		}
  		$o_config = Configuration::load();
 
- 		$va_settings = $this->getSettingValuesFromElementArray($pa_element_info, array('fieldWidth', 'fieldHeight'));
+ 		$va_settings = $this->getSettingValuesFromElementArray($pa_element_info, array('fieldWidth', 'fieldHeight', 'disableMap'));
 
 		JavascriptLoadManager::register('maps');
 
@@ -247,43 +255,45 @@ class GeoNamesAttributeValue extends AttributeValue implements IAttributeValue {
 			</script>
 		";
 
-		$vs_element .= "
-			<div id='map_".$pa_element_info['element_id']."{n}' style='width:700px; height:160px;'>
+		if(!$va_settings["disableMap"]){
+			$vs_element .= "
+				<div id='map_".$pa_element_info['element_id']."{n}' style='width:700px; height:160px;'>
 
-			</div>
-			<script type='text/javascript'>
-				if ('{n}'.substring(0,3) == 'new') {
-					jQuery('#map_".$pa_element_info['element_id']."{n}').hide();
-				} else {
-					jQuery(document).ready(function() {
-		";
-		
-		$vs_element .= "
-				var re = /\[([\d\.\-,; ]+)\]/;
-				var r = re.exec('{".$pa_element_info['element_id']."}');
-				var latlong = (r) ? r[1] : null;
+				</div>
+				<script type='text/javascript'>
+					if ('{n}'.substring(0,3) == 'new') {
+						jQuery('#map_".$pa_element_info['element_id']."{n}').hide();
+					} else {
+						jQuery(document).ready(function() {
+			";
 
-				if (latlong) {
-					// map vars are global
-					map_".$pa_element_info['element_id']."{n} = new google.maps.Map(document.getElementById('map_".$pa_element_info['element_id']."{n}'), {
-						disableDefaultUI: false,
-						mapTypeId: google.maps.MapTypeId.SATELLITE
-					});
-				
-					var tmp = latlong.split(',');
-					var pt = new google.maps.LatLng(tmp[0], tmp[1]);
-					map_".$pa_element_info['element_id']."{n}.setCenter(pt);
-					map_".$pa_element_info['element_id']."{n}.setZoom(15);		// todo: make this a user preference of some sort
-					var marker = new google.maps.Marker({
-						position: pt,
-						map: map_".$pa_element_info['element_id']."{n}
-					});
-				}";
-		
-		$vs_element .= "
-					});
-				}
-			</script>";
+			$vs_element .= "
+					var re = /\[([\d\.\-,; ]+)\]/;
+					var r = re.exec('{".$pa_element_info['element_id']."}');
+					var latlong = (r) ? r[1] : null;
+
+					if (latlong) {
+						// map vars are global
+						map_".$pa_element_info['element_id']."{n} = new google.maps.Map(document.getElementById('map_".$pa_element_info['element_id']."{n}'), {
+							disableDefaultUI: false,
+							mapTypeId: google.maps.MapTypeId.SATELLITE
+						});
+
+						var tmp = latlong.split(',');
+						var pt = new google.maps.LatLng(tmp[0], tmp[1]);
+						map_".$pa_element_info['element_id']."{n}.setCenter(pt);
+						map_".$pa_element_info['element_id']."{n}.setZoom(15);		// todo: make this a user preference of some sort
+						var marker = new google.maps.Marker({
+							position: pt,
+							map: map_".$pa_element_info['element_id']."{n}
+						});
+					}";
+
+			$vs_element .= "
+						});
+					}
+				</script>";
+		}
 
  		return $vs_element;
  	}

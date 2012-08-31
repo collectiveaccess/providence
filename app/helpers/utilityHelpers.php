@@ -37,6 +37,7 @@
 require_once(__CA_LIB_DIR__.'/core/Datamodel.php');
 require_once(__CA_LIB_DIR__.'/core/Configuration.php');
 require_once(__CA_LIB_DIR__.'/core/Parsers/ZipFile.php');
+require_once(__CA_LIB_DIR__.'/core/Logging/Eventlog.php');
 
 
 # ----------------------------------------------------------------------
@@ -132,10 +133,12 @@ define('OS_WIN32', 1);
 # --- XML
 # ----------------------------------------
 function caEscapeForXML($ps_text) {
+	$ps_text = caMakeProperUTF8ForXML($ps_text);
 	$ps_text = str_replace("&", "&amp;", $ps_text);
 	$ps_text = str_replace("<", "&lt;", $ps_text);
 	$ps_text = str_replace(">", "&gt;", $ps_text);
 	$ps_text = str_replace("'", "&apos;", $ps_text);
+	
 	return str_replace("\"", "&quot;", $ps_text);
 }
 # ----------------------------------------
@@ -664,7 +667,7 @@ function caFileIsIncludable($ps_file) {
 		}
 		
 		if(isset($pa_options['print']) && $pa_options['print']) {
-			print $vs_output;
+			print "<pre>{$vs_output}</pre>";
 		}
 		
 		return $vs_output;
@@ -1302,6 +1305,34 @@ function caFileIsIncludable($ps_file) {
 	 */
 	function caEscapeShellArg($ps_text) {
 		return escapeshellarg($ps_text);
+	}
+	# ------------------------------------------------------------------------------------------------
+	/**
+	 *
+	 *
+	 * @param string $ps_date_expression Start of date range, as Unix timestamp
+	 * @param array $pa_options All options supported by TimeExpressionParser::getText() are supported
+	 *
+	 * @return array
+	 */
+	function caGetISODates($ps_date_expression, $pa_options=null) {
+		if (!is_array($pa_options)) { $pa_options = array(); }
+		$o_tep = new TimeExpressionParser();
+		
+		if (!$o_tep->parse($ps_date_expression)) { return null; }
+		
+		return array(
+			'start' => $o_tep->getText(array_merge($pa_options, array('start_as_iso8601' => true))),
+			'end' => $o_tep->getText(array_merge($pa_options, array('end_as_iso8601' => true)))
+		);
+	}
+	# ----------------------------------------
+	/**
+	 *
+	 */
+	function caLogEvent($ps_code, $ps_message, $ps_source=null) {
+		$t_log = new EventLog();
+		return $t_log->log(array('CODE' => $ps_code, 'MESSAGE' => $ps_message, 'SOURCE' => $ps_source));
 	}
 	# ---------------------------------------
 ?>

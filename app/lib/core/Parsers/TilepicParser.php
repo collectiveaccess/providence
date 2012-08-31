@@ -42,6 +42,8 @@ define("LIBRARY_GD", 0);
 define("LIBRARY_IMAGEMAGICK",2);
 define("LIBRARY_IMAGICK",3);
 define("LIBRARY_COREIMAGE",4);
+define("LIBRARY_GMAGICK",5);
+define("LIBRARY_GRAPHICSMAGICK",6);
 
 class TilepicParser {
 	var $error = "";
@@ -104,6 +106,7 @@ class TilepicParser {
 	var $opo_config;
 	var $opo_external_app_config;
 	var $ops_imagemagick_path;
+	var $ops_graphicsmagick_path;
 	var $ops_CoreImage_path;
 	
 	var $opa_CoreImage_pipeline;
@@ -116,24 +119,31 @@ class TilepicParser {
 		$this->ops_imagemagick_path = $this->opo_external_app_config->get('imagemagick_path');
 		$this->ops_CoreImage_path = $this->opo_external_app_config->get('coreimagetool_app');
 		$this->opa_CoreImage_pipeline = array();
+		$this->ops_graphicsmagick_path = $this->opo_external_app_config->get('graphicsmagick_app');
 		
-		if (caMediaPluginCoreImageInstalled($this->ops_CoreImage_path)) {
-			$this->backend = LIBRARY_COREIMAGE;
-		} else {
-			if (caMediaPluginImagickInstalled()) {
-				$this->backend = LIBRARY_IMAGICK;
-			} else {
-				if (caMediaPluginImageMagickInstalled($this->ops_imagemagick_path)) {
-					$this->backend = LIBRARY_IMAGEMAGICK;
-				} else {
-					if (caMediaPluginGDInstalled()) {
-						$this->backend = LIBRARY_GD;
-					} else {
-						return null;
-					}
-				}
+		// edit ranking of preferred backends for tilepic processing here
+
+		// TODO: maybe put this in a config file and make it consistent with
+		// what the main media processing engine "choses"?
+		
+		$va_backend_ranking = array(
+			LIBRARY_GMAGICK => caMediaPluginGmagickInstalled(),
+			LIBRARY_COREIMAGE => caMediaPluginCoreImageInstalled($this->ops_CoreImage_path),
+			LIBRARY_IMAGICK => caMediaPluginImagickInstalled(),
+			LIBRARY_GRAPHICSMAGICK => caMediaPluginGraphicsMagickInstalled($this->ops_graphicsmagick_path),
+			LIBRARY_IMAGEMAGICK => caMediaPluginImageMagickInstalled($this->ops_imagemagick_path),
+			LIBRARY_GD => true, // one available back-end has to be assumed
+		);
+		
+		foreach($va_backend_ranking as $vn_backend => $vb_available){
+			if($vb_available){
+				$this->backend = $vn_backend;
+				break;
 			}
 		}
+		
+		if ($this->debug) print "TilePic processing backend is {$this->backend}";
+		
 		if ($filename) { $this->load($filename); }
 	}
 	# ------------------------------------------------------------------------------------
@@ -157,6 +167,12 @@ class TilepicParser {
 				break;
 			case LIBRARY_COREIMAGE:
 				$this->backend = LIBRARY_COREIMAGE;
+				break;
+			case LIBRARY_GMAGICK:
+				$this->backend = LIBRARY_GMAGICK;
+				break;
+			case LIBRARY_GRAPHICSMAGICK:
+				$this->backend = LIBRARY_GRAPHICSMAGICK;
 				break;
 			default:
 				$this->backend = LIBRARY_IMAGEMAGICK;
@@ -326,6 +342,12 @@ class TilepicParser {
 			case LIBRARY_COREIMAGE:
 				return $this->encode_coreimage($ps_filepath, $ps_output_path, $pa_options);
 				break;
+			case LIBRARY_GRAPHICSMAGICK:
+				return $this->encode_graphicsmagick($ps_filepath, $ps_output_path, $pa_options);
+				break;
+			case LIBRARY_GMAGICK:
+				return $this->encode_gmagick($ps_filepath, $ps_output_path, $pa_options);
+				break;
 			default:
 				return $this->encode_imagemagick($ps_filepath, $ps_output_path, $pa_options);
 				break;
@@ -335,6 +357,27 @@ class TilepicParser {
 	private function _imageMagickRead($ps_filepath) {
 		if (caMediaPluginImageMagickInstalled($this->ops_imagemagick_path)) {
 			exec($this->ops_imagemagick_path.'/identify -format "%m;%w;%h\n" "'.$ps_filepath."\" 2> /dev/null", $va_output, $vn_return);
+			
+			$va_tmp = explode(';', $va_output[0]);
+			if (sizeof($va_tmp) != 3) {
+				return null;
+			}
+			
+			return array(
+				'mimetype' => $this->magickToMimeType($va_tmp[0]),
+				'magick' => $va_tmp[0],
+				'width' => $va_tmp[1],
+				'height' => $va_tmp[2],
+				'ops' => array(),
+				'filepath' => $ps_filepath
+			);
+		}
+		return null;
+	}
+	# ------------------------------------------------
+	private function _graphicsMagickRead($ps_filepath) {
+		if (caMediaPluginGraphicsMagickInstalled($this->ops_graphicsmagick_path)) {
+			exec($this->ops_graphicsmagick_path.' identify -format "%m;%w;%h\n" "'.$ps_filepath."\" 2> /dev/null", $va_output, $vn_return);
 			
 			$va_tmp = explode(';', $va_output[0]);
 			if (sizeof($va_tmp) != 3) {
@@ -407,10 +450,71 @@ class TilepicParser {
 		return true;
 	}
 	# ------------------------------------------------
+	private function _graphicsMagickProcess($ps_source_filepath, $ps_dest_filepath, $pa_ops, $pn_quality=null) {
+		$va_ops = array('-colorspace RGB');
+		if (!is_null($pn_quality)) {
+			$va_ops[] = '-quality '.intval($pn_quality);
+		}
+		
+		foreach($pa_ops as $va_op) {
+			switch($va_op['op']) {
+				case 'size':
+					if ($va_op['width'] < 1) { break; }
+					if ($va_op['height'] < 1) { break; }
+					$va_ops[] = '-resize '.$va_op['width'].'x'.$va_op['height'].' -filter Cubic';
+					break;
+				case 'crop':
+					if ($va_op['width'] < 1) { break; }
+					if ($va_op['height'] < 1) { break; }
+					if ($va_op['x'] < 0) { break; }
+					if ($va_op['y'] < 0) { break; }
+					$va_ops[] = '-crop '.$va_op['width'].'x'.$va_op['height'].'+'.$va_op['x'].'+'.$va_op['y'];
+					break;
+				case 'rotate':
+					if (!is_numeric($va_op['angle'])) { break; }
+					$va_ops[] = '-rotate '.$va_op['angle'];
+					break;
+				case 'filter_despeckle':
+					$va_ops[] = '-despeckle';
+					break;
+				case 'filter_sharpen':
+					if ($va_op['radius'] < 0) { break; }
+					$vs_tmp = '-sharpen '.$va_op['radius'];
+					if (isset($va_op['sigma'])) { $vs_tmp .= 'x'.$va_op['sigma'];}
+					$va_ops[] = $vs_tmp;
+					break;
+				case 'filter_median':
+					if ($va_op['radius'] < 0) { break; }
+					$va_ops[] = '-median '.$va_op['radius'];
+					break;
+				case 'filter_unsharp_mask':
+					if ($va_op['radius'] < 0) { break; }
+					$vs_tmp = '-unsharp '.$va_op['radius'];
+					if (isset($va_op['sigma'])) { $vs_tmp .= 'x'.$va_op['sigma'];}
+					if (isset($va_op['amount'])) { $vs_tmp .= '+'.$va_op['amount'];}
+					if (isset($va_op['threshold'])) { $vs_tmp .= '+'.$va_op['threshold'];}
+					$va_ops[] = $vs_tmp;
+					break;
+				case 'strip':
+					// option
+					//$va_ops[] = '-strip';
+					$va_ops[] = '+profile "*"';
+					break;
+			}
+		}
+		exec($this->ops_graphicsmagick_path.' convert "'.$ps_source_filepath.'[0]" '.join(' ', $va_ops).' "'.$ps_dest_filepath.'"');
+		return true;
+	}
+	# ------------------------------------------------
 	private function _imageMagickImageFromTiles($ps_dest_filepath, $pa_tiles, $pn_tile_width, $pn_tile_height) {
 		
 		exec($this->ops_imagemagick_path.'/montage '.join(' ', $pa_tiles).' -mode Concatenate -tile '.$pn_tile_width.'x'.$pn_tile_height.' "'.$ps_dest_filepath.'"');
 	
+		return true;
+	}
+	# ------------------------------------------------
+	private function _graphicsMagickImageFromTiles($ps_dest_filepath, $pa_tiles, $pn_tile_width, $pn_tile_height) {
+		exec($this->ops_graphicsmagick_path.' montage '.join(' ', $pa_tiles).' -mode Concatenate -tile '.$pn_tile_width.'x'.$pn_tile_height.' "'.$ps_dest_filepath.'"');	
 		return true;
 	}
 	# ------------------------------------------------
@@ -541,7 +645,7 @@ class TilepicParser {
 	# ------------------------------------------------------------------------------------
 	function encode_imagemagick ($ps_filepath, $ps_output_path, $pa_options) {
 		if (!($vs_tilepic_tmpdir = $this->opo_config->get('tilepic_tmpdir'))) {
-			$vs_tilepic_tmpdir = '/tmp';
+			$vs_tilepic_tmpdir = caGetTempDirPath();
 		}
 		if (!($magick = $this->mimetype2magick[$pa_options["output_mimetype"]])) {
 			$this->error = "Invalid output format";
@@ -570,7 +674,7 @@ class TilepicParser {
         	$image_width *= $pa_options["scale_factor"];
         	$image_height *= $pa_options["scale_factor"];
 			
-			$vs_tmp_basename = tempnam($vs_tilepic_tmpdir, 'tpc_');
+			$vs_tmp_basename = tempnam($vs_tilepic_tmpdir, 'tpc_scale_');
 			$vs_tmp_fname = $vs_tmp_basename.'.jpg';
 			if (!($this->_imageMagickProcess($vs_filepath, $vs_tmp_fname, array(
 					array(
@@ -605,7 +709,7 @@ class TilepicParser {
 					}
 					
 					if ($vn_orientation_rotate) {
-						$vs_tmp_basename = tempnam($vs_tilepic_tmpdir, 'tpc_');
+						$vs_tmp_basename = tempnam($vs_tilepic_tmpdir, 'tpc_rotate_');
 						$vs_tmp_fname = $vs_tmp_basename.'.jpg';
 						if (!($this->_imageMagickProcess($vs_filepath, $vs_tmp_fname, array(
 								array(
@@ -666,7 +770,7 @@ class TilepicParser {
 				if ($this->debug) { print "RESIZE layer $l TO $image_width x $image_height \n";}
 				
 				
-				$vs_tmp_basename = tempnam($vs_tilepic_tmpdir, 'tpc_');
+				$vs_tmp_basename = tempnam($vs_tilepic_tmpdir, 'tpc_layer_scale_');
 				$vs_tmp_fname = $vs_tmp_basename.'.jpg';
 				if (!($this->_imageMagickProcess($vs_filepath, $vs_tmp_fname, array(
 						array(
@@ -688,7 +792,7 @@ class TilepicParser {
 			
 			$layer_list[] = array();
 			while($y < $image_height) {
-				$vs_tmp_basename = tempnam($vs_tilepic_tmpdir, 'tpc_');
+				$vs_tmp_basename = tempnam($vs_tilepic_tmpdir, 'tpc_tile_');
 				$vs_tmp_fname = $vs_tmp_basename.'.jpg';
 				if (!($this->_imageMagickProcess($vs_filepath, $vs_tmp_fname, array(
 						array(
@@ -704,12 +808,280 @@ class TilepicParser {
 					),
 					$pa_options["quality"]
 				))) {
-					$this->error = "Couldn't scale image";
+					$this->error = "Couldn't tile image";
+					@unlink($vs_tmp_fname);
+					@unlink($vs_tmp_basename);
 					return false;
 				}
 				
 				$vs_tile = file_get_contents($vs_tmp_fname);
 				@unlink($vs_tmp_fname);
+				@unlink($vs_tmp_basename);
+				
+				$layer_list[sizeof($layer_list)-1][] = $vs_tile;
+				$x += $pa_options["tile_width"];
+				
+				if ($x >= $image_width) {
+					$y += $pa_options["tile_height"];
+					$x = 0;
+				}
+				
+				$i++;
+				$tiles++;
+				
+			}
+			if ($this->debug) { print "OUTPUT $tiles TILES FOR LAYER $l : $image_width x $image_height\n";}
+		}
+		if ($vs_filepath != $ps_filepath) { @unlink($vs_filepath); }
+		
+		#
+		# Write Tilepic format file
+		#
+		if ($this->debug) { print "WRITING FILE..."; }
+		if ($fh = fopen($ps_output_path.".tpc", "w")) {
+			# --- attribute list
+			$attribute_list = "";
+			$attributes = 0;
+			
+			if ((isset($pa_options["attributes"])) && (is_array($pa_options["attributes"]))) {
+				$pa_options["attributes"]["mimeType"] = $pa_options["output_mimetype"];
+			} else {
+				$pa_options["attributes"] = array("mimeType" => $pa_options["output_mimetype"]);
+			}
+			foreach ($pa_options["attributes"] as $k => $v) {
+				$attribute_list .= "$k=$v\0";
+				$attributes++;
+			}
+			
+			if ($this->debug) { print "header OK;"; }
+			# --- header
+			if (!fwrite($fh, "TPC\n")) {
+				$this->error = "Could not write Tilepic signature";
+				return false;
+			}
+			if (!fwrite($fh, pack("NNNNNNnnNN",40, $base_width, $base_height, $pa_options["tile_width"], $pa_options["tile_height"], $tiles, $pa_options["layers"], $pa_options["layer_ratio"], strlen($attribute_list),$attributes))) {
+				$this->error = "Could not write Tilepic header";
+				return false;
+			}
+		
+			# --- offset table
+			$offset = 44 + ($tiles * 4);
+			for($i=sizeof($layer_list)-1; $i >= 0; $i--) {
+				for($j=0; $j<sizeof($layer_list[$i]);$j++) {
+					if (!fwrite($fh, pack("N",$offset))) {
+						$this->error = "Could not write Tilepic offset table";
+						return false;
+					}
+					$offset += strlen($layer_list[$i][$j]);
+				}   
+			}
+			if ($this->debug) { print "offset table OK;"; }
+			
+			if (!fwrite($fh, pack("N", $offset))) {
+				$this->error = "Could not finish writing Tilepic offset table";
+				return false;
+			}
+			
+			# --- tiles
+			for($i=sizeof($layer_list)-1; $i >= 0; $i--) {
+				for($j=0; $j<sizeof($layer_list[$i]);$j++) {
+					if (!fwrite($fh, $layer_list[$i][$j])) {
+						$this->error = "Could not write Tilepic tile data";
+						return false;
+					}
+				}   
+			}
+			if ($this->debug) { print "tiles OK;"; }
+			unset($layer_list);
+			# --- attributes
+			if (!fwrite($fh, $attribute_list)) {
+				$this->error = "Could not write Tilepic attributes";
+				return false;
+			}
+			if ($this->debug) { print "attributes OK\n"; }
+			fclose($fh);
+			
+			return $pa_options;
+		} else {
+			$this->error = "Couldn't open output file $ps_output_path\n";
+			return false;
+		}
+	}
+	# ------------------------------------------------------------------------------------
+	function encode_graphicsmagick ($ps_filepath, $ps_output_path, $pa_options) {
+		if (!($vs_tilepic_tmpdir = $this->opo_config->get('tilepic_tmpdir'))) {
+			$vs_tilepic_tmpdir = caGetTempDirPath();
+		}
+		if (!($magick = $this->mimetype2magick[$pa_options["output_mimetype"]])) {
+			$this->error = "Invalid output format";
+			return false;
+		}
+		
+		#
+		# Open image
+		#
+		$h = $this->_graphicsMagickRead($ps_filepath);
+		if (!$h) {
+			$this->error = "Couldn't open image $ps_filepath";
+			return false;
+		}
+
+		$vs_filepath = $ps_filepath;
+
+		$image_width = 	$h['width'];
+		$image_height = $h['height'];
+		if (($image_width < 10) || ($image_height < 10)) {
+			$this->error = "Image is too small to be output as Tilepic; minimum dimensions are 10x10 pixels";
+				return false;
+		}
+
+		if ($pa_options["scale_factor"] != 1) {
+			$image_width *= $pa_options["scale_factor"];
+			$image_height *= $pa_options["scale_factor"];
+
+				$vs_tmp_basename = tempnam($vs_tilepic_tmpdir, 'tpc_scale_');
+				$vs_tmp_fname = $vs_tmp_basename.'.jpg';
+				if (!($this->_graphicsMagickProcess($vs_filepath, $vs_tmp_fname, array(
+						array(
+							'op' => 'size',
+							'width' => $image_width,
+							'height' => $image_height,
+						)
+					)
+				))) {
+					$this->error = "Couldn't scale image";
+					@unlink($vs_tmp_fname);
+					return false;
+				}
+				$vs_filepath = $vs_tmp_fname;
+		}
+
+		 if(function_exists('exif_read_data')) {
+			if (is_array($va_exif = @exif_read_data($ps_filepath, 'EXIF', true, false))) { 
+				if (isset($va_exif['IFD0']['Orientation'])) {
+					$vn_orientation_rotate = null;
+					$vn_orientation = $va_exif['IFD0']['Orientation'];
+					switch($vn_orientation) {
+						case 3:
+							$vn_orientation_rotate = 180;
+							break;
+						case 6:
+							$vn_orientation_rotate = 90;
+							break;
+						case 8:
+							$vn_orientation_rotate = -90;
+							break;
+					}
+					
+					if ($vn_orientation_rotate) {
+						$vs_tmp_basename = tempnam($vs_tilepic_tmpdir, 'tpc_rotate_');
+						$vs_tmp_fname = $vs_tmp_basename.'.jpg';
+						if (!($this->_graphicsMagickProcess($vs_filepath, $vs_tmp_fname, array(
+								array(
+									'op' => 'rotate',
+									'angle' => $vn_orientation_rotate
+								)
+							)
+						))) {
+							$this->error = "Couldn't rotate image";
+							@unlink($vs_tmp_fname);
+							return false;
+						}
+						
+						if (in_array($vn_orientation_rotate, array(90, -90))) {
+							$vn_tmp = $image_width;
+							$image_width = $h['width'] = $image_height;
+							$image_height = $h['height'] = $vn_tmp;
+						}
+						$vs_filepath = $vs_tmp_fname;
+					}
+				}
+			}
+		}
+        
+		#
+		# How many layers to make?
+		#
+		if (!$pa_options["layers"]) {
+			$sw = $image_width * $pa_options["layer_ratio"];
+			$sh = $image_height * $pa_options["layer_ratio"];
+			$pa_options["layers"] = 1;
+			while (($sw >= $pa_options["tile_width"]) || ($sh >= $pa_options["tile_height"])) {
+				$sw = ceil($sw / $pa_options["layer_ratio"]);
+				$sh = ceil($sh / $pa_options["layer_ratio"]);
+				$pa_options["layers"] ++;
+			}
+		}
+		
+		#
+		# Cut image into tiles
+		#
+		$tiles = 0;
+		$layer_list = array();
+		$base_width = $image_width;
+		$base_height = $image_height;
+		
+		if ($this->debug) { print "BASE $base_width x $base_height \n";}
+		for($l=$pa_options["layers"]; $l >= 1; $l--) {
+			
+			$x = $y = 0;
+			$wx = $pa_options["tile_width"];
+			$wy = $pa_options["tile_height"];
+			
+			if ($this->debug) { print "LAYER=$l\n"; };
+			if ($l < $pa_options["layers"]) {
+				$image_width = ceil($image_width/$pa_options["layer_ratio"]);
+				$image_height = ceil($image_height/$pa_options["layer_ratio"]);
+				if ($this->debug) { print "RESIZE layer $l TO $image_width x $image_height \n";}
+				
+				
+				$vs_tmp_basename = tempnam($vs_tilepic_tmpdir, 'tpc_layer_scale_');
+				$vs_tmp_fname = $vs_tmp_basename.'.jpg';
+				if (!($this->_graphicsMagickProcess($vs_filepath, $vs_tmp_fname, array(
+						array(
+							'op' => 'size',
+							'width' => $image_width,
+							'height' => $image_height,
+						)
+					)
+				))) {
+					$this->error = "Couldn't scale image";
+					@unlink($vs_tmp_fname);
+					return false;
+				}
+				if ($vs_filepath != $ps_filepath) { @unlink($vs_filepath); }
+				$vs_filepath = $vs_tmp_fname;
+			}
+		
+			$i = 0;
+			
+			$layer_list[] = array();
+			while($y < $image_height) {
+				$vs_tmp_basename = tempnam($vs_tilepic_tmpdir, 'tpc_tile_');
+				$vs_tmp_fname = $vs_tmp_basename.'.jpg';
+				if (!($this->_graphicsMagickProcess($vs_filepath, $vs_tmp_fname, array(
+						array(
+							'op' => 'crop',
+							'width' => $wx,
+							'height' => $wy,
+							'x' => $x,
+							'y' => $y
+						), 
+						array(
+							'op' => 'strip'
+						)
+					),
+					$pa_options["quality"]
+				))) {
+					$this->error = "Couldn't tile image";
+					@unlink($vs_tmp_fname);
+					@unlink($vs_tmp_basename);
+					return false;
+				}
+				
+				$vs_tile = file_get_contents($vs_tmp_fname);
+				@unlink($vs_tmp_fname);
+				@unlink($vs_tmp_basename);
 				
 				$layer_list[sizeof($layer_list)-1][] = $vs_tile;
 				$x += $pa_options["tile_width"];
@@ -832,7 +1204,7 @@ class TilepicParser {
         	$image_width *= $pa_options["scale_factor"];
         	$image_height *= $pa_options["scale_factor"];
 			
-			$vs_tmp_fname = tempnam($vs_tilepic_tmpdir, 'tpc_');
+			$vs_tmp_fname = tempnam($vs_tilepic_tmpdir, 'tpc_scale_');
 			if (!($this->_CoreImageProcess($vs_filepath, $vs_tmp_fname, array(
 					array(
 						'op' => 'size',
@@ -868,7 +1240,7 @@ class TilepicParser {
 					}
 					
 					if ($vn_orientation_rotate) {
-						$vs_tmp_basename = tempnam($vs_tilepic_tmpdir, 'tpc_');
+						$vs_tmp_basename = tempnam($vs_tilepic_tmpdir, 'tpc_rotate_');
 						$vs_tmp_fname = $vs_tmp_basename.'.jpg';
 						if (!($this->_CoreImageProcess($vs_filepath, $vs_tmp_fname, array(
 								array(
@@ -1010,7 +1382,7 @@ class TilepicParser {
 					
 					foreach($tile_name_list as $vs_tmp_fname) {
 						$vs_tile = file_get_contents($vs_tmp_fname);
-						unlink($vs_tmp_fname);
+						@unlink($vs_tmp_fname);
 						$layer_list[sizeof($layer_list)-1][] = $vs_tile;
 						
 						$tile_name_list = array();
@@ -1243,6 +1615,215 @@ class TilepicParser {
 				
 				# --- remove color profile (saves lots of space)
 				//$slice->removeImageProfile($slice);
+				$layer_list[sizeof($layer_list)-1][] = $slice->getImageBlob();
+				$slice->destroy();
+				$x += $pa_options["tile_width"];
+				
+				if ($x >= $image_width) {
+					$y += $pa_options["tile_height"];
+					$x = 0;
+				}
+				
+				$i++;
+				$tiles++;
+				
+			}
+			if ($this->debug) { print "OUTPUT $tiles TILES FOR LAYER $l : $image_width x $image_height\n";}
+		}
+		
+		$h->destroy();
+		#
+		# Write Tilepic format file
+		#
+		if ($this->debug) { print "WRITING FILE..."; }
+		if ($fh = fopen($ps_output_path.".tpc", "w")) {
+			# --- attribute list
+			$attribute_list = "";
+			$attributes = 0;
+			
+			if ((isset($pa_options["attributes"])) && (is_array($pa_options["attributes"]))) {
+				$pa_options["attributes"]["mimeType"] = $pa_options["output_mimetype"];
+			} else {
+				$pa_options["attributes"] = array("mimeType" => $pa_options["output_mimetype"]);
+			}
+			foreach ($pa_options["attributes"] as $k => $v) {
+				$attribute_list .= "$k=$v\0";
+				$attributes++;
+			}
+			
+			if ($this->debug) { print "header OK;"; }
+			# --- header
+			if (!fwrite($fh, "TPC\n")) {
+				$this->error = "Could not write Tilepic signature";
+				return false;
+			}
+			if (!fwrite($fh, pack("NNNNNNnnNN",40, $base_width, $base_height, $pa_options["tile_width"], $pa_options["tile_height"], $tiles, $pa_options["layers"], $pa_options["layer_ratio"], strlen($attribute_list),$attributes))) {
+				$this->error = "Could not write Tilepic header";
+				return false;
+			}
+		
+			# --- offset table
+			$offset = 44 + ($tiles * 4);
+			for($i=sizeof($layer_list)-1; $i >= 0; $i--) {
+				for($j=0; $j<sizeof($layer_list[$i]);$j++) {
+					if (!fwrite($fh, pack("N",$offset))) {
+						$this->error = "Could not write Tilepic offset table";
+						return false;
+					}
+					$offset += strlen($layer_list[$i][$j]);
+				}   
+			}
+			if ($this->debug) { print "offset table OK;"; }
+			
+			if (!fwrite($fh, pack("N", $offset))) {
+				$this->error = "Could not finish writing Tilepic offset table";
+				return false;
+			}
+			
+			# --- tiles
+			for($i=sizeof($layer_list)-1; $i >= 0; $i--) {
+				for($j=0; $j<sizeof($layer_list[$i]);$j++) {
+					if (!fwrite($fh, $layer_list[$i][$j])) {
+						$this->error = "Could not write Tilepic tile data";
+						return false;
+					}
+				}   
+			}
+			if ($this->debug) { print "tiles OK;"; }
+			unset($layer_list);
+			# --- attributes
+			if (!fwrite($fh, $attribute_list)) {
+				$this->error = "Could not write Tilepic attributes";
+				return false;
+			}
+			if ($this->debug) { print "attributes OK\n"; }
+			fclose($fh);
+			
+			return $pa_options;
+		} else {
+			$this->error = "Couldn't open output file $ps_output_path\n";
+			return false;
+		}
+	}
+	# ------------------------------------------------------------------------------------
+	function encode_gmagick ($ps_filepath, $ps_output_path, $pa_options) {
+		if (!($magick = $this->mimetype2magick[$pa_options["output_mimetype"]])) {
+			$this->error = "Invalid output format";
+			return false;
+		}
+		
+		#
+		# Open image
+		#
+		try {
+			$h = new Gmagick($ps_filepath);
+		} catch (Exception $e){
+			$this->error = "Couldn't open image $ps_filepath";
+			return false;
+		}
+
+		if(function_exists('exif_read_data')) {
+			if (is_array($va_exif = @exif_read_data($ps_filepath, 'EXIF', true, false))) { 
+				if (isset($va_exif['IFD0']['Orientation'])) {
+					$vn_orientation = $va_exif['IFD0']['Orientation'];
+					switch($vn_orientation) {
+						case 3:
+							$h->rotateimage("#FFFFFF", 180);
+							break;
+						case 6:
+							$h->rotateimage("#FFFFFF", 90);
+							break;
+						case 8:
+							$h->rotateimage("#FFFFFF", -90);
+							break;
+					}
+				}
+			}
+		}
+        
+		$h->setimagetype(Gmagick::IMGTYPE_TRUECOLOR);
+
+		if (!$h->setimagecolorspace(Gmagick::COLORSPACE_RGB)) {
+			$this->error = "Error during RGB colorspace transformation operation";
+			return false;
+		}
+		
+		$va_tmp = $h->getimagegeometry();
+		$image_width = 	$va_tmp['width'];
+		$image_height = $va_tmp['height'];
+		if (($image_width < 10) || ($image_height < 10)) {
+			$this->error = "Image is too small to be output as Tilepic; minimum dimensions are 10x10 pixels";
+				return false;
+		}
+
+		if ($pa_options["scale_factor"] != 1) {
+			$image_width *= $pa_options["scale_factor"];
+			$image_height *= $pa_options["scale_factor"];
+
+				if (!$h->resizeimage($image_width, $image_height, Gmagick::FILTER_CUBIC, $pa_options["antialiasing"])) {
+					$this->error = "Couldn't scale image";
+					return false;
+				}
+		}
+        
+		#
+		# How many layers to make?
+		#
+		if (!$pa_options["layers"]) {
+			$sw = $image_width * $pa_options["layer_ratio"];
+			$sh = $image_height * $pa_options["layer_ratio"];
+			$pa_options["layers"] = 1;
+			while (($sw >= $pa_options["tile_width"]) || ($sh >= $pa_options["tile_height"])) {
+				$sw = ceil($sw / $pa_options["layer_ratio"]);
+				$sh = ceil($sh / $pa_options["layer_ratio"]);
+				$pa_options["layers"] ++;
+			}
+		}
+		
+		#
+		# Cut image into tiles
+		#
+		$tiles = 0;
+		$layer_list = array();
+		$base_width = $image_width;
+		$base_height = $image_height;
+		
+		if ($this->debug) { print "BASE $base_width x $base_height \n";}
+		for($l=$pa_options["layers"]; $l >= 1; $l--) {
+			
+			$x = $y = 0;
+			$wx = $pa_options["tile_width"];
+			$wy = $pa_options["tile_height"];
+			
+			if ($this->debug) { print "LAYER=$l\n"; };
+			if ($l < $pa_options["layers"]) {
+				$image_width = ceil($image_width/$pa_options["layer_ratio"]);
+				$image_height = ceil($image_height/$pa_options["layer_ratio"]);
+				if ($this->debug) { print "RESIZE layer $l TO $image_width x $image_height \n";}
+				if (!$h->resizeimage( $image_width, $image_height, Gmagick::FILTER_CUBIC, $pa_options["antialiasing"])) {
+					$this->error = "Couldn't scale image";
+					return false;
+				}
+			}
+		
+			$i = 0;
+			$layer_list[] = array();
+			while($y < $image_height) {
+				$slice = clone $h;
+				try {
+					$slice->cropimage($wx, $wy, $x, $y);
+					$slice->setcompressionquality($pa_options["quality"]);
+				} catch (Exception $e){
+					$this->error = "Couldn't create tile";
+					return false;
+				}
+				
+				if (!$slice->setimageformat($magick)) {
+					$this->error = "Tile conversion failed: $reason; $description";
+					return false;
+				}
+				
+				# --- remove color profile (saves lots of space)
 				$layer_list[sizeof($layer_list)-1][] = $slice->getImageBlob();
 				$slice->destroy();
 				$x += $pa_options["tile_width"];

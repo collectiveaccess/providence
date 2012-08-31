@@ -44,13 +44,14 @@ require_once(__CA_LIB_DIR__.'/core/Parsers/TimeExpressionParser.php');
 	 * @param $pa_preferred_locales -
 	 * @return Array - returns an associative array defining which locales should be used when displaying values; suitable for use with caExtractValuesByLocale()
 	 */
+	$g_user_locale_rules = array();
 	function caGetUserLocaleRules($ps_item_locale=null, $pa_preferred_locales=null) {
-		global $g_ui_locale, $g_ui_locale_id;
+		global $g_ui_locale, $g_ui_locale_id, $g_user_locale_rules;
+		
+		if (isset($g_user_locale_rules[$ps_item_locale])) { return $g_user_locale_rules[$ps_item_locale]; }
 		
 		$o_config = Configuration::load();
 		$va_default_locales = $o_config->getList('locale_defaults');
-		
-		//$vs_label_mode = $po_request->user->getPreference('cataloguing_display_label_mode');
 		
 		$va_preferred_locales = array();
 		if ($ps_item_locale) {
@@ -87,7 +88,7 @@ require_once(__CA_LIB_DIR__.'/core/Parsers/TimeExpressionParser.php');
 				$va_preferred_locales[$g_ui_locale] = true;
 			}
 		}
-		$va_rules = array(
+		$g_user_locale_rules[$ps_item_locale] = $va_rules = array(
 			'preferred' => $va_preferred_locales,	/* all of these locales will display if available */
 			'fallback' => $va_fallback_locales		/* the first of these that is available will display, but only if none of the preferred locales are available */
 		);
@@ -106,18 +107,18 @@ require_once(__CA_LIB_DIR__.'/core/Parsers/TimeExpressionParser.php');
 	 */
 	function caExtractValuesByLocale($pa_locale_rules, $pa_values, $pa_options=null) {
 		if (!is_array($pa_values)) { return array(); }
-		$t_locales = new ca_locales();
-		$va_locales = $t_locales->getLocaleList();
+		$va_locales = ca_locales::getLocaleList();
 		
 		if (!is_array($pa_options)) { $pa_options = array(); }
 		if (!isset($pa_options['returnList'])) { $pa_options['returnList'] = false; }
 		
-		if (isset($pa_options['debug']) && $pa_options['debug']) {
-			print_r($pa_values);
-		}
 		if (!is_array($pa_values)) { return array(); }
 		$va_values = array();
 		foreach($pa_values as $vm_id => $va_value_list_by_locale) {
+			if (sizeof($va_value_list_by_locale) == 1) {		// Don't bother looking if there's just a single value
+				$va_values[$vm_id] = array_shift($va_value_list_by_locale);
+				continue;
+			}
 			foreach($va_value_list_by_locale as $pm_locale => $vm_value) {
 				// convert locale_id to locale string
 				if (is_numeric($pm_locale)) {
@@ -148,11 +149,7 @@ require_once(__CA_LIB_DIR__.'/core/Parsers/TimeExpressionParser.php');
 	}
 	# ------------------------------------------------------------------------------------------------
 	function caExtractValuesByUserLocale($pa_values, $ps_item_locale=null, $pa_preferred_locales=null, $pa_options=null) {
-		$va_values = caExtractValuesByLocale(caGetUserLocaleRules($ps_item_locale, $pa_preferred_locales), $pa_values, $pa_options);
-		if (isset($pa_options['debug']) && $pa_options['debug']) {
-			//print_r($va_values);
-		}
-		return $va_values;
+		return caExtractValuesByLocale(caGetUserLocaleRules($ps_item_locale, $pa_preferred_locales), $pa_values, $pa_options);
 	}
 	# ------------------------------------------------------------------------------------------------
 	/**
@@ -560,10 +557,18 @@ require_once(__CA_LIB_DIR__.'/core/Parsers/TimeExpressionParser.php');
 				if (!$vs_label) { 
 					switch($vs_table_name) {
 						case 'ca_commerce_orders':
-							if ($vs_org = $t_item->get('billing_organization')) {
-								$vs_label = _t('%5 #%4 on %1 from %2 (%3)', caGetLocalizedDate($t_item->get('created_on', array('GET_DIRECT_DATE' => true)), array('dateFormat' => 'delimited', 'timeOmit' => true)), $t_item->get('billing_fname').' '.$t_item->get('billing_lname'), $vs_org, $t_item->getOrderNumber(), caUcFirstUTF8Safe($t_item->getProperty('NAME_SINGULAR')));
+							if ($t_item->get('order_type') == 'L') {
+								if ($vs_org = $t_item->get('billing_organization')) {
+									$vs_label = _t('%5 #%4 on %1 to %2 (%3)', caGetLocalizedDate($t_item->get('created_on', array('GET_DIRECT_DATE' => true)), array('dateFormat' => 'delimited', 'timeOmit' => true)), $t_item->get('billing_fname').' '.$t_item->get('billing_lname'), $vs_org, $t_item->getOrderNumber(), caUcFirstUTF8Safe($t_item->getProperty('NAME_SINGULAR')));
+								} else {
+									$vs_label = _t('%4 #%3 on %1 to %2', caGetLocalizedDate($t_item->get('created_on', array('GET_DIRECT_DATE' => true)), array('dateFormat' => 'delimited', 'timeOmit' => true)),$t_item->get('billing_fname').' '.$t_item->get('billing_lname'), $t_item->getOrderNumber(), caUcFirstUTF8Safe($t_item->getProperty('NAME_SINGULAR')));
+								}
 							} else {
-								$vs_label = _t('%4 #%3 on %1 from %2', caGetLocalizedDate($t_item->get('created_on', array('GET_DIRECT_DATE' => true)), array('dateFormat' => 'delimited', 'timeOmit' => true)),$t_item->get('billing_fname').' '.$t_item->get('billing_lname'), $t_item->getOrderNumber(), caUcFirstUTF8Safe($t_item->getProperty('NAME_SINGULAR')));
+								if ($vs_org = $t_item->get('billing_organization')) {
+									$vs_label = _t('%5 #%4 on %1 from %2 (%3)', caGetLocalizedDate($t_item->get('created_on', array('GET_DIRECT_DATE' => true)), array('dateFormat' => 'delimited', 'timeOmit' => true)), $t_item->get('billing_fname').' '.$t_item->get('billing_lname'), $vs_org, $t_item->getOrderNumber(), caUcFirstUTF8Safe($t_item->getProperty('NAME_SINGULAR')));
+								} else {
+									$vs_label = _t('%4 #%3 on %1 from %2', caGetLocalizedDate($t_item->get('created_on', array('GET_DIRECT_DATE' => true)), array('dateFormat' => 'delimited', 'timeOmit' => true)),$t_item->get('billing_fname').' '.$t_item->get('billing_lname'), $t_item->getOrderNumber(), caUcFirstUTF8Safe($t_item->getProperty('NAME_SINGULAR')));
+								}
 							}
 							break;
 						default:
@@ -606,19 +611,7 @@ require_once(__CA_LIB_DIR__.'/core/Parsers/TimeExpressionParser.php');
 				$vs_buf .= "<strong>"._t("Creating new %1", $vs_type_name).": <div>".($vs_parent_name ?  _t("%1 &gt; New %2", $vs_parent_name, $vs_type_name) : _t("New %1", $vs_type_name))."</div></strong>\n";
 				$vs_buf .= "<br/>\n";
 			}
-		
-		// -------------------------------------------------------------------------------------
-		//
-		// Metabolic stuff goes here
-		//
-		
-		// $t_item contains the model for the record currently being edited. 
-		// To figure out what sort of record it is use $t_item->tableName()
-		//if ($t_item->tableName() == 'ca_objects') {
-		//	$vs_buf .= "<b>Project: </b>".$t_item->get("ca_collections.preferred_labels.name", array("restrict_to_types" => array("project"), "delimiter" => "<br/>"))."<br/>";
-		//	$vs_buf .= "<b>Silo: </b>".$t_item->get("ca_collections.preferred_labels.name", array("restrict_to_types" => array("silo"), "delimiter" => "<br/>"))."<br/>";
-		//}
-		
+	
 		// -------------------------------------------------------------------------------------
 		//
 		// Item-specific information
@@ -688,6 +681,15 @@ require_once(__CA_LIB_DIR__.'/core/Parsers/TimeExpressionParser.php');
 	});
 </script>\n";
 				
+			}
+			
+			//
+			// Output loan info for ca_objects
+			//
+			if ($vs_table_name === 'ca_objects') {
+				if ($po_view->request->user->canDoAction('can_manage_clients') && ($va_loan_details = $t_item->isOnLoan())) {
+					$vs_buf .= "<div>".caNavLink($po_view->request, _t('On loan to %1', $va_loan_details['billing_fname'].' '.$va_loan_details['billing_lname']), 'inspectorOnLoan', 'client/library', 'OrderEditor', 'Edit', array('order_id' => $va_loan_details['order_id']))."</div>";
+				}
 			}
 			
 			//
@@ -950,22 +952,25 @@ require_once(__CA_LIB_DIR__.'/core/Parsers/TimeExpressionParser.php');
 			//
 			// Output extra useful info for client services/commerce orders
 			//
+			
 			if ($vs_table_name === 'ca_commerce_orders') {
 				$o_client_services_config = Configuration::load($po_view->request->config->get('client_services_config'));
-				$vs_currency_symbol = $o_client_services_config->get('currency_symbol');
-				$va_order_totals = $t_item->getOrderTotals();
-				$vs_buf .= "<table style='margin-left: 10px;'>";
-				$vs_buf .= "<tr><td><strong>"._t("Items").'</strong></td><td>'.$vs_currency_symbol.sprintf("%4.2f", $va_order_totals['fee'])." (".(int)$va_order_totals['items'].")</td></tr>\n";
-				$vs_buf .= "<tr><td><strong>"._t("S+H").'</strong></td><td>'.$vs_currency_symbol.sprintf("%4.2f", ($va_order_totals['shipping'] + $va_order_totals['handling']))."</td></tr>\n";
-				$vs_buf .= "<tr><td><strong>"._t("Tax").'</strong></td><td>'.$vs_currency_symbol.sprintf("%4.2f", $va_order_totals['tax'])."</td></tr>\n";
+				if (($va_order_totals['fee'] + $va_order_totals['tax']+ $va_order_totals['shipping']+ $va_order_totals['handling'] + $va_order_totals['additional_order_fees'] + $va_order_totals['additional_item_fees']) != 0) {	
+					$vs_currency_symbol = $o_client_services_config->get('currency_symbol');
+					$va_order_totals = $t_item->getOrderTotals();
+					$vs_buf .= "<table style='margin-left: 10px;'>";
+					$vs_buf .= "<tr><td><strong>"._t("Items").'</strong></td><td>'.$vs_currency_symbol.sprintf("%4.2f", $va_order_totals['fee'])." (".(int)$va_order_totals['items'].")</td></tr>\n";
+					$vs_buf .= "<tr><td><strong>"._t("S+H").'</strong></td><td>'.$vs_currency_symbol.sprintf("%4.2f", ($va_order_totals['shipping'] + $va_order_totals['handling']))."</td></tr>\n";
+					$vs_buf .= "<tr><td><strong>"._t("Tax").'</strong></td><td>'.$vs_currency_symbol.sprintf("%4.2f", $va_order_totals['tax'])."</td></tr>\n";
+					
+					$vs_buf .= "<tr><td><strong>"._t("Addtl fees").'</strong></td><td>'.$vs_currency_symbol.sprintf("%4.2f", ($va_order_totals['additional_order_fees'] + $va_order_totals['additional_item_fees']))."</td></tr>\n";
+					$vs_buf .= "<tr><td><strong>"._t("Total").'</strong></td><td>'.$vs_currency_symbol.sprintf("%4.2f", $va_order_totals['fee'] + $va_order_totals['tax']+ $va_order_totals['shipping']+ $va_order_totals['handling'] + $va_order_totals['additional_order_fees'] + $va_order_totals['additional_item_fees'])."</td></tr>\n";
+					$vs_buf .= "</table>";
+					$vs_buf .= "<strong>".$t_item->getFieldInfo('payment_status', 'LABEL')."</strong>: ".$t_item->getChoiceListValue('payment_status', $t_item->get('payment_status'))."<br/>\n";
+				}
 				
-				$vs_buf .= "<tr><td><strong>"._t("Addtl fees").'</strong></td><td>'.$vs_currency_symbol.sprintf("%4.2f", ($va_order_totals['additional_order_fees'] + $va_order_totals['additional_item_fees']))."</td></tr>\n";
-				$vs_buf .= "<tr><td><strong>"._t("Total").'</strong></td><td>'.$vs_currency_symbol.sprintf("%4.2f", $va_order_totals['fee'] + $va_order_totals['tax']+ $va_order_totals['shipping']+ $va_order_totals['handling'] + $va_order_totals['additional_order_fees'] + $va_order_totals['additional_item_fees'])."</td></tr>\n";
-				$vs_buf .= "</table>";
+				$vs_buf .= "<br/><strong>".$t_item->getFieldInfo('order_status', 'LABEL')."</strong>: ".$t_item->getChoiceListValue('order_status', $t_item->get('order_status'))."<br/>\n";
 				
-				
-				$vs_buf .= "<strong>".$t_item->getFieldInfo('order_status', 'LABEL')."</strong>: ".$t_item->getChoiceListValue('order_status', $t_item->get('order_status'))."<br/>\n";
-				$vs_buf .= "<strong>".$t_item->getFieldInfo('payment_status', 'LABEL')."</strong>: ".$t_item->getChoiceListValue('payment_status', $t_item->get('payment_status'))."<br/>\n";
 				
 				if ($vs_shipping_date = $t_item->get('shipping_date', array('dateFormat' => 'delimited', 'timeOmit' => true))) {
 					$vs_buf .= "<strong>".$t_item->getFieldInfo('shipping_date', 'LABEL')."</strong>: ".$vs_shipping_date;
@@ -978,10 +983,11 @@ require_once(__CA_LIB_DIR__.'/core/Parsers/TimeExpressionParser.php');
 					
 					$vs_buf .= "<br/>\n";
 				}
-				if ($vn_shipping_method = $t_item->get('shipping_method')) {
+				if (($vn_shipping_method = $t_item->get('shipping_method')) && ($t_item->getChoiceListValue('shipping_method', $vn_shipping_method) != 'None')) {
 					$vs_buf .= "<strong>".$t_item->getFieldInfo('shipping_method', 'LABEL')."</strong>: ".$t_item->getChoiceListValue('shipping_method', $vn_shipping_method)."<br/>\n";
 				}
 			}
+			
 			
 			//
 			// Output extra useful info for bundle mapping groups
@@ -1568,7 +1574,7 @@ $ca_relationship_lookup_parse_cache = array();
 		//
 		$vb_use_new_display_format = false;
 		$va_bundles = array();
-		
+		$vs_display_delimiter = '';
 		if (isset($ca_relationship_lookup_parse_cache[$vs_rel_table])) {
 			$va_bundles = $ca_relationship_lookup_parse_cache[$vs_rel_table]['bundles'];
 			$va_display_format = $ca_relationship_lookup_parse_cache[$vs_rel_table]['display_format'];
@@ -1641,7 +1647,7 @@ $ca_relationship_lookup_parse_cache = array();
 					
 					foreach($va_bundles as $vs_bundle_name) {
 						if (in_array($vs_bundle_name, array('_parent', '_hierarchy'))) { continue;}
-						if (!($vs_value = trim($qr_rel_items->get($vs_bundle_name)))) { 
+						if (!($vs_value = trim($qr_rel_items->get($vs_bundle_name, array('delimiter' => $vs_display_delimiter))))) { 
 							if ((!isset($pa_options['stripTags']) || !$pa_options['stripTags']) &&  (sizeof($va_tmp = explode('.', $vs_bundle_name)) == 3)) {		// is tag media?
 								$vs_value = trim($qr_rel_items->getMediaTag($va_tmp[0].'.'.$va_tmp[1], $va_tmp[2]));
 							}
@@ -1745,14 +1751,17 @@ $ca_relationship_lookup_parse_cache = array();
 			if ($vb_use_new_display_format) {
 				$vs_parent = $va_parent_labels[$va_parent_ids[$vn_id]];
 				$vs_hier = $va_hierarchies[$va_hierarchy_ids[$vn_id]]['name_plural'] ? $va_hierarchies[$va_hierarchy_ids[$vn_id]]['name_plural'] : $va_hierarchies[$va_hierarchy_ids[$vn_id]]['name'];
-
-				foreach($va_related_item_info[$vn_id] as $vn_x => $vs_display_value) {
-					$vs_display_value = str_replace("^_parent", $vs_parent, $vs_display_value);
-					$va_tmp[$vn_id][$vn_x] = str_replace("^_hierarchy", $vs_hier, $vs_display_value);
-				
-					if (!strlen(trim($va_tmp[$vn_id][$vn_x]))) { unset($va_tmp[$vn_id][$vn_x]); }
+				if (is_array($va_related_item_info[$vn_id])) {
+					foreach($va_related_item_info[$vn_id] as $vn_x => $vs_display_value) {
+						$vs_display_value = str_replace("^_parent", $vs_parent, $vs_display_value);
+						$va_tmp[$vn_id][$vn_x] = str_replace("^_hierarchy", $vs_hier, $vs_display_value);
+					
+						if (!strlen(trim($va_tmp[$vn_id][$vn_x]))) { unset($va_tmp[$vn_id][$vn_x]); }
+					}
 				}
-				$va_tmp[$vn_id] = join($vs_display_delimiter, $va_tmp[$vn_id]);
+				if (is_array($va_tmp[$vn_id])) {
+					$va_tmp[$vn_id] = join($vs_display_delimiter, $va_tmp[$vn_id]);
+				}
 			} else {
 				$va_tmp[$vn_id] = str_replace('^_parent',  $va_parent_labels[$va_parent_ids[$vn_id]], $va_tmp[$vn_id]);
 				$va_tmp[$vn_id] = str_replace('^_hierarchy',  $va_hierarchies[$va_hierarchy_ids[$vn_id]]['name_plural'] ? $va_hierarchies[$va_hierarchy_ids[$vn_id]]['name_plural'] : $va_hierarchies[$va_hierarchy_ids[$vn_id]]['name'], $va_tmp[$vn_id]);

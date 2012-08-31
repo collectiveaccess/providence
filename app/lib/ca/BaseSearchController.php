@@ -91,6 +91,7 @@
  				$this->opo_result_context->isNewSearch(true);
  			}
  			parent::Index($po_search, $pa_options);
+ 			
  			JavascriptLoadManager::register('hierBrowser');
  			JavascriptLoadManager::register('browsable');	// need this to support browse panel when filtering/refining search results
  			$t_model = $this->opo_datamodel->getInstanceByTableName($this->ops_tablename, true);
@@ -146,7 +147,8 @@
 					'sort_direction' => $vs_sort_direction, 
 					'appendToSearch' => $vs_append_to_search,
 					'checkAccess' => $va_access_values,
-					'no_cache' => $vb_is_new_search
+					'no_cache' => $vb_is_new_search,
+					'dontCheckFacetAvailability' => true
 				);
 				if ($vb_is_new_search ||isset($pa_options['saved_search']) || (is_subclass_of($po_search, "BrowseEngine") && !$po_search->numCriteria()) ) {
 					$vs_browse_classname = get_class($po_search);
@@ -177,11 +179,13 @@
 					
  					$vb_criteria_have_changed = $po_search->criteriaHaveChanged();
 					$po_search->execute($va_search_opts);
+					
 					$this->opo_result_context->setParameter('browse_id', $po_search->getBrowseID());
 					
 					if ($vs_group_name = $this->request->config->get('browse_facet_group_for_'.$this->ops_tablename)) {
  						$po_search->setFacetGroup($vs_group_name);
  					}
+ 					
 					$vo_result = $po_search->getResults($va_search_opts);
 				} else {
 					$vo_result = $po_search->search($vs_search, $va_search_opts);
@@ -190,7 +194,6 @@
 				
 				// Only prefetch what we need
 				$vo_result->setOption('prefetch', $vn_items_per_page);
- 		
 				
 				//
 				// Handle details of partitioning search results by type, if required
@@ -210,7 +213,6 @@
 				}
  				if($vb_is_new_search || $vb_criteria_have_changed) {
 					$this->opo_result_context->setResultList($vo_result->getPrimaryKeyValues());
-					
 					$vn_page_num = 1;
 				}
  				$this->view->setVar('num_hits', $vo_result->numHits());

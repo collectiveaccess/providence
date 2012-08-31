@@ -1,0 +1,17 @@
+.roundedNav {
+	padding-bottom:5px;
+	padding-top:3px;
+	border: 1px solid #000;
+}
+#topNavContainer {
+	height:35px;
+}
+.sf-menu a {
+	padding-top: .8em; 
+}
+.sf-menu a, .sf-menu a:visited  { /* visited pseudo selector so IE6 applies text colour*/
+	color:			#333;
+}
+.sf-menu-search a{
+	padding-top: .65em;
+} 

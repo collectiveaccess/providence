@@ -56,7 +56,7 @@ var caUI = caUI || {};
 		// --------------------------------------------------------------------------------
 		// Define methods
 		// --------------------------------------------------------------------------------
-		that.showBrowsePanel = function(facet, modifyMode, modifyID, grouping, clear) {
+		that.showBrowsePanel = function(facet, modifyMode, modifyID, grouping, clear, target) {
 			if (that.singleFacetValues[facet]) {
 				document.location = that.addCriteriaUrl + "/facet/" + facet + "/id/" + that.singleFacetValues[facet];
 				return true;
@@ -66,12 +66,13 @@ var caUI = caUI || {};
 			jQuery("#" + that.panelID).fadeIn(that.panelTransitionSpeed, function() { that.isChanging = false; });
 			
 			if (that.useExpose) { 
-				jQuery("#" + that.panelID).expose({api: true, color: that.exposeBackgroundColor, opacity: that.exposeBackgroundOpacity}).load(); 
+				jQuery("#" + that.panelID).expose({api: true, color: that.exposeBackgroundColor, opacity: that.exposeBackgroundOpacity, zIndex: 99999}).load(); 
 			}
 			if (!modifyID) { modifyID = ''; }
 			
 			var options = { facet: facet, modify: (modifyMode ? 1 : ''), id: modifyID, grouping: grouping, clear: clear ? 1 : 0 };
 			if (that.browseID) { options['browse_id'] = that.browseID; }
+			if (target) { options['target'] = target; }
 			jQuery("#" + that.panelContentID).load(that.facetUrl, options);
 		}
 		

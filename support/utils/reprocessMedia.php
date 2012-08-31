@@ -21,14 +21,17 @@
 	
 	$qr_reps = $o_db->query("SELECT * FROM ca_object_representations ORDER BY representation_id");
 	while($qr_reps->nextRow()) {
+		$va_media_info = $qr_reps->getMediaInfo('media');
+		$vs_original_filename = $va_media_info['ORIGINAL_FILENAME'];
+		
 		$vs_mimetype = $qr_reps->getMediaInfo('media', 'original', 'MIMETYPE');
 		if(($argv[3]) && (!preg_match("!^".$argv[3]."!", $vs_mimetype))) {
 			continue;
 		}
-		print "Re-processing ".$vs_mimetype." media for representation id=".$qr_reps->get('representation_id')."\n";
+		print "Re-processing ".$vs_mimetype." media for representation id=".$qr_reps->get('representation_id')." ({$vs_original_filename})\n";
 		$t_rep->load($qr_reps->get('representation_id'));
-		$t_rep->set('media', $p =$qr_reps->getMediaPath('media', 'original'));
-		print "path=$p\n";
+		$t_rep->set('media', $p =$qr_reps->getMediaPath('media', 'original'), array('original_filename' => $vs_original_filename));
+
 		if ($argv[2]) {
 			$t_rep->update(array('update_only_media_versions' => array($argv[2])));
 		} else {

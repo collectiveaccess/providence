@@ -278,8 +278,7 @@
 					$vb_takes_locale = false;
 					if (isset($va_properties['takesLocale']) && $va_properties['takesLocale']) {
 						$vb_takes_locale = true;
-						$t_locale = new ca_locales();
-						$va_locales = $t_locale->getLocaleList(array('sort_field' => '', 'sort_order' => 'asc', 'index_by_code' => true, 'available_for_cataloguing_only' => true)); 
+						$va_locales = ca_locales::getLocaleList(array('sort_field' => '', 'sort_order' => 'asc', 'index_by_code' => true, 'available_for_cataloguing_only' => true)); 
 					} else {
 						$va_locales = array('_generic' => array());
 					}
@@ -296,9 +295,9 @@
 							}
 						}
 						
-						if ($vs_locale != '_generic') {		// _generic means this setting doesn't take a locale
+						if (($vs_locale != '_generic') && (is_array($vs_value))) {		// _generic means this setting doesn't take a locale
 							if (!($vs_text_value = $vs_value[$va_locale_info['locale_id']])) {
-								$vs_text_value = $vs_value[$va_locale_info['code']];
+								$vs_text_value = (is_array($vs_value) && isset($vs_value[$va_locale_info['code']])) ? $vs_value[$va_locale_info['code']] : '';
 							}
 						} else {
 							$vs_text_value = $vs_value;
@@ -335,8 +334,7 @@
 						} else {
 							if ($vb_locale_list) {
  								include_once(__CA_MODELS_DIR__.'/ca_locales.php');
- 								$t_locale = new ca_locales();
- 								$va_rel_opts = array_flip($t_locale->getLocaleList(array('return_display_values' => true)));
+ 								$va_rel_opts = array_flip(ca_locales::getLocaleList(array('return_display_values' => true)));
 							} else {
 								if ($vb_show_lists) {
  									include_once(__CA_MODELS_DIR__.'/ca_lists.php');
@@ -379,7 +377,7 @@
 					
 						if ($vn_height > 1) { $va_attr['multiple'] = 1; $vs_input_name .= '[]'; }
 						
-						$va_opts = array('id' => $vs_input_id, 'width' => $vn_width, 'height' => $vn_height);
+						$va_opts = array('id' => $vs_input_id, 'width' => $vn_width, 'height' => $vn_height, 'value' => is_array($vs_value) ? $vs_value[0] : $vs_value, 'values' => is_array($vs_value) ? $vs_value : array($vs_value));
 						if(!isset($va_opts['value'])) { $va_opts['value'] = -1; }		// make sure default list item is never selected
 						$vs_select_element = caHTMLSelect($vs_input_name, $va_properties['options'], array(), $va_opts);
 					}
@@ -405,8 +403,7 @@
 		 * on the ca_search_forms instance to save settings to the database
 		 */ 
 		public function setSettingsFromHTMLForm($po_request) {
-			$t_locale = new ca_locales();
-			$va_locales = $t_locale->getLocaleList(array('sort_field' => '', 'sort_order' => 'asc', 'index_by_code' => true, 'available_for_cataloguing_only' => true)); 
+			$va_locales = ca_locales::getLocaleList(array('sort_field' => '', 'sort_order' => 'asc', 'index_by_code' => true, 'available_for_cataloguing_only' => true)); 
 			$va_available_settings = $this->getAvailableSettings();
 
 			$this->o_instance->setMode(ACCESS_WRITE);
