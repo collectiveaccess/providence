@@ -6368,6 +6368,7 @@ create table ca_commerce_orders
   created_on int unsigned not null,
   
   order_status varchar(40) not null,	
+  order_number varchar(255) not null,	
   order_type char(1) not null default 'O',	
    
   shipping_fname varchar(255) not null,
@@ -6572,5 +6573,5 @@ create table ca_schema_updates (
 ) engine=innodb CHARACTER SET utf8 COLLATE utf8_general_ci;
 
 /* Indicate up to what migration this schema definition covers */
-/* CURRENT MIGRATION: 67 */
-INSERT IGNORE INTO ca_schema_updates (version_num, datetime) VALUES (67, unix_timestamp());
+/* CURRENT MIGRATION: 68 */
+INSERT IGNORE INTO ca_schema_updates (version_num, datetime) VALUES (68, unix_timestamp());

@@ -392,6 +392,22 @@ class ca_users extends BaseModel {
 		return $this->update();
 	}
 	# ----------------------------------------
+	# --- Utility
+	# ----------------------------------------
+	/**
+	 *
+	 */
+	public function getUserNameFormattedForLookup() {
+		if (!($this->getPrimaryKey())) { return null; }
+		
+		$va_values = $this->getFieldValuesArray();
+		foreach($va_values as $vs_key => $vs_val) {
+			$va_values["ca_users.{$vs_key}"] = $vs_val;
+		}
+		
+		return caProcessTemplate(join($this->getAppConfig()->getList('ca_users_lookup_delimiter'), $this->getAppConfig()->getList('ca_users_lookup_settings')), $va_values, array());
+	}
+	# ----------------------------------------
 	# --- Authentication
 	# ----------------------------------------
 	/**

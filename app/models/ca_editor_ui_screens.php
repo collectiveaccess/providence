@@ -528,6 +528,23 @@ class ca_editor_ui_screens extends BundlableLabelableBaseModelWithAttributes {
 								'description' => _t('If checked hierarchy browser will be open when form loads.')
 							)
 						);
+					} else {
+						if ($vs_bundle == 'ca_commerce_order_history') {
+							$va_additional_settings = array(
+								'order_type' => array(
+									'formatType' => FT_TEXT,
+									'displayType' => DT_SELECT,
+									'takesLocale' => false,
+									'default' => '',
+									'options' => array(
+										_t('Sales order') => 'O',
+										_t('Loan') => 'L'
+									),
+									'label' => _t('Type of order'),
+									'description' => _t('Determines which type of order is displayed.')
+								)		
+							);
+						}
 					}
 					break;
 				default:

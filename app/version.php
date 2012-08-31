@@ -3,7 +3,7 @@
 	define('__CollectiveAccess__', '1.3');
 	
 	# Schema revision
-	define('__CollectiveAccess_Schema_Rev__', 67);
+	define('__CollectiveAccess_Schema_Rev__', 68);
 	
 	# Release type
 	define('__CollectiveAccess_Release_Type__', 'GIT');
