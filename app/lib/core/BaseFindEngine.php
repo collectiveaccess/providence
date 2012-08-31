@@ -70,6 +70,7 @@
 					key (row_id)
 				) engine=memory;
 			");
+			if (!sizeof($pa_hits)) { return $this->ops_tmp_table_name; }
 			
 			if (is_null($g_mysql_has_file_priv)) {	// Figure out if user has FILE priv
 				$qr_grants = $this->opo_db->query("
