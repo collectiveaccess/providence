@@ -185,16 +185,16 @@ class SearchEngine extends SearchBase {
 
 			// Filter deleted records out of final result
 			if ((!isset($pa_options['showDeleted']) || !$pa_options['showDeleted']) && $t_table->hasField('deleted')) {
-				$this->addResultFilter('ca_objects.deleted', '=', '0');
+				$this->addResultFilter($this->ops_tablename.'.deleted', '=', '0');
 			}
 			
 			if (isset($pa_options['checkAccess']) && (is_array($pa_options['checkAccess']) && sizeof($pa_options['checkAccess']))) {
 				$va_access_values = $pa_options['checkAccess'];
-				$this->addResultFilter('ca_objects.access', 'IN', join(",",$va_access_values));
+				$this->addResultFilter($this->ops_tablename.'.access', 'IN', join(",",$va_access_values));
 			} 
 					
 			if (is_array($va_type_ids = $this->getTypeRestrictionList()) && sizeof($va_type_ids)) {
-				$this->addResultFilter('ca_objects.type_id', 'IN', join(",",$va_type_ids));
+				$this->addResultFilter($this->ops_tablename.'.type_id', 'IN', join(",",$va_type_ids));
 			}
 			$o_res =  $this->opo_engine->search($this->opn_tablenum, $vs_search, $this->opa_result_filters, $o_rewritten_query);
 
