@@ -683,9 +683,10 @@ class WLPlugSearchEngineSolr extends BaseSearchPlugin implements IWLPlugSearchEn
 			$this->opo_datamodel->getTableName($pn_tablenum). /* core name (i.e. table name */
 			"/update" /* updater */
 		);
-		$vo_http_client->setRawData($vs_post_xml)->setEncType('text/xml')->request('POST');
 		
 		try {
+			$vo_http_client->setRawData($vs_post_xml)->setEncType('text/xml')->request('POST');
+		
 			$vo_http_response = $vo_http_client->request();
 		} catch (Exception $e) {
 			// Optimize error
