@@ -248,11 +248,6 @@ div.inspectorLotObjectTypeControls {
 	margin-top: 0px;
 }
 
-a.inspectorOnLoan {
-	color: #cc0000;
-	font-style: italic;
-}
-
 #leftNav h4 div {  text-transform: none; font-weight: normal; padding-top: 5px; }
 #leftNav h3 div {  text-transform: none; font-weight: normal; padding-top: 5px; }
 
@@ -1830,16 +1825,16 @@ table.representationAnnotationListItem {
 	height: 100%;
 }
 
-#caMediaDisplayContent, #caMediaOverlayContent {
+#caMediaOverlayContent {
 	margin: 0px;
 	width: 100%;
 	height: 100%;
 	overflow: auto;
 	text-align: center;
-	position: relative;
 }
 
 #caMediaPanelProgress {
+	position: absolute;
 	display: none;
 	font-size:36px;
 	font-weight: bold;
@@ -1894,76 +1889,42 @@ div.caMediaOverlayControls .objectInfo{
 	width:40%;
 	float:left;
 }
-
 div.caMediaOverlayControls .repNav {
-	font-size: 12px;
-	width: 80px;
 	float:left;
-}
-
-div.caMediaOverlayControls .caRepTools {
-	position: relative;
-	float: right;
+	width:16%;
 	padding: 0px 2% 0px 2%;
 	text-align:center;
 	color:#FFF;
 }
-#caRepRotationToolPanel {
+div.caMediaOverlayControls .repEdit {
+	float:left;
+	width: 16
+	height:100%;
+	padding: 0px 2% 0px 2%;
+	text-align:center;
+	color:#FFF;
+}
+
+div.caMediaOverlayControls .repRotate {
+	position: relative;
+	float:left;
+	width:16%;
+	padding: 0px 2% 0px 2%;
+	text-align:center;
+	color:#FFF;
+}
+
+#rotateButton { 
+	float: left;
+}
+#rotateBar {
 	background: #000;
-	display:none; 
-	width:300px; 
+	display:none; width:90px; 
 	height: 100px; 
-	opacity: 0.75;
+	opacity: 0.5;
 	position: absolute;
-	bottom: 16px;
-	right: 0px;
-}
-
-#caRepRotationToolPanel .caRepToolsClose{
-	position: absolute;
-	width:15px;
-	height:16px;
-	top: 5px;
-	right: 5px;
-	background-image:url("../graphics/buttons/x_white.png");
-}
-
-#caRepToolsRotateAngleControl {
-	margin-top: 4px;
-	width: 290px;
-	text-align: center;
-	font-size: 10px;
-}
-
-img.caRepToolsRotateControlButton {
-	border: 1px solid #000000;
-	background: #FFFFFF;
-}
-
-img.caRepToolsRotateControlButtonSelected {
-	border: 1px solid #CC0000;
-	background: #FFFFFF;
-}
-
-img.caRepToolsRotateControlButton:hover {
-	border: 1px solid #999999;
-	background: #FFFFFF;
-}
-
-#caRepToolsRotateProgress {
-	position: absolute;
-	top: 72px;
-	left: 40px;
-	width: 220px;
-	height: 19px;
-	opacity: 0.9;
-	
-	display: none;
-	padding: 0px;
-	
-	font-size:14px;
-	font-weight: bold;
-	text-align: center;
+	bottom: 0px;
+	left: 0px;
 }
 
 .caAudioPlayer {
@@ -3910,6 +3871,10 @@ div.preferenceSectionDivider {
 	margin-bottom: 10px;
 }
 
+.searchReindexRowProgressGroup {
+
+}
+
 a.caDeleteLabelButton {
 	text-decoration: none;
 }
@@ -4263,21 +4228,18 @@ a.caClientCommunicationsNewOrderButton:hover {
 	clear:right;
 	color: #333;
 	text-align: left;
-	background-color:#fff;
-	padding:5px 10px 5px 10px;
-	border: 3px solid #ccc;
+	background-color:#e6e6e6;
+	padding:5px 10px 10px 10px;
 	border-radius: 8px;
 	-moz-border-radius: 8px; 
 	-webkit-border-radius: 8px;
-	margin-bottom:15px;
 }
 #caClientOrderOverview .orderStatus .statusDesc {
 	background-color:#ffffff;
-	padding:2px 0px 0px 5px;
+	padding:10px;
 	line-height:1.3em;
 	font-size:12px;
 	margin: 0px 0px 15px 0px;
-	float:left;
 }
 #caClientOrderOverview .overrideButton {
 	float:right;
@@ -4286,7 +4248,7 @@ a.caClientCommunicationsNewOrderButton:hover {
 #caClientOrderOverview .orderStatus .statusWarning{
 	font-weight:bold;
 	background:	#FFFFFF url('../graphics/icons/warning.gif') no-repeat 10px 5px;
-	padding: 15px 0px 8px 50px;
+	padding: 15px 0px 15px 50px;
 	margin: 10px 0px 0px 0px;
 }
 a.caClientOrderOverviewButton {
@@ -4304,13 +4266,8 @@ a.caClientOrderOverviewButton {
 a.caClientOrderOverviewButton:hover {
 	background-color: #545454;
 }
-#commerceOrderStatusMessage {
-	width:500px;
-	float:left;
-	font-size:1.5em;
-}
 #caClientOrderOverview .overviewItem {
-	padding:0px 0px 10px 0px;
+	padding:0px 0px 10px 10px;
 	font-size:12px;
 }
 
@@ -4351,47 +4308,13 @@ a.caClientOrderOverviewButton:hover {
 	width:100%;
 }   
 
-#loanSummaryTable {
-	border-top:1px solid #ccc;
-}
+
 #caClientLibraryCustomerInfoForm {
 	display: none;
 }
 
 .caClientLibraryLoadingIndicator {
 	background: white url('../graphics/icons/indicator.gif') right center no-repeat !important;
-}
-
-.caClientOrderHistoryTable {
-	width: 100%;	
-	border-top:1px solid #ccc;
-}
-.caClientOrderHistoryRow {
-	border-top:1px solid #ccc;
-	padding: 5px;
-}
-.caClientOrderHistoryRowOut {
-	border-top:1px solid #00cc00;
-	background: rgba(180, 180, 180, 0.4);
-	padding: 5px;
-}
-
-.caClientOrderHistoryRowOverdue {
-	border-top:1px solid #cc0000;
-	background: rgba(255, 0, 0, 0.4);
-	padding: 5px;
-}
-
-.caClientOrderHistoryHeader {
-	font-weight: bold;
-	font-size: 11px;
-	text-transform: uppercase; 
-	background-color: #f1f1f1;
-}
-.caClientOrderHistoryText {
-	font-weight: normal;
-	font-size: 11px;
-	padding: 5px;
 }
 
 /* -------------------------------------------------*/
@@ -4484,30 +4407,4 @@ div.searchlight-results-wrapper {
 div.searchlight-results div.searchlight-selected {
     background: #333;
     color: #fff;
-}
-#caClientOrderOverview .loanTitle {
-	font-size: 13px;
-	font-weight: bold;
-	color: #333;
-	padding: 0px 5px 0px 5px;
-}
-#caClientOrderOverview td {
-	border-bottom: 1px solid #ccc;
-	padding: 5px 10px 5px 10px;
-}
-#caClientOrderOverview table {
-	width: 100%;
-}
-.titleTd td{
-	border-left: 1px solid #333;
-}
-.orderTotal {
-	font-weight: bold;
-	text-transform: uppercase;
-	float:right;
-	padding: 5px 0px 0px 0px;
-	clear:both;
-}
-.overdue {
-	color: red;
 }

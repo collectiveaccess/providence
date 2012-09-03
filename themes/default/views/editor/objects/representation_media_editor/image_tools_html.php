@@ -28,36 +28,44 @@
 	$t_object 					= $this->getVar('t_object');
 	$t_rep 						= $this->getVar('t_object_representation');
 	$vn_representation_id		= $t_rep->getPrimaryKey();
+	
+	$va_transformation_history = $t_rep->getMediaTransformationHistory('media', 'ROTATE');
+	$va_rotation_info = array_pop($va_transformation_history);
+	$vn_rotation = (int)$va_rotation_info['angle'];
 ?>
 			<!-- Controls - only for media editor -->
 			<div class="caRepTools">
-				<a href="#" id="caRepToolsButton"><?php print _t("Tools"); ?></a>
-				<div id="caRepToolsPanel">
+				<a href="#" id="caRepToolsButton"><img src="<?php print $this->request->getThemeUrlPath()."/graphics/buttons/rotate16.png"; ?>" alt="<?php print htmlspecialchars(_t('Rotation'), ENT_QUOTES, "utf8"); ?>"/></a>
+				<div id="caRepRotationToolPanel">
 					<div class="caRepToolsClose"> </div>
-					<div id="caRepToolsTabs">
-						<ul>
-							<li><a href="#caRepToolsTabs-1"><?php print _t('Rotate'); ?></a></li>
-						</ul>
-						<div id="caRepToolsTabs-1">
-							<div id='caRepToolsRotateProgress'>
-								<img src="<?php print $this->request->getThemeUrlPath()."/graphics/icons/indicator_bar.gif"; ?>" alt="<?php print htmlspecialchars(_t('Rotating...'), ENT_QUOTES, "utf8"); ?>" class="caRepToolsRotateProgress"/>
-								<div id='caRepToolsRotateProgressMessage'><?php print _t('Rotating...'); ?></div>
-							</div>
-							
-							<div id="caRepToolsRotateAngleControl">
-								<form>
-									<?php print caHTMLRadioButtonInput("angle", array('value' => '90', 'checked' => 1)); ?><?php print _t('90∘ CW'); ?><br/>
-									<?php print caHTMLRadioButtonInput("angle", array('value' => '180')); ?><?php print _t('180∘ CW'); ?><br/>
-									<?php print caHTMLRadioButtonInput("angle", array('value' => '-90')); ?><?php print _t('90∘ CCW'); ?><br/>
-								</form>
-							</div>
-							
-							<div id="caRepToolsRotateControlButtons">
-								<div><a href="#" id="caRepToolsRotateApplyButton"><?php print _t("Apply"); ?></a></div>
-								
-								<div><a href="#" id="caRepToolsRotateRevertButton" style="display: <?php print ($t_rep->mediaHasUndo('media') ? "block" : "none"); ?>;"><?php print _t("Revert"); ?></a></div>
-							</div>
-							<br style="clear: both;"/>
+					
+					<div>
+						<div id="caRepToolsRotateAngleControl">
+							<table width="100%">
+								<tr valign="bottom">
+									<td width="25%" align="center">
+										<a href="#" rel="0" id="caRepToolsButtonRotate0" class="<?php print ($vn_rotation == 0) ? 'caRepToolsRotateControlButtonSelected' : 'caRepToolsRotateControlButton'; ?>"><img src="<?php print $this->request->getThemeUrlPath()."/graphics/icons/rotate_0.png"; ?>" alt="<?php print htmlspecialchars(_t('No rotation'), ENT_QUOTES, "utf8"); ?>" class="<?php print ($vn_rotation == 0) ? 'caRepToolsRotateControlButtonSelected' : 'caRepToolsRotateControlButton'; ?>"/></a>
+										<br/><?php print _t("0°"); ?>
+									</td>
+									<td width="25%" align="center">
+										<a href="#" rel="90" id="caRepToolsButtonRotate90" class="<?php print ($vn_rotation == 90) ? 'caRepToolsRotateControlButtonSelected' : 'caRepToolsRotateControlButton'; ?>"><img src="<?php print $this->request->getThemeUrlPath()."/graphics/icons/rotate_cw_90.png"; ?>" alt="<?php print htmlspecialchars(_t('Rotate 90 CW'), ENT_QUOTES, "utf8"); ?>"  class="<?php print ($vn_rotation == 90) ? 'caRepToolsRotateControlButtonSelected' : 'caRepToolsRotateControlButton'; ?>"/></a>
+										<br/><?php print _t("90° CW"); ?>
+									</td>
+									<td width="25%" align="center">
+										<a href="#" rel="180" id="caRepToolsButtonRotate180" class="<?php print ($vn_rotation == 180) ? 'caRepToolsRotateControlButtonSelected' : 'caRepToolsRotateControlButton'; ?>"><img src="<?php print $this->request->getThemeUrlPath()."/graphics/icons/rotate_180.png"; ?>" alt="<?php print htmlspecialchars(_t('Rotate 180'), ENT_QUOTES, "utf8"); ?>"  class="<?php print ($vn_rotation == 180) ? 'caRepToolsRotateControlButtonSelected' : 'caRepToolsRotateControlButton'; ?>"/></a>
+										<br/><?php print _t("180°"); ?>
+									</td>
+									<td width="25%" align="center">
+										<a href="#" rel="270" id="caRepToolsButtonRotate270" class="<?php print ($vn_rotation == 270) ? 'caRepToolsRotateControlButtonSelected' : 'caRepToolsRotateControlButton'; ?>"><img src="<?php print $this->request->getThemeUrlPath()."/graphics/icons/rotate_ccw_90.png"; ?>" alt="<?php print htmlspecialchars(_t('Rotate 90 CCW'), ENT_QUOTES, "utf8"); ?>"  class="<?php print ($vn_rotation == 270) ? 'caRepToolsRotateControlButtonSelected' : 'caRepToolsRotateControlButton'; ?>"/></a>
+										<br/><?php print _t("90° CCW"); ?>
+									</td>
+								</tr>
+							</table>
+						</div>
+						<br style="clear: both;"/>
+						
+						<div id='caRepToolsRotateProgress'>
+							<img src="<?php print $this->request->getThemeUrlPath()."/graphics/icons/indicator_bar.gif"; ?>" alt="<?php print htmlspecialchars(_t('Rotating...'), ENT_QUOTES, "utf8"); ?>" class="caRepToolsRotateProgress"/>
 						</div>
 					</div>
 				</div>
@@ -69,18 +77,16 @@
 				jQuery(document).ready(function() {
 					jQuery('#caRepToolsButton').click(function() {
 						if (repToolsIsOpen) {
-							jQuery('#caRepToolsPanel').hide("slide", { direction: "down" }, 250, function() { repToolsIsOpen = false; });
+							jQuery('#caRepRotationToolPanel').hide("slide", { direction: "down" }, 250, function() { repToolsIsOpen = false; });
 						} else {
-							jQuery('#caRepToolsPanel').show("slide", { direction: "down" }, 250, function() { repToolsIsOpen = true; });
+							jQuery('#caRepRotationToolPanel').show("slide", { direction: "down" }, 250, function() { repToolsIsOpen = true; });
 						}
 					});
 					
-					jQuery('#caRepToolsPanel .caRepToolsClose').click(function() {
-						jQuery('#caRepToolsPanel').hide("slide", { direction: "down" }, 250, function() { repToolsIsOpen = false; });
+					jQuery('#caRepRotationToolPanel .caRepToolsClose').click(function() {
+						jQuery('#caRepRotationToolPanel').hide("slide", { direction: "down" }, 250, function() { repToolsIsOpen = false; });
 					});
 					
-					jQuery("#caRepToolsTabs").tabs();
-			
 					function caPostProcessingHandler(d) {
 						jQuery('#caRepToolsRotateProgress').hide();
 						<?php print "jQuery(\"#".(($vs_display_type == 'media_overlay') ? 'caMediaOverlayContent' : 'caMediaDisplayContent')."\").load(\"".caNavUrl($this->request, 'editor/objects', 'ObjectEditor', 'GetRepresentationEditor', array('reload' => 1, 'representation_id' => (int)$vn_representation_id, 'object_id' => (int)$t_object->getPrimaryKey()))."\")"; ?>;
@@ -90,20 +96,21 @@
 							} else {
 								jQuery('#caRepToolsRotateRevertButton').hide();
 							}
+							
+							if (d['op'] == 'ROTATE') {
+								jQuery("#caRepToolsRotateAngleControl .caRepToolsRotateControlButtonSelected").removeClass("caRepToolsRotateControlButtonSelected").addClass("caRepToolsRotateControlButton");
+								jQuery("#caRepToolsRotateAngleControl #caRepToolsButtonRotate" + d['angle']).addClass("caRepToolsRotateControlButtonSelected");
+								jQuery("#caRepToolsRotateAngleControl #caRepToolsButtonRotate" + d['angle']).find("img").addClass("caRepToolsRotateControlButtonSelected");
+							}
 						}
 					}
 					
-					jQuery("#caRepToolsRotateApplyButton").click(function() {
+					jQuery("a.caRepToolsRotateControlButton, a.caRepToolsRotateControlButtonSelected").click(function() {
 						jQuery('#caRepToolsRotateProgressMessage').html("<?php print _t('Rotating...'); ?>");
 						jQuery('#caRepToolsRotateProgress').show();
-						var angle = jQuery('#caRepToolsRotateAngleControl form input[name="angle"]:checked').val();
-						jQuery.getJSON('<?php print caNavUrl($this->request, 'editor/objects', 'ObjectEditor', 'ProcessMedia'); ?>', { op: 'ROTATE', angle: angle, object_id: <?php print (int)$t_object->getPrimaryKey(); ?>, representation_id: <?php print (int)$vn_representation_id; ?> }, caPostProcessingHandler);
-					});
-					
-					jQuery("#caRepToolsRotateRevertButton").click(function() {
-						jQuery('#caRepToolsRotateProgressMessage').html("<?php print _t('Reverting...'); ?>");
-						jQuery('#caRepToolsRotateProgress').show();
-						jQuery.getJSON('<?php print caNavUrl($this->request, 'editor/objects', 'ObjectEditor', 'RevertMedia'); ?>', { object_id: <?php print (int)$t_object->getPrimaryKey(); ?>, representation_id: <?php print (int)$vn_representation_id; ?> }, caPostProcessingHandler);
+						
+						var angle = jQuery(this).attr('rel'); 
+						jQuery.getJSON('<?php print caNavUrl($this->request, 'editor/objects', 'ObjectEditor', 'ProcessMedia'); ?>', { op: 'ROTATE', angle: angle, revert: 1, object_id: <?php print (int)$t_object->getPrimaryKey(); ?>, representation_id: <?php print (int)$vn_representation_id; ?> }, caPostProcessingHandler);
 					});
 				});
 			</script>
