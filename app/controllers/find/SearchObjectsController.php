@@ -28,6 +28,7 @@
  	require_once(__CA_LIB_DIR__."/ca/BaseSearchController.php");
  	require_once(__CA_LIB_DIR__."/ca/Search/ObjectSearch.php");
  	require_once(__CA_LIB_DIR__."/ca/Browse/ObjectBrowse.php");
+ 	require_once(__CA_LIB_DIR__."/core/GeographicMap.php");
 	require_once(__CA_MODELS_DIR__."/ca_objects.php");
 	require_once(__CA_MODELS_DIR__."/ca_sets.php");
 	require_once(__CA_MODELS_DIR__."/ca_set_items.php");
@@ -69,7 +70,8 @@
 			$this->opa_views = array(
 				'thumbnail' => _t('thumbnails'),
 				'full' => _t('full'),
-				'list' => _t('list')
+				'list' => _t('list'),
+				'map' => _t('map')
 			 );
 			 
 			 $this->opa_sorts = array_merge(array(
@@ -103,6 +105,22 @@
  			$t_rep = new ca_object_representations($t_object->getPrimaryRepresentationID());
  			
  			$this->response->addContent($t_rep->getRepresentationViewerHTMLBundle($this->request, array('display' => 'media_overlay', 'object_id' => $vn_object_id, 'containerID' => 'caMediaPanelContentArea')));
+ 		}
+ 		# -------------------------------------------------------
+ 		/**
+ 		 * Ajax action that returns info on a mapped location based upon the 'id' request parameter.
+ 		 * 'id' is a list of object_ids to display information before. Each integer id is separated by a semicolon (";")
+ 		 * The "ca_objects_results_map_balloon_html" view in Results/ is used to render the content.
+ 		 */ 
+ 		public function getMapItemInfo() {
+ 			$pa_object_ids = explode(';', $this->request->getParameter('id', pString));
+ 			
+ 			$va_access_values = caGetUserAccessValues($this->request);
+ 			
+ 			$this->view->setVar('ids', $pa_object_ids);
+ 			$this->view->setVar('access_values', $va_access_values);
+ 			
+ 		 	$this->render("Results/ca_objects_results_map_balloon_html.php");
  		}
  		# -------------------------------------------------------
  		/**
