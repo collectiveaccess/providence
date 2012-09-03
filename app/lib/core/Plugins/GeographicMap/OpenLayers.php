@@ -136,40 +136,31 @@ class WLPlugGeographicMapOpenLayers Extends BaseGeographicMapPlugIn Implements I
 		center: [0, 0],
 		zoom: 1
 	});
-	var markers_{$vs_id} = new OpenLayers.Layer.Markers('Markers');
-	
-	var size = new OpenLayers.Size(21,25);
-	var icon = new OpenLayers.Icon('http://www.openlayers.org/dev/img/marker.png', size, new OpenLayers.Pixel(-(size.w/2), -size.h));\n\n
-	var popup_{$vs_id} = null;
-	var markerClick_{$vs_id} = function (evt) {
-			if (popup_{$vs_id} == null) {
-				popup_{$vs_id} = this.createPopup(this.closeBox);
-				map_{$vs_id}.addPopup(popup_{$vs_id});
-				popup_{$vs_id}.show();
-			} else {
-				popup_{$vs_id}.lonlat = this.lonlat;
-				jQuery(popup_{$vs_id}.contentDiv).html('".htmlspecialchars(_t('Loading...'), ENT_QUOTES)."');
-				popup_{$vs_id}.show();
-			}
-			if (this.data.ajaxUrl) {
-				jQuery(popup_{$vs_id}.div).css('width', '200px').css('height', '200px').css('overflow', 'auto');
-				jQuery(popup_{$vs_id}.contentDiv).load(this.data.ajaxUrl).css('width', '100%').css('height', '100%');
-			}
-			console.log(this);
-			OpenLayers.Event.stop(evt);
-		};\n\n
+
+		var features_{$vs_id} = [];
+		
+		var styles_{$vs_id} = new OpenLayers.StyleMap({
+			'default': new OpenLayers.Style({
+				pointRadius: '5',
+				fillColor: '#ffcc66',
+				strokeColor: '#ff9933',
+				strokeWidth: 2,
+				graphicZIndex: 1
+			}),
+			'select': new OpenLayers.Style({
+				fillColor: '#66ccff',
+				strokeColor: '#3399ff',
+				graphicZIndex: 2
+			})
+		});
 ";
 
-$va_locs = $va_paths = array();
+		$va_locs = $va_paths = array();
 		foreach($va_map_items as $o_map_item) {
 			$va_coords = $o_map_item->getCoordinates();
 			if (sizeof($va_coords) > 1) {
 				// is path
-				$va_path = array();
-				foreach($va_coords as $va_coord) {
-					$va_path[] = "new google.maps.LatLng({$va_coord['latitude']},{$va_coord['longitude']})";
-				}
-				$va_paths[] = array('path' => $va_coords, 'pathJS' => $va_path, 'label' => $o_map_item->getLabel(), 'content' => $o_map_item->getContent(), 'ajaxContentUrl' => $o_map_item->getAjaxContentUrl(), 'ajaxContentID' => $o_map_item->getAjaxContentID());
+				$va_paths[] = array('path' => $va_coords, 'label' => $o_map_item->getLabel(), 'content' => $o_map_item->getContent(), 'ajaxContentUrl' => $o_map_item->getAjaxContentUrl(), 'ajaxContentID' => $o_map_item->getAjaxContentID());
 			} else {
 				// is point
 				$va_coord = array_shift($va_coords);
@@ -190,36 +181,108 @@ $va_locs = $va_paths = array();
 					$va_buf[md5($va_marker_content_item['content'])] = $va_marker_content_item['content'];	// md5 is to ensure there is no duplicate content (eg. if something is mapped to the same location twice)
 				}	
 				
-				$vn_latitude = sprintf("%3.4f", $vn_latitude);
-				$vn_longitude = sprintf("%3.4f", $vn_longitude);
-				
 				if (!($vn_latitude && $vn_longitude)) { continue; }
-				$vs_content = preg_replace("![\n\r]+!", " ", addslashes($vs_label))."', '".preg_replace("![\n\r]+!", " ", addslashes(join($vs_delimiter, $va_buf)))."'";
+				$vs_label = preg_replace("![\n\r]+!", " ", addslashes($vs_label));
+				$vs_content = preg_replace("![\n\r]+!", " ", addslashes(join($vs_delimiter, $va_buf)));
 				$vs_ajax_url = preg_replace("![\n\r]+!", " ", ($vs_ajax_content_url ? addslashes($vs_ajax_content_url."/id/".join(';', $va_ajax_ids)) : ''));
-				//$vs_buf .= "	caMap_{$vs_id}_markers.push(caMap_{$vs_id}.makeMarker(".$vn_latitude.", ".$vn_longitude.", '".preg_replace("![\n\r]+!", " ", addslashes($vs_label))."', '".preg_replace("![\n\r]+!", " ", addslashes(join($vs_delimiter, $va_buf)))."', '".preg_replace("![\n\r]+!", " ", ($vs_ajax_content_url ? addslashes($vs_ajax_content_url."/id/".join(';', $va_ajax_ids)) : ''))."'));\n";
-				$vs_buf .= "markers_{$vs_id}.addMarker(m = new OpenLayers.Marker(lonLat = new OpenLayers.LonLat({$vn_longitude},{$vn_latitude}).transform(
-        new OpenLayers.Projection('EPSG:4326'),map_{$vs_id}.getProjectionObject()),".($vn_c ? "icon.clone()" : "icon")."));\n";
+				
+        		$vs_buf .= "
+        		features_{$vs_id}.push(new OpenLayers.Feature.Vector(
+					new OpenLayers.Geometry.Point({$vn_longitude},{$vn_latitude}).transform(new OpenLayers.Projection('EPSG:4326'),map_{$vs_id}.getProjectionObject()), {
+						label: '{$vs_label}',
+						content: '{$vs_content}',
+						ajaxUrl: '{$vs_ajax_url}'
+					}
+				));\n";
         
-        		$vs_buf .= "m.feature = new OpenLayers.Feature(markers_{$vs_id}, lonLat);
-							m.feature.closeBox = true;
-							m.feature.popupClass = OpenLayers.Class(OpenLayers.Popup.AnchoredBubble, { autoSize: true });
-							m.feature.data.popupContentHTML = '".htmlspecialchars(_t('Loading...'), ENT_QUOTES)."';
-							m.feature.data.ajaxUrl = '{$vs_ajax_url}';
-							m.feature.data.overflow = 'auto';\n";
-				$vs_buf .= "
-    m.events.register('mousedown', m.feature, markerClick_{$vs_id});\n
-			";
 			}
 			$vn_c++;
 		}
-		
-$vs_buf .= "
 
-	map_{$vs_id}.addLayer(markers_{$vs_id});
-	map_{$vs_id}.zoomToExtent(markers_{$vs_id}.getDataExtent());
-});
-</script>
-";
+		$vs_buf .= "
+			var style = { 
+			  strokeColor: '#0000ff', 
+			  strokeOpacity: 0.5,
+			  strokeWidth: 5
+			};
+				
+			var points_{$vs_id} = new OpenLayers.Layer.Vector('Points', {
+				styleMap: styles_{$vs_id},
+				rendererOptions: {zIndexing: true}
+			});\n";
+		
+		foreach($va_paths as $vn_i => $va_path) {
+			$va_buf = array();
+			$va_ajax_ids = array();
+				
+			$vs_label = $va_path['label'];
+			$vs_content = $va_path['content'];
+			$vs_ajax_url = preg_replace("![\n\r]+!", " ", ($va_path['ajaxContentUrl'] ? addslashes($va_path['ajaxContentUrl']."/id/".$va_path['ajaxContentID']) : ''));
+	
+			
+			$va_path_coords = array();
+			foreach($va_path['path'] as $va_path_point) {
+				$va_path_coords[] = "new OpenLayers.Geometry.Point(".$va_path_point['longitude'].",".$va_path_point['latitude'].").transform(new OpenLayers.Projection('EPSG:4326'), map_{$vs_id}.getProjectionObject())";
+			}
+			
+			$vs_buf .= "var lineFeature = new OpenLayers.Feature.Vector(new OpenLayers.Geometry.LineString([".join(",", $va_path_coords)."]), {
+					label: '{$vs_label}',
+					content: '{$vs_content}',
+					ajaxUrl: '{$vs_ajax_url}'
+				}, style);\n";
+			$vs_buf .= "points_{$vs_id}.addFeatures([lineFeature]);\n";
+		}
+		
+		$vs_buf .= "
+			var popup_{$vs_id} = null;
+			points_{$vs_id}.addFeatures(features_{$vs_id});
+			
+			var selectedFeature_{$vs_id};
+			var markerClick_{$vs_id} = function (feature) {
+				selectedFeature_{$vs_id} = feature;
+				
+				if (!popup_{$vs_id}) {
+					popup_{$vs_id} = new OpenLayers.Popup.AnchoredBubble('infoBubble', 
+						 feature.geometry.getBounds().getCenterLonLat(),
+						 null,
+						 feature.data.label,
+						 null, true, onPopupClose);
+					feature.popup = popup_{$vs_id};
+					map_{$vs_id}.addPopup(popup_{$vs_id});
+				} else {
+					jQuery(popup_{$vs_id}.contentDiv).html(feature.data.label + feature.data.content);
+					
+					if (feature.geometry && feature.geometry.x) {
+						popup_{$vs_id}.lonlat = new OpenLayers.LonLat(feature.geometry.x,feature.geometry.y);
+					} else {
+						popup_{$vs_id}.lonlat = new OpenLayers.LonLat(feature.geometry.bounds.left,feature.geometry.bounds.top);
+					}
+					popup_{$vs_id}.show();
+				}
+				
+				popup_{$vs_id}.setSize(new OpenLayers.Size(300, 150));
+				
+				if (feature.data.ajaxUrl) {
+					jQuery(popup_{$vs_id}.contentDiv).html('".htmlspecialchars(_t('Loading...'), ENT_QUOTES)."');
+					jQuery(popup_{$vs_id}.div).css('width', '300px').css('height', '150px').css('overflow', 'auto');
+					jQuery(popup_{$vs_id}.contentDiv).load(feature.data.ajaxUrl);
+				}
+			};
+			
+			var selectControl_{$vs_id} = new OpenLayers.Control.SelectFeature(points_{$vs_id}, {hover: false, onSelect: markerClick_{$vs_id}});
+            map_{$vs_id}.addControl(selectControl_{$vs_id});
+            selectControl_{$vs_id}.activate();
+            
+			function onPopupClose(evt) {
+          	  selectControl_{$vs_id}.unselect(selectedFeature_{$vs_id});
+          	  popup_{$vs_id}.hide();
+        	}
+			
+			map_{$vs_id}.addLayer(points_{$vs_id});
+			map_{$vs_id}.zoomToExtent(points_{$vs_id}.getDataExtent());
+		});
+		</script>
+		";
 				break;
 			# ---------------------------------
 		}
