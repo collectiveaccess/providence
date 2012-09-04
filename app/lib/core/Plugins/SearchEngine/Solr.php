@@ -100,11 +100,10 @@ class WLPlugSearchEngineSolr extends BaseSearchPlugin implements IWLPlugSearchEn
 	}
 	# -------------------------------------------------------
 	public function search($pn_subject_tablenum, $ps_search_expression, $pa_filters=array(), $po_rewritten_query=null){
-		$t = new Timer();
 		$va_solr_search_filters = array();
 		
 		$vn_i = 0;
-		$va_old_signs = $po_rewritten_query->getSigns();
+		$va_old_signs = is_object($po_rewritten_query) ? $po_rewritten_query->getSigns() : array();
 		
 		$va_terms = $va_signs = array();
 		foreach($po_rewritten_query->getSubqueries() as $o_lucene_query_element) {
