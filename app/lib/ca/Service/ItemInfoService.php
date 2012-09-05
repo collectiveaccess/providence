@@ -53,67 +53,59 @@ class ItemInfoService extends BaseService {
 		$this->opo_dm = Datamodel::load();
 	}
 	# -------------------------------------------------------
-	/**
-	 * Unified get function
-	 *
-	 * @param string $type [ca_objects, ca_entities, ca_places, ca_occurrences, ca_collections, ca_list_items]
-	 * @param array $item_ids list of primary keys
-	 * @param array $bundles list of bundles to get
-	 * For example:
-	 * array("ca_objects.status","ca_entities.preferred_labels.displayname")
-	 * @param array $options associative array of option arrays to pass through options to BaseModel::get() for each bundle.
-	 * For example (corresponding to the example above):
-	 * array(
-	 *	"ca_objects.status" = array( "convertCodesToDisplayText" => true ),
-	 *	"ca_entities.preferred_labels.displayname" = array( "delimiter" => ", " )
-	 * )
-	 * Possible options (keys) for each bundle are
-	 * -BINARY: return field value as is
-	 * -FILTER_HTML_SPECIAL_CHARS: convert all applicable chars to their html entities
-	 * -DONT_PROCESS_GLOSSARY_TAGS: ?
-	 * -CONVERT_HTML_BREAKS: similar to nl2br()
-	 * -convertLineBreaks: same as CONVERT_HTML_BREAKS
-	 * -GET_DIRECT_DATE: return raw date value from database if $ps_field adresses a date field, otherwise the value will be parsed using the TimeExpressionParser::getText() method
-	 * -GET_DIRECT_TIME: return raw time value from database if $ps_field adresses a time field, otherwise the value will be parsed using the TimeExpressionParser::getText() method
-	 * -TIMECODE_FORMAT: set return format for fields representing time ranges possible (string) values: COLON_DELIMITED, HOURS_MINUTES_SECONDS, RAW; data will be passed through floatval() by default
-	 * -QUOTE: set return value into quotes
-	 * -URL_ENCODE: value will be passed through urlencode()
-	 * -ESCAPE_FOR_XML: convert <, >, &, ' and " characters for XML use
-	 * -DONT_STRIP_SLASHES: if set to true, return value will not be passed through stripslashes()
-	 * -template: formatting string to use for returned value; ^<fieldname> placeholder is used to represent field value in template
-	 * -returnAsArray: if true, fields that can return multiple values [currently only <table_name>.children.<field>] will return values in an indexed array; default is false
-	 * -returnAllLocales:
-	 * -delimiter: if set, value is used as delimiter when fields that can return multiple fields are returned as strings; default is a single space
-	 * -convertCodesToDisplayText: if set, id values refering to foreign keys are returned as preferred label text in the current locale
-	 * @return array associative array of bundle contents
-	 */
-	public function get($type,$item_ids,$bundles,$options){
-		if(!($t_subject_instance = $this->getTableInstance($type,$item_id,true))){
-			throw new SoapFault("Server", "Invalid type or item_id");
-		}
-		$va_return = array();
-		if(is_array($item_ids)){
-			// reindex array to account for bad indexing by the user which could result in SQL errors in the code blow
-			$item_ids = array_values($item_ids);
-			$qr_result = $t_subject_instance->makeSearchResult($type, $item_ids);
-			if(!$qr_result){
-				throw new SoapFault("Server","Couldn't convert list of items to search result");
-			}
-			while($qr_result->nextHit()) {
-				foreach($bundles as $vs_bundle){
-					if($this->_isBadBundle($vs_bundle)){
-						continue;
-					}
-					if(isset($options[$vs_bundle])){
-						$va_return[$qr_result->get($t_subject_instance->primaryKey())][$vs_bundle] = $qr_result->get($vs_bundle,$options[$vs_bundle]);
-					} else {
-						$va_return[$qr_result->get($t_subject_instance->primaryKey())][$vs_bundle] = $qr_result->get($vs_bundle);
-					}
-				}
-			}
-		}
-		return $va_return;
-	}
+    /**
+     * Unified get function
+     *
+     * @param string $type [ca_objects, ca_entities, ca_places, ca_occurrences, ca_collections, ca_list_items]
+     * @param int $item_id primary key
+     * @param array $bundles list of bundles to get
+     * For example:
+     * array("ca_objects.status","ca_entities.preferred_labels.displayname")
+     * @param array $options associative array of option arrays to pass through options to BaseModel::get() for each bundle.
+     * For example (corresponding to the example above):
+     * array(
+     *	"ca_objects.status" = array( "convertCodesToDisplayText" => true ),
+     *	"ca_entities.preferred_labels.displayname" = array( "delimiter" => ", " )
+     * )
+     * Possible options (keys) for each bundle are
+     * -BINARY: return field value as is
+     * -FILTER_HTML_SPECIAL_CHARS: convert all applicable chars to their html entities
+     * -DONT_PROCESS_GLOSSARY_TAGS: ?
+     * -CONVERT_HTML_BREAKS: similar to nl2br()
+     * -convertLineBreaks: same as CONVERT_HTML_BREAKS
+     * -GET_DIRECT_DATE: return raw date value from database if $ps_field adresses a date field, otherwise the value will be parsed using the TimeExpressionParser::getText() method
+     * -GET_DIRECT_TIME: return raw time value from database if $ps_field adresses a time field, otherwise the value will be parsed using the TimeExpressionParser::getText() method
+     * -TIMECODE_FORMAT: set return format for fields representing time ranges possible (string) values: COLON_DELIMITED, HOURS_MINUTES_SECONDS, RAW; data will be passed through floatval() by default
+     * -QUOTE: set return value into quotes
+     * -URL_ENCODE: value will be passed through urlencode()
+     * -ESCAPE_FOR_XML: convert <, >, &, ' and " characters for XML use
+     * -DONT_STRIP_SLASHES: if set to true, return value will not be passed through stripslashes()
+     * -template: formatting string to use for returned value; ^<fieldname> placeholder is used to represent field value in template
+     * -returnAsArray: if true, fields that can return multiple values [currently only <table_name>.children.<field>] will return values in an indexed array; default is false
+     * -returnAllLocales:
+     * -delimiter: if set, value is used as delimiter when fields that can return multiple fields are returned as strings; default is a single space
+     * -convertCodesToDisplayText: if set, id values refering to foreign keys are returned as preferred label text in the current locale
+     * @return array associative array of bundle contents
+     */
+    public function get($type,$item_id,$bundles,$options){
+        if(!($t_subject_instance = $this->getTableInstance($type,$item_id))){
+            throw new SoapFault("Server", "Invalid type $type or item_id $item_id");
+        }
+
+        $va_return = array();
+        foreach($bundles as $vs_bundle){
+            if($this->_isBadBundle($vs_bundle)){
+                continue;
+            }
+            if(isset($options[$vs_bundle])){
+                $va_return[$vs_bundle] = $t_subject_instance->get($vs_bundle,$options[$vs_bundle]);
+            } else {
+                $va_return[$vs_bundle] = $t_subject_instance->get($vs_bundle);
+            }
+        }
+
+        return $va_return;
+    }
 	# -------------------------------------------------------
 	/**
 	 * Filter fields which should not be available for every service user
