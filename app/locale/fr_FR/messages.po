@@ -3,7 +3,7 @@ msgstr ""
 "Project-Id-Version: CollectiveAccess\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2012-09-04 23:00+0200\n"
-"PO-Revision-Date: 2012-09-04 23:26+0100\n"
+"PO-Revision-Date: 2012-09-05 10:14+0100\n"
 "Last-Translator: Gautier MICHELIN <gm@ideesculture.com>\n"
 "Language-Team: francais <ideesculture@gmail.com>\n"
 "Language: fr_FR\n"
@@ -309,9 +309,8 @@ msgid "Overdue by %1"
 msgstr "En retard par %1"
 
 #: app/controllers/client/library/CheckInController.php:139
-#, fuzzy
 msgid "Could not check in item %1: %2"
-msgstr "Impossible de réordonner l'élément %1 : %2"
+msgstr "Impossible de retourner l'objet %1 : %2"
 
 #: app/controllers/client/library/CheckInController.php:146
 msgid "Checked in %1 item"
@@ -322,20 +321,20 @@ msgid "Checked in %1 items"
 msgstr "%1 objets retournés"
 
 #: app/controllers/client/library/CheckOutController.php:177
-#, fuzzy
 msgid "Errors occurred when undeleting user: %1"
-msgstr "Des erreurs ont eu lieu lors de l'envoi du message : %1"
+msgstr "Des erreurs ont eu lieu lors de la restauration de l'utilisateur : %1"
 
 #: app/controllers/client/library/CheckOutController.php:196
-#, fuzzy
 msgid "Errors occurred when creating new user: %1"
-msgstr "Des erreurs ont eu lieu lors de l'envoi du message : %1"
+msgstr "Des erreurs ont eu lieu lors de la création du nouvel utilisateur : %1"
 
 #: app/controllers/client/library/CheckOutController.php:200
 msgid ""
 "Created new client login for <em>%1</em>. Login name is <em>%2</em> and "
 "password is <em>%3</em>"
 msgstr ""
+"Nouveau login client pour <em>%1</em>. Le nom d'utilisateur est <em>%2</em> "
+"et le mot de passe est <em>%3</em>"
 
 #: app/controllers/client/library/CheckOutController.php:218
 #: app/controllers/client/library/OrderEditorController.php:282
@@ -346,13 +345,14 @@ msgstr ""
 
 #: app/controllers/client/library/CheckOutController.php:223
 #: app/controllers/client/library/CheckOutController.php:224
-#, fuzzy
 msgid "You must specify a client"
-msgstr "Aucun utilisateur spécifié"
+msgstr "Aucun client spécifié"
 
 #: app/controllers/client/library/CheckOutController.php:280
 msgid "Could not check-out item <em>%1</em> (%2) due to errors: %3"
 msgstr ""
+"Impossible d'enregistrer le prêt de <em>%1</em> (%2) à cause des erreurs "
+"suivantes : %3"
 
 #: app/controllers/client/library/CheckOutController.php:300
 #: themes/default/views/administrate/setup/Search/search_controls_html.php:99
@@ -365,7 +365,7 @@ msgstr "objets"
 
 #: app/controllers/client/library/CheckOutController.php:300
 msgid "Checked out %1 %2 for %3 (order %4)"
-msgstr ""
+msgstr "Emprunt %1 %2 pour %3 (commande %4)"
 
 #: app/controllers/client/library/CheckOutController.php:311
 msgid "No items were specified"
@@ -977,6 +977,9 @@ msgid ""
 "\"%2\". Check your configuration and make sure your GeoNames.org account is "
 "enabled for web services."
 msgstr ""
+"La connexion à GeoNames avec le nom %1 a été refusée avec le message \"%2\". "
+"Veuillez vérifier votre configuration et vérifier que votre compte GeoNames."
+"org ait bien l'accès activé aux web services."
 
 #: app/controllers/lookup/GeoNamesController.php:95
 msgid "Could not connect to GeoNames"
@@ -3791,11 +3794,10 @@ msgid "Disable map"
 msgstr "Désactiver la carte"
 
 #: app/lib/ca/Attributes/Values/GeoNamesAttributeValue.php:86
-#, fuzzy
 msgid "Check this option if you want to disable location map display."
 msgstr ""
-"Cocher cette option si vous voulez que la sélection d'un élément dans la "
-"liste soit obligatoire."
+"Cocher cette option si vous voulez désactiver l'affichage de la localisation "
+"sur une carte."
 
 #: app/lib/ca/Attributes/Values/GeoNamesAttributeValue.php:93
 #: app/lib/ca/Attributes/Values/OccurrenceAttributeValue.php:72
@@ -14037,10 +14039,12 @@ msgstr "L'utilisateur qui surveille l'enregistrement en cours."
 msgid ""
 "Handles periodic cleanup and email alert tasks for client services features."
 msgstr ""
+"Gère un nettoyage régulier et des tâches d'alerte par email pour les "
+"fonctionnalités d'e-commerce."
 
 #: app/plugins/clientServices/clientServicesPlugin.php:87
 msgid "Could not authenticate to remote system %1"
-msgstr ""
+msgstr "Authentification impossible sur le système distant %1"
 
 #: app/plugins/clientServices/clientServicesPlugin.php:112
 msgid "Could not open target path %1"
@@ -14053,6 +14057,8 @@ msgstr "Impossible d'ouvrir l'URL de téléchargement %1"
 #: app/plugins/clientServices/clientServicesPlugin.php:123
 msgid "Media file %1 failed to be downloaded from %2; checksums differ: %3/%4"
 msgstr ""
+"Le fichier média %1 n'a pu être téléchargé depuis %2 ; la somme de contrôle "
+"ne correspond pas : %3/%4"
 
 #: app/plugins/clientServices/clientServicesPlugin.php:127
 msgid "Invalid representation_id \"%1\" or target path \"%2\""
@@ -14063,17 +14069,23 @@ msgid ""
 "Change of order status to PROCESSED from PROCESSED_AWAITING_MEDIA_ACCESS "
 "failed for order_id %1: %2"
 msgstr ""
+"Le changement de statute de command de PROCESSED vers "
+"PROCESSED_AWAITING_MEDIA_ACCESS a échoué pour la commande %1 : %2"
 
 #: app/plugins/clientServices/clientServicesPlugin.php:163
 msgid ""
 "Change of order status to PROCESSED from PROCESSED_AWAITING_DIGITIZATION "
 "failed for order_id %1: %2"
 msgstr ""
+"Le changement du statut de commande de PROCESSED à "
+"PROCESSED_AWAITING_DIGITIZATION a échoué pour la commande %1 : %2"
 
 #: app/plugins/clientServices/clientServicesPlugin.php:200
 msgid ""
 "Change of order status to COMPLETED from PROCESSED failed for order_id %1: %2"
 msgstr ""
+"Le changement du statut de commande de PROCESSED à COMPLETED a échoué pour "
+"la commande %1 : %2"
 
 #: app/plugins/disabled/idnoArchiver/idnoArchiverPlugin.php:36
 msgid "Archives past identifier values."
@@ -14467,7 +14479,7 @@ msgstr ""
 
 #: app/plugins/travelogue/traveloguePlugin.php:44
 msgid "Accepts submissions of media via email."
-msgstr ""
+msgstr "Accepte des envois de média par email."
 
 #: app/plugins/twitter/twitterPlugin.php:41
 msgid "Publishes newly published records to twitter."
@@ -16688,9 +16700,8 @@ msgid "Close"
 msgstr "Fermer"
 
 #: themes/default/views/bundles/ca_acl_access.php:48
-#, fuzzy
 msgid "Global Access"
-msgstr "Accès refusé"
+msgstr "Accès global"
 
 #: themes/default/views/bundles/ca_acl_access.php:52
 msgid "All groups and users "
@@ -16701,34 +16712,32 @@ msgid "this record, unless you create an exception"
 msgstr "cet enregistrement, à moins que vous n'enregistriez une exception"
 
 #: themes/default/views/bundles/ca_acl_access.php:62
-#, fuzzy
 msgid "Edit Global Access"
-msgstr "Accès en lecture/modification"
+msgstr "Modifier l'accès global"
 
 #: themes/default/views/bundles/ca_acl_access.php:66
-#, fuzzy
 msgid "Exceptions"
-msgstr "Actions"
+msgstr "Exceptions"
 
 #: themes/default/views/bundles/ca_acl_access.php:69
 msgid ""
 "The following groups and users have special access or restrictions for this "
 "record"
 msgstr ""
+"Les groupes et utilisateurs suivants ont des autorisations ou des "
+"restrictions spécifiques pour cet enregistrement."
 
 #: themes/default/views/bundles/ca_acl_access.php:71
-#, fuzzy
 msgid "No access exceptions exist for this record"
-msgstr "Aucun envoi n'est nécessaire pour cette commande"
+msgstr "Aucune exception d'accès pour cet enregistrement"
 
 #: themes/default/views/bundles/ca_acl_access.php:99
 msgid "Edit Exceptions"
 msgstr "Modifier les exceptions"
 
 #: themes/default/views/bundles/ca_acl_access.php:103
-#, fuzzy
 msgid "Create an Exception"
-msgstr "Exception Imagick"
+msgstr "Créer une exception"
 
 #: themes/default/views/bundles/ca_acl_user_groups.php:55
 #: themes/default/views/bundles/ca_user_groups.php:55
@@ -16891,21 +16900,18 @@ msgid "Add relationship"
 msgstr "Ajouter un lien"
 
 #: themes/default/views/bundles/ca_commerce_order_history.php:50
-#, fuzzy
 msgid "No loans have been made"
-msgstr "Aucun ensemble n'a été créé"
+msgstr "Aucun prêt n'a été enregistré"
 
 #: themes/default/views/bundles/ca_commerce_order_history.php:57
 #: themes/default/views/client/library/list_loans_html.php:127
 #: themes/default/views/client/library/loan_pdf_export_html.php:36
-#, fuzzy
 msgid "Loan #"
-msgstr "prêt"
+msgstr "Prêt n°"
 
 #: themes/default/views/bundles/ca_commerce_order_history.php:58
-#, fuzzy
 msgid "Loaned to"
-msgstr "%1 ajouté à '%2'"
+msgstr "Prêté à "
 
 #: themes/default/views/bundles/ca_commerce_order_history.php:59
 #: themes/default/views/client/library/loan_pdf_checklist_html.php:36
@@ -17331,27 +17337,27 @@ msgid "Checked out: %1"
 msgstr "Emprunté : %1"
 
 #: themes/default/views/client/library/checkin_html.php:70
-#, fuzzy
 msgid "Due: %1"
-msgstr "Date de retour"
+msgstr "Retour prévu : %1"
 
 #: themes/default/views/client/library/checkin_html.php:126
 msgid "No matching items were found for <em>%1</em>"
-msgstr ""
+msgstr "Aucun objet correspondant n'a été trouvé pour <em>%1</em>"
 
 #: themes/default/views/client/library/checkin_html.php:144
 msgid "Omitted %1 match that is already queued for check-in"
 msgstr ""
+"%1 correspondance omise qui est déjà dans la file d'attente des retours"
 
 #: themes/default/views/client/library/checkin_html.php:144
 msgid "Omitted %1 matches that are already queued for check-in"
 msgstr ""
+"%1 correspondances omises qui sont déjà dans la file d'attente des retours"
 
 #: themes/default/views/client/library/checkout_html.php:55
 #: app/conf/navigation.conf:2836
-#, fuzzy
 msgid "Check-out"
-msgstr "Quitter"
+msgstr "Prêter"
 
 #: themes/default/views/client/library/checkout_html.php:64
 msgid "Client name"
@@ -17388,6 +17394,8 @@ msgstr "Ajouter un élément à la commande"
 #: themes/default/views/client/library/checkout_html.php:401
 msgid "<em>%1</em> is currently on loan and is due to be returned on %2"
 msgstr ""
+"<em>%1</em> est actuellement en cours de prêt et doit être retourné pour le "
+"%2"
 
 #: themes/default/views/client/library/checkout_html.php:424
 msgid "Please select a client"
@@ -17398,10 +17406,12 @@ msgid ""
 "Please specify a billing email address for the client. This will be used as "
 "the login name for their newly created account."
 msgstr ""
+"Veuillez spécifier une adresse email de facturation pour le client. Elle "
+"sera utilisé comme nom d'utilisateur pour le compte correspondant."
 
 #: themes/default/views/client/library/checkout_html.php:439
 msgid "Please add at least one item to checkout"
-msgstr ""
+msgstr "Veuillez ajouter au moins un objet pour le prêt"
 
 #: themes/default/views/client/library/list_communications_html.php:49
 #: themes/default/views/client/orders/list_communications_html.php:49
@@ -17454,7 +17464,7 @@ msgstr "Télécharger le PDF"
 #: themes/default/views/client/library/list_loans_html.php:142
 #: themes/default/views/client/library/loan_pdf_export_html.php:36
 msgid "Schedule"
-msgstr ""
+msgstr "Planification"
 
 #: themes/default/views/client/library/list_loans_html.php:168
 #: themes/default/views/client/library/loan_pdf_export_html.php:186
@@ -17471,7 +17481,7 @@ msgstr "Expédié le %1"
 #: themes/default/views/client/library/list_loans_html.php:182
 #: themes/default/views/client/library/loan_pdf_export_html.php:197
 msgid "Overdue %1"
-msgstr ""
+msgstr "Retard %1"
 
 #: themes/default/views/client/library/list_loans_html.php:185
 #: themes/default/views/client/library/loan_pdf_export_html.php:200
@@ -17500,9 +17510,8 @@ msgid "Image"
 msgstr "image"
 
 #: themes/default/views/client/library/loan_pdf_checklist_html.php:73
-#, fuzzy
 msgid "Checklist for loan %1"
-msgstr "Descriptif du prêt"
+msgstr "Vérification pour le prêt %1"
 
 #: themes/default/views/client/library/loan_pdf_checklist_html.php:75
 #: themes/default/views/client/library/loan_pdf_export_html.php:111
@@ -17511,38 +17520,32 @@ msgstr "Descriptif du prêt"
 #: themes/default/views/find/Results/ca_objects_pdf_results_html.php:76
 #: themes/default/views/find/Results/ca_objects_pdf_results_long_html.php:76
 #: themes/default/views/find/Results/ca_objects_pdf_results_thumb_html.php:77
-#, fuzzy
 msgid "Page [%1]/[%2]"
-msgstr "Page %1"
+msgstr "Page [%1]/[%2]"
 
 #: themes/default/views/client/library/loan_pdf_export_html.php:69
 #: themes/default/views/client/library/widget_loans_info_html.php:35
 #: themes/default/views/client/orders/order_pdf_export_html.php:72
-#, fuzzy
 msgid "%1 loan"
-msgstr "prêt"
+msgstr "%1 prêt"
 
 #: themes/default/views/client/library/loan_pdf_export_html.php:69
 #: themes/default/views/client/library/widget_loans_info_html.php:35
 #: themes/default/views/client/orders/order_pdf_export_html.php:72
-#, fuzzy
 msgid "%1 loans"
-msgstr "Prêts"
+msgstr "%1 prêts"
 
 #: themes/default/views/client/library/loan_pdf_export_html.php:83
 #: themes/default/views/client/orders/order_pdf_export_html.php:39
 #: themes/default/views/client/orders/order_pdf_export_html.php:86
-#, fuzzy
 msgid "Created"
 msgstr "Créé"
 
 #: themes/default/views/client/library/loan_pdf_export_html.php:109
-#, fuzzy
 msgid "Loans with %1"
-msgstr "%1 %2 tagués avec \"%3\""
+msgstr "Prêts avec %1"
 
 #: themes/default/views/client/library/order_additional_fees_html.php:46
-#, fuzzy
 msgid "Additional loan fees"
 msgstr "Frais supplémentaires"
 
@@ -17595,9 +17598,8 @@ msgid "Messages"
 msgstr "Messages"
 
 #: themes/default/views/client/library/order_customer_info_html.php:47
-#, fuzzy
 msgid "User account to associate loan with"
-msgstr "Compte utilisateur pour associer la commande"
+msgstr "Compte utilisateur pour associer le prêt"
 
 #: themes/default/views/client/library/order_customer_info_html.php:115
 #: themes/default/views/client/orders/order_customer_info_html.php:115
@@ -17605,67 +17607,59 @@ msgid "Customer information"
 msgstr "Information client"
 
 #: themes/default/views/client/library/order_item_list_html.php:61
-#, fuzzy
 msgid "Items loaned"
-msgstr "'%1' pour les objets %2 "
+msgstr "Objets prêtés"
 
 #: themes/default/views/client/library/order_item_list_html.php:163
-#, fuzzy
 msgid "Add item to loan"
-msgstr "Ajouter un élément à la commande"
+msgstr "Ajouter un objet au prêt"
 
 #: themes/default/views/client/library/order_overview_html.php:50
-#, fuzzy
 msgid "Loan Overview"
-msgstr "Résumé de la commande"
+msgstr "Résumé du prêt"
 
 #: themes/default/views/client/library/order_overview_html.php:63
 #: themes/default/views/client/library/order_overview_html.php:67
 #: themes/default/views/client/library/order_overview_html.php:72
 #: themes/default/views/client/library/order_overview_html.php:78
 #: themes/default/views/client/library/order_overview_html.php:88
-#, fuzzy
 msgid "Status: %1"
-msgstr "Statut"
+msgstr "Statut : %1"
 
 #: themes/default/views/client/library/order_overview_html.php:64
-#, fuzzy
 msgid ""
 "Loan request is being entered by the client and not yet submitted for "
 "processing."
 msgstr ""
-"La commande est en cours de saisie par le client et n'a pas encore été "
-"soumise pour traitement."
+"La demande de prêt est en cours de saisie par le client et n'a pas encore "
+"été soumise pour traitement."
 
 #: themes/default/views/client/library/order_overview_html.php:68
-#, fuzzy
 msgid ""
 "Loan request has been submitted by the client for processing. Please review "
 "the request, modify pricing as required, assemble items to be loaned and "
 "then click the \"process\" button below."
 msgstr ""
-"La commande a été soumise par le client pour une estimation de prix. "
-"Veuillez vérifier la commande, modifier le prix des éléments et ensuite "
-"cliquer sur le bouton \"retourner l'évaluation à l'utilisateur\"."
+"La demande de prêt a été soumise par le client pour une estimation de prix. "
+"Veuillez vérifier la demande, modifier le prix si nécessaire et ensuite "
+"cliquer sur le bouton \"traiter\"."
 
 #: themes/default/views/client/library/order_overview_html.php:69
-#, fuzzy
 msgid "Process"
-msgstr "Traité par"
+msgstr "Traiter"
 
 #: themes/default/views/client/library/order_overview_html.php:73
-#, fuzzy
 msgid ""
 "Loan request requires payment by client. If you have payment details to "
 "enter for the client click on the \"enter payment information\" button "
 "below. Otherwise you must wait for the client to enter their payment "
 "information via the client interface."
 msgstr ""
-"La commande est prête pour son paiement par le client. Si vous avez des "
-"informations de paiement pour le client, cliquez sur le bouton \"saisir les "
-"informations de paiement\" ci-dessous. Dans le cas contraire, vous devez "
-"attendre la saisie par le client de ses informations de paiement dans "
-"l'interface."
+"La demande de prêt nécessite le paiement du client. Si vous avez des "
+"informations de paiement à saisir pour le client, cliquez sur le bouton "
+"\"saisir les informations de paiement\" ci-dessous. Dans le cas contraire, "
+"vous devez attendre la saisie par le client de ses informations de paiement "
+"dans l'interface."
 
 #: themes/default/views/client/library/order_overview_html.php:74
 #: themes/default/views/client/orders/order_overview_html.php:76
@@ -17673,14 +17667,12 @@ msgid "Enter payment information"
 msgstr "Saisissez les informations du paiement"
 
 #: themes/default/views/client/library/order_overview_html.php:81
-#, fuzzy
 msgid ""
 "Loan has been made. If the load requires shipping click on the \"record "
 "shipment details\" below to enter shipping information."
 msgstr ""
-"La commande a été payée et est prête à être traitée. Lorsque la commande "
-"aura été expédiée, cliquez sur le bouton \"enregistrer les informations "
-"d'envoi\" ci-dessous et saisissez la date d'expédition."
+"Le prêt a été réalisé. Si le prêt nécessite un envoi, cliquez sur le bouton "
+"\"enregistrer les informations d'expédition\" ci-dessous."
 
 #: themes/default/views/client/library/order_overview_html.php:82
 #: themes/default/views/client/orders/order_overview_html.php:84
@@ -17694,11 +17686,12 @@ msgid ""
 "Loan has been made. It will be closed automatically when the last item is "
 "returned."
 msgstr ""
+"Le prêt a été enregistré. Il sera automatiquement fermé lorsque le dernier "
+"objet sera retourné."
 
 #: themes/default/views/client/library/order_overview_html.php:89
-#, fuzzy
 msgid "Loan is complete. No further action is required."
-msgstr "La commande a été complétée. Aucune action supplémentaire requise."
+msgstr "Le prêt est enregistré. Aucune action supplémentaire requise."
 
 #: themes/default/views/client/library/order_overview_html.php:93
 #: themes/default/views/client/orders/order_overview_html.php:120
@@ -17706,40 +17699,34 @@ msgid "Invalid status %1"
 msgstr "Statut invalide %1"
 
 #: themes/default/views/client/library/order_overview_html.php:100
-#, fuzzy
 msgid "Change loan status"
-msgstr "objets de l'historique des modifications"
+msgstr "Changer le statut de prêt"
 
 #: themes/default/views/client/library/order_overview_html.php:127
-#, fuzzy
 msgid "Action Required: loan requires shipping but no shipping method is set!"
 msgstr ""
-"Attention : la commande nécessite une expédition mais aucune méthode "
+"Action nécessaire : la commande nécessite une expédition mais aucune méthode "
 "d'expédition n'a été définie !"
 
 #: themes/default/views/client/library/order_overview_html.php:132
 #: themes/default/views/client/orders/order_overview_html.php:159
-#, fuzzy
 msgid "Action Required: shipping address is incomplete!"
-msgstr "Attention : l'adresse d'expédition est incomplète !"
+msgstr "Action nécessaire : l'adresse d'expédition est incomplète !"
 
 #: themes/default/views/client/library/order_overview_html.php:140
-#, fuzzy
 msgid "Action Required: loan requires shipping!"
-msgstr "Attention : une commande nécessite un envoi !"
+msgstr "Action nécessaire : une commande nécessite un envoi !"
 
 #: themes/default/views/client/library/order_overview_html.php:145
-#, fuzzy
 msgid "Action Required: loan is complete but items never shipped!"
 msgstr ""
-"Attention : la commande est terminée mais les éléments n'ont jamais été "
-"expédiés !"
+"Action nécessaire : la commande est terminée mais les éléments n'ont jamais "
+"été expédiés !"
 
 #: themes/default/views/client/library/order_overview_html.php:156
 #: themes/default/views/client/orders/order_overview_html.php:183
-#, fuzzy
 msgid "Action Required: no payment recorded!"
-msgstr "Attention : aucun paiement n'a été enregistré !"
+msgstr "Action nécessaire : aucun paiement n'a été enregistré !"
 
 #: themes/default/views/client/library/order_overview_html.php:164
 #: themes/default/views/client/orders/order_overview_html.php:191
@@ -17747,24 +17734,20 @@ msgid "Next step"
 msgstr "Prochaine étape"
 
 #: themes/default/views/client/library/order_overview_html.php:175
-#, fuzzy
 msgid "Loan Number"
-msgstr "%1 doit être un nombre"
+msgstr "Numéro de prêt"
 
 #: themes/default/views/client/library/order_overview_html.php:176
-#, fuzzy
 msgid "Loaned To"
-msgstr "%1 ajouté à '%2'"
+msgstr "Prêté à"
 
 #: themes/default/views/client/library/order_overview_html.php:179
-#, fuzzy
 msgid "Loan Date"
-msgstr "Date de création"
+msgstr "Date de prêt"
 
 #: themes/default/views/client/library/order_overview_html.php:182
-#, fuzzy
 msgid "Items Due"
-msgstr "Date de retour"
+msgstr "Objets à retourner"
 
 #: themes/default/views/client/library/order_overview_html.php:191
 #: themes/default/views/client/orders/order_overview_html.php:202
@@ -17772,30 +17755,30 @@ msgid "Total Cost"
 msgstr "Total"
 
 #: themes/default/views/client/library/order_overview_html.php:191
-#, fuzzy
 msgid "Items returned"
-msgstr "Date de retour"
+msgstr "Objets retournés"
 
 #: themes/default/views/client/library/order_overview_html.php:204
-#, fuzzy
 msgid ""
 "There has been <a href='%2'>%1 communication</a> regarding this loan request"
-msgstr "Il y a eu <a href='%2'>%1 communication</a> concernant cette commande"
+msgstr ""
+"Il y a eu <a href='%2'>%1 communication</a> concernant cette demande de prêt."
 
 #: themes/default/views/client/library/order_overview_html.php:204
-#, fuzzy
 msgid ""
 "There have been <a href='%2'>%1 communications</a> regarding this loan "
 "request"
-msgstr "Il y a eu <a href='%2'>%1 communications</a> concernant cette commande"
+msgstr ""
+"Il y a eu <a href='%2'>%1 communications</a> concernant cette demande de "
+"prêt."
 
 #: themes/default/views/client/library/order_overview_html.php:210
 msgid "Client has <a href='%2'>%1 other outstanding loan</a>"
-msgstr ""
+msgstr "Le client a <a href='%2'>%1 autre prêt en retard</a>"
 
 #: themes/default/views/client/library/order_overview_html.php:210
 msgid "Client has <a href='%2'>%1 other outstanding loans</a>"
-msgstr ""
+msgstr "Le client a <a href='%2'>%1 autres prêts en retard</a>"
 
 #: themes/default/views/client/library/order_overview_html.php:226
 #: themes/default/views/client/orders/order_overview_html.php:236
@@ -17804,15 +17787,13 @@ msgstr "Réduction"
 
 #: themes/default/views/client/library/order_overview_html.php:233
 #: themes/default/views/client/orders/order_overview_html.php:243
-#, fuzzy
 msgid "%1 Items"
-msgstr "%1 éléments"
+msgstr "%1 objets"
 
 #: themes/default/views/client/library/order_overview_html.php:233
 #: themes/default/views/client/orders/order_overview_html.php:243
-#, fuzzy
 msgid "%1 Item"
-msgstr "%1 élément"
+msgstr "%1 objet"
 
 #: themes/default/views/client/library/order_overview_html.php:233
 #: themes/default/views/client/orders/order_overview_html.php:243
@@ -17822,39 +17803,33 @@ msgstr "Gérer"
 
 #: themes/default/views/client/library/order_overview_html.php:233
 #: themes/default/views/client/orders/order_overview_html.php:243
-#, fuzzy
 msgid "Print checklist"
-msgstr "Provision de version imprimée"
+msgstr "Imprimer la checklist"
 
 #: themes/default/views/client/library/order_overview_html.php:238
 #: themes/default/views/client/orders/order_overview_html.php:248
-#, fuzzy
 msgid "Item Name"
-msgstr "Nom de l'item (pluriel)"
+msgstr "Nom de l'objet"
 
 #: themes/default/views/client/library/order_overview_html.php:238
-#, fuzzy
 msgid "Checkout Date"
-msgstr "Date de création"
+msgstr "Date d'emprunt"
 
 #: themes/default/views/client/library/order_overview_html.php:238
-#, fuzzy
 msgid "Due Date"
-msgstr "Date de retour"
+msgstr "Retour prévu"
 
 #: themes/default/views/client/library/order_overview_html.php:270
 msgid "items still in circulation"
 msgstr "objets encore en circulation"
 
 #: themes/default/views/client/library/order_overview_html.php:272
-#, fuzzy
 msgid "All items have been returned"
-msgstr "Aucun ensemble n'a été créé"
+msgstr "Tous les objets ont été retournés"
 
 #: themes/default/views/client/library/order_overview_html.php:275
-#, fuzzy
 msgid "items overdue"
-msgstr "'%1' pour les objets %2 "
+msgstr "objets en retard"
 
 #: themes/default/views/client/library/order_overview_html.php:290
 #: themes/default/views/client/orders/order_overview_html.php:282
@@ -17905,13 +17880,12 @@ msgid "Expiration date"
 msgstr "Date de fin de validité"
 
 #: themes/default/views/client/library/order_payment_html.php:74
-#, fuzzy
 msgid ""
 "Please wait while client loan is processed (this may take up to 60 seconds "
 "to complete)"
 msgstr ""
-"Veuillez patienter pendant le traitement de cette commande (ceci peut "
-"prendre jusqu'à 60 secondes)"
+"Veuillez patienter pendant le traitement de ce prêt (ceci peut prendre "
+"jusqu'à 60 secondes)"
 
 #: themes/default/views/client/library/order_payment_html.php:82
 #: themes/default/views/client/library/order_payment_html.php:137
@@ -17956,9 +17930,8 @@ msgid "Check #"
 msgstr "Chèque numéro"
 
 #: themes/default/views/client/library/order_payment_html.php:112
-#, fuzzy
 msgid "Payment details – fees for this client loan has been paid"
-msgstr "Détails du paiement - cette commande a été payée"
+msgstr "Détails du paiement - des frais pour ce prêt ont été payés"
 
 #: themes/default/views/client/library/order_payment_html.php:116
 #: themes/default/views/client/orders/order_fulfillment_events_html.php:57
@@ -17982,14 +17955,12 @@ msgid "TransactionID"
 msgstr "Identifiant de transaction"
 
 #: themes/default/views/client/library/order_payment_html.php:148
-#, fuzzy
 msgid "Loan does not require payment"
-msgstr "Votre commande (%2) soumise le %1 nécessite un paiement."
+msgstr "L'emprunt ne nécessite aucun paiement."
 
 #: themes/default/views/client/library/order_payment_html.php:153
-#, fuzzy
 msgid "Loan is not yet ready for payment"
-msgstr "La commande n'est pas prête pour le paiement"
+msgstr "L'emprunt n'est pas encore prêt pour le paiement."
 
 #: themes/default/views/client/library/order_shipping_html.php:50
 #: themes/default/views/client/orders/order_shipping_html.php:50
@@ -17997,38 +17968,32 @@ msgid "Shipping information"
 msgstr "Information sur l'expédition"
 
 #: themes/default/views/client/library/order_shipping_html.php:91
-#, fuzzy
 msgid "No shipping is required for this loan"
-msgstr "Aucun envoi n'est nécessaire pour cette commande"
+msgstr "Aucun envoi n'est nécessaire pour ce prêt"
 
 #: themes/default/views/client/library/widget_checkin_info_html.php:29
-#, fuzzy
 msgid "Client check-in"
-msgstr "Intégration client"
+msgstr "Emprunt"
 
 #: themes/default/views/client/library/widget_checkin_info_html.php:45
 #: themes/default/views/client/library/widget_checkout_info_html.php:45
-#, fuzzy
 msgid "%1 outstanding loan"
-msgstr "Hiérarchie des prêts"
+msgstr "%1 prêt en attente"
 
 #: themes/default/views/client/library/widget_checkin_info_html.php:45
 #: themes/default/views/client/library/widget_checkout_info_html.php:45
-#, fuzzy
 msgid "%1 outstanding loans"
-msgstr "Explorer les prêts"
+msgstr "%1 prêts en attente"
 
 #: themes/default/views/client/library/widget_checkin_info_html.php:47
 #: themes/default/views/client/library/widget_checkout_info_html.php:47
-#, fuzzy
 msgid "%1 overdue loan"
-msgstr "Hiérarchie des prêts"
+msgstr "%1 prêt en retard"
 
 #: themes/default/views/client/library/widget_checkin_info_html.php:47
 #: themes/default/views/client/library/widget_checkout_info_html.php:47
-#, fuzzy
 msgid "%1 overdue loans"
-msgstr "Explorer les prêts"
+msgstr "%1 prêts en retard"
 
 #: themes/default/views/client/library/widget_checkout_info_html.php:29
 msgid "Client check-out"
@@ -18050,9 +18015,8 @@ msgid "%1 threads have new messages"
 msgstr "%1 discussions comportent des nouveaux messages"
 
 #: themes/default/views/client/library/widget_loans_info_html.php:33
-#, fuzzy
 msgid "Client loans"
-msgstr "prêts"
+msgstr "Prêts"
 
 #: themes/default/views/client/orders/list_orders_html.php:78
 msgid "New order"
@@ -18063,9 +18027,8 @@ msgid "total"
 msgstr "total"
 
 #: themes/default/views/client/orders/list_orders_html.php:184
-#, fuzzy
 msgid "No orders match your criteria"
-msgstr "Aucun enregistrement ne correspond aux critères"
+msgstr "Aucune commande ne correspond aux critères"
 
 #: themes/default/views/client/orders/order_additional_fees_html.php:46
 msgid "Additional order fees"
@@ -18185,15 +18148,15 @@ msgstr ""
 "informés par email lorsque les éléments seront disponibles au téléchargement."
 
 #: themes/default/views/client/orders/order_overview_html.php:106
-#, fuzzy
 msgid ""
 "Order has been paid for and will be ready for fulfillment via user-initiated "
 "download once all items have been transferred to the server. You will be "
 "informed by email when the items are ready for download."
 msgstr ""
 "La commande a été payée et sera mise à disposition au téléchargement par "
-"l'utilisateur une fois que les éléments seront numérisés. Vous serez "
-"informés par email lorsque les éléments seront disponibles au téléchargement."
+"l'utilisateur une fois que les éléments seront tous transférés vers le "
+"serveur. Vous serez informés par email lorsque les éléments seront "
+"disponibles au téléchargement."
 
 #: themes/default/views/client/orders/order_overview_html.php:111
 msgid ""
@@ -18205,41 +18168,34 @@ msgid "Order has been reopened due to an issue."
 msgstr "La commande a été réouverte suite à un problème."
 
 #: themes/default/views/client/orders/order_overview_html.php:127
-#, fuzzy
 msgid "Change order status"
-msgstr "Ecraser le statut courant"
+msgstr "Modifier le statut de la commande"
 
 #: themes/default/views/client/orders/order_overview_html.php:154
-#, fuzzy
 msgid "Action Required: order requires shipping but no shipping method is set!"
 msgstr ""
-"Attention : la commande nécessite une expédition mais aucune méthode "
+"Action nécessaire : la commande nécessite une expédition mais aucune méthode "
 "d'expédition n'a été définie !"
 
 #: themes/default/views/client/orders/order_overview_html.php:167
-#, fuzzy
 msgid "Action Required: order requires shipping!"
-msgstr "Attention : une commande nécessite un envoi !"
+msgstr "Action nécessaire : une commande nécessite un envoi !"
 
 #: themes/default/views/client/orders/order_overview_html.php:172
-#, fuzzy
 msgid "Action Required: order is complete but items never shipped!"
 msgstr ""
-"Attention : la commande est terminée mais les éléments n'ont jamais été "
-"expédiés !"
+"Action nécessaire : la commande est terminée mais les objets n'ont jamais "
+"été expédiés !"
 
 #: themes/default/views/client/orders/order_overview_html.php:197
-#, fuzzy
 msgid "Order Number"
-msgstr "%1 doit être un nombre"
+msgstr "Numéro de commande"
 
 #: themes/default/views/client/orders/order_overview_html.php:198
-#, fuzzy
 msgid "Ordered By"
-msgstr "Explorer par :"
+msgstr "Commandé par"
 
 #: themes/default/views/client/orders/order_overview_html.php:201
-#, fuzzy
 msgid "Order Date"
 msgstr "Date de commande"
 
@@ -18253,13 +18209,12 @@ msgstr "Il y a eu <a href='%2'>%1 communications</a> concernant cette commande"
 
 #: themes/default/views/client/orders/order_overview_html.php:220
 msgid "Client has <a href='%2'>%1 other outstanding orders</a>"
-msgstr ""
+msgstr "Le client a <a href='%2'>%1 autres commandes en retard</a>"
 
 #: themes/default/views/client/orders/order_overview_html.php:248
 #: themes/default/views/client/orders/order_pdf_checklist_html.php:38
-#, fuzzy
 msgid "Fulfillment"
-msgstr "Méthode de réalisation"
+msgstr "Réalisation"
 
 #: themes/default/views/client/orders/order_payment_html.php:74
 msgid ""
@@ -18274,18 +18229,16 @@ msgid "Payment details – this order has been paid for"
 msgstr "Détails du paiement - cette commande a été payée"
 
 #: themes/default/views/client/orders/order_payment_html.php:148
-#, fuzzy
 msgid "Order does not require payment"
-msgstr "La commande n'existe pas."
+msgstr "La commande ne nécessite pas de paiement"
 
 #: themes/default/views/client/orders/order_payment_html.php:153
 msgid "Order is not yet ready for payment"
 msgstr "La commande n'est pas prête pour le paiement"
 
 #: themes/default/views/client/orders/order_pdf_checklist_html.php:74
-#, fuzzy
 msgid "Checklist for order %1"
-msgstr "Tri par défaut"
+msgstr "A vérifier pour la commande %1"
 
 #: themes/default/views/client/orders/order_pdf_export_html.php:92
 msgid "Ship date"
@@ -18296,32 +18249,26 @@ msgid "Ship method"
 msgstr "Méthode d'expédition"
 
 #: themes/default/views/client/orders/order_pdf_export_html.php:112
-#, fuzzy
 msgid "Orders with %1"
-msgstr "%1 %2 tagués avec \"%3\""
+msgstr "Commandes avec %1"
 
 #: themes/default/views/client/orders/order_pdf_export_html.php:179
-#, fuzzy
 msgid "Phone: %1"
-msgstr "Téléphone"
+msgstr "Téléphone : %1"
 
 #: themes/default/views/client/orders/order_pdf_export_html.php:180
-#, fuzzy
 msgid "Fax: %1"
-msgstr "Fax"
+msgstr "Fax : %1"
 
 #: themes/default/views/client/orders/order_pdf_export_html.php:212
-#, fuzzy
 msgid "Method: %1"
-msgstr "Méthode"
+msgstr "Méthode : %1"
 
 #: themes/default/views/client/orders/order_pdf_export_html.php:215
-#, fuzzy
 msgid "Ship date: %1"
-msgstr "Date d'expédition"
+msgstr "Date d'expédition : %1"
 
 #: themes/default/views/client/orders/order_pdf_export_html.php:218
-#, fuzzy
 msgid "Shipped on: %1"
 msgstr "Expédié le %1"
 
@@ -18450,14 +18397,12 @@ msgid "Object lot identifier"
 msgstr "Identifiant de lot d'objet"
 
 #: themes/default/views/editor/objects/representation_media_editor/image_tools_html.php:38
-#, fuzzy
 msgid "Rotation"
-msgstr "Localisation"
+msgstr "Rotation"
 
 #: themes/default/views/editor/objects/representation_media_editor/image_tools_html.php:47
-#, fuzzy
 msgid "No rotation"
-msgstr "Pas d'erreur"
+msgstr "Pas de rotation"
 
 #: themes/default/views/editor/objects/representation_media_editor/image_tools_html.php:48
 msgid "0°"
@@ -18472,9 +18417,8 @@ msgid "90° CW"
 msgstr "90° à droite"
 
 #: themes/default/views/editor/objects/representation_media_editor/image_tools_html.php:55
-#, fuzzy
 msgid "Rotate 180"
-msgstr "Impossible d'effectuer la rotation de l'image"
+msgstr "Rotation à 180°"
 
 #: themes/default/views/editor/objects/representation_media_editor/image_tools_html.php:56
 msgid "180°"
@@ -18490,9 +18434,8 @@ msgstr "90° à gauche"
 
 #: themes/default/views/editor/objects/representation_media_editor/image_tools_html.php:68
 #: themes/default/views/editor/objects/representation_media_editor/image_tools_html.php:109
-#, fuzzy
 msgid "Rotating..."
-msgstr "Evaluation"
+msgstr "Rotation..."
 
 #: themes/default/views/editor/representation_annotations/print_summary_html.php:60
 msgid "Annotation identifier"
@@ -18576,20 +18519,20 @@ msgid ""
 "%1 of %2 results have been mapped.  To see all results chose a different "
 "display."
 msgstr ""
+"%1 de %2 résultats ont une correspondance.  Pour afficher tous les "
+"résultats, utilisez un autre affichage."
 
 #: themes/default/views/find/Results/ca_objects_results_map_html.php:51
-#, fuzzy
 msgid "Found %1 results."
 msgstr "%1 résultats trouvés."
 
 #: themes/default/views/find/Results/ca_objects_results_map_html.php:59
-#, fuzzy
 msgid ""
 "It is not possible to show a map of the results because none of the items "
 "found have map coordinates."
 msgstr ""
 "Impossible d'afficher une carte des résultats : aucun des objets trouvés n'a "
-"de coordonnée définie."
+"de coordonnées définies."
 
 #: themes/default/views/find/Results/quick_search_results_html.php:31
 msgid "Sort by "
@@ -19004,9 +18947,8 @@ msgid "is a trademark of"
 msgstr "est une marque déposée de"
 
 #: themes/default/views/pageFormat/pageFooter.php:43
-#, fuzzy
 msgid "Please wait..."
-msgstr "Note : "
+msgstr "Veuillez patienter..."
 
 #: themes/default/views/pageFormat/pageHeader.php:85
 msgid ""
@@ -19567,24 +19509,20 @@ msgid "Import/export mapping group editor"
 msgstr "Import/export éditeur de groupe de correspondance"
 
 #: app/conf/navigation.conf:2755
-#, fuzzy
 msgid "Sales communications"
 msgstr "Communications client"
 
 #: app/conf/navigation.conf:2782
-#, fuzzy
 msgid "Sales orders"
-msgstr "Vos commandes"
+msgstr "Commandes"
 
 #: app/conf/navigation.conf:2809
-#, fuzzy
 msgid "Library communications"
-msgstr "Communications client"
+msgstr "Communications liées aux prêts"
 
 #: app/conf/navigation.conf:2852
-#, fuzzy
 msgid "Manage loans"
-msgstr "Explorer les prêts"
+msgstr "Gérer les prêts"
 
 #: app/conf/navigation.conf:2869
 msgid "Calendar"
@@ -19611,9 +19549,8 @@ msgid "Payment"
 msgstr "Paiement"
 
 #: app/conf/navigation.conf:3024
-#, fuzzy
 msgid "Loan editor"
-msgstr "Description de l'éditeur"
+msgstr "Editeur de prêt"
 
 #: app/conf/user_actions.conf:7
 msgid "System administration"
@@ -19936,16 +19873,12 @@ msgstr ""
 "droits d'accès"
 
 #: app/conf/user_actions.conf:151
-#, fuzzy
 msgid "Delete own sets and set content"
-msgstr "Supprimer des ensembles et leurs contenus"
+msgstr "Supprimer vos propres ensembles et leurs contenus"
 
 #: app/conf/user_actions.conf:152
-#, fuzzy
 msgid "Allow user to delete sets which they created"
-msgstr ""
-"Autorise l'utilisateur à supprimer les ensembles sur lesquels il a des "
-"droits d'accès"
+msgstr "Autorise l'utilisateur à supprimer les ensembles qu'il a créé"
 
 #: app/conf/user_actions.conf:155
 msgid "View sets"
@@ -20877,9 +20810,8 @@ msgid "Allow user to change types of existing tours"
 msgstr "Autoriser l'utilisateur à modifier les types de parcours existants"
 
 #: app/conf/user_actions.conf:662
-#, fuzzy
 msgid "Manage access control lists for tours"
-msgstr "Gérer les listes de contrôle d'accès pour les éléments de liste"
+msgstr "Gérer les listes de contrôle d'accès pour les parcours"
 
 #: app/conf/user_actions.conf:663
 msgid "Allow user to manage access control lists for tours"
@@ -20888,16 +20820,14 @@ msgstr ""
 "parcours"
 
 #: app/conf/user_actions.conf:666
-#, fuzzy
 msgid "Manage access control lists for tour stops"
-msgstr "Gérer les listes de contrôle d'accès pour les listes"
+msgstr "Gérer les listes de contrôle d'accès pour les points de parcours"
 
 #: app/conf/user_actions.conf:667
-#, fuzzy
 msgid "Allow user to manage access control lists for tour stops"
 msgstr ""
 "Autorise l'utilisateur à gérer les listes de contrôle d'accès pour les "
-"parcours"
+"points de parcours"
 
 #: app/conf/user_actions.conf:673
 msgid "List &amp; vocabulary editing"
