@@ -123,7 +123,8 @@ class WLPlugGeographicMapOpenLayers Extends BaseGeographicMapPlugIn Implements I
 	jQuery(document).ready(function() {
 		var map_{$vs_id} = new OpenLayers.Map({
 		div: '{$vs_id}',
-		layers: [new OpenLayers.Layer.OSM()],
+		//layers: [new OpenLayers.Layer.OSM()],
+		layers: [new OpenLayers.Layer.Stamen('toner')],
 		controls: [
 			new OpenLayers.Control.Navigation({
 				dragPanOptions: {
