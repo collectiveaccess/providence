@@ -106,7 +106,9 @@ class WLPlugSearchEngineSolr extends BaseSearchPlugin implements IWLPlugSearchEn
 		$va_old_signs = is_object($po_rewritten_query) ? $po_rewritten_query->getSigns() : array();
 		
 		$va_terms = $va_signs = array();
-		foreach($po_rewritten_query->getSubqueries() as $o_lucene_query_element) {
+		
+		if ($po_rewritten_query) {
+			foreach($po_rewritten_query->getSubqueries() as $o_lucene_query_element) {
 			if (!$va_old_signs || !is_array($va_old_signs)) {	// if array is null then according to Zend Lucene all subqueries should be "are required"... so we AND them
 				$vs_op = "AND";
 			} else {
@@ -286,9 +288,10 @@ class WLPlugSearchEngineSolr extends BaseSearchPlugin implements IWLPlugSearchEn
 			$vn_i++;
 		}
 		
-		$o_rewritten_query = new Zend_Search_Lucene_Search_Query_Boolean($va_terms, $va_signs);	
-		$ps_search_expression = $this->_queryToString($o_rewritten_query);
-		if ($vs_filter_query = $this->_filterValueToQueryValue($pa_filters)) {
+			$o_rewritten_query = new Zend_Search_Lucene_Search_Query_Boolean($va_terms, $va_signs);	
+			$ps_search_expression = $this->_queryToString($o_rewritten_query);
+		}
+		if (is_array($pa_filters) && sizeof($pa_filters) && ($vs_filter_query = $this->_filterValueToQueryValue($pa_filters))) {
 			$ps_search_expression .= ' AND ('.$vs_filter_query.')';
 		}
 		
