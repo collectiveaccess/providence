@@ -3403,11 +3403,11 @@ if (!$va_facet_info['show_all_when_first_facet'] || ($this->numCriteria() > 0)) 
 				$vs_group_sql = '
 						OR
 						(ca_acl.group_id IN (?))';
-				$va_params = array((int)$this->opn_browse_table_num, (int)$pn_access, (int)$pn_user_id, $va_group_ids);
+				$va_params = array((int)$this->opn_browse_table_num, (int)$pn_user_id, $va_group_ids, (int)$pn_access);
 			} else {
 				$va_group_ids = null;
 				$vs_group_sql = '';
-				$va_params = array((int)$this->opn_browse_table_num, (int)$pn_access, (int)$pn_user_id);
+				$va_params = array((int)$this->opn_browse_table_num, (int)$pn_user_id, (int)$pn_access);
 			}
 			
 			$qr_sort = $this->opo_db->query($vs_sql = "
@@ -3416,7 +3416,6 @@ if (!$va_facet_info['show_all_when_first_facet'] || ($this->numCriteria() > 0)) 
 				INNER JOIN {$vs_browse_tmp_table} ON {$vs_browse_tmp_table}.row_id = ca_acl.row_id
 				WHERE
 					ca_acl.table_num = ? AND
-					(ca_acl.access < ?) AND
 					
 					(
 						(ca_acl.user_id = ?)
@@ -3424,6 +3423,8 @@ if (!$va_facet_info['show_all_when_first_facet'] || ($this->numCriteria() > 0)) 
 						OR 
 						(ca_acl.user_id IS NULL AND ca_acl.group_id IS NULL)
 					)
+				GROUP BY ca_acl.row_id
+				HAVING MAX(ca_acl.access) < ?
 			", $va_params);
 			$va_hits = array();
 			
@@ -3433,12 +3434,20 @@ if (!$va_facet_info['show_all_when_first_facet'] || ($this->numCriteria() > 0)) 
 			}
 			
 			// For row_ids that have no ACL entry
-			//if ($this->opo_config->get('default_item_access_level') >= $pn_access) {
-				// Add row_ids that have no ACL entry because default access meets or exceeds requested access
-			//	foreach($pa_hits as $vn_id => $vb_dummy) {
-			//		$va_hits[$vn_id] = true;
-			//	}
-			//}	
+			if ($pn_access > $this->opo_config->get('default_item_access_level')) {
+				$qr_sort = $this->opo_db->query($vs_sql = "
+					SELECT {$vs_browse_tmp_table}.row_id
+					FROM {$vs_browse_tmp_table}
+					LEFT OUTER JOIN ca_acl ON {$vs_browse_tmp_table}.row_id = ca_acl.row_id
+					WHERE
+						ca_acl.acl_id IS NULL;
+				");
+				
+				while($qr_sort->nextRow()) {
+					$va_row = $qr_sort->getRow();
+					unset($pa_hits[$va_row['row_id']]);
+				}
+			}
 			
 			//$this->cleanupTemporaryResultTable();
 			

@@ -214,7 +214,7 @@ class SearchEngine extends SearchBase {
 			if (isset($pa_options['sort']) && $pa_options['sort'] && ($pa_options['sort'] != '_natural')) {
 				$va_hits = $this->sortHits($va_hits, $pa_options['sort'], (isset($pa_options['sort_direction']) ? $pa_options['sort_direction'] : null));
 			}
-		
+			
 			$o_res = new WLPlugSearchEngineCachedResult($va_hit_values = array_keys($va_hits), $this->opn_tablenum);
 			
 			// cache for later use
@@ -299,11 +299,11 @@ class SearchEngine extends SearchBase {
 			$vs_group_sql = '
 					OR
 					(ca_acl.group_id IN (?))';
-			$va_params = array((int)$this->opn_tablenum, (int)$pn_access, (int)$pn_user_id, $va_group_ids);
+			$va_params = array((int)$this->opn_tablenum, (int)$pn_user_id, $va_group_ids, (int)$pn_access);
 		} else {
 			$va_group_ids = null;
 			$vs_group_sql = '';
-			$va_params = array((int)$this->opn_tablenum, (int)$pn_access, (int)$pn_user_id);
+			$va_params = array((int)$this->opn_tablenum, (int)$pn_user_id, (int)$pn_access);
 		}
 		
 		$qr_sort = $this->opo_db->query($vs_sql = "
@@ -311,19 +311,36 @@ class SearchEngine extends SearchBase {
 			FROM ca_acl
 			INNER JOIN {$vs_search_tmp_table} ON ca_acl.row_id = {$vs_search_tmp_table}.row_id
 			WHERE
-				(ca_acl.access < ?) AND (ca_acl.table_num = ?) AND
+				(ca_acl.table_num = ?) AND
 				(
 					(ca_acl.user_id = ?)
 					{$vs_group_sql}
 					OR 
 					(ca_acl.user_id IS NULL AND ca_acl.group_id IS NULL)
 				)
+			GROUP BY ca_acl.row_id
+			HAVING MAX(ca_acl.access) < ?
 		", $va_params);
 		
 		while($qr_sort->nextRow()) {
 			$va_row = $qr_sort->getRow();
 			unset($pa_hits[$va_row['row_id']]);
-		}	
+		}
+		
+		if ($pn_access > $this->opo_app_config->get('default_item_access_level')) {
+			$qr_sort = $this->opo_db->query($vs_sql = "
+				SELECT {$vs_search_tmp_table}.row_id
+				FROM {$vs_search_tmp_table}
+				LEFT OUTER JOIN ca_acl ON {$vs_search_tmp_table}.row_id = ca_acl.row_id
+				WHERE
+					ca_acl.acl_id IS NULL;
+			");
+			
+			while($qr_sort->nextRow()) {
+				$va_row = $qr_sort->getRow();
+				unset($pa_hits[$va_row['row_id']]);
+			}
+		}
 		
 		$this->cleanupTemporaryResultTable();
 		return $pa_hits;
