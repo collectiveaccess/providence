@@ -640,6 +640,25 @@ class WLPlugSearchEngineSolr extends BaseSearchPlugin implements IWLPlugSearchEn
 					$vn_status = (int)$va_status[0];
 					if ($vn_status > 0) { 
 						caLogEvent('ERR', _t('Indexing failed for %1: status %2', $vs_core, $vn_status), 'Solr->flushContentBuffer()');
+					} else {						
+						/* commit */
+						try {
+							$vs_post_xml = '<commit waitFlush="false" waitSearcher="false" softCommit="true"/>';
+							$vo_http_client->setRawData($vs_post_xml)->setEncType('text/xml')->request('POST');
+							$vo_http_response = $vo_http_client->request();
+							if ($o_resp = @new SimpleXMLElement($vo_http_response->getBody())) {
+								$va_status = $o_resp->xpath("/response/lst/int[@name='status']");
+								$vn_status = (int)$va_status[0];
+								if ($vn_status > 0) { 
+									caLogEvent('ERR', _t('Indexing commit failed for %1: status %2', $vs_core, $vn_status), 'Solr->flushContentBuffer()');
+								}
+							} else {
+								caLogEvent('ERR', _t('Indexing commit failed for %1: invalid response from SOLR %2', $vs_core, $vo_http_response->getBody()), 'Solr->flushContentBuffer()');
+							}
+						} catch (Exception $e) {
+							// Commit error
+							caLogEvent('ERR', _t('Indexing commit failed: %1; response was %2', $e->getMessage(), $vo_http_response->getBody()), 'Solr->flushContentBuffer()');
+						}
 					}
 				} else {
 					caLogEvent('ERR', _t('Indexing failed for %1: invalid response from SOLR %2', $vs_core, $vo_http_response->getBody()), 'Solr->flushContentBuffer()');
@@ -648,25 +667,6 @@ class WLPlugSearchEngineSolr extends BaseSearchPlugin implements IWLPlugSearchEn
 				// Indexing error
 				caLogEvent('ERR', _t('Indexing failed for %1: %2; response was %3', $vs_core, $e->getMessage(), $vo_http_response->getBody()), 'Solr->flushContentBuffer()');
 			}
-		}
-       
-		/* commit */
-		try {
-			$vs_post_xml = '<commit waitFlush="false" waitSearcher="false" softCommit="true"/>';
-			$vo_http_client->setRawData($vs_post_xml)->setEncType('text/xml')->request('POST');
-			$vo_http_response = $vo_http_client->request();
-			if ($o_resp = @new SimpleXMLElement($vo_http_response->getBody())) {
-				$va_status = $o_resp->xpath("/response/lst/int[@name='status']");
-				$vn_status = (int)$va_status[0];
-				if ($vn_status > 0) { 
-					caLogEvent('ERR', _t('Indexing commit failed for %1: status %2', $vs_core, $vn_status), 'Solr->flushContentBuffer()');
-				}
-			} else {
-				caLogEvent('ERR', _t('Indexing commit failed for %1: invalid response from SOLR %2', $vs_core, $vo_http_response->getBody()), 'Solr->flushContentBuffer()');
-			}
-		} catch (Exception $e) {
-			// Commit error
-			caLogEvent('ERR', _t('Indexing commit failed: %1; response was %2', $e->getMessage(), $vo_http_response->getBody()), 'Solr->flushContentBuffer()');
 		}
 
 		/* clean up */
