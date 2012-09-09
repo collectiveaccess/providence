@@ -1314,6 +1314,10 @@ div.control-box-right-content {
 	margin-top: 3px;
 }
 
+div.control-box-right-content select {
+	width: 150px;
+}
+
 div.list-filter, div.simple-search-box {
 	float: left;
 	margin-top: 3px;
