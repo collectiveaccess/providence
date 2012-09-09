@@ -88,8 +88,8 @@ class ItemInfoService extends BaseService {
 	 * @return array associative array of bundle contents
 	 */
 	public function get($type,$item_ids,$bundles,$options){
-		if(!($t_subject_instance = $this->getTableInstance($type,$item_id,true))){
-			throw new SoapFault("Server", "Invalid type or item_id");
+		if(!($t_subject_instance = $this->getTableInstance($type,null,true))){
+			throw new SoapFault("Server", "Invalid type");
 		}
 		$va_return = array();
 		if(is_array($item_ids)){
@@ -182,9 +182,10 @@ class ItemInfoService extends BaseService {
 					"element_code" => $vo_value->getElementCode(),
 					"element_id" => $vo_value->getElementID(),
 					"attribute_info" => $t_subject_instance->getAttributeLabelAndDescription($vo_value->getElementCode()),
-					"datatype" => $va_element_type_cfg[$t_element->get("datatype")]				);
+					"datatype" => $va_element_type_cfg[$t_element->get("datatype")]
+				);
 			}
-			$va_return[] = $va_attr;
+			$va_return[$vo_attr->getAttributeID()] = $va_attr;
 		}
 		return $va_return;
 	}
@@ -202,20 +203,25 @@ class ItemInfoService extends BaseService {
 			throw new SoapFault("Server", "Invalid type or item_id");
 		}
 		$t_locale = new ca_locales();
-
+		$t_element = new ca_metadata_elements();
 		$va_attrs = $t_subject_instance->getAttributesByElement($attribute_code_or_id);
 		$va_return = array();
+		$va_element_type_cfg = ca_metadata_elements::getAttributeTypes();
 		foreach($va_attrs as $vo_attr){
 			$va_attr = array();
 			foreach($vo_attr->getValues() as $vo_value){
+				$t_element->load($vo_value->getElementID());
 				$va_attr[] = array(
-					"element_id" => $vo_value->getElementID(),
 					"value_id" => $vo_value->getValueID(),
 					"display_value" => $vo_value->getDisplayValue(),
+					"element_code" => $vo_value->getElementCode(),
+					"element_id" => $vo_value->getElementID(),
+					"attribute_info" => $t_subject_instance->getAttributeLabelAndDescription($vo_value->getElementCode()),
+					"datatype" => $va_element_type_cfg[$t_element->get("datatype")],
 					"locale" => $t_locale->localeIDToCode($vo_attr->getLocaleID()),
 				);
 			}
-			$va_return[] = $va_attr;
+			$va_return[$vo_attr->getAttributeID()] = $va_attr;
 		}
 		return $va_return;
 	}
@@ -295,8 +301,8 @@ class ItemInfoService extends BaseService {
 		}
 		$va_reps = $t_subject_instance->getRepresentations($versions);
 		foreach($va_reps as &$va_rep){
-			$va_rep["media"] = caUnserializeForDatabase($va_rep["media"]);
-			$va_rep["media_metadata"] = caUnserializeForDatabase($va_rep["media_metadata"]);
+			$va_rep["media"] = "<[[CDATA[".caUnserializeForDatabase($va_rep["media"])."]]>";
+			$va_rep["media_metadata"] = "<[[CDATA[".caUnserializeForDatabase($va_rep["media_metadata"])."]]>";
 		}
 		return $va_reps;
 	}
@@ -634,8 +640,7 @@ class ItemInfoService extends BaseService {
 	 * @return array List of available language
 	 */
 	public function getLocaleList($pa_options = null){
-		$t_locale = new ca_locales();
-		return $t_locale->getLocaleList($pa_options);
+		return ca_locales::getLocaleList($pa_options);
 	}
 	# -------------------------------------------------------
 	# Utilities

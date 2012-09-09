@@ -57,6 +57,9 @@ class WLPlugMediaPDFWand Extends WLPlug implements IWLPlugMedia {
 	var $ops_ghostscript_path;
 	var $ops_pdftotext_path;
 	
+	var $ops_imagemagick_path;
+	var $ops_graphicsmagick_path;
+	
 	var $info = array(
 		"IMPORT" => array(
 			"application/pdf" 					=> "pdf"
@@ -140,6 +143,7 @@ class WLPlugMediaPDFWand Extends WLPlug implements IWLPlugMedia {
 		$this->ops_ghostscript_path = $this->opo_external_app_config->get('ghostscript_app');
 		$this->ops_pdftotext_path = $this->opo_external_app_config->get('pdftotext_app');
 		$this->ops_imagemagick_path = $this->opo_external_app_config->get('imagemagick_path');
+		$this->ops_graphicsmagick_path = $this->opo_external_app_config->get('graphicsmagick_app');
 
 		
 		$this->info["INSTANCE"] = $this;
@@ -168,7 +172,16 @@ class WLPlugMediaPDFWand Extends WLPlug implements IWLPlugMedia {
 			return '';
 		}
 		
-		if ((!$this->opo_config->get('dont_use_imagemagick_to_identify_pdfs')) && caMediaPluginImageMagickInstalled($this->ops_imagemagick_path)) {
+		if ((!$this->opo_config->get('dont_use_graphicsmagick_to_identify_pdfs')) && caMediaPluginGraphicsMagickInstalled($this->ops_graphicsmagick_path)) {
+			if(is_array($va_info = $this->_graphicsMagickIdentify($ps_filepath)) && sizeof($va_info)) {
+				$vn_width = $va_info['width'];
+				$vn_height = $va_info['height'];
+				$vn_res = 72;
+				$vn_pages = $va_info['pages'];
+			} else {
+				return null;
+			}
+		} else if ((!$this->opo_config->get('dont_use_imagemagick_to_identify_pdfs')) && caMediaPluginImageMagickInstalled($this->ops_imagemagick_path)) {
 			if(is_array($va_info = $this->_imageMagickIdentify($ps_filepath)) && sizeof($va_info)) {
 				$vn_width = $va_info['width'];
 				$vn_height = $va_info['height'];
@@ -226,7 +239,24 @@ class WLPlugMediaPDFWand Extends WLPlug implements IWLPlugMedia {
 	}
 	# ------------------------------------------------
 	private function _imageMagickIdentify($ps_filepath) {
-		exec($this->ops_imagemagick_path.'/identify -format "%m;%w;%h;%p\n" "'.$ps_filepath."\" 2> /dev/null", $va_output, $vn_return);
+		exec($this->ops_imagemagick_path.'/identify -format "%m;%w;%h;%p\n" '.caEscapeShellArg($ps_filepath)." 2> /dev/null", $va_output, $vn_return);
+		
+		array_pop($va_output); // last line is blank
+		if (is_array($va_output) && (sizeof($va_output) > 0)) {
+			$va_tmp = explode(';', $va_output[0]);
+			if ($va_tmp[0] === 'PDF') {
+				return array(
+					'width' => intval($va_tmp[1]),
+					'height' => intval($va_tmp[2]),
+					'pages' => sizeof($va_output)
+				);
+			}
+		}
+		return null;
+	}
+	# ----------------------------------------------------------
+	private function _graphicsMagickIdentify($ps_filepath) {
+		exec($this->ops_graphicsmagick_path.' identify -format "%m;%w;%h;%p\n" '.caEscapeShellArg($ps_filepath)." 2> /dev/null", $va_output, $vn_return);
 		
 		array_pop($va_output); // last line is blank
 		if (is_array($va_output) && (sizeof($va_output) > 0)) {
@@ -334,7 +364,7 @@ class WLPlugMediaPDFWand Extends WLPlug implements IWLPlugMedia {
 		//try to extract text
 		if (caMediaPluginPdftotextInstalled($this->ops_pdftotext_path)) {
 			$vs_tmp_filename = tempnam('/tmp', 'CA_PDF_TEXT');
-			exec($this->ops_pdftotext_path.' -q -enc UTF-8 \''.$ps_filepath.'\' '.$vs_tmp_filename);
+			exec($this->ops_pdftotext_path.' -q -enc UTF-8 '.caEscapeShellArg($ps_filepath).' '.caEscapeShellArg($vs_tmp_filename));
 			$vs_extracted_text = file_get_contents($vs_tmp_filename);
 			$this->handle['content'] = $this->ohandle['content'] = $vs_extracted_text;
 			@unlink($vs_tmp_filename);
@@ -421,8 +451,15 @@ class WLPlugMediaPDFWand Extends WLPlug implements IWLPlugMedia {
 		return true;
 	}
 	# ----------------------------------------------------------
-	public function write($ps_filepath, $ps_mimetype) {
+	/**
+	 * @param array $pa_options Options include:
+	 *		dontUseDefaultIcons = If set to true, write will fail rather than use default icons when preview can't be generated. Default is false – to use default icons.
+	 *
+	 */
+	public function write($ps_filepath, $ps_mimetype, $pa_options=null) {
 		if (!$this->handle) { return false; }
+		
+		$vb_dont_allow_default_icons = (isset($pa_options['dontUseDefaultIcons']) && $pa_options['dontUseDefaultIcons']) ? true : false;
 		
 		# is mimetype valid?
 		if (!($vs_ext = $this->info["EXPORT"][$ps_mimetype])) {
@@ -461,7 +498,7 @@ class WLPlugMediaPDFWand Extends WLPlug implements IWLPlugMedia {
 				$vb_processed_preview = false;
 				switch($ps_mimetype) {
 					case 'image/jpeg':
-						exec(escapeshellcmd($this->ops_ghostscript_path." -dNOPAUSE -dBATCH -sDEVICE=".($vn_scaling_correction ? "tiff24nc" : "jpeg")." $vs_antialiasing -dJPEGQ=".$vn_quality." -dFirstPage=".$vn_page." -dLastPage=".$vn_page." -sOutputFile=\"".$ps_filepath.".".$vs_ext."\" -r".$vs_res." \"".$this->handle["filepath"]."\""), $va_output, $vn_return);
+						exec($this->ops_ghostscript_path." -dNOPAUSE -dBATCH -sDEVICE=".($vn_scaling_correction ? "tiff24nc" : "jpeg")." $vs_antialiasing -dJPEGQ=".$vn_quality." -dFirstPage=".$vn_page." -dLastPage=".$vn_page." -sOutputFile=".caEscapeShellArg($ps_filepath.".".$vs_ext)." -r".$vs_res." ".caEscapeShellArg($this->handle["filepath"]), $va_output, $vn_return);
 						
 						if ($vn_return == 0) {
 							$vb_processed_preview = true;
@@ -470,7 +507,7 @@ class WLPlugMediaPDFWand Extends WLPlug implements IWLPlugMedia {
 					case 'image/tiff':
 					case 'image/png':
 					case 'image/gif':
-						exec(escapeshellcmd($this->ops_ghostscript_path." -dNOPAUSE -dBATCH -sDEVICE=tiff24nc $vs_antialiasing -dFirstPage=".$vn_page." -dLastPage=".$vn_page." -sOutputFile=\"".$ps_filepath.".".$vs_ext."\" -r".$vs_res." \"".$this->handle["filepath"]."\""), $va_output, $vn_return);
+						exec($this->ops_ghostscript_path." -dNOPAUSE -dBATCH -sDEVICE=tiff24nc $vs_antialiasing -dFirstPage=".$vn_page." -dLastPage=".$vn_page." -sOutputFile=".caEscapeShellArg($ps_filepath.".".$vs_ext)." -r".$vs_res." ".caEscapeShellArg($this->handle["filepath"]), $va_output, $vn_return);
 						if ($vn_return == 0) {
 							$vb_processed_preview = true;
 						}
@@ -537,28 +574,7 @@ class WLPlugMediaPDFWand Extends WLPlug implements IWLPlugMedia {
 			}
 			
 			if ($vb_use_default_icon) {
-				# use default media icons
-				if (file_exists($this->opo_config->get("default_media_icons"))) {
-					$o_icon_info = Configuration::load($this->opo_config->get("default_media_icons"));
-					if ($va_icon_info = $o_icon_info->getAssoc('application/pdf')) {
-						$vs_icon_path = $o_icon_info->get("icon_folder_path");
-						if ($vs_icon_filename = trim($va_icon_info[$this->get("version")])) {
-							if (!copy($vs_icon_path."/".$vs_icon_filename,$ps_filepath.'.'.$vs_ext)) {
-								$this->postError(1610, _t("Can't copy icon file from %1 to %2", $vs_icon_path."/".trim($va_icon_info[$this->get("version")]), $ps_filepath.'.'.$vs_ext), "WLPlugPDFWand->write()");
-								return false;
-							}
-						} else {
-							$this->postError(1610, _t("Icon for version %1 available for this media type (system misconfiguration)", $this->get("version")), "WLPlugPDFWand->write()");
-							return false;
-						}
-					} else {
-						$this->postError(1610, _t("No icons available for this media type (system misconfiguration)"), "WLPlugPDFWand->write()");
-						return false;
-					}
-				} else {
-					$this->postError(1610, _t("No icons available (system misconfiguration)"), "WLPlugPDFWand->write()");
-					return false;
-				}
+				return $vb_dont_allow_default_icons ? null : __CA_MEDIA_DOCUMENT_DEFAULT_ICON__;
 			}
 		}
 		
@@ -626,7 +642,7 @@ class WLPlugMediaPDFWand Extends WLPlug implements IWLPlugMedia {
 				$vn_res = 72;
 			}
 			$this->set('resolution', $vn_res);
-			if ($vs_filename = $this->write($vs_output_file_prefix.sprintf("%05d", $vn_i), 'image/jpeg')) {
+			if ($vs_filename = $this->write($vs_output_file_prefix.sprintf("%05d", $vn_i), 'image/jpeg', array('dontUseDefaultIcons' => true))) {
 				$va_files[$vn_i] = $vs_filename;
 			}
 		}

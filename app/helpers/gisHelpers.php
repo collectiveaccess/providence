@@ -350,9 +350,9 @@
 			_t("Tennessee") => "TN",
 			_t("Texas") => "TX",
 			_t("Utah") => "UT",
+			_t("Vermont") => "VT",
 			_t("Virginia") => "VA",
 			_t("Virgin Islands") => "VI",
-			_t("Vermont") => "VT",
 			_t("Washington") => "WA",
 			_t("Wisconsin") => "WI",
 			_t("West Virginia") => "WV",
@@ -517,6 +517,7 @@
 						'max_latitude' =>  ($vn_lat1 < $vn_lat2) ? $vn_lat2 : $vn_lat1,
 						'min_longitude' =>  ($vn_long1 > $vn_long2) ? $vn_long2 : $vn_long1,
 						'max_longitude' =>  ($vn_long1 < $vn_long2) ? $vn_long2 : $vn_long1,
+						'distance' => $vn_length
 					);
 					
 					break;

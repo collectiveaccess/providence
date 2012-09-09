@@ -86,6 +86,8 @@ class SolrConfiguration {
 
 		/* configure the cores */
 		foreach($va_tables as $vs_table){
+			$t_instance = $po_datamodel->getTableInstance($vs_table);
+			
 			/* create core directory */
 			if(!file_exists($ps_solr_home_dir."/".$vs_table)){
 				if(!mkdir($ps_solr_home_dir."/".$vs_table, 0777)){ /* TODO: think about permissions */
@@ -143,33 +145,113 @@ class SolrConfiguration {
 					/* subject table */
 					/* we add the PK - this is used for incremental indexing */
 					$vs_field_schema.=SolrConfiguration::tabs(2).'<field name="'.$vs_table.'.'.
-						$po_datamodel->getTableInstance($vs_table)->primaryKey()
-						.'" type="string" indexed="true" stored="true" />'.SolrConfiguration::nl();
+						$t_instance->primaryKey()
+						.'" type="int" indexed="true" stored="true" />'.SolrConfiguration::nl();
 					$vs_field_schema.=SolrConfiguration::tabs(2).'<field name="'.
-						$po_datamodel->getTableInstance($vs_table)->primaryKey()
-						.'" type="string" indexed="true" stored="true" />'.SolrConfiguration::nl();
+						$t_instance->primaryKey()
+						.'" type="int" indexed="true" stored="true" />'.SolrConfiguration::nl();
 					$vs_subject_table_copyfields.=SolrConfiguration::tabs(1).'<copyField source="'.$vs_table.'.'.
-						$po_datamodel->getTableInstance($vs_table)->primaryKey().
-						'" dest="'.$po_datamodel->getTableInstance($vs_table)->primaryKey().'" />'.SolrConfiguration::nl();
+						$t_instance->primaryKey().
+						'" dest="'.$t_instance->primaryKey().'" />'.SolrConfiguration::nl();
 					
 					/* get fields-to-index from search indexing configuration */
-					$va_table_fields = $po_search_base->getFieldsToIndex($vs_table);
+					if (!is_array($va_table_fields = $po_search_base->getFieldsToIndex($vs_table))) {
+						$va_table_fields = array();
+					}
 
+					$vn_table_num = $po_datamodel->getTableNum($vs_table);
+					
 					/* replace virtual _metadata field with actual _ca_attribute_N type fields */
+					
+					$va_attributes = null;
+					$va_opts = array();
 					if(isset($va_table_fields['_metadata'])){
+						if (!is_array($va_opts = $va_table_fields['_metadata'])) { $va_opts = array(); }
+						
 						unset($va_table_fields['_metadata']);
-						$vn_table_num = $po_datamodel->getTableNum($vs_table);
+						
 						$qr_type_restrictions = $o_db->query('
-							SELECT DISTINCT element_id
-							FROM ca_metadata_type_restrictions
-							WHERE table_num = ?
+							SELECT DISTINCT came.*
+							FROM ca_metadata_type_restrictions camtr
+							INNER JOIN ca_metadata_elements as came ON came.element_id = camtr.element_id
+							WHERE camtr.table_num = ?
 						',(int)$vn_table_num);
-						$va_type_restrictions = array();
+						
+						$va_attributes = array();
 						while($qr_type_restrictions->nextRow()){
-							$va_type_restrictions[] = $qr_type_restrictions->get('element_id');
+							$vn_element_id = $qr_type_restrictions->get('element_id');
+							
+							$va_attributes[$vn_element_id] = array(
+								'element_id' => $vn_element_id,
+								'element_code' => $qr_type_restrictions->get('element_code'),
+								'datatype' => $qr_type_restrictions->get('datatype')
+							);
 						}
-						foreach($va_type_restrictions as $vn_element_id){
-							$va_table_fields['_ca_attribute_'.$vn_element_id] = array();
+					}
+					
+					if (is_array($va_table_fields)) {
+						foreach($va_table_fields as $vs_field_name => $va_field_options){ 
+							if (preg_match('!^ca_attribute_(.*)$!', $vs_field_name, $va_matches)) {
+								$qr_type_restrictions = $o_db->query('
+									SELECT DISTINCT came.*
+									FROM ca_metadata_type_restrictions camtr
+									INNER JOIN ca_metadata_elements as came ON came.element_id = camtr.element_id
+									WHERE camtr.table_num = ? AND came.element_code = ?
+								',(int)$vn_table_num, (string)$va_matches[1]);
+								
+								while($qr_type_restrictions->nextRow()) {
+									$vn_element_id = $qr_type_restrictions->get('element_id');
+									
+									$va_attributes[$vn_element_id] = array(
+										'element_id' => $vn_element_id,
+										'element_code' => $qr_type_restrictions->get('element_code'),
+										'datatype' => $qr_type_restrictions->get('datatype')
+									);
+								}
+							}
+						}
+					}
+					
+					if (is_array($va_attributes)) {
+						foreach($va_attributes as $vn_element_id => $va_element_info) {
+							$vs_element_code = $va_element_info['element_code'];
+							
+							$va_element_opts = array();
+							switch($va_element_info['datatype']) {
+								case 1: // text
+								case 3:	// list
+								case 5:	// url
+								case 6: // currency
+								case 8: // length
+								case 9: // weight
+								case 13: // LCSH
+								case 14: // geonames
+								case 15: // file
+								case 16: // media
+								case 19: // taxonomy
+								case 20: // information service
+									$va_element_opts['type'] = 'text';
+									break;
+								case 2:	// daterange
+									$va_element_opts['type'] = 'daterange';
+									$va_table_fields[$vs_element_code.'_text'] = array_merge($va_opts, array('type' => 'text'));
+									break;
+								case 4:	// geocode
+									$va_element_opts['type'] = 'geocode';
+									$va_table_fields[$vs_element_code.'_text'] = array_merge($va_opts, array('type' => 'text'));
+									break;
+								case 10:	// timecode
+								case 12:	// numeric/float
+									$va_element_opts['type'] = 'float';
+									break;
+								case 11:	// integer
+									$va_element_opts['type'] = 'int';
+									break;
+								default:
+									$va_element_opts['type'] = 'text';
+									break;
+							}
+							$va_table_fields[$vs_element_code] = array_merge($va_opts, $va_element_opts);
 						}
 					}
 
@@ -204,15 +286,16 @@ class SolrConfiguration {
 					if (!($va_cache_data = $vo_cache->load('ca_search_indexing_info_'.$vs_table))) {
 						$va_cache_data = array();
 					}
-
+				
 					if(!$pb_invoked_from_command_line){
-						$va_table_fields = array_merge($va_cache_data,$va_table_fields);
+						$va_table_fields = array_merge($va_cache_data, $va_table_fields);
 					}
 					
 					$vo_cache->save($va_table_fields,'ca_search_indexing_info_'.$vs_table);
 
 					if(is_array($va_table_fields)){
 						foreach($va_table_fields as $vs_field_name => $va_field_options){
+							
 							if(in_array("STORE",$va_field_options)){
 								$vb_field_is_stored = true;
 							} else {
@@ -225,8 +308,47 @@ class SolrConfiguration {
 							}
 
 							$va_schema_fields[] = $vs_table.'.'.$vs_field_name;
-							$vs_field_schema.=SolrConfiguration::tabs(2).'<field name="'.$vs_table.'.'.$vs_field_name.'" type="';
-							$vb_field_is_tokenized ? $vs_field_schema.='text' : $vs_field_schema.='string';
+							
+							if (in_array($va_field_options['type'], array('text', 'string'))) {
+								$vs_type = $vb_field_is_tokenized ? 'text' : 'string';
+							} else {
+								if (!isset($va_field_options['type']) && $t_instance->hasField($vs_field_name)) {
+									switch($t_instance->getFieldInfo($vs_field_name, "FIELD_TYPE")){
+										case (FT_TEXT):
+										case (FT_MEDIA):
+										case (FT_FILE):
+										case (FT_PASSWORD):
+										case (FT_VARS):
+											$va_field_options['type'] = 'text';
+											break;
+										case (FT_NUMBER):
+										case (FT_TIME):
+										case (FT_TIMERANGE):
+										case (FT_TIMECODE):
+											$va_field_options['type'] = 'float';
+											break;
+										case (FT_TIMESTAMP):
+										case (FT_DATETIME):
+										case (FT_HISTORIC_DATETIME):
+										case (FT_DATE):
+										case (FT_HISTORIC_DATE):
+										case (FT_DATERANGE):
+										case (FT_HISTORIC_DATERANGE):
+											$va_field_options['type'] = 'daterange';
+											break;
+										case (FT_BIT):
+											$va_field_options['type'] = 'bool';
+											break;
+										default:
+											$va_field_options['type'] = null;
+											break;
+									}
+								}
+								$vs_type = (isset($va_field_options['type']) && $va_field_options['type']) ? $va_field_options['type'] : 'text';
+							}
+							
+							$vs_field_schema.=SolrConfiguration::tabs(2).'<field name="'.$vs_table.'.'.$vs_field_name.'" type="'.$vs_type;
+							
 							$vs_field_schema.='" indexed="true" ';
 							$vb_field_is_stored ? $vs_field_schema.='stored="true" ' : $vs_field_schema.='stored="false" ';
 							$vs_field_schema.='/>'.SolrConfiguration::nl();
@@ -255,8 +377,6 @@ class SolrConfiguration {
 							$vs_field_schema.='/>'.SolrConfiguration::nl();
 						}
 					}
-					/* write field indexing config into file */
-					fprintf($vr_schema_xml_file,"%s",$vs_field_schema);
 
 					/* copyfield directives
 					 * we use a single field in each index (called "text") where
@@ -268,11 +388,32 @@ class SolrConfiguration {
 					foreach($va_schema_fields as $vs_schema_field){
 						$vs_copyfields.= SolrConfiguration::tabs(1).'<copyField source="'.$vs_schema_field.'" dest="text" />'.SolrConfiguration::nl();
 					}
+					
+					
+					
+					//
+					// Get access points
+					//
+					if (!is_array($va_access_points = $po_search_base->getAccessPoints($vs_table))) {
+						$va_access_points = array();
+					}
+					
+					foreach($va_access_points as $vs_access_point => $va_access_point_info) {
+						foreach($va_access_point_info['fields'] as $vn_i => $vs_schema_field) {
+							$vs_copyfields.= SolrConfiguration::tabs(1).'<copyField source="'.$vs_schema_field.'" dest="'.$vs_access_point.'" />'.SolrConfiguration::nl();
+							
+						}
+						$vs_field_schema.=SolrConfiguration::tabs(2).'<field name="'.$vs_access_point.'" type="text" indexed="true" stored="true" multiValued="true"/>'.SolrConfiguration::nl();
+					}
+					
+					/* write field indexing config into file */
+					fprintf($vr_schema_xml_file,"%s",$vs_field_schema);
+					
 					continue;
 				}
 				/* 3rd replacement: uniquekey */
 				if(strpos($vs_line,"<!--KEY-->")!==false){
-					$vs_pk = $po_datamodel->getTableInstance($vs_table)->primaryKey();
+					$vs_pk = $t_instance->primaryKey();
 					fprintf($vr_schema_xml_file,"%s",str_replace("<!--KEY-->",$vs_table.".".$vs_pk,$vs_line));
 					continue;
 				}
@@ -307,3 +448,4 @@ class SolrConfiguration {
 	}
 	# ------------------------------------------------
 }
+?>

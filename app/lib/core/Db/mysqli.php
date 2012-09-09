@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2011 Whirl-i-Gig
+ * Copyright 2011-2012 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -42,6 +42,16 @@ require_once(__CA_LIB_DIR__."/core/Db/DbStatement.php");
  * Cache for prepared statements
  */
 $g_mysql_statement_cache = array();
+
+/**
+ * Flag indicating if db user has FILE priv; null=undetermined
+ */
+$g_mysql_has_file_priv = null;
+
+/**
+ * Flag indicating if db user has FILE priv; null=undetermined
+ */
+$g_mysql_has_file_priv = null;
 
 /**
  * MySQL driver for Db abstraction class

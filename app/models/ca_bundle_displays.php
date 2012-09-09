@@ -480,8 +480,7 @@ class ca_bundle_displays extends BundlableLabelableBaseModelWithAttributes {
 				$va_placements = $this->getAvailableBundles($this->get('table_num'));
 			}
 		}
-		ca_bundle_displays::$s_placement_list_cache[$vn_display_id] = $va_placements;
-		return $va_placements;
+		return ca_bundle_displays::$s_placement_list_cache[$vn_display_id] = $va_placements;
 	}
 	# ------------------------------------------------------
 	/**
@@ -964,6 +963,44 @@ class ca_bundle_displays extends BundlableLabelableBaseModelWithAttributes {
 			}
 		}
 		
+		// get commerce order history bundle (objects only, of course)
+		if ($vs_table == 'ca_objects') {
+			$va_additional_settings = array(
+				'order_type' => array(
+					'formatType' => FT_TEXT,
+					'displayType' => DT_SELECT,
+					'width' => 35, 'height' => 1,
+					'takesLocale' => false,
+					'default' => '',
+					'options' => array(
+						_t('Sales order') => 'O',
+						_t('Loan') => 'L'
+					),
+					'label' => _t('Type of order'),
+					'description' => _t('Determines which type of order is displayed.')
+				)		
+			);
+			
+			$vs_bundle = 'ca_commerce_order_history';
+			$vs_label = _t('Order history');
+			$vs_display = _t('Order history');
+			$vs_description = _t('List of orders (loans or sales) that include this object');
+			
+			$va_available_bundles[strip_tags($vs_display)][$vs_bundle] = array(
+				'bundle' => $vs_bundle,
+				'display' => ($vs_format == 'simple') ? $vs_label : $vs_display,
+				'description' => $vs_description,
+				'settingsForm' => $t_placement->getHTMLSettingForm(array('id' => $vs_bundle.'_0')),
+				'settings' => $va_additional_settings
+			);
+			
+			if ($vb_show_tooltips) {
+				TooltipManager::add(
+					"#bundleDisplayEditorBundle_ca_commerce_order_history",
+					"<h2>{$vs_label}</h2>{$vs_description}"
+				);
+			}
+		}
 		
 		if (caGetBundleAccessLevel($vs_table, "ca_object_representations") != __CA_BUNDLE_ACCESS_NONE__) {
 			// get object representations (objects only, of course)
@@ -1591,8 +1628,7 @@ class ca_bundle_displays extends BundlableLabelableBaseModelWithAttributes {
 				}
 			}
 			
-			$t_locale = new ca_locales();
-			$va_locale_list = $t_locale->getLocaleList(array('index_by_code' => true));
+			$va_locale_list = ca_locales::getLocaleList(array('index_by_code' => true));
 			
 			$va_available_bundles = $t_display->getAvailableBundles();
 			foreach($va_bundles as $vn_i => $vs_bundle) {

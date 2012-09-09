@@ -258,6 +258,9 @@
 			if (!is_array($va_ancestor_ids = $t_list_item->getHierarchyAncestors(null, array('idsOnly' => true, 'includeSelf' => true)))) {
 				$va_ancestor_ids = array();
 			}
+			// remove hierarchy root from ancestor list, otherwise invalid bindings 
+			// from root nodes (which are not "real" rel types) may be inherited
+			$va_ancestor_ids = array_diff($va_ancestor_ids, array($t_list_item->getHierarchyRootID()));
 			
 			$va_types = array();
 			$va_parent_ids = array();
@@ -283,17 +286,27 @@
 					$vs_subtype = null;
 					if (
 						$qr_res->get('sub_type_left_id') && !(((in_array($qr_res->get('sub_type_left_id'), $va_ancestor_ids))))
-					) { 
+					) { // not left
+						
 						if ($qr_res->get('sub_type_right_id') && !((in_array($qr_res->get('sub_type_right_id'), $va_ancestor_ids)))) {
-							///continue;
+							// not left and not right
+							continue;
 						} else {
+							// not left and right
 							$vs_subtype = $qr_res->get('sub_type_left_id');	
 							$vs_subtype_orientation = "left";
 						}
-					} else {
+					} else if (
+						$qr_res->get('sub_type_left_id') && in_array($qr_res->get('sub_type_left_id'), $va_ancestor_ids)
+					) { // left
 						if ($qr_res->get('sub_type_right_id') && ((in_array($qr_res->get('sub_type_right_id'), $va_ancestor_ids)))) {
+							// left and right
 							$vs_subtype = $qr_res->get('sub_type_right_id');
+							$vs_subtype_orientation = "";
+						} else {
+							// left and not right
 							$vs_subtype_orientation = "right";
+							$vs_subtype = $qr_res->get('sub_type_right_id');	
 						}
 					}
 					if (!$vs_subtype) { $vs_subtype = 'NULL'; }

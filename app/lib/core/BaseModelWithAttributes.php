@@ -596,6 +596,29 @@
 		}
 		# ------------------------------------------------------------------
 		/**
+		 * Set field value(s) for the table row represented by this object
+		 *
+		 */
+		public function set($pa_fields, $pm_value="", $pa_options=null) {
+			if ($this->ATTRIBUTE_TYPE_LIST_CODE) {
+				if(is_array($pa_fields)) {
+					if (isset($pa_fields[$this->ATTRIBUTE_TYPE_ID_FLD]) && !is_numeric($pa_fields[$this->ATTRIBUTE_TYPE_ID_FLD])) {
+						if ($vn_id = ca_lists::getItemID($this->ATTRIBUTE_TYPE_LIST_CODE, $pa_fields[$this->ATTRIBUTE_TYPE_ID_FLD])) {
+							$pa_fields[$this->ATTRIBUTE_TYPE_ID_FLD] = $vn_id;
+						}
+					}
+				} else {
+					if (($pa_fields ==  $this->ATTRIBUTE_TYPE_ID_FLD) && (!is_numeric($pm_value))) {
+						if ($vn_id = ca_lists::getItemID($this->ATTRIBUTE_TYPE_LIST_CODE, $pm_value)) {
+							$pm_value = $vn_id;
+						}
+					}
+				}
+			}
+			return parent::set($pa_fields, $pm_value, $pa_options);
+		}
+		# ------------------------------------------------------------------
+		/**
 		 * Get value(s) for specified attribute. $ps_field specifies the value to fetch in <table_name>.<element_code> or <table_name>.<element_code>.<subelement_code>
 		 * Will return a string containing the retrieved value or values (since attributes can repeat). The values will
 		 * be formatted using the 'template' option with values separated by a delimiter as set in the 'delimiter'
@@ -1503,7 +1526,7 @@
 			$vs_table = $this->tableName();
 			foreach($va_elements as $vn_element_id => $vs_element_code) {
 				$va_vals = $this->get("{$vs_table}.{$vs_element_code}", array("returnAsArray" => true, "returnAllLocales" => true));
-				
+				if (!is_array($va_vals)) { continue; }
 				foreach($va_vals as $vn_id => $va_vals_by_locale) {
 					foreach($va_vals_by_locale as $vn_locale_id => $va_vals_by_attr_id) {
 						foreach($va_vals_by_attr_id as $vn_attribute_id => $va_val) {

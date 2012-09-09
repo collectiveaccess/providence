@@ -109,10 +109,14 @@ class BundlableLabelableBaseModelWithAttributes extends LabelableBaseModelWithAt
 		if ($this->getTypeFieldName() && !(!$vn_type_id && $va_field_info['IS_NULL'])) {
 			if (!($vn_ret = $t_list->itemIsEnabled($this->getTypeListCode(), $vn_type_id))) {
 				$va_type_list = $this->getTypeList(array('directChildrenOnly' => false, 'returnHierarchyLevels' => true, 'item_id' => null));
-				if(is_null($vn_ret)) {
-					$this->postError(2510, _t("<em>%1</em> is invalid", $va_type_list[$vn_type_id]['name_singular']), "BundlableLabelableBaseModelWithAttributes->insert()");
+				if (!isset($va_type_list[$vn_type_id])) {
+					$this->postError(2510, _t("Type must be specified"), "BundlableLabelableBaseModelWithAttributes->insert()");
 				} else {
-					$this->postError(2510, _t("<em>%1</em> is not enabled", $va_type_list[$vn_type_id]['name_singular']), "BundlableLabelableBaseModelWithAttributes->insert()");
+					if(is_null($vn_ret)) {
+						$this->postError(2510, _t("<em>%1</em> is invalid", $va_type_list[$vn_type_id]['name_singular']), "BundlableLabelableBaseModelWithAttributes->insert()");
+					} else {
+						$this->postError(2510, _t("<em>%1</em> is not enabled", $va_type_list[$vn_type_id]['name_singular']), "BundlableLabelableBaseModelWithAttributes->insert()");
+					}
 				}
 				$vb_error = true;
 			}
@@ -296,6 +300,19 @@ class BundlableLabelableBaseModelWithAttributes extends LabelableBaseModelWithAt
 		$t_dupe->purify($this->purify());
 		$t_dupe->setTransaction($o_t);
 		
+		if($this->isHierarchical()) {
+			if (!$this->get($this->getProperty('HIERARCHY_PARENT_ID_FLD'))) {
+				if ($this->getHierarchyType() == __CA_HIER_TYPE_ADHOC_MONO__) {	// If we're duping the root of an adhoc hierarchy then we need to set the HIERARCHY_ID_FLD to null
+					$this->set($this->getProperty('HIERARCHY_ID_FLD'), null);
+				} else {
+					// Don't allow duping of hierarchy roots for non-adhoc hierarchies
+					if ($vb_we_set_transaction) { $this->removeTransaction(false);}
+					$this->postError(2055, _t("Cannot duplicate root of hierarchy"), "BundlableLabelableBaseModelWithAttributes->duplicate()");
+					return null;
+				}
+			}
+		}
+
 		// duplicate primary record + intrinsics
 		$va_field_list = $this->getFormFields(true, true);
 		foreach($va_field_list as $vn_i => $vs_field) {
@@ -307,7 +324,7 @@ class BundlableLabelableBaseModelWithAttributes extends LabelableBaseModelWithAt
 		// Calculate identifier using numbering plugin
 		if ($vs_idno_fld) {
 			if (method_exists($this, "getIDNoPlugInInstance") && ($o_numbering_plugin = $this->getIDNoPlugInInstance())) {
-				if (!($vs_sep = $o_numbering_plugin->getSeparator())) { $vs_sep = ''; }
+				if (!($vs_sep = $o_numbering_plugin->getSeparator())) { $vs_sep = '-'; }
 				if (!is_array($va_idno_values = $o_numbering_plugin->htmlFormValuesAsArray($vs_idno_fld, $this->get($vs_idno_fld), false, false, true))) { $va_idno_values = array(); }
 
 				$t_dupe->set($vs_idno_fld, join($vs_sep, $va_idno_values));	// true=always set serial values, even if they already have a value; this let's us use the original pattern while replacing the serial value every time through
@@ -318,7 +335,8 @@ class BundlableLabelableBaseModelWithAttributes extends LabelableBaseModelWithAt
 			}
 			if ($vs_idno_stub) {
 				$t_lookup = $this->_DATAMODEL->getInstanceByTableName($this->tableName());
-				$va_tmp = preg_split("![{$vs_sep}]+!", $vs_idno_stub);
+				
+				$va_tmp = $vs_sep ? preg_split("![{$vs_sep}]+!", $vs_idno_stub) : array($vs_idno_stub);
 				$vs_suffix = is_array($va_tmp) ? array_pop($va_tmp) : '';
 				if (!is_numeric($vs_suffix)) { 
 					$vs_suffix = 0; 
@@ -327,7 +345,7 @@ class BundlableLabelableBaseModelWithAttributes extends LabelableBaseModelWithAt
 				}
 				do {
 					$vs_suffix = (int)$vs_suffix + 1;
-					$vs_idno = trim($vs_idno_stub).$vs_sep.trim($vs_suffix);
+					$vs_idno = trim($vs_idno_stub).$vs_sep.trim($vs_suffix);	// force separator if none defined otherwise you end up with agglutinative numbers
 				} while($t_lookup->load(array($vs_idno_fld => $vs_idno)));
 			} else {
 				$vs_idno = "???";
@@ -339,6 +357,7 @@ class BundlableLabelableBaseModelWithAttributes extends LabelableBaseModelWithAt
 		$t_dupe->setMode(ACCESS_WRITE);
 		
 		if (isset($pa_options['user_id']) && $pa_options['user_id'] && $t_dupe->hasField('user_id')) { $t_dupe->set('user_id', $pa_options['user_id']); }
+		
 		$t_dupe->insert();
 		
 		if ($t_dupe->numErrors()) {
@@ -401,6 +420,13 @@ class BundlableLabelableBaseModelWithAttributes extends LabelableBaseModelWithAt
 			$pa_fields = array($pa_fields => $pm_value);
 		}
 		
+		if (($vs_type_list_code = $this->getTypeListCode()) && ($vs_type_field_name = $this->getTypeFieldName())) {
+			if (isset($pa_fields[$vs_type_field_name]) && !is_numeric($pa_fields[$vs_type_field_name])) {
+				if ($vn_id = ca_lists::getItemID($vs_type_list_code, $pa_fields[$vs_type_field_name])) {
+					$pa_fields[$vs_type_field_name] = $vn_id;
+				}
+			}
+		}
 		if ($this->getPrimaryKey() && isset($pa_fields[$this->getTypeFieldName()]) && !defined('__CA_ALLOW_SETTING_OF_PRIMARY_KEYS__')) {
 			$this->postError(2520, _t("Type id cannot be set after insert"), "BundlableLabelableBaseModelWithAttributes->set()");
 			return false;
@@ -1345,6 +1371,13 @@ class BundlableLabelableBaseModelWithAttributes extends LabelableBaseModelWithAt
 					// This bundle is only available when editing objects of type ca_object_representations
 					case 'ca_object_representations_media_display':
 						$vs_element .= $this->getMediaDisplayHTMLFormBundle($pa_options['request'], $pa_options['formName'], $ps_placement_code, $pa_bundle_settings, $pa_options);
+						break;
+					# -------------------------------
+					// This bundle is only available for objects
+					case 'ca_commerce_order_history':
+						if (!$pa_options['request']->user->canDoAction('can_manage_clients')) { break; }
+						$vs_label_text = ($pa_bundle_settings['order_type'][0] == 'O') ? _t('Order history') : _t('Loan history');
+						$vs_element .= $this->getCommerceOrderHistoryHTMLFormBundle($pa_options['request'], $pa_options['formName'].'_'.$ps_bundle_name, $ps_placement_code, $pa_bundle_settings, $pa_options);
 						break;
 					# -------------------------------
 					default:
@@ -3000,6 +3033,9 @@ class BundlableLabelableBaseModelWithAttributes extends LabelableBaseModelWithAt
  	 *		exclude_types = omits any items related to the current row that are of any of the specified types from the returned set of ids. You can pass either an array of types or a single type. The types can be type_code's or type_id's.
  	 *		excludeTypes = synonym for exclude_types
  	 *
+ 	 *		restrict_to_lists = when fetching related ca_list_items restricts returned items to those that are in the specified lists; pass an array of list list_codes or list_ids
+ 	 *		restrictToLists = synonym for restrict_to_lists
+ 	 *
  	 *		fields = array of fields (in table.fieldname format) to include in returned data
  	 *		return_non_preferred_labels = if set to true, non-preferred labels are included in returned data
  	 *		returnNonPreferredLabels = synonym for return_non_preferred_labels
@@ -3031,7 +3067,8 @@ class BundlableLabelableBaseModelWithAttributes extends LabelableBaseModelWithAt
 	 	if(isset($pa_options['dontIncludeSubtypesInTypeRestriction']) && (!isset($pa_options['dont_include_subtypes_in_type_restriction']) || !$pa_options['dont_include_subtypes_in_type_restriction'])) { $pa_options['dont_include_subtypes_in_type_restriction'] = $pa_options['dontIncludeSubtypesInTypeRestriction']; }
 	 	if(isset($pa_options['returnNonPreferredLabels']) && (!isset($pa_options['return_non_preferred_labels']) || !$pa_options['return_non_preferred_labels'])) { $pa_options['return_non_preferred_labels'] = $pa_options['returnNonPreferredLabels']; }
 	 	if(isset($pa_options['returnLabelsAsArray']) && (!isset($pa_options['return_labels_as_array']) || !$pa_options['return_labels_as_array'])) { $pa_options['return_labels_as_array'] = $pa_options['returnLabelsAsArray']; }
-	 
+		if(isset($pa_options['restrictToLists']) && (!isset($pa_options['restrict_to_lists']) || !$pa_options['restrict_to_lists'])) { $pa_options['restrict_to_lists'] = $pa_options['restrictToLists']; }
+	 	
 		$o_db = $this->getDb();
 		$o_tep = new TimeExpressionParser();
 		$vb_uses_effective_dates = false;
@@ -3384,6 +3421,17 @@ class BundlableLabelableBaseModelWithAttributes extends LabelableBaseModelWithAt
 			$vs_cur_table = array_shift($va_path);
 			$va_joins = array();
 			
+			// Enforce restrict_to_lists for related list items
+			if (($vs_related_table_name == 'ca_list_items') && is_array($pa_options['restrict_to_lists'])) {
+				$va_list_ids = array();
+				foreach($pa_options['restrict_to_lists'] as $vm_list) {
+					if ($vn_list_id = ca_lists::getListID($vm_list)) { $va_list_ids[] = $vn_list_id; }
+				}
+				if (sizeof($va_list_ids)) {
+					$va_wheres[] = "(ca_list_items.list_id IN (".join(",", $va_list_ids)."))";
+				}
+			}
+			
 			foreach($va_path as $vs_join_table) {
 				$va_rel_info = $this->getAppDatamodel()->getRelationships($vs_cur_table, $vs_join_table);
 				$va_joins[] = 'INNER JOIN '.$vs_join_table.' ON '.$vs_cur_table.'.'.$va_rel_info[$vs_cur_table][$vs_join_table][0][0].' = '.$vs_join_table.'.'.$va_rel_info[$vs_cur_table][$vs_join_table][0][1]."\n";
@@ -3707,9 +3755,9 @@ $pa_options["display_form_field_tips"] = true;
 	
 		if (!($vs_search_result_class = $t_instance->getProperty('SEARCH_RESULT_CLASSNAME'))) { return null; }
 		require_once(__CA_LIB_DIR__.'/ca/Search/'.$vs_search_result_class.'.php');
-		$o_data = new WLPlugSearchEngineCachedResult($pa_ids, array(), $t_instance->primaryKey());
+		$o_data = new WLPlugSearchEngineCachedResult($pa_ids, $t_instance->tableNum());
 		$o_res = new $vs_search_result_class();
-		$o_res->init($t_instance->tableNum(), $o_data, array());
+		$o_res->init($o_data, array());
 		
 		return $o_res;
 	}
@@ -3726,14 +3774,17 @@ $pa_options["display_form_field_tips"] = true;
 	 */
 	static public function createResultSet($pa_ids) {
 		if (!is_array($pa_ids) || !sizeof($pa_ids)) { return null; }
-		$pn_table_num = $this->getAppDataModel()->getTableNum(get_called_class());
-		if (!($t_instance = $this->getAppDataModel()->getInstanceByTableNum($pn_table_num))) { return null; }
+		$o_dm = Datamodel::load();
+		$pn_table_num = $o_dm->getTableNum(get_called_class());
+		if (!($t_instance = $o_dm->getInstanceByTableNum($pn_table_num))) { return null; }
 	
 		if (!($vs_search_result_class = $t_instance->getProperty('SEARCH_RESULT_CLASSNAME'))) { return null; }
 		require_once(__CA_LIB_DIR__.'/ca/Search/'.$vs_search_result_class.'.php');
-		$o_data = new WLPlugSearchEngineCachedResult($pa_ids, array(), $t_instance->primaryKey());
+		$o_data = new WLPlugSearchEngineCachedResult($pa_ids, $t_instance->tableNum());
 		$o_res = new $vs_search_result_class();
-		$o_res->init($t_instance->tableNum(), $o_data, array());
+		$o_res->init($o_data, array());
+		
+		return $o_res;
 	}
 	# --------------------------------------------------------------------------------------------
 	# Access control lists
@@ -3800,6 +3851,8 @@ $pa_options["display_form_field_tips"] = true;
 			$va_initial_values = array();
 		}
 		$qr_res->seek(0);
+		
+		$t_acl = new ca_acl();
 		while($qr_res->nextRow()) {
 			$va_row = array();
 			foreach(array('user_id', 'fname', 'lname', 'email', 'access') as $vs_f) {
@@ -3809,6 +3862,7 @@ $pa_options["display_form_field_tips"] = true;
 			if ($vb_return_for_bundle) {
 				$va_row['_display'] = $va_initial_values[$va_row['user_id']]['_display'];
 				$va_row['id'] = $va_row['user_id'];
+				$va_row['access_display'] = $t_acl->getChoiceListValue('access', $va_row['access']);
 				$va_users[(int)$qr_res->get('acl_id')] = $va_row;
 			} else {
 				$va_users[(int)$qr_res->get('user_id')] = $va_row;
@@ -3847,7 +3901,6 @@ $pa_options["display_form_field_tips"] = true;
 			
 			if ($t_acl->numErrors()) {
 				$this->errors = $t_acl->errors;
-				print_R($t_acl->getErrors());
 				return false;
 			}
 		}
@@ -3976,6 +4029,9 @@ $pa_options["display_form_field_tips"] = true;
 		} else {
 			$va_initial_values = array();
 		}
+		
+		$t_acl = new ca_acl();
+		
 		$qr_res->seek(0);
 		while($qr_res->nextRow()) {
 			$va_row = array();
@@ -3986,6 +4042,8 @@ $pa_options["display_form_field_tips"] = true;
 			if ($vb_return_for_bundle) {
 				$va_row['_display'] = $va_initial_values[$va_row['group_id']]['_display'];
 				$va_row['id'] = $va_row['group_id'];
+				$va_row['access_display'] = $t_acl->getChoiceListValue('access', $va_row['access']);
+				
 				$va_groups[(int)$qr_res->get('acl_id')] = $va_row;
 			} else {
 				$va_groups[(int)$qr_res->get('group_id')] = $va_row;
@@ -4109,6 +4167,43 @@ $pa_options["display_form_field_tips"] = true;
 		}
 		return true;
 	}
+	# ------------------------------------------------------------------
+	/**
+	 * Returns an array containing the ACL world access setting for the currently load row. The array
+	 * Array keys are:
+	 *			access				[access level as integer value]
+	 *			access_display		[access level as display text]
+	 *
+	 * @param array $pa_options Supported options:
+	 *		No options currently supported
+	 *
+	 * @return array Information about current ACL world setting
+	 */ 
+	public function getACLWorldAccess($pa_options=null) {
+		if (!($vn_id = (int)$this->getPrimaryKey())) { return null; }
+		
+		if (!is_array($pa_options)) { $pa_options = array(); }
+		
+		$o_db = $this->getDb();
+		
+		$qr_res = $o_db->query("
+			SELECT acl.*
+			FROM ca_acl acl
+			WHERE
+				acl.table_num = ? AND acl.row_id = ? AND acl.group_id IS NULL AND acl.user_id IS NULL
+		", $this->tableNum(), $vn_id);
+		
+		$t_acl = new ca_acl();
+		$va_row = array();
+		if($qr_res->nextRow()) {
+			foreach(array('access') as $vs_f) {
+				$va_row[$vs_f] = $qr_res->get($vs_f);
+			}
+			$va_row['access_display'] = $t_acl->getChoiceListValue('access', $va_row['access']);
+		}
+		
+		return $va_row;
+	}
 	# --------------------------------------------------------------------------------------------		
 	/**
 	 * 
@@ -4185,6 +4280,7 @@ $pa_options["display_form_field_tips"] = true;
 	 * @return int An access value 
 	 */
 	public function checkACLAccessForUser($t_user, $pn_id=null) {
+		if (!$this->supportsACL()) { return __CA_ACL_EDIT_DELETE_ACCESS__; }
 		if (!$pn_id) { 
 			$pn_id = (int)$this->getPrimaryKey(); 
 			if (!$pn_id) { return null; }
@@ -4193,6 +4289,15 @@ $pa_options["display_form_field_tips"] = true;
 		require_once(__CA_MODELS_DIR__.'/ca_acl.php');
 		
 		return ca_acl::accessForRow($t_user, $this->tableNum(), $pn_id);
+	}
+	# --------------------------------------------------------------------------------------------		
+	/**
+	 * Checks if model supports ACL item-based access control
+	 *
+	 * @return bool True if model supports ACL, false if not
+	 */
+	public function supportsACL() {
+		return (bool)$this->getProperty('SUPPORTS_ACL');
 	}
 	# ------------------------------------------------------
 }

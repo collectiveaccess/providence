@@ -376,7 +376,7 @@ class WLPlugMediaQuicktimeVR Extends WLPlug Implements IWLPlugMedia {
 					if (($vn_start_secs = $this->properties["duration"]/8) > 120) { 
 						$vn_start_secs = 120;		// always take a frame from the first two minutes to ensure performance (ffmpeg gets slow if it has to seek far into a movie to extract a frame)
 					}
-					exec(escapeshellcmd($this->ops_path_to_ffmpeg." -ss ".($vn_start_secs)." -i \"".$this->filepath."\" -f mjpeg -t 0.001 -y \"".$filepath.".".$ext."\""), $va_output, $vn_return);
+					exec($this->ops_path_to_ffmpeg." -ss ".($vn_start_secs)." -i ".caEscapeShellArg($this->filepath)." -f mjpeg -t 0.001 -y ".caEscapeShellArg($filepath.".".$ext), $va_output, $vn_return);
 					if (($vn_return < 0) || ($vn_return > 1) || (!@filesize($filepath.".".$ext))) {
 						@unlink($filepath.".".$ext);
 						// don't throw error as ffmpeg cannot generate frame still from all files
@@ -398,33 +398,7 @@ class WLPlugMediaQuicktimeVR Extends WLPlug Implements IWLPlugMedia {
 				// if output file doesn't exist, ffmpeg failed or isn't installed
 				// so use default icons
 				if (!file_exists($filepath.".".$ext)) {
-					# use default media icons
-					if (file_exists($this->opo_config->get("default_media_icons"))) {
-						$o_icon_info = Configuration::load($this->opo_config->get("default_media_icons"));
-						if ($va_icon_info = $o_icon_info->getAssoc($this->handle["mime_type"])) {
-							$vs_icon_path = $o_icon_info->get("icon_folder_path");
-							
-							$vs_version = $this->get("version");
-							if (!$va_icon_info[$vs_version]) { $vs_version = 'small'; }
-							if (!copy($vs_icon_path."/".trim($va_icon_info[$vs_version]),$filepath.".".$ext)) {
-								$this->postError(1610, _t("Can't copy icon file for %1 to %2", $vs_version, $filepath.".".$ext), "WLPlugQuicktimeVR->write()");
-								return false;
-							}
-
-							if (!($this->properties["width"] = $this->get("version_width"))) {
-								$this->properties["width"] = $this->get("version_height");
-							}
-							if (!($this->properties["height"] = $this->get("version_height"))) {
-								$this->properties["height"] = $this->get("version_width");
-							}
-						} else {
-							$this->postError(1610, _t("No icon available for this media type [%1] (system misconfiguration)", $this->handle["mime_type"]), "WLPlugQuicktimeVR->write()");
-							return false;
-						}
-					} else {
-						$this->postError(1610, _t("No icons available (system misconfiguration)"), "WLPlugQuicktimeVR->write()");
-						return false;
-					}
+					return __CA_MEDIA_VIDEO_DEFAULT_ICON__;
 				}
 				$this->properties["mimetype"] = $mimetype;
 				$this->properties["typename"] = isset($this->typenames[$mimetype]) ? $this->typenames[$mimetype] : $mimetype;
@@ -524,7 +498,7 @@ class WLPlugMediaQuicktimeVR Extends WLPlug Implements IWLPlugMedia {
 		$vs_output_file_prefix = tempnam($vs_tmp_dir, 'caQuicktimeVRPreview');
 		$vs_output_file = $vs_output_file_prefix.'%05d.jpg';
 		
-		exec(escapeshellcmd($this->ops_path_to_ffmpeg." -i \"".$this->filepath."\" -f image2 -r ".$vs_freq." -ss {$vn_s} -t {$vn_previewed_duration} -s ".$vn_preview_width."x".$vn_preview_height." -y \"".$vs_output_file."\""), $va_output, $vn_return);
+		exec($this->ops_path_to_ffmpeg." -i ".caEscapeShellArg($this->filepath)." -f image2 -r ".$vs_freq." -ss {$vn_s} -t {$vn_previewed_duration} -s ".$vn_preview_width."x".$vn_preview_height." -y ".caEscapeShellArg($vs_output_file), $va_output, $vn_return);
 		$vn_i = 1;
 		
 		$va_files = array();

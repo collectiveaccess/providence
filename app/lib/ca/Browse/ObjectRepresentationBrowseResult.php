@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2011 Whirl-i-Gig
+ * Copyright 2011-2012 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -37,16 +37,12 @@
 include_once(__CA_LIB_DIR__."/ca/Search/BaseSearchResult.php");
 
 class ObjectRepresentationBrowseResult extends BaseSearchResult {
+	
 	# -------------------------------------
 	/**
-	 * Name of labels table for this type of search subject (eg. for ca_objects, the label table is ca_object_labels)
+	 * Name of table for this type of search subject
 	 */
-	protected $ops_label_table_name = 'ca_object_representation_labels';
-	# -------------------------------------
-	/**
-	 * Name of field in labels table to use for display for this type of search subject (eg. for ca_objects, the label display field is 'name')
-	 */
-	protected $ops_label_display_field = 'name';
+	protected $ops_table_name = 'ca_object_representations';
 	# -------------------------------------
 	/**
 	 * Constructor
@@ -58,8 +54,8 @@ class ObjectRepresentationBrowseResult extends BaseSearchResult {
 	/**
 	 * Override init to set ca_representations join params
 	 */
-	public function init($pn_subject_table_num, $po_engine_result, $pa_tables) {
-		parent::init($pn_subject_table_num, $po_engine_result, $pa_tables);
+	public function init($po_engine_result, $pa_tables) {
+		parent::init($po_engine_result, $pa_tables);
 		$this->opa_tables['ca_object_representations'] = array(
 			'fieldList' => array('ca_object_representations.media', 'ca_object_representations.representation_id', 'ca_object_representations.access'),
 			'joinTables' => array('ca_objects_x_object_representations'),

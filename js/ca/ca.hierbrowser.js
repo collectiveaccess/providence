@@ -38,6 +38,8 @@ var caUI = caUI || {};
 									//  The horizontal browser requires more space but it arguably easier and more pleasant to use with large hierarchies.
 									//  The vertical browser is more compact and works well with smaller hierarchies 
 			
+			bundle: '',
+			
 			levelDataUrl: '',
 			initDataUrl: '',
 			editUrl: '',
@@ -114,7 +116,7 @@ if (that.uiStyle == 'horizontal') {
 			if (!item_id) { that.setUpHierarchyLevel(0, that.useAsRootID ? that.useAsRootID : 0, 1); return; }
 			that.levelLists = [];
 			that.selectedItemIDs = [];
-			jQuery.getJSON(that.initDataUrl, { id: item_id}, function(data) {
+			jQuery.getJSON(that.initDataUrl, { id: item_id, bundle: that.bundle}, function(data) {
 				if (data.length) {
 					that.selectedItemIDs = data.join(';').split(';');
 					
@@ -228,7 +230,7 @@ if (that.uiStyle == 'horizontal') {
 }	
 			var parent_id = item_id;
 			
-			jQuery.getJSON(that.levelDataUrl, { id: item_id, init: is_init ? 1 : '', root_item_id: that.selectedItemIDs[0] ? that.selectedItemIDs[0] : ''}, function(data) {
+			jQuery.getJSON(that.levelDataUrl, { id: item_id, bundle: that.bundle, init: is_init ? 1 : '', root_item_id: that.selectedItemIDs[0] ? that.selectedItemIDs[0] : ''}, function(data) {
 				var l = jQuery('#' + newLevelDivID).data('level');
 				
 				jQuery.each(data, function(i, item) {

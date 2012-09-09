@@ -51,7 +51,7 @@
 		closeButton: '<?php print (!isset($va_display_options['no_overlay'])) ? '<img src="'.$this->request->getThemeUrlPath().'/graphics/buttons/x.png" alt="'._t('Close').'"/>' : ''; ?>',
 		editButton: '<img src="<?php print $this->request->getThemeUrlPath(); ?>/graphics/buttons/edit.png" alt="<?php print _t('Edit'); ?>"/>',
 		downloadButton: '<img src="<?php print $this->request->getThemeUrlPath(); ?>/graphics/buttons/download.png" alt="<?php print _t('Download'); ?>"/>',
-		selectionRecordURL: '<?php print caNavUrl($this->request, 'client', 'OrderEditor', 'RecordRepresentationSelection', array('item_id' => $vn_item_id)); ?>',
+		selectionRecordURL: '<?php print caNavUrl($this->request, 'client/orders', 'OrderEditor', 'RecordRepresentationSelection', array('item_id' => $vn_item_id)); ?>',
 		sectionsAreSelectable: <?php print ((sizeof($va_sections) > 0) && isset($va_display_options['sectionsAreSelectable']) && ($va_display_options['sectionsAreSelectable'])) ? "true" : "false"; ?>
 
 	});

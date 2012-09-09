@@ -46,16 +46,25 @@ class WLPlugSearchEngineSolrResult extends WLPlug implements IWLPlugSearchEngine
 	private $opn_subject_tablenum;
 	private $ops_subject_primary_key;
 	# -------------------------------------------------------
-	public function __construct($pa_results, $pa_query_terms, $pn_subject_tablenum){
-		$this->opo_datamodel =& Datamodel::load();
-		$this->opa_hits = $pa_results;
-		$this->opn_current_row = -1;
-		$this->opa_query_terms = $pa_query_terms;
-		
-		$this->opn_subject_tablenum = $pn_subject_tablenum;
-		$t_instance = $this->opo_datamodel->getInstanceByTableNum($pn_subject_tablenum);
-		$this->ops_subject_primary_key = $t_instance->primaryKey();
+	public function __construct($pa_hits, $pn_table_num){
+		$this->opn_subject_tablenum = $pn_table_num;
+		$this->setHits($pa_hits);
 	}
+	# -------------------------------------------------------
+	public function setHits($pa_hits) {
+		$this->opa_hits = $pa_hits;
+		$this->opn_current_row = -1;
+		
+		if (sizeof($this->opa_hits)) {
+			$o_dm = Datamodel::load();
+			$this->opo_subject_instance = $o_dm->getInstanceByTableNum($this->opn_subject_tablenum, true);
+			$this->ops_subject_primary_key = $this->opo_subject_instance->primaryKey();
+			$this->ops_subject_table_name = $this->opo_subject_instance->tableName();
+		}
+	}
+	# -------------------------------------------------------
+	public function getHits() {
+		return $this->opa_hits;
 	}
 	# -------------------------------------------------------
 	public function numHits(){
@@ -70,6 +79,10 @@ class WLPlugSearchEngineSolrResult extends WLPlug implements IWLPlugSearchEngine
 		return false;
 	}
 	# -------------------------------------------------------
+	public function currentRow() {
+		return $this->opn_current_row;
+	}
+	# -------------------------------------------------------
 	public function get($ps_field, $pa_options=null){
 		// everything that was stored in the index is in the result array
 		return isset($this->opa_hits[$this->opn_current_row][$ps_field]) ? $this->opa_hits[$this->opn_current_row][$ps_field] : false;
@@ -77,6 +90,7 @@ class WLPlugSearchEngineSolrResult extends WLPlug implements IWLPlugSearchEngine
 	# -------------------------------------------------------
 	public function getPrimaryKeyValues($vn_limit=null) {
 		if(!$vn_limit) {$vn_limit = null; }
+		if(!is_array($this->opa_hits)) { return array(); }
 		// primary key
 		$va_ids = array();
 		
@@ -97,12 +111,5 @@ class WLPlugSearchEngineSolrResult extends WLPlug implements IWLPlugSearchEngine
 		return false;
 	}
 	# -------------------------------------------------------
-	public function currentRow(){
-		return $this->opn_current_row;
-	}
-	# -------------------------------------------------------
-	public function getQueryTerms(){
-		return $this->opa_query_terms;
-	}
-	# -------------------------------------------------------
 }
+?>

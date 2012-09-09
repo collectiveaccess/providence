@@ -27,6 +27,7 @@ $va_searches = array(
 	'"jakarta apache" NOT "Apache Lucene"',
 	'"jakarta apache" -"Apache Lucene"',
 	'title:(+return +"pink panther")',
+	'media/strawberry_flag/159_Strawberry Gazette #5_2010.08.29/Strawberry Gazette 5.pdf',
 	'\(1\+1\)\:2'
 );
 

@@ -435,7 +435,7 @@ class WLPlugMediaOffice Extends WLPlug Implements IWLPlugMedia {
 		//try to extract text
 		if ($this->opb_abiword_installed && !$this->opb_libre_office_installed) {
 			$vs_tmp_filename = tempnam('/tmp', 'CA_MSWORD_TEXT');
-			exec($this->ops_abiword_path.' -t txt '.$ps_filepath.' -o '.$vs_tmp_filename);
+			exec($this->ops_abiword_path.' -t txt '.caEscapeShellArg($ps_filepath).' -o '.$vs_tmp_filename);
 			$vs_extracted_text = preg_replace('![^\w\d]+!u' , ' ', file_get_contents($vs_tmp_filename));	// ABIWord seems to dump Unicode...
 			$this->handle['content'] = $this->ohandle['content'] = $vs_extracted_text;
 			@unlink($vs_tmp_filename);
@@ -527,8 +527,15 @@ class WLPlugMediaOffice Extends WLPlug Implements IWLPlugMedia {
 		return true;
 	}
 	# ----------------------------------------------------------
-	public function write($ps_filepath, $ps_mimetype) {
+	/**
+	 * @param array $pa_options Options include:
+	 *		dontUseDefaultIcons = If set to true, write will fail rather than use default icons when preview can't be generated. Default is false – to use default icons.
+	 *
+	 */
+	public function write($ps_filepath, $ps_mimetype, $pa_options=null) {
 		if (!$this->handle) { return false; }
+		
+		$vb_dont_allow_default_icons = (isset($pa_options['dontUseDefaultIcons']) && $pa_options['dontUseDefaultIcons']) ? true : false;
 		
 		# is mimetype valid?
 		if (!($vs_ext = $this->info["EXPORT"][$ps_mimetype])) {
@@ -549,8 +556,8 @@ class WLPlugMediaOffice Extends WLPlug Implements IWLPlugMedia {
 				$vs_out_file = array_pop($va_tmp);
 				
 				putenv("HOME={$vs_tmp_dir_path}");		// libreoffice will fail silently if you don't set this environment variable to a directory it can write to. Nice way to waste a day debugging. Yay!
-				exec($this->ops_libreoffice_path." --nologo --nofirststartwizard --headless -convert-to pdf \"".$this->filepath."\"  -outdir {$vs_tmp_dir_path} 2>&1", $va_output, $vn_return);
-				exec($this->ops_libreoffice_path." --nologo --nofirststartwizard --headless -convert-to html \"".$this->filepath."\"  -outdir {$vs_tmp_dir_path} 2>&1", $va_output, $vn_return);
+				exec($this->ops_libreoffice_path." --nologo --nofirststartwizard --headless -convert-to pdf ".caEscapeShellArg($this->filepath)."  -outdir ".caEscapeShellArg($vs_tmp_dir_path)." 2>&1", $va_output, $vn_return);
+				exec($this->ops_libreoffice_path." --nologo --nofirststartwizard --headless -convert-to html ".caEscapeShellArg($this->filepath)."  -outdir ".caEscapeShellArg($vs_tmp_dir_path)." 2>&1", $va_output, $vn_return);
 			
 				$va_out_file = explode(".", $vs_out_file);
 				if (sizeof($va_out_file) > 1) { array_pop($va_out_file); }
@@ -593,22 +600,7 @@ class WLPlugMediaOffice Extends WLPlug Implements IWLPlugMedia {
 			
 			# use default media icons
 			if (!file_exists($vs_filepath_with_extension)) {	// always jpegs
-				if (file_exists($this->opo_config->get("default_media_icons"))) {
-					$o_icon_info = Configuration::load($this->opo_config->get("default_media_icons"));
-					if ($va_icon_info = $o_icon_info->getAssoc('application/msword')) {
-						$vs_icon_path = $o_icon_info->get("icon_folder_path");
-						if (!copy($vs_icon_path."/".trim($va_icon_info[$this->get("version")]),$ps_filepath.'.'.$vs_ext)) {
-							$this->postError(1610, _t("Can't copy icon file from %1 to %2", $vs_icon_path."/".trim($va_icon_info[$this->get("version")]), $ps_filepath.'.'.$vs_ext), "WLPlugMediaOffice->write()");
-							return false;
-						}
-					} else {
-						$this->postError(1610, _t("No icon available for this media type (system misconfiguration)"), "WLPlugMediaOffice->write()");
-						return false;
-					}
-				} else {
-					$this->postError(1610, _t("No icons available (system misconfiguration)"), "WLPlugMediaOffice->write()");
-					return false;
-				}
+				return $vb_dont_allow_default_icons ? null : __CA_MEDIA_DOCUMENT_DEFAULT_ICON__;
 			}
 		}
 		
@@ -627,7 +619,7 @@ class WLPlugMediaOffice Extends WLPlug Implements IWLPlugMedia {
 		if ($vs_pdf_path = WLPlugMediaOffice::$s_pdf_conv_cache[$this->filepath]) {
 			$o_media = new Media();
 			if ($o_media->read($vs_pdf_path)) {
-				return $o_media->writePreviews($pa_options);	
+				return $o_media->writePreviews(array_merge($pa_options, array('dontUseDefaultIcons' => true)));	
 			}
 		
 		}

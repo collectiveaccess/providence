@@ -60,7 +60,7 @@ var caUI = caUI || {};
 			
 			// setup autocompleter
 			jQuery('#' + that.setItemAutocompleteID).autocomplete(that.lookupURL, {
-				minChars: 3, matchSubset: 1, matchContains: 1,  max: 500,
+				minChars: 3, matchSubset: 1, matchContains: 1,  max: 50,
 				formatItem: function(data) { return data[0]; },
 				formatResult: function(data, value) { return jQuery.trim(value.replace(/<\/?[^>]+>/gi, '')); }
 			});

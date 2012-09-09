@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2009-2011 Whirl-i-Gig
+ * Copyright 2009-2012 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -44,24 +44,26 @@ class WLPlugSearchEngineCachedResult extends WLPlug implements IWLPlugSearchEngi
 	
 	private $opa_hits;
 	private $opn_current_row;
-	private $opo_subject_instance;
-	
-	private $opa_query_terms;
-	
-	private $ops_table_primary_key_name;
-	
+	protected $opn_subject_tablenum;
+	protected $ops_subject_pk;
 	# -------------------------------------------------------
-	public function __construct($pa_hits, $pa_query_terms, $ps_table_primary_key_name=null) {
+	public function __construct($pa_hits, $pn_table_num) {
 		$this->opo_datamodel = Datamodel::load();
+		
+		$this->opn_subject_tablenum = $pn_table_num;
+		
+		$this->ops_subject_pk = $this->opo_datamodel->getTablePrimaryKeyName($pn_table_num);
 		$this->setHits($pa_hits);
-		$this->opa_query_terms = $pa_query_terms;
-		$this->ops_table_primary_key_name = $ps_table_primary_key_name;
 	}
 	# -------------------------------------------------------
 	public function setHits($pa_hits) {
 		$this->opa_hits = $pa_hits;	// is array of row_ids
 		$this->opn_current_row = -1;
 		
+	}
+	# -------------------------------------------------------
+	public function getHits() {
+		return $this->opa_hits;
 	}
 	# -------------------------------------------------------
 	public function seek($pn_index) {
@@ -89,16 +91,9 @@ class WLPlugSearchEngineCachedResult extends WLPlug implements IWLPlugSearchEngi
 	}
 	# -------------------------------------------------------
 	public function get($ps_field, $pa_options=null) {
-		if ($ps_field == $this->ops_table_primary_key_name) {return $this->opa_hits[$this->opn_current_row];}
+		if ($ps_field == $this->ops_subject_pk) {return $this->opa_hits[$this->opn_current_row];}
 		
 		return false;
-	}
-	# -------------------------------------------------------
-	/**
-	 * Returns an array of terms used in the query (does *not* include access points, boolean, punctuation, etc.)
-	 */
-	public function getQueryTerms() {
-		return $this->opa_query_terms;
 	}
 	# -------------------------------------------------------
 	public function getPrimaryKeyValues($vn_limit=null) {

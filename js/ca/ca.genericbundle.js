@@ -110,14 +110,16 @@ var caUI = caUI || {};
 						if (templateValues[v] == null) {  templateValues[v] = ''; }
 					});
 
-					this.errors[id] = initialValues['_errors'];
+					if (initialValues['_errors']) {
+						this.errors[id] = initialValues['_errors'];
+					}
 				}
 				templateValues.n = 'new_' + this.getCount();
 				templateValues.error = '';
 				isNew = true;
 			}
 					
-			var defaultLocaleSelectedIndex = 0;
+			var defaultLocaleSelectedIndex = false;
 			if (isNew && this.incrementLocalesForNewBundles) {
 				// set locale_id for new bundles
 				// find unused locale
@@ -253,14 +255,18 @@ var caUI = caUI || {};
 			
 			// set default locale for new
 			if (isNew) {
-				if (jQuery(this.container + " #" + this.fieldNamePrefix + "locale_id_" + templateValues.n +" option:eq(" + defaultLocaleSelectedIndex + ")").length) {
-					// There's a locale drop-dow to mess with
-					jQuery(this.container + " #" + this.fieldNamePrefix + "locale_id_" + templateValues.n +" option:eq(" + defaultLocaleSelectedIndex + ")").attr('selected', true);
+				if (defaultLocaleSelectedIndex !== false) {
+					if (jQuery(this.container + " #" + this.fieldNamePrefix + "locale_id_" + templateValues.n +" option:eq(" + defaultLocaleSelectedIndex + ")").length) {
+						// There's a locale drop-dow to mess with
+						jQuery(this.container + " #" + this.fieldNamePrefix + "locale_id_" + templateValues.n +" option:eq(" + defaultLocaleSelectedIndex + ")").attr('selected', true);
+					} else {
+						// No locale drop-down, or it somehow doesn't include the locale we want
+						jQuery(this.container + " #" + this.fieldNamePrefix + "locale_id_" + templateValues.n).after("<input type='hidden' name='" + this.fieldNamePrefix + "locale_id_" + templateValues.n + "' value='" + that.defaultLocaleID + "'/>");
+						jQuery(this.container + " #" + this.fieldNamePrefix + "locale_id_" + templateValues.n).remove();
+						
+					}
 				} else {
-					// No locale drop-down, or it somehow doesn't include the locale we want
-					jQuery(this.container + " #" + this.fieldNamePrefix + "locale_id_" + templateValues.n).after("<input type='hidden' name='" + this.fieldNamePrefix + "locale_id_" + templateValues.n + "' value='" + that.defaultLocaleID + "'/>");
-					jQuery(this.container + " #" + this.fieldNamePrefix + "locale_id_" + templateValues.n).remove();
-					
+				  jQuery(this.container + " #" + this.fieldNamePrefix + "locale_id_" + templateValues.n +" option[value=" + that.defaultLocaleID + "]").attr('selected', true);
 				}
 			}
 			

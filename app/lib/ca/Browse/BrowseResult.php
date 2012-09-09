@@ -44,17 +44,14 @@ class WLPlugSearchEngineBrowseEngine extends WLPlug implements IWLPlugSearchEngi
 	
 	private $opa_hits;
 	private $opn_current_row;
-	private $opo_subject_instance;
-	
-	
-	private $ops_subject_name;
+	protected $opo_subject_instance;
 	
 	# -------------------------------------------------------
-	public function __construct($pa_hits, $pa_query_terms) {
+	public function __construct($pa_hits, $pn_table_num) {
 		parent::__construct($pa_hits, $pa_query_terms);
 		
 		$this->opo_datamodel = Datamodel::load();
-		$this->ops_subject_name = $pa_query_terms;
+		$this->opn_subject_tablenum = $pn_table_num;
 		
 		$this->setHits($pa_hits);
 	}
@@ -63,10 +60,14 @@ class WLPlugSearchEngineBrowseEngine extends WLPlug implements IWLPlugSearchEngi
 		$this->opa_hits = $pa_hits;
 		$this->opn_current_row = -1;
 		if (sizeof($this->opa_hits)) {
-			$this->opo_subject_instance = $this->opo_datamodel->getInstanceByTableNum($this->ops_subject_name, true);
+			$this->opo_subject_instance = $this->opo_datamodel->getInstanceByTableNum($this->opn_subject_tablenum, true);
 			$this->ops_subject_primary_key = $this->opo_subject_instance->primaryKey();
 			$this->ops_subject_table_name = $this->opo_subject_instance->tableName();
 		}
+	}
+	# -------------------------------------------------------
+	public function getHits() {
+		return $this->opa_hits;
 	}
 	# -------------------------------------------------------
 	public function seek($pn_index) {
@@ -107,13 +108,6 @@ class WLPlugSearchEngineBrowseEngine extends WLPlug implements IWLPlugSearchEngi
 		}
 		// false=can't get value; signals to SearchResult::get() that it should try to load the field if it can
 		return false;
-	}
-	# -------------------------------------------------------
-	/**
-	 * Returns an array of terms used in the query (does *not* include access points, boolean, punctuation, etc.)
-	 */
-	public function getQueryTerms() {
-		return array();
 	}
 	# -------------------------------------------------------
 }

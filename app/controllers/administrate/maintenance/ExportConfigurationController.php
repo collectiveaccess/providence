@@ -46,7 +46,7 @@ class ExportConfigurationController extends ActionController {
 	}
 	# ------------------------------------------------
 	public function Export(){
-		$vs_xml = ConfigurationExporter::exportConfigurationAsXML($this->request->config->get('app_name'), _t('Profile created on %1 by %2', caGetLocalizedDate(), $this->request->user->get('fname').' '.$this->request->user->get('lname')), 'base.xml', '');
+		$vs_xml = ConfigurationExporter::exportConfigurationAsXML($this->request->config->get('app_name'), _t('Profile created on %1 by %2', caGetLocalizedDate(), $this->request->user->get('fname').' '.$this->request->user->get('lname')), 'base', '');
 		
 		$this->view->setVar('profile', $vs_xml);
 		$this->view->setVar('profile_file_name', $this->request->config->get('app_name').'_config.xml');

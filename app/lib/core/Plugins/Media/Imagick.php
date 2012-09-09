@@ -82,6 +82,7 @@ class WLPlugMediaImagick Extends WLPlug Implements IWLPlugMedia {
 			"image/x-sony-sr2"	=> "sr2",
 			"image/x-sony-srf"	=> "srf",
 			"image/x-sigma-x3f"	=> "x3f",
+			"image/x-dcraw"	=> "raw",
 		),
 		"EXPORT" => array(
 			"image/jpeg" 		=> "jpg",
@@ -105,6 +106,7 @@ class WLPlugMediaImagick Extends WLPlug Implements IWLPlugMedia {
 			"image/x-sony-sr2"	=> "sr2",
 			"image/x-sony-srf"	=> "srf",
 			"image/x-sigma-x3f"	=> "x3f",
+			"image/x-dcraw"	=> "raw",
 		),
 		"TRANSFORMATIONS" => array(
 			"SCALE" 			=> array("width", "height", "mode", "antialiasing"),
@@ -166,6 +168,7 @@ class WLPlugMediaImagick Extends WLPlug Implements IWLPlugMedia {
 		"image/x-sony-sr2"	=> "Sony SR2 RAW Image",
 		"image/x-sony-srf"	=> "Sony SRF RAW Image",
 		"image/x-sigma-x3f"	=> "Sigma X3F RAW Image",
+		"image/x-dcraw"	=> "RAW Image",
 	);
 	
 	var $magick_names = array(
@@ -190,6 +193,7 @@ class WLPlugMediaImagick Extends WLPlug Implements IWLPlugMedia {
 		"image/x-sony-sr2"	=> "SR2",
 		"image/x-sony-srf"	=> "SRF",
 		"image/x-sigma-x3f"	=> "X3F",
+		"image/x-dcraw"	=> "RAW",
 	);
 	
 	#
@@ -208,6 +212,8 @@ class WLPlugMediaImagick Extends WLPlug Implements IWLPlugMedia {
 		"image/dng"		=> "image/x-adobe-dng"
 	);
 	
+	private $ops_CoreImage_path;
+	private $ops_dcraw_path;
 	
 	# ------------------------------------------------
 	public function __construct() {
@@ -222,8 +228,14 @@ class WLPlugMediaImagick Extends WLPlug Implements IWLPlugMedia {
 		$this->opo_external_app_config = Configuration::load($vs_external_app_config_path);
 		$this->ops_CoreImage_path = $this->opo_external_app_config->get('coreimagetool_app');
 		
+		$this->ops_dcraw_path = $this->opo_external_app_config->get('dcraw_app');
+		
 		if (caMediaPluginCoreImageInstalled($this->ops_CoreImage_path)) {
 			return null;	// don't use if CoreImage executable are available
+		}
+		
+		if (caMediaPluginGmagickInstalled()) {
+			return null;	// don't use if Gmagick extension is available
 		}
 		
 		if (!caMediaPluginImagickInstalled()) {
@@ -244,15 +256,33 @@ class WLPlugMediaImagick Extends WLPlug Implements IWLPlugMedia {
 				$va_status['unused'] = true;
 				$va_status['warnings'][] = _t("Didn't load because CoreImageTool is available and preferred");
 			} 
+			if (caMediaPluginGmagickInstalled()) {
+				$va_status['unused'] = true;
+				$va_status['warnings'][] = _t("Didn't load because Gmagick is available and preferred");
+			} 
 			if (!caMediaPluginImagickInstalled()) {	
 				$va_status['errors'][] = _t("Didn't load because Imagick is not available");
 			} 
+		}
+		
+		if (!caMediaPluginDcrawInstalled($this->ops_dcraw_path)) {
+			$va_status['warnings'][] = _t("RAW image support is not enabled because DCRAW cannot be found");
 		}
 		
 		return $va_status;
 	}
 	# ------------------------------------------------
 	public function divineFileFormat($ps_filepath) {
+		# is it a camera raw image?
+		if (caMediaPluginDcrawInstalled($this->ops_dcraw_path)) {
+			exec($this->ops_dcraw_path." -i ".caEscapeShellArg($ps_filepath)." 2> /dev/null", $va_output, $vn_return);
+			if ($vn_return == 0) {
+				if ((!preg_match("/^Cannot decode/", $va_output[0])) && (!preg_match("/Master/i", $va_output[0]))) {
+					return 'image/x-dcraw';
+				}
+			}
+		}
+		
 		$r_handle = new Imagick();
 		try {
 			if ($ps_filepath != '' && ($r_handle->pingImage($ps_filepath))) {
@@ -432,6 +462,32 @@ class WLPlugMediaImagick Extends WLPlug Implements IWLPlugMedia {
 				$this->handle = "";
 				$this->filepath = "";
 				$handle = new Imagick();
+				
+				if ($mimetype == 'image/x-dcraw') {
+					if($this->filepath_conv) { @unlink($this->filepath_conv); }
+					if (!caMediaPluginDcrawInstalled($this->ops_dcraw_path)) {
+						$this->postError(1610, _t("Could not convert Camera RAW format file because conversion tool (dcraw) is not installed"), "WLPlugImagick->read()");
+						return false;
+					}
+					
+					$vs_tmp_name = tempnam(caGetTempDirPath(), "rawtmp");
+					if (!copy($ps_filepath, $vs_tmp_name)) {
+						$this->postError(1610, _t("Could not copy Camera RAW file to temporary directory"), "WLPlugImagick->read()");
+						return false;
+					}
+					exec($this->ops_dcraw_path." -T ".caEscapeShellArg($vs_tmp_name), $va_output, $vn_return);
+					if ($vn_return != 0) {
+						$this->postError(1610, _t("Camera RAW file conversion failed: %1", $vn_return), "WLPlugImagick->read()");
+						return false;
+					}
+					if (!(file_exists($vs_tmp_name.'.tiff') && (filesize($vs_tmp_name.'.tiff') > 0))) {
+						$this->postError(1610, _t("Translation from Camera RAW to TIFF failed"), "WLPlugImagick->read()");
+						return false;
+					}
+					$ps_filepath = $this->filepath_conv = $vs_tmp_name.'.tiff';
+
+					@unlink($vs_tmp_name);
+				}
 				
 				if ($handle->readImage($ps_filepath)) {
 					$this->handle = $handle;
@@ -654,20 +710,14 @@ class WLPlugMediaImagick Extends WLPlug Implements IWLPlugMedia {
 					}
 					
 					$w = new Imagick();
-					$qr = $w->getQuantumRange();
-					$vn_opacity = floatval($qr['quantumRangeLong']) - (floatval($qr['quantumRangeLong']) * $vn_opacity_setting );
-					if ($vn_opacity <= 0) {
-						$vn_opacity = 0.5;
-					} else {
-						if ($vn_opacity > 1) {
-							$vn_opacity = 0.5;
-						}
-					}
 					if (!$w->readImage($parameters['image'])) {
 						$this->postError(1610, _t("Couldn't load watermark image at %1", $parameters['image']), "WLPlugImagick->transform:WATERMARK()");
 						return false;
 					}
 					//$w->evaluateImage(imagick::COMPOSITE_MINUS, $vn_opacity, imagick::CHANNEL_OPACITY) ; [seems broken with latest imagick circa March 2010?]
+					if(method_exists($w, "setImageOpacity")){ // added in ImageMagick 6.3.1
+						$w->setImageOpacity($vn_opacity_setting);
+					}
 					$d->composite(imagick::COMPOSITE_DISSOLVE,$vn_watermark_x,$vn_watermark_y,$vn_watermark_width,$vn_watermark_height, $w);
 					$this->handle->drawImage($d);
 					break;
@@ -794,14 +844,9 @@ class WLPlugMediaImagick Extends WLPlug Implements IWLPlugMedia {
 			case "ROTATE":
 				$angle = $parameters["angle"];
 				if (($angle > -360) && ($angle < 360)) {
-					$pixel = NewPixelWand("#FFFFFF");
-					if ( !$this->handle->rotateImage($pixel, $angle ) ) {
+					if ( !$this->handle->rotateImage("#FFFFFF", $angle ) ) {
 						$this->postError(1610, _t("Error during image rotate"), "WLPlugImagick->transform()");
-						
-						DestroyPixelWand($pixel);
 						return false;
-					} else {
-						DestroyPixelWand($pixel);
 					}
 				}
 				break;
@@ -918,9 +963,16 @@ class WLPlugMediaImagick Extends WLPlug Implements IWLPlugMedia {
 				$this->handle->levelImage($this->properties['reference-black'], $this->properties['gamma'], $this->properties['reference-white']);
 			}
 			
+			$this->handle->stripImage();	// remove all lingering metadata
+			
 			# write the file
-			if ( !$this->handle->writeImage($ps_filepath.".".$ext ) ) {
-				$this->postError(1610, _t("Error writing file"), "WLPlugImagick->write()");
+			try {
+				if ( !$this->handle->writeImage($ps_filepath.".".$ext ) ) {
+					$this->postError(1610, _t("Error writing file"), "WLPlugImagick->write()");
+					return false;
+				}
+			} catch (Exception $e) {
+				$this->postError(1610, _t("Error writing file: %1", $e->getMessage()), "WLPlugImagick->write()");
 				return false;
 			}
 			
@@ -1073,6 +1125,10 @@ class WLPlugMediaImagick Extends WLPlug Implements IWLPlugMedia {
 	public function destruct() {
 		if(is_object($this->handle)) { $this->handle->destroy(); }
 		if(is_object($this->ohandle)) { $this->ohandle->destroy(); }
+		
+		if ($this->filepath_conv) {
+			@unlink($this->filepath_conv);
+		}
 	}
 	# ------------------------------------------------
 	public function htmlTag($ps_url, $pa_properties, $pa_options=null, $pa_volume_info=null) {

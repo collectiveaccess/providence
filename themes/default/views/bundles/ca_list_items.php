@@ -40,7 +40,7 @@
 	
 	$va_initial_values	= $this->getVar('initialValues');
 	
-	$vn_browse_last_id = (int)$this->request->session->getVar('ca_list_items_browse_last_id');
+	$vn_browse_last_id = (int)$this->request->session->getVar('ca_list_items_'.$vs_id_prefix.'_browse_last_id');
 
 	// params to pass during occurrence lookup
 	$va_lookup_params = (isset($va_settings['restrict_to_type']) && $va_settings['restrict_to_type']) ? array('type' => $va_settings['restrict_to_type'], 'noSubtypes' => (int)$va_settings['dont_include_subtypes_in_type_restriction']) : array();
@@ -124,6 +124,8 @@
 						uiStyle: 'horizontal',
 						levelDataUrl: '<?php print caNavUrl($this->request, 'lookup', 'ListItem', 'GetHierarchyLevel', array('noSymbols' => 1, 'voc' => 1, 'lists' => join(';', $va_settings['restrict_to_lists']))); ?>',
 						initDataUrl: '<?php print caNavUrl($this->request, 'lookup', 'ListItem', 'GetHierarchyAncestorList'); ?>',
+						
+						bundle: '<?php print $vs_id_prefix; ?>',
 						
 						selectOnLoad : true,
 						browserWidth: "<?php print $va_settings['hierarchicalBrowserWidth']; ?>",
