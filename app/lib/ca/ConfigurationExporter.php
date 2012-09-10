@@ -871,7 +871,7 @@ final class ConfigurationExporter {
 	# -------------------------------------------------------
 	private function makeIDNO($ps_idno){
 		if(strlen($ps_idno)>0){
-			return preg_replace('/[^\pL\p{Zs}]+/u', '', $ps_idno);
+			return preg_replace('/[^\pL\p{Zs}]+/u', '_', $ps_idno);
 		} else {
 			return "default";
 		}
