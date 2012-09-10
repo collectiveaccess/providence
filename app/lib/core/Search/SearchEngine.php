@@ -1127,7 +1127,8 @@ class SearchEngine extends SearchBase {
 			$vs_delete_sql = ' AND (deleted = 0)';
 		}
 
-		$qr_res = $this->opo_db->query("
+		$o_db = new Db();
+		$qr_res = $o_db->query("
 			SELECT n.{$vs_pk}, l.{$vs_label_display_field}, l.locale_id, n.type_id
 			FROM {$vs_label_table_name} l
 			INNER JOIN ".$ps_tablename." AS n ON n.{$vs_pk} = l.{$vs_pk}
