@@ -314,7 +314,7 @@ class ca_object_lots extends BundlableLabelableBaseModelWithAttributes {
 				SELECT count(*) c
 				FROM ca_objects
 				WHERE
-					lot_id = ?
+					lot_id = ? AND deleted = 0
 			", (int)$vn_lot_id);
 			
 		$qr_res->nextRow();
