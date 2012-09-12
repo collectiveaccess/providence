@@ -372,7 +372,7 @@
 							</xs:complexType>
 						</xs:element>
 					</xs:sequence>
-					<xs:attribute name="code" type="codeType" use="optional"/>
+					<xs:attribute name="code" type="codeType" use="required"/>
 				</xs:complexType>
 			</xs:element>
 		</xs:sequence>
