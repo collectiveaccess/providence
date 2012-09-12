@@ -736,6 +736,7 @@
 			} else {
 				$va_criteria = $this->getCriteria();
 				//print "cache miss for [$vs_cache_key]<br>";
+				$vb_need_to_save_in_cache = true;
 			}
 			if (!$vb_results_cached) {
 				$this->opo_ca_browse_cache->setParameter('sort', null); 
@@ -830,8 +831,28 @@
 											$va_wheres[] = "(".$t_item_rel->tableName().".type_id NOT IN (".join(',', $va_exclude_relationship_types)."))";
 										}
 										
-										if (!(bool)$vn_state) {
-											$va_wheres[] = "(".$t_rel_item->tableName().".".$t_rel_item->primaryKey()." IS NULL)";
+										if (!(bool)$vn_state) {	// no option
+											if ($t_rel_item->hasField('deleted')) {
+												$va_wheres[] = "((".$t_rel_item->tableName().".deleted = 0) OR (".$t_rel_item->tableName().".deleted IS NULL))";
+											}							
+											if (isset($pa_options['checkAccess']) && is_array($pa_options['checkAccess']) && sizeof($pa_options['checkAccess']) && $t_rel_item->hasField('access')) {
+												$va_wheres[] = "((".$t_rel_item->tableName().".".$t_rel_item->primaryKey()." IS NOT NULL) AND (".$t_rel_item->tableName().".access NOT IN (".join(',', $pa_options['checkAccess']).")) OR ((".$t_rel_item->tableName().".".$t_rel_item->primaryKey()." IS NULL) AND (".$t_rel_item->tableName().".access IS NULL)))";
+											}
+										} else {							// yes option
+											$va_wheres[] = "(".$t_rel_item->tableName().".".$t_rel_item->primaryKey()." IS NOT NULL)";
+											if ($t_rel_item->hasField('deleted')) {
+												$va_wheres[] = "(".$t_rel_item->tableName().".deleted = 0)";
+											}							
+											if (isset($pa_options['checkAccess']) && is_array($pa_options['checkAccess']) && sizeof($pa_options['checkAccess']) && $t_rel_item->hasField('access')) {
+												$va_wheres[] = "(".$t_rel_item->tableName().".access IN (".join(',', $pa_options['checkAccess'])."))";
+											}
+										}
+										if ($t_item->hasField('deleted')) {
+											$va_wheres[] = "(".$t_item->tableName().".deleted = 0)";
+										}
+													
+										if (isset($pa_options['checkAccess']) && is_array($pa_options['checkAccess']) && sizeof($pa_options['checkAccess']) && $t_item->hasField('access')) {
+											$va_wheres[] = "(".$t_item->tableName().".access IN (".join(',', $pa_options['checkAccess'])."))";
 										}
 										
 										
@@ -1340,8 +1361,7 @@
 									}
 									$va_options = $pa_options;
 									unset($va_options['sort']);					// browse engine takes care of sort so there is no reason to waste time having the search engine do so
-									$va_options['dontFilterByACL'] = true;		// browse engine does ACL checking so don't waste time doing it in the search
-
+									
 									$qr_res = $o_search->search($va_row_ids[0], $va_options);
 
 									if ($qr_res->numHits() > 0) {
@@ -1427,7 +1447,11 @@
 					$this->_dropTempTable('ca_browses_acc');
 					$this->_dropTempTable('ca_browses_tmp');
 					
-					$this->opo_ca_browse_cache->setResults(($this->opo_config->get('perform_item_level_access_checking')) ? array_keys($this->filterHitsByACL(array_flip($va_results), $vn_user_id, __CA_ACL_READONLY_ACCESS__)): $va_results);
+					if ((!isset($pa_options['dontFilterByACL']) || !$pa_options['dontFilterByACL']) && $this->opo_config->get('perform_item_level_access_checking') && method_exists($t_item, "supportsACL") && $t_item->supportsACL()) {
+						$va_results = array_keys($this->filterHitsByACL(array_flip($va_results), $vn_user_id, __CA_ACL_READONLY_ACCESS__));
+					}
+					
+					$this->opo_ca_browse_cache->setResults($va_results);
 					$vb_need_to_save_in_cache = true;
 				}
 			} else {
@@ -1479,18 +1503,24 @@
 					");
 					$va_results = $qr_res->getAllFieldValues($vs_pk);
 					
-					$this->opo_ca_browse_cache->setResults(($this->opo_config->get('perform_item_level_access_checking')) ? array_keys($this->filterHitsByACL(array_flip($va_results), $vn_user_id, __CA_ACL_READONLY_ACCESS__)): $va_results);
-					$vb_need_to_save_in_cache = true;
+					if ((!isset($pa_options['dontFilterByACL']) || !$pa_options['dontFilterByACL']) && $this->opo_config->get('perform_item_level_access_checking') && method_exists($t_item, "supportsACL") && $t_item->supportsACL()) {
+						$va_results = array_keys($this->filterHitsByACL(array_flip($va_results), $vn_user_id, __CA_ACL_READONLY_ACCESS__));
+					}
+					$this->opo_ca_browse_cache->setResults($va_results);
 				} else {
 					$this->opo_ca_browse_cache->setResults(array());
-					$vb_need_to_save_in_cache = true;
 				}
+				$vb_need_to_save_in_cache = true;
 			}
 		
 			if ($vb_need_to_cache_facets) {
 				if (!$pa_options['dontCheckFacetAvailability']) {
 					$this->loadFacetContent($pa_options);
 				}
+			}
+	
+			if ($vb_need_to_save_in_cache) {
+				$this->opo_ca_browse_cache->save();
 			}
 	
 			return true;
@@ -1710,24 +1740,31 @@
 							$va_wheres[] = "(".$t_item_rel->tableName().".type_id NOT IN (".join(',', $va_exclude_relationship_types)."))";
 						}
 						
-						if (!(bool)$va_state_info['id']) {
+						if (!(bool)$va_state_info['id']) {	// no option
 							$va_wheres[] = "(".$t_rel_item->tableName().".".$t_rel_item->primaryKey()." IS NULL)";
-						} else {
+							if ($t_rel_item->hasField('deleted')) {
+								$va_wheres[] = "((".$t_rel_item->tableName().".deleted = 0) OR (".$t_rel_item->tableName().".deleted IS NULL))";
+							}							
+							if (isset($pa_options['checkAccess']) && is_array($pa_options['checkAccess']) && sizeof($pa_options['checkAccess']) && $t_rel_item->hasField('access')) {
+								$va_wheres[] = "((".$t_rel_item->tableName().".access NOT IN (".join(',', $pa_options['checkAccess']).")) OR (".$t_rel_item->tableName().".access IS NULL))";
+							}
+						} else {							// yes option
 							$va_wheres[] = "(".$t_rel_item->tableName().".".$t_rel_item->primaryKey()." IS NOT NULL)";
-						}
-						if ($t_item->hasField('deleted')) {
-							$va_wheres[] = "(".$t_item->tableName().".deleted = 0)";
+							if ($t_rel_item->hasField('deleted')) {
+								$va_wheres[] = "(".$t_rel_item->tableName().".deleted = 0)";
+							}							
+							if (isset($pa_options['checkAccess']) && is_array($pa_options['checkAccess']) && sizeof($pa_options['checkAccess']) && $t_rel_item->hasField('access')) {
+								$va_wheres[] = "(".$t_rel_item->tableName().".access IN (".join(',', $pa_options['checkAccess'])."))";
+							}
 						}
 						
-						if ($t_rel_item->hasField('deleted')) {
-							$va_wheres[] = "(".$t_rel_item->tableName().".deleted = 0 OR ".$t_rel_item->tableName().".deleted IS NULL)";
+											
+						if ($t_item->hasField('deleted')) {
+							$va_wheres[] = "(".$t_item->tableName().".deleted = 0)";
 						}
 									
 						if (isset($pa_options['checkAccess']) && is_array($pa_options['checkAccess']) && sizeof($pa_options['checkAccess']) && $t_item->hasField('access')) {
 							$va_wheres[] = "(".$vs_browse_table_name.".access IN (".join(',', $pa_options['checkAccess'])."))";
-						}
-						if (isset($pa_options['checkAccess']) && is_array($pa_options['checkAccess']) && sizeof($pa_options['checkAccess']) && $t_rel_item->hasField('access')) {
-							$va_wheres[] = "(".$t_rel_item->tableName().".access IN (".join(',', $pa_options['checkAccess'])."))";
 						}
 						
 						if (sizeof($va_results)) {
@@ -3403,46 +3440,84 @@ if (!$va_facet_info['show_all_when_first_facet'] || ($this->numCriteria() > 0)) 
 				$vs_group_sql = '
 						OR
 						(ca_acl.group_id IN (?))';
-				$va_params = array((int)$this->opn_browse_table_num, (int)$pn_access, (int)$pn_user_id, $va_group_ids);
+				$va_params = array((int)$this->opn_browse_table_num, (int)$pn_user_id, $va_group_ids, (int)$pn_access);
 			} else {
 				$va_group_ids = null;
 				$vs_group_sql = '';
-				$va_params = array((int)$this->opn_browse_table_num, (int)$pn_access, (int)$pn_user_id);
+				$va_params = array((int)$this->opn_browse_table_num, (int)$pn_user_id, (int)$pn_access);
 			}
 			
-			$qr_sort = $this->opo_db->query($vs_sql = "
-				SELECT ca_acl.row_id
-				FROM ca_acl
-				INNER JOIN {$vs_browse_tmp_table} ON {$vs_browse_tmp_table}.row_id = ca_acl.row_id
-				WHERE
-					ca_acl.table_num = ? AND
-					(ca_acl.access < ?) AND
-					
-					(
-						(ca_acl.user_id = ?)
-						{$vs_group_sql}
-						OR 
-						(ca_acl.user_id IS NULL AND ca_acl.group_id IS NULL)
-					)
-			", $va_params);
 			$va_hits = array();
 			
-			while($qr_sort->nextRow()) {
-				$va_row = $qr_sort->getRow();
-				unset($pa_hits[$va_row['row_id']]);
+			if ($pn_access <= $this->opo_config->get('default_item_access_level')) {
+				// Requested access is more restrictive than default access (so return items with default ACL)
+				
+					// Find records that have ACL that matches
+					$qr_sort = $this->opo_db->query("
+						SELECT ca_acl.row_id
+						FROM ca_acl
+						INNER JOIN {$vs_browse_tmp_table} ON {$vs_browse_tmp_table}.row_id = ca_acl.row_id
+						WHERE
+							(ca_acl.table_num = ?)
+							AND
+							(
+								(ca_acl.user_id = ?)
+								{$vs_group_sql}
+								OR 
+								(ca_acl.user_id IS NULL AND ca_acl.group_id IS NULL)
+							)
+							AND
+							(ca_acl.access >= ?)
+					", $va_params);
+					
+					while($qr_sort->nextRow()) {
+						$va_row = $qr_sort->getRow();
+						$va_hits[$va_row['row_id']] = true;
+					}
+					
+					// Find records with default ACL
+					$qr_sort = $this->opo_db->query("
+						SELECT {$vs_browse_tmp_table}.row_id
+						FROM {$vs_browse_tmp_table}
+						LEFT OUTER JOIN ca_acl ON {$vs_browse_tmp_table}.row_id = ca_acl.row_id AND ca_acl.table_num = ?
+						WHERE
+							ca_acl.row_id IS NULL;
+					", array((int)$this->opn_browse_table_num));
+					
+					while($qr_sort->nextRow()) {
+						$va_row = $qr_sort->getRow();
+						$va_hits[$va_row['row_id']] = true;
+					}
+			} else {
+				// Default access is more restrictive than requested access (so *don't* return items with default ACL)
+				
+					// Find records that have ACL that matches
+					$qr_sort = $this->opo_db->query("
+						SELECT ca_acl.row_id
+						FROM ca_acl
+						INNER JOIN {$vs_browse_tmp_table} ON {$vs_browse_tmp_table}.row_id = ca_acl.row_id
+						WHERE
+							(ca_acl.table_num = ?)
+							AND
+							(
+								(ca_acl.user_id = ?)
+								{$vs_group_sql}
+								OR 
+								(ca_acl.user_id IS NULL AND ca_acl.group_id IS NULL)
+							)
+							AND
+							(ca_acl.access >= ?)
+					", $va_params);
+					
+					while($qr_sort->nextRow()) {
+						$va_row = $qr_sort->getRow();
+						$va_hits[$va_row['row_id']] = true;
+					}
 			}
-			
-			// For row_ids that have no ACL entry
-			//if ($this->opo_config->get('default_item_access_level') >= $pn_access) {
-				// Add row_ids that have no ACL entry because default access meets or exceeds requested access
-			//	foreach($pa_hits as $vn_id => $vb_dummy) {
-			//		$va_hits[$vn_id] = true;
-			//	}
-			//}	
-			
+						
 			//$this->cleanupTemporaryResultTable();
 			
-			return $pa_hits;
+			return $va_hits;
 		}
 		# ------------------------------------------------------------------
 		/**

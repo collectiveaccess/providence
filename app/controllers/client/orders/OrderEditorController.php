@@ -760,5 +760,32 @@
  			$this->render('ajax_user_profile_info_json.php');
  		}
  		# -------------------------------------------------------
+ 		/**
+ 		 *
+ 		 */
+ 		public function GetChecklist() {
+ 			if (!$this->opt_order->getPrimaryKey()) { $this->Edit(); return; }
+ 			require_once(__CA_LIB_DIR__."/core/Print/html2pdf/html2pdf.class.php");
+			
+			$this->view->setVar('items', $this->opt_order->getItems());
+				
+			try {
+				$vs_content = $this->render('order_pdf_checklist_html.php');
+			//	print $vs_content; die("en");
+				$vo_html2pdf = new HTML2PDF('L','letter','en');
+				$vo_html2pdf->setDefaultFont("dejavusans");
+				$vo_html2pdf->WriteHTML($vs_content);
+				
+	header("Content-Disposition: attachment; filename=order_checklist.pdf");
+	header("Content-type: application/pdf");
+	
+				$vo_html2pdf->Output('order_checklist.pdf');
+				$vb_printed_properly = true;
+			} catch (Exception $e) {
+				$vb_printed_properly = false;
+				$this->postError(3100, _t("Could not generate PDF"),"OrderEditorController->GetCheckList()");
+			}
+		}
+ 		# -------------------------------------------------------
  	}
  ?>
