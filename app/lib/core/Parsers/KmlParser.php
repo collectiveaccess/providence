@@ -104,8 +104,8 @@ class KmlParser {
 					'name' 			=> $vs_name,
 					'type'			=> 'POINT',
 					'description' 	=> $vs_description,
-					'latitude' 		=> $va_tmp[1],
-					'longitude' 	=> $va_tmp[0]
+					'latitude' 		=> $va_tmp[0],
+					'longitude' 	=> $va_tmp[1]
 				);
 			} else {
 				if (isset($va_placemark->LineString) && isset($va_placemark->LineString->coordinates)) {
@@ -122,8 +122,8 @@ class KmlParser {
 					foreach($va_coord_lines as $vs_coord_line) {
 						$va_tmp = explode(',',$vs_coord_line);
 						$va_coord_list[] = array(
-							'latitude' 		=> $va_tmp[1],
-							'longitude' 	=> $va_tmp[0]
+							'latitude' 		=> $va_tmp[0],
+							'longitude' 	=> $va_tmp[1]
 						);
 					}
 					
