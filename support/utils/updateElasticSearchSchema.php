@@ -108,7 +108,7 @@
 					case 2:	// daterange
 						$va_element_opts['properties']['type'] = 'date';
 						$va_element_opts['properties']["format"] = 'dateOptionalTime';
-						$va_element_opts['properties']["ignore_malformed"] = true;
+						$va_element_opts['properties']["ignore_malformed"] = false;
 						$va_table_fields[$vs_element_code.'_text'] = array_merge($va_opts, array('properties' => array('type' => 'string')));
 						break;
 					case 4:	// geocode
@@ -244,6 +244,46 @@
 					print $vo_http_response->getBody();
 				}
 			}
+		}
+		
+		/* created and modified fields */
+		$va_mapping = array();
+		$va_mapping[$vs_table]["properties"]["created"] = array(
+			'type' => 'date',
+			'format' => 'dateOptionalTime',
+			'ignore_malformed' => false,
+		);
+		$va_mapping[$vs_table]["properties"]["modified"] = array(
+			'type' => 'date',
+			'format' => 'dateOptionalTime',
+			'ignore_malformed' => false,
+		);
+		$va_mapping[$vs_table]["properties"]["created_user_id"] = array(
+			'type' => 'double',
+		);
+		$va_mapping[$vs_table]["properties"]["modified_user_id"] = array(
+			'type' => 'double',
+		);
+		
+		$vo_http_client = new Zend_Http_Client();
+		$vo_http_client->setUri(
+			$vo_search_conf->get('search_elasticsearch_base_url')."/".
+			$vo_search_conf->get('search_elasticsearch_index_name')."/".
+			$vs_table."/". /* ElasticSearch type name (i.e. table name) */
+			"_mapping"
+		);
+		
+		$vo_http_client->setRawData(json_encode($va_mapping))->setEncType('text/json')->request('POST');
+				
+		try {
+			$vo_http_response = $vo_http_client->request();
+			$va_response = json_decode($vo_http_response->getBody(),true);
+			if(!$va_response["ok"]){
+				print "SOMETHING WENT WRONT AT $vs_table.created/modified WITH MSG: ".$va_response["error"]."\n";
+				print "MAPPING SENT TO ELASTICSEARCH WAS: ".json_encode($va_mapping)."\n";
+			}
+		} catch (Exception $e){
+			print $vo_http_response->getBody();
 		}
 	}
 

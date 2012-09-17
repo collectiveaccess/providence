@@ -68,7 +68,7 @@ class WLPlugSearchEngineElasticSearch extends BaseSearchPlugin implements IWLPlu
 		$this->opa_options = array(
 			'start' => 0,
 			'limit' => 10000,					// maximum number of hits to return [default=10000],
-			'maxContentBufferSize' => 50				// maximum number of indexed content items to accumulate before writing to the database
+			'maxContentBufferSize' => 100				// maximum number of indexed content items to accumulate before writing to the index
 		);
 
 		$this->opa_capabilities = array(
@@ -580,10 +580,10 @@ class WLPlugSearchEngineElasticSearch extends BaseSearchPlugin implements IWLPlu
 				$va_post_json[$va_key[1]] = $va_key[2];
 				
 				if ($qr_res->get('changetype') == 'I') {
-					$va_post_json["created"] = date("c", $qr_res->get('log_datetime')).'Z';
+					$va_post_json["created"] = date("c", $qr_res->get('log_datetime'));
 					$va_post_json["created_user_id"] = $qr_res->get('user_id');
 				} else {
-					$va_post_json["modified"] = date("c", $qr_res->get('log_datetime')).'Z';
+					$va_post_json["modified"] = date("c", $qr_res->get('log_datetime'));
 					$va_post_json["modified_user_id"] = $qr_res->get('user_id');
 				}
 			}
