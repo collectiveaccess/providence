@@ -62,6 +62,10 @@ class WLPlugSearchEngineCachedResult extends WLPlug implements IWLPlugSearchEngi
 		
 	}
 	# -------------------------------------------------------
+	public function getHits() {
+		return $this->opa_hits;
+	}
+	# -------------------------------------------------------
 	public function seek($pn_index) {
 		if (($pn_index >= 0) && ($pn_index < sizeof($this->opa_hits))) {
 			$this->opn_current_row = $pn_index - 1;

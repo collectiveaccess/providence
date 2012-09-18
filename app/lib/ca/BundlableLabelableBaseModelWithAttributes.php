@@ -1373,6 +1373,13 @@ class BundlableLabelableBaseModelWithAttributes extends LabelableBaseModelWithAt
 						$vs_element .= $this->getMediaDisplayHTMLFormBundle($pa_options['request'], $pa_options['formName'], $ps_placement_code, $pa_bundle_settings, $pa_options);
 						break;
 					# -------------------------------
+					// This bundle is only available for objects
+					case 'ca_commerce_order_history':
+						if (!$pa_options['request']->user->canDoAction('can_manage_clients')) { break; }
+						$vs_label_text = ($pa_bundle_settings['order_type'][0] == 'O') ? _t('Order history') : _t('Loan history');
+						$vs_element .= $this->getCommerceOrderHistoryHTMLFormBundle($pa_options['request'], $pa_options['formName'].'_'.$ps_bundle_name, $ps_placement_code, $pa_bundle_settings, $pa_options);
+						break;
+					# -------------------------------
 					default:
 						$vs_element = "'{$ps_bundle_name}' is not a valid bundle name";
 						break;
@@ -3028,6 +3035,9 @@ class BundlableLabelableBaseModelWithAttributes extends LabelableBaseModelWithAt
  	 *		exclude_types = omits any items related to the current row that are of any of the specified types from the returned set of ids. You can pass either an array of types or a single type. The types can be type_code's or type_id's.
  	 *		excludeTypes = synonym for exclude_types
  	 *
+ 	 *		restrict_to_lists = when fetching related ca_list_items restricts returned items to those that are in the specified lists; pass an array of list list_codes or list_ids
+ 	 *		restrictToLists = synonym for restrict_to_lists
+ 	 *
  	 *		fields = array of fields (in table.fieldname format) to include in returned data
  	 *		return_non_preferred_labels = if set to true, non-preferred labels are included in returned data
  	 *		returnNonPreferredLabels = synonym for return_non_preferred_labels
@@ -3059,7 +3069,8 @@ class BundlableLabelableBaseModelWithAttributes extends LabelableBaseModelWithAt
 	 	if(isset($pa_options['dontIncludeSubtypesInTypeRestriction']) && (!isset($pa_options['dont_include_subtypes_in_type_restriction']) || !$pa_options['dont_include_subtypes_in_type_restriction'])) { $pa_options['dont_include_subtypes_in_type_restriction'] = $pa_options['dontIncludeSubtypesInTypeRestriction']; }
 	 	if(isset($pa_options['returnNonPreferredLabels']) && (!isset($pa_options['return_non_preferred_labels']) || !$pa_options['return_non_preferred_labels'])) { $pa_options['return_non_preferred_labels'] = $pa_options['returnNonPreferredLabels']; }
 	 	if(isset($pa_options['returnLabelsAsArray']) && (!isset($pa_options['return_labels_as_array']) || !$pa_options['return_labels_as_array'])) { $pa_options['return_labels_as_array'] = $pa_options['returnLabelsAsArray']; }
-	 
+		if(isset($pa_options['restrictToLists']) && (!isset($pa_options['restrict_to_lists']) || !$pa_options['restrict_to_lists'])) { $pa_options['restrict_to_lists'] = $pa_options['restrictToLists']; }
+	 	
 		$o_db = $this->getDb();
 		$o_tep = new TimeExpressionParser();
 		$vb_uses_effective_dates = false;
@@ -3413,6 +3424,17 @@ class BundlableLabelableBaseModelWithAttributes extends LabelableBaseModelWithAt
 			$va_wheres[] = "(".$this->tableName().'.'.$this->primaryKey()." IN (".join(",", $va_row_ids)."))";
 			$vs_cur_table = array_shift($va_path);
 			$va_joins = array();
+			
+			// Enforce restrict_to_lists for related list items
+			if (($vs_related_table_name == 'ca_list_items') && is_array($pa_options['restrict_to_lists'])) {
+				$va_list_ids = array();
+				foreach($pa_options['restrict_to_lists'] as $vm_list) {
+					if ($vn_list_id = ca_lists::getListID($vm_list)) { $va_list_ids[] = $vn_list_id; }
+				}
+				if (sizeof($va_list_ids)) {
+					$va_wheres[] = "(ca_list_items.list_id IN (".join(",", $va_list_ids)."))";
+				}
+			}
 			
 			foreach($va_path as $vs_join_table) {
 				$va_rel_info = $this->getAppDatamodel()->getRelationships($vs_cur_table, $vs_join_table);
@@ -3885,7 +3907,6 @@ $pa_options["display_form_field_tips"] = true;
 			
 			if ($t_acl->numErrors()) {
 				$this->errors = $t_acl->errors;
-				print_R($t_acl->getErrors());
 				return false;
 			}
 		}
@@ -4265,6 +4286,7 @@ $pa_options["display_form_field_tips"] = true;
 	 * @return int An access value 
 	 */
 	public function checkACLAccessForUser($t_user, $pn_id=null) {
+		if (!$this->supportsACL()) { return __CA_ACL_EDIT_DELETE_ACCESS__; }
 		if (!$pn_id) { 
 			$pn_id = (int)$this->getPrimaryKey(); 
 			if (!$pn_id) { return null; }
@@ -4273,6 +4295,16 @@ $pa_options["display_form_field_tips"] = true;
 		require_once(__CA_MODELS_DIR__.'/ca_acl.php');
 		
 		return ca_acl::accessForRow($t_user, $this->tableNum(), $pn_id);
+	}
+	# --------------------------------------------------------------------------------------------		
+	/**
+	 * Checks if model supports ACL item-based access control
+	 *
+	 * @return bool True if model supports ACL, false if not
+	 */
+	public function supportsACL() {
+		if ($this->getAppConfig()->get($this->tableName().'_dont_do_item_level_access_control')) { return false; }
+		return (bool)$this->getProperty('SUPPORTS_ACL');
 	}
 	# ------------------------------------------------------
 }

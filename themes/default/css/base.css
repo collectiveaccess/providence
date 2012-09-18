@@ -248,6 +248,11 @@ div.inspectorLotObjectTypeControls {
 	margin-top: 0px;
 }
 
+a.inspectorOnLoan {
+	color: #cc0000;
+	font-style: italic;
+}
+
 #leftNav h4 div {  text-transform: none; font-weight: normal; padding-top: 5px; }
 #leftNav h3 div {  text-transform: none; font-weight: normal; padding-top: 5px; }
 
@@ -1903,70 +1908,61 @@ div.caMediaOverlayControls .caRepTools {
 	text-align:center;
 	color:#FFF;
 }
-#caRepToolsPanel {
+#caRepRotationToolPanel {
 	background: #000;
 	display:none; 
-	width:540px; 
-	height: 160px; 
+	width:300px; 
+	height: 100px; 
 	opacity: 0.75;
 	position: absolute;
 	bottom: 16px;
 	right: 0px;
 }
 
-#caRepToolsPanel .caRepToolsClose{
-	float:right;
+#caRepRotationToolPanel .caRepToolsClose{
+	position: absolute;
 	width:15px;
 	height:16px;
+	top: 5px;
+	right: 5px;
 	background-image:url("../graphics/buttons/x_white.png");
-	margin: 10px 10px 0px 20px;
-}
-#caRepRotation90CCW, #caRepRotation180, #caRepRotation90CW {
-	color: #000000;
 }
 
 #caRepToolsRotateAngleControl {
-	float: left;
-	width: 100px;
-	
-	text-align: left;
-	font-size: 14px;
-	margin: 1px solid #cc0000;
+	margin-top: 4px;
+	width: 290px;
+	text-align: center;
+	font-size: 10px;
 }
 
-#caRepToolsRotateControlButtons {
-	float: left;
-	width: 100px;
-	height: 75px; 
+img.caRepToolsRotateControlButton {
+	border: 1px solid #000000;
+	background: #FFFFFF;
 }
 
-#caRepToolsRotateControlButtons a {
-	color: #000000;
+img.caRepToolsRotateControlButtonSelected {
+	border: 1px solid #CC0000;
+	background: #FFFFFF;
 }
 
-#caRepToolsRotateControlButtons a:hover {
-	color: #cc0000;
+img.caRepToolsRotateControlButton:hover {
+	border: 1px solid #999999;
+	background: #FFFFFF;
 }
 
 #caRepToolsRotateProgress {
 	position: absolute;
-	top: 30px;
-	right: 10px;
-	width: 260px;
-	height: 80px;
+	top: 72px;
+	left: 40px;
+	width: 220px;
+	height: 19px;
 	opacity: 0.9;
 	
 	display: none;
-	padding: 20px;
+	padding: 0px;
 	
-	font-size:18px;
+	font-size:14px;
 	font-weight: bold;
-	text-align: center;
-}
-
-#caRepToolsRotateProgressMessage {
-	font-weight: bold;
-	font-size: 14px;
 	text-align: center;
 }
 
@@ -4267,18 +4263,21 @@ a.caClientCommunicationsNewOrderButton:hover {
 	clear:right;
 	color: #333;
 	text-align: left;
-	background-color:#e6e6e6;
-	padding:5px 10px 10px 10px;
+	background-color:#fff;
+	padding:5px 10px 5px 10px;
+	border: 3px solid #ccc;
 	border-radius: 8px;
 	-moz-border-radius: 8px; 
 	-webkit-border-radius: 8px;
+	margin-bottom:15px;
 }
 #caClientOrderOverview .orderStatus .statusDesc {
 	background-color:#ffffff;
-	padding:10px;
+	padding:2px 0px 0px 5px;
 	line-height:1.3em;
 	font-size:12px;
 	margin: 0px 0px 15px 0px;
+	float:left;
 }
 #caClientOrderOverview .overrideButton {
 	float:right;
@@ -4287,7 +4286,7 @@ a.caClientCommunicationsNewOrderButton:hover {
 #caClientOrderOverview .orderStatus .statusWarning{
 	font-weight:bold;
 	background:	#FFFFFF url('../graphics/icons/warning.gif') no-repeat 10px 5px;
-	padding: 15px 0px 15px 50px;
+	padding: 15px 0px 8px 50px;
 	margin: 10px 0px 0px 0px;
 }
 a.caClientOrderOverviewButton {
@@ -4305,8 +4304,13 @@ a.caClientOrderOverviewButton {
 a.caClientOrderOverviewButton:hover {
 	background-color: #545454;
 }
+#commerceOrderStatusMessage {
+	width:500px;
+	float:left;
+	font-size:1.5em;
+}
 #caClientOrderOverview .overviewItem {
-	padding:0px 0px 10px 10px;
+	padding:0px 0px 10px 0px;
 	font-size:12px;
 }
 
@@ -4347,13 +4351,47 @@ a.caClientOrderOverviewButton:hover {
 	width:100%;
 }   
 
-
+#loanSummaryTable {
+	border-top:1px solid #ccc;
+}
 #caClientLibraryCustomerInfoForm {
 	display: none;
 }
 
 .caClientLibraryLoadingIndicator {
 	background: white url('../graphics/icons/indicator.gif') right center no-repeat !important;
+}
+
+.caClientOrderHistoryTable {
+	width: 100%;	
+	border-top:1px solid #ccc;
+}
+.caClientOrderHistoryRow {
+	border-top:1px solid #ccc;
+	padding: 5px;
+}
+.caClientOrderHistoryRowOut {
+	border-top:1px solid #00cc00;
+	background: rgba(180, 180, 180, 0.4);
+	padding: 5px;
+}
+
+.caClientOrderHistoryRowOverdue {
+	border-top:1px solid #cc0000;
+	background: rgba(255, 0, 0, 0.4);
+	padding: 5px;
+}
+
+.caClientOrderHistoryHeader {
+	font-weight: bold;
+	font-size: 11px;
+	text-transform: uppercase; 
+	background-color: #f1f1f1;
+}
+.caClientOrderHistoryText {
+	font-weight: normal;
+	font-size: 11px;
+	padding: 5px;
 }
 
 /* -------------------------------------------------*/
@@ -4454,7 +4492,7 @@ div.searchlight-results div.searchlight-selected {
 	padding: 0px 5px 0px 5px;
 }
 #caClientOrderOverview td {
-	border-bottom: 1px solid #666;
+	border-bottom: 1px solid #ccc;
 	padding: 5px 10px 5px 10px;
 }
 #caClientOrderOverview table {
@@ -4472,4 +4510,33 @@ div.searchlight-results div.searchlight-selected {
 }
 .overdue {
 	color: red;
+}
+
+/ * OpenLayers */  
+.olControlButton1ItemActive {
+    position: absolute;
+    background-image: url(../graphics/buttons/map_delete.png);
+    top: 0;
+    right: 0;
+    width: 24px;
+    height: 22px;
+}  
+.olControlButton1ItemActive:hover {
+    position: absolute;
+    background-image: url(../graphics/buttons/map_delete_selected.png);
+    top: 0;
+    right: 0;
+    width: 24px;
+    height: 22px;
+}  
+
+
+.olControlPanel {
+	border: 0px solid black;
+	bottom: 5px;
+	right: 5px;
+	width: 24px;
+	height: 22px;
+	position: absolute;
+	cursor: pointer;
 }

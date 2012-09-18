@@ -263,7 +263,7 @@ create table ca_users
 (
    user_id                        int unsigned                   not null AUTO_INCREMENT,
    user_name                      varchar(255)                   not null,
-   userclass                      tinyint unsigned                not null,
+   userclass                      tinyint unsigned               not null,
    password                       varchar(100)                   not null,
    fname                          varchar(255)                   not null,
    lname                          varchar(255)                   not null,
@@ -273,6 +273,7 @@ create table ca_users
    active                         tinyint unsigned               not null,
    confirmed_on                   int unsigned,
    confirmation_key               char(32),
+   registered_on                  int unsigned,
    entity_id                      int unsigned,
    primary key (user_id),
    constraint fk_ca_entities_entity_id foreign key (entity_id)
@@ -6367,6 +6368,7 @@ create table ca_commerce_orders
   created_on int unsigned not null,
   
   order_status varchar(40) not null,	
+  order_number varchar(255) not null,	
   order_type char(1) not null default 'O',	
    
   shipping_fname varchar(255) not null,
@@ -6571,5 +6573,5 @@ create table ca_schema_updates (
 ) engine=innodb CHARACTER SET utf8 COLLATE utf8_general_ci;
 
 /* Indicate up to what migration this schema definition covers */
-/* CURRENT MIGRATION: 66 */
-INSERT IGNORE INTO ca_schema_updates (version_num, datetime) VALUES (66, unix_timestamp());
+/* CURRENT MIGRATION: 68 */
+INSERT IGNORE INTO ca_schema_updates (version_num, datetime) VALUES (68, unix_timestamp());

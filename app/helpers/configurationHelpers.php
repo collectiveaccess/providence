@@ -60,8 +60,7 @@ require_once(__CA_MODELS_DIR__.'/ca_bundle_mappings.php');
 		$va_list_ids = array();
 		$va_list_item_ids = array();
 		
-		$t_locale = new ca_locales();
-		$va_locale_ids = $t_locale->getLocaleList(array('sort_field' => '', 'sort_order' => 'asc', 'index_by_code' => true));
+		$va_locale_ids = ca_locales::getLocaleList(array('sort_field' => '', 'sort_order' => 'asc', 'index_by_code' => true));
 		//$va_lists = $o_profile->getLists();
 		foreach($pa_lists_config as $vs_list_code => $va_info) {
 			$t_list->set('list_code', $vs_list_code);
@@ -143,8 +142,7 @@ require_once(__CA_MODELS_DIR__.'/ca_bundle_mappings.php');
 		if (!is_array($pa_elements_config)) { return null; }
 		$o_dm = Datamodel::load();
 		
-		$t_locale = new ca_locales();
-		$va_locale_ids = $t_locale->getLocaleList(array('sort_field' => '', 'sort_order' => 'asc', 'index_by_code' => true));
+		$va_locale_ids = ca_locales::getLocaleList(array('sort_field' => '', 'sort_order' => 'asc', 'index_by_code' => true));
 		
 		$t_list = new ca_lists();
 		$t_list_item = new ca_list_items();
@@ -192,8 +190,7 @@ require_once(__CA_MODELS_DIR__.'/ca_bundle_mappings.php');
 		
 		$o_dm = Datamodel::load();
 		
-		$t_locale = new ca_locales();
-		$va_locale_ids = $t_locale->getLocaleList(array('sort_field' => '', 'sort_order' => 'asc', 'index_by_code' => true));
+		$va_locale_ids = ca_locales::getLocaleList(array('sort_field' => '', 'sort_order' => 'asc', 'index_by_code' => true));
 		
 		foreach($pa_ui_config as $vs_ui_code => $va_ui_info) {
 			if (!($vn_type = $o_dm->getTableNum($va_ui_info['type']))) { 
@@ -293,8 +290,7 @@ require_once(__CA_MODELS_DIR__.'/ca_bundle_mappings.php');
                         $va_list_item_ids[$list_type_code][$list_items_result->get('item_value')] = $list_items_result->get('item_id');
                 }
 		
-		$t_locale = new ca_locales();
-		$va_locale_ids = $t_locale->getLocaleList(array('sort_field' => '', 'sort_order' => 'asc', 'index_by_code' => true));
+		$va_locale_ids = ca_locales::getLocaleList(array('sort_field' => '', 'sort_order' => 'asc', 'index_by_code' => true));
 		
 		$t_rel_type = new ca_relationship_types();
 		$t_rel_type->setMode(ACCESS_WRITE);

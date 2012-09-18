@@ -63,6 +63,10 @@ class WLPlugSearchEngineSolrResult extends WLPlug implements IWLPlugSearchEngine
 		}
 	}
 	# -------------------------------------------------------
+	public function getHits() {
+		return $this->opa_hits;
+	}
+	# -------------------------------------------------------
 	public function numHits(){
 		return is_array($this->opa_hits) ? sizeof($this->opa_hits) : 0;
 	}
@@ -108,3 +112,4 @@ class WLPlugSearchEngineSolrResult extends WLPlug implements IWLPlugSearchEngine
 	}
 	# -------------------------------------------------------
 }
+?>

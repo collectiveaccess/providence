@@ -1,6 +1,6 @@
 .ac_results {
 	padding: 0px;
-	border: 1px solid #4b4b4b;
+	border: 1px solid black;
 	background-color: white;
 	overflow: hidden;
 	z-index: 99999;
@@ -16,7 +16,7 @@
 
 .ac_results li {
 	margin: 0px;
-	padding: 10px 10px;
+	padding: 2px 5px;
 	cursor: default;
 	display: block;
 	/* 
@@ -43,6 +43,6 @@
 }
 
 .ac_over {
-	background-color: #134959;
+	background-color: #0A246A;
 	color: white;
 }

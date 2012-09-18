@@ -181,6 +181,16 @@
 									} else {
 										$vn_user_id = $t_user->getPrimaryKey();
 									}
+								} else {
+									$t_user->setMode(ACCESS_WRITE);
+									$t_user->set('active', 1);
+									$t_user->set('userclass', 1);				// 1=public user (no back-end login)
+									$t_user->update();
+									if ($t_user->numErrors()) {
+										$this->notification->addNotification(_t('Errors occurred when reactivating user: %1', join('; ', $t_user->getErrors())), __NOTIFICATION_TYPE_ERROR__);
+									} else {
+										$vn_user_id = $t_user->getPrimaryKey();
+									}
 								}
 							} else {
 								$t_user->setMode(ACCESS_WRITE);

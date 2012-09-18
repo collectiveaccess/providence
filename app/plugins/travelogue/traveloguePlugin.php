@@ -77,6 +77,9 @@
 				$vs_password = $this->opo_config->get('password');
 				$vs_ssl = $this->opo_config->get('ssl');
 				
+				if (!$vs_server) { return; }
+				if (!$vs_username) { return; }
+				
 				$o_mail = new Zend_Mail_Storage_Imap(array(
 					'host'     => $vs_server,
 					'user'     => $vs_username,
@@ -88,8 +91,6 @@
 				
 				$va_mail_to_delete = array();
 				foreach ($o_mail as $vn_message_num => $o_message) {
-					//$va_headers = $o_message->getHeaders();
-					
 					$va_mail_to_delete[$vn_message_num] = true;
 					
 					// Extract title from subject line of email

@@ -37,6 +37,7 @@
  		# -------------------------------------------------------
  		public function Index() {
  			JavascriptLoadManager::register('tableList');
+ 			JavascriptLoadManager::register('bundleableEditor');
 			
 			$o_result_context = new ResultContext($this->request, 'ca_commerce_orders', 'basic_search_library');
  			$this->_initView($o_result_context);
@@ -69,12 +70,14 @@
  			$t_order->setFieldAttribute('order_status', 'IS_NULL', true);
  			
  			// filtering options
- 			foreach(array('order_status' => 'string', 'created_on' => 'string', 'loan_checkout_date' => 'string', 'loan_due_date' => 'string', 'loan_returned_date' => 'string', 'search' => 'string', 'transaction_id' => 'int') as $vs_f => $vs_type) {
+ 			foreach(array('order_status' => 'string', 'created_on' => 'string', 'loan_checkout_date' => 'string', 'loan_due_date' => 'string', 'loan_return_date' => 'string', 'search' => 'string', 'transaction_id' => 'int', 'user_id' => 'int') as $vs_f => $vs_type) {
 				if (array_key_exists($vs_f, $_REQUEST)) {
 					$vm_v = $this->request->getParameter($vs_f, pString);
 					$o_result_context->setParameter('caClientOrderList_'.$vs_f, $vm_v);
 				} else {
-					$vm_v = $o_result_context->getParameter('caClientOrderList_'.$vs_f);
+					if (!($vm_v = $this->request->getParameter($vs_f, pString))) { 
+						$vm_v = $o_result_context->getParameter('caClientOrderList_'.$vs_f);
+					}
 				}
 				
 				// transaction_id may appear in GET requests since the communication editor links to this page with transaction_id as a param
@@ -90,6 +93,7 @@
 				if ($vs_f != 'search') { $t_order->set($vs_f, $vm_v); }
 				$va_options[$vs_f] = $vm_v;
 			}
+			
  			$this->view->setVar('t_order', $t_order);
  			$this->view->setVar('t_order_item', $t_order_item);
  			$this->view->setVar('filter_options', $va_options);
@@ -119,6 +123,34 @@
  			$this->view->setVar('order_list', $va_order_list = $t_order->getOrders(array('type' => 'L')));
  			return $this->render('widget_loans_info_html.php', true);
  		}
+ 		
+ 		# -------------------------------------------------------
+ 		/**
+ 		 *
+ 		 */
+ 		public function Export() {
+ 			require_once(__CA_LIB_DIR__."/core/Print/html2pdf/html2pdf.class.php");
+			
+			$o_result_context = new ResultContext($this->request, 'ca_commerce_orders', 'basic_search_library');
+ 			$this->_initView($o_result_context);
+ 			
+			try {
+				$vs_content = $this->render('loan_pdf_checklist_html.php');
+				//print $vs_content; die("en");
+				$vo_html2pdf = new HTML2PDF('L','letter','en');
+				$vo_html2pdf->setDefaultFont("dejavusans");
+				$vo_html2pdf->WriteHTML($vs_content);
+				
+	header("Content-Disposition: attachment; filename=loan_checklist.pdf");
+	header("Content-type: application/pdf");
+	
+				$vo_html2pdf->Output('loan_export.pdf');
+				$vb_printed_properly = true;
+			} catch (Exception $e) {
+				$vb_printed_properly = false;
+				$this->postError(3100, _t("Could not generate PDF"),"ListController->Export()");
+			}
+		}
  		# -------------------------------------------------------
  	}
  ?>

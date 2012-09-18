@@ -83,6 +83,28 @@
 	}
 	# ------------------------------------------------------------------------------------------------
 	/**
+	 * Detects if GraphicsMagick is available in specified directory path
+	 * 
+	 * @param $ps_graphicsmagick_path - path to directory containing GraphicsMagick executables
+	 * @return boolean - true if available, false if not
+	 */
+	function caMediaPluginGraphicsMagickInstalled($ps_graphicsmagick_path) {
+		global $_MEDIAHELPER_PLUGIN_CACHE_GRAPHICSMAGICK;
+		if (isset($_MEDIAHELPER_PLUGIN_CACHE_GRAPHICSMAGICK[$ps_graphicsmagick_path])) {
+			return $_MEDIAHELPER_PLUGIN_CACHE_GRAPHICSMAGICK[$ps_graphicsmagick_path];
+		} else {
+			$_MEDIAHELPER_PLUGIN_CACHE_GRAPHICSMAGICK = array();
+		}
+		if (!$ps_graphicsmagick_path || (preg_match("/[^\/A-Za-z0-9\.:]+/", $ps_graphicsmagick_path)) || !file_exists($ps_graphicsmagick_path)) { return false; }
+		
+		exec($ps_graphicsmagick_path.' 2> /dev/null', $va_output, $vn_return);
+		if (($vn_return >= 0) && ($vn_return < 127)) {
+			return $_MEDIAHELPER_PLUGIN_CACHE_GRAPHICSMAGICK[$ps_graphicsmagick_path] = true;
+		}
+		return $_MEDIAHELPER_PLUGIN_CACHE_GRAPHICSMAGICK[$ps_graphicsmagick_path] = false;
+	}
+	# ------------------------------------------------------------------------------------------------
+	/**
 	 * Detects if dcraw executable is available at specified path
 	 * 
 	 * @param $ps_path_to_dcraw - full path to dcraw including executable name
@@ -201,6 +223,15 @@
 		$o_config = Configuration::load();
 		if ($o_config->get('dont_use_imagick')) { return false; }
 		return class_exists('Imagick') ? true : false;
+	}
+	# ------------------------------------------------------------------------------------------------
+	/**
+	 * Detects if Gmagick PHP extension is available
+	 * 
+	 * @return boolean - true if available, false if not
+	 */
+	function caMediaPluginGmagickInstalled() {
+		return class_exists('Gmagick') ? true : false;
 	}
 	# ------------------------------------------------------------------------------------------------
 	/**

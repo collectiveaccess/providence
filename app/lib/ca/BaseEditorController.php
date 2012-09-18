@@ -765,7 +765,7 @@
 			$t_subject->setACLUserGroups($va_groups_to_set);
 			
 			// Save "world" ACL
-			$t_subject->setACLWorldAccess($x=$this->request->getParameter("{$vs_form_prefix}_access_world", pInteger));
+			$t_subject->setACLWorldAccess($this->request->getParameter("{$vs_form_prefix}_access_world", pInteger));
 			
  			$this->Access();
  		}

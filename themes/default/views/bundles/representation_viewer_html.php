@@ -334,9 +334,11 @@
 		if ($vb_use_media_editor) {
 			$va_display_info = caGetMediaDisplayInfo($vs_display_type, $t_rep->getMediaInfo('media', 'INPUT', 'MIMETYPE'));
 			
-			if (isset($va_display_info['editing_tools']) && ($vs_tool_view = $va_display_info['editing_tools'])) {
-				$this->addViewPath($this->request->getThemeDirectoryPath()."/views/editor/objects");
-				print $this->render("representation_media_editor/{$vs_tool_view}_html.php");
+			if (isset($va_display_info['editing_tools']) && (is_array($va_tool_views = $va_display_info['editing_tools']))) {
+				foreach($va_tool_views as $vs_tool_view) {
+					$this->addViewPath($this->request->getThemeDirectoryPath()."/views/editor/objects");
+					print $this->render("representation_media_editor/{$vs_tool_view}_html.php");
+				}
 			}
 ?>
 

@@ -168,8 +168,14 @@
  			//
  			// Actually execute the browse - do the queries
  			//
- 			if ($vs_group_name = $this->request->config->get('browse_facet_group_for_'.$this->ops_tablename)) {
-				$this->opo_browse->setFacetGroup($vs_group_name);
+ 			//if ($vs_group_name = $this->request->config->get('browse_facet_group_for_'.$this->ops_tablename)) {
+			//	$this->opo_browse->setFacetGroup($vs_group_name);
+			//}
+			//
+			// Restrict facets to specific group (if set in app.conf config)
+			// 			
+			if ($vs_facet_group = $this->request->config->get($this->ops_tablename.(($this->opo_browse->numCriteria() < 1) ? '_browse_facet_group' : '_browse_refine_facet_group'))) {
+				$this->opo_browse->setFacetGroup($vs_facet_group);
 			}
  			$this->opo_browse->execute(array('checkAccess' => $va_access_values, 'no_cache' => !$this->opo_result_context->cacheIsValid()));
  			$this->opo_result_context->validateCache();

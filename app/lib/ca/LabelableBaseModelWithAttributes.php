@@ -1014,8 +1014,7 @@
  			global $g_ui_locale_id;
  			
  			if (!$this->getPreferredLabelCount()) {
-				$t_locale = new ca_locales();
-				$va_locale_list = $t_locale->getLocaleList();
+				$va_locale_list = ca_locales::getLocaleList();
 				
 				if ($pn_locale_id && isset($va_locale_list[$pn_locale_id])) {
 					$vn_locale_id = $pn_locale_id;
@@ -1501,7 +1500,7 @@
 			foreach($pa_group_ids as $vn_group_id => $vn_access) {
 				if ($vn_user_id) {	// verify that group we're linking to is owned by the current user
 					$t_group = new ca_user_groups($vn_group_id);
-					if (($t_group->get('user_id') != $vn_user_id) && $t_group->get('user_id')) { continue; }
+					//if (($t_group->get('user_id') != $vn_user_id) && $t_group->get('user_id')) { continue; }
 				}
 				$t_rel->clear();
 				$t_rel->load(array('group_id' => $vn_group_id, $vs_pk => $vn_id));		// try to load existing record

@@ -41,6 +41,7 @@
  	require_once(__CA_MODELS_DIR__."/ca_sets.php");
 	require_once(__CA_LIB_DIR__."/core/Parsers/ZipFile.php");
 	require_once(__CA_LIB_DIR__."/core/AccessRestrictions.php");
+ 	require_once(__CA_LIB_DIR__.'/core/Print/PrintForms.php');
  	
 	class BaseFindController extends ActionController {
 		# ------------------------------------------------------------------
@@ -203,8 +204,12 @@
 					'code' => '_pdf'
 				),
 				array(
+					'name' => _t('PDF (Long)'),
+					'code' => '_pdflong'
+				),				
+				array(
 					'name' => _t('PDF (Thumbnails)'),
-					'code' => '_pdfthumb'
+					'code' => '_pdfthumb' 
 				)
 			);
 			
@@ -221,7 +226,7 @@
  			// Available sets
  			//
  			$t_set = new ca_sets();
- 			$this->view->setVar('available_sets', caExtractValuesByUserLocale($t_set->getSets(array('table' => $this->ops_tablename, 'user_id' => $this->request->getUserID(), 'access' => __CA_SET_EDIT_ACCESS__))));
+ 			$this->view->setVar('available_sets', caExtractValuesByUserLocale($t_set->getSets(array('table' => $this->ops_tablename, 'user_id' => $this->request->getUserID(), 'access' => __CA_SET_EDIT_ACCESS__, 'omitCounts' => true))));
 
 			if(strlen($this->ops_tablename)>0){
 				if(!$this->request->user->canDoAction("can_edit_{$this->ops_tablename}")){
@@ -230,7 +235,7 @@
 					$this->view->setVar("default_action","Edit");
 				}
 			}
-
+			
 			$this->view->setVar('access_restrictions',AccessRestrictions::load());
  		}
 		# -------------------------------------------------------
@@ -247,7 +252,6 @@
  		 * Returns list of available label print formats
  		 */
  		public function getPrintForms() {
- 			require_once(__CA_LIB_DIR__.'/core/Print/PrintForms.php');
 			return PrintForms::getAvailableForms($this->request->config->get($this->ops_tablename.'_print_forms'));
 		}
 		# -------------------------------------------------------
@@ -555,6 +559,26 @@
 					}
 					return;
 					break;	
+				case '_pdflong':
+					require_once(__CA_LIB_DIR__."/core/Print/html2pdf/html2pdf.class.php");
+					
+					try {
+						$vs_content = $this->render('Results/'.$this->ops_tablename.'_pdf_results_long_html.php');
+						$vo_html2pdf = new HTML2PDF('P','letter','en');
+						$vo_html2pdf->setDefaultFont("dejavusans");
+						$vo_html2pdf->WriteHTML($vs_content);
+						
+			header("Content-Disposition: attachment; filename=export_results.pdf");
+			header("Content-type: application/pdf");
+			
+						$vo_html2pdf->Output('long_results.pdf');
+						$vb_printed_properly = true;
+					} catch (Exception $e) {
+						$vb_printed_properly = false;
+						$this->postError(3100, _t("Could not generate PDF"),"BaseEditorController->PrintSummary()");
+					}
+					return;
+					break;					
 				case '_csv':
 					$vs_delimiter = ",";
 					$vs_output_file_name = mb_substr(preg_replace("/[^A-Za-z0-9\-]+/", '_', $ps_output_filename.'_csv'), 0, 30);

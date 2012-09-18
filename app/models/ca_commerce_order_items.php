@@ -385,13 +385,13 @@ class ca_commerce_order_items extends BaseModel {
 			$this->postError(1101, _t('Checkout date must be before due date'), 'ca_commerce_orders->_preSaveActions()');		
 		}
 		
-		if (		// checkout date should not be in the future
-			($t_order->get('order_type') == 'L')
-			&&
-			($vn_checkout_date > time())
-		) {
-			$this->postError(1101, _t('Checkout date must not be in the future'), 'ca_commerce_orders->_preSaveActions()');		
-		}
+		//if (		// checkout date should not be in the future
+		//	($t_order->get('order_type') == 'L')
+		//	&&
+		//	($vn_checkout_date > time())
+		//) {
+		//	$this->postError(1101, _t('Checkout date must not be in the future'), 'ca_commerce_orders->_preSaveActions()');		
+		//}
 		
 		if (		// return date should not be in the future
 			($t_order->get('order_type') == 'L')
@@ -416,14 +416,14 @@ class ca_commerce_order_items extends BaseModel {
 		
 		
 		if (($t_order->get('order_type') == 'L') && ($t_order->get('order_status') != 'COMPLETED')) {
-			if (!sizeof($t_order->unreturnedLoanItems())) {
-				$t_order->setMode(ACCESS_WRITE);
-				$t_order->set('order_status', 'COMPLETED');
-				$t_order->update();
-				if ($t_order->numErrors() > 0) {
-					$this->postError(1101, _t('Could not update status of order to COMPLETED: %1', join("; ", $t_order->getErrors())), 'ca_commerce_orders->_postSaveActions()');
-				}
-			}
+#			if (!sizeof($t_order->unreturnedLoanItems())) {
+#				$t_order->setMode(ACCESS_WRITE);
+#				$t_order->set('order_status', 'COMPLETED');
+#				$t_order->update();
+#				if ($t_order->numErrors() > 0) {
+#					$this->postError(1101, _t('Could not update status of order to COMPLETED: %1', join("; ", $t_order->getErrors())), 'ca_commerce_orders->_postSaveActions()');
+#				}
+#			}
 		}
 		
 		if ($this->numErrors() > 0) {

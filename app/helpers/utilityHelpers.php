@@ -667,7 +667,7 @@ function caFileIsIncludable($ps_file) {
 		}
 		
 		if(isset($pa_options['print']) && $pa_options['print']) {
-			print $vs_output;
+			print "<pre>{$vs_output}</pre>";
 		}
 		
 		return $vs_output;
@@ -1333,6 +1333,34 @@ function caFileIsIncludable($ps_file) {
 	function caLogEvent($ps_code, $ps_message, $ps_source=null) {
 		$t_log = new EventLog();
 		return $t_log->log(array('CODE' => $ps_code, 'MESSAGE' => $ps_message, 'SOURCE' => $ps_source));
+	}
+	# ---------------------------------------
+	/**
+	 * Truncates text to a maximum length, including an ellipsis ("...")
+	 *
+	 * @param string $ps_text Text to (possibly) truncate
+	 * @param int $pn_max_length Maximum number of characters to return; if omitted defaults to 30 charactes
+	 * @return string The truncated text
+	 */
+	function caTruncateStringWithEllipsis($ps_text, $pn_max_length=30) {
+		if ($pn_max_length < 1) { $pn_max_length = 30; }
+		if (mb_strlen($ps_text) > $pn_max_length) {
+			$ps_text = mb_substr($ps_text, 0, ($pn_max_length - 3))."...";
+		}
+		return $ps_text;
+	}
+	# ---------------------------------------
+	/**
+	 * Determines if current request was from from command line
+	 *
+	 * @return True if request wasrun from command line, false if not
+	 */
+	function caIsRunFromCLI() {
+		if(php_sapi_name() == 'cli' && empty($_SERVER['REMOTE_ADDR'])) {
+			return true;
+		} else {
+			return false;
+		}
 	}
 	# ---------------------------------------
 ?>
