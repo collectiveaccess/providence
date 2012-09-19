@@ -4511,3 +4511,107 @@ div.searchlight-results div.searchlight-selected {
 .overdue {
 	color: red;
 }
+
+/ * OpenLayers */  
+
+.olMap {
+	background-color: #999999;
+}
+
+.olControlDelete {
+    position: absolute;
+    background-image: url(../graphics/buttons/map_delete.png);
+    top: 0;
+    right: 0;
+    width: 24px;
+    height: 22px;
+}  
+.olControlDelete:hover {
+    position: absolute;
+    background-image: url(../graphics/buttons/map_delete_selected.png);
+    top: 0;
+    right: 0;
+    width: 24px;
+    height: 22px;
+}  
+
+.olControlDeleteItemActive {
+    position: absolute;
+    background-image: url(../graphics/buttons/map_delete.png);
+    top: 0;
+    right: 0;
+    width: 24px;
+    height: 22px;
+}  
+.olControlDeleteItemActive:hover {
+    position: absolute;
+    background-image: url(../graphics/buttons/map_delete_selected.png);
+    top: 0;
+    right: 0;
+    width: 24px;
+    height: 22px;
+}  
+
+.olControlDeletePanel {
+	border: 0px solid black;
+	bottom: 5px;
+	right: 5px;
+	width: 24px;
+	height: 22px;
+	position: absolute;
+	cursor: pointer;
+}
+
+.olMapKmlControl {
+	float: left;
+	position: relative; 
+	width: 150px;
+	height:30px;
+	margin: 5px 0 5px 0;
+	padding: 0px;
+}
+
+.olMapSearchBox {
+	float: right;
+	position: relative; 
+	background:	url(../graphics/backgrounds/searchbox.png) no-repeat bottom right;
+	width: 150px;
+	height:30px;
+	margin: 5px 0 5px 0;
+	padding: 0px;
+}
+
+.olMapSearchBoxIcon {
+	margin: 12px 8px 0 0;
+}
+	
+.olMapSearchBox input {
+	outline-style:none;
+	border: none;
+}
+
+.olMapSearchContainer {
+	float:			right;
+	margin:			0;
+	padding-right:	0;
+	list-style:		none;
+	line-height:	1.0;
+}
+
+.olMapSearchText {
+	font-size:12px;
+	font-family: Verdana, Arial, Helvetica, sans-serif;
+	padding:1px 3px 3px 3px;
+	font-weight:normal;
+	border: 0px;
+	width: 100px;
+	height:12px;
+	float:left;
+	margin:9px 0px 0px 23px;
+	outline-style:none;
+}
+
+.olMapKMLInput {
+	display: none;
+	margin-top: 18px !important;
+}
