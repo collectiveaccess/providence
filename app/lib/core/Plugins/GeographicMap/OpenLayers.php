@@ -57,74 +57,89 @@ class WLPlugGeographicMapOpenLayers Extends BaseGeographicMapPlugIn Implements I
 	 *
 	 * @param $ps_format - specifies format to generate output in. Currently only 'HTML' is supported.
 	 * @param $pa_options - array of options to use when rendering output. Supported options are:
-	 *		mapType - type of map to render; valid values are 'ROADMAP', 'SATELLITE', 'HYBRID', 'TERRAIN'; if not specified 'google_maps_default_type' setting in app.conf is used; if that is not set default is 'SATELLITE'
-	 *		showNavigationControls - if true, navigation controls are displayed; default is to use 'google_maps_show_navigation_controls' setting in app.conf
-	 *		showScaleControls -  if true, scale controls are displayed; default is to use 'google_maps_show_scale_controls' setting in app.conf
-	 *		showMapTypeControls -  if true, map type controls are displayed; default is to use 'google_maps_show_map_type_controls' setting in app.conf
-	 *		cycleRandomly - if true, map cycles randomly through markers; default is false
-	 *		cycleRandomlyInterval - Interval between movement between markers; specify in milliseconds or seconds followed by 's' (eg. 4s); default is 2s
-	 *		stopAfterRandomCycles - Stop cycling after a number of movements; set to zero to cycle forever; default is zero.
-	 *		delimiter - Delimiter to use to separate content for different items being plotted in the same location (and therefore being put in the same marker detail balloon); default is an HTML line break tag ("<br/>")
-	 *		minZoomLevel - Minimum zoom level to allow; leave null if you don't want to enforce a limit
-	 *		maxZoomLevel - Maximum zoom level to allow; leave null if you don't want to enforce a limit
-	 *		zoomLevel - Zoom map to specified level rather than fitting all markers into view; leave null if you don't want to specify a zoom level. IF this option is set minZoomLevel and maxZoomLevel will be ignored.
-	 *		pathColor - 
-	 *		pathWeight -
-	 *		pathOpacity - 
+	 *		width = Width of map + controls in pixels; default is 690
+	 *		height = Height of map + controls in pixels; default is 300
+	 *		baseLayer = Tiles to user for base layer. Should be full class name with optional constructor string (Eg. OpenLayers.Layer.Stamen('toner')); default is OpenLayers.Layer.OSM()
+	 *		pointRadius = Radius, in pixels, of plotted points. Default is 5 pixels
+	 *		fillColor = Color (in hex format with leading "#") to fill regions and points with
+	 *		strokeWidth = Width of plotted paths, in pixels. Default is 2
+	 *		strokeColor = Color of plotted paths, in hex format with leading "#"
+	 *		fillColorSelected = Color to fill regions with when selected, in hex format with leading "#"
+	 *		strokeColorSelected = Color of plotted paths when selected, in hex format with leading "#"
+	 *
+	 * 		delimiter = HTML to place between items displayed in info overlays for plotted items. Default is an HTML break ("<br/>")
+	 * @return string HTML output
 	 */
 	public function render($ps_format, $pa_options=null) {
+		$o_config = Configuration::load();
+		
 		list($vn_width, $vn_height) = $this->getDimensions();
 		$vn_width = intval($vn_width);
 		$vn_height = intval($vn_height);
-		if ($vn_width < 1) { $vn_width = 200; }
-		if ($vn_height < 1) { $vn_height = 200; }
+		if ($vn_width < 1) { $vn_width = 690; }
+		if ($vn_height < 1) { $vn_height = 300; }
+		
+		$va_options = caGetOptions($pa_options, array());
 		
 		$va_map_items = $this->getMapItems();
 		$va_extents = $this->getExtents();
 		
 		$vs_delimiter = isset($pa_options['delimiter']) ? $pa_options['delimiter'] : "<br/>";
-		$vn_zoom_level = (isset($pa_options['zoomLevel']) && ((int)$pa_options['zoomLevel'] > 0)) ? (int)$pa_options['zoomLevel'] : null;
-		$vn_min_zoom_level = (isset($pa_options['minZoomLevel']) && ((int)$pa_options['minZoomLevel'] > 0)) ? (int)$pa_options['minZoomLevel'] : null;
-		$vn_max_zoom_level = (isset($pa_options['maxZoomLevel']) && ((int)$pa_options['maxZoomLevel'] > 0)) ? (int)$pa_options['maxZoomLevel'] : null;
 		
-		$vs_path_color = (isset($pa_options['pathColor'])) ? $pa_options['pathColor'] : '#cc0000';
-		$vn_path_weight = (isset($pa_options['pathWeight']) && ((int)$pa_options['pathWeight'] > 0)) ? (int)$pa_options['pathWeight'] : 2;
-		$vn_path_opacity = (isset($pa_options['pathOpacity']) && ((int)$pa_options['pathOpacity'] >= 0)  && ((int)$pa_options['pathOpacity'] <= 1)) ? (int)$pa_options['pathOpacity'] : 0.5;
-		
-		
-		$vs_type = (isset($pa_options['mapType'])) ? strtoupper($pa_options['mapType']) : strtoupper($this->opo_config->get('google_maps_default_type'));
-		if (!in_array($vs_type, array('ROADMAP', 'SATELLITE', 'HYBRID', 'TERRAIN'))) {
-			$vs_type = 'SATELLITE';
+		if (!($vs_base_layer = $va_options['baseLayer'])) { 
+			if (!($vs_base_layer = $o_config->get('openlayers_base_layer'))) {
+				$vs_base_layer = 'OpenLayers.Layer.OSM()';
+			}
 		}
+		
+		if (($vn_point_radius = $va_options['pointRadius']) < 1) { 
+			if (!($vn_point_radius = $o_config->get('openlayers_point_radius'))) {
+				$vn_point_radius = 1; 
+			}
+		}
+		if (($vs_fill_color = $va_options['fillColor']) < 1) { 
+			if (!($vs_fill_color = $o_config->get('openlayers_fill_color'))) {
+				$vs_fill_color = '#ffcc66'; 
+			}
+		}
+		if (($vn_stroke_width = $va_options['strokeWidth']) < 1) { 
+			if (!($vn_stroke_width = $o_config->get('openlayers_stroke_width'))) {
+				$vn_stroke_width = 1; 
+			}
+		}
+		if (($vs_stroke_color = $va_options['strokeColor']) < 1) { 
+			if (!($vs_stroke_color = $o_config->get('openlayers_stroke_color'))) {
+				$vs_stroke_color = '#ffcc66'; 
+			}
+		}
+		
+		if (($vs_fill_color_selected = $va_options['fillColorSelected']) < 1) { 
+			if (!($vs_fill_color_selected = $o_config->get('openlayers_fill_color_selected'))) {
+				$vs_fill_color_selected = '#66ccff'; 
+			}
+		}
+		if (($vs_stroke_color_selected = $va_options['strokeColorSelected']) < 1) { 
+			if (!($vs_stroke_color_selected = $o_config->get('openlayers_stroke_color_selected'))) {
+				$vs_stroke_color_selected = '#3399ff'; 
+			}
+		}
+		
+		
+		
+		
 		if (!$vs_id = trim($this->get('id'))) { $vs_id = 'map'; }
 		
 		switch(strtoupper($ps_format)) {
 			# ---------------------------------
 			case 'HTML':
 			default:
-				if (isset($pa_options['showNavigationControls'])) {
-					$vb_show_navigation_control 	= $pa_options['showNavigationControls'] ? 'true' : 'false';
-				} else {
-					$vb_show_navigation_control 	= $this->opo_config->get('google_maps_show_navigation_controls') ? 'true' : 'false';
-				}
-				if (isset($pa_options['showScaleControls'])) {
-					$vb_show_scale_control 				= $pa_options['showScaleControls'] ? 'true' : 'false';
-				} else {
-					$vb_show_scale_control 			= $this->opo_config->get('google_maps_show_scale_controls') ? 'true' : 'false';
-				}
-				if (isset($pa_options['showMapTypeControls'])) {
-					$vb_show_map_type_control 		= $pa_options['showMapTypeControls'] ? 'true' : 'false';
-				} else {
-					$vb_show_map_type_control 		= $this->opo_config->get('google_maps_show_map_type_controls') ? 'true' : 'false';
-				}
 				
 				$vs_buf = "
 <script type='text/javascript'>;
 	jQuery(document).ready(function() {
 		var map_{$vs_id} = new OpenLayers.Map({
 		div: '{$vs_id}',
-		//layers: [new OpenLayers.Layer.OSM()],
-		layers: [new OpenLayers.Layer.Stamen('toner')],
+		layers: [new {$vs_base_layer}],
 		controls: [
 			new OpenLayers.Control.Navigation({
 				dragPanOptions: {
@@ -142,15 +157,15 @@ class WLPlugGeographicMapOpenLayers Extends BaseGeographicMapPlugIn Implements I
 		
 		var styles_{$vs_id} = new OpenLayers.StyleMap({
 			'default': new OpenLayers.Style({
-				pointRadius: '5',
-				fillColor: '#ffcc66',
-				strokeColor: '#ff9933',
-				strokeWidth: 2,
+				pointRadius: '{$vn_point_radius}',
+				fillColor: '{$vs_fill_color}',
+				strokeColor: '{$vs_stroke_color}',
+				strokeWidth: '{$vn_stroke_width}',
 				graphicZIndex: 1
 			}),
 			'select': new OpenLayers.Style({
-				fillColor: '#66ccff',
-				strokeColor: '#3399ff',
+				fillColor: '{$vs_fill_color_selected}',
+				strokeColor: '{$vs_stroke_color_selected}',
 				graphicZIndex: 2
 			})
 		});
@@ -202,7 +217,7 @@ class WLPlugGeographicMapOpenLayers Extends BaseGeographicMapPlugIn Implements I
 
 		$vs_buf .= "
 			var style = { 
-			  strokeColor: '#0000ff', 
+			  strokeColor: '{$vs_stroke_color}', 
 			  strokeOpacity: 0.5,
 			  strokeWidth: 5
 			};
@@ -292,7 +307,10 @@ class WLPlugGeographicMapOpenLayers Extends BaseGeographicMapPlugIn Implements I
 	}
 	# ------------------------------------------------
 	/**
-	 * Options:
+	 * Returns HTML for editable Geocode attribute, suitable for inclusion in a bundleable editing form 
+	 *
+	 * @param array $pa_element_info Array of information about the element the bundle is being generate for
+	 * @param array $pa_options Options are:
 	 *		width = Width of map + controls in pixels; default is 690
 	 *		height = Height of map + controls in pixels; default is 300
 	 *		baseLayer = Tiles to user for base layer. Should be full class name with optional constructor string (Eg. OpenLayers.Layer.Stamen('toner')); default is OpenLayers.Layer.OSM()
@@ -302,6 +320,8 @@ class WLPlugGeographicMapOpenLayers Extends BaseGeographicMapPlugIn Implements I
 	 *		strokeColor = Color of plotted paths, in hex format with leading "#"
 	 *		fillColorSelected = Color to fill regions with when selected, in hex format with leading "#"
 	 *		strokeColorSelected = Color of plotted paths when selected, in hex format with leading "#"
+	 *
+	 * @return string HTML output
 	 */
 	public function getAttributeBundleHTML($pa_element_info, $pa_options=null) {
 		JavascriptLoadManager::register('openlayers');
@@ -350,7 +370,6 @@ class WLPlugGeographicMapOpenLayers Extends BaseGeographicMapPlugIn Implements I
 			}
 		}
  		
-		$o_config = Configuration::load();
 		$po_request = isset($pa_options['request']) ? $pa_options['request'] : null;
 		
 		
