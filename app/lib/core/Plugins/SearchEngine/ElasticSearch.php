@@ -45,12 +45,15 @@ require_once(__CA_LIB_DIR__.'/core/Zend/Cache.php');
 require_once(__CA_MODELS_DIR__.'/ca_metadata_elements.php');
 require_once(__CA_LIB_DIR__.'/core/Plugins/SearchEngine/BaseSearchPlugin.php');
 require_once(__CA_LIB_DIR__.'/ca/Attributes/Values/GeocodeAttributeValue.php');
+require_once(__CA_LIB_DIR__.'/core/Parsers/TimeExpressionParser.php');
 
 class WLPlugSearchEngineElasticSearch extends BaseSearchPlugin implements IWLPlugSearchEngine {
 	# -------------------------------------------------------
 	private $opn_indexing_subject_tablenum;
 	private $ops_indexing_subject_tablename;
 	private $opn_indexing_subject_row_id;
+	
+	private $opo_tep;
 	
 	static $s_doc_content_buffer = array();			// content buffer used when indexing
 	static $s_element_code_cache = array();
@@ -484,7 +487,9 @@ class WLPlugSearchEngineElasticSearch extends BaseSearchPlugin implements IWLPlu
 					case 2:	// daterange
 						if (!is_array($pa_parsed_content = caGetISODates($pm_content))) { return null; }
 						$this->opa_doc_content_buffer[$ps_content_tablename.'.'.$va_element_info['element_code'].'_text'][] = $pm_content;
-						$pm_content = array($pa_parsed_content["start"],$pa_parsed_content["end"]);
+						$ps_rewritten_start = $this->_rewriteDate($pa_parsed_content["start"],true);
+						$ps_rewritten_end = $this->_rewriteDate($pa_parsed_content["end"],false);
+						$pm_content = array($ps_rewritten_start,$ps_rewritten_end);
 						break;
 					case 4:	// geocode
 						if ($va_coords = $this->opo_geocode_parser->parseValue($pm_content, $va_element_info)) {
@@ -517,6 +522,28 @@ class WLPlugSearchEngineElasticSearch extends BaseSearchPlugin implements IWLPlu
 			}
 		}
 		$this->opa_doc_content_buffer[$ps_content_tablename.'.'.$ps_content_fieldname][] = $pm_content;
+	}
+	# -------------------------------------------------------
+	/**
+	 * ElasticSearch won't accept dates where day or month is zero, so we have to 
+	 * rewrite certain dates, especially when dealing with "open-ended" date ranges,
+	 * e.g. "before 1998", "after 2012"
+	 */
+	private function _rewriteDate($ps_date,$vb_is_start=true){
+		if($vb_is_start){
+			$vs_return = str_replace("-00-", "-01-", $ps_date);
+			$vs_return = str_replace("-00T", "-01T", $vs_return);
+		} else {
+			$vs_return = str_replace("-00-", "-12-", $ps_date);
+			// the following may produce something like "February 31st" but that doesn't seem to bother ElasticSearch
+			$vs_return = str_replace("-00T", "-31T", $vs_return); 
+		}
+		
+		// substitute start and end of universe values with ElasticSearch's builtin boundaries
+		$vs_return = str_replace(TEP_START_OF_UNIVERSE,"-292275054",$vs_return);
+		$vs_return = str_replace(TEP_END_OF_UNIVERSE,"292278993",$vs_return);
+		
+		return $vs_return;
 	}
 	# -------------------------------------------------------
 	public function commitRowIndexing(){
@@ -605,10 +632,10 @@ class WLPlugSearchEngineElasticSearch extends BaseSearchPlugin implements IWLPlu
 				$va_response = json_decode($vo_http_response->getBody(),true);
 				
 				if(!isset($va_response["ok"]) || $va_response["ok"]!=1){
-					caLogEvent('ERR', _t('Indexing commit failed for %1; response was %2', $va_key[0], $vo_http_response->getBody()), 'ElasticSearch->flushContentBuffer()');
+					caLogEvent('ERR', _t('Indexing commit failed for %1; response was %2', $vs_key, $vo_http_response->getBody()), 'ElasticSearch->flushContentBuffer()');
 				}
 			} catch (Exception $e){
-				caLogEvent('ERR', _t('Indexing commit failed: %1; response was %2', $e->getMessage(), $vo_http_response->getBody()), 'ElasticSearch->flushContentBuffer()');
+				caLogEvent('ERR', _t('Indexing commit failed for %1: %2; response was %3', $vs_key, $e->getMessage(), $vo_http_response->getBody()), 'ElasticSearch->flushContentBuffer()');
 			}
 		}
 		
