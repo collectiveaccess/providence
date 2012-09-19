@@ -94,7 +94,7 @@ class WLPlugGeographicMapOpenLayers Extends BaseGeographicMapPlugIn Implements I
 		
 		if (($vn_point_radius = $va_options['pointRadius']) < 1) { 
 			if (!($vn_point_radius = $o_config->get('openlayers_point_radius'))) {
-				$vn_point_radius = 1; 
+				$vn_point_radius = 5; 
 			}
 		}
 		if (($vs_fill_color = $va_options['fillColor']) < 1) { 
@@ -104,12 +104,12 @@ class WLPlugGeographicMapOpenLayers Extends BaseGeographicMapPlugIn Implements I
 		}
 		if (($vn_stroke_width = $va_options['strokeWidth']) < 1) { 
 			if (!($vn_stroke_width = $o_config->get('openlayers_stroke_width'))) {
-				$vn_stroke_width = 1; 
+				$vn_stroke_width = 2; 
 			}
 		}
 		if (($vs_stroke_color = $va_options['strokeColor']) < 1) { 
 			if (!($vs_stroke_color = $o_config->get('openlayers_stroke_color'))) {
-				$vs_stroke_color = '#ffcc66'; 
+				$vs_stroke_color = '#ff9933'; 
 			}
 		}
 		
@@ -327,11 +327,16 @@ class WLPlugGeographicMapOpenLayers Extends BaseGeographicMapPlugIn Implements I
 		JavascriptLoadManager::register('openlayers');
 		$o_config = Configuration::load();
 		
+		$va_element_width = caParseFormElementDimension($pa_element_info['settings']['fieldWidth']);
+		$vn_element_width = $va_element_width['dimension'];
+		$va_element_height = caParseFormElementDimension($pa_element_info['settings']['fieldHeight']);
+		$vn_element_height = $va_element_height['dimension'];
 		$va_options = caGetOptions($pa_options, array(
-			'width' => 690, 'height' => 300
+			'width' => $vn_element_width, 'height' => $vn_element_height
 		));
-		if (($vn_width = $va_options['width']) < 100) { $vn_width = 100; }
-		if (($vn_height = $va_options['height']) < 100) { $vn_height = 100; }
+		
+		if (($vn_width = $va_options['width']) < 100) { $vn_width = 690; }
+		if (($vn_height = $va_options['height']) < 100) { $vn_height = 300; }
 		if (!($vs_base_layer = $va_options['baseLayer'])) { 
 			if (!($vs_base_layer = $o_config->get('openlayers_base_layer'))) {
 				$vs_base_layer = 'OpenLayers.Layer.OSM()';
@@ -340,7 +345,7 @@ class WLPlugGeographicMapOpenLayers Extends BaseGeographicMapPlugIn Implements I
 		
 		if (($vn_point_radius = $va_options['pointRadius']) < 1) { 
 			if (!($vn_point_radius = $o_config->get('openlayers_point_radius'))) {
-				$vn_point_radius = 1; 
+				$vn_point_radius = 5; 
 			}
 		}
 		if (($vs_fill_color = $va_options['fillColor']) < 1) { 
@@ -350,12 +355,12 @@ class WLPlugGeographicMapOpenLayers Extends BaseGeographicMapPlugIn Implements I
 		}
 		if (($vn_stroke_width = $va_options['strokeWidth']) < 1) { 
 			if (!($vn_stroke_width = $o_config->get('openlayers_stroke_width'))) {
-				$vn_stroke_width = 1; 
+				$vn_stroke_width = 2; 
 			}
 		}
 		if (($vs_stroke_color = $va_options['strokeColor']) < 1) { 
 			if (!($vs_stroke_color = $o_config->get('openlayers_stroke_color'))) {
-				$vs_stroke_color = '#ffcc66'; 
+				$vs_stroke_color = '#ff9933'; 
 			}
 		}
 		
