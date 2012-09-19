@@ -1350,4 +1350,17 @@ function caFileIsIncludable($ps_file) {
 		return $ps_text;
 	}
 	# ---------------------------------------
+	/**
+	 * Determines if current request was from from command line
+	 *
+	 * @return True if request wasrun from command line, false if not
+	 */
+	function caIsRunFromCLI() {
+		if(php_sapi_name() == 'cli' && empty($_SERVER['REMOTE_ADDR'])) {
+			return true;
+		} else {
+			return false;
+		}
+	}
+	# ---------------------------------------
 ?>

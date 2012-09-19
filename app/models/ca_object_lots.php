@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2008-2011 Whirl-i-Gig
+ * Copyright 2008-2012 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -339,7 +339,7 @@ class ca_object_lots extends BundlableLabelableBaseModelWithAttributes {
 				SELECT object_id
 				FROM ca_objects
 				WHERE
-					lot_id = ?
+					lot_id = ? AND deleted = 0
 			", (int)$vn_lot_id);
 			
 		$t_object = new ca_objects();
@@ -385,7 +385,7 @@ class ca_object_lots extends BundlableLabelableBaseModelWithAttributes {
 				SELECT *
 				FROM ca_objects
 				WHERE
-					lot_id = ?
+					lot_id = ? AND deleted = 0
 				ORDER BY
 					idno_sort
 			", (int)$vn_lot_id);
