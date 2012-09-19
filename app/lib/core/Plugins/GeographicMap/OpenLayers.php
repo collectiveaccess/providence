@@ -292,55 +292,108 @@ class WLPlugGeographicMapOpenLayers Extends BaseGeographicMapPlugIn Implements I
 	}
 	# ------------------------------------------------
 	/**
-	 *
+	 * Options:
+	 *		width = Width of map + controls in pixels; default is 690
+	 *		height = Height of map + controls in pixels; default is 300
+	 *		baseLayer = Tiles to user for base layer. Should be full class name with optional constructor string (Eg. OpenLayers.Layer.Stamen('toner')); default is OpenLayers.Layer.OSM()
+	 *		pointRadius = Radius, in pixels, of plotted points. Default is 5 pixels
+	 *		fillColor = Color (in hex format with leading "#") to fill regions and points with
+	 *		strokeWidth = Width of plotted paths, in pixels. Default is 2
+	 *		strokeColor = Color of plotted paths, in hex format with leading "#"
+	 *		fillColorSelected = Color to fill regions with when selected, in hex format with leading "#"
+	 *		strokeColorSelected = Color of plotted paths when selected, in hex format with leading "#"
 	 */
 	public function getAttributeBundleHTML($pa_element_info, $pa_options=null) {
 		JavascriptLoadManager::register('openlayers');
+		$o_config = Configuration::load();
+		
+		$va_options = caGetOptions($pa_options, array(
+			'width' => 690, 'height' => 300
+		));
+		if (($vn_width = $va_options['width']) < 100) { $vn_width = 100; }
+		if (($vn_height = $va_options['height']) < 100) { $vn_height = 100; }
+		if (!($vs_base_layer = $va_options['baseLayer'])) { 
+			if (!($vs_base_layer = $o_config->get('openlayers_base_layer'))) {
+				$vs_base_layer = 'OpenLayers.Layer.OSM()';
+			}
+		}
+		
+		if (($vn_point_radius = $va_options['pointRadius']) < 1) { 
+			if (!($vn_point_radius = $o_config->get('openlayers_point_radius'))) {
+				$vn_point_radius = 1; 
+			}
+		}
+		if (($vs_fill_color = $va_options['fillColor']) < 1) { 
+			if (!($vs_fill_color = $o_config->get('openlayers_fill_color'))) {
+				$vs_fill_color = '#ffcc66'; 
+			}
+		}
+		if (($vn_stroke_width = $va_options['strokeWidth']) < 1) { 
+			if (!($vn_stroke_width = $o_config->get('openlayers_stroke_width'))) {
+				$vn_stroke_width = 1; 
+			}
+		}
+		if (($vs_stroke_color = $va_options['strokeColor']) < 1) { 
+			if (!($vs_stroke_color = $o_config->get('openlayers_stroke_color'))) {
+				$vs_stroke_color = '#ffcc66'; 
+			}
+		}
+		
+		if (($vs_fill_color_selected = $va_options['fillColorSelected']) < 1) { 
+			if (!($vs_fill_color_selected = $o_config->get('openlayers_fill_color_selected'))) {
+				$vs_fill_color_selected = '#66ccff'; 
+			}
+		}
+		if (($vs_stroke_color_selected = $va_options['strokeColorSelected']) < 1) { 
+			if (!($vs_stroke_color_selected = $o_config->get('openlayers_stroke_color_selected'))) {
+				$vs_stroke_color_selected = '#3399ff'; 
+			}
+		}
  		
 		$o_config = Configuration::load();
+		$po_request = isset($pa_options['request']) ? $pa_options['request'] : null;
+		
 		
 		$vs_id = $pa_element_info['element_id'];
 		
-		$vs_element = '<div id="mapholder_'.$vs_id.'_{n}" class="mapholder"  style="width:650px; height:300px; float: left;">';
-	//	$vs_element .= 	'<div class="mapCoordInput">';
-		//$vs_element .= 		'<div class="mapSearchBox">';
-	//	$vs_element .=				'<input type="text" class="mapSearchText" name="searchtext"  id="{fieldNamePrefix}'.$pa_element_info['element_id'].'_{n}_search" size="30" value="'._t('Search for geographic location').'..." autocomplete="off"/>';
-	//	$vs_element .=				'<div class="mapSearchSuggest"></div>';
-	//	$vs_element .=				'<a href="#" class="button">'._t('Upload KML file').' &rsaquo;</a>';
-		//$vs_element .= 		'</div>';
-	//	$vs_element .= 	'</div>';
-	//	$vs_element .=		'<div class="mapKMLInput" style="display: none;">';
-	//	$vs_element .=			_t("Select KML or KMZ file").': <input type="file" name="{fieldNamePrefix}'.$pa_element_info['element_id'].'_{n}"/><a href="#" class="button">'._t('Use map').' &rsaquo;</a>';
-	//	$vs_element .=		'</div>';
-		$vs_element .= '<div class="map" id="map_'.$vs_id.'_{n}" style="width:690px; height:300px;"> </div>';
+		$vs_element = '<div id="{fieldNamePrefix}mapholder_'.$vs_id.'_{n}" class="mapholder" style="width:'.$vn_width.'spx; height:'.($vn_height + 40).'px; float: left; margin:-18px 0 0 0;">';
+
+		$vs_element .= 		'<div class="olMapSearchControls" id="{fieldNamePrefix}Controls_{n}">';
+		if ($po_request) {
+			$vs_element .= 		'<div class="olMapSearchBox">';
+			$vs_element .=				'<input type="text" class="olMapSearchText" name="{fieldNamePrefix}'.$pa_element_info['element_id'].'_{n}_search"  id="{fieldNamePrefix}'.$pa_element_info['element_id'].'_{n}_search" size="30" value="" autocomplete="off" onfocus="this.value = \'\';" onkeypress="return map_geocode_'.$vs_id.'(event);"/>';
+			$vs_element .= 				"<a href='#' onclick='map_geocode_{$vs_id}();'><img src='".$po_request->getThemeUrlPath()."/graphics/buttons/glass.png' border='0' width='11' height='11' alt='"._t('Search')."' class='olMapSearchBoxIcon' id='{fieldNamePrefix}".$pa_element_info['element_id']."_{n}_search_button'/></a>";
+			$vs_element .= 		'</div>';
+		}
+		$vs_element .= 			'<div class="olMapKmlControl" id="{fieldNamePrefix}showKmlControl_{n}">';
+		$vs_element .=					'<div style="position: absolute; bottom: 0px; left: 0px;"><a href="#" class="button" id="{fieldNamePrefix}showKmlControl_{n}_button">'._t('Upload KML file').' &rsaquo;</a></div>';
+		$vs_element .= 			'</div>';
+		$vs_element .= 		'</div>';
+		
+		$vs_element .=		'<div class="olMapKMLInput" id="{fieldNamePrefix}KmlControl_{n}">';
+		$vs_element .=			_t("Select KML or KMZ file").': <input type="file" name="{fieldNamePrefix}'.$pa_element_info['element_id'].'_{n}"/><a href="#" class="button"  id="{fieldNamePrefix}hideKmlControl_{n}_button">'._t('Use map').' &rsaquo;</a>';
+		$vs_element .=		'</div>';
+		$vs_element .= 		'<div class="olMap" id="{fieldNamePrefix}map_'.$vs_id.'_{n}" style="width:'.$vn_width.'px; height:'.$vn_height.'px;"> </div>';
 		$vs_element .='</div>';
 		$vs_element .= "<script type='text/javascript'>
+		
+			var map_{$vs_id};
 	jQuery(document).ready(function() {
 		// Styles
 		var styles_{$vs_id} = new OpenLayers.StyleMap({
 			'default': new OpenLayers.Style({
-				pointRadius: '5',
-				fillColor: '#ffcc66',
-				strokeColor: '#ff9933',
-				strokeWidth: 2,
+				pointRadius: '{$vn_point_radius}',
+				fillColor: '{$vs_fill_color}',
+				strokeColor: '{$vs_stroke_color}',
+				strokeWidth: '{$vn_stroke_width}',
 				graphicZIndex: 1
 			}),
 			'select': new OpenLayers.Style({
-				fillColor: '#66ccff',
-				strokeColor: '#3399ff',
+				fillColor: '{$vs_fill_color_selected}',
+				strokeColor: '{$vs_stroke_color_selected}',
 				graphicZIndex: 2
 			})
 		});
-		
-		var t = jQuery('#{fieldNamePrefix}".$pa_element_info['element_id']."_{n}_search').val();
-		geocoder = new google.maps.Geocoder();
-		geocoder.geocode( { 'address': t}, function(results, status) {
-  if (status == google.maps.GeocoderStatus.OK) {
-   console.log(results[0]['geometry']['location']['Xa']);
-  } else {
-    alert('Geocode was not successful for the following reason: ' + status);
-  }
- });
 
 		var map_{$vs_id}_editing_toolbar;
 		
@@ -354,7 +407,7 @@ class WLPlugGeographicMapOpenLayers Extends BaseGeographicMapPlugIn Implements I
 				for (var j=0; j<n.length; j++) {
 					var np = n[j].clone();
 					np.transform(map_{$vs_id}.getProjectionObject(), new OpenLayers.Projection('EPSG:4326'));
-					pl.push(np.x + ',' + np.y);
+					pl.push(np.y + ',' + np.x);
 				}
 				if ((pl.length > 1) && (geometry_type == 'OpenLayers.Geometry.Polygon')) { pl.push(pl[0]); } // close polygons
 				features.push(pl.join(';'));
@@ -374,18 +427,16 @@ class WLPlugGeographicMapOpenLayers Extends BaseGeographicMapPlugIn Implements I
 		map_{$vs_id}_editing_toolbar = new OpenLayers.Control.EditingToolbar(points_{$vs_id});
 		
 		// Set up map
-		var map_{$vs_id} = new OpenLayers.Map({
-			div: 'map_{$vs_id}_{n}',
-			layers: [new OpenLayers.Layer.OSM()],
-			//layers: [new OpenLayers.Layer.Stamen('toner')],
+		map_{$vs_id} = new OpenLayers.Map({
+			div: '{fieldNamePrefix}map_{$vs_id}_{n}',
+			layers: [new {$vs_base_layer}],
 			controls: [
 				new OpenLayers.Control.Navigation({
 					dragPanOptions: {
 						enableKinetic: true
 					}
 				}),
-				new OpenLayers.Control.Zoom(),
-				map_{$vs_id}_editing_toolbar
+				new OpenLayers.Control.Zoom()
 			],
 			center: [0,0],
 			zoom: 1
@@ -398,23 +449,28 @@ class WLPlugGeographicMapOpenLayers Extends BaseGeographicMapPlugIn Implements I
 		map_{$vs_id}_drag_ctrl.activate();
 		
 		// add delete control
-		var map_{$vs_id}_delete_button = new OpenLayers.Control.Button ({displayClass: 'olControlButton1', trigger: function() { 
+		var map_{$vs_id}_delete_button = new OpenLayers.Control.Button ({displayClass: 'olControlDelete', trigger: function() { 
 			if (points_{$vs_id}.selectedFeatures) { 
 				points_{$vs_id}.removeFeatures(points_{$vs_id}.selectedFeatures);
 				map_serialize_features_{$vs_id}();
 			}
-		}, title: 'Button is to be clicked'});
-		var map_{$vs_id}_delete_panel = new OpenLayers.Control.Panel({type: OpenLayers.Control.TYPE_BUTTON});
+		}, title: '"._t('Remove')."'});
+		var map_{$vs_id}_delete_panel = new OpenLayers.Control.Panel({type: OpenLayers.Control.TYPE_BUTTON, displayClass: 'olControlDeletePanel'});
 		map_{$vs_id}_delete_panel.addControls([map_{$vs_id}_delete_button]);
 		map_{$vs_id}.addControl(map_{$vs_id}_delete_panel);
 		map_{$vs_id}_delete_button.activate();
 		
 		// Grab current map coordinates from input
 		var map_{$ps_id}_loc_str = '{".$pa_element_info['element_id']."}';
-		var map_{$ps_id}_loc_features = map_{$ps_id}_loc_str.match(/\[([\d\,\-\.\:\;]+)\]/)[1].split(/:/);
+		var map_{$ps_id}_loc_features = map_{$ps_id}_loc_str.match(/\[([\d\,\-\.\:\;]+)\]/)
+		if (map_{$ps_id}_loc_features && (map_{$ps_id}_loc_features.length > 1)) {
+			map_{$ps_id}_loc_features = map_{$ps_id}_loc_features[1].split(/:/);
+		} else {
+			map_{$ps_id}_loc_features = [];
+		}
 		var features_{$vs_id} = [];
 		
-		var i, j;
+		var i, j, c=0;
 		for(i=0; i < map_{$ps_id}_loc_features.length; i++) {
 			var ptlist = map_{$ps_id}_loc_features[i].split(/;/);
 			
@@ -423,27 +479,20 @@ class WLPlugGeographicMapOpenLayers Extends BaseGeographicMapPlugIn Implements I
 				var ptolist = [];
 				for(j=0; j < ptlist.length; j++) {
 					var pt = ptlist[j].split(/,/);
-					ptolist.push(new OpenLayers.Geometry.Point(pt[0], pt[1]));
+					ptolist.push(new OpenLayers.Geometry.Point(pt[1], pt[0]));
 					
 				}
 				features_{$vs_id}.push(new OpenLayers.Feature.Vector(
-					new OpenLayers.Geometry.LineString(ptolist).transform(new OpenLayers.Projection('EPSG:4326'),map_{$vs_id}.getProjectionObject()), {
-						label: '{$vs_label}',
-						content: '{$vs_content}',
-						ajaxUrl: '{$vs_ajax_url}'
-					}
+					new OpenLayers.Geometry.LineString(ptolist).transform(new OpenLayers.Projection('EPSG:4326'),map_{$vs_id}.getProjectionObject()), {}
 				));
 			} else {
 				// point
 				var pt = ptlist[0].split(/,/);
 				features_{$vs_id}.push(new OpenLayers.Feature.Vector(
-					new OpenLayers.Geometry.Point(pt[0], pt[1]).transform(new OpenLayers.Projection('EPSG:4326'),map_{$vs_id}.getProjectionObject()), {
-						label: '{$vs_label}',
-						content: '{$vs_content}',
-						ajaxUrl: '{$vs_ajax_url}'
-					}
+					new OpenLayers.Geometry.Point(pt[1], pt[0]).transform(new OpenLayers.Projection('EPSG:4326'),map_{$vs_id}.getProjectionObject()), {}
 				));
 			}
+			c++;
 		}
 	
 		points_{$vs_id}.addFeatures(features_{$vs_id});
@@ -452,37 +501,53 @@ class WLPlugGeographicMapOpenLayers Extends BaseGeographicMapPlugIn Implements I
 			hover: false,
 			renderIntent: 'temporary',
 			multiple: true, clickout: true, toggle: true, box: true,
-			eventListeners: {
-				featurehighlighted: function() { console.log('hi'); }
-			}
+			eventListeners: {}
 		});
 		map_{$vs_id}.addControl(map_{$vs_id}_highlight_ctrl);
 		map_{$vs_id}_highlight_ctrl.activate();
 		
+		map_{$vs_id}.addControl(map_{$vs_id}_editing_toolbar);
+		map_{$vs_id}_editing_toolbar.activate();
  
 		map_{$vs_id}.addLayer(points_{$vs_id});
-		map_{$vs_id}.zoomToExtent(points_{$vs_id}.getDataExtent());
 		
+		if (c > 0) {
+			map_{$vs_id}.zoomToExtent(points_{$vs_id}.getDataExtent());
+			if (map_{$vs_id}.zoom > 14) { map_{$vs_id}.zoomTo(14); }
+		}
 		
-		jQuery('#mapholder_".$vs_id."_{n}').find('.mapCoordInput:first').find('a:first').click(function(event) {
+		jQuery('#{fieldNamePrefix}showKmlControl_{n}_button').click(function(event) {
 			event.preventDefault();
-			jQuery(this).parent().hide(200, function() {
-				jQuery('#mapholder_".$vs_id."_{n}').find('.mapKMLInput:first').slideDown(200);
+			jQuery('#{fieldNamePrefix}Controls_{n}').hide(200, function() {
+				jQuery('#{fieldNamePrefix}KmlControl_{n}').slideDown(200);
 			});
-			jQuery('#mapholder_".$vs_id."_{n}').find('.map:first').hide(200);
 		});
 		
-		jQuery('#mapholder_".$vs_id."_{n}').find('.mapKMLInput:first').find('a:first').click(function(event) {
+		jQuery('#{fieldNamePrefix}hideKmlControl_{n}_button').click(function(event) {
 				event.preventDefault();
 				jQuery(this).parent().hide(200, function() {
-					jQuery('#mapholder_".$vs_id."_{n}').find('.mapCoordInput:first .mapSearchBox').slideDown(200);
-					jQuery('#mapholder_".$vs_id."_{n}').find('.map:first').slideDown(200);
+					jQuery('#{fieldNamePrefix}Controls_{n}').slideDown(200);
 				});
-				cleanMap(mapdata);
 			});
 	});
+		function map_geocode_{$vs_id}(e) {
+			if (e && ((e.keyCode || e.which || e.charCode || 0) !== 13)) { return true; }
+			var t = jQuery('#{fieldNamePrefix}".$pa_element_info['element_id']."_{n}_search').val();
+			jQuery('#{fieldNamePrefix}".$pa_element_info['element_id']."_{n}_search_button').attr('src', '".$po_request->getThemeUrlPath()."/graphics/icons/indicator.gif');
+			console.log(jQuery('#{fieldNamePrefix}".$pa_element_info['element_id']."_{n}_search_button').attr('src'));
+			geocoder = new google.maps.Geocoder();
+			geocoder.geocode( { 'address': t}, function(results, status) {
+				jQuery('#{fieldNamePrefix}".$pa_element_info['element_id']."_{n}_search_button').attr('src', '".$po_request->getThemeUrlPath()."/graphics/buttons/glass.png');
+				
+				if (status == google.maps.GeocoderStatus.OK) {
+					map_{$vs_id}.panTo(new OpenLayers.LonLat(results[0]['geometry']['location']['Ya'], results[0]['geometry']['location']['Xa']).transform(new OpenLayers.Projection('EPSG:4326'),map_{$vs_id}.getProjectionObject()));
+					map_{$vs_id}.zoomTo((results[0]['geometry']['location_type'] == 'APPROXIMATE') ? 10 : 14);
+				}
+			});
+			return false;
+		}
 	</script>";
-		$vs_element .= '<input class="coordinates mapCoordinateDisplay" type="text" name="{fieldNamePrefix}'.$pa_element_info['element_id'].'_{n}" size="30"/>';
+		$vs_element .= '<input class="coordinates mapCoordinateDisplay" type="hidden" name="{fieldNamePrefix}'.$pa_element_info['element_id'].'_{n}" size="30"/>';
 		
 		return $vs_element;
 	}

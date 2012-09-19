@@ -479,6 +479,9 @@
 			case __CA_NAV_BUTTON_SEARCH__:
 				$vs_img_name = 'lens';
 				break;
+			case __CA_NAV_BUTTON_GLASS__:
+				$vs_img_name = 'glass';
+				break;
 			case __CA_NAV_BUTTON_INFO__:
 				$vs_img_name = 'info';
 				break;

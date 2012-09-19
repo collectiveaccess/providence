@@ -190,9 +190,9 @@
  			if (is_array($ps_value) && $ps_value['_uploaded_file']) {
  				$o_kml = new KmlParser($ps_value['tmp_name']);
  				$va_placemarks = $o_kml->getPlacemarks();
- 				
- 				$va_coords = array();
+ 				$va_features = array();
  				foreach($va_placemarks as $va_placemark) {
+ 					$va_coords = array();
  					switch($va_placemark['type']) {
  						case 'POINT':
  							$va_coords[] = $va_placemark['latitude'].','.$va_placemark['longitude'];
@@ -203,15 +203,17 @@
 							}	
  							break;
  					}
+ 					if (sizeof($va_coords)) {
+						$va_features[] = join(';', $va_coords);
+					}
  				}
  				
- 				if (sizeof($va_coords)) {
- 					$ps_value = '['.join(';', $va_coords).']';
+ 				if (sizeof($va_features)) {
+ 					$ps_value = '['.join(':', $va_features).']';
  				} else {
  					$ps_value = '';
  				}
  			}
- 			
  			$ps_value = trim(preg_replace("![\t\n\r]+!", ' ', $ps_value));
  			
  			if (!trim($ps_value)) {
@@ -306,8 +308,6 @@
  			if (isset($pa_options['forSearch']) && $pa_options['forSearch']) {
  				return caHTMLTextInput("{fieldNamePrefix}".$pa_element_info['element_id']."_{n}", array('id' => "{fieldNamePrefix}".$pa_element_info['element_id']."_{n}", 'value' => $pa_options['value']), $pa_options);
  			}
- 			
- 			//$va_settings = $this->getSettingValuesFromElementArray($pa_element_info, array('fieldWidth', 'fieldHeight'));
  			
  			return $this->opo_geo_plugin->getAttributeBundleHTML($pa_element_info, $pa_options);
  		}
