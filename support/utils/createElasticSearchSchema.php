@@ -299,13 +299,13 @@
 			print "[DEBUG] Response body was: ".$vo_http_response->getBody()."\n";
 			exit -1;
 		}
-		
-		print "\nCreating the ElasticSearch schema was successful!\n";
-		print "Note that all data has been wiped from the index so you have to issue a full reindex now, either using the \n";
-		print "'reindex.php' script in this directory or the web-based tool under Manage > Administration > Maintenance.\n\n";
-		
-		exit(0);
 	}
+	
+	print "\nCreating the ElasticSearch schema was successful!\n";
+	print "Note that all data has been wiped from the index so you have to issue a full reindex now, either using the \n";
+	print "'reindex.php' script in this directory or the web-based tool under Manage > Administration > Maintenance.\n\n";
+	
+	exit(0);
 
 
 ?>
