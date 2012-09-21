@@ -495,7 +495,7 @@ class WLPlugSearchEngineElasticSearch extends BaseSearchPlugin implements IWLPlu
 						if ($va_coords = $this->opo_geocode_parser->parseValue($pm_content, $va_element_info)) {
 							if (isset($va_coords['value_longtext2']) && $va_coords['value_longtext2']) {
 								$this->opa_doc_content_buffer[$ps_content_tablename.'.'.$va_element_info['element_code'].'_text'][] = $pm_content;
-								$va_coords = explode(';', $va_coords['value_longtext2']);
+								$va_coords = explode(':', $va_coords['value_longtext2']);
 								foreach($va_coords as $vs_point){
 									$this->opa_doc_content_buffer[$ps_content_tablename.'.'.$va_element_info['element_code']][] = $vs_point;
 								}
