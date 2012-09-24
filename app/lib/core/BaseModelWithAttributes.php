@@ -304,7 +304,7 @@
 				$va_attributes = $this->getAttributesByElement($pm_element_code_or_id);
 			
 				foreach($va_attributes as $o_attribute) {
-					$this->removeAttribute($o_attribute->getAttributeID());
+					$this->removeAttribute($o_attribute->getAttributeID(), null, null, array('dontCheckMinMax' => true));
 				}
 			} else {
 				if(is_array($va_element_codes = $this->getApplicableElementCodes($this->getTypeID(), false, false))) {
@@ -312,7 +312,7 @@
 						$va_attributes = $this->getAttributesByElement($vs_element_code);
 			
 						foreach($va_attributes as $o_attribute) {
-							$this->removeAttribute($o_attribute->getAttributeID());
+							$this->removeAttribute($o_attribute->getAttributeID(), null, null, array('dontCheckMinMax' => true));
 						}
 					}
 				}
