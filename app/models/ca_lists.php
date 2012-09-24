@@ -716,6 +716,38 @@ class ca_lists extends BundlableLabelableBaseModelWithAttributes {
 	/**
 	 *
 	 */
+	public function getItemFromListForDisplay($pm_list_name_or_id, $ps_idno, $pb_return_plural=false) {
+	
+		if (isset(ca_lists::$s_list_item_display_cache[$ps_idno])) {
+			$va_items = ca_lists::$s_list_item_display_cache[$ps_idno];
+		} else {
+			$vn_list_id = $this->_getListID($pm_list_name_or_id);
+			
+			$o_db = $this->getDb();
+			$qr_res = $o_db->query("
+				SELECT cli.item_id, clil.locale_id, clil.name_singular, clil.name_plural
+				FROM ca_list_items cli
+				INNER JOIN ca_list_item_labels AS clil ON cli.item_id = clil.item_id
+				WHERE
+					(cli.list_id = ?) AND (cli.idno = ?) AND (clil.is_preferred = 1)
+			", (int)$vn_list_id, (string)$ps_idno);
+			
+			$va_items = array();
+			while($qr_res->nextRow()) {
+				 $va_items[$vn_item_id = $qr_res->get('item_id')][$qr_res->get('locale_id')] = $qr_res->getRow();
+			}
+			ca_lists::$s_list_item_display_cache[$vn_item_id] = ca_lists::$s_list_item_display_cache[$vs_idno] = $va_items;
+		}
+		
+		$va_tmp = caExtractValuesByUserLocale($va_items, null, null, array());
+		$va_item = array_shift($va_tmp);
+		
+		return $va_item[$pb_return_plural ? 'name_plural' : 'name_singular'];
+	}
+	# ------------------------------------------------------
+	/**
+	 *
+	 */
 	public function getItemFromListForDisplayByItemID($pm_list_name_or_id, $pn_item_id, $pb_return_plural=false) {
 	
 		if (isset(ca_lists::$s_list_item_display_cache[$pn_item_id])) {
@@ -1011,10 +1043,10 @@ class ca_lists extends BundlableLabelableBaseModelWithAttributes {
 	 *  nullOption = if set then a "null" (no value) option is available labeled with the value passed in this option
 	 *  additionalOptions = an optional array of options that will be passed through to caHTMLSelect; keys are display labels and values are used as option values
 	 *  value = if set, the <select> will have default selection set to the item whose *value* matches the option value. If none is set then the first item in the list will be selected
-	 *  disabledOptions = optional array of item values to be disabled in the select. Disabled items cannot be selected by the user
 	 *  key = ca_list_item field to be used as value for the <select> element list; can be set to either item_id or item_value; default is item_id
 	 *	width = the display width of the list in characters or pixels
 	 *  limitToItemsWithID =
+	 *  omitItemsWithID = 
 	 * 
 	 * @return string - HTML code for the <select> element; empty string if the list is empty
 	 */
@@ -1047,6 +1079,7 @@ class ca_lists extends BundlableLabelableBaseModelWithAttributes {
 		}
 		
 		if (!isset($pa_options['limitToItemsWithID']) || !is_array($pa_options['limitToItemsWithID']) || !sizeof($pa_options['limitToItemsWithID'])) { $pa_options['limitToItemsWithID'] = null; }
+		if (!isset($pa_options['omitItemsWithID']) || !is_array($pa_options['omitItemsWithID']) || !sizeof($pa_options['omitItemsWithID'])) { $pa_options['omitItemsWithID'] = null; }
 	
 		if (isset($pa_options['nullOption']) && $pa_options['nullOption']) {
 			$va_options[''] = $pa_options['nullOption'];
@@ -1056,6 +1089,7 @@ class ca_lists extends BundlableLabelableBaseModelWithAttributes {
 		$vn_default_val = null;
 		foreach($va_list_items as $vn_item_id => $va_item) {
 			if (is_array($pa_options['limitToItemsWithID']) && !in_array($vn_item_id, $pa_options['limitToItemsWithID'])) { continue; }
+			if (is_array($pa_options['omitItemsWithID']) && in_array($vn_item_id, $pa_options['omitItemsWithID'])) { continue; }
 			
 			$va_options[$va_item[$pa_options['key']]] = str_repeat('&nbsp;', intval($va_item['LEVEL']) * 3).' '.$va_item['name_singular'];
 			if (!$va_item['is_enabled']) { $va_disabled_options[$va_item[$pa_options['key']]] = true; }
