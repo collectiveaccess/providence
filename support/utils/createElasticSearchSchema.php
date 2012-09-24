@@ -21,8 +21,13 @@
 		$vo_search_conf->get('search_elasticsearch_base_url')."/".
 		$vo_search_conf->get('search_elasticsearch_index_name')
 	);
-	$vo_http_client->request('DELETE');
-	$vo_http_client->request('PUT');
+	try {
+		$vo_http_client->request('DELETE');
+		$vo_http_client->request('PUT');
+	} catch (Zend_Http_Client_Adapter_Exception $e){
+		print "[ERROR] Couldn't connect to ElasticSearch. Is the service running?\n";
+		exit -1;
+	}
 	
 	$va_tables = $vo_search_indexing_conf->getAssocKeys();
 	$vo_search_base = new SearchBase();
@@ -198,11 +203,14 @@
 					$vo_http_response = $vo_http_client->request();
 					$va_response = json_decode($vo_http_response->getBody(),true);
 					if(!$va_response["ok"]){
-						print "SOMETHING WENT WRONT AT $vs_table.$vs_field_name WITH MSG: ".$va_response["error"]."\n";
-						print "MAPPING SENT TO ELASTICSEARCH WAS: ".json_encode($va_mapping)."\n";
+						print "[ERROR] Something went wrong at $vs_table.$vs_field_name with message: ".$va_response["error"]."\n";
+						print "[DEBUG] Mapping sent to ElasticSearch was: ".json_encode($va_mapping)."\n";
+						exit -1;
 					}
 				} catch (Exception $e){
-					print $vo_http_response->getBody();
+					print "[ERROR] Something went wrong at $vs_table.$vs_field_name\n";
+					print "[DEBUG] Response body was: ".$vo_http_response->getBody()."\n";
+					exit -1;
 				}
 				
 			}
@@ -237,11 +245,14 @@
 					$vo_http_response = $vo_http_client->request();
 					$va_response = json_decode($vo_http_response->getBody(),true);
 					if(!$va_response["ok"]){
-						print "SOMETHING WENT WRONT AT $vs_table.$vs_related_table.$vs_related_table_field WITH MSG: ".$va_response["error"]."\n";
-						print "MAPPING SENT TO ELASTICSEARCH WAS: ".json_encode($va_mapping)."\n";
+						print "[ERROR] Something went wrong at $vs_table.$vs_related_table.$vs_related_table_field with message: ".$va_response["error"]."\n";
+						print "[DEBUG] Mapping sent to ElasticSearch was: ".json_encode($va_mapping)."\n";
+						exit -1;
 					}
 				} catch (Exception $e){
-					print $vo_http_response->getBody();
+					print "[ERROR] Something went wrong at $vs_table.$vs_field_name\n";
+					print "[DEBUG] Response body was: ".$vo_http_response->getBody()."\n";
+					exit -1;
 				}
 			}
 		}
@@ -279,13 +290,22 @@
 			$vo_http_response = $vo_http_client->request();
 			$va_response = json_decode($vo_http_response->getBody(),true);
 			if(!$va_response["ok"]){
-				print "SOMETHING WENT WRONT AT $vs_table.created/modified WITH MSG: ".$va_response["error"]."\n";
-				print "MAPPING SENT TO ELASTICSEARCH WAS: ".json_encode($va_mapping)."\n";
+				print "[ERROR] Something went wrong at $vs_table.created/modified with message: ".$va_response["error"]."\n";
+				print "[DEBUG] Mapping sent to ElasticSearch was: ".json_encode($va_mapping)."\n";
+				exit -1;
 			}
 		} catch (Exception $e){
-			print $vo_http_response->getBody();
+			print "[ERROR] Something went wrong at $vs_table.$vs_field_name\n";
+			print "[DEBUG] Response body was: ".$vo_http_response->getBody()."\n";
+			exit -1;
 		}
 	}
+	
+	print "\nCreating the ElasticSearch schema was successful!\n";
+	print "Note that all data has been wiped from the index so you have to issue a full reindex now, either using the \n";
+	print "'reindex.php' script in this directory or the web-based tool under Manage > Administration > Maintenance.\n\n";
+	
+	exit(0);
 
 
 ?>

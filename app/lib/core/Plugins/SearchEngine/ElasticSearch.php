@@ -495,7 +495,7 @@ class WLPlugSearchEngineElasticSearch extends BaseSearchPlugin implements IWLPlu
 						if ($va_coords = $this->opo_geocode_parser->parseValue($pm_content, $va_element_info)) {
 							if (isset($va_coords['value_longtext2']) && $va_coords['value_longtext2']) {
 								$this->opa_doc_content_buffer[$ps_content_tablename.'.'.$va_element_info['element_code'].'_text'][] = $pm_content;
-								$va_coords = explode(';', $va_coords['value_longtext2']);
+								$va_coords = explode(':', $va_coords['value_longtext2']);
 								foreach($va_coords as $vs_point){
 									$this->opa_doc_content_buffer[$ps_content_tablename.'.'.$va_element_info['element_code']][] = $vs_point;
 								}
@@ -601,8 +601,7 @@ class WLPlugSearchEngineElasticSearch extends BaseSearchPlugin implements IWLPlu
 					(ccl.changetype <> 'D')
 			", $this->opo_datamodel->getTableNum($va_key[0]), (int)$va_key[2]);
 			while($qr_res->nextRow()) {
-				$va_post_xml[$va_key[0]] .= "\t<doc>\n";
-
+				
 				// We "fake" the <table>.<primary key> value here to be the log_id of the change log entry to ensure that the log entry
 				// document has a different unique key than the entry for the actual record. If we didn't do this then we'd overwrite
 				// the indexing for the record itself with indexing for successful log entries. Since the SearchEngine is looking for
