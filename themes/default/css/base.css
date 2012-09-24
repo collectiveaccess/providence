@@ -228,6 +228,18 @@ h2 { font-size: 13px; color: #666; }
 	font-size: 9px;
 }
 
+#inspectorChangeType {
+	width: 190px;
+}
+
+#inspectorChangeTypeButton {
+	float: right;
+	font-size: 10px;
+	padding: 2px !important;
+	margin: 0px;
+	text-align:right;
+}
+
 div.inspectorLotObjectTypeControls {
 	padding: 3px;
 	margin-top: 8px;
@@ -4614,4 +4626,45 @@ div.searchlight-results div.searchlight-selected {
 .olMapKMLInput {
 	display: none;
 	margin-top: 18px !important;
+}
+
+
+/* Type change */
+#caTypeChangePanel {
+	position: fixed; 
+	top: 0px; 
+	left: 0px;
+	width: 450px; 
+	display: none;
+	margin: 0px;
+	padding:0px !important;
+	border: 2px solid #999999;
+	z-index: 31000;			/* needs to be on top of menu bar, which has z-index=30000 */
+	background-color: #FFFFFF;
+}
+
+#caTypeChangePanel .close a{
+	text-decoration:none;
+	font-size:16px;
+}
+
+#caTypeChangePanelContentArea {
+	padding:10px;
+}
+
+#caTypeChangePanelControlButtons {
+	width: 100%; 
+	text-align: center;
+}
+
+#caTypeChangePanelControlButtons table {
+	width: 100%; 
+}
+
+div.dialogHeader {
+	background-color: #cccccc;
+	font-size: 13px;
+	font-weight: bold !important;	
+	padding: 5px;
+	margin: 0px;
 }

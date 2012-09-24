@@ -414,6 +414,11 @@ class BundlableLabelableBaseModelWithAttributes extends LabelableBaseModelWithAt
 	# ------------------------------------------------------
 	/**
 	 * Overrides set() to check that the type field is not being set improperly
+	 *
+	 * @param array $pa_fields
+	 * @param mixed $pm_value
+	 * @param array $pa_options Options are passed directly to parent::set(); options specifically defined here are:
+	 *		allowSettingOfTypeID = if true then type_id may be set for existing rows; default is to not allow type_id to be set for existing rows.
 	 */
 	public function set($pa_fields, $pm_value="", $pa_options=null) {
 		if (!is_array($pa_fields)) {
@@ -427,7 +432,7 @@ class BundlableLabelableBaseModelWithAttributes extends LabelableBaseModelWithAt
 				}
 			}
 		}
-		if ($this->getPrimaryKey() && isset($pa_fields[$this->getTypeFieldName()]) && !defined('__CA_ALLOW_SETTING_OF_PRIMARY_KEYS__')) {
+		if ($this->getPrimaryKey() && isset($pa_fields[$this->getTypeFieldName()]) && !(isset($pa_options['allowSettingOfTypeID']) && $pa_options['allowSettingOfTypeID'])) {
 			$this->postError(2520, _t("Type id cannot be set after insert"), "BundlableLabelableBaseModelWithAttributes->set()");
 			return false;
 		}
@@ -4300,6 +4305,44 @@ $pa_options["display_form_field_tips"] = true;
 		if ($this->getAppConfig()->get($this->tableName().'_dont_do_item_level_access_control')) { return false; }
 		return (bool)$this->getProperty('SUPPORTS_ACL');
 	}
-	# ------------------------------------------------------
+	# --------------------------------------------------------------------------------------------	
+	/**
+	 * Change type of record, removing any metadata that is invalid for the new type
+	 *
+	 * @return bool True if change succeeded, false if error
+	 */
+	public function changeType($pm_type) {
+		if (!$this->getPrimaryKey()) { return false; }					// row must be loaded
+		if (!method_exists($this, 'getTypeID')) { return false; }		// model must be type-able
+		
+		unset($_REQUEST['form_timestamp']);
+		
+		if (!($vb_already_in_transaction = $this->inTransaction())) {
+			$this->setTransaction($o_t = new Transaction());
+		}
+		
+		$vn_old_type_id = $this->getTypeID();
+		$this->setMode(ACCESS_WRITE);
+		$this->set($this->getTypeFieldName(), $pm_type, array('allowSettingOfTypeID' => true));
+		
+		// remove attributes that are not valid for new type
+		$va_old_elements = $this->getApplicableElementCodes($vn_old_type_id);
+		$va_new_elements = $this->getApplicableElementCodes($this->getTypeID());
+		
+		foreach($va_old_elements as $vn_old_element_id => $vs_old_element_code) {
+			if (!isset($va_new_elements[$vn_old_element_id])) {
+				$this->removeAttributes($vn_old_element_id, array('force' => true));
+			}
+		}
+		
+		if ($this->update()) {
+			if (!$vb_already_in_transaction) { $o_t->commit(); }
+			return true;
+		}
+		
+		if (!$vb_already_in_transaction) { $o_t->rollback(); }
+		return false;
+	}
+	# --------------------------------------------------------------------------------------------
 }
 ?>

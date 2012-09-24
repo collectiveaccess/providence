@@ -58,8 +58,8 @@
  	define('__CA_NAV_BUTTON_MAGNIFY__', 19);
  	define('__CA_NAV_BUTTON_OVERVIEW__', 20);
  	define('__CA_NAV_BUTTON_PAN__', 21);
- 	
- 	
+ 	define('__CA_NAV_BUTTON_CHANGE__', 22);
+ 		
  	define('__CA_NAV_BUTTON_ICON_POS_LEFT__', 0);
  	define('__CA_NAV_BUTTON_ICON_POS_RIGHT__', 1);
  	define('__CA_NAV_BUTTON_ICON_POS_TOP__', 2);
@@ -532,6 +532,9 @@
 				break;
 			case __CA_NAV_BUTTON_PAN__:
 				$vs_img_name = 'pan';
+				break;
+			case __CA_NAV_BUTTON_CHANGE__:
+				$vs_img_name = 'change';
 				break;
 			default:
 				$vs_img_name = '';
