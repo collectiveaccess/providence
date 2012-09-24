@@ -1866,7 +1866,7 @@ $ca_relationship_lookup_parse_cache = array();
 	function caReloadTranslationsForVariable($data) {
 		if(is_array($data)) {
 			foreach($data as $key=>$value) {
-				$data[$key] = reloadTranslations($value);
+				$data[$key] = caReloadTranslationsForVariable($value);
 			}
 		} elseif(is_string($data)) {
 			$data=_t($data);

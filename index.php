@@ -89,7 +89,7 @@
 	$req->reloadAppConfig();	// need to reload app config to reflect current locale
 	
 	// Reload translations for ca_models_definitions as they were loaded before initiating Zend_Translate
-	BaseModel::$s_ca_models_definitions = reloadTranslations(BaseModel::$s_ca_models_definitions);
+	BaseModel::$s_ca_models_definitions = caReloadTranslationsForVariable(BaseModel::$s_ca_models_definitions);
 	
 	//
 	// PageFormat plug-in generates header/footer shell around page content
