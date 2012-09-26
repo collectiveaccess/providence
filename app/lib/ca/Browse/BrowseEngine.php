@@ -736,6 +736,7 @@
 			} else {
 				$va_criteria = $this->getCriteria();
 				//print "cache miss for [$vs_cache_key]<br>";
+				$vb_need_to_save_in_cache = true;
 			}
 			if (!$vb_results_cached) {
 				$this->opo_ca_browse_cache->setParameter('sort', null); 
@@ -830,8 +831,28 @@
 											$va_wheres[] = "(".$t_item_rel->tableName().".type_id NOT IN (".join(',', $va_exclude_relationship_types)."))";
 										}
 										
-										if (!(bool)$vn_state) {
-											$va_wheres[] = "(".$t_rel_item->tableName().".".$t_rel_item->primaryKey()." IS NULL)";
+										if (!(bool)$vn_state) {	// no option
+											if ($t_rel_item->hasField('deleted')) {
+												$va_wheres[] = "((".$t_rel_item->tableName().".deleted = 0) OR (".$t_rel_item->tableName().".deleted IS NULL))";
+											}							
+											if (isset($pa_options['checkAccess']) && is_array($pa_options['checkAccess']) && sizeof($pa_options['checkAccess']) && $t_rel_item->hasField('access')) {
+												$va_wheres[] = "((".$t_rel_item->tableName().".".$t_rel_item->primaryKey()." IS NOT NULL) AND (".$t_rel_item->tableName().".access NOT IN (".join(',', $pa_options['checkAccess']).")) OR ((".$t_rel_item->tableName().".".$t_rel_item->primaryKey()." IS NULL) AND (".$t_rel_item->tableName().".access IS NULL)))";
+											}
+										} else {							// yes option
+											$va_wheres[] = "(".$t_rel_item->tableName().".".$t_rel_item->primaryKey()." IS NOT NULL)";
+											if ($t_rel_item->hasField('deleted')) {
+												$va_wheres[] = "(".$t_rel_item->tableName().".deleted = 0)";
+											}							
+											if (isset($pa_options['checkAccess']) && is_array($pa_options['checkAccess']) && sizeof($pa_options['checkAccess']) && $t_rel_item->hasField('access')) {
+												$va_wheres[] = "(".$t_rel_item->tableName().".access IN (".join(',', $pa_options['checkAccess'])."))";
+											}
+										}
+										if ($t_item->hasField('deleted')) {
+											$va_wheres[] = "(".$t_item->tableName().".deleted = 0)";
+										}
+													
+										if (isset($pa_options['checkAccess']) && is_array($pa_options['checkAccess']) && sizeof($pa_options['checkAccess']) && $t_item->hasField('access')) {
+											$va_wheres[] = "(".$t_item->tableName().".access IN (".join(',', $pa_options['checkAccess'])."))";
 										}
 										
 										
@@ -1426,7 +1447,11 @@
 					$this->_dropTempTable('ca_browses_acc');
 					$this->_dropTempTable('ca_browses_tmp');
 					
-					$this->opo_ca_browse_cache->setResults(($this->opo_config->get('perform_item_level_access_checking')) ? array_keys($this->filterHitsByACL(array_flip($va_results), $vn_user_id, __CA_ACL_READONLY_ACCESS__)): $va_results);
+					if ((!isset($pa_options['dontFilterByACL']) || !$pa_options['dontFilterByACL']) && $this->opo_config->get('perform_item_level_access_checking') && method_exists($t_item, "supportsACL") && $t_item->supportsACL()) {
+						$va_results = array_keys($this->filterHitsByACL(array_flip($va_results), $vn_user_id, __CA_ACL_READONLY_ACCESS__));
+					}
+					
+					$this->opo_ca_browse_cache->setResults($va_results);
 					$vb_need_to_save_in_cache = true;
 				}
 			} else {
@@ -1478,18 +1503,24 @@
 					");
 					$va_results = $qr_res->getAllFieldValues($vs_pk);
 					
-					$this->opo_ca_browse_cache->setResults(($this->opo_config->get('perform_item_level_access_checking')) ? array_keys($this->filterHitsByACL(array_flip($va_results), $vn_user_id, __CA_ACL_READONLY_ACCESS__)): $va_results);
-					$vb_need_to_save_in_cache = true;
+					if ((!isset($pa_options['dontFilterByACL']) || !$pa_options['dontFilterByACL']) && $this->opo_config->get('perform_item_level_access_checking') && method_exists($t_item, "supportsACL") && $t_item->supportsACL()) {
+						$va_results = array_keys($this->filterHitsByACL(array_flip($va_results), $vn_user_id, __CA_ACL_READONLY_ACCESS__));
+					}
+					$this->opo_ca_browse_cache->setResults($va_results);
 				} else {
 					$this->opo_ca_browse_cache->setResults(array());
-					$vb_need_to_save_in_cache = true;
 				}
+				$vb_need_to_save_in_cache = true;
 			}
 		
 			if ($vb_need_to_cache_facets) {
 				if (!$pa_options['dontCheckFacetAvailability']) {
 					$this->loadFacetContent($pa_options);
 				}
+			}
+	
+			if ($vb_need_to_save_in_cache) {
+				$this->opo_ca_browse_cache->save();
 			}
 	
 			return true;
@@ -1709,24 +1740,31 @@
 							$va_wheres[] = "(".$t_item_rel->tableName().".type_id NOT IN (".join(',', $va_exclude_relationship_types)."))";
 						}
 						
-						if (!(bool)$va_state_info['id']) {
+						if (!(bool)$va_state_info['id']) {	// no option
 							$va_wheres[] = "(".$t_rel_item->tableName().".".$t_rel_item->primaryKey()." IS NULL)";
-						} else {
+							if ($t_rel_item->hasField('deleted')) {
+								$va_wheres[] = "((".$t_rel_item->tableName().".deleted = 0) OR (".$t_rel_item->tableName().".deleted IS NULL))";
+							}							
+							if (isset($pa_options['checkAccess']) && is_array($pa_options['checkAccess']) && sizeof($pa_options['checkAccess']) && $t_rel_item->hasField('access')) {
+								$va_wheres[] = "((".$t_rel_item->tableName().".access NOT IN (".join(',', $pa_options['checkAccess']).")) OR (".$t_rel_item->tableName().".access IS NULL))";
+							}
+						} else {							// yes option
 							$va_wheres[] = "(".$t_rel_item->tableName().".".$t_rel_item->primaryKey()." IS NOT NULL)";
-						}
-						if ($t_item->hasField('deleted')) {
-							$va_wheres[] = "(".$t_item->tableName().".deleted = 0)";
+							if ($t_rel_item->hasField('deleted')) {
+								$va_wheres[] = "(".$t_rel_item->tableName().".deleted = 0)";
+							}							
+							if (isset($pa_options['checkAccess']) && is_array($pa_options['checkAccess']) && sizeof($pa_options['checkAccess']) && $t_rel_item->hasField('access')) {
+								$va_wheres[] = "(".$t_rel_item->tableName().".access IN (".join(',', $pa_options['checkAccess'])."))";
+							}
 						}
 						
-						if ($t_rel_item->hasField('deleted')) {
-							$va_wheres[] = "(".$t_rel_item->tableName().".deleted = 0 OR ".$t_rel_item->tableName().".deleted IS NULL)";
+											
+						if ($t_item->hasField('deleted')) {
+							$va_wheres[] = "(".$t_item->tableName().".deleted = 0)";
 						}
 									
 						if (isset($pa_options['checkAccess']) && is_array($pa_options['checkAccess']) && sizeof($pa_options['checkAccess']) && $t_item->hasField('access')) {
 							$va_wheres[] = "(".$vs_browse_table_name.".access IN (".join(',', $pa_options['checkAccess'])."))";
-						}
-						if (isset($pa_options['checkAccess']) && is_array($pa_options['checkAccess']) && sizeof($pa_options['checkAccess']) && $t_rel_item->hasField('access')) {
-							$va_wheres[] = "(".$t_rel_item->tableName().".access IN (".join(',', $pa_options['checkAccess'])."))";
 						}
 						
 						if (sizeof($va_results)) {

@@ -771,6 +771,28 @@
  		}
  		# -------------------------------------------------------
  		/**
+ 		 * 
+ 		 *
+ 		 * @param array $pa_options Array of options passed through to _initView 
+ 		 */
+ 		public function ChangeType($pa_options=null) {
+ 			list($vn_subject_id, $t_subject) = $this->_initView($pa_options);
+ 			if ($this->request->user->canDoAction("can_change_type_".$t_subject->tableName())) {
+				if (method_exists($t_subject, "changeType")) {
+					if (!$t_subject->changeType($vn_new_type_id = $this->request->getParameter('type_id', pInteger))) {
+						// post error
+						$this->notification->addNotification(_t('Could not set type to <em>%1</em>: %2', caGetListItemForDisplay($t_subject->getTypeListCode(), $vn_new_type_id), join("; ", $t_subject->getErrors())), __NOTIFICATION_TYPE_ERROR__);
+					} else {
+						$this->notification->addNotification(_t('Set type to <em>%1</em>', $t_subject->getTypeName()), __NOTIFICATION_TYPE_INFO__);
+					}
+				}
+			} else {
+				$this->notification->addNotification(_t('Cannot change type'), __NOTIFICATION_TYPE_ERROR__);
+			}
+ 			$this->Edit();
+ 		}
+ 		# -------------------------------------------------------
+ 		/**
  		 * Initializes editor view with core set of values, loads model with record to be edited and selects user interface to use.
  		 *
  		 * @param $pa_options Array of options. Supported options are:

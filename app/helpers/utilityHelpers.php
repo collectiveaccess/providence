@@ -1350,4 +1350,33 @@ function caFileIsIncludable($ps_file) {
 		return $ps_text;
 	}
 	# ---------------------------------------
+	/**
+	 * Determines if current request was from from command line
+	 *
+	 * @return boolean True if request wasrun from command line, false if not
+	 */
+	function caIsRunFromCLI() {
+		if(php_sapi_name() == 'cli' && empty($_SERVER['REMOTE_ADDR'])) {
+			return true;
+		} else {
+			return false;
+		}
+	}
+	# ---------------------------------------
+	/**
+	 * 
+	 *
+	 * @param array $pa_options
+	 * @param array $pa_defaults
+	 * @return array
+	 */
+	function caGetOptions($pa_options, $pa_defaults) {
+		$va_proc_options = $pa_options;
+		
+		foreach($pa_defaults as $vs_opt => $vs_opt_default_val) {
+			if (!isset($va_proc_options[$vs_opt])) { $va_proc_options[$vs_opt] = $vs_opt_default_val; }
+		}
+		return $va_proc_options;
+	}
+	# ---------------------------------------
 ?>

@@ -291,11 +291,16 @@
 		}
 		# ------------------------------------------------------------------
 		/** 
-		 * removes all attributes from current row of specified element, or all attributes regardless of 
+		 * Removes all attributes from current row of specified element, or all attributes regardless of 
 		 * element if $pm_element_code_or_id is omitted
 		 *
-		 * Note that this method does not respect the minAttributesPerRow type restriction setting. It always
-		 * removes *all* attributes
+		 * Note that this method respects the minAttributesPerRow type restriction setting and will only delete attributes until the minimum permissible
+		 * number of reached. If you wish to remove *all* attributes, ignoring any minAttributesPerRow constraints, pass the 'force' option set to true. 
+		 *
+		 * @param mixed $pm_element_code_or_id
+		 * @param array $pa_options Options are:
+		 *		force = if set to true all attributes are removed, even if there is a non-zero minAttributesPerRow constraint set
+		 * @return bool True on success, false on error
 		 */
 		public function removeAttributes($pm_element_code_or_id=null, $pa_options=null) {
 			if(!$this->getPrimaryKey()) { return null; }
@@ -304,7 +309,7 @@
 				$va_attributes = $this->getAttributesByElement($pm_element_code_or_id);
 			
 				foreach($va_attributes as $o_attribute) {
-					$this->removeAttribute($o_attribute->getAttributeID());
+					$this->removeAttribute($o_attribute->getAttributeID(), null, null, array('dontCheckMinMax' => isset($pa_options['force']) && $pa_options['force']));
 				}
 			} else {
 				if(is_array($va_element_codes = $this->getApplicableElementCodes($this->getTypeID(), false, false))) {
@@ -312,7 +317,7 @@
 						$va_attributes = $this->getAttributesByElement($vs_element_code);
 			
 						foreach($va_attributes as $o_attribute) {
-							$this->removeAttribute($o_attribute->getAttributeID());
+							$this->removeAttribute($o_attribute->getAttributeID(), null, null, array('dontCheckMinMax' => isset($pa_options['force']) && $pa_options['force']));
 						}
 					}
 				}

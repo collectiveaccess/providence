@@ -207,7 +207,7 @@ class SearchEngine extends SearchBase {
 			}
 					
 			$vn_user_id = (isset($pa_options['user_id']) && (int)$pa_options['user_id']) ?  (int)$pa_options['user_id'] : (int)$AUTH_CURRENT_USER_ID;
-			if ((!isset($pa_options['dontFilterByACL']) || !$pa_options['dontFilterByACL']) && $this->opo_app_config->get('perform_item_level_access_checking')) {
+			if ((!isset($pa_options['dontFilterByACL']) || !$pa_options['dontFilterByACL']) && $this->opo_app_config->get('perform_item_level_access_checking') && method_exists($t_table, "supportsACL") && $t_table->supportsACL()) {
 				$va_hits = $this->filterHitsByACL($va_hits, $vn_user_id, __CA_ACL_READONLY_ACCESS__);
 			}
 					
@@ -340,7 +340,7 @@ class SearchEngine extends SearchBase {
 					LEFT OUTER JOIN ca_acl ON {$vs_search_tmp_table}.row_id = ca_acl.row_id AND ca_acl.table_num = ?
 					WHERE
 						ca_acl.row_id IS NULL;
-				", array((int)$this->opn_browse_table_num));
+				", array((int)$this->opn_tablenum));
 				
 				while($qr_sort->nextRow()) {
 					$va_row = $qr_sort->getRow();
@@ -460,8 +460,8 @@ class SearchEngine extends SearchBase {
 							WHERE
 								(attr_vals.element_id = ?) AND (attr.table_num = ?) AND (attr_vals.{$vs_sort_field} IS NOT NULL)
 						";
-						//print $vs_sql." ; $vn_element_id/; ".$this->opn_browse_table_num."<br>";
-						$qr_sort = $this->opo_db->query($vs_sql, (int)$vn_element_id, (int)$this->opn_browse_table_num);
+						//print $vs_sql." ; $vn_element_id/; ".$this->opn_tablenum."<br>";
+						$qr_sort = $this->opo_db->query($vs_sql, (int)$vn_element_id, (int)$this->opn_tablenum);
 						
 						while($qr_sort->nextRow()) {
 							$va_row = $qr_sort->getRow();
@@ -1127,7 +1127,8 @@ class SearchEngine extends SearchBase {
 			$vs_delete_sql = ' AND (deleted = 0)';
 		}
 
-		$qr_res = $this->opo_db->query("
+		$o_db = new Db();
+		$qr_res = $o_db->query("
 			SELECT n.{$vs_pk}, l.{$vs_label_display_field}, l.locale_id, n.type_id
 			FROM {$vs_label_table_name} l
 			INNER JOIN ".$ps_tablename." AS n ON n.{$vs_pk} = l.{$vs_pk}
