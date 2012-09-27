@@ -1351,20 +1351,17 @@ function caFileIsIncludable($ps_file) {
 	}
 	# ---------------------------------------
 	/**
-	 * Reload an already loaded variable with its content strings recursively translated whenever available
+	 * Reload an already loaded variable (pointer way) with its translated content when available
 	 *
-	 * @param mixed $data
-	 * @return mixed
+	 * @param mixed $item
+	 * @return boolean (always true)
 	 */
-	 function caReloadTranslationsForVariable($data) {
-	 if(is_array($data)) {
-	 foreach($data as $key=>$value) {
-	 $data[$key] = caReloadTranslationsForVariable($value);
+	 function caReplaceStringByTranslation(&$item, $key = NULL) {
+	 	if (is_string($item)) {
+	 		$item = _t($item);
+	 	}
+	 	return true;
 	 }
-	 } elseif(is_string($data)) {
-	 $data=_t($data);
-	 }
-	 return $data;
-	 }
+	 
 	 # ---------------------------------------
-?>
+	 ?>
