@@ -1081,7 +1081,7 @@ class ca_lists extends BundlableLabelableBaseModelWithAttributes {
 		if (!isset($pa_options['limitToItemsWithID']) || !is_array($pa_options['limitToItemsWithID']) || !sizeof($pa_options['limitToItemsWithID'])) { $pa_options['limitToItemsWithID'] = null; }
 		if (!isset($pa_options['omitItemsWithID']) || !is_array($pa_options['omitItemsWithID']) || !sizeof($pa_options['omitItemsWithID'])) { $pa_options['omitItemsWithID'] = null; }
 	
-		if (isset($pa_options['nullOption']) && $pa_options['nullOption']) {
+		if ((isset($pa_options['nullOption']) && $pa_options['nullOption']) && ($vs_render_as != 'checklist')) {
 			$va_options[''] = $pa_options['nullOption'];
 		}
 		
