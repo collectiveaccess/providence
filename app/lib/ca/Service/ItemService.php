@@ -65,10 +65,13 @@ class ItemService {
 		}
 		
 		$this->opn_id = $this->opo_request->getParameter("id",pInteger);
-		$this->opa_post = json_decode($this->opo_request->getRawPostData(),true);
-		
-		if(!is_array($this->opa_post)){
-			$this->opa_errors[] = _t("Data sent via POST doesn't seem to be in JSON format");
+
+		$vs_post_data = $this->opo_request->getRawPostData();
+		if(strlen(trim($vs_post_data))>0){
+			$this->opa_post = json_decode($vs_post_data,true);
+			if(!is_array($this->opa_post)){
+				$this->opa_errors[] = _t("Data sent via POST doesn't seem to be in JSON format");
+			}
 		}
 		
 		if(!$this->opo_dm->getTableNum($ps_table)){
