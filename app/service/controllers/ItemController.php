@@ -37,6 +37,10 @@
 		public function __call($ps_table, $pa_args){
 			$vo_service = new ItemService($this->request,$ps_table);
 			$va_content = $vo_service->dispatch();
+
+			if(intval($this->request->getParameter("pretty",pInteger))>0){
+				$this->view->setVar("pretty_print",true);
+			}
 			
 			if($vo_service->hasErrors()){
 				$this->view->setVar("errors",$vo_service->getErrors());

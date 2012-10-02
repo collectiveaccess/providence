@@ -30,5 +30,11 @@
 	
 	$va_return = array("ok" => true) + $this->getVar('content');
 
-	print json_encode($va_return);
+	if($this->getVar('pretty_print')){
+		print caFormatJson(json_encode($va_return));
+	} else {
+		print json_encode($va_return);
+	}
+
+	
 ?>
