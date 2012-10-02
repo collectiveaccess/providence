@@ -64,7 +64,7 @@ class ItemService {
 			$this->opa_errors[] = _t("Invalid HTTP request method");
 		}
 		
-		$this->opn_id = $this->opo_request->getParameter("id",pInteger);
+		$this->opn_id = intval($this->opo_request->getParameter("id",pInteger));
 
 		$vs_post_data = $this->opo_request->getRawPostData();
 		if(strlen(trim($vs_post_data))>0){
@@ -72,6 +72,8 @@ class ItemService {
 			if(!is_array($this->opa_post)){
 				$this->opa_errors[] = _t("Data sent via POST doesn't seem to be in JSON format");
 			}
+		} else {
+			$this->opa_post = array();
 		}
 		
 		if(!$this->opo_dm->getTableNum($ps_table)){
@@ -88,7 +90,51 @@ class ItemService {
 	}
 	# -------------------------------------------------------
 	public function dispatch(){
+		if(($this->opn_id>0) && ($this->ops_method=="GET")){
+			if(sizeof($this->opa_post)==0){
+				
+			} else {
+				return $this->getSpecificItemInfo();
+			}
+		} else {
+			
+		}
 		return array();
+	}
+	# -------------------------------------------------------
+	protected function getSpecificItemInfo(){
+		$t_instance = $this->opo_dm->getInstanceByTableName($this->ops_table);
+		if(!$t_instance->load($this->opn_id)){
+			$this->opa_errors[] = _t("ID does not exist");
+			return false;
+		}
+
+		$va_return = array();
+		foreach($this->opa_post as $vs_bundle => $va_options){
+			if($this->_isBadBundle($vs_bundle)){
+				continue;
+			}
+
+			if(!is_array($va_options)){
+				$va_options = array();
+			}
+
+			$va_return[$vs_bundle] = $t_instance->get($vs_bundle,$va_options);
+		}
+
+		return $va_return;
+	}
+	# -------------------------------------------------------
+	/**
+	 * Filter fields which should not be available for every service user
+	 * @param string $ps_bundle field name
+	 * @return boolean true if bundle should not be returned to user
+	 */
+	private function _isBadBundle($ps_bundle){
+		if(stripos($ps_bundle, "ca_users")!==false){
+			return true;
+		}
+		return false;
 	}
 	# -------------------------------------------------------
 }
