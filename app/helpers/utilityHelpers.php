@@ -1105,7 +1105,7 @@ function caFileIsIncludable($ps_file) {
 			$prevChar = $char;
 		}
 	
-		return $result;
+		return $result.$newLine;
 	}
 	# ---------------------------------------
 	/**
