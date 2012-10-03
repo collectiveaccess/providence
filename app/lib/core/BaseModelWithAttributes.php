@@ -873,6 +873,7 @@
 		 * @param array $pa_attributes An optional array of HTML attributes to place into the returned <select> tag
 		 * @param array $pa_options An array of options. Supported options are anything supported by ca_lists::getListAsHTMLFormElement as well as:
 		 *		childrenOfCurrentTypeOnly = Returns only types below the current type
+		 *		restrictToTypes = Array of type_ids to restrict type list to
 		 * @return string HTML for list element
 		 */ 
 		public function getTypeListAsHTMLFormElement($ps_name, $pa_attributes=null, $pa_options=null) {
@@ -882,6 +883,14 @@
 			}
 			
 			$pa_options['limitToItemsWithID'] = caGetTypeRestrictionsForUser($this->tableName(), $pa_options);
+			
+			if (isset($pa_options['restrictToTypes']) && is_array($pa_options['restrictToTypes'])) {
+				if (!$pa_options['limitToItemsWithID'] || !is_array($pa_options['limitToItemsWithID'])) {
+					$pa_options['limitToItemsWithID'] = $pa_options['restrictToTypes'];
+				} else {
+					$pa_options['limitToItemsWithID'] = array_intersect($pa_options['limitToItemsWithID'], $pa_options['restrictToTypes']);
+				}
+			}
 			
 			return $t_list->getListAsHTMLFormElement($this->getTypeListCode(), $ps_name, $pa_attributes, $pa_options);
 		}
