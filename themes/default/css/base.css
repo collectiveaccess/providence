@@ -836,6 +836,11 @@ div.hint {
 
 }
 
+.quickAddSectionBox{
+	margin: 0px 0px 0px 10px;
+	padding: 10px;
+}
+
 /* Style for labels on standard form fields (ie. no error) */
 .formLabel {
 	font-family: Verdana, Arial, Helvetica, sans-serif;
@@ -4667,4 +4672,47 @@ div.dialogHeader {
 	font-weight: bold !important;	
 	padding: 5px;
 	margin: 0px;
+}
+
+/* Quick add */
+.caRelationQuickAddPanel {
+	position: fixed; 
+	top: 0px; 
+	left: 0px;
+	width: 900px; 
+	height: 600px;
+	overflow: auto;
+	display: none;
+	margin: 0px;
+	padding:0px !important;
+	border: 2px solid #999999;
+	z-index: 31000;			/* needs to be on top of menu bar, which has z-index=30000 */
+	background-color: #FFFFFF;
+}
+
+#caRelationQuickAddPanel .close a{
+	text-decoration:none;
+	font-size:16px;
+}
+
+#caRelationQuickAddPanelContentArea {
+	padding:10px;
+}
+
+#caRelationQuickAddPanelControlButtons {
+	width: 100%; 
+	text-align: center;
+}
+
+#caRelationQuickAddPanelControlButtons table {
+	width: 100%; 
+}
+
+div.quickAddFormTopPadding {
+	height: 50px;
+}
+
+div.quickAddErrorContainer {
+	width: 860px;
+	display: none;
 }
