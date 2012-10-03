@@ -1343,7 +1343,10 @@ class ca_users extends BaseModel {
 			if (!isset($va_prefs)) {
 				return isset($va_pref_info["default"]) ? $va_pref_info["default"] : null;
 			}
-			return isset($va_prefs[$ps_pref]) ? $va_prefs[$ps_pref] : ($va_pref_info["default"] ? $va_pref_info["default"] : null);
+			if(isset($va_prefs[$ps_pref])) {
+				return $va_prefs[$ps_pref] ? $va_prefs[$ps_pref] : ($va_pref_info["default"] ? $va_pref_info["default"] : null);
+			}
+			return ($va_pref_info["default"] ? $va_pref_info["default"] : null);
 		} else {
 			$this->postError(920, _t("%1 is not a valid user preference", $ps_pref),"User->getPreference()");
 			return null;
