@@ -69,7 +69,9 @@ class SearchResult extends BaseObject {
 	private $opa_timestamp_cache;
 	private $opa_row_ids_to_prefetch_cache;
 	
-	private $opo_tep; // timeexpression parser
+	private $opo_tep; // time expression parser
+	
+	private $opa_cached_result_counts;
 	
 	# ------------------------------------------------------------------
 	public function __construct($po_engine_result=null, $pa_tables=null) {
@@ -115,6 +117,7 @@ class SearchResult extends BaseObject {
 		$this->opn_table_num = $this->opo_subject_instance->tableNum();
 		$this->ops_table_name =  $this->opo_subject_instance->tableName();
 		$this->ops_table_pk = $this->opo_subject_instance->primaryKey();
+		$this->opa_cached_result_counts = array();
 		
 		$this->opo_engine_result = $po_engine_result;
 		if (!is_array($pa_tables)) { print caPrintStackTrace(); }
@@ -172,14 +175,14 @@ class SearchResult extends BaseObject {
 		$va_row_ids = array();
 		
 		$vn_cur_row_index = $this->opo_engine_result->currentRow();
-		$this->seek($pn_start);
+		self::seek($pn_start);
 		
 		$vn_i=0;
 		while(self::nextHit() && ($vn_i < $pn_num_rows)) {
 			$va_row_ids[] = $this->opo_engine_result->get($this->ops_table_pk);
 			$vn_i++;
 		}
-		$this->seek($vn_cur_row_index + 1);
+		self::seek($vn_cur_row_index + 1);
 		
 		return $this->opa_row_ids_to_prefetch_cache[$ps_tablename.'/'.$pn_start.'/'.$pn_num_rows] = $va_row_ids;
 	}
@@ -1601,12 +1604,13 @@ class SearchResult extends BaseObject {
 	 * @param bool $vb_sort If true, counts for each field value will be sorted by value; default is false
 	 */
 	public function getResultCountForFieldValues($pa_field_list, $vb_sort=false){
+		$vs_key = md5(print_r($pa_field_list, true).($vb_sort ? 'sort' : 'nosort'));
+		if (isset( $this->opa_cached_result_counts[$vs_key])) { return  $this->opa_cached_result_counts[$vs_key]; }
 		if (($vn_cur_row_index = $this->opo_engine_result->currentRow()) < 0) {
 			$vn_cur_row_index = 0;
 		}
-		$this->seek(0);
+		self::seek(0);
 		$va_result = array();
-		$this->setOption("prefetch", self::numHits());
 		
 		// loop through result and try to fetch values of the given field list
 		while(self::nextHit()) {
@@ -1621,11 +1625,7 @@ class SearchResult extends BaseObject {
 							$vs_field = $va_matches[1].'.'.$va_matches[2];
 						}
 						foreach($vm_field_values as $vs_field_value) {
-							if($va_result[$vs_field][$vs_field_value]){
-								$va_result[$vs_field][$vs_field_value]++;
-							} else {
-								$va_result[$vs_field][$vs_field_value] = 1;
-							}
+							$va_result[$vs_field][$vs_field_value]++;
 						}						
 					} // do nothing on other cases (e.g. error or empty fields)
 				}
@@ -1633,7 +1633,7 @@ class SearchResult extends BaseObject {
 		}
 		
 		// restore current position
-		$this->seek($vn_cur_row_index);
+		self::seek($vn_cur_row_index);
 		
 		// user wants the arrays to be sorted
 		if($vb_sort) {
@@ -1641,7 +1641,7 @@ class SearchResult extends BaseObject {
 				ksort($va_field_contents);
 			}
 		}
-		return $va_result;
+		return $this->opa_cached_result_counts[$vs_key] = $va_result;
 	}
 	# ------------------------------------------------------------------
 }

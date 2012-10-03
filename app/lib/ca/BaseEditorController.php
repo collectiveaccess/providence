@@ -802,6 +802,8 @@
  			// load required javascript
  			JavascriptLoadManager::register('bundleableEditor');
  			JavascriptLoadManager::register('imageScroller');
+ 			JavascriptLoadManager::register('datePickerUI');
+ 			
  			$t_subject = $this->opo_datamodel->getInstanceByTableName($this->ops_table_name);
  			$vn_subject_id = $this->request->getParameter($t_subject->primaryKey(), pInteger);
  			

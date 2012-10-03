@@ -6,7 +6,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2009-2011 Whirl-i-Gig
+ * Copyright 2009-2012 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -94,6 +94,23 @@ var caUI = caUI || {};
 			jQuery('#' + autocompleter_id).result(function(event, data, formatted) {
 				if (options.autocompleteOptions && options.autocompleteOptions.onSelect) {
 					if (!options.autocompleteOptions.onSelect(autocompleter_id, data)) { return false; }
+				}
+				
+				if(!parseInt(data[1]) && options.quickaddPanel) {
+					var panelUrl = options.quickaddUrl;
+					if (data[3]) { panelUrl += '/q/' + escape(data[3]); }
+					if (options && options.types) {
+						panelUrl += '/types/' + options.types;
+					}
+					options.quickaddPanel.showPanel(panelUrl);
+					jQuery('#' + options.quickaddPanel.getPanelContentID()).data('autocompleteInputID', options.autocompleteInputID + id);
+					jQuery('#' + options.quickaddPanel.getPanelContentID()).data('autocompleteItemIDID', options.itemID + id + ' #' + options.fieldNamePrefix + 'id' + id);
+					jQuery('#' + options.quickaddPanel.getPanelContentID()).data('autocompleteTypeIDID', options.itemID + id + ' #' + options.fieldNamePrefix + 'type_id' + id);
+					jQuery('#' + options.quickaddPanel.getPanelContentID()).data('panel', options.quickaddPanel);
+					
+					jQuery('#' + options.quickaddPanel.getPanelContentID()).data('autocompleteInput', jQuery("#" + options.autocompleteInputID + id).val());
+					
+					jQuery("#" + options.autocompleteInputID + id).val('');
 				}
 				options.select(id, data, formatted);
 			});

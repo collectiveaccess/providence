@@ -1,13 +1,13 @@
 <?php
 /* ----------------------------------------------------------------------
- * lookup/ajax_occurrence_list_html.php : 
+ * app/controllers/editor/occurrences/OccurrenceQuickAddController.php : 
  * ----------------------------------------------------------------------
  * CollectiveAccess
  * Open-source collections management software
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2009-2012 Whirl-i-Gig
+ * Copyright 2012 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -25,7 +25,17 @@
  *
  * ----------------------------------------------------------------------
  */
-	foreach($this->getVar('occurrence_list') as $vn_item_id => $va_item) {
-		print str_replace("|", "-", $va_item['_display'])."|".$vn_item_id."|".$va_item['type_id']."|".$va_item['_query']."\n";
-	}
-?>
+ 
+ 	require_once(__CA_MODELS_DIR__."/ca_occurrences.php");
+ 	require_once(__CA_LIB_DIR__."/ca/BaseQuickAddController.php");
+ 
+ 	class OccurrenceQuickAddController extends BaseQuickAddController {
+ 		# -------------------------------------------------------
+ 		protected $ops_table_name = 'ca_occurrences';		// name of "subject" table (what we're editing)
+ 		# -------------------------------------------------------
+ 		public function __construct(&$po_request, &$po_response, $pa_view_paths=null) {
+ 			parent::__construct($po_request, $po_response, $pa_view_paths);
+ 		}
+ 		# -------------------------------------------------------
+ 	}
+ ?>

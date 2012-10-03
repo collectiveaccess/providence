@@ -3274,10 +3274,10 @@ if (!$va_facet_info['show_all_when_first_facet'] || ($this->numCriteria() > 0)) 
 						if ($t_element->load(array('element_code' => $vs_sort_element_code))) {
 							$vn_element_id = $t_element->getPrimaryKey();
 							
-							if (!($vs_sortable_value_fld = 'attr_vals.'.Attribute::getSortFieldForDatatype($t_element->get('datatype')))) {
+							if (!($vs_sortable_value_fld = Attribute::getSortFieldForDatatype($t_element->get('datatype')))) {
 								return $pa_hits;
 							}
-							
+							$vs_sortable_value_fld = 'attr_vals.'.$vs_sortable_value_fld;
 							
 							$vs_sort_field = array_pop(explode('.', $vs_sortable_value_fld));
 							$vs_locale_where = ($vn_num_locales > 1) ? 'attr.locale_id' : '';

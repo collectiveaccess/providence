@@ -489,7 +489,7 @@ class ca_objects extends BundlableLabelableBaseModelWithAttributes implements IB
  		$o_db = $this->getDb();
  		
  		$qr_reps = $o_db->query("
- 			SELECT caor.representation_id, caor.media, caoor.is_primary, caor.access, caor.status, l.name, caor.locale_id, caor.media_metadata, caor.type_id, caor.idno, caor.idno_sort, caor.md5, caor.mimetype, caor.original_filename
+ 			SELECT caor.representation_id, caor.media, caoor.is_primary, caor.access, caor.status, l.name, caor.locale_id, caor.media_metadata, caor.type_id, caor.idno, caor.idno_sort, caor.md5, caor.mimetype, caor.original_filename, caoor.rank
  			FROM ca_object_representations caor
  			INNER JOIN ca_objects_x_object_representations AS caoor ON caor.representation_id = caoor.representation_id
  			LEFT JOIN ca_locales AS l ON caor.locale_id = l.locale_id

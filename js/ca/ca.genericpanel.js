@@ -117,6 +117,14 @@ var caUI = caUI || {};
 			return (jQuery('#' + that.panelID + ':visible').length > 0) ? true : false;
 		}
 		
+		that.getPanelID = function() {
+			return that.panelID;
+		}
+		
+		that.getPanelContentID = function() {
+			return that.panelContentID;
+		}
+		
 		// --------------------------------------------------------------------------------
 		// Mobile Safari zooming
 		// --------------------------------------------------------------------------------
