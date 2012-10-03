@@ -77,6 +77,8 @@ class RequestHTTP extends Request {
 	private $ops_script_name;
 	private $ops_base_path;
 	private $ops_path_info;
+	private $ops_request_method;
+	private $ops_raw_post_data = "";
 	
 /**
  * Parsed request info: controller path, controller and action
@@ -130,12 +132,19 @@ class RequestHTTP extends Request {
 		$this->opa_params['COOKIE'] =& $_COOKIE;
 		$this->opa_params['URL'] = array();
 		
+		$this->ops_request_method = (isset($_SERVER["REQUEST_METHOD"]) ? $_SERVER["REQUEST_METHOD"] : null);
+
 		$va_tmp = (isset($_SERVER['SCRIPT_NAME']) && $_SERVER['SCRIPT_NAME']) ? explode('/', $_SERVER['SCRIPT_NAME']) : array();
 		
 		$this->ops_script_name = '';
 		while((!$this->ops_script_name) && (sizeof($va_tmp) > 0)) {
 			$this->ops_script_name = array_pop($va_tmp);
 		}
+		
+		if($this->ops_script_name=="service.php"){
+			$this->ops_raw_post_data = file_get_contents("php://input");
+		}
+		
 		$this->ops_base_path = join('/', $va_tmp);
 		$this->ops_full_path = isset($_SERVER['REQUEST_URI']) ? $_SERVER['REQUEST_URI'] : null;
 		$this->ops_path_info = isset($_SERVER['PATH_INFO']) ? $_SERVER['PATH_INFO'] : '';
@@ -209,6 +218,14 @@ class RequestHTTP extends Request {
 	# -------------------------------------------------------
 	public function getScriptName() {
 		return $this->ops_script_name;
+	}
+	# -------------------------------------------------------
+	public function getRequestMethod() {
+		return $this->ops_request_method;
+	}
+	# -------------------------------------------------------
+	public function getRawPostData() {
+		return $this->ops_raw_post_data;
 	}
 	# -------------------------------------------------------
 	public function getSession() {
