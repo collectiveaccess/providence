@@ -119,7 +119,10 @@ class ItemService {
 		}
 
 		$va_return = array();
-		foreach($this->opa_post as $vs_bundle => $va_options){
+		if(!is_array($this->opa_post["bundles"])){
+			return false;
+		}
+		foreach($this->opa_post["bundles"] as $vs_bundle => $va_options){
 			if($this->_isBadBundle($vs_bundle)){
 				continue;
 			}
