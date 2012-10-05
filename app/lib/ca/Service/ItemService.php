@@ -119,7 +119,10 @@ class ItemService {
 		}
 
 		$va_return = array();
-		foreach($this->opa_post as $vs_bundle => $va_options){
+		if(!is_array($this->opa_post["bundles"])){
+			return false;
+		}
+		foreach($this->opa_post["bundles"] as $vs_bundle => $va_options){
 			if($this->_isBadBundle($vs_bundle)){
 				continue;
 			}
@@ -216,7 +219,22 @@ class ItemService {
 			}
 		}
 
-		// @TODO: related items
+		// yes, not all combinations between these tables have relationships
+		// but it also doesn't hurt to query for them
+		$va_possible_tables = array(
+			"ca_objects", "ca_object_lots", "ca_entities",
+			"ca_places", "ca_occurrences", "ca_collections",
+			"ca_list_items", "ca_object_representations",
+			"ca_storage_locations", "ca_movements",
+			"ca_loans", "ca_tours", "ca_tour_stops"
+		);
+
+		foreach($va_possible_tables as $vs_rel_table){
+			$va_related_items = $t_instance->get($vs_rel_table,array("returnAsArray" => true));
+			if(is_array($va_related_items) && sizeof($va_related_items)>0){
+				$va_return["related"][$vs_rel_table] = array_values($va_related_items);
+			}
+		}
 
 		return $va_return;
 	}
