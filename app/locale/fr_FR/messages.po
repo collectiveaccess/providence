@@ -3,7 +3,7 @@ msgstr ""
 "Project-Id-Version: CollectiveAccess\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2012-09-04 23:00+0200\n"
-"PO-Revision-Date: 2012-10-07 23:13+0100\n"
+"PO-Revision-Date: 2012-10-07 23:21+0100\n"
 "Last-Translator: Gautier MICHELIN <gm@ideesculture.com>\n"
 "Language-Team: francais <ideesculture@gmail.com>\n"
 "Language: fr_FR\n"
@@ -1488,7 +1488,7 @@ msgstr "Ajouter/retirer l'item de la liste de surveillance"
 
 #: app/helpers/displayHelpers.php:611
 msgid "Creating new %1"
-msgstr "Création d'un nouveau %1"
+msgstr "Création de %1 "
 
 #: app/helpers/displayHelpers.php:611
 msgid "%1 &gt; New %2"
