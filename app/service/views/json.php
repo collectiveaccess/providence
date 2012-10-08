@@ -1,6 +1,6 @@
 <?php
 /* ----------------------------------------------------------------------
- * app/service/views/service_error.php :
+ * app/service/views/item_json.php :
  * ----------------------------------------------------------------------
  * CollectiveAccess
  * Open-source collections management software
@@ -27,11 +27,14 @@
  */
 
 	header('Content-type: application/json');
+	
+	$va_return = array("ok" => true) + $this->getVar('content');
 
-	$va_return = array(
-		"ok" => false,
-		"errors" => $this->getVar('errors'),
-	);
+	if($this->getVar('pretty_print')){
+		print caFormatJson(json_encode($va_return));
+	} else {
+		print json_encode($va_return);
+	}
 
-	print json_encode($va_return);
+	
 ?>

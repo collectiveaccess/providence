@@ -23,10 +23,6 @@
  * the "license.txt" file for details, or visit the CollectiveAccess web site at
  * http://www.CollectiveAccess.org
  *
- * Portions of this code were inspired by and/or based upon the Omeka 
- * OaiPmhRepository plugin by John Flatness and Yu-Hsun Lin available at 
- * http://www.omeka.org and licensed under the GNU Public License version 3
- *
  * @package CollectiveAccess
  * @subpackage WebServices
  * @license http://www.gnu.org/copyleft/gpl.html GNU Public License version 3
@@ -37,64 +33,22 @@
  /**
   *
   */
-  
-require_once(__CA_LIB_DIR__."/ca/Service/BaseService.php");
+
+require_once(__CA_LIB_DIR__."/ca/Service/BaseJSONService.php");  
 require_once(__CA_MODELS_DIR__."/ca_lists.php");
 
-class ItemService {
-	# -------------------------------------------------------
-	private $opo_request;
-	private $ops_table;
-	private $opo_dm;
-	
-	private $opa_errors;
-	
-	private $opn_id;
-	private $opa_post;
-	private $ops_method;
+
+class ItemService extends BaseJSONService {	
 	# -------------------------------------------------------
 	public function __construct($po_request,$ps_table=""){
-		$this->opo_request = $po_request;
-		$this->ops_table = $ps_table;
-		$this->opo_dm = Datamodel::load();
-		$this->opa_errors = array();
-		
-		$this->ops_method = $this->opo_request->getRequestMethod();
-		
-		if(!in_array($this->ops_method, array("PUT","DELETE","GET","OPTIONS"))){
-			$this->opa_errors[] = _t("Invalid HTTP request method");
-		}
-		
-		$this->opn_id = intval($this->opo_request->getParameter("id",pInteger));
-
-		$vs_post_data = $this->opo_request->getRawPostData();
-		if(strlen(trim($vs_post_data))>0){
-			$this->opa_post = json_decode($vs_post_data,true);
-			if(!is_array($this->opa_post)){
-				$this->opa_errors[] = _t("Data sent via POST doesn't seem to be in JSON format");
-			}
-		} else {
-			$this->opa_post = array();
-		}
-		
-		if(!$this->opo_dm->getTableNum($ps_table)){
-			$this->opa_errors[] = _t("Table name does not exist");
-		}
-	}
-	# -------------------------------------------------------
-	public function hasErrors(){
-		return (bool) sizeof($this->opa_errors);
-	}
-	# -------------------------------------------------------
-	public function getErrors(){
-		return $this->opa_errors;
+		parent::__construct($po_request,$ps_table);
 	}
 	# -------------------------------------------------------
 	public function dispatch(){
-		switch($this->ops_method){
+		switch($this->getRequestMethod()){
 			case "GET":
 				if($this->opn_id>0){
-					if(sizeof($this->opa_post)==0){
+					if(sizeof($this->getRequestBodyArray())==0){
 						return $this->getAllItemInfo();
 					} else {
 						return $this->getSpecificItemInfo();
@@ -106,9 +60,8 @@ class ItemService {
 				break;
 			// @TODO
 			case "PUT":
-			case "OPTIONS":
-			default: // shouldn't happen, but still ..
-				$this->opa_errors[] = _t("Invalid HTTP request method");
+			default:
+				$this->addError(_t("Invalid HTTP request method"));
 				return false;
 		}
 	}
@@ -118,11 +71,13 @@ class ItemService {
 			return false;
 		}
 
+		$va_post = $this->getRequestBodyArray();
+
 		$va_return = array();
-		if(!is_array($this->opa_post["bundles"])){
+		if(!is_array($va_post["bundles"])){
 			return false;
 		}
-		foreach($this->opa_post["bundles"] as $vs_bundle => $va_options){
+		foreach($va_post["bundles"] as $vs_bundle => $va_options){
 			if($this->_isBadBundle($vs_bundle)){
 				continue;
 			}
@@ -282,3 +237,5 @@ class ItemService {
 	}
 	# -------------------------------------------------------
 }
+
+?>

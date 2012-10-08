@@ -1,0 +1,103 @@
+<?php
+/** ---------------------------------------------------------------------
+ * app/lib/ca/Service/BaseJSONService.php
+ * ----------------------------------------------------------------------
+ * CollectiveAccess
+ * Open-source collections management software
+ * ----------------------------------------------------------------------
+ *
+ * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
+ * Copyright 2012 Whirl-i-Gig
+ *
+ * For more information visit http://www.CollectiveAccess.org
+ *
+ * This program is free software; you may redistribute it and/or modify it under
+ * the terms of the provided license as published by Whirl-i-Gig
+ *
+ * CollectiveAccess is distributed in the hope that it will be useful, but
+ * WITHOUT ANY WARRANTIES whatsoever, including any implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+ *
+ * This source code is free and modifiable under the terms of
+ * GNU General Public License. (http://www.gnu.org/copyleft/gpl.html). See
+ * the "license.txt" file for details, or visit the CollectiveAccess web site at
+ * http://www.CollectiveAccess.org
+ *
+ * @package CollectiveAccess
+ * @subpackage WebServices
+ * @license http://www.gnu.org/copyleft/gpl.html GNU Public License version 3
+ *
+ * ----------------------------------------------------------------------
+ */
+
+ /**
+  *
+  */
+  
+require_once(__CA_MODELS_DIR__."/ca_lists.php");
+
+class BaseJSONService {
+	# -------------------------------------------------------
+	protected $opo_request;
+	protected $ops_table;
+	protected $opo_dm;
+	
+	protected $opa_errors;
+	
+	protected $opn_id;
+	protected $opa_post;
+	protected $ops_method;
+	# -------------------------------------------------------
+	public function __construct($po_request,$ps_table=""){
+		$this->opo_request = $po_request;
+		$this->ops_table = $ps_table;
+		$this->opo_dm = Datamodel::load();
+		$this->opa_errors = array();
+		
+		$this->ops_method = $this->opo_request->getRequestMethod();
+		
+		if(!in_array($this->ops_method, array("PUT","DELETE","GET","OPTIONS"))){
+			$this->addError(("Invalid HTTP request method"));
+		}
+		
+		$this->opn_id = intval($this->opo_request->getParameter("id",pInteger));
+
+		$vs_post_data = $this->opo_request->getRawPostData();
+		if(strlen(trim($vs_post_data))>0){
+			$this->opa_post = json_decode($vs_post_data,true);
+			if(!is_array($this->opa_post)){
+				$this->addError(_t("Data sent via POST doesn't seem to be in JSON format"));
+			}
+		} else {
+			$this->opa_post = array();
+		}
+		
+		if(!$this->opo_dm->getTableNum($ps_table)){
+			$this->addError(_t("Table name does not exist"));
+		}
+	}
+	# -------------------------------------------------------
+	public function getRequestMethod(){
+		return $this->ops_method;
+	}
+	# -------------------------------------------------------
+	public function getRequestBodyArray(){
+		return $this->opa_post;
+	}
+	# -------------------------------------------------------
+	public function hasErrors(){
+		return (bool) sizeof($this->opa_errors);
+	}
+	# -------------------------------------------------------
+	public function getErrors(){
+		return $this->opa_errors;
+	}
+	# -------------------------------------------------------
+	public function addError($ps_error){
+		$this->opa_errors[] = $ps_error;
+		return true;
+	}
+	# -------------------------------------------------------
+}
+
+?>
