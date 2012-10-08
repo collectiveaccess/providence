@@ -147,7 +147,7 @@ class ItemService {
 		$t_list = new ca_lists();
 		$t_locales = new ca_locales();
 
-		$va_locales = $t_locales->getLocaleList();
+		$va_locales = $t_locales->getLocaleList(array("available_for_cataloguing_only" => true));
 		
 		$va_return = array();
 
@@ -168,7 +168,7 @@ class ItemService {
 		if(is_array($va_labels)){
 			foreach($va_labels as $vn_locale_id => $va_labels_by_locale){
 				foreach($va_labels_by_locale as $va_tmp){
-					$va_return["preferred_labels"][$va_locales[$vn_locale_id]["code"]][] = $va_tmp[$t_instance->getLabelDisplayField()];
+					$va_return["nonpreferred_labels"][$va_locales[$vn_locale_id]["code"]][] = $va_tmp[$t_instance->getLabelDisplayField()];
 				}
 			}
 		}
