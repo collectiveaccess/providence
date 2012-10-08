@@ -195,36 +195,6 @@ class ItemService extends BaseJSONService {
 	}
 	# -------------------------------------------------------
 	/**
-	 * Get BaseModel instance for given table and optionally load the record with the specified ID
-	 * @param string $ps_table table name, e.g. "ca_objects"
-	 * @param int $pn_id primary key value of the record to load
-	 * @return BaseModel
-	 */
-	private function _getTableInstance($ps_table,$pn_id=null){
-		if(!in_array($ps_table, array(
-			"ca_objects", "ca_object_lots", "ca_entities",
-			"ca_places", "ca_occurrences", "ca_collections",
-			"ca_list_items", "ca_object_representations",
-			"ca_storage_locations", "ca_movements",
-			"ca_loans", "ca_tours", "ca_tour_stops")))
-		{
-			$this->opa_errors[] = _t("Accessing this table directly is not allowed");
-			return false;
-		}
-
-		$t_instance = $this->opo_dm->getInstanceByTableName($ps_table);
-
-		if($pn_id > 0){
-			if(!$t_instance->load($pn_id)){
-				$this->opa_errors[] = _t("ID does not exist");
-				return false;
-			}
-		}
-
-		return $t_instance;
-	}
-	# -------------------------------------------------------
-	/**
 	 * Filter fields which should not be available for every service user
 	 * @param string $ps_bundle field name
 	 * @return boolean true if bundle should not be returned to user
