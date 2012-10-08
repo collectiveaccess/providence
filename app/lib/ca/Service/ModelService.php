@@ -58,7 +58,6 @@ class ModelService extends BaseJSONService {
 						$this->addError(_t("Invalid request body format"));
 						return false;
 					}
-					
 				}
 				break;
 			default:
@@ -77,8 +76,8 @@ class ModelService extends BaseJSONService {
 			foreach($va_types as $va_type){
 				$va_return[$va_type["idno"]] = $this->getModelInfoForType($va_type["idno"]);
 			}
-		} else if(is_array($pa_types["types"])){
-			foreach($pa_types["types"] as $vs_type){
+		} else if(is_array($pa_types)){
+			foreach($pa_types as $vs_type){
 				$va_return[$vs_type] = $this->getModelInfoForType($vs_type);
 			}
 		} else {
