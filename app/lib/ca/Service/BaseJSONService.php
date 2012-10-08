@@ -47,6 +47,8 @@ class BaseJSONService {
 	protected $opn_id;
 	protected $opa_post;
 	protected $ops_method;
+
+	protected $opa_valid_tables;
 	# -------------------------------------------------------
 	public function __construct($po_request,$ps_table=""){
 		$this->opo_request = $po_request;
@@ -75,6 +77,14 @@ class BaseJSONService {
 		if(!$this->opo_dm->getTableNum($ps_table)){
 			$this->addError(_t("Table name does not exist"));
 		}
+
+		$this->opa_valid_tables = array(
+			"ca_objects", "ca_object_lots", "ca_entities",
+			"ca_places", "ca_occurrences", "ca_collections",
+			"ca_list_items", "ca_lists", "ca_object_representations",
+			"ca_storage_locations", "ca_movements",
+			"ca_loans", "ca_tours", "ca_tour_stops"
+		);
 	}
 	# -------------------------------------------------------
 	public function getRequestMethod(){
@@ -98,6 +108,10 @@ class BaseJSONService {
 		return true;
 	}
 	# -------------------------------------------------------
+	public function getTableName(){
+		return $this->ops_table;
+	}
+	# -------------------------------------------------------
 	/**
 	 * Get BaseModel instance for given table and optionally load the record with the specified ID
 	 * @param string $ps_table table name, e.g. "ca_objects"
@@ -105,13 +119,7 @@ class BaseJSONService {
 	 * @return BaseModel
 	 */
 	protected function _getTableInstance($ps_table,$pn_id=null){
-		if(!in_array($ps_table, array(
-			"ca_objects", "ca_object_lots", "ca_entities",
-			"ca_places", "ca_occurrences", "ca_collections",
-			"ca_list_items", "ca_object_representations",
-			"ca_storage_locations", "ca_movements",
-			"ca_loans", "ca_tours", "ca_tour_stops")))
-		{
+		if(!in_array($ps_table, $this->opa_valid_tables)){
 			$this->opa_errors[] = _t("Accessing this table directly is not allowed");
 			return false;
 		}
