@@ -1,6 +1,6 @@
 <?php
 /* ----------------------------------------------------------------------
- * app/service/views/service_error.php :
+ * app/service/views/json_error.php :
  * ----------------------------------------------------------------------
  * CollectiveAccess
  * Open-source collections management software

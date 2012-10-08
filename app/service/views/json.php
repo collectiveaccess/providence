@@ -1,6 +1,6 @@
 <?php
 /* ----------------------------------------------------------------------
- * app/service/views/item_json.php :
+ * app/service/views/json.php :
  * ----------------------------------------------------------------------
  * CollectiveAccess
  * Open-source collections management software
