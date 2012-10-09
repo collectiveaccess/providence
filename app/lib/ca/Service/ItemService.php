@@ -194,18 +194,6 @@ class ItemService extends BaseJSONService {
 		return $va_return;
 	}
 	# -------------------------------------------------------
-	/**
-	 * Filter fields which should not be available for every service user
-	 * @param string $ps_bundle field name
-	 * @return boolean true if bundle should not be returned to user
-	 */
-	private function _isBadBundle($ps_bundle){
-		if(stripos($ps_bundle, "ca_users")!==false){
-			return true;
-		}
-		return false;
-	}
-	# -------------------------------------------------------
 }
 
 ?>
