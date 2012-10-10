@@ -103,7 +103,7 @@ var caUI = caUI || {};
 						panelUrl += '/types/' + options.types;
 					}
 					options.quickaddPanel.showPanel(panelUrl);
-					jQuery('#' + options.quickaddPanel.getPanelContentID()).data('autocompleteInputID', options.autocompleteInputID + id);
+					jQuery('#' + options.quickaddPanel.getPanelContentID()).data('autocompleteInputID', autocompleter_id);
 					jQuery('#' + options.quickaddPanel.getPanelContentID()).data('autocompleteItemIDID', options.itemID + id + ' #' + options.fieldNamePrefix + 'id' + id);
 					jQuery('#' + options.quickaddPanel.getPanelContentID()).data('autocompleteTypeIDID', options.itemID + id + ' #' + options.fieldNamePrefix + 'type_id' + id);
 					jQuery('#' + options.quickaddPanel.getPanelContentID()).data('panel', options.quickaddPanel);
@@ -111,14 +111,26 @@ var caUI = caUI || {};
 					jQuery('#' + options.quickaddPanel.getPanelContentID()).data('autocompleteInput', jQuery("#" + options.autocompleteInputID + id).val());
 					
 					jQuery("#" + options.autocompleteInputID + id).val('');
+				} else {
+					if(!parseInt(data[1])) {
+						jQuery('#' + autocompleter_id).val('');  // no matches so clear text input
+					}
 				}
 				options.select(id, data, formatted);
+			});
+			
+			jQuery('#' + autocompleter_id).blur(function() {
+				// If nothing has been selected remove all content from autocompleter text input
+				if(!jQuery('#' + options.itemID + id + ' #' + options.fieldNamePrefix + 'id' + id).val()) {
+					jQuery('#' + autocompleter_id).val('');
+				}
 			});
 		}
 		
 		options.select = function(id, data, formatted) {
 			var item_id = data[1];
 			var type_id = (data[2]) ? data[2] : '';
+			if (parseInt(item_id) < 0) { return; }
 			
 			jQuery('#' + options.itemID + id + ' #' + options.fieldNamePrefix + 'id' + id).val(item_id);
 			jQuery('#' + options.itemID + id + ' #' + options.fieldNamePrefix + 'type_id' + id).css('display', 'inline');

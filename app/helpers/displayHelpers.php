@@ -1572,6 +1572,9 @@ $ca_relationship_lookup_parse_cache = array();
 		$ps_inline_create_message = (isset($pa_options['inlineCreateMessage'])) ? (string)$pa_options['inlineCreateMessage'] : null;
 		$ps_inline_create_query = (isset($pa_options['inlineCreateQuery'])) ? (string)$pa_options['inlineCreateQuery'] : null;
 		
+		$ps_empty_result_message = (isset($pa_options['emptyResultMessage'])) ? (string)$pa_options['emptyResultMessage'] : null;
+		$ps_empty_result_query = (isset($pa_options['emptyResultQuery'])) ? (string)$pa_options['emptyResultQuery'] : null;
+		
 		
 		$va_exclude = (isset($pa_options['exclude']) && is_array($pa_options['exclude'])) ? $pa_options['exclude'] : array();
 		
@@ -1628,11 +1631,17 @@ $ca_relationship_lookup_parse_cache = array();
 		$vs_type_id_fld = method_exists($t_rel, 'getTypeFieldName') ? $t_rel->getTypeFieldName() : null;
 		
 		$vn_c = 0;
-		$vb_include_inline_add_message = false;
-		
+		$vb_include_inline_add_message = $vb_include_empty_result_message = false;
+	
 		if (is_object($qr_rel_items)) {
-			if ($ps_inline_create_message && !$qr_rel_items->numHits()) {
-				$vb_include_inline_add_message = true;	
+			if (!$qr_rel_items->numHits()) {
+				if ($ps_inline_create_message) { 
+					$vb_include_inline_add_message = true;	
+				} else {
+					if ($ps_empty_result_message) { 
+						$vb_include_empty_result_message = true;	
+					}
+				}
 			} else {
 				while($qr_rel_items->nextHit()) {
 					$vn_id = $qr_rel_items->get("{$vs_rel_table}.{$vs_rel_pk}");
@@ -1811,6 +1820,16 @@ $ca_relationship_lookup_parse_cache = array();
 					$vs_rel_pk => 0,
 					'_query' => $ps_inline_create_query
 				);
+		} else {
+			if ($vb_include_empty_result_message) {
+				$va_initial_values[0] = 
+					array(
+						'_display' => $ps_empty_result_message,
+						'id' => -1,
+						$vs_rel_pk => -1,
+						'_query' => $ps_empty_result_query
+					);
+			}
 		}
 		
 		return $va_initial_values;		
