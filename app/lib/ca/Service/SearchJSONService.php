@@ -40,7 +40,7 @@ class SearchJSONService extends BaseJSONService {
 	private $ops_query;
 	# -------------------------------------------------------
 	public function __construct($po_request,$ps_table=""){
-		$this->ops_query = intval($po_request->getParameter("q",pString));
+		$this->ops_query = $po_request->getParameter("q",pString);
 
 		parent::__construct($po_request,$ps_table);
 	}

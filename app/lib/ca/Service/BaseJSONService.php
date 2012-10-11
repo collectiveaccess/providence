@@ -124,10 +124,15 @@ class BaseJSONService {
 			return false;
 		}
 
+		$vb_include_deleted = intval($this->opo_request->getParameter("include_deleted",pInteger));
+
 		$t_instance = $this->opo_dm->getInstanceByTableName($ps_table);
 
 		if($pn_id > 0){
 			if(!$t_instance->load($pn_id)){
+				$this->opa_errors[] = _t("ID does not exist");
+				return false;
+			} else if(!$vb_include_deleted && $t_instance->get("deleted")){
 				$this->opa_errors[] = _t("ID does not exist");
 				return false;
 			}

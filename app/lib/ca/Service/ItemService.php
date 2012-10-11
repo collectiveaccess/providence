@@ -58,8 +58,25 @@ class ItemService extends BaseJSONService {
 					return array();
 				}
 				break;
-			// @TODO
 			case "PUT":
+				if(sizeof($this->getRequestBodyArray())==0){
+					$this->addError(_t("Missing request body for PUT"));
+					return false;
+				}
+				if($this->opn_id>0){
+					// @TODO: edit existing record service
+				} else {
+					return $this->addItem();
+				}
+				break;
+			case "DELETE":
+				if($this->opn_id>0){
+					return $this->deleteItem();
+				} else {
+					$this->addError(_t("No identifier specified"));
+					return false;
+				}
+				break;
 			default:
 				$this->addError(_t("Invalid HTTP request method"));
 				return false;
@@ -174,17 +191,10 @@ class ItemService extends BaseJSONService {
 			}
 		}
 
-		// yes, not all combinations between these tables have relationships
-		// but it also doesn't hurt to query for them
-		$va_possible_tables = array(
-			"ca_objects", "ca_object_lots", "ca_entities",
-			"ca_places", "ca_occurrences", "ca_collections",
-			"ca_list_items", "ca_object_representations",
-			"ca_storage_locations", "ca_movements",
-			"ca_loans", "ca_tours", "ca_tour_stops"
-		);
-
-		foreach($va_possible_tables as $vs_rel_table){
+		// relationships
+		// yes, not all combinations between these tables have 
+		// relationships but it also doesn't hurt to query
+		foreach($this->opa_valid_tables as $vs_rel_table){
 			$va_related_items = $t_instance->get($vs_rel_table,array("returnAsArray" => true));
 			if(is_array($va_related_items) && sizeof($va_related_items)>0){
 				$va_return["related"][$vs_rel_table] = array_values($va_related_items);
@@ -192,6 +202,129 @@ class ItemService extends BaseJSONService {
 		}
 
 		return $va_return;
+	}
+	# -------------------------------------------------------
+	private function addItem(){
+		if(!($t_instance = $this->_getTableInstance($this->ops_table))){
+			return false;
+		}
+
+		$t_locales = new ca_locales();
+		$va_post = $this->getRequestBodyArray();
+
+		// intrinsic fields
+		if(is_array($va_post["intrinsic_fields"]) && sizeof($va_post["intrinsic_fields"])){
+			foreach($va_post["intrinsic_fields"] as $vs_field_name => $vs_value){
+				$t_instance->set($vs_field_name,$vs_value);
+			}
+		} else {
+			$this->addError(_t("No intrinsic fields specified"));
+			return false;
+		}
+
+		// attributes
+		if(is_array($va_post["attributes"]) && sizeof($va_post["attributes"])){
+			foreach($va_post["attributes"] as $vs_attribute_name => $va_values){
+				foreach($va_values as $va_value){
+					if($va_value["locale"]){
+						$va_value["locale_id"] = $t_locales->localeCodeToID($va_value["locale"]);
+						unset($va_value["locale"]);
+					}
+					$t_instance->addAttribute($va_value,$vs_attribute_name);
+				}
+			}
+		}
+
+		$t_instance->setMode(ACCESS_WRITE);
+		$t_instance->insert();
+
+		// AFTER INSERT STUFF
+
+		// preferred labels
+		if(is_array($va_post["preferred_labels"]) && sizeof($va_post["preferred_labels"])){
+			foreach($va_post["preferred_labels"] as $va_label){
+				if($va_label["locale"]){
+					$vn_locale_id = $t_locales->localeCodeToID($va_label["locale"]);
+					unset($va_label["locale"]);
+				}
+				$t_instance->addLabel($va_label,$vn_locale_id,null,true);
+			}
+		}
+
+		// nonpreferred labels
+		if(is_array($va_post["nonpreferred_labels"]) && sizeof($va_post["nonpreferred_labels"])){
+			foreach($va_post["nonpreferred_labels"] as $va_label){
+				if($va_label["locale"]){
+					$vn_locale_id = $t_locales->localeCodeToID($va_label["locale"]);
+					unset($va_label["locale"]);
+				}
+				if($va_label["type_id"]){
+					$vn_type_id = $va_label["type_id"];
+					unset($va_label["type_id"]);
+				} else {
+					$vn_type_id = null;
+				}
+				$t_instance->addLabel($va_label,$vn_locale_id,$vn_type_id,false);
+			}
+		}
+
+		// relationships
+		if(is_array($va_post["related"]) && sizeof($va_post["related"])>0){
+			foreach($va_post["related"] as $vs_table => $va_relationships){
+				foreach($va_relationships as $va_relationship){
+					$vs_source_info = isset($va_relationship["source_info"]) ? $va_relationship["source_info"] : null;
+					$vs_effective_date = isset($va_relationship["effective_date"]) ? $va_relationship["effective_date"] : null;
+					$vs_direction = isset($va_relationship["direction"]) ? $va_relationship["direction"] : null;
+
+					$t_rel_instance = $this->_getTableInstance($vs_table);
+
+					$vs_pk = isset($va_relationship[$t_rel_instance->primaryKey()]) ? $va_relationship[$t_rel_instance->primaryKey()] : null;
+					$vs_type_id = isset($va_relationship["type_id"]) ? $va_relationship["type_id"] : null;
+
+					$t_instance->addRelationship($vs_table,$vs_pk,$vs_type_id,$vs_effective_date,$vs_source_info,$vs_direction);
+
+					// @TODO add relationship attributes as soon as they're implemented
+				}
+			}
+		}
+
+		if($t_instance->numErrors()>0){
+			foreach($t_instance->getErrors() as $vs_error){
+				$this->addError($vs_error);
+			}
+			// don't leave orphaned record in case something
+			// went wrong with labels or relationships
+			if($t_instance->getPrimaryKey()){
+				$t_instance->delete();
+			}
+			return false;
+		} else {
+			return array($t_instance->primaryKey() => $t_instance->getPrimaryKey());
+		}
+	}
+	# -------------------------------------------------------
+	private function deleteItem(){
+		if(!($t_instance = $this->_getTableInstance($this->ops_table,$this->opn_id))){
+			return false;
+		}
+
+		$va_post = $this->getRequestBodyArray();
+
+		$vb_delete_related = isset($va_post["delete_related"]) ? $va_post["delete_related"] : false;
+		$vb_hard_delete = isset($va_post["hard"]) ? $va_post["hard"] : false;
+
+		$t_instance->setMode(ACCESS_WRITE);
+		$t_instance->delete($vb_delete_related,array("hard" => $vb_hard_delete));
+
+
+		if($t_instance->numErrors()>0){
+			foreach($t_instance->getErrors() as $vs_error){
+				$this->addError($vs_error);
+			}
+			return false;
+		} else {
+			return array("deleted" => $this->opn_id);
+		}
 	}
 	# -------------------------------------------------------
 }
