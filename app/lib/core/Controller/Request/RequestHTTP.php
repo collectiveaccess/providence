@@ -143,6 +143,17 @@ class RequestHTTP extends Request {
 		
 		if($this->ops_script_name=="service.php"){
 			$this->ops_raw_post_data = file_get_contents("php://input");
+
+			if($_SERVER["PHP_AUTH_USER"] && $_SERVER["PHP_AUTH_PW"]){
+				$this->doAuthentication(array(
+					'noPublicUsers' => true,
+					"no_headers" => true,
+					"dont_redirect" => true,
+					"options" => array(),
+					"user_name" => $_SERVER["PHP_AUTH_USER"],
+					"password" => $_SERVER["PHP_AUTH_PW"],
+				));
+			}
 		}
 		
 		$this->ops_base_path = join('/', $va_tmp);

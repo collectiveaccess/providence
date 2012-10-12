@@ -25,7 +25,7 @@
  *
  * ----------------------------------------------------------------------
  */
- 	require_once(__CA_LIB_DIR__.'/ca/Service/AccessControlService.php');
+ 	require_once(__CA_LIB_DIR__.'/ca/Service/deprecated/AccessControlService.php');
 	require_once(__CA_LIB_DIR__.'/ca/Service/BaseServiceController.php');
 	require_once(__CA_LIB_DIR__.'/core/Zend/Soap/Server.php');
 	require_once(__CA_LIB_DIR__.'/core/Zend/Soap/AutoDiscover.php');

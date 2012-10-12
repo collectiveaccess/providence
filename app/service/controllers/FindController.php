@@ -1,6 +1,6 @@
 <?php
 /* ----------------------------------------------------------------------
- * app/service/controllers/ItemController.php :
+ * app/service/controllers/FindController.php :
  * ----------------------------------------------------------------------
  * CollectiveAccess
  * Open-source collections management software
@@ -26,16 +26,16 @@
  * ----------------------------------------------------------------------
  */
 	require_once(__CA_LIB_DIR__.'/ca/Service/BaseServiceController.php');
-	require_once(__CA_LIB_DIR__.'/ca/Service/ItemService.php');
+	require_once(__CA_LIB_DIR__.'/ca/Service/SearchJSONService.php');
 
-	class ItemController extends BaseServiceController {
+	class FindController extends BaseServiceController {
 		# -------------------------------------------------------
 		public function __construct(&$po_request, &$po_response, $pa_view_paths) {
  			parent::__construct($po_request, $po_response, $pa_view_paths);
  		}
 		# -------------------------------------------------------
 		public function __call($ps_table, $pa_args){
-			$vo_service = new ItemService($this->request,$ps_table);
+			$vo_service = new SearchJSONService($this->request,$ps_table);
 			$va_content = $vo_service->dispatch();
 
 			if(intval($this->request->getParameter("pretty",pInteger))>0){

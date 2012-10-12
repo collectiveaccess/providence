@@ -159,6 +159,9 @@
 				if($pb_quickadd || ($this->request->user && $this->request->user->canDoAction('can_quickadd_'.$this->opo_item_instance->tableName()))) {
 					$va_opts['inlineCreateQuery'] = $ps_query;
 					$va_opts['inlineCreateMessage'] = _t('<em>%1</em> does not exist. Create?', $ps_query);
+				} else {
+					$va_opts['emptyResultQuery'] = $ps_query;
+					$va_opts['emptyResultMessage'] = _t('No matches found for <em>%1</em>', $ps_query);
 				}
 				
 				$va_items = caProcessRelationshipLookupLabel($qr_res, $this->opo_item_instance, $va_opts);
