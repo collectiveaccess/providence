@@ -832,11 +832,12 @@
 										}
 										
 										if (!(bool)$vn_state) {	// no option
+											$va_wheres[] = "(".$t_rel_item->tableName().".".$t_rel_item->primaryKey()." IS NULL)";
 											if ($t_rel_item->hasField('deleted')) {
 												$va_wheres[] = "((".$t_rel_item->tableName().".deleted = 0) OR (".$t_rel_item->tableName().".deleted IS NULL))";
 											}							
 											if (isset($pa_options['checkAccess']) && is_array($pa_options['checkAccess']) && sizeof($pa_options['checkAccess']) && $t_rel_item->hasField('access')) {
-												$va_wheres[] = "((".$t_rel_item->tableName().".".$t_rel_item->primaryKey()." IS NOT NULL) AND (".$t_rel_item->tableName().".access NOT IN (".join(',', $pa_options['checkAccess']).")) OR ((".$t_rel_item->tableName().".".$t_rel_item->primaryKey()." IS NULL) AND (".$t_rel_item->tableName().".access IS NULL)))";
+												$va_wheres[] = "((".$t_rel_item->tableName().".access NOT IN (".join(',', $pa_options['checkAccess']).")) OR ((".$t_rel_item->tableName().".".$t_rel_item->primaryKey()." IS NULL) AND (".$t_rel_item->tableName().".access IS NULL)))";
 											}
 										} else {							// yes option
 											$va_wheres[] = "(".$t_rel_item->tableName().".".$t_rel_item->primaryKey()." IS NOT NULL)";
