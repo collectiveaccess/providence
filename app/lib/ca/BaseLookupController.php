@@ -71,6 +71,7 @@
 			$ps_types = $this->request->getParameter('types', pString);
 			$pb_no_subtypes = (bool)$this->request->getParameter('noSubtypes', pInteger);
 			$pb_quickadd = (bool)$this->request->getParameter('quickadd', pInteger);
+			$pb_no_inline = (bool)$this->request->getParameter('noInline', pInteger);
 			
 			if (!($pn_limit = $this->request->getParameter('limit', pInteger))) { $pn_limit = 100; }
 			$va_items = array();
@@ -156,7 +157,7 @@
 				$qr_res->setOption('dontPrefetchAttributes', true);
 				
 				$va_opts = array('exclude' => $va_excludes, 'limit' => $pn_limit);
-				if($pb_quickadd || ($this->request->user && $this->request->user->canDoAction('can_quickadd_'.$this->opo_item_instance->tableName()))) {
+				if(!$pb_no_inline && ($pb_quickadd || ($this->request->user && $this->request->user->canDoAction('can_quickadd_'.$this->opo_item_instance->tableName())))) {
 					$va_opts['inlineCreateQuery'] = $ps_query;
 					$va_opts['inlineCreateMessage'] = _t('<em>%1</em> does not exist. Create?', $ps_query);
 				} else {

@@ -1,6 +1,6 @@
 <?php
 /* ----------------------------------------------------------------------
- * app/views/editor/entities/quickadd_html.php : 
+ * app/views/editor/storage_locations/quickadd_html.php : 
  * ----------------------------------------------------------------------
  * CollectiveAccess
  * Open-source collections management software
@@ -25,7 +25,6 @@
  *
  * ----------------------------------------------------------------------
  */
- 
  	global $g_ui_locale_id;
  
  	$t_subject 			= $this->getVar('t_subject');
@@ -39,7 +38,7 @@
 
 	$vb_can_edit	 	= $t_subject->isSaveable($this->request);
 	
-	$vs_form_name = "EntityQuickAddForm";
+	$vs_form_name = "StorageLocationQuickAddForm";
 ?>		
 <form action="#" name="<?php print $vs_form_name; ?>" method="POST" enctype="multipart/form-data" id="<?php print $vs_form_name.$vs_field_name_prefix.$vs_n; ?>">
 	<div class='dialogHeader quickAddDialogHeader'><?php 
@@ -47,7 +46,7 @@
 	
 	if ($vb_can_edit) {
 		print "<div style='float: right;'>".caJSButton($this->request, __CA_NAV_BUTTON_ADD__, _t("Add %1", $t_subject->getProperty('NAME_SINGULAR')), "{$vs_form_name}{$vs_field_name_prefix}{$vs_n}", array("onclick" => "caSave{$vs_form_name}{$vs_field_name_prefix}{$vs_n}(event);"))
-		.' '.caJSButton($this->request, __CA_NAV_BUTTON_CANCEL__, _t("Cancel"), "{$vs_form_name}{$vs_field_name_prefix}{$vs_n}", array("onclick" => "jQuery(\"#{$vs_form_name}".$vs_field_name_prefix.$vs_n."\").parent().data(\"panel\").hidePanel();"))."</div><br style='clear: both;'/>\n";
+		.' '.caJSButton($this->request, __CA_NAV_BUTTON_CANCEL__, _t("Cancel"), "{$vs_form_name}{$vs_field_name_prefix}{$vs_n}", array("onclick" => "jQuery(\"#{$vs_form_name}{$vs_field_name_prefix}{$vs_n}\").parent().data(\"panel\").hidePanel();"))."</div><br style='clear: both;'/>\n";
 	}
 ?>
 	</div>
@@ -55,19 +54,71 @@
 		<div class="quickAddFormTopPadding"><!-- empty --></div>
 			<div class="quickAddErrorContainer" id="<?php print $vs_form_name; ?>Errors<?php print $vs_field_name_prefix.$vs_n; ?>"> </div>
 <?php
-
+			// Output hierarchy browser
+			$va_lookup_urls = caJSONLookupServiceUrl($this->request, 'ca_storage_locations');
+?>
+	<div class='bundleLabel'><span class="formLabelText" id="ObjectEditorForm_ca_entities"><?php print _t('Location in hierarchy'); ?></span><br/>
+		<div class="bundleContainer">
+			<div class="caItemList">
+				<div class="hierarchyBrowserContainer">
+					<div id="caQuickAdd<?php print $vs_form_name; ?>HierarchyBrowser" class="hierarchyBrowserSmall">
+						<!-- Content for hierarchy browser is dynamically inserted here by ca.hierbrowser -->
+					</div><!-- end hierbrowser -->
+					<div>
+						<?php print _t('Search'); ?>: <input type="text" id="caQuickAdd<?php print $vs_form_name; ?>HierarchyBrowserSearch" name="search" value="<?php print htmlspecialchars($this->getVar('search'), ENT_QUOTES, 'UTF-8'); ?>" size="100"/>
+					</div>
+				</div>
+							
+				<script type="text/javascript">
+					// Set up "add" hierarchy browser
+					var o<?php print $vs_form_name.$vs_field_name_prefix; ?>HierarchyBrowser = null;				
+					if (!o<?php print $vs_form_name.$vs_field_name_prefix; ?>HierarchyBrowser) {
+						o<?php print $vs_form_name.$vs_field_name_prefix; ?>HierarchyBrowser = caUI.initHierBrowser('caQuickAdd<?php print $vs_form_name.$vs_field_name_prefix; ?>HierarchyBrowser', {
+							levelDataUrl: '<?php print $va_lookup_urls['levelList']; ?>',
+							initDataUrl: '<?php print $va_lookup_urls['ancestorList']; ?>',
+							editButtonIcon: '<img src="<?php print $this->request->getThemeUrlPath(); ?>/graphics/buttons/arrow_grey_right.gif" border="0" title="Edit storage location">',
+						
+							readOnly: false,
+							selectOnLoad: true,
+							
+							initItemID: '<?php print (int)$this->getVar("default_parent_id"); ?>',
+							indicatorUrl: '<?php print $this->request->getThemeUrlPath(); ?>/graphics/icons/indicator.gif',
+							displayCurrentSelectionOnLoad: true,
+							
+							currentSelectionIDID: '<?php print $vs_form_name; ?>_parent_id',
+							currentSelectionDisplayID: 'browseCurrentSelection',
+							onSelection: function(item_id, parent_id, name, display, type_id) {
+								jQuery('#<?php print $vs_form_name; ?>_parent_id').val(item_id);
+							}
+						});
+					}
+					jQuery('#caQuickAdd<?php print $vs_form_name.$vs_field_name_prefix; ?>HierarchyBrowserSearch').autocomplete(
+						'<?php print caNavUrl($this->request, 'lookup', 'StorageLocation', 'Get', array('noInline' => 1)); ?>', {minChars: 3, matchSubset: 1, matchContains: 1, delay: 800}
+					);
+					jQuery('#caQuickAdd<?php print $vs_form_name.$vs_field_name_prefix; ?>HierarchyBrowserSearch').result(function(event, data, formatted) {
+						if (parseInt(data[1]) > 0) {
+							o<?php print $vs_form_name.$vs_field_name_prefix; ?>HierarchyBrowser.setUpHierarchy(data[1]);	// jump browser to selected item
+						}
+						jQuery('#caQuickAdd<?php print $vs_form_name.$vs_field_name_prefix; ?>HierarchyBrowserSearch').val('');
+					});
+				</script>
+				<input type="hidden" name="parent_id" value="<?php print (int)$this->getVar("default_parent_id"); ?>" id="<?php print $vs_form_name; ?>_parent_id"/>
+			</div>
+		</div>
+	</div>
+<?php
 			$va_force_new_label = array();
 			foreach($t_subject->getLabelUIFields() as $vn_i => $vs_fld) {
 				$va_force_new_label[$vs_fld] = '';
 			}
 			$va_force_new_label['locale_id'] = $g_ui_locale_id;							// use default locale
 			$va_force_new_label[$t_subject->getLabelDisplayField()] = $vs_q;				// query text is used for display field
-			$va_force_new_label = array_merge($va_force_new_label, DataMigrationUtils::splitEntityName($vs_q));		// query text split as entity name used for other entity label fields
 			
 			$va_form_elements = $t_subject->getBundleFormHTMLForScreen($this->getVar('screen'), array(
 					'request' => $this->request, 
 					'formName' => $vs_form_name.$vs_field_name_prefix.$vs_n,
-					'forceLabelForNew' => $va_force_new_label							// force query text to be default in label fields
+					'forceLabelForNew' => $va_force_new_label,							// force query text to be default in label fields
+					'omit' => array('parent_id')
 			));
 			
 			print join("\n", $va_form_elements);
@@ -81,7 +132,7 @@
 
 		<script type="text/javascript">
 			function caSave<?php print $vs_form_name.$vs_field_name_prefix.$vs_n; ?>(e) {
-				jQuery.post('<?php print caNavUrl($this->request, "editor/entities", "EntityQuickAdd", "Save"); ?>', jQuery("#<?php print $vs_form_name.$vs_field_name_prefix.$vs_n; ?>").serialize(), function(resp, textStatus) {
+				jQuery.post('<?php print caNavUrl($this->request, "editor/storage_locations", "StorageLocationQuickAdd", "Save"); ?>', jQuery("#<?php print $vs_form_name.$vs_field_name_prefix.$vs_n; ?>").serialize(), function(resp, textStatus) {
 				
 					if (resp.status == 0) {
 						var inputID = jQuery("#<?php print $vs_form_name.$vs_field_name_prefix.$vs_n; ?>").parent().data('autocompleteInputID');
@@ -92,7 +143,7 @@
 						jQuery('#' + itemIDID).val(resp.id);
 						jQuery('#' + typeIDID).val(resp.type_id);
 						
-						jQuery.jGrowl('<?php print addslashes(_t('Created entity ')); ?> <em>' + resp.display + '</em>', { header: '<?php print addslashes(_t('Quick add %1', $t_subject->getProperty('NAME_SINGULAR'))); ?>' }); 
+						jQuery.jGrowl('<?php print addslashes(_t('Created storage location ')); ?> <em>' + resp.display + '</em>', { header: '<?php print addslashes(_t('Quick add %1', $t_subject->getProperty('NAME_SINGULAR'))); ?>' }); 
 						jQuery("#<?php print $vs_form_name.$vs_field_name_prefix.$vs_n; ?>").parent().data('panel').hidePanel();
 					} else {
 						// error
@@ -115,7 +166,7 @@
 			function caSwitchTypeQuickAddForm<?php print $vs_field_name_prefix.$vs_n; ?>() {
 				jQuery("#<?php print $vs_form_name.$vs_field_name_prefix.$vs_n; ?> input[name=type_id]").val(jQuery("#<?php print $vs_form_name; ?>TypeID<?php print $vs_field_name_prefix.$vs_n; ?>").val());
 				var data = jQuery("#<?php print $vs_form_name.$vs_field_name_prefix.$vs_n; ?>").serialize();
-				jQuery("#<?php print $vs_form_name.$vs_field_name_prefix.$vs_n; ?>").parent().load("<?php print caNavUrl($this->request, 'editor/entities', 'EntityQuickAdd', 'Form'); ?>", data);
+				jQuery("#<?php print $vs_form_name.$vs_field_name_prefix.$vs_n; ?>").parent().load("<?php print caNavUrl($this->request, 'editor/storage_locations', 'StorageLocationQuickAdd', 'Form'); ?>", data);
 			}
 		</script>
 	</div>

@@ -75,6 +75,10 @@
 				return;
  			}
  			
+ 			if ($vn_parent_id = $this->request->getParameter('parent_id', pInteger)) {
+ 				$this->opo_result_context->setParameter($t_subject->tableName().'_last_parent_id', $vn_parent_id);
+ 			}
+ 			
  			//
  			// Is record of correct type?
  			// 
@@ -177,6 +181,8 @@
 			
 			$this->view->setVar('q', $this->request->getParameter('q', pString));
 			
+			$this->view->setVar('default_parent_id', $this->opo_result_context->getParameter($t_subject->tableName().'_last_parent_id'));
+			
 			$this->render('quickadd_html.php');
  		}
  		# -------------------------------------------------------
@@ -258,6 +264,10 @@
  			# trigger "BeforeSaveItem" hook 
 			$this->opo_app_plugin_manager->hookBeforeSaveItem(array('id' => null, 'table_num' => $t_subject->tableNum(), 'table_name' => $t_subject->tableName(), 'instance' => $t_subject, 'is_insert' => true));
  			
+ 			$vn_parent_id = $this->request->getParameter('parent_id', pInteger);
+ 			$t_subject->set('parent_id', $vn_parent_id);
+ 			$this->opo_result_context->setParameter($t_subject->tableName().'_last_parent_id', $vn_parent_id);
+ 			
  			$vb_save_rc = $t_subject->saveBundlesForScreen($this->request->getParameter('screen', pString), $this->request, array_merge($pa_options, array('ui_instance' => $t_ui)));
 			$this->view->setVar('t_ui', $t_ui);
 		
@@ -302,10 +312,10 @@
  				}
  			} else {
  				$this->opo_result_context->invalidateCache();
-  				$this->opo_result_context->saveContext();
  			}
+  			$this->opo_result_context->saveContext();
+ 			
  			# trigger "SaveItem" hook 
- 		
 			$this->opo_app_plugin_manager->hookSaveItem(array('id' => $vn_subject_id, 'table_num' => $t_subject->tableNum(), 'table_name' => $t_subject->tableName(), 'instance' => $t_subject, 'is_insert' => true));
  			
  			$vn_id = $t_subject->getPrimaryKey();

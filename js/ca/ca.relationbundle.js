@@ -100,7 +100,13 @@ var caUI = caUI || {};
 					var panelUrl = options.quickaddUrl;
 					if (data[3]) { panelUrl += '/q/' + escape(data[3]); }
 					if (options && options.types) {
-						panelUrl += '/types/' + options.types;
+						options.types = options.types.join(",");
+						if (options.types.length > 0) {
+							panelUrl += '/types/' + options.types;
+						}
+					}
+					if (options.fieldNamePrefix && (options.fieldNamePrefix.length > 0)) {
+						panelUrl += '/field_name_prefix/' + options.fieldNamePrefix;
 					}
 					options.quickaddPanel.showPanel(panelUrl);
 					jQuery('#' + options.quickaddPanel.getPanelContentID()).data('autocompleteInputID', autocompleter_id);
