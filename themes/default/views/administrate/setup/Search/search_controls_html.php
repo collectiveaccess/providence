@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2009-2011 Whirl-i-Gig
+ * Copyright 2009-2012 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -28,7 +28,7 @@
  	
  	$t_subject = $this->getVar('t_subject');
  	$vs_table = $t_subject->tableName();
- 	$va_lookup_urls = caJSONLookupServiceUrl($this->request, $vs_table);
+ 	$va_lookup_urls = caJSONLookupServiceUrl($this->request, $vs_table, array('noInline' => 1));
  	
  	$vs_type_id_form_element = '';
 	if ($vn_type_id = intval($this->getVar('type_id'))) {
@@ -159,10 +159,13 @@
 						'<?php print $va_lookup_urls['search']; ?>', {minChars: 3, matchSubset: 1, matchContains: 1, delay: 800}
 					);
 					jQuery('#browseSearch').result(function(event, data, formatted) {
-						oHierBrowser.setUpHierarchy(data[1]);	// jump browser to selected item
-						if (stateCookieJar.get('<?php print $vs_table; ?>BrowserIsClosed') == 1) {
-							jQuery("#browseToggle").click();
+						if (parseInt(data[1]) > 0) {
+							oHierBrowser.setUpHierarchy(data[1]);	// jump browser to selected item
+							if (stateCookieJar.get('<?php print $vs_table; ?>BrowserIsClosed') == 1) {
+								jQuery("#browseToggle").click();
+							}
 						}
+						jQuery('#browseSearch').val('');
 					});
 					jQuery("#browseToggle").click(function() {
 						jQuery("#browse").slideToggle(350, function() { 
