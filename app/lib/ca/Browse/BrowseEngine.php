@@ -1631,8 +1631,6 @@
 			
 			$va_all_criteria = $this->getCriteria();
 			
-			// Skip facets that have already been browsed upon [DISABLED (for now)]
-			if (isset($va_all_criteria[$ps_facet_name])) { return ($vb_check_availability_only) ? false : array(); }
 			$va_criteria = $this->getCriteria($ps_facet_name);
 			
 			$va_facet_info = $this->opa_browse_settings['facets'][$ps_facet_name];
