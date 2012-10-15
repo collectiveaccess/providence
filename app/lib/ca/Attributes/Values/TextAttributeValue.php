@@ -248,7 +248,7 @@
  				$vs_element = "<script type='text/javascript'>jQuery(document).ready(function() {
  			var e = CKEDITOR.instances['{fieldNamePrefix}".$pa_element_info['element_id']."_{n}'];
     		if (e) { e.destroy(true); }
-			jQuery('.jqueryCkeditor').ckeditor(function() {
+			jQuery('#{fieldNamePrefix}".$pa_element_info['element_id']."_{n}').ckeditor(function() {
 				this.on( 'change', function(e) { 
 					if (caUI && caUI.utils) { caUI.utils.showUnsavedChangesWarning(true);  }
 				 });
