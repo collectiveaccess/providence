@@ -517,7 +517,7 @@ require_once(__CA_LIB_DIR__.'/core/Parsers/TimeExpressionParser.php');
 			$vs_buf .= "<br style='clear: both;'/></div></h4>\n";
 		} else {	
 			if ($vn_item_id) {
-				if($po_view->request->user->canDoAction("can_edit_".$vs_priv_table_name)){
+				if($po_view->request->user->canDoAction("can_edit_".$vs_priv_table_name) && (sizeof($t_item->getTypeList()) > 1)){
 					if ($po_view->request->user->canDoAction("can_change_type_{$vs_table_name}")) {
 						
 						$vs_buf .= "<div id='inspectorChangeType'><div id='inspectorChangeTypeButton'><a href='#' onclick='caTypeChangePanel.showPanel(); return false;'>".caNavIcon($po_view->request, __CA_NAV_BUTTON_CHANGE__, null, array('title' => _t('Change type')))."</a></div></div>\n";
