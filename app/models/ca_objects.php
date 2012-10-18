@@ -1094,6 +1094,26 @@ class ca_objects extends BundlableLabelableBaseModelWithAttributes implements IB
  		return $va_rep_list;
  	}
  	# ------------------------------------------------------
+ 	/**
+ 	 * Returns information for representation attached to the current object with the specified MD5 hash. 
+ 	 *
+ 	 * @param string $ps_md5 The MD5 hash to return representation info for. 
+ 	 * @param array $pa_options Options for selection of representations to return; same as options for ca_objects::getRepresentations()
+ 	 *
+ 	 * @return array An array with information about the matching representation, in the same format as that returned by ca_objects::getRepresentations(), or null if there is no match
+ 	 */
+ 	public function representationWithMD5($ps_md5, $pa_options=null) {
+ 		$va_rep_list = array();
+ 		if (is_array($va_reps = $this->getRepresentations($pa_options))) {
+ 			foreach($va_reps as $vn_rep_id => $va_rep) {
+ 				if ($ps_mimetype == $va_rep['md5']) {	
+ 					return $va_rep;
+ 				}
+ 			}
+ 		}
+ 		return null;
+ 	}
+ 	# ------------------------------------------------------
  	#
  	# ------------------------------------------------------
 	/**

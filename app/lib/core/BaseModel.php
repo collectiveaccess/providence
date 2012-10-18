@@ -2682,6 +2682,7 @@ class BaseModel extends BaseObject {
 						//$this->rebuildHierarchicalIndex($this->get($vs_hier_id_fld));
 						$t_instance = $this->_DATAMODEL->getInstanceByTableName($this->tableName());
 						foreach($va_rebuild_hierarchical_index as $vn_child_id) {
+							if ($vn_child_id == $this->getPrimaryKey()) { continue; }
 							if ($t_instance->load($vn_child_id)) {
 								$t_instance->setMode(ACCESS_WRITE);
 								$t_instance->set($this->getProperty('HIERARCHY_ID_FLD'), $vn_hierarchy_id);

@@ -992,7 +992,6 @@ class SearchEngine extends SearchBase {
 				$this->opa_search_type_ids = array_merge($this->opa_search_type_ids, $va_ids);
 			}
 		}
-		
 		return true;
 	}
 	# ------------------------------------------------------
