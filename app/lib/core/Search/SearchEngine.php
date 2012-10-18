@@ -975,7 +975,7 @@ class SearchEngine extends SearchBase {
 		
 		$this->opa_search_type_ids = array();
 		foreach($pa_type_codes_or_ids as $vs_code_or_id) {
-			if (!(int)$vs_code_or_id) { continue; }
+			if (!strlen($vs_code_or_id)) { continue; }
 			if (!is_numeric($vs_code_or_id)) {
 				$vn_type_id = $t_list->getItemIDFromList($vs_list_name, $vs_code_or_id);
 			} else {
