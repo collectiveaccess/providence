@@ -594,6 +594,8 @@ create table ca_collections
    status                         tinyint unsigned               not null default 0,
    deleted                        tinyint unsigned               not null default 0,
    rank                             int unsigned                     not null default 0,
+   acl_inherit_from_parent         tinyint unsigned              not null default 0,
+   
    primary key (collection_id),
    constraint fk_ca_collections_type_id foreign key (type_id)
       references ca_list_items (item_id) on delete restrict on update restrict,
@@ -617,6 +619,7 @@ create index i_source_id on ca_collections(source_id);
 create index i_hier_collection_id on ca_collections(hier_collection_id);
 create index i_hier_left on ca_collections(hier_left);
 create index i_hier_right on ca_collections(hier_right);
+create index i_acl_inherit_from_parent on ca_collections(acl_inherit_from_parent);
 
 
 /*==========================================================================*/
@@ -1568,7 +1571,10 @@ create table ca_objects
    access                         tinyint unsigned               not null default 0,
    status                         tinyint unsigned               not null default 0,
    deleted                        tinyint unsigned               not null default 0,
-   rank                             int unsigned                     not null default 0,
+   rank                           int unsigned                   not null default 0,
+   acl_inherit_from_ca_collections tinyint unsigned              not null default 0,
+   acl_inherit_from_parent         tinyint unsigned              not null default 0,
+   
    primary key (object_id),
    constraint fk_ca_objects_source_id foreign key (source_id)
       references ca_list_items (item_id) on delete restrict on update restrict,
@@ -1608,6 +1614,8 @@ create index i_acqusition_type_id on ca_objects
 );
 create index i_source_id on ca_objects(source_id);
 create index i_item_status_id on ca_objects(item_status_id);
+create index i_acl_inherit_from_parent on ca_objects(acl_inherit_from_parent);
+create index i_acl_inherit_from_ca_collections on ca_objects(acl_inherit_from_ca_collections);
 
 
 /*==========================================================================*/
@@ -2272,6 +2280,8 @@ create table ca_acl
    row_id                         int unsigned                   not null,
    access                         tinyint unsigned               not null default 0,
    notes                          char(10)                       not null,
+   inherited_from_table_num       tinyint unsigned               null,
+   inherited_from_row_id          int unsigned                   null,
    primary key (acl_id),
    constraint fk_ca_acl_group_id foreign key (group_id)
       references ca_user_groups (group_id) on delete restrict on update restrict,
@@ -2282,6 +2292,8 @@ create table ca_acl
 create index i_row_id on ca_acl(row_id, table_num);
 create index i_user_id on ca_acl(user_id);
 create index i_group_id on ca_acl(group_id);
+create index i_inherited_from_table_num ON ca_acl(inherited_from_table_num);
+create index i_inherited_from_row_id ON ca_acl(inherited_from_row_id);
 
 
 /*==========================================================================*/
@@ -6573,5 +6585,5 @@ create table ca_schema_updates (
 ) engine=innodb CHARACTER SET utf8 COLLATE utf8_general_ci;
 
 /* Indicate up to what migration this schema definition covers */
-/* CURRENT MIGRATION: 68 */
-INSERT IGNORE INTO ca_schema_updates (version_num, datetime) VALUES (68, unix_timestamp());
+/* CURRENT MIGRATION: 69 */
+INSERT IGNORE INTO ca_schema_updates (version_num, datetime) VALUES (69, unix_timestamp());
