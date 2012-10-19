@@ -1363,6 +1363,7 @@
 									}
 									$va_options = $pa_options;
 									unset($va_options['sort']);					// browse engine takes care of sort so there is no reason to waste time having the search engine do so
+									$va_options['filterNonPrimaryRepresentations'] = true;	// filter out non-primary representations in ca_objects results to save (a bit) of time
 									
 									$qr_res = $o_search->search($va_row_ids[0], $va_options);
 
@@ -3206,7 +3207,7 @@ if (!$va_facet_info['show_all_when_first_facet'] || ($this->numCriteria() > 0)) 
 			if (!is_array($va_results)) { $va_results = array(); }
 			
 			if ($po_result) {
-				$po_result->init(new WLPlugSearchEngineBrowseEngine($va_results, $this->opn_browse_table_num), array());
+				$po_result->init(new WLPlugSearchEngineBrowseEngine($va_results, $this->opn_browse_table_num), array(), $pa_options);
 				
 				return $po_result;
 			} else {
