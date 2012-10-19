@@ -50,4 +50,6 @@ class ObjectLotBrowseResult extends BaseSearchResult {
 	public function __construct() {
 		parent::__construct();
 	}
+	# -------------------------------------
 }
+?>
