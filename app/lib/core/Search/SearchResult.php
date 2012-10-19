@@ -112,7 +112,7 @@ class SearchResult extends BaseObject {
 		$this->opo_tep = $GLOBALS["_DbResult_time_expression_parser"];
 	}
 	# ------------------------------------------------------------------
-	public function init($po_engine_result, $pa_tables) {
+	public function init($po_engine_result, $pa_tables, $pa_options=null) {
 		
 		$this->opn_table_num = $this->opo_subject_instance->tableNum();
 		$this->ops_table_name =  $this->opo_subject_instance->tableName();
