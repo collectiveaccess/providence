@@ -37,6 +37,9 @@
 require_once (__CA_LIB_DIR__."/core/Configuration.php");
 require_once (__CA_LIB_DIR__."/core/BaseObject.php");
 
+define("__CA_MEDIA_VIDEO_DEFAULT_ICON__", 'video');
+define("__CA_MEDIA_AUDIO_DEFAULT_ICON__", 'audio');
+define("__CA_MEDIA_DOCUMENT_DEFAULT_ICON__", 'document');
 
 class Media extends BaseObject {
 	# ----------------------------------------------------------
@@ -101,7 +104,7 @@ class Media extends BaseObject {
 	public function getUnregisteredPlugin($ps_plugin_name) {
 		
 		if(!in_array($ps_plugin_name, $this->getPluginNames())) { return null; }
-		if (isset(Media::$WLMedia_unregistered_plugin_cache[$ps_plugin_name])) { return Media::$WLMedia_unregistered_plugin_cache[$ps_plugin_name]; }
+		//if (isset(Media::$WLMedia_unregistered_plugin_cache[$ps_plugin_name])) { return Media::$WLMedia_unregistered_plugin_cache[$ps_plugin_name]; }
 		
 		# get plugin directory from configuration
 		$o_config = Configuration::load();

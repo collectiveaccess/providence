@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2006-2010 Whirl-i-Gig
+ * Copyright 2006-2012 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -73,6 +73,30 @@ class MediaInfoCoder {
 			return false;
 		}	
 		
+		#
+		# Use icon
+		#
+		if ($ps_version && (!$ps_key || (in_array($ps_key, array('WIDTH', 'HEIGHT'))))) {
+			if (isset($va_media_info[$ps_version]['USE_ICON']) && ($vs_icon_code = $va_media_info[$ps_version]['USE_ICON'])) {
+				if ($va_icon_size = caGetMediaIconForSize($vs_icon_code, $va_media_info[$ps_version]['WIDTH'], $va_media_info[$ps_version]['HEIGHT'])) {
+					$va_media_info[$ps_version]['WIDTH'] = $va_icon_size['width'];
+					$va_media_info[$ps_version]['HEIGHT'] = $va_icon_size['height'];
+				}
+			}
+		} else {
+			if (!$ps_key || (in_array($ps_key, array('WIDTH', 'HEIGHT')))) {
+				foreach(array_keys($va_media_info) as $vs_version) {
+					if (isset($va_media_info[$vs_version]['USE_ICON']) && ($vs_icon_code = $va_media_info[$vs_version]['USE_ICON'])) {
+						if ($va_icon_size = caGetMediaIconForSize($vs_icon_code, $va_media_info[$vs_version]['WIDTH'], $va_media_info[$vs_version]['HEIGHT'])) {
+							if (!$va_icon_size['size']) { continue; }
+							$va_media_info[$vs_version]['WIDTH'] = $va_icon_size['width'];
+							$va_media_info[$vs_version]['HEIGHT'] = $va_icon_size['height'];
+						}
+					}
+				} 
+			}
+		}
+		
 		if ($ps_version) {
 			if (!$ps_key) {
 				return $va_media_info[$ps_version];
@@ -95,6 +119,13 @@ class MediaInfoCoder {
 		}
 		
 		#
+		# Use icon
+		#
+		if (isset($va_media_info[$ps_version]['USE_ICON']) && ($vs_icon_code = $va_media_info[$ps_version]['USE_ICON'])) {
+			return caGetDefaultMediaIconPath($vs_icon_code, $va_media_info[$ps_version]['WIDTH'], $va_media_info[$ps_version]['HEIGHT']);
+		}
+		
+		#
 		# Is this version externally hosted?
 		#
 		if (isset($va_media_info[$ps_version]["EXTERNAL_URL"]) && ($va_media_info[$ps_version]["EXTERNAL_URL"])) {
@@ -105,11 +136,7 @@ class MediaInfoCoder {
 		# Is this version queued for processing?
 		#
 		if (isset($va_media_info[$ps_version]["QUEUED"]) && $va_media_info[$ps_version]["QUEUED"]) {
-			if ($va_media_info[$ps_version]["QUEUED_ICON"]["filepath"]) {
-				return $va_media_info[$ps_version]["QUEUED_ICON"]["filepath"];
-			} else {
-				return false;
-			}
+			return null;
 		}
 		
 		$va_volume_info = $this->opo_volume_info->getVolumeInformation($va_media_info[$ps_version]["VOLUME"]);
@@ -129,6 +156,12 @@ class MediaInfoCoder {
 		}
 	}
 	# ---------------------------------------------------------------------------
+	/**
+	 * 
+	 * @param array $pa_options Supported options include:
+	 *		localOnly = if true url to locally hosted media is always returned, even if an external url is available
+	 *		externalOnly = if true url to externally hosted media is always returned, even if an no external url is available
+	 */
 	public function getMediaUrl($ps_data, $ps_version, $pa_options=null) {
 		if (!($va_media_info = $this->getMediaArray($ps_data))) {
 			return false;
@@ -140,9 +173,22 @@ class MediaInfoCoder {
 		}
 		
 		#
+		# Use icon
+		#
+		if (isset($va_media_info[$ps_version]['USE_ICON']) && ($vs_icon_code = $va_media_info[$ps_version]['USE_ICON'])) {
+			return caGetDefaultMediaIconUrl($vs_icon_code, $va_media_info[$ps_version]['WIDTH'], $va_media_info[$ps_version]['HEIGHT']);
+		}
+		
+		#
 		# Is this version externally hosted?
 		#
-		if (isset($va_media_info[$ps_version]["EXTERNAL_URL"]) && ($va_media_info[$ps_version]["EXTERNAL_URL"])) {
+		if (!isset($pa_options['localOnly']) || !$pa_options['localOnly']){
+			if (isset($va_media_info[$ps_version]["EXTERNAL_URL"]) && ($va_media_info[$ps_version]["EXTERNAL_URL"])) {
+				return $va_media_info[$ps_version]["EXTERNAL_URL"];
+			}
+		}
+		
+		if (isset($pa_options['externalOnly']) && $pa_options['externalOnly']) {
 			return $va_media_info[$ps_version]["EXTERNAL_URL"];
 		}
 		
@@ -150,11 +196,7 @@ class MediaInfoCoder {
 		# Is this version queued for processing?
 		#
 		if (isset($va_media_info[$ps_version]["QUEUED"]) && ($va_media_info[$ps_version]["QUEUED"])) {
-			if ($va_media_info[$ps_version]["QUEUED_ICON"]["src"]) {
-				return $va_media_info[$ps_version]["QUEUED_ICON"]["src"];
-			} else {
-				return false;
-			}
+			return null;
 		}
 		
 		$va_volume_info = $this->opo_volume_info->getVolumeInformation($va_media_info[$ps_version]["VOLUME"]);
@@ -200,17 +242,20 @@ class MediaInfoCoder {
 		}
 		
 		#
+		# Use icon
+		#
+		if (isset($va_media_info[$ps_version]['USE_ICON']) && ($vs_icon_code = $va_media_info[$ps_version]['USE_ICON'])) {
+			return caGetDefaultMediaIconTag($vs_icon_code, $va_media_info[$ps_version]['WIDTH'], $va_media_info[$ps_version]['HEIGHT']);
+		}
+		
+		#
 		# Is this version queued for processing?
 		#
 		if (isset($va_media_info[$ps_version]["QUEUED"]) && ($va_media_info[$ps_version]["QUEUED"])) {
-			if ($va_media_info[$ps_version]["QUEUED_ICON"]["src"]) {
-				return "<img src='".$va_media_info[$ps_version]["QUEUED_ICON"]["src"]."' width='".$va_media_info[$ps_version]["QUEUED_ICON"]["width"]."' height='".$va_media_info[$ps_version]["QUEUED_ICON"]["height"]."' alt='".$va_media_info[$ps_version]["QUEUED_ICON"]["alt"]."'>";
-			} else {
-				return $va_media_info[$ps_version]["QUEUED_MESSAGE"];
-			}
+			return $va_media_info[$ps_version]["QUEUED_MESSAGE"];
 		}
 		
-		$vs_url = $this->getMediaUrl($va_media_info, $ps_version, $pa_options["page"]);
+		$vs_url = $this->getMediaUrl($va_media_info, $ps_version, $pa_options["page"], $pa_options);
 		$o_media = new Media();
 		
 		$o_vol = new MediaVolumes();

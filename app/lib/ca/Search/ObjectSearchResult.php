@@ -39,31 +39,37 @@ include_once(__CA_LIB_DIR__."/ca/Search/BaseSearchResult.php");
 class ObjectSearchResult extends BaseSearchResult {
 	# -------------------------------------
 	/**
-	 * Name of labels table for this type of search subject (eg. for ca_objects, the label table is ca_object_labels)
+	 * Name of table for this type of search subject
 	 */
-	protected $ops_label_table_name = 'ca_object_labels';
-	# -------------------------------------
-	/**
-	 * Name of field in labels table to use for display for this type of search subject (eg. for ca_objects, the label display field is 'name')
-	 */
-	protected $ops_label_display_field = 'name';
+	protected $ops_table_name = 'ca_objects';
 	# -------------------------------------
 	/**
 	 * Constructor
 	 */
-	public function __construct() {
-		parent::__construct();
+	public function __construct($po_engine_result=null, $pa_tables=null) {
+		parent::__construct($po_engine_result=null, $pa_tables=null);
 	}
 	# -------------------------------------
 	/**
 	 * Override init to set ca_representations join params
+	 *
+	 * @param IWLPlugSearchEngineResult $po_engine_result
+	 * @param array $pa_tables
+	 * @param array $pa_options Options are:
+	 *		filterNonPrimaryRepresentations = If set only primary representations are returned. This can improve performance somewhat in most cases. Default is false.
 	 */
-	public function init($pn_subject_table_num, $po_engine_result, $pa_tables) {
-		parent::init($pn_subject_table_num, $po_engine_result, $pa_tables);
+	public function init($po_engine_result, $pa_tables, $pa_options=null) {
+		parent::init($po_engine_result, $pa_tables);
+		
+		if (isset($pa_options['filterNonPrimaryRepresentations']) && $pa_options['filterNonPrimaryRepresentations']) {
+			$va_criteria = array('ca_objects_x_object_representations.is_primary = 1', 'ca_object_representations.deleted = 0');
+		} else {
+			$va_criteria = array('ca_object_representations.deleted = 0');
+		}
 		$this->opa_tables['ca_object_representations'] = array(
-			'fieldList' => array('ca_object_representations.media', 'ca_object_representations.representation_id', 'ca_object_representations.access'),
+			'fieldList' => array('ca_object_representations.media', 'ca_object_representations.representation_id', 'ca_object_representations.access', 'ca_object_representations.md5', 'ca_object_representations.mimetype'),
 			'joinTables' => array('ca_objects_x_object_representations'),
-			'criteria' => array('ca_objects_x_object_representations.is_primary = 1', 'ca_object_representations.deleted = 0')
+			'criteria' => $va_criteria
 		);
 	}
 	# -------------------------------------
@@ -95,7 +101,7 @@ class ObjectSearchResult extends BaseSearchResult {
 				return null;
 			}
 		}
-		return parent::getMediaTag($ps_field, $ps_version, $pa_option);
+		return parent::getMediaTag($ps_field, $ps_version, $pa_options);
 	}
 	# -------------------------------------
 	/**
@@ -110,13 +116,13 @@ class ObjectSearchResult extends BaseSearchResult {
 				return null;
 			}
 		}
-		return parent::getMediaUrl($ps_field, $ps_version, $pa_option);
+		return parent::getMediaUrl($ps_field, $ps_version, $pa_options);
 	}
 	# -------------------------------------
 	/**
 	 *
 	 */
-	public function getMediaInfo($ps_field, $ps_version, $pa_options=null) {
+	public function getMediaInfo($ps_field, $ps_version, $ps_key=null, $pa_options=null) {
 		$va_tmp = explode('.', $ps_field);
 		
 		if (($va_tmp[0] === 'ca_object_representations') && ($va_tmp[1] !== 'access')) {
@@ -125,7 +131,7 @@ class ObjectSearchResult extends BaseSearchResult {
 				return null;
 			}
 		}
-		return parent::getMediaInfo($ps_field, $ps_version, $pa_option);
+		return parent::getMediaInfo($ps_field, $ps_version, $ps_key, 0, $pa_options);
 	}
 	# ------------------------------------------------------
  	/**

@@ -280,9 +280,11 @@ class ca_editor_uis extends BundlableLabelableBaseModelWithAttributes {
 	 *		.. etc ..
 	 * @param RequestHTTP $po_request The current request
 	 * @param int $pn_type_id Optional type_id
+	 * @param array $pa_options Options are:
+	 *		editorPref = "cataloguing" to select UI using user's "cataloguing_<table_name>_editor_ui" preference, "quickadd" to use "quickadd_<table_name>_editor_ui" pref; default is "cataloguing"
 	 * @return ca_editor_uis instance loaded with default UI on success, false on failure
 	 */
-	static public function loadDefaultUI($pm_table_name_or_num, $po_request, $pn_type_id=null) {
+	static public function loadDefaultUI($pm_table_name_or_num, $po_request, $pn_type_id=null, $pa_options=null) {
 		if (ca_editor_uis::$s_default_ui_cache[$pm_table_name_or_num.'/'.$pn_type_id]) { return ca_editor_uis::$s_default_ui_cache[$pm_table_name_or_num.'/'.$pn_type_id]; }
 		
 		$o_dm = Datamodel::load();
@@ -296,23 +298,33 @@ class ca_editor_uis extends BundlableLabelableBaseModelWithAttributes {
 		$vs_table_name = $t_instance->tableName();
 		$vn_table_num = $t_instance->tableNum();
 		
-		$va_uis_by_type = $po_request->user->getPreference("cataloguing_{$vs_table_name}_editor_ui");
-		$va_available_uis_by_type = $po_request->user->_getUIListByType($vn_table_num);
+		if (!isset($pa_options['editorPref'])) { $pa_options['editorPref'] = 'cataloguing'; }
 		
+		switch($pa_options['editorPref']) {
+			case 'quickadd':
+				$va_uis_by_type = $po_request->user->getPreference("quickadd_{$vs_table_name}_editor_ui");
+				break;
+			default:
+				$va_uis_by_type = $po_request->user->getPreference("cataloguing_{$vs_table_name}_editor_ui");
+				break;
+		}
+		$va_available_uis_by_type = $po_request->user->_getUIListByType($vn_table_num);
+
 		if ($pn_type_id) {
 			if (!is_array($va_uis_by_type)) { 
-				if (!isset($va_available_uis_by_type[$pn_type_id][$va_uis_by_type])) {
+				if (!isset($va_available_uis_by_type[$pn_type_id][$va_uis_by_type]) && !isset($va_available_uis_by_type['__all__'][$va_uis_by_type])) {
 					$pn_type_id = null;
 				}
 				$va_uis_by_type = array(); 
 			} else {
-				if (!isset($va_available_uis_by_type[$pn_type_id][$va_uis_by_type[$pn_type_id]])) {
+				if (!isset($va_available_uis_by_type[$pn_type_id][$va_uis_by_type[$pn_type_id]]) && !isset($va_available_uis_by_type['__all__'][$va_uis_by_type[$pn_type_id]])) {
 					$pn_type_id = null;
 				}
 			}
 		}
-		
+	
 		$t_ui = new ca_editor_uis();
+		
 		if (!$pn_type_id || !($vn_rc = $t_ui->load($va_uis_by_type[$pn_type_id]))) {
 			$va_ui_ids = ca_editor_uis::getAvailableUIs($vn_table_num, $po_request, $pn_type_id, true);
 			
@@ -344,8 +356,9 @@ class ca_editor_uis extends BundlableLabelableBaseModelWithAttributes {
 		$va_types = $t_instance->getTypeList();
 		
 		$o_db = $this->getDb();
-		
-		$vs_type_sql = ((int)$pn_type_id) ? "AND (ceustr.type_id IS NULL OR ceustr.type_id = ".intval($pn_type_id).")" : '';
+		$va_type_list = caMakeTypeIDList($this->get('editor_type'), array($pn_type_id), array('dontIncludeSubtypesInTypeRestriction' => true));
+		if (!sizeof($va_type_list)) { $va_type_list = array($pn_type_id); }
+		$vs_type_sql = ((int)$pn_type_id) ? "AND (ceustr.type_id IS NULL OR ceustr.type_id IN (".join(",", $va_type_list)."))" : '';
 	
 		$qr_res = $o_db->query("
 			SELECT ceus.*, ceusl.*, ceustr.type_id restriction_type_id
@@ -569,8 +582,11 @@ class ca_editor_uis extends BundlableLabelableBaseModelWithAttributes {
 		if (ca_editor_uis::$s_available_ui_cache[$pn_table_num.'/'.$pn_type_id.'/'.$pn_user_id]) { return ca_editor_uis::$s_available_ui_cache[$pn_table_num.'/'.$pn_type_id.'/'.$pn_user_id]; }
 		
 		if ($pn_type_id) {
-			$va_uis = $po_request->user->_getUIListByType($pn_table_num);
-			$va_uis = $va_uis[$pn_type_id];
+			$va_ui_list = $po_request->user->_getUIListByType($pn_table_num);
+			if (!is_array($va_uis = $va_ui_list[$pn_type_id])) { $va_uis = array(); }
+			if (is_array($va_ui_list['__all__'])) {
+				$va_uis = $va_uis + $va_ui_list['__all__'];
+			}
 		} else {
 			$va_uis = $po_request->user->_getUIList($pn_table_num);
 		}
@@ -652,7 +668,7 @@ class ca_editor_uis extends BundlableLabelableBaseModelWithAttributes {
 					}
 				}
 			} else {
-				//// add screen to UI
+				// add screen to UI
 			//	$this->addItem($vn_screen_id, null, $vn_user_id, $vn_rank);
 			}
 		}

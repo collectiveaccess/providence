@@ -83,6 +83,28 @@
 	}
 	# ------------------------------------------------------------------------------------------------
 	/**
+	 * Detects if GraphicsMagick is available in specified directory path
+	 * 
+	 * @param $ps_graphicsmagick_path - path to directory containing GraphicsMagick executables
+	 * @return boolean - true if available, false if not
+	 */
+	function caMediaPluginGraphicsMagickInstalled($ps_graphicsmagick_path) {
+		global $_MEDIAHELPER_PLUGIN_CACHE_GRAPHICSMAGICK;
+		if (isset($_MEDIAHELPER_PLUGIN_CACHE_GRAPHICSMAGICK[$ps_graphicsmagick_path])) {
+			return $_MEDIAHELPER_PLUGIN_CACHE_GRAPHICSMAGICK[$ps_graphicsmagick_path];
+		} else {
+			$_MEDIAHELPER_PLUGIN_CACHE_GRAPHICSMAGICK = array();
+		}
+		if (!$ps_graphicsmagick_path || (preg_match("/[^\/A-Za-z0-9\.:]+/", $ps_graphicsmagick_path)) || !file_exists($ps_graphicsmagick_path)) { return false; }
+		
+		exec($ps_graphicsmagick_path.' 2> /dev/null', $va_output, $vn_return);
+		if (($vn_return >= 0) && ($vn_return < 127)) {
+			return $_MEDIAHELPER_PLUGIN_CACHE_GRAPHICSMAGICK[$ps_graphicsmagick_path] = true;
+		}
+		return $_MEDIAHELPER_PLUGIN_CACHE_GRAPHICSMAGICK[$ps_graphicsmagick_path] = false;
+	}
+	# ------------------------------------------------------------------------------------------------
+	/**
 	 * Detects if dcraw executable is available at specified path
 	 * 
 	 * @param $ps_path_to_dcraw - full path to dcraw including executable name
@@ -204,6 +226,15 @@
 	}
 	# ------------------------------------------------------------------------------------------------
 	/**
+	 * Detects if Gmagick PHP extension is available
+	 * 
+	 * @return boolean - true if available, false if not
+	 */
+	function caMediaPluginGmagickInstalled() {
+		return class_exists('Gmagick') ? true : false;
+	}
+	# ------------------------------------------------------------------------------------------------
+	/**
 	 * Detects if GD PHP extension is available. Return false if GD is installed but lacks JPEG support unless "don't worry about JPEGs" parameter is set to true.
 	 *
 	 * @param boolean $pb_dont_worry_about_jpegs If set will return true if GD is installed without JPEG support; default is to consider JPEG-less GD worthless.
@@ -244,7 +275,7 @@
 	 */
 	function caExtractMetadataWithMediaInfo($ps_mediainfo_path,$ps_filepath){
 		if (!trim($ps_mediainfo_path) || (preg_match("/[^\/A-Za-z0-9\.:]+/", $ps_mediainfo_path)) || !file_exists($ps_mediainfo_path)) { return false; }
-		exec($ps_mediainfo_path." ".$ps_filepath,$va_output,$vn_return);
+		exec($ps_mediainfo_path." ".caEscapeShellArg($ps_filepath),$va_output,$vn_return);
 		$vs_cat = "GENERIC";
 		$va_return = array();
 		foreach($va_output as $vs_line){
@@ -289,7 +320,7 @@
  		$va_date_elements = $o_metadata_config->getList('extract_embedded_exif_creation_date_to');
  		$va_date_containers = $o_metadata_config->getAssoc('extract_embedded_exif_creation_date_to_container');
  		
- 		if (isset($pa_metadata['EXIF']) && is_array($pa_metadata['EXIF']) && ((is_array($va_georef_elements) && sizeof($va_georef_elements)) || (is_array($va_date_elements) && sizeof($va_date_elements)))) {
+ 		if (isset($pa_metadata['EXIF']) && is_array($pa_metadata['EXIF']) && ((is_array($va_georef_elements) && sizeof($va_georef_elements)) || (is_array($va_georef_containers) && sizeof($va_georef_containers))  || (is_array($va_date_elements) && sizeof($va_date_elements))  || (is_array($va_date_containers) && sizeof($va_date_containers)))) {
 			$va_exif_data = $pa_metadata['EXIF'];
 			
 			if (is_array($va_georef_elements)) {
@@ -567,6 +598,103 @@
 			return $va_filtered_faces;
 		}
 		return array();
+	}
+	# ------------------------------------------------------------------------------------------------
+	/**
+	 * Attempt to detect faces in image files (TIFF, JPEG, PNG) using OpenCV and the php-facedetect module
+	 * If php-facedetect and/or OpenCV are not installed then function will return an empty array
+	 *
+	 * @param string $ps_type 
+	 * @param int $pn_width  Width of media
+	 * @param int $pn_height Height of media
+	 * @param array $pa_options 
+	 * 
+	 * @return string Media ICON <img> tag
+	 */
+	function caGetDefaultMediaIconTag($ps_type, $pn_width, $pn_height, $pa_options=null) {			
+		if (is_array($va_selected_size = caGetMediaIconForSize($ps_type, $pn_width, $pn_height, $pa_options))) {
+			$o_config = Configuration::load();
+			$o_icon_config = Configuration::load($o_config->get('default_media_icons'));
+			$va_icons = $o_icon_config->getAssoc($ps_type);
+			return caHTMLImage($o_icon_config->get('icon_folder_url').'/'.$va_icons[$va_selected_size['size']], array('width' => $va_selected_size['width'], 'height' => $va_selected_size['height']));
+		}
+		
+		return null;
+	}
+	# ------------------------------------------------------------------------------------------------
+	/**
+	 * Attempt to detect faces in image files (TIFF, JPEG, PNG) using OpenCV and the php-facedetect module
+	 * If php-facedetect and/or OpenCV are not installed then function will return an empty array
+	 *
+	 * @param string $ps_type 
+	 * @param int $pn_width  Width of media
+	 * @param int $pn_height Height of media
+	 * @param array $pa_options 
+	 * 
+	 * @return string Media ICON <img> tag
+	 */
+	function caGetDefaultMediaIconUrl($ps_type, $pn_width, $pn_height, $pa_options=null) {			
+		if (is_array($va_selected_size = caGetMediaIconForSize($ps_type, $pn_width, $pn_height, $pa_options))) {			
+			$o_config = Configuration::load();
+			$o_icon_config = Configuration::load($o_config->get('default_media_icons'));
+			$va_icons = $o_icon_config->getAssoc($ps_type);
+			return $o_icon_config->get('icon_folder_url').'/'.$va_icons[$va_selected_size['size']];
+		}
+		
+		return null;
+	}
+	# ------------------------------------------------------------------------------------------------
+	/**
+	 * Attempt to detect faces in image files (TIFF, JPEG, PNG) using OpenCV and the php-facedetect module
+	 * If php-facedetect and/or OpenCV are not installed then function will return an empty array
+	 *
+	 * @param string $ps_type 
+	 * @param int $pn_width  Width of media
+	 * @param int $pn_height Height of media
+	 * @param array $pa_options 
+	 * 
+	 * @return string Media ICON <img> tag
+	 */
+	function caGetDefaultMediaIconPath($ps_type, $pn_width, $pn_height, $pa_options=null) {			
+		if (is_array($va_selected_size = caGetMediaIconForSize($ps_type, $pn_width, $pn_height, $pa_options))) {			
+			$o_config = Configuration::load();
+			$o_icon_config = Configuration::load($o_config->get('default_media_icons'));
+			$va_icons = $o_icon_config->getAssoc($ps_type);
+			return $o_icon_config->get('icon_folder_path').'/'.$va_icons[$va_selected_size['size']];
+		}
+		
+		return null;
+	}
+	# ------------------------------------------------------------------------------------------------
+	/**
+	 *
+	 *
+	 */
+	function caGetMediaIconForSize($ps_type, $pn_width, $pn_height, $pa_options=null) {
+		$o_config = Configuration::load();
+		$o_icon_config = Configuration::load($o_config->get('default_media_icons'));
+		
+		$vs_selected_size = null;
+		if (is_array($va_icons = $o_icon_config->getAssoc($ps_type))) {
+			$vn_min_diff_x = $vn_min_diff_y = 1000000;
+			$vs_selected_size = null;
+			foreach($va_icons as $vs_size => $vs_filename) {
+				$va_tmp = explode('x', $vs_size);
+				
+				if (
+					((($vn_diff_x = ((int)$pn_width - (int)$va_tmp[0])) >= 0) && ($vn_diff_x <= $vn_min_diff_x))
+					&&
+					((($vn_diff_y = ((int)$pn_height - (int)$va_tmp[1])) >= 0) && ($vn_diff_y <= $vn_min_diff_y))
+				) {
+					$vn_min_diff_x = $vn_diff_x;
+					$vn_min_diff_y = $vn_diff_y;
+					$vs_selected_size = $vs_size;
+				}
+			}
+			if (!$vs_selected_size) { $vs_selected_size = array_shift(array_keys($va_icons)); }
+		}
+		$va_tmp = explode('x', $vs_selected_size);
+		return array('size' => $vs_selected_size, 'width' => $va_tmp[0], 'height' => $va_tmp[1]);
 	}
 	# ------------------------------------------------------------------------------------------------
 ?>

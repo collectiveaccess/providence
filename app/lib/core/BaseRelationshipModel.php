@@ -38,8 +38,68 @@
  require_once(__CA_LIB_DIR__.'/core/IRelationshipModel.php');
  require_once(__CA_APP_DIR__.'/helpers/htmlFormHelpers.php');
  require_once(__CA_MODELS_DIR__.'/ca_relationship_types.php');
+ require_once(__CA_MODELS_DIR__.'/ca_acl.php');
  
 	class BaseRelationshipModel extends BaseModel implements IRelationshipModel {
+		# ------------------------------------------------------
+		/**
+		 * 
+		 */
+		public function insert($pa_options=null) {
+			if ($vn_rc = parent::insert($pa_options)) {
+				$t_left = $this->getAppDatamodel()->getInstanceByTableNum($this->getLeftTableNum());
+				$t_right = $this->getAppDatamodel()->getInstanceByTableNum($this->getRightTableNum());
+				
+				foreach(array($this->getRightTableName() => $t_left, $this->getLeftTableName() => $t_right) as $vs_other_table_name => $t_instance) {
+					if ((bool)$t_instance->getProperty('SUPPORTS_ACL_INHERITANCE')) {
+						if (is_array($va_inheritors = $t_instance->getProperty('ACL_INHERITANCE_LIST')) && in_array($vs_other_table_name, $va_inheritors)) {
+							ca_acl::applyACLInheritanceToRelatedRowFromRow($t_instance, ($vs_other_table_name == $this->getLeftTableName()) ? $this->get($this->getRightTableFieldName()) : $this->get($this->getLeftTableFieldName()), $vs_other_table_name, ($vs_other_table_name == $this->getLeftTableName()) ? $this->get($this->getLeftTableFieldName()) : $this->get($this->getRightTableFieldName()));
+						}
+					}
+				}
+			}
+			return $vn_rc;
+		}
+		# ------------------------------------------------------
+		/**
+		 * 
+		 */
+		public function update($pa_options=null) {
+			if ($vn_rc = parent::update($pa_options)) {
+				$t_left = $this->getAppDatamodel()->getInstanceByTableNum($this->getLeftTableNum());
+				$t_right = $this->getAppDatamodel()->getInstanceByTableNum($this->getRightTableNum());
+				
+				foreach(array($this->getRightTableName() => $t_left, $this->getLeftTableName() => $t_right) as $vs_other_table_name => $t_instance) {
+					if ((bool)$t_instance->getProperty('SUPPORTS_ACL_INHERITANCE')) {
+						if (is_array($va_inheritors = $t_instance->getProperty('ACL_INHERITANCE_LIST')) && in_array($vs_other_table_name, $va_inheritors)) {
+							ca_acl::applyACLInheritanceToRelatedRowFromRow($t_instance, ($vs_other_table_name == $this->getLeftTableName()) ? $this->get($this->getRightTableFieldName()) : $this->get($this->getLeftTableFieldName()), $vs_other_table_name, ($vs_other_table_name == $this->getLeftTableName()) ? $this->get($this->getLeftTableFieldName()) : $this->get($this->getRightTableFieldName()));
+						}
+					}
+				}
+			}
+			return $vn_rc;
+		}
+		# ------------------------------------------------------
+		/**
+		 * 
+		 */
+		public function delete($pa_options=null) {
+			$t_left = $this->getAppDatamodel()->getInstanceByTableNum($this->getLeftTableNum());
+			$vn_left_id = $this->get($this->getLeftTableFieldName());
+			$vn_right_id = $this->get($this->getRightTableFieldName());
+			
+			$t_right = $this->getAppDatamodel()->getInstanceByTableNum($this->getRightTableNum());
+			if ($vn_rc = parent::delete($pa_options)) {
+				foreach(array($this->getRightTableName() => $t_left, $this->getLeftTableName() => $t_right) as $vs_other_table_name => $t_instance) {
+					if ((bool)$t_instance->getProperty('SUPPORTS_ACL_INHERITANCE')) {
+						if (is_array($va_inheritors = $t_instance->getProperty('ACL_INHERITANCE_LIST')) && in_array($vs_other_table_name, $va_inheritors)) {
+							ca_acl::applyACLInheritanceToRelatedRowFromRow($t_instance, ($vs_other_table_name == $this->getLeftTableName()) ? $vn_right_id : $vn_left_id, $vs_other_table_name, ($vs_other_table_name == $this->getLeftTableName()) ? $vn_left_id : $vn_right_id, array('deleteACLOnly' => true));
+						}
+					}
+				}
+			}
+			return $vn_rc;
+		}
 		# ------------------------------------------------------
 		/**
 		 * Returns name of the "left" table (by convention the table mentioned first in the relationship table name)
@@ -258,6 +318,9 @@
 			if (!is_array($va_ancestor_ids = $t_list_item->getHierarchyAncestors(null, array('idsOnly' => true, 'includeSelf' => true)))) {
 				$va_ancestor_ids = array();
 			}
+			// remove hierarchy root from ancestor list, otherwise invalid bindings 
+			// from root nodes (which are not "real" rel types) may be inherited
+			$va_ancestor_ids = array_diff($va_ancestor_ids, array($t_list_item->getHierarchyRootID()));
 			
 			$va_types = array();
 			$va_parent_ids = array();
@@ -283,17 +346,27 @@
 					$vs_subtype = null;
 					if (
 						$qr_res->get('sub_type_left_id') && !(((in_array($qr_res->get('sub_type_left_id'), $va_ancestor_ids))))
-					) { 
+					) { // not left
+						
 						if ($qr_res->get('sub_type_right_id') && !((in_array($qr_res->get('sub_type_right_id'), $va_ancestor_ids)))) {
-							///continue;
+							// not left and not right
+							continue;
 						} else {
+							// not left and right
 							$vs_subtype = $qr_res->get('sub_type_left_id');	
 							$vs_subtype_orientation = "left";
 						}
-					} else {
+					} else if (
+						$qr_res->get('sub_type_left_id') && in_array($qr_res->get('sub_type_left_id'), $va_ancestor_ids)
+					) { // left
 						if ($qr_res->get('sub_type_right_id') && ((in_array($qr_res->get('sub_type_right_id'), $va_ancestor_ids)))) {
+							// left and right
 							$vs_subtype = $qr_res->get('sub_type_right_id');
+							$vs_subtype_orientation = "";
+						} else {
+							// left and not right
 							$vs_subtype_orientation = "right";
+							$vs_subtype = $qr_res->get('sub_type_right_id');	
 						}
 					}
 					if (!$vs_subtype) { $vs_subtype = 'NULL'; }

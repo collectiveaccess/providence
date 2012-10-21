@@ -221,6 +221,9 @@ final class ConfigurationExporter {
 			$vo_item->setAttribute("idno", $this->makeIDNO($qr_items->get("idno")));
 			$vo_item->setAttribute("enabled", $qr_items->get("is_enabled"));
 			$vo_item->setAttribute("default", $qr_items->get("is_default"));
+			if(is_numeric($vn_value = $qr_items->get("item_value"))){
+				$vo_item->setAttribute("value", $vn_value);
+			}
 
 			$vo_labels = $this->opo_dom->createElement("labels");
 			$qr_list_item_labels = $this->opo_db->query("SELECT * FROM ca_list_item_labels WHERE item_id=?",$qr_items->get("item_id"));
@@ -506,6 +509,10 @@ final class ConfigurationExporter {
 							if(!is_array($va_values)){
 								$va_values = array($va_values);
 							}
+							
+							// account for legacy settings
+							if($vs_setting=="restrict_to_type") $vs_setting = "restrict_to_types";
+							
 							foreach($va_values as $vs_key => $vs_value){
 								if(strlen($vs_value)>0){
 									$vo_setting = $this->opo_dom->createElement("setting",$vs_value);
@@ -864,7 +871,7 @@ final class ConfigurationExporter {
 	# -------------------------------------------------------
 	private function makeIDNO($ps_idno){
 		if(strlen($ps_idno)>0){
-			return preg_replace("/[^\pL\pN]/","_",$ps_idno);
+			return preg_replace('/[^\pL\p{Zs}]+/u', '_', $ps_idno);
 		} else {
 			return "default";
 		}

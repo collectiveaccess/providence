@@ -835,7 +835,7 @@ class WLPlugMediaCoreImage Extends WLPlug Implements IWLPlugMedia {
 	# ------------------------------------------------
 	private function _CoreImageIdentify($ps_filepath) {
 		if (caMediaPluginCoreImageInstalled($this->ops_CoreImage_path)) {
-			$va_info = explode(':', shell_exec("sips --getProperty format \"{$ps_filepath}\""));
+			$va_info = explode(':', shell_exec("sips --getProperty format ".caEscapeShellArg($ps_filepath)));
 			return $this->appleTypeToMimeType(trim(array_pop($va_info)));
 		}
 		return null;
@@ -863,7 +863,7 @@ class WLPlugMediaCoreImage Extends WLPlug Implements IWLPlugMedia {
 	# ------------------------------------------------
 	private function _CoreImageRead($ps_filepath) {
 		if (caMediaPluginCoreImageInstalled($this->ops_CoreImage_path)) {
-			$vs_output = shell_exec('sips --getProperty format --getProperty space --getProperty bitsPerSample --getProperty pixelWidth --getProperty pixelHeight --getProperty dpiWidth --getProperty dpiHeight "'.$ps_filepath."\" 2> /dev/null");
+			$vs_output = shell_exec('sips --getProperty format --getProperty space --getProperty bitsPerSample --getProperty pixelWidth --getProperty pixelHeight --getProperty dpiWidth --getProperty dpiHeight '.caEscapeShellArg($ps_filepath)." 2> /dev/null");
 			
 			$va_tmp = explode("\n", $vs_output);
 			
@@ -990,8 +990,8 @@ class WLPlugMediaCoreImage Extends WLPlug Implements IWLPlugMedia {
 			
 			$vs_input_file = $pa_handle['filepath'];
 			if (is_array($va_ops) && sizeof($va_ops)) {
-				array_unshift($va_ops, "load image \"{$vs_input_file}\"");
-				array_push($va_ops, "store image \"{$ps_filepath}\" ".$this->apple_UTIs[$ps_mimetype]);
+				array_unshift($va_ops, "load image ".caEscapeShellArg($vs_input_file));
+				array_push($va_ops, "store image ".caEscapeShellArg($ps_filepath)." ".$this->apple_UTIs[$ps_mimetype]);
 				//print "<hr>".join(" ", $va_ops)."<hr>";
 				exec($this->ops_CoreImage_path." ".join(" ", $va_ops));
 				

@@ -39,18 +39,12 @@ include_once(__CA_LIB_DIR__."/ca/Search/BaseSearchResult.php");
 class ObjectBrowseResult extends BaseSearchResult {
 	# -------------------------------------
 	/**
-	 * Name of labels table for this type of search subject (eg. for ca_objects, the label table is ca_object_labels)
+	 * Name of table for this type of search subject
 	 */
-	protected $ops_label_table_name = 'ca_object_labels';
+	protected $ops_table_name = 'ca_objects';
 	# -------------------------------------
-	/**
-	 * Name of field in labels table to use for display for this type of search subject (eg. for ca_objects, the label display field is 'name')
-	 */
-	protected $ops_label_display_field = 'name';
-	
 	protected $opa_mimetype_cache = array();
 	protected $opa_class_cache = array();
-	
 	# -------------------------------------
 	/**
 	 * Constructor
@@ -61,13 +55,24 @@ class ObjectBrowseResult extends BaseSearchResult {
 	# -------------------------------------
 	/**
 	 * Override init to set ca_representations join params
+	 *
+	 * @param IWLPlugSearchEngineResult $po_engine_result
+	 * @param array $pa_tables
+	 * @param array $pa_options Options are:
+	 *		filterNonPrimaryRepresentations = If set only primary representations are returned. This can improve performance somewhat in most cases. Default is false.
 	 */
-	public function init($pn_subject_table_num, $po_engine_result, $pa_tables) {
-		parent::init($pn_subject_table_num, $po_engine_result, $pa_tables);
+	public function init($po_engine_result, $pa_tables, $pa_options=null) {
+		parent::init($po_engine_result, $pa_tables);
+		
+		if (isset($pa_options['filterNonPrimaryRepresentations']) && $pa_options['filterNonPrimaryRepresentations']) {
+			$va_criteria = array('ca_objects_x_object_representations.is_primary = 1', 'ca_object_representations.deleted = 0');
+		} else {
+			$va_criteria = array('ca_object_representations.deleted = 0');
+		}
 		$this->opa_tables['ca_object_representations'] = array(
 			'fieldList' => array('ca_object_representations.media', 'ca_object_representations.representation_id', 'ca_object_representations.access', 'ca_object_representations.md5', 'ca_object_representations.mimetype'),
 			'joinTables' => array('ca_objects_x_object_representations'),
-			'criteria' => array('ca_objects_x_object_representations.is_primary = 1', 'ca_object_representations.deleted = 0')
+			'criteria' => $va_criteria
 		);
 	}
 	# -------------------------------------

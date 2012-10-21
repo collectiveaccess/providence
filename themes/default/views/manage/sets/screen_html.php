@@ -27,6 +27,7 @@
  */
  	$t_set = $this->getVar('t_subject');
 	$vn_set_id = $this->getVar('subject_id');
+	$can_delete = $this->getVar('can_delete');
 	
 	$t_ui = $this->getVar('t_ui');	
 ?>
@@ -36,7 +37,7 @@
 			caFormSubmitButton($this->request, __CA_NAV_BUTTON_SAVE__, _t("Save"), 'SetEditorForm').' '.
 			caNavButton($this->request, __CA_NAV_BUTTON_CANCEL__, _t("Cancel"), 'manage/sets', 'SetEditor', 'Edit/'.$this->request->getActionExtra(), array('set_id' => $vn_set_id)), 
 			'', 
-			((intval($vn_set_id) > 0) && ($this->request->user->canDoAction('can_delete_sets'))) ? caNavButton($this->request, __CA_NAV_BUTTON_DELETE__, _t("Delete"), 'manage/sets', 'SetEditor', 'Delete/'.$this->request->getActionExtra(), array('set_id' => $vn_set_id)) : ''
+			((intval($vn_set_id) > 0) && ($can_delete)) ? caNavButton($this->request, __CA_NAV_BUTTON_DELETE__, _t("Delete"), 'manage/sets', 'SetEditor', 'Delete/'.$this->request->getActionExtra(), array('set_id' => $vn_set_id)) : ''
 		);
 		
 			print caFormTag($this->request, 'Save/'.$this->request->getActionExtra().'/set_id/'.$vn_set_id, 'SetEditorForm', null, 'POST', 'multipart/form-data');

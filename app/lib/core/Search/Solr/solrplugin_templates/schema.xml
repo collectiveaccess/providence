@@ -9,11 +9,20 @@
 			</analyzer>
 		</fieldType>
 		<fieldType name="string" class="solr.StrField" />
+		<fieldType name="daterange" class="solr.DateField" multiValued="true" />
+		<fieldType name="int" class="solr.IntField" />
+		<fieldType name="float" class="solr.FloatField" />
+		<fieldType name="geocode" class="solr.LatLonType" subFieldType="double" multiValued="true"/>
+		<fieldType name="bool" class="solr.BoolField" />
 		<fieldtype name="ignored" stored="false" indexed="false" class="solr.StrField" /> 
 	</types>
 	<fields>
 		<!--FIELDS-->
 		<field name="text" type="text" indexed="true" stored="false" multiValued="true"/>
+		<field name="created" type="daterange" indexed="true" stored="false" multiValued="false"/>
+		<field name="created_user_id" type="int" indexed="true" stored="false" multiValued="false"/>
+		<field name="modified" type="daterange" indexed="true" stored="false" multiValued="false"/>
+		<field name="modified_user_id" type="int" indexed="true" stored="false" multiValued="false"/>
 		<dynamicField name="*" type="ignored" />
 	</fields>
 	<uniqueKey><!--KEY--></uniqueKey>

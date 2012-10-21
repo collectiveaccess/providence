@@ -40,21 +40,24 @@
  	<div id="resultBox">
 <?php
 	if($vo_result) {
-		print $this->render('Results/paging_controls_html.php');
+		$vs_view = $this->getVar('current_view');
+		if ($vo_result->numHits() == 0) { $vs_view = 'no_results'; }
+		if ($vs_view != 'map') { print $this->render('Results/paging_controls_html.php'); }
 		
 		print $this->render('Results/search_options_html.php');
 ?>
 
 	<div class="sectionBox">
 <?php
-		$vs_view = $this->getVar('current_view');
-		if ($vo_result->numHits() == 0) { $vs_view = 'no_results'; }
 		switch($vs_view) {
 			case 'full':
 				print $this->render('Results/ca_objects_results_full_html.php');
 				break;
 			case 'list':
 				print $this->render('Results/ca_objects_results_list_html.php');
+				break;
+			case 'map':
+				print $this->render('Results/ca_objects_results_map_html.php');
 				break;
 			case 'no_results':
 				print $this->render('Results/no_results_html.php');
@@ -66,7 +69,7 @@
 ?>		
 	</div><!-- end sectionbox -->
 <?php
-		print $this->render('Results/paging_controls_minimal_html.php');
+		if ($vs_view != 'map') { print $this->render('Results/paging_controls_minimal_html.php'); }
 	}
 ?>
 </div><!-- end resultbox -->

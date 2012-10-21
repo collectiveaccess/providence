@@ -127,7 +127,7 @@ class SnoballStemmer
         
         $result = '';
 
-        $word = strtolower($word);
+        $word = strtolower(caRemoveAccents($word));
 
         // Strip punctuation, etc. Keep ' and . for URLs and contractions.
         if ( substr($word, -2) == "'s" ) {

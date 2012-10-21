@@ -41,6 +41,17 @@
  		 * Browse engine used to wrap searches. The browse "wrapper" provides for "refine search" functionality
  		 */
  		protected $opo_browse;
+ 		# -------------------------------------------------------
+ 		/**
+ 		 *
+ 		 */
+ 		public function Facets() {
+ 			$va_access_values = caGetUserAccessValues($this->request);
+ 			$this->opo_browse->loadFacetContent(array('checkAccess' => $va_access_values));
+			$this->view->setVar('browse', $this->opo_browse);
+			
+ 			$this->render("Search/ajax_refine_facets_html.php");
+ 		}
 		# -------------------------------------------------------
  		public function getFacet() {
  			$va_access_values = caGetUserAccessValues($this->request);

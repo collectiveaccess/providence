@@ -70,6 +70,8 @@
 			$ps_type = $this->request->getParameter('type', pString);
 			$ps_types = $this->request->getParameter('types', pString);
 			$pb_no_subtypes = (bool)$this->request->getParameter('noSubtypes', pInteger);
+			$pb_quickadd = (bool)$this->request->getParameter('quickadd', pInteger);
+			$pb_no_inline = (bool)$this->request->getParameter('noInline', pInteger);
 			
 			if (!($pn_limit = $this->request->getParameter('limit', pInteger))) { $pn_limit = 100; }
 			$va_items = array();
@@ -154,7 +156,16 @@
 				$qr_res->setOption('prefetch', $pn_limit);
 				$qr_res->setOption('dontPrefetchAttributes', true);
 				
-				$va_items = caProcessRelationshipLookupLabel($qr_res, $this->opo_item_instance, array('exclude' => $va_excludes));
+				$va_opts = array('exclude' => $va_excludes, 'limit' => $pn_limit);
+				if(!$pb_no_inline && ($pb_quickadd || ($this->request->user && $this->request->user->canDoAction('can_quickadd_'.$this->opo_item_instance->tableName())))) {
+					$va_opts['inlineCreateQuery'] = $ps_query;
+					$va_opts['inlineCreateMessage'] = _t('<em>%1</em> does not exist. Create?', $ps_query);
+				} else {
+					$va_opts['emptyResultQuery'] = $ps_query;
+					$va_opts['emptyResultMessage'] = _t('No matches found for <em>%1</em>', $ps_query);
+				}
+				
+				$va_items = caProcessRelationshipLookupLabel($qr_res, $this->opo_item_instance, $va_opts);
 			}
 			if (!is_array($va_items)) { $va_items = array(); }
 			$this->view->setVar(str_replace(' ', '_', $this->ops_name_singular).'_list', $va_items);
@@ -166,6 +177,8 @@
  		 * Returned data is JSON format
  		 */
  		public function GetHierarchyLevel() {
+			$ps_bundle = (string)$this->request->getParameter('bundle', pString);
+			
 			$t_item = $this->opo_item_instance;
 			if (!$t_item->isHierarchical()) { return; }
 			
@@ -231,7 +244,7 @@
  				//
  				// ... so the hierbrowser passes an extra 'init' parameters set to 1 if the GetHierarchyLevel() call
  				// is part of a browser initialization
- 				$this->request->session->setVar($this->ops_table_name.'_browse_last_id', $pn_id);
+ 				$this->request->session->setVar($this->ops_table_name.'_'.$ps_bundle.'_browse_last_id', $pn_id);
  			}
  			
  			$va_items_for_locale['_primaryKey'] = $t_item->primaryKey();	// pass the name of the primary key so the hierbrowser knows where to look for item_id's

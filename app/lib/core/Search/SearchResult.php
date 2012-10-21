@@ -53,7 +53,7 @@ class SearchResult extends BaseObject {
 	private $opo_search_config;
 	private $opo_db;
 	private $opn_table_num;
-	private $ops_table_name;
+	protected $ops_table_name;
 	private $ops_table_pk;
 	// ----
 	
@@ -62,28 +62,30 @@ class SearchResult extends BaseObject {
 	private $opo_engine_result;
 	protected $opa_tables;
 	
-	private $opo_row_instance;
+	protected $opo_subject_instance;
 	
 	private $opa_prefetch_cache;
 	private $opa_rel_prefetch_cache;
 	private $opa_timestamp_cache;
 	private $opa_row_ids_to_prefetch_cache;
 	
-	private $opo_tep; // timeexpression parser
+	private $opo_tep; // time expression parser
+	
+	private $opa_cached_result_counts;
 	
 	# ------------------------------------------------------------------
-	public function __construct($pn_subject_table_num=null, $po_engine_result=null, $pa_tables=null) {
-		
+	public function __construct($po_engine_result=null, $pa_tables=null) {
 		$this->opo_db = new Db();
 		$this->opo_datamodel = Datamodel::load();
+		$this->opo_subject_instance = $this->opo_datamodel->getInstanceByTableName($this->ops_table_name, true);
 		
 		$this->opa_prefetch_cache = array();
 		$this->opa_rel_prefetch_cache = array();
 		$this->opa_timestamp_cache = array();
 		$this->opa_row_ids_to_prefetch_cache = array();
 		
-		if ($pn_subject_table_num) {
-			$this->init($pn_subject_table_num, $po_engine_result, $pa_tables);
+		if ($po_engine_result) {
+			$this->init($po_engine_result, $pa_tables);
 		}
 		
 		if (!$GLOBALS["_DbResult_time_expression_parser"]) { $GLOBALS["_DbResult_time_expression_parser"] = new TimeExpressionParser(); }
@@ -107,20 +109,21 @@ class SearchResult extends BaseObject {
 		);
 		
 		
-		$this->opo_tep = new TimeExpressionParser();
-
+		$this->opo_tep = $GLOBALS["_DbResult_time_expression_parser"];
 	}
 	# ------------------------------------------------------------------
-	public function init($pn_subject_table_num, $po_engine_result, $pa_tables) {
-		$this->opn_table_num = $pn_subject_table_num;
+	public function init($po_engine_result, $pa_tables, $pa_options=null) {
+		
+		$this->opn_table_num = $this->opo_subject_instance->tableNum();
+		$this->ops_table_name =  $this->opo_subject_instance->tableName();
+		$this->ops_table_pk = $this->opo_subject_instance->primaryKey();
+		$this->opa_cached_result_counts = array();
+		
 		$this->opo_engine_result = $po_engine_result;
+		if (!is_array($pa_tables)) { print caPrintStackTrace(); }
 		$this->opa_tables = $pa_tables;
 		
 		$this->errors = array();
-	
-		$this->opo_row_instance = $this->opo_datamodel->getInstanceByTableNum($this->opn_table_num, true);
-		$this->ops_table_name =  $this->opo_row_instance->tableName();
-		$this->ops_table_pk = $this->opo_row_instance->primaryKey();
 	}
 	# ------------------------------------------------------------------
 	public function tableNum() {
@@ -172,14 +175,14 @@ class SearchResult extends BaseObject {
 		$va_row_ids = array();
 		
 		$vn_cur_row_index = $this->opo_engine_result->currentRow();
-		$this->seek($pn_start);
+		self::seek($pn_start);
 		
 		$vn_i=0;
 		while(self::nextHit() && ($vn_i < $pn_num_rows)) {
 			$va_row_ids[] = $this->opo_engine_result->get($this->ops_table_pk);
 			$vn_i++;
 		}
-		$this->seek($vn_cur_row_index + 1);
+		self::seek($vn_cur_row_index + 1);
 		
 		return $this->opa_row_ids_to_prefetch_cache[$ps_tablename.'/'.$pn_start.'/'.$pn_num_rows] = $va_row_ids;
 	}
@@ -248,7 +251,7 @@ class SearchResult extends BaseObject {
 		}
 	
 		$vb_has_locale_id = true;
-		if ($this->opo_row_instance->hasField('locale_id') && (!$t_rel_instance->hasField('locale_id'))) {
+		if ($this->opo_subject_instance->hasField('locale_id') && (!$t_rel_instance->hasField('locale_id'))) {
 			$va_fields[] = $this->ops_table_name.'.locale_id';
 			$vb_has_locale_id = true;
 		}
@@ -302,7 +305,7 @@ class SearchResult extends BaseObject {
 		if (sizeof($va_row_ids = $this->getRowIDsToPrefetch($ps_tablename, $pn_start, $pn_num_rows)) == 0) { return false; }
 		//print "PREFETCH RELATED (".join("; ", $va_row_ids)."): ".$ps_tablename.' - '. $pn_start.' - '. $pn_num_rows."<br>";
 		$vs_md5 = caMakeCacheKeyFromOptions($pa_options);
-		$va_rel_items = $this->opo_row_instance->getRelatedItems($ps_tablename, array_merge($pa_options, array('row_ids' => $va_row_ids, 'limit' => 100000)));		// if there are more than 100,000 then we have a problem
+		$va_rel_items = $this->opo_subject_instance->getRelatedItems($ps_tablename, array_merge($pa_options, array('row_ids' => $va_row_ids, 'limit' => 100000)));		// if there are more than 100,000 then we have a problem
 		foreach($va_rel_items as $vn_relation_id => $va_rel_item) {
 			$this->opa_rel_prefetch_cache[$ps_tablename][$va_rel_item['row_id']][$vs_md5][] = $va_rel_item;
 		}
@@ -339,13 +342,13 @@ class SearchResult extends BaseObject {
 	 *
 	 */
 	public function getPrimaryKeyValues($vn_limit=4000000000) {
-		$vs_pk = $this->opo_row_instance->primaryKey();
-		$this->opo_engine_result->seek(0);
+		//$vs_pk = $this->opo_subject_instance->primaryKey();
+		return $this->opo_engine_result->getHits();
 		
 		$va_ids = array();
 		$vn_c = 0;
-		while($this->opo_engine_result->nextHit()) {
-			$va_ids[] = $this->opo_engine_result->get($vs_pk);
+		foreach($va_hits as $vn_id) {
+			$va_ids[] = $va_hit[$vs_pk];
 			$vn_c++;
 			if ($vn_c >= $vn_limit) { break; }
 		}
@@ -369,7 +372,7 @@ class SearchResult extends BaseObject {
 	 *		template = formats attribute values; precede element codes with a caret ("^"). Eg. "^address1<br/>^city, ^state ^postalcode ^country"; only used when returnAsArray is false and a scalar is therefore to be returned.
 	 *		delimiter = 
 	 *		returnAllLocales = 
-	 *		convertCodesToDisplayText = if true then list_ids are automatically converted to display text in the current locale; default is false (return list_ids raw)
+	 *		convertCodesToDisplayText = if true then item_ids are automatically converted to display text in the current locale; default is false (return item_ids raw)
 	 *
 	 * 		restrict_to_type = restricts returned items to those of the specified type; only supports a single type which can be specified as a list item_code or item_id
  	 *		restrictToType = synonym for restrict_to_type
@@ -561,21 +564,11 @@ class SearchResult extends BaseObject {
 								case 'label':
 								case 'preferred_labels':
 								case $va_path_components['table_name'].'.preferred_labels':
-									$vs_field_val = $va_relation_info['label'];
+									
 									if ($vb_show_hierarachy) {
-										if ($va_ids_by_hier = $this->get($va_path_components['table_name'].'.hierarchy.'.$t_instance->primaryKey(), array_merge($pa_options, array('returnAsArray' => true)))) {
-										
-											$va_vals = array();
-											foreach($va_ids_by_hier as $va_ids) {
-												foreach($va_ids as $vn_id) {
-													if($t_instance->load($vn_id)) {
-														$va_vals[] = $t_instance->get($va_path_components['table_name'].".preferred_labels", $pa_options);
-													}
-												}
-											}
-											
-											$vs_field_val = join($vb_show_hierarachy ? $vs_hierarchical_delimiter : $vs_delimiter, $va_vals);
-										}
+										$vs_field_val = $qr_rel_items->get($va_path_components['table_name'].'.hierarchy.preferred_labels', array_merge($pa_options, array('delimiter' => $vs_hierarchical_delimiter)));
+									} else {
+										$vs_field_val = $va_relation_info['label'];
 									}
 									$vs_value = str_replace("^{$vs_tag}", $vs_field_val, $vs_value);
 									break;
@@ -628,7 +621,7 @@ class SearchResult extends BaseObject {
 				$vb_get_preferred_labels_only = ($va_path_components['field_name'] == 'preferred_labels') ? true : false;
 				$vb_get_nonpreferred_labels_only = ($va_path_components['field_name'] == 'nonpreferred_labels') ? true : false;
 				
-				if ($va_path_components['num_components'] == 2) {
+				if ($va_path_components['num_components'] == 2) {	// if it's just <table_name>.preferred_labels then return an array of fields from the label table
 					$vb_return_all_label_values = true;
 				}
 				
@@ -1078,7 +1071,7 @@ class SearchResult extends BaseObject {
 								
 								// do we need to translate foreign key and choice list codes to display text?
 								$t_instance = $this->opo_datamodel->getInstanceByTableName($va_path_components['table_name'], true);
-								$vs_prop = ($vb_return_all_label_values) ? $va_value[$t_instance->getProperty('LABEL_DISPLAY_FIELD')] : $va_value[$va_path_components['field_name']];
+								$vs_prop = ($vb_return_all_label_values) ? $va_value : $va_value[$va_path_components['field_name']];
 								
 								if ($vb_get_relationship_typename) {
 									if (!$t_rel_type) { $t_rel_type = $this->opo_datamodel->getInstanceByTableName('ca_relationship_types', true); }
@@ -1532,10 +1525,7 @@ class SearchResult extends BaseObject {
 	}
 	# ------------------------------------------------------------------
 	# Utilities
-	# ------------------------------------------------------------------
-	public function getQueryTerms() {
-		return $this->opo_engine_result->getQueryTerms();
-	}
+	
 	# ------------------------------------------------------------------
 	/**
 	 *
@@ -1614,12 +1604,13 @@ class SearchResult extends BaseObject {
 	 * @param bool $vb_sort If true, counts for each field value will be sorted by value; default is false
 	 */
 	public function getResultCountForFieldValues($pa_field_list, $vb_sort=false){
+		$vs_key = md5(print_r($pa_field_list, true).($vb_sort ? 'sort' : 'nosort'));
+		if (isset( $this->opa_cached_result_counts[$vs_key])) { return  $this->opa_cached_result_counts[$vs_key]; }
 		if (($vn_cur_row_index = $this->opo_engine_result->currentRow()) < 0) {
 			$vn_cur_row_index = 0;
 		}
-		$this->seek(0);
+		self::seek(0);
 		$va_result = array();
-		$this->setOption("prefetch", self::numHits());
 		
 		// loop through result and try to fetch values of the given field list
 		while(self::nextHit()) {
@@ -1634,11 +1625,7 @@ class SearchResult extends BaseObject {
 							$vs_field = $va_matches[1].'.'.$va_matches[2];
 						}
 						foreach($vm_field_values as $vs_field_value) {
-							if($va_result[$vs_field][$vs_field_value]){
-								$va_result[$vs_field][$vs_field_value]++;
-							} else {
-								$va_result[$vs_field][$vs_field_value] = 1;
-							}
+							$va_result[$vs_field][$vs_field_value]++;
 						}						
 					} // do nothing on other cases (e.g. error or empty fields)
 				}
@@ -1646,7 +1633,7 @@ class SearchResult extends BaseObject {
 		}
 		
 		// restore current position
-		$this->seek($vn_cur_row_index);
+		self::seek($vn_cur_row_index);
 		
 		// user wants the arrays to be sorted
 		if($vb_sort) {
@@ -1654,7 +1641,7 @@ class SearchResult extends BaseObject {
 				ksort($va_field_contents);
 			}
 		}
-		return $va_result;
+		return $this->opa_cached_result_counts[$vs_key] = $va_result;
 	}
 	# ------------------------------------------------------------------
 }

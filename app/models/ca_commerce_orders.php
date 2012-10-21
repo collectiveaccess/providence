@@ -34,6 +34,7 @@
    *
    */
 require_once(__CA_MODELS_DIR__.'/ca_commerce_transactions.php');
+require_once(__CA_MODELS_DIR__.'/ca_sets.php');
 require_once(__CA_LIB_DIR__.'/core/Parsers/TimeExpressionParser.php');
 require_once(__CA_LIB_DIR__.'/ca/Search/CommerceOrderSearch.php');
 require_once(__CA_LIB_DIR__.'/core/Payment.php');
@@ -65,14 +66,25 @@ BaseModel::$s_ca_models_definitions['ca_commerce_orders'] = array(
 				'DEFAULT' => 'SUBMITTED',
 				'LABEL' => _t('Order status'), 'DESCRIPTION' => _t('Status of order.'),
 				'BOUNDS_CHOICE_LIST' => array(
-					_t('open') => 'OPEN',							// in process of being created by user - all aspects may be modified by user
-					_t('submitted – awaiting quote') => 'SUBMITTED',		// user has submitted order for pricing - only address may be modified
-					_t('awaiting payment') => 'AWAITING_PAYMENT',	// order is awaiting payment before completion - only payment details can be submitted by user
-					_t('payment processed - awaiting digitization') => 'PROCESSED_AWAITING_DIGITIZATION',					// processing completed; awaiting digitization before fulfillment
-					_t('payment processed - ready for fulfillment') => 'PROCESSED',					// processing completed; awaiting fulfillment
-					_t('completed') => 'COMPLETED',					// order complete - user has been sent items
-					_t('reopened') => 'REOPENED'					// order reopened due to issue
+					
 				)
+		),
+		'order_type' => array(
+				'FIELD_TYPE' => FT_TEXT, 'DISPLAY_TYPE' => DT_SELECT,
+				'DISPLAY_WIDTH' => "120px", 'DISPLAY_HEIGHT' => 1,
+				'IS_NULL' => false, 
+				'DEFAULT' => 'O',
+				'LABEL' => _t('Order type'), 'DESCRIPTION' => _t('Indicates whether order is a library loan or sale.'),
+				'BOUNDS_CHOICE_LIST' => array(
+					_t('sales order') => 'O',							
+					_t('library loan') => 'L'
+				)
+		),
+		'order_number' => array(
+				'FIELD_TYPE' => FT_TEXT, 'DISPLAY_TYPE' => DT_OMIT,
+				'DISPLAY_WIDTH' => "120px", 'DISPLAY_HEIGHT' => 1,
+				'IS_NULL' => false, 
+				'LABEL' => _t('Order number'), 'DESCRIPTION' => _t('Unique identifying number for order.')
 		),
 		'shipping_fname' => array(
 				'FIELD_TYPE' => FT_TEXT, 'DISPLAY_TYPE' => DT_FIELD, 
@@ -312,7 +324,7 @@ BaseModel::$s_ca_models_definitions['ca_commerce_orders'] = array(
 		),
 		'payment_received_on' => array(
 				'FIELD_TYPE' => FT_DATETIME, 'DISPLAY_TYPE' => DT_FIELD, 
-				'DISPLAY_WIDTH' => 40, 'DISPLAY_HEIGHT' => 1,
+				'DISPLAY_WIDTH' => 20, 'DISPLAY_HEIGHT' => 1,
 				'IS_NULL' => true, 
 				'DEFAULT' => '',
 				'LABEL' => _t('Payment received on'), 'DESCRIPTION' => _t('Date/time payment was received.'),
@@ -503,7 +515,7 @@ class ca_commerce_orders extends BaseModel {
 	# ----------------------------------------
 	public function __construct($pn_id=null) {
 		parent::__construct($pn_id);
-		
+		$this->setOrderStatusDropDown();
 	 	$this->opo_client_services_config = caGetClientServicesConfiguration();
 		$va_configured_payment_options = $this->opo_client_services_config->getList('payment_methods');
 		$va_available_payment_methods = BaseModel::$s_ca_models_definitions['ca_commerce_orders']['FIELDS']['payment_method']['BOUNDS_CHOICE_LIST'];
@@ -531,6 +543,9 @@ class ca_commerce_orders extends BaseModel {
 	
 		if ($vn_rc = parent::insert($pa_options)) {
 			$this->sendStatusChangeEmailNotification(null, null, null);
+			
+			$this->set('order_number', ca_commerce_orders::generateOrderNumber($this->getPrimaryKey(), $this->get('created_on', array('GET_DIRECT_DATE' => true))));
+			parent::update();
 		}
 		return $vn_rc;
 	}
@@ -551,23 +566,37 @@ class ca_commerce_orders extends BaseModel {
 				}
 				break;
 			case 'AWAITING_PAYMENT':
-				if ($this->get('payment_received_on') && $this->changed('payment_received_on')) {
-					// If it paid for then flip status to "PROCESSED" (if it's all ready to go) or "PROCESSED_AWAITING_DIGITIZATION" if stuff needs to be digitized
-					$va_items_missing_media = $this->itemsMissingDownloadableMedia();
-					if(sizeof($va_items_missing_media) > 0) {
-						$this->set('order_status', 'PROCESSED_AWAITING_DIGITIZATION');
-					} else {
+				if (($this->get('payment_received_on') && $this->changed('payment_received_on')) || ($this->getTotal() == 0)) {
+					if ($this->get('order_type') == 'L') {
+						// LOANS
 						$this->set('order_status', 'PROCESSED');
+					} else {
+						// SALES ORDERS
+						
+						// If it paid for then flip status to "PROCESSED" (if it's all ready to go) or "PROCESSED_AWAITING_DIGITIZATION" if stuff needs to be digitized
+						if(sizeof($va_items_with_no_media = $this->itemsWithNoDownloadableMedia()) > 0) {
+							$this->set('order_status', 'PROCESSED_AWAITING_DIGITIZATION');
+						} else {
+							// If "original" files are missing then mark as PROCESSED_AWAITING_MEDIA_ACCESS
+							if (sizeof($va_items_missing_media = $this->itemsMissingDownloadableMedia('original'))) {
+								$this->set('order_status', 'PROCESSED_AWAITING_MEDIA_ACCESS');
+							} else {
+								$this->set('order_status', 'PROCESSED');
+							}
+						}
 					}
 				}
 				break;
 		}
 		
 		$vb_status_changed = $this->changed('order_status');
+		
+		$this->set('order_number', ca_commerce_orders::generateOrderNumber($this->getPrimaryKey(), $this->get('created_on', array('GET_DIRECT_DATE' => true))));
+			
 		if($vn_rc = parent::update($pa_options)) {
 			if ($vb_status_changed) { $this->sendStatusChangeEmailNotification($vn_old_status, $vn_old_ship_date, $vn_old_shipped_on_date); }
 			
-			if (in_array($this->get('order_status'), array('PROCESSED', 'PROCESSED_AWAITING_DIGITIZATION', 'COMPLETED'))) {
+			if (in_array($this->get('order_status'), array('PROCESSED', 'PROCESSED_AWAITING_DIGITIZATION', 'PROCESSED_AWAITING_MEDIA_ACCESS', 'COMPLETED'))) {
 				// Delete originating set if configured to do so
 				if($this->opo_client_services_config->get('set_disposal_policy') == 'DELETE_WHEN_ORDER_PROCESSED') {
 					$t_trans = new ca_commerce_transactions($this->get('transaction_id'));
@@ -591,11 +620,14 @@ class ca_commerce_orders extends BaseModel {
 		if (($vs_shipped_on_date = $this->get('shipped_on_date', array('GET_DIRECT_DATE' => true))) && ($vs_shipping_date = $this->get('shipping_date', array('GET_DIRECT_DATE' => true)))) {
 			if ($vs_shipped_on_date < $vs_shipping_date) {
 				$this->postError(1101, _t('Shipped on date must not be before the shipping date'), 'ca_commerce_orders->_preSaveActions()');
-				return false;
 			}
 		}
+		
 		if (($this->get('payment_status') == 'RECEIVED') && (!$this->get('payment_received_on'))) {
 			$this->postError(1101, _t('Payment date must be set if payment status is set to received'), 'ca_commerce_orders->_preSaveActions()');
+		}
+		
+		if ($this->numErrors() > 0) {
 			return false;
 		}
 		
@@ -610,6 +642,12 @@ class ca_commerce_orders extends BaseModel {
 			$this->set('handling_cost', 0);
 		}
 		
+		if (($this->get('order_type') == 'L') && ($this->get('order_status') != 'COMPLETED')) {
+			if (!sizeof($this->unreturnedLoanItems())) {
+				$this->set('order_status', 'COMPLETED');
+			}
+		}
+		
 		return true;
 	}
 	# ----------------------------------------
@@ -618,7 +656,7 @@ class ca_commerce_orders extends BaseModel {
 	 */
 	public function sendStatusChangeEmailNotification($pn_old_status, $pn_old_ship_date, $pn_old_shipped_on_date) {
 		global $g_request;
-		if (!$g_request) { return null; }
+		$vn_user_id = is_object($g_request) ? $g_request->getUserID() : null;
 		
 		$vb_status_has_changed = (($vs_status = $this->get('order_status')) != $pn_old_status) ? true : false;
 		$vb_shipping_has_changed = (($this->get('shipped_on_date', array('GET_DIRECT_DATE' => true)) != $pn_old_shipped_on_date) || ($this->get('shipping_date', array('GET_DIRECT_DATE' => true)) != $pn_old_ship_date)) ? true : false;
@@ -647,31 +685,42 @@ class ca_commerce_orders extends BaseModel {
 		if ($vb_status_has_changed) {	// has status changed?
 			$va_admin_addresses = null;
 			if (in_array($vs_status, $va_administrative_email_on_order_status)) { $va_admin_addresses = $va_administrative_email_addresses; }
-			
 			switch($vs_status) {
 				case 'SUBMITTED':
 					$vs_subject = _t('Your order posted on %1 has been received', $vs_order_date);
-					caSendMessageUsingView($g_request, $vs_to_email, $vs_sender_email, "[{$vs_app_name}] {$vs_subject}", "commerce_order_status_submitted.tpl", array('subject' => $vs_subject, 'from_user_id' => $g_request->getUserID(), 'sender_name' => $vs_sender_name, 'sender_email' => $vs_sender_email, 'sent_on' => time(), 'login_url' => $vs_login_url, 't_order' => $this), null, $va_admin_addresses);
+					caSendMessageUsingView($g_request, $vs_to_email, $vs_sender_email, "[{$vs_app_name}] {$vs_subject}", "commerce_order_status_submitted.tpl", array('subject' => $vs_subject, 'from_user_id' => $vn_user_id, 'sender_name' => $vs_sender_name, 'sender_email' => $vs_sender_email, 'sent_on' => time(), 'login_url' => $vs_login_url, 't_order' => $this), null, $va_admin_addresses);
 					break;
 				case 'AWAITING_PAYMENT':
 					$vs_subject = _t('Your order (%2) posted on %1 requires payment', $vs_order_date, $this->getOrderNumber());
-					caSendMessageUsingView($g_request, $vs_to_email, $vs_sender_email, "[{$vs_app_name}] {$vs_subject}", "commerce_order_status_awaiting_payment.tpl", array('subject' => $vs_subject, 'from_user_id' => $g_request->getUserID(), 'sender_name' => $vs_sender_name, 'sender_email' => $vs_sender_email, 'sent_on' => time(), 'login_url' => $vs_login_url, 't_order' => $this), null, $va_admin_addresses);
+					caSendMessageUsingView($g_request, $vs_to_email, $vs_sender_email, "[{$vs_app_name}] {$vs_subject}", "commerce_order_status_awaiting_payment.tpl", array('subject' => $vs_subject, 'from_user_id' => $vn_user_id, 'sender_name' => $vs_sender_name, 'sender_email' => $vs_sender_email, 'sent_on' => time(), 'login_url' => $vs_login_url, 't_order' => $this), null, $va_admin_addresses);
 					break;
 				case 'PROCESSED_AWAITING_DIGITIZATION':
 					$vs_subject = _t('Payment for order (%2) posted on %1 has been processed; your downloads are now pending digitization of purchased items', $vs_order_date, $this->getOrderNumber());
-					caSendMessageUsingView($g_request, $vs_to_email, $vs_sender_email, "[{$vs_app_name}] {$vs_subject}", "commerce_order_status_processed_awaiting_digitization.tpl", array('subject' => $vs_subject, 'from_user_id' => $g_request->getUserID(), 'sender_name' => $vs_sender_name, 'sender_email' => $vs_sender_email, 'sent_on' => time(), 'login_url' => $vs_login_url, 't_order' => $this), null, $va_admin_addresses);
+					caSendMessageUsingView($g_request, $vs_to_email, $vs_sender_email, "[{$vs_app_name}] {$vs_subject}", "commerce_order_status_processed_awaiting_digitization.tpl", array('subject' => $vs_subject, 'from_user_id' => $vn_user_id, 'sender_name' => $vs_sender_name, 'sender_email' => $vs_sender_email, 'sent_on' => time(), 'login_url' => $vs_login_url, 't_order' => $this), null, $va_admin_addresses);
+					break;
+				case 'PROCESSED_AWAITING_MEDIA_ACCESS':
+					$vs_subject = _t('Payment for order (%2) posted on %1 has been processed; your downloads are now pending digitization of transfer of media to the server', $vs_order_date, $this->getOrderNumber());
+					caSendMessageUsingView($g_request, $vs_to_email, $vs_sender_email, "[{$vs_app_name}] {$vs_subject}", "commerce_order_status_processed_awaiting_media_access.tpl", array('subject' => $vs_subject, 'from_user_id' => $vn_user_id, 'sender_name' => $vs_sender_name, 'sender_email' => $vs_sender_email, 'sent_on' => time(), 'login_url' => $vs_login_url, 't_order' => $this), null, $va_admin_addresses);
+					break;
+				case 'PROCESSED_AWAITING_MEDIA_ACCESS':
+					$vs_subject = _t('Payment for order (%2) posted on %1 has been processed; your downloads are now pending digitization of transfer of media to the server', $vs_order_date, $this->getOrderNumber());
+					caSendMessageUsingView($g_request, $vs_to_email, $vs_sender_email, "[{$vs_app_name}] {$vs_subject}", "commerce_order_status_processed_awaiting_media_access.tpl", array('subject' => $vs_subject, 'from_user_id' => $g_request->getUserID(), 'sender_name' => $vs_sender_name, 'sender_email' => $vs_sender_email, 'sent_on' => time(), 'login_url' => $vs_login_url, 't_order' => $this), null, $va_admin_addresses);
+					break;
+				case 'PROCESSED_AWAITING_MEDIA_ACCESS':
+					$vs_subject = _t('Payment for order (%2) posted on %1 has been processed; your downloads are now pending digitization of transfer of media to the server', $vs_order_date, $this->getOrderNumber());
+					caSendMessageUsingView($g_request, $vs_to_email, $vs_sender_email, "[{$vs_app_name}] {$vs_subject}", "commerce_order_status_processed_awaiting_media_access.tpl", array('subject' => $vs_subject, 'from_user_id' => $g_request->getUserID(), 'sender_name' => $vs_sender_name, 'sender_email' => $vs_sender_email, 'sent_on' => time(), 'login_url' => $vs_login_url, 't_order' => $this), null, $va_admin_addresses);
 					break;
 				case 'PROCESSED':
 					$vs_subject = _t('Payment for order (%2) posted on %1 has been processed', $vs_order_date, $this->getOrderNumber());
-					caSendMessageUsingView($g_request, $vs_to_email, $vs_sender_email, "[{$vs_app_name}] {$vs_subject}", "commerce_order_status_processed.tpl", array('subject' => $vs_subject, 'from_user_id' => $g_request->getUserID(), 'sender_name' => $vs_sender_name, 'sender_email' => $vs_sender_email, 'sent_on' => time(), 'login_url' => $vs_login_url, 't_order' => $this), null, $va_admin_addresses);
+					caSendMessageUsingView($g_request, $vs_to_email, $vs_sender_email, "[{$vs_app_name}] {$vs_subject}", "commerce_order_status_processed.tpl", array('subject' => $vs_subject, 'from_user_id' => $vn_user_id, 'sender_name' => $vs_sender_name, 'sender_email' => $vs_sender_email, 'sent_on' => time(), 'login_url' => $vs_login_url, 't_order' => $this), null, $va_admin_addresses);
 					break;
 				case 'COMPLETED':
 					$vs_subject = _t('Your order (%2) posted on %1 is complete', $vs_order_date, $this->getOrderNumber());
-					caSendMessageUsingView($g_request, $vs_to_email, $vs_sender_email, "[{$vs_app_name}] {$vs_subject}", "commerce_order_status_completed.tpl", array('subject' => $vs_subject, 'from_user_id' => $g_request->getUserID(), 'sender_name' => $vs_sender_name, 'sender_email' => $vs_sender_email, 'sent_on' => time(), 'login_url' => $vs_login_url, 't_order' => $this), null, $va_admin_addresses);
+					caSendMessageUsingView($g_request, $vs_to_email, $vs_sender_email, "[{$vs_app_name}] {$vs_subject}", "commerce_order_status_completed.tpl", array('subject' => $vs_subject, 'from_user_id' => $vn_user_id, 'sender_name' => $vs_sender_name, 'sender_email' => $vs_sender_email, 'sent_on' => time(), 'login_url' => $vs_login_url, 't_order' => $this), null, $va_admin_addresses);
 					break;
 				case 'REOPENED':
 					$vs_subject = _t('Order (%2) posted on %1 has been reopened', $vs_order_date, $this->getOrderNumber());
-					caSendMessageUsingView($g_request, $vs_to_email, $vs_sender_email, "[{$vs_app_name}] {$vs_subject}", "commerce_order_status_reopened.tpl", array('subject' => $vs_subject, 'from_user_id' => $g_request->getUserID(), 'sender_name' => $vs_sender_name, 'sender_email' => $vs_sender_email, 'sent_on' => time(), 'login_url' => $vs_login_url, 't_order' => $this), null, $va_admin_addresses);
+					caSendMessageUsingView($g_request, $vs_to_email, $vs_sender_email, "[{$vs_app_name}] {$vs_subject}", "commerce_order_status_reopened.tpl", array('subject' => $vs_subject, 'from_user_id' => $vn_user_id, 'sender_name' => $vs_sender_name, 'sender_email' => $vs_sender_email, 'sent_on' => time(), 'login_url' => $vs_login_url, 't_order' => $this), null, $va_admin_addresses);
 					break;
 			}
 		} else {
@@ -683,14 +732,14 @@ class ca_commerce_orders extends BaseModel {
 				if (($vn_shipped_on_date > 0) && ($vn_shipped_on_date != $pn_old_shipped_on_date)) {
 					// Notify client that package has shipped
 					$vs_subject = _t('Order (%2) posted on %1 has shipped', $vs_order_date, $this->getOrderNumber());
-					caSendMessageUsingView($g_request, $vs_to_email, $vs_sender_email, "[{$vs_app_name}] {$vs_subject}", "commerce_order_shipped.tpl", array('subject' => $vs_subject, 'from_user_id' => $g_request->getUserID(), 'sender_name' => $vs_sender_name, 'sender_email' => $vs_sender_email, 'sent_on' => time(), 'login_url' => $vs_login_url, 't_order' => $this));
+					caSendMessageUsingView($g_request, $vs_to_email, $vs_sender_email, "[{$vs_app_name}] {$vs_subject}", "commerce_order_shipped.tpl", array('subject' => $vs_subject, 'from_user_id' => $vn_user_id, 'sender_name' => $vs_sender_name, 'sender_email' => $vs_sender_email, 'sent_on' => time(), 'login_url' => $vs_login_url, 't_order' => $this));
 					return true;
 				}
 				
 				if (($vn_ship_date > 0) && ($vn_ship_date != $pn_old_ship_date)) {
 					// Notify client that package has been schedule for shipping
 					$vs_subject = _t('Order (%2) posted on %1 has been scheduled for shipping', $vs_order_date, $this->getOrderNumber());
-					caSendMessageUsingView($g_request, $vs_to_email, $vs_sender_email, "[{$vs_app_name}] {$vs_subject}", "commerce_order_will_ship_on.tpl", array('subject' => $vs_subject, 'from_user_id' => $g_request->getUserID(), 'sender_name' => $vs_sender_name, 'sender_email' => $vs_sender_email, 'sent_on' => time(), 'login_url' => $vs_login_url, 't_order' => $this));
+					caSendMessageUsingView($g_request, $vs_to_email, $vs_sender_email, "[{$vs_app_name}] {$vs_subject}", "commerce_order_will_ship_on.tpl", array('subject' => $vs_subject, 'from_user_id' => $vn_user_id, 'sender_name' => $vs_sender_name, 'sender_email' => $vs_sender_email, 'sent_on' => time(), 'login_url' => $vs_login_url, 't_order' => $this));
 					return true;
 				}
 			}
@@ -741,7 +790,7 @@ class ca_commerce_orders extends BaseModel {
 		foreach($pa_fields as $vs_f => $vs_v) { 
 			switch($vs_f) {
 				case 'shipped_on_date':
-					if (!in_array($this->get('order_status'), array('PROCESSED', 'PROCESSED_AWAITING_DIGITIZATION'))) {
+					if (!in_array($this->get('order_status'), array('PROCESSED', 'PROCESSED_AWAITING_DIGITIZATION', 'PROCESSED_AWAITING_MEDIA_ACCESS'))) {
 						$this->postError(1101, _t('Cannot ship order until it is paid for'), 'ca_commerce_orders->set()');
 						return false;
 					}
@@ -756,8 +805,58 @@ class ca_commerce_orders extends BaseModel {
 					break;
 			}
 		}
-		
+		$this->setOrderStatusDropDown();
 		return parent::set($pa_fields, $pm_value, $pa_options);
+	}
+	# ----------------------------------------
+	/**
+	 *
+	 */
+	public function setOrderStatusDropDown() {
+		$vs_type = $this->get('order_type');
+	 	switch($vs_type) {
+	 		case 'L':
+	 			$this->FIELDS['order_status']['BOUNDS_CHOICE_LIST'] = array(
+	 				_t('open') => 'OPEN',							// in process of being created by user - all aspects may be modified by user
+					_t('submitted') => 'SUBMITTED',					// user has submitted order 
+					_t('awaiting payment') => 'AWAITING_PAYMENT',	// order is awaiting payment before completion - only payment details can be submitted by user
+					_t('processed') => 'PROCESSED',					// loan has been processed and user has items
+					_t('completed') => 'COMPLETED'					// loan complete - user returned all items
+	 			);
+	 			$this->FIELDS['order_status']['LABEL'] = _t('Loan status');
+	 			$this->NAME_SINGULAR = _t('client loan');
+	 			$this->NAME_PLURAL = _t('client loans');
+	 			break;
+	 		default:
+	 		case 'O':
+	 			$this->FIELDS['order_status']['BOUNDS_CHOICE_LIST'] = array(
+	 				_t('open') => 'OPEN',							// in process of being created by user - all aspects may be modified by user
+					_t('submitted – awaiting quote') => 'SUBMITTED',		// user has submitted order for pricing - only address may be modified
+					_t('awaiting payment') => 'AWAITING_PAYMENT',	// order is awaiting payment before completion - only payment details can be submitted by user
+					_t('payment processed - awaiting digitization') => 'PROCESSED_AWAITING_DIGITIZATION',					// processing completed; awaiting digitization before fulfillment
+					_t('payment processed - awaiting media access') => 'PROCESSED_AWAITING_MEDIA_ACCESS',					// processing completed; awaiting transfer of media before fulfillment
+					_t('payment processed - ready for fulfillment') => 'PROCESSED',					// processing completed; awaiting fulfillment
+					_t('completed') => 'COMPLETED',					// order complete - user has been sent items
+					_t('reopened') => 'REOPENED'					// order reopened due to issue
+	 			);
+	 			$this->FIELDS['order_status']['LABEL'] = _t('Order status');
+	 			$this->NAME_SINGULAR = _t('order');
+	 			$this->NAME_PLURAL = _t('orders');
+	 			break;
+	 	}
+	 	
+	 	return true;
+	}
+	# ----------------------------------------
+	/**
+	 *
+	 */
+	public function load($pm_id=null, $pb_use_cache=true) {
+		$vn_rc = parent::load($pm_id, $pb_use_cache);
+		
+		$this->setOrderStatusDropDown();
+		
+		return $vn_rc;
 	}
 	# ----------------------------------------
 	/**
@@ -968,6 +1067,14 @@ class ca_commerce_orders extends BaseModel {
 	 *		shipping_method = 
 	 *		order_status = 
 	 *		search = 
+	 *		type = 
+	 *		loan_checkout_date =
+	 *		loan_due_date =
+	 *		loan_return_date =
+	 *		is_overdue = 
+	 *		is_outstanding =
+	 *		object_id =
+	 *		exclude = optional array of order_id's to omit from the returned list
 	 */
 	 public function getOrders($pa_options=null) {
 	 	$o_db = $this->getDb();
@@ -975,6 +1082,26 @@ class ca_commerce_orders extends BaseModel {
 	 	$vb_join_transactions = false;
 	 	
 	 	$va_sql_wheres = $va_sql_values = array();
+	 	
+	 	if (isset($pa_options['is_overdue']) && ((bool)$pa_options['is_overdue'])) {
+	 		$pa_options['type'] = 'L';
+	 		
+	 		$va_sql_wheres[] = "(i.loan_due_date < ?)";
+	 		$va_sql_values[] = time();
+	 		
+	 		$va_sql_wheres[] = "(i.loan_return_date IS NULL)";
+	 	}
+	 	
+	 	if (isset($pa_options['exclude']) && (is_array($pa_options['exclude']))) {
+	 		$va_sql_wheres[] = "(o.order_id NOT IN (?))";
+	 		$va_sql_values[] = $pa_options['exclude'];
+	 	}
+	 	
+	 	if (isset($pa_options['is_outstanding']) && ((bool)$pa_options['is_outstanding'])) {
+	 		$pa_options['type'] = 'L';
+	 		
+	 		$va_sql_wheres[] = "(i.loan_return_date IS NULL)";
+	 	}
 	 	
 	 	if (!is_array($pa_options['order_status'])) { 
 	 		if (isset($pa_options['order_status']) && strlen($pa_options['order_status'])) {
@@ -990,6 +1117,10 @@ class ca_commerce_orders extends BaseModel {
 				$va_sql_values[] = $pa_options['order_status'];
 			}
 		}
+	 	if (isset($pa_options['type']) && in_array($pa_options['type'], array('O', 'L'))) {
+	 		$va_sql_wheres[] = "(o.order_type = ?)";
+	 		$va_sql_values[] = (string)$pa_options['type'];
+	 	}
 	 	
 	 	if (isset($pa_options['shipping_method']) && strlen($pa_options['shipping_method'])) {
 	 		$va_sql_wheres[] = "(o.shipping_method = ?)";
@@ -1006,14 +1137,39 @@ class ca_commerce_orders extends BaseModel {
 	 		$va_sql_wheres[] = "(o.transaction_id = ?)";
 	 		$va_sql_values[] = (int)$pa_options['transaction_id'];
 	 	}
-	 	
-	 	
+	
 	 	if (isset($pa_options['created_on']) && strlen($pa_options['created_on'])) {
-	 		$o_tep = new TimeExpressionParser();
-	 		
-	 		if ($o_tep->parse($pa_options['created_on'])) {
-	 			$va_dates = $o_tep->getUnixTimestamps();
+	 		if (is_array($va_dates = caDateToUnixTimestamps($pa_options['created_on']))) {
 	 			$va_sql_wheres[] = "(o.created_on BETWEEN ? AND ?)";
+	 			$va_sql_values[] = (float)$va_dates['start'];
+	 			$va_sql_values[] = (float)$va_dates['end'];
+	 		}
+	 	}
+	 	
+	 	if (isset($pa_options['object_id']) && strlen($pa_options['object_id'])) {
+	 		$va_sql_wheres[] = "(i.object_id = ?)";
+	 		$va_sql_values[] = (int)$pa_options['object_id'];
+	 	}
+	 	
+	 	if (isset($pa_options['loan_checkout_date']) && strlen($pa_options['loan_checkout_date'])) {
+	 		if (is_array($va_dates = caDateToUnixTimestamps($pa_options['loan_checkout_date']))) {
+	 			$va_sql_wheres[] = "(i.loan_checkout_date BETWEEN ? AND ?)";
+	 			$va_sql_values[] = (float)$va_dates['start'];
+	 			$va_sql_values[] = (float)$va_dates['end'];
+	 		}
+	 	}
+	 	
+	 	if (isset($pa_options['loan_due_date']) && strlen($pa_options['loan_due_date'])) {
+	 		if (is_array($va_dates = caDateToUnixTimestamps($pa_options['loan_due_date']))) {
+	 			$va_sql_wheres[] = "(i.loan_due_date BETWEEN ? AND ?)";
+	 			$va_sql_values[] = (float)$va_dates['start'];
+	 			$va_sql_values[] = (float)$va_dates['end'];
+	 		}
+	 	}
+	 	
+	 	if (isset($pa_options['loan_return_date']) && strlen($pa_options['loan_return_date'])) {
+	 		if (is_array($va_dates = caDateToUnixTimestamps($pa_options['loan_return_date']))) {
+	 			$va_sql_wheres[] = "(i.loan_return_date BETWEEN ? AND ?)";
 	 			$va_sql_values[] = (float)$va_dates['start'];
 	 			$va_sql_values[] = (float)$va_dates['end'];
 	 		}
@@ -1076,7 +1232,8 @@ class ca_commerce_orders extends BaseModel {
 	 			
 	 	", $va_sql_values);
 	 	
-	 	$va_additional_fee_codes = $this->opo_client_services_config->getAssoc('additional_order_item_fees');
+	 	$va_additional_fee_codes = $this->opo_client_services_config->getAssoc(($this->get('order_type') == 'L') ? 'additional_loan_fees' : 'additional_order_item_fees');
+	 	
 	 	$va_order_item_additional_fees = array();
 	 	while($qr_res->nextRow()) {
 	 		$va_fees = caUnserializeForDatabase($qr_res->get('additional_fees'));
@@ -1089,6 +1246,35 @@ class ca_commerce_orders extends BaseModel {
 			$va_order_item_additional_fees[$qr_res->get('order_id')] += $vn_fee_total;
 	 	}
 	 	
+	 	// Get overdue items (only if type is set to [L]oan)
+	 	if (isset($pa_options['type']) && ($pa_options['type'] == 'L')) {
+	 		$qr_res = $o_db->query("
+				SELECT 
+					o.order_id, 
+					min(i.loan_checkout_date) loan_checkout_date, min(i.loan_due_date) loan_due_date
+				FROM ca_commerce_orders o
+				INNER JOIN ca_commerce_order_items AS i ON o.order_id = i.order_id
+	 			".($vb_join_transactions ? "INNER JOIN ca_commerce_transactions AS t ON t.transaction_id = o.transaction_id" : "")."
+				WHERE
+					o.deleted = 0 AND i.loan_return_date IS NULL
+					{$vs_sql_wheres}
+				GROUP BY o.order_id
+					
+			", $va_sql_values);
+			
+			$va_due_dates = $va_overdue_dates = array();
+			$vn_t = time();
+			
+			while($qr_res->nextRow()) {
+				$vn_due_date = $qr_res->get('loan_due_date');
+				if ($vn_due_date > $vn_t) {
+					$va_due_dates[$qr_res->get('order_id')] = caFormatInterval($vn_due_date - $vn_t, 2);
+				} else {
+					$va_overdue_dates[$qr_res->get('order_id')] = caFormatInterval($vn_t - $vn_due_date, 2);
+				}
+			}
+		}
+		
 	 	// Get item totals
 	 	$qr_res = $o_db->query($vs_sql = "
 	 		SELECT 
@@ -1097,7 +1283,9 @@ class ca_commerce_orders extends BaseModel {
 	 			sum(i.tax) order_total_item_tax, 
 	 			((o.shipping_cost) + (i.shipping_cost)) order_total_shipping, 
 	 			((o.handling_cost) + (i.handling_cost)) order_total_handling, 
-	 			count(*) num_items
+	 			count(*) num_items, 
+	 			min(i.loan_checkout_date) loan_checkout_date_start, min(i.loan_due_date) loan_due_date_start, min(i.loan_return_date) loan_return_date_start,
+	 			max(i.loan_checkout_date) loan_checkout_date_end, max(i.loan_due_date) loan_due_date_end, max(i.loan_return_date) loan_return_date_end
 	 		FROM ca_commerce_orders o
 	 		LEFT JOIN ca_commerce_order_items AS i ON o.order_id = i.order_id
 	 		".($vb_join_transactions ? "INNER JOIN ca_commerce_transactions AS t ON t.transaction_id = o.transaction_id" : "")."
@@ -1125,6 +1313,16 @@ class ca_commerce_orders extends BaseModel {
 			
 	 		$va_order['order_total'] = $va_order['order_total_item_fees'] + $va_order['order_total_item_tax'] + $va_order['order_total_shipping'] + $va_order['order_total_handling'] + $vn_additional_order_fees + (float)$va_order_item_additional_fees[$qr_res->get('order_id')];
 	 		
+	 		if (isset($va_overdue_dates[$va_order['order_id']])) {
+	 			$va_order['is_overdue'] = true;
+	 			$va_order['overdue_period'] = $va_overdue_dates[$va_order['order_id']];
+	 		} else {
+				if (isset($va_due_dates[$va_order['order_id']])) {
+					$va_order['is_overdue'] = false;
+					$va_order['due_period'] = $va_due_dates[$va_order['order_id']];
+				}
+			}
+	 		
 	 		$va_orders[] = $va_order;
 	 	}
 	 	
@@ -1144,10 +1342,10 @@ class ca_commerce_orders extends BaseModel {
 	 	
 	 	$o_db = $this->getDb();
 	 	
-	 	$va_additional_fee_codes = $this->opo_client_services_config->getAssoc('additional_order_item_fees');
+	 	$va_additional_fee_codes = $this->opo_client_services_config->getAssoc(($this->get('order_type') == 'L') ? 'additional_loan_fees' : 'additional_order_item_fees');
 	 	
 	 	$qr_res = $o_db->query("
-	 		SELECT o.*, i.*, objl.name, objl.name_sort, objl.locale_id, obj.idno, obj.idno_sort
+	 		SELECT i.*, objl.name, objl.name_sort, objl.locale_id, obj.idno, obj.idno_sort
 	 		FROM ca_commerce_order_items i
 	 		INNER JOIN ca_commerce_orders AS o ON o.order_id = i.order_id
 	 		INNER JOIN ca_objects AS obj ON obj.object_id = i.object_id
@@ -1166,18 +1364,48 @@ class ca_commerce_orders extends BaseModel {
 	 	
 	 	$va_item_to_rep_ids = array();
 	 	if (sizeof($va_item_ids)) {
-			$qr_rep_count = $o_db->query("
-				SELECT coixor.item_id, coixor.representation_id, count(*) c
-				FROM ca_commerce_order_items_x_object_representations coixor
-				INNER JOIN ca_object_representations AS o_r ON o_r.representation_id = coixor.representation_id
-				WHERE
-					coixor.item_id IN (?) AND o_r.deleted = 0
-				GROUP BY coixor.item_id
-			", array($va_item_ids));
-			
-			while($qr_rep_count->nextRow()) {
-				$va_rep_counts[(int)$qr_rep_count->get('item_id')] = (int)$qr_rep_count->get('c');
-				$va_item_to_rep_ids[(int)$qr_rep_count->get('item_id')] = (int)$qr_rep_count->get('representation_id');
+	 		if ($this->get('order_type') == 'O') {
+				$qr_rep_count = $o_db->query("
+					SELECT coixor.item_id, coixor.representation_id, count(*) c
+					FROM ca_commerce_order_items_x_object_representations coixor
+					INNER JOIN ca_object_representations AS o_r ON o_r.representation_id = coixor.representation_id
+					WHERE
+						coixor.item_id IN (?) AND o_r.deleted = 0
+					GROUP BY coixor.item_id
+				", array($va_item_ids));
+				
+				while($qr_rep_count->nextRow()) {
+					$va_rep_counts[(int)$qr_rep_count->get('item_id')] = (int)$qr_rep_count->get('c');
+					$va_item_to_rep_ids[(int)$qr_rep_count->get('item_id')] = (int)$qr_rep_count->get('representation_id');
+				}
+			} else {
+				$qr_rep_count = $o_db->query("
+					SELECT o.item_id, coixor.representation_id, count(*) c
+					FROM ca_commerce_order_items o
+					INNER JOIN ca_objects_x_object_representations AS coixor ON o.object_id = coixor.object_id
+					INNER JOIN ca_object_representations AS o_r ON o_r.representation_id = coixor.representation_id
+					WHERE
+						o.item_id IN (?) AND o_r.deleted = 0
+					GROUP BY o.item_id
+				", array($va_item_ids));
+				
+				while($qr_rep_count->nextRow()) {
+					$va_rep_counts[(int)$qr_rep_count->get('item_id')] = (int)$qr_rep_count->get('c');
+					$va_item_to_rep_ids[(int)$qr_rep_count->get('item_id')] = (int)$qr_rep_count->get('representation_id');
+				}
+				
+				$qr_rep_count = $o_db->query("
+					SELECT o.item_id, coixor.representation_id
+					FROM ca_commerce_order_items o
+					INNER JOIN ca_objects_x_object_representations AS coixor ON o.object_id = coixor.object_id
+					INNER JOIN ca_object_representations AS o_r ON o_r.representation_id = coixor.representation_id
+					WHERE
+						o.item_id IN (?) AND o_r.deleted = 0 AND coixor.is_primary = 1
+				", array($va_item_ids));
+				
+				while($qr_rep_count->nextRow()) {
+					$va_item_to_rep_ids[(int)$qr_rep_count->get('item_id')] = (int)$qr_rep_count->get('representation_id');
+				}
 			}
 			
 			$qr_rep_count = $o_db->query("
@@ -1280,8 +1508,9 @@ class ca_commerce_orders extends BaseModel {
 	 	$t_object = new ca_objects($pn_object_id);
 	 	$vn_rep_id = $t_object->getPrimaryRepresentationID();
 	 	
-	 	$t_item->addRepresentations((isset($pa_options['representation_ids']) && is_array($pa_options['representation_ids'])) ? $pa_options['representation_ids'] : array($vn_rep_id));
-	 	
+	 	if ($this->get('order_type') == 'O') {
+	 		$t_item->addRepresentations((isset($pa_options['representation_ids']) && is_array($pa_options['representation_ids'])) ? $pa_options['representation_ids'] : array($vn_rep_id));
+	 	}
 	 	return $t_item;
 	}
 	# ----------------------------------------
@@ -1310,6 +1539,9 @@ class ca_commerce_orders extends BaseModel {
 	 				break;
 	 			default:
 	 				$t_item->set($vs_f, $vs_v);
+	 				if ($t_item->numErrors()) {
+						$this->errors = array_merge($this->errors, $t_item->errors);
+					}
 	 				break;
 	 		}
 	 	}
@@ -1325,7 +1557,7 @@ class ca_commerce_orders extends BaseModel {
 	 	$t_item->update();
 	 	
 	 	if ($t_item->numErrors()) {
-	 		print_R($t_item->getErrors());
+	 		$this->errors = $t_item->errors;
 	 	}
 	 	
 	 	return $t_item;
@@ -1350,7 +1582,7 @@ class ca_commerce_orders extends BaseModel {
 	 	$t_item->delete(true);
 	 	
 	 	if ($t_item->numErrors()) {
-	 		print_R($t_item->getErrors());
+	 		$this->errors = $t_item->errors;
 	 		return false;
 	 	}
 	 	return true;
@@ -1601,6 +1833,7 @@ class ca_commerce_orders extends BaseModel {
 	 * @param HTTPRequest $po_request The current request
 	 * @param array $pa_options Array of options. Supported options are 
 	 *			noCache = If set to true then label cache is bypassed; default is true
+	 *			type = "O" = order; "L" = loan; default is "O"
 	 *
 	 * @return string Rendered HTML bundle
 	 */
@@ -1612,7 +1845,7 @@ class ca_commerce_orders extends BaseModel {
 		if(!is_array($pa_options)) { $pa_options = array(); }
 		
 		$o_view->setVar('options', $pa_options);
-		
+		$o_view->setVar('fee_list', (isset($pa_options['type']) && ($pa_options['type'] == 'L')) ? $this->opo_client_services_config->getAssoc('additional_loan_fees') : $this->opo_client_services_config->getAssoc('additional_order_fees'));
 		$o_view->setVar('t_subject', $this);
 		
 		
@@ -1662,11 +1895,12 @@ class ca_commerce_orders extends BaseModel {
 	}
 	# ------------------------------------------------------
 	/**
-	 * 
+	 * Checks all items in order that are downloaded and returns a list of item_ids for items
+	 * that have no representations attached.
 	 *
-	 * @return array 
+	 * @return array A list of item_ids for which no representations are defined.
 	 */
-	public function itemsMissingDownloadableMedia() {
+	public function itemsWithNoDownloadableMedia() {
 		if (!$this->getPrimaryKey()) { return null; }
 		
 		$o_db = $this->getDb();
@@ -1688,14 +1922,70 @@ class ca_commerce_orders extends BaseModel {
 		$t_object = new ca_objects();
 		$va_rep_counts = $t_object->getMediaCountsForIDs($va_object_ids);
 		
-		$va_items_missing_downloadable_media = array();
+		$va_items_with_no_downloadable_media = array();
 		while($qr_res->nextRow()) {
 			$vn_object_id = $qr_res->get('object_id');
 			if (!isset($va_rep_counts[$vn_object_id]) || !$va_rep_counts[$vn_object_id]) {
-				$va_items_missing_downloadable_media[$qr_res->get('item_id')] = true;
+				$va_items_with_no_downloadable_media[$qr_res->get('item_id')] = true;
 			}
 		}
-		return array_keys($va_items_missing_downloadable_media);
+		return array_keys($va_items_with_no_downloadable_media);
+	}
+	# ------------------------------------------------------
+	/**
+	 * Checks all items in order that are downloadable and returns a list of object representation (organized by object)
+	 * for which the specified version of media is missing on the server. This can be useful in situations where you are
+	 * not keeping high-resolution media on the server. Rather than passing a dead media URL to the user it can be detected
+	 * and action, such as downloading the missing media, taken.
+	 *
+	 * @param string $ps_version Optional version to check media for. If omitted defaults to version "original" (by convention this is the original uploaded media)
+	 * @param array $pa_options Array of options. Support options are:
+	 *		returnRepresentationIDs = If set representation_id's for missing media are returned, otherwise MD5 hashes for missing representations are returned. Default is false.
+	 * @return array List of missing items, key'ed on object_id. Value for each is a list of MD5 hashes (or representation_ids if the returnRepresentationIDs option is set)
+	 */
+	public function itemsMissingDownloadableMedia($ps_version='original', $pa_options=null) {
+		if (!$this->getPrimaryKey()) { return null; }
+		
+		$o_db = $this->getDb();
+		
+		// Get items that require download
+		$qr_res = $o_db->query("
+			SELECT i.item_id, i.object_id, coxor.representation_id
+			FROM ca_commerce_order_items i
+			LEFT JOIN ca_commerce_order_items_x_object_representations AS coxor ON i.item_id = coxor.item_id
+			WHERE
+				i.fullfillment_method = 'DOWNLOAD' AND i.order_id = ?
+		", (int)$this->getPrimaryKey());
+		
+		$va_object_ids = array();
+		$va_representation_list = array();
+		while($qr_res->nextRow()) {
+			$vn_object_id = (int)$qr_res->get('object_id');
+			$vn_representation_id = (int)$qr_res->get('representation_id');
+			if ($vn_representation_id) {
+				$va_object_ids[$vn_object_id][$vn_representation_id] = true;
+				$va_representation_list[$vn_representation_id] = $vn_object_id;
+			} else {
+				// get all representations attached to this object
+				$qr_reps = $o_db->query("SELECT representation_id FROM ca_objects_x_object_representations WHERE object_id = ?", $vn_object_id);
+				while($qr_reps->nextRow()) {
+					$va_object_ids[$vn_object_id][$vn_representation_id = (int)$qr_reps->get('representation_id')] = true;
+					$va_representation_list[$vn_representation_id] = $vn_object_id;
+				}
+			}
+		}
+		
+		// Check if files are missing
+		$va_missing_items = array();
+		if (sizeof($va_representation_list)) {
+			$qr_rep_check = $o_db->query("SELECT representation_id, media, md5 FROM ca_object_representations WHERE representation_id IN (?)", array(array_keys($va_representation_list)));
+			while($qr_rep_check->nextRow()) {
+				if (!file_exists($qr_rep_check->getMediaPath('media', $ps_version))) {
+					$va_missing_items[$va_representation_list[(int)$qr_rep_check->get('representation_id')]][] = (isset($pa_options['returnRepresentationIDs']) && $pa_options['returnRepresentationIDs']) ? $qr_rep_check->get('representation_id') : $qr_rep_check->get('md5');
+				}
+			}
+		}
+		return $va_missing_items;
 	}
 	# ------------------------------------------------------
 	/**
@@ -1734,6 +2024,15 @@ class ca_commerce_orders extends BaseModel {
 	}
 	# ------------------------------------------------------
 	/**
+	 * Formats order number (DDMMYYY date + "-" + order_id) for display
+	 *
+	 * @return string The order number
+	 */
+	static public function generateOrderNumber($pn_order_id, $pn_created_on) {
+		return date("mdY", $pn_created_on)."-".$pn_order_id;
+	}
+	# ------------------------------------------------------
+	/**
 	 * Returns a list of order_ids associated with a transaction
 	 *
 	 * @param int $pn_transaction_id A transaction_id
@@ -1765,7 +2064,7 @@ class ca_commerce_orders extends BaseModel {
 	 */
 	public function getFulfillmentLog($pa_options=null) {
 		if (!($vn_order_id = $this->getPrimaryKey())) { return null; }
-		$o_db = new Db();
+		$o_db = $this->getDb();
 		
 		$qr_res = $o_db->query("
 			SELECT e.*, i.*, o.idno item_idno
@@ -1810,6 +2109,164 @@ class ca_commerce_orders extends BaseModel {
 		}
 		
 		return $va_events;
+	}
+	# ------------------------------------------------------
+	/**
+	 * Returns transaction instance for currently loaded order
+	 *
+	 * @return ca_commerce_transactions transaction instance or null if no order is loaded
+	 */
+	public function getOrderTransaction() {
+		if (!($vn_transaction_id = $this->get('transaction_id'))) { return null; }
+		return new ca_commerce_transactions($vn_transaction_id);
+	}
+	# ------------------------------------------------------
+	/**
+	 *
+	 */
+	public function getOrderTransactionUserName() {
+		if (!($t_trans = $this->getOrderTransaction())) { return null; }
+		if (!($t_user = $t_trans->getTransactionUser())) { return null; }
+		
+		$va_values = $t_user->getFieldValuesArray();
+		foreach($va_values as $vs_key => $vs_val) {
+			$va_values["ca_users.{$vs_key}"] = $vs_val;
+		}
+		
+		return caProcessTemplate(join($this->getAppConfig()->getList('ca_users_lookup_delimiter'), $this->getAppConfig()->getList('ca_users_lookup_settings')), $va_values, array());
+	}
+	# ------------------------------------------------------
+	/**
+	 *
+	 */
+	public function getOrderTransactionUserID() {
+		if (!($t_trans = $this->getOrderTransaction())) { return null; }
+		if (!($t_user = $t_trans->getTransactionUser())) { return null; }
+		
+		return $t_user->getPrimaryKey();
+	}
+	# ------------------------------------------------------
+	/**
+	 *
+	 */
+	public function getOrderTransactionUserInstance() {
+		if (!($t_trans = $this->getOrderTransaction())) { return null; }
+		if (!($t_user = $t_trans->getTransactionUser())) { return null; }
+
+		return $t_user;	
+	}
+	# ------------------------------------------------------
+	/**
+	 *
+	 */
+	public function getLoanDueDates() {
+		if (!($vn_order_id = $this->getPrimaryKey())) { return null; }
+		$o_db = $this->getDb();
+		
+		$qr_res = $o_db->query("
+			SELECT min(loan_due_date) mindate, max(loan_due_date) maxdate
+			FROM ca_commerce_order_items
+			WHERE order_id = ?
+		", (int)$vn_order_id);
+		if ($qr_res->nextRow()) {
+			$vn_min = $qr_res->get('mindate');
+			$vn_max = $qr_res->get('maxdate');
+			
+			if (!$vn_min) { $vn_min = $vn_max; }
+			if (!$vn_max) { $vn_max = $vn_min; }
+			if (!$vn_min || !$vn_max) { return null; }
+			
+			return array(
+				'min' => caGetLocalizedDate($vn_min, array('dateFormat' => 'delimited')),
+				'max' => caGetLocalizedDate($vn_max, array('dateFormat' => 'delimited')),
+				'min_raw' => $vn_min,
+				'max_raw' => $vn_max,
+				'range' => caGetLocalizedDateRange($vn_min, $vn_max, array('timeOmit' => true))
+			);
+		}
+		return null;
+	}
+	# ------------------------------------------------------
+	/**
+	 *
+	 */
+	public function getLoanReturnDates() {
+		if (!($vn_order_id = $this->getPrimaryKey())) { return null; }
+		$o_db = $this->getDb();
+		
+		$qr_res = $o_db->query("
+			SELECT min(loan_return_date) mindate, max(loan_return_date) maxdate
+			FROM ca_commerce_order_items
+			WHERE order_id = ?
+		", (int)$vn_order_id);
+		if ($qr_res->nextRow()) {
+			$vn_min = $qr_res->get('mindate');
+			$vn_max = $qr_res->get('maxdate');
+			
+			if (!$vn_min) { $vn_min = $vn_max; }
+			if (!$vn_max) { $vn_max = $vn_min; }
+			if (!$vn_min || !$vn_max) { return null; }
+			
+			return array(
+				'min' => caGetLocalizedDate($vn_min, array('dateFormat' => 'delimited')),
+				'max' => caGetLocalizedDate($vn_max, array('dateFormat' => 'delimited')),
+				'min_raw' => $vn_min,
+				'max_raw' => $vn_max,
+				'range' => caGetLocalizedDateRange($vn_min, $vn_max, array('timeOmit' => true))
+			);
+		}
+		return null;
+	}
+	# ------------------------------------------------------
+	/**
+	 *
+	 */
+	public function unreturnedLoanItems() {
+		if (!($vn_order_id = $this->getPrimaryKey())) { return null; }
+		$o_db = $this->getDb();
+		
+		$qr_res = $o_db->query("
+			SELECT *
+			FROM ca_commerce_order_items
+			WHERE order_id = ? AND loan_return_date IS NULL
+		", (int)$vn_order_id);
+		
+		$va_unreturned_items = array();
+		while ($qr_res->nextRow()) {
+			$va_unreturned_items[$qr_res->get('item_id')] = $qr_res->getRow();
+		}
+		return $va_unreturned_items;
+	}
+	# ------------------------------------------------------
+	/**
+	 *
+	 */
+	static public function getUsageOfItemInOrders($pn_object_id, $pa_options=null) {
+		$o_db = new Db();
+		
+		$va_sql_wheres = $va_sql_params = array((int)$pn_object_id);
+		if (isset($pa_options['type']) && in_array($pa_options['type'], array('O', 'L'))) {
+			$va_sql_wheres[] = "(o.order_type = ?)";
+			$va_sql_params[] = $pa_options['type'];
+		}
+		
+		$vs_sql_wheres = '';
+		if (sizeof($va_sql_wheres)) {
+			$vs_sql_wheres = " AND ".join(" AND ", $va_sql_wheres);
+		}
+		
+		$qr_res = $o_db->query("
+			SELECT o.*, i.*
+			FROM ca_commerce_order_items i
+			INNER JOIN ca_commerce_orders AS o ON o.order_id = i.order_id
+			WHERE object_id = ? {$vs_sql_wheres}
+		", $va_sql_params);
+		
+		$va_usage_history = array();
+		while ($qr_res->nextRow()) {
+			$va_usage_history[$qr_res->get('item_id')] = $qr_res->getRow();
+		}
+		return $va_usage_history;
 	}
 	# ------------------------------------------------------
 }

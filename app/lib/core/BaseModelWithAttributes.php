@@ -291,11 +291,16 @@
 		}
 		# ------------------------------------------------------------------
 		/** 
-		 * removes all attributes from current row of specified element, or all attributes regardless of 
+		 * Removes all attributes from current row of specified element, or all attributes regardless of 
 		 * element if $pm_element_code_or_id is omitted
 		 *
-		 * Note that this method does not respect the minAttributesPerRow type restriction setting. It always
-		 * removes *all* attributes
+		 * Note that this method respects the minAttributesPerRow type restriction setting and will only delete attributes until the minimum permissible
+		 * number of reached. If you wish to remove *all* attributes, ignoring any minAttributesPerRow constraints, pass the 'force' option set to true. 
+		 *
+		 * @param mixed $pm_element_code_or_id
+		 * @param array $pa_options Options are:
+		 *		force = if set to true all attributes are removed, even if there is a non-zero minAttributesPerRow constraint set
+		 * @return bool True on success, false on error
 		 */
 		public function removeAttributes($pm_element_code_or_id=null, $pa_options=null) {
 			if(!$this->getPrimaryKey()) { return null; }
@@ -304,7 +309,7 @@
 				$va_attributes = $this->getAttributesByElement($pm_element_code_or_id);
 			
 				foreach($va_attributes as $o_attribute) {
-					$this->removeAttribute($o_attribute->getAttributeID());
+					$this->removeAttribute($o_attribute->getAttributeID(), null, null, array('dontCheckMinMax' => isset($pa_options['force']) && $pa_options['force']));
 				}
 			} else {
 				if(is_array($va_element_codes = $this->getApplicableElementCodes($this->getTypeID(), false, false))) {
@@ -312,7 +317,7 @@
 						$va_attributes = $this->getAttributesByElement($vs_element_code);
 			
 						foreach($va_attributes as $o_attribute) {
-							$this->removeAttribute($o_attribute->getAttributeID());
+							$this->removeAttribute($o_attribute->getAttributeID(), null, null, array('dontCheckMinMax' => isset($pa_options['force']) && $pa_options['force']));
 						}
 					}
 				}
@@ -596,6 +601,29 @@
 		}
 		# ------------------------------------------------------------------
 		/**
+		 * Set field value(s) for the table row represented by this object
+		 *
+		 */
+		public function set($pa_fields, $pm_value="", $pa_options=null) {
+			if ($this->ATTRIBUTE_TYPE_LIST_CODE) {
+				if(is_array($pa_fields)) {
+					if (isset($pa_fields[$this->ATTRIBUTE_TYPE_ID_FLD]) && !is_numeric($pa_fields[$this->ATTRIBUTE_TYPE_ID_FLD])) {
+						if ($vn_id = ca_lists::getItemID($this->ATTRIBUTE_TYPE_LIST_CODE, $pa_fields[$this->ATTRIBUTE_TYPE_ID_FLD])) {
+							$pa_fields[$this->ATTRIBUTE_TYPE_ID_FLD] = $vn_id;
+						}
+					}
+				} else {
+					if (($pa_fields ==  $this->ATTRIBUTE_TYPE_ID_FLD) && (!is_numeric($pm_value))) {
+						if ($vn_id = ca_lists::getItemID($this->ATTRIBUTE_TYPE_LIST_CODE, $pm_value)) {
+							$pm_value = $vn_id;
+						}
+					}
+				}
+			}
+			return parent::set($pa_fields, $pm_value, $pa_options);
+		}
+		# ------------------------------------------------------------------
+		/**
 		 * Get value(s) for specified attribute. $ps_field specifies the value to fetch in <table_name>.<element_code> or <table_name>.<element_code>.<subelement_code>
 		 * Will return a string containing the retrieved value or values (since attributes can repeat). The values will
 		 * be formatted using the 'template' option with values separated by a delimiter as set in the 'delimiter'
@@ -845,6 +873,7 @@
 		 * @param array $pa_attributes An optional array of HTML attributes to place into the returned <select> tag
 		 * @param array $pa_options An array of options. Supported options are anything supported by ca_lists::getListAsHTMLFormElement as well as:
 		 *		childrenOfCurrentTypeOnly = Returns only types below the current type
+		 *		restrictToTypes = Array of type_ids to restrict type list to
 		 * @return string HTML for list element
 		 */ 
 		public function getTypeListAsHTMLFormElement($ps_name, $pa_attributes=null, $pa_options=null) {
@@ -854,6 +883,14 @@
 			}
 			
 			$pa_options['limitToItemsWithID'] = caGetTypeRestrictionsForUser($this->tableName(), $pa_options);
+			
+			if (isset($pa_options['restrictToTypes']) && is_array($pa_options['restrictToTypes'])) {
+				if (!$pa_options['limitToItemsWithID'] || !is_array($pa_options['limitToItemsWithID'])) {
+					$pa_options['limitToItemsWithID'] = $pa_options['restrictToTypes'];
+				} else {
+					$pa_options['limitToItemsWithID'] = array_intersect($pa_options['limitToItemsWithID'], $pa_options['restrictToTypes']);
+				}
+			}
 			
 			return $t_list->getListAsHTMLFormElement($this->getTypeListCode(), $ps_name, $pa_attributes, $pa_options);
 		}
@@ -1503,7 +1540,7 @@
 			$vs_table = $this->tableName();
 			foreach($va_elements as $vn_element_id => $vs_element_code) {
 				$va_vals = $this->get("{$vs_table}.{$vs_element_code}", array("returnAsArray" => true, "returnAllLocales" => true));
-				
+				if (!is_array($va_vals)) { continue; }
 				foreach($va_vals as $vn_id => $va_vals_by_locale) {
 					foreach($va_vals_by_locale as $vn_locale_id => $va_vals_by_attr_id) {
 						foreach($va_vals_by_attr_id as $vn_attribute_id => $va_val) {

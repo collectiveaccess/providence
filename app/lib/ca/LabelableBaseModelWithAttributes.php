@@ -50,6 +50,24 @@
 		# ------------------------------------------------------------------
 		static $s_label_cache = array();
 		static $s_labels_by_id_cache = array();
+		
+		/** 
+		 * List of failed preferred label inserts to be forced into HTML bundle
+		 *
+		 * @used setFailedPreferredLabelInserts()
+		 * @used clearPreferredFailedLabelInserts()
+		 * @used getPreferredLabelHTMLFormBundle()
+		 */
+		private $opa_failed_preferred_label_inserts = array();
+		
+		/** 
+		 * List of failed preferred label inserts to be forced into HTML bundle
+		 *
+		 * @used setFailedNonPreferredLabelInserts()
+		 * @used clearNonPreferredFailedLabelInserts()
+		 * @used getNonPreferredLabelHTMLFormBundle()
+		 */
+		private $opa_failed_nonpreferred_label_inserts = array();
 		# ------------------------------------------------------------------
 		public function __construct($pn_id=null) {
 			parent::__construct($pn_id);
@@ -291,12 +309,14 @@
  		 *		checkAccess = array of access values to filter results by; if defined only items with the specified access code(s) are returned. Only supported for <table_name>.hierarchy.preferred_labels and <table_name>.children.preferred_labels because these returns sets of items. For <table_name>.parent.preferred_labels, which returns a single row at most, you should do access checking yourself. (Everything here applies equally to nonpreferred_labels)
  	 	 *		sort = optional bundles to sort returned values on. Only supported for <table_name>.children.preferred_labels. The bundle specifiers are fields with or without tablename.
  	 	 *		sort_direction = direction to sort results by, either 'asc' for ascending order or 'desc' for descending order; default is 'asc'
+ 	 	 *		convertCodesToDisplayText = if true then non-preferred label type_ids are automatically converted to display text in the current locale; default is false (return non-preferred label type_id raw)
  	 	 */
 		public function get($ps_field, $pa_options=null) {
 			$vs_template = 				(isset($pa_options['template'])) ? $pa_options['template'] : null;
 			$vb_return_as_array = 		(isset($pa_options['returnAsArray'])) ? (bool)$pa_options['returnAsArray'] : false;
 			$vb_return_all_locales =	(isset($pa_options['returnAllLocales'])) ? (bool)$pa_options['returnAllLocales'] : false;
 			$vs_delimiter =				(isset($pa_options['delimiter'])) ? $pa_options['delimiter'] : ' ';
+			$vb_convert_codes_to_display_text = (isset($pa_options['convertCodesToDisplayText'])) ? (bool)$pa_options['convertCodesToDisplayText'] : false;
 			if ($vb_return_all_locales && !$vb_return_as_array) { $vb_return_as_array = true; }
 		
 			// if desired try to return values in a preferred language/locale
@@ -365,6 +385,7 @@
 								}
 								$va_data = $va_sorted_data;
 							}
+							
 							if ($vb_return_as_array) {
 								return $va_data;
 							} else {
@@ -411,7 +432,7 @@
 						$vb_check_access = is_array($pa_options['checkAccess']) && $this->hasField('access');
 						$va_tmp = array();
 						foreach($va_ancestor_list as $vn_i => $va_item) {
-							if ($vb_check_access && !in_array($va_item['access'], $pa_options['checkAccess'])) { continue; }
+							if ($vb_check_access && !in_array($va_item['NODE']['access'], $pa_options['checkAccess'])) { continue; }
 							if ($vs_template) {
 								$va_tmp[$va_item['NODE'][$vs_pk]] = caProcessTemplate($vs_template, $va_item['NODE'], array('removePrefix' => 'preferred_labels.'));
 							} else {
@@ -449,7 +470,20 @@
 						# ---------------------------------------------
 						case 'preferred_labels':
 							if (!$vb_return_as_array) {
-								return $t_instance->getLabelForDisplay(false, $pa_options['locale']);
+								$va_labels = caExtractValuesByUserLocale($t_instance->getPreferredLabels(), null, $va_preferred_locales);
+								$vs_disp_field = $this->getLabelDisplayField();
+									
+								$va_values = array();
+								foreach($va_labels as $vn_row_id => $va_label_list) {
+									foreach($va_label_list as $vn_i => $va_label) {
+										if ($vs_template) {
+											$va_values[] = caProcessTemplate($vs_template, $va_label, array('removePrefix' => 'preferred_labels.'));
+										} else {
+											$va_values[] = $va_label[$vs_disp_field];
+										}
+									}
+								}
+								return join($vs_delimiter, $va_values);
 							} else {
 								$va_labels = $t_instance->getPreferredLabels(null, false);
 								if ($vb_return_all_locales) {
@@ -470,6 +504,37 @@
 						# ---------------------------------------------
 						case 'nonpreferred_labels':
 							if (!$vb_return_as_array) {
+								$vs_disp_field = $this->getLabelDisplayField();
+								$va_labels = caExtractValuesByUserLocale($t_instance->getNonPreferredLabels(), null, $va_preferred_locales);
+								
+								$t_list = new ca_lists();
+								if ($vb_convert_codes_to_display_text) {
+									$va_types = $t_list->getItemsForList($this->getLabelTableInstance()->getFieldInfo('type_id', 'LIST_CODE'), array('extractValuesByUserLocale' => true));
+								}
+							
+								$va_values = array();
+								foreach($va_labels as $vn_row_id => $va_label_list) {
+									foreach($va_label_list as $vn_i => $va_label) {
+										if ($vs_template) {
+											$va_label_values = $va_label;
+											$va_label_values['typename_singular'] = $va_types[$va_label['type_id']]['name_singular'];
+											$va_label_values['typename_plural'] = $va_types[$va_label['type_id']]['name_plural'];
+											
+											if ($vb_convert_codes_to_display_text) {
+												$va_label_values['type_id'] = $va_types[$va_label['type_id']]['name_singular'];
+											}
+											$va_values[] = caProcessTemplate($vs_template, $va_label_values, array('removePrefix' => 'nonpreferred_labels.'));
+										} else {
+											if ($vb_convert_codes_to_display_text && ($vs_disp_field == 'type_id')) {
+												$va_values[] = $va_types[$va_label[$vs_disp_field]]['name_singular'];
+											} else {
+												$va_values[] = $va_label[$vs_disp_field];
+											}
+										}
+									}
+								}
+								return join($vs_delimiter, $va_values);
+								
 								$va_labels = caExtractValuesByUserLocale($t_instance->getNonPreferredLabels(null, false));
 								$vs_disp_field = $this->getLabelDisplayField();
 								$va_processed_labels = array();
@@ -500,15 +565,23 @@
 							case 'preferred_labels':
 								if (!$vb_return_as_array) {
 									if (isset($va_tmp[2]) && ($va_tmp[2])) {
-										$va_labels = caExtractValuesByUserLocale($t_instance->getPreferredLabels(), null, $va_preferred_locales);
-										
-										foreach($va_labels as $vn_row_id => $va_label_list) {
-											return $va_label_list[0][$va_tmp[2]];
-										}
-										return null;
+										$vs_disp_field = $va_tmp[2];
 									} else {
-										return $t_instance->getLabelForDisplay(false, $pa_options['locale']);
+										$vs_disp_field = $this->getLabelDisplayField();
 									}
+									$va_labels = caExtractValuesByUserLocale($t_instance->getPreferredLabels(), null, $va_preferred_locales);
+									
+									$va_values = array();
+									foreach($va_labels as $vn_row_id => $va_label_list) {
+										foreach($va_label_list as $vn_i => $va_label) {
+											if ($vs_template) {
+												$va_values[] = caProcessTemplate($vs_template, $va_label, array('removePrefix' => 'preferred_labels.'));
+											} else {
+												$va_values[] = $va_label[$vs_disp_field];
+											}
+										}
+									}
+									return join($vs_delimiter, $va_values);
 								} else {
 									$va_labels = $t_instance->getPreferredLabels(null, false);
 									
@@ -554,10 +627,30 @@
 									}
 									$va_labels = caExtractValuesByUserLocale($t_instance->getNonPreferredLabels(), null, $va_preferred_locales);
 									
+									$t_list = new ca_lists();
+									if ($vb_convert_codes_to_display_text) {
+										$va_types = $t_list->getItemsForList($this->getLabelTableInstance()->getFieldInfo('type_id', 'LIST_CODE'), array('extractValuesByUserLocale' => true));
+									}
+								
 									$va_values = array();
 									foreach($va_labels as $vn_row_id => $va_label_list) {
 										foreach($va_label_list as $vn_i => $va_label) {
-											$va_values[] = $va_label[$vs_disp_field];
+											if ($vs_template) {
+												$va_label_values = $va_label;
+												$va_label_values['typename_singular'] = $va_types[$va_label['type_id']]['name_singular'];
+												$va_label_values['typename_plural'] = $va_types[$va_label['type_id']]['name_plural'];
+												
+												if ($vb_convert_codes_to_display_text) {
+													$va_label_values['type_id'] = $va_types[$va_label['type_id']]['name_singular'];
+												}
+												$va_values[] = caProcessTemplate($vs_template, $va_label_values, array('removePrefix' => 'nonpreferred_labels.'));
+											} else {
+												if ($vb_convert_codes_to_display_text && ($vs_disp_field == 'type_id')) {
+													$va_values[] = $va_types[$va_label[$vs_disp_field]]['name_singular'];
+												} else {
+													$va_values[] = $va_label[$vs_disp_field];
+												}
+											}
 										}
 									}
 									return join($vs_delimiter, $va_values);
@@ -939,8 +1032,7 @@
  			global $g_ui_locale_id;
  			
  			if (!$this->getPreferredLabelCount()) {
-				$t_locale = new ca_locales();
-				$va_locale_list = $t_locale->getLocaleList();
+				$va_locale_list = ca_locales::getLocaleList();
 				
 				if ($pn_locale_id && isset($va_locale_list[$pn_locale_id])) {
 					$vn_locale_id = $pn_locale_id;
@@ -1005,6 +1097,46 @@
 			return null;
 		}
 		# ------------------------------------------------------------------
+		/**
+		 * 
+		 *
+		 * @return bool Always returns true
+		 */
+		public function setFailedPreferredLabelInserts($pa_label_list) {
+			$this->opa_failed_preferred_label_inserts = $pa_label_list;
+			return true;
+		}
+		# ------------------------------------------------------------------
+		/**
+		 * 
+		 *
+		 * @return bool Always returns true
+		 */
+		public function clearFailedPreferredLabelInserts($pa_label_list) {
+			$this->opa_failed_preferred_label_inserts = array();
+			return true;
+		}
+		# ------------------------------------------------------------------
+		/**
+		 * 
+		 *
+		 * @return bool Always returns true
+		 */
+		public function setFailedNonPreferredLabelInserts($pa_label_list) {
+			$this->opa_failed_nonpreferred_label_inserts = $pa_label_list;
+			return true;
+		}
+		# ------------------------------------------------------------------
+		/**
+		 * 
+		 *
+		 * @return bool Always returns true
+		 */
+		public function clearFailedNonPreferredLabelInserts($pa_label_list) {
+			$this->opa_failed_nonpreferred_label_inserts = array();
+			return true;
+		}
+		# ------------------------------------------------------------------
 		/** 
 		 * Returns HTML form bundle (for use in a form) for preferred labels attached to this row
 		 *
@@ -1014,7 +1146,7 @@
 		 * @param array $pa_bundle_settings
 		 * @param array $pa_options Array of options. Supported options are 
 		 *			noCache = If set to true then label cache is bypassed; default is true
-		 *
+		 *			forceLabelForNew = 
 		 * @return string Rendered HTML bundle
 		 */
 		public function getPreferredLabelHTMLFormBundle($po_request, $ps_form_name, $ps_placement_code, $pa_bundle_settings=null, $pa_options=null) {
@@ -1069,8 +1201,16 @@
 							}
 						}
 					}
+				} else {
+					if (isset($pa_options['forceLabelForNew']) && is_array($pa_options['forceLabelForNew'])) {
+						$va_new_labels_to_force_due_to_error[] = $pa_options['forceLabelForNew'];
+					}
 				}
 			}
+			if (is_array($this->opa_failed_preferred_label_inserts) && sizeof($this->opa_failed_preferred_label_inserts)) {
+				$va_new_labels_to_force_due_to_error = $this->opa_failed_preferred_label_inserts;
+			}
+
 			$o_view->setVar('new_labels', $va_new_labels_to_force_due_to_error);
 			$o_view->setVar('label_initial_values', $va_inital_values);
 			
@@ -1141,6 +1281,10 @@
 						}
 					}
 				}
+			}
+			
+			if (is_array($this->opa_failed_nonpreferred_label_inserts) && sizeof($this->opa_failed_nonpreferred_label_inserts)) {
+				$va_new_labels_to_force_due_to_error = $this->opa_failed_preferred_label_inserts;
 			}
 			
 			$o_view->setVar('new_labels', $va_new_labels_to_force_due_to_error);
@@ -1426,7 +1570,7 @@
 			foreach($pa_group_ids as $vn_group_id => $vn_access) {
 				if ($vn_user_id) {	// verify that group we're linking to is owned by the current user
 					$t_group = new ca_user_groups($vn_group_id);
-					if (($t_group->get('user_id') != $vn_user_id) && $t_group->get('user_id')) { continue; }
+					//if (($t_group->get('user_id') != $vn_user_id) && $t_group->get('user_id')) { continue; }
 				}
 				$t_rel->clear();
 				$t_rel->load(array('group_id' => $vn_group_id, $vs_pk => $vn_id));		// try to load existing record

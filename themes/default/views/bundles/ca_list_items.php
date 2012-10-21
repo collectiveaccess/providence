@@ -40,7 +40,7 @@
 	
 	$va_initial_values	= $this->getVar('initialValues');
 	
-	$vn_browse_last_id = (int)$this->request->session->getVar('ca_list_items_browse_last_id');
+	$vn_browse_last_id = (int)$this->request->session->getVar('ca_list_items_'.$vs_id_prefix.'_browse_last_id');
 
 	// params to pass during occurrence lookup
 	$va_lookup_params = (isset($va_settings['restrict_to_type']) && $va_settings['restrict_to_type']) ? array('type' => $va_settings['restrict_to_type'], 'noSubtypes' => (int)$va_settings['dont_include_subtypes_in_type_restriction']) : array();
@@ -125,6 +125,8 @@
 						levelDataUrl: '<?php print caNavUrl($this->request, 'lookup', 'ListItem', 'GetHierarchyLevel', array('noSymbols' => 1, 'voc' => 1, 'lists' => join(';', $va_settings['restrict_to_lists']))); ?>',
 						initDataUrl: '<?php print caNavUrl($this->request, 'lookup', 'ListItem', 'GetHierarchyAncestorList'); ?>',
 						
+						bundle: '<?php print $vs_id_prefix; ?>',
+						
 						selectOnLoad : true,
 						browserWidth: "<?php print $va_settings['hierarchicalBrowserWidth']; ?>",
 						
@@ -149,11 +151,14 @@
 					});
 					
 					jQuery('#<?php print $vs_id_prefix; ?>_hierarchyBrowserSearch{n}').autocomplete(
-						'<?php print caNavUrl($this->request, 'lookup', 'ListItem', 'Get'); ?>', {minChars: 3, matchSubset: 1, matchContains: 1, delay: 800, extraParams: {noSymbols: 1}}
+						'<?php print caNavUrl($this->request, 'lookup', 'ListItem', 'Get', array('noInline' => 1)); ?>', {minChars: 3, matchSubset: 1, matchContains: 1, delay: 800, extraParams: {noSymbols: 1}}
 					);
 					
 					jQuery('#<?php print $vs_id_prefix; ?>_hierarchyBrowserSearch{n}').result(function(event, data, formatted) {
-						<?php print $vs_id_prefix; ?>oHierBrowser{n}.setUpHierarchy(data[1]);	// jump browser to selected item
+						if (parseInt(data[1]) > 0) {
+							<?php print $vs_id_prefix; ?>oHierBrowser{n}.setUpHierarchy(data[1]);	// jump browser to selected item
+						}
+						jQuery('#<?php print $vs_id_prefix; ?>_hierarchyBrowserSearch{n}').val('');
 					});
 
 				});

@@ -6,7 +6,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2009-2011 Whirl-i-Gig
+ * Copyright 2009-2012 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -81,22 +81,62 @@ var caUI = caUI || {};
 		
 		options.onAddItem = function(id, options, isNew) {
 			if (!isNew) { return; }
-			jQuery('#' + options.itemID + id + ' #' + options.fieldNamePrefix + 'autocomplete' + id).autocomplete(options.autocompleteUrl, 
-				{ minChars: ((parseInt(options.minChars) > 0) ? options.minChars : 3), matchSubset: 1, matchContains: 1, delay: 800, scroll: true, max: 100, extraParams: options.extraParams,
+			
+			var autocompleter_id = options.itemID + id + ' #' + options.fieldNamePrefix + 'autocomplete' + id;
+			jQuery('#' + autocompleter_id).autocomplete(options.autocompleteUrl, 
+				jQuery.extend({ minChars: ((parseInt(options.minChars) > 0) ? options.minChars : 3), matchSubset: 1, matchContains: 1, delay: 800, scroll: true, max: 100, extraParams: options.extraParams,
 					formatResult: function(data, value) {
 						return jQuery.trim(value.replace(/<\/?[^>]+>/gi, ''));
 					}
-				}
+				}, options.autocompleteOptions)
 			);
 			
-			jQuery('#' + options.itemID + id + ' #' + options.fieldNamePrefix + 'autocomplete' + id).result(function(event, data, formatted) {
+			jQuery('#' + autocompleter_id).result(function(event, data, formatted) {
+				if (options.autocompleteOptions && options.autocompleteOptions.onSelect) {
+					if (!options.autocompleteOptions.onSelect(autocompleter_id, data)) { return false; }
+				}
+				
+				if(!parseInt(data[1]) && options.quickaddPanel) {
+					var panelUrl = options.quickaddUrl;
+					if (data[3]) { panelUrl += '/q/' + escape(data[3]); }
+					if (options && options.types) {
+						options.types = options.types.join(",");
+						if (options.types.length > 0) {
+							panelUrl += '/types/' + options.types;
+						}
+					}
+					if (options.fieldNamePrefix && (options.fieldNamePrefix.length > 0)) {
+						panelUrl += '/field_name_prefix/' + options.fieldNamePrefix;
+					}
+					options.quickaddPanel.showPanel(panelUrl);
+					jQuery('#' + options.quickaddPanel.getPanelContentID()).data('autocompleteInputID', autocompleter_id);
+					jQuery('#' + options.quickaddPanel.getPanelContentID()).data('autocompleteItemIDID', options.itemID + id + ' #' + options.fieldNamePrefix + 'id' + id);
+					jQuery('#' + options.quickaddPanel.getPanelContentID()).data('autocompleteTypeIDID', options.itemID + id + ' #' + options.fieldNamePrefix + 'type_id' + id);
+					jQuery('#' + options.quickaddPanel.getPanelContentID()).data('panel', options.quickaddPanel);
+					
+					jQuery('#' + options.quickaddPanel.getPanelContentID()).data('autocompleteInput', jQuery("#" + options.autocompleteInputID + id).val());
+					
+					jQuery("#" + options.autocompleteInputID + id).val('');
+				} else {
+					if(!parseInt(data[1])) {
+						jQuery('#' + autocompleter_id).val('');  // no matches so clear text input
+					}
+				}
 				options.select(id, data, formatted);
+			});
+			
+			jQuery('#' + autocompleter_id).blur(function() {
+				// If nothing has been selected remove all content from autocompleter text input
+				if(!jQuery('#' + options.itemID + id + ' #' + options.fieldNamePrefix + 'id' + id).val()) {
+					jQuery('#' + autocompleter_id).val('');
+				}
 			});
 		}
 		
 		options.select = function(id, data, formatted) {
 			var item_id = data[1];
 			var type_id = (data[2]) ? data[2] : '';
+			if (parseInt(item_id) < 0) { return; }
 			
 			jQuery('#' + options.itemID + id + ' #' + options.fieldNamePrefix + 'id' + id).val(item_id);
 			jQuery('#' + options.itemID + id + ' #' + options.fieldNamePrefix + 'type_id' + id).css('display', 'inline');

@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2008-2011 Whirl-i-Gig
+ * Copyright 2008-2012 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -203,6 +203,14 @@
 					'item_id' => null
 				);
  			} 
+ 			
+ 			if (!is_numeric($ps_value)) {
+ 				// try to convert idno to item_id
+ 				if ($vn_id = ca_lists::getItemID($pa_element_info['list_id'], $ps_value)) {
+ 					$ps_value = $vn_id;
+ 				}
+ 			}
+ 			
  			$t_item = new ca_list_items((int)$ps_value);
  			if (!$t_item->getPrimaryKey()) {
  				if ($ps_value) {
@@ -234,9 +242,9 @@
  		public function htmlFormElement($pa_element_info, $pa_options=null) {
  			$vb_require_value = (is_null($pa_element_info['settings']['requireValue'])) ? true : (bool)$pa_element_info['settings']['requireValue'];
  			if (($pa_element_info['parent_id']) && ($pa_element_info['settings']['render'] == 'checklist')) { $pa_element_info['settings']['render'] = ''; }	// checklists can only be top-level
- 			if (!isset($pa_options['width']) && isset($pa_element_info['settings']['listWidth']) && strlen($pa_element_info['settings']['listWidth']) > 0) { $pa_options['width'] = $pa_element_info['settings']['listWidth']; }
- 			if (!isset($pa_options['height']) && isset($pa_element_info['settings']['listHeight']) && strlen($pa_element_info['settings']['listHeight']) > 0) { $pa_options['height'] = $pa_element_info['settings']['listHeight']; }
- 			
+ 			if ((!isset($pa_options['width']) || !strlen($pa_options['width'])) && isset($pa_element_info['settings']['listWidth']) && strlen($pa_element_info['settings']['listWidth']) > 0) { $pa_options['width'] = $pa_element_info['settings']['listWidth']; }
+ 			if ((!isset($pa_options['height']) || !strlen($pa_options['height'])) && isset($pa_element_info['settings']['listHeight']) && strlen($pa_element_info['settings']['listHeight']) > 0) { $pa_options['height'] = $pa_element_info['settings']['listHeight']; }
+ 
  			if (isset($pa_options['nullOption']) && strlen($pa_options['nullOption'])) {
  				$vb_null_option = $pa_options['nullOption'];
  			} else {

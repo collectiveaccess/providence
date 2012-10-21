@@ -62,11 +62,13 @@
  	 * 	$pa_bcc: 	Email address(es) of bcc'ed message recipients. Can be a string containing a single email address or
  	 *				an associative array with keys set to multiple addresses and corresponding values optionally set to
  	 *				a human-readable recipient name. (optional)
+ 	 * 	$pa_attachment: 	array containing file path, name and mimetype of file to attach.
+ 	 *				keys are "path", "name", "mimetype"
  	 *
  	 * While both $ps_body_text and $ps_html_text are optional, at least one should be set and both can be set for a 
  	 * combination text and HTML email
  	 */
-	function caSendmail($pa_to, $pa_from, $ps_subject, $ps_body_text, $ps_body_html='', $pa_cc=null, $pa_bcc=null) {
+	function caSendmail($pa_to, $pa_from, $ps_subject, $ps_body_text, $ps_body_html='', $pa_cc=null, $pa_bcc=null, $pa_attachment=null) {
 		$o_config = Configuration::load();
 		$o_log = new Eventlog();
 		
@@ -152,7 +154,21 @@
 				}
 			}
 			
-			
+			if(is_array($pa_attachment) && $pa_attachment["path"]){
+				$ps_attachment_url = $pa_attachment["path"];
+				# --- only attach media if it is less than 50MB
+				if(filesize($ps_attachment_url) < 419430400){
+					$vs_file_contents = file_get_contents($ps_attachment_url);
+					$o_attachment = $o_mail->createAttachment($vs_file_contents);
+					if($pa_attachment["name"]){
+						$o_attachment->filename = $pa_attachment["name"];
+					}
+					if($pa_attachment["mimetype"]){
+						$o_attachment->type = $pa_attachment["mimetype"];
+					}
+				}
+			}
+
 			$o_mail->setSubject($ps_subject);
 			if ($ps_body_text) {
 				$o_mail->setBodyText($ps_body_text);
@@ -224,7 +240,9 @@
  	 * @return string True if send, false if error
 	 */
 	function caSendMessageUsingView($po_request, $pa_to, $pa_from, $ps_subject, $ps_view, $pa_values, $pa_cc=null, $pa_bcc=null) {
-		$o_view = new View(null, $po_request->getViewsDirectoryPath()."/mailTemplates");
+		$vs_view_path = (is_object($po_request)) ? $po_request->getViewsDirectoryPath() : __CA_BASE_DIR__.'/themes/default/views';
+		
+		$o_view = new View(null, $vs_view_path."/mailTemplates");
 		foreach($pa_values as $vs_key => $vm_val) {
 			$o_view->setVar($vs_key, $vm_val);
 		}

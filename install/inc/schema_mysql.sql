@@ -263,7 +263,7 @@ create table ca_users
 (
    user_id                        int unsigned                   not null AUTO_INCREMENT,
    user_name                      varchar(255)                   not null,
-   userclass                      tinyint unsigned                not null,
+   userclass                      tinyint unsigned               not null,
    password                       varchar(100)                   not null,
    fname                          varchar(255)                   not null,
    lname                          varchar(255)                   not null,
@@ -273,6 +273,7 @@ create table ca_users
    active                         tinyint unsigned               not null,
    confirmed_on                   int unsigned,
    confirmation_key               char(32),
+   registered_on                  int unsigned,
    entity_id                      int unsigned,
    primary key (user_id),
    constraint fk_ca_entities_entity_id foreign key (entity_id)
@@ -593,6 +594,8 @@ create table ca_collections
    status                         tinyint unsigned               not null default 0,
    deleted                        tinyint unsigned               not null default 0,
    rank                             int unsigned                     not null default 0,
+   acl_inherit_from_parent         tinyint unsigned              not null default 0,
+   
    primary key (collection_id),
    constraint fk_ca_collections_type_id foreign key (type_id)
       references ca_list_items (item_id) on delete restrict on update restrict,
@@ -616,6 +619,7 @@ create index i_source_id on ca_collections(source_id);
 create index i_hier_collection_id on ca_collections(hier_collection_id);
 create index i_hier_left on ca_collections(hier_left);
 create index i_hier_right on ca_collections(hier_right);
+create index i_acl_inherit_from_parent on ca_collections(acl_inherit_from_parent);
 
 
 /*==========================================================================*/
@@ -1567,7 +1571,10 @@ create table ca_objects
    access                         tinyint unsigned               not null default 0,
    status                         tinyint unsigned               not null default 0,
    deleted                        tinyint unsigned               not null default 0,
-   rank                             int unsigned                     not null default 0,
+   rank                           int unsigned                   not null default 0,
+   acl_inherit_from_ca_collections tinyint unsigned              not null default 0,
+   acl_inherit_from_parent         tinyint unsigned              not null default 0,
+   
    primary key (object_id),
    constraint fk_ca_objects_source_id foreign key (source_id)
       references ca_list_items (item_id) on delete restrict on update restrict,
@@ -1607,6 +1614,8 @@ create index i_acqusition_type_id on ca_objects
 );
 create index i_source_id on ca_objects(source_id);
 create index i_item_status_id on ca_objects(item_status_id);
+create index i_acl_inherit_from_parent on ca_objects(acl_inherit_from_parent);
+create index i_acl_inherit_from_ca_collections on ca_objects(acl_inherit_from_ca_collections);
 
 
 /*==========================================================================*/
@@ -2264,14 +2273,16 @@ create index i_label_right_id on ca_object_lots_x_places(label_right_id);
 /*==========================================================================*/
 create table ca_acl
 (
-   aci_id                         int unsigned                   not null AUTO_INCREMENT,
+   acl_id                         int unsigned                   not null AUTO_INCREMENT,
    group_id                       int unsigned,
    user_id                        int unsigned,
    table_num                      tinyint unsigned               not null,
    row_id                         int unsigned                   not null,
    access                         tinyint unsigned               not null default 0,
    notes                          char(10)                       not null,
-   primary key (aci_id),
+   inherited_from_table_num       tinyint unsigned               null,
+   inherited_from_row_id          int unsigned                   null,
+   primary key (acl_id),
    constraint fk_ca_acl_group_id foreign key (group_id)
       references ca_user_groups (group_id) on delete restrict on update restrict,
    constraint fk_ca_acl_user_id foreign key (user_id)
@@ -2281,6 +2292,8 @@ create table ca_acl
 create index i_row_id on ca_acl(row_id, table_num);
 create index i_user_id on ca_acl(user_id);
 create index i_group_id on ca_acl(group_id);
+create index i_inherited_from_table_num ON ca_acl(inherited_from_table_num);
+create index i_inherited_from_row_id ON ca_acl(inherited_from_row_id);
 
 
 /*==========================================================================*/
@@ -6314,6 +6327,7 @@ create table ca_commerce_communications
   communication_id int(10) unsigned not null auto_increment,
   transaction_id int unsigned not null,
   source char(1) not null, 
+  communication_type char(1) not null default 'O', 
   created_on int unsigned not null,
   from_user_id int unsigned null,
   subject varchar(255) not null,
@@ -6334,6 +6348,7 @@ create table ca_commerce_communications
 create index i_transaction_id on ca_commerce_communications(transaction_id);
 create index i_read_on on ca_commerce_communications(read_on);
 create index i_from_user_id on ca_commerce_communications(from_user_id);
+create index i_communication_type on ca_commerce_communications(communication_type);
 
 
 /*==========================================================================*/
@@ -6365,6 +6380,8 @@ create table ca_commerce_orders
   created_on int unsigned not null,
   
   order_status varchar(40) not null,	
+  order_number varchar(255) not null,	
+  order_type char(1) not null default 'O',	
    
   shipping_fname varchar(255) not null,
   shipping_lname varchar(255) not null,
@@ -6419,6 +6436,7 @@ create table ca_commerce_orders
 ) engine=innodb CHARACTER SET utf8 COLLATE utf8_general_ci;
 
 create index i_transaction_id on ca_commerce_orders(transaction_id);
+create index i_order_type on ca_commerce_orders(order_type);
 
 
 /*==========================================================================*/
@@ -6441,6 +6459,10 @@ create table ca_commerce_order_items
    refund_notes                   text not null,
    refund_amount                  decimal(8,2) null,
    
+   loan_checkout_date             int unsigned null DEFAULT '0',
+   loan_due_date                  int unsigned null DEFAULT '0',
+   loan_return_date               int unsigned null DEFAULT '0',
+   
    additional_fees                longtext not null,
    
    rank                           int unsigned                   not null default 0,
@@ -6454,6 +6476,9 @@ create table ca_commerce_order_items
 
 create index i_object_id on ca_commerce_order_items(object_id);
 create index i_order_id on ca_commerce_order_items(order_id);
+create index i_loan_checkout_date on ca_commerce_order_items(loan_checkout_date);
+create index i_loan_due_date on ca_commerce_order_items(loan_due_date);
+create index i_loan_return_date on ca_commerce_order_items(loan_return_date);
 
 
 /*==========================================================================*/
@@ -6560,5 +6585,5 @@ create table ca_schema_updates (
 ) engine=innodb CHARACTER SET utf8 COLLATE utf8_general_ci;
 
 /* Indicate up to what migration this schema definition covers */
-/* CURRENT MIGRATION: 63 */
-INSERT IGNORE INTO ca_schema_updates (version_num, datetime) VALUES (63, unix_timestamp());
+/* CURRENT MIGRATION: 69 */
+INSERT IGNORE INTO ca_schema_updates (version_num, datetime) VALUES (69, unix_timestamp());

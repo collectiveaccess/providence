@@ -326,8 +326,8 @@
 										<xs:complexType>
 											<xs:simpleContent>
 												<xs:extension base="xs:string">
-												<xs:attribute name="code" type="xs:string"/>
-												<xs:attribute name="type" type="xs:string"/>
+												<xs:attribute name="code" type="xs:string" use="required"/>
+												<xs:attribute name="type" type="xs:string" use="required"/>
 												</xs:extension>
 											</xs:simpleContent>
 										</xs:complexType>
@@ -372,7 +372,7 @@
 							</xs:complexType>
 						</xs:element>
 					</xs:sequence>
-					<xs:attribute name="code" type="codeType" use="optional"/>
+					<xs:attribute name="code" type="codeType" use="required"/>
 				</xs:complexType>
 			</xs:element>
 		</xs:sequence>
@@ -439,7 +439,7 @@
 									<xs:sequence>
 										<xs:element name="labels" type="listLabels" minOccurs="1"
 											maxOccurs="1"/>
-										<xs:element name="items" type="listItems" minOccurs="1"
+										<xs:element name="items" type="listItems" minOccurs="0"
 											maxOccurs="1"/>
 									</xs:sequence>
 									<xs:attribute name="code" type="codeType" use="required"/>

@@ -38,7 +38,7 @@
  	$o_config = $va_options['config'];
  	$vs_currency_symbol = $va_options['currency_symbol'];
  	
- 	$va_fees = $o_config->getAssoc('additional_order_fees');
+ 	$va_fees = $this->getVar('fee_list');
  	
  	if (is_array($va_fees)) {
  		$va_fee_values = $t_subject->get('additional_fees');

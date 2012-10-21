@@ -84,6 +84,85 @@
  		}
  		# -------------------------------------------------------
  		/**
+ 		 * xxx
+ 		 *
+ 		 * Expects the following request parameters: 
+ 		 *		object_id = the id of the ca_objects record to display
+ 		 *		representation_id = the id of the ca_object_representations record to display; the representation must belong to the specified object
+ 		 *
+ 		 *	Optional request parameters:
+ 		 *		version = The version of the representation to display. If omitted the display version configured in media_display.conf is used
+ 		 *
+ 		 */ 
+ 		public function GetRepresentationEditor() {
+ 			list($vn_object_id, $t_object) = $this->_initView();
+ 			$pn_representation_id 	= $this->request->getParameter('representation_id', pInteger);
+ 			$pb_reload 	= (bool)$this->request->getParameter('reload', pInteger);
+ 			
+ 			if(!$vn_object_id) { $vn_object_id = 0; }
+ 			$t_rep = new ca_object_representations($pn_representation_id);
+ 			if (!$t_rep->getPrimaryKey()) {
+ 				// error - invalid representation_id
+ 			}
+ 			$va_opts = array('display' => 'media_editor', 'object_id' => $vn_object_id, 'containerID' => 'caMediaPanelContentArea', 'mediaEditor' => true, 'noControls' => $pb_reload);
+ 			if (strlen($vs_use_book_viewer = $this->request->getParameter('use_book_viewer', pInteger))) { $va_opts['use_book_viewer'] = (bool)$vs_use_book_viewer; }
+ 
+ 			$this->response->addContent($t_rep->getRepresentationViewerHTMLBundle($this->request, $va_opts));
+ 		}
+ 		# -------------------------------------------------------
+ 		/**
+ 		 *
+ 		 */ 
+ 		public function ProcessMedia() {
+ 			list($vn_object_id, $t_object) = $this->_initView();
+ 			$pn_representation_id 	= $this->request->getParameter('representation_id', pInteger);
+ 			$ps_op 					= $this->request->getParameter('op', pString);
+ 			$pn_angle 				= $this->request->getParameter('angle', pInteger);
+ 			$pb_revert 				= (bool)$this->request->getParameter('revert', pInteger);
+ 			
+ 			$t_rep = new ca_object_representations($pn_representation_id);
+ 			if (!$t_rep->getPrimaryKey()) { 
+ 				$va_response = array(
+ 					'action' => 'process', 'status' => 20, 'message' => _t('Invalid representation_id')
+ 				);
+ 			} else {
+				if ($t_rep->applyMediaTransformation('media', $ps_op, array('angle' => $pn_angle), array('revert' => $pb_revert))) {
+					$va_response = array(
+						'action' => 'process', 'status' => 0, 'message' => 'OK', 'op' => $ps_op, 'angle' => $pn_angle
+					);
+				} else {
+					$va_response = array(
+						'action' => 'process', 'status' => 10, 'message' => _t('Transformation failed')
+					);
+				}
+			}
+ 			
+ 			$this->view->setVar('response', $va_response);
+ 			$this->render('object_representation_process_media_json.php');
+ 		}
+ 		# -------------------------------------------------------
+ 		/**
+ 		 *
+ 		 */ 
+ 		public function RevertMedia() {
+ 			list($vn_object_id, $t_object) = $this->_initView();
+ 			$pn_representation_id 	= $this->request->getParameter('representation_id', pInteger);
+ 			if(!$vn_object_id) { $vn_object_id = 0; }
+ 			$t_rep = new ca_object_representations($pn_representation_id);
+ 			if ($t_rep->removeMediaTransformations('media')) {
+ 				$va_response = array(
+ 					'action' => 'revert', 'status' => 0
+ 				);
+ 			} else {
+ 				$va_response = array(
+ 					'action' => 'revert', 'status' => 10
+ 				);
+ 			}
+ 			$this->view->setVar('response', $va_response);
+ 			$this->render('object_representation_process_media_json.php');
+ 		}
+ 		# -------------------------------------------------------
+ 		/**
  		 * Download all media attached to specified object (not necessarily open for editing)
  		 * Includes all representation media attached to the specified object + any media attached to oter
  		 * objects in the same object hierarchy as the specified object. Used by the book viewer interfacce to 

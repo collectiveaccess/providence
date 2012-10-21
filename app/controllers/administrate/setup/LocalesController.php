@@ -77,7 +77,7 @@
 			if ($this->request->numActionErrors()) {
 				$this->render('locale_edit_html.php');
 			} else {
- 				$this->view->setVar('locale_list', $t_locale->getLocaleList());
+ 				$this->view->setVar('locale_list', ca_locales::getLocaleList());
 
  				$this->render('locale_list_html.php');
  			}
@@ -88,7 +88,7 @@
  			
  			$t_locale = $this->getLocaleObject();
  			$vs_sort_field = $this->request->getParameter('sort', pString);
- 			$this->view->setVar('locale_list', $t_locale->getLocaleList(array('sort_field' => $vs_sort_field, 'sort_order' => 'asc', 'index_by_code' => false)));
+ 			$this->view->setVar('locale_list', ca_locales::getLocaleList(array('sort_field' => $vs_sort_field, 'sort_order' => 'asc', 'index_by_code' => false)));
 
  			$this->render('locale_list_html.php');
  		}

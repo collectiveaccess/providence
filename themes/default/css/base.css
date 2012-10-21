@@ -65,6 +65,8 @@ h2 { font-size: 13px; color: #666; }
 	-webkit-border-bottom-left-radius: 10px;
 	-moz-border-radius-bottomright: 10px; 
 	-webkit-border-bottom-right-radius: 10px;
+ 	 border-bottom-left-radius: 10px;
+ 	 border-bottom-right-radius: 10px;
 }
 *:first-child+html .roundedNav{padding-right:0px;} * html .roundedNav{padding-right:0px;}
 #topNav {
@@ -226,6 +228,18 @@ h2 { font-size: 13px; color: #666; }
 	font-size: 9px;
 }
 
+#inspectorChangeType {
+	width: 190px;
+}
+
+#inspectorChangeTypeButton {
+	float: right;
+	font-size: 10px;
+	padding: 2px !important;
+	margin: 0px;
+	text-align:right;
+}
+
 div.inspectorLotObjectTypeControls {
 	padding: 3px;
 	margin-top: 8px;
@@ -244,6 +258,11 @@ div.inspectorLotObjectTypeControls {
 
 .inspectorChangeDateListLine {
 	margin-top: 0px;
+}
+
+a.inspectorOnLoan {
+	color: #cc0000;
+	font-style: italic;
 }
 
 #leftNav h4 div {  text-transform: none; font-weight: normal; padding-top: 5px; }
@@ -606,6 +625,8 @@ li.sfHover > a > .sf-sub-indicator {
 	-moz-border-radius-topright: 17px;
 	-webkit-border-top-right-radius: 17px;
 	-webkit-border-bottom-left-radius: 17px;
+	border-bottom-left-radius: 17px;
+	border-top-right-radius: 17px;
 	border:0px;
 }
 .sf-shadow ul.sf-shadow-off {
@@ -815,6 +836,11 @@ div.hint {
 
 }
 
+.quickAddSectionBox{
+	margin: 0px 0px 0px 10px;
+	padding: 10px;
+}
+
 /* Style for labels on standard form fields (ie. no error) */
 .formLabel {
 	font-family: Verdana, Arial, Helvetica, sans-serif;
@@ -839,11 +865,12 @@ div.hint {
 	text-align: left;
 	background-color:#e6e6e6;
 	border: 2px solid #e6e6e6;
-
 	-moz-border-radius-topleft: 8px; 
 	-webkit-border-top-left-radius: 8px;
 	-moz-border-radius-topright: 8px; 
 	-webkit-border-top-right-radius: 8px;
+	border-top-right-radius: 8px;
+	border-top-left-radius: 8px;
 }
 
 .settingsBundle {
@@ -958,6 +985,7 @@ div.hint {
 	background: url('../graphics/backgrounds/tooltip_box.png');*/
 	-moz-border-radius: 10px; 
 	-webkit-border-top: 10px;
+	border-radius: 10px;
 	-moz-box-shadow: 2px 2px 5px #adadad;
 	-webkit-box-shadow: 2px 2px 5px #adadad;
 	box-shadow: 2px 2px 5px #adadad;
@@ -1179,6 +1207,7 @@ div.form-header-button {
 	-webkit-border-top-left-radius: 8px;
 	-moz-border-radius-topright: 8px; 
 	-webkit-border-top-right-radius: 8px;	
+	border-radius: 8px;
 }
 
 div.form-header-button a {
@@ -1312,6 +1341,10 @@ div.control-box-middle-content {
 div.control-box-right-content {
 	float: right;
 	margin-top: 3px;
+}
+
+div.control-box-right-content select {
+	width: 150px;
 }
 
 div.list-filter, div.simple-search-box {
@@ -1790,27 +1823,24 @@ table.representationAnnotationListItem {
 	padding: 5px;
 }
 
-/* overlays (for object representations) */
+/* overlay (for object representations) */
 #caMediaPanel {
 	position: fixed; 
-	top: 1.5%; 
-	left: 1.5%; 
-	border: 4px solid #ccc; 
-	background-color: #FFFFFF; 
-	width: 97%; 
-	height: 97%; 
-	overflow: hidden;
+	top: 0px; 
+	left: 0px;
+	width: 100%; 
+	height: 100%; 
 	display: none;
-	margin: 0 auto;
+	margin: 0px;
 	padding: 0px;
 	z-index: 31000;			/* needs to be on top of menu bar, which has z-index=30000 */
 }
 #caMediaPanel #close{
 	float: right;
-	width:16px;
+	width:15px;
 	height:16px;
-	margin:7px;
-	background-image:url("../graphics/buttons/delete.gif");
+	margin:10px;
+	background-image:url("../graphics/buttons/x.png");
 }
 #caMediaPanel #close a{
 	text-decoration:none;
@@ -1818,42 +1848,153 @@ table.representationAnnotationListItem {
 }
 #caMediaPanelContentArea {
 	width: 100%; 
-	height: 100%; 
+	height: 100%;
 }
 
-#caMediaOverlayContent {
-	margin-top: 0px;
-	margin-left: 0px;
+#caMediaDisplayContent, #caMediaOverlayContent {
+	margin: 0px;
 	width: 100%;
 	height: 100%;
 	overflow: auto;
 	text-align: center;
+	position: relative;
+}
+
+#caMediaPanelProgress {
+	display: none;
+	font-size:36px;
+	font-weight: bold;
+	text-align: center;
+	width: 300px;
+	height: 50px;
 }
 
 div.caMediaOverlayControls {
-	background-color: #FFFFFF;
-	padding: 3px;
-	font-size: 9px;
-	margin-left: 0px;
-	height: 22px;
-	border-bottom:2px solid #ededed;
+	background-color: #000;
+	color:#FFF;
+	font-size: 11px;
+	text-align:center;
+	position:absolute;
+	padding: 10px 0px 10px 0px;
+	width:100%;
+	bottom:0px;
+	left:0px;
+	z-index: 32000;			/* needs to be on top of caMediaPanel, which has z-index=31000 */
+	/* opacity:.1;	 */
+	opacity: 1.0;
+}
+/* div.caMediaOverlayControls:hover {
+	opacity:1.0;
+	background-color:rgba(0,0,0,0.8);
+} */
+div.caMediaOverlayControls a{
+	text-decoration:none;
+	font-weight:bold;
+	font-size:16px;
+	color:#FFF;
+}
+div.caMediaOverlayControls a:hover{
+	color:#FFF;
+}
+div.caMediaOverlayControls .close{
+	float:right;
+	width:15px;
+	height:16px;
+	background-image:url("../graphics/buttons/x_white.png");
+	margin: 0px 10px 0px 20px;
+}
+div.caMediaOverlayControls .download{
+	float:right;
+	margin-left:20px;
+}
+div.caMediaOverlayControls .objectInfo{
+	font-size:11px;
+	color:#FFF;
+	padding-left:10px;
+	text-align:left;
+	width:40%;
+	float:left;
 }
 
-select.caMediaOverlayControls {
-	font-size: 9px;
+div.caMediaOverlayControls .repNav {
+	font-size: 12px;
+	width: 80px;
+	float:left;
 }
-#caMediaOverlayThumbnails{
-	padding: 10px 0px 0px 0px;
+
+div.caMediaOverlayControls .caRepTools {
+	position: relative;
+	float: right;
+	padding: 0px 2% 0px 2%;
 	text-align:center;
-	height:90px;
-	width:840px;
-	overflow:auto;
+	color:#FFF;
 }
-#caMediaOverlayThumbnails img{
-	margin:0px 1px 0px 1px;
+#caRepRotationToolPanel {
+	background: #000;
+	display:none; 
+	width:300px; 
+	height: 100px; 
+	opacity: 0.75;
+	position: absolute;
+	bottom: 16px;
+	right: 0px;
 }
-#caMediaOverlayThumbnails div{
-	margin:0px auto 0px auto;
+
+#caRepRotationToolPanel .caRepToolsClose{
+	position: absolute;
+	width:15px;
+	height:16px;
+	top: 5px;
+	right: 5px;
+	background-image:url("../graphics/buttons/x_white.png");
+}
+
+#caRepToolsRotateAngleControl {
+	margin-top: 4px;
+	width: 290px;
+	text-align: center;
+	font-size: 10px;
+}
+
+img.caRepToolsRotateControlButton {
+	border: 1px solid #000000;
+	background: #FFFFFF;
+}
+
+img.caRepToolsRotateControlButtonSelected {
+	border: 1px solid #CC0000;
+	background: #FFFFFF;
+}
+
+img.caRepToolsRotateControlButton:hover {
+	border: 1px solid #999999;
+	background: #FFFFFF;
+}
+
+#caRepToolsRotateProgress {
+	position: absolute;
+	top: 72px;
+	left: 40px;
+	width: 220px;
+	height: 19px;
+	opacity: 0.9;
+	
+	display: none;
+	padding: 0px;
+	
+	font-size:14px;
+	font-weight: bold;
+	text-align: center;
+}
+
+.caAudioPlayer {
+	position: absolute;
+	top: 50%;
+	left: 50%;
+	width: 600px;
+	height: 32px;
+	margin-top: 16px;
+	margin-left: -300px;
 }
 
 /* overlays (for search results QuickLook) */
@@ -2179,7 +2320,7 @@ div.hierarchyBrowserLevel {
 	top: 0px;
 	width: 230px;
 	height: 100%;
-	padding: 0px;
+	padding: 0px 10px 0px 0px;
 	margin: 0px;
 	border: 1px solid #cccccc; 
 	background: #FFFFFF;
@@ -3108,6 +3249,7 @@ div.bundleDisplayEditorPlacement {
 	-webkit-border-bottom-left-radius: 8px;
 	-moz-border-radius-bottomright: 8px; 
 	-webkit-border-bottom-right-radius: 8px;
+	border-radius: 8px;
 }
 
 div.bundleDisplayEditorPlacementList {
@@ -3253,11 +3395,12 @@ a.dashboardControl {font-weight:bold; padding-right:10px; text-decoration:none;}
 	font-weight: bold;
 	text-align: left;
 	background-color:#828282;
-
 	-moz-border-radius-topleft: 8px; 
 	-webkit-border-top-left-radius: 8px;
 	-moz-border-radius-topright: 8px; 
 	-webkit-border-top-right-radius: 8px;
+	border-top-right-radius: 8px;
+	border-top-left-radius: 8px;
 }
 
 .portlet-content { 
@@ -3546,6 +3689,12 @@ body > div.jGrowl.center {
 	left: 				25%;
 }
 
+div.jGrowl > .ui-state-highlight {
+    background: inherit;
+    color: inherit;
+    border: inherit;
+}
+
 /** Cross Browser Styling **/
 div.center div.jGrowl-notification, div.center div.jGrowl-closer {
 	margin-left: 		auto;
@@ -3568,6 +3717,7 @@ div.jGrowl div.jGrowl-notification, div.jGrowl div.jGrowl-closer {
 	display: 				none;
 	-moz-border-radius: 	5px;
 	-webkit-border-radius:	5px;
+	border-radius: 			5px;
 }
 
 div.jGrowl div.jGrowl-notification {
@@ -3703,6 +3853,7 @@ div.roundedRel {
 	-webkit-border-radius: 10px;
 	-moz-border-radius: 10px; 
 	-webkit-border-bottom-right-radius: 10px;
+	border-radius: 10px;
 }
 
 .caItemList {
@@ -3738,6 +3889,7 @@ div.roundedRel {
 	-webkit-border-radius: 6px;
 	-moz-border-radius: 6px; 
 	-webkit-border-bottom-right-radius: 6px;
+	border-radius: 6px;
 }
 
 .roundedRel .caDeleteItemButton {
@@ -3779,10 +3931,6 @@ div.preferenceSectionDivider {
 	margin-bottom: 10px;
 }
 
-.searchReindexRowProgressGroup {
-
-}
-
 a.caDeleteLabelButton {
 	text-decoration: none;
 }
@@ -3802,6 +3950,7 @@ a.caDeleteLabelButton {
 	-webkit-border-radius: 10px;
 	-moz-border-radius: 10px; 
 	-webkit-border-radius: 10px;
+	border-radius: 10px;
 }
 
 
@@ -3867,6 +4016,7 @@ a.caDeleteLabelButton {
 	-webkit-border-top-left-radius: 3px;
 	-moz-border-radius-topright: 3px; 
 	-webkit-border-top-right-radius: 3px;
+	border-radius: 3px;
 }
 .caClientCommunicationsMessageSummaryHeading {
 	font-weight:bold;
@@ -3911,6 +4061,7 @@ a.caClientCommunicationsMessageReplyButton {
 	float:right;
 	-moz-border-radius: 4px; 
 	-webkit-border-radius: 4px;
+	border-radius: 4px;
 }
 a.caClientCommunicationsMessageReplyButton:hover {
 	background-color: #545454;
@@ -3923,6 +4074,7 @@ a.caClientCommunicationsMessageReplyButton:hover {
 	background-color:#e2e2e2;
 	-moz-border-radius: 10px; 
 	-webkit-border-radius: 10px;
+	border-radius: 10px;	
 }
 div.caClientCommunicationsMessageSummaryThreadButton {
 	text-align:right;
@@ -3932,7 +4084,7 @@ div.caClientCommunicationsMessageSummaryCounter {
 	background-color: #666666;
 	color: #F0F0F0;
 	padding: 3px;
-	
+	border-radius: 4px;	
 	-moz-border-radius: 4px; 
 	-webkit-border-radius: 4px;
 }
@@ -4035,6 +4187,7 @@ a.caClientCommunicationsNewOrderButton {
 	float:right;
 	-moz-border-radius: 4px; 
 	-webkit-border-radius: 4px;
+	border-radius: 4px;	
 }
 a.caClientCommunicationsNewOrderButton:hover {
 	background-color: #545454;
@@ -4112,6 +4265,7 @@ a.caClientCommunicationsNewOrderButton:hover {
 	background-color:#e2e2e2;
 	-moz-border-radius: 10px; 
 	-webkit-border-radius: 10px;
+	border-radius: 10px;
 	padding:10px;
 	margin:0px 0px 20px 0px;
 }
@@ -4130,18 +4284,21 @@ a.caClientCommunicationsNewOrderButton:hover {
 	clear:right;
 	color: #333;
 	text-align: left;
-	background-color:#e6e6e6;
-	padding:5px 10px 10px 10px;
-
+	background-color:#fff;
+	padding:5px 10px 5px 10px;
+	border: 3px solid #ccc;
+	border-radius: 8px;
 	-moz-border-radius: 8px; 
 	-webkit-border-radius: 8px;
+	margin-bottom:15px;
 }
 #caClientOrderOverview .orderStatus .statusDesc {
 	background-color:#ffffff;
-	padding:10px;
+	padding:2px 0px 0px 5px;
 	line-height:1.3em;
 	font-size:12px;
 	margin: 0px 0px 15px 0px;
+	float:left;
 }
 #caClientOrderOverview .overrideButton {
 	float:right;
@@ -4150,7 +4307,7 @@ a.caClientCommunicationsNewOrderButton:hover {
 #caClientOrderOverview .orderStatus .statusWarning{
 	font-weight:bold;
 	background:	#FFFFFF url('../graphics/icons/warning.gif') no-repeat 10px 5px;
-	padding: 15px 0px 15px 50px;
+	padding: 15px 0px 8px 50px;
 	margin: 10px 0px 0px 0px;
 }
 a.caClientOrderOverviewButton {
@@ -4163,12 +4320,18 @@ a.caClientOrderOverviewButton {
 	padding:3px 5px 4px 5px;
 	-moz-border-radius: 4px; 
 	-webkit-border-radius: 4px;
+	border-radius: 4px;
 }
 a.caClientOrderOverviewButton:hover {
 	background-color: #545454;
 }
+#commerceOrderStatusMessage {
+	width:500px;
+	float:left;
+	font-size:1.5em;
+}
 #caClientOrderOverview .overviewItem {
-	padding:0px 0px 10px 10px;
+	padding:0px 0px 10px 0px;
 	font-size:12px;
 }
 
@@ -4187,6 +4350,7 @@ a.caClientOrderOverviewButton:hover {
 	background-color:#e2e2e2;
 	-moz-border-radius: 10px; 
 	-webkit-border-radius: 10px;
+	border-radius: 10px;	
 	padding:5px 20px 10px 15px;
 	margin:0px 0px 5px 0px;
 }
@@ -4201,11 +4365,108 @@ a.caClientOrderOverviewButton:hover {
 	float:right;
 	-moz-border-radius: 4px; 
 	-webkit-border-radius: 4px;
+	border-radius: 4px;	
 	margin-top:10px;
 }
 #caClientOrderCommunicationForm input[type="text"], #caClientOrderCommunicationForm input[type="textarea"], #caClientOrderCommunicationForm textarea, #caClientOrderCommunicationForm input{
 	width:100%;
 }   
+
+#loanSummaryTable {
+	border-top:1px solid #ccc;
+}
+#caClientLibraryCustomerInfoForm {
+	display: none;
+}
+
+.caClientLibraryLoadingIndicator {
+	background: white url('../graphics/icons/indicator.gif') right center no-repeat !important;
+}
+
+.caClientOrderHistoryTable {
+	width: 100%;	
+	border-top:1px solid #ccc;
+}
+.caClientOrderHistoryRow {
+	border-top:1px solid #ccc;
+	padding: 5px;
+}
+.caClientOrderHistoryRowOut {
+	border-top:1px solid #00cc00;
+	background: rgba(180, 180, 180, 0.4);
+	padding: 5px;
+}
+
+.caClientOrderHistoryRowOverdue {
+	border-top:1px solid #cc0000;
+	background: rgba(255, 0, 0, 0.4);
+	padding: 5px;
+}
+
+.caClientOrderHistoryHeader {
+	font-weight: bold;
+	font-size: 11px;
+	text-transform: uppercase; 
+	background-color: #f1f1f1;
+}
+.caClientOrderHistoryText {
+	font-weight: normal;
+	font-size: 11px;
+	padding: 5px;
+}
+
+/* -------------------------------------------------*/
+/* Record-level Access screen                       */
+/* -------------------------------------------------*/
+
+.globalAccess {
+	background-color:#eee;
+	-moz-border-radius: 10px; 
+	-webkit-border-radius: 10px;
+	border-radius: 10px;
+	padding:10px;
+	margin-bottom: 15px;
+}
+.globalAccess .title {
+	font-size: 18px;
+	font-family: arial;
+	font-weight: normal;
+}
+.globalAccess .bundleContainer {
+	border: 0px;
+	padding-left:0px;
+
+}
+.globalAccess .labelInfo {
+	background-color:#eee;
+	border-top: none;
+}
+.globalAccess h2 {
+	padding-top:10px;
+	border-top: dotted 1px #ccc;
+	font-family: arial;
+	font-weight: normal;
+}
+#editGlobalAccess {
+	display:none;
+}
+#editUserAccess {
+	display:none;
+}
+.editLink a{
+	text-decoration:none;	
+	font-size: 12px;
+}
+div.editLink {
+	padding-top:25px;
+	float:right;
+}
+.accessName {
+	font-weight: bold;
+	font-size: 12px;
+	color: #134959;
+	line-height:1.75em;
+}
 
 /* -------------------------------------------------*/
 /* "Searchlight" autocomplete search results styles */
@@ -4244,4 +4505,229 @@ div.searchlight-results-wrapper {
 div.searchlight-results div.searchlight-selected {
     background: #333;
     color: #fff;
+}
+#caClientOrderOverview .loanTitle {
+	font-size: 13px;
+	font-weight: bold;
+	color: #333;
+	padding: 0px 5px 0px 5px;
+}
+#caClientOrderOverview td {
+	border-bottom: 1px solid #ccc;
+	padding: 5px 10px 5px 10px;
+}
+#caClientOrderOverview table {
+	width: 100%;
+}
+.titleTd td{
+	border-left: 1px solid #333;
+}
+.orderTotal {
+	font-weight: bold;
+	text-transform: uppercase;
+	float:right;
+	padding: 5px 0px 0px 0px;
+	clear:both;
+}
+.overdue {
+	color: red;
+}
+
+/ * OpenLayers */  
+
+.olMap {
+	background-color: #999999;
+}
+
+.olControlDelete {
+    position: absolute;
+    background-image: url(../graphics/buttons/map_delete.png);
+    top: 0;
+    right: 0;
+    width: 24px;
+    height: 22px;
+}  
+.olControlDelete:hover {
+    position: absolute;
+    background-image: url(../graphics/buttons/map_delete_selected.png);
+    top: 0;
+    right: 0;
+    width: 24px;
+    height: 22px;
+}  
+
+.olControlDeleteItemActive {
+    position: absolute;
+    background-image: url(../graphics/buttons/map_delete.png);
+    top: 0;
+    right: 0;
+    width: 24px;
+    height: 22px;
+}  
+.olControlDeleteItemActive:hover {
+    position: absolute;
+    background-image: url(../graphics/buttons/map_delete_selected.png);
+    top: 0;
+    right: 0;
+    width: 24px;
+    height: 22px;
+}  
+
+.olControlDeletePanel {
+	border: 0px solid black;
+	bottom: 5px;
+	right: 5px;
+	width: 24px;
+	height: 22px;
+	position: absolute;
+	cursor: pointer;
+}
+
+.olMapKmlControl {
+	float: left;
+	position: relative; 
+	width: 150px;
+	height:30px;
+	margin: 5px 0 5px 0;
+	padding: 0px;
+}
+
+.olMapSearchBox {
+	float: right;
+	position: relative; 
+	background:	url(../graphics/backgrounds/searchbox.png) no-repeat bottom right;
+	width: 150px;
+	height:30px;
+	margin: 5px 0 5px 0;
+	padding: 0px;
+}
+
+.olMapSearchBoxIcon {
+	margin: 12px 8px 0 0;
+}
+	
+.olMapSearchBox input {
+	outline-style:none;
+	border: none;
+}
+
+.olMapSearchContainer {
+	float:			right;
+	margin:			0;
+	padding-right:	0;
+	list-style:		none;
+	line-height:	1.0;
+}
+
+.olMapSearchText {
+	font-size:12px;
+	font-family: Verdana, Arial, Helvetica, sans-serif;
+	padding:1px 3px 3px 3px;
+	font-weight:normal;
+	border: 0px;
+	width: 100px;
+	height:12px;
+	float:left;
+	margin:9px 0px 0px 23px;
+	outline-style:none;
+}
+
+.olMapKMLInput {
+	display: none;
+	margin-top: 18px !important;
+}
+
+
+/* Type change */
+#caTypeChangePanel {
+	position: fixed; 
+	top: 0px; 
+	left: 0px;
+	width: 450px; 
+	display: none;
+	margin: 0px;
+	padding:0px !important;
+	border: 2px solid #999999;
+	z-index: 31000;			/* needs to be on top of menu bar, which has z-index=30000 */
+	background-color: #FFFFFF;
+}
+
+#caTypeChangePanel .close a{
+	text-decoration:none;
+	font-size:16px;
+}
+
+#caTypeChangePanelContentArea {
+	padding:10px;
+}
+
+#caTypeChangePanelControlButtons {
+	width: 100%; 
+	text-align: center;
+}
+
+#caTypeChangePanelControlButtons table {
+	width: 100%; 
+}
+
+div.dialogHeader {
+	background-color: #cccccc;
+	font-size: 13px;
+	font-weight: bold !important;	
+	padding: 5px;
+	margin: 0px;
+}
+
+/* Quick add */
+.caRelationQuickAddPanel {
+	position: fixed; 
+	top: 0px; 
+	left: 0px;
+	width: 900px; 
+	height: 600px;
+	overflow: auto;
+	display: none;
+	margin: 0px;
+	padding:0px !important;
+	border: 2px solid #999999;
+	z-index: 31000;			/* needs to be on top of menu bar, which has z-index=30000 */
+	background-color: #FFFFFF;
+}
+
+#caRelationQuickAddPanel .close a{
+	text-decoration:none;
+	font-size:16px;
+}
+
+#caRelationQuickAddPanelContentArea {
+	padding:10px;
+}
+
+#caRelationQuickAddPanelControlButtons {
+	width: 100%; 
+	text-align: center;
+}
+
+#caRelationQuickAddPanelControlButtons table {
+	width: 100%; 
+}
+
+div.quickAddFormTopPadding {
+	height: 50px;
+}
+
+div.quickAddErrorContainer {
+	width: 860px;
+	display: none;
+}
+
+div.quickAddDialogHeader {
+	position: fixed; 
+	width: 890px; 
+	z-index:33000;
+}
+
+div.quickAddTypeList {
+	float: left;
+	margin-top: 6px; 
 }
