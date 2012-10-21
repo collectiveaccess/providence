@@ -309,6 +309,7 @@
 				return $t_item->getPrimaryKey();
 			}
 			
+			if (isset($pa_options['dontCreate']) && $pa_options['dontCreate']) { return false; }
 			//
 			// Need to create list item
 			//
