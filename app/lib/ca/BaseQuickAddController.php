@@ -130,6 +130,7 @@
  			$this->request->setParameter('type_id', $vn_type_id);
  			$t_subject->set('type_id', $vn_type_id);
  			
+ 			$t_ui = ca_editor_uis::loadDefaultUI($this->ops_table_name, $this->request, $vn_type_id, array('editorPref' => 'quickadd'));
  			
  			// Get default screen (this is all we show in quickadd, even if the UI has multiple screens)
  			$va_nav = $t_ui->getScreensAsNavConfigFragment($this->request, $vn_type_id, $this->request->getModulePath(), $this->request->getController(), $this->request->getAction(),
