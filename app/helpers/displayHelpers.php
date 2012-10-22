@@ -1214,9 +1214,9 @@ require_once(__CA_LIB_DIR__.'/core/Parsers/TimeExpressionParser.php');
 		});
 					";
 				}
+	
+				$vs_buf .= "</script>\n";
 			}
-			
-			$vs_buf .= "</script>\n";
 		}
 		
 		return $vs_buf;
