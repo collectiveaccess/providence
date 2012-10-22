@@ -36,9 +36,9 @@
 
 require_once(__CA_LIB_DIR__.'/core/ModelSettings.php');
 require_once(__CA_LIB_DIR__.'/ca/BundlableLabelableBaseModelWithAttributes.php');
-require_once(__CA_MODELS_DIR__."/ca_data_importer_labels");
-require_once(__CA_MODELS_DIR__."/ca_data_importer_groups");
-require_once(__CA_MODELS_DIR__."/ca_data_importer_items");
+require_once(__CA_MODELS_DIR__."/ca_data_importer_labels.php");
+require_once(__CA_MODELS_DIR__."/ca_data_importer_groups.php");
+require_once(__CA_MODELS_DIR__."/ca_data_importer_items.php");
 
 BaseModel::$s_ca_models_definitions['ca_data_importers'] = array(
  	'NAME_SINGULAR' 	=> _t('data importer'),

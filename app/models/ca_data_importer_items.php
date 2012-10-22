@@ -35,8 +35,8 @@
    */
 
 require_once(__CA_LIB_DIR__.'/core/ModelSettings.php');
-require_once(__CA_MODELS_DIR__."/ca_data_importers");
-require_once(__CA_MODELS_DIR__."/ca_data_importer_groups");
+require_once(__CA_MODELS_DIR__."/ca_data_importers.php");
+require_once(__CA_MODELS_DIR__."/ca_data_importer_groups.php");
 
 BaseModel::$s_ca_models_definitions['ca_data_importer_items'] = array(
  	'NAME_SINGULAR' 	=> _t('data importer item'),
