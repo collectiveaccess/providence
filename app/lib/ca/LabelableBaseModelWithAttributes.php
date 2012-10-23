@@ -50,6 +50,24 @@
 		# ------------------------------------------------------------------
 		static $s_label_cache = array();
 		static $s_labels_by_id_cache = array();
+		
+		/** 
+		 * List of failed preferred label inserts to be forced into HTML bundle
+		 *
+		 * @used setFailedPreferredLabelInserts()
+		 * @used clearPreferredFailedLabelInserts()
+		 * @used getPreferredLabelHTMLFormBundle()
+		 */
+		private $opa_failed_preferred_label_inserts = array();
+		
+		/** 
+		 * List of failed preferred label inserts to be forced into HTML bundle
+		 *
+		 * @used setFailedNonPreferredLabelInserts()
+		 * @used clearNonPreferredFailedLabelInserts()
+		 * @used getNonPreferredLabelHTMLFormBundle()
+		 */
+		private $opa_failed_nonpreferred_label_inserts = array();
 		# ------------------------------------------------------------------
 		public function __construct($pn_id=null) {
 			parent::__construct($pn_id);
@@ -1079,6 +1097,46 @@
 			return null;
 		}
 		# ------------------------------------------------------------------
+		/**
+		 * 
+		 *
+		 * @return bool Always returns true
+		 */
+		public function setFailedPreferredLabelInserts($pa_label_list) {
+			$this->opa_failed_preferred_label_inserts = $pa_label_list;
+			return true;
+		}
+		# ------------------------------------------------------------------
+		/**
+		 * 
+		 *
+		 * @return bool Always returns true
+		 */
+		public function clearFailedPreferredLabelInserts($pa_label_list) {
+			$this->opa_failed_preferred_label_inserts = array();
+			return true;
+		}
+		# ------------------------------------------------------------------
+		/**
+		 * 
+		 *
+		 * @return bool Always returns true
+		 */
+		public function setFailedNonPreferredLabelInserts($pa_label_list) {
+			$this->opa_failed_nonpreferred_label_inserts = $pa_label_list;
+			return true;
+		}
+		# ------------------------------------------------------------------
+		/**
+		 * 
+		 *
+		 * @return bool Always returns true
+		 */
+		public function clearFailedNonPreferredLabelInserts($pa_label_list) {
+			$this->opa_failed_nonpreferred_label_inserts = array();
+			return true;
+		}
+		# ------------------------------------------------------------------
 		/** 
 		 * Returns HTML form bundle (for use in a form) for preferred labels attached to this row
 		 *
@@ -1088,7 +1146,7 @@
 		 * @param array $pa_bundle_settings
 		 * @param array $pa_options Array of options. Supported options are 
 		 *			noCache = If set to true then label cache is bypassed; default is true
-		 *
+		 *			forceLabelForNew = 
 		 * @return string Rendered HTML bundle
 		 */
 		public function getPreferredLabelHTMLFormBundle($po_request, $ps_form_name, $ps_placement_code, $pa_bundle_settings=null, $pa_options=null) {
@@ -1143,8 +1201,16 @@
 							}
 						}
 					}
+				} else {
+					if (isset($pa_options['forceLabelForNew']) && is_array($pa_options['forceLabelForNew'])) {
+						$va_new_labels_to_force_due_to_error[] = $pa_options['forceLabelForNew'];
+					}
 				}
 			}
+			if (is_array($this->opa_failed_preferred_label_inserts) && sizeof($this->opa_failed_preferred_label_inserts)) {
+				$va_new_labels_to_force_due_to_error = $this->opa_failed_preferred_label_inserts;
+			}
+
 			$o_view->setVar('new_labels', $va_new_labels_to_force_due_to_error);
 			$o_view->setVar('label_initial_values', $va_inital_values);
 			
@@ -1215,6 +1281,10 @@
 						}
 					}
 				}
+			}
+			
+			if (is_array($this->opa_failed_nonpreferred_label_inserts) && sizeof($this->opa_failed_nonpreferred_label_inserts)) {
+				$va_new_labels_to_force_due_to_error = $this->opa_failed_preferred_label_inserts;
 			}
 			
 			$o_view->setVar('new_labels', $va_new_labels_to_force_due_to_error);

@@ -170,6 +170,18 @@ BaseModel::$s_ca_models_definitions['ca_collections'] =  array(
 				'IS_NULL' => false, 
 				'DEFAULT' => '',
 				'LABEL' => _t('Sort order'), 'DESCRIPTION' => _t('Sort order'),
+		),
+		'acl_inherit_from_parent' => array(
+				'FIELD_TYPE' => FT_NUMBER, 'DISPLAY_TYPE' => DT_SELECT, 
+				'DISPLAY_WIDTH' => 100, 'DISPLAY_HEIGHT' => 1,
+				'IS_NULL' => false, 
+				'DEFAULT' => 0,
+				'ALLOW_BUNDLE_ACCESS_CHECK' => true,
+				'BOUNDS_CHOICE_LIST' => array(
+					_t('Do not inherit access settings from parent') => 0,
+					_t('Inherit access settings from parent') => 1
+				),
+				'LABEL' => _t('Inherit access settings from parent?'), 'DESCRIPTION' => _t('Determines whether access settings set for parent collections are applied to this collection.')
 		)
 	)
 );
@@ -286,6 +298,16 @@ class ca_collections extends BundlableLabelableBaseModelWithAttributes implement
 	# ACL
 	# ------------------------------------------------------
 	protected $SUPPORTS_ACL = true;
+	
+	/** 
+	 * Other tables can inherit ACL from this one
+	 */
+	protected $SUPPORTS_ACL_INHERITANCE = true;
+	
+	/**
+	 * List of tables that can inherit ACL from this one
+	 */
+	protected $ACL_INHERITANCE_LIST = array('ca_objects');
 	
 	# ------------------------------------------------------
 	# $FIELDS contains information about each field in the table. The order in which the fields

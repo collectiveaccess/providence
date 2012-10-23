@@ -1,6 +1,6 @@
 <?php
 /* ----------------------------------------------------------------------
- * app/views/client/order_overview_html.php : 
+ * app/views/client/orders/order_overview_html.php : 
  * ----------------------------------------------------------------------
  * CollectiveAccess
  * Open-source places management software
@@ -27,6 +27,9 @@
  */
  
 	$t_order = $this->getVar('t_order');
+	$t_item = new ca_commerce_order_items();
+	
+	$t_order->set('order_type', 'L');
 	$vn_order_id = (int)$t_order->getPrimaryKey();
 	
 	$t_transaction = $this->getVar('t_transaction');
@@ -43,19 +46,12 @@
 	
 	print caFormTag($this->request, 'SaveOrderOverview', 'caClientOrderOverviewForm', null, 'post', 'multipart/form-data', '_top', array());
 
-	$vs_item_url = caNavUrl($this->request, 'client/orders', 'OrderEditor', 'ItemList', array('order_id' => $vn_order_id));
+	
+	$va_users_other_orders = $t_order->getOrders(array('user_id' => $vn_client_user_id = $t_order->getOrderTransactionUserID(), 'type' => 'L', 'is_outstanding' => true, 'exclude' => array($vn_order_id)));
 ?>
+<h1><?php print _t('Order Overview'); ?></h1>
 <div id="caClientOrderOverview">
-	<div class="overrideButton"><a href="#" class="button" onclick="jQuery('#caCommerceOrderStatusOverride').toggle(150);"><?php print _t('Override current order status'); ?> &rsaquo;</a></div>
-	<div class="formContainerBg" id="caCommerceOrderStatusOverride" style="display: none;">
-	<?php
-		print "<div class='formLabel'>";
-		print $t_order->htmlFormElement('order_status', "^LABEL ^ELEMENT", array('width' => $vn_width));
-		
-		print caFormSubmitButton($this->request, __CA_NAV_BUTTON_SAVE__, _t("Save"), 'caClientOrderOverviewForm');
-		print "</div>\n";
-	?>
-	</div><!-- end formContainerBg -->
+	
 	
 	<div class="orderStatus">
 <?php
@@ -125,9 +121,26 @@
 			$vs_next_step = '';
 			break;
 	}
-	
+
 	print "<h1 id='commerceOrderStatusMessage'>".$vs_status_message."</h1>";
+?>
+<div class="overrideButton" style='float:right;'><a href="#" class="button" onclick="jQuery('#caCommerceOrderStatusOverride').toggle(150);"><?php print _t('Change order status'); ?> &rsaquo;</a></div>
+<?php
 	print "<div class='statusDesc'>{$vs_order_status_description}\n";
+?>
+
+	
+	<div class="formContainerBg" id="caCommerceOrderStatusOverride" style="display: none;">
+	<?php
+		print "<div class='formLabel'>";
+		print $t_order->htmlFormElement('order_status', "^LABEL ^ELEMENT", array('width' => $vn_width));
+		
+		print caFormSubmitButton($this->request, __CA_NAV_BUTTON_SAVE__, _t("Save"), 'caClientOrderOverviewForm');
+		print "</div>\n";
+	?>
+	</div><!-- end formContainerBg -->
+<?php	
+
 	
 		
 	//
@@ -138,12 +151,12 @@
 		
 		// Shipping required but no method set
 		if ($t_order->get('shipping_method') == 'NONE') {
-			$va_warnings[] = _t('Warning: order requires shipping but no shipping method is set!');
+			$va_warnings[] = _t('Action Required: order requires shipping but no shipping method is set!');
 		}
 		
 		// Missing shipping address
 		if (!$t_order->get('shipping_lname') || !$t_order->get('shipping_address1') || !$t_order->get('shipping_city') || !$t_order->get('shipping_zone') || !$t_order->get('shipping_country') || !$t_order->get('shipping_postal_code')) {
-			$va_warnings[] = _t('Warning: shipping address is incomplete!');
+			$va_warnings[] = _t('Action Required: shipping address is incomplete!');
 		}
 		
 		switch($t_order->get('order_status')) {
@@ -151,12 +164,12 @@
 			case 'PROCESSED_AWAITING_DIGITIZATION':	
 			case 'PROCESSED_AWAITING_MEDIA_ACCESS':
 				if (!$t_order->get('shipped_on_date') && !$t_order->get('ship_date')) { 			// Order paid for but not shipped or estimate ship date set
-					$va_warnings[] = _t('Warning: order requires shipping!');
+					$va_warnings[] = _t('Action Required: order requires shipping!');
 				} 
 				break;
 			case 'COMPLETED':	
 				if (!$t_order->get('shipped_on_date') ) { 			// Order complete but not shipped
-					$va_warnings[] = _t('Warning: order is complete but items never shipped!');
+					$va_warnings[] = _t('Action Required: order is complete but items never shipped!');
 				} 
 				break;
 		}
@@ -166,10 +179,8 @@
 	// payment
 	switch($t_order->get('order_status')) {
 		case 'PROCESSED':	
-		case 'PROCESSED_AWAITING_DIGITIZATION':
-		case 'PROCESSED_AWAITING_MEDIA_ACCESS':
-			if (!$t_order->get('payment_received_on')) { 			// no payment date for processed order?
-				$va_warnings[] = _t('Warning: no payment recorded!');
+			if (!$t_order->get('payment_received_on') && ($t_order->getTotal() > 0)) { 			// no payment date for processed order?
+				$va_warnings[] = _t('Action Required: no payment recorded!');
 			} 
 			break;
 	}
@@ -177,18 +188,39 @@
 		print "<div class='statusWarning'>".$vs_warning."</div>";
 	}
 	print "</div><!-- end statusDesc -->";
-	if ($vs_next_step) { print "<h2 style='text-align:right;'>"._t("Next step").": $vs_next_step</h2>\n"; }
+	if ($vs_next_step) { print "<h2 style='float: right; text-align:right;'>"._t("Next step").": $vs_next_step</h2>\n"; }
 ?>
+	<div style='width:100%; height:1px; clear:both;'></div>
 	</div><!-- end orderStatus -->
+	<table cellspacing="0" id='loanSummaryTable'>
+		<tr>
+			<td bgcolor="#f1f1f1"><span class='loanTitle'><?php print _t('Order Number').": </span></td><td>".$t_order->getOrderNumber()."";?></td>
+			<td bgcolor="#f1f1f1"><span class='loanTitle'><?php print _t('Ordered By').": </span></td><td>".$t_order->get('billing_fname').' '.$t_order->get('billing_lname'); ?></td>
+		</tr>
+		<tr>
+			<td bgcolor="#f1f1f1"><span class='loanTitle'><?php print _t('Order Date').": </span></td><td>".$t_order->get('created_on'); ?></td>
+			<td bgcolor='#f1f1f1'><span class='loanTitle'><?php print _t("Total Cost")."</span></td><td>".$vs_currency_symbol.$va_order_totals['sum']; ?></td>		
+		</tr>
 
+			
+	</table>
+	
+<?php 
+	// messages
+	$va_messages = $t_transaction->getMessages();
+	$vn_num_messages = sizeof($va_messages);
+	$vs_communication_url = caNavUrl($this->request, 'client/orders', 'Communications', 'Index', array('transaction_id' => $vn_transaction_id));
+?>
+	<h3><?php print ($vn_num_messages == 1) ? _t("There has been <a href='%2'>%1 communication</a> regarding this order", $vn_num_messages, $vs_communication_url) :  _t("There have been <a href='%2'>%1 communications</a> regarding this order", $vn_num_messages, $vs_communication_url); ?></h3>
 
-
-	<h1><?php print _t('Order Overview'); ?></h1>
-	<h2><?php print _t('Order #%1 – %2 – from %3', $t_order->getOrderNumber(), $t_order->get('created_on'), $t_order->get('billing_fname').' '.$t_order->get('billing_lname')); ?></h1>
-	<H3><?php print _t("Cost"); ?></H3>
-	<div class="overviewItem">
-		<?php print "<b>"._t("Total Cost").":</b> ".$vs_currency_symbol.$va_order_totals['sum']; ?>
-	</div>
+<?php
+	if (is_array($va_users_other_orders) && ($vn_num_other_orders = sizeof($va_users_other_orders))) {
+		$vs_other_order_url = caNavUrl($this->request, 'client/orders', 'List', 'Index', array('user_id' => $vn_client_user_id));
+?>
+	<h3><?php print ($vn_num_other_orders == 1) ? _t("Client has <a href='%2'>%1 other outstanding orders</a>", $vn_num_other_orders, $vs_other_order_url) :  _t("Client has <a href='%2'>%1 other outstanding orders</a>", $vn_num_other_orders, $vs_other_order_url); ?></h3>
+<?php
+	}
+?>
 	<div class="overviewItem">
 <?php 
 		$va_output = array();
@@ -204,13 +236,37 @@
 			print "<b>"._t("Cost Breakdown").":</b> ".join(" + ", $va_output);
 		}
 ?></div>
-	
-	<H3><?php print _t("Items"); ?></H3>
-	<div class="overviewItem">
-		<?php print "<b>"._t("Total Items").":</b> ".((($vn_item_count = sizeof($va_items)) != 1) ? _t("<a href='%2'>%1 items</a>", $vn_item_count, $vs_item_url) : _t("<a href='%2'>%1 item</a>", $vn_item_count, $vs_item_url)); ?>
-	</div>
-
 <?php
+	;
+?>
+	<div >
+		<?php print "<h1>".((($vn_item_count = sizeof($va_items)) != 1) ? _t("%1 Items", $vn_item_count) : _t("%1 Item", $vn_item_count))." <span style='font-size:.65em;'>".caNavLink($this->request, _t('Manage'), '', 'client/orders', 'OrderEditor', 'ItemList', array('order_id' => $vn_order_id))."</span> <span style='font-size:.65em;'>".caNavLink($this->request, _t('Print checklist'), '', 'client/orders', 'OrderEditor', 'GetCheckList', array('order_id' => $vn_order_id))."</span></h1>"; ?>
+	</div>
+	
+<?php
+print "<table cellspacing='0' style='padding: 0px 5px 0px 5px;'>";
+print "<tr style='font-weight:bold; text-transform: uppercase; background-color: #f1f1f1;'><td width='200'>"._t('Item Name')."</td><td>"._t('ID')."</td><td>"._t('Service')."</td><td>"._t('Fulfillment')."</td><td>"._t('Fee')."</td><td>"._t('Notes')."</td></tr>";
+$va_outstanding = 0;
+$va_overdue = 0;
+foreach ($va_items as $va_item) {
+	$vn_object_id = $va_item['object_id'];
+	print "<tr>";
+	
+	print "<td class='itemTitle{$vn_object_id}'>".caNavLink($this->request, $va_item['name'], "", "editor", "objects/ObjectEditor", "Edit", array('object_id' => $va_item['object_id']))."</td>";
+	print "<td>".$va_item['idno']."</td>";
+	print "<td>".$t_item->getChoiceListValue('service', $va_item['service'])."</td>";
+	print "<td>".$t_item->getChoiceListValue('fullfillment_method', $va_item['fullfillment_method'])."</td>";
+	print "<td>".$vs_currency_symbol.(int)$va_item['fee']."</td>";
+	print "<td>".$va_item['notes']."</td>";
+	print "</tr>";
+	TooltipManager::add(
+		".itemTitle{$vn_object_id}", "<table><tr><td>".$va_item['thumbnail_tag']."</td><td><b>".$va_item['idno']."<br/><br/></b>".$va_item['name']."</td></tr></table>"
+	);
+}
+print "</table>";
+
+
+print "<div style='height:70px; width: 100%; clear:both;'></div>";
 	// shipping
 	if ($t_order->requiresShipping()) {
 		$va_shipping_name_list = array();
@@ -248,48 +304,10 @@
 
 	}
 
-	// download
-	if ($t_order->requiresDownload()) {
-		switch($t_order->get('order_status')) {
-			case 'PROCESSED':
-				// can to be downloaded now
-?>
-<div class="overviewItem"><?php print _t("%1 items are available for download", $va_item_counts_by_fulfillment_method['DOWNLOAD']); ?></div>
-<?php				
-				break;
-			case 'PROCESSED_AWAITING_DIGITIZATION':
-				// download must wait until material is digitized
-?>
-				<div class="overviewItem"><?php print _t("%1 items will be available for download once digitization is completed", $va_item_counts_by_fulfillment_method['DOWNLOAD']); ?></div>
-<?php				
-				break;
-			case 'PROCESSED_AWAITING_MEDIA_ACCESS':
-				// download must wait until material is available on the server
-?>
-				<div class="overviewItem"><?php print _t("%1 items will be available for download once it has been transferred to the server", $va_item_counts_by_fulfillment_method['DOWNLOAD']); ?></div>
-<?php				
-				break;
-			default:
-				// will need to be shipped after payment
-?>
-				<div class="overviewItem"><?php print _t("%1 items will be available for download when order is paid for", $va_item_counts_by_fulfillment_method['DOWNLOAD']); ?></div>
-<?php					
-				break;
-		}	
-	}
-?>
-
-<?php
-	// messages
-	$va_messages = $t_transaction->getMessages();
-	$vn_num_messages = sizeof($va_messages);
-	$vs_communication_url = caNavUrl($this->request, 'client/orders', 'Communications', 'Index', array('transaction_id' => $vn_transaction_id));
-?>
-	<h3><?php print ($vn_num_messages == 1) ? _t("There has been <a href='%2'>%1 communication</a> regarding this order", $vn_num_messages, $vs_communication_url) :  _t("There have been <a href='%2'>%1 communications</a> regarding this order", $vn_num_messages, $vs_communication_url); ?></h3>
-<?php
 
 	// Order_id used when saving "change status" form	
 	print $t_order->htmlFormElement('order_id');
+
 ?>
 </form>
 </div><!-- end caClientOrderOverview -->

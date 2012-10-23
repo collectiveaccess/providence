@@ -50,7 +50,10 @@ var caUI = caUI || {};
 			onOpenCallback: null,
 			onCloseCallback: null,
 			
-			isChanging: false
+			center: false,
+			
+			isChanging: false,
+			clearOnClose: false
 		}, options);
 		
 		
@@ -60,6 +63,13 @@ var caUI = caUI || {};
 		that.showPanel = function(url, onCloseCallback) {
 			that.setZoom(that.allowMobileSafariZooming);
 			that.isChanging = true;
+			
+			
+			if (that.center) {
+				jQuery('#' + that.panelID).css("top", ((jQuery(window).height() - jQuery('#' + that.panelID).height())/2) + "px");
+				jQuery('#' + that.panelID).css("left", ((jQuery(window).width() - jQuery('#' + that.panelID).width())/2) + "px");
+			}
+			
 			jQuery('#' + that.panelID).fadeIn(that.panelTransitionSpeed, function() { that.isChanging = false; });
 			
 			if (that.useExpose) { 
@@ -71,11 +81,14 @@ var caUI = caUI || {};
 			}
 			
 			// Apply close behavior to selected elements
-			jQuery('#' + that.panelContentID).load(url, that.closeButtonSelector ? function() {			
-				jQuery(that.closeButtonSelector).click(function() {
-					that.hidePanel();
-				})
-			} : null);
+			if (url) {
+				jQuery('#' + that.panelContentID).load(url, that.closeButtonSelector ? function() {			
+					jQuery(that.closeButtonSelector).click(function() {
+						that.hidePanel();
+					})
+				} : null);
+				that.clearOnClose = true;
+			}
 			
 			if (that.onOpenCallback) {
 				that.onOpenCallback(url);
@@ -93,11 +106,23 @@ var caUI = caUI || {};
 			if (that.useExpose) {
 				jQuery.mask.close();
 			}
-			jQuery('#' + that.panelContentID).empty();
+			
+			if (that.clearOnClose) {
+				jQuery('#' + that.panelContentID).empty();
+				that.clearOnClose = false;
+			}
 		}
 		
 		that.panelIsVisible = function() {
 			return (jQuery('#' + that.panelID + ':visible').length > 0) ? true : false;
+		}
+		
+		that.getPanelID = function() {
+			return that.panelID;
+		}
+		
+		that.getPanelContentID = function() {
+			return that.panelContentID;
 		}
 		
 		// --------------------------------------------------------------------------------

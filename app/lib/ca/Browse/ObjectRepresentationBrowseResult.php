@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2011 Whirl-i-Gig
+ * Copyright 2011-2012 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -54,12 +54,11 @@ class ObjectRepresentationBrowseResult extends BaseSearchResult {
 	/**
 	 * Override init to set ca_representations join params
 	 */
-	public function init($pn_subject_table_num, $po_engine_result, $pa_tables) {
-		parent::init($pn_subject_table_num, $po_engine_result, $pa_tables);
+	public function init($po_engine_result, $pa_tables, $pa_options=null) {
+		parent::init($po_engine_result, $pa_tables);
 		$this->opa_tables['ca_object_representations'] = array(
 			'fieldList' => array('ca_object_representations.media', 'ca_object_representations.representation_id', 'ca_object_representations.access'),
-			'joinTables' => array('ca_objects_x_object_representations'),
-			//'criteria' => array('ca_objects_x_object_representations.is_primary = 1')
+			'joinTables' => array('ca_objects_x_object_representations')
 		);
 	}
 	# -------------------------------------

@@ -135,7 +135,7 @@
  			$this->_initView($o_result_context);
  			
 			try {
-				$vs_content = $this->render('loan_pdf_export_html.php');
+				$vs_content = $this->render('loan_pdf_checklist_html.php');
 				//print $vs_content; die("en");
 				$vo_html2pdf = new HTML2PDF('L','letter','en');
 				$vo_html2pdf->setDefaultFont("dejavusans");

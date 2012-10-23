@@ -100,14 +100,15 @@ class WLPlugSearchEngineSolr extends BaseSearchPlugin implements IWLPlugSearchEn
 	}
 	# -------------------------------------------------------
 	public function search($pn_subject_tablenum, $ps_search_expression, $pa_filters=array(), $po_rewritten_query=null){
-		$t = new Timer();
 		$va_solr_search_filters = array();
 		
 		$vn_i = 0;
-		$va_old_signs = $po_rewritten_query->getSigns();
+		$va_old_signs = is_object($po_rewritten_query) ? $po_rewritten_query->getSigns() : array();
 		
 		$va_terms = $va_signs = array();
-		foreach($po_rewritten_query->getSubqueries() as $o_lucene_query_element) {
+		
+		if ($po_rewritten_query) {
+			foreach($po_rewritten_query->getSubqueries() as $o_lucene_query_element) {
 			if (!$va_old_signs || !is_array($va_old_signs)) {	// if array is null then according to Zend Lucene all subqueries should be "are required"... so we AND them
 				$vs_op = "AND";
 			} else {
@@ -287,9 +288,10 @@ class WLPlugSearchEngineSolr extends BaseSearchPlugin implements IWLPlugSearchEn
 			$vn_i++;
 		}
 		
-		$o_rewritten_query = new Zend_Search_Lucene_Search_Query_Boolean($va_terms, $va_signs);	
-		$ps_search_expression = $this->_queryToString($o_rewritten_query);
-		if ($vs_filter_query = $this->_filterValueToQueryValue($pa_filters)) {
+			$o_rewritten_query = new Zend_Search_Lucene_Search_Query_Boolean($va_terms, $va_signs);	
+			$ps_search_expression = $this->_queryToString($o_rewritten_query);
+		}
+		if (is_array($pa_filters) && sizeof($pa_filters) && ($vs_filter_query = $this->_filterValueToQueryValue($pa_filters))) {
 			$ps_search_expression .= ' AND ('.$vs_filter_query.')';
 		}
 		
@@ -638,6 +640,25 @@ class WLPlugSearchEngineSolr extends BaseSearchPlugin implements IWLPlugSearchEn
 					$vn_status = (int)$va_status[0];
 					if ($vn_status > 0) { 
 						caLogEvent('ERR', _t('Indexing failed for %1: status %2', $vs_core, $vn_status), 'Solr->flushContentBuffer()');
+					} else {						
+						/* commit */
+						try {
+							$vs_post_xml = '<commit waitFlush="false" waitSearcher="false" softCommit="true"/>';
+							$vo_http_client->setRawData($vs_post_xml)->setEncType('text/xml')->request('POST');
+							$vo_http_response = $vo_http_client->request();
+							if ($o_resp = @new SimpleXMLElement($vo_http_response->getBody())) {
+								$va_status = $o_resp->xpath("/response/lst/int[@name='status']");
+								$vn_status = (int)$va_status[0];
+								if ($vn_status > 0) { 
+									caLogEvent('ERR', _t('Indexing commit failed for %1: status %2', $vs_core, $vn_status), 'Solr->flushContentBuffer()');
+								}
+							} else {
+								caLogEvent('ERR', _t('Indexing commit failed for %1: invalid response from SOLR %2', $vs_core, $vo_http_response->getBody()), 'Solr->flushContentBuffer()');
+							}
+						} catch (Exception $e) {
+							// Commit error
+							caLogEvent('ERR', _t('Indexing commit failed: %1; response was %2', $e->getMessage(), $vo_http_response->getBody()), 'Solr->flushContentBuffer()');
+						}
 					}
 				} else {
 					caLogEvent('ERR', _t('Indexing failed for %1: invalid response from SOLR %2', $vs_core, $vo_http_response->getBody()), 'Solr->flushContentBuffer()');
@@ -646,25 +667,6 @@ class WLPlugSearchEngineSolr extends BaseSearchPlugin implements IWLPlugSearchEn
 				// Indexing error
 				caLogEvent('ERR', _t('Indexing failed for %1: %2; response was %3', $vs_core, $e->getMessage(), $vo_http_response->getBody()), 'Solr->flushContentBuffer()');
 			}
-		}
-       
-		/* commit */
-		try {
-			$vs_post_xml = '<commit waitFlush="false" waitSearcher="false" softCommit="true"/>';
-			$vo_http_client->setRawData($vs_post_xml)->setEncType('text/xml')->request('POST');
-			$vo_http_response = $vo_http_client->request();
-			if ($o_resp = @new SimpleXMLElement($vo_http_response->getBody())) {
-				$va_status = $o_resp->xpath("/response/lst/int[@name='status']");
-				$vn_status = (int)$va_status[0];
-				if ($vn_status > 0) { 
-					caLogEvent('ERR', _t('Indexing commit failed for %1: status %2', $vs_core, $vn_status), 'Solr->flushContentBuffer()');
-				}
-			} else {
-				caLogEvent('ERR', _t('Indexing commit failed for %1: invalid response from SOLR %2', $vs_core, $vo_http_response->getBody()), 'Solr->flushContentBuffer()');
-			}
-		} catch (Exception $e) {
-			// Commit error
-			caLogEvent('ERR', _t('Indexing commit failed: %1; response was %2', $e->getMessage(), $vo_http_response->getBody()), 'Solr->flushContentBuffer()');
 		}
 
 		/* clean up */
@@ -683,9 +685,10 @@ class WLPlugSearchEngineSolr extends BaseSearchPlugin implements IWLPlugSearchEn
 			$this->opo_datamodel->getTableName($pn_tablenum). /* core name (i.e. table name */
 			"/update" /* updater */
 		);
-		$vo_http_client->setRawData($vs_post_xml)->setEncType('text/xml')->request('POST');
 		
 		try {
+			$vo_http_client->setRawData($vs_post_xml)->setEncType('text/xml')->request('POST');
+		
 			$vo_http_response = $vo_http_client->request();
 		} catch (Exception $e) {
 			// Optimize error

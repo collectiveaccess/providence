@@ -37,7 +37,7 @@
 	$pa_ancestors 		= $this->getVar('ancestors');
 	$pn_id 				= $this->getVar('id');
 	$ps_id_prefix 		= $this->getVar('placement_code').$this->getVar('id_prefix').'HierLocation';
-	$va_lookup_urls 	= caJSONLookupServiceUrl($this->request, $t_subject->tableName());
+	$va_lookup_urls 	= caJSONLookupServiceUrl($this->request, $t_subject->tableName(), array('noInline' => 1));
 	
 	$vb_strict_type_hierarchy = (bool)$this->request->config->get($t_subject->tableName().'_enforce_strict_type_hierarchy');
 	$vs_type_selector 	= trim($t_subject->getTypeListAsHTMLFormElement("{$ps_id_prefix}type_id", array('id' => "{$ps_id_prefix}typeList"), array('childrenOfCurrentTypeOnly' => $vb_strict_type_hierarchy, 'includeSelf' => !$vb_strict_type_hierarchy, 'directChildrenOnly' => $vb_strict_type_hierarchy)));
@@ -266,10 +266,11 @@
 			'<?php print $va_lookup_urls['search']; ?>', {minChars: 3, matchSubset: 1, matchContains: 1, delay: 800}
 		);
 		jQuery('#<?php print $ps_id_prefix; ?>MoveHierarchyBrowserSearch').result(function(event, data, formatted) {
-			jQuery("#<?php print $ps_id_prefix; ?>HierarchyBrowserContainer").slideDown(350);
-			o<?php print $ps_id_prefix; ?>MoveHierarchyBrowser.setUpHierarchy(data[1]);	// jump browser to selected item
-			var strippedString = data[0].replace(/(<([^>]+)>)/ig,"");
-			jQuery('#<?php print $ps_id_prefix; ?>MoveHierarchyBrowserSearch').val(strippedString);
+			if (parseInt(data[1]) > 0) {
+				jQuery("#<?php print $ps_id_prefix; ?>HierarchyBrowserContainer").slideDown(350);
+				o<?php print $ps_id_prefix; ?>MoveHierarchyBrowser.setUpHierarchy(data[1]);	// jump browser to selected item
+			}
+			jQuery('#<?php print $ps_id_prefix; ?>MoveHierarchyBrowserSearch').val('');
 		});
 <?php
 	}
@@ -288,10 +289,11 @@
 			'<?php print $va_lookup_urls['search']; ?>', {minChars: 3, matchSubset: 1, matchContains: 1, delay: 800, extraParams: { <?php print ($t_subject->getProperty('HIERARCHY_ID_FLD')) ? "currentHierarchyOnly: ".(int)$t_subject->get($t_subject->getProperty('HIERARCHY_ID_FLD'))."}" : "}"; ?> }
 		);
 		jQuery('#<?php print $ps_id_prefix; ?>ExploreHierarchyBrowserSearch').result(function(event, data, formatted) {
-			jQuery("#<?php print $ps_id_prefix; ?>HierarchyBrowserContainer").slideDown(350);
-			o<?php print $ps_id_prefix; ?>ExploreHierarchyBrowser.setUpHierarchy(data[1]);	// jump browser to selected item
-			var strippedString = data[0].replace(/(<([^>]+)>)/ig,"");
-			jQuery('#<?php print $ps_id_prefix; ?>ExploreHierarchyBrowserSearch').val(strippedString);
+			if (parseInt(data[1]) > 0) {
+				jQuery("#<?php print $ps_id_prefix; ?>HierarchyBrowserContainer").slideDown(350);
+				o<?php print $ps_id_prefix; ?>ExploreHierarchyBrowser.setUpHierarchy(data[1]);	// jump browser to selected item
+			}
+			jQuery('#<?php print $ps_id_prefix; ?>ExploreHierarchyBrowserSearch').val('');
 		});
 		
 		// Disable form change warnings to add type drop-downs

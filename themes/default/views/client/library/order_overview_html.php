@@ -124,7 +124,7 @@
 		
 		// Shipping required but no method set
 		if ($t_order->get('shipping_method') == 'NONE') {
-			$va_warnings[] = _t('Action Required: order requires shipping but no shipping method is set!');
+			$va_warnings[] = _t('Action Required: loan requires shipping but no shipping method is set!');
 		}
 		
 		// Missing shipping address
@@ -137,12 +137,12 @@
 			case 'PROCESSED_AWAITING_DIGITIZATION':	
 			case 'PROCESSED_AWAITING_MEDIA_ACCESS':
 				if (!$t_order->get('shipped_on_date') && !$t_order->get('ship_date')) { 			// Order paid for but not shipped or estimate ship date set
-					$va_warnings[] = _t('Action Required: order requires shipping!');
+					$va_warnings[] = _t('Action Required: loan requires shipping!');
 				} 
 				break;
 			case 'COMPLETED':	
 				if (!$t_order->get('shipped_on_date') ) { 			// Order complete but not shipped
-					$va_warnings[] = _t('Action Required: order is complete but items never shipped!');
+					$va_warnings[] = _t('Action Required: loan is complete but items never shipped!');
 				} 
 				break;
 		}

@@ -35,14 +35,14 @@
 <div class='navBreadCrumbContainer'>
 	<div class='navBreadCrumbs'>
 <?php
-	$count= count($va_breadcrumb);
+	$count = count($va_breadcrumb);
 	$i=1;
 	print '<div class="crumb"><div class="crumbtext navBreadCrumbLabel">'._t('Current location').'</div><img src="'.$this->request->getThemeUrlPath().'/graphics/arrows/breadcrumbloc.png" width="16" height="19" border="0"></div>';
 	foreach ($va_breadcrumb as $crumb) {
-		if ($i==$count) {
-			print '<div class="lastcrumb"><div class="crumbtext">'.unicode_ucfirst($crumb).'</div><img src="'.$this->request->getThemeUrlPath().'/graphics/arrows/breadcrumb.png" width="16" height="19" border="0"></div>';
+		if ($i == $count) {
+			print '<div class="lastcrumb"><nobr><div class="crumbtext">'.caUcFirstUTF8Safe($crumb).'</div><img src="'.$this->request->getThemeUrlPath().'/graphics/arrows/breadcrumb.png" width="16" height="19" border="0"></nobr></div>';
 		} else {
-			print '<div class="crumb"><div class="crumbtext">'.unicode_ucfirst($crumb).'</div><img src="'.$this->request->getThemeUrlPath().'/graphics/arrows/breadcrumb.png" width="16" height="19" border="0"></div>';
+			print '<div class="crumb"><nobr><div class="crumbtext">'.caUcFirstUTF8Safe($crumb).'</div><img src="'.$this->request->getThemeUrlPath().'/graphics/arrows/breadcrumb.png" width="16" height="19" border="0"></nobr></div>';
 			$i++;
 		}
 	}
