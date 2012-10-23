@@ -1169,13 +1169,12 @@ require_once(__CA_LIB_DIR__.'/core/Parsers/TimeExpressionParser.php');
 			}
 		}
 		$vs_buf .= "</div></h4>\n";
-			
+		
+		$vs_buf .= "<script type='text/javascript'>
+			var inspectorCookieJar = jQuery.cookieJar('caCookieJar');";
 			if($t_item->getPrimaryKey()) {
 				if ($vs_more_info) {
-					$vs_buf .= "
-		<script type='text/javascript'>
-			var inspectorCookieJar = jQuery.cookieJar('caCookieJar');
-			
+					$vs_buf .= "			
 			if (inspectorCookieJar.get('inspectorMoreInfoIsOpen') == undefined) {		// default is to have info open
 				inspectorCookieJar.set('inspectorMoreInfoIsOpen', 1);
 			}
@@ -1215,9 +1214,9 @@ require_once(__CA_LIB_DIR__.'/core/Parsers/TimeExpressionParser.php');
 		});
 					";
 				}
-	
-				$vs_buf .= "</script>\n";
 			}
+
+			$vs_buf .= "</script>\n";
 		}
 		
 		return $vs_buf;
