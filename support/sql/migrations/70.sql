@@ -8,7 +8,7 @@ create table ca_data_importers (
 	importer_id				int unsigned			not null AUTO_INCREMENT,
 	importer_code			varchar(100)			not null,
 	table_num				tinyint unsigned		not null,
-	settings				text					not null,
+	settings				longtext					not null,
 	primary key (importer_id)
 ) engine=innodb CHARACTER SET utf8 COLLATE utf8_general_ci;
 
@@ -50,7 +50,7 @@ create table ca_data_importer_groups (
 	importer_id 			int unsigned			not null,
 	group_code				varchar(100)			not null,
 	table_num 				tinyint unsigned		not null,
-	settings				text					not null,
+	settings				longtext					not null,
 
 	primary key (group_id),
 
@@ -59,15 +59,15 @@ create table ca_data_importer_groups (
 ) engine=innodb CHARACTER SET utf8 COLLATE utf8_general_ci;
 
 create index i_importer_id on ca_data_importer_groups(importer_id);
-create unique index u_group_code on ca_data_importer_groups(group_code);
+create unique index u_group_code on ca_data_importer_groups(importer_id, group_code);
 create index i_table_num on ca_data_importer_groups(table_num);
 
 create table ca_data_importer_items (
 	item_id 				int unsigned			not null AUTO_INCREMENT,
 	importer_id 			int unsigned			not null,
 	group_id 				int unsigned			null,
-	source 					varchar(255)			not null,
-	destination				varchar(255)			not null,
+	source 					varchar(1024)			not null,
+	destination				varchar(1024)			not null,
 	settings				longtext				not null,
 
 	primary key (item_id),
