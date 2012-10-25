@@ -69,7 +69,7 @@ BaseModel::$s_ca_models_definitions['ca_data_importer_items'] = array(
 				'IS_NULL' => false, 
 				'DEFAULT' => '',
 				'LABEL' => _t('Data source'), 'DESCRIPTION' => _t('Source in external format to map CollectiveAccess path to. The format of the external element is determined by the target. For XML-based formats this will typically be an XPath specification; for delimited targets this will be a column number.'),
-				'BOUNDS_LENGTH' => array(0,255)
+				'BOUNDS_LENGTH' => array(0,1024)
 		),
 		'destination' => array(
 				'FIELD_TYPE' => FT_TEXT, 'DISPLAY_TYPE' => DT_FIELD, 
@@ -77,7 +77,7 @@ BaseModel::$s_ca_models_definitions['ca_data_importer_items'] = array(
 				'IS_NULL' => false,
 				'DEFAULT' => '',
 				'LABEL' => _t('External element'), 'DESCRIPTION' => _t('Name of CollectiveAccess bundle to map to.'),
-				'BOUNDS_LENGTH' => array(0,255)
+				'BOUNDS_LENGTH' => array(0,1024)
 		),
 		'settings' => array(
 				'FIELD_TYPE' => FT_VARS, 'DISPLAY_TYPE' => DT_OMIT, 
