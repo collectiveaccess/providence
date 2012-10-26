@@ -1152,7 +1152,8 @@ class ca_sets extends BundlableLabelableBaseModelWithAttributes implements IBund
 		
 		$vs_label_join_sql = '';
 		if ($t_rel_label_table) {
-			$vs_label_join_sql = "LEFT JOIN ".$t_rel_label_table->tableName()." AS rel_label ON rel.".$t_rel_table->primaryKey()." = rel_label.".$t_rel_table->primaryKey()."\n";
+			if ($t_rel_label_table->hasField("is_preferred")) { $vs_preferred_sql = " AND rel_label.is_preferred = 1 "; }
+			$vs_label_join_sql = "LEFT JOIN ".$t_rel_label_table->tableName()." AS rel_label ON rel.".$t_rel_table->primaryKey()." = rel_label.".$t_rel_table->primaryKey()." {$vs_preferred_sql}\n";
 		}
 		
 		

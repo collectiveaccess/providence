@@ -129,11 +129,23 @@
 			
 				$vn_num = 0;
 				foreach($this->opa_filter_values as $vm_value) {
-					$vn_num .= $va_r[$this->ops_filter_field][$vm_value];
+					$vn_num += (int)$va_r[$this->ops_filter_field][$vm_value];
 				}
 				return $vn_num;
 			}
 			return parent::numHits();
+		}
+		# ------------------------------------------------------------------
+		public function seek($pn_index) {
+			if ($this->ops_filter_field) {
+				parent::seek(0);
+				for($vn_i=0; $vn_i < $pn_index; $vn_i++) {
+					$this->nextHit();
+				}
+				return true;
+			} else {
+				return parent::seek($pn_index);
+			}
 		}
 		# -------------------------------------------------------
 	}

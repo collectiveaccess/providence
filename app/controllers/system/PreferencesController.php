@@ -50,6 +50,12 @@
  			$this->render('preferences_cataloguing_html.php');
  		}
  		# -------------------------------------------------------
+ 		public function EditQuickAddPrefs() {
+ 			$this->view->setVar('t_user', $this->request->user);
+ 			$this->view->setVar('group', 'quickadd');
+ 			$this->render('preferences_quickadd_html.php');
+ 		}
+ 		# -------------------------------------------------------
  		public function EditUnitsPrefs() {
  			$this->view->setVar('t_user', $this->request->user);
  			$this->view->setVar('group', 'units');
@@ -100,6 +106,24 @@
 						}
 					}
 					$vs_view_name = 'preferences_cataloguing_html.php';
+ 					break;
+ 				case 'EditQuickAddPrefs':
+ 					$vs_group = 'quickadd';
+ 				
+ 					$va_ui_prefs = array();
+					foreach($this->request->user->getValidPreferences($vs_group) as $vs_pref) {
+					
+						foreach($_REQUEST AS $vs_k => $vs_v) {
+							if (preg_match("!pref_{$vs_pref}_([\d]+)!", $vs_k, $va_matches)) {
+								$va_ui_prefs[$vs_pref][$va_matches[1]] = $vs_v;
+							}
+						}
+					
+						foreach($va_ui_prefs as $vs_pref => $va_values ){
+							$this->request->user->setPreference($vs_pref, $va_values);
+						}
+					}
+					$vs_view_name = 'preferences_quickadd_html.php';
  					break;
  				case 'EditMediaPrefs':
  					$vs_group = 'media';

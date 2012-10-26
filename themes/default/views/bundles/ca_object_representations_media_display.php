@@ -79,7 +79,7 @@
 <?php
 	}
 ?>
-						<a href="#" onclick="caMediaPanel.showPanel('<?php print urldecode(caNavUrl($this->request, 'editor/objects', 'ObjectEditor', 'GetRepresentationInfo', array('representation_id' => $t_subject->getPrimaryKey()))); ?>'); return false;"><?php print $t_subject->getMediaTag('media', 'preview170'); ?></a>
+						<a href="#" onclick="caMediaPanel.showPanel('<?php print urldecode(caNavUrl($this->request, 'editor/objects', 'ObjectEditor', 'GetRepresentationEditor', array('representation_id' => $t_subject->getPrimaryKey()))); ?>'); return false;"><?php print $t_subject->getMediaTag('media', 'preview170'); ?></a>
 					</div>
 				</td>
 			</tr>

@@ -28,6 +28,7 @@
  
  	require_once(__CA_LIB_DIR__."/ca/BaseBrowseController.php");
  	require_once(__CA_LIB_DIR__."/ca/Browse/ObjectBrowse.php");
+ 	require_once(__CA_LIB_DIR__."/core/GeographicMap.php");
  
  	class BrowseObjectsController extends BaseBrowseController {
  		# -------------------------------------------------------
@@ -69,7 +70,8 @@
  			$this->opa_views = array(
 				'thumbnail' => _t('thumbnails'),
 				'full' => _t('full'),
-				'list' => _t('list')
+				'list' => _t('list'),
+				'map' => _t('map')
 			);
 			 
 			$this->opa_sorts = array_merge(array(
@@ -84,6 +86,22 @@
  			JavascriptLoadManager::register('tabUI');
  			JavascriptLoadManager::register('panel');
  			parent::Index(false, $pa_options);
+ 		}
+ 		# -------------------------------------------------------
+ 		/**
+ 		 * Ajax action that returns info on a mapped location based upon the 'id' request parameter.
+ 		 * 'id' is a list of object_ids to display information before. Each integer id is separated by a semicolon (";")
+ 		 * The "ca_objects_results_map_balloon_html" view in Results/ is used to render the content.
+ 		 */ 
+ 		public function getMapItemInfo() {
+ 			$pa_object_ids = explode(';', $this->request->getParameter('id', pString));
+ 			
+ 			$va_access_values = caGetUserAccessValues($this->request);
+ 			
+ 			$this->view->setVar('ids', $pa_object_ids);
+ 			$this->view->setVar('access_values', $va_access_values);
+ 			
+ 		 	$this->render("Results/ca_objects_results_map_balloon_html.php");
  		}
  		# -------------------------------------------------------
  		/**

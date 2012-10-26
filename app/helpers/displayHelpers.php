@@ -517,12 +517,21 @@ require_once(__CA_LIB_DIR__.'/core/Parsers/TimeExpressionParser.php');
 			$vs_buf .= "<br style='clear: both;'/></div></h4>\n";
 		} else {	
 			if ($vn_item_id) {
-				if($po_view->request->user->canDoAction("can_edit_".$vs_priv_table_name)){
+				if($po_view->request->user->canDoAction("can_edit_".$vs_priv_table_name) && (sizeof($t_item->getTypeList()) > 1)){
+					if ($po_view->request->user->canDoAction("can_change_type_{$vs_table_name}")) {
+						
+						$vs_buf .= "<div id='inspectorChangeType'><div id='inspectorChangeTypeButton'><a href='#' onclick='caTypeChangePanel.showPanel(); return false;'>".caNavIcon($po_view->request, __CA_NAV_BUTTON_CHANGE__, null, array('title' => _t('Change type')))."</a></div></div>\n";
+						
+						$vo_change_type_view = new View($po_view->request, $po_view->request->getViewsDirectoryPath()."/bundles/");
+						$vo_change_type_view->setVar('t_item', $t_item);
+						
+						FooterManager::add($vo_change_type_view->render("change_type_html.php"));
+					}
 					$vs_buf .= "<strong>"._t("Editing %1", $vs_type_name).": </strong>\n";
 				}else{
 					$vs_buf .= "<strong>"._t("Viewing %1", $vs_type_name).": </strong>\n";
 				}
-				
+					
 				if ($vs_get_spec = $po_view->request->config->get("{$vs_table_name}_inspector_display_title")) {
 					$vs_label = caProcessTemplateForIDs($vs_get_spec, $vs_table_name, array($t_item->getPrimaryKey()));
 				} else {
@@ -1160,13 +1169,12 @@ require_once(__CA_LIB_DIR__.'/core/Parsers/TimeExpressionParser.php');
 			}
 		}
 		$vs_buf .= "</div></h4>\n";
-			
+		
+		$vs_buf .= "<script type='text/javascript'>
+			var inspectorCookieJar = jQuery.cookieJar('caCookieJar');";
 			if($t_item->getPrimaryKey()) {
 				if ($vs_more_info) {
-					$vs_buf .= "
-		<script type='text/javascript'>
-			var inspectorCookieJar = jQuery.cookieJar('caCookieJar');
-			
+					$vs_buf .= "			
 			if (inspectorCookieJar.get('inspectorMoreInfoIsOpen') == undefined) {		// default is to have info open
 				inspectorCookieJar.set('inspectorMoreInfoIsOpen', 1);
 			}
@@ -1206,9 +1214,9 @@ require_once(__CA_LIB_DIR__.'/core/Parsers/TimeExpressionParser.php');
 		});
 					";
 				}
-	
-				$vs_buf .= "</script>\n";
 			}
+
+			$vs_buf .= "</script>\n";
 		}
 		
 		return $vs_buf;
@@ -1564,6 +1572,9 @@ $ca_relationship_lookup_parse_cache = array();
 		$ps_inline_create_message = (isset($pa_options['inlineCreateMessage'])) ? (string)$pa_options['inlineCreateMessage'] : null;
 		$ps_inline_create_query = (isset($pa_options['inlineCreateQuery'])) ? (string)$pa_options['inlineCreateQuery'] : null;
 		
+		$ps_empty_result_message = (isset($pa_options['emptyResultMessage'])) ? (string)$pa_options['emptyResultMessage'] : null;
+		$ps_empty_result_query = (isset($pa_options['emptyResultQuery'])) ? (string)$pa_options['emptyResultQuery'] : null;
+		
 		
 		$va_exclude = (isset($pa_options['exclude']) && is_array($pa_options['exclude'])) ? $pa_options['exclude'] : array();
 		
@@ -1620,11 +1631,17 @@ $ca_relationship_lookup_parse_cache = array();
 		$vs_type_id_fld = method_exists($t_rel, 'getTypeFieldName') ? $t_rel->getTypeFieldName() : null;
 		
 		$vn_c = 0;
-		$vb_include_inline_add_message = false;
-		
+		$vb_include_inline_add_message = $vb_include_empty_result_message = false;
+	
 		if (is_object($qr_rel_items)) {
-			if ($ps_inline_create_message && !$qr_rel_items->numHits()) {
-				$vb_include_inline_add_message = true;	
+			if (!$qr_rel_items->numHits()) {
+				if ($ps_inline_create_message) { 
+					$vb_include_inline_add_message = true;	
+				} else {
+					if ($ps_empty_result_message) { 
+						$vb_include_empty_result_message = true;	
+					}
+				}
 			} else {
 				while($qr_rel_items->nextHit()) {
 					$vn_id = $qr_rel_items->get("{$vs_rel_table}.{$vs_rel_pk}");
@@ -1803,6 +1820,16 @@ $ca_relationship_lookup_parse_cache = array();
 					$vs_rel_pk => 0,
 					'_query' => $ps_inline_create_query
 				);
+		} else {
+			if ($vb_include_empty_result_message) {
+				$va_initial_values[0] = 
+					array(
+						'_display' => $ps_empty_result_message,
+						'id' => -1,
+						$vs_rel_pk => -1,
+						'_query' => $ps_empty_result_query
+					);
+			}
 		}
 		
 		return $va_initial_values;		

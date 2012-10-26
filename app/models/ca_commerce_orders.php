@@ -1393,6 +1393,19 @@ class ca_commerce_orders extends BaseModel {
 					$va_rep_counts[(int)$qr_rep_count->get('item_id')] = (int)$qr_rep_count->get('c');
 					$va_item_to_rep_ids[(int)$qr_rep_count->get('item_id')] = (int)$qr_rep_count->get('representation_id');
 				}
+				
+				$qr_rep_count = $o_db->query("
+					SELECT o.item_id, coixor.representation_id
+					FROM ca_commerce_order_items o
+					INNER JOIN ca_objects_x_object_representations AS coixor ON o.object_id = coixor.object_id
+					INNER JOIN ca_object_representations AS o_r ON o_r.representation_id = coixor.representation_id
+					WHERE
+						o.item_id IN (?) AND o_r.deleted = 0 AND coixor.is_primary = 1
+				", array($va_item_ids));
+				
+				while($qr_rep_count->nextRow()) {
+					$va_item_to_rep_ids[(int)$qr_rep_count->get('item_id')] = (int)$qr_rep_count->get('representation_id');
+				}
 			}
 			
 			$qr_rep_count = $o_db->query("

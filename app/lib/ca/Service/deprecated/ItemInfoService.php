@@ -88,8 +88,8 @@ class ItemInfoService extends BaseService {
 	 * @return array associative array of bundle contents
 	 */
 	public function get($type,$item_ids,$bundles,$options){
-		if(!($t_subject_instance = $this->getTableInstance($type,$item_id,true))){
-			throw new SoapFault("Server", "Invalid type or item_id");
+		if(!($t_subject_instance = $this->getTableInstance($type,null,true))){
+			throw new SoapFault("Server", "Invalid type");
 		}
 		$va_return = array();
 		if(is_array($item_ids)){

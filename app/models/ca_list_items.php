@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2008-2011 Whirl-i-Gig
+ * Copyright 2008-2012 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -642,6 +642,34 @@ class ca_list_items extends BundlableLabelableBaseModelWithAttributes implements
 		}
 		return $va_item_ids;
 	}
+	# ------------------------------------------------------
+ 	/**
+ 	 * Check if currently loaded row is save-able
+ 	 *
+ 	 * @param RequestHTTP $po_request
+ 	 * @return bool True if record can be saved, false if not
+ 	 */
+ 	public function isSaveable($po_request) {
+ 		// Is row loaded?
+ 		if (!($vn_list_id = $this->get('list_id'))) { return false; }
+ 		
+ 		$t_list = new ca_lists($vn_list_id);
+ 		if (!$t_list->getPrimaryKey()) { return false; }
+ 		return $t_list->isSaveable($po_request);
+ 	}
+ 	# ------------------------------------------------------
+ 	/**
+ 	 * Check if currently loaded row is deletable
+ 	 */
+ 	public function isDeletable($po_request) {
+ 		// Is row loaded?
+ 		if (!$this->getPrimaryKey()) { return false; }
+ 		
+ 		$t_list = new ca_lists($this->get('list_id'));
+ 		if (!$t_list->getPrimaryKey()) { return false; }
+ 		
+ 		return $t_list->isDeletable($po_request);
+ 	}
 	# ------------------------------------------------------
 }
 ?>

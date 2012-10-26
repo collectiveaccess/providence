@@ -118,6 +118,7 @@
  			$pn_representation_id 	= $this->request->getParameter('representation_id', pInteger);
  			$ps_op 					= $this->request->getParameter('op', pString);
  			$pn_angle 				= $this->request->getParameter('angle', pInteger);
+ 			$pb_revert 				= (bool)$this->request->getParameter('revert', pInteger);
  			
  			$t_rep = new ca_object_representations($pn_representation_id);
  			if (!$t_rep->getPrimaryKey()) { 
@@ -125,9 +126,9 @@
  					'action' => 'process', 'status' => 20, 'message' => _t('Invalid representation_id')
  				);
  			} else {
-				if ($t_rep->applyMediaTransformation('media', $ps_op, array('angle' => $pn_angle))) {
+				if ($t_rep->applyMediaTransformation('media', $ps_op, array('angle' => $pn_angle), array('revert' => $pb_revert))) {
 					$va_response = array(
-						'action' => 'process', 'status' => 0, 'message' => 'OK'
+						'action' => 'process', 'status' => 0, 'message' => 'OK', 'op' => $ps_op, 'angle' => $pn_angle
 					);
 				} else {
 					$va_response = array(

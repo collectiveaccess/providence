@@ -28,7 +28,7 @@
  	
  	$t_subject = 			$this->getVar('t_subject');
  	$vs_table = 			$t_subject->tableName();
- 	$va_lookup_urls = 		caJSONLookupServiceUrl($this->request, $vs_table);
+ 	$va_lookup_urls = 		caJSONLookupServiceUrl($this->request, $vs_table, array('noInline' => 1));
  	$vo_result_context =	$this->getVar('result_context');
  	
  	$vs_type_id_form_element = '';
@@ -115,10 +115,13 @@
 						'<?php print $va_lookup_urls['search']; ?>', {minChars: 3, matchSubset: 1, matchContains: 1, delay: 800}
 					);
 					jQuery('#BasicSearchInput').result(function(event, data, formatted) {
-						oHierBrowser.setUpHierarchy(data[1]);	// jump browser to selected item
-						if (stateCookieJar.get('<?php print $vs_table; ?>BrowserIsClosed') == 1) {
-							jQuery("#browseToggle").click();
+						if (parseInt(data[1]) > 0) {
+							oHierBrowser.setUpHierarchy(data[1]);	// jump browser to selected item
+							if (stateCookieJar.get('<?php print $vs_table; ?>BrowserIsClosed') == 1) {
+								jQuery("#browseToggle").click();
+							}
 						}
+						jQuery('#BasicSearchInput').val('');
 					});
 					jQuery("#browseToggle").click(function() {
 						jQuery("#browse").slideToggle(350, function() { 
