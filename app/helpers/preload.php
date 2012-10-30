@@ -35,7 +35,6 @@
    */
    
 	require(__CA_APP_DIR__."/helpers/utilityHelpers.php");
-	require(__CA_APP_DIR__."/helpers/requestHelpers.php");
 	require(__CA_APP_DIR__."/helpers/navigationHelpers.php");
 	require(__CA_APP_DIR__."/helpers/mailHelpers.php");
 	require(__CA_APP_DIR__."/helpers/clientServicesHelpers.php");
