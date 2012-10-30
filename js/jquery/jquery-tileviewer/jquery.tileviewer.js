@@ -219,7 +219,7 @@ var methods = {
 										jQuery('#' + options.id + "ControlZoomIn").css("opacity", 0.5);
 										jQuery('#' + options.id + "ControlZoomOut").css("opacity", 0.5);
 									}
-									view.change_zoom(20, w/2, h/2);
+									view.change_zoom(30, w/2, h/2);
 								}, 50);
 							});
 							
@@ -239,9 +239,10 @@ var methods = {
 										jQuery('#' + options.id + "ControlZoomIn").css("opacity", 0.5);
 										jQuery('#' + options.id + "ControlZoomOut").css("opacity", 0.5);
 									}
-									view.change_zoom(-20, w/2, h/2);
+									view.change_zoom(-30, w/2, h/2);
 								}, 50);
 							});
+							
 							
 							jQuery(document).bind('keypress', '] +', function() { 	// zoom in using keyboard "]" or "+"						
 								var w = jQuery(view.canvas).width();
@@ -286,6 +287,67 @@ var methods = {
 								view.pan.ydest = p.y + 50;
 								view.pan.level = layer.level;
 								view.pan(); 
+							});
+							
+							//
+							// Touch events
+							//
+							
+							jQuery(view.canvas).bind('swipemove', function(e, m) {
+								var desc = m.description.split(/:/);
+								if ((desc[0] != 'swipemove') || (desc[1] != '1')) {
+									return false;
+								}
+								if (view.pan && view.pan.xdest) {
+									view.pan.xdest = view.pan.ydest = view.pan.leveldest = null; //cancel pan
+								}
+								
+								layer.xpos += m.delta[0].lastX;
+								layer.ypos += m.delta[0].lastY;
+								view.draw();
+								
+								e.preventDefault();
+								m.originalEvent.preventDefault();
+								return false;
+							});
+							
+							jQuery(view.canvas).bind('pinch', function(e, m) {
+								var desc = m.description.split(/:/);
+								if (desc[0] != 'pinch') {
+									return false;
+								}
+								if (view.pan && view.pan.xdest) {
+									view.pan.xdest = view.pan.ydest = view.pan.leveldest = null; //cancel pan
+								}
+								
+								if (m && (m.scale !== null)) {
+									var x = jQuery(view.canvas).data("touchx");
+									var y = jQuery(view.canvas).data("touchy");
+								
+									var scale = m.scale;
+									var old_tilesize = layer.tilesize;
+									if (scale < 1) { scale = -1 * (1/scale); }
+									scale = scale * (options.zoom_sensitivity/4);
+									
+									view.change_zoom(scale, x, y);
+								}
+								e.preventDefault();
+								m.originalEvent.preventDefault();
+								return false;
+							});
+							
+							jQuery(view.canvas).bind('touchstart', function(e) {
+								var x = parseInt(e.originalEvent.targetTouches[0].clientX);
+								var y = parseInt(e.originalEvent.targetTouches[0].clientY);
+								if (e.originalEvent.targetTouches.length > 1) {		
+									// Average location of multiple touches							
+									var x2 = parseInt(e.originalEvent.targetTouches[1].clientX);
+									var y2 = parseInt(e.originalEvent.targetTouches[1].clientY);
+									x = (x + x2)/2;
+									y = (y + y2)/2;
+								}
+								
+								jQuery(view.canvas).data("touchx", x).data("touchy", y);
 							});
 						}
                     },
@@ -586,7 +648,7 @@ var methods = {
                         return {x: pixel_x, y: pixel_y};
                     },
 
-                    //calculate pixel potision on the center
+                    //calculate pixel position on the center
                     center_pixelpos: function() {
                         return view.client2pixel(view.canvas.clientWidth/2, view.canvas.clientHeight/2);
                     },
@@ -595,10 +657,15 @@ var methods = {
 						var w = jQuery(view.canvas).width();
 						var h = jQuery(view.canvas).height();
 						
+						var cl = layer.level;
+						var ctilesize = layer.tilesize;
+						var cxtilenum = layer.xtilenum;
+						var cytilenum = layer.ytilenum;
+						var cxpos = layer.xpos;
+						var cypos = layer.ypos;
                         
                         //ignore if we've reached min/max zoom
                         if(layer.level == 0 && layer.tilesize+delta > layer.info.tilesize*options.maximum_pixelsize) { return false; }
-						
 						
 						// Don't allow zooming smaller than window
 						if ((delta < 0) && (((layer.tilesize + delta) * (layer.xtilenum)) <= w) && (((layer.tilesize + delta) * (layer.ytilenum)) <= h)) { return false; }
@@ -611,7 +678,6 @@ var methods = {
                         layer.ypos -= dist_from_y0/layer.tilesize*delta;
                         
                         // Don't allow scrolling offscreen
-
                         if (
                         	(layer.xpos > w) 
                         	|| 
@@ -621,11 +687,14 @@ var methods = {
                         	|| 
                         	(layer.ypos < (-1 *(layer.tilesize * layer.ytilenum)))
                         ) { 
-                        	view.pan.xdest = (layer.tilesize * layer.xtilenum)/2;
-							view.pan.ydest = (layer.tilesize * layer.ytilenum)/2;
-							view.pan.level = layer.level;
+                        	layer.xpos = cxpos;
+                        	layer.ypos = cypos;
+                        	layer.level = cl;
+                        	view.pan.xdest = 0;
+							view.pan.ydest = 0; 
+							view.pan.level = cl;
 							view.needdraw = true;
-							
+							view.pan(); 
 							return;
                         }
                         
@@ -636,19 +705,20 @@ var methods = {
 						
                         //adjust level
                         if(layer.tilesize > layer.info.tilesize) { //level down
-                            if(layer.level != 0) {
+                            if(layer.level > 0) {
                                 layer.level--;
                                 layer.tilesize /= 2; //we can't use bitoperation here.. need to preserve floating point
                                 view.recalc_viewparams();
                             }
-                        }
-                        if(layer.tilesize < layer.info.tilesize/2) { //level up
-                            if(layer.level != layer.info._maxlevel) {
-                                layer.level++;
-                                layer.tilesize *= 2; //we can't use bitoperation here.. need to preserve floating point
-                                view.recalc_viewparams();
-                            }
-                        }
+                        } else {
+							if(layer.tilesize < layer.info.tilesize/2) { //level up
+								if(layer.level < layer.info._maxlevel) {
+									layer.level++;
+									layer.tilesize *= 2; //we can't use bitoperation here.. need to preserve floating point
+									view.recalc_viewparams();
+								}
+							}
+						}
 
                         view.needdraw = true;
                     },
@@ -720,6 +790,7 @@ var methods = {
                          return null;
                     }
                 };//view definition
+               
                 $this.data("view", view);
 
                 //setup views
@@ -1005,19 +1076,15 @@ var methods = {
                 });
 
                 $(view.canvas).bind("mousewheel.tileviewer", function(e, delta) {
-                    view.pan.xdest = null;//cancel pan
-                    //if(view.mode == "pan") {
-                        delta = delta*options.zoom_sensitivity;
-                        var offset = $(view.canvas).offset();
-                        view.change_zoom(delta, e.pageX - offset.left, e.pageY - offset.top);
-                    //}
+                    view.pan.xdest =  view.pan.ydest =  view.pan.leveldest = null;//cancel pan
+                    delta = delta*options.zoom_sensitivity;
+                	var offset = $(view.canvas).offset();
+            		view.change_zoom(delta, e.pageX - offset.left, e.pageY - offset.top);
                     return false;
                 });
-            } else {
-               // console.log("already initialized");
             }
 
-                methods.setmode.call($this, {mode: "pan"});
+        	methods.setmode.call($this, {mode: "pan"});
         }); //for each
     }, //public / init
 
@@ -1182,6 +1249,8 @@ var methods = {
     	var c = 1;	// our Tilepic parser always puts a tiny thumb as the first tile, which we want to skip since tileviewer doesn't encode a counterpart
     	alevel = l - level - 2;
     	for(i=0; i<alevel; i++) {
+    		if (i < 0) { console.log("Negative i=" + i); continue;}
+    		//if (i >= methods.tileCounts.length) { console.log("Excessive i=" + i); continue;}
     		c += methods.tileCounts[i];
     	}
     	return c + tile + 1;
