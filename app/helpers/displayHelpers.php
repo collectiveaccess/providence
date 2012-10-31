@@ -1387,16 +1387,21 @@ require_once(__CA_LIB_DIR__.'/core/Parsers/TimeExpressionParser.php');
 	 *		returnAsArray = if true an array of processed template values is returned, otherwise the template values are returned as a string joined together with a delimiter. Default is false.
 	 *		delimiter = value to string together template values with when returnAsArray is false. Default is ';' (semicolon)
 	 *		relatedValues = array of field values to return in template when directly referenced. Array should be indexed numerically in parallel with $pa_row_ids
-	 *
+	 *		relationshipValues = array of field values to return in template for relationship when directly referenced. Should be indexed by row_id and then by relation_id
+	 *		placeholderPrefix = 
 	 * @return mixed Output of processed templates
 	 */
 	function caProcessTemplateForIDs($ps_template, $pm_tablename_or_num, $pa_row_ids, $pa_options=null) {
+		unset($pa_options['request']);
+		unset($pa_options['template']);	// we pass through options to get() and don't want templates 
+		
 		$vb_return_as_array = (isset($pa_options['returnAsArray'])) ? (bool)$pa_options['returnAsArray'] : false;
 		if (!is_array($pa_row_ids) || !sizeof($pa_row_ids)) {
 			return $vb_return_as_array ? array() : "";
 		}
 		
-		$va_related_values = (isset($pa_options['relatedValues']) && is_array($pa_options['relatedValues'])) ? $pa_options['relatedValues'] : array();
+		$va_related_values = (isset($pa_options['relatedValues']) && is_array($pa_options['relatedValues'])) ? $pa_options['relatedValues'] : array();		
+		$va_relationship_values = (isset($pa_options['relationshipValues']) && is_array($pa_options['relationshipValues'])) ? $pa_options['relationshipValues'] : array();
 		
 		$vs_delimiter = (isset($pa_options['delimiter'])) ? $pa_options['delimiter'] : '; ';
 		
@@ -1407,39 +1412,127 @@ require_once(__CA_LIB_DIR__.'/core/Parsers/TimeExpressionParser.php');
 		
 		$o_dm = Datamodel::load();
 		$ps_tablename = is_numeric($pm_tablename_or_num) ? $o_dm->getTableName($pm_tablename_or_num) : $pm_tablename_or_num;
-		
+
 		$t_instance = $o_dm->getInstanceByTableName($ps_tablename, true);
+		$vs_pk = $t_instance->primaryKey();
+		
 		$qr_res = $t_instance->makeSearchResult($ps_tablename, $pa_row_ids);
 		
 		$va_proc_templates = array();
 		$vn_i = 0;
+		
+		// Parse template
+		$o_dom = new DOMDocument('1.0', 'utf-8');
+		libxml_use_internal_errors(true);								// don't reported mangled HTML errors
+		$o_dom->loadHTML($ps_template);
+		libxml_clear_errors();
+		$o_ifdefs = $o_dom->getElementsByTagName("ifdef");				// if defined
+		$o_ifnotdefs = $o_dom->getElementsByTagName("ifnotdef");		// if not defined
+		
+		$va_ifdefs = array();
+		foreach($o_ifdefs as $o_ifdef) {
+			$va_ifdefs[(string)$o_ifdef->getAttribute('code')][] = array('directive' => $o_dom->saveHTML($o_ifdef), 'content' => $o_ifdef->textContent);
+		}
+		
+		$va_ifnotdefs = array();
+		foreach($o_ifnotdefs as $o_ifnotdef) {
+			$va_ifnotdefs[(string)$o_ifnotdef->getAttribute('code')][] = array('directive' => $o_dom->saveHTML($o_ifnotdef), 'content' => $o_ifnotdef->textContent);
+		}
+		
+		$va_tag_val_list = array();
 		while($qr_res->nextHit()) {
+			$vs_pk_val = $qr_res->get($vs_pk);
 			$va_proc_templates[$vn_i] = $ps_template;
+			
 			foreach($va_tags as $vs_tag) {
-				if (isset($va_related_values[$vn_i][$vs_tag])) {
-					$vs_val = $va_related_values[$vn_i][$vs_tag];
-				} else {
-					$va_tmp = explode('.', $vs_tag);	// see if this is a reference to a related table
-						
-					if (($ps_tablename != $va_tmp[0]) && ($t_tmp = $o_dm->getInstanceByTableName($va_tmp[0], true))) {	// if the part of the tag before a "." (or the tag itself if there are no periods) is a table then try to fetch it as related to the current record
-						$vs_val = $qr_res->get($vs_tag);
-					} else {
-						if (sizeof($va_tmp) > 1) {
-							$vs_get_spec = $vs_tag;
-						} else {
-							$vs_get_spec = "{$ps_tablename}.{$vs_tag}";
-						}
-						$vs_val = $qr_res->get($vs_get_spec);
-					}
+				$va_tmp = explode('.', $vs_tag);
+				if (isset($pa_options['showHierarchicalLabels']) && $pa_options['showHierarchicalLabels'] && ($vs_tag == 'label')) {
+					unset($va_related_values[$vs_pk_val][$vs_tag]);
+					unset($va_relationship_values[$vs_pk_val][$vs_tag]);
+					$va_tmp = array($ps_tablename, 'hierarchy', 'preferred_labels');
 				}
-				if ($vs_val) {
-					$va_proc_templates[$vn_i] = str_replace('^'.$vs_tag, $vs_val, $va_proc_templates[$vn_i]);
-				} else {
-					$va_proc_templates[$vn_i] = preg_replace("![^A-Za-z0-9_\^ ]*\^{$vs_tag}[ ]*[^A-Za-z0-9_ ]*[ ]*!", '', $va_proc_templates[$vn_i]);
+				
+				if (!isset($va_relationship_values[$vs_pk_val])) { $va_relationship_values[$vs_pk_val] = array(0 => null); }
+				
+				foreach($va_relationship_values[$vs_pk_val] as $vn_relation_id => $va_relationship_value_array) {
+					if (isset($va_relationship_value_array[$vs_tag]) && !(isset($pa_options['showHierarchicalLabels']) && $pa_options['showHierarchicalLabels'] && ($vs_tag == 'label'))) {
+						$vs_val = $va_relationship_value_array[$vs_tag];
+					} else {
+						if (isset($va_related_values[$vs_pk_val][$vs_tag])) {
+							$vs_val = $va_related_values[$vs_pk_val][$vs_tag];
+						} else {
+							// see if this is a reference to a related table
+							if (($ps_tablename != $va_tmp[0]) && ($t_tmp = $o_dm->getInstanceByTableName($va_tmp[0], true))) {	// if the part of the tag before a "." (or the tag itself if there are no periods) is a related table then try to fetch it as related to the current record
+								if (isset($pa_options['placeholderPrefix']) && $pa_options['placeholderPrefix']) {
+									$vs_get_spec = array_shift($va_tmp).".".$pa_options['placeholderPrefix'];
+									if(sizeof($va_tmp) > 0) {
+										$vs_get_spec .= ".".join(".", $va_tmp);
+									}
+								} 
+								$vs_val = $qr_res->get($vs_get_spec, $pa_options);
+							} else {
+								if ($va_tmp[0] == $ps_tablename) { array_shift($va_tmp); }	// get rid of primary table if it's in the field spec
+							
+								if (isset($pa_options['showHierarchicalLabels']) && $pa_options['showHierarchicalLabels']) {
+									if ($va_tmp[1] == 'preferred_labels') {
+										array_unshift($va_tmp, 'hierarchy');
+									}
+								}
+							
+								if (isset($pa_options['placeholderPrefix']) && $pa_options['placeholderPrefix']) {
+									array_unshift($va_tmp, $pa_options['placeholderPrefix']);
+								}
+								
+								$vs_get_spec = "{$ps_tablename}.".join(".", $va_tmp);
+								$vs_val = $qr_res->get($vs_get_spec, $pa_options);
+							}
+						}
+					}
+						
+					$va_tag_val_list[$vn_i][$vs_tag] = $vs_val;
 				}
 			}
 		
 			$vn_i++;
+		}
+			
+		foreach($va_tag_val_list as $vn_i => $va_tag_vals) {
+			// Process <ifdef> (IF DEFined)
+			foreach($va_ifdefs as $vs_code => $va_def_con) { 
+				$va_tag_list = explode(",", $vs_code);
+				$vb_output = true;
+				foreach($va_tag_list as $vs_tag_to_test) {
+					if (!isset($va_tag_vals[$vs_tag_to_test]) || !strlen($va_tag_vals[$vs_tag_to_test])) { $vb_output = false; break; }
+				}
+				
+				foreach($va_def_con as $va_ifdef) {
+					if ($vb_output) {
+						$va_proc_templates[$vn_i] = str_replace($va_ifdef['directive'], $va_ifdef['content'], $va_proc_templates[$vn_i]);
+					} else {
+						$va_proc_templates[$vn_i] = str_replace($va_ifdef['directive'], '', $va_proc_templates[$vn_i]);
+					}
+				}
+			}
+			
+			// Process <ifnotdef> (IF NOT DEFined)
+			foreach($va_ifnotdefs as $vs_code => $va_notdef_con) { 
+				$va_tag_list = explode(",", $vs_code);
+				$vb_output = true;
+				foreach($va_tag_list as $vs_tag_to_test) {
+					if (isset($va_tag_vals[$vs_tag_to_test]) && strlen($va_tag_vals[$vs_tag_to_test])) { $vb_output = false; break; }
+				}
+				
+				foreach($va_notdef_con as $va_ifnotdef) {
+					if ($vb_output) {
+						$va_proc_templates[$vn_i] = str_replace($va_ifnotdef['directive'], $va_ifnotdef['content'], $va_proc_templates[$vn_i]);
+					} else {
+						$va_proc_templates[$vn_i] = str_replace($va_ifnotdef['directive'], '', $va_proc_templates[$vn_i]);
+					}
+				}
+			}
+			foreach($va_tag_vals as $vs_tag => $vs_val) {
+				$va_proc_templates[$vn_i] = str_replace('^'.$vs_tag, $vs_val, $va_proc_templates[$vn_i]);
+			}
 		}
 		
 		if ($vb_return_as_array) {

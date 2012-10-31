@@ -560,14 +560,16 @@ class BundlableLabelableBaseModelWithAttributes extends LabelableBaseModelWithAt
 						
 						$va_ids = array();
 						$vs_pk = $t_instance->primaryKey();
+						$va_relationship_values = array();
 						if (is_array($va_rel_items = $this->get($va_tmp[0], $va_template_opts))) {
 							foreach($va_rel_items as $vn_rel_id => $va_rel_item) {
 								$va_ids[] = $va_rel_item[$vs_pk];
+								$va_relationship_values[$va_rel_item[$vs_pk]][$vn_rel_id] = $va_rel_item;
 							}
 						} else {
 							$va_rel_items = array();
 						}
-						return caProcessTemplateForIDs($vs_template, $va_tmp[0], $va_ids, array_merge($pa_options, array('relatedValues' => array_values($va_rel_items))));
+						return caProcessTemplateForIDs($vs_template, $va_tmp[0], $va_ids, array_merge($pa_options, array('relationshipValues' => $va_relationship_values)));
 					}
 					
 					$va_related_items = $this->getRelatedItems($va_tmp[0], array_merge($pa_options, array('returnLabelsAsArray' => true)));

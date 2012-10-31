@@ -1451,31 +1451,7 @@
 			}
 			
 			if ($ps_template) {
-				$va_templated_values = array();
-				foreach($va_tmp as $vn_id => $va_value_list) {
-					foreach($va_value_list as $va_value) {
-						$vs_template = $ps_template;
-						
-						$va_element_codes = array_keys($va_value);
-						usort($va_element_codes, "caLengthSortHelper");
-						
-						foreach($va_element_codes as $vn_i => $vs_element_code) {
-							if ($vs_value = $va_value[$vs_element_code]) {
-								$vs_template = str_replace("^".$vs_element_code, $vs_value, $vs_template);
-							} else {
-								$vs_template = preg_replace("![^A-Za-z0-9_\^ ]*\^{$vs_element_code}[ ]*[^A-Za-z0-9_ ]*!", '', $vs_template);
-							}
-						}
-						
-						if ($vs_template) { $va_templated_values[] = $vs_template; }
-					}
-				}
-				$va_proc_templates[$vn_i] = preg_replace("![^A-Za-z0-9_\^ ]*\^{$vs_tag}[^A-Za-z0-9_ ]*!", '', $va_proc_templates[$vn_i]);
-				$vs_text = preg_replace('![^A-Za-z0-9_\^ ]*\^[A-Za-z0-9_\-]+[^A-Za-z0-9_ ]*!', '', join($vs_delimiter, $va_templated_values)); // remove un-replaced tags
-				if (isset($pa_options['convertLineBreaks']) && $pa_options['convertLineBreaks']) {
-					$vs_text = caConvertLineBreaks($vs_text);
-				}
-				return $vs_text;
+				return caProcessTemplateForIDs($ps_template, $this->tableNum(), array($vn_row_id), array('placeholderPrefix' => $t_element->get('element_code')));
 			} else {
 				// no template
 				$va_attribute_list = array();

@@ -536,74 +536,18 @@ class SearchResult extends BaseObject {
 				$va_row_ids = array();
 				$vs_rel_pk = $t_instance->primaryKey();
 				
+				$va_relationship_values = array();
 				foreach($va_related_items as $vn_relation_id => $va_relation_info) {
 					$va_row_ids[] = $va_relation_info[$vs_rel_pk];
+					$va_relationship_values[$va_relation_info[$vs_rel_pk]][$vn_relation_id] = array(
+						'relationship_typename' => $va_relation_info['relationship_typename'],
+						'relationship_type_id' => $va_relation_info['relationship_type_id'],
+						'label' => $va_relation_info['label']
+					);
 				}
 				if (!sizeof($va_row_ids)) { return ''; }
-				$va_tags = array();
-				if (preg_match_all("!\^([A-Za-z0-9_\.]+)!", $vs_template, $va_matches)) {
-					$va_tags = $va_matches[1];
-				}
-				
-				if (!sizeof($va_tags)) { 
-					$va_tags = array('label'); 
-					$vs_template = '^label';
-				}
-				
-				$qr_rel_items = $t_instance->makeSearchResult($va_path_components['table_name'], $va_row_ids);
-				$qr_rel_items->setOption('prefetch', 1000);
-				
-				$va_values = array();
-				while($qr_rel_items->nextHit()) {
-					$va_relation_info = array_shift($va_related_items);
-					if (sizeof($va_tags)) {
-						$vs_value = $vs_template;
-						foreach($va_tags as $vs_tag) {
-							$vs_field_val = null;
-							switch($vs_tag) {
-								case 'label':
-								case 'preferred_labels':
-								case $va_path_components['table_name'].'.preferred_labels':
-									
-									if ($vb_show_hierarachy) {
-										$vs_field_val = $qr_rel_items->get($va_path_components['table_name'].'.hierarchy.preferred_labels', array_merge($pa_options, array('delimiter' => $vs_hierarchical_delimiter)));
-									} else {
-										$vs_field_val = $va_relation_info['label'];
-									}
-									$vs_value = str_replace("^{$vs_tag}", $vs_field_val, $vs_value);
-									break;
-								case 'relationship_typename':
-									$vs_field_val = $va_relation_info['relationship_typename'];
-									break;
-								default:
-									$va_tmp = explode('.', $vs_tag);	// see if this is a reference to a related table
-									if (($va_path_components['table_name'] != $va_tmp[0]) && ($t_tmp = $this->opo_datamodel->getInstanceByTableName($va_tmp[0], true))) {	// if the part of the tag before a "." (or the tag itself if there are no periods) is a table then try to fetch it as related to the current record
-										$vs_field_val = $qr_rel_items->get($vs_tag);
-									} else {
-										if (sizeof($va_tmp) > 1) { 
-											$vs_get_spec = $vs_tag;
-										} else {
-											$vs_get_spec = $va_path_components['table_name'].".".$vs_tag;
-										}
-										$vs_field_val = $qr_rel_items->get($vs_get_spec);
-									}
-									break;
-							}
-							
-							if ($vs_field_val) {
-								$vs_value = str_replace("^{$vs_tag}", $vs_field_val, $vs_value);
-							} else {
-								$vs_value = preg_replace("![^\^A-Za-z0-9_ ]*\^{$vs_tag}[ ]*[^A-Za-z0-9_ ]*[ ]*!", '', $vs_value);
-							}
-						}
-						
-						$va_values[] = $vs_value;
-					} else {
-						$va_values[] = $qr_rel_items->get($va_path_components['table_name'].'.preferred_labels');
-					}
-				}
-				
-				return join($vs_delimiter, $va_values);
+				if (!$vs_template) { $vs_template = "^label"; }
+				return caProcessTemplateForIDs($vs_template, $t_instance->tableNum(), $va_row_ids, array_merge($pa_options, array('relationshipValues' => $va_relationship_values, 'showHierarchicalLabels' => $vb_show_hierarachy)));
 			}
 		}
 		
