@@ -95,6 +95,7 @@ class WLPlugSearchEngineSolr extends BaseSearchPlugin implements IWLPlugSearchEn
 	# -------------------------------------------------------
 	public function __destruct() {	
 		if (is_array(WLPlugSearchEngineSolr::$s_doc_content_buffer) && sizeof(WLPlugSearchEngineSolr::$s_doc_content_buffer)) {
+			if(!$this->opo_db->connected(false, 'Solr->__destruct()')) { $this->opo_db->connect(); }		// Need to reconnect database if connection has already been torn down
 			$this->flushContentBuffer();
 		}
 	}
