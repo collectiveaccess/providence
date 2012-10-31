@@ -1431,11 +1431,13 @@ require_once(__CA_LIB_DIR__.'/core/Parsers/TimeExpressionParser.php');
 		
 		$va_ifdefs = array();
 		foreach($o_ifdefs as $o_ifdef) {
+			if (!$o_ifdef) { continue; }
 			$va_ifdefs[(string)$o_ifdef->getAttribute('code')][] = array('directive' => $o_dom->saveHTML($o_ifdef), 'content' => $o_ifdef->textContent);
 		}
 		
 		$va_ifnotdefs = array();
 		foreach($o_ifnotdefs as $o_ifnotdef) {
+			if (!$o_ifnotdef) { continue; }
 			$va_ifnotdefs[(string)$o_ifnotdef->getAttribute('code')][] = array('directive' => $o_dom->saveHTML($o_ifnotdef), 'content' => $o_ifnotdef->textContent);
 		}
 		
@@ -1495,14 +1497,29 @@ require_once(__CA_LIB_DIR__.'/core/Parsers/TimeExpressionParser.php');
 		
 			$vn_i++;
 		}
-			
+
 		foreach($va_tag_val_list as $vn_i => $va_tag_vals) {
 			// Process <ifdef> (IF DEFined)
 			foreach($va_ifdefs as $vs_code => $va_def_con) { 
-				$va_tag_list = explode(",", $vs_code);
-				$vb_output = true;
+				if (strpos($vs_code, "|") !== false) {
+					$vs_bool = 'OR';
+					$va_tag_list = explode("|", $vs_code);
+					$vb_output = false;
+				} else {
+					$vs_bool = 'AND';
+					$va_tag_list = explode(",", $vs_code);
+					$vb_output = true;
+				}
 				foreach($va_tag_list as $vs_tag_to_test) {
-					if (!isset($va_tag_vals[$vs_tag_to_test]) || !strlen($va_tag_vals[$vs_tag_to_test])) { $vb_output = false; break; }
+					switch($vs_bool) {
+						case 'OR':
+							if (isset($va_tag_vals[$vs_tag_to_test]) && strlen($va_tag_vals[$vs_tag_to_test])) { $vb_output = true; break(2); }			// any must be defined; if any is defined output
+							break;
+						case 'AND':
+						default:
+							if (!isset($va_tag_vals[$vs_tag_to_test]) || !strlen($va_tag_vals[$vs_tag_to_test])) { $vb_output = false; break(2); }		// all must be defined; if any is not defined don't output
+							break;
+					}
 				}
 				
 				foreach($va_def_con as $va_ifdef) {
@@ -1516,10 +1533,27 @@ require_once(__CA_LIB_DIR__.'/core/Parsers/TimeExpressionParser.php');
 			
 			// Process <ifnotdef> (IF NOT DEFined)
 			foreach($va_ifnotdefs as $vs_code => $va_notdef_con) { 
-				$va_tag_list = explode(",", $vs_code);
+				if (strpos($vs_code, "|") !== false) {
+					$vs_bool = 'OR';
+					$va_tag_list = explode("|", $vs_code);
+					$vb_output = false;
+				} else {
+					$vs_bool = 'AND';
+					$va_tag_list = explode(",", $vs_code);
+					$vb_output = true;
+				}
 				$vb_output = true;
 				foreach($va_tag_list as $vs_tag_to_test) {
-					if (isset($va_tag_vals[$vs_tag_to_test]) && strlen($va_tag_vals[$vs_tag_to_test])) { $vb_output = false; break; }
+					switch($vs_bool) {
+						case 'OR':
+							if (!isset($va_tag_vals[$vs_tag_to_test]) || !strlen($va_tag_vals[$vs_tag_to_test])) { $vb_output = true; break(2); }		// any must be not defined; if anything is not set output
+							break;
+						case 'AND':
+						default:
+							if (isset($va_tag_vals[$vs_tag_to_test]) && strlen($va_tag_vals[$vs_tag_to_test])) { $vb_output = false; break(2); }	// all must be not defined; if anything is set don't output
+							break;
+					}
+					
 				}
 				
 				foreach($va_notdef_con as $va_ifnotdef) {
