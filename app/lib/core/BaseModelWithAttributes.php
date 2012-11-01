@@ -1451,7 +1451,8 @@
 			}
 			
 			if ($ps_template) {
-				return caProcessTemplateForIDs($ps_template, $this->tableNum(), array($vn_row_id), array('placeholderPrefix' => $t_element->get('element_code')));
+				unset($pa_options['template']);
+				return caProcessTemplateForIDs($ps_template, $this->tableNum(), array($vn_row_id), array_merge($pa_options, array('placeholderPrefix' => $t_element->get('element_code'))));
 			} else {
 				// no template
 				$va_attribute_list = array();

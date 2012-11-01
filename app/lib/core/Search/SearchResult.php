@@ -720,13 +720,20 @@ class SearchResult extends BaseObject {
 			}
 			if (!$vb_return_as_array) {
 				if (isset($pa_options['convertCodesToDisplayText']) && $pa_options['convertCodesToDisplayText'] && ($va_path_components['field_name'])) {
-					$vs_template = '';
+					$vs_template = null;
 					if ($va_path_components['subfield_name']) { 
-						$vs_template = '^'.$va_path_components['subfield_name']; 
+						$va_values = $t_instance->getAttributeDisplayValues($va_path_components['field_name'], $vn_row_id, $pa_options);
+						$va_value_list = array();
+						foreach($va_values as $vn_id => $va_attr_val_list) {
+							foreach($va_attr_val_list as $vn_value_id => $va_value_array) {
+								$va_value_list[] = $va_value_array[$va_path_components['subfield_name']];
+							}
+						}
+						return join(" ", $va_value_list);
 					} else {
 						if (isset($pa_options['template'])) { $vs_template = $pa_options['template']; }
 					}
-					
+					unset($pa_options['template']);
 					return $t_instance->getAttributesForDisplay($va_path_components['field_name'], $vs_template, array_merge(array('row_id' => $vn_row_id), $pa_options));
 				}
 				if ($t_element && !$va_path_components['subfield_name'] && ($t_element->get('datatype') == 0)) {
