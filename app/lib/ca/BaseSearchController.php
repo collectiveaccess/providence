@@ -148,7 +148,8 @@
 					'appendToSearch' => $vs_append_to_search,
 					'checkAccess' => $va_access_values,
 					'no_cache' => $vb_is_new_search,
-					'dontCheckFacetAvailability' => true
+					'dontCheckFacetAvailability' => true,
+					'filterNonPrimaryRepresentations' => true
 				);
 				if ($vb_is_new_search ||isset($pa_options['saved_search']) || (is_subclass_of($po_search, "BrowseEngine") && !$po_search->numCriteria()) ) {
 					$vs_browse_classname = get_class($po_search);

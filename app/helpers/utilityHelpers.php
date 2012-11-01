@@ -895,11 +895,20 @@ function caFileIsIncludable($ps_file) {
 	 *
 	 * @param string $ps_string The string to process
 	 */
-	function caUcFirstUTF8Safe($ps_string) {
-		$vn_strlen = mb_strlen($ps_string, 'UTF-8');
-		$vs_first_char = mb_substr($ps_string, 0, 1, 'UTF-8');
-		$vs_tmp = mb_substr($ps_string, 1, $vn_strlen - 1, 'UTF-8');
-		return mb_strtoupper($vs_first_char, 'UTF-8').$vs_tmp;
+	function caUcFirstUTF8Safe($ps_string, $pb_capitalize_all_words=false) {
+		if ($pb_capitalize_all_words) {
+			$va_words = preg_split('![ ]+!', $ps_string);
+		} else {
+			$va_words = array($ps_string);
+		}
+		
+		$va_proc_words = array();
+		foreach($va_words as $vs_string) {
+			$vn_strlen = mb_strlen($vs_string, 'UTF-8');
+			$vs_first_char = mb_substr($vs_string, 0, 1, 'UTF-8');
+			$va_proc_words[] = mb_strtoupper($vs_first_char, 'UTF-8').mb_substr($vs_string, 1, $vn_strlen - 1, 'UTF-8');
+		}
+		return join(' ', $va_proc_words);
 	}
 	# ---------------------------------------
 	/**
@@ -1105,7 +1114,7 @@ function caFileIsIncludable($ps_file) {
 			$prevChar = $char;
 		}
 	
-		return $result;
+		return $result.$newLine;
 	}
 	# ---------------------------------------
 	/**

@@ -241,7 +241,7 @@ class SearchEngine extends SearchBase {
 			));
 		}
 		if ($po_result) {
-			$po_result->init($o_res, $this->opa_tables);
+			$po_result->init($o_res, $this->opa_tables, $pa_options);
 			return $po_result;
 		} else {
 			return new SearchResult($o_res, $this->opa_tables);
@@ -433,6 +433,22 @@ class SearchEngine extends SearchBase {
 			
 			$va_tmp = explode('.', $vs_field);
 			
+			// Rewrite for <table>.preferred_labels.* syntax
+			if ($va_tmp[1] == 'preferred_labels') {
+				if ($t_labeled_item_table = $this->opo_datamodel->getInstanceByTableName($va_tmp[0], true)) {
+					if ($t_label_table = $t_labeled_item_table->getLabelTableInstance()) {
+						$va_tmp2 = array($t_label_table->tableName());
+						if (isset($va_tmp[2]) && $t_label_table->hasField($va_tmp[2])) {
+							$va_tmp2[] = $va_tmp[2];
+						} else {
+							$va_tmp2[] = $t_label_table->getLabelDisplayField();
+						}
+						$va_tmp = $va_tmp2;
+						$vs_field = join(".", $va_tmp);
+					}
+				}
+			}
+			
 			if ($va_tmp[0] == $vs_table_name) {
 				//
 				// sort field is in search table
@@ -446,9 +462,11 @@ class SearchEngine extends SearchBase {
 					if ($t_element->load(array('element_code' => $vs_sort_element_code))) {
 						$vn_element_id = $t_element->getPrimaryKey();
 						
-						if (!($vs_sortable_value_fld = 'attr_vals.'.Attribute::getSortFieldForDatatype($t_element->get('datatype')))) {
+						if (!($vs_sortable_value_fld = Attribute::getSortFieldForDatatype($t_element->get('datatype')))) {
 							return $pa_hits;
 						}
+						
+						$vs_sortable_value_fld = 'attr_vals.'.$vs_sortable_value_fld;
 						
 						$vs_sort_field = array_pop(explode('.', $vs_sortable_value_fld));
 						$vs_locale_where = ($vn_num_locales > 1) ? 'attr.locale_id' : '';
@@ -973,7 +991,7 @@ class SearchEngine extends SearchBase {
 		
 		$this->opa_search_type_ids = array();
 		foreach($pa_type_codes_or_ids as $vs_code_or_id) {
-			if (!(int)$vs_code_or_id) { continue; }
+			if (!strlen($vs_code_or_id)) { continue; }
 			if (!is_numeric($vs_code_or_id)) {
 				$vn_type_id = $t_list->getItemIDFromList($vs_list_name, $vs_code_or_id);
 			} else {
@@ -990,7 +1008,6 @@ class SearchEngine extends SearchBase {
 				$this->opa_search_type_ids = array_merge($this->opa_search_type_ids, $va_ids);
 			}
 		}
-		
 		return true;
 	}
 	# ------------------------------------------------------

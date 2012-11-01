@@ -33,7 +33,7 @@
 	$pa_ancestors 		= $this->getVar('ancestors');
 	$pn_id 				= $this->getVar('id');
 	$ps_id_prefix 		= $this->getVar('placement_code').$this->getVar('id_prefix').'HierNavigation';
-	$va_lookup_urls 	= caJSONLookupServiceUrl($this->request, $t_subject->tableName());
+	$va_lookup_urls 	= caJSONLookupServiceUrl($this->request, $t_subject->tableName(), array('noInline' => 1));
 	
 	$pa_bundle_settings = $this->getVar('settings');
 ?>	

@@ -767,6 +767,16 @@
 			// Save "world" ACL
 			$t_subject->setACLWorldAccess($this->request->getParameter("{$vs_form_prefix}_access_world", pInteger));
 			
+			// Propagate ACL settings to records that inherit from this one
+			if ((bool)$t_subject->getProperty('SUPPORTS_ACL_INHERITANCE')) {
+				ca_acl::applyACLInheritanceToChildrenFromRow($t_subject);
+				if (is_array($va_inheritors = $t_subject->getProperty('ACL_INHERITANCE_LIST'))) {
+					foreach($va_inheritors as $vs_inheritor_table) {
+						ca_acl::applyACLInheritanceToRelatedFromRow($t_subject, $vs_inheritor_table);
+					}
+				}
+			}
+			
  			$this->Access();
  		}
  		# -------------------------------------------------------
@@ -802,6 +812,8 @@
  			// load required javascript
  			JavascriptLoadManager::register('bundleableEditor');
  			JavascriptLoadManager::register('imageScroller');
+ 			JavascriptLoadManager::register('datePickerUI');
+ 			
  			$t_subject = $this->opo_datamodel->getInstanceByTableName($this->ops_table_name);
  			$vn_subject_id = $this->request->getParameter($t_subject->primaryKey(), pInteger);
  			

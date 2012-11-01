@@ -751,8 +751,18 @@
 	# ------------------------------------------------------------------------------------------------
 	/**
 	 * Returns urls for JSON lookup services
+	 *
+	 * @param RequestHTTP $po_request
+	 * @param string $ps_table The database table name or number for which you want to perform lookups
+	 * @param array $pa_attributes Optional array of attributes to add to the lookup url
+	 * @return array An array of lookup urls key'ed by use. Keys are:
+	 *		ancestorList = Hierarchical ancestor lookup 
+	 *		levelList = Hierarchical level lookup - returns a single level of the hierarchy
+	 *		search = Simple text search lookup
+	 *		idno = Duplicate idno lookup
+	 *		intrinsic = Checks value of instrinsic field and return list of primary keys that use the specified value
 	 */
-	function caJSONLookupServiceUrl($po_request, $ps_table) {
+	function caJSONLookupServiceUrl($po_request, $ps_table, $pa_attributes=null) {
 		$o_dm = Datamodel::load();
 		
 		if (is_numeric($ps_table)) {
@@ -865,11 +875,11 @@
 				break;
 		}
 		return array(
-			'ancestorList' => caNavUrl($po_request, $vs_module, $vs_controller, 'GetHierarchyAncestorList'),
-			'levelList' => caNavUrl($po_request, $vs_module, $vs_controller, 'GetHierarchyLevel'),
-			'search' => caNavUrl($po_request, $vs_module, $vs_controller, 'Get'),
-			'idno' => caNavUrl($po_request, $vs_module, $vs_controller, 'IDNo'),
-			'intrinsic' => caNavUrl($po_request, $vs_module, $vs_controller, 'intrinsic')
+			'ancestorList' => caNavUrl($po_request, $vs_module, $vs_controller, 'GetHierarchyAncestorList', $pa_attributes),
+			'levelList' => caNavUrl($po_request, $vs_module, $vs_controller, 'GetHierarchyLevel', $pa_attributes),
+			'search' => caNavUrl($po_request, $vs_module, $vs_controller, 'Get', $pa_attributes),
+			'idno' => caNavUrl($po_request, $vs_module, $vs_controller, 'IDNo', $pa_attributes),
+			'intrinsic' => caNavUrl($po_request, $vs_module, $vs_controller, 'intrinsic', $pa_attributes)
 		);
 	}
 	# ------------------------------------------------------------------------------------------------

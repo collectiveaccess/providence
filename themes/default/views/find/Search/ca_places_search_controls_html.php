@@ -93,13 +93,16 @@
 				});
 				
 				jQuery('#browseSearch').autocomplete(
-					'<?php print caNavUrl($this->request, 'lookup', 'Place', 'Get', array()); ?>', {minChars: 3, matchSubset: 1, matchContains: 1, delay: 800}
+					'<?php print caNavUrl($this->request, 'lookup', 'Place', 'Get', array('noInline' => 1)); ?>', {minChars: 3, matchSubset: 1, matchContains: 1, delay: 800}
 				);
 				jQuery('#browseSearch').result(function(event, data, formatted) {
-					oHierBrowser.setUpHierarchy(data[1]);	// jump browser to selected item
-					if (stateCookieJar.get('placeBrowserIsClosed') == 1) {
-						jQuery("#browseToggle").click();
+					if (parseInt(data[1])) {
+						oHierBrowser.setUpHierarchy(data[1]);	// jump browser to selected item
+						if (stateCookieJar.get('placeBrowserIsClosed') == 1) {
+							jQuery("#browseToggle").click();
+						}
 					}
+					jQuery('#browseSearch').val('');
 				});
 				jQuery("#browseToggle").click(function() {
 					jQuery("#browse").slideToggle(350, function() { 
