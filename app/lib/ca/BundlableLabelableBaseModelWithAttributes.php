@@ -4347,6 +4347,9 @@ $pa_options["display_form_field_tips"] = true;
 			}
 			$va_row['access_display'] = $t_acl->getChoiceListValue('access', $va_row['access']);
 		}
+		if (!strlen($va_row['access_display'])) {	// show default
+			$va_row['access_display'] = $t_acl->getChoiceListValue('access', $this->getAppConfig()->get('default_item_access_level'));
+		}
 		
 		return $va_row;
 	}
