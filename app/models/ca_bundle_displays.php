@@ -1560,11 +1560,8 @@ class ca_bundle_displays extends BundlableLabelableBaseModelWithAttributes {
 			
 				$va_ids = $po_result->get(join('.', $va_tmp2), array('returnAsArray' => true));
 				$va_links = array();
-				
 				if (is_array($va_ids)) {
-					$va_display_texts = $po_result->get($vs_bundle_name, array_merge($pa_options, array('returnAsArray' => true)));
-					
-					
+					$va_display_texts = caProcessTemplateForIDs($pa_options['template'], $va_tmp2[0], $va_ids, array_merge($pa_options, array('returnAsArray' => true)));
 					foreach($va_display_texts as $vn_i => $va_text) {
 						
 						if (is_array($va_text)) {
