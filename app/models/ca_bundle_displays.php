@@ -1553,13 +1553,14 @@ class ca_bundle_displays extends BundlableLabelableBaseModelWithAttributes {
 		if (!$pa_options['forReport'] && isset($pa_options['makeEditorLink']) && $pa_options['makeEditorLink'] && isset($pa_options['request']) && $pa_options['request']) {
 			if ($t_instance = $this->getAppDatamodel()->getInstanceByTableName($va_tmp[0], true)) {
 				$va_tmp2 = $va_tmp;
-				if ((in_array($vs_tmp = array_pop($va_tmp2), array('related')))) {
+				if ((sizeof($va_tmp2) > 1) && (in_array($vs_tmp = array_pop($va_tmp2), array('related')))) {
 					$va_tmp2[] = $vs_tmp;
 				}
 				$va_tmp2[] = $t_instance->primaryKey();
-				
+			
 				$va_ids = $po_result->get(join('.', $va_tmp2), array('returnAsArray' => true));
 				$va_links = array();
+				
 				if (is_array($va_ids)) {
 					$va_display_texts = $po_result->get($vs_bundle_name, array_merge($pa_options, array('returnAsArray' => true)));
 					

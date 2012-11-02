@@ -520,7 +520,7 @@ class BundlableLabelableBaseModelWithAttributes extends LabelableBaseModelWithAt
 							} else {
 								$va_rel_items = array();
 							}
-							return caProcessTemplateForIDs($vs_template, $va_tmp[0], $va_ids, array_merge($pa_options, array('relatedValues' => array_values($va_rel_items))));
+							return caProcessTemplateForIDs($vs_template, $va_tmp[0], $va_ids, $pa_options);
 						} else {
 							$va_proc_labels = array();
 							foreach($va_related_items as $vn_relation_id => $va_relation_info) {
