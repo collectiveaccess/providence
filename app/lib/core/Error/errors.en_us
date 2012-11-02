@@ -114,6 +114,7 @@
 1220 = Invalid table parameter
 1230 = Parent must be specified
 1240 = Invalid table specification
+1250 = Could not save ACL inheritance settings
 
 # --- File errors
 1500 = File not found

@@ -1155,6 +1155,8 @@ class BundlableLabelableBaseModelWithAttributes extends LabelableBaseModelWithAt
 					}
 				}
 				
+				$o_view->setVar('bundle_name', $ps_bundle_name);
+				$o_view->setVar('settings', $pa_bundle_settings);
 				$o_view->setVar('t_instance', $this);
 				$vs_element = $o_view->render('intrinsic.php', true);
 				
@@ -1164,7 +1166,11 @@ class BundlableLabelableBaseModelWithAttributes extends LabelableBaseModelWithAt
 					TooltipManager::add('#'.$vs_field_id, "<h3>".$pa_options['label']."</h3>{$vs_description}");
 				}
 				
-				$vs_display_format = $o_config->get('bundle_element_display_format');
+				if (isset($pa_bundle_settings['forACLAccessScreen']) && $pa_bundle_settings['forACLAccessScreen']) {
+					$vs_display_format = '^ELEMENT';
+				} else {
+					$vs_display_format = $o_config->get('bundle_element_display_format');
+				}
 				break;
 			# -------------------------------------------------
 			case 'attribute':

@@ -777,6 +777,21 @@
 				}
 			}
 			
+			// Set ACL-related intrinsic fields
+			if ($t_subject->hasField('acl_inherit_from_ca_collections') || $t_subject->hasField('acl_inherit_from_parent')) {
+				$t_subject->setMode(ACCESS_WRITE);
+				if ($t_subject->hasField('acl_inherit_from_ca_collections')) {
+					$t_subject->set('acl_inherit_from_ca_collections', $this->request->getParameter('acl_inherit_from_ca_collections', pString));
+				}
+				if ($t_subject->hasField('acl_inherit_from_parent')) {
+					$t_subject->set('acl_inherit_from_parent', $this->request->getParameter('acl_inherit_from_parent', pString));
+				}
+				$t_subject->update();
+				
+				if ($t_subject->numErrors()) {
+					$this->postError(1250, _t('Could not set ACL inheritance settings: %1', join("; ", $t_subject->getErrors())),"BaseEditorController->SetAccess()");
+				}
+			}
  			$this->Access();
  		}
  		# -------------------------------------------------------
