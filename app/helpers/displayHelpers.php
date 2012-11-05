@@ -1399,6 +1399,7 @@ require_once(__CA_LIB_DIR__.'/core/Parsers/TimeExpressionParser.php');
 		if (!is_array($pa_row_ids) || !sizeof($pa_row_ids)) {
 			return $vb_return_as_array ? array() : "";
 		}
+		unset($pa_options['returnAsArray']);
 		
 		$va_related_values = (isset($pa_options['relatedValues']) && is_array($pa_options['relatedValues'])) ? $pa_options['relatedValues'] : array();		
 		$va_relationship_values = (isset($pa_options['relationshipValues']) && is_array($pa_options['relationshipValues'])) ? $pa_options['relationshipValues'] : array();
