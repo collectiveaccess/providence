@@ -2401,7 +2401,7 @@ class BaseModel extends BaseObject {
 				}
 				
 				if (!isset($va_attr["IS_NULL"])) { $va_attr["IS_NULL"] = 0; }
-				if ($va_attr["IS_NULL"] && (strlen($vs_field_value) == 0)) {
+				if ($va_attr["IS_NULL"] && (!in_array($vs_field_type, array(FT_MEDIA, FT_FILE))) && (strlen($vs_field_value) == 0)) {
 					$vs_field_value_is_null = 1;
 				} else {
 					$vs_field_value_is_null = 0;
