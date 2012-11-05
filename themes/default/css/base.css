@@ -3298,6 +3298,16 @@ div.bundleDisplayTemplateKey {
 	color: #000000;
 }
 
+div.bundleDisplayElementSettingsControl {
+	float: right; 
+	margin-right: 15px;
+}
+
+.bundleDisplayElementBundleName {
+	font-size: 9px;
+	font-style: italic;
+}
+
 /* UI Editor styles */
 table.uiScreenItem {
 	width: 100%;
