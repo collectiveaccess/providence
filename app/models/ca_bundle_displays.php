@@ -794,7 +794,7 @@ class ca_bundle_displays extends BundlableLabelableBaseModelWithAttributes {
 			if ($vb_show_tooltips) {
 				TooltipManager::add(
 					"#bundleDisplayEditorBundle_{$vs_table}_{$vs_f}",
-					"<h2>{$vs_label}</h2>{$vs_description}"
+					$this->_formatBundleTooltip($vs_label, $vs_bundle, $vs_description)
 				);
 			}
 		}
@@ -881,7 +881,7 @@ class ca_bundle_displays extends BundlableLabelableBaseModelWithAttributes {
 			if ($vb_show_tooltips) {
 				TooltipManager::add(
 					"#bundleDisplayEditorBundle_{$vs_table}_{$vs_element_code}",
-					"<h2>{$vs_label}</h2>{$vs_description}"
+					$this->_formatBundleTooltip($vs_label, $vs_bundle, $vs_description)
 				);
 			}
 		}
@@ -935,7 +935,7 @@ class ca_bundle_displays extends BundlableLabelableBaseModelWithAttributes {
 			if ($vb_show_tooltips) {
 				TooltipManager::add(
 					"#bundleDisplayEditorBundle_{$vs_table}_preferred_labels",
-					"<h2>{$vs_label}</h2>{$vs_description}"
+					$this->_formatBundleTooltip($vs_label, $vs_bundle, $vs_description)
 				);
 			}
 		}
@@ -958,7 +958,7 @@ class ca_bundle_displays extends BundlableLabelableBaseModelWithAttributes {
 			if ($vb_show_tooltips) {	
 				TooltipManager::add(
 					"#bundleDisplayEditorBundle_{$vs_table}_nonpreferred_labels",
-					"<h2>{$vs_label}</h2>{$vs_description}"
+					$this->_formatBundleTooltip($vs_label, $vs_bundle, $vs_description)
 				);
 			}
 		}
@@ -997,7 +997,7 @@ class ca_bundle_displays extends BundlableLabelableBaseModelWithAttributes {
 			if ($vb_show_tooltips) {
 				TooltipManager::add(
 					"#bundleDisplayEditorBundle_ca_commerce_order_history",
-					"<h2>{$vs_label}</h2>{$vs_description}"
+					$this->_formatBundleTooltip($vs_label, $vs_bundle, $vs_description)
 				);
 			}
 		}
@@ -1040,7 +1040,7 @@ class ca_bundle_displays extends BundlableLabelableBaseModelWithAttributes {
 					if ($vb_show_tooltips) {
 						TooltipManager::add(
 							"#bundleDisplayEditorBundle_ca_object_representations_media_{$vs_version}",
-							"<h2>{$vs_label}</h2>{$vs_description}"
+							$this->_formatBundleTooltip($vs_label, $vs_bundle, $vs_description)
 						);
 					}
 				}
@@ -1183,7 +1183,7 @@ class ca_bundle_displays extends BundlableLabelableBaseModelWithAttributes {
 			if ($vb_show_tooltips) {
 				TooltipManager::add(
 					"#bundleDisplayEditorBundle_{$vs_id_suffix}",
-					"<h2>{$vs_label}</h2>{$vs_description}"
+					$this->_formatBundleTooltip($vs_label, $vs_bundle, $vs_description)
 				);
 			}
 		}
@@ -1219,7 +1219,7 @@ class ca_bundle_displays extends BundlableLabelableBaseModelWithAttributes {
 		if ($vb_show_tooltips) {
 			TooltipManager::add(
 				"#bundleDisplayEditorBundle_{$vs_table}_created",
-				"<h2>{$vs_label}</h2>{$vs_description}"
+				$this->_formatBundleTooltip($vs_label, $vs_bundle, $vs_description)
 			);
 		}
 		
@@ -1236,7 +1236,7 @@ class ca_bundle_displays extends BundlableLabelableBaseModelWithAttributes {
 		if ($vb_show_tooltips) {
 			TooltipManager::add(
 				"#bundleDisplayEditorBundle_{$vs_table}_lastModified}",
-				"<h2>{$vs_label}</h2>{$vs_description}"
+				$this->_formatBundleTooltip($vs_label, $vs_bundle, $vs_description)
 			);
 		}
 		
@@ -1300,12 +1300,16 @@ class ca_bundle_displays extends BundlableLabelableBaseModelWithAttributes {
 			if ($vb_show_tooltips) {
 				TooltipManager::add(
 					"#bundleDisplayEditor_{$vn_placement_id}",
-					"<h2>{$vs_label}</h2>{$vs_description}"
+					$this->_formatBundleTooltip($vs_label, $va_placement['bundle'], $vs_description)
 				);
 			}
 		}
 		
 		return $va_placements_in_display;
+	}
+	# ------------------------------------------------------
+	private function _formatBundleTooltip($ps_label, $ps_bundle, $ps_description) {
+		return "<div><strong>{$ps_label}</strong></div><div class='bundleDisplayElementBundleName'>{$ps_bundle}</div><br/><div>{$ps_description}</div>";
 	}
 	# ------------------------------------------------------
 	/**
