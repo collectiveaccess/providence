@@ -895,11 +895,20 @@ function caFileIsIncludable($ps_file) {
 	 *
 	 * @param string $ps_string The string to process
 	 */
-	function caUcFirstUTF8Safe($ps_string) {
-		$vn_strlen = mb_strlen($ps_string, 'UTF-8');
-		$vs_first_char = mb_substr($ps_string, 0, 1, 'UTF-8');
-		$vs_tmp = mb_substr($ps_string, 1, $vn_strlen - 1, 'UTF-8');
-		return mb_strtoupper($vs_first_char, 'UTF-8').$vs_tmp;
+	function caUcFirstUTF8Safe($ps_string, $pb_capitalize_all_words=false) {
+		if ($pb_capitalize_all_words) {
+			$va_words = preg_split('![ ]+!', $ps_string);
+		} else {
+			$va_words = array($ps_string);
+		}
+		
+		$va_proc_words = array();
+		foreach($va_words as $vs_string) {
+			$vn_strlen = mb_strlen($vs_string, 'UTF-8');
+			$vs_first_char = mb_substr($vs_string, 0, 1, 'UTF-8');
+			$va_proc_words[] = mb_strtoupper($vs_first_char, 'UTF-8').mb_substr($vs_string, 1, $vn_strlen - 1, 'UTF-8');
+		}
+		return join(' ', $va_proc_words);
 	}
 	# ---------------------------------------
 	/**
@@ -1105,7 +1114,7 @@ function caFileIsIncludable($ps_file) {
 			$prevChar = $char;
 		}
 	
-		return $result;
+		return $result.$newLine;
 	}
 	# ---------------------------------------
 	/**
@@ -1348,6 +1357,35 @@ function caFileIsIncludable($ps_file) {
 			$ps_text = mb_substr($ps_text, 0, ($pn_max_length - 3))."...";
 		}
 		return $ps_text;
+	}
+	# ---------------------------------------
+	/**
+	 * Determines if current request was from from command line
+	 *
+	 * @return boolean True if request wasrun from command line, false if not
+	 */
+	function caIsRunFromCLI() {
+		if(php_sapi_name() == 'cli' && empty($_SERVER['REMOTE_ADDR'])) {
+			return true;
+		} else {
+			return false;
+		}
+	}
+	# ---------------------------------------
+	/**
+	 * 
+	 *
+	 * @param array $pa_options
+	 * @param array $pa_defaults
+	 * @return array
+	 */
+	function caGetOptions($pa_options, $pa_defaults) {
+		$va_proc_options = $pa_options;
+		
+		foreach($pa_defaults as $vs_opt => $vs_opt_default_val) {
+			if (!isset($va_proc_options[$vs_opt])) { $va_proc_options[$vs_opt] = $vs_opt_default_val; }
+		}
+		return $va_proc_options;
 	}
 	# ---------------------------------------
 ?>

@@ -79,7 +79,7 @@
 
 <!-- BEGIN Media Player -->
 <div class="bundleContainer" style="text-align:center; padding:5px;">
-	<?php print $t_subject->getMediaTag('media', $o_properties->getDisplayMediaVersion(), array('viewer_width' => 725, 'viewer_height' => 370, 'id' => 'annotation_media_player', 'poster_frame_url' => $t_subject->getMediaUrl('media', 'medium'))); ?>
+	<?php print $t_subject->getMediaTag('media', $o_properties->getDisplayMediaVersion(), array('class' => 'annotation_media_player', 'viewer_width' => 725, 'viewer_height' => 32, 'id' => 'annotation_media_player', 'poster_frame_url' => $t_subject->getMediaUrl('media', 'medium'))); ?>
 </div>
 <!-- END Media Player -->
 
@@ -106,7 +106,7 @@
 			}
 			if ($vs_goto_property) {
 ?>
-					</tr><tr><td <?php print ($vn_col_count > 1) ? "colspan='".$vn_col_count."'" : ""; ?>><a href="#" onclick="jQuery('#annotation_media_player').jPlayer('play', parseInt({{startTimecode_raw}}) ? parseInt({{startTimecode_raw}}) : 0); return false;" class="button" id="{fieldNamePrefix}gotoButton_{n}"><?php print _t('Play Clip'); ?> &rsaquo;</a></td>
+					</tr><tr><td <?php print ($vn_col_count > 1) ? "colspan='".$vn_col_count."'" : ""; ?>><a href="#" onclick="if (!jQuery('#annotation_media_player').data('hasBeenPlayed')) { jQuery('#annotation_media_player')[0].player.play(); jQuery('#annotation_media_player').data('hasBeenPlayed', true); } jQuery('#annotation_media_player')[0].player.setCurrentTime(parseFloat({{startTimecode_raw}}) >= 0 ? parseFloat({{startTimecode_raw}}) : 0); return false;" class="button" id="{fieldNamePrefix}gotoButton_{n}"><?php print _t('Play Clip'); ?> &rsaquo;</a></td>
 <?php
 			}
 			print "</tr></table></td>";

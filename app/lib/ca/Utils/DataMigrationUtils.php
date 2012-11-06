@@ -309,6 +309,7 @@
 				return $t_item->getPrimaryKey();
 			}
 			
+			if (isset($pa_options['dontCreate']) && $pa_options['dontCreate']) { return false; }
 			//
 			// Need to create list item
 			//
@@ -507,9 +508,11 @@
 			if (file_exists($vs_lang_filepath = __CA_LIB_DIR__.'/ca/Utils/DataMigrationUtils/'.$vs_locale.'.lang')) {
 				$o_config = Configuration::load($vs_lang_filepath);
 				$va_titles = $o_config->getList('titles');
+				$va_corp_suffixes = $o_config->getList('corporation_suffixes');
 			} else {
 				$o_config = null;
 				$va_titles = array();
+				$va_corp_suffixes = array();
 			}
 			
 			$va_name = array();
@@ -527,6 +530,14 @@
 				foreach($va_titles as $vs_title) {
 					if (preg_match("!^({$vs_title})!", $ps_text, $va_matches)) {
 						$va_name['prefix'] = $va_matches[1];
+						$ps_text = str_replace($va_matches[1], '', $ps_text);
+					}
+				}
+				
+				// check for suffixes
+				foreach($va_corp_suffixes as $vs_suffix) {
+					if (preg_match("!({$vs_suffix})$!", $ps_text, $va_matches)) {
+						$va_name['suffix'] = $va_matches[1];
 						$ps_text = str_replace($va_matches[1], '', $ps_text);
 					}
 				}

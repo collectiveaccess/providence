@@ -268,7 +268,7 @@
 <script type="text/javascript">
 	jQuery(document).ready(function() {
 		jQuery('#client_autocomplete').autocomplete('<?php print caNavUrl($this->request, 'lookup', 'User', 'Get'); ?>', 
-			{ minChars: 3, matchSubset: 1, matchContains: 1, delay: 800, scroll: true, max: 100, extraParams: { 'inlineCreate': true },
+			{ minChars: 3, matchSubset: 1, matchContains: 1, delay: 800, scroll: true, max: 100, extraParams: { 'inlineCreate': true, 'quickadd': 1 },
 				formatResult: function(data, value) {
 					return jQuery.trim(value.replace(/<\/?[^>]+>/gi, ''));
 				}

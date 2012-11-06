@@ -36,6 +36,7 @@
 		</script>
 <?php
 	print TooltipManager::getLoadHTML();
+	print FooterManager::getLoadHTML();
 ?>
 
 	<!-- Overlay for media display triggered from left sidenav widget or quicklook-->

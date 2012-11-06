@@ -151,11 +151,14 @@
 					});
 					
 					jQuery('#<?php print $vs_id_prefix; ?>_hierarchyBrowserSearch{n}').autocomplete(
-						'<?php print caNavUrl($this->request, 'lookup', 'ListItem', 'Get'); ?>', {minChars: 3, matchSubset: 1, matchContains: 1, delay: 800, extraParams: {noSymbols: 1}}
+						'<?php print caNavUrl($this->request, 'lookup', 'ListItem', 'Get', array('noInline' => 1)); ?>', {minChars: 3, matchSubset: 1, matchContains: 1, delay: 800, extraParams: {noSymbols: 1}}
 					);
 					
 					jQuery('#<?php print $vs_id_prefix; ?>_hierarchyBrowserSearch{n}').result(function(event, data, formatted) {
-						<?php print $vs_id_prefix; ?>oHierBrowser{n}.setUpHierarchy(data[1]);	// jump browser to selected item
+						if (parseInt(data[1]) > 0) {
+							<?php print $vs_id_prefix; ?>oHierBrowser{n}.setUpHierarchy(data[1]);	// jump browser to selected item
+						}
+						jQuery('#<?php print $vs_id_prefix; ?>_hierarchyBrowserSearch{n}').val('');
 					});
 
 				});

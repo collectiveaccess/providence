@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2007-2009 Whirl-i-Gig
+ * Copyright 2007-2012 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -104,8 +104,8 @@ class KmlParser {
 					'name' 			=> $vs_name,
 					'type'			=> 'POINT',
 					'description' 	=> $vs_description,
-					'latitude' 		=> $va_tmp[0],
-					'longitude' 	=> $va_tmp[1]
+					'latitude' 		=> $va_tmp[1],
+					'longitude' 	=> $va_tmp[0]
 				);
 			} else {
 				if (isset($va_placemark->LineString) && isset($va_placemark->LineString->coordinates)) {
@@ -122,8 +122,8 @@ class KmlParser {
 					foreach($va_coord_lines as $vs_coord_line) {
 						$va_tmp = explode(',',$vs_coord_line);
 						$va_coord_list[] = array(
-							'latitude' 		=> $va_tmp[0],
-							'longitude' 	=> $va_tmp[1]
+							'latitude' 		=> $va_tmp[1],
+							'longitude' 	=> $va_tmp[0]
 						);
 					}
 					

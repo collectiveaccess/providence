@@ -2401,7 +2401,7 @@ class BaseModel extends BaseObject {
 				}
 				
 				if (!isset($va_attr["IS_NULL"])) { $va_attr["IS_NULL"] = 0; }
-				if ($va_attr["IS_NULL"] && (strlen($vs_field_value) == 0)) {
+				if ($va_attr["IS_NULL"] && (!in_array($vs_field_type, array(FT_MEDIA, FT_FILE))) && (strlen($vs_field_value) == 0)) {
 					$vs_field_value_is_null = 1;
 				} else {
 					$vs_field_value_is_null = 0;
@@ -2682,6 +2682,7 @@ class BaseModel extends BaseObject {
 						//$this->rebuildHierarchicalIndex($this->get($vs_hier_id_fld));
 						$t_instance = $this->_DATAMODEL->getInstanceByTableName($this->tableName());
 						foreach($va_rebuild_hierarchical_index as $vn_child_id) {
+							if ($vn_child_id == $this->getPrimaryKey()) { continue; }
 							if ($t_instance->load($vn_child_id)) {
 								$t_instance->setMode(ACCESS_WRITE);
 								$t_instance->set($this->getProperty('HIERARCHY_ID_FLD'), $vn_hierarchy_id);
@@ -3592,6 +3593,7 @@ class BaseModel extends BaseObject {
 	 * Supported options:
 	 * 		delete_old_media = set to zero to prevent that old media files are deleted; defaults to 1
 	 *		these_versions_only = if set to an array of valid version names, then only the specified versions are updated with the currently updated file; ignored if no media already exists
+	 *		dont_allow_duplicate_media = if set to true, and the model as a field named "md5" then media will be rejected if a row already exists with the same MD5 signature
 	 */
 	public function _processMedia($ps_field, $pa_options=null) {
 		global $AUTH_CURRENT_USER_ID;
@@ -3668,6 +3670,21 @@ class BaseModel extends BaseObject {
 			}
 			
 			if (isset($this->_SET_FILES[$ps_field]['tmp_name']) && (file_exists($this->_SET_FILES[$ps_field]['tmp_name']))) {
+				if (!isset($pa_options['dont_allow_duplicate_media'])) {
+					$pa_options['dont_allow_duplicate_media'] = (bool)$this->getAppConfig()->get('dont_allow_duplicate_media');
+				}
+				if (isset($pa_options['dont_allow_duplicate_media']) && $pa_options['dont_allow_duplicate_media']) {
+					if($this->hasField('md5')) {
+						$qr_dupe_chk = $this->getDb()->query("
+							SELECT ".$this->primaryKey()." FROM ".$this->tableName()." WHERE md5 = ? ".($this->hasField('deleted') ? ' AND deleted = 0': '')."
+						", (string)md5_file($this->_SET_FILES[$ps_field]['tmp_name']));
+						
+						if ($qr_dupe_chk->nextRow()) {
+							$this->postError(1600, _t("Media already exists in database"),"BaseModel->_processMedia()");
+							return false;
+						}
+					}
+				}
 
 				// ImageMagick partly relies on file extensions to properly identify images (RAW images in particular)
 				// therefore we rename the temporary file here (using the extension of the original filename, if any)
@@ -9063,20 +9080,28 @@ $pa_options["display_form_field_tips"] = true;
 		}
 		
 		$vs_primary_key = $this->primaryKey();
+		$vs_sql ="
+				SELECT t.*
+				FROM ".$this->tableName()." t
+				{$vs_join_sql}
+				{$vs_where_sql}
+				ORDER BY
+					t.".$vs_primary_key." DESC";
 		
-		$qr_res = $o_db->query("
-			SELECT t.*
-			FROM ".$this->tableName()." t
-			{$vs_join_sql}
-			{$vs_where_sql}
-			ORDER BY
-				t.".$vs_primary_key." DESC
-			{$vs_limit_sql}
-		");
+		$vn_index = 0;
 		$va_recently_added_items = array();
-		
-		while($qr_res->nextRow()) {
-			$va_recently_added_items[$qr_res->get($this->primaryKey())] = $qr_res->getRow();
+		while(sizeof($va_recently_added_items) < $pn_limit) {
+			$qr_res = $o_db->query(
+				"{$vs_sql} LIMIT {$vn_index},{$pn_limit}"
+			);
+			if (!$qr_res->numRows()) { break; }
+			$va_recently_added_items = array();
+			
+			while($qr_res->nextRow()) {
+				$va_row = $qr_res->getRow();
+				$va_recently_added_items[$va_row[$vs_primary_key]] = $va_row;
+			}
+			$vn_index += $pn_limit;
 		}
 		return $va_recently_added_items;
 	}

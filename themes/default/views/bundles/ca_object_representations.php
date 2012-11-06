@@ -180,7 +180,9 @@
 			</table>
 		</div>
 		<script type="text/javascript">
-			jQuery("#{fieldNamePrefix}type_id_{n}").attr('disabled', true);
+			jQuery(document).ready(function() {
+				jQuery("#{fieldNamePrefix}type_id_{n}").attr('disabled', true);
+			});
 		</script>
 <?php
 	print TooltipManager::getLoadHTML('bundle_ca_object_representations');
