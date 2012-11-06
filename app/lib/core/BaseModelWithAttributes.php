@@ -579,7 +579,7 @@
 									foreach($va_values as $vs_sub_code => $vs_value) {
 										if (!$t_element = $this->_getElementInstance($vs_sub_code)) { continue; }
 										
-										switch($t_element->get('datatype')) {
+										switch((int)$t_element->get('datatype')) {
 											case 3:		// list
 												$va_list_item = $t_list->getItemFromListByItemID($t_element->get('list_id'), $vs_value);
 												$vs_value = $vs_value.":".$va_list_item['idno'];
