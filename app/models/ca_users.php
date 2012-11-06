@@ -1343,7 +1343,10 @@ class ca_users extends BaseModel {
 			if (!isset($va_prefs)) {
 				return isset($va_pref_info["default"]) ? $va_pref_info["default"] : null;
 			}
-			return isset($va_prefs[$ps_pref]) ? $va_prefs[$ps_pref] : ($va_pref_info["default"] ? $va_pref_info["default"] : null);
+			if(isset($va_prefs[$ps_pref])) {
+				return $va_prefs[$ps_pref] ? $va_prefs[$ps_pref] : ($va_pref_info["default"] ? $va_pref_info["default"] : null);
+			}
+			return ($va_pref_info["default"] ? $va_pref_info["default"] : null);
 		} else {
 			$this->postError(920, _t("%1 is not a valid user preference", $ps_pref),"User->getPreference()");
 			return null;
@@ -1475,11 +1478,34 @@ class ca_users extends BaseModel {
 				case 'FT_NUMBER':
 					if (isset($va_pref_info["value"]) && is_array($va_pref_info["value"])) {
 						# make sure value within length bounds
-						if (!(($ps_value >= $va_pref_info["value"]["minimum"]) && ($ps_value <= $va_pref_info["value"]["maximum"]))) {
-							if ($pb_post_errors) {
-								$this->postError(921, _t("Value for %1 must be between %2 and %3", $va_pref_info["label"], $va_pref_info["value"]["minimum"], $va_pref_info["value"]["maximum"]),"User->isValidPreferenceValue()");
+						
+						if (strlen($va_pref_info["value"]["minimum"]) && ($va_pref_info["value"]["maximum"])) {
+							if (!(($ps_value >= $va_pref_info["value"]["minimum"]) && ($ps_value <= $va_pref_info["value"]["maximum"]))) {
+								if ($pb_post_errors) {
+									$this->postError(921, _t("Value for %1 must be between %2 and %3", $va_pref_info["label"], $va_pref_info["value"]["minimum"], $va_pref_info["value"]["maximum"]),"User->isValidPreferenceValue()");
+								}
+								return false;
 							}
-							return false;
+						} else {
+							if (strlen($va_pref_info["value"]["minimum"])) {
+								if ($ps_value < $va_pref_info["value"]["minimum"]) {
+									if ($pb_post_errors) {
+										if($va_pref_info["value"]["minimum"] == 1) {
+											$this->postError(921, _t("%1 must be set", $va_pref_info["label"], $va_pref_info["value"]["minimum"], $va_pref_info["value"]["maximum"]),"User->isValidPreferenceValue()");
+										} else {
+											$this->postError(921, _t("Value for %1 must be greater than %2", $va_pref_info["label"], $va_pref_info["value"]["minimum"]),"User->isValidPreferenceValue()");
+										}
+									}
+									return false;
+								}
+							} else {
+								if ($ps_value > $va_pref_info["value"]["maximum"]) {
+									if ($pb_post_errors) {
+										$this->postError(921, _t("Value for %1 must be less than %2", $va_pref_info["label"], $va_pref_info["value"]["maximum"]),"User->isValidPreferenceValue()");
+									}
+									return false;
+								}
+							}
 						}
 					}
 					break;
@@ -1487,11 +1513,34 @@ class ca_users extends BaseModel {
 				case 'FT_TEXT':
 					if (isset($va_pref_info["length"]) && is_array($va_pref_info["length"])) { 
 						# make sure value within length bounds
-						if (!((strlen($ps_value) >= $va_pref_info["length"]["minimum"]) && (strlen($ps_value) <= $va_pref_info["length"]["maximum"]))){
-							if ($pb_post_errors) {
-								$this->postError(921, _t("Value for %1 must be between %2 and %3 characters", $va_pref_info["label"], $va_pref_info["length"]["minimum"], $va_pref_info["length"]["maximum"]),"User->isValidPreferenceValue()");
+						
+						if (strlen($va_pref_info["length"]["minimum"]) && ($va_pref_info["length"]["maximum"])) {
+							if (!((strlen($ps_value) >= $va_pref_info["length"]["minimum"]) && (strlen($ps_value) <= $va_pref_info["length"]["maximum"]))){
+								if ($pb_post_errors) {
+									$this->postError(921, _t("Value for %1 must be between %2 and %3 characters", $va_pref_info["label"], $va_pref_info["length"]["minimum"], $va_pref_info["length"]["maximum"]),"User->isValidPreferenceValue()");
+								}
+								return false;
 							}
-							return false;
+						} else {
+							if (strlen($va_pref_info["length"]["minimum"])) {
+								if ($ps_value < $va_pref_info["length"]["minimum"]) {
+									if ($pb_post_errors) {
+										if($va_pref_info["length"]["minimum"] == 1) {
+											$this->postError(921, _t("%1 must be set", $va_pref_info["label"], $va_pref_info["length"]["minimum"], $va_pref_info["length"]["maximum"]),"User->isValidPreferenceValue()");
+										} else {
+											$this->postError(921, _t("Value for %1 must be greater than %2 characters", $va_pref_info["label"], $va_pref_info["length"]["minimum"]),"User->isValidPreferenceValue()");
+										}
+									}
+									return false;
+								}
+							} else {
+								if ($ps_value > $va_pref_info["length"]["maximum"]) {
+									if ($pb_post_errors) {
+										$this->postError(921, _t("Value for %1 must be less than %2 characters", $va_pref_info["label"], $va_pref_info["length"]["maximum"]),"User->isValidPreferenceValue()");
+									}
+									return false;
+								}
+							}
 						}
 					}
 					break;

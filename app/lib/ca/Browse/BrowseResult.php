@@ -48,8 +48,6 @@ class WLPlugSearchEngineBrowseEngine extends WLPlug implements IWLPlugSearchEngi
 	
 	# -------------------------------------------------------
 	public function __construct($pa_hits, $pn_table_num) {
-		parent::__construct($pa_hits, $pa_query_terms);
-		
 		$this->opo_datamodel = Datamodel::load();
 		$this->opn_subject_tablenum = $pn_table_num;
 		

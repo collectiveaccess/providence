@@ -44,7 +44,7 @@ $_ca_metadata_type_restriction_settings = array(		// global
 		'width' => 5, 'height' => 1,
 		'default' => 0,
 		'label' => _t('Minimum number of attributes of this kind that must be associated with an item'),
-		'description' => _t('An error will occur if an attempt is made to save an item with fewer than this number of attributes of this type. Set to &gt; 1 to make this attribute effectively mandatory. Set to zero if you don\'t wish to set a limit.')
+		'description' => _t('If set to 0 a delete button will allow a cataloguer to quickly clear the data contents of the element by collapsing the placement on the user interface screen.  If set to 1, the element will be fixed in place and data will need to be deleted manually.  If set to more than 1, the element placement will be duplicated (up to the number entered here) when a new record or screen is opened.')
 	),
 	'maxAttributesPerRow' => array(
 		'formatType' => FT_NUMBER,
@@ -52,7 +52,7 @@ $_ca_metadata_type_restriction_settings = array(		// global
 		'width' => 5, 'height' => 1,
 		'default' => 65535,
 		'label' => _t('Maximum number of attributes of this kind that can be associated with an item'),
-		'description' => _t('An error will occur if an attempt is made to save an item with more than this number of attributes of this type. Set to &gt; 1 to make this attribute single-value. Otherwise set it to an appropriately high value.')
+		'description' => _t('If set to more than 1 the element will be repeated to capture additional data values during cataloging.  The extent of the repeatability will match the number entered here.')
 	),
 	'minimumAttributeBundlesToDisplay' => array(
 		'formatType' => FT_NUMBER,
@@ -60,7 +60,7 @@ $_ca_metadata_type_restriction_settings = array(		// global
 		'width' => 5, 'height' => 1,
 		'default' => 0,
 		'label' => _t('Minimum number of attribute bundles to show in an editing form.'),
-		'description' => _t('The minimum number of attribute bundles to show in an editing form. If the number of actual attributes is less than this number then the user interface will show empty form bundles to reach this number. This number should be less than or equal to the maximum number of attributes per row.')
+		'description' => _t('If 0 is entered here, sets an element to the collapsed position when a new record or screen is opened.  This is useful for list elements in leu of a null value, because no data selection will be saved when the element is collapsed.  Note: "Minimum number of attributes of this kind that must be associated with an item" must also be saved as 0 to set the element to the collapsed position.')
 	)
 );
  

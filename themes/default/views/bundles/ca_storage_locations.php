@@ -139,11 +139,14 @@
 					});
 					
 					jQuery('#<?php print $vs_id_prefix; ?>_hierarchyBrowserSearch{n}').autocomplete(
-						'<?php print caNavUrl($this->request, 'lookup', 'StorageLocation', 'Get'); ?>', {minChars: 3, matchSubset: 1, matchContains: 1, delay: 800, extraParams: {}}
+						'<?php print caNavUrl($this->request, 'lookup', 'StorageLocation', 'Get', array('noInline' => 1)); ?>', {minChars: 3, matchSubset: 1, matchContains: 1, delay: 800, extraParams: {}}
 					);
 					
 					jQuery('#<?php print $vs_id_prefix; ?>_hierarchyBrowserSearch{n}').result(function(event, data, formatted) {
-						<?php print $vs_id_prefix; ?>oHierBrowser{n}.setUpHierarchy(data[1]);	// jump browser to selected item
+						if (parseInt(data[1]) > 0) {
+							<?php print $vs_id_prefix; ?>oHierBrowser{n}.setUpHierarchy(data[1]);	// jump browser to selected item
+						}
+						jQuery('#<?php print $vs_id_prefix; ?>_hierarchyBrowserSearch{n}').val('');
 					});
 				});
 			</script>
@@ -185,12 +188,37 @@
 ?>
 	</div>
 </div>
-			
+	
+<div id="caRelationQuickAddPanel<?php print $vs_id_prefix; ?>" class="caRelationQuickAddPanel"> 
+	<div id="caRelationQuickAddPanel<?php print $vs_id_prefix; ?>ContentArea">
+	<div class='dialogHeader'><?php print _t('Quick Add', $t_item->getProperty('NAME_SINGULAR')); ?></div>
+		
+	</div>
+</div>		
 <script type="text/javascript">
+	var caRelationQuickAddPanel<?php print $vs_id_prefix; ?>;
 	var caRelationBundle<?php print $vs_id_prefix; ?>;
 	jQuery(document).ready(function() {
 		jQuery('#<?php print $vs_id_prefix; ?>caItemListSortControlTrigger').click(function() { jQuery('#<?php print $vs_id_prefix; ?>caItemListSortControls').slideToggle(200); });
 		jQuery('#<?php print $vs_id_prefix; ?>caItemListSortControls a.caItemListSortControl').click(function() {jQuery('#<?php print $vs_id_prefix; ?>caItemListSortControls').slideUp(200); });
+		
+		if (caUI.initPanel) {
+			caRelationQuickAddPanel<?php print $vs_id_prefix; ?> = caUI.initPanel({ 
+				panelID: "caRelationQuickAddPanel<?php print $vs_id_prefix; ?>",						/* DOM ID of the <div> enclosing the panel */
+				panelContentID: "caRelationQuickAddPanel<?php print $vs_id_prefix; ?>ContentArea",		/* DOM ID of the content area <div> in the panel */
+				exposeBackgroundColor: "#000000",				
+				exposeBackgroundOpacity: 0.7,					
+				panelTransitionSpeed: 400,						
+				closeButtonSelector: ".close",
+				center: true,
+				onOpenCallback: function() {
+					jQuery("#topNavContainer").hide(250);
+				},
+				onCloseCallback: function() {
+					jQuery("#topNavContainer").show(250);
+				}
+			});
+		}
 		
 		caRelationBundle<?php print $vs_id_prefix; ?> = caUI.initRelationBundle('#<?php print $vs_id_prefix.$t_item->tableNum().'_rel'; ?>', {
 			fieldNamePrefix: '<?php print $vs_id_prefix; ?>_',
@@ -210,7 +238,10 @@
 			readonly: <?php print $vb_read_only ? "true" : "false"; ?>,
 			isSortable: <?php print $vb_read_only ? "false" : "true"; ?>,
 			listSortOrderID: '<?php print $vs_id_prefix; ?>BundleList',
-			listSortItems: 'div.roundedRel'
+			listSortItems: 'div.roundedRel',			
+			autocompleteInputID: '<?php print $vs_id_prefix; ?>_autocomplete',
+			quickaddPanel: caRelationQuickAddPanel<?php print $vs_id_prefix; ?>,
+			quickaddUrl: '<?php print caNavUrl($this->request, 'editor/storage_locations', 'StorageLocationQuickAdd', 'Form', array('location_id' => 0)); ?>'	
 		});
 	});
 </script>

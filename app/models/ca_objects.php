@@ -216,6 +216,30 @@ BaseModel::$s_ca_models_definitions['ca_objects'] = array(
 				'IS_NULL' => false, 
 				'DEFAULT' => '',
 				'LABEL' => _t('Sort order'), 'DESCRIPTION' => _t('Sort order'),
+		),
+		'acl_inherit_from_ca_collections' => array(
+				'FIELD_TYPE' => FT_NUMBER, 'DISPLAY_TYPE' => DT_SELECT, 
+				'DISPLAY_WIDTH' => 100, 'DISPLAY_HEIGHT' => 1,
+				'IS_NULL' => false, 
+				'DEFAULT' => 0,
+				'ALLOW_BUNDLE_ACCESS_CHECK' => true,
+				'BOUNDS_CHOICE_LIST' => array(
+					_t('Do not inherit access settings from related collections') => 0,
+					_t('Inherit access settings from related collections') => 1
+				),
+				'LABEL' => _t('Inherit access settings from collections?'), 'DESCRIPTION' => _t('Determines whether access settings set for related collections are applied to this object.')
+		),
+		'acl_inherit_from_parent' => array(
+				'FIELD_TYPE' => FT_NUMBER, 'DISPLAY_TYPE' => DT_SELECT, 
+				'DISPLAY_WIDTH' => 100, 'DISPLAY_HEIGHT' => 1,
+				'IS_NULL' => false, 
+				'DEFAULT' => 0,
+				'ALLOW_BUNDLE_ACCESS_CHECK' => true,
+				'BOUNDS_CHOICE_LIST' => array(
+					_t('Do not inherit access settings from parent') => 0,
+					_t('Inherit access settings from parent') => 1
+				),
+				'LABEL' => _t('Inherit access settings from parent?'), 'DESCRIPTION' => _t('Determines whether access settings set for parent objects are applied to this object.')
 		)
 	)
 );
@@ -489,7 +513,7 @@ class ca_objects extends BundlableLabelableBaseModelWithAttributes implements IB
  		$o_db = $this->getDb();
  		
  		$qr_reps = $o_db->query("
- 			SELECT caor.representation_id, caor.media, caoor.is_primary, caor.access, caor.status, l.name, caor.locale_id, caor.media_metadata, caor.type_id, caor.idno, caor.idno_sort, caor.md5, caor.mimetype, caor.original_filename
+ 			SELECT caor.representation_id, caor.media, caoor.is_primary, caor.access, caor.status, l.name, caor.locale_id, caor.media_metadata, caor.type_id, caor.idno, caor.idno_sort, caor.md5, caor.mimetype, caor.original_filename, caoor.rank
  			FROM ca_object_representations caor
  			INNER JOIN ca_objects_x_object_representations AS caoor ON caor.representation_id = caoor.representation_id
  			LEFT JOIN ca_locales AS l ON caor.locale_id = l.locale_id
@@ -1092,6 +1116,26 @@ class ca_objects extends BundlableLabelableBaseModelWithAttributes implements IB
  			}
  		}
  		return $va_rep_list;
+ 	}
+ 	# ------------------------------------------------------
+ 	/**
+ 	 * Returns information for representation attached to the current object with the specified MD5 hash. 
+ 	 *
+ 	 * @param string $ps_md5 The MD5 hash to return representation info for. 
+ 	 * @param array $pa_options Options for selection of representations to return; same as options for ca_objects::getRepresentations()
+ 	 *
+ 	 * @return array An array with information about the matching representation, in the same format as that returned by ca_objects::getRepresentations(), or null if there is no match
+ 	 */
+ 	public function representationWithMD5($ps_md5, $pa_options=null) {
+ 		$va_rep_list = array();
+ 		if (is_array($va_reps = $this->getRepresentations($pa_options))) {
+ 			foreach($va_reps as $vn_rep_id => $va_rep) {
+ 				if ($ps_mimetype == $va_rep['md5']) {	
+ 					return $va_rep;
+ 				}
+ 			}
+ 		}
+ 		return null;
  	}
  	# ------------------------------------------------------
  	#

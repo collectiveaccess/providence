@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2011 Whirl-i-Gig
+ * Copyright 2011-2012 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -39,16 +39,30 @@ require_once(__CA_MODELS_DIR__.'/ca_lists.php');
 
 	# ---------------------------------------
 	/**
-	 * 
+	 * Fetch item_id for item with specified idno in list
 	 *
-	 * @param string $ps_list_code
-	 * @param string $ps_item_idno
-	 * @return int 
+	 * @param string $ps_list_code List code
+	 * @param string $ps_idno idno of item to get item_id for
+	 * @return int item_id of list item or null if no matching item was found
 	 */
-	function caGetListItemID($ps_list_code, $ps_item_idno) {
+	function caGetListItemID($ps_list_code, $ps_idno) {
 		$t_list = new ca_lists();
 		
-		return $t_list->getItemIDFromList($ps_list_code, $ps_item_idno);
+		return $t_list->getItemIDFromList($ps_list_code, $ps_idno);
+	}
+	# ---------------------------------------
+	/**
+	 * Fetch display label in current locale for item with specified idno in list
+	 *
+	 * @param string $ps_list_code List code
+	 * @param string $ps_idno idno of item to get label for
+	 * @param bool $pb_return_plural If true, return plural version of label. Default is to return singular version of label.
+	 * @return string The label of the list item, or null if no matching item was found
+	 */
+	function caGetListItemForDisplay($ps_list_code, $ps_idno, $pb_return_plural=false) {
+		$t_list = new ca_lists();
+		
+		return $t_list->getItemFromListForDisplay($ps_list_code, $ps_idno, $pb_return_plural);
 	}
 	# ---------------------------------------
 ?>

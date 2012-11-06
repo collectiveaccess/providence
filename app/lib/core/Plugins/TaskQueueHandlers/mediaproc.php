@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2006-2010 Whirl-i-Gig
+ * Copyright 2006-2012 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -139,7 +139,6 @@ include_once(__CA_LIB_DIR__."/core/Logging/Eventlog.php");
 		 * @return array Returns false on error, or an array with processing details on success
 		 */
 		public function process($pa_parameters) {
-			
 			$vs_table = 		$pa_parameters["TABLE"];				// name of table of record we're processing
 			$vs_field = 		$pa_parameters["FIELD"];				// name of field in record we're processing
 			$vs_pk = 			$pa_parameters["PK"];					// Field name of primary key of record we're processing
@@ -426,12 +425,18 @@ include_once(__CA_LIB_DIR__."/core/Logging/Eventlog.php");
 			#
 			# Update record
 			#
-	
 			if ($t_instance->load($vn_id)) {
+				if (method_exists($t_instance, "useBlobAsMediaField")) {	// support for attributes - force field to be FT_MEDIA
+					$t_instance->useBlobAsMediaField(true); 
+				}
 				$md = $t_instance->get($vs_field);
-				$media_desc = array_merge($md, $media_desc);
-				$t_instance->setMediaInfo($vs_field, $media_desc);
+				$va_merged_media_desc = is_array($md) ? $md : array();
+				foreach($media_desc as $vs_k => $va_v) {
+					$va_merged_media_desc[$vs_k] = $va_v;
+				}
 				$t_instance->setMode(ACCESS_WRITE);
+				$t_instance->setMediaInfo($vs_field, $va_merged_media_desc);
+				
 				$t_instance->update();
 				
 				if ($t_instance->numErrors()) {
