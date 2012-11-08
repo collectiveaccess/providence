@@ -36,14 +36,21 @@
 /* ]]> */
 </script>
 <div class="sectionBox">
-	<?php 
+<?php 
 		print caFormTag($this->request, 'ListUsers', 'caUserListForm', null, 'post', 'multipart/form-data', '_top', array('disableUnsavedChangesWarning' => true));
 		print caFormControlBox(
 			'<div class="list-filter">'._t('Filter').': <input type="text" name="filter" value="" onkeyup="$(\'#caUserList\').caFilterTable(this.value); return false;" size="20"/></div>', 
 			''._t('Show %1 users', caHTMLSelect('userclass', $this->request->user->getFieldInfo('userclass', 'BOUNDS_CHOICE_LIST'), array('onchange' => 'jQuery("#caUserListForm").submit();'), array('value' => $this->getVar('userclass')))), 
 			caNavHeaderButton($this->request, __CA_NAV_BUTTON_ADD__, _t("New user"), 'administrate/access', 'Users', 'Edit', array('user_id' => 0))
 		); 
-	?>	
+
+	if(sizeof($va_user_list)){	
+?>	
+		<a href='#' id='showTools' onclick='jQuery("#searchToolsBox").slideDown(250); jQuery("#showTools").hide(); return false;'><?php print _t("Tools"); ?> <img src="<?php print $this->request->getThemeUrlPath(); ?>/graphics/arrows/arrow_right_gray.gif" width="6" height="7" border="0"></a>
+<?php
+		print $this->render('user_tools_html.php');
+	}
+?>
 	
 		<h1><?php print _t('%1 users', ucfirst($this->getVar('userclass_displayname'))); ?></h1>
 		
