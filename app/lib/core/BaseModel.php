@@ -2284,7 +2284,15 @@ class BaseModel extends BaseObject {
 				// the indexing values for children of this record
 				$vn_orig_hier_left 		= $this->get($vs_hier_left_fld);
 				$vn_orig_hier_right 	= $this->get($vs_hier_right_fld);
+				
 				$vn_parent_id 			= $this->get($vs_parent_id_fld);
+				
+				
+				if (($vn_orig_hier_right - $vn_orig_hier_left) == 0) {
+					$this->_calcHierarchicalIndexing($this->_getHierarchyParent($vn_parent_id));
+					$vn_orig_hier_left 		= $this->get($vs_hier_left_fld);
+					$vn_orig_hier_right 	= $this->get($vs_hier_right_fld);
+				}
 				
 				if ($vb_parent_id_changed = $this->changed($vs_parent_id_fld)) {
 					$va_parent_info = $this->_getHierarchyParent($vn_parent_id);
