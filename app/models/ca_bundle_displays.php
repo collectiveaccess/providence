@@ -1505,16 +1505,16 @@ class ca_bundle_displays extends BundlableLabelableBaseModelWithAttributes {
 		
 		$va_tmp = explode('.', $vs_bundle_name);
 		
-		if ($pa_options['forReport']) {
-			if (substr($vs_bundle_name,0, 31) == 'ca_object_representations.media') {
-				if ((sizeof($va_tmp) >= 3) && ($vs_version = $this->getAppConfig()->get('report_representation_version'))) {
-					array_pop($va_tmp);
-					$va_tmp[] = $vs_version;
-					$vs_bundle_name = join('.', $va_tmp);
-				}
-			}
-		}
-		
+	// 	if ($pa_options['forReport']) {
+// 			if (substr($vs_bundle_name,0, 31) == 'ca_object_representations.media') {
+// 				if ((sizeof($va_tmp) >= 3) && ($vs_version = $this->getAppConfig()->get('report_representation_version'))) {
+// 					array_pop($va_tmp);
+// 					$va_tmp[] = $vs_version;
+// 					$vs_bundle_name = join('.', $va_tmp);
+// 				}
+// 			}
+// 		}
+// 		
 		if (!isset($pa_options['maximumLength'])) {
 			$pa_options['maximumLength'] =  ($va_placement['settings']['maximum_length']) ? $va_placement['settings']['maximum_length'] : null;
 		}
