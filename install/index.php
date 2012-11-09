@@ -29,7 +29,12 @@
  */
 	define('__CollectiveAccess_Installer__', 1);
 	$_SESSION = array();	
-	error_reporting(E_ALL ^ E_NOTICE);
+	if (defined('E_DEPRECATED')) {	// PHP 5.3/5.4
+		error_reporting(E_ALL & ~E_NOTICE & ~E_DEPRECATED & ~E_STRICT);
+	} else {	// PHP <= 5.2
+		error_reporting(E_ALL & ~E_NOTICE);
+	}
+	
 	set_time_limit(7200);
 	ini_set("memory_limit", "128M");	
 	
