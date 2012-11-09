@@ -89,10 +89,12 @@
 	$req->reloadAppConfig();	// need to reload app config to reflect current locale
 	
 	// Reload translations for ca_models_definitions as they were loaded before initiating Zend_Translate
-	array_walk_recursive(BaseModel::$s_ca_models_definitions, 'caReplaceStringByTranslation');
-	array_walk_recursive($_ca_attribute_settings, 'caReplaceStringByTranslation');
-	array_walk_recursive($_ca_metadata_type_restriction_settings , 'caReplaceStringByTranslation');
-
+	if ($g_ui_locale != "en_US") {
+		array_walk_recursive(BaseModel::$s_ca_models_definitions, 'caReplaceStringByTranslation');
+		array_walk_recursive($_ca_attribute_settings, 'caReplaceStringByTranslation');
+		array_walk_recursive($_ca_metadata_type_restriction_settings , 'caReplaceStringByTranslation');
+	}
+	
 	//
 	// PageFormat plug-in generates header/footer shell around page content
 	//
