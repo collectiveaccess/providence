@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2000-2011 Whirl-i-Gig
+ * Copyright 2000-2012 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -803,7 +803,7 @@ class Configuration {
 		if (isset($this->ops_config_settings["scalars"][$ps_key])) {
 			return $this->ops_config_settings["scalars"][$ps_key];
 		} else {
-			return null;
+			return false;
 		}
 	}
 	/* ---------------------------------------- */
