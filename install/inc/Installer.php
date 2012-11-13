@@ -1069,27 +1069,28 @@ class Installer {
 
 		$t_group = new ca_user_groups();
 		$t_group->setMode(ACCESS_WRITE);
-
-		foreach($va_groups as $vs_group_code => $vo_group) {
-			$t_group->set('name', trim((string) $vo_group->name));
-			$t_group->set('description', trim((string) $vo_group->description));
-			$t_group->set('code', $vs_group_code);
-			$t_group->set('parent_id', null);
-			$t_group->insert();
-
-			$va_roles = array();
-
-			if($vo_group->roles){
-				foreach($vo_group->roles->children() as $vo_role){
-					$va_roles[] = trim((string) $vo_role);
+		if (is_array($va_groups)) {
+			foreach($va_groups as $vs_group_code => $vo_group) {
+				$t_group->set('name', trim((string) $vo_group->name));
+				$t_group->set('description', trim((string) $vo_group->description));
+				$t_group->set('code', $vs_group_code);
+				$t_group->set('parent_id', null);
+				$t_group->insert();
+	
+				$va_roles = array();
+	
+				if($vo_group->roles){
+					foreach($vo_group->roles->children() as $vo_role){
+						$va_roles[] = trim((string) $vo_role);
+					}
 				}
-			}
-
-			$t_group->addRoles($va_roles);
-
-			if ($t_group->numErrors()) {
-				$this->addError("There were errors inserting user group {$vs_group_code}: ".join("; ",$t_group->getErrors()));
-				return false;
+	
+				$t_group->addRoles($va_roles);
+	
+				if ($t_group->numErrors()) {
+					$this->addError("There were errors inserting user group {$vs_group_code}: ".join("; ",$t_group->getErrors()));
+					return false;
+				}
 			}
 		}
 

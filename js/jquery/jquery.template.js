@@ -54,7 +54,7 @@ jQuery.fn.template = function( objValues ){
  			// Replace the value with version where entities are converted to text  {{{{n}}}}
 			strHTML = strHTML.replace(
 				new RegExp( "\\{\\{\\{\\{" + strSafeKey + "\\}\\}\\}\\}", "gi" ),
-				jQuery("<div/>").html(objValues[ strKey ]).text()
+				jQuery("<div>" + objValues[ strKey ] + "</div>").text()
 				);
 				
  			// Replace the value with quotes converted to entities {{{n}}}

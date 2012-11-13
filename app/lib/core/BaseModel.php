@@ -2284,7 +2284,15 @@ class BaseModel extends BaseObject {
 				// the indexing values for children of this record
 				$vn_orig_hier_left 		= $this->get($vs_hier_left_fld);
 				$vn_orig_hier_right 	= $this->get($vs_hier_right_fld);
+				
 				$vn_parent_id 			= $this->get($vs_parent_id_fld);
+				
+				
+				if (($vn_orig_hier_right - $vn_orig_hier_left) == 0) {
+					$this->_calcHierarchicalIndexing($this->_getHierarchyParent($vn_parent_id));
+					$vn_orig_hier_left 		= $this->get($vs_hier_left_fld);
+					$vn_orig_hier_right 	= $this->get($vs_hier_right_fld);
+				}
 				
 				if ($vb_parent_id_changed = $this->changed($vs_parent_id_fld)) {
 					$va_parent_info = $this->_getHierarchyParent($vn_parent_id);
@@ -2401,7 +2409,7 @@ class BaseModel extends BaseObject {
 				}
 				
 				if (!isset($va_attr["IS_NULL"])) { $va_attr["IS_NULL"] = 0; }
-				if ($va_attr["IS_NULL"] && (strlen($vs_field_value) == 0)) {
+				if ($va_attr["IS_NULL"] && (!in_array($vs_field_type, array(FT_MEDIA, FT_FILE))) && (strlen($vs_field_value) == 0)) {
 					$vs_field_value_is_null = 1;
 				} else {
 					$vs_field_value_is_null = 0;

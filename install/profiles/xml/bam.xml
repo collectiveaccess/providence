@@ -7425,6 +7425,15 @@
             <setting name="minimumAttributeBundlesToDisplay">1</setting>
           </settings>
         </restriction>
+        <restriction>
+          <table>ca_collections</table>
+          <type>folder</type>
+          <settings>
+            <setting name="minAttributesPerRow">1</setting>
+            <setting name="maxAttributesPerRow">1</setting>
+            <setting name="minimumAttributeBundlesToDisplay">1</setting>
+          </settings>
+        </restriction>
       </typeRestrictions>
     </metadataElement>
     <metadataElement code="workDescription" datatype="Text">
@@ -9560,6 +9569,9 @@
             </placement>
             <placement code="ca_attribute_scopeContent">
               <bundle>ca_attribute_scopeContent</bundle>
+            </placement>
+            <placement code="ca_attribute_boxDate">
+              <bundle>ca_attribute_boxDate</bundle>
             </placement>
             <placement code="ca_attribute_accessRestrict">
               <bundle>ca_attribute_accessRestrict</bundle>
