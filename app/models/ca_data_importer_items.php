@@ -38,6 +38,11 @@ require_once(__CA_LIB_DIR__.'/core/ModelSettings.php');
 require_once(__CA_MODELS_DIR__."/ca_data_importers.php");
 require_once(__CA_MODELS_DIR__."/ca_data_importer_groups.php");
 
+define("__CA_DATA_IMPORTER_DESTINATION_INTRINSIC__", 0);
+define("__CA_DATA_IMPORTER_DESTINATION_ATTRIBUTE__", 1);
+define("__CA_DATA_IMPORTER_DESTINATION_RELATED__", 2);
+define("__CA_DATA_IMPORTER_DESTINATION_META__", 3);
+
 BaseModel::$s_ca_models_definitions['ca_data_importer_items'] = array(
  	'NAME_SINGULAR' 	=> _t('data importer item'),
  	'NAME_PLURAL' 		=> _t('data importer items'),
@@ -87,10 +92,6 @@ BaseModel::$s_ca_models_definitions['ca_data_importer_items'] = array(
 				'LABEL' => _t('Settings'), 'DESCRIPTION' => _t('Importer item settings')
 		)
 	)
-);
-
-global $_ca_data_importer_items_settings;
-$_ca_data_importer_items_settings = array(		// global
 );
 	
 class ca_data_importer_items extends BaseModel {
@@ -178,12 +179,75 @@ class ca_data_importer_items extends BaseModel {
 	
 	# ------------------------------------------------------
 	public function __construct($pn_id=null) {		
-		global $_ca_data_importer_items_settings;
 		parent::__construct($pn_id);
 		
-		//
-		$this->SETTINGS = new ModelSettings($this, 'settings', $_ca_data_importer_items_settings);
+		$this->initSettings();
+	}
+	# ------------------------------------------------------
+	protected function initLabelDefinitions() {
+		parent::initLabelDefinitions();
 		
+		// TODO
+	}
+	# ------------------------------------------------------
+	protected function initSettings() {
+		$va_settings = array();
+		
+		// TODO
+		
+		$this->SETTINGS = new ModelSettings($this, 'settings', $va_settings);
+	}
+	# ------------------------------------------------------
+	public function getDestinationType() {
+		$vo_dm = Datamodel::load();
+		$vs_destination = $this->get("destination");
+		
+		$t_importer = new ca_data_importers($this->get("importer_id"));
+		$t_instance = $vo_dm->getInstanceByTableNum($t_importer->get("table_num"));
+		
+		$va_split = explode(".",$vs_destination);
+		
+		switch(sizeof($va_split)){
+			case 1:
+				return __CA_DATA_IMPORTER_DESTINATION_RELATED__;
+			case 2:
+				if(trim($va_split[0])==$t_instance->tableName()){
+					if($t_instance->hasField(trim($va_split[1]))){
+						return __CA_DATA_IMPORTER_DESTINATION_INTRINSIC__;
+					} else if($t_instance->isValidMetadataElement(trim($va_split[1]))){
+						return __CA_DATA_IMPORTER_DESTINATION_ATTRIBUTE__;
+					} else {
+						return __CA_DATA_IMPORTER_DESTINATION_META__;
+					}
+				} else {
+					return __CA_DATA_IMPORTER_DESTINATION_RELATED__;
+				}
+			case 3:
+			default:
+				return __CA_DATA_IMPORTER_DESTINATION_META__;
+		}
+		
+	}
+	# ------------------------------------------------------
+	public function getImportItemsInGroup(){
+		if(!$this->getPrimaryKey()) return false;
+		
+		if($this->get("group_id")){
+			$t_group = new ca_data_importer_groups($this->get("group_id"));
+			return $t_group->getItems();
+		} else {
+			return false;
+		}
+	}
+	# ------------------------------------------------------
+	/**
+	 * Reroutes calls to method implemented by settings delegate to the delegate class
+	 */
+	public function __call($ps_name, $pa_arguments) {
+		if (method_exists($this->SETTINGS, $ps_name)) {
+			return call_user_func_array(array($this->SETTINGS, $ps_name), $pa_arguments);
+		}
+		die($this->tableName()." does not implement method {$ps_name}");
 	}
 	# ------------------------------------------------------
 }

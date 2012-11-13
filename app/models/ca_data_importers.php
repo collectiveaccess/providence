@@ -94,10 +94,6 @@ BaseModel::$s_ca_models_definitions['ca_data_importers'] = array(
 		)
 	)
 );
-
-global $_ca_data_importers_settings;
-$_ca_data_importers_settings = array(		// global
-);
 	
 class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 	# ---------------------------------
@@ -200,12 +196,165 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 		// Filter list of tables importers can be used for to those enabled in current config
 		BaseModel::$s_ca_models_definitions['ca_data_importers']['FIELDS']['table_num']['BOUNDS_CHOICE_LIST'] = caFilterTableList(BaseModel::$s_ca_models_definitions['ca_data_importers']['FIELDS']['table_num']['BOUNDS_CHOICE_LIST']);
 		
-		global $_ca_data_importers_settings;
 		parent::__construct($pn_id);
 		
-		//
-		$this->SETTINGS = new ModelSettings($this, 'settings', $_ca_data_importers_settings);
+		$this->initSettings();
+	}
+	# ------------------------------------------------------
+	protected function initLabelDefinitions() {
+		parent::initLabelDefinitions();
 		
+		// TODO
+	}
+	# ------------------------------------------------------
+	protected function initSettings() {
+		$va_settings = array();
+		
+		$va_settings['importer_type'] = array(
+			'formatType' => FT_TEXT,
+			'displayType' => DT_SELECT,
+			'width' => 40, 'height' => 1,
+			'takesLocale' => false,
+			'default' => '',
+			'options' => $this->getAvailableImporterTypes(),
+			'label' => _t('Importer type'),
+			'description' => _t('Set importer type, i.e. the format of the source data (e.g. CSV, XML).')
+		);
+		
+		$this->SETTINGS = new ModelSettings($this, 'settings', $va_settings);
+	}
+	# ------------------------------------------------------
+	public function getAvailableImporterTypes() {
+		return array(
+			"CSV" => "CSV"
+		);
+	}
+	# ------------------------------------------------------
+	public function addImportItem($pa_values){
+		
+	}
+	# ------------------------------------------------------
+	public function addGroup($ps_group_code,$pa_values,$pa_items=array()){
+		
+	}
+	# ------------------------------------------------------
+	public function getGroups(){
+		if(!$this->getPrimaryKey()) return false;
+		
+		$vo_db = $this->getDb();
+		
+		$qr_groups = $vo_db->query("
+			SELECT * FROM ca_data_importer_groups WHERE importer_id=?
+		",$this->getPrimaryKey());
+		
+		$va_return = array();
+		while($qr_groups->nextRow()){
+			$va_return[$qr_groups->get("group_id")] = $qr_groups->getRow();
+		}
+		
+		return $va_return;
+	}
+	# ------------------------------------------------------
+	public function getGroupIDs(){
+		if(is_array($va_groups = $this->getGroups())){
+			return $va_groups;
+		} else {
+			return array();
+		}
+	}
+	# ------------------------------------------------------
+	public function getItems(){
+		if(!$this->getPrimaryKey()) return false;
+		
+		$vo_db = $this->getDb();
+		
+		$qr_items = $vo_db->query("
+			SELECT * FROM ca_data_importer_items WHERE importer_id=?
+		",$this->getPrimaryKey());
+		
+		$va_return = array();
+		while($qr_items->nextRow()){
+			$va_return[$qr_items->get("item_id")] = $qr_items->getRow();
+		}
+		
+		return $va_return;
+	}
+	# ------------------------------------------------------
+	public function getItemIDs(){
+		if(is_array($va_items = $this->getItems())){
+			return $va_items;
+		} else {
+			return array();
+		}
+	}
+	# ------------------------------------------------------
+	/**
+	 * Remove group and all associated items
+	 * 
+	 * @param type $ps_group_code
+	 */
+	public function removeGroup($pn_group_id){
+		$t_group = new ca_data_importer_groups();
+		
+		if(!in_array($pn_group_id, $this->getGroupIDs())){
+			return false; // don't delete groups from other importers
+		}
+		
+		if($t_group->load($pn_group_id)){
+			$t_group->setMode(ACCESS_WRITE);
+			$t_group->removeItems();
+			$t_group->delete();
+		} else {
+			return false;
+		}
+	}
+	# ------------------------------------------------------
+	public function removeAllGroups(){
+		foreach($this->getGroupIDs() as $vn_group_id){
+			$this->removeGroup($vn_group_id);
+		}
+	}
+	# ------------------------------------------------------
+	/**
+	 * Remove importer group using its group code
+	 * 
+	 * @param string $ps_group_code
+	 */
+	public function removeGroupByCode($ps_group_code){
+		$t_group = new ca_data_importer_groups();
+		
+		if($t_group->load(array("code" => $ps_group_code))){
+			$t_group->setMode(ACCESS_WRITE);
+			$t_group->removeItems();
+			$t_group->delete();
+		} else {
+			return false;
+		}
+	}
+	# ------------------------------------------------------
+	public function removeItem($pn_item_id){
+		$t_item = new ca_data_importer_items();
+		
+		if(!in_array($pn_item_id, $this->getItemIDs())){
+			return false; // don't delete items from other importers
+		}
+		
+		if($t_item->load($pn_item_id)){
+			$t_item->setMode(ACCESS_WRITE);
+			$t_item->delete();
+		} else {
+			return false;
+		}
+	}
+	# ------------------------------------------------------
+	/**
+	 * Reroutes calls to method implemented by settings delegate to the delegate class
+	 */
+	public function __call($ps_name, $pa_arguments) {
+		if (method_exists($this->SETTINGS, $ps_name)) {
+			return call_user_func_array(array($this->SETTINGS, $ps_name), $pa_arguments);
+		}
+		die($this->tableName()." does not implement method {$ps_name}");
 	}
 	# ------------------------------------------------------
 }
