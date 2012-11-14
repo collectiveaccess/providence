@@ -192,6 +192,14 @@
             </label>
           </labels>
         </item>
+        <item idno="Lithograph" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>Lithograph</name_singular>
+              <name_plural>Lithograph</name_plural>
+            </label>
+          </labels>
+        </item>
         <item idno="ColoredPencil" enabled="1" default="0">
           <labels>
             <label locale="en_US" preferred="1">
@@ -280,6 +288,22 @@
             </label>
           </labels>
         </item>
+        <item idno="Wood" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>Wood</name_singular>
+              <name_plural>Wood</name_plural>
+            </label>
+          </labels>
+        </item>
+    	<item idno="Woodcut" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>Woodcut</name_singular>
+              <name_plural>Woodcut</name_plural>
+            </label>
+          </labels>
+        </item>
         <item idno="Silkscreen" enabled="1" default="0">
           <labels>
             <label locale="en_US" preferred="1">
@@ -288,11 +312,27 @@
             </label>
           </labels>
         </item>
+    	 <item idno="Canvas" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>Canvas</name_singular>
+              <name_plural>Canvas</name_plural>
+            </label>
+          </labels>
+        </item>
         <item idno="SumiInk" enabled="1" default="0">
           <labels>
             <label locale="en_US" preferred="1">
               <name_singular>Sumi Ink</name_singular>
               <name_plural>Sumi Inks</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="Aquatint" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>Aquatint</name_singular>
+              <name_plural>Aquatint</name_plural>
             </label>
           </labels>
         </item>
@@ -321,7 +361,7 @@
             </label>
           </labels>
           <items>
-            <item idno="DVD" enabled="1" default="0">
+            <item idno="TapeAudio" enabled="1" default="0">
               <labels>
                 <label locale="en_US" preferred="1">
                   <name_singular>Audio</name_singular>
@@ -3100,49 +3140,79 @@
         </label>
       </labels>
       <elements>
-        <metadataElement code="dimensions_width" datatype="Length">
+      	<metadataElement code="dimensions_line1" datatype="Container">
           <labels>
             <label locale="en_US">
-              <name>Width</name>
-              <description>Width of object; enter in your preferred units (eg. 10cm</description>
+              <name>Line 1</name>
             </label>
           </labels>
-          <settings>
-            <setting name="fieldWidth">10</setting>
-            <setting name="fieldHeight">1</setting>
-          </settings>
+          <elements>
+			<metadataElement code="dimensions_width" datatype="Length">
+			  <labels>
+				<label locale="en_US">
+				  <name>Width</name>
+				  <description>Width of object; enter in your preferred units (eg. 10cm)</description>
+				</label>
+			  </labels>
+			  <settings>
+				<setting name="fieldWidth">10</setting>
+				<setting name="fieldHeight">1</setting>
+			  </settings>
+			</metadataElement>
+			<metadataElement code="dimensions_height" datatype="Length">
+			  <labels>
+				<label locale="en_US">
+				  <name>Height</name>
+				  <description>Height of object; enter in your preferred units (eg. 10cm)</description>
+				</label>
+			  </labels>
+			  <settings>
+				<setting name="fieldWidth">10</setting>
+				<setting name="fieldHeight">1</setting>
+			  </settings>
+			</metadataElement>
+			<metadataElement code="dimensions_depth" datatype="Length">
+			  <labels>
+				<label locale="en_US">
+				  <name>Depth</name>
+				  <description>Depth of object; enter in your preferred units (eg. 10cm)</description>
+				</label>
+			  </labels>
+			  <settings>
+				<setting name="fieldWidth">10</setting>
+				<setting name="fieldHeight">1</setting>
+			  </settings>
+			</metadataElement>
+			<metadataElement code="dimensions_type" datatype="List" list="dimension_type">
+			  <labels>
+				<label locale="en_US">
+				  <name>Type</name>
+				</label>
+			  </labels>
+			</metadataElement>
+		</elements>
         </metadataElement>
-        <metadataElement code="dimensions_height" datatype="Length">
+        <metadataElement code="dimensions_line2" datatype="Container">
           <labels>
             <label locale="en_US">
-              <name>Height</name>
-              <description>Height of object; enter in your preferred units (eg. 10cm</description>
+              <name>Line2</name>
             </label>
           </labels>
-          <settings>
-            <setting name="fieldWidth">10</setting>
-            <setting name="fieldHeight">1</setting>
-          </settings>
-        </metadataElement>
-        <metadataElement code="dimensions_depth" datatype="Length">
-          <labels>
-            <label locale="en_US">
-              <name>Depth</name>
-              <description>Depth of object; enter in your preferred units (eg. 10cm</description>
-            </label>
-          </labels>
-          <settings>
-            <setting name="fieldWidth">10</setting>
-            <setting name="fieldHeight">1</setting>
-          </settings>
-        </metadataElement>
-        <metadataElement code="dimensions_type" datatype="List" list="dimension_type">
-          <labels>
-            <label locale="en_US">
-              <name>Type</name>
-            </label>
-          </labels>
-        </metadataElement>
+          <elements>
+			<metadataElement code="dimensions_display" datatype="Text">
+			  <labels>
+				<label locale="en_US">
+				  <name>Display dimensions</name>
+				  <description>Dimensions as text, for display</description>
+				</label>
+			  </labels>
+			  <settings>
+				<setting name="fieldWidth">100</setting>
+				<setting name="fieldHeight">1</setting>
+			  </settings>
+			</metadataElement>
+		</elements>
+		</metadataElement>
       </elements>
       <typeRestrictions>
         <restriction code="r1">
@@ -7236,6 +7306,16 @@
   <relationshipTypes>
     <relationshipTable name="ca_objects_x_entities">
       <types>
+      	<type code="artist" default="0">
+          <labels>
+            <label locale="en_US">
+              <typename>artist</typename>
+              <typename_reverse>artist</typename_reverse>
+            </label>
+          </labels>
+          <subTypeLeft> </subTypeLeft>
+          <subTypeRight/>
+        </type>
         <type code="sale_agent" default="0">
           <labels>
             <label locale="en_US">
@@ -7448,7 +7528,7 @@
     </relationshipTable>
     <relationshipTable name="ca_objects_x_occurrences">
       <types>
-        <type code="depicts" default="1">
+        <type code="related" default="1">
           <labels>
             <label locale="en_US">
               <typename>is related to</typename>
