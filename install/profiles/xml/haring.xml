@@ -4096,7 +4096,7 @@
               </labels>
               <settings>
                 <setting name="fieldWidth">70</setting>
-                <setting name="fieldHeight">3</setting>
+                <setting name="fieldHeight">1</setting>
                 <setting name="minChars">0</setting>
                 <setting name="maxChars">65535</setting>
               </settings>
@@ -4118,7 +4118,7 @@
               </labels>
               <settings>
                 <setting name="fieldWidth">70</setting>
-                <setting name="fieldHeight">3</setting>
+                <setting name="fieldHeight">1</setting>
                 <setting name="minChars">0</setting>
                 <setting name="maxChars">65535</setting>
               </settings>
@@ -4140,7 +4140,7 @@
               </labels>
               <settings>
                 <setting name="fieldWidth">70</setting>
-                <setting name="fieldHeight">3</setting>
+                <setting name="fieldHeight">1</setting>
                 <setting name="minChars">0</setting>
                 <setting name="maxChars">65535</setting>
               </settings>
@@ -4162,7 +4162,7 @@
               </labels>
               <settings>
                 <setting name="fieldWidth">70</setting>
-                <setting name="fieldHeight">3</setting>
+                <setting name="fieldHeight">1</setting>
                 <setting name="minChars">0</setting>
                 <setting name="maxChars">65535</setting>
               </settings>
@@ -4184,7 +4184,7 @@
               </labels>
               <settings>
                 <setting name="fieldWidth">70</setting>
-                <setting name="fieldHeight">3</setting>
+                <setting name="fieldHeight">2</setting>
                 <setting name="minChars">0</setting>
                 <setting name="maxChars">65535</setting>
               </settings>
@@ -4206,7 +4206,29 @@
               </labels>
               <settings>
                 <setting name="fieldWidth">70</setting>
-                <setting name="fieldHeight">3</setting>
+                <setting name="fieldHeight">2</setting>
+                <setting name="minChars">0</setting>
+                <setting name="maxChars">65535</setting>
+              </settings>
+            </metadataElement>
+          </elements>
+        </metadataElement>
+        <metadataElement code="ei_line7" datatype="Container">
+          <labels>
+            <label locale="en_US">
+              <name/>
+            </label>
+          </labels>
+          <elements>
+            <metadataElement code="hc" datatype="Text">
+              <labels>
+                <label locale="en_US">
+                  <name>HC</name>
+                </label>
+              </labels>
+              <settings>
+                <setting name="fieldWidth">70</setting>
+                <setting name="fieldHeight">1</setting>
                 <setting name="minChars">0</setting>
                 <setting name="maxChars">65535</setting>
               </settings>
