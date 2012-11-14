@@ -1404,7 +1404,7 @@ require_once(__CA_LIB_DIR__.'/core/Parsers/TimeExpressionParser.php');
 		if (!isset($pa_options['convertCodesToDisplayText'])) { $pa_options['convertCodesToDisplayText'] = true; }
 		
 		$vb_return_as_array = (isset($pa_options['returnAsArray'])) ? (bool)$pa_options['returnAsArray'] : false;
-		if (!is_array($pa_row_ids) || !sizeof($pa_row_ids)) {
+		if (!is_array($pa_row_ids) || !sizeof($pa_row_ids) || !$ps_template) {
 			return $vb_return_as_array ? array() : "";
 		}
 		unset($pa_options['returnAsArray']);
