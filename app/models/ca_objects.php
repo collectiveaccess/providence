@@ -402,7 +402,7 @@ class ca_objects extends BundlableLabelableBaseModelWithAttributes implements IB
 		$this->BUNDLES['ca_commerce_order_history'] = array('type' => 'special', 'repeating' => true, 'label' => _t('Order history'));
 	}
 	# ------------------------------------------------------
-	public function delete($pb_delete_related=false){
+	public function delete($pb_delete_related=false, $pa_options=null){
 		// nuke related representations
 		foreach($this->getRepresentations() as $va_rep){
 			// check if representation is in use anywhere else 
@@ -412,7 +412,7 @@ class ca_objects extends BundlableLabelableBaseModelWithAttributes implements IB
 			}
 		}
 
-		return parent::delete($pb_delete_related);
+		return parent::delete($pb_delete_related, $pa_options);
 	}
 	# ------------------------------------------------------
 	/**
@@ -1150,6 +1150,8 @@ class ca_objects extends BundlableLabelableBaseModelWithAttributes implements IB
 	 */
 	 public function getHierarchyList($pb_dummy=false) {
 	 	$vn_pk = $this->getPrimaryKey();
+	 	$vs_template = $this->getAppConfig()->get('ca_objects_hierarchy_browser_display_settings');
+	 	
 	 	if (!$vn_pk) { 
 	 		$o_db = new Db();
 	 		if (is_array($va_type_ids = caMergeTypeRestrictionLists($this, array())) && sizeof($va_type_ids)) {
@@ -1177,7 +1179,7 @@ class ca_objects extends BundlableLabelableBaseModelWithAttributes implements IB
 	 		while($qr_res->nextRow()) {
 	 			$va_hiers[$vn_object_id = $qr_res->get('object_id')] = array(
 	 				'object_id' => $vn_object_id,
-	 				'name' => $va_labels[$vn_object_id],
+	 				'name' => caProcessTemplateForIDs($vs_template, 'ca_objects', array($vn_object_id)),
 	 				'hierarchy_id' => $vn_object_id,
 	 				'children' => (int)$qr_res->get('c')
 	 			);
@@ -1203,12 +1205,12 @@ class ca_objects extends BundlableLabelableBaseModelWithAttributes implements IB
 			$va_object_hierarchy_root = array(
 				$t_object->get($vs_hier_fld) => array(
 					'object_id' => $vn_pk,
-					'name' => $vs_label,
+					'name' => $vs_name = caProcessTemplateForIDs($vs_template, 'ca_objects', array($vn_pk)),
 					'hierarchy_id' => $vn_hier_id,
 					'children' => sizeof($va_children)
 				),
 				'object_id' => $vn_pk,
-				'name' => $vs_label,
+				'name' => $vs_name,
 				'hierarchy_id' => $vn_hier_id,
 				'children' => sizeof($va_children)
 			);
