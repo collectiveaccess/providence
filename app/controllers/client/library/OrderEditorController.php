@@ -716,5 +716,32 @@
  			$this->render('ajax_user_profile_info_json.php');
  		}
  		# -------------------------------------------------------
+ 		/**
+ 		 *
+ 		 */
+ 		public function GetChecklist() {
+ 			if (!$this->opt_order->getPrimaryKey()) { $this->Edit(); return; }
+ 			require_once(__CA_LIB_DIR__."/core/Print/html2pdf/html2pdf.class.php");
+			
+			$this->view->setVar('items', $this->opt_order->getItems());
+				
+			try {
+				$vs_content = $this->render('loan_pdf_checklist_html.php');
+				$vo_html2pdf = new HTML2PDF('L','letter','en');
+				$vo_html2pdf->setDefaultFont("dejavusans");
+				$vo_html2pdf->setTestIsImage(false);
+				$vo_html2pdf->WriteHTML($vs_content);
+				
+	header("Content-Disposition: attachment; filename=loan_checklist.pdf");
+	header("Content-type: application/pdf");
+	
+				$vo_html2pdf->Output('loan_checklist.pdf');
+				$vb_printed_properly = true;
+			} catch (Exception $e) {
+				$vb_printed_properly = false;
+				$this->postError(3100, _t("Could not generate PDF"),"OrderEditorController->GetCheckList()");
+			}
+		}
+ 		# -------------------------------------------------------
  	}
  ?>

@@ -480,8 +480,7 @@ class ca_bundle_displays extends BundlableLabelableBaseModelWithAttributes {
 				$va_placements = $this->getAvailableBundles($this->get('table_num'));
 			}
 		}
-		ca_bundle_displays::$s_placement_list_cache[$vn_display_id] = $va_placements;
-		return $va_placements;
+		return ca_bundle_displays::$s_placement_list_cache[$vn_display_id] = $va_placements;
 	}
 	# ------------------------------------------------------
 	/**
@@ -795,7 +794,7 @@ class ca_bundle_displays extends BundlableLabelableBaseModelWithAttributes {
 			if ($vb_show_tooltips) {
 				TooltipManager::add(
 					"#bundleDisplayEditorBundle_{$vs_table}_{$vs_f}",
-					"<h2>{$vs_label}</h2>{$vs_description}"
+					$this->_formatBundleTooltip($vs_label, $vs_bundle, $vs_description)
 				);
 			}
 		}
@@ -882,7 +881,7 @@ class ca_bundle_displays extends BundlableLabelableBaseModelWithAttributes {
 			if ($vb_show_tooltips) {
 				TooltipManager::add(
 					"#bundleDisplayEditorBundle_{$vs_table}_{$vs_element_code}",
-					"<h2>{$vs_label}</h2>{$vs_description}"
+					$this->_formatBundleTooltip($vs_label, $vs_bundle, $vs_description)
 				);
 			}
 		}
@@ -936,7 +935,7 @@ class ca_bundle_displays extends BundlableLabelableBaseModelWithAttributes {
 			if ($vb_show_tooltips) {
 				TooltipManager::add(
 					"#bundleDisplayEditorBundle_{$vs_table}_preferred_labels",
-					"<h2>{$vs_label}</h2>{$vs_description}"
+					$this->_formatBundleTooltip($vs_label, $vs_bundle, $vs_description)
 				);
 			}
 		}
@@ -959,11 +958,49 @@ class ca_bundle_displays extends BundlableLabelableBaseModelWithAttributes {
 			if ($vb_show_tooltips) {	
 				TooltipManager::add(
 					"#bundleDisplayEditorBundle_{$vs_table}_nonpreferred_labels",
-					"<h2>{$vs_label}</h2>{$vs_description}"
+					$this->_formatBundleTooltip($vs_label, $vs_bundle, $vs_description)
 				);
 			}
 		}
 		
+		// get commerce order history bundle (objects only, of course)
+		if ($vs_table == 'ca_objects') {
+			$va_additional_settings = array(
+				'order_type' => array(
+					'formatType' => FT_TEXT,
+					'displayType' => DT_SELECT,
+					'width' => 35, 'height' => 1,
+					'takesLocale' => false,
+					'default' => '',
+					'options' => array(
+						_t('Sales order') => 'O',
+						_t('Loan') => 'L'
+					),
+					'label' => _t('Type of order'),
+					'description' => _t('Determines which type of order is displayed.')
+				)		
+			);
+			
+			$vs_bundle = 'ca_commerce_order_history';
+			$vs_label = _t('Order history');
+			$vs_display = _t('Order history');
+			$vs_description = _t('List of orders (loans or sales) that include this object');
+			
+			$va_available_bundles[strip_tags($vs_display)][$vs_bundle] = array(
+				'bundle' => $vs_bundle,
+				'display' => ($vs_format == 'simple') ? $vs_label : $vs_display,
+				'description' => $vs_description,
+				'settingsForm' => $t_placement->getHTMLSettingForm(array('id' => $vs_bundle.'_0')),
+				'settings' => $va_additional_settings
+			);
+			
+			if ($vb_show_tooltips) {
+				TooltipManager::add(
+					"#bundleDisplayEditorBundle_ca_commerce_order_history",
+					$this->_formatBundleTooltip($vs_label, $vs_bundle, $vs_description)
+				);
+			}
+		}
 		
 		if (caGetBundleAccessLevel($vs_table, "ca_object_representations") != __CA_BUNDLE_ACCESS_NONE__) {
 			// get object representations (objects only, of course)
@@ -1003,7 +1040,7 @@ class ca_bundle_displays extends BundlableLabelableBaseModelWithAttributes {
 					if ($vb_show_tooltips) {
 						TooltipManager::add(
 							"#bundleDisplayEditorBundle_ca_object_representations_media_{$vs_version}",
-							"<h2>{$vs_label}</h2>{$vs_description}"
+							$this->_formatBundleTooltip($vs_label, $vs_bundle, $vs_description)
 						);
 					}
 				}
@@ -1146,7 +1183,7 @@ class ca_bundle_displays extends BundlableLabelableBaseModelWithAttributes {
 			if ($vb_show_tooltips) {
 				TooltipManager::add(
 					"#bundleDisplayEditorBundle_{$vs_id_suffix}",
-					"<h2>{$vs_label}</h2>{$vs_description}"
+					$this->_formatBundleTooltip($vs_label, $vs_bundle, $vs_description)
 				);
 			}
 		}
@@ -1182,7 +1219,7 @@ class ca_bundle_displays extends BundlableLabelableBaseModelWithAttributes {
 		if ($vb_show_tooltips) {
 			TooltipManager::add(
 				"#bundleDisplayEditorBundle_{$vs_table}_created",
-				"<h2>{$vs_label}</h2>{$vs_description}"
+				$this->_formatBundleTooltip($vs_label, $vs_bundle, $vs_description)
 			);
 		}
 		
@@ -1199,7 +1236,7 @@ class ca_bundle_displays extends BundlableLabelableBaseModelWithAttributes {
 		if ($vb_show_tooltips) {
 			TooltipManager::add(
 				"#bundleDisplayEditorBundle_{$vs_table}_lastModified}",
-				"<h2>{$vs_label}</h2>{$vs_description}"
+				$this->_formatBundleTooltip($vs_label, $vs_bundle, $vs_description)
 			);
 		}
 		
@@ -1263,12 +1300,16 @@ class ca_bundle_displays extends BundlableLabelableBaseModelWithAttributes {
 			if ($vb_show_tooltips) {
 				TooltipManager::add(
 					"#bundleDisplayEditor_{$vn_placement_id}",
-					"<h2>{$vs_label}</h2>{$vs_description}"
+					$this->_formatBundleTooltip($vs_label, $va_placement['bundle'], $vs_description)
 				);
 			}
 		}
 		
 		return $va_placements_in_display;
+	}
+	# ------------------------------------------------------
+	private function _formatBundleTooltip($ps_label, $ps_bundle, $ps_description) {
+		return "<div><strong>{$ps_label}</strong></div><div class='bundleDisplayElementBundleName'>{$ps_bundle}</div><br/><div>{$ps_description}</div>";
 	}
 	# ------------------------------------------------------
 	/**
@@ -1464,16 +1505,16 @@ class ca_bundle_displays extends BundlableLabelableBaseModelWithAttributes {
 		
 		$va_tmp = explode('.', $vs_bundle_name);
 		
-		if ($pa_options['forReport']) {
-			if (substr($vs_bundle_name,0, 31) == 'ca_object_representations.media') {
-				if ((sizeof($va_tmp) >= 3) && ($vs_version = $this->getAppConfig()->get('report_representation_version'))) {
-					array_pop($va_tmp);
-					$va_tmp[] = $vs_version;
-					$vs_bundle_name = join('.', $va_tmp);
-				}
-			}
-		}
-		
+	// 	if ($pa_options['forReport']) {
+// 			if (substr($vs_bundle_name,0, 31) == 'ca_object_representations.media') {
+// 				if ((sizeof($va_tmp) >= 3) && ($vs_version = $this->getAppConfig()->get('report_representation_version'))) {
+// 					array_pop($va_tmp);
+// 					$va_tmp[] = $vs_version;
+// 					$vs_bundle_name = join('.', $va_tmp);
+// 				}
+// 			}
+// 		}
+// 		
 		if (!isset($pa_options['maximumLength'])) {
 			$pa_options['maximumLength'] =  ($va_placement['settings']['maximum_length']) ? $va_placement['settings']['maximum_length'] : null;
 		}
@@ -1516,17 +1557,15 @@ class ca_bundle_displays extends BundlableLabelableBaseModelWithAttributes {
 		if (!$pa_options['forReport'] && isset($pa_options['makeEditorLink']) && $pa_options['makeEditorLink'] && isset($pa_options['request']) && $pa_options['request']) {
 			if ($t_instance = $this->getAppDatamodel()->getInstanceByTableName($va_tmp[0], true)) {
 				$va_tmp2 = $va_tmp;
-				if ((in_array($vs_tmp = array_pop($va_tmp2), array('related')))) {
+				if ((sizeof($va_tmp2) > 1) && (in_array($vs_tmp = array_pop($va_tmp2), array('related')))) {
 					$va_tmp2[] = $vs_tmp;
 				}
 				$va_tmp2[] = $t_instance->primaryKey();
-				
+			
 				$va_ids = $po_result->get(join('.', $va_tmp2), array('returnAsArray' => true));
 				$va_links = array();
 				if (is_array($va_ids)) {
-					$va_display_texts = $po_result->get($vs_bundle_name, array_merge($pa_options, array('returnAsArray' => true)));
-					
-					
+					$va_display_texts = caProcessTemplateForIDs($pa_options['template'], $va_tmp2[0], $va_ids, array_merge($pa_options, array('returnAsArray' => true)));
 					foreach($va_display_texts as $vn_i => $va_text) {
 						
 						if (is_array($va_text)) {
@@ -1591,8 +1630,7 @@ class ca_bundle_displays extends BundlableLabelableBaseModelWithAttributes {
 				}
 			}
 			
-			$t_locale = new ca_locales();
-			$va_locale_list = $t_locale->getLocaleList(array('index_by_code' => true));
+			$va_locale_list = ca_locales::getLocaleList(array('index_by_code' => true));
 			
 			$va_available_bundles = $t_display->getAvailableBundles();
 			foreach($va_bundles as $vn_i => $vs_bundle) {

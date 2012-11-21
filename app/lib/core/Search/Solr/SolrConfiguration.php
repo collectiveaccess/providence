@@ -377,8 +377,6 @@ class SolrConfiguration {
 							$vs_field_schema.='/>'.SolrConfiguration::nl();
 						}
 					}
-					/* write field indexing config into file */
-					fprintf($vr_schema_xml_file,"%s",$vs_field_schema);
 
 					/* copyfield directives
 					 * we use a single field in each index (called "text") where
@@ -390,6 +388,27 @@ class SolrConfiguration {
 					foreach($va_schema_fields as $vs_schema_field){
 						$vs_copyfields.= SolrConfiguration::tabs(1).'<copyField source="'.$vs_schema_field.'" dest="text" />'.SolrConfiguration::nl();
 					}
+					
+					
+					
+					//
+					// Get access points
+					//
+					if (!is_array($va_access_points = $po_search_base->getAccessPoints($vs_table))) {
+						$va_access_points = array();
+					}
+					
+					foreach($va_access_points as $vs_access_point => $va_access_point_info) {
+						foreach($va_access_point_info['fields'] as $vn_i => $vs_schema_field) {
+							$vs_copyfields.= SolrConfiguration::tabs(1).'<copyField source="'.$vs_schema_field.'" dest="'.$vs_access_point.'" />'.SolrConfiguration::nl();
+							
+						}
+						$vs_field_schema.=SolrConfiguration::tabs(2).'<field name="'.$vs_access_point.'" type="text" indexed="true" stored="true" multiValued="true"/>'.SolrConfiguration::nl();
+					}
+					
+					/* write field indexing config into file */
+					fprintf($vr_schema_xml_file,"%s",$vs_field_schema);
+					
 					continue;
 				}
 				/* 3rd replacement: uniquekey */
@@ -429,3 +448,4 @@ class SolrConfiguration {
 	}
 	# ------------------------------------------------
 }
+?>

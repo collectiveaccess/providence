@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2008-2011 Whirl-i-Gig
+ * Copyright 2008-2012 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -203,8 +203,7 @@ class ca_locales extends BaseModel {
 		if (ca_locales::$s_default_locale_id) { return ca_locales::$s_default_locale_id; }
 		global $g_ui_locale_id;
 		
-		$t_locale = new ca_locales();
-		$va_locale_list = $t_locale->getLocaleList(array('available_for_cataloguing_only' => true));
+		$va_locale_list = ca_locales::getLocaleList(array('available_for_cataloguing_only' => true));
 		
 		$vn_default_id = null;
 		if (isset($va_locale_list[$g_ui_locale_id])) { 
@@ -219,7 +218,7 @@ class ca_locales extends BaseModel {
 	/**
 	 *
 	 */
-	public function getLocaleList($pa_options=null) {
+	static public function getLocaleList($pa_options=null) {
 		
 		$vs_sort_field 				= isset($pa_options['sort_field']) ? $pa_options['sort_field'] : '';
 		$vs_sort_direction 			= isset($pa_options['sort_direction']) ? $pa_options['sort_direction'] : 'asc';
@@ -237,7 +236,7 @@ class ca_locales extends BaseModel {
 			return ca_locales::$s_locale_list_cache[$vs_cache_key];
 		}
 		
-		$o_db = $this->getDb();
+		$o_db = new Db();
 		$vs_sort = 'ORDER BY '.$vs_sort_field;
 
 		$qr_locales = $o_db->query("
@@ -316,6 +315,16 @@ class ca_locales extends BaseModel {
 	}
 	# ------------------------------------------------------
 	/**
+	 * Returns number of locales configured for cataloguing use
+	 *
+	 * @return int Number of locales configured for cataloguer
+	 */
+	static public function numberOfCataloguingLocales() {
+		$t_locale = new ca_locales();
+		return (int)$t_locale->numberOfLocales(array('forCataloguing' => true));
+	}
+	# ------------------------------------------------------
+	/**
 	 * Loads model with locale record having specifed code and returns the locale_id. Once the 
 	 * model is loaded you can use get() and other model methods to get at fields in the locale's record
 	 *
@@ -324,7 +333,7 @@ class ca_locales extends BaseModel {
 	 */
 	public function loadLocaleByCode($ps_code) {
 		if (!isset(ca_locales::$s_locale_code_to_id[$ps_code])) {
-			$this->getLocaleList(array('index_by_code' => true));
+			ca_locales::getLocaleList(array('index_by_code' => true));
 		}
 		
 		$this->load(ca_locales::$s_locale_code_to_id[$ps_code]);
@@ -342,7 +351,7 @@ class ca_locales extends BaseModel {
 	 */
 	public function localeCodeToID($ps_code) {
 		if (!isset(ca_locales::$s_locale_code_to_id[$ps_code])) {
-			$this->getLocaleList(array('index_by_code' => true));
+			ca_locales::getLocaleList(array('index_by_code' => true));
 		}
 		return ca_locales::$s_locale_code_to_id[$ps_code];
 	}
@@ -356,7 +365,7 @@ class ca_locales extends BaseModel {
 	 */
 	public function localeIDToCode($pn_id) {
 		if(!isset(ca_locales::$s_locale_id_to_code[$pn_id])){
-			$this->getLocaleList();
+			ca_locales::getLocaleList();
 		}
 		return ca_locales::$s_locale_id_to_code[$pn_id];
 	}

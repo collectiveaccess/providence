@@ -765,9 +765,60 @@
 			$t_subject->setACLUserGroups($va_groups_to_set);
 			
 			// Save "world" ACL
-			$t_subject->setACLWorldAccess($x=$this->request->getParameter("{$vs_form_prefix}_access_world", pInteger));
+			$t_subject->setACLWorldAccess($this->request->getParameter("{$vs_form_prefix}_access_world", pInteger));
 			
+			// Propagate ACL settings to records that inherit from this one
+			if ((bool)$t_subject->getProperty('SUPPORTS_ACL_INHERITANCE')) {
+				ca_acl::applyACLInheritanceToChildrenFromRow($t_subject);
+				if (is_array($va_inheritors = $t_subject->getProperty('ACL_INHERITANCE_LIST'))) {
+					foreach($va_inheritors as $vs_inheritor_table) {
+						ca_acl::applyACLInheritanceToRelatedFromRow($t_subject, $vs_inheritor_table);
+					}
+				}
+			}
+			
+			// Set ACL-related intrinsic fields
+			if ($t_subject->hasField('acl_inherit_from_ca_collections') || $t_subject->hasField('acl_inherit_from_parent')) {
+				$t_subject->setMode(ACCESS_WRITE);
+				if ($t_subject->hasField('acl_inherit_from_ca_collections')) {
+					$t_subject->set('acl_inherit_from_ca_collections', $this->request->getParameter('acl_inherit_from_ca_collections', pString));
+				}
+				if ($t_subject->hasField('acl_inherit_from_parent')) {
+					$t_subject->set('acl_inherit_from_parent', $this->request->getParameter('acl_inherit_from_parent', pString));
+				}
+				$t_subject->update();
+				
+				if ($t_subject->numErrors()) {
+					$this->postError(1250, _t('Could not set ACL inheritance settings: %1', join("; ", $t_subject->getErrors())),"BaseEditorController->SetAccess()");
+				}
+			}
  			$this->Access();
+ 		}
+ 		# -------------------------------------------------------
+ 		/**
+ 		 * 
+ 		 *
+ 		 * @param array $pa_options Array of options passed through to _initView 
+ 		 */
+ 		public function ChangeType($pa_options=null) {
+ 			list($vn_subject_id, $t_subject) = $this->_initView($pa_options);
+ 			if ($this->request->user->canDoAction("can_change_type_".$t_subject->tableName())) {
+				if (method_exists($t_subject, "changeType")) {
+					$this->opo_app_plugin_manager->hookBeforeSaveItem(array('id' => $vn_subject_id, 'table_num' => $t_subject->tableNum(), 'table_name' => $t_subject->tableName(), 'instance' => $t_subject, 'is_insert' => false));
+ 			
+					if (!$t_subject->changeType($vn_new_type_id = $this->request->getParameter('type_id', pInteger))) {
+						// post error
+						$this->notification->addNotification(_t('Could not set type to <em>%1</em>: %2', caGetListItemForDisplay($t_subject->getTypeListCode(), $vn_new_type_id), join("; ", $t_subject->getErrors())), __NOTIFICATION_TYPE_ERROR__);
+					} else {
+						$this->notification->addNotification(_t('Set type to <em>%1</em>', $t_subject->getTypeName()), __NOTIFICATION_TYPE_INFO__);
+					}
+					$this->opo_app_plugin_manager->hookSaveItem(array('id' => $vn_subject_id, 'table_num' => $t_subject->tableNum(), 'table_name' => $t_subject->tableName(), 'instance' => $t_subject, 'is_insert' => false));
+ 			
+				}
+			} else {
+				$this->notification->addNotification(_t('Cannot change type'), __NOTIFICATION_TYPE_ERROR__);
+			}
+ 			$this->Edit();
  		}
  		# -------------------------------------------------------
  		/**
@@ -780,6 +831,8 @@
  			// load required javascript
  			JavascriptLoadManager::register('bundleableEditor');
  			JavascriptLoadManager::register('imageScroller');
+ 			JavascriptLoadManager::register('datePickerUI');
+ 			
  			$t_subject = $this->opo_datamodel->getInstanceByTableName($this->ops_table_name);
  			$vn_subject_id = $this->request->getParameter($t_subject->primaryKey(), pInteger);
  			

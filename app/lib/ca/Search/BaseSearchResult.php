@@ -59,10 +59,9 @@
 			$this->opo_list = new ca_lists();
 			$this->opo_datamodel = Datamodel::load();
 			
-			$t_locale = new ca_locales();
-			$this->opa_locales = $t_locale->getLocaleList();
-			$this->ops_label_table_name = $this->opo_subject_instance->getLabelTableName();
-			$this->ops_label_display_field = $this->opo_subject_instance->getLabelDisplayField();
+			$this->opa_locales = ca_locales::getLocaleList();
+			$this->ops_label_table_name = method_exists($this->opo_subject_instance, "getLabelTableName") ? $this->opo_subject_instance->getLabelTableName() : null;
+			$this->ops_label_display_field = method_exists($this->opo_subject_instance, "getLabelDisplayField") ? $this->opo_subject_instance->getLabelDisplayField() : null;
 		}
 		# -------------------------------------------------------
 		/**
@@ -130,11 +129,23 @@
 			
 				$vn_num = 0;
 				foreach($this->opa_filter_values as $vm_value) {
-					$vn_num .= $va_r[$this->ops_filter_field][$vm_value];
+					$vn_num += (int)$va_r[$this->ops_filter_field][$vm_value];
 				}
 				return $vn_num;
 			}
 			return parent::numHits();
+		}
+		# ------------------------------------------------------------------
+		public function seek($pn_index) {
+			if ($this->ops_filter_field) {
+				parent::seek(0);
+				for($vn_i=0; $vn_i < $pn_index; $vn_i++) {
+					$this->nextHit();
+				}
+				return true;
+			} else {
+				return parent::seek($pn_index);
+			}
 		}
 		# -------------------------------------------------------
 	}

@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2004 - 2009 Whirl-i-Gig
+ * Copyright 2004 - 2012 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -40,8 +40,8 @@ $pn_tile = $_REQUEST["t"];
 
 $ps_filepath = preg_replace("/^http[s]{0,1}:\/\/[^\/]+/i", "", $ps_filepath);
 $ps_filepath = preg_replace("/\.tpc\$/", "", $ps_filepath);
-$ps_filepath = preg_replace("/[^A-Za-z0-9_\-\/]/", "", $ps_filepath);
 $ps_filepath = str_replace($vo_conf->get('ca_media_url_root'),"", $ps_filepath);
+$ps_filepath = preg_replace("/[^A-Za-z0-9_\-\/]/", "", $ps_filepath);
 
 $vs_media_root = $vo_conf->get('ca_media_root_dir');
 

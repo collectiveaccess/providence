@@ -28,6 +28,9 @@
  
 	$vs_id_prefix 			= $this->getVar('placement_code').$this->getVar('id_prefix');
  	$vs_element 			= $this->getVar('form_element');
+ 	$va_settings 			= $this->getVar('settings');
+ 	$t_instance				= $this->getVar('t_instance');
+ 	$vs_bundle_name 		= $this->getVar('bundle_name');
  	
  	$va_errors = array();
  	if(is_array($va_action_errors = $this->getVar('errors'))) {
@@ -38,10 +41,20 @@
 ?>
 
 	<div>
+<?php
+	if (isset($va_settings['forACLAccessScreen']) && $va_settings['forACLAccessScreen']) {
+?>
+		<div class="globalAccess">	
+			<div class='title'><?php print $t_instance->getFieldInfo($vs_bundle_name, 'LABEL'); ?></div>
+			<p>
+<?php
+	} else {
+?>
 		<div class="bundleContainer">
 			<div class="caItemList">
 				<div class="labelInfo">	
 <?php
+	}
 					if (is_array($va_errors) && sizeof($va_errors)) {
 ?>
 						<span class="formLabelError"><?php print join('; ', $va_errors); ?></span>
@@ -61,8 +74,17 @@
 					<br style="clear: both;"/>
 <?php
 	}
+	
+	if (isset($va_settings['forACLAccessScreen']) && $va_settings['forACLAccessScreen']) {
+?>
+		</p>
+<?php
+	} else {
 ?>
 				</div>
 			</div>
+<?php
+	}
+?>
 		</div>
 	</div>

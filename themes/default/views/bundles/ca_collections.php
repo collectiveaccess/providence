@@ -36,7 +36,7 @@
 	
 	$vb_read_only		=	((isset($va_settings['readonly']) && $va_settings['readonly'])  || ($this->request->user->getBundleAccessLevel($t_instance->tableName(), 'ca_collections') == __CA_BUNDLE_ACCESS_READONLY__));
 	
-	// params to pass during occurrence lookup
+	// params to pass during collection lookup
 	$va_lookup_params = (isset($va_settings['restrict_to_type']) && $va_settings['restrict_to_type']) ? array('type' => $va_settings['restrict_to_type'], 'noSubtypes' => (int)$va_settings['dont_include_subtypes_in_type_restriction']) : array();
 ?>
 <div id="<?php print $vs_id_prefix.$t_item->tableNum().'_rel'; ?>">
@@ -121,12 +121,37 @@
 ?>
 	</div>
 </div>
-			
+
+<div id="caRelationQuickAddPanel<?php print $vs_id_prefix; ?>" class="caRelationQuickAddPanel"> 
+	<div id="caRelationQuickAddPanel<?php print $vs_id_prefix; ?>ContentArea">
+	<div class='dialogHeader'><?php print _t('Quick Add', $t_item->getProperty('NAME_SINGULAR')); ?></div>
+		
+	</div>
+</div>	
 <script type="text/javascript">
+	var caRelationQuickAddPanel<?php print $vs_id_prefix; ?>;
 	var caRelationBundle<?php print $vs_id_prefix; ?>;
 	jQuery(document).ready(function() {
 		jQuery('#<?php print $vs_id_prefix; ?>caItemListSortControlTrigger').click(function() { jQuery('#<?php print $vs_id_prefix; ?>caItemListSortControls').slideToggle(200); });
 		jQuery('#<?php print $vs_id_prefix; ?>caItemListSortControls a.caItemListSortControl').click(function() {jQuery('#<?php print $vs_id_prefix; ?>caItemListSortControls').slideUp(200); });
+		
+		if (caUI.initPanel) {
+			caRelationQuickAddPanel<?php print $vs_id_prefix; ?> = caUI.initPanel({ 
+				panelID: "caRelationQuickAddPanel<?php print $vs_id_prefix; ?>",						/* DOM ID of the <div> enclosing the panel */
+				panelContentID: "caRelationQuickAddPanel<?php print $vs_id_prefix; ?>ContentArea",		/* DOM ID of the content area <div> in the panel */
+				exposeBackgroundColor: "#000000",				
+				exposeBackgroundOpacity: 0.7,					
+				panelTransitionSpeed: 400,						
+				closeButtonSelector: ".close",
+				center: true,
+				onOpenCallback: function() {
+				jQuery("#topNavContainer").hide(250);
+				},
+				onCloseCallback: function() {
+					jQuery("#topNavContainer").show(250);
+				}
+			});
+		}
 		
 		caRelationBundle<?php print $vs_id_prefix; ?> = caUI.initRelationBundle('#<?php print $vs_id_prefix.$t_item->tableNum().'_rel'; ?>', {
 			fieldNamePrefix: '<?php print $vs_id_prefix; ?>_',
@@ -146,7 +171,10 @@
 			readonly: <?php print $vb_read_only ? "true" : "false"; ?>,
 			isSortable: <?php print $vb_read_only ? "false" : "true"; ?>,
 			listSortOrderID: '<?php print $vs_id_prefix; ?>BundleList',
-			listSortItems: 'div.roundedRel'
+			listSortItems: 'div.roundedRel',
+			autocompleteInputID: '<?php print $vs_id_prefix; ?>_autocomplete',
+			quickaddPanel: caRelationQuickAddPanel<?php print $vs_id_prefix; ?>,
+			quickaddUrl: '<?php print caNavUrl($this->request, 'editor/collections', 'CollectionQuickAdd', 'Form', array('collection_id' => 0)); ?>'
 		});
 	});
 </script>

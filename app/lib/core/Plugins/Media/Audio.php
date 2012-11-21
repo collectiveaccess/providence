@@ -64,6 +64,7 @@ class WLPlugMediaAudio Extends WLPlug Implements IWLPlugMedia {
 	var $opo_config;
 	var $opo_external_app_config;
 	var $ops_path_to_ffmpeg;
+	var $opb_ffmpeg_available;
 
 	var $ops_mediainfo_path;
 	var $opb_mediainfo_available;
@@ -153,7 +154,7 @@ class WLPlugMediaAudio Extends WLPlug Implements IWLPlugMedia {
 		$this->ops_mediainfo_path = $this->opo_external_app_config->get('mediainfo_app');
 		$this->opb_mediainfo_available = caMediaInfoInstalled($this->ops_mediainfo_path);
 
-		if (!caMediaPluginFFfmpegInstalled($this->ops_path_to_ffmpeg)) { return null; }
+		$this->opb_ffmpeg_available = caMediaPluginFFfmpegInstalled($this->ops_path_to_ffmpeg);
 
 		$this->info["INSTANCE"] = $this;
 		return $this->info;
@@ -162,12 +163,10 @@ class WLPlugMediaAudio Extends WLPlug Implements IWLPlugMedia {
 	public function checkStatus() {
 		$va_status = parent::checkStatus();
 		
-		if ($this->register()) {
-			$va_status['available'] = true;
-		} else {
-			if (!caMediaPluginFFfmpegInstalled($this->ops_path_to_ffmpeg)) { 
-				$va_status['errors'][] = _t("Didn't load because ffmpeg is not installed");
-			}
+		$this->register();
+		$va_status['available'] = true;
+		if (!$this->opb_ffmpeg_available) { 
+			$va_status['errors'][] = _t("Incoming Audio files will not be transcoded because ffmpeg is not installed.");
 		}
 		
 		if ($this->opb_mediainfo_available) { 
@@ -528,7 +527,7 @@ class WLPlugMediaAudio Extends WLPlug Implements IWLPlugMedia {
 			}
 		} else {
 
-			if (($mimetype != "image/png") && ($mimetype != "image/jpeg")) {
+			if (($mimetype != "image/png") && ($mimetype != "image/jpeg") && ($this->opb_ffmpeg_available)) {
 				#
 				# Do conversion
 				#
@@ -609,7 +608,11 @@ class WLPlugMediaAudio Extends WLPlug Implements IWLPlugMedia {
 					$this->properties["duration"] = $va_mp3_output_info["playtime_seconds"];
 				}
 			} else {
-				# use default media icons
+				# use default media icons if ffmpeg is not present or the current version is an image
+				if(!$this->get("width") && !$this->get("height")){
+					$this->set("width",580);
+					$this->set("height",200);
+				}
 				return __CA_MEDIA_AUDIO_DEFAULT_ICON__;
 			}
 		}
@@ -652,13 +655,12 @@ class WLPlugMediaAudio Extends WLPlug Implements IWLPlugMedia {
 	public function writeClip($ps_filepath, $ps_start, $ps_end, $pa_options=null) {
 		$o_tc = new TimecodeParser();
 		
-		$vn_start = $vn_end = null;
-		if ($o_tc->parse($ps_start)) { $vn_start = $o_tc->getSeconds(); }
-		if ($o_tc->parse($ps_end)) { $vn_end = $o_tc->getSeconds(); }
+		$vn_start = $vn_end = 0;
+		if ($o_tc->parse($ps_start)) { $vn_start = (float)$o_tc->getSeconds(); }
+		if ($o_tc->parse($ps_end)) { $vn_end = (float)$o_tc->getSeconds(); }
 		
-		if (!$vn_start || !$vn_end) { return null; }
+		if ($vn_end == 0) { return null; }
 		if ($vn_start >= $vn_end) { return null; }
-		
 		$vn_duration = $vn_end - $vn_start;
 		
 		exec($this->ops_path_to_ffmpeg." -i ".caEscapeShellArg($this->filepath)." -f mp3 -t {$vn_duration}  -y -ss {$vn_start} ".caEscapeShellArg($ps_filepath), $va_output, $vn_return);
@@ -826,7 +828,7 @@ class WLPlugMediaAudio Extends WLPlug Implements IWLPlugMedia {
 						$vn_height = ($pa_options["viewer_height"] > 0) ? $pa_options["viewer_height"] : 95;
 						ob_start();
 ?>
-					<div class="caAudioPlayer">
+					<div class="<?php print (isset($pa_options["viewer_width"])) ? $pa_options["viewer_width"] : "caAudioPlayer"; ?>">
 						<audio id="<?php print $vs_id; ?>" src="<?php print $ps_url; ?>" type="audio/mp3" controls="controls"></audio>
 					</div>	
 					<script type="text/javascript">

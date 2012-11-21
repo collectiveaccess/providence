@@ -313,6 +313,11 @@ class ca_object_representations extends BundlableLabelableBaseModelWithAttribute
 	protected $SEARCH_RESULT_CLASSNAME = 'ObjectRepresentationSearchResult';
 	
 	# ------------------------------------------------------
+	# ACL
+	# ------------------------------------------------------
+	protected $SUPPORTS_ACL = true;
+	
+	# ------------------------------------------------------
 	# --- Constructor
 	#
 	# This is a function called when a new instance of this object is created. This

@@ -52,13 +52,25 @@ class ObjectSearchResult extends BaseSearchResult {
 	# -------------------------------------
 	/**
 	 * Override init to set ca_representations join params
+	 *
+	 * @param IWLPlugSearchEngineResult $po_engine_result
+	 * @param array $pa_tables
+	 * @param array $pa_options Options are:
+	 *		filterNonPrimaryRepresentations = If set only primary representations are returned. This can improve performance somewhat in most cases. Default is true.
 	 */
-	public function init($po_engine_result, $pa_tables) {
+	public function init($po_engine_result, $pa_tables, $pa_options=null) {
 		parent::init($po_engine_result, $pa_tables);
+		
+		if (!isset($pa_options['filterNonPrimaryRepresentations'])) { $pa_options['filterNonPrimaryRepresentations'] = true; }
+		if ($pa_options['filterNonPrimaryRepresentations']) {
+			$va_criteria = array('ca_objects_x_object_representations.is_primary = 1', 'ca_object_representations.deleted = 0');
+		} else {
+			$va_criteria = array('ca_object_representations.deleted = 0');
+		}
 		$this->opa_tables['ca_object_representations'] = array(
-			'fieldList' => array('ca_object_representations.media', 'ca_object_representations.representation_id', 'ca_object_representations.access'),
+			'fieldList' => array('ca_object_representations.media', 'ca_object_representations.representation_id', 'ca_object_representations.access', 'ca_object_representations.md5', 'ca_object_representations.mimetype'),
 			'joinTables' => array('ca_objects_x_object_representations'),
-			'criteria' => array('ca_objects_x_object_representations.is_primary = 1', 'ca_object_representations.deleted = 0')
+			'criteria' => $va_criteria
 		);
 	}
 	# -------------------------------------

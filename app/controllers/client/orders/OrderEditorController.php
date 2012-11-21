@@ -30,6 +30,7 @@
  	require_once(__CA_MODELS_DIR__.'/ca_commerce_orders.php');
  	require_once(__CA_MODELS_DIR__.'/ca_commerce_order_items.php');
  	require_once(__CA_APP_DIR__.'/helpers/gisHelpers.php');
+ 	require_once(__CA_LIB_DIR__."/ca/ApplicationPluginManager.php");
 
  	class OrderEditorController extends ActionController {
  		# -------------------------------------------------------
@@ -79,7 +80,8 @@
  			$this->view->setVar('t_transaction', new ca_commerce_transactions($vn_transaction_id));
  			$this->view->setVar('currency_symbol', $this->opo_client_services_config->get('currency_symbol'));
  			$this->view->setVar('additional_fees', $this->opt_order->getAdditionalFeesHTMLFormBundle($this->request, array('config' => $this->opo_client_services_config, 'currency_symbol' => $this->opo_client_services_config->get('currency_symbol'), 'type' => 'O')));
- 		
+ 		 	
+ 		 	$this->opo_app_plugin_manager->hookEditItem(array('id' => $this->opt_order->getPrimaryKey(), 'table_num' => $this->opt_order->tableNum(), 'table_name' => $this->opt_order->tableName(), 'instance' => $this->opt_order));
  			$this->render('order_overview_html.php');
  		}
  		# -------------------------------------------------------
@@ -88,6 +90,7 @@
  			
  			$this->view->setVar('additional_fees', $this->opt_order->getAdditionalFeesHTMLFormBundle($this->request, array('config' => $this->opo_client_services_config, 'currency_symbol' => $this->opo_client_services_config->get('currency_symbol'), 'type' => 'O')));
  			
+ 			$this->opo_app_plugin_manager->hookEditItem(array('id' => $this->opt_order->getPrimaryKey(), 'table_num' => $this->opt_order->tableNum(), 'table_name' => $this->opt_order->tableName(), 'instance' => $this->opt_order));
  			$this->render('order_customer_info_html.php');
  		}
  		# -------------------------------------------------------
@@ -97,13 +100,15 @@
  			
  			$this->view->setVar('additional_fees', $this->opt_order->getAdditionalFeesHTMLFormBundle($this->request, array('config' => $this->opo_client_services_config, 'currency_symbol' => $this->opo_client_services_config->get('currency_symbol'), 'type' => 'O')));
  		
+ 			$this->opo_app_plugin_manager->hookEditItem(array('id' => $this->opt_order->getPrimaryKey(), 'table_num' => $this->opt_order->tableNum(), 'table_name' => $this->opt_order->tableName(), 'instance' => $this->opt_order));
  			$this->render('order_additional_fees_html.php');
  		}
  		# -------------------------------------------------------
  		public function Shipping() {
  			if (!$this->opt_order->getPrimaryKey()) { $this->Edit(); return; }
  			
- 			$this->render('order_shipping_html.php');
+ 			$this->opo_app_plugin_manager->hookEditItem(array('id' => $this->opt_order->getPrimaryKey(), 'table_num' => $this->opt_order->tableNum(), 'table_name' => $this->opt_order->tableName(), 'instance' => $this->opt_order));
+			$this->render('order_shipping_html.php');
  		}
  		# -------------------------------------------------------
  		public function Payment() {
@@ -125,7 +130,8 @@
  			$this->view->setVar('credit_card_exp_year_list', $va_credit_card_exp_year_list);
  			
  			
- 			$this->render('order_payment_html.php');
+ 			$this->opo_app_plugin_manager->hookEditItem(array('id' => $this->opt_order->getPrimaryKey(), 'table_num' => $this->opt_order->tableNum(), 'table_name' => $this->opt_order->tableName(), 'instance' => $this->opt_order));
+			$this->render('order_payment_html.php');
  		}
  		# -------------------------------------------------------
  		public function ItemList() {
@@ -159,7 +165,8 @@
  			
  			$this->view->setVar('default_values', $va_default_values);
  			
- 			$this->render('order_item_list_html.php');
+ 			$this->opo_app_plugin_manager->hookEditItem(array('id' => $this->opt_order->getPrimaryKey(), 'table_num' => $this->opt_order->tableNum(), 'table_name' => $this->opt_order->tableName(), 'instance' => $this->opt_order));
+			$this->render('order_item_list_html.php');
  		}
  		# -------------------------------------------------------
  		public function Communications() {
@@ -169,6 +176,8 @@
  			$this->view->setVar('t_transaction', $t_transaction = new ca_commerce_transactions($vn_transaction_id));
  			
  			$this->view->setVar('messages', $t_transaction->getMessages());
+ 			
+ 			$this->opo_app_plugin_manager->hookEditItem(array('id' => $this->opt_order->getPrimaryKey(), 'table_num' => $this->opt_order->tableNum(), 'table_name' => $this->opt_order->tableName(), 'instance' => $this->opt_order));
  			$this->render('order_communications_html.php');
  		}
  		# -------------------------------------------------------
@@ -184,10 +193,13 @@
  		 */
  		public function ReturnQuoteToUser() {
  			if (!$this->opt_order->getPrimaryKey()) { $this->Edit(); return; }
+ 			$this->opo_app_plugin_manager->hookBeforeSaveItem(array('id' => $this->opt_order->getPrimaryKey(), 'table_num' => $this->opt_order->tableNum(), 'table_name' => $this->opt_order->tableName(), 'instance' => $this->opt_order, 'is_insert' => false));
  			
  			$this->opt_order->setMode(ACCESS_WRITE);
  			$this->opt_order->set('order_status', 'AWAITING_PAYMENT');
  			$this->opt_order->update();
+ 			
+ 			$this->opo_app_plugin_manager->hookSaveItem(array('id' => $this->opt_order->getPrimaryKey(), 'table_num' => $this->opt_order->tableNum(), 'table_name' => $this->opt_order->tableName(), 'instance' => $this->opt_order, 'is_insert' => false));
  			
  			$this->OrderOverview();
  		}
@@ -284,7 +296,10 @@
 					$t_user->setPreference($vs_pref, $this->opt_order->get($vs_field));
 				}
 			}
+			
+			$this->opo_app_plugin_manager->hookBeforeSaveItem(array('id' => $this->opt_order->getPrimaryKey(), 'table_num' => $this->opt_order->tableNum(), 'table_name' => $this->opt_order->tableName(), 'instance' => $this->opt_order, 'is_insert' => false));
 			$t_user->update();
+ 			$this->opo_app_plugin_manager->hookSaveItem(array('id' => $this->opt_order->getPrimaryKey(), 'table_num' => $this->opt_order->tableNum(), 'table_name' => $this->opt_order->tableName(), 'instance' => $this->opt_order, 'is_insert' => false));
  			
  			if (!$this->opt_order->numErrors()) {
  				$this->notification->addNotification(_t('Saved changes'), __NOTIFICATION_TYPE_INFO__);	
@@ -389,7 +404,8 @@
  		 */
  		public function SaveItemList() {
  			if (!$this->opt_order->getPrimaryKey()) { $this->Edit(); return; }
- 			
+ 			$this->opo_app_plugin_manager->hookBeforeSaveItem(array('id' => $this->opt_order->getPrimaryKey(), 'table_num' => $this->opt_order->tableNum(), 'table_name' => $this->opt_order->tableName(), 'instance' => $this->opt_order, 'is_insert' => true));
+ 				
  			$va_additional_fee_codes = $this->opo_client_services_config->getAssoc('additional_order_item_fees');
  			
  			$va_errors = array();
@@ -487,7 +503,9 @@
  			
  			// reorder items?
  			$this->opt_order->reorderItems(explode(';', $this->request->getParameter('item_listBundleList', pString)));
- 			
+ 		
+ 			$this->opo_app_plugin_manager->hookSaveItem(array('id' => $this->opt_order->getPrimaryKey(), 'table_num' => $this->opt_order->tableNum(), 'table_name' => $this->opt_order->tableName(), 'instance' => $this->opt_order, 'is_insert' => true));
+ 				
  			$this->ItemList();
  		}
  		# -------------------------------------------------------
@@ -623,7 +641,10 @@
 				}
 				
 				$this->opt_order->set('order_type', 'O');	// O=sales order
+				
+				$this->opo_app_plugin_manager->hookBeforeSaveItem(array('id' => $this->opt_order->getPrimaryKey(), 'table_num' => $this->opt_order->tableNum(), 'table_name' => $this->opt_order->tableName(), 'instance' => $this->opt_order, 'is_insert' => true));
  				$this->opt_order->insert();
+ 				$this->opo_app_plugin_manager->hookSaveItem(array('id' => $this->opt_order->getPrimaryKey(), 'table_num' => $this->opt_order->tableNum(), 'table_name' => $this->opt_order->tableName(), 'instance' => $this->opt_order, 'is_insert' => true));
  				
  				$this->request->setParameter('order_id', $this->opt_order->getPrimaryKey());
  				
@@ -759,6 +780,33 @@
  			$this->view->setVar("user_id", $pn_user_id);
  			$this->render('ajax_user_profile_info_json.php');
  		}
+ 		# -------------------------------------------------------
+ 		/**
+ 		 *
+ 		 */
+ 		public function GetChecklist() {
+ 			if (!$this->opt_order->getPrimaryKey()) { $this->Edit(); return; }
+ 			require_once(__CA_LIB_DIR__."/core/Print/html2pdf/html2pdf.class.php");
+			
+			$this->view->setVar('items', $this->opt_order->getItems());
+				
+			try {
+				$vs_content = $this->render('order_pdf_checklist_html.php');
+			//	print $vs_content; die("en");
+				$vo_html2pdf = new HTML2PDF('L','letter','en');
+				$vo_html2pdf->setDefaultFont("dejavusans");
+				$vo_html2pdf->WriteHTML($vs_content);
+				
+	header("Content-Disposition: attachment; filename=order_checklist.pdf");
+	header("Content-type: application/pdf");
+	
+				$vo_html2pdf->Output('order_checklist.pdf');
+				$vb_printed_properly = true;
+			} catch (Exception $e) {
+				$vb_printed_properly = false;
+				$this->postError(3100, _t("Could not generate PDF"),"OrderEditorController->GetCheckList()");
+			}
+		}
  		# -------------------------------------------------------
  	}
  ?>

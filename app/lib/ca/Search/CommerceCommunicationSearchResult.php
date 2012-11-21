@@ -61,4 +61,6 @@ class CommerceCommunicationSearchResult extends BaseSearchResult {
 	public function getDisplayLabels($pb_has_preferred_flag=true) {
 		return array(1 => "_dummy");
 	}
+	# -------------------------------------
 }
+?>

@@ -32,6 +32,8 @@
  	
  	$vs_currency_symbol = $this->getVar('currency_symbol');
 
+ 	$t_filter_user = new ca_users($va_filter_options['user_id']);
+	$vs_filter_user_id_name = $t_filter_user->getUserNameFormattedForLookup();
 ?>
 <script language="JavaScript" type="text/javascript">
 /* <![CDATA[ */
@@ -60,36 +62,50 @@
 ?>
 			</td><td>
 <?php		
-			print $t_order->htmlFormElement('created_on', null, array('FIELD_TYPE' => 'FT_DATETIME', 'DISPLAY_TYPE' => DT_FIELD, 'value' => $va_filter_options['created_on'], 'classname'=> 'dateBg'));			
+			print $t_order->htmlFormElement('created_on', null, array('FIELD_TYPE' => 'FT_DATETIME', 'DISPLAY_TYPE' => DT_FIELD, 'value' => $va_filter_options['created_on'], 'classname'=> 'dateBg', 'width' => 15));			
 ?>
 			</td><td>
 <?php		
-			print $t_order->htmlFormElement('shipping_date', null, array('FIELD_TYPE' => 'FT_DATETIME', 'DISPLAY_TYPE' => DT_FIELD, 'value' => $va_filter_options['shipping_date'], 'classname'=> 'dateBg'));			
+			print $t_order->htmlFormElement('shipping_date', null, array('FIELD_TYPE' => 'FT_DATETIME', 'DISPLAY_TYPE' => DT_FIELD, 'value' => $va_filter_options['shipping_date'], 'classname'=> 'dateBg', 'width' => 15));			
 ?>
 			</td><td>
 <?php		
-			print $t_order->htmlFormElement('shipped_on_date', null, array('FIELD_TYPE' => 'FT_DATETIME', 'DISPLAY_TYPE' => DT_FIELD, 'value' => $va_filter_options['shipped_on_date'], 'classname'=> 'dateBg'));			
+			print $t_order->htmlFormElement('shipped_on_date', null, array('FIELD_TYPE' => 'FT_DATETIME', 'DISPLAY_TYPE' => DT_FIELD, 'value' => $va_filter_options['shipped_on_date'], 'classname'=> 'dateBg', 'width' => 15));			
 ?>
 			</td>
-			<td align="right" valign="top">
+			<td align="right" valign="top" rowspan="2">
 <?php
 	print caNavHeaderButton($this->request, __CA_NAV_BUTTON_ADD_LARGE__, _t("New order"), 'client/orders', 'OrderEditor', 'CustomerInfo', array('order_id' => 0))
 ?>
 			</td>
 		</tr>
 		<tr>
-			<td colspan="3">
-				<div class="formLabel"><?php print _t('Search')."<br/>".caHTMLTextInput('search', array('value' => $va_filter_options['search']), array('width' => '400px')); ?></div>
+			<td>
+				<div class="formLabel"><?php print _t('Search')."<br/>".caHTMLTextInput('search', array('value' => $va_filter_options['search']), array('width' => '15')); ?></div>
+			</td><td colspan="2">
+				<div class="formLabel">
+					<?php print _t('Client')."<br/>".caHTMLTextInput('user_id_autocomplete', array('value' => $vs_filter_user_id_name, 'class'=> 'lookupBg', 'id' => 'user_id_autocomplete'), array('width' => '40')); ?>
+					<input type="hidden" name="user_id" id="user_id" value="<?php print $va_filter_options['user_id']; ?>"/>
+				</div>
 			</td><td>
 <?php		
 			print $t_order->htmlFormElement('shipping_method', null, array('nullOption' => '-'));		
 ?>
 			</td>
-			<td align="right" valign="bottom">
+		</tr>
+		<tr>
+			<td colspan="4">
 <?php
-				print caFormSubmitButton($this->request, __CA_NAV_BUTTON_GO__, _t('Filter'), 'caViewOptions', array());
-				print caJSButton($this->request, __CA_NAV_BUTTON_CANCEL__, _t('Reset'), 'caViewOptions', array('onclick' => 'jQuery("#searchToolsBox input").val("");'));
-
+				print caFormSubmitButton($this->request, __CA_NAV_BUTTON_GO__, _t('Filter'), 'caViewOptions', array())."\n";
+				
+				if (sizeof($va_order_list)) {
+					print caNavButton($this->request, __CA_NAV_BUTTON_DOWNLOAD__, _t('Get PDF'), 'client/orders', 'Orders', 'Export');
+				}
+?>
+			</td>
+			<td align="right">
+<?php
+				print caJSButton($this->request, __CA_NAV_BUTTON_CANCEL__, _t('Reset'), 'caViewOptions', array('onclick' => 'jQuery("#searchToolsBox input").val("");'))."\n";
 ?>
 			</td>
 		</tr>
@@ -114,51 +130,59 @@
 				<?php _p('Summary'); ?>
 			</th>
 			<th>
-				<?php _p('Status'); ?>
+				<?php _p('Total'); ?>
 			</th>
 			<th>
-				<?php _p('Total'); ?>
+				<?php _p('Status'); ?>
 			</th>
 			<th class="{sorter: false} list-header-nosort">&nbsp;</th>
 		</tr>
 		</thead>
 		<tbody>
 <?php
-	foreach($va_order_list as $va_order) {
+	if (sizeof($va_order_list)) {
+		foreach($va_order_list as $va_order) {
 ?>
-		<tr>
-			<td>
-				<?php print $va_order['order_number']; ?>
-			</td>
-			<td>
-				<?php print caGetLocalizedDate($va_order['created_on'], array('dateFormat' => 'delimited')); ?>
-			</td>
-			<td>
-				<?php print $va_order['billing_fname'].' '.$va_order['billing_lname']." ".($va_order['billing_organization'] ? "(".$va_order['billing_organization'].")" : ""); ?>
-			</td>
-			<td>
+			<tr>
+				<td>
+					<?php print $va_order['order_number']; ?>
+				</td>
+				<td>
+					<?php print caGetLocalizedDate($va_order['created_on'], array('dateFormat' => 'delimited')); ?>
+				</td>
+				<td>
+					<?php print $va_order['billing_fname'].' '.$va_order['billing_lname']." ".($va_order['billing_organization'] ? "(".$va_order['billing_organization'].")" : ""); ?>
+				</td>
+				<td>
 <?php 
-		print ($va_order['num_items'] == 1) ? _t('%1 item', $va_order['num_items']) : _t('%1 items', $va_order['num_items']); 
-		
-		if ($va_order['shipped_on_date']) {
-			print "\n<br/>"._t('Shipped on %1', caGetLocalizedDate($va_order['shipped_on_date'], array('dateFormat' => 'delimited', 'timeOmit' => true)));
-		} else {
-			if ($va_order['shipping_date']) {
-				print "\n<br/>"._t('Ships on %1', caGetLocalizedDate($va_order['shipping_date'], array('dateFormat' => 'delimited', 'timeOmit' => true)));
-			}
-		}
+					print ($va_order['num_items'] == 1) ? _t('%1 item', $va_order['num_items']) : _t('%1 items', $va_order['num_items']); 
+					
+					if ($va_order['shipped_on_date']) {
+						print "\n<br/>"._t('Shipped on %1', caGetLocalizedDate($va_order['shipped_on_date'], array('dateFormat' => 'delimited', 'timeOmit' => true)));
+					} else {
+						if ($va_order['shipping_date']) {
+							print "\n<br/>"._t('Ships on %1', caGetLocalizedDate($va_order['shipping_date'], array('dateFormat' => 'delimited', 'timeOmit' => true)));
+						}
+					}
 ?>
-			</td>
-			<td>
-				<?php print $vs_currency_symbol.sprintf("%4.2f", $va_order['order_total_item_fees'] + $va_order['order_total_item_tax'] + $va_order['shipping_cost'] + $va_order['handling_cost'])." ("._t('total').")"; ?>
-			</td>
-			<td>
-				<?php print $t_order->getChoiceListValue('order_status', $va_order['order_status']); ?>
-			</td>
-			<td>
-				<?php print caNavButton($this->request, __CA_NAV_BUTTON_EDIT__, _t("Edit"), 'client/orders', 'OrderEditor', 'Edit', array('order_id' => $va_order['order_id']), array(), array('icon_position' => __CA_NAV_BUTTON_ICON_POS_LEFT__, 'use_class' => 'list-button', 'no_background' => true, 'dont_show_content' => true)); ?>
-			</td>
-		</tr>
+				</td>
+				<td>
+					<?php print $vs_currency_symbol.sprintf("%4.2f", $va_order['order_total_item_fees'] + $va_order['order_total_item_tax'] + $va_order['shipping_cost'] + $va_order['handling_cost'])." ("._t('total').")"; ?>
+				</td>
+				<td>
+					<?php print $t_order->getChoiceListValue('order_status', $va_order['order_status']); ?>
+				</td>
+				<td>
+					<?php print caNavButton($this->request, __CA_NAV_BUTTON_EDIT__, _t("Edit"), 'client/orders', 'OrderEditor', 'Edit', array('order_id' => $va_order['order_id']), array(), array('icon_position' => __CA_NAV_BUTTON_ICON_POS_LEFT__, 'use_class' => 'list-button', 'no_background' => true, 'dont_show_content' => true)); ?>
+				</td>
+			</tr>
+<?php
+		}
+	} else {
+?>
+	<tr>
+		<td colspan="7" align="center"><?php print _t('No orders match your criteria'); ?></td>
+	</tr>
 <?php
 	}
 ?>
@@ -193,5 +217,22 @@
 			jQuery("#showTools").show(); jQuery("#hideTools").hide();
 		}); 
 		return false;
+	});
+	
+	jQuery(document).ready(function() {
+		jQuery('#user_id_autocomplete').autocomplete('<?php print caNavUrl($this->request, 'lookup', 'User', 'Get'); ?>', 
+			{ minChars: 3, matchSubset: 1, matchContains: 1, delay: 800, scroll: true, max: 100, extraParams: { 'inlineCreate': false },
+				formatResult: function(data, value) {
+					return jQuery.trim(value.replace(/<\/?[^>]+>/gi, ''));
+				}
+			}
+		);
+		
+		jQuery('#user_id_autocomplete').result(function(event, data, formatted) {
+			var item_id = data[1];
+			if (parseInt(item_id)) {
+				jQuery('#user_id').val(item_id);
+			}
+		});
 	});
 </script>

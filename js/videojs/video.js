@@ -943,7 +943,6 @@ _V_.LoopToggle = _V_.Button.extend({
 
   // OnPause - Add the vjs-noloop class to the element so it can change appearance
   onNoLoop: function(){
-  	console.log(this.el);
     _V_.removeClass(this.el, "vjs-loop");
     _V_.addClass(this.el, "vjs-noloop");
   }

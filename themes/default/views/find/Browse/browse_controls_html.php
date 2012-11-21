@@ -32,6 +32,8 @@
 	$va_results 		= $this->getVar('result');
 	$vs_controller 		= $this->getVar('controller');
 	
+	$vs_view			= $this->getVar('current_view');
+	
 	if (!$this->request->isAjax()) {
 		if ($this->getVar('target') == 'ca_objects') {
 ?>
@@ -123,10 +125,10 @@
 <?php
 	if (sizeof($va_criteria) > 0) {
 		# --- show results
-		print $this->render('Results/paging_controls_html.php');
+		if ($vs_view != 'map') { print $this->render('Results/paging_controls_html.php'); }
 		print $this->render('Results/search_options_html.php');
-		print $this->render('Results/'.$this->getVar('target').'_results_'.$this->getVar('current_view').'_html.php');
-		print $this->render('Results/paging_controls_minimal_html.php');
+		print $this->render('Results/'.$this->getVar('target').'_results_'.$vs_view.'_html.php');
+		if ($vs_view != 'map') { print $this->render('Results/paging_controls_minimal_html.php'); }
 	}
 	if (!$this->request->isAjax()) {
 ?>

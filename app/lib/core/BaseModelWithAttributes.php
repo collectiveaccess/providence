@@ -291,11 +291,16 @@
 		}
 		# ------------------------------------------------------------------
 		/** 
-		 * removes all attributes from current row of specified element, or all attributes regardless of 
+		 * Removes all attributes from current row of specified element, or all attributes regardless of 
 		 * element if $pm_element_code_or_id is omitted
 		 *
-		 * Note that this method does not respect the minAttributesPerRow type restriction setting. It always
-		 * removes *all* attributes
+		 * Note that this method respects the minAttributesPerRow type restriction setting and will only delete attributes until the minimum permissible
+		 * number of reached. If you wish to remove *all* attributes, ignoring any minAttributesPerRow constraints, pass the 'force' option set to true. 
+		 *
+		 * @param mixed $pm_element_code_or_id
+		 * @param array $pa_options Options are:
+		 *		force = if set to true all attributes are removed, even if there is a non-zero minAttributesPerRow constraint set
+		 * @return bool True on success, false on error
 		 */
 		public function removeAttributes($pm_element_code_or_id=null, $pa_options=null) {
 			if(!$this->getPrimaryKey()) { return null; }
@@ -304,7 +309,7 @@
 				$va_attributes = $this->getAttributesByElement($pm_element_code_or_id);
 			
 				foreach($va_attributes as $o_attribute) {
-					$this->removeAttribute($o_attribute->getAttributeID());
+					$this->removeAttribute($o_attribute->getAttributeID(), null, null, array('dontCheckMinMax' => isset($pa_options['force']) && $pa_options['force']));
 				}
 			} else {
 				if(is_array($va_element_codes = $this->getApplicableElementCodes($this->getTypeID(), false, false))) {
@@ -312,7 +317,7 @@
 						$va_attributes = $this->getAttributesByElement($vs_element_code);
 			
 						foreach($va_attributes as $o_attribute) {
-							$this->removeAttribute($o_attribute->getAttributeID());
+							$this->removeAttribute($o_attribute->getAttributeID(), null, null, array('dontCheckMinMax' => isset($pa_options['force']) && $pa_options['force']));
 						}
 					}
 				}
@@ -511,7 +516,7 @@
 			if (!is_array($pa_options)) { $pa_options = array(); }
 			
 			$vn_id = $this->getPrimaryKey();
-			if(parent::delete($pb_delete_related)) {
+			if(parent::delete($pb_delete_related, $pa_options)) {
 				// Delete any associated attributes and attribute_values
 				if (!($qr_res = $this->getDb()->query("
 					DELETE FROM ca_attribute_values 
@@ -574,7 +579,7 @@
 									foreach($va_values as $vs_sub_code => $vs_value) {
 										if (!$t_element = $this->_getElementInstance($vs_sub_code)) { continue; }
 										
-										switch($t_element->get('datatype')) {
+										switch((int)$t_element->get('datatype')) {
 											case 3:		// list
 												$va_list_item = $t_list->getItemFromListByItemID($t_element->get('list_id'), $vs_value);
 												$vs_value = $vs_value.":".$va_list_item['idno'];
@@ -868,6 +873,7 @@
 		 * @param array $pa_attributes An optional array of HTML attributes to place into the returned <select> tag
 		 * @param array $pa_options An array of options. Supported options are anything supported by ca_lists::getListAsHTMLFormElement as well as:
 		 *		childrenOfCurrentTypeOnly = Returns only types below the current type
+		 *		restrictToTypes = Array of type_ids to restrict type list to
 		 * @return string HTML for list element
 		 */ 
 		public function getTypeListAsHTMLFormElement($ps_name, $pa_attributes=null, $pa_options=null) {
@@ -877,6 +883,14 @@
 			}
 			
 			$pa_options['limitToItemsWithID'] = caGetTypeRestrictionsForUser($this->tableName(), $pa_options);
+			
+			if (isset($pa_options['restrictToTypes']) && is_array($pa_options['restrictToTypes'])) {
+				if (!$pa_options['limitToItemsWithID'] || !is_array($pa_options['limitToItemsWithID'])) {
+					$pa_options['limitToItemsWithID'] = $pa_options['restrictToTypes'];
+				} else {
+					$pa_options['limitToItemsWithID'] = array_intersect($pa_options['limitToItemsWithID'], $pa_options['restrictToTypes']);
+				}
+			}
 			
 			return $t_list->getListAsHTMLFormElement($this->getTypeListCode(), $ps_name, $pa_attributes, $pa_options);
 		}
@@ -1437,31 +1451,8 @@
 			}
 			
 			if ($ps_template) {
-				$va_templated_values = array();
-				foreach($va_tmp as $vn_id => $va_value_list) {
-					foreach($va_value_list as $va_value) {
-						$vs_template = $ps_template;
-						
-						$va_element_codes = array_keys($va_value);
-						usort($va_element_codes, "caLengthSortHelper");
-						
-						foreach($va_element_codes as $vn_i => $vs_element_code) {
-							if ($vs_value = $va_value[$vs_element_code]) {
-								$vs_template = str_replace("^".$vs_element_code, $vs_value, $vs_template);
-							} else {
-								$vs_template = preg_replace("![^A-Za-z0-9_\^ ]*\^{$vs_element_code}[ ]*[^A-Za-z0-9_ ]*!", '', $vs_template);
-							}
-						}
-						
-						if ($vs_template) { $va_templated_values[] = $vs_template; }
-					}
-				}
-				$va_proc_templates[$vn_i] = preg_replace("![^A-Za-z0-9_\^ ]*\^{$vs_tag}[^A-Za-z0-9_ ]*!", '', $va_proc_templates[$vn_i]);
-				$vs_text = preg_replace('![^A-Za-z0-9_\^ ]*\^[A-Za-z0-9_\-]+[^A-Za-z0-9_ ]*!', '', join($vs_delimiter, $va_templated_values)); // remove un-replaced tags
-				if (isset($pa_options['convertLineBreaks']) && $pa_options['convertLineBreaks']) {
-					$vs_text = caConvertLineBreaks($vs_text);
-				}
-				return $vs_text;
+				unset($pa_options['template']);
+				return caProcessTemplateForIDs($ps_template, $this->tableNum(), array($vn_row_id), array_merge($pa_options, array('placeholderPrefix' => $t_element->get('element_code'))));
 			} else {
 				// no template
 				$va_attribute_list = array();

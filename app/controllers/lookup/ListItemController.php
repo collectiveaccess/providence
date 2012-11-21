@@ -67,6 +67,7 @@
  		 * Returned data is JSON format
  		 */
  		public function GetHierarchyLevel() {
+			$ps_bundle = (string)$this->request->getParameter('bundle', pString);
 			$t_item = $this->opo_item_instance;
 			
 			$va_lists = array();
@@ -142,7 +143,7 @@
  				//
  				// ... so the hierbrowser passes an extra 'init' parameters set to 1 if the GetHierarchyLevel() call
  				// is part of a browser initialization
- 				$this->request->session->setVar($this->ops_table_name.'_browse_last_id', $pn_id);
+ 				$this->request->session->setVar($this->ops_table_name.'_'.$ps_bundle.'_browse_last_id', $pn_id);
  			}
  			
  			$va_list_items['_primaryKey'] = $t_item->primaryKey();	// pass the name of the primary key so the hierbrowser knows where to look for item_id's

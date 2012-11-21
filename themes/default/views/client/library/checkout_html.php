@@ -268,7 +268,7 @@
 <script type="text/javascript">
 	jQuery(document).ready(function() {
 		jQuery('#client_autocomplete').autocomplete('<?php print caNavUrl($this->request, 'lookup', 'User', 'Get'); ?>', 
-			{ minChars: 3, matchSubset: 1, matchContains: 1, delay: 800, scroll: true, max: 100, extraParams: { 'inlineCreate': true },
+			{ minChars: 3, matchSubset: 1, matchContains: 1, delay: 800, scroll: true, max: 100, extraParams: { 'inlineCreate': true, 'quickadd': 1 },
 				formatResult: function(data, value) {
 					return jQuery.trim(value.replace(/<\/?[^>]+>/gi, ''));
 				}
@@ -398,7 +398,7 @@
 					}
 					if(data[3] > 0) {
 						jQuery('#' + autocompleter_id).val('');
-						var msg = '<?php print addslashes(print _t("<em>%1</em> is currently on loan and is due to be returned on %2")); ?>';
+						var msg = '<?php print addslashes(_t("<em>%1</em> is currently on loan and is due to be returned on %2")); ?>';
 						msg = msg.replace("%1", data[0]);
 						msg = msg.replace("%2", data[4]);
 						jQuery.jGrowl(msg, { sticky: false, speed:'fast' });

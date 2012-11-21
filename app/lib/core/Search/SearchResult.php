@@ -69,7 +69,9 @@ class SearchResult extends BaseObject {
 	private $opa_timestamp_cache;
 	private $opa_row_ids_to_prefetch_cache;
 	
-	private $opo_tep; // timeexpression parser
+	private $opo_tep; // time expression parser
+	
+	private $opa_cached_result_counts;
 	
 	# ------------------------------------------------------------------
 	public function __construct($po_engine_result=null, $pa_tables=null) {
@@ -110,11 +112,12 @@ class SearchResult extends BaseObject {
 		$this->opo_tep = $GLOBALS["_DbResult_time_expression_parser"];
 	}
 	# ------------------------------------------------------------------
-	public function init($po_engine_result, $pa_tables) {
+	public function init($po_engine_result, $pa_tables, $pa_options=null) {
 		
 		$this->opn_table_num = $this->opo_subject_instance->tableNum();
 		$this->ops_table_name =  $this->opo_subject_instance->tableName();
 		$this->ops_table_pk = $this->opo_subject_instance->primaryKey();
+		$this->opa_cached_result_counts = array();
 		
 		$this->opo_engine_result = $po_engine_result;
 		if (!is_array($pa_tables)) { print caPrintStackTrace(); }
@@ -172,14 +175,14 @@ class SearchResult extends BaseObject {
 		$va_row_ids = array();
 		
 		$vn_cur_row_index = $this->opo_engine_result->currentRow();
-		$this->seek($pn_start);
+		self::seek($pn_start);
 		
 		$vn_i=0;
 		while(self::nextHit() && ($vn_i < $pn_num_rows)) {
 			$va_row_ids[] = $this->opo_engine_result->get($this->ops_table_pk);
 			$vn_i++;
 		}
-		$this->seek($vn_cur_row_index + 1);
+		self::seek($vn_cur_row_index + 1);
 		
 		return $this->opa_row_ids_to_prefetch_cache[$ps_tablename.'/'.$pn_start.'/'.$pn_num_rows] = $va_row_ids;
 	}
@@ -339,13 +342,13 @@ class SearchResult extends BaseObject {
 	 *
 	 */
 	public function getPrimaryKeyValues($vn_limit=4000000000) {
-		$vs_pk = $this->opo_subject_instance->primaryKey();
-		$this->opo_engine_result->seek(0);
+		//$vs_pk = $this->opo_subject_instance->primaryKey();
+		return $this->opo_engine_result->getHits();
 		
 		$va_ids = array();
 		$vn_c = 0;
-		while($this->opo_engine_result->nextHit()) {
-			$va_ids[] = $this->opo_engine_result->get($vs_pk);
+		foreach($va_hits as $vn_id) {
+			$va_ids[] = $va_hit[$vs_pk];
 			$vn_c++;
 			if ($vn_c >= $vn_limit) { break; }
 		}
@@ -533,74 +536,18 @@ class SearchResult extends BaseObject {
 				$va_row_ids = array();
 				$vs_rel_pk = $t_instance->primaryKey();
 				
+				$va_relationship_values = array();
 				foreach($va_related_items as $vn_relation_id => $va_relation_info) {
 					$va_row_ids[] = $va_relation_info[$vs_rel_pk];
+					$va_relationship_values[$va_relation_info[$vs_rel_pk]][$vn_relation_id] = array(
+						'relationship_typename' => $va_relation_info['relationship_typename'],
+						'relationship_type_id' => $va_relation_info['relationship_type_id'],
+						'label' => $va_relation_info['label']
+					);
 				}
 				if (!sizeof($va_row_ids)) { return ''; }
-				$va_tags = array();
-				if (preg_match_all("!\^([A-Za-z0-9_\.]+)!", $vs_template, $va_matches)) {
-					$va_tags = $va_matches[1];
-				}
-				
-				if (!sizeof($va_tags)) { 
-					$va_tags = array('label'); 
-					$vs_template = '^label';
-				}
-				
-				$qr_rel_items = $t_instance->makeSearchResult($va_path_components['table_name'], $va_row_ids);
-				$qr_rel_items->setOption('prefetch', 1000);
-				
-				$va_values = array();
-				while($qr_rel_items->nextHit()) {
-					$va_relation_info = array_shift($va_related_items);
-					if (sizeof($va_tags)) {
-						$vs_value = $vs_template;
-						foreach($va_tags as $vs_tag) {
-							$vs_field_val = null;
-							switch($vs_tag) {
-								case 'label':
-								case 'preferred_labels':
-								case $va_path_components['table_name'].'.preferred_labels':
-									
-									if ($vb_show_hierarachy) {
-										$vs_field_val = $qr_rel_items->get($va_path_components['table_name'].'.hierarchy.preferred_labels', array_merge($pa_options, array('delimiter' => $vs_hierarchical_delimiter)));
-									} else {
-										$vs_field_val = $va_relation_info['label'];
-									}
-									$vs_value = str_replace("^{$vs_tag}", $vs_field_val, $vs_value);
-									break;
-								case 'relationship_typename':
-									$vs_field_val = $va_relation_info['relationship_typename'];
-									break;
-								default:
-									$va_tmp = explode('.', $vs_tag);	// see if this is a reference to a related table
-									if (($va_path_components['table_name'] != $va_tmp[0]) && ($t_tmp = $this->opo_datamodel->getInstanceByTableName($va_tmp[0], true))) {	// if the part of the tag before a "." (or the tag itself if there are no periods) is a table then try to fetch it as related to the current record
-										$vs_field_val = $qr_rel_items->get($vs_tag);
-									} else {
-										if (sizeof($va_tmp) > 1) { 
-											$vs_get_spec = $vs_tag;
-										} else {
-											$vs_get_spec = $va_path_components['table_name'].".".$vs_tag;
-										}
-										$vs_field_val = $qr_rel_items->get($vs_get_spec);
-									}
-									break;
-							}
-							
-							if ($vs_field_val) {
-								$vs_value = str_replace("^{$vs_tag}", $vs_field_val, $vs_value);
-							} else {
-								$vs_value = preg_replace("![^\^A-Za-z0-9_ ]*\^{$vs_tag}[ ]*[^A-Za-z0-9_ ]*[ ]*!", '', $vs_value);
-							}
-						}
-						
-						$va_values[] = $vs_value;
-					} else {
-						$va_values[] = $qr_rel_items->get($va_path_components['table_name'].'.preferred_labels');
-					}
-				}
-				
-				return join($vs_delimiter, $va_values);
+				if (!$vs_template) { $vs_template = "^label"; }
+				return caProcessTemplateForIDs($vs_template, $t_instance->tableNum(), $va_row_ids, array_merge($pa_options, array('relationshipValues' => $va_relationship_values, 'showHierarchicalLabels' => $vb_show_hierarachy)));
 			}
 		}
 		
@@ -773,13 +720,20 @@ class SearchResult extends BaseObject {
 			}
 			if (!$vb_return_as_array) {
 				if (isset($pa_options['convertCodesToDisplayText']) && $pa_options['convertCodesToDisplayText'] && ($va_path_components['field_name'])) {
-					$vs_template = '';
+					$vs_template = null;
 					if ($va_path_components['subfield_name']) { 
-						$vs_template = '^'.$va_path_components['subfield_name']; 
+						$va_values = $t_instance->getAttributeDisplayValues($va_path_components['field_name'], $vn_row_id, $pa_options);
+						$va_value_list = array();
+						foreach($va_values as $vn_id => $va_attr_val_list) {
+							foreach($va_attr_val_list as $vn_value_id => $va_value_array) {
+								$va_value_list[] = $va_value_array[$va_path_components['subfield_name']];
+							}
+						}
+						return join(" ", $va_value_list);
 					} else {
 						if (isset($pa_options['template'])) { $vs_template = $pa_options['template']; }
 					}
-					
+					unset($pa_options['template']);
 					return $t_instance->getAttributesForDisplay($va_path_components['field_name'], $vs_template, array_merge(array('row_id' => $vn_row_id), $pa_options));
 				}
 				if ($t_element && !$va_path_components['subfield_name'] && ($t_element->get('datatype') == 0)) {
@@ -1601,12 +1555,13 @@ class SearchResult extends BaseObject {
 	 * @param bool $vb_sort If true, counts for each field value will be sorted by value; default is false
 	 */
 	public function getResultCountForFieldValues($pa_field_list, $vb_sort=false){
+		$vs_key = md5(print_r($pa_field_list, true).($vb_sort ? 'sort' : 'nosort'));
+		if (isset( $this->opa_cached_result_counts[$vs_key])) { return  $this->opa_cached_result_counts[$vs_key]; }
 		if (($vn_cur_row_index = $this->opo_engine_result->currentRow()) < 0) {
 			$vn_cur_row_index = 0;
 		}
-		$this->seek(0);
+		self::seek(0);
 		$va_result = array();
-		$this->setOption("prefetch", self::numHits());
 		
 		// loop through result and try to fetch values of the given field list
 		while(self::nextHit()) {
@@ -1621,11 +1576,7 @@ class SearchResult extends BaseObject {
 							$vs_field = $va_matches[1].'.'.$va_matches[2];
 						}
 						foreach($vm_field_values as $vs_field_value) {
-							if($va_result[$vs_field][$vs_field_value]){
-								$va_result[$vs_field][$vs_field_value]++;
-							} else {
-								$va_result[$vs_field][$vs_field_value] = 1;
-							}
+							$va_result[$vs_field][$vs_field_value]++;
 						}						
 					} // do nothing on other cases (e.g. error or empty fields)
 				}
@@ -1633,7 +1584,7 @@ class SearchResult extends BaseObject {
 		}
 		
 		// restore current position
-		$this->seek($vn_cur_row_index);
+		self::seek($vn_cur_row_index);
 		
 		// user wants the arrays to be sorted
 		if($vb_sort) {
@@ -1641,7 +1592,7 @@ class SearchResult extends BaseObject {
 				ksort($va_field_contents);
 			}
 		}
-		return $va_result;
+		return $this->opa_cached_result_counts[$vs_key] = $va_result;
 	}
 	# ------------------------------------------------------------------
 }

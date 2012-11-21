@@ -44,19 +44,12 @@
 	
 	print caFormTag($this->request, 'SaveOrderOverview', 'caClientOrderOverviewForm', null, 'post', 'multipart/form-data', '_top', array());
 
-	$vs_item_url = caNavUrl($this->request, 'client/library', 'OrderEditor', 'ItemList', array('order_id' => $vn_order_id));
+	
+	$va_users_other_orders = $t_order->getOrders(array('user_id' => $vn_client_user_id = $t_order->getOrderTransactionUserID(), 'type' => 'L', 'is_outstanding' => true, 'exclude' => array($vn_order_id)));
 ?>
+<h1><?php print _t('Loan Overview'); ?></h1>
 <div id="caClientOrderOverview">
-	<div class="overrideButton"><a href="#" class="button" onclick="jQuery('#caCommerceOrderStatusOverride').toggle(150);"><?php print _t('Override current loan status'); ?> &rsaquo;</a></div>
-	<div class="formContainerBg" id="caCommerceOrderStatusOverride" style="display: none;">
-	<?php
-		print "<div class='formLabel'>";
-		print $t_order->htmlFormElement('order_status', "^LABEL ^ELEMENT", array('width' => $vn_width));
-		
-		print caFormSubmitButton($this->request, __CA_NAV_BUTTON_SAVE__, _t("Save"), 'caClientOrderOverviewForm');
-		print "</div>\n";
-	?>
-	</div><!-- end formContainerBg -->
+	
 	
 	<div class="orderStatus">
 <?php
@@ -67,38 +60,33 @@
 	$vs_next_step = '';
 	switch($vs_order_status) {
 		case 'OPEN':
-			$vs_status_message = _t('Client loan status: %1', $vs_order_status_display);
+			$vs_status_message = _t('Status: %1', $vs_order_status_display);
 			TooltipManager::add("#commerceOrderStatusMessage", $vs_order_status_description = _t('Loan request is being entered by the client and not yet submitted for processing.'));
 			break;
 		case 'SUBMITTED':
-			$vs_status_message = _t('Client loan status: %1', $vs_order_status_display);
+			$vs_status_message = _t('Status: %1', $vs_order_status_display);
 			TooltipManager::add("#commerceOrderStatusMessage", $vs_order_status_description = _t('Loan request has been submitted by the client for processing. Please review the request, modify pricing as required, assemble items to be loaned and then click the "process" button below.'));
 			$vs_next_step = caNavLink($this->request, _t('Process')." &rsaquo;", 'caClientOrderOverviewButton',  'client/library', 'OrderEditor', 'ReturnQuoteToUser', array('order_id' => $vn_order_id));
 			break;
 		case 'AWAITING_PAYMENT':
-			$vs_status_message = _t('Client loan status: %1', $vs_order_status_display);
+			$vs_status_message = _t('Status: %1', $vs_order_status_display);
 			TooltipManager::add("#commerceOrderStatusMessage", $vs_order_status_description = _t('Loan request requires payment by client. If you have payment details to enter for the client click on the "enter payment information" button below. Otherwise you must wait for the client to enter their payment information via the client interface.'));
 			$vs_next_step = caNavLink($this->request, _t('Enter payment information')." &rsaquo;", 'caClientOrderOverviewButton',  'client/library', 'OrderEditor', 'Payment', array('order_id' => $vn_order_id));
 			
 			break;
 		case 'PROCESSED':
-			$vs_status_message = _t('Client loan status: %1', $vs_order_status_display);
+			$vs_status_message = _t('Status: %1', $vs_order_status_display);
 			
 			if ($t_order->requiresShipping()) {
-				TooltipManager::add("#commerceOrderStatusMessage", $vs_order_status_description = _t('Loan is ready for fulfillment. If the load requires shipping click on the "record shipment details" below to enter shipping information.'));
+				TooltipManager::add("#commerceOrderStatusMessage", $vs_order_status_description = _t('Loan has been made. If the load requires shipping click on the "record shipment details" below to enter shipping information.'));
 				$vs_next_step = caNavLink($this->request, _t('Record shipment details')." &rsaquo;", 'caClientOrderOverviewButton',  'client/library', 'OrderEditor', 'Shipping', array('order_id' => $vn_order_id));
 			} else {
-				TooltipManager::add("#commerceOrderStatusMessage", $vs_order_status_description = _t('Loan is ready for fulfillment. It will be closed automatically when the last item is returned.'));
+				TooltipManager::add("#commerceOrderStatusMessage", $vs_order_status_description = _t('Loan has been made. It will be closed automatically when the last item is returned.'));
 			}
 			break;
 		case 'COMPLETED':
-			$vs_status_message = _t('Client loan status: %1', $vs_order_status_display);
-			TooltipManager::add("#commerceOrderStatusMessage", $vs_order_status_description = _t('Loan has been fulfilled and is complete. No further action is required.'));
-			
-			break;
-		case 'REOPENED':
-			$vs_status_message = _t('Client loan status: %1', $vs_order_status_display);
-			TooltipManager::add("#commerceOrderStatusMessage", $vs_order_status_description = _t('Loan has been reopened due to an issue.'));
+			$vs_status_message = _t('Status: %1', $vs_order_status_display);
+			TooltipManager::add("#commerceOrderStatusMessage", $vs_order_status_description = _t('Loan is complete. No further action is required.'));
 			
 			break;
 		default:
@@ -106,9 +94,26 @@
 			$vs_next_step = '';
 			break;
 	}
-	
+
 	print "<h1 id='commerceOrderStatusMessage'>".$vs_status_message."</h1>";
+?>
+<div class="overrideButton" style='float:right;'><a href="#" class="button" onclick="jQuery('#caCommerceOrderStatusOverride').toggle(150);"><?php print _t('Change loan status'); ?> &rsaquo;</a></div>
+<?php
 	print "<div class='statusDesc'>{$vs_order_status_description}\n";
+?>
+
+	
+	<div class="formContainerBg" id="caCommerceOrderStatusOverride" style="display: none;">
+	<?php
+		print "<div class='formLabel'>";
+		print $t_order->htmlFormElement('order_status', "^LABEL ^ELEMENT", array('width' => $vn_width));
+		
+		print caFormSubmitButton($this->request, __CA_NAV_BUTTON_SAVE__, _t("Save"), 'caClientOrderOverviewForm');
+		print "</div>\n";
+	?>
+	</div><!-- end formContainerBg -->
+<?php	
+
 	
 		
 	//
@@ -119,12 +124,12 @@
 		
 		// Shipping required but no method set
 		if ($t_order->get('shipping_method') == 'NONE') {
-			$va_warnings[] = _t('Warning: order requires shipping but no shipping method is set!');
+			$va_warnings[] = _t('Action Required: loan requires shipping but no shipping method is set!');
 		}
 		
 		// Missing shipping address
 		if (!$t_order->get('shipping_lname') || !$t_order->get('shipping_address1') || !$t_order->get('shipping_city') || !$t_order->get('shipping_zone') || !$t_order->get('shipping_country') || !$t_order->get('shipping_postal_code')) {
-			$va_warnings[] = _t('Warning: shipping address is incomplete!');
+			$va_warnings[] = _t('Action Required: shipping address is incomplete!');
 		}
 		
 		switch($t_order->get('order_status')) {
@@ -132,12 +137,12 @@
 			case 'PROCESSED_AWAITING_DIGITIZATION':	
 			case 'PROCESSED_AWAITING_MEDIA_ACCESS':
 				if (!$t_order->get('shipped_on_date') && !$t_order->get('ship_date')) { 			// Order paid for but not shipped or estimate ship date set
-					$va_warnings[] = _t('Warning: order requires shipping!');
+					$va_warnings[] = _t('Action Required: loan requires shipping!');
 				} 
 				break;
 			case 'COMPLETED':	
 				if (!$t_order->get('shipped_on_date') ) { 			// Order complete but not shipped
-					$va_warnings[] = _t('Warning: order is complete but items never shipped!');
+					$va_warnings[] = _t('Action Required: loan is complete but items never shipped!');
 				} 
 				break;
 		}
@@ -148,7 +153,7 @@
 	switch($t_order->get('order_status')) {
 		case 'PROCESSED':	
 			if (!$t_order->get('payment_received_on') && ($t_order->getTotal() > 0)) { 			// no payment date for processed order?
-				$va_warnings[] = _t('Warning: no payment recorded!');
+				$va_warnings[] = _t('Action Required: no payment recorded!');
 			} 
 			break;
 	}
@@ -156,15 +161,16 @@
 		print "<div class='statusWarning'>".$vs_warning."</div>";
 	}
 	print "</div><!-- end statusDesc -->";
-	if ($vs_next_step) { print "<h2 style='text-align:right;'>"._t("Next step").": $vs_next_step</h2>\n"; }
+	if ($vs_next_step) { print "<h2 style='float: right; text-align:right;'>"._t("Next step").": $vs_next_step</h2>\n"; }
 ?>
+	<div style='width:100%; height:1px; clear:both;'></div>
 	</div><!-- end orderStatus -->
 <?php
 	$va_due_dates = $t_order->getLoanDueDates();
 	$va_return_dates = $t_order->getLoanReturnDates();
 ?>
-	<h1><?php print _t('Loan Overview'); ?></h1>
-	<table cellspacing="0" >
+
+	<table cellspacing="0" id='loanSummaryTable'>
 		<tr>
 			<td bgcolor="#f1f1f1"><span class='loanTitle'><?php print _t('Loan Number').": </span></td><td>".$t_order->getOrderNumber()."";?></td>
 			<td bgcolor="#f1f1f1"><span class='loanTitle'><?php print _t('Loaned To').": </span></td><td>".$t_order->get('billing_fname').' '.$t_order->get('billing_lname'); ?></td>
@@ -196,6 +202,15 @@
 	$vs_communication_url = caNavUrl($this->request, 'client/library', 'Communications', 'Index', array('transaction_id' => $vn_transaction_id));
 ?>
 	<h3><?php print ($vn_num_messages == 1) ? _t("There has been <a href='%2'>%1 communication</a> regarding this loan request", $vn_num_messages, $vs_communication_url) :  _t("There have been <a href='%2'>%1 communications</a> regarding this loan request", $vn_num_messages, $vs_communication_url); ?></h3>
+
+<?php
+	if (is_array($va_users_other_orders) && ($vn_num_other_orders = sizeof($va_users_other_orders))) {
+		$vs_other_order_url = caNavUrl($this->request, 'client/library', 'List', 'Index', array('user_id' => $vn_client_user_id));
+?>
+	<h3><?php print ($vn_num_other_orders == 1) ? _t("Client has <a href='%2'>%1 other outstanding loan</a>", $vn_num_other_orders, $vs_other_order_url) :  _t("Client has <a href='%2'>%1 other outstanding loans</a>", $vn_num_other_orders, $vs_other_order_url); ?></h3>
+<?php
+	}
+?>
 	<div class="overviewItem">
 <?php 
 		$va_output = array();
@@ -211,9 +226,11 @@
 			print "<b>"._t("Cost Breakdown").":</b> ".join(" + ", $va_output);
 		}
 ?></div>
-	
+<?php
+	;
+?>
 	<div >
-		<?php print "<h1>".((($vn_item_count = sizeof($va_items)) != 1) ? _t("%1 Items", $vn_item_count) : _t("%1 Item", $vn_item_count))." <span style='font-size:.65em;'><a href='".$vs_item_url."'>"._t('Manage')."</a></span></h1>"; ?>
+		<?php print "<h1>".((($vn_item_count = sizeof($va_items)) != 1) ? _t("%1 Items", $vn_item_count) : _t("%1 Item", $vn_item_count))." <span style='font-size:.65em;'>".caNavLink($this->request, _t('Manage'), '', 'client/library', 'OrderEditor', 'ItemList', array('order_id' => $vn_order_id))."</span> <span style='font-size:.65em;'>".caNavLink($this->request, _t('Print checklist'), '', 'client/library', 'OrderEditor', 'GetCheckList', array('order_id' => $vn_order_id))."</span></h1>"; ?>
 	</div>
 	
 <?php
@@ -222,9 +239,11 @@ print "<tr style='font-weight:bold; text-transform: uppercase; background-color:
 $va_outstanding = 0;
 $va_overdue = 0;
 foreach ($va_items as $va_item) {
+	$vn_object_id = $va_item['object_id'];
 	print "<tr>";
 	
-	print "<td>".caNavLink($this->request, $va_item['name'], "", "editor", "objects/ObjectEditor", "Edit", array('object_id' => $va_item['object_id']))."</td>";
+	#print "<td>".$va_item['thumbnail_tag']."</td>"; 
+	print "<td class='itemTitle{$vn_object_id}'>".caNavLink($this->request, $va_item['name'], "", "editor", "objects/ObjectEditor", "Edit", array('object_id' => $va_item['object_id']))."</td>";
 	print "<td>".$va_item['idno']."</td>";
 	print "<td>".date( 'M j, Y', $va_item['loan_checkout_date'])."</td>";
 	if (($va_item['loan_due_date'] < time()) && (!$va_item['loan_return_date'])) {
@@ -241,6 +260,9 @@ foreach ($va_items as $va_item) {
 		}
 	print "</td>";
 	print "</tr>";
+	TooltipManager::add(
+		".itemTitle{$vn_object_id}", "<table><tr><td>".$va_item['thumbnail_tag']."</td><td><b>".$va_item['idno']."<br/><br/></b>".$va_item['name']."</td></tr></table>"
+	);
 }
 print "</table>";
 
@@ -293,6 +315,7 @@ print "<div style='height:70px; width: 100%; clear:both;'></div>";
 
 	// Order_id used when saving "change status" form	
 	print $t_order->htmlFormElement('order_id');
+
 ?>
 </form>
 </div><!-- end caClientOrderOverview -->
