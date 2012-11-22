@@ -200,7 +200,7 @@ class WLPlugMediaOffice Extends WLPlug Implements IWLPlugMedia {
 			return '';
 		}
 		
-		if ($r_fp = fopen($ps_filepath, "r")) {
+		if ($r_fp = @fopen($ps_filepath, "r")) {
 			$vs_sig = fgets($r_fp, 9);
 			if ($this->isWord972000doc($vs_sig, $r_fp)) {
 				$this->properties = $this->handle = $this->ohandle = array(
