@@ -894,8 +894,41 @@
  		 * @param array $pa_options Array of options passed through to _initView 
  		 */
  		public function DownloadFile() {
- 			list($vn_subject_id, $t_subject) = $this->_initView();
  			if (!($pn_value_id = $this->request->getParameter('value_id', pInteger))) { return; }
+ 			$t_attr_val = new ca_attribute_values($pn_value_id);
+ 			if (!$t_attr_val->getPrimaryKey()) { return; }
+ 			$t_attr = new ca_attributes($t_attr_val->get('attribute_id'));
+ 		
+ 			$vn_table_num = $this->opo_datamodel->getTableNum($this->ops_table_name);
+ 			if ($t_attr->get('table_num') !=  $vn_table_num) { 
+ 				$this->response->setRedirect($this->request->config->get('error_display_url').'/n/2580?r='.urlencode($this->request->getFullUrlPath()));
+ 				return;
+ 			}
+ 			$t_element = new ca_metadata_elements($t_attr->get('element_id'));
+ 			$this->request->setParameter($this->opo_datamodel->getTablePrimaryKeyName($vn_table_num), $t_attr->get('row_id'));
+ 			
+ 			list($vn_subject_id, $t_subject) = $this->_initView($pa_options);
+ 			$ps_version = $this->request->getParameter('version', pString);
+ 			
+ 			//
+ 			// Does user have access to bundle?
+ 			//
+ 			if (($this->request->user->getBundleAccessLevel($this->ops_table_name, $t_element->get('element_code'))) < __CA_BUNDLE_ACCESS_READONLY__) {
+ 				$this->response->setRedirect($this->request->config->get('error_display_url').'/n/2580?r='.urlencode($this->request->getFullUrlPath()));
+ 				return;
+ 			}
+ 			
+ 			//
+ 			// Does user have access to type?
+ 			//
+ 			$va_restrict_to_types = null;
+ 			if ($t_subject->getAppConfig()->get('perform_type_access_checking')) {
+ 				$va_restrict_to_types = caGetTypeRestrictionsForUser($this->ops_table_name, array('access' => __CA_BUNDLE_ACCESS_EDIT__));
+ 			}
+ 			if (is_array($va_restrict_to_types) && !in_array($t_subject->get('type_id'), $va_restrict_to_types)) {
+ 				$this->response->setRedirect($this->request->config->get('error_display_url').'/n/2560?r='.urlencode($this->request->getFullUrlPath()));
+ 				return;
+ 			}
  			
  			//
  			// Does user have access to row?
@@ -907,12 +940,9 @@
  				}
  			}
  			
- 			$o_view = new View($this->request, $this->request->getViewsDirectoryPath().'/bundles/');
- 			
- 			// TODO: check that file is part of item user has access rights for
- 			$t_attr_val = new ca_attribute_values($pn_value_id);
- 			if (!$t_attr_val->getPrimaryKey()) { return; }
  			$t_attr_val->useBlobAsFileField(true);
+ 			
+ 			$o_view = new View($this->request, $this->request->getViewsDirectoryPath().'/bundles/');
  			
  			// get value
  			$t_element = new ca_metadata_elements($t_attr_val->get('element_id'));
@@ -920,7 +950,6 @@
  			if ($t_element->get('datatype') != 15) { 	// 15=file
  				return;
  			}
- 			
  			
  			$o_view->setVar('file_path', $t_attr_val->getFilePath('value_blob'));
  			$o_view->setVar('file_name', ($vs_name = trim($t_attr_val->get('value_longtext2'))) ? $vs_name : _t("downloaded_file"));
@@ -938,9 +967,41 @@
  		 * @param array $pa_options Array of options passed through to _initView 
  		 */
  		public function DownloadMedia($pa_options=null) {
- 			list($vn_subject_id, $t_subject) = $this->_initView($pa_options);
  			if (!($pn_value_id = $this->request->getParameter('value_id', pInteger))) { return; }
+ 			$t_attr_val = new ca_attribute_values($pn_value_id);
+ 			if (!$t_attr_val->getPrimaryKey()) { return; }
+ 			$t_attr = new ca_attributes($t_attr_val->get('attribute_id'));
+ 		
+ 			$vn_table_num = $this->opo_datamodel->getTableNum($this->ops_table_name);
+ 			if ($t_attr->get('table_num') !=  $vn_table_num) { 
+ 				$this->response->setRedirect($this->request->config->get('error_display_url').'/n/2580?r='.urlencode($this->request->getFullUrlPath()));
+ 				return;
+ 			}
+ 			$t_element = new ca_metadata_elements($t_attr->get('element_id'));
+ 			$this->request->setParameter($this->opo_datamodel->getTablePrimaryKeyName($vn_table_num), $t_attr->get('row_id'));
+ 			
+ 			list($vn_subject_id, $t_subject) = $this->_initView($pa_options);
  			$ps_version = $this->request->getParameter('version', pString);
+ 			
+ 			//
+ 			// Does user have access to bundle?
+ 			//
+ 			if (($this->request->user->getBundleAccessLevel($this->ops_table_name, $t_element->get('element_code'))) < __CA_BUNDLE_ACCESS_READONLY__) {
+ 				$this->response->setRedirect($this->request->config->get('error_display_url').'/n/2580?r='.urlencode($this->request->getFullUrlPath()));
+ 				return;
+ 			}
+ 			
+ 			//
+ 			// Does user have access to type?
+ 			//
+ 			$va_restrict_to_types = null;
+ 			if ($t_subject->getAppConfig()->get('perform_type_access_checking')) {
+ 				$va_restrict_to_types = caGetTypeRestrictionsForUser($this->ops_table_name, array('access' => __CA_BUNDLE_ACCESS_EDIT__));
+ 			}
+ 			if (is_array($va_restrict_to_types) && !in_array($t_subject->get('type_id'), $va_restrict_to_types)) {
+ 				$this->response->setRedirect($this->request->config->get('error_display_url').'/n/2560?r='.urlencode($this->request->getFullUrlPath()));
+ 				return;
+ 			}
  			
  			//
  			// Does user have access to row?
@@ -952,9 +1013,6 @@
  				}
  			}
  			
- 			// TODO: check that file is part of item user has access rights for
- 			$t_attr_val = new ca_attribute_values($pn_value_id);
- 			if (!$t_attr_val->getPrimaryKey()) { return; }
  			$t_attr_val->useBlobAsMediaField(true);
  			
  			if (!in_array($ps_version, $t_attr_val->getMediaVersions('value_blob'))) { $ps_version = 'original'; }
@@ -968,7 +1026,6 @@
  			if ($t_element->get('datatype') != 16) { 	// 16=media
  				return;
  			}
- 			
  			
  			$o_view->setVar('file_path', $t_attr_val->getMediaPath('value_blob', $ps_version));
  			$o_view->setVar('file_name', ($vs_name = trim($t_attr_val->get('value_longtext2'))) ? $vs_name : _t("downloaded_file"));
