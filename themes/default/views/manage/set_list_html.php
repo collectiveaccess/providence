@@ -134,3 +134,5 @@
 		</tbody>
 	</table>
 </div>
+
+	<div class="editorBottomPadding"><!-- empty --></div>
