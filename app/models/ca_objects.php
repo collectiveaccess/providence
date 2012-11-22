@@ -402,7 +402,7 @@ class ca_objects extends BundlableLabelableBaseModelWithAttributes implements IB
 		$this->BUNDLES['ca_commerce_order_history'] = array('type' => 'special', 'repeating' => true, 'label' => _t('Order history'));
 	}
 	# ------------------------------------------------------
-	public function delete($pb_delete_related=false){
+	public function delete($pb_delete_related=false, $pa_options=null){
 		// nuke related representations
 		foreach($this->getRepresentations() as $va_rep){
 			// check if representation is in use anywhere else 
@@ -412,7 +412,7 @@ class ca_objects extends BundlableLabelableBaseModelWithAttributes implements IB
 			}
 		}
 
-		return parent::delete($pb_delete_related);
+		return parent::delete($pb_delete_related, $pa_options);
 	}
 	# ------------------------------------------------------
 	/**
@@ -826,6 +826,8 @@ class ca_objects extends BundlableLabelableBaseModelWithAttributes implements IB
  	 * @param $pa_options - an array of options passed through to BaseModel::set() when creating the new representation. Currently supported options:
  	 *		original_filename - the name of the file being uploaded; will be recorded in the database and used as the filename when the file is subsequently downloaded
  	 *		rank - a numeric rank used to order the representations when listed
+ 	 *		returnRepresentation = if set the newly created ca_object_representations instance is returned rather than the link_id of the newly created ca_objects_x_object_representations record
+ 	 * @return mixed Returns primary key (link_id) of the ca_objects_x_object_representations row linking the newly created representation to the object; if the 'returnRepresentation' is set then an instance for the newly created ca_object_representations is returned instead; boolean false is returned on error
  	 */
  	public function addRepresentation($ps_media_path, $pn_type_id, $pn_locale_id, $pn_status, $pn_access, $pb_is_primary, $pa_values=null, $pa_options=null) {
  		if (!($vn_object_id = $this->getPrimaryKey())) { return null; }
@@ -915,6 +917,9 @@ class ca_objects extends BundlableLabelableBaseModelWithAttributes implements IB
 			$this->update();
 		}
 		
+		if (isset($pa_options['returnRepresentation']) && (bool)$pa_options['returnRepresentation']) {
+			return $t_rep;
+		} 
  		return $t_oxor->getPrimaryKey();
  	}
  	# ------------------------------------------------------
@@ -1150,6 +1155,8 @@ class ca_objects extends BundlableLabelableBaseModelWithAttributes implements IB
 	 */
 	 public function getHierarchyList($pb_dummy=false) {
 	 	$vn_pk = $this->getPrimaryKey();
+	 	$vs_template = $this->getAppConfig()->get('ca_objects_hierarchy_browser_display_settings');
+	 	
 	 	if (!$vn_pk) { 
 	 		$o_db = new Db();
 	 		if (is_array($va_type_ids = caMergeTypeRestrictionLists($this, array())) && sizeof($va_type_ids)) {
@@ -1177,7 +1184,7 @@ class ca_objects extends BundlableLabelableBaseModelWithAttributes implements IB
 	 		while($qr_res->nextRow()) {
 	 			$va_hiers[$vn_object_id = $qr_res->get('object_id')] = array(
 	 				'object_id' => $vn_object_id,
-	 				'name' => $va_labels[$vn_object_id],
+	 				'name' => caProcessTemplateForIDs($vs_template, 'ca_objects', array($vn_object_id)),
 	 				'hierarchy_id' => $vn_object_id,
 	 				'children' => (int)$qr_res->get('c')
 	 			);
@@ -1203,12 +1210,12 @@ class ca_objects extends BundlableLabelableBaseModelWithAttributes implements IB
 			$va_object_hierarchy_root = array(
 				$t_object->get($vs_hier_fld) => array(
 					'object_id' => $vn_pk,
-					'name' => $vs_label,
+					'name' => $vs_name = caProcessTemplateForIDs($vs_template, 'ca_objects', array($vn_pk)),
 					'hierarchy_id' => $vn_hier_id,
 					'children' => sizeof($va_children)
 				),
 				'object_id' => $vn_pk,
-				'name' => $vs_label,
+				'name' => $vs_name,
 				'hierarchy_id' => $vn_hier_id,
 				'children' => sizeof($va_children)
 			);
