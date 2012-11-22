@@ -1558,7 +1558,6 @@ class BaseModel extends BaseObject {
 		}
 		
 		if ($pm_id == null) {
-			//$this->postError(750,_t("Can't load record; key is blank"), "BaseModel->load()");
 			return false;
 		}
 
