@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2009-2011 Whirl-i-Gig
+ * Copyright 2009-2012 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -30,24 +30,22 @@
  
 	$vs_id_prefix 			= $this->getVar('placement_code').$this->getVar('id_prefix');
 	$va_items 				= $this->getVar('items');
-	$t_set 						= $this->getVar('t_set');
+	$t_set 					= $this->getVar('t_set');
 	$vn_set_id 				= $t_set->getPrimaryKey();
-	$t_row 						= $this->getVar('t_row');
-	$vs_type_singular 	= $this->getVar('type_singular');
+	$t_row 					= $this->getVar('t_row');
+	$vs_type_singular 		= $this->getVar('type_singular');
 	$vs_type_plural 		= $this->getVar('type_plural');
 	$va_lookup_urls 		= $this->getVar('lookup_urls');
-	$vn_table_num 		= $t_set->get('table_num');
+	$vn_table_num 			= $t_set->get('table_num');
 ?>
 <div id="<?php print $vs_id_prefix; ?>setItemEditor" class='setItemEditor'>
 <?php
 	if (!$vn_table_num) {
 ?>
-		<div class="notification-warning-box" id='<?php print $vs_id_prefix; ?>setNoItemsWarning'>
-			<ul class="notification-warning-box">
-				<li class="notification-warning-box"><?php
-					print _t('You must save this set before you can add items to it.');
-			?></li>
-			</ul>
+		<div id='<?php print $vs_id_prefix; ?>setNoItemsWarning'>
+			<?php
+					print "<strong>"._t('You must save this set before you can add items to it.')."</strong>";
+			?>
 		</div>
 <?php
 	} else {
@@ -59,17 +57,10 @@
 	</div>
 	<div id="<?php print $vs_id_prefix; ?>setItems" class="setItems">
 		<div class="setEditorAddItemForm" id="<?php print $vs_id_prefix; ?>addItemForm">
-			<?php print _t('Add %1 to set', $vs_type_singular).': '; ?>
-			<input type="text" size="70" name="setItemAutocompleter" id="<?php print $vs_id_prefix; ?>setItemAutocompleter"/>
+			<?php print _t('Add %1', $vs_type_singular).': '; ?>
+			<input type="text" size="70" name="setItemAutocompleter" id="<?php print $vs_id_prefix; ?>setItemAutocompleter" class="lookupBg"/>
 		</div>
-		
-		<div class="notification-warning-box" id='<?php print $vs_id_prefix; ?>setNoItemsWarning'>
-			<ul class="notification-warning-box">
-				<li class="notification-warning-box"><?php
-					print _t('There are no items in this set');
-			?></li>
-			</ul>
-		</div>
+
 		<ul id="<?php print $vs_id_prefix; ?>setItemList" class="setItemList">
 
 		</ul>
