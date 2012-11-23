@@ -109,7 +109,7 @@
  			$va_set_stats = array('mine' => caExtractValuesByUserLocale($t_set->getSets(array('user_id' => $this->request->getUserID(), 'access' => __CA_SET_EDIT_ACCESS__)), null, null, array()));
  			if ($this->request->user->canDoAction('is_administrator') || $this->request->user->canDoAction('can_administrate_sets')) {
  				$va_set_stats['user'] = caExtractValuesByUserLocale($t_set->getSets(array('user_id' => $this->request->getUserID(), 'allUsers' => true)), null, null, array());
- 				$va_set_stats['public'] = caExtractValuesByUserLocale($t_set->getSets(array('user_id' => $this->request->getUserID(), 'allPublicUsers' => true)), null, null, array());
+ 				$va_set_stats['public'] = caExtractValuesByUserLocale($t_set->getSets(array('user_id' => $this->request->getUserID(), 'publicUsers' => true)), null, null, array());
  			}
  			
  			$o_result_context = new ResultContext($this->request, 'ca_sets', 'basic_search');
