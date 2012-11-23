@@ -1106,6 +1106,10 @@ require_once(__CA_LIB_DIR__.'/core/Parsers/TimeExpressionParser.php');
 				
 				}
 				$vs_buf .= "</div>\n";
+				
+				if ($vs_get_spec = $po_view->request->config->get("{$vs_table_name}_inspector_display_below_media")) {
+					$vs_buf .= caProcessTemplateForIDs($vs_get_spec, $vs_table_name, array($t_item->getPrimaryKey()));
+				}
 			}
 	
 			$vs_more_info = '';
@@ -1162,6 +1166,9 @@ require_once(__CA_LIB_DIR__.'/core/Parsers/TimeExpressionParser.php');
 				$vs_more_info .= "</div>\n";
 			}
 			
+			if ($vs_get_spec = $po_view->request->config->get("{$vs_table_name}_inspector_display_more_info")) {
+				$vs_more_info .= caProcessTemplateForIDs($vs_get_spec, $vs_table_name, array($t_item->getPrimaryKey()));
+			}
 			if ($vs_more_info) {
 				$vs_buf .= "<div class='button' style='text-align:right;'><a href='#' id='inspectorMoreInfo'>"._t("More info")."</a> &rsaquo;</div>
 			<div id='inspectorInfo' style='background-color:#f9f9f9; border: 1px solid #eee; margin:3px 0px -3px 0px;'>";
@@ -1394,6 +1401,7 @@ require_once(__CA_LIB_DIR__.'/core/Parsers/TimeExpressionParser.php');
 	function caProcessTemplateForIDs($ps_template, $pm_tablename_or_num, $pa_row_ids, $pa_options=null) {
 		unset($pa_options['request']);
 		unset($pa_options['template']);	// we pass through options to get() and don't want templates 
+		if (!isset($pa_options['convertCodesToDisplayText'])) { $pa_options['convertCodesToDisplayText'] = true; }
 		
 		$vb_return_as_array = (isset($pa_options['returnAsArray'])) ? (bool)$pa_options['returnAsArray'] : false;
 		if (!is_array($pa_row_ids) || !sizeof($pa_row_ids)) {
@@ -1407,7 +1415,7 @@ require_once(__CA_LIB_DIR__.'/core/Parsers/TimeExpressionParser.php');
 		$vs_delimiter = (isset($pa_options['delimiter'])) ? $pa_options['delimiter'] : '; ';
 		
 		$va_tags = array();
-		if (preg_match_all("!\^([A-Za-z0-9_\.]+)!", $ps_template, $va_matches)) {
+		if (preg_match_all("!\^([A-Za-z0-9_\.]+[^ \t\r\n\"\'<>]*)!", $ps_template, $va_matches)) {
 			$va_tags = $va_matches[1];
 		}
 		
@@ -1427,34 +1435,52 @@ require_once(__CA_LIB_DIR__.'/core/Parsers/TimeExpressionParser.php');
 		libxml_use_internal_errors(true);								// don't reported mangled HTML errors
 		$o_dom->loadHTML($ps_template);
 		libxml_clear_errors();
+		
 		$o_ifdefs = $o_dom->getElementsByTagName("ifdef");				// if defined
 		$o_ifnotdefs = $o_dom->getElementsByTagName("ifnotdef");		// if not defined
 		$o_mores = $o_dom->getElementsByTagName("more");				// more tags – content suppressed if there are no defined values following the tag pair
 		$o_betweens = $o_dom->getElementsByTagName("between");			// between tags – content suppressed if there are not defined values on both sides of the tag pair
 		
+		$o_options = $o_dom->getElementsByTagName("options");
 		
 		$va_ifdefs = array();
 		foreach($o_ifdefs as $o_ifdef) {
 			if (!$o_ifdef) { continue; }
-			$va_ifdefs[(string)$o_ifdef->getAttribute('code')][] = array('directive' => $o_dom->saveHTML($o_ifdef), 'content' => $o_ifdef->textContent);
+			
+			$vs_html = $o_dom->saveHTML($o_ifdef);
+			$vs_content = preg_replace("!^<[^\>]+>!", "", $vs_html);
+			$vs_content = preg_replace("!<[^\>]+>$!", "", $vs_content);
+			
+			$va_ifdefs[(string)$o_ifdef->getAttribute('code')][] = array('directive' => $vs_html, 'content' => $vs_content);
 		}
 		
 		$va_ifnotdefs = array();
 		foreach($o_ifnotdefs as $o_ifnotdef) {
 			if (!$o_ifnotdef) { continue; }
-			$va_ifnotdefs[(string)$o_ifnotdef->getAttribute('code')][] = array('directive' => $o_dom->saveHTML($o_ifnotdef), 'content' => $o_ifnotdef->textContent);
+			
+			$vs_html = $o_dom->saveHTML($o_ifnotdef);
+			$vs_content = preg_replace("!^<[^\>]+>!", "", $vs_html);
+			$vs_content = preg_replace("!<[^\>]+>$!", "", $vs_content);
+			
+			$va_ifnotdefs[(string)$o_ifnotdef->getAttribute('code')][] = array('directive' => $vs_html, 'content' => $vs_content);
 		}
 		
 		$va_mores = array();
 		foreach($o_mores as $o_more) {
 			if (!$o_more) { continue; }
-			$va_mores[] = array('directive' => $o_dom->saveHTML($o_more), 'content' => $o_more->textContent);
+			$vs_html = $o_dom->saveHTML($o_more);
+			$vs_content = preg_replace("!^<[^\>]+>!", "", $vs_html);
+			$vs_content = preg_replace("!<[^\>]+>$!", "", $vs_content);
+			$va_mores[] = array('directive' => $vs_html, 'content' => $vs_content);
 		}
 		
 		$va_betweens = array();
 		foreach($o_betweens as $o_between) {
 			if (!$o_between) { continue; }
-			$va_betweens[] = array('directive' => $o_dom->saveHTML($o_between), 'content' => $o_between->textContent);
+			$vs_html = $o_dom->saveHTML($o_between);
+			$vs_content = preg_replace("!^<[^\>]+>!", "", $vs_html);
+			$vs_content = preg_replace("!<[^\>]+>$!", "", $vs_content);
+			$va_betweens[] = array('directive' => $vs_html, 'content' => $vs_content);
 		}
 		
 		$va_tag_val_list = $va_defined_tag_list = array();
@@ -1465,8 +1491,31 @@ require_once(__CA_LIB_DIR__.'/core/Parsers/TimeExpressionParser.php');
 			$va_tag_val_list[$vn_i] = array();
 			$va_defined_tag_list[$vn_i] = array();
 			
+			$va_tag_opts = array();
 			foreach($va_tags as $vs_tag) {
 				$va_tmp = explode('.', $vs_tag);
+				$vs_last_element = $va_tmp[sizeof($va_tmp)-1];
+				$va_tag_opt_tmp = explode(";", $vs_last_element);
+				if (sizeof($va_tag_opt_tmp) > 1) {
+					array_shift($va_tag_opt_tmp); // get rid of getspec
+					
+					foreach($va_tag_opt_tmp as $vs_tag_opt_raw) {
+						$va_tag_tmp = explode("=", $vs_tag_opt_raw);
+						$va_tag_tmp[0] = trim($va_tag_tmp[0]);
+						$va_tag_tmp[1] = trim($va_tag_tmp[1]);
+						if (in_array($va_tag_tmp[0], array('delimiter', 'hierarchicalDelimiter'))) {
+							$va_tag_tmp[1] = str_replace("_", " ", $va_tag_tmp[1]);
+						}
+						if (sizeof($va_tag_line_tmp = explode("|", $va_tag_tmp[1])) > 1) {
+							$va_tag_opts[trim($va_tag_tmp[0])] = $va_tag_line_tmp;
+						} else {
+							$va_tag_opts[trim($va_tag_tmp[0])] = $va_tag_tmp[1];
+						}
+					}
+				}
+				
+				$pa_options = array_merge($pa_options, $va_tag_opts);
+				
 				if (isset($pa_options['showHierarchicalLabels']) && $pa_options['showHierarchicalLabels'] && ($vs_tag == 'label')) {
 					unset($va_related_values[$vs_pk_val][$vs_tag]);
 					unset($va_relationship_values[$vs_pk_val][$vs_tag]);
@@ -1484,12 +1533,15 @@ require_once(__CA_LIB_DIR__.'/core/Parsers/TimeExpressionParser.php');
 						} else {
 							// see if this is a reference to a related table
 							if (($ps_tablename != $va_tmp[0]) && ($t_tmp = $o_dm->getInstanceByTableName($va_tmp[0], true))) {	// if the part of the tag before a "." (or the tag itself if there are no periods) is a related table then try to fetch it as related to the current record
+								
 								if (isset($pa_options['placeholderPrefix']) && $pa_options['placeholderPrefix']) {
 									$vs_get_spec = array_shift($va_tmp).".".$pa_options['placeholderPrefix'];
 									if(sizeof($va_tmp) > 0) {
 										$vs_get_spec .= ".".join(".", $va_tmp);
 									}
-								} 
+								} else {
+									$vs_get_spec = $vs_tag;
+								}
 								$vs_val = $qr_res->get($vs_get_spec, $pa_options);
 							} else {
 								if ($va_tmp[0] == $ps_tablename) { array_shift($va_tmp); }	// get rid of primary table if it's in the field spec
