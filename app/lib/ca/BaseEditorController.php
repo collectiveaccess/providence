@@ -804,12 +804,16 @@
  			list($vn_subject_id, $t_subject) = $this->_initView($pa_options);
  			if ($this->request->user->canDoAction("can_change_type_".$t_subject->tableName())) {
 				if (method_exists($t_subject, "changeType")) {
+					$this->opo_app_plugin_manager->hookBeforeSaveItem(array('id' => $vn_subject_id, 'table_num' => $t_subject->tableNum(), 'table_name' => $t_subject->tableName(), 'instance' => $t_subject, 'is_insert' => false));
+ 			
 					if (!$t_subject->changeType($vn_new_type_id = $this->request->getParameter('type_id', pInteger))) {
 						// post error
 						$this->notification->addNotification(_t('Could not set type to <em>%1</em>: %2', caGetListItemForDisplay($t_subject->getTypeListCode(), $vn_new_type_id), join("; ", $t_subject->getErrors())), __NOTIFICATION_TYPE_ERROR__);
 					} else {
 						$this->notification->addNotification(_t('Set type to <em>%1</em>', $t_subject->getTypeName()), __NOTIFICATION_TYPE_INFO__);
 					}
+					$this->opo_app_plugin_manager->hookSaveItem(array('id' => $vn_subject_id, 'table_num' => $t_subject->tableNum(), 'table_name' => $t_subject->tableName(), 'instance' => $t_subject, 'is_insert' => false));
+ 			
 				}
 			} else {
 				$this->notification->addNotification(_t('Cannot change type'), __NOTIFICATION_TYPE_ERROR__);
