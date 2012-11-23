@@ -1558,7 +1558,6 @@ class BaseModel extends BaseObject {
 		}
 		
 		if ($pm_id == null) {
-			//$this->postError(750,_t("Can't load record; key is blank"), "BaseModel->load()");
 			return false;
 		}
 
@@ -6092,8 +6091,10 @@ class BaseModel extends BaseObject {
 			}
 		}
 			
+		$va_additional_child_join_conditions = array();
 		if ($this->hasField('deleted') && (!isset($pa_options['returnDeleted']) || (!$pa_options['returnDeleted']))) {
 			$va_additional_table_wheres[] = "({$vs_table_name}.deleted = 0)";
+			$va_additional_child_join_conditions[] = "p2.deleted = 0";
 		}
 		
 		if ($this->isHierarchical()) {
@@ -6127,18 +6128,19 @@ class BaseModel extends BaseObject {
 			}
 			
 			if ($pb_return_child_counts) {
+				$vs_additional_child_join_conditions = sizeof($va_additional_child_join_conditions) ? " AND ".join(" AND ", $va_additional_child_join_conditions) : "";
 				$qr_hier = $o_db->query("
 					SELECT ".$this->tableName().".* ".(sizeof($va_additional_table_select_fields) ? ', '.join(', ', $va_additional_table_select_fields) : '').", count(*) child_count, p2.".$this->primaryKey()." has_children
 					FROM ".$this->tableName()."
 					{$vs_sql_joins}
-					LEFT JOIN ".$this->tableName()." AS p2 ON p2.".$vs_hier_parent_id_fld." = ".$this->tableName().".".$this->primaryKey()."
+					LEFT JOIN ".$this->tableName()." AS p2 ON p2.".$vs_hier_parent_id_fld." = ".$this->tableName().".".$this->primaryKey()." {$vs_additional_child_join_conditions}
 					WHERE
 						(".$this->tableName().".{$vs_hier_parent_id_fld} = ?) ".((sizeof($va_additional_table_wheres) > 0) ? ' AND '.join(' AND ', $va_additional_table_wheres) : '')."
 					GROUP BY
 						".$this->tableName().".".$this->primaryKey()." {$vs_additional_table_to_join_group_by}
 					ORDER BY
 						".$vs_order_by."
-				", $pn_id);
+				", (int)$pn_id);
 			} else {
 				$qr_hier = $o_db->query("
 					SELECT ".$this->tableName().".* ".(sizeof($va_additional_table_select_fields) ? ', '.join(', ', $va_additional_table_select_fields) : '')."
@@ -6148,7 +6150,7 @@ class BaseModel extends BaseObject {
 						(".$this->tableName().".{$vs_hier_parent_id_fld} = ?) ".((sizeof($va_additional_table_wheres) > 0) ? ' AND '.join(' AND ', $va_additional_table_wheres) : '')."
 					ORDER BY
 						".$vs_order_by."
-				", $pn_id);
+				", (int)$pn_id);
 			}
 			if ($o_db->numErrors()) {
 				$this->errors = array_merge($this->errors, $o_db->errors());

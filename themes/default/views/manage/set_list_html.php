@@ -30,7 +30,7 @@
 	$va_set_list 		= $this->getVar('set_list');
 
 	$t_list = new ca_lists();
-	$vs_set_type_menu = '<div class="sf-small-menu form-header-button rounded">'.
+	$vs_set_type_menu = '<div class="sf-small-menu form-header-button rounded" style="padding: 6px;">'.
 							'<div style="float:right; margin: 3px;">'.
 								'<a href="#" onclick="_navigateToNewForm(jQuery(\'#typeList\').val(), jQuery(\'#tableList\').val());">'.caNavIcon($this->request, __CA_NAV_BUTTON_ADD_LARGE__).'</a>'.
 							'</div>'.
@@ -91,7 +91,7 @@
 ?>
 			<tr>
 				<td>
-					<?php print $va_set['name']; ?>
+					<?php print $va_set['name'].($va_set['set_code'] ? "<br/>(".$va_set['set_code'].")" : ""); ?>
 				</td>
 				<td>
 					<?php print $va_set['set_content_type']; ?>
@@ -103,7 +103,7 @@
 					<?php print $va_set['item_count']; ?>
 				</td>
 				<td>
-					<?php print $va_set['fname'].' '.$va_set['lname']; ?>
+					<?php print $va_set['fname'].' '.$va_set['lname'].($va_set['email'] ? "<br/>(<a href='mailto:".$va_set['email']."'>".$va_set['email']."</a>)" : ""); ?>
 				</td>
 				<td>
 					<?php print $t_set->getChoiceListValue('access', $va_set['access']); ?>
@@ -134,3 +134,5 @@
 		</tbody>
 	</table>
 </div>
+
+	<div class="editorBottomPadding"><!-- empty --></div>

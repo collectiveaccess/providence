@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2009-2011 Whirl-i-Gig
+ * Copyright 2009-2012 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -30,12 +30,10 @@
 	
 	header("Content-type: application/octet-stream");
 	header("Last-Modified: " . gmdate("D, d M Y H:i:s") . " GMT");
-	header("Cache-Control: no-store, no-cache, must-revalidate");
-	header("Cache-Control: post-check=0, pre-check=0", false);
+	header("Cache-Control: no-store, no-cache, must-revalidate, post-check=0, pre-check=0");
 	header("Pragma: no-cache");
-	header("Cache-control: private");
 	
-	header("Content-Disposition: attachment; filename=".preg_replace('![ \t\r\n]+!', '_', $vs_file_name));
+	header("Content-Disposition: attachment; filename=\"".preg_replace('![ \t\r\n]+!', '_', $vs_file_name)."\"");
 	
 	readfile($vs_file_path);
 ?>
