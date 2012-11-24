@@ -1426,7 +1426,7 @@ require_once(__CA_LIB_DIR__.'/core/Parsers/TimeExpressionParser.php');
 		$vs_pk = $t_instance->primaryKey();
 		
 		$qr_res = $t_instance->makeSearchResult($ps_tablename, $pa_row_ids);
-		
+		if(!$qr_res) { return ''; }
 		$va_proc_templates = array();
 		$vn_i = 0;
 		
