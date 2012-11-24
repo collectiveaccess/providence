@@ -4,7 +4,7 @@
 	Description:
 */
 
-ALTER TABLE ca_commerce_orders ADD COLUMN sales_agent varchar(255) not null;
+ALTER TABLE ca_commerce_orders ADD COLUMN sales_agent varchar(1024) not null;
 
 /* -------------------------------------------------------------------------------- */
 
