@@ -86,12 +86,12 @@ BaseModel::$s_ca_models_definitions['ca_commerce_orders'] = array(
 				'IS_NULL' => false, 
 				'LABEL' => _t('Order number'), 'DESCRIPTION' => _t('Unique identifying number for order.')
 		),
-		
 		'sales_agent' => array(
 				'FIELD_TYPE' => FT_TEXT, 'DISPLAY_TYPE' => DT_FIELD, 
 				'DISPLAY_WIDTH' => 80, 'DISPLAY_HEIGHT' => 1,
 				'IS_NULL' => false, 
 				'DEFAULT' => '',
+				'LOOKUP' => true,
 				'LABEL' => _t('Sales agent'), 'DESCRIPTION' => _t('Optional note indicating who sales agent for sale was.'),
 				'BOUNDS_LENGTH' => array(0,1024)
 		),
@@ -116,6 +116,7 @@ BaseModel::$s_ca_models_definitions['ca_commerce_orders'] = array(
 				'DISPLAY_WIDTH' => 80, 'DISPLAY_HEIGHT' => 1,
 				'IS_NULL' => false, 
 				'DEFAULT' => '',
+				'LOOKUP' => true,
 				'LABEL' => _t('Organization'), 'DESCRIPTION' => _t('Ship to: organization.'),
 				'BOUNDS_LENGTH' => array(0,255)
 		),
@@ -213,6 +214,7 @@ BaseModel::$s_ca_models_definitions['ca_commerce_orders'] = array(
 				'DISPLAY_WIDTH' => 80, 'DISPLAY_HEIGHT' => 1,
 				'IS_NULL' => false, 
 				'DEFAULT' => '',
+				'LOOKUP' => true,
 				'LABEL' => _t('Organization'), 'DESCRIPTION' => _t('Bill to: organization.'),
 				'BOUNDS_LENGTH' => array(0,255)
 		),
