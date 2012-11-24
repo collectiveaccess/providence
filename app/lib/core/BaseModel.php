@@ -8063,6 +8063,103 @@ $pa_options["display_form_field_tips"] = true;
 	}
 	# --------------------------------------------------------------------------------------------
 	/**
+	 * Checks if a relationship exists between the currently loaded row and the specified target
+	 *
+	 * @param mixed $pm_rel_table_name_or_num Table name (eg. "ca_entities") or number as defined in datamodel.conf of table containing row to creation relationship to.
+	 * @param int $pn_rel_id primary key value of row to creation relationship to.
+	 * @param mixed $pm_type_id Relationship type type_code or type_id, as defined in the ca_relationship_types table. This is required for all relationships that use relationship types. This includes all of the most common types of relationships.
+	 * @param string $ps_effective_date Optional date expression to qualify relation with. Any expression that the TimeExpressionParser can handle is supported here.
+	 * @param string $ps_direction Optional direction specification for self-relationships (relationships linking two rows in the same table). Valid values are 'ltor' (left-to-right) and  'rtol' (right-to-left); the direction determines which "side" of the relationship the currently loaded row is on: 'ltor' puts the current row on the left side. For many self-relations the direction determines the nature and display text for the relationship.
+	 * @return boolean True on success, false on error.
+	 */
+	public function relationshipExists($pm_rel_table_name_or_num, $pn_rel_id, $pm_type_id=null, $ps_effective_date=null, $ps_direction=null) {
+		if(!($va_rel_info = $this->_getRelationshipInfo($pm_rel_table_name_or_num))) { 
+			$this->postError(1240, _t('Related table specification "%1" is not valid', $pm_rel_table_name_or_num), 'BaseModel->addRelationship()');
+			return false; 
+		}
+		$t_item_rel = $va_rel_info['t_item_rel'];
+		
+		if ($pm_type_id && !is_numeric($pm_type_id)) {
+			$t_rel_type = new ca_relationship_types();
+			if ($vs_linking_table = $t_rel_type->getRelationshipTypeTable($this->tableName(), $t_item_rel->tableName())) {
+				$pn_type_id = $t_rel_type->getRelationshipTypeID($vs_linking_table, $pm_type_id);
+			}
+		} else {
+			$pn_type_id = $pm_type_id;
+		}
+		
+		if (!is_numeric($pn_rel_id)) {
+			if ($t_rel_item = $this->_DATAMODEL->getInstanceByTableName($va_rel_info['related_table_name'], true)) {
+				if (($vs_idno_fld = $t_rel_item->getProperty('ID_NUMBERING_ID_FIELD')) && $t_rel_item->load(array($vs_idno_fld => $pn_rel_id))) {
+					$pn_rel_id = $t_rel_item->getPrimaryKey();
+				}
+			}
+		}
+		
+		$o_db = $this->getDb();
+		$t_item_rel = $va_rel_info['t_item_rel'];
+		$vs_rel_table_name = $t_item_rel->tableName();
+		
+		$vs_type_sql = $vs_timestamp_sql = '';
+		
+		$va_query_params = array();
+		
+		$vs_left_table_name = $t_item_rel->getLeftTableName();
+		$vs_left_field_name = $t_item_rel->getLeftTableFieldName();
+		
+		$vs_right_table_name = $t_item_rel->getRightTableName();
+		$vs_right_field_name = $t_item_rel->getRightTableFieldName();
+		
+		
+			
+		if ($va_rel_info['related_table_name'] == $this->tableName()) {
+			// is self relation
+			if ($ps_direction == 'rtol') {
+				$vn_left_id = (int)$pn_rel_id;
+				$vn_right_id = (int)$this->getPrimaryKey();
+			} else {
+				$vn_left_id = (int)$this->getPrimaryKey();
+				$vn_right_id = (int)$pn_rel_id;
+			}
+		} else {
+			if ($vs_left_table_name == $this->tableName()) {
+				$vn_left_id = (int)$this->getPrimaryKey();
+				$vn_right_id = (int)$pn_rel_id;
+			} else {
+				$vn_left_id = (int)$pn_rel_id;
+				$vn_right_id = (int)$this->getPrimaryKey();
+			}
+		}
+		
+		$va_query_params = array($vn_left_id, $vn_right_id);
+		
+		if ($t_item_rel->hasField('type_id')) {
+			$vs_type_sql = ' AND type_id = ?';
+			$va_query_params[] = (int)$pn_type_id;
+		}
+		
+		
+		if ($ps_effective_date && $t_item_rel->hasField('sdatetime') && ($va_timestamps = caDateToHistoricTimestamps($ps_effective_date))) {
+			$vs_timestamp_sql = " AND (sdatetime = ? AND edatetime = ?)";
+			$va_query_params[] = (float)$va_timestamps['start'];
+			$va_query_params[] = (float)$va_timestamps['end'];
+		}
+		
+		$qr_res = $o_db->query("
+			SELECT *
+			FROM {$vs_rel_table_name}
+			WHERE
+				{$vs_left_field_name} = ? AND {$vs_right_field_name} = ?
+				{$vs_type_sql} {$vs_timestamp_sql}
+		", $va_query_params);
+		
+		if ($qr_res->nextRow()) {
+			return true;
+		}
+		return false;
+	}
+	# --------------------------------------------------------------------------------------------
+	/**
 	 *
 	 */
 	public function getDefaultLocaleList() {
