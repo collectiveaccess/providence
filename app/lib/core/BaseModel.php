@@ -6542,7 +6542,6 @@ class BaseModel extends BaseObject {
 			if(!isset($pa_options[$vs_key])) { $pa_options[$vs_key] = null; }
 		}
 		
-
 		$va_attr = $this->getFieldInfo($ps_field);
 		
 		foreach (array(
@@ -7108,6 +7107,15 @@ $pa_options["display_form_field_tips"] = true;
 		alreadyInUseMessage: '".addslashes(_t('Value must be unique. Please try another.'))."'
 	});
 </script>";
+							} else {
+								if (isset($va_attr['LOOKUP']) && ($va_attr['LOOKUP'])) {
+									if ((class_exists("AppController")) && ($app = AppController::getInstance()) && ($req = $app->getRequest())) {
+										JavascriptLoadManager::register('jquery', 'autocomplete');
+										$vs_element .= "<script type='text/javascript'>
+	jQuery('#".$pa_options["id"]."').autocomplete('".caNavUrl($req, 'lookup', 'Intrinsic', 'Get', array('bundle' => $this->tableName().".{$ps_field}"))."', { minChars: 3, matchSubset: 1, matchContains: 1, delay: 800, scroll: true, max: 500, extraParams: { }});
+</script>";
+									}
+								}
 							}
 							
 							if (isset($pa_options['usewysiwygeditor']) && $pa_options['usewysiwygeditor']) {
