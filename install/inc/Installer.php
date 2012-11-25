@@ -766,7 +766,7 @@ class Installer {
 		$t_rel_type->setMode(ACCESS_WRITE);
 
 
-
+		$vn_rank_default = (int)$t_rel_type->getFieldInfo('rank', 'DEFAULT');
 		foreach($po_relationship_types->children() as $vo_type) {
 			$vs_type_code = self::getAttribute($vo_type, "code");
 			$vn_default = self::getAttribute($vo_type, "default");
@@ -778,6 +778,8 @@ class Installer {
 			
 			if ($vn_rank > 0) {
 				$t_rel_type->set("rank", $vn_rank);
+			} else {
+				$t_rel_type->set("rank", $vn_rank_default);
 			}
 
 			$t_rel_type->set('sub_type_left_id', null);
