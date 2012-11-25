@@ -35,6 +35,7 @@
   */
  
  	require_once(__CA_MODELS_DIR__.'/ca_entities.php');
+ 	require_once(__CA_MODELS_DIR__.'/ca_entity_labels.php');
  	require_once(__CA_MODELS_DIR__.'/ca_places.php');
  	require_once(__CA_MODELS_DIR__.'/ca_collections.php');
  	require_once(__CA_MODELS_DIR__.'/ca_lists.php');
@@ -76,13 +77,24 @@
 		 * @param array $pa_options An optional array of options, which include:
 		 *				outputErrors - if true, errors will be printed to console [default=true]
 		 *				dontCreate - if true then new entities will not be created [default=false]
+		 *				matchOnDisplayName  if true then entities are looked up exclusively using displayname, otherwise forename and surname fields are used [default=false]
 		 */
 		static function getEntityID($pa_entity_name, $pn_type_id, $pn_locale_id, $pa_values=null, $pa_options=null) {
 			if (!is_array($pa_options)) { $pa_options = array(); }
 			if(!isset($pa_options['outputErrors'])) { $pa_options['outputErrors'] = true; }
 			
 			$t_entity = new ca_entities();
-			if (sizeof($va_entity_ids = $t_entity->getEntityIDsByName($pa_entity_name['forename'], $pa_entity_name['surname'])) == 0) {
+			$vb_exists = false;
+			if (isset($pa_options['matchOnDisplayName']) && $pa_options['matchOnDisplayName']) {
+				$t_entity_label = new ca_entity_labels();
+				if ($t_entity_label->load(array('displayname' => $pa_entity_name['displayname']))) {
+					$va_entity_ids = array($t_entity_label->get('entity_id'));
+					$vb_exists = true;
+				}
+			} else {
+				$vb_exists = (sizeof($va_entity_ids = $t_entity->getEntityIDsByName($pa_entity_name['forename'], $pa_entity_name['surname'])) > 0);
+			}
+			if (!$vb_exists) {
 				if (isset($pa_options['dontCreate']) && $pa_options['dontCreate']) { return false; }
 				
 				$t_entity->setMode(ACCESS_WRITE);
@@ -236,7 +248,7 @@
 			if(!isset($pa_options['outputErrors'])) { $pa_options['outputErrors'] = true; }
 			
 			$t_occurrence = new ca_occurrences();
-			if (sizeof($va_occurrence_ids = $t_occurrence->getOccurrenceIDsByName($ps_occ_name, $pn_parent_id)) == 0) {
+			if (sizeof($va_occurrence_ids = $t_occurrence->getOccurrenceIDsByName($ps_occ_name, $pn_parent_id, $pn_type_id)) == 0) {
 				if (isset($pa_options['dontCreate']) && $pa_options['dontCreate']) { return false; }
 				
 				$t_occurrence->setMode(ACCESS_WRITE);
@@ -295,6 +307,10 @@
 		# -------------------------------------------------------
 		/** 
 		 *
+		 * @param array $pa_options An optional array of options, which include:
+		 *				dontCreate - if true then new items will not be created [default=false]
+		 *				matchOnLabel =  if true then list items are looked up exclusively using labels [default=false]
+		 *
 		 */
 		static function getListItemID($pm_list_code_or_id, $ps_item_idno, $pn_type_id, $pn_locale_id, $pa_values=null, $pa_options=null) {
 			if (!is_array($pa_options)) { $pa_options = array(); }
@@ -305,10 +321,16 @@
 			$t_list = new ca_lists();
 			$t_item = new ca_list_items();
 			
-			if ($t_item->load(array('list_id' => $vn_list_id, 'idno' => $ps_item_idno))) {
-				return $t_item->getPrimaryKey();
+			if (isset($pa_options['matchOnLabel']) && $pa_options['matchOnLabel']) {
+				if ($vn_item_id = $t_list->getItemIDFromListByLabel($pm_list_code_or_id, $pa_values['name_singular'] ? $pa_values['name_singular'] : $ps_item_idno)) {
+					return $vn_item_id;
+				}
+			} else {
+				if ($t_item->load(array('list_id' => $vn_list_id, 'idno' => $ps_item_idno))) {
+					return $t_item->getPrimaryKey();
+				}
 			}
-			
+				
 			if (isset($pa_options['dontCreate']) && $pa_options['dontCreate']) { return false; }
 			//
 			// Need to create list item
@@ -498,6 +520,7 @@
 		 */
 		static function splitEntityName($ps_text, $pa_options=null) {
 			global $g_ui_locale;
+			$ps_text = trim(preg_replace("![ ]+!", " ", $ps_text));
 			
 			if (isset($pa_options['locale']) && $pa_options['locale']) {
 				$vs_locale = $pa_options['locale'];
@@ -571,6 +594,7 @@
 				}
 			}
 			
+			$va_name['displayname'] = $ps_text;
 			foreach($va_name as $vs_k => $vs_v) {
 				$va_name[$vs_k] = trim($vs_v);
 			}
