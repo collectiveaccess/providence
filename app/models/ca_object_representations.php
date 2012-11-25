@@ -559,7 +559,10 @@ class ca_object_representations extends BundlableLabelableBaseModelWithAttribute
  		return $va_sorted_annotations;
  	} 
  	# ------------------------------------------------------
- 	public function addAnnotation($pn_locale_id, $pn_user_id, $pa_properties, $pn_status, $pn_access) {
+ 	/**
+ 	 *
+ 	 */
+ 	public function addAnnotation($ps_title, $pn_locale_id, $pn_user_id, $pa_properties, $pn_status, $pn_access, $pa_values=null, $pa_options=null) {
  		if (!($vn_representation_id = $this->getPrimaryKey())) { return null; }
  		
  		if (!($o_coder = $this->getAnnotationPropertyCoderInstance($this->getAnnotationType()))) {
@@ -596,6 +599,13 @@ class ca_object_representations extends BundlableLabelableBaseModelWithAttribute
 			$this->errors = $t_annotation->errors;
 			return false;
 		}
+		
+		$t_annotation->addLabel(array('name' => $ps_title), $pn_locale_id, null, true);
+		if ($t_annotation->numErrors()) {
+			$this->errors = $t_annotation->errors;
+			return false;
+		}
+		
 		foreach($o_coder->getPropertyList() as $vs_property) {
 			$t_annotation->setPropertyValue($vs_property, $o_coder->getProperty($vs_property));
 		}
@@ -607,11 +617,43 @@ class ca_object_representations extends BundlableLabelableBaseModelWithAttribute
 			return false;
 		}
 		
+		if (is_array($pa_values)) {
+			foreach($pa_values as $vs_element => $va_value) { 					
+				if (is_array($va_value)) {
+					// array of values (complex multi-valued attribute)
+					$t_annotation->addAttribute(
+						array_merge($va_value, array(
+							'locale_id' => $pn_locale_id
+						)), $vs_element);
+				} else {
+					// scalar value (simple single value attribute)
+					if ($va_value) {
+						$t_annotation->addAttribute(array(
+							'locale_id' => $pn_locale_id,
+							$vs_element => $va_value
+						), $vs_element);
+					}
+				}
+			}
+		}
+		
+		$t_annotation->update();
  		
+ 		if ($t_annotation->numErrors()) {
+			$this->errors = $t_annotation->errors;
+			return false;
+		}
+ 		
+ 		if (isset($pa_options['returnAnnotation']) && (bool)$pa_options['returnAnnotation']) {
+ 			return $t_annotation;
+ 		}
  		return $t_annotation->getPrimaryKey();
  	}
  	# ------------------------------------------------------
- 	public function editAnnotation($pn_annotation_id, $pn_locale_id, $pa_properties, $pn_status, $pn_access) {
+ 	/**
+ 	 *
+ 	 */
+ 	public function editAnnotation($pn_annotation_id, $pn_locale_id, $pa_properties, $pn_status, $pn_access, $pa_values=null, $pa_options=null) {
  		if (!($vn_representation_id = $this->getPrimaryKey())) { return null; }
  	
  		if (!($o_coder = $this->getAnnotationPropertyCoderInstance($this->getAnnotationType()))) {
@@ -650,12 +692,45 @@ class ca_object_representations extends BundlableLabelableBaseModelWithAttribute
 				return false;
 			}
 			
+			if (is_array($pa_values)) {
+				foreach($pa_values as $vs_element => $va_value) { 					
+					if (is_array($va_value)) {
+						// array of values (complex multi-valued attribute)
+						$t_annotation->addAttribute(
+							array_merge($va_value, array(
+								'locale_id' => $pn_locale_id
+							)), $vs_element);
+					} else {
+						// scalar value (simple single value attribute)
+						if ($va_value) {
+							$t_annotation->addAttribute(array(
+								'locale_id' => $pn_locale_id,
+								$vs_element => $va_value
+							), $vs_element);
+						}
+					}
+				}
+			}
+			
+			$t_annotation->update();
+			
+			if ($t_annotation->numErrors()) {
+				$this->errors = $t_annotation->errors;
+				return false;
+			}
+			
+			if (isset($pa_options['returnAnnotation']) && (bool)$pa_options['returnAnnotation']) {
+				return $t_annotation;
+			}
 			return true;
  		}
  		
  		return false;
  	}
  	# ------------------------------------------------------
+ 	/**
+ 	 *
+ 	 */
  	public function removeAnnotation($pn_annotation_id) {
  		if (!($vn_representation_id = $this->getPrimaryKey())) { return null; }
  		

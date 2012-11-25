@@ -1,13 +1,13 @@
 <?php
 /* ----------------------------------------------------------------------
- * bundles/ca_attributes_download_media.php : Generic view for download of media stored in MediaAttributeValues
+ * lookup/ajax_intrinsic_value_list_html.php : 
  * ----------------------------------------------------------------------
  * CollectiveAccess
  * Open-source collections management software
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2009-2012 Whirl-i-Gig
+ * Copyright 2012 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -25,15 +25,7 @@
  *
  * ----------------------------------------------------------------------
  */
-	$vs_file_name = $this->getVar('file_name');
-	$vs_file_path = $this->getVar('file_path');
-	
-	header("Content-type: application/octet-stream");
-	header("Last-Modified: " . gmdate("D, d M Y H:i:s") . " GMT");
-	header("Cache-Control: no-store, no-cache, must-revalidate, post-check=0, pre-check=0");
-	header("Pragma: no-cache");
-	
-	header("Content-Disposition: attachment; filename=\"".preg_replace('![ \t\r\n]+!', '_', $vs_file_name)."\"");
-	
-	readfile($vs_file_path);
+	foreach($this->getVar('intrinsic_value_list') as $vn_id => $vs_value) {
+		print $vs_value."\n";
+	}
 ?>
