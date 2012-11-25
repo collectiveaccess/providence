@@ -100,7 +100,7 @@ BaseModel::$s_ca_models_definitions['ca_relationship_types'] = array(
 				'FIELD_TYPE' => FT_NUMBER, 'DISPLAY_TYPE' => DT_FIELD, 
 				'DISPLAY_WIDTH' => 10, 'DISPLAY_HEIGHT' => 1,
 				'IS_NULL' => false, 
-				'DEFAULT' => '',
+				'DEFAULT' => '10',
 				'LABEL' => _t('Sort order'), 'DESCRIPTION' => _t('The relative priority of the relationship type when displayed in a list with other relationship types. Lower numbers indicate higher priority.'),
 				'BOUNDS_VALUE' => array(0,65535)
 		),
@@ -183,7 +183,7 @@ class ca_relationship_types extends BundlableLabelableBaseModelWithAttributes {
 
 	# If you want to order records arbitrarily, add a numeric field to the table and place
 	# its name here. The generic list scripts can then use it to order table records.
-	protected $RANK = '';
+	protected $RANK = 'rank';
 	
 	
 	# ------------------------------------------------------
