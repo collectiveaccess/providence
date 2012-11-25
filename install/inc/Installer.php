@@ -770,10 +770,15 @@ class Installer {
 		foreach($po_relationship_types->children() as $vo_type) {
 			$vs_type_code = self::getAttribute($vo_type, "code");
 			$vn_default = self::getAttribute($vo_type, "default");
+			$vn_rank = (int)self::getAttribute($vo_type, "rank");
 
 			$t_rel_type->set('table_num', $pn_table_num);
 			$t_rel_type->set('type_code', $vs_type_code);
 			$t_rel_type->set("parent_id", $pn_parent_id);
+			
+			if ($vn_rank > 0) {
+				$t_rel_type->set("rank", $vn_rank);
+			}
 
 			$t_rel_type->set('sub_type_left_id', null);
 			$t_rel_type->set('sub_type_right_id', null);
