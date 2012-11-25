@@ -211,7 +211,7 @@
 				);
  			} 
  			if (!is_numeric($ps_value)) { 
- 				$this->postError(1970, _t('Item_id is not valid'), 'ListAttributeValue->parseValue()');
+ 				$this->postError(1970, _t('Item_id is not valid for element %1',$pa_element_info["element_code"]), 'ListAttributeValue->parseValue()');
 				return false;
 			}
  			$t_item = new ca_list_items((int)$ps_value);

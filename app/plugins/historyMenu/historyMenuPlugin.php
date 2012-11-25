@@ -54,6 +54,8 @@
 					$va_activity_list = array();
 				}
 				
+				if (!method_exists($pa_params['instance'], "getTypeID")) { return $pa_params; }
+				
 				// TODO: This should be a configurable preference of some kind
 				$vn_max_num_items_in_activity_menu = 20;
 				

@@ -42,6 +42,7 @@
 	require_once(__CA_LIB_DIR__."/core/Parsers/ZipFile.php");
 	require_once(__CA_LIB_DIR__."/core/AccessRestrictions.php");
  	require_once(__CA_LIB_DIR__.'/core/Print/PrintForms.php');
+ 	require_once(__CA_LIB_DIR__.'/core/Parsers/dompdf/dompdf_config.inc.php');
  	
 	class BaseFindController extends ActionController {
 		# ------------------------------------------------------------------
@@ -520,63 +521,45 @@
 			
 			switch($ps_output_type) {
 				case '_pdf':
-					require_once(__CA_LIB_DIR__."/core/Print/html2pdf/html2pdf.class.php");
-					
-					try {
-						$vs_content = $this->render('Results/'.$this->ops_tablename.'_pdf_results_html.php');
-						$vo_html2pdf = new HTML2PDF('L','letter','en');
-						$vo_html2pdf->setDefaultFont("dejavusans");
-						$vo_html2pdf->WriteHTML($vs_content);
-						
 			header("Content-Disposition: attachment; filename=export_results.pdf");
 			header("Content-type: application/pdf");
-			
-						$vo_html2pdf->Output('results.pdf');
-						$vb_printed_properly = true;
-					} catch (Exception $e) {
-						$vb_printed_properly = false;
-						$this->postError(3100, _t("Could not generate PDF"),"BaseEditorController->PrintSummary()");
-					}
+					$vs_content = $this->render('Results/'.$this->ops_tablename.'_pdf_results_html.php');
+				
+					$o_pdf = new DOMPDF();
+					// Page sizes: 'letter', 'legal', 'A4'
+					// Orientation:  'portrait' or 'landscape'
+					$o_pdf->set_paper("letter", "landscape");
+					$o_pdf->load_html($vs_content, 'utf-8');
+					$o_pdf->render();
+					$o_pdf->stream("results.pdf");
 					return;
 					break;
 				case '_pdfthumb':
-					require_once(__CA_LIB_DIR__."/core/Print/html2pdf/html2pdf.class.php");
-					
-					try {
-						$vs_content = $this->render('Results/'.$this->ops_tablename.'_pdf_results_thumb_html.php');
-						$vo_html2pdf = new HTML2PDF('L','letter','en');
-						$vo_html2pdf->setDefaultFont("dejavusans");
-						$vo_html2pdf->WriteHTML($vs_content);
-						
 			header("Content-Disposition: attachment; filename=export_results.pdf");
 			header("Content-type: application/pdf");
-			
-						$vo_html2pdf->Output('thumb_results.pdf');
-						$vb_printed_properly = true;
-					} catch (Exception $e) {
-						$vb_printed_properly = false;
-						$this->postError(3100, _t("Could not generate PDF"),"BaseEditorController->PrintSummary()");
-					}
+					$vs_content = $this->render('Results/'.$this->ops_tablename.'_pdf_results_thumb_html.php');
+				
+					$o_pdf = new DOMPDF();
+					// Page sizes: 'letter', 'legal', 'A4'
+					// Orientation:  'portrait' or 'landscape'
+					$o_pdf->set_paper("letter", "landscape");
+					$o_pdf->load_html($vs_content, 'utf-8');
+					$o_pdf->render();
+					$o_pdf->stream("results.pdf");
 					return;
 					break;	
 				case '_pdflong':
-					require_once(__CA_LIB_DIR__."/core/Print/html2pdf/html2pdf.class.php");
-					
-					try {
-						$vs_content = $this->render('Results/'.$this->ops_tablename.'_pdf_results_long_html.php');
-						$vo_html2pdf = new HTML2PDF('P','letter','en');
-						$vo_html2pdf->setDefaultFont("dejavusans");
-						$vo_html2pdf->WriteHTML($vs_content);
-						
 			header("Content-Disposition: attachment; filename=export_results.pdf");
 			header("Content-type: application/pdf");
-			
-						$vo_html2pdf->Output('long_results.pdf');
-						$vb_printed_properly = true;
-					} catch (Exception $e) {
-						$vb_printed_properly = false;
-						$this->postError(3100, _t("Could not generate PDF"),"BaseEditorController->PrintSummary()");
-					}
+					$vs_content = $this->render('Results/'.$this->ops_tablename.'_pdf_results_long_html.php');
+				
+					$o_pdf = new DOMPDF();
+					// Page sizes: 'letter', 'legal', 'A4'
+					// Orientation:  'portrait' or 'landscape'
+					$o_pdf->set_paper("letter", "landscape");
+					$o_pdf->load_html($vs_content, 'utf-8');
+					$o_pdf->render();
+					$o_pdf->stream("results.pdf");
 					return;
 					break;					
 				case '_csv':

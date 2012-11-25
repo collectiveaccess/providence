@@ -27,13 +27,59 @@
  */
  
 	$va_sets = $this->getVar('sets');
+	
+	if ($this->request->user->canDoAction("is_administrator")) {
+?>
+<h3><?php print _t('Set Statistics'); ?>:
+<div><?php
+		if (sizeof($va_sets['mine']) == 1) {
+			print _t("1 set available to you");
+		} else {
+			print _t("%1 sets available to you", sizeof($va_sets['mine']));
+		}
+		print "<br/>\n";
+		if (sizeof($va_sets['user']) == 1) {
+			print _t("1 set created by other users");
+		} else {
+			print _t("%1 sets created by other users", sizeof($va_sets['user']));
+		}
+		print "<br/>\n";
+		if (sizeof($va_sets['public']) == 1) {
+			print _t("1 set created by the public");
+		} else {
+			print _t("%1 sets created by the public", sizeof($va_sets['public']));
+		}
+		
+?></div>
+</h3><h3><?php print _t('Show sets'); ?>:
+<div><?php
+			print caFormTag($this->request, 'ListSets', 'caSetDisplayMode', $this->request->getModulePath().'/'.$this->request->getController(), 'post', 'multipart/form-data', '_top', array('disableUnsavedChangesWarning' => true)); 
+	
+			$va_options = array(
+				_t('Available to you') => 0,
+				_t('By other users') => 1,
+				_t('By the public') => 2
+			);
+			
+			print caHTMLSelect('mode', $va_options, array('class' => 'searchToolsSelect'), array('value' => $this->getVar('mode'), 'width' => '130px'))."\n";
+			print caFormSubmitLink($this->request, _t('Show'), 'button', 'caSetDisplayMode')." &rsaquo;";
+?>
+			</form>
+<?php
+?></div>
+</h3>
+<?php	
+	} else {
 ?>
 <h3><?php print _t('Your sets'); ?>:
 <div><?php
-	if (sizeof($va_sets) == 1) {
-		print _t("1 set is available");
-	} else {
-		print _t("%1 sets are available", sizeof($va_sets));
-	}
+		if (sizeof($va_sets['mine']) == 1) {
+			print _t("1 set is available");
+		} else {
+			print _t("%1 sets are available", sizeof($va_sets['mine']));
+		}
 ?></div>
 </h3>
+<?php
+	}
+?>
