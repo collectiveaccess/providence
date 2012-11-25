@@ -429,27 +429,32 @@ class ca_occurrences extends BundlableLabelableBaseModelWithAttributes implement
 	/**
 	 *
 	 */
-	public function getOccurrenceIDsByName($ps_name, $pn_parent_id=null) {
+	public function getOccurrenceIDsByName($ps_name, $pn_parent_id=null, $pn_type_id=null) {
 		$o_db = $this->getDb();
 		
-		if ($pn_parent_id) {
-			$qr_res = $o_db->query("
-				SELECT DISTINCT cap.occurrence_id
-				FROM ca_occurrences cap
-				INNER JOIN ca_occurrence_labels AS capl ON capl.occurrence_id = cap.occurrence_id
-				WHERE
-					capl.name = ? AND cap.parent_id = ?
-			", (string)$ps_name, (int)$pn_parent_id);
-		} else {
-			$qr_res = $o_db->query("
-				SELECT DISTINCT cap.occurrence_id
-				FROM ca_occurrences cap
-				INNER JOIN ca_occurrence_labels AS capl ON capl.occurrence_id = cap.occurrence_id
-				WHERE
-					capl.name = ?
-			", (string)$ps_name);
-
+		$va_params = array((string)$ps_name);
+		
+		$vs_type_sql = '';
+		if ($pn_type_id) {
+			$va_type_ids = caMakeTypeIDList('ca_occurrences', array($pn_type_id));
+			$pn_type_id = array_shift($va_type_ids);
+			$vs_type_sql = " AND cap.type_id = ?";
+			$va_params[] = (int)$pn_type_id;
 		}
+		
+		if ($pn_parent_id) {
+			$vs_parent_sql = " AND cap.parent_id = ?";
+			$va_params[] = (int)$pn_parent_id;
+		} 
+		
+		$qr_res = $o_db->query($x="
+				SELECT DISTINCT cap.occurrence_id
+				FROM ca_occurrences cap
+				INNER JOIN ca_occurrence_labels AS capl ON capl.occurrence_id = cap.occurrence_id
+				WHERE
+					capl.name = ? {$vs_type_sql} {$vs_parent_sql}
+			", $va_params);
+		
 		$va_occurrence_ids = array();
 		while($qr_res->nextRow()) {
 			$va_occurrence_ids[] = $qr_res->get('occurrence_id');
