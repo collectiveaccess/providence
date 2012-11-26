@@ -520,7 +520,7 @@ class BundlableLabelableBaseModelWithAttributes extends LabelableBaseModelWithAt
 							} else {
 								$va_rel_items = array();
 							}
-							return caProcessTemplateForIDs($vs_template, $va_tmp[0], $va_ids, array_merge($pa_options, array('relatedValues' => array_values($va_rel_items))));
+							return caProcessTemplateForIDs($vs_template, $va_tmp[0], $va_ids, $pa_options);
 						} else {
 							$va_proc_labels = array();
 							foreach($va_related_items as $vn_relation_id => $va_relation_info) {
@@ -1155,6 +1155,8 @@ class BundlableLabelableBaseModelWithAttributes extends LabelableBaseModelWithAt
 					}
 				}
 				
+				$o_view->setVar('bundle_name', $ps_bundle_name);
+				$o_view->setVar('settings', $pa_bundle_settings);
 				$o_view->setVar('t_instance', $this);
 				$vs_element = $o_view->render('intrinsic.php', true);
 				
@@ -1164,7 +1166,11 @@ class BundlableLabelableBaseModelWithAttributes extends LabelableBaseModelWithAt
 					TooltipManager::add('#'.$vs_field_id, "<h3>".$pa_options['label']."</h3>{$vs_description}");
 				}
 				
-				$vs_display_format = $o_config->get('bundle_element_display_format');
+				if (isset($pa_bundle_settings['forACLAccessScreen']) && $pa_bundle_settings['forACLAccessScreen']) {
+					$vs_display_format = '^ELEMENT';
+				} else {
+					$vs_display_format = $o_config->get('bundle_element_display_format');
+				}
 				break;
 			# -------------------------------------------------
 			case 'attribute':
@@ -3893,6 +3899,12 @@ $pa_options["display_form_field_tips"] = true;
 		$pn_table_num = $this->getAppDataModel()->getTableNum($pm_rel_table_name_or_num);
 		if (!($t_instance = $this->getAppDataModel()->getInstanceByTableNum($pn_table_num))) { return null; }
 	
+		foreach($pa_ids as $vn_id) {
+			if (!is_numeric($vn_id)) { 
+				return false;
+			}
+		}
+	
 		if (!($vs_search_result_class = $t_instance->getProperty('SEARCH_RESULT_CLASSNAME'))) { return null; }
 		require_once(__CA_LIB_DIR__.'/ca/Search/'.$vs_search_result_class.'.php');
 		$o_data = new WLPlugSearchEngineCachedResult($pa_ids, $t_instance->tableNum());
@@ -3917,6 +3929,12 @@ $pa_options["display_form_field_tips"] = true;
 		$o_dm = Datamodel::load();
 		$pn_table_num = $o_dm->getTableNum(get_called_class());
 		if (!($t_instance = $o_dm->getInstanceByTableNum($pn_table_num))) { return null; }
+		
+		foreach($pa_ids as $vn_id) {
+			if (!is_numeric($vn_id)) { 
+				return false;
+			}
+		}
 	
 		if (!($vs_search_result_class = $t_instance->getProperty('SEARCH_RESULT_CLASSNAME'))) { return null; }
 		require_once(__CA_LIB_DIR__.'/ca/Search/'.$vs_search_result_class.'.php');
@@ -4340,6 +4358,9 @@ $pa_options["display_form_field_tips"] = true;
 				$va_row[$vs_f] = $qr_res->get($vs_f);
 			}
 			$va_row['access_display'] = $t_acl->getChoiceListValue('access', $va_row['access']);
+		}
+		if (!strlen($va_row['access_display'])) {	// show default
+			$va_row['access_display'] = $t_acl->getChoiceListValue('access', $this->getAppConfig()->get('default_item_access_level'));
 		}
 		
 		return $va_row;

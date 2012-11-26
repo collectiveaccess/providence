@@ -8,6 +8,10 @@ html, body {
 	height: 100%;
 }
 
+img {
+	border: 0px;
+}
+
 form{
 	display:inline;
 }
@@ -3298,6 +3302,16 @@ div.bundleDisplayTemplateKey {
 	color: #000000;
 }
 
+div.bundleDisplayElementSettingsControl {
+	float: right; 
+	margin-right: 15px;
+}
+
+.bundleDisplayElementBundleName {
+	font-size: 9px;
+	font-style: italic;
+}
+
 /* UI Editor styles */
 table.uiScreenItem {
 	width: 100%;
@@ -4416,7 +4430,7 @@ a.caClientOrderOverviewButton:hover {
 }
 
 /* -------------------------------------------------*/
-/* Record-level Access screen                       */
+/* Item-level access screen                         */
 /* -------------------------------------------------*/
 
 .globalAccess {

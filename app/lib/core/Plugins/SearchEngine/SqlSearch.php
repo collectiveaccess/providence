@@ -1001,6 +1001,8 @@ class WLPlugSearchEngineSqlSearch extends BaseSearchPlugin implements IWLPlugSea
 						
 						if (!sizeof($va_sql_where)) { continue; }
 						$vs_sql_where = join(' OR ', $va_sql_where);
+					} else {
+						$va_ft_terms = $va_ft_like_terms = $va_ft_like_terms = array();
 					}
 					
 					
