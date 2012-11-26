@@ -1,6 +1,6 @@
 <?php
 /** ---------------------------------------------------------------------
- * support/tests/lib/core/ConfigurationTests.php 
+ * support/tests/lib/core/ConfigurationTest.php 
  * ----------------------------------------------------------------------
  * CollectiveAccess
  * Open-source collections management software
@@ -31,10 +31,10 @@
  */
 	define("__CA_DISABLE_CONFIG_CACHING__", true);
 	require_once('PHPUnit/Autoload.php');
-	require_once('../../../../setup.php');
+	require_once('./setup.php');
 	require_once(__CA_LIB_DIR__.'/core/Configuration.php');
 	
-	class ConfigurationTests extends PHPUnit_Framework_TestCase {
+	class ConfigurationTest extends PHPUnit_Framework_TestCase {
 		public function testScalars() {
 			$o_config = new Configuration('./data/test.conf');
 			

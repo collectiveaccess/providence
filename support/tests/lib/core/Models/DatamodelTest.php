@@ -1,6 +1,6 @@
 <?php
 /** ---------------------------------------------------------------------
- * support/tests/lib/core/Models/DatamodelTests.php 
+ * support/tests/lib/core/Models/DatamodelTest.php 
  * ----------------------------------------------------------------------
  * CollectiveAccess
  * Open-source collections management software
@@ -30,10 +30,10 @@
  * ----------------------------------------------------------------------
  */
 	require_once('PHPUnit/Autoload.php');
-	require_once('../../../../../setup.php');
+	require_once('./setup.php');
 	require_once(__CA_LIB_DIR__.'/core/Datamodel.php');
 	
-	class DatamodelTests extends PHPUnit_Framework_TestCase {
+	class DatamodelTest extends PHPUnit_Framework_TestCase {
 		public function testInstantiateAllModels() {
 			$o_dm = Datamodel::load();
 			
