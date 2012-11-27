@@ -1,6 +1,6 @@
 <?php
 /** ---------------------------------------------------------------------
- * support/tests/lib/core/Controller/AccessControlTests.php 
+ * support/tests/lib/core/Controller/AccessControlTest.php 
  * ----------------------------------------------------------------------
  * CollectiveAccess
  * Open-source collections management software
@@ -30,7 +30,7 @@
  * ----------------------------------------------------------------------
  */
 require_once('PHPUnit/Autoload.php');
-require_once('../../../../../setup.php');
+require_once('./setup.php');
 require_once(__CA_LIB_DIR__."/core/Db.php");
 require_once(__CA_LIB_DIR__."/core/Configuration.php");
 require_once(__CA_LIB_DIR__."/core/Controller/RequestDispatcher.php");
@@ -39,7 +39,7 @@ require_once(__CA_LIB_DIR__."/core/Controller/Response/ResponseHTTP.php");
 require_once(__CA_MODELS_DIR__."/ca_user_roles.php");
 require_once(__CA_MODELS_DIR__."/ca_users.php");
 
-class AccessControlTests extends PHPUnit_Framework_TestCase {
+class AccessControlTest extends PHPUnit_Framework_TestCase {
 	# -------------------------------------------------------
 	private $ops_username;
 	private $ops_password;

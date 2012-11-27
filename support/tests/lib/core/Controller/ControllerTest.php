@@ -1,6 +1,6 @@
 <?php
 /** ---------------------------------------------------------------------
- * support/tests/lib/core/Controller/ControllerTests.php 
+ * support/tests/lib/core/Controller/ControllerTest.php 
  * ----------------------------------------------------------------------
  * CollectiveAccess
  * Open-source collections management software
@@ -30,10 +30,10 @@
  * ----------------------------------------------------------------------
  */
 	require_once('PHPUnit/Autoload.php');
-	require_once('../../../../../setup.php');
+	require_once('./setup.php');
 	require_once(__CA_LIB_DIR__.'/core/Controller/AppController.php');
 	
-	class ControllerTests extends PHPUnit_Framework_TestCase {
+	class ControllerTest extends PHPUnit_Framework_TestCase {
 	
 		
 		public function testRequestDispatch() {
