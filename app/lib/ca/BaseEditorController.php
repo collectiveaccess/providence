@@ -176,6 +176,13 @@
  				$vn_type_id = $this->request->getParameter($t_subject->getTypeFieldName(), pInteger);
  			}
  			
+ 			if (!$t_ui || !$t_ui->getPrimaryKey()) {
+ 				$this->notification->addNotification(_t('There is no configuration available for this editor. Check your system configuration and ensure there is at least one valid configuration for this type of editor.'), __NOTIFICATION_TYPE_ERROR__);
+				
+				$this->postError(1260, _t('There is no configuration available for this editor. Check your system configuration and ensure there is at least one valid configuration for this type of editor.'),"BaseEditorController->Edit()");
+				return;
+			}
+			
  			$va_nav = $t_ui->getScreensAsNavConfigFragment($this->request, $vn_type_id, $this->request->getModulePath(), $this->request->getController(), $this->request->getAction(),
 				array(),
 				array()
@@ -184,9 +191,7 @@
  				$this->request->setActionExtra($va_nav['defaultScreen']);
  			}
 			$this->view->setVar('t_ui', $t_ui);
-			if (!$t_ui->getPrimaryKey()) {
-				$this->notification->addNotification(_t('There is no configuration available for this editor. Check your system configuration and ensure there is at least one valid configuration for this type of editor.'), __NOTIFICATION_TYPE_ERROR__);
-			}
+			
 			if ($vn_subject_id) { $this->request->session->setVar($this->ops_table_name.'_browse_last_id', $vn_subject_id); } 	// set last edited
 			
 			# trigger "EditItem" hook 

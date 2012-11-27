@@ -30,13 +30,13 @@
  * ----------------------------------------------------------------------
  */
 require_once 'PHPUnit/Autoload.php';
-require_once('../../../setup.php');
+require_once('./setup.php');
 require_once(__CA_LIB_DIR__."/core/Datamodel.php");
 require_once(__CA_LIB_DIR__."/core/Db.php");
 require_once(__CA_LIB_DIR__."/core/Configuration.php");
 require_once(__CA_APP_DIR__."/helpers/utilityHelpers.php");
 
-class ModelSchemaTests extends PHPUnit_Framework_TestCase {
+class ModelSchemaTest extends PHPUnit_Framework_TestCase {
 	# -------------------------------------------------------
 	private $opo_dm;
 	# -------------------------------------------------------

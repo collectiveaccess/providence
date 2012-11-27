@@ -1,6 +1,6 @@
 <?php
 /** ---------------------------------------------------------------------
- * support/tests/lib/core/Parsers/TimeExpressionParserTests.php 
+ * support/tests/lib/core/Parsers/TimeExpressionParserTest.php 
  * ----------------------------------------------------------------------
  * CollectiveAccess
  * Open-source collections management software
@@ -30,10 +30,10 @@
  * ----------------------------------------------------------------------
  */
 	require_once('PHPUnit/Autoload.php');
-	require_once('../../../../../setup.php');
+	require_once('./setup.php');
 	require_once(__CA_LIB_DIR__.'/core/Parsers/TimeExpressionParser.php');
 	
-	class TimeExpressionParserTests extends PHPUnit_Framework_TestCase {
+	class TimeExpressionParserTest extends PHPUnit_Framework_TestCase {
 	
 		public function testQuarterCentryDates() {
 			$o_tep = new TimeExpressionParser();

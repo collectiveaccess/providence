@@ -1415,7 +1415,7 @@ require_once(__CA_LIB_DIR__.'/core/Parsers/TimeExpressionParser.php');
 		$vs_delimiter = (isset($pa_options['delimiter'])) ? $pa_options['delimiter'] : '; ';
 		
 		$va_tags = array();
-		if (preg_match_all("!\^([A-Za-z0-9_\.]+[^ \t\r\n\"\'<>]*)!", $ps_template, $va_matches)) {
+		if (preg_match_all("!\^([A-Za-z0-9_\.]+[^ \t\r\n\"\'<>\(\)\{\}\/]*)!", $ps_template, $va_matches)) {
 			$va_tags = $va_matches[1];
 		}
 		

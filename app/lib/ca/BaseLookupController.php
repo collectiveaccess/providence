@@ -190,7 +190,7 @@
  				$va_items_for_locale = $t_item->getHierarchyList();
  			} else {
 				if ($t_item->load($pn_id)) {		// id is the id of the parent for the level we're going to return
-				
+					$vs_table_name = $t_item->tableName();
 					$vs_label_table_name = $this->opo_item_instance->getLabelTableName();
 					$vs_label_display_field_name = $this->opo_item_instance->getLabelDisplayField();
 					$vs_pk = $this->opo_item_instance->primaryKey();
@@ -213,12 +213,19 @@
 					);
 					
 					$va_items = array();
+					
+					$o_config = Configuration::load();
+					if (!($vs_item_template = trim($o_config->get("{$vs_table_name}_hierarchy_browser_display_settings")))) {
+						$vs_item_template = "^{$vs_table_name}.preferred_labels.{$vs_label_display_field_name}";
+					}
+					
 					while($qr_children->nextRow()) {
 						$va_tmp = $qr_children->getRow();
 						
 						if (!$va_tmp[$vs_label_display_field_name]) { $va_tmp[$vs_label_display_field_name] = $va_tmp['idno']; }
 						if (!$va_tmp[$vs_label_display_field_name]) { $va_tmp[$vs_label_display_field_name] = '???'; }
-						$va_tmp['name'] = $va_tmp[$vs_label_display_field_name];
+						
+						$va_tmp['name'] = caProcessTemplateForIDs($vs_item_template, $vs_table_name, array($va_tmp[$vs_pk]));
 						
 						// Child count is only valid if has_children is not null
 						$va_tmp['children'] = $qr_children->get('has_children') ? $qr_children->get('child_count') : 0;
@@ -227,12 +234,24 @@
 					
 					$va_items_for_locale = caExtractValuesByUserLocale($va_items);
 					
+					$vs_rank_fld = $t_item->getProperty('RANK');
+					
 					$va_sorted_items = array();
 					foreach($va_items_for_locale as $vn_id => $va_node) {
-						$va_sorted_items[($vs_key = preg_replace('![^A-Za-z0-9]!', '_', $va_node['name']).'_'.$vn_id) ? $vs_key : '000'] = $va_node;
+						$vs_key = preg_replace('![^A-Za-z0-9]!', '_', $va_node['name']);
+						if ($vs_rank_fld && ($vs_rank = (int)sprintf("%08d", $va_node[$vs_rank_fld]))) {
+							$va_sorted_items[$vs_rank][$vs_key] = $va_node;
+						} else {
+							$va_sorted_items[$vs_key][$vs_key] = $va_node;
+						}
 					}
+					
 					ksort($va_sorted_items);
-					$va_items_for_locale = $va_sorted_items;
+					$va_items_for_locale = array();
+					foreach($va_sorted_items as $vs_k => $va_v) {
+						ksort($va_v);
+						$va_items_for_locale = array_merge($va_items_for_locale, $va_v);
+					}
 				}
  			}
  			

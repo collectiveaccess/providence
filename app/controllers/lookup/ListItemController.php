@@ -70,6 +70,8 @@
 			$ps_bundle = (string)$this->request->getParameter('bundle', pString);
 			$t_item = $this->opo_item_instance;
 			
+	 		$vs_template = $t_item->getAppConfig()->get('ca_list_items_hierarchy_browser_display_settings');
+			
 			$va_lists = array();
 			if ($ps_lists = $this->request->getParameter('lists', pString)) {
 				$va_lists = explode(";", $ps_lists);
@@ -112,7 +114,8 @@
 					foreach($va_list_items as $vn_item_id => $va_item) {
 						if (!$va_item[$vs_label_display_field_name]) { $va_item[$vs_label_display_field_name] = $va_item['idno']; }
 						if (!$va_item[$vs_label_display_field_name]) { $va_item[$vs_label_display_field_name] = '???'; }
-						$va_item['name'] = $va_item[$vs_label_display_field_name];
+						
+						$va_item['name'] = caProcessTemplateForIDs($vs_template, 'ca_list_items', array($vn_item_id));
 						
 						// Child count is only valid if has_children is not null
 						$va_item['children'] = 0;

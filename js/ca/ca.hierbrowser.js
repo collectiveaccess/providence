@@ -254,11 +254,11 @@ if (that.uiStyle == 'horizontal') {
 						
 						if ( (!((l == 0) && that.dontAllowEditForFirstLevel))) {
 							jQuery('#' + newLevelListID).append(
-								"<li class='" + that.className + "'>" + moreButton +"<a href='#' id='hierBrowser_" + that.name + '_level_' + l + '_item_' + item[data._primaryKey] + "' class='" + that.className + "'>"  +  jQuery('<div/>').text(item.name).html() + "</a></li>"
+								"<li class='" + that.className + "'>" + moreButton +"<a href='#' id='hierBrowser_" + that.name + '_level_' + l + '_item_' + item[data._primaryKey] + "' class='" + that.className + "'>"  +  item.name + "</a></li>"
 							);
 						} else {
 							jQuery('#' + newLevelListID).append(
-								"<li class='" + that.className + "'>" + moreButton + jQuery('<div/>').text(item.name).html() + "</li>"
+								"<li class='" + that.className + "'>" + moreButton + item.name + "</li>"
 							);
 						}
 						
