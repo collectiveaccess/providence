@@ -47,47 +47,47 @@ class ItemServiceTest extends PHPUnit_Framework_TestCase {
 		$vo_service = new ItemService($vo_request,"ca_objects");
 		$va_return = $vo_service->dispatch();
 
-		$this->assertTrue($va_return["ok"]);
+		$this->assertFalse($vo_service->hasErrors());
 
 		// check example data from each section
 
 		// intrinsic
-  		$this->assertEquals($va_return["idno"]["value"],"CIHP.27");
-		$this->assertEquals($va_return["access"]["value"],"1");
-		$this->assertEquals($va_return["access"]["display_text"]["en_US"],"Public");
+  		$this->assertEquals("CIHP.27", $va_return["idno"]["value"]);
+		$this->assertEquals("1", $va_return["access"]["value"]);
+		$this->assertEquals("Public", $va_return["access"]["display_text"]["en_US"]);
 
 		// labels
 		$this->assertEquals(
-			$va_return["preferred_labels"]["en_US"][0],
-			"Astroland arcade, Surf Avenue"
+			"Astroland arcade, Surf Avenue",
+			$va_return["preferred_labels"]["en_US"][0]
 		);
 
 		// attributes
 		$this->assertEquals(
-			$va_return["ca_objects.description"][0]["en_US"]["description"],
-			"Astroland arcade, taken from Surf Avenue looking south west."
+			"Astroland arcade, taken from Surf Avenue looking south west.",
+			$va_return["ca_objects.description"][0]["en_US"]["description"]
 		);
 
 		$this->assertEquals(
-			$va_return["ca_objects.subtitle"][0]["en_US"]["subtitle"],
-			"November 30, 2006"
+			"November 30, 2006",
+			$va_return["ca_objects.subtitle"][0]["en_US"]["subtitle"]
 		);
 
 		// related items
 		$this->assertEquals(
-			$va_return["related"]["ca_entities"][0]["entity_id"], "4"
+			"4", $va_return["related"]["ca_entities"][0]["entity_id"]
 		);
 
 		$this->assertEquals(
-			$va_return["related"]["ca_entities"][0]["displayname"], "Seth Kaufman"
+			"Seth Kaufman", $va_return["related"]["ca_entities"][0]["label"]
 		);
 
 		$this->assertEquals(
-			$va_return["related"]["ca_list_items"][0]["displayname"], "arcades"
+			"arcades", $va_return["related"]["ca_list_items"][0]["label"]
 		);
 
 		$this->assertEquals(
-			$va_return["related"]["ca_list_items"][0]["relationship_typename"], "depicts"
+			"depicts", $va_return["related"]["ca_list_items"][0]["relationship_typename"]
 		);
 
 	}
@@ -124,19 +124,18 @@ JSON;
 		$vo_service = new ItemService($vo_request,"ca_objects");
 		$va_return = $vo_service->dispatch();
 
-		$this->assertTrue($va_return["ok"]);
+		$this->assertFalse($vo_service->hasErrors());
 
 		$this->assertEquals(
-			$va_return["ca_objects.access"],"Public"
+			"Public", $va_return["ca_objects.access"]
 		);
 
 		$this->assertEquals(
-			$va_return["ca_objects.preferred_labels.name"],"Astroland arcade, Surf Avenue"
+			"Astroland arcade, Surf Avenue",$va_return["ca_objects.preferred_labels.name"]
 		);
 
 		$this->assertEquals(
-			$va_return["ca_entities.entity_id"],
-			array("4")
+			array("4"), $va_return["ca_entities.entity_id"]
 		);
 	}
 	# -------------------------------------------------------

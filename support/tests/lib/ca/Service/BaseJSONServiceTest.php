@@ -50,10 +50,10 @@ class BaseJSONServiceTest extends PHPUnit_Framework_TestCase {
 		$vo_service = new BaseJSONService($vo_request,"ca_objects");
 
 		$this->assertFalse($vo_service->hasErrors());
-		$this->assertEquals($vo_service->getTableName(),"ca_objects");
-		$this->assertEquals($vo_service->getRequestMethod(),"GET");
-		$this->assertEquals($vo_service->getIdentifier(),4711);
-		$this->assertEquals($vo_service->getRequestBodyArray(),array("foo" => "bar"));
+		$this->assertEquals("ca_objects",$vo_service->getTableName());
+		$this->assertEquals("GET",$vo_service->getRequestMethod());
+		$this->assertEquals(4711,$vo_service->getIdentifier());
+		$this->assertEquals(array("foo" => "bar"),$vo_service->getRequestBodyArray());
 	}
 	# -------------------------------------------------------
 	public function testImproperInstantiation(){
@@ -71,7 +71,7 @@ class BaseJSONServiceTest extends PHPUnit_Framework_TestCase {
 		// we don't check error messages because they tend to change frequently but
 		// the above code should generate 3 errors (invalid table, no JSON request body
 		// and invalid request method)
-		$this->assertEquals(sizeof($vo_service->getErrors()),3);
+		$this->assertEquals(3,sizeof($vo_service->getErrors()));
 	}
 	# -------------------------------------------------------
 }
