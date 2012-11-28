@@ -104,17 +104,19 @@ class ItemServiceTest extends PHPUnit_Framework_TestCase {
 		$vo_response = new ResponseHTTP();
 		$vo_request = new RequestHTTP($vo_response);
 		$vs_request_body=<<<JSON
-		"bundles" : {
-			"ca_objects.access" : {
-				"convertCodesToDisplayText" : true
-			},
-			"ca_objects.preferred_labels.name" : {
-				"delimiter" : "; "
-			},
-			"ca_entities.entity_id" : {
-				"returnAsArray" : true
-			}
+{
+	"bundles" : {
+		"ca_objects.access" : {
+			"convertCodesToDisplayText" : true
+		},
+		"ca_objects.preferred_labels.name" : {
+			"delimiter" : "; "
+		},
+		"ca_entities.entity_id" : {
+			"returnAsArray" : true
 		}
+	}
+}
 JSON;
 		$vo_request->setParameter("id",27,"GET");
 		$vo_request->setRawPostData($vs_request_body);
