@@ -8,10 +8,6 @@ html, body {
 	height: 100%;
 }
 
-img {
-	border: 0px;
-}
-
 form{
 	display:inline;
 }
@@ -1922,7 +1918,7 @@ div.caMediaOverlayControls .objectInfo{
 
 div.caMediaOverlayControls .repNav {
 	font-size: 12px;
-	width: 80px;
+	width: 100px;
 	float:left;
 }
 
