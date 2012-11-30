@@ -47,7 +47,7 @@ class AccessRestrictions {
 	 * Parsed version of access restriction definition
 	 * @var array 
 	 */
-	private $opa_acr;
+	public $opa_acr;
 
 	/**
 	 * "Empty" ca_users variable to work with
