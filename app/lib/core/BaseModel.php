@@ -6056,6 +6056,7 @@ class BaseModel extends BaseObject {
 	 *		additionalTableToJoin: name of table to join to hierarchical table (and return fields from); only fields related many-to-one are currently supported
 	 *		returnChildCounts: if true, the number of children under each returned child is calculated and returned in the result set under the column name 'child_count'. Note that this count is always at least 1, even if there are no children. The 'has_children' column will be null if the row has, in fact no children, or non-null if it does have children. You should check 'has_children' before using 'child_count' and disregard 'child_count' if 'has_children' is null.
 	 *		returnDeleted = return deleted records in list (def. false)
+	 *		sort =
 	 * @return DbResult 
 	 */
 	public function &getHierarchyChildrenAsQuery($pn_id=null, $pa_options=null) {
@@ -6121,10 +6122,36 @@ class BaseModel extends BaseObject {
 			
 			$vs_hier_parent_id_fld = $this->getProperty("HIERARCHY_PARENT_ID_FLD");
 			
-			if ($vs_rank_fld = $this->getProperty('RANK')) { 
-				$vs_order_by = $this->tableName().'.'.$vs_rank_fld;
-			} else {
-				$vs_order_by = $this->tableName().".".$this->primaryKey();
+			// Try to set explicit sort
+			if (isset($pa_options['sort']) && $pa_options['sort']) {
+				if (!is_array($pa_options['sort'])) { $pa_options['sort'] = array($pa_options['sort']); }
+				$va_order_bys = array();
+				foreach($pa_options['sort'] as $vs_sort_fld) {
+					$va_sort_tmp = explode(".", $vs_sort_fld);
+				
+					switch($va_sort_tmp[0]) {
+						case $this->tableName():
+							if ($this->hasField($va_sort_tmp[1])) {
+								$va_order_bys[] = $vs_sort_fld;
+							}
+							break;
+						case $ps_additional_table_to_join:
+							if ($t_additional_table_to_join->hasField($va_sort_tmp[1])) {
+								$va_order_bys[] = $vs_sort_fld;
+							}
+							break;
+					}
+				}
+				$vs_order_by = join(", ", $va_order_bys);
+			} 
+			
+			// Fall back to default sorts if no explicit sort
+			if (!$vs_order_by) {
+				if ($vs_rank_fld = $this->getProperty('RANK')) { 
+					$vs_order_by = $this->tableName().'.'.$vs_rank_fld;
+				} else {
+					$vs_order_by = $this->tableName().".".$this->primaryKey();
+				}
 			}
 			
 			if ($pb_return_child_counts) {
