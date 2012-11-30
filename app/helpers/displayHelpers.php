@@ -297,7 +297,7 @@ require_once(__CA_LIB_DIR__.'/core/Parsers/TimeExpressionParser.php');
 			$va_service_info = caJSONLookupServiceUrl($po_request, $t_instance->tableName());
 			$vs_output .= "jQuery(document).ready(function() {";
 			$vs_output .= "jQuery('#remapTo').autocomplete(
-					'".$va_service_info['search']."', {minChars: 3, matchSubset: 1, matchContains: 1, delay: 800, extraParams: {noSymbols: 1, exclude: ".(int)$t_instance->getPrimaryKey()."}}
+					'".$va_service_info['search']."', {minChars: 3, matchSubset: 1, matchContains: 1, delay: 800, scroll: true, max: 100, extraParams: {noSymbols: 1, exclude: ".(int)$t_instance->getPrimaryKey()."}}
 				);";
 				
 			$vs_output.= "jQuery('#remapTo').result(function(event, data, formatted) {
