@@ -260,33 +260,53 @@ require_once(__CA_LIB_DIR__.'/core/Parsers/TimeExpressionParser.php');
 	 *
 	 */
 	function caDeleteRemapper($po_request, $t_instance) {
-		$va_tables = array(
-			'ca_objects', 'ca_entities', 'ca_places', 'ca_occurrences', 'ca_collections', 'ca_storage_locations', 'ca_list_items', 'ca_loans', 'ca_movements', 'ca_tours', 'ca_tour_stops'
-		);
+		$vs_instance_table = $t_instance->tableName();
 		
-		if (!in_array($t_instance->tableName(), $va_tables)) { return null; }
-		
-		$va_buf = array();
 		$vn_count = 0;
-		foreach($va_tables as $vs_table) {
-			$va_items = $t_instance->getRelatedItems($vs_table);
-			
-			if (!($vn_c = sizeof($va_items))) { continue; }
-			if ($vn_c == 1) {
-				$va_buf[] = _t("Has %1 reference to %2", $vn_c, caGetTableDisplayName($vs_table, true))."<br>\n";
-			} else {
-				$va_buf[] = _t("Has %1 references to %2", $vn_c, caGetTableDisplayName($vs_table, true))."<br>\n";
-			}
-			$vn_count += $vn_c;
+		$va_buf = array();
+		switch($vs_instance_table) {
+			case 'ca_relationship_types':
+				// get # of relationships using this type
+				$vn_rel_count = $t_instance->getRelationshipCountForType();
+				$t_rel_instance = $t_instance->getAppDatamodel()->getInstanceByTableNum($t_instance->get('table_num'));
+				if (!$t_rel_instance->load($t_instance->get('table_num'))) { return ''; }
+				if ($vn_rel_count == 1) {
+					$va_buf[] = _t("Type is used by %1 %2", $vn_rel_count, $t_rel_instance->getProperty('NAME_PLURAL'))."<br>\n";
+				} else {
+					$va_buf[] = _t("Type is used by %1 %2", $vn_rel_count, $t_rel_instance->getProperty('NAME_PLURAL'))."<br>\n";
+				}
+				$vn_count += $vn_rel_count;
+				
+				$vs_typename = _t('relationship type');
+				break;
+			default:
+				$va_tables = array(
+					'ca_objects', 'ca_entities', 'ca_places', 'ca_occurrences', 'ca_collections', 'ca_storage_locations', 'ca_list_items', 'ca_loans', 'ca_movements', 'ca_tours', 'ca_tour_stops',
+				);
+				
+				if (!in_array($t_instance->tableName(), $va_tables)) { return null; }
+				
+				foreach($va_tables as $vs_table) {
+					$va_items = $t_instance->getRelatedItems($vs_table);
+					
+					if (!($vn_c = sizeof($va_items))) { continue; }
+					if ($vn_c == 1) {
+						$va_buf[] = _t("Has %1 reference to %2", $vn_c, caGetTableDisplayName($vs_table, true))."<br>\n";
+					} else {
+						$va_buf[] = _t("Has %1 references to %2", $vn_c, caGetTableDisplayName($vs_table, true))."<br>\n";
+					}
+					$vn_count += $vn_c;
+				}
+				$vs_typename = $t_instance->getTypeName();
 		}
 		
 		$vs_output = '';
 		if (sizeof($va_buf)) {
 			// add autocompleter for remapping
 			if ($vn_count == 1) {
-				$vs_output .= "<h3 id='caDeleteReferenceCount'>"._t('This %1 is referenced %2 time', $vs_typename = $t_instance->getTypeName(), $vn_count).". "._t('When deleting this %1:', $vs_typename)."</h3>\n";
+				$vs_output .= "<h3 id='caDeleteReferenceCount'>"._t('This %1 is referenced %2 time', $vs_typename, $vn_count).". "._t('When deleting this %1:', $vs_typename)."</h3>\n";
 			} else {
-				$vs_output .= "<h3 id='caDeleteReferenceCount'>"._t('This %1 is referenced %2 times', $vs_typename = $t_instance->getTypeName(), $vn_count).". "._t('When deleting this %1:', $vs_typename)."</h3>\n";
+				$vs_output .= "<h3 id='caDeleteReferenceCount'>"._t('This %1 is referenced %2 times', $vs_typename, $vn_count).". "._t('When deleting this %1:', $vs_typename)."</h3>\n";
 			}
 			$vs_output .= caHTMLRadioButtonInput('referenceHandling', array('value' => 'delete', 'checked' => 1, 'id' => 'caReferenceHandlingDelete')).' '._t('remove all references')."<br/>\n";
 			$vs_output .= caHTMLRadioButtonInput('referenceHandling', array('value' => 'remap', 'id' => 'caReferenceHandlingRemap')).' '._t('transfer references to').' '.caHTMLTextInput('remapTo', array('value' => '', 'size' => 40, 'id' => 'remapTo', 'class' => 'lookupBg', 'disabled' => 1));
@@ -297,7 +317,7 @@ require_once(__CA_LIB_DIR__.'/core/Parsers/TimeExpressionParser.php');
 			$va_service_info = caJSONLookupServiceUrl($po_request, $t_instance->tableName());
 			$vs_output .= "jQuery(document).ready(function() {";
 			$vs_output .= "jQuery('#remapTo').autocomplete(
-					'".$va_service_info['search']."', {minChars: 3, matchSubset: 1, matchContains: 1, delay: 800, scroll: true, max: 100, extraParams: {noSymbols: 1, exclude: ".(int)$t_instance->getPrimaryKey()."}}
+					'".$va_service_info['search']."', {minChars: 3, matchSubset: 1, matchContains: 1, delay: 800, scroll: true, max: 100, extraParams: {noSymbols: 1, exclude: ".(int)$t_instance->getPrimaryKey().", table_num: ".(int)$t_instance->get('table_num')."}}
 				);";
 				
 			$vs_output.= "jQuery('#remapTo').result(function(event, data, formatted) {
