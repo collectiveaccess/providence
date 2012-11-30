@@ -306,6 +306,7 @@ if (that.uiStyle == 'horizontal') {
 					
 					var foundSelected = false;
 					jQuery.each(data, function(i, item) {
+						if (!item) { return; }
 						jQuery('#' + newLevelDivID).data('itemCount', data['_itemCount']);
 						if (item[data._primaryKey]) {
 							if ((is_init) && (level == 0) && (!that.selectedItemIDs[0])) {
