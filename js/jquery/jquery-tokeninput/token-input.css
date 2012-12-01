@@ -30,6 +30,7 @@ ul.token-input-list li input {
 
 li.token-input-token {
     overflow: hidden; 
+    width: auto !important;
     height: auto !important; 
     height: 1%;
     margin: 3px;

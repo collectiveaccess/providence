@@ -1918,7 +1918,7 @@ div.caMediaOverlayControls .objectInfo{
 
 div.caMediaOverlayControls .repNav {
 	font-size: 12px;
-	width: 80px;
+	width: 100px;
 	float:left;
 }
 
@@ -3296,6 +3296,16 @@ div.bundleDisplayTemplateKey {
 	font-size: 10px;
 	font-weight: normal;
 	color: #000000;
+}
+
+div.bundleDisplayElementSettingsControl {
+	float: right; 
+	margin-right: 15px;
+}
+
+.bundleDisplayElementBundleName {
+	font-size: 9px;
+	font-style: italic;
 }
 
 /* UI Editor styles */

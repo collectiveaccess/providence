@@ -516,7 +516,7 @@
 			if (!is_array($pa_options)) { $pa_options = array(); }
 			
 			$vn_id = $this->getPrimaryKey();
-			if(parent::delete($pb_delete_related)) {
+			if(parent::delete($pb_delete_related, $pa_options)) {
 				// Delete any associated attributes and attribute_values
 				if (!($qr_res = $this->getDb()->query("
 					DELETE FROM ca_attribute_values 
@@ -579,7 +579,7 @@
 									foreach($va_values as $vs_sub_code => $vs_value) {
 										if (!$t_element = $this->_getElementInstance($vs_sub_code)) { continue; }
 										
-										switch($t_element->get('datatype')) {
+										switch((int)$t_element->get('datatype')) {
 											case 3:		// list
 												$va_list_item = $t_list->getItemFromListByItemID($t_element->get('list_id'), $vs_value);
 												$vs_value = $vs_value.":".$va_list_item['idno'];

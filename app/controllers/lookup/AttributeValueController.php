@@ -60,6 +60,11 @@
 				return null;
 			}
 			
+			if ($this->request->user->getBundleAccessLevel($va_tmp[0], $vs_tmp[1]) == __CA_BUNDLE_ACCESS_NONE__) {
+				print _t("You do not have access to this bundle");
+				return null;
+			}
+			
 			$va_type_restrictions = $t_element->getTypeRestrictions($t_table->tableNum());
 			if (!$va_type_restrictions || !is_array($va_type_restrictions) || !sizeof($va_type_restrictions)) {
 				print _t("Element code is not bound to the specified table");

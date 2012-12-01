@@ -122,8 +122,8 @@ var caUI = caUI || {};
 			}
 			
 			output =  "<div id='displayElement_" + id +"' class='" + that.displayItemClass + "'>";
-			output += " <div style='float: right; margin-right: 15px;' class='_displayElementSettingsControl'><a href='#' onclick='jQuery(\"#displayElementSettings_" +  id.replace(/\./g, "\\\\.") +"\").slideToggle(250); return false; '>" + that.settingsIcon + "</a></div>";
-			output += "<div style='width:75%'>" + label + "</div>";
+			output += " <div class='bundleDisplayElementSettingsControl'><a href='#' onclick='jQuery(\"#displayElementSettings_" +  id.replace(/\./g, "\\\\.") +"\").slideToggle(250); return false; '>" + that.settingsIcon + "</a></div>";
+			output += "<div style='width:75%'>" + label + " <div class='bundleDisplayElementBundleName'>(" + placement_info.bundle + ")</div></div>";
 			output += "<div id='displayElementSettings_" + id +"' style='display: none;'>" +settingsForm + "</div>";
 			output += "</div>\n";
 			
@@ -145,10 +145,10 @@ var caUI = caUI || {};
 			});
 			jQuery('#' + that.displayBundleListID).val(bundle_list.join(';'));
 			
-			jQuery('#' + that.availableListID + ' .' +  that.displayItemClass + ' ._displayElementSettingsControl').hide(0);
+			jQuery('#' + that.availableListID + ' .' +  that.displayItemClass + ' .bundleDisplayElementSettingsControl').hide(0);
 			jQuery('#' + that.availableListID + ' input').attr('disabled', true);
 			
-			jQuery('#' + that.toDisplayListID + ' .' +  that.displayItemClass + ' ._displayElementSettingsControl').show(0);
+			jQuery('#' + that.toDisplayListID + ' .' +  that.displayItemClass + ' .bundleDisplayElementSettingsControl').show(0);
 			jQuery('#' + that.toDisplayListID + ' input').attr('disabled', false);
 		}
 		// ------------------------------------------------------------------------------------

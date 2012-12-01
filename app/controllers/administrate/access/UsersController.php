@@ -35,6 +35,7 @@
  		#
  		# -------------------------------------------------------
  		public function Edit() {
+ 			JavascriptLoadManager::register("bundleableEditor");
  			$t_user = $this->getUserObject();
 			
 			$va_profile_prefs = $t_user->getValidPreferences('profile');
@@ -61,6 +62,10 @@
  				if ($t_user->numErrors()) {
  					$this->request->addActionErrors($t_user->errors(), 'field_'.$vs_f);
  				}
+ 			}
+ 			
+ 			if ($this->request->getParameter('entity_id', pInteger) == 0) {
+ 				$t_user->set('entity_id', null);
  			}
 
  			if ($this->request->getParameter('password', pString) != $this->request->getParameter('password_confirm', pString)) {
@@ -201,6 +206,117 @@
  				return;
  			} else {
  				$this->render('user_delete_html.php');
+ 			}
+ 		}
+ 		# -------------------------------------------------------
+ 		public function DownloadUserReport() {
+ 			$vs_download_format = $this->request->getParameter("download_format", pString);
+ 			if(!$vs_download_format){
+ 				$vs_download_format = "tab";
+ 			}
+ 			$this->view->setVar("download_format", $vs_download_format);
+ 			switch($vs_download_format){
+ 				default:
+ 				case "tab":
+ 					$this->view->setVar("file_extension", "txt");
+ 					$this->view->setVar("mimetype", "text/plain");
+ 					$vs_delimiter_col = "\t";
+ 					$vs_delimiter_row = "\n";
+ 				break;
+ 				# -----------------------------------
+ 				case "csv":
+ 					$this->view->setVar("file_extension", "txt");
+ 					$this->view->setVar("mimetype", "text/plain");
+ 					$vs_delimiter_col = ",";
+ 					$vs_delimiter_row = "\n";
+ 				break;
+ 				# -----------------------------------
+ 			}
+ 			
+ 			$o_db = new Db();
+ 			$t_user = new ca_users();
+ 			$va_fields = array("lname", "fname", "email", "user_name", "userclass", "active", "last_login");
+ 			$va_profile_prefs = $t_user->getValidPreferences('profile');
+ 			$va_profile_prefs_labels = array();
+ 			foreach($va_profile_prefs as $vs_pref) {
+				$va_pref_info = $t_user->getPreferenceInfo($vs_pref);
+				$va_profile_prefs_labels[$vs_pref] = $va_pref_info["label"];
+			}
+ 			$qr_users = $o_db->query("SELECT * FROM ca_users ORDER BY user_id DESC");
+ 			if($qr_users->numRows()){
+ 				$va_rows = array();
+ 				# --- headings
+ 				$va_row = array();
+ 				# --- headings for field values
+ 				foreach($va_fields as $vs_field){
+ 					switch($vs_field){
+ 						case "last_login":
+ 							$va_row[] = _t("Last login");
+ 						break;
+ 						# --------------------
+ 						default:
+ 							$va_row[] = $t_user->getDisplayLabel("ca_users.".$vs_field);
+ 						break;
+ 						# --------------------
+ 					}
+ 				}
+ 				# --- headings for profile prefs
+ 				foreach($va_profile_prefs_labels as $vs_pref => $vs_pref_label){
+ 					$va_row[] = $vs_pref_label;
+ 				}
+ 				$va_rows[] = join($vs_delimiter_col, $va_row);
+ 				reset($va_fields);
+ 				reset($va_profile_prefs_labels);
+ 				$o_tep = new TimeExpressionParser();
+ 				while($qr_users->nextRow()){
+ 					$va_row = array();
+ 					# --- fields
+ 					foreach($va_fields as $vs_field){
+						switch($vs_field){
+							case "userclass":
+								$va_row[] = $t_user->getChoiceListValue($vs_field, $qr_users->get("ca_users.".$vs_field));
+							break;
+							# -----------------------
+							case "active":
+								$va_row[] = ($qr_users->get("ca_users.".$vs_field) == 1) ? _t("active") : _t("not active");
+							break;
+							# -----------------------
+							case "last_login":
+								if (!is_array($va_vars = $qr_users->getVars('vars'))) { $va_vars = array(); }
+
+								if ($va_vars['last_login'] > 0) {
+									$o_tep->setUnixTimestamps($va_vars['last_login'], $va_vars['last_login']);
+									$va_row[] = $o_tep->getText();
+								}else{
+									$va_row[] = "-";
+								}
+								
+							break;
+							# -----------------------
+							default:
+								if($vs_download_format == "csv"){
+									$va_row[] = str_replace(",", "-", $qr_users->get("ca_users.".$vs_field));
+								}else{
+									$va_row[] = $qr_users->get("ca_users.".$vs_field);
+								}
+							break;
+							# -----------------------	
+						}
+					}
+					# --- profile prefs
+					foreach($va_profile_prefs_labels as $vs_pref => $vs_pref_label){
+						$t_user->load($qr_users->get("ca_users.user_id"));
+						$va_row[] = $t_user->getPreference($vs_pref);
+					}
+					$va_rows[] = join($vs_delimiter_col, $va_row);
+ 				}
+ 				$vs_file_contents = join($vs_delimiter_row, $va_rows);
+ 				$this->view->setVar("file_contents", $vs_file_contents);
+ 				return $this->render('user_report.php');
+ 			}else{
+ 				$this->notification->addNotification(_t("There are no users"), __NOTIFICATION_TYPE_INFO__);
+ 				$this->ListUsers();
+ 				return;
  			}
  		}
  		# -------------------------------------------------------
