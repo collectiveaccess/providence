@@ -141,8 +141,8 @@
 					
 					// TODO: make this a configurable mapping ala how media metadata is done
 					$t_object->addAttribute(
-						array('locale_id' => $pn_locale_id, 'description' => join("\n\n", $va_texts)),
-						'description'
+						array('locale_id' => $pn_locale_id, 'generalNotes' => join("\n\n", $va_texts)),
+						'generalNotes'
 					);
 					
 					$t_object->insert();
