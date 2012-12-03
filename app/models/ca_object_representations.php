@@ -392,8 +392,8 @@ class ca_object_representations extends BundlableLabelableBaseModelWithAttribute
 		return $vn_rc;
 	}
 	# ------------------------------------------------------
-	public function delete($pn_delete_related=false) {
-		return parent::delete($pn_delete_related);
+	public function delete($pn_delete_related=false, $pa_options=null) {
+		return parent::delete($pn_delete_related, $pa_options);
 	}
 	# ------------------------------------------------------
 	/**
