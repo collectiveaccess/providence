@@ -1,13 +1,13 @@
 <?php
-/* ----------------------------------------------------------------------
- * app/views/administrate/setup/interface_editor/log_html.php : 
+/** ---------------------------------------------------------------------
+ * support/tests/lib/core/Models/DatamodelTest.php 
  * ----------------------------------------------------------------------
  * CollectiveAccess
  * Open-source collections management software
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2011 Whirl-i-Gig
+ * Copyright 2009-2012 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -22,20 +22,26 @@
  * GNU General Public License. (http://www.gnu.org/copyleft/gpl.html). See
  * the "license.txt" file for details, or visit the CollectiveAccess web site at
  * http://www.CollectiveAccess.org
- *
+ * 
+ * @package CollectiveAccess
+ * @subpackage tests
+ * @license http://www.gnu.org/copyleft/gpl.html GNU Public License version 3
+ * 
  * ----------------------------------------------------------------------
  */
- 	$t_ui = $this->getVar('t_subject');
-	$vn_ui_id = $this->getVar('subject_id');
+	require_once('PHPUnit/Autoload.php');
+	require_once('./setup.php');
+	require_once(__CA_LIB_DIR__.'/core/Datamodel.php');
+	
+	class DatamodelTest extends PHPUnit_Framework_TestCase {
+		public function testInstantiateAllModels() {
+			$o_dm = Datamodel::load();
+			
+			$va_tables = $o_dm->getTableNames();
+			
+			foreach($va_tables as $vs_table) {
+				$this->assertInstanceOf($vs_table, $o_dm->getInstanceByTableName($vs_table));
+			}
+		}
+	}
 ?>
-<div class="sectionBox">
-<?php
-	print caFormControlBox(
-		'<div class="list-filter">'._t('Filter').': <input type="text" name="filter" value="" onkeyup="jQuery(\'#caLog\').caFilterTable(this.value); return false;" size="20"/></div>', 
-		'', 
-		''
-	); 
-	print $t_ui->getChangeLogForDisplay('caLog');
-?>
-	<div class="editorBottomPadding"><!-- empty --></div>
-</div>

@@ -425,6 +425,7 @@
 					</xs:sequence>
 					<xs:attribute name="code" type="elementCodeType" use="required"/>
 					<xs:attribute name="default" type="booleanType" use="required"/>
+					<xs:attribute name="rank" type="xs:integer" use="optional"/>
 				</xs:complexType>
 			</xs:element>
 		</xs:sequence>

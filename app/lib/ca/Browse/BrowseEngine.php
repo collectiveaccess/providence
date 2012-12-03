@@ -1540,23 +1540,7 @@
 			if ($o_results->numHits() != 1) {
 				$va_facets = $this->getFacetList();
 				$o_browse_cache = new BrowseCache();
-				$va_parent_browse_params = $this->opo_ca_browse_cache->getParameters();;
-				
-				
-				//
-				// Get facets in parent browse (browse with all criteria except the last)
-				// for availability checking. If a facet wasn't available for the parent browse it won't be
-				// available for this one either.
-				//
-				$va_facets = null;
-				if (is_array($va_cur_criteria = $va_parent_browse_params['criteria'])) {
-					array_pop($va_parent_browse_params['criteria']);
-					if ($o_browse_cache->load(BrowseCache::makeCacheKey($va_parent_browse_params, is_array($this->opa_browse_type_ids) ? $this->opa_browse_type_ids : array()))) {
-						if (is_array($va_facet_list = $o_browse_cache->getFacets())) {
-							$va_facets = array_keys($va_facet_list);
-						}
-					}
-				}
+				$va_parent_browse_params = $this->opo_ca_browse_cache->getParameters();
 				
 				//
 				// If we couldn't get facets for a parent browse then use full facet list

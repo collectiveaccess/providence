@@ -1,13 +1,13 @@
 <?php
 /** ---------------------------------------------------------------------
- * support/tests/lib/core/Models/DatamodelTests.php 
+ * support/tests/helpers/UtilityHelpersTest.php
  * ----------------------------------------------------------------------
  * CollectiveAccess
  * Open-source collections management software
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2009-2012 Whirl-i-Gig
+ * Copyright 2012 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -29,19 +29,26 @@
  * 
  * ----------------------------------------------------------------------
  */
-	require_once('PHPUnit/Autoload.php');
-	require_once('../../../../../setup.php');
-	require_once(__CA_LIB_DIR__.'/core/Datamodel.php');
-	
-	class DatamodelTests extends PHPUnit_Framework_TestCase {
-		public function testInstantiateAllModels() {
-			$o_dm = Datamodel::load();
-			
-			$va_tables = $o_dm->getTableNames();
-			
-			foreach($va_tables as $vs_table) {
-				$this->assertInstanceOf($vs_table, $o_dm->getInstanceByTableName($vs_table));
-			}
-		}
+require_once('PHPUnit/Autoload.php');
+require_once('./setup.php');
+require_once(__CA_APP_DIR__."/helpers/utilityHelpers.php");
+
+class UtilityHelpersTest extends PHPUnit_Framework_TestCase {
+	# -------------------------------------------------------
+	public function testCaFormatJson(){
+		// actually valid JSON, perl-programmer style!
+		$vs_test_json=<<<JSON
+{"glossary": { "title": "example glossary", "GlossDiv": { "title": "S", "GlossList": {
+"GlossEntry": { "ID": "SGML","SortAs": "SGML","GlossTerm": "Standard Generalized Markup Language",
+"Acronym": "SGML", "Abbrev": "ISO 8879:1986", "GlossDef": { "para": "A meta-markup language,
+used to create markup languages such as DocBook.", "GlossSeeAlso": ["GML", "XML"]
+}, "GlossSee": "markup" } } } } }
+JSON;
+		$vs_formatted_json = caFormatJson($vs_test_json);
+		$this->assertEquals(
+			json_decode($vs_test_json,true),
+			json_decode($vs_formatted_json,true)
+		);
 	}
-?>
+	# -------------------------------------------------------
+}

@@ -176,6 +176,13 @@
  				$vn_type_id = $this->request->getParameter($t_subject->getTypeFieldName(), pInteger);
  			}
  			
+ 			if (!$t_ui || !$t_ui->getPrimaryKey()) {
+ 				$this->notification->addNotification(_t('There is no configuration available for this editor. Check your system configuration and ensure there is at least one valid configuration for this type of editor.'), __NOTIFICATION_TYPE_ERROR__);
+				
+				$this->postError(1260, _t('There is no configuration available for this editor. Check your system configuration and ensure there is at least one valid configuration for this type of editor.'),"BaseEditorController->Edit()");
+				return;
+			}
+			
  			$va_nav = $t_ui->getScreensAsNavConfigFragment($this->request, $vn_type_id, $this->request->getModulePath(), $this->request->getController(), $this->request->getAction(),
 				array(),
 				array()
@@ -184,9 +191,7 @@
  				$this->request->setActionExtra($va_nav['defaultScreen']);
  			}
 			$this->view->setVar('t_ui', $t_ui);
-			if (!$t_ui->getPrimaryKey()) {
-				$this->notification->addNotification(_t('There is no configuration available for this editor. Check your system configuration and ensure there is at least one valid configuration for this type of editor.'), __NOTIFICATION_TYPE_ERROR__);
-			}
+			
 			if ($vn_subject_id) { $this->request->session->setVar($this->ops_table_name.'_browse_last_id', $vn_subject_id); } 	// set last edited
 			
 			# trigger "EditItem" hook 
@@ -414,19 +419,29 @@
  				
  				// Do we need to move relationships?
  				if (($vn_remap_id =  $this->request->getParameter('remapToID', pInteger)) && ($this->request->getParameter('referenceHandling', pString) == 'remap')) {
- 					$va_tables = array(
-						'ca_objects', 'ca_entities', 'ca_places', 'ca_occurrences', 'ca_collections', 'ca_storage_locations', 'ca_list_items', 'ca_loans', 'ca_movements', 'ca_tours', 'ca_tour_stops'
-					);
-					
-					$vn_c = 0;
-					foreach($va_tables as $vs_table) {
- 						$vn_c += $t_subject->moveRelationships($vs_table, $vn_remap_id);
- 					}
- 					
- 					if ($vn_c > 0) {
- 						$t_target = $this->opo_datamodel->getInstanceByTableName($this->ops_table_name);
- 						$t_target->load($vn_remap_id);
-						$this->notification->addNotification(($vn_c == 1) ? _t("Transferred %1 relationship to <em>%2</em> (%3)", $vn_c, $t_target->getLabelForDisplay(), $t_target->get($t_target->getProperty('ID_NUMBERING_ID_FIELD'))) : _t("Transferred %1 relationships to <em>%2</em> (%3)", $vn_c, $t_target->getLabelForDisplay(), $t_target->get($t_target->getProperty('ID_NUMBERING_ID_FIELD'))), __NOTIFICATION_TYPE_INFO__);	
+ 					switch($t_subject->tableName()) {
+ 						case 'ca_relationship_types':
+ 							if ($vn_c = $t_subject->moveRelationshipsToType($vn_remap_id)) {
+ 								$t_target = new ca_relationship_types($vn_remap_id);
+ 								$this->notification->addNotification(($vn_c == 1) ? _t("Transferred %1 relationship to type <em>%2</em>", $vn_c, $t_target->getLabelForDisplay()) : _t("Transferred %1 relationships to type <em>%2</em>", $vn_c, $t_target->getLabelForDisplay()), __NOTIFICATION_TYPE_INFO__);	
+ 							}
+ 							break;
+ 						default:
+							$va_tables = array(
+								'ca_objects', 'ca_entities', 'ca_places', 'ca_occurrences', 'ca_collections', 'ca_storage_locations', 'ca_list_items', 'ca_loans', 'ca_movements', 'ca_tours', 'ca_tour_stops', 'ca_object_representations'
+							);
+							
+							$vn_c = 0;
+							foreach($va_tables as $vs_table) {
+								$vn_c += $t_subject->moveRelationships($vs_table, $vn_remap_id);
+							}
+							
+							if ($vn_c > 0) {
+								$t_target = $this->opo_datamodel->getInstanceByTableName($this->ops_table_name);
+								$t_target->load($vn_remap_id);
+								$this->notification->addNotification(($vn_c == 1) ? _t("Transferred %1 relationship to <em>%2</em> (%3)", $vn_c, $t_target->getLabelForDisplay(), $t_target->get($t_target->getProperty('ID_NUMBERING_ID_FIELD'))) : _t("Transferred %1 relationships to <em>%2</em> (%3)", $vn_c, $t_target->getLabelForDisplay(), $t_target->get($t_target->getProperty('ID_NUMBERING_ID_FIELD'))), __NOTIFICATION_TYPE_INFO__);	
+							}
+						break;
 					}
 				}
  				
@@ -450,7 +465,7 @@
  				}
  			} else {
  				if ($vb_confirm) {
- 					$this->notification->addNotification(_t("%1 was deleted", $vs_type_name), __NOTIFICATION_TYPE_INFO__);
+ 					$this->notification->addNotification(_t("%1 was deleted", caUcFirstUTF8Safe($vs_type_name)), __NOTIFICATION_TYPE_INFO__);
  					
  					// update result list since it has changed
  					$this->opo_result_context->removeIDFromResults($vn_subject_id);
