@@ -441,7 +441,7 @@ class SearchEngine extends SearchBase {
 						if (isset($va_tmp[2]) && $t_label_table->hasField($va_tmp[2])) {
 							$va_tmp2[] = $va_tmp[2];
 						} else {
-							$va_tmp2[] = $t_label_table->getLabelDisplayField();
+							$va_tmp2[] = $t_labeled_item_table->getLabelDisplayField();
 						}
 						$va_tmp = $va_tmp2;
 						$vs_field = join(".", $va_tmp);

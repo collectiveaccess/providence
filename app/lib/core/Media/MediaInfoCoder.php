@@ -37,6 +37,7 @@
 require_once(__CA_LIB_DIR__."/core/Media.php");
 require_once(__CA_LIB_DIR__."/core/Media/MediaVolumes.php");
 require_once(__CA_APP_DIR__."/helpers/utilityHelpers.php");
+require_once(__CA_APP_DIR__."/helpers/mediaPluginHelpers.php");
 
 $_MEDIA_INFO_CODER_INSTANCE_CACHE = null;
 

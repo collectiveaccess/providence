@@ -1,6 +1,6 @@
 <?php
 /** ---------------------------------------------------------------------
- * FooterManager.php : class to control loading of tooltips
+ * FooterManager.php : class to control loading of page footer
  * ----------------------------------------------------------------------
  * CollectiveAccess
  * Open-source collections management software

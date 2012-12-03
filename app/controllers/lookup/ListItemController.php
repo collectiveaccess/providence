@@ -68,72 +68,90 @@
  		 */
  		public function GetHierarchyLevel() {
 			$ps_bundle = (string)$this->request->getParameter('bundle', pString);
+			$pa_ids = explode(";", $ps_ids = $this->request->getParameter('id', pString));
+			if (!sizeof($pa_ids)) { $pa_ids = array(null); }
+			
 			$t_item = $this->opo_item_instance;
+			
+	 		$vs_template = $t_item->getAppConfig()->get('ca_list_items_hierarchy_browser_display_settings');
 			
 			$va_lists = array();
 			if ($ps_lists = $this->request->getParameter('lists', pString)) {
 				$va_lists = explode(";", $ps_lists);
 			}
 			
-			$va_items_for_locale = array();
- 			if ((!($pn_id = $this->request->getParameter('id', pInteger))) && method_exists($t_item, "getHierarchyList")) { 
- 				if (!($pn_list_id = $this->request->getParameter('list_id', pInteger))) {
-					// no id so by default return list of available hierarchies
-					$va_list_items = $t_item->getHierarchyList();
-					
-					if (sizeof($va_lists)) {
-						// filter out lists that weren't specified
-						foreach($va_list_items as $vn_list_id => $va_list) {
-							if (!in_array($vn_list_id, $va_lists) && !in_array($va_list['list_code'], $va_lists)) {
-								unset($va_list_items[$vn_list_id]);
-							}
-						}
-					} else {
-						if ($this->request->getParameter('voc', pInteger)) {
-							// Only show vocabularies
+			$va_level_data = array();
+			foreach($pa_ids as $pn_id) {
+				$va_tmp = explode(":", $pn_id);
+				$vn_id = $va_tmp[0];
+				$vn_start = (int)$va_tmp[1];
+				if($vn_start < 0) { $vn_start = 0; }
+				
+				if (!$pn_id && method_exists($t_item, "getHierarchyList")) { 
+					if (!($pn_list_id = $this->request->getParameter('list_id', pInteger))) {
+						// no id so by default return list of available hierarchies
+						$va_list_items = $t_item->getHierarchyList();
+						
+						if (sizeof($va_lists)) {
+							// filter out lists that weren't specified
 							foreach($va_list_items as $vn_list_id => $va_list) {
-								if (!$va_list['use_as_vocabulary']) {
+								if (!in_array($vn_list_id, $va_lists) && !in_array($va_list['list_code'], $va_lists)) {
 									unset($va_list_items[$vn_list_id]);
+								}
+							}
+						} else {
+							if ($this->request->getParameter('voc', pInteger)) {
+								// Only show vocabularies
+								foreach($va_list_items as $vn_list_id => $va_list) {
+									if (!$va_list['use_as_vocabulary']) {
+										unset($va_list_items[$vn_list_id]);
+									}
 								}
 							}
 						}
 					}
-				}
- 			} else {
-				if ($t_item->load($pn_id)) {		// id is the id of the parent for the level we're going to return
-					$t_list = new ca_lists($vn_list_id = $t_item->get('list_id'));
-				
-					$vs_label_table_name = $this->opo_item_instance->getLabelTableName();
-					$vs_label_display_field_name = $this->opo_item_instance->getLabelDisplayField();
+				} else {
+					if ($t_item->load($pn_id)) {		// id is the id of the parent for the level we're going to return
+						$t_list = new ca_lists($vn_list_id = $t_item->get('list_id'));
 					
-					$va_list_items = $t_list->getItemsForList($vn_list_id, array('returnHierarchyLevels' => false, 'item_id' => $pn_id, 'extractValuesByUserLocale' => true, 'sort' => $t_list->get('sort_type'), 'directChildrenOnly' => true));
-			
-					// output
-					foreach($va_list_items as $vn_item_id => $va_item) {
-						if (!$va_item[$vs_label_display_field_name]) { $va_item[$vs_label_display_field_name] = $va_item['idno']; }
-						if (!$va_item[$vs_label_display_field_name]) { $va_item[$vs_label_display_field_name] = '???'; }
-						$va_item['name'] = $va_item[$vs_label_display_field_name];
+						$vs_label_table_name = $this->opo_item_instance->getLabelTableName();
+						$vs_label_display_field_name = $this->opo_item_instance->getLabelDisplayField();
 						
-						// Child count is only valid if has_children is not null
-						$va_item['children'] = 0;
-						$va_list_items[$vn_item_id] = $va_item;
-					}
-					
-					if (sizeof($va_list_items)) {
-						$o_db = new Db();
-						$qr_res = $o_db->query("
-							SELECT count(*) c, parent_id
-							FROM ca_list_items
-							WHERE 
-								parent_id IN (".join(",", array_keys($va_list_items)).")
-							GROUP BY parent_id
-						");
-						while($qr_res->nextRow()) {
-							$va_list_items[$qr_res->get('parent_id')]['children'] = $qr_res->get('c');
+						$va_list_items = $t_list->getItemsForList($vn_list_id, array('returnHierarchyLevels' => false, 'item_id' => $pn_id, 'extractValuesByUserLocale' => true, 'sort' => $t_list->get('sort_type'), 'directChildrenOnly' => true));
+				
+						// output
+						foreach($va_list_items as $vn_item_id => $va_item) {
+							unset($va_item['description']);
+							if (!$va_item[$vs_label_display_field_name]) { $va_item[$vs_label_display_field_name] = $va_item['idno']; }
+							if (!$va_item[$vs_label_display_field_name]) { $va_item[$vs_label_display_field_name] = '???'; }
+							
+							$va_item['name'] = caProcessTemplateForIDs($vs_template, 'ca_list_items', array($vn_item_id));
+							
+							// Child count is only valid if has_children is not null
+							$va_item['children'] = 0;
+							$va_list_items[$vn_item_id] = $va_item;
+						}
+						
+						if (sizeof($va_list_items)) {
+							$o_db = new Db();
+							$qr_res = $o_db->query("
+								SELECT count(*) c, parent_id
+								FROM ca_list_items
+								WHERE 
+									parent_id IN (".join(",", array_keys($va_list_items)).")
+								GROUP BY parent_id
+							");
+							while($qr_res->nextRow()) {
+								$va_list_items[$qr_res->get('parent_id')]['children'] = $qr_res->get('c');
+							}
 						}
 					}
 				}
- 			}
+				$va_list_items['_primaryKey'] = $t_item->primaryKey();	// pass the name of the primary key so the hierbrowser knows where to look for item_id's
+ 				$va_list_items['_itemCount'] = $qr_res ? $qr_res->numRows() : 0;
+ 				
+				$va_level_data[$pn_id] = $va_list_items;
+			}
  			
  			if (!$this->request->getParameter('init', pInteger)) {
  				// only set remember "last viewed" if the load is done interactively
@@ -146,10 +164,9 @@
  				$this->request->session->setVar($this->ops_table_name.'_'.$ps_bundle.'_browse_last_id', $pn_id);
  			}
  			
- 			$va_list_items['_primaryKey'] = $t_item->primaryKey();	// pass the name of the primary key so the hierbrowser knows where to look for item_id's
  			
  			$this->view->setVar('dontShowSymbols', (bool)$this->request->getParameter('noSymbols', pString));
- 			$this->view->setVar('list_item_list', $va_list_items);
+ 			$this->view->setVar('list_item_list', $va_level_data);
  			
  			return $this->render('list_item_hierarchy_level_json.php');
  		}
