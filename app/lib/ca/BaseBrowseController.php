@@ -431,6 +431,7 @@
 						// fall through to default case
 					default:
 						if(!$vn_id) {
+							$va_hier_ids = $this->opo_browse->getHierarchyIDsForFacet($ps_facet_name, array('checkAccess' => $va_access_values));
 							$t_item = $this->opo_datamodel->getInstanceByTableName($va_facet_info['table']);
 							$t_item->load($vn_id);
 							$vn_id = $vn_root = $t_item->getHierarchyRootID();
@@ -439,6 +440,7 @@
 							$vn_last_id = null;
 							$vn_c = 0;
 							foreach($va_hierarchy_list as $vn_i => $va_item) {
+								if (!in_array($vn_i, $va_hier_ids)) { continue; }	// only show hierarchies that have items in browse result
 								if ($vn_start <= $vn_c) {
 									$va_item['id'] = $va_item[$t_item->primaryKey()];
 									if (!isset($va_facet[$va_item['id']]) && ($vn_root == $va_item['id'])) { continue; }

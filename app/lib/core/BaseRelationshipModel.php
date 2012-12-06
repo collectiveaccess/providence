@@ -456,7 +456,8 @@
 								$va_subtype_lookups[$vs_subtype] = true;
 							}
 							
-							$va_processed_types[$vs_subtype] = caExtractValuesByUserLocale($va_types_by_locale, null, null, array('returnList' => true));
+							if (!is_array($va_processed_types[$vs_subtype])) { $va_processed_types[$vs_subtype] = array(); }
+							$va_processed_types[$vs_subtype] = array_merge(	$va_processed_types[$vs_subtype], caExtractValuesByUserLocale($va_types_by_locale, null, null, array('returnList' => true)));
 						}
 					}
 				}

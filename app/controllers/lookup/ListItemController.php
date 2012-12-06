@@ -87,7 +87,7 @@
 				$vn_start = (int)$va_tmp[1];
 				if($vn_start < 0) { $vn_start = 0; }
 				
-				if (!$pn_id && method_exists($t_item, "getHierarchyList")) { 
+				if (!$vn_id && method_exists($t_item, "getHierarchyList")) { 
 					if (!($pn_list_id = $this->request->getParameter('list_id', pInteger))) {
 						// no id so by default return list of available hierarchies
 						$va_list_items = $t_item->getHierarchyList();
@@ -111,13 +111,13 @@
 						}
 					}
 				} else {
-					if ($t_item->load($pn_id)) {		// id is the id of the parent for the level we're going to return
+					if ($t_item->load($vn_id)) {		// id is the id of the parent for the level we're going to return
 						$t_list = new ca_lists($vn_list_id = $t_item->get('list_id'));
 					
 						$vs_label_table_name = $this->opo_item_instance->getLabelTableName();
 						$vs_label_display_field_name = $this->opo_item_instance->getLabelDisplayField();
 						
-						$va_list_items = $t_list->getItemsForList($vn_list_id, array('returnHierarchyLevels' => false, 'item_id' => $pn_id, 'extractValuesByUserLocale' => true, 'sort' => $t_list->get('sort_type'), 'directChildrenOnly' => true));
+						$va_list_items = $t_list->getItemsForList($vn_list_id, array('returnHierarchyLevels' => false, 'item_id' => $vn_id, 'extractValuesByUserLocale' => true, 'sort' => $t_list->get('sort_type'), 'directChildrenOnly' => true));
 				
 						// output
 						foreach($va_list_items as $vn_item_id => $va_item) {

@@ -640,7 +640,7 @@ class WLPlugMediaGD Extends WLPlug Implements IWLPlugMedia {
 						"layers" => $this->properties["layers"],
 					)					
 				))) {
-					$this->postError(1610, $this->handle->error, "WLPlugTilepic->write()");	
+					$this->postError(1610, $tp->error, "WLPlugTilepic->write()");	
 					return false;
 				}
 			}
@@ -650,7 +650,7 @@ class WLPlugMediaGD Extends WLPlug Implements IWLPlugMedia {
 			}
 			$this->properties["mimetype"] = "image/tilepic";
 			$this->properties["typename"] = "Tilepic";
-			return true;
+			return $filepath;
 		} else {
 			# is mimetype valid?
 			if (!($ext = $this->info["EXPORT"][$mimetype])) {
@@ -694,7 +694,7 @@ class WLPlugMediaGD Extends WLPlug Implements IWLPlugMedia {
 			$this->properties["mimetype"] = $mimetype;
 			$this->properties["typename"] = $vs_typename;
 			
-			return true;
+			return $filepath.".".$ext;
 		}
 	}
 	# ------------------------------------------------

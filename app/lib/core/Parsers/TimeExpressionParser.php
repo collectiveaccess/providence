@@ -669,7 +669,8 @@ class TimeExpressionParser {
 		}
 	
 		# remove commas
-		$ps_expression = str_replace(',', '', $ps_expression);
+		$ps_expression = str_replace(',', ' ', $ps_expression);
+		$ps_expression = preg_replace('![ ]+!', ' ', $ps_expression);
 				
 		# remove articles
 		$definiteArticles = $this->opo_language_settings->getList("definiteArticles");
