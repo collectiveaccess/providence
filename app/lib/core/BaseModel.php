@@ -1041,7 +1041,6 @@ class BaseModel extends BaseObject {
 					$vm_value = preg_replace("/[\"']/", "", $vm_value);
 				}
 
-
 				// what markup is supported for text fields?
 				$vs_markup_type = $this->getFieldInfo($vs_field, "MARKUP_TYPE");
 
@@ -1050,7 +1049,9 @@ class BaseModel extends BaseObject {
 					$vm_value = htmlspecialchars($vm_value, ENT_QUOTES, 'UTF-8');
 				}
 
-				$vs_cur_value = isset($this->_FIELD_VALUES[$vs_field]) ? $this->_FIELD_VALUES[$vs_field] : null;
+				$vm_value = (string)$vm_value;
+				
+				$vs_cur_value = isset($this->_FIELD_VALUES[$vs_field]) ? (string)$this->_FIELD_VALUES[$vs_field] : null;
 				switch ($pa_fields_type) {
 					case (FT_NUMBER):
 						if ($vs_cur_value != $vm_value) {
@@ -1281,7 +1282,7 @@ class BaseModel extends BaseObject {
 								if (!($vs_list_multiple_delimiter = $this->getFieldInfo($vs_field, 'LIST_MULTIPLE_DELIMITER'))) { $vs_list_multiple_delimiter = ';'; }
 								$vs_string_value = join($vs_list_multiple_delimiter, $vm_value);
 								$vs_string_value = str_replace("\0", '', $vs_string_value);
-								if ($vs_cur_value != $vs_string_value) {
+								if ($vs_cur_value !== $vs_string_value) {
 									$this->_FIELD_VALUE_CHANGED[$vs_field] = true;
 								}
 								$this->_FIELD_VALUES[$vs_field] = $vs_string_value;
@@ -1290,19 +1291,19 @@ class BaseModel extends BaseObject {
 							$vm_value = str_replace("\0", '', $vm_value);
 							if ($this->getFieldInfo($vs_field, "ENTITY_ENCODE_INPUT")) {
 								$vs_value_entity_encoded = htmlentities(html_entity_decode($vm_value));
-								if ($vs_cur_value != $vs_value_entity_encoded) {
+								if ($vs_cur_value !== $vs_value_entity_encoded) {
 									$this->_FIELD_VALUE_CHANGED[$vs_field] = true;
 								}
 								$this->_FIELD_VALUES[$vs_field] = $vs_value_entity_encoded;
 							} else {
 								if ($this->getFieldInfo($vs_field, "URL_ENCODE_INPUT")) {
 									$vs_value_url_encoded = urlencode($vm_value);
-									if ($vs_cur_value != $vs_value_url_encoded) {
+									if ($vs_cur_value !== $vs_value_url_encoded) {
 										$this->_FIELD_VALUE_CHANGED[$vs_field] = true;
 									}
 									$this->_FIELD_VALUES[$vs_field] = $vs_value_url_encoded;
 								} else {
-									if ($vs_cur_value != $vm_value) {
+									if ($vs_cur_value !== $vm_value) {
 										$this->_FIELD_VALUE_CHANGED[$vs_field] = true;
 									}
 									$this->_FIELD_VALUES[$vs_field] = $vm_value;
