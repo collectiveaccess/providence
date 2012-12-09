@@ -263,5 +263,78 @@ $vs_buf .= "
 		return $vs_buf;
 	}
 	# ------------------------------------------------
+	/**
+	 *
+	 */
+	public function getAttributeBundleHTML($pa_element_info, $pa_options=null) {
+ 		JavascriptLoadManager::register('maps');
+ 		
+		$o_config = Configuration::load();
+		
+		if (!in_array($vs_map_type = $o_config->get('google_maps_default_type'), array('ROADMAP', 'SATELLITE', 'HYBRID', 'TERRAIN'))) {
+			$vs_map_type = 'ROADMAP';
+		}
+		$vs_element = 	'<div id="mapholder_'.$pa_element_info['element_id'].'_{n}" class="mapholder">';
+		$vs_element .= 	'<div class="mapCoordInput">';
+		$vs_element .= 		'<div class="mapSearchBox">';
+		$vs_element .=				'<input type="text" class="mapSearchText" name="searchtext"  id="{fieldNamePrefix}'.$pa_element_info['element_id'].'_{n}" size="60" value="'._t('Search for geographic location').'..." autocomplete="off"/>';
+		$vs_element .=				'<div class="mapSearchSuggest"></div>';
+		$vs_element .=				'<a href="#" class="button">'._t('Upload KML file').' &rsaquo;</a>';
+		$vs_element .= 		'</div>';
+		$vs_element .= 	'</div>';
+		$vs_element .=		'<div class="mapKMLInput" style="display: none;">';
+		$vs_element .=			_t("Select KML or KMZ file").': <input type="file" name="{fieldNamePrefix}'.$pa_element_info['element_id'].'_{n}"/><a href="#" class="button">'._t('Use map').' &rsaquo;</a>';
+		$vs_element .=		'</div>';
+		$vs_element .=		'<div class="map" style="width:695px; height:300px;"></div>';
+		$vs_element .= 		'<script type="text/javascript">';
+				$vs_element .= 		"jQuery(document).ready(function() {
+				var mID_{n} = ".$pa_element_info['element_id'].";
+										var mapdata = {
+											mapID : mID_{n},
+											mapholder : jQuery('#mapholder_' + mID_{n} + '_{n}'),
+											searchDefaultText : '"._t('Search for geographic location')."...',
+											searchTextID:  '{fieldNamePrefix}".$pa_element_info['element_id']."_search_text{n}', 
+											zoomlevel : 12,
+											initialLocation : null,
+											map : null,
+											geocoder : null,
+											marker : null,
+											markers : null,
+											selectionIndex : -1,
+											coordinates : \"{{{".$pa_element_info['element_id']."}}}\"
+										};
+										
+										var mapOptions = {
+											zoom: 12,
+											mapTypeControl: ".((bool)$o_config->get('google_maps_show_map_type_controls') ? 'true' : 'false').",
+											mapTypeControlOptions: {
+												style: google.maps.MapTypeControlStyle.DEFAULT
+											},
+											navigationControl: ".((bool)$o_config->get('google_maps_show_navigation_controls') ? 'true' : 'false').",
+											navigationControlOptions: {
+												style: google.maps.NavigationControlStyle.DEFAULT
+											},
+											scaleControl: ".((bool)$o_config->get('google_maps_show_scale_controls') ? 'true' : 'false').",
+											scaleControlOptions: {
+												style: google.maps.ScaleControlStyle.DEFAULT
+											},
+											disableDefaultUI: false,
+											mapTypeId: google.maps.MapTypeId.{$vs_map_type}
+										};
+										/* Initialization of the map */
+										if ('{n}'.substring(0,3) == 'new') {
+											initNewMap(mapdata,mapOptions);
+										} else {
+											initExistingMap(mapdata,mapOptions);
+										}
+										initMapsApp(mapdata);
+									});";
+		$vs_element .= 		'</script>';
+		$vs_element .= '<input class="coordinates mapCoordinateDisplay" type="text" name="{fieldNamePrefix}'.$pa_element_info['element_id'].'_{n}" size="80"/>';
+		$vs_element .=	'</div>';
+	
+		return $vs_element;
+	}
+	# ------------------------------------------------
 }
 ?>

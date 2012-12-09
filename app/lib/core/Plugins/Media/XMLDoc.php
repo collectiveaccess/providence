@@ -136,7 +136,7 @@ class WLPlugMediaXMLDoc Extends WLPlug Implements IWLPlugMedia {
 			return '';
 		}
 		
-		if ($r_fp = fopen($ps_filepath, "r")) {
+		if ($r_fp = @fopen($ps_filepath, "r")) {
 			$vs_sig = fgets($r_fp, 10); 
 			if (preg_match('!<\?xml!', $vs_sig)) {
 				$this->properties = $this->handle = $this->ohandle = array(

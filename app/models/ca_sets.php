@@ -413,6 +413,9 @@ class ca_sets extends BundlableLabelableBaseModelWithAttributes implements IBund
 	 *			row_id = if set to an integer only sets containing the specified row are returned
 	 *			setIDsOnly = if set to true only set_id values are returned, in a simple array
 	 *			omitCounts = 
+	 *			all = 
+	 *			allUsers =
+	 *			publicUsers =
 	 * @return array A list of sets keyed by set_id and then locale_id. Keys for the per-locale value array include: set_id, set_code, status, public access, owner user_id, content table_num, set type_id, set name, number of items in the set (item_count), set type name for display and set content type name for display. If setIDsOnly option is set then a simple array of set_id values is returned instead.
 	 */
 	public function getSets($pa_options=null) {
@@ -452,54 +455,62 @@ class ca_sets extends BundlableLabelableBaseModelWithAttributes implements IBund
 			);
 		}
 		
-		if ($pn_user_id && !$this->getAppConfig()->get('dont_enforce_access_control_for_ca_sets')) {
-			$o_dm = $this->getAppDatamodel();
-			$t_user = $o_dm->getInstanceByTableName('ca_users', true);
-			$t_user->load($pn_user_id);
-			
-			if ($t_user->getPrimaryKey()) {
-				$vs_access_sql = ($pn_access > 0) ? " AND (access >= ".intval($pn_access).")" : "";
-				if (is_array($va_groups = $t_user->getUserGroups()) && sizeof($va_groups)) {
-					$vs_sql = "(
-						(cs.user_id = ".intval($pn_user_id).") OR 
-						(cs.set_id IN (
-								SELECT set_id 
-								FROM ca_sets_x_user_groups 
-								WHERE 
-									group_id IN (".join(',', array_keys($va_groups)).") {$vs_access_sql}
-									AND
-									(
-										 (sdatetime IS NULL AND edatetime IS NULL)
-										 OR 
-										 (
-										 	sdatetime <= ".time()." AND edatetime >= ".time()."
-										 )
-									)
+		if (isset($pa_options['all']) && $pa_options['all']) {
+			$va_sql_wheres[] = "(cs.user_id IN (SELECT user_id FROM ca_users WHERE userclass != 255))";
+		} elseif (isset($pa_options['allUsers']) && $pa_options['allUsers']) {
+			$va_sql_wheres[] = "(cs.user_id IN (SELECT user_id FROM ca_users WHERE userclass = 0))";
+		} elseif (isset($pa_options['publicUsers']) && $pa_options['publicUsers']) {
+			$va_sql_wheres[] = "(cs.user_id IN (SELECT user_id FROM ca_users WHERE userclass = 1))";
+		} else {
+			if ($pn_user_id && !$this->getAppConfig()->get('dont_enforce_access_control_for_ca_sets')) {
+				$o_dm = $this->getAppDatamodel();
+				$t_user = $o_dm->getInstanceByTableName('ca_users', true);
+				$t_user->load($pn_user_id);
+				
+				if ($t_user->getPrimaryKey()) {
+					$vs_access_sql = ($pn_access > 0) ? " AND (access >= ".intval($pn_access).")" : "";
+					if (is_array($va_groups = $t_user->getUserGroups()) && sizeof($va_groups)) {
+						$vs_sql = "(
+							(cs.user_id = ".intval($pn_user_id).") OR 
+							(cs.set_id IN (
+									SELECT set_id 
+									FROM ca_sets_x_user_groups 
+									WHERE 
+										group_id IN (".join(',', array_keys($va_groups)).") {$vs_access_sql}
+										AND
+										(
+											 (sdatetime IS NULL AND edatetime IS NULL)
+											 OR 
+											 (
+												sdatetime <= ".time()." AND edatetime >= ".time()."
+											 )
+										)
+								)
 							)
-						)
-					)";
-				} else {
-					$vs_sql = "(cs.user_id = {$pn_user_id})";
+						)";
+					} else {
+						$vs_sql = "(cs.user_id = {$pn_user_id})";
+					}
+					
+					$vs_sql .= " OR (cs.set_id IN (
+											SELECT set_id 
+											FROM ca_sets_x_users 
+											WHERE 
+												user_id = {$pn_user_id} {$vs_access_sql}
+												AND
+												(
+													 (sdatetime IS NULL AND edatetime IS NULL)
+													 OR 
+													 (
+														sdatetime <= ".time()." AND edatetime >= ".time()."
+													 )
+												)
+										)
+									)";
+					
+					
+					$va_sql_wheres[] = "({$vs_sql})";
 				}
-				
-				$vs_sql .= " OR (cs.set_id IN (
-										SELECT set_id 
-										FROM ca_sets_x_users 
-										WHERE 
-											user_id = {$pn_user_id} {$vs_access_sql}
-											AND
-											(
-												 (sdatetime IS NULL AND edatetime IS NULL)
-												 OR 
-												 (
-													sdatetime <= ".time()." AND edatetime >= ".time()."
-												 )
-											)
-									)
-								)";
-				
-				
-				$va_sql_wheres[] = "({$vs_sql})";
 			}
 		}
 		
@@ -731,10 +742,12 @@ class ca_sets extends BundlableLabelableBaseModelWithAttributes implements IBund
 	 * @param int $pn_user_id user_id of user to check set access for
 	 * @param int $pn_access type of access required. Use __CA_SET_READ_ACCESS__ for read-only access or __CA_SET_EDIT_ACCESS__ for editing (full) access
 	 * @param int $pn_set_id The id of the set to check. If omitted then currently loaded set will be checked.
+	 * @param array $pa_options No options yet
 	 * @return bool True if user has access, false if not
 	 */
-	public function haveAccessToSet($pn_user_id, $pn_access, $pn_set_id=null) {
+	public function haveAccessToSet($pn_user_id, $pn_access, $pn_set_id=null, $pa_options=null) {
 		if ($this->getAppConfig()->get('dont_enforce_access_control_for_ca_sets')) { return true; }
+		
 		if ($pn_set_id) { 
 			$vn_set_id = $pn_set_id; 
 			$t_set = new ca_sets($vn_set_id);
@@ -760,6 +773,15 @@ class ca_sets extends BundlableLabelableBaseModelWithAttributes implements IBund
 		if (($t_set->get('access') > 0) && ($pn_access == __CA_SET_READ_ACCESS__)) {	 // public sets are readable by all
 			return ca_sets::$s_have_access_to_set_cache[$vn_set_id.'/'.$pn_user_id.'/'.$pn_access] = true; 
 		}
+		
+		//
+		// If user is admin or has set admin privs allow them access to the set
+		//
+		$t_user = new ca_users();
+		if ($t_user->load($pn_user_id) && ($t_user->canDoAction('is_administrator') || $t_user->canDoAction('can_administrate_sets'))) { 
+			return ca_sets::$s_have_access_to_set_cache[$vn_set_id.'/'.$pn_user_id.'/'.$pn_access] = true;
+		}
+		
 		
 		$o_db =  $this->getDb();
 		$qr_res = $o_db->query($vs_sql="
@@ -1152,7 +1174,8 @@ class ca_sets extends BundlableLabelableBaseModelWithAttributes implements IBund
 		
 		$vs_label_join_sql = '';
 		if ($t_rel_label_table) {
-			$vs_label_join_sql = "LEFT JOIN ".$t_rel_label_table->tableName()." AS rel_label ON rel.".$t_rel_table->primaryKey()." = rel_label.".$t_rel_table->primaryKey()."\n";
+			if ($t_rel_label_table->hasField("is_preferred")) { $vs_preferred_sql = " AND rel_label.is_preferred = 1 "; }
+			$vs_label_join_sql = "LEFT JOIN ".$t_rel_label_table->tableName()." AS rel_label ON rel.".$t_rel_table->primaryKey()." = rel_label.".$t_rel_table->primaryKey()." {$vs_preferred_sql}\n";
 		}
 		
 		

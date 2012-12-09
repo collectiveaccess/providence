@@ -509,6 +509,10 @@ final class ConfigurationExporter {
 							if(!is_array($va_values)){
 								$va_values = array($va_values);
 							}
+							
+							// account for legacy settings
+							if($vs_setting=="restrict_to_type") $vs_setting = "restrict_to_types";
+							
 							foreach($va_values as $vs_key => $vs_value){
 								if(strlen($vs_value)>0){
 									$vo_setting = $this->opo_dom->createElement("setting",$vs_value);
@@ -867,7 +871,7 @@ final class ConfigurationExporter {
 	# -------------------------------------------------------
 	private function makeIDNO($ps_idno){
 		if(strlen($ps_idno)>0){
-			return preg_replace("/[^\pL\pN]/","_",$ps_idno);
+			return preg_replace("/[^-_a-zA-Z0-9]/","_",$ps_idno);
 		} else {
 			return "default";
 		}

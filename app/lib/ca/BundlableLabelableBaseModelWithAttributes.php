@@ -414,6 +414,11 @@ class BundlableLabelableBaseModelWithAttributes extends LabelableBaseModelWithAt
 	# ------------------------------------------------------
 	/**
 	 * Overrides set() to check that the type field is not being set improperly
+	 *
+	 * @param array $pa_fields
+	 * @param mixed $pm_value
+	 * @param array $pa_options Options are passed directly to parent::set(); options specifically defined here are:
+	 *		allowSettingOfTypeID = if true then type_id may be set for existing rows; default is to not allow type_id to be set for existing rows.
 	 */
 	public function set($pa_fields, $pm_value="", $pa_options=null) {
 		if (!is_array($pa_fields)) {
@@ -427,7 +432,7 @@ class BundlableLabelableBaseModelWithAttributes extends LabelableBaseModelWithAt
 				}
 			}
 		}
-		if ($this->getPrimaryKey() && isset($pa_fields[$this->getTypeFieldName()]) && !defined('__CA_ALLOW_SETTING_OF_PRIMARY_KEYS__')) {
+		if ($this->getPrimaryKey() && isset($pa_fields[$this->getTypeFieldName()]) && !(isset($pa_options['allowSettingOfTypeID']) && $pa_options['allowSettingOfTypeID'])) {
 			$this->postError(2520, _t("Type id cannot be set after insert"), "BundlableLabelableBaseModelWithAttributes->set()");
 			return false;
 		}
@@ -515,7 +520,7 @@ class BundlableLabelableBaseModelWithAttributes extends LabelableBaseModelWithAt
 							} else {
 								$va_rel_items = array();
 							}
-							return caProcessTemplateForIDs($vs_template, $va_tmp[0], $va_ids, array_merge($pa_options, array('relatedValues' => array_values($va_rel_items))));
+							return caProcessTemplateForIDs($vs_template, $va_tmp[0], $va_ids, $pa_options);
 						} else {
 							$va_proc_labels = array();
 							foreach($va_related_items as $vn_relation_id => $va_relation_info) {
@@ -555,14 +560,16 @@ class BundlableLabelableBaseModelWithAttributes extends LabelableBaseModelWithAt
 						
 						$va_ids = array();
 						$vs_pk = $t_instance->primaryKey();
+						$va_relationship_values = array();
 						if (is_array($va_rel_items = $this->get($va_tmp[0], $va_template_opts))) {
 							foreach($va_rel_items as $vn_rel_id => $va_rel_item) {
 								$va_ids[] = $va_rel_item[$vs_pk];
+								$va_relationship_values[$va_rel_item[$vs_pk]][$vn_rel_id] = $va_rel_item;
 							}
 						} else {
 							$va_rel_items = array();
 						}
-						return caProcessTemplateForIDs($vs_template, $va_tmp[0], $va_ids, array_merge($pa_options, array('relatedValues' => array_values($va_rel_items))));
+						return caProcessTemplateForIDs($vs_template, $va_tmp[0], $va_ids, array_merge($pa_options, array('relationshipValues' => $va_relationship_values)));
 					}
 					
 					$va_related_items = $this->getRelatedItems($va_tmp[0], array_merge($pa_options, array('returnLabelsAsArray' => true)));
@@ -1148,6 +1155,8 @@ class BundlableLabelableBaseModelWithAttributes extends LabelableBaseModelWithAt
 					}
 				}
 				
+				$o_view->setVar('bundle_name', $ps_bundle_name);
+				$o_view->setVar('settings', $pa_bundle_settings);
 				$o_view->setVar('t_instance', $this);
 				$vs_element = $o_view->render('intrinsic.php', true);
 				
@@ -1157,7 +1166,11 @@ class BundlableLabelableBaseModelWithAttributes extends LabelableBaseModelWithAt
 					TooltipManager::add('#'.$vs_field_id, "<h3>".$pa_options['label']."</h3>{$vs_description}");
 				}
 				
-				$vs_display_format = $o_config->get('bundle_element_display_format');
+				if (isset($pa_bundle_settings['forACLAccessScreen']) && $pa_bundle_settings['forACLAccessScreen']) {
+					$vs_display_format = '^ELEMENT';
+				} else {
+					$vs_display_format = $o_config->get('bundle_element_display_format');
+				}
 				break;
 			# -------------------------------------------------
 			case 'attribute':
@@ -1680,7 +1693,11 @@ class BundlableLabelableBaseModelWithAttributes extends LabelableBaseModelWithAt
  			$t_ui = ca_editor_uis::loadDefaultUI($this->tableName(), $pa_options['request'], $this->getTypeID());
  		}
  		
- 		$va_bundles = $t_ui->getScreenBundlePlacements($pm_screen);
+ 		if (isset($pa_options['bundles']) && is_array($pa_options['bundles'])) {
+ 			$va_bundles = $pa_options['bundles'];
+ 		} else {
+ 			$va_bundles = $t_ui->getScreenBundlePlacements($pm_screen);
+ 		}
  
  		$va_bundle_html = array();
  		
@@ -1724,12 +1741,12 @@ class BundlableLabelableBaseModelWithAttributes extends LabelableBaseModelWithAt
 			}
 			
 			// add type_id
-			if (isset($this->ATTRIBUTE_TYPE_ID_FLD) && $this->ATTRIBUTE_TYPE_ID_FLD) {
-				$va_bundle_html[$this->ATTRIBUTE_TYPE_ID_FLD] = caHTMLHiddenInput($this->ATTRIBUTE_TYPE_ID_FLD, array('value' => $pa_options['request']->getParameter($this->ATTRIBUTE_TYPE_ID_FLD, pInteger)));
+			if (isset($this->ATTRIBUTE_TYPE_ID_FLD) && $this->ATTRIBUTE_TYPE_ID_FLD && !in_array('type_id', $va_omit_bundles)) {
+				$va_bundle_html[$this->ATTRIBUTE_TYPE_ID_FLD] = caHTMLHiddenInput($this->ATTRIBUTE_TYPE_ID_FLD, array('value' => $pa_options['request']->getParameter($this->ATTRIBUTE_TYPE_ID_FLD, pString)));
 			}
 			
 			// add parent_id
-			if (isset($this->HIERARCHY_PARENT_ID_FLD) && $this->HIERARCHY_PARENT_ID_FLD) {
+			if (isset($this->HIERARCHY_PARENT_ID_FLD) && $this->HIERARCHY_PARENT_ID_FLD && !in_array('parent_id', $va_omit_bundles)) {
 				$va_bundle_html[$this->HIERARCHY_PARENT_ID_FLD] = caHTMLHiddenInput($this->HIERARCHY_PARENT_ID_FLD, array('value' => $pa_options['request']->getParameter($this->HIERARCHY_PARENT_ID_FLD, pInteger)));
 			}
 			
@@ -1999,36 +2016,9 @@ class BundlableLabelableBaseModelWithAttributes extends LabelableBaseModelWithAt
 	}
 	# ------------------------------------------------------
 	/**
-	* saves all bundles on the specified screen in the database by extracting 
-	* required data from the supplied request
-	* $pm_screen can be a screen tag (eg. "Screen5") or a screen_id (eg. 5)
-	*
-	* Calls processBundlesBeforeBaseModelSave() method in subclass right before invoking insert() or update() on
-	* the BaseModel, if the method is defined. Passes the following parameters to processBundlesBeforeBaseModelSave():
-	*		array $pa_bundles An array of bundles to be saved
-	*		string $ps_form_prefix The form prefix
-	*		RequestHTTP $po_request The current request
-	*		array $pa_options Optional array of parameters; expected to be the same as that passed to saveBundlesForScreen()
-	*
-	* The processBundlesBeforeBaseModelSave() is useful for those odd cases where you need to do some processing before the basic
-	* database record defined by the model (eg. intrinsic fields and hierarchy coding) is inserted or updated. You usually don't need 
-	* to use it.
-	*/
-	public function saveBundlesForScreen($pm_screen, $po_request, $pa_options=null) {
-		$vb_we_set_transaction = false;
-		
-		if (!$this->inTransaction()) {
-			$this->setTransaction(new Transaction($this->getDb()));
-			$vb_we_set_transaction = true;
-		}
-		
-		BaseModel::setChangeLogUnitID();
-		// get items on screen
-		if (isset($pa_options['ui_instance']) && ($pa_options['ui_instance'])) {
- 			$t_ui = $pa_options['ui_instance'];
- 		} else {
-			$t_ui = ca_editor_uis::loadDefaultUI($this->tableName(), $po_request, $this->getTypeID());
- 		}
+	 *
+	 */
+	protected function getBundleListsForScreen($pm_screen, $po_request, $t_ui, $pa_options=null) {
 		$va_bundles = $t_ui->getScreenBundlePlacements($pm_screen);
 		
 		// sort fields by type
@@ -2044,9 +2034,7 @@ class BundlableLabelableBaseModelWithAttributes extends LabelableBaseModelWithAt
 				$va_fields_by_type[$va_info['type']][$va_tmp['placement_code']] = $va_tmp['bundle_name'];
 			}
 		}
-		
-		$vs_form_prefix = $po_request->getParameter('_formName', pString);
-		
+			
 		// auto-add mandatory fields if this is a new object
 		if (!is_array($va_fields_by_type['intrinsic'])) { $va_fields_by_type['intrinsic'] = array(); }
 		if (!$this->getPrimaryKey()) {
@@ -2068,6 +2056,161 @@ class BundlableLabelableBaseModelWithAttributes extends LabelableBaseModelWithAt
 		if (($this->tableName() == 'ca_objects') && (!in_array('lot_id', $va_fields_by_type['intrinsic'])) && ($po_request->getParameter('lot_id', pInteger))) {
 			$va_fields_by_type['intrinsic'][] = 'lot_id';
 		}
+		
+		return array('bundles' => $va_bundles, 'fields_by_type' => $va_fields_by_type);
+	}
+	# ------------------------------------------------------
+	/**
+	 *
+	 */
+	public function extractValuesFromRequest($pm_screen, $po_request, $pa_options) {
+		
+		// get items on screen
+		if (isset($pa_options['ui_instance']) && ($pa_options['ui_instance'])) {
+ 			$t_ui = $pa_options['ui_instance'];
+ 		} else {
+			$t_ui = ca_editor_uis::loadDefaultUI($this->tableName(), $po_request, $this->getTypeID());
+ 		}
+		
+		$va_bundle_lists = $this->getBundleListsForScreen($pm_screen, $po_request, $t_ui, $pa_options);
+		
+		$va_values = array();
+		
+		// Get intrinsics
+		$va_values['intrinsic'] = array();
+		if (is_array($va_bundle_lists['fields_by_type']['intrinsic'])) {
+			$vs_idno_field = $this->getProperty('ID_NUMBERING_ID_FIELD');
+			foreach($va_bundle_lists['fields_by_type']['intrinsic'] as $vs_f) {
+				
+				switch($vs_f) {
+					case $vs_idno_field:
+						if ($this->opo_idno_plugin_instance) {
+							$this->opo_idno_plugin_instance->setDb($this->getDb());
+							$va_values['intrinsic'][$vs_f] = $this->opo_idno_plugin_instance->htmlFormValue($vs_idno_field);
+						} else {
+							$va_values['intrinsic'][$vs_f] = $po_request->getParameter($vs_f, pString);
+						}
+						break;
+					default:
+						$va_values['intrinsic'][$vs_f] = $po_request->getParameter($vs_f, pString);
+						break;
+				}
+			}
+		}
+		
+		// Get attributes
+		$va_attributes_by_element = $va_attributes = array();
+		$vs_form_prefix = $po_request->getParameter('_formName', pString);
+		
+		if (is_array($va_bundle_lists['fields_by_type']['attribute'])) {
+			foreach($va_bundle_lists['fields_by_type']['attribute'] as $vs_placement_code => $vs_f) {
+				
+				$va_attributes_to_insert = array();
+				$va_attributes_to_delete = array();
+				$va_locales = array();
+				foreach($_REQUEST as $vs_key => $vs_val) {
+					$vs_element_set_code = preg_replace("/^ca_attribute_/", "", $vs_f);
+					
+					$t_element = $this->_getElementInstance($vs_element_set_code);
+					$vn_element_id = $t_element->getPrimaryKey();
+					
+					if (
+						preg_match('/'.$vs_placement_code.$vs_form_prefix.'_attribute_'.$vn_element_id.'_([\w\d\-_]+)_new_([\d]+)/', $vs_key, $va_matches)
+						||
+						preg_match('/'.$vs_placement_code.$vs_form_prefix.'_attribute_'.$vn_element_id.'_([\w\d\-_]+)_([\d]+)/', $vs_key, $va_matches)
+					) { 
+						$vn_c = intval($va_matches[2]);
+						// yep - grab the locale and value
+						$vn_locale_id = isset($_REQUEST[$vs_placement_code.$vs_form_prefix.'_attribute_'.$vn_element_id.'_locale_id_new_'.$vn_c]) ? $_REQUEST[$vs_placement_code.$vs_form_prefix.'_attribute_'.$vn_element_id.'_locale_id_new_'.$vn_c] : null;
+						
+						$va_attributes_by_element[$vn_element_id][$vn_c]['locale_id'] = $va_attributes[$vn_c]['locale_id'] = $vn_locale_id; 
+						$va_attributes_by_element[$vn_element_id][$vn_c][$va_matches[1]] = $va_attributes[$vn_c][$va_matches[1]] = $vs_val;
+					} 
+				}
+			}
+		}
+		$va_values['attributes'] = $va_attributes_by_element;
+		
+		// Get preferred labels
+		$va_preferred_labels = array();
+		if (is_array($va_bundle_lists['fields_by_type']['preferred_label'])) {
+			foreach($va_bundle_lists['fields_by_type']['preferred_label'] as $vs_placement_code => $vs_f) {
+				foreach($_REQUEST as $vs_key => $vs_value ) {
+				///	print "$vs_key<br>";
+				//	print $vs_placement_code.$vs_form_prefix.'_Pref'.'locale_id_new_([\d]+)<br>';
+					if (
+						!preg_match('/'.$vs_placement_code.$vs_form_prefix.'_Pref'.'locale_id_(new_[\d]+)/', $vs_key, $va_matches)
+						&&
+						!preg_match('/'.$vs_placement_code.$vs_form_prefix.'_Pref'.'locale_id_([\d]+)/', $vs_key, $va_matches)
+					) { continue; }
+					$vn_c = $va_matches[1];
+					if (
+						($vn_label_locale_id = $vs_value)
+					) {
+						if(is_array($va_label_values = $this->getLabelUIValuesFromRequest($po_request, $vs_placement_code.$vs_form_prefix, $vn_c, true))) {
+							$va_label_values['locale_id'] = $vn_label_locale_id;
+							$va_preferred_labels[$vn_label_locale_id] = $va_label_values;
+						}
+					}
+				}
+			}
+		}
+		$va_values['preferred_label'] = $va_preferred_labels;
+		
+		return $va_values;
+	}
+	# ------------------------------------------------------
+	/**
+	* Saves all bundles on the specified screen in the database by extracting 
+	* required data from the supplied request
+	* $pm_screen can be a screen tag (eg. "Screen5") or a screen_id (eg. 5)
+	*
+	* Calls processBundlesBeforeBaseModelSave() method in subclass right before invoking insert() or update() on
+	* the BaseModel, if the method is defined. Passes the following parameters to processBundlesBeforeBaseModelSave():
+	*		array $pa_bundles An array of bundles to be saved
+	*		string $ps_form_prefix The form prefix
+	*		RequestHTTP $po_request The current request
+	*		array $pa_options Optional array of parameters; expected to be the same as that passed to saveBundlesForScreen()
+	*
+	* The processBundlesBeforeBaseModelSave() is useful for those odd cases where you need to do some processing before the basic
+	* database record defined by the model (eg. intrinsic fields and hierarchy coding) is inserted or updated. You usually don't need 
+	* to use it.
+	*
+	* @param mixed $pm_screen
+	* @param RequestHTTP $ps_request
+	* @param array $pa_options Options are:
+	*		dryRun = Go through the motions of saving but don't actually write information to the database
+	*/
+	public function saveBundlesForScreen($pm_screen, $po_request, $pa_options=null) {
+		$vb_we_set_transaction = false;
+		
+		$vs_form_prefix = $po_request->getParameter('_formName', pString);
+		
+		$vb_dryrun = (isset($pa_options['dryRun']) && $pa_options['dryRun']) ? true : false;
+		
+		if (!$this->inTransaction()) {
+			$this->setTransaction(new Transaction($this->getDb()));
+			$vb_we_set_transaction = true;
+		} else {
+			if ($vb_dryrun) {
+				$this->postError(799, _t('Cannot do dry run save when in transaction. Try again without setting a transaction.'), "BundlableLabelableBaseModelWithAttributes->saveBundlesForScreen()");				
+				
+				return false;
+			}
+		}
+
+		BaseModel::setChangeLogUnitID();
+		// get items on screen
+		if (isset($pa_options['ui_instance']) && ($pa_options['ui_instance'])) {
+ 			$t_ui = $pa_options['ui_instance'];
+ 		} else {
+			$t_ui = ca_editor_uis::loadDefaultUI($this->tableName(), $po_request, $this->getTypeID());
+ 		}
+		
+		$va_bundle_lists = $this->getBundleListsForScreen($pm_screen, $po_request, $t_ui, $pa_options);
+		
+		$va_bundles = $va_bundle_lists['bundles'];
+		$va_fields_by_type = $va_bundle_lists['fields_by_type'];
 		
 		// save intrinsic fields
 		if (is_array($va_fields_by_type['intrinsic'])) {
@@ -2273,6 +2416,7 @@ class BundlableLabelableBaseModelWithAttributes extends LabelableBaseModelWithAt
 		$this->setMode(ACCESS_WRITE);
 			
 		$vb_is_insert = false;
+		
 		if ($this->getPrimaryKey()) {
 			$this->update();
 		} else {
@@ -2940,6 +3084,8 @@ class BundlableLabelableBaseModelWithAttributes extends LabelableBaseModelWithAt
 		}
 		
 		BaseModel::unsetChangeLogUnitID();
+		
+		if ($vb_dryrun) { $this->removeTransaction(false); }
 		if ($vb_we_set_transaction) { $this->removeTransaction(true); }
 		return true;
 	}
@@ -3753,6 +3899,12 @@ $pa_options["display_form_field_tips"] = true;
 		$pn_table_num = $this->getAppDataModel()->getTableNum($pm_rel_table_name_or_num);
 		if (!($t_instance = $this->getAppDataModel()->getInstanceByTableNum($pn_table_num))) { return null; }
 	
+		foreach($pa_ids as $vn_id) {
+			if (!is_numeric($vn_id)) { 
+				return false;
+			}
+		}
+	
 		if (!($vs_search_result_class = $t_instance->getProperty('SEARCH_RESULT_CLASSNAME'))) { return null; }
 		require_once(__CA_LIB_DIR__.'/ca/Search/'.$vs_search_result_class.'.php');
 		$o_data = new WLPlugSearchEngineCachedResult($pa_ids, $t_instance->tableNum());
@@ -3777,6 +3929,12 @@ $pa_options["display_form_field_tips"] = true;
 		$o_dm = Datamodel::load();
 		$pn_table_num = $o_dm->getTableNum(get_called_class());
 		if (!($t_instance = $o_dm->getInstanceByTableNum($pn_table_num))) { return null; }
+		
+		foreach($pa_ids as $vn_id) {
+			if (!is_numeric($vn_id)) { 
+				return false;
+			}
+		}
 	
 		if (!($vs_search_result_class = $t_instance->getProperty('SEARCH_RESULT_CLASSNAME'))) { return null; }
 		require_once(__CA_LIB_DIR__.'/ca/Search/'.$vs_search_result_class.'.php');
@@ -4201,6 +4359,9 @@ $pa_options["display_form_field_tips"] = true;
 			}
 			$va_row['access_display'] = $t_acl->getChoiceListValue('access', $va_row['access']);
 		}
+		if (!strlen($va_row['access_display'])) {	// show default
+			$va_row['access_display'] = $t_acl->getChoiceListValue('access', $this->getAppConfig()->get('default_item_access_level'));
+		}
 		
 		return $va_row;
 	}
@@ -4297,8 +4458,47 @@ $pa_options["display_form_field_tips"] = true;
 	 * @return bool True if model supports ACL, false if not
 	 */
 	public function supportsACL() {
+		if ($this->getAppConfig()->get($this->tableName().'_dont_do_item_level_access_control')) { return false; }
 		return (bool)$this->getProperty('SUPPORTS_ACL');
 	}
-	# ------------------------------------------------------
+	# --------------------------------------------------------------------------------------------	
+	/**
+	 * Change type of record, removing any metadata that is invalid for the new type
+	 *
+	 * @return bool True if change succeeded, false if error
+	 */
+	public function changeType($pm_type) {
+		if (!$this->getPrimaryKey()) { return false; }					// row must be loaded
+		if (!method_exists($this, 'getTypeID')) { return false; }		// model must be type-able
+		
+		unset($_REQUEST['form_timestamp']);
+		
+		if (!($vb_already_in_transaction = $this->inTransaction())) {
+			$this->setTransaction($o_t = new Transaction());
+		}
+		
+		$vn_old_type_id = $this->getTypeID();
+		$this->setMode(ACCESS_WRITE);
+		$this->set($this->getTypeFieldName(), $pm_type, array('allowSettingOfTypeID' => true));
+		
+		// remove attributes that are not valid for new type
+		$va_old_elements = $this->getApplicableElementCodes($vn_old_type_id);
+		$va_new_elements = $this->getApplicableElementCodes($this->getTypeID());
+		
+		foreach($va_old_elements as $vn_old_element_id => $vs_old_element_code) {
+			if (!isset($va_new_elements[$vn_old_element_id])) {
+				$this->removeAttributes($vn_old_element_id, array('force' => true));
+			}
+		}
+		
+		if ($this->update()) {
+			if (!$vb_already_in_transaction) { $o_t->commit(); }
+			return true;
+		}
+		
+		if (!$vb_already_in_transaction) { $o_t->rollback(); }
+		return false;
+	}
+	# --------------------------------------------------------------------------------------------
 }
 ?>

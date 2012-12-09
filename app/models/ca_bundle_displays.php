@@ -794,7 +794,7 @@ class ca_bundle_displays extends BundlableLabelableBaseModelWithAttributes {
 			if ($vb_show_tooltips) {
 				TooltipManager::add(
 					"#bundleDisplayEditorBundle_{$vs_table}_{$vs_f}",
-					"<h2>{$vs_label}</h2>{$vs_description}"
+					$this->_formatBundleTooltip($vs_label, $vs_bundle, $vs_description)
 				);
 			}
 		}
@@ -881,7 +881,7 @@ class ca_bundle_displays extends BundlableLabelableBaseModelWithAttributes {
 			if ($vb_show_tooltips) {
 				TooltipManager::add(
 					"#bundleDisplayEditorBundle_{$vs_table}_{$vs_element_code}",
-					"<h2>{$vs_label}</h2>{$vs_description}"
+					$this->_formatBundleTooltip($vs_label, $vs_bundle, $vs_description)
 				);
 			}
 		}
@@ -935,7 +935,7 @@ class ca_bundle_displays extends BundlableLabelableBaseModelWithAttributes {
 			if ($vb_show_tooltips) {
 				TooltipManager::add(
 					"#bundleDisplayEditorBundle_{$vs_table}_preferred_labels",
-					"<h2>{$vs_label}</h2>{$vs_description}"
+					$this->_formatBundleTooltip($vs_label, $vs_bundle, $vs_description)
 				);
 			}
 		}
@@ -958,7 +958,7 @@ class ca_bundle_displays extends BundlableLabelableBaseModelWithAttributes {
 			if ($vb_show_tooltips) {	
 				TooltipManager::add(
 					"#bundleDisplayEditorBundle_{$vs_table}_nonpreferred_labels",
-					"<h2>{$vs_label}</h2>{$vs_description}"
+					$this->_formatBundleTooltip($vs_label, $vs_bundle, $vs_description)
 				);
 			}
 		}
@@ -997,7 +997,7 @@ class ca_bundle_displays extends BundlableLabelableBaseModelWithAttributes {
 			if ($vb_show_tooltips) {
 				TooltipManager::add(
 					"#bundleDisplayEditorBundle_ca_commerce_order_history",
-					"<h2>{$vs_label}</h2>{$vs_description}"
+					$this->_formatBundleTooltip($vs_label, $vs_bundle, $vs_description)
 				);
 			}
 		}
@@ -1040,7 +1040,7 @@ class ca_bundle_displays extends BundlableLabelableBaseModelWithAttributes {
 					if ($vb_show_tooltips) {
 						TooltipManager::add(
 							"#bundleDisplayEditorBundle_ca_object_representations_media_{$vs_version}",
-							"<h2>{$vs_label}</h2>{$vs_description}"
+							$this->_formatBundleTooltip($vs_label, $vs_bundle, $vs_description)
 						);
 					}
 				}
@@ -1183,7 +1183,7 @@ class ca_bundle_displays extends BundlableLabelableBaseModelWithAttributes {
 			if ($vb_show_tooltips) {
 				TooltipManager::add(
 					"#bundleDisplayEditorBundle_{$vs_id_suffix}",
-					"<h2>{$vs_label}</h2>{$vs_description}"
+					$this->_formatBundleTooltip($vs_label, $vs_bundle, $vs_description)
 				);
 			}
 		}
@@ -1219,7 +1219,7 @@ class ca_bundle_displays extends BundlableLabelableBaseModelWithAttributes {
 		if ($vb_show_tooltips) {
 			TooltipManager::add(
 				"#bundleDisplayEditorBundle_{$vs_table}_created",
-				"<h2>{$vs_label}</h2>{$vs_description}"
+				$this->_formatBundleTooltip($vs_label, $vs_bundle, $vs_description)
 			);
 		}
 		
@@ -1236,7 +1236,7 @@ class ca_bundle_displays extends BundlableLabelableBaseModelWithAttributes {
 		if ($vb_show_tooltips) {
 			TooltipManager::add(
 				"#bundleDisplayEditorBundle_{$vs_table}_lastModified}",
-				"<h2>{$vs_label}</h2>{$vs_description}"
+				$this->_formatBundleTooltip($vs_label, $vs_bundle, $vs_description)
 			);
 		}
 		
@@ -1300,12 +1300,16 @@ class ca_bundle_displays extends BundlableLabelableBaseModelWithAttributes {
 			if ($vb_show_tooltips) {
 				TooltipManager::add(
 					"#bundleDisplayEditor_{$vn_placement_id}",
-					"<h2>{$vs_label}</h2>{$vs_description}"
+					$this->_formatBundleTooltip($vs_label, $va_placement['bundle'], $vs_description)
 				);
 			}
 		}
 		
 		return $va_placements_in_display;
+	}
+	# ------------------------------------------------------
+	private function _formatBundleTooltip($ps_label, $ps_bundle, $ps_description) {
+		return "<div><strong>{$ps_label}</strong></div><div class='bundleDisplayElementBundleName'>{$ps_bundle}</div><br/><div>{$ps_description}</div>";
 	}
 	# ------------------------------------------------------
 	/**
@@ -1501,16 +1505,16 @@ class ca_bundle_displays extends BundlableLabelableBaseModelWithAttributes {
 		
 		$va_tmp = explode('.', $vs_bundle_name);
 		
-		if ($pa_options['forReport']) {
-			if (substr($vs_bundle_name,0, 31) == 'ca_object_representations.media') {
-				if ((sizeof($va_tmp) >= 3) && ($vs_version = $this->getAppConfig()->get('report_representation_version'))) {
-					array_pop($va_tmp);
-					$va_tmp[] = $vs_version;
-					$vs_bundle_name = join('.', $va_tmp);
-				}
-			}
-		}
-		
+	// 	if ($pa_options['forReport']) {
+// 			if (substr($vs_bundle_name,0, 31) == 'ca_object_representations.media') {
+// 				if ((sizeof($va_tmp) >= 3) && ($vs_version = $this->getAppConfig()->get('report_representation_version'))) {
+// 					array_pop($va_tmp);
+// 					$va_tmp[] = $vs_version;
+// 					$vs_bundle_name = join('.', $va_tmp);
+// 				}
+// 			}
+// 		}
+// 		
 		if (!isset($pa_options['maximumLength'])) {
 			$pa_options['maximumLength'] =  ($va_placement['settings']['maximum_length']) ? $va_placement['settings']['maximum_length'] : null;
 		}
@@ -1553,17 +1557,15 @@ class ca_bundle_displays extends BundlableLabelableBaseModelWithAttributes {
 		if (!$pa_options['forReport'] && isset($pa_options['makeEditorLink']) && $pa_options['makeEditorLink'] && isset($pa_options['request']) && $pa_options['request']) {
 			if ($t_instance = $this->getAppDatamodel()->getInstanceByTableName($va_tmp[0], true)) {
 				$va_tmp2 = $va_tmp;
-				if ((in_array($vs_tmp = array_pop($va_tmp2), array('related')))) {
+				if ((sizeof($va_tmp2) > 1) && (in_array($vs_tmp = array_pop($va_tmp2), array('related')))) {
 					$va_tmp2[] = $vs_tmp;
 				}
 				$va_tmp2[] = $t_instance->primaryKey();
-				
+			
 				$va_ids = $po_result->get(join('.', $va_tmp2), array('returnAsArray' => true));
 				$va_links = array();
 				if (is_array($va_ids)) {
-					$va_display_texts = $po_result->get($vs_bundle_name, array_merge($pa_options, array('returnAsArray' => true)));
-					
-					
+					$va_display_texts = caProcessTemplateForIDs($pa_options['template'], $va_tmp2[0], $va_ids, array_merge($pa_options, array('returnAsArray' => true)));
 					foreach($va_display_texts as $vn_i => $va_text) {
 						
 						if (is_array($va_text)) {

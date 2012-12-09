@@ -49,6 +49,7 @@
 	require(__CA_LIB_DIR__."/ca/MetaTagManager.php");
 	require(__CA_LIB_DIR__."/ca/JavascriptLoadManager.php");
 	require(__CA_LIB_DIR__."/ca/TooltipManager.php");
+	require(__CA_LIB_DIR__."/ca/FooterManager.php");
 
 	require(__CA_LIB_DIR__."/ca/AppNavigation.php");
 	

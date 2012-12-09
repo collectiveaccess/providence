@@ -306,5 +306,16 @@
  		return $this->opo_mapping_engine->render($ps_format, $pa_options);
  	}
  	# -------------------------------------------------------------------
+ 	/**
+ 	 * Render map for output
+ 	 *
+ 	 * @param $ps_format - the format in which to render the map. Use 'HTML' for html output (no other formats are currently supported)
+ 	 * @param $pa_options - optional array of options, passed through to the render() method of the underlying mapping plugin. Options support will depend upon the plugin.
+ 	 * @return string - map output in specified format
+ 	 */
+ 	public function getAttributeBundleHTML($pa_element_info, $pa_options=null) {
+ 		return $this->opo_mapping_engine->getAttributeBundleHTML($pa_element_info, $pa_options);
+ 	}
+ 	# -------------------------------------------------------------------
  }
  ?>

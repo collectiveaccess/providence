@@ -48,6 +48,7 @@ var caUI = caUI || {};
 			showOnNewIDList: [],
 			hideOnNewIDList: [],
 			enableOnNewIDList: [],
+			disableOnExistingIDList: [],
 			counter: 0,
 			minRepeats: 0,
 			maxRepeats: 65535,
@@ -239,9 +240,20 @@ var caUI = caUI || {};
 						jQuery(that.container + ' #' + hide_id +'new_' + curCount).hide();}
 					);
 				}
+				
 				if (this.enableOnNewIDList.length > 0) {
-					jQuery.each(this.enableOnNewIDList, function(i, enable_id) { 
-						jQuery(that.container + ' #' + enable_id +'new_' + curCount).attr('disabled', false); }
+					jQuery.each(this.enableOnNewIDList, 
+						function(i, enable_id) { 
+							jQuery(that.container + ' #' + enable_id +'new_' + curCount).prop('disabled', false); 
+						}
+					);
+				}
+			} else {
+				if (this.disableOnExistingIDList.length > 0) {
+					jQuery.each(this.disableOnExistingIDList, 
+						function(i, disable_id) { 
+							jQuery(that.container + ' #' + disable_id + id).prop('disabled', true); 
+						}
 					);
 				}
 			}
@@ -263,10 +275,16 @@ var caUI = caUI || {};
 						// No locale drop-down, or it somehow doesn't include the locale we want
 						jQuery(this.container + " #" + this.fieldNamePrefix + "locale_id_" + templateValues.n).after("<input type='hidden' name='" + this.fieldNamePrefix + "locale_id_" + templateValues.n + "' value='" + that.defaultLocaleID + "'/>");
 						jQuery(this.container + " #" + this.fieldNamePrefix + "locale_id_" + templateValues.n).remove();
-						
 					}
 				} else {
-				  jQuery(this.container + " #" + this.fieldNamePrefix + "locale_id_" + templateValues.n +" option[value=" + that.defaultLocaleID + "]").attr('selected', true);
+					if (jQuery(this.container + " #" + this.fieldNamePrefix + "locale_id_" + templateValues.n +" option[value=" + that.defaultLocaleID + "]").length) {
+						// There's a locale drop-dow to mess with
+						jQuery(this.container + " #" + this.fieldNamePrefix + "locale_id_" + templateValues.n +" option[value=" + that.defaultLocaleID + "]").attr('selected', true);
+					} else {
+						// No locale drop-down, or it somehow doesn't include the locale we want
+						jQuery(this.container + " #" + this.fieldNamePrefix + "locale_id_" + templateValues.n).after("<input type='hidden' name='" + this.fieldNamePrefix + "locale_id_" + templateValues.n + "' value='" + that.defaultLocaleID + "'/>");
+						jQuery(this.container + " #" + this.fieldNamePrefix + "locale_id_" + templateValues.n).remove();
+					}
 				}
 			}
 			
