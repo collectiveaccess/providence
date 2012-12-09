@@ -6051,6 +6051,55 @@ class BaseModel extends BaseObject {
 			return null;
 		}
 	}
+	
+	# --------------------------------------------------------------------------------------------
+	/**
+	 * 
+	 * @param array, optional associative array of options. Valid keys for the array are:
+	 *		returnDeleted = return deleted records in list (def. false)
+	 * @return DbRes
+	 */
+	public function &getHierarchyChildCountsForIDs($pa_ids, $pa_options=null) {
+		if (!$this->isHierarchical()) { return null; }
+		$va_additional_table_wheres = array();
+		
+		if(!is_array($pa_ids)) { 
+			if (!$pa_ids) {
+				return null; 
+			} else {
+				$pa_ids = array($pa_ids);
+			}
+		}
+		
+		if (!sizeof($pa_ids)) { return array(); }
+		
+		$o_db = $this->getDb();
+		$vs_table_name = $this->tableName();
+		$vs_pk = $this->primaryKey();
+		
+		foreach($pa_ids as $vn_i => $vn_id) {
+			$pa_ids[$vn_i] = (int)$vn_id;
+		}
+		
+		if ($this->hasField('deleted') && (!isset($pa_options['returnDeleted']) || (!$pa_options['returnDeleted']))) {
+			$va_additional_table_wheres[] = "({$vs_table_name}.deleted = 0)";
+		}
+		
+		
+		$qr_res = $o_db->query("
+			SELECT parent_id,  count(*) c
+			FROM {$vs_table_name}
+			WHERE
+				parent_id IN (?) ".((sizeof($va_additional_table_wheres)) ? " AND ".join(" AND ", $va_additional_table_wheres) : "")."
+			GROUP BY parent_id
+		", array($pa_ids));
+		
+		$va_counts = array();
+		while($qr_res->nextRow()) {
+			$va_counts[(int)$qr_res->get('parent_id')] = (int)$qr_res->get('c');
+		}
+		return $va_counts;
+	}
 	# --------------------------------------------------------------------------------------------
 	/**
 	 * Get *direct* child records for currently loaded record or one specified by $pn_id
