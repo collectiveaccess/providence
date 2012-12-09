@@ -1070,17 +1070,15 @@ class WLPlugSearchEngineSqlSearch extends BaseSearchPlugin implements IWLPlugSea
 									$vs_direct_sql_query = str_replace('^JOIN', "", $vs_direct_sql_query);
 								}
 								$vs_sql = "
-									DELETE FROM {$ps_dest_table} WHERE row_id IN
-									(SELECT swi.row_id
-									FROM ca_sql_search_word_index swi
-									INNER JOIN ca_sql_search_words AS sw ON sw.word_id = swi.word_id
-									WHERE
-										{$vs_sql_where}
+									DELETE FROM {$ps_dest_table} 
+									USING {$ps_dest_table}, ca_sql_search_words sw, ca_sql_search_word_index swi
+									WHERE 
+										".($vs_sql_where ? "{$vs_sql_where} AND " : "")."
+										{$ps_dest_table}.row_id = swi.row_id AND
+										sw.word_id = swi.word_id
 										AND
 										swi.table_num = ?
 										".($this->getOption('omitPrivateIndexing') ? " AND swi.access = 0" : '')."
-									GROUP BY
-										swi.row_id)
 								";
 							
 								//print "$vs_sql<hr>";
