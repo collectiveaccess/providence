@@ -1048,9 +1048,7 @@ class BaseModel extends BaseObject {
 				if (!($vs_markup_type == __CA_MT_HTML__)) {
 					$vm_value = htmlspecialchars($vm_value, ENT_QUOTES, 'UTF-8');
 				}
-
-				$vm_value = (string)$vm_value;
-				
+								
 				$vs_cur_value = isset($this->_FIELD_VALUES[$vs_field]) ? (string)$this->_FIELD_VALUES[$vs_field] : null;
 				switch ($pa_fields_type) {
 					case (FT_NUMBER):
@@ -1268,6 +1266,7 @@ class BaseModel extends BaseObject {
 						}
 						break;
 					case (FT_TEXT):
+						$vm_value = (string)$vm_value;
 						if (is_string($vm_value)) {
 							$vm_value = stripSlashes($vm_value);
 						}
