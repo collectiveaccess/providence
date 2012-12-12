@@ -195,6 +195,28 @@ class ItemService extends BaseJSONService {
 		// yes, not all combinations between these tables have 
 		// relationships but it also doesn't hurt to query
 		foreach($this->opa_valid_tables as $vs_rel_table){
+
+			//
+			// set-related hacks
+			if($this->ops_table == "ca_sets" && $vs_rel_table=="ca_tours"){ // throws SQL error in getRelatedItems
+				continue;
+			}
+			// you'd expect the set items to be included for sets but
+			// we don't wan't to list set items as allowed related table
+			// which is why we add them by hand here
+			if($this->ops_table == "ca_sets"){
+				$va_tmp = $t_instance->getItems();
+				$va_set_items = array();
+				foreach($va_tmp as $va_loc){
+					foreach($va_loc as $va_item){
+						$va_set_items[] = $va_item;
+					}
+				}
+				$va_return["related"]["ca_set_items"] = $va_set_items;
+			}
+			// end set-related hacks
+			//
+
 			$va_related_items = $t_instance->get($vs_rel_table,array("returnAsArray" => true));
 			if(is_array($va_related_items) && sizeof($va_related_items)>0){
 				$va_return["related"][$vs_rel_table] = array_values($va_related_items);
