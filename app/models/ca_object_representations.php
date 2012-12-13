@@ -544,11 +544,12 @@ class ca_object_representations extends BundlableLabelableBaseModelWithAttribute
  			$va_labels[$qr_annotation_labels->get('annotation_id')][$qr_annotation_labels->get('locale_id')] = $qr_annotation_labels->get('name');
  		}
  		
- 		if (!isset($pa_options['dontExtraValuesByUserLocale']) || !$pa_options['dontExtraValuesByUserLocale']) {
+ 		if (!isset($pa_options['dontExtractValuesByUserLocale']) || !$pa_options['dontExtractValuesByUserLocale']) {
  			$va_labels = caExtractValuesByUserLocale($va_labels);
  		}
  		
- 		ksort($va_annotations, SORT_REGULAR);
+ 		ksort($va_annotations);
+ 		
  		$va_sorted_annotations = array();
  		foreach($va_annotations as $vs_key => $va_values) {
  			foreach($va_values as $va_val) {
@@ -800,7 +801,7 @@ class ca_object_representations extends BundlableLabelableBaseModelWithAttribute
 		$o_view->setVar('settings', $pa_bundle_settings);
 		
 		$va_inital_values = array();
-		if (sizeof($va_items = $this->getAnnotations(array('dontExtraValuesByUserLocale' => true)))) {
+		if (sizeof($va_items = $this->getAnnotations(array('dontExtractValuesByUserLocale' => true)))) {
 			$t_rel = $this->getAppDatamodel()->getInstanceByTableName('ca_representation_annotations', true);
 			$vs_rel_pk = $t_rel->primaryKey();
 			foreach ($va_items as $vn_id => $va_item) {
@@ -818,7 +819,7 @@ class ca_object_representations extends BundlableLabelableBaseModelWithAttribute
  	 *
  	 */
  	protected function _processRepresentationAnnotations($po_request, $ps_form_prefix, $ps_placement_code) {
- 		$va_rel_items = $this->getAnnotations(array('dontExtraValuesByUserLocale' => true));
+ 		$va_rel_items = $this->getAnnotations(array('dontExtractValuesByUserLocale' => true));
 		$o_coder = $this->getAnnotationPropertyCoderInstance($this->getAnnotationType());
 		foreach($va_rel_items as $vn_id => $va_rel_item) {
 			$this->clearErrors();
@@ -890,24 +891,12 @@ class ca_object_representations extends BundlableLabelableBaseModelWithAttribute
 				}
 				
 				// create annotation
-				$vn_annotation_id = $this->addAnnotation($vn_locale_id, $po_request->getUserID(), $va_properties, $vn_status, $vn_access);
+				$vs_label = $po_request->getParameter($ps_placement_code.$ps_form_prefix.'_ca_representation_annotations_label_new_'.$vn_c, pString);
+				$vn_annotation_id = $this->addAnnotation($vs_label, $vn_locale_id, $po_request->getUserID(), $va_properties, $vn_status, $vn_access);
 				
 				if ($this->numErrors()) {
 					$po_request->addActionErrors($this->errors(), 'ca_representation_annotations', 'new_'.$vn_c);
-				} else {
-					// try to add label
-					if ($vs_label = $po_request->getParameter($ps_placement_code.$ps_form_prefix.'_ca_representation_annotations_label_new_'.$vn_c, pString)) {
-						$t_annotation = new ca_representation_annotations($vn_annotation_id);
-						if ($t_annotation->getPrimaryKey()) {
-							$t_annotation->setMode(ACCESS_WRITE);
-							$t_annotation->addLabel(array('name' => $vs_label), $vn_locale_id, null, true);
-							
-							if ($t_annotation->numErrors()) {
-								$po_request->addActionErrors($t_annotation->errors(), 'ca_representation_annotations', 'new_'.$vn_c);
-							}
-						}
-					}
-				}
+				} 
 			}
 		}
 		
