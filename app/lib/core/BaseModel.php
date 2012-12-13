@@ -8210,65 +8210,91 @@ $pa_options["display_form_field_tips"] = true;
 			}
 		}
 		
-		$o_db = $this->getDb();
-		$t_item_rel = $va_rel_info['t_item_rel'];
-		$vs_rel_table_name = $t_item_rel->tableName();
-		
-		$vs_type_sql = $vs_timestamp_sql = '';
-		
 		$va_query_params = array();
+		$o_db = $this->getDb();
 		
-		$vs_left_table_name = $t_item_rel->getLeftTableName();
-		$vs_left_field_name = $t_item_rel->getLeftTableFieldName();
+		if (($t_item_rel = $va_rel_info['t_item_rel']) && method_exists($t_item_rel, 'getLeftTableName')) {
+			$vs_rel_table_name = $t_item_rel->tableName();
 		
-		$vs_right_table_name = $t_item_rel->getRightTableName();
-		$vs_right_field_name = $t_item_rel->getRightTableFieldName();
+			$vs_type_sql = $vs_timestamp_sql = '';
+		
+		
+			$vs_left_table_name = $t_item_rel->getLeftTableName();
+			$vs_left_field_name = $t_item_rel->getLeftTableFieldName();
+		
+			$vs_right_table_name = $t_item_rel->getRightTableName();
+			$vs_right_field_name = $t_item_rel->getRightTableFieldName();
 		
 		
 			
-		if ($va_rel_info['related_table_name'] == $this->tableName()) {
-			// is self relation
-			if ($ps_direction == 'rtol') {
-				$vn_left_id = (int)$pn_rel_id;
-				$vn_right_id = (int)$this->getPrimaryKey();
+			if ($va_rel_info['related_table_name'] == $this->tableName()) {
+				// is self relation
+				if ($ps_direction == 'rtol') {
+					$vn_left_id = (int)$pn_rel_id;
+					$vn_right_id = (int)$this->getPrimaryKey();
+				} else {
+					$vn_left_id = (int)$this->getPrimaryKey();
+					$vn_right_id = (int)$pn_rel_id;
+				}
 			} else {
-				$vn_left_id = (int)$this->getPrimaryKey();
-				$vn_right_id = (int)$pn_rel_id;
+				if ($vs_left_table_name == $this->tableName()) {
+					$vn_left_id = (int)$this->getPrimaryKey();
+					$vn_right_id = (int)$pn_rel_id;
+				} else {
+					$vn_left_id = (int)$pn_rel_id;
+					$vn_right_id = (int)$this->getPrimaryKey();
+				}
+			}
+		
+			$va_query_params = array($vn_left_id, $vn_right_id);
+		
+			if ($t_item_rel->hasField('type_id')) {
+				$vs_type_sql = ' AND type_id = ?';
+				$va_query_params[] = (int)$pn_type_id;
+			}
+		
+		
+			if ($ps_effective_date && $t_item_rel->hasField('sdatetime') && ($va_timestamps = caDateToHistoricTimestamps($ps_effective_date))) {
+				$vs_timestamp_sql = " AND (sdatetime = ? AND edatetime = ?)";
+				$va_query_params[] = (float)$va_timestamps['start'];
+				$va_query_params[] = (float)$va_timestamps['end'];
+			}
+		
+			$qr_res = $o_db->query("
+				SELECT relation_id
+				FROM {$vs_rel_table_name}
+				WHERE
+					{$vs_left_field_name} = ? AND {$vs_right_field_name} = ?
+					{$vs_type_sql} {$vs_timestamp_sql}
+			", $va_query_params);
+		
+			if (sizeof($va_ids = $qr_res->getAllFieldValues('relation_id'))) {
+				return $va_ids;
 			}
 		} else {
-			if ($vs_left_table_name == $this->tableName()) {
-				$vn_left_id = (int)$this->getPrimaryKey();
-				$vn_right_id = (int)$pn_rel_id;
-			} else {
-				$vn_left_id = (int)$pn_rel_id;
-				$vn_right_id = (int)$this->getPrimaryKey();
+			if (sizeof($va_rel_info['path']) == 2) {		// many-one rel
+				$va_rel_keys = $va_rel_info['rel_keys'];
+				$vb_is_one_table = ($this->tableName() == $va_rel_keys['one_table']) ? true : false;
+			
+				if ($vb_is_one_table) {
+					$vs_where_sql = "ot.".$va_rel_keys['one_table_field']." = ?";
+				} else {
+					$vs_where_sql = "mt.".$va_rel_keys['many_table_field']." = ?";
+				}
+				$va_query_params[] = (int)$this->getPrimaryKey();
+			
+				$vs_relation_id_fld = ($vb_is_one_table ? "mt.".$va_rel_keys['many_table_field'] : "ot.".$va_rel_keys['one_table_field']);
+				$qr_res = $o_db->query("
+					SELECT {$vs_relation_id_fld}
+					FROM {$va_rel_keys['one_table']} ot
+					INNER JOIN {$va_rel_keys['many_table']} AS mt ON mt.{$va_rel_keys['many_table_field']} = ot.{$va_rel_keys['one_table_field']}
+					WHERE
+						{$vs_where_sql}
+				", $va_query_params);
+				if (sizeof($va_ids = $qr_res->getAllFieldValues($vs_relation_id_fld))) {
+					return $va_ids;
+				}
 			}
-		}
-		
-		$va_query_params = array($vn_left_id, $vn_right_id);
-		
-		if ($t_item_rel->hasField('type_id')) {
-			$vs_type_sql = ' AND type_id = ?';
-			$va_query_params[] = (int)$pn_type_id;
-		}
-		
-		
-		if ($ps_effective_date && $t_item_rel->hasField('sdatetime') && ($va_timestamps = caDateToHistoricTimestamps($ps_effective_date))) {
-			$vs_timestamp_sql = " AND (sdatetime = ? AND edatetime = ?)";
-			$va_query_params[] = (float)$va_timestamps['start'];
-			$va_query_params[] = (float)$va_timestamps['end'];
-		}
-		
-		$qr_res = $o_db->query("
-			SELECT relation_id
-			FROM {$vs_rel_table_name}
-			WHERE
-				{$vs_left_field_name} = ? AND {$vs_right_field_name} = ?
-				{$vs_type_sql} {$vs_timestamp_sql}
-		", $va_query_params);
-		
-		if (sizeof($va_ids = $qr_res->getAllFieldValues('relation_id'))) {
-			return $va_ids;
 		}
 		
 		return false;
