@@ -1392,6 +1392,7 @@ div.search-hier-browser-box {
 	border: 2px solid #e6e6e6;
 	padding-left:10px;
 }
+
 .labelInfo {
 	background-color: #fbfbfb;
 	border-top: 1px dotted #e6e6e6;
@@ -1995,6 +1996,13 @@ img.caRepToolsRotateControlButton:hover {
 	height: 32px;
 	margin-top: 16px;
 	margin-left: -300px;
+}
+
+.annotation_media_player {
+	position: relative;
+	width: 600px;
+	height: 32px;
+	margin-top: 16px;
 }
 
 /* overlays (for search results QuickLook) */
