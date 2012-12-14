@@ -1049,7 +1049,7 @@ class BaseModel extends BaseObject {
 					$vm_value = htmlspecialchars($vm_value, ENT_QUOTES, 'UTF-8');
 				}
 								
-				$vs_cur_value = isset($this->_FIELD_VALUES[$vs_field]) ? (string)$this->_FIELD_VALUES[$vs_field] : null;
+				$vs_cur_value = isset($this->_FIELD_VALUES[$vs_field]) ? $this->_FIELD_VALUES[$vs_field] : null;
 				switch ($pa_fields_type) {
 					case (FT_NUMBER):
 						if ($vs_cur_value != $vm_value) {
