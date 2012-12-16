@@ -39,7 +39,7 @@
  			
  			// check access to set - if user doesn't have edit access we bail
  			$t_set = new ca_sets($po_request->getParameter('set_id', pInteger));
- 			if (!$t_set->haveAccessToSet($po_request->getUserID(), __CA_SET_EDIT_ACCESS__)) {
+ 			if (!$t_set->haveAccessToSet($po_request->getUserID(), __CA_SET_EDIT_ACCESS__, null, array('request' => $po_request))) {
  				$this->postError(2320, _t("Access denied"), "RequestDispatcher->dispatch()");
  			}
  		}
@@ -101,7 +101,7 @@
 				}
 				
 				// does user have edit access to set?
-				if (!$t_set->haveAccessToSet($this->request->getUserID(), __CA_SET_EDIT_ACCESS__)) {
+				if (!$t_set->haveAccessToSet($this->request->getUserID(), __CA_SET_EDIT_ACCESS__, null, array('request' => $this->request))) {
 					$this->notification->addNotification(_t("You cannot edit this set"), __NOTIFICATION_TYPE_ERROR__);
 					$this->Edit();
 					return;
@@ -135,10 +135,11 @@
 					$vs_thumbnail_version = "thumbnail";
 				}
  				if(sizeof($va_reps = $t_row->getRepresentations(array($vs_thumbnail_version)))) {
- 					$this->view->setVar('representation_tag', $va_reps[0]['tags'][$vs_thumbnail_version]);
- 					$this->view->setVar('representation_url', $va_reps[0]['urls'][$vs_thumbnail_version]);
- 					$this->view->setVar('representation_width', $va_reps[0]['info'][$vs_thumbnail_version]['WIDTH']);
- 					$this->view->setVar('representation_height', $va_reps[0]['info'][$vs_thumbnail_version]['HEIGHT']);
+ 					$va_rep = array_shift($va_reps);
+ 					$this->view->setVar('representation_tag', $va_rep['tags'][$vs_thumbnail_version]);
+ 					$this->view->setVar('representation_url', $va_rep['urls'][$vs_thumbnail_version]);
+ 					$this->view->setVar('representation_width', $va_rep['info'][$vs_thumbnail_version]['WIDTH']);
+ 					$this->view->setVar('representation_height', $va_rep['info'][$vs_thumbnail_version]['HEIGHT']);
  				}
  			}
  			$this->render('ajax_set_item_info_json.php');

@@ -1120,7 +1120,7 @@ function caFileIsIncludable($ps_file) {
 	/**
 	  * Parses natural language date and returns pair of Unix timestamps defining date/time range
 	  *
-	  * @param string $ps_date_expression A valid date/time expression as described in http://wiki.collectiveaccess.org/index.php?title=DateAndTimeFormats
+	  * @param string $ps_date_expression A valid date/time expression as described in http://docs.collectiveaccess.org/wiki/Date_and_Time_Formats
 	  * @return array The start and end timestamps for the parsed date/time range. Array contains values key'ed under 0 and 1 and 'start' and 'end'; null is returned if expression cannot be parsed.
 	  */
 	function caDateToUnixTimestamps($ps_date_expression) {
@@ -1134,7 +1134,7 @@ function caFileIsIncludable($ps_file) {
 	/**
 	  * Parses natural language date and returns a Unix timestamp 
 	  *
-	  * @param string $ps_date_expression A valid date/time expression as described in http://wiki.collectiveaccess.org/index.php?title=DateAndTimeFormats
+	  * @param string $ps_date_expression A valid date/time expression as described in http://docs.collectiveaccess.org/wiki/Date_and_Time_Formats
 	  * @return int A Unix timestamp for the date expression or null if expression cannot be parsed.
 	  */
 	function caDateToUnixTimestamp($ps_date_expression) {
@@ -1142,6 +1142,20 @@ function caFileIsIncludable($ps_file) {
 		if ($o_tep->parse($ps_date_expression)) {
 			$va_date = $o_tep->getUnixTimestamps();
 			return $va_date['start'];
+		}
+		return null;
+	}
+	# ---------------------------------------
+	/**
+	  * Parses natural language date and returns pair of historic timestamps defining date/time range
+	  *
+	  * @param string $ps_date_expression A valid date/time expression as described in http://docs.collectiveaccess.org/wiki/Date_and_Time_Formats
+	  * @return array The start and end timestamps for the parsed date/time range. Array contains values key'ed under 0 and 1 and 'start' and 'end'; null is returned if expression cannot be parsed.
+	  */
+	function caDateToHistoricTimestamps($ps_date_expression) {
+		$o_tep = new TimeExpressionParser();
+		if ($o_tep->parse($ps_date_expression)) {
+			return $o_tep->getHistoricTimestamps();
 		}
 		return null;
 	}

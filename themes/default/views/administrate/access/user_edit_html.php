@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2008-2009 Whirl-i-Gig
+ * Copyright 2008-2012 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -46,11 +46,29 @@
 
 		// ca_users fields
 		foreach($t_user->getFormFields() as $vs_f => $va_user_info) {
-			print $t_user->htmlFormElement($vs_f, null, array('field_errors' => $this->request->getActionErrors('field_'.$vs_f)));
+			
+			switch($vs_f) {
+				case 'password':
+					// display password confirmation
+					print $t_user->htmlFormElement($vs_f, null, array('field_errors' => $this->request->getActionErrors('field_'.$vs_f)));
 
-			if ($vs_f == 'password') {
-				// display password confirmation
-				print $t_user->htmlFormElement($vs_f, str_replace('^LABEL', _t("Confirm password"), $this->appconfig->get('form_element_display_format')), array('name' => 'password_confirm', 'LABEL' => 'Confirm password'));
+					print $t_user->htmlFormElement($vs_f, str_replace('^LABEL', _t("Confirm password"), $this->appconfig->get('form_element_display_format')), array('name' => 'password_confirm', 'LABEL' => 'Confirm password'));
+					break;
+				case 'entity_id':
+					print "<div class='formLabel'><span id='_ca_user_entity_id_'>".($vs_entity_label = $t_user->getFieldInfo('entity_id', 'LABEL'))."</span><br/>";
+					$vs_template = join($this->request->config->get('ca_entities_lookup_delimiter'), $this->request->config->get('ca_entities_lookup_settings'));
+					print caHTMLTextInput('entity_id_lookup', array('class' => 'lookupBg', 'size' => 70, 'id' => 'ca_users_entity_id_lookup', 'value' => caProcessTemplateForIDs($vs_template, 'ca_entities', array($vn_entity_id = $t_user->get('entity_id')))));
+					if ($vn_entity_id) { print "<a href='#' onclick='caClearUserEntityID(); return false;'>"._t('Clear')." &rsaquo;</a>\n"; }
+					print caHTMLHiddenInput('entity_id', array('value' => $vn_entity_id, 'id' => 'ca_users_entity_id_value'));
+					print "</div>\n";
+					
+					ToolTipManager::add(
+						'#_ca_user_entity_id_', "<h3>{$vs_entity_label}</h3>\n".$t_user->getFieldInfo('entity_id', 'DESCRIPTION')
+					);
+					break;
+				default:
+					print $t_user->htmlFormElement($vs_f, null, array('field_errors' => $this->request->getActionErrors('field_'.$vs_f)));
+					break;
 			}
 		}
 ?>
@@ -91,3 +109,22 @@
 	print $vs_control_box;
 ?>
 </div>
+	<div class="editorBottomPadding"><!-- empty --></div>
+	
+<script type='text/javascript'>
+	jQuery(document).ready(function() {
+ 		jQuery('#ca_users_entity_id_lookup').autocomplete('<?php print caNavUrl($this->request, 'lookup', 'Entity', 'Get', array()); ?>', 
+				{ minChars: 3, matchSubset: 1, matchContains: 1, delay: 800, scroll: true, max: 500, extraParams: { }});
+				
+		jQuery('#ca_users_entity_id_lookup').result(function(event, data, formatted) {
+			if (parseInt(data[1]) >= 0) {
+				jQuery('#ca_users_entity_id_value').val(parseInt(data[1]));
+			}
+		});
+	});
+	
+	function caClearUserEntityID() {
+		jQuery('#ca_users_entity_id_lookup').val('');
+		jQuery('#ca_users_entity_id_value').val(0);
+	}	
+ </script>

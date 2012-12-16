@@ -154,6 +154,18 @@
 			</tr>
 		</table>
 	</div><!-- end formContainerBg -->
+	
+	<h2><?php print _t('Sale information'); ?></h2>
+	<div class="formContainerBg" style="padding-top:10px;">
+<?php
+		foreach(array('sales_agent') as $vs_f) {
+			$va_info = $t_order->getFieldInfo($vs_f);
+			print $t_order->htmlFormElement($vs_f, null, array('width' => "700px", 'field_errors' => $va_errors[$vs_f]));
+		}
+?>
+	</div>
+	
+	
 <?php
 	print $t_order->htmlFormElement('order_id');
 

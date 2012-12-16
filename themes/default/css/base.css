@@ -8,10 +8,6 @@ html, body {
 	height: 100%;
 }
 
-img {
-	border: 0px;
-}
-
 form{
 	display:inline;
 }
@@ -1396,6 +1392,7 @@ div.search-hier-browser-box {
 	border: 2px solid #e6e6e6;
 	padding-left:10px;
 }
+
 .labelInfo {
 	background-color: #fbfbfb;
 	border-top: 1px dotted #e6e6e6;
@@ -1922,7 +1919,7 @@ div.caMediaOverlayControls .objectInfo{
 
 div.caMediaOverlayControls .repNav {
 	font-size: 12px;
-	width: 80px;
+	width: 100px;
 	float:left;
 }
 
@@ -1999,6 +1996,13 @@ img.caRepToolsRotateControlButton:hover {
 	height: 32px;
 	margin-top: 16px;
 	margin-left: -300px;
+}
+
+.annotation_media_player {
+	position: relative;
+	width: 600px;
+	height: 32px;
+	margin-top: 16px;
 }
 
 /* overlays (for search results QuickLook) */

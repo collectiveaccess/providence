@@ -239,6 +239,10 @@ class RequestHTTP extends Request {
 		return $this->ops_raw_post_data;
 	}
 	# -------------------------------------------------------
+	public function setRawPostData($ps_post_data) {
+		$this->ops_raw_post_data = $ps_post_data;
+	}
+	# -------------------------------------------------------
 	public function getSession() {
 		return $this->session;
 	}

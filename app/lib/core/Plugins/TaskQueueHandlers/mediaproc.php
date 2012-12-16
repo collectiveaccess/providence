@@ -211,6 +211,8 @@ include_once(__CA_LIB_DIR__."/core/Logging/Eventlog.php");
 			$va_old_media_to_delete = array();
 			
 			foreach($va_versions as $v => $va_version_settings) {
+				$vs_use_icon = null;
+				
 				if(!file_exists($vs_input_file)) {
 					$this->error->setError(505, _t("Input media file '%1' does not exist", $vs_input_file),"mediaproc->process()");
 					$o_media->cleanup();
@@ -354,7 +356,17 @@ include_once(__CA_LIB_DIR__."/core/Logging/Eventlog.php");
 						$o_media->cleanup();
 						return false;
 					} else {
-						$va_output_files[] = $vs_output_file;
+						if (
+								($vs_output_file === __CA_MEDIA_VIDEO_DEFAULT_ICON__)
+								||
+								($vs_output_file === __CA_MEDIA_AUDIO_DEFAULT_ICON__)
+								||
+								($vs_output_file === __CA_MEDIA_DOCUMENT_DEFAULT_ICON__)
+						) {
+							$vs_use_icon = $vs_output_file;
+						} else {
+							$va_output_files[] = $vs_output_file;
+						}
 					}
 					
 					if (is_array($va_volume_info["mirrors"]) && sizeof($va_volume_info["mirrors"]) > 0) {
@@ -400,18 +412,27 @@ include_once(__CA_LIB_DIR__."/core/Logging/Eventlog.php");
 						}
 					}
 					
-					$media_desc[$v] = array(
-						"VOLUME" => $va_version_settings['VOLUME'],					
-						"MIMETYPE" => $vs_output_mimetype,
-						"WIDTH" => $o_media->get("width"),
-						"HEIGHT" => $o_media->get("height"),
-						"PROPERTIES" => $o_media->getProperties(),
-						"FILENAME" => $vs_table."_".$vs_field."_".$vn_id."_".$v.".".$vs_ext,
-						"HASH" => $vs_dirhash,
-						"MAGIC" => $vs_magic,
-						"EXTENSION" => $vs_ext,
-						"MD5" => md5_file($vs_filepath.".".$vs_ext)
-					);
+					if ($vs_use_icon) {
+						$media_desc[$v] = array(
+							"MIMETYPE" => $vs_output_mimetype,
+							"USE_ICON" => $vs_use_icon,
+							"WIDTH" => $o_media->get("width"),
+							"HEIGHT" => $o_media->get("height")
+						);
+					} else {
+						$media_desc[$v] = array(
+							"VOLUME" => $va_version_settings['VOLUME'],					
+							"MIMETYPE" => $vs_output_mimetype,
+							"WIDTH" => $o_media->get("width"),
+							"HEIGHT" => $o_media->get("height"),
+							"PROPERTIES" => $o_media->getProperties(),
+							"FILENAME" => $vs_table."_".$vs_field."_".$vn_id."_".$v.".".$vs_ext,
+							"HASH" => $vs_dirhash,
+							"MAGIC" => $vs_magic,
+							"EXTENSION" => $vs_ext,
+							"MD5" => md5_file($vs_filepath.".".$vs_ext)
+						);
+					}
 				}
 				if (!$vb_dont_delete_original_media) {
 					$vs_old_media_path = $t_instance->getMediaPath($vs_field, $v);

@@ -35,6 +35,7 @@
  		#
  		# -------------------------------------------------------
  		public function Edit() {
+ 			JavascriptLoadManager::register("bundleableEditor");
  			$t_user = $this->getUserObject();
 			
 			$va_profile_prefs = $t_user->getValidPreferences('profile');
@@ -61,6 +62,10 @@
  				if ($t_user->numErrors()) {
  					$this->request->addActionErrors($t_user->errors(), 'field_'.$vs_f);
  				}
+ 			}
+ 			
+ 			if ($this->request->getParameter('entity_id', pInteger) == 0) {
+ 				$t_user->set('entity_id', null);
  			}
 
  			if ($this->request->getParameter('password', pString) != $this->request->getParameter('password_confirm', pString)) {

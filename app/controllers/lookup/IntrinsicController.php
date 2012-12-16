@@ -1,6 +1,6 @@
 <?php
 /* ----------------------------------------------------------------------
- * app/controllers/lookup/MetadataElementController.php : 
+ * app/controllers/lookup/IntrinsicController.php : 
  * ----------------------------------------------------------------------
  * CollectiveAccess
  * Open-source collections management software
@@ -26,12 +26,11 @@
  * ----------------------------------------------------------------------
  */
  	require_once(__CA_LIB_DIR__."/core/Controller/ActionController.php");
- 	require_once(__CA_MODELS_DIR__."/ca_metadata_elements.php");
  
  	//
- 	// This lookup controller doesn't extent BaseLookupController
+ 	// This lookup controller doesn't extend BaseLookupController
  	// since direct lookups on attributes are handled specially – not via the search engine
- 	class AttributeValueController extends ActionController {
+ 	class IntrinsicController extends ActionController {
  		# -------------------------------------------------------
  		# AJAX handlers
  		# -------------------------------------------------------
@@ -40,64 +39,44 @@
 			$ps_bundle = $this->request->getParameter('bundle', pString);
 			
 			$va_tmp = explode('.', $ps_bundle);
+			$vs_table = $va_tmp[0];
+			$vs_field = $va_tmp[1];
 			
 			$o_dm = Datamodel::load();
 			
-			if (!($t_table = $o_dm->getInstanceByTableName($va_tmp[0], true))) {
+			if (!($t_table = $o_dm->getInstanceByTableName($vs_table, true))) {
 				// bad table name
 				print _t("Invalid table name");
 				return null;
 			}
 			
-			$t_element = new ca_metadata_elements();
-			if (!($t_element->load(array('element_code' => $va_tmp[1])))) {
-				print _t("Invalid element code");
+			if (!($t_table->hasField($vs_field)) || (!in_array($t_table->getFieldInfo($vs_field, 'FIELD_TYPE'), array(FT_TEXT, FT_NUMBER)))) {
+				// bad field name
+				print _t("Invalid bundle name");
 				return null;
 			}
 			
-			if ((int)$t_element->getSetting('suggestExistingValues') !== 1) {
-				print _t("Value suggestion is not supported for this metadata element");
-				return null;
-			}
-			
-			if ($this->request->user->getBundleAccessLevel($va_tmp[0], $vs_tmp[1]) == __CA_BUNDLE_ACCESS_NONE__) {
+			if ($this->request->user->getBundleAccessLevel($vs_table, $vs_field) == __CA_BUNDLE_ACCESS_NONE__) {
 				print _t("You do not have access to this bundle");
 				return null;
 			}
 			
-			$va_type_restrictions = $t_element->getTypeRestrictions($t_table->tableNum());
-			if (!$va_type_restrictions || !is_array($va_type_restrictions) || !sizeof($va_type_restrictions)) {
-				print _t("Element code is not bound to the specified table");
-				return null;
-			}
+			$vn_max_returned_values = 50;
 			
 			$o_db = new Db();
 			
-			switch($t_element->getSetting('suggestExistingValueSort')) {
-				case 'recent':		// date/time entered
-					$vs_sort_field = 'value_id DESC';
-					$vn_max_returned_values = 10;
-					break;
-				default:				// alphabetically
-					$vs_sort_field = 'value_longtext1 ASC';
-					$vn_max_returned_values = 50;
-					break;
-			}
-			
-			$qr_res = $o_db->query("
-				SELECT DISTINCT value_longtext1
-				FROM ca_attribute_values
+			$qr_res = $o_db->query($x="
+				SELECT DISTINCT {$vs_field}
+				FROM {$vs_table}
 				WHERE
-					element_id = ?
-					AND
-					(value_longtext1 LIKE ?)
+					({$vs_field} LIKE ?)
 				ORDER BY
-					{$vs_sort_field}
+					{$vs_field}
 				LIMIT {$vn_max_returned_values}
-			", (int)$t_element->getPrimaryKey(), (string)$ps_query.'%');
-			
-			$this->view->setVar('attribute_value_list', $qr_res->getAllFieldValues('value_longtext1'));
-			return $this->render('ajax_attribute_value_list_html.php');
+			", (string)$ps_query.'%');
+		
+			$this->view->setVar('intrinsic_value_list', $qr_res->getAllFieldValues($vs_field));
+			return $this->render('ajax_intrinsic_value_list_html.php');
 		}
 		# -------------------------------------------------------
  		/**
