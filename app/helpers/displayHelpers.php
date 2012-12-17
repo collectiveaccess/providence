@@ -475,6 +475,36 @@ require_once(__CA_LIB_DIR__.'/core/Parsers/TimeExpressionParser.php');
 	}
 	# ------------------------------------------------------------------------------------------------
 	/**
+	 * 
+	 *
+	 * @param array $pa_bundle_list 
+	 * @param array $pa_options Optional array of options. Supported options are:
+	 *		NONE
+	 *
+	 * @return string 
+	 */
+	function caEditorFieldList($pa_bundle_list, $pa_options=null) {
+		$vs_buf = "<script type=\"text/javascript\">
+		jQuery(document).ready(function() {
+			jQuery(document).bind('keydown.ctrl_f', function() {
+				caEditorFieldList.showPanel(null);
+			});
+			jQuery('#editorFieldListContentArea').html(jQuery(\"#editorFieldListHTML\").html());
+			jQuery('#editorFieldListContentArea a').click(function() {
+				caEditorFieldList.hidePanel();
+			});
+		});
+</script>
+<div id=\"editorFieldListHTML\">";
+		foreach($pa_bundle_list as $vs_anchor => $va_info) {
+			$vs_buf .= "<a href=\"#\" onclick=\"jQuery.scrollTo('a[name={$vs_anchor}]', {duration: 350, offset: -80 }); return false;\" class=\"editorFieldListLink\">".$va_info['name']."</a><br/>";
+		}
+		$vs_buf .= "</div>\n";
+		
+		return $vs_buf;
+	}
+	# ------------------------------------------------------------------------------------------------
+	/**
 	 * Generates standard-format inspector panels for editors
 	 *
 	 * @param View $po_view Inspector view object
