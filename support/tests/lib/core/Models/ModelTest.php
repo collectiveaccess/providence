@@ -37,7 +37,7 @@
 	//
 	// NOTE: REQUIRES CONEY ISLAND HISTORY PROJECT TEST DATA
 	//
-	// You can get this data from the SVN repository at http://collectiveaccess.svn.whirl-i-gig.com/CollectiveAccess/test/test_data_mysql.dump
+	// You can get this data from the GitHub repository at http://github.com/CollectiveAccess/providence/support/test/test_data_mysql.dump
 	//
 	
 	class ModelTest extends PHPUnit_Framework_TestCase {
@@ -46,6 +46,16 @@
 		 * @var ca_objects.idno value of record to use for testing
 		 */
 		private $ops_object_idno = 'CIHP.TEST';
+		# -------------------------------------------------------------------------------
+		/**
+		 * Set up request global required by get() returnAsLink option
+		 */
+		public function __construct() {
+			define("__CA_APP_TYPE__", "PAWTUCKET");
+			global $g_request;
+			$g_request = new RequestHTTP(new ResponseHTTP(), array('no_headers' => true, 'no_authentication' => true));
+			
+		}
 		# -------------------------------------------------------------------------------
 		public function testIntrinsicGet() {
 			$t_object = new ca_objects();
@@ -68,7 +78,7 @@
 			$va_val = $t_object->get('ca_objects.idno', array('returnAsArray' => true, 'returnAllLocales' => false));
 			$this->assertInternalType("array", $va_val, "Return value should be array");
 			$this->assertEquals(sizeof($va_val), 1, "Size of returned array should be 1");
-			$this->assertContains("CIHP.TEST", $va_val, "Returned value should be ".$this->ops_object_idno);
+			$this->assertContains($this->ops_object_idno, $va_val, "Returned value should be ".$this->ops_object_idno);
 			
 			//
 			// Get as array with locales
@@ -82,14 +92,14 @@
 			$va_val = array_shift($va_val);
 			$this->assertInternalType("array", $va_val, "Third level of returned value should be array");
 			
-			$this->assertContains("CIHP.TEST", $va_val, "Value in third level should be ".$this->ops_object_idno);
+			$this->assertContains($this->ops_object_idno, $va_val, "Value in third level should be ".$this->ops_object_idno);
 			
 			//
 			// Get as scalar with locales (should force returnAsArray to true)
 			//
 			$vs_val = $t_object->get('ca_objects.idno', array('returnAsArray' => false, 'returnAllLocales' => true));
-			$this->assertInternalType("array", $vs_val, "Return value should be string");
-			$this->assertContains("CIHP.TEST", $va_val, "Returned value should be ".$this->ops_object_idno);
+			$this->assertInternalType("array", $vs_val, "Return value should be array");
+			$this->assertContains($this->ops_object_idno, $va_val, "Returned value should be ".$this->ops_object_idno);
 		}
 		# -------------------------------------------------------------------------------
 		public function testSimpleRelatedGet() {
@@ -97,21 +107,57 @@
 			$this->assertTrue($t_object->load(array('idno' => $this->ops_object_idno)), "Could not load test record");
 			
 			//
-			// Get related entities
+			// Get related entities as string
 			//
 			$vs_val = $t_object->get('ca_entities', array('returnAsArray' => false, 'returnAllLocales' => false, 'delimiter' => '; '));	
 			$this->assertInternalType("string", $vs_val);
 			$this->assertEquals('Seth Kaufman; Charles Denson', $vs_val, "Return value is incorrect");
 			
 			//
-			// Get related items for table - always an array
+			// Get related entities as link
 			//
-			$va_val = $t_object->get('ca_entities', array('returnAsArray' => true, 'returnAllLocales' => false));
-			$this->assertInternalType("array", $va_val, "Return value should be array");
-			$va_val = array_shift($va_val);
-			$this->assertInternalType("string", $va_val['entity_id'], "Value for key 'entity_id' should be string");
-			$this->assertGreaterThan(0, (int)$va_val['entity_id'], "Value for key 'entity_id' should be greater than zero when cast to integer");
-		
+			$vs_val = $t_object->get('ca_entities', array('returnAsLink' => true, 'returnAsArray' => false, 'returnAllLocales' => false, 'delimiter' => '; '));	
+			$this->assertInternalType("string", $vs_val);
+			$this->assertContains('<a href', $vs_val, "Return value is incorrect");
+			$this->assertContains('Seth Kaufman', $vs_val, "Return value is incorrect");
+			
+			foreach(array('with returnAsLink' => true, 'without returnAsLink' => false) as $vs_message => $vb_return_as_link) {
+				//
+				// Get related items for table as array
+				//
+				$va_val = $t_object->get('ca_entities', array('returnAsArray' => true, 'returnAllLocales' => false, 'returnAsLink' => $vb_return_as_link));
+				$this->assertInternalType("array", $va_val, "Return value should be array {$vs_message}");
+				$va_val = array_shift($va_val);
+				$this->assertInternalType("string", $va_val['entity_id'], "Value for key 'entity_id' should be string {$vs_message}");
+				$this->assertGreaterThan(0, (int)$va_val['entity_id'], "Value for key 'entity_id' should be greater than zero when cast to integer {$vs_message}");
+			
+				//
+				// Get related items for table as all-locales array
+				//
+				$va_val = $t_object->get('ca_entities', array('returnAsArray' => true, 'returnAllLocales' => true, 'returnAsLink' => $vb_return_as_link));
+				$this->assertInternalType("array", $va_val, "Return value should be array");
+			
+				$va_val = array_shift($va_val);
+				$this->assertInternalType("array", $va_val, "Second level of returned value should be array {$vs_message}");
+			
+				$va_val = array_shift($va_val);
+				$this->assertInternalType("array", $va_val, "Third level of returned value should be array {$vs_message}");
+			
+				$this->assertContains("Seth Kaufman", $va_val, "Value in third level should be Seth Kaufman {$vs_message}");
+								
+				//
+				// Get related entities with template
+				//
+				$vs_val = $t_object->get('ca_entities', array('template' => '^preferred_labels.surname, ^preferred_labels.forename (^idno)', 'returnAsLink' => $vb_return_as_link, 'returnAsArray' => false, 'returnAllLocales' => false, 'delimiter' => '; '));	
+				$this->assertInternalType("string", $vs_val);
+				
+				if ($vb_return_as_link) {
+					$this->assertContains('<a href', $vs_val, "Return value is incorrect {$vs_message}");
+					$this->assertContains('Kaufman, Seth (4)', $vs_val, "Return value is incorrect {$vs_message}");				
+				} else {
+					$this->assertEquals('Kaufman, Seth (4); Denson, Charles (5)', $vs_val, "Return value is incorrect {$vs_message}");
+				}
+			}
 		}
 		# -------------------------------------------------------------------------------
 		public function testAttributeGet() {
@@ -435,6 +481,24 @@
 			$this->assertInternalType("string", $va_val, "Return value should be string");
 			$this->assertEquals($vs_value, $va_val, "Returned value is incorrect");
 			
+			//
+			// Get related preferred labels array (all fields) as link
+			//
+			$va_val = $t_object->get('ca_entities.preferred_labels', array('returnAsLink' => true, 'returnAsArray' => false, 'returnAllLocales' => false, 'delimiter' => '; '));
+			
+			$this->assertInternalType("string", $va_val, "Return value should be string");
+			$this->assertContains('<a href', $va_val, "Returned value is not link");
+			$this->assertContains("Seth Kaufman", $va_val, "Returned value is incorrect");
+			
+			//
+			// Get related preferred labels array (all fields) as link with template
+			//
+			$va_val = $t_object->get('ca_entities.preferred_labels', array('template' => '^preferred_labels.surname, ^preferred_labels.forename', 'returnAsLink' => true, 'returnAsArray' => false, 'returnAllLocales' => false, 'delimiter' => '; '));
+			
+			$this->assertInternalType("string", $va_val, "Return value should be string");
+			$this->assertContains('<a href', $va_val, "Returned value is not link");
+			$this->assertContains("Kaufman, Seth", $va_val, "Returned value is incorrect");
+			
 			$va_val = $t_object->get('ca_entities.preferred_labels', array('returnAsArray' => true, 'returnAllLocales' => false));
 			
 			$this->assertInternalType("array", $va_val, "Return value should be array");
@@ -465,6 +529,17 @@
 			$this->assertInternalType("string", $va_val, "Return value should be string");
 			$this->assertEquals($vs_value, $va_val, "Returned value is incorrect");
 			
+			//
+			// Get specific field in preferred labels as link
+			//
+			$vs_value = 'Kaufman; Denson';
+			$va_val = $t_object->get('ca_entities.preferred_labels.surname', array('returnAsLink' => true, 'returnAsArray' => false, 'returnAllLocales' => false, 'delimiter' => '; '));
+			
+			$this->assertInternalType("string", $va_val, "Return value should be string");
+			$this->assertContains('<a href', $va_val, "Returned value is not link");
+			$this->assertContains('Kaufman', $va_val, "Returned value is incorrect");
+			
+			
 			$va_val = $t_object->get('ca_entities.preferred_labels.surname', array('returnAsArray' => true, 'returnAllLocales' => false));
 			
 			$vs_value = 'Kaufman';
@@ -492,6 +567,15 @@
 			
 			$this->assertInternalType("string", $va_val, "Return value should be string");
 			$this->assertEquals($vs_value, $va_val, "Returned value is incorrect");
+			
+			//
+			// Get entity field as link
+			//
+			$va_val = $t_object->get('ca_entities.idno', array('returnAsLink' => true, 'returnAsArray' => false, 'returnAllLocales' => false, 'delimiter' => '; '));
+			
+			$this->assertInternalType("string", $va_val, "Return value should be string");
+			$this->assertContains('<a href', $va_val, "Returned value is not link");
+			$this->assertContains('4', $va_val, "Returned value is incorrect");
 			
 			$va_val = $t_object->get('ca_entities.idno', array('returnAsArray' => true, 'returnAllLocales' => false));
 			
@@ -521,13 +605,51 @@
 			$this->assertInternalType("string", $va_val, "Return value should be string");
 			$this->assertEquals($vs_value, $va_val, "Returned value is incorrect");
 			
+			//
+			// Get entity attribute as link
+			//
+			$va_val = $t_object->get('ca_entities.internal_notes', array('returnAsLink' => true, 'returnAsArray' => false, 'returnAllLocales' => false, 'delimiter' => '; '));
+			
+			$this->assertInternalType("string", $va_val, "Return value should be string");
+			$this->assertContains('<a href', $va_val, "Returned value is not a link");
+			$this->assertContains($vs_value, $va_val, "Returned value is incorrect");
+			
+			//
+			// Get entity attribute as link with template
+			//
+			$va_val = $t_object->get('ca_entities.internal_notes', array('template' => 'Notes: ^internal_notes','returnAsLink' => true, 'returnAsArray' => false, 'returnAllLocales' => false, 'delimiter' => '; '));
+			
+			$this->assertInternalType("string", $va_val, "Return value should be string");
+			$this->assertContains('<a href', $va_val, "Returned value is not a link");
+			$this->assertContains("Notes: {$vs_value}", $va_val, "Returned value is incorrect");
+			
+			//
+			// Get entity attribute with template
+			//
+			$va_val = $t_object->get('ca_entities.internal_notes', array('template' => 'Notes: ^internal_notes','returnAsLink' => false, 'returnAsArray' => false, 'returnAllLocales' => false, 'delimiter' => '; '));
+			
+			$this->assertInternalType("string", $va_val, "Return value should be string");
+			$this->assertEquals("Notes: {$vs_value}; Notes: ", $va_val, "Returned value is incorrect");
+			
+			
+			//
+			// Get entity attribute as array and links with template
+			//
+			$va_val = $t_object->get('ca_entities.internal_notes', array('template' => 'Notes: ^internal_notes','returnAsLink' => true, 'returnAsArray' => true, 'returnAllLocales' => false, 'delimiter' => '; '));
+			
+			$this->assertInternalType("array", $va_val, "Return value should be array");
+			$this->assertContains("Notes: {$vs_value}", array_shift($va_val), "Returned value is incorrect");
+			
+			
 			$va_val = $t_object->get('ca_entities.internal_notes', array('returnAsArray' => true, 'returnAllLocales' => false));
 			
 			$vs_value = 'These are test notes';
+			$va_val = array_pop($va_val);
+			
 			$this->assertInternalType("array", $va_val, "Return value should be array");
 			$this->assertEquals(sizeof($va_val), 1, "Size of returned array should be 1");
-			$this->assertArrayHasKey('internal_notes', $va_val[0], "Returned array should have key 'internal_notes'");
-			$this->assertContains($vs_value, $va_val[0], "Returned value is incorrect");
+			$this->assertArrayHasKey('internal_notes', $va_val, "Returned array should have key 'internal_notes'");
+			$this->assertContains($vs_value, $va_val, "Returned value is incorrect");
 			
 			$va_val = $t_object->get('ca_entities.internal_notes', array('returnAsArray' => true, 'returnAllLocales' => true));
 
@@ -554,7 +676,7 @@
 			//
 			// Get intrinsic field from parent
 			//
-			$vs_value = 'CIHP.TEST';
+			$vs_value = $this->ops_object_idno;
 			$va_val = $t_object->get('ca_objects.parent.idno', array('returnAsArray' => false, 'returnAllLocales' => false));
 			
 			$this->assertInternalType("string", $va_val, "Returned value should be string");
@@ -634,7 +756,7 @@
 		# -------------------------------------------------------------------------------
 		public function testChildrenGet() {
 			$t_object = new ca_objects();
-			$this->assertTrue($t_object->load(array('idno' => 'CIHP.TEST')), "Could not load test record");
+			$this->assertTrue($t_object->load(array('idno' => $this->ops_object_idno)), "Could not load test record");
 			
 			//
 			// Get intrinsic field from children
