@@ -139,7 +139,7 @@
 								SELECT count(*) c, parent_id
 								FROM ca_list_items
 								WHERE 
-									parent_id IN (".join(",", array_keys($va_list_items)).")
+									parent_id IN (".join(",", array_keys($va_list_items)).") AND deleted = 0
 								GROUP BY parent_id
 							");
 							while($qr_res->nextRow()) {
