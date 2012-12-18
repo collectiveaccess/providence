@@ -185,13 +185,13 @@ BaseModel::$s_ca_models_definitions['ca_list_items'] = array(
 				'LIST' => 'workflow_statuses',
 				'LABEL' => _t('Status'), 'DESCRIPTION' => _t('Indicates the current state of the list item.')
 		),
-		// 'deleted' => array(
-// 				'FIELD_TYPE' => FT_BIT, 'DISPLAY_TYPE' => DT_OMIT, 
-// 				'DISPLAY_WIDTH' => 10, 'DISPLAY_HEIGHT' => 1,
-// 				'IS_NULL' => false, 
-// 				'DEFAULT' => 0,
-// 				'LABEL' => _t('Is deleted?'), 'DESCRIPTION' => _t('Indicates if list item is deleted or not.')
-// 		)
+		'deleted' => array(
+ 				'FIELD_TYPE' => FT_BIT, 'DISPLAY_TYPE' => DT_OMIT, 
+ 				'DISPLAY_WIDTH' => 10, 'DISPLAY_HEIGHT' => 1,
+ 				'IS_NULL' => false, 
+ 				'DEFAULT' => 0,
+ 				'LABEL' => _t('Is deleted?'), 'DESCRIPTION' => _t('Indicates if list item is deleted or not.')
+		)
  	)
 );
 
