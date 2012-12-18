@@ -327,6 +327,9 @@
 							$va_rels = $t_rel->getRelationshipInfo($vs_rel_table);
 							
 							$va_rel_opts = array();
+							if (isset($va_properties['allowNull']) && $va_properties['allowNull']) {
+								$va_rel_opts['-'] = null;
+							}
 							foreach($va_rels as $vn_type_id => $va_rel_type_info) {
 								if (!$va_rel_type_info['parent_id']) { continue; }
 								$va_rel_opts[$va_rel_type_info['typename'].'/'.$va_rel_type_info['typename_reverse']] = $va_rel_type_info['type_id'];
@@ -351,17 +354,23 @@
 						}
 						
 						$va_attr = array();
-						if ($vn_height > 1) { $va_attr['multiple'] = 1; $vs_input_name .= '[]'; }
+						if ($vn_height > 1) { 
+							$va_attr['multiple'] = 1; $vs_input_name .= '[]'; 
+						}
 						
 						$va_opts = array('id' => $vs_input_id, 'width' => $vn_width, 'height' => $vn_height);
 						if ($vn_height > 1) {
 							if ($vs_value && !is_array($vs_value)) { $vs_value = array($vs_value); }
 							$va_opts['values'] = $vs_value;
 						} else {
-							if ($vs_value) {
-								$va_opts['value'] = $vs_value;
+							if (is_array($vs_value)) {
+								$va_opts['value'] = array_pop($vs_value);
 							} else {
-								$va_opts['value'] = null;
+								if ($vs_value) {
+									$va_opts['value'] = $vs_value;
+								} else {
+									$va_opts['value'] = null;
+								}
 							}
 						}
 						
@@ -370,7 +379,7 @@
 							if(!isset($va_opts['value'])) { $va_opts['value'] = -1; }		// make sure default list item is never selected
 							$vs_select_element = $t_list->getListAsHTMLFormElement($vs_list_code, $vs_input_name, $va_attr, $va_opts);
 						} else {
-							if(!isset($va_opts['value'])) { $va_opts['value'] = -1; }		// make sure default list item is never selecteds
+							if(!isset($va_opts['value'])) { $va_opts['value'] = -1; }		// make sure default list item is never selected
 							$vs_select_element = caHTMLSelect($vs_input_name, $va_rel_opts, $va_attr, $va_opts);
 						}
 					} else {

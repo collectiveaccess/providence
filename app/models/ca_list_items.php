@@ -437,6 +437,7 @@ class ca_list_items extends BundlableLabelableBaseModelWithAttributes implements
 	 	$t_list = new ca_lists();
 	 	
 	 	$va_hierarchies = caExtractValuesByUserLocale($t_list->getListOfLists());
+	 	$vs_template = $this->getAppConfig()->get('ca_list_items_hierarchy_browser_display_settings');
 		
 		$o_db = $this->getDb();
 		

@@ -470,6 +470,7 @@ class ca_editor_ui_screens extends BundlableLabelableBaseModelWithAttributes {
 							'description' => _t('Normally restricting to type(s) automatically includes all sub-(child) types. If this option is checked then the lookup results will include items with the selected type(s) <b>only</b>.')
 						)
 					);
+					
 					if ($vs_bundle == 'ca_list_items') {
 						$va_additional_settings['restrict_to_lists'] = array(
 							'formatType' => FT_TEXT,
@@ -480,7 +481,6 @@ class ca_editor_ui_screens extends BundlableLabelableBaseModelWithAttributes {
 							'default' => '',
 							'label' => _t('Restrict to list'),
 							'description' => _t('Restricts display to items from the specified list(s). Leave all unselected for no restriction.')
-						
 						);
 					}
 					if (in_array($vs_bundle, array('ca_places', 'ca_list_items', 'ca_storage_locations'))) {
@@ -492,7 +492,6 @@ class ca_editor_ui_screens extends BundlableLabelableBaseModelWithAttributes {
 							'default' => '1',
 							'label' => _t('Use hierarchy browser?'),
 							'description' => _t('If checked a hierarchical browser will be used to select related items instead of an auto-complete lookup.')
-						
 						);
 						
 						$va_additional_settings['hierarchicalBrowserHeight'] = array(
@@ -506,11 +505,43 @@ class ca_editor_ui_screens extends BundlableLabelableBaseModelWithAttributes {
 						
 						);
 					}
+					if (($t_instance->tableName() == 'ca_objects') && in_array($vs_bundle, array('ca_list_items'))) {
+						$va_additional_settings['restrictToTermsRelatedToCollection'] = array(
+							'formatType' => FT_TEXT,
+							'displayType' => DT_CHECKBOXES,
+							'width' => "10", 'height' => "1",
+							'takesLocale' => false,
+							'default' => '0',
+							'label' => _t('Restrict to checklist of terms from related collections?'),
+							'description' => _t('xxx.')
+						);
+						$va_additional_settings['restrictToTermsOnCollectionWithRelationshipType'] = array(
+							'formatType' => FT_TEXT,
+							'displayType' => DT_SELECT,
+							'useRelationshipTypeList' => 'ca_objects_x_collections',
+							'width' => "275px", 'height' => "75px",
+							'takesLocale' => false,
+							'default' => '',
+							'label' => _t('Restrict checklist to terms related to collection as'),
+							'description' => _t('xxx. Leave all unselected for no restriction.')
+						);
+						$va_additional_settings['restrictToTermsOnCollectionUseRelationshipType'] =  array(
+							'formatType' => FT_TEXT,
+							'displayType' => DT_SELECT,
+							'useRelationshipTypeList' => 'ca_objects_x_vocabulary_terms',
+							'width' => "275px", 'height' => "1",
+							'takesLocale' => false,
+							'default' => '',
+							'label' => _t('Use for checked collection terms relationship type'),
+							'description' => _t('xxx. Leave all unselected for no restriction.')
+						);
+					}
 					if (!$t_rel->hasField('type_id')) { unset($va_additional_settings['restrict_to_types']); }
 					if (sizeof($va_path) == 3) {
 						if ($t_link = $this->_DATAMODEL->getInstanceByTableName($va_path[1], true)) {
 							if (!$t_link->hasField('type_id')) {
 								unset($va_additional_settings['restrict_to_relationship_types']);
+								unset($va_additional_settings['useFixedRelationshipType']);
 							}
 						}
 					}

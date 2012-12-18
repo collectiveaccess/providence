@@ -1,6 +1,6 @@
 <?php
 /** ---------------------------------------------------------------------
- * app/lib/ca/Service/SearchJSONService.php
+ * app/lib/ca/Service/BrowseService.php
  * ----------------------------------------------------------------------
  * CollectiveAccess
  * Open-source collections management software
@@ -34,49 +34,66 @@
   *
   */
 
-require_once(__CA_LIB_DIR__."/ca/Service/BaseJSONService.php"); 
+require_once(__CA_LIB_DIR__."/ca/Service/BaseJSONService.php");  
+require_once(__CA_LIB_DIR__."/ca/Browse/BrowseEngine.php");
 
-class SearchJSONService extends BaseJSONService {
-	private $ops_query;
+class BrowseService extends BaseJSONService {
 	# -------------------------------------------------------
 	public function __construct($po_request,$ps_table=""){
-		$this->ops_query = $po_request->getParameter("q",pString);
-
 		parent::__construct($po_request,$ps_table);
 	}
 	# -------------------------------------------------------
 	public function dispatch(){
-		$va_post = $this->getRequestBodyArray();
-
-
 		switch($this->getRequestMethod()){
+			case "OPTIONS":
+				return $this->getFacetInfo();
 			case "GET":
-				if(sizeof($va_post)==0){
-					return $this->search();
+				if(sizeof($this->getRequestBodyArray())>0){
+					return $this->getBrowseResults();	
 				} else {
-					if(is_array($va_post["bundles"])){
-						return $this->search($va_post["bundles"]);
-					} else {
-						$this->addError(_t("Invalid request body format"));
-						return false;
-					}
+					$this->addError(_t("Getting results for browses without criteria is not supported"));
+					return false;
 				}
-				break;
 			default:
-				$this->addError(_t("Invalid HTTP request method for this service"));
+				$this->addError(_t("Invalid HTTP request method"));
 				return false;
 		}
 	}
-	# -------------------------------------------------------
-	private function search($pa_bundles=null){
-		$ps_class = $this->mapTypeToSearchClassName($this->getTableName());
-		require_once(__CA_LIB_DIR__."/ca/Search/{$ps_class}.php");
-			
-		$vo_search = new $ps_class();
-		$t_instance = $this->_getTableInstance($this->getTableName());
+	# --------------------------------------------------
+	protected function getFacetInfo(){
+		$o_browse = $this->initBrowseWithUserFacets();
+		$o_browse->execute();
+		$va_info = $o_browse->getInfoForFacetsWithContent();
+		unset($va_info["_search"]);
+
+		foreach($va_info as $vs_facet => &$va_facet_info){
+			$va_content = $o_browse->getFacetContent($vs_facet);
+			if(sizeof($va_content)==0){
+				unset($va_info[$vs_facet]);
+			} else {
+				$va_facet_info["content"] = $o_browse->getFacetContent($vs_facet);	
+			}
+		}
+
+		return $va_info;
+	}
+	# --------------------------------------------------
+	protected function getBrowseResults(){
+		$o_browse = $this->initBrowseWithUserFacets();
+		$o_browse->execute();
+
+		$va_post = $this->getRequestBodyArray();
+		if(is_array($va_post["bundles"])){
+			$pa_bundles = $va_post["bundles"];
+		}
+		if(!is_array($va_post["criteria"]) || sizeof($va_post["criteria"])==0){
+			$this->addError(_t("Getting results for browses without criteria is not supported"));
+			return false;
+		}
 
 		$va_return = array();
-		$vo_result = $vo_search->search($this->ops_query);
+		$vo_result = $o_browse->getResults();
+		$t_instance = $this->_getTableInstance($this->getTableName());
 
 		while($vo_result->nextHit()){
 			$va_item = array();
@@ -86,8 +103,8 @@ class SearchJSONService extends BaseJSONService {
 				$va_item["idno"] = $vs_idno;
 			}
 
-			if(is_array($va_display_labels = $vo_result->getDisplayLabels())){
-				$va_item["display_label"] = array_pop($va_display_labels);
+			if($vs_label = $vo_result->get($this->getTableName().".preferred_labels")){
+				$va_item["display_label"] = $vs_label;	
 			}
 
 			if(is_array($pa_bundles)){
@@ -105,7 +122,29 @@ class SearchJSONService extends BaseJSONService {
 			$va_return["results"][] = $va_item;
 		}
 
+
 		return $va_return;
+	}
+	# --------------------------------------------------
+	private function initBrowseWithUserFacets(){
+		$ps_class = $this->mapTypeToSearchClassName($this->getTableName());
+		require_once(__CA_LIB_DIR__."/ca/Browse/{$ps_class}.php");
+
+		$o_browse = new $ps_class();
+		$va_post = $this->getRequestBodyArray();
+
+		if(is_array($va_post) && sizeof($va_post)>0){
+			$va_criteria = $va_post["criteria"];
+			if(is_array($va_criteria)){
+				foreach($va_criteria as $vs_facet => $va_row_ids){
+					if(is_array($va_row_ids)){
+						$o_browse->addCriteria($vs_facet,$va_row_ids);
+					}
+				}
+			}
+		}
+
+		return $o_browse;
 	}
 	# -------------------------------------------------------
 	# Utilities
@@ -113,35 +152,33 @@ class SearchJSONService extends BaseJSONService {
 	private function mapTypeToSearchClassName($ps_type){
 		switch($ps_type){
 			case "ca_objects":
-				return "ObjectSearch";
+				return "ObjectBrowse";
 			case "ca_object_lots":
-				return "ObjectLotSearch";
+				return "ObjectLotBrowse";
 			case "ca_entities":
-				return "EntitySearch";
+				return "EntityBrowse";
 			case "ca_places":
-				return "PlaceSearch";
+				return "PlaceBrowse";
 			case "ca_occurrences":
-				return "OccurrenceSearch";
+				return "OccurrenceBrowse";
 			case "ca_collections":
-				return "CollectionSearch";
+				return "CollectionBrowse";
 			case "ca_lists":
-				return "ListSearch";
+				return "ListBrowse";
 			case "ca_list_items":
-				return "ListItemSearch";
+				return "ListItemBrowse";
 			case "ca_object_representations":
-				return "ObjectRepresentationSearch";
+				return "ObjectRepresentationBrowse";
 			case "ca_storage_locations": 
-				return "StorageLocationSearch";
+				return "StorageLocationBrowse";
 			case "ca_movements":
-				return "MovementSearch";
+				return "MovementBrowse";
 			case "ca_loans":
-				return "LoanSearch";
+				return "LoanBrowse";
 			case "ca_tours":
-				return "TourSearch";
+				return "TourBrowse";
 			case "ca_tour_stops":
-				return "TourStopSearch";
-			case "ca_sets":
-				return "SetSearch";
+				return "TourStopBrowse";
 			default:
 				return false;
 		}

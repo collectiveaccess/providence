@@ -34,7 +34,7 @@
  		# -------------------------------------------------------
  		private $pt_role;
  		
- 		private $opa_bundleable_tables = array('ca_objects', 'ca_entities', 'ca_places', 'ca_occurrences', 'ca_collections', 'ca_loans', 'ca_movements', 'ca_tours', 'ca_tour_stops');
+ 		private $opa_bundleable_tables = array('ca_objects', 'ca_entities', 'ca_places', 'ca_occurrences', 'ca_collections', 'ca_loans', 'ca_movements', 'ca_tours', 'ca_tour_stops', 'ca_object_representations', 'ca_representation_annotations');
  		# -------------------------------------------------------
  		#
  		# -------------------------------------------------------

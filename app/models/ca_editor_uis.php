@@ -413,7 +413,7 @@ class ca_editor_uis extends BundlableLabelableBaseModelWithAttributes {
 			if (is_array($va_screens_with_bundles) && !isset($va_screens_with_bundles[$vn_screen_id])) { unset($va_screens[$vn_screen_id]); continue; }
 			foreach($va_screen_labels_by_locale as $vn_locale_id => $va_restriction_info) {
 				if (!is_array($va_screens[$vn_screen_id][$vn_screen_locale_id]['typeRestrictions'])) { continue; }
-				$va_screens[$vn_screen_id][$vn_screen_locale_id]['typeRestrictionsForDisplay'] = join(', ', $va_screens[$vn_screen_id][$vn_screen_locale_id]['typeRestrictions']);
+				$va_screens[$vn_screen_id][$vn_locale_id]['typeRestrictionsForDisplay'] = join(', ', $va_screens[$vn_screen_id][$vn_locale_id]['typeRestrictions']);
 			}
 		}
 		return $_SESSION['screen_cache'][$this->getPrimaryKey().'/'.$pn_type_id.'/'.$vs_opts_md5] = caExtractValuesByUserLocale($va_screens);

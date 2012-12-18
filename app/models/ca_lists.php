@@ -1011,7 +1011,7 @@ class ca_lists extends BundlableLabelableBaseModelWithAttributes {
 	 * Converts list specifier (code or list_id) into a list_id
 	 *
 	 * @param mixed $pm_list_name_or_id List code or list_id
-	 * @return int list for the specified list, or null if the list does not exist
+	 * @return int listva_list_items for the specified list, or null if the list does not exist
 	 */
 	static function getListCode($pm_list_name_or_id) {
 		if (ca_lists::$s_list_code_cache[$pm_list_name_or_id]) {
@@ -1047,14 +1047,20 @@ class ca_lists extends BundlableLabelableBaseModelWithAttributes {
 	 *	width = the display width of the list in characters or pixels
 	 *  limitToItemsWithID =
 	 *  omitItemsWithID = 
+	 *	
+	 *	limitToItemsRelatedToCollections = array of collection_id or idno
+	 *	limitToItemsRelatedToCollectionWithRelationshipTypes = array of type name or type_id
 	 * 
 	 * @return string - HTML code for the <select> element; empty string if the list is empty
 	 */
 	static public function getListAsHTMLFormElement($pm_list_name_or_id, $ps_name, $pa_attributes=null, $pa_options=null) {
 		$t_list = new ca_lists();
-		$vn_list_id = $t_list->_getListID($pm_list_name_or_id);
-		$t_list->load($vn_list_id);
+		
 		if (!is_array($pa_options)) { $pa_options = array(); }
+		if (!(isset($pa_options['limitToItemsRelatedToCollection']) && is_array($pa_options['limitToItemsRelatedToCollections']))) {
+			$vn_list_id = $t_list->_getListID($pm_list_name_or_id);
+			$t_list->load($vn_list_id);
+		}
 		$vn_root_id = (isset($pa_options['childrenOnlyForItemID']) && $pa_options['childrenOnlyForItemID']) ? $pa_options['childrenOnlyForItemID'] : null;
 		
 		$vs_render_as = isset($pa_options['render']) ? $pa_options['render'] : ''; 
@@ -1064,7 +1070,32 @@ class ca_lists extends BundlableLabelableBaseModelWithAttributes {
 		}
 		
 		if (!in_array($vs_render_as, array('lookup', 'horiz_hierbrowser', 'vert_hierbrowser'))) {
-			$va_list_items = $t_list->getItemsForList($pm_list_name_or_id, array_merge($pa_options, array('returnHierarchyLevels' => true, 'item_id' => $vn_root_id, 'extractValuesByUserLocale' => true, 'sort' => $vn_sort_type)));
+			if (isset($pa_options['limitToItemsRelatedToCollections']) && is_array($pa_options['limitToItemsRelatedToCollections'])) {
+				$t_collection = new ca_collections();
+				$va_collection_ids = array();
+				foreach($pa_options['limitToItemsRelatedToCollections'] as $vn_collection_id) {
+					if ($vn_collection_id && !is_numeric($vn_collection_id)) {
+						if ($vn_collection_id = $t_collection->load(array('idno' => $vn_collection_id))) {
+							$va_collection_ids[] = $vn_collection_id;
+						}
+					} else {
+						if ($vn_collection_id) {
+							$va_collection_ids[] = $vn_collection_id;
+						}
+					}
+				}
+				
+				if (sizeof($va_collection_ids)) {
+					$qr_collections = $t_list->makeSearchResult('ca_collections', $va_collection_ids, array('restrictToRelationshipTypes' => isset($pa_options['limitToItemsRelatedToCollectionWithRelationshipTypes']) ? $pa_options['limitToItemsRelatedToCollectionWithRelationshipTypes'] : null));
+					
+					
+					while($qr_collections->nextHit()) {
+						$va_list_items = $qr_collections->get('ca_list_items', array('returnAsArray' => true));
+					}
+				}
+			} else {
+				$va_list_items = $t_list->getItemsForList($pm_list_name_or_id, array_merge($pa_options, array('returnHierarchyLevels' => true, 'item_id' => $vn_root_id, 'extractValuesByUserLocale' => true, 'sort' => $vn_sort_type)));
+			}
 		}
 		
 		if (!is_array($va_list_items)) { $va_list_items = array(); }

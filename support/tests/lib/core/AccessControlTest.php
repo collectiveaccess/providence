@@ -1,6 +1,6 @@
 <?php
 /** ---------------------------------------------------------------------
- * support/tests/lib/core/Controller/AccessControlTests.php 
+ * support/tests/lib/core/Controller/AccessControlTest.php 
  * ----------------------------------------------------------------------
  * CollectiveAccess
  * Open-source collections management software
@@ -30,24 +30,26 @@
  * ----------------------------------------------------------------------
  */
 require_once('PHPUnit/Autoload.php');
-require_once('../../../../../setup.php');
+require_once('./setup.php');
 require_once(__CA_LIB_DIR__."/core/Db.php");
 require_once(__CA_LIB_DIR__."/core/Configuration.php");
+require_once(__CA_LIB_DIR__."/core/AccessRestrictions.php");
 require_once(__CA_LIB_DIR__."/core/Controller/RequestDispatcher.php");
 require_once(__CA_LIB_DIR__."/core/Controller/Request/RequestHTTP.php");
 require_once(__CA_LIB_DIR__."/core/Controller/Response/ResponseHTTP.php");
 require_once(__CA_MODELS_DIR__."/ca_user_roles.php");
 require_once(__CA_MODELS_DIR__."/ca_users.php");
 
-class AccessControlTests extends PHPUnit_Framework_TestCase {
+class AccessControlTest extends PHPUnit_Framework_TestCase {
 	# -------------------------------------------------------
 	private $ops_username;
 	private $ops_password;
 	private $opt_user;
 	private $opt_role;
-	private $ops_service_base_url;
 	# -------------------------------------------------------
 	protected function setUp(){
+		$o_dm = new DataModel(true); // PHPUnit seems to barf on the caching code if we don't instanciate a Datamodel instance
+		$o_dm->getTableNum("ca_objects");
 
 		// set up test role
 
@@ -58,11 +60,12 @@ class AccessControlTests extends PHPUnit_Framework_TestCase {
 		if(!$this->opt_role->insert()){
 			print "ERROR inserting role: ".join(" ",$this->opt_role->getErrors())."\n";
 		}
+
 		$this->opt_role->setMode(ACCESS_READ);
 
 		// set up test user
 
-		$this->ops_username = "service_test_user";
+		$this->ops_username = "unit_test_user";
 		$this->ops_password = "topsecret";
 		$this->opt_user = new ca_users();
 		$this->opt_user->setMode(ACCESS_WRITE);
@@ -84,7 +87,9 @@ class AccessControlTests extends PHPUnit_Framework_TestCase {
 		$this->opt_user->addRoles("unit_test_role");
 		$this->opt_user->setMode(ACCESS_READ);
 
-		$this->ops_service_base_url = "http://".__CA_SITE_HOSTNAME__."/".__CA_URL_ROOT__."/service.php";
+		global $req, $resp;
+		$resp = new ResponseHTTP();
+		$req = new RequestHTTP($resp,array("dont_create_new_session" => true));
 	}
 	# -------------------------------------------------------
 	protected function tearDown(){
@@ -98,7 +103,8 @@ class AccessControlTests extends PHPUnit_Framework_TestCase {
 	}
 	# -------------------------------------------------------
 	public function testActionLevelAccessControlWithoutParams(){
-		$vo_dispatcher = new RequestDispatcher();
+		$vo_acr = AccessRestrictions::load(true);
+
 		$va_access_restrictions = array(
 			"administrate/setup/ConfigurationCheckController/DoCheck" => array(
 				"default" => array (
@@ -107,13 +113,15 @@ class AccessControlTests extends PHPUnit_Framework_TestCase {
 			)
 		);
 
+		$vo_acr->opa_acr = $va_access_restrictions;
+
 		$this->opt_role->setMode(ACCESS_WRITE);
 		$this->opt_role->setRoleActions(array());
-                $this->opt_role->update();
+		$this->opt_role->update();
+		ca_users::$s_user_action_access_cache = array();
 
-		$vb_access = $vo_dispatcher->accessPermitted(
-			$this->opt_user,
-			$va_access_restrictions,
+		$vb_access = $vo_acr->userCanAccess(
+			$this->opt_user->getPrimaryKey(),
 			array("administrate","setup"),
 			"ConfigurationCheck",
 			"DoCheck"
@@ -123,11 +131,11 @@ class AccessControlTests extends PHPUnit_Framework_TestCase {
 
 		$this->opt_role->setMode(ACCESS_WRITE);
 		$this->opt_role->setRoleActions(array("can_view_configuration_check"));
-                $this->opt_role->update();
+		$this->opt_role->update();
+		ca_users::$s_user_action_access_cache = array();
 
-		$vb_access = $vo_dispatcher->accessPermitted(
-			$this->opt_user,
-			$va_access_restrictions,
+		$vb_access = $vo_acr->userCanAccess(
+			$this->opt_user->getPrimaryKey(),
 			array("administrate","setup"),
 			"ConfigurationCheck",
 			"DoCheck"
@@ -137,9 +145,9 @@ class AccessControlTests extends PHPUnit_Framework_TestCase {
 	}
 	# -------------------------------------------------------
 	public function testActionLevelAccessControlWithParams(){
-		$vo_resp = new ResponseHTTP();
-		$vo_req = @new RequestHTTP($vo_resp);
-		$vo_dispatcher = new RequestDispatcher($vo_req,$vo_resp);
+		return;
+		global $req;
+		$vo_acr = AccessRestrictions::load(true);
 
 		$va_access_restrictions = array(
 			"editor/objects/ObjectEditorController/Save" => array(
@@ -155,8 +163,7 @@ class AccessControlTests extends PHPUnit_Framework_TestCase {
 				"create" => array (
 					"parameters" => array(
 						"object_id" => array(
-							"value" => "0",
-							"type" => "int"
+							"value" => "not_set",
 						)
 					),
 					"actions" => array("can_create_ca_objects")
@@ -164,17 +171,19 @@ class AccessControlTests extends PHPUnit_Framework_TestCase {
 			)
 		);
 
-	// no roles -> can't edit or create
+		$vo_acr->opa_acr = $va_access_restrictions;
+
+		// no roles -> can't edit or create
 
 		$this->opt_role->setMode(ACCESS_WRITE);
 		$this->opt_role->setRoleActions(array());
-                $this->opt_role->update();
+		$this->opt_role->update();
+		ca_users::$s_user_action_access_cache = array();
 		
-		$vo_req->setParameter("object_id",0,"GET");
+		$req->setParameter("object_id",null,"GET");
 
-		$vb_access = $vo_dispatcher->accessPermitted(
-			$this->opt_user,
-			$va_access_restrictions,
+		$vb_access = $vo_acr->userCanAccess(
+			$this->opt_user->getPrimaryKey(),
 			array("editor","objects"),
 			"ObjectEditor",
 			"Save"
@@ -182,11 +191,10 @@ class AccessControlTests extends PHPUnit_Framework_TestCase {
 
 		$this->assertFalse($vb_access);
 
-		$vo_req->setParameter("object_id",23,"GET");
+		$req->setParameter("object_id",23,"GET");
 
-		$vb_access = $vo_dispatcher->accessPermitted(
-			$this->opt_user,
-			$va_access_restrictions,
+		$vb_access = $vo_acr->userCanAccess(
+			$this->opt_user->getPrimaryKey(),
 			array("editor","objects"),
 			"ObjectEditor",
 			"Save"
@@ -194,17 +202,17 @@ class AccessControlTests extends PHPUnit_Framework_TestCase {
 
 		$this->assertFalse($vb_access);
 
-	// edit role -> can edit but not create
+		// edit role -> can edit but not create
 
 		$this->opt_role->setMode(ACCESS_WRITE);
 		$this->opt_role->setRoleActions(array("can_edit_ca_objects"));
-                $this->opt_role->update();
+		$this->opt_role->update();
+		ca_users::$s_user_action_access_cache = array();
 
-		$vo_req->setParameter("object_id",0,"GET");
+		$req->setParameter("object_id",null,"GET");
 
-		$vb_access = $vo_dispatcher->accessPermitted(
-			$this->opt_user,
-			$va_access_restrictions,
+		$vb_access = $vo_acr->userCanAccess(
+			$this->opt_user->getPrimaryKey(),
 			array("editor","objects"),
 			"ObjectEditor",
 			"Save"
@@ -212,11 +220,10 @@ class AccessControlTests extends PHPUnit_Framework_TestCase {
 
 		$this->assertFalse($vb_access);
 
-		$vo_req->setParameter("object_id",23,"GET");
+		$req->setParameter("object_id",23,"GET");
 
-		$vb_access = $vo_dispatcher->accessPermitted(
-			$this->opt_user,
-			$va_access_restrictions,
+		$vb_access = $vo_acr->userCanAccess(
+			$this->opt_user->getPrimaryKey(),
 			array("editor","objects"),
 			"ObjectEditor",
 			"Save"
@@ -224,17 +231,17 @@ class AccessControlTests extends PHPUnit_Framework_TestCase {
 
 		$this->assertTrue($vb_access);
 
-	// create role -> can create but not edit
+		// create role -> can create but not edit
 
 		$this->opt_role->setMode(ACCESS_WRITE);
 		$this->opt_role->setRoleActions(array("can_create_ca_objects"));
-                $this->opt_role->update();
+		$this->opt_role->update();
+		ca_users::$s_user_action_access_cache = array();
 
-		$vo_req->setParameter("object_id",0,"GET");
+		$req->setParameter("object_id",null,"GET");
 
-		$vb_access = $vo_dispatcher->accessPermitted(
-			$this->opt_user,
-			$va_access_restrictions,
+		$vb_access = $vo_acr->userCanAccess(
+			$this->opt_user->getPrimaryKey(),
 			array("editor","objects"),
 			"ObjectEditor",
 			"Save"
@@ -242,11 +249,10 @@ class AccessControlTests extends PHPUnit_Framework_TestCase {
 
 		$this->assertTrue($vb_access);
 
-		$vo_req->setParameter("object_id",23,"GET");
+		$req->setParameter("object_id",23,"GET");
 
-		$vb_access = $vo_dispatcher->accessPermitted(
-			$this->opt_user,
-			$va_access_restrictions,
+		$vb_access = $vo_acr->userCanAccess(
+			$this->opt_user->getPrimaryKey(),
 			array("editor","objects"),
 			"ObjectEditor",
 			"Save"
@@ -254,17 +260,17 @@ class AccessControlTests extends PHPUnit_Framework_TestCase {
 
 		$this->assertFalse($vb_access);
 
-	// both roles -> can do both
+		// both roles -> can do both
 
 		$this->opt_role->setMode(ACCESS_WRITE);
 		$this->opt_role->setRoleActions(array("can_create_ca_objects","can_edit_ca_objects"));
-                $this->opt_role->update();
+		$this->opt_role->update();
+		ca_users::$s_user_action_access_cache = array();
 
-		$vo_req->setParameter("object_id",0,"GET");
+		$req->setParameter("object_id",null,"GET");
 
-		$vb_access = $vo_dispatcher->accessPermitted(
-			$this->opt_user,
-			$va_access_restrictions,
+		$vb_access = $vo_acr->userCanAccess(
+			$this->opt_user->getPrimaryKey(),
 			array("editor","objects"),
 			"ObjectEditor",
 			"Save"
@@ -272,11 +278,10 @@ class AccessControlTests extends PHPUnit_Framework_TestCase {
 
 		$this->assertTrue($vb_access);
 
-		$vo_req->setParameter("object_id",23,"GET");
+		$req->setParameter("object_id",23,"GET");
 
-		$vb_access = $vo_dispatcher->accessPermitted(
-			$this->opt_user,
-			$va_access_restrictions,
+		$vb_access = $vo_acr->userCanAccess(
+			$this->opt_user->getPrimaryKey(),
 			array("editor","objects"),
 			"ObjectEditor",
 			"Save"
@@ -286,7 +291,8 @@ class AccessControlTests extends PHPUnit_Framework_TestCase {
 	}
 	# -------------------------------------------------------
 	public function testModuleLevelAccessControl(){
-		$vo_dispatcher = new RequestDispatcher();
+		$vo_acr = AccessRestrictions::load(true);
+
 		$va_access_restrictions = array(
 			"administrate/access" => array(
 				"default" => array (
@@ -295,15 +301,17 @@ class AccessControlTests extends PHPUnit_Framework_TestCase {
 			)
 		);
 
-	// no role -> can't access any controller in administrate/access
+		$vo_acr->opa_acr = $va_access_restrictions;
+
+		// no role -> can't access any controller in administrate/access
 
 		$this->opt_role->setMode(ACCESS_WRITE);
 		$this->opt_role->setRoleActions(array());
-                $this->opt_role->update();
+		$this->opt_role->update();
+		ca_users::$s_user_action_access_cache = array();
 
-		$vb_access = $vo_dispatcher->accessPermitted(
-			$this->opt_user,
-			$va_access_restrictions,
+		$vb_access = $vo_acr->userCanAccess(
+			$this->opt_user->getPrimaryKey(),
 			array("administrate","access"),
 			"Groups",
 			"ListGroups"
@@ -311,9 +319,8 @@ class AccessControlTests extends PHPUnit_Framework_TestCase {
 
 		$this->assertFalse($vb_access);
 
-		$vb_access = $vo_dispatcher->accessPermitted(
-			$this->opt_user,
-			$va_access_restrictions,
+		$vb_access = $vo_acr->userCanAccess(
+			$this->opt_user->getPrimaryKey(),
 			array("administrate","access"),
 			"Roles",
 			"ListRoles"
@@ -321,9 +328,8 @@ class AccessControlTests extends PHPUnit_Framework_TestCase {
 
 		$this->assertFalse($vb_access);
 
-		$vb_access = $vo_dispatcher->accessPermitted(
-			$this->opt_user,
-			$va_access_restrictions,
+		$vb_access = $vo_acr->userCanAccess(
+			$this->opt_user->getPrimaryKey(),
 			array("administrate","access"),
 			"Users",
 			"ListUsers"
@@ -331,15 +337,15 @@ class AccessControlTests extends PHPUnit_Framework_TestCase {
 
 		$this->assertFalse($vb_access);
 
-	// got role -> can access any controller in administrate/access
+		// got role -> can access any controller in administrate/access
 
 		$this->opt_role->setMode(ACCESS_WRITE);
 		$this->opt_role->setRoleActions(array("can_set_access_control"));
-                $this->opt_role->update();
+		$this->opt_role->update();
+		ca_users::$s_user_action_access_cache = array();
 
-		$vb_access = $vo_dispatcher->accessPermitted(
-			$this->opt_user,
-			$va_access_restrictions,
+		$vb_access = $vo_acr->userCanAccess(
+			$this->opt_user->getPrimaryKey(),
 			array("administrate","access"),
 			"Groups",
 			"ListGroups"
@@ -347,9 +353,8 @@ class AccessControlTests extends PHPUnit_Framework_TestCase {
 
 		$this->assertTrue($vb_access);
 
-		$vb_access = $vo_dispatcher->accessPermitted(
-			$this->opt_user,
-			$va_access_restrictions,
+		$vb_access = $vo_acr->userCanAccess(
+			$this->opt_user->getPrimaryKey(),
 			array("administrate","access"),
 			"Roles",
 			"ListRoles"
@@ -357,9 +362,8 @@ class AccessControlTests extends PHPUnit_Framework_TestCase {
 
 		$this->assertTrue($vb_access);
 
-		$vb_access = $vo_dispatcher->accessPermitted(
-			$this->opt_user,
-			$va_access_restrictions,
+		$vb_access = $vo_acr->userCanAccess(
+			$this->opt_user->getPrimaryKey(),
 			array("administrate","access"),
 			"Users",
 			"ListUsers"
@@ -369,7 +373,8 @@ class AccessControlTests extends PHPUnit_Framework_TestCase {
 	}
 	# -------------------------------------------------------
 	public function testControllerLevelAccessControl(){
-		$vo_dispatcher = new RequestDispatcher();
+		$vo_acr = AccessRestrictions::load(true);
+
 		$va_access_restrictions = array(
 			"administrate/setup/InterfacesController" => array(
 				"default" => array (
@@ -378,15 +383,17 @@ class AccessControlTests extends PHPUnit_Framework_TestCase {
 			)
 		);
 
-	// no role -> can't access controller
+		$vo_acr->opa_acr = $va_access_restrictions;
+
+		// no role -> can't access controller
 
 		$this->opt_role->setMode(ACCESS_WRITE);
 		$this->opt_role->setRoleActions(array());
-                $this->opt_role->update();
+		$this->opt_role->update();
+		ca_users::$s_user_action_access_cache = array();
 
-		$vb_access = $vo_dispatcher->accessPermitted(
-			$this->opt_user,
-			$va_access_restrictions,
+		$vb_access = $vo_acr->userCanAccess(
+			$this->opt_user->getPrimaryKey(),
 			array("administrate","setup"),
 			"Interfaces",
 			"ListUIs"
@@ -394,15 +401,15 @@ class AccessControlTests extends PHPUnit_Framework_TestCase {
 
 		$this->assertFalse($vb_access);
 
-	// got role -> can access controller
+		// got role -> can access controller
 
 		$this->opt_role->setMode(ACCESS_WRITE);
 		$this->opt_role->setRoleActions(array("can_configure_user_interfaces"));
-                $this->opt_role->update();
+		$this->opt_role->update();
+		ca_users::$s_user_action_access_cache = array();
 
-		$vb_access = $vo_dispatcher->accessPermitted(
-			$this->opt_user,
-			$va_access_restrictions,
+		$vb_access = $vo_acr->userCanAccess(
+			$this->opt_user->getPrimaryKey(),
 			array("administrate","setup"),
 			"Interfaces",
 			"ListUIs"
@@ -412,9 +419,9 @@ class AccessControlTests extends PHPUnit_Framework_TestCase {
 	}
 	# -------------------------------------------------------
 	public function testBooleanOperators(){
-		$vo_dispatcher = new RequestDispatcher();
+		$vo_acr = AccessRestrictions::load(true);
 
-	// OR
+		// OR
 
 		$va_access_restrictions = array(
 			"administrate/setup/list_editor/ListEditorController" => array(
@@ -425,15 +432,17 @@ class AccessControlTests extends PHPUnit_Framework_TestCase {
 			)
 		);
 
-	// no role -> can't access controller
+		$vo_acr->opa_acr = $va_access_restrictions;
+
+		// no role -> can't access controller
 
 		$this->opt_role->setMode(ACCESS_WRITE);
 		$this->opt_role->setRoleActions(array());
-                $this->opt_role->update();
+		$this->opt_role->update();
+		ca_users::$s_user_action_access_cache = array();
 
-		$vb_access = $vo_dispatcher->accessPermitted(
-			$this->opt_user,
-			$va_access_restrictions,
+		$vb_access = $vo_acr->userCanAccess(
+			$this->opt_user->getPrimaryKey(),
 			array("administrate","setup","list_editor"),
 			"ListEditor",
 			"Edit"
@@ -441,16 +450,16 @@ class AccessControlTests extends PHPUnit_Framework_TestCase {
 
 		$this->assertFalse($vb_access);
 
-	// has one of the OR-ed roles -> can access controller
+		// has one of the OR-ed roles -> can access controller
 
 		$this->opt_role->setMode(ACCESS_WRITE);
 		$va_actions = $va_access_restrictions["administrate/setup/list_editor/ListEditorController"]["default"]["actions"];
 		$this->opt_role->setRoleActions(array($va_actions[array_rand($va_actions)]));
-                $this->opt_role->update();
+		$this->opt_role->update();
+		ca_users::$s_user_action_access_cache = array();
 
-		$vb_access = $vo_dispatcher->accessPermitted(
-			$this->opt_user,
-			$va_access_restrictions,
+		$vb_access = $vo_acr->userCanAccess(
+			$this->opt_user->getPrimaryKey(),
 			array("administrate","setup","list_editor"),
 			"ListEditor",
 			"Edit"
@@ -458,7 +467,7 @@ class AccessControlTests extends PHPUnit_Framework_TestCase {
 
 		$this->assertTrue($vb_access);
 
-	// AND
+		// AND
 		$va_access_restrictions = array(
 			"administrate/setup/list_editor/ListEditorController" => array(
 				"default" => array (
@@ -468,15 +477,17 @@ class AccessControlTests extends PHPUnit_Framework_TestCase {
 			)
 		);
 
-	// no role -> can't access controller
+		$vo_acr->opa_acr = $va_access_restrictions;
+
+		// no role -> can't access controller
 
 		$this->opt_role->setMode(ACCESS_WRITE);
 		$this->opt_role->setRoleActions(array());
-                $this->opt_role->update();
+		$this->opt_role->update();
+		ca_users::$s_user_action_access_cache = array();
 
-		$vb_access = $vo_dispatcher->accessPermitted(
-			$this->opt_user,
-			$va_access_restrictions,
+		$vb_access = $vo_acr->userCanAccess(
+			$this->opt_user->getPrimaryKey(),
 			array("administrate","setup","list_editor"),
 			"ListEditor",
 			"Edit"
@@ -484,16 +495,16 @@ class AccessControlTests extends PHPUnit_Framework_TestCase {
 
 		$this->assertFalse($vb_access);
 
-	// has one of the AND-ed roles -> can't access controller
+		// has one of the AND-ed roles -> can't access controller
 
 		$this->opt_role->setMode(ACCESS_WRITE);
 		$va_actions = $va_access_restrictions["administrate/setup/list_editor/ListEditorController"]["default"]["actions"];
 		$this->opt_role->setRoleActions(array($va_actions[array_rand($va_actions)]));
-                $this->opt_role->update();
+		$this->opt_role->update();
+		ca_users::$s_user_action_access_cache = array();
 
-		$vb_access = $vo_dispatcher->accessPermitted(
-			$this->opt_user,
-			$va_access_restrictions,
+		$vb_access = $vo_acr->userCanAccess(
+			$this->opt_user->getPrimaryKey(),
 			array("administrate","setup","list_editor"),
 			"ListEditor",
 			"Edit"
@@ -501,15 +512,15 @@ class AccessControlTests extends PHPUnit_Framework_TestCase {
 
 		$this->assertFalse($vb_access);
 
-	// has all AND-ed roles -> can access controller
+		// has all AND-ed roles -> can access controller
 
 		$this->opt_role->setMode(ACCESS_WRITE);
 		$this->opt_role->setRoleActions($va_actions);
-                $this->opt_role->update();
+		$this->opt_role->update();
+		ca_users::$s_user_action_access_cache = array();
 
-		$vb_access = $vo_dispatcher->accessPermitted(
-			$this->opt_user,
-			$va_access_restrictions,
+		$vb_access = $vo_acr->userCanAccess(
+			$this->opt_user->getPrimaryKey(),
 			array("administrate","setup","list_editor"),
 			"ListEditor",
 			"Edit"
