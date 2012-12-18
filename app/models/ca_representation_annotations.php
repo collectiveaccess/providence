@@ -319,7 +319,7 @@ class ca_representation_annotations extends BundlableLabelableBaseModelWithAttri
 		}
 		$this->set('props', $this->opo_annotations_properties->getPropertyValues());
 		
-		if ($this->getPrimaryKey() && ($this->changed('props') || (isset($pa_options['forcePreviewGeneration']) && $pa_options['forcePreviewGeneration']))) {
+		if (!$this->getAppConfig()->get('dont_generate_annotation_previews') && $this->getPrimaryKey() && ($this->changed('props') || (isset($pa_options['forcePreviewGeneration']) && $pa_options['forcePreviewGeneration']))) {
 			$vs_start = $this->getPropertyValue('startTimecode');
 			$vs_end = $this->getPropertyValue('endTimecode');
 			
