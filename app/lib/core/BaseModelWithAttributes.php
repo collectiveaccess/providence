@@ -48,6 +48,7 @@
 		static $s_element_id_lookup_cache = array();
  		static $s_element_instance_cache = array();
  		static $s_element_code_lookup_cache = array();
+ 		static $s_element_datatype_lookup_cache = array();
 		# ------------------------------------------------------------------
 		protected $opa_failed_attribute_inserts;
 		protected $opa_failed_attribute_updates;
@@ -641,12 +642,16 @@
 		 *
 		 * @param $pa_options array - array of options for get; in addition to the standard get() options, will also pass through options to attribute value handlers
 		 *		Supported options include:
-		 *				locale = 
-		 *				returnAsArray = if true, return an array, otherwise return a string (default is false)
-		 *				returnAllLocales = 
-		 *				template = 
-		 *				delimiter = 
-		 *				convertCodesToDisplayText =
+		 *			locale = 
+		 *			returnAsArray = if true, return an array, otherwise return a string (default is false)
+		 *			returnAllLocales = 
+		 *			template = 
+		 *			delimiter = 
+		 *			convertCodesToDisplayText =
+ 	 	 *			returnAsLink = if true and $ps_field is a URL attribute and returnAllLocales is not set, then returned values will be links. Default is false.
+ 	 	 *			returnAsLinkText = *For URL attributes only* Text to use a content of HTML link. If omitted the url itself is used as the link content. 	 	 
+ 	 	 *			returnAsLinkAttributes = array of attributes to include in link <a> tag. Use this to set class, alt and any other link attributes.
+		 *
 		 * @return mixed - 
 		 *
 		 * 
@@ -658,6 +663,11 @@
 			$vs_delimiter = 				(isset($pa_options['delimiter'])) ? $pa_options['delimiter'] : ' ';
 			$vb_return_as_array = 		(isset($pa_options['returnAsArray'])) ? (bool)$pa_options['returnAsArray'] : false;
 			$vb_return_all_locales = 	(isset($pa_options['returnAllLocales'])) ? (bool)$pa_options['returnAllLocales'] : false;
+			
+			$vb_return_as_link = 		(isset($pa_options['returnAsLink'])) ? (bool)$pa_options['returnAsLink'] : false;
+			$vs_return_as_link_text = 	(isset($pa_options['returnAsLinkText'])) ? (string)$pa_options['returnAsLinkText'] : '';
+			$vs_return_as_link_attributes = 	(isset($pa_options['returnAsLinkAttributes'])) ? (string)$pa_options['returnAsLinkAttributes'] : array();
+			
 			if ($vb_return_all_locales && !$vb_return_as_array) { $vb_return_as_array = true; }
 			if (!isset($pa_options['convertCodesToDisplayText'])) { $pa_options['convertCodesToDisplayText'] = false; }
 		
@@ -727,9 +737,20 @@
 							if (!$vb_return_as_array) {
 								return $t_instance->getAttributesForDisplay($va_tmp[1], $vs_template, $pa_options);
 							} else {
-								$va_values = $t_instance->getAttributeDisplayValues($va_tmp[1], $t_instance->getPrimaryKey(), $pa_options);
+								$va_values = $t_instance->getAttributeDisplayValues($va_tmp[1], $vn_row_id = $t_instance->getPrimaryKey(), $pa_options);
 								if (!$vb_return_all_locales) {
 									$va_values = array_shift($va_values);
+									
+									if ($vs_template) {
+										$va_values_tmp = array();
+										foreach($va_values as $vn_i => $va_value_list) {
+											foreach($va_value_list as $vn_attr_id => $va_attr_data) {
+												$va_values_tmp[] = caProcessTemplateForIDs($vs_template, $va_tmp[0], array($vn_row_id), array_merge($pa_options, array('returnAsArray' => false, 'placeholderPrefix' => $va_tmp[1])));
+											}
+										}
+				
+										$va_values = $va_values_tmp;
+									}
 								}
 								return $va_values;
 							}
@@ -742,11 +763,12 @@
 						if ($va_tmp[0] === $t_instance->tableName()) {
 							if (!$t_instance->hasField($va_tmp[1])) {
 								// try it as an attribute
+									
 								if (!$vb_return_as_array) {
 									if (!$vs_template) { $vs_template = '^'.$va_tmp[2]; }
 									return $t_instance->getAttributesForDisplay($va_tmp[1], $vs_template, $pa_options);
 								} else {
-									$va_values = $t_instance->getAttributeDisplayValues($va_tmp[1], $t_instance->getPrimaryKey(), $pa_options);
+									$va_values = $t_instance->getAttributeDisplayValues($va_tmp[1], $vn_row_id = $t_instance->getPrimaryKey(), $pa_options);
 									$va_subvalues = array();
 									
 									if ($vb_return_all_locales) {
@@ -763,12 +785,12 @@
 										foreach($va_values as $vn_id => $va_attribute_values) {
 											foreach($va_attribute_values as $vn_attribute_id => $va_data) {
 												if(isset($va_data[$va_tmp[2]])) {
-													$va_subvalues[$vn_attribute_id] = $va_data[$va_tmp[2]];
+													if (!$vs_template) { $vs_template = "^".$va_tmp[2]; }
+													$va_subvalues[$vn_attribute_id] = caProcessTemplateForIDs($vs_template, $va_tmp[0], array($vn_row_id), array_merge($pa_options, array('returnAsArray' => false, 'placeholderPrefix' => $va_tmp[1])));
 												}
 											}
 										}
 									}
-									
 									return $va_subvalues;
 								}
 							}
@@ -1325,7 +1347,7 @@
 		 * @param $pm_element_code_or_id string|integer -
 		 * @param $pn_row_id integer -
 		 * @param $pa_options array -
-		 *				convertLinkBreaks - if set to true, will attemp to convert line break characters to HTML <p> and <br> tags; default is false.
+		 *				convertLineBreaks - if set to true, will attempt to convert line break characters to HTML <p> and <br> tags; default is false.
 		 *				locale - if set to a valid locale_id or locale code, values will be returned in locale *if available*, otherwise will fallback to values in languages that are available using the standard fallback mechanism. Default is to use user's current locale.
 		 *				returnAllLocales - if set to true, values for all locales are returned, locale option is ignored and the returned array is indexed first by attribute_id and then by locale_id. Default is false.
 		 *				indexByRowID - if true first index of returned array is $pn_row_id, otherwise it is the element_id of the retrieved metadata element	
@@ -1351,7 +1373,8 @@
 					} else {
 						$vn_list_id = null;
 					}
-					if (isset($pa_options['convertLinkBreaks']) && $pa_options['convertLinkBreaks']) {
+					
+					if (isset($pa_options['convertLineBreaks']) && $pa_options['convertLineBreaks']) {
 						$vs_converted_value = preg_replace("!(\n|\r\n){2}!","<p/>",$o_value->getDisplayValue(array_merge($pa_options, array('list_id' => $vn_list_id))));
 						$va_display_values[$vs_element_code] = preg_replace("![\n]{1}!","<br/>",$vs_converted_value);
 					} else {
@@ -1427,7 +1450,7 @@
 	     *
 	     * Supported options
 	     *	delimiter = text to use between attribute values; default is a single space
-	     *	convertLinkBreaks = if true will convert line breaks to HTML <br/> tags for display in a web browser; default is false
+	     *	convertLineBreaks = if true will convert line breaks to HTML <br/> tags for display in a web browser; default is false
 		 */
 		public function getAttributesForDisplay($pm_element_code_or_id, $ps_template=null, $pa_options=null) {
 			if (!($vn_row_id = $this->getPrimaryKey())) { 
@@ -1781,6 +1804,15 @@
 			
 			BaseModelWithAttributes::$s_element_id_lookup_cache[$t_element->getPrimaryKey()] = BaseModelWithAttributes::$s_element_id_lookup_cache[$t_element->get('element_code')] = $t_element->getPrimaryKey();
 			return BaseModelWithAttributes::$s_element_code_lookup_cache[$t_element->get('element_code')] = BaseModelWithAttributes::$s_element_code_lookup_cache[$t_element->getPrimaryKey()] = $t_element->get('element_code');
+		}
+		# ------------------------------------------------------------------
+		public function _getElementDatatype($pm_element_code_or_id) {
+			if (isset(BaseModelWithAttributes::$s_element_datatype_lookup_cache[$pm_element_code_or_id])) { return BaseModelWithAttributes::$s_element_datatype_lookup_cache[$pm_element_code_or_id]; }
+		
+			if (!($t_element = $this->_getElementInstance($pm_element_code_or_id))) { return null; }
+			
+			BaseModelWithAttributes::$s_element_id_lookup_cache[$t_element->getPrimaryKey()] = BaseModelWithAttributes::$s_element_id_lookup_cache[$t_element->get('element_code')] = $t_element->getPrimaryKey();
+			return BaseModelWithAttributes::$s_element_datatype_lookup_cache[$t_element->getPrimaryKey()] = BaseModelWithAttributes::$s_element_datatype_lookup_cache[$t_element->get('element_code')] = $t_element->get('datatype');
 		}
 		# ------------------------------------------------------------------
 	}
