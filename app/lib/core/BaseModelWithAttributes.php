@@ -1076,6 +1076,9 @@
 					$vs_br = "";
 				}
 
+				if (isset($pa_bundle_settings['usewysiwygeditor']) && strlen($pa_bundle_settings['usewysiwygeditor']) == 0) {
+					unset($pa_bundle_settings['usewysiwygeditor']);	// let null usewysiwygeditor bundle option fall back to metadata element setting
+				}
 				$va_elements_by_container[$va_element['parent_id']][] = $vs_br.ca_attributes::attributeHtmlFormElement($va_element, array_merge($pa_bundle_settings, array_merge($pa_options, array(
 					'label' => (sizeof($va_element_set) > 1) ? $va_label['name'] : '',
 					'description' => $va_label['description'],

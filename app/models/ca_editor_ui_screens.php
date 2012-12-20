@@ -414,9 +414,13 @@ class ca_editor_ui_screens extends BundlableLabelableBaseModelWithAttributes {
 					$va_additional_settings = array(
 						'usewysiwygeditor' => array(
 							'formatType' => FT_NUMBER,
-							'displayType' => DT_CHECKBOXES,
-							'default' => 0,
-							'width' => 1, 'height' => 1,
+							'displayType' => DT_SELECT,
+							'options' => array(
+								_t('yes') => 1,
+								_t('no') => 0
+							),
+							'default' => '',
+							'width' => "100px", 'height' => 1,
 							'label' => _t('Use rich text editor'),
 							'description' => _t('Check this option if you want to use a word-processor like editor with this text field. If you expect users to enter rich text (italic, bold, underline) then you might want to enable this.')
 						)
@@ -426,10 +430,15 @@ class ca_editor_ui_screens extends BundlableLabelableBaseModelWithAttributes {
 					if ($va_elements[preg_replace('!ca_attribute_!', '', $vs_bundle)]['datatype'] == 1) {		// 1=text
 						$va_additional_settings = array(
 							'usewysiwygeditor' => array(
-								'formatType' => FT_NUMBER,
-								'displayType' => DT_CHECKBOXES,
-								'default' => 0,
-								'width' => 1, 'height' => 1,
+								'formatType' => FT_TEXT,
+								'displayType' => DT_SELECT,
+								'options' => array(
+									_t('yes') => 1,
+									_t('no') => 0,
+									_t('use default') => null
+								),
+								'default' => '',
+								'width' => "100px", 'height' => 1,
 								'label' => _t('Use rich text editor'),
 								'description' => _t('Check this option if you want to use a word-processor like editor with this text field. If you expect users to enter rich text (italic, bold, underline) then you might want to enable this.')
 							)
