@@ -1686,7 +1686,7 @@ class BundlableLabelableBaseModelWithAttributes extends LabelableBaseModelWithAt
  	 *		omit = list of bundles to omit from form in the event they are included in the UI
  	 *	@return array List of bundle HTML to display in form, keyed on placement code
  	 */
- 	public function getBundleFormHTMLForScreen($pm_screen, $pa_options, $pa_placements=null) {
+ 	public function getBundleFormHTMLForScreen($pm_screen, $pa_options, &$pa_placements=null) {
  		$va_omit_bundles = (isset($pa_options['omit']) && is_array($pa_options['omit'])) ? $pa_options['omit'] : array();
  		
  		if (isset($pa_options['ui_instance']) && ($pa_options['ui_instance'])) {

@@ -47,7 +47,7 @@
 			
 			$va_form_elements = $t_occurrence->getBundleFormHTMLForScreen($this->request->getActionExtra(), array(
 									'request' => $this->request, 
-									'formName' => 'OccurrenceEditorForm'), &$va_bundle_list);
+									'formName' => 'OccurrenceEditorForm'), $va_bundle_list);
 			
 			print join("\n", $va_form_elements);
 			

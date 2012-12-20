@@ -48,7 +48,7 @@
 			
 			$va_form_elements = $t_location->getBundleFormHTMLForScreen($this->request->getActionExtra(), array(
 									'request' => $this->request, 
-									'formName' => 'StorageLocationEditorForm'), &$va_bundle_list);
+									'formName' => 'StorageLocationEditorForm'), $va_bundle_list);
 									
 			print join("\n", $va_form_elements);
 			

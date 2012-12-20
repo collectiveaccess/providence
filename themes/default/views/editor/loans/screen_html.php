@@ -47,7 +47,7 @@
 			
 			$va_form_elements = $t_loan->getBundleFormHTMLForScreen($this->request->getActionExtra(), array(
 									'request' => $this->request, 
-									'formName' => 'LoanEditorForm'), &$va_bundle_list);
+									'formName' => 'LoanEditorForm'), $va_bundle_list);
 									
 			print join("\n", $va_form_elements);
 			

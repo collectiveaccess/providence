@@ -52,7 +52,7 @@
 									'request' => $this->request, 
 									'formName' => 'TourStopEditorForm',
 									'context_id' => $vs_context_id
-								), &$va_bundle_list);
+								), $va_bundle_list);
 			
 			print join("\n", $va_form_elements);
 			

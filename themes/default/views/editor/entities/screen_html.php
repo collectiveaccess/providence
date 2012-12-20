@@ -47,7 +47,7 @@
 			
 			$va_form_elements = $t_entity->getBundleFormHTMLForScreen($this->request->getActionExtra(), array(
 									'request' => $this->request, 
-									'formName' => 'EntityEditorForm'), &$va_bundle_list);
+									'formName' => 'EntityEditorForm'), $va_bundle_list);
 			
 			print join("\n", $va_form_elements);
 			

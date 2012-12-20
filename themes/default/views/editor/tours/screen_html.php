@@ -48,7 +48,7 @@
 			
 			$va_form_elements = $t_tour->getBundleFormHTMLForScreen($this->request->getActionExtra(), array(
 									'request' => $this->request, 
-									'formName' => 'TourEditorForm'), &$va_bundle_list);
+									'formName' => 'TourEditorForm'), $va_bundle_list);
 			
 			print join("\n", $va_form_elements);
 			
