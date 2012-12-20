@@ -1764,7 +1764,7 @@ class BundlableLabelableBaseModelWithAttributes extends LabelableBaseModelWithAt
 					}
 				}
 				if (!$vb_output_bundle) { continue; }
-				$va_bundle_html[$va_bundle['placement_code']] = "<a name=\"{$pm_screen}_{$vn_c}\"></a>".$this->getBundleFormHTML($va_bundle['bundle_name'], $va_bundle['placement_code'], $va_bundle['settings'], $pa_options, &$vs_bundle_display_name);
+				$va_bundle_html[$va_bundle['placement_code']] = "<a name=\"{$pm_screen}_{$vn_c}\"></a>".$this->getBundleFormHTML($va_bundle['bundle_name'], $va_bundle['placement_code'], $va_bundle['settings'], $pa_options, $vs_bundle_display_name);
 				$va_bundles_present[$va_bundle['bundle_name']] = true;
 					
 				$pa_placements["{$pm_screen}_{$vn_c}"] = array(
