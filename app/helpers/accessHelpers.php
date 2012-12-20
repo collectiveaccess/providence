@@ -124,6 +124,7 @@
 		$vs_cache_key = md5($pm_table_name_or_num."/".print_r($pa_options, true));
 		if (isset($g_access_helpers_type_restriction_cache[$vs_cache_key])) { return $g_access_helpers_type_restriction_cache[$vs_cache_key]; }
 		$o_dm = Datamodel::load();
+		$o_config = Configuration::load();
 		
 		$vn_min_access = isset($pa_options['access']) ? (int)$pa_options['access'] : __CA_BUNDLE_ACCESS_READONLY__;
 		

@@ -1184,6 +1184,7 @@ class ca_objects extends BundlableLabelableBaseModelWithAttributes implements IB
 	 		while($qr_res->nextRow()) {
 	 			$va_hiers[$vn_object_id = $qr_res->get('object_id')] = array(
 	 				'object_id' => $vn_object_id,
+	 				'item_id' => $vn_object_id,
 	 				'name' => caProcessTemplateForIDs($vs_template, 'ca_objects', array($vn_object_id)),
 	 				'hierarchy_id' => $vn_object_id,
 	 				'children' => (int)$qr_res->get('c')
@@ -1210,6 +1211,7 @@ class ca_objects extends BundlableLabelableBaseModelWithAttributes implements IB
 			$va_object_hierarchy_root = array(
 				$t_object->get($vs_hier_fld) => array(
 					'object_id' => $vn_pk,
+	 				'item_id' => $vn_pk,
 					'name' => $vs_name = caProcessTemplateForIDs($vs_template, 'ca_objects', array($vn_pk)),
 					'hierarchy_id' => $vn_hier_id,
 					'children' => sizeof($va_children)

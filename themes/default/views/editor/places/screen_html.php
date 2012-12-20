@@ -50,7 +50,7 @@
 									'request' => $this->request, 
 									'formName' => 'PlaceEditorForm',
 									'context_id' => $vs_context_id
-								));
+								), $va_bundle_list);
 									
 			print join("\n", $va_form_elements);
 			
@@ -63,3 +63,5 @@
 	</div>
 
 	<div class="editorBottomPadding"><!-- empty --></div>
+	
+	<?php print caEditorFieldList($va_bundle_list); ?>

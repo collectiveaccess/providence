@@ -27,6 +27,7 @@
  */
 	define("__CA_MICROTIME_START_OF_REQUEST__", microtime());
 	define("__CA_BASE_MEMORY_USAGE__", memory_get_usage(true));
+	define("__CA_APP_TYPE__", "PROVIDENCE");
 	
 	if (!file_exists('./setup.php')) { print "No setup.php file found!"; exit; }
 	require('./setup.php');

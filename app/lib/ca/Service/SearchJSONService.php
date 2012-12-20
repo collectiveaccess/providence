@@ -140,6 +140,8 @@ class SearchJSONService extends BaseJSONService {
 				return "TourSearch";
 			case "ca_tour_stops":
 				return "TourStopSearch";
+			case "ca_sets":
+				return "SetSearch";
 			default:
 				return false;
 		}

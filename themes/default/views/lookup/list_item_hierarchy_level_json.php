@@ -29,12 +29,6 @@
  	$va_list = $this->getVar('list_item_list');
  	foreach($va_list as $vs_key => $va_info) {
  		if (!is_array($va_info)) { continue; }
- 		if ($va_info['list_code']) {
- 			$va_list[$vs_key]['name'] = $va_list[$vs_key]['name']." (".$va_info['list_code'].")";
- 		}
- 		if ($va_info['idno']) {
- 			$va_list[$vs_key]['name'] = $va_list[$vs_key]['name']." (".$va_info['idno'].")";
- 		}
  		
  		if (!$this->getVar('dontShowSymbols')) {
 			if ($va_info['use_as_vocabulary']) {
