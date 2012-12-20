@@ -216,11 +216,32 @@
 				$vs_val = $t_object->get('ca_objects.description', array('returnAsArray' => false, 'returnAllLocales' => true));
 				$this->assertInternalType("array", $vs_val, "Return value should be string");
 				$this->assertContains($vs_description, $va_val, "Returned value is incorrect");
+
+				// Get scalar with template
+				//
+				$vs_val = $t_object->get('ca_objects.description', array('template' => 'Description is: ^ca_objects.description', 'returnAsArray' => false, 'returnAllLocales' => false));
+				$this->assertInternalType("string", $vs_val, "Return value should be string");
+				$this->assertEquals("Description is: This is a test description", $vs_val, "Returned value is incorrect");
+				
+				$vs_val = $t_object->get('ca_objects.description.description', array('template' => 'Description is: ^ca_objects.description', 'returnAsArray' => false, 'returnAllLocales' => false));
+				$this->assertInternalType("string", $vs_val, "Return value should be string");
+				$this->assertEquals("Description is: This is a test description", $vs_val, "Returned value is incorrect");
+		
 				
 				//
-				// TODO: Test templates
+				// Get scalar with template as array
 				//
+				$va_val = $t_object->get('ca_objects.description', array('template' => 'Description is: ^ca_objects.description', 'returnAsArray' => true, 'returnAllLocales' => false));
+			
+				$this->assertInternalType("array", $va_val, "Return value should be string");
+				$this->assertContains("Description is: {$vs_description}", $va_val, "Returned value is incorrect");
 				
+				$va_val = $t_object->get('ca_objects.description.description', array('template' => 'Description is: ^ca_objects.description', 'returnAsArray' => true, 'returnAllLocales' => false));
+	
+				$this->assertInternalType("array", $va_val, "Return value should be string");
+				$this->assertContains("Description is: {$vs_description}", $va_val, "Returned value is incorrect");
+
+
 			//
 			// Test <tablename>.<element_code>.<sub_element_code> attributes 
 			//
@@ -237,7 +258,6 @@
 				$va_val = $t_object->get('ca_objects.description.description', array('returnAsArray' => true, 'returnAllLocales' => false));
 				$this->assertInternalType("array", $va_val, "Return value should be array");
 				$this->assertEquals(sizeof($va_val), 1, "Size of returned array should be 1");
-				
 				$this->assertContains($vs_description, $va_val, "Returned value is incorrect");
 				
 				//
@@ -260,9 +280,19 @@
 				$this->assertInternalType("array", $vs_val, "Return value should be string");
 				$this->assertContains($vs_description, $va_val, "Returned value is incorrect");
 				
+				
 				//
-				// TODO: Test templates
+				// Attribute with template
 				//
+				$va_val = $t_object->get('ca_objects.dimensions_numeric', array('template' => 'W=^dimensions_width', 'returnAsArray' => false, 'returnAllLocales' => false));
+				
+				$this->assertInternalType("string", $va_val, "Return value should be string");
+				$this->assertEquals("W=12.0 in", $va_val, "Returned value is incorrect");
+				
+				$va_val = $t_object->get('ca_objects.dimensions_numeric', array('template' => 'W=^dimensions_width', 'returnAsArray' => true, 'returnAllLocales' => false));
+		
+				$this->assertInternalType("array", $va_val, "Return value should be array");
+				$this->assertContains("W=12.0 in", $va_val, "Returned value is incorrect");
 				
 		}
 		# -------------------------------------------------------------------------------
@@ -364,6 +394,39 @@
 				$this->assertInternalType("array", $vs_val, "Return value should be string");
 				$this->assertContains($vs_title, $va_val, "Returned value is incorrect");
 			
+				
+				//
+				// Get URL attribute as link
+				//
+				$vs_val = $t_object->get('ca_objects.external_link.url_entry', array('returnAsArray' => false, 'returnAllLocales' => false));
+				$this->assertInternalType("string", $vs_val, "Return value should be string");
+				$this->assertEquals("http://www.coneyislandhistory.org/about", $vs_val, "Returned value is incorrect");
+			
+				$vs_val = $t_object->get('ca_objects.external_link.url_entry', array('returnAsLink' => true, 'returnAsArray' => false, 'returnAllLocales' => false));
+				$this->assertInternalType("string", $vs_val, "Return value should be string");
+				$this->assertContains("<a href", $vs_val, "Returned value is not a link");
+				$this->assertContains("http://www.coneyislandhistory.org/about", $vs_val, "Returned value is incorrect");
+				
+				$va_val = $t_object->get('ca_objects.external_link.url_entry', array('returnAsLink' => true, 'returnAsArray' => true, 'returnAllLocales' => false));
+				$this->assertInternalType("array", $va_val, "Return value should be array");
+				$vs_val = array_pop($va_val);
+				$this->assertContains("<a href", $vs_val, "Returned value is not a link");
+				$this->assertContains("http://www.coneyislandhistory.org/about", $vs_val, "Returned value is incorrect");
+				
+				$vs_val = $t_object->get('ca_objects.external_link.url_entry', array('returnAsLink' => true, 'returnAsLinkText' => 'LINK_GOES_HERE', 'returnAsArray' => false, 'returnAllLocales' => false));
+				$this->assertInternalType("string", $vs_val, "Return value should be string");
+				$this->assertContains("<a href", $vs_val, "Returned value is not a link");
+				$this->assertContains(">LINK_GOES_HERE<", $vs_val, "Returned value is incorrect");
+				$this->assertContains("http://www.coneyislandhistory.org/about", $vs_val, "Returned value is incorrect");
+				
+				$vs_val = $t_object->get('ca_objects.external_link.url_entry', array('returnAsLink' => true, 'returnAsLinkText' => 'LINK_GOES_HERE', 'returnAsLinkAttributes' => array('class' => 'extLink', 'alt' => 'External link'), 'returnAsArray' => false, 'returnAllLocales' => false));
+				$this->assertInternalType("string", $vs_val, "Return value should be string");
+				$this->assertContains("href=", $vs_val, "Returned value is not a link");
+				$this->assertContains("<a", $vs_val, "Returned value is not a link");
+				$this->assertContains("class='extLink'", $vs_val, "Returned value is missing class");
+				$this->assertContains("alt='External link'", $vs_val, "Returned value is alt attribute");
+				$this->assertContains(">LINK_GOES_HERE<", $vs_val, "Returned value is incorrect");
+				$this->assertContains("http://www.coneyislandhistory.org/about", $vs_val, "Returned value is incorrect");
 		}
 		# -------------------------------------------------------------------------------
 		public function testNonPreferredLabelGet() {
