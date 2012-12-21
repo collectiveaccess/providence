@@ -475,6 +475,36 @@ require_once(__CA_LIB_DIR__.'/core/Parsers/TimeExpressionParser.php');
 	}
 	# ------------------------------------------------------------------------------------------------
 	/**
+	 * 
+	 *
+	 * @param array $pa_bundle_list 
+	 * @param array $pa_options Optional array of options. Supported options are:
+	 *		NONE
+	 *
+	 * @return string 
+	 */
+	function caEditorFieldList($pa_bundle_list, $pa_options=null) {
+		$vs_buf = "<script type=\"text/javascript\">
+		jQuery(document).ready(function() {
+			jQuery(document).bind('keydown.ctrl_f', function() {
+				caEditorFieldList.showPanel(null);
+			});
+			jQuery('#editorFieldListContentArea').html(jQuery(\"#editorFieldListHTML\").html());
+			jQuery('#editorFieldListContentArea a').click(function() {
+				caEditorFieldList.hidePanel();
+			});
+		});
+</script>
+<div id=\"editorFieldListHTML\">";
+		foreach($pa_bundle_list as $vs_anchor => $va_info) {
+			$vs_buf .= "<a href=\"#\" onclick=\"jQuery.scrollTo('a[name={$vs_anchor}]', {duration: 350, offset: -80 }); return false;\" class=\"editorFieldListLink\">".$va_info['name']."</a><br/>";
+		}
+		$vs_buf .= "</div>\n";
+		
+		return $vs_buf;
+	}
+	# ------------------------------------------------------------------------------------------------
+	/**
 	 * Generates standard-format inspector panels for editors
 	 *
 	 * @param View $po_view Inspector view object
@@ -1435,7 +1465,7 @@ require_once(__CA_LIB_DIR__.'/core/Parsers/TimeExpressionParser.php');
 		$vs_delimiter = (isset($pa_options['delimiter'])) ? $pa_options['delimiter'] : '; ';
 		
 		$va_tags = array();
-		if (preg_match_all("!\^([A-Za-z0-9_\.]+[^ \t\r\n\"\'<>\(\)\{\}\/]*)!", $ps_template, $va_matches)) {
+		if (preg_match_all("!\^([A-Za-z0-9_\.]+[^ \t\r\n\"\'<>\(\)\{\}\/,]*)!", $ps_template, $va_matches)) {
 			$va_tags = $va_matches[1];
 		}
 		
@@ -2170,5 +2200,80 @@ $ca_relationship_lookup_parse_cache = array();
 		}
 		return $vn_can_download;
 	}
-	# ------------------------------------------------------------------------------------------------
+	# ------------------------------------------------------------------
+	/**
+	 * Creates links to the appropriate editor (in Providence) or detail page (in Pawtucket) from supplied text and ids.
+	 * Used in SearchResult::get() and BundlableLabelableBaseModelWithAttributes::get() to automatically generate links when fetching
+	 * information from related tables.
+	 *
+	 * @param array $pa_text An array of strings to create links for
+	 * @param string $ps_table_name The name of the table/record to which the links refer
+	 * @param array $pa_row_ids Array of row_ids to link to. Values must correspond by index with those in $pa_text
+	 * @param string $ps_class Optional CSS class to apply to links
+	 *
+	 * @return array A list of HTML links
+	 */
+	function caCreateLinksFromText($pa_text, $ps_table_name, $pa_row_ids, $ps_class=null) {
+		if (!in_array(__CA_APP_TYPE__, array('PROVIDENCE', 'PAWTUCKET'))) { return $pa_text; }
+		if (__CA_APP_TYPE__ == 'PAWTUCKET') {
+			$o_config = Configuration::load();
+			if (!$o_config->get("allow_detail_for_{$ps_table_name}")) { return $pa_text; }
+		}
+		
+		// Parse template
+		$o_dom = new DOMDocument('1.0', 'utf-8');
+		libxml_use_internal_errors(true);								// don't reported mangled HTML errors
+		
+		
+		global $g_request;
+		if (!$g_request) { return $pa_text; }
+		
+		foreach($pa_text as $vn_i => $vs_text) {
+			$o_dom->loadHTML($vs_text);
+			libxml_clear_errors();
+			
+			$va_l_tags = array();
+			$o_links = $o_dom->getElementsByTagName("l");				// l=link
+		
+			foreach($o_links as $o_link) {
+				if (!$o_link) { continue; }
+				$vs_html = $o_dom->saveHTML($o_link);
+				$vs_content = preg_replace("!^<[^\>]+>!", "", $vs_html);
+				$vs_content = preg_replace("!<[^\>]+>$!", "", $vs_content);
+		
+				$va_l_tags[] = array('directive' => $vs_html, 'content' => $vs_content);
+			}
+			
+			if (sizeof($va_l_tags)) {
+				$vs_content = $vs_text;
+				foreach($va_l_tags as $va_l) {
+					switch(__CA_APP_TYPE__) {
+						case 'PROVIDENCE':
+							$vs_link_text= caEditorLink($g_request, $va_l['content'], $ps_class, $ps_table_name, $pa_row_ids[$vn_i]);
+							break;
+						case 'PAWTUCKET':
+							$vs_link_text= caDetailLink($g_request, $va_l['content'], $ps_class, $ps_table_name, $pa_row_ids[$vn_i]);
+							break;
+					}
+					
+					$vs_content = str_replace($va_l['directive'], $vs_link_text, $vs_content);
+				}
+				$va_links[] = $vs_content;
+			} else {
+				switch(__CA_APP_TYPE__) {
+					case 'PROVIDENCE':
+						$va_links[] = caEditorLink($g_request, $vs_text, $ps_class, $ps_table_name, $pa_row_ids[$vn_i]);
+						break;
+					case 'PAWTUCKET':
+						$va_links[] = caDetailLink($g_request, $vs_text, $ps_class, $ps_table_name, $pa_row_ids[$vn_i]);
+						break;
+					default:
+						$va_links[] = $vs_text;
+						break;
+				}
+			}
+		}
+		return $va_links;
+	}
+	# ------------------------------------------------------------------
 ?>

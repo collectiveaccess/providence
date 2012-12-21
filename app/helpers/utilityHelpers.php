@@ -1402,4 +1402,28 @@ function caFileIsIncludable($ps_file) {
 		return $va_proc_options;
 	}
 	# ---------------------------------------
+	/**
+	 * Removes from supplied array values that begin with binary (non-character) data. 
+	 * Arrays may be of any depth. 
+	 *
+	 * Note that function is of limited use outside of the case it was designed for: to remove binary entries from extracted EXIF metadata arrays.
+	 *
+	 * @param array $pa_array The array to sanitize
+	 * @param array $pa_options No options are currently supported
+	 * @return array The sanitized array
+	 */
+	function caSanitizeArray($pa_array, $pa_options=null) {
+		if (!is_array($pa_array)) { return array(); }
+		foreach($pa_array as $vn_k => $vm_v) {
+			if (is_array($vm_v)) {
+				$pa_array[$vn_k] = caSanitizeArray($vm_v);
+			} else {
+				if (!preg_match("!^[\p{L}\p{N}\p{P}]+!", $vm_v)) {
+					unset($pa_array[$vn_k]);
+				}
+			}
+		}
+		return $pa_array;
+	}
+	# ---------------------------------------
 ?>

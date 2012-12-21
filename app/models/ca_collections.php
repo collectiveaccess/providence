@@ -405,6 +405,7 @@ class ca_collections extends BundlableLabelableBaseModelWithAttributes implement
 	 		$va_labels = $this->getPreferredDisplayLabelsForIDs($va_collection_ids);
 	 		while($qr_res->nextRow()) {
 	 			$va_hiers[$vn_collection_id = $qr_res->get('collection_id')] = array(
+	 				'item_id' => $vn_collection_id,
 	 				'collection_id' => $vn_collection_id,
 	 				'name' => caProcessTemplateForIDs($vs_template, 'ca_collections', array($vn_collection_id)),
 	 				'hierarchy_id' => $vn_collection_id,
@@ -431,11 +432,13 @@ class ca_collections extends BundlableLabelableBaseModelWithAttributes implement
 			$va_children = $t_collection->getHierarchyChildren(null, array('idsOnly' => true));
 			$va_collection_hierarchy_root = array(
 				$t_collection->get($vs_hier_fld) => array(
+					'item_id' => $vn_pk,
 					'collection_id' => $vn_pk,
 					'name' => caProcessTemplateForIDs($vs_template, 'ca_collections', array($vn_pk)),
 					'hierarchy_id' => $vn_hier_id,
 					'children' => sizeof($va_children)
 				),
+				'item_id' => $vn_pk,
 				'collection_id' => $vn_pk,
 				'name' => $vs_label,
 				'hierarchy_id' => $vn_hier_id,

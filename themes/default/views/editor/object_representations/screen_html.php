@@ -46,7 +46,7 @@
 		
 			$va_form_elements = $t_object_representation->getBundleFormHTMLForScreen($this->request->getActionExtra(), array(
 									'request' => $this->request, 
-									'formName' => 'ObjectRepresentationEditorForm'));
+									'formName' => 'ObjectRepresentationEditorForm'), $va_bundle_list);
 			
 			print join("\n", $va_form_elements);
 			
@@ -57,3 +57,5 @@
 	</div>
 
 	<div class="editorBottomPadding"><!-- empty --></div>
+	
+	<?php print caEditorFieldList($va_bundle_list); ?>

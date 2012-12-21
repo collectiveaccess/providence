@@ -506,7 +506,7 @@ class ca_relationship_types extends BundlableLabelableBaseModelWithAttributes {
 		while ($qr_res->nextRow()) {
 			$vn_type_id = $qr_res->get('type_id');
 			//$va_hierarchies[$vn_type_id]['table_num'] = $qr_res->get('table_num');	
-			$va_hierarchies[$vn_type_id]['type_id'] = $vn_type_id;	
+			$va_hierarchies[$vn_type_id]['type_id'] = $va_hierarchies[$vn_type_id]['item_id'] = $vn_type_id;	
 			$va_hierarchies[$vn_type_id]['name'] = $va_relationship_tables[$qr_res->get('table_num')]['name'];	
 			
 			$qr_children = $o_db->query("
