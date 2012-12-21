@@ -785,8 +785,11 @@
 										foreach($va_values as $vn_id => $va_attribute_values) {
 											foreach($va_attribute_values as $vn_attribute_id => $va_data) {
 												if(isset($va_data[$va_tmp[2]])) {
-													if (!$vs_template) { $vs_template = "^".$va_tmp[2]; }
-													$va_subvalues[$vn_attribute_id] = caProcessTemplateForIDs($vs_template, $va_tmp[0], array($vn_row_id), array_merge($pa_options, array('returnAsArray' => false, 'placeholderPrefix' => $va_tmp[1])));
+													if ($vs_template) { 
+														$va_subvalues[$vn_attribute_id] = caProcessTemplateForIDs($vs_template, $va_tmp[0], array($vn_row_id), array_merge($pa_options, array('returnAsArray' => false, 'placeholderPrefix' => $va_tmp[1])));
+													} else {
+														$va_subvalues[$vn_attribute_id] = $va_data;
+													}
 												}
 											}
 										}
