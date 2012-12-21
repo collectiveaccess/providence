@@ -4654,6 +4654,9 @@ div.searchlight-results div.searchlight-selected {
 	display: none;
 	margin-top: 18px !important;
 }
+.olMap {
+	clear:left;
+}
 
 
 /* Type change */
