@@ -175,7 +175,7 @@ BaseModel::$s_ca_models_definitions['ca_collections'] =  array(
 				'FIELD_TYPE' => FT_NUMBER, 'DISPLAY_TYPE' => DT_SELECT, 
 				'DISPLAY_WIDTH' => 100, 'DISPLAY_HEIGHT' => 1,
 				'IS_NULL' => false, 
-				'DEFAULT' => 0,
+				'DEFAULT' => null,
 				'ALLOW_BUNDLE_ACCESS_CHECK' => true,
 				'BOUNDS_CHOICE_LIST' => array(
 					_t('Do not inherit access settings from parent') => 0,
@@ -327,6 +327,11 @@ class ca_collections extends BundlableLabelableBaseModelWithAttributes implement
 	#
 	# ------------------------------------------------------
 	public function __construct($pn_id=null) {
+		
+		if (!is_null(BaseModel::$s_ca_models_definitions['ca_collections']['FIELDS']['acl_inherit_from_parent']['DEFAULT'])) {
+			$o_config = Configuration::load();
+			BaseModel::$s_ca_models_definitions['ca_collections']['FIELDS']['acl_inherit_from_parent']['DEFAULT'] = (int)$o_config->get('ca_collections_acl_inherit_from_parent_default');
+		}
 		parent::__construct($pn_id);	# call superclass constructor
 	}
 	# ------------------------------------------------------
