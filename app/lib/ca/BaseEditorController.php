@@ -35,12 +35,11 @@
   */
  
  	require_once(__CA_MODELS_DIR__."/ca_editor_uis.php");
- 	require_once(__CA_MODELS_DIR__."/ca_attribute_values.php");
  	require_once(__CA_MODELS_DIR__."/ca_metadata_elements.php");
- 	require_once(__CA_MODELS_DIR__."/ca_bundle_mappings.php");
- 	require_once(__CA_MODELS_DIR__."/ca_bundle_displays.php");
  	require_once(__CA_MODELS_DIR__."/ca_attributes.php");
  	require_once(__CA_MODELS_DIR__."/ca_attribute_values.php");
+ 	require_once(__CA_MODELS_DIR__."/ca_bundle_mappings.php");
+ 	require_once(__CA_MODELS_DIR__."/ca_bundle_displays.php");
  	require_once(__CA_LIB_DIR__."/core/Datamodel.php");
  	require_once(__CA_LIB_DIR__."/ca/ApplicationPluginManager.php");
  	require_once(__CA_LIB_DIR__."/ca/ResultContext.php");
@@ -1119,7 +1118,7 @@
  			list($vn_subject_id, $t_subject, $t_ui) = $this->_initView($pa_options);
  			if (!$this->request->isLoggedIn()) { return array(); }
  			
- 			if (!$vn_type_id = $t_subject->getTypeID()) {
+ 			if (!($vn_type_id = $t_subject->getTypeID())) {
  				$vn_type_id = $this->request->getParameter($t_subject->getTypeFieldName(), pInteger);
  			}
  			$va_nav = $t_ui->getScreensAsNavConfigFragment($this->request, $vn_type_id, $pa_params['default']['module'], $pa_params['default']['controller'], $pa_params['default']['action'],
