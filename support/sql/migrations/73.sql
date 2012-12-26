@@ -4,6 +4,7 @@
 	Description:
 */
 
+/* --------------------------- Batch edit log --------------------------- */
 create table ca_batch_log
 (
    batch_id                       int unsigned              not null AUTO_INCREMENT,
@@ -34,6 +35,7 @@ create table ca_batch_log_items
     constraint fk_ca_change_log_log_id foreign key (log_id)
       references ca_change_log (log_id) on delete restrict on update restrict
 ) engine=innodb CHARACTER SET utf8 COLLATE utf8_general_ci;
+
 
 /* -------------------------------------------------------------------------------- */
 
