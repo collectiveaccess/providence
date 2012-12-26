@@ -81,6 +81,13 @@
 				<th class="list-header-unsorted">
 					<?php print _t('Status'); ?>
 				</th>
+				<?php
+	if (true) { 		// TODO: check that user has batch privs
+?>
+				<th class="{sorter: false} list-header-nosort">&nbsp;</th>
+<?php
+	}
+?>
 				<th class="{sorter: false} list-header-nosort">&nbsp;</th>
 			</tr>
 		</thead>
@@ -111,9 +118,19 @@
 				<td>
 					<?php print $t_set->getChoiceListValue('status', $va_set['status']); ?>
 				</td>
+<?php
+	if (true) { 		// TODO: check that user has batch privs
+?>
+				<td>
+<?php 
+					print caNavLink($this->request, _t('(B)'), '', 'batch', 'Editor', 'Edit', array('set_id' => $va_set['set_id']));
+?>
+				</td>
+<?php
+	}
+?>
 				<td width="50">
 					<?php print caNavButton($this->request, __CA_NAV_BUTTON_EDIT__, _t("Edit"), 'manage/sets', 'SetEditor', 'Edit', array('set_id' => $va_set['set_id']), array(), array('icon_position' => __CA_NAV_BUTTON_ICON_POS_LEFT__, 'use_class' => 'list-button', 'no_background' => true, 'dont_show_content' => true)); ?>
-					
 					<?php ($va_set['can_delete'] == TRUE) ? print caNavButton($this->request, __CA_NAV_BUTTON_DELETE__, _t("Delete"), 'manage/sets', 'SetEditor', 'Delete', array('set_id' => $va_set['set_id']), array(), array('icon_position' => __CA_NAV_BUTTON_ICON_POS_LEFT__, 'use_class' => 'list-button', 'no_background' => true, 'dont_show_content' => true)) : ''; ?>
 				</td>
 			</tr>

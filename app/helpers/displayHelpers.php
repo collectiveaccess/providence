@@ -1297,6 +1297,65 @@ require_once(__CA_LIB_DIR__.'/core/Parsers/TimeExpressionParser.php');
 	}
 	# ------------------------------------------------------------------------------------------------
 	/**
+	 * Generates standard-format inspector panels for editors
+	 *
+	 * @param View $po_view Inspector view object
+	 * @param array $pa_options Optional array of options. Supported options are:
+	 *		backText = a string to use as the "back" button text; default is "Results"
+	 *
+	 * @return string HTML implementing the inspector
+	 */
+	function caBatchEditorInspector($po_view, $pa_options=null) {
+		require_once(__CA_MODELS_DIR__.'/ca_sets.php');
+		
+		$t_set 				= $po_view->getVar('t_set');
+		$t_item 				= $po_view->getVar('t_item');
+		
+		$o_result_context		= $po_view->getVar('result_context');
+		$t_ui 					= $po_view->getVar('t_ui');
+		
+		$o_dm = Datamodel::load();
+	
+		// action extra to preserve currently open screen across next/previous links
+		//$vs_screen_extra 	= ($po_view->getVar('screen')) ? '/'.$po_view->getVar('screen') : '';
+		
+		$vs_buf = '<h3 class="nextPrevious">'.caNavLink($po_view->request, 'Back', '', 'manage', 'Set', 'ListSets')."</h3>\n";
+
+		$vs_color = null;
+		if ($t_type) { $vs_color = trim($t_type->get('color')); } 
+		if (!$vs_color && $t_ui) { $vs_color = trim($t_ui->get('color')); }
+		if (!$vs_color) { $vs_color = "444444"; }
+		
+		$vs_buf .= "<h4><div id='caColorbox' style='border: 6px solid #{$vs_color}; padding-bottom:15px;'>\n";
+		
+		
+		$vs_item_name_plural = $t_item->getProperty('NAME_PLURAL');
+		$vn_item_count = $t_set->getItemCount();
+		
+		$vs_buf .= "<strong>"._t("Batch editing %1 %2 in set", $vn_item_count, $vs_item_name_plural).": </strong>\n";
+		
+		
+		if (!($vs_label = $t_set->getLabelForDisplay())) {
+			if (!($vs_label = $t_set->get('set_code'))) {
+				$vs_label = '['._t('BLANK').']'; 
+			}
+		}
+	
+		
+		$vs_buf .= "<div style='width:190px; overflow:hidden;'>{$vs_watch}{$vs_label}"."<a title='$vs_idno'>".($vs_idno ? " ({$vs_idno})" : '')."</a></div>\n";
+
+		
+		// -------------------------------------------------------------------------------------
+	
+		
+		
+		$vs_buf .= "</div></h4>\n";
+		
+	
+		return $vs_buf;
+	}
+	# ------------------------------------------------------------------------------------------------
+	/**
 	  *
 	  */
 	function caFilterTableList($pa_tables) {
