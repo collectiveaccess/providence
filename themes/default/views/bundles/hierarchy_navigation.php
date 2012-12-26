@@ -36,6 +36,21 @@
 	$va_lookup_urls 	= caJSONLookupServiceUrl($this->request, $t_subject->tableName(), array('noInline' => 1));
 	
 	$pa_bundle_settings = $this->getVar('settings');
+	
+	if (in_array($t_subject->tableName(), array('ca_objects', 'ca_collections')) && (bool)$this->request->config->get('ca_objects_x_collections_hierarchy_enabled')) {
+		$va_lookup_urls = array(
+			'search' => caNavUrl($this->request, 'lookup', 'ObjectCollectionHierarchy', 'Get'),
+			'levelList' => caNavUrl($this->request, 'lookup', 'ObjectCollectionHierarchy', 'GetHierarchyLevel'),
+			'ancestorList' => caNavUrl($this->request, 'lookup', 'ObjectCollectionHierarchy', 'GetHierarchyAncestorList')
+		);
+		$vs_edit_url = caNavUrl($this->request, 'lookup', 'ObjectCollectionHierarchy', 'Edit').'/id/';
+		$vn_init_id = $t_subject->tableName()."-".$pn_id;
+	} else {
+		$va_lookup_urls 	= caJSONLookupServiceUrl($this->request, $t_subject->tableName(), array('noInline' => 1));
+		$vs_edit_url = caEditorUrl($this->request, $t_subject->tableName());
+		$vn_init_id = $pn_id;
+	}
+	
 ?>	
 	<div class="bundleContainer">
 		<div class="hierNav">
@@ -91,10 +106,10 @@
 				levelDataUrl: '<?php print $va_lookup_urls['levelList']; ?>',
 				initDataUrl: '<?php print $va_lookup_urls['ancestorList']; ?>',
 				readOnly: false,
-				initItemID: '<?php print $pn_id; ?>',
+				initItemID: '<?php print $vn_init_id; ?>',
 				indicatorUrl: '<?php print $this->request->getThemeUrlPath(); ?>/graphics/icons/indicator.gif',
 				
-				editUrl: '<?php print caEditorUrl($this->request, $t_subject->tableName()); ?>',
+				editUrl: '<?php print $vs_edit_url; ?>',
 				editButtonIcon: '<img src="<?php print $this->request->getThemeUrlPath(); ?>/graphics/buttons/arrow_grey_right.gif" border="0" title="Edit">',
 				
 				currentSelectionDisplayID: 'browseCurrentSelection'
