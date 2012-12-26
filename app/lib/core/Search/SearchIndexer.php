@@ -516,8 +516,8 @@ class SearchIndexer extends SearchBase {
 								$end_field = $va_field_list[$vs_field]['END'];
 								$pn_content = $pa_field_data[$start_field] . " - " .$pa_field_data[$end_field];
 							} else {
+								$va_content = array();
 								if (isset($va_field_list[$vs_field]['LIST_CODE']) && $va_field_list[$vs_field]['LIST_CODE']) {
-									$va_content = array();
 									// Is reference to list item so index preferred label values
 									$t_item = new ca_list_items((int)$pa_field_data[$vs_field]);
 									$va_labels = $t_item->getPreferredDisplayLabelsForIDs(array((int)$pa_field_data[$vs_field]), array('returnAllLocales' => true));
