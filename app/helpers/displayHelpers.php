@@ -1329,10 +1329,10 @@ require_once(__CA_LIB_DIR__.'/core/Parsers/TimeExpressionParser.php');
 		$vs_buf .= "<h4><div id='caColorbox' style='border: 6px solid #{$vs_color}; padding-bottom:15px;'>\n";
 		
 		
-		$vs_item_name_plural = $t_item->getProperty('NAME_PLURAL');
-		$vn_item_count = $t_set->getItemCount();
+		$vn_item_count = $t_set->getItemCount(array('user_id' => $po_view->request->getUserID()));
+		$vs_item_name = ($vn_item_count == 1) ? $t_item->getProperty("NAME_SINGULAR"): $t_item->getProperty("NAME_PLURAL");
 		
-		$vs_buf .= "<strong>"._t("Batch editing %1 %2 in set", $vn_item_count, $vs_item_name_plural).": </strong>\n";
+		$vs_buf .= "<strong>"._t("Batch editing %1 %2 in set", $vn_item_count, $vs_item_name).": </strong>\n";
 		
 		
 		if (!($vs_label = $t_set->getLabelForDisplay())) {
