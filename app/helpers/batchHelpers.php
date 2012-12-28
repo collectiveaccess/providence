@@ -92,4 +92,84 @@
 		return $vs_buf;
 	}
 	# ---------------------------------------
+	/**
+	 * 
+	 */
+	function caBatchEditorNonPreferredLabelsModeControl($t_item, $ps_id_prefix) {
+		$vs_buf = "	<div class='editorBatchModeControl'>"._t("In batch")." ".
+			caHTMLSelect($ps_id_prefix."_batch_mode", array(
+			_t("do not use") => "_disabled_", 
+			_t('add to each item') => '_add_', 
+			_t('replace value') => '_replace_',
+			_t('remove all values') => '_delete_'
+		), array('id' => $ps_id_prefix.'Labels_batch_mode_select'))."</div>\n
+
+	<script type=\"text/javascript\">
+		jQuery(document).ready(function() {
+			jQuery('#".$ps_id_prefix."Labels_batch_mode_select').change(function() {
+				if ((jQuery(this).val() == '_disabled_') || (jQuery(this).val() == '_delete_')) {
+					jQuery('#".$ps_id_prefix."Labels').slideUp(250);
+				} else {
+					jQuery('#".$ps_id_prefix."Labels').slideDown(250);
+				}
+			});
+			jQuery('#".$ps_id_prefix."Labels').hide();
+		});
+	</script>\n";
+	
+		return $vs_buf;
+	}
+	# ---------------------------------------
+	/**
+	 * 
+	 */
+	function caBatchEditorIntrinsicModeControl($t_item, $ps_bundle_name) {
+		$vs_buf = "<div class='editorBatchModeControl'>"._t("In batch")." ".
+			caHTMLSelect("{$ps_bundle_name}_batch_mode", array(
+				_t("do not use") => "_disabled_", 
+				_t('set for each item') => '_replace_'
+		), array("id" => "{$ps_bundle_name}_batch_mode_select"))."</div>\n
+	<script type=\"text/javascript\">
+		jQuery(document).ready(function() {
+			jQuery('#{$ps_bundle_name}_batch_mode_select').change(function() {
+				if (jQuery(this).val() == '_disabled_') {
+					jQuery('#{$ps_bundle_name}').slideUp(250);
+				} else {
+					jQuery('#{$ps_bundle_name}').slideDown(250);
+				}
+			});
+			jQuery('#{$ps_bundle_name}').hide();
+		});
+	</script>\n";
+	
+		return $vs_buf;
+	}
+	# ---------------------------------------
+	/**
+	 * 
+	 */
+	function caBatchEditorAttributeModeControl($ps_id_prefix) {
+		$vs_buf = "<div class='editorBatchModeControl'>"._t("In batch")." ".
+			caHTMLSelect("{$ps_id_prefix}_batch_mode", array(
+				_t("do not use") => "_disabled_", 
+				_t('add to each item') => '_add_', 
+				_t('replace values') => '_replace_',
+				_t('remove all values') => '_delete_'
+			), array('id' => "{$ps_id_prefix}_batch_mode_select"))."</div>\n
+	<script type=\"text/javascript\">
+		jQuery(document).ready(function() {
+			jQuery('#{$ps_id_prefix}_batch_mode_select').change(function() {
+				if ((jQuery(this).val() == '_disabled_') || (jQuery(this).val() == '_delete_')) {
+					jQuery('#{$ps_id_prefix}').slideUp(250);
+				} else {
+					jQuery('#{$ps_id_prefix}').slideDown(250);
+				}
+			});
+			jQuery('#{$ps_id_prefix}').hide();
+		});
+	</script>";
+	
+		return $vs_buf;
+	}
+	# ---------------------------------------
 ?>

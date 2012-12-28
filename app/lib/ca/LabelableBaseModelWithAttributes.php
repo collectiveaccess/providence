@@ -207,9 +207,14 @@
  		}
 		# ------------------------------------------------------------------
 		/**
-		 * Remove all labels, preferred and non-preferred, attached to this row
+		 * Remove all labels attached to this row. By default both preferred and non-preferred are removed.
+		 * The $pn_mode parameter can be used to restrict removal to preferred or non-preferred if needed.
+		 *
+		 * @param int $pn_mode Set to __CA_LABEL_TYPE_PREFERRED__ or __CA_LABEL_TYPE_NONPREFERRED__ to restrict removal. Default is __CA_LABEL_TYPE_ANY__ (no restriction)
+		 *
+		 * @return bool True on success, false on error
 		 */
- 		public function removeAllLabels() {
+ 		public function removeAllLabels($pn_mode=__CA_LABEL_TYPE_ANY__) {
  			if (!$this->getPrimaryKey()) { return null; }
  			
  			if (!($t_label = $this->_DATAMODEL->getInstanceByTableName($this->getLabelTableName()))) { return null; }
@@ -217,14 +222,26 @@
 				$t_label->setTransaction($this->getTransaction());
 			}
  			
+ 			$vb_ret = true;
  			$va_labels = $this->getLabels();
  			foreach($va_labels as $vn_id => $va_labels_by_locale) {
  				foreach($va_labels_by_locale as $vn_locale_id => $va_labels) {
  					foreach($va_labels as $vn_i => $va_label) {
- 						$this->removeLabel($va_label['label_id']);
+ 						if (isset($va_label['is_preferred'])) {
+							switch($pn_mode) {
+								case __CA_LABEL_TYPE_PREFERRED__:
+									if (!(bool)$va_label['is_preferred']) { continue(2); }
+									break;
+								case __CA_LABEL_TYPE_NONPREFERRED__:
+									if ((bool)$va_label['is_preferred']) { continue(2); }
+									break;
+							}
+						}
+ 						$vb_ret &= $this->removeLabel($va_label['label_id']);
  					}
  				}
  			}
+ 			return $vb_ret;
  		}
  		# ------------------------------------------------------------------
 		/**
@@ -1289,6 +1306,7 @@
 			
 			$o_view->setVar('new_labels', $va_new_labels_to_force_due_to_error);
 			$o_view->setVar('label_initial_values', $va_inital_values);
+			$o_view->setVar('batch', (bool)(isset($pa_options['batch']) && $pa_options['batch']));
 			
 			return $o_view->render($this->getLabelTableName().'_nonpreferred.php');
 		}

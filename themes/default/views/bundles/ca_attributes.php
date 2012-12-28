@@ -112,27 +112,7 @@
 	}
 	
 	if ($vb_batch) {
-		print "<div class='editorBatchModeControl'>"._t("In batch")." ".
-			caHTMLSelect("{$vs_id_prefix}_batch_mode", array(
-				_t("do not use") => "_disabled_", 
-				_t('add to each item') => '_add_', 
-				_t('replace values') => '_replace_',
-				_t('remove all values') => '_delete_'
-			), array('id' => "{$vs_id_prefix}_batch_mode_select"))."</div>\n";
-?>
-	<script type="text/javascript">
-		jQuery(document).ready(function() {
-			jQuery('#<?php print $vs_id_prefix; ?>_batch_mode_select').change(function() {
-				if ((jQuery(this).val() == '_disabled_') || (jQuery(this).val() == '_delete_')) {
-					jQuery('#<?php print $vs_id_prefix; ?>').slideUp(250);
-				} else {
-					jQuery('#<?php print $vs_id_prefix; ?>').slideDown(250);
-				}
-			});
-			jQuery('#<?php print $vs_id_prefix; ?>').hide();
-		});
-	</script>
-<?php
+		print caBatchEditorAttributeModeControl($vs_id_prefix);
 	}
 ?>
 <div id="<?php print $vs_id_prefix; ?>">

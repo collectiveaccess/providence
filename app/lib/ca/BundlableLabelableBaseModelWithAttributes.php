@@ -2371,7 +2371,7 @@ class BundlableLabelableBaseModelWithAttributes extends LabelableBaseModelWithAt
 					if (preg_match('/'.$vs_placement_code.$vs_form_prefix.'_attribute_'.$vn_element_id.'_([\w\d\-_]+)_new_([\d]+)/', $vs_key, $va_matches)) { 
 						if ($vb_batch) {
 							switch($vs_batch_mode) {
-								case '_disable_':		// skip
+								case '_disabled_':		// skip
 									continue;
 									break;
 								case '_add_':			// just try to add attribute as in normal non-batch save
@@ -2383,7 +2383,6 @@ class BundlableLabelableBaseModelWithAttributes extends LabelableBaseModelWithAt
 									break;
 							}
 						}
-						
 						
 						$vn_c = intval($va_matches[2]);
 						// yep - grab the locale and value
@@ -2698,16 +2697,38 @@ if (!$vb_batch) {
 						}
 					}
 				}
-}				
-				// check for new labels to add
+			}		
+}		
+			// check for new labels to add
+			foreach($va_fields_by_type['nonpreferred_label'] as $vs_placement_code => $vs_f) {
+				if ($vb_batch) {
+					$vs_batch_mode = $po_request->getParameter($vs_placement_code.$vs_form_prefix.'_NPref_batch_mode', pString);
+			
+					switch($vs_batch_mode) {
+						case '_disabled_':		// skip
+							continue(2);
+							break;
+						case '_add_':			// just try to add attribute as in normal non-batch save
+							// noop
+							break;
+						case '_replace_':		// remove all existing nonpreferred labels before trying to save
+							$this->removeAllLabels(__CA_LABEL_TYPE_NONPREFERRED__);
+							continue;
+						case '_delete_':		// remove all existing nonpreferred labels
+							$this->removeAllLabels(__CA_LABEL_TYPE_NONPREFERRED__);
+							continue(2);
+							break;
+					}
+				}
+				
 				foreach($_REQUEST as $vs_key => $vs_value ) {
-					if (!preg_match('/'.$vs_placement_code.$vs_form_prefix.'_NPref'.'locale_id_new_([\d]+)/', $vs_key, $va_matches)) { continue; }
+					if (!preg_match('/^'.$vs_placement_code.$vs_form_prefix.'_NPref'.'locale_id_new_([\d]+)/', $vs_key, $va_matches)) { continue; }
 					$vn_c = intval($va_matches[1]);
 					if ($vn_new_label_locale_id = $po_request->getParameter($vs_placement_code.$vs_form_prefix.'_NPref'.'locale_id_new_'.$vn_c, pString)) {
 						if (is_array($va_label_values = $this->getLabelUIValuesFromRequest($po_request, $vs_placement_code.$vs_form_prefix, 'new_'.$vn_c, false))) {
 							$vn_new_label_type_id = $po_request->getParameter($vs_placement_code.$vs_form_prefix.'_NPref'.'type_id_new_'.$vn_c, pInteger);
 							$this->addLabel($va_label_values, $vn_new_label_locale_id, $vn_new_label_type_id, false);	
-							
+						
 							if ($this->numErrors()) {
 								$po_request->addActionErrors($this->errors(), $vs_f);
 							}
@@ -2790,7 +2811,7 @@ if (!$vb_batch) {
 						if ($vb_batch) {
 							$vs_batch_mode = $_REQUEST[$vs_prefix_stub.'batch_mode'];
 	
-							if ($vs_batch_mode == '_disable_') { break;}
+							if ($vs_batch_mode == '_disabled_') { break;}
 							if ($vs_batch_mode == '_replace_') { $this->removeAllRepresentations();}
 							if ($vs_batch_mode == '_delete_') { $this->removeAllRepresentations(); break; }
 						}
@@ -2897,7 +2918,7 @@ if (!$vb_batch) {
 						if ($vb_batch) {
 							$vs_batch_mode = $_REQUEST[$vs_form_prefix.'_ca_sets_batch_mode'];
 	
-							if ($vs_batch_mode == '_disable_') { break;}
+							if ($vs_batch_mode == '_disabled_') { break;}
 							if ($vs_batch_mode == '_replace_') { $t_set->removeItemFromAllSets($this->tableNum(), $this->getPrimaryKey());}
 							if ($vs_batch_mode == '_delete_') { $t_set->removeItemFromAllSets($this->tableNum(), $this->getPrimaryKey()); break; }
 						}	
@@ -3288,7 +3309,7 @@ if (!$vb_batch) {
  		// check for new relations to add
  		if ($vb_batch) {
 			$vs_batch_mode = $_REQUEST[$ps_form_prefix.'_'.$ps_bundlename.'_batch_mode'];
- 			if ($vb_batch_mode == '_disable_') { return true; }
+ 			if ($vb_batch_mode == '_disabled_') { return true; }
 			if ($vs_batch_mode == '_delete_') {				// remove all relationships and return
 				$this->removeRelationships($ps_bundlename);
 				return true;

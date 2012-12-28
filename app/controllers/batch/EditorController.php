@@ -69,6 +69,17 @@
  		public function Edit($pa_values=null, $pa_options=null) {
  			list($vn_set_id, $t_set, $t_subject, $t_ui) = $this->_initView($pa_options);
  			
+ 			if (!$vn_set_id) { 
+ 				$this->response->setRedirect($this->request->config->get('error_display_url').'/n/3200?r='.urlencode($this->request->getFullUrlPath()));
+ 				return;
+ 			}
+ 			
+ 			// Can user batch edit this table?
+ 			if (!$this->request->user->canDoAction('can_batch_edit_'.$t_set->getAppDatamodel()->getTableName($t_set->get('table_num')))) {
+ 				$this->response->setRedirect($this->request->config->get('error_display_url').'/n/3210?r='.urlencode($this->request->getFullUrlPath()));
+ 				return;
+ 			}
+ 			
  			$va_nav = $t_ui->getScreensAsNavConfigFragment($this->request, $vn_type_id, $this->request->getModulePath(), $this->request->getController(), $this->request->getAction(),
 				array(),
 				array()
@@ -90,15 +101,52 @@
  			if (!is_array($pa_options)) { $pa_options = array(); }
  			list($vn_set_id, $t_set, $t_subject, $t_ui) = $this->_initView($pa_options);
  			
+ 			if (!$vn_set_id) { 
+ 				$this->response->setRedirect($this->request->config->get('error_display_url').'/n/3200?r='.urlencode($this->request->getFullUrlPath()));
+ 				return;
+ 			}
+ 			
+ 			// Can user batch edit this table?
+ 			if (!$this->request->user->canDoAction('can_batch_edit_'.$t_set->getAppDatamodel()->getTableName($t_set->get('table_num')))) {
+ 				$this->response->setRedirect($this->request->config->get('error_display_url').'/n/3210?r='.urlencode($this->request->getFullUrlPath()));
+ 				return;
+ 			}
+ 			
  			$va_row_ids = $t_set->getItemRowIDs();
  			$vn_num_items = sizeof($va_row_ids);
  			$va_errors = array();
  			$va_save_opts = array('batch' => true, 'existingRepresentationMap' => array());
  			
+ 			if ($vb_perform_type_access_checking = (bool)$t_subject->getAppConfig()->get('perform_type_access_checking')) {
+ 				$va_restrict_to_types = caGetTypeRestrictionsForUser($this->ops_table_name, array('access' => __CA_BUNDLE_ACCESS_EDIT__));
+ 			}
+ 			$vb_perform_item_level_access_checking = (bool)$t_subject->getAppConfig()->get('perform_item_level_access_checking');
+ 			
  			$o_trans = new Transaction();
  			foreach(array_keys($va_row_ids) as $vn_row_id) {
  				$t_subject->setTransaction($o_trans);
- 				if ($t_subject->load($vn_row_id)) {
+ 				if ($t_subject->load($vn_row_id)) {						
+					//
+					// Is record deleted?
+					//
+					if ($t_subject->hasField('deleted') && $t_subject->get('deleted')) { 
+						continue;		// skip
+					}
+				
+					//
+					// Is record of correct type?
+					//
+					if (($vb_perform_type_access_checking) && (is_array($va_restrict_to_types) && !in_array($t_subject->get('type_id'), $va_restrict_to_types))) {
+						continue;		// skip
+					}
+							
+					//
+					// Does user have access to row?
+					//
+					if (($vb_perform_item_level_access_checking) && ($t_subject->checkACLAccessForUser($this->request->user) == __CA_ACL_READ_WRITE_ACCESS__)) {
+						continue;		// skip
+					}
+ 					
  					$vs_screen = $this->request->getActionExtra();
  					
  					// TODO: call plugins beforeBatchItemSave
@@ -143,12 +191,12 @@
  			
  			if (!$vn_set_id || !$t_set->load($vn_set_id)) {
  				// Bad set id
- 				die("Invalid set_id");
+ 				return array(null, null, null, null);
  			}
  			
  			// Does user have access to set?
  			if (!$t_set->haveAccessToSet($this->request->getUserID(), __CA_SET_READ_ACCESS__)) {
- 				die("You don't have access to the set");
+ 				return array(null, null, null, null);
  			}
  			
  			
