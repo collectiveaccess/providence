@@ -34,6 +34,7 @@
   *
   */
  
+ 	require_once(__CA_APP_DIR__."/helpers/batchHelpers.php");
  	require_once(__CA_MODELS_DIR__."/ca_sets.php");
  	require_once(__CA_MODELS_DIR__."/ca_editor_uis.php");
  	require_once(__CA_LIB_DIR__."/core/Datamodel.php");
@@ -89,7 +90,38 @@
  			if (!is_array($pa_options)) { $pa_options = array(); }
  			list($vn_set_id, $t_set, $t_subject, $t_ui) = $this->_initView($pa_options);
  			
- 			print_R($_REQUEST);
+ 			$va_row_ids = $t_set->getItemRowIDs();
+ 			$vn_num_items = sizeof($va_row_ids);
+ 			$va_errors = array();
+ 			$va_save_opts = array('batch' => true, 'existingRepresentationMap' => array());
+ 			
+ 			$o_trans = new Transaction();
+ 			foreach(array_keys($va_row_ids) as $vn_row_id) {
+ 				$t_subject->setTransaction($o_trans);
+ 				if ($t_subject->load($vn_row_id)) {
+ 					$vs_screen = $this->request->getActionExtra();
+ 					
+ 					// TODO: call plugins beforeBatchItemSave
+ 					$t_subject->saveBundlesForScreen($vs_screen, $this->request, $va_save_opts);
+ 					// TODO: call plugins beforeAfterItemSave
+ 					
+ 					if ($t_subject->numErrors()) {
+ 						//print_R($t_subject->getErrors());
+ 						$va_errors[$t_subject->getPrimaryKey()] = $t_subject->errors();
+					}
+				}
+			}
+			
+ 			$vn_num_errors = sizeof($va_errors);
+ 			if($vn_num_errors) {
+ 				$this->notification->addNotification(($vn_num_errors == 1) ? _t('There was %1 error while processing the batch', $vn_num_errors) : _t('There were %1 errors while processing the batch', $vn_num_errors), __NOTIFICATION_TYPE_ERROR__);
+ 				$o_trans->rollback();
+ 			} else {
+ 				$this->notification->addNotification(_t('Saved changes to %1 %2 in set', $vn_num_items, $t_subject->getProperty(($vn_num_items == 1) ? 'NAME_SINGULAR' : 'NAME_PLURAL')), __NOTIFICATION_TYPE_INFO__);
+ 				$o_trans->commit();
+ 			}
+ 			
+			$t_subject->clear();
  			
  			$this->render('screen_html.php');
  		}

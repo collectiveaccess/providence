@@ -2068,6 +2068,22 @@ table.attributeListItem {
 
 
 /*** EDITOR FORMS ***/
+
+.editorBatchModeControl {
+	float: right;
+	font-size: 10px;
+	font-weight: normal;
+}
+
+.editorBatchBundleContent {
+	display: none;
+}
+
+.editorBatchModeControl select {
+	font-size: 10px;
+	font-weight: normal;
+}
+
 #editorFieldListHeader {
 	font-size: 13px;
 	font-weight: bold;

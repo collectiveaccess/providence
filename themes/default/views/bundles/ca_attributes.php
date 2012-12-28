@@ -46,6 +46,7 @@
 	
 	$va_settings 				= 	$this->getVar('settings');
 	$vb_read_only				=	((isset($va_settings['readonly']) && $va_settings['readonly'])  || ($this->request->user->getBundleAccessLevel($this->getVar('t_instance')->tableName(), $this->getVar('element_code')) == __CA_BUNDLE_ACCESS_READONLY__));
+	$vb_batch					=	$this->getVar('batch');
 	
 	// generate list of inital form values; the bundle Javascript call will
 	// use the template to generate the initial form
@@ -110,8 +111,29 @@
 		$vs_add_label = _t("Add %1", mb_strtolower($vs_element_set_label, 'UTF-8'));
 	}
 	
-	//print "Min/max: ".$this->getVar('min_num_repeats')."/".$this->getVar('max_num_repeats');
-	//print "start: " .$this->getVar('min_num_to_display');
+	if ($vb_batch) {
+		print "<div class='editorBatchModeControl'>"._t("In batch")." ".
+			caHTMLSelect("{$vs_id_prefix}_batch_mode", array(
+				_t("do not use") => "_disabled_", 
+				_t('add to each item') => '_add_', 
+				_t('replace values') => '_replace_',
+				_t('remove all values') => '_delete_'
+			), array('id' => "{$vs_id_prefix}_batch_mode_select"))."</div>\n";
+?>
+	<script type="text/javascript">
+		jQuery(document).ready(function() {
+			jQuery('#<?php print $vs_id_prefix; ?>_batch_mode_select').change(function() {
+				if ((jQuery(this).val() == '_disabled_') || (jQuery(this).val() == '_delete_')) {
+					jQuery('#<?php print $vs_id_prefix; ?>').slideUp(250);
+				} else {
+					jQuery('#<?php print $vs_id_prefix; ?>').slideDown(250);
+				}
+			});
+			jQuery('#<?php print $vs_id_prefix; ?>').hide();
+		});
+	</script>
+<?php
+	}
 ?>
 <div id="<?php print $vs_id_prefix; ?>">
 <?php

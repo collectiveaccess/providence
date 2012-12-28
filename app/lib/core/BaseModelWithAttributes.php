@@ -1045,6 +1045,8 @@
 			if (!is_array($pa_options)) { $pa_options = array(); }
 			if (!is_array($pa_bundle_settings)) { $pa_bundle_settings = array(); }
 			
+			$vb_batch = (isset($pa_options['batch']) && $pa_options['batch']) ? true : false;
+			
 			if (!($t_element = $this->_getElementInstance($pm_element_code_or_id))) {
 				return false;
 			}
@@ -1146,9 +1148,10 @@
 			$o_view->setVar('render_mode', $t_element->getSetting('render'));	// only set for list attributes (as of 26 Sept 2010 at least)
 			
 			if ($t_restriction = $this->getTypeRestrictionInstance($t_element->get('element_id'))) {
-				$o_view->setVar('min_num_repeats', $t_restriction->getSetting('minAttributesPerRow'));
-				$o_view->setVar('max_num_repeats', $t_restriction->getSetting('maxAttributesPerRow'));
-				$o_view->setVar('min_num_to_display', $t_restriction->getSetting('minimumAttributeBundlesToDisplay'));
+				// If batch mode force repeats to unbounded and minimums to zero
+				$o_view->setVar('min_num_repeats', $vb_batch ? 0 : $t_restriction->getSetting('minAttributesPerRow'));
+				$o_view->setVar('max_num_repeats', $vb_batch  ? 9999 : $t_restriction->getSetting('maxAttributesPerRow'));
+				$o_view->setVar('min_num_to_display', $vb_batch ? 0 : $t_restriction->getSetting('minimumAttributeBundlesToDisplay'));
 			}
 			
 			// these are lists of associative arrays representing attributes that were rejected in a save() action
@@ -1165,6 +1168,9 @@
 			
 			// pass bundle settings to view
 			$o_view->setVar('settings', $pa_bundle_settings);
+			
+			// Is this being used in the batch editor?
+			$o_view->setVar('batch', (bool)(isset($pa_options['batch']) && $pa_options['batch']));
 			
 			return $o_view->render('ca_attributes.php');
 		}

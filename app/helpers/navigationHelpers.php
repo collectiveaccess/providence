@@ -59,6 +59,7 @@
  	define('__CA_NAV_BUTTON_OVERVIEW__', 20);
  	define('__CA_NAV_BUTTON_PAN__', 21);
  	define('__CA_NAV_BUTTON_CHANGE__', 22);
+ 	define('__CA_NAV_BUTTON_BATCH_EDIT__', 23);
  		
  	define('__CA_NAV_BUTTON_ICON_POS_LEFT__', 0);
  	define('__CA_NAV_BUTTON_ICON_POS_RIGHT__', 1);
@@ -472,6 +473,9 @@
 				break;
 			case __CA_NAV_BUTTON_EDIT__:
 				$vs_img_name = 'edit';
+				break;
+			case __CA_NAV_BUTTON_BATCH_EDIT__:
+				$vs_img_name = 'batch_edit';
 				break;
 			case __CA_NAV_BUTTON_ALERT__:
 				$vs_img_name = 'alert';

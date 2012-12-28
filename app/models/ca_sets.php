@@ -92,9 +92,10 @@ BaseModel::$s_ca_models_definitions['ca_sets'] = array(
 					_t('Occurrences') => 67,
 					_t('Collections') => 13,
 					_t('Storage locations') => 89,
-					_t('Object representations') => 56
-				),
-				'BOUNDS_LENGTH' => array(1,100)
+					_t('Object representations') => 56,
+					_t('Loans') => 133,
+					_t('Movements') => 137
+				)
 		),
 		'type_id' => array(
 				'FIELD_TYPE' => FT_NUMBER, 'DISPLAY_TYPE' => DT_SELECT, 
@@ -961,7 +962,7 @@ class ca_sets extends BundlableLabelableBaseModelWithAttributes implements IBund
 	}
 	# ------------------------------------------------------
 	/**
-	 * Removes all instances of the specified item from the set as specified by the row_id
+	 * Removes all instances of the specified set item from the set as specified by the row_id
 	 *
 	 * @param int $pn_row_id The row_id of the item to remove
 	 * @param int $pn_user_id Option user_id of user to check set access for; if no user_id is specified then no access checking is done
@@ -984,7 +985,7 @@ class ca_sets extends BundlableLabelableBaseModelWithAttributes implements IBund
 	}
 	# ------------------------------------------------------
 	/**
-	 * Removes the specified item from the set as specified by the item_id
+	 * Removes the specified set item from the set as specified by the item_id
 	 *
 	 * @param int $pn_item_id The item_id of the ca_set_items row in the set
 	 * @param int $pn_user_id Option user_id of user to check set access for; if no user_id is specified then no access checking is done
@@ -1005,6 +1006,36 @@ class ca_sets extends BundlableLabelableBaseModelWithAttributes implements IBund
 			return true;
 		}
 		return true;
+	}
+	# ------------------------------------------------------
+	/**
+	 * Removes the specified set item as specified by row_id from all sets in which it is a member.
+	 *
+	 * @param mixed $pm_table_name_or_num Name or number of table
+	 * @param int $pn_row_id The row_id of the item to remove from sets
+	 * @param int $pn_user_id Option user_id of user to check set access for; if no user_id is specified then no access checking is done
+	 * @return bool True on success, false if item was not removed from one or more sets due to error or access restrictions
+	 */
+	public function removeItemFromAllSets($pm_table_name_or_num, $pn_row_id, $pn_user_id=null) {
+		if (!($vn_table_num = $this->_getTableNum($pm_table_name_or_num))) { return null; }
+		
+		$t_item = new ca_set_items();
+		$t_item->setMode(ACCESS_WRITE);
+		
+		$va_set_ids = $this->getSetIDsForItem($vn_table_num, $pn_row_id);
+		$vb_skipped = false;
+		foreach($va_set_ids as $vn_set_id) {
+			if ($pn_user_id && (!$t_set->haveAccessToSet($pn_user_id, __CA_SET_EDIT_ACCESS__, $vn_set_id))) { $vb_skipped = true; continue; }
+			
+			if ($t_item->load(array('set_id' => $vn_set_id, 'row_id' => $pn_row_id))) {
+				$t_item->delete(true);
+				if ($t_item->numErrors()) {
+					$this->errors = $t_item->errors;
+					return false;
+				}
+			}	
+		}
+		return !$vb_skipped;
 	}
 	# ------------------------------------------------------
 	/**
@@ -1472,6 +1503,8 @@ LEFT JOIN ca_object_representations AS cor ON coxor.representation_id = cor.repr
  			$vn_i++;
  		}
  		$o_view->setVar('initial_values', $va_initial_values);
+ 		
+ 		$o_view->setVar('batch', (bool)(isset($pa_options['batch']) && $pa_options['batch']));
  		
 		return $o_view->render('ca_sets.php');
 	}

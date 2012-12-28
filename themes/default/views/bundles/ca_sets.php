@@ -39,9 +39,14 @@
 	$va_settings 				= $this->getVar('settings');
 	$va_initial_values 			= $this->getVar('initial_values');
 	
-	$vb_read_only		=	(isset($va_settings['readonly']) && $va_settings['readonly']);
+	$vb_read_only				= (isset($va_settings['readonly']) && $va_settings['readonly']);
+	$vb_batch					= $this->getVar('batch');
 
 	$va_errors = array();
+	
+	if ($vb_batch) {
+		print caBatchEditorSetsModeControl($vn_table_num, $vs_id_prefix);
+	}
 ?>
 <div id="<?php print $vs_id_prefix.$vn_table_num.'_sets'; ?>">
 <?php

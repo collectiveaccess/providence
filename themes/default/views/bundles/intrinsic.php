@@ -31,6 +31,7 @@
  	$va_settings 			= $this->getVar('settings');
  	$t_instance				= $this->getVar('t_instance');
  	$vs_bundle_name 		= $this->getVar('bundle_name');
+ 	$vb_batch				= $this->getVar('batch');
  	
  	$va_errors = array();
  	if(is_array($va_action_errors = $this->getVar('errors'))) {
@@ -38,6 +39,27 @@
  			$va_errors[] = $o_error->getErrorDescription();
  		}
  	}
+ 	if ($vb_batch) {
+		print "<div class='editorBatchModeControl'>"._t("In batch")." ".
+			caHTMLSelect("{$vs_bundle_name}_batch_mode", array(
+				_t("do not use") => "_disabled_", 
+				_t('set for each item') => '_replace_'
+		), array("id" => "{$vs_bundle_name}_batch_mode_select"))."</div>\n";
+?>
+	<script type="text/javascript">
+		jQuery(document).ready(function() {
+			jQuery('#<?php print $vs_bundle_name; ?>_batch_mode_select').change(function() {
+				if (jQuery(this).val() == '_disabled_') {
+					jQuery('#<?php print $vs_bundle_name; ?>').slideUp(250);
+				} else {
+					jQuery('#<?php print $vs_bundle_name; ?>').slideDown(250);
+				}
+			});
+			jQuery('#<?php print $vs_bundle_name; ?>').hide();
+		});
+	</script>
+<?php
+	}
 ?>
 
 	<div>
@@ -50,7 +72,7 @@
 <?php
 	} else {
 ?>
-		<div class="bundleContainer">
+		<div class="bundleContainer" id="<?php print $vs_bundle_name; ?>">
 			<div class="caItemList">
 				<div class="labelInfo">	
 <?php
@@ -73,8 +95,7 @@
 ?>
 					<br style="clear: both;"/>
 <?php
-	}
-	
+	}	
 	if (isset($va_settings['forACLAccessScreen']) && $va_settings['forACLAccessScreen']) {
 ?>
 		</p>

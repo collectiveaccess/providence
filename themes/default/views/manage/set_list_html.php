@@ -81,13 +81,6 @@
 				<th class="list-header-unsorted">
 					<?php print _t('Status'); ?>
 				</th>
-				<?php
-	if (true) { 		// TODO: check that user has batch privs
-?>
-				<th class="{sorter: false} list-header-nosort">&nbsp;</th>
-<?php
-	}
-?>
 				<th class="{sorter: false} list-header-nosort">&nbsp;</th>
 			</tr>
 		</thead>
@@ -106,8 +99,16 @@
 				<td>
 					<?php print $va_set['set_type']; ?>
 				</td>
-				<td>
-					<?php print $va_set['item_count']; ?>
+				<td align="center">
+<?php 
+					
+					if ($this->request->user->canDoAction('can_batch_edit_'.$t_set->getAppDatamodel()->getTableName($va_set['table_num']))) {
+						print $va_set['item_count']; 
+						print caNavButton($this->request, __CA_NAV_BUTTON_BATCH_EDIT__, _t('Batch edit'), 'batch', 'Editor', 'Edit', array('set_id' => $va_set['set_id']), array(), array('icon_position' => __CA_NAV_BUTTON_ICON_POS_LEFT__, 'use_class' => 'list-button', 'no_background' => true, 'dont_show_content' => true));
+					} else {
+						print $va_set['item_count']; 
+					}
+?>
 				</td>
 				<td>
 					<?php print $va_set['fname'].' '.$va_set['lname'].($va_set['email'] ? "<br/>(<a href='mailto:".$va_set['email']."'>".$va_set['email']."</a>)" : ""); ?>
@@ -118,17 +119,6 @@
 				<td>
 					<?php print $t_set->getChoiceListValue('status', $va_set['status']); ?>
 				</td>
-<?php
-	if (true) { 		// TODO: check that user has batch privs
-?>
-				<td>
-<?php 
-					print caNavLink($this->request, _t('(B)'), '', 'batch', 'Editor', 'Edit', array('set_id' => $va_set['set_id']));
-?>
-				</td>
-<?php
-	}
-?>
 				<td width="50">
 					<?php print caNavButton($this->request, __CA_NAV_BUTTON_EDIT__, _t("Edit"), 'manage/sets', 'SetEditor', 'Edit', array('set_id' => $va_set['set_id']), array(), array('icon_position' => __CA_NAV_BUTTON_ICON_POS_LEFT__, 'use_class' => 'list-button', 'no_background' => true, 'dont_show_content' => true)); ?>
 					<?php ($va_set['can_delete'] == TRUE) ? print caNavButton($this->request, __CA_NAV_BUTTON_DELETE__, _t("Delete"), 'manage/sets', 'SetEditor', 'Delete', array('set_id' => $va_set['set_id']), array(), array('icon_position' => __CA_NAV_BUTTON_ICON_POS_LEFT__, 'use_class' => 'list-button', 'no_background' => true, 'dont_show_content' => true)) : ''; ?>
