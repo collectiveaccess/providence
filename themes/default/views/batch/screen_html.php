@@ -35,7 +35,7 @@
 	
 	if ($vb_can_edit) {
 		print $vs_control_box = caFormControlBox(
-			caFormSubmitButton($this->request, __CA_NAV_BUTTON_SAVE__, _t("Save"), 'BatchEditorForm').' '.
+			caFormSubmitButton($this->request, __CA_NAV_BUTTON_SAVE__, _t("Execute batch edit"), 'BatchEditorForm').' '.
 			caNavButton($this->request, __CA_NAV_BUTTON_CANCEL__, _t("Cancel"), 'batch', 'Editor', 'Edit/'.$this->request->getActionExtra(), array('set_id' => $vn_set_id)),
 			'', 
 			''
