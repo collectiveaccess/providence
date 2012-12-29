@@ -2478,7 +2478,6 @@ if (!$vb_batch) {
 						}
 						
 						$this->clearErrors();
-						//print "EDIT $vn_attribute_id/$vn_element_set_id/$vs_f/".print_R($va_attr_update, true)."<Br>\n";
 						$this->editAttribute($vn_attribute_id, $vn_element_set_id, $va_attr_update, $vs_f);
 					}
 				}
@@ -2546,7 +2545,7 @@ if (!$vb_batch) {		// hierarchy moves are not supported in batch mode
 						break;
 				}
 			}
-			//print_r($this->getErrors());
+			
 			$po_request->addActionErrors($va_errors);
 			
 			if ($vb_is_insert) {
@@ -2574,7 +2573,7 @@ if (!$vb_batch) {		// hierarchy moves are not supported in batch mode
 			}
 		}
 
-if (!$vb_batch) {	// TODO		
+if (!$vb_batch) {	
 		// save preferred labels
 		$vb_check_for_dupe_labels = $this->_CONFIG->get('allow_duplicate_labels_for_'.$this->tableName()) ? false : true;
 		$vb_error_inserting_pref_label = false;
@@ -3055,7 +3054,7 @@ if (!$vb_batch) {
 						global $g_ui_locale_id;
 						require_once(__CA_MODELS_DIR__.'/ca_bundle_mapping_groups.php');
 						$va_group_ids = explode(';', $po_request->getParameter($vs_form_prefix.'_ca_bundle_mapping_groups_GroupBundleList', pString));
-						//print_R($_REQUEST);
+						
 						foreach($_REQUEST as $vs_key => $vs_val) {
 							if (is_array($vs_val) || !($vs_val = trim($vs_val))) { continue; }
 							if (preg_match("!^{$vs_form_prefix}_ca_bundle_mapping_groups_name_new_([\d]+)$!", $vs_key, $va_matches)) {
@@ -3824,7 +3823,6 @@ if (!$vb_batch) {
 			
 			//print "<pre>$vs_sql</pre>\n";
 			$qr_res = $o_db->query($vs_sql);
-			//print_r($o_db->getErrors());
 
 			if ($vb_uses_relationship_types)  { 
 				$va_rel_types = $t_rel->getRelationshipInfo($t_item_rel->tableName()); 

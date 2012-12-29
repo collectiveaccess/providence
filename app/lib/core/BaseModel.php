@@ -5361,6 +5361,10 @@ class BaseModel extends BaseObject {
 							print "<br>$vs_sql<hr>\n";
 						}
 					}
+				} else {				
+					if (($vn_id = $this->get('row_id')) > 0) {	// At a minimum always log self as subject
+						$va_subjects[$this->get('table_num')][] = $vn_id;
+					}
 				}
 			}
 		}
@@ -5379,10 +5383,10 @@ class BaseModel extends BaseObject {
 				INSERT INTO ".$vs_change_log_database."ca_change_log
 				(
 					log_datetime, user_id, unit_id, changetype,
-					logged_table_num, logged_row_id
+					logged_table_num, logged_row_id, batch_id
 				)
 				VALUES
-				(?, ?, ?, ?, ?, ?)
+				(?, ?, ?, ?, ?, ?, ?)
 			"))) {
 				// prepare failed - shouldn't happen
 				return false;
@@ -5416,18 +5420,23 @@ class BaseModel extends BaseObject {
 
 		$vs_snapshot = caSerializeForDatabase($va_snapshot, true);
 
-
 		if (!(($ps_change_type == 'U') && (!sizeof($va_snapshot)))) {
 			// Create primary log entry
+			
+			global $g_change_log_batch_id;	// Log batch_id as set in global by ca_batch_log model (app/models/ca_batch_log.php)
 			$this->opqs_change_log->execute(
 				time(), $pn_user_id, $vn_unit_id, $ps_change_type,
-				$this->tableNum(), $vn_row_id
+				$this->tableNum(), $vn_row_id, ((int)$g_change_log_batch_id ? (int)$g_change_log_batch_id : null)
 			);
 			
 			$vn_log_id = $this->opqs_change_log->getLastInsertID();
 			$this->opqs_change_log_snapshot->execute(
 				$vn_log_id, $vs_snapshot
 			);
+		
+			if ($g_change_log_delegate && method_exists($g_change_log_delegate, "onLogChange")) {
+				call_user_func( array( $g_change_log_delegate, 'onLogChange'), $this->tableNum(), $vn_row_id, $vn_log_id );
+			}
 
 			foreach($va_subjects as $vn_subject_table_num => $va_subject_ids) {
 				foreach($va_subject_ids as $vn_subject_row_id) {

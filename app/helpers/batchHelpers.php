@@ -37,7 +37,12 @@
 
 	# ---------------------------------------
 	/**
+	 * Generates batch mode control HTML for batch editor relationship bundles
+	 *
+	 * @param BundlableLabelableBaseModelWithAttributes $t_item 
+	 * @param string $ps_id_prefix
 	 * 
+	 * @return string HTML implementing the control
 	 */
 	function caBatchEditorRelationshipModeControl($t_item, $ps_id_prefix) {
 		$vs_buf = "	<div class='editorBatchModeControl'>"._t("In batch")." ".
@@ -65,7 +70,12 @@
 	}
 	# ---------------------------------------
 	/**
+	 * Generates batch mode control HTML for batch editor ca_sets bundle
+	 *
+	 * @param int $pn_table_num 
+	 * @param string $ps_id_prefix
 	 * 
+	 * @return string HTML implementing the control
 	 */
 	function caBatchEditorSetsModeControl($pn_table_num, $ps_id_prefix) {
 		$vs_buf = "	<div class='editorBatchModeControl'>"._t("In batch")." ".
@@ -93,7 +103,12 @@
 	}
 	# ---------------------------------------
 	/**
+	 * Generates batch mode control HTML for batch editor non-preferred label bundles
+	 *
+	 * @param BundlableLabelableBaseModelWithAttributes $t_item 
+	 * @param string $ps_id_prefix
 	 * 
+	 * @return string HTML implementing the control
 	 */
 	function caBatchEditorNonPreferredLabelsModeControl($t_item, $ps_id_prefix) {
 		$vs_buf = "	<div class='editorBatchModeControl'>"._t("In batch")." ".
@@ -121,7 +136,12 @@
 	}
 	# ---------------------------------------
 	/**
+	 * Generates batch mode control HTML for batch editor intrinsic field bundles
+	 *
+	 * @param BundlableLabelableBaseModelWithAttributes $t_item 
+	 * @param string $ps_bundle_name
 	 * 
+	 * @return string HTML implementing the control
 	 */
 	function caBatchEditorIntrinsicModeControl($t_item, $ps_bundle_name) {
 		$vs_buf = "<div class='editorBatchModeControl'>"._t("In batch")." ".
@@ -146,7 +166,11 @@
 	}
 	# ---------------------------------------
 	/**
+	 * Generates batch mode control HTML for metadata attribute bundles
+	 *
+	 * @param string $ps_id_prefix
 	 * 
+	 * @return string HTML implementing the control
 	 */
 	function caBatchEditorAttributeModeControl($ps_id_prefix) {
 		$vs_buf = "<div class='editorBatchModeControl'>"._t("In batch")." ".

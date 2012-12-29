@@ -51,10 +51,10 @@
 			$va_form_elements = $t_subject->getBundleFormHTMLForScreen($this->request->getActionExtra(), array(
 									'request' => $this->request, 
 									'formName' => 'BatchEditorForm',
-									'batch' => true
-									//'forceHidden' => array('lot_id')
+									'batch' => true,
+									'ui_instance' => $this->getVar('t_ui')
 								), $va_bundle_list);
-			
+								
 			print join("\n", $va_form_elements);
 			
 			if ($vb_can_edit) { print $vs_control_box; }

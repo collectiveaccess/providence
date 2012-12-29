@@ -962,6 +962,43 @@ class ca_sets extends BundlableLabelableBaseModelWithAttributes implements IBund
 	}
 	# ------------------------------------------------------
 	/**
+	 * Add a list of row_ids to the currently loaded set with minimal overhead
+	 *
+	 * @param int $pa_row_ids
+	 * @return int Returns item_id of newly created set item entry. The item_id is a unique identifier for the row_id in the city at the specified position (rank). It is *not* the same as the row_id.
+	 */
+	public function addItems($pa_row_ids) {
+		$vn_set_id = $this->getPrimaryKey();
+		if (!$vn_set_id) { return false; } 
+		if (!is_array($pa_row_ids)) { return false; } 
+		if (!sizeof($pa_row_ids)) { return false; } 
+		
+		$vn_table_num = $this->get('table_num');
+		$vn_type_id = $this->get('type_id');
+		
+		$vn_c = 0;
+		foreach($pa_row_ids as $vn_row_id) {
+			// Add it to the set
+			$t_item = new ca_set_items();
+			$t_item->setMode(ACCESS_WRITE);
+			$t_item->set('set_id', $vn_set_id);
+			$t_item->set('table_num', $vn_table_num);
+			$t_item->set('row_id', $vn_row_id);
+			$t_item->set('type_id', $vn_type_id);
+		
+			$t_item->insert();
+		
+			if ($t_item->numErrors()) {
+				$this->errors = $t_item->errors;
+				//return false;
+			} else {
+				$vn_c++;
+			}
+		}
+		return $vn_c;
+	}
+	# ------------------------------------------------------
+	/**
 	 * Removes all instances of the specified set item from the set as specified by the row_id
 	 *
 	 * @param int $pn_row_id The row_id of the item to remove

@@ -37,7 +37,7 @@
 include_once(__CA_LIB_DIR__."/core/Logging/BaseLogger.php");
 
 # ----------------------------------------------------------------------
-class Batchlog {
+class Batchlog extends BaseLogger {
 	# ----------------------------------------
 	/**
 	 *
@@ -46,13 +46,20 @@ class Batchlog {
 	# ----------------------------------------
 	public function __construct($pa_entry=null) {
 		parent::__construct();
+		if (is_array($pa_entry)) {
+			$this->log($pa_entry);
+		}
 	}
 	# ----------------------------------------
 	/**
 	 *
 	 */
 	public function log($pa_entry) {
+ 		global $g_change_log_batch_id;
 		if (is_array($pa_entry)) {
+			if (!in_array($pa_entry['batch_type'], array("SR", "BE", "MI"))) {	// batch types are "SR" (search/replace), "BE" (batch editor), "MI" (media import)
+				return false;
+			}
 			$this->o_db->query("
 				INSERT INTO ca_batch_log 
 				(log_datetime, user_id, table_num, notes, batch_type)
@@ -60,7 +67,7 @@ class Batchlog {
 				(unix_timestamp(), ?, ?, ?, ?)
 			", $pa_entry['user_id'], $pa_entry['table_num'], $pa_entry['notes'], $pa_entry['batch_type']);
 			
-			return $this->opn_last_batch_id = (int)$this->o_db->getLastInsertID();
+			return $g_change_log_batch_id = $this->opn_last_batch_id = (int)$this->o_db->getLastInsertID();
 		}
 		return false;
 	}
@@ -78,14 +85,24 @@ class Batchlog {
 	/**
 	 *
 	 */
-	 public function addItem($pn_row_id, $pn_log_id) {
+	 public function addItem($pn_row_id, $pa_errors=null) {
 	 	if (!$this->opn_last_batch_id) { return false; }
+	 	if (!$pn_row_id) { return false; }
+	 	
+	 	if (!is_array($pa_errors)) { $pa_errors = array(); }
+	 	if (sizeof($pa_errors)) {
+	 		$va_errors = array();
+	 		foreach($pa_errors as $o_error) {
+	 			$va_errors[$o_error->getErrorNumber()] = $o_error->getErrorDescription();
+	 		}
+	 	}
+	 	
 		$this->o_db->query("
 				INSERT INTO ca_batch_log_items
-				(row_id, log_id, batch_id)
+				(row_id, batch_id, errors)
 				VALUES
 				(?, ?, ?)
-			", (int)$pn_row_id, (int)$pn_log_id, (int)$this->opn_last_batch_id);
+			", (int)$pn_row_id, (int)$this->opn_last_batch_id, caSerializeForDatabase($va_errors));
 			
 		
 		return $this->o_db->numErrors() ? false : true;

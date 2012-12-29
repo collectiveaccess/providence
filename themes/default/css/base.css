@@ -1662,6 +1662,52 @@ select.searchToolsSelect {
 	font-size: 11px;
 }
 
+/* search sets - horizontal show hide */
+#showSets, #hideSets {
+	float:right;
+	margin: 1px 0px 0px 10px;
+	text-decoration:none;
+	text-transform:uppercase;
+	color:#828282;
+	font-size:9px;
+}
+
+#searchSetsBox{
+	clear:both;
+	margin: 0px 0px 0px 0px;
+	display:none;
+	font-size:12px;
+	color:#828282;
+}
+#searchSetsBox .bg{
+	background-color: #E2E2E2;
+	border:0px;
+	padding:6px 3px 6px 10px;
+}
+
+#searchSetsBox .col{
+	float:left;
+	margin-right:15px;
+	color:#333;
+}
+
+select.searchSetsSelect {
+	width: 165px;
+	font-size: 11px;
+}
+
+div.searchSetsToggle {
+	font-size: 9px;
+}
+a.searchSetsToggle {
+	font-size: 9px;
+	text-decoration: none;
+}
+
+input.searchSetsTextInput {
+	font-size: 10px !important; 
+	outline-width: 0 !important;
+}
 
 .qlButtonContainerThumbnail{
 	width:76px;
@@ -2077,6 +2123,10 @@ table.attributeListItem {
 
 .editorBatchBundleContent {
 	display: none;
+}
+
+.editorBatchSetEditorLink {
+	float: right;
 }
 
 .editorBatchModeControl select {

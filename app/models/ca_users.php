@@ -1611,6 +1611,7 @@ class ca_users extends BaseModel {
 	 *		field_errors = array of error messages to display on preference element
 	 *		useTable = if true and displayType for element in DT_CHECKBOXES checkboxes will be formatted in a table with numTableColumns columns
 	 *		numTableColumns = Number of columns to use when formatting checkboxes as a table. Default, if omitted, is 3
+	 *		genericUIList = forces FT_*_EDITOR_UI to return single UI list for table rather than by type
 	 * @return string HTML code to generate form widget
 	 */	
 	public function preferenceHtmlFormElement($ps_pref, $ps_format=null, $pa_options=null) {
@@ -1732,7 +1733,7 @@ class ca_users extends BaseModel {
 							$va_values = $this->getPreference($ps_pref);
 							if (!is_array($va_values)) { $va_values = array(); }
 							
-							if (method_exists($t_instance, 'getTypeFieldName') && ($t_instance->getTypeFieldName())) {
+							if (method_exists($t_instance, 'getTypeFieldName') && ($t_instance->getTypeFieldName()) && (!isset($pa_options['genericUIList']) || !$pa_options['genericUIList'])) {
 								
 								$vs_output = '';
 								$va_ui_list_by_type = $this->_getUIListByType($vn_table_num);

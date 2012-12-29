@@ -115,7 +115,6 @@
  			$va_row_ids = $t_set->getItemRowIDs();
  			$vn_num_items = sizeof($va_row_ids);
  			$va_errors = array();
- 			$va_save_opts = array('batch' => true, 'existingRepresentationMap' => array());
  			
  			if ($vb_perform_type_access_checking = (bool)$t_subject->getAppConfig()->get('perform_type_access_checking')) {
  				$va_restrict_to_types = caGetTypeRestrictionsForUser($this->ops_table_name, array('access' => __CA_BUNDLE_ACCESS_EDIT__));
@@ -123,9 +122,19 @@
  			$vb_perform_item_level_access_checking = (bool)$t_subject->getAppConfig()->get('perform_item_level_access_checking');
  			
  			$o_trans = new Transaction();
+ 			$o_log = new Batchlog(array(
+ 				'user_id' => $this->request->getUserID(),
+ 				'batch_type' => 'BE',
+ 				'table_num' => (int)$t_set->get('table_num'),
+ 				'notes' => ''
+ 			));
+ 			
+ 			$va_save_opts = array('batch' => true, 'existingRepresentationMap' => array());
  			foreach(array_keys($va_row_ids) as $vn_row_id) {
  				$t_subject->setTransaction($o_trans);
- 				if ($t_subject->load($vn_row_id)) {						
+ 				if ($t_subject->load($vn_row_id)) {	
+ 					$this->request->clearActionErrors();
+ 										
 					//
 					// Is record deleted?
 					//
@@ -153,23 +162,37 @@
  					$t_subject->saveBundlesForScreen($vs_screen, $this->request, $va_save_opts);
  					// TODO: call plugins beforeAfterItemSave
  					
- 					if ($t_subject->numErrors()) {
- 						//print_R($t_subject->getErrors());
- 						$va_errors[$t_subject->getPrimaryKey()] = $t_subject->errors();
+					$o_log->addItem($vn_row_id, $va_action_errors = $this->request->getActionErrors());
+ 					if (sizeof($va_action_errors) > 0) {
+ 						$va_errors[$t_subject->getPrimaryKey()] = array(
+ 							'idno' => $t_subject->get($t_subject->getProperty('ID_NUMBERING_ID_FIELD')),
+ 							'label' => $t_subject->getLabelForDisplay(),
+ 							'errors' => $va_action_errors
+ 						);
 					}
 				}
 			}
 			
- 			$vn_num_errors = sizeof($va_errors);
- 			if($vn_num_errors) {
- 				$this->notification->addNotification(($vn_num_errors == 1) ? _t('There was %1 error while processing the batch', $vn_num_errors) : _t('There were %1 errors while processing the batch', $vn_num_errors), __NOTIFICATION_TYPE_ERROR__);
+ 			$vn_num_errored_rows = sizeof($va_errors);
+ 			if($vn_num_errored_rows > 0) {
+ 				$this->notification->addNotification(_t('%1 %2 had errors while processing the batch', $vn_num_errored_rows, $t_subject->getProperty(($vn_num_items == 1) ? 'NAME_SINGULAR' : 'NAME_PLURAL')), __NOTIFICATION_TYPE_ERROR__);
+ 				
+ 				foreach($va_errors as $vn_row_id => $va_error_info) {
+ 					$va_error_list = array();
+ 					foreach($va_error_info['errors'] as $o_error) {
+ 						$va_error_list[] = $o_error->getErrorDescription();
+ 					}
+ 					$this->notification->addNotification("<em>".$va_error_info['label']."</em> (".$va_error_info['idno']."): ".join("; ", $va_error_list), __NOTIFICATION_TYPE_ERROR__);
+ 				}
+ 				
  				$o_trans->rollback();
  			} else {
  				$this->notification->addNotification(_t('Saved changes to %1 %2 in set', $vn_num_items, $t_subject->getProperty(($vn_num_items == 1) ? 'NAME_SINGULAR' : 'NAME_PLURAL')), __NOTIFICATION_TYPE_INFO__);
  				$o_trans->commit();
  			}
  			
-			$t_subject->clear();
+			//$t_subject->clear();
+			$t_subject->init();
  			
  			$this->render('screen_html.php');
  		}
@@ -202,6 +225,9 @@
  			
  			$t_subject = $this->opo_datamodel->getInstanceByTableNum($t_set->get('table_num'));
  			$t_ui = new ca_editor_uis();
+ 			if (!isset($pa_options['ui']) && !$pa_options['ui']) {
+ 				$pa_options['ui'] = $this->request->user->getPreference("batch_".$t_subject->tableName()."_editor_ui");
+ 			}
  			if (isset($pa_options['ui']) && $pa_options['ui']) {
  				if (is_numeric($pa_options['ui'])) {
  					$t_ui->load((int)$pa_options['ui']);

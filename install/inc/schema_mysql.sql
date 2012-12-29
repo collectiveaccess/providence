@@ -31,7 +31,11 @@ create table ca_change_log
    logged_row_id                  int unsigned                   not null,
    rolledback                     tinyint unsigned               not null default 0,
    unit_id                        char(32),
-   primary key (log_id)
+   batch_id                       int unsigned                   null,
+   primary key (log_id),
+   
+   constraint fk_ca_change_log_batch_id foreign key (batch_id)
+      references ca_batch_log (batch_id) on delete restrict on update restrict
 ) engine=innodb CHARACTER SET utf8 COLLATE utf8_general_ci;
 
 create index i_datetime on ca_change_log(log_datetime);
@@ -39,6 +43,7 @@ create index i_user_id on ca_change_log(user_id);
 create index i_logged on ca_change_log(logged_row_id, logged_table_num);
 create index i_unit_id on ca_change_log(unit_id);
 create index i_table_num on ca_change_log (logged_table_num);
+create index i_batch_id on ca_change_log (batch_id);
 
 
 /*==========================================================================*/
@@ -4785,16 +4790,13 @@ create table ca_batch_log
 create table ca_batch_log_items 
 (
 	batch_id                       int unsigned                   not null,
-	log_id                         bigint                         not null,
 	row_id                         int unsigned                   not null,
+	errors                         longtext                       null,
 	
-	primary key (batch_id, log_id, row_id), 
-   	KEY i_log_id (log_id),
+	primary key (batch_id, row_id), 
     KEY i_row_id (row_id),
     constraint fk_ca_batch_log_items_batch_id foreign key (batch_id)
-      references ca_batch_log (batch_id) on delete restrict on update restrict,
-    constraint fk_ca_change_log_log_id foreign key (log_id)
-      references ca_change_log (log_id) on delete restrict on update restrict
+      references ca_batch_log (batch_id) on delete restrict on update restrict
 ) engine=innodb CHARACTER SET utf8 COLLATE utf8_general_ci;
 
 
@@ -6703,5 +6705,5 @@ create table ca_schema_updates (
 ) engine=innodb CHARACTER SET utf8 COLLATE utf8_general_ci;
 
 /* Indicate up to what migration this schema definition covers */
-/* CURRENT MIGRATION: 73 */
-INSERT IGNORE INTO ca_schema_updates (version_num, datetime) VALUES (73, unix_timestamp());
+/* CURRENT MIGRATION: 74 */
+INSERT IGNORE INTO ca_schema_updates (version_num, datetime) VALUES (74, unix_timestamp());
