@@ -35,7 +35,8 @@
 	
 	if ($vb_can_edit) {
 		print $vs_control_box = caFormControlBox(
-			caFormSubmitButton($this->request, __CA_NAV_BUTTON_SAVE__, _t("Execute batch edit"), 'BatchEditorForm').' '.
+			caJSButton($this->request, __CA_NAV_BUTTON_SAVE__, _t("Execute batch edit"), 'caBatchEditorForm', array('onclick' => 'caConfirmBatchExecutionPanel.showPanel(); return false;')).' '.
+			//caFormSubmitButton($this->request, __CA_NAV_BUTTON_SAVE__, _t("Execute batch edit"), 'caBatchEditorForm').' '.
 			caNavButton($this->request, __CA_NAV_BUTTON_CANCEL__, _t("Cancel"), 'batch', 'Editor', 'Edit/'.$this->request->getActionExtra(), array('set_id' => $vn_set_id)),
 			'', 
 			''
@@ -45,12 +46,12 @@
 	<div class="sectionBox">
 <?php
 
-			print caFormTag($this->request, 'Save/'.$this->request->getActionExtra(), 'BatchEditorForm', null, 'POST', 'multipart/form-data');
+			print caFormTag($this->request, 'Save/'.$this->request->getActionExtra(), 'caBatchEditorForm', null, 'POST', 'multipart/form-data', '_top', array('disableUnsavedChangesWarning' => true, 'noTimestamp' => true));
 		
 			$va_bundle_list = array();
 			$va_form_elements = $t_subject->getBundleFormHTMLForScreen($this->request->getActionExtra(), array(
 									'request' => $this->request, 
-									'formName' => 'BatchEditorForm',
+									'formName' => 'caBatchEditorForm',
 									'batch' => true,
 									'ui_instance' => $this->getVar('t_ui')
 								), $va_bundle_list);
@@ -66,3 +67,7 @@
 	<div class="editorBottomPadding"><!-- empty --></div>
 	
 	<?php print caEditorFieldList($va_bundle_list); ?>
+	
+<?php 
+		print $this->render("confirm_html.php");
+?>

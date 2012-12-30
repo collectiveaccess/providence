@@ -35,13 +35,14 @@
   */
  
  	require_once(__CA_APP_DIR__."/helpers/batchHelpers.php");
+ 	require_once(__CA_APP_DIR__."/helpers/configurationHelpers.php");
  	require_once(__CA_MODELS_DIR__."/ca_sets.php");
  	require_once(__CA_MODELS_DIR__."/ca_editor_uis.php");
  	require_once(__CA_LIB_DIR__."/core/Datamodel.php");
  	require_once(__CA_LIB_DIR__."/ca/ApplicationPluginManager.php");
  	require_once(__CA_LIB_DIR__."/ca/ResultContext.php");
-	require_once(__CA_LIB_DIR__."/core/Logging/Eventlog.php");
-	require_once(__CA_LIB_DIR__."/core/Logging/Batchlog.php");
+ 	require_once(__CA_LIB_DIR__."/ca/BatchProcessor.php");
+ 	require_once(__CA_LIB_DIR__."/ca/BatchEditorProgress.php");
  
  	class EditorController extends ActionController {
  		# -------------------------------------------------------
@@ -52,6 +53,10 @@
  		#
  		# -------------------------------------------------------
  		public function __construct(&$po_request, &$po_response, $pa_view_paths=null) {
+ 			
+ 			JavascriptLoadManager::register('bundleableEditor');
+ 			JavascriptLoadManager::register('panel');
+ 			
  			parent::__construct($po_request, $po_response, $pa_view_paths);
  			
  			$this->opo_datamodel = Datamodel::load();
@@ -112,67 +117,11 @@
  				return;
  			}
  			
- 			$va_row_ids = $t_set->getItemRowIDs();
- 			$vn_num_items = sizeof($va_row_ids);
- 			$va_errors = array();
- 			
- 			if ($vb_perform_type_access_checking = (bool)$t_subject->getAppConfig()->get('perform_type_access_checking')) {
- 				$va_restrict_to_types = caGetTypeRestrictionsForUser($this->ops_table_name, array('access' => __CA_BUNDLE_ACCESS_EDIT__));
- 			}
- 			$vb_perform_item_level_access_checking = (bool)$t_subject->getAppConfig()->get('perform_item_level_access_checking');
- 			
- 			$o_trans = new Transaction();
- 			$o_log = new Batchlog(array(
- 				'user_id' => $this->request->getUserID(),
- 				'batch_type' => 'BE',
- 				'table_num' => (int)$t_set->get('table_num'),
- 				'notes' => ''
- 			));
- 			
- 			$va_save_opts = array('batch' => true, 'existingRepresentationMap' => array());
- 			foreach(array_keys($va_row_ids) as $vn_row_id) {
- 				$t_subject->setTransaction($o_trans);
- 				if ($t_subject->load($vn_row_id)) {	
- 					$this->request->clearActionErrors();
- 										
-					//
-					// Is record deleted?
-					//
-					if ($t_subject->hasField('deleted') && $t_subject->get('deleted')) { 
-						continue;		// skip
-					}
-				
-					//
-					// Is record of correct type?
-					//
-					if (($vb_perform_type_access_checking) && (is_array($va_restrict_to_types) && !in_array($t_subject->get('type_id'), $va_restrict_to_types))) {
-						continue;		// skip
-					}
-							
-					//
-					// Does user have access to row?
-					//
-					if (($vb_perform_item_level_access_checking) && ($t_subject->checkACLAccessForUser($this->request->user) == __CA_ACL_READ_WRITE_ACCESS__)) {
-						continue;		// skip
-					}
- 					
- 					$vs_screen = $this->request->getActionExtra();
- 					
- 					// TODO: call plugins beforeBatchItemSave
- 					$t_subject->saveBundlesForScreen($vs_screen, $this->request, $va_save_opts);
- 					// TODO: call plugins beforeAfterItemSave
- 					
-					$o_log->addItem($vn_row_id, $va_action_errors = $this->request->getActionErrors());
- 					if (sizeof($va_action_errors) > 0) {
- 						$va_errors[$t_subject->getPrimaryKey()] = array(
- 							'idno' => $t_subject->get($t_subject->getProperty('ID_NUMBERING_ID_FIELD')),
- 							'label' => $t_subject->getLabelForDisplay(),
- 							'errors' => $va_action_errors
- 						);
-					}
-				}
-			}
-			
+	
+			$app = AppController::getInstance();
+			$app->registerPlugin(new BatchEditorProgress($this->request, $t_set, $t_subject));
+ 			//$va_errors = BatchProcessor::saveBatchEditorFormForSet($this->request, $this->ops_table_name, $t_set, $t_subject);
+ 	if (0) {
  			$vn_num_errored_rows = sizeof($va_errors);
  			if($vn_num_errored_rows > 0) {
  				$this->notification->addNotification(_t('%1 %2 had errors while processing the batch', $vn_num_errored_rows, $t_subject->getProperty(($vn_num_items == 1) ? 'NAME_SINGULAR' : 'NAME_PLURAL')), __NOTIFICATION_TYPE_ERROR__);
@@ -185,16 +134,12 @@
  					$this->notification->addNotification("<em>".$va_error_info['label']."</em> (".$va_error_info['idno']."): ".join("; ", $va_error_list), __NOTIFICATION_TYPE_ERROR__);
  				}
  				
- 				$o_trans->rollback();
  			} else {
  				$this->notification->addNotification(_t('Saved changes to %1 %2 in set', $vn_num_items, $t_subject->getProperty(($vn_num_items == 1) ? 'NAME_SINGULAR' : 'NAME_PLURAL')), __NOTIFICATION_TYPE_INFO__);
- 				$o_trans->commit();
+ 				
  			}
- 			
-			//$t_subject->clear();
-			$t_subject->init();
- 			
- 			$this->render('screen_html.php');
+ 	}
+ 			$this->render('batch_results_html.php');
  		}
  		# -------------------------------------------------------
  		/**
