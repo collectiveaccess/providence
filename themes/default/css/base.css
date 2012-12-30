@@ -4134,6 +4134,14 @@ div.preferenceSectionDivider {
 	text-align: center;
 }
 
+.batchProcessingHelpText{
+	padding:20px;
+	margin:20px;
+	line-height:1.3em;
+	font-size:13px;
+	border:3px solid #cccccc;
+}
+
 
 a.caDeleteLabelButton {
 	text-decoration: none;

@@ -67,7 +67,7 @@ class Session {
 		session_name($this->name);
 		ini_set("session.gc_maxlifetime", $this->lifetime); 
 		session_set_cookie_params($this->lifetime, '/', $this->domain);
-		session_start();
+		@session_start();
 	}
 
 	# ----------------------------------------

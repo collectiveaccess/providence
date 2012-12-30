@@ -63,4 +63,6 @@
 		$vs_buf .= "</ol>";
 	}
 	print $vs_buf;
+	
+	print "\n\n"._t("Processing took %1.", $this->getVar('elapsedTime'));
 ?>

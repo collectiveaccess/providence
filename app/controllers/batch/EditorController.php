@@ -117,11 +117,33 @@
  				return;
  			}
  			
-	
-			$app = AppController::getInstance();
-			$app->registerPlugin(new BatchEditorProgress($this->request, $t_set, $t_subject, array('sendMail' => (bool)$this->request->getParameter('send_email_when_done', pInteger), 'runInBackground' => (bool)$this->request->getParameter('run_in_background', pInteger))));
-
- 			$this->render('batch_results_html.php');
+ 			
+ 			if ((bool)$this->request->getParameter('run_in_background', pInteger)) { // queue for background processing
+ 				$o_tq = new TaskQueue();
+ 				
+ 				$vs_row_key = $vs_entity_key = join("/", array($this->request->getUserID(), $t_set->getPrimaryKey(), time(), rand(1,999999)));
+				if (!$o_tq->addTask(
+					'batchEditor',
+					array(
+						'set_id' => $vn_set_id,
+						'ui_id' => $t_ui->getPrimaryKey(),
+						'screen' => $this->request->getActionExtra(),
+						'user_id' => $this->request->getUserID(),
+						'values' => $_REQUEST,
+						'sendMail' => (bool)$this->request->getParameter('send_email_when_done', pInteger)
+					),
+					array("priority" => 100, "entity_key" => $vs_entity_key, "row_key" => $vs_row_key, 'user_id' => $this->request->getUserID())))
+				{
+					//$this->postError(100, _t("Couldn't queue batch processing for"),"EditorContro->_processMedia()");
+					
+				}
+				$this->render('batch_queued_html.php');
+			} else { 
+				// run now
+				$app = AppController::getInstance();
+				$app->registerPlugin(new BatchEditorProgress($this->request, $t_set, $t_subject, array('sendMail' => (bool)$this->request->getParameter('send_email_when_done', pInteger), 'runInBackground' => (bool)$this->request->getParameter('run_in_background', pInteger))));
+				$this->render('batch_results_html.php');
+			}
  		}
  		# -------------------------------------------------------
  		/**

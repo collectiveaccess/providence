@@ -149,9 +149,10 @@
 				$ps_callback($po_request, $vn_num_items, $vn_num_items, _t("Processing completed"), time() - $vn_start_time, memory_get_usage(true), sizeof($va_notices), sizeof($va_errors));
 			}
 			
+			$vn_elapsed_time = time() - $vn_start_time;
 			if (isset($pa_options['reportCallback']) && ($ps_callback = $pa_options['reportCallback'])) {
 				$va_general = array(
-					'elapsedTime' => time() - $vn_start_time,
+					'elapsedTime' => $vn_elapsed_time,
 					'numErrors' => sizeof($va_errors),
 					'numProcessed' => sizeof($va_notices),
 					'batchSize' => $vn_num_items,
@@ -180,7 +181,8 @@
 							'subjectNameSingular' => $t_subject->getProperty('NAME_SINGULAR'),
 							'subjectNamePlural' => $t_subject->getProperty('NAME_PLURAL'),
 							'completedOn' => caGetLocalizedDate(time()),
-							'setName' => $t_set->getLabelForDisplay()
+							'setName' => $t_set->getLabelForDisplay(),
+							'elapsedTime' => caFormatInterval($vn_elapsed_time)
 						)
 					);
 				}
