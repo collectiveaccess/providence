@@ -174,7 +174,7 @@
 			
 			if (isset($pa_options['sendMail']) && $pa_options['sendMail']) {
 				if ($vs_email = trim($po_request->user->get('email'))) {
-					caSendMessageUsingView($po_request, array($vs_email => $po_request->user->get('fname').' '.$po_request->user->get('lname')), __CA_ADMIN_EMAIL__, _t('Batch complete'), 'batch_processing_completed.tpl', 
+					caSendMessageUsingView($po_request, array($vs_email => $po_request->user->get('fname').' '.$po_request->user->get('lname')), __CA_ADMIN_EMAIL__, _t('[%1] Batch edit completed', $po_request->config->get('app_display_name')), 'batch_processing_completed.tpl', 
 						array(
 							'notices' => $va_notices, 'errors' => $va_errors,
 							'batchSize' => $vn_num_items, 'numErrors' => sizeof($va_errors), 'numProcessed' => sizeof($va_notices),
