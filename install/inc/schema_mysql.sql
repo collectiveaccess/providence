@@ -273,6 +273,7 @@ create table ca_users
    fname                          varchar(255)                   not null,
    lname                          varchar(255)                   not null,
    email                          varchar(255)                   not null,
+   sms_number                     varchar(30)                    not null,
    vars                           longtext                       not null,
    volatile_vars                  text                           not null,
    active                         tinyint unsigned               not null,
@@ -6706,5 +6707,5 @@ create table ca_schema_updates (
 ) engine=innodb CHARACTER SET utf8 COLLATE utf8_general_ci;
 
 /* Indicate up to what migration this schema definition covers */
-/* CURRENT MIGRATION: 75 */
-INSERT IGNORE INTO ca_schema_updates (version_num, datetime) VALUES (75, unix_timestamp());
+/* CURRENT MIGRATION: 76 */
+INSERT IGNORE INTO ca_schema_updates (version_num, datetime) VALUES (76, unix_timestamp());

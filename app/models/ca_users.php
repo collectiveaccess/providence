@@ -103,6 +103,14 @@ BaseModel::$s_ca_models_definitions['ca_users'] = array(
 				'LABEL' => _t('E-mail'), 'DESCRIPTION' => _t('The e-mail address of this user. The address will be used for all mail-based system notifications and alerts to this user.'),
 				'BOUNDS_LENGTH' => array(0,255)
 		),
+		'sms_number' => array(
+				'FIELD_TYPE' => FT_TEXT, 'DISPLAY_TYPE' => DT_FIELD, 
+				'DISPLAY_WIDTH' => 60, 'DISPLAY_HEIGHT' => 1,
+				'IS_NULL' => false, 
+				'DEFAULT' => '',
+				'LABEL' => _t('SMS number'), 'DESCRIPTION' => _t('Phone number for contact by SMS (text message). The number will be used for all SMS-based system notifications and alerts to this user.'),
+				'BOUNDS_LENGTH' => array(0,30)
+		),
 		'entity_id' => array(
 				'FIELD_TYPE' => FT_NUMBER, 'DISPLAY_TYPE' => DT_FIELD, 
 				'DISPLAY_WIDTH' => 40, 'DISPLAY_HEIGHT' => 1,
