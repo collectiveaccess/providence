@@ -32,6 +32,7 @@
 	$t_set	 			= $this->getVar('t_set');
 	
 	$vn_num_items_in_set = $t_set->getItemCount(array('user_id' => $this->request->getUserID()));
+	$vb_queue_enabled = (bool)$this->request->config->get('queue_enabled');
 ?>
 <script type="text/javascript">
 	var caConfirmBatchExecutionPanel;
@@ -70,17 +71,26 @@
 ?>			
 			</div>
 			<div class="caConfirmBatchExecutionPanelAlertControls">
+<?php
+	if ($vb_queue_enabled) {
+?>
 				<div class="caConfirmBatchExecutionPanelAlertControlLeft">
 <?php
 					print caHTMLCheckboxInput('run_in_background', array('id' => 'caRunBatchInBackground', 'value' => 1)).' '._t('Process changes in background');
 ?>
-				</div><div class="caConfirmBatchExecutionPanelAlertControlRight">
+				</div>
 <?php
-				if ($vs_email = trim($this->request->user->get('email'))) {
+	}
+	if ($vs_email = trim($this->request->user->get('email'))) {
+?>
+				<div class="<?php print $vb_queue_enabled ? "caConfirmBatchExecutionPanelAlertControlRight" : "caConfirmBatchExecutionPanelAlertControlLeft"; ?>">
+<?php			
 					print caHTMLCheckboxInput('send_email_when_done', array('id' => 'caSendEmailWhenDone', 'value' => 1)).' '._t('Send email to <em>%1</em> when complete', $vs_email);
-				}
 ?>			
 				</div>
+<?php
+	}
+?>
 			</div>
 			<div id="caConfirmBatchExecutionPanelControlButtons">
 				<table>

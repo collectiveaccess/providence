@@ -118,7 +118,7 @@
  			}
  			
  			
- 			if ((bool)$this->request->getParameter('run_in_background', pInteger)) { // queue for background processing
+ 			if ((bool)$this->request->config->get('queue_enabled') && (bool)$this->request->getParameter('run_in_background', pInteger)) { // queue for background processing
  				$o_tq = new TaskQueue();
  				
  				$vs_row_key = $vs_entity_key = join("/", array($this->request->getUserID(), $t_set->getPrimaryKey(), time(), rand(1,999999)));
