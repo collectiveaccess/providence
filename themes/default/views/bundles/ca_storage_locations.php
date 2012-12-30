@@ -48,7 +48,7 @@
 		print caBatchEditorRelationshipModeControl($t_item, $vs_id_prefix);
 	}
 ?>
-<div id="<?php print $vs_id_prefix.$t_item->tableNum().'_rel'; ?>">
+<div id="<?php print $vs_id_prefix.$t_item->tableNum().'_rel'; ?>" <?php print $vb_batch ? "class='editorBatchBundleContent'" : ''; ?>>
 <?php
 	//
 	// Template to generate display for existing items

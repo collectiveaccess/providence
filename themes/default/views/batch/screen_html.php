@@ -29,23 +29,17 @@
 	
 	$t_set	 			= $this->getVar('t_set');
 	$vn_set_id	 		= $this->getVar('set_id');
-
-	$vb_can_edit	 	= $t_subject->isSaveable($this->request);
-	$vb_can_delete		= $t_subject->isDeletable($this->request);
 	
-	if ($vb_can_edit) {
-		print $vs_control_box = caFormControlBox(
-			caJSButton($this->request, __CA_NAV_BUTTON_SAVE__, _t("Execute batch edit"), 'caBatchEditorForm', array('onclick' => 'caConfirmBatchExecutionPanel.showPanel(); return false;')).' '.
-			caNavButton($this->request, __CA_NAV_BUTTON_CANCEL__, _t("Cancel"), 'batch', 'Editor', 'Edit/'.$this->request->getActionExtra(), array('set_id' => $vn_set_id)),
-			'', 
-			''
-		);
-	}
+	print $vs_control_box = caFormControlBox(
+		caJSButton($this->request, __CA_NAV_BUTTON_SAVE__, _t("Execute batch edit"), 'caBatchEditorForm', array('onclick' => 'caConfirmBatchExecutionPanel.showPanel(); return false;')).' '.
+		caNavButton($this->request, __CA_NAV_BUTTON_CANCEL__, _t("Cancel"), 'batch', 'Editor', 'Edit/'.$this->request->getActionExtra(), array('set_id' => $vn_set_id)),
+		'', 
+		''
+	);
 ?>
 	<div class="sectionBox">
 <?php
-
-			print caFormTag($this->request, 'Save/'.$this->request->getActionExtra(), 'caBatchEditorForm', null, 'POST', 'multipart/form-data', '_top', array('disableUnsavedChangesWarning' => true, 'noTimestamp' => true));
+		print caFormTag($this->request, 'Save/'.$this->request->getActionExtra(), 'caBatchEditorForm', null, 'POST', 'multipart/form-data', '_top', array('disableUnsavedChangesWarning' => true, 'noTimestamp' => true));
 		
 			$va_bundle_list = array();
 			$va_form_elements = $t_subject->getBundleFormHTMLForScreen($this->request->getActionExtra(), array(
@@ -57,11 +51,11 @@
 								
 			print join("\n", $va_form_elements);
 			
-			if ($vb_can_edit) { print $vs_control_box; }
+			print $vs_control_box; 
 ?>
 			<input type='hidden' name='set_id' value='<?php print $vn_set_id; ?>'/>
 <?php 
-		print $this->render("confirm_html.php");
+			print $this->render("confirm_html.php");
 ?>
 		</form>
 	</div>
@@ -69,4 +63,3 @@
 	<div class="editorBottomPadding"><!-- empty --></div>
 	
 	<?php print caEditorFieldList($va_bundle_list); ?>
-	

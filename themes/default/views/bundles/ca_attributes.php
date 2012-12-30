@@ -115,7 +115,7 @@
 		print caBatchEditorAttributeModeControl($vs_id_prefix);
 	}
 ?>
-<div id="<?php print $vs_id_prefix; ?>">
+<div id="<?php print $vs_id_prefix; ?>" <?php print $vb_batch ? "class='editorBatchBundleContent'" : ''; ?>>
 <?php
 	//
 	// The bundle template - used to generate each bundle in the form

@@ -62,7 +62,6 @@
 					jQuery('#".$ps_id_prefix.$t_item->tableNum()."_rel').slideDown(250);
 				}
 			});
-			jQuery('#".$ps_id_prefix.$t_item->tableNum()."_rel').hide();
 		});
 	</script>\n";
 	
@@ -95,7 +94,6 @@
 					jQuery('#".$ps_id_prefix.$pn_table_num."_sets').slideDown(250);
 				}
 			});
-			jQuery('#".$ps_id_prefix.$pn_table_num."_sets').hide();
 		});
 	</script>\n";
 	
@@ -128,7 +126,6 @@
 					jQuery('#".$ps_id_prefix."Labels').slideDown(250);
 				}
 			});
-			jQuery('#".$ps_id_prefix."Labels').hide();
 		});
 	</script>\n";
 	
@@ -158,7 +155,6 @@
 					jQuery('#{$ps_bundle_name}').slideDown(250);
 				}
 			});
-			jQuery('#{$ps_bundle_name}').hide();
 		});
 	</script>\n";
 	
@@ -189,7 +185,6 @@
 					jQuery('#{$ps_id_prefix}').slideDown(250);
 				}
 			});
-			jQuery('#{$ps_id_prefix}').hide();
 		});
 	</script>";
 	

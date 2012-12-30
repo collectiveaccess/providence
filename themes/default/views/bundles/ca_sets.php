@@ -48,7 +48,7 @@
 		print caBatchEditorSetsModeControl($vn_table_num, $vs_id_prefix);
 	}
 ?>
-<div id="<?php print $vs_id_prefix.$vn_table_num.'_sets'; ?>">
+<div id="<?php print $vs_id_prefix.$vn_table_num.'_sets'; ?>" <?php print $vb_batch ? "class='editorBatchBundleContent'" : ''; ?>>
 <?php
 	//
 	// The bundle template - used to generate each bundle in the form
