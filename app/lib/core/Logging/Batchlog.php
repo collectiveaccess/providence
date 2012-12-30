@@ -43,6 +43,7 @@ class Batchlog extends BaseLogger {
 	 *
 	 */
   	private $opn_last_batch_id = null;
+  	private $opn_start_time = null;
 	# ----------------------------------------
 	public function __construct($pa_entry=null) {
 		parent::__construct();
@@ -57,17 +58,42 @@ class Batchlog extends BaseLogger {
 	public function log($pa_entry) {
  		global $g_change_log_batch_id;
 		if (is_array($pa_entry)) {
+			if (isset($pa_entry['transaction']) && $pa_entry['transaction']) {
+				$this->o_db = $pa_entry['transaction']->getDb();
+			}
 			if (!in_array($pa_entry['batch_type'], array("SR", "BE", "MI"))) {	// batch types are "SR" (search/replace), "BE" (batch editor), "MI" (media import)
 				return false;
 			}
 			$this->o_db->query("
 				INSERT INTO ca_batch_log 
-				(log_datetime, user_id, table_num, notes, batch_type)
+				(log_datetime, user_id, table_num, notes, batch_type, elapsed_time)
 				VALUES
-				(unix_timestamp(), ?, ?, ?, ?)
+				(unix_timestamp(), ?, ?, ?, ?, 0)
 			", $pa_entry['user_id'], $pa_entry['table_num'], $pa_entry['notes'], $pa_entry['batch_type']);
-			
+			$this->opn_start_time = time();
 			return $g_change_log_batch_id = $this->opn_last_batch_id = (int)$this->o_db->getLastInsertID();
+		}
+		return false;
+	}
+	# ----------------------------------------
+	/**
+	 *
+	 */
+	public function close() {
+ 		global $g_change_log_batch_id;
+		if ($g_change_log_batch_id) {
+			
+			$this->o_db->query("
+				UPDATE ca_batch_log 
+				SET elapsed_time = ?
+				WHERE
+				batch_id = ?
+			", array((time() - $this->opn_start_time), $g_change_log_batch_id));
+			
+			$this->opn_start_time = null;
+			$this->opn_last_batch_id = null;
+			$g_change_log_batch_id = null;
+			return true;
 		}
 		return false;
 	}
