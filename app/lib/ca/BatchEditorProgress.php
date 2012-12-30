@@ -69,7 +69,7 @@
 			if ($req->isLoggedIn() && $req->user->canDoAction('can_do_search_reindex')) {
 				set_time_limit(3600*24); // if it takes more than 24 hours we're in trouble
 				
-				$va_errors = BatchProcessor::saveBatchEditorFormForSet($this->request, $this->ot_set, $this->ot_subject, array('callback' => 'caIncrementBatchEditorProgress'));
+				$va_errors = BatchProcessor::saveBatchEditorFormForSet($this->request, $this->ot_set, $this->ot_subject, array('progressCallback' => 'caIncrementBatchEditorProgress', 'reportCallback' => 'caCreateBatchEditorResultsReport'));
 			}
 		}	
 		# -------------------------------------------------------

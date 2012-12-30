@@ -54,12 +54,15 @@
 		}
 		# ----------------------------------------
 		/**
-		 *
+		 * @param array $pa_options
+		 *		progressCallback =
+		 *		reportCallback = 
 		 */
 		public static function saveBatchEditorFormForSet($po_request, $t_set, $t_subject, $pa_options=null) {
  			$va_row_ids = $t_set->getItemRowIDs();
  			$vn_num_items = sizeof($va_row_ids);
- 			$va_errors = array();
+ 			
+ 			$va_notices = $va_errors = array();
  			
  			if ($vb_perform_type_access_checking = (bool)$t_subject->getAppConfig()->get('perform_type_access_checking')) {
  				$va_restrict_to_types = caGetTypeRestrictionsForUser($t_subject->tableName(), array('access' => __CA_BUNDLE_ACCESS_EDIT__));
@@ -122,19 +125,39 @@
  						$va_errors[$t_subject->getPrimaryKey()] = array(
  							'idno' => $t_subject->get($t_subject->getProperty('ID_NUMBERING_ID_FIELD')),
  							'label' => $t_subject->getLabelForDisplay(),
- 							'errors' => $va_action_errors
+ 							'errors' => $va_action_errors,
+ 							'status' => 'ERROR'
  						);
+					} else {
+						$va_notices[$t_subject->getPrimaryKey()] = array(
+							'idno' => $t_subject->get($t_subject->getProperty('ID_NUMBERING_ID_FIELD')),
+ 							'label' => $t_subject->getLabelForDisplay(),
+ 							'status' => 'SUCCESS'
+						);
 					}
 					
-					if (isset($pa_options['callback']) && ($ps_callback = $pa_options['callback'])) {
-						$ps_callback($vn_c, $vn_num_items, _t("Processing %1 (%2) [%3/%4]", $t_subject->getLabelForDisplay(), $t_subject->get($t_subject->getProperty('ID_NUMBERING_ID_FIELD')), $vn_c, $vn_num_items), time() - $vn_start_time, memory_get_usage(true));
+					if (isset($pa_options['progressCallback']) && ($ps_callback = $pa_options['progressCallback'])) {
+						$ps_callback($po_request, $vn_c, $vn_num_items, _t("[%3/%4] Processing %1 (%2)", caTruncateStringWithEllipsis($t_subject->getLabelForDisplay(), 50), $t_subject->get($t_subject->getProperty('ID_NUMBERING_ID_FIELD')), $vn_c, $vn_num_items), time() - $vn_start_time, memory_get_usage(true));
 					}
 					
 					$vn_c++;
 				}
 			}
-			if (isset($pa_options['callback']) && ($ps_callback = $pa_options['callback'])) {
-				$ps_callback($vn_num_items, $vn_num_items, _t("Processed %1 %2", $vn_c, $t_subject->getProperty(($vn_c == 1) ? 'NAME_SINGULAR' : 'NAME_PLURAL')), time() - $vn_start_time, memory_get_usage(true));
+			if (isset($pa_options['progressCallback']) && ($ps_callback = $pa_options['progressCallback'])) {
+				$ps_callback($po_request, $vn_num_items, $vn_num_items, _t("Processed %1 %2", $vn_c, $t_subject->getProperty(($vn_c == 1) ? 'NAME_SINGULAR' : 'NAME_PLURAL')), time() - $vn_start_time, memory_get_usage(true));
+			}
+			
+			if (isset($pa_options['reportCallback']) && ($ps_callback = $pa_options['reportCallback'])) {
+				$va_general = array(
+					'elapsedTime' => time() - $vn_start_time,
+					'numErrors' => sizeof($va_errors),
+					'numProcessed' => sizeof($va_notices),
+					'batchSize' => $vn_num_items,
+					'table' => $t_subject->tableName(),
+					'set_id' => $t_set->getPrimaryKey(),
+					'set_name' => $t_set->getLabelForDisplay()
+				);
+				$ps_callback($po_request, $va_general, $va_notices, $va_errors);
 			}
 			$o_log->close();
 			

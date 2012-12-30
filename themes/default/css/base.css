@@ -4074,6 +4074,53 @@ div.preferenceSectionDivider {
 	margin-bottom: 10px;
 }
 
+.batchProcessingHelpText{
+	padding:20px;
+	margin:20px;
+	line-height:1.3em;
+	font-size:13px;
+	border:3px solid #cccccc;
+}
+
+.batchProcessingStatus { 
+	font-size:16px;
+	color: #828282;
+	text-align: left;
+	padding: 10px;
+	line-height:1.3em;
+	overflow: hidden;
+	height: 1.2em;
+}
+
+.batchProcessingElapsedTime {
+	float: right;
+	font-size: 10px;
+	margin-top: 5px;
+}
+
+.batchProcessingTableProgressGroup {
+	margin-bottom: 10px;
+}
+
+#batchProcessingReport {
+	border: 1px dotted #000000;
+	
+	width: 720px;
+	min-height: 200px;
+	margin: 20px auto 0px auto;
+	padding: 10px;
+	font-size: 11px;
+}
+
+.batchProcessingReportSectionHead {
+	font-weight: bold;
+	font-size: 12px;
+}
+
+#batchProcessingReport ol, #batchProcessingReport ul {
+	line-height: 1.3em;
+}
+
 a.caDeleteLabelButton {
 	text-decoration: none;
 }
