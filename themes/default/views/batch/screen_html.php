@@ -36,7 +36,6 @@
 	if ($vb_can_edit) {
 		print $vs_control_box = caFormControlBox(
 			caJSButton($this->request, __CA_NAV_BUTTON_SAVE__, _t("Execute batch edit"), 'caBatchEditorForm', array('onclick' => 'caConfirmBatchExecutionPanel.showPanel(); return false;')).' '.
-			//caFormSubmitButton($this->request, __CA_NAV_BUTTON_SAVE__, _t("Execute batch edit"), 'caBatchEditorForm').' '.
 			caNavButton($this->request, __CA_NAV_BUTTON_CANCEL__, _t("Cancel"), 'batch', 'Editor', 'Edit/'.$this->request->getActionExtra(), array('set_id' => $vn_set_id)),
 			'', 
 			''
@@ -61,6 +60,9 @@
 			if ($vb_can_edit) { print $vs_control_box; }
 ?>
 			<input type='hidden' name='set_id' value='<?php print $vn_set_id; ?>'/>
+<?php 
+		print $this->render("confirm_html.php");
+?>
 		</form>
 	</div>
 
@@ -68,6 +70,3 @@
 	
 	<?php print caEditorFieldList($va_bundle_list); ?>
 	
-<?php 
-		print $this->render("confirm_html.php");
-?>

@@ -4092,10 +4092,16 @@ div.preferenceSectionDivider {
 	height: 1.2em;
 }
 
-.batchProcessingElapsedTime {
+#batchProcessingElapsedTime {
+	float: left;
+	font-size: 10px;
+	margin-top: 0px;
+}
+
+#batchProcessingCounts {
 	float: right;
 	font-size: 10px;
-	margin-top: 5px;
+	margin-top: 0px;
 }
 
 .batchProcessingTableProgressGroup {
@@ -4106,10 +4112,11 @@ div.preferenceSectionDivider {
 	border: 1px dotted #000000;
 	
 	width: 720px;
-	min-height: 200px;
+	min-height: 30px;
 	margin: 20px auto 0px auto;
 	padding: 10px;
 	font-size: 11px;
+	display: none;
 }
 
 .batchProcessingReportSectionHead {
@@ -4120,6 +4127,13 @@ div.preferenceSectionDivider {
 #batchProcessingReport ol, #batchProcessingReport ul {
 	line-height: 1.3em;
 }
+
+#batchProcessingMore {
+	display: none;
+	font-size: 12px;
+	text-align: center;
+}
+
 
 a.caDeleteLabelButton {
 	text-decoration: none;

@@ -58,15 +58,11 @@
 	
 	function caExecuteBatch() {
 		jQuery("#caBatchEditorForm").submit();
-		//jQuery("#caConfirmBatchExecutionPanelContentArea").load("<?php print caNavUrl($this->request, 'Batch', 'Editor', 'Save/'.$this->request->getActionExtra()); ?>", jQuery("#caBatchEditorForm").serialize() , function(responseText, textStatus, XMLHttpRequest) {
-			// noop	
-		//}); 
 	}
 </script>
 <div id="caConfirmBatchExecutionPanel" class="caConfirmBatchExecutionPanel"> 
 	<div class='dialogHeader'><?php print _t('Batch edit (%1 %2)', $vn_num_items_in_set, $t_subject->getProperty(($vn_num_items_in_set == 1) ? 'NAME_SINGULAR' : 'NAME_PLURAL')); ?></div>
 	<div id="caConfirmBatchExecutionPanelContentArea">
-		<?php print caFormTag($this->request, '#', 'caConfirmBatchExecutionForm', null, $ps_method='post', 'multipart/form-data', '_top', array()); ?>
 
 			<div class="caConfirmBatchExecutionPanelAlertText">
 <?php
@@ -76,11 +72,13 @@
 			<div class="caConfirmBatchExecutionPanelAlertControls">
 				<div class="caConfirmBatchExecutionPanelAlertControlLeft">
 <?php
-					print caHTMLCheckboxInput('run_batch_in_background', array('id' => 'caRunBatchInBackground')).' '._t('Process changes in background');
+					print caHTMLCheckboxInput('run_in_background', array('id' => 'caRunBatchInBackground', 'value' => 1)).' '._t('Process changes in background');
 ?>
 				</div><div class="caConfirmBatchExecutionPanelAlertControlRight">
 <?php
-					print caHTMLCheckboxInput('send_email_when_done', array('id' => 'caSendEmailWhenDone')).' '._t('Send me an email when processing is completed');
+				if ($vs_email = trim($this->request->user->get('email'))) {
+					print caHTMLCheckboxInput('send_email_when_done', array('id' => 'caSendEmailWhenDone', 'value' => 1)).' '._t('Send email to <em>%1</em> when complete', $vs_email);
+				}
 ?>			
 				</div>
 			</div>
@@ -92,8 +90,5 @@
 					</tr>
 				</table>
 			</div>
-			
-			<?php print caHTMLHiddenInput($t_subject->primaryKey(), array('value' => $t_subject->getPrimaryKey())); ?>
-		</form>
 	</div>
 </div>

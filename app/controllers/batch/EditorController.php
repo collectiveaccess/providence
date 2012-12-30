@@ -119,26 +119,8 @@
  			
 	
 			$app = AppController::getInstance();
-			$app->registerPlugin(new BatchEditorProgress($this->request, $t_set, $t_subject));
- 			//$va_errors = BatchProcessor::saveBatchEditorFormForSet($this->request, $this->ops_table_name, $t_set, $t_subject);
- 	if (0) {
- 			$vn_num_errored_rows = sizeof($va_errors);
- 			if($vn_num_errored_rows > 0) {
- 				$this->notification->addNotification(_t('%1 %2 had errors while processing the batch', $vn_num_errored_rows, $t_subject->getProperty(($vn_num_items == 1) ? 'NAME_SINGULAR' : 'NAME_PLURAL')), __NOTIFICATION_TYPE_ERROR__);
- 				
- 				foreach($va_errors as $vn_row_id => $va_error_info) {
- 					$va_error_list = array();
- 					foreach($va_error_info['errors'] as $o_error) {
- 						$va_error_list[] = $o_error->getErrorDescription();
- 					}
- 					$this->notification->addNotification("<em>".$va_error_info['label']."</em> (".$va_error_info['idno']."): ".join("; ", $va_error_list), __NOTIFICATION_TYPE_ERROR__);
- 				}
- 				
- 			} else {
- 				$this->notification->addNotification(_t('Saved changes to %1 %2 in set', $vn_num_items, $t_subject->getProperty(($vn_num_items == 1) ? 'NAME_SINGULAR' : 'NAME_PLURAL')), __NOTIFICATION_TYPE_INFO__);
- 				
- 			}
- 	}
+			$app->registerPlugin(new BatchEditorProgress($this->request, $t_set, $t_subject, array('sendMail' => (bool)$this->request->getParameter('send_email_when_done', pInteger), 'runInBackground' => (bool)$this->request->getParameter('run_in_background', pInteger))));
+
  			$this->render('batch_results_html.php');
  		}
  		# -------------------------------------------------------

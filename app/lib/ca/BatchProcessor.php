@@ -35,6 +35,7 @@
   */
  	require_once(__CA_APP_DIR__."/helpers/batchHelpers.php");
  	require_once(__CA_APP_DIR__."/helpers/configurationHelpers.php");
+ 	require_once(__CA_APP_DIR__."/helpers/mailHelpers.php");
  	require_once(__CA_MODELS_DIR__."/ca_sets.php");
  	require_once(__CA_MODELS_DIR__."/ca_editor_uis.php");
  	require_once(__CA_LIB_DIR__."/core/Datamodel.php");
@@ -57,6 +58,7 @@
 		 * @param array $pa_options
 		 *		progressCallback =
 		 *		reportCallback = 
+		 *		sendMail = 
 		 */
 		public static function saveBatchEditorFormForSet($po_request, $t_set, $t_subject, $pa_options=null) {
  			$va_row_ids = $t_set->getItemRowIDs();
@@ -137,14 +139,14 @@
 					}
 					
 					if (isset($pa_options['progressCallback']) && ($ps_callback = $pa_options['progressCallback'])) {
-						$ps_callback($po_request, $vn_c, $vn_num_items, _t("[%3/%4] Processing %1 (%2)", caTruncateStringWithEllipsis($t_subject->getLabelForDisplay(), 50), $t_subject->get($t_subject->getProperty('ID_NUMBERING_ID_FIELD')), $vn_c, $vn_num_items), time() - $vn_start_time, memory_get_usage(true));
+						$ps_callback($po_request, $vn_c, $vn_num_items, _t("[%3/%4] Processing %1 (%2)", caTruncateStringWithEllipsis($t_subject->getLabelForDisplay(), 50), $t_subject->get($t_subject->getProperty('ID_NUMBERING_ID_FIELD')), $vn_c, $vn_num_items), time() - $vn_start_time, memory_get_usage(true), sizeof($va_notices), sizeof($va_errors));
 					}
 					
 					$vn_c++;
 				}
 			}
 			if (isset($pa_options['progressCallback']) && ($ps_callback = $pa_options['progressCallback'])) {
-				$ps_callback($po_request, $vn_num_items, $vn_num_items, _t("Processed %1 %2", $vn_c, $t_subject->getProperty(($vn_c == 1) ? 'NAME_SINGULAR' : 'NAME_PLURAL')), time() - $vn_start_time, memory_get_usage(true));
+				$ps_callback($po_request, $vn_num_items, $vn_num_items, _t("Processing completed"), time() - $vn_start_time, memory_get_usage(true), sizeof($va_notices), sizeof($va_errors));
 			}
 			
 			if (isset($pa_options['reportCallback']) && ($ps_callback = $pa_options['reportCallback'])) {
@@ -166,6 +168,21 @@
 					$o_trans->rollback();
 				} else {
 					$o_trans->commit();
+				}
+			}
+			
+			if (isset($pa_options['sendMail']) && $pa_options['sendMail']) {
+				if ($vs_email = trim($po_request->user->get('email'))) {
+					caSendMessageUsingView($po_request, array($vs_email => $po_request->user->get('fname').' '.$po_request->user->get('lname')), __CA_ADMIN_EMAIL__, _t('Batch complete'), 'batch_processing_completed.tpl', 
+						array(
+							'notices' => $va_notices, 'errors' => $va_errors,
+							'batchSize' => $vn_num_items, 'numErrors' => sizeof($va_errors), 'numProcessed' => sizeof($va_notices),
+							'subjectNameSingular' => $t_subject->getProperty('NAME_SINGULAR'),
+							'subjectNamePlural' => $t_subject->getProperty('NAME_PLURAL'),
+							'completedOn' => caGetLocalizedDate(time()),
+							'setName' => $t_set->getLabelForDisplay()
+						)
+					);
 				}
 			}
 			

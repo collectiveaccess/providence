@@ -35,11 +35,17 @@
 	<div id="progressbar"></div>
 </div>
 
+<div id="batchProcessingCounts"></div>
 <div id="batchProcessingElapsedTime"></div>
+
+<br class="clear"/>
 
 <div id="batchProcessingReport"></div>
 <div class="editorBottomPadding"><!-- empty --></div>
 
+<div id="batchProcessingMore">
+	<?php print caNavLink($this->request, _t('Perform another batch edit'), '', 'batch', 'Editor', 'Edit/'.$this->request->getActionExtra(), array('set_id' => $this->getVar('set_id'))); ?>
+</div>
 	
 <script type="text/javascript">
 		jQuery('#progressbar').progressbar({
@@ -48,7 +54,7 @@
 </script>
 
 <?php
-	function caIncrementBatchEditorProgress($po_request, $pn_rows_complete, $pn_total_rows, $ps_message, $pn_elapsed_time, $pn_memory_used) {
+	function caIncrementBatchEditorProgress($po_request, $pn_rows_complete, $pn_total_rows, $ps_message, $pn_elapsed_time, $pn_memory_used, $pn_num_processed, $pn_num_errors) {
 		$pn_percentage = ($pn_rows_complete/$pn_total_rows) * 100;
 		if (is_null($ps_message)) {
 			$ps_message = _t('Processed %1/%2', $pn_rows_complete, $pn_total_rows);
@@ -57,6 +63,8 @@
 		print "<script type='text/javascript'>";
 		print "jQuery('#progressbar').progressbar('value',{$pn_percentage}); jQuery('#batchProcessingTableStatus').html('{$ps_message}');";
 		print "jQuery('#batchProcessingElapsedTime').html('".caFormatInterval($pn_elapsed_time)."/".sprintf("%4.2f mb", ($pn_memory_used/ 1048576))."');"; 
+		print "jQuery('#batchProcessingCounts').html('".addslashes(_t("%1 processed; %2 errors", $pn_num_processed, $pn_num_errors))."');"; 
+		
 		print "</script>";
 		caFlushOutput();
 	}
@@ -83,7 +91,8 @@
 		}
 		
 		print "<script type='text/javascript'>";
-		print "jQuery('#batchProcessingReport').html('".addslashes($vs_buf)."');"; 
+		print "jQuery('#batchProcessingReport').html('".addslashes($vs_buf)."').fadeIn(300);"; 
+		print "jQuery('#batchProcessingMore').fadeIn(300);"; 
 		print "</script>";
 		caFlushOutput();
 	}
