@@ -71,27 +71,58 @@
 ?>			
 			</div>
 			<div class="caConfirmBatchExecutionPanelAlertControls">
+				<table class="caConfirmBatchExecutionPanelAlertControls">
+					<tr style="vertical-align: top;">
 <?php
 	if ($vb_queue_enabled) {
 ?>
-				<div class="caConfirmBatchExecutionPanelAlertControlLeft">
+				<td class="caConfirmBatchExecutionPanelAlertControls">
 <?php
-					print caHTMLCheckboxInput('run_in_background', array('id' => 'caRunBatchInBackground', 'value' => 1)).' '._t('Process changes in background');
+					print caHTMLCheckboxInput('run_in_background', array('id' => 'caRunBatchInBackground', 'value' => 1));
 ?>
-				</div>
+				</td>
+				<td class="caConfirmBatchExecutionPanelAlertControls">
+<?php
+					print _t('Process in background');
+?>
+
+				</td>
 <?php
 	}
 	if ($vs_email = trim($this->request->user->get('email'))) {
 ?>
-				<div class="<?php print $vb_queue_enabled ? "caConfirmBatchExecutionPanelAlertControlRight" : "caConfirmBatchExecutionPanelAlertControlLeft"; ?>">
+				<td class="caConfirmBatchExecutionPanelAlertControl">
 <?php			
-					print caHTMLCheckboxInput('send_email_when_done', array('id' => 'caSendEmailWhenDone', 'value' => 1)).' '._t('Send email to <em>%1</em> when complete', $vs_email);
+					print caHTMLCheckboxInput('send_email_when_done', array('id' => 'caSendEmailWhenDone', 'value' => 1));
+?>
+				</td>
+				<td class="caConfirmBatchExecutionPanelAlertControl">
+<?php					
+					print _t('Send email to <strong>%1</strong> when done', $vs_email);
 ?>			
-				</div>
+				</td>
 <?php
 	}
+	
+	if (($vs_sms = trim($this->request->user->get('sms_number'))) && (bool)$this->request->config->get('enable_sms_notifications')) {
 ?>
+				<td class="caConfirmBatchExecutionPanelAlertControl">
+<?php			
+					print caHTMLCheckboxInput('send_sms_when_done', array('id' => 'caSendSMSWhenDone', 'value' => 1));
+?>
+				</td>
+				<td class="caConfirmBatchExecutionPanelAlertControl">
+<?php
+					print _t('Send SMS to <strong>%1</strong> when done', $vs_sms);
+?>			
+				</td>
+<?php
+	}
+?>				
+					</tr>
+				</table>
 			</div>
+			<br class="clear"/>
 			<div id="caConfirmBatchExecutionPanelControlButtons">
 				<table>
 					<tr>

@@ -43,6 +43,7 @@
  	require_once(__CA_LIB_DIR__."/ca/ResultContext.php");
 	require_once(__CA_LIB_DIR__."/core/Logging/Eventlog.php");
 	require_once(__CA_LIB_DIR__."/core/Logging/Batchlog.php");
+	require_once(__CA_LIB_DIR__."/core/SMS.php");
   
 	class BatchProcessor {
 		# ----------------------------------------
@@ -172,6 +173,9 @@
 				}
 			}
 			
+			$vs_set_name = $t_set->getLabelForDisplay();
+			$vs_started_on = caGetLocalizedDate($vn_start_time);
+			
 			if (isset($pa_options['sendMail']) && $pa_options['sendMail']) {
 				if ($vs_email = trim($po_request->user->get('email'))) {
 					caSendMessageUsingView($po_request, array($vs_email => $po_request->user->get('fname').' '.$po_request->user->get('lname')), __CA_ADMIN_EMAIL__, _t('[%1] Batch edit completed', $po_request->config->get('app_display_name')), 'batch_processing_completed.tpl', 
@@ -180,14 +184,18 @@
 							'batchSize' => $vn_num_items, 'numErrors' => sizeof($va_errors), 'numProcessed' => sizeof($va_notices),
 							'subjectNameSingular' => $t_subject->getProperty('NAME_SINGULAR'),
 							'subjectNamePlural' => $t_subject->getProperty('NAME_PLURAL'),
+							'startedOn' => $vs_started_on,
 							'completedOn' => caGetLocalizedDate(time()),
-							'setName' => $t_set->getLabelForDisplay(),
+							'setName' => $vs_set_name,
 							'elapsedTime' => caFormatInterval($vn_elapsed_time)
 						)
 					);
 				}
 			}
 			
+			if (isset($pa_options['sendSMS']) && $pa_options['sendSMS']) {
+				SMS::send($po_request->getUserID(), _t("[%1] Batch processing for set %2 with %3 %4 begun at %5 is complete", $po_request->config->get('app_display_name'), caTruncateStringWithEllipsis($vs_set_name, 20), $vn_num_items, $t_subject->getProperty(($vn_num_items == 1) ? 'NAME_SINGULAR' : 'NAME_PLURAL'), $vs_started_on));
+			}
 			return $va_errors;
 		}
 		# ----------------------------------------

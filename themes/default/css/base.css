@@ -4891,16 +4891,17 @@ div.searchlight-results div.searchlight-selected {
 
 .caConfirmBatchExecutionPanelAlertControls {
 	font-size: 11px;
-	padding: 10px;
 	height: 25px;
+	margin-bottom: 10px;
 }
 
-.caConfirmBatchExecutionPanelAlertControlLeft {
-	float: left;
+table.caConfirmBatchExecutionPanelAlertControls {
+	margin-left:auto; 
+    margin-right:auto;
 }
 
-.caConfirmBatchExecutionPanelAlertControlRight {
-	float: right;
+.caConfirmBatchExecutionPanelAlertControl {
+	font-size: 11px;
 }
 
 /* Type change */

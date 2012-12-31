@@ -130,7 +130,8 @@
 						'screen' => $this->request->getActionExtra(),
 						'user_id' => $this->request->getUserID(),
 						'values' => $_REQUEST,
-						'sendMail' => (bool)$this->request->getParameter('send_email_when_done', pInteger)
+						'sendMail' => (bool)$this->request->getParameter('send_email_when_done', pInteger),
+						'sendSMS' => (bool)$this->request->getParameter('send_sms_when_done', pInteger)
 					),
 					array("priority" => 100, "entity_key" => $vs_entity_key, "row_key" => $vs_row_key, 'user_id' => $this->request->getUserID())))
 				{
@@ -141,7 +142,7 @@
 			} else { 
 				// run now
 				$app = AppController::getInstance();
-				$app->registerPlugin(new BatchEditorProgress($this->request, $t_set, $t_subject, array('sendMail' => (bool)$this->request->getParameter('send_email_when_done', pInteger), 'runInBackground' => (bool)$this->request->getParameter('run_in_background', pInteger))));
+				$app->registerPlugin(new BatchEditorProgress($this->request, $t_set, $t_subject, array('sendMail' => (bool)$this->request->getParameter('send_email_when_done', pInteger), 'sendSMS' => (bool)$this->request->getParameter('send_sms_when_done', pInteger), 'runInBackground' => (bool)$this->request->getParameter('run_in_background', pInteger))));
 				$this->render('batch_results_html.php');
 			}
  		}
