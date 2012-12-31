@@ -94,7 +94,7 @@
  			}
 			$this->view->setVar('t_ui', $t_ui);
  			
- 			$this->render('screen_html.php');
+ 			$this->render('editor/screen_html.php');
  		}
  		# -------------------------------------------------------
  		/**
@@ -138,12 +138,12 @@
 					//$this->postError(100, _t("Couldn't queue batch processing for"),"EditorContro->_processMedia()");
 					
 				}
-				$this->render('batch_queued_html.php');
+				$this->render('editor/batch_queued_html.php');
 			} else { 
 				// run now
 				$app = AppController::getInstance();
 				$app->registerPlugin(new BatchEditorProgress($this->request, $t_set, $t_subject, array('sendMail' => (bool)$this->request->getParameter('send_email_when_done', pInteger), 'sendSMS' => (bool)$this->request->getParameter('send_sms_when_done', pInteger), 'runInBackground' => (bool)$this->request->getParameter('run_in_background', pInteger))));
-				$this->render('batch_results_html.php');
+				$this->render('editor/batch_results_html.php');
 			}
  		}
  		# -------------------------------------------------------
@@ -275,7 +275,7 @@
 			$this->view->setVar('screen', $this->request->getActionExtra());						// name of screen
 			$this->view->setVar('result_context', $this->getResultContext());
 			
- 			return $this->render('widget_batch_info_html.php', true);
+ 			return $this->render('editor/widget_batch_info_html.php', true);
  		}
 		# ------------------------------------------------------------------
  	}

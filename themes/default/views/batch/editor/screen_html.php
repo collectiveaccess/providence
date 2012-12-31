@@ -55,7 +55,7 @@
 ?>
 			<input type='hidden' name='set_id' value='<?php print $vn_set_id; ?>'/>
 <?php 
-			print $this->render("confirm_html.php");
+			print $this->render("editor/confirm_html.php");
 ?>
 		</form>
 	</div>
