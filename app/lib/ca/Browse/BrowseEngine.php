@@ -1540,23 +1540,7 @@
 			if ($o_results->numHits() != 1) {
 				$va_facets = $this->getFacetList();
 				$o_browse_cache = new BrowseCache();
-				$va_parent_browse_params = $this->opo_ca_browse_cache->getParameters();;
-				
-				
-				//
-				// Get facets in parent browse (browse with all criteria except the last)
-				// for availability checking. If a facet wasn't available for the parent browse it won't be
-				// available for this one either.
-				//
-				$va_facets = null;
-				if (is_array($va_cur_criteria = $va_parent_browse_params['criteria'])) {
-					array_pop($va_parent_browse_params['criteria']);
-					if ($o_browse_cache->load(BrowseCache::makeCacheKey($va_parent_browse_params, is_array($this->opa_browse_type_ids) ? $this->opa_browse_type_ids : array()))) {
-						if (is_array($va_facet_list = $o_browse_cache->getFacets())) {
-							$va_facets = array_keys($va_facet_list);
-						}
-					}
-				}
+				$va_parent_browse_params = $this->opo_ca_browse_cache->getParameters();
 				
 				//
 				// If we couldn't get facets for a parent browse then use full facet list
@@ -1600,6 +1584,36 @@
 			// is facet cached?
 			if (isset($va_facet_cache[$ps_facet_name]) && is_array($va_facet_cache[$ps_facet_name])) { return $va_facet_cache[$ps_facet_name]; }
 			return $this->getFacetContent($ps_facet_name, $pa_options);
+		}
+		# ------------------------------------------------------
+		/**
+		 * Returns list of hierarchy_ids used by entries in the specified authority facet. For example, if the current browse
+		 * has an authority facet for vocabulary terms (aka. ca_list_items), then this methods will return list_ids for all of 
+		 * the lists in which the facet entries reside. For a ca_places authority facet, this will return all of the place hierarchy_ids
+		 * for which places in the facet reside.
+		 *
+		 * Note that this method only returns values for authority facets. It is not relevant for any other facet type.
+		 *
+		 * @param string $ps_facet_name The name of the authority facet
+		 * @param array $pa_options Options:
+		 *		checkAccess = array of access values to filter facets that have an 'access' field by
+		 *
+		 * @return array A list of ids
+		 */
+		public function getHierarchyIDsForFacet($ps_facet_name, $pa_options=null) {
+			if (!is_array($this->opa_browse_settings)) { return null; }
+			$va_facet_cache = $this->opo_ca_browse_cache->getFacets();
+			
+			// is facet cached?
+			if (!isset($va_facet_cache[$ps_facet_name]) || !is_array($va_facet_cache[$ps_facet_name])) {
+				$va_facet_cache[$ps_facet_name] = $this->getFacetContent($ps_facet_name, $pa_options);
+			}
+			
+			$va_hier_ids = array();
+			foreach($va_facet_cache[$ps_facet_name] as $vn_id => $va_item) {
+				$va_hier_ids[$va_item['hierarchy_id']] = true;
+			}
+			return array_keys($va_hier_ids);
 		}
 		# ------------------------------------------------------
 		/**
@@ -2262,14 +2276,25 @@
 							$qr_res = $this->opo_db->query($vs_sql, $vs_list_name);
 						//print $vs_sql." [$vs_list_name]";
 							return ((int)$qr_res->numRows() > 1) ? true : false;
-						} else {
+						} else {						
+							// Get label ordering fields
+							$va_ordering_fields_to_fetch = (isset($va_facet_info['order_by_label_fields']) && is_array($va_facet_info['order_by_label_fields'])) ? $va_facet_info['order_by_label_fields'] : array();
+	
+							$va_orderbys = array();
+							$t_rel_item_label = new ca_list_item_labels();
+							foreach($va_ordering_fields_to_fetch as $vs_sort_by_field) {
+								if (!$t_rel_item_label->hasField($vs_sort_by_field)) { continue; }
+								$va_orderbys[] = $va_label_selects[] = 'lil.'.$vs_sort_by_field;
+							}
+							
+							$vs_order_by = (sizeof($va_orderbys) ? "ORDER BY ".join(', ', $va_orderbys) : '');
 							$vs_sql = "
 								SELECT DISTINCT lil.item_id, lil.name_singular, lil.name_plural, lil.locale_id
 								FROM ca_list_items li
 								INNER JOIN ca_list_item_labels AS lil ON lil.item_id = li.item_id
 								{$vs_join_sql}
 								WHERE
-									ca_lists.list_code = ? {$vs_where_sql}";
+									ca_lists.list_code = ? {$vs_where_sql} {$vs_order_by}";
 							//print $vs_sql." [$vs_list_name]";
 							$qr_res = $this->opo_db->query($vs_sql, $vs_list_name);
 							
@@ -2887,10 +2912,14 @@ if (!$va_facet_info['show_all_when_first_facet'] || ($this->numCriteria() > 0)) 
 					$va_selects[] = $t_rel_item->tableName().'.'.$vs_rel_pk;				// get primary key of related
 					
 					
-					$vs_hier_parent_id_fld = null;
+					$vs_hier_parent_id_fld = $vs_hier_id_fld = null;
 					if ($vb_rel_is_hierarchical) {
 						$vs_hier_parent_id_fld = $t_rel_item->getProperty('HIERARCHY_PARENT_ID_FLD');
 						$va_selects[] = $t_rel_item->tableName().'.'.$vs_hier_parent_id_fld;
+						
+						if ($vs_hier_id_fld = $t_rel_item->getProperty('HIERARCHY_ID_FLD')) {
+							$va_selects[] = $t_rel_item->tableName().'.'.$vs_hier_id_fld;
+						}
 					}
 					
 					// analyze group_fields (if defined) and add them to the query
@@ -3022,6 +3051,7 @@ if (!$va_facet_info['show_all_when_first_facet'] || ($this->numCriteria() > 0)) 
 									'id' => $va_fetched_row[$vs_rel_pk],
 									'type_id' => array(),
 									'parent_id' => $vb_rel_is_hierarchical ? $va_fetched_row[$vs_hier_parent_id_fld] : null,
+									'hierarchy_id' => $vb_rel_is_hierarchical ? $va_fetched_row[$vs_hier_id_fld] : null,
 									'rel_type_id' => array(),
 									'child_count' => 0
 								);
@@ -3045,7 +3075,7 @@ if (!$va_facet_info['show_all_when_first_facet'] || ($this->numCriteria() > 0)) 
 						if (!isset($va_facet_info['dont_expand_hierarchically']) || !$va_facet_info['dont_expand_hierarchically']) {
 							while(sizeof($va_ids = array_keys($va_facet_parents))) {
 								$vs_sql = "
-									SELECT p.".$t_rel_item->primaryKey().", p.{$vs_hier_parent_id_fld}
+									SELECT p.".$t_rel_item->primaryKey().", p.{$vs_hier_parent_id_fld}".(($vs_hier_id_fld = $t_rel_item->getProperty('HIERARCHY_ID_FLD')) ? ", p.{$vs_hier_id_fld}" : "")."
 									FROM ".$t_rel_item->tableName()." p
 									WHERE
 										(p.".$t_rel_item->primaryKey()." IN (?)) AND (p.{$vs_hier_parent_id_fld} IS NOT NULL)
@@ -3059,6 +3089,7 @@ if (!$va_facet_info['show_all_when_first_facet'] || ($this->numCriteria() > 0)) 
 										'id' => $va_fetched_row[$vs_rel_pk],
 										'type_id' => array(),
 										'parent_id' => $vb_rel_is_hierarchical ? $va_fetched_row[$vs_hier_parent_id_fld] : null,
+										'hierarchy_id' => $vb_rel_is_hierarchical ? $va_fetched_row[$vs_hier_id_fld] : null,
 										'rel_type_id' => array(),
 										'child_count' => 0
 									);

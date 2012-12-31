@@ -48,6 +48,7 @@ var caUI = caUI || {};
 			showOnNewIDList: [],
 			hideOnNewIDList: [],
 			enableOnNewIDList: [],
+			disableOnExistingIDList: [],
 			counter: 0,
 			minRepeats: 0,
 			maxRepeats: 65535,
@@ -58,6 +59,8 @@ var caUI = caUI || {};
 			incrementLocalesForNewBundles: true,
 			defaultValues: {},
 			readonly: 0,
+			
+			sortInitialValuesBy: null,
 			
 			isSortable: false,
 			listSortOrderID: null,
@@ -239,9 +242,20 @@ var caUI = caUI || {};
 						jQuery(that.container + ' #' + hide_id +'new_' + curCount).hide();}
 					);
 				}
+				
 				if (this.enableOnNewIDList.length > 0) {
-					jQuery.each(this.enableOnNewIDList, function(i, enable_id) { 
-						jQuery(that.container + ' #' + enable_id +'new_' + curCount).attr('disabled', false); }
+					jQuery.each(this.enableOnNewIDList, 
+						function(i, enable_id) { 
+							jQuery(that.container + ' #' + enable_id +'new_' + curCount).prop('disabled', false); 
+						}
+					);
+				}
+			} else {
+				if (this.disableOnExistingIDList.length > 0) {
+					jQuery.each(this.disableOnExistingIDList, 
+						function(i, disable_id) { 
+							jQuery(that.container + ' #' + disable_id + id).prop('disabled', true); 
+						}
 					);
 				}
 			}
@@ -350,8 +364,24 @@ var caUI = caUI || {};
 		
 		// create initial values
 		var initalizedCount = 0;
+		var initialValuesSorted = [];
+		
+		// create an array so we can sort
 		jQuery.each(that.initialValues, function(k, v) {
-			that.addToBundle(k, v, true);
+			v['_key'] = k;
+			initialValuesSorted.push(v);
+		});
+		
+		// perform configured sort
+		if (that.sortInitialValuesBy) {
+			initialValuesSorted.sort(function(a, b) { 
+				return a[that.sortInitialValuesBy] - b[that.sortInitialValuesBy];
+			});
+		}
+		
+		// create the bundles
+		jQuery.each(initialValuesSorted, function(k, v) {
+			that.addToBundle(v['_key'], v, true);
 			initalizedCount++;
 		});
 		

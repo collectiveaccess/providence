@@ -1392,6 +1392,7 @@ div.search-hier-browser-box {
 	border: 2px solid #e6e6e6;
 	padding-left:10px;
 }
+
 .labelInfo {
 	background-color: #fbfbfb;
 	border-top: 1px dotted #e6e6e6;
@@ -1918,7 +1919,7 @@ div.caMediaOverlayControls .objectInfo{
 
 div.caMediaOverlayControls .repNav {
 	font-size: 12px;
-	width: 80px;
+	width: 100px;
 	float:left;
 }
 
@@ -1997,6 +1998,13 @@ img.caRepToolsRotateControlButton:hover {
 	margin-left: -300px;
 }
 
+.annotation_media_player {
+	position: relative;
+	width: 600px;
+	height: 32px;
+	margin-top: 16px;
+}
+
 /* overlays (for search results QuickLook) */
 #quickLookPanel {
 	position: fixed; 
@@ -2051,10 +2059,69 @@ table.attributeListItem {
 	padding: 0px;
 	margin: 0px;
 }
-td.attributeListItem {
+.attributeListItem td {
 	padding: 0px;
-	padding-right: 5px;
+	padding-right: 15px;
 	margin: 0px;
+	font-weight: normal;
+}
+
+
+/*** EDITOR FORMS ***/
+#editorFieldListHeader {
+	font-size: 13px;
+	font-weight: bold;
+	text-align: center;
+	color: #666;
+	padding-bottom: 5px;
+}
+#editorFieldList {
+	position: fixed;
+	background: #ffffff;
+	opacity: 0.8;
+	width: 210px;
+	height: 250px;
+	padding: 8px;
+	border: 2px solid #000000;
+	top: 0px;
+	left: 0px;
+	
+	display: none;
+	
+	-moz-border-radius-: 10px; 
+	-webkit-border-radius: 10px;
+	-moz-border-radius: 10px; 
+}
+
+a.editorFieldListLink {
+	font-size: 12px;
+	text-decoration: none;
+	font-family: Verdana, Arial, Helvetica, sans-serif;
+	line-height: 18px;
+}
+
+#editorFieldListContentArea {
+	overflow: auto;
+	font-size: 12px;
+	text-decoration: none;
+	font-family: Verdana, Arial, Helvetica, sans-serif;
+	line-height: 18px;
+	
+	width: 100%;
+	height: 90%;
+}
+
+#editorFieldList #editorFieldListClose{
+	float: right;
+	width:15px;
+	height:16px;
+	margin:5px;
+	background-image:url("../graphics/buttons/x.png");
+}
+
+/* container for HTML code that files #editorFieldList */
+#editorFieldListHTML {
+	display: none;
 }
 
 /*** EDITOR FORMS ***/
@@ -3298,6 +3365,16 @@ div.bundleDisplayTemplateKey {
 	color: #000000;
 }
 
+div.bundleDisplayElementSettingsControl {
+	float: right; 
+	margin-right: 15px;
+}
+
+.bundleDisplayElementBundleName {
+	font-size: 9px;
+	font-style: italic;
+}
+
 /* UI Editor styles */
 table.uiScreenItem {
 	width: 100%;
@@ -4416,7 +4493,7 @@ a.caClientOrderOverviewButton:hover {
 }
 
 /* -------------------------------------------------*/
-/* Record-level Access screen                       */
+/* Item-level access screen                         */
 /* -------------------------------------------------*/
 
 .globalAccess {
@@ -4635,6 +4712,9 @@ div.searchlight-results div.searchlight-selected {
 .olMapKMLInput {
 	display: none;
 	margin-top: 18px !important;
+}
+.olMap {
+	clear:left;
 }
 
 

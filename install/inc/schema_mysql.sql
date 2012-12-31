@@ -2180,11 +2180,11 @@ create unique index u_all on ca_data_importer_labels
 
 /*==========================================================================*/
 create table ca_data_importer_groups (
-   group_id          int unsigned         not null AUTO_INCREMENT,
+   group_id             int unsigned         not null AUTO_INCREMENT,
    importer_id          int unsigned         not null,
    group_code           varchar(100)         not null,
-   table_num            tinyint unsigned     not null,
-   settings          longtext              not null,
+   destination          varchar(1024)        not null,
+   settings             longtext             not null,
 
    primary key (group_id),
 
@@ -2194,7 +2194,6 @@ create table ca_data_importer_groups (
 
 create index i_importer_id on ca_data_importer_groups(importer_id);
 create unique index u_group_code on ca_data_importer_groups(importer_id, group_code);
-create index i_table_num on ca_data_importer_groups(table_num);
 
 /*==========================================================================*/
 create table ca_data_importer_items (
@@ -6504,6 +6503,8 @@ create table ca_commerce_orders
   shipping_date int unsigned null,
   shipped_on_date int unsigned null,
   
+  sales_agent varchar(1024) not null,
+  
   additional_fees longtext not null,
    
   refund_date int unsigned null,
@@ -6667,5 +6668,5 @@ create table ca_schema_updates (
 ) engine=innodb CHARACTER SET utf8 COLLATE utf8_general_ci;
 
 /* Indicate up to what migration this schema definition covers */
-/* CURRENT MIGRATION: 70 */
-INSERT IGNORE INTO ca_schema_updates (version_num, datetime) VALUES (70, unix_timestamp());
+/* CURRENT MIGRATION: 72 */
+INSERT IGNORE INTO ca_schema_updates (version_num, datetime) VALUES (72, unix_timestamp());

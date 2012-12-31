@@ -558,13 +558,13 @@ class WLPlugGeographicMapOpenLayers Extends BaseGeographicMapPlugIn Implements I
 			if (e && ((e.keyCode || e.which || e.charCode || 0) !== 13)) { return true; }
 			var t = jQuery('#{fieldNamePrefix}".$pa_element_info['element_id']."_{n}_search').val();
 			jQuery('#{fieldNamePrefix}".$pa_element_info['element_id']."_{n}_search_button').attr('src', '".$po_request->getThemeUrlPath()."/graphics/icons/indicator.gif');
-			console.log(jQuery('#{fieldNamePrefix}".$pa_element_info['element_id']."_{n}_search_button').attr('src'));
-			geocoder = new google.maps.Geocoder();
+			var geocoder = new google.maps.Geocoder();
 			geocoder.geocode( { 'address': t}, function(results, status) {
 				jQuery('#{fieldNamePrefix}".$pa_element_info['element_id']."_{n}_search_button').attr('src', '".$po_request->getThemeUrlPath()."/graphics/buttons/glass.png');
-				
+				console.log(results);
 				if (status == google.maps.GeocoderStatus.OK) {
-					map_{$vs_id}.panTo(new OpenLayers.LonLat(results[0]['geometry']['location']['Ya'], results[0]['geometry']['location']['Xa']).transform(new OpenLayers.Projection('EPSG:4326'),map_{$vs_id}.getProjectionObject()));
+					var loc = results[0]['geometry']['location'];
+					map_{$vs_id}.panTo(new OpenLayers.LonLat(loc.lng(), loc.lat()).transform(new OpenLayers.Projection('EPSG:4326'),map_{$vs_id}.getProjectionObject()));
 					map_{$vs_id}.zoomTo((results[0]['geometry']['location_type'] == 'APPROXIMATE') ? 10 : 14);
 				}
 			});

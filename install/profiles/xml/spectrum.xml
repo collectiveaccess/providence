@@ -9234,7 +9234,7 @@
             <label locale="en_US">
               <name>Object valuation renewal date</name>
             </label>
-			<label locale="fe_FR">
+			<label locale="fr_FR">
               <name>Date de renouvellement d'estimation de l'objet</name>
             </label>
           </labels>

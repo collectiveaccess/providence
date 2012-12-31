@@ -669,7 +669,8 @@ class TimeExpressionParser {
 		}
 	
 		# remove commas
-		$ps_expression = str_replace(',', '', $ps_expression);
+		$ps_expression = str_replace(',', ' ', $ps_expression);
+		$ps_expression = preg_replace('![ ]+!', ' ', $ps_expression);
 				
 		# remove articles
 		$definiteArticles = $this->opo_language_settings->getList("definiteArticles");
@@ -2013,10 +2014,10 @@ class TimeExpressionParser {
 			// start is same as end so just output start date
 			if ($va_dates['start'] == $va_dates['end']) {
 				if ($pa_options['start_as_iso8601'] || $pa_options['end_as_iso8601']) {
-					return $this->getISODateTime($va_start_pieces, 'FULL');
+					return $this->getISODateTime($va_start_pieces, 'FULL', $pa_options);
 				}
 				if ((isset($pa_options['dateFormat']) && ($pa_options['dateFormat'] == 'iso8601'))) { 
-					return $this->getISODateTime($va_start_pieces, 'START');
+					return $this->getISODateTime($va_start_pieces, 'START', $pa_options);
 				} else {
 					return $this->_dateTimeToText($va_start_pieces, $pa_options);
 				}
@@ -2038,16 +2039,16 @@ class TimeExpressionParser {
 			}
 		
 			if ($pa_options['start_as_iso8601']) {
-				return $this->getISODateTime($va_start_pieces, 'FULL');
+				return $this->getISODateTime($va_start_pieces, 'FULL', $pa_options);
 			}
 			if ($pa_options['end_as_iso8601']) {
-				return $this->getISODateTime($va_end_pieces, 'FULL');
+				return $this->getISODateTime($va_end_pieces, 'FULL', $pa_options);
 			}
 			
 			
 			if (isset($pa_options['dateFormat']) && ($pa_options['dateFormat'] == 'iso8601')) {
-				$vs_start = $this->getISODateTime($va_start_pieces, 'START');
-				$vs_end = $this->getISODateTime($va_end_pieces, 'END');
+				$vs_start = $this->getISODateTime($va_start_pieces, 'START', $pa_options);
+				$vs_end = $this->getISODateTime($va_end_pieces, 'END', $pa_options);
 				
 				if ($vs_start != $vs_end) {
 					return "{$vs_start}/{$vs_end}";
@@ -2695,9 +2696,14 @@ class TimeExpressionParser {
 		$this->opb_debug = ($pn_debug) ? true: false;
 	}
 	# -------------------------------------------------------------------
-	function getISODateTime($pa_date, $ps_mode='START') {
+	function getISODateTime($pa_date, $ps_mode='START', $pa_options=null) {
 		if ($ps_mode = 'FULL') {
-			return $pa_date['year'].'-'.sprintf("%02d", $pa_date['month']).'-'.sprintf("%02d", $pa_date['day']).'T'.sprintf("%02d", $pa_date['hours']).':'.sprintf("%02d", $pa_date['minutes']).':'.sprintf("%02d", $pa_date['seconds']).'Z';
+			$vs_date = $pa_date['year'].'-'.sprintf("%02d", $pa_date['month']).'-'.sprintf("%02d", $pa_date['day']);
+			
+			if (!isset($pa_options['timeOmit']) || !$pa_options['timeOmit']) {
+				$vs_date .= 'T'.sprintf("%02d", $pa_date['hours']).':'.sprintf("%02d", $pa_date['minutes']).':'.sprintf("%02d", $pa_date['seconds']).'Z';
+			}
+			return $vs_date;
 		}
 		if (
 			(!($pa_date['month'] == 1 && $pa_date['day'] == 1 && ($ps_mode == 'START'))) &&
@@ -2708,11 +2714,13 @@ class TimeExpressionParser {
 			$vs_date = $pa_date['year'];
 		}
 		
-		if (
-			(!($pa_date['hours'] == 0 && $pa_date['minutes'] == 0 && $pa_date['seconds'] == 0 && ($ps_mode == 'START'))) &&
-			(!($pa_date['hours'] == 23 && $pa_date['minutes'] == 59 && $pa_date['seconds'] == 59 && ($ps_mode == 'END')))
-		) {
-			$vs_date .= 'T'.sprintf("%02d", $pa_date['hours']).':'.sprintf("%02d", $pa_date['minutes']).':'.sprintf("%02d", $pa_date['seconds']).'Z';
+		if (!isset($pa_options['timeOmit']) || !$pa_options['timeOmit']) {
+			if (
+				(!($pa_date['hours'] == 0 && $pa_date['minutes'] == 0 && $pa_date['seconds'] == 0 && ($ps_mode == 'START'))) &&
+				(!($pa_date['hours'] == 23 && $pa_date['minutes'] == 59 && $pa_date['seconds'] == 59 && ($ps_mode == 'END')))
+			) {
+				$vs_date .= 'T'.sprintf("%02d", $pa_date['hours']).':'.sprintf("%02d", $pa_date['minutes']).':'.sprintf("%02d", $pa_date['seconds']).'Z';
+			}
 		}
 		
 		return $vs_date;

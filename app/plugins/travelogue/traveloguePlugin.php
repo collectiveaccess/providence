@@ -80,12 +80,16 @@
 				if (!$vs_server) { return; }
 				if (!$vs_username) { return; }
 				
-				$o_mail = new Zend_Mail_Storage_Imap(array(
-					'host'     => $vs_server,
-					'user'     => $vs_username,
-					'password' => $vs_password, 
-					'ssl'      => $vs_ssl)
-				);
+				try {
+					$o_mail = new Zend_Mail_Storage_Imap(array(
+						'host'     => $vs_server,
+						'user'     => $vs_username,
+						'password' => $vs_password, 
+						'ssl'      => $vs_ssl)
+					);
+				} catch (Exception $e) {
+					return null;
+				}
 				
 				$va_mimetypes = $this->opo_config->getList('mimetypes');
 				

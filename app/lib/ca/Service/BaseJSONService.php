@@ -72,19 +72,21 @@ class BaseJSONService {
 			}
 		} else {
 			$this->opa_post = array();
-		}
-		
-		if(!$this->opo_dm->getTableNum($ps_table)){
-			$this->addError(_t("Table name does not exist"));
-		}
+		}		
 
 		$this->opa_valid_tables = array(
 			"ca_objects", "ca_object_lots", "ca_entities",
 			"ca_places", "ca_occurrences", "ca_collections",
 			"ca_list_items", "ca_lists", "ca_object_representations",
 			"ca_storage_locations", "ca_movements",
-			"ca_loans", "ca_tours", "ca_tour_stops"
+			"ca_loans", "ca_tours", "ca_tour_stops", "ca_sets"
 		);
+
+		if(strlen($ps_table)>0){
+			if(!in_array($ps_table, $this->opa_valid_tables)){
+				$this->addError(_t("Table name does not exist"));
+			}
+		}
 	}
 	# -------------------------------------------------------
 	public function getRequestMethod(){
@@ -110,6 +112,10 @@ class BaseJSONService {
 	# -------------------------------------------------------
 	public function getTableName(){
 		return $this->ops_table;
+	}
+	# -------------------------------------------------------
+	public function getIdentifier(){
+		return $this->opn_id;
 	}
 	# -------------------------------------------------------
 	/**

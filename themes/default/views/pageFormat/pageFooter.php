@@ -41,15 +41,20 @@
 
 	<!-- Overlay for media display triggered from left sidenav widget or quicklook-->
 	<div id="caMediaPanel" class="caMediaPanel"> 
-		<div id="caMediaPanelProgress"><?php print _t("Please wait..."); ?></div>
 		<div id="caMediaPanelContentArea"></div>
 	</div>
+	
+	<div id="editorFieldList">
+		<div id="editorFieldListHeader"><?php print _t('Form table of contents'); ?></div>
+		<div id="editorFieldListContentArea"><div>
+	</div>
+	
 	<script type="text/javascript">
 	/*
 		Set up the "quicklook" panel that will be triggered by links in each search result
 		Note that the actual <div>'s implementing the panel are located in views/pageFormat/pageFooter.php
 	*/
-	var caMediaPanel;
+	var caMediaPanel, caEditorFieldList;
 	jQuery(document).ready(function() {
 		if (caUI.initPanel) {
 			caMediaPanel = caUI.initPanel({ 
@@ -65,6 +70,16 @@
 				onCloseCallback: function() {
 					jQuery('#topNavContainer').show(250);
 				}
+			});
+			
+			caEditorFieldList = caUI.initPanel({ 
+				panelID: 'editorFieldList',						/* DOM ID of the <div> enclosing the panel */
+				panelContentID: 'editorFieldListContentArea',		/* DOM ID of the content area <div> in the panel */
+				exposeBackgroundColor: '#000000',				/* color (in hex notation) of background masking out page content; include the leading '#' in the color spec */
+				exposeBackgroundOpacity: 0.7,					/* opacity of background color masking out page content; 1.0 is opaque */
+				panelTransitionSpeed: 400,						/* time it takes the panel to fade in/out in milliseconds */
+				closeButtonSelector: '.close',					/* anything with the CSS classname "close" will trigger the panel to close */
+				center: true
 			});
 		}
 		

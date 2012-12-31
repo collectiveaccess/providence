@@ -65,30 +65,13 @@ BaseModel::$s_ca_models_definitions['ca_data_importer_groups'] = array(
 				'UNIQUE_WITHIN' => array()
 				//'REQUIRES' => array('is_administrator')
 		),
-		'table_num' => array(
-				'FIELD_TYPE' => FT_NUMBER, 'DISPLAY_TYPE' => DT_HIDDEN,
-				'DONT_USE_AS_BUNDLE' => true,
-				'DISPLAY_WIDTH' => 40, 'DISPLAY_HEIGHT' => 1,
-				'IS_NULL' => false, 
+		'destination' => array(
+				'FIELD_TYPE' => FT_TEXT, 'DISPLAY_TYPE' => DT_FIELD, 
+				'DISPLAY_WIDTH' => 70, 'DISPLAY_HEIGHT' => 1,
+				'IS_NULL' => false,
 				'DEFAULT' => '',
-				'LABEL' => _t('Display type'), 'DESCRIPTION' => _t('Indicates type of item importer group is used for.'),
-				'BOUNDS_CHOICE_LIST' => array(
-					_t('objects') => 57,
-					_t('object lots') => 51,
-					_t('entities') => 20,
-					_t('places') => 72,
-					_t('occurrences') => 67,
-					_t('collections') => 13,
-					_t('storage locations') => 89,
-					_t('loans') => 133,
-					_t('movements') => 137,
-					_t('tours') => 153,
-					_t('tour stops') => 155,
-					_t('object representations') => 56,
-					_t('representation annotations') => 82,
-					_t('lists') => 36,
-					_t('list items') => 33
-				)
+				'LABEL' => _t('External element'), 'DESCRIPTION' => _t('Name of CollectiveAccess bundle to map to.'),
+				'BOUNDS_LENGTH' => array(0,1024)
 		),
 		'settings' => array(
 				'FIELD_TYPE' => FT_VARS, 'DISPLAY_TYPE' => DT_OMIT, 

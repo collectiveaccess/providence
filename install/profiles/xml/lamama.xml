@@ -3153,48 +3153,12 @@
             </label>
           </labels>
           <bundlePlacements>
-           <placement code="ca_playwright">
+           <placement code="ca_entites">
               <bundle>ca_entities</bundle>
             <settings>
-              <setting name="restrict_to_relationship_types">playwright</setting>
-                <setting name="label" locale="en_US">Playwright</setting>
+            
               </settings>
            </placement>
-            <placement code="ca_director">
-              <bundle>ca_entities</bundle>
-            <settings>
-              <setting name="restrict_to_relationship_types">director</setting>
-                <setting name="label" locale="en_US">Director</setting>
-              </settings>
-            </placement>
-            <placement code="ca_composer">
-              <bundle>ca_entities</bundle>
-            <settings>
-              <setting name="restrict_to_relationship_types">composer</setting>
-                <setting name="label" locale="en_US">Composer</setting>
-              </settings>
-            </placement>
-            <placement code="ca_choreographer">
-              <bundle>ca_entities</bundle>
-            <settings>
-              <setting name="restrict_to_relationship_types">choreographer</setting>
-                <setting name="label" locale="en_US">Choreographer</setting>
-              </settings>
-            </placement>
-            <placement code="ca_principle">
-              <bundle>ca_entities</bundle>
-            <settings>
-              <setting name="restrict_to_relationship_types">principle</setting>
-                <setting name="label" locale="en_US">Principle artist</setting>
-              </settings>
-            </placement>
-            <placement code="ca_photographer">
-              <bundle>ca_entities</bundle>
-            <settings>
-              <setting name="restrict_to_relationship_types">photographer</setting>
-                <setting name="label" locale="en_US">Photographer</setting>
-              </settings>
-            </placement>
           </bundlePlacements>
         </screen>
         <screen idno="related_events" default="0">
@@ -4432,63 +4396,34 @@
         </type>
       </types>
     </relationshipTable>
-    <relationshipTable name="ca_entities_x_occurrences">
+    
+   <relationshipTable name="ca_entities_x_occurrences">
       <types>
-        <type code="attended" default="1">
+        <type code="artistic_director" default="1">
           <labels>
             <label locale="en_US">
-              <typename>attended</typename>
-              <typename_reverse>attended</typename_reverse>
-            </label>
-          </labels>
-          <subTypeLeft> </subTypeLeft>
-          <subTypeRight>event</subTypeRight>
-        </type>
-        <type code="producer" default="0">
-          <labels>
-            <label locale="en_US">
-              <typename>producer</typename>
-              <typename_reverse>producer</typename_reverse>
+              <typename>artistic director</typename>
+              <typename_reverse>artistic director</typename_reverse>
             </label>
           </labels>
           <subTypeLeft> </subTypeLeft>
           <subTypeRight></subTypeRight>
         </type>
-        <type code="performer" default="0">
+        <type code="managing_director" default="0">
           <labels>
             <label locale="en_US">
-              <typename>performer</typename>
-              <typename_reverse>performer</typename_reverse>
+              <typename>managing director</typename>
+              <typename_reverse>managing director</typename_reverse>
             </label>
           </labels>
           <subTypeLeft> </subTypeLeft>
           <subTypeRight></subTypeRight>
         </type>
-        <type code="curator" default="0">
+        <type code="executive_director" default="0">
           <labels>
             <label locale="en_US">
-              <typename>curator</typename>
-              <typename_reverse>curator</typename_reverse>
-            </label>
-          </labels>
-          <subTypeLeft> </subTypeLeft>
-          <subTypeRight></subTypeRight>
-        </type>
-        <type code="photographer" default="0">
-          <labels>
-            <label locale="en_US">
-              <typename>photographer</typename>
-              <typename_reverse>photographer</typename_reverse>
-            </label>
-          </labels>
-          <subTypeLeft> </subTypeLeft>
-          <subTypeRight></subTypeRight>
-        </type>
-        <type code="playwright" default="0">
-          <labels>
-            <label locale="en_US">
-              <typename>playwright</typename>
-              <typename_reverse>playwright</typename_reverse>
+              <typename>executive director</typename>
+              <typename_reverse>executive director</typename_reverse>
             </label>
           </labels>
           <subTypeLeft> </subTypeLeft>
@@ -4497,38 +4432,18 @@
         <type code="director" default="0">
           <labels>
             <label locale="en_US">
-              <typename>director</typename>
-              <typename_reverse>director</typename_reverse>
+              <typename>directed</typename>
+              <typename_reverse>directed by</typename_reverse>
             </label>
           </labels>
           <subTypeLeft> </subTypeLeft>
           <subTypeRight></subTypeRight>
         </type>
-        <type code="composer" default="0">
+        <type code="producer" default="0">
           <labels>
             <label locale="en_US">
-              <typename>composer</typename>
-              <typename_reverse>composer</typename_reverse>
-            </label>
-          </labels>
-          <subTypeLeft> </subTypeLeft>
-          <subTypeRight></subTypeRight>
-        </type>
-        <type code="choreographer" default="0">
-          <labels>
-            <label locale="en_US">
-              <typename>choreographer</typename>
-              <typename_reverse>choreographer</typename_reverse>
-            </label>
-          </labels>
-          <subTypeLeft> </subTypeLeft>
-          <subTypeRight></subTypeRight>
-        </type>
-        <type code="set_designer" default="0">
-          <labels>
-            <label locale="en_US">
-              <typename>set designer</typename>
-              <typename_reverse>set designer</typename_reverse>
+              <typename>produced</typename>
+              <typename_reverse>produced by</typename_reverse>
             </label>
           </labels>
           <subTypeLeft> </subTypeLeft>
@@ -4544,31 +4459,151 @@
           <subTypeLeft> </subTypeLeft>
           <subTypeRight></subTypeRight>
         </type>
-        <type code="costume_designer" default="0">
+        <type code="music" default="0">
           <labels>
             <label locale="en_US">
-              <typename>costume designer</typename>
-              <typename_reverse>costume designer</typename_reverse>
+              <typename>music</typename>
+              <typename_reverse>music</typename_reverse>
             </label>
           </labels>
           <subTypeLeft> </subTypeLeft>
           <subTypeRight></subTypeRight>
         </type>
-        <type code="lighting_designer" default="0">
+        <type code="lyrics" default="0">
           <labels>
             <label locale="en_US">
-              <typename>lighting designer</typename>
-              <typename_reverse>lighting designer</typename_reverse>
+              <typename>lyrics</typename>
+              <typename_reverse>lyrics</typename_reverse>
             </label>
           </labels>
           <subTypeLeft> </subTypeLeft>
           <subTypeRight></subTypeRight>
         </type>
-        <type code="sound_designer" default="0">
+        <type code="book" default="0">
           <labels>
             <label locale="en_US">
-              <typename>sound designer</typename>
-              <typename_reverse>sound designer</typename_reverse>
+              <typename>book</typename>
+              <typename_reverse>book</typename_reverse>
+            </label>
+          </labels>
+          <subTypeLeft> </subTypeLeft>
+          <subTypeRight></subTypeRight>
+        </type>
+        <type code="actor" default="0">
+          <labels>
+            <label locale="en_US">
+              <typename>actor</typename>
+              <typename_reverse>actor</typename_reverse>
+            </label>
+          </labels>
+          <subTypeLeft> </subTypeLeft>
+          <subTypeRight></subTypeRight>
+        </type>
+        <type code="performer" default="0">
+          <labels>
+            <label locale="en_US">
+              <typename>performer</typename>
+              <typename_reverse>performer</typename_reverse>
+            </label>
+          </labels>
+          <subTypeLeft> </subTypeLeft>
+          <subTypeRight></subTypeRight>
+        </type>
+        <type code="alternate_actor" default="0">
+          <labels>
+            <label locale="en_US">
+              <typename>alternate actor</typename>
+              <typename_reverse>alternate actor</typename_reverse>
+            </label>
+          </labels>
+          <subTypeLeft> </subTypeLeft>
+          <subTypeRight></subTypeRight>
+        </type>
+        <type code="alternate_performer" default="0">
+          <labels>
+            <label locale="en_US">
+              <typename>alternate performer</typename>
+              <typename_reverse>alternate performer</typename_reverse>
+            </label>
+          </labels>
+          <subTypeLeft> </subTypeLeft>
+          <subTypeRight></subTypeRight>
+        </type>
+        <type code="understudy" default="0">
+          <labels>
+            <label locale="en_US">
+              <typename>understudy</typename>
+              <typename_reverse>understudy</typename_reverse>
+            </label>
+          </labels>
+          <subTypeLeft> </subTypeLeft>
+          <subTypeRight></subTypeRight>
+        </type>
+        <type code="playwright" default="0">
+          <labels>
+            <label locale="en_US">
+              <typename>playwright</typename>
+              <typename_reverse>playwright</typename_reverse>
+            </label>
+          </labels>
+          <subTypeLeft> </subTypeLeft>
+          <subTypeRight></subTypeRight>
+        </type>
+        <type code="adapted_by" default="0">
+          <labels>
+            <label locale="en_US">
+              <typename>adapted by</typename>
+              <typename_reverse>adapted by</typename_reverse>
+            </label>
+          </labels>
+          <subTypeLeft> </subTypeLeft>
+          <subTypeRight></subTypeRight>
+        </type>
+        <type code="translated_by" default="0">
+          <labels>
+            <label locale="en_US">
+              <typename>translated by</typename>
+              <typename_reverse>translated by</typename_reverse>
+            </label>
+          </labels>
+          <subTypeLeft> </subTypeLeft>
+          <subTypeRight></subTypeRight>
+        </type>
+        <type code="set_design" default="0">
+          <labels>
+            <label locale="en_US">
+              <typename>set design</typename>
+              <typename_reverse>set design</typename_reverse>
+            </label>
+          </labels>
+          <subTypeLeft> </subTypeLeft>
+          <subTypeRight></subTypeRight>
+        </type>
+        <type code="costume_design" default="0">
+          <labels>
+            <label locale="en_US">
+              <typename>costume design</typename>
+              <typename_reverse>costume design</typename_reverse>
+            </label>
+          </labels>
+          <subTypeLeft> </subTypeLeft>
+          <subTypeRight></subTypeRight>
+        </type>
+        <type code="lighting_design" default="0">
+          <labels>
+            <label locale="en_US">
+              <typename>lighting design</typename>
+              <typename_reverse>lighting design</typename_reverse>
+            </label>
+          </labels>
+          <subTypeLeft> </subTypeLeft>
+          <subTypeRight></subTypeRight>
+        </type>
+        <type code="sound_design" default="0">
+          <labels>
+            <label locale="en_US">
+              <typename>sound design</typename>
+              <typename_reverse>sound design</typename_reverse>
             </label>
           </labels>
           <subTypeLeft> </subTypeLeft>
@@ -4584,21 +4619,221 @@
           <subTypeLeft> </subTypeLeft>
           <subTypeRight></subTypeRight>
         </type>
-        <type code="translator" default="0">
+        <type code="original_music" default="0">
           <labels>
             <label locale="en_US">
-              <typename>translator</typename>
-              <typename_reverse>translator</typename_reverse>
+              <typename>original music</typename>
+              <typename_reverse>original music</typename_reverse>
             </label>
           </labels>
           <subTypeLeft> </subTypeLeft>
           <subTypeRight></subTypeRight>
         </type>
-        <type code="musicians" default="0">
+        <type code="makeup_hair" default="0">
           <labels>
             <label locale="en_US">
-              <typename>musicians</typename>
-              <typename_reverse>musicians</typename_reverse>
+              <typename>makeup/hair</typename>
+              <typename_reverse>makeup/hair</typename_reverse>
+            </label>
+          </labels>
+          <subTypeLeft> </subTypeLeft>
+          <subTypeRight></subTypeRight>
+        </type>
+        <type code="wig" default="0">
+          <labels>
+            <label locale="en_US">
+              <typename>wig</typename>
+              <typename_reverse>wig</typename_reverse>
+            </label>
+          </labels>
+          <subTypeLeft> </subTypeLeft>
+          <subTypeRight></subTypeRight>
+        </type>
+        <type code="production_stage_manager" default="0">
+          <labels>
+            <label locale="en_US">
+              <typename>production stage manager</typename>
+              <typename_reverse>production stage manager</typename_reverse>
+            </label>
+          </labels>
+          <subTypeLeft> </subTypeLeft>
+          <subTypeRight></subTypeRight>
+        </type>
+        <type code="stage_manager" default="0">
+          <labels>
+            <label locale="en_US">
+              <typename>stage manager</typename>
+              <typename_reverse>stage manager</typename_reverse>
+            </label>
+          </labels>
+          <subTypeLeft> </subTypeLeft>
+          <subTypeRight></subTypeRight>
+        </type>
+        <type code="casting" default="0">
+          <labels>
+            <label locale="en_US">
+              <typename>casting</typename>
+              <typename_reverse>casting</typename_reverse>
+            </label>
+          </labels>
+          <subTypeLeft> </subTypeLeft>
+          <subTypeRight></subTypeRight>
+        </type>
+        <type code="general_manager" default="0">
+          <labels>
+            <label locale="en_US">
+              <typename>general manager</typename>
+              <typename_reverse>general manager</typename_reverse>
+            </label>
+          </labels>
+          <subTypeLeft> </subTypeLeft>
+          <subTypeRight></subTypeRight>
+        </type>
+        <type code="musical_direction" default="0">
+          <labels>
+            <label locale="en_US">
+              <typename>musical direction</typename>
+              <typename_reverse>musical direction</typename_reverse>
+            </label>
+          </labels>
+          <subTypeLeft> </subTypeLeft>
+          <subTypeRight></subTypeRight>
+        </type>
+        <type code="orchestra_staff" default="0">
+          <labels>
+            <label locale="en_US">
+              <typename>orchestra staff</typename>
+              <typename_reverse>orchestra staff</typename_reverse>
+            </label>
+          </labels>
+          <subTypeLeft> </subTypeLeft>
+          <subTypeRight></subTypeRight>
+        </type>
+        <type code="conductor" default="0">
+          <labels>
+            <label locale="en_US">
+              <typename>conductor</typename>
+              <typename_reverse>conductor</typename_reverse>
+            </label>
+          </labels>
+          <subTypeLeft> </subTypeLeft>
+          <subTypeRight></subTypeRight>
+        </type>
+        <type code="associate_conductor" default="0">
+          <labels>
+            <label locale="en_US">
+              <typename>associate conductor</typename>
+              <typename_reverse>associate conductor</typename_reverse>
+            </label>
+          </labels>
+          <subTypeLeft> </subTypeLeft>
+          <subTypeRight></subTypeRight>
+        </type>
+        <type code="assistant_conductor" default="0">
+          <labels>
+            <label locale="en_US">
+              <typename>assistant conductor</typename>
+              <typename_reverse>assistant conductor</typename_reverse>
+            </label>
+          </labels>
+          <subTypeLeft> </subTypeLeft>
+          <subTypeRight></subTypeRight>
+        </type>
+        <type code="music_preparation" default="0">
+          <labels>
+            <label locale="en_US">
+              <typename>music preparation</typename>
+              <typename_reverse>music preparation</typename_reverse>
+            </label>
+          </labels>
+          <subTypeLeft> </subTypeLeft>
+          <subTypeRight></subTypeRight>
+        </type>
+        <type code="choreography" default="0">
+          <labels>
+            <label locale="en_US">
+              <typename>choreography</typename>
+              <typename_reverse>choreography</typename_reverse>
+            </label>
+          </labels>
+          <subTypeLeft> </subTypeLeft>
+          <subTypeRight></subTypeRight>
+        </type>
+        <type code="dance_captain" default="0">
+          <labels>
+            <label locale="en_US">
+              <typename>dance captain</typename>
+              <typename_reverse>dance captain</typename_reverse>
+            </label>
+          </labels>
+          <subTypeLeft> </subTypeLeft>
+          <subTypeRight></subTypeRight>
+        </type>
+        <type code="technical_supervisor" default="0">
+          <labels>
+            <label locale="en_US">
+              <typename>technical supervisor</typename>
+              <typename_reverse>technical supervisor</typename_reverse>
+            </label>
+          </labels>
+          <subTypeLeft> </subTypeLeft>
+          <subTypeRight></subTypeRight>
+        </type>
+        <type code="press_representative" default="0">
+          <labels>
+            <label locale="en_US">
+              <typename>press representative</typename>
+              <typename_reverse>press representative</typename_reverse>
+            </label>
+          </labels>
+          <subTypeLeft> </subTypeLeft>
+          <subTypeRight></subTypeRight>
+        </type>
+        <type code="director_of_marketing" default="0">
+          <labels>
+            <label locale="en_US">
+              <typename>director of marketing</typename>
+              <typename_reverse>director of marketing</typename_reverse>
+            </label>
+          </labels>
+          <subTypeLeft> </subTypeLeft>
+          <subTypeRight></subTypeRight>
+        </type>
+        <type code="founding_director" default="0">
+          <labels>
+            <label locale="en_US">
+              <typename>founding director</typename>
+              <typename_reverse>founding director</typename_reverse>
+            </label>
+          </labels>
+          <subTypeLeft> </subTypeLeft>
+          <subTypeRight></subTypeRight>
+        </type>
+        <type code="associate_artistic_director" default="0">
+          <labels>
+            <label locale="en_US">
+              <typename>associate artistic director</typename>
+              <typename_reverse>associate artistic director</typename_reverse>
+            </label>
+          </labels>
+          <subTypeLeft> </subTypeLeft>
+          <subTypeRight></subTypeRight>
+        </type>
+        <type code="photographer" default="0">
+          <labels>
+            <label locale="en_US">
+              <typename>photographer</typename>
+              <typename_reverse>photographer</typename_reverse>
+            </label>
+          </labels>
+          <subTypeLeft> </subTypeLeft>
+          <subTypeRight></subTypeRight>
+        </type>
+         <type code="curator" default="0">
+          <labels>
+            <label locale="en_US">
+              <typename>curator</typename>
+              <typename_reverse>curator</typename_reverse>
             </label>
           </labels>
           <subTypeLeft> </subTypeLeft>
@@ -4606,6 +4841,8 @@
         </type>
       </types>
     </relationshipTable>
+    
+    
     <relationshipTable name="ca_object_lots_x_entities">
       <types>
         <type code="donor" default="1">

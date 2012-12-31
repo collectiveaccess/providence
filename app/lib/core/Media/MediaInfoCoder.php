@@ -37,6 +37,7 @@
 require_once(__CA_LIB_DIR__."/core/Media.php");
 require_once(__CA_LIB_DIR__."/core/Media/MediaVolumes.php");
 require_once(__CA_APP_DIR__."/helpers/utilityHelpers.php");
+require_once(__CA_APP_DIR__."/helpers/mediaPluginHelpers.php");
 
 $_MEDIA_INFO_CODER_INSTANCE_CACHE = null;
 
@@ -261,7 +262,11 @@ class MediaInfoCoder {
 		$o_vol = new MediaVolumes();
 		$va_volume = $o_vol->getVolumeInformation($va_media_info[$ps_version]['VOLUME']);
 		
-		return $o_media->htmlTag($va_media_info[$ps_version]["MIMETYPE"], $vs_url, $va_media_info[$ps_version]["PROPERTIES"], $pa_options, $va_volume);
+		$va_properties = $va_media_info[$ps_version]["PROPERTIES"];
+		if (isset($pa_options['width'])) { $va_properties['width'] = $pa_options['width']; }
+		if (isset($pa_options['height'])) { $va_properties['height'] = $pa_options['height']; }
+		
+		return $o_media->htmlTag($va_media_info[$ps_version]["MIMETYPE"], $vs_url, $va_properties, $pa_options, $va_volume);
 	}
 	# ---------------------------------------------------------------------------
 	public function getMediaVersions($ps_data) {
