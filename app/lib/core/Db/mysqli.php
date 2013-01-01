@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2011-2012 Whirl-i-Gig
+ * Copyright 2011-2013 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -106,15 +106,17 @@ class Db_mysqli extends DbDriverBase {
 	 */
 	function connect($po_caller, $pa_options) {
 		global $g_connect;
+		if (!is_array($g_connect)) { $g_connect = array(); }
+		$vs_db_connection_key = $pa_options["host"].'/'.$pa_options["database"];
 		
-		if (is_resource($g_connect)) { $this->opr_db = $g_connect; return true;}
+		if (isset($g_connect[$vs_db_connection_key]) && is_resource($g_connect[$vs_db_connection_key])) { $this->opr_db = $g_connect[$vs_db_connection_key]; return true;}
 		
 		if (!function_exists("mysqli_connect")) {
 			die(_t("Your PHP installation lacks MySQL support. Please add it and retry..."));
 			exit;
 		}
 		
-		$this->opr_db = mysqli_connect($pa_options["host"], $pa_options["username"], $pa_options["password"]);
+		$this->opr_db = @mysqli_connect($pa_options["host"], $pa_options["username"], $pa_options["password"]);
 
 		if (!$this->opr_db) {
 			$po_caller->postError(200, mysqli_connect_error(), "Db->mysqli->connect()");
@@ -128,7 +130,7 @@ class Db_mysqli extends DbDriverBase {
 		mysqli_query($this->opr_db, 'SET NAMES \'utf8\'');
 		mysqli_query($this->opr_db, 'SET character_set_results = NULL');	
 		
-		$g_connect = $this->opr_db;
+		$g_connect[$vs_db_connection_key] = $this->opr_db;
 		return true;
 	}
 
