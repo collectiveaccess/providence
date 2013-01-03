@@ -44,11 +44,5 @@ include_once(__CA_LIB_DIR__."/core/Search/SearchEngine.php");
 			parent::__construct();
 		}
 		# -------------------------------------------------------
-		public function &search($ps_search, $po_results, $pa_options=null) {
-			$vs_append_to_search = (isset($pa_options['appendToSearch'])) ? ' '.$pa_options['appendToSearch'] : '';
-	
-			return parent::doSearch($ps_search.$vs_append_to_search, $po_results, $pa_options);
-		}
-		# -------------------------------------------------------
 	}
 ?>

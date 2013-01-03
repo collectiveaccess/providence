@@ -3738,7 +3738,8 @@ class BundlableLabelableBaseModelWithAttributes extends LabelableBaseModelWithAt
 				// Set 'label' entry - display label in current user's locale
 				foreach($va_rels as $vs_v => $va_rel) {
 					$va_tmp = array(0 => $va_rel['labels']);
-					$va_rels[$vs_v]['label'] = array_shift(caExtractValuesByUserLocale($va_tmp));
+					$va_tmp2 = caExtractValuesByUserLocale($va_tmp);
+					$va_rels[$vs_v]['label'] = array_shift($va_tmp2);
 				}
 			}
 			

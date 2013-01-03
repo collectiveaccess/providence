@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2009-2012 Whirl-i-Gig
+ * Copyright 2009-2013 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -551,7 +551,8 @@
 					// get column header text
 					$vs_header = $va_display_item['display'];
 					if (isset($va_settings['label']) && is_array($va_settings['label'])) {
-						if ($vs_tmp = array_shift(caExtractValuesByUserLocale(array($va_settings['label'])))) { $vs_header = $vs_tmp; }
+						$va_tmp = caExtractValuesByUserLocale(array($va_settings['label']));
+						if ($vs_tmp = array_shift($va_tmp)) { $vs_header = $vs_tmp; }
 					}
 					
 					$va_display_list[$vn_placement_id] = array(

@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2009-2011 Whirl-i-Gig
+ * Copyright 2009-2013 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -85,12 +85,14 @@
  		 * Callbacks:
  		 * 		hookBeforeNewSearch() is called just before executing a new search. The first parameter is the BrowseEngine object containing the search.
  		 */
- 		public function Index($po_search, $pa_options=null) {
+ 		public function Index($pa_options=null) {
+ 			$po_search = isset($pa_options['search']) ? $pa_options['search'] : null;
+ 			
  			if (isset($pa_options['saved_search']) && $pa_options['saved_search']) {
  				$this->opo_result_context->setSearchExpression($pa_options['saved_search']['search']);
  				$this->opo_result_context->isNewSearch(true);
  			}
- 			parent::Index($po_search, $pa_options);
+ 			parent::Index($pa_options);
  			
  			JavascriptLoadManager::register('hierBrowser');
  			JavascriptLoadManager::register('browsable');	// need this to support browse panel when filtering/refining search results
@@ -118,7 +120,10 @@
  			}
  			if (!isset($this->opa_views[$vs_view])) { $vs_view = array_shift(array_keys($this->opa_views)); }
  			
- 			if (!($vs_sort 	= $this->opo_result_context->getCurrentSort())) { $vs_sort = array_shift(array_keys($this->opa_sorts)); }
+ 			if (!($vs_sort 	= $this->opo_result_context->getCurrentSort())) { 
+ 				$va_tmp = array_keys($this->opa_sorts);
+ 				$vs_sort = array_shift($va_tmp); 
+ 			}
  			$vs_sort_direction = $this->opo_result_context->getCurrentSortDirection();
 			$vn_display_id 	= $this->opo_result_context->getCurrentBundleDisplay();
  			
@@ -441,8 +446,8 @@
  		# -------------------------------------------------------
  		# Sidebar info handler
  		# -------------------------------------------------------
- 		public function Tools($pa_parameters, $po_search) {
- 			parent::Tools($pa_parameters, $po_search);
+ 		public function Tools($pa_parameters) {
+ 			parent::Tools($pa_parameters);
  			
 			$this->view->setVar('mode_name', _t('search'));
 			$this->view->setVar('mode_type_singular', $this->searchName('singular'));

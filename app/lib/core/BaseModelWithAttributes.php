@@ -1775,6 +1775,7 @@
 				$this->postError(1950, _t("Element code or id must not be blank"), "BaseModelWithAttributes->_getElementInstance()");
 				return false;
 			}
+			
  			if (isset(BaseModelWithAttributes::$s_element_instance_cache[$pm_element_code_or_id]) && BaseModelWithAttributes::$s_element_instance_cache[$pm_element_code_or_id]) {
  				return BaseModelWithAttributes::$s_element_instance_cache[$pm_element_code_or_id];
  			}

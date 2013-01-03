@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2009-2012 Whirl-i-Gig
+ * Copyright 2009-2013 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -82,8 +82,14 @@
 			}
  		}
  		# -------------------------------------------------------
- 		function Index($pb_dont_render_view=false, $pa_options=null) {
- 			parent::Index($po_search, $pa_options);
+ 		/**
+ 		 *
+ 		 */
+ 		public function Index($pb_dont_render_view=false, $pa_options=null) {
+ 			$po_search = isset($pa_options['search']) ? $pa_options['search'] : null;
+ 			$pb_dont_render_view = (isset($pa_options['dontRenderView']) && (bool)$pa_options['dontRenderView']) ? true : false;
+ 			
+ 			parent::Index($pa_options);
  			JavascriptLoadManager::register('browsable');
 			JavascriptLoadManager::register('hierBrowser');
  			
@@ -619,7 +625,7 @@
  		# Sidebar info handler
  		# -------------------------------------------------------
  		public function Tools($pa_parameters) {
- 			parent::Tools($pa_parameters, $po_search);
+ 			parent::Tools($pa_parameters);
 			
 			$this->view->setVar('mode_type_singular', $this->browseName('singular'));
 			$this->view->setVar('mode_type_plural', $this->browseName('plural'));

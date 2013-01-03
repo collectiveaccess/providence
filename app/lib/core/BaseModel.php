@@ -1904,7 +1904,8 @@ class BaseModel extends BaseObject {
 					)) {
 						if ($t_many_table = $this->_DATAMODEL->getTableInstance($va_many_to_one_relations[$vs_field]["one_table"])) {
 							if ($this->inTransaction()) {
-								$t_many_table->setTransaction($this->getTransaction());
+								$o_trans = $this->getTransaction();
+								$t_many_table->setTransaction($o_trans);
 							}
 							$t_many_table->load($this->get($va_many_to_one_relations[$vs_field]["many_table_field"]));
 						}
@@ -2429,7 +2430,8 @@ class BaseModel extends BaseObject {
 					if (!(($va_attr["IS_NULL"]) && ($vs_field_value == ""))) {
 						if ($t_many_table = $this->_DATAMODEL->getTableInstance($va_many_to_one_relations[$vs_field]["one_table"])) {
 							if ($this->inTransaction()) {
-								$t_many_table->setTransaction($this->getTransaction());
+								$o_trans = $this->getTransaction();
+								$t_many_table->setTransaction($o_trans);
 							}
 							$t_many_table->load($this->get($va_many_to_one_relations[$vs_field]["many_table_field"]));
 						}
@@ -2884,7 +2886,8 @@ class BaseModel extends BaseObject {
 
 						# do any records exist?
 						$t_related = $this->_DATAMODEL->getTableInstance($vs_many_table);
-						$t_related->setTransaction($this->getTransaction());
+						$o_trans = $this->getTransaction();
+						$t_related->setTransaction($o_trans);
 						$qr_record_check = $o_db->query("
 							SELECT ".$t_related->primaryKey()."
 							FROM ".$vs_many_table."

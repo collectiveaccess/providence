@@ -250,8 +250,8 @@ class ca_metadata_elements extends LabelableBaseModelWithAttributes implements I
 		$this->FIELDS['datatype']['BOUNDS_CHOICE_LIST'] = array_flip(ca_metadata_elements::getAttributeTypes());
 	}
 	# ------------------------------------------------------
-	public function load($pm_id = NULL, $pb_use_cache = true) {
-		if ($vn_rc = parent::load($pn_id)) {
+	public function load($pm_id=null, $pb_use_cache = true) {
+		if ($vn_rc = parent::load($pm_id)) {
 			if (!isset(ca_metadata_elements::$s_settings_cache[$this->getPrimaryKey()])) {
 				ca_metadata_elements::$s_settings_cache[$this->getPrimaryKey()] = $this->get('settings');
 			}

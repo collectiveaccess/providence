@@ -97,7 +97,8 @@ class SearchEngine extends SearchBase {
 	 *
 	 */
 	public function search($ps_search, $pa_options=null) {
-		return $this->search($ps_search, null, $pa_options);
+		$vs_append_to_search = (isset($pa_options['appendToSearch'])) ? ' '.$pa_options['appendToSearch'] : '';
+		return $this->search($ps_search.$vs_append_to_search, null, $pa_options);
 	}
 	# ------------------------------------------------------------------
 	/**

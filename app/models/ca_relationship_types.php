@@ -253,7 +253,7 @@ class ca_relationship_types extends BundlableLabelableBaseModelWithAttributes {
 		if ($pn_id) { $this->loadSubtypeLists();}
 	}
 	# ------------------------------------------------------
-	public function load($pm_id=null) {
+	public function load($pm_id = NULL, $pb_use_cache = true) {
 		if ($vn_rc = parent::load($pm_id)) {
 			$this->loadSubtypeLists();
 			return $vn_rc;

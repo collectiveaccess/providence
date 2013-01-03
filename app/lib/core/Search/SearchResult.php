@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2008-2012 Whirl-i-Gig
+ * Copyright 2008-2013 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -1405,9 +1405,10 @@ class SearchResult extends BaseObject {
 	/**
 	 * 
 	 */
-	function getMediaInfo($ps_field, $ps_version=null, $ps_key=null, $pn_index=0, $pa_options=null) {
+	function getMediaInfo($ps_field, $ps_version=null, $ps_key=null, $pa_options=null) {
+		$vn_index = (isset($pa_options['index']) && ((int)$pa_options['index'] > 0)) ? (int)$pa_options['index'] : 0;
 		$va_media_info = $this->get($ps_field, array("unserialize" => true, 'returnAsArray' => true));
-		return $GLOBALS["_DbResult_mediainfocoder"]->getMediaInfo($va_media_info[$pn_index], $ps_version, $ps_key, $pa_options);
+		return $GLOBALS["_DbResult_mediainfocoder"]->getMediaInfo($va_media_info[$vn_index], $ps_version, $ps_key, $pa_options);
 	}
 	# ------------------------------------------------------------------
 	/**

@@ -3209,7 +3209,14 @@ if (!$va_facet_info['show_all_when_first_facet'] || ($this->numCriteria() > 0)) 
 		/**
 		 * Fetch the subject rows found by an execute()'d browse
 		 */
-		public function getResults($po_result=null, $pa_options=null) {
+		public function getResults($pa_options=null) {
+			return $this->doGetResults(null, $pa_options);
+		}
+		# ------------------------------------------------------
+		/**
+		 * Fetch the subject rows found by an execute()'d browse
+		 */
+		protected function doGetResults($po_result=null, $pa_options=null) {
 			if (!is_array($this->opa_browse_settings)) { return null; }
 			$t_item = $this->opo_datamodel->getInstanceByTableName($this->ops_browse_table_name, true);
 			$vb_will_sort = (isset($pa_options['sort']) && $pa_options['sort'] && (($this->getCachedSortSetting() != $pa_options['sort']) || ($this->getCachedSortDirectionSetting() != $pa_options['sort_direction'])));
@@ -3219,7 +3226,9 @@ if (!$va_facet_info['show_all_when_first_facet'] || ($this->numCriteria() > 0)) 
 			
 			if(sizeof($va_results =  $this->opo_ca_browse_cache->getResults())) {
 				if ($vb_will_sort) {
-					$va_results = array_keys($this->sortHits(array_flip($va_results), $pa_options['sort'], (isset($pa_options['sort_direction']) ? $pa_options['sort_direction'] : null)));
+					$va_results_flipped = array_flip($va_results);
+					$va_tmp = $this->sortHits($va_results_flipped, $pa_options['sort'], (isset($pa_options['sort_direction']) ? $pa_options['sort_direction'] : null));
+					$va_results = array_keys($va_tmp);
 
 					$this->opo_ca_browse_cache->setParameter('table_num', $this->opn_browse_table_num); 
 					$this->opo_ca_browse_cache->setParameter('sort', $pa_options['sort']);
