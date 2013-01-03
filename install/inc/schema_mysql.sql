@@ -32,10 +32,7 @@ create table ca_change_log
    rolledback                     tinyint unsigned               not null default 0,
    unit_id                        char(32),
    batch_id                       int unsigned                   null,
-   primary key (log_id),
-   
-   constraint fk_ca_change_log_batch_id foreign key (batch_id)
-      references ca_batch_log (batch_id) on delete restrict on update restrict
+   primary key (log_id)
 ) engine=innodb CHARACTER SET utf8 COLLATE utf8_general_ci;
 
 create index i_datetime on ca_change_log(log_datetime);
