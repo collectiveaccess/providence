@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2000-2012 Whirl-i-Gig
+ * Copyright 2000-2013 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -7529,6 +7529,12 @@ $pa_options["display_form_field_tips"] = true;
 			}
 			if (isset($va_info['BOUNDS_LENGTH']) && is_array($va_info['BOUNDS_LENGTH'])) {
 				if ($va_info['BOUNDS_LENGTH'][0] > 0) {
+					$va_mandatory_fields[] = $vs_field;
+					continue;
+				}
+			}
+			if (isset($va_info['BOUNDS_VALUE']) && is_array($va_info['BOUNDS_VALUE'])) {
+				if ($va_info['BOUNDS_VALUE'][0] > 0) {
 					$va_mandatory_fields[] = $vs_field;
 					continue;
 				}
