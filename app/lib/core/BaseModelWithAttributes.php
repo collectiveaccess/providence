@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2008-2012 Whirl-i-Gig
+ * Copyright 2008-2013 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -83,7 +83,7 @@
 			$vn_element_id = $t_element->getPrimaryKey();
 			
 			// check restriction min/max settings
-			$t_restriction = $t_element->getTypeRestrictionInstance($this->tableNum(), $this->getTypeID());
+			$t_restriction = $t_element->getTypeRestrictionInstanceForElement($this->tableNum(), $this->getTypeID());
 			if (!$t_restriction) { return null; }		// attribute not bound to this type
 			$vn_min = $t_restriction->getSetting('minAttributesPerRow');
 			$vn_max = $t_restriction->getSetting('maxAttributesPerRow');
@@ -242,7 +242,7 @@
 			// check restriction min/max settings
 			if (!isset($pa_options['dontCheckMinMax']) || !$pa_options['dontCheckMinMax']) { 
 				if (!($t_element = $this->_getElementInstance($t_attr->get('element_id')))) { return false; }
-				$t_restriction = $t_element->getTypeRestrictionInstance($this->tableNum(), $this->getTypeID());
+				$t_restriction = $t_element->getTypeRestrictionInstanceForElement($this->tableNum(), $this->getTypeID());
 				if (!$t_restriction) { return null; }		// attribute not bound to this type
 				$vn_min = $t_restriction->getSetting('minAttributesPerRow');
 				$vn_max = $t_restriction->getSetting('maxAttributesPerRow');
@@ -401,7 +401,7 @@
 			return $va_field_values;
 		}
 		# ------------------------------------------------------------------
-		public function load($pm_id=null) {
+		public function load($pm_id=null, $pb_use_cache=true) {
 			$this->init();
 			$this->setFieldValuesArray(array());
 			if ($vn_c = parent::load($pm_id)) {
@@ -507,7 +507,7 @@
 			return false;
 		}
 		# ------------------------------------------------------------------
-		public function delete($pb_delete_related=false, $pa_options=null) {
+		public function delete($pb_delete_related=false, $pa_options=null, $pa_fields=null, $pa_table_list=null) {
 			$vb_web_set_change_log_unit_id = BaseModel::setChangeLogUnitID();
 			
 			if (!$this->inTransaction()) {
@@ -517,7 +517,7 @@
 			if (!is_array($pa_options)) { $pa_options = array(); }
 			
 			$vn_id = $this->getPrimaryKey();
-			if(parent::delete($pb_delete_related, $pa_options)) {
+			if(parent::delete($pb_delete_related, $pa_options, $pa_fields, $pa_table_list)) {
 				// Delete any associated attributes and attribute_values
 				if (!($qr_res = $this->getDb()->query("
 					DELETE FROM ca_attribute_values 

@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2009 Whirl-i-Gig
+ * Copyright 2009-2013 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -47,7 +47,7 @@ include_once(__CA_LIB_DIR__."/core/Search/SearchEngine.php");
 		public function &search($ps_search, $po_results, $pa_options=null) {
 			$vs_append_to_search = (isset($pa_options['appendToSearch'])) ? ' '.$pa_options['appendToSearch'] : '';
 	
-			return parent::search($ps_search.$vs_append_to_search, $po_results, $pa_options);
+			return parent::doSearch($ps_search.$vs_append_to_search, $po_results, $pa_options);
 		}
 		# -------------------------------------------------------
 	}
