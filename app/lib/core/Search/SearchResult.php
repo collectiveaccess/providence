@@ -1270,7 +1270,8 @@ class SearchResult extends BaseObject {
 									$va_versions = $o_media_settings->getMediaTypeVersions('*');
 								
 									if (!isset($va_versions[$vs_version])) {
-										$vs_version = array_shift(array_keys($va_versions));
+										$va_tmp = array_keys($va_versions);
+										$vs_version = array_shift($va_tmp);
 									}
 									
 									if (isset($pa_options['returnURL']) && ($pa_options['returnURL'])) {

@@ -412,8 +412,9 @@
  			
  			if ($vb_confirm = ($this->request->getParameter('confirm', pInteger) == 1) ? true : false) {
  				$vb_we_set_transation = false;
- 				if (!$t_subject->inTransaction()) { 
- 					$t_subject->setTransaction($o_t = new Transaction());
+ 				if (!$t_subject->inTransaction()) {
+ 					$o_t = new Transaction();
+ 					$t_subject->setTransaction($o_t);
  					$vb_we_set_transation = true;
  				}
  				

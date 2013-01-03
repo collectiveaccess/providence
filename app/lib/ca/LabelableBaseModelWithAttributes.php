@@ -1048,7 +1048,8 @@
 					if ($g_ui_locale_id) { 
 						$vn_locale_id = $g_ui_locale_id;
 					} else {
-						$vn_locale_id = array_shift(array_keys($va_locale_list));
+						$va_tmp = array_keys($va_locale_list);
+						$vn_locale_id = array_shift($va_tmp);
 					}
 				}
 				

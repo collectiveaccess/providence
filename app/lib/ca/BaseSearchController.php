@@ -115,10 +115,14 @@
  			}
  			
  			if (!($vs_view 			= $this->opo_result_context->getCurrentView())) { 
- 				$vs_view = $this->ops_view_default ? $this->ops_view_default : array_shift(array_keys($this->opa_views)); 
+ 				$va_tmp = array_keys($this->opa_views);
+ 				$vs_view = $this->ops_view_default ? $this->ops_view_default : array_shift($va_tmp); 
  				$this->opo_result_context->setCurrentView($vs_view);
  			}
- 			if (!isset($this->opa_views[$vs_view])) { $vs_view = array_shift(array_keys($this->opa_views)); }
+ 			if (!isset($this->opa_views[$vs_view])) { 
+ 				$va_tmp = array_keys($this->opa_views);
+ 				$vs_view = array_shift($va_tmp); 
+ 			}
  			
  			if (!($vs_sort 	= $this->opo_result_context->getCurrentSort())) { 
  				$va_tmp = array_keys($this->opa_sorts);
@@ -212,7 +216,8 @@
 					
 					$vn_show_type_id = $this->opo_result_context->getParameter('show_type_id');
 					if (!isset($va_type_counts_obj_type[$vn_show_type_id])) {
-						$vn_show_type_id = array_shift(array_keys($va_type_counts_obj_type));
+						$va_tmp = array_keys($va_type_counts_obj_type);
+						$vn_show_type_id = array_shift($va_tmp);
 					}
 					$this->view->setVar('show_type_id', $vn_show_type_id);
 					$vo_result->filterResult('ca_objects.type_id', $vn_show_type_id);
