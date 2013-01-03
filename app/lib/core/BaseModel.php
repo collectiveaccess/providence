@@ -7537,6 +7537,12 @@ $pa_options["display_form_field_tips"] = true;
 					continue;
 				}
 			}
+			if (isset($va_info['BOUNDS_VALUE']) && is_array($va_info['BOUNDS_VALUE'])) {
+				if ($va_info['BOUNDS_VALUE'][0] > 0) {
+					$va_mandatory_fields[] = $vs_field;
+					continue;
+				}
+			}
 		}
 		
 		return $va_mandatory_fields;
