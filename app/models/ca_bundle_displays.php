@@ -1284,7 +1284,8 @@ class ca_bundle_displays extends BundlableLabelableBaseModelWithAttributes {
 		foreach($va_placements as $vn_placement_id => $va_placement) {
 			$vs_label = ($vs_label = $t_instance->getDisplayLabel($va_placement['bundle_name'])) ? $vs_label : $va_placement['bundle_name'];
 			if(is_array($va_placement['settings']['label'])){
-				if ($vs_user_set_label = array_shift(caExtractValuesByUserLocale(array($va_placement['settings']['label'])))) {
+				$va_tmp = caExtractValuesByUserLocale(array($va_placement['settings']['label']));
+				if ($vs_user_set_label = array_shift($va_tmp)) {
 					$vs_label = "{$vs_label} (<em>{$vs_user_set_label}</em>)";
 				}
 			}

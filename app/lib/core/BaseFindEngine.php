@@ -78,7 +78,8 @@
 				");
 				$g_mysql_has_file_priv = false;
 				while($qr_grants->nextRow()) {
-					$vs_grant = array_shift(array_values($qr_grants->getRow()));
+					$va_grants = array_values($qr_grants->getRow());
+					$vs_grant = array_shift($va_grants);
 					if (preg_match('!^GRANT FILE!', $vs_grant)) {
 						$g_mysql_has_file_priv = true;
 						break;

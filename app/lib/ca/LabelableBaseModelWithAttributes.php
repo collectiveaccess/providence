@@ -85,7 +85,8 @@
 		
 			if (!($t_label = $this->_DATAMODEL->getInstanceByTableName($this->getLabelTableName()))) { return null; }
 			if ($this->inTransaction()) {
-				$t_label->setTransaction($this->getTransaction());
+				$o_trans = $this->getTransaction();
+				$t_label->setTransaction($o_trans);
 			}
 			
 			$t_label->purify($this->purify());
@@ -127,7 +128,8 @@
 			
 			if (!($t_label = $this->_DATAMODEL->getInstanceByTableName($this->getLabelTableName()))) { return null; }
 			if ($this->inTransaction()) {
-				$t_label->setTransaction($this->getTransaction());
+				$o_trans = $this->getTransaction();
+				$t_label->setTransaction($o_trans);
 			}
 			
 			$t_label->purify($this->purify());
@@ -185,7 +187,8 @@
  			
  			if (!($t_label = $this->_DATAMODEL->getInstanceByTableName($this->getLabelTableName()))) { return null; }
  			if ($this->inTransaction()) {
-				$t_label->setTransaction($this->getTransaction());
+ 				$o_trans = $this->getTransaction();
+				$t_label->setTransaction($o_trans);
 			}
 			
  			if (!$t_label->load($pn_label_id)) { return null; }
@@ -219,7 +222,8 @@
  			
  			if (!($t_label = $this->_DATAMODEL->getInstanceByTableName($this->getLabelTableName()))) { return null; }
  			if ($this->inTransaction()) {
-				$t_label->setTransaction($this->getTransaction());
+ 				$o_trans = $this->getTransaction();
+				$t_label->setTransaction($o_trans);
 			}
  			
  			$vb_ret = true;
@@ -272,7 +276,8 @@
  		public function loadByLabel($pa_label_values, $pa_table_values=null) {
  			$t_label = $this->getLabelTableInstance();
  			if ($this->inTransaction()) {
-				$t_label->setTransaction($this->getTransaction());
+ 				$o_trans = $this->getTransaction();
+				$t_label->setTransaction($o_trans);
 			}
 			
  			$o_db = $this->getDb();
@@ -766,7 +771,8 @@
  		public function getLabelForDisplay($pb_dont_cache=true, $pm_locale=null, $pa_options=null) {
 			if (!($t_label = $this->_DATAMODEL->getInstanceByTableName($this->getLabelTableName(), true))) { return null; }
 			if ($this->inTransaction()) {
-				$t_label->setTransaction($this->getTransaction());
+				$o_trans = $this->getTransaction();
+				$t_label->setTransaction($o_trans);
 			}
 			
 			$va_preferred_locales = null;
@@ -905,7 +911,8 @@
  			}
 			if (!($t_label = $this->_DATAMODEL->getInstanceByTableName($this->getLabelTableName(), true))) { return null; }
 			if ($this->inTransaction()) {
-				$t_label->setTransaction($this->getTransaction());
+				$o_trans = $this->getTransaction();
+				$t_label->setTransaction($o_trans);
 			}
  			
  			$vs_label_where_sql = 'WHERE (l.'.$this->primaryKey().' = ?)';
@@ -1016,7 +1023,8 @@
  			if (!$this->getPrimaryKey()) { return null; }
 			if (!($t_label = $this->_DATAMODEL->getInstanceByTableName($this->getLabelTableName(), true))) { return null; }
 			if ($this->inTransaction()) {
-				$t_label->setTransaction($this->getTransaction());
+				$o_trans = $this->getTransaction();
+				$t_label->setTransaction($o_trans);
 			}
 			$o_db = $this->getDb();
  			
@@ -1057,7 +1065,8 @@
 					if ($g_ui_locale_id) { 
 						$vn_locale_id = $g_ui_locale_id;
 					} else {
-						$vn_locale_id = array_shift(array_keys($va_locale_list));
+						$va_tmp = array_keys($va_locale_list);
+						$vn_locale_id = array_shift($va_tmp);
 					}
 				}
 				

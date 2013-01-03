@@ -38,12 +38,12 @@
  			parent::__construct($po_request, $po_response, $pa_view_paths);
  		}
  		# -------------------------------------------------------
- 		protected function _initView() {
+ 		protected function _initView($pa_options=null) {
  			JavascriptLoadManager::register('bundleableEditor');
  			JavascriptLoadManager::register('sortableUI');
  			JavascriptLoadManager::register('bundleListEditorUI');
  			
- 			$va_init = parent::_initView();
+ 			$va_init = parent::_initView($pa_options);
  			if (!$va_init[1]->getPrimaryKey()) {
  				$va_init[1]->set('user_id', $this->request->getUserID());
  				$va_init[1]->set('table_num', $this->request->getParameter('table_num', pInteger));
@@ -65,13 +65,13 @@
  			}
  		}
  		# -------------------------------------------------------
- 		public function Edit() {
- 			if ($this->_isFormEditable()) { return parent::Edit(); } 
+ 		public function Edit($pa_values=null, $pa_options=null) {
+ 			if ($this->_isFormEditable()) { return parent::Edit($pa_values, $pa_options); } 
  			return false;
  		}
  		# -------------------------------------------------------
- 		public function Delete() {
- 			if ($this->_isFormEditable()) { return parent::Delete(); } 
+ 		public function Delete($pa_options=null) {
+ 			if ($this->_isFormEditable()) { return parent::Delete($pa_options); } 
  			return false;
  		}
  		# -------------------------------------------------------

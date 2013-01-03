@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2009 Whirl-i-Gig
+ * Copyright 2009-2013 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -47,7 +47,7 @@ class StorageLocationSearch extends BaseSearch {
 
 	# ----------------------------------------------------------------------
 	public function &search($ps_search, $pa_options=null) {
-		return parent::search($ps_search, new StorageLocationSearchResult(), $pa_options);
+		return parent::doSearch($ps_search, new StorageLocationSearchResult(), $pa_options);
 	}
 	# ----------------------------------------------------------------------
 }

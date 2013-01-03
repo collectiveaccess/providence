@@ -395,7 +395,7 @@ class ca_users extends BaseModel {
 	 * @access public
 	 * @return bool Returns true if no error, false if error occurred
 	 */	
-	public function delete() {
+	public function delete($pb_delete_related=false, $pa_options=null, $pa_fields=null, $pa_table_list=null) {
 		$this->clearErrors();
 		$this->set('userclass', 255);
 		return $this->update();
