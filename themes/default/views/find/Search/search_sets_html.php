@@ -66,7 +66,9 @@
 			<a href='#' onclick="caCreateSetFromResults(); return false;" class="button"><?php print _t('Create'); ?> &rsaquo;</a>
 		</form>
 	</div>
-
+<?php
+	if ($this->request->user->canDoAction('can_batch_edit_'.$t_subject->tableName())) {
+?>
 	<div class="col">
 <?php
 		print _t("Create set and batch edit results").":<br/>";
@@ -79,6 +81,9 @@
 			<a href='#' onclick="caCreateSetFromResults(true); return false;" class="button"><?php print _t('Edit'); ?> &rsaquo;</a>
 		</form>
 	</div>
+<?php
+	}
+?>
 
 		<a href='#' id='hideSets' onclick='return caHandleResultsUIBoxes("sets", "hide");'><img src="<?php print $this->request->getThemeUrlPath(); ?>/graphics/icons/collapse.gif" width="11" height="11" border="0"></a>
 		<div style='clear:both;height:1px;'>&nbsp;</div>
