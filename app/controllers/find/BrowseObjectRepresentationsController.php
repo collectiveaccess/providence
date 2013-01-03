@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2011 Whirl-i-Gig
+ * Copyright 2011-2013 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -74,10 +74,6 @@
 			 	'ca_object_representations.type_id' => _t('type'),
 			 	'ca_object_representations.idno_sort' => _t('idno')
 			), $this->opa_sorts);
- 		}
- 		# -------------------------------------------------------
- 		public function Index($pa_options=null) {
- 			parent::Index(false, $pa_options);
  		}
  		# -------------------------------------------------------
  		/**

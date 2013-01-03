@@ -209,7 +209,8 @@ class ca_locales extends BaseModel {
 		if (isset($va_locale_list[$g_ui_locale_id])) { 
 			$vn_default_id = $g_ui_locale_id; 
 		} else {
-			$vn_default_id =  array_shift(array_keys($va_locale_list));
+			$va_tmp = array_keys($va_locale_list);
+			$vn_default_id =  array_shift($va_tmp);
 		}
 		
 		return ca_locales::$s_default_locale_id = $vn_default_id;
