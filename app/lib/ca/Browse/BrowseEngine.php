@@ -3412,7 +3412,8 @@ if (!$va_facet_info['show_all_when_first_facet'] || ($this->numCriteria() > 0)) 
 				// Grab values and index for sorting later
 				//
 				
-				$vs_sort_field = array_pop(explode('.', $vs_sortable_value_fld));
+				$va_tmp = explode('.', $vs_sortable_value_fld);
+				$vs_sort_field = array_pop($va_tmp);
 				$vs_join_sql = join("\n", $va_joins);
 				$vs_sql = "
 					SELECT {$vs_table_name}.{$vs_table_pk}{$vs_locale_where}, lower({$vs_sortable_value_fld}) {$vs_sort_field}
