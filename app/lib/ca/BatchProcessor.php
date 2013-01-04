@@ -279,22 +279,27 @@
  				$t_set->load($vn_set_id);
  			} else {
  				if (($vs_set_mode == 'create') && ($vs_set_create_name)) {
-					$t_set->setMode(ACCESS_WRITE);
-					$t_set->set('user_id', $po_request->getUserID());
-					$t_set->set('type_id', $po_request->config->get('ca_sets_default_type'));
-					$t_set->set('table_num', $t_object->tableNum());
-					$t_set->set('set_code', mb_substr(preg_replace("![^A-Za-z0-9_\-]+!", "_", $vs_set_create_name), 0, 100));
+ 					$vs_set_code = mb_substr(preg_replace("![^A-Za-z0-9_\-]+!", "_", $vs_set_create_name), 0, 100);
+ 					if ($t_set->load(array('set_code' => $vs_set_code))) {
+ 						$vn_set_id = $t_set->getPrimaryKey();
+ 					} else {
+						$t_set->setMode(ACCESS_WRITE);
+						$t_set->set('user_id', $po_request->getUserID());
+						$t_set->set('type_id', $po_request->config->get('ca_sets_default_type'));
+						$t_set->set('table_num', $t_object->tableNum());
+						$t_set->set('set_code', $vs_set_code);
 			
-					$t_set->insert();
-					if ($t_set->numErrors()) {
-						//$this->view->setVar('error', join("; ", $t_set->getErrors()));
-					}
+						$t_set->insert();
+						if ($t_set->numErrors()) {
+							//$this->view->setVar('error', join("; ", $t_set->getErrors()));
+						}
 			
-					$t_set->addLabel(array('name' => $vs_set_create_name), $vn_locale_id, null, true);
- 					if ($t_set->numErrors()) {
-						//$this->view->setVar('error', join("; ", $t_set->getErrors()));
+						$t_set->addLabel(array('name' => $vs_set_create_name), $vn_locale_id, null, true);
+						if ($t_set->numErrors()) {
+							//$this->view->setVar('error', join("; ", $t_set->getErrors()));
+						}
+						$vn_set_id = $t_set->getPrimaryKey();
 					}
-					$vn_set_id = $t_set->getPrimaryKey();
  				} else {
  					$vn_set_id = null;	// no set
  				}

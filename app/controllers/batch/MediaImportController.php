@@ -102,11 +102,11 @@
 				if ($vn_count == 0) { continue; }
 				$va_dir_list["{$vs_dir} ({$vn_count} file".(($vn_count == 1) ? '' : 's').')'] = $vs_dir;
 			}
-			$this->view->setVar('directory_list', caHTMLSelect('directory', $va_dir_list, array('id' => 'caMediaImportDirectoryList')));
+			$this->view->setVar('directory_list', caHTMLSelect('directory', $va_dir_list, array('id' => 'caMediaImportDirectoryList'), array('width' => '500px')));
 			
 			$this->view->setVar('import_mode', caHTMLSelect('import_mode', array(
-				_t('Import only media that can be matched with existing records') => 'ALWAYS_MATCH',
 				_t('Import all media, matching with existing records where possible') => 'TRY_TO_MATCH',
+				_t('Import only media that can be matched with existing records') => 'ALWAYS_MATCH',
 				_t('Import all media, creating new records for each') => 'DONT_MATCH'
 			)));
  			

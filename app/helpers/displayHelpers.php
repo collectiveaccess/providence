@@ -1393,8 +1393,8 @@ require_once(__CA_LIB_DIR__.'/core/Parsers/TimeExpressionParser.php');
 		$va_dir_list = caGetSubDirectoryList($vs_batch_media_import_root_directory, true, false);
 		$vs_buf .= "<p>"._t('<strong>Directories on server:</strong> %1', sizeof($va_dir_list))."\n";
 		
-		$va_file_list = caGetDirectoryContentsAsList($vs_batch_media_import_root_directory, true, false);
-		$vs_buf .= "<br/>"._t('<strong>Files on server:</strong> %1', sizeof($va_file_list))."</p>\n";
+		//$va_file_list = caGetDirectoryContentsAsList($vs_batch_media_import_root_directory, true, false);
+		//$vs_buf .= "<br/>"._t('<strong>Files on server:</strong> %1', sizeof($va_file_list))."</p>\n";
 		
 		$vs_buf .= "<div style='width:190px; overflow:hidden;'>{$vs_watch}{$vs_label}"."<a title='$vs_idno'>".($vs_idno ? " ({$vs_idno})" : '')."</a></div>\n";
 
