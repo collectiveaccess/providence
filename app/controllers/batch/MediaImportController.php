@@ -193,7 +193,7 @@
  				
  				$vs_row_key = $vs_entity_key = join("/", array($this->request->getUserID(), $va_options['importFromDirectory'], time(), rand(1,999999)));
 				if (!$o_tq->addTask(
-					'batchMediaImporter',
+					'mediaImport',
 					$va_options,
 					array("priority" => 100, "entity_key" => $vs_entity_key, "row_key" => $vs_row_key, 'user_id' => $this->request->getUserID())))
 				{
