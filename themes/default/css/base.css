@@ -4547,6 +4547,7 @@ div.searchlight-results div.searchlight-selected {
 
 .olMap {
 	background-color: #999999;
+	clear:left;
 }
 
 .olControlDelete {
@@ -4645,6 +4646,9 @@ div.searchlight-results div.searchlight-selected {
 .olMapKMLInput {
 	display: none;
 	margin-top: 18px !important;
+}
+.olMap {
+	clear:left;
 }
 
 
