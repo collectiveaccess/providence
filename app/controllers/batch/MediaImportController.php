@@ -185,7 +185,8 @@
  				'set_id' => $this->request->getParameter('set_id', pInteger),
  				'idnoMode' => $this->request->getParameter('idno_mode', pString),
  				'idno' => $this->request->getParameter('idno', pString),
- 				'locale_id' => $g_ui_locale_id
+ 				'locale_id' => $g_ui_locale_id,
+ 				'user_id' => $this->request->getUserID()
  			);
  
  			if ((bool)$this->request->config->get('queue_enabled') && (bool)$this->request->getParameter('run_in_background', pInteger)) { // queue for background processing
