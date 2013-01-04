@@ -27,11 +27,12 @@
  */
 	JavascriptLoadManager::register("sortableUI");
 ?>
-<h1><?php print _t('Batch queued for background processing'); ?></h1>
+<h1><?php print _t('Media import queued for background processing'); ?></h1>
 
 <div class="batchProcessingHelpText">
 <?php 
-	print _t('Your batch edit has been queued and will be run shortly. You may continue to work while the batch is processed.'); 
+	print _t('Your media import has been queued and will be run shortly. You may continue to work while the import is processed.'); 
+	
 	if ((bool)$this->request->getParameter('send_email_when_done', pInteger) && (bool)$this->request->getParameter('send_sms_when_done', pInteger)) {
 		print ' '._t('You will receive email and SMS text messages when processing is complete.');
 	} else {

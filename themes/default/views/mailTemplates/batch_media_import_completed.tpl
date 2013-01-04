@@ -1,13 +1,13 @@
 <?php
 /** ---------------------------------------------------------------------
- * views/mailTemplates/batch_processing_completed.tpl
+ * views/mailTemplates/batch_media_import_completed.tpl
  * ----------------------------------------------------------------------
  * CollectiveAccess
  * Open-source collections management software
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2012 Whirl-i-Gig
+ * Copyright 2013 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -33,9 +33,9 @@
   /**
    *
    */ 
-	print _t('Batch processing of the set %1 completed on %2.
+	print _t('Batch media import of the directory <em>%1</em> completed on %2.
 %3 of %4 %5 were processed. %6 had errors. A full list of processed %7 follows:<br/><br/>', 
-		$this->getVar('setName'), $this->getVar('completedOn'),
+		$this->getVar('directory'), $this->getVar('completedOn'),
 		$this->getVar('batchSize'), $this->getVar('numProcessed'),
 		$this->getVar('subjectNamePlural'), $this->getVar('numErrors'),
 		$this->getVar('subjectNamePlural')
@@ -56,7 +56,7 @@
 		$vs_buf .= "</ul><br/><br/>";
 	}
 	if (is_array($va_notices) && sizeof($va_notices)) {
-		$vs_buf .= '<strong>'._t('Processed successfully').':</strong><br/><ol>';
+		$vs_buf .= '<strong>'._t('Processed').':</strong><br/><ol>';
 		foreach($va_notices as $vn_id => $va_notice) {
 			$vs_buf .= "<li><em>".$va_notice['label']."</em> (".$va_notice['idno']."): ".$va_notice['status']."</li>";
 		}
@@ -64,5 +64,9 @@
 	}
 	print $vs_buf;
 	
-	print "\n\n"._t("Processing took %1", $this->getVar('elapsedTime'));
+	if ($vs_set_name = $this->getVar('setName')) {
+		print  "\n<br/><br/>"._t("Imported media were added to the set <em>%1</em>", $vs_set_name);
+	}
+	
+	print "\n<br/><br/>"._t("Processing took %1", $this->getVar('elapsedTime'));
 ?>

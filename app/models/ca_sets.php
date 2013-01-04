@@ -964,7 +964,8 @@ class ca_sets extends BundlableLabelableBaseModelWithAttributes implements IBund
 	}
 	# ------------------------------------------------------
 	/**
-	 * Add a list of row_ids to the currently loaded set with minimal overhead
+	 * Add a list of row_ids to the currently loaded set with minimal overhead.
+	 * Note: this method doesn't check access rights for the set
 	 *
 	 * @param int $pa_row_ids
 	 * @return int Returns item_id of newly created set item entry. The item_id is a unique identifier for the row_id in the city at the specified position (rank). It is *not* the same as the row_id.

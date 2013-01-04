@@ -1,13 +1,13 @@
 <?php
 /** ---------------------------------------------------------------------
- * app/lib/ca/BatchEditorProgress.php : 
+ * app/lib/ca/BatchMediaImportProgress.php : 
  * ----------------------------------------------------------------------
  * CollectiveAccess
  * Open-source collections management software
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2012 Whirl-i-Gig
+ * Copyright 2013 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -39,17 +39,13 @@
  	require_once(__CA_LIB_DIR__.'/core/Controller/AppController/AppControllerPlugin.php');
  	require_once(__CA_LIB_DIR__.'/ca/BatchProcessor.php');
  
-	class BatchEditorProgress extends AppControllerPlugin {
+	class BatchMediaImportProgress extends AppControllerPlugin {
 		# -------------------------------------------------------
 		private $request;
-		private $ot_set;
-		private $ot_subject;
 		private $opa_options;
 		# -------------------------------------------------------
-		public function __construct($po_request, $t_set, $t_subject, $pa_options=null) {
+		public function __construct($po_request, $pa_options=null) {
 			$this->request = $po_request;
-			$this->ot_set = $t_set;
-			$this->ot_subject = $t_subject;
 			$this->opa_options = is_array($pa_options) ? $pa_options : array();
 		}
 		# -------------------------------------------------------
@@ -69,8 +65,8 @@
 			//
 			if ($req->isLoggedIn()) {
 				set_time_limit(3600*24); // if it takes more than 24 hours we're in trouble
-				
-				$va_errors = BatchProcessor::saveBatchEditorFormForSet($this->request, $this->ot_set, $this->ot_subject, array_merge($this->opa_options, array('progressCallback' => 'caIncrementBatchEditorProgress', 'reportCallback' => 'caCreateBatchEditorResultsReport')));
+			
+				$va_errors = BatchProcessor::importMediaFromDirectory($this->request, array_merge($this->opa_options, array('progressCallback' => 'caIncrementBatchMediaImportProgress', 'reportCallback' => 'caCreateBatchMediaImportResultsReport')));
 			}
 		}	
 		# -------------------------------------------------------
