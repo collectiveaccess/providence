@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2009 Whirl-i-Gig
+ * Copyright 2009-2013 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -75,8 +75,9 @@
  		 * need to do here is instantiate a new subject-appropriate subclass of BaseSearch 
  		 * (eg. CollectionSearch for collections, EntitySearch for entities) and pass it to BaseSearchController->Index() 
  		 */ 
- 		public function Index() {
- 			return parent::Index(new ItemCommentSearch());
+ 		public function Index($pa_options=null) {
+ 			$pa_options['search'] = new ItemCommentSearch();
+ 			return parent::Index($pa_options);
  		}
  		# -------------------------------------------------------
  		public function ListUnmoderated() {

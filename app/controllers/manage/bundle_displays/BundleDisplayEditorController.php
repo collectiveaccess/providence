@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2010-2011 Whirl-i-Gig
+ * Copyright 2010-2013 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -39,12 +39,12 @@
  			parent::__construct($po_request, $po_response, $pa_view_paths);
  		}
  		# -------------------------------------------------------
- 		protected function _initView() {
+ 		protected function _initView($pa_options=null) {
  			JavascriptLoadManager::register('bundleableEditor');
  			JavascriptLoadManager::register('sortableUI');
  			JavascriptLoadManager::register('bundleListEditorUI');
  			
- 			$va_init = parent::_initView();
+ 			$va_init = parent::_initView($pa_options);
  			if (!$va_init[1]->getPrimaryKey()) {
  				$va_init[1]->set('user_id', $this->request->getUserID());
  				$va_init[1]->set('table_num', $this->request->getParameter('table_num', pInteger));
@@ -65,13 +65,13 @@
  			}
  		}
  		# -------------------------------------------------------
- 		public function Edit() {
- 			if ($this->_isDisplayEditable()) { return parent::Edit(); } 
+ 		public function Edit($pa_values=null, $pa_options=null) {
+ 			if ($this->_isDisplayEditable()) { return parent::Edit($pa_values, $pa_options); } 
  			return false;
  		}
  		# -------------------------------------------------------
- 		public function Delete() {
- 			if ($this->_isDisplayEditable()) { return parent::Delete(); } 
+ 		public function Delete($pa_options=null) {
+ 			if ($this->_isDisplayEditable()) { return parent::Delete($pa_options); } 
  			return false;
  		}
  		# -------------------------------------------------------

@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2000-2012 Whirl-i-Gig
+ * Copyright 2000-2013 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -681,7 +681,8 @@ class BaseModel extends BaseObject {
 							
 							$vs_version = $va_tmp[2];
 							if (!isset($va_versions[$vs_version])) {
-								$vs_version = array_shift(array_keys($va_versions));
+								$va_tmp = array_keys($va_versions);
+								$vs_version = array_shift($va_tmp);
 							}
 							
 							if (isset($pa_options['returnURL']) && $pa_options['returnURL']) {
@@ -1041,7 +1042,6 @@ class BaseModel extends BaseObject {
 					$vm_value = preg_replace("/[\"']/", "", $vm_value);
 				}
 
-
 				// what markup is supported for text fields?
 				$vs_markup_type = $this->getFieldInfo($vs_field, "MARKUP_TYPE");
 
@@ -1049,7 +1049,7 @@ class BaseModel extends BaseObject {
 				if (!($vs_markup_type == __CA_MT_HTML__)) {
 					$vm_value = htmlspecialchars($vm_value, ENT_QUOTES, 'UTF-8');
 				}
-
+								
 				$vs_cur_value = isset($this->_FIELD_VALUES[$vs_field]) ? $this->_FIELD_VALUES[$vs_field] : null;
 				switch ($pa_fields_type) {
 					case (FT_NUMBER):
@@ -1267,6 +1267,7 @@ class BaseModel extends BaseObject {
 						}
 						break;
 					case (FT_TEXT):
+						$vm_value = (string)$vm_value;
 						if (is_string($vm_value)) {
 							$vm_value = stripSlashes($vm_value);
 						}
@@ -1281,7 +1282,7 @@ class BaseModel extends BaseObject {
 								if (!($vs_list_multiple_delimiter = $this->getFieldInfo($vs_field, 'LIST_MULTIPLE_DELIMITER'))) { $vs_list_multiple_delimiter = ';'; }
 								$vs_string_value = join($vs_list_multiple_delimiter, $vm_value);
 								$vs_string_value = str_replace("\0", '', $vs_string_value);
-								if ($vs_cur_value != $vs_string_value) {
+								if ($vs_cur_value !== $vs_string_value) {
 									$this->_FIELD_VALUE_CHANGED[$vs_field] = true;
 								}
 								$this->_FIELD_VALUES[$vs_field] = $vs_string_value;
@@ -1290,19 +1291,19 @@ class BaseModel extends BaseObject {
 							$vm_value = str_replace("\0", '', $vm_value);
 							if ($this->getFieldInfo($vs_field, "ENTITY_ENCODE_INPUT")) {
 								$vs_value_entity_encoded = htmlentities(html_entity_decode($vm_value));
-								if ($vs_cur_value != $vs_value_entity_encoded) {
+								if ($vs_cur_value !== $vs_value_entity_encoded) {
 									$this->_FIELD_VALUE_CHANGED[$vs_field] = true;
 								}
 								$this->_FIELD_VALUES[$vs_field] = $vs_value_entity_encoded;
 							} else {
 								if ($this->getFieldInfo($vs_field, "URL_ENCODE_INPUT")) {
 									$vs_value_url_encoded = urlencode($vm_value);
-									if ($vs_cur_value != $vs_value_url_encoded) {
+									if ($vs_cur_value !== $vs_value_url_encoded) {
 										$this->_FIELD_VALUE_CHANGED[$vs_field] = true;
 									}
 									$this->_FIELD_VALUES[$vs_field] = $vs_value_url_encoded;
 								} else {
-									if ($vs_cur_value != $vm_value) {
+									if ($vs_cur_value !== $vm_value) {
 										$this->_FIELD_VALUE_CHANGED[$vs_field] = true;
 									}
 									$this->_FIELD_VALUES[$vs_field] = $vm_value;
@@ -1904,7 +1905,8 @@ class BaseModel extends BaseObject {
 					)) {
 						if ($t_many_table = $this->_DATAMODEL->getTableInstance($va_many_to_one_relations[$vs_field]["one_table"])) {
 							if ($this->inTransaction()) {
-								$t_many_table->setTransaction($this->getTransaction());
+								$o_trans = $this->getTransaction();
+								$t_many_table->setTransaction($o_trans);
 							}
 							$t_many_table->load($this->get($va_many_to_one_relations[$vs_field]["many_table_field"]));
 						}
@@ -2429,7 +2431,8 @@ class BaseModel extends BaseObject {
 					if (!(($va_attr["IS_NULL"]) && ($vs_field_value == ""))) {
 						if ($t_many_table = $this->_DATAMODEL->getTableInstance($va_many_to_one_relations[$vs_field]["one_table"])) {
 							if ($this->inTransaction()) {
-								$t_many_table->setTransaction($this->getTransaction());
+								$o_trans = $this->getTransaction();
+								$t_many_table->setTransaction($o_trans);
 							}
 							$t_many_table->load($this->get($va_many_to_one_relations[$vs_field]["many_table_field"]));
 						}
@@ -2884,7 +2887,8 @@ class BaseModel extends BaseObject {
 
 						# do any records exist?
 						$t_related = $this->_DATAMODEL->getTableInstance($vs_many_table);
-						$t_related->setTransaction($this->getTransaction());
+						$o_trans = $this->getTransaction();
+						$t_related->setTransaction($o_trans);
 						$qr_record_check = $o_db->query("
 							SELECT ".$t_related->primaryKey()."
 							FROM ".$vs_many_table."
@@ -6051,6 +6055,55 @@ class BaseModel extends BaseObject {
 			return null;
 		}
 	}
+	
+	# --------------------------------------------------------------------------------------------
+	/**
+	 * 
+	 * @param array, optional associative array of options. Valid keys for the array are:
+	 *		returnDeleted = return deleted records in list (def. false)
+	 * @return DbRes
+	 */
+	public function &getHierarchyChildCountsForIDs($pa_ids, $pa_options=null) {
+		if (!$this->isHierarchical()) { return null; }
+		$va_additional_table_wheres = array();
+		
+		if(!is_array($pa_ids)) { 
+			if (!$pa_ids) {
+				return null; 
+			} else {
+				$pa_ids = array($pa_ids);
+			}
+		}
+		
+		if (!sizeof($pa_ids)) { return array(); }
+		
+		$o_db = $this->getDb();
+		$vs_table_name = $this->tableName();
+		$vs_pk = $this->primaryKey();
+		
+		foreach($pa_ids as $vn_i => $vn_id) {
+			$pa_ids[$vn_i] = (int)$vn_id;
+		}
+		
+		if ($this->hasField('deleted') && (!isset($pa_options['returnDeleted']) || (!$pa_options['returnDeleted']))) {
+			$va_additional_table_wheres[] = "({$vs_table_name}.deleted = 0)";
+		}
+		
+		
+		$qr_res = $o_db->query("
+			SELECT parent_id,  count(*) c
+			FROM {$vs_table_name}
+			WHERE
+				parent_id IN (?) ".((sizeof($va_additional_table_wheres)) ? " AND ".join(" AND ", $va_additional_table_wheres) : "")."
+			GROUP BY parent_id
+		", array($pa_ids));
+		
+		$va_counts = array();
+		while($qr_res->nextRow()) {
+			$va_counts[(int)$qr_res->get('parent_id')] = (int)$qr_res->get('c');
+		}
+		return $va_counts;
+	}
 	# --------------------------------------------------------------------------------------------
 	/**
 	 * Get *direct* child records for currently loaded record or one specified by $pn_id
@@ -8161,65 +8214,91 @@ $pa_options["display_form_field_tips"] = true;
 			}
 		}
 		
-		$o_db = $this->getDb();
-		$t_item_rel = $va_rel_info['t_item_rel'];
-		$vs_rel_table_name = $t_item_rel->tableName();
-		
-		$vs_type_sql = $vs_timestamp_sql = '';
-		
 		$va_query_params = array();
+		$o_db = $this->getDb();
 		
-		$vs_left_table_name = $t_item_rel->getLeftTableName();
-		$vs_left_field_name = $t_item_rel->getLeftTableFieldName();
+		if (($t_item_rel = $va_rel_info['t_item_rel']) && method_exists($t_item_rel, 'getLeftTableName')) {
+			$vs_rel_table_name = $t_item_rel->tableName();
 		
-		$vs_right_table_name = $t_item_rel->getRightTableName();
-		$vs_right_field_name = $t_item_rel->getRightTableFieldName();
+			$vs_type_sql = $vs_timestamp_sql = '';
+		
+		
+			$vs_left_table_name = $t_item_rel->getLeftTableName();
+			$vs_left_field_name = $t_item_rel->getLeftTableFieldName();
+		
+			$vs_right_table_name = $t_item_rel->getRightTableName();
+			$vs_right_field_name = $t_item_rel->getRightTableFieldName();
 		
 		
 			
-		if ($va_rel_info['related_table_name'] == $this->tableName()) {
-			// is self relation
-			if ($ps_direction == 'rtol') {
-				$vn_left_id = (int)$pn_rel_id;
-				$vn_right_id = (int)$this->getPrimaryKey();
+			if ($va_rel_info['related_table_name'] == $this->tableName()) {
+				// is self relation
+				if ($ps_direction == 'rtol') {
+					$vn_left_id = (int)$pn_rel_id;
+					$vn_right_id = (int)$this->getPrimaryKey();
+				} else {
+					$vn_left_id = (int)$this->getPrimaryKey();
+					$vn_right_id = (int)$pn_rel_id;
+				}
 			} else {
-				$vn_left_id = (int)$this->getPrimaryKey();
-				$vn_right_id = (int)$pn_rel_id;
+				if ($vs_left_table_name == $this->tableName()) {
+					$vn_left_id = (int)$this->getPrimaryKey();
+					$vn_right_id = (int)$pn_rel_id;
+				} else {
+					$vn_left_id = (int)$pn_rel_id;
+					$vn_right_id = (int)$this->getPrimaryKey();
+				}
+			}
+		
+			$va_query_params = array($vn_left_id, $vn_right_id);
+		
+			if ($t_item_rel->hasField('type_id')) {
+				$vs_type_sql = ' AND type_id = ?';
+				$va_query_params[] = (int)$pn_type_id;
+			}
+		
+		
+			if ($ps_effective_date && $t_item_rel->hasField('sdatetime') && ($va_timestamps = caDateToHistoricTimestamps($ps_effective_date))) {
+				$vs_timestamp_sql = " AND (sdatetime = ? AND edatetime = ?)";
+				$va_query_params[] = (float)$va_timestamps['start'];
+				$va_query_params[] = (float)$va_timestamps['end'];
+			}
+		
+			$qr_res = $o_db->query("
+				SELECT relation_id
+				FROM {$vs_rel_table_name}
+				WHERE
+					{$vs_left_field_name} = ? AND {$vs_right_field_name} = ?
+					{$vs_type_sql} {$vs_timestamp_sql}
+			", $va_query_params);
+		
+			if (sizeof($va_ids = $qr_res->getAllFieldValues('relation_id'))) {
+				return $va_ids;
 			}
 		} else {
-			if ($vs_left_table_name == $this->tableName()) {
-				$vn_left_id = (int)$this->getPrimaryKey();
-				$vn_right_id = (int)$pn_rel_id;
-			} else {
-				$vn_left_id = (int)$pn_rel_id;
-				$vn_right_id = (int)$this->getPrimaryKey();
+			if (sizeof($va_rel_info['path']) == 2) {		// many-one rel
+				$va_rel_keys = $va_rel_info['rel_keys'];
+				$vb_is_one_table = ($this->tableName() == $va_rel_keys['one_table']) ? true : false;
+			
+				if ($vb_is_one_table) {
+					$vs_where_sql = "ot.".$va_rel_keys['one_table_field']." = ?";
+				} else {
+					$vs_where_sql = "mt.".$va_rel_keys['many_table_field']." = ?";
+				}
+				$va_query_params[] = (int)$this->getPrimaryKey();
+			
+				$vs_relation_id_fld = ($vb_is_one_table ? "mt.".$va_rel_keys['many_table_field'] : "ot.".$va_rel_keys['one_table_field']);
+				$qr_res = $o_db->query("
+					SELECT {$vs_relation_id_fld}
+					FROM {$va_rel_keys['one_table']} ot
+					INNER JOIN {$va_rel_keys['many_table']} AS mt ON mt.{$va_rel_keys['many_table_field']} = ot.{$va_rel_keys['one_table_field']}
+					WHERE
+						{$vs_where_sql}
+				", $va_query_params);
+				if (sizeof($va_ids = $qr_res->getAllFieldValues($vs_relation_id_fld))) {
+					return $va_ids;
+				}
 			}
-		}
-		
-		$va_query_params = array($vn_left_id, $vn_right_id);
-		
-		if ($t_item_rel->hasField('type_id')) {
-			$vs_type_sql = ' AND type_id = ?';
-			$va_query_params[] = (int)$pn_type_id;
-		}
-		
-		
-		if ($ps_effective_date && $t_item_rel->hasField('sdatetime') && ($va_timestamps = caDateToHistoricTimestamps($ps_effective_date))) {
-			$vs_timestamp_sql = " AND (sdatetime = ? AND edatetime = ?)";
-			$va_query_params[] = (float)$va_timestamps['start'];
-			$va_query_params[] = (float)$va_timestamps['end'];
-		}
-		
-		$qr_res = $o_db->query("
-			SELECT relation_id
-			FROM {$vs_rel_table_name}
-			WHERE
-				{$vs_left_field_name} = ? AND {$vs_right_field_name} = ?
-				{$vs_type_sql} {$vs_timestamp_sql}
-		", $va_query_params);
-		
-		if (sizeof($va_ids = $qr_res->getAllFieldValues('relation_id'))) {
-			return $va_ids;
 		}
 		
 		return false;
@@ -8471,7 +8550,7 @@ $pa_options["display_form_field_tips"] = true;
 	 *		If you want both moderated and unmoderated tags to be returned then omit the parameter or pass a null value
 	 *
 	 * @param $pn_user_id [integer] A valid ca_users.user_id value. If specified, only tags added by the specified user will be returned. (optional - default is null)
-	 * @param $pn_moderation_status [boolean] To return only unmoderated tags set to FALSE; to return only moderated tags set to TRUE; to return all tags set to null or omit
+	 * @param $pb_moderation_status [boolean] To return only unmoderated tags set to FALSE; to return only moderated tags set to TRUE; to return all tags set to null or omit
 	 */
 	public function getTags($pn_user_id=null, $pb_moderation_status=null, $pn_row_id=null) {
 		if (!($vn_row_id = $pn_row_id)) {

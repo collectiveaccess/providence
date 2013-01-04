@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2009-2012 Whirl-i-Gig
+ * Copyright 2009-2013 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -236,8 +236,8 @@ class ca_set_items extends BundlableLabelableBaseModelWithAttributes {
 	 * @param int $pn_set_item_id Set item id to load. 
 	 * @return bool Returns true if no error, false if error occurred
 	 */	
-	public function load($pn_set_item_id=null) {
-		$vn_rc = parent::load($pn_set_item_id);
+	public function load($pn_set_item_id=null, $pb_use_cache=true) {
+		$vn_rc = parent::load($pn_set_item_id, $pb_use_cache);
 		
 		# load set item vars (the get() method automatically unserializes the data)
 		$this->opa_set_item_vars = $this->get("vars");
@@ -281,7 +281,7 @@ class ca_set_items extends BundlableLabelableBaseModelWithAttributes {
 		if ($this->opa_set_item_vars_have_changed) {
 			$this->set("vars",$this->opa_set_item_vars);
 		}
-		return parent::update();
+		return parent::update($pa_options);
 	}
 	# ------------------------------------------------------
 	protected function initLabelDefinitions() {

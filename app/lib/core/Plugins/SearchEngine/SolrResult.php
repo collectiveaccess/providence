@@ -96,7 +96,9 @@ class WLPlugSearchEngineSolrResult extends WLPlug implements IWLPlugSearchEngine
 		
 		$vn_c = 0;
 		foreach($this->opa_hits as $vn_i => $va_row) {
-			$va_ids[] = $va_row[$this->ops_subject_primary_key];
+			$vs_val = array($va_row[$this->ops_subject_primary_key]);	// handle primary key as array (can happen in some broken configurations)
+			if (is_array($vs_val)) { $vs_val = array_pop($vs_val); }
+			$va_ids[] = $vs_val;
 			$vn_c++;
 			if (!is_null($vn_limit) && ($vn_c >= $vn_limit)) { break; }
 		}

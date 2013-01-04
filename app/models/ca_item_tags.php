@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2009-2010 Whirl-i-Gig
+ * Copyright 2009-2013 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -182,32 +182,40 @@ class ca_item_tags extends BaseModel {
 	/**
 	 *
 	 */
-	public function getModeratedTags() {
-		return $this->getTags('moderated');
+	public function getModeratedTags($pn_limit=0) {
+		return $this->getAllTags(false, $pn_limit);
 	}
 	# ------------------------------------------------------
 	/**
 	 *
 	 */
-	public function getUnmoderatedTags() {
-		return $this->getTags('unmoderated');
+	public function getUnmoderatedTags($pn_limit=0) {
+		return $this->getAllTags(true, $pn_limit);
 	}
 	# ------------------------------------------------------
 	/**
+	 * Returns all tags attached to any kind of row.
+	 * If the optional $pb_moderation_status parameter is passed then only tags matching the criteria will be returned:
+	 *		Passing $pb_moderation_status = TRUE will cause only moderated tags to be returned
+	 *		Passing $pb_moderation_status = FALSE will cause only unmoderated tags to be returned
+	 *		If you want both moderated and unmoderated tags to be returned then omit the parameter or pass a null value
 	 *
+	 * @param bool $pb_moderation_status To return only unmoderated tags set to FALSE; to return only moderated tags set to TRUE; to return all tags set to null or omit
+	 * @param int $pn_limit Maximum number of tags to return. Default is 0 - no limit.
+	 * 
+	 * @return array
 	 */
-	public function getTags($ps_mode='', $pn_limit=0) {
+	public function getAllTags($pb_moderation_status=null, $pn_limit=0) {
 		$o_db = $this->getDb();
 		
 		$vs_where = '';
 		
-		switch($ps_mode) {
-			case 'unmoderated':
-				$vs_where = ' WHERE cixt.moderated_on IS NULL';
-				break;	
-			case 'moderated':
-				$vs_where = ' WHERE cixt.moderated_on IS NOT NULL';
-				break;	
+		if ($pb_moderation_status === true) {
+			$vs_where = ' WHERE cixt.moderated_on IS NULL';
+		} elseif($pb_moderation_status === false) {
+			$vs_where = ' WHERE cixt.moderated_on IS NOT NULL';
+		} else {
+			$vs_where = '';
 		}
 		$vs_limit = "";
 		if(intval($pn_limit) > 0){

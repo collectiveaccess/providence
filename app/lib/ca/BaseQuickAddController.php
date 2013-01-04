@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2012 Whirl-i-Gig
+ * Copyright 2013 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -111,10 +111,12 @@
  			if (!($vn_type_id = $t_subject->getTypeID())) {
  				if (!($vn_type_id = $this->request->getParameter($t_subject->getTypeFieldName(), pString))) {
  					if ($vs_type = $this->request->config->get('quickadd_'.$t_subject->tableName().'_default_type')) {
- 						$vn_type_id = array_shift(caMakeTypeIDList($t_subject->tableName(), array($vs_type)));
+ 						$va_tmp = caMakeTypeIDList($t_subject->tableName(), array($vs_type));
+ 						$vn_type_id = array_shift($va_tmp);
  					}
  					if (!$vn_type_id) {
- 						$vn_type_id = array_shift(array_keys($t_subject->getTypeList()));
+ 						$va_tmp = array_keys($t_subject->getTypeList());
+ 						$vn_type_id = array_shift($va_tmp);
  					}
  				}
  			}
@@ -322,7 +324,8 @@
  			$vn_id = $t_subject->getPrimaryKey();
  			
  			if ($vn_id) {
- 				$va_name = array_pop(caProcessRelationshipLookupLabel($t_subject->makeSearchResult($t_subject->tableName(), array($vn_id)), $t_subject));
+ 				$va_tmp = caProcessRelationshipLookupLabel($t_subject->makeSearchResult($t_subject->tableName(), array($vn_id)), $t_subject);
+ 				$va_name = array_pop($va_tmp);
  			} else {
  				$va_name = array();
  			}

@@ -375,6 +375,20 @@ class ca_objects extends BundlableLabelableBaseModelWithAttributes implements IB
 	#
 	# ------------------------------------------------------
 	public function __construct($pn_id=null) {
+		if (
+			!is_null(BaseModel::$s_ca_models_definitions['ca_objects']['FIELDS']['acl_inherit_from_parent']['DEFAULT'])
+			||
+			!is_null(BaseModel::$s_ca_models_definitions['ca_objects']['FIELDS']['acl_inherit_from_ca_collections']['DEFAULT'])
+		) {
+			$o_config = Configuration::load();
+		
+			if (!is_null(BaseModel::$s_ca_models_definitions['ca_objects']['FIELDS']['acl_inherit_from_parent']['DEFAULT'])) {
+				BaseModel::$s_ca_models_definitions['ca_objects']['FIELDS']['acl_inherit_from_parent']['DEFAULT'] = (int)$o_config->get('ca_objects_acl_inherit_from_parent_default');
+			}
+			if (!is_null(BaseModel::$s_ca_models_definitions['ca_objects']['FIELDS']['acl_inherit_from_ca_collections']['DEFAULT'])) {
+				BaseModel::$s_ca_models_definitions['ca_objects']['FIELDS']['acl_inherit_from_ca_collections']['DEFAULT'] = (int)$o_config->get('ca_objects_acl_inherit_from_ca_collections_default');
+			}
+		}
 		parent::__construct($pn_id);
 	}
 	# ------------------------------------------------------
@@ -402,7 +416,7 @@ class ca_objects extends BundlableLabelableBaseModelWithAttributes implements IB
 		$this->BUNDLES['ca_commerce_order_history'] = array('type' => 'special', 'repeating' => true, 'label' => _t('Order history'));
 	}
 	# ------------------------------------------------------
-	public function delete($pb_delete_related=false, $pa_options=null){
+	public function delete($pb_delete_related=false, $pa_options=null, $pa_fields=null, $pa_table_list=null){
 		// nuke related representations
 		foreach($this->getRepresentations() as $va_rep){
 			// check if representation is in use anywhere else 
@@ -412,7 +426,7 @@ class ca_objects extends BundlableLabelableBaseModelWithAttributes implements IB
 			}
 		}
 
-		return parent::delete($pb_delete_related, $pa_options);
+		return parent::delete($pb_delete_related, $pa_options, $pa_fields, $pa_table_list);
 	}
 	# ------------------------------------------------------
 	/**
@@ -836,7 +850,8 @@ class ca_objects extends BundlableLabelableBaseModelWithAttributes implements IB
  		$t_rep = new ca_object_representations();
  		
  		if ($this->inTransaction()) {
- 			$t_rep->setTransaction($this->getTransaction());
+ 			$o_trans = $this->getTransaction();
+ 			$t_rep->setTransaction($o_trans);
  		}
  		
  		$t_rep->setMode(ACCESS_WRITE);
@@ -889,7 +904,8 @@ class ca_objects extends BundlableLabelableBaseModelWithAttributes implements IB
 			
  		$t_oxor = new ca_objects_x_object_representations();
  		if ($this->inTransaction()) {
- 			$t_oxor->setTransaction($this->getTransaction());
+ 			$o_trans = $this->getTransaction();
+ 			$t_oxor->setTransaction($o_trans);
  		}
  		$t_oxor->setMode(ACCESS_WRITE);
  		$t_oxor->set('object_id', $vn_object_id);
@@ -942,7 +958,8 @@ class ca_objects extends BundlableLabelableBaseModelWithAttributes implements IB
  		
  		$t_rep = new ca_object_representations();
  		if ($this->inTransaction()) {
- 			$t_rep->setTransaction($this->getTransaction());
+ 			$o_trans = $this->getTransaction();
+ 			$t_rep->setTransaction($o_trans);
  		}
  		if (!$t_rep->load(array('representation_id' => $pn_representation_id))) {
  			$this->postError(750, _t("Representation id=%1 does not exist", $pn_representation_id), "ca_objects->editRepresentation()");
@@ -1184,6 +1201,7 @@ class ca_objects extends BundlableLabelableBaseModelWithAttributes implements IB
 	 		while($qr_res->nextRow()) {
 	 			$va_hiers[$vn_object_id = $qr_res->get('object_id')] = array(
 	 				'object_id' => $vn_object_id,
+	 				'item_id' => $vn_object_id,
 	 				'name' => caProcessTemplateForIDs($vs_template, 'ca_objects', array($vn_object_id)),
 	 				'hierarchy_id' => $vn_object_id,
 	 				'children' => (int)$qr_res->get('c')
@@ -1210,6 +1228,7 @@ class ca_objects extends BundlableLabelableBaseModelWithAttributes implements IB
 			$va_object_hierarchy_root = array(
 				$t_object->get($vs_hier_fld) => array(
 					'object_id' => $vn_pk,
+	 				'item_id' => $vn_pk,
 					'name' => $vs_name = caProcessTemplateForIDs($vs_template, 'ca_objects', array($vn_pk)),
 					'hierarchy_id' => $vn_hier_id,
 					'children' => sizeof($va_children)

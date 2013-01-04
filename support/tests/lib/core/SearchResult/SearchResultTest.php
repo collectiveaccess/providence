@@ -30,7 +30,7 @@
  * ----------------------------------------------------------------------
  */
 	require_once('PHPUnit/Autoload.php');
-	require_once('./setup.php');
+	require_once('../../../setup.php');
 	require_once(__CA_LIB_DIR__.'/core/Datamodel.php');
 	require_once(__CA_LIB_DIR__.'/ca/Search/ObjectSearch.php');
 	require_once(__CA_LIB_DIR__.'/ca/Search/EntitySearch.php');
@@ -38,14 +38,29 @@
 	//
 	// NOTE: REQUIRES CONEY ISLAND HISTORY PROJECT TEST DATA
 	//
-	// You can get this data from the SVN repository at http://collectiveaccess.svn.whirl-i-gig.com/CollectiveAccess/test/test_data_mysql.dump
+	// You can get this data from the GitHub repository at http://github.com/CollectiveAccess/providence/support/test/test_data_mysql.dump
 	//
 	
 	class SearchResultTest extends PHPUnit_Framework_TestCase {
 		# -------------------------------------------------------------------------------
+		/**
+		 * @var ca_objects.idno value of record to use for testing
+		 */
+		private $ops_object_idno = 'CIHP.TEST';
+		# -------------------------------------------------------------------------------
+		/**
+		 * Set up request global required by get() returnAsLink option
+		 */
+		public function __construct() {
+			define("__CA_APP_TYPE__", "PAWTUCKET");
+			global $g_request;
+			$g_request = new RequestHTTP(new ResponseHTTP(), array('no_headers' => true, 'no_authentication' => true));
+			
+		}
+		# -------------------------------------------------------------------------------
 		public function testIntrinsicGet() {
 			$o_search = new ObjectSearch();
-			$qr_res = $o_search->search('ca_objects.idno:CIHP.60');
+			$qr_res = $o_search->search('ca_objects.idno:'.$this->ops_object_idno);
 			$qr_res->nextHit();
 			
 			//
@@ -53,22 +68,24 @@
 			//
 			$vs_val = $qr_res->get('ca_objects.idno', array('returnAsArray' => false, 'returnAllLocales' => false));
 			$this->assertInternalType("string", $vs_val);
-			$this->assertEquals($vs_val, 'CIHP.60', "Return value should be string");
+			$this->assertEquals($vs_val, $this->ops_object_idno, "Return value should be string");
+			
+			$vs_val = $qr_res->get('idno', array('returnAsArray' => false, 'returnAllLocales' => false));
+			$this->assertInternalType("string", $vs_val);
+			$this->assertEquals($vs_val, $this->ops_object_idno, "Return value should be string");
 			
 			//
 			// Get as array without locales
 			//
 			$va_val = $qr_res->get('ca_objects.idno', array('returnAsArray' => true, 'returnAllLocales' => false));
-			
 			$this->assertInternalType("array", $va_val, "Return value should be array");
 			$this->assertEquals(sizeof($va_val), 1, "Size of returned array should be 1");
-			$this->assertContains("CIHP.60", $va_val, "Returned value should be 'CIHP.60'");
+			$this->assertContains($this->ops_object_idno, $va_val, "Returned value should be ".$this->ops_object_idno);
 			
 			//
 			// Get as array with locales
 			//
 			$va_val = $qr_res->get('ca_objects.idno', array('returnAsArray' => true, 'returnAllLocales' => true));
-			
 			$this->assertInternalType("array", $va_val, "Return value should be array");
 			
 			$va_val = array_shift($va_val);
@@ -77,38 +94,86 @@
 			$va_val = array_shift($va_val);
 			$this->assertInternalType("array", $va_val, "Third level of returned value should be array");
 			
-			$this->assertContains("CIHP.60", $va_val, "Value in third level should be 'CIHP.60'");
+			$this->assertContains($this->ops_object_idno, $va_val, "Value in third level should be ".$this->ops_object_idno);
 			
 			//
-			// Get as scalar with locales (returnAsArray should be forced to true by locale setting)
+			// Get as scalar with locales (should force returnAsArray to true)
 			//
 			$vs_val = $qr_res->get('ca_objects.idno', array('returnAsArray' => false, 'returnAllLocales' => true));
-			$this->assertInternalType("array", $vs_val, "Return value should be string");
-			$this->assertContains("CIHP.60", $va_val, "Returned value should be 'CIHP.60'");
-			
-			
-			//
-			// Test instrinsic date field
-			//
-			$o_search = new EntitySearch();
-			$qr_res = $o_search->search('ca_entities.idno:2');
+			$this->assertInternalType("array", $vs_val, "Return value should be array");
+			$this->assertContains($this->ops_object_idno, $va_val, "Returned value should be ".$this->ops_object_idno);
+		}
+		# -------------------------------------------------------------------------------
+		public function testSimpleRelatedGet() {
+			$o_search = new ObjectSearch();
+			$qr_res = $o_search->search('ca_objects.idno:'.$this->ops_object_idno);
 			$qr_res->nextHit();
 			
-			$vs_val = $qr_res->get('ca_entities.lifespan');
-			$this->assertEquals("1865 - 1914", $vs_val, "Value for date should be 1865 - 1914");
+			//
+			// Get related entities as string
+			//
+			$vs_val = $qr_res->get('ca_entities', array('returnAsArray' => false, 'returnAllLocales' => false, 'delimiter' => '; '));	
+			$this->assertInternalType("string", $vs_val);
+			$this->assertEquals('Seth Kaufman; Charles Denson', $vs_val, "Return value is incorrect");
+			
+			//
+			// Get related entities as link
+			//
+			$vs_val = $qr_res->get('ca_entities', array('returnAsLink' => true, 'returnAsArray' => false, 'returnAllLocales' => false, 'delimiter' => '; '));	
+			$this->assertInternalType("string", $vs_val);
+			$this->assertContains('<a href', $vs_val, "Return value is incorrect");
+			$this->assertContains('Seth Kaufman', $vs_val, "Return value is incorrect");
+			
+			foreach(array('with returnAsLink' => true, 'without returnAsLink' => false) as $vs_message => $vb_return_as_link) {
+				//
+				// Get related items for table as array
+				//
+				$va_val = $qr_res->get('ca_entities', array('returnAsArray' => true, 'returnAllLocales' => false, 'returnAsLink' => $vb_return_as_link));
+				$this->assertInternalType("array", $va_val, "Return value should be array {$vs_message}");
+				$va_val = array_shift($va_val);
+				$this->assertInternalType("string", $va_val['entity_id'], "Value for key 'entity_id' should be string {$vs_message}");
+				$this->assertGreaterThan(0, (int)$va_val['entity_id'], "Value for key 'entity_id' should be greater than zero when cast to integer {$vs_message}");
+			
+				//
+				// Get related items for table as all-locales array
+				//
+				$va_val = $qr_res->get('ca_entities', array('returnAsArray' => true, 'returnAllLocales' => true, 'returnAsLink' => $vb_return_as_link));
+				$this->assertInternalType("array", $va_val, "Return value should be array");
+			
+				$va_val = array_shift($va_val);
+				$this->assertInternalType("array", $va_val, "Second level of returned value should be array {$vs_message}");
+			
+				$va_val = array_shift($va_val);
+				$this->assertInternalType("array", $va_val, "Third level of returned value should be array {$vs_message}");
+			
+				$this->assertContains("Seth Kaufman", $va_val, "Value in third level should be Seth Kaufman {$vs_message}");
+								
+				//
+				// Get related entities with template
+				//
+				$vs_val = $qr_res->get('ca_entities', array('template' => '^preferred_labels.surname, ^preferred_labels.forename (^idno)', 'returnAsLink' => $vb_return_as_link, 'returnAsArray' => false, 'returnAllLocales' => false, 'delimiter' => '; '));	
+				$this->assertInternalType("string", $vs_val);
+				
+				if ($vb_return_as_link) {
+					$this->assertContains('<a href', $vs_val, "Return value is incorrect {$vs_message}");
+					$this->assertContains('Kaufman, Seth (4)', $vs_val, "Return value is incorrect {$vs_message}");				
+				} else {
+					$this->assertEquals('Kaufman, Seth (4); Denson, Charles (5)', $vs_val, "Return value is incorrect {$vs_message}");
+				}
+			}
 		}
 		# -------------------------------------------------------------------------------
 		public function testAttributeGet() {
 			$o_search = new ObjectSearch();
-			$qr_res = $o_search->search('ca_objects.idno:CIHP.60');
+			$qr_res = $o_search->search('ca_objects.idno:'.$this->ops_object_idno);
 			$qr_res->nextHit();
 			
-			$vs_description = 'Page 04 of W.F. Mangels Company Catalogue #4; "Palace Gondola Carousells"';
+			$vs_description = 'This is a test description';
 
 			//
 			// Test <tablename>.<element_code> attributes 
 			//
-			
+	if (false) {		
 				//
 				// Get as scalar without locales
 				//
@@ -135,7 +200,6 @@
 				// Get as array with locales
 				//
 				$va_val = $qr_res->get('ca_objects.description', array('returnAsArray' => true, 'returnAllLocales' => true));
-				
 				$this->assertInternalType("array", $va_val, "Return value should be array");
 				
 				$va_val = array_shift($va_val);
@@ -149,17 +213,48 @@
 				
 				$this->assertContains($vs_description, $va_val, "Value in fourth level is incorrect");
 				$this->assertArrayHasKey("description", $va_val, "Fourth level of returned value should be array with key 'description'");
+
+				//
+				// Get as scalar with locales (setting of returnAllLocales should force returnAsArray to true)
+				//
+				$va_val = $qr_res->get('ca_objects.description', array('returnAsArray' => false, 'returnAllLocales' => true));
+				$this->assertInternalType("array", $va_val, "Return value should be array");
 				
-				//
-				// Get as scalar with locales (returnAsArray should be forced to true by locale setting)
-				//
-				$vs_val = $qr_res->get('ca_objects.description', array('returnAsArray' => false, 'returnAllLocales' => true));
-				$this->assertInternalType("array", $vs_val, "Return value should be string");
+				$va_val = array_shift($va_val);
+				$this->assertInternalType("array", $va_val, "Second level of returned value should be array");
+				
+				$va_val = array_shift($va_val);
+				$this->assertInternalType("array", $va_val, "Third level of returned value should be array");
+				
+				$va_val = array_shift($va_val);
+				$this->assertInternalType("array", $va_val, "Fourth level of returned value should be array");
+				
 				$this->assertContains($vs_description, $va_val, "Returned value is incorrect");
 				
 				//
-				// TODO: Test templates
+				// Get scalar with template
 				//
+				$vs_val = $qr_res->get('ca_objects.description', array('template' => 'Description is: ^ca_objects.description', 'returnAsArray' => false, 'returnAllLocales' => false));
+				$this->assertInternalType("string", $vs_val, "Return value should be string");
+				$this->assertEquals("Description is: This is a test description", $vs_val, "Returned value is incorrect");
+				
+				$vs_val = $qr_res->get('ca_objects.description.description', array('template' => 'Description is: ^ca_objects.description', 'returnAsArray' => false, 'returnAllLocales' => false));
+				$this->assertInternalType("string", $vs_val, "Return value should be string");
+				$this->assertEquals("Description is: This is a test description", $vs_val, "Returned value is incorrect");
+		
+				
+				//
+				// Get scalar with template as array
+				//
+				$va_val = $qr_res->get('ca_objects.description', array('template' => 'Description is: ^ca_objects.description', 'returnAsArray' => true, 'returnAllLocales' => false));
+			
+				$this->assertInternalType("array", $va_val, "Return value should be string");
+				$this->assertContains("Description is: {$vs_description}", $va_val, "Returned value is incorrect");
+				
+				$va_val = $qr_res->get('ca_objects.description.description', array('template' => 'Description is: ^ca_objects.description', 'returnAsArray' => true, 'returnAllLocales' => false));
+			
+				$this->assertInternalType("array", $va_val, "Return value should be string");
+				$this->assertContains("Description is: {$vs_description}", $va_val, "Returned value is incorrect");
 				
 			//
 			// Test <tablename>.<element_code>.<sub_element_code> attributes 
@@ -167,6 +262,7 @@
 				//
 				// Get as scalar without locales
 				//
+	}
 				$vs_val = $qr_res->get('ca_objects.description.description', array('returnAsArray' => false, 'returnAllLocales' => false));
 				$this->assertInternalType("string", $vs_val);
 				$this->assertEquals($vs_description, $vs_val, "Return value is incorrect");	
@@ -175,7 +271,6 @@
 				// Get as array without locales
 				//
 				$va_val = $qr_res->get('ca_objects.description.description', array('returnAsArray' => true, 'returnAllLocales' => false));
-				
 				$this->assertInternalType("array", $va_val, "Return value should be array");
 				$this->assertEquals(sizeof($va_val), 1, "Size of returned array should be 1");
 				
@@ -186,7 +281,6 @@
 				//
 				$va_val = $qr_res->get('ca_objects.description.description', array('returnAsArray' => true, 'returnAllLocales' => true));
 				$this->assertInternalType("array", $va_val, "Return value should be array");
-				
 				$va_val = array_shift($va_val);
 				$this->assertInternalType("array", $va_val, "Second level of returned value should be array");
 				
@@ -196,24 +290,64 @@
 				$this->assertContains($vs_description, $va_val, "Value in third level is incorrect");
 				
 				//
-				// Get as scalar with locales (returnAsArray should be forced to true by locale setting)
+				// Get as scalar with locales (setting of returnAllLocales should force returnAsArray to true)
 				//
 				$vs_val = $qr_res->get('ca_objects.description.description', array('returnAsArray' => false, 'returnAllLocales' => true));
 				$this->assertInternalType("array", $vs_val, "Return value should be string");
 				$this->assertContains($vs_description, $va_val, "Returned value is incorrect");
 				
 				//
-				// TODO: Test templates
+				// Attribute with template
 				//
+				$va_val = $qr_res->get('ca_objects.dimensions_numeric', array('template' => 'W=^dimensions_width', 'returnAsArray' => false, 'returnAllLocales' => false));
 				
+				$this->assertInternalType("string", $va_val, "Return value should be string");
+				$this->assertEquals("W=12.0 in", $va_val, "Returned value is incorrect");
+				
+				$va_val = $qr_res->get('ca_objects.dimensions_numeric', array('template' => 'W=^dimensions_width', 'returnAsArray' => true, 'returnAllLocales' => false));
+				$this->assertInternalType("array", $va_val, "Return value should be array");
+				$this->assertContains("W=12.0 in", $va_val, "Returned value is incorrect");
+				
+				//
+				// Get URL attribute as link
+				//
+				$vs_val = $qr_res->get('ca_objects.external_link.url_entry', array('returnAsArray' => false, 'returnAllLocales' => false));
+				$this->assertInternalType("string", $vs_val, "Return value should be string");
+				$this->assertEquals("http://www.coneyislandhistory.org/about", $vs_val, "Returned value is incorrect");
+			
+				$vs_val = $qr_res->get('ca_objects.external_link.url_entry', array('returnAsLink' => true, 'returnAsArray' => false, 'returnAllLocales' => false));
+				$this->assertInternalType("string", $vs_val, "Return value should be string");
+				$this->assertContains("<a href", $vs_val, "Returned value is not a link");
+				$this->assertContains("http://www.coneyislandhistory.org/about", $vs_val, "Returned value is incorrect");
+				
+				$va_val = $qr_res->get('ca_objects.external_link.url_entry', array('returnAsLink' => true, 'returnAsArray' => true, 'returnAllLocales' => false));
+				$this->assertInternalType("array", $va_val, "Return value should be array");
+				$vs_val = array_pop($va_val);
+				$this->assertContains("<a href", $vs_val, "Returned value is not a link");
+				$this->assertContains("http://www.coneyislandhistory.org/about", $vs_val, "Returned value is incorrect");
+				
+				$vs_val = $qr_res->get('ca_objects.external_link.url_entry', array('returnAsLink' => true, 'returnAsLinkText' => 'LINK_GOES_HERE', 'returnAsArray' => false, 'returnAllLocales' => false));
+				$this->assertInternalType("string", $vs_val, "Return value should be string");
+				$this->assertContains("<a href", $vs_val, "Returned value is not a link");
+				$this->assertContains(">LINK_GOES_HERE<", $vs_val, "Returned value is incorrect");
+				$this->assertContains("http://www.coneyislandhistory.org/about", $vs_val, "Returned value is incorrect");
+				
+				$vs_val = $qr_res->get('ca_objects.external_link.url_entry', array('returnAsLink' => true, 'returnAsLinkText' => 'LINK_GOES_HERE', 'returnAsLinkAttributes' => array('class' => 'extLink', 'alt' => 'External link'), 'returnAsArray' => false, 'returnAllLocales' => false));
+				$this->assertInternalType("string", $vs_val, "Return value should be string");
+				$this->assertContains("href=", $vs_val, "Returned value is not a link");
+				$this->assertContains("<a", $vs_val, "Returned value is not a link");
+				$this->assertContains("class='extLink'", $vs_val, "Returned value is missing class");
+				$this->assertContains("alt='External link'", $vs_val, "Returned value is alt attribute");
+				$this->assertContains(">LINK_GOES_HERE<", $vs_val, "Returned value is incorrect");
+				$this->assertContains("http://www.coneyislandhistory.org/about", $vs_val, "Returned value is incorrect");
 		}
 		# -------------------------------------------------------------------------------
 		public function testPreferredLabelGet() {
 			$o_search = new ObjectSearch();
-			$qr_res = $o_search->search('ca_objects.idno:CIHP.60');
+			$qr_res = $o_search->search('ca_objects.idno:'.$this->ops_object_idno);
 			$qr_res->nextHit();
 			
-			$vs_title = "Page 05 - Palace Gondola Carousells";
+			$vs_title = "Canonical test record";
 			
 			//
 			// Get preferred label values (all fields - not specific values)
@@ -230,13 +364,13 @@
 				// Get as array without locales
 				//
 				$va_val = $qr_res->get('ca_objects.preferred_labels', array('returnAsArray' => true, 'returnAllLocales' => false));
-				
+
 				$this->assertInternalType("array", $va_val, "Return value should be array");
 				$this->assertEquals(sizeof($va_val), 1, "Size of returned array should be 1");
 				$va_val = array_shift($va_val);
-				$this->assertInternalType("string", $va_val, "Second level of returned value should be array");
+				$this->assertInternalType("array", $va_val, "Second level of returned value should be array");
 				
-				//$this->assertArrayHasKey("name", $va_val, "Second level of returned value should be array with key 'name'");
+				$this->assertArrayHasKey("name", $va_val, "Second level of returned value should be array with key 'name'");
 				
 				$this->assertContains($vs_title, $va_val, "Returned value is incorrect");
 				
@@ -254,13 +388,13 @@
 				$this->assertInternalType("array", $va_val, "Third level of returned value should be array");
 				
 				$va_val = array_shift($va_val);
-				$this->assertInternalType("string", $va_val, "Fourth level of returned value should be string");
+				$this->assertInternalType("array", $va_val, "Fourth level of returned value should be array");
 				
-				//$this->assertContains($vs_title, $va_val, "Value in fourth level is incorrect");
-				//$this->assertArrayHasKey("name", $va_val, "Fourth level of returned value should be array with key 'name'");
+				$this->assertContains($vs_title, $va_val, "Value in fourth level is incorrect");
+				$this->assertArrayHasKey("name", $va_val, "Fourth level of returned value should be array with key 'name'");
 				
 				//
-				// Get as scalar with locales (returnAsArray should be forced to true by locale setting)
+				// Get as scalar with locales (setting of returnAllLocales should force returnAsArray to true)
 				//
 				$vs_val = $qr_res->get('ca_objects.preferred_labels', array('returnAsArray' => false, 'returnAllLocales' => true));
 				$this->assertInternalType("array", $vs_val, "Return value should be string");
@@ -281,7 +415,7 @@
 				// Get as array without locales
 				//
 				$va_val = $qr_res->get('ca_objects.preferred_labels.name', array('returnAsArray' => true, 'returnAllLocales' => false));
-				
+
 				$this->assertInternalType("array", $va_val, "Return value should be array");
 				$this->assertEquals(sizeof($va_val), 1, "Size of returned array should be 1");
 				$this->assertContains($vs_title, $va_val, "Returned value is incorrect");
@@ -291,7 +425,7 @@
 				//
 				$va_val = $qr_res->get('ca_objects.preferred_labels.name', array('returnAsArray' => true, 'returnAllLocales' => true));
 				$this->assertInternalType("array", $va_val, "Return value should be array");
-				
+
 				$va_val = array_shift($va_val);
 				$this->assertInternalType("array", $va_val, "Second level of returned value should be array");
 				
@@ -301,7 +435,7 @@
 				$this->assertContains($vs_title, $va_val, "Value in third level is incorrect");
 				
 				//
-				// Get as scalar with locales (returnAsArray should be forced to true by locale setting)
+				// Get as scalar with locales (setting of returnAllLocales should force returnAsArray to true)
 				//
 				$vs_val = $qr_res->get('ca_objects.preferred_labels.name', array('returnAsArray' => false, 'returnAllLocales' => true));
 				$this->assertInternalType("array", $vs_val, "Return value should be string");
@@ -311,7 +445,7 @@
 		# -------------------------------------------------------------------------------
 		public function testNonPreferredLabelGet() {
 			$o_search = new ObjectSearch();
-			$qr_res = $o_search->search('ca_objects.idno:CIHP.60');
+			$qr_res = $o_search->search('ca_objects.idno:'.$this->ops_object_idno);
 			$qr_res->nextHit();
 			
 			$vs_title = "This is an alternate title";
@@ -331,15 +465,17 @@
 				// Get as array without locales
 				//
 				$va_val = $qr_res->get('ca_objects.nonpreferred_labels', array('returnAsArray' => true, 'returnAllLocales' => false));
-				
+
 				$this->assertInternalType("array", $va_val, "Return value should be array");
 				$this->assertEquals(sizeof($va_val), 1, "Size of returned array should be 1");
 				$va_val = array_shift($va_val);
-				$this->assertInternalType("string", $va_val, "Second level of returned value should be string");
+				$this->assertInternalType("array", $va_val, "Second level of returned value should be array");
+				$va_val = array_shift($va_val);
+				$this->assertInternalType("array", $va_val, "Third level of returned value should be array");
 				
-				//$this->assertArrayHasKey("name", $va_val, "Second level of returned value should be array with key 'name'");
+				$this->assertArrayHasKey("name", $va_val, "Third level of returned value should be array with key 'name'");
 				
-				//$this->assertContains($vs_title, $va_val, "Returned value is incorrect");
+				$this->assertContains($vs_title, $va_val, "Returned value is incorrect");
 				
 				//
 				// Get as array with locales
@@ -355,13 +491,13 @@
 				$this->assertInternalType("array", $va_val, "Third level of returned value should be array");
 				
 				$va_val = array_shift($va_val);
-				$this->assertInternalType("string", $va_val, "Fourth level of returned value should be string");
+				$this->assertInternalType("array", $va_val, "Fourth level of returned value should be array");
 				
-				//$this->assertContains($vs_title, $va_val, "Value in fourth level is incorrect");
-				//$this->assertArrayHasKey("name", $va_val, "Fourth level of returned value should be array with key 'name'");
+				$this->assertContains($vs_title, $va_val, "Value in fourth level is incorrect");
+				$this->assertArrayHasKey("name", $va_val, "Fourth level of returned value should be array with key 'name'");
 				
 				//
-				// Get as scalar with locales (returnAsArray should be forced to true by locale setting)
+				// Get as scalar with locales (setting of returnAllLocales should force returnAsArray to true)
 				//
 				$vs_val = $qr_res->get('ca_objects.nonpreferred_labels', array('returnAsArray' => false, 'returnAllLocales' => true));
 				$this->assertInternalType("array", $vs_val, "Return value should be string");
@@ -382,8 +518,9 @@
 				// Get as array without locales
 				//
 				$va_val = $qr_res->get('ca_objects.nonpreferred_labels.name', array('returnAsArray' => true, 'returnAllLocales' => false));
-				
+
 				$this->assertInternalType("array", $va_val, "Return value should be array");
+				
 				$this->assertEquals(sizeof($va_val), 1, "Size of returned array should be 1");
 				$this->assertContains($vs_title, $va_val, "Returned value is incorrect");
 				
@@ -392,7 +529,7 @@
 				//
 				$va_val = $qr_res->get('ca_objects.nonpreferred_labels.name', array('returnAsArray' => true, 'returnAllLocales' => true));
 				$this->assertInternalType("array", $va_val, "Return value should be array");
-				
+
 				$va_val = array_shift($va_val);
 				$this->assertInternalType("array", $va_val, "Second level of returned value should be array");
 				
@@ -402,7 +539,7 @@
 				$this->assertContains($vs_title, $va_val, "Value in third level is incorrect");
 				
 				//
-				// Get as scalar with locales (returnAsArray should be forced to true by locale setting)
+				// Get as scalar with locales (setting of returnAllLocales should force returnAsArray to true)
 				//
 				$vs_val = $qr_res->get('ca_objects.nonpreferred_labels.name', array('returnAsArray' => false, 'returnAllLocales' => true));
 				$this->assertInternalType("array", $vs_val, "Return value should be string");
@@ -412,57 +549,35 @@
 		# -------------------------------------------------------------------------------
 		public function testRelatedItemsGet() {
 			$o_search = new ObjectSearch();
-			$qr_res = $o_search->search('ca_objects.idno:CIHP.60');
+			$qr_res = $o_search->search('ca_objects.idno:'.$this->ops_object_idno);
 			$qr_res->nextHit();
-			
-			
-			//
-			// Get related items for table as string (returnAsArray is false)
-			//
-			$vs_val = $qr_res->get('ca_entities', array('returnAsArray' => false, 'returnAllLocales' => false));
 		
-			$this->assertInternalType("string", $vs_val, "Return value should be string");
-			$this->assertEquals('W.F. Mangels Company early times catalogues', $vs_val, "Returned value is incorrect");
-			
-		
-			//
-			// Get related items for table as array (returnAsArray is true, returnAllLocales is true)
-			//
-			$va_val = $qr_res->get('ca_entities', array('returnAsArray' => true, 'returnAllLocales' => true));
-		
-			$this->assertInternalType("array", $va_val, "Return value should be array");
-			
-			$va_val = array_shift($va_val);
-			$this->assertInternalType("string", $va_val['entity_id'], "Value for key 'entity_id' should be string");
-			$this->assertGreaterThan(0, (int)$va_val['entity_id'], "Value for key 'entity_id' should be greater than zero when cast to integer");
-			
-			$this->assertInternalType("array", $va_val['labels'], "Labels should be array keyed on locale_id");
-			$this->assertInternalType("string", $va_val['labels'][1], "Label for locale_id 1 should be string");
-			$this->assertEquals('W.F. Mangels Company', $va_val['labels'][1], "Returned label value is incorrect");
-			
-			//
-			// Get related items for table as array without all locales (returnAsArray is true, returnAllLocales is false)
-			//
-			$va_val = $qr_res->get('ca_entities', array('returnAsArray' => true, 'returnAllLocales' => false));
-		
-			$this->assertInternalType("array", $va_val, "Return value should be array");
-			
-			$va_val = array_shift($va_val);
-			$this->assertInternalType("string", $va_val['entity_id'], "Value for key 'entity_id' should be string");
-			$this->assertGreaterThan(0, (int)$va_val['entity_id'], "Value for key 'entity_id' should be greater than zero when cast to integer");
-			
-			$this->assertInternalType("array", $va_val['labels'], "Labels should be array");
-			$this->assertInternalType("string", $va_val['labels'][0], "Label for index 0 should be string");
-			$this->assertEquals('W.F. Mangels Company', $va_val['labels'][0], "Returned label value is incorrect");
-				
 			//
 			// Get related preferred labels array (all fields)
 			//
-			$vs_value = 'W.F. Mangels Company; early times catalogues';
+			$vs_value = 'Seth Kaufman; Charles Denson';
 			$va_val = $qr_res->get('ca_entities.preferred_labels', array('returnAsArray' => false, 'returnAllLocales' => false, 'delimiter' => '; '));
 			
 			$this->assertInternalType("string", $va_val, "Return value should be string");
 			$this->assertEquals($vs_value, $va_val, "Returned value is incorrect");
+			
+			//
+			// Get related preferred labels array (all fields) as link
+			//
+			$va_val = $qr_res->get('ca_entities.preferred_labels', array('returnAsLink' => true, 'returnAsArray' => false, 'returnAllLocales' => false, 'delimiter' => '; '));
+			
+			$this->assertInternalType("string", $va_val, "Return value should be string");
+			$this->assertContains('<a href', $va_val, "Returned value is not link");
+			$this->assertContains("Seth Kaufman", $va_val, "Returned value is incorrect");
+			
+			//
+			// Get related preferred labels array (all fields) as link with template
+			//
+			$va_val = $qr_res->get('ca_entities.preferred_labels', array('template' => '^preferred_labels.surname, ^preferred_labels.forename', 'returnAsLink' => true, 'returnAsArray' => false, 'returnAllLocales' => false, 'delimiter' => '; '));
+	
+			$this->assertInternalType("string", $va_val, "Return value should be string");
+			$this->assertContains('<a href', $va_val, "Returned value is not link");
+			$this->assertContains("Kaufman, Seth", $va_val, "Returned value is incorrect");
 			
 			$va_val = $qr_res->get('ca_entities.preferred_labels', array('returnAsArray' => true, 'returnAllLocales' => false));
 			
@@ -480,23 +595,34 @@
 			$this->assertInternalType("array", $va_val, "Third level of returned value should be array");
 			
 			$va_val = array_shift($va_val);
-			$this->assertInternalType("string", $va_val, "Fourth level of returned value should be string");
+			$this->assertInternalType("array", $va_val, "Fourth level of returned value should be array");
 			
-			$vs_value = 'W.F. Mangels Company';
+			$vs_value = 'Seth Kaufman';
 			$this->assertContains($vs_value, $va_val, "Value in fourth level is incorrect");
 			
 			//
 			// Get specific field in preferred labels
 			//
-			$vs_value = 'Mangels Company; times catalogues';
+			$vs_value = 'Kaufman; Denson';
 			$va_val = $qr_res->get('ca_entities.preferred_labels.surname', array('returnAsArray' => false, 'returnAllLocales' => false, 'delimiter' => '; '));
 			
 			$this->assertInternalType("string", $va_val, "Return value should be string");
 			$this->assertEquals($vs_value, $va_val, "Returned value is incorrect");
 			
+			//
+			// Get specific field in preferred labels as link
+			//
+			$vs_value = 'Kaufman; Denson';
+			$va_val = $qr_res->get('ca_entities.preferred_labels.surname', array('returnAsLink' => true, 'returnAsArray' => false, 'returnAllLocales' => false, 'delimiter' => '; '));
+			
+			$this->assertInternalType("string", $va_val, "Return value should be string");
+			$this->assertContains('<a href', $va_val, "Returned value is not link");
+			$this->assertContains('Kaufman', $va_val, "Returned value is incorrect");
+			
+			
 			$va_val = $qr_res->get('ca_entities.preferred_labels.surname', array('returnAsArray' => true, 'returnAllLocales' => false));
 			
-			$vs_value = 'Mangels Company';
+			$vs_value = 'Kaufman';
 			$this->assertInternalType("array", $va_val, "Return value should be array");
 			$this->assertContains($vs_value, $va_val, "Returned value is incorrect");
 			
@@ -516,15 +642,24 @@
 			//
 			// Get entity field
 			//
-			$vs_value = '10; 18';
+			$vs_value = '4; 5';
 			$va_val = $qr_res->get('ca_entities.idno', array('returnAsArray' => false, 'returnAllLocales' => false, 'delimiter' => '; '));
 			
 			$this->assertInternalType("string", $va_val, "Return value should be string");
 			$this->assertEquals($vs_value, $va_val, "Returned value is incorrect");
 			
+			//
+			// Get entity field as link
+			//
+			$va_val = $qr_res->get('ca_entities.idno', array('returnAsLink' => true, 'returnAsArray' => false, 'returnAllLocales' => false, 'delimiter' => '; '));
+			
+			$this->assertInternalType("string", $va_val, "Return value should be string");
+			$this->assertContains('<a href', $va_val, "Returned value is not link");
+			$this->assertContains('4', $va_val, "Returned value is incorrect");
+			
 			$va_val = $qr_res->get('ca_entities.idno', array('returnAsArray' => true, 'returnAllLocales' => false));
 			
-			$vs_value = '10';
+			$vs_value = '4';
 			$this->assertInternalType("array", $va_val, "Return value should be array");
 			$this->assertContains($vs_value, $va_val, "Returned value is incorrect");
 			
@@ -544,20 +679,57 @@
 			//
 			// Get entity attribute
 			//
-			$vs_value = 'these are test notes';
+			$vs_value = 'These are test notes';
 			$va_val = $qr_res->get('ca_entities.internal_notes', array('returnAsArray' => false, 'returnAllLocales' => false, 'delimiter' => '; '));
 			
 			$this->assertInternalType("string", $va_val, "Return value should be string");
 			$this->assertEquals($vs_value, $va_val, "Returned value is incorrect");
 			
+			//
+			// Get entity attribute as link
+			//
+			$va_val = $qr_res->get('ca_entities.internal_notes', array('returnAsLink' => true, 'returnAsArray' => false, 'returnAllLocales' => false, 'delimiter' => '; '));
+			
+			$this->assertInternalType("string", $va_val, "Return value should be string");
+			$this->assertContains('<a href', $va_val, "Returned value is not a link");
+			$this->assertContains($vs_value, $va_val, "Returned value is incorrect");
+			
+			//
+			// Get entity attribute as link with template
+			//
+			$va_val = $qr_res->get('ca_entities.internal_notes', array('template' => 'Notes: ^internal_notes','returnAsLink' => true, 'returnAsArray' => false, 'returnAllLocales' => false, 'delimiter' => '; '));
+			
+			$this->assertInternalType("string", $va_val, "Return value should be string");
+			$this->assertContains('<a href', $va_val, "Returned value is not a link");
+			$this->assertContains("Notes: {$vs_value}", $va_val, "Returned value is incorrect");
+			
+			//
+			// Get entity attribute with template
+			//
+			$va_val = $qr_res->get('ca_entities.internal_notes', array('template' => 'Notes: ^internal_notes','returnAsLink' => false, 'returnAsArray' => false, 'returnAllLocales' => false, 'delimiter' => '; '));
+			
+			$this->assertInternalType("string", $va_val, "Return value should be string");
+			$this->assertEquals("Notes: {$vs_value}; Notes: ", $va_val, "Returned value is incorrect");
+			
+			
+			//
+			// Get entity attribute as array and links with template
+			//
+			$va_val = $qr_res->get('ca_entities.internal_notes', array('template' => 'Notes: ^internal_notes','returnAsLink' => true, 'returnAsArray' => true, 'returnAllLocales' => false, 'delimiter' => '; '));
+			
+			$this->assertInternalType("array", $va_val, "Return value should be array");
+			$this->assertContains("Notes: {$vs_value}", array_shift($va_val), "Returned value is incorrect");
+			
+			
 			$va_val = $qr_res->get('ca_entities.internal_notes', array('returnAsArray' => true, 'returnAllLocales' => false));
-					
-			$vs_value = 'these are test notes';
+			
+			$vs_value = 'These are test notes';
+			$va_val = array_pop($va_val);
+			
 			$this->assertInternalType("array", $va_val, "Return value should be array");
 			$this->assertEquals(sizeof($va_val), 1, "Size of returned array should be 1");
-	
-			$this->assertArrayHasKey('internal_notes', $va_val[0], "Returned array should have key 'internal_notes'");
-			$this->assertContains($vs_value, $va_val[0], "Returned value is incorrect");
+			$this->assertArrayHasKey('internal_notes', $va_val, "Returned array should have key 'internal_notes'");
+			$this->assertContains($vs_value, $va_val, "Returned value is incorrect");
 			
 			$va_val = $qr_res->get('ca_entities.internal_notes', array('returnAsArray' => true, 'returnAllLocales' => true));
 
@@ -579,21 +751,22 @@
 		# -------------------------------------------------------------------------------
 		public function testParentGet() {
 			$o_search = new ObjectSearch();
-			$qr_res = $o_search->search('ca_objects.idno:CIHP.60');
+			$qr_res = $o_search->search('ca_objects.idno:'.$this->ops_object_idno.".1");
 			$qr_res->nextHit();
 			
 			//
 			// Get intrinsic field from parent
 			//
-			$vs_value = 'CIHP.59';
+			$vs_value = $this->ops_object_idno;
 			$va_val = $qr_res->get('ca_objects.parent.idno', array('returnAsArray' => false, 'returnAllLocales' => false));
+			
 			$this->assertInternalType("string", $va_val, "Returned value should be string");
-			$this->assertEquals('CIHP.47', $va_val, "Returned value is incorrect");
+			$this->assertEquals($vs_value, $va_val, "Returned value is incorrect");
 			
 			$va_val = $qr_res->get('ca_objects.parent.idno', array('returnAsArray' => true, 'returnAllLocales' => false));
 			$this->assertInternalType("array", $va_val, "Returned value should be array");
 			$this->assertEquals(sizeof($va_val), 1, "Size of returned array should be 1");
-			$this->assertContains('CIHP.47', $va_val, "Value in array is incorrect");
+			$this->assertContains($vs_value, $va_val, "Value in array is incorrect");
 			
 			$va_val = $qr_res->get('ca_objects.parent.idno', array('returnAsArray' => true, 'returnAllLocales' => true));
 			$this->assertInternalType("array", $va_val, "Returned value should be array");
@@ -604,12 +777,12 @@
 			
 			$va_val = array_shift($va_val);
 			$this->assertInternalType("array", $va_val, "Third level of returned value should be array");
-			$this->assertContains('CIHP.47', $va_val, "Value in array is incorrect");
+			$this->assertContains($vs_value, $va_val, "Value in array is incorrect");
 			
 			//
 			// Get preferred labels from parent
 			//
-			$vs_value = 'W.F. Mangels Company Catalogue #4';
+			$vs_value = 'Canonical test record';
 			$va_val = $qr_res->get('ca_objects.parent.preferred_labels.name', array('returnAsArray' => false, 'returnAllLocales' => false));
 			$this->assertInternalType("string", $va_val, "Returned value should be string");
 			$this->assertEquals($vs_value, $va_val, "Returned value is incorrect");
@@ -633,7 +806,7 @@
 			//
 			// Get attributes from parent
 			//
-			$vs_value = '28 page catalogue from the W.F. Mangels Carousell Works showing their range of products, including carousels, carved horses, band organs, Whips, shooting ranges and vending ovens.';
+			$vs_value = 'This is a test description';
 			$va_val = $qr_res->get('ca_objects.parent.description', array('returnAsArray' => false, 'returnAllLocales' => false));
 			$this->assertInternalType("string", $va_val, "Returned value should be string");
 			$this->assertEquals($vs_value, $va_val, "Returned value is incorrect");
@@ -664,28 +837,25 @@
 		# -------------------------------------------------------------------------------
 		public function testChildrenGet() {
 			$o_search = new ObjectSearch();
-			$qr_res = $o_search->search('ca_objects.idno:CIHP.47');
+			$qr_res = $o_search->search('ca_objects.idno:'.$this->ops_object_idno);
 			$qr_res->nextHit();
 			
 			//
 			// Get intrinsic field from children
 			//
-			$vs_value = 'CIHP.56 CIHP.57 CIHP.58 CIHP.59 CIHP.60 CIHP.61 CIHP.62 CIHP.63 CIHP.64 CIHP.65 CIHP.66 CIHP.67 CIHP.68 CIHP.69 CIHP.70 CIHP.71 CIHP.72 CIHP.73 CIHP.74 CIHP.75 CIHP.76 CIHP.77 CIHP.78 CIHP.79 CIHP.80 CIHP.81 CIHP.82 CIHP.83';
-			$va_val = $qr_res->get('ca_objects.children.idno', array('returnAsArray' => false, 'returnAllLocales' => false));
+			$vs_value = 'CIHP.TEST.1; CIHP.TEST.2';
+			$va_val = $qr_res->get('ca_objects.children.idno', array('returnAsArray' => false, 'returnAllLocales' => false, 'delimiter' => '; '));
 			$this->assertInternalType("string", $va_val, "Returned value should be string");
-
 			$this->assertEquals($vs_value, $va_val, "Returned value is incorrect");
 			
-			$vs_value = 'CIHP.56';
+			$vs_value = 'CIHP.TEST.1';
 			$va_val = $qr_res->get('ca_objects.children.idno', array('returnAsArray' => true, 'returnAllLocales' => false));
 
 			$this->assertInternalType("array", $va_val, "Returned value should be array");
 			$this->assertGreaterThan(0, sizeof($va_val), "Size of returned array should be greater than 0");
-
 			$this->assertContains($vs_value, $va_val, "Value in array is incorrect");
 			
 			$va_val = $qr_res->get('ca_objects.children.idno', array('returnAsArray' => true, 'returnAllLocales' => true));
-
 			$this->assertInternalType("array", $va_val, "Returned value should be array");
 			
 			$va_val = array_shift($va_val);
@@ -693,15 +863,15 @@
 			
 			$va_val = array_shift($va_val);
 			$this->assertInternalType("array", $va_val, "Third level of returned value should be array");
-
+			
+			$va_val = array_shift($va_val);
 			$this->assertContains($vs_value, $va_val, "Value in array is incorrect");
 			
 			//
 			// Get preferred labels from children
 			//
-			$vs_value = 'Page 01 - Title page Page 02 - Catalogue description Page 03 - Photos of places where Mangels devices are in use Page 04 - Photos of places where Mangels devices are in use Page 05 - Palace Gondola Carousells Page 06 - Combination Galloping Horse Carousell Page 07 - Palace Galloping Horse Carousell Page 08 - Combination Horse Galloping Carousell Page 09 - Portable Galloping Horse Carousell Page 10 - Carousell Figures Page 11 - Chariots Page 12 - Organs and Orchestrions Page 13 - Engines and Motors Page 14 - The Tickler Page 15 - Electric Scenic Railway Car for High Speed Pleasure Railways Page 16 - Great Yale - Harvard Boat Race Page 17 - Roasting Furnace Page 18 - New Portable Roasting Furnace Page 19 - Milch Cows and Striking Machine Page 20 - Mechanical Shooting Gallery Background Page 21 - Mechanical Shooting Gallery Background Page 22 - Mechanical Shooting Gallery Background Page 23 - Electric Target Page 24 - Slide Page 25 - (List of parts for shooting gallery) Page 26 - Squirrel Tree and Revolving Target Page 27 - Ten Pins, Sprocket Wheel and Detachable Chain, Cast-Iron Birds, Bird Racks and Imitation Clay Pipes Page 28 - Agents for The J.W. Zarro Enterprises Advertisement';
-			$va_val = $qr_res->get('ca_objects.children.preferred_labels.name', array('returnAsArray' => false, 'returnAllLocales' => false));
-		
+			$vs_value = 'Canonical test sub-record No. 1; Canonical test sub-record No. 2';
+			$va_val = $qr_res->get('ca_objects.children.preferred_labels.name', array('returnAsArray' => false, 'returnAllLocales' => false, 'delimiter' => '; '));
 			$this->assertInternalType("string", $va_val, "Returned value should be string");
 			$this->assertEquals($vs_value, $va_val, "Returned value is incorrect");
 			
@@ -709,7 +879,7 @@
 			$this->assertInternalType("array", $va_val, "Returned value should be array");
 			$this->assertGreaterThan(0, sizeof($va_val), "Size of returned array should be greater than 0");
 			
-			$vs_value = 'Page 01 - Title page';
+			$vs_value = 'Canonical test sub-record No. 1';
 			$this->assertContains($vs_value, $va_val, "Value in array is incorrect");
 			
 			$va_val = $qr_res->get('ca_objects.children.preferred_labels.name', array('returnAsArray' => true, 'returnAllLocales' => true));

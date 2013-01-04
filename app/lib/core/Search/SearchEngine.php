@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2007-2012 Whirl-i-Gig
+ * Copyright 2007-2013 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -94,6 +94,14 @@ class SearchEngine extends SearchBase {
 	# Search
 	# ------------------------------------------------------------------
 	/**
+	 *
+	 */
+	public function search($ps_search, $pa_options=null) {
+		$vs_append_to_search = (isset($pa_options['appendToSearch'])) ? ' '.$pa_options['appendToSearch'] : '';
+		return $this->search($ps_search.$vs_append_to_search, null, $pa_options);
+	}
+	# ------------------------------------------------------------------
+	/**
 	 * Performs a search by calling the search() method on the underlying search engine plugin
 	 * Information about all searches is logged to ca_search_log
 	 *
@@ -117,7 +125,7 @@ class SearchEngine extends SearchBase {
 	 * @return SearchResult Results packages in a SearchResult object, or sub-class of SearchResult if an instance was passed in $po_result
 	 * @uses TimeExpressionParser::parse
 	 */
-	public function search($ps_search, $po_result=null, $pa_options=null) {
+	public function doSearch($ps_search, $po_result=null, $pa_options=null) {
 		global $AUTH_CURRENT_USER_ID;
 		
 		$t = new Timer();
@@ -571,7 +579,8 @@ class SearchEngine extends SearchBase {
 			// Grab values and index for sorting later
 			//
 			
-			$vs_sort_field = array_pop(explode('.', $vs_sortable_value_fld));
+			$va_tmp = explode('.', $vs_sortable_value_fld);
+			$vs_sort_field = array_pop($va_tmp);
 			$vs_join_sql = join("\n", $va_joins);
 			$vs_sql = "
 				SELECT {$vs_table_name}.{$vs_table_pk}{$vs_locale_where}, lower({$vs_sortable_value_fld}) {$vs_sort_field}
