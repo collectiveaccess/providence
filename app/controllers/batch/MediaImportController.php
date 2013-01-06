@@ -74,6 +74,7 @@
  		 *
  		 */
  		public function Index($pa_values=null, $pa_options=null) {
+ 			JavascriptLoadManager::register("directoryBrowser");
  			list($t_ui) = $this->_initView($pa_options);
  			
  			$t_object = new ca_objects();
@@ -93,16 +94,6 @@
  				$this->request->setActionExtra($va_nav['defaultScreen']);
  			}
 			$this->view->setVar('t_ui', $t_ui);
-			
-			// Get directory list
-			$va_dir_list_with_file_counts = caGetSubDirectoryList($this->request->config->get('batch_media_import_root_directory'), true, false);
-			$va_dir_list = array();
-			
-			foreach($va_dir_list_with_file_counts as $vs_dir => $vn_count) {
-				if ($vn_count == 0) { continue; }
-				$va_dir_list["{$vs_dir} ({$vn_count} file".(($vn_count == 1) ? '' : 's').')'] = $vs_dir;
-			}
-			$this->view->setVar('directory_list', caHTMLSelect('directory', $va_dir_list, array('id' => 'caMediaImportDirectoryList'), array('width' => '500px')));
 			
 			$this->view->setVar('import_mode', caHTMLSelect('import_mode', array(
 				_t('Import all media, matching with existing records where possible') => 'TRY_TO_MATCH',
@@ -144,19 +135,14 @@
  			
  			$vs_directory = $this->request->getParameter('directory', pString);
  			
- 			if (!is_dir($vs_directory)) { 
- 				$this->response->setRedirect($this->request->config->get('error_display_url').'/n/3250?r='.urlencode($this->request->getFullUrlPath()));
- 				return;
- 			}
- 			
  			$vs_batch_media_import_root_directory = $this->request->config->get('batch_media_import_root_directory');
-
- 			if (!preg_match("!^{$vs_batch_media_import_root_directory}!", $vs_directory)) {
+ 			 			
+ 			if (preg_match("!/\.\.!", $vs_directory) || preg_match("!\.\./!", $vs_directory)) { 
  				$this->response->setRedirect($this->request->config->get('error_display_url').'/n/3250?r='.urlencode($this->request->getFullUrlPath()));
  				return;
  			}
  			
- 			if (preg_match("!/\.\.!", $vs_directory) || preg_match("!\.\./!", $vs_directory)) {
+ 			if (!is_dir($vs_batch_media_import_root_directory.'/'.$vs_directory)) { die("does not exist: ".$vs_batch_media_import_root_directory.'/'.$vs_directory);
  				$this->response->setRedirect($this->request->config->get('error_display_url').'/n/3250?r='.urlencode($this->request->getFullUrlPath()));
  				return;
  			}
@@ -172,7 +158,7 @@
  				'sendSMS' => (bool)$this->request->getParameter('send_sms_when_done', pInteger), 
  				'runInBackground' => (bool)$this->request->getParameter('run_in_background', pInteger),
  				
- 				'importFromDirectory' => $vs_directory,
+ 				'importFromDirectory' => $vs_batch_media_import_root_directory.'/'.$vs_directory,
  				'importMode' => $this->request->getParameter('import_mode', pString),
  				'ca_objects_type_id' => $this->request->getParameter('ca_objects_type_id', pInteger),
  				'ca_object_representations_type_id' => $this->request->getParameter('ca_object_representations_type_id', pInteger),
@@ -209,6 +195,55 @@
 				$this->render('mediaimport/batch_results_html.php');
 			}
  		}
+		# ----------------------------------------
+		/**
+		 * Returns a list of files for the directory $dir 
+		 *
+		 * @param string $dir The path to the directory you wish to get the contents list for
+		 * @param bool $pb_include_hidden_files Optional. By default caGetDirectoryContentsAsList() does not consider hidden files (files starting with a '.') when calculating file counts. Set this to true to include hidden files in counts. Note that the special UNIX '.' and '..' directory entries are *never* counted as files.
+		 * @param int $pn_max_length_of_name Maximum length in characters of returned file names. Note that the full name is always returned in the 'fullname' value. Only 'name' is truncated.
+		 * @return array An array of file names.
+		 */
+		private function _getDirectoryListing($dir, $pb_include_hidden_files=false, $pn_max_length_of_name=25) {
+			if (!is_dir($dir)) { return array(); }
+			$va_file_list = array();
+			if(substr($dir, -1, 1) == "/"){
+				$dir = substr($dir, 0, strlen($dir) - 1);
+			}
+			
+			if ($handle = opendir($dir)) {
+				while (false !== ($item = readdir($handle))) {
+					if ($item != "." && $item != ".." && ($pb_include_hidden_files || (!$pb_include_hidden_files && $item{0} !== '.'))) {
+						$vb_is_dir = is_dir("{$dir}/{$item}");
+						$vs_k = preg_replace('![^A-Za-z0-9_\-]+!', '_', $item);
+						if ($vb_is_dir) { 
+							$va_child_counts = caGetDirectoryContentsCount("{$dir}/{$item}", false, false);
+							$va_file_list[$vs_k] = array(
+								'item_id' => $vs_k, 
+								'name' => caTruncateStringWithEllipsis($item, $pn_max_length_of_name),
+								'fullname' => $item,
+								'type' => 'DIR',
+								'children' => (int)$va_child_counts['files'] + (int)$va_child_counts['directories'],
+								'files' => (int)$va_child_counts['files'],
+								'subdirectories' => (int)$va_child_counts['directories']
+							);
+						} else { 
+							if (!$vb_is_dir) { 
+								$va_file_list[$vs_k] = array(
+									'item_id' => $vs_k,
+									'name' => caTruncateStringWithEllipsis($item, $pn_max_length_of_name),
+									'fullname' => $item,
+									'type' => 'FILE'
+								);
+							}
+						}
+					}
+				}
+				closedir($handle);
+			}
+		
+			return $va_file_list;
+		}
  		# -------------------------------------------------------
  		/**
  		 * Initializes editor view with core set of values, loads model with record to be edited and selects user interface to use.
@@ -253,34 +288,57 @@
 		public function getResultContext() {
 			return $this->opo_result_context;
 		}
-		# -------------------------------------------------------
- 		# Dynamic navigation generation
- 		# -------------------------------------------------------
- 		/**
- 		 * Generates side-navigation for current UI based upon screen structure in database. Called by AppNavigation class.
- 		 *
- 		 * @param array $pa_params Array of parameters used to generate navigation
- 		 * @param array $pa_options Array of options passed through to _initView 
- 		 * @return array Navigation specification ready for inclusion in a menu spec
- 		 */
- 		public function _genDynamicNav($pa_params, $pa_options=null) {
- 			list($t_ui) = $this->_initView($pa_options);
- 			if (!$this->request->isLoggedIn()) { return array(); }
+ 		# ------------------------------------------------------------------
+ 		public function GetDirectoryLevel() {
+ 			$ps_path = $this->request->getParameter('path', pString);
+ 			$ps_id = $this->request->getParameter('id', pString);
+ 			list($ps_directory, $pn_start) = explode(":", $ps_id);
+ 			$vs_root_directory = $this->request->config->get('batch_media_import_root_directory');
  			
- 			$vn_type_id = $this->request->getParameter('type_id', pInteger);
- 	
- 			$va_nav = $t_ui->getScreensAsNavConfigFragment($this->request, $vn_type_id, $pa_params['default']['module'], $pa_params['default']['controller'], $pa_params['default']['action'],
- 				isset($pa_params['parameters']) ? $pa_params['parameters'] : null,
- 				isset($pa_params['requires']) ? $pa_params['requires'] : null,
- 				false,
- 				array('hideIfNoAccess' => isset($pa_params['hideIfNoAccess']) ? $pa_params['hideIfNoAccess'] : false)
- 			);
+ 			$va_level_data = array();
  			
- 			if (!$this->request->getActionExtra()) {
- 				$this->request->setActionExtra($va_nav['defaultScreen']);
+ 			if (!$ps_directory) { 
+ 				$va_level_data[$vs_k] = array('/' => 
+ 						array(
+ 							'item_id' => '/',
+							'name' => 'Root',
+							'type' => 'DIR',
+							'children' => 1
+						)
+ 				);
+				$va_level_data[$vs_k]['_primaryKey'] = 'name';
+				$va_level_data[$vs_k]['_itemCount'] = 1;
+ 			} else {
+				$vs_k = $ps_directory;
+				$va_level_data[$vs_k] = $va_file_list = $this->_getDirectoryListing($vs_root_directory.'/'.$ps_path, false);
+				$va_level_data[$vs_k]['_primaryKey'] = 'name';
+				$va_level_data[$vs_k]['_itemCount'] = sizeof($va_file_list);
+			}
+ 			
+ 			$this->view->setVar('directory_list', $va_level_data);
+ 			
+ 			
+ 			$this->render('mediaimport/directory_level_json.php');
+ 		}
+ 		# ------------------------------------------------------------------
+ 		public function GetDirectoryAncestorList() {
+ 			$ps_id = $this->request->getParameter('id', pString);
+ 			list($ps_directory, $pn_start) = explode(":", $ps_id);
+ 			
+ 			$va_ancestors = array();	
+ 			if ($ps_directory) {
+ 				$va_tmp = explode("/", $ps_directory);
+ 				$va_acc = array();
+ 				foreach($va_tmp as $vs_tmp) {
+ 					if (!$vs_tmp) { continue; }
+ 					$va_acc[] = $vs_tmp;
+ 					$va_ancestors[] = "/".join("/", $va_acc);
+ 				}
  			}
  			
- 			return $va_nav['fragment'];
+ 			$this->view->setVar("ancestors", $va_ancestors);
+ 			
+ 			$this->render('mediaimport/directory_ancestors_json.php');
  		}
 		# ------------------------------------------------------------------
  		# Sidebar info handler

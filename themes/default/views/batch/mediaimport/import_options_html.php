@@ -45,11 +45,45 @@
 			<span class="formLabelText"><?php print _t('Directory to import'); ?></span> 
 				<div class="bundleContainer">
 					<div class="caLabelList" >
-						<p>
+						<!--- begin directoryBrowser --->
+			<div id="directoryBrowser" class='directoryBrowser'>
+				<!-- Content for directory browser is dynamically inserted here by ca.hierbrowser -->
+			</div><!-- end directoryBrowser -->
+<script type="text/javascript">
+	var oDirBrowser;
+	jQuery(document).ready(function() {
+		
+		jQuery('#browseTypeMenu .sf-hier-menu .sf-menu a').click(function() { 
+			jQuery(document).attr('location', jQuery(this).attr('href') + oDirBrowser.getSelectedItemID());	
+			return false;
+		});	
+		
+		oDirBrowser = caUI.initDirectoryBrowser('directoryBrowser', {
+			levelDataUrl: '<?php print caNavUrl($this->request, 'batch', 'MediaImport', 'GetDirectoryLevel'); ?>',
+			initDataUrl: '<?php print caNavUrl($this->request, 'batch', 'MediaImport', 'GetDirectoryAncestorList'); ?>',
+			
+			openDirectoryIcon: '<img src="<?php print $this->request->getThemeUrlPath(); ?>/graphics/buttons/arrow_grey_right.gif" border="0" title="Edit"/>',
+			
+			folderIcon: '<img src="<?php print $this->request->getThemeUrlPath(); ?>/graphics/icons/folder_small.png" border="0" title="Folder" style="margin-right: 7px;"/>',
+			fileIcon: '<img src="<?php print $this->request->getThemeUrlPath(); ?>/graphics/icons/file_small.png" border="0" title="File" style="margin-right: 7px;"/>',
+			
+			displayFiles: true,
+			allowFileSelection: false,
+			
+			initItemID: '/',
+			indicatorUrl: '<?php print $this->request->getThemeUrlPath(); ?>/graphics/icons/indicator.gif',
+			
+			currentSelectionDisplayID: 'browseCurrentSelection',
+			
+			onSelection: function(item_id, path, name, type) {
+				if (type == 'DIR') { jQuery('#caDirectoryValue').val(path); }
+			}
+		});
+	});
+</script>
 <?php
-			print $this->getVar('directory_list');
+		print caHTMLHiddenInput('directory', array('value' => '', 'id' => 'caDirectoryValue'));		
 ?>	
-						</p>
 					</div>
 				</div>
 		</div>
@@ -202,7 +236,7 @@
 	<script type="text/javascript">
 		function caShowConfirmBatchExecutionPanel() {
 			var msg = '<?php print addslashes(_t("You are about to import files from <em>%1</em>")); ?>';
-			msg = msg.replace("%1", jQuery('#caMediaImportDirectoryList').val());
+			msg = msg.replace("%1", jQuery('#caDirectoryValue').val());
 			caConfirmBatchExecutionPanel.showPanel();
 			jQuery('#caConfirmBatchExecutionPanelAlertText').html(msg);
 		}
