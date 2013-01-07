@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2007-2010 Whirl-i-Gig
+ * Copyright 2007-2013 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -546,7 +546,8 @@
 			$vs_buf = '';
 			$vs_cur_selection = $this->getPathStub($ps_cur_selection, 2);
 			
-			$vs_last_selected_path_item = array_pop(explode('/', $ps_cur_selection));
+			$va_cur_selection = explode('/', $ps_cur_selection);
+			$vs_last_selected_path_item = array_pop($va_cur_selection);
 			
 			foreach($pa_navinfo as $vs_nav => $va_nav_info) {
 				if (isset($va_nav_info['hide']) && $va_nav_info['hide']) { continue; }

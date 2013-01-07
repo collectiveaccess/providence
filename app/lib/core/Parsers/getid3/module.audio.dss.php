@@ -7,50 +7,53 @@
 // See readme.txt for more details                             //
 /////////////////////////////////////////////////////////////////
 //                                                             //
-// module.audio.au.php                                         //
+// module.audio.dss.php                                        //
 // module for analyzing Digital Speech Standard (DSS) files    //
 // dependencies: NONE                                          //
 //                                                            ///
 /////////////////////////////////////////////////////////////////
 
 
-class getid3_dss
+class getid3_dss extends getid3_handler
 {
 
-	function getid3_dss(&$fd, &$ThisFileInfo) {
+	function Analyze() {
+		$info = &$this->getid3->info;
 
-		fseek($fd, $ThisFileInfo['avdataoffset'], SEEK_SET);
-		$DSSheader  = fread($fd, 1256);
+		fseek($this->getid3->fp, $info['avdataoffset'], SEEK_SET);
+		$DSSheader  = fread($this->getid3->fp, 1256);
 
-		if (substr($DSSheader, 0, 4) != "\x02".'dss') {
-			$ThisFileInfo['error'][] = 'Expecting "[x02]dss" at offset '.$ThisFileInfo['avdataoffset'].', found "'.substr($DSSheader, 0, 4).'"';
+		if (!preg_match('#^(\x02|\x03)dss#', $DSSheader)) {
+			$info['error'][] = 'Expecting "[02-03] 64 73 73" at offset '.$info['avdataoffset'].', found "'.getid3_lib::PrintHexBytes(substr($DSSheader, 0, 4)).'"';
 			return false;
 		}
 
 		// some structure information taken from http://cpansearch.perl.org/src/RGIBSON/Audio-DSS-0.02/lib/Audio/DSS.pm
 
 		// shortcut
-		$ThisFileInfo['dss'] = array();
-		$thisfile_dss        = &$ThisFileInfo['dss'];
+		$info['dss'] = array();
+		$thisfile_dss        = &$info['dss'];
 
-		$ThisFileInfo['fileformat']            = 'dss';
-		$ThisFileInfo['audio']['dataformat']   = 'dss';
-		$ThisFileInfo['audio']['bitrate_mode'] = 'cbr';
+		$info['fileformat']            = 'dss';
+		$info['audio']['dataformat']   = 'dss';
+		$info['audio']['bitrate_mode'] = 'cbr';
 		//$thisfile_dss['encoding']              = 'ISO-8859-1';
 
+		$thisfile_dss['version']        =                            ord(substr($DSSheader,   0,   1));
 		$thisfile_dss['date_create']    = $this->DSSdateStringToUnixDate(substr($DSSheader,  38,  12));
 		$thisfile_dss['date_complete']  = $this->DSSdateStringToUnixDate(substr($DSSheader,  50,  12));
-		$thisfile_dss['length']         =                         intval(substr($DSSheader,  62,   6));
+		//$thisfile_dss['length']         =                         intval(substr($DSSheader,  62,   6)); // I thought time was in seconds, it's actually HHMMSS
+		$thisfile_dss['length']         = intval((substr($DSSheader,  62, 2) * 3600) + (substr($DSSheader,  64, 2) * 60) + substr($DSSheader,  66, 2));
 		$thisfile_dss['priority']       =                            ord(substr($DSSheader, 793,   1));
 		$thisfile_dss['comments']       =                           trim(substr($DSSheader, 798, 100));
 
 
-		//$ThisFileInfo['audio']['bits_per_sample']  = ?;
-		//$ThisFileInfo['audio']['sample_rate']      = ?;
-		$ThisFileInfo['audio']['channels']     = 1;
+		//$info['audio']['bits_per_sample']  = ?;
+		//$info['audio']['sample_rate']      = ?;
+		$info['audio']['channels']     = 1;
 
-		$ThisFileInfo['playtime_seconds'] = $thisfile_dss['length'];
-		$ThisFileInfo['audio']['bitrate'] = ($ThisFileInfo['filesize'] * 8) / $ThisFileInfo['playtime_seconds'];
+		$info['playtime_seconds'] = $thisfile_dss['length'];
+		$info['audio']['bitrate'] = ($info['filesize'] * 8) / $info['playtime_seconds'];
 
 		return true;
 	}

@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2009-2012 Whirl-i-Gig
+ * Copyright 2009-2013 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -2293,6 +2293,8 @@ $ca_relationship_lookup_parse_cache = array();
 		$o_dom = new DOMDocument('1.0', 'utf-8');
 		libxml_use_internal_errors(true);								// don't reported mangled HTML errors
 		
+		
+		$va_links = array();
 		
 		global $g_request;
 		if (!$g_request) { return $pa_text; }

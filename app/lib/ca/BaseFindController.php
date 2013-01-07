@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2009-2011 Whirl-i-Gig
+ * Copyright 2009-2013 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -78,7 +78,9 @@
 		/** 
 		 * Set up basic "find" action
 		 */
- 		public function Index($po_search, $pa_options=null) {
+ 		public function Index($pa_options=null) {
+ 			$po_search = isset($pa_options['search']) ? $pa_options['search'] : null;
+ 			
  			$t_model 				= $this->opo_datamodel->getInstanceByTableName($this->ops_tablename, true);
  			$vn_display_id 			= $this->opo_result_context->getCurrentBundleDisplay();
 			
@@ -94,7 +96,8 @@
 					// get column header text
 					$vs_header = $va_display_item['display'];
 					if (isset($va_settings['label']) && is_array($va_settings['label'])) {
-						if ($vs_tmp = array_shift(caExtractValuesByUserLocale(array($va_settings['label'])))) { $vs_header = $vs_tmp; }
+						$va_tmp = caExtractValuesByUserLocale(array($va_settings['label']));
+						if ($vs_tmp = array_shift($va_tmp)) { $vs_header = $vs_tmp; }
 					}
 					
 					$va_display_list[$vn_placement_id] = array(
@@ -872,10 +875,16 @@
  		/**
  		 * Set up variables for "tools" widget
  		 */
- 		public function Tools($pa_parameters, $po_search) {
+ 		public function Tools($pa_parameters) {
  			if (!$vn_items_per_page = $this->opo_result_context->getItemsPerPage()) { $vn_items_per_page = $this->opa_items_per_page[0]; }
- 			if (!$vs_view 			= $this->opo_result_context->getCurrentView()) { $vs_view = array_shift(array_keys($this->opa_views)); }
- 			if (!$vs_sort 			= $this->opo_result_context->getCurrentSort()) { $vs_sort = array_shift(array_keys($this->opa_sorts)); }
+ 			if (!$vs_view 			= $this->opo_result_context->getCurrentView()) { 
+ 				$va_tmp = array_keys($this->opa_views);
+ 				$vs_view = array_shift($va_tmp); 
+ 			}
+ 			if (!$vs_sort 			= $this->opo_result_context->getCurrentSort()) { 
+ 				$va_tmp = array_keys($this->opa_sorts);
+ 				$vs_sort = array_shift($va_tmp); 
+ 			}
 			
  			$this->view->setVar('views', $this->opa_views);	// pass view list to view for rendering
  			$this->view->setVar('current_view', $vs_view);

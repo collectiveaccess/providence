@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2011 Whirl-i-Gig
+ * Copyright 2011-2013 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -81,19 +81,8 @@
  		 * (eg. ObjectSearch for objects, TourStopSearch for tour stops) and pass it to BaseSearchController->Index() 
  		 */
  		public function Index($pa_options=null) {
- 			return parent::Index($this->opo_browse, $pa_options);
- 		}
- 		# -------------------------------------------------------
- 		/**
- 		 * Advanced search form handler (returns search form and results, if any)
- 		 * Most logic is contained in the BaseSearchController->Form() method; all you usually
- 		 * need to do here is instantiate a new subject-appropriate subclass of BaseSearch 
- 		 * (eg. ObjectSearch for objects, EntitySearch for entities) and pass it to BaseSearchController->Form() 
- 		 */ 
- 		public function Form($pa_options=null) {
- 			JavascriptLoadManager::register('imageScroller');
- 			JavascriptLoadManager::register('tabUI');
- 			return parent::Form(new TourStopSearch(), $pa_options);
+ 			$pa_options['search'] = $this->opo_browse;
+ 			return parent::Index($pa_options);
  		}
  		# -------------------------------------------------------
  		/**
@@ -112,7 +101,7 @@
  		 */ 
  		public function Tools($pa_parameters) {
  			// pass instance of subject-appropriate search object as second parameter (ex. for an object search this is an instance of ObjectSearch()
- 			return parent::Tools($pa_parameters, new TourStopSearch());
+ 			return parent::Tools($pa_parameters);
  		}
  		# -------------------------------------------------------
  	}
