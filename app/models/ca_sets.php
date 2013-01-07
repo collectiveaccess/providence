@@ -419,6 +419,7 @@ class ca_sets extends BundlableLabelableBaseModelWithAttributes implements IBund
 	 *			all = 
 	 *			allUsers =
 	 *			publicUsers =
+	 *			name = 
 	 * @return array A list of sets keyed by set_id and then locale_id. Keys for the per-locale value array include: set_id, set_code, status, public access, owner user_id, content table_num, set type_id, set name, number of items in the set (item_count), set type name for display and set content type name for display. If setIDsOnly option is set then a simple array of set_id values is returned instead.
 	 */
 	public function getSets($pa_options=null) {
@@ -429,6 +430,7 @@ class ca_sets extends BundlableLabelableBaseModelWithAttributes implements IBund
 		$pn_access = isset($pa_options['access']) ? $pa_options['access'] : null;
 		$pb_set_ids_only = isset($pa_options['setIDsOnly']) ? (bool)$pa_options['setIDsOnly'] : false;
 		$pb_omit_counts = isset($pa_options['omitCounts']) ? (bool)$pa_options['omitCounts'] : false;
+		$ps_set_name = isset($pa_options['name']) ? $pa_options['name'] : null;
 		
 		$pn_row_id = (isset($pa_options['row_id']) && ((int)$pa_options['row_id'])) ? (int)$pa_options['row_id'] : null;
 		
@@ -445,8 +447,10 @@ class ca_sets extends BundlableLabelableBaseModelWithAttributes implements IBund
 		$o_db = $this->getDb();
 		
 		$va_sql_wheres = array("(cs.deleted = 0)");
+		$va_sql_params = array();
 		if ($vn_table_num) {
-			$va_sql_wheres[] = "(cs.table_num = ".intval($vn_table_num).")";
+			$va_sql_wheres[] = "(cs.table_num = ?)";
+			$va_sql_params[] = (int)$vn_table_num;
 		}
 		
 		if ($pb_set_ids_only) {
@@ -518,26 +522,36 @@ class ca_sets extends BundlableLabelableBaseModelWithAttributes implements IBund
 		}
 		
 		if (!is_null($pa_public_access) && is_array($pa_public_access) && sizeof($pa_public_access)) {
-			$va_sql_wheres[] = "(cs.access IN (".join(', ', $pa_public_access)."))";
+			$va_sql_wheres[] = "(cs.access IN (?))";
+			$va_sql_params[] = $pa_public_access;
 		}
 		
 		if (isset($pm_type) && $pm_type) {
 			if(is_numeric($pm_type)){
-				$va_sql_wheres[] = "(cs.type_id = ".intval($pm_type).")";
+				$va_sql_wheres[] = "(cs.type_id = ?)";
+				$va_sql_params[] = (int)$pm_type;
 			}else{
 				# --- look up code of set type
 				$t_list = new ca_lists();
 				$vn_type_id = $t_list->getItemIDFromList("set_types", $pm_type);
 				if($vn_type_id){
-					$va_sql_wheres[] = "(cs.type_id = {$vn_type_id})";
+					$va_sql_wheres[] = "(cs.type_id = ?)";
+					$va_sql_params[] = (int)$vn_type_id;
 				}
 			}
 		}
 		
 		if ($pn_row_id > 0) {
-			$va_sql_wheres[] = "((csi.row_id = {$pn_row_id}) AND (csi.table_num = {$vn_table_num}))";
+			$va_sql_wheres[] = "((csi.row_id = ?) AND (csi.table_num = ?))";
 			$va_extra_joins[] = "INNER JOIN ca_set_items AS csi ON cs.set_id = csi.set_id";
 			$va_sql_selects[] = 'csi.item_id';
+			$va_sql_params[] = (int)$pn_row_id;
+			$va_sql_params[] = (int)$vn_table_num;
+		}
+		
+		if ($ps_set_name) { 
+			$va_sql_wheres[] = "(csl.name = ?)";
+			$va_sql_params[] = (string)$ps_set_name;
 		}
 		
 		if (!$pb_set_ids_only && !$pb_omit_counts) {
@@ -548,7 +562,7 @@ class ca_sets extends BundlableLabelableBaseModelWithAttributes implements IBund
 				INNER JOIN ca_set_items AS csi ON cs.set_id = csi.set_id
 				".(sizeof($va_sql_wheres) ? 'WHERE ' : '')."
 				".join(' AND ', $va_sql_wheres)."
-			");
+			", $va_sql_params);
 			
 			$va_item_counts = array();
 			while($qr_table_nums->nextRow()) {
@@ -568,7 +582,7 @@ class ca_sets extends BundlableLabelableBaseModelWithAttributes implements IBund
 					".(sizeof($va_item_wheres) ? 'WHERE ' : '')."
 					".join(' AND ', $va_item_wheres)."
 					GROUP BY cs.set_id
-				");
+				", $va_sql_params);
 				while($qr_res->nextRow()) {
 					$va_item_counts[(int)$qr_res->get('set_id')] = (int)$qr_res->get('item_count');
 				}
@@ -585,7 +599,7 @@ class ca_sets extends BundlableLabelableBaseModelWithAttributes implements IBund
 				".(sizeof($va_sql_wheres) ? 'WHERE ' : '')."
 				".join(' AND ', $va_sql_wheres)."
 				ORDER BY csl.name
-			");
+			", $va_sql_params);
 			$va_sets = array();
 			$o_dm = $this->getAppDatamodel();
 			$va_type_name_cache = array();
@@ -612,7 +626,7 @@ class ca_sets extends BundlableLabelableBaseModelWithAttributes implements IBund
 					".join("\n", $va_extra_joins)."
 					".(sizeof($va_sql_wheres) ? 'WHERE ' : '')."
 					".join(' AND ', $va_sql_wheres)."
-				");
+				", $va_sql_params);
 				return $qr_res->getAllFieldValues("set_id");
 			} else {
 				$qr_res = $o_db->query("
@@ -624,7 +638,7 @@ class ca_sets extends BundlableLabelableBaseModelWithAttributes implements IBund
 					".join("\n", $va_extra_joins)."
 					".(sizeof($va_sql_wheres) ? 'WHERE ' : '')."
 					".join(' AND ', $va_sql_wheres)."
-				");
+				", $va_sql_params);
 				$t_list = new ca_lists();
 				while($qr_res->nextRow()) {
 					$vn_table_num = $qr_res->get('table_num');

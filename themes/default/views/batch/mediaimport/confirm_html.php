@@ -29,6 +29,7 @@
 	JavascriptLoadManager::register("panel");
 	
 	$vb_queue_enabled = (bool)$this->request->config->get('queue_enabled');
+ 	$va_last_settings = $this->getVar('batch_mediaimport_last_settings');
 ?>
 <script type="text/javascript">
 	var caConfirmBatchExecutionPanel;
@@ -74,7 +75,11 @@
 ?>
 				<td class="caConfirmBatchExecutionPanelAlertControls">
 <?php
-					print caHTMLCheckboxInput('run_in_background', array('id' => 'caRunBatchInBackground', 'value' => 1));
+					$va_opts = array('id' => 'caRunBatchInBackground', 'value' => 1);
+					if (isset($va_last_settings['runInBackground']) && $va_last_settings['runInBackground']) {
+						$va_opts['checked'] = 1;
+					}
+					print caHTMLCheckboxInput('run_in_background', $va_opts);
 ?>
 				</td>
 				<td class="caConfirmBatchExecutionPanelAlertControls">
@@ -89,7 +94,11 @@
 ?>
 				<td class="caConfirmBatchExecutionPanelAlertControl">
 <?php			
-					print caHTMLCheckboxInput('send_email_when_done', array('id' => 'caSendEmailWhenDone', 'value' => 1));
+					$va_opts = array('id' => 'caSendEmailWhenDone', 'value' => 1);
+					if (isset($va_last_settings['sendMail']) && $va_last_settings['sendMail']) {
+						$va_opts['checked'] = 1;
+					}
+					print caHTMLCheckboxInput('send_email_when_done', $va_opts);
 ?>
 				</td>
 				<td class="caConfirmBatchExecutionPanelAlertControl">
@@ -104,7 +113,11 @@
 ?>
 				<td class="caConfirmBatchExecutionPanelAlertControl">
 <?php			
-					print caHTMLCheckboxInput('send_sms_when_done', array('id' => 'caSendSMSWhenDone', 'value' => 1));
+					$va_opts = array('id' => 'caSendSMSWhenDone', 'value' => 1);
+					if (isset($va_last_settings['sendSMS']) && $va_last_settings['sendSMS']) {
+						$va_opts['checked'] = 1;
+					}
+					print caHTMLCheckboxInput('send_sms_when_done', $va_opts);
 ?>
 				</td>
 				<td class="caConfirmBatchExecutionPanelAlertControl">

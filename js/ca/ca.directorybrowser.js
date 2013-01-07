@@ -48,7 +48,6 @@ var caUI = caUI || {};
 			
 			initItemID: null,		// if set, hierarchy opens with specified item_id selected
 			defaultItemID: null,	// set to default value to show when no initItemID is set; note that initItemID is an ID to open with *and select.* defaultItemID merely specifies an item to open with, but not select.
-			useAsRootID: null,		// if set to an item_id, that is used at the root of the display hierarchy
 			
 			className: 'directoryBrowserLevel',
 			classNameSelected: 'directoryBrowserLevelSelected',
@@ -94,28 +93,20 @@ var caUI = caUI || {};
 		// BEGIN method definitions
 		// --------------------------------------------------------------------------------
 		// Set up initial state and all levels of hierarchy. The item_id parameter will be used to determine the root
-		// of the hierarchy if set. If it is omitted then the useAsRootID option value will be used.
+		// of the hierarchy if set. 
 		//
-		// @param int item_id The database id of the item to be used as the root of the hierarchy. If omitted the useAsRootID option value is used, or if that is not available whatever root the server decides to use.
+		// @param int item_id The database id of the item to be used as the root of the hierarchy. 
 		//
 		that.setUpHierarchy = function(item_id) {
-			if (!item_id) { that.setUpHierarchyLevel(0, that.useAsRootID ? that.useAsRootID : '/', 1, null, true); return; }
+			if (!item_id) { that.setUpHierarchyLevel(0, '/', 1, null, true); return; }
 			that.levelLists = [];
 			that.selectedItemIDs = [];
 			jQuery.getJSON(that.initDataUrl, { id: item_id}, function(data) {
 				if (data.length) {
 					that.selectedItemIDs = data.join(';').split(';');
-					
-					if (that.useAsRootID > 0) {
-						that.selectedItemIDs.shift();
-						if (jQuery.inArray(that.useAsRootID, data) == -1) {
-							data.unshift(that.useAsRootID);
-						}
-					} else {
-						data.unshift(0);
-					}
+					data.unshift("/");
 				} else {
-					data = [that.useAsRootID ? that.useAsRootID : 0];
+					data = ["/"];
 				}
 				var l = 0;
 				jQuery.each(data, function(i, id) {
@@ -253,12 +244,14 @@ var caUI = caUI || {};
 						if (!item) { return; }
 						if (item['item_id']) {
 							if ((is_init) && (level == 0) && (!that.selectedItemIDs[0])) {
-								that.selectedItemIDs[0] = item['item_id'];
+								that.selectItem(level, item['item_id'], null, item[that.hasChildrenIndicator], item);
 							}
 							if (that.selectedItemIDs[level] == item['item_id']) {
 								foundSelected = true;
+								if (level >= (that.selectedItemIDs.length - 1)) {
+									that.selectItem(level, that.selectedItemIDs[level], jQuery('#' + newLevelDivID).data('parent_id'), item[that.hasChildrenIndicator], item);
+								}
 							}
-							
 							
 							var icon = '';
 							var countText = '';

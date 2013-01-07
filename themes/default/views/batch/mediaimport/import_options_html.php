@@ -28,6 +28,8 @@
  
  	$t_object = $this->getVar('t_object');
  	$t_rep = $this->getVar('t_rep');
+ 	
+ 	$va_last_settings = $this->getVar('batch_mediaimport_last_settings');
  
 	print $vs_control_box = caFormControlBox(
 		caJSButton($this->request, __CA_NAV_BUTTON_SAVE__, _t("Execute media import"), 'caBatchMediaImportForm', array('onclick' => 'caShowConfirmBatchExecutionPanel(); return false;')).' '.
@@ -39,25 +41,18 @@
 	<div class="sectionBox">
 <?php
 		print caFormTag($this->request, 'Save/'.$this->request->getActionExtra(), 'caBatchMediaImportForm', null, 'POST', 'multipart/form-data', '_top', array('disableUnsavedChangesWarning' => true, 'noTimestamp' => true));
-		
 ?>
 		<div class='bundleLabel'>
 			<span class="formLabelText"><?php print _t('Directory to import'); ?></span> 
-				<div class="bundleContainer">
-					<div class="caLabelList" >
+			<div class="bundleContainer">
+				<div class="caLabelList" >
 						<!--- begin directoryBrowser --->
-			<div id="directoryBrowser" class='directoryBrowser'>
-				<!-- Content for directory browser is dynamically inserted here by ca.hierbrowser -->
-			</div><!-- end directoryBrowser -->
+				<div id="directoryBrowser" class='directoryBrowser'>
+					<!-- Content for directory browser is dynamically inserted here by ca.hierbrowser -->
+				</div><!-- end directoryBrowser -->
 <script type="text/javascript">
 	var oDirBrowser;
 	jQuery(document).ready(function() {
-		
-		jQuery('#browseTypeMenu .sf-hier-menu .sf-menu a').click(function() { 
-			jQuery(document).attr('location', jQuery(this).attr('href') + oDirBrowser.getSelectedItemID());	
-			return false;
-		});	
-		
 		oDirBrowser = caUI.initDirectoryBrowser('directoryBrowser', {
 			levelDataUrl: '<?php print caNavUrl($this->request, 'batch', 'MediaImport', 'GetDirectoryLevel'); ?>',
 			initDataUrl: '<?php print caNavUrl($this->request, 'batch', 'MediaImport', 'GetDirectoryAncestorList'); ?>',
@@ -70,7 +65,7 @@
 			displayFiles: true,
 			allowFileSelection: false,
 			
-			initItemID: '/',
+			initItemID: '<?php print $va_last_settings['importFromDirectory']; ?>',
 			indicatorUrl: '<?php print $this->request->getThemeUrlPath(); ?>/graphics/icons/indicator.gif',
 			
 			currentSelectionDisplayID: 'browseCurrentSelection',
@@ -84,8 +79,17 @@
 <?php
 		print caHTMLHiddenInput('directory', array('value' => '', 'id' => 'caDirectoryValue'));		
 ?>	
-					</div>
 				</div>
+				<div style="margin: 8px 0 5px 0;">
+<?php 
+				$va_opts = array('id' => 'caIncludeSubDirectories', 'value' => 1);
+				if (isset($va_last_settings['includeSubDirectories']) && $va_last_settings['includeSubDirectories']) {
+					$va_opts['checked'] = 1;
+				} 
+				print caHTMLCheckboxInput('include_subdirectories', $va_opts).' '._t('Include all sub-directories'); 
+?>	
+				</div>
+			</div>
 		</div>
 		<div class='bundleLabel'>
 			<span class="formLabelText"><?php print _t('Import mode'); ?></span> 
@@ -129,15 +133,27 @@
 					<p>
 						<table>
 							<tr>
-								<td><?php print caHTMLRadioButtonInput('set_mode', array('value' => 'add', 'checked' => 1, 'id' => 'caAddToSet')); ?></td>
-								<td class='formLabel'><?php print _t('Add imported media to set %1', caHTMLSelect('set_id', $this->getVar('available_sets'), array('id' => 'caAddToSetID', 'class' => 'searchSetsSelect'), array('value' => null, 'width' => '170px'))); ?></td>
+								<td><?php 
+									$va_attrs = array('value' => 'add', 'checked' => 1, 'id' => 'caAddToSet');
+									if (isset($va_last_settings['setMode']) && ($va_last_settings['setMode'] == 'add')) { $va_attrs['checked'] = 1; }
+									print caHTMLRadioButtonInput('set_mode', $va_attrs); 
+								?></td>
+								<td class='formLabel'><?php print _t('Add imported media to set %1', caHTMLSelect('set_id', $this->getVar('available_sets'), array('id' => 'caAddToSetID', 'class' => 'searchSetsSelect', 'width' => '300px'), array('value' => null, 'width' => '170px'))); ?></td>
 							</tr>
 							<tr>
-								<td><?php print caHTMLRadioButtonInput('set_mode', array('value' => 'create', 'id' => 'caCreateSet')); ?></td>
-								<td class='formLabel'><?php print _t('Create set %1 with imported media', caHTMLTextInput('set_create_name', array('value' => '', 'size' => '100px', 'id' => 'caSetCreateName'))); ?></td>
+								<td><?php 
+									$va_attrs = array('value' => 'create', 'id' => 'caCreateSet');
+									if (isset($va_last_settings['setMode']) && ($va_last_settings['setMode'] == 'create')) { $va_attrs['checked'] = 1; }
+									print caHTMLRadioButtonInput('set_mode', $va_attrs); 
+								?></td>
+								<td class='formLabel'><?php print _t('Create set %1 with imported media', caHTMLTextInput('set_create_name', array('value' => '', 'width' => '200px', 'id' => 'caSetCreateName'))); ?></td>
 							</tr>
 							<tr>
-								<td><?php print caHTMLRadioButtonInput('set_mode', array('value' => 'none', 'id' => 'caNoSet')); ?></td>
+								<td><?php 
+									$va_attrs = array('value' => 'none', 'id' => 'caNoSet');
+									if (isset($va_last_settings['setMode']) && ($va_last_settings['setMode'] == 'none')) { $va_attrs['checked'] = 1; }
+									print caHTMLRadioButtonInput('set_mode', $va_attrs); 
+								?></td>
 								<td class='formLabel'><?php print _t('Do not associate imported media with a set'); ?></td>
 							</tr>
 						</table>
@@ -171,11 +187,19 @@
 					<p>
 						<table>
 							<tr>
-								<td><?php print caHTMLRadioButtonInput('idno_mode', array('value' => 'form', 'checked' => 1, 'id' => 'caIdnoFormMode')); ?></td>
+								<td><?php 
+									$va_attrs = array('value' => 'form', 'id' => 'caIdnoFormMode');
+									if (isset($va_last_settings['idnoMode']) && ($va_last_settings['idnoMode'] == 'form')) { $va_attrs['checked'] = 1; }
+									print caHTMLRadioButtonInput('idno_mode', $va_attrs); 
+								?></td>
 								<td class='formLabel' id='caIdnoFormModeForm'><?php print _t('Set object identifier to %1', $t_object->htmlFormElement('idno', '^ELEMENT', array('request' => $this->request))); ?></td>
 							</tr>
 							<tr>
-								<td><?php print caHTMLRadioButtonInput('idno_mode', array('value' => 'filename', 'id' => 'caIdnoFilenameMode')); ?></td>
+								<td><?php 
+									$va_attrs = array('value' => 'filename', 'id' => 'caIdnoFilenameMode');
+									if (isset($va_last_settings['idnoMode']) && ($va_last_settings['idnoMode'] == 'filename')) { $va_attrs['checked'] = 1; }
+									print caHTMLRadioButtonInput('idno_mode', $va_attrs); 
+								?></td>
 								<td class='formLabel'><?php print _t('Set object identifier to file name'); ?></td>
 							</tr>
 						</table>
@@ -216,7 +240,8 @@
 											print "<br/>";
 											print _t('Set representation access to<br/>%1', $t_rep->htmlFormElement('access', '', array('name' => 'ca_object_representations_access')));
 ?>									
-									</td>								</tr>
+									</td>								
+								</tr>
 							</table>
 						</p>
 					</div>

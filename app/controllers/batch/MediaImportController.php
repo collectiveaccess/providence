@@ -77,8 +77,15 @@
  			JavascriptLoadManager::register("directoryBrowser");
  			list($t_ui) = $this->_initView($pa_options);
  			
+ 			$this->view->setVar('batch_mediaimport_last_settings', $va_last_settings = is_array($va_last_settings = $this->request->user->getVar('batch_mediaimport_last_settings')) ? $va_last_settings : array());
+ 			
  			$t_object = new ca_objects();
+ 			$t_object->set('status', $va_last_settings['ca_objects_status']);
+ 			$t_object->set('access', $va_last_settings['ca_objects_access']);
+ 			
  			$t_rep = new ca_object_representations();
+ 			$t_rep->set('status', $va_last_settings['ca_object_representations_status']);
+ 			$t_rep->set('access', $va_last_settings['ca_object_representations_access']);
  			
  			// Can user batch import media?
  			if (!$this->request->user->canDoAction('can_batch_import_media')) {
@@ -99,10 +106,10 @@
 				_t('Import all media, matching with existing records where possible') => 'TRY_TO_MATCH',
 				_t('Import only media that can be matched with existing records') => 'ALWAYS_MATCH',
 				_t('Import all media, creating new records for each') => 'DONT_MATCH'
-			)));
+			), array(), array('value' => $va_last_settings['importMode'])));
  			
- 			$this->view->setVar('ca_objects_type_list', $t_object->getTypeListAsHTMLFormElement('ca_objects_type_id'));
- 			$this->view->setVar('ca_object_representations_type_list', $t_rep->getTypeListAsHTMLFormElement('ca_object_representations_type_id'));
+ 			$this->view->setVar('ca_objects_type_list', $t_object->getTypeListAsHTMLFormElement('ca_objects_type_id', null, array('value' => $va_last_settings['ca_objects_type_id'])));
+ 			$this->view->setVar('ca_object_representations_type_list', $t_rep->getTypeListAsHTMLFormElement('ca_object_representations_type_id', null, array('value' => $va_last_settings['ca_object_representations_type_id'])));
  		
  			//
  			// Available sets
@@ -118,7 +125,7 @@
 
  			$this->view->setVar('t_object', $t_object);
  			$this->view->setVar('t_rep', $t_rep);
- 			
+ 		
  			$this->render('mediaimport/import_options_html.php');
  		}
  		# -------------------------------------------------------
@@ -159,6 +166,7 @@
  				'runInBackground' => (bool)$this->request->getParameter('run_in_background', pInteger),
  				
  				'importFromDirectory' => $vs_batch_media_import_root_directory.'/'.$vs_directory,
+ 				'includeSubDirectories' => (bool)$this->request->getParameter('include_subdirectories', pInteger),
  				'importMode' => $this->request->getParameter('import_mode', pString),
  				'ca_objects_type_id' => $this->request->getParameter('ca_objects_type_id', pInteger),
  				'ca_object_representations_type_id' => $this->request->getParameter('ca_object_representations_type_id', pInteger),
@@ -174,6 +182,10 @@
  				'locale_id' => $g_ui_locale_id,
  				'user_id' => $this->request->getUserID()
  			);
+ 			
+ 			$va_last_settings = $va_options;
+ 			$va_last_settings['importFromDirectory'] = preg_replace("!{$vs_batch_media_import_root_directory}[/]*!", "", $va_last_settings['importFromDirectory']); 
+ 			$this->request->user->setVar('batch_mediaimport_last_settings', $va_last_settings);
  
  			if ((bool)$this->request->config->get('queue_enabled') && (bool)$this->request->getParameter('run_in_background', pInteger)) { // queue for background processing
  				$o_tq = new TaskQueue();
@@ -204,7 +216,7 @@
 		 * @param int $pn_max_length_of_name Maximum length in characters of returned file names. Note that the full name is always returned in the 'fullname' value. Only 'name' is truncated.
 		 * @return array An array of file names.
 		 */
-		private function _getDirectoryListing($dir, $pb_include_hidden_files=false, $pn_max_length_of_name=25) {
+		private function _getDirectoryListing($dir, $pb_include_hidden_files=false, $pn_max_length_of_name=25, $pn_start_at=0, $pn_max_items_to_return=25) {
 			if (!is_dir($dir)) { return array(); }
 			$va_file_list = array();
 			if(substr($dir, -1, 1) == "/"){
@@ -212,11 +224,14 @@
 			}
 			
 			if ($handle = opendir($dir)) {
+				$vn_i = $vn_c = 0;
 				while (false !== ($item = readdir($handle))) {
 					if ($item != "." && $item != ".." && ($pb_include_hidden_files || (!$pb_include_hidden_files && $item{0} !== '.'))) {
 						$vb_is_dir = is_dir("{$dir}/{$item}");
 						$vs_k = preg_replace('![^A-Za-z0-9_\-]+!', '_', $item);
 						if ($vb_is_dir) { 
+							$vn_i++;
+							if (($pn_start_at > 0) && ($vn_i <= $pn_start_at)) { continue; }
 							$va_child_counts = caGetDirectoryContentsCount("{$dir}/{$item}", false, false);
 							$va_file_list[$vs_k] = array(
 								'item_id' => $vs_k, 
@@ -227,17 +242,23 @@
 								'files' => (int)$va_child_counts['files'],
 								'subdirectories' => (int)$va_child_counts['directories']
 							);
+							$vn_c++;
 						} else { 
 							if (!$vb_is_dir) { 
+								$vn_i++;
+								if (($pn_start_at > 0) && ($vn_i <= $pn_start_at)) { continue; }
 								$va_file_list[$vs_k] = array(
 									'item_id' => $vs_k,
 									'name' => caTruncateStringWithEllipsis($item, $pn_max_length_of_name),
 									'fullname' => $item,
 									'type' => 'FILE'
 								);
+								$vn_c++;
 							}
 						}
 					}
+					
+					if ($vn_c >= $pn_max_items_to_return) { break; }
 				}
 				closedir($handle);
 			}
@@ -297,22 +318,37 @@
  			
  			$va_level_data = array();
  			
- 			if (!$ps_directory) { 
- 				$va_level_data[$vs_k] = array('/' => 
- 						array(
- 							'item_id' => '/',
-							'name' => 'Root',
-							'type' => 'DIR',
-							'children' => 1
-						)
- 				);
-				$va_level_data[$vs_k]['_primaryKey'] = 'name';
-				$va_level_data[$vs_k]['_itemCount'] = 1;
+ 			if ($this->request->getParameter('init', pInteger)) { 
+ 				$va_tmp = explode(";", $ps_id);
+ 				
+ 				$va_acc = array();
+ 				foreach($va_tmp as $vs_tmp) {
+ 					list($vs_directory, $vn_start) = explode(":", $vs_tmp);
+ 					if (!$vs_directory) { continue; }
+ 					$va_acc[] = $vs_directory;
+ 					$vs_k = join("/", $va_acc);
+					$va_level_data[$vs_directory] = $va_file_list = $this->_getDirectoryListing($vs_root_directory.'/'.$vs_k, false);
+					$va_level_data[$vs_directory]['_primaryKey'] = 'name';
+					$va_level_data[$vs_directory]['_itemCount'] = sizeof($va_file_list);
+ 				}
  			} else {
-				$vs_k = $ps_directory;
-				$va_level_data[$vs_k] = $va_file_list = $this->_getDirectoryListing($vs_root_directory.'/'.$ps_path, false);
-				$va_level_data[$vs_k]['_primaryKey'] = 'name';
-				$va_level_data[$vs_k]['_itemCount'] = sizeof($va_file_list);
+				if (!$ps_directory) { 
+					$va_level_data[$vs_k] = array('/' => 
+							array(
+								'item_id' => '/',
+								'name' => 'Root',
+								'type' => 'DIR',
+								'children' => 1
+							)
+					);
+					$va_level_data[$vs_k]['_primaryKey'] = 'name';
+					$va_level_data[$vs_k]['_itemCount'] = 1;
+				} else {
+					$vs_k = $ps_directory;
+					$va_level_data[$vs_k] = $va_file_list = $this->_getDirectoryListing($vs_root_directory.'/'.$ps_path, false);
+					$va_level_data[$vs_k]['_primaryKey'] = 'name';
+					$va_level_data[$vs_k]['_itemCount'] = sizeof($va_file_list);
+				}
 			}
  			
  			$this->view->setVar('directory_list', $va_level_data);
@@ -331,8 +367,8 @@
  				$va_acc = array();
  				foreach($va_tmp as $vs_tmp) {
  					if (!$vs_tmp) { continue; }
- 					$va_acc[] = $vs_tmp;
- 					$va_ancestors[] = "/".join("/", $va_acc);
+ 					$va_acc = array($vs_tmp);
+ 					$va_ancestors[] = join("/", $va_acc);
  				}
  			}
  			

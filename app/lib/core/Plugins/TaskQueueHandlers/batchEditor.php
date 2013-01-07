@@ -67,14 +67,25 @@ require_once(__CA_MODELS_DIR__.'/ca_users.php');
 			
 			$va_params = array();
 			
+			$t_set = new ca_sets($va_parameters['set_id']);
 			$va_params['importing_from'] = array(
-				'label' => _t("Importing media from"),
-				'value' => $va_parameters["directory"]
+				'label' => _t("Applying batch edits to set"),
+				'value' => $t_set->getLabelForDisplay()
 			);
-			$va_params['number_of_files'] = array(
-				'label' => _t("Files to import"),
-				'value' => (int)$va_parameters["number_of_files"]
+			$va_params['number_of_records'] = array(
+				'label' => _t("Records to edit"),
+				'value' => (int)$t_set->getItemCount(array('user_id' => $va_parameters['user_id']))
 			);
+			
+			$t_ui = new ca_editor_uis($va_parameters['ui_id']);
+			
+			$t_screen = new ca_editor_ui_screens();
+			if ($t_screen->load(array('ui_id' => $t_ui->getPrimaryKey(), 'screen_id' => str_ireplace("screen", "", $va_parameters['screen'])))) {
+				$va_params['ui'] = array(
+					'label' => _t("Using interface"),
+					'value' => $t_ui->getLabelForDisplay()." ➜ ".$t_screen->getLabelForDisplay()
+				);
+			}
 			
 			return $va_params;
 		}
@@ -98,13 +109,12 @@ require_once(__CA_MODELS_DIR__.'/ca_users.php');
 			
 			$o_app = AppController::getInstance($o_request, $o_response);
 			
-			//print_r($x); print_r($pa_parameters); die;
 			$t_set = new ca_sets($pa_parameters['set_id']);
 			$o_dm = Datamodel::load();
 			$t_subject = $o_dm->getInstanceByTableNum($t_set->get('table_num'));
-			$va_errors = BatchProcessor::saveBatchEditorFormForSet($o_request, $t_set, $t_subject, array('sendMail' => (bool)$pa_parameters['sendMail'], 'sendSMS' => (bool)$pa_parameters['sendSMS']));
+			$va_report = BatchProcessor::saveBatchEditorFormForSet($o_request, $t_set, $t_subject, array('sendMail' => (bool)$pa_parameters['sendMail'], 'sendSMS' => (bool)$pa_parameters['sendSMS']));
 
-			return $va_errors;
+			return $va_report;
 		}
 		# --------------------------------------------------------------------------------
 		# Cancel function - cancels queued task, doing cleanup and deleting task queue record

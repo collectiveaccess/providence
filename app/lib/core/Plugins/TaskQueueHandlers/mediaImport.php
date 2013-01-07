@@ -43,6 +43,8 @@ require_once(__CA_LIB_DIR__."/core/Datamodel.php");
 require_once(__CA_LIB_DIR__.'/core/Zend/Mail.php');
 require_once(__CA_LIB_DIR__.'/ca/BatchProcessor.php');
 require_once(__CA_MODELS_DIR__.'/ca_sets.php');
+require_once(__CA_MODELS_DIR__.'/ca_editor_uis.php');
+require_once(__CA_MODELS_DIR__.'/ca_editor_ui_screens.php');
 require_once(__CA_MODELS_DIR__.'/ca_users.php');
 	
 	class WLPlugTaskQueueHandlermediaImport Extends WLPlug Implements IWLPlugTaskQueueHandler {
@@ -67,15 +69,22 @@ require_once(__CA_MODELS_DIR__.'/ca_users.php');
 			
 			$va_params = array();
 			
-			$va_params['importing_from'] = array(
+			$o_config = Configuration::load();
+			$vs_batch_media_import_root_directory = $o_config->get('batch_media_import_root_directory');
+			$vs_relative_directory = preg_replace("!{$vs_batch_media_import_root_directory}[/]*!", "", $va_parameters["importFromDirectory"]); 
+			
+			$va_params['importFromDirectory'] = array(
 				'label' => _t("Importing media from"),
-				'value' => $va_parameters["directory"]
-			);
-			$va_params['number_of_files'] = array(
-				'label' => _t("Files to import"),
-				'value' => (int)$va_parameters["number_of_files"]
+				'value' => "/".$vs_relative_directory
 			);
 			
+			if (file_exists($va_parameters["importFromDirectory"])) {
+				$va_counts = caGetDirectoryContentsCount($va_parameters["importFromDirectory"], $va_parameters["includeSubDirectories"], false);
+				$va_params['number_of_files'] = array(
+					'label' => _t("Files to import"),
+					'value' => (int)$va_counts['files']
+				);
+			}
 			return $va_params;
 		}
 		# --------------------------------------------------------------------------------
@@ -98,9 +107,9 @@ require_once(__CA_MODELS_DIR__.'/ca_users.php');
 			
 			$o_app = AppController::getInstance($o_request, $o_response);
 			
-			$va_errors = BatchProcessor::importMediaFromDirectory($o_request, $pa_parameters);
-
-			return $va_errors;
+			$va_report = BatchProcessor::importMediaFromDirectory($o_request, $pa_parameters);
+			
+			return $va_report;
 		}
 		# --------------------------------------------------------------------------------
 		# Cancel function - cancels queued task, doing cleanup and deleting task queue record

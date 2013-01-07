@@ -92,6 +92,7 @@
 						$vs_buf .= "<li><em>".caEditorLink($po_request, $va_notice['label'], '', $pa_general['table'], $vn_id)."</em> (".$va_notice['idno']."): ".$va_notice['status']."</li>";
 						break;
 					case 'SKIPPED':
+					case 'MATCHED':
 						$vs_buf .= "<li><em>".$va_notice['label']."</em>: ".$va_notice['message']."</li>";
 						break;
 					default:
