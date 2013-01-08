@@ -4583,6 +4583,38 @@ $pa_options["display_form_field_tips"] = true;
 		if (!$vb_already_in_transaction) { $o_t->rollback(); }
 		return false;
 	}
+	# --------------------------------------------------------------------------------------------	
+	/**
+	 * Set ID numbering field (aka. idno or idno_stub) to a value using a template based upon the 
+	 * ID numbering configuration (typically multipart_id_numbering.conf for the MultipartIDNumbering system). 
+	 * The template is simply a text value conforming to the configured format with any auto-generated SERIAL values 
+	 * replaced with % characters. Eg. 2012.% will set the idno value for the current row to 2012.121 assuming that 121
+	 * is the next number in the serial sequence.
+	 *
+	 * @param string $ps_template_value Template to use. If omitted or left blank the template defaults to a single "%" This is useful for the common case of assigning simple auto-incrementing integers as idno values.
+	 * @param array $pa_options Options are:
+	 *		dontSetValue = The template will be processed and the idno value generated but not actually set for the current row if this option is set. Default is false.
+	 * @return mixed The processed template value set as the idno, or false if the model doesn't support id numbering
+	 */
+	public function setIdnoTWithTemplate($ps_template_value=null, $pa_options=null) {
+		if (($vs_idno_field = $this->getProperty('ID_NUMBERING_ID_FIELD')) && $this->opo_idno_plugin_instance) {
+			$pb_dont_set_value = (bool)(isset($pa_options['dontSetValue']) && $pa_options['dontSetValue']);
+		
+			if (!$ps_template_value) {
+				$ps_template_value = '%';
+			}
+		
+			$this->opo_idno_plugin_instance->setDb($this->getDb());
+			$vs_gen_idno = $this->opo_idno_plugin_instance->htmlFormValue($vs_idno_field, $ps_template_value);
+			
+			if (!$pb_dont_set_value) {
+				$this->set($vs_idno_field, $vs_gen_idno);
+			}
+			
+			return $vs_gen_idno;
+		}
+		return false;
+	}
 	# --------------------------------------------------------------------------------------------
 }
 ?>
