@@ -8268,9 +8268,21 @@ $pa_options["display_form_field_tips"] = true;
 					{$vs_type_sql} {$vs_timestamp_sql}
 			", $va_query_params);
 		
-			if (sizeof($va_ids = $qr_res->getAllFieldValues('relation_id'))) {
-				return $va_ids;
+			$va_ids = $qr_res->getAllFieldValues('relation_id');
+			
+			if ($va_rel_info['related_table_name'] == $this->tableName()) {
+				$qr_res = $o_db->query("
+					SELECT relation_id
+					FROM {$vs_rel_table_name}
+					WHERE
+						{$vs_right_field_name} = ? AND {$vs_left_field_name} = ?
+						{$vs_type_sql} {$vs_timestamp_sql}
+				", $va_query_params);
+				
+				$va_ids += $qr_res->getAllFieldValues('relation_id');
 			}
+			
+			if (sizeof($va_ids)) { return $va_ids; }
 		} else {
 			if (sizeof($va_rel_info['path']) == 2) {		// many-one rel
 				$va_rel_keys = $va_rel_info['rel_keys'];
