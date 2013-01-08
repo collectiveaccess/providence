@@ -2904,7 +2904,7 @@ class BaseModel extends BaseObject {
 								while($qr_record_check->nextRow()) {
 									if ($t_related->load($qr_record_check->get($t_related->primaryKey()))) {
 										$t_related->setMode(ACCESS_WRITE);
-										$t_related->delete($pb_delete_related, $pa_options, null, $pa_table_list);
+										$t_related->delete($pb_delete_related, array_merge($pa_options, array('hard' => true)), null, $pa_table_list);
 										
 										if ($t_related->numErrors()) {
 											$this->postError(790, _t("Can't delete item because items related to it have sub-records (%1)", $vs_many_table),"BaseModel->delete()");
