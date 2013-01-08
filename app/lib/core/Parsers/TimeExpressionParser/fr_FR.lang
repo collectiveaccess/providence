@@ -36,10 +36,10 @@ monthTable = {
 dayListDisplay = [Dimanche, Lundi, Mardi, Mercredi, Jeudi, Vendredi, Samedi]
 
 #rangePreConjunctions = [from, between]
-rangePreConjunctions = [du,entre]
+rangePreConjunctions = [du,entre,de]
 
 #rangeConjunctions = [to, -, and, .., through]
-rangeConjunctions = [-, ...,au,et]
+rangeConjunctions = [-, ..., au, et, à]
 
 dateTimeConjunctions = [à,@]
 
@@ -65,20 +65,20 @@ dateUncertaintyDayIndicator = [j]
 dateMYA = [Ma]
 
 dateADIndicator = EC
-dateBCIndicator = AEC
+dateBCIndicator = av. J.-C.
 ADBCTable = {
-	ad = EC,
-	a.d. = EC,
-	AD = EC,
-	bc = AEC,
-	b.c. = AEC,
-	BC = AEC,
-	c.e. = EC,
-	b.c.e. = AEC,
-	ce = EC,
-	bce = AEC,
-	avjc = AEC,
-	apjc = EC
+	ad = ap. J.-C.,
+	a.d. = ap. J.-C.,
+	AD = ap. J.-C.,
+	bc = av. J.-C.,
+	b.c. = av. J.-C.,
+	BC = av. J.-C.,
+	c.e. = ap. J.-C.,
+	b.c.e. = av. J.-C.,
+	ce = ap. J.-C.,
+	bce = av. J.-C.,
+	avjc = av. J.-C.,
+	apjc = ap. J.-C.
 }
 
 #nowDate = [now]
@@ -103,7 +103,7 @@ afterQualifier = [après]
 bornQualifier = [n., n, né]
 
 # Text to indicate century (as in "20th century")
-centuryIndicator = [siècle, S.]
+centuryIndicator = [S., s., siècle, siecle, century, cent]
 
 # Text to indicate decade (as in "1920s")
 decadeIndicator = [s]
@@ -112,7 +112,7 @@ decadeIndicator = [s]
 # (eg. 0th, 1st, 2nd, 3rd would be a list like so: [th, st, nd, rd])
 #ordinalSuffixes = [th, st, nd, rd]
 # ??? à revoir
-ordinalSuffixes = [e, er]
+ordinalSuffixes = [e, er, e, e]
 #ordinalSuffixDefault = th
 ordinalSuffixDefault = e
 
@@ -133,7 +133,7 @@ definiteArticles = [le]
 # Indefinite articles
 #indefiniteArticles = [a, an]
 # ??? une 
-indefiniteArticles = [un]
+indefiniteArticles = [un, au]
 
 # Seasons
 winterSeason = [hiver]
