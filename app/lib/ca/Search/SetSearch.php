@@ -1,26 +1,38 @@
 <?php
-/**
- * 
- * SetSearch module.  Copyright 2009 Whirl-i-Gig (http://www.whirl-i-gig.com)
- * class for object search handling
+/** ---------------------------------------------------------------------
+ * app/lib/ca/Search/SetSearch.php :
+ * ----------------------------------------------------------------------
+ * CollectiveAccess
+ * Open-source collections management software
+ * ----------------------------------------------------------------------
  *
- * @author Stefan Keidel <stefan@whirl-i-gig.com>
- * @copyright Copyright 2008 Whirl-i-Gig (http://www.whirl-i-gig.com)
- * @license http://www.gnu.org/copyleft/lesser.html
- * @package CA
- * @subpackage Core
+ * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
+ * Copyright 2008-2013 Whirl-i-Gig
  *
- * Disclaimer:  There are no doubt inefficiencies and bugs in this code; the
- * documentation leaves much to be desired. If you'd like to improve these  
- * libraries please consider helping us develop this software. 
+ * For more information visit http://www.CollectiveAccess.org
  *
- * phpweblib is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY.
+ * This program is free software; you may redistribute it and/or modify it under
+ * the terms of the provided license as published by Whirl-i-Gig
  *
- * This source code are free and modifiable under the terms of 
- * GNU Lesser General Public License. (http://www.gnu.org/copyleft/lesser.html)
+ * CollectiveAccess is distributed in the hope that it will be useful, but
+ * WITHOUT ANY WARRANTIES whatsoever, including any implied warranty of 
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  
  *
+ * This source code is free and modifiable under the terms of 
+ * GNU General Public License. (http://www.gnu.org/copyleft/gpl.html). See
+ * the "license.txt" file for details, or visit the CollectiveAccess web site at
+ * http://www.CollectiveAccess.org
  *
+ * @package CollectiveAccess
+ * @subpackage Search
+ * @license http://www.gnu.org/copyleft/gpl.html GNU Public License version 3
+ *
+ * ----------------------------------------------------------------------
  */
+ 
+ /**
+  *
+  */
 
 include_once(__CA_LIB_DIR__."/ca/Search/BaseSearch.php");
 include_once(__CA_LIB_DIR__."/ca/Search/SetSearchResult.php");
@@ -35,7 +47,7 @@ class SetSearch extends BaseSearch {
 
 	# ----------------------------------------------------------------------
 	public function &search($ps_search, $pa_options=null) {
-		return parent::search($ps_search, new SetSearchResult(), $pa_options);
+		return parent::doSearch($ps_search, new SetSearchResult(), $pa_options);
 	}
 	# ----------------------------------------------------------------------
 }

@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2000-2012 Whirl-i-Gig
+ * Copyright 2000-2013 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -681,7 +681,8 @@ class BaseModel extends BaseObject {
 							
 							$vs_version = $va_tmp[2];
 							if (!isset($va_versions[$vs_version])) {
-								$vs_version = array_shift(array_keys($va_versions));
+								$va_tmp = array_keys($va_versions);
+								$vs_version = array_shift($va_tmp);
 							}
 							
 							if (isset($pa_options['returnURL']) && $pa_options['returnURL']) {
@@ -1904,7 +1905,8 @@ class BaseModel extends BaseObject {
 					)) {
 						if ($t_many_table = $this->_DATAMODEL->getTableInstance($va_many_to_one_relations[$vs_field]["one_table"])) {
 							if ($this->inTransaction()) {
-								$t_many_table->setTransaction($this->getTransaction());
+								$o_trans = $this->getTransaction();
+								$t_many_table->setTransaction($o_trans);
 							}
 							$t_many_table->load($this->get($va_many_to_one_relations[$vs_field]["many_table_field"]));
 						}
@@ -2429,7 +2431,8 @@ class BaseModel extends BaseObject {
 					if (!(($va_attr["IS_NULL"]) && ($vs_field_value == ""))) {
 						if ($t_many_table = $this->_DATAMODEL->getTableInstance($va_many_to_one_relations[$vs_field]["one_table"])) {
 							if ($this->inTransaction()) {
-								$t_many_table->setTransaction($this->getTransaction());
+								$o_trans = $this->getTransaction();
+								$t_many_table->setTransaction($o_trans);
 							}
 							$t_many_table->load($this->get($va_many_to_one_relations[$vs_field]["many_table_field"]));
 						}
@@ -2884,7 +2887,8 @@ class BaseModel extends BaseObject {
 
 						# do any records exist?
 						$t_related = $this->_DATAMODEL->getTableInstance($vs_many_table);
-						$t_related->setTransaction($this->getTransaction());
+						$o_trans = $this->getTransaction();
+						$t_related->setTransaction($o_trans);
 						$qr_record_check = $o_db->query("
 							SELECT ".$t_related->primaryKey()."
 							FROM ".$vs_many_table."
@@ -8558,7 +8562,7 @@ $pa_options["display_form_field_tips"] = true;
 	 *		If you want both moderated and unmoderated tags to be returned then omit the parameter or pass a null value
 	 *
 	 * @param $pn_user_id [integer] A valid ca_users.user_id value. If specified, only tags added by the specified user will be returned. (optional - default is null)
-	 * @param $pn_moderation_status [boolean] To return only unmoderated tags set to FALSE; to return only moderated tags set to TRUE; to return all tags set to null or omit
+	 * @param $pb_moderation_status [boolean] To return only unmoderated tags set to FALSE; to return only moderated tags set to TRUE; to return all tags set to null or omit
 	 */
 	public function getTags($pn_user_id=null, $pb_moderation_status=null, $pn_row_id=null) {
 		if (!($vn_row_id = $pn_row_id)) {

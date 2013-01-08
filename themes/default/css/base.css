@@ -4614,6 +4614,7 @@ div.searchlight-results div.searchlight-selected {
 
 .olMap {
 	background-color: #999999;
+	clear:left;
 }
 
 .olControlDelete {

@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2008-2010 Whirl-i-Gig
+ * Copyright 2008-2013 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -191,7 +191,7 @@ class ca_objects_x_object_representations extends BaseRelationshipModel {
 		parent::__construct($pn_id);	# call superclass constructor
 	}
 	# ------------------------------------------------------
-	public function insert() {
+	public function insert($pa_options=null) {
 		$t_object = new ca_objects();
 		$o_trans = new Transaction();
 		$o_db = $o_trans->getDb();
@@ -218,7 +218,7 @@ class ca_objects_x_object_representations extends BaseRelationshipModel {
 				$this->set('is_primary', 1);
 			}
 			
-			$vb_rc = parent::insert();
+			$vb_rc = parent::insert($pa_options);
 			$o_trans->commitTransaction();
 			return $vb_rc;
 		} else {
@@ -232,7 +232,7 @@ class ca_objects_x_object_representations extends BaseRelationshipModel {
 					object_id = ?
 			", (int)$vn_object_id);
 			
-			if (!$vb_rc = parent::insert()) {
+			if (!$vb_rc = parent::insert($pa_options)) {
 				$o_trans->rollbackTransaction();
 			} else {
 				$o_trans->commitTransaction();
@@ -242,7 +242,7 @@ class ca_objects_x_object_representations extends BaseRelationshipModel {
 		}
 	}
 	# ------------------------------------------------------
-	public function update() {
+	public function update($pa_options=null) {
 		$t_object = new ca_objects();
 		$o_trans = new Transaction();
 		$o_db = $o_trans->getDb();
@@ -272,7 +272,7 @@ class ca_objects_x_object_representations extends BaseRelationshipModel {
 					$this->set('is_primary', 1);
 				}
 				
-				return parent::update();
+				return parent::update($pa_options);
 			} else {
 				// unset other reps is_primary field
 				$o_db->query("
@@ -281,7 +281,7 @@ class ca_objects_x_object_representations extends BaseRelationshipModel {
 					WHERE
 						object_id = ?
 				", (int)$vn_object_id);
-				if (!($vb_rc = parent::update())) {
+				if (!($vb_rc = parent::update($pa_options))) {
 					$o_trans->rollbackTransaction();
 				} else {
 					$o_trans->commitTransaction();
@@ -289,13 +289,13 @@ class ca_objects_x_object_representations extends BaseRelationshipModel {
 				return $vb_rc;
 			}
 		} else {
-			$vb_rc = parent::update();
+			$vb_rc = parent::update($pa_options);
 			$o_trans->commitTransaction();
 			return $vb_rc;
 		}
 	}
 	# ------------------------------------------------------
-	public function delete($pb_delete_related=false) {
+	public function delete($pb_delete_related=false, $pa_options=null, $pa_fields=null, $pa_table_list=null) {
 		$t_object = new ca_objects();
 		
 		$vn_object_id = $this->get('object_id');
@@ -338,7 +338,7 @@ class ca_objects_x_object_representations extends BaseRelationshipModel {
 				}				
 			}
 		} 
-		if($vb_rc = parent::delete($pb_delete_related)) {
+		if($vb_rc = parent::delete($pb_delete_related, $pa_options, $pa_fields, $pa_table_list)) {
 			$o_trans->commitTransaction();
 		} else {
 			$o_trans->rollbackTransaction();

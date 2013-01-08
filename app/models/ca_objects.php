@@ -416,7 +416,7 @@ class ca_objects extends BundlableLabelableBaseModelWithAttributes implements IB
 		$this->BUNDLES['ca_commerce_order_history'] = array('type' => 'special', 'repeating' => true, 'label' => _t('Order history'));
 	}
 	# ------------------------------------------------------
-	public function delete($pb_delete_related=false, $pa_options=null){
+	public function delete($pb_delete_related=false, $pa_options=null, $pa_fields=null, $pa_table_list=null){
 		// nuke related representations
 		foreach($this->getRepresentations() as $va_rep){
 			// check if representation is in use anywhere else 
@@ -426,7 +426,7 @@ class ca_objects extends BundlableLabelableBaseModelWithAttributes implements IB
 			}
 		}
 
-		return parent::delete($pb_delete_related, $pa_options);
+		return parent::delete($pb_delete_related, $pa_options, $pa_fields, $pa_table_list);
 	}
 	# ------------------------------------------------------
 	/**
@@ -850,7 +850,8 @@ class ca_objects extends BundlableLabelableBaseModelWithAttributes implements IB
  		$t_rep = new ca_object_representations();
  		
  		if ($this->inTransaction()) {
- 			$t_rep->setTransaction($this->getTransaction());
+ 			$o_trans = $this->getTransaction();
+ 			$t_rep->setTransaction($o_trans);
  		}
  		
  		$t_rep->setMode(ACCESS_WRITE);
@@ -903,7 +904,8 @@ class ca_objects extends BundlableLabelableBaseModelWithAttributes implements IB
 			
  		$t_oxor = new ca_objects_x_object_representations();
  		if ($this->inTransaction()) {
- 			$t_oxor->setTransaction($this->getTransaction());
+ 			$o_trans = $this->getTransaction();
+ 			$t_oxor->setTransaction($o_trans);
  		}
  		$t_oxor->setMode(ACCESS_WRITE);
  		$t_oxor->set('object_id', $vn_object_id);
@@ -956,7 +958,8 @@ class ca_objects extends BundlableLabelableBaseModelWithAttributes implements IB
  		
  		$t_rep = new ca_object_representations();
  		if ($this->inTransaction()) {
- 			$t_rep->setTransaction($this->getTransaction());
+ 			$o_trans = $this->getTransaction();
+ 			$t_rep->setTransaction($o_trans);
  		}
  		if (!$t_rep->load(array('representation_id' => $pn_representation_id))) {
  			$this->postError(750, _t("Representation id=%1 does not exist", $pn_representation_id), "ca_objects->editRepresentation()");

@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2009-2012 Whirl-i-Gig
+ * Copyright 2009-2013 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -281,8 +281,8 @@ class ca_representation_annotations extends BundlableLabelableBaseModelWithAttri
 		$this->BUNDLES['ca_list_items'] = array('type' => 'related_table', 'repeating' => true, 'label' => _t('Related vocabulary terms'));
 	}
  	# ------------------------------------------------------
-	public function load($pm_id=null) {
-		$vn_rc = parent::load($pm_id);
+	public function load($pm_id=null, $pb_use_cache=true) {
+		$vn_rc = parent::load($pm_id, $pb_use_cache);
 		
 		$vs_type = $this->getAnnotationType();
 		$this->opo_annotations_properties = $this->loadProperties($vs_type);
@@ -345,8 +345,8 @@ class ca_representation_annotations extends BundlableLabelableBaseModelWithAttri
 		return $vn_rc;
 	}
 	# ------------------------------------------------------
-	public function delete($delete_related=0, $pa_fields=null, $pa_table_list=null) {
-		$vn_rc = parent::delete($delete_related, $pa_fields, $pa_table_list);
+	public function delete($pb_delete_related=false, $pa_options=null, $pa_fields=null, $pa_table_list=null) {
+		$vn_rc = parent::delete($pb_delete_related, $pa_options, $pa_fields, $pa_table_list);
 		
 		if (!$this->numErrors()) {
 			$this->opo_annotations_properties = null;

@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2008-2011 Whirl-i-Gig
+ * Copyright 2008-2013 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -41,14 +41,14 @@
 		# -------------------------------------------------------
 		
 		# -------------------------------------------------------
-		public function insert() {
+		public function insert($pa_options=null) {
 			$this->_generateSortableValue();	// populate sort field
-			return parent::insert();
+			return parent::insert($pa_options);
 		}
 		# -------------------------------------------------------
-		public function update() {
+		public function update($pa_options=null) {
 			$this->_generateSortableValue();	// populate sort field
-			return parent::update();
+			return parent::update($pa_options);
 		}
 		# -------------------------------------------------------
 		/**
