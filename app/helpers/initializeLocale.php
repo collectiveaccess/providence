@@ -33,38 +33,26 @@
   /**
    *
    */
+
+   function initializeLocale($g_ui_locale) {
+   		global $_, $_locale;
+   		
+		if(!file_exists($vs_locale_path = __CA_APP_DIR__.'/locale/user/'.$g_ui_locale.'/messages.mo')) {
+			$vs_locale_path = __CA_APP_DIR__.'/locale/'.$g_ui_locale.'/messages.mo';
+		}
+		if(file_exists($vs_locale_path)) {
+			// If the locale is valid, locale is set
+			$_ = new Zend_Translate('gettext',$vs_locale_path, $g_ui_locale);
+			$_locale = new Zend_Locale($g_ui_locale);
+			Zend_Registry::set('Zend_Locale', $_locale);
+			$cookiepath = ((__CA_URL_ROOT__=="") ? "/" : __CA_URL_ROOT__);
+			setcookie('CA_'.__CA_APP_NAME__.'_ui_locale', $g_ui_locale, time()+36000, $cookiepath);
+			return true;
+		} else {
+			// cookie invalid, deleting
+			setcookie('CA_'.__CA_APP_NAME__.'_ui_locale', NULL, -1);
+			return false;
+		}
+   }
    
-	require(__CA_LIB_DIR__."/core/Zend/Translate.php");
-	require(__CA_LIB_DIR__."/core/Zend/Registry.php");
-	require(__CA_APP_DIR__."/helpers/initializeLocale.php");
-
-	if (isset($_COOKIE['CA_'.__CA_APP_NAME__.'_ui_locale'])) {
-		$g_ui_locale = $_COOKIE['CA_'.__CA_APP_NAME__.'_ui_locale'];
-		initializeLocale($g_ui_locale);
-	}
-	
-	require(__CA_APP_DIR__."/helpers/utilityHelpers.php");
-	require(__CA_APP_DIR__."/helpers/navigationHelpers.php");
-	require(__CA_APP_DIR__."/helpers/mailHelpers.php");
-	require(__CA_APP_DIR__."/helpers/clientServicesHelpers.php");
-	
-	require(__CA_LIB_DIR__."/core/ApplicationMonitor.php");
-	require(__CA_LIB_DIR__."/core/BaseModel.php");
-	require(__CA_LIB_DIR__."/core/Controller/AppController.php");
-	
-	require(__CA_LIB_DIR__."/ca/Search/DidYouMean.php");
-	
-	require(__CA_LIB_DIR__."/ca/MetaTagManager.php");
-	require(__CA_LIB_DIR__."/ca/JavascriptLoadManager.php");
-	require(__CA_LIB_DIR__."/ca/TooltipManager.php");
-	require(__CA_LIB_DIR__."/ca/FooterManager.php");
-
-	require(__CA_LIB_DIR__."/ca/AppNavigation.php");
-	
-	require(__CA_LIB_DIR__."/core/Controller/ActionController.php");
-	
-	require(__CA_MODELS_DIR__."/ca_acl.php");
-	
-	// initialize Tooltip manager
-	TooltipManager::init();
 ?>

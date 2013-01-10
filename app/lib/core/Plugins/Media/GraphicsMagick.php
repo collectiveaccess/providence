@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2008-2012 Whirl-i-Gig
+ * Copyright 2008-2013 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -933,8 +933,9 @@ class WLPlugMediaGraphicsMagick Extends WLPlug Implements IWLPlugMedia {
 	# ------------------------------------------------
 	private function _graphicsMagickIdentify($ps_filepath) {
 		if (caMediaPluginGraphicsMagickInstalled($this->ops_graphicsmagick_path)) {
-			exec($this->ops_graphicsmagick_path.' identify -format "%m" '.caEscapeShellArg($ps_filepath)." 2> /dev/null", $va_output, $vn_return);
-			return $this->magickToMimeType($va_output[0]);
+			exec($this->ops_graphicsmagick_path.' identify -format "%m;" '.caEscapeShellArg($ps_filepath)." 2> /dev/null", $va_output, $vn_return);
+			$va_types = explode(";", $va_output[0]);
+			return $this->magickToMimeType($va_types[0]);	// force use of first image in multi-page TIFF
 		}
 		return null;
 	}

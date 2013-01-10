@@ -893,9 +893,9 @@ class ca_lists extends BundlableLabelableBaseModelWithAttributes {
 		$o_db = $this->getDb();
 		$qr_res = $o_db->query("
 			SELECT item_id
-			FROM ca_list_items
+			FROM ca_list_items cli
 			WHERE
-				(cli.deleted = 0) AND (list_id = ?) AND (parent_id IS NULL)
+				(cli.deleted = 0) AND (cli.list_id = ?) AND (cli.parent_id IS NULL)
 		", (int)$vn_list_id);
 		
 		$va_items = array();
