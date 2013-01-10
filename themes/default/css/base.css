@@ -855,6 +855,12 @@ div.hint {
 	padding-left:10px;
 }
 
+.formLabelSubtext {
+	padding-left:5px;
+	font-weight: normal; 
+	font-size: 9px;
+}
+
 .bundleLabel {
 	font-family: Verdana, Arial, Helvetica, sans-serif;
 	font-size:13px;
