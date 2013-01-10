@@ -252,7 +252,7 @@ var caUI = caUI || {};
 									that.selectItem(level, that.selectedItemIDs[level], jQuery('#' + newLevelDivID).data('parent_id'), item[that.hasChildrenIndicator], item);
 								}
 							}
-							
+						
 							var icon = '';
 							var countText = '';
 							var childCount = 0;
@@ -269,22 +269,23 @@ var caUI = caUI || {};
 							}
 							
 							var moreButton = '';
+							var item_id_for_css = item['item_id'].replace(/[^A-Za-z0-9_\-]+/g, '_');
 							if ((that.openDirectoryIcon) && (item.type == 'DIR')) {
 								if (childCount > 0) {
-									moreButton = "<div style='float: right;'><a href='#' id='directoryBrowser_" + that.name + '_level_' + level + '_item_' + item['item_id'] + "_open' >" + that.openDirectoryIcon + "</a></div>";
+									moreButton = "<div style='float: right;'><a href='#' id='directoryBrowser_" + that.name + '_level_' + level + '_item_' + item_id_for_css + "_open' >" + that.openDirectoryIcon + "</a></div>";
 								} else {
-									moreButton = "<div style='float: right;'><a href='#' id='directoryBrowser_" + that.name + '_level_' + level + '_item_' + item['item_id'] + "_open'  style='opacity: 0.3;'>" + that.openDirectoryIcon + "</a></div>";
+									moreButton = "<div style='float: right;'><a href='#' id='directoryBrowser_" + that.name + '_level_' + level + '_item_' + item_id_for_css + "_open'  style='opacity: 0.3;'>" + that.openDirectoryIcon + "</a></div>";
 								}
 							}
 							
 							
 							if ((item.type == 'FILE') && (!that.allowFileSelection)) {
 								jQuery('#' + newLevelListID).append(
-									"<li class='" + that.className + "'><a href='#' id='directoryBrowser_" + that.name + '_level_' + level + '_item_' + item['item_id'] + "' class='" + that.className + "' title='" + item.fullname + "' style='opacity: 0.5;'>" + icon +  item.name + "</a></li>"
+									"<li class='" + that.className + "'><a href='#' id='directoryBrowser_" + that.name + '_level_' + level + '_item_' + item_id_for_css + "' class='" + that.className + "' title='" + item.fullname + "' style='opacity: 0.5;'>" + icon +  item.name + "</a></li>"
 								);
 							} else {
 								jQuery('#' + newLevelListID).append(
-									"<li class='" + that.className + "'>" + moreButton +"<a href='#' id='directoryBrowser_" + that.name + '_level_' + level + '_item_' + item['item_id'] + "' class='" + that.className + "' title='" + item.fullname + "'>" + icon +  item.name + countText + "</a></li>"
+									"<li class='" + that.className + "'>" + moreButton +"<a href='#' id='directoryBrowser_" + that.name + '_level_' + level + '_item_' + item_id_for_css + "' class='" + that.className + "' title='" + item.fullname + "'>" + icon +  item.name + countText + "</a></li>"
 								);
 							}
 							
@@ -361,13 +362,15 @@ var caUI = caUI || {};
 					
 					if (!is_init) {
 						that.selectedItemIDs[level-1] = item_id;
+						var item_id_for_css = item_id.replace(/[^A-Za-z0-9_\-]+/, '_');
 						jQuery('#' + newLevelListID + ' a').removeClass(that.classNameSelected).addClass(that.className);
 						jQuery('#directoryBrowser_' + that.name + '_' + (level - 1) + ' a').removeClass(that.classNameSelected).addClass(that.className);
-						jQuery('#directoryBrowser_' + that.name + '_level_' + (level - 1) + '_item_' + item_id).addClass(that.classNameSelected);
+						jQuery('#directoryBrowser_' + that.name + '_level_' + (level - 1) + '_item_' + item_id_for_css).addClass(that.classNameSelected);
 					} else {
 						if ((that.selectedItemIDs[level] !== undefined) && !dontDoSelectAndScroll) {
-							jQuery('#directoryBrowser_' + that.name + '_level_' + (level) + '_item_' + that.selectedItemIDs[level]).addClass(that.classNameSelected);
-							jQuery('#directoryBrowser_' + that.name + '_' + level).scrollTo('#directoryBrowser_' + that.name + '_level_' + level + '_item_' + that.selectedItemIDs[level]);
+							var item_id_for_css = that.selectedItemIDs[level].replace(/[^A-Za-z0-9_\-]+/, '_');
+							jQuery('#directoryBrowser_' + that.name + '_level_' + (level) + '_item_' + item_id_for_css).addClass(that.classNameSelected);
+							jQuery('#directoryBrowser_' + that.name + '_' + level).scrollTo('#directoryBrowser_' + that.name + '_level_' + level + '_item_' + item_id_for_css);
 						}
 					}
 	
@@ -430,9 +433,10 @@ var caUI = caUI || {};
 				that.selectedItemIDs.pop();
 			}
 			that.selectedItemIDs.push(item_id);
-			jQuery('#directoryBrowser_' + that.name + '_' + level + ' a').removeClass(that.classNameSelected).addClass(that.className);
-			jQuery('#directoryBrowser_' + that.name + '_level_' + level + '_item_' + item_id).addClass(that.classNameSelected);
 			
+			var item_id_for_css = item_id.replace(/[^A-Za-z0-9_\-]+/g, '_');
+			jQuery('#directoryBrowser_' + that.name + '_' + level + ' a').removeClass(that.classNameSelected).addClass(that.className);
+			jQuery('#directoryBrowser_' + that.name + '_level_' + level + '_item_' + item_id_for_css).addClass(that.classNameSelected);
 		
 			if (that.onSelection) {
 				that.onSelection(item_id, that.selectedItemIDs.join("/"), item.name, item.type);

@@ -228,7 +228,7 @@
 				while (false !== ($item = readdir($handle))) {
 					if ($item != "." && $item != ".." && ($pb_include_hidden_files || (!$pb_include_hidden_files && $item{0} !== '.'))) {
 						$vb_is_dir = is_dir("{$dir}/{$item}");
-						$vs_k = preg_replace('![^A-Za-z0-9_\-]+!', '_', $item);
+						$vs_k = preg_replace('![\:]+!', '|', $item);
 						if ($vb_is_dir) { 
 							$vn_i++;
 							if (($pn_start_at > 0) && ($vn_i <= $pn_start_at)) { continue; }
@@ -312,6 +312,7 @@
  		# ------------------------------------------------------------------
  		public function GetDirectoryLevel() {
  			$ps_path = $this->request->getParameter('path', pString);
+ 			$ps_path = preg_replace('![\|]+!', ':', $ps_path);
  			$ps_id = $this->request->getParameter('id', pString);
  			list($ps_directory, $pn_start) = explode(":", $ps_id);
  			$vs_root_directory = $this->request->config->get('batch_media_import_root_directory');
