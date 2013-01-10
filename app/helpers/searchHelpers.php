@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2011 Whirl-i-Gig
+ * Copyright 2011-2013 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -208,7 +208,7 @@ require_once(__CA_MODELS_DIR__.'/ca_lists.php');
 			case 'ca_object_representations':
 			case 56:
 				$vs_module = 'find';
-				$vs_controller = ($vb_return_advanced) ? 'SearchObjectRepresentationsAdvanced' : 'SearchRepresentations';
+				$vs_controller = ($vb_return_advanced) ? 'SearchObjectRepresentationsAdvanced' : 'SearchObjectRepresentations';
 				$vs_action = 'Index';
 				break;
 			case 'ca_relationship_types':
