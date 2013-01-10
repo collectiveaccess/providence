@@ -623,6 +623,7 @@ class ca_sets extends BundlableLabelableBaseModelWithAttributes implements IBund
 					SELECT ".join(', ', $va_sql_selects)."
 					FROM ca_sets cs
 					INNER JOIN ca_users AS u ON cs.user_id = u.user_id
+					LEFT JOIN ca_set_labels AS csl ON cs.set_id = csl.set_id
 					".join("\n", $va_extra_joins)."
 					".(sizeof($va_sql_wheres) ? 'WHERE ' : '')."
 					".join(' AND ', $va_sql_wheres)."
