@@ -56,6 +56,7 @@ class WLPlugSMSSendHub Extends BaseSMSPlugin Implements IWLPlugSMS {
 	 */
 	static public function send($pn_user_id, $ps_message) {
 		global $AUTH_CURRENT_USER_ID, $g_request;
+		if (!function_exists("curl_init")) { return false; }
 		
 		if ($pn_user_id == $AUTH_CURRENT_USER_ID) {
 			$t_user = $g_request->user;	// use request user object 
