@@ -1426,4 +1426,82 @@ function caFileIsIncludable($ps_file) {
 		return $pa_array;
 	}
 	# ---------------------------------------
+	/**
+	 * Detects if a string is a valid roman number
+	 *
+	 * @param string $pa_string The string to analyze
+	 * @return boolean True if string is a roman number, false otherwise
+	 */
+	function caIsRomanNumerals($pa_string) {
+		$pattern = "^M{0,4}(CM|CD|D?C{0,3})(XC|XL|L?X{0,3})(IX|IV|V?I{0,3})$";
+		return preg_match($pattern, $pa_string);
+	}
+	# ---------------------------------------
+	/**
+	 * Convert an arabic int to a roman number
+	 * 
+	 * Source : http://www.go4expert.com/forums/showthread.php?t=4948
+	 *
+	 * @param $input_arabic_numeral The int to convert
+	 * @return string Roman number resulting from the conversion
+	 */
+	
+	function caArabicRoman($num) {
+		// Make sure that we only use the integer portion of the value
+		$n = intval($num);
+		$result = '';
+		
+		// Declare a lookup array that we will use to traverse the number:
+		$lookup = array('M' => 1000, 'CM' => 900, 'D' => 500, 'CD' => 400,
+				'C' => 100, 'XC' => 90, 'L' => 50, 'XL' => 40,
+				'X' => 10, 'IX' => 9, 'V' => 5, 'IV' => 4, 'I' => 1);
+		
+		foreach ($lookup as $roman => $value)
+		{
+			// Determine the number of matches
+			$matches = intval($n / $value);
+		
+			// Store that many characters
+			$result .= str_repeat($roman, $matches);
+		
+			// Substract that from the number
+			$n = $n % $value;
+		}
+		
+		// The Roman numeral should be built, return it
+		return $result;
+	}
+
+	/**
+	 * Convert a roman number to arabic numerals
+	 *
+	 * Source : http://wcetdesigns.com/tutorials/2011/12/01/roman-arabic-converter.html
+	 *
+	 * @param string $roman The string to convert
+	 * @return mixed int if converted, false if no valid roman number supplied   
+	 */
+	
+	function caRomanArabic($roman) {
+		//ROMAN/ARABIC CONVERSION TABLE
+		$r = array("I", "II", "III", "IV", "V", "VI", "VII", "VIII", "IX", "X", "XX", "XXX", "XL", "L", "LX", "LXX", "LXXX", "XC", "C", "CC", "CCC", "CD", "D", "DC", "DCC", "DCCC", "CM", "M", "MM", "MMM", "MMMM");
+		$n = array(1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 20, 30, 40, 50, 60, 70, 80, 90, 100, 200, 300, 400, 500, 600, 700, 800, 900, 1000, 2000, 3000, 4000);
+		
+		//ROMAN NUMERAL PATTERN FOR VALIDITY
+		$pattern = "^M{0,4}(CM|CD|D?C{0,3})(XC|XL|L?X{0,3})(IX|IV|V?I{0,3})$";
+		
+		//IF ROMAN NUMERAL IS VALID, IT'LL CONVERT TO THE NEW SYSTEM
+		if(eregi(pattern, $roman, $group)){
+			for($i=1; $i<count($group); $i++){
+				for($j=0; $j<count($r); $j++){
+					//CONVERSION PROCESS
+					if($group[$i]==$r[$j]){
+						$nn += $n[$j];
+					}
+				}
+			} 
+		} else { 
+			return false;
+		}
+		return $nn;
+	}	
 ?>

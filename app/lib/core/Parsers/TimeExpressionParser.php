@@ -1940,10 +1940,11 @@ class TimeExpressionParser {
 	#	afterQualifier	(string) [default is first indicator in language config file]
 	#	presentDate		(string) [default is first indicator in language config file]
 	#	isLifespan		(true|false) [default is false; if true, date is output with 'born' and 'died' syntax if appropriate]
-	#  useQuarterCenturySyntaxForDisplay (true|false) [default is false; if true dates ranging over uniform quarter centuries (eg. 1900 - 1925, 1925 - 1950, 1950 - 1975, 1975-2000) will be output in the format "20 Q1" (eg. 1st quarter of 20th century... 1900 - 1925)
+	#   useQuarterCenturySyntaxForDisplay (true|false) [default is false; if true dates ranging over uniform quarter centuries (eg. 1900 - 1925, 1925 - 1950, 1950 - 1975, 1975-2000) will be output in the format "20 Q1" (eg. 1st quarter of 20th century... 1900 - 1925)
+	#   useRomanNumeralsForCenturyDisplay (true|false] [default is false; if true century only dates (eg 18th century) will be output in roman numerals like "XVIIIth century"
 	function getText($pa_options=null) {
 		if (!$pa_options) { $pa_options = array(); }
-		foreach(array('dateFormat', 'dateDelimiter', 'uncertaintyIndicator', 'showADEra', 'timeFormat', 'timeDelimiter', 'circaIndicator', 'beforeQualifier', 'afterQualifier', 'presentDate', 'useQuarterCenturySyntaxForDisplay', 'timeOmit') as $vs_opt) {
+		foreach(array('dateFormat', 'dateDelimiter', 'uncertaintyIndicator', 'showADEra', 'timeFormat', 'timeDelimiter', 'circaIndicator', 'beforeQualifier', 'afterQualifier', 'presentDate', 'useQuarterCenturySyntaxForDisplay', 'timeOmit', 'useRomanNumeralsForCenturyDisplay') as $vs_opt) {
 			if (!isset($pa_options[$vs_opt]) && ($vs_opt_val = $this->opo_datetime_settings->get($vs_opt))) {
 				$pa_options[$vs_opt] = $vs_opt_val;
 			}
@@ -2295,6 +2296,11 @@ class TimeExpressionParser {
 							$va_century_indicators = $this->opo_language_settings->getList("centuryIndicator");
 							
 							$vs_era = ($vn_century < 0) ? ' '.$this->opo_language_settings->get('dateBCIndicator') : '';
+
+							// if useRomanNumeralsForCenturyDisplay is set in datetime.conf, 20th Century will be displayed as XXth Century
+							if ($pa_options["useRomanNumeralsForCenturyDisplay"]) {
+								return caArabicRoman(abs($vn_century)).$vs_ordinal.' '.$va_century_indicators[0].$vs_era;
+							}
 							
 							return abs($vn_century).$vs_ordinal.' '.$va_century_indicators[0].$vs_era;
 						}
