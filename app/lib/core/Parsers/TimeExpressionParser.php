@@ -395,15 +395,26 @@ class TimeExpressionParser {
 								$va_next_token = $this->getToken();
 								
 								$vs_next_token_lc = mb_strtolower($va_next_token['value']);
+								$vn_use_romans = $this->opo_datetime_settings->get("useRomanNumeralsForCenturies");
+																
 								if (
+									($vn_use_romans && in_array($vs_next_token_lc, $this->opo_language_settings->getList("centuryIndicator")) && preg_match("/^([MDCLXVI]+)(.*)$/", $va_token['value'], $va_roman_matches))
+									||	
 									((in_array($vs_next_token_lc, $this->opo_language_settings->getList("centuryIndicator"))) && (preg_match("/^([\d]+)(.*)$/", $va_token['value'], $va_matches)))
 									||
 									(preg_match("/^([\d]{2})[_]{2}$/", $va_token['value'], $va_matches))
 								) {	
+
 									$va_ordinals = $this->opo_language_settings->getList("ordinalSuffixes");
 									$va_ordinals[] = $this->opo_language_settings->get("ordinalSuffixDefault");
+
 									//if (in_array($va_matches[2], $va_ordinals)) {
-										$vn_century = intval($va_matches[1]);
+										if ($vn_use_romans && caIsRomanNumerals($va_roman_matches[1])) {
+											$vn_century = intval(caRomanArabic($va_roman_matches[1]));
+										} else {
+											$vn_century = intval($va_matches[1]);
+										} 
+										
 										
 										if (in_array($vs_next_token_lc, $this->opo_language_settings->getList("centuryIndicator"))) {
 											$va_next_token = null;
@@ -1944,10 +1955,10 @@ class TimeExpressionParser {
 	#	presentDate		(string) [default is first indicator in language config file]
 	#	isLifespan		(true|false) [default is false; if true, date is output with 'born' and 'died' syntax if appropriate]
 	#   useQuarterCenturySyntaxForDisplay (true|false) [default is false; if true dates ranging over uniform quarter centuries (eg. 1900 - 1925, 1925 - 1950, 1950 - 1975, 1975-2000) will be output in the format "20 Q1" (eg. 1st quarter of 20th century... 1900 - 1925)
-	#   useRomanNumeralsForCenturyDisplay (true|false] [default is false; if true century only dates (eg 18th century) will be output in roman numerals like "XVIIIth century"
+	#   useRomanNumeralsForCenturies (true|false] [default is false; if true century only dates (eg 18th century) will be output in roman numerals like "XVIIIth century"
 	function getText($pa_options=null) {
 		if (!$pa_options) { $pa_options = array(); }
-		foreach(array('dateFormat', 'dateDelimiter', 'uncertaintyIndicator', 'showADEra', 'timeFormat', 'timeDelimiter', 'circaIndicator', 'beforeQualifier', 'afterQualifier', 'presentDate', 'useQuarterCenturySyntaxForDisplay', 'timeOmit', 'useRomanNumeralsForCenturyDisplay') as $vs_opt) {
+		foreach(array('dateFormat', 'dateDelimiter', 'uncertaintyIndicator', 'showADEra', 'timeFormat', 'timeDelimiter', 'circaIndicator', 'beforeQualifier', 'afterQualifier', 'presentDate', 'useQuarterCenturySyntaxForDisplay', 'timeOmit', 'useRomanNumeralsForCenturies') as $vs_opt) {
 			if (!isset($pa_options[$vs_opt]) && ($vs_opt_val = $this->opo_datetime_settings->get($vs_opt))) {
 				$pa_options[$vs_opt] = $vs_opt_val;
 			}
@@ -2300,8 +2311,8 @@ class TimeExpressionParser {
 							
 							$vs_era = ($vn_century < 0) ? ' '.$this->opo_language_settings->get('dateBCIndicator') : '';
 
-							// if useRomanNumeralsForCenturyDisplay is set in datetime.conf, 20th Century will be displayed as XXth Century
-							if ($pa_options["useRomanNumeralsForCenturyDisplay"]) {
+							// if useRomanNumeralsForCenturies is set in datetime.conf, 20th Century will be displayed as XXth Century
+							if ($pa_options["useRomanNumeralsForCenturies"]) {
 								return caArabicRoman(abs($vn_century)).$vs_ordinal.' '.$va_century_indicators[0].$vs_era;
 							}
 							
