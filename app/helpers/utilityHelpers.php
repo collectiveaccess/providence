@@ -1427,10 +1427,9 @@ function caFileIsIncludable($ps_file) {
 	}
 	# ---------------------------------------
 	/**
-	 * Detects if a string is a valid roman number
+	 * Returns a regexp string to check if a string is a valid roman number
 	 *
-	 * @param string $pa_string The string to analyze
-	 * @return boolean True if string is a roman number, false otherwise
+	 * @return string The PCRE regexp
 	 */
 	function caRomanNumeralsRegexp() {
 		return "M{0,4}(CM|CD|D?C{0,3})(XC|XL|L?X{0,3})(IX|IV|V?I{0,3})";
@@ -1450,7 +1449,7 @@ function caFileIsIncludable($ps_file) {
 	}
 	# ---------------------------------------
 	/**
-	 * Convert an arabic int to a roman number
+	 * Converts an arabic int to a roman number
 	 * 
 	 * Source : http://www.go4expert.com/forums/showthread.php?t=4948
 	 *
@@ -1485,7 +1484,7 @@ function caFileIsIncludable($ps_file) {
 	}
 
 	/**
-	 * Convert a roman number to arabic numerals
+	 * Converts a roman number to arabic numerals
 	 *
 	 * Source : pear/Numbers/Roman.php
 	 *
