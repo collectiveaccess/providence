@@ -1432,8 +1432,20 @@ function caFileIsIncludable($ps_file) {
 	 * @param string $pa_string The string to analyze
 	 * @return boolean True if string is a roman number, false otherwise
 	 */
+	function caRomanNumeralsRegexp() {
+		return "M{0,4}(CM|CD|D?C{0,3})(XC|XL|L?X{0,3})(IX|IV|V?I{0,3})";
+	}
+	
+	# ---------------------------------------
+	/**
+	 * Detects if a string is a valid roman number
+	 *
+	 * @param string $pa_string The string to analyze
+	 * @return boolean True if string is a roman number, false otherwise
+	 */
 	function caIsRomanNumerals($pa_string) {
-		$pattern = "^M{0,4}(CM|CD|D?C{0,3})(XC|XL|L?X{0,3})(IX|IV|V?I{0,3})$";
+		if ($pa_string === NULL) return false;
+		$pattern = "/^".caRomanNumeralsRegexp()."$/";
 		return preg_match($pattern, $pa_string);
 	}
 	# ---------------------------------------
@@ -1475,33 +1487,43 @@ function caFileIsIncludable($ps_file) {
 	/**
 	 * Convert a roman number to arabic numerals
 	 *
-	 * Source : http://wcetdesigns.com/tutorials/2011/12/01/roman-arabic-converter.html
+	 * Source : pear/Numbers/Roman.php
 	 *
 	 * @param string $roman The string to convert
 	 * @return mixed int if converted, false if no valid roman number supplied   
 	 */
 	
 	function caRomanArabic($roman) {
-		//ROMAN/ARABIC CONVERSION TABLE
-		$r = array("I", "II", "III", "IV", "V", "VI", "VII", "VIII", "IX", "X", "XX", "XXX", "XL", "L", "LX", "LXX", "LXXX", "XC", "C", "CC", "CCC", "CD", "D", "DC", "DCC", "DCCC", "CM", "M", "MM", "MMM", "MMMM");
-		$n = array(1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 20, 30, 40, 50, 60, 70, 80, 90, 100, 200, 300, 400, 500, 600, 700, 800, 900, 1000, 2000, 3000, 4000);
-		
-		//ROMAN NUMERAL PATTERN FOR VALIDITY
-		$pattern = "^M{0,4}(CM|CD|D?C{0,3})(XC|XL|L?X{0,3})(IX|IV|V?I{0,3})$";
-		
-		//IF ROMAN NUMERAL IS VALID, IT'LL CONVERT TO THE NEW SYSTEM
-		if(eregi(pattern, $roman, $group)){
-			for($i=1; $i<count($group); $i++){
-				for($j=0; $j<count($r); $j++){
-					//CONVERSION PROCESS
-					if($group[$i]==$r[$j]){
-						$nn += $n[$j];
-					}
-				}
-			} 
-		} else { 
-			return false;
-		}
-		return $nn;
+		$conv = array(
+            array("letter" => 'I', "number" => 1),
+            array("letter" => 'V', "number" => 5),
+            array("letter" => 'X', "number" => 10),
+            array("letter" => 'L', "number" => 50),
+            array("letter" => 'C', "number" => 100),
+            array("letter" => 'D', "number" => 500),
+            array("letter" => 'M', "number" => 1000),
+            array("letter" => 0,   "number" => 0)
+        );
+        $arabic = 0;
+        $state  = 0;
+        $sidx   = 0;
+        $len    = strlen($roman) - 1;
+        while ($len >= 0) {
+            $i = 0;
+            $sidx = $len;
+            while ($conv[$i]['number'] > 0) {
+                if (strtoupper($roman[$sidx]) == $conv[$i]['letter']) {
+                    if ($state > $conv[$i]['number']) {
+                        $arabic -= $conv[$i]['number'];
+                    } else {
+                        $arabic += $conv[$i]['number'];
+                        $state   = $conv[$i]['number'];
+                    }
+                }
+                $i++;
+            }
+            $len--;
+        }
+        return($arabic);
 	}	
 ?>
