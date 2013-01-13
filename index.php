@@ -78,16 +78,13 @@
 	$g_ui_locale = $req->user->getPreferredUILocale();				// get current UI locale as locale string 			(available as global)
 	$g_ui_units_pref = $req->user->getPreference('units');			// user's selected display units for measurements 	(available as global)
 	
-	if(!file_exists($vs_locale_path = __CA_APP_DIR__.'/locale/user/'.$g_ui_locale.'/messages.mo')) {
-		$vs_locale_path = __CA_APP_DIR__.'/locale/'.$g_ui_locale.'/messages.mo';
+	if((!isset($_locale)) || ($g_ui_locale != $_COOKIE['CA_'.__CA_APP_NAME__.'_ui_locale'])) {
+		if(!initializeLocale($g_ui_locale)) die("Error loading locale ".$g_ui_locale);
+		$req->reloadAppConfig();
 	}
-	$_ = new Zend_Translate('gettext',$vs_locale_path, $g_ui_locale);
-	$_locale = new Zend_Locale($g_ui_locale);
-	Zend_Registry::set('Zend_Locale', $_locale);
+
 	global $ca_translation_cache;
 	$ca_translation_cache = array();
-	
-	$req->reloadAppConfig();	// need to reload app config to reflect current locale
 	
 	//
 	// PageFormat plug-in generates header/footer shell around page content

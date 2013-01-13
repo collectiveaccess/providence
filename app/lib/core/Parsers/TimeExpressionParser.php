@@ -211,6 +211,9 @@ class TimeExpressionParser {
 	}
 	# -------------------------------------------------------------------
 	function parse($ps_expression, $pa_options=null) {
+	
+		$ps_expression = caRemoveAccents($ps_expression);
+		
 		if (!$pa_options) { $pa_options = array(); }
 		$this->init();
 		
