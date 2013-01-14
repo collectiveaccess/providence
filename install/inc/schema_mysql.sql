@@ -709,6 +709,8 @@ create index i_source_id on ca_places(source_id);
 create index i_life_sdatetime on ca_places(lifespan_sdate);
 create index i_life_edatetime on ca_places(lifespan_edate);
 create index i_parent_id on ca_places(parent_id);
+create index i_hier_left on ca_places(hier_left);
+create index i_hier_right on ca_place(hier_right);
 
 
 /*==========================================================================*/
@@ -6704,5 +6706,5 @@ create table ca_schema_updates (
 ) engine=innodb CHARACTER SET utf8 COLLATE utf8_general_ci;
 
 /* Indicate up to what migration this schema definition covers */
-/* CURRENT MIGRATION: 77 */
-INSERT IGNORE INTO ca_schema_updates (version_num, datetime) VALUES (77, unix_timestamp());
+/* CURRENT MIGRATION: 78 */
+INSERT IGNORE INTO ca_schema_updates (version_num, datetime) VALUES (78, unix_timestamp());
