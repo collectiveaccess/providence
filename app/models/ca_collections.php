@@ -355,6 +355,12 @@ class ca_collections extends BundlableLabelableBaseModelWithAttributes implement
 		$this->BUNDLES['hierarchy_location'] = array('type' => 'special', 'repeating' => false, 'label' => _t('Location in hierarchy'));
 	}
 	# ------------------------------------------------------
+	/**
+	 * Finds collections with a label that matches $ps_name exactly
+	 *
+	 * @param string $ps_name The name to search for
+	 * @return array A list of collection_ids with the specified label
+	 */
 	public function getCollectionIDsByName($ps_name) {
 		$o_db = $this->getDb();
 		$qr_res = $o_db->query("

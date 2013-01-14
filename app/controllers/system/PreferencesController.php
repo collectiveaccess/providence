@@ -181,12 +181,9 @@
 							$g_ui_locale_id = $this->request->user->getPreferredUILocaleID();			// get current UI locale as locale_id	 			(available as global)
 							$g_ui_locale = $this->request->user->getPreferredUILocale();				// get current UI locale as locale string 			(available as global)
 							
-							if(!file_exists($vs_locale_path = __CA_APP_DIR__.'/locale/user/'.$g_ui_locale.'/messages.mo')) {
-								$vs_locale_path = __CA_APP_DIR__.'/locale/'.$g_ui_locale.'/messages.mo';
-							}
-							$_ = new Zend_Translate('gettext',$vs_locale_path, $g_ui_locale);
-							$_locale = new Zend_Locale($g_ui_locale);
-							Zend_Registry::set('Zend_Locale', $_locale);
+							if(!initializeLocale($g_ui_locale)) die("Error loading locale ".$g_ui_locale);
+							global $ca_translation_cache;
+							$ca_translation_cache = array();				
 							
 							// reload menu bar
 							AppNavigation::clearMenuBarCache($this->request);

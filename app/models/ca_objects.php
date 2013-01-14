@@ -1030,21 +1030,22 @@ class ca_objects extends BundlableLabelableBaseModelWithAttributes implements IB
  	}
  	# ------------------------------------------------------
  	/**
- 	 * Remove a single representation from the currently loaded object. Note that the representation will be removed from the database completed, so if it is also linked to other objects it will be removed from them as well.
+ 	 * Remove a single representation from the currently loaded object. Note that the representation will be removed from the database completely, so if it is also linked to other objects it will be removed from them as well.
  	 *
  	 * @param int $pn_representation_id The representation_id of the representation to remove
+ 	 * @param array $pa_options Options are passed through to BaseMode::delete()
  	 * @return bool True if delete succeeded, false if there was an error. You can get the error messages by calling getErrors() on the ca_objects instance.
  	 */
- 	public function removeRepresentation($pn_representation_id) {
+ 	public function removeRepresentation($pn_representation_id, $pa_options=null) {
  		if(!$this->getPrimaryKey()) { return null; }
  		
  		$t_rep = new ca_object_representations();
- 		if (!$t_rep->load(array('representation_id' => $pn_representation_id))) {
+ 		if (!$t_rep->load($pn_representation_id)) {
  			$this->postError(750, _t("Representation id=%1 does not exist", $pn_representation_id), "ca_objects->removeRepresentation()");
  			return false;
  		} else {
  			$t_rep->setMode(ACCESS_WRITE);
- 			$t_rep->delete(true);
+ 			$t_rep->delete(true, $pa_options);
  			
  			if ($t_rep->numErrors()) {
  				$this->errors = array_merge($this->errors, $t_rep->errors());
@@ -1062,10 +1063,10 @@ class ca_objects extends BundlableLabelableBaseModelWithAttributes implements IB
  	 *
  	 * @return bool True if delete succeeded, false if there was an error. You can get the error messages by calling getErrors() on the ca_objects instance.
  	 */
- 	public function removeAllRepresentations() {
+ 	public function removeAllRepresentations($pa_options=null) {
  		if (is_array($va_reps = $this->getRepresentations())) {
  			foreach($va_reps as $vn_i => $va_rep_info) {
- 				if (!$this->removeRepresentation($va_rep_info['representation_id'])) {
+ 				if (!$this->removeRepresentation($va_rep_info['representation_id'], $pa_options)) {
  					// Representation remove failed
  					return false;
  				}

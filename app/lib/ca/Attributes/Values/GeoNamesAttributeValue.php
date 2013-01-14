@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2008-2012 Whirl-i-Gig
+ * Copyright 2008-2013 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -143,6 +143,11 @@ class GeoNamesAttributeValue extends AttributeValue implements IAttributeValue {
  		$this->ops_uri_value =  $pa_value_array['value_longtext2'];
  	}
  	# ------------------------------------------------------------------
+ 	/**
+ 	 * @param array $pa_options Options are:
+ 	 *		forDuplication = returns full text + Geonames URL suitable for setting a duplicate attribute. Used in BaseModelWithAttributes::copyAttributesTo()
+ 	 * @return string GeoNames value
+ 	 */
 	public function getDisplayValue($pa_options=null) {
 		if(isset($pa_options['coordinates']) && $pa_options['coordinates']) {
 			if (preg_match("!\[([^\]]+)!", $this->ops_text_value, $va_matches)) {
@@ -156,6 +161,11 @@ class GeoNamesAttributeValue extends AttributeValue implements IAttributeValue {
 				return array('latitude' => null, 'longitude' => null, 'path' => null, 'label' => $this->ops_text_value);
 			}
 		}
+		
+		if(isset($pa_options['forDuplication']) && $pa_options['forDuplication']) {
+			return $this->ops_text_value.'|'.$this->ops_uri_value;
+		}
+
 		return $this->ops_text_value;
 	}
 	# ------------------------------------------------------------------
@@ -167,6 +177,9 @@ class GeoNamesAttributeValue extends AttributeValue implements IAttributeValue {
 		return $this->ops_uri_value;
 	}
 	# ------------------------------------------------------------------
+	/**
+	 *
+	 */
 	public function parseValue($ps_value, $pa_element_info) {
  		$ps_value = trim(preg_replace("![\t\n\r]+!", ' ', $ps_value));
 		$vo_conf = Configuration::load();
