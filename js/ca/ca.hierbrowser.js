@@ -483,9 +483,11 @@ if (that.uiStyle == 'horizontal') {
 	if (that.uiStyle == 'horizontal') {
 					var selected_item_id_cl = selected_item_id;
 					jQuery('#' + newLevelDivID).scroll(function () { 
-					   if (jQuery('#' + newLevelDivID).scrollTop() >= jQuery('#' + newLevelDivID).height() - 100) {
+						var curPage = jQuery('#' + newLevelDivID).data("page");
+						if (!curPage) { curPage = 0; }
+					   if (jQuery('#' + newLevelDivID).scrollTop() >= ((curPage * jQuery('#' + newLevelDivID).height()) - 10)) {
 						  // get page #
-						  var p = Math.ceil(jQuery('#' + newLevelDivID).scrollTop()/jQuery('#' + newLevelDivID).height()) - 1;
+						  var p = Math.ceil(jQuery('#' + newLevelDivID).scrollTop()/jQuery('#' + newLevelDivID).height());
 						  if (p < 0) { p = 0; }
 						  if (jQuery('#' + newLevelDivID).data('itemCount') <= (p * that.maxItemsPerHierarchyLevelPage)) { 
 							return;

@@ -2,4 +2,6 @@
 app/tmp/*
 setup.php
 /media/*
-support/projects/*
+.DS_Store
+.settings
+.project

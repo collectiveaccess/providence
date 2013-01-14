@@ -2457,10 +2457,11 @@ div.hierarchyBrowserContainerVertical {
 div.hierarchyBrowserLevel {
 	position: absolute;
 	top: 0px;
+	left: 0px;
 	width: 230px;
 	height: 100%;
-	padding: 0px 10px 0px 0px;
-	margin: 0px;
+	padding: 0px 0px 0px 0px;
+	margin: 0px 0px 0px 0px;
 	border: 1px solid #cccccc; 
 	background: #FFFFFF;
 	overflow: auto;
@@ -2477,7 +2478,7 @@ div.hierarchyBrowserLevelVertical {
 
 .hierarchyBrowserLevel ul {
 	padding: 3px;
-	margin: 3px;
+	margin: 3px 7px 3px 3px;
 	display:list-item;
 	list-style: none;
 	list-style-type: none;
