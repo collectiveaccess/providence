@@ -178,8 +178,9 @@ require_once(__CA_MODELS_DIR__.'/ca_lists.php');
 				break;
 			case 'ca_places':
 			case 72:
-				$vs_module = 'editor/places';
-				$vs_controller = 'PlaceEditor';
+				$vs_module = 'find';
+				$vs_controller = ($vb_return_advanced) ? 'SearchPlacesAdvanced' : 'SearchPlaces';
+				$vs_action = 'Index';
 				break;
 			case 'ca_occurrences':
 			case 67:
