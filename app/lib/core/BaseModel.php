@@ -2299,7 +2299,7 @@ class BaseModel extends BaseObject {
 				
 				$vn_parent_id 			= $this->get($vs_parent_id_fld);
 				
-				
+	if (!isset($pa_options['dontSetHierarchicalIndexing']) || !$pa_options['dontSetHierarchicalIndexing']) {		
 				if (($vn_orig_hier_right - $vn_orig_hier_left) == 0) {
 					$this->_calcHierarchicalIndexing($this->_getHierarchyParent($vn_parent_id));
 					$vn_orig_hier_left 		= $this->get($vs_hier_left_fld);
@@ -2317,7 +2317,7 @@ class BaseModel extends BaseObject {
 							return false;
 						}
 					}
-					
+	}					
 					//if (is_null($this->getOriginalValue($vs_parent_id_fld))) {
 						// don't allow moves of hierarchy roots - just ignore the move and keep on going with the update
 					//	$this->set($vs_parent_id_fld, null);
@@ -2380,7 +2380,7 @@ class BaseModel extends BaseObject {
 								die("Invalid hierarchy type: ".$this->getHierarchyType());
 								break;
 						}
-						
+	if (!isset($pa_options['dontSetHierarchicalIndexing']) || !$pa_options['dontSetHierarchicalIndexing']) {							
 						if ($va_parent_info) {
 							$va_hier_indexing = $this->_calcHierarchicalIndexing($va_parent_info);
 						} else {
@@ -2388,6 +2388,7 @@ class BaseModel extends BaseObject {
 						}
 						$this->set($this->getProperty('HIERARCHY_LEFT_INDEX_FLD'), $va_hier_indexing['left']);
 						$this->set($this->getProperty('HIERARCHY_RIGHT_INDEX_FLD'), $va_hier_indexing['right']);
+	}
 					//}
 				}
 			}
