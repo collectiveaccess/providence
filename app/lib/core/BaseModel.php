@@ -1811,7 +1811,7 @@ class BaseModel extends BaseObject {
 			// Set any auto-set hierarchical fields (eg. HIERARCHY_LEFT_INDEX_FLD and HIERARCHY_RIGHT_INDEX_FLD indexing for all and HIERARCHY_ID_FLD for ad-hoc hierarchies) here
 			//
 			$vn_hier_left_index_value = $vn_hier_right_index_value = 0;
-			if ($vb_is_hierarchical = $this->isHierarchical()) {
+			if (($vb_is_hierarchical = $this->isHierarchical()) && (!isset($pa_options['dontSetHierarchicalIndexing']) || !$pa_options['dontSetHierarchicalIndexing'])) {
 				$vn_parent_id = $this->get($this->getProperty('HIERARCHY_PARENT_ID_FLD'));
 				$va_parent_info = $this->_getHierarchyParent($vn_parent_id);
 				
@@ -2163,8 +2163,11 @@ class BaseModel extends BaseObject {
 					
 					$this->_FIELD_VALUE_CHANGED = array();					
 						
+					if (sizeof(BaseModel::$s_instance_cache[$vs_table_name = $this->tableName()]) > 100) {		// Limit cache to 100 instances per table
+						array_pop(BaseModel::$s_instance_cache[$vs_table_name]);
+					}
 					// Update instance cache
-					BaseModel::$s_instance_cache[$this->tableName()][$vn_id] = $this->_FIELD_VALUES;
+					BaseModel::$s_instance_cache[$vs_table_name][$vn_id] = $this->_FIELD_VALUES;
 					
 					return $vn_id;
 				} else {
@@ -2722,7 +2725,10 @@ class BaseModel extends BaseObject {
 				$this->_FIELD_VALUE_CHANGED = array();
 				
 				// Update instance cache
-				BaseModel::$s_instance_cache[$this->tableName()][$this->getPrimaryKey()] = $this->_FIELD_VALUES;
+				if (sizeof(BaseModel::$s_instance_cache[$vs_table_name = $this->tableName()]) > 100) {		// Limit cache to 100 instances per table
+					array_pop(BaseModel::$s_instance_cache[$vs_table_name]);
+				}
+				BaseModel::$s_instance_cache[$vs_table_name][$this->getPrimaryKey()] = $this->_FIELD_VALUES;
 				return true;
 			} else {
 				if ($vb_we_set_transaction) { $this->removeTransaction(false); }
