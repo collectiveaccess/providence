@@ -2284,8 +2284,9 @@ class BaseModel extends BaseObject {
 
 				$vb_we_set_transaction = true;
 			}
-			$o_db = $this->getDb();
 			
+			$o_db = $this->getDb();
+		
 			if ($vb_is_hierarchical = $this->isHierarchical()) {
 				$vs_parent_id_fld 		= $this->getProperty('HIERARCHY_PARENT_ID_FLD');
 				$vs_hier_left_fld 		= $this->getProperty('HIERARCHY_LEFT_INDEX_FLD');
@@ -2305,7 +2306,7 @@ class BaseModel extends BaseObject {
 					$vn_orig_hier_left 		= $this->get($vs_hier_left_fld);
 					$vn_orig_hier_right 	= $this->get($vs_hier_right_fld);
 				}
-				
+	}			
 				if ($vb_parent_id_changed = $this->changed($vs_parent_id_fld)) {
 					$va_parent_info = $this->_getHierarchyParent($vn_parent_id);
 					
@@ -2317,69 +2318,64 @@ class BaseModel extends BaseObject {
 							return false;
 						}
 					}
-	}					
-					//if (is_null($this->getOriginalValue($vs_parent_id_fld))) {
-						// don't allow moves of hierarchy roots - just ignore the move and keep on going with the update
-					//	$this->set($vs_parent_id_fld, null);
-					//	$vb_parent_id_changed = false;
-					//} else {
 					
-						switch($this->getHierarchyType()) {
-							case __CA_HIER_TYPE_SIMPLE_MONO__:	// you only need to set parent_id for this type of hierarchy
+					switch($this->getHierarchyType()) {
+						case __CA_HIER_TYPE_SIMPLE_MONO__:	// you only need to set parent_id for this type of hierarchy
+							
+							break;
+						case __CA_HIER_TYPE_MULTI_MONO__:	// you need to set parent_id; you only need to set hierarchy_id if you're creating a root
+							if (!($vn_hierarchy_id = $this->get($this->getProperty('HIERARCHY_ID_FLD')))) {
+								$this->set($this->getProperty('HIERARCHY_ID_FLD'), $va_parent_info[$this->getProperty('HIERARCHY_ID_FLD')]);
+							}
+							
+							if (!($vn_hierarchy_id = $this->get($vs_hier_id_fld))) {
+								$this->postError(2030, _t("Hierarchy ID must be specified for this update"), "BaseModel->update()");
+								if ($vb_we_set_transaction) { $this->removeTransaction(false); }
 								
-								break;
-							case __CA_HIER_TYPE_MULTI_MONO__:	// you need to set parent_id; you only need to set hierarchy_id if you're creating a root
-								if (!($vn_hierarchy_id = $this->get($this->getProperty('HIERARCHY_ID_FLD')))) {
-									$this->set($this->getProperty('HIERARCHY_ID_FLD'), $va_parent_info[$this->getProperty('HIERARCHY_ID_FLD')]);
+								return false;
+							}
+							
+							// Moving between hierarchies
+							if ($this->get($vs_hier_id_fld) != $va_parent_info[$vs_hier_id_fld]) {
+								$vn_hierarchy_id = $va_parent_info[$vs_hier_id_fld];
+								$this->set($this->getProperty('HIERARCHY_ID_FLD'), $vn_hierarchy_id);
+						
+								if (is_array($va_children = $this->_getHierarchyChildren(array($this->getPrimaryKey())))) {
+									
+									$va_rebuild_hierarchical_index = $va_children;
+								}
+							}
+							
+							break;
+						case __CA_HIER_TYPE_ADHOC_MONO__:	// you need to set parent_id for this hierarchy; you never need to set hierarchy_id
+							if ($va_parent_info) {
+								// set hierarchy to that of root
+								if (sizeof($va_ancestors = $this->getHierarchyAncestors($vn_parent_id, array('idsOnly' => true, 'includeSelf' => true)))) {
+									$vn_hierarchy_id = array_pop($va_ancestors);
+								} else {
+									$vn_hierarchy_id = $this->getPrimaryKey();
+								}
+								$this->set($this->getProperty('HIERARCHY_ID_FLD'), $vn_hierarchy_id);
+							
+								if (is_array($va_children = $this->_getHierarchyChildren(array($this->getPrimaryKey())))) {
+									$va_rebuild_hierarchical_index = $va_children;
 								}
 								
-								if (!($vn_hierarchy_id = $this->get($vs_hier_id_fld))) {
-									$this->postError(2030, _t("Hierarchy ID must be specified for this update"), "BaseModel->update()");
-									if ($vb_we_set_transaction) { $this->removeTransaction(false); }
-									
-									return false;
-								}
-								
-								// Moving between hierarchies
-								if ($this->get($vs_hier_id_fld) != $va_parent_info[$vs_hier_id_fld]) {
-									$vn_hierarchy_id = $va_parent_info[$vs_hier_id_fld];
-									$this->set($this->getProperty('HIERARCHY_ID_FLD'), $vn_hierarchy_id);
 							
-									if (is_array($va_children = $this->_getHierarchyChildren(array($this->getPrimaryKey())))) {
-										
-										$va_rebuild_hierarchical_index = $va_children;
-									}
-								}
+							} 
 								
-								break;
-							case __CA_HIER_TYPE_ADHOC_MONO__:	// you need to set parent_id for this hierarchy; you never need to set hierarchy_id
-								if ($va_parent_info) {
-									// set hierarchy to that of root
-									if (sizeof($va_ancestors = $this->getHierarchyAncestors($vn_parent_id, array('idsOnly' => true, 'includeSelf' => true)))) {
-										$vn_hierarchy_id = array_pop($va_ancestors);
-									} else {
-										$vn_hierarchy_id = $this->getPrimaryKey();
-									}
-									$this->set($this->getProperty('HIERARCHY_ID_FLD'), $vn_hierarchy_id);
-								
-									if (is_array($va_children = $this->_getHierarchyChildren(array($this->getPrimaryKey())))) {
-										$va_rebuild_hierarchical_index = $va_children;
-									}
-									
-								
-								} 
-									
-								// if there's no parent then this is a root in which case HIERARCHY_ID_FLD should be set to the primary
-								// key of the row, which we'll know once we insert it (so we must set it after insert)
-							
-								break;
-							case __CA_HIER_TYPE_MULTI_POLY__:	// TODO: implement
-							
-								break;
-							default:
-								die("Invalid hierarchy type: ".$this->getHierarchyType());
-								break;
-						}
+							// if there's no parent then this is a root in which case HIERARCHY_ID_FLD should be set to the primary
+							// key of the row, which we'll know once we insert it (so we must set it after insert)
+						
+							break;
+						case __CA_HIER_TYPE_MULTI_POLY__:	// TODO: implement
+						
+							break;
+						default:
+							die("Invalid hierarchy type: ".$this->getHierarchyType());
+							break;
+					}
+					
 	if (!isset($pa_options['dontSetHierarchicalIndexing']) || !$pa_options['dontSetHierarchicalIndexing']) {							
 						if ($va_parent_info) {
 							$va_hier_indexing = $this->_calcHierarchicalIndexing($va_parent_info);
@@ -2389,7 +2385,6 @@ class BaseModel extends BaseObject {
 						$this->set($this->getProperty('HIERARCHY_LEFT_INDEX_FLD'), $va_hier_indexing['left']);
 						$this->set($this->getProperty('HIERARCHY_RIGHT_INDEX_FLD'), $va_hier_indexing['right']);
 	}
-					//}
 				}
 			}
 
