@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2012 Whirl-i-Gig
+ * Copyright 2012-2013 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -150,9 +150,9 @@
 		jQuery(document).ready(function() {
 			jQuery('#{$ps_bundle_name}_batch_mode_select').change(function() {
 				if (jQuery(this).val() == '_disabled_') {
-					jQuery('#{$ps_bundle_name}').slideUp(250);
+					jQuery('#intrinsic_{$ps_bundle_name}').slideUp(250);
 				} else {
-					jQuery('#{$ps_bundle_name}').slideDown(250);
+					jQuery('#intrinsic_{$ps_bundle_name}').slideDown(250);
 				}
 			});
 		});

@@ -53,7 +53,7 @@
 <?php
 	} else {
 ?>
-		<div class="bundleContainer <?php print $vb_batch ? "editorBatchBundleContent" : ''; ?>" id="<?php print $vs_bundle_name; ?>">
+		<div class="bundleContainer <?php print $vb_batch ? "editorBatchBundleContent" : ''; ?>" id="intrinsic_<?php print $vs_bundle_name; ?>">
 			<div class="caItemList">
 				<div class="labelInfo">	
 <?php
