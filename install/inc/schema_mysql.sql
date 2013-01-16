@@ -710,7 +710,7 @@ create index i_life_sdatetime on ca_places(lifespan_sdate);
 create index i_life_edatetime on ca_places(lifespan_edate);
 create index i_parent_id on ca_places(parent_id);
 create index i_hier_left on ca_places(hier_left);
-create index i_hier_right on ca_place(hier_right);
+create index i_hier_right on ca_places(hier_right);
 
 
 /*==========================================================================*/
