@@ -496,8 +496,10 @@ require_once(__CA_LIB_DIR__.'/core/Parsers/TimeExpressionParser.php');
 		});
 </script>
 <div id=\"editorFieldListHTML\">";
-		foreach($pa_bundle_list as $vs_anchor => $va_info) {
-			$vs_buf .= "<a href=\"#\" onclick=\"jQuery.scrollTo('a[name={$vs_anchor}]', {duration: 350, offset: -80 }); return false;\" class=\"editorFieldListLink\">".$va_info['name']."</a><br/>";
+		if (is_array($pa_bundle_list)) { 
+			foreach($pa_bundle_list as $vs_anchor => $va_info) {
+				$vs_buf .= "<a href=\"#\" onclick=\"jQuery.scrollTo('a[name={$vs_anchor}]', {duration: 350, offset: -80 }); return false;\" class=\"editorFieldListLink\">".$va_info['name']."</a><br/>";
+			}	
 		}
 		$vs_buf .= "</div>\n";
 		
