@@ -25,7 +25,6 @@
  *
  * ----------------------------------------------------------------------
  */
-	foreach($this->getVar('lcsh_list') as $vn_id => $va_item) {
-		print str_replace("|", "-", $va_item['displayname'].($va_item['idno'] ? ' ['.$va_item['idno'].']' : ''))."|".$vn_id."\n";
-	}
+ 
+ 	print json_encode($this->getVar('lcsh_list'));
 ?>
