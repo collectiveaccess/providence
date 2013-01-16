@@ -300,9 +300,9 @@
  			}
  			
  			if ((bool)$va_settings['useDatePicker']) { 
- 				JavascriptLoadManager::register('datePickerUI');
+ 				//JavascriptLoadManager::register('datePickerUI');
  				$vs_element .= "<script type='text/javascript'>
- 					jQuery('#{fieldNamePrefix}".$pa_element_info['element_id']."_{n}').daterangepicker();
+ 					jQuery('#{fieldNamePrefix}".$pa_element_info['element_id']."_{n}').datepicker();
  				</script>\n";
  			}
  			
