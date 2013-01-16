@@ -1353,7 +1353,7 @@ class ca_users extends BaseModel {
 				return isset($va_pref_info["default"]) ? $va_pref_info["default"] : null;
 			}
 			if(isset($va_prefs[$ps_pref])) {
-				return $va_prefs[$ps_pref] ? $va_prefs[$ps_pref] : ($va_pref_info["default"] ? $va_pref_info["default"] : null);
+				return (!is_null($va_prefs[$ps_pref])) ? $va_prefs[$ps_pref] : ($va_pref_info["default"] ? $va_pref_info["default"] : null);
 			}
 			return ($va_pref_info["default"] ? $va_pref_info["default"] : null);
 		} else {
