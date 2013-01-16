@@ -37,7 +37,7 @@
  		# -------------------------------------------------------
  		# AJAX handlers
  		# -------------------------------------------------------
-		public function Get() {
+		public function Get($pa_additional_query_params=null, $pa_options=null) {
 			$ps_query = $this->request->getParameter('q', pString);
 			$ps_type = $this->request->getParameter('type', pString);
 			$va_vocs = array();
