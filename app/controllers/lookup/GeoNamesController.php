@@ -37,7 +37,7 @@ class GeoNamesController extends ActionController {
  	# -------------------------------------------------------
  	# AJAX handlers
  	# -------------------------------------------------------
-	public function Get() {
+	public function Get($pa_additional_query_params=null, $pa_options=null) {
 		global $g_ui_locale_id;
 
 		$ps_query = $this->request->getParameter('q', pString);
