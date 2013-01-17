@@ -252,16 +252,20 @@ class GeoNamesAttributeValue extends AttributeValue implements IAttributeValue {
 			);
 
 		if ($pa_options['po_request']) {
-			$vs_url = caNavUrl($pa_options['po_request'], 'lookup', 'GeoNames', 'Get');
+			$vs_url = caNavUrl($pa_options['po_request'], 'lookup', 'GeoNames', 'Get', array('max' => 100));
 		}
 
 		$vs_element .= '</div>';
 		$vs_element .= "
 			<script type='text/javascript'>
 				jQuery(document).ready(function() {
-					jQuery('#geonames_".$pa_element_info['element_id']."_autocomplete{n}').autocomplete('".$vs_url."', { max: 50, minChars: 3, matchSubset: 1, matchContains: 1, delay: 800});
-					jQuery('#geonames_".$pa_element_info['element_id']."_autocomplete{n}').result(function(event, data, formatted) {
-							jQuery('#{fieldNamePrefix}".$pa_element_info['element_id']."_{n}').val(data[0] + '|' + data[1]);
+					jQuery('#geonames_".$pa_element_info['element_id']."_autocomplete{n}').autocomplete(
+						{ 
+							source: '".$vs_url."',
+							minLength: 3, delay: 800,
+							select: function(event, ui) {
+								jQuery('#{fieldNamePrefix}".$pa_element_info['element_id']."_{n}').val(ui.item.label + '|' + ui.item.id);
+							}
 						}
 					);
 				});

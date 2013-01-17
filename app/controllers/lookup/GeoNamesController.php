@@ -40,7 +40,7 @@ class GeoNamesController extends ActionController {
 	public function Get($pa_additional_query_params=null, $pa_options=null) {
 		global $g_ui_locale_id;
 
-		$ps_query = $this->request->getParameter('q', pString);
+		$ps_query = $this->request->getParameter('term', pString);
 		$ps_type = $this->request->getParameter('type', pString);
 		$vo_conf = Configuration::load();
 		$vs_user = trim($vo_conf->get("geonames_user"));
@@ -75,11 +75,18 @@ class GeoNamesController extends ActionController {
 						'lng' => '',
 						'idno' => ''
 					);
+					$va_items[0]['label'] = $va_items[0]['displayname'];
 				} else {
 					foreach($vo_xml->children() as $vo_child){
 						if($vo_child->getName()!="totalResultsCount"){
 							$va_items[(string)$vo_child->geonameId] = array(
 								'displayname' => $vo_child->name,
+								'label' => $vo_child->name.
+											($vo_child->countryName ? ', '.$vo_child->countryName : '').
+											($vo_child->continentCode ? ', '.$vo_child->continentCode : '').
+											($vo_child->lat ? " [".$vo_child->lat."," : '').
+											($vo_child->lng ? $vo_child->lng."]" : '').
+											($vo_child->fclName ? " (".$vo_child->fclName.")" : ''),
 								'country' => $vo_child->countryName ? $vo_child->countryName : null,
 								'continent' => $vo_child->continentCode ? $vo_child->continentCode : null,
 								'fcl' => $vo_child->fclName ? $vo_child->fclName : null,
@@ -100,6 +107,7 @@ class GeoNamesController extends ActionController {
 					'lng' => '',
 					'idno' => ''
 				);
+				$va_items[0]['label'] = $va_items[0]['displayname'];
 			}
 		}
 
