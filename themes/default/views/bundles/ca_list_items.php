@@ -181,22 +181,24 @@
 							currentSelectionDisplayID: '<?php print $vs_id_prefix; ?>_browseCurrentSelectionText{n}',
 							onSelection: function(item_id, parent_id, name, display, type_id) {
 								if (!init) {	// Don't actually select the init value, otherwise if you save w/no selection you get "phantom" relationships
-									caRelationBundle<?php print $vs_id_prefix; ?>.select('{n}', [0, item_id, type_id], display);
+									caRelationBundle<?php print $vs_id_prefix; ?>.select('{n}', {id: item_id, type_id: type_id}, display);
 								}
 								init = false;
 							}
 						});
 						
 						jQuery('#<?php print $vs_id_prefix; ?>_hierarchyBrowserSearch{n}').autocomplete(
-							'<?php print caNavUrl($this->request, 'lookup', 'ListItem', 'Get', array('noInline' => 1)); ?>', {minChars: 3, matchSubset: 1, matchContains: 1, delay: 800, extraParams: {noSymbols: 1}}
-						);
-						
-						jQuery('#<?php print $vs_id_prefix; ?>_hierarchyBrowserSearch{n}').result(function(event, data, formatted) {
-							if (parseInt(data[1]) > 0) {
-								<?php print $vs_id_prefix; ?>oHierBrowser{n}.setUpHierarchy(data[1]);	// jump browser to selected item
+							{
+								source: '<?php print caNavUrl($this->request, 'lookup', 'ListItem', 'Get', array('noInline' => 1, 'noSymbols' => 1)); ?>', 
+								minLength: 3, delay: 800,
+								select: function(event, ui) {
+									if (parseInt(ui.item.id) > 0) {
+										<?php print $vs_id_prefix; ?>oHierBrowser{n}.setUpHierarchy(ui.item.id);	// jump browser to selected item
+									}
+									jQuery('#<?php print $vs_id_prefix; ?>_hierarchyBrowserSearch{n}').val('');
+								}
 							}
-							jQuery('#<?php print $vs_id_prefix; ?>_hierarchyBrowserSearch{n}').val('');
-						});
+						);
 	
 					});
 				</script>

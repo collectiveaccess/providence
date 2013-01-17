@@ -373,7 +373,7 @@
 		
 				foreach($va_items as $vn_object_id => $va_object) {
 					if ((int)$va_object_ids[$vn_object_id] > 0) {
-						$va_items[$vn_object_id]['_display'] .= ' [<em>'._t('on loan through %1', caGetLocalizedDate($va_object_ids[$vn_object_id], array('dateFormat' => 'delimited', 'timeOmit' => true))).'</em>]';
+						$va_items[$vn_object_id]['label'] .= ' [<em>'._t('on loan through %1', caGetLocalizedDate($va_object_ids[$vn_object_id], array('dateFormat' => 'delimited', 'timeOmit' => true))).'</em>]';
 					}
 				}
 			}
@@ -381,7 +381,7 @@
 			
 			if (!sizeof($va_items)) {		// nothing found
 				$va_items[0] = array(
-					'_display' => _t('No matches found'),
+					'label' => _t('No matches found'),
 					'type_id' => null,
 					'object_id' => 0
 				);
