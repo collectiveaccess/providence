@@ -2124,7 +2124,6 @@ $ca_relationship_lookup_parse_cache = array();
 			$va_initial_values[$va_item['relation_id'] ? (int)$va_item['relation_id'] : $va_item[$vs_rel_pk]] = array_merge(
 				$va_item,
 				array(
-					'_display' => $vs_display,
 					'label' => $vs_display
 				)
 			);
@@ -2133,7 +2132,6 @@ $ca_relationship_lookup_parse_cache = array();
 		if($vb_include_inline_add_message) {
 			$va_initial_values[0] = 
 				array(
-					'_display' => $ps_inline_create_message,
 					'label' => $ps_inline_create_message,
 					'id' => 0,
 					$vs_rel_pk => 0,
@@ -2143,7 +2141,6 @@ $ca_relationship_lookup_parse_cache = array();
 			if ($vb_include_empty_result_message) {
 				$va_initial_values[0] = 
 					array(
-						'_display' => $ps_empty_result_message,
 						'label' => $ps_empty_result_message,
 						'id' => -1,
 						$vs_rel_pk => -1,
