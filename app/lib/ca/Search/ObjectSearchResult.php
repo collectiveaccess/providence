@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2008-2012 Whirl-i-Gig
+ * Copyright 2008-2013 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -123,7 +123,7 @@ class ObjectSearchResult extends BaseSearchResult {
 	/**
 	 *
 	 */
-	public function getMediaInfo($ps_field, $ps_version, $ps_key=null, $pa_options=null) {
+	public function getMediaInfo($ps_field, $ps_version=null, $ps_key=null, $pa_options=null) {
 		$va_tmp = explode('.', $ps_field);
 		
 		if (($va_tmp[0] === 'ca_object_representations') && ($va_tmp[1] !== 'access')) {
@@ -132,7 +132,7 @@ class ObjectSearchResult extends BaseSearchResult {
 				return null;
 			}
 		}
-		return parent::getMediaInfo($ps_field, $ps_version, $ps_key, 0, $pa_options);
+		return parent::getMediaInfo($ps_field, $ps_version, $ps_key, $pa_options);
 	}
 	# ------------------------------------------------------
  	/**

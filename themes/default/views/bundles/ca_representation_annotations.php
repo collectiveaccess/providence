@@ -79,7 +79,10 @@
 
 <!-- BEGIN Media Player -->
 <div class="bundleContainer" style="text-align:center; padding:5px;">
-	<?php print $t_subject->getMediaTag('media', $o_properties->getDisplayMediaVersion(), array('class' => 'annotation_media_player', 'viewer_width' => 725, 'viewer_height' => 32, 'id' => 'annotation_media_player', 'poster_frame_url' => $t_subject->getMediaUrl('media', 'medium'))); ?>
+<?php
+	$va_media_player_config = caGetMediaDisplayInfo('annotation_editor', $t_subject->getMediaInfo('media', $o_properties->getDisplayMediaVersion(), 'MIMETYPE'));
+?>
+	<?php print $t_subject->getMediaTag('media', $o_properties->getDisplayMediaVersion(), array('class' => 'annotation_media_player', 'viewer_width' => $va_media_player_config['viewer_width'], 'viewer_height' => $va_media_player_config['viewer_height'], 'id' => 'annotation_media_player', 'poster_frame_url' => $t_subject->getMediaUrl('media', 'medium'))); ?>
 </div>
 <!-- END Media Player -->
 
@@ -146,6 +149,7 @@
 		fieldNamePrefix: '<?php print $vs_id_prefix; ?>_',
 		templateValues: ['status', 'access', 'locale_id', 'label', <?php print join(',', $va_prop_list); ?>],
 		initialValues: <?php print json_encode($va_inital_values); ?>,
+		sortInitialValuesBy: 'startTimecode_raw',
 		errors: <?php print json_encode($va_errors); ?>,
 		forceNewValues: <?php print json_encode($va_failed_inserts); ?>,
 		itemID: '<?php print $vs_id_prefix; ?>Item_',

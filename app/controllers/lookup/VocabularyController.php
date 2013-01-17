@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2008 Whirl-i-Gig
+ * Copyright 2008-2013 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -43,7 +43,7 @@
  		protected $ops_name_singular = 'vocabulary';
  		protected $ops_search_class = 'ListItemSearch';
  		# -------------------------------------------------------
- 		public function Get() {
+ 		public function Get($pa_additional_query_params=null, $pa_options=null) {
  			$pa_options = array();
  			$pa_additional_query_params = array('ca_lists.use_as_vocabulary:1');
  			if ($ps_list = $this->request->getParameter('list', pString)) {

@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2012 Whirl-i-Gig
+ * Copyright 2012-2013 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -476,6 +476,7 @@ class WLPlugMediaGmagick Extends WLPlug Implements IWLPlugMedia {
 				
 				try {
 					$handle = new Gmagick($ps_filepath);
+					$handle->setimageindex(0);		// force use of first image in multi-page TIFF
 					$this->handle = $handle;
 					$this->filepath = $ps_filepath;
 					
@@ -483,7 +484,7 @@ class WLPlugMediaGmagick Extends WLPlug Implements IWLPlugMedia {
 					
 					// exif
 					if(function_exists('exif_read_data')) {
-						if (is_array($va_exif = @exif_read_data($ps_filepath, 'EXIF', true, false))) { 							
+						if (is_array($va_exif = caSanitizeArray(@exif_read_data($ps_filepath, 'EXIF', true, false)))) { 							
 							//
 							// Rotate incoming image as needed
 							//
@@ -518,6 +519,7 @@ class WLPlugMediaGmagick Extends WLPlug Implements IWLPlugMedia {
 									}
 								}
 							}
+	
 							$this->metadata['EXIF'] = $va_exif;
 						}
 					}

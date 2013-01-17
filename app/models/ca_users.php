@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2008-2012 Whirl-i-Gig
+ * Copyright 2008-2013 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -386,7 +386,7 @@ class ca_users extends BaseModel {
 	 * @access public
 	 * @return bool Returns true if no error, false if error occurred
 	 */	
-	public function delete() {
+	public function delete($pb_delete_related=false, $pa_options=null, $pa_fields=null, $pa_table_list=null) {
 		$this->clearErrors();
 		$this->set('userclass', 255);
 		return $this->update();
@@ -1344,7 +1344,7 @@ class ca_users extends BaseModel {
 				return isset($va_pref_info["default"]) ? $va_pref_info["default"] : null;
 			}
 			if(isset($va_prefs[$ps_pref])) {
-				return $va_prefs[$ps_pref] ? $va_prefs[$ps_pref] : ($va_pref_info["default"] ? $va_pref_info["default"] : null);
+				return (!is_null($va_prefs[$ps_pref])) ? $va_prefs[$ps_pref] : ($va_pref_info["default"] ? $va_pref_info["default"] : null);
 			}
 			return ($va_pref_info["default"] ? $va_pref_info["default"] : null);
 		} else {

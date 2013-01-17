@@ -37,7 +37,7 @@
  		# -------------------------------------------------------
  		# AJAX handlers
  		# -------------------------------------------------------
-		public function Get() {
+		public function Get($pa_additional_query_params=null, $pa_options=null) {
 			//$tt = new Timer();
 			$ps_query = $this->request->getParameter('q', pString);
 			//file_put_contents("/tmp/times", "### QUERY: {$ps_query}\n", FILE_APPEND);

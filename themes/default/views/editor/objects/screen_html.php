@@ -46,11 +46,12 @@
 
 			print caFormTag($this->request, 'Save/'.$this->request->getActionExtra().'/object_id/'.$vn_object_id, 'ObjectEditorForm', null, 'POST', 'multipart/form-data');
 		
+			$va_bundle_list = array();
 			$va_form_elements = $t_object->getBundleFormHTMLForScreen($this->request->getActionExtra(), array(
 									'request' => $this->request, 
 									'formName' => 'ObjectEditorForm',
 									'forceHidden' => array('lot_id')
-								));
+								), $va_bundle_list);
 			
 			print join("\n", $va_form_elements);
 			
@@ -62,3 +63,5 @@
 	</div>
 
 	<div class="editorBottomPadding"><!-- empty --></div>
+	
+	<?php print caEditorFieldList($va_bundle_list); ?>

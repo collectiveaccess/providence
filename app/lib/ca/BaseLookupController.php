@@ -209,8 +209,6 @@
 							$va_additional_wheres[] = "(({$vs_label_table_name}.is_preferred = 1) OR ({$vs_label_table_name}.is_preferred IS NULL))";
 						}
 						
-						
-						
 						$o_config = Configuration::load();
 						if (!(is_array($va_sorts = $o_config->getList($this->ops_table_name.'_hierarchy_browser_sort_values'))) || !sizeof($va_sorts)) { $va_sorts = null; }
 						foreach($va_sorts as $vn_i => $vs_sort_fld) {
@@ -237,9 +235,7 @@
 												'additionalTableJoinType' => 'LEFT',
 												'additionalTableSelectFields' => array($vs_label_display_field_name, 'locale_id'),
 												'additionalTableWheres' => $va_additional_wheres,
-												'returnChildCounts' => true,
-												'sort' => $va_sorts,
-												'sortDirection' => $vs_sort_dir
+												'returnChildCounts' => true
 											)
 						);
 						
@@ -255,7 +251,6 @@
 						}
 						$vn_c = 0;
 						
-						$qr_children->seek($vn_start);
 						while($qr_children->nextRow()) {
 							$va_tmp = array(
 								$vs_pk => $vn_id = $qr_children->get($this->ops_table_name.'.'.$vs_pk),
@@ -284,10 +279,7 @@
 							$va_items[$va_tmp[$vs_pk]][$va_tmp['locale_id']] = $va_tmp;
 							
 							$vn_c++;
-							if (!is_null($vn_max_items_per_page) && ($vn_c >= $vn_max_items_per_page)) { break; }
 						}
-						
-						
 						
 						$va_items_for_locale = caExtractValuesByUserLocale($va_items);
 						
@@ -310,6 +302,9 @@
 						ksort($va_sorted_items);
 						if ($vs_sort_dir == 'desc') { $va_sorted_items = array_reverse($va_sorted_items); }
 						$va_items_for_locale = array();
+						
+						$va_sorted_items = array_slice($va_sorted_items, $vn_start, $vn_max_items_per_page);
+						
 						foreach($va_sorted_items as $vs_k => $va_v) {
 							ksort($va_v);
 							if ($vs_sort_dir == 'desc') { $va_v = array_reverse($va_v); }
