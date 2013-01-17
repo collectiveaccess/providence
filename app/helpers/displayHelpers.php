@@ -314,16 +314,19 @@ require_once(__CA_LIB_DIR__.'/core/Parsers/TimeExpressionParser.php');
 			$vs_output .= caHTMLHiddenInput('remapToID', array('value' => '', 'id' => 'remapToID'));
 			$vs_output .= "<script type='text/javascript'>";
 			
-			$va_service_info = caJSONLookupServiceUrl($po_request, $t_instance->tableName());
+			$va_service_info = caJSONLookupServiceUrl($po_request, $t_instance->tableName(), array('noSymbols' => 1, 'exclude' => (int)$t_instance->getPrimaryKey(), 'table_num' => (int)$t_instance->get('table_num')));
 			$vs_output .= "jQuery(document).ready(function() {";
 			$vs_output .= "jQuery('#remapTo').autocomplete(
-					'".$va_service_info['search']."', {minChars: 3, matchSubset: 1, matchContains: 1, delay: 800, scroll: true, max: 100, extraParams: {noSymbols: 1, exclude: ".(int)$t_instance->getPrimaryKey().", table_num: ".(int)$t_instance->get('table_num')."}}
+					{
+						source: '".$va_service_info['search']."', html: true,
+						minLength: 3, delay: 800,
+						select: function(event, ui) {
+							jQuery('#remapToID').val(ui.item.id);
+							jQuery('#caReferenceHandlingClear').css('display', 'inline');
+						}
+					}
 				);";
 				
-			$vs_output.= "jQuery('#remapTo').result(function(event, data, formatted) {
-					jQuery('#remapToID').val(data[1]);
-					jQuery('#caReferenceHandlingClear').css('display', 'inline');
-				});";
 			$vs_output .= "jQuery('#caReferenceHandlingRemap').click(function() {
 				jQuery('#remapTo').attr('disabled', false);
 			});
