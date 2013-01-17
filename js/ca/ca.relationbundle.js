@@ -6,7 +6,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2009-2012 Whirl-i-Gig
+ * Copyright 2009-2013 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -83,59 +83,58 @@ var caUI = caUI || {};
 			if (!isNew) { return; }
 			
 			var autocompleter_id = options.itemID + id + ' #' + options.fieldNamePrefix + 'autocomplete' + id;
-			jQuery('#' + autocompleter_id).autocomplete(options.autocompleteUrl, 
-				jQuery.extend({ minChars: ((parseInt(options.minChars) > 0) ? options.minChars : 3), matchSubset: 1, matchContains: 1, delay: 800, scroll: true, max: 100, extraParams: options.extraParams,
-					formatResult: function(data, value) {
-						return jQuery.trim(value.replace(/<\/?[^>]+>/gi, ''));
+			//options.extraParams
+			jQuery('#' + autocompleter_id).autocomplete( 
+				jQuery.extend({ source: options.autocompleteUrl, minLength: ((parseInt(options.minChars) > 0) ? options.minChars : 3), delay: 800, html: true,
+					select: function( event, ui ) {
+						if (options.autocompleteOptions && options.autocompleteOptions.onSelect) {
+							if (!options.autocompleteOptions.onSelect(autocompleter_id, ui.item)) { return false; }
+						}
+						console.log(ui.item);
+						if(!parseInt(ui.item.id) && options.quickaddPanel) {
+							var panelUrl = options.quickaddUrl;
+							if (ui.item._query) { panelUrl += '/q/' + escape(ui.item._query); }
+							if (options && options.types) {
+								options.types = options.types.join(",");
+								if (options.types.length > 0) {
+									panelUrl += '/types/' + options.types;
+								}
+							}
+							if (options.fieldNamePrefix && (options.fieldNamePrefix.length > 0)) {
+								panelUrl += '/field_name_prefix/' + options.fieldNamePrefix;
+							}
+							options.quickaddPanel.showPanel(panelUrl);
+							jQuery('#' + options.quickaddPanel.getPanelContentID()).data('autocompleteInputID', autocompleter_id);
+							jQuery('#' + options.quickaddPanel.getPanelContentID()).data('autocompleteItemIDID', options.itemID + id + ' #' + options.fieldNamePrefix + 'id' + id);
+							jQuery('#' + options.quickaddPanel.getPanelContentID()).data('autocompleteTypeIDID', options.itemID + id + ' #' + options.fieldNamePrefix + 'type_id' + id);
+							jQuery('#' + options.quickaddPanel.getPanelContentID()).data('panel', options.quickaddPanel);
+					
+							jQuery('#' + options.quickaddPanel.getPanelContentID()).data('autocompleteInput', jQuery("#" + options.autocompleteInputID + id).val());
+					
+							jQuery("#" + options.autocompleteInputID + id).val('');
+						} else {
+							if(!parseInt(ui.item.id)) {
+								jQuery('#' + autocompleter_id).val('');  // no matches so clear text input
+							}
+						}
+						options.select(id, ui.item, 'test');
+						
+						jQuery('#' + autocompleter_id).val(jQuery.trim(ui.item.label.replace(/<\/?[^>]+>/gi, '')));
+						event.preventDefault();
+					},
+					change: function( event, ui ) {
+						// If nothing has been selected remove all content from autocompleter text input
+						if(!jQuery('#' + options.itemID + id + ' #' + options.fieldNamePrefix + 'id' + id).val()) {
+							jQuery('#' + autocompleter_id).val('');
+						}
 					}
 				}, options.autocompleteOptions)
 			);
-			
-			jQuery('#' + autocompleter_id).result(function(event, data, formatted) {
-				if (options.autocompleteOptions && options.autocompleteOptions.onSelect) {
-					if (!options.autocompleteOptions.onSelect(autocompleter_id, data)) { return false; }
-				}
-				
-				if(!parseInt(data[1]) && options.quickaddPanel) {
-					var panelUrl = options.quickaddUrl;
-					if (data[3]) { panelUrl += '/q/' + escape(data[3]); }
-					if (options && options.types) {
-						options.types = options.types.join(",");
-						if (options.types.length > 0) {
-							panelUrl += '/types/' + options.types;
-						}
-					}
-					if (options.fieldNamePrefix && (options.fieldNamePrefix.length > 0)) {
-						panelUrl += '/field_name_prefix/' + options.fieldNamePrefix;
-					}
-					options.quickaddPanel.showPanel(panelUrl);
-					jQuery('#' + options.quickaddPanel.getPanelContentID()).data('autocompleteInputID', autocompleter_id);
-					jQuery('#' + options.quickaddPanel.getPanelContentID()).data('autocompleteItemIDID', options.itemID + id + ' #' + options.fieldNamePrefix + 'id' + id);
-					jQuery('#' + options.quickaddPanel.getPanelContentID()).data('autocompleteTypeIDID', options.itemID + id + ' #' + options.fieldNamePrefix + 'type_id' + id);
-					jQuery('#' + options.quickaddPanel.getPanelContentID()).data('panel', options.quickaddPanel);
-					
-					jQuery('#' + options.quickaddPanel.getPanelContentID()).data('autocompleteInput', jQuery("#" + options.autocompleteInputID + id).val());
-					
-					jQuery("#" + options.autocompleteInputID + id).val('');
-				} else {
-					if(!parseInt(data[1])) {
-						jQuery('#' + autocompleter_id).val('');  // no matches so clear text input
-					}
-				}
-				options.select(id, data, formatted);
-			});
-			
-			jQuery('#' + autocompleter_id).blur(function() {
-				// If nothing has been selected remove all content from autocompleter text input
-				if(!jQuery('#' + options.itemID + id + ' #' + options.fieldNamePrefix + 'id' + id).val()) {
-					jQuery('#' + autocompleter_id).val('');
-				}
-			});
 		}
 		
 		options.select = function(id, data, formatted) {
-			var item_id = data[1];
-			var type_id = (data[2]) ? data[2] : '';
+			var item_id = data.id;
+			var type_id = (data.type_id) ? data.type_id : '';
 			if (parseInt(item_id) < 0) { return; }
 			
 			jQuery('#' + options.itemID + id + ' #' + options.fieldNamePrefix + 'id' + id).val(item_id);
