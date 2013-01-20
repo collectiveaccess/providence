@@ -1803,6 +1803,32 @@ require_once(__CA_LIB_DIR__.'/core/Parsers/TimeExpressionParser.php');
 	}
 	# ------------------------------------------------------------------------------------------------
 	/**
+	 * Normal arbitrarily precise date expression to century, decade, year, month or day
+	 *
+	 * @param string $ps_expression A valid date expression parseable by the TimeExpressionParser class
+	 * @param string $ps_normalization Level to normalize to. Valid values are centuries, decades, years, months, days
+	 * @param array $pa_options
+	 *			delimiter = A string to join multiple values with when returning normalized date range as a string. Default is semicolon followed by space ("; ")
+	 *			returnAsArray = If set an array of normalized values will be returned rather than a string. Default is false.
+	 * @return mixes The normalized expression. If the expression normalizes to multiple values (eg. a range of years being normalized to months) then the values will be joined with a delimiter and returned as a string unless the "returnAsArray" option is set.
+	 */
+	function caNormalizeDateRange($ps_expression, $ps_normalization, $pa_options=null) {
+		$o_tep = new TimeExpressionParser();
+		if ($o_tep->parse($ps_expression)) {
+			$va_dates = $o_tep->getHistoricTimestamps();
+			$va_vals= $o_tep->normalizeDateRange($va_dates['start'], $va_dates['end'], $ps_normalization);
+			
+			if (isset($pa_options['returnAsArray']) && $pa_options['returnAsArray']) {
+				return $va_vals;
+			} else {
+				$vs_delimiter = isset($pa_options['returnAsArray']) ? $pa_options['returnAsArray'] : "; ";
+				return join($vs_delimiter, $va_vals);
+			}
+		}
+		return null;
+	}
+	# ------------------------------------------------------------------------------------------------
+	/**
 	 * Returns text describing dimensions of object representation
 	 *
 	 * @param DbResult or ca_object_representations instance $po_rep An object containing representation data. Can be either a DbResult object (ie. a query result) or ca_object_representations instance (an instance representing a row in the ca_object_representation class)
