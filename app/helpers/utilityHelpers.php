@@ -293,9 +293,10 @@ function caFileIsIncludable($ps_file) {
 	 * @param string $dir The path to the directory you wish to get the contents list for
 	 * @param bool $pb_recursive Optional. By default caGetDirectoryContentsAsList() will recurse through all sub-directories of $dir; set this to false to only consider files that are in $dir itself.
 	 * @param bool $pb_include_hidden_files Optional. By default caGetDirectoryContentsAsList() does not consider hidden files (files starting with a '.') when calculating file counts. Set this to true to include hidden files in counts. Note that the special UNIX '.' and '..' directory entries are *never* counted as files.
+	 * @param bool $pb_sort Optional. If set paths are returns sorted alphabetically. Default is false.
 	 * @return array An array of file paths.
 	 */
-	function &caGetDirectoryContentsAsList($dir, $pb_recursive=true, $pb_include_hidden_files=false) {
+	function &caGetDirectoryContentsAsList($dir, $pb_recursive=true, $pb_include_hidden_files=false, $pb_sort=false) {
 		$va_file_list = array();
 		if(substr($dir, -1, 1) == "/"){
 			$dir = substr($dir, 0, strlen($dir) - 1);
@@ -308,7 +309,7 @@ function caFileIsIncludable($ps_file) {
 						$va_file_list = array_merge($va_file_list, caGetDirectoryContentsAsList("{$dir}/{$item}", true, $pb_include_hidden_files));
 					} else { 
 						if (!$vb_is_dir) { 
-							$va_file_list[] = "{$dir}/{$item}";
+							$va_file_list["{$dir}/{$item}"] = true;
 						}
 					}
 				}
@@ -316,6 +317,10 @@ function caFileIsIncludable($ps_file) {
 			closedir($handle);
 		}
 		
+		if ($pb_sort) {
+			ksort($va_file_list);
+		}
+		$va_file_list = array_keys($va_file_list);
 		return $va_file_list;
 	}
 	# ----------------------------------------
