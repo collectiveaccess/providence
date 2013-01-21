@@ -93,14 +93,17 @@
 						});
 					}
 					jQuery('#caQuickAdd<?php print $vs_form_name.$vs_field_name_prefix; ?>HierarchyBrowserSearch').autocomplete(
-						'<?php print caNavUrl($this->request, 'lookup', 'StorageLocation', 'Get', array('noInline' => 1)); ?>', {minChars: 3, matchSubset: 1, matchContains: 1, delay: 800}
-					);
-					jQuery('#caQuickAdd<?php print $vs_form_name.$vs_field_name_prefix; ?>HierarchyBrowserSearch').result(function(event, data, formatted) {
-						if (parseInt(data[1]) > 0) {
-							o<?php print $vs_form_name.$vs_field_name_prefix; ?>HierarchyBrowser.setUpHierarchy(data[1]);	// jump browser to selected item
+						{
+							minLength: 3, delay: 800,
+							source: '<?php print caNavUrl($this->request, 'lookup', 'StorageLocation', 'Get', array('noInline' => 1)); ?>',
+							select: function(event, ui) {
+								if (parseInt(ui.item.id) > 0) {
+									o<?php print $vs_form_name.$vs_field_name_prefix; ?>HierarchyBrowser.setUpHierarchy(ui.item.id);	// jump browser to selected item
+								}
+								jQuery('#caQuickAdd<?php print $vs_form_name.$vs_field_name_prefix; ?>HierarchyBrowserSearch').val('');
+							}
 						}
-						jQuery('#caQuickAdd<?php print $vs_form_name.$vs_field_name_prefix; ?>HierarchyBrowserSearch').val('');
-					});
+					);
 				</script>
 				<input type="hidden" name="parent_id" value="<?php print (int)$this->getVar("default_parent_id"); ?>" id="<?php print $vs_form_name; ?>_parent_id"/>
 			</div>

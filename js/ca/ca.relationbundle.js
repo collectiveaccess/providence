@@ -66,17 +66,6 @@ var caUI = caUI || {};
 					types.push({type_id: typeList[i].type_id, typename: typeList[i].typename, direction: typeList[i].direction});
 				}
 			}
-			//jQuery('#' + options.itemID + id + ' select[name=' + options.fieldNamePrefix + 'type_id' + id + ']').data('item_type_id', item_type_id);
-
-			//jQuery.each(types, function (i, t) {
-			//	var type_direction = (t.direction) ? t.direction+ "_" : '';
-			//	jQuery('#' + options.itemID + id + ' select[name=' + options.fieldNamePrefix + 'type_id' + id + ']').append("<option value='" + type_direction + t.type_id + "'>" +  t.typename + "</option>");
-			//});
-			
-			//var direction = (values['direction']) ? values['direction'] + "_" : '';
-			//if (jQuery('#' + options.itemID + id + ' select option[value=' + direction + values['relationship_type_id'] + ']').attr('selected', '1').length  == 0) {
-			//	jQuery('#' + options.itemID + id + ' select option[value=' + values['relationship_type_id'] + ']').attr('selected', '1');
-			//}
 		}
 		
 		options.onAddItem = function(id, options, isNew) {
@@ -85,12 +74,22 @@ var caUI = caUI || {};
 			var autocompleter_id = options.itemID + id + ' #' + options.fieldNamePrefix + 'autocomplete' + id;
 			//options.extraParams
 			jQuery('#' + autocompleter_id).autocomplete( 
-				jQuery.extend({ source: options.autocompleteUrl, minLength: ((parseInt(options.minChars) > 0) ? options.minChars : 3), delay: 800, html: true,
+				jQuery.extend({ minLength: ((parseInt(options.minChars) > 0) ? options.minChars : 3), delay: 800, html: true,
+					source: function( request, response ) {
+						$.ajax({
+							url: options.autocompleteUrl,
+							dataType: "json",
+							data: jQuery.extend(options.extraParams, { term: request.term }),
+							success: function( data ) {
+								response(data);
+							}
+						});
+					}, 
 					select: function( event, ui ) {
 						if (options.autocompleteOptions && options.autocompleteOptions.onSelect) {
 							if (!options.autocompleteOptions.onSelect(autocompleter_id, ui.item)) { return false; }
 						}
-						console.log(ui.item);
+						
 						if(!parseInt(ui.item.id) && options.quickaddPanel) {
 							var panelUrl = options.quickaddUrl;
 							if (ui.item._query) { panelUrl += '/q/' + escape(ui.item._query); }

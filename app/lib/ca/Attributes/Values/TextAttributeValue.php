@@ -292,7 +292,7 @@
  				$vs_element .= "<script type='text/javascript'>
  					jQuery('#{fieldNamePrefix}".$pa_element_info['element_id']."_{n}').autocomplete( 
 						{ 
-							source: '".$vs_lookup_url."',
+							source: '{$vs_lookup_url}',
 							minLength: 3, delay: 800
 						}
 					);

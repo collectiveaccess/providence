@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2008-2009 Whirl-i-Gig
+ * Copyright 2008-2013 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -195,9 +195,10 @@ class PlaceAttributeValue extends AttributeValue implements IAttributeValue {
 				)
 			);
 
+		$va_params = array('max' => 50);
 		if ($pa_options['po_request']) {
 			if($va_settings['restrictToPlaceTypeIdno'] && $va_settings['restrictToPlaceTypeIdno'] != ''){
-				$va_params = array("type" => $va_settings['restrictToPlaceTypeIdno']);
+				$va_params = array_merge($va_params, array("type" => $va_settings['restrictToPlaceTypeIdno']));
 			} else {
 				$va_params = null;
 			}
@@ -209,13 +210,15 @@ class PlaceAttributeValue extends AttributeValue implements IAttributeValue {
 
 		$vs_element .= " <a href='#' style='display: none;' id='{fieldNamePrefix}".$pa_element_info['element_id']."_link{n}' target='_place_details'>"._t("More")."</a>";
 
-		//$vs_element .= '</div>';
 		$vs_element .= "
 			<script type='text/javascript'>
 				jQuery(document).ready(function() {
-					jQuery('#place_".$pa_element_info['element_id']."_autocomplete{n}').autocomplete('".$vs_url."', { max: 50, minChars: 3, matchSubset: 1, matchContains: 1, delay: 800});
-					jQuery('#place_".$pa_element_info['element_id']."_autocomplete{n}').result(function(event, data, formatted) {
-							jQuery('#{fieldNamePrefix}".$pa_element_info['element_id']."_{n}').val(data[0] + '|' + data[1]);
+					jQuery('#place_".$pa_element_info['element_id']."_autocomplete{n}').autocomplete(
+						{ 
+							source: '{$vs_url}', minLength: 3, delay: 800,
+							select: function(event, ui) {
+								jQuery('#{fieldNamePrefix}".$pa_element_info['element_id']."_{n}').val(ui.item.label + '|' + ui.item.id);
+							}
 						}
 					);
 				});

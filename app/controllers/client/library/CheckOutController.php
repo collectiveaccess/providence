@@ -340,7 +340,7 @@
  		 * 
  		 */
  		public function Get() {
- 			$ps_query = $this->request->getParameter('q', pString);
+ 			$ps_query = $this->request->getParameter('term', pString);
  			$o_search = new ObjectSearch();
  			
  			$qr_res = $o_search->search($ps_query);
@@ -373,7 +373,10 @@
 		
 				foreach($va_items as $vn_object_id => $va_object) {
 					if ((int)$va_object_ids[$vn_object_id] > 0) {
-						$va_items[$vn_object_id]['label'] .= ' [<em>'._t('on loan through %1', caGetLocalizedDate($va_object_ids[$vn_object_id], array('dateFormat' => 'delimited', 'timeOmit' => true))).'</em>]';
+						$vs_due_date_for_display = caGetLocalizedDate($va_object_ids[$vn_object_id], array('format' => 'delimited', 'timeOmit' => true));
+						$va_items[$vn_object_id]['label'] .= ' [<em>'._t('on loan through %1', $vs_due_date_for_display).'</em>]';
+						$va_items[$vn_object_id]['due_date'] = $va_object_ids[$vn_object_id];
+						$va_items[$vn_object_id]['due_date_display'] = $vs_due_date_for_display;
 					}
 				}
 			}
