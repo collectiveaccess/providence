@@ -373,6 +373,7 @@
  				$t_object = new ca_objects();
 				$t_object->setTransaction($o_trans);
 				
+				$vs_modified_filename = $f;
 				if (in_array($vs_import_mode, array('TRY_TO_MATCH', 'ALWAYS_MATCH'))) {
 					foreach($va_regex_list as $vs_regex_name => $va_regex_info) {
 						foreach($va_regex_info['regexes'] as $vs_regex) {
@@ -380,6 +381,10 @@
 								if (!$vs_idno || (strlen($va_matches[1]) < strlen($vs_idno))) {
 									$vs_idno = $va_matches[1];
 								}
+								if (!$vs_modified_filename || (strlen($vs_modified_filename)  > strlen($va_matches[1]))) {
+									$vs_modified_filename = $va_matches[1];
+								}
+								
 								if ($t_object->load(array('idno' => $va_matches[1], 'deleted' => 0))) {
 								
 									$va_notices[$vs_relative_directory.'/'.$f.'_match'] = array(
@@ -442,7 +447,7 @@
 						
 						if ($vs_idno_mode === 'filename') {
 							// use the filename as identifier
-							$t_object->set('idno', $f);
+							$t_object->set('idno', $vs_modified_filename);
 						} else {
 							// Calculate identifier using numbering plugin
 							$o_numbering_plugin = $t_object->getIDNoPlugInInstance();
