@@ -1,5 +1,6 @@
 /nbproject/*
 app/tmp/*
+app/conf/local/*
 setup.php
 /media/*
 .DS_Store
