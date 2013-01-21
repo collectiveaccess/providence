@@ -128,7 +128,7 @@ var caUI = caUI || {};
 						}
 					}
 				}, options.autocompleteOptions)
-			);
+			).click(function() { this.select(); });
 		}
 		
 		options.select = function(id, data, formatted) {

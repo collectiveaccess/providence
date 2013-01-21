@@ -92,7 +92,8 @@ class GeoNamesController extends ActionController {
 								'fcl' => $vo_child->fclName ? $vo_child->fclName : null,
 								'lat' => $vo_child->lat ? $vo_child->lat : null,
 								'lng' => $vo_child->lng ? $vo_child->lng : null,
-								'idno' => $vo_child->geonameId
+								'idno' => $vo_child->geonameId,
+								'id' => (string)$vo_child->geonameId
 							);
 						}
 					}
@@ -105,7 +106,8 @@ class GeoNamesController extends ActionController {
 					'fcl' => '',
 					'lat' => '',
 					'lng' => '',
-					'idno' => ''
+					'idno' => '',
+					'id' => 0
 				);
 				$va_items[0]['label'] = $va_items[0]['displayname'];
 			}

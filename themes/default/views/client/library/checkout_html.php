@@ -270,7 +270,7 @@
 		jQuery('#client_autocomplete').autocomplete( 
 			{ 
 				source: '<?php print caNavUrl($this->request, 'lookup', 'User', 'Get', array('max' => 100, 'inlineCreate' => 1, 'quickadd' => 1)); ?>',
-				minLength: 3, delay: 800,
+				minLength: 3, delay: 800, html: true,
 				select: function(event, ui) {
 					var item_id = ui.item.id;
 					if (!parseInt(item_id)) {
@@ -278,6 +278,7 @@
 						jQuery('#caClientLibraryCustomerInfoMoreButton').css('display', 'inline').click();
 						jQuery('#transaction_user_id').val(0);
 						jQuery('#client_autocomplete').val('');
+						event.preventDefault();
 				
 						var lname = ui.item.fname;
 						var fname = ui.item.lname;
@@ -322,7 +323,7 @@
 					}
 				}
 			}
-		);
+		).click(function() { this.select(); });
 	});
 	
 	function caUseBillingAddressForShipping(setFields) {		

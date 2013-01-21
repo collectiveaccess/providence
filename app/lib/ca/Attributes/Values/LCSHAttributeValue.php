@@ -245,7 +245,7 @@
 									jQuery('#{fieldNamePrefix}".$pa_element_info['element_id']."_{n}').val(ui.item.label + ' [' + ui.item.idno + ']|' + ui.item.url);
      							}
      						}
-						);
+						).click(function() { this.select(); });
 						
 						if ('{{".$pa_element_info['element_id']."}}') {
 							var re = /\[info:lc([^\]]+)\]/; 
