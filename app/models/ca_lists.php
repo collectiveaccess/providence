@@ -1282,9 +1282,9 @@ class ca_lists extends BundlableLabelableBaseModelWithAttributes {
 					<script type='text/javascript'>
 						jQuery(document).ready(function() {
 							jQuery('#".$ps_name."_autocomplete').autocomplete({
-									source: '".$vs_url."', minLength: 3, delay: 800,
+									source: '{$vs_url}', minLength: 3, delay: 800,
 									select: function(event, ui) {
-										jQuery('#".$ps_name."').val(ui.item.id);
+										jQuery('#{$ps_name}').val(ui.item.id);
 									}
 								}
 							);
