@@ -828,7 +828,14 @@ class WLPlugMediaGmagick Extends WLPlug Implements IWLPlugMedia {
 				break;
 			# -----------------------
 			case "SHARPEN":
-				# noop
+				$radius = $parameters["radius"];
+				if ($radius < .1) { $radius = 1; }
+				$sigma = $parameters["sigma"];
+				if ($sigma < .1) { $sigma = 1; }
+				if ( !$this->handle->sharpenImage( $radius, $sigma) ) {
+					$this->postError(1610, _t("Error during image sharpen"), "WLPlugGmagick->transform:SHARPEN()");
+					return false;
+				}
 				break;
 			# -----------------------
 			case "UNSHARPEN_MASK":
