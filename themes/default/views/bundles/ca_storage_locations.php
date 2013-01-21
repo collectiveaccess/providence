@@ -141,11 +141,12 @@
 					jQuery('#<?php print $vs_id_prefix; ?>_hierarchyBrowserSearch{n}').autocomplete(
 						{
 							source: '<?php print caNavUrl($this->request, 'lookup', 'StorageLocation', 'Get', array('noInline' => 1)); ?>',
-							minLength: 3, delay: 800,
+							minLength: 3, delay: 800, html: true,
 							select: function(event, ui) {
 								if (parseInt(ui.item.id) > 0) {
 									<?php print $vs_id_prefix; ?>oHierBrowser{n}.setUpHierarchy(ui.item.id);	// jump browser to selected item
 								}
+								event.preventDefault();
 								jQuery('#<?php print $vs_id_prefix; ?>_hierarchyBrowserSearch{n}').val('');
 							}
 						}
