@@ -261,7 +261,7 @@ class GeoNamesAttributeValue extends AttributeValue implements IAttributeValue {
 				jQuery(document).ready(function() {
 					jQuery('#geonames_".$pa_element_info['element_id']."_autocomplete{n}').autocomplete(
 						{ 
-							source: '".$vs_url."',
+							source: '{$vs_url}',
 							minLength: 3, delay: 800,
 							select: function(event, ui) {
 								jQuery('#{fieldNamePrefix}".$pa_element_info['element_id']."_{n}').val(ui.item.label + '|' + ui.item.id);
