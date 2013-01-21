@@ -223,9 +223,9 @@
 				$dir = substr($dir, 0, strlen($dir) - 1);
 			}
 			
-			if ($handle = opendir($dir)) {
+			if($va_paths = scandir($dir, 0)) {
 				$vn_i = $vn_c = 0;
-				while (false !== ($item = readdir($handle))) {
+				foreach($va_paths as $item) {
 					if ($item != "." && $item != ".." && ($pb_include_hidden_files || (!$pb_include_hidden_files && $item{0} !== '.'))) {
 						$vb_is_dir = is_dir("{$dir}/{$item}");
 						$vs_k = preg_replace('![\:]+!', '|', $item);
@@ -260,7 +260,6 @@
 					
 					if ($vn_c >= $pn_max_items_to_return) { break; }
 				}
-				closedir($handle);
 			}
 		
 			return $va_file_list;
@@ -326,11 +325,14 @@
  				foreach($va_tmp as $vs_tmp) {
  					list($vs_directory, $vn_start) = explode(":", $vs_tmp);
  					if (!$vs_directory) { continue; }
+ 					
  					$va_acc[] = $vs_directory;
  					$vs_k = join("/", $va_acc);
-					$va_level_data[$vs_directory] = $va_file_list = $this->_getDirectoryListing($vs_root_directory.'/'.$vs_k, false);
+					$va_level_data[$vs_directory] = $va_file_list = $this->_getDirectoryListing($vs_root_directory.'/'.$vs_k, false, 25, (int)$vn_start);
 					$va_level_data[$vs_directory]['_primaryKey'] = 'name';
-					$va_level_data[$vs_directory]['_itemCount'] = sizeof($va_file_list);
+					
+					$va_counts = caGetDirectoryContentsCount($vs_root_directory.'/'.$vs_k, true, false);
+					$va_level_data[$vs_directory]['_itemCount'] = $va_counts['files'] + $va_counts['directories'];
  				}
  			} else {
 				if (!$ps_directory) { 
@@ -345,10 +347,13 @@
 					$va_level_data[$vs_k]['_primaryKey'] = 'name';
 					$va_level_data[$vs_k]['_itemCount'] = 1;
 				} else {
+ 					list($vs_directory, $vn_start) = explode(":", $ps_id);
 					$vs_k = $ps_directory;
-					$va_level_data[$vs_k] = $va_file_list = $this->_getDirectoryListing($vs_root_directory.'/'.$ps_path, false);
+					$va_level_data[$vs_k] = $va_file_list = $this->_getDirectoryListing($vs_root_directory.'/'.$ps_path, false, 25, (int)$vn_start);
 					$va_level_data[$vs_k]['_primaryKey'] = 'name';
-					$va_level_data[$vs_k]['_itemCount'] = sizeof($va_file_list);
+					
+					$va_counts = caGetDirectoryContentsCount($vs_root_directory.'/'.$ps_path, true, false);
+					$va_level_data[$vs_k]['_itemCount'] = $va_counts['files'] + $va_counts['directories'];
 				}
 			}
  			
