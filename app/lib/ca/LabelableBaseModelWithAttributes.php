@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2008-2012 Whirl-i-Gig
+ * Copyright 2008-2013 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -1236,7 +1236,8 @@
 			if (is_array($this->opa_failed_preferred_label_inserts) && sizeof($this->opa_failed_preferred_label_inserts)) {
 				$va_new_labels_to_force_due_to_error = $this->opa_failed_preferred_label_inserts;
 			}
-
+			
+			$o_view->setVar('batch', (bool)(isset($pa_options['batch']) && $pa_options['batch']));
 			$o_view->setVar('new_labels', $va_new_labels_to_force_due_to_error);
 			$o_view->setVar('label_initial_values', $va_inital_values);
 			

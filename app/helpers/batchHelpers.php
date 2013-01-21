@@ -101,6 +101,37 @@
 	}
 	# ---------------------------------------
 	/**
+	 * Generates batch mode control HTML for batch editor preferred label bundles
+	 *
+	 * @param BundlableLabelableBaseModelWithAttributes $t_item 
+	 * @param string $ps_id_prefix
+	 * 
+	 * @return string HTML implementing the control
+	 */
+	function caBatchEditorPreferredLabelsModeControl($t_item, $ps_id_prefix) {
+		$vs_buf = "	<div class='editorBatchModeControl'>"._t("In batch")." ".
+			caHTMLSelect($ps_id_prefix."_batch_mode", array(
+			_t("do not use") => "_disabled_", 
+			_t('replace value') => '_replace_',
+			_t('remove all values') => '_delete_'
+		), array('id' => $ps_id_prefix.'Labels_batch_mode_select'))."</div>\n
+
+	<script type=\"text/javascript\">
+		jQuery(document).ready(function() {
+			jQuery('#".$ps_id_prefix."Labels_batch_mode_select').change(function() {
+				if ((jQuery(this).val() == '_disabled_') || (jQuery(this).val() == '_delete_')) {
+					jQuery('#".$ps_id_prefix."Labels').slideUp(250);
+				} else {
+					jQuery('#".$ps_id_prefix."Labels').slideDown(250);
+				}
+			});
+		});
+	</script>\n";
+	
+		return $vs_buf;
+	}
+	# ---------------------------------------
+	/**
 	 * Generates batch mode control HTML for batch editor non-preferred label bundles
 	 *
 	 * @param BundlableLabelableBaseModelWithAttributes $t_item 

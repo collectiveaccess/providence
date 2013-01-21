@@ -1117,7 +1117,6 @@ class BundlableLabelableBaseModelWithAttributes extends LabelableBaseModelWithAt
 			# -------------------------------------------------
 			case 'preferred_label':
 			case 'nonpreferred_label':
-				if ($vb_batch && ($vs_type == 'preferred_label')) { return null; } // preferred label not supported in batch mode
 				if (is_array($va_error_objects = $pa_options['request']->getActionErrors($ps_bundle_name)) && sizeof($va_error_objects)) {
 					$vs_display_format = $o_config->get('bundle_element_error_display_format');
 					foreach($va_error_objects as $o_e) {
@@ -2587,12 +2586,13 @@ if (!$vb_batch) {		// hierarchy moves are not supported in batch mode
 			}
 		}
 
-if (!$vb_batch) {	
 		// save preferred labels
 		$vb_check_for_dupe_labels = $this->_CONFIG->get('allow_duplicate_labels_for_'.$this->tableName()) ? false : true;
 		$vb_error_inserting_pref_label = false;
 		if (is_array($va_fields_by_type['preferred_label'])) {
 			foreach($va_fields_by_type['preferred_label'] as $vs_placement_code => $vs_f) {
+
+if (!$vb_batch) {	
 				// check for existing labels to update (or delete)
 				$va_preferred_labels = $this->getPreferredLabels(null, false);
 				foreach($va_preferred_labels as $vn_item_id => $va_labels_by_locale) {
@@ -2632,10 +2632,26 @@ if (!$vb_batch) {
 						}
 					}
 				}
-				
+}				
 				// check for new labels to add
 				foreach($_REQUEST as $vs_key => $vs_value ) {
 					if (!preg_match('/'.$vs_placement_code.$vs_form_prefix.'_Pref'.'locale_id_new_([\d]+)/', $vs_key, $va_matches)) { continue; }
+					
+					if ($vb_batch) {
+						$vs_batch_mode = $po_request->getParameter($vs_placement_code.$vs_form_prefix.'_Pref_batch_mode', pString);
+						switch($vs_batch_mode) {
+							case '_disabled_':		// skip
+								continue(2);
+								break;
+							case '_replace_':		// remove all existing preferred labels before trying to save
+								$this->removeAllLabels(__CA_LABEL_TYPE_PREFERRED__);
+								continue;
+							case '_delete_':		// remove all existing preferred labels
+								$this->removeAllLabels(__CA_LABEL_TYPE_PREFERRED__);
+								continue(2);
+								break;
+						}
+					}
 					$vn_c = intval($va_matches[1]);
 					if ($vn_new_label_locale_id = $po_request->getParameter($vs_placement_code.$vs_form_prefix.'_Pref'.'locale_id_new_'.$vn_c, pString)) {
 						if(is_array($va_label_values = $this->getLabelUIValuesFromRequest($po_request, $vs_placement_code.$vs_form_prefix, 'new_'.$vn_c, true))) {
@@ -2673,7 +2689,8 @@ if (!$vb_batch) {
 			return false;
 		}
 		unset($va_inserted_attributes_by_element);
-}		
+
+	
 		// save non-preferred labels
 		if (isset($va_fields_by_type['nonpreferred_label']) && is_array($va_fields_by_type['nonpreferred_label'])) {
 if (!$vb_batch) {	
