@@ -280,7 +280,8 @@
  			# trigger "BeforeSaveItem" hook 
 			$this->opo_app_plugin_manager->hookBeforeSaveItem(array('id' => $vn_subject_id, 'table_num' => $t_subject->tableNum(), 'table_name' => $t_subject->tableName(), 'instance' => $t_subject, 'is_insert' => $vb_is_insert));
  			
- 			$vb_save_rc = $t_subject->saveBundlesForScreen($this->request->getActionExtra(), $this->request, array_merge($pa_options, array('ui_instance' => $t_ui)));
+ 			$va_opts = array_merge($pa_options, array('ui_instance' => $t_ui));
+ 			$vb_save_rc = $t_subject->saveBundlesForScreen($this->request->getActionExtra(), $this->request, $va_opts);
 			$this->view->setVar('t_ui', $t_ui);
 		
 			if(!$vn_subject_id) {

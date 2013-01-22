@@ -271,7 +271,8 @@
  			$t_subject->set('parent_id', $vn_parent_id);
  			$this->opo_result_context->setParameter($t_subject->tableName().'_last_parent_id', $vn_parent_id);
  			
- 			$vb_save_rc = $t_subject->saveBundlesForScreen($this->request->getParameter('screen', pString), $this->request, array_merge($pa_options, array('ui_instance' => $t_ui)));
+ 			$va_opts = array_merge($pa_options, array('ui_instance' => $t_ui));
+ 			$vb_save_rc = $t_subject->saveBundlesForScreen($this->request->getParameter('screen', pString), $this->request, $va_opts);
 			$this->view->setVar('t_ui', $t_ui);
 		
 			if(!$vn_subject_id) {
