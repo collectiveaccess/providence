@@ -302,7 +302,9 @@
  			
  			if ((bool)$va_settings['useDatePicker']) { 
  				$vs_element .= "<script type='text/javascript'>
- 					jQuery('#{fieldNamePrefix}".$pa_element_info['element_id']."_{n}').datepicker();
+ 					jQuery(document).ready(function() {
+ 						jQuery('#{fieldNamePrefix}".$pa_element_info['element_id']."_{n}').datepicker({constrainInput: false});
+ 					});
  				</script>\n";
  			}
  			
