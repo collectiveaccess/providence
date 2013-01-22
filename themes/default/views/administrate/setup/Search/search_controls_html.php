@@ -166,10 +166,11 @@
 										jQuery("#browseToggle").click();
 									}
 								}
+								event.preventDefault();
 								jQuery('#browseSearch').val('');
 							}
 						}
-					);
+					).click(function() { this.select(); });
 					jQuery("#browseToggle").click(function() {
 						jQuery("#browse").slideToggle(350, function() { 
 							stateCookieJar.set('<?php print $vs_table; ?>BrowserIsClosed', (this.style.display == 'block') ? 0 : 1); 
