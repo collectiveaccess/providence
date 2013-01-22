@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2009-2012 Whirl-i-Gig
+ * Copyright 2009-2013 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -276,15 +276,17 @@
 ?>
 		// Set up "move" hierarchy browse search
 		jQuery('#<?php print $ps_id_prefix; ?>MoveHierarchyBrowserSearch').autocomplete(
-			'<?php print $va_lookup_urls['search']; ?>', {minChars: 3, matchSubset: 1, matchContains: 1, delay: 800}
-		);
-		jQuery('#<?php print $ps_id_prefix; ?>MoveHierarchyBrowserSearch').result(function(event, data, formatted) {
-			if (parseInt(data[1]) > 0) {
-				jQuery("#<?php print $ps_id_prefix; ?>HierarchyBrowserContainer").slideDown(350);
-				o<?php print $ps_id_prefix; ?>MoveHierarchyBrowser.setUpHierarchy(data[1]);	// jump browser to selected item
+			{ 
+				source: '<?php print $va_lookup_urls['search']; ?>', minLength: 3, delay: 800,
+				select: function( event, ui ) {
+					if (parseInt(ui.item.id) > 0) {
+						jQuery("#<?php print $ps_id_prefix; ?>HierarchyBrowserContainer").slideDown(350);
+						o<?php print $ps_id_prefix; ?>MoveHierarchyBrowser.setUpHierarchy(ui.item.id);	// jump browser to selected item
+					}
+					jQuery('#<?php print $ps_id_prefix; ?>MoveHierarchyBrowserSearch').val('');
+				}
 			}
-			jQuery('#<?php print $ps_id_prefix; ?>MoveHierarchyBrowserSearch').val('');
-		});
+		);
 <?php
 	}
 ?>
@@ -299,15 +301,17 @@
 		
 		// Set up "explore" hierarchy browse search
 		jQuery('#<?php print $ps_id_prefix; ?>ExploreHierarchyBrowserSearch').autocomplete(
-			'<?php print $va_lookup_urls['search']; ?>', {minChars: 3, matchSubset: 1, matchContains: 1, delay: 800, extraParams: { <?php print ($t_subject->getProperty('HIERARCHY_ID_FLD')) ? "currentHierarchyOnly: ".(int)($t_subject->get($t_subject->getProperty('HIERARCHY_ID_FLD')) ? 1 : 0)."}" : "}"; ?> }
-		);
-		jQuery('#<?php print $ps_id_prefix; ?>ExploreHierarchyBrowserSearch').result(function(event, data, formatted) {
-			if (data[1]) {
-				jQuery("#<?php print $ps_id_prefix; ?>HierarchyBrowserContainer").slideDown(350);
-				o<?php print $ps_id_prefix; ?>ExploreHierarchyBrowser.setUpHierarchy(data[1]);	// jump browser to selected item
+			{
+				source: '<?php print $va_lookup_urls['search']; ?><?php print ($t_subject->getProperty('HIERARCHY_ID_FLD')) ? "/currentHierarchyOnly/".(int)$t_subject->get($t_subject->getProperty('HIERARCHY_ID_FLD')) : ""; ?>', minLength: 3, delay: 800, 
+				select: function( event, ui ) {
+					if (parseInt(ui.item.id) > 0) {
+						jQuery("#<?php print $ps_id_prefix; ?>HierarchyBrowserContainer").slideDown(350);
+						o<?php print $ps_id_prefix; ?>ExploreHierarchyBrowser.setUpHierarchy(ui.item.id);	// jump browser to selected item
+					}
+					jQuery('#<?php print $ps_id_prefix; ?>ExploreHierarchyBrowserSearch').val('');
+				}
 			}
-			jQuery('#<?php print $ps_id_prefix; ?>ExploreHierarchyBrowserSearch').val('');
-		});
+		);
 		
 		// Disable form change warnings to add type drop-downs
 		jQuery('#<?php print $ps_id_prefix; ?>HierarchyBrowseAddUnder select').unbind('change');

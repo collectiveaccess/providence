@@ -156,17 +156,20 @@
 					});
 					
 					jQuery('#browseSearch').autocomplete(
-						'<?php print $va_lookup_urls['search']; ?>', {minChars: 3, matchSubset: 1, matchContains: 1, delay: 800}
-					);
-					jQuery('#browseSearch').result(function(event, data, formatted) {
-						if (parseInt(data[1]) > 0) {
-							oHierBrowser.setUpHierarchy(data[1]);	// jump browser to selected item
-							if (stateCookieJar.get('<?php print $vs_table; ?>BrowserIsClosed') == 1) {
-								jQuery("#browseToggle").click();
+						{
+							minLength: 3, delay: 800,
+							source: '<?php print $va_lookup_urls['search']; ?>',
+							select: function(event, ui) {
+								if (parseInt(ui.item.id) > 0) {
+									oHierBrowser.setUpHierarchy(ui.item.id);	// jump browser to selected item
+									if (stateCookieJar.get('<?php print $vs_table; ?>BrowserIsClosed') == 1) {
+										jQuery("#browseToggle").click();
+									}
+								}
+								jQuery('#browseSearch').val('');
 							}
 						}
-						jQuery('#browseSearch').val('');
-					});
+					);
 					jQuery("#browseToggle").click(function() {
 						jQuery("#browse").slideToggle(350, function() { 
 							stateCookieJar.set('<?php print $vs_table; ?>BrowserIsClosed', (this.style.display == 'block') ? 0 : 1); 

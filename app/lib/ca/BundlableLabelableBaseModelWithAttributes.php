@@ -3268,7 +3268,7 @@ if (!$vb_batch) {
 						}
 						
 						if ($this->changed('media')) {
-							$this->update(($vs_version != '_all') ? array('update_only_media_versions' => $va_versions_to_process) : array());
+							$this->update(($vs_version != '_all') ? array('updateOnlyMediaVersions' => $va_versions_to_process) : array());
 							if ($this->numErrors()) {
 								$po_request->addActionErrors($this->errors(), 'ca_object_representations_media_display', 'general');
 							}
@@ -3791,7 +3791,8 @@ if (!$vb_batch) {
 				foreach($va_rels_by_sort_key as $vn_id => $va_rel) {
 					$va_tmp = array(0 => $va_rel['labels']);
 					$va_sorted_rels[$vn_id] = $va_rel;
-					$va_sorted_rels[$vn_id]['label'] = array_shift(caExtractValuesByUserLocale($va_tmp));
+					$va_values_filtered_by_locale = caExtractValuesByUserLocale($va_tmp);
+					$va_sorted_rels[$vn_id]['label'] = array_shift($va_values_filtered_by_locale);
 				}
 			}
 			$va_rels = $va_sorted_rels;
@@ -4266,7 +4267,7 @@ $pa_options["display_form_field_tips"] = true;
 			}
 			
 			if ($vb_return_for_bundle) {
-				$va_row['_display'] = $va_initial_values[$va_row['user_id']]['_display'];
+				$va_row['label'] = $va_initial_values[$va_row['user_id']]['label'];
 				$va_row['id'] = $va_row['user_id'];
 				$va_row['access_display'] = $t_acl->getChoiceListValue('access', $va_row['access']);
 				$va_users[(int)$qr_res->get('acl_id')] = $va_row;
@@ -4446,7 +4447,7 @@ $pa_options["display_form_field_tips"] = true;
 			}
 			
 			if ($vb_return_for_bundle) {
-				$va_row['_display'] = $va_initial_values[$va_row['group_id']]['_display'];
+				$va_row['label'] = $va_initial_values[$va_row['group_id']]['label'];
 				$va_row['id'] = $va_row['group_id'];
 				$va_row['access_display'] = $t_acl->getChoiceListValue('access', $va_row['access']);
 				

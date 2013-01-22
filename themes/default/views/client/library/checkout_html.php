@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2012 Whirl-i-Gig
+ * Copyright 2012-2013 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -58,7 +58,7 @@
 		''
 	);
 	
-	print caFormTag($this->request, 'Save', 'caClientLibraryCheckoutForm', null, 'post', 'multipart/form-data', '_top', array());	
+	print caFormTag($this->request, 'Save', 'caClientLibraryCheckoutForm', null, 'post', 'multipart/form-data', '_top', array('disableUnsavedChangesWarning' => true, 'noTimestamp' => true));	
 ?>
 		<div class="formLabel">
 			<?php print _t('Client name'); ?>:
@@ -267,64 +267,63 @@
 
 <script type="text/javascript">
 	jQuery(document).ready(function() {
-		jQuery('#client_autocomplete').autocomplete('<?php print caNavUrl($this->request, 'lookup', 'User', 'Get'); ?>', 
-			{ minChars: 3, matchSubset: 1, matchContains: 1, delay: 800, scroll: true, max: 100, extraParams: { 'inlineCreate': true, 'quickadd': 1 },
-				formatResult: function(data, value) {
-					return jQuery.trim(value.replace(/<\/?[^>]+>/gi, ''));
-				}
-			}
-		);
-		
-		jQuery('#client_autocomplete').result(function(event, data, formatted) {
-			var item_id = data[1];
-			if (!parseInt(item_id)) {
-				// Create new user
-				jQuery('#caClientLibraryCustomerInfoMoreButton').css('display', 'inline').click();
-				jQuery('#transaction_user_id').val(0);
-				jQuery('#client_autocomplete').val('');
+		jQuery('#client_autocomplete').autocomplete( 
+			{ 
+				source: '<?php print caNavUrl($this->request, 'lookup', 'User', 'Get', array('max' => 100, 'inlineCreate' => 1, 'quickadd' => 1)); ?>',
+				minLength: 3, delay: 800, html: true,
+				select: function(event, ui) {
+					var item_id = ui.item.id;
+					if (!parseInt(item_id)) {
+						// Create new user
+						jQuery('#caClientLibraryCustomerInfoMoreButton').css('display', 'inline').click();
+						jQuery('#transaction_user_id').val(0);
+						jQuery('#client_autocomplete').val('');
+						event.preventDefault();
 				
-				var name_elements = data[3].split(new RegExp(/[ ]+/));
-				var lname = name_elements.pop();
-				var fname = name_elements.join(" ");
-				jQuery('#caBillingFields input[name=billing_fname]').val(fname);
-				jQuery('#caBillingFields input[name=billing_lname]').val(lname);
-			} else {
-				// Set existing user and get address info from server
-				jQuery('#transaction_user_id').val(item_id);
-				jQuery('#caClientLibraryCustomerInfoMoreButton').css('display', 'inline');
-				jQuery.getJSON('<?php print caNavUrl($this->request, "client/orders", "OrderEditor", "GetUserProfileInfo"); ?>', {user_id: item_id}, function(data) {
-					var n, k;
-					for(k in data) {
-						switch(k) {
-							case 'state':
-								n = 'zone_text';
-								break;
-							case 'postalcode':
-								n = 'postal_code';
-								break;
-							case 'country':
-								jQuery('#billing_zone_select').val(data['state']);
-								jQuery('#shipping_zone_select').val(data['state']);
-								break;
-							default:
-								n = k;
-								break;
-						}
-						jQuery('#caBillingFields input[name=billing_' + n + ']').val(data[k]);
-						jQuery('#caShippingFields input[name=shipping_' + n + ']').val(data[k]);
-					}
-				});
-				if(data[3]) {
-					jQuery('#caBillingFields input[name=billing_fname]').val(data[3]);
-					jQuery('#caBillingFields input[name=billing_lname]').val(data[4]);
-					jQuery('#caBillingFields input[name=billing_email]').val(data[5]);
+						var lname = ui.item.fname;
+						var fname = ui.item.lname;
+						jQuery('#caBillingFields input[name=billing_fname]').val(fname);
+						jQuery('#caBillingFields input[name=billing_lname]').val(lname);
+					} else {
+						// Set existing user and get address info from server
+						jQuery('#transaction_user_id').val(item_id);
+						jQuery('#caClientLibraryCustomerInfoMoreButton').css('display', 'inline');
+						jQuery.getJSON('<?php print caNavUrl($this->request, "client/orders", "OrderEditor", "GetUserProfileInfo"); ?>', {user_id: item_id}, function(data) {
+							var n, k;
+							for(k in data) {
+								switch(k) {
+									case 'state':
+										n = 'zone_text';
+										break;
+									case 'postalcode':
+										n = 'postal_code';
+										break;
+									case 'country':
+										jQuery('#billing_zone_select').val(data['state']);
+										jQuery('#shipping_zone_select').val(data['state']);
+										break;
+									default:
+										n = k;
+										break;
+								}
+								jQuery('#caBillingFields input[name=billing_' + n + ']').val(data[k]);
+								jQuery('#caShippingFields input[name=shipping_' + n + ']').val(data[k]);
+							}
+						});
+						
+						if(ui.item) {
+							jQuery('#caBillingFields input[name=billing_fname]').val(ui.item.fname);
+							jQuery('#caBillingFields input[name=billing_lname]').val(ui.item.lname);
+							jQuery('#caBillingFields input[name=billing_email]').val(ui.item.email);
 					
-					jQuery('#caShippingFields input[name=shipping_fname]').val(data[3]);
-					jQuery('#caShippingFields input[name=shipping_lname]').val(data[4]);
-					jQuery('#caShippingFields input[name=shipping_email]').val(data[5]);
+							jQuery('#caShippingFields input[name=shipping_fname]').val(ui.item.fname);
+							jQuery('#caShippingFields input[name=shipping_lname]').val(ui.item.lname);
+							jQuery('#caShippingFields input[name=shipping_email]').val(ui.item.email);
+						}
+					}
 				}
 			}
-		});
+		).click(function() { this.select(); });
 	});
 	
 	function caUseBillingAddressForShipping(setFields) {		

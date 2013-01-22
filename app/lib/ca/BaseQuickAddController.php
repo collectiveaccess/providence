@@ -333,7 +333,7 @@
  				'status' => sizeof($va_error_list) ? 10 : 0,
  				'id' => $vn_id,
  				'table' => $t_subject->tableName(),
- 				'display' => $va_name['_display'],
+ 				'display' => $va_name['label'],
  				'errors' => $va_error_list
  			);
  			

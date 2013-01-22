@@ -5125,3 +5125,7 @@ div.quickAddTypeList {
 	float: left;
 	margin-top: 6px; 
 }
+
+input[type='text'].ui-autocomplete-loading {
+    background: white url('../graphics/icons/indicator.gif') right center no-repeat;
+}

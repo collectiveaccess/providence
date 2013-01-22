@@ -1539,7 +1539,7 @@
 				} 
 				
 				if ($vb_return_for_bundle) {
-					$va_row['_display'] = $va_initial_values[$va_row['group_id']]['_display'];
+					$va_row['label'] = $va_initial_values[$va_row['group_id']]['label'];
 					$va_row['id'] = $va_row['group_id'];
 					$va_groups[(int)$qr_res->get('relation_id')] = $va_row;
 				} else {
@@ -1775,7 +1775,7 @@
 				} 
 				
 				if ($vb_return_for_bundle) {
-					$va_row['_display'] = $va_initial_values[$va_row['user_id']]['_display'];
+					$va_row['label'] = $va_initial_values[$va_row['user_id']]['label'];
 					$va_row['id'] = $va_row['user_id'];
 					$va_users[(int)$qr_res->get('relation_id')] = $va_row;
 				} else {
