@@ -111,9 +111,13 @@ var caUI = caUI || {};
 							jQuery('#' + options.quickaddPanel.getPanelContentID()).data('autocompleteInput', jQuery("#" + options.autocompleteInputID + id).val());
 					
 							jQuery("#" + options.autocompleteInputID + id).val('');
+							event.preventDefault();
+							return;
 						} else {
 							if(!parseInt(ui.item.id)) {
 								jQuery('#' + autocompleter_id).val('');  // no matches so clear text input
+								event.preventDefault();
+								return;
 							}
 						}
 						options.select(id, ui.item, 'test');
