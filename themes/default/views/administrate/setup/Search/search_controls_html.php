@@ -157,7 +157,7 @@
 					
 					jQuery('#browseSearch').autocomplete(
 						{
-							minLength: 3, delay: 800,
+							minLength: 3, delay: 800, html: true,
 							source: '<?php print $va_lookup_urls['search']; ?>',
 							select: function(event, ui) {
 								if (parseInt(ui.item.id) > 0) {

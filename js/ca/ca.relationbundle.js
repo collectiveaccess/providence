@@ -114,7 +114,7 @@ var caUI = caUI || {};
 							event.preventDefault();
 							return;
 						} else {
-							if(!parseInt(ui.item.id)) {
+							if(!parseInt(ui.item.id) || (ui.item.id <= 0)) {
 								jQuery('#' + autocompleter_id).val('');  // no matches so clear text input
 								event.preventDefault();
 								return;
