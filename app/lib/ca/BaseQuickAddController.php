@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2013 Whirl-i-Gig
+ * Copyright 2012-2013 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -204,6 +204,7 @@
 					'status' => 30,
 					'id' => null,
 					'table' => $t_subject->tableName(),
+					'type_id' => null,
 					'display' => null,
 					'errors' => array(_t("You are not allowed to quickadd %1", $t_subject->getProperty('NAME_PLURAL')) => _t("You are not allowed to quickadd %1", $t_subject->getProperty('NAME_PLURAL')))
 				);
@@ -232,6 +233,7 @@
 					'status' => 20,
 					'id' => null,
 					'table' => $t_subject->tableName(),
+					'type_id' => null,
 					'display' => null,
 					'errors' => array(_t("Cannot save using empty request. Are you using a bookmark?") => _t("Cannot save using empty request. Are you using a bookmark?"))
 				);
@@ -334,6 +336,7 @@
  				'status' => sizeof($va_error_list) ? 10 : 0,
  				'id' => $vn_id,
  				'table' => $t_subject->tableName(),
+				'type_id' => method_exists($t_subject, "getTypeID") ? $t_subject->getTypeID() : null,
  				'display' => $va_name['label'],
  				'errors' => $va_error_list
  			);

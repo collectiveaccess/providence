@@ -72,7 +72,7 @@ var caUI = caUI || {};
 			if (!isNew) { return; }
 			
 			var autocompleter_id = options.itemID + id + ' #' + options.fieldNamePrefix + 'autocomplete' + id;
-			//options.extraParams
+
 			jQuery('#' + autocompleter_id).autocomplete( 
 				jQuery.extend({ minLength: ((parseInt(options.minChars) > 0) ? options.minChars : 3), delay: 800, html: true,
 					source: function( request, response ) {
@@ -107,10 +107,12 @@ var caUI = caUI || {};
 							jQuery('#' + options.quickaddPanel.getPanelContentID()).data('autocompleteItemIDID', options.itemID + id + ' #' + options.fieldNamePrefix + 'id' + id);
 							jQuery('#' + options.quickaddPanel.getPanelContentID()).data('autocompleteTypeIDID', options.itemID + id + ' #' + options.fieldNamePrefix + 'type_id' + id);
 							jQuery('#' + options.quickaddPanel.getPanelContentID()).data('panel', options.quickaddPanel);
+							jQuery('#' + options.quickaddPanel.getPanelContentID()).data('relationbundle', that);
 					
 							jQuery('#' + options.quickaddPanel.getPanelContentID()).data('autocompleteInput', jQuery("#" + options.autocompleteInputID + id).val());
 					
 							jQuery("#" + options.autocompleteInputID + id).val('');
+							
 							event.preventDefault();
 							return;
 						} else {
@@ -120,7 +122,7 @@ var caUI = caUI || {};
 								return;
 							}
 						}
-						options.select(id, ui.item, 'test');
+						options.select(id, ui.item);
 						
 						jQuery('#' + autocompleter_id).val(jQuery.trim(ui.item.label.replace(/<\/?[^>]+>/gi, '')));
 						event.preventDefault();
@@ -135,7 +137,8 @@ var caUI = caUI || {};
 			).click(function() { this.select(); });
 		}
 		
-		options.select = function(id, data, formatted) {
+		options.select = function(id, data) {
+			if (!id) { id = 'new_' + (that.getCount() - 1); } // default to current "new" option
 			var item_id = data.id;
 			var type_id = (data.type_id) ? data.type_id : '';
 			if (parseInt(item_id) < 0) { return; }
