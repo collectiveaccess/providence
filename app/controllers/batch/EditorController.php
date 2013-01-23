@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2012 Whirl-i-Gig
+ * Copyright 2012-2013 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -87,7 +87,9 @@
  			
  			$va_nav = $t_ui->getScreensAsNavConfigFragment($this->request, $vn_type_id, $this->request->getModulePath(), $this->request->getController(), $this->request->getAction(),
 				array(),
-				array()
+				array(),
+				false,
+				array('restrictToTypes' => $t_set->getTypesForItems())
 			);
  			if (!$this->request->getActionExtra() || !isset($va_nav['fragment'][str_replace("Screen", "screen_", $this->request->getActionExtra())])) {
  				$this->request->setActionExtra($va_nav['defaultScreen']);
@@ -223,7 +225,6 @@
  		 * @return array Navigation specification ready for inclusion in a menu spec
  		 */
  		public function _genDynamicNav($pa_params, $pa_options=null) {
- 			//list($vn_subject_id, $t_subject, $t_ui) = $this->_initView($pa_options);
  			list($vn_set_id, $t_set, $t_subject, $t_ui) = $this->_initView($pa_options);
  			if (!$this->request->isLoggedIn()) { return array(); }
  			
@@ -234,7 +235,7 @@
  				isset($pa_params['parameters']) ? $pa_params['parameters'] : null,
  				isset($pa_params['requires']) ? $pa_params['requires'] : null,
  				false,
- 				array('hideIfNoAccess' => isset($pa_params['hideIfNoAccess']) ? $pa_params['hideIfNoAccess'] : false)
+ 				array('hideIfNoAccess' => isset($pa_params['hideIfNoAccess']) ? $pa_params['hideIfNoAccess'] : false, 'returnTypeRestrictions' => true, 'restrictToTypes' => $t_set->getTypesForItems())
  			);
  			
  			if (!$this->request->getActionExtra()) {

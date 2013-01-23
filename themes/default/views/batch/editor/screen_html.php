@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2012 Whirl-i-Gig
+ * Copyright 2012-2013 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -46,6 +46,7 @@
 									'request' => $this->request, 
 									'formName' => 'caBatchEditorForm',
 									'batch' => true,
+									'restrictToTypes' => array_keys($t_set->getTypesForItems()),
 									'ui_instance' => $this->getVar('t_ui')
 								), $va_bundle_list);
 								

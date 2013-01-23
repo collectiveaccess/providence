@@ -978,7 +978,7 @@ class BundlableLabelableBaseModelWithAttributes extends LabelableBaseModelWithAt
 		// add metadata elements
 		foreach($this->getApplicableElementCodes($vn_type_id, false, false) as $vs_code) {
 			$this->BUNDLES['ca_attribute_'.$vs_code] = array(
-				'type' => 'attribute', 'repeating' => false, 'label' => $vs_code //$this->getAttributeLabel($vs_code)
+				'type' => 'attribute', 'repeating' => false, 'label' => $vs_code
 			);
 		}
 	}
@@ -1216,15 +1216,8 @@ class BundlableLabelableBaseModelWithAttributes extends LabelableBaseModelWithAt
 				// bundle names for attributes are simply element codes prefixed with 'ca_attribute_'
 				// since getAttributeHTMLFormBundle() takes a straight element code we have to strip the prefix here
 				$vs_attr_element_code = str_replace('ca_attribute_', '', $ps_bundle_name);
+				$vs_display_format = $o_config->get('bundle_element_display_format');
 				
-				//if (is_array($va_error_objects = $pa_options['request']->getActionErrors($ps_bundle_name))) {
-				//	$vs_display_format = $o_config->get('form_element_error_display_format');
-				//	foreach($va_error_objects as $o_e) {
-				//		$va_errors[] = $o_e->getErrorDescription();
-				//	}
-				//} else {
-					$vs_display_format = $o_config->get('bundle_element_display_format');
-				//}
 				$vs_element = $this->getAttributeHTMLFormBundle($pa_options['request'], $pa_options['formName'], $vs_attr_element_code, $ps_placement_code, $pa_bundle_settings, $pa_options);
 				
 				$vs_field_id = 'ca_attribute_'.$pa_options['formName'].'_'.$vs_attr_element_code;
@@ -1751,6 +1744,7 @@ class BundlableLabelableBaseModelWithAttributes extends LabelableBaseModelWithAt
  	 *		force = list of bundles to force onto form if they are not included in the UI; forced bundles will be included at the bottom of the form
  	 *		forceHidden = list of *intrinsic* fields to force onto form as hidden <input> elements if they are not included in the UI; NOTE: only intrinsic fields may be specified
  	 *		omit = list of bundles to omit from form in the event they are included in the UI
+ 	 *		restrictToTypes = 
  	 *	@return array List of bundle HTML to display in form, keyed on placement code
  	 */
  	public function getBundleFormHTMLForScreen($pm_screen, $pa_options, &$pa_placements=null) {
@@ -1777,11 +1771,23 @@ class BundlableLabelableBaseModelWithAttributes extends LabelableBaseModelWithAt
 			$vs_type_id_fld = isset($this->ATTRIBUTE_TYPE_ID_FLD) ? $this->ATTRIBUTE_TYPE_ID_FLD : null;
 			$vs_hier_parent_id_fld = isset($this->HIERARCHY_PARENT_ID_FLD) ? $this->HIERARCHY_PARENT_ID_FLD : null;
 			
+			if(isset($pa_options['restrictToTypes']) && is_array($pa_options['restrictToTypes'])) {
+				$va_valid_element_codes = $this->getApplicableElementCodesForTypes($pa_options['restrictToTypes']);
+			} else {
+				$va_valid_element_codes = null;
+			}
+			
 			$vn_c = 0;
 			foreach($va_bundles as $va_bundle) {
 				if ($va_bundle['bundle_name'] === $vs_type_id_fld) { continue; }	// skip type_id
 				if ((!$vn_pk_id) && ($va_bundle['bundle_name'] === $vs_hier_parent_id_fld)) { continue; }
 				if (in_array($va_bundle['bundle_name'], $va_omit_bundles)) { continue; }
+				
+				if ($va_valid_element_codes && (substr($va_bundle['bundle_name'],0, 13) == 'ca_attribute_')) {
+					if (!in_array(substr($va_bundle['bundle_name'],13), $va_valid_element_codes)) {
+						continue;
+					}
+				}
 				
 				// Test for user action restrictions on intrinsic fields
 				$vb_output_bundle = true;

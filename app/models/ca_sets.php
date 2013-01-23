@@ -1476,6 +1476,54 @@ LEFT JOIN ca_object_representations AS cor ON coxor.representation_id = cor.repr
 		return 0;
 	}
 	# ------------------------------------------------------
+	/**
+	 * Returns list of types present for items in set
+	 *
+	 * @param array $pa_options
+	 *		user_id - Restricts access to sets accessible by the current user. If omitted then all sets, regardless of access are returned.
+	 *		checkAccess - Restricts returned sets to those with an public access level with the specified values. If omitted sets are returned regardless of public access (ca_sets.access) value. Can be a single value or array if you wish to filter on multiple public access values.
+	 *
+	 * @return array List of types. Keys are integer type_ids, values are plural type names for the current locale
+	 */
+	public function getTypesForItems($pa_options=null) {
+		if(!($vn_set_id = $this->getPrimaryKey())) { return null; }
+		if (!is_array($pa_options)) { $pa_options = array(); }
+		if ($pa_options['user_id'] && !$this->haveAccessToSet($pa_options['user_id'], __CA_SET_READ_ACCESS__)) { return false; }
+		
+		$o_db = $this->getDb();
+		
+		$o_dm = $this->getAppDatamodel();
+		if (!($t_rel_table = $o_dm->getInstanceByTableNum($this->get('table_num'), true))) { return null; }
+		if (!($vs_type_id_fld = $t_rel_table->getTypeFieldName())) { return array(); }
+		
+		// get set items
+		$vs_access_sql = '';
+		if (isset($pa_options['checkAccess']) && is_array($pa_options['checkAccess']) && sizeof($pa_options['checkAccess']) && $t_rel_table->hasField('access')) {
+			$vs_access_sql = ' AND rel.access IN ('.join(',', $pa_options['checkAccess']).')';
+		}
+		
+		$vs_deleted_sql = '';
+		if ($t_rel_table->hasField('deleted')) {
+			$vs_deleted_sql = ' AND rel.deleted = 0';
+		}
+		
+		$va_type_list = method_exists($t_rel_table, "getTypeList") ? $t_rel_table->getTypeList() : array();
+		
+		$qr_res = $o_db->query("
+			SELECT distinct rel.{$vs_type_id_fld}
+			FROM ca_set_items casi
+			INNER JOIN ".$t_rel_table->tableName()." AS rel ON rel.".$t_rel_table->primaryKey()." = casi.row_id
+			WHERE
+				casi.set_id = ? {$vs_access_sql} {$vs_deleted_sql}
+		", array($vn_set_id));
+		
+		$va_type_ids = array();
+		while($qr_res->nextRow()) {
+			$va_type_ids[$vn_type_id = $qr_res->get($vs_type_id_fld)] = $va_type_list[$vn_type_id]['name_plural'];
+		}
+		return $va_type_ids;
+	}
+	# ------------------------------------------------------
 	# Bundles
 	# ------------------------------------------------------
 	/**

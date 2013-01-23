@@ -1362,7 +1362,7 @@ require_once(__CA_LIB_DIR__.'/core/Parsers/TimeExpressionParser.php');
 		
 		// -------------------------------------------------------------------------------------
 	
-		
+		$vs_buf .= "<div>"._t('Set contains <em>%1</em>', join(", ", $t_set->getTypesForItems()))."</div>\n";
 		
 		$vs_buf .= "</div></h4>\n";
 		
