@@ -84,6 +84,11 @@
  				$this->response->setRedirect($this->request->config->get('error_display_url').'/n/3210?r='.urlencode($this->request->getFullUrlPath()));
  				return;
  			}
+ 			if ($t_set->getItemCount(array('user_id' => $this->request->getUserID())) <= 0) { 
+ 				$this->response->setRedirect($this->request->config->get('error_display_url').'/n/3220?r='.urlencode($this->request->getFullUrlPath()));
+ 				return;
+ 			}
+ 			
  			$this->view->setVar('batch_editor_last_settings', $va_last_settings = is_array($va_last_settings = $this->request->user->getVar('batch_editor_last_settings')) ? $va_last_settings : array());
  			
  			

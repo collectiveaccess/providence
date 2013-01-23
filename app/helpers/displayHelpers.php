@@ -790,12 +790,13 @@ require_once(__CA_LIB_DIR__.'/core/Parsers/TimeExpressionParser.php');
 			//
 			if ($vs_table_name === 'ca_sets') {
 				
+				$vn_set_item_count = $t_item->getItemCount(array('user_id' => $po_view->request->getUserID()));
 				
-				if ($po_view->request->user->canDoAction('can_batch_edit_'.$o_dm->getTableName($t_item->get('table_num')))) {
+				if (($vn_set_item_count > 0) && ($po_view->request->user->canDoAction('can_batch_edit_'.$o_dm->getTableName($t_item->get('table_num'))))) {
 					$vs_buf .= caNavButton($po_view->request, __CA_NAV_BUTTON_BATCH_EDIT__, _t('Batch edit'), 'batch', 'Editor', 'Edit', array('set_id' => $t_item->getPrimaryKey()), array(), array('icon_position' => __CA_NAV_BUTTON_ICON_POS_LEFT__, 'use_class' => 'editorBatchSetEditorLink', 'no_background' => true, 'dont_show_content' => true));
 				}
 				
-				$vs_buf .= "<div><strong>"._t("Number of items")."</strong>: ".$t_item->getItemCount(array('user_id' => $po_view->request->getUserID()))."<br/>\n";
+				$vs_buf .= "<div><strong>"._t("Number of items")."</strong>: {$vn_set_item_count}<br/>\n";
 					
 				if ($t_item->getPrimaryKey()) {
 					
