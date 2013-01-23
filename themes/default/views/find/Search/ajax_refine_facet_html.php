@@ -28,6 +28,7 @@
  	$va_facet 				= $this->getVar('grouped_facet');
 	$vs_facet_name 			= $this->getVar('facet_name');
 	$va_facet_info 			= $this->getVar('facet_info');
+	$vs_grouping_field		= $this->getVar('grouping');
 	$vs_group_mode 			= $va_facet_info["group_mode"];
 
 	if (!$va_facet||!$vs_facet_name) { 
