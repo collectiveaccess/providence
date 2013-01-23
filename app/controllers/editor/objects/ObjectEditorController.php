@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2008-2012 Whirl-i-Gig
+ * Copyright 2008-2013 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -43,7 +43,7 @@
  			JavascriptLoadManager::register('panel');
  		}
  		# -------------------------------------------------------
- 		public function Edit() {
+ 		public function Edit($pa_values=null, $pa_options=null) {
  			$va_values = array();
  			
  			if ($vn_lot_id = $this->request->getParameter('lot_id', pInteger)) {
@@ -55,7 +55,7 @@
 				}
  			}
  			
- 			return parent::Edit($va_values);
+ 			return parent::Edit($va_values, $pa_options);
  		}
  		# -------------------------------------------------------
  		# AJAX handlers
@@ -168,7 +168,7 @@
  		 * objects in the same object hierarchy as the specified object. Used by the book viewer interfacce to 
  		 * initiate a download.
  		 */ 
- 		public function DownloadMedia() {
+ 		public function DownloadMedia($pa_options=null) {
  			$pn_object_id = $this->request->getParameter('object_id', pInteger);
  			$t_object = new ca_objects($pn_object_id);
  			if (!($vn_object_id = $t_object->getPrimaryKey())) { return; }

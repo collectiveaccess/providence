@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2000-2012 Whirl-i-Gig
+ * Copyright 2000-2013 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -681,7 +681,8 @@ class BaseModel extends BaseObject {
 							
 							$vs_version = $va_tmp[2];
 							if (!isset($va_versions[$vs_version])) {
-								$vs_version = array_shift(array_keys($va_versions));
+								$va_tmp = array_keys($va_versions);
+								$vs_version = array_shift($va_tmp);
 							}
 							
 							if (isset($pa_options['returnURL']) && $pa_options['returnURL']) {
@@ -1049,7 +1050,7 @@ class BaseModel extends BaseObject {
 					$vm_value = htmlspecialchars($vm_value, ENT_QUOTES, 'UTF-8');
 				}
 								
-				$vs_cur_value = isset($this->_FIELD_VALUES[$vs_field]) ? (string)$this->_FIELD_VALUES[$vs_field] : null;
+				$vs_cur_value = isset($this->_FIELD_VALUES[$vs_field]) ? $this->_FIELD_VALUES[$vs_field] : null;
 				switch ($pa_fields_type) {
 					case (FT_NUMBER):
 						if ($vs_cur_value != $vm_value) {
@@ -1904,7 +1905,8 @@ class BaseModel extends BaseObject {
 					)) {
 						if ($t_many_table = $this->_DATAMODEL->getTableInstance($va_many_to_one_relations[$vs_field]["one_table"])) {
 							if ($this->inTransaction()) {
-								$t_many_table->setTransaction($this->getTransaction());
+								$o_trans = $this->getTransaction();
+								$t_many_table->setTransaction($o_trans);
 							}
 							$t_many_table->load($this->get($va_many_to_one_relations[$vs_field]["many_table_field"]));
 						}
@@ -2429,7 +2431,8 @@ class BaseModel extends BaseObject {
 					if (!(($va_attr["IS_NULL"]) && ($vs_field_value == ""))) {
 						if ($t_many_table = $this->_DATAMODEL->getTableInstance($va_many_to_one_relations[$vs_field]["one_table"])) {
 							if ($this->inTransaction()) {
-								$t_many_table->setTransaction($this->getTransaction());
+								$o_trans = $this->getTransaction();
+								$t_many_table->setTransaction($o_trans);
 							}
 							$t_many_table->load($this->get($va_many_to_one_relations[$vs_field]["many_table_field"]));
 						}
@@ -2756,6 +2759,7 @@ class BaseModel extends BaseObject {
 	 * to specify which tables to omit when deleting related stuff
 	 */
 	public function delete ($pb_delete_related=false, $pa_options=null, $pa_fields=null, $pa_table_list=null) {
+		if(!is_array($pa_options)) { $pa_options = array(); }
 		$vn_id = $this->getPrimaryKey();
 		if ($this->hasField('deleted') && (!isset($pa_options['hard']) || !$pa_options['hard'])) {
 			$this->setMode(ACCESS_WRITE);
@@ -2884,7 +2888,8 @@ class BaseModel extends BaseObject {
 
 						# do any records exist?
 						$t_related = $this->_DATAMODEL->getTableInstance($vs_many_table);
-						$t_related->setTransaction($this->getTransaction());
+						$o_trans = $this->getTransaction();
+						$t_related->setTransaction($o_trans);
 						$qr_record_check = $o_db->query("
 							SELECT ".$t_related->primaryKey()."
 							FROM ".$vs_many_table."
@@ -2900,7 +2905,7 @@ class BaseModel extends BaseObject {
 								while($qr_record_check->nextRow()) {
 									if ($t_related->load($qr_record_check->get($t_related->primaryKey()))) {
 										$t_related->setMode(ACCESS_WRITE);
-										$t_related->delete($pb_delete_related, $pa_options, null, $pa_table_list);
+										$t_related->delete($pb_delete_related, array_merge($pa_options, array('hard' => true)), null, $pa_table_list);
 										
 										if ($t_related->numErrors()) {
 											$this->postError(790, _t("Can't delete item because items related to it have sub-records (%1)", $vs_many_table),"BaseModel->delete()");
@@ -8268,9 +8273,21 @@ $pa_options["display_form_field_tips"] = true;
 					{$vs_type_sql} {$vs_timestamp_sql}
 			", $va_query_params);
 		
-			if (sizeof($va_ids = $qr_res->getAllFieldValues('relation_id'))) {
-				return $va_ids;
+			$va_ids = $qr_res->getAllFieldValues('relation_id');
+			
+			if ($va_rel_info['related_table_name'] == $this->tableName()) {
+				$qr_res = $o_db->query("
+					SELECT relation_id
+					FROM {$vs_rel_table_name}
+					WHERE
+						{$vs_right_field_name} = ? AND {$vs_left_field_name} = ?
+						{$vs_type_sql} {$vs_timestamp_sql}
+				", $va_query_params);
+				
+				$va_ids += $qr_res->getAllFieldValues('relation_id');
 			}
+			
+			if (sizeof($va_ids)) { return $va_ids; }
 		} else {
 			if (sizeof($va_rel_info['path']) == 2) {		// many-one rel
 				$va_rel_keys = $va_rel_info['rel_keys'];
@@ -8546,7 +8563,7 @@ $pa_options["display_form_field_tips"] = true;
 	 *		If you want both moderated and unmoderated tags to be returned then omit the parameter or pass a null value
 	 *
 	 * @param $pn_user_id [integer] A valid ca_users.user_id value. If specified, only tags added by the specified user will be returned. (optional - default is null)
-	 * @param $pn_moderation_status [boolean] To return only unmoderated tags set to FALSE; to return only moderated tags set to TRUE; to return all tags set to null or omit
+	 * @param $pb_moderation_status [boolean] To return only unmoderated tags set to FALSE; to return only moderated tags set to TRUE; to return all tags set to null or omit
 	 */
 	public function getTags($pn_user_id=null, $pb_moderation_status=null, $pn_row_id=null) {
 		if (!($vn_row_id = $pn_row_id)) {

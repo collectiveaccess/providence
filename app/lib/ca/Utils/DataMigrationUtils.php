@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2010-2012 Whirl-i-Gig
+ * Copyright 2010-2013 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -79,6 +79,7 @@
 		 *				dontCreate - if true then new entities will not be created [default=false]
 		 *				matchOnDisplayName  if true then entities are looked up exclusively using displayname, otherwise forename and surname fields are used [default=false]
 		 * 				transaction - if Transaction object is passed, use it for all Db-related tasks [default=null]
+		 *				generateIdnoWithTemplate = A template to use when setting the idno. The template is a value with automatically-set SERIAL values replaced with % characters. Eg. 2012.% will set the created row's idno value to 2012.121 (assuming that 121 is the next number in the serial sequence.) The template is NOT used if idno is passed explicitly as a value in $pa_values.
 		 */
 		static function getEntityID($pa_entity_name, $pn_type_id, $pn_locale_id, $pa_values=null, $pa_options=null) {
 			if (!is_array($pa_options)) { $pa_options = array(); }
@@ -108,7 +109,14 @@
 				$t_entity->set('source_id', isset($pa_values['source_id']) ? $pa_values['source_id'] : null);
 				$t_entity->set('access', isset($pa_values['access']) ? $pa_values['access'] : 0);
 				$t_entity->set('status', isset($pa_values['status']) ? $pa_values['status'] : 0);
-				$t_entity->set('idno', isset($pa_values['idno']) ? $pa_values['idno'] : null);
+				
+				if (!($vs_idno = isset($pa_values['idno']) ? $pa_values['idno'] : null)) {
+					if(isset($pa_options['generateIdnoWithTemplate']) && $pa_options['generateIdnoWithTemplate']) {
+						$vs_idno = $t_entity->setIdnoTWithTemplate($pa_options['generateIdnoWithTemplate'], array('dontSetValue' => true));
+					}
+				}
+				
+				$t_entity->set('idno', $vs_idno);
 				$t_entity->set('lifespan', isset($pa_values['lifespan']) ? $pa_values['lifespan'] : null);
 				$t_entity->set('parent_id', isset($pa_values['parent_id']) ? $pa_values['parent_id'] : null);
 				unset($pa_values['access']);	
@@ -253,6 +261,7 @@
 		 *				outputErrors - if true, errors will be printed to console [default=true]
 		 *				dontCreate - if true then new entities will not be created [default=false]
 		 * 				transaction - if Transaction object is passed, use it for all Db-related tasks [default=null]
+		 *				generateIdnoWithTemplate = A template to use when setting the idno. The template is a value with automatically-set SERIAL values replaced with % characters. Eg. 2012.% will set the created row's idno value to 2012.121 (assuming that 121 is the next number in the serial sequence.) The template is NOT used if idno is passed explicitly as a value in $pa_values.
 		 */
 		static function getOccurrenceID($ps_occ_name, $pn_parent_id, $pn_type_id, $pn_locale_id, $pa_values=null, $pa_options=null) {
 			if (!is_array($pa_options)) { $pa_options = array(); }
@@ -273,7 +282,14 @@
 				$t_occurrence->set('source_id', isset($pa_values['source_id']) ? $pa_values['source_id'] : null);
 				$t_occurrence->set('access', isset($pa_values['access']) ? $pa_values['access'] : 0);
 				$t_occurrence->set('status', isset($pa_values['status']) ? $pa_values['status'] : 0);
-				$t_occurrence->set('idno', isset($pa_values['idno']) ? $pa_values['idno'] : null);
+				
+				if (!($vs_idno = isset($pa_values['idno']) ? $pa_values['idno'] : null)) {
+					if(isset($pa_options['generateIdnoWithTemplate']) && $pa_options['generateIdnoWithTemplate']) {
+						$vs_idno = $t_occurrence->setIdnoTWithTemplate($pa_options['generateIdnoWithTemplate'], array('dontSetValue' => true));
+					}
+				}
+				
+				$t_occurrence->set('idno', $vs_idno);
 				$t_occurrence->set('hier_occurrence_id', isset($pa_values['hier_occurrence_id']) ? $pa_values['hier_occurrence_id'] : null);
 				unset($pa_values['access']);	
 				unset($pa_values['status']);
@@ -383,6 +399,7 @@
 		 *				outputErrors - if true, errors will be printed to console [default=true]
 		 *				dontCreate - if true then new collections will not be created [default=false]
 		 * 				transaction - if Transaction object is passed, use it for all Db-related tasks [default=null]
+		 *				generateIdnoWithTemplate = A template to use when setting the idno. The template is a value with automatically-set SERIAL values replaced with % characters. Eg. 2012.% will set the created row's idno value to 2012.121 (assuming that 121 is the next number in the serial sequence.) The template is NOT used if idno is passed explicitly as a value in $pa_values.
 		 */
 		static function getCollectionID($ps_collection_name, $pn_type_id, $pn_locale_id, $pa_values=null, $pa_options=null) {
 			if (!is_array($pa_options)) { $pa_options = array(); }
@@ -402,7 +419,14 @@
 				$t_collection->set('source_id', isset($pa_values['source_id']) ? $pa_values['source_id'] : null);
 				$t_collection->set('access', isset($pa_values['access']) ? $pa_values['access'] : 0);
 				$t_collection->set('status', isset($pa_values['status']) ? $pa_values['status'] : 0);
-				$t_collection->set('idno', isset($pa_values['idno']) ? $pa_values['idno'] : null);
+				
+				if (!($vs_idno = isset($pa_values['idno']) ? $pa_values['idno'] : null)) {
+					if(isset($pa_options['generateIdnoWithTemplate']) && $pa_options['generateIdnoWithTemplate']) {
+						$vs_idno = $t_collection->setIdnoTWithTemplate($pa_options['generateIdnoWithTemplate'], array('dontSetValue' => true));
+					}
+				}
+				
+				$t_collection->set('idno', $vs_idno);
 				$t_collection->set('parent_id', isset($pa_values['parent_id']) ? $pa_values['parent_id'] : null);
 				unset($pa_values['access']);	
 				unset($pa_values['status']);
@@ -594,8 +618,8 @@
 					}
 					return null;
 				}
-				$t_object->addLabel(array('name' => $ps_object_name), $pn_locale_id, null, true);
 				
+				$t_object->addLabel(array('name' => $ps_object_name), $pn_locale_id, null, true);
 				
 				$vn_object_id = $t_object->getPrimaryKey();
 			} else {
@@ -603,6 +627,91 @@
 			}
 				
 			return $vn_object_id;
+		}
+		# -------------------------------------------------------
+		/** 
+		 * Returns loan_id for the loan with the specified name, regardless of specified type. If the loan does not already 
+		 * exist then it will be created with the specified name, type and locale, as well as with any specified values in the $pa_values array.
+		 * $pa_values keys should be either valid loan fields or attributes.
+		 *
+		 * @param string $ps_loan_name Loan label name
+		 * @param int $pn_type_id The type_id of the loan type to use if the loan needs to be created
+		 * @param int $pn_locale_id The locale_id to use if the loan needs to be created (will be used for both the loan locale as well as the label locale)
+		 * @param array $pa_values An optional array of additional values to populate newly created loan records with. These values are *only* used for newly created loans; they will not be applied if the loan named already exists. The array keys should be names of loan fields or valid loan attributes. Values should be either a scalar (for single-value attributes) or an array of values for (multi-valued attributes)
+		 * @param array $pa_options An optional array of options, which include:
+		 *				outputErrors - if true, errors will be printed to console [default=true]
+		 *				dontCreate - if true then new loans will not be created [default=false]
+		 * 				transaction - if Transaction object is passed, use it for all Db-related tasks [default=null]
+		 *				generateIdnoWithTemplate = A template to use when setting the idno. The template is a value with automatically-set SERIAL values replaced with % characters. Eg. 2012.% will set the created row's idno value to 2012.121 (assuming that 121 is the next number in the serial sequence.) The template is NOT used if idno is passed explicitly as a value in $pa_values.
+		 */
+		static function getLoanID($ps_loan_name, $pn_type_id, $pn_locale_id, $pa_values=null, $pa_options=null) {
+			if (!is_array($pa_options)) { $pa_options = array(); }
+			if(!isset($pa_options['outputErrors'])) { $pa_options['outputErrors'] = true; }
+			
+			$t_loan = new ca_loans();
+			if (isset($pa_options['transaction']) && $pa_options['transaction'] instanceof Transaction){
+				$t_loan->setTransaction($pa_options['transaction']);
+			}
+
+			if (sizeof($va_loan_ids = $t_loan->getLoanIDsByName($ps_loan_name)) == 0) {
+				if (isset($pa_options['dontCreate']) && $pa_options['dontCreate']) { return false; }
+				
+				$t_loan->setMode(ACCESS_WRITE);
+				$t_loan->set('locale_id', $pn_locale_id);
+				$t_loan->set('type_id', $pn_type_id);
+				$t_loan->set('access', isset($pa_values['access']) ? $pa_values['access'] : 0);
+				$t_loan->set('status', isset($pa_values['status']) ? $pa_values['status'] : 0);
+				
+				if (!($vs_idno = isset($pa_values['idno']) ? $pa_values['idno'] : null)) {
+					if(isset($pa_options['generateIdnoWithTemplate']) && $pa_options['generateIdnoWithTemplate']) {
+						$vs_idno = $t_loan->setIdnoTWithTemplate($pa_options['generateIdnoWithTemplate'], array('dontSetValue' => true));
+					}
+				}
+				
+				$t_loan->set('idno', $vs_idno);
+				$t_loan->set('parent_id', isset($pa_values['parent_id']) ? $pa_values['parent_id'] : null);
+				unset($pa_values['access']);	
+				unset($pa_values['status']);
+				unset($pa_values['idno']);
+				
+				if (is_array($pa_values)) {
+					foreach($pa_values as $vs_element => $va_value) { 					
+						if (is_array($va_value)) {
+							// array of values (complex multi-valued attribute)
+							$t_loan->addAttribute(
+								array_merge($va_value, array(
+									'locale_id' => $pn_locale_id
+								)), $vs_element);
+						} else {
+							// scalar value (simple single value attribute)
+							if ($va_value) {
+								$t_loan->addAttribute(array(
+									'locale_id' => $pn_locale_id,
+									$vs_element => $va_value
+								), $vs_element);
+							}
+						}
+					}
+				}
+				
+				$t_loan->insert();
+				
+				if ($t_loan->numErrors()) {
+					if(isset($pa_options['outputErrors']) && $pa_options['outputErrors']) {
+						print "ERROR INSERTING loan (".$ps_loan_name."): ".join('; ', $t_loan->getErrors())."\n";
+						print_R($pa_values);
+					}
+					return null;
+				}
+				
+				$t_loan->addLabel(array('name' => $ps_loan_name), $pn_locale_id, null, true);
+				
+				$vn_loan_id = $t_loan->getPrimaryKey();
+			} else {
+				$vn_loan_id = array_shift($va_loan_ids);
+			}
+				
+			return $vn_loan_id;
 		}
 		# -------------------------------------------------------
 		/**

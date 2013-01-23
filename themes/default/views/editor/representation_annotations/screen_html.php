@@ -46,7 +46,7 @@
 		
 			$va_form_elements = $t_representation_annotation->getBundleFormHTMLForScreen($this->request->getActionExtra(), array(
 									'request' => $this->request, 
-									'formName' => 'RepresentationAnnotationEditorForm'));
+									'formName' => 'RepresentationAnnotationEditorForm'), $va_bundle_list);
 									
 			print join("\n", $va_form_elements);
 			
@@ -57,3 +57,5 @@
 	</div>
 
 	<div class="editorBottomPadding"><!-- empty --></div>
+	
+	<?php print caEditorFieldList($va_bundle_list); ?>

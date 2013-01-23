@@ -59,8 +59,9 @@
  			}
  		}
  		# -------------------------------------------------------
- 		public function Index($po_search, $pa_options=null) {
- 			parent::Index($po_search, $pa_options);
+ 		public function Index($pa_options=null) {
+ 			$po_search = (isset($pa_options['search']) && $pa_options['search']) ? $pa_options['search'] : null;
+ 			parent::Index($pa_options);
  			JavascriptLoadManager::register('browsable');	// need this to support browse panel when filtering/refining search results
  			
  			$t_model = $this->opo_datamodel->getTableInstance($this->ops_tablename, true);
@@ -69,8 +70,14 @@
  			$vn_page_num 			= $this->opo_result_context->getCurrentResultsPageNumber();
  			$vs_search 				= $this->opo_result_context->getSearchExpression();
  			if (!$vn_items_per_page = $this->opo_result_context->getItemsPerPage()) { $vn_items_per_page = $this->opa_items_per_page[0]; }
- 			if (!$vs_view 			= $this->opo_result_context->getCurrentView()) { $vs_view = array_shift(array_keys($this->opa_views)); }
- 			if (!($vs_sort 	= $this->opo_result_context->getCurrentSort())) { $vs_sort = array_shift(array_keys($this->opa_sorts)); }
+ 			if (!$vs_view 			= $this->opo_result_context->getCurrentView()) { 
+ 				$va_tmp = array_keys($this->opa_views);
+ 				$vs_view = array_shift($va_tmp); 
+ 			}
+ 			if (!($vs_sort 	= $this->opo_result_context->getCurrentSort())) { 
+ 				$va_tmp = array_keys($this->opa_sorts);
+ 				$vs_sort = array_shift($va_tmp); 
+ 			}
 			$vs_sort_direction = $this->opo_result_context->getCurrentSortDirection();
 			$vn_display_id 			= $this->opo_result_context->getCurrentBundleDisplay();
 
@@ -83,7 +90,8 @@
  			if (!($vn_form_id = (isset($pa_options['form_id'])) ? $pa_options['form_id'] : null)) {
 				if (!($vn_form_id = $this->opo_result_context->getParameter('form_id'))) {
 					if (sizeof($va_forms = $t_form->getForms(array('table' => $this->ops_tablename, 'user_id' => $this->request->getUserID(), 'access' => __CA_SEARCH_FORM_READ_ACCESS__)))) {
-						$vn_form_id = array_shift(array_keys($va_forms));
+						$va_tmp = array_keys($va_forms);
+						$vn_form_id = array_shift($va_tmp);
 					}
 				}
 			}
@@ -254,7 +262,8 @@
  			if (!$vn_form_id = $this->request->getParameter('form_id', pInteger)) {
  				if ((!($vn_form_id = $this->opo_result_context->getParameter('form_id'))) || (!$t_form->haveAccessToForm($this->request->getUserID(), __CA_SEARCH_FORM_READ_ACCESS__, $vn_form_id))) {
  					if (sizeof($va_forms = $t_form->getForms(array('table' => $this->ops_tablename, 'user_id' => $this->request->getUserID(), 'access' => __CA_SEARCH_FORM_READ_ACCESS__)))) {
- 						$vn_form_id = array_shift(array_keys($va_forms));
+ 						$va_tmp = array_keys($va_forms);
+ 						$vn_form_id = array_shift($va_tmp);
  					}
  				}
  			}
@@ -291,7 +300,8 @@
  			if (!($vn_form_id = $pn_form_id)) {
  				if ((!($vn_form_id = $this->opo_result_context->getParameter('form_id'))) || (!$t_form->haveAccessToForm($this->request->getUserID(), __CA_SEARCH_FORM_READ_ACCESS__, $vn_form_id))) {
  					if (sizeof($va_forms = $t_form->getForms(array('table' => $this->ops_tablename, 'user_id' => $this->request->getUserID(), 'access' => __CA_SEARCH_FORM_READ_ACCESS__)))) {
- 						$vn_form_id = array_shift(array_keys($va_forms));
+ 						$va_tmp = array_keys($va_forms);
+ 						$vn_form_id = array_shift($va_tmp);
  					}
  				}
  			}
@@ -312,7 +322,7 @@
  		# -------------------------------------------------------
  		# Sidebar info handler
  		# -------------------------------------------------------
- 		public function Tools($pa_parameters, $po_search) {
+ 		public function Tools($pa_parameters) {
  			parent::Tools($pa_parameters, $po_search);
 
 			$this->view->setVar('mode_name', _t('search'));

@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2008-2011 Whirl-i-Gig
+ * Copyright 2008-2012 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -48,7 +48,7 @@
 									'request' => $this->request, 
 									'formName' => 'ListItemEditorForm',
 									'context_id' => $vs_context_id
-								));
+								), $va_bundle_list);
 			
 			print join("\n", $va_form_elements);
 			
@@ -61,3 +61,5 @@
 	</div>
 
 	<div class="editorBottomPadding"><!-- empty --></div>
+	
+	<?php print caEditorFieldList($va_bundle_list); ?>

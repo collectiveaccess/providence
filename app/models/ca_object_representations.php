@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2008-2012 Whirl-i-Gig
+ * Copyright 2008-2013 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -356,7 +356,7 @@ class ca_object_representations extends BundlableLabelableBaseModelWithAttribute
 		}
 		
 		// do insert
-		if ($vn_rc = parent::insert()) {
+		if ($vn_rc = parent::insert($pa_options)) {
 			$va_media_info = $this->getMediaInfo('media', 'original');
 			$this->set('md5', $va_media_info['MD5']);
 			$this->set('mimetype', $va_media_info['MIMETYPE']);
@@ -366,7 +366,7 @@ class ca_object_representations extends BundlableLabelableBaseModelWithAttribute
 			$va_metadata = $this->get('media_metadata', array('binary' => true));
 			caExtractEmbeddedMetadata($this, $va_metadata, $this->get('locale_id'));
 			
-			$vn_rc = parent::update($pa_options);
+			$vn_rc = parent::update();
 		}
 		
 		return $vn_rc;
@@ -390,10 +390,6 @@ class ca_object_representations extends BundlableLabelableBaseModelWithAttribute
 		}
 		
 		return $vn_rc;
-	}
-	# ------------------------------------------------------
-	public function delete($pn_delete_related=false, $pa_options=null) {
-		return parent::delete($pn_delete_related, $pa_options);
 	}
 	# ------------------------------------------------------
 	/**

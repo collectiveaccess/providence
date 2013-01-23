@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2009-2011 Whirl-i-Gig
+ * Copyright 2009-2013 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -59,7 +59,7 @@ class ElementsController extends BaseEditorController {
 		return $this->render('elements_list_html.php');
 	}
 	# -------------------------------------------------------
-	public function Edit(){
+	public function Edit($pa_values=null, $pa_options=null){
 		JavascriptLoadManager::register('bundleableEditor');
 		
 		
@@ -116,7 +116,7 @@ class ElementsController extends BaseEditorController {
 		$this->render('elements_edit_html.php');
 	}
 	# -------------------------------------------------------
-	public function Save() {
+	public function Save($pa_values=null) {
 		$t_element = $this->getElementObject();
 		$t_element->setMode(ACCESS_WRITE);
 		$va_request = $_REQUEST; /* we don't want to modify $_REQUEST since this may cause ugly side-effects */
@@ -306,7 +306,7 @@ class ElementsController extends BaseEditorController {
 		return;
  	}
 	# -------------------------------------------------------
-	public function Delete() {
+	public function Delete($pa_values=null) {
 		$t_element = $this->getElementObject();
 		if ($this->request->getParameter('confirm', pInteger)) {
 			$t_element->setMode(ACCESS_WRITE);

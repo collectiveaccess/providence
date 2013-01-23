@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2008-2010 Whirl-i-Gig
+ * Copyright 2008-2013 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -271,18 +271,18 @@ class ca_entity_labels extends BaseLabel {
 		parent::__construct($pn_id);	# call superclass constructor
 	}
 	# ------------------------------------------------------
-	public function insert() {
+	public function insert($pa_options=null) {
 		if (!$this->get('displayname')) {
 			$this->set('displayname', trim(preg_replace('![ ]+!', ' ', $this->get('forename').' '.$this->get('middlename').' '.$this->get('surname'))));
 		}
-		return parent::insert();
+		return parent::insert($pa_options);
 	}
 	# ------------------------------------------------------
-	public function update() {
+	public function update($pa_options=null) {
 		if (!$this->get('displayname')) {
 			$this->set('displayname', trim(preg_replace('![ ]+!', ' ', $this->get('forename').' '.$this->get('middlename').' '.$this->get('surname'))));
 		}
-		return parent::update();
+		return parent::update($pa_options);
 	}
 	# ------------------------------------------------------
 }

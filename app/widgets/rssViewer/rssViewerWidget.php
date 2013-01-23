@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2011 Whirl-i-Gig
+ * Copyright 2011-2013 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -61,7 +61,7 @@
 		/**
 		 *
 		 */
-		public function renderWidget($ps_widget_id, $pa_settings) {
+		public function renderWidget($ps_widget_id, &$pa_settings) {
 			parent::renderWidget($ps_widget_id, $pa_settings);
 
 			if ($pa_settings['feed_url']) {
