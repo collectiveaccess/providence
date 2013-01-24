@@ -3,7 +3,7 @@ msgstr ""
 "Project-Id-Version: CollectiveAccess\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2013-01-24 15:11+0100\n"
-"PO-Revision-Date: 2013-01-24 15:43+0100\n"
+"PO-Revision-Date: 2013-01-24 16:01+0100\n"
 "Last-Translator: Gautier MICHELIN <gm@ideesculture.com>\n"
 "Language-Team: francais <ideesculture@gmail.com>\n"
 "Language: fr_FR\n"
@@ -80,7 +80,7 @@ msgstr "actif"
 
 #: app/controllers/administrate/access/UsersController.php:281
 msgid "not active"
-msgstr ""
+msgstr "inactif"
 
 #: app/controllers/administrate/access/UsersController.php:318
 msgid "There are no users"
@@ -1450,7 +1450,7 @@ msgstr "Annuler"
 
 #: app/helpers/displayHelpers.php:274 app/helpers/displayHelpers.php:276
 msgid "Type is used by %1 %2"
-msgstr ""
+msgstr "Type utilisé par %1 %2"
 
 #: app/helpers/displayHelpers.php:294
 msgid "Has %1 reference to %2"
@@ -4627,9 +4627,8 @@ msgid "Could not set type to <em>%1</em>: %2"
 msgstr "Impossible de ré-ordonner le point de parcours %1 : %2"
 
 #: app/lib/ca/BaseEditorController.php:832
-#, fuzzy
 msgid "Set type to <em>%1</em>"
-msgstr "Par <em>%1</em>"
+msgstr "Définir le type à <em>%1</em>"
 
 #: app/lib/ca/BaseEditorController.php:838
 msgid "Cannot change type"
@@ -4696,9 +4695,8 @@ msgid "<em>%1</em> does not exist. Create?"
 msgstr "<em>%1</em> n'existe pas. Le créer ?"
 
 #: app/lib/ca/BaseQuickAddController.php:208
-#, fuzzy
 msgid "You are not allowed to quickadd %1"
-msgstr "Vous êtes déconnecté"
+msgstr "Vous n'êtes pas autorisé à faire un ajout rapide de %1"
 
 #: app/lib/ca/BaseSearchController.php:137
 msgid "%1 search"
@@ -4995,6 +4993,8 @@ msgid ""
 "Cannot do dry run save when in transaction. Try again without setting a "
 "transaction."
 msgstr ""
+"Impossible de lancer en \"dry run\" pendant une transaction. Veuillez "
+"réessayer sans définir de transaction."
 
 #: app/lib/ca/BundlableLabelableBaseModelWithAttributes.php:2540
 #: app/lib/ca/BundlableLabelableBaseModelWithAttributes.php:2577
@@ -5580,12 +5580,11 @@ msgstr "Le début doit être inférieur à la fin"
 
 #: app/lib/ca/Service/BaseJSONService.php:71
 msgid "Data sent via POST doesn't seem to be in JSON format"
-msgstr ""
+msgstr "Les données envoyées par POST ne semblent pas être au format JSON"
 
 #: app/lib/ca/Service/BaseJSONService.php:87
-#, fuzzy
 msgid "Table name does not exist"
-msgstr "L'ensemble n'existe pas"
+msgstr "Le nom de la table n'existe pas"
 
 #: app/lib/ca/Service/BaseJSONService.php:129
 msgid "Accessing this table directly is not allowed"
@@ -5595,38 +5594,35 @@ msgstr "L'accès direct à cette table n'est pas autorisé"
 #: app/lib/ca/Service/BrowseService.php:90
 msgid "Getting results for browses without criteria is not supported"
 msgstr ""
+"Impossible d'afficher les résultats via Parcourir sans critère de défini"
 
 #: app/lib/ca/Service/BrowseService.php:58
 #: app/lib/ca/Service/ItemService.php:81
-#, fuzzy
 msgid "Invalid HTTP request method"
-msgstr "Code d'élément invalide"
+msgstr "Méthode de requête HTTP invalide"
 
 #: app/lib/ca/Service/ItemService.php:63
 msgid "Missing request body for PUT"
-msgstr ""
+msgstr "PUT : Il manque le corps (body) dans les données envoyées"
 
 #: app/lib/ca/Service/ItemService.php:76
-#, fuzzy
 msgid "No identifier specified"
-msgstr "Aucun champ spécifié"
+msgstr "Aucun identifiant spécifié"
 
 #: app/lib/ca/Service/ItemService.php:243
-#, fuzzy
 msgid "No intrinsic fields specified"
-msgstr "Aucun champ spécifié"
+msgstr "Aucun champ intrinsèque spécifié"
 
 #: app/lib/ca/Service/ModelService.php:58
 #: app/lib/ca/Service/ModelService.php:84
 #: app/lib/ca/Service/SearchJSONService.php:60
-#, fuzzy
 msgid "Invalid request body format"
-msgstr "Transformation invalide %1"
+msgstr "Format du corps (body) de la requête invalide"
 
 #: app/lib/ca/Service/ModelService.php:64
 #: app/lib/ca/Service/SearchJSONService.php:66
 msgid "Invalid HTTP request method for this service"
-msgstr ""
+msgstr "Méthode de requête HTTP invalide pour ce service"
 
 #: app/lib/ca/Service/OAIPMHService.php:144
 msgid "Invalid provider '%1'."
@@ -5991,7 +5987,7 @@ msgstr "Impossible d'ouvrir le fichier de média depuis l'URL [%1]"
 
 #: app/lib/core/BaseModel.php:3703
 msgid "Media already exists in database"
-msgstr ""
+msgstr "Le média existe déjà dans la base"
 
 #: app/lib/core/BaseModel.php:3731
 msgid "File type %1 not accepted by %2"
@@ -6119,9 +6115,8 @@ msgid "Related table specification \"%1\" is not valid"
 msgstr "La spécification de table liée \"%1\" est invalide"
 
 #: app/lib/core/BaseModel.php:7599 app/lib/core/BaseModel.php:7739
-#, fuzzy
 msgid "Relationship already exists"
-msgstr "Types de relation"
+msgstr "La relation existe déjà"
 
 #: app/lib/core/BaseModel.php:8382
 msgid "No locale was set for tag"
@@ -7012,9 +7007,8 @@ msgid "View PDF file"
 msgstr "Afficher le fichier PDF"
 
 #: app/lib/core/Plugins/SearchEngine/ElasticSearch.php:98
-#, fuzzy
 msgid "Index delete failed: %1"
-msgstr "Echec dans l'optimisation de l'index : %1"
+msgstr "Erreur dans la suppression de l'index : %1"
 
 #: app/lib/core/Plugins/SearchEngine/ElasticSearch.php:575
 #: app/lib/core/Plugins/SearchEngine/Solr.php:546
@@ -7032,9 +7026,8 @@ msgid "Indexing commit failed for %1: %2; response was %3"
 msgstr "Echec d'indexation pour %1 : %2 ; la réponse était %3"
 
 #: app/lib/core/Plugins/SearchEngine/ElasticSearchConfigurationSettings.php:80
-#, fuzzy
 msgid "ElasticSearch up and running"
-msgstr "Les cores Solr sont fonctionnels et en éxécution"
+msgstr "ElasticSearch activé et en fonction"
 
 #: app/lib/core/Plugins/SearchEngine/ElasticSearchConfigurationSettings.php:82
 msgid "ElasticSearch index exists"
@@ -8989,17 +8982,19 @@ msgstr "Vous ne pouvez pas accéder à ce formulaire"
 
 #: app/models/ca_collections.php:182 app/models/ca_objects.php:240
 msgid "Inherit access settings from parent"
-msgstr ""
+msgstr "Hériter le contrôle d'accès de l'élément parent"
 
 #: app/models/ca_collections.php:184 app/models/ca_objects.php:242
 msgid "Inherit access settings from parent?"
-msgstr ""
+msgstr "Hériter le contrôle d'accès de l'élément parent ?"
 
 #: app/models/ca_collections.php:184
 msgid ""
 "Determines whether access settings set for parent collections are applied to "
 "this collection."
 msgstr ""
+"Détermine si le contrôle d'accès de l'élément parent est appliqué à cette "
+"collection."
 
 #: app/models/ca_collections.php:340 app/models/ca_entities.php:322
 #: app/models/ca_list_items.php:339 app/models/ca_loans.php:285
@@ -9835,7 +9830,7 @@ msgstr "Vendeur"
 
 #: app/models/ca_commerce_orders.php:95
 msgid "Optional note indicating who sales agent for sale was."
-msgstr ""
+msgstr "Note optionnelle pour définir qui a réalisé la vente."
 
 #: app/models/ca_commerce_orders.php:103 app/models/ca_commerce_orders.php:201
 #: app/models/ca_users.php:87
@@ -10536,60 +10531,51 @@ msgid "data importer group"
 msgstr "groupe d'import de données"
 
 #: app/models/ca_data_importer_groups.php:43
-#, fuzzy
 msgid "data importer groups"
-msgstr "éléments d'import de données"
+msgstr "groupes d'import de données"
 
 #: app/models/ca_data_importer_groups.php:50
-#, fuzzy
 msgid ""
 "Unique numeric identifier used by CollectiveAccess internally to identify "
 "this importer group"
 msgstr ""
 "Identifiant numérique unique utilisé par CollectiveAccess de manière interne "
-"pour identifier ce groupe"
+"pour identifier ce groupe d'import"
 
 #: app/models/ca_data_importer_groups.php:64
 msgid "Group code"
 msgstr "Code du groupe"
 
 #: app/models/ca_data_importer_groups.php:64
-#, fuzzy
 msgid "Unique alphanumeric identifier for this importer group."
-msgstr "Identifiant alphanumérique unique pour cette unité."
+msgstr "Identifiant alphanumérique unique pour ce groupe d'import."
 
 #: app/models/ca_data_importer_groups.php:73
 #: app/models/ca_data_importer_items.php:79
-#, fuzzy
 msgid "Name of CollectiveAccess bundle to map to."
-msgstr "Nom du paquet CollectiveAccess à mapper."
+msgstr "Nom du bloc CollectiveAccess à mapper."
 
 #: app/models/ca_data_importer_groups.php:81
-#, fuzzy
 msgid "Importer group settings"
-msgstr "Correspondances d'mport/export"
+msgstr "Paramètres du groupe d'import"
 
 #: app/models/ca_data_importer_items.php:42
-#, fuzzy
 msgid "data importer item"
 msgstr "élément d'import de données"
 
 #: app/models/ca_data_importer_items.php:43
-#, fuzzy
 msgid "data importer items"
 msgstr "éléments d'import de données"
 
 #: app/models/ca_data_importer_items.php:50
-#, fuzzy
 msgid ""
 "Unique numeric identifier used by CollectiveAccess internally to identify "
 "this importer item"
 msgstr ""
 "Identifiant numérique unique utilisé par CollectiveAccess de manière interne "
-"pour identifier cet élément de l'ensemble"
+"pour identifier cet élément de l'import"
 
 #: app/models/ca_data_importer_items.php:71
-#, fuzzy
 msgid ""
 "Source in external format to map CollectiveAccess path to. The format of the "
 "external element is determined by the target. For XML-based formats this "
@@ -10602,9 +10588,8 @@ msgstr ""
 "format XPath ; pour les formats texte délimités ce sera un numéro de colonne."
 
 #: app/models/ca_data_importer_items.php:87
-#, fuzzy
 msgid "Importer item settings"
-msgstr "Correspondances d'mport/export"
+msgstr "Paramètres de l'élément d'import"
 
 #: app/models/ca_data_importer_labels.php:41
 msgid "importer name"
@@ -10667,9 +10652,8 @@ msgid "lists"
 msgstr "listes"
 
 #: app/models/ca_data_importers.php:93
-#, fuzzy
 msgid "Importer settings"
-msgstr "Paramètres du rôle"
+msgstr "Paramètres de l'import"
 
 #: app/models/ca_editor_ui_bundle_placement_type_restrictions.php:46
 msgid "editor ui bundle placement type restriction"
@@ -10977,23 +10961,20 @@ msgstr "Hauteur de la navigation hiérarchique."
 
 #: app/models/ca_editor_ui_screens.php:524
 msgid "Restrict to checklist of terms from related collections?"
-msgstr ""
+msgstr "Restreindre à la liste des termes des collections liées ?"
 
 #: app/models/ca_editor_ui_screens.php:525
 msgid "xxx."
-msgstr ""
+msgstr "xxx."
 
 #: app/models/ca_editor_ui_screens.php:534
 msgid "Restrict checklist to terms related to collection as"
-msgstr ""
+msgstr "Restreindre à la liste des termes des collections liées"
 
 #: app/models/ca_editor_ui_screens.php:535
 #: app/models/ca_editor_ui_screens.php:545
-#, fuzzy
 msgid "xxx. Leave all unselected for no restriction."
-msgstr ""
-"Limite l'affichage aux éléments du (des) type(s) spécifiés(s). Laissers vide "
-"pour ne pas appliquer de restriction."
+msgstr "xxx. Laisser tout désélectionné pour ne mettre aucune restriction."
 
 #: app/models/ca_editor_ui_screens.php:544
 #, fuzzy
@@ -14472,28 +14453,24 @@ msgid "%1 must be set"
 msgstr "%1 doit être défini"
 
 #: app/models/ca_users.php:1496
-#, fuzzy
 msgid "Value for %1 must be greater than %2"
-msgstr "%1 ne doit être plus grand que %2"
+msgstr "La valeur de %1 ne doit être plus grand que %2"
 
 #: app/models/ca_users.php:1504
-#, fuzzy
 msgid "Value for %1 must be less than %2"
-msgstr "%1 doit être inférieur à %2"
+msgstr "La valeur de %1 doit être inférieure à %2"
 
 #: app/models/ca_users.php:1520
 msgid "Value for %1 must be between %2 and %3 characters"
 msgstr "La valeur de %1 doit se situer entre %2 et %3 caractères"
 
 #: app/models/ca_users.php:1531
-#, fuzzy
 msgid "Value for %1 must be greater than %2 characters"
-msgstr "La valeur de %1 doit se situer entre %2 et %3 caractères"
+msgstr "La valeur de %1 doit avoir plus de %2 caractères"
 
 #: app/models/ca_users.php:1539
-#, fuzzy
 msgid "Value for %1 must be less than %2 characters"
-msgstr "La valeur de %1 doit se situer entre %2 et %3 caractères"
+msgstr "La valeur de %1 doit avoir moins de %2 caractères"
 
 #: app/models/ca_users.php:2638 app/models/ca_users.php:2656
 msgid "No default UI locale is available"
@@ -14555,13 +14532,12 @@ msgid "Could not open download URL \"%1\""
 msgstr "Impossible d'ouvrir l'URL de téléchargement %1"
 
 #: app/plugins/clientServices/clientServicesPlugin.php:123
-#, fuzzy
 msgid ""
 "Media file %1 failed to be downloaded from url \"%2\"; checksums differ: %3/"
 "%4"
 msgstr ""
-"Le fichier média %1 n'a pu être téléchargé depuis %2 ; la somme de contrôle "
-"ne correspond pas : %3/%4"
+"Le fichier média %1 n'a pu être téléchargé depuis l'url \"%2\" ; la somme de "
+"contrôle ne correspond pas : %3/%4"
 
 #: app/plugins/clientServices/clientServicesPlugin.php:127
 msgid "Invalid representation_id \"%1\" or target path \"%2\""
@@ -16129,7 +16105,6 @@ msgstr ""
 "\"_blank\">wiki du projet</a> CollectiveAccess."
 
 #: install/inc/page1.php:78
-#, fuzzy
 msgid ""
 "Don't see a suitable profile? Browse our <a href=\"http://www."
 "CollectiveAccess.org/support/library\" target=\"_blank\">installation "
@@ -16143,7 +16118,7 @@ msgstr ""
 "\">répertoire des profils d'installation</a> pour d'autres configurations "
 "développées par la communauté des utilisateurs de CollectiveAccess. Pour "
 "installer un nouveau profil, copiez tout simplement le fichier dans le "
-"répertoire <i>install/profiles</i> sur le serveur et lancez à nouveau le "
+"répertoire <i>install/profiles/xml</i> sur le serveur et lancez à nouveau le "
 "programme d'installation dans votre navigateur."
 
 #: install/inc/page1.php:87
@@ -16517,9 +16492,8 @@ msgstr ""
 "\t"
 
 #: themes/default/views/administrate/maintenance/export_configuration_landing_html.php:38
-#, fuzzy
 msgid "Export and download system configuration"
-msgstr "Exporter la configuration"
+msgstr "Exporter la configuration système"
 
 #: themes/default/views/administrate/maintenance/hierarchical_reindex_landing_html.php:29
 #: themes/default/views/administrate/maintenance/hierarchical_reindex_landing_html.php:37
@@ -20717,9 +20691,8 @@ msgstr ""
 "Autoriser l'utilisateur à créer de nouvelles annotations de représentations"
 
 #: app/conf/user_actions.conf:275
-#, fuzzy
 msgid "Edit representation annotations"
-msgstr "annotations pour la représentation"
+msgstr "Modifier les annotations pour les représentations"
 
 #: app/conf/user_actions.conf:276
 msgid "Allow user to edit existing representation annotations"
@@ -20727,9 +20700,8 @@ msgstr ""
 "Autoriser l'utilisateur à modifier des représentations d'objets existantes"
 
 #: app/conf/user_actions.conf:279
-#, fuzzy
 msgid "Delete representation annotations"
-msgstr "Créer des annotations de représentation"
+msgstr "Supprimer les annotations des représentations"
 
 #: app/conf/user_actions.conf:280
 msgid "Allow user to delete representation annotations"
@@ -21545,27 +21517,23 @@ msgstr ""
 "de type webservice."
 
 #: app/conf/user_actions.conf:723
-#, fuzzy
 msgid "Use JSON search service"
-msgstr "Utiliser le service de recherche"
+msgstr "Utiliser le service de recherche JSON"
 
 #: app/conf/user_actions.conf:724
-#, fuzzy
 msgid "Allow user to use JSON search service"
-msgstr "Autoriser l'utilisateur à utiliser le webservice de recherche."
+msgstr "Autoriser l'utilisateur à utiliser le webservice de recherche JSON."
 
 #: app/conf/user_actions.conf:727
-#, fuzzy
 msgid "Use JSON item service"
-msgstr "Utiliser le service iteminfo"
+msgstr "Utiliser le service item JSON"
 
 #: app/conf/user_actions.conf:728
-#, fuzzy
 msgid ""
 "Allow user to use JSON item service (used to get and modify detailed "
 "information about records)."
 msgstr ""
-"Autoriser l'utilisateur à utiliser le webservice iteminfo (utilisé pour "
+"Autoriser l'utilisateur à utiliser le webservice item JSON (utilisé pour "
 "obtenir des informations détaillées à propos d'un enregistrement)."
 
 #: app/conf/user_actions.conf:731
@@ -21573,13 +21541,12 @@ msgid "Use JSON model service"
 msgstr "Utiliser le service JSON des modèles"
 
 #: app/conf/user_actions.conf:732
-#, fuzzy
 msgid ""
 "Allow user to use JSON model service (used to get detailed information about "
 "the metadata schema)."
 msgstr ""
-"Autoriser l'utilisateur à utiliser le webservice iteminfo (utilisé pour "
-"obtenir des informations détaillées à propos d'un enregistrement)."
+"Autoriser l'utilisateur à utiliser le webservice modèle JSON (utilisé pour "
+"obtenir des informations détaillées sur la structure de la base)."
 
 #: app/conf/user_actions.conf:735
 msgid "Use JSON browse service"
@@ -21761,15 +21728,15 @@ msgstr "Fond de carte"
 
 #: app/conf/user_pref_defs.conf:155
 msgid "Sets base layer to use when searching, viewing or editing using maps."
-msgstr ""
+msgstr "Défini le fond de carte à utiliser "
 
 #: app/conf/user_pref_defs.conf:160
 msgid "OpenStreetMap"
-msgstr ""
+msgstr "OpenStreetMap"
 
 #: app/conf/user_pref_defs.conf:161
 msgid "Toner"
-msgstr ""
+msgstr "Toner"
 
 #: app/conf/user_pref_defs.conf:162
 msgid "Watercolor"
@@ -21777,7 +21744,7 @@ msgstr "Aquarelle"
 
 #: app/conf/user_pref_defs.conf:169
 msgid "Naming policy for downloaded media"
-msgstr "Politique de nommage pour les médias téléchargés"
+msgstr "Nom de fichier pour les médias téléchargés"
 
 #: app/conf/user_pref_defs.conf:170
 msgid ""
