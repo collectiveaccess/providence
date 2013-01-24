@@ -3,7 +3,7 @@ msgstr ""
 "Project-Id-Version: CollectiveAccess\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2013-01-24 15:11+0100\n"
-"PO-Revision-Date: 2013-01-24 15:34+0100\n"
+"PO-Revision-Date: 2013-01-24 15:35+0100\n"
 "Last-Translator: Gautier MICHELIN <gm@ideesculture.com>\n"
 "Language-Team: francais <ideesculture@gmail.com>\n"
 "Language: fr_FR\n"
@@ -18588,9 +18588,8 @@ msgid "User account to associate order with"
 msgstr "Compte utilisateur pour associer la commande"
 
 #: themes/default/views/client/orders/order_customer_info_html.php:158
-#, fuzzy
 msgid "Sale information"
-msgstr "Information disponible"
+msgstr "Information sur la vente"
 
 #: themes/default/views/client/orders/order_fulfillment_events_html.php:48
 #: app/conf/navigation.conf:2934
@@ -18931,9 +18930,8 @@ msgstr "Modifier les paramètres de ce widget"
 #: themes/default/views/editor/occurrences/quickadd_html.php:46
 #: themes/default/views/editor/places/quickadd_html.php:45
 #: themes/default/views/editor/storage_locations/quickadd_html.php:45
-#, fuzzy
 msgid "Quick Add %1"
-msgstr "Ajouter %1"
+msgstr "Ajouter rapide - %1"
 
 #: themes/default/views/editor/collections/quickadd_html.php:94
 #: themes/default/views/editor/occurrences/quickadd_html.php:94
@@ -18945,9 +18943,8 @@ msgstr "%1 créés"
 #: themes/default/views/editor/occurrences/quickadd_html.php:94
 #: themes/default/views/editor/places/quickadd_html.php:146
 #: themes/default/views/editor/storage_locations/quickadd_html.php:146
-#, fuzzy
 msgid "Quick add %1"
-msgstr "Saisie rapide de lieux"
+msgstr "Ajout rapide - %1"
 
 #: themes/default/views/editor/entities/quickadd_html.php:95
 msgid "Created entity "
@@ -19486,7 +19483,7 @@ msgstr "%1 ensembles accessibles"
 
 #: themes/default/views/manage/widget_set_info_html.php:42
 msgid "1 set created by other users"
-msgstr "1 set créé par d'autres utilisateurs"
+msgstr "1 ensemble créé par d'autres utilisateurs"
 
 #: themes/default/views/manage/widget_set_info_html.php:44
 msgid "%1 sets created by other users"
