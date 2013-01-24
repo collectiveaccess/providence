@@ -1540,23 +1540,7 @@
 			if ($o_results->numHits() != 1) {
 				$va_facets = $this->getFacetList();
 				$o_browse_cache = new BrowseCache();
-				$va_parent_browse_params = $this->opo_ca_browse_cache->getParameters();;
-				
-				
-				//
-				// Get facets in parent browse (browse with all criteria except the last)
-				// for availability checking. If a facet wasn't available for the parent browse it won't be
-				// available for this one either.
-				//
-				$va_facets = null;
-				if (is_array($va_cur_criteria = $va_parent_browse_params['criteria'])) {
-					array_pop($va_parent_browse_params['criteria']);
-					if ($o_browse_cache->load(BrowseCache::makeCacheKey($va_parent_browse_params, is_array($this->opa_browse_type_ids) ? $this->opa_browse_type_ids : array()))) {
-						if (is_array($va_facet_list = $o_browse_cache->getFacets())) {
-							$va_facets = array_keys($va_facet_list);
-						}
-					}
-				}
+				$va_parent_browse_params = $this->opo_ca_browse_cache->getParameters();
 				
 				//
 				// If we couldn't get facets for a parent browse then use full facet list
@@ -1600,6 +1584,157 @@
 			// is facet cached?
 			if (isset($va_facet_cache[$ps_facet_name]) && is_array($va_facet_cache[$ps_facet_name])) { return $va_facet_cache[$ps_facet_name]; }
 			return $this->getFacetContent($ps_facet_name, $pa_options);
+		}
+		/**
+		 * Return grouped list of items from the specified table that are related to the current browse set.
+		 * Grouping of items is based on browse configuration.
+		 * 
+		 * Options:
+		 *		checkAccess = array of access values to filter facets that have an 'access' field by
+		 */
+		public function getFacetWithGroups($ps_facet_name, $ps_group_mode, $ps_grouping_field=null, $pa_options=null){
+			$va_facet_info = $this->getInfoForFacet($ps_facet_name);
+			$va_facet = $this->getFacet($ps_facet_name, $pa_options);
+
+			$t_rel_types = new ca_relationship_types();
+			$va_relationship_types = $t_rel_types->getRelationshipInfo($va_facet_info['relationship_table']);
+
+			$t_model = $this->opo_datamodel->getTableInstance($va_facet_info['table']);
+			if (method_exists($t_model, "getTypeList")) {
+				$va_types = $t_model->getTypeList();
+			}
+
+			$vn_element_datatype = null;
+			if ($vs_grouping_attribute_element_code = (preg_match('!^ca_attribute_([\w]+)!', $ps_grouping_field, $va_matches)) ? $va_matches[1] : null) {
+				$t_element = new ca_metadata_elements();
+				$t_element->load(array('element_code' => $vs_grouping_attribute_element_code));
+				$vn_grouping_attribute_id = $t_element->getPrimaryKey();
+				$vn_element_datatype = $t_element->get('datatype');
+			}
+
+			if ((!isset($va_facet_info['groupings'][$ps_grouping_field]) || !($va_facet_info['groupings'][$ps_grouping_field])) && is_array($va_facet_info['groupings'])) { 
+				$va_tmp = array_keys($va_facet_info['groupings']);
+				$ps_grouping_field = $va_tmp[0];
+			}
+
+			$va_grouped_items = array();
+			switch($ps_group_mode) {
+				case 'none':
+					// nothing to do here
+					return $va_facet;
+				case 'alphabetical';
+				default:
+					$o_tep = new TimeExpressionParser();
+		
+					// TODO: how do we handle non-latin characters?
+					$va_label_order_by_fields = isset($va_facet_info['order_by_label_fields']) ? $va_facet_info['order_by_label_fields'] : array('label');
+					foreach($va_facet as $vn_i => $va_item) {
+						$va_groups = array();
+						switch($ps_grouping_field) {
+							case 'label':
+								$va_groups[] = mb_substr($va_item[$va_label_order_by_fields[0]], 0, 1);	
+								break;
+							case 'relationship_types':
+								foreach($va_item['rel_type_id'] as $vs_g) {
+									if (isset($va_relationship_types[$vs_g]['typename'])) {
+										$va_groups[] = $va_relationship_types[$vs_g]['typename'];
+									} else {
+										$va_groups[] = $vs_g;
+									}
+								}
+								break;
+							case 'type':
+								foreach($va_item['type_id'] as $vs_g) {
+									if (isset($va_types[$vs_g]['name_plural'])) {
+										$va_groups[] = $va_types[$vs_g]['name_plural'];
+									} else {
+										$va_groups[] = _t('Type ').$vs_g;
+									}
+								}
+								break;
+							default:
+								if ($vn_grouping_attribute_id) {
+									switch($vn_element_datatype) {
+										case 2: //date
+											$va_tmp = explode(':', $ps_grouping_field);
+											if(isset($va_item['ca_attribute_'.$vn_grouping_attribute_id]) && is_array($va_item['ca_attribute_'.$vn_grouping_attribute_id])) {
+												foreach($va_item['ca_attribute_'.$vn_grouping_attribute_id] as $vn_i => $va_v) {
+													$va_v = $o_tep->normalizeDateRange($va_v['value_decimal1'], $va_v['value_decimal2'], (isset($va_tmp[1]) && in_array($va_tmp[1], array('years', 'decades', 'centuries'))) ? $va_tmp[1] : 'decades');
+													foreach($va_v as $vn_i => $vn_v) {
+														$va_groups[] = $vn_v;
+													}
+												}
+											}
+											break;
+										default:
+											if(isset($va_item['ca_attribute_'.$vn_grouping_attribute_id]) && is_array($va_item['ca_attribute_'.$vn_grouping_attribute_id])) {
+												foreach($va_item['ca_attribute_'.$vn_grouping_attribute_id] as $vn_i => $va_v) {
+													$va_groups[] = $va_v['value_longtext1'];
+												}
+											}
+											break;
+									}
+								} else {
+									$va_groups[] = mb_substr($va_item[$va_label_order_by_fields[0]], 0, 1);	
+								}
+								break;
+						}
+						
+						foreach($va_groups as $vs_group) {
+							$vs_group = unicode_ucfirst($vs_group);
+							$vs_alpha_key = '';
+							foreach($va_label_order_by_fields as $vs_f) {
+								$vs_alpha_key .= $va_item[$vs_f];
+							}
+							$vs_alpha_key = trim($vs_alpha_key);
+							if (preg_match('!^[A-Z0-9]{1}!', $vs_group)) {
+								$va_grouped_items[$vs_group][$vs_alpha_key] = $va_item;
+							} else {
+								$va_grouped_items['~'][$vs_alpha_key] = $va_item;
+							}
+						}
+					}
+					
+					// sort lists alphabetically
+					foreach($va_grouped_items as $vs_key => $va_list) {
+						ksort($va_list);
+						$va_grouped_items[$vs_key] = $va_list;
+					}
+					ksort($va_grouped_items);
+					break;
+			}
+
+			return $va_grouped_items;
+		}
+		# ------------------------------------------------------
+		/**
+		 * Returns list of hierarchy_ids used by entries in the specified authority facet. For example, if the current browse
+		 * has an authority facet for vocabulary terms (aka. ca_list_items), then this methods will return list_ids for all of 
+		 * the lists in which the facet entries reside. For a ca_places authority facet, this will return all of the place hierarchy_ids
+		 * for which places in the facet reside.
+		 *
+		 * Note that this method only returns values for authority facets. It is not relevant for any other facet type.
+		 *
+		 * @param string $ps_facet_name The name of the authority facet
+		 * @param array $pa_options Options:
+		 *		checkAccess = array of access values to filter facets that have an 'access' field by
+		 *
+		 * @return array A list of ids
+		 */
+		public function getHierarchyIDsForFacet($ps_facet_name, $pa_options=null) {
+			if (!is_array($this->opa_browse_settings)) { return null; }
+			$va_facet_cache = $this->opo_ca_browse_cache->getFacets();
+			
+			// is facet cached?
+			if (!isset($va_facet_cache[$ps_facet_name]) || !is_array($va_facet_cache[$ps_facet_name])) {
+				$va_facet_cache[$ps_facet_name] = $this->getFacetContent($ps_facet_name, $pa_options);
+			}
+			
+			$va_hier_ids = array();
+			foreach($va_facet_cache[$ps_facet_name] as $vn_id => $va_item) {
+				$va_hier_ids[$va_item['hierarchy_id']] = true;
+			}
+			return array_keys($va_hier_ids);
 		}
 		# ------------------------------------------------------
 		/**
@@ -2898,10 +3033,14 @@ if (!$va_facet_info['show_all_when_first_facet'] || ($this->numCriteria() > 0)) 
 					$va_selects[] = $t_rel_item->tableName().'.'.$vs_rel_pk;				// get primary key of related
 					
 					
-					$vs_hier_parent_id_fld = null;
+					$vs_hier_parent_id_fld = $vs_hier_id_fld = null;
 					if ($vb_rel_is_hierarchical) {
 						$vs_hier_parent_id_fld = $t_rel_item->getProperty('HIERARCHY_PARENT_ID_FLD');
 						$va_selects[] = $t_rel_item->tableName().'.'.$vs_hier_parent_id_fld;
+						
+						if ($vs_hier_id_fld = $t_rel_item->getProperty('HIERARCHY_ID_FLD')) {
+							$va_selects[] = $t_rel_item->tableName().'.'.$vs_hier_id_fld;
+						}
 					}
 					
 					// analyze group_fields (if defined) and add them to the query
@@ -3033,6 +3172,7 @@ if (!$va_facet_info['show_all_when_first_facet'] || ($this->numCriteria() > 0)) 
 									'id' => $va_fetched_row[$vs_rel_pk],
 									'type_id' => array(),
 									'parent_id' => $vb_rel_is_hierarchical ? $va_fetched_row[$vs_hier_parent_id_fld] : null,
+									'hierarchy_id' => $vb_rel_is_hierarchical ? $va_fetched_row[$vs_hier_id_fld] : null,
 									'rel_type_id' => array(),
 									'child_count' => 0
 								);
@@ -3056,7 +3196,7 @@ if (!$va_facet_info['show_all_when_first_facet'] || ($this->numCriteria() > 0)) 
 						if (!isset($va_facet_info['dont_expand_hierarchically']) || !$va_facet_info['dont_expand_hierarchically']) {
 							while(sizeof($va_ids = array_keys($va_facet_parents))) {
 								$vs_sql = "
-									SELECT p.".$t_rel_item->primaryKey().", p.{$vs_hier_parent_id_fld}
+									SELECT p.".$t_rel_item->primaryKey().", p.{$vs_hier_parent_id_fld}".(($vs_hier_id_fld = $t_rel_item->getProperty('HIERARCHY_ID_FLD')) ? ", p.{$vs_hier_id_fld}" : "")."
 									FROM ".$t_rel_item->tableName()." p
 									WHERE
 										(p.".$t_rel_item->primaryKey()." IN (?)) AND (p.{$vs_hier_parent_id_fld} IS NOT NULL)
@@ -3070,6 +3210,7 @@ if (!$va_facet_info['show_all_when_first_facet'] || ($this->numCriteria() > 0)) 
 										'id' => $va_fetched_row[$vs_rel_pk],
 										'type_id' => array(),
 										'parent_id' => $vb_rel_is_hierarchical ? $va_fetched_row[$vs_hier_parent_id_fld] : null,
+										'hierarchy_id' => $vb_rel_is_hierarchical ? $va_fetched_row[$vs_hier_id_fld] : null,
 										'rel_type_id' => array(),
 										'child_count' => 0
 									);
@@ -3189,7 +3330,14 @@ if (!$va_facet_info['show_all_when_first_facet'] || ($this->numCriteria() > 0)) 
 		/**
 		 * Fetch the subject rows found by an execute()'d browse
 		 */
-		public function getResults($po_result=null, $pa_options=null) {
+		public function getResults($pa_options=null) {
+			return $this->doGetResults(null, $pa_options);
+		}
+		# ------------------------------------------------------
+		/**
+		 * Fetch the subject rows found by an execute()'d browse
+		 */
+		protected function doGetResults($po_result=null, $pa_options=null) {
 			if (!is_array($this->opa_browse_settings)) { return null; }
 			$t_item = $this->opo_datamodel->getInstanceByTableName($this->ops_browse_table_name, true);
 			$vb_will_sort = (isset($pa_options['sort']) && $pa_options['sort'] && (($this->getCachedSortSetting() != $pa_options['sort']) || ($this->getCachedSortDirectionSetting() != $pa_options['sort_direction'])));
@@ -3199,7 +3347,9 @@ if (!$va_facet_info['show_all_when_first_facet'] || ($this->numCriteria() > 0)) 
 			
 			if(sizeof($va_results =  $this->opo_ca_browse_cache->getResults())) {
 				if ($vb_will_sort) {
-					$va_results = array_keys($this->sortHits(array_flip($va_results), $pa_options['sort'], (isset($pa_options['sort_direction']) ? $pa_options['sort_direction'] : null)));
+					$va_results_flipped = array_flip($va_results);
+					$va_tmp = $this->sortHits($va_results_flipped, $pa_options['sort'], (isset($pa_options['sort_direction']) ? $pa_options['sort_direction'] : null));
+					$va_results = array_keys($va_tmp);
 
 					$this->opo_ca_browse_cache->setParameter('table_num', $this->opn_browse_table_num); 
 					$this->opo_ca_browse_cache->setParameter('sort', $pa_options['sort']);
@@ -3383,7 +3533,8 @@ if (!$va_facet_info['show_all_when_first_facet'] || ($this->numCriteria() > 0)) 
 				// Grab values and index for sorting later
 				//
 				
-				$vs_sort_field = array_pop(explode('.', $vs_sortable_value_fld));
+				$va_tmp = explode('.', $vs_sortable_value_fld);
+				$vs_sort_field = array_pop($va_tmp);
 				$vs_join_sql = join("\n", $va_joins);
 				$vs_sql = "
 					SELECT {$vs_table_name}.{$vs_table_pk}{$vs_locale_where}, lower({$vs_sortable_value_fld}) {$vs_sort_field}

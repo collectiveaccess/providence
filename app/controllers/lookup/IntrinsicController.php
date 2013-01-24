@@ -65,7 +65,7 @@
 			
 			$o_db = new Db();
 			
-			$qr_res = $o_db->query($x="
+			$qr_res = $o_db->query("
 				SELECT DISTINCT {$vs_field}
 				FROM {$vs_table}
 				WHERE

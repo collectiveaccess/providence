@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2009-2012 Whirl-i-Gig
+ * Copyright 2009-2013 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -83,13 +83,13 @@
 		/**
 		 * 
 		 */
-		public function delete($pa_options=null) {
+		public function delete($pb_delete_related=false, $pa_options=null, $pa_fields=null, $pa_table_list=null) {
 			$t_left = $this->getAppDatamodel()->getInstanceByTableNum($this->getLeftTableNum());
 			$vn_left_id = $this->get($this->getLeftTableFieldName());
 			$vn_right_id = $this->get($this->getRightTableFieldName());
 			
 			$t_right = $this->getAppDatamodel()->getInstanceByTableNum($this->getRightTableNum());
-			if ($vn_rc = parent::delete($pa_options)) {
+			if ($vn_rc = parent::delete($pb_delete_related, $pa_options, $pa_fields, $pa_table_list)) {
 				foreach(array($this->getRightTableName() => $t_left, $this->getLeftTableName() => $t_right) as $vs_other_table_name => $t_instance) {
 					if ((bool)$t_instance->getProperty('SUPPORTS_ACL_INHERITANCE')) {
 						if (is_array($va_inheritors = $t_instance->getProperty('ACL_INHERITANCE_LIST')) && in_array($vs_other_table_name, $va_inheritors)) {
@@ -456,7 +456,8 @@
 								$va_subtype_lookups[$vs_subtype] = true;
 							}
 							
-							$va_processed_types[$vs_subtype] = caExtractValuesByUserLocale($va_types_by_locale, null, null, array('returnList' => true));
+							if (!is_array($va_processed_types[$vs_subtype])) { $va_processed_types[$vs_subtype] = array(); }
+							$va_processed_types[$vs_subtype] = array_merge(	$va_processed_types[$vs_subtype], caExtractValuesByUserLocale($va_types_by_locale, null, null, array('returnList' => true)));
 						}
 					}
 				}

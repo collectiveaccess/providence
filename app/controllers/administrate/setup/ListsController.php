@@ -91,8 +91,9 @@
  		 * (eg. PlaceSearch for objects, EntitySearch for entities) and pass it to BaseSearchController->Search() 
  		 */ 
  		public function Index($pa_options=null) {
+ 			$pa_options['search'] = $this->opo_browse;
  			$this->opb_uses_hierarchy_browser = true;
- 			return parent::Index($this->opo_browse, $pa_options);
+ 			return parent::Index($pa_options);
  		}
  		# -------------------------------------------------------
  		public function ViewHierarchy() {
@@ -123,7 +124,7 @@
  		 */ 
  		public function Tools($pa_parameters) {
  			// pass instance of subject-appropriate search object as second parameter (ex. for an object search this is an instance of PlaceSearch()
- 			return parent::Tools($pa_parameters, new ListItemBrowse());
+ 			return parent::Tools($pa_parameters);
  		}
  		# -------------------------------------------------------
  	}

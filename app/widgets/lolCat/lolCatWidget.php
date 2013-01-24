@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2010 Whirl-i-Gig
+ * Copyright 2010-2013 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -60,7 +60,7 @@
 		/**
 		 *
 		 */
-		public function renderWidget($ps_widget_id, $pa_settings) {
+		public function renderWidget($ps_widget_id, &$pa_settings) {
 			parent::renderWidget($ps_widget_id, $pa_settings);
 
 			$vs_feed_url = 'http://feeds.feedburner.com/ICanHasCheezburger';
@@ -123,7 +123,7 @@
 				$this->opo_view->setVar('item_link', $item->link());
 				
 				// Find the image URL in the encoded HTML content...
-				if (preg_match("!(https://i.chzbgr.com/completestore/[^\"']+)!i", $item->encoded(), $va_matches)) {
+				if (preg_match("!(https://i.chzbgr.com/maxW500/[^\"']+)!i", $item->encoded(), $va_matches)) {
 					$vs_url = $va_matches[1];
 					
 					$vn_width = 430;							// force width of image to 430 pixels

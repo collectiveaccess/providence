@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2009-2012 Whirl-i-Gig
+ * Copyright 2009-2013 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -71,6 +71,8 @@
  		 *
  		 */
  		public function Edit($pa_values=null, $pa_options=null) {
+ 			JavascriptLoadManager::register('panel');
+ 			
  			list($vn_subject_id, $t_subject, $t_ui, $vn_parent_id, $vn_above_id) = $this->_initView($pa_options);
  			$vs_mode = $this->request->getParameter('mode', pString);
  			
@@ -412,26 +414,37 @@
  			
  			if ($vb_confirm = ($this->request->getParameter('confirm', pInteger) == 1) ? true : false) {
  				$vb_we_set_transation = false;
- 				if (!$t_subject->inTransaction()) { 
- 					$t_subject->setTransaction($o_t = new Transaction());
+ 				if (!$t_subject->inTransaction()) {
+ 					$o_t = new Transaction();
+ 					$t_subject->setTransaction($o_t);
  					$vb_we_set_transation = true;
  				}
  				
  				// Do we need to move relationships?
  				if (($vn_remap_id =  $this->request->getParameter('remapToID', pInteger)) && ($this->request->getParameter('referenceHandling', pString) == 'remap')) {
- 					$va_tables = array(
-						'ca_objects', 'ca_entities', 'ca_places', 'ca_occurrences', 'ca_collections', 'ca_storage_locations', 'ca_list_items', 'ca_loans', 'ca_movements', 'ca_tours', 'ca_tour_stops'
-					);
-					
-					$vn_c = 0;
-					foreach($va_tables as $vs_table) {
- 						$vn_c += $t_subject->moveRelationships($vs_table, $vn_remap_id);
- 					}
- 					
- 					if ($vn_c > 0) {
- 						$t_target = $this->opo_datamodel->getInstanceByTableName($this->ops_table_name);
- 						$t_target->load($vn_remap_id);
-						$this->notification->addNotification(($vn_c == 1) ? _t("Transferred %1 relationship to <em>%2</em> (%3)", $vn_c, $t_target->getLabelForDisplay(), $t_target->get($t_target->getProperty('ID_NUMBERING_ID_FIELD'))) : _t("Transferred %1 relationships to <em>%2</em> (%3)", $vn_c, $t_target->getLabelForDisplay(), $t_target->get($t_target->getProperty('ID_NUMBERING_ID_FIELD'))), __NOTIFICATION_TYPE_INFO__);	
+ 					switch($t_subject->tableName()) {
+ 						case 'ca_relationship_types':
+ 							if ($vn_c = $t_subject->moveRelationshipsToType($vn_remap_id)) {
+ 								$t_target = new ca_relationship_types($vn_remap_id);
+ 								$this->notification->addNotification(($vn_c == 1) ? _t("Transferred %1 relationship to type <em>%2</em>", $vn_c, $t_target->getLabelForDisplay()) : _t("Transferred %1 relationships to type <em>%2</em>", $vn_c, $t_target->getLabelForDisplay()), __NOTIFICATION_TYPE_INFO__);	
+ 							}
+ 							break;
+ 						default:
+							$va_tables = array(
+								'ca_objects', 'ca_entities', 'ca_places', 'ca_occurrences', 'ca_collections', 'ca_storage_locations', 'ca_list_items', 'ca_loans', 'ca_movements', 'ca_tours', 'ca_tour_stops', 'ca_object_representations'
+							);
+							
+							$vn_c = 0;
+							foreach($va_tables as $vs_table) {
+								$vn_c += $t_subject->moveRelationships($vs_table, $vn_remap_id);
+							}
+							
+							if ($vn_c > 0) {
+								$t_target = $this->opo_datamodel->getInstanceByTableName($this->ops_table_name);
+								$t_target->load($vn_remap_id);
+								$this->notification->addNotification(($vn_c == 1) ? _t("Transferred %1 relationship to <em>%2</em> (%3)", $vn_c, $t_target->getLabelForDisplay(), $t_target->get($t_target->getProperty('ID_NUMBERING_ID_FIELD'))) : _t("Transferred %1 relationships to <em>%2</em> (%3)", $vn_c, $t_target->getLabelForDisplay(), $t_target->get($t_target->getProperty('ID_NUMBERING_ID_FIELD'))), __NOTIFICATION_TYPE_INFO__);	
+							}
+						break;
 					}
 				}
  				
@@ -455,7 +468,7 @@
  				}
  			} else {
  				if ($vb_confirm) {
- 					$this->notification->addNotification(_t("%1 was deleted", $vs_type_name), __NOTIFICATION_TYPE_INFO__);
+ 					$this->notification->addNotification(_t("%1 was deleted", caUcFirstUTF8Safe($vs_type_name)), __NOTIFICATION_TYPE_INFO__);
  					
  					// update result list since it has changed
  					$this->opo_result_context->removeIDFromResults($vn_subject_id);
@@ -541,7 +554,8 @@
 					// get column header text
 					$vs_header = $va_display_item['display'];
 					if (isset($va_settings['label']) && is_array($va_settings['label'])) {
-						if ($vs_tmp = array_shift(caExtractValuesByUserLocale(array($va_settings['label'])))) { $vs_header = $vs_tmp; }
+						$va_tmp = caExtractValuesByUserLocale(array($va_settings['label']));
+						if ($vs_tmp = array_shift($va_tmp)) { $vs_header = $vs_tmp; }
 					}
 					
 					$va_display_list[$vn_placement_id] = array(

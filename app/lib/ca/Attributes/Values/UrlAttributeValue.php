@@ -174,13 +174,29 @@
  		# ------------------------------------------------------------------
  		/**
  		 * @param array $pa_options Supported options are
- 		 *		asHTML - if set, URL is returned as an HTML link 
- 		 * @return string The url
+ 		 *		asHTML = if set, URL is returned as a simple HTML link with target set to _url_details (deprecated)
+ 		 *		returnAsLink = if set, URL is returned as a link formatted according to settings in the other returnAsLink* options described below
+ 		 *		returnAsLinkText = text to use a content of HTML link. If omitted the url itself is used as the link content.
+ 		 *		returnAsLinkAttributes = array of attributes to include in link <a> tag. Use this to set class, alt and any other link attributes.
+ 		 *		
+ 		 * @return string The url or link HTML
  		 */
 		public function getDisplayValue($pa_options=null) {
 			if (isset($pa_options['asHTML']) && $pa_options['asHTML']) {
-				return "<a href='".$this->ops_text_value."' target='_url_details'>".$this->ops_text_value.'</a>';
+				return caHTMLLink($this->ops_text_value, array('href' => $this->ops_text_value, 'target' => '_url_details'));
 			} 
+			
+			$vs_return_as_link = 				(isset($pa_options['returnAsLink'])) ? (bool)$pa_options['returnAsLink'] : false;
+			if ($vs_return_as_link) {
+				$vs_return_as_link_text = 			(isset($pa_options['returnAsLinkText'])) ? (string)$pa_options['returnAsLinkText'] : '';
+				$va_return_as_link_attributes = 	(isset($pa_options['returnAsLinkAttributes']) && is_array($pa_options['returnAsLinkAttributes'])) ? $pa_options['returnAsLinkAttributes'] : array();
+			
+				$va_return_as_link_attributes['href'] = $this->ops_text_value;
+			
+				if (!$vs_return_as_link_text) { $vs_return_as_link_text = $this->ops_text_value; }
+				return caHTMLLink($vs_return_as_link_text, $va_return_as_link_attributes);
+			}
+			
 			return $this->ops_text_value;
 		}
  		# ------------------------------------------------------------------

@@ -32,6 +32,9 @@
 		
  		# -------------------------------------------------------
  		public function Login() {
+			if (isset($_COOKIE['CA_'.__CA_APP_NAME__.'_ui_locale'])) {
+				if(!initializeLocale($_COOKIE['CA_'.__CA_APP_NAME__.'_ui_locale'])) die("Error loading locale ".$g_ui_locale);
+			}
  			$this->render('login_html.php');
  		}
  		# -------------------------------------------------------
@@ -40,6 +43,9 @@
 				$this->notification->addNotification(_t("Login was invalid"), __NOTIFICATION_TYPE_ERROR__);
  				
  				$this->view->setVar('notifications', $this->notification->getNotifications());
+				if (isset($_COOKIE['CA_'.__CA_APP_NAME__.'_ui_locale'])) {
+					if(!initializeLocale($_COOKIE['CA_'.__CA_APP_NAME__.'_ui_locale'])) die("Error loading locale ".$g_ui_locale);
+				}
  				$this->render('login_html.php');
 			} else {
 				//
@@ -49,14 +55,10 @@
 				$g_ui_locale_id = $this->request->user->getPreferredUILocaleID();			// get current UI locale as locale_id	 			(available as global)
 				$g_ui_locale = $this->request->user->getPreferredUILocale();				// get current UI locale as locale string 			(available as global)
 				$g_ui_units_pref = $this->request->user->getPreference('units');			// user's selected display units for measurements 	(available as global)
-				
-				if(!file_exists($vs_locale_path = __CA_APP_DIR__.'/locale/user/'.$g_ui_locale.'/messages.mo')) {
-					$vs_locale_path = __CA_APP_DIR__.'/locale/'.$g_ui_locale.'/messages.mo';
-				}
-				$_ = new Zend_Translate('gettext',$vs_locale_path, $g_ui_locale);
-				$_locale = new Zend_Locale($g_ui_locale);
-				Zend_Registry::set('Zend_Locale', $_locale);
-				
+								
+				if(!initializeLocale($g_ui_locale)) die("Error loading locale ".$g_ui_locale);
+				global $ca_translation_cache;
+				$ca_translation_cache = array();				
 				AppNavigation::clearMenuBarCache($this->request);	// want to clear menu bar on login
 				
 				// Notify the user of the good news

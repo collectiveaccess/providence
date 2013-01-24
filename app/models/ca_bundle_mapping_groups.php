@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2011 Whirl-i-Gig
+ * Copyright 2011-2013 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -336,19 +336,19 @@ class ca_bundle_mapping_groups extends BundlableLabelableBaseModelWithAttributes
 		unset($this->SETTINGS);
 	}
 	# ------------------------------------------------------
-	public function load ($pm_id=null) { 
-		$vn_rc = parent::load($pm_id);
+	public function load ($pm_id=null, $pb_use_cache=true) { 
+		$vn_rc = parent::load($pm_id, $pb_use_cache);
 		$this->initSettings();
 		return $vn_rc;
 	}
 	# ------------------------------------------------------
-	public function insert ($pa_options=null) { 
+	public function insert($pa_options=null) { 
 		$vn_rc = parent::insert($pa_options);
 		$this->initSettings();
 		return $vn_rc;
 	}
 	# ------------------------------------------------------
-	public function update ($pa_options=null) { 
+	public function update($pa_options=null) { 
 		$vn_rc = parent::update($pa_options);
 		$this->initSettings();
 		return $vn_rc;
