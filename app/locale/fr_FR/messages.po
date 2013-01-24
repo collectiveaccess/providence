@@ -3,7 +3,7 @@ msgstr ""
 "Project-Id-Version: CollectiveAccess\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2013-01-24 15:11+0100\n"
-"PO-Revision-Date: 2013-01-24 15:13+0100\n"
+"PO-Revision-Date: 2013-01-24 15:22+0100\n"
 "Last-Translator: Gautier MICHELIN <gm@ideesculture.com>\n"
 "Language-Team: francais <ideesculture@gmail.com>\n"
 "Language: fr_FR\n"
@@ -6427,9 +6427,8 @@ msgid "Loading..."
 msgstr "Chargement…"
 
 #: app/lib/core/Plugins/GeographicMap/OpenLayers.php:483
-#, fuzzy
 msgid "Remove"
-msgstr "Filtrer le HTML"
+msgstr "Retirer"
 
 #: app/lib/core/Plugins/Media/Audio.php:143
 msgid "Provides audio processing and conversion using ffmpeg"
@@ -14485,9 +14484,8 @@ msgid "Value for %1 must be between %2 and %3"
 msgstr "La valeur de %1 doit être située entre %2 et %3."
 
 #: app/models/ca_users.php:1494 app/models/ca_users.php:1529
-#, fuzzy
 msgid "%1 must be set"
-msgstr "%1 doit être défini à %2"
+msgstr "%1 doit être défini"
 
 #: app/models/ca_users.php:1496
 #, fuzzy
@@ -15348,7 +15346,7 @@ msgstr "Forum"
 
 #: app/widgets/links/views/main_html.php:37
 msgid "Cheat sheets"
-msgstr ""
+msgstr "Astuces"
 
 #: app/widgets/lolCat/lolCatWidget.php:41
 msgid "lol Katz"
@@ -19485,54 +19483,48 @@ msgid "Set Statistics"
 msgstr "Statistiques"
 
 #: themes/default/views/manage/widget_set_info_html.php:36
-#, fuzzy
 msgid "1 set available to you"
-msgstr "1 ensemble est disponible"
+msgstr "1 ensemble accessible"
 
 #: themes/default/views/manage/widget_set_info_html.php:38
-#, fuzzy
 msgid "%1 sets available to you"
-msgstr "1 ensemble est disponible"
+msgstr "%1 ensembles accessibles"
 
 #: themes/default/views/manage/widget_set_info_html.php:42
-#, fuzzy
 msgid "1 set created by other users"
-msgstr "Le tag n'a pas été crée par l'utilisateur spécifié"
+msgstr "1 set créé par d'autres utilisateurs"
 
 #: themes/default/views/manage/widget_set_info_html.php:44
-#, fuzzy
 msgid "%1 sets created by other users"
-msgstr "Le tag n'a pas été crée par l'utilisateur spécifié"
+msgstr "%1 ensembles créés par d'autres utilisateurs"
 
 #: themes/default/views/manage/widget_set_info_html.php:48
 msgid "1 set created by the public"
-msgstr ""
+msgstr "1 ensemble créé par le public"
 
 #: themes/default/views/manage/widget_set_info_html.php:50
 msgid "%1 sets created by the public"
-msgstr ""
+msgstr "%1 ensembles créés par le public"
 
 #: themes/default/views/manage/widget_set_info_html.php:54
-#, fuzzy
 msgid "Show sets"
-msgstr "Outils de duplication"
+msgstr "Afficher les ensembles"
 
 #: themes/default/views/manage/widget_set_info_html.php:59
-#, fuzzy
 msgid "Available to you"
-msgstr "Disponible"
+msgstr "Accessible"
 
 #: themes/default/views/manage/widget_set_info_html.php:60
 msgid "By other users"
-msgstr ""
+msgstr "Par d'autres utilisateurs"
 
 #: themes/default/views/manage/widget_set_info_html.php:61
 msgid "By the public"
-msgstr ""
+msgstr "Par le public"
 
 #: themes/default/views/manage/widget_set_info_html.php:65
 msgid "Show"
-msgstr ""
+msgstr "Afficher"
 
 #: themes/default/views/manage/widget_set_info_html.php:74
 msgid "Your sets"
