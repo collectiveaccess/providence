@@ -90,7 +90,14 @@ BaseModel::$s_ca_models_definitions['ca_data_exporters'] = array(
 				'IS_NULL' => false, 
 				'DEFAULT' => '',
 				'LABEL' => _t('Settings'), 'DESCRIPTION' => _t('exporter settings')
-		)
+		),
+		'vars' => array(
+				'FIELD_TYPE' => FT_VARS, 'DISPLAY_TYPE' => DT_OMIT, 
+				'DISPLAY_WIDTH' => 88, 'DISPLAY_HEIGHT' => 15,
+				'IS_NULL' => false, 
+				'DEFAULT' => '',
+				'LABEL' => 'Variable storage', 'DESCRIPTION' => 'Storage area for exporter variables'
+		),
 	)
 );
 

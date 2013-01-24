@@ -1,6 +1,6 @@
 /*
 	Date: 22 October 2012
-	Migration: 70
+	Migration: 73
 	Description: Data structures for export
 */
 

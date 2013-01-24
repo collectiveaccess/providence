@@ -2222,6 +2222,7 @@ create table ca_data_exporters (
    exporter_code        varchar(100)         not null,
    table_num            tinyint unsigned     not null,
    settings          longtext          not null,
+   vars          longtext          not null,
    primary key (exporter_id)
 ) engine=innodb CHARACTER SET utf8 COLLATE utf8_general_ci;
 
@@ -6739,4 +6740,4 @@ create table ca_schema_updates (
 
 /* Indicate up to what migration this schema definition covers */
 /* CURRENT MIGRATION: 73 */
-INSERT IGNORE INTO ca_schema_updates (version_num, datetime) VALUES (73, unix_timestamp());
+INSERT IGNORE INTO ca_schema_updates (version_num, datetime) VALUES (74, unix_timestamp());
