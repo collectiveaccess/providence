@@ -341,7 +341,7 @@ function caFileIsIncludable($ps_file) {
 		$va_counts = array(
 			'directories' => 0, 'files' => 0
 		);
-		if ($handle = opendir($dir)) {
+		if ($handle = @opendir($dir)) {
 			while (false !== ($item = readdir($handle))) {
 				if ($item != "." && $item != ".." && ($pb_include_hidden_files || (!$pb_include_hidden_files && $item{0} !== '.'))) {
 					$vb_is_dir = is_dir("{$dir}/{$item}");
