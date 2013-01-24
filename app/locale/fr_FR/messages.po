@@ -3,7 +3,7 @@ msgstr ""
 "Project-Id-Version: CollectiveAccess\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2013-01-24 15:11+0100\n"
-"PO-Revision-Date: 2013-01-24 15:35+0100\n"
+"PO-Revision-Date: 2013-01-24 15:43+0100\n"
 "Last-Translator: Gautier MICHELIN <gm@ideesculture.com>\n"
 "Language-Team: francais <ideesculture@gmail.com>\n"
 "Language: fr_FR\n"
@@ -83,9 +83,8 @@ msgid "not active"
 msgstr ""
 
 #: app/controllers/administrate/access/UsersController.php:318
-#, fuzzy
 msgid "There are no users"
-msgstr "Il n'y a aucune recherche enregistrée"
+msgstr "Il n'y a aucun utilisateur"
 
 #: app/controllers/administrate/maintenance/ExportConfigurationController.php:50
 msgid "Profile created on %1 by %2"
@@ -9831,9 +9830,8 @@ msgid "Unique identifying number for order."
 msgstr "Identifiant unique pour le rôle utilisateur"
 
 #: app/models/ca_commerce_orders.php:95
-#, fuzzy
 msgid "Sales agent"
-msgstr "Commande"
+msgstr "Vendeur"
 
 #: app/models/ca_commerce_orders.php:95
 msgid "Optional note indicating who sales agent for sale was."
@@ -10534,9 +10532,8 @@ msgid "Success"
 msgstr "Réussi"
 
 #: app/models/ca_data_importer_groups.php:42
-#, fuzzy
 msgid "data importer group"
-msgstr "élément d'import de données"
+msgstr "groupe d'import de données"
 
 #: app/models/ca_data_importer_groups.php:43
 #, fuzzy
@@ -10553,9 +10550,8 @@ msgstr ""
 "pour identifier ce groupe"
 
 #: app/models/ca_data_importer_groups.php:64
-#, fuzzy
 msgid "Group code"
-msgstr "Groupe"
+msgstr "Code du groupe"
 
 #: app/models/ca_data_importer_groups.php:64
 #, fuzzy
@@ -10611,39 +10607,32 @@ msgid "Importer item settings"
 msgstr "Correspondances d'mport/export"
 
 #: app/models/ca_data_importer_labels.php:41
-#, fuzzy
 msgid "importer name"
-msgstr "Prénom"
+msgstr "nom de l'import"
 
 #: app/models/ca_data_importer_labels.php:42
-#, fuzzy
 msgid "importer names"
-msgstr "noms de parcours"
+msgstr "noms de l'import"
 
 #: app/models/ca_data_importer_labels.php:63
-#, fuzzy
 msgid "Name of importer"
-msgstr "Nom du lot"
+msgstr "Nom de l'import"
 
 #: app/models/ca_data_importer_labels.php:79
-#, fuzzy
 msgid "Description of importer"
-msgstr "Description de l'éditeur"
+msgstr "Description de l'import"
 
 #: app/models/ca_data_importer_labels.php:88
-#, fuzzy
 msgid "Locale of importer name"
-msgstr "Langue du nom d'affichage"
+msgstr "Langue du nom de l'import"
 
 #: app/models/ca_data_importers.php:44
-#, fuzzy
 msgid "data importer"
-msgstr "élément d'import de données"
+msgstr "import de données"
 
 #: app/models/ca_data_importers.php:45
-#, fuzzy
 msgid "data importers"
-msgstr "éléments d'import de données"
+msgstr "imports de données"
 
 #: app/models/ca_data_importers.php:52
 #, fuzzy
@@ -10655,9 +10644,8 @@ msgstr ""
 "pour identifier cet enregistrement"
 
 #: app/models/ca_data_importers.php:59
-#, fuzzy
 msgid "Importer code"
-msgstr "Mode d'import"
+msgstr "Code d'import"
 
 #: app/models/ca_data_importers.php:59
 #, fuzzy
@@ -10665,9 +10653,8 @@ msgid "Unique alphanumeric identifier for this importer."
 msgstr "Identifiant alphanumérique unique pour cette unité."
 
 #: app/models/ca_data_importers.php:69
-#, fuzzy
 msgid "Importer type"
-msgstr "Type d'item"
+msgstr "Type d'import"
 
 #: app/models/ca_data_importers.php:69
 #, fuzzy
@@ -10922,9 +10909,8 @@ msgid "Type restrictions"
 msgstr "Limitations pour les types"
 
 #: app/models/ca_editor_ui_screens.php:438
-#, fuzzy
 msgid "use default"
-msgstr "Est par défaut ?"
+msgstr "utilisé par défaut"
 
 #: app/models/ca_editor_ui_screens.php:460
 msgid ""
@@ -15097,7 +15083,7 @@ msgstr "Vous ne pouvez pas accéder à ce formulaire"
 #: themes/default/views/system/preferences_html.php:1
 #: themes/default/views/system/preferences_quickadd_html.php:1
 msgid "Reset"
-msgstr "Reset"
+msgstr "Annuler"
 
 #: app/widgets/clock/clockWidget.php:38
 msgid "Clock"
@@ -16435,9 +16421,8 @@ msgid "Active?"
 msgstr "Actif ?"
 
 #: themes/default/views/administrate/access/user_tools_html.php:35
-#, fuzzy
 msgid "Download user report as"
-msgstr "Télécharger les résultats en tant que"
+msgstr "Télécharger le rapport"
 
 #: themes/default/views/administrate/maintenance/acl_reindex_landing_html.php:29
 #: themes/default/views/administrate/maintenance/acl_reindex_landing_html.php:38
@@ -17220,7 +17205,6 @@ msgid "Close"
 msgstr "Fermer"
 
 #: themes/default/views/bundles/ca_acl_access.php:48
-#, fuzzy
 msgid "Global access"
 msgstr "Accès global"
 
@@ -17431,9 +17415,8 @@ msgstr "Ajouter un lien"
 #: themes/default/views/bundles/ca_occurrences.php:127
 #: themes/default/views/bundles/ca_places.php:202
 #: themes/default/views/bundles/ca_storage_locations.php:194
-#, fuzzy
 msgid "Quick Add"
-msgstr "Saisie rapide de lieux"
+msgstr "Ajout rapide"
 
 #: themes/default/views/bundles/ca_commerce_order_history.php:50
 msgid "No loans have been made"
@@ -17509,9 +17492,8 @@ msgid "Add screen"
 msgstr "Ajouter un écran"
 
 #: themes/default/views/bundles/ca_list_items.php:67
-#, fuzzy
 msgid "No collection subjects"
-msgstr "Ensembles de collections"
+msgstr "Sujet hors de la collection"
 
 #: themes/default/views/bundles/ca_object_lots.php:187
 msgid "Add lot"
@@ -17686,9 +17668,8 @@ msgid ""
 msgstr ""
 
 #: themes/default/views/bundles/change_type_html.php:60
-#, fuzzy
 msgid "Change type from <em>%1</em> to %2"
-msgstr "Modifications de <strong>%1</strong> du %2"
+msgstr "Modifications de type de <strong>%1</strong> en %2"
 
 #: themes/default/views/bundles/hierarchy_location.php:138
 #: themes/default/views/bundles/hierarchy_location.php:282
@@ -18931,7 +18912,7 @@ msgstr "Modifier les paramètres de ce widget"
 #: themes/default/views/editor/places/quickadd_html.php:45
 #: themes/default/views/editor/storage_locations/quickadd_html.php:45
 msgid "Quick Add %1"
-msgstr "Ajouter rapide - %1"
+msgstr "Ajout rapide - %1"
 
 #: themes/default/views/editor/collections/quickadd_html.php:94
 #: themes/default/views/editor/occurrences/quickadd_html.php:94
@@ -19024,9 +19005,8 @@ msgid "Annotation identifier"
 msgstr "Identifiant d'annotation"
 
 #: themes/default/views/editor/storage_locations/quickadd_html.php:146
-#, fuzzy
 msgid "Created storage location "
-msgstr "Créer des emplacements"
+msgstr "Emplacement créés"
 
 #: themes/default/views/editor/tours/print_summary_html.php:60
 msgid "Tour identifier"
@@ -19583,9 +19563,8 @@ msgid "is a trademark of"
 msgstr "est une marque déposée de"
 
 #: themes/default/views/pageFormat/pageFooter.php:48
-#, fuzzy
 msgid "Form table of contents"
-msgstr "Type de contenu"
+msgstr "Contenu"
 
 #: themes/default/views/pageFormat/pageHeader.php:86
 msgid ""
@@ -19997,14 +19976,12 @@ msgid "My preferences"
 msgstr "Mes préférences"
 
 #: app/conf/navigation.conf:1923 app/conf/user_pref_defs.conf:14
-#, fuzzy
 msgid "Editing"
-msgstr "%1 en cours de modification"
+msgstr "Modification"
 
 #: app/conf/navigation.conf:1931 app/conf/user_pref_defs.conf:46
-#, fuzzy
 msgid "Quick add"
-msgstr "Saisie rapide de lieux"
+msgstr "Ajout rapide"
 
 #: app/conf/navigation.conf:1947 app/conf/user_pref_defs.conf:63
 msgid "Units of measurement"
@@ -20168,7 +20145,6 @@ msgid "Overview"
 msgstr "Résumé"
 
 #: app/conf/navigation.conf:2845
-#, fuzzy
 msgid "Customer &amp; sale info"
 msgstr "Informations client"
 
@@ -20920,7 +20896,7 @@ msgstr "Autoriser l'utilisateur à dupliquer des entités"
 
 #: app/conf/user_actions.conf:369
 msgid "Quick add entities"
-msgstr "Saisie rapide d'entités"
+msgstr "Ajout rapide d'entités"
 
 #: app/conf/user_actions.conf:370
 msgid ""
@@ -20998,7 +20974,7 @@ msgstr "Autoriser l'utilisateur à dupliquer des lieux"
 
 #: app/conf/user_actions.conf:412
 msgid "Quick add places"
-msgstr "Saisie rapide de lieux"
+msgstr "Ajout rapide de lieux"
 
 #: app/conf/user_actions.conf:413
 msgid ""
@@ -21078,7 +21054,7 @@ msgstr "Autoriser l'utilisateur à dupliquer des occurrences"
 
 #: app/conf/user_actions.conf:455
 msgid "Quick add occurrences"
-msgstr "Saisie rapide d'occurrences"
+msgstr "Ajout rapide d'occurrences"
 
 #: app/conf/user_actions.conf:456
 msgid ""
@@ -21158,7 +21134,7 @@ msgstr "Autoriser l'utilisateur à dupliquer des collections"
 
 #: app/conf/user_actions.conf:498
 msgid "Quick add collections"
-msgstr "Saisie rapide de collections"
+msgstr "Ajout rapide de collections"
 
 #: app/conf/user_actions.conf:499
 msgid ""
@@ -21239,7 +21215,7 @@ msgstr "Autorise l'utilisateur à dupliquer des emplacements"
 
 #: app/conf/user_actions.conf:541
 msgid "Quick add storage locations"
-msgstr "Saisie rapide de emplacements"
+msgstr "Ajout rapide d'emplacements"
 
 #: app/conf/user_actions.conf:542
 msgid ""
@@ -21593,9 +21569,8 @@ msgstr ""
 "obtenir des informations détaillées à propos d'un enregistrement)."
 
 #: app/conf/user_actions.conf:731
-#, fuzzy
 msgid "Use JSON model service"
-msgstr "Utiliser le service iteminfo"
+msgstr "Utiliser le service JSON des modèles"
 
 #: app/conf/user_actions.conf:732
 #, fuzzy
@@ -21607,14 +21582,13 @@ msgstr ""
 "obtenir des informations détaillées à propos d'un enregistrement)."
 
 #: app/conf/user_actions.conf:735
-#, fuzzy
 msgid "Use JSON browse service"
-msgstr "Utiliser le service de recherche"
+msgstr "Utiliser le service JSON de parcours de la base"
 
 #: app/conf/user_actions.conf:736
-#, fuzzy
 msgid "Allow user to use JSON browse service."
-msgstr "Autoriser l'utilisateur à utiliser le webservice de recherche."
+msgstr ""
+"Autoriser l'utilisateur à utiliser le webservice JSON de parcours de la base."
 
 #: app/conf/user_actions.conf:742
 msgid "Use cataloguing service"
@@ -21783,7 +21757,7 @@ msgstr ""
 
 #: app/conf/user_pref_defs.conf:154
 msgid "Map base layer"
-msgstr ""
+msgstr "Fond de carte"
 
 #: app/conf/user_pref_defs.conf:155
 msgid "Sets base layer to use when searching, viewing or editing using maps."
@@ -21798,9 +21772,8 @@ msgid "Toner"
 msgstr ""
 
 #: app/conf/user_pref_defs.conf:162
-#, fuzzy
 msgid "Watercolor"
-msgstr "Couleur de l'item"
+msgstr "Aquarelle"
 
 #: app/conf/user_pref_defs.conf:169
 msgid "Naming policy for downloaded media"
@@ -22062,34 +22035,35 @@ msgstr ""
 "correspondance d'import/export."
 
 #: app/conf/user_pref_defs.conf:366
-#, fuzzy
 msgid "Selects which user interface to use when quick-adding entities."
 msgstr ""
-"Sélectionner quelle interface utilisateur utiliser de saisie des entités"
+"Sélectionner l'interface utilisateur à utiliser pour l'ajout rapide des "
+"entités"
 
 #: app/conf/user_pref_defs.conf:373
-#, fuzzy
 msgid "Selects which user interface to use when quick-adding places."
-msgstr "Sélectionner l'interface utilisateur pour saisir les lieux."
+msgstr ""
+"Sélectionner l'interface utilisateur à utiliser pour l'ajout rapide des lieux"
 
 #: app/conf/user_pref_defs.conf:380
-#, fuzzy
 msgid ""
 "Selects which user interface to use when editquick-addinging occurrences."
 msgstr ""
-"Sélectionner quelle interface utilisateur utiliser pour saisir les "
-"occurrences."
+"Sélectionner l'interface utilisateur à utiliser pour l'ajout rapide des "
+"occurrences"
 
 #: app/conf/user_pref_defs.conf:387
-#, fuzzy
 msgid "Selects which user interface to use when quick-adding collections."
-msgstr "Sélectionner l'interface utilisateur pour éditer les collections."
+msgstr ""
+"Sélectionner l'interface utilisateur à utiliser pour l'ajout rapide des "
+"collections."
 
 #: app/conf/user_pref_defs.conf:394
-#, fuzzy
 msgid ""
 "Selects which user interface to use when quick-adding storage locations."
-msgstr "Sélectionner l'interface utilisateur pour la saisie des emplacements."
+msgstr ""
+"Sélectionner l'interface utilisateur à utiliser pour l'ajout rapide des "
+"emplacements."
 
 #: app/conf/user_pref_defs.conf:404
 msgid "Display measurements in"
