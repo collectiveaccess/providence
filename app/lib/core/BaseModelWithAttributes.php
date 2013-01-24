@@ -1149,6 +1149,7 @@
 			
 			if ($t_restriction = $this->getTypeRestrictionInstance($t_element->get('element_id'))) {
 				// If batch mode force minimums to zero
+				$o_view->setVar('max_num_repeats', $vb_batch  ? 9999 : $t_restriction->getSetting('maxAttributesPerRow'));
 				$o_view->setVar('min_num_repeats', $vb_batch ? 0 : $t_restriction->getSetting('minAttributesPerRow'));
 				$o_view->setVar('min_num_to_display', $vb_batch ? 1 : $t_restriction->getSetting('minimumAttributeBundlesToDisplay'));
 			}
