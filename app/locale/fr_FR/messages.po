@@ -3,7 +3,7 @@ msgstr ""
 "Project-Id-Version: CollectiveAccess\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2013-01-24 15:11+0100\n"
-"PO-Revision-Date: 2013-01-24 16:23+0100\n"
+"PO-Revision-Date: 2013-01-24 16:33+0100\n"
 "Last-Translator: Gautier MICHELIN <gm@ideesculture.com>\n"
 "Language-Team: francais <ideesculture@gmail.com>\n"
 "Language: fr_FR\n"
@@ -19439,27 +19439,27 @@ msgstr "Statistiques"
 
 #: themes/default/views/manage/widget_set_info_html.php:36
 msgid "1 set available to you"
-msgstr "1 ensemble accessible"
+msgstr "1 ensemble visible par vous"
 
 #: themes/default/views/manage/widget_set_info_html.php:38
 msgid "%1 sets available to you"
-msgstr "%1 ensembles accessibles"
+msgstr "%1 ensembles visibles par vous"
 
 #: themes/default/views/manage/widget_set_info_html.php:42
 msgid "1 set created by other users"
-msgstr "1 ensemble créé par d'autres utilisateurs"
+msgstr "1 ensemble visible par d'autres utilisateurs"
 
 #: themes/default/views/manage/widget_set_info_html.php:44
 msgid "%1 sets created by other users"
-msgstr "%1 ensembles créés par d'autres utilisateurs"
+msgstr "%1 ensembles visibles par d'autres utilisateurs"
 
 #: themes/default/views/manage/widget_set_info_html.php:48
 msgid "1 set created by the public"
-msgstr "1 ensemble créé par le public"
+msgstr "1 ensemble visible par le public"
 
 #: themes/default/views/manage/widget_set_info_html.php:50
 msgid "%1 sets created by the public"
-msgstr "%1 ensembles créés par le public"
+msgstr "%1 ensembles visibles par le public"
 
 #: themes/default/views/manage/widget_set_info_html.php:54
 msgid "Show sets"
