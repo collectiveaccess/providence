@@ -111,7 +111,15 @@ BaseModel::$s_ca_models_definitions['ca_data_exporter_items'] = array(
 				'DISPLAY_WIDTH' => 88, 'DISPLAY_HEIGHT' => 15,
 				'IS_NULL' => false, 
 				'DEFAULT' => '',
-				'LABEL' => 'Variable storage', 'DESCRIPTION' => 'Storage area for exporter variables'
+				'LABEL' => 'Variable storage', 'DESCRIPTION' => 'Storage area for exporter item variables'
+		),
+		'rank' => array(
+				'FIELD_TYPE' => FT_NUMBER, 'DISPLAY_TYPE' => DT_FIELD, 
+				'DISPLAY_WIDTH' => 10, 'DISPLAY_HEIGHT' => 1,
+				'IS_NULL' => false, 
+				'DEFAULT' => '',
+				'DONT_ALLOW_IN_UI' => true,
+				'LABEL' => _t('Sort order'), 'DESCRIPTION' => _t('Sort order'),
 		),
 	)
 );
@@ -211,6 +219,31 @@ class ca_data_exporter_items extends BaseModel {
 		//
 		$this->SETTINGS = new ModelSettings($this, 'settings', $_ca_data_exporter_items_settings);
 		
+	}
+	# ------------------------------------------------------
+	/**
+	 * Override BaseModel::set() to prevent setting of element and source fields for existing records
+	 */
+	public function set($pa_fields, $pm_value="", $pa_options=null) {
+		if ($this->getPrimaryKey()) {
+			if(!is_array($pa_fields))  { $pa_fields = array($pa_fields => $pm_value); }
+			$va_fields_proc = array();
+			foreach($pa_fields as $vs_field => $vs_value) {
+				if (!in_array($vs_field, array('element', 'source'))) {
+					$va_fields_proc[$vs_field] = $vs_value;
+				}
+			}
+			if (!sizeof($va_fields_proc)) { $va_fields_proc = null; }
+			$vn_rc = parent::set($va_fields_proc, null, $pa_options);	
+			
+			$this->initSettings();
+			return $vn_rc;
+		}
+		
+		$vn_rc = parent::set($pa_fields, $pm_value, $pa_options);
+		
+		$this->initSettings();
+		return $vn_rc;
 	}
 	# ------------------------------------------------------
 }

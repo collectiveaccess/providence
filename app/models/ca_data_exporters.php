@@ -214,5 +214,114 @@ class ca_data_exporters extends BundlableLabelableBaseModelWithAttributes {
 		
 	}
 	# ------------------------------------------------------
+	/**
+	 * Override BaseModel::set() to prevent setting of table_num field for existing records
+	 */
+	public function set($pa_fields, $pm_value="", $pa_options=null) {
+		if ($this->getPrimaryKey()) {
+			if(!is_array($pa_fields))  { $pa_fields = array($pa_fields => $pm_value); }
+			$va_fields_proc = array();
+			foreach($pa_fields as $vs_field => $vs_value) {
+				if (!in_array($vs_field, array('table_num'))) {
+					$va_fields_proc[$vs_field] = $vs_value;
+				}
+			}
+			if (!sizeof($va_fields_proc)) { $va_fields_proc = null; }
+			$vn_rc = parent::set($va_fields_proc, null, $pa_options);	
+			
+			$this->initSettings();
+			return $vn_rc;
+		}
+		
+		$vn_rc = parent::set($pa_fields, $pm_value, $pa_options);
+		
+		$this->initSettings();
+		return $vn_rc;
+	}
+	# ------------------------------------------------------
+	/**
+	 * Get all exporter items items for this exporter
+	 * @param array $pa_options available options are:
+	 *                          includeSettingsForm
+	 *                          id_prefix
+	 * @return array array of items, keyed by their primary key
+	 */
+	public function getItems($pa_options){
+		if (!($vn_exporter_id = $this->getPrimaryKey())) { return null; }
+
+		$vb_include_settings_form = isset($pa_options['includeSettingsForm']) ? (bool)$pa_options['includeSettingsForm'] : false;
+		$vs_id_prefix = isset($pa_options['id_prefix']) ? $pa_options['id_prefix'] : '';
+
+		$vo_db = $this->getDb();
+		$qr_items = $vo_db->query("SELECT * FROM ca_data_exporter_items WHERE exporter_id = ?",$vn_exporter_id);
+
+		$va_items = array();
+		while($qr_items->nextRow()) {
+			$va_items[$vn_item_id = $qr_items->get('item_id')] = $qr_items->getRow();
+			
+			if ($vb_include_settings_form) {
+				$t_item = new ca_data_exporter_items($vn_item_id);
+				$va_items[$vn_item_id]['settings'] = $t_item->getHTMLSettingForm(array('settings' => $t_item->getSettings(), 'id' => "{$vs_id_prefix}_setting_{$vn_item_id}"));
+			}
+		}
+
+		return $va_items;
+	}
+	# ------------------------------------------------------
+	/**
+	 * Add new exporter item to this exporter.
+	 * @param int $pn_parent_id parent id for the new record. can be null
+	 * @param string $ps_source value for 'source' field. this will typicall be a bundle name
+	 * @param string $ps_element name of the target element
+	 * @param array $pa_settings array of user settings
+	 * @param array $pa_vars array of variables to store
+	 * @return ca_data_exporter_items BaseModel representation of the new record
+	 */
+	public function addItem($pn_parent_id=null,$ps_source,$ps_element,$pa_settings,$pa_vars){
+		if (!($vn_exporter_id = $this->getPrimaryKey())) { return null; }
+
+		$t_item = new ca_data_exporter_items();
+		$t_item->setMode(ACCESS_WRITE);
+		$t_item->set('parent_id',$pn_parent_id);
+		$t_item->set('exporter_id',$vn_exporter_id);
+		$t_item->set('source',$ps_source);
+		$t_item->set('element',$ps_element);
+		$t_item->set('vars',$pa_vars);
+
+		foreach($pa_settings as $vs_key => $vs_value){
+			$t_item->setSetting($vs_key,$vs_value);
+		}
+
+		$t_item->insert();
+
+		if ($t_item->numErrors()) {
+			$this->errors = array_merge($this->errors, $t_item->errors);
+			return false;
+		}
+		return $t_item;
+	}
+	# ------------------------------------------------------
+	/**
+	 * Remove item from this exporter and delete
+	 * @param int $pn_item_id primary key of the item to remove
+	 * @return boolean success state
+	 */
+	public function removeItem($pn_item_id) {
+		if (!($vn_exporter_id = $this->getPrimaryKey())) { return null; }
+		
+		$t_item = new ca_data_exporter_items($pn_item_id);
+		if ($t_item->getPrimaryKey() && ($t_item->get('exporter_id') == $vn_exporter_id)) {
+			$t_item->setMode(ACCESS_WRITE);
+			$t_item->delete(true);
+			
+			if ($t_item->numErrors()) {
+				$this->errors = array_merge($this->errors, $t_item->errors);
+				return false;
+			}
+			return true;
+		}
+		return false;
+	}
+	# ------------------------------------------------------
 }
 ?>

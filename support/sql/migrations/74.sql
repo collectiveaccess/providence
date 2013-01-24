@@ -5,6 +5,7 @@
 */
 
 ALTER TABLE ca_data_exporters ADD COLUMN vars longtext not null;
+ALTER TABLE ca_data_exporter_items ADD COLUMN rank int unsigned not null default 0;
 
 /* -------------------------------------------------------------------------------- */
 

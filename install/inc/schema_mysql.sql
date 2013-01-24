@@ -2272,6 +2272,7 @@ create table ca_data_exporter_items (
    hier_left            decimal(30,20) unsigned not null,
    hier_right           decimal(30,20) unsigned not null,
    vars              longtext          not null,
+   rank              int unsigned      not null default 0,
 
    primary key (item_id),
 
