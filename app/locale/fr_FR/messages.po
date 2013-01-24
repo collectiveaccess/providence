@@ -3,7 +3,7 @@ msgstr ""
 "Project-Id-Version: CollectiveAccess\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2013-01-24 15:11+0100\n"
-"PO-Revision-Date: 2013-01-24 15:26+0100\n"
+"PO-Revision-Date: 2013-01-24 15:34+0100\n"
 "Last-Translator: Gautier MICHELIN <gm@ideesculture.com>\n"
 "Language-Team: francais <ideesculture@gmail.com>\n"
 "Language: fr_FR\n"
@@ -75,9 +75,8 @@ msgid "Last login"
 msgstr "Dernière session"
 
 #: app/controllers/administrate/access/UsersController.php:281
-#, fuzzy
 msgid "active"
-msgstr "Actif ?"
+msgstr "actif"
 
 #: app/controllers/administrate/access/UsersController.php:281
 msgid "not active"
@@ -4634,9 +4633,8 @@ msgid "Set type to <em>%1</em>"
 msgstr "Par <em>%1</em>"
 
 #: app/lib/ca/BaseEditorController.php:838
-#, fuzzy
 msgid "Cannot change type"
-msgstr "Modifier le type"
+msgstr "Impossible de changer le type"
 
 #: app/lib/ca/BaseEditorController.php:890
 msgid "new %1"
@@ -17677,9 +17675,8 @@ msgid " for period "
 msgstr "pour la période"
 
 #: themes/default/views/bundles/change_type_html.php:56
-#, fuzzy
 msgid "Change %1 type"
-msgstr "Modifier le type"
+msgstr "Changer le type (%1)"
 
 #: themes/default/views/bundles/change_type_html.php:59
 msgid ""
@@ -18940,9 +18937,8 @@ msgstr "Ajouter %1"
 
 #: themes/default/views/editor/collections/quickadd_html.php:94
 #: themes/default/views/editor/occurrences/quickadd_html.php:94
-#, fuzzy
 msgid "Created %1 "
-msgstr "Créé le %1"
+msgstr "%1 créés"
 
 #: themes/default/views/editor/collections/quickadd_html.php:94
 #: themes/default/views/editor/entities/quickadd_html.php:95
@@ -18954,9 +18950,8 @@ msgid "Quick add %1"
 msgstr "Saisie rapide de lieux"
 
 #: themes/default/views/editor/entities/quickadd_html.php:95
-#, fuzzy
 msgid "Created entity "
-msgstr "Créer une entité"
+msgstr "Entité créée"
 
 #: themes/default/views/editor/object_events/print_summary_html.php:60
 msgid "Object event identifier"
@@ -19024,9 +19019,8 @@ msgid "Rotating..."
 msgstr "Rotation..."
 
 #: themes/default/views/editor/places/quickadd_html.php:146
-#, fuzzy
 msgid "Created place "
-msgstr "Créer un lieu"
+msgstr "Lieu créé"
 
 #: themes/default/views/editor/representation_annotations/print_summary_html.php:60
 msgid "Annotation identifier"
@@ -19512,15 +19506,15 @@ msgstr "Afficher les ensembles"
 
 #: themes/default/views/manage/widget_set_info_html.php:59
 msgid "Available to you"
-msgstr "Accessible"
+msgstr "Visibles par vous"
 
 #: themes/default/views/manage/widget_set_info_html.php:60
 msgid "By other users"
-msgstr "Par d'autres utilisateurs"
+msgstr "Visibles par d'autres utilisateurs"
 
 #: themes/default/views/manage/widget_set_info_html.php:61
 msgid "By the public"
-msgstr "Par le public"
+msgstr "Visibles par le public"
 
 #: themes/default/views/manage/widget_set_info_html.php:65
 msgid "Show"
@@ -20313,9 +20307,8 @@ msgstr ""
 "pour tous les utilisateurs"
 
 #: app/conf/user_actions.conf:55
-#, fuzzy
 msgid "Administrate sets"
-msgstr "Administration"
+msgstr "Gérer les ensembles"
 
 #: app/conf/user_actions.conf:56
 msgid ""
