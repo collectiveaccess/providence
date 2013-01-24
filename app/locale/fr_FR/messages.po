@@ -3,7 +3,7 @@ msgstr ""
 "Project-Id-Version: CollectiveAccess\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2013-01-24 15:11+0100\n"
-"PO-Revision-Date: 2013-01-24 16:01+0100\n"
+"PO-Revision-Date: 2013-01-24 16:13+0100\n"
 "Last-Translator: Gautier MICHELIN <gm@ideesculture.com>\n"
 "Language-Team: francais <ideesculture@gmail.com>\n"
 "Language: fr_FR\n"
@@ -341,9 +341,8 @@ msgid "Errors occurred when undeleting user: %1"
 msgstr "Des erreurs ont eu lieu lors de la restauration de l'utilisateur : %1"
 
 #: app/controllers/client/library/CheckOutController.php:190
-#, fuzzy
 msgid "Errors occurred when reactivating user: %1"
-msgstr "Des erreurs ont eu lieu lors de la création du nouvel utilisateur : %1"
+msgstr "Des erreurs ont eu lieu lors de la réactivation de l'utilisateur : %1"
 
 #: app/controllers/client/library/CheckOutController.php:206
 msgid "Errors occurred when creating new user: %1"
@@ -999,9 +998,8 @@ msgstr ""
 
 #: app/controllers/lookup/AttributeValueController.php:64
 #: app/controllers/lookup/IntrinsicController.php:60
-#, fuzzy
 msgid "You do not have access to this bundle"
-msgstr "Vous ne pouvez pas accéder à ce formulaire"
+msgstr "Vous n'avez pas accès à ce bloc"
 
 #: app/controllers/lookup/AttributeValueController.php:70
 msgid "Element code is not bound to the specified table"
@@ -1022,9 +1020,8 @@ msgid "Could not connect to GeoNames"
 msgstr "Impossible de se connecter à GeoNames"
 
 #: app/controllers/lookup/IntrinsicController.php:55
-#, fuzzy
 msgid "Invalid bundle name"
-msgstr "Nom de table invalide"
+msgstr "Nom de bloc invalide"
 
 #: app/controllers/lookup/LCSHController.php:74
 #: app/controllers/lookup/TaxonomyController.php:177
@@ -1033,9 +1030,8 @@ msgstr "ERREUR"
 
 #: app/controllers/lookup/ObjectCollectionHierarchyController.php:130
 #: app/lib/ca/BaseLookupController.php:165
-#, fuzzy
 msgid "No matches found for <em>%1</em>"
-msgstr "Aucun objet correspondant n'a été trouvé pour <em>%1</em>"
+msgstr "Aucune correspondance pour <em>%1</em>"
 
 #: app/controllers/lookup/TaxonomyController.php:167
 msgid "ERROR: uBio web service query failed."
@@ -4249,9 +4245,8 @@ msgstr ""
 "radio ou de checklist."
 
 #: app/lib/ca/Attributes/Values/ListAttributeValue.php:214
-#, fuzzy
 msgid "Item_id is not valid for element %1"
-msgstr "%1 est une date invalide"
+msgstr "item_id n'est pas valide pour l'élément %1"
 
 #: app/lib/ca/Attributes/Values/ListAttributeValue.php:220
 msgid "%1 is not a valid list item_id for %2 [%3]"
@@ -4591,14 +4586,12 @@ msgid "Cannot delete root of hierarchy"
 msgstr "Impossible de supprimer la racine de la hiérarchie"
 
 #: app/lib/ca/BaseEditorController.php:429
-#, fuzzy
 msgid "Transferred %1 relationship to type <em>%2</em>"
-msgstr "Relation %1 transférée vers <em>%2</em> (%3)"
+msgstr "Relation transférée vers le type <em>%2</em>"
 
 #: app/lib/ca/BaseEditorController.php:429
-#, fuzzy
 msgid "Transferred %1 relationships to type <em>%2</em>"
-msgstr "Relations %1 transférées vers <em>%2</em> (%3)"
+msgstr "%1 relations transférée vers le type <em>%2</em>"
 
 #: app/lib/ca/BaseEditorController.php:445
 msgid "Transferred %1 relationship to <em>%2</em> (%3)"
@@ -4617,14 +4610,12 @@ msgid "Could not generate PDF: %1"
 msgstr "Impossible de générer le PDF : %1"
 
 #: app/lib/ca/BaseEditorController.php:811
-#, fuzzy
 msgid "Could not set ACL inheritance settings: %1"
-msgstr "Impossible de déterminer les éléments frères/soeurs de %1"
+msgstr "Impossible de définir l'héritage des droits d'accès : %1"
 
 #: app/lib/ca/BaseEditorController.php:830
-#, fuzzy
 msgid "Could not set type to <em>%1</em>: %2"
-msgstr "Impossible de ré-ordonner le point de parcours %1 : %2"
+msgstr "Impossible de définir le type de <em>%1</em> : %2"
 
 #: app/lib/ca/BaseEditorController.php:832
 msgid "Set type to <em>%1</em>"
@@ -7016,14 +7007,12 @@ msgid "Commit of index delete failed: %1"
 msgstr "Echec dans la transmission de la suppression d'index : %1"
 
 #: app/lib/core/Plugins/SearchEngine/ElasticSearch.php:634
-#, fuzzy
 msgid "Indexing commit failed for %1; response was %2"
-msgstr "Echec dans la transmission de l'indexation : %1 ; la réponse était %2"
+msgstr "Indexation échouée pour %1 ; la réponse retournée est %2"
 
 #: app/lib/core/Plugins/SearchEngine/ElasticSearch.php:637
-#, fuzzy
 msgid "Indexing commit failed for %1: %2; response was %3"
-msgstr "Echec d'indexation pour %1 : %2 ; la réponse était %3"
+msgstr "Indexation échouée pour %1 : %2 ; la réponse retournée est %3"
 
 #: app/lib/core/Plugins/SearchEngine/ElasticSearchConfigurationSettings.php:80
 msgid "ElasticSearch up and running"
@@ -7031,17 +7020,20 @@ msgstr "ElasticSearch activé et en fonction"
 
 #: app/lib/core/Plugins/SearchEngine/ElasticSearchConfigurationSettings.php:82
 msgid "ElasticSearch index exists"
-msgstr ""
+msgstr "L'index ElasticSearch existe"
 
 #: app/lib/core/Plugins/SearchEngine/ElasticSearchConfigurationSettings.php:85
 msgid "The ElasticSearch service must be running."
-msgstr ""
+msgstr "Le service ElasticSearch doit être en fonction."
 
 #: app/lib/core/Plugins/SearchEngine/ElasticSearchConfigurationSettings.php:87
 msgid ""
 "CollectiveAccess uses only a single index in an ElasticSearch setup. The "
 "name of that index can be set in the CollectiveAccess configuration."
 msgstr ""
+"CollectiveAccess utilise un seul index pour la configuration "
+"d'ElasticSearch. Le nom de cet index peut être défini dans la configuration "
+"de CollectiveAccess."
 
 #: app/lib/core/Plugins/SearchEngine/ElasticSearchConfigurationSettings.php:90
 msgid ""
@@ -7049,6 +7041,9 @@ msgid ""
 "your CollectiveAccess configuration (the ElasticSearch URL and index name in "
 "particular)."
 msgstr ""
+"Installe et lance le service ElasticSearch. Si il est déjà lancé, vérifiez "
+"votre configuration de CollectiveAccess (l'URL et le nom de l'index "
+"ElasticSearch particulièrement)."
 
 #: app/lib/core/Plugins/SearchEngine/ElasticSearchConfigurationSettings.php:92
 msgid ""
@@ -8270,13 +8265,12 @@ msgid "Placement label"
 msgstr "Libellé d'emplacement"
 
 #: app/models/ca_bundle_displays.php:1369
-#, fuzzy
 msgid ""
 "The label for this placement as defined in the placements settings. The "
 "value used will be adjusted to reflect the current user&apos;s locale."
 msgstr ""
-"Le libellé de cet emplacement défini dans les paramètres des emplacements. "
-"La valeur utilisée sera déterminée en fonction de la langue utilisateur."
+"Le libellé de cette position de bloc. La valeur utilisée sera déterminée en "
+"fonction de la langue de l'utilisateur."
 
 #: app/models/ca_bundle_displays.php:1443
 msgid "Specified version of media"
@@ -8311,9 +8305,8 @@ msgid "has no access"
 msgstr "n'a pas accès"
 
 #: app/models/ca_bundle_displays_x_user_groups.php:74
-#, fuzzy
 msgid "Indicates group&apos;s level of access to the display. "
-msgstr "Indique une gestion par groupe des droits d'affichage"
+msgstr "Indique le droit d'accès du groupe à l'affichage."
 
 #: app/models/ca_bundle_displays_x_users.php:40
 msgid "bundle displays ⇔ user association"
@@ -8326,9 +8319,8 @@ msgstr "associations affichages ⇔ utilisateur"
 #: app/models/ca_bundle_displays_x_users.php:73
 #: app/models/ca_editor_uis_x_user_groups.php:73
 #: app/models/ca_editor_uis_x_users.php:73
-#, fuzzy
 msgid "Indicates user&apos;s level of access to the display. "
-msgstr "Indique une gestion par utilisateur des droits d'affichage"
+msgstr "Indique le droit d'accès de l'utilisateur à l'affichage."
 
 #: app/models/ca_bundle_mapping_group_labels.php:41
 msgid "mapping unit name"
@@ -8976,9 +8968,8 @@ msgid "Indicates if the collection is deleted or not."
 msgstr "Indique si une collection est supprimée ou non."
 
 #: app/models/ca_collections.php:181 app/models/ca_objects.php:239
-#, fuzzy
 msgid "Do not inherit access settings from parent"
-msgstr "Vous ne pouvez pas accéder à ce formulaire"
+msgstr "N'hérite pas des droits d'accès de l'objet parent"
 
 #: app/models/ca_collections.php:182 app/models/ca_objects.php:240
 msgid "Inherit access settings from parent"
@@ -10620,31 +10611,29 @@ msgid "data importers"
 msgstr "imports de données"
 
 #: app/models/ca_data_importers.php:52
-#, fuzzy
 msgid ""
 "Unique numeric identifier used by CollectiveAccess internally to identify "
 "this importer"
 msgstr ""
 "Identifiant numérique unique utilisé par CollectiveAccess de manière interne "
-"pour identifier cet enregistrement"
+"pour identifier cet import"
 
 #: app/models/ca_data_importers.php:59
 msgid "Importer code"
 msgstr "Code d'import"
 
 #: app/models/ca_data_importers.php:59
-#, fuzzy
 msgid "Unique alphanumeric identifier for this importer."
-msgstr "Identifiant alphanumérique unique pour cette unité."
+msgstr "Identifiant alphanumérique unique pour cet import."
 
 #: app/models/ca_data_importers.php:69
 msgid "Importer type"
 msgstr "Type d'import"
 
 #: app/models/ca_data_importers.php:69
-#, fuzzy
 msgid "Indicates type of item importer is used for."
-msgstr "Indique le type d'item pour lequel cet affichage est utilisé."
+msgstr ""
+"Indique le type d'enregistrement pour lequel cet import peut être utilisé."
 
 #: app/models/ca_data_importers.php:84 app/models/ca_editor_uis.php:101
 #: app/models/ca_lists.php:52 app/models/ca_metadata_type_restrictions.php:102
@@ -10977,9 +10966,8 @@ msgid "xxx. Leave all unselected for no restriction."
 msgstr "xxx. Laisser tout désélectionné pour ne mettre aucune restriction."
 
 #: app/models/ca_editor_ui_screens.php:544
-#, fuzzy
 msgid "Use for checked collection terms relationship type"
-msgstr "relation occurrence ⇔ collection"
+msgstr "Utilisé pour les types de relations sélectionnés vers les collections"
 
 #: app/models/ca_editor_ui_screens.php:567
 msgid "Open hierarchy browser by default"
@@ -12966,23 +12954,27 @@ msgstr ""
 
 #: app/models/ca_objects.php:228
 msgid "Inherit access settings from related collections"
-msgstr ""
+msgstr "Hériter les paramètres d'accès des collections liées"
 
 #: app/models/ca_objects.php:230
 msgid "Inherit access settings from collections?"
-msgstr ""
+msgstr "Hériter les paramètres d'accès des collections liées ?"
 
 #: app/models/ca_objects.php:230
 msgid ""
 "Determines whether access settings set for related collections are applied "
 "to this object."
 msgstr ""
+"Détermine si les droits d'accès définis pour les collections liées "
+"s'appliquent à cet objet."
 
 #: app/models/ca_objects.php:242
 msgid ""
 "Determines whether access settings set for parent objects are applied to "
 "this object."
 msgstr ""
+"Détermine si les droits d'accès définis pour les objets parents s'appliquent "
+"à cet objet."
 
 #: app/models/ca_objects.php:397
 msgid "Media representations"
@@ -13685,9 +13677,8 @@ msgid "search forms ⇔ group associations"
 msgstr "associations formulaires ⇔ groupe"
 
 #: app/models/ca_search_forms_x_user_groups.php:74
-#, fuzzy
 msgid "Indicates group&apos;s level of access to the form. "
-msgstr "Indique une gestion par groupe des droits pour l'accès au formulaire."
+msgstr "Indique les niveau d'accès des groupes au formulaire."
 
 #: app/models/ca_search_forms_x_users.php:40
 msgid "search forms ⇔ user association"
@@ -13698,9 +13689,8 @@ msgid "search forms ⇔ user associations"
 msgstr "associations formulaires ⇔ utilisateur"
 
 #: app/models/ca_search_forms_x_users.php:73
-#, fuzzy
 msgid "Indicates user&apos;s level of access to the form. "
-msgstr "Indique une gestion par utilisateur pour l'accès au formulaire."
+msgstr "Indique les niveau d'accès des utilisateurs au formulaire."
 
 #: app/models/ca_set_item_labels.php:40
 msgid "set item caption"
@@ -13841,9 +13831,8 @@ msgid "group-set assocations"
 msgstr "associations groupe-ensemble"
 
 #: app/models/ca_sets_x_user_groups.php:74
-#, fuzzy
 msgid "Indicates group&apos;s level of access to the set. "
-msgstr "Indique une gestion par groupe des droits pour l'accès à l'ensemble."
+msgstr "Indique les niveau d'accès des groupes à l'ensemble."
 
 #: app/models/ca_sets_x_user_groups.php:82 app/models/ca_sets_x_users.php:81
 msgid ""
@@ -13862,9 +13851,8 @@ msgid "user-set assocations"
 msgstr "associations utilisateur-ensemble"
 
 #: app/models/ca_sets_x_users.php:73
-#, fuzzy
 msgid "Indicates user&apos;s level of access to the set. "
-msgstr "Indique une gestion par utilisateur pour l'accès à l'ensemble."
+msgstr "Indique les niveau d'accès des utilisateurs à l'ensemble."
 
 #: app/models/ca_storage_location_labels.php:40
 msgid "storage location name"
@@ -14384,9 +14372,8 @@ msgstr ""
 "notifications et les alertes transmises par email à cet utilisateur."
 
 #: app/models/ca_users.php:111
-#, fuzzy
 msgid "Related entity (optional)"
-msgstr "Personnes liées"
+msgstr "Personnes liées (optionnel)"
 
 #: app/models/ca_users.php:111
 msgid "The entity this user login is associated with."
@@ -17640,6 +17627,9 @@ msgid ""
 "fields not applicable to the new type to be discarded. This action cannot be "
 "undone."
 msgstr ""
+"<strong>Attention :</strong> changer le type %1 entraînera la pert "
+"d'information de toys les champs qui ne peuvent s'appliquer au nouveau type. "
+"Cette action ne peut pas être annulée."
 
 #: themes/default/views/bundles/change_type_html.php:60
 msgid "Change type from <em>%1</em> to %2"
@@ -20262,6 +20252,8 @@ msgid ""
 "Allow user view, edit and delete all sets regardless of ownership or access "
 "control"
 msgstr ""
+"Autorise l'utilisateur à afficher, modifier et supprimer tous les ensembles "
+"quelque soit leur propriétaire ou leur droit d'accès"
 
 #: app/conf/user_actions.conf:59
 msgid "Initiate search reindexing"
