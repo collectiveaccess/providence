@@ -3,21 +3,21 @@ msgstr ""
 "Project-Id-Version: CollectiveAccess\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2012-09-04 23:00+0200\n"
-"PO-Revision-Date: 2013-01-24 14:14+0100\n"
+"PO-Revision-Date: 2013-01-24 14:24+0100\n"
 "Last-Translator: Gautier MICHELIN <gm@ideesculture.com>\n"
 "Language-Team: francais <ideesculture@gmail.com>\n"
 "Language: fr_FR\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"X-Poedit-SourceCharset: utf-8\n"
+"X-Poedit-SourceCharset: UTF-8\n"
 "X-Poedit-Basepath: /Users/gautier/Documents/github/collectiveaccess/"
-"providence-french\n"
+"providence\n"
 "X-Poedit-KeywordsList: _t;_p;_\n"
 "Plural-Forms: nplurals=2; plural=(n > 1)\n"
 "X-Poedit-Bookmarks: 324,373,564,610,1014,1337,1638,1913,2388,-1\n"
 "X-Poedit-SearchPath-0: /Users/gautier/Documents/github/collectiveaccess/"
-"providence-french\n"
+"providence\n"
 
 #: app/controllers/administrate/access/GroupsController.php:58
 #: app/controllers/administrate/access/UsersController.php:67
@@ -733,7 +733,7 @@ msgstr "lieux"
 #: app/models/ca_storage_locations.php:43 app/conf/browse.conf:144
 #: app/conf/browse.conf:346
 msgid "storage location"
-msgstr "localisation"
+msgstr "emplacement"
 
 #: app/controllers/find/BrowseStorageLocationsController.php:88
 #: app/controllers/find/SearchStorageLocationsAdvancedController.php:101
@@ -743,7 +743,7 @@ msgstr "localisation"
 #: app/models/ca_search_forms.php:102 app/models/ca_storage_locations.php:44
 #: app/conf/browse.conf:145 app/conf/browse.conf:347
 msgid "storage locations"
-msgstr "localisations"
+msgstr "emplacements"
 
 #: app/controllers/find/BrowseToursController.php:87
 #: app/controllers/find/SearchToursAdvancedController.php:95
@@ -898,7 +898,7 @@ msgstr "Collections"
 #: app/conf/user_pref_defs.conf:390 app/conf/user_pref_defs.conf:442
 #: app/conf/user_pref_defs.conf:482 app/conf/user_pref_defs.conf:562
 msgid "Storage locations"
-msgstr "Localisations"
+msgstr "Emplacements"
 
 #: app/controllers/find/QuickSearchController.php:92
 #: app/widgets/recentChanges/recentChangesWidget.php:128
@@ -3796,8 +3796,7 @@ msgstr "Désactiver la carte"
 #: app/lib/ca/Attributes/Values/GeoNamesAttributeValue.php:86
 msgid "Check this option if you want to disable location map display."
 msgstr ""
-"Cocher cette option si vous voulez désactiver l'affichage de la localisation "
-"sur une carte."
+"Cocher cette option si vous voulez désactiver l'affichage sur une carte."
 
 #: app/lib/ca/Attributes/Values/GeoNamesAttributeValue.php:93
 #: app/lib/ca/Attributes/Values/OccurrenceAttributeValue.php:72
@@ -8415,7 +8414,7 @@ msgstr "Indique si la correspondance est visible par le public ou non."
 
 #: app/models/ca_bundle_mappings.php:140 app/models/ca_bundle_mappings.php:248
 msgid "Mapping settings"
-msgstr "Paramètres de localisation"
+msgstr "Paramètres de cartographie"
 
 #: app/models/ca_bundle_mappings.php:247
 msgid "Mapping units"
@@ -8777,7 +8776,7 @@ msgstr "Lot lié"
 #: app/models/ca_objects.php:365 app/models/ca_occurrences.php:319
 #: app/models/ca_places.php:330 app/models/ca_storage_locations.php:292
 msgid "Related storage locations"
-msgstr "Localisations liées"
+msgstr "Emplacements liés"
 
 #: app/models/ca_collections.php:321 app/models/ca_entities.php:332
 #: app/models/ca_list_items.php:348 app/models/ca_loans.php:293
@@ -9115,11 +9114,11 @@ msgstr ""
 
 #: app/models/ca_collections_x_storage_locations.php:40
 msgid "collection ⇔ storage location relationship"
-msgstr "relation collection ⇔ localisation"
+msgstr "relation collection ⇔ emplacement"
 
 #: app/models/ca_collections_x_storage_locations.php:41
 msgid "collection ⇔ storage location relationships"
-msgstr "relations collection ⇔ localisation"
+msgstr "relations collection ⇔ emplacement"
 
 #: app/models/ca_collections_x_vocabulary_terms.php:40
 msgid "collection ⇔ vocabulary term relationship"
@@ -10178,7 +10177,7 @@ msgstr "Référence de la source"
 
 #: app/models/ca_data_import_items.php:61
 msgid "Reference to location of imported item in source data"
-msgstr "Référence à la localisation des item importés dans les données source"
+msgstr "Référence à l'emplacement des item importés dans les données source"
 
 #: app/models/ca_data_import_items.php:83
 msgid ""
@@ -10802,11 +10801,11 @@ msgstr "relations entité ⇔ lieu"
 
 #: app/models/ca_entities_x_storage_locations.php:40
 msgid "entity ⇔ storage location relationship"
-msgstr "relation entité ⇔ localisation"
+msgstr "relation entité ⇔ emplacement"
 
 #: app/models/ca_entities_x_storage_locations.php:41
 msgid "entity ⇔ storage location relationships"
-msgstr "relations entité ⇔ localisation"
+msgstr "relations entité ⇔ emplacement"
 
 #: app/models/ca_entities_x_vocabulary_terms.php:40
 msgid "entity ⇔ vocabulary term relationship"
@@ -11592,11 +11591,11 @@ msgstr "relations prêts ⇔ lieux"
 
 #: app/models/ca_loans_x_storage_locations.php:40
 msgid "loans ⇔ storage locations relationship"
-msgstr "relation prêts ⇔ localisation"
+msgstr "relation prêts ⇔ emplacement"
 
 #: app/models/ca_loans_x_storage_locations.php:41
 msgid "loans ⇔ storage locations relationships"
-msgstr "relations prêts ⇔ localisation"
+msgstr "relations prêts ⇔ emplacement"
 
 #: app/models/ca_loans_x_vocabulary_terms.php:40
 msgid "loans ⇔ vocabulary terms relationship"
@@ -11827,7 +11826,7 @@ msgstr "Type d'item pour relier à l'élément."
 
 #: app/models/ca_metadata_type_restrictions.php:93
 msgid "storage_locations"
-msgstr "localisations"
+msgstr "emplacements"
 
 #: app/models/ca_movement_labels.php:40
 msgid "movement title"
@@ -11949,11 +11948,11 @@ msgstr "relations mouvements ⇔ lieux"
 
 #: app/models/ca_movements_x_storage_locations.php:40
 msgid "movements ⇔ storage locations relationship"
-msgstr "relation mouvements ⇔ localisations"
+msgstr "relation mouvements ⇔ emplacements"
 
 #: app/models/ca_movements_x_storage_locations.php:41
 msgid "movements ⇔ storage locations relationships"
-msgstr "relations mouvements ⇔ localisations"
+msgstr "relations mouvements ⇔ emplacements"
 
 #: app/models/ca_movements_x_vocabulary_terms.php:40
 msgid "movements ⇔ vocabulary terms relationship"
@@ -12036,11 +12035,11 @@ msgstr "relations événement d'objet ⇔ lieu"
 
 #: app/models/ca_object_events_x_storage_locations.php:40
 msgid "object event ⇔ storage location relationship"
-msgstr "relation événement d'objet ⇔ localisation"
+msgstr "relation événement d'objet ⇔ emplacement"
 
 #: app/models/ca_object_events_x_storage_locations.php:41
 msgid "object event ⇔ storage location relationships"
-msgstr "relations événement d'objet ⇔ localisation"
+msgstr "relations événement d'objet ⇔ emplacement"
 
 #: app/models/ca_object_events_x_vocabulary_terms.php:40
 msgid "object event ⇔ vocabulary term relationship"
@@ -12092,11 +12091,11 @@ msgstr "Date (ou plage de dates) à laquelle l'événement a eu lieu."
 
 #: app/models/ca_object_lot_events_x_storage_locations.php:40
 msgid "object lot event ⇔ storage location relationship"
-msgstr "relation événement de lot d'objet ⇔ localisation"
+msgstr "relation événement de lot d'objet ⇔ emplacement"
 
 #: app/models/ca_object_lot_events_x_storage_locations.php:41
 msgid "object lot event ⇔ storage location relationships"
-msgstr "relations événement de lot d'objet ⇔ localisation"
+msgstr "relations événement de lot d'objet ⇔ emplacement"
 
 #: app/models/ca_object_lot_events_x_vocabulary_terms.php:40
 msgid "object lot event ⇔ vocabulary term relationship"
@@ -12238,11 +12237,11 @@ msgstr "relations lot d'objets ⇔ lieu"
 
 #: app/models/ca_object_lots_x_storage_locations.php:40
 msgid "object lot ⇔ storage location relationship"
-msgstr "relation lot d'objets ⇔ localisations"
+msgstr "relation lot d'objets ⇔ emplacements"
 
 #: app/models/ca_object_lots_x_storage_locations.php:41
 msgid "object lot ⇔ storage location relationships"
-msgstr "relations lot d'objets ⇔ localisation"
+msgstr "relations lot d'objets ⇔ emplacement"
 
 #: app/models/ca_object_lots_x_vocabulary_terms.php:40
 msgid "object lot ⇔ vocabulary term relationship"
@@ -12619,11 +12618,11 @@ msgstr "relations objet ⇔ lieu"
 
 #: app/models/ca_objects_x_storage_locations.php:40
 msgid "object ⇔ storage location relationship"
-msgstr "relation objet ⇔ localisation"
+msgstr "relation objet ⇔ emplacement"
 
 #: app/models/ca_objects_x_storage_locations.php:41
 msgid "object ⇔ storage location relationships"
-msgstr "relations objet ⇔ localisation"
+msgstr "relations objet ⇔ emplacement"
 
 #: app/models/ca_objects_x_vocabulary_terms.php:40
 msgid "object ⇔ vocabulary term relationship"
@@ -12719,11 +12718,11 @@ msgstr "relations occurrence ⇔ occurrence"
 
 #: app/models/ca_occurrences_x_storage_locations.php:40
 msgid "occurrences ⇔ storage locations relationship"
-msgstr "relation occurrences ⇔ localisation"
+msgstr "relation occurrences ⇔ emplacements"
 
 #: app/models/ca_occurrences_x_storage_locations.php:41
 msgid "occurrences ⇔ storage locations relationships"
-msgstr "relations occurrences ⇔ localisation"
+msgstr "relations occurrences ⇔ emplacements"
 
 #: app/models/ca_occurrences_x_vocabulary_terms.php:40
 msgid "occurrence ⇔ vocabulary term relationship"
@@ -12834,11 +12833,11 @@ msgstr "relations lieu ⇔ lieu"
 
 #: app/models/ca_places_x_storage_locations.php:40
 msgid "places ⇔ storage locations relationship"
-msgstr "relation lieux ⇔ localisations"
+msgstr "relation lieux ⇔ emplacements"
 
 #: app/models/ca_places_x_storage_locations.php:41
 msgid "places ⇔ storage locations relationships"
-msgstr "relations lieux ⇔ localisations"
+msgstr "relations lieux ⇔ emplacements"
 
 #: app/models/ca_places_x_vocabulary_terms.php:40
 msgid "place ⇔ vocabulary term relationship"
@@ -13408,15 +13407,15 @@ msgstr "Indique une gestion par utilisateur pour l'accès à l'ensemble."
 
 #: app/models/ca_storage_location_labels.php:40
 msgid "storage location name"
-msgstr "nom de la localisation"
+msgstr "nom de l'emplacement"
 
 #: app/models/ca_storage_location_labels.php:41
 msgid "storage location names"
-msgstr "noms de localisation"
+msgstr "noms de l'emplacement"
 
 #: app/models/ca_storage_location_labels.php:79
 msgid "Name of storage location"
-msgstr "Nom de la localisation"
+msgstr "Nom de l'emplacement"
 
 #: app/models/ca_storage_locations.php:51
 msgid ""
@@ -13432,21 +13431,21 @@ msgid ""
 "has a single \"instrinsic\" type that determines the set of descriptive and "
 "administrative metadata that can be applied to it."
 msgstr ""
-"Le type de localisation de stockage. Dans CollectiveAccess toute "
-"localisation a un unique type \"intrinsèque\" qui détermine l'ensemble des "
-"données descriptives et administratives qui peuvent s'y appliquer."
+"Le type d'emplacement. Dans CollectiveAccess tout emplacement a un unique "
+"type \"intrinsèque\" qui détermine l'ensemble des données descriptives et "
+"administratives qui peuvent s'y appliquer."
 
 #: app/models/ca_storage_locations.php:74
 msgid "Location identifier"
-msgstr "Identifiant de localisation"
+msgstr "Identifiant"
 
 #: app/models/ca_storage_locations.php:74
 msgid "A unique alphanumeric identifier for this location."
-msgstr "Un identifiant alphanumérique unique pour cette localisation."
+msgstr "Un identifiant alphanumérique unique pour cette emplacement."
 
 #: app/models/ca_storage_locations.php:120
 msgid "Indicates the current state of the storage location record."
-msgstr "Indique l'état courant de l'enregistrement de localisation."
+msgstr "Indique l'état courant de l'enregistrement d'emplacement."
 
 #: app/models/ca_storage_locations.php:127
 msgid "Indicates if the storage location is deleted or not."
@@ -13454,7 +13453,7 @@ msgstr "Indique si l'élément de liste est supprimé ou non."
 
 #: app/models/ca_storage_locations_x_storage_locations.php:40
 msgid "storage locations ⇔ storage locations relationship"
-msgstr "relation lieux ⇔ localisations"
+msgstr "relation lieux ⇔ emplacements"
 
 #: app/models/ca_storage_locations_x_storage_locations.php:41
 msgid "storage locations ⇔ storage locations relationships"
@@ -14009,7 +14008,7 @@ msgstr "Comptes utilisateurs"
 
 #: app/models/ca_users_x_roles.php:40
 msgid "user-role assocation"
-msgstr "localisation"
+msgstr "emplacement"
 
 #: app/models/ca_users_x_roles.php:41
 msgid "user-role assocations"
@@ -14716,14 +14715,14 @@ msgstr ""
 
 #: app/widgets/count/countWidget.php:196
 msgid "Show count for storage locations?"
-msgstr "Afficher un comptage des localisations ?"
+msgstr "Afficher un comptage des emplacements ?"
 
 #: app/widgets/count/countWidget.php:197
 msgid ""
 "If checked total number of storage locations in the database will be "
 "displayed."
 msgstr ""
-"Si coché, le nombre total des localisations de la base de données sera "
+"Si coché, le nombre total des emplacements de la base de données sera "
 "affiché."
 
 #: app/widgets/count/countWidget.php:205
@@ -15438,7 +15437,7 @@ msgstr "Ensembles de lots d'objets"
 
 #: app/widgets/searchBySet/views/main_html.php:63
 msgid "Storage Location Sets"
-msgstr "Ensembles de localisations"
+msgstr "Ensembles de emplacements"
 
 #: app/widgets/searchBySet/views/main_html.php:68
 msgid "Collection Sets"
@@ -16028,7 +16027,7 @@ msgid ""
 msgstr ""
 "<p>CollectiveAccess se base sur des <em>indices</em> pour accélérer la "
 "récupération des données hiérarchiques telles que les listes multi-niveaux "
-"ou les localisations. Occasionnellement ces indices peuvent se retrouver "
+"ou les emplacements. Occasionnellement ces indices peuvent se retrouver "
 "désynchronisés par rapport à la structure de vos données. Lorsque ceci a "
 "lieu, vous pouvez rencontrer des comportements bizarres lors de l'ajout, du "
 "déplacement ou de la suppression d'éléments dans une hiérarchie. Si vous "
@@ -18748,7 +18747,7 @@ msgstr "Lots d'objets"
 
 #: themes/default/views/manage/saved_searches_list_html.php:85
 msgid "Storage Locations"
-msgstr "Localisations"
+msgstr "Emplacements"
 
 #: themes/default/views/manage/search_form_list_html.php:38
 msgid "New search form for "
@@ -18961,7 +18960,7 @@ msgstr ""
 
 #: themes/default/views/pageFormat/sideBar.php:40
 msgid "Current location"
-msgstr "Localisation courante"
+msgstr "Emplacement courant"
 
 #: themes/default/views/system/configuration_error_html.php:46
 msgid ""
@@ -19036,7 +19035,7 @@ msgstr "Requête"
 
 #: themes/default/views/system/monitor_html.php:47
 msgid "Location"
-msgstr "Localisation"
+msgstr "Emplacement"
 
 #: themes/default/views/system/monitor_html.php:47
 msgid "Execution time"
@@ -19303,11 +19302,11 @@ msgstr "Collection"
 
 #: app/conf/navigation.conf:621
 msgid "Storage location"
-msgstr "Localisation"
+msgstr "Emplacement"
 
 #: app/conf/navigation.conf:630
 msgid "Storage location editor"
-msgstr "Éditeur de localisation"
+msgstr "Éditeur d'emplacement"
 
 #: app/conf/navigation.conf:782
 msgid "Movement"
@@ -20534,84 +20533,84 @@ msgstr ""
 
 #: app/conf/user_actions.conf:509
 msgid "Storage location authority editing"
-msgstr "Modification de localisations"
+msgstr "Modification d'emplacement"
 
 #: app/conf/user_actions.conf:510
 msgid "Actions allowing creation, editing and deletion of storage locations."
 msgstr ""
 "Actions autorisant la création, la modification et la suppression de "
-"localisations."
+"emplacements."
 
 #: app/conf/user_actions.conf:513
 msgid "Create storage locations"
-msgstr "Créer des localisations"
+msgstr "Créer des emplacements"
 
 #: app/conf/user_actions.conf:514
 msgid "Allow user to create new storage locations"
-msgstr "Autoriser l'utilisateur à créer des localisations"
+msgstr "Autoriser l'utilisateur à créer des emplacements"
 
 #: app/conf/user_actions.conf:517
 msgid "Edit storage locations"
-msgstr "Modifier des localisations"
+msgstr "Modifier des emplacements"
 
 #: app/conf/user_actions.conf:518
 msgid "Allow user to edit existing storage locations"
-msgstr "Autoriser l'utilisateur à modifier les localisations existantes"
+msgstr "Autoriser l'utilisateur à modifier les emplacements existants"
 
 #: app/conf/user_actions.conf:521
 msgid "Delete storage locations"
-msgstr "Supprimer des localisations"
+msgstr "Supprimer des emplacements"
 
 #: app/conf/user_actions.conf:522
 msgid "Allow user to delete storage locations"
-msgstr "Autoriser l'utilisateur à supprimer des localisations"
+msgstr "Autoriser l'utilisateur à supprimer des emplacements"
 
 #: app/conf/user_actions.conf:525
 msgid "Search storage locations"
-msgstr "Chercher des localisations"
+msgstr "Chercher des emplacements"
 
 #: app/conf/user_actions.conf:526
 msgid "Allow user to search storage locations"
-msgstr "Autoriser l'utilisateur à chercher des localisations"
+msgstr "Autoriser l'utilisateur à chercher des emplacements"
 
 #: app/conf/user_actions.conf:529
 msgid "Browse storage locations"
-msgstr "Naviguer dans les localisations"
+msgstr "Naviguer dans les emplacements"
 
 #: app/conf/user_actions.conf:530
 msgid "Allow user to browse storage locations"
-msgstr "Autoriser l'utilisateur à parcourir les localisations"
+msgstr "Autoriser l'utilisateur à parcourir les emplacements"
 
 #: app/conf/user_actions.conf:533
 msgid "Duplicate storage locations"
-msgstr "Dupliquer les localisations"
+msgstr "Dupliquer les emplacements"
 
 #: app/conf/user_actions.conf:534
 msgid "Allow user to duplicate storage locations"
-msgstr "Autorise l'utilisateur à dupliquer des localisations"
+msgstr "Autorise l'utilisateur à dupliquer des emplacements"
 
 #: app/conf/user_actions.conf:537
 msgid "Quick add storage locations"
-msgstr "Saisie rapide de localisations"
+msgstr "Saisie rapide de emplacements"
 
 #: app/conf/user_actions.conf:538
 msgid ""
 "Allow user to add storage locations not already present while creating "
 "relationships"
 msgstr ""
-"Autorise l'utilisateur à ajouter des localisations lors de la création de "
+"Autorise l'utilisateur à ajouter des emplacements lors de la création de "
 "nouvelles relations"
 
 #: app/conf/user_actions.conf:542
 msgid "Allow user to change types of existing storage locations"
 msgstr ""
-"Autoriser l'utilisateur à modifier les types des localisations existantes"
+"Autoriser l'utilisateur à modifier les types des emplacements existants"
 
 #: app/conf/user_actions.conf:546
 msgid "Allow user to manage access control lists for storage locations"
 msgstr ""
 "Autoriser l'utilisateur à gérer les listes de contrôle d'accès pour les "
-"localisations"
+"emplacements"
 
 #: app/conf/user_actions.conf:552
 msgid "Loans editing"
@@ -21026,7 +21025,7 @@ msgstr "Thème à utiliser pour l'interface (vues, CSS, images) "
 
 #: app/conf/user_pref_defs.conf:110
 msgid "Show current location as 'breadcrumb' trail"
-msgstr "Affiche la localisation courante dans un 'fil d'ariane'"
+msgstr "Affiche l'emplacement courante dans un 'fil d'ariane'"
 
 #: app/conf/user_pref_defs.conf:111
 msgid ""
@@ -21180,11 +21179,11 @@ msgstr "Sélectionner l'interface utilisateur pour éditer les collections."
 
 #: app/conf/user_pref_defs.conf:212
 msgid "Storage location editor user interface"
-msgstr "Interface utilisateur pour l'éditeur de localisations"
+msgstr "Interface utilisateur pour l'éditeur d'emplacement"
 
 #: app/conf/user_pref_defs.conf:213
 msgid "Selects which user interface to use when editing storage locations."
-msgstr "Sélectionner l'interface utilisateur pour la saisie des localisations."
+msgstr "Sélectionner l'interface utilisateur pour la saisie des emplacements."
 
 #: app/conf/user_pref_defs.conf:219
 msgid "Object representation editor user interface"
@@ -21467,11 +21466,11 @@ msgstr "Si coché, tous les champs de l'occurrence seront dupliqués."
 
 #: app/conf/user_pref_defs.conf:608
 msgid "If checked alternate names for the storage location will be duplicated."
-msgstr "Si coché, les noms alternatifs pour la localisation seront dupliqués."
+msgstr "Si coché, les noms alternatifs pour l'emplacement seront dupliqués."
 
 #: app/conf/user_pref_defs.conf:619
 msgid "If checked all fields in the storage location will be duplicated."
-msgstr "Si coché, tous les champs de la localisation seront dupliqués."
+msgstr "Si coché, tous les champs de l'emplacement seront dupliqués."
 
 #: app/conf/user_pref_defs.conf:643
 msgid "If checked alternate names for the loan will be duplicated."
