@@ -352,7 +352,7 @@
 					$va_level_data[$vs_k] = $va_file_list = $this->_getDirectoryListing($vs_root_directory.'/'.$ps_path, false, 25, (int)$vn_start);
 					$va_level_data[$vs_k]['_primaryKey'] = 'name';
 					
-					$va_counts = caGetDirectoryContentsCount($vs_root_directory.'/'.$ps_path, true, false);
+					$va_counts = caGetDirectoryContentsCount($vs_root_directory.'/'.$ps_path, false, false);
 					$va_level_data[$vs_k]['_itemCount'] = $va_counts['files'] + $va_counts['directories'];
 				}
 			}
