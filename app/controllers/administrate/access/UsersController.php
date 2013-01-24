@@ -282,8 +282,9 @@
 							break;
 							# -----------------------
 							case "last_login":
-								if (!is_array($va_vars = $qr_users->getVars('vars'))) { $va_vars = array(); }
-
+								//if (!is_array($va_vars = $qr_users->getVars('vars'))) { $va_vars = array(); }
+                                                                if (!is_array($va_vars = $qr_users->getVars('volatile_vars'))) { $va_vars = array(); }
+                                                                
 								if ($va_vars['last_login'] > 0) {
 									$o_tep->setUnixTimestamps($va_vars['last_login'], $va_vars['last_login']);
 									$va_row[] = $o_tep->getText();
