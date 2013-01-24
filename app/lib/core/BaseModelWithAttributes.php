@@ -1702,6 +1702,20 @@
  			BaseModelWithAttributes::$s_applicable_element_code_cache[$this->tableNum().'/'.$pn_type_id.'/'.($pb_include_sub_element_codes ? 1 : 0)] = $va_codes;
  			return $va_codes;
  		}
+ 		# ------------------------------------------------------------------
+		/**
+		 *
+		 */
+ 		public function getApplicableElementCodesForTypes($pa_type_ids, $pb_include_sub_element_codes=false, $pb_dont_cache=true) {
+ 			$va_codes = array();
+ 			foreach($pa_type_ids as $vn_i => $vn_type_id) {
+ 				$va_tmp = $this->getApplicableElementCodes($vn_type_id, $pb_include_sub_element_codes, $pb_dont_cache);
+ 				foreach($va_tmp as $vn_element_id => $vs_element_code) {
+ 					$va_codes[$vn_element_id] = $vs_element_code;
+ 				}
+ 			}
+ 			return $va_codes;
+ 		}
 		# ------------------------------------------------------------------
 		/**
 		 *

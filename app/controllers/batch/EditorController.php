@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2012 Whirl-i-Gig
+ * Copyright 2012-2013 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -84,10 +84,19 @@
  				$this->response->setRedirect($this->request->config->get('error_display_url').'/n/3210?r='.urlencode($this->request->getFullUrlPath()));
  				return;
  			}
+ 			if ($t_set->getItemCount(array('user_id' => $this->request->getUserID())) <= 0) { 
+ 				$this->response->setRedirect($this->request->config->get('error_display_url').'/n/3220?r='.urlencode($this->request->getFullUrlPath()));
+ 				return;
+ 			}
+ 			
+ 			$this->view->setVar('batch_editor_last_settings', $va_last_settings = is_array($va_last_settings = $this->request->user->getVar('batch_editor_last_settings')) ? $va_last_settings : array());
+ 			
  			
  			$va_nav = $t_ui->getScreensAsNavConfigFragment($this->request, $vn_type_id, $this->request->getModulePath(), $this->request->getController(), $this->request->getAction(),
 				array(),
-				array()
+				array(),
+				false,
+				array('restrictToTypes' => $t_set->getTypesForItems())
 			);
  			if (!$this->request->getActionExtra() || !isset($va_nav['fragment'][str_replace("Screen", "screen_", $this->request->getActionExtra())])) {
  				$this->request->setActionExtra($va_nav['defaultScreen']);
@@ -117,6 +126,15 @@
  				return;
  			}
  			
+ 			$va_last_settings = array(
+				'set_id' => $vn_set_id,
+				'ui_id' => $t_ui->getPrimaryKey(),
+				'screen' => $this->request->getActionExtra(),
+				'user_id' => $this->request->getUserID(),
+				'values' => $_REQUEST,
+				'sendMail' => (bool)$this->request->getParameter('send_email_when_done', pInteger),
+				'sendSMS' => (bool)$this->request->getParameter('send_sms_when_done', pInteger)
+			);
  			
  			if ((bool)$this->request->config->get('queue_enabled') && (bool)$this->request->getParameter('run_in_background', pInteger)) { // queue for background processing
  				$o_tq = new TaskQueue();
@@ -124,15 +142,7 @@
  				$vs_row_key = $vs_entity_key = join("/", array($this->request->getUserID(), $t_set->getPrimaryKey(), time(), rand(1,999999)));
 				if (!$o_tq->addTask(
 					'batchEditor',
-					array(
-						'set_id' => $vn_set_id,
-						'ui_id' => $t_ui->getPrimaryKey(),
-						'screen' => $this->request->getActionExtra(),
-						'user_id' => $this->request->getUserID(),
-						'values' => $_REQUEST,
-						'sendMail' => (bool)$this->request->getParameter('send_email_when_done', pInteger),
-						'sendSMS' => (bool)$this->request->getParameter('send_sms_when_done', pInteger)
-					),
+					$va_last_settings,
 					array("priority" => 100, "entity_key" => $vs_entity_key, "row_key" => $vs_row_key, 'user_id' => $this->request->getUserID())))
 				{
 					//$this->postError(100, _t("Couldn't queue batch processing for"),"EditorContro->_processMedia()");
@@ -145,6 +155,9 @@
 				$app->registerPlugin(new BatchEditorProgress($this->request, $t_set, $t_subject, array('sendMail' => (bool)$this->request->getParameter('send_email_when_done', pInteger), 'sendSMS' => (bool)$this->request->getParameter('send_sms_when_done', pInteger), 'runInBackground' => (bool)$this->request->getParameter('run_in_background', pInteger))));
 				$this->render('editor/batch_results_html.php');
 			}
+			
+ 			$this->request->user->setVar('batch_editor_last_settings', $va_last_settings);
+ 
  		}
  		# -------------------------------------------------------
  		/**
@@ -223,7 +236,6 @@
  		 * @return array Navigation specification ready for inclusion in a menu spec
  		 */
  		public function _genDynamicNav($pa_params, $pa_options=null) {
- 			//list($vn_subject_id, $t_subject, $t_ui) = $this->_initView($pa_options);
  			list($vn_set_id, $t_set, $t_subject, $t_ui) = $this->_initView($pa_options);
  			if (!$this->request->isLoggedIn()) { return array(); }
  			
@@ -234,7 +246,7 @@
  				isset($pa_params['parameters']) ? $pa_params['parameters'] : null,
  				isset($pa_params['requires']) ? $pa_params['requires'] : null,
  				false,
- 				array('hideIfNoAccess' => isset($pa_params['hideIfNoAccess']) ? $pa_params['hideIfNoAccess'] : false)
+ 				array('hideIfNoAccess' => isset($pa_params['hideIfNoAccess']) ? $pa_params['hideIfNoAccess'] : false, 'returnTypeRestrictions' => true, 'restrictToTypes' => $t_set->getTypesForItems())
  			);
  			
  			if (!$this->request->getActionExtra()) {
