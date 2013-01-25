@@ -123,10 +123,6 @@ BaseModel::$s_ca_models_definitions['ca_data_exporter_items'] = array(
 		),
 	)
 );
-
-global $_ca_data_exporter_items_settings;
-$_ca_data_exporter_items_settings = array(		// global
-);
 	
 class ca_data_exporter_items extends BaseModel {
 	# ---------------------------------
@@ -217,8 +213,12 @@ class ca_data_exporter_items extends BaseModel {
 		parent::__construct($pn_id);
 		
 		//
-		$this->SETTINGS = new ModelSettings($this, 'settings', $_ca_data_exporter_items_settings);
+		$this->initSettings();
 		
+	}
+	# ------------------------------------------------------
+	protected function initSettings(){
+		$this->SETTINGS = new ModelSettings($this, 'settings', array());
 	}
 	# ------------------------------------------------------
 	/**
@@ -246,5 +246,17 @@ class ca_data_exporter_items extends BaseModel {
 		return $vn_rc;
 	}
 	# ------------------------------------------------------
+	# Settings
+	# ------------------------------------------------------
+	/**
+	 * Reroutes calls to method implemented by settings delegate to the delegate class
+	 */
+	public function __call($ps_name, $pa_arguments) {
+		if (method_exists($this->SETTINGS, $ps_name)) {
+			return call_user_func_array(array($this->SETTINGS, $ps_name), $pa_arguments);
+		}
+		die($this->tableName()." does not implement method {$ps_name}");
+	}
+	# ------------------------------------------------------	
 }
 ?>

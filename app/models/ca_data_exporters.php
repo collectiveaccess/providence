@@ -100,10 +100,6 @@ BaseModel::$s_ca_models_definitions['ca_data_exporters'] = array(
 		),
 	)
 );
-
-global $_ca_data_exporters_settings;
-$_ca_data_exporters_settings = array(		// global
-);
 	
 class ca_data_exporters extends BundlableLabelableBaseModelWithAttributes {
 	# ---------------------------------
@@ -210,8 +206,43 @@ class ca_data_exporters extends BundlableLabelableBaseModelWithAttributes {
 		parent::__construct($pn_id);
 		
 		//
-		$this->SETTINGS = new ModelSettings($this, 'settings', $_ca_data_exporters_settings);
+		$this->initSettings();
 		
+	}
+	# ------------------------------------------------------
+	protected function initSettings(){
+		$va_settings = array();
+
+		if (!($vn_table_num = $this->get('table_num'))) { 
+			$this->SETTINGS = new ModelSettings($this, 'settings', array());	
+		}
+
+		if (($t_instance = $this->_DATAMODEL->getInstanceByTableNum($vn_table_num, true)) && method_exists($t_instance, "getTypeListCode")) {
+			$va_settings['restrict_to_types'] = array(
+				'formatType' => FT_TEXT,
+				'displayType' => DT_SELECT,
+				'width' => 100, 'height' => 8,
+				'takesLocale' => false,
+				'default' => '',
+				'useList' => $t_instance->getTypeListCode(),
+				'label' => _t('Restrict to types'),
+				'description' => _t('Restrict export to specific types of item.')
+			);
+		}
+
+		$va_settings['restrict_access'] = array(
+			'formatType' => FT_TEXT,
+			'displayType' => DT_SELECT,
+			'width' => 100, 'height' => 8,
+			'takesLocale' => false,
+			'default' => '',
+			'useList' => 'access_statuses',
+			'label' => _t('Restrict to access status'),
+			'description' => _t('Restrict export based on access status settings.')
+		);
+		
+
+		$this->SETTINGS = new ModelSettings($this, 'settings', $va_settings);
 	}
 	# ------------------------------------------------------
 	/**
@@ -242,6 +273,7 @@ class ca_data_exporters extends BundlableLabelableBaseModelWithAttributes {
 	/**
 	 * Get all exporter items items for this exporter
 	 * @param array $pa_options available options are:
+	 *                          onlyTopLevel
 	 *                          includeSettingsForm
 	 *                          id_prefix
 	 * @return array array of items, keyed by their primary key
@@ -250,10 +282,22 @@ class ca_data_exporters extends BundlableLabelableBaseModelWithAttributes {
 		if (!($vn_exporter_id = $this->getPrimaryKey())) { return null; }
 
 		$vb_include_settings_form = isset($pa_options['includeSettingsForm']) ? (bool)$pa_options['includeSettingsForm'] : false;
+		$vb_only_top_level = isset($pa_options['onlyTopLevel']) ? (bool)$pa_options['onlyTopLevel'] : false;
+
 		$vs_id_prefix = isset($pa_options['id_prefix']) ? $pa_options['id_prefix'] : '';
 
 		$vo_db = $this->getDb();
-		$qr_items = $vo_db->query("SELECT * FROM ca_data_exporter_items WHERE exporter_id = ?",$vn_exporter_id);
+
+		$va_conditions = array();
+		if($vb_only_top_level){
+			$va_conditions[] ="AND parent_id IS NULL";
+		}
+		$qr_items = $vo_db->query("
+			SELECT * FROM ca_data_exporter_items
+			WHERE exporter_id = ?
+			" . join(" ",$va_conditions) . " 
+			ORDER BY rank ASC
+		",$vn_exporter_id);
 
 		$va_items = array();
 		while($qr_items->nextRow()) {
@@ -323,5 +367,17 @@ class ca_data_exporters extends BundlableLabelableBaseModelWithAttributes {
 		return false;
 	}
 	# ------------------------------------------------------
+	# Settings
+	# ------------------------------------------------------
+	/**
+	 * Reroutes calls to method implemented by settings delegate to the delegate class
+	 */
+	public function __call($ps_name, $pa_arguments) {
+		if (method_exists($this->SETTINGS, $ps_name)) {
+			return call_user_func_array(array($this->SETTINGS, $ps_name), $pa_arguments);
+		}
+		die($this->tableName()." does not implement method {$ps_name}");
+	}
+	# ------------------------------------------------------	
 }
 ?>
