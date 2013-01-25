@@ -67,11 +67,11 @@ class BrowseService extends BaseJSONService {
 		unset($va_info["_search"]);
 
 		foreach($va_info as $vs_facet => &$va_facet_info){
-			$va_content = $o_browse->getFacetContent($vs_facet);
-			if(sizeof($va_content)==0){
+			$va_facet = $o_browse->getFacetWithGroups($vs_facet, $va_facet_info["group_mode"]);
+			if(sizeof($va_facet)==0){
 				unset($va_info[$vs_facet]);
 			} else {
-				$va_facet_info["content"] = $o_browse->getFacetContent($vs_facet);	
+				$va_facet_info["content"] = $va_facet;
 			}
 		}
 
