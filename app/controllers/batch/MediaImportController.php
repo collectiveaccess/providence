@@ -310,15 +310,16 @@
 		}
  		# ------------------------------------------------------------------
  		public function GetDirectoryLevel() {
- 			$ps_path = $this->request->getParameter('path', pString);
- 			$ps_path = preg_replace('![\|]+!', ':', $ps_path);
  			$ps_id = $this->request->getParameter('id', pString);
- 			list($ps_directory, $pn_start) = explode(":", $ps_id);
+ 			$pn_max = $this->request->getParameter('max', pString);
  			$vs_root_directory = $this->request->config->get('batch_media_import_root_directory');
  			
  			$va_level_data = array();
  			
  			if ($this->request->getParameter('init', pInteger)) { 
+ 				//
+ 				// On first load (init) of browser load all levels in single request
+ 				//
  				$va_tmp = explode(";", $ps_id);
  				
  				$va_acc = array();
@@ -326,15 +327,18 @@
  					list($vs_directory, $vn_start) = explode(":", $vs_tmp);
  					if (!$vs_directory) { continue; }
  					
- 					$va_acc[] = $vs_directory;
- 					$vs_k = join("/", $va_acc);
-					$va_level_data[$vs_directory] = $va_file_list = $this->_getDirectoryListing($vs_root_directory.'/'.$vs_k, false, 25, (int)$vn_start);
-					$va_level_data[$vs_directory]['_primaryKey'] = 'name';
+ 					$va_tmp = explode('/', $vs_directory);
+					$vs_k = array_pop($va_tmp);
+					if(!$vs_k) { $vs_k = '/'; }
 					
-					$va_counts = caGetDirectoryContentsCount($vs_root_directory.'/'.$vs_k, false, false);
-					$va_level_data[$vs_directory]['_itemCount'] = $va_counts['files'] + $va_counts['directories'];
+					$va_level_data[$vs_k] = $va_file_list = $this->_getDirectoryListing($vs_root_directory.'/'.$vs_directory, false, 20, (int)$vn_start, (int)$pn_max);
+					$va_level_data[$vs_k]['_primaryKey'] = 'name';
+					
+					$va_counts = caGetDirectoryContentsCount($vs_root_directory.'/'.$vs_directory, false, false);
+					$va_level_data[$vs_k]['_itemCount'] = $va_counts['files'] + $va_counts['directories'];
  				}
  			} else {
+ 				list($ps_directory, $pn_start) = explode(":", $ps_id);
 				if (!$ps_directory) { 
 					$va_level_data[$vs_k] = array('/' => 
 							array(
@@ -347,12 +351,14 @@
 					$va_level_data[$vs_k]['_primaryKey'] = 'name';
 					$va_level_data[$vs_k]['_itemCount'] = 1;
 				} else {
- 					list($vs_directory, $vn_start) = explode(":", $ps_id);
-					$vs_k = $ps_directory;
-					$va_level_data[$vs_k] = $va_file_list = $this->_getDirectoryListing($vs_root_directory.'/'.$ps_path, false, 25, (int)$vn_start);
+					$va_tmp = explode('/', $ps_directory);
+					$vs_k = array_pop($va_tmp);
+					if(!$vs_k) { $vs_k = '/'; }
+					
+					$va_level_data[$vs_k] = $va_file_list = $this->_getDirectoryListing($vs_root_directory.'/'.$ps_directory, false, 20, (int)$pn_start, (int)$pn_max);
 					$va_level_data[$vs_k]['_primaryKey'] = 'name';
 					
-					$va_counts = caGetDirectoryContentsCount($vs_root_directory.'/'.$ps_path, false, false);
+					$va_counts = caGetDirectoryContentsCount($vs_root_directory.'/'.$ps_directory, false, false);
 					$va_level_data[$vs_k]['_itemCount'] = $va_counts['files'] + $va_counts['directories'];
 				}
 			}

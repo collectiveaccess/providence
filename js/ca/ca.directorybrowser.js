@@ -78,7 +78,7 @@ var caUI = caUI || {};
 			_pageLoadsForLevel:[],				// log of which pages per-level have been loaded already
 			_queuedLoadsForLevel: [],			// parameters for pending loads per-level
 			
-			maxItemsPerHierarchyLevelPage: 25	// maximum number of items to load at one time into a level
+			maxItemsPerHierarchyLevelPage: 100	// maximum number of items to load at one time into a level
 		}, options);
 		
 		if (!that.levelDataUrl) { 
@@ -209,9 +209,14 @@ var caUI = caUI || {};
 			var itemIDsToLevelInfo = {};
 			
 			var is_init = false;
+			var path = [];
 			for(var l = 0; l < that._queuedLoadsForLevel.length; l++) {
 				for(var i = 0; i < that._queuedLoadsForLevel[l].length; i++) {
-					id_list.push(that._queuedLoadsForLevel[l][i]['item_id']+':'+that._queuedLoadsForLevel[l][i]['start']);
+					var p = that.selectedItemIDs.slice(0, (l > 0) ? l-1 : 0).join("/");
+					
+					var item_id = that._queuedLoadsForLevel[l][i]['item_id'];
+					id_list.push(p + '/' + ((item_id != '/') ? item_id : '') +':'+that._queuedLoadsForLevel[l][i]['start']);
+					
 					itemIDsToLevelInfo[that._queuedLoadsForLevel[l][i]['item_id']] = {
 						level: l,
 						newLevelDivID: that._queuedLoadsForLevel[l][i]['newLevelDivID'],
@@ -225,7 +230,10 @@ var caUI = caUI || {};
 			}
 			if (!id_list.length) { return; }
 			var start = 0;
-			jQuery.getJSON(that.levelDataUrl, { id: id_list.join(';'), init: is_init ? 1 : '', path: that.selectedItemIDs.join("/"), root_item_id: that.selectedItemIDs[0] ? that.selectedItemIDs[0] : '/', start: start * that.maxItemsPerHierarchyLevelPage, max: that.maxItemsPerHierarchyLevelPage }, function(dataForLevels) {
+			
+			var params = { id: id_list.join(';'), init: is_init ? 1 : '', start: start * that.maxItemsPerHierarchyLevelPage, max: that.maxItemsPerHierarchyLevelPage };
+			
+			jQuery.getJSON(that.levelDataUrl, params, function(dataForLevels) {
 				jQuery.each(dataForLevels, function(key, data) {
 					var tmp = key.split(":");
 					var item_id = tmp[0];
@@ -243,9 +251,9 @@ var caUI = caUI || {};
 					jQuery.each(data, function(i, item) {
 						if (!item) { return; }
 						if (item['item_id']) {
-							if ((is_init) && (level == 0) && (!that.selectedItemIDs[0])) {
-								that.selectItem(level, item['item_id'], null, item[that.hasChildrenIndicator], item);
-							}
+							//if ((is_init) && (level == 0) && (!that.selectedItemIDs[0])) {
+								//that.selectItem(level, item['item_id'], null, item[that.hasChildrenIndicator], item);
+							//}
 							if (that.selectedItemIDs[level] == item['item_id']) {
 								foundSelected = true;
 								if (level >= (that.selectedItemIDs.length - 1)) {
@@ -362,13 +370,13 @@ var caUI = caUI || {};
 					
 					if (!is_init) {
 						that.selectedItemIDs[level-1] = item_id;
-						var item_id_for_css = item_id.replace(/[^A-Za-z0-9_\-]+/, '_');
-						jQuery('#' + newLevelListID + ' a').removeClass(that.classNameSelected).addClass(that.className);
+						var item_id_for_css = item_id.replace(/[^A-Za-z0-9_\-]+/g, '_');
+						//jQuery('#' + newLevelListID + ' a').removeClass(that.classNameSelected).addClass(that.className);
 						jQuery('#directoryBrowser_' + that.name + '_' + (level - 1) + ' a').removeClass(that.classNameSelected).addClass(that.className);
 						jQuery('#directoryBrowser_' + that.name + '_level_' + (level - 1) + '_item_' + item_id_for_css).addClass(that.classNameSelected);
 					} else {
 						if ((that.selectedItemIDs[level] !== undefined) && !dontDoSelectAndScroll) {
-							var item_id_for_css = that.selectedItemIDs[level].replace(/[^A-Za-z0-9_\-]+/, '_');
+							var item_id_for_css = that.selectedItemIDs[level].replace(/[^A-Za-z0-9_\-]+/g, '_');
 							jQuery('#directoryBrowser_' + that.name + '_level_' + (level) + '_item_' + item_id_for_css).addClass(that.classNameSelected);
 							jQuery('#directoryBrowser_' + that.name + '_' + level).scrollTo('#directoryBrowser_' + that.name + '_level_' + level + '_item_' + item_id_for_css);
 						}
