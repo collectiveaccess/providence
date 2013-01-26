@@ -39,7 +39,7 @@
  			JavascriptLoadManager::register('tableList');
  			JavascriptLoadManager::register('bundleableEditor');
 			
-			$o_result_context = new ResultContext($this->request, 'ca_commerce_orders', 'basic_search_library');
+			$o_result_context = new ResultContext($this->request, 'ca_commerce_orders', 'basic_search_order');
  			$this->_initView($o_result_context);
  			
  			$this->render('list_orders_html.php');

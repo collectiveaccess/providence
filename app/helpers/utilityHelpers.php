@@ -1120,7 +1120,7 @@ function caFileIsIncludable($ps_file) {
 	/**
 	  * Parses natural language date and returns pair of Unix timestamps defining date/time range
 	  *
-	  * @param string $ps_date_expression A valid date/time expression as described in http://wiki.collectiveaccess.org/index.php?title=DateAndTimeFormats
+	  * @param string $ps_date_expression A valid date/time expression as described in http://docs.collectiveaccess.org/wiki/Date_and_Time_Formats
 	  * @return array The start and end timestamps for the parsed date/time range. Array contains values key'ed under 0 and 1 and 'start' and 'end'; null is returned if expression cannot be parsed.
 	  */
 	function caDateToUnixTimestamps($ps_date_expression) {
@@ -1134,7 +1134,7 @@ function caFileIsIncludable($ps_file) {
 	/**
 	  * Parses natural language date and returns a Unix timestamp 
 	  *
-	  * @param string $ps_date_expression A valid date/time expression as described in http://wiki.collectiveaccess.org/index.php?title=DateAndTimeFormats
+	  * @param string $ps_date_expression A valid date/time expression as described in http://docs.collectiveaccess.org/wiki/Date_and_Time_Formats
 	  * @return int A Unix timestamp for the date expression or null if expression cannot be parsed.
 	  */
 	function caDateToUnixTimestamp($ps_date_expression) {
@@ -1142,6 +1142,20 @@ function caFileIsIncludable($ps_file) {
 		if ($o_tep->parse($ps_date_expression)) {
 			$va_date = $o_tep->getUnixTimestamps();
 			return $va_date['start'];
+		}
+		return null;
+	}
+	# ---------------------------------------
+	/**
+	  * Parses natural language date and returns pair of historic timestamps defining date/time range
+	  *
+	  * @param string $ps_date_expression A valid date/time expression as described in http://docs.collectiveaccess.org/wiki/Date_and_Time_Formats
+	  * @return array The start and end timestamps for the parsed date/time range. Array contains values key'ed under 0 and 1 and 'start' and 'end'; null is returned if expression cannot be parsed.
+	  */
+	function caDateToHistoricTimestamps($ps_date_expression) {
+		$o_tep = new TimeExpressionParser();
+		if ($o_tep->parse($ps_date_expression)) {
+			return $o_tep->getHistoricTimestamps();
 		}
 		return null;
 	}
@@ -1388,4 +1402,127 @@ function caFileIsIncludable($ps_file) {
 		return $va_proc_options;
 	}
 	# ---------------------------------------
+	/**
+	 * Removes from supplied array values that begin with binary (non-character) data. 
+	 * Arrays may be of any depth. 
+	 *
+	 * Note that function is of limited use outside of the case it was designed for: to remove binary entries from extracted EXIF metadata arrays.
+	 *
+	 * @param array $pa_array The array to sanitize
+	 * @param array $pa_options No options are currently supported
+	 * @return array The sanitized array
+	 */
+	function caSanitizeArray($pa_array, $pa_options=null) {
+		if (!is_array($pa_array)) { return array(); }
+		foreach($pa_array as $vn_k => $vm_v) {
+			if (is_array($vm_v)) {
+				$pa_array[$vn_k] = caSanitizeArray($vm_v);
+			} else {
+				if (!preg_match("!^[\p{L}\p{N}\p{P}]+!", $vm_v)) {
+					unset($pa_array[$vn_k]);
+				}
+			}
+		}
+		return $pa_array;
+	}
+	# ---------------------------------------
+	/**
+	 * Returns a regexp string to check if a string is a valid roman number
+	 *
+	 * @return string The PCRE regexp
+	 */
+	function caRomanNumeralsRegexp() {
+		return "M{0,4}(CM|CD|D?C{0,3})(XC|XL|L?X{0,3})(IX|IV|V?I{0,3})";
+	}
+	
+	# ---------------------------------------
+	/**
+	 * Detects if a string is a valid roman number
+	 *
+	 * @param string $pa_string The string to analyze
+	 * @return boolean True if string is a roman number, false otherwise
+	 */
+	function caIsRomanNumerals($pa_string) {
+		if ($pa_string === NULL) return false;
+		$pattern = "/^".caRomanNumeralsRegexp()."$/";
+		return preg_match($pattern, $pa_string);
+	}
+	# ---------------------------------------
+	/**
+	 * Converts an arabic int to a roman number
+	 * 
+	 * Source : http://www.go4expert.com/forums/showthread.php?t=4948
+	 *
+	 * @param $input_arabic_numeral The int to convert
+	 * @return string Roman number resulting from the conversion
+	 */
+	
+	function caArabicRoman($num) {
+		// Make sure that we only use the integer portion of the value
+		$n = intval($num);
+		$result = '';
+		
+		// Declare a lookup array that we will use to traverse the number:
+		$lookup = array('M' => 1000, 'CM' => 900, 'D' => 500, 'CD' => 400,
+				'C' => 100, 'XC' => 90, 'L' => 50, 'XL' => 40,
+				'X' => 10, 'IX' => 9, 'V' => 5, 'IV' => 4, 'I' => 1);
+		
+		foreach ($lookup as $roman => $value)
+		{
+			// Determine the number of matches
+			$matches = intval($n / $value);
+		
+			// Store that many characters
+			$result .= str_repeat($roman, $matches);
+		
+			// Substract that from the number
+			$n = $n % $value;
+		}
+		
+		// The Roman numeral should be built, return it
+		return $result;
+	}
+
+	/**
+	 * Converts a roman number to arabic numerals
+	 *
+	 * Source : pear/Numbers/Roman.php
+	 *
+	 * @param string $roman The string to convert
+	 * @return mixed int if converted, false if no valid roman number supplied   
+	 */
+	
+	function caRomanArabic($roman) {
+		$conv = array(
+            array("letter" => 'I', "number" => 1),
+            array("letter" => 'V', "number" => 5),
+            array("letter" => 'X', "number" => 10),
+            array("letter" => 'L', "number" => 50),
+            array("letter" => 'C', "number" => 100),
+            array("letter" => 'D', "number" => 500),
+            array("letter" => 'M', "number" => 1000),
+            array("letter" => 0,   "number" => 0)
+        );
+        $arabic = 0;
+        $state  = 0;
+        $sidx   = 0;
+        $len    = strlen($roman) - 1;
+        while ($len >= 0) {
+            $i = 0;
+            $sidx = $len;
+            while ($conv[$i]['number'] > 0) {
+                if (strtoupper($roman[$sidx]) == $conv[$i]['letter']) {
+                    if ($state > $conv[$i]['number']) {
+                        $arabic -= $conv[$i]['number'];
+                    } else {
+                        $arabic += $conv[$i]['number'];
+                        $state   = $conv[$i]['number'];
+                    }
+                }
+                $i++;
+            }
+            $len--;
+        }
+        return($arabic);
+	}	
 ?>

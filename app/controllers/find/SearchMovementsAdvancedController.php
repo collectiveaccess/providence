@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2010 Whirl-i-Gig
+ * Copyright 2010-2013 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -85,8 +85,9 @@
  		 * (eg. ObjectSearch for objects, MovementSearch for movements) and pass it to BaseAdvancedSearchController->Index() 
  		 */ 
  		public function Index($pa_options=null) {
+ 			$pa_options['search'] = $this->opo_browse;
  			JavascriptLoadManager::register('tabUI');
- 			return parent::Index($this->opo_browse, $pa_options);
+ 			return parent::Index($pa_options);
  		}
  		# -------------------------------------------------------
  		/**
@@ -104,7 +105,7 @@
  		 * Returns "search tools" widget
  		 */ 
  		public function Tools($pa_parameters) {
- 			return parent::Tools($pa_parameters, new MovementSearch());
+ 			return parent::Tools($pa_parameters);
  		}
  		# -------------------------------------------------------
  	}

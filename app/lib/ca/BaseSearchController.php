@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2009-2011 Whirl-i-Gig
+ * Copyright 2009-2013 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -85,12 +85,14 @@
  		 * Callbacks:
  		 * 		hookBeforeNewSearch() is called just before executing a new search. The first parameter is the BrowseEngine object containing the search.
  		 */
- 		public function Index($po_search, $pa_options=null) {
+ 		public function Index($pa_options=null) {
+ 			$po_search = isset($pa_options['search']) ? $pa_options['search'] : null;
+ 			
  			if (isset($pa_options['saved_search']) && $pa_options['saved_search']) {
  				$this->opo_result_context->setSearchExpression($pa_options['saved_search']['search']);
  				$this->opo_result_context->isNewSearch(true);
  			}
- 			parent::Index($po_search, $pa_options);
+ 			parent::Index($pa_options);
  			
  			JavascriptLoadManager::register('hierBrowser');
  			JavascriptLoadManager::register('browsable');	// need this to support browse panel when filtering/refining search results
@@ -113,12 +115,19 @@
  			}
  			
  			if (!($vs_view 			= $this->opo_result_context->getCurrentView())) { 
- 				$vs_view = $this->ops_view_default ? $this->ops_view_default : array_shift(array_keys($this->opa_views)); 
+ 				$va_tmp = array_keys($this->opa_views);
+ 				$vs_view = $this->ops_view_default ? $this->ops_view_default : array_shift($va_tmp); 
  				$this->opo_result_context->setCurrentView($vs_view);
  			}
- 			if (!isset($this->opa_views[$vs_view])) { $vs_view = array_shift(array_keys($this->opa_views)); }
+ 			if (!isset($this->opa_views[$vs_view])) { 
+ 				$va_tmp = array_keys($this->opa_views);
+ 				$vs_view = array_shift($va_tmp); 
+ 			}
  			
- 			if (!($vs_sort 	= $this->opo_result_context->getCurrentSort())) { $vs_sort = array_shift(array_keys($this->opa_sorts)); }
+ 			if (!($vs_sort 	= $this->opo_result_context->getCurrentSort())) { 
+ 				$va_tmp = array_keys($this->opa_sorts);
+ 				$vs_sort = array_shift($va_tmp); 
+ 			}
  			$vs_sort_direction = $this->opo_result_context->getCurrentSortDirection();
 			$vn_display_id 	= $this->opo_result_context->getCurrentBundleDisplay();
  			
@@ -148,7 +157,8 @@
 					'appendToSearch' => $vs_append_to_search,
 					'checkAccess' => $va_access_values,
 					'no_cache' => $vb_is_new_search,
-					'dontCheckFacetAvailability' => true
+					'dontCheckFacetAvailability' => true,
+					'filterNonPrimaryRepresentations' => true
 				);
 				if ($vb_is_new_search ||isset($pa_options['saved_search']) || (is_subclass_of($po_search, "BrowseEngine") && !$po_search->numCriteria()) ) {
 					$vs_browse_classname = get_class($po_search);
@@ -206,7 +216,8 @@
 					
 					$vn_show_type_id = $this->opo_result_context->getParameter('show_type_id');
 					if (!isset($va_type_counts_obj_type[$vn_show_type_id])) {
-						$vn_show_type_id = array_shift(array_keys($va_type_counts_obj_type));
+						$va_tmp = array_keys($va_type_counts_obj_type);
+						$vn_show_type_id = array_shift($va_tmp);
 					}
 					$this->view->setVar('show_type_id', $vn_show_type_id);
 					$vo_result->filterResult('ca_objects.type_id', $vn_show_type_id);
@@ -440,8 +451,8 @@
  		# -------------------------------------------------------
  		# Sidebar info handler
  		# -------------------------------------------------------
- 		public function Tools($pa_parameters, $po_search) {
- 			parent::Tools($pa_parameters, $po_search);
+ 		public function Tools($pa_parameters) {
+ 			parent::Tools($pa_parameters);
  			
 			$this->view->setVar('mode_name', _t('search'));
 			$this->view->setVar('mode_type_singular', $this->searchName('singular'));

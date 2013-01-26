@@ -1009,7 +1009,8 @@ class ca_search_forms extends BundlableLabelableBaseModelWithAttributes {
 			$vs_display = $va_available_bundles[$va_placement['bundle_name']]['display'];
 			
 			if(is_array($va_placement['settings']['label'])){
-				if ($vs_user_set_label = array_shift(caExtractValuesByUserLocale(array($va_placement['settings']['label'])))) {
+				$va_tmp = caExtractValuesByUserLocale(array($va_placement['settings']['label']));
+				if ($vs_user_set_label = array_shift($va_tmp)) {
 					$vs_label = "{$vs_label} (<em>{$vs_user_set_label}</em>)";
 					$vs_display = "{$vs_display} (<em>{$vs_user_set_label}</em>)";
 				}

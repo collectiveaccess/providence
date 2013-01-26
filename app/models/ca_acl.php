@@ -299,5 +299,133 @@ class ca_acl extends BaseModel {
 		return ca_acl::$s_acl_access_value_cache[$vn_user_id][$pn_table_num][$pn_row_id] = (int)$o_config->get('default_item_access_level');
 	}
 	# ------------------------------------------------------
+	/**
+	 *
+	 */
+	public static function applyACLInheritanceToChildrenFromRow($t_subject) {
+		if (!$t_subject->isHierarchical()) { return false; }
+		
+		$vn_subject_id = $t_subject->getPrimaryKey();
+		if (!$vn_subject_id) { return false; }
+		
+		$o_db = new Db();
+		$va_ids = $t_subject->getHierarchyChildren(null, array('idsOnly' => true));
+		
+		$vs_subject_pk = (string)$t_subject->primaryKey();
+		$vs_subject = (string)$t_subject->tableName();
+		$vn_subject_table_num = (int)$t_subject->tableNum();
+		
+		// Delete existing inherited rows
+		$qr_del = $o_db->query("DELETE FROM ca_acl WHERE inherited_from_table_num = ? AND inherited_from_row_id = ? AND table_num = ?", array((int)$vn_subject_table_num, (int)$vn_subject_id, (int)$vn_subject_table_num));
+		foreach($va_ids as $vn_id) {
+			$qr_clone = $o_db->query("
+					INSERT INTO ca_acl
+					(group_id, user_id, table_num, row_id, access, notes, inherited_from_table_num, inherited_from_row_id)
+					SELECT group_id, user_id, {$vn_subject_table_num}, {$vn_id}, access, notes, {$vn_subject_table_num}, {$vn_subject_id}
+					FROM ca_acl
+					WHERE
+						table_num = ? AND row_id = ? AND (group_id IS NOT NULL OR user_id IS NOT NULL)
+				", (int)$vn_subject_table_num, (int)$vn_subject_id);
+		}
+		
+		return true;
+	}
+	# ------------------------------------------------------
+	/**
+	 *
+	 */
+	public static function applyACLInheritanceToRelatedFromRow($t_subject, $ps_target) {
+		$o_dm = Datamodel::load();
+		$o_db = new Db();
+		
+		if ($t_link = $t_subject->getRelationshipInstance($ps_target)) {
+			if ($t_rel_item = $o_dm->getInstanceByTableName($ps_target, false)) {
+				$va_path = array_keys($o_dm->getPath($vs_cur_table = $t_subject->tableName(), $ps_target));
+				$vs_table = array_shift($va_path);
+				
+				if (!$t_rel_item->hasField("acl_inherit_from_{$vs_table}")) { return false; }
+				
+				$vs_target_pk = (string)$t_rel_item->primaryKey();
+				$vn_target_table_num = (int)$t_rel_item->tableNum();
+				
+				$vs_subject_pk = (string)$t_subject->primaryKey();
+				$vs_subject = (string)$t_subject->tableName();
+				$vn_subject_table_num = (int)$t_subject->tableNum();
+				$vn_subject_id = (int)$t_subject->getPrimaryKey();
+				
+				foreach($va_path as $vs_join_table) {
+					$va_rel_info = $o_dm->getRelationships($vs_cur_table, $vs_join_table);
+					$va_joins[] = 'INNER JOIN '.$vs_join_table.' ON '.$vs_cur_table.'.'.$va_rel_info[$vs_cur_table][$vs_join_table][0][0].' = '.$vs_join_table.'.'.$va_rel_info[$vs_cur_table][$vs_join_table][0][1]."\n";
+					$vs_cur_table = $vs_join_table;
+				}
+				
+				// Delete existing inherited rows
+				$qr_del = $o_db->query("DELETE FROM ca_acl WHERE inherited_from_table_num = ? AND inherited_from_row_id = ? AND table_num = ?", array((int)$vn_subject_table_num, (int)$vn_subject_id, (int)$vn_target_table_num));
+				
+				$qr_res = $o_db->query("
+					SELECT {$ps_target}.{$vs_target_pk}
+					FROM {$vs_subject}
+					".join("\n", $va_joins)."
+					WHERE ({$vs_subject}.{$vs_subject_pk} = ?) AND {$ps_target}.acl_inherit_from_{$vs_subject} = 1", (int)$t_subject->getPrimaryKey());
+			
+				while($qr_res->nextRow()) {
+					$vn_target_id = $qr_res->get($vs_target_pk);
+					$qr_clone = $o_db->query("
+						INSERT INTO ca_acl
+						(group_id, user_id, table_num, row_id, access, notes, inherited_from_table_num, inherited_from_row_id)
+						SELECT group_id, user_id, {$vn_target_table_num}, {$vn_target_id}, access, notes, {$vn_subject_table_num}, {$vn_subject_id}
+						FROM ca_acl
+						WHERE
+							table_num = ? AND row_id = ? AND (group_id IS NOT NULL OR user_id IS NOT NULL)
+					", (int)$vn_subject_table_num, (int)$vn_subject_id);
+				}
+			}
+		}
+		return true;
+	}
+	# ------------------------------------------------------
+	/**
+	 *
+	 */
+	public static function applyACLInheritanceToRelatedRowFromRow($t_subject, $pn_subject_id, $ps_target, $pn_target_id, $pa_options=null) {
+		$o_dm = Datamodel::load();
+		$o_db = new Db();
+		
+		if ($t_link = $t_subject->getRelationshipInstance($ps_target)) {
+			if ($t_rel_item = $o_dm->getInstanceByTableName($ps_target, false)) {
+				
+				
+				$vs_target_pk = (string)$t_rel_item->primaryKey();
+				$vn_target_table_num = (int)$t_rel_item->tableNum();
+				
+				$vs_subject_pk = (string)$t_subject->primaryKey();
+				$vs_subject = (string)$t_subject->tableName();
+				$vn_subject_table_num = (int)$t_subject->tableNum();
+				$pn_target_id = (int)$pn_target_id;
+				$pn_subject_id = (int)$pn_subject_id;
+				
+				if (!isset($pa_options['deleteACLOnly']) || !$pa_options['deleteACLOnly']) {
+					if (!$t_rel_item->hasField("acl_inherit_from_{$vs_subject}")) { return false; }
+				}
+				
+				// Delete existing inherited rows
+				$qr_del = $o_db->query("DELETE FROM ca_acl WHERE inherited_from_table_num = ? AND inherited_from_row_id = ? AND table_num = ? AND row_id = ?", array((int)$vn_subject_table_num, (int)$pn_subject_id, (int)$vn_target_table_num, (int)$pn_target_id));
+				
+				if (!isset($pa_options['deleteACLOnly']) || !$pa_options['deleteACLOnly']) {
+					$qr_clone = $o_db->query("
+						INSERT INTO ca_acl
+						(group_id, user_id, table_num, row_id, access, notes, inherited_from_table_num, inherited_from_row_id)
+						SELECT group_id, user_id, {$vn_target_table_num}, {$pn_target_id}, access, notes, {$vn_subject_table_num}, {$pn_subject_id}
+						FROM ca_acl
+						WHERE
+							table_num = ? AND row_id = ? AND (group_id IS NOT NULL OR user_id IS NOT NULL)
+					", (int)$vn_subject_table_num, (int)$pn_subject_id);
+				}
+		
+			}
+		}
+		return true;
+	}
+	# ------------------------------------------------------
 }
 ?>

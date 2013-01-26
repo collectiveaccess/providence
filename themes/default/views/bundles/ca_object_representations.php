@@ -179,9 +179,6 @@
 				</tr>
 			</table>
 		</div>
-		<script type="text/javascript">
-			jQuery("#{fieldNamePrefix}type_id_{n}").attr('disabled', true);
-		</script>
 <?php
 	print TooltipManager::getLoadHTML('bundle_ca_object_representations');
 ?>
@@ -222,6 +219,7 @@
 		showOnNewIDList: ['<?php print $vs_id_prefix; ?>_media_', '<?php print $vs_id_prefix; ?>_type_id_div_'],
 		hideOnNewIDList: ['<?php print $vs_id_prefix; ?>_media_show_update_', '<?php print $vs_id_prefix; ?>_edit_','<?php print $vs_id_prefix; ?>_download_', '<?php print $vs_id_prefix; ?>_media_metadata_container_'],
 		enableOnNewIDList: ['<?php print $vs_id_prefix; ?>_type_id_'],
+		disableOnExistingIDList: ['<?php print $vs_id_prefix; ?>_type_id_'],
 		showEmptyFormsOnLoad: 1,
 		readonly: <?php print $vb_read_only ? "true" : "false"; ?>,
 		isSortable: <?php print !$vb_read_only ? "true" : "false"; ?>,

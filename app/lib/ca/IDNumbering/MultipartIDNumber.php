@@ -704,7 +704,8 @@
 						continue;
 					}
 					
-					if (($va_element_values[$ps_name.'_'.$vs_element_name] == '') || $pb_always_generate_serial_values) {
+					if (($va_element_values[$ps_name.'_'.$vs_element_name] == '') || ($va_element_values[$ps_name.'_'.$vs_element_name] == '%') || $pb_always_generate_serial_values) {
+						if ($va_element_values[$ps_name.'_'.$vs_element_name] == '%') { $va_element_values[$ps_name.'_'.$vs_element_name] = ''; }
 						$va_tmp[$vs_element_name] = $this->getNextValue($vs_element_name, join($vs_separator, $va_tmp), $pb_dont_mark_serial_value_as_used);
 						$vb_isset = $vb_is_not_empty = true;
 						continue;

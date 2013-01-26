@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2008-2012 Whirl-i-Gig
+ * Copyright 2008-2013 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -250,8 +250,8 @@ class ca_metadata_elements extends LabelableBaseModelWithAttributes implements I
 		$this->FIELDS['datatype']['BOUNDS_CHOICE_LIST'] = array_flip(ca_metadata_elements::getAttributeTypes());
 	}
 	# ------------------------------------------------------
-	public function load($pn_id) {
-		if ($vn_rc = parent::load($pn_id)) {
+	public function load($pm_id=null, $pb_use_cache = true) {
+		if ($vn_rc = parent::load($pm_id)) {
 			if (!isset(ca_metadata_elements::$s_settings_cache[$this->getPrimaryKey()])) {
 				ca_metadata_elements::$s_settings_cache[$this->getPrimaryKey()] = $this->get('settings');
 			}
@@ -259,22 +259,22 @@ class ca_metadata_elements extends LabelableBaseModelWithAttributes implements I
 		return $vn_rc;
 	}
 	# ------------------------------------------------------
-	public function insert() {
+	public function insert($pa_options=null) {
 		$this->set('settings', ca_metadata_elements::$s_settings_cache[null]);
-		if ($vn_rc =  parent::insert()) {
+		if ($vn_rc =  parent::insert($pa_options)) {
 			ca_metadata_elements::$s_settings_cache[$this->getPrimaryKey()] = ca_metadata_elements::$s_settings_cache[null];
 		}
 		return $vn_rc;
 	}
 	# ------------------------------------------------------
-	public function update() {
+	public function update($pa_options=null) {
 		$this->set('settings', ca_metadata_elements::$s_settings_cache[$this->getPrimaryKey()]);
-		return parent::update();
+		return parent::update($pa_options);
 	}
 	# ------------------------------------------------------
-	public function delete($pb_delete_related=false) {
+	public function delete($pb_delete_related = false, $pa_options = NULL, $pa_fields = NULL, $pa_table_list = NULL) {
 		$vn_id = $this->getPrimaryKey();
-		if ($vn_rc = parent::delete($pb_delete_related)) {
+		if ($vn_rc = parent::delete($pb_delete_related, $pa_options, $pa_fields, $pa_table_list)) {
 			unset(ca_metadata_elements::$s_settings_cache[$vn_id]);
 		}
 		return $vn_rc;
@@ -969,7 +969,7 @@ class ca_metadata_elements extends LabelableBaseModelWithAttributes implements I
 	 * @param $pn_type_id - type_id of type restriction; leave null if you want a non-type-specific restriction
 	 * @return ca_metadata_type_restrictions instance - will be loaded with type restriction
 	 */
-	public function getTypeRestrictionInstance($pn_table_num, $pn_type_id) {
+	public function getTypeRestrictionInstanceForElement($pn_table_num, $pn_type_id) {
 		if (!($vn_element_id = $this->getPrimaryKey())) { return null; }		// element must be loaded
 		if ($this->get('parent_id')) { return null; }						// element must be root of hierarchy
 		

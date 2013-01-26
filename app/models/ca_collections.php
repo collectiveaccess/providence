@@ -170,6 +170,18 @@ BaseModel::$s_ca_models_definitions['ca_collections'] =  array(
 				'IS_NULL' => false, 
 				'DEFAULT' => '',
 				'LABEL' => _t('Sort order'), 'DESCRIPTION' => _t('Sort order'),
+		),
+		'acl_inherit_from_parent' => array(
+				'FIELD_TYPE' => FT_NUMBER, 'DISPLAY_TYPE' => DT_SELECT, 
+				'DISPLAY_WIDTH' => 100, 'DISPLAY_HEIGHT' => 1,
+				'IS_NULL' => false, 
+				'DEFAULT' => null,
+				'ALLOW_BUNDLE_ACCESS_CHECK' => true,
+				'BOUNDS_CHOICE_LIST' => array(
+					_t('Do not inherit access settings from parent') => 0,
+					_t('Inherit access settings from parent') => 1
+				),
+				'LABEL' => _t('Inherit access settings from parent?'), 'DESCRIPTION' => _t('Determines whether access settings set for parent collections are applied to this collection.')
 		)
 	)
 );
@@ -287,6 +299,16 @@ class ca_collections extends BundlableLabelableBaseModelWithAttributes implement
 	# ------------------------------------------------------
 	protected $SUPPORTS_ACL = true;
 	
+	/** 
+	 * Other tables can inherit ACL from this one
+	 */
+	protected $SUPPORTS_ACL_INHERITANCE = true;
+	
+	/**
+	 * List of tables that can inherit ACL from this one
+	 */
+	protected $ACL_INHERITANCE_LIST = array('ca_objects');
+	
 	# ------------------------------------------------------
 	# $FIELDS contains information about each field in the table. The order in which the fields
 	# are listed here is the order in which they will be returned using getFields()
@@ -305,6 +327,11 @@ class ca_collections extends BundlableLabelableBaseModelWithAttributes implement
 	#
 	# ------------------------------------------------------
 	public function __construct($pn_id=null) {
+		
+		if (!is_null(BaseModel::$s_ca_models_definitions['ca_collections']['FIELDS']['acl_inherit_from_parent']['DEFAULT'])) {
+			$o_config = Configuration::load();
+			BaseModel::$s_ca_models_definitions['ca_collections']['FIELDS']['acl_inherit_from_parent']['DEFAULT'] = (int)$o_config->get('ca_collections_acl_inherit_from_parent_default');
+		}
 		parent::__construct($pn_id);	# call superclass constructor
 	}
 	# ------------------------------------------------------
@@ -328,6 +355,12 @@ class ca_collections extends BundlableLabelableBaseModelWithAttributes implement
 		$this->BUNDLES['hierarchy_location'] = array('type' => 'special', 'repeating' => false, 'label' => _t('Location in hierarchy'));
 	}
 	# ------------------------------------------------------
+	/**
+	 * Finds collections with a label that matches $ps_name exactly
+	 *
+	 * @param string $ps_name The name to search for
+	 * @return array A list of collection_ids with the specified label
+	 */
 	public function getCollectionIDsByName($ps_name) {
 		$o_db = $this->getDb();
 		$qr_res = $o_db->query("
@@ -355,6 +388,8 @@ class ca_collections extends BundlableLabelableBaseModelWithAttributes implement
 	 */
 	 public function getHierarchyList($pb_dummy=false) {
 	 	$vn_pk = $this->getPrimaryKey();
+	 	$vs_template = $this->getAppConfig()->get('ca_collections_hierarchy_browser_display_settings');
+	 	
 	 	if (!$vn_pk) { 
 	 		$o_db = new Db();
 	 		if (is_array($va_type_ids = caMergeTypeRestrictionLists($this, array())) && sizeof($va_type_ids)) {
@@ -381,8 +416,9 @@ class ca_collections extends BundlableLabelableBaseModelWithAttributes implement
 	 		$va_labels = $this->getPreferredDisplayLabelsForIDs($va_collection_ids);
 	 		while($qr_res->nextRow()) {
 	 			$va_hiers[$vn_collection_id = $qr_res->get('collection_id')] = array(
+	 				'item_id' => $vn_collection_id,
 	 				'collection_id' => $vn_collection_id,
-	 				'name' => $va_labels[$vn_collection_id],
+	 				'name' => caProcessTemplateForIDs($vs_template, 'ca_collections', array($vn_collection_id)),
 	 				'hierarchy_id' => $vn_collection_id,
 	 				'children' => (int)$qr_res->get('c')
 	 			);
@@ -407,11 +443,13 @@ class ca_collections extends BundlableLabelableBaseModelWithAttributes implement
 			$va_children = $t_collection->getHierarchyChildren(null, array('idsOnly' => true));
 			$va_collection_hierarchy_root = array(
 				$t_collection->get($vs_hier_fld) => array(
+					'item_id' => $vn_pk,
 					'collection_id' => $vn_pk,
-					'name' => $vs_label,
+					'name' => caProcessTemplateForIDs($vs_template, 'ca_collections', array($vn_pk)),
 					'hierarchy_id' => $vn_hier_id,
 					'children' => sizeof($va_children)
 				),
+				'item_id' => $vn_pk,
 				'collection_id' => $vn_pk,
 				'name' => $vs_label,
 				'hierarchy_id' => $vn_hier_id,
