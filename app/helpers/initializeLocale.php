@@ -1,13 +1,13 @@
 <?php
 /** ---------------------------------------------------------------------
- * support/tests/lib/core/Models/DatamodelTests.php 
+ * app/helpers/preload.php : includes for commonly used classes and libraries
  * ----------------------------------------------------------------------
  * CollectiveAccess
  * Open-source collections management software
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2009-2012 Whirl-i-Gig
+ * Copyright 2008-2012 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -24,24 +24,35 @@
  * http://www.CollectiveAccess.org
  * 
  * @package CollectiveAccess
- * @subpackage tests
+ * @subpackage utils
  * @license http://www.gnu.org/copyleft/gpl.html GNU Public License version 3
  * 
  * ----------------------------------------------------------------------
  */
-	require_once('PHPUnit/Autoload.php');
-	require_once('../../../../../setup.php');
-	require_once(__CA_LIB_DIR__.'/core/Datamodel.php');
-	
-	class DatamodelTests extends PHPUnit_Framework_TestCase {
-		public function testInstantiateAllModels() {
-			$o_dm = Datamodel::load();
-			
-			$va_tables = $o_dm->getTableNames();
-			
-			foreach($va_tables as $vs_table) {
-				$this->assertInstanceOf($vs_table, $o_dm->getInstanceByTableName($vs_table));
-			}
+ 
+  /**
+   *
+   */
+
+   function initializeLocale($g_ui_locale) {
+   		global $_, $_locale;
+   		
+		if(!file_exists($vs_locale_path = __CA_APP_DIR__.'/locale/user/'.$g_ui_locale.'/messages.mo')) {
+			$vs_locale_path = __CA_APP_DIR__.'/locale/'.$g_ui_locale.'/messages.mo';
 		}
-	}
+		if(file_exists($vs_locale_path)) {
+			// If the locale is valid, locale is set
+			$_ = new Zend_Translate('gettext',$vs_locale_path, $g_ui_locale);
+			$_locale = new Zend_Locale($g_ui_locale);
+			Zend_Registry::set('Zend_Locale', $_locale);
+			$cookiepath = ((__CA_URL_ROOT__=="") ? "/" : __CA_URL_ROOT__);
+			setcookie('CA_'.__CA_APP_NAME__.'_ui_locale', $g_ui_locale, time()+36000, $cookiepath);
+			return true;
+		} else {
+			// cookie invalid, deleting
+			setcookie('CA_'.__CA_APP_NAME__.'_ui_locale', NULL, -1);
+			return false;
+		}
+   }
+   
 ?>

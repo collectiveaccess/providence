@@ -48,7 +48,7 @@
 			
 			$va_form_elements = $t_tour->getBundleFormHTMLForScreen($this->request->getActionExtra(), array(
 									'request' => $this->request, 
-									'formName' => 'TourEditorForm'));
+									'formName' => 'TourEditorForm'), $va_bundle_list);
 			
 			print join("\n", $va_form_elements);
 			
@@ -59,3 +59,5 @@
 	</div>
 
 	<div class="editorBottomPadding"><!-- empty --></div>
+	
+	<?php print caEditorFieldList($va_bundle_list); ?>

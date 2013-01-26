@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2010 Whirl-i-Gig
+ * Copyright 2010-2013 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -50,7 +50,7 @@
 		}
 		# ------------------------------------------------------
 		public function getResults($pa_options=null) {
-			return parent::getResults(new LoanBrowseResult(), $pa_options);
+			return parent::doGetResults(new LoanBrowseResult(), $pa_options);
 		}
 		# ----------------------------------------------------------------------
 	}

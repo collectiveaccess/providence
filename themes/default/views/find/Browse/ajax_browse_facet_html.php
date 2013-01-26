@@ -26,38 +26,21 @@
  * ----------------------------------------------------------------------
  */
  	
-	$va_facet = $this->getVar('facet');
+	$va_facet = $this->getVar('grouped_facet');
 	$vs_facet_name = $this->getVar('facet_name');
 	$va_facet_info = $this->getVar('facet_info');
+	$vs_grouping_field = $this->getVar('grouping');
+	$vs_group_mode = $va_facet_info["group_mode"];
 	
 	$t_item = $this->getVar('t_item');
 	$t_subject = $this->getVar('t_subject');
 	
-	$va_types = $this->getVar('type_list');
-	$va_relationship_types = $this->getVar('relationship_type_list');
-	
 	$vb_individual_group_display = (bool)$this->getVar('individual_group_display');
-
-	$vs_grouping_field = $this->getVar('grouping');
-	if ((!isset($va_facet_info['groupings'][$vs_grouping_field]) || !($va_facet_info['groupings'][$vs_grouping_field])) && is_array($va_facet_info['groupings'])) { 
-		$va_tmp = array_keys($va_facet_info['groupings']);
-		$vs_grouping_field = $va_tmp[0]; 
-	}
 	
-	$vn_element_datatype = null;
-	if ($vs_grouping_attribute_element_code = (preg_match('!^ca_attribute_([\w]+)!', $vs_grouping_field, $va_matches)) ? $va_matches[1] : null) {
-		$t_element = new ca_metadata_elements();
-		$t_element->load(array('element_code' => $vs_grouping_attribute_element_code));
-		$vn_grouping_attribute_id = $t_element->getPrimaryKey();
-		$vn_element_datatype = $t_element->get('datatype');
-	}
-	
-	$vs_group_mode = $this->getVar('group_mode');
 	if (!$va_facet||!$vs_facet_name) { 
 		print _t('No facet defined'); 
 		return;
 	}
-	
 	
 	$vm_modify_id = $this->getVar('modify') ? $this->getVar('modify') : '0';
 ?>
@@ -158,80 +141,7 @@
 		# ------------------------------------------------------------
 		case 'alphabetical';
 		default:
-			$o_tep = new TimeExpressionParser();
-		
-			// TODO: how do we handle non-latin characters?
-			$va_label_order_by_fields = isset($va_facet_info['order_by_label_fields']) ? $va_facet_info['order_by_label_fields'] : array('label');
-			foreach($va_facet as $vn_i => $va_item) {
-				$va_groups = array();
-				switch($vs_grouping_field) {
-					case 'label':
-						$va_groups[] = mb_substr(trim($va_item[$va_label_order_by_fields[0]]), 0, 1, 'UTF-8');	
-						break;
-					case 'relationship_types':
-						foreach($va_item['rel_type_id'] as $vs_g) {
-							if (isset($va_relationship_types[$vs_g]['typename'])) {
-								$va_groups[] = trim($va_relationship_types[$vs_g]['typename']);
-							} else {
-								$va_groups[] = trim($vs_g);
-							}
-						}
-						break;
-					case 'type':
-						foreach($va_item['type_id'] as $vs_g) {
-							if (isset($va_types[$vs_g]['name_plural'])) {
-								$va_groups[] = trim($va_types[$vs_g]['name_plural']);
-							} else {
-								$va_groups[] = trim(_t('Type ').$vs_g);
-							}
-						}
-						break;
-					default:
-						if ($vn_grouping_attribute_id) {
-							switch($vn_element_datatype) {
-								case 2: //date
-									$va_tmp = explode(':', $vs_grouping_field);
-									if(isset($va_item['ca_attribute_'.$vn_grouping_attribute_id]) && is_array($va_item['ca_attribute_'.$vn_grouping_attribute_id])) {
-										foreach($va_item['ca_attribute_'.$vn_grouping_attribute_id] as $vn_i => $va_v) {
-											$va_v = $o_tep->normalizeDateRange($va_v['value_decimal1'], $va_v['value_decimal2'], (isset($va_tmp[1]) && in_array($va_tmp[1], array('years', 'decades', 'centuries'))) ? $va_tmp[1] : 'decades');
-											foreach($va_v as $vn_i => $vn_v) {
-												$va_groups[] = trim($vn_v);
-											}
-										}
-									}
-									break;
-								default:
-									if(isset($va_item['ca_attribute_'.$vn_grouping_attribute_id]) && is_array($va_item['ca_attribute_'.$vn_grouping_attribute_id])) {
-										foreach($va_item['ca_attribute_'.$vn_grouping_attribute_id] as $vn_i => $va_v) {
-											$va_groups[] = trim($va_v['value_longtext1']);
-										}
-									}
-									break;
-							}
-						} else {
-							$va_groups[] = mb_substr(trim($va_item[$va_label_order_by_fields[0]]), 0, 1, 'UTF-8');	
-						}
-						break;
-				}
-				
-				foreach($va_groups as $vs_group) {
-					if (!($vs_group = trim(unicode_ucfirst($vs_group)))) { $vs_group = "~"; }
-					$vs_alpha_key = '';
-					foreach($va_label_order_by_fields as $vs_f) {
-						$vs_alpha_key .= $va_item[$vs_f];
-					}
-					$vs_alpha_key = trim($vs_alpha_key);
-					$va_grouped_items[$vs_group][$vs_alpha_key] = $va_item;
-				}
-			}
-			
-			// sort lists alphabetically
-			foreach($va_grouped_items as $vs_key => $va_list) {
-				ksort($va_list);
-				$va_grouped_items[$vs_key] = $va_list;
-			}
-			ksort($va_grouped_items);
-			$va_groups = array_keys($va_grouped_items);
+			$va_groups = array_keys($va_facet);
 ?>
 
 	<div class="browseSelectPanelHeader">
@@ -255,10 +165,10 @@
 	<div class="browseSelectPanelList" id="browseSelectPanelList">
 <?php
 			
-			if (($vs_g) && (isset($va_grouped_items[$vs_g]))) {
-				$va_grouped_items = array($vs_g => $va_grouped_items[$vs_g]);
+			if (($vs_g) && (isset($va_facet[$vs_g]))) {
+				$va_facet = array($vs_g => $va_facet[$vs_g]);
 			}
-			foreach($va_grouped_items as $vs_group => $va_items) {
+			foreach($va_facet as $vs_group => $va_items) {
 				$va_row = array();
 				if ($vs_group === '~') {
 					$vs_group = '~';

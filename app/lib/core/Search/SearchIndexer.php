@@ -516,7 +516,22 @@ class SearchIndexer extends SearchBase {
 								$end_field = $va_field_list[$vs_field]['END'];
 								$pn_content = $pa_field_data[$start_field] . " - " .$pa_field_data[$end_field];
 							} else {
-								$pn_content = $pa_field_data[$vs_field];
+								$va_content = array();
+								// if (isset($va_field_list[$vs_field]['LIST_CODE']) && $va_field_list[$vs_field]['LIST_CODE']) {
+// 									// Is reference to list item so index preferred label values
+// 									$t_item = new ca_list_items((int)$pa_field_data[$vs_field]);
+// 									$va_labels = $t_item->getPreferredDisplayLabelsForIDs(array((int)$pa_field_data[$vs_field]), array('returnAllLocales' => true));
+// 									
+// 									foreach($va_labels as $vn_row_id => $va_labels_per_row) {
+// 										foreach($va_labels_per_row as $vn_locale_id => $vs_label) {
+// 											$va_content[$vs_label] = true;
+// 										}
+// 									}
+// 									$va_content[$t_item->get('idno')] = true;
+// 								} 
+								$va_content[$pa_field_data[$vs_field]] = true;
+								$this->opo_engine->indexField($pn_subject_tablenum, $vs_field, $pn_subject_row_id, join(" ", array_keys($va_content)), $va_data);
+								break;
 							}
 							
 							// is this field related to something?

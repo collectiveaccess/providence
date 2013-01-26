@@ -65,7 +65,7 @@ var methods = {
 
             ///////////////////////////////////////////////////////////////////////////////////
             // Now we can start initializing
-            //If the plugin hasn't been initialized yet..
+            // If the plugin hasn't been initialized yet..
             var view = $this.data("view");
             if(!view) {
                 var layer = {
@@ -121,7 +121,7 @@ var methods = {
                     needdraw: false, //flag used to request for frameredraw 
 
                     ///////////////////////////////////////////////////////////////////////////////////
-                    // internal functions
+                    // Internal functions
                     draw: function() {
                         view.needdraw = false;
                         if(layer.info == null) { return; }
@@ -373,9 +373,11 @@ var methods = {
                         ctx.shadowBlur    = 4;
                         ctx.shadowColor   = 'rgba(0,0,0,1)';
                      
+                     	var offset = 0;
+                     	if (options.magnifier) { offset = options.magnifier_view_size + 5; }
 
                         //draw thumbnail image
-                        ctx.drawImage(layer.thumb, 1, 1, layer.thumb.width, layer.thumb.height);
+                        ctx.drawImage(layer.thumb, 1, offset, layer.thumb.width, layer.thumb.height);
 
                         //draw current view
                         var rect = view.get_viewpos();
@@ -393,6 +395,8 @@ var methods = {
                         if (y < 0) { h = h + y; y = 0; }
                         if ((x + w) > layer.thumb.width) { w = layer.thumb.width - x; }
                         if ((y + h) > layer.thumb.height) { h = layer.thumb.height - y; }
+                        
+                        y += offset;
                         
                         ctx.strokeRect(x, y, w, h);
                     },
@@ -550,8 +554,7 @@ var methods = {
                         mcontext.putImageData(marea, 0,0);//draw to canvas so that I can zoom it up
 
                         //display on the bottom left corner
-                        ctx.drawImage(view.magnifier_canvas, 0, view.canvas.clientHeight-options.magnifier_view_size, options.magnifier_view_size, options.magnifier_view_size);
-
+                        ctx.drawImage(view.magnifier_canvas, 1, 1, layer.thumb.width, options.magnifier_view_size);
                     },
 
                     draw_select_1d: function(ctx) {
@@ -898,17 +901,21 @@ var methods = {
 */
 
                 ///////////////////////////////////////////////////////////////////////////////////
-                //event handlers
+                // Event handlers
                 $(view.canvas).mousedown(function(e) {
                     var offset = $(view.canvas).offset();
                     var x = e.pageX - offset.left;
                     var y = e.pageY - offset.top;
+                    
+					if(options.magnifier) {
+						y -= (options.magnifier_view_size + 5);
+					}	
 
 					if (options.thumbnail) {
 						var tw = layer.thumb.width;
 						var th = layer.thumb.height;
 						
-						if ((x <= tw) && (y <= th)) {	
+						if ((x <= tw) && (y <= th)) {
 							view.pan.xdest = ((x/tw) * layer.info.width);
 							view.pan.ydest = ((y/th) * layer.info.height);
 							view.pan.level = layer.level;
@@ -1070,7 +1077,7 @@ var methods = {
                         }
                     }
 
-                    view.update_status(); //mouse position change doesn't cause view update.. so I have to call this 
+                    view.update_status(); //mouse position change doesn't cause view update.. so we have to call this 
 
                     return false;
                 });

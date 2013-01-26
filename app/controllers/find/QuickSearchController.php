@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2009-2010 Whirl-i-Gig
+ * Copyright 2009-2013 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -54,7 +54,7 @@
  		/**
  		 *
  		 */ 
- 		public function Index() {
+ 		public function Index($pa_options=null) {
  			$ps_search 		= $this->request->getParameter('search', pString);
  			$ps_sort 		= $this->request->getParameter('sort', pString);
  			

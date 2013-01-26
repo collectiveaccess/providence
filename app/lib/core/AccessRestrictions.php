@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2011 Whirl-i-Gig
+ * Copyright 2011-2013 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -47,7 +47,7 @@ class AccessRestrictions {
 	 * Parsed version of access restriction definition
 	 * @var array 
 	 */
-	private $opa_acr;
+	public $opa_acr;
 
 	/**
 	 * "Empty" ca_users variable to work with
@@ -138,7 +138,7 @@ class AccessRestrictions {
 
 		// check rules
 		foreach($va_groups_to_check as $va_group){
-			if(!is_array($va_group["actions"])) continue; // group without action restrictions
+			if(!is_array($va_group) || !is_array($va_group["actions"])) continue; // group without action restrictions
 			$vb_group_passed = false;
 
 			// check if parameter restrictions apply

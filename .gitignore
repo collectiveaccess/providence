@@ -2,3 +2,6 @@
 app/tmp/*
 setup.php
 /media/*
+.DS_Store
+.settings
+.project

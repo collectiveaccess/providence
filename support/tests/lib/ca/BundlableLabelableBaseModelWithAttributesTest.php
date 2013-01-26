@@ -30,12 +30,12 @@
  * ----------------------------------------------------------------------
  */
 	require_once('PHPUnit/Autoload.php');
-	require_once('../../../../setup.php');
+	require_once('../../setup.php');
 	require_once(__CA_MODELS_DIR__.'/ca_objects.php');
 	require_once(__CA_MODELS_DIR__.'/ca_lists.php');
 	require_once(__CA_LIB_DIR__.'/ca/Search/ObjectSearch.php');
 	
-	class BundlableLabelableBaseModelWithAttributesTests extends PHPUnit_Framework_TestCase {
+	class BundlableLabelableBaseModelWithAttributesTest extends PHPUnit_Framework_TestCase {
 	
 		//
 		// Test attempts to insert a ca_object record, then loads it and compares retrieved values to what was originally stored,

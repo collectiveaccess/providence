@@ -100,7 +100,7 @@ BaseModel::$s_ca_models_definitions['ca_relationship_types'] = array(
 				'FIELD_TYPE' => FT_NUMBER, 'DISPLAY_TYPE' => DT_FIELD, 
 				'DISPLAY_WIDTH' => 10, 'DISPLAY_HEIGHT' => 1,
 				'IS_NULL' => false, 
-				'DEFAULT' => '',
+				'DEFAULT' => '10',
 				'LABEL' => _t('Sort order'), 'DESCRIPTION' => _t('The relative priority of the relationship type when displayed in a list with other relationship types. Lower numbers indicate higher priority.'),
 				'BOUNDS_VALUE' => array(0,65535)
 		),
@@ -183,7 +183,7 @@ class ca_relationship_types extends BundlableLabelableBaseModelWithAttributes {
 
 	# If you want to order records arbitrarily, add a numeric field to the table and place
 	# its name here. The generic list scripts can then use it to order table records.
-	protected $RANK = '';
+	protected $RANK = 'rank';
 	
 	
 	# ------------------------------------------------------
@@ -253,7 +253,7 @@ class ca_relationship_types extends BundlableLabelableBaseModelWithAttributes {
 		if ($pn_id) { $this->loadSubtypeLists();}
 	}
 	# ------------------------------------------------------
-	public function load($pm_id=null) {
+	public function load($pm_id = NULL, $pb_use_cache = true) {
 		if ($vn_rc = parent::load($pm_id)) {
 			$this->loadSubtypeLists();
 			return $vn_rc;
@@ -506,7 +506,7 @@ class ca_relationship_types extends BundlableLabelableBaseModelWithAttributes {
 		while ($qr_res->nextRow()) {
 			$vn_type_id = $qr_res->get('type_id');
 			//$va_hierarchies[$vn_type_id]['table_num'] = $qr_res->get('table_num');	
-			$va_hierarchies[$vn_type_id]['type_id'] = $vn_type_id;	
+			$va_hierarchies[$vn_type_id]['type_id'] = $va_hierarchies[$vn_type_id]['item_id'] = $vn_type_id;	
 			$va_hierarchies[$vn_type_id]['name'] = $va_relationship_tables[$qr_res->get('table_num')]['name'];	
 			
 			$qr_children = $o_db->query("
@@ -600,6 +600,76 @@ class ca_relationship_types extends BundlableLabelableBaseModelWithAttributes {
 			$this->getTransaction()->commit();
 		}
 		return $vn_rc;
+	}
+	# ------------------------------------------------------
+	/**
+	 * 
+	 */
+	public function getRelationshipCountForType($pm_table_name_or_num=null, $pm_type_code_or_id=null) {
+		if ($pm_table_name_or_num && $pm_type_code_or_id) {
+			$vn_type_id = $this->getRelationshipTypeID($pm_table_name_or_num, $pm_type_code_or_id);
+		} else {
+			$vn_type_id = $this->getPrimaryKey();
+			$pm_table_name_or_num = $this->get('table_num');
+		}
+		if (!$vn_type_id) { return null; }
+		
+		$va_info = $this->getRelationshipInfo($pm_table_name_or_num);
+		if (!isset($va_info[$vn_type_id])) { return null; }
+		
+		$vn_rel_table_num = $va_info[$vn_type_id]['table_num'];
+		if ($vs_rel_table_name = $this->getAppDatamodel()->getTableName($vn_rel_table_num)) {
+			$qr_res = $this->getDb()->query("
+				SELECT count(*) c
+				FROM {$vs_rel_table_name}
+				WHERE
+					type_id = ?
+			", (int)$vn_type_id);
+			if ($qr_res->nextRow()) {
+				return (int)$qr_res->get('c');
+			}
+			return 0;
+		}
+		return null;
+	}
+	# ------------------------------------------------------
+	/**
+	 *
+	 */
+	public function moveRelationshipsToType($pm_type_code_or_id) {
+		if (!($vn_source_id = $this->getPrimaryKey())) { return null; }
+		if (!($vn_type_id = $this->getRelationshipTypeID($vn_table_num = $this->get('table_num'), $pm_type_code_or_id))) { return null; }
+		
+		if (!($vs_table_name = $this->getAppDatamodel()->getTableName($vn_table_num))) { return null; }
+		$qr_res = $this->getDb()->query("
+				SELECT * 
+				FROM {$vs_table_name}
+				WHERE type_id = ?
+			", (int)$vn_source_id);
+			
+		$va_to_reindex_relations = array();
+		while($qr_res->nextRow()) {
+			$va_to_reindex_relations[$qr_res->get('relation_id')] = $qr_res->getRow();
+		}
+		$qr_res = $this->getDb()->query("
+				UPDATE {$vs_table_name}
+				SET type_id = ? WHERE type_id = ?
+			", (int)$vn_type_id, (int)$vn_source_id);
+		if ($this->getDb()->numErrors() > 0) {
+			$this->errors = $this->getDb()->errors;
+			return null;
+		}
+		$vn_num_rows = (int)$this->getDb()->affectedRows();
+		
+		// Reindex modified relationships
+		if (!BaseModel::$search_indexer) {
+			BaseModel::$search_indexer = new SearchIndexer($this->getDb());
+		}
+		foreach($va_to_reindex_relations as $vn_relation_id => $va_row) {
+			BaseModel::$search_indexer->indexRow($vn_table_num, $vn_relation_id, $va_row, false, null, array('type_id' => true));
+		}
+		
+		return $vn_num_rows;
 	}
 	# ------------------------------------------------------
 }

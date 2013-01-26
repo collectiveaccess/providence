@@ -846,7 +846,7 @@ class WLPlugMediaCoreImage Extends WLPlug Implements IWLPlugMedia {
 			$va_metadata = array();
 			
 			if(function_exists('exif_read_data')) {
-				if (is_array($va_exif = @exif_read_data($ps_filepath, 'EXIF', true, false))) { $va_metadata['EXIF'] = $va_exif; }
+				if (is_array($va_exif = caSanitizeArray(@exif_read_data($ps_filepath, 'EXIF', true, false)))) { $va_metadata['EXIF'] = $va_exif; }
 			}
 			
 			$o_xmp = new XMPParser();

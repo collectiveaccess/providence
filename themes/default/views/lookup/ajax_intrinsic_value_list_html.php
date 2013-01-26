@@ -1,13 +1,13 @@
 <?php
 /* ----------------------------------------------------------------------
- * views/administrate/setup/bundle_mapping_editor/delete_html.php : 
+ * lookup/ajax_intrinsic_value_list_html.php : 
  * ----------------------------------------------------------------------
  * CollectiveAccess
  * Open-source collections management software
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2011 Whirl-i-Gig
+ * Copyright 2012 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -25,14 +25,7 @@
  *
  * ----------------------------------------------------------------------
  */
- 	$t_mapping = $this->getVar('t_subject');
-	$vn_mapping_id = $this->getVar('subject_id');
-?>
-<div class="sectionBox">
-<?php
-	if (!$this->getVar('confirmed')) {
-		// show delete confirmation notice
-		print caDeleteWarningBox($this->request, $t_mapping, $this->getVar('subject_name'), 'administrate/setup/bundle_mapping_editor', 'BundleMappingEditor', 'Edit/'.$this->request->getActionExtra(), array('mapping_id' => $vn_mapping_id));
+	foreach($this->getVar('intrinsic_value_list') as $vn_id => $vs_value) {
+		print $vs_value."\n";
 	}
 ?>
-</div>

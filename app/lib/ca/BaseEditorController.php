@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2009-2012 Whirl-i-Gig
+ * Copyright 2009-2013 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -71,6 +71,8 @@
  		 *
  		 */
  		public function Edit($pa_values=null, $pa_options=null) {
+ 			JavascriptLoadManager::register('panel');
+ 			
  			list($vn_subject_id, $t_subject, $t_ui, $vn_parent_id, $vn_above_id) = $this->_initView($pa_options);
  			$vs_mode = $this->request->getParameter('mode', pString);
  			
@@ -176,6 +178,13 @@
  				$vn_type_id = $this->request->getParameter($t_subject->getTypeFieldName(), pInteger);
  			}
  			
+ 			if (!$t_ui || !$t_ui->getPrimaryKey()) {
+ 				$this->notification->addNotification(_t('There is no configuration available for this editor. Check your system configuration and ensure there is at least one valid configuration for this type of editor.'), __NOTIFICATION_TYPE_ERROR__);
+				
+				$this->postError(1260, _t('There is no configuration available for this editor. Check your system configuration and ensure there is at least one valid configuration for this type of editor.'),"BaseEditorController->Edit()");
+				return;
+			}
+			
  			$va_nav = $t_ui->getScreensAsNavConfigFragment($this->request, $vn_type_id, $this->request->getModulePath(), $this->request->getController(), $this->request->getAction(),
 				array(),
 				array()
@@ -184,9 +193,7 @@
  				$this->request->setActionExtra($va_nav['defaultScreen']);
  			}
 			$this->view->setVar('t_ui', $t_ui);
-			if (!$t_ui->getPrimaryKey()) {
-				$this->notification->addNotification(_t('There is no configuration available for this editor. Check your system configuration and ensure there is at least one valid configuration for this type of editor.'), __NOTIFICATION_TYPE_ERROR__);
-			}
+			
 			if ($vn_subject_id) { $this->request->session->setVar($this->ops_table_name.'_browse_last_id', $vn_subject_id); } 	// set last edited
 			
 			# trigger "EditItem" hook 
@@ -407,26 +414,37 @@
  			
  			if ($vb_confirm = ($this->request->getParameter('confirm', pInteger) == 1) ? true : false) {
  				$vb_we_set_transation = false;
- 				if (!$t_subject->inTransaction()) { 
- 					$t_subject->setTransaction($o_t = new Transaction());
+ 				if (!$t_subject->inTransaction()) {
+ 					$o_t = new Transaction();
+ 					$t_subject->setTransaction($o_t);
  					$vb_we_set_transation = true;
  				}
  				
  				// Do we need to move relationships?
  				if (($vn_remap_id =  $this->request->getParameter('remapToID', pInteger)) && ($this->request->getParameter('referenceHandling', pString) == 'remap')) {
- 					$va_tables = array(
-						'ca_objects', 'ca_entities', 'ca_places', 'ca_occurrences', 'ca_collections', 'ca_storage_locations', 'ca_list_items', 'ca_loans', 'ca_movements', 'ca_tours', 'ca_tour_stops'
-					);
-					
-					$vn_c = 0;
-					foreach($va_tables as $vs_table) {
- 						$vn_c += $t_subject->moveRelationships($vs_table, $vn_remap_id);
- 					}
- 					
- 					if ($vn_c > 0) {
- 						$t_target = $this->opo_datamodel->getInstanceByTableName($this->ops_table_name);
- 						$t_target->load($vn_remap_id);
-						$this->notification->addNotification(($vn_c == 1) ? _t("Transferred %1 relationship to <em>%2</em> (%3)", $vn_c, $t_target->getLabelForDisplay(), $t_target->get($t_target->getProperty('ID_NUMBERING_ID_FIELD'))) : _t("Transferred %1 relationships to <em>%2</em> (%3)", $vn_c, $t_target->getLabelForDisplay(), $t_target->get($t_target->getProperty('ID_NUMBERING_ID_FIELD'))), __NOTIFICATION_TYPE_INFO__);	
+ 					switch($t_subject->tableName()) {
+ 						case 'ca_relationship_types':
+ 							if ($vn_c = $t_subject->moveRelationshipsToType($vn_remap_id)) {
+ 								$t_target = new ca_relationship_types($vn_remap_id);
+ 								$this->notification->addNotification(($vn_c == 1) ? _t("Transferred %1 relationship to type <em>%2</em>", $vn_c, $t_target->getLabelForDisplay()) : _t("Transferred %1 relationships to type <em>%2</em>", $vn_c, $t_target->getLabelForDisplay()), __NOTIFICATION_TYPE_INFO__);	
+ 							}
+ 							break;
+ 						default:
+							$va_tables = array(
+								'ca_objects', 'ca_entities', 'ca_places', 'ca_occurrences', 'ca_collections', 'ca_storage_locations', 'ca_list_items', 'ca_loans', 'ca_movements', 'ca_tours', 'ca_tour_stops', 'ca_object_representations'
+							);
+							
+							$vn_c = 0;
+							foreach($va_tables as $vs_table) {
+								$vn_c += $t_subject->moveRelationships($vs_table, $vn_remap_id);
+							}
+							
+							if ($vn_c > 0) {
+								$t_target = $this->opo_datamodel->getInstanceByTableName($this->ops_table_name);
+								$t_target->load($vn_remap_id);
+								$this->notification->addNotification(($vn_c == 1) ? _t("Transferred %1 relationship to <em>%2</em> (%3)", $vn_c, $t_target->getLabelForDisplay(), $t_target->get($t_target->getProperty('ID_NUMBERING_ID_FIELD'))) : _t("Transferred %1 relationships to <em>%2</em> (%3)", $vn_c, $t_target->getLabelForDisplay(), $t_target->get($t_target->getProperty('ID_NUMBERING_ID_FIELD'))), __NOTIFICATION_TYPE_INFO__);	
+							}
+						break;
 					}
 				}
  				
@@ -450,7 +468,7 @@
  				}
  			} else {
  				if ($vb_confirm) {
- 					$this->notification->addNotification(_t("%1 was deleted", $vs_type_name), __NOTIFICATION_TYPE_INFO__);
+ 					$this->notification->addNotification(_t("%1 was deleted", caUcFirstUTF8Safe($vs_type_name)), __NOTIFICATION_TYPE_INFO__);
  					
  					// update result list since it has changed
  					$this->opo_result_context->removeIDFromResults($vn_subject_id);
@@ -536,7 +554,8 @@
 					// get column header text
 					$vs_header = $va_display_item['display'];
 					if (isset($va_settings['label']) && is_array($va_settings['label'])) {
-						if ($vs_tmp = array_shift(caExtractValuesByUserLocale(array($va_settings['label'])))) { $vs_header = $vs_tmp; }
+						$va_tmp = caExtractValuesByUserLocale(array($va_settings['label']));
+						if ($vs_tmp = array_shift($va_tmp)) { $vs_header = $vs_tmp; }
 					}
 					
 					$va_display_list[$vn_placement_id] = array(
@@ -894,8 +913,41 @@
  		 * @param array $pa_options Array of options passed through to _initView 
  		 */
  		public function DownloadFile() {
- 			list($vn_subject_id, $t_subject) = $this->_initView();
  			if (!($pn_value_id = $this->request->getParameter('value_id', pInteger))) { return; }
+ 			$t_attr_val = new ca_attribute_values($pn_value_id);
+ 			if (!$t_attr_val->getPrimaryKey()) { return; }
+ 			$t_attr = new ca_attributes($t_attr_val->get('attribute_id'));
+ 		
+ 			$vn_table_num = $this->opo_datamodel->getTableNum($this->ops_table_name);
+ 			if ($t_attr->get('table_num') !=  $vn_table_num) { 
+ 				$this->response->setRedirect($this->request->config->get('error_display_url').'/n/2580?r='.urlencode($this->request->getFullUrlPath()));
+ 				return;
+ 			}
+ 			$t_element = new ca_metadata_elements($t_attr->get('element_id'));
+ 			$this->request->setParameter($this->opo_datamodel->getTablePrimaryKeyName($vn_table_num), $t_attr->get('row_id'));
+ 			
+ 			list($vn_subject_id, $t_subject) = $this->_initView($pa_options);
+ 			$ps_version = $this->request->getParameter('version', pString);
+ 			
+ 			//
+ 			// Does user have access to bundle?
+ 			//
+ 			if (($this->request->user->getBundleAccessLevel($this->ops_table_name, $t_element->get('element_code'))) < __CA_BUNDLE_ACCESS_READONLY__) {
+ 				$this->response->setRedirect($this->request->config->get('error_display_url').'/n/2580?r='.urlencode($this->request->getFullUrlPath()));
+ 				return;
+ 			}
+ 			
+ 			//
+ 			// Does user have access to type?
+ 			//
+ 			$va_restrict_to_types = null;
+ 			if ($t_subject->getAppConfig()->get('perform_type_access_checking')) {
+ 				$va_restrict_to_types = caGetTypeRestrictionsForUser($this->ops_table_name, array('access' => __CA_BUNDLE_ACCESS_EDIT__));
+ 			}
+ 			if (is_array($va_restrict_to_types) && !in_array($t_subject->get('type_id'), $va_restrict_to_types)) {
+ 				$this->response->setRedirect($this->request->config->get('error_display_url').'/n/2560?r='.urlencode($this->request->getFullUrlPath()));
+ 				return;
+ 			}
  			
  			//
  			// Does user have access to row?
@@ -907,12 +959,9 @@
  				}
  			}
  			
- 			$o_view = new View($this->request, $this->request->getViewsDirectoryPath().'/bundles/');
- 			
- 			// TODO: check that file is part of item user has access rights for
- 			$t_attr_val = new ca_attribute_values($pn_value_id);
- 			if (!$t_attr_val->getPrimaryKey()) { return; }
  			$t_attr_val->useBlobAsFileField(true);
+ 			
+ 			$o_view = new View($this->request, $this->request->getViewsDirectoryPath().'/bundles/');
  			
  			// get value
  			$t_element = new ca_metadata_elements($t_attr_val->get('element_id'));
@@ -920,7 +969,6 @@
  			if ($t_element->get('datatype') != 15) { 	// 15=file
  				return;
  			}
- 			
  			
  			$o_view->setVar('file_path', $t_attr_val->getFilePath('value_blob'));
  			$o_view->setVar('file_name', ($vs_name = trim($t_attr_val->get('value_longtext2'))) ? $vs_name : _t("downloaded_file"));
@@ -938,9 +986,41 @@
  		 * @param array $pa_options Array of options passed through to _initView 
  		 */
  		public function DownloadMedia($pa_options=null) {
- 			list($vn_subject_id, $t_subject) = $this->_initView($pa_options);
  			if (!($pn_value_id = $this->request->getParameter('value_id', pInteger))) { return; }
+ 			$t_attr_val = new ca_attribute_values($pn_value_id);
+ 			if (!$t_attr_val->getPrimaryKey()) { return; }
+ 			$t_attr = new ca_attributes($t_attr_val->get('attribute_id'));
+ 		
+ 			$vn_table_num = $this->opo_datamodel->getTableNum($this->ops_table_name);
+ 			if ($t_attr->get('table_num') !=  $vn_table_num) { 
+ 				$this->response->setRedirect($this->request->config->get('error_display_url').'/n/2580?r='.urlencode($this->request->getFullUrlPath()));
+ 				return;
+ 			}
+ 			$t_element = new ca_metadata_elements($t_attr->get('element_id'));
+ 			$this->request->setParameter($this->opo_datamodel->getTablePrimaryKeyName($vn_table_num), $t_attr->get('row_id'));
+ 			
+ 			list($vn_subject_id, $t_subject) = $this->_initView($pa_options);
  			$ps_version = $this->request->getParameter('version', pString);
+ 			
+ 			//
+ 			// Does user have access to bundle?
+ 			//
+ 			if (($this->request->user->getBundleAccessLevel($this->ops_table_name, $t_element->get('element_code'))) < __CA_BUNDLE_ACCESS_READONLY__) {
+ 				$this->response->setRedirect($this->request->config->get('error_display_url').'/n/2580?r='.urlencode($this->request->getFullUrlPath()));
+ 				return;
+ 			}
+ 			
+ 			//
+ 			// Does user have access to type?
+ 			//
+ 			$va_restrict_to_types = null;
+ 			if ($t_subject->getAppConfig()->get('perform_type_access_checking')) {
+ 				$va_restrict_to_types = caGetTypeRestrictionsForUser($this->ops_table_name, array('access' => __CA_BUNDLE_ACCESS_EDIT__));
+ 			}
+ 			if (is_array($va_restrict_to_types) && !in_array($t_subject->get('type_id'), $va_restrict_to_types)) {
+ 				$this->response->setRedirect($this->request->config->get('error_display_url').'/n/2560?r='.urlencode($this->request->getFullUrlPath()));
+ 				return;
+ 			}
  			
  			//
  			// Does user have access to row?
@@ -952,9 +1032,6 @@
  				}
  			}
  			
- 			// TODO: check that file is part of item user has access rights for
- 			$t_attr_val = new ca_attribute_values($pn_value_id);
- 			if (!$t_attr_val->getPrimaryKey()) { return; }
  			$t_attr_val->useBlobAsMediaField(true);
  			
  			if (!in_array($ps_version, $t_attr_val->getMediaVersions('value_blob'))) { $ps_version = 'original'; }
@@ -968,7 +1045,6 @@
  			if ($t_element->get('datatype') != 16) { 	// 16=media
  				return;
  			}
- 			
  			
  			$o_view->setVar('file_path', $t_attr_val->getMediaPath('value_blob', $ps_version));
  			$o_view->setVar('file_name', ($vs_name = trim($t_attr_val->get('value_longtext2'))) ? $vs_name : _t("downloaded_file"));

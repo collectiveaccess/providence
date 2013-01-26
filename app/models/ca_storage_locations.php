@@ -305,15 +305,15 @@ class ca_storage_locations extends BundlableLabelableBaseModelWithAttributes imp
 	 * Return array containing information about all storage location hierarchies, including their root_id's
 	 */
 	 public function getHierarchyList($pb_dummy=false) {
-		
 		$vn_root_id = $this->getHierarchyRootID();
 		$t_root = new ca_storage_locations($vn_root_id);
 		$qr_children = $t_root->getHierarchyChildrenAsQuery();
 		$va_preferred_labels = $t_root->getPreferredLabels(null, false);
 		
 		return array(array(
-			'location_id' => $t_root->getPrimaryKey(),
-			'name' => 'Root',
+			'location_id' => $vn_id = $t_root->getPrimaryKey(),
+			'item_id' => $vn_id,
+			'name' => _t('Storage locations'),
 			'children' => $qr_children->numRows(),
 			'has_children' => $qr_children->numRows() ? true : false
 		));
