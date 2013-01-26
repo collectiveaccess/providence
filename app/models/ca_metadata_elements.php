@@ -840,6 +840,26 @@ class ca_metadata_elements extends LabelableBaseModelWithAttributes implements I
 		
 		return $va_restrictions;
 	}
+	
+	# ------------------------------------------------------
+	/**
+	 * 
+	 */
+	static public function getElementDatatype($pm_element_code_or_id) {
+		$vo_db = new Db();
+		
+		$vn_element_id = null;		
+		$t_element = new ca_metadata_elements(is_numeric($pm_element_code_or_id) ? $pm_element_code_or_id : null);
+		
+		if (!($vn_element_id = $t_element->getPrimaryKey())) {
+			if ($t_element->load(array('element_code' => $pm_element_code_or_id))) {
+				return $t_element->get('datatype');	
+			}
+		} else {
+			return $t_element->get('datatype');
+		}
+		return null;
+	}
 	# ------------------------------------------------------
 	#
 	# ------------------------------------------------------

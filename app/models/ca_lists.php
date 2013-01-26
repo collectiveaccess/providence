@@ -1011,7 +1011,7 @@ class ca_lists extends BundlableLabelableBaseModelWithAttributes {
 	 * Converts list specifier (code or list_id) into a list_id
 	 *
 	 * @param mixed $pm_list_name_or_id List code or list_id
-	 * @return int listva_list_items for the specified list, or null if the list does not exist
+	 * @return int list for the specified list, or null if the list does not exist
 	 */
 	static function getListCode($pm_list_name_or_id) {
 		if (ca_lists::$s_list_code_cache[$pm_list_name_or_id]) {

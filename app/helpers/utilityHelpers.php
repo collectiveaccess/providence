@@ -1502,7 +1502,6 @@ function caFileIsIncludable($ps_file) {
 	 * @param $input_arabic_numeral The int to convert
 	 * @return string Roman number resulting from the conversion
 	 */
-	
 	function caArabicRoman($num) {
 		// Make sure that we only use the integer portion of the value
 		$n = intval($num);
@@ -1528,7 +1527,7 @@ function caFileIsIncludable($ps_file) {
 		// The Roman numeral should be built, return it
 		return $result;
 	}
-
+	# ---------------------------------------
 	/**
 	 * Converts a roman number to arabic numerals
 	 *
@@ -1537,7 +1536,6 @@ function caFileIsIncludable($ps_file) {
 	 * @param string $roman The string to convert
 	 * @return mixed int if converted, false if no valid roman number supplied   
 	 */
-	
 	function caRomanArabic($roman) {
 		$conv = array(
             array("letter" => 'I', "number" => 1),
@@ -1570,5 +1568,6 @@ function caFileIsIncludable($ps_file) {
             $len--;
         }
         return($arabic);
-	}	
+	}
+	# ----------------------------------------
 ?>
