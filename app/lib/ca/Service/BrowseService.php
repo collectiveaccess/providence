@@ -63,11 +63,18 @@ class BrowseService extends BaseJSONService {
 	protected function getFacetInfo(){
 		$o_browse = $this->initBrowseWithUserFacets();
 		$o_browse->execute();
+		$va_post = $this->getRequestBodyArray();
+
 		$va_info = $o_browse->getInfoForFacetsWithContent();
 		unset($va_info["_search"]);
 
 		foreach($va_info as $vs_facet => &$va_facet_info){
-			$va_facet = $o_browse->getFacetWithGroups($vs_facet, $va_facet_info["group_mode"]);
+			if(isset($va_post["ungrouped"]) && $va_post["ungrouped"]){
+				$va_facet = $o_browse->getFacet($vs_facet);
+			} else {
+				$va_facet = $o_browse->getFacetWithGroups($vs_facet, $va_facet_info["group_mode"]);
+			}
+
 			if(sizeof($va_facet)==0){
 				unset($va_info[$vs_facet]);
 			} else {
@@ -98,7 +105,8 @@ class BrowseService extends BaseJSONService {
 		while($vo_result->nextHit()){
 			$va_item = array();
 
-			$va_item[$t_instance->primaryKey()] = $vo_result->get($t_instance->primaryKey());
+			$va_item[$t_instance->primaryKey()] = $vn_id = $vo_result->get($t_instance->primaryKey());
+			$va_item['id'] = $vn_id;
 			if($vs_idno = $vo_result->get("idno")){
 				$va_item["idno"] = $vs_idno;
 			}
