@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2009-2012 Whirl-i-Gig
+ * Copyright 2009-2013 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -227,7 +227,7 @@
 				);
 				
 			if ($pa_options['po_request']) {
-				$vs_url = caNavUrl($pa_options['po_request'], 'lookup', 'LCSH', 'Get');
+				$vs_url = caNavUrl($pa_options['po_request'], 'lookup', 'LCSH', 'Get', array('max' => 100, 'element_id' => (int)$pa_element_info['element_id']));
 			} else {
 				// hardcoded default for testing.
 				$vs_url = '/index.php/lookup/LCSH/Get';	
@@ -239,11 +239,13 @@
 			$vs_element .= "
 				<script type='text/javascript'>
 					jQuery(document).ready(function() {
-						jQuery('#lcsh_".$pa_element_info['element_id']."_autocomplete{n}').autocomplete('".$vs_url."', {minChars: 3, matchSubset: 1, matchContains: 1, delay: 800, max: 100, extraParams: {element_id: ".(int)$pa_element_info['element_id']."}});
-						jQuery('#lcsh_".$pa_element_info['element_id']."_autocomplete{n}').result(function(event, data, formatted) {
-								jQuery('#{fieldNamePrefix}".$pa_element_info['element_id']."_{n}').val(data[0] + '|' + data[1]);
-							}
-						);
+						jQuery('#lcsh_".$pa_element_info['element_id']."_autocomplete{n}').autocomplete(
+							{ source: '{$vs_url}', minLength: 3, delay: 800, 
+								select: function( event, ui ) {
+									jQuery('#{fieldNamePrefix}".$pa_element_info['element_id']."_{n}').val(ui.item.label + ' [' + ui.item.idno + ']|' + ui.item.url);
+     							}
+     						}
+						).click(function() { this.select(); });
 						
 						if ('{{".$pa_element_info['element_id']."}}') {
 							var re = /\[info:lc([^\]]+)\]/; 

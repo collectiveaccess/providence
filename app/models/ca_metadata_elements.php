@@ -840,6 +840,26 @@ class ca_metadata_elements extends LabelableBaseModelWithAttributes implements I
 		
 		return $va_restrictions;
 	}
+	
+	# ------------------------------------------------------
+	/**
+	 * 
+	 */
+	static public function getElementDatatype($pm_element_code_or_id) {
+		$vo_db = new Db();
+		
+		$vn_element_id = null;		
+		$t_element = new ca_metadata_elements(is_numeric($pm_element_code_or_id) ? $pm_element_code_or_id : null);
+		
+		if (!($vn_element_id = $t_element->getPrimaryKey())) {
+			if ($t_element->load(array('element_code' => $pm_element_code_or_id))) {
+				return $t_element->get('datatype');	
+			}
+		} else {
+			return $t_element->get('datatype');
+		}
+		return null;
+	}
 	# ------------------------------------------------------
 	#
 	# ------------------------------------------------------
@@ -958,6 +978,27 @@ class ca_metadata_elements extends LabelableBaseModelWithAttributes implements I
 			$va_restrictions[] = $qr_res->getRow();
 		}
 		return $va_restrictions;
+	}
+	# ------------------------------------------------------
+	/**
+	 * Return type restrictions for current element and specified table for display
+	 * Display consists of type names in the current locale
+	 *
+	 * @param int $pn_table_num The table to return restrictions for
+	 * @return array An array of type names to which this element is restricted, in the current locale
+	 * 
+	 */
+	public function getTypeRestrictionsForDisplay($pn_table_num) {
+		$va_restrictions = $this->getTypeRestrictions($pn_table_num);
+		
+		$t_instance = $this->getAppDatamodel()->getInstanceByTableNum($pn_table_num, true);
+		$va_restriction_names = array();
+		$va_type_names = $t_instance->getTypeList();
+		foreach($va_restrictions as $vn_i => $va_restriction) {
+			if (!$va_restriction['type_id']) { continue; }
+			$va_restriction_names[] = $va_type_names[$va_restriction['type_id']]['name_plural'];
+		}
+		return $va_restriction_names;
 	}
 	# ------------------------------------------------------
 	/**

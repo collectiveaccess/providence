@@ -148,7 +148,10 @@
 <?php 
 	$vs_g = null;
 	if($vb_individual_group_display) {
-		if (!($vs_g = $this->getVar('only_show_group'))) { $vs_g = array_shift(array_keys($va_grouped_items)); }
+		if (!($vs_g = $this->getVar('only_show_group'))) { 
+			$va_tmp = array_keys($va_grouped_items);
+			$vs_g = array_shift($va_tmp);
+		}
 	}
 	
 	print _t("Jump to").': '; 

@@ -25,7 +25,5 @@
  *
  * ----------------------------------------------------------------------
  */
-	foreach($this->getVar('intrinsic_value_list') as $vn_id => $vs_value) {
-		print $vs_value."\n";
-	}
+ 	print json_encode($this->getVar('intrinsic_value_list'));
 ?>

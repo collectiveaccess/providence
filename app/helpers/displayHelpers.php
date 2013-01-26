@@ -314,16 +314,19 @@ require_once(__CA_LIB_DIR__.'/core/Parsers/TimeExpressionParser.php');
 			$vs_output .= caHTMLHiddenInput('remapToID', array('value' => '', 'id' => 'remapToID'));
 			$vs_output .= "<script type='text/javascript'>";
 			
-			$va_service_info = caJSONLookupServiceUrl($po_request, $t_instance->tableName());
+			$va_service_info = caJSONLookupServiceUrl($po_request, $t_instance->tableName(), array('noSymbols' => 1, 'exclude' => (int)$t_instance->getPrimaryKey(), 'table_num' => (int)$t_instance->get('table_num')));
 			$vs_output .= "jQuery(document).ready(function() {";
 			$vs_output .= "jQuery('#remapTo').autocomplete(
-					'".$va_service_info['search']."', {minChars: 3, matchSubset: 1, matchContains: 1, delay: 800, scroll: true, max: 100, extraParams: {noSymbols: 1, exclude: ".(int)$t_instance->getPrimaryKey().", table_num: ".(int)$t_instance->get('table_num')."}}
+					{
+						source: '".$va_service_info['search']."', html: true,
+						minLength: 3, delay: 800,
+						select: function(event, ui) {
+							jQuery('#remapToID').val(ui.item.id);
+							jQuery('#caReferenceHandlingClear').css('display', 'inline');
+						}
+					}
 				);";
 				
-			$vs_output.= "jQuery('#remapTo').result(function(event, data, formatted) {
-					jQuery('#remapToID').val(data[1]);
-					jQuery('#caReferenceHandlingClear').css('display', 'inline');
-				});";
 			$vs_output .= "jQuery('#caReferenceHandlingRemap').click(function() {
 				jQuery('#remapTo').attr('disabled', false);
 			});
@@ -496,8 +499,10 @@ require_once(__CA_LIB_DIR__.'/core/Parsers/TimeExpressionParser.php');
 		});
 </script>
 <div id=\"editorFieldListHTML\">";
-		foreach($pa_bundle_list as $vs_anchor => $va_info) {
-			$vs_buf .= "<a href=\"#\" onclick=\"jQuery.scrollTo('a[name={$vs_anchor}]', {duration: 350, offset: -80 }); return false;\" class=\"editorFieldListLink\">".$va_info['name']."</a><br/>";
+		if (is_array($pa_bundle_list)) { 
+			foreach($pa_bundle_list as $vs_anchor => $va_info) {
+				$vs_buf .= "<a href=\"#\" onclick=\"jQuery.scrollTo('a[name={$vs_anchor}]', {duration: 350, offset: -80 }); return false;\" class=\"editorFieldListLink\">".$va_info['name']."</a><br/>";
+			}	
 		}
 		$vs_buf .= "</div>\n";
 		
@@ -784,7 +789,14 @@ require_once(__CA_LIB_DIR__.'/core/Parsers/TimeExpressionParser.php');
 			// Output extra useful info for sets
 			//
 			if ($vs_table_name === 'ca_sets') {
-				$vs_buf .= "<div><strong>"._t("Number of items")."</strong>: ".$t_item->getItemCount(array('user_id' => $po_view->request->getUserID()))."<br/>\n";
+				
+				$vn_set_item_count = $t_item->getItemCount(array('user_id' => $po_view->request->getUserID()));
+				
+				if (($vn_set_item_count > 0) && ($po_view->request->user->canDoAction('can_batch_edit_'.$o_dm->getTableName($t_item->get('table_num'))))) {
+					$vs_buf .= caNavButton($po_view->request, __CA_NAV_BUTTON_BATCH_EDIT__, _t('Batch edit'), 'batch', 'Editor', 'Edit', array('set_id' => $t_item->getPrimaryKey()), array(), array('icon_position' => __CA_NAV_BUTTON_ICON_POS_LEFT__, 'use_class' => 'editorBatchSetEditorLink', 'no_background' => true, 'dont_show_content' => true));
+				}
+				
+				$vs_buf .= "<div><strong>"._t("Number of items")."</strong>: {$vn_set_item_count}<br/>\n";
 					
 				if ($t_item->getPrimaryKey()) {
 					
@@ -1297,6 +1309,96 @@ require_once(__CA_LIB_DIR__.'/core/Parsers/TimeExpressionParser.php');
 	}
 	# ------------------------------------------------------------------------------------------------
 	/**
+	 * Generates standard-format inspector panels for editors
+	 *
+	 * @param View $po_view Inspector view object
+	 * @param array $pa_options Optional array of options. Supported options are:
+	 *		backText = a string to use as the "back" button text; default is "Results"
+	 *
+	 * @return string HTML implementing the inspector
+	 */
+	function caBatchEditorInspector($po_view, $pa_options=null) {
+		require_once(__CA_MODELS_DIR__.'/ca_sets.php');
+		
+		$t_set 				= $po_view->getVar('t_set');
+		$t_item 				= $po_view->getVar('t_item');
+		
+		$o_result_context		= $po_view->getVar('result_context');
+		$t_ui 					= $po_view->getVar('t_ui');
+		
+		$o_dm = Datamodel::load();
+	
+		// action extra to preserve currently open screen across next/previous links
+		//$vs_screen_extra 	= ($po_view->getVar('screen')) ? '/'.$po_view->getVar('screen') : '';
+		
+		$vs_buf = '<h3 class="nextPrevious">'.caNavLink($po_view->request, 'Back', '', 'manage', 'Set', 'ListSets')."</h3>\n";
+
+		$vs_color = null;
+		if ($t_type) { $vs_color = trim($t_type->get('color')); } 
+		if (!$vs_color && $t_ui) { $vs_color = trim($t_ui->get('color')); }
+		if (!$vs_color) { $vs_color = "444444"; }
+		
+		$vs_buf .= "<h4><div id='caColorbox' style='border: 6px solid #{$vs_color}; padding-bottom:15px;'>\n";
+		
+		
+		$vn_item_count = $t_set->getItemCount(array('user_id' => $po_view->request->getUserID()));
+		$vs_item_name = ($vn_item_count == 1) ? $t_item->getProperty("NAME_SINGULAR"): $t_item->getProperty("NAME_PLURAL");
+		
+		$vs_buf .= "<strong>"._t("Batch editing %1 %2 in set", $vn_item_count, $vs_item_name).": </strong>\n";
+		
+		
+		if (!($vs_label = $t_set->getLabelForDisplay())) {
+			if (!($vs_label = $t_set->get('set_code'))) {
+				$vs_label = '['._t('BLANK').']'; 
+			}
+		}
+		
+		if($t_set->haveAccessToSet($po_view->request->getUserID(), __CA_SET_EDIT_ACCESS__)) {
+			$vs_label = caEditorLink($po_view->request, $vs_label, '', 'ca_sets', $t_set->getPrimaryKey());
+		}
+	
+		
+		$vs_buf .= "<div style='width:190px; overflow:hidden;'>{$vs_watch}{$vs_label}"."<a title='$vs_idno'>".($vs_idno ? " ({$vs_idno})" : '')."</a></div>\n";
+
+		
+		// -------------------------------------------------------------------------------------
+	
+		$vs_buf .= "<div>"._t('Set contains <em>%1</em>', join(", ", $t_set->getTypesForItems()))."</div>\n";
+		
+		$vs_buf .= "</div></h4>\n";
+		
+	
+		return $vs_buf;
+	}
+	# ------------------------------------------------------------------------------------------------
+	/**
+	 * Generates standard-format inspector panels for editors
+	 *
+	 * @param View $po_view Inspector view object
+	 * @param array $pa_options Optional array of options. Supported options are:
+	 *		backText = a string to use as the "back" button text; default is "Results"
+	 *
+	 * @return string HTML implementing the inspector
+	 */
+	function caBatchMediaImportInspector($po_view, $pa_options=null) {
+		$vs_color = "444444"; 
+		$vs_buf .= "<h4><div id='caColorbox' style='border: 6px solid #{$vs_color}; padding-bottom:15px;'>\n";
+		$vs_buf .= "<strong>"._t("Batch import media")."</strong>\n";
+		
+		$vs_batch_media_import_root_directory = $po_view->request->config->get('batch_media_import_root_directory');
+		$vs_buf .= "<p>"._t('<strong>Server directory:</strong> %1', $vs_batch_media_import_root_directory)."</p>\n";
+
+		// Show the counts here is nice but can bog the server down when the import directory is an NFS or SAMBA mount
+		//$va_counts = caGetDirectoryContentsCount($vs_batch_media_import_root_directory, true, false, false); 
+		//$vs_buf .= "<p>"._t('<strong>Directories on server:</strong> %1', $va_counts['directories'])."<br/>\n";
+		//$vs_buf .= _t('<strong>Files on server:</strong> %1', $va_counts['files'])."<p>\n";
+
+		$vs_buf .= "</div></h4>\n";
+		
+		return $vs_buf;
+	}
+	# ------------------------------------------------------------------------------------------------
+	/**
 	  *
 	  */
 	function caFilterTableList($pa_tables) {
@@ -1800,6 +1902,32 @@ require_once(__CA_LIB_DIR__.'/core/Parsers/TimeExpressionParser.php');
 	}
 	# ------------------------------------------------------------------------------------------------
 	/**
+	 * Normalize arbitrarily precise date expression to century, decade, year, month or day
+	 *
+	 * @param string $ps_expression A valid date expression parseable by the TimeExpressionParser class
+	 * @param string $ps_normalization Level to normalize to. Valid values are centuries, decades, years, months, days
+	 * @param array $pa_options
+	 *			delimiter = A string to join multiple values with when returning normalized date range as a string. Default is semicolon followed by space ("; ")
+	 *			returnAsArray = If set an array of normalized values will be returned rather than a string. Default is false.
+	 * @return mixes The normalized expression. If the expression normalizes to multiple values (eg. a range of years being normalized to months) then the values will be joined with a delimiter and returned as a string unless the "returnAsArray" option is set.
+	 */
+	function caNormalizeDateRange($ps_expression, $ps_normalization, $pa_options=null) {
+		$o_tep = new TimeExpressionParser();
+		if ($o_tep->parse($ps_expression)) {
+			$va_dates = $o_tep->getHistoricTimestamps();
+			$va_vals= $o_tep->normalizeDateRange($va_dates['start'], $va_dates['end'], $ps_normalization);
+			
+			if (isset($pa_options['returnAsArray']) && $pa_options['returnAsArray']) {
+				return $va_vals;
+			} else {
+				$vs_delimiter = isset($pa_options['returnAsArray']) ? $pa_options['returnAsArray'] : "; ";
+				return join($vs_delimiter, $va_vals);
+			}
+		}
+		return null;
+	}
+	# ------------------------------------------------------------------------------------------------
+	/**
 	 * Returns text describing dimensions of object representation
 	 *
 	 * @param DbResult or ca_object_representations instance $po_rep An object containing representation data. Can be either a DbResult object (ie. a query result) or ca_object_representations instance (an instance representing a row in the ca_object_representation class)
@@ -2124,7 +2252,7 @@ $ca_relationship_lookup_parse_cache = array();
 			$va_initial_values[$va_item['relation_id'] ? (int)$va_item['relation_id'] : $va_item[$vs_rel_pk]] = array_merge(
 				$va_item,
 				array(
-					'_display' => $vs_display
+					'label' => $vs_display
 				)
 			);
 		}
@@ -2132,7 +2260,7 @@ $ca_relationship_lookup_parse_cache = array();
 		if($vb_include_inline_add_message) {
 			$va_initial_values[0] = 
 				array(
-					'_display' => $ps_inline_create_message,
+					'label' => $ps_inline_create_message,
 					'id' => 0,
 					$vs_rel_pk => 0,
 					'_query' => $ps_inline_create_query
@@ -2141,7 +2269,7 @@ $ca_relationship_lookup_parse_cache = array();
 			if ($vb_include_empty_result_message) {
 				$va_initial_values[0] = 
 					array(
-						'_display' => $ps_empty_result_message,
+						'label' => $ps_empty_result_message,
 						'id' => -1,
 						$vs_rel_pk => -1,
 						'_query' => $ps_empty_result_query

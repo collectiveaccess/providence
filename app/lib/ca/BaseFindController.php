@@ -240,6 +240,8 @@
 				}
 			}
 			
+			$this->view->setVar('result_context', $this->opo_result_context);
+			
 			$this->view->setVar('access_restrictions',AccessRestrictions::load());
  		}
 		# -------------------------------------------------------
@@ -688,6 +690,45 @@
 			$this->view->setVar('num_items_added', $vn_added_items_count);
 			$this->view->setVar('num_items_already_in_set', $vn_dupe_item_count);
  			$this->render('Results/ajax_add_to_set_json.php');
+ 		}
+ 		# ------------------------------------------------------------------
+ 		/**
+ 		 * Add items to specified set
+ 		 */ 
+ 		public function createSetFromResult() {
+ 			global $g_ui_locale_id;
+ 			
+ 			$va_row_ids = $this->opo_result_context->getResultList();
+ 			
+ 			$vn_added_items_count = 0;
+ 			if (is_array($va_row_ids) && sizeof($va_row_ids)) {
+				$t_model = $this->opo_datamodel->getInstanceByTableName($this->ops_tablename, true);
+				$vs_set_name = $this->request->getParameter('set_name', pString);
+				if (!$vs_set_name) { $vs_set_name = $this->opo_result_context->getSearchExpression(); }
+			
+				$t_set = new ca_sets();
+				$t_set->setMode(ACCESS_WRITE);
+				$t_set->set('user_id', $this->request->getUserID());
+				$t_set->set('type_id', $this->request->config->get('ca_sets_default_type'));
+				$t_set->set('table_num', $t_model->tableNum());
+				$t_set->set('set_code', mb_substr(preg_replace("![^A-Za-z0-9_\-]+!", "_", $vs_set_name), 0, 100));
+			
+				$t_set->insert();
+				
+				if ($t_set->numErrors()) {
+					$this->view->setVar('error', join("; ", $t_set->getErrors()));
+				}
+			
+				$t_set->addLabel(array('name' => $vs_set_name), $g_ui_locale_id, null, true);
+			
+				$vn_added_items_count = $t_set->addItems($va_row_ids);
+			}
+ 		
+			$this->view->setVar('set_id', $t_set->getPrimaryKey());
+			$this->view->setVar('t_set', $t_set);
+			$this->view->setVar('set_name', $vs_set_name);
+			$this->view->setVar('num_items_added', $vn_added_items_count);
+ 			$this->render('Results/ajax_create_set_from_result_json.php');
  		}
  		# ------------------------------------------------------------------
  		/**

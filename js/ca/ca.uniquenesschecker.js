@@ -6,7 +6,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2011 Whirl-i-Gig
+ * Copyright 2011-2013 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -48,7 +48,7 @@ var caUI = caUI || {};
 		that.checkValue = function() { 
 			jQuery('#' + that.statusID).html((that.processIndicator ? '<img src=\'' + that.processIndicator + '\' border=\'0\'/>' : ''));
 			
-			var val = jQuery('#' + that.formElementID).val();;
+			var val = jQuery('#' + that.formElementID).val();
 			jQuery.getJSON(that.lookupUrl, { n: val, table_num: that.table_num, id: that.row_id, field: that.field, withinFields: that.withinFields}, 
 				function(data) {
 					if (
