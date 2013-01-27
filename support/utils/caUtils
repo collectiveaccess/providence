@@ -1,0 +1,81 @@
+#!/usr/bin/env php
+<?php
+	if (!_caUtilsLoadSetupPHP()) {
+		die("Could not find your CollectiveAccess setup.php file! Please set the COLLECTIVEACCESS_HOME environment variable to the location of your CollectiveAccess installation, or run this command from a sub-directory of your CollectiveAccess installation.\n");
+	}
+	require_once(__CA_LIB_DIR__."/ca/Utils/CLIUtils.php");
+	require_once(__CA_LIB_DIR__."/core/Zend/Console/Getopt.php");
+	
+	try {
+		$o_opts = new Zend_Console_Getopt(array(
+			"hostname|h-s" => 'Hostname of installation. If omitted default installation is used.'
+		));
+		$o_opts->parse();
+	} catch(Exception $e) {
+		die("Invalid options specified. Try 'caUtils help' to view list of valid options.\n");
+	}
+	
+	$va_args = $o_opts->getRemainingArgs();
+	$vs_cmd = array_shift($va_args);
+	$vs_cmd = strtolower(str_replace("-", "_", $vs_cmd));
+	
+	
+	if ($vs_cmd == 'help') {
+		$vs_cmd = array_shift($va_args);
+		$vs_cmd_proc = strtolower(str_replace("-", "_", $vs_cmd));
+		if (method_exists("CLIUtils", $vs_cmd_proc)) {
+			print "Help for \"{$vs_cmd}\":\n\n";
+			print "\t".call_user_func_array("CLIUtils::{$vs_cmd_proc}Help", $o_opts->toArray())."\n";
+		} else {
+			print "No help is available for \"{$vs_cmd}\"\n";
+		}
+	} else {
+		if (method_exists("CLIUtils", $vs_cmd)) {
+			call_user_func_array("CLIUtils::{$vs_cmd}", $o_opts->toArray());
+		} else {
+			$va_methods = get_class_methods("CLIUtils");
+		
+			if ($vs_cmd) {
+				print "\"{$vs_cmd}\" is an invalid command. Valid commands are:\n\n";
+			} else {
+				print "You must specify a valid command. Valid commands are:\n\n";
+			}
+		
+			foreach($va_methods as $vs_method) {
+				if(preg_match("!Help$!", $vs_method)) { continue; }
+				print "\t".str_pad(str_replace("_", "-", $vs_method), 30)."\t".call_user_func("CLIUtils::{$vs_method}ShortHelp")."\n\n";
+			}
+		}
+	}
+	
+	# --------------------------------------------------------
+	/**
+	 * Try to locate and load setup.php bootstrap file. If load fails return false and 
+	 * let the caller handle telling the user. 
+	 *
+	 * @return bool True if setup.php is located and loaded, false if setup.php could not be found.
+	 */
+	function _caUtilsLoadSetupPHP() {
+		// Look for environment variable
+		$vs_path = getenv("COLLECTIVEACCESS_HOME");
+		if (file_exists("{$vs_path}/setup.php")) {
+			require_once("{$vs_path}/setup.php");
+			return true;
+		}
+		
+		// Look in current directory and then in parent directories
+		$vs_cwd = getcwd();
+		$va_cwd = explode("/", $vs_cwd);
+		while(sizeof($va_cwd) > 0) {
+			if (file_exists("/".join("/", $va_cwd)."/setup.php")) {
+				require_once("/".join("/", $va_cwd)."/setup.php");
+				return true;
+			}
+			array_pop($va_cwd);
+		}
+		
+		// Give up and die
+		return false;
+	}
+	# --------------------------------------------------------
+?>
