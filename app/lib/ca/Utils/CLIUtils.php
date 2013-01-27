@@ -34,12 +34,8 @@
   *
   */
 
- 	require_once(__CA_MODELS_DIR__.'/ca_entities.php');
- 	require_once(__CA_MODELS_DIR__.'/ca_entity_labels.php');
- 	require_once(__CA_MODELS_DIR__.'/ca_places.php');
- 	require_once(__CA_MODELS_DIR__.'/ca_collections.php');
- 	require_once(__CA_MODELS_DIR__.'/ca_lists.php');
- 	require_once(__CA_MODELS_DIR__.'/ca_storage_locations.php');
+ 	require_once(__CA_LIB_DIR__.'/core/Utils/CLIProgressBar.php');
+	require_once(__CA_LIB_DIR__."/core/Zend/Console/Getopt.php");
  
 	class CLIUtils {
 		# -------------------------------------------------------
@@ -87,38 +83,39 @@ Note that depending upon the size of your database rebuilding can take from a fe
 				'ca_object_representations', 'ca_representation_annotations',
 				'ca_list_items'
 			) as $vs_table) {
-		
-				require_once(__CA_MODELS_DIR__."/".$vs_table.".php");
+				require_once(__CA_MODELS_DIR__."/{$vs_table}.php");
 				$t_table = new $vs_table;
 				$vs_pk = $t_table->primaryKey();
-				$qr_res = $o_db->query('SELECT '.$vs_pk.' FROM '.$vs_table);
+				$qr_res = $o_db->query("SELECT {$vs_pk} FROM {$vs_table}");
 		
 				if ($vs_label_table_name = $t_table->getLabelTableName()) {
 					require_once(__CA_MODELS_DIR__."/".$vs_label_table_name.".php");
 					$t_label = new $vs_label_table_name;
 					$vs_label_pk = $t_label->primaryKey();
-					$qr_labels = $o_db->query('SELECT '.$vs_label_pk.' FROM '.$vs_label_table_name);
+					$qr_labels = $o_db->query("SELECT {$vs_label_pk} FROM {$vs_label_table_name}");
 			
-					print "PROCESSING {$vs_label_table_name}\n";
+					print CLIProgressBar::start($qr_labels->numRows(), _t('Processing %1', $t_label->getProperty('NAME_PLURAL')));
 					while($qr_labels->nextRow()) {
 						$vn_label_pk_val = $qr_labels->get($vs_label_pk);
-						print "\tUPDATING LABEL [{$vn_label_pk_val}]\n";
+						print CLIProgressBar::next();
 						if ($t_label->load($vn_label_pk_val)) {
 							$t_label->setMode(ACCESS_WRITE);
 							$t_label->update();
 						}
 					}
+					print CLIProgressBar::finish();
 				}
 		
-				print "PROCESSING {$vs_table}\n";
+				print CLIProgressBar::start($qr_res->numRows(), _t('Processing %1 identifiers', $t_table->getProperty('NAME_SINGULAR')));
 				while($qr_res->nextRow()) {
 					$vn_pk_val = $qr_res->get($vs_pk);
-					print "\tUPDATING [{$vn_pk_val}]\n";
+					print CLIProgressBar::next();
 					if ($t_table->load($vn_pk_val)) {
 						$t_table->setMode(ACCESS_WRITE);
 						$t_table->update();
 					}
 				}
+				print CLIProgressBar::finish();
 			}
 		}
 		# -------------------------------------------------------
@@ -138,6 +135,79 @@ Note that depending upon the size of your database reloading sort values can tak
 		 */
 		public static function rebuild_sort_valuesShortHelp() {
 			return "Rebuilds values use to sort by title, name and identifier.";
+		}
+		
+		# -------------------------------------------------------
+		/**
+		 * Remove media present in media directories but not referenced in database (aka. orphan media)
+		 */
+		public static function remove_unused_media($po_opts=null) {
+			require_once(__CA_LIB_DIR__."/core/Db.php");
+			require_once(__CA_MODELS_DIR__."/ca_object_representations.php");
+		
+			$vb_delete = (bool)$po_opts->getOption('delete');
+			$o_db = new Db();
+	
+			$t_rep = new ca_object_representations();
+			$t_rep->setMode(ACCESS_WRITE);
+	
+			$qr_reps = $o_db->query("SELECT * FROM ca_object_representations");
+			print CLIProgressBar::start($qr_reps->numRows(), _t('Loading valid file paths from database'));
+	
+			$va_paths = array();
+			while($qr_reps->nextRow()) {
+				print CLIProgressBar::next();
+				$va_versions = $qr_reps->getMediaVersions('media');
+				if (!is_array($va_versions)) { continue; }
+				foreach($va_versions as $vs_version) {
+					$va_paths[$qr_reps->getMediaPath('media', $vs_version)] = true;
+				}
+			}
+			print CLIProgressBar::finish();
+	
+			print CLIProgressBar::start(1, _t('Reading file list'));
+			$va_contents = caGetDirectoryContentsAsList(__CA_BASE_DIR__.'/media', true, false);
+			print CLIProgressBar::next();
+			print CLIProgressBar::finish();
+			
+			$vn_delete_count = 0;
+			
+			print CLIProgressBar::start(sizeof($va_contents), _t('Finding unused files'));
+			$va_report = array();
+			foreach($va_contents as $vs_path) {
+				print CLIProgressBar::next();
+				if (!preg_match('!_ca_object_representation!', $vs_path)) { continue; } // skip non object representation files
+				if (!$va_paths[$vs_path]) { 
+					$vn_delete_count++;
+					if ($vb_delete) {
+						unlink($vs_path);
+					}
+					$va_report[] = $vs_path;
+				}
+			}
+			print CLIProgressBar::finish();
+			
+			print "\n"._t('There are %1 files total', sizeof($va_contents))."\n";
+			$vs_percent = sprintf("%2.1f", ($vn_delete_count/sizeof($va_contents)) * 100)."%";
+			if ($vn_delete_count == 1) {
+				print "\t".(isset($vb_delete)) ? "{$vn_delete_count} file ({$vs_percent}) was deleted\n" : "{$vn_delete_count} file ({$vs_percent}) is unused\n";
+			} else {
+				print "\t".(isset($vb_delete)) ?  "{$vn_delete_count} files ({$vs_percent}) were deleted\n" : "{$vn_delete_count} files ({$vs_percent}) are unused\n";
+			}
+		}
+		# -------------------------------------------------------
+		/**
+		 *
+		 */
+		public static function remove_unused_mediaShortHelp() {
+			return "Help text to come";
+		}
+		# -------------------------------------------------------
+		/**
+		 *
+		 */
+		public static function remove_unused_mediaHelp() {
+			return "Detects and, optionally, removes media present in the media directories but not referenced in the database.";
 		}
 		# -------------------------------------------------------
 	}

@@ -13,11 +13,15 @@
 	
 	try {
 		$o_opts = new Zend_Console_Getopt(array(
-			"hostname|h-s" => 'Hostname of installation. If omitted default installation is used.'
+			"hostname|h-s" => 'Hostname of installation. If omitted default installation is used.',
+			"delete|d" => 'Delete unused files. Default is false.'
 		));
 		$o_opts->parse();
 	} catch(Exception $e) {
 		die("Invalid options specified. Try 'caUtils help' to view list of valid options.\n");
+	}
+	if ($vs_hostname = $o_opts->getOption('hostname')) {
+		$_SERVER['HTTP_HOST'] = $vs_hostname;
 	}
 	
 	$va_args = $o_opts->getRemainingArgs();
@@ -33,7 +37,7 @@
 		$vs_cmd_proc = strtolower(str_replace("-", "_", $vs_cmd));
 		if (method_exists("CLIUtils", $vs_cmd_proc)) {
 			print "Help for \"{$vs_cmd}\":\n\n";
-			print "\t".call_user_func_array("CLIUtils::{$vs_cmd_proc}Help", $o_opts->toArray())."\n";
+			print "\t".call_user_func_array("CLIUtils::{$vs_cmd_proc}Help", array($o_opts))."\n";
 		} else {
 			print "No help is available for \"{$vs_cmd}\"\n";
 		}
@@ -42,7 +46,7 @@
 			//
 			// Execute command
 			//
-			call_user_func_array("CLIUtils::{$vs_cmd}", $o_opts->toArray());
+			call_user_func_array("CLIUtils::{$vs_cmd}", array($o_opts));
 		} else {
 			//
 			// List available commands
