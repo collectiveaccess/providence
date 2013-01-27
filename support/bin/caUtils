@@ -10,12 +10,15 @@
 	if (!caIsRunFromCLI()) {
 		die("Sorry, caUtils must be run from the command line!\n");
 	}
+	$vs_cmd = strtolower(str_replace("-", "_", $argv[1]));
+	
+	$va_available_cli_opts = array_merge(array(
+			"hostname|h-s" => 'Hostname of installation. If omitted default installation is used.',
+			"help" => "Displays available commands with descriptions."
+		), method_exists("CLIUtils", "{$vs_cmd}ParamList") ? call_user_func("CLIUtils::{$vs_cmd}ParamList") : array());
 	
 	try {
-		$o_opts = new Zend_Console_Getopt(array(
-			"hostname|h-s" => 'Hostname of installation. If omitted default installation is used.',
-			"delete|d" => 'Delete unused files. Default is false.'
-		));
+		$o_opts = new Zend_Console_Getopt($va_available_cli_opts);
 		$o_opts->parse();
 	} catch(Exception $e) {
 		die("Invalid options specified. Try 'caUtils help' to view list of valid options.\n");
@@ -25,22 +28,24 @@
 	}
 	
 	$va_args = $o_opts->getRemainingArgs();
-	$vs_cmd = array_shift($va_args);
-	$vs_cmd = strtolower(str_replace("-", "_", $vs_cmd));
 	
+	$vs_app_heading = _t("CollectiveAccess %1 (%2/%3) Utilities\n(c) 2013 Whirl-i-Gig",__CollectiveAccess__, __CollectiveAccess_Schema_Rev__, __CollectiveAccess_Release_Type__)."\n\n";
 	
-	if (($vs_cmd == 'help') && (sizeof($va_args) > 0)) {
+	print $vs_app_heading;
+	if (($vs_cmd == 'help') && (sizeof($va_args) > 1) && ($va_args[1])) {
 		//
 		// Full-length help for command
 		//
-		$vs_cmd = array_shift($va_args);
-		$vs_cmd_proc = strtolower(str_replace("-", "_", $vs_cmd));
-		if (method_exists("CLIUtils", $vs_cmd_proc)) {
-			print "Help for \"{$vs_cmd}\":\n\n";
-			print "\t".call_user_func_array("CLIUtils::{$vs_cmd_proc}Help", array($o_opts))."\n";
+		$vs_subcmd = $va_args[1];
+		$vs_subcmd_proc = strtolower(str_replace("-", "_", $vs_subcmd));
+		if (method_exists("CLIUtils", $vs_subcmd_proc)) {
+			
+			print "Help for \"{$vs_subcmd}\":\n\n";
+			print "\t".call_user_func_array("CLIUtils::{$vs_subcmd_proc}Help", array($o_opts))."\n";
 		} else {
-			print "No help is available for \"{$vs_cmd}\"\n";
+			print "No help is available for \"{$vs_subcmd}\"\n";
 		}
+		print "\nFor more information visit http://www.collectiveaccess.org\n"; 
 	} else {
 		if (method_exists("CLIUtils", $vs_cmd)) {
 			//
@@ -51,6 +56,7 @@
 			//
 			// List available commands
 			//
+			
 			$va_methods = get_class_methods("CLIUtils");
 		
 			if ($vs_cmd) {
@@ -61,6 +67,7 @@
 		
 			foreach($va_methods as $vs_method) {
 				if(preg_match("!Help$!", $vs_method)) { continue; }
+				if(preg_match("!ParamList$!", $vs_method)) { continue; }
 				print "\t".str_pad(str_replace("_", "-", $vs_method), 30)."\t".call_user_func("CLIUtils::{$vs_method}ShortHelp")."\n\n";
 			}
 		}

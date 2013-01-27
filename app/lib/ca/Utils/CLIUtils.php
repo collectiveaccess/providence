@@ -56,6 +56,15 @@
 		/**
 		 *
 		 */
+		public static function rebuild_search_indexParamList() {
+			return array(
+			
+			);
+		}
+		# -------------------------------------------------------
+		/**
+		 *
+		 */
 		public static function rebuild_search_indexHelp() {
 			return "CollectiveAccess relies upon indices when searching your data. Indices are simply summaries of your data designed to speed query processing. The precise form and characteristics of the indices used will vary with the type of search engine you are using. They may be stored on disk, in a database or on another server, but their purpose is always the same: to make searches execute faster.
 
@@ -122,6 +131,13 @@ Note that depending upon the size of your database rebuilding can take from a fe
 		/**
 		 *
 		 */
+		public static function rebuild_sort_valuesParamList() {
+			return array();
+		}
+		# -------------------------------------------------------
+		/**
+		 *
+		 */
 		public static function rebuild_sort_valuesHelp() {
 			return "CollectiveAccess relies upon sort values when sorting values that should not sort alphabetically, such as titles with articles (eg. The Man Who Fell to Earth should sort as Man Who Fell to Earth, The) and alphanumeric identifiers (eg. 2011.001 and 2011.2 should sort next to each other with leading zeros in the first ignored).
 
@@ -144,8 +160,8 @@ Note that depending upon the size of your database reloading sort values can tak
 		public static function remove_unused_media($po_opts=null) {
 			require_once(__CA_LIB_DIR__."/core/Db.php");
 			require_once(__CA_MODELS_DIR__."/ca_object_representations.php");
-		
-			$vb_delete = (bool)$po_opts->getOption('delete');
+
+			$vb_delete_opt = (bool)$po_opts->getOption('delete');
 			$o_db = new Db();
 	
 			$t_rep = new ca_object_representations();
@@ -189,25 +205,129 @@ Note that depending upon the size of your database reloading sort values can tak
 			
 			print "\n"._t('There are %1 files total', sizeof($va_contents))."\n";
 			$vs_percent = sprintf("%2.1f", ($vn_delete_count/sizeof($va_contents)) * 100)."%";
+			
 			if ($vn_delete_count == 1) {
-				print "\t".(isset($vb_delete)) ? "{$vn_delete_count} file ({$vs_percent}) was deleted\n" : "{$vn_delete_count} file ({$vs_percent}) is unused\n";
+				print ($vb_delete_opt ? "{$vn_delete_count} file ({$vs_percent}) was deleted\n" : "{$vn_delete_count} file ({$vs_percent}) is unused\n");
 			} else {
-				print "\t".(isset($vb_delete)) ?  "{$vn_delete_count} files ({$vs_percent}) were deleted\n" : "{$vn_delete_count} files ({$vs_percent}) are unused\n";
+				print ($vb_delete_opt ?  "{$vn_delete_count} files ({$vs_percent}) were deleted\n" : "{$vn_delete_count} files ({$vs_percent}) are unused\n");
 			}
 		}
 		# -------------------------------------------------------
 		/**
 		 *
 		 */
+		public static function remove_unused_mediaParamList() {
+			return array(
+				"delete|d" => 'Delete unused files. Default is false.'
+			);
+		}
+		# -------------------------------------------------------
+		/**
+		 *
+		 */
 		public static function remove_unused_mediaShortHelp() {
-			return "Help text to come";
+			return "Detects and, optionally, removes media present in the media directories but not referenced in the database.";
 		}
 		# -------------------------------------------------------
 		/**
 		 *
 		 */
 		public static function remove_unused_mediaHelp() {
-			return "Detects and, optionally, removes media present in the media directories but not referenced in the database.";
+			return "Help text to come";
+		}
+		# -------------------------------------------------------
+		/**
+		 * Export current system configuration as an XML installation profile
+		 */
+		public static function export_profile($po_opts=null) {
+			require_once(__CA_LIB_DIR__."/ca/ConfigurationExporter.php");
+	
+			if(!class_exists("DOMDocument")){
+				print("Sorry, the PHP DOM extension is required to export profiles.\n");
+				return;
+			}
+
+			$vs_output = $po_opts->getOption("output");
+			$va_output = explode("/", $vs_output);
+			array_pop($va_output);
+			if ($vs_output && (!is_dir(join("/", $va_output)))) {
+				print("Sorry, cannot write profile to {$vs_output}.\n");
+				return;
+			}
+			
+			$vs_profile = ConfigurationExporter::exportConfigurationAsXML($po_opts->getOption("name"), $po_opts->getOption("description"), $po_opts->getOption("base"), $po_opts->getOption("infoURL"));
+			
+			if ($vs_output) {
+				file_put_contents($vs_output, $vs_profile);
+			} else {
+				print $vs_profile;
+			}
+		}
+		# -------------------------------------------------------
+		/**
+		 *
+		 */
+		public static function export_profileParamList() {
+			return array(
+				"base|b-s" => 'File name of profile to use as base profile. Omit if you do not want to use a base profile. (Optional)',
+				"name|n=s" => 'Name of the profile, used for "profileName" element.',
+				"infoURL|u-s" => 'URL pointing to more information about the profile. (Optional)',
+				"description|d-s" => 'Description of the profile, used for "profileDescription" element. (Optional)',
+				"output|o-s" => 'File to output profile to. If omitted profile is printed to standard output. (Optional)'
+			);
+		}
+		# -------------------------------------------------------
+		/**
+		 *
+		 */
+		public static function export_profileShortHelp() {
+			return "Export current system configuration as an XML installation profile.";
+		}
+		# -------------------------------------------------------
+		/**
+		 *
+		 */
+		public static function export_profileHelp() {
+			return "Help text to come.";
+		}
+		# -------------------------------------------------------
+		/**
+		 * Process queued tasks
+		 */
+		public static function process_task_queue($po_opts=null) {
+			require_once(__CA_LIB_DIR__."/core/TaskQueue.php");
+	
+			$vo_tq = new TaskQueue();
+			
+			if (!$po_opts->getOption("quiet")) { print "Processing queued tasks...\n"; }
+			$vo_tq->processQueue();		// Process queued tasks
+			
+			if (!$po_opts->getOption("quiet")) { print "Processing recurring tasks...\n"; }
+			$vo_tq->runPeriodicTasks();	// Process recurring tasks implemented in plugins
+			if (!$po_opts->getOption("quiet")) { print "Processing complete.\n"; }
+		}
+		# -------------------------------------------------------
+		/**
+		 *
+		 */
+		public static function process_task_queueParamList() {
+			return array(
+				"quiet|q" => "Run without outputting progress information."
+			);
+		}
+		# -------------------------------------------------------
+		/**
+		 *
+		 */
+		public static function process_task_queueShortHelp() {
+			return "Process queued tasks.";
+		}
+		# -------------------------------------------------------
+		/**
+		 *
+		 */
+		public static function process_task_queueHelp() {
+			return "Help text to come.";
 		}
 		# -------------------------------------------------------
 	}
