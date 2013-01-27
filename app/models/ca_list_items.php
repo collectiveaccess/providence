@@ -366,7 +366,8 @@ class ca_list_items extends BundlableLabelableBaseModelWithAttributes implements
 		
 		if ($this->getPrimaryKey()) {
 			$t_list = new ca_lists();
-			$t_list->setTransaction($this->getTransaction());
+			$o_trans = $this->getTransaction();
+			$t_list->setTransaction($o_trans);
 			
 			
 			if (($t_list->load($this->get('list_id'))) && ($t_list->get('list_code') == 'place_hierarchies') && ($this->get('parent_id'))) {
