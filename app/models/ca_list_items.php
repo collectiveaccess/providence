@@ -378,7 +378,7 @@ class ca_list_items extends BundlableLabelableBaseModelWithAttributes implements
 				
 				// create root in ca_places
 				$t_place = new ca_places();
-				$t_place->setTransaction($this->getTransaction());
+				$t_place->setTransaction($o_trans);
 				$t_place->setMode(ACCESS_WRITE);
 				$t_place->set('hierarchy_id', $this->getPrimaryKey());
 				$t_place->set('locale_id', $vn_locale_id);
