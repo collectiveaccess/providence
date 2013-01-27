@@ -3,8 +3,13 @@
 	if (!_caUtilsLoadSetupPHP()) {
 		die("Could not find your CollectiveAccess setup.php file! Please set the COLLECTIVEACCESS_HOME environment variable to the location of your CollectiveAccess installation, or run this command from a sub-directory of your CollectiveAccess installation.\n");
 	}
+	require_once(__CA_APP_DIR__."/helpers/utilityHelpers.php");
 	require_once(__CA_LIB_DIR__."/ca/Utils/CLIUtils.php");
 	require_once(__CA_LIB_DIR__."/core/Zend/Console/Getopt.php");
+	
+	if (!caIsRunFromCLI()) {
+		die("Sorry, caUtils must be run from the command line!\n");
+	}
 	
 	try {
 		$o_opts = new Zend_Console_Getopt(array(
@@ -20,7 +25,10 @@
 	$vs_cmd = strtolower(str_replace("-", "_", $vs_cmd));
 	
 	
-	if ($vs_cmd == 'help') {
+	if (($vs_cmd == 'help') && (sizeof($va_args) > 0)) {
+		//
+		// Full-length help for command
+		//
 		$vs_cmd = array_shift($va_args);
 		$vs_cmd_proc = strtolower(str_replace("-", "_", $vs_cmd));
 		if (method_exists("CLIUtils", $vs_cmd_proc)) {
@@ -31,8 +39,14 @@
 		}
 	} else {
 		if (method_exists("CLIUtils", $vs_cmd)) {
+			//
+			// Execute command
+			//
 			call_user_func_array("CLIUtils::{$vs_cmd}", $o_opts->toArray());
 		} else {
+			//
+			// List available commands
+			//
 			$va_methods = get_class_methods("CLIUtils");
 		
 			if ($vs_cmd) {
