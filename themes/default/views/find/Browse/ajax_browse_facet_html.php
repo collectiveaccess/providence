@@ -36,6 +36,9 @@
 	$va_types = $this->getVar('type_list');
 	$va_relationship_types = $this->getVar('relationship_type_list');
 	
+	$va_row_size = $this->request->config->get('browse_row_size');
+	$va_td_width = intval(100/$va_row_size);
+	
 	$vb_individual_group_display = (bool)$this->getVar('individual_group_display');
 
 	$vs_grouping_field = $this->getVar('grouping');
@@ -134,17 +137,17 @@
 			foreach($va_facet as $vn_i => $va_item) {
 				$vs_label = caGetLabelForDisplay($va_facet, $va_item, $va_facet_info);
 				
-				$va_row[] = "<td class='browseSelectPanelListCell'>".caNavLink($this->request, $vs_label, 'browseSelectPanelLink', 'find', $this->request->getController(), ((strlen($vm_modify_id)) ? 'modifyCriteria' : 'addCriteria'), array('facet' => $vs_facet_name, 'id' => $va_item['id'], 'mod_id' => $vm_modify_id))."</td>";
+				$va_row[] = "<td class='browseSelectPanelListCell' width='{$va_td_width}%;'>".caNavLink($this->request, $vs_label, 'browseSelectPanelLink', 'find', $this->request->getController(), ((strlen($vm_modify_id)) ? 'modifyCriteria' : 'addCriteria'), array('facet' => $vs_facet_name, 'id' => $va_item['id'], 'mod_id' => $vm_modify_id))."</td>";
 				
-				if (sizeof($va_row) == 5) {
+				if (sizeof($va_row) == $va_row_size) {
 					print "<tr valign='top'>".join('', $va_row)."</tr>\n";
 					
 					$va_row = array();
 				}
 			}
 			if (sizeof($va_row) > 0) {
-				if (sizeof($va_row) < 5) {
-					for($vn_i = sizeof($va_row); $vn_i <= 5; $vn_i++) {
+				if (sizeof($va_row) < $va_row_size) {
+					for($vn_i = sizeof($va_row); $vn_i <= $va_row_size; $vn_i++) {
 						$va_row[] = '<td> </td>';
 					}
 				}
@@ -270,17 +273,17 @@
 				foreach($va_items as $va_item) {
 					$vs_label = caGetLabelForDisplay($va_facet, $va_item, $va_facet_info);
 				
-					$va_row[] = "<td class='browseSelectPanelListCell'>".caNavLink($this->request, $vs_label, 'browseSelectPanelLink', 'find', $this->request->getController(), ((strlen($vm_modify_id) > 0) ? 'modifyCriteria' : 'addCriteria'), array('facet' => $vs_facet_name, 'id' => $va_item['id'], 'mod_id' => $vm_modify_id))."</td>";
+					$va_row[] = "<td class='browseSelectPanelListCell' width='{$va_td_width}%;'>".caNavLink($this->request, $vs_label, 'browseSelectPanelLink', 'find', $this->request->getController(), ((strlen($vm_modify_id) > 0) ? 'modifyCriteria' : 'addCriteria'), array('facet' => $vs_facet_name, 'id' => $va_item['id'], 'mod_id' => $vm_modify_id))."</td>";
 					
-					if (sizeof($va_row) == 5) {
+					if (sizeof($va_row) == $va_row_size) {
 						print "<tr valign='top'>".join('', $va_row)."</tr>\n";
 						
 						$va_row = array();
 					}
 				}
 				if (sizeof($va_row) > 0) {
-					if (sizeof($va_row) < 5) {
-						for($vn_i = sizeof($va_row); $vn_i <= 5; $vn_i++) {
+					if (sizeof($va_row) < $va_row_size) {
+						for($vn_i = sizeof($va_row); $vn_i <= $va_row_size; $vn_i++) {
 							$va_row[] = '<td> </td>';
 						}
 					}
