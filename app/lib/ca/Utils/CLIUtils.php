@@ -330,5 +330,128 @@ Note that depending upon the size of your database reloading sort values can tak
 			return "Help text to come.";
 		}
 		# -------------------------------------------------------
+		/**
+		 * Reprocess media
+		 */
+		public static function reprocess_media($po_opts=null) {
+			define('__CollectiveAccess_IS_REPROCESSING_MEDIA__', 1);
+			require_once(__CA_LIB_DIR__."/core/Db.php");
+			require_once(__CA_MODELS_DIR__."/ca_object_representations.php");
+	
+			$o_db = new Db();
+	
+			$t_rep = new ca_object_representations();
+			$t_rep->setMode(ACCESS_WRITE);
+	
+			$va_mimetypes = explode(",", $po_opts->getOption("mimetypes"));
+			$va_versions = explode(",", $po_opts->getOption("versions"));
+	
+			$qr_reps = $o_db->query("SELECT * FROM ca_object_representations ORDER BY representation_id");
+			
+			print CLIProgressBar::start($qr_reps->numRows(), _t('Re-processing media'));
+			while($qr_reps->nextRow()) {
+				$va_media_info = $qr_reps->getMediaInfo('media');
+				$vs_original_filename = $va_media_info['ORIGINAL_FILENAME'];
+				
+				print CLIProgressBar::next(1, _t("Re-processing %1", ($vs_original_filename ? $vs_original_filename : $qr_reps->get('representation_id'))));
+		
+				$vs_mimetype = $qr_reps->getMediaInfo('media', 'original', 'MIMETYPE');
+				if(sizeof($va_mimetypes)) {
+					foreach($va_mimetypes as $vs_mimetype_pattern) {
+						if(!preg_match("!^{$vs_mimetype_pattern}!", $vs_mimetype)) {
+							continue(2);
+						}
+					}
+				}
+				
+				$t_rep->load($qr_reps->get('representation_id'));
+				$t_rep->set('media', $p =$qr_reps->getMediaPath('media', 'original'), array('original_filename' => $vs_original_filename));
+
+				if (sizeof($va_versions)) {
+					$t_rep->update(array('updateOnlyMediaVersions' =>$va_versions));
+				} else {
+					$t_rep->update();
+				}
+		
+				if ($t_rep->numErrors()) {
+					print "\n\tError processing media: ".join('; ', $t_rep->getErrors())."\n";
+				}
+			}
+			print CLIProgressBar::finish();
+		}
+		# -------------------------------------------------------
+		/**
+		 *
+		 */
+		public static function reprocess_mediaParamList() {
+			return array(
+				"mimetypes|m-s" => "Limit re-processing to specified mimetype(s) or mimetype stubs. Separate multiple mimetypes with commas.",
+				"versions|v-s" => "Limit re-processing to specified versions. Separate multiple versions with commas."
+			);
+		}
+		# -------------------------------------------------------
+		/**
+		 *
+		 */
+		public static function reprocess_mediaShortHelp() {
+			return "Re-process existing media using current media processing configuration.";
+		}
+		# -------------------------------------------------------
+		/**
+		 *
+		 */
+		public static function reprocess_mediaHelp() {
+			return "CollectiveAccess generates derivatives for all uploaded media. More here...";
+		}
+		# -------------------------------------------------------
+		/**
+		 * Reprocess media
+		 */
+		public static function update_database_schema($po_opts=null) {
+			require_once(__CA_LIB_DIR__."/ca/ConfigurationCheck.php");
+	
+			$o_config_check = new ConfigurationCheck();
+			if (($vn_current_revision = ConfigurationCheck::getSchemaVersion()) < __CollectiveAccess_Schema_Rev__) {
+				print "Are you sure you want to update your CollectiveAccess database from revision {$vn_current_revision} to ".__CollectiveAccess_Schema_Rev__."?\nNOTE: you should backup your database before applying updates!\n\nType 'y' to proceed or 'N' to cancel, then hit return ";
+				flush();
+				ob_flush();
+				$confirmation  =  trim( fgets( STDIN ) );
+				if ( $confirmation !== 'y' ) {
+					// The user did not say 'y'.
+					return;
+				}
+				$va_messages = ConfigurationCheck::performDatabaseSchemaUpdate();
+
+				print CLIProgressBar::start(sizeof($va_messages), _t('Updating database'));
+				foreach($va_messages as $vs_message) {
+					print CLIProgressBar::next(1, $vs_message);
+				}
+			} else {
+				print "Database already at revision ".__CollectiveAccess_Schema_Rev__.". No update is required.\n";
+			}
+			print CLIProgressBar::finish();
+		}
+		# -------------------------------------------------------
+		/**
+		 *
+		 */
+		public static function update_database_schemaParamList() {
+			return array();
+		}
+		# -------------------------------------------------------
+		/**
+		 *
+		 */
+		public static function update_database_schemaShortHelp() {
+			return "Update database schema to the current version.";
+		}
+		# -------------------------------------------------------
+		/**
+		 *
+		 */
+		public static function update_database_schemaHelp() {
+			return "Updates database schema to current version. More here...";
+		}
+		# -------------------------------------------------------
 	}
 ?>
