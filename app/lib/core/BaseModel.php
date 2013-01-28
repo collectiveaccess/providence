@@ -2759,6 +2759,7 @@ class BaseModel extends BaseObject {
 	 * to specify which tables to omit when deleting related stuff
 	 */
 	public function delete ($pb_delete_related=false, $pa_options=null, $pa_fields=null, $pa_table_list=null) {
+		if(!is_array($pa_options)) { $pa_options = array(); }
 		$vn_id = $this->getPrimaryKey();
 		if ($this->hasField('deleted') && (!isset($pa_options['hard']) || !$pa_options['hard'])) {
 			$this->setMode(ACCESS_WRITE);
@@ -2904,7 +2905,7 @@ class BaseModel extends BaseObject {
 								while($qr_record_check->nextRow()) {
 									if ($t_related->load($qr_record_check->get($t_related->primaryKey()))) {
 										$t_related->setMode(ACCESS_WRITE);
-										$t_related->delete($pb_delete_related, $pa_options, null, $pa_table_list);
+										$t_related->delete($pb_delete_related, array_merge($pa_options, array('hard' => true)), null, $pa_table_list);
 										
 										if ($t_related->numErrors()) {
 											$this->postError(790, _t("Can't delete item because items related to it have sub-records (%1)", $vs_many_table),"BaseModel->delete()");
@@ -8272,9 +8273,21 @@ $pa_options["display_form_field_tips"] = true;
 					{$vs_type_sql} {$vs_timestamp_sql}
 			", $va_query_params);
 		
-			if (sizeof($va_ids = $qr_res->getAllFieldValues('relation_id'))) {
-				return $va_ids;
+			$va_ids = $qr_res->getAllFieldValues('relation_id');
+			
+			if ($va_rel_info['related_table_name'] == $this->tableName()) {
+				$qr_res = $o_db->query("
+					SELECT relation_id
+					FROM {$vs_rel_table_name}
+					WHERE
+						{$vs_right_field_name} = ? AND {$vs_left_field_name} = ?
+						{$vs_type_sql} {$vs_timestamp_sql}
+				", $va_query_params);
+				
+				$va_ids += $qr_res->getAllFieldValues('relation_id');
 			}
+			
+			if (sizeof($va_ids)) { return $va_ids; }
 		} else {
 			if (sizeof($va_rel_info['path']) == 2) {		// many-one rel
 				$va_rel_keys = $va_rel_info['rel_keys'];
