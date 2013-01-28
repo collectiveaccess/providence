@@ -25,7 +25,5 @@
  *
  * ----------------------------------------------------------------------
  */
-	foreach($this->getVar('occurrence_list') as $vn_item_id => $va_item) {
-		print str_replace("|", "-", $va_item['_display'])."|".$vn_item_id."|".$va_item['type_id']."|".$va_item['_query']."\n";
-	}
+ 	print json_encode($this->getVar('occurrence_list'));
 ?>

@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2009-2012 Whirl-i-Gig
+ * Copyright 2009-2013 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -37,7 +37,24 @@
 	$pa_ancestors 		= $this->getVar('ancestors');
 	$pn_id 				= $this->getVar('id');
 	$ps_id_prefix 		= $this->getVar('placement_code').$this->getVar('id_prefix').'HierLocation';
-	$va_lookup_urls 	= caJSONLookupServiceUrl($this->request, $t_subject->tableName(), array('noInline' => 1));
+	
+	$va_search_lookup_extra_params = array('noInline' => 1);
+	if ($t_subject->getProperty('HIERARCHY_ID_FLD') && ($vn_hier_id = (int)$t_subject->get($t_subject->getProperty('HIERARCHY_ID_FLD')))) {
+		$va_search_lookup_extra_params['currentHierarchyOnly'] = $vn_hier_id;
+	}
+	if (in_array($t_subject->tableName(), array('ca_objects', 'ca_collections')) && (bool)$this->request->config->get('ca_objects_x_collections_hierarchy_enabled')) {
+		$va_lookup_urls = array(
+			'search' => caNavUrl($this->request, 'lookup', 'ObjectCollectionHierarchy', 'Get', $va_search_lookup_extra_params),
+			'levelList' => caNavUrl($this->request, 'lookup', 'ObjectCollectionHierarchy', 'GetHierarchyLevel'),
+			'ancestorList' => caNavUrl($this->request, 'lookup', 'ObjectCollectionHierarchy', 'GetHierarchyAncestorList')
+		);
+		$vs_edit_url = caNavUrl($this->request, 'lookup', 'ObjectCollectionHierarchy', 'Edit').'/id/';
+		$vn_init_id = $t_subject->tableName()."-".$pn_id;
+	} else {
+		$va_lookup_urls 	= caJSONLookupServiceUrl($this->request, $t_subject->tableName(), $va_search_lookup_extra_params);
+		$vs_edit_url = caEditorUrl($this->request, $t_subject->tableName());
+		$vn_init_id = $pn_id;
+	}
 	
 	$vb_strict_type_hierarchy = (bool)$this->request->config->get($t_subject->tableName().'_enforce_strict_type_hierarchy');
 	$vs_type_selector 	= trim($t_subject->getTypeListAsHTMLFormElement("{$ps_id_prefix}type_id", array('id' => "{$ps_id_prefix}typeList"), array('childrenOfCurrentTypeOnly' => $vb_strict_type_hierarchy, 'includeSelf' => !$vb_strict_type_hierarchy, 'directChildrenOnly' => $vb_strict_type_hierarchy)));
@@ -244,7 +261,7 @@
 	?>
 					</div>
 				</div>
-				<br class="clear"/>
+				<div class="clear"><!-- empty --></div>
 				<div id="<?php print $ps_id_prefix; ?>AddHierarchyBrowser" class="hierarchyBrowserSmall">
 					<!-- Content for hierarchy browser is dynamically inserted here by ca.hierbrowser -->
 				</div><!-- end hierbrowser -->
@@ -263,15 +280,18 @@
 ?>
 		// Set up "move" hierarchy browse search
 		jQuery('#<?php print $ps_id_prefix; ?>MoveHierarchyBrowserSearch').autocomplete(
-			'<?php print $va_lookup_urls['search']; ?>', {minChars: 3, matchSubset: 1, matchContains: 1, delay: 800}
-		);
-		jQuery('#<?php print $ps_id_prefix; ?>MoveHierarchyBrowserSearch').result(function(event, data, formatted) {
-			if (parseInt(data[1]) > 0) {
-				jQuery("#<?php print $ps_id_prefix; ?>HierarchyBrowserContainer").slideDown(350);
-				o<?php print $ps_id_prefix; ?>MoveHierarchyBrowser.setUpHierarchy(data[1]);	// jump browser to selected item
+			{ 
+				source: '<?php print $va_lookup_urls['search']; ?>', minLength: 3, delay: 800, html: true,
+				select: function( event, ui ) {
+					if (parseInt(ui.item.id) > 0) {
+						jQuery("#<?php print $ps_id_prefix; ?>HierarchyBrowserContainer").slideDown(350);
+						o<?php print $ps_id_prefix; ?>MoveHierarchyBrowser.setUpHierarchy(ui.item.id);	// jump browser to selected item
+					}
+					event.preventDefault();
+					jQuery('#<?php print $ps_id_prefix; ?>MoveHierarchyBrowserSearch').val('');
+				}
 			}
-			jQuery('#<?php print $ps_id_prefix; ?>MoveHierarchyBrowserSearch').val('');
-		});
+		).click(function() { this.select() });
 <?php
 	}
 ?>
@@ -286,15 +306,18 @@
 		
 		// Set up "explore" hierarchy browse search
 		jQuery('#<?php print $ps_id_prefix; ?>ExploreHierarchyBrowserSearch').autocomplete(
-			'<?php print $va_lookup_urls['search']; ?>', {minChars: 3, matchSubset: 1, matchContains: 1, delay: 800, extraParams: { <?php print ($t_subject->getProperty('HIERARCHY_ID_FLD')) ? "currentHierarchyOnly: ".(int)$t_subject->get($t_subject->getProperty('HIERARCHY_ID_FLD'))."}" : "}"; ?> }
-		);
-		jQuery('#<?php print $ps_id_prefix; ?>ExploreHierarchyBrowserSearch').result(function(event, data, formatted) {
-			if (parseInt(data[1]) > 0) {
-				jQuery("#<?php print $ps_id_prefix; ?>HierarchyBrowserContainer").slideDown(350);
-				o<?php print $ps_id_prefix; ?>ExploreHierarchyBrowser.setUpHierarchy(data[1]);	// jump browser to selected item
+			{
+				source: '<?php print $va_lookup_urls['search']; ?>', minLength: 3, delay: 800, html: true,
+				select: function( event, ui ) {
+					if (parseInt(ui.item.id) > 0) {
+						jQuery("#<?php print $ps_id_prefix; ?>HierarchyBrowserContainer").slideDown(350);
+						o<?php print $ps_id_prefix; ?>ExploreHierarchyBrowser.setUpHierarchy(ui.item.id);	// jump browser to selected item
+					}
+					event.preventDefault();
+					jQuery('#<?php print $ps_id_prefix; ?>ExploreHierarchyBrowserSearch').val('');
+				}
 			}
-			jQuery('#<?php print $ps_id_prefix; ?>ExploreHierarchyBrowserSearch').val('');
-		});
+		).click(function() { this.select() });
 		
 		// Disable form change warnings to add type drop-downs
 		jQuery('#<?php print $ps_id_prefix; ?>HierarchyBrowseAddUnder select').unbind('change');
@@ -334,10 +357,10 @@
 				
 				readOnly: <?php print $vb_read_only ? 1 : 0; ?>,
 				
-				editUrl: '<?php print caEditorUrl($this->request, $t_subject->tableName()); ?>',
+				editUrl: '<?php print $vs_edit_url; ?>',
 				editButtonIcon: '<img src="<?php print $this->request->getThemeUrlPath(); ?>/graphics/buttons/arrow_grey_right.gif" border="0" title="Edit">',
 				
-				initItemID: '<?php print $pn_id; ?>',
+				initItemID: '<?php print $vn_init_id; ?>',
 				indicatorUrl: '<?php print $this->request->getThemeUrlPath(); ?>/graphics/icons/indicator.gif',
 				displayCurrentSelectionOnLoad: false
 			});
@@ -395,14 +418,12 @@
 				levelDataUrl: '<?php print $va_lookup_urls['levelList']; ?>',
 				initDataUrl: '<?php print $va_lookup_urls['ancestorList']; ?>',
 				
-				readOnly: <?php print $vb_read_only ? 1 : 0; ?>,
+				readOnly: true,
+				allowSelection: false,
 				
 				initItemID: '<?php print $pn_id; ?>',
 				indicatorUrl: '<?php print $this->request->getThemeUrlPath(); ?>/graphics/icons/indicator.gif',
-				displayCurrentSelectionOnLoad: true,
-				
-				className: 'explore',
-				classNameSelected: 'exploreSelected'
+				displayCurrentSelectionOnLoad: true
 			});
 		}
 	}

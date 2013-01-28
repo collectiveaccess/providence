@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2009 Whirl-i-Gig
+ * Copyright 2009-2013 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -25,7 +25,6 @@
  *
  * ----------------------------------------------------------------------
  */
-	foreach($this->getVar('lcsh_list') as $vn_id => $va_item) {
-		print str_replace("|", "-", $va_item['displayname'].($va_item['idno'] ? ' ['.$va_item['idno'].']' : ''))."|".$vn_id."\n";
-	}
+ 
+ 	print json_encode($this->getVar('lcsh_list'));
 ?>

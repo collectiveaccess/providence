@@ -767,6 +767,7 @@ class ca_object_representations extends BundlableLabelableBaseModelWithAttribute
  					WHERE 
  						representation_id = ?
  				)
+ 				AND cor.deleted = 0
  		", (int)$vn_representation_id);
  		
  		$va_reps = array();
@@ -1432,7 +1433,7 @@ class ca_object_representations extends BundlableLabelableBaseModelWithAttribute
 		if (!file_exists($ps_filepath)) { return null; }
 		$vs_md5 = md5_file($ps_filepath);
 		$t_rep = new ca_object_representations();
-		if ($t_rep->load(array('md5' => $vs_md5))) { 
+		if ($t_rep->load(array('md5' => $vs_md5, 'deleted' => 0))) { 
 			return $t_rep;
 		}
 		

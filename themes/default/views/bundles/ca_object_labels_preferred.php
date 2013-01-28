@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2009-2012 Whirl-i-Gig
+ * Copyright 2009-2013 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -35,12 +35,15 @@
 	$vs_add_label =		$this->getVar('add_label');
 	
 	$vb_read_only		=	((isset($va_settings['readonly']) && $va_settings['readonly'])  || ($this->request->user->getBundleAccessLevel('ca_objects', 'preferred_labels') == __CA_BUNDLE_ACCESS_READONLY__));
-	
-	
+		
 	if (!$va_force_new_labels = $this->getVar('new_labels')) { $va_force_new_labels = array(); }	// list of new labels not saved due to error which we need to for onto the label list as new
 
+	$vb_batch			= $this->getVar('batch');
+	if ($vb_batch) {
+		print caBatchEditorPreferredLabelsModeControl($t_label, $vs_id_prefix);
+	}
 ?>
-<div id="<?php print $vs_id_prefix; ?>Labels"  >
+<div id="<?php print $vs_id_prefix; ?>Labels" <?php print $vb_batch ? "class='editorBatchBundleContent'" : ''; ?>>
 <?php
 	//
 	// The bundle template - used to generate each bundle in the form
