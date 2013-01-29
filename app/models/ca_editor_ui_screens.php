@@ -818,7 +818,8 @@ class ca_editor_ui_screens extends BundlableLabelableBaseModelWithAttributes {
 			
 			$vs_label = ($vs_label = ($t_instance->getDisplayLabel($t_instance->tableName().'.'.$vs_bundle_proc))) ? $vs_label : $va_placement['bundle_name'];
 			if(is_array($va_placement['settings']['label'])){
-				if ($vs_user_set_label = array_shift(caExtractValuesByUserLocale(array($va_placement['settings']['label'])))) {
+				$va_tmp = caExtractValuesByUserLocale(array($va_placement['settings']['label']));
+				if ($vs_user_set_label = array_shift($va_tmp)) {
 					$vs_label = "{$vs_label} (<em>{$vs_user_set_label}</em>)";
 				}
 			}
