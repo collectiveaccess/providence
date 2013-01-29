@@ -1275,6 +1275,20 @@ class ca_object_representations extends BundlableLabelableBaseModelWithAttribute
 	}
  	# ------------------------------------------------------
  	/**
+ 	 * Override export function to do some cleanup in the media_metadata part.
+ 	 * XML parsers and wrappers like DOMDocument tend to be rather picky with their input as far as invalid
+ 	 * characters go and the return value of this function is usually used for something like that.
+ 	 */
+ 	public function getValuesForExport($pa_options=null){
+ 		$va_export = parent::getValuesForExport($pa_options);
+ 		// this section tends to contain wonky chars that are close to impossible to clean up
+ 		// if you read through the EXIF specs you know why ...
+ 		if(isset($va_export['media_metadata']['EXIF']['IFD0'])){
+ 			unset($va_export['media_metadata']['EXIF']['IFD0']);
+ 		}
+ 		return $va_export;
+ 	}
+ 	/**
  	 * 
  	 *
  	 * @param RequestHTTP $po_request
