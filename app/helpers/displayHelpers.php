@@ -1902,7 +1902,7 @@ require_once(__CA_LIB_DIR__.'/core/Parsers/TimeExpressionParser.php');
 	}
 	# ------------------------------------------------------------------------------------------------
 	/**
-	 * Normal arbitrarily precise date expression to century, decade, year, month or day
+	 * Normalize arbitrarily precise date expression to century, decade, year, month or day
 	 *
 	 * @param string $ps_expression A valid date expression parseable by the TimeExpressionParser class
 	 * @param string $ps_normalization Level to normalize to. Valid values are centuries, decades, years, months, days

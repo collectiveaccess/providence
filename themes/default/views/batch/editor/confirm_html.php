@@ -79,16 +79,16 @@
 ?>
 				<td class="caConfirmBatchExecutionPanelAlertControls">
 <?php
-					print caHTMLCheckboxInput('run_in_background', array('id' => 'caRunBatchInBackground', 'value' => 1));
-?>
-				</td>
-				<td class="caConfirmBatchExecutionPanelAlertControls">
-<?php
 					$va_opts = array('id' => 'caRunBatchInBackground', 'value' => 1);
 					if (isset($va_last_settings['runInBackground']) && $va_last_settings['runInBackground']) {
 						$va_opts['checked'] = 1;
 					}
 					print caHTMLCheckboxInput('run_in_background', $va_opts);
+?>
+				</td>
+				<td class="caConfirmBatchExecutionPanelAlertControls">
+<?php
+					print _t('Process in background');
 ?>
 
 				</td>

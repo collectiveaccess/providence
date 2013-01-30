@@ -7751,10 +7751,11 @@ $pa_options["display_form_field_tips"] = true;
 			}
 		}
 		
-		if ((!isset($pa_options['allowDuplicates']) || !$pa_options['allowDuplicates']) && $this->relationshipExists($pm_rel_table_name_or_num, $pn_rel_id, $pm_type_id, $ps_effective_date, $ps_direction)) {
+		if ((!isset($pa_options['allowDuplicates']) || !$pa_options['allowDuplicates']) && $this->relationshipExists($pm_rel_table_name_or_num, $pn_rel_id, $pm_type_id, $ps_effective_date, $ps_direction, array('relation_id' => $pn_relation_id))) {
 			if (isset($pa_options['setErrorOnDuplicate']) && $pa_options['setErrorOnDuplicate']) {
 				$this->postError(1100, _t('Relationship already exists'), 'BaseModel->addRelationship');
 			}
+			print "foo";
 			return false;
 		}
 		
@@ -8206,13 +8207,20 @@ $pa_options["display_form_field_tips"] = true;
 	 * @param mixed $pm_type_id Relationship type type_code or type_id, as defined in the ca_relationship_types table. This is required for all relationships that use relationship types. This includes all of the most common types of relationships.
 	 * @param string $ps_effective_date Optional date expression to qualify relation with. Any expression that the TimeExpressionParser can handle is supported here.
 	 * @param string $ps_direction Optional direction specification for self-relationships (relationships linking two rows in the same table). Valid values are 'ltor' (left-to-right) and  'rtol' (right-to-left); the direction determines which "side" of the relationship the currently loaded row is on: 'ltor' puts the current row on the left side. For many self-relations the direction determines the nature and display text for the relationship.
+	 * @param array $pa_options Options are:
+	 *		relation_id = an optional relation_id to ignore when checking for existence. If you are checking for relations other than one you know exists you can set this to ensure that relationship is not considered.
+	 *
 	 * @return mixed Array of matched relation_ids on success, false on error.
 	 */
-	public function relationshipExists($pm_rel_table_name_or_num, $pn_rel_id, $pm_type_id=null, $ps_effective_date=null, $ps_direction=null) {
+	public function relationshipExists($pm_rel_table_name_or_num, $pn_rel_id, $pm_type_id=null, $ps_effective_date=null, $ps_direction=null, $pa_options=null) {
 		if(!($va_rel_info = $this->_getRelationshipInfo($pm_rel_table_name_or_num))) { 
 			$this->postError(1240, _t('Related table specification "%1" is not valid', $pm_rel_table_name_or_num), 'BaseModel->addRelationship()');
 			return false; 
 		}
+		
+		$vn_relation_id = ((isset($pa_options['relation_id']) && (int)$pa_options['relation_id'])) ? (int)$pa_options['relation_id'] : null;
+		$vs_relation_id_sql = null;
+		
 		$t_item_rel = $va_rel_info['t_item_rel'];
 		
 		if ($pm_type_id && !is_numeric($pm_type_id)) {
@@ -8281,13 +8289,18 @@ $pa_options["display_form_field_tips"] = true;
 				$va_query_params[] = (float)$va_timestamps['start'];
 				$va_query_params[] = (float)$va_timestamps['end'];
 			}
-		
+			
+			if ($vn_relation_id) {
+				$vs_relation_id_sql = " AND relation_id <> ?";
+				$va_query_params[] = $vn_relation_id;
+			}
+			
 			$qr_res = $o_db->query("
 				SELECT relation_id
 				FROM {$vs_rel_table_name}
 				WHERE
 					{$vs_left_field_name} = ? AND {$vs_right_field_name} = ?
-					{$vs_type_sql} {$vs_timestamp_sql}
+					{$vs_type_sql} {$vs_timestamp_sql} {$vs_relation_id_sql}
 			", $va_query_params);
 		
 			$va_ids = $qr_res->getAllFieldValues('relation_id');
@@ -8298,7 +8311,7 @@ $pa_options["display_form_field_tips"] = true;
 					FROM {$vs_rel_table_name}
 					WHERE
 						{$vs_right_field_name} = ? AND {$vs_left_field_name} = ?
-						{$vs_type_sql} {$vs_timestamp_sql}
+						{$vs_type_sql} {$vs_timestamp_sql} {$vs_relation_id_sql}
 				", $va_query_params);
 				
 				$va_ids += $qr_res->getAllFieldValues('relation_id');
@@ -8316,6 +8329,11 @@ $pa_options["display_form_field_tips"] = true;
 					$vs_where_sql = "mt.".$va_rel_keys['many_table_field']." = ?";
 				}
 				$va_query_params[] = (int)$this->getPrimaryKey();
+							
+				if ($vn_relation_id) {
+					$vs_relation_id_sql = " AND relation_id <> ?";
+					$va_query_params[] = $vn_relation_id;
+				}
 			
 				$vs_relation_id_fld = ($vb_is_one_table ? "mt.".$va_rel_keys['many_table_field'] : "ot.".$va_rel_keys['one_table_field']);
 				$qr_res = $o_db->query("
@@ -8323,7 +8341,7 @@ $pa_options["display_form_field_tips"] = true;
 					FROM {$va_rel_keys['one_table']} ot
 					INNER JOIN {$va_rel_keys['many_table']} AS mt ON mt.{$va_rel_keys['many_table_field']} = ot.{$va_rel_keys['one_table_field']}
 					WHERE
-						{$vs_where_sql}
+						{$vs_where_sql} {$vs_relation_id_sql}
 				", $va_query_params);
 				if (sizeof($va_ids = $qr_res->getAllFieldValues($vs_relation_id_fld))) {
 					return $va_ids;
