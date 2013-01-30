@@ -75,6 +75,27 @@ class ObjectSearchResult extends BaseSearchResult {
 	}
 	# -------------------------------------
 	/**
+	 * Set if non-primary representations are filtered from returned results
+	 *
+	 * @param bool $pb_filter IF true non primary representations will be filtered from returned results
+	 * @return bool Always returns true
+	 */
+	public function filterNonPrimaryRepresentations($pb_filter) {
+		if ($pb_filter) {
+			$va_criteria = array('ca_objects_x_object_representations.is_primary = 1', 'ca_object_representations.deleted = 0');
+		} else {
+			$va_criteria = array('ca_object_representations.deleted = 0');
+		}
+		$this->opa_tables['ca_object_representations'] = array(
+			'fieldList' => array('ca_object_representations.media', 'ca_object_representations.representation_id', 'ca_object_representations.access', 'ca_object_representations.md5', 'ca_object_representations.mimetype'),
+			'joinTables' => array('ca_objects_x_object_representations'),
+			'criteria' => $va_criteria
+		);
+		
+		return true;
+	}
+	# -------------------------------------
+	/**
 	 *
 	 */
 	public function get($ps_field, $pa_options=null) {
