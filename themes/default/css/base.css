@@ -240,6 +240,18 @@ h2 { font-size: 13px; color: #666; }
 	text-align:right;
 }
 
+#inspectorLotMediaDownload {
+	width: 190px;
+}
+
+#inspectorLotMediaDownloadButton {
+	float: right;
+	font-size: 10px;
+	padding: 2px !important;
+	margin: 0px;
+	text-align:right;
+}
+
 div.inspectorLotObjectTypeControls {
 	padding: 3px;
 	margin-top: 8px;
