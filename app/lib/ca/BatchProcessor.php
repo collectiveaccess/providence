@@ -87,7 +87,14 @@
  				'transaction' => $o_trans
  			));
  			
- 			$va_save_opts = array('batch' => true, 'existingRepresentationMap' => array());
+ 			$vs_screen = $po_request->getActionExtra();
+ 			$t_screen = new ca_editor_ui_screens(str_replace("Screen", "", $vs_screen));
+ 			if($t_screen->getPrimaryKey()) {
+ 				$t_ui = new ca_editor_uis($t_screen->get('ui_id'));
+ 			} else {
+ 				$t_ui = null;
+ 			}
+ 			$va_save_opts = array('batch' => true, 'existingRepresentationMap' => array(), 'ui_instance' => $t_ui);
  			
  			$vn_c = 0;
  			$vn_start_time = time();
@@ -116,8 +123,6 @@
 					if (($vb_perform_item_level_access_checking) && ($t_subject->checkACLAccessForUser($po_request->user) == __CA_ACL_READ_WRITE_ACCESS__)) {
 						continue;		// skip
 					}
- 					
- 					$vs_screen = $po_request->getActionExtra();
  					
  					// TODO: call plugins beforeBatchItemSave?
  					$t_subject->saveBundlesForScreen($vs_screen, $po_request, $va_save_opts);
