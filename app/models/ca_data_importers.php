@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2012 Whirl-i-Gig
+ * Copyright 2012-2013 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -36,9 +36,13 @@
 
 require_once(__CA_LIB_DIR__.'/core/ModelSettings.php');
 require_once(__CA_LIB_DIR__.'/ca/BundlableLabelableBaseModelWithAttributes.php');
+require_once(__CA_LIB_DIR__.'/ca/Import/DataReaderManager.php');
+require_once(__CA_LIB_DIR__.'/ca/Utils/DataMigrationUtils.php');
 require_once(__CA_MODELS_DIR__."/ca_data_importer_labels.php");
 require_once(__CA_MODELS_DIR__."/ca_data_importer_groups.php");
 require_once(__CA_MODELS_DIR__."/ca_data_importer_items.php");
+require_once(__CA_LIB_DIR__.'/core/Parsers/PHPExcel/PHPExcel.php');
+require_once(__CA_LIB_DIR__.'/core/Parsers/PHPExcel/PHPExcel/IOFactory.php');
 
 BaseModel::$s_ca_models_definitions['ca_data_importers'] = array(
  	'NAME_SINGULAR' 	=> _t('data importer'),
@@ -191,6 +195,7 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 	 */
 	public $SETTINGS;
 	
+	
 	# ------------------------------------------------------
 	public function __construct($pn_id=null) {
 		// Filter list of tables importers can be used for to those enabled in current config
@@ -220,41 +225,102 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 			'label' => _t('Importer type'),
 			'description' => _t('Set importer type, i.e. the format of the source data (e.g. CSV, XML).')
 		);
+		$va_settings['type'] = array(
+			'formatType' => FT_TEXT,
+			'displayType' => DT_SELECT,
+			'width' => 40, 'height' => 1,
+			'takesLocale' => false,
+			'default' => '',
+			'label' => _t('Record type'),
+			'description' => _t('Type to set all imported records to')
+		);
+		$va_settings['numInitialRowsToSkip'] = array(
+			'formatType' => FT_NUMBER,
+			'displayType' => DT_FIELD,
+			'width' => 4, 'height' => 1,
+			'takesLocale' => false,
+			'default' => 0,
+			'label' => _t('Initial rows to skip'),
+			'description' => _t('The number of rows at the top of the data set to skip. Use this setting to skip over headers in spreadsheets and similar data.')
+		);
 		
 		$this->SETTINGS = new ModelSettings($this, 'settings', $va_settings);
 	}
 	# ------------------------------------------------------
+	/**
+	 *
+	 */
 	public function getAvailableImporterTypes() {
 		return array(
-			"CSV" => "CSV"
+			'CSV' 		=> 'CSV',
+			'TAB' 		=> 'TAB',
+			'XSLX' 		=> 'XLSX',
+			'MySQL' 	=> 'MySQL'
 		);
 	}
 	# ------------------------------------------------------
+	/**
+	 *
+	 */
 	public function addImportItem($pa_values){
 		
 	}
 	# ------------------------------------------------------
-	public function addGroup($ps_group_code,$pa_values,$pa_items=array()){
+	/**
+	 *
+	 */
+	public function addGroup($ps_group_code, $ps_destination, $pa_settings=null, $pa_options=null){
+		if(!$this->getPrimaryKey()) return false;
 		
+		$t_group = new ca_data_importer_groups();
+		$t_group->setMode(ACCESS_WRITE);
+		$t_group->set('importer_id', $this->getPrimaryKey());
+		$t_group->set('group_code', $ps_group_code);
+		$t_group->set('destination', $ps_destination);
+		
+		if (is_array($pa_settings)) {
+			foreach($pa_settings as $vs_k => $vs_v) {
+				$t_group->setSetting($vs_k, $vs_v);
+			}
+		}
+		$t_group->insert();
+		
+		if ($t_group->numErrors()) {
+			$this->errors = $t_group->errors;
+			return false;
+		}
+		
+		if (isset($pa_options['returnInstance']) && $pa_options['returnInstance']) {
+			return $t_group;
+		}
+		return $t_group->getPrimaryKey();
 	}
 	# ------------------------------------------------------
+	/**
+	 *
+	 */
 	public function getGroups(){
 		if(!$this->getPrimaryKey()) return false;
 		
 		$vo_db = $this->getDb();
 		
 		$qr_groups = $vo_db->query("
-			SELECT * FROM ca_data_importer_groups WHERE importer_id=?
+			SELECT * 
+			FROM ca_data_importer_groups 
+			WHERE importer_id = ?
 		",$this->getPrimaryKey());
 		
 		$va_return = array();
 		while($qr_groups->nextRow()){
-			$va_return[$qr_groups->get("group_id")] = $qr_groups->getRow();
+			$va_return[(int)$qr_groups->get("group_id")] = $qr_groups->getRow();
 		}
 		
 		return $va_return;
 	}
 	# ------------------------------------------------------
+	/**
+	 *
+	 */
 	public function getGroupIDs(){
 		if(is_array($va_groups = $this->getGroups())){
 			return $va_groups;
@@ -269,12 +335,15 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 		$vo_db = $this->getDb();
 		
 		$qr_items = $vo_db->query("
-			SELECT * FROM ca_data_importer_items WHERE importer_id=?
+			SELECT * 
+			FROM ca_data_importer_items 
+			WHERE importer_id = ?
 		",$this->getPrimaryKey());
 		
 		$va_return = array();
 		while($qr_items->nextRow()){
 			$va_return[$qr_items->get("item_id")] = $qr_items->getRow();
+			$va_return[$qr_items->get("item_id")]['settings'] = caUnserializeForDatabase($va_return[$qr_items->get("item_id")]['settings']);
 		}
 		
 		return $va_return;
@@ -355,6 +424,508 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 			return call_user_func_array(array($this->SETTINGS, $ps_name), $pa_arguments);
 		}
 		die($this->tableName()." does not implement method {$ps_name}");
+	}
+	# ------------------------------------------------------
+	/**
+	 *
+	 */
+	public static function loadImporterFromFile($ps_source, $pa_options=null) {
+		global $g_ui_locale_id;
+		$vn_locale_id = (isset($pa_options['locale_id']) && (int)$pa_options['locale_id']) ? (int)$pa_options['locale_id'] : $g_ui_locale_id;
+		
+		$o_excel = PHPExcel_IOFactory::load($ps_source);
+		//$o_excel->setActiveSheet(1);
+		$o_sheet = $o_excel->getActiveSheet();
+		
+		$vn_row = 0;
+		
+		$va_settings = array();
+		$va_mappings = array();
+		foreach ($o_sheet->getRowIterator() as $o_row) {
+			if ($vn_row == 0) {	// skip first row
+				$vn_row++;
+				continue;
+			}
+			
+			//$o_cells = $o_row->getCellIterator();
+			//$o_cells->setIterateOnlyExistingCells(false); 
+			
+			$vn_row_num = $o_row->getRowIndex();
+			$o_cell = $o_sheet->getCellByColumnAndRow(0, $vn_row_num);
+			$vs_mode = (string)$o_cell->getValue();
+			
+			switch($vs_mode) {
+				default:
+				case 'SKIP':
+					continue(2);
+					break;
+				case 'Mapping':
+				case 'Constant':
+					$o_source = $o_sheet->getCellByColumnAndRow(1, $o_row->getRowIndex());
+					$o_dest = $o_sheet->getCellByColumnAndRow(2, $o_row->getRowIndex());
+					
+					$o_group = $o_sheet->getCellByColumnAndRow(3, $o_row->getRowIndex());
+					$o_options = $o_sheet->getCellByColumnAndRow(4, $o_row->getRowIndex());
+					$o_refinery = $o_sheet->getCellByColumnAndRow(5, $o_row->getRowIndex());
+					$o_refinery_options = $o_sheet->getCellByColumnAndRow(6, $o_row->getRowIndex());
+					$o_orig_values = $o_sheet->getCellByColumnAndRow(7, $o_row->getRowIndex());
+					$o_replacement_values = $o_sheet->getCellByColumnAndRow(8, $o_row->getRowIndex());
+					$o_source_desc = $o_sheet->getCellByColumnAndRow(9, $o_row->getRowIndex());
+					$o_notes = $o_sheet->getCellByColumnAndRow(10, $o_row->getRowIndex());
+					
+					if (!($vs_group = trim((string)$o_group->getValue()))) {
+						$vs_group = '_group_'.(string)$o_source->getValue();
+					}
+					
+					$vs_source = trim((string)$o_source->getValue());
+					
+					if ($vs_mode == 'Constant') {
+						$vs_source = "_CONSTANT_:{$vs_source}";
+					}
+					$vs_destination = trim((string)$o_dest->getValue());
+					
+					if (!$vs_source) { 
+						print "Warning: skipped mapping at row {$vn_row_num} because source was not defined\n";
+						continue(2);
+					}
+					if (!$vs_destination) { 
+						print "Warning: skipped mapping at row {$vn_row_num} because destination was not defined\n";
+						continue(2);
+					}
+					
+					$va_options = null;
+					if ($vs_options_json = (string)$o_options->getValue()) { 
+						if (is_null($va_options = @json_decode($vs_options_json))) {
+							print "Warning: invalid options for group {$vs_group}/source {$vs_source}\n";
+						}
+					}
+					
+					if ($vs_mode == 'Mapping') {
+						$vs_refinery = trim((string)$o_refinery->getValue());
+					
+						$va_refinery_options = null;
+						if ($vs_refinery && ($vs_refinery_options_json = (string)$o_refinery_options->getValue())) {
+							if (is_null($va_refinery_options = json_decode($vs_refinery_options_json))) {
+								print "Warning: invalid refinery options for group {$vs_group}/source {$vs_source} = $vs_refinery_options_json\n";
+							}
+						}
+					} else {
+						// Constants don't use refineries
+						$vs_refinery = $va_refinery_options = null;
+					}
+					
+					$va_mapping[$vs_group][$vs_source] = array(
+						'destination' => $vs_destination,
+						'options' => $va_options,
+						'refinery' => $vs_refinery,
+						'refinery_options' => $va_refinery_options,
+						'source_description' => (string)$o_source_desc->getValue(),
+						'notes' => (string)$o_notes->getValue(),
+						'original_values' => preg_split("![\n\r]{1}!", (string)$o_orig_values->getValue()),
+						'replacement_values' => preg_split("![\n\r]{1}!", (string)$o_replacement_values->getValue())
+					);
+					
+					break;
+				case 'Setting':
+					$o_setting_name = $o_sheet->getCellByColumnAndRow(1, $o_row->getRowIndex());
+					$o_setting_value = $o_sheet->getCellByColumnAndRow(2, $o_row->getRowIndex());
+					$va_settings[(string)$o_setting_name->getValue()] = (string)$o_setting_value->getValue();
+					break;
+			}
+			$vn_row++;
+		}
+		
+		// Do checks on mapping
+		if (!$va_settings['code']) { 
+			print "You must set a code for your mapping!\n";
+			return;
+		}
+		
+		$o_dm = Datamodel::load();
+		if (!($t_instance = $o_dm->getInstanceByTableName($va_settings['table']))) {
+			print _t("Mapping target table %1 is invalid\n", $va_settings['table']);
+			return;
+		}
+		
+		if (!$va_settings['name']) { $va_settings['name'] = $va_settings['code']; }
+		
+		//print_R($va_settings);
+		//print_R($va_mapping);
+		
+		
+		$t_importer = new ca_data_importers();
+		$t_importer->setMode(ACCESS_WRITE);
+		
+		// Remove any existing mapping
+		if ($t_importer->load(array('importer_code' => $va_settings['code']))) {
+			$t_importer->delete(true);
+			if ($t_importer->numErrors()) {
+				print _t("Could not delete existing mapping for %1: %2", $va_settings['code'], join("; ", $t_importer->getErrors()))."\n";
+				return;
+			}
+		}
+		
+		// Create new mapping
+		$t_importer->set('importer_code', $va_settings['code']);
+		$t_importer->set('table_num', $t_instance->tableNum());
+		
+		unset($va_settings['code']);
+		unset($va_settings['table']);
+		foreach($va_settings as $vs_k => $vs_v) {
+			$t_importer->setSetting($vs_k, $vs_v);
+		}
+		$t_importer->insert();
+		
+		if ($t_importer->numErrors()) {
+			print _t("Error creating mapping: %1", join("; ", $t_importer->getErrors()))."\n";
+			return;
+		}
+		
+		$t_importer->addLabel(array('name' => $va_settings['name']), $vn_locale_id, null, true);
+		
+		if ($t_importer->numErrors()) {
+			print _t("Error creating mapping name: %1", join("; ", $t_importer->getErrors()))."\n";
+			return;
+		}
+		
+		foreach($va_mapping as $vs_group => $va_mappings_for_group) {
+			$vs_group_dest = ca_data_importers::_getGroupDestinationFromItems($va_mappings_for_group);
+			if (!$vs_group_dest) { 
+				$va_item = array_shift($va_mappings_for_group);
+				print _t("Skipped items for %1 because no common grouping could be found", $va_item['destination'])."\n";
+				continue;
+			}
+			
+			$t_group = $t_importer->addGroup($vs_group, $vs_group_dest, array(), array('returnInstance' => true));
+			
+			// Add items
+			foreach($va_mappings_for_group as $vs_source => $va_mapping) {
+				$va_item_settings = array();
+				$va_item_settings['refineries'] = array($va_mapping['refinery']);
+				
+				$va_item_settings['original_values'] = $va_mapping['original_values'];
+				$va_item_settings['replacement_values'] = $va_mapping['replacement_values'];
+				
+				if (is_object($va_mapping['options'])) {
+					foreach($va_mapping['options'] as $vs_k => $vs_v) {
+						$va_item_settings[$vs_k] = $vs_v;
+					}
+				}
+				if (is_object($va_mapping['refinery_options'])) {
+					foreach($va_mapping['refinery_options'] as $vs_k => $vs_v) {
+						$va_item_settings[$va_mapping['refinery'].'_'.$vs_k] = $vs_v;
+					}
+				}
+				$t_group->addItem($vs_source, $va_mapping['destination'], $va_item_settings, array('returnInstance' => true));
+			}
+		}
+		
+		return true;
+	}
+	# ------------------------------------------------------
+	/**
+	 *
+	 */
+	static public function _getGroupDestinationFromItems($pa_items) {
+		$va_acc = null;
+		foreach($pa_items as $vn_item_id => $va_item) {
+			if (is_null($va_acc)) { 
+				$va_acc = explode(".", $va_item['destination']);
+			} else {
+				$va_tmp = explode(".", $va_item['destination']);
+				
+				$vn_len = sizeof($va_acc);
+				for($vn_i=$vn_len - 1; $vn_i >= 0; $vn_i--) {
+					if (!isset($va_tmp[$vn_i]) || ($va_acc[$vn_i] != $va_tmp[$vn_i])) {
+						for($vn_x = $vn_i; $vn_x < $vn_len; $vn_x++) {
+							unset($va_acc[$vn_x]);
+						}
+					}
+				}
+			}
+		}
+		
+		return join(".", $va_acc);
+	}
+	# ------------------------------------------------------
+	/**
+	 *
+	 */
+	static public function mappingExists($ps_mapping) {
+		$t_importer = new ca_data_importers();
+		if($t_importer->load(array('importer_code' => $ps_mapping))) {
+			return $t_importer;
+		}
+		return false;
+	}
+	# ------------------------------------------------------
+	/**
+	 *
+	 */
+	static public function importDataFromSource($ps_source, $ps_mapping, $pa_options=null) {
+		if (!($t_mapping = ca_data_importers::mappingExists($ps_mapping))) {
+			return null;
+		}
+		
+		global $g_ui_locale_id;
+		$vn_locale_id = (isset($pa_options['locale_id']) && (int)$pa_options['locale_id']) ? (int)$pa_options['locale_id'] : $g_ui_locale_id;
+		
+		$o_dm = $t_mapping->getAppDatamodel();
+		
+	
+		// Open file 
+		$ps_format = (isset($pa_options['format']) && $pa_options['format']) ? $pa_options['format'] : null;	
+		if (!($o_reader = $t_mapping->getDataReader($ps_source, $ps_format))) {
+			print _t("Could not open source %1 (format=%2)", $ps_source, $ps_format);
+			return false;
+		}
+		if (!$o_reader->read($ps_source)) {
+			print _t("Could not read source %1 (format=%2)", $ps_source, $ps_format);
+			return false;
+		}
+		
+		// What are we importing?
+		$vn_table_num = $t_mapping->get('table_num');
+		if (!($t_subject = $o_dm->getInstanceByTableNum($vn_table_num))) {
+			// invalid table
+			return false;
+		}
+		$vs_subject_table_name = $t_subject->tableName();
+		$vs_type_id_fld = $t_subject->getTypeFieldName();
+		$vs_idno_fld = $t_subject->getProperty('ID_NUMBERING_ID_FIELD');
+		
+		// get mapping groups
+		$va_groups = $t_mapping->getGroups();
+		$va_items = $t_mapping->getItems();
+		
+		//
+		// Mapping-level settings
+		//
+		$vs_type_mapping_setting = $t_mapping->getSetting('type');
+		$vn_num_initial_rows_to_skip = $t_mapping->getSetting('numInitialRowsToSkip');
+		//die("type=$vs_type_mapping_setting");
+		
+		// Analyze mapping for figure out where type, idno and preferred label are coming from
+		$vn_type_id_mapping_item_id = $vn_idno_mapping_item_id = null;
+		foreach($va_items as $vn_item_id => $va_item) {
+			$vs_destination = $va_item['destination'];
+			
+			switch($vs_destination) {
+				case "{$vs_subject_table_name}.{$vs_type_id_fld}":
+					$vn_type_id_mapping_item_id = $vn_item_id;
+					break;
+				case "{$vs_subject_table_name}.{$vs_idno_fld}":
+					$vn_idno_mapping_item_id = $vn_item_id;
+					break;
+			}
+		}
+		
+		$va_items_by_group = array();
+		foreach($va_items as $vn_item_id => $va_item) {
+			$va_items_by_group[$va_item['group_id']][$va_item['item_id']] = $va_item;
+		}
+		
+		
+		// 
+		// Run through rows
+		//
+		$vn_row = 0;
+		while ($o_reader->nextRow()) {
+			if ($vn_row < $vn_num_initial_rows_to_skip) {	// skip over initial header rows
+				$vn_row++;
+				continue;
+			}
+			
+			//
+			// Get data for current row
+			//
+			
+			$va_row = $o_reader->getRow();
+			
+			//
+			// Perform mapping and insert
+			//
+			
+			// Get minimal info for imported row (type_id, idno, label)
+			
+			// Get type
+			if ($vn_type_id_mapping_item_id) {
+				// Type is specified in row
+				$vs_type = $t_mapping->getValueFromSource($va_items[$vn_type_id_mapping_item_id], $va_row);
+			} else {
+				// Type is constant for all rows
+				$vs_type = $vs_type_mapping_setting;	
+			}
+			
+			// Get idno
+			if ($vn_idno_mapping_item_id) {
+				// idno is specified in row
+				$vs_idno = $va_row[($va_items[$vn_idno_mapping_item_id]['source'] - 1)];
+			} else {
+				// TODO: idno is a template
+				
+			}
+			
+			$t_subject->init();
+			$t_subject->setMode(ACCESS_WRITE);
+			//print "set $vs_type_id_fld to $vs_type\n";
+			$t_subject->set($vs_type_id_fld, $vs_type);
+			$t_subject->set($vs_idno_fld, $vs_idno);
+			
+			$t_subject->insert();
+			DataMigrationUtils::postError($t_subject, _t("While inserting imported subject"));
+	
+			$va_subject_preferred_label = array();
+			$va_subject_non_preferred_labels = array();
+			//print_r($va_items_by_group);
+			foreach($va_items_by_group as $vn_group_id => $va_items) {
+				$va_group = $va_groups[$vn_group_id];
+				$vs_group_destination = $va_group['destination'];
+				
+				$va_group_tmp = explode(".", $vs_group_destination);
+				$vs_target_table = $va_group_tmp[0];
+				
+				$va_acc = array();
+				foreach($va_items as $vn_item_id => $va_item) {
+					$vm_val = $va_row[(int)$va_item['source'] - 1];
+					if (isset($va_item['settings']['skipGroupIfEmpty']) && (bool)$va_item['settings']['skipGroupIfEmpty'] && !strlen($vm_val)) {
+						continue(2);
+					}
+					
+					$vb_refined = false;
+					if (isset($va_item['settings']['refineries']) && is_array($va_item['settings']['refineries'])) {
+						foreach($va_item['settings']['refineries'] as $vs_refinery) {
+							if (!$vs_refinery) { continue; }
+							if ($o_refinery = RefineryManager::getRefineryInstance($vs_refinery)) {
+								$vm_val = $o_refinery->refine($vm_val, $va_row, $va_group, $va_item['settings'], array());
+								
+								$vb_refined = true;
+							}
+						}
+					}
+					
+					$va_tmp = explode(".",  $va_item['destination']);
+					
+					$va_ptr =& $va_acc;
+					foreach($va_tmp as $vs_tmp) {
+						if(!is_array($va_ptr[$vs_tmp])) { $va_ptr[$vs_tmp] = array(); }
+						$va_ptr =& $va_ptr[$vs_tmp];
+					}
+					
+					switch($vs_tmp) {
+						case 'preferred_labels':
+						case 'nonpreferred_labels':
+							if (!$vb_refined && ($t_instance = $o_dm->getInstanceByTableName($vs_target_table, true))) {
+								$va_ptr =& $va_ptr[$t_instance->getLabelDisplayField()];
+							}
+							break;
+					}
+					if (preg_match("!^_CONSTANT_:(.*)!", $va_item['source'], $va_matches)) {
+						$va_ptr = $va_matches[1];
+					} else {
+						$va_ptr = $vm_val;
+					}
+				}
+				
+				//
+				// Process data in subject record
+				//
+				if (isset($va_acc[$vs_subject_table_name])) {
+					foreach($va_acc[$vs_subject_table_name] as $vs_element => $vm_data) {
+						switch($vs_element) {
+							case 'preferred_labels':
+								$va_preferred_label = $vm_data;
+								break;
+							default:
+								$va_data = null;
+								if (is_array($vm_data)) { // container
+									$va_data = $vm_data;
+									$va_data['locale_id'] = $vn_locale_id;
+									
+									$t_subject->addAttribute($va_data, $vs_element);
+								} else {
+									if ($t_subject->hasField($vs_element)) {
+										$t_subject->set($vs_element, $vm_data);
+									} else {
+										$va_data = array(
+											'locale_id' => $vn_locale_id, $vs_element => $vm_data
+										);
+										$t_subject->addAttribute($va_data, $vs_element);
+									}
+								}
+					
+								$t_subject->update();
+								DataMigrationUtils::postError($t_subject, _t("While updating imported subject with new attribute or field data"));
+						}
+					}
+				}
+				
+				//
+				// Process related
+				//
+				unset($va_acc[$vs_subject_table_name]);
+				//print_r($va_acc);
+				foreach($va_acc as $vs_table_name => $va_data_for_rel_table) {
+			
+					//foreach($va_data_for_rel_table as $vs_element => $vm_data) {
+						if(isset($va_data_for_rel_table['preferred_labels'])) {
+							if (!is_array($va_data_for_rel_table['preferred_labels'])) {
+								// TODO: create label array out of string
+								$va_pref_label = array();
+							} else {
+						 		$va_pref_label = $va_data_for_rel_table['preferred_labels'];
+						 	}
+						 }
+						 
+						 switch($vs_table_name) {
+						 	case 'ca_entities':
+						 		unset($va_data_for_rel_table['preferred_labels']);
+						 		if ($vn_rel_id = DataMigrationUtils::getEntityID($va_pref_label, 'person', $vn_locale_id, $va_data_for_rel_table, array())) {
+						 			$t_subject->addRelationship($vs_table_name, $vn_rel_id, 'artist');
+						 			DataMigrationUtils::postError($t_subject, _t("While adding entity"));
+						 		}
+						 		break;
+						 }
+					//}
+				}
+				
+				$vn_row++;
+			}
+			
+			if(sizeof($va_preferred_label)) {
+				$t_subject->addLabel(
+					$va_preferred_label, $vn_locale_id, null, true
+				);
+			} else {
+				$t_subject->addLabel(
+					array($t_subject->getLabelDisplayField() => '???'), $vn_locale_id, null, true
+				);
+			}
+			
+			DataMigrationUtils::postError($t_subject, _t("While adding label to imported subject"));
+		}
+		//$vn_locale_id
+		
+	}
+	# ------------------------------------------------------
+	/**
+	 *
+	 */
+	public function getDataReader($ps_source, $ps_format=null) {
+		//$o_reader_manager = new DataReaderManager();
+		
+		return DataReaderManager::getDataReaderForFormat($ps_format);
+		
+		if (!$ps_format) {
+			// TODO: try to figure out format from source
+		}
+	}
+	# ------------------------------------------------------
+	/**
+	 *
+	 */
+	public function guessSourceFormat($ps_source) {
+			
 	}
 	# ------------------------------------------------------
 }

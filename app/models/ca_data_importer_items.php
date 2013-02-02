@@ -37,6 +37,7 @@
 require_once(__CA_LIB_DIR__.'/core/ModelSettings.php');
 require_once(__CA_MODELS_DIR__."/ca_data_importers.php");
 require_once(__CA_MODELS_DIR__."/ca_data_importer_groups.php");
+require_once(__CA_LIB_DIR__."/ca/Import/RefineryManager.php");
 
 define("__CA_DATA_IMPORTER_DESTINATION_INTRINSIC__", 0);
 define("__CA_DATA_IMPORTER_DESTINATION_ATTRIBUTE__", 1);
@@ -190,10 +191,50 @@ class ca_data_importer_items extends BaseModel {
 		// TODO
 	}
 	# ------------------------------------------------------
-	protected function initSettings() {
-		$va_settings = array();
+	public function initSettings($pa_settings=null) {
+		$va_settings = is_array($pa_settings) ? $pa_settings : array();
 		
-		// TODO
+		$va_settings['refineries'] = array(
+			'formatType' => FT_TEXT,
+			'displayType' => DT_SELECT,
+			'width' => 40, 'height' => 6,
+			'takesLocale' => false,
+			'default' => '',
+			'options' => ca_data_importer_items::getAvailableRefineries(),
+			'label' => _t('Refineries'),
+			'description' => _t('Select refineries')
+		);
+		$va_settings['original_values'] = array(
+			'formatType' => FT_TEXT,
+			'displayType' => DT_FIELD,
+			'width' => 40, 'height' => 10,
+			'takesLocale' => false,
+			'default' => '',
+			'label' => _t('Original values'),
+			'description' => _t('Return-separated list of values to be replaced.')
+		);
+		$va_settings['replacement_values'] = array(
+			'formatType' => FT_TEXT,
+			'displayType' => DT_FIELD,
+			'width' => 40, 'height' => 10,
+			'takesLocale' => false,
+			'default' => '',
+			'label' => _t('Replacement values'),
+			'description' => _t('Return-separated list of values to replace original values with.')
+		);
+		$va_settings['skipGroupIfEmpty'] = array(
+			'formatType' => FT_NUMBER,
+			'displayType' => DT_SELECT,
+			'width' => 40, 'height' => 10,
+			'takesLocale' => false,
+			'default' => 0,
+			'options' => array(
+				_t('yes') => 1,
+				_t('no') => 0
+			),
+			'label' => _t('Skip group if empty'),
+			'description' => _t('Skip group if value for this item is empty.')
+		);
 		
 		$this->SETTINGS = new ModelSettings($this, 'settings', $va_settings);
 	}
@@ -244,10 +285,50 @@ class ca_data_importer_items extends BaseModel {
 	 * Reroutes calls to method implemented by settings delegate to the delegate class
 	 */
 	public function __call($ps_name, $pa_arguments) {
+		if (($ps_name == 'setSetting') && ($pa_arguments[0] == 'refineries')) {
+			//
+			// Load refinery-specific settings as refineries are selected
+			//
+			if(is_array($pa_arguments[1])) {
+				$va_current_settings = $this->SETTINGS->getAvailableSettings();
+				foreach($pa_arguments[1] as $vs_refinery) {
+					if (is_array($va_refinery_settings = ca_data_importer_items::getRefinerySettings($vs_refinery))) {
+						$va_current_settings += $va_refinery_settings;
+					}
+				}
+				$this->SETTINGS->setAvailableSettings($va_current_settings);
+			}
+		}
 		if (method_exists($this->SETTINGS, $ps_name)) {
 			return call_user_func_array(array($this->SETTINGS, $ps_name), $pa_arguments);
 		}
 		die($this->tableName()." does not implement method {$ps_name}");
+	}
+	
+	# ------------------------------------------------------
+	/**
+	 *
+	 */
+	static public function getAvailableRefineries() {
+		$va_refinery_names = RefineryManager::getRefineryNames();
+		
+		$va_refinery_list = array();
+		foreach($va_refinery_names as $vs_name) {
+			$o_refinery = RefineryManager::getRefineryInstance($vs_name);
+			$va_refinery_list[$vs_name] = $o_refinery->getTitle();
+		}
+		
+		return $va_refinery_list;
+	}
+	# ------------------------------------------------------
+	/**
+	 *
+	 */
+	static public function getRefinerySettings($ps_refinery) {
+		if ($o_refinery = RefineryManager::getRefineryInstance($ps_refinery)) {
+			return $o_refinery->getRefinerySettings();
+		}
+		return null;
 	}
 	# ------------------------------------------------------
 }

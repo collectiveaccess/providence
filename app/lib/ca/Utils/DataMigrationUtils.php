@@ -723,6 +723,9 @@
 				
 				$va_tmp = preg_split('![ ]+!', trim($ps_text));
 				
+				$va_name = array(
+					'surname' => '', 'forename' => '', 'middlename' => '', 'displayname' => ''
+				);
 				switch(sizeof($va_tmp)) {
 					case 1:
 						$va_name['surname'] = $ps_text;

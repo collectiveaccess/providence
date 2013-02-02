@@ -175,6 +175,9 @@ class ca_data_importer_groups extends BaseModel {
 	public $SETTINGS;
 	
 	# ------------------------------------------------------
+	/**
+	 *
+	 */
 	public function __construct($pn_id=null) {
 		// Filter list of tables importers can be used for to those enabled in current config
 		//BaseModel::$s_ca_models_definitions['ca_data_importer_groups']['FIELDS']['table_num']['BOUNDS_CHOICE_LIST'] = caFilterTableList(BaseModel::$s_ca_models_definitions['ca_data_importer_groups']['FIELDS']['table_num']['BOUNDS_CHOICE_LIST']);
@@ -184,12 +187,18 @@ class ca_data_importer_groups extends BaseModel {
 		$this->initSettings();
 	}
 	# ------------------------------------------------------
+	/**
+	 *
+	 */
 	protected function initLabelDefinitions() {
 		parent::initLabelDefinitions();
 		
 		// TODO
 	}
 	# ------------------------------------------------------
+	/**
+	 *
+	 */
 	protected function initSettings() {
 		$va_settings = array();
 		
@@ -198,27 +207,64 @@ class ca_data_importer_groups extends BaseModel {
 		$this->SETTINGS = new ModelSettings($this, 'settings', $va_settings);
 	}
 	# ------------------------------------------------------
-	public function addItem($pa_values) {
+	/**
+	 *
+	 */
+	public function addItem($ps_source, $ps_destination, $pa_settings=null, $pa_options=null) {
+		if(!$this->getPrimaryKey()) return false;
+		
+		$t_item = new ca_data_importer_items();
+		$t_item->setMode(ACCESS_WRITE);
+		$t_item->set('group_id', $this->getPrimaryKey());
+		$t_item->set('importer_id', $this->get('importer_id'));
+		$t_item->set('source', $ps_source);
+		$t_item->set('destination', $ps_destination);
+		
+		if (is_array($pa_settings)) {
+			foreach($pa_settings as $vs_k => $vs_v) {
+				$t_item->setSetting($vs_k, $vs_v);
+			}
+		}
+		
+		$t_item->insert();
+		
+		if ($t_item->numErrors()) {
+			$this->errors = $t_item->errors;
+			return false;
+		}
+		
+		if (isset($pa_options['returnInstance']) && $pa_options['returnInstance']) {
+			return $t_item;
+		}
+		return $t_item->getPrimaryKey();
 		
 	}
 	# ------------------------------------------------------
+	/**
+	 *
+	 */
 	public function getItems() {
 		if(!$this->getPrimaryKey()) return false;
 		
 		$vo_db = $this->getDb();
 		
 		$qr_items = $vo_db->query("
-			SELECT * FROM ca_data_importer_items WHERE group_id=?
-		",$this->getPrimaryKey());
+			SELECT * 
+			FROM ca_data_importer_items 
+			WHERE group_id = ?
+		", (int)$this->getPrimaryKey());
 		
 		$va_return = array();
 		while($qr_items->nextRow()){
-			$va_return[$qr_items->get("item_id")] = $qr_items->getRow();
+			$va_return[(int)$qr_items->get("item_id")] = $qr_items->getRow();
 		}
 		
 		return $va_return;
 	}
 	# ------------------------------------------------------
+	/**
+	 *
+	 */
 	public function getItemIDs() {
 		if(is_array($va_items = $this->getItems())){
 			return $va_items;
@@ -227,6 +273,9 @@ class ca_data_importer_groups extends BaseModel {
 		}
 	}
 	# ------------------------------------------------------
+	/**
+	 *
+	 */
 	public function removeItem($pn_item_id){
 		$t_item = new ca_data_importer_items();
 		
@@ -242,6 +291,9 @@ class ca_data_importer_groups extends BaseModel {
 		}
 	}
 	# ------------------------------------------------------
+	/**
+	 *
+	 */
 	public function removeAllItems(){
 		foreach($this->getItemIDs() as $vn_item_id){
 			$this->removeItem($vn_item_id);

@@ -405,7 +405,7 @@ Note that depending upon the size of your database reloading sort values can tak
 		}
 		# -------------------------------------------------------
 		/**
-		 * Reprocess media
+		 * Update database schema
 		 */
 		public static function update_database_schema($po_opts=null) {
 			require_once(__CA_LIB_DIR__."/ca/ConfigurationCheck.php");
@@ -451,6 +451,108 @@ Note that depending upon the size of your database reloading sort values can tak
 		 */
 		public static function update_database_schemaHelp() {
 			return "Updates database schema to current version. More here...";
+		}
+		# -------------------------------------------------------
+		/**
+		 * 
+		 */
+		public static function load_import_mapping($po_opts=null) {
+			require_once(__CA_MODELS_DIR__."/ca_data_importers.php");
+	
+			if (!($vs_file_path = $po_opts->getOption('file'))) {
+				print "You must specify a file!\n";
+				return;
+			}
+			if (!file_exists($vs_file_path)) {
+				print "{$vs_file_path} does not exist!\n";
+				return;
+			}
+			
+			if (!ca_data_importers::loadImporterFromFile($vs_file_path)) {
+				print "Could not import $vs_file_path\n";
+			} else {
+				print "Created mapping from $vs_file_path\n";
+			}
+		}
+		# -------------------------------------------------------
+		/**
+		 *
+		 */
+		public static function load_import_mappingParamList() {
+			return array(
+				"file|f=s" => 'Excel XLSX file to load.'
+			);
+		}
+		# -------------------------------------------------------
+		/**
+		 *
+		 */
+		public static function load_import_mappingShortHelp() {
+			return "Load import mapping from Excel XLSX format file.";
+		}
+		# -------------------------------------------------------
+		/**
+		 *
+		 */
+		public static function load_import_mappingHelp() {
+			return "Loads import mapping from Excel XLSX format file. More here...";
+		}
+		# -------------------------------------------------------
+		/**
+		 * 
+		 */
+		public static function import_data($po_opts=null) {
+			require_once(__CA_MODELS_DIR__."/ca_data_importers.php");
+	
+			if (!($vs_data_source = $po_opts->getOption('source'))) {
+				print _t('You must specify a data source for import');
+				return;
+			}
+			if (!$vs_data_source) {
+				print _t('You must specify a source');
+				return;
+			}
+			if (!($vs_mapping = $po_opts->getOption('mapping'))) {
+				print _t('You must specify a mapping');
+				return;
+			}
+			if (!(ca_data_importers::mappingExists($vs_mapping))) {
+				print _t('Mapping %1 does not exist', $vs_mapping);
+				return;
+			}
+			
+			$vs_format = $po_opts->getOption('format');
+			
+			if (!ca_data_importers::importDataFromSource($vs_data_source, $vs_mapping, array('format' => $vs_format))) {
+				print _t("Could not import source %1", $vs_data_source);
+			} else {
+				print _t("Created mapping from %1", $vs_file_path);
+			}
+		}
+		# -------------------------------------------------------
+		/**
+		 *
+		 */
+		public static function import_dataParamList() {
+			return array(
+				"source|s=s" => 'Data to import. For files provide the path; for database, OAI and other non-file sources provide a URL.',
+				"mapping|m=s" => 'Mapping to import data with.',
+				"format|f-s" => 'The format of the data to import. (Ex. XLSX, tab, CSV, mysql, OAI, Filemaker XML, ExcelXML, MARC). If omitted an attempt will be made to automatically identify the data format.'
+			);
+		}
+		# -------------------------------------------------------
+		/**
+		 *
+		 */
+		public static function import_dataShortHelp() {
+			return "Import data from an Excel XLSX, tab or comma delimited text or XML file.";
+		}
+		# -------------------------------------------------------
+		/**
+		 *
+		 */
+		public static function import_dataHelp() {
+			return "Import data from an Excel XLSX, tab or comma delimited text or XML file. More here...";
 		}
 		# -------------------------------------------------------
 	}

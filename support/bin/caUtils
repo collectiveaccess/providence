@@ -3,6 +3,7 @@
 	if (!_caUtilsLoadSetupPHP()) {
 		die("Could not find your CollectiveAccess setup.php file! Please set the COLLECTIVEACCESS_HOME environment variable to the location of your CollectiveAccess installation, or run this command from a sub-directory of your CollectiveAccess installation.\n");
 	}
+	require_once(__CA_MODELS_DIR__."/ca_locales.php");
 	require_once(__CA_APP_DIR__."/helpers/utilityHelpers.php");
 	require_once(__CA_LIB_DIR__."/ca/Utils/CLIUtils.php");
 	require_once(__CA_LIB_DIR__."/core/Zend/Console/Getopt.php");
@@ -10,6 +11,12 @@
 	if (!caIsRunFromCLI()) {
 		die("Sorry, caUtils must be run from the command line!\n");
 	}
+	
+	$o_config = Configuration::load();
+	$g_ui_locale = $o_config->get('locale_default');
+	$t_locale = new ca_locales();
+	$g_ui_locale_id = $t_locale->localeCodeToID($g_ui_locale);		// get current UI locale as locale_id	  (available as global)
+
 	$vs_cmd = strtolower(str_replace("-", "_", $argv[1]));
 	
 	$va_available_cli_opts = array_merge(array(
