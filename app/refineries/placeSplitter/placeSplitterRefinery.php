@@ -96,11 +96,20 @@
 				if ($vs_hierarchy = $pa_item['settings']['placeSplitter_hierarchy']) {
 					$vn_hierarchy_id = caGetListItemID('place_hierarchies', $vs_hierarchy);
 					
-					$t_place = new ca_places();
-					$t_place->load(array('parent_id' => null, 'hierarchy_id' => $vn_hierarchy_id));
-					$va_val['_parent_id'] = $t_place->getPrimaryKey();
+				} else {
+					// Default to first place hierarchy
+					$t_list = new ca_lists();
+					$va_hierarchy_ids = $t_list->getItemsForList('place_hierarchies', array('idsOnly' => true));
+					$vn_hierarchy_id = array_shift($va_hierarchy_ids);
 				}
-			
+				if (!$vn_hierarchy_id) {
+					print _t("[Error] No place hierarchies are defined")."\n";
+					return array();
+				}
+				$t_place = new ca_places();
+				$t_place->load(array('parent_id' => null, 'hierarchy_id' => $vn_hierarchy_id));
+				$va_val['_parent_id'] = $t_place->getPrimaryKey();
+				
 				// Set attributes
 				if (is_array($va_attrs = $pa_item['settings']['placeSplitter_attributes'])) {
 					foreach($pa_item['settings']['placeSplitter_attributes'] as $vs_element_code => $va_attrs) {
