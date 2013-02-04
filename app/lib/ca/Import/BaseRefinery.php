@@ -89,11 +89,46 @@
 		public function getDescription() {
 			return $this->ops_description; 
 		}
+		
 		# -------------------------------------------------------
 		/**
 		 *
 		 */
-		abstract function refine($pm_value, $pa_data, $pa_group, $pa_settings, $pa_options=null);
+		public static function parsePlaceholder($ps_placeholder, $pa_source_data, $pa_item, $ps_delimiter=null, $pn_index=0) {
+			if ($ps_placeholder[0] == '^') {
+				$vs_val = $pa_source_data[substr($ps_placeholder, 1)];
+			} else {
+				$vs_val = $ps_placeholder;
+			}
+			
+			if ($ps_delimiter) {
+				$va_val = explode($ps_delimiter, $vs_val);
+				if ($pn_index < sizeof($va_val)) {
+					$vs_val = $va_val[$pn_index];
+				} else {
+					$vs_val = null;
+				}
+			}
+			
+			if (is_array($pa_item['settings']['original_values']) && (($vn_i = array_search($vs_val, $pa_item['settings']['original_values'])) !== false)) {
+				$vs_val = $pa_item['settings']['original_values']['replacement_values'][$vn_i];
+			}
+			
+			return $vs_val;
+		}
+		# -------------------------------------------------------
+		/**
+		 * Process a mapped value
+		 *
+		 * @param array $pa_destination_data Array of data that to be imported. Will contain the product of all mappings performed on the current source row *to date*. The refinery can make any required additions and modifications to this data; since it's passed by reference those changes will be returned.
+		 * @param array $pa_group Specification and settings for the mapping group being processed
+		 * @param mixed $pa_item Specification and settings for the mapping item being processed. Settings are in an array under the "settings" key
+		 * @param array $pa_source_data The entire source row. You can extract the current value being processed by plugging the item "source" specification into $pa_source_data
+		 * @param array $pa_options Refinery-specific processing options
+		 *
+		 * @return array The value(s) to add 
+		 */
+		abstract function refine(&$pa_destination_data, $pa_group, $pa_item, $pa_source_data, $pa_options=null);
 		# -------------------------------------------------------	
 	}
 ?>

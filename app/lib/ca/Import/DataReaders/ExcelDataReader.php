@@ -89,7 +89,7 @@ class ExcelDataReader extends BaseDataReader {
 		if (!$this->opo_rows->valid()) {return false; }
 		
 		if($o_row = $this->opo_rows->current()) {
-			$this->opa_row_buf = array();
+			$this->opa_row_buf = array(null);
 		
 			$o_cells = $o_row->getCellIterator();
 			$o_cells->setIterateOnlyExistingCells(false); 
@@ -134,7 +134,7 @@ class ExcelDataReader extends BaseDataReader {
 	 */
 	public function get($pn_col, $pa_options=null) {
 		if (is_array($this->opa_row_buf) && ((int)$pn_col > 0) && ((int)$pn_col <= sizeof($this->opa_row_buf))) {
-			return $this->opa_row_buf[(int)$pn_col-1];
+			return $this->opa_row_buf[(int)$pn_col];
 		}
 		
 		return null;	

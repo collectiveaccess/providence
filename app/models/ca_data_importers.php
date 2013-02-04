@@ -441,6 +441,8 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 		
 		$va_settings = array();
 		$va_mappings = array();
+		
+		$va_refineries = RefineryManager::getRefineryNames();
 		foreach ($o_sheet->getRowIterator() as $o_row) {
 			if ($vn_row == 0) {	// skip first row
 				$vn_row++;
@@ -495,7 +497,7 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 					
 					$va_options = null;
 					if ($vs_options_json = (string)$o_options->getValue()) { 
-						if (is_null($va_options = @json_decode($vs_options_json))) {
+						if (is_null($va_options = @json_decode($vs_options_json, true))) {
 							print "Warning: invalid options for group {$vs_group}/source {$vs_source}\n";
 						}
 					}
@@ -505,8 +507,12 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 					
 						$va_refinery_options = null;
 						if ($vs_refinery && ($vs_refinery_options_json = (string)$o_refinery_options->getValue())) {
-							if (is_null($va_refinery_options = json_decode($vs_refinery_options_json))) {
-								print "Warning: invalid refinery options for group {$vs_group}/source {$vs_source} = $vs_refinery_options_json\n";
+							if (!in_array($vs_refinery, $va_refineries)) {
+								print _t("Warning: refinery %1 does not exist", $vs_refinery)."\n";
+							} else {
+								if (is_null($va_refinery_options = json_decode($vs_refinery_options_json, true))) {
+									print "Warning: invalid refinery options for group {$vs_group}/source {$vs_source} = $vs_refinery_options_json\n";
+								}
 							}
 						}
 					} else {
@@ -606,12 +612,12 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 				$va_item_settings['original_values'] = $va_mapping['original_values'];
 				$va_item_settings['replacement_values'] = $va_mapping['replacement_values'];
 				
-				if (is_object($va_mapping['options'])) {
+				if (is_array($va_mapping['options'])) {
 					foreach($va_mapping['options'] as $vs_k => $vs_v) {
 						$va_item_settings[$vs_k] = $vs_v;
 					}
 				}
-				if (is_object($va_mapping['refinery_options'])) {
+				if (is_array($va_mapping['refinery_options'])) {
 					foreach($va_mapping['refinery_options'] as $vs_k => $vs_v) {
 						$va_item_settings[$va_mapping['refinery'].'_'.$vs_k] = $vs_v;
 					}
@@ -760,7 +766,7 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 			// Get idno
 			if ($vn_idno_mapping_item_id) {
 				// idno is specified in row
-				$vs_idno = $va_row[($va_items[$vn_idno_mapping_item_id]['source'] - 1)];
+				$vs_idno = $va_row[($va_items[$vn_idno_mapping_item_id]['source'])];
 			} else {
 				// TODO: idno is a template
 				
@@ -774,138 +780,171 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 			
 			$t_subject->insert();
 			DataMigrationUtils::postError($t_subject, _t("While inserting imported subject"));
-	
-			$va_subject_preferred_label = array();
-			$va_subject_non_preferred_labels = array();
-			//print_r($va_items_by_group);
+			
+			$vb_output_subject_preferred_label = false;
+			$va_content_tree = array();
+			
 			foreach($va_items_by_group as $vn_group_id => $va_items) {
 				$va_group = $va_groups[$vn_group_id];
 				$vs_group_destination = $va_group['destination'];
 				
 				$va_group_tmp = explode(".", $vs_group_destination);
 				$vs_target_table = $va_group_tmp[0];
+				// TODO: verify that it's a valid table
 				
-				$va_acc = array();
+				unset($va_parent);
+				$va_ptr =& $va_content_tree;
+				
+				foreach($va_group_tmp as $vs_tmp) {
+					if(!is_array($va_ptr[$vs_tmp])) { $va_ptr[$vs_tmp] = array(); }
+					$va_ptr =& $va_ptr[$vs_tmp];
+					if ($vs_tmp == $vs_target_table) {	// add numeric index after table to ensure repeat values don't overwrite each other
+						$va_parent =& $va_ptr;
+						$va_ptr[] = array();
+						$va_ptr =& $va_ptr[sizeof($va_ptr)-1];
+					}
+				}
+				
 				foreach($va_items as $vn_item_id => $va_item) {
-					$vm_val = $va_row[(int)$va_item['source'] - 1];
+					$vm_val = $va_row[(int)$va_item['source']];
 					if (isset($va_item['settings']['skipGroupIfEmpty']) && (bool)$va_item['settings']['skipGroupIfEmpty'] && !strlen($vm_val)) {
+						if ($va_parent && is_array($va_parent)) { array_pop($va_parent); }	// remove empty container array
 						continue(2);
 					}
 					
-					$vb_refined = false;
+					// Get location in content tree for addition of new content
+					$va_item_dest = explode(".",  $va_item['destination']);
+					$vs_item_terminal = $va_item_dest[sizeof($va_item_dest)-1];
+					
+					
+					// Is it a constant value?
+					if (preg_match("!^_CONSTANT_:(.*)!", $va_item['source'], $va_matches)) {
+						$va_ptr[$vs_item_terminal] = $va_matches[1];		// Set it and go onto the next item
+						continue;
+					}
+					
+					// Perform refinery call (if required)
 					if (isset($va_item['settings']['refineries']) && is_array($va_item['settings']['refineries'])) {
 						foreach($va_item['settings']['refineries'] as $vs_refinery) {
 							if (!$vs_refinery) { continue; }
 							if ($o_refinery = RefineryManager::getRefineryInstance($vs_refinery)) {
-								$vm_val = $o_refinery->refine($vm_val, $va_row, $va_group, $va_item['settings'], array());
+								$va_refined_values = $o_refinery->refine($va_content_tree, $va_group, $va_item, $va_row, array());
 								
-								$vb_refined = true;
+								array_pop($va_parent);
+								foreach($va_refined_values as $va_refined_value) {
+									$va_parent[] = $va_refined_value;
+								}
+								continue(2);
 							}
 						}
 					}
 					
-					$va_tmp = explode(".",  $va_item['destination']);
 					
-					$va_ptr =& $va_acc;
-					foreach($va_tmp as $vs_tmp) {
-						if(!is_array($va_ptr[$vs_tmp])) { $va_ptr[$vs_tmp] = array(); }
-						$va_ptr =& $va_ptr[$vs_tmp];
-					}
-					
-					switch($vs_tmp) {
+					switch($vs_item_terminal) {
 						case 'preferred_labels':
 						case 'nonpreferred_labels':
-							if (!$vb_refined && ($t_instance = $o_dm->getInstanceByTableName($vs_target_table, true))) {
+							if ($t_instance = $o_dm->getInstanceByTableName($vs_target_table, true)) {
+								$va_ptr[$t_instance->getLabelDisplayField()] = '';
 								$va_ptr =& $va_ptr[$t_instance->getLabelDisplayField()];
 							}
+							$va_ptr = $vm_val;
 							break;
-					}
-					if (preg_match("!^_CONSTANT_:(.*)!", $va_item['source'], $va_matches)) {
-						$va_ptr = $va_matches[1];
-					} else {
-						$va_ptr = $vm_val;
-					}
+						default:
+							$va_ptr[$vs_item_terminal] = $vm_val;
+							break;
+					}	
 				}
-				
-				//
-				// Process data in subject record
-				//
-				if (isset($va_acc[$vs_subject_table_name])) {
-					foreach($va_acc[$vs_subject_table_name] as $vs_element => $vm_data) {
-						switch($vs_element) {
-							case 'preferred_labels':
-								$va_preferred_label = $vm_data;
-								break;
-							default:
-								$va_data = null;
-								if (is_array($vm_data)) { // container
-									$va_data = $vm_data;
-									$va_data['locale_id'] = $vn_locale_id;
-									
-									$t_subject->addAttribute($va_data, $vs_element);
-								} else {
-									if ($t_subject->hasField($vs_element)) {
-										$t_subject->set($vs_element, $vm_data);
-									} else {
-										$va_data = array(
-											'locale_id' => $vn_locale_id, $vs_element => $vm_data
-										);
-										$t_subject->addAttribute($va_data, $vs_element);
-									}
-								}
-					
-								$t_subject->update();
-								DataMigrationUtils::postError($t_subject, _t("While updating imported subject with new attribute or field data"));
-						}
-					}
-				}
-				
-				//
-				// Process related
-				//
-				unset($va_acc[$vs_subject_table_name]);
-				//print_r($va_acc);
-				foreach($va_acc as $vs_table_name => $va_data_for_rel_table) {
-			
-					//foreach($va_data_for_rel_table as $vs_element => $vm_data) {
-						if(isset($va_data_for_rel_table['preferred_labels'])) {
-							if (!is_array($va_data_for_rel_table['preferred_labels'])) {
-								// TODO: create label array out of string
-								$va_pref_label = array();
-							} else {
-						 		$va_pref_label = $va_data_for_rel_table['preferred_labels'];
-						 	}
-						 }
-						 
-						 switch($vs_table_name) {
-						 	case 'ca_entities':
-						 		unset($va_data_for_rel_table['preferred_labels']);
-						 		if ($vn_rel_id = DataMigrationUtils::getEntityID($va_pref_label, 'person', $vn_locale_id, $va_data_for_rel_table, array())) {
-						 			$t_subject->addRelationship($vs_table_name, $vn_rel_id, 'artist');
-						 			DataMigrationUtils::postError($t_subject, _t("While adding entity"));
-						 		}
-						 		break;
-						 }
-					//}
-				}
+						
 				
 				$vn_row++;
 			}
 			
-			if(sizeof($va_preferred_label)) {
-				$t_subject->addLabel(
-					$va_preferred_label, $vn_locale_id, null, true
-				);
-			} else {
+			//
+			// Process data in subject record
+			//
+			//print_r($va_content_tree);
+			//die("END\n\n");
+			foreach($va_content_tree as $vs_table_name => $va_content) {
+				if ($vs_table_name == $vs_subject_table_name) {
+					foreach($va_content as $vn_i => $va_element_data) {
+						foreach($va_element_data as $vs_element => $va_element_content) {
+								switch($vs_element) {
+									case 'preferred_labels':									
+										$t_subject->addLabel(
+											$va_element_content, $vn_locale_id, null, true
+										);
+										if ($t_subject->numErrors() == 0) {
+											$vb_output_subject_preferred_label = true;
+										}
+										DataMigrationUtils::postError($t_subject, _t("While adding preferred label to imported subject"));
+										break;
+									case 'nonpreferred_labels':									
+										$t_subject->addLabel(
+											$va_element_content, $vn_locale_id, null, false
+										);
+										DataMigrationUtils::postError($t_subject, _t("While adding non-preferred label to imported subject"));
+										break;
+									default:
+										if ($t_subject->hasField($vs_element)) {
+											$t_subject->set($vs_element, $va_element_content[$vs_element]);
+											break;
+										}
+									
+										$va_element_content['locale_id'] = $vn_locale_id;
+										$t_subject->addAttribute($va_element_content, $vs_element);
+										
+										$t_subject->update();
+										DataMigrationUtils::postError($t_subject, _t("While updating imported subject with new attribute or field data"));
+										
+										break;
+								}
+						}
+					} 
+				} else {
+					// related
+					
+					foreach($va_content as $vn_i => $va_element_data) {
+							$va_data_for_rel_table = $va_element_data;
+							unset($va_data_for_rel_table['preferred_labels']);
+							unset($va_data_for_rel_table['_relationship_type']);
+							unset($va_data_for_rel_table['_type']);
+							unset($va_data_for_rel_table['_parent_id']);
+							
+							switch($vs_table_name) {
+								case 'ca_entities':
+									if ($vn_rel_id = DataMigrationUtils::getEntityID($va_element_data['preferred_labels'], $va_element_data['_type'], $vn_locale_id, $va_data_for_rel_table, array())) {
+										$t_subject->addRelationship($vs_table_name, $vn_rel_id, strtolower(trim($va_element_data['_relationship_type'])));
+										DataMigrationUtils::postError($t_subject, _t("While adding entity: %1", $va_element_data['_relationship_type']));
+									}
+									break;
+								case 'ca_places':
+									if ($vn_rel_id = DataMigrationUtils::getPlaceID($va_element_data['preferred_labels']['name'], $va_element_data['_parent_id'], $va_element_data['_type'], $vn_locale_id, $va_data_for_rel_table, array())) {
+										$t_subject->addRelationship($vs_table_name, $vn_rel_id, strtolower(trim($va_element_data['_relationship_type'])));
+										DataMigrationUtils::postError($t_subject, _t("While adding place: %1", $va_element_data['_relationship_type']));
+									}
+									break;
+								case 'ca_collections':
+									if ($vn_rel_id = DataMigrationUtils::getCollectionID($va_element_data['preferred_labels']['name'], $va_element_data['_type'], $vn_locale_id, $va_data_for_rel_table, array())) {
+										$t_subject->addRelationship($vs_table_name, $vn_rel_id, strtolower(trim($va_element_data['_relationship_type'])));
+										DataMigrationUtils::postError($t_subject, _t("While adding collection: %1", $va_element_data['_relationship_type']));
+									}
+									break;
+							 }
+					}
+				}
+			}
+				
+			
+			if(!$vb_output_subject_preferred_label) {
 				$t_subject->addLabel(
 					array($t_subject->getLabelDisplayField() => '???'), $vn_locale_id, null, true
 				);
+				DataMigrationUtils::postError($t_subject, _t("While adding label to imported subject"));
 			}
 			
-			DataMigrationUtils::postError($t_subject, _t("While adding label to imported subject"));
 		}
-		//$vn_locale_id
 		
+		return true;
 	}
 	# ------------------------------------------------------
 	/**

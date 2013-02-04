@@ -1,6 +1,6 @@
 <?php
 /* ----------------------------------------------------------------------
- * entitySplitterRefinery.php : 
+ * placeSplitterRefinery.php : 
  * ----------------------------------------------------------------------
  * CollectiveAccess
  * Open-source collections management software
@@ -28,14 +28,14 @@
  	require_once(__CA_LIB_DIR__.'/ca/Import/BaseRefinery.php');
  	require_once(__CA_LIB_DIR__.'/ca/Utils/DataMigrationUtils.php');
  
-	class entitySplitterRefinery extends BaseRefinery {
+	class placeSplitterRefinery extends BaseRefinery {
 		# -------------------------------------------------------
 		
 		# -------------------------------------------------------
 		public function __construct() {
-			$this->ops_name = 'entitySplitter';
-			$this->ops_title = _t('Entity splitter');
-			$this->ops_description = _t('Splits entities');
+			$this->ops_name = 'placeSplitter';
+			$this->ops_title = _t('Place splitter');
+			$this->ops_description = _t('Splits places');
 			
 			parent::__construct();
 		}
@@ -60,48 +60,53 @@
 			$vs_terminal = array_pop($va_group_dest);
 			$pm_value = $pa_source_data[$pa_item['source']];
 			
-			if ($vs_delimiter = $pa_item['settings']['entitySplitter_delimiter']) {
-				$va_entities = explode($vs_delimiter, $pm_value);
+			if ($vs_delimiter = $pa_item['settings']['placeSplitter_delimiter']) {
+				$va_places = explode($vs_delimiter, $pm_value);
 			} else {
-				$va_entities = array($pm_value);
+				$va_places = array($pm_value);
 			}
 			
-			//print_R($pa_item);
-			
 			$va_vals = array();
-			foreach($va_entities as $vn_i => $vs_entity) {
-				if (!$vs_entity = trim($vs_entity)) { continue; }
+			foreach($va_places as $vn_i => $vs_place) {
+				if (!$vs_place = trim($vs_place)) { continue; }
 				
-				$va_split_name = DataMigrationUtils::splitEntityName($vs_entity);
-		
-				if(isset($va_split_name[$vs_terminal])) {
-					return $va_split_name[$vs_terminal];
+				
+				if($vs_terminal == 'name') {
+					return $vs_place;
 				}
 			
 				if (in_array($vs_terminal, array('preferred_labels', 'nonpreferred_labels'))) {
-					return $va_split_name;	
+					return array('name' => $vs_place);	
 				}
 			
 				// Set label
-				$va_val = array('preferred_labels' => $va_split_name);
+				$va_val = array('preferred_labels' => array('name' => $vs_place));
 			
 				// Set relationship type
-				if ($vs_rel_type_opt = $pa_item['settings']['entitySplitter_relationshipType']) {
+				if ($vs_rel_type_opt = $pa_item['settings']['placeSplitter_relationshipType']) {
 					$va_val['_relationship_type'] = BaseRefinery::parsePlaceholder($vs_rel_type_opt, $pa_source_data, $pa_item, $vs_delimiter, $vn_i);
 				}
 			
-				// Set entity_type
-				;
-				if ($vs_type_opt = $pa_item['settings']['entitySplitter_entityType']) {
+				// Set place type
+				if ($vs_type_opt = $pa_item['settings']['placeSplitter_placeType']) {
 					$va_val['_type'] = BaseRefinery::parsePlaceholder($vs_type_opt, $pa_source_data, $pa_item);
+				}
+				
+				// Set place hierarchy
+				if ($vs_hierarchy = $pa_item['settings']['placeSplitter_hierarchy']) {
+					$vn_hierarchy_id = caGetListItemID('place_hierarchies', $vs_hierarchy);
+					
+					$t_place = new ca_places();
+					$t_place->load(array('parent_id' => null, 'hierarchy_id' => $vn_hierarchy_id));
+					$va_val['_parent_id'] = $t_place->getPrimaryKey();
 				}
 			
 				// Set attributes
-				if (is_array($va_attrs = $pa_item['settings']['entitySplitter_attributes'])) {
-					foreach($pa_item['settings']['entitySplitter_attributes'] as $vs_element_code => $va_attrs) {
+				if (is_array($va_attrs = $pa_item['settings']['placeSplitter_attributes'])) {
+					foreach($pa_item['settings']['placeSplitter_attributes'] as $vs_element_code => $va_attrs) {
 						if(is_array($va_attrs)) {
 							foreach($va_attrs as $vs_k => $vs_v) {
-								$pa_item['settings']['entitySplitter_attributes'][$vs_element_code][$vs_k] = BaseRefinery::parsePlaceholder($vs_v, $pa_source_data, $pa_item);
+								$pa_item['settings']['placeSplitter_attributes'][$vs_element_code][$vs_k] = BaseRefinery::parsePlaceholder($vs_v, $pa_source_data, $pa_item);
 							}
 						}
 					}
@@ -116,8 +121,8 @@
 		# -------------------------------------------------------
 	}
 	
-	 BaseRefinery::$s_refinery_settings['entitySplitter'] = array(		
-			'entitySplitter_delimiter' => array(
+	 BaseRefinery::$s_refinery_settings['placeSplitter'] = array(		
+			'placeSplitter_delimiter' => array(
 				'formatType' => FT_TEXT,
 				'displayType' => DT_SELECT,
 				'width' => 10, 'height' => 1,
@@ -126,7 +131,7 @@
 				'label' => _t('Delimiter'),
 				'description' => _t('Delimiter')
 			),
-			'entitySplitter_relationshipType' => array(
+			'placeSplitter_relationshipType' => array(
 				'formatType' => FT_TEXT,
 				'displayType' => DT_SELECT,
 				'width' => 10, 'height' => 1,
@@ -135,16 +140,16 @@
 				'label' => _t('Relationship type'),
 				'description' => _t('Relationship type')
 			),
-			'entitySplitter_entityType' => array(
+			'placeSplitter_placeType' => array(
 				'formatType' => FT_TEXT,
 				'displayType' => DT_SELECT,
 				'width' => 10, 'height' => 1,
 				'takesLocale' => false,
 				'default' => '',
-				'label' => _t('Entity type'),
-				'description' => _t('Entity type')
+				'label' => _t('Place type'),
+				'description' => _t('Place type')
 			),
-			'entitySplitter_attributes' => array(
+			'placeSplitter_attributes' => array(
 				'formatType' => FT_TEXT,
 				'displayType' => DT_SELECT,
 				'width' => 10, 'height' => 1,
@@ -152,6 +157,15 @@
 				'default' => '',
 				'label' => _t('Attributes'),
 				'description' => _t('Attributes')
+			),
+			'placeSplitter_hierarchy' => array(
+				'formatType' => FT_TEXT,
+				'displayType' => DT_SELECT,
+				'width' => 10, 'height' => 1,
+				'takesLocale' => false,
+				'default' => '',
+				'label' => _t('Hierarchy'),
+				'description' => _t('Hierarchy to add places to')
 			)
 		);
 ?>
