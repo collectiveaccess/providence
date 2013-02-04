@@ -482,7 +482,7 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 					$vs_source = trim((string)$o_source->getValue());
 					
 					if ($vs_mode == 'Constant') {
-						$vs_source = "_CONSTANT_:{$vs_source}";
+						$vs_source = "_CONSTANT_:{$vn_row_num}:{$vs_source}";
 					}
 					$vs_destination = trim((string)$o_dest->getValue());
 					
@@ -666,18 +666,29 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 	}
 	# ------------------------------------------------------
 	/**
+	 * 
 	 *
+	 * @param string $ps_source
+	 * @param string $ps_mapping
+	 * @param array $pa_options
+	 *		showCLIProgressBar = Show command-line progress bar. Default is false.
+	 *		format = Format of data being imported. MANDATORY
 	 */
 	static public function importDataFromSource($ps_source, $ps_mapping, $pa_options=null) {
 		if (!($t_mapping = ca_data_importers::mappingExists($ps_mapping))) {
 			return null;
 		}
 		
+		$vb_show_cli_progress_bar = (isset($pa_options['showCLIProgressBar']) && ($pa_options['showCLIProgressBar'])) ? true : false;
+		
 		global $g_ui_locale_id;
 		$vn_locale_id = (isset($pa_options['locale_id']) && (int)$pa_options['locale_id']) ? (int)$pa_options['locale_id'] : $g_ui_locale_id;
 		
 		$o_dm = $t_mapping->getAppDatamodel();
 		
+		if ($vb_show_cli_progress_bar){
+			print CLIProgressBar::start(0, _t('Reading %1', $ps_source));
+		}
 	
 		// Open file 
 		$ps_format = (isset($pa_options['format']) && $pa_options['format']) ? $pa_options['format'] : null;	
@@ -688,6 +699,10 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 		if (!$o_reader->read($ps_source)) {
 			print _t("Could not read source %1 (format=%2)", $ps_source, $ps_format);
 			return false;
+		}
+		
+		if ($vb_show_cli_progress_bar){
+			print CLIProgressBar::start($o_reader->numRows(), _t('Importing from %1', $ps_source));
 		}
 		
 		// What are we importing?
@@ -701,8 +716,8 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 		$vs_idno_fld = $t_subject->getProperty('ID_NUMBERING_ID_FIELD');
 		
 		// get mapping groups
-		$va_groups = $t_mapping->getGroups();
-		$va_items = $t_mapping->getItems();
+		$va_mapping_groups = $t_mapping->getGroups();
+		$va_mapping_items = $t_mapping->getItems();
 		
 		//
 		// Mapping-level settings
@@ -713,7 +728,7 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 		
 		// Analyze mapping for figure out where type, idno and preferred label are coming from
 		$vn_type_id_mapping_item_id = $vn_idno_mapping_item_id = null;
-		foreach($va_items as $vn_item_id => $va_item) {
+		foreach($va_mapping_items as $vn_item_id => $va_item) {
 			$vs_destination = $va_item['destination'];
 			
 			switch($vs_destination) {
@@ -727,7 +742,7 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 		}
 		
 		$va_items_by_group = array();
-		foreach($va_items as $vn_item_id => $va_item) {
+		foreach($va_mapping_items as $vn_item_id => $va_item) {
 			$va_items_by_group[$va_item['group_id']][$va_item['item_id']] = $va_item;
 		}
 		
@@ -757,7 +772,7 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 			// Get type
 			if ($vn_type_id_mapping_item_id) {
 				// Type is specified in row
-				$vs_type = $t_mapping->getValueFromSource($va_items[$vn_type_id_mapping_item_id], $va_row);
+				$vs_type = $t_mapping->getValueFromSource($va_mapping_items[$vn_type_id_mapping_item_id], $va_row);
 			} else {
 				// Type is constant for all rows
 				$vs_type = $vs_type_mapping_setting;	
@@ -766,15 +781,19 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 			// Get idno
 			if ($vn_idno_mapping_item_id) {
 				// idno is specified in row
-				$vs_idno = $va_row[($va_items[$vn_idno_mapping_item_id]['source'])];
+				$vs_idno = $va_row[($va_mapping_items[$vn_idno_mapping_item_id]['source'])];
 			} else {
 				// TODO: idno is a template
 				
 			}
 			
+			//print "IDNO=$vs_idno FOR $vn_idno_mapping_item_id/".($va_mapping_items[$vn_idno_mapping_item_id]['source'])."\n";
+			//print "set $vs_type_id_fld to $vs_type\n";
+			if ($vb_show_cli_progress_bar) {
+				print CLIProgressBar::next(1, _t("Importing %1", $vs_idno));
+			}
 			$t_subject->init();
 			$t_subject->setMode(ACCESS_WRITE);
-			//print "set $vs_type_id_fld to $vs_type\n";
 			$t_subject->set($vs_type_id_fld, $vs_type);
 			$t_subject->set($vs_idno_fld, $vs_idno);
 			
@@ -785,7 +804,7 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 			$va_content_tree = array();
 			
 			foreach($va_items_by_group as $vn_group_id => $va_items) {
-				$va_group = $va_groups[$vn_group_id];
+				$va_group = $va_mapping_groups[$vn_group_id];
 				$vs_group_destination = $va_group['destination'];
 				
 				$va_group_tmp = explode(".", $vs_group_destination);
@@ -818,7 +837,7 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 					
 					
 					// Is it a constant value?
-					if (preg_match("!^_CONSTANT_:(.*)!", $va_item['source'], $va_matches)) {
+					if (preg_match("!^_CONSTANT_:[\d]+:(.*)!", $va_item['source'], $va_matches)) {
 						$va_ptr[$vs_item_terminal] = $va_matches[1];		// Set it and go onto the next item
 						continue;
 					}
@@ -836,6 +855,13 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 								}
 								continue(2);
 							}
+						}
+					}
+					
+					if (isset($va_item['settings']['delimiter']) && strlen($vs_item_delimiter = $va_item['settings']['delimiter'])) {
+						$va_val_list = explode($vs_item_delimiter, $vm_val);
+						foreach($va_val_list as $vs_list_val) {
+							$va_parent[] = array($vs_item_terminal => array($vs_item_terminal => $vs_list_val));
 						}
 					}
 					
@@ -894,7 +920,7 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 										$t_subject->addAttribute($va_element_content, $vs_element);
 										
 										$t_subject->update();
-										DataMigrationUtils::postError($t_subject, _t("While updating imported subject with new attribute or field data"));
+										DataMigrationUtils::postError($t_subject, _t("While updating imported subject with data for attribute %1", $vs_element));
 										
 										break;
 								}
@@ -944,6 +970,9 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 			
 		}
 		
+		if ($vb_show_cli_progress_bar) {
+			print CLIProgressBar::finish();
+		}
 		return true;
 	}
 	# ------------------------------------------------------

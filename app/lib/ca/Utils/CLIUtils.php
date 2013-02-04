@@ -523,7 +523,7 @@ Note that depending upon the size of your database reloading sort values can tak
 			
 			$vs_format = $po_opts->getOption('format');
 			
-			if (!ca_data_importers::importDataFromSource($vs_data_source, $vs_mapping, array('format' => $vs_format))) {
+			if (!ca_data_importers::importDataFromSource($vs_data_source, $vs_mapping, array('format' => $vs_format, 'showCLIProgressBar' => true))) {
 				print _t("Could not import source %1", $vs_data_source)."\n";
 			} else {
 				print _t("Imported data from source %1", $vs_data_source)."\n";
