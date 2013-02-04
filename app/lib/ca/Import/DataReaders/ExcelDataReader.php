@@ -43,6 +43,7 @@ class ExcelDataReader extends BaseDataReader {
 	private $opo_handle = null;
 	private $opo_rows = null;
 	private $opa_row_buf = array();
+	private $opn_current_row = 0;
 	# -------------------------------------------------------
 	/**
 	 *
@@ -69,6 +70,7 @@ class ExcelDataReader extends BaseDataReader {
 			//$this->opo_handle->setActiveSheet(1);
 			$o_sheet = $this->opo_handle->getActiveSheet();
 			$this->opo_rows = $o_sheet->getRowIterator();
+			$this->opn_current_row = 0;
 		} catch (Exception $e) {
 			return false;
 		}
@@ -85,7 +87,11 @@ class ExcelDataReader extends BaseDataReader {
 	 */
 	public function nextRow() {
 		if (!$this->opo_rows) { return false; }
-		$this->opo_rows->next();
+		
+		if ($this->opn_current_row > 0) {
+			$this->opo_rows->next();
+		}
+		$this->opn_current_row++;
 		if (!$this->opo_rows->valid()) {return false; }
 		
 		if($o_row = $this->opo_rows->current()) {
@@ -93,8 +99,6 @@ class ExcelDataReader extends BaseDataReader {
 		
 			$o_cells = $o_row->getCellIterator();
 			$o_cells->setIterateOnlyExistingCells(false); 
-			
-			
 			
 			$va_row = array();
 			$vb_val_was_set = false;
@@ -107,7 +111,7 @@ class ExcelDataReader extends BaseDataReader {
 				$vn_col++;
 			}
 			if (!$vb_val_was_set) { return $this->nextRow(); }	// skip completely blank rows
-			$this->opa_row_buf = array_slice($this->opa_row_buf, 0, $vn_last_col_set);
+			//$this->opa_row_buf = array_slice($this->opa_row_buf, 0, $vn_last_col_set);
 			
 			return $o_row;
 		}
@@ -122,7 +126,8 @@ class ExcelDataReader extends BaseDataReader {
 	 * @return bool
 	 */
 	public function seek($pn_row_num) {
-		return $this->opo_rows->seek($pn_row_num-1);
+		$this->opn_current_row = $pn_row_num;
+		return $this->opo_rows->seek($pn_row_num + 1);
 	}
 	# -------------------------------------------------------
 	/**
@@ -151,6 +156,15 @@ class ExcelDataReader extends BaseDataReader {
 		}
 		
 		return null;	
+	}
+	# -------------------------------------------------------
+	/**
+	 * 
+	 * 
+	 * @return int
+	 */
+	public function numRows() {
+		return $this->opo_handle->getActiveSheet()->getHighestRow();
 	}
 	# -------------------------------------------------------
 }
