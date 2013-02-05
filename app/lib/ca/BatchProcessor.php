@@ -87,7 +87,14 @@
  				'transaction' => $o_trans
  			));
  			
- 			$va_save_opts = array('batch' => true, 'existingRepresentationMap' => array());
+ 			$vs_screen = $po_request->getActionExtra();
+ 			$t_screen = new ca_editor_ui_screens(str_replace("Screen", "", $vs_screen));
+ 			if($t_screen->getPrimaryKey()) {
+ 				$t_ui = new ca_editor_uis($t_screen->get('ui_id'));
+ 			} else {
+ 				$t_ui = null;
+ 			}
+ 			$va_save_opts = array('batch' => true, 'existingRepresentationMap' => array(), 'ui_instance' => $t_ui);
  			
  			$vn_c = 0;
  			$vn_start_time = time();
@@ -116,8 +123,6 @@
 					if (($vb_perform_item_level_access_checking) && ($t_subject->checkACLAccessForUser($po_request->user) == __CA_ACL_READ_WRITE_ACCESS__)) {
 						continue;		// skip
 					}
- 					
- 					$vs_screen = $po_request->getActionExtra();
  					
  					// TODO: call plugins beforeBatchItemSave?
  					$t_subject->saveBundlesForScreen($vs_screen, $po_request, $va_save_opts);
@@ -278,7 +283,6 @@
  			$vn_locale_id						= $pa_options['locale_id'];
  			if (!$vn_locale_id) { $vn_locale_id = $g_ui_locale_id; }
  			
- 			
  			$va_files_to_process = caGetDirectoryContentsAsList($pa_options['importFromDirectory'], $vb_include_subdirectories);
  			
  			if ($vs_set_mode == 'add') {
@@ -417,7 +421,7 @@
 					// found existing object
 					$t_object->setMode(ACCESS_WRITE);
 					
-					$t_new_rep = $t_object->addRepresentation($vs_directory.'/'.$f, $vn_rep_type_id, $vn_locale_id, $vs_object_representation_status, $vs_object_representation_access, false, array(), array('original_filename' => $f, 'returnRepresentation' => true));
+					$t_new_rep = $t_object->addRepresentation($vs_directory.'/'.$f, $vn_rep_type_id, $vn_locale_id, $vn_object_representation_status, $vn_object_representation_access, false, array(), array('original_filename' => $f, 'returnRepresentation' => true));
 				
 					if ($t_object->numErrors()) {	
 						$o_eventlog->log(array(
@@ -496,7 +500,8 @@
 							$o_trans->rollback();
 							continue;
 						}
-						$t_new_rep = $t_object->addRepresentation($vs_directory.'/'.$f, $vn_rep_type_id, $vn_locale_id, $vn_object_representation_access, $vn_object_representation_status, true, array(), array('original_filename' => $f, 'returnRepresentation' => true));
+						
+						$t_new_rep = $t_object->addRepresentation($vs_directory.'/'.$f, $vn_rep_type_id, $vn_locale_id, $vn_object_representation_status, $vn_object_representation_access, true, array(), array('original_filename' => $f, 'returnRepresentation' => true));
 				
 						if ($t_object->numErrors()) {	
 							$o_eventlog->log(array(
