@@ -31,6 +31,7 @@
  	$va_settings 			= $this->getVar('settings');
  	$t_instance				= $this->getVar('t_instance');
  	$vs_bundle_name 		= $this->getVar('bundle_name');
+ 	$vb_batch				= $this->getVar('batch');
  	
  	$va_errors = array();
  	if(is_array($va_action_errors = $this->getVar('errors'))) {
@@ -38,8 +39,10 @@
  			$va_errors[] = $o_error->getErrorDescription();
  		}
  	}
+ 	if ($vb_batch) {
+		print caBatchEditorIntrinsicModeControl($t_instance, $vs_bundle_name);
+	}
 ?>
-
 	<div>
 <?php
 	if (isset($va_settings['forACLAccessScreen']) && $va_settings['forACLAccessScreen']) {
@@ -50,7 +53,7 @@
 <?php
 	} else {
 ?>
-		<div class="bundleContainer">
+		<div class="bundleContainer <?php print $vb_batch ? "editorBatchBundleContent" : ''; ?>" id="intrinsic_<?php print $vs_bundle_name; ?>">
 			<div class="caItemList">
 				<div class="labelInfo">	
 <?php
@@ -73,8 +76,7 @@
 ?>
 					<br style="clear: both;"/>
 <?php
-	}
-	
+	}	
 	if (isset($va_settings['forACLAccessScreen']) && $va_settings['forACLAccessScreen']) {
 ?>
 		</p>

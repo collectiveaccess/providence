@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2013 Whirl-i-Gig
+ * Copyright 2012-2013 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -204,6 +204,7 @@
 					'status' => 30,
 					'id' => null,
 					'table' => $t_subject->tableName(),
+					'type_id' => null,
 					'display' => null,
 					'errors' => array(_t("You are not allowed to quickadd %1", $t_subject->getProperty('NAME_PLURAL')) => _t("You are not allowed to quickadd %1", $t_subject->getProperty('NAME_PLURAL')))
 				);
@@ -232,6 +233,7 @@
 					'status' => 20,
 					'id' => null,
 					'table' => $t_subject->tableName(),
+					'type_id' => null,
 					'display' => null,
 					'errors' => array(_t("Cannot save using empty request. Are you using a bookmark?") => _t("Cannot save using empty request. Are you using a bookmark?"))
 				);
@@ -271,7 +273,8 @@
  			$t_subject->set('parent_id', $vn_parent_id);
  			$this->opo_result_context->setParameter($t_subject->tableName().'_last_parent_id', $vn_parent_id);
  			
- 			$vb_save_rc = $t_subject->saveBundlesForScreen($this->request->getParameter('screen', pString), $this->request, array_merge($pa_options, array('ui_instance' => $t_ui)));
+ 			$va_opts = array_merge($pa_options, array('ui_instance' => $t_ui));
+ 			$vb_save_rc = $t_subject->saveBundlesForScreen($this->request->getParameter('screen', pString), $this->request, $va_opts);
 			$this->view->setVar('t_ui', $t_ui);
 		
 			if(!$vn_subject_id) {
@@ -333,7 +336,8 @@
  				'status' => sizeof($va_error_list) ? 10 : 0,
  				'id' => $vn_id,
  				'table' => $t_subject->tableName(),
- 				'display' => $va_name['_display'],
+				'type_id' => method_exists($t_subject, "getTypeID") ? $t_subject->getTypeID() : null,
+ 				'display' => $va_name['label'],
  				'errors' => $va_error_list
  			);
  			

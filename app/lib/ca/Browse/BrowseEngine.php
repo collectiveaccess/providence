@@ -115,6 +115,19 @@
 		}
 		# ------------------------------------------------------
 		/**
+		 * Dynamically insert facet configuration
+		 *
+		 * @param string $ps_facet_name The name of the facet to insert
+		 * @return bool true if add succeeded
+		 */
+		public function addFacetConfiguration($ps_facet_name, $pa_options) {
+			$this->opa_browse_settings['facets'][$ps_facet_name] = $pa_options;
+			$this->_processBrowseSettings();
+			
+			return true;
+		}
+		# ------------------------------------------------------
+		/**
 		 * Forces reload of the browse instance (ie. a cached browse) from the database
 		 *
 		 * @param int $pn_browse_id The id of the browse to reload
@@ -1732,6 +1745,7 @@
 			
 			$va_hier_ids = array();
 			foreach($va_facet_cache[$ps_facet_name] as $vn_id => $va_item) {
+				if (!isset($va_item['hierarchy_id']) || !$va_item['hierarchy_id']) { continue; }
 				$va_hier_ids[$va_item['hierarchy_id']] = true;
 			}
 			return array_keys($va_hier_ids);
@@ -2990,6 +3004,23 @@ if (!$va_facet_info['show_all_when_first_facet'] || ($this->numCriteria() > 0)) 
 						$va_wheres[] = "(".$t_subject->tableName().'.'.$t_subject->primaryKey()." IN (".join(',', $va_results)."))";
 					}
 					
+					if (!is_array($va_restrict_to_lists = $va_facet_info['restrict_to_lists'])) { $va_restrict_to_lists = array(); }
+					if (is_array($va_restrict_to_lists) && (sizeof($va_restrict_to_lists) > 0) && ($t_rel_item->tableName() == 'ca_list_items')) {
+						$va_list_ids = array();
+						foreach($va_restrict_to_lists as $vm_list) {
+							if (is_numeric($vm_list)) {
+								$vn_list_id = (int)$vm_list;
+							} else {
+								$vn_list_id = (int)ca_lists::getListID($vm_list);
+							}
+							if ($vn_list_id) { $va_list_ids[] = $vn_list_id; }
+						}
+						
+						if (sizeof($va_list_ids) > 0) {
+							$va_wheres[] = "{$vs_rel_table_name}.list_id IN (".join(',', $va_list_ids).")";
+						}
+					}
+					
 					if (is_array($va_restrict_to_types) && (sizeof($va_restrict_to_types) > 0) && method_exists($t_rel_item, "getTypeList")) {
 						$va_wheres[] = "{$vs_rel_table_name}.type_id IN (".join(',', $va_restrict_to_types).")";
 					}
@@ -3430,19 +3461,38 @@ if (!$va_facet_info['show_all_when_first_facet'] || ($this->numCriteria() > 0)) 
 							if (!($vs_sortable_value_fld = Attribute::getSortFieldForDatatype($t_element->get('datatype')))) {
 								return $pa_hits;
 							}
-							$vs_sortable_value_fld = 'attr_vals.'.$vs_sortable_value_fld;
 							
-							$vs_sort_field = array_pop(explode('.', $vs_sortable_value_fld));
-							$vs_locale_where = ($vn_num_locales > 1) ? 'attr.locale_id' : '';
-							$vs_sql = "
-								SELECT attr.row_id, attr.locale_id, lower({$vs_sortable_value_fld}) {$vs_sort_field}
-								FROM ca_attributes attr
-								INNER JOIN ca_attribute_values AS attr_vals ON attr_vals.attribute_id = attr.attribute_id
-								INNER JOIN {$vs_browse_tmp_table} ON {$vs_browse_tmp_table}.row_id = attr.row_id
-								WHERE
-									(attr_vals.element_id = ?) AND (attr.table_num = ?) AND (attr_vals.{$vs_sort_field} IS NOT NULL)
-							";
-							//print $vs_sql." ; $vn_element_id/; ".$this->opn_browse_table_num."<br>";
+							if ((int)$t_element->get('datatype') == 3) {
+								$vs_sortable_value_fld = 'lil.name_plural';
+								
+								$vs_sort_field = array_pop(explode('.', $vs_sortable_value_fld));
+								$vs_locale_where = ($vn_num_locales > 1) ? ', lil.locale_id' : '';
+					
+								$vs_sql = "
+									SELECT attr.row_id, lil.locale_id, lower({$vs_sortable_value_fld}) {$vs_sort_field}
+									FROM ca_attributes attr
+									INNER JOIN ca_attribute_values AS attr_vals ON attr_vals.attribute_id = attr.attribute_id
+									INNER JOIN ca_list_item_labels AS lil ON lil.item_id = attr_vals.item_id
+									INNER JOIN {$vs_browse_tmp_table} ON {$vs_browse_tmp_table}.row_id = attr.row_id
+									WHERE
+										(attr_vals.element_id = ?) AND (attr.table_num = ?) AND (lil.{$vs_sort_field} IS NOT NULL)
+								";
+							} else {
+								$vs_sortable_value_fld = 'attr_vals.'.$vs_sortable_value_fld;
+						
+								$vs_sort_field = array_pop(explode('.', $vs_sortable_value_fld));
+								$vs_locale_where = ($vn_num_locales > 1) ? ', attr.locale_id' : '';
+								
+								$vs_sql = "
+									SELECT attr.row_id, attr.locale_id, lower({$vs_sortable_value_fld}) {$vs_sort_field}
+									FROM ca_attributes attr
+									INNER JOIN ca_attribute_values AS attr_vals ON attr_vals.attribute_id = attr.attribute_id
+									INNER JOIN {$vs_browse_tmp_table} ON {$vs_browse_tmp_table}.row_id = attr.row_id
+									WHERE
+										(attr_vals.element_id = ?) AND (attr.table_num = ?) AND (attr_vals.{$vs_sort_field} IS NOT NULL)
+								";
+								//print $vs_sql." ; $vn_element_id/; ".$this->opn_browse_table_num."<br>";
+							}
 							$qr_sort = $this->opo_db->query($vs_sql, (int)$vn_element_id, (int)$this->opn_browse_table_num);
 							
 							while($qr_sort->nextRow()) {

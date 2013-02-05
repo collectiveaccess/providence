@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2008-2012 Whirl-i-Gig
+ * Copyright 2008-2013 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -235,6 +235,11 @@ class ca_relationship_types extends BundlableLabelableBaseModelWithAttributes {
 
 	protected $FIELDS;
 	
+	/**
+	 * @var cached relationship type_ids as loaded/created by getRelationshipTypeID()
+	 */
+	static $s_relationship_type_id_cache = array();
+	
 	# ------------------------------------------------------
 	# --- Constructor
 	#
@@ -345,22 +350,77 @@ class ca_relationship_types extends BundlableLabelableBaseModelWithAttributes {
 	}
 	# ------------------------------------------------------
 	/**
-	 *
+	 * @param array $pa_options Option are
+	 *		create = create relationship type using parameters if one with the specified type code or type_id doesn't exist already [default=false]
+	 *		cache = cache relationship types as they are referenced and return cached value if possible [default=true]
 	 */
-	public function getRelationshipTypeID($pm_table_name_or_num, $pm_type_code_or_id) {
+	public function getRelationshipTypeID($pm_table_name_or_num, $pm_type_code_or_id, $pn_locale_id=null, $pa_values=null, $pa_options=null) {
+		if (!is_array($pa_options)) { $pa_options = array(); }
+		if (!isset($pa_options['create'])) { $pa_options['create'] = false; }
+		if (!isset($pa_options['cache'])) { $pa_options['cache'] = true; }
+		
+		if (!is_numeric($pm_table_name_or_num)) {
+			$vn_table_num = $this->getAppDatamodel()->getTableNum($pm_table_name_or_num);
+		} else {
+			$vn_table_num = $pm_table_name_or_num;
+		}
+		if ($pa_options['cache'] && isset(ca_relationship_types::$s_relationship_type_id_cache[$vn_table_num.'/'.$pm_type_code_or_id])) {
+			return ca_relationship_types::$s_relationship_type_id_cache[$vn_table_num.'/'.$pm_type_code_or_id];
+		}
+		
 		if (is_numeric($pm_type_code_or_id)) {
 			if ($va_relationships = $this->getRelationshipInfo($pm_table_name_or_num)) {
-				if (isset($va_relationships[$pm_type_code_or_id])) { return $pm_type_code_or_id; }
+				if (isset($va_relationships[$pm_type_code_or_id])) { 
+					return ca_relationship_types::$s_relationship_type_id_cache[$vn_table_num.'/'.$pm_type_code_or_id] = $pm_type_code_or_id; 
+				}
 			}
 		} else {
 			if ($va_relationships = $this->getRelationshipInfo($pm_table_name_or_num, $ps_type_code)) {
 				foreach($va_relationships as $vn_type_id => $va_type_info) {
 					if ($va_type_info['type_code'] == $pm_type_code_or_id) {
-						return $vn_type_id;
+						return ca_relationship_types::$s_relationship_type_id_cache[$vn_table_num.'/'.$pm_type_code_or_id] = $vn_type_id;
 					}
 				}
 			}
 		}
+		
+		if (isset($pa_options['create']) && $pa_options['create'] && $pn_locale_id && is_array($pa_values)) {
+			$t_rel = new ca_relationship_types();
+			$t_rel->setMode(ACCESS_WRITE);
+			$t_rel->set('type_code', $pm_type_code_or_id);
+			$t_rel->set('table_num', $vn_table_num);
+			$t_rel->set('sub_type_left_id', isset($pa_values['sub_type_left_id']) ? (int)$pa_values['sub_type_left_id'] : null);
+			$t_rel->set('sub_type_right_id', isset($pa_values['sub_type_right_id']) ? (int)$pa_values['sub_type_right_id'] : null);
+			$t_rel->set('parent_id', isset($pa_values['parent_id']) ? (int)$pa_values['parent_id'] : null);
+			$t_rel->set('rank', isset($pa_values['rank']) ? (int)$pa_values['rank'] : 0);
+			$t_rel->set('is_default', isset($pa_values['is_default']) ? (int)$pa_values['is_default'] : 0);
+			
+			$t_rel->insert();
+			
+			if ($t_rel->numErrors()) {
+				$this->errors = $t_rel->errors;
+				return false;
+			}
+			
+			if (!isset($pa_values['typename_reverse']) || !$pa_values['typename_reverse']) { $pa_values['typename_reverse'] = $pa_values['typename']; }
+			
+			$t_rel->addLabel(
+				array(
+					'typename' => isset($pa_values['typename']) ? $pa_values['typename'] : $pm_type_code_or_id,
+					'typename_reverse' => isset($pa_values['typename_reverse']) ? $pa_values['typename_reverse'] : $pm_type_code_or_id,
+					
+					'description' => isset($pa_values['description']) ? $pa_values['description'] : '',
+					'description_reverse' => isset($pa_values['description_reverse']) ? $pa_values['description_reverse'] : ''
+				),
+				$pn_locale_id, null, true
+			);
+			if ($t_rel->numErrors()) {
+				$this->errors = $t_rel->errors;
+				return false;
+			}
+			return ca_relationship_types::$s_relationship_type_id_cache[$vn_table_num.'/'.$pm_type_code_or_id] = $t_rel->getPrimaryKey();
+		}
+		
 		return null;
 	}
 	# ------------------------------------------------------

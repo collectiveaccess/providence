@@ -33,7 +33,7 @@
 		$t_rep->set('media', $p =$qr_reps->getMediaPath('media', 'original'), array('original_filename' => $vs_original_filename));
 
 		if ($argv[2]) {
-			$t_rep->update(array('update_only_media_versions' => array($argv[2])));
+			$t_rep->update(array('updateOnlyMediaVersions' => array($argv[2])));
 		} else {
 			$t_rep->update();
 		}

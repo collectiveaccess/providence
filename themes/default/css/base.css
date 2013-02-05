@@ -867,6 +867,12 @@ div.hint {
 	padding-left:10px;
 }
 
+.formLabelSubtext {
+	padding-left:5px;
+	font-weight: normal; 
+	font-size: 9px;
+}
+
 .bundleLabel {
 	font-family: Verdana, Arial, Helvetica, sans-serif;
 	font-size:13px;
@@ -1674,6 +1680,52 @@ select.searchToolsSelect {
 	font-size: 11px;
 }
 
+/* search sets - horizontal show hide */
+#showSets, #hideSets {
+	float:right;
+	margin: 1px 0px 0px 10px;
+	text-decoration:none;
+	text-transform:uppercase;
+	color:#828282;
+	font-size:9px;
+}
+
+#searchSetsBox{
+	clear:both;
+	margin: 0px 0px 0px 0px;
+	display:none;
+	font-size:12px;
+	color:#828282;
+}
+#searchSetsBox .bg{
+	background-color: #E2E2E2;
+	border:0px;
+	padding:6px 3px 6px 10px;
+}
+
+#searchSetsBox .col{
+	float:left;
+	margin-right:15px;
+	color:#333;
+}
+
+select.searchSetsSelect {
+	width: 165px;
+	font-size: 11px;
+}
+
+div.searchSetsToggle {
+	font-size: 9px;
+}
+a.searchSetsToggle {
+	font-size: 9px;
+	text-decoration: none;
+}
+
+input.searchSetsTextInput {
+	font-size: 10px !important; 
+	outline-width: 0 !important;
+}
 
 .qlButtonContainerThumbnail{
 	width:76px;
@@ -2080,6 +2132,26 @@ table.attributeListItem {
 
 
 /*** EDITOR FORMS ***/
+
+.editorBatchModeControl {
+	float: right;
+	font-size: 10px;
+	font-weight: normal;
+}
+
+.editorBatchBundleContent {
+	display: none;
+}
+
+.editorBatchSetEditorLink {
+	float: right;
+}
+
+.editorBatchModeControl select {
+	font-size: 10px;
+	font-weight: normal;
+}
+
 #editorFieldListHeader {
 	font-size: 13px;
 	font-weight: bold;
@@ -2602,6 +2674,126 @@ a.exploreSelected {
 .nextControl {
 	float:right;
 }
+
+
+/*** FILE DIRECTORY BROWSER ***/
+div.directoryBrowser {
+	border: 1px solid #ccc;
+	width: 715px;
+	height: 300px;
+	margin: 5px 0px 5px 0px;
+}
+
+div.directoryBrowserVertical {
+	border: 1px solid #ccc;
+	width: 100%;
+	height: 200px;
+	margin: 5px 0px 2px 0px;
+	overflow: auto;
+}
+
+div.directoryBrowserSmall {
+	border: 1px solid #ccc;
+	width: 98%;
+	height: 180px;
+	margin: 5px 0px 2px 6px;
+}
+
+div.directoryBrowserLarge {
+	border: 1px solid #000000;
+	width: 100%;
+	height: 400px;
+	margin: 0px 0px 10px 0px;
+}
+
+div.directoryBrowserContainer {
+	position: relative;
+	overflow: auto;
+	overflow-y: hidden;
+	height: 100%;
+	margin: 0px;
+	padding: 0px;
+}
+
+div.directoryBrowserContainerVertical {
+	overflow: auto;
+	overflow-y: hidden;
+	margin: 0px;
+	padding: 0px;
+}
+
+div.directoryBrowserLevel {
+	position: absolute;
+	top: 0px;
+	width: 230px;
+	height: 100%;
+	padding: 0px 10px 0px 0px;
+	margin: 0px;
+	border: 1px solid #cccccc; 
+	background: #FFFFFF;
+	overflow: auto;
+}
+
+div.directoryBrowserLevelVertical {
+	padding: 0px;
+	margin: 5px;
+	background: #FFFFFF;
+	overflow: none;
+	text-align: center;
+	font-size: 12px;
+}
+
+.directoryBrowserLevel ul {
+	padding: 3px;
+	margin: 3px;
+	display:list-item;
+	list-style: none;
+	list-style-type: none;
+	background: none;
+}
+
+.directoryBrowserLevel li {
+	margin-bottom: 10px;
+	border-bottom: 1px dashed #cccccc;
+	list-style-type: none;
+	text-align: left;
+	background: none;
+}
+.directoryBrowserLevel a {
+	text-decoration: none;
+	font-weight: normal;
+}
+
+a.directoryBrowserLevelSelected {
+	color: #000000;
+	text-decoration: none;
+	font-weight: bold;
+	font-style: normal;
+}
+
+a.directoryBrowserLevelEditButton {
+	text-decoration: none;
+	font-weight: bold;
+}
+
+div.directoryBrowseTab {
+	height: 245px;
+	width: 712px;
+	overflow: hidden;
+	font-weight: normal;
+	margin-left:-10px;
+}
+
+div.directoryBrowserCurrentSelection {
+	padding: 6px;
+	margin-bottom: 5px;
+}
+
+span.directoryBrowserCurrentSelectionText {
+	font-weight: normal;
+}
+
+
 /*** quick search styles ***/
 .quickSearchContentArea {
 	width: 100%; 
@@ -4021,6 +4213,75 @@ div.preferenceSectionDivider {
 	margin-bottom: 10px;
 }
 
+.batchProcessingHelpText{
+	padding:20px;
+	margin:20px;
+	line-height:1.3em;
+	font-size:13px;
+	border:3px solid #cccccc;
+}
+
+.batchProcessingStatus { 
+	font-size:16px;
+	color: #828282;
+	text-align: left;
+	padding: 10px;
+	line-height:1.3em;
+	overflow: hidden;
+	height: 1.2em;
+}
+
+#batchProcessingElapsedTime {
+	float: left;
+	font-size: 10px;
+	margin-top: 0px;
+}
+
+#batchProcessingCounts {
+	float: right;
+	font-size: 10px;
+	margin-top: 0px;
+}
+
+.batchProcessingTableProgressGroup {
+	margin-bottom: 10px;
+}
+
+#batchProcessingReport {
+	border: 1px dotted #000000;
+	
+	width: 720px;
+	min-height: 30px;
+	margin: 20px auto 0px auto;
+	padding: 10px;
+	font-size: 11px;
+	display: none;
+}
+
+.batchProcessingReportSectionHead {
+	font-weight: bold;
+	font-size: 12px;
+}
+
+#batchProcessingReport ol, #batchProcessingReport ul {
+	line-height: 1.3em;
+}
+
+#batchProcessingMore {
+	display: none;
+	font-size: 12px;
+	text-align: center;
+}
+
+.batchProcessingHelpText{
+	padding:20px;
+	margin:20px;
+	line-height:1.3em;
+	font-size:13px;
+	border:3px solid #cccccc;
+}
+
+
 a.caDeleteLabelButton {
 	text-decoration: none;
 }
@@ -4731,6 +4992,57 @@ div.searchlight-results div.searchlight-selected {
 	clear:left;
 }
 
+/* Batch confirmation change */
+#caConfirmBatchExecutionPanel {
+	position: fixed; 
+	top: 0px; 
+	left: 0px;
+	width: 550px; 
+	display: none;
+	margin: 0px;
+	padding:0px !important;
+	border: 2px solid #999999;
+	z-index: 31000;			/* needs to be on top of menu bar, which has z-index=30000 */
+	background-color: #FFFFFF;
+}
+
+#caConfirmBatchExecutionPanel .close a{
+	text-decoration:none;
+	font-size:16px;
+}
+
+#caConfirmBatchExecutionPanelContentArea {
+	padding:10px;
+}
+
+#caConfirmBatchExecutionPanelControlButtons {
+	width: 490px; 
+	text-align: center;
+}
+
+#caConfirmBatchExecutionPanelControlButtons table {
+	width: 100%; 
+}
+
+.caConfirmBatchExecutionPanelAlertText {
+	font-size: 14px;
+	padding: 15px;
+}
+
+.caConfirmBatchExecutionPanelAlertControls {
+	font-size: 11px;
+	height: 25px;
+	margin-bottom: 10px;
+}
+
+table.caConfirmBatchExecutionPanelAlertControls {
+	margin-left:auto; 
+    margin-right:auto;
+}
+
+.caConfirmBatchExecutionPanelAlertControl {
+	font-size: 11px;
+}
 
 /* Type change */
 #caTypeChangePanel {
@@ -4824,4 +5136,8 @@ div.quickAddDialogHeader {
 div.quickAddTypeList {
 	float: left;
 	margin-top: 6px; 
+}
+
+input[type='text'].ui-autocomplete-loading {
+    background: white url('../graphics/icons/indicator.gif') right center no-repeat;
 }
