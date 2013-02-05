@@ -762,7 +762,7 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 			//
 			
 			$va_row = $o_reader->getRow();
-			
+			//print_R($va_row);
 			//
 			// Perform mapping and insert
 			//
@@ -772,16 +772,18 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 			// Get type
 			if ($vn_type_id_mapping_item_id) {
 				// Type is specified in row
-				$vs_type = $t_mapping->getValueFromSource($va_mapping_items[$vn_type_id_mapping_item_id], $va_row);
+				$vs_type = $t_mapping->getValueFromSource($va_mapping_items[$vn_type_id_mapping_item_id], $o_reader);
 			} else {
 				// Type is constant for all rows
 				$vs_type = $vs_type_mapping_setting;	
 			}
 			
 			// Get idno
+			$vs_idno = null;
 			if ($vn_idno_mapping_item_id) {
 				// idno is specified in row
-				$vs_idno = $va_row[($va_mapping_items[$vn_idno_mapping_item_id]['source'])];
+				//$vs_idno = $va_row[($va_mapping_items[$vn_idno_mapping_item_id]['source'])];
+				$vs_idno = $t_mapping->getValueFromSource($va_mapping_items[$vn_idno_mapping_item_id], $o_reader);
 			} else {
 				// TODO: idno is a template
 				
@@ -799,7 +801,7 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 			
 			$t_subject->insert();
 			DataMigrationUtils::postError($t_subject, _t("While inserting imported subject"));
-			
+		
 			$vb_output_subject_preferred_label = false;
 			$va_content_tree = array();
 			
@@ -808,6 +810,7 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 				$vs_group_destination = $va_group['destination'];
 				
 				$va_group_tmp = explode(".", $vs_group_destination);
+				if ((sizeof($va_items) < 2) && (sizeof($va_group_tmp) > 2)) { array_pop($va_group_tmp); }
 				$vs_target_table = $va_group_tmp[0];
 				// TODO: verify that it's a valid table
 				
@@ -825,7 +828,13 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 				}
 				
 				foreach($va_items as $vn_item_id => $va_item) {
-					$vm_val = $va_row[(int)$va_item['source']];
+					if($vn_type_id_mapping_item_id && ($vn_item_id == $vn_type_id_mapping_item_id)) { 
+						if ($va_parent && is_array($va_parent)) { array_pop($va_parent); }	// remove empty container array
+						continue; 
+					}
+					
+					$vm_val = $t_mapping->getValueFromSource($va_item, $o_reader);
+					
 					if (isset($va_item['settings']['skipGroupIfEmpty']) && (bool)$va_item['settings']['skipGroupIfEmpty'] && !strlen($vm_val)) {
 						if ($va_parent && is_array($va_parent)) { array_pop($va_parent); }	// remove empty container array
 						continue(2);
@@ -834,7 +843,6 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 					// Get location in content tree for addition of new content
 					$va_item_dest = explode(".",  $va_item['destination']);
 					$vs_item_terminal = $va_item_dest[sizeof($va_item_dest)-1];
-					
 					
 					// Is it a constant value?
 					if (preg_match("!^_CONSTANT_:[\d]+:(.*)!", $va_item['source'], $va_matches)) {
@@ -920,7 +928,7 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 										$t_subject->addAttribute($va_element_content, $vs_element);
 										
 										$t_subject->update();
-										DataMigrationUtils::postError($t_subject, _t("While updating imported subject with data for attribute %1", $vs_element));
+										DataMigrationUtils::postError($t_subject, _t("While updating imported subject with data for attribute %1 with values %2", $vs_element, print_R($va_element_content, true)));
 										
 										break;
 								}
@@ -994,6 +1002,20 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 	 */
 	public function guessSourceFormat($ps_source) {
 			
+	}
+	# ------------------------------------------------------
+	/**
+	 *
+	 */
+	public function getValueFromSource($pa_item, $po_reader) {
+		$vm_value = $po_reader->get($pa_item['source']);
+		
+		if ($vm_value && is_array($pa_item['settings']['original_values'])) {
+			if (($vn_index = array_search($vm_value, $pa_item['settings']['original_values'])) !== false) {
+				$vm_value = $pa_item['settings']['replacement_values'][$vn_index];
+			}
+		}
+		return $vm_value;
 	}
 	# ------------------------------------------------------
 }

@@ -69,15 +69,11 @@
 				require_once("{$vs_base_reader_dir}/{$vs_reader}.php");
 				$vs_reader_classname = "{$vs_reader}";
 				
-				$o_instance = new $vs_reader_classname("{$vs_base_reader_dir}/{$vs_reader}", array());
+				$o_instance = new $vs_reader_classname();
 				
 				$va_status = $o_instance->checkStatus();
 				
 				if (!isset($va_status['available']) || !$va_status['available']) { continue;}
-
-				//$o_class_info = new ReflectionClass($vs_refinery_classname);
-
-				
 				
 				DataReaderManager::$s_data_reader_instances[$vs_reader] = $o_instance;	
 			}
