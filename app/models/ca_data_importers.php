@@ -527,8 +527,8 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 						'refinery_options' => $va_refinery_options,
 						'source_description' => (string)$o_source_desc->getValue(),
 						'notes' => (string)$o_notes->getValue(),
-						'original_values' => preg_split("![\n\r]{1}!", (string)$o_orig_values->getValue()),
-						'replacement_values' => preg_split("![\n\r]{1}!", (string)$o_replacement_values->getValue())
+						'original_values' => preg_split("![\n\r]{1}!", mb_strtolower((string)$o_orig_values->getValue())),
+						'replacement_values' => preg_split("![\n\r]{1}!", mb_strtolower((string)$o_replacement_values->getValue()))
 					);
 					
 					break;
@@ -746,7 +746,6 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 			$va_items_by_group[$va_item['group_id']][$va_item['item_id']] = $va_item;
 		}
 		
-		
 		// 
 		// Run through rows
 		//
@@ -777,6 +776,7 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 				// Type is constant for all rows
 				$vs_type = $vs_type_mapping_setting;	
 			}
+			
 			
 			// Get idno
 			$vs_idno = null;
@@ -834,10 +834,18 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 					}
 					
 					$vm_val = $t_mapping->getValueFromSource($va_item, $o_reader);
+		
+					if (isset($va_item['settings']['restrictToTypes']) && is_array($va_item['settings']['restrictToTypes']) && !in_array($vs_type, $va_item['settings']['restrictToTypes'])) {
+						if ($va_parent && is_array($va_parent)) { array_pop($va_parent); }	// remove empty container array
+						continue(2);
+					}
 					
 					if (isset($va_item['settings']['skipGroupIfEmpty']) && (bool)$va_item['settings']['skipGroupIfEmpty'] && !strlen($vm_val)) {
 						if ($va_parent && is_array($va_parent)) { array_pop($va_parent); }	// remove empty container array
 						continue(2);
+					}
+					if (isset($va_item['settings']['default']) && strlen($va_item['settings']['default']) && !strlen($vm_val)) {
+						$vm_val = $va_item['settings']['default'];
 					}
 					
 					// Get location in content tree for addition of new content
@@ -855,12 +863,16 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 						foreach($va_item['settings']['refineries'] as $vs_refinery) {
 							if (!$vs_refinery) { continue; }
 							if ($o_refinery = RefineryManager::getRefineryInstance($vs_refinery)) {
-								$va_refined_values = $o_refinery->refine($va_content_tree, $va_group, $va_item, $va_row, array());
-								
-								array_pop($va_parent);
+								$va_refined_values = $o_refinery->refine($va_content_tree, $va_group, $va_item, $va_row, array('source' => $ps_source));
+							
+								$va_p = array_pop($va_parent);
 								foreach($va_refined_values as $va_refined_value) {
-									$va_parent[] = $va_refined_value;
+									$va_parent[] = array_merge($va_p, $va_refined_value);
 								}
+								$va_ptr =& $va_parent[sizeof($va_parent)-1];
+								$va_keys = array_keys($va_ptr);
+								$vs_key = array_shift($va_keys);
+								$va_ptr =& $va_ptr[$vs_key];
 								continue(2);
 							}
 						}
@@ -868,9 +880,15 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 					
 					if (isset($va_item['settings']['delimiter']) && strlen($vs_item_delimiter = $va_item['settings']['delimiter'])) {
 						$va_val_list = explode($vs_item_delimiter, $vm_val);
+						array_pop($va_parent);	// remove empty slot for "regular" value
+						
+						// Add delimited values
 						foreach($va_val_list as $vs_list_val) {
-							$va_parent[] = array($vs_item_terminal => array($vs_item_terminal => $vs_list_val));
+							$va_parent[] = array($vs_item_terminal => array($vs_item_terminal => trim($vs_list_val)));
 						}
+						
+						$vn_row++;
+						continue;	// Don't add "regular" value below
 					}
 					
 					
@@ -898,6 +916,7 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 			//
 			//print_r($va_content_tree);
 			//die("END\n\n");
+			
 			foreach($va_content_tree as $vs_table_name => $va_content) {
 				if ($vs_table_name == $vs_subject_table_name) {
 					foreach($va_content as $vn_i => $va_element_data) {
@@ -910,7 +929,7 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 										if ($t_subject->numErrors() == 0) {
 											$vb_output_subject_preferred_label = true;
 										}
-										DataMigrationUtils::postError($t_subject, _t("While adding preferred label to imported subject"));
+										DataMigrationUtils::postError($t_subject, _t("While adding preferred label to imported subject: %1", print_R($va_element_content, true)));
 										break;
 									case 'nonpreferred_labels':									
 										$t_subject->addLabel(
@@ -948,7 +967,7 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 								case 'ca_entities':
 									if ($vn_rel_id = DataMigrationUtils::getEntityID($va_element_data['preferred_labels'], $va_element_data['_type'], $vn_locale_id, $va_data_for_rel_table, array())) {
 										$t_subject->addRelationship($vs_table_name, $vn_rel_id, strtolower(trim($va_element_data['_relationship_type'])));
-										DataMigrationUtils::postError($t_subject, _t("While adding entity: %1", $va_element_data['_relationship_type']));
+										DataMigrationUtils::postError($t_subject, _t("While adding entity: %1", $va_element_data['_relationship_type']));	
 									}
 									break;
 								case 'ca_places':
@@ -1011,11 +1030,11 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 		$vm_value = $po_reader->get($pa_item['source']);
 		
 		if ($vm_value && is_array($pa_item['settings']['original_values'])) {
-			if (($vn_index = array_search($vm_value, $pa_item['settings']['original_values'])) !== false) {
+			if (($vn_index = array_search(mb_strtolower($vm_value), $pa_item['settings']['original_values'])) !== false) {
 				$vm_value = $pa_item['settings']['replacement_values'][$vn_index];
 			}
 		}
-		return $vm_value;
+		return trim($vm_value);
 	}
 	# ------------------------------------------------------
 }

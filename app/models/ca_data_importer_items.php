@@ -235,6 +235,15 @@ class ca_data_importer_items extends BaseModel {
 			'label' => _t('Skip group if empty'),
 			'description' => _t('Skip group if value for this item is empty.')
 		);
+		$va_settings['default'] = array(
+			'formatType' => FT_TEXT,
+			'displayType' => DT_FIELD,
+			'width' => 40, 'height' => 2,
+			'takesLocale' => false,
+			'default' => '',
+			'label' => _t('Default value'),
+			'description' => _t('Value to use if source value is blank.')
+		);
 		$va_settings['delimiter'] = array(
 			'formatType' => FT_TEXT,
 			'displayType' => DT_FIELD,
@@ -243,6 +252,15 @@ class ca_data_importer_items extends BaseModel {
 			'default' => '',
 			'label' => _t('Delimiter'),
 			'description' => _t('Delimiter to split repeating values on.')
+		);
+		$va_settings['restrictToTypes'] = array(
+			'formatType' => FT_TEXT,
+			'displayType' => DT_FIELD,
+			'width' => 10, 'height' => 1,
+			'takesLocale' => false,
+			'default' => '',
+			'label' => _t('Restrict to types'),
+			'description' => _t('')
 		);
 		
 		$this->SETTINGS = new ModelSettings($this, 'settings', $va_settings);
