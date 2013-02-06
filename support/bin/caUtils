@@ -1,0 +1,113 @@
+#!/usr/bin/env php
+<?php
+	if (!_caUtilsLoadSetupPHP()) {
+		die("Could not find your CollectiveAccess setup.php file! Please set the COLLECTIVEACCESS_HOME environment variable to the location of your CollectiveAccess installation, or run this command from a sub-directory of your CollectiveAccess installation.\n");
+	}
+	require_once(__CA_MODELS_DIR__."/ca_locales.php");
+	require_once(__CA_APP_DIR__."/helpers/utilityHelpers.php");
+	require_once(__CA_LIB_DIR__."/ca/Utils/CLIUtils.php");
+	require_once(__CA_LIB_DIR__."/core/Zend/Console/Getopt.php");
+	
+	if (!caIsRunFromCLI()) {
+		die("Sorry, caUtils must be run from the command line!\n");
+	}
+	
+	$o_config = Configuration::load();
+	$g_ui_locale = $o_config->get('locale_default');
+	$t_locale = new ca_locales();
+	$g_ui_locale_id = $t_locale->localeCodeToID($g_ui_locale);		// get current UI locale as locale_id	  (available as global)
+
+	$vs_cmd = strtolower(str_replace("-", "_", $argv[1]));
+	
+	$va_available_cli_opts = array_merge(array(
+			"hostname|h-s" => 'Hostname of installation. If omitted default installation is used.',
+			"help" => "Displays available commands with descriptions."
+		), method_exists("CLIUtils", "{$vs_cmd}ParamList") ? call_user_func("CLIUtils::{$vs_cmd}ParamList") : array());
+	
+	try {
+		$o_opts = new Zend_Console_Getopt($va_available_cli_opts);
+		$o_opts->parse();
+	} catch(Exception $e) {
+		die("Invalid options specified. Try 'caUtils help' to view list of valid options.\n");
+	}
+	if ($vs_hostname = $o_opts->getOption('hostname')) {
+		$_SERVER['HTTP_HOST'] = $vs_hostname;
+	}
+	
+	$va_args = $o_opts->getRemainingArgs();
+	
+	$vs_app_heading = _t("CollectiveAccess %1 (%2/%3) Utilities\n(c) 2013 Whirl-i-Gig",__CollectiveAccess__, __CollectiveAccess_Schema_Rev__, __CollectiveAccess_Release_Type__)."\n\n";
+	
+	print $vs_app_heading;
+	if (($vs_cmd == 'help') && (sizeof($va_args) > 1) && ($va_args[1])) {
+		//
+		// Full-length help for command
+		//
+		$vs_subcmd = $va_args[1];
+		$vs_subcmd_proc = strtolower(str_replace("-", "_", $vs_subcmd));
+		if (method_exists("CLIUtils", $vs_subcmd_proc)) {
+			
+			print "Help for \"{$vs_subcmd}\":\n\n";
+			print "\t".call_user_func_array("CLIUtils::{$vs_subcmd_proc}Help", array($o_opts))."\n";
+		} else {
+			print "No help is available for \"{$vs_subcmd}\"\n";
+		}
+		print "\nFor more information visit http://www.collectiveaccess.org\n"; 
+	} else {
+		if (method_exists("CLIUtils", $vs_cmd)) {
+			//
+			// Execute command
+			//
+			call_user_func_array("CLIUtils::{$vs_cmd}", array($o_opts));
+		} else {
+			//
+			// List available commands
+			//
+			
+			$va_methods = get_class_methods("CLIUtils");
+		
+			if ($vs_cmd) {
+				print "\"{$vs_cmd}\" is an invalid command. Valid commands are:\n\n";
+			} else {
+				print "You must specify a valid command. Valid commands are:\n\n";
+			}
+		
+			foreach($va_methods as $vs_method) {
+				if(preg_match("!Help$!", $vs_method)) { continue; }
+				if(preg_match("!ParamList$!", $vs_method)) { continue; }
+				print "\t".str_pad(str_replace("_", "-", $vs_method), 30)."\t".call_user_func("CLIUtils::{$vs_method}ShortHelp")."\n\n";
+			}
+		}
+	}
+	
+	# --------------------------------------------------------
+	/**
+	 * Try to locate and load setup.php bootstrap file. If load fails return false and 
+	 * let the caller handle telling the user. 
+	 *
+	 * @return bool True if setup.php is located and loaded, false if setup.php could not be found.
+	 */
+	function _caUtilsLoadSetupPHP() {
+		// Look for environment variable
+		$vs_path = getenv("COLLECTIVEACCESS_HOME");
+		if (file_exists("{$vs_path}/setup.php")) {
+			require_once("{$vs_path}/setup.php");
+			return true;
+		}
+		
+		// Look in current directory and then in parent directories
+		$vs_cwd = getcwd();
+		$va_cwd = explode("/", $vs_cwd);
+		while(sizeof($va_cwd) > 0) {
+			if (file_exists("/".join("/", $va_cwd)."/setup.php")) {
+				require_once("/".join("/", $va_cwd)."/setup.php");
+				return true;
+			}
+			array_pop($va_cwd);
+		}
+		
+		// Give up and die
+		return false;
+	}
+	# --------------------------------------------------------
+?>

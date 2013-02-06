@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2010-2011 Whirl-i-Gig
+ * Copyright 2010-2013 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -61,6 +61,15 @@
 		 */
 		public function getAvailableSettings() {
 			return $this->opa_settings_defs;
+		}
+		# ------------------------------------------------------
+		/**
+		 * Sets the associative array of setting descriptions (but *not* the setting values)
+		 * The keys of this array are the setting codes, the values associative arrays containing
+		 * info about the setting itself (label, description type of value, how to display an entry element for the setting in a form)
+		 */
+		public function setAvailableSettings($pa_settings) {
+			$this->opa_settings_defs = $pa_settings;
 		}
 		# ------------------------------------------------------
 		/**

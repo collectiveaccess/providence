@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2012 Whirl-i-Gig
+ * Copyright 2012-2013 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -81,10 +81,6 @@ BaseModel::$s_ca_models_definitions['ca_data_importer_groups'] = array(
 				'LABEL' => _t('Settings'), 'DESCRIPTION' => _t('Importer group settings')
 		)
 	)
-);
-
-global $_ca_data_importer_groups_settings;
-$_ca_data_importer_groups_settings = array(		// global
 );
 	
 class ca_data_importer_groups extends BaseModel {
@@ -179,16 +175,139 @@ class ca_data_importer_groups extends BaseModel {
 	public $SETTINGS;
 	
 	# ------------------------------------------------------
+	/**
+	 *
+	 */
 	public function __construct($pn_id=null) {
 		// Filter list of tables importers can be used for to those enabled in current config
-		BaseModel::$s_ca_models_definitions['ca_data_importer_groups']['FIELDS']['table_num']['BOUNDS_CHOICE_LIST'] = caFilterTableList(BaseModel::$s_ca_models_definitions['ca_data_importer_groups']['FIELDS']['table_num']['BOUNDS_CHOICE_LIST']);
+		//BaseModel::$s_ca_models_definitions['ca_data_importer_groups']['FIELDS']['table_num']['BOUNDS_CHOICE_LIST'] = caFilterTableList(BaseModel::$s_ca_models_definitions['ca_data_importer_groups']['FIELDS']['table_num']['BOUNDS_CHOICE_LIST']);
 		
-		global $_ca_data_importer_groups_settings;
 		parent::__construct($pn_id);
 		
-		//
-		$this->SETTINGS = new ModelSettings($this, 'settings', $_ca_data_importer_groups_settings);
+		$this->initSettings();
+	}
+	# ------------------------------------------------------
+	/**
+	 *
+	 */
+	protected function initLabelDefinitions() {
+		parent::initLabelDefinitions();
 		
+		// TODO
+	}
+	# ------------------------------------------------------
+	/**
+	 *
+	 */
+	protected function initSettings() {
+		$va_settings = array();
+		
+		// TODO
+		
+		$this->SETTINGS = new ModelSettings($this, 'settings', $va_settings);
+	}
+	# ------------------------------------------------------
+	/**
+	 *
+	 */
+	public function addItem($ps_source, $ps_destination, $pa_settings=null, $pa_options=null) {
+		if(!$this->getPrimaryKey()) return false;
+		
+		$t_item = new ca_data_importer_items();
+		$t_item->setMode(ACCESS_WRITE);
+		$t_item->set('group_id', $this->getPrimaryKey());
+		$t_item->set('importer_id', $this->get('importer_id'));
+		$t_item->set('source', $ps_source);
+		$t_item->set('destination', $ps_destination);
+		
+		if (is_array($pa_settings)) {
+			foreach($pa_settings as $vs_k => $vs_v) {
+				$t_item->setSetting($vs_k, $vs_v);
+			}
+		}
+		
+		$t_item->insert();
+		
+		if ($t_item->numErrors()) {
+			$this->errors = $t_item->errors;
+			return false;
+		}
+		
+		if (isset($pa_options['returnInstance']) && $pa_options['returnInstance']) {
+			return $t_item;
+		}
+		return $t_item->getPrimaryKey();
+		
+	}
+	# ------------------------------------------------------
+	/**
+	 *
+	 */
+	public function getItems() {
+		if(!$this->getPrimaryKey()) return false;
+		
+		$vo_db = $this->getDb();
+		
+		$qr_items = $vo_db->query("
+			SELECT * 
+			FROM ca_data_importer_items 
+			WHERE group_id = ?
+		", (int)$this->getPrimaryKey());
+		
+		$va_return = array();
+		while($qr_items->nextRow()){
+			$va_return[(int)$qr_items->get("item_id")] = $qr_items->getRow();
+		}
+		
+		return $va_return;
+	}
+	# ------------------------------------------------------
+	/**
+	 *
+	 */
+	public function getItemIDs() {
+		if(is_array($va_items = $this->getItems())){
+			return $va_items;
+		} else {
+			return array();
+		}
+	}
+	# ------------------------------------------------------
+	/**
+	 *
+	 */
+	public function removeItem($pn_item_id){
+		$t_item = new ca_data_importer_items();
+		
+		if(!in_array($pn_item_id, $this->getItemIDs())){
+			return false; // don't delete unrelated items
+		}
+		
+		if($t_item->load($pn_item_id)){
+			$t_item->setMode(ACCESS_WRITE);
+			$t_item->delete();
+		} else {
+			return false;
+		}
+	}
+	# ------------------------------------------------------
+	/**
+	 *
+	 */
+	public function removeAllItems(){
+		foreach($this->getItemIDs() as $vn_item_id){
+			$this->removeItem($vn_item_id);
+		}
+	}
+	# ------------------------------------------------------
+	/**
+	 * Reroutes calls to method implemented by settings delegate to the delegate class
+	 */
+	public function __call($ps_name, $pa_arguments) {
+		if (method_exists($this->SETTINGS, $ps_name)) {
+			return call_user_func_array(array($this->SETTINGS, $ps_name), $pa_arguments);
+		}
+		die($this->tableName()." does not implement method {$ps_name}");
 	}
 	# ------------------------------------------------------
 }

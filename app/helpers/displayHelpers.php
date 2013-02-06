@@ -1413,7 +1413,6 @@ require_once(__CA_LIB_DIR__.'/core/Parsers/TimeExpressionParser.php');
 		$o_dm = Datamodel::load();
 		
 		// assume table display names (*not actual database table names*) are keys and table_nums are values
-		
 		$va_filtered_tables = array();
 		foreach($pa_tables as $vs_display_name => $vn_table_num) {
 			$vs_display_name = mb_strtolower($vs_display_name, 'UTF-8');
@@ -1429,12 +1428,13 @@ require_once(__CA_LIB_DIR__.'/core/Parsers/TimeExpressionParser.php');
 					foreach($va_types as $vn_item_id => $va_type_info) {
 						$va_type_labels[] = mb_strtolower($va_type_info['name_plural'], 'UTF-8');
 					}
-					
 					if (sizeof($va_type_labels)) {
 						if (mb_strlen($vs_label = join('/', $va_type_labels)) > 50) {
 							$vs_label = mb_substr($vs_label, 0, 60).'...';
 						}
 						$va_filtered_tables[$vs_label] = $vn_table_num;
+					} else {
+						$va_filtered_tables[$vs_display_name] = $vn_table_num;
 					}
 					break;
 				default:	

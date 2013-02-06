@@ -366,7 +366,8 @@ class ca_list_items extends BundlableLabelableBaseModelWithAttributes implements
 		
 		if ($this->getPrimaryKey()) {
 			$t_list = new ca_lists();
-			$t_list->setTransaction($this->getTransaction());
+			$o_trans = $this->getTransaction();
+			$t_list->setTransaction($o_trans);
 			
 			
 			if (($t_list->load($this->get('list_id'))) && ($t_list->get('list_code') == 'place_hierarchies') && ($this->get('parent_id'))) {
@@ -377,7 +378,7 @@ class ca_list_items extends BundlableLabelableBaseModelWithAttributes implements
 				
 				// create root in ca_places
 				$t_place = new ca_places();
-				$t_place->setTransaction($this->getTransaction());
+				$t_place->setTransaction($o_trans);
 				$t_place->setMode(ACCESS_WRITE);
 				$t_place->set('hierarchy_id', $this->getPrimaryKey());
 				$t_place->set('locale_id', $vn_locale_id);
