@@ -130,6 +130,17 @@
 				unset($pa_values['source_id']);
 				unset($pa_values['lifespan']);
 				
+				$t_entity->insert();
+				
+				if ($t_entity->numErrors()) {
+					if(isset($pa_options['outputErrors']) && $pa_options['outputErrors']) {
+						print "ERROR INSERTING entity (".$pa_entity_name['forename']."/".$pa_entity_name['surname']."): ".join('; ', $t_entity->getErrors())."\n";
+					}
+					return null;
+				}
+				
+				$t_entity->addLabel($pa_entity_name, $pn_locale_id, null, true);
+				
 				if (is_array($pa_values)) {
 					foreach($pa_values as $vs_element => $va_value) { 					
 						if (is_array($va_value)) {
@@ -148,18 +159,14 @@
 							}
 						}
 					}
-				}
-				$t_entity->insert();
+					$t_entity->update();
 				
-				if ($t_entity->numErrors()) {
-					if(isset($pa_options['outputErrors']) && $pa_options['outputErrors']) {
-						print "ERROR INSERTING entity (".$pa_entity_name['forename']."/".$pa_entity_name['surname']."): ".join('; ', $t_entity->getErrors())."\n";
-						print_R($pa_values);
+					if ($t_entity->numErrors()) {
+						if(isset($pa_options['outputErrors']) && $pa_options['outputErrors']) {
+							print "ERROR ADDING ATTRIBUTES TO entity (".$pa_entity_name['forename']."/".$pa_entity_name['surname']."): ".join('; ', $t_entity->getErrors())."\n";
+						}
 					}
-					return null;
 				}
-				$t_entity->addLabel($pa_entity_name, $pn_locale_id, null, true);
-				
 				
 				$vn_entity_id = $t_entity->getPrimaryKey();
 			} else {
