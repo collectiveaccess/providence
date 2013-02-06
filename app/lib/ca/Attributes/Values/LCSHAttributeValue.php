@@ -217,11 +217,11 @@
 								'value_decimal1' => is_numeric($vs_id) ? $vs_id : null	// id
 							);
 						} else {
-							$this->postError(1970, _t('Could not get results for LOC'), 'LCSHAttributeValue->parseValue()');
+							$this->postError(1970, _t('Could not get results from LCSH service for %1', $ps_value), 'LCSHAttributeValue->parseValue()');
 							return false;
 						}
 					} else {
-						$this->postError(1970, _t('Could not get results for LOC'), 'LCSHAttributeValue->parseValue()');
+						$this->postError(1970, _t('Could not get results from LCSH service for %1', $ps_value), 'LCSHAttributeValue->parseValue()');
 						return false;
 					}
 				}
@@ -284,12 +284,12 @@
 						
 						if ('{{".$pa_element_info['element_id']."}}') {
 							var re = /\[info:lc([^\]]+)\]/; 
-							var r = re.exec('{".$pa_element_info['element_id']."}');
+							var r = re.exec('{{".$pa_element_info['element_id']."}}');
 							var lcsh_id = (r) ? r[1] : null;
 							
 							if (!lcsh_id) {
 								re = /\[sh([^\]]+)\]/; 
-								var r = re.exec('{".$pa_element_info['element_id']."}');
+								var r = re.exec('{{".$pa_element_info['element_id']."}}');
 								var lcsh_id = (r) ? '/authorities/subjects/sh' + r[1] : null;
 							}
 							
