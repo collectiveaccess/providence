@@ -156,7 +156,7 @@
 						
 						// add preferred labels
 						if (!($t_item->addLabel(
-							array('name_singular' => $vs_preferred_term, 'name_plural' => $vs_preferred_term, 'description' => $va_subject['description']),
+							array('name_singular' => trim(htmlentities($vs_preferred_term, ENT_NOQUOTES)), 'name_plural' => trim(htmlentities($vs_preferred_term, ENT_NOQUOTES)), 'description' => $va_subject['description']),
 							$pn_en_locale_id, null, true
 						))) {
 							print "ERROR: Could not add preferred label to AAT term [".$va_subject['subject_id']."] ".$vs_preferred_term.": ".join("; ", $t_item->getErrors())."\n";
@@ -181,10 +181,10 @@
 								}
 								
 								if (!($t_item->addLabel(
-									array('name_singular' => $vs_np_label, 'name_plural' => $vs_np_label, 'description' => ''),
+									array('name_singular' => trim(htmlentities($vs_np_label, ENT_NOQUOTES)), 'name_plural' => trim(htmlentities($vs_np_label, ENT_NOQUOTES)), 'description' => ''),
 									$pn_en_locale_id, $vn_np_term_type_id, false
 								))) {
-									print "ERROR: Could not add non-preferred label to AAT term [".$va_subject['subject_id']."] ".$vs_np_label.": ".join("; ", $t_item->getErrors())."\n";
+									print "ERROR: Could not add non-preferred label to AAT term [".$va_subject['subject_id']."] ".$vs_np_label."\n"; //: ".join("; ", $t_item->getErrors())."\n";
 								}
 							}
 						}
