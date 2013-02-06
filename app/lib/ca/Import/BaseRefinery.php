@@ -95,6 +95,7 @@
 		 *
 		 */
 		public static function parsePlaceholder($ps_placeholder, $pa_source_data, $pa_item, $ps_delimiter=null, $pn_index=0) {
+			$ps_placeholder = trim($ps_placeholder);
 			if ($ps_placeholder[0] == '^') {
 				$vs_val = $pa_source_data[substr($ps_placeholder, 1)];
 			} else {
@@ -104,17 +105,18 @@
 			if ($ps_delimiter) {
 				$va_val = explode($ps_delimiter, $vs_val);
 				if ($pn_index < sizeof($va_val)) {
-					$vs_val = $va_val[$pn_index];
+					if (!($vs_val = $va_val[$pn_index])) { $vs_val = ''; }
 				} else {
-					$vs_val = null;
+					$vs_val = array_shift($va_val);
 				}
 			}
+			$vs_val = trim($vs_val);
 			
-			if (is_array($pa_item['settings']['original_values']) && (($vn_i = array_search($vs_val, $pa_item['settings']['original_values'])) !== false)) {
-				$vs_val = $pa_item['settings']['original_values']['replacement_values'][$vn_i];
+			if (is_array($pa_item['settings']['original_values']) && (($vn_i = array_search(mb_strtolower($vs_val), $pa_item['settings']['original_values'])) !== false)) {
+				$vs_val = $pa_item['settings']['replacement_values'][$vn_i];
 			}
 			
-			return $vs_val;
+			return trim($vs_val);
 		}
 		# -------------------------------------------------------
 		/**
