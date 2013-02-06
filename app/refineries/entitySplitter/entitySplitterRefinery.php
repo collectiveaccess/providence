@@ -69,6 +69,7 @@
 			//print_R($pa_item);
 			
 			$va_vals = array();
+			$vn_c = 0;
 			foreach($va_entities as $vn_i => $vs_entity) {
 				if (!$vs_entity = trim($vs_entity)) { continue; }
 				
@@ -86,29 +87,43 @@
 				$va_val = array('preferred_labels' => $va_split_name);
 			
 				// Set relationship type
-				if ($vs_rel_type_opt = $pa_item['settings']['entitySplitter_relationshipType']) {
-					$va_val['_relationship_type'] = BaseRefinery::parsePlaceholder($vs_rel_type_opt, $pa_source_data, $pa_item, $vs_delimiter, $vn_i);
+				if (
+					($vs_rel_type_opt = $pa_item['settings']['entitySplitter_relationshipType'])
+				) {
+					if (!($va_val['_relationship_type'] = BaseRefinery::parsePlaceholder($vs_rel_type_opt, $pa_source_data, $pa_item, $vs_delimiter, $vn_c))) {
+						if ($vs_rel_type_opt = $pa_item['settings']['entitySplitter_relationshipTypeDefault']) {
+							$va_val['_relationship_type'] = BaseRefinery::parsePlaceholder($vs_rel_type_opt, $pa_source_data, $pa_item, $vs_delimiter, $vn_c);
+						}
+					}
 				}
 			
 				// Set entity_type
-				;
-				if ($vs_type_opt = $pa_item['settings']['entitySplitter_entityType']) {
-					$va_val['_type'] = BaseRefinery::parsePlaceholder($vs_type_opt, $pa_source_data, $pa_item);
+				if (
+					($vs_type_opt = $pa_item['settings']['entitySplitter_entityType'])
+				) {
+					
+					if (!($va_val['_type'] = BaseRefinery::parsePlaceholder($vs_type_opt, $pa_source_data, $pa_item, $vs_delimiter, $vn_c))) {
+						if($vs_type_opt = $pa_item['settings']['entitySplitter_entityTypeDefault']) {
+							$va_val['_type'] = BaseRefinery::parsePlaceholder($vs_type_opt, $pa_source_data, $pa_item, $vs_delimiter, $vn_c);
+						}
+					}
 				}
 			
 				// Set attributes
-				if (is_array($va_attrs = $pa_item['settings']['entitySplitter_attributes'])) {
+				if (is_array($pa_item['settings']['entitySplitter_attributes'])) {
+					$va_attr_vals = array();
 					foreach($pa_item['settings']['entitySplitter_attributes'] as $vs_element_code => $va_attrs) {
 						if(is_array($va_attrs)) {
 							foreach($va_attrs as $vs_k => $vs_v) {
-								$pa_item['settings']['entitySplitter_attributes'][$vs_element_code][$vs_k] = BaseRefinery::parsePlaceholder($vs_v, $pa_source_data, $pa_item);
+								$va_attr_vals[$vs_element_code][$vs_k] = BaseRefinery::parsePlaceholder($vs_v, $pa_source_data, $pa_item, $vs_delimiter, $vn_c);
 							}
 						}
 					}
-					$va_val = array_merge($va_val, $va_attrs);
+					$va_val = array_merge($va_val, $va_attr_vals);
 				}
 				
 				$va_vals[] = $va_val;
+				$vn_c++;
 			}
 			
 			return $va_vals;
@@ -152,6 +167,24 @@
 				'default' => '',
 				'label' => _t('Attributes'),
 				'description' => _t('Attributes')
-			)
+			),
+			'entitySplitter_relationshipTypeDefault' => array(
+				'formatType' => FT_TEXT,
+				'displayType' => DT_FIELD,
+				'width' => 10, 'height' => 1,
+				'takesLocale' => false,
+				'default' => '',
+				'label' => _t('Relationship type default'),
+				'description' => _t('Relationship type default')
+			),
+			'entitySplitter_entityTypeDefault' => array(
+				'formatType' => FT_TEXT,
+				'displayType' => DT_FIELD,
+				'width' => 10, 'height' => 1,
+				'takesLocale' => false,
+				'default' => '',
+				'label' => _t('Entity type default'),
+				'description' => _t('Entity type default')
+			),
 		);
 ?>

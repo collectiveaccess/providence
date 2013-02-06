@@ -83,6 +83,28 @@
 				$va_val = array('preferred_labels' => array('name' => $vs_collection));
 			
 				// Set relationship type
+				if (
+					($vs_rel_type_opt = $pa_item['settings']['collectionSplitter_relationshipType'])
+				) {
+					if (!($va_val['_relationship_type'] = BaseRefinery::parsePlaceholder($vs_rel_type_opt, $pa_source_data, $pa_item, $vs_delimiter, $vn_c))) {
+						if ($vs_rel_type_opt = $pa_item['settings']['collectionSplitter_relationshipTypeDefault']) {
+							$va_val['_relationship_type'] = BaseRefinery::parsePlaceholder($vs_rel_type_opt, $pa_source_data, $pa_item, $vs_delimiter, $vn_c);
+						}
+					}
+				}
+			
+				// Set collection_type
+				if (
+					($vs_type_opt = $pa_item['settings']['collectionSplitter_collectionType'])
+				) {
+					
+					if (!($va_val['_type'] = BaseRefinery::parsePlaceholder($vs_type_opt, $pa_source_data, $pa_item, $vs_delimiter, $vn_c))) {
+						if($vs_type_opt = $pa_item['settings']['collectionSplitter_collectionTypeDefault']) {
+							$va_val['_type'] = BaseRefinery::parsePlaceholder($vs_type_opt, $pa_source_data, $pa_item, $vs_delimiter, $vn_c);
+						}
+					}
+				}
+				// Set relationship type
 				if ($vs_rel_type_opt = $pa_item['settings']['collectionSplitter_relationshipType']) {
 					$va_val['_relationship_type'] = BaseRefinery::parsePlaceholder($vs_rel_type_opt, $pa_source_data, $pa_item, $vs_delimiter, $vn_i);
 				}
@@ -105,15 +127,16 @@
 				}
 			
 				// Set attributes
-				if (is_array($va_attrs = $pa_item['settings']['collectionSplitter_attributes'])) {
+				if (is_array($pa_item['settings']['collectionSplitter_attributes'])) {
+					$va_attr_vals = array();
 					foreach($pa_item['settings']['collectionSplitter_attributes'] as $vs_element_code => $va_attrs) {
 						if(is_array($va_attrs)) {
 							foreach($va_attrs as $vs_k => $vs_v) {
-								$pa_item['settings']['collectionSplitter_attributes'][$vs_element_code][$vs_k] = BaseRefinery::parsePlaceholder($vs_v, $pa_source_data, $pa_item);
+								$va_attr_vals[$vs_element_code][$vs_k] = BaseRefinery::parsePlaceholder($vs_v, $pa_source_data, $pa_item);
 							}
 						}
 					}
-					$va_val = array_merge($va_val, $va_attrs);
+					$va_val = array_merge($va_val, $va_attr_vals);
 				}
 				
 				$va_vals[] = $va_val;
@@ -169,6 +192,24 @@
 				'default' => '',
 				'label' => _t('Parents'),
 				'description' => _t('Collection parents to create, if required')
+			),
+			'collectionSplitter_relationshipTypeDefault' => array(
+				'formatType' => FT_TEXT,
+				'displayType' => DT_FIELD,
+				'width' => 10, 'height' => 1,
+				'takesLocale' => false,
+				'default' => '',
+				'label' => _t('Relationship type default'),
+				'description' => _t('Relationship type default')
+			),
+			'collectionSplitter_collectionTypeDefault' => array(
+				'formatType' => FT_TEXT,
+				'displayType' => DT_FIELD,
+				'width' => 10, 'height' => 1,
+				'takesLocale' => false,
+				'default' => '',
+				'label' => _t('Collection type default'),
+				'description' => _t('Collection type default')
 			)
 		);
 ?>

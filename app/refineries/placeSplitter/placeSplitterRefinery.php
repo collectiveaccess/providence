@@ -83,13 +83,26 @@
 				$va_val = array('preferred_labels' => array('name' => $vs_place));
 			
 				// Set relationship type
-				if ($vs_rel_type_opt = $pa_item['settings']['placeSplitter_relationshipType']) {
-					$va_val['_relationship_type'] = BaseRefinery::parsePlaceholder($vs_rel_type_opt, $pa_source_data, $pa_item, $vs_delimiter, $vn_i);
+				if (
+					($vs_rel_type_opt = $pa_item['settings']['placeSplitter_relationshipType'])
+				) {
+					if (!($va_val['_relationship_type'] = BaseRefinery::parsePlaceholder($vs_rel_type_opt, $pa_source_data, $pa_item, $vs_delimiter, $vn_c))) {
+						if ($vs_rel_type_opt = $pa_item['settings']['placeSplitter_relationshipTypeDefault']) {
+							$va_val['_relationship_type'] = BaseRefinery::parsePlaceholder($vs_rel_type_opt, $pa_source_data, $pa_item, $vs_delimiter, $vn_c);
+						}
+					}
 				}
 			
-				// Set place type
-				if ($vs_type_opt = $pa_item['settings']['placeSplitter_placeType']) {
-					$va_val['_type'] = BaseRefinery::parsePlaceholder($vs_type_opt, $pa_source_data, $pa_item);
+				// Set place_type
+				if (
+					($vs_type_opt = $pa_item['settings']['placeSplitter_placeType'])
+				) {
+					
+					if (!($va_val['_type'] = BaseRefinery::parsePlaceholder($vs_type_opt, $pa_source_data, $pa_item, $vs_delimiter, $vn_c))) {
+						if($vs_type_opt = $pa_item['settings']['placeSplitter_placeTypeDefault']) {
+							$va_val['_type'] = BaseRefinery::parsePlaceholder($vs_type_opt, $pa_source_data, $pa_item, $vs_delimiter, $vn_c);
+						}
+					}
 				}
 				
 				// Set place hierarchy
@@ -111,15 +124,16 @@
 				$va_val['_parent_id'] = $t_place->getPrimaryKey();
 				
 				// Set attributes
-				if (is_array($va_attrs = $pa_item['settings']['placeSplitter_attributes'])) {
+				if (is_array($pa_item['settings']['placeSplitter_attributes'])) {
+					$va_attr_vals = array();
 					foreach($pa_item['settings']['placeSplitter_attributes'] as $vs_element_code => $va_attrs) {
 						if(is_array($va_attrs)) {
 							foreach($va_attrs as $vs_k => $vs_v) {
-								$pa_item['settings']['placeSplitter_attributes'][$vs_element_code][$vs_k] = BaseRefinery::parsePlaceholder($vs_v, $pa_source_data, $pa_item);
+								$va_attr_vals[$vs_element_code][$vs_k] = BaseRefinery::parsePlaceholder($vs_v, $pa_source_data, $pa_item);
 							}
 						}
 					}
-					$va_val = array_merge($va_val, $va_attrs);
+					$va_val = array_merge($va_val, $va_attr_vals);
 				}
 				
 				$va_vals[] = $va_val;
@@ -175,6 +189,24 @@
 				'default' => '',
 				'label' => _t('Hierarchy'),
 				'description' => _t('Hierarchy to add places to')
+			),
+			'placeSplitter_relationshipTypeDefault' => array(
+				'formatType' => FT_TEXT,
+				'displayType' => DT_FIELD,
+				'width' => 10, 'height' => 1,
+				'takesLocale' => false,
+				'default' => '',
+				'label' => _t('Relationship type default'),
+				'description' => _t('Relationship type default')
+			),
+			'placeSplitter_placeTypeDefault' => array(
+				'formatType' => FT_TEXT,
+				'displayType' => DT_FIELD,
+				'width' => 10, 'height' => 1,
+				'takesLocale' => false,
+				'default' => '',
+				'label' => _t('Place type default'),
+				'description' => _t('Place type default')
 			)
 		);
 ?>

@@ -60,6 +60,8 @@
 			$vs_terminal = array_pop($va_group_dest);
 			$pm_value = $pa_source_data[$pa_item['source']];
 			
+			$pm_value = preg_replace("![^\d\.A-Za-z\"\"’”]+!", "", $pm_value);
+			
 			$vs_units = $pa_item['settings']['measurementsSplitter_units'];
 			
 			if ($vs_delimiter = $pa_item['settings']['measurementsSplitter_delimiter']) {
