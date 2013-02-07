@@ -67,6 +67,7 @@
 			}
 			
 			$va_vals = array();
+			$vn_c = 0;
 			foreach($va_places as $vn_i => $vs_place) {
 				if (!$vs_place = trim($vs_place)) { continue; }
 				
@@ -97,7 +98,6 @@
 				if (
 					($vs_type_opt = $pa_item['settings']['placeSplitter_placeType'])
 				) {
-					
 					if (!($va_val['_type'] = BaseRefinery::parsePlaceholder($vs_type_opt, $pa_source_data, $pa_item, $vs_delimiter, $vn_c))) {
 						if($vs_type_opt = $pa_item['settings']['placeSplitter_placeTypeDefault']) {
 							$va_val['_type'] = BaseRefinery::parsePlaceholder($vs_type_opt, $pa_source_data, $pa_item, $vs_delimiter, $vn_c);
@@ -137,6 +137,7 @@
 				}
 				
 				$va_vals[] = $va_val;
+				$vn_c++;
 			}
 			
 			return $va_vals;

@@ -67,6 +67,7 @@
 			}
 			
 			$va_vals = array();
+			$vn_c = 0;
 			foreach($va_collections as $vn_i => $vs_collection) {
 				if (!$vs_collection = trim($vs_collection)) { continue; }
 				
@@ -140,6 +141,7 @@
 				}
 				
 				$va_vals[] = $va_val;
+				$vn_c++;
 			}
 			
 			return $va_vals;
