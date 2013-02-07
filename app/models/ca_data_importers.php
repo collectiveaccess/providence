@@ -223,7 +223,7 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 			'default' => '',
 			'options' => $this->getAvailableImporterTypes(),
 			'label' => _t('Importer type'),
-			'description' => _t('Set importer type, i.e. the format of the source data (e.g. CSV, XML).')
+			'description' => _t('Set importer type, i.e. the format of the source data.  Currently supported: XLSX, XLS, and MYSQL')
 		);
 		$va_settings['type'] = array(
 			'formatType' => FT_TEXT,
@@ -232,7 +232,7 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 			'takesLocale' => false,
 			'default' => '',
 			'label' => _t('Record type'),
-			'description' => _t('Type to set all imported records to')
+			'description' => _t('Type to set all imported records to. If import includes a mapping to type_id, that will be privileged and the type setting will be ignored.')
 		);
 		$va_settings['numInitialRowsToSkip'] = array(
 			'formatType' => FT_NUMBER,
@@ -241,7 +241,93 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 			'takesLocale' => false,
 			'default' => 0,
 			'label' => _t('Initial rows to skip'),
-			'description' => _t('The number of rows at the top of the data set to skip. Use this setting to skip over headers in spreadsheets and similar data.')
+			'description' => _t('The number of rows at the top of the data set to skip. Use this setting to skip over column headers in spreadsheets and similar data.')
+		);
+		$va_settings['name'] = array(
+			'formatType' => FT_NUMBER,
+			'displayType' => DT_FIELD,
+			'width' => 40, 'height' => 1,
+			'takesLocale' => false,
+			'default' => '',
+			'label' => _t('Mapping name'),
+			'description' => _t('Human readable name of the import mapping.  Pending implementation.')
+		);
+		$va_settings['code'] = array(
+			'formatType' => FT_NUMBER,
+			'displayType' => DT_FIELD,
+			'width' => 40, 'height' => 1,
+			'takesLocale' => false,
+			'default' => '',
+			'label' => _t('Mapping identifier'),
+			'description' => _t('Arbitrary alphanumeric code for the import mapping (no special characters or spaces).  Pending implementation.')
+		);
+		$va_settings['table'] = array(
+			'formatType' => FT_NUMBER,
+			'displayType' => DT_FIELD,
+			'width' => 40, 'height' => 1,
+			'takesLocale' => false,
+			'default' => '',
+			'label' => _t('Map to table'),
+			'description' => _t('Sets the CollectiveAccess table for the imported data.  Pending implementation.')
+		);
+		$va_settings['errorPolicy'] = array(
+			'formatType' => FT_NUMBER,
+			'displayType' => DT_FIELD,
+			'width' => 40, 'height' => 1,
+			'takesLocale' => false,
+			'default' => '',
+			'options' => array(
+				_t('ignore') => ignore,
+				_t('stop') => stop,
+				_t('prompt') => prompt
+			),
+			'label' => _t('Error policy'),
+			'description' => _t('Determines how errors are handled for the mapping.  Options are to ignore the error, stop the import when an error is encountered and to receive a prompt when the error is encountered.  Pending implementation.')
+		);
+		$va_settings['existingRecordPolicy'] = array(
+			'formatType' => FT_NUMBER,
+			'displayType' => DT_FIELD,
+			'width' => 40, 'height' => 1,
+			'takesLocale' => false,
+			'default' => '',
+			'options' => array(
+				_t('none') => none,
+				_t('skip') => skip,
+				_t('merge_on_idno') => merge_idno,
+				_t('merge_on_preferred_labels') => merge_labels,
+				_t('merge_on_idno_and_preferred_labels') => merge_idno_and_labels,
+				_t('overwrite_on_idno') => overwrite_idno,
+				_t('overwrite_on_preferred_labels') => overwrite_labels,
+				_t('overwrite_on_idno_and_preferred_labels') => overwrite_idno_labels
+			),
+			'label' => _t('Existing record policy'),
+			'description' => _t('Determines how existing records are checked for and handled by the import mapping.  Pending implementation.')
+		);
+		$va_settings['archiveMapping'] = array(
+			'formatType' => FT_NUMBER,
+			'displayType' => DT_FIELD,
+			'width' => 40, 'height' => 1,
+			'takesLocale' => false,
+			'default' => '',
+			'options' => array(
+				_t('yes') => 1,
+				_t('no') => 0
+			),
+			'label' => _t('Archive mapping?'),
+			'description' => _t('Set to yes to save the mapping spreadsheet; no to delete it from the server after import.  Pending implementation.')
+		);
+		$va_settings['archiveDataSets'] = array(
+			'formatType' => FT_NUMBER,
+			'displayType' => DT_FIELD,
+			'width' => 40, 'height' => 1,
+			'takesLocale' => false,
+			'default' => '',
+			'options' => array(
+				_t('yes') => 1,
+				_t('no') => 0
+			),
+			'label' => _t('Archive data sets?'),
+			'description' => _t('Set to yes to save the data spreadsheet or no to delete it from the server after import.  Pending implementation.')
 		);
 		
 		$this->SETTINGS = new ModelSettings($this, 'settings', $va_settings);
