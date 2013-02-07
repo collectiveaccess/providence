@@ -74,7 +74,7 @@
 			
 			if ($vs_date_expression && ($vs_exp = BaseRefinery::parsePlaceholder($vs_date_expression, $pa_source_data, $pa_item))) {
 				if ($o_tep->parse($vs_exp)) {
-					return array(0 => array($vs_group_terminal => array($vs_item_terminal => $o_tep->getText())));
+					return $o_tep->getText();
 				}
 			}
 			
@@ -84,11 +84,20 @@
 			$vs_date_expression = join(" - ", $va_date);
 			if ($vs_date_expression && ($vs_exp = BaseRefinery::parsePlaceholder($vs_date_expression, $pa_source_data, $pa_item))) {
 				if ($o_tep->parse($vs_exp)) {
-					return array(0 => array($vs_group_terminal => array($vs_item_terminal => $o_tep->getText())));
+					return $o_tep->getText();
 				}
 			}
 			
-			return array();
+			return null;
+		}
+		# -------------------------------------------------------	
+		/**
+		 * dateJoiner returns a single transformed date value
+		 *
+		 * @return bool Always false
+		 */
+		public function returnsMultipleValues() {
+			return false;
 		}
 		# -------------------------------------------------------
 	}

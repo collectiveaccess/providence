@@ -128,6 +128,15 @@
 			
 			return $va_vals;
 		}
+		# -------------------------------------------------------	
+		/**
+		 * entitySplitter returns multiple values
+		 *
+		 * @return bool Always true
+		 */
+		public function returnsMultipleValues() {
+			return true;
+		}
 		# -------------------------------------------------------
 	}
 	

@@ -146,6 +146,15 @@
 			
 			return $va_vals;
 		}
+		# -------------------------------------------------------	
+		/**
+		 * collectionSplitter returns multiple values
+		 *
+		 * @return bool Always true
+		 */
+		public function returnsMultipleValues() {
+			return true;
+		}
 		# -------------------------------------------------------
 	}
 	

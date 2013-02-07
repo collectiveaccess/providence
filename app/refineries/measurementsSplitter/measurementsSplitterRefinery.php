@@ -94,6 +94,15 @@
 			}
 			return array(0 => array($vs_terminal => $va_val));
 		}
+		# -------------------------------------------------------	
+		/**
+		 * measurementsSplitter returns multiple values
+		 *
+		 * @return bool Always true
+		 */
+		public function returnsMultipleValues() {
+			return true;
+		}
 		# -------------------------------------------------------
 	}
 	
