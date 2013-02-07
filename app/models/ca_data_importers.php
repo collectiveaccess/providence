@@ -724,7 +724,6 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 		//
 		$vs_type_mapping_setting = $t_mapping->getSetting('type');
 		$vn_num_initial_rows_to_skip = $t_mapping->getSetting('numInitialRowsToSkip');
-		//die("type=$vs_type_mapping_setting");
 		
 		// Analyze mapping for figure out where type, idno and preferred label are coming from
 		$vn_type_id_mapping_item_id = $vn_idno_mapping_item_id = null;
@@ -869,10 +868,10 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 								foreach($va_refined_values as $va_refined_value) {
 									$va_parent[] = array_merge($va_p, $va_refined_value);
 								}
-								$va_ptr =& $va_parent[sizeof($va_parent)-1];
-								$va_keys = array_keys($va_ptr);
-								$vs_key = array_shift($va_keys);
-								$va_ptr =& $va_ptr[$vs_key];
+								//$va_ptr =& $va_parent[sizeof($va_parent)-1];
+								//$va_keys = array_keys($va_ptr);
+								//$vs_key = array_shift($va_keys);
+								//$va_ptr =& $va_ptr[$vs_key];
 								continue(2);
 							}
 						}
@@ -914,9 +913,9 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 			//
 			// Process data in subject record
 			//
-			//print_r($va_content_tree);
-			//die("END\n\n");
-			
+			print_r($va_content_tree);
+			die("END\n\n");
+			continue;
 			foreach($va_content_tree as $vs_table_name => $va_content) {
 				if ($vs_table_name == $vs_subject_table_name) {
 					foreach($va_content as $vn_i => $va_element_data) {
@@ -1034,7 +1033,13 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 				$vm_value = $pa_item['settings']['replacement_values'][$vn_index];
 			}
 		}
-		return trim($vm_value);
+		
+		$vm_value = trim($vm_value);
+		
+		if (!$vm_value && isset($pa_item['settings']['default']) && strlen($pa_item['settings']['default'])) {
+			$vm_value = $pa_item['settings']['default'];
+		}
+		return $vm_value;
 	}
 	# ------------------------------------------------------
 }
