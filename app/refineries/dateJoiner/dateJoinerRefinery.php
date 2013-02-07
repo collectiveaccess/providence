@@ -110,7 +110,7 @@
 				'takesLocale' => false,
 				'default' => '',
 				'label' => _t('Date start'),
-				'description' => _t('Date start')
+				'description' => _t('Maps the date from the data source that is the beginning of the conjoined date range.')
 			),
 			'dateJoiner_dateEnd' => array(
 				'formatType' => FT_TEXT,
@@ -119,7 +119,7 @@
 				'takesLocale' => false,
 				'default' => '',
 				'label' => _t('Date end'),
-				'description' => _t('Date end')
+				'description' => _t('Maps the date from the data source that is the end of the conjoined date range.')
 			)
 		);
 ?>
