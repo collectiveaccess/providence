@@ -889,7 +889,7 @@ function caFileIsIncludable($ps_file) {
 	 * @param array $pa_sort_keys An array of keys in the second-level array to sort by
 	 * @return array The sorted array
 	*/
-	function caSortArrayByKeyInValue($pa_values, $pa_sort_keys) {
+	function caSortArrayByKeyInValue($pa_values, $pa_sort_keys, $ps_sort_direction="ASC") {
 		$va_sort_keys = array();
 		foreach ($pa_sort_keys as $vs_field) {
 			$va_tmp = explode('.', $vs_field);
@@ -905,6 +905,9 @@ function caFileIsIncludable($ps_file) {
 			$va_sorted_by_key[join('/', $va_key)][$vn_id] = $va_data;
 		}
 		ksort($va_sorted_by_key);
+		if (strtolower($ps_sort_direction) == 'desc') {
+			$va_sorted_by_key = array_reverse($va_sorted_by_key);
+		}
 		
 		$pa_values = array();
 		foreach($va_sorted_by_key as $vs_key => $va_data) {
