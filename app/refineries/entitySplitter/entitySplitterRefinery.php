@@ -139,7 +139,7 @@
 				'takesLocale' => false,
 				'default' => '',
 				'label' => _t('Delimiter'),
-				'description' => _t('Delimiter')
+				'description' => _t('Sets the value of the delimiter to break on, separating data source values.')
 			),
 			'entitySplitter_relationshipType' => array(
 				'formatType' => FT_TEXT,
@@ -148,7 +148,7 @@
 				'takesLocale' => false,
 				'default' => '',
 				'label' => _t('Relationship type'),
-				'description' => _t('Relationship type')
+				'description' => _t('Accepts a constant type code for the relationship type or a reference to the location in the data source where the type can be found.')
 			),
 			'entitySplitter_entityType' => array(
 				'formatType' => FT_TEXT,
@@ -157,7 +157,7 @@
 				'takesLocale' => false,
 				'default' => '',
 				'label' => _t('Entity type'),
-				'description' => _t('Entity type')
+				'description' => _t('Accepts a constant list item idno from the list entity_types or a reference to the location in the data source where the type can be found')
 			),
 			'entitySplitter_attributes' => array(
 				'formatType' => FT_TEXT,
@@ -166,7 +166,7 @@
 				'takesLocale' => false,
 				'default' => '',
 				'label' => _t('Attributes'),
-				'description' => _t('Attributes')
+				'description' => _t('Sets or maps metadata for the entity record by referencing the metadataElement code and the location in the data source where the data values can be found.')
 			),
 			'entitySplitter_relationshipTypeDefault' => array(
 				'formatType' => FT_TEXT,
@@ -175,7 +175,7 @@
 				'takesLocale' => false,
 				'default' => '',
 				'label' => _t('Relationship type default'),
-				'description' => _t('Relationship type default')
+				'description' => _t('Sets the default relationship type that will be used if none are defined or if the data source values do not match any values in the CollectiveAccess system.')
 			),
 			'entitySplitter_entityTypeDefault' => array(
 				'formatType' => FT_TEXT,
@@ -184,7 +184,7 @@
 				'takesLocale' => false,
 				'default' => '',
 				'label' => _t('Entity type default'),
-				'description' => _t('Entity type default')
+				'description' => _t('Sets the default entity type that will be used if none are defined or if the data source values do not match any values in the CollectiveAccess list entity_types.')
 			),
 		);
 ?>
