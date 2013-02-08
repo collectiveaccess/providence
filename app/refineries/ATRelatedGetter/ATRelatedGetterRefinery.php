@@ -159,7 +159,7 @@
 				'takesLocale' => false,
 				'default' => '',
 				'label' => _t('Map of related table field values'),
-				'description' => _t('Map of related table field values to CollectiveAccess')
+				'description' => _t('Map of related table field values to CollectiveAccess element')
 			),
 		);
 ?>

@@ -202,7 +202,7 @@ class ca_data_importer_items extends BaseModel {
 			'default' => '',
 			'options' => ca_data_importer_items::getAvailableRefineries(),
 			'label' => _t('Refineries'),
-			'description' => _t('Select refineries')
+			'description' => _t('Select the refinery that preforms the correct function to alter your data source as it maps to CollectiveAccess.')
 		);
 		$va_settings['original_values'] = array(
 			'formatType' => FT_TEXT,
@@ -211,7 +211,7 @@ class ca_data_importer_items extends BaseModel {
 			'takesLocale' => false,
 			'default' => '',
 			'label' => _t('Original values'),
-			'description' => _t('Return-separated list of values to be replaced.')
+			'description' => _t('Return-separated list of values from the data source to be replaced.  For example photo is used in the data source, but photograph is used in CollectiveAccess.')
 		);
 		$va_settings['replacement_values'] = array(
 			'formatType' => FT_TEXT,
@@ -220,7 +220,7 @@ class ca_data_importer_items extends BaseModel {
 			'takesLocale' => false,
 			'default' => '',
 			'label' => _t('Replacement values'),
-			'description' => _t('Return-separated list of values to replace original values with.')
+			'description' => _t('Return-separated list of CollectiveAccess list item idnos that correspond to the mapped values from the original data source.  For example sound recording (entered in the Original values column) maps to audio_digital, which is entered here in the Replacement values column.')
 		);
 		$va_settings['skipGroupIfEmpty'] = array(
 			'formatType' => FT_NUMBER,
@@ -233,7 +233,7 @@ class ca_data_importer_items extends BaseModel {
 				_t('no') => 0
 			),
 			'label' => _t('Skip group if empty'),
-			'description' => _t('Skip group if value for this item is empty.')
+			'description' => _t('Skip all of the proceeding elements in the group if value for this element is empty.  For example, a field called Description Type would be irrelevant if the Description field is empty.')
 		);
 		$va_settings['default'] = array(
 			'formatType' => FT_TEXT,
@@ -242,7 +242,7 @@ class ca_data_importer_items extends BaseModel {
 			'takesLocale' => false,
 			'default' => '',
 			'label' => _t('Default value'),
-			'description' => _t('Value to use if source value is blank.')
+			'description' => _t('Value to use if data source value is blank.')
 		);
 		$va_settings['delimiter'] = array(
 			'formatType' => FT_TEXT,
@@ -260,7 +260,7 @@ class ca_data_importer_items extends BaseModel {
 			'takesLocale' => false,
 			'default' => '',
 			'label' => _t('Restrict to types'),
-			'description' => _t('')
+			'description' => _t('Restricts the the mapping to only records of the designated type.  For example the Duration field is only applicable to objects of the type moving_image and not photograph.')
 		);
 		
 		$this->SETTINGS = new ModelSettings($this, 'settings', $va_settings);
