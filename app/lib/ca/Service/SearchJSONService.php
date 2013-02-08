@@ -81,7 +81,8 @@ class SearchJSONService extends BaseJSONService {
 		while($vo_result->nextHit()){
 			$va_item = array();
 
-			$va_item[$t_instance->primaryKey()] = $vo_result->get($t_instance->primaryKey());
+			$va_item[$t_instance->primaryKey()] = $vn_id = $vo_result->get($t_instance->primaryKey());
+			$va_item['id'] = $vn_id;
 			if($vs_idno = $vo_result->get("idno")){
 				$va_item["idno"] = $vs_idno;
 			}
