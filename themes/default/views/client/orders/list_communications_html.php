@@ -64,18 +64,16 @@
 				</div>
 	
 <script type="text/javascript">
-	jQuery('#client_user_id_autocomplete').autocomplete('<?php print caNavUrl($this->request, 'lookup', 'User', 'Get'); ?>', 
-		{ minChars: 3, matchSubset: 1, matchContains: 1, delay: 800, scroll: true, max: 100, extraParams: {},
-			formatResult: function(data, value) {
-				return jQuery.trim(value.replace(/<\/?[^>]+>/gi, ''));
+	jQuery('#client_user_id_autocomplete').autocomplete(
+		{ 
+			minLength: 3, delay: 800, scroll: true,
+			source: '<?php print caNavUrl($this->request, 'lookup', 'User', 'Get', array('max' => 100)); ?>',
+			select: function(event, ui) {
+				var item_id = ui.item.id
+				jQuery('#user_id').val(item_id);
 			}
 		}
 	).click(function() { this.select(); });
-	
-	jQuery('#client_user_id_autocomplete').result(function(event, data, formatted) {
-		var item_id = data[1];
-		jQuery('#user_id').val(item_id);
-	});
 </script>
 			</td>
 			<td rowspan="2" align="right" valign="bottom">

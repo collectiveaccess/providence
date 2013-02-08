@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2011 Whirl-i-Gig
+ * Copyright 2011-2013 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -37,8 +37,12 @@
 	
 	$vb_read_only		=	((isset($va_settings['readonly']) && $va_settings['readonly'])  || ($this->request->user->getBundleAccessLevel('ca_tours', 'preferred_labels') == __CA_BUNDLE_ACCESS_READONLY__));
 
+	$vb_batch			= $this->getVar('batch');
+	if ($vb_batch) {
+		print caBatchEditorPreferredLabelsModeControl($t_label, $vs_id_prefix);
+	}
 ?>
-<div id="<?php print $vs_id_prefix; ?>Labels"  >
+<div id="<?php print $vs_id_prefix; ?>Labels" <?php print $vb_batch ? "class='editorBatchBundleContent'" : ''; ?>>
 <?php
 	//
 	// The bundle template - used to generate each bundle in the form

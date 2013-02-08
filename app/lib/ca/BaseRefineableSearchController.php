@@ -75,11 +75,13 @@
  			
  			$va_facet = $this->opo_browse->getFacet($ps_facet_name, array('sort' => 'name', 'checkAccess' => $va_access_values));
  			
- 			$this->view->setVar('facet', $va_facet);
+ 			$this->view->setVar('facet', $va_facet); // leave as is for old pawtucket views
  			$this->view->setVar('facet_info', $va_facet_info = $this->opo_browse->getInfoForFacet($ps_facet_name));
  			$this->view->setVar('facet_name', $ps_facet_name);
- 			
- 			$this->view->setVar('grouping', $this->request->getParameter('grouping', pString));
+ 			$this->view->setVar('grouping', $vs_grouping = $this->request->getParameter('grouping', pString));
+
+ 			// this should be 'facet' but we don't want to render all old 'ajax_refine_facet_html' views (pawtucket themes) unusable
+ 			$this->view->setVar('grouped_facet',$this->opo_browse->getFacetWithGroups($ps_facet_name, $va_facet_info["group_mode"], $vs_grouping, array('sort' => 'name', 'checkAccess' => $va_access_values)));
  			
  			// generate type menu and type value list for related authority table facet
  			if ($va_facet_info['type'] === 'authority') {

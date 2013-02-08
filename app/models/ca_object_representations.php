@@ -767,6 +767,7 @@ class ca_object_representations extends BundlableLabelableBaseModelWithAttribute
  					WHERE 
  						representation_id = ?
  				)
+ 				AND cor.deleted = 0
  		", (int)$vn_representation_id);
  		
  		$va_reps = array();
@@ -1275,6 +1276,20 @@ class ca_object_representations extends BundlableLabelableBaseModelWithAttribute
 	}
  	# ------------------------------------------------------
  	/**
+ 	 * Override export function to do some cleanup in the media_metadata part.
+ 	 * XML parsers and wrappers like DOMDocument tend to be rather picky with their input as far as invalid
+ 	 * characters go and the return value of this function is usually used for something like that.
+ 	 */
+ 	public function getValuesForExport($pa_options=null){
+ 		$va_export = parent::getValuesForExport($pa_options);
+ 		// this section tends to contain wonky chars that are close to impossible to clean up
+ 		// if you read through the EXIF specs you know why ...
+ 		if(isset($va_export['media_metadata']['EXIF']['IFD0'])){
+ 			unset($va_export['media_metadata']['EXIF']['IFD0']);
+ 		}
+ 		return $va_export;
+ 	}
+ 	/**
  	 * 
  	 *
  	 * @param RequestHTTP $po_request
@@ -1432,7 +1447,7 @@ class ca_object_representations extends BundlableLabelableBaseModelWithAttribute
 		if (!file_exists($ps_filepath)) { return null; }
 		$vs_md5 = md5_file($ps_filepath);
 		$t_rep = new ca_object_representations();
-		if ($t_rep->load(array('md5' => $vs_md5))) { 
+		if ($t_rep->load(array('md5' => $vs_md5, 'deleted' => 0))) { 
 			return $t_rep;
 		}
 		

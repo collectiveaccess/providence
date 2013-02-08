@@ -34,6 +34,7 @@
    *
    */
 require_once(__CA_LIB_DIR__."/core/AccessRestrictions.php");
+require_once(__CA_LIB_DIR__."/core/Logging/Eventlog.php");
 require_once(__CA_APP_DIR__.'/models/ca_user_roles.php');
 include_once(__CA_APP_DIR__."/helpers/utilityHelpers.php");
 require_once(__CA_APP_DIR__.'/models/ca_user_groups.php');
@@ -102,6 +103,14 @@ BaseModel::$s_ca_models_definitions['ca_users'] = array(
 				'DEFAULT' => '',
 				'LABEL' => _t('E-mail'), 'DESCRIPTION' => _t('The e-mail address of this user. The address will be used for all mail-based system notifications and alerts to this user.'),
 				'BOUNDS_LENGTH' => array(0,255)
+		),
+		'sms_number' => array(
+				'FIELD_TYPE' => FT_TEXT, 'DISPLAY_TYPE' => DT_FIELD, 
+				'DISPLAY_WIDTH' => 60, 'DISPLAY_HEIGHT' => 1,
+				'IS_NULL' => false, 
+				'DEFAULT' => '',
+				'LABEL' => _t('SMS number'), 'DESCRIPTION' => _t('Phone number for contact by SMS (text message). The number will be used for all SMS-based system notifications and alerts to this user.'),
+				'BOUNDS_LENGTH' => array(0,30)
 		),
 		'entity_id' => array(
 				'FIELD_TYPE' => FT_NUMBER, 'DISPLAY_TYPE' => DT_FIELD, 
@@ -1611,6 +1620,7 @@ class ca_users extends BaseModel {
 	 *		field_errors = array of error messages to display on preference element
 	 *		useTable = if true and displayType for element in DT_CHECKBOXES checkboxes will be formatted in a table with numTableColumns columns
 	 *		numTableColumns = Number of columns to use when formatting checkboxes as a table. Default, if omitted, is 3
+	 *		genericUIList = forces FT_*_EDITOR_UI to return single UI list for table rather than by type
 	 * @return string HTML code to generate form widget
 	 */	
 	public function preferenceHtmlFormElement($ps_pref, $ps_format=null, $pa_options=null) {
@@ -1732,7 +1742,7 @@ class ca_users extends BaseModel {
 							$va_values = $this->getPreference($ps_pref);
 							if (!is_array($va_values)) { $va_values = array(); }
 							
-							if (method_exists($t_instance, 'getTypeFieldName') && ($t_instance->getTypeFieldName())) {
+							if (method_exists($t_instance, 'getTypeFieldName') && ($t_instance->getTypeFieldName()) && (!isset($pa_options['genericUIList']) || !$pa_options['genericUIList'])) {
 								
 								$vs_output = '';
 								$va_ui_list_by_type = $this->_getUIListByType($vn_table_num);
@@ -2424,9 +2434,13 @@ class ca_users extends BaseModel {
 	 * in order to make a decision; $pa_options is an associative array of User handler-specific
 	 * keys and values that can contain such information
 	 */
-	public function authenticate(&$ps_username, $ps_password="", $pa_options="") {
+	public function authenticate(&$ps_username, $ps_password="", $pa_options=null) {
 		if($this->opo_auth_config->get("use_ldap")){
 			return $this->authenticateLDAP($ps_username,$ps_password);
+		}
+		
+		if($this->opo_auth_config->get("use_extdb")){
+			return $this->authenticateExtDB($ps_username,$ps_password);
 		}
 		
 		if ($this->load(array("user_name" => $ps_username))) {
@@ -2446,7 +2460,7 @@ class ca_users extends BaseModel {
 		}
 		return false;
 	}
-	
+	# ----------------------------------------
 	/**
 	 * Do LDAP authentification (creates user based on directory 
 	 * information and config preferences in authentication.conf)
@@ -2560,6 +2574,175 @@ class ca_users extends BaseModel {
 			}
 		}
 		return $vb_return;
+	}
+	# ----------------------------------------
+	/**
+	 * Do authentification against an external database (creates user based on directory 
+	 * information and config preferences in authentication.conf)
+	 * @param string $ps_username username
+	 * @param string $ps_password password
+	 */
+	private function authenticateExtDB($ps_username="",$ps_password=""){
+		$o_log = new Eventlog();
+		
+		// external database config
+		$vs_extdb_host = $this->opo_auth_config->get("extdb_host");
+		$vs_extdb_username = $this->opo_auth_config->get("extdb_username");
+		$vs_extdb_password = $this->opo_auth_config->get("extdb_password");
+		$vs_extdb_database = $this->opo_auth_config->get("extdb_database");
+		$vs_extdb_db_type = $this->opo_auth_config->get("extdb_db_type");
+		
+		
+		$o_ext_db = new Db(null, array(
+			'host' 		=> $vs_extdb_host,
+			'username' 	=> $vs_extdb_username,
+			'password' 	=> $vs_extdb_password,
+			'database' 	=> $vs_extdb_database,
+			'type' 		=> $vs_extdb_db_type,
+			'persistent_connections' => true
+		), false);
+		if($o_ext_db->connected()){
+			$vs_extdb_table = $this->opo_auth_config->get("extdb_table");
+			$vs_extdb_username_field = $this->opo_auth_config->get("extdb_username_field");
+			$vs_extdb_password_field = $this->opo_auth_config->get("extdb_password_field");
+			
+			switch(strtolower($this->opo_auth_config->get("extdb_password_hash_type"))) {
+				case 'md5':
+					$ps_password_proc = md5($ps_password);
+					break;
+				case 'sha1':
+					$ps_password_proc = sha1($ps_password);
+					break;
+				default:
+					$ps_password_proc = $ps_password;
+					break;
+			}
+		
+			// Authenticate user against extdb
+			$qr_auth = $o_ext_db->query("
+				SELECT * FROM {$vs_extdb_table} WHERE {$vs_extdb_username_field} = ? AND {$vs_extdb_password_field} = ?
+			", array($ps_username, $ps_password_proc));
+			
+			if($qr_auth && $qr_auth->nextRow()) {
+				if(!$this->load(array("user_name" => $ps_username))){ // first user login, authentication via extdb successful
+				
+				// Set username/password
+					$this->set("user_name",$ps_username);
+					$this->set("password",$ps_password);
+					
+				
+				// Determine value for ca_users.active
+					$vn_active = (int)$this->opo_auth_config->get('extdb_default_active');
+					
+					$va_extdb_active_field_map = $this->opo_auth_config->getAssoc('extdb_active_field_map');
+					if (($vs_extdb_active_field = $this->opo_auth_config->get('extdb_active_field')) && is_array($va_extdb_active_field_map)) {
+						
+						if (isset($va_extdb_active_field_map[$vs_active_val = $qr_auth->get($vs_extdb_active_field)])) {
+							$vn_active = (int)$va_extdb_active_field_map[$vs_active_val];
+						}
+					}
+					$this->set("active",$vn_active);
+					
+					
+				// Determine value for ca_users.user_class
+					$vs_extdb_access_value = strtolower($this->opo_auth_config->get('extdb_default_access'));
+					
+					$va_extdb_access_field_map = $this->opo_auth_config->getAssoc('extdb_access_field_map');
+					if (($vs_extdb_access_field = $this->opo_auth_config->get('extdb_access_field')) && is_array($va_extdb_access_field_map)) {
+						
+						if (isset($va_extdb_access_field_map[$vs_access_val = $qr_auth->get($vs_extdb_access_field)])) {
+							$vs_extdb_access_value = strtolower($va_extdb_access_field_map[$vs_access_val]);
+						}
+					}
+					
+					switch($vs_extdb_access_value) {
+						case 'public':
+							$vn_user_class = 1;
+							break;
+						case 'full':
+							$vn_user_class = 0;
+							break;
+						default:
+							// Can't log in - no access
+							$o_log->log(array('CODE' => 'LOGF', 'SOURCE' => 'ca_users/extdb', 'MESSAGE' => _t('Could not login user %1 after authentication from external database because user class was not set.', $ps_username)));
+							return false;
+							break;
+					}
+					$this->set('userclass', $vn_user_class);
+					
+				// map fields
+					if (is_array($va_extdb_user_field_map = $this->opo_auth_config->getAssoc('extdb_user_field_map'))) {
+						foreach($va_extdb_user_field_map as $vs_extdb_field => $vs_ca_field) {
+							$this->set($vs_ca_field, $qr_auth->get($vs_extdb_field));
+						}
+					}
+
+					$vn_mode = $this->getMode();
+					$this->setMode(ACCESS_WRITE);
+
+					$this->insert();
+					if(!$this->getPrimaryKey()){
+						// log record creation failed
+						$o_log->log(array('CODE' => 'LOGF', 'SOURCE' => 'ca_users/extdb', 'MESSAGE' => _t('Could not login user %1 after authentication from external database because creation of user record failed: %2', $ps_username, join("; ", $this->getErrors()))));
+						return false;
+					} 
+					
+				// map preferences
+					if (is_array($va_extdb_user_pref_map = $this->opo_auth_config->getAssoc('extdb_user_pref_map'))) {
+						foreach($va_extdb_user_pref_map as $vs_extdb_field => $vs_ca_pref) {
+							$this->setPreference($vs_ca_pref, $qr_auth->get($vs_extdb_field));
+						}
+					}
+					$this->update();
+					
+
+				// set user roles
+					$va_extdb_user_roles = $this->opo_auth_config->getAssoc('extdb_default_roles');
+					
+					$va_extdb_roles_field_map = $this->opo_auth_config->getAssoc('extdb_roles_field_map');
+					if (($vs_extdb_roles_field = $this->opo_auth_config->get('extdb_roles_field')) && is_array($va_extdb_roles_field_map)) {
+						
+						if (isset($va_extdb_roles_field_map[$vs_roles_val = $qr_auth->get($vs_extdb_roles_field)])) {
+							$va_extdb_user_roles = $va_extdb_roles_field_map[$vs_roles_val];
+						}
+					}
+					if(!is_array($va_extdb_user_roles)) { $va_extdb_user_roles = array(); }
+					if(sizeof($va_extdb_user_roles)) { $this->addRoles($va_extdb_user_roles); }
+
+				// set user groups
+					$va_extdb_user_groups = $this->opo_auth_config->getAssoc('extdb_default_groups');
+					
+					$va_extdb_groups_field_map = $this->opo_auth_config->getAssoc('extdb_groups_field_map');
+					if (($vs_extdb_groups_field = $this->opo_auth_config->get('extdb_groups_field')) && is_array($va_extdb_groups_field_map)) {
+						
+						if (isset($va_extdb_groups_field_map[$vs_groups_val = $qr_auth->get($vs_extdb_groups_field)])) {
+							$va_extdb_user_groups = $va_extdb_groups_field_map[$vs_groups_val];
+						}
+					}
+					if(!is_array($va_extdb_user_groups)) { $va_extdb_user_groups = array(); }
+					if(sizeof($va_extdb_user_groups)) { $this->addToGroups($va_extdb_user_groups); }
+
+				// restore mode
+					$this->setMode($vn_mode);
+					
+					// TODO: log user creation
+					$o_log->log(array('CODE' => 'LOGN', 'SOURCE' => 'ca_users/extdb', 'MESSAGE' => _t('Created new login for user %1 after authentication from external database', $ps_username)));
+						
+				}		
+			
+				return true;
+			} else {
+				// authentication failed
+				$o_log->log(array('CODE' => 'LOGF', 'SOURCE' => 'ca_users/extdb', 'MESSAGE' => _t('Could not login user %1 using external database because external authentication failed', $ps_username)));
+						
+				return false;
+			}
+		} else {
+			// couldn't connect to external database
+			$o_log->log(array('CODE' => 'LOGF', 'SOURCE' => 'ca_users/extdb', 'MESSAGE' => _t('Could not login user %1 using external database because login to external database failed', $ps_username)));
+						
+			return false;
+		}
 	}
 	# ----------------------------------------
 	/**

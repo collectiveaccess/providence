@@ -34,13 +34,18 @@
 	$va_settings 		= $this->getVar('settings');
 	$vs_add_label 		= $this->getVar('add_label');
 	$va_rel_types		= $this->getVar('relationship_types');
+	$vb_batch			= $this->getVar('batch');
 
 	$vb_read_only		=	((isset($va_settings['readonly']) && $va_settings['readonly'])  || ($this->request->user->getBundleAccessLevel($t_instance->tableName(), 'ca_objects') == __CA_BUNDLE_ACCESS_READONLY__));
 	
 	// params to pass during occurrence lookup
 	$va_lookup_params = (isset($va_settings['restrict_to_type']) && $va_settings['restrict_to_type']) ? array('type' => $va_settings['restrict_to_type'], 'noSubtypes' => (int)$va_settings['dont_include_subtypes_in_type_restriction']) : array();
+
+	if ($vb_batch) {
+		print caBatchEditorRelationshipModeControl($t_item, $vs_id_prefix);
+	}
 ?>
-<div id="<?php print $vs_id_prefix.$t_item->tableNum().'_rel'; ?>">
+<div id="<?php print $vs_id_prefix.$t_item->tableNum().'_rel'; ?>" <?php print $vb_batch ? "class='editorBatchBundleContent'" : ''; ?>>
 <?php
 	//
 	// Template to generate display for existing items
@@ -50,7 +55,7 @@
 ?>
 	<textarea class='caItemTemplate' style='display: none;'>
 		<div id="<?php print $vs_id_prefix; ?>Item_{n}" class="labelInfo roundedRel">
-			<a href="<?php print urldecode(caEditorUrl($this->request, 'ca_objects', '{object_id}')); ?>" class="caEditItemButton" id="<?php print $vs_id_prefix; ?>_edit_related_{n}">{{_display}}</a>
+			<a href="<?php print urldecode(caEditorUrl($this->request, 'ca_objects', '{object_id}')); ?>" class="caEditItemButton" id="<?php print $vs_id_prefix; ?>_edit_related_{n}">{{label}}</a>
 
 			<input type="hidden" name="<?php print $vs_id_prefix; ?>_type_id{n}" id="<?php print $vs_id_prefix; ?>_type_id{n}" value="{type_id}"/>
 			<input type="hidden" name="<?php print $vs_id_prefix; ?>_id{n}" id="<?php print $vs_id_prefix; ?>_id{n}" value="{id}"/>
@@ -70,7 +75,7 @@
 ?>
 	<textarea class='caItemTemplate' style='display: none;'>
 		<div id="<?php print $vs_id_prefix; ?>Item_{n}" class="labelInfo roundedRel">
-			<a href="<?php print urldecode(caEditorUrl($this->request, 'ca_objects', '{object_id}')); ?>" class="caEditItemButton" id="<?php print $vs_id_prefix; ?>_edit_related_{n}">{{{{_display}}}}</a>
+			<a href="<?php print urldecode(caEditorUrl($this->request, 'ca_objects', '{object_id}')); ?>" class="caEditItemButton" id="<?php print $vs_id_prefix; ?>_edit_related_{n}">{{{{label}}}}</a>
 			({{relationship_typename}})
 			<input type="hidden" name="<?php print $vs_id_prefix; ?>_type_id{n}" id="<?php print $vs_id_prefix; ?>_type_id{n}" value="{type_id}"/>
 			<input type="hidden" name="<?php print $vs_id_prefix; ?>_id{n}" id="<?php print $vs_id_prefix; ?>_id{n}" value="{id}"/>
@@ -98,7 +103,7 @@
 			<table class="caListItem">
 				<tr>
 					<td>
-						<input type="text" size="60" name="<?php print $vs_id_prefix; ?>_autocomplete{n}" value="{{_display}}" id="<?php print $vs_id_prefix; ?>_autocomplete{n}" class="lookupBg"/>
+						<input type="text" size="60" name="<?php print $vs_id_prefix; ?>_autocomplete{n}" value="{{label}}" id="<?php print $vs_id_prefix; ?>_autocomplete{n}" class="lookupBg"/>
 					</td>
 					<td>
 <?php
@@ -178,13 +183,13 @@
 <?php
 	if ($t_subject->tableName() == 'ca_object_representations') {
 ?>
-			templateValues: ['_display', 'id'],
+			templateValues: ['label', 'id'],
 			relationshipTypes: {}
 <?php
 	} else {
 ?>
 			relationshipTypes: <?php print json_encode($this->getVar('relationship_types_by_sub_type')); ?>,
-			templateValues: ['_display', 'id', 'type_id']
+			templateValues: ['label', 'id', 'type_id']
 <?php
 	}
 ?>

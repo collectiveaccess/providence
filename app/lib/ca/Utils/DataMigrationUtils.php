@@ -57,6 +57,11 @@
 		 */
 		static $s_target_encoding = 'UTF-8';
 		
+		/**
+		 * @var cache of created list item_ids
+		 */
+		static $s_cached_list_item_ids = array();
+		
 		# -------------------------------------------------------
 		/**
 		 * Sets the source text encoding to be used by DataMigrationUtils::transformTextEncoding()
@@ -125,6 +130,17 @@
 				unset($pa_values['source_id']);
 				unset($pa_values['lifespan']);
 				
+				$t_entity->insert();
+				
+				if ($t_entity->numErrors()) {
+					if(isset($pa_options['outputErrors']) && $pa_options['outputErrors']) {
+						print "ERROR INSERTING entity (".$pa_entity_name['forename']."/".$pa_entity_name['surname']."): ".join('; ', $t_entity->getErrors())."\n";
+					}
+					return null;
+				}
+				
+				$t_entity->addLabel($pa_entity_name, $pn_locale_id, null, true);
+				
 				if (is_array($pa_values)) {
 					foreach($pa_values as $vs_element => $va_value) { 					
 						if (is_array($va_value)) {
@@ -143,18 +159,14 @@
 							}
 						}
 					}
-				}
-				$t_entity->insert();
+					$t_entity->update();
 				
-				if ($t_entity->numErrors()) {
-					if(isset($pa_options['outputErrors']) && $pa_options['outputErrors']) {
-						print "ERROR INSERTING entity (".$pa_entity_name['forename']."/".$pa_entity_name['surname']."): ".join('; ', $t_entity->getErrors())."\n";
-						print_R($pa_values);
+					if ($t_entity->numErrors()) {
+						if(isset($pa_options['outputErrors']) && $pa_options['outputErrors']) {
+							print "ERROR ADDING ATTRIBUTES TO entity (".$pa_entity_name['forename']."/".$pa_entity_name['surname']."): ".join('; ', $t_entity->getErrors())."\n";
+						}
 					}
-					return null;
 				}
-				$t_entity->addLabel($pa_entity_name, $pn_locale_id, null, true);
-				
 				
 				$vn_entity_id = $t_entity->getPrimaryKey();
 			} else {
@@ -178,6 +190,7 @@
 		 *				outputErrors - if true, errors will be printed to console [default=true]
 		 *				dontCreate - if true then new entities will not be created [default=false]
 		 * 				transaction - if Transaction object is passed, use it for all Db-related tasks [default=null]
+		 *				returnInstance = return ca_places instance rather than place_id. Default is false.
 		 */
 		static function getPlaceID($ps_place_name, $pn_parent_id, $pn_type_id, $pn_locale_id, $pa_values=null, $pa_options=null) {
 			if (!is_array($pa_options)) { $pa_options = array(); }
@@ -240,8 +253,14 @@
 				
 				
 				$vn_place_id = $t_place->getPrimaryKey();
+				if (isset($pa_options['returnInstance']) && $pa_options['returnInstance']) {
+					return $t_place;
+				}
 			} else {
 				$vn_place_id = array_shift($va_place_ids);
+				if (isset($pa_options['returnInstance']) && $pa_options['returnInstance']) {
+					return new ca_places($vn_place_id);
+				}
 			}
 				
 			return $vn_place_id;
@@ -341,13 +360,21 @@
 		 * @param array $pa_options An optional array of options, which include:
 		 *				dontCreate - if true then new items will not be created [default=false]
 		 *				matchOnLabel =  if true then list items are looked up exclusively using labels [default=false]
+		 *				cache = cache item_ids of previously created/loaded items [default=true]
 		 *
 		 */
 		static function getListItemID($pm_list_code_or_id, $ps_item_idno, $pn_type_id, $pn_locale_id, $pa_values=null, $pa_options=null) {
 			if (!is_array($pa_options)) { $pa_options = array(); }
 			if(!isset($pa_options['outputErrors'])) { $pa_options['outputErrors'] = true; }
+			if(!isset($pa_options['cache'])) { $pa_options['cache'] = true; }
 			
-			if (!($vn_list_id = ca_lists::getListID($pm_list_code_or_id))) { return null; }
+			if ($pa_options['cache'] && isset(DataMigrationUtils::$s_cached_list_item_ids[$pm_list_code_or_id.'/'.$ps_item_idno])) {
+				return DataMigrationUtils::$s_cached_list_item_ids[$pm_list_code_or_id.'/'.$ps_item_idno];
+			}
+			
+			if (!($vn_list_id = ca_lists::getListID($pm_list_code_or_id))) { 
+				return DataMigrationUtils::$s_cached_list_item_ids[$pm_list_code_or_id.'/'.$ps_item_idno] = null; 
+			}
 			
 			$t_list = new ca_lists();
 			$t_item = new ca_list_items();
@@ -358,11 +385,11 @@
 			
 			if (isset($pa_options['matchOnLabel']) && $pa_options['matchOnLabel']) {
 				if ($vn_item_id = $t_list->getItemIDFromListByLabel($pm_list_code_or_id, $pa_values['name_singular'] ? $pa_values['name_singular'] : $ps_item_idno)) {
-					return $vn_item_id;
+					return DataMigrationUtils::$s_cached_list_item_ids[$pm_list_code_or_id.'/'.$ps_item_idno] = $vn_item_id;
 				}
 			} else {
 				if ($t_item->load(array('list_id' => $vn_list_id, 'idno' => $ps_item_idno))) {
-					return $t_item->getPrimaryKey();
+					return DataMigrationUtils::$s_cached_list_item_ids[$pm_list_code_or_id.'/'.$ps_item_idno] = $t_item->getPrimaryKey();
 				}
 			}
 				
@@ -381,7 +408,7 @@
 					), $pn_locale_id, null, true
 				);
 				
-				return $t_item->getPrimaryKey();
+				return DataMigrationUtils::$s_cached_list_item_ids[$pm_list_code_or_id.'/'.$ps_item_idno] = $t_item->getPrimaryKey();
 			}
 			return null;
 		}
@@ -785,6 +812,9 @@
 				
 				$va_tmp = preg_split('![ ]+!', trim($ps_text));
 				
+				$va_name = array(
+					'surname' => '', 'forename' => '', 'middlename' => '', 'displayname' => ''
+				);
 				switch(sizeof($va_tmp)) {
 					case 1:
 						$va_name['surname'] = $ps_text;

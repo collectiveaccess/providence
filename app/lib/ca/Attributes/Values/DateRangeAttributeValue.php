@@ -288,21 +288,23 @@
  				$vs_bundle_name = $pa_options['t_subject']->tableName().'.'.$pa_element_info['element_code'];
  				
  				if ($pa_options['po_request']) {
- 					$vs_lookup_url	= caNavUrl($pa_options['po_request'], 'lookup', 'AttributeValue', 'Get', array());
+ 					$vs_lookup_url	= caNavUrl($pa_options['po_request'], 'lookup', 'AttributeValue', 'Get', array('bundle' => $vs_bundle_name, 'max' => 500));
  				}
  			}
  			
  			if ((bool)$va_settings['suggestExistingValues'] && $vs_lookup_url && $vs_bundle_name) { 
  				$vs_element .= "<script type='text/javascript'>
- 					jQuery('#{fieldNamePrefix}".$pa_element_info['element_id']."_{n}').autocomplete('".$vs_lookup_url."', 
-								{ minChars: 3, matchSubset: 1, matchContains: 1, delay: 800, scroll: true, max: 500, extraParams: { bundle: '".$vs_bundle_name."'}});
+ 					jQuery('#{fieldNamePrefix}".$pa_element_info['element_id']."_{n}').autocomplete( 
+						{ source: '{$vs_lookup_url}', minLength: 3, delay: 800}
+					);
  				</script>\n";
  			}
  			
  			if ((bool)$va_settings['useDatePicker']) { 
- 				JavascriptLoadManager::register('datePickerUI');
  				$vs_element .= "<script type='text/javascript'>
- 					jQuery('#{fieldNamePrefix}".$pa_element_info['element_id']."_{n}').daterangepicker();
+ 					jQuery(document).ready(function() {
+ 						jQuery('#{fieldNamePrefix}".$pa_element_info['element_id']."_{n}').datepicker({constrainInput: false});
+ 					});
  				</script>\n";
  			}
  			

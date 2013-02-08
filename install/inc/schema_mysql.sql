@@ -31,6 +31,7 @@ create table ca_change_log
    logged_row_id                  int unsigned                   not null,
    rolledback                     tinyint unsigned               not null default 0,
    unit_id                        char(32),
+   batch_id                       int unsigned                   null,
    primary key (log_id)
 ) engine=innodb CHARACTER SET utf8 COLLATE utf8_general_ci;
 
@@ -39,6 +40,7 @@ create index i_user_id on ca_change_log(user_id);
 create index i_logged on ca_change_log(logged_row_id, logged_table_num);
 create index i_unit_id on ca_change_log(unit_id);
 create index i_table_num on ca_change_log (logged_table_num);
+create index i_batch_id on ca_change_log (batch_id);
 
 
 /*==========================================================================*/
@@ -268,6 +270,7 @@ create table ca_users
    fname                          varchar(255)                   not null,
    lname                          varchar(255)                   not null,
    email                          varchar(255)                   not null,
+   sms_number                     varchar(30)                    not null,
    vars                           longtext                       not null,
    volatile_vars                  text                           not null,
    active                         tinyint unsigned               not null,
@@ -706,6 +709,8 @@ create index i_source_id on ca_places(source_id);
 create index i_life_sdatetime on ca_places(lifespan_sdate);
 create index i_life_edatetime on ca_places(lifespan_edate);
 create index i_parent_id on ca_places(parent_id);
+create index i_hier_left on ca_places(hier_left);
+create index i_hier_right on ca_places(hier_right);
 
 
 /*==========================================================================*/
@@ -4764,6 +4769,39 @@ create table ca_search_log (
 
 
 /*==========================================================================*/
+create table ca_batch_log
+(
+   batch_id                       int unsigned              not null AUTO_INCREMENT,
+   user_id                        int unsigned              not null,
+   log_datetime                   int unsigned              not null,
+   notes                          text                      not null,
+   batch_type                     char(2)                   not null,
+   table_num                      tinyint unsigned          not null,
+   elapsed_time                   int unsigned              not null default 0,
+   
+   primary key (batch_id), 
+   KEY i_log_datetime (log_datetime),
+   KEY i_user_id (user_id),
+   constraint fk_ca_batch_log_user_id foreign key (user_id)
+      references ca_users (user_id) on delete restrict on update restrict
+) engine=innodb CHARACTER SET utf8 COLLATE utf8_general_ci;
+
+
+/*==========================================================================*/
+create table ca_batch_log_items 
+(
+	batch_id                       int unsigned                   not null,
+	row_id                         int unsigned                   not null,
+	errors                         longtext                       null,
+	
+	primary key (batch_id, row_id), 
+    KEY i_row_id (row_id),
+    constraint fk_ca_batch_log_items_batch_id foreign key (batch_id)
+      references ca_batch_log (batch_id) on delete restrict on update restrict
+) engine=innodb CHARACTER SET utf8 COLLATE utf8_general_ci;
+
+
+/*==========================================================================*/
 create table ca_bundle_displays (
 	display_id		int unsigned not null primary key auto_increment,
 	user_id			int unsigned null references ca_users(user_id),
@@ -6668,5 +6706,5 @@ create table ca_schema_updates (
 ) engine=innodb CHARACTER SET utf8 COLLATE utf8_general_ci;
 
 /* Indicate up to what migration this schema definition covers */
-/* CURRENT MIGRATION: 72 */
-INSERT IGNORE INTO ca_schema_updates (version_num, datetime) VALUES (72, unix_timestamp());
+/* CURRENT MIGRATION: 78 */
+INSERT IGNORE INTO ca_schema_updates (version_num, datetime) VALUES (78, unix_timestamp());
