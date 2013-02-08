@@ -4126,6 +4126,18 @@ div.roundedRel {
 	border-radius: 10px;
 }
 
+div.listRel {
+	font-size: 12px;
+	font-weight: normal;
+	padding: 10px;
+	margin-bottom: 5px;
+
+	width: 690px;	
+	border: 1px solid #aaaaaa;
+	background-color:#ffffff;
+	min-height: 18px;
+}
+
 .caItemList {
 	margin-top: 10px;
 }
@@ -4165,6 +4177,10 @@ div.roundedRel {
 .roundedRel .caDeleteItemButton {
 	position: relative;
 	top: 3px;
+}
+
+.listRel .caDeleteItemButton {
+	float: right;
 }
 
 div.preferenceSectionDivider {
