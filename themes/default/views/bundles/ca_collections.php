@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2009-2012 Whirl-i-Gig
+ * Copyright 2009-2013 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -35,6 +35,7 @@
 	$va_rel_types		= $this->getVar('relationship_types');
 	$vb_batch			= $this->getVar('batch');
 	
+	$vs_sort			=	((isset($va_settings['sort']) && $va_settings['sort'])) ? $va_settings['sort'] : '';
 	$vb_read_only		=	((isset($va_settings['readonly']) && $va_settings['readonly'])  || ($this->request->user->getBundleAccessLevel($t_instance->tableName(), 'ca_collections') == __CA_BUNDLE_ACCESS_READONLY__));
 	
 	// params to pass during collection lookup
@@ -96,7 +97,7 @@
 	
 	<div class="bundleContainer">
 <?php
-	if(sizeof($this->getVar('initialValues')) && !$vb_read_only) {
+	if(sizeof($this->getVar('initialValues')) && !$vb_read_only && !$vs_sort) {
 ?>
 		<div class="caItemListSortControlTrigger" id="<?php print $vs_id_prefix; ?>caItemListSortControlTrigger">
 			<?php print _t('Sort by'); ?>
@@ -174,7 +175,7 @@
 			autocompleteUrl: '<?php print caNavUrl($this->request, 'lookup', 'Collection', 'Get', $va_lookup_params); ?>',
 			types: <?php print json_encode($va_settings['restrict_to_types']); ?>,
 			readonly: <?php print $vb_read_only ? "true" : "false"; ?>,
-			isSortable: <?php print $vb_read_only ? "false" : "true"; ?>,
+			isSortable: <?php print ($vb_read_only || $vs_sort) ? "false" : "true"; ?>,
 			listSortOrderID: '<?php print $vs_id_prefix; ?>BundleList',
 			listSortItems: 'div.roundedRel',
 			autocompleteInputID: '<?php print $vs_id_prefix; ?>_autocomplete',

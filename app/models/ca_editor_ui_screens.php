@@ -477,6 +477,49 @@ class ca_editor_ui_screens extends BundlableLabelableBaseModelWithAttributes {
 							'default' => '0',
 							'label' => _t('Do not include sub-types in type restriction'),
 							'description' => _t('Normally restricting to type(s) automatically includes all sub-(child) types. If this option is checked then the lookup results will include items with the selected type(s) <b>only</b>.')
+						),
+						'list_format' => array(
+							'formatType' => FT_TEXT,
+							'displayType' => DT_SELECT,
+							'options' => array(
+								_t('bubbles (draggable)') => 'bubbles',
+								_t('list (not draggable)') => 'list'
+							),
+							'default' => 'bubbles',
+							'width' => "200px", 'height' => 1,
+							'label' => _t('Format of relationship list'),
+							'description' => _t('.')
+						),
+						'sort' => array(
+							'formatType' => FT_TEXT,
+							'displayType' => DT_SELECT,
+							'width' => "200px", 'height' => "1",
+							'takesLocale' => false,
+							'default' => '1',
+							'label' => _t('Sort using'),
+							'showSortableBundlesFor' => $t_rel->tableName(),
+							'description' => _t('Method used to sort related items.')
+						),
+						'sortDirection' => array(
+							'formatType' => FT_TEXT,
+							'displayType' => DT_SELECT,
+							'width' => "200px", 'height' => "1",
+							'takesLocale' => false,
+							'default' => 'ASC',
+							'options' => array(
+								_t('Ascending') => 'ASC',
+								_t('Descending') => 'DESC'
+							),
+							'label' => _t('Sort direction'),
+							'description' => _t('Direction of sort, when not in a user-specified order.')
+						),
+						'display_template' => array(
+							'formatType' => FT_TEXT,
+							'displayType' => DT_FIELD,
+							'default' => '',
+							'width' => "275px", 'height' => 4,
+							'label' => _t('Relationship display template'),
+							'description' => _t('Layout for relationship when displayed in list (can include HTML). Element code tags prefixed with the ^ character can be used to represent the value in the template. For example: <i>^my_element_code</i>.')
 						)
 					);
 					
@@ -522,7 +565,7 @@ class ca_editor_ui_screens extends BundlableLabelableBaseModelWithAttributes {
 							'takesLocale' => false,
 							'default' => '0',
 							'label' => _t('Restrict to checklist of terms from related collections?'),
-							'description' => _t('xxx.')
+							'description' => _t('Will restrict checklist to those terms applied to related collections.')
 						);
 						$va_additional_settings['restrictToTermsOnCollectionWithRelationshipType'] = array(
 							'formatType' => FT_TEXT,
@@ -532,7 +575,7 @@ class ca_editor_ui_screens extends BundlableLabelableBaseModelWithAttributes {
 							'takesLocale' => false,
 							'default' => '',
 							'label' => _t('Restrict checklist to terms related to collection as'),
-							'description' => _t('xxx. Leave all unselected for no restriction.')
+							'description' => _t('Will restrict checklist to terms related to collections with the specified relationship type. Leave all unselected for no restriction.')
 						);
 						$va_additional_settings['restrictToTermsOnCollectionUseRelationshipType'] =  array(
 							'formatType' => FT_TEXT,
@@ -541,8 +584,8 @@ class ca_editor_ui_screens extends BundlableLabelableBaseModelWithAttributes {
 							'width' => "275px", 'height' => "1",
 							'takesLocale' => false,
 							'default' => '',
-							'label' => _t('Use for checked collection terms relationship type'),
-							'description' => _t('xxx. Leave all unselected for no restriction.')
+							'label' => _t('Checked collection term relationship type'),
+							'description' => _t('Specified the relationship used to relate collection-restricted terms to this object.')
 						);
 					}
 					if (!$t_rel->hasField('type_id')) { unset($va_additional_settings['restrict_to_types']); }

@@ -162,7 +162,7 @@
 				'takesLocale' => false,
 				'default' => '',
 				'label' => _t('Delimiter'),
-				'description' => _t('Delimiter')
+				'description' => _t('Sets the value of the delimiter to break on, separating data source values.')
 			),
 			'placeSplitter_relationshipType' => array(
 				'formatType' => FT_TEXT,
@@ -171,7 +171,7 @@
 				'takesLocale' => false,
 				'default' => '',
 				'label' => _t('Relationship type'),
-				'description' => _t('Relationship type')
+				'description' => _t('Accepts a constant type code for the relationship type or a reference to the location in the data source where the type can be found.')
 			),
 			'placeSplitter_placeType' => array(
 				'formatType' => FT_TEXT,
@@ -180,7 +180,7 @@
 				'takesLocale' => false,
 				'default' => '',
 				'label' => _t('Place type'),
-				'description' => _t('Place type')
+				'description' => _t('Accepts a constant list item idno from the list place_types or a reference to the location in the data source where the type can be found.')
 			),
 			'placeSplitter_attributes' => array(
 				'formatType' => FT_TEXT,
@@ -189,7 +189,7 @@
 				'takesLocale' => false,
 				'default' => '',
 				'label' => _t('Attributes'),
-				'description' => _t('Attributes')
+				'description' => _t('Sets or maps metadata for the place record by referencing the metadataElement code and the location in the data source where the data values can be found.')
 			),
 			'placeSplitter_hierarchy' => array(
 				'formatType' => FT_TEXT,
@@ -198,7 +198,7 @@
 				'takesLocale' => false,
 				'default' => '',
 				'label' => _t('Hierarchy'),
-				'description' => _t('Hierarchy to add places to')
+				'description' => _t('Identifies the root node of the place hierarchy to add places to.')
 			),
 			'placeSplitter_relationshipTypeDefault' => array(
 				'formatType' => FT_TEXT,
@@ -207,7 +207,7 @@
 				'takesLocale' => false,
 				'default' => '',
 				'label' => _t('Relationship type default'),
-				'description' => _t('Relationship type default')
+				'description' => _t('Sets the default relationship type that will be used if none are defined or if the data source values do not match any values in the CollectiveAccess system')
 			),
 			'placeSplitter_placeTypeDefault' => array(
 				'formatType' => FT_TEXT,
@@ -216,7 +216,7 @@
 				'takesLocale' => false,
 				'default' => '',
 				'label' => _t('Place type default'),
-				'description' => _t('Place type default')
+				'description' => _t('Sets the default place type that will be used if none are defined or if the data source values do not match any values in the CollectiveAccess list place_types')
 			)
 		);
 ?>

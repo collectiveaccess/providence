@@ -166,7 +166,7 @@
 				'takesLocale' => false,
 				'default' => '',
 				'label' => _t('Delimiter'),
-				'description' => _t('Delimiter')
+				'description' => _t('Sets the value of the delimiter to break on, separating data source values')
 			),
 			'collectionSplitter_relationshipType' => array(
 				'formatType' => FT_TEXT,
@@ -175,7 +175,7 @@
 				'takesLocale' => false,
 				'default' => '',
 				'label' => _t('Relationship type'),
-				'description' => _t('Relationship type')
+				'description' => _t('Accepts a constant type code for the relationship type or a reference to the location in the data source where the type can be found.  Note for object data: if the relationship type matches that set as the hierarchy control, the object will be pulled in as a "child" element in the collection hierarchy.')
 			),
 			'collectionSplitter_collectionType' => array(
 				'formatType' => FT_TEXT,
@@ -184,7 +184,7 @@
 				'takesLocale' => false,
 				'default' => '',
 				'label' => _t('Collection type'),
-				'description' => _t('Collection type')
+				'description' => _t('Accepts a constant list item idno from the list collection_types or a reference to the location in the data source where the type can be found.')
 			),
 			'collectionSplitter_attributes' => array(
 				'formatType' => FT_TEXT,
@@ -193,7 +193,7 @@
 				'takesLocale' => false,
 				'default' => '',
 				'label' => _t('Attributes'),
-				'description' => _t('Attributes')
+				'description' => _t('Sets or maps metadata for the collection record by referencing the metadataElement code and the location in the data source where the data values can be found.')
 			),
 			'collectionSplitter_parents' => array(
 				'formatType' => FT_TEXT,
@@ -211,7 +211,7 @@
 				'takesLocale' => false,
 				'default' => '',
 				'label' => _t('Relationship type default'),
-				'description' => _t('Relationship type default')
+				'description' => _t('Sets the default relationship type that will be used if none are defined or if the data source values do not match any values in the CollectiveAccess system.')
 			),
 			'collectionSplitter_collectionTypeDefault' => array(
 				'formatType' => FT_TEXT,
@@ -220,7 +220,7 @@
 				'takesLocale' => false,
 				'default' => '',
 				'label' => _t('Collection type default'),
-				'description' => _t('Collection type default')
+				'description' => _t('Sets the default collection type that will be used if none are defined or if the data source values do not match any values in the CollectiveAccess list collection_types.')
 			)
 		);
 ?>
