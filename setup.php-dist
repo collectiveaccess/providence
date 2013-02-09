@@ -105,7 +105,7 @@ define("__CA_SMTP_PORT__", 25);
 # queue processing script to run (usually via CRON) if you set this option. Set up details are 
 # available at http://docs.collectiveaccess.org
 #
-defined("__CA_QUEUE_ENABLED__", 0);
+define("__CA_QUEUE_ENABLED__", 0);
 
 
 #
