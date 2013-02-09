@@ -32,6 +32,10 @@
 		$va_tmp = explode("/", str_replace("\\", "/", $_SERVER['SCRIPT_NAME']));
 		array_pop($va_tmp);
 		$vs_path = join("/", $va_tmp);
+		
+		if (!is_array($opa_error_messages)) {
+			$opa_error_messages = self::$opa_error_messages;
+		}
 ?>
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml">
@@ -43,13 +47,13 @@
 	<div id='box'>
 	<div id="logo"><img src="<?php print $vs_path ?>/themes/default/graphics/installLogo.gif"/></div><!-- end logo -->
 	<div id="content">
-		<?php print _t("<div class='error'>An error in your system configuration has been detected</div>
+		<?php print "<div class='error'>An error in your system configuration has been detected</div>
 			General installation instructions can be found
 			<a href='http://wiki.collectiveaccess.org/index.php?title=Installation_(Providence)' target='_blank'>here</a>.
-			For more specific hints on the existing issues please have a look at the messages below."); ?>
+			For more specific hints on the existing issues please have a look at the messages below."; ?>
 		<br/><br/>
 <?php
-foreach (self::$opa_error_messages as $vs_message):
+foreach ($opa_error_messages as $vs_message):
 ?>
 		<div class="permissionError">
 			<img src='<?php print $vs_path; ?>/themes/default/graphics/vorsicht.gif' class="permissionErrorIcon"/>
