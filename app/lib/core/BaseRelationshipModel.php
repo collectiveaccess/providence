@@ -284,7 +284,8 @@
 			$vs_right_table_name = $this->getRightTableName();
 			
 			$o_db = $this->getDb();
-				
+			$t_rel_type = new ca_relationship_types();
+					
 			$vs_restrict_to_relationship_type_sql = '';
 			if (isset($pa_options['restrict_to_relationship_types']) && $pa_options['restrict_to_relationship_types']) {
 				if(!is_array($pa_options['restrict_to_relationship_types'])) {
@@ -292,7 +293,6 @@
 				}
 				if(sizeof($pa_options['restrict_to_relationship_types'])) {
 					$va_restrict_to_type_list = array();
-					$t_rel_type = new ca_relationship_types();
 					
 					foreach($pa_options['restrict_to_relationship_types'] as $vs_type_code) {
 						if (!strlen(trim($vs_type_code))) { continue; }
