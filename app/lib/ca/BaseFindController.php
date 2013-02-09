@@ -544,6 +544,7 @@
 						$vs_content = $this->render('Results/'.$this->ops_tablename.'_pdf_results_html.php');
 						$vo_html2pdf = new HTML2PDF('L','letter','en');
 						$vo_html2pdf->setDefaultFont("dejavusans");
+						$vo_html2pdf->setTestIsImage(false);
 						$vo_html2pdf->WriteHTML($vs_content);
 						
 			header("Content-Disposition: attachment; filename=export_results.pdf");
@@ -575,6 +576,7 @@
 						$vs_content = $this->render('Results/'.$this->ops_tablename.'_pdf_results_thumb_html.php');
 						$vo_html2pdf = new HTML2PDF('L','letter','en');
 						$vo_html2pdf->setDefaultFont("dejavusans");
+						$vo_html2pdf->setTestIsImage(false);
 						$vo_html2pdf->WriteHTML($vs_content);
 						
 			header("Content-Disposition: attachment; filename=export_results.pdf");
