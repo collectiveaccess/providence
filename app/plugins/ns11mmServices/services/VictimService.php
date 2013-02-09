@@ -248,7 +248,7 @@ class VictimService extends NS11mmService {
 					
 					// reset filesize property to reflect size of version, not size of original
 					foreach($va_reps[$vn_i]['paths'] as $vs_version => $vs_path) {
-						$va_reps[$vn_i]['info'][$vs_version]['PROPERTIES']['filesize'] = filesize($va_reps[$vn_i]['paths'][$vs_version]);
+						$va_reps[$vn_i]['info'][$vs_version]['PROPERTIES']['filesize'] = @filesize($va_reps[$vn_i]['paths'][$vs_version]);
 					}
 					
 					unset($va_reps[$vn_i]['paths']);
@@ -439,7 +439,7 @@ class VictimService extends NS11mmService {
 			}
 			
 			header("Content-type: audio/mpeg");
-			header("Content-length: ".filesize($vs_file));
+			header("Content-length: ".@filesize($vs_file));
 			readfile($vs_file);
 			return;
 		}
