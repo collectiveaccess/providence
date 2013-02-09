@@ -182,7 +182,11 @@ class SearchEngine extends SearchBase {
 				$o_parsed_query = $o_query_parser->parse($ps_search, $vs_char_set);
 			} catch (Exception $e) {
 				// Retry search with all non-alphanumeric characters removed
-				$o_parsed_query = $o_query_parser->parse(preg_replace("![^A-Za-z0-9 ]+!", " ", $ps_search), $vs_char_set);
+				try {
+					$o_parsed_query = $o_query_parser->parse(preg_replace("![^A-Za-z0-9 ]+!", " ", $ps_search), $vs_char_set);
+				} catch (Exception $e) {
+					$o_parsed_query = $o_query_parser->parse("", $vs_char_set);
+				}
 			}
 			
 			$va_rewrite_results = $this->_rewriteQuery($o_parsed_query);
