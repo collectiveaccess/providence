@@ -207,10 +207,10 @@
 					'name' => _t('PDF (Chart)'),
 					'code' => '_pdf'
 				),
-				array(
-					'name' => _t('PDF (Long)'),
-					'code' => '_pdflong'
-				),				
+			//	array(
+			//		'name' => _t('PDF (Long)'),
+			//		'code' => '_pdflong'
+			//	),				
 				array(
 					'name' => _t('PDF (Thumbnails)'),
 					'code' => '_pdfthumb' 
@@ -258,6 +258,7 @@
  		 * Returns list of available label print formats
  		 */
  		public function getPrintForms() {
+ 			require_once(__CA_LIB_DIR__.'/core/Print/PrintForms.php');
 			return PrintForms::getAvailableForms($this->request->config->get($this->ops_tablename.'_print_forms'));
 		}
 		# -------------------------------------------------------
@@ -526,45 +527,79 @@
 			
 			switch($ps_output_type) {
 				case '_pdf':
+// 			header("Content-Disposition: attachment; filename=export_results.pdf");
+// 			header("Content-type: application/pdf");
+// 					$vs_content = $this->render('Results/'.$this->ops_tablename.'_pdf_results_html.php');
+// 				
+// 					$o_pdf = new DOMPDF();
+// 					// Page sizes: 'letter', 'legal', 'A4'
+// 					// Orientation:  'portrait' or 'landscape'
+// 					$o_pdf->set_paper("letter", "landscape");
+// 					$o_pdf->load_html($vs_content, 'utf-8');
+// 					$o_pdf->render();
+// 					$o_pdf->stream("results.pdf");
+					require_once(__CA_LIB_DIR__."/core/Print/html2pdf/html2pdf.class.php");
+					
+					try {
+						$vs_content = $this->render('Results/'.$this->ops_tablename.'_pdf_results_html.php');
+						$vo_html2pdf = new HTML2PDF('L','letter','en');
+						$vo_html2pdf->setDefaultFont("dejavusans");
+						$vo_html2pdf->WriteHTML($vs_content);
+						
 			header("Content-Disposition: attachment; filename=export_results.pdf");
 			header("Content-type: application/pdf");
-					$vs_content = $this->render('Results/'.$this->ops_tablename.'_pdf_results_html.php');
-				
-					$o_pdf = new DOMPDF();
-					// Page sizes: 'letter', 'legal', 'A4'
-					// Orientation:  'portrait' or 'landscape'
-					$o_pdf->set_paper("letter", "landscape");
-					$o_pdf->load_html($vs_content, 'utf-8');
-					$o_pdf->render();
-					$o_pdf->stream("results.pdf");
+			
+						$vo_html2pdf->Output('results.pdf');
+						$vb_printed_properly = true;
+					} catch (Exception $e) {
+						$vb_printed_properly = false;
+						$this->postError(3100, _t("Could not generate PDF"),"BaseEditorController->PrintSummary()");
+					}
 					return;
 					break;
 				case '_pdfthumb':
+// 			header("Content-Disposition: attachment; filename=export_results.pdf");
+// 			header("Content-type: application/pdf");
+// 					$vs_content = $this->render('Results/'.$this->ops_tablename.'_pdf_results_thumb_html.php');
+// 				
+// 					$o_pdf = new DOMPDF();
+// 					// Page sizes: 'letter', 'legal', 'A4'
+// 					// Orientation:  'portrait' or 'landscape'
+// 					$o_pdf->set_paper("letter", "landscape");
+// 					$o_pdf->load_html($vs_content, 'utf-8');
+// 					$o_pdf->render();
+// 					$o_pdf->stream("results.pdf");
+					require_once(__CA_LIB_DIR__."/core/Print/html2pdf/html2pdf.class.php");
+					
+					try {
+						$vs_content = $this->render('Results/'.$this->ops_tablename.'_pdf_results_thumb_html.php');
+						$vo_html2pdf = new HTML2PDF('L','letter','en');
+						$vo_html2pdf->setDefaultFont("dejavusans");
+						$vo_html2pdf->WriteHTML($vs_content);
+						
 			header("Content-Disposition: attachment; filename=export_results.pdf");
 			header("Content-type: application/pdf");
-					$vs_content = $this->render('Results/'.$this->ops_tablename.'_pdf_results_thumb_html.php');
-				
-					$o_pdf = new DOMPDF();
-					// Page sizes: 'letter', 'legal', 'A4'
-					// Orientation:  'portrait' or 'landscape'
-					$o_pdf->set_paper("letter", "landscape");
-					$o_pdf->load_html($vs_content, 'utf-8');
-					$o_pdf->render();
-					$o_pdf->stream("results.pdf");
+			
+						$vo_html2pdf->Output('thumb_results.pdf');
+						$vb_printed_properly = true;
+					} catch (Exception $e) {
+						$vb_printed_properly = false;
+						$this->postError(3100, _t("Could not generate PDF"),"BaseEditorController->PrintSummary()");
+					}
 					return;
 					break;	
-				case '_pdflong':
-			header("Content-Disposition: attachment; filename=export_results.pdf");
-			header("Content-type: application/pdf");
-					$vs_content = $this->render('Results/'.$this->ops_tablename.'_pdf_results_long_html.php');
-				
-					$o_pdf = new DOMPDF();
-					// Page sizes: 'letter', 'legal', 'A4'
-					// Orientation:  'portrait' or 'landscape'
-					$o_pdf->set_paper("letter", "landscape");
-					$o_pdf->load_html($vs_content, 'utf-8');
-					$o_pdf->render();
-					$o_pdf->stream("results.pdf");
+// 				case '_pdflong':
+// 			header("Content-Disposition: attachment; filename=export_results.pdf");
+// 			header("Content-type: application/pdf");
+// 					$vs_content = $this->render('Results/'.$this->ops_tablename.'_pdf_results_long_html.php');
+// 				
+// 					$o_pdf = new DOMPDF();
+// 					// Page sizes: 'letter', 'legal', 'A4'
+// 					// Orientation:  'portrait' or 'landscape'
+// 					$o_pdf->set_paper("letter", "landscape");
+// 					$o_pdf->load_html($vs_content, 'utf-8');
+// 					$o_pdf->render();
+// 					$o_pdf->stream("results.pdf");
 					return;
 					break;					
 				case '_csv':
