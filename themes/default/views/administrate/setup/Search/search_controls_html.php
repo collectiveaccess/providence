@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2009-2011 Whirl-i-Gig
+ * Copyright 2009-2012 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -28,7 +28,7 @@
  	
  	$t_subject = $this->getVar('t_subject');
  	$vs_table = $t_subject->tableName();
- 	$va_lookup_urls = caJSONLookupServiceUrl($this->request, $vs_table);
+ 	$va_lookup_urls = caJSONLookupServiceUrl($this->request, $vs_table, array('noInline' => 1));
  	
  	$vs_type_id_form_element = '';
 	if ($vn_type_id = intval($this->getVar('type_id'))) {
@@ -156,14 +156,21 @@
 					});
 					
 					jQuery('#browseSearch').autocomplete(
-						'<?php print $va_lookup_urls['search']; ?>', {minChars: 3, matchSubset: 1, matchContains: 1, delay: 800}
-					);
-					jQuery('#browseSearch').result(function(event, data, formatted) {
-						oHierBrowser.setUpHierarchy(data[1]);	// jump browser to selected item
-						if (stateCookieJar.get('<?php print $vs_table; ?>BrowserIsClosed') == 1) {
-							jQuery("#browseToggle").click();
+						{
+							minLength: 3, delay: 800, html: true,
+							source: '<?php print $va_lookup_urls['search']; ?>',
+							select: function(event, ui) {
+								if (parseInt(ui.item.id) > 0) {
+									oHierBrowser.setUpHierarchy(ui.item.id);	// jump browser to selected item
+									if (stateCookieJar.get('<?php print $vs_table; ?>BrowserIsClosed') == 1) {
+										jQuery("#browseToggle").click();
+									}
+								}
+								event.preventDefault();
+								jQuery('#browseSearch').val('');
+							}
 						}
-					});
+					).click(function() { this.select(); });
 					jQuery("#browseToggle").click(function() {
 						jQuery("#browse").slideToggle(350, function() { 
 							stateCookieJar.set('<?php print $vs_table; ?>BrowserIsClosed', (this.style.display == 'block') ? 0 : 1); 

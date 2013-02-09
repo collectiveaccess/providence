@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2008-2012 Whirl-i-Gig
+ * Copyright 2008-2013 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -48,6 +48,7 @@
 		static $s_element_id_lookup_cache = array();
  		static $s_element_instance_cache = array();
  		static $s_element_code_lookup_cache = array();
+ 		static $s_element_datatype_lookup_cache = array();
 		# ------------------------------------------------------------------
 		protected $opa_failed_attribute_inserts;
 		protected $opa_failed_attribute_updates;
@@ -82,7 +83,7 @@
 			$vn_element_id = $t_element->getPrimaryKey();
 			
 			// check restriction min/max settings
-			$t_restriction = $t_element->getTypeRestrictionInstance($this->tableNum(), $this->getTypeID());
+			$t_restriction = $t_element->getTypeRestrictionInstanceForElement($this->tableNum(), $this->getTypeID());
 			if (!$t_restriction) { return null; }		// attribute not bound to this type
 			$vn_min = $t_restriction->getSetting('minAttributesPerRow');
 			$vn_max = $t_restriction->getSetting('maxAttributesPerRow');
@@ -241,7 +242,7 @@
 			// check restriction min/max settings
 			if (!isset($pa_options['dontCheckMinMax']) || !$pa_options['dontCheckMinMax']) { 
 				if (!($t_element = $this->_getElementInstance($t_attr->get('element_id')))) { return false; }
-				$t_restriction = $t_element->getTypeRestrictionInstance($this->tableNum(), $this->getTypeID());
+				$t_restriction = $t_element->getTypeRestrictionInstanceForElement($this->tableNum(), $this->getTypeID());
 				if (!$t_restriction) { return null; }		// attribute not bound to this type
 				$vn_min = $t_restriction->getSetting('minAttributesPerRow');
 				$vn_max = $t_restriction->getSetting('maxAttributesPerRow');
@@ -400,7 +401,7 @@
 			return $va_field_values;
 		}
 		# ------------------------------------------------------------------
-		public function load($pm_id=null) {
+		public function load($pm_id=null, $pb_use_cache=true) {
 			$this->init();
 			$this->setFieldValuesArray(array());
 			if ($vn_c = parent::load($pm_id)) {
@@ -506,7 +507,7 @@
 			return false;
 		}
 		# ------------------------------------------------------------------
-		public function delete($pb_delete_related=false, $pa_options=null) {
+		public function delete($pb_delete_related=false, $pa_options=null, $pa_fields=null, $pa_table_list=null) {
 			$vb_web_set_change_log_unit_id = BaseModel::setChangeLogUnitID();
 			
 			if (!$this->inTransaction()) {
@@ -516,7 +517,7 @@
 			if (!is_array($pa_options)) { $pa_options = array(); }
 			
 			$vn_id = $this->getPrimaryKey();
-			if(parent::delete($pb_delete_related)) {
+			if(parent::delete($pb_delete_related, $pa_options, $pa_fields, $pa_table_list)) {
 				// Delete any associated attributes and attribute_values
 				if (!($qr_res = $this->getDb()->query("
 					DELETE FROM ca_attribute_values 
@@ -579,7 +580,7 @@
 									foreach($va_values as $vs_sub_code => $vs_value) {
 										if (!$t_element = $this->_getElementInstance($vs_sub_code)) { continue; }
 										
-										switch($t_element->get('datatype')) {
+										switch((int)$t_element->get('datatype')) {
 											case 3:		// list
 												$va_list_item = $t_list->getItemFromListByItemID($t_element->get('list_id'), $vs_value);
 												$vs_value = $vs_value.":".$va_list_item['idno'];
@@ -641,12 +642,16 @@
 		 *
 		 * @param $pa_options array - array of options for get; in addition to the standard get() options, will also pass through options to attribute value handlers
 		 *		Supported options include:
-		 *				locale = 
-		 *				returnAsArray = if true, return an array, otherwise return a string (default is false)
-		 *				returnAllLocales = 
-		 *				template = 
-		 *				delimiter = 
-		 *				convertCodesToDisplayText =
+		 *			locale = 
+		 *			returnAsArray = if true, return an array, otherwise return a string (default is false)
+		 *			returnAllLocales = 
+		 *			template = 
+		 *			delimiter = 
+		 *			convertCodesToDisplayText =
+ 	 	 *			returnAsLink = if true and $ps_field is a URL attribute and returnAllLocales is not set, then returned values will be links. Default is false.
+ 	 	 *			returnAsLinkText = *For URL attributes only* Text to use a content of HTML link. If omitted the url itself is used as the link content. 	 	 
+ 	 	 *			returnAsLinkAttributes = array of attributes to include in link <a> tag. Use this to set class, alt and any other link attributes.
+		 *
 		 * @return mixed - 
 		 *
 		 * 
@@ -658,6 +663,11 @@
 			$vs_delimiter = 				(isset($pa_options['delimiter'])) ? $pa_options['delimiter'] : ' ';
 			$vb_return_as_array = 		(isset($pa_options['returnAsArray'])) ? (bool)$pa_options['returnAsArray'] : false;
 			$vb_return_all_locales = 	(isset($pa_options['returnAllLocales'])) ? (bool)$pa_options['returnAllLocales'] : false;
+			
+			$vb_return_as_link = 		(isset($pa_options['returnAsLink'])) ? (bool)$pa_options['returnAsLink'] : false;
+			$vs_return_as_link_text = 	(isset($pa_options['returnAsLinkText'])) ? (string)$pa_options['returnAsLinkText'] : '';
+			$vs_return_as_link_attributes = 	(isset($pa_options['returnAsLinkAttributes'])) ? (string)$pa_options['returnAsLinkAttributes'] : array();
+			
 			if ($vb_return_all_locales && !$vb_return_as_array) { $vb_return_as_array = true; }
 			if (!isset($pa_options['convertCodesToDisplayText'])) { $pa_options['convertCodesToDisplayText'] = false; }
 		
@@ -727,9 +737,20 @@
 							if (!$vb_return_as_array) {
 								return $t_instance->getAttributesForDisplay($va_tmp[1], $vs_template, $pa_options);
 							} else {
-								$va_values = $t_instance->getAttributeDisplayValues($va_tmp[1], $t_instance->getPrimaryKey(), $pa_options);
+								$va_values = $t_instance->getAttributeDisplayValues($va_tmp[1], $vn_row_id = $t_instance->getPrimaryKey(), $pa_options);
 								if (!$vb_return_all_locales) {
 									$va_values = array_shift($va_values);
+									
+									if ($vs_template) {
+										$va_values_tmp = array();
+										foreach($va_values as $vn_i => $va_value_list) {
+											foreach($va_value_list as $vn_attr_id => $va_attr_data) {
+												$va_values_tmp[] = caProcessTemplateForIDs($vs_template, $va_tmp[0], array($vn_row_id), array_merge($pa_options, array('returnAsArray' => false, 'placeholderPrefix' => $va_tmp[1])));
+											}
+										}
+				
+										$va_values = $va_values_tmp;
+									}
 								}
 								return $va_values;
 							}
@@ -742,11 +763,12 @@
 						if ($va_tmp[0] === $t_instance->tableName()) {
 							if (!$t_instance->hasField($va_tmp[1])) {
 								// try it as an attribute
+									
 								if (!$vb_return_as_array) {
 									if (!$vs_template) { $vs_template = '^'.$va_tmp[2]; }
 									return $t_instance->getAttributesForDisplay($va_tmp[1], $vs_template, $pa_options);
 								} else {
-									$va_values = $t_instance->getAttributeDisplayValues($va_tmp[1], $t_instance->getPrimaryKey(), $pa_options);
+									$va_values = $t_instance->getAttributeDisplayValues($va_tmp[1], $vn_row_id = $t_instance->getPrimaryKey(), $pa_options);
 									$va_subvalues = array();
 									
 									if ($vb_return_all_locales) {
@@ -763,12 +785,15 @@
 										foreach($va_values as $vn_id => $va_attribute_values) {
 											foreach($va_attribute_values as $vn_attribute_id => $va_data) {
 												if(isset($va_data[$va_tmp[2]])) {
-													$va_subvalues[$vn_attribute_id] = $va_data[$va_tmp[2]];
+													if ($vs_template) { 
+														$va_subvalues[$vn_attribute_id] = caProcessTemplateForIDs($vs_template, $va_tmp[0], array($vn_row_id), array_merge($pa_options, array('returnAsArray' => false, 'placeholderPrefix' => $va_tmp[1])));
+													} else {
+														$va_subvalues[$vn_attribute_id] = $va_data;
+													}
 												}
 											}
 										}
 									}
-									
 									return $va_subvalues;
 								}
 							}
@@ -1020,6 +1045,8 @@
 			if (!is_array($pa_options)) { $pa_options = array(); }
 			if (!is_array($pa_bundle_settings)) { $pa_bundle_settings = array(); }
 			
+			$vb_batch = (isset($pa_options['batch']) && $pa_options['batch']) ? true : false;
+			
 			if (!($t_element = $this->_getElementInstance($pm_element_code_or_id))) {
 				return false;
 			}
@@ -1076,6 +1103,9 @@
 					$vs_br = "";
 				}
 
+				if (isset($pa_bundle_settings['usewysiwygeditor']) && strlen($pa_bundle_settings['usewysiwygeditor']) == 0) {
+					unset($pa_bundle_settings['usewysiwygeditor']);	// let null usewysiwygeditor bundle option fall back to metadata element setting
+				}
 				$va_elements_by_container[$va_element['parent_id']][] = $vs_br.ca_attributes::attributeHtmlFormElement($va_element, array_merge($pa_bundle_settings, array_merge($pa_options, array(
 					'label' => (sizeof($va_element_set) > 1) ? $va_label['name'] : '',
 					'description' => $va_label['description'],
@@ -1118,9 +1148,10 @@
 			$o_view->setVar('render_mode', $t_element->getSetting('render'));	// only set for list attributes (as of 26 Sept 2010 at least)
 			
 			if ($t_restriction = $this->getTypeRestrictionInstance($t_element->get('element_id'))) {
-				$o_view->setVar('min_num_repeats', $t_restriction->getSetting('minAttributesPerRow'));
-				$o_view->setVar('max_num_repeats', $t_restriction->getSetting('maxAttributesPerRow'));
-				$o_view->setVar('min_num_to_display', $t_restriction->getSetting('minimumAttributeBundlesToDisplay'));
+				// If batch mode force minimums to zero
+				$o_view->setVar('max_num_repeats', $vb_batch  ? 9999 : $t_restriction->getSetting('maxAttributesPerRow'));
+				$o_view->setVar('min_num_repeats', $vb_batch ? 0 : $t_restriction->getSetting('minAttributesPerRow'));
+				$o_view->setVar('min_num_to_display', $vb_batch ? 1 : $t_restriction->getSetting('minimumAttributeBundlesToDisplay'));
 			}
 			
 			// these are lists of associative arrays representing attributes that were rejected in a save() action
@@ -1137,6 +1168,9 @@
 			
 			// pass bundle settings to view
 			$o_view->setVar('settings', $pa_bundle_settings);
+			
+			// Is this being used in the batch editor?
+			$o_view->setVar('batch', (bool)(isset($pa_options['batch']) && $pa_options['batch']));
 			
 			return $o_view->render('ca_attributes.php');
 		}
@@ -1325,7 +1359,7 @@
 		 * @param $pm_element_code_or_id string|integer -
 		 * @param $pn_row_id integer -
 		 * @param $pa_options array -
-		 *				convertLinkBreaks - if set to true, will attemp to convert line break characters to HTML <p> and <br> tags; default is false.
+		 *				convertLineBreaks - if set to true, will attempt to convert line break characters to HTML <p> and <br> tags; default is false.
 		 *				locale - if set to a valid locale_id or locale code, values will be returned in locale *if available*, otherwise will fallback to values in languages that are available using the standard fallback mechanism. Default is to use user's current locale.
 		 *				returnAllLocales - if set to true, values for all locales are returned, locale option is ignored and the returned array is indexed first by attribute_id and then by locale_id. Default is false.
 		 *				indexByRowID - if true first index of returned array is $pn_row_id, otherwise it is the element_id of the retrieved metadata element	
@@ -1351,7 +1385,8 @@
 					} else {
 						$vn_list_id = null;
 					}
-					if (isset($pa_options['convertLinkBreaks']) && $pa_options['convertLinkBreaks']) {
+					
+					if (isset($pa_options['convertLineBreaks']) && $pa_options['convertLineBreaks']) {
 						$vs_converted_value = preg_replace("!(\n|\r\n){2}!","<p/>",$o_value->getDisplayValue(array_merge($pa_options, array('list_id' => $vn_list_id))));
 						$va_display_values[$vs_element_code] = preg_replace("![\n]{1}!","<br/>",$vs_converted_value);
 					} else {
@@ -1427,7 +1462,7 @@
 	     *
 	     * Supported options
 	     *	delimiter = text to use between attribute values; default is a single space
-	     *	convertLinkBreaks = if true will convert line breaks to HTML <br/> tags for display in a web browser; default is false
+	     *	convertLineBreaks = if true will convert line breaks to HTML <br/> tags for display in a web browser; default is false
 		 */
 		public function getAttributesForDisplay($pm_element_code_or_id, $ps_template=null, $pa_options=null) {
 			if (!($vn_row_id = $this->getPrimaryKey())) { 
@@ -1451,31 +1486,8 @@
 			}
 			
 			if ($ps_template) {
-				$va_templated_values = array();
-				foreach($va_tmp as $vn_id => $va_value_list) {
-					foreach($va_value_list as $va_value) {
-						$vs_template = $ps_template;
-						
-						$va_element_codes = array_keys($va_value);
-						usort($va_element_codes, "caLengthSortHelper");
-						
-						foreach($va_element_codes as $vn_i => $vs_element_code) {
-							if ($vs_value = $va_value[$vs_element_code]) {
-								$vs_template = str_replace("^".$vs_element_code, $vs_value, $vs_template);
-							} else {
-								$vs_template = preg_replace("![^A-Za-z0-9_\^ ]*\^{$vs_element_code}[ ]*[^A-Za-z0-9_ ]*!", '', $vs_template);
-							}
-						}
-						
-						if ($vs_template) { $va_templated_values[] = $vs_template; }
-					}
-				}
-				$va_proc_templates[$vn_i] = preg_replace("![^A-Za-z0-9_\^ ]*\^{$vs_tag}[^A-Za-z0-9_ ]*!", '', $va_proc_templates[$vn_i]);
-				$vs_text = preg_replace('![^A-Za-z0-9_\^ ]*\^[A-Za-z0-9_\-]+[^A-Za-z0-9_ ]*!', '', join($vs_delimiter, $va_templated_values)); // remove un-replaced tags
-				if (isset($pa_options['convertLineBreaks']) && $pa_options['convertLineBreaks']) {
-					$vs_text = caConvertLineBreaks($vs_text);
-				}
-				return $vs_text;
+				unset($pa_options['template']);
+				return caProcessTemplateForIDs($ps_template, $this->tableNum(), array($vn_row_id), array_merge($pa_options, array('placeholderPrefix' => $t_element->get('element_code'))));
 			} else {
 				// no template
 				$va_attribute_list = array();
@@ -1539,7 +1551,7 @@
 			
 			$vs_table = $this->tableName();
 			foreach($va_elements as $vn_element_id => $vs_element_code) {
-				$va_vals = $this->get("{$vs_table}.{$vs_element_code}", array("returnAsArray" => true, "returnAllLocales" => true));
+				$va_vals = $this->get("{$vs_table}.{$vs_element_code}", array("returnAsArray" => true, "returnAllLocales" => true, 'forDuplication' => true));
 				if (!is_array($va_vals)) { continue; }
 				foreach($va_vals as $vn_id => $va_vals_by_locale) {
 					foreach($va_vals_by_locale as $vn_locale_id => $va_vals_by_attr_id) {
@@ -1691,6 +1703,20 @@
  			BaseModelWithAttributes::$s_applicable_element_code_cache[$this->tableNum().'/'.$pn_type_id.'/'.($pb_include_sub_element_codes ? 1 : 0)] = $va_codes;
  			return $va_codes;
  		}
+ 		# ------------------------------------------------------------------
+		/**
+		 *
+		 */
+ 		public function getApplicableElementCodesForTypes($pa_type_ids, $pb_include_sub_element_codes=false, $pb_dont_cache=true) {
+ 			$va_codes = array();
+ 			foreach($pa_type_ids as $vn_i => $vn_type_id) {
+ 				$va_tmp = $this->getApplicableElementCodes($vn_type_id, $pb_include_sub_element_codes, $pb_dont_cache);
+ 				foreach($va_tmp as $vn_element_id => $vs_element_code) {
+ 					$va_codes[$vn_element_id] = $vs_element_code;
+ 				}
+ 			}
+ 			return $va_codes;
+ 		}
 		# ------------------------------------------------------------------
 		/**
 		 *
@@ -1769,6 +1795,7 @@
 				$this->postError(1950, _t("Element code or id must not be blank"), "BaseModelWithAttributes->_getElementInstance()");
 				return false;
 			}
+			
  			if (isset(BaseModelWithAttributes::$s_element_instance_cache[$pm_element_code_or_id]) && BaseModelWithAttributes::$s_element_instance_cache[$pm_element_code_or_id]) {
  				return BaseModelWithAttributes::$s_element_instance_cache[$pm_element_code_or_id];
  			}
@@ -1804,6 +1831,15 @@
 			
 			BaseModelWithAttributes::$s_element_id_lookup_cache[$t_element->getPrimaryKey()] = BaseModelWithAttributes::$s_element_id_lookup_cache[$t_element->get('element_code')] = $t_element->getPrimaryKey();
 			return BaseModelWithAttributes::$s_element_code_lookup_cache[$t_element->get('element_code')] = BaseModelWithAttributes::$s_element_code_lookup_cache[$t_element->getPrimaryKey()] = $t_element->get('element_code');
+		}
+		# ------------------------------------------------------------------
+		public function _getElementDatatype($pm_element_code_or_id) {
+			if (isset(BaseModelWithAttributes::$s_element_datatype_lookup_cache[$pm_element_code_or_id])) { return BaseModelWithAttributes::$s_element_datatype_lookup_cache[$pm_element_code_or_id]; }
+		
+			if (!($t_element = $this->_getElementInstance($pm_element_code_or_id))) { return null; }
+			
+			BaseModelWithAttributes::$s_element_id_lookup_cache[$t_element->getPrimaryKey()] = BaseModelWithAttributes::$s_element_id_lookup_cache[$t_element->get('element_code')] = $t_element->getPrimaryKey();
+			return BaseModelWithAttributes::$s_element_datatype_lookup_cache[$t_element->getPrimaryKey()] = BaseModelWithAttributes::$s_element_datatype_lookup_cache[$t_element->get('element_code')] = $t_element->get('datatype');
 		}
 		# ------------------------------------------------------------------
 	}

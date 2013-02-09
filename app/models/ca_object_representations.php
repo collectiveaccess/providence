@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2008-2012 Whirl-i-Gig
+ * Copyright 2008-2013 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -356,7 +356,7 @@ class ca_object_representations extends BundlableLabelableBaseModelWithAttribute
 		}
 		
 		// do insert
-		if ($vn_rc = parent::insert()) {
+		if ($vn_rc = parent::insert($pa_options)) {
 			$va_media_info = $this->getMediaInfo('media', 'original');
 			$this->set('md5', $va_media_info['MD5']);
 			$this->set('mimetype', $va_media_info['MIMETYPE']);
@@ -366,7 +366,7 @@ class ca_object_representations extends BundlableLabelableBaseModelWithAttribute
 			$va_metadata = $this->get('media_metadata', array('binary' => true));
 			caExtractEmbeddedMetadata($this, $va_metadata, $this->get('locale_id'));
 			
-			$vn_rc = parent::update($pa_options);
+			$vn_rc = parent::update();
 		}
 		
 		return $vn_rc;
@@ -390,10 +390,6 @@ class ca_object_representations extends BundlableLabelableBaseModelWithAttribute
 		}
 		
 		return $vn_rc;
-	}
-	# ------------------------------------------------------
-	public function delete($pn_delete_related=false) {
-		return parent::delete($pn_delete_related);
 	}
 	# ------------------------------------------------------
 	/**
@@ -544,11 +540,12 @@ class ca_object_representations extends BundlableLabelableBaseModelWithAttribute
  			$va_labels[$qr_annotation_labels->get('annotation_id')][$qr_annotation_labels->get('locale_id')] = $qr_annotation_labels->get('name');
  		}
  		
- 		if (!isset($pa_options['dontExtraValuesByUserLocale']) || !$pa_options['dontExtraValuesByUserLocale']) {
+ 		if (!isset($pa_options['dontExtractValuesByUserLocale']) || !$pa_options['dontExtractValuesByUserLocale']) {
  			$va_labels = caExtractValuesByUserLocale($va_labels);
  		}
  		
- 		ksort($va_annotations, SORT_REGULAR);
+ 		ksort($va_annotations);
+ 		
  		$va_sorted_annotations = array();
  		foreach($va_annotations as $vs_key => $va_values) {
  			foreach($va_values as $va_val) {
@@ -559,7 +556,10 @@ class ca_object_representations extends BundlableLabelableBaseModelWithAttribute
  		return $va_sorted_annotations;
  	} 
  	# ------------------------------------------------------
- 	public function addAnnotation($pn_locale_id, $pn_user_id, $pa_properties, $pn_status, $pn_access) {
+ 	/**
+ 	 *
+ 	 */
+ 	public function addAnnotation($ps_title, $pn_locale_id, $pn_user_id, $pa_properties, $pn_status, $pn_access, $pa_values=null, $pa_options=null) {
  		if (!($vn_representation_id = $this->getPrimaryKey())) { return null; }
  		
  		if (!($o_coder = $this->getAnnotationPropertyCoderInstance($this->getAnnotationType()))) {
@@ -596,6 +596,13 @@ class ca_object_representations extends BundlableLabelableBaseModelWithAttribute
 			$this->errors = $t_annotation->errors;
 			return false;
 		}
+		
+		$t_annotation->addLabel(array('name' => $ps_title), $pn_locale_id, null, true);
+		if ($t_annotation->numErrors()) {
+			$this->errors = $t_annotation->errors;
+			return false;
+		}
+		
 		foreach($o_coder->getPropertyList() as $vs_property) {
 			$t_annotation->setPropertyValue($vs_property, $o_coder->getProperty($vs_property));
 		}
@@ -607,11 +614,43 @@ class ca_object_representations extends BundlableLabelableBaseModelWithAttribute
 			return false;
 		}
 		
+		if (is_array($pa_values)) {
+			foreach($pa_values as $vs_element => $va_value) { 					
+				if (is_array($va_value)) {
+					// array of values (complex multi-valued attribute)
+					$t_annotation->addAttribute(
+						array_merge($va_value, array(
+							'locale_id' => $pn_locale_id
+						)), $vs_element);
+				} else {
+					// scalar value (simple single value attribute)
+					if ($va_value) {
+						$t_annotation->addAttribute(array(
+							'locale_id' => $pn_locale_id,
+							$vs_element => $va_value
+						), $vs_element);
+					}
+				}
+			}
+		}
+		
+		$t_annotation->update();
  		
+ 		if ($t_annotation->numErrors()) {
+			$this->errors = $t_annotation->errors;
+			return false;
+		}
+ 		
+ 		if (isset($pa_options['returnAnnotation']) && (bool)$pa_options['returnAnnotation']) {
+ 			return $t_annotation;
+ 		}
  		return $t_annotation->getPrimaryKey();
  	}
  	# ------------------------------------------------------
- 	public function editAnnotation($pn_annotation_id, $pn_locale_id, $pa_properties, $pn_status, $pn_access) {
+ 	/**
+ 	 *
+ 	 */
+ 	public function editAnnotation($pn_annotation_id, $pn_locale_id, $pa_properties, $pn_status, $pn_access, $pa_values=null, $pa_options=null) {
  		if (!($vn_representation_id = $this->getPrimaryKey())) { return null; }
  	
  		if (!($o_coder = $this->getAnnotationPropertyCoderInstance($this->getAnnotationType()))) {
@@ -650,12 +689,45 @@ class ca_object_representations extends BundlableLabelableBaseModelWithAttribute
 				return false;
 			}
 			
+			if (is_array($pa_values)) {
+				foreach($pa_values as $vs_element => $va_value) { 					
+					if (is_array($va_value)) {
+						// array of values (complex multi-valued attribute)
+						$t_annotation->addAttribute(
+							array_merge($va_value, array(
+								'locale_id' => $pn_locale_id
+							)), $vs_element);
+					} else {
+						// scalar value (simple single value attribute)
+						if ($va_value) {
+							$t_annotation->addAttribute(array(
+								'locale_id' => $pn_locale_id,
+								$vs_element => $va_value
+							), $vs_element);
+						}
+					}
+				}
+			}
+			
+			$t_annotation->update();
+			
+			if ($t_annotation->numErrors()) {
+				$this->errors = $t_annotation->errors;
+				return false;
+			}
+			
+			if (isset($pa_options['returnAnnotation']) && (bool)$pa_options['returnAnnotation']) {
+				return $t_annotation;
+			}
 			return true;
  		}
  		
  		return false;
  	}
  	# ------------------------------------------------------
+ 	/**
+ 	 *
+ 	 */
  	public function removeAnnotation($pn_annotation_id) {
  		if (!($vn_representation_id = $this->getPrimaryKey())) { return null; }
  		
@@ -695,6 +767,7 @@ class ca_object_representations extends BundlableLabelableBaseModelWithAttribute
  					WHERE 
  						representation_id = ?
  				)
+ 				AND cor.deleted = 0
  		", (int)$vn_representation_id);
  		
  		$va_reps = array();
@@ -725,7 +798,7 @@ class ca_object_representations extends BundlableLabelableBaseModelWithAttribute
 		$o_view->setVar('settings', $pa_bundle_settings);
 		
 		$va_inital_values = array();
-		if (sizeof($va_items = $this->getAnnotations(array('dontExtraValuesByUserLocale' => true)))) {
+		if (sizeof($va_items = $this->getAnnotations(array('dontExtractValuesByUserLocale' => true)))) {
 			$t_rel = $this->getAppDatamodel()->getInstanceByTableName('ca_representation_annotations', true);
 			$vs_rel_pk = $t_rel->primaryKey();
 			foreach ($va_items as $vn_id => $va_item) {
@@ -743,7 +816,7 @@ class ca_object_representations extends BundlableLabelableBaseModelWithAttribute
  	 *
  	 */
  	protected function _processRepresentationAnnotations($po_request, $ps_form_prefix, $ps_placement_code) {
- 		$va_rel_items = $this->getAnnotations(array('dontExtraValuesByUserLocale' => true));
+ 		$va_rel_items = $this->getAnnotations(array('dontExtractValuesByUserLocale' => true));
 		$o_coder = $this->getAnnotationPropertyCoderInstance($this->getAnnotationType());
 		foreach($va_rel_items as $vn_id => $va_rel_item) {
 			$this->clearErrors();
@@ -815,24 +888,12 @@ class ca_object_representations extends BundlableLabelableBaseModelWithAttribute
 				}
 				
 				// create annotation
-				$vn_annotation_id = $this->addAnnotation($vn_locale_id, $po_request->getUserID(), $va_properties, $vn_status, $vn_access);
+				$vs_label = $po_request->getParameter($ps_placement_code.$ps_form_prefix.'_ca_representation_annotations_label_new_'.$vn_c, pString);
+				$vn_annotation_id = $this->addAnnotation($vs_label, $vn_locale_id, $po_request->getUserID(), $va_properties, $vn_status, $vn_access);
 				
 				if ($this->numErrors()) {
 					$po_request->addActionErrors($this->errors(), 'ca_representation_annotations', 'new_'.$vn_c);
-				} else {
-					// try to add label
-					if ($vs_label = $po_request->getParameter($ps_placement_code.$ps_form_prefix.'_ca_representation_annotations_label_new_'.$vn_c, pString)) {
-						$t_annotation = new ca_representation_annotations($vn_annotation_id);
-						if ($t_annotation->getPrimaryKey()) {
-							$t_annotation->setMode(ACCESS_WRITE);
-							$t_annotation->addLabel(array('name' => $vs_label), $vn_locale_id, null, true);
-							
-							if ($t_annotation->numErrors()) {
-								$po_request->addActionErrors($t_annotation->errors(), 'ca_representation_annotations', 'new_'.$vn_c);
-							}
-						}
-					}
-				}
+				} 
 			}
 		}
 		
@@ -1215,6 +1276,20 @@ class ca_object_representations extends BundlableLabelableBaseModelWithAttribute
 	}
  	# ------------------------------------------------------
  	/**
+ 	 * Override export function to do some cleanup in the media_metadata part.
+ 	 * XML parsers and wrappers like DOMDocument tend to be rather picky with their input as far as invalid
+ 	 * characters go and the return value of this function is usually used for something like that.
+ 	 */
+ 	public function getValuesForExport($pa_options=null){
+ 		$va_export = parent::getValuesForExport($pa_options);
+ 		// this section tends to contain wonky chars that are close to impossible to clean up
+ 		// if you read through the EXIF specs you know why ...
+ 		if(isset($va_export['media_metadata']['EXIF']['IFD0'])){
+ 			unset($va_export['media_metadata']['EXIF']['IFD0']);
+ 		}
+ 		return $va_export;
+ 	}
+ 	/**
  	 * 
  	 *
  	 * @param RequestHTTP $po_request
@@ -1372,7 +1447,7 @@ class ca_object_representations extends BundlableLabelableBaseModelWithAttribute
 		if (!file_exists($ps_filepath)) { return null; }
 		$vs_md5 = md5_file($ps_filepath);
 		$t_rep = new ca_object_representations();
-		if ($t_rep->load(array('md5' => $vs_md5))) { 
+		if ($t_rep->load(array('md5' => $vs_md5, 'deleted' => 0))) { 
 			return $t_rep;
 		}
 		

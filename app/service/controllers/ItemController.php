@@ -1,6 +1,6 @@
 <?php
 /* ----------------------------------------------------------------------
- * app/service/controllers/itemController.php :
+ * app/service/controllers/ItemController.php :
  * ----------------------------------------------------------------------
  * CollectiveAccess
  * Open-source collections management software
@@ -44,10 +44,10 @@
 			
 			if($vo_service->hasErrors()){
 				$this->view->setVar("errors",$vo_service->getErrors());
-				$this->render("service_error.php");
+				$this->render("json_error.php");
 			} else {
 				$this->view->setVar("content",$va_content);
-				$this->render("item_json.php");
+				$this->render("json.php");
 			}
 		}
 		# -------------------------------------------------------

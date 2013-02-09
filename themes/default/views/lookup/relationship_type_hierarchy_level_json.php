@@ -29,7 +29,7 @@
  	$va_list = $this->getVar('relationship_type_list');
  
  	foreach($va_list as $vs_key => $va_info) {
- 		$va_list[$vs_key]['name'] = $va_list[$vs_key]['name'].(($va_list[$vs_key]['type_code']) ? " (".$va_list[$vs_key]['type_code'].")" : "");
+ 		$va_list[$vs_key]['name'] = $va_list[$vs_key]['name'];
 		if ($va_info['is_default']) {
  			$va_list[$vs_key]['name'] = $va_list[$vs_key]['name'].' ◉';
  		}

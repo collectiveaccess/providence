@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2008-2012 Whirl-i-Gig
+ * Copyright 2008-2013 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -106,7 +106,7 @@ BaseModel::$s_ca_models_definitions['ca_metadata_elements'] = array(
 				'DISPLAY_WIDTH' => 88, 'DISPLAY_HEIGHT' => 15,
 				'IS_NULL' => false, 
 				'DEFAULT' => '',
-				'LABEL' => _t('Settings'), 'DESCRIPTION' => _t('Type-specific ettings for metadata element')
+				'LABEL' => _t('Settings'), 'DESCRIPTION' => _t('Type-specific settings for metadata element')
 		),
 		'rank' => array(
 				'FIELD_TYPE' => FT_NUMBER, 'DISPLAY_TYPE' => DT_OMIT, 
@@ -250,8 +250,8 @@ class ca_metadata_elements extends LabelableBaseModelWithAttributes implements I
 		$this->FIELDS['datatype']['BOUNDS_CHOICE_LIST'] = array_flip(ca_metadata_elements::getAttributeTypes());
 	}
 	# ------------------------------------------------------
-	public function load($pn_id) {
-		if ($vn_rc = parent::load($pn_id)) {
+	public function load($pm_id=null, $pb_use_cache = true) {
+		if ($vn_rc = parent::load($pm_id)) {
 			if (!isset(ca_metadata_elements::$s_settings_cache[$this->getPrimaryKey()])) {
 				ca_metadata_elements::$s_settings_cache[$this->getPrimaryKey()] = $this->get('settings');
 			}
@@ -259,22 +259,22 @@ class ca_metadata_elements extends LabelableBaseModelWithAttributes implements I
 		return $vn_rc;
 	}
 	# ------------------------------------------------------
-	public function insert() {
+	public function insert($pa_options=null) {
 		$this->set('settings', ca_metadata_elements::$s_settings_cache[null]);
-		if ($vn_rc =  parent::insert()) {
+		if ($vn_rc =  parent::insert($pa_options)) {
 			ca_metadata_elements::$s_settings_cache[$this->getPrimaryKey()] = ca_metadata_elements::$s_settings_cache[null];
 		}
 		return $vn_rc;
 	}
 	# ------------------------------------------------------
-	public function update() {
+	public function update($pa_options=null) {
 		$this->set('settings', ca_metadata_elements::$s_settings_cache[$this->getPrimaryKey()]);
-		return parent::update();
+		return parent::update($pa_options);
 	}
 	# ------------------------------------------------------
-	public function delete($pb_delete_related=false) {
+	public function delete($pb_delete_related = false, $pa_options = NULL, $pa_fields = NULL, $pa_table_list = NULL) {
 		$vn_id = $this->getPrimaryKey();
-		if ($vn_rc = parent::delete($pb_delete_related)) {
+		if ($vn_rc = parent::delete($pb_delete_related, $pa_options, $pa_fields, $pa_table_list)) {
 			unset(ca_metadata_elements::$s_settings_cache[$vn_id]);
 		}
 		return $vn_rc;
@@ -840,6 +840,26 @@ class ca_metadata_elements extends LabelableBaseModelWithAttributes implements I
 		
 		return $va_restrictions;
 	}
+	
+	# ------------------------------------------------------
+	/**
+	 * 
+	 */
+	static public function getElementDatatype($pm_element_code_or_id) {
+		$vo_db = new Db();
+		
+		$vn_element_id = null;		
+		$t_element = new ca_metadata_elements(is_numeric($pm_element_code_or_id) ? $pm_element_code_or_id : null);
+		
+		if (!($vn_element_id = $t_element->getPrimaryKey())) {
+			if ($t_element->load(array('element_code' => $pm_element_code_or_id))) {
+				return $t_element->get('datatype');	
+			}
+		} else {
+			return $t_element->get('datatype');
+		}
+		return null;
+	}
 	# ------------------------------------------------------
 	#
 	# ------------------------------------------------------
@@ -961,6 +981,27 @@ class ca_metadata_elements extends LabelableBaseModelWithAttributes implements I
 	}
 	# ------------------------------------------------------
 	/**
+	 * Return type restrictions for current element and specified table for display
+	 * Display consists of type names in the current locale
+	 *
+	 * @param int $pn_table_num The table to return restrictions for
+	 * @return array An array of type names to which this element is restricted, in the current locale
+	 * 
+	 */
+	public function getTypeRestrictionsForDisplay($pn_table_num) {
+		$va_restrictions = $this->getTypeRestrictions($pn_table_num);
+		
+		$t_instance = $this->getAppDatamodel()->getInstanceByTableNum($pn_table_num, true);
+		$va_restriction_names = array();
+		$va_type_names = $t_instance->getTypeList();
+		foreach($va_restrictions as $vn_i => $va_restriction) {
+			if (!$va_restriction['type_id']) { continue; }
+			$va_restriction_names[] = $va_type_names[$va_restriction['type_id']]['name_plural'];
+		}
+		return $va_restriction_names;
+	}
+	# ------------------------------------------------------
+	/**
 	 * Load type restriction for specified table and type and return loaded model instance.
 	 * Will return specific restriction for type_id, or a general (type_id=null) restriction if no
 	 * type-specific restriction is defined.
@@ -969,7 +1010,7 @@ class ca_metadata_elements extends LabelableBaseModelWithAttributes implements I
 	 * @param $pn_type_id - type_id of type restriction; leave null if you want a non-type-specific restriction
 	 * @return ca_metadata_type_restrictions instance - will be loaded with type restriction
 	 */
-	public function getTypeRestrictionInstance($pn_table_num, $pn_type_id) {
+	public function getTypeRestrictionInstanceForElement($pn_table_num, $pn_type_id) {
 		if (!($vn_element_id = $this->getPrimaryKey())) { return null; }		// element must be loaded
 		if ($this->get('parent_id')) { return null; }						// element must be root of hierarchy
 		

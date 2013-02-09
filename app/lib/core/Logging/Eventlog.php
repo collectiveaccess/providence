@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2004-2008 Whirl-i-Gig
+ * Copyright 2004-2012 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -34,21 +34,17 @@
   *
   */
  
-include_once(__CA_LIB_DIR__."/core/Error.php");
-include_once(__CA_LIB_DIR__."/core/Configuration.php");
-include_once(__CA_LIB_DIR__."/core/Db.php");
-include_once(__CA_LIB_DIR__."/core/Parsers/TimeExpressionParser.php");
+include_once(__CA_LIB_DIR__."/core/Logging/BaseLogger.php");
 
 # ----------------------------------------------------------------------
-class Eventlog {
-
-  	private $o_db;
-  	private $ops_table_prefix;
+class Eventlog extends BaseLogger {
+	# ----------------------------------------
   	private $opa_log_codes;
 	# ----------------------------------------
+	/** 
+	 *
+	 */
 	public function __construct($pa_entry=null) {
-		$this->clearTransaction();
-		
 		$o_config = Configuration::load();
 		
 		# system codes are: "LOGN" = "successful login"; "LOGF" = "failed login"; "SYS" = "system"; "QUE" = queue
@@ -56,17 +52,19 @@ class Eventlog {
 		if (!is_array($va_codes)) { $va_codes = array(); }
 		$this->opa_log_codes = array_merge($va_codes,array("LOGN", "LOGF", "SYS", "DEBG", "QUE", "ERR"));
 		
-		
-		if (is_array($pa_entry)) {
-			$this->log($pa_entry);
-		}
-		
+		parent::__construct();
 	}
 	# ----------------------------------------
+	/** 
+	 *
+	 */
 	public function isValidLoggingCode($ps_code) {
 		return in_array($ps_code, $this->opa_log_codes);
 	}
 	# ----------------------------------------
+	/** 
+	 *
+	 */
 	public function log($pa_entry) {
 		if (is_array($pa_entry)) {
 			
@@ -92,6 +90,9 @@ class Eventlog {
 		return false;
 	}
 	# ----------------------------------------
+	/** 
+	 *
+	 */
 	public function search($ps_datetime_expression, $ps_code=null) {
 		$o_tep = new TimeExpressionParser();
 		
@@ -128,21 +129,6 @@ class Eventlog {
 			}
 		}
 		return null;
-	}
-	# ----------------------------------------
-	# --- Transactions
-	# ----------------------------------------
-	public function setTransaction($po_transaction) {
-		if (is_object($po_transaction)) {
-			$this->o_db =& $po_transaction->getDb();
-			return true;
-		} else {
-			return false;
-		}
-	}
-	# ----------------------------------------
-	public function clearTransaction() {
-		$this->o_db = new Db();
 	}
 	# ----------------------------------------
 }

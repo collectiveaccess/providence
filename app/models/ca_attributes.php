@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2008-2012 Whirl-i-Gig
+ * Copyright 2008-2013 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -191,7 +191,7 @@ class ca_attributes extends BaseModel {
 	/**
 	 * Stub out indexing for this table - it is never indexed
 	 */
-	public function doSearchIndexing() {
+	public function doSearchIndexing($pa_changed_field_values_array=null, $pb_reindex_mode=false, $ps_engine=null) {
 		return;
 	}
 	# ------------------------------------------------------
@@ -459,15 +459,10 @@ class ca_attributes extends BaseModel {
 			$o_config = Configuration::load();
 		}
 		
-		// TODO: does {fieldNamePrefix} need to be hardcoded? Does it matter?
-		// TODO: use appropriate element labels to label elements
-		
 		$vn_width = 25;
 		$vn_max_length = 255;
 		
 		$vs_element = Attribute::valueHTMLFormElement($pa_element_info['datatype'], $pa_element_info, $pa_options);
-		
-		// TODO: formalize, cleanup and document formatting code
 		
 		$ps_format = isset($pa_options['format']) ? $pa_options['format'] : null;
 		

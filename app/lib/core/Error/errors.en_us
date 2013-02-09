@@ -114,6 +114,8 @@
 1220 = Invalid table parameter
 1230 = Parent must be specified
 1240 = Invalid table specification
+1250 = Could not save ACL inheritance settings
+1260 = No user interface is available for this editor
 
 # --- File errors
 1500 = File not found
@@ -224,3 +226,9 @@
 
 # --- Summary printing errors
 3100 = Could not generate PDF
+
+# --- Batch editing errors
+3200 = Invalid set
+3210 = Batch editing is not allowed
+3220 = Set is empty
+3250 = Invalid directory

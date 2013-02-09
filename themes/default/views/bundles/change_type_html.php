@@ -28,7 +28,7 @@
  
 	JavascriptLoadManager::register("panel");
 	$t_item = $this->getVar('t_item');
-	if (sizeof($t_item->getTypeList()) <= 1) { return ''; }
+	//if (sizeof($t_item->getTypeList()) <= 1) { return ''; }
 ?>
 <script type="text/javascript">
 	var caTypeChangePanel;
@@ -52,7 +52,6 @@
 		}
 	});
 </script>
-<div id='inspectorChangeType'><div id='inspectorChangeTypeButton'><a href='#' onclick='caTypeChangePanel.showPanel(); return false;'><?php print caNavIcon($this->request, __CA_NAV_BUTTON_CHANGE__, null, array('title' => _t('Change type'))); ?></a></div></div>
 <div id="caTypeChangePanel" class="caTypeChangePanel"> 
 	<div class='dialogHeader'><?php print _t('Change %1 type', $t_item->getProperty('NAME_SINGULAR')); ?></div>
 	<div id="caTypeChangePanelContentArea">

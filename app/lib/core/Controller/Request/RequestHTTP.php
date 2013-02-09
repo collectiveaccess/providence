@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2007-2011 Whirl-i-Gig
+ * Copyright 2007-2012 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -91,6 +91,9 @@ class RequestHTTP extends Request {
  	private $ops_parsed_is_app_plugin = false;
  		
 	# -------------------------------------------------------
+	/**
+	 *
+	 */
 	public function __construct($po_response, $pa_options=null) {
 		$this->opo_response = $po_response;
 		parent::__construct();
@@ -109,6 +112,24 @@ class RequestHTTP extends Request {
 				$pa_options["dont_redirect_to_login"] = true;
 				$pa_options["dont_redirect_to_welcome"] = true;
 			}
+			
+			$va_sim_params = null;
+			if (isset($pa_options["simulateWith"]) && is_array($pa_options["simulateWith"])) {
+				$va_sim_params = $pa_options["simulateWith"];
+				if (isset($va_sim_params['GET'])) { $_GET = $va_sim_params['GET']; }
+				if (isset($va_sim_params['POST'])) {$_POST = $va_sim_params['POST']; }
+				if (isset($va_sim_params['COOKIE'])) {$_COOKIE = $va_sim_params['COOKIE']; }
+				$_REQUEST = array_merge($_GET, $_POST, $_COOKIE);
+				
+				foreach(array(
+					'SCRIPT_NAME', 'REQUEST_METHOD', 'PHP_AUTH_USER', 'PHP_AUTH_PW',
+					'REQUEST_URI', 'PATH_INFO', 'REMOTE_ADDR', 'HTTP_USER_AGENT'
+				) as $vs_k) {
+					if (isset($va_sim_params[$vs_k])) { $_SERVER[$vs_k] = $va_sim_params[$vs_k]; }
+				}
+				
+				$pa_options["no_authentication"] = true;
+			}
 		}
 	
 		# get session
@@ -122,7 +143,11 @@ class RequestHTTP extends Request {
 		if (!isset($pa_options["no_authentication"]) || !$pa_options["no_authentication"]) {
 			$this->doAuthentication($pa_options);
 		} else {
-			$this->user = new ca_users();
+			if (isset($va_sim_params['user_id']) && $va_sim_params['user_id']) {
+				$this->user = new ca_users($va_sim_params['user_id']);
+			} else {
+				$this->user = new ca_users();
+			}
 		}
 		
 		$this->opb_is_dispatched = false;
@@ -143,6 +168,17 @@ class RequestHTTP extends Request {
 		
 		if($this->ops_script_name=="service.php"){
 			$this->ops_raw_post_data = file_get_contents("php://input");
+
+			if($_SERVER["PHP_AUTH_USER"] && $_SERVER["PHP_AUTH_PW"]){
+				$this->doAuthentication(array(
+					'noPublicUsers' => true,
+					"no_headers" => true,
+					"dont_redirect" => true,
+					"options" => array(),
+					"user_name" => $_SERVER["PHP_AUTH_USER"],
+					"password" => $_SERVER["PHP_AUTH_PW"],
+				));
+			}
 		}
 		
 		$this->ops_base_path = join('/', $va_tmp);
@@ -226,6 +262,10 @@ class RequestHTTP extends Request {
 	# -------------------------------------------------------
 	public function getRawPostData() {
 		return $this->ops_raw_post_data;
+	}
+	# -------------------------------------------------------
+	public function setRawPostData($ps_post_data) {
+		$this->ops_raw_post_data = $ps_post_data;
 	}
 	# -------------------------------------------------------
 	public function getSession() {

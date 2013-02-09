@@ -380,7 +380,7 @@
 			
 			JavascriptLoadManager::register("swf/swfobject");
 $vs_tag = "
-				<div id='{$vs_id_name}' style='width:{$vn_viewer_width_with_units}; height: {$vn_viewer_height_with_units};'>
+				<div id='{$vs_id_name}' style='width:{$vn_viewer_width_with_units}; height: {$vn_viewer_height_with_units}; position: relative; z-index: 0;'>
 					{$vs_error_tag}
 				</div>
 				<script type='text/javascript'>
@@ -404,7 +404,7 @@ $vs_tag = "
 						});
 					} else {
 						// Fall-back to Flash-based viewer if browse doesn't support <canvas>
-						swfobject.embedSWF(\"{$vs_viewer_base_url}/viewers/apps/bischen.swf\", \"{$vs_id_name}\", \"{$vn_viewer_width}\", \"{$vn_viewer_height}\", \"8.0.0\",\"{$vs_viewer_base_url}/viewers/apps/expressInstall.swf\", false, {AllowScriptAccess: \"always\", allowFullScreen: \"true\", flashvars:\"{$vs_flash_vars}\", bgcolor: \"#ffffff\"});
+						swfobject.embedSWF(\"{$vs_viewer_base_url}/viewers/apps/bischen.swf\", \"{$vs_id_name}\", \"{$vn_viewer_width}\", \"{$vn_viewer_height}\", \"9.0.0\",\"{$vs_viewer_base_url}/viewers/apps/expressInstall.swf\", false, {AllowScriptAccess: \"always\", allowFullScreen: \"true\", flashvars:\"{$vs_flash_vars}\", bgcolor: \"#000000\", wmode: \"transparent\"});
 					}
 				</script>\n";			
 

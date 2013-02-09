@@ -37,7 +37,7 @@
 	$va_settings 		= $this->getVar('settings');
 
 	$vb_read_only		=	(isset($va_settings['readonly']) && $va_settings['readonly']);
-	
+	$vb_batch			=	$this->getVar('batch');
 	
 	$vb_allow_fetching_from_urls = $this->request->getAppConfig()->get('allow_fetching_of_media_from_remote_urls');
 	
@@ -89,8 +89,32 @@
 			}
 		}
 	}
+	
+	if ($vb_batch) {
+		print "<div class='editorBatchModeControl'>"._t("In batch")." ".
+			caHTMLSelect($vs_id_prefix.$t_item->tableNum()."_rel_batch_mode", array(
+				_t("do not use") => "_disabled_", 
+				_t('add to each item') => '_add_', 
+				_t('replace values') => '_replace_',
+				_t('remove all values') => '_delete_'
+			), array('id' => $vs_id_prefix.$t_item->tableNum()."_rel_batch_mode_select"))."</div>\n";
 ?>
-<div id="<?php print $vs_id_prefix.$t_item->tableNum().'_rel'; ?>">
+	<script type="text/javascript">
+		jQuery(document).ready(function() {
+			jQuery('#<?php print $vs_id_prefix.$t_item->tableNum(); ?>_rel_batch_mode_select').change(function() {
+				if ((jQuery(this).val() == '_disabled_') || (jQuery(this).val() == '_delete_')) {
+					jQuery('#<?php print $vs_id_prefix.$t_item->tableNum().'_rel'; ?>').slideUp(250);
+				} else {
+					jQuery('#<?php print $vs_id_prefix.$t_item->tableNum().'_rel'; ?>').slideDown(250);
+				}
+			});
+			jQuery('#<?php print $vs_id_prefix.$t_item->tableNum().'_rel'; ?>').hide();
+		});
+	</script>
+<?php
+	}
+?>
+<div id="<?php print $vs_id_prefix.$t_item->tableNum().'_rel'; ?>" <?php print $vb_batch ? "class='editorBatchBundleContent'" : ''; ?>>
 <?php
 	//
 	// The bundle template - used to generate each bundle in the form
@@ -179,9 +203,6 @@
 				</tr>
 			</table>
 		</div>
-		<script type="text/javascript">
-			jQuery("#{fieldNamePrefix}type_id_{n}").attr('disabled', true);
-		</script>
 <?php
 	print TooltipManager::getLoadHTML('bundle_ca_object_representations');
 ?>
@@ -222,6 +243,7 @@
 		showOnNewIDList: ['<?php print $vs_id_prefix; ?>_media_', '<?php print $vs_id_prefix; ?>_type_id_div_'],
 		hideOnNewIDList: ['<?php print $vs_id_prefix; ?>_media_show_update_', '<?php print $vs_id_prefix; ?>_edit_','<?php print $vs_id_prefix; ?>_download_', '<?php print $vs_id_prefix; ?>_media_metadata_container_'],
 		enableOnNewIDList: ['<?php print $vs_id_prefix; ?>_type_id_'],
+		disableOnExistingIDList: ['<?php print $vs_id_prefix; ?>_type_id_'],
 		showEmptyFormsOnLoad: 1,
 		readonly: <?php print $vb_read_only ? "true" : "false"; ?>,
 		isSortable: <?php print !$vb_read_only ? "true" : "false"; ?>,

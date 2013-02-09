@@ -23,10 +23,6 @@
  * the "license.txt" file for details, or visit the CollectiveAccess web site at
  * http://www.CollectiveAccess.org
  *
- * Portions of this code were inspired by and/or based upon the Omeka 
- * OaiPmhRepository plugin by John Flatness and Yu-Hsun Lin available at 
- * http://www.omeka.org and licensed under the GNU Public License version 3
- *
  * @package CollectiveAccess
  * @subpackage WebServices
  * @license http://www.gnu.org/copyleft/gpl.html GNU Public License version 3
@@ -37,64 +33,22 @@
  /**
   *
   */
-  
-require_once(__CA_LIB_DIR__."/ca/Service/BaseService.php");
+
+require_once(__CA_LIB_DIR__."/ca/Service/BaseJSONService.php");  
 require_once(__CA_MODELS_DIR__."/ca_lists.php");
 
-class ItemService {
-	# -------------------------------------------------------
-	private $opo_request;
-	private $ops_table;
-	private $opo_dm;
-	
-	private $opa_errors;
-	
-	private $opn_id;
-	private $opa_post;
-	private $ops_method;
+
+class ItemService extends BaseJSONService {	
 	# -------------------------------------------------------
 	public function __construct($po_request,$ps_table=""){
-		$this->opo_request = $po_request;
-		$this->ops_table = $ps_table;
-		$this->opo_dm = Datamodel::load();
-		$this->opa_errors = array();
-		
-		$this->ops_method = $this->opo_request->getRequestMethod();
-		
-		if(!in_array($this->ops_method, array("PUT","DELETE","GET","OPTIONS"))){
-			$this->opa_errors[] = _t("Invalid HTTP request method");
-		}
-		
-		$this->opn_id = intval($this->opo_request->getParameter("id",pInteger));
-
-		$vs_post_data = $this->opo_request->getRawPostData();
-		if(strlen(trim($vs_post_data))>0){
-			$this->opa_post = json_decode($vs_post_data,true);
-			if(!is_array($this->opa_post)){
-				$this->opa_errors[] = _t("Data sent via POST doesn't seem to be in JSON format");
-			}
-		} else {
-			$this->opa_post = array();
-		}
-		
-		if(!$this->opo_dm->getTableNum($ps_table)){
-			$this->opa_errors[] = _t("Table name does not exist");
-		}
-	}
-	# -------------------------------------------------------
-	public function hasErrors(){
-		return (bool) sizeof($this->opa_errors);
-	}
-	# -------------------------------------------------------
-	public function getErrors(){
-		return $this->opa_errors;
+		parent::__construct($po_request,$ps_table);
 	}
 	# -------------------------------------------------------
 	public function dispatch(){
-		switch($this->ops_method){
+		switch($this->getRequestMethod()){
 			case "GET":
 				if($this->opn_id>0){
-					if(sizeof($this->opa_post)==0){
+					if(sizeof($this->getRequestBodyArray())==0){
 						return $this->getAllItemInfo();
 					} else {
 						return $this->getSpecificItemInfo();
@@ -104,11 +58,27 @@ class ItemService {
 					return array();
 				}
 				break;
-			// @TODO
 			case "PUT":
-			case "OPTIONS":
-			default: // shouldn't happen, but still ..
-				$this->opa_errors[] = _t("Invalid HTTP request method");
+				if(sizeof($this->getRequestBodyArray())==0){
+					$this->addError(_t("Missing request body for PUT"));
+					return false;
+				}
+				if($this->opn_id>0){
+					return $this->editItem();
+				} else {
+					return $this->addItem();
+				}
+				break;
+			case "DELETE":
+				if($this->opn_id>0){
+					return $this->deleteItem();
+				} else {
+					$this->addError(_t("No identifier specified"));
+					return false;
+				}
+				break;
+			default:
+				$this->addError(_t("Invalid HTTP request method"));
 				return false;
 		}
 	}
@@ -118,11 +88,13 @@ class ItemService {
 			return false;
 		}
 
+		$va_post = $this->getRequestBodyArray();
+
 		$va_return = array();
-		if(!is_array($this->opa_post["bundles"])){
+		if(!is_array($va_post["bundles"])){
 			return false;
 		}
-		foreach($this->opa_post["bundles"] as $vs_bundle => $va_options){
+		foreach($va_post["bundles"] as $vs_bundle => $va_options){
 			if($this->_isBadBundle($vs_bundle)){
 				continue;
 			}
@@ -147,7 +119,7 @@ class ItemService {
 		$t_list = new ca_lists();
 		$t_locales = new ca_locales();
 
-		$va_locales = $t_locales->getLocaleList();
+		$va_locales = $t_locales->getLocaleList(array("available_for_cataloguing_only" => true));
 		
 		$va_return = array();
 
@@ -168,7 +140,7 @@ class ItemService {
 		if(is_array($va_labels)){
 			foreach($va_labels as $vn_locale_id => $va_labels_by_locale){
 				foreach($va_labels_by_locale as $va_tmp){
-					$va_return["preferred_labels"][$va_locales[$vn_locale_id]["code"]][] = $va_tmp[$t_instance->getLabelDisplayField()];
+					$va_return["nonpreferred_labels"][$va_locales[$vn_locale_id]["code"]][] = $va_tmp[$t_instance->getLabelDisplayField()];
 				}
 			}
 		}
@@ -200,6 +172,11 @@ class ItemService {
 			}
 		}
 
+		// representations for objects
+		if($this->ops_table == "ca_objects"){
+			$va_return['representations'] = $t_instance->getRepresentations();
+		}
+
 		// attributes
 		$va_codes = $t_instance->getApplicableElementCodes();
 		foreach($va_codes as $vs_code){
@@ -219,17 +196,32 @@ class ItemService {
 			}
 		}
 
-		// yes, not all combinations between these tables have relationships
-		// but it also doesn't hurt to query for them
-		$va_possible_tables = array(
-			"ca_objects", "ca_object_lots", "ca_entities",
-			"ca_places", "ca_occurrences", "ca_collections",
-			"ca_list_items", "ca_object_representations",
-			"ca_storage_locations", "ca_movements",
-			"ca_loans", "ca_tours", "ca_tour_stops"
-		);
+		// relationships
+		// yes, not all combinations between these tables have 
+		// relationships but it also doesn't hurt to query
+		foreach($this->opa_valid_tables as $vs_rel_table){
 
-		foreach($va_possible_tables as $vs_rel_table){
+			//
+			// set-related hacks
+			if($this->ops_table == "ca_sets" && $vs_rel_table=="ca_tours"){ // throws SQL error in getRelatedItems
+				continue;
+			}
+			// you'd expect the set items to be included for sets but
+			// we don't wan't to list set items as allowed related table
+			// which is why we add them by hand here
+			if($this->ops_table == "ca_sets"){
+				$va_tmp = $t_instance->getItems();
+				$va_set_items = array();
+				foreach($va_tmp as $va_loc){
+					foreach($va_loc as $va_item){
+						$va_set_items[] = $va_item;
+					}
+				}
+				$va_return["related"]["ca_set_items"] = $va_set_items;
+			}
+			// end set-related hacks
+			//
+
 			$va_related_items = $t_instance->get($vs_rel_table,array("returnAsArray" => true));
 			if(is_array($va_related_items) && sizeof($va_related_items)>0){
 				$va_return["related"][$vs_rel_table] = array_values($va_related_items);
@@ -239,46 +231,244 @@ class ItemService {
 		return $va_return;
 	}
 	# -------------------------------------------------------
-	/**
-	 * Get BaseModel instance for given table and optionally load the record with the specified ID
-	 * @param string $ps_table table name, e.g. "ca_objects"
-	 * @param int $pn_id primary key value of the record to load
-	 * @return BaseModel
-	 */
-	private function _getTableInstance($ps_table,$pn_id=null){
-		if(!in_array($ps_table, array(
-			"ca_objects", "ca_object_lots", "ca_entities",
-			"ca_places", "ca_occurrences", "ca_collections",
-			"ca_list_items", "ca_object_representations",
-			"ca_storage_locations", "ca_movements",
-			"ca_loans", "ca_tours", "ca_tour_stops")))
-		{
-			$this->opa_errors[] = _t("Accessing this table directly is not allowed");
+	private function addItem(){
+		if(!($t_instance = $this->_getTableInstance($this->ops_table))){
 			return false;
 		}
 
-		$t_instance = $this->opo_dm->getInstanceByTableName($ps_table);
+		$t_locales = new ca_locales();
+		$va_post = $this->getRequestBodyArray();
 
-		if($pn_id > 0){
-			if(!$t_instance->load($pn_id)){
-				$this->opa_errors[] = _t("ID does not exist");
-				return false;
+		// intrinsic fields
+		if(is_array($va_post["intrinsic_fields"]) && sizeof($va_post["intrinsic_fields"])){
+			foreach($va_post["intrinsic_fields"] as $vs_field_name => $vs_value){
+				$t_instance->set($vs_field_name,$vs_value);
+			}
+		} else {
+			$this->addError(_t("No intrinsic fields specified"));
+			return false;
+		}
+
+		// attributes
+		if(is_array($va_post["attributes"]) && sizeof($va_post["attributes"])){
+			foreach($va_post["attributes"] as $vs_attribute_name => $va_values){
+				foreach($va_values as $va_value){
+					if($va_value["locale"]){
+						$va_value["locale_id"] = $t_locales->localeCodeToID($va_value["locale"]);
+						unset($va_value["locale"]);
+					}
+					$t_instance->addAttribute($va_value,$vs_attribute_name);
+				}
 			}
 		}
 
-		return $t_instance;
-	}
-	# -------------------------------------------------------
-	/**
-	 * Filter fields which should not be available for every service user
-	 * @param string $ps_bundle field name
-	 * @return boolean true if bundle should not be returned to user
-	 */
-	private function _isBadBundle($ps_bundle){
-		if(stripos($ps_bundle, "ca_users")!==false){
-			return true;
+		$t_instance->setMode(ACCESS_WRITE);
+		$t_instance->insert();
+
+		// AFTER INSERT STUFF
+
+		// preferred labels
+		if(is_array($va_post["preferred_labels"]) && sizeof($va_post["preferred_labels"])){
+			foreach($va_post["preferred_labels"] as $va_label){
+				if($va_label["locale"]){
+					$vn_locale_id = $t_locales->localeCodeToID($va_label["locale"]);
+					unset($va_label["locale"]);
+				}
+				$t_instance->addLabel($va_label,$vn_locale_id,null,true);
+			}
 		}
-		return false;
+
+		// nonpreferred labels
+		if(is_array($va_post["nonpreferred_labels"]) && sizeof($va_post["nonpreferred_labels"])){
+			foreach($va_post["nonpreferred_labels"] as $va_label){
+				if($va_label["locale"]){
+					$vn_locale_id = $t_locales->localeCodeToID($va_label["locale"]);
+					unset($va_label["locale"]);
+				}
+				if($va_label["type_id"]){
+					$vn_type_id = $va_label["type_id"];
+					unset($va_label["type_id"]);
+				} else {
+					$vn_type_id = null;
+				}
+				$t_instance->addLabel($va_label,$vn_locale_id,$vn_type_id,false);
+			}
+		}
+
+		// relationships
+		if(is_array($va_post["related"]) && sizeof($va_post["related"])>0){
+			foreach($va_post["related"] as $vs_table => $va_relationships){
+				foreach($va_relationships as $va_relationship){
+					$vs_source_info = isset($va_relationship["source_info"]) ? $va_relationship["source_info"] : null;
+					$vs_effective_date = isset($va_relationship["effective_date"]) ? $va_relationship["effective_date"] : null;
+					$vs_direction = isset($va_relationship["direction"]) ? $va_relationship["direction"] : null;
+
+					$t_rel_instance = $this->_getTableInstance($vs_table);
+
+					$vs_pk = isset($va_relationship[$t_rel_instance->primaryKey()]) ? $va_relationship[$t_rel_instance->primaryKey()] : null;
+					$vs_type_id = isset($va_relationship["type_id"]) ? $va_relationship["type_id"] : null;
+
+					$t_instance->addRelationship($vs_table,$vs_pk,$vs_type_id,$vs_effective_date,$vs_source_info,$vs_direction);
+
+					// @TODO add relationship attributes as soon as they're implemented
+				}
+			}
+		}
+
+		if($t_instance->numErrors()>0){
+			foreach($t_instance->getErrors() as $vs_error){
+				$this->addError($vs_error);
+			}
+			// don't leave orphaned record in case something
+			// went wrong with labels or relationships
+			if($t_instance->getPrimaryKey()){
+				$t_instance->delete();
+			}
+			return false;
+		} else {
+			return array($t_instance->primaryKey() => $t_instance->getPrimaryKey());
+		}
 	}
 	# -------------------------------------------------------
+	private function editItem(){
+		if(!($t_instance = $this->_getTableInstance($this->ops_table,$this->opn_id))){
+			return false;
+		}
+
+		$t_locales = new ca_locales();
+		$va_post = $this->getRequestBodyArray();
+
+		// intrinsic fields
+		if(is_array($va_post["intrinsic_fields"]) && sizeof($va_post["intrinsic_fields"])){
+			foreach($va_post["intrinsic_fields"] as $vs_field_name => $vs_value){
+				$t_instance->set($vs_field_name,$vs_value);
+			}
+		}
+
+		// attributes
+		if(is_array($va_post["remove_attributes"])){
+			foreach($va_post["remove_attributes"] as $vs_code_to_delete){
+				$t_instance->removeAttributes($vs_code_to_delete);
+			}
+		} else if ($va_post["remove_all_attributes"]){
+			$t_instance->removeAttributes();
+		}
+
+		if(is_array($va_post["attributes"]) && sizeof($va_post["attributes"])){
+			foreach($va_post["attributes"] as $vs_attribute_name => $va_values){
+				foreach($va_values as $va_value){
+					if($va_value["locale"]){
+						$va_value["locale_id"] = $t_locales->localeCodeToID($va_value["locale"]);
+						unset($va_value["locale"]);
+					}
+					$t_instance->addAttribute($va_value,$vs_attribute_name);
+				}
+			}
+		}
+
+		$t_instance->setMode(ACCESS_WRITE);
+		$t_instance->update();
+
+		// AFTER UPDATE STUFF
+
+		// yank all labels?
+		if ($va_post["remove_all_labels"]){
+			$t_instance->removeAllLabels();
+		}
+
+		// preferred labels
+		if(is_array($va_post["preferred_labels"]) && sizeof($va_post["preferred_labels"])){
+			foreach($va_post["preferred_labels"] as $va_label){
+				if($va_label["locale"]){
+					$vn_locale_id = $t_locales->localeCodeToID($va_label["locale"]);
+					unset($va_label["locale"]);
+				}
+				$t_instance->addLabel($va_label,$vn_locale_id,null,true);
+			}
+		}
+
+		// nonpreferred labels
+		if(is_array($va_post["nonpreferred_labels"]) && sizeof($va_post["nonpreferred_labels"])){
+			foreach($va_post["nonpreferred_labels"] as $va_label){
+				if($va_label["locale"]){
+					$vn_locale_id = $t_locales->localeCodeToID($va_label["locale"]);
+					unset($va_label["locale"]);
+				}
+				if($va_label["type_id"]){
+					$vn_type_id = $va_label["type_id"];
+					unset($va_label["type_id"]);
+				} else {
+					$vn_type_id = null;
+				}
+				$t_instance->addLabel($va_label,$vn_locale_id,$vn_type_id,false);
+			}
+		}
+
+		// relationships
+		if (is_array($va_post["remove_relationships"])){
+			foreach($va_post["remove_relationships"] as $vs_table){
+				$t_instance->removeRelationships($vs_table);
+			}
+		}
+
+		if($va_post["remove_all_relationships"]){
+			foreach($this->opa_valid_tables as $vs_table){
+				$t_instance->removeRelationships($vs_table);	
+			}
+		}
+
+		if(is_array($va_post["related"]) && sizeof($va_post["related"])>0){
+			foreach($va_post["related"] as $vs_table => $va_relationships){
+				foreach($va_relationships as $va_relationship){
+					$vs_source_info = isset($va_relationship["source_info"]) ? $va_relationship["source_info"] : null;
+					$vs_effective_date = isset($va_relationship["effective_date"]) ? $va_relationship["effective_date"] : null;
+					$vs_direction = isset($va_relationship["direction"]) ? $va_relationship["direction"] : null;
+
+					$t_rel_instance = $this->_getTableInstance($vs_table);
+
+					$vs_pk = isset($va_relationship[$t_rel_instance->primaryKey()]) ? $va_relationship[$t_rel_instance->primaryKey()] : null;
+					$vs_type_id = isset($va_relationship["type_id"]) ? $va_relationship["type_id"] : null;
+
+					$t_instance->addRelationship($vs_table,$vs_pk,$vs_type_id,$vs_effective_date,$vs_source_info,$vs_direction);
+				}
+			}
+		}
+
+		if($t_instance->numErrors()>0){
+			foreach($t_instance->getErrors() as $vs_error){
+				$this->addError($vs_error);
+			}
+			return false;
+		} else {
+			return array($t_instance->primaryKey() => $t_instance->getPrimaryKey());
+		}
+
+	}
+	# -------------------------------------------------------
+	private function deleteItem(){
+		if(!($t_instance = $this->_getTableInstance($this->ops_table,$this->opn_id))){
+			return false;
+		}
+
+		$va_post = $this->getRequestBodyArray();
+
+		$vb_delete_related = isset($va_post["delete_related"]) ? $va_post["delete_related"] : false;
+		$vb_hard_delete = isset($va_post["hard"]) ? $va_post["hard"] : false;
+
+		$t_instance->setMode(ACCESS_WRITE);
+		$t_instance->delete($vb_delete_related,array("hard" => $vb_hard_delete));
+
+
+		if($t_instance->numErrors()>0){
+			foreach($t_instance->getErrors() as $vs_error){
+				$this->addError($vs_error);
+			}
+			return false;
+		} else {
+			return array("deleted" => $this->opn_id);
+		}
+	}
+	# -------------------------------------------------------	
 }
+
+?>

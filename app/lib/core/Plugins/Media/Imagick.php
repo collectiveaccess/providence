@@ -509,7 +509,7 @@ class WLPlugMediaImagick Extends WLPlug Implements IWLPlugMedia {
 					
 					// exif
 					if(function_exists('exif_read_data')) {
-						if (is_array($va_exif = @exif_read_data($ps_filepath, 'EXIF', true, false))) { 							
+						if (is_array($va_exif = caSanitizeArray(@exif_read_data($ps_filepath, 'EXIF', true, false)))) { 							
 							//
 							// Rotate incoming image as needed
 							//

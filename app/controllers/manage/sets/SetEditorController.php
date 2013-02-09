@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2009-2011 Whirl-i-Gig
+ * Copyright 2009-2013 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -39,15 +39,15 @@
  			
  			// check access to set - if user doesn't have edit access we bail
  			$t_set = new ca_sets($po_request->getParameter('set_id', pInteger));
- 			if (!$t_set->haveAccessToSet($po_request->getUserID(), __CA_SET_EDIT_ACCESS__)) {
+ 			if (!$t_set->haveAccessToSet($po_request->getUserID(), __CA_SET_EDIT_ACCESS__, null, array('request' => $po_request))) {
  				$this->postError(2320, _t("Access denied"), "RequestDispatcher->dispatch()");
  			}
  		}
  		# -------------------------------------------------------
- 		protected function _initView() {
+ 		protected function _initView($pa_options=null) {
  			JavascriptLoadManager::register('bundleableEditor');
  			JavascriptLoadManager::register('sortableUI');
- 			$va_init = parent::_initView();
+ 			$va_init = parent::_initView($pa_options);
  			if (!$va_init[1]->getPrimaryKey()) {
  				$va_init[1]->set('user_id', $this->request->getUserID());
  				$va_init[1]->set('table_num', $this->request->getParameter('table_num', pInteger));
@@ -56,38 +56,38 @@
  		}
  		# -------------------------------------------------------
  		public function Edit($pa_values=null, $pa_options=null) {
-      list($vn_subject_id, $t_subject, $t_ui, $vn_parent_id, $vn_above_id) = $this->_initView($pa_options);
-      $this->view->setVar('can_delete', $this->UserCanDeleteSet($t_subject->get('user_id')));
- 			parent::Edit();
+      		list($vn_subject_id, $t_subject, $t_ui, $vn_parent_id, $vn_above_id) = $this->_initView($pa_options);
+      		$this->view->setVar('can_delete', $this->UserCanDeleteSet($t_subject->get('user_id')));
+ 			parent::Edit($pa_values, $pa_options);
  		}
  		# -------------------------------------------------------
  		public function Delete($pa_options=null) {
  			list($vn_subject_id, $t_subject, $t_ui) = $this->_initView($pa_options);
 
  			if (!$vn_subject_id) { return; }
-      if (!$this->UserCanDeleteSet($t_subject->get('user_id'))) {
-        $this->postError(2320, _t("Access denied here"), "RequestDispatcher->dispatch()");
-      }
-      else {
-        parent::Delete($pa_options);
-      }
-    }
-    # -------------------------------------------------------
-    private function UserCanDeleteSet($user_id) {
-      $can_delete = FALSE;
-      // If users can delete all sets, show Delete button
-      if ($this->request->user->canDoAction('can_delete_sets')) {
-        $can_delete = TRUE;
-      }
+			  if (!$this->UserCanDeleteSet($t_subject->get('user_id'))) {
+				$this->postError(2320, _t("Access denied here"), "RequestDispatcher->dispatch()");
+			  }
+			  else {
+				parent::Delete($pa_options);
+			  }
+		}
+		# -------------------------------------------------------
+		private function UserCanDeleteSet($user_id) {
+		  $can_delete = FALSE;
+		  // If users can delete all sets, show Delete button
+		  if ($this->request->user->canDoAction('can_delete_sets')) {
+			$can_delete = TRUE;
+		  }
 
-      // If users can delete own sets, and this set belongs to them, show Delete button
-      if ($this->request->user->canDoAction('can_delete_own_sets')) {
-        if ($user_id == $this->request->getUserID()) {
-          $can_delete = TRUE;
-        }
-      }
-      return $can_delete;
-    }
+		  // If users can delete own sets, and this set belongs to them, show Delete button
+		  if ($this->request->user->canDoAction('can_delete_own_sets')) {
+			if ($user_id == $this->request->getUserID()) {
+			  $can_delete = TRUE;
+			}
+		  }
+		  return $can_delete;
+		}
  		# -------------------------------------------------------
  		# Ajax handlers
  		# -------------------------------------------------------
@@ -101,7 +101,7 @@
 				}
 				
 				// does user have edit access to set?
-				if (!$t_set->haveAccessToSet($this->request->getUserID(), __CA_SET_EDIT_ACCESS__)) {
+				if (!$t_set->haveAccessToSet($this->request->getUserID(), __CA_SET_EDIT_ACCESS__, null, array('request' => $this->request))) {
 					$this->notification->addNotification(_t("You cannot edit this set"), __NOTIFICATION_TYPE_ERROR__);
 					$this->Edit();
 					return;
@@ -135,10 +135,11 @@
 					$vs_thumbnail_version = "thumbnail";
 				}
  				if(sizeof($va_reps = $t_row->getRepresentations(array($vs_thumbnail_version)))) {
- 					$this->view->setVar('representation_tag', $va_reps[0]['tags'][$vs_thumbnail_version]);
- 					$this->view->setVar('representation_url', $va_reps[0]['urls'][$vs_thumbnail_version]);
- 					$this->view->setVar('representation_width', $va_reps[0]['info'][$vs_thumbnail_version]['WIDTH']);
- 					$this->view->setVar('representation_height', $va_reps[0]['info'][$vs_thumbnail_version]['HEIGHT']);
+ 					$va_rep = array_shift($va_reps);
+ 					$this->view->setVar('representation_tag', $va_rep['tags'][$vs_thumbnail_version]);
+ 					$this->view->setVar('representation_url', $va_rep['urls'][$vs_thumbnail_version]);
+ 					$this->view->setVar('representation_width', $va_rep['info'][$vs_thumbnail_version]['WIDTH']);
+ 					$this->view->setVar('representation_height', $va_rep['info'][$vs_thumbnail_version]['HEIGHT']);
  				}
  			}
  			$this->render('ajax_set_item_info_json.php');

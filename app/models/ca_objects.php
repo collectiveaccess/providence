@@ -216,6 +216,30 @@ BaseModel::$s_ca_models_definitions['ca_objects'] = array(
 				'IS_NULL' => false, 
 				'DEFAULT' => '',
 				'LABEL' => _t('Sort order'), 'DESCRIPTION' => _t('Sort order'),
+		),
+		'acl_inherit_from_ca_collections' => array(
+				'FIELD_TYPE' => FT_NUMBER, 'DISPLAY_TYPE' => DT_SELECT, 
+				'DISPLAY_WIDTH' => 100, 'DISPLAY_HEIGHT' => 1,
+				'IS_NULL' => false, 
+				'DEFAULT' => 0,
+				'ALLOW_BUNDLE_ACCESS_CHECK' => true,
+				'BOUNDS_CHOICE_LIST' => array(
+					_t('Do not inherit access settings from related collections') => 0,
+					_t('Inherit access settings from related collections') => 1
+				),
+				'LABEL' => _t('Inherit access settings from collections?'), 'DESCRIPTION' => _t('Determines whether access settings set for related collections are applied to this object.')
+		),
+		'acl_inherit_from_parent' => array(
+				'FIELD_TYPE' => FT_NUMBER, 'DISPLAY_TYPE' => DT_SELECT, 
+				'DISPLAY_WIDTH' => 100, 'DISPLAY_HEIGHT' => 1,
+				'IS_NULL' => false, 
+				'DEFAULT' => 0,
+				'ALLOW_BUNDLE_ACCESS_CHECK' => true,
+				'BOUNDS_CHOICE_LIST' => array(
+					_t('Do not inherit access settings from parent') => 0,
+					_t('Inherit access settings from parent') => 1
+				),
+				'LABEL' => _t('Inherit access settings from parent?'), 'DESCRIPTION' => _t('Determines whether access settings set for parent objects are applied to this object.')
 		)
 	)
 );
@@ -351,6 +375,20 @@ class ca_objects extends BundlableLabelableBaseModelWithAttributes implements IB
 	#
 	# ------------------------------------------------------
 	public function __construct($pn_id=null) {
+		if (
+			!is_null(BaseModel::$s_ca_models_definitions['ca_objects']['FIELDS']['acl_inherit_from_parent']['DEFAULT'])
+			||
+			!is_null(BaseModel::$s_ca_models_definitions['ca_objects']['FIELDS']['acl_inherit_from_ca_collections']['DEFAULT'])
+		) {
+			$o_config = Configuration::load();
+		
+			if (!is_null(BaseModel::$s_ca_models_definitions['ca_objects']['FIELDS']['acl_inherit_from_parent']['DEFAULT'])) {
+				BaseModel::$s_ca_models_definitions['ca_objects']['FIELDS']['acl_inherit_from_parent']['DEFAULT'] = (int)$o_config->get('ca_objects_acl_inherit_from_parent_default');
+			}
+			if (!is_null(BaseModel::$s_ca_models_definitions['ca_objects']['FIELDS']['acl_inherit_from_ca_collections']['DEFAULT'])) {
+				BaseModel::$s_ca_models_definitions['ca_objects']['FIELDS']['acl_inherit_from_ca_collections']['DEFAULT'] = (int)$o_config->get('ca_objects_acl_inherit_from_ca_collections_default');
+			}
+		}
 		parent::__construct($pn_id);
 	}
 	# ------------------------------------------------------
@@ -378,7 +416,7 @@ class ca_objects extends BundlableLabelableBaseModelWithAttributes implements IB
 		$this->BUNDLES['ca_commerce_order_history'] = array('type' => 'special', 'repeating' => true, 'label' => _t('Order history'));
 	}
 	# ------------------------------------------------------
-	public function delete($pb_delete_related=false){
+	public function delete($pb_delete_related=false, $pa_options=null, $pa_fields=null, $pa_table_list=null){
 		// nuke related representations
 		foreach($this->getRepresentations() as $va_rep){
 			// check if representation is in use anywhere else 
@@ -388,7 +426,7 @@ class ca_objects extends BundlableLabelableBaseModelWithAttributes implements IB
 			}
 		}
 
-		return parent::delete($pb_delete_related);
+		return parent::delete($pb_delete_related, $pa_options, $pa_fields, $pa_table_list);
 	}
 	# ------------------------------------------------------
 	/**
@@ -802,6 +840,9 @@ class ca_objects extends BundlableLabelableBaseModelWithAttributes implements IB
  	 * @param $pa_options - an array of options passed through to BaseModel::set() when creating the new representation. Currently supported options:
  	 *		original_filename - the name of the file being uploaded; will be recorded in the database and used as the filename when the file is subsequently downloaded
  	 *		rank - a numeric rank used to order the representations when listed
+ 	 *		returnRepresentation = if set the newly created ca_object_representations instance is returned rather than the link_id of the newly created ca_objects_x_object_representations record
+ 	 *
+ 	 * @return mixed Returns primary key (link_id) of the ca_objects_x_object_representations row linking the newly created representation to the object; if the 'returnRepresentation' is set then an instance for the newly created ca_object_representations is returned instead; boolean false is returned on error
  	 */
  	public function addRepresentation($ps_media_path, $pn_type_id, $pn_locale_id, $pn_status, $pn_access, $pb_is_primary, $pa_values=null, $pa_options=null) {
  		if (!($vn_object_id = $this->getPrimaryKey())) { return null; }
@@ -810,7 +851,8 @@ class ca_objects extends BundlableLabelableBaseModelWithAttributes implements IB
  		$t_rep = new ca_object_representations();
  		
  		if ($this->inTransaction()) {
- 			$t_rep->setTransaction($this->getTransaction());
+ 			$o_trans = $this->getTransaction();
+ 			$t_rep->setTransaction($o_trans);
  		}
  		
  		$t_rep->setMode(ACCESS_WRITE);
@@ -863,7 +905,8 @@ class ca_objects extends BundlableLabelableBaseModelWithAttributes implements IB
 			
  		$t_oxor = new ca_objects_x_object_representations();
  		if ($this->inTransaction()) {
- 			$t_oxor->setTransaction($this->getTransaction());
+ 			$o_trans = $this->getTransaction();
+ 			$t_oxor->setTransaction($o_trans);
  		}
  		$t_oxor->setMode(ACCESS_WRITE);
  		$t_oxor->set('object_id', $vn_object_id);
@@ -891,6 +934,9 @@ class ca_objects extends BundlableLabelableBaseModelWithAttributes implements IB
 			$this->update();
 		}
 		
+		if (isset($pa_options['returnRepresentation']) && (bool)$pa_options['returnRepresentation']) {
+			return $t_rep;
+		} 
  		return $t_oxor->getPrimaryKey();
  	}
  	# ------------------------------------------------------
@@ -913,7 +959,8 @@ class ca_objects extends BundlableLabelableBaseModelWithAttributes implements IB
  		
  		$t_rep = new ca_object_representations();
  		if ($this->inTransaction()) {
- 			$t_rep->setTransaction($this->getTransaction());
+ 			$o_trans = $this->getTransaction();
+ 			$t_rep->setTransaction($o_trans);
  		}
  		if (!$t_rep->load(array('representation_id' => $pn_representation_id))) {
  			$this->postError(750, _t("Representation id=%1 does not exist", $pn_representation_id), "ca_objects->editRepresentation()");
@@ -984,21 +1031,22 @@ class ca_objects extends BundlableLabelableBaseModelWithAttributes implements IB
  	}
  	# ------------------------------------------------------
  	/**
- 	 * Remove a single representation from the currently loaded object. Note that the representation will be removed from the database completed, so if it is also linked to other objects it will be removed from them as well.
+ 	 * Remove a single representation from the currently loaded object. Note that the representation will be removed from the database completely, so if it is also linked to other objects it will be removed from them as well.
  	 *
  	 * @param int $pn_representation_id The representation_id of the representation to remove
+ 	 * @param array $pa_options Options are passed through to BaseMode::delete()
  	 * @return bool True if delete succeeded, false if there was an error. You can get the error messages by calling getErrors() on the ca_objects instance.
  	 */
- 	public function removeRepresentation($pn_representation_id) {
+ 	public function removeRepresentation($pn_representation_id, $pa_options=null) {
  		if(!$this->getPrimaryKey()) { return null; }
  		
  		$t_rep = new ca_object_representations();
- 		if (!$t_rep->load(array('representation_id' => $pn_representation_id))) {
+ 		if (!$t_rep->load($pn_representation_id)) {
  			$this->postError(750, _t("Representation id=%1 does not exist", $pn_representation_id), "ca_objects->removeRepresentation()");
  			return false;
  		} else {
  			$t_rep->setMode(ACCESS_WRITE);
- 			$t_rep->delete(true);
+ 			$t_rep->delete(true, $pa_options);
  			
  			if ($t_rep->numErrors()) {
  				$this->errors = array_merge($this->errors, $t_rep->errors());
@@ -1016,10 +1064,10 @@ class ca_objects extends BundlableLabelableBaseModelWithAttributes implements IB
  	 *
  	 * @return bool True if delete succeeded, false if there was an error. You can get the error messages by calling getErrors() on the ca_objects instance.
  	 */
- 	public function removeAllRepresentations() {
+ 	public function removeAllRepresentations($pa_options=null) {
  		if (is_array($va_reps = $this->getRepresentations())) {
  			foreach($va_reps as $vn_i => $va_rep_info) {
- 				if (!$this->removeRepresentation($va_rep_info['representation_id'])) {
+ 				if (!$this->removeRepresentation($va_rep_info['representation_id'], $pa_options)) {
  					// Representation remove failed
  					return false;
  				}
@@ -1094,6 +1142,26 @@ class ca_objects extends BundlableLabelableBaseModelWithAttributes implements IB
  		return $va_rep_list;
  	}
  	# ------------------------------------------------------
+ 	/**
+ 	 * Returns information for representation attached to the current object with the specified MD5 hash. 
+ 	 *
+ 	 * @param string $ps_md5 The MD5 hash to return representation info for. 
+ 	 * @param array $pa_options Options for selection of representations to return; same as options for ca_objects::getRepresentations()
+ 	 *
+ 	 * @return array An array with information about the matching representation, in the same format as that returned by ca_objects::getRepresentations(), or null if there is no match
+ 	 */
+ 	public function representationWithMD5($ps_md5, $pa_options=null) {
+ 		$va_rep_list = array();
+ 		if (is_array($va_reps = $this->getRepresentations($pa_options))) {
+ 			foreach($va_reps as $vn_rep_id => $va_rep) {
+ 				if ($ps_mimetype == $va_rep['md5']) {	
+ 					return $va_rep;
+ 				}
+ 			}
+ 		}
+ 		return null;
+ 	}
+ 	# ------------------------------------------------------
  	#
  	# ------------------------------------------------------
 	/**
@@ -1106,6 +1174,8 @@ class ca_objects extends BundlableLabelableBaseModelWithAttributes implements IB
 	 */
 	 public function getHierarchyList($pb_dummy=false) {
 	 	$vn_pk = $this->getPrimaryKey();
+	 	$vs_template = $this->getAppConfig()->get('ca_objects_hierarchy_browser_display_settings');
+	 	
 	 	if (!$vn_pk) { 
 	 		$o_db = new Db();
 	 		if (is_array($va_type_ids = caMergeTypeRestrictionLists($this, array())) && sizeof($va_type_ids)) {
@@ -1133,7 +1203,8 @@ class ca_objects extends BundlableLabelableBaseModelWithAttributes implements IB
 	 		while($qr_res->nextRow()) {
 	 			$va_hiers[$vn_object_id = $qr_res->get('object_id')] = array(
 	 				'object_id' => $vn_object_id,
-	 				'name' => $va_labels[$vn_object_id],
+	 				'item_id' => $vn_object_id,
+	 				'name' => caProcessTemplateForIDs($vs_template, 'ca_objects', array($vn_object_id)),
 	 				'hierarchy_id' => $vn_object_id,
 	 				'children' => (int)$qr_res->get('c')
 	 			);
@@ -1159,12 +1230,13 @@ class ca_objects extends BundlableLabelableBaseModelWithAttributes implements IB
 			$va_object_hierarchy_root = array(
 				$t_object->get($vs_hier_fld) => array(
 					'object_id' => $vn_pk,
-					'name' => $vs_label,
+	 				'item_id' => $vn_pk,
+					'name' => $vs_name = caProcessTemplateForIDs($vs_template, 'ca_objects', array($vn_pk)),
 					'hierarchy_id' => $vn_hier_id,
 					'children' => sizeof($va_children)
 				),
 				'object_id' => $vn_pk,
-				'name' => $vs_label,
+				'name' => $vs_name,
 				'hierarchy_id' => $vn_hier_id,
 				'children' => sizeof($va_children)
 			);
@@ -1273,29 +1345,35 @@ class ca_objects extends BundlableLabelableBaseModelWithAttributes implements IB
 	 *
 	 * @param string $ps_name The label value to search for
 	 * @param int $pn_parent_id Optional parent_id. If specified search is restricted to direct children of the specified parent object.
+	 * @param int $pn_type_id Optional type_id.
 	 * @return array An array of object_ids
 	 */
-	public function getObjectIDsByName($ps_name, $pn_parent_id=null) {
+	public function getObjectIDsByName($ps_name, $pn_parent_id=null, $pn_type_id=null) {
 		$o_db = $this->getDb();
 		
-		if ($pn_parent_id) {
-			$qr_res = $o_db->query("
-				SELECT DISTINCT cap.object_id
-				FROM ca_objects cap
-				INNER JOIN ca_object_labels AS capl ON capl.object_id = cap.object_id
-				WHERE
-					capl.name = ? AND cap.parent_id = ?
-			", (string)$ps_name, (int)$pn_parent_id);
-		} else {
-			$qr_res = $o_db->query("
-				SELECT DISTINCT cap.object_id
-				FROM ca_objects cap
-				INNER JOIN ca_object_labels AS capl ON capl.object_id = cap.object_id
-				WHERE
-					capl.name = ?
-			", (string)$ps_name);
-
+		$va_params = array((string)$ps_name);
+		
+		$vs_type_sql = '';
+		if ($pn_type_id) {
+			$va_type_ids = caMakeTypeIDList('ca_objects', array($pn_type_id));
+			$pn_type_id = array_shift($va_type_ids);
+			$vs_type_sql = " AND cap.type_id = ?";
+			$va_params[] = (int)$pn_type_id;
 		}
+		
+		if ($pn_parent_id) {
+			$vs_parent_sql = " AND cap.parent_id = ?";
+			$va_params[] = (int)$pn_parent_id;
+		} 
+		
+		$qr_res = $o_db->query($x="
+				SELECT DISTINCT cap.object_id
+				FROM ca_objects cap
+				INNER JOIN ca_object_labels AS capl ON capl.object_id = cap.object_id
+				WHERE
+					capl.name = ? {$vs_type_sql} {$vs_parent_sql}
+			", $va_params);
+		
 		$va_object_ids = array();
 		while($qr_res->nextRow()) {
 			$va_object_ids[] = $qr_res->get('object_id');

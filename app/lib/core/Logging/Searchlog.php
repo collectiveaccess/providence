@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2010 Whirl-i-Gig
+ * Copyright 2010-2012 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -34,27 +34,20 @@
   *
   */
  
-include_once(__CA_LIB_DIR__."/core/Error.php");
-include_once(__CA_LIB_DIR__."/core/Configuration.php");
-include_once(__CA_LIB_DIR__."/core/Datamodel.php");
-include_once(__CA_LIB_DIR__."/core/Db.php");
-include_once(__CA_LIB_DIR__."/core/Parsers/TimeExpressionParser.php");
+include_once(__CA_LIB_DIR__."/core/Logging/BaseLogger.php");
 
-# ----------------------------------------------------------------------
-class Searchlog {
-
-  	private $o_db;
-  	private $ops_table_prefix;
+class Searchlog extends BaseLogger {
 	# ----------------------------------------
+	/** 
+	 *
+	 */
 	public function __construct($pa_entry=null) {
-		$this->clearTransaction();
-		
-		if (is_array($pa_entry)) {
-			$this->log($pa_entry);
-		}
-		
+		parent::__construct();
 	}
 	# ----------------------------------------
+	/** 
+	 *
+	 */
 	public function log($pa_entry) {
 		if (is_array($pa_entry)) {
 			$this->o_db->query("
@@ -69,6 +62,9 @@ class Searchlog {
 		return false;
 	}
 	# ----------------------------------------
+	/** 
+	 *
+	 */
 	public function search($ps_datetime_expression, $ps_code=null) {
 		$o_tep = new TimeExpressionParser();
 		
@@ -104,21 +100,6 @@ class Searchlog {
 			}
 		}
 		return null;
-	}
-	# ----------------------------------------
-	# --- Transactions
-	# ----------------------------------------
-	public function setTransaction($po_transaction) {
-		if (is_object($po_transaction)) {
-			$this->o_db =& $po_transaction->getDb();
-			return true;
-		} else {
-			return false;
-		}
-	}
-	# ----------------------------------------
-	public function clearTransaction() {
-		$this->o_db = new Db();
 	}
 	# ----------------------------------------
 }

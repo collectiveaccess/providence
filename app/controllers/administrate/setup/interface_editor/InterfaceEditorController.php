@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2011 Whirl-i-Gig
+ * Copyright 2011-2013 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -39,7 +39,7 @@
  			parent::__construct($po_request, $po_response, $pa_view_paths);
  		}
  		# -------------------------------------------------------
- 		protected function _initView() {
+ 		protected function _initView($pa_options=null) {
  			JavascriptLoadManager::register('bundleableEditor');
  			JavascriptLoadManager::register('sortableUI');
  			JavascriptLoadManager::register('bundleListEditorUI');

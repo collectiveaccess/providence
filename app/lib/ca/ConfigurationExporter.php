@@ -50,12 +50,11 @@ require_once(__CA_MODELS_DIR__."/ca_search_form_placements.php");
 
 final class ConfigurationExporter {
 	# -------------------------------------------------------
-	private static $opa_error_messages;
-	private static $opo_config;
-	private static $opo_db;
-	private static $opo_dom;
-	private static $opt_locale;
-	private static $opo_dm;
+	private $opo_config;
+	private $opo_dm;
+	private $opo_db;
+	private $opt_locale;
+	private $opo_dom;
 	# -------------------------------------------------------
 
 	# -------------------------------------------------------
@@ -871,7 +870,7 @@ final class ConfigurationExporter {
 	# -------------------------------------------------------
 	private function makeIDNO($ps_idno){
 		if(strlen($ps_idno)>0){
-			return preg_replace('/[^\pL\p{Zs}]+/u', '_', $ps_idno);
+			return preg_replace("/[^-_a-zA-Z0-9]/","_",$ps_idno);
 		} else {
 			return "default";
 		}

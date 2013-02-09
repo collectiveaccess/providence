@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2008-2012 Whirl-i-Gig
+ * Copyright 2008-2013 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -43,7 +43,7 @@
  			JavascriptLoadManager::register('panel');
  		}
  		# -------------------------------------------------------
- 		public function Edit() {
+ 		public function Edit($pa_values=null, $pa_options=null) {
  			$va_values = array();
  			
  			if ($vn_lot_id = $this->request->getParameter('lot_id', pInteger)) {
@@ -55,7 +55,7 @@
 				}
  			}
  			
- 			return parent::Edit($va_values);
+ 			return parent::Edit($va_values, $pa_options);
  		}
  		# -------------------------------------------------------
  		# AJAX handlers
@@ -74,9 +74,17 @@
  		public function GetRepresentationInfo() {
  			list($vn_object_id, $t_object) = $this->_initView();
  			$pn_representation_id 	= $this->request->getParameter('representation_id', pInteger);
- 			if(!$vn_object_id) { $vn_object_id = 0; }
+ 		
  			$t_rep = new ca_object_representations($pn_representation_id);
  			
+ 			if(!$vn_object_id) { 
+ 				if (is_array($va_object_ids = $t_rep->get('ca_objects.object_id', array('returnAsArray' => true))) && sizeof($va_object_ids)) {
+ 					$vn_object_id = array_shift($va_object_ids);
+ 				} else {
+ 					$this->postError(1100, _t('Invalid object/representation'), 'ObjectEditorController->GetRepresentationInfo');
+ 					return;
+ 				}
+ 			}
  			$va_opts = array('display' => 'media_overlay', 'object_id' => $vn_object_id, 'containerID' => 'caMediaPanelContentArea');
  			if (strlen($vs_use_book_viewer = $this->request->getParameter('use_book_viewer', pInteger))) { $va_opts['use_book_viewer'] = (bool)$vs_use_book_viewer; }
  
@@ -99,11 +107,17 @@
  			$pn_representation_id 	= $this->request->getParameter('representation_id', pInteger);
  			$pb_reload 	= (bool)$this->request->getParameter('reload', pInteger);
  			
- 			if(!$vn_object_id) { $vn_object_id = 0; }
  			$t_rep = new ca_object_representations($pn_representation_id);
- 			if (!$t_rep->getPrimaryKey()) {
- 				// error - invalid representation_id
+ 			
+ 			if(!$vn_object_id) { 
+ 				if (is_array($va_object_ids = $t_rep->get('ca_objects.object_id', array('returnAsArray' => true))) && sizeof($va_object_ids)) {
+ 					$vn_object_id = array_shift($va_object_ids);
+ 				} else {
+ 					$this->postError(1100, _t('Invalid object/representation'), 'ObjectEditorController->GetRepresentationEditor');
+ 					return;
+ 				}
  			}
+ 			
  			$va_opts = array('display' => 'media_editor', 'object_id' => $vn_object_id, 'containerID' => 'caMediaPanelContentArea', 'mediaEditor' => true, 'noControls' => $pb_reload);
  			if (strlen($vs_use_book_viewer = $this->request->getParameter('use_book_viewer', pInteger))) { $va_opts['use_book_viewer'] = (bool)$vs_use_book_viewer; }
  
@@ -168,7 +182,7 @@
  		 * objects in the same object hierarchy as the specified object. Used by the book viewer interfacce to 
  		 * initiate a download.
  		 */ 
- 		public function DownloadMedia() {
+ 		public function DownloadMedia($pa_options=null) {
  			$pn_object_id = $this->request->getParameter('object_id', pInteger);
  			$t_object = new ca_objects($pn_object_id);
  			if (!($vn_object_id = $t_object->getPrimaryKey())) { return; }

@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2006-2011 Whirl-i-Gig
+ * Copyright 2006-2013 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -107,16 +107,11 @@ class Db extends DbBase {
 	 *
 	 * Sets up the properties of the Db object and opens a connection to the database.
 	 *
-	 * @param string $ps_config_file_path
+	 * @param string $ps_config_file_path Not used
 	 * @param array $pa_options Database options like username, pw, host, etc - if ommitted, it is fetched from configuration file
 	 * @param bool $pb_die_on_error optional, default is true
 	 */
 	public function Db($ps_config_file_path="", $pa_options=null, $pb_die_on_error=true) {
-		//print "Construct db\n";
-		//debug_print_backtrace();
-		//print "\n\n";
-
-	
 		$this->config = Configuration::load();
 		$this->datamodel = Datamodel::load();
 
@@ -275,7 +270,7 @@ class Db extends DbBase {
 		// If second parameter is array use that as query params for placeholders, otherwise use successive params to fill placeholders
 		if (!($vb_res = $o_stmt->executeWithParamsAsArray(is_array($va_args[0]) ? $va_args[0] : $va_args))) {
 			// copy errors from statement object to Db object
-			$this->errors =& $o_stmt->errors();
+			$this->errors = $o_stmt->errors();
 		} else {
 			$this->opn_last_insert_id = $o_stmt->getLastInsertID();
 		}

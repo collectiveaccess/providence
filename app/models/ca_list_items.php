@@ -185,13 +185,13 @@ BaseModel::$s_ca_models_definitions['ca_list_items'] = array(
 				'LIST' => 'workflow_statuses',
 				'LABEL' => _t('Status'), 'DESCRIPTION' => _t('Indicates the current state of the list item.')
 		),
-		// 'deleted' => array(
-// 				'FIELD_TYPE' => FT_BIT, 'DISPLAY_TYPE' => DT_OMIT, 
-// 				'DISPLAY_WIDTH' => 10, 'DISPLAY_HEIGHT' => 1,
-// 				'IS_NULL' => false, 
-// 				'DEFAULT' => 0,
-// 				'LABEL' => _t('Is deleted?'), 'DESCRIPTION' => _t('Indicates if list item is deleted or not.')
-// 		)
+		'deleted' => array(
+ 				'FIELD_TYPE' => FT_BIT, 'DISPLAY_TYPE' => DT_OMIT, 
+ 				'DISPLAY_WIDTH' => 10, 'DISPLAY_HEIGHT' => 1,
+ 				'IS_NULL' => false, 
+ 				'DEFAULT' => 0,
+ 				'LABEL' => _t('Is deleted?'), 'DESCRIPTION' => _t('Indicates if list item is deleted or not.')
+		)
  	)
 );
 
@@ -366,7 +366,8 @@ class ca_list_items extends BundlableLabelableBaseModelWithAttributes implements
 		
 		if ($this->getPrimaryKey()) {
 			$t_list = new ca_lists();
-			$t_list->setTransaction($this->getTransaction());
+			$o_trans = $this->getTransaction();
+			$t_list->setTransaction($o_trans);
 			
 			
 			if (($t_list->load($this->get('list_id'))) && ($t_list->get('list_code') == 'place_hierarchies') && ($this->get('parent_id'))) {
@@ -377,7 +378,7 @@ class ca_list_items extends BundlableLabelableBaseModelWithAttributes implements
 				
 				// create root in ca_places
 				$t_place = new ca_places();
-				$t_place->setTransaction($this->getTransaction());
+				$t_place->setTransaction($o_trans);
 				$t_place->setMode(ACCESS_WRITE);
 				$t_place->set('hierarchy_id', $this->getPrimaryKey());
 				$t_place->set('locale_id', $vn_locale_id);
@@ -437,6 +438,7 @@ class ca_list_items extends BundlableLabelableBaseModelWithAttributes implements
 	 	$t_list = new ca_lists();
 	 	
 	 	$va_hierarchies = caExtractValuesByUserLocale($t_list->getListOfLists());
+	 	$vs_template = $this->getAppConfig()->get('ca_list_items_hierarchy_browser_display_settings');
 		
 		$o_db = $this->getDb();
 		

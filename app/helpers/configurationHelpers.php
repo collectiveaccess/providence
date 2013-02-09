@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2009-2010 Whirl-i-Gig
+ * Copyright 2009-2013 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -714,7 +714,9 @@ require_once(__CA_MODELS_DIR__.'/ca_bundle_mappings.php');
 		
 		foreach($va_files as $vs_filepath) {
 			if (preg_match("!\.xml$!", $vs_filepath)) {
-				$vs_file = array_shift(explode('.', array_pop(explode('/', $vs_filepath))));
+				$va_tmp = explode('/', $vs_filepath);
+				$va_tmp2 = explode('.', array_pop($va_tmp));
+				$vs_file = array_shift($va_tmp2);
 				$va_profile_info = Installer::getProfileInfo("./profiles/xml", $vs_file);
 				if (!$va_profile_info['useForConfiguration']) { continue; }
 				$va_profiles[$va_profile_info['display']] = $vs_file; 

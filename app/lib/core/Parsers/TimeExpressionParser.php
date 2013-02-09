@@ -211,6 +211,9 @@ class TimeExpressionParser {
 	}
 	# -------------------------------------------------------------------
 	function parse($ps_expression, $pa_options=null) {
+	
+		$ps_expression = caRemoveAccents($ps_expression);
+		
 		if (!$pa_options) { $pa_options = array(); }
 		$this->init();
 		
@@ -392,15 +395,26 @@ class TimeExpressionParser {
 								$va_next_token = $this->getToken();
 								
 								$vs_next_token_lc = mb_strtolower($va_next_token['value']);
+								$vn_use_romans = $this->opo_datetime_settings->get("useRomanNumeralsForCenturies");
+																
 								if (
+									($vn_use_romans && in_array($vs_next_token_lc, $this->opo_language_settings->getList("centuryIndicator")) && preg_match("/^([MDCLXVI]+)(.*)$/", $va_token['value'], $va_roman_matches))
+									||	
 									((in_array($vs_next_token_lc, $this->opo_language_settings->getList("centuryIndicator"))) && (preg_match("/^([\d]+)(.*)$/", $va_token['value'], $va_matches)))
 									||
 									(preg_match("/^([\d]{2})[_]{2}$/", $va_token['value'], $va_matches))
 								) {	
+
 									$va_ordinals = $this->opo_language_settings->getList("ordinalSuffixes");
 									$va_ordinals[] = $this->opo_language_settings->get("ordinalSuffixDefault");
+
 									//if (in_array($va_matches[2], $va_ordinals)) {
-										$vn_century = intval($va_matches[1]);
+										if ($vn_use_romans && caIsRomanNumerals($va_roman_matches[1])) {
+											$vn_century = intval(caRomanArabic($va_roman_matches[1]));
+										} else {
+											$vn_century = intval($va_matches[1]);
+										} 
+										
 										
 										if (in_array($vs_next_token_lc, $this->opo_language_settings->getList("centuryIndicator"))) {
 											$va_next_token = null;
@@ -669,7 +683,8 @@ class TimeExpressionParser {
 		}
 	
 		# remove commas
-		$ps_expression = str_replace(',', '', $ps_expression);
+		$ps_expression = str_replace(',', ' ', $ps_expression);
+		$ps_expression = preg_replace('![ ]+!', ' ', $ps_expression);
 				
 		# remove articles
 		$definiteArticles = $this->opo_language_settings->getList("definiteArticles");
@@ -725,9 +740,15 @@ class TimeExpressionParser {
 		# process 6-number year ranges
 		
 		# replace '-' used to express decades (eg. 192-) and centuries (eg. 19--) with underscores since we use '-' for ranges
-		$ps_expression = preg_replace('!([\d]{2})[\-]{2}!', '\1__', $ps_expression);
-		$ps_expression = preg_replace('!([\d]{3})[\-]{1}$!', '\1_', $ps_expression);
-		$ps_expression = preg_replace('!([\d]{3})[\-]{1}[\D]+!', '\1_', $ps_expression);
+		if (preg_match('![\d]{4}\-!', $ps_expression)) {
+			$ps_expression = preg_replace("![\-]{1}!", " - ", $ps_expression);
+		} else {
+			$ps_expression = preg_replace('!([\d]{2})[\-]{2}!', '\1__', $ps_expression);
+			$ps_expression = preg_replace('!([\d]{3})[\-]{1}$!', '\1_', $ps_expression);
+			$ps_expression = preg_replace('!([\d]{3})[\-]{1}[\D]+!', '\1_', $ps_expression);
+		}
+		
+		$ps_expression = preg_replace("![\-]{1}!", " - ", $ps_expression);
 		
 		$va_era_list = array_merge(array_keys($this->opo_language_settings->getAssoc("ADBCTable")), array($this->opo_language_settings->get("dateADIndicator"), $this->opo_language_settings->get("dateBCIndicator")));
 		foreach($va_era_list as $vs_era) {
@@ -780,7 +801,7 @@ class TimeExpressionParser {
 		
 		// support year ranges in the form yyyy/yyyy
 		$ps_expression = preg_replace("!^([\d]{4})/([\d]{4})$!", "$1 - $2", trim($ps_expression));
-
+		
 		return trim($ps_expression);
 	}
 	# -------------------------------------------------------------------
@@ -1939,10 +1960,11 @@ class TimeExpressionParser {
 	#	afterQualifier	(string) [default is first indicator in language config file]
 	#	presentDate		(string) [default is first indicator in language config file]
 	#	isLifespan		(true|false) [default is false; if true, date is output with 'born' and 'died' syntax if appropriate]
-	#  useQuarterCenturySyntaxForDisplay (true|false) [default is false; if true dates ranging over uniform quarter centuries (eg. 1900 - 1925, 1925 - 1950, 1950 - 1975, 1975-2000) will be output in the format "20 Q1" (eg. 1st quarter of 20th century... 1900 - 1925)
+	#   useQuarterCenturySyntaxForDisplay (true|false) [default is false; if true dates ranging over uniform quarter centuries (eg. 1900 - 1925, 1925 - 1950, 1950 - 1975, 1975-2000) will be output in the format "20 Q1" (eg. 1st quarter of 20th century... 1900 - 1925)
+	#   useRomanNumeralsForCenturies (true|false] [default is false; if true century only dates (eg 18th century) will be output in roman numerals like "XVIIIth century"
 	function getText($pa_options=null) {
 		if (!$pa_options) { $pa_options = array(); }
-		foreach(array('dateFormat', 'dateDelimiter', 'uncertaintyIndicator', 'showADEra', 'timeFormat', 'timeDelimiter', 'circaIndicator', 'beforeQualifier', 'afterQualifier', 'presentDate', 'useQuarterCenturySyntaxForDisplay', 'timeOmit') as $vs_opt) {
+		foreach(array('dateFormat', 'dateDelimiter', 'uncertaintyIndicator', 'showADEra', 'timeFormat', 'timeDelimiter', 'circaIndicator', 'beforeQualifier', 'afterQualifier', 'presentDate', 'useQuarterCenturySyntaxForDisplay', 'timeOmit', 'useRomanNumeralsForCenturies') as $vs_opt) {
 			if (!isset($pa_options[$vs_opt]) && ($vs_opt_val = $this->opo_datetime_settings->get($vs_opt))) {
 				$pa_options[$vs_opt] = $vs_opt_val;
 			}
@@ -2013,10 +2035,10 @@ class TimeExpressionParser {
 			// start is same as end so just output start date
 			if ($va_dates['start'] == $va_dates['end']) {
 				if ($pa_options['start_as_iso8601'] || $pa_options['end_as_iso8601']) {
-					return $this->getISODateTime($va_start_pieces, 'FULL');
+					return $this->getISODateTime($va_start_pieces, 'FULL', $pa_options);
 				}
 				if ((isset($pa_options['dateFormat']) && ($pa_options['dateFormat'] == 'iso8601'))) { 
-					return $this->getISODateTime($va_start_pieces, 'START');
+					return $this->getISODateTime($va_start_pieces, 'START', $pa_options);
 				} else {
 					return $this->_dateTimeToText($va_start_pieces, $pa_options);
 				}
@@ -2038,16 +2060,16 @@ class TimeExpressionParser {
 			}
 		
 			if ($pa_options['start_as_iso8601']) {
-				return $this->getISODateTime($va_start_pieces, 'FULL');
+				return $this->getISODateTime($va_start_pieces, 'FULL', $pa_options);
 			}
 			if ($pa_options['end_as_iso8601']) {
-				return $this->getISODateTime($va_end_pieces, 'FULL');
+				return $this->getISODateTime($va_end_pieces, 'FULL', $pa_options);
 			}
 			
 			
 			if (isset($pa_options['dateFormat']) && ($pa_options['dateFormat'] == 'iso8601')) {
-				$vs_start = $this->getISODateTime($va_start_pieces, 'START');
-				$vs_end = $this->getISODateTime($va_end_pieces, 'END');
+				$vs_start = $this->getISODateTime($va_start_pieces, 'START', $pa_options);
+				$vs_end = $this->getISODateTime($va_end_pieces, 'END', $pa_options);
 				
 				if ($vs_start != $vs_end) {
 					return "{$vs_start}/{$vs_end}";
@@ -2294,6 +2316,11 @@ class TimeExpressionParser {
 							$va_century_indicators = $this->opo_language_settings->getList("centuryIndicator");
 							
 							$vs_era = ($vn_century < 0) ? ' '.$this->opo_language_settings->get('dateBCIndicator') : '';
+
+							// if useRomanNumeralsForCenturies is set in datetime.conf, 20th Century will be displayed as XXth Century
+							if ($pa_options["useRomanNumeralsForCenturies"]) {
+								return caArabicRoman(abs($vn_century)).$vs_ordinal.' '.$va_century_indicators[0].$vs_era;
+							}
 							
 							return abs($vn_century).$vs_ordinal.' '.$va_century_indicators[0].$vs_era;
 						}
@@ -2695,9 +2722,14 @@ class TimeExpressionParser {
 		$this->opb_debug = ($pn_debug) ? true: false;
 	}
 	# -------------------------------------------------------------------
-	function getISODateTime($pa_date, $ps_mode='START') {
+	function getISODateTime($pa_date, $ps_mode='START', $pa_options=null) {
 		if ($ps_mode = 'FULL') {
-			return $pa_date['year'].'-'.sprintf("%02d", $pa_date['month']).'-'.sprintf("%02d", $pa_date['day']).'T'.sprintf("%02d", $pa_date['hours']).':'.sprintf("%02d", $pa_date['minutes']).':'.sprintf("%02d", $pa_date['seconds']).'Z';
+			$vs_date = $pa_date['year'].'-'.sprintf("%02d", $pa_date['month']).'-'.sprintf("%02d", $pa_date['day']);
+			
+			if (!isset($pa_options['timeOmit']) || !$pa_options['timeOmit']) {
+				$vs_date .= 'T'.sprintf("%02d", $pa_date['hours']).':'.sprintf("%02d", $pa_date['minutes']).':'.sprintf("%02d", $pa_date['seconds']).'Z';
+			}
+			return $vs_date;
 		}
 		if (
 			(!($pa_date['month'] == 1 && $pa_date['day'] == 1 && ($ps_mode == 'START'))) &&
@@ -2708,11 +2740,13 @@ class TimeExpressionParser {
 			$vs_date = $pa_date['year'];
 		}
 		
-		if (
-			(!($pa_date['hours'] == 0 && $pa_date['minutes'] == 0 && $pa_date['seconds'] == 0 && ($ps_mode == 'START'))) &&
-			(!($pa_date['hours'] == 23 && $pa_date['minutes'] == 59 && $pa_date['seconds'] == 59 && ($ps_mode == 'END')))
-		) {
-			$vs_date .= 'T'.sprintf("%02d", $pa_date['hours']).':'.sprintf("%02d", $pa_date['minutes']).':'.sprintf("%02d", $pa_date['seconds']).'Z';
+		if (!isset($pa_options['timeOmit']) || !$pa_options['timeOmit']) {
+			if (
+				(!($pa_date['hours'] == 0 && $pa_date['minutes'] == 0 && $pa_date['seconds'] == 0 && ($ps_mode == 'START'))) &&
+				(!($pa_date['hours'] == 23 && $pa_date['minutes'] == 59 && $pa_date['seconds'] == 59 && ($ps_mode == 'END')))
+			) {
+				$vs_date .= 'T'.sprintf("%02d", $pa_date['hours']).':'.sprintf("%02d", $pa_date['minutes']).':'.sprintf("%02d", $pa_date['seconds']).'Z';
+			}
 		}
 		
 		return $vs_date;
