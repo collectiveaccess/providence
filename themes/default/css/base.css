@@ -5158,8 +5158,11 @@ input[type='text'].ui-autocomplete-loading {
     background: white url('../graphics/icons/indicator.gif') right center no-repeat;
 }
 
-.annotation_media_player {
-	position: absolute;
-	top: 0px;
-	left: 0px;
+.caAnnotationMediaPlayerContainer {
+	width: 725px;
+	height: 32px;
+}
+.caAnnotationMediaPlayer {
+	
+	margin: 0 auto 0 auto;
 }
