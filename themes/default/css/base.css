@@ -4716,3 +4716,9 @@ div.quickAddErrorContainer {
 	width: 860px;
 	display: none;
 }
+
+.annotation_media_player {
+	position: absolute;
+	top: 0px;
+	left: 0px;
+}
