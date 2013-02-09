@@ -658,7 +658,6 @@ class Db_mysql extends DbDriverBase {
 		}
 	}
 
-	
 	/**
 	 * Returns list of engines present in the MySQL installation. The list in an array with
 	 * keys set to engine names and values set to an array of information returned from MySQL
