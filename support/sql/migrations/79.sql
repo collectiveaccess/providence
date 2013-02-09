@@ -51,7 +51,6 @@ create table if not exists ca_data_importer_log_items
 ) engine=innodb CHARACTER SET utf8 COLLATE utf8_general_ci;
 
 
-
 ALTER TABLE ca_data_importers ADD COLUMN deleted tinyint unsigned not null;
 ALTER TABLE ca_data_importers ADD COLUMN worksheet longblob not null;
 

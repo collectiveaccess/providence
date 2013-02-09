@@ -34,9 +34,6 @@
    *
    */
 
-   table_num                     tinyint unsigned               not null,
-   row_id                        int unsigned                   not null,
-   notes                         text  
 BaseModel::$s_ca_models_definitions['ca_data_importer_log_items'] = array(
  	'NAME_SINGULAR' 	=> _t('data import log entry'),
  	'NAME_PLURAL' 		=> _t('data import log entries'),
