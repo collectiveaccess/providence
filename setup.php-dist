@@ -215,8 +215,7 @@ define("__CA_CONF_DIR__", __CA_APP_DIR__."/conf");
 define("__CA_LOCAL_CONFIG_DIRECTORY__", __CA_CONF_DIR__."/local");
 
 # Set path to instance configuration file
-# (If you want to run several CA distinct instances using a single install
-#  you can add additional configuration files here. See http://trac.collectiveaccess.org/wiki/MultipleInstances)
+# (If you want to run several CA distinct instances using a single install you can add additional configuration files here.)
 $_CA_INSTANCE_CONFIG_FILES = array(
 	'_default_'	=> __CA_CONF_DIR__.'/app.conf'	// the _default_ value must always be defined
 );
