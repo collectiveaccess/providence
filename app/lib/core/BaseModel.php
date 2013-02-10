@@ -3786,7 +3786,7 @@ class BaseModel extends BaseObject {
 				if (isset($this->_SET_FILES[$ps_field]['options']['undo']) && file_exists($this->_SET_FILES[$ps_field]['options']['undo'])) {
 					if ($volume = $version_info['original']['VOLUME']) {
 						$vi = $this->_MEDIA_VOLUMES->getVolumeInformation($volume);
-						if ($vi["absolutePath"] && ($dirhash = $this->_getDirectoryHash($vi["absolutePath"], $this->getPrimaryKey()))) {
+						if ($vi["absolutePath"] && (strlen($dirhash = $this->_getDirectoryHash($vi["absolutePath"], $this->getPrimaryKey())))) {
 							$magic = rand(0,99999);
 							$vs_filename = $this->_genMediaName($ps_field)."_undo_";
 							$filepath = $vi["absolutePath"]."/".$dirhash."/".$magic."_".$vs_filename;
@@ -3802,7 +3802,6 @@ class BaseModel extends BaseObject {
 						}
 					}
 				}
-				
 				
 				$va_process_these_versions_only = array();
 				if (isset($pa_options['these_versions_only']) && is_array($pa_options['these_versions_only']) && sizeof($pa_options['these_versions_only'])) {
@@ -4321,7 +4320,7 @@ class BaseModel extends BaseObject {
 		if (!is_array($va_media_info)) {
 			return null;
 		}
-			
+		
 		if(isset($pa_options['revert']) && $pa_options['revert'] && isset($va_media_info['_undo_'])) {
 			$vs_path = $vs_undo_path = $this->getMediaPath($ps_field, '_undo_');
 			$va_transformation_history = array();
