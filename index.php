@@ -32,6 +32,7 @@
 	if (!file_exists('./setup.php')) { print "No setup.php file found!"; exit; }
 	require('./setup.php');
 	
+	caWriteServerConfigHints();
 	// connect to database
 	$o_db = new Db(null, null, false);
 	if (!$o_db->connected()) {
@@ -109,4 +110,5 @@
 	//
 	$resp->sendResponse();
 	$req->close();
+	
 ?>
