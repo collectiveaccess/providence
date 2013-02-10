@@ -7754,7 +7754,6 @@ $pa_options["display_form_field_tips"] = true;
 			if (isset($pa_options['setErrorOnDuplicate']) && $pa_options['setErrorOnDuplicate']) {
 				$this->postError(1100, _t('Relationship already exists'), 'BaseModel->addRelationship');
 			}
-			print "foo";
 			return false;
 		}
 		
