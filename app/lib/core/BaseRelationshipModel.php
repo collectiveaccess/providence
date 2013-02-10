@@ -314,7 +314,7 @@
 				}
 			}
 			
-			$qr_res = $o_db->query($x="
+			$qr_res = $o_db->query("
 				SELECT *
 				FROM ca_relationship_types crt
 				INNER JOIN ca_relationship_type_labels AS crtl ON crt.type_id = crtl.type_id
