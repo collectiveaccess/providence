@@ -661,7 +661,9 @@ require_once(__CA_MODELS_DIR__.'/ca_bundle_mappings.php');
 		return $va_errors;
 	}
 	# ----------------------------------------------------------------
-
+	/**
+	 *
+	 */
 	define('__CA_MYSQL_ERROR_INNODB__', 0);
 
 	function caCheckMySQLConfiguration() {
@@ -727,6 +729,9 @@ require_once(__CA_MODELS_DIR__.'/ca_bundle_mappings.php');
 		return $va_profiles;
 	}
 	# ----------------------------------------------------------------
+	/**
+	 *
+	 */
 	function caCheckDatabaseConnection() {
 		$o_db = new Db('',null, false);
 		if(!$o_db->connected()) {
@@ -736,16 +741,25 @@ require_once(__CA_MODELS_DIR__.'/ca_bundle_mappings.php');
 		}
 	}
 	# ----------------------------------------------------------------
+	/**
+	 *
+	 */
 	function caFlushOutput() {
 		echo str_pad('',4096)."\n";
 		@ob_flush();
 		flush();
 	}
 	# ----------------------------------------------------------------
+	/**
+	 *
+	 */
 	function caGetRandomPassword() {
 		return substr(md5(uniqid(microtime())), 0, 6);
 	}
 	# ----------------------------------------------------------------
+	/**
+	 *
+	 */
 	function caConfigProcessMetadataElementConfig($vs_element_code, $va_element_info, $pn_parent_id, $pa_locale_ids) {
 		if (($vn_datatype = ca_metadata_elements::getAttributeTypeCode($va_element_info['datatype'])) === false) {
 			//print "<div class='installTaskFailure'>failed! <span class='installTaskFailureInfo'> invalid data type '".$va_element_info['datatype']."' while adding metadata element '{$vs_element_code}'</p><p>Installation halted</p></span></div>\n";
@@ -807,6 +821,9 @@ require_once(__CA_MODELS_DIR__.'/ca_bundle_mappings.php');
 		return $vn_element_id;
 	}
 	# ----------------------------------------------------------------
+	/**
+	 *
+	 */
 	function caConfigProcessListItems(&$t_list, $pa_items, $pn_parent_id, $pa_locale_ids) {
 		if (!is_array($pa_items)) {
 			print "List is empty for"; $t_list->dump();
@@ -853,6 +870,9 @@ require_once(__CA_MODELS_DIR__.'/ca_bundle_mappings.php');
 		return true;
 	}
 	# ----------------------------------------------------------------
+	/**
+	 *
+	 */
 	function caCreateDirectoryPath($ps_path) {
 			if (!file_exists($ps_path)) {
 				if (!@mkdir($ps_path, 0777, true)) {
@@ -864,5 +884,5 @@ require_once(__CA_MODELS_DIR__.'/ca_bundle_mappings.php');
 				return true;
 			}
 	}
-	# ------------------------------------------------------------------------------------------------
+	# ----------------------------------------------------------------
 ?>
