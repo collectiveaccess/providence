@@ -1579,7 +1579,7 @@ function caFileIsIncludable($ps_file) {
 	 */
 	function caWriteServerConfigHints() {
 		if (file_exists(__CA_APP_DIR__."/tmp/server_config_hints.txt")) { return false; }
-		return file_put_contents(__CA_APP_DIR__."/tmp/server_config_hints.txt", serialize(
+		return @file_put_contents(__CA_APP_DIR__."/tmp/server_config_hints.txt", serialize(
 			array(
 				'SCRIPT_FILENAME' => $_SERVER['SCRIPT_FILENAME'],
 				'HTTP_HOST' => $_SERVER['HTTP_HOST'],
