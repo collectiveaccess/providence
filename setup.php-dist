@@ -142,7 +142,7 @@ define("__CA_APP_NAME__", "collectiveaccess");
 # 		If you must to set this manually, enter the correct directory but omit trailing slashes!
 # 		For Windows hosts, use a notation similar to "C:/PATH/TO/COLLECTIVEACCESS"; do NOT use backslashes
 #
-define("__CA_BASE_DIR__", pathinfo(preg_replace("!/install$!", "", $_SERVER['SCRIPT_FILENAME']), PATHINFO_DIRNAME));
+define("__CA_BASE_DIR__", pathinfo(preg_replace("!/install!", "", $_SERVER['SCRIPT_FILENAME']), PATHINFO_DIRNAME));
 
 
 #
