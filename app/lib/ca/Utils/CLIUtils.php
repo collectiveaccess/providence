@@ -76,6 +76,16 @@
 		);
 		# -------------------------------------------------------
 		/**
+		 * Determines if CLIUtils function should be presented as a command within caUtils
+		 *
+		 * @param string $ps_function_name The function to check
+		 * @return bool True if the function is a caUtils command
+		 */
+		public static function isCommand($ps_function_name) {
+			return (!in_array($ps_function_name, array('isCommand', 'textWithColor', 'textWithBackgroundColor')));
+		}
+		# -------------------------------------------------------
+		/**
 		 * Return text in ANSI color
 		 *
 		 * @param string $ps_string The string to output
@@ -114,6 +124,8 @@
 			
 			$o_si = new SearchIndexer();
 			$o_si->reindex(null, array('showProgress' => true, 'interactiveProgressDisplay' => true));
+			
+			return true;
 		}
 		# -------------------------------------------------------
 		/**
@@ -131,9 +143,9 @@
 		public static function rebuild_search_indexHelp() {
 			return _t("CollectiveAccess relies upon indices when searching your data. Indices are simply summaries of your data designed to speed query processing. The precise form and characteristics of the indices used will vary with the type of search engine you are using. They may be stored on disk, in a database or on another server, but their purpose is always the same: to make searches execute faster.
 
-For search results to be accurate the database and indices must be in sync. CollectiveAccess simultaneously updates both the database and indicies as you add, edit and delete data, keeping database and indices in agreement. Occasionally things get out of sync, however. If the basic and advanced searches are consistently returning unexpected results you can use this tool to rebuild the indices from the database and bring things back into alignment.
+\tFor search results to be accurate the database and indices must be in sync. CollectiveAccess simultaneously updates both the database and indicies as you add, edit and delete data, keeping database and indices in agreement. Occasionally things get out of sync, however. If the basic and advanced searches are consistently returning unexpected results you can use this tool to rebuild the indices from the database and bring things back into alignment.
 
-Note that depending upon the size of your database rebuilding can take from a few minutes to several hours. During the rebuilding process the system will remain usable but search functions may return incomplete results. Browse functions, which do not rely upon indices, will not be affected.");
+\tNote that depending upon the size of your database rebuilding can take from a few minutes to several hours. During the rebuilding process the system will remain usable but search functions may return incomplete results. Browse functions, which do not rely upon indices, will not be affected.");
 		}
 		# -------------------------------------------------------
 		/**
@@ -189,6 +201,7 @@ Note that depending upon the size of your database rebuilding can take from a fe
 				}
 				print CLIProgressBar::finish();
 			}
+			return trie;
 		}
 		# -------------------------------------------------------
 		/**
@@ -204,9 +217,9 @@ Note that depending upon the size of your database rebuilding can take from a fe
 		public static function rebuild_sort_valuesHelp() {
 			return _t("CollectiveAccess relies upon sort values when sorting values that should not sort alphabetically, such as titles with articles (eg. The Man Who Fell to Earth should sort as Man Who Fell to Earth, The) and alphanumeric identifiers (eg. 2011.001 and 2011.2 should sort next to each other with leading zeros in the first ignored).
 
-Sort values are derived from corresponding values in your database. The internal format of sort values can vary between versions of CollectiveAccess causing erroneous sorting behavior after an upgrade. If you notice values such as titles and identifiers are sorting incorrectly, you may need to reload sort values from your data.
+\tSort values are derived from corresponding values in your database. The internal format of sort values can vary between versions of CollectiveAccess causing erroneous sorting behavior after an upgrade. If you notice values such as titles and identifiers are sorting incorrectly, you may need to reload sort values from your data.
 
-Note that depending upon the size of your database reloading sort values can take from a few minutes to an hour or more. During the reloading process the system will remain usable but search and browse functions may return incorrectly sorted results.");
+\tNote that depending upon the size of your database reloading sort values can take from a few minutes to an hour or more. During the reloading process the system will remain usable but search and browse functions may return incorrectly sorted results.");
 		}
 		# -------------------------------------------------------
 		/**
@@ -274,6 +287,7 @@ Note that depending upon the size of your database reloading sort values can tak
 			} else {
 				print ($vb_delete_opt ?  _t("%1 files (%2) were deleted", $vn_delete_count, $vs_percent) : t_("%1 files (%2) are unused", $vn_delete_count, $vs_percent))."\n";
 			}
+			return true;
 		}
 		# -------------------------------------------------------
 		/**
@@ -325,6 +339,7 @@ Note that depending upon the size of your database reloading sort values can tak
 			} else {
 				print $vs_profile;
 			}
+			return true;
 		}
 		# -------------------------------------------------------
 		/**
@@ -368,6 +383,8 @@ Note that depending upon the size of your database reloading sort values can tak
 			if (!$po_opts->getOption("quiet")) { print _t("Processing recurring tasks...")."\n"; }
 			$vo_tq->runPeriodicTasks();	// Process recurring tasks implemented in plugins
 			if (!$po_opts->getOption("quiet")) { print _t("Processing complete.")."\n"; }
+			
+			return true;
 		}
 		# -------------------------------------------------------
 		/**
@@ -437,10 +454,12 @@ Note that depending upon the size of your database reloading sort values can tak
 				}
 		
 				if ($t_rep->numErrors()) {
-					print _t("Error processing media: %1", join('; ', $t_rep->getErrors()))."\n";
+					print CLIUtils::textWithColor(_t("[ERROR] Error processing media: %1", join('; ', $t_rep->getErrors())), "red")."\n";
 				}
 			}
 			print CLIProgressBar::finish();
+			
+			return true;
 		}
 		# -------------------------------------------------------
 		/**
@@ -481,7 +500,7 @@ Note that depending upon the size of your database reloading sort values can tak
 				$confirmation  =  trim( fgets( STDIN ) );
 				if ( $confirmation !== 'y' ) {
 					// The user did not say 'y'.
-					return;
+					return false;
 				}
 				$va_messages = ConfigurationCheck::performDatabaseSchemaUpdate();
 
@@ -489,10 +508,13 @@ Note that depending upon the size of your database reloading sort values can tak
 				foreach($va_messages as $vs_message) {
 					print CLIProgressBar::next(1, $vs_message);
 				}
+				print CLIProgressBar::finish();
 			} else {
+				print CLIProgressBar::finish();
 				print _t("Database already at revision %1. No update is required.", __CollectiveAccess_Schema_Rev__)."\n";
 			}
-			print CLIProgressBar::finish();
+			
+			return true;
 		}
 		# -------------------------------------------------------
 		/**
@@ -524,17 +546,19 @@ Note that depending upon the size of your database reloading sort values can tak
 	
 			if (!($vs_file_path = $po_opts->getOption('file'))) {
 				print _t("You must specify a file!")."\n";
-				return;
+				return false;
 			}
 			if (!file_exists($vs_file_path)) {
-				print _t("%1 does not exist!", $vs_file_path)."\n";
-				return;
+				print _t("File '%1' does not exist!", $vs_file_path)."\n";
+				return false;
 			}
 			
 			if (!ca_data_importers::loadImporterFromFile($vs_file_path)) {
-				print _t("Could not import %1", $vs_file_path)."\n";
+				print _t("Could not import '%1'", $vs_file_path)."\n";
+				return false;
 			} else {
-				print _t("Created mapping from %1", $vs_file_path)."\n";
+				print _t("Created mapping from '%1'", $vs_file_path)."\n";
+				return true;
 			}
 		}
 		# -------------------------------------------------------
@@ -569,27 +593,29 @@ Note that depending upon the size of your database reloading sort values can tak
 	
 			if (!($vs_data_source = $po_opts->getOption('source'))) {
 				print _t('You must specify a data source for import')."\n";
-				return;
+				return false;
 			}
 			if (!$vs_data_source) {
-				print _t('You must specify a source')."\n";
-				return;
+				print _t('You must specify a source')."\n"."\n";
+				return false;
 			}
 			if (!($vs_mapping = $po_opts->getOption('mapping'))) {
-				print _t('You must specify a mapping');
-				return;
+				print _t('You must specify a mapping')."\n";
+				return false;
 			}
 			if (!(ca_data_importers::mappingExists($vs_mapping))) {
 				print _t('Mapping %1 does not exist', $vs_mapping)."\n";
-				return;
+				return false;
 			}
 			
 			$vs_format = $po_opts->getOption('format');
 			
 			if (!ca_data_importers::importDataFromSource($vs_data_source, $vs_mapping, array('format' => $vs_format, 'showCLIProgressBar' => true))) {
 				print _t("Could not import source %1", $vs_data_source)."\n";
+				return false;
 			} else {
 				print _t("Imported data from source %1", $vs_data_source)."\n";
+				return true;
 			}
 		}
 		# -------------------------------------------------------
