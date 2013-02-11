@@ -36,7 +36,8 @@
 // That script has been subsumed into the caUtils command-line application.
 //
 // This script merely calls caUtils to run its process-task-queue command in "quiet" mode
- 
+
+
 // Run process-task-queue utility
 	$vs_hostname = isset($argv[1]) ? $argv[1] : null;
 	$argv = array('caUtils', 'process-task-queue', '--quiet');
@@ -48,6 +49,10 @@
 	$_SERVER['argc'] = $argc;
 	
 	ob_start();
-	require("../bin/caUtils");
+	$va_cwd = explode("/", $_SERVER['SCRIPT_FILENAME']);
+	array_pop($va_cwd);
+	array_pop($va_cwd);
+	chdir(join("/", $va_cwd));
+	require(join("/", $va_cwd)."/bin/caUtils");
 	ob_clean();
 ?>
