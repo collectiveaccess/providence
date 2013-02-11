@@ -283,7 +283,6 @@
  			$vn_locale_id						= $pa_options['locale_id'];
  			if (!$vn_locale_id) { $vn_locale_id = $g_ui_locale_id; }
  			
- 			
  			$va_files_to_process = caGetDirectoryContentsAsList($pa_options['importFromDirectory'], $vb_include_subdirectories);
  			
  			if ($vs_set_mode == 'add') {
@@ -422,7 +421,7 @@
 					// found existing object
 					$t_object->setMode(ACCESS_WRITE);
 					
-					$t_new_rep = $t_object->addRepresentation($vs_directory.'/'.$f, $vn_rep_type_id, $vn_locale_id, $vs_object_representation_status, $vs_object_representation_access, false, array(), array('original_filename' => $f, 'returnRepresentation' => true));
+					$t_new_rep = $t_object->addRepresentation($vs_directory.'/'.$f, $vn_rep_type_id, $vn_locale_id, $vn_object_representation_status, $vn_object_representation_access, false, array(), array('original_filename' => $f, 'returnRepresentation' => true));
 				
 					if ($t_object->numErrors()) {	
 						$o_eventlog->log(array(
@@ -501,7 +500,8 @@
 							$o_trans->rollback();
 							continue;
 						}
-						$t_new_rep = $t_object->addRepresentation($vs_directory.'/'.$f, $vn_rep_type_id, $vn_locale_id, $vn_object_representation_access, $vn_object_representation_status, true, array(), array('original_filename' => $f, 'returnRepresentation' => true));
+						
+						$t_new_rep = $t_object->addRepresentation($vs_directory.'/'.$f, $vn_rep_type_id, $vn_locale_id, $vn_object_representation_status, $vn_object_representation_access, true, array(), array('original_filename' => $f, 'returnRepresentation' => true));
 				
 						if ($t_object->numErrors()) {	
 							$o_eventlog->log(array(
