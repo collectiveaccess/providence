@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2009-2011 Whirl-i-Gig
+ * Copyright 2009-2013 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -73,6 +73,15 @@
  		public function Delete($pa_options=null) {
  			if ($this->_isFormEditable()) { return parent::Delete($pa_options); } 
  			return false;
+ 		}
+ 		# -------------------------------------------------------
+ 		/**
+ 		 * If instance was just saved grant current user access
+ 		 */
+ 		public function _afterSave($pt_subject, $pb_is_insert) {
+ 			if ($pb_is_insert && $pt_subject->getPrimaryKey()) {
+ 				$pt_subject->addUsers(array($this->request->getUserID() => __CA_SEARCH_FORM_EDIT_ACCESS__));
+ 			}
  		}
  		# -------------------------------------------------------
  		# Sidebar info handler
