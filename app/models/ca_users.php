@@ -2808,6 +2808,9 @@ class ca_users extends BaseModel {
 	 *
 	 */
 	public function getPreferredUILocale() {
+		if (!(defined("__CA_DEFAULT_LOCALE__"))) { 
+			define("__CA_DEFAULT_LOCALE__", "en_US"); // if all else fails...
+		}
 		$t_locale = new ca_locales();
 		if ($vs_locale = $this->getPreference('ui_locale')) {
 			return $vs_locale;
@@ -2818,13 +2821,16 @@ class ca_users extends BaseModel {
 			return $va_default_locales[0];
 		}
 		
-		die(_t("No default UI locale is available"));
+		return __CA_DEFAULT_LOCALE__;
 	}
 	# ----------------------------------------
 	/**
 	 *
 	 */
 	public function getPreferredUILocaleID() {
+		if (!(defined("__CA_DEFAULT_LOCALE__"))) {
+			define("__CA_DEFAULT_LOCALE__", "en_US"); // if all else fails...
+		}
 		$t_locale = new ca_locales();
 		if ($vs_locale = $this->getPreference('ui_locale')) {
 			if ($vn_locale_id = $t_locale->localeCodeToID($vs_locale)) {
@@ -2836,7 +2842,8 @@ class ca_users extends BaseModel {
 		if (sizeof($va_default_locales) && $vn_locale_id = $t_locale->localeCodeToID($va_default_locales[0])) {
 			return $vn_locale_id;
 		}
-		die(_t("No default UI locale is available"));
+		
+		return __CA_DEFAULT_LOCALE__;
 	}
 	# ----------------------------------------
 	/**
