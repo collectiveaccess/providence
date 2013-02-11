@@ -38,6 +38,15 @@
 	$pn_id 				= $this->getVar('id');
 	$ps_id_prefix 		= $this->getVar('placement_code').$this->getVar('id_prefix').'HierLocation';
 	
+	switch($vs_priv_table) {
+		case 'ca_relationship_types':
+			$vb_has_privs = $this->request->user->canDoAction('can_configure_relationship_types');
+			break;
+		default:
+			$vb_has_privs = $this->request->user->canDoAction('can_create_'.$vs_priv_table);
+			break;
+	}
+	
 	$va_search_lookup_extra_params = array('noInline' => 1);
 	if ($t_subject->getProperty('HIERARCHY_ID_FLD') && ($vn_hier_id = (int)$t_subject->get($t_subject->getProperty('HIERARCHY_ID_FLD')))) {
 		$va_search_lookup_extra_params['currentHierarchyOnly'] = $vn_hier_id;
@@ -194,7 +203,7 @@
 					<li><a href="#<?php print $ps_id_prefix; ?>HierarchyBrowserTabs-move" onclick='_init<?php print $ps_id_prefix; ?>MoveHierarchyBrowser();'><span><?php print _t('Move'); ?></span></a></li>
 <?php
 	}
-	if ((!$vb_read_only && $this->request->user->canDoAction('can_create_'.$vs_priv_table)) && (!$vb_strict_type_hierarchy || ($vb_strict_type_hierarchy && $vs_type_selector))) {
+	if ((!$vb_read_only && $vb_has_privs) && (!$vb_strict_type_hierarchy || ($vb_strict_type_hierarchy && $vs_type_selector))) {
 ?>
 					<li><a href="#<?php print $ps_id_prefix; ?>HierarchyBrowserTabs-add" onclick='_init<?php print $ps_id_prefix; ?>AddHierarchyBrowser();'><span><?php print _t('Add'); ?></span></a></li>
 <?php
@@ -232,7 +241,7 @@
 				</div>
 <?php
 	}
-	if ((!$vb_read_only && $this->request->user->canDoAction('can_create_'.$vs_priv_table)) && (!$vb_strict_type_hierarchy || ($vb_strict_type_hierarchy && $vs_type_selector))) {
+	if ((!$vb_read_only && $vb_has_privs) && (!$vb_strict_type_hierarchy || ($vb_strict_type_hierarchy && $vs_type_selector))) {
 ?>
 			<div id="<?php print $ps_id_prefix; ?>HierarchyBrowserTabs-add"  class="hierarchyBrowseTab">
 				<div class="hierarchyBrowserMessageContainer">
@@ -353,7 +362,7 @@
 				levelDataUrl: '<?php print $va_lookup_urls['levelList']; ?>',
 				initDataUrl: '<?php print $va_lookup_urls['ancestorList']; ?>',
 				
-				dontAllowEditForFirstLevel: <?php print (in_array($t_subject->tableName(), array('ca_places', 'ca_storage_locations', 'ca_list_items')) ? 'true' : 'false'); ?>,
+				dontAllowEditForFirstLevel: <?php print (in_array($t_subject->tableName(), array('ca_places', 'ca_storage_locations', 'ca_list_items', 'ca_relationship_types')) ? 'true' : 'false'); ?>,
 				
 				readOnly: <?php print $vb_read_only ? 1 : 0; ?>,
 				
@@ -407,7 +416,7 @@
 <?php
 	}
 	
-	if ((!$vb_read_only && $this->request->user->canDoAction('can_create_'.$vs_priv_table)) && (!$vb_strict_type_hierarchy || ($vb_strict_type_hierarchy && $vs_type_selector))) {
+	if ((!$vb_read_only && $vb_has_privs) && (!$vb_strict_type_hierarchy || ($vb_strict_type_hierarchy && $vs_type_selector))) {
 ?>
 	// Set up "add" hierarchy browser
 	var o<?php print $ps_id_prefix; ?>AddHierarchyBrowser = null;

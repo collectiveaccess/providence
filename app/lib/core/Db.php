@@ -270,7 +270,7 @@ class Db extends DbBase {
 		// If second parameter is array use that as query params for placeholders, otherwise use successive params to fill placeholders
 		if (!($vb_res = $o_stmt->executeWithParamsAsArray(is_array($va_args[0]) ? $va_args[0] : $va_args))) {
 			// copy errors from statement object to Db object
-			$this->errors =& $o_stmt->errors();
+			$this->errors = $o_stmt->errors();
 		} else {
 			$this->opn_last_insert_id = $o_stmt->getLastInsertID();
 		}
@@ -490,6 +490,21 @@ class Db extends DbBase {
 	public function getIndices($ps_table) {
 		if(!$this->connected(true, "Db->getIndices()")) { return false; }
 		return $this->opo_db->getIndices($this, $ps_table);
+	}
+	
+	/**
+	 * Returns list of engines present in the database installation. The list in an array with
+	 * keys set to engine names and values set to an array of information returned from the database
+	 * server about engine that are currently available. Database server such as MySQL may return 
+	 * many engines, while others return only a single standard engine. In general, engines are only
+	 * of concern when you require specific features. CollectiveAccess, for example, requires the 
+	 * MySQL InnoDB engine. getEngines() enables the application to check for it.
+	 *
+	 * @return array An array of available engines, or false on error. The array is key'ed on Engine name. Values are arrays of engine information. This information is varies by database server.
+	 */
+	public function getEngines() {
+		if(!$this->connected(true, "Db->getEngines()")) { return false; }
+		return $this->opo_db->getEngines($this);
 	}
 
 	/**

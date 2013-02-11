@@ -106,7 +106,7 @@ BaseModel::$s_ca_models_definitions['ca_metadata_elements'] = array(
 				'DISPLAY_WIDTH' => 88, 'DISPLAY_HEIGHT' => 15,
 				'IS_NULL' => false, 
 				'DEFAULT' => '',
-				'LABEL' => _t('Settings'), 'DESCRIPTION' => _t('Type-specific ettings for metadata element')
+				'LABEL' => _t('Settings'), 'DESCRIPTION' => _t('Type-specific settings for metadata element')
 		),
 		'rank' => array(
 				'FIELD_TYPE' => FT_NUMBER, 'DISPLAY_TYPE' => DT_OMIT, 

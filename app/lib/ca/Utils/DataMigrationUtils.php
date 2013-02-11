@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2010-2012 Whirl-i-Gig
+ * Copyright 2010-2013 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -130,6 +130,17 @@
 				unset($pa_values['source_id']);
 				unset($pa_values['lifespan']);
 				
+				$t_entity->insert();
+				
+				if ($t_entity->numErrors()) {
+					if(isset($pa_options['outputErrors']) && $pa_options['outputErrors']) {
+						print "ERROR INSERTING entity (".$pa_entity_name['forename']."/".$pa_entity_name['surname']."): ".join('; ', $t_entity->getErrors())."\n";
+					}
+					return null;
+				}
+				
+				$t_entity->addLabel($pa_entity_name, $pn_locale_id, null, true);
+				
 				if (is_array($pa_values)) {
 					foreach($pa_values as $vs_element => $va_value) { 					
 						if (is_array($va_value)) {
@@ -148,18 +159,14 @@
 							}
 						}
 					}
-				}
-				$t_entity->insert();
+					$t_entity->update();
 				
-				if ($t_entity->numErrors()) {
-					if(isset($pa_options['outputErrors']) && $pa_options['outputErrors']) {
-						print "ERROR INSERTING entity (".$pa_entity_name['forename']."/".$pa_entity_name['surname']."): ".join('; ', $t_entity->getErrors())."\n";
-						print_R($pa_values);
+					if ($t_entity->numErrors()) {
+						if(isset($pa_options['outputErrors']) && $pa_options['outputErrors']) {
+							print "ERROR ADDING ATTRIBUTES TO entity (".$pa_entity_name['forename']."/".$pa_entity_name['surname']."): ".join('; ', $t_entity->getErrors())."\n";
+						}
 					}
-					return null;
 				}
-				$t_entity->addLabel($pa_entity_name, $pn_locale_id, null, true);
-				
 				
 				$vn_entity_id = $t_entity->getPrimaryKey();
 			} else {
@@ -569,6 +576,87 @@
 		}
 		# -------------------------------------------------------
 		/** 
+		 * Returns object_id for the object_id with the specified name, regardless of specified type. If the object does not already 
+		 * exist then it will be created with the specified name, type and locale, as well as with any specified values in the $pa_values array.
+		 * $pa_values keys should be either valid object fields or attributes.
+		 *
+		 * @param string $ps_object_name Object label name
+		 * @param int $pn_parent_id The parent_id of the object; must be set to a non-null value
+		 * @param int $pn_type_id The type_id of the object type to use if the object needs to be created
+		 * @param int $pn_locale_id The locale_id to use if the object needs to be created (will be used for both the object locale as well as the label locale)
+		 * @param array $pa_values An optional array of additional values to populate newly created object records with. These values are *only* used for newly created objects; they will not be applied if the object named already exists. The array keys should be names of ca_objects fields or valid entity attributes. Values should be either a scalar (for single-value attributes) or an array of values for (multi-valued attributes)
+		 * @param array $pa_options An optional array of options, which include:
+		 *				outputErrors - if true, errors will be printed to console [default=true]
+		 *				dontCreate - if true then new entities will not be created [default=false]
+		 * 				transaction - if Transaction object is passed, use it for all Db-related tasks [default=null]
+		 */
+		static function getObjectID($ps_object_name, $pn_parent_id, $pn_type_id, $pn_locale_id, $pa_values=null, $pa_options=null) {
+			if (!is_array($pa_options)) { $pa_options = array(); }
+			if(!isset($pa_options['outputErrors'])) { $pa_options['outputErrors'] = true; }
+			
+			$t_object = new ca_objects();
+			if (isset($pa_options['transaction']) && $pa_options['transaction'] instanceof Transaction){
+				$t_object->setTransaction($pa_options['transaction']);
+			}
+
+			if (sizeof($va_object_ids = $t_object->getObjectIDsByName($ps_object_name, $pn_parent_id, $pn_type_id)) == 0) {
+				if (isset($pa_options['dontCreate']) && $pa_options['dontCreate']) { return false; }
+				
+				$t_object->setMode(ACCESS_WRITE);
+				$t_object->set('locale_id', $pn_locale_id);
+				$t_object->set('type_id', $pn_type_id);
+				$t_object->set('parent_id', $pn_parent_id);
+				$t_object->set('source_id', isset($pa_values['source_id']) ? $pa_values['source_id'] : null);
+				$t_object->set('access', isset($pa_values['access']) ? $pa_values['access'] : 0);
+				$t_object->set('status', isset($pa_values['status']) ? $pa_values['status'] : 0);
+				$t_object->set('idno', isset($pa_values['idno']) ? $pa_values['idno'] : null);
+				$t_object->set('hier_object_id', isset($pa_values['hier_object_id']) ? $pa_values['hier_object_id'] : null);
+				unset($pa_values['access']);	
+				unset($pa_values['status']);
+				unset($pa_values['idno']);
+				unset($pa_values['source_id']);
+				unset($pa_values['hier_object_id']);
+				
+				if (is_array($pa_values)) {
+					foreach($pa_values as $vs_element => $va_value) { 					
+						if (is_array($va_value)) {
+							// array of values (complex multi-valued attribute)
+							$t_object->addAttribute(
+								array_merge($va_value, array(
+									'locale_id' => $pn_locale_id
+								)), $vs_element);
+						} else {
+							// scalar value (simple single value attribute)
+							if ($va_value) {
+								$t_object->addAttribute(array(
+									'locale_id' => $pn_locale_id,
+									$vs_element => $va_value
+								), $vs_element);
+							}
+						}
+					}
+				}
+				$t_object->insert();
+				
+				if ($t_object->numErrors()) {
+					if(isset($pa_options['outputErrors']) && $pa_options['outputErrors']) {
+						print "ERROR INSERTING object (".$ps_object_name."): ".join('; ', $t_object->getErrors())."\n";
+						print_R($pa_values);
+					}
+					return null;
+				}
+				
+				$t_object->addLabel(array('name' => $ps_object_name), $pn_locale_id, null, true);
+				
+				$vn_object_id = $t_object->getPrimaryKey();
+			} else {
+				$vn_object_id = array_shift($va_object_ids);
+			}
+				
+			return $vn_object_id;
+		}
+		# -------------------------------------------------------
+		/** 
 		 * Returns loan_id for the loan with the specified name, regardless of specified type. If the loan does not already 
 		 * exist then it will be created with the specified name, type and locale, as well as with any specified values in the $pa_values array.
 		 * $pa_values keys should be either valid loan fields or attributes.
@@ -632,6 +720,7 @@
 						}
 					}
 				}
+				
 				$t_loan->insert();
 				
 				if ($t_loan->numErrors()) {
@@ -641,8 +730,8 @@
 					}
 					return null;
 				}
-				$t_loan->addLabel(array('name' => $ps_loan_name), $pn_locale_id, null, true);
 				
+				$t_loan->addLabel(array('name' => $ps_loan_name), $pn_locale_id, null, true);
 				
 				$vn_loan_id = $t_loan->getPrimaryKey();
 			} else {
@@ -723,6 +812,9 @@
 				
 				$va_tmp = preg_split('![ ]+!', trim($ps_text));
 				
+				$va_name = array(
+					'surname' => '', 'forename' => '', 'middlename' => '', 'displayname' => ''
+				);
 				switch(sizeof($va_tmp)) {
 					case 1:
 						$va_name['surname'] = $ps_text;

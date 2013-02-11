@@ -80,7 +80,7 @@ var caUI = caUI || {};
 		}
 		
 		that.showUnsavedChangesWarning = function(b) {
-			if(typeof caUI.utils.showUnsavedChangesWarning === 'function') {
+			if(caUI && caUI.utils && typeof caUI.utils.showUnsavedChangesWarning === 'function') {
 				if (b === undefined) { b = true; }
 				caUI.utils.showUnsavedChangesWarning(b);
 			}

@@ -981,66 +981,12 @@ div.hint {
 	color: transparent;
 }
 
-
 /* form field tooltips */
-#tooltip {
-	position: absolute;
-	z-index: 3000;
-	padding: 5px;
-	/*opacity: 0.85;
-	border: 1px solid #111;
-	background-color: #eee;*/
+.tooltipFormat h3 {
+	padding: 0px 0px 10px 0px !important;
+	margin: 0px !important;
+	font-color: #000000 !important;
 }
-#tooltip h3, #tooltip div { margin: 0; }
-
-#tooltip.tooltipFormat {
-	font-family: Arial;
-	border: none;
-	width: 210px;
-	padding:15px;
-	/*height: 135px;
-	opacity: 0.8;
-	background: url('../graphics/backgrounds/tooltip_box.png');*/
-	-moz-border-radius: 10px; 
-	-webkit-border-top: 10px;
-	border-radius: 10px;
-	-moz-box-shadow: 2px 2px 5px #adadad;
-	-webkit-box-shadow: 2px 2px 5px #adadad;
-	box-shadow: 2px 2px 5px #adadad;
-	background-color:#FFFFFF;
-	color:#000000;
-	font-size:11px;
-	border:1px solid #adadad;
-}
-#tooltip.tooltipFormat h3 {
-	margin-bottom: 0.25em;
-	font-size: 10pt;
-	width: 220px;
-	text-align: center;
-}
-#tooltip.tooltipFormat div { 
-	/*width: 205px;
-	height: 130px;
-	text-align: left;
-	overflow: hidden;*/
-	margin: 0px;
-}
-
-#tooltip.resizeableTooltip {
-	font-family: Arial;
-	border: none;
-	padding:3px;
-	opacity: 1.0;
-}
-
-#tooltip.resizeableTooltip h3 {
-	margin-bottom: 0.25em;
-	font-size: 10pt;
-	text-align: center;
-	opacity: 1.0;
-}
-
-
 
 /*** Button styles ***/
 div.button{
@@ -4138,6 +4084,18 @@ div.roundedRel {
 	border-radius: 10px;
 }
 
+div.listRel {
+	font-size: 12px;
+	font-weight: normal;
+	padding: 10px;
+	margin-bottom: 5px;
+
+	width: 690px;	
+	border: 1px solid #aaaaaa;
+	background-color:#ffffff;
+	min-height: 18px;
+}
+
 .caItemList {
 	margin-top: 10px;
 }
@@ -4177,6 +4135,10 @@ div.roundedRel {
 .roundedRel .caDeleteItemButton {
 	position: relative;
 	top: 3px;
+}
+
+.listRel .caDeleteItemButton {
+	float: right;
 }
 
 div.preferenceSectionDivider {
@@ -5140,4 +5102,13 @@ div.quickAddTypeList {
 
 input[type='text'].ui-autocomplete-loading {
     background: white url('../graphics/icons/indicator.gif') right center no-repeat;
+}
+
+.caAnnotationMediaPlayerContainer {
+	width: 725px;
+	height: 32px;
+}
+.caAnnotationMediaPlayer {
+	
+	margin: 0 auto 0 auto;
 }

@@ -2068,13 +2068,24 @@ class BundlableLabelableBaseModelWithAttributes extends LabelableBaseModelWithAt
 		if (isset($pa_bundle_settings['restrictToTermsRelatedToCollection']) && $pa_bundle_settings['restrictToTermsRelatedToCollection']) {
 			$va_get_related_opts['restrict_to_relationship_types'] = $pa_bundle_settings['restrictToTermsOnCollectionUseRelationshipType'];
 		}
+		
+		if ($pa_bundle_settings['sort']) {
+			$va_get_related_opts['sort'] = $pa_bundle_settings['sort'];
+			$va_get_related_opts['sortDirection'] = $pa_bundle_settings['sortDirection'];
+		}
 		if (sizeof($va_items = $this->getRelatedItems($ps_related_table, $va_get_related_opts))) {
 			$t_rel = $this->getAppDatamodel()->getInstanceByTableName($ps_related_table, true);
 			$vs_rel_pk = $t_rel->primaryKey();
 			$va_ids = caExtractArrayValuesFromArrayOfArrays($va_items, $vs_rel_pk);
 			$qr_rel_items = $t_item->makeSearchResult($t_rel->tableNum(), $va_ids);	
 			
-			$va_initial_values = caProcessRelationshipLookupLabel($qr_rel_items, $t_rel, array('relatedItems' => $va_items, 'stripTags' => true));
+			
+			$va_opts = array('relatedItems' => $va_items, 'stripTags' => true);
+			if(strlen(trim($pa_bundle_settings['display_template']))) {
+				$va_opts['template'] = trim($pa_bundle_settings['display_template']);
+			}
+			$va_initial_values = caProcessRelationshipLookupLabel($qr_rel_items, $t_rel, $va_opts);
+			
 		}
 		
 		$va_force_new_values = array();
@@ -3439,6 +3450,7 @@ if (!$vb_batch) {
  	 *		start = item to start return set at; first item is numbered zero; default is 0
  	 *		limit = number of items to limit return set to; default is 1000
  	 *		sort = optional array of bundles to sort returned values on. Currently only supported when getting related values via simple related <table_name> and <table_name>.related invokations. Eg. from a ca_objects results you can use the 'sort' option got get('ca_entities'), get('ca_entities.related') or get('ca_objects.related'). The bundle specifiers are fields with or without tablename. Only those fields returned for the related tables (intrinsics, label fields and attributes) are sortable.
+ 	 *		sortDirection = direction of sort. Valid values as "ASC" (ascending) and "DESC" (descending). Default is ASC.
  	 *		showDeleted = if set to true, related items that have been deleted are returned. Default is false.
 	 *		where = optional array of fields and field values to filter returned values on. The fields must be intrinsic and in the same table as the field being "get()'ed" Can be used to filter returned values from primary and related tables. This option can be useful when you want to fetch certain values from a related table. For example, you want to get the relationship source_info values, but only for relationships going to a specific related record. Note that multiple fields/values are effectively AND'ed together - all must match for a row to be returned - and that only equivalence is supported (eg. field equals value).
  	 *		user_id = If set item level access control is performed relative to specified user_id, otherwise defaults to logged in user
@@ -3472,6 +3484,7 @@ if (!$vb_batch) {
 		
 		if(isset($pa_options['sort']) && !is_array($pa_options['sort'])) { $pa_options['sort'] = array($pa_options['sort']); }
 		$va_sort_fields = (isset($pa_options['sort']) && is_array($pa_options['sort'])) ? $pa_options['sort'] : null;
+		$vs_sort_direction = (isset($pa_options['sortDirection']) && $pa_options['sortDirection']) ? $pa_options['sortDirection'] : null;
 		
 		if (!$va_row_ids && ($vn_row_id > 0)) {
 			$va_row_ids = array($vn_row_id);
@@ -3953,7 +3966,7 @@ if (!$vb_batch) {
 			}
 			
 			// Perform sort
-			$va_rels = caSortArrayByKeyInValue($va_rels, $va_sort_fields);
+			$va_rels = caSortArrayByKeyInValue($va_rels, $va_sort_fields, $vs_sort_direction);
 		}
 		
 		return $va_rels;

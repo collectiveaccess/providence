@@ -85,7 +85,7 @@
 		if (is_array($pa_notices) && sizeof($pa_notices)) {
 			$vs_buf .= '<div class="batchProcessingReportSectionHead">'._t('Processed successfully').':</div><ol>';
 			foreach($pa_notices as $vn_id => $va_notice) {
-				$vs_buf .= "<li><em>".caEditorLink($po_request, $va_notice['label'], '', $pa_general['table'], $vn_id)."</em> (".$va_notice['idno']."): ".$va_notice['status']."</li>";
+				$vs_buf .= "<li><em>".caEditorLink($po_request, preg_replace("![\r\n\t]+!", " ", $va_notice['label']), '', $pa_general['table'], $vn_id)."</em> (".$va_notice['idno']."): ".$va_notice['status']."</li>";
 			}
 			$vs_buf .= "</ol>";
 		}

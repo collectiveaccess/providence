@@ -177,19 +177,54 @@
  			$o_config = Configuration::load();
  			
  			$ps_value = trim(preg_replace("![\t\n\r]+!", ' ', $ps_value));
- 			
 			if (trim($ps_value)) {
 				$va_tmp = explode('|', $ps_value);
+				if (sizeof($va_tmp) > 1) {
 				
-				$vs_url = str_replace('info:lc/', 'http://id.loc.gov/authorities/', $va_tmp[1]);
+					$vs_url = str_replace('info:lc/', 'http://id.loc.gov/authorities/', $va_tmp[1]);
 				
-				$va_tmp1 = explode('/', $va_tmp[1]);
-				$vs_id = array_pop($va_tmp1);
-				return array(
-					'value_longtext1' => $va_tmp[0],						// text
-					'value_longtext2' => $vs_url,							// uri
-					'value_decimal1' => is_numeric($vs_id) ? $vs_id : null	// id
-				);
+					$va_tmp1 = explode('/', $va_tmp[1]);
+					$vs_id = array_pop($va_tmp1);
+					return array(
+						'value_longtext1' => $va_tmp[0],						// text
+						'value_longtext2' => $vs_url,							// uri
+						'value_decimal1' => is_numeric($vs_id) ? $vs_id : null	// id
+					);
+				} else {
+					$vs_data = @file_get_contents("http://id.loc.gov/search/?q=".urlencode($ps_value).'&format=atom&count=5');
+					if ($vs_data) {
+						$o_xml = @simplexml_load_string($vs_data);
+	
+						$vs_label = $vs_url = $vs_id = null;
+						if ($o_xml) {
+							$o_entries = $o_xml->{'entry'};
+							if ($o_entries && sizeof($o_entries)) {
+								foreach($o_entries as $o_entry) {
+									$o_links = $o_entry->{'link'};
+									$va_attr = $o_links[0]->attributes();
+									
+									$vs_label = (string)$o_entry->{'title'};
+									
+									$vs_url = str_replace('http://id.loc.gov/', 'info:lc/', (string)$va_attr->{'href'});
+									$vs_id = (string)$o_entry->{'id'};
+								}
+							}
+						}
+						if ($vs_url) {
+							return array(
+								'value_longtext1' => $vs_label." [{$vs_url}]",						// text
+								'value_longtext2' => $vs_url,							// uri
+								'value_decimal1' => is_numeric($vs_id) ? $vs_id : null	// id
+							);
+						} else {
+							$this->postError(1970, _t('Could not get results from LCSH service for %1', $ps_value), 'LCSHAttributeValue->parseValue()');
+							return false;
+						}
+					} else {
+						$this->postError(1970, _t('Could not get results from LCSH service for %1', $ps_value), 'LCSHAttributeValue->parseValue()');
+						return false;
+					}
+				}
 			}
 			return array(
 				'value_longtext1' => '',	// text
@@ -249,12 +284,12 @@
 						
 						if ('{{".$pa_element_info['element_id']."}}') {
 							var re = /\[info:lc([^\]]+)\]/; 
-							var r = re.exec('{".$pa_element_info['element_id']."}');
+							var r = re.exec('{{".$pa_element_info['element_id']."}}');
 							var lcsh_id = (r) ? r[1] : null;
 							
 							if (!lcsh_id) {
 								re = /\[sh([^\]]+)\]/; 
-								var r = re.exec('{".$pa_element_info['element_id']."}');
+								var r = re.exec('{{".$pa_element_info['element_id']."}}');
 								var lcsh_id = (r) ? '/authorities/subjects/sh' + r[1] : null;
 							}
 							

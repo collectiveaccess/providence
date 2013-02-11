@@ -1413,7 +1413,6 @@ require_once(__CA_LIB_DIR__.'/core/Parsers/TimeExpressionParser.php');
 		$o_dm = Datamodel::load();
 		
 		// assume table display names (*not actual database table names*) are keys and table_nums are values
-		
 		$va_filtered_tables = array();
 		foreach($pa_tables as $vs_display_name => $vn_table_num) {
 			$vs_display_name = mb_strtolower($vs_display_name, 'UTF-8');
@@ -1429,12 +1428,13 @@ require_once(__CA_LIB_DIR__.'/core/Parsers/TimeExpressionParser.php');
 					foreach($va_types as $vn_item_id => $va_type_info) {
 						$va_type_labels[] = mb_strtolower($va_type_info['name_plural'], 'UTF-8');
 					}
-					
 					if (sizeof($va_type_labels)) {
 						if (mb_strlen($vs_label = join('/', $va_type_labels)) > 50) {
 							$vs_label = mb_substr($vs_label, 0, 60).'...';
 						}
 						$va_filtered_tables[$vs_label] = $vn_table_num;
+					} else {
+						$va_filtered_tables[$vs_display_name] = $vn_table_num;
 					}
 					break;
 				default:	
@@ -1997,7 +1997,8 @@ require_once(__CA_LIB_DIR__.'/core/Parsers/TimeExpressionParser.php');
 	 *		config = 
 	 *		limit = maximum number of items to return; if omitted all items are returned
 	 *		inlineCreateMessage = 
-	 *		inlineCreateQuery = 
+	 *		inlineCreateQuery =
+	 *		template = 
 	 * @return mixed 
 	 */
 global $ca_relationship_lookup_parse_cache;
@@ -2011,7 +2012,7 @@ $ca_relationship_lookup_parse_cache = array();
 		$vs_idno_fld 					= $pt_rel->getProperty('ID_NUMBERING_ID_FIELD');
 		$vs_idno_sort_fld 				= $pt_rel->getProperty('ID_NUMBERING_SORT_FIELD');
 		$vs_rel_pk 						= $pt_rel->primaryKey();
-		$vs_rel_table						= $pt_rel->tableName();
+		$vs_rel_table					= $pt_rel->tableName();
 		
 		if (!isset($pa_options['config']) || !is_object($pa_options['config'])) {
 			$o_config = Configuration::load();
@@ -2026,6 +2027,8 @@ $ca_relationship_lookup_parse_cache = array();
 		$ps_empty_result_message = (isset($pa_options['emptyResultMessage'])) ? (string)$pa_options['emptyResultMessage'] : null;
 		$ps_empty_result_query = (isset($pa_options['emptyResultQuery'])) ? (string)$pa_options['emptyResultQuery'] : null;
 		
+		$vs_template = (isset($pa_options['template'])) ? (string)$pa_options['template'] : null;
+		$vs_cache_key = md5($vs_display_format);
 		
 		$va_exclude = (isset($pa_options['exclude']) && is_array($pa_options['exclude'])) ? $pa_options['exclude'] : array();
 		
@@ -2037,10 +2040,10 @@ $ca_relationship_lookup_parse_cache = array();
 		$vb_use_new_display_format = false;
 		$va_bundles = array();
 		$vs_display_delimiter = '';
-		if (isset($ca_relationship_lookup_parse_cache[$vs_rel_table])) {
-			$va_bundles = $ca_relationship_lookup_parse_cache[$vs_rel_table]['bundles'];
-			$va_display_format = $ca_relationship_lookup_parse_cache[$vs_rel_table]['display_format'];
-			$vs_display_delimiter = $ca_relationship_lookup_parse_cache[$vs_rel_table]['delimiter'];
+		if (isset($ca_relationship_lookup_parse_cache[$vs_rel_table][$vs_cache_key])) {
+			$va_bundles = $ca_relationship_lookup_parse_cache[$vs_rel_table][$vs_cache_key]['bundles'];
+			$va_display_format = $ca_relationship_lookup_parse_cache[$vs_rel_table][$vs_cache_key]['display_format'];
+			$vs_display_delimiter = $ca_relationship_lookup_parse_cache[$vs_rel_table][$vs_cache_key]['delimiter'];
 			$vb_use_new_display_format = true;
 		} else {
 			if (($vs_display_format = $o_config->get($vs_rel_table.'_lookup_settings')) && !is_array($vs_display_format)) {				
@@ -2053,13 +2056,13 @@ $ca_relationship_lookup_parse_cache = array();
 			} else {
 				if (is_array($va_display_format = $o_config->getList($vs_rel_table.'_lookup_settings'))) {
 					$vb_use_new_display_format = true;
-					
+				
 					if(!($vs_display_delimiter = $o_config->get($vs_rel_table.'_lookup_delimiter'))) {
 						$vs_display_delimiter = ' ';
 					} else {
 						$vs_display_delimiter = " {$vs_display_delimiter} ";
 					}
-					
+				
 					foreach($va_display_format as $vs_display_element) {
 						if (preg_match_all('!\^{1}([A-Za-z0-9\._]+)!', $vs_display_element, $va_matches)) {
 							$va_bundles = array_merge($va_bundles, $va_matches[1]);
@@ -2067,7 +2070,7 @@ $ca_relationship_lookup_parse_cache = array();
 					}
 				}
 			}
-			$ca_relationship_lookup_parse_cache[$vs_rel_table] = array(
+			$ca_relationship_lookup_parse_cache[$vs_rel_table][$vs_cache_key] = array(
 				'bundles' => $va_bundles,
 				'display_format' => $va_display_format,
 				'delimiter' => $vs_display_delimiter
@@ -2157,6 +2160,10 @@ $ca_relationship_lookup_parse_cache = array();
 						$va_related_item_info[$vn_id] = $va_display_value;
 					} else {
 						$va_related_item_info[$vn_id] = $vs_display_value;
+					}
+					
+					if ($vs_template) {
+						$va_item['_display'] = caProcessTemplateForIDs($vs_template, $vs_rel_table, array($vn_id), array('returnAsArray' => false, 'returnAsLink' => true));
 					}
 					
 					$va_items[$vn_id] = $va_item;
