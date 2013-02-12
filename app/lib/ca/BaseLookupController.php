@@ -63,7 +63,8 @@
  		# -------------------------------------------------------
 		public function Get($pa_additional_query_params=null, $pa_options=null) {
 			if (!$this->ops_search_class) { return null; }
-			$ps_query = $this->request->getParameter('q', pString);
+			$ps_query = $this->request->getParameter('term', pString); 
+			
 			$pb_exact = $this->request->getParameter('exact', pInteger);
 			$ps_exclude = $this->request->getParameter('exclude', pString);
 			$va_excludes = explode(";", $ps_exclude);

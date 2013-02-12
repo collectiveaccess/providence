@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2006-2012 Whirl-i-Gig
+ * Copyright 2006-2013 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -279,6 +279,8 @@ class MediaInfoCoder {
 		unset($va_media_info["ORIGINAL_FILENAME"]);
 		unset($va_media_info["INPUT"]);
 		unset($va_media_info["VOLUME"]);
+		unset($va_media_info["_undo_"]);
+		unset($va_media_info["TRANSFORMATION_HISTORY"]);
 		
 		return array_keys($va_media_info);		
 	}

@@ -71,7 +71,7 @@
 				'thumbnail' => _t('thumbnails'),
 				'full' => _t('full'),
 				'list' => _t('list'),
-				'map' => _t('map')
+				//'map' => _t('map')
 			);
 			 
 			$this->opa_sorts = array_merge(array(

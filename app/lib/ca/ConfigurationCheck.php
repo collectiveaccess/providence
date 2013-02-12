@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2010-2011 Whirl-i-Gig
+ * Copyright 2010-2013 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -199,6 +199,7 @@ final class ConfigurationCheck {
 		$qr_engines = self::$opo_db->query("SHOW ENGINES");
 		$vb_innodb_available = false;
 		while($qr_engines->nextRow()){
+			if (!in_array($qr_engines->get('Support'), array('YES', 'DEFAULT'))) { continue; }
 			if(strtolower($qr_engines->get("Engine"))=="innodb"){
 				$vb_innodb_available = true;
 			}

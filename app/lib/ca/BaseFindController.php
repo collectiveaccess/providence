@@ -207,10 +207,10 @@
 					'name' => _t('PDF (Chart)'),
 					'code' => '_pdf'
 				),
-				array(
-					'name' => _t('PDF (Long)'),
-					'code' => '_pdflong'
-				),				
+			//	array(
+			//		'name' => _t('PDF (Long)'),
+			//		'code' => '_pdflong'
+			//	),				
 				array(
 					'name' => _t('PDF (Thumbnails)'),
 					'code' => '_pdfthumb' 
@@ -240,6 +240,8 @@
 				}
 			}
 			
+			$this->view->setVar('result_context', $this->opo_result_context);
+			
 			$this->view->setVar('access_restrictions',AccessRestrictions::load());
  		}
 		# -------------------------------------------------------
@@ -256,6 +258,7 @@
  		 * Returns list of available label print formats
  		 */
  		public function getPrintForms() {
+ 			require_once(__CA_LIB_DIR__.'/core/Print/PrintForms.php');
 			return PrintForms::getAvailableForms($this->request->config->get($this->ops_tablename.'_print_forms'));
 		}
 		# -------------------------------------------------------
@@ -524,45 +527,81 @@
 			
 			switch($ps_output_type) {
 				case '_pdf':
+// 			header("Content-Disposition: attachment; filename=export_results.pdf");
+// 			header("Content-type: application/pdf");
+// 					$vs_content = $this->render('Results/'.$this->ops_tablename.'_pdf_results_html.php');
+// 				
+// 					$o_pdf = new DOMPDF();
+// 					// Page sizes: 'letter', 'legal', 'A4'
+// 					// Orientation:  'portrait' or 'landscape'
+// 					$o_pdf->set_paper("letter", "landscape");
+// 					$o_pdf->load_html($vs_content, 'utf-8');
+// 					$o_pdf->render();
+// 					$o_pdf->stream("results.pdf");
+					require_once(__CA_LIB_DIR__."/core/Print/html2pdf/html2pdf.class.php");
+					
+					try {
+						$vs_content = $this->render('Results/'.$this->ops_tablename.'_pdf_results_html.php');
+						$vo_html2pdf = new HTML2PDF('L','letter','en');
+						$vo_html2pdf->setDefaultFont("dejavusans");
+						$vo_html2pdf->setTestIsImage(false);
+						$vo_html2pdf->WriteHTML($vs_content);
+						
 			header("Content-Disposition: attachment; filename=export_results.pdf");
 			header("Content-type: application/pdf");
-					$vs_content = $this->render('Results/'.$this->ops_tablename.'_pdf_results_html.php');
-				
-					$o_pdf = new DOMPDF();
-					// Page sizes: 'letter', 'legal', 'A4'
-					// Orientation:  'portrait' or 'landscape'
-					$o_pdf->set_paper("letter", "landscape");
-					$o_pdf->load_html($vs_content, 'utf-8');
-					$o_pdf->render();
-					$o_pdf->stream("results.pdf");
+			
+						$vo_html2pdf->Output('results.pdf');
+						$vb_printed_properly = true;
+					} catch (Exception $e) {
+						$vb_printed_properly = false;
+						$this->postError(3100, _t("Could not generate PDF"),"BaseEditorController->PrintSummary()");
+					}
 					return;
 					break;
 				case '_pdfthumb':
+// 			header("Content-Disposition: attachment; filename=export_results.pdf");
+// 			header("Content-type: application/pdf");
+// 					$vs_content = $this->render('Results/'.$this->ops_tablename.'_pdf_results_thumb_html.php');
+// 				
+// 					$o_pdf = new DOMPDF();
+// 					// Page sizes: 'letter', 'legal', 'A4'
+// 					// Orientation:  'portrait' or 'landscape'
+// 					$o_pdf->set_paper("letter", "landscape");
+// 					$o_pdf->load_html($vs_content, 'utf-8');
+// 					$o_pdf->render();
+// 					$o_pdf->stream("results.pdf");
+					require_once(__CA_LIB_DIR__."/core/Print/html2pdf/html2pdf.class.php");
+					
+					try {
+						$vs_content = $this->render('Results/'.$this->ops_tablename.'_pdf_results_thumb_html.php');
+						$vo_html2pdf = new HTML2PDF('L','letter','en');
+						$vo_html2pdf->setDefaultFont("dejavusans");
+						$vo_html2pdf->setTestIsImage(false);
+						$vo_html2pdf->WriteHTML($vs_content);
+						
 			header("Content-Disposition: attachment; filename=export_results.pdf");
 			header("Content-type: application/pdf");
-					$vs_content = $this->render('Results/'.$this->ops_tablename.'_pdf_results_thumb_html.php');
-				
-					$o_pdf = new DOMPDF();
-					// Page sizes: 'letter', 'legal', 'A4'
-					// Orientation:  'portrait' or 'landscape'
-					$o_pdf->set_paper("letter", "landscape");
-					$o_pdf->load_html($vs_content, 'utf-8');
-					$o_pdf->render();
-					$o_pdf->stream("results.pdf");
+			
+						$vo_html2pdf->Output('thumb_results.pdf');
+						$vb_printed_properly = true;
+					} catch (Exception $e) {
+						$vb_printed_properly = false;
+						$this->postError(3100, _t("Could not generate PDF"),"BaseEditorController->PrintSummary()");
+					}
 					return;
 					break;	
-				case '_pdflong':
-			header("Content-Disposition: attachment; filename=export_results.pdf");
-			header("Content-type: application/pdf");
-					$vs_content = $this->render('Results/'.$this->ops_tablename.'_pdf_results_long_html.php');
-				
-					$o_pdf = new DOMPDF();
-					// Page sizes: 'letter', 'legal', 'A4'
-					// Orientation:  'portrait' or 'landscape'
-					$o_pdf->set_paper("letter", "landscape");
-					$o_pdf->load_html($vs_content, 'utf-8');
-					$o_pdf->render();
-					$o_pdf->stream("results.pdf");
+// 				case '_pdflong':
+// 			header("Content-Disposition: attachment; filename=export_results.pdf");
+// 			header("Content-type: application/pdf");
+// 					$vs_content = $this->render('Results/'.$this->ops_tablename.'_pdf_results_long_html.php');
+// 				
+// 					$o_pdf = new DOMPDF();
+// 					// Page sizes: 'letter', 'legal', 'A4'
+// 					// Orientation:  'portrait' or 'landscape'
+// 					$o_pdf->set_paper("letter", "landscape");
+// 					$o_pdf->load_html($vs_content, 'utf-8');
+// 					$o_pdf->render();
+// 					$o_pdf->stream("results.pdf");
 					return;
 					break;					
 				case '_csv':
@@ -688,6 +727,45 @@
 			$this->view->setVar('num_items_added', $vn_added_items_count);
 			$this->view->setVar('num_items_already_in_set', $vn_dupe_item_count);
  			$this->render('Results/ajax_add_to_set_json.php');
+ 		}
+ 		# ------------------------------------------------------------------
+ 		/**
+ 		 * Add items to specified set
+ 		 */ 
+ 		public function createSetFromResult() {
+ 			global $g_ui_locale_id;
+ 			
+ 			$va_row_ids = $this->opo_result_context->getResultList();
+ 			
+ 			$vn_added_items_count = 0;
+ 			if (is_array($va_row_ids) && sizeof($va_row_ids)) {
+				$t_model = $this->opo_datamodel->getInstanceByTableName($this->ops_tablename, true);
+				$vs_set_name = $this->request->getParameter('set_name', pString);
+				if (!$vs_set_name) { $vs_set_name = $this->opo_result_context->getSearchExpression(); }
+			
+				$t_set = new ca_sets();
+				$t_set->setMode(ACCESS_WRITE);
+				$t_set->set('user_id', $this->request->getUserID());
+				$t_set->set('type_id', $this->request->config->get('ca_sets_default_type'));
+				$t_set->set('table_num', $t_model->tableNum());
+				$t_set->set('set_code', mb_substr(preg_replace("![^A-Za-z0-9_\-]+!", "_", $vs_set_name), 0, 100));
+			
+				$t_set->insert();
+				
+				if ($t_set->numErrors()) {
+					$this->view->setVar('error', join("; ", $t_set->getErrors()));
+				}
+			
+				$t_set->addLabel(array('name' => $vs_set_name), $g_ui_locale_id, null, true);
+			
+				$vn_added_items_count = $t_set->addItems($va_row_ids);
+			}
+ 		
+			$this->view->setVar('set_id', $t_set->getPrimaryKey());
+			$this->view->setVar('t_set', $t_set);
+			$this->view->setVar('set_name', $vs_set_name);
+			$this->view->setVar('num_items_added', $vn_added_items_count);
+ 			$this->render('Results/ajax_create_set_from_result_json.php');
  		}
  		# ------------------------------------------------------------------
  		/**

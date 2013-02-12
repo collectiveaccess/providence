@@ -51,5 +51,5 @@
  	// saves all bundles on the specified screen in the database by extracting 
  	// required data from the supplied request
  	// $pm_screen can be a screen tag (eg. "Screen5") or a screen_id (eg. 5)
- 	public function saveBundlesForScreen($pm_screen, $pa_options);
+ 	public function saveBundlesForScreen($pm_screen, $po_request, &$pa_options);
  }
