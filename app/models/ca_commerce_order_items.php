@@ -175,7 +175,7 @@ BaseModel::$s_ca_models_definitions['ca_commerce_order_items'] = array(
 				'FIELD_TYPE' => FT_DATETIME, 'DISPLAY_TYPE' => DT_FIELD, 
 				'DISPLAY_WIDTH' => 20, 'DISPLAY_HEIGHT' => 1,
 				'IS_NULL' => true, 
-				'DEFAULT' => _t(''),
+				'DEFAULT' => '',
 				'LABEL' => _t('Date received'), 'DESCRIPTION' => _t('Date/time the item was checked out.'),
 		),
 		'loan_due_date' => array(
