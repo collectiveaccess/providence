@@ -3420,6 +3420,8 @@ class BaseModel extends BaseObject {
 				unset($va_media_desc["ORIGINAL_FILENAME"]);
 				unset($va_media_desc["INPUT"]);
 				unset($va_media_desc["VOLUME"]);
+				unset($va_media_desc["_undo_"]);
+				unset($va_media_desc["TRANSFORMATION_HISTORY"]);
 				return array_keys($va_media_desc);
 			}
 		} else {
