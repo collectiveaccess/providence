@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2011-2012 Whirl-i-Gig
+ * Copyright 2011-2013 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -295,13 +295,25 @@
 <?php			
 			if(caObjectsDisplayDownloadLink($this->request)){
 ?>
-
 				<div class='download'>
 <?php 
-						# -- get version to download configured in media_display.conf
+					$va_versions = $t_rep->getMediaVersions('media');
+					sort($va_versions);
+					if ($this->request->user->canDoAction('can_download_media')) {
+						// -- give privileged users choice of versions to download
+						print caFormTag($this->request, 'DownloadMedia', 'caMediaDownloadForm', 'editor/objects/ObjectEditor', 'post', 'multipart/form-data', '_top', array('disableUnsavedChangesWarning' => true, 'noTimestamp' => true));
+						print caHTMLSelect('version', $va_versions, array('style' => 'font-size: 9px;'));
+						print caFormSubmitLink($this->request, "<img src='".$this->request->getThemeUrlPath()."/graphics/buttons/downloadWhite.png' border='0' title='"._t("Download media")."' valign='bottom'/>", '', 'caMediaDownloadForm', 'caMediaDownloadFormButton');
+						print caHTMLHiddenInput("object_id", array('value' => $t_object->getPrimaryKey()));
+						print caHTMLHiddenInput("representation_id", array('value' => $t_rep->getPrimaryKey()));
+						print caHTMLHiddenInput("download", array('value' => 1));
+						print "</form>\n";
+					} else {
+						// -- get version to download configured in media_display.conf
 						$va_download_display_info = caGetMediaDisplayInfo($vs_display_type, $t_rep->getMediaInfo('media', 'INPUT', 'MIMETYPE'));
-						$vs_download_version = $va_download_display_info['display_version'];
-						print caNavLink($this->request, "<img src='".$this->request->getThemeUrlPath()."/graphics/buttons/downloadWhite.png' border='0' title='"._t("Download Media")."'>", '', 'Detail', 'Object', 'DownloadRepresentation', array('representation_id' => $t_rep->getPrimaryKey(), "object_id" => $t_object->getPrimaryKey(), "download" => 1, "version" => $vs_download_version));
+						$vs_download_version = ($va_download_display_info['download_version']) ? $va_download_display_info['download_version'] : array_pop($va_versions);
+						print caNavLink($this->request, "<img src='".$this->request->getThemeUrlPath()."/graphics/buttons/downloadWhite.png' border='0' title='"._t("Download media")."'>", '', 'editor/objects', 'ObjectEditor', 'DownloadRepresentation', array('representation_id' => $t_rep->getPrimaryKey(), "object_id" => $t_object->getPrimaryKey(), "download" => 1, "version" => $vs_download_version));
+					}
 ?>				
 				</div>
 <?php
