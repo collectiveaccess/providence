@@ -35,7 +35,7 @@
 	");
 	
 	print caFormTag($this->request, 'reload', 'caSortValuesReloadForm', null, 'post', 'multipart/form-data', '_top', array('disableUnsavedChangesWarning' => true, 'noTimestamp' => true));
-	print "<div style='text-align: center'>".caFormSubmitButton($this->request, __CA_NAV_BUTTON_GO__, 'Reload sort values', 'caSortValuesReloadForm', array())."</div>";
+	print "<div style='text-align: center'>".caFormSubmitButton($this->request, __CA_NAV_BUTTON_GO__, _t("Reload sort values"), 'caSortValuesReloadForm', array())."</div>";
 	print "</form>";
 	print "</div>\n";
 ?>
