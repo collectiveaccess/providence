@@ -166,7 +166,7 @@ class GeoNamesAttributeValue extends AttributeValue implements IAttributeValue {
 			return $this->ops_text_value.'|'.$this->ops_uri_value;
 		}
 
-		return $this->ops_text_value;
+		return $this->ops_text_value.' [id:'.$this->ops_uri_value.']';
 	}
 	# ------------------------------------------------------------------
 	public function getTextValue(){
@@ -186,7 +186,6 @@ class GeoNamesAttributeValue extends AttributeValue implements IAttributeValue {
 		$vs_user = trim($vo_conf->get("geonames_user"));
 
 		$va_settings = $this->getSettingValuesFromElementArray($pa_element_info, array('canBeEmpty'));
-
 		if (!$ps_value) {
  			if(!$va_settings["canBeEmpty"]){
 				$this->postError(1970, _t('Entry was blank.'), 'GeoNamesAttributeValue->parseValue()');
@@ -194,11 +193,12 @@ class GeoNamesAttributeValue extends AttributeValue implements IAttributeValue {
 			}
 			return array();
  		} else {
-			$va_tmp = explode('|', $ps_value);
-
-			$vs_text = $va_tmp[0];
-			$vs_id = $va_tmp[1];
-			
+ 			$vs_text = $ps_value;
+ 			$vs_id = null;
+			if (preg_match("! \[id:([0-9]+)\]$!", $vs_text, $va_matches)) {
+				$vs_id = $va_matches[1];
+				$vs_text = preg_replace("! \[id:[0-9]+\]$!", "", $ps_value);
+			}
 			if (!$vs_id) {
 				if(!$va_settings["canBeEmpty"]){
 					$this->postError(1970, _t('Entry was blank.'), 'GeoNamesAttributeValue->parseValue()');
@@ -206,11 +206,10 @@ class GeoNamesAttributeValue extends AttributeValue implements IAttributeValue {
 				}
 				return array();
 			}
-			$vs_url = "http://api.geonames.org/get?geonameId={$vs_id}&style=full&username={$vs_user}";
 
 			return array(
 				'value_longtext1' => $vs_text,
-				'value_longtext2' => $vs_url,
+				'value_longtext2' => $vs_id,
 			);
 		}
 	}
@@ -252,18 +251,22 @@ class GeoNamesAttributeValue extends AttributeValue implements IAttributeValue {
 			);
 
 		if ($pa_options['po_request']) {
-			$vs_url = caNavUrl($pa_options['po_request'], 'lookup', 'GeoNames', 'Get');
+			$vs_url = caNavUrl($pa_options['po_request'], 'lookup', 'GeoNames', 'Get', array('max' => 100));
 		}
 
 		$vs_element .= '</div>';
 		$vs_element .= "
 			<script type='text/javascript'>
 				jQuery(document).ready(function() {
-					jQuery('#geonames_".$pa_element_info['element_id']."_autocomplete{n}').autocomplete('".$vs_url."', { max: 50, minChars: 3, matchSubset: 1, matchContains: 1, delay: 800});
-					jQuery('#geonames_".$pa_element_info['element_id']."_autocomplete{n}').result(function(event, data, formatted) {
-							jQuery('#{fieldNamePrefix}".$pa_element_info['element_id']."_{n}').val(data[0] + '|' + data[1]);
+					jQuery('#geonames_".$pa_element_info['element_id']."_autocomplete{n}').autocomplete(
+						{ 
+							source: '{$vs_url}',
+							minLength: 3, delay: 800,
+							select: function(event, ui) {
+								jQuery('#{fieldNamePrefix}".$pa_element_info['element_id']."_{n}').val(ui.item.label + ' [id:' + ui.item.id + ']');
+							}
 						}
-					);
+					).click(function() { this.select(); });
 				});
 			</script>
 		";

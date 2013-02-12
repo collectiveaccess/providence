@@ -35,10 +35,14 @@
 	$va_settings = 		$this->getVar('settings');
 	$vs_add_label =		$this->getVar('add_label');
 	
-	$vb_read_only		=	((isset($va_settings['readonly']) && $va_settings['readonly'])  || ($this->request->user->getBundleAccessLevel('ca_places', 'nonpreferred_labels') == __CA_BUNDLE_ACCESS_READONLY__));
+	$vb_read_only		= ((isset($va_settings['readonly']) && $va_settings['readonly'])  || ($this->request->user->getBundleAccessLevel('ca_places', 'nonpreferred_labels') == __CA_BUNDLE_ACCESS_READONLY__));
+	$vb_batch			= $this->getVar('batch');
 	
+	if ($vb_batch) {
+		print caBatchEditorNonPreferredLabelsModeControl($t_label, $vs_id_prefix);
+	}
 ?>
-<div id="<?php print $vs_id_prefix; ?>Labels">
+<div id="<?php print $vs_id_prefix; ?>Labels" <?php print $vb_batch ? "class='editorBatchBundleContent'" : ''; ?>>
 <?php
 	//
 	// The bundle template - used to generate each bundle in the form

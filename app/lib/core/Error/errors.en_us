@@ -226,3 +226,9 @@
 
 # --- Summary printing errors
 3100 = Could not generate PDF
+
+# --- Batch editing errors
+3200 = Invalid set
+3210 = Batch editing is not allowed
+3220 = Set is empty
+3250 = Invalid directory

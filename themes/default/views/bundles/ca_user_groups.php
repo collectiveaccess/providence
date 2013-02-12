@@ -53,7 +53,7 @@
 				<tr>
 					<td class="formLabel">
 						<?php print _t('Group'); ?>
-						<input type="text" size="30" name="<?php print $vs_id_prefix; ?>_autocomplete{n}" value="{{_display}}" id="<?php print $vs_id_prefix; ?>_autocomplete{n}" class="lookupBg"/>
+						<input type="text" size="30" name="<?php print $vs_id_prefix; ?>_autocomplete{n}" value="{{label}}" id="<?php print $vs_id_prefix; ?>_autocomplete{n}" class="lookupBg"/>
 						<?php print $t_rel->htmlFormElement('access', '^ELEMENT', array('name' => $vs_id_prefix.'_access_{n}', 'id' => $vs_id_prefix.'_access_{n}', 'value' => '{{access}}')); ?>
 						<?php if ($t_rel->hasField('effective_date')) { print _t(' for period ').$t_rel->htmlFormElement('effective_date', '^ELEMENT', array('name' => $vs_id_prefix.'_effective_date_{n}', 'value' => '{{effective_date}}', 'classname'=> 'dateBg')); } ?>
 						<input type="hidden" name="<?php print $vs_id_prefix; ?>_id{n}" id="<?php print $vs_id_prefix; ?>_id{n}" value="{id}"/>
@@ -90,7 +90,7 @@
 	jQuery(document).ready(function() {
 		caUI.initRelationBundle('#<?php print $vs_id_prefix.$t_item->tableNum().'_rel'; ?>', {
 			fieldNamePrefix: '<?php print $vs_id_prefix; ?>_',
-			templateValues: ['_display', 'effective_date', 'access', 'id'],
+			templateValues: ['label', 'effective_date', 'access', 'id'],
 			initialValues: <?php print json_encode($va_initial_values); ?>,
 			itemID: '<?php print $vs_id_prefix; ?>Item_',
 			templateClassName: 'caItemTemplate',

@@ -1,6 +1,6 @@
 <?php
 /** ---------------------------------------------------------------------
- * app/helpers/preload.php : includes for commonly used classes and libraries
+ * app/helpers/initalizeLocale.php : 
  * ----------------------------------------------------------------------
  * CollectiveAccess
  * Open-source collections management software

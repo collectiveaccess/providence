@@ -172,6 +172,11 @@ class ItemService extends BaseJSONService {
 			}
 		}
 
+		// representations for objects
+		if($this->ops_table == "ca_objects"){
+			$va_return['representations'] = $t_instance->getRepresentations();
+		}
+
 		// attributes
 		$va_codes = $t_instance->getApplicableElementCodes();
 		foreach($va_codes as $vs_code){

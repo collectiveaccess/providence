@@ -31,6 +31,7 @@ create table ca_change_log
    logged_row_id                  int unsigned                   not null,
    rolledback                     tinyint unsigned               not null default 0,
    unit_id                        char(32),
+   batch_id                       int unsigned                   null,
    primary key (log_id)
 ) engine=innodb CHARACTER SET utf8 COLLATE utf8_general_ci;
 
@@ -39,6 +40,7 @@ create index i_user_id on ca_change_log(user_id);
 create index i_logged on ca_change_log(logged_row_id, logged_table_num);
 create index i_unit_id on ca_change_log(unit_id);
 create index i_table_num on ca_change_log (logged_table_num);
+create index i_batch_id on ca_change_log (batch_id);
 
 
 /*==========================================================================*/
@@ -268,6 +270,7 @@ create table ca_users
    fname                          varchar(255)                   not null,
    lname                          varchar(255)                   not null,
    email                          varchar(255)                   not null,
+   sms_number                     varchar(30)                    not null,
    vars                           longtext                       not null,
    volatile_vars                  text                           not null,
    active                         tinyint unsigned               not null,
@@ -431,7 +434,7 @@ create table ca_object_representations
    rating_status                  tinyint unsigned               not null default 0,
    access                         tinyint unsigned               not null default 0,
    status                         tinyint unsigned               not null default 0,
-   rank                             int unsigned                     not null default 0,
+   rank                             int unsigned                 not null default 0,
    primary key (representation_id),
    constraint fk_ca_object_representations_type_id foreign key (type_id)
       references ca_list_items (item_id) on delete restrict on update restrict,
@@ -706,6 +709,8 @@ create index i_source_id on ca_places(source_id);
 create index i_life_sdatetime on ca_places(lifespan_sdate);
 create index i_life_edatetime on ca_places(lifespan_edate);
 create index i_parent_id on ca_places(parent_id);
+create index i_hier_left on ca_places(hier_left);
+create index i_hier_right on ca_places(hier_right);
 
 
 /*==========================================================================*/
@@ -2076,76 +2081,19 @@ create index i_label_right_id on ca_object_events_x_storage_locations(label_righ
 
 
 /*==========================================================================*/
-create table ca_data_import_events
-(
-   event_id                       int unsigned                   not null AUTO_INCREMENT,
-   occurred_on                    int unsigned                   not null,
-   user_id                        int unsigned,
-   description                    text                           not null,
-   type_code                      char(10)                       not null,
-   source                         text                           not null,
-   primary key (event_id),
-   constraint fk_ca_data_import_events_user_id foreign key (user_id)
-      references ca_users (user_id) on delete restrict on update restrict
-) engine=innodb CHARACTER SET utf8 COLLATE utf8_general_ci;
-
-create index i_user_id on ca_data_import_events(user_id);
-
-
-/*==========================================================================*/
-create table ca_data_import_items
-(
-   item_id                        int unsigned                  not null AUTO_INCREMENT,
-   event_id                       int unsigned                  not null,
-   source_ref                    varchar(255)                  not null,
-   table_num                    tinyint unsigned            null,
-   row_id                          int unsigned                  null,
-   type_code                     char(1)                          null,
-   started_on                    int unsigned                 not null,
-   completed_on               int unsigned                 null,
-   elapsed_time                decimal(8,4)                  null,
-   success                        tinyint unsigned            null,
-   message                       text                              not null,
-   primary key (item_id),
-   constraint fk_ca_data_import_items_event_id foreign key (event_id)
-      references ca_data_import_events (event_id) on delete restrict on update restrict
-) engine=innodb CHARACTER SET utf8 COLLATE utf8_general_ci;
-
-create index i_event_id on ca_data_import_items(event_id);
-create index i_row_id on ca_data_import_items(table_num, row_id);
-
-
-/*==========================================================================*/
-create table ca_data_import_event_log
-(
-   log_id                       int unsigned                   not null AUTO_INCREMENT,
-   event_id                    int unsigned                   not null,
-   item_id                      int unsigned                   null,
-   type_code                  char(10)                       not null,
-   date_time                  int unsigned                   not null,
-   message                    text                           not null,
-   source                       varchar(255)                   not null,
-   primary key (log_id),
-   constraint fk_ca_data_import_events_event_id foreign key (event_id)
-      references ca_data_import_events (event_id) on delete restrict on update restrict,
-    constraint fk_ca_data_import_events_item_id foreign key (item_id)
-      references ca_data_import_items (item_id) on delete restrict on update restrict
-) engine=innodb CHARACTER SET utf8 COLLATE utf8_general_ci;
-
-create index i_event_id on ca_data_import_event_log(event_id);
-create index i_item_id on ca_data_import_event_log(item_id);
-
-/*==========================================================================*/
 create table ca_data_importers (
    importer_id          int unsigned         not null AUTO_INCREMENT,
    importer_code        varchar(100)         not null,
    table_num            tinyint unsigned     not null,
-   settings          longtext              not null,
+   settings             longtext             not null,
+   worksheet            longblob             not null,
+   deleted              tinyint unsigned     not null,
    primary key (importer_id)
 ) engine=innodb CHARACTER SET utf8 COLLATE utf8_general_ci;
 
 create unique index u_importer_code on ca_data_importers(importer_code);
 create index i_table_num on ca_data_importers(table_num);
+
 
 /*==========================================================================*/
 create table ca_data_importer_labels (
@@ -2178,6 +2126,7 @@ create unique index u_all on ca_data_importer_labels
    is_preferred
 );
 
+
 /*==========================================================================*/
 create table ca_data_importer_groups (
    group_id             int unsigned         not null AUTO_INCREMENT,
@@ -2195,11 +2144,12 @@ create table ca_data_importer_groups (
 create index i_importer_id on ca_data_importer_groups(importer_id);
 create unique index u_group_code on ca_data_importer_groups(importer_id, group_code);
 
+
 /*==========================================================================*/
 create table ca_data_importer_items (
    item_id           int unsigned         not null AUTO_INCREMENT,
    importer_id          int unsigned         not null,
-   group_id             int unsigned         null,
+   group_id             int unsigned         not null,
    source               varchar(1024)         not null,
    destination          varchar(1024)         not null,
    settings          longtext          not null,
@@ -2215,6 +2165,50 @@ create table ca_data_importer_items (
 
 create index i_importer_id on ca_data_importer_items(importer_id);
 create index i_group_id on ca_data_importer_items(group_id);
+
+
+/*==========================================================================*/
+create table ca_data_importer_log
+(
+   log_id                         int unsigned                   not null AUTO_INCREMENT,
+   importer_id                    int unsigned                   not null,
+   user_id                        int unsigned,
+   log_datetime                   int unsigned                   not null,
+   notes                          text                           not null,
+   table_num                      tinyint unsigned               not null,
+   datafile                       longblob                       not null,
+   primary key (log_id),
+   
+   index i_user_id (user_id),
+   index i_importer_id (importer_id),
+   index i_log_datetime (log_datetime),
+   
+   constraint fk_ca_data_importer_log_user_id foreign key (user_id)
+      references ca_users (user_id) on delete restrict on update restrict,
+   constraint fk_ca_data_importers_log_importer_id foreign key (importer_id)
+      references ca_data_importers (importer_id) on delete restrict on update restrict
+) engine=innodb CHARACTER SET utf8 COLLATE utf8_general_ci;
+
+
+/*==========================================================================*/
+create table ca_data_importer_log_items
+(
+   log_item_id                   int unsigned                   not null AUTO_INCREMENT,
+   log_id                        int unsigned                   not null,
+   log_datetime                  int unsigned                   not null,
+   table_num                     tinyint unsigned               not null,
+   row_id                        int unsigned                   not null,
+   type_code                     char(10)                       not null,
+   notes                         text                           not null,
+   primary key (log_item_id),
+   
+   index i_log_id (log_id),
+   index i_row_id (row_id),
+   index i_log_datetime (log_datetime),
+   
+   constraint fk_ca_data_importer_log_items_log_id foreign key (log_id)
+      references ca_data_importer_log (log_id) on delete restrict on update restrict
+) engine=innodb CHARACTER SET utf8 COLLATE utf8_general_ci;
 
 
 /*==========================================================================*/
@@ -4764,6 +4758,39 @@ create table ca_search_log (
 
 
 /*==========================================================================*/
+create table ca_batch_log
+(
+   batch_id                       int unsigned              not null AUTO_INCREMENT,
+   user_id                        int unsigned              not null,
+   log_datetime                   int unsigned              not null,
+   notes                          text                      not null,
+   batch_type                     char(2)                   not null,
+   table_num                      tinyint unsigned          not null,
+   elapsed_time                   int unsigned              not null default 0,
+   
+   primary key (batch_id), 
+   KEY i_log_datetime (log_datetime),
+   KEY i_user_id (user_id),
+   constraint fk_ca_batch_log_user_id foreign key (user_id)
+      references ca_users (user_id) on delete restrict on update restrict
+) engine=innodb CHARACTER SET utf8 COLLATE utf8_general_ci;
+
+
+/*==========================================================================*/
+create table ca_batch_log_items 
+(
+	batch_id                       int unsigned                   not null,
+	row_id                         int unsigned                   not null,
+	errors                         longtext                       null,
+	
+	primary key (batch_id, row_id), 
+    KEY i_row_id (row_id),
+    constraint fk_ca_batch_log_items_batch_id foreign key (batch_id)
+      references ca_batch_log (batch_id) on delete restrict on update restrict
+) engine=innodb CHARACTER SET utf8 COLLATE utf8_general_ci;
+
+
+/*==========================================================================*/
 create table ca_bundle_displays (
 	display_id		int unsigned not null primary key auto_increment,
 	user_id			int unsigned null references ca_users(user_id),
@@ -6668,5 +6695,5 @@ create table ca_schema_updates (
 ) engine=innodb CHARACTER SET utf8 COLLATE utf8_general_ci;
 
 /* Indicate up to what migration this schema definition covers */
-/* CURRENT MIGRATION: 72 */
-INSERT IGNORE INTO ca_schema_updates (version_num, datetime) VALUES (72, unix_timestamp());
+/* CURRENT MIGRATION: 79 */
+INSERT IGNORE INTO ca_schema_updates (version_num, datetime) VALUES (79, unix_timestamp());

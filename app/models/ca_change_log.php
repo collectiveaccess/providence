@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2008-2010 Whirl-i-Gig
+ * Copyright 2008-2012 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -60,14 +60,6 @@ BaseModel::$s_ca_models_definitions['ca_change_log'] = array(
 				'DEFAULT' => '',
 				'LABEL' => _t('User'), 'DESCRIPTION' => _t('User who performed event')
 		),
-		'user_data' => array(
-				'FIELD_TYPE' => FT_TEXT, 'DISPLAY_TYPE' => DT_FIELD, 
-				'DISPLAY_WIDTH' => 88, 'DISPLAY_HEIGHT' => 15,
-				'IS_NULL' => false, 
-				'DEFAULT' => '',
-				'LABEL' => 'User data', 'DESCRIPTION' => 'User data',
-				'BOUNDS_LENGTH' => array(0,65535)
-		),
 		'changetype' => array(
 				'FIELD_TYPE' => FT_TEXT, 'DISPLAY_TYPE' => DT_FIELD, 
 				'DISPLAY_WIDTH' => 1, 'DISPLAY_HEIGHT' => 1,
@@ -91,35 +83,12 @@ BaseModel::$s_ca_models_definitions['ca_change_log'] = array(
 				'DEFAULT' => '',
 				'LABEL' => 'Row id', 'DESCRIPTION' => 'Identifier of row to which action was applied'
 		),
-		'snapshot' => array(
-				'FIELD_TYPE' => FT_TEXT, 'DISPLAY_TYPE' => DT_FIELD, 
-				'DISPLAY_WIDTH' => 88, 'DISPLAY_HEIGHT' => 15,
-				'IS_NULL' => false, 
-				'DEFAULT' => '',
-				'LABEL' => 'Snapshot', 'DESCRIPTION' => 'Snapshot of row data (before action was applied)'
-		),
-		'remarks' => array(
-				'FIELD_TYPE' => FT_TEXT, 'DISPLAY_TYPE' => DT_FIELD, 
-				'DISPLAY_WIDTH' => 88, 'DISPLAY_HEIGHT' => 15,
-				'IS_NULL' => false, 
-				'DEFAULT' => '',
-				'LABEL' => _t('Remarks'), 'DESCRIPTION' => _t('Remarks relating to change'),
-				'BOUNDS_LENGTH' => array(0,65535)
-		),
-		'unit_type' => array(
-				'FIELD_TYPE' => FT_NUMBER, 'DISPLAY_TYPE' => DT_FIELD, 
-				'DISPLAY_WIDTH' => 10, 'DISPLAY_HEIGHT' => 1,
-				'IS_NULL' => true, 
-				'DEFAULT' => '',
-				'LABEL' => 'Unit type', 'DESCRIPTION' => 'NOT CURRENTLY USED',
-				'BOUNDS_VALUE' => array(0,255)
-		),
 		'unit_id' => array(
-				'FIELD_TYPE' => FT_NUMBER, 'DISPLAY_TYPE' => DT_FIELD, 
+				'FIELD_TYPE' => FT_TEXT, 'DISPLAY_TYPE' => DT_FIELD, 
 				'DISPLAY_WIDTH' => 10, 'DISPLAY_HEIGHT' => 1,
 				'IS_NULL' => true, 
 				'DEFAULT' => '',
-				'LABEL' => 'Unit id', 'DESCRIPTION' => 'NOT CURRENTLY USED'
+				'LABEL' => 'Unit id', 'DESCRIPTION' => ''
 		)
 	)
 );
