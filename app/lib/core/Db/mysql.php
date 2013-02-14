@@ -659,6 +659,31 @@ class Db_mysql extends DbDriverBase {
 	}
 
 	/**
+	 * Returns list of engines present in the MySQL installation. The list in an array with
+	 * keys set to engine names and values set to an array of information returned from MySQL
+	 * about each engine. Note that while the MySQL SHOW ENGINES query return information
+	 * about unsupported and disabled engines, getEngines() only returns information
+	 * about engines that are available.
+     *
+	 * @param mixed $po_caller object representation of the calling class, usually Db
+	 * @return array engine list, false on error.
+	 */
+	function getEngines($po_caller) {
+		if ($r_show = mysql_query("SHOW ENGINES", $this->opr_db)) {
+			$va_engines = array();
+			while($va_row = mysql_fetch_assoc($r_show)) {
+				if (!in_array($va_row['Support'], array('YES', 'DEFAULT'))) { continue; }
+				$va_engines[$va_row['Engine']] = $va_row;
+			}
+
+			return $va_engines;
+		} else {
+			$po_caller->postError(280, mysql_error($this->opr_db), "Db->mysql->getEngines()");
+			return false;
+		}
+	}
+	
+	/**
 	 * Converts native datatypes to db datatypes
 	 *
 	 * @param string string representation of the datatype

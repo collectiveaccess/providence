@@ -491,6 +491,21 @@ class Db extends DbBase {
 		if(!$this->connected(true, "Db->getIndices()")) { return false; }
 		return $this->opo_db->getIndices($this, $ps_table);
 	}
+	
+	/**
+	 * Returns list of engines present in the database installation. The list in an array with
+	 * keys set to engine names and values set to an array of information returned from the database
+	 * server about engine that are currently available. Database server such as MySQL may return 
+	 * many engines, while others return only a single standard engine. In general, engines are only
+	 * of concern when you require specific features. CollectiveAccess, for example, requires the 
+	 * MySQL InnoDB engine. getEngines() enables the application to check for it.
+	 *
+	 * @return array An array of available engines, or false on error. The array is key'ed on Engine name. Values are arrays of engine information. This information is varies by database server.
+	 */
+	public function getEngines() {
+		if(!$this->connected(true, "Db->getEngines()")) { return false; }
+		return $this->opo_db->getEngines($this);
+	}
 
 	/**
 	 * Destructor

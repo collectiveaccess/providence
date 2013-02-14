@@ -3420,6 +3420,8 @@ class BaseModel extends BaseObject {
 				unset($va_media_desc["ORIGINAL_FILENAME"]);
 				unset($va_media_desc["INPUT"]);
 				unset($va_media_desc["VOLUME"]);
+				unset($va_media_desc["_undo_"]);
+				unset($va_media_desc["TRANSFORMATION_HISTORY"]);
 				return array_keys($va_media_desc);
 			}
 		} else {
@@ -3786,7 +3788,7 @@ class BaseModel extends BaseObject {
 				if (isset($this->_SET_FILES[$ps_field]['options']['undo']) && file_exists($this->_SET_FILES[$ps_field]['options']['undo'])) {
 					if ($volume = $version_info['original']['VOLUME']) {
 						$vi = $this->_MEDIA_VOLUMES->getVolumeInformation($volume);
-						if ($vi["absolutePath"] && ($dirhash = $this->_getDirectoryHash($vi["absolutePath"], $this->getPrimaryKey()))) {
+						if ($vi["absolutePath"] && (strlen($dirhash = $this->_getDirectoryHash($vi["absolutePath"], $this->getPrimaryKey())))) {
 							$magic = rand(0,99999);
 							$vs_filename = $this->_genMediaName($ps_field)."_undo_";
 							$filepath = $vi["absolutePath"]."/".$dirhash."/".$magic."_".$vs_filename;
@@ -3802,7 +3804,6 @@ class BaseModel extends BaseObject {
 						}
 					}
 				}
-				
 				
 				$va_process_these_versions_only = array();
 				if (isset($pa_options['these_versions_only']) && is_array($pa_options['these_versions_only']) && sizeof($pa_options['these_versions_only'])) {
@@ -4321,7 +4322,7 @@ class BaseModel extends BaseObject {
 		if (!is_array($va_media_info)) {
 			return null;
 		}
-			
+		
 		if(isset($pa_options['revert']) && $pa_options['revert'] && isset($va_media_info['_undo_'])) {
 			$vs_path = $vs_undo_path = $this->getMediaPath($ps_field, '_undo_');
 			$va_transformation_history = array();
@@ -7755,7 +7756,6 @@ $pa_options["display_form_field_tips"] = true;
 			if (isset($pa_options['setErrorOnDuplicate']) && $pa_options['setErrorOnDuplicate']) {
 				$this->postError(1100, _t('Relationship already exists'), 'BaseModel->addRelationship');
 			}
-			print "foo";
 			return false;
 		}
 		
@@ -8329,11 +8329,6 @@ $pa_options["display_form_field_tips"] = true;
 					$vs_where_sql = "mt.".$va_rel_keys['many_table_field']." = ?";
 				}
 				$va_query_params[] = (int)$this->getPrimaryKey();
-							
-				if ($vn_relation_id) {
-					$vs_relation_id_sql = " AND relation_id <> ?";
-					$va_query_params[] = $vn_relation_id;
-				}
 			
 				$vs_relation_id_fld = ($vb_is_one_table ? "mt.".$va_rel_keys['many_table_field'] : "ot.".$va_rel_keys['one_table_field']);
 				$qr_res = $o_db->query("
@@ -8341,7 +8336,7 @@ $pa_options["display_form_field_tips"] = true;
 					FROM {$va_rel_keys['one_table']} ot
 					INNER JOIN {$va_rel_keys['many_table']} AS mt ON mt.{$va_rel_keys['many_table_field']} = ot.{$va_rel_keys['one_table_field']}
 					WHERE
-						{$vs_where_sql} {$vs_relation_id_sql}
+						{$vs_where_sql}
 				", $va_query_params);
 				if (sizeof($va_ids = $qr_res->getAllFieldValues($vs_relation_id_fld))) {
 					return $va_ids;
