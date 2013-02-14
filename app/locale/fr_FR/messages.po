@@ -3,7 +3,7 @@ msgstr ""
 "Project-Id-Version: CollectiveAccess\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2013-02-12 21:22+0100\n"
-"PO-Revision-Date: 2013-02-12 22:49+0100\n"
+"PO-Revision-Date: 2013-02-14 11:27+0100\n"
 "Last-Translator: Gautier MICHELIN <gm@ideesculture.com>\n"
 "Language-Team: francais <ideesculture@gmail.com>\n"
 "Language: fr_FR\n"
@@ -539,9 +539,8 @@ msgid "Renumbered contents of lot"
 msgstr "Contenu renuméroté du lot"
 
 #: app/controllers/editor/object_lots/ObjectLotEditorController.php:129
-#, fuzzy
 msgid "No media is available for download"
-msgstr "%1 éléments sont disponibles au téléchargement"
+msgstr "Aucun média disponible au téléchargement"
 
 #: app/controllers/editor/objects/ObjectEditorController.php:84
 #: app/controllers/editor/objects/ObjectEditorController.php:116
@@ -1062,9 +1061,8 @@ msgid "No matches found for <em>%1</em>"
 msgstr "Aucune correspondance pour <em>%1</em>"
 
 #: app/controllers/lookup/TaxonomyController.php:168
-#, fuzzy
 msgid "No results found for %1."
-msgstr "Aucune correspondance pour <em>%1</em>"
+msgstr "Aucun résultat trouvé pour %1"
 
 #: app/controllers/lookup/TaxonomyController.php:174
 msgid "ERROR: uBio web service query failed."
@@ -1282,9 +1280,8 @@ msgstr "Par lot"
 #: app/helpers/batchHelpers.php:114 app/helpers/batchHelpers.php:145
 #: app/helpers/batchHelpers.php:177 app/helpers/batchHelpers.php:205
 #: themes/default/views/bundles/ca_object_representations.php:96
-#, fuzzy
 msgid "do not use"
-msgstr "Non utilisé"
+msgstr "ne pas utiliser"
 
 #: app/helpers/batchHelpers.php:51 app/helpers/batchHelpers.php:83
 #: app/helpers/batchHelpers.php:146 app/helpers/batchHelpers.php:206
@@ -1305,9 +1302,8 @@ msgid "remove all values"
 msgstr "retirer toutes les valeurs"
 
 #: app/helpers/batchHelpers.php:178
-#, fuzzy
 msgid "set for each item"
-msgstr "élément de l'ensemble"
+msgstr "définir pour chaque enregistrement"
 
 #: app/helpers/batchHelpers.php:207
 #: themes/default/views/bundles/ca_object_representations.php:98
@@ -1624,9 +1620,8 @@ msgid "Lot contains %1 objects"
 msgstr "Le lot contient %1 objets"
 
 #: app/helpers/displayHelpers.php:714
-#, fuzzy
 msgid "Download all media associated with objects in this lot."
-msgstr "Si coché, tous les médias associés à l'objet seront dupliqués."
+msgstr "Télécharger tous les médias associés à des objets de ce lot."
 
 #: app/helpers/displayHelpers.php:718
 msgid "There is %1 object with non-conforming numbering"
@@ -4176,9 +4171,8 @@ msgstr "Codes de langue ISO 639-5"
 
 #: app/lib/ca/Attributes/Values/LCSHAttributeValue.php:220
 #: app/lib/ca/Attributes/Values/LCSHAttributeValue.php:224
-#, fuzzy
 msgid "Could not get results from LCSH service for %1"
-msgstr "Impossible de créer un sous-répertoire pour le fichier %1"
+msgstr "Impossible de récupérer les résultats du service LCSH pour %1"
 
 #: app/lib/ca/Attributes/Values/LCSHAttributeValue.php:271
 msgid "More &rsaquo;"
@@ -4791,22 +4785,22 @@ msgid "Processing completed"
 msgstr "Traitement terminé"
 
 #: app/lib/ca/BatchProcessor.php:186
-#, fuzzy
 msgid "[%1] Batch edit completed"
-msgstr "%1 terminé"
+msgstr "[%1] Modification par lot terminée"
 
 #: app/lib/ca/BatchProcessor.php:202
 msgid "[%1] Batch processing for set %2 with %3 %4 begun at %5 is complete"
 msgstr ""
+"[%1] Le traitement par lot pour l'ensemble %2 avec %3 %4 (début %5) est "
+"terminé"
 
 #: app/lib/ca/BatchProcessor.php:317
 msgid "Create set %1"
 msgstr "Création de l'ensemble M1"
 
 #: app/lib/ca/BatchProcessor.php:318
-#, fuzzy
 msgid "Failed to create set %1: %2"
-msgstr "Impossible de ré-ordonner le point de parcours %1 : %2"
+msgstr "Echec pendant la création de l'ensemble %1 : %2"
 
 #: app/lib/ca/BatchProcessor.php:326
 msgid "Add label to set %1"
@@ -4823,20 +4817,21 @@ msgstr "Vous n'avez pas accès à l'ensemble %1"
 #: app/lib/ca/BatchProcessor.php:343
 msgid "Cannot add to set %1 because you do not have edit access"
 msgstr ""
+"Impossible d'ajouter à l'ensemble %1 parce que vous n'avez pas les droits en "
+"écriture"
 
 #: app/lib/ca/BatchProcessor.php:371
 msgid "Skipped %1 from %2 because it already exists"
-msgstr ""
+msgstr "%1 ignoré (parmi %2) parce qu'il existe déjà"
 
 #: app/lib/ca/BatchProcessor.php:397
-#, fuzzy
 msgid "Matched media %1 from %2 to object using %2"
-msgstr "Correspondance du média %1 à l'objet à l'aide de %2"
+msgstr "Correspondance du média %1 de %2 à un objet à l'aide de %2"
 
 #: app/lib/ca/BatchProcessor.php:413
-#, fuzzy
 msgid "Matched media %1 from %2 to object using filename"
-msgstr "Correspondance du média %1 à l'objet du nom de fichier"
+msgstr ""
+"Correspondance du média %1 de %2 à un objet en fonction du nom de fichier"
 
 #: app/lib/ca/BatchProcessor.php:437 app/lib/ca/BatchProcessor.php:517
 msgid "Error importing %1 from %2: %3"
@@ -4860,7 +4855,7 @@ msgstr "%1 importé en tant que %2"
 
 #: app/lib/ca/BatchProcessor.php:542
 msgid "Skipped %1 from %2 because it could not be matched"
-msgstr ""
+msgstr "%1 ignoré (parmi %2) parce qu'il n'y a pas de correspondance"
 
 #: app/lib/ca/BatchProcessor.php:542
 msgid "Skipped %1 from %2"
@@ -4868,12 +4863,11 @@ msgstr "%1 passés parmi %2"
 
 #: app/lib/ca/BatchProcessor.php:548
 msgid "[%3/%4] Processing %1 (%3)"
-msgstr ""
+msgstr "[%3/%4] Traitement %1 (%3)"
 
 #: app/lib/ca/BatchProcessor.php:586
-#, fuzzy
 msgid "[%1] Batch media import completed"
-msgstr "Import de média en série"
+msgstr "[%1] Import des médias par lot terminé"
 
 #: app/lib/ca/BatchProcessor.php:590 app/lib/ca/BatchProcessor.php:602
 msgid "file"
@@ -4888,6 +4882,8 @@ msgid ""
 "[%1] Media import processing for directory %2 with %3 %4 begun at %5 is "
 "complete"
 msgstr ""
+"[%1] Le traitement d'import des médias pour le répertoire %2 avec %3 %4 "
+"(début %5) est terminé."
 
 #: app/lib/ca/Browse/BrowseEngine.php:102
 #: app/lib/core/Plugins/GeographicMap/OpenLayers.php:389
@@ -5732,7 +5728,7 @@ msgstr "Lecteur de données MySQL"
 
 #: app/lib/ca/Import/DataReaders/MySQLDataReader.php:57
 msgid "Reads data from MySQL databases"
-msgstr ""
+msgstr "Lit des données des bases de données MySQL"
 
 #: app/lib/ca/ImportExport/Formats/EAD/EAD.php:198
 msgid "Encoded Archival Description format"
@@ -5957,6 +5953,8 @@ msgid ""
 "Rebuilds search indices. Use this if you suspect the indices are out of sync "
 "with the database."
 msgstr ""
+"Reconstruire les indices de recherche. Utilisez ceci si vous suspectez les "
+"index"
 
 #: app/lib/ca/Utils/CLIUtils.php:181
 msgid "Processing %1"
@@ -6007,11 +6005,11 @@ msgstr ""
 
 #: app/lib/ca/Utils/CLIUtils.php:229
 msgid "Rebuilds values use to sort by title, name and identifier."
-msgstr ""
+msgstr "Reconstruit les valeurs de tri par titre, nom et identifiant."
 
 #: app/lib/ca/Utils/CLIUtils.php:247
 msgid "Loading valid file paths from database"
-msgstr ""
+msgstr "Chargement des chemins de fichier valides depuis la base de données"
 
 #: app/lib/ca/Utils/CLIUtils.php:260
 msgid "Reading file list"
@@ -6019,7 +6017,7 @@ msgstr "Liste de lecture des fichiers"
 
 #: app/lib/ca/Utils/CLIUtils.php:267
 msgid "Finding unused files"
-msgstr ""
+msgstr "Recherche de fichiers inutilisés"
 
 #: app/lib/ca/Utils/CLIUtils.php:282
 msgid "There are %1 files total"
@@ -6031,7 +6029,7 @@ msgstr "%1 fichier (%2) a été supprimé"
 
 #: app/lib/ca/Utils/CLIUtils.php:286
 msgid "%1 file (%2) is unused"
-msgstr ""
+msgstr "%1 fichiers (%2) sont inutilisés"
 
 #: app/lib/ca/Utils/CLIUtils.php:288
 msgid "%1 files (%2) were deleted"
@@ -6039,13 +6037,15 @@ msgstr "%1 fichiers (%2) ont été supprimés"
 
 #: app/lib/ca/Utils/CLIUtils.php:298
 msgid "Delete unused files. Default is false."
-msgstr ""
+msgstr "Supprimer les fichiers inutilisés (non par défaut)."
 
 #: app/lib/ca/Utils/CLIUtils.php:306
 msgid ""
 "Detects and, optionally, removes media present in the media directories but "
 "not referenced in the database."
 msgstr ""
+"Détecte et supprime (optionnel) les médias présents dans le répertoire média "
+"qui sont inutilisés dans la base de données."
 
 #: app/lib/ca/Utils/CLIUtils.php:313
 msgid "Help text to come"
@@ -6064,6 +6064,8 @@ msgid ""
 "File name of profile to use as base profile. Omit if you do not want to use "
 "a base profile. (Optional)"
 msgstr ""
+"Nom du profil à utiliser en tant que profil de base. Laisser vide si vous ne "
+"voulez pas utiliser un profil de base (optionnel)."
 
 #: app/lib/ca/Utils/CLIUtils.php:351
 msgid "Name of the profile, used for \"profileName\" element."
@@ -6078,17 +6080,21 @@ msgid ""
 "Description of the profile, used for \"profileDescription\" element. "
 "(Optional)"
 msgstr ""
+"Description du profil, utilisé pour l'élément \"profileDescription"
+"\" (optionnel)."
 
 #: app/lib/ca/Utils/CLIUtils.php:354
 msgid ""
 "File to output profile to. If omitted profile is printed to standard output. "
 "(Optional)"
 msgstr ""
+"Le fichier cible pour le profil. Si laissé vide, le profil est renvoyé vers "
+"la sortie standard (optionnel)."
 
 #: app/lib/ca/Utils/CLIUtils.php:362
-#, fuzzy
 msgid "Export current system configuration as an XML installation profile."
-msgstr "Exporter la configuration système dans un profil d'installation"
+msgstr ""
+"Export la configuration courante du système dans un profil d'installation."
 
 #: app/lib/ca/Utils/CLIUtils.php:369 app/lib/ca/Utils/CLIUtils.php:410
 msgid "Help text to come."
@@ -6108,7 +6114,7 @@ msgstr "Traitement terminé"
 
 #: app/lib/ca/Utils/CLIUtils.php:395
 msgid "Run without outputting progress information."
-msgstr ""
+msgstr "Lancer sans afficher de barre de progression."
 
 #: app/lib/ca/Utils/CLIUtils.php:403
 msgid "Process queued tasks."
@@ -6131,21 +6137,29 @@ msgid ""
 "Limit re-processing to specified mimetype(s) or mimetype stubs. Separate "
 "multiple mimetypes with commas."
 msgstr ""
+"Limiter le retraitement au(x) mimetype(s) spécifié(s). Séparer les mimetypes "
+"par des virgules."
 
 #: app/lib/ca/Utils/CLIUtils.php:471
 msgid ""
 "Limit re-processing to specified versions. Separate multiple versions with "
 "commas."
 msgstr ""
+"Limite le traitement aux versions spécifiés. Séparer les valeurs multiples "
+"par des virgules."
 
 #: app/lib/ca/Utils/CLIUtils.php:479
 msgid "Re-process existing media using current media processing configuration."
 msgstr ""
+"Retraiter les médias existants en utilisant la configuration actuelle de "
+"traitement des médias (si des modifications y ont été apportées)."
 
 #: app/lib/ca/Utils/CLIUtils.php:486
 msgid ""
 "CollectiveAccess generates derivatives for all uploaded media. More here..."
 msgstr ""
+"CollectiveAccess génère des versions dérivées de chaque média uploadé. Plus "
+"d'informations ici…"
 
 #: app/lib/ca/Utils/CLIUtils.php:497
 msgid ""
@@ -6155,6 +6169,12 @@ msgid ""
 "\n"
 "Type 'y' to proceed or 'N' to cancel, then hit return "
 msgstr ""
+"Etes vous sûr de vouloir mettre à jour votre base de données "
+"CollectiveAccess de la version %1 à la version %2 ?\n"
+"NOTE : vous devriez réaliser une sauvegarde de la base avant de réaliser des "
+"mises à jours !\n"
+"\n"
+"Saisir 'y' pour valider ou 'N' pour annuler, puis appuyer sur entrée"
 
 #: app/lib/ca/Utils/CLIUtils.php:507
 msgid "Updating database"
@@ -6171,7 +6191,7 @@ msgstr "Mise à jour du schéma de la base de données."
 
 #: app/lib/ca/Utils/CLIUtils.php:538
 msgid "Updates database schema to current version. More here..."
-msgstr "Mise à jour de la base de données. Plus d'informations ici..."
+msgstr "Mise à jour de la base de données. Plus d'informations ici…"
 
 #: app/lib/ca/Utils/CLIUtils.php:548
 msgid "You must specify a file!"
@@ -6201,7 +6221,7 @@ msgstr "Chargement de correspondance depuis un fichier Excel XLSX"
 msgid "Loads import mapping from Excel XLSX format file. More here..."
 msgstr ""
 "Chargement de la correspondance depuis un fichier Excel XLSX. Plus "
-"d'informations ici..."
+"d'informations ici…"
 
 #: app/lib/ca/Utils/CLIUtils.php:595
 msgid "You must specify a data source for import"
@@ -6262,7 +6282,7 @@ msgid ""
 "More here..."
 msgstr ""
 "Import de données depuis un fichier Excel XLSX, texte délimité par une "
-"fabulation ou une virgule, ou XML. Plus d'informations..."
+"fabulation ou une virgule, ou XML. Plus d'informations…"
 
 #: app/lib/ca/Utils/DataMigrationUtils.php:833
 msgid "and"
@@ -7832,7 +7852,7 @@ msgstr ""
 
 #: app/lib/core/Plugins/SMS/SendHub.php:51
 msgid "Sends SMS text messages using the SendHub API"
-msgstr ""
+msgstr "Envoyer des messages textes par SMS à l'aide de l'API SendHub"
 
 #: app/lib/core/Plugins/TaskQueueHandlers/as3mirror.php:66
 msgid "AS3 mirroring handler"
@@ -7860,7 +7880,7 @@ msgstr "Processeur de modifications par lot en arrière-plan"
 
 #: app/lib/core/Plugins/TaskQueueHandlers/batchEditor.php:72
 msgid "Applying batch edits to set"
-msgstr ""
+msgstr "Appliquer les modifications par lots à l'ensemble"
 
 #: app/lib/core/Plugins/TaskQueueHandlers/batchEditor.php:76
 msgid "Records to edit"
@@ -11234,6 +11254,8 @@ msgid ""
 "Select the refinery that preforms the correct function to alter your data "
 "source as it maps to CollectiveAccess."
 msgstr ""
+"Définit le traitement complémentaire qui réalise des corrections sur vos "
+"sources de données pour les faire correspondre à CollectiveAccess."
 
 #: app/models/ca_data_importer_items.php:213
 msgid "Original values"
@@ -11245,6 +11267,9 @@ msgid ""
 "example photo is used in the data source, but photograph is used in "
 "CollectiveAccess."
 msgstr ""
+"Liste des valeurs (séparées par des sauts de ligne) des valeurs des données "
+"sources à remplacer. Par exemple la photo est utilisée en source de données, "
+"mais la photographie est utilisée dans CollectiveAccess."
 
 #: app/models/ca_data_importer_items.php:222
 msgid "Replacement values"
@@ -11257,10 +11282,15 @@ msgid ""
 "recording (entered in the Original values column) maps to audio_digital, "
 "which is entered here in the Replacement values column."
 msgstr ""
+"Liste des valeurs (séparées par des sauts de ligne) des éléments de liste de "
+"CollectiveAccess qui correspondent aux valeurs d'origine de la source de "
+"données. Par exemple les enregistrements de son (saisies dans la colonne "
+"valeur d'origine) correspondent à audio_digital, qui est ici saisi dans les "
+"valeurs de la colonne remplacement."
 
 #: app/models/ca_data_importer_items.php:235
 msgid "Skip group if empty"
-msgstr ""
+msgstr "Passer le groupe si vide"
 
 #: app/models/ca_data_importer_items.php:236
 msgid ""
@@ -11268,10 +11298,13 @@ msgid ""
 "is empty.  For example, a field called Description Type would be irrelevant "
 "if the Description field is empty."
 msgstr ""
+"Passe tous les éléments de traitement du groupe si la valeur de cet élément "
+"est vide. Par exemple, un champ appelé Type de Description devrait être "
+"ignoré si le champ Description est vide."
 
 #: app/models/ca_data_importer_items.php:245
 msgid "Value to use if data source value is blank."
-msgstr ""
+msgstr "Valeur à utiliser si la valeur de la source de données est vide."
 
 #: app/models/ca_data_importer_items.php:254
 msgid "Delimiter to split repeating values on."
@@ -11283,6 +11316,9 @@ msgid ""
 "example the Duration field is only applicable to objects of the type "
 "moving_image and not photograph."
 msgstr ""
+"Restreint la correspondance aux seuls enregistrements du type indiqué. Par "
+"exemple, le champ Durée est applicable uniquement aux objets du type "
+"moving_image et pas aux photographies."
 
 #: app/models/ca_data_importer_labels.php:41
 msgid "importer name"
@@ -11374,9 +11410,8 @@ msgid "Row ID"
 msgstr "Identifiant de la ligne"
 
 #: app/models/ca_data_importer_log_items.php:102
-#, fuzzy
 msgid "Notes regarding import of item."
-msgstr "Notes correspondantes à l'enregistrement."
+msgstr "Notes concernant l'import de l'enregistrement"
 
 #: app/models/ca_data_importers.php:48
 msgid "data importer"
@@ -11427,6 +11462,7 @@ msgstr "Feuille de données de l'import"
 #: app/models/ca_data_importers.php:104
 msgid "Archived copy of worksheet used to create the importer."
 msgstr ""
+"Copie archivé de la feuille de calcul utilisée pour créer le module d'import."
 
 #: app/models/ca_data_importers.php:111
 msgid "Indicates if the importer is deleted or not."
@@ -11437,6 +11473,8 @@ msgid ""
 "Set importer type, i.e. the format of the source data.  Currently supported: "
 "XLSX, XLS, and MYSQL"
 msgstr ""
+"Définit le type de fonction d'import, par exemple le format de source de "
+"données. Actuellement supporté : XLSX, XLS et MySQL"
 
 #: app/models/ca_data_importers.php:249
 msgid "Record type"
@@ -11447,16 +11485,22 @@ msgid ""
 "Type to set all imported records to. If import includes a mapping to "
 "type_id, that will be privileged and the type setting will be ignored."
 msgstr ""
+"Type à affecter à tous les enregistrements. Si l'import inclut une "
+"correspondance vers type_id, celui-ci sera privilégié et la sélection du "
+"type ne sera pas prise en compte."
 
 #: app/models/ca_data_importers.php:258
 msgid "Initial rows to skip"
-msgstr ""
+msgstr "Nombre de lignes à ignorer"
 
 #: app/models/ca_data_importers.php:259
 msgid ""
 "The number of rows at the top of the data set to skip. Use this setting to "
 "skip over column headers in spreadsheets and similar data."
 msgstr ""
+"Le nombre de lignes au début des données à ignorer. Utilisez ce paramètre "
+"pour passer les entêtes de colonnes dans les feuilles de données ou dans des "
+"cas similaires."
 
 #: app/models/ca_data_importers.php:267
 msgid "Mapping name"
@@ -11464,7 +11508,7 @@ msgstr "Nom de correspondance"
 
 #: app/models/ca_data_importers.php:268
 msgid "Human readable name of the import mapping.  Pending implementation."
-msgstr ""
+msgstr "Nom lisible de la correspondance d'import. Implémentation en cours."
 
 #: app/models/ca_data_importers.php:276
 msgid "Mapping identifier"
@@ -11475,16 +11519,20 @@ msgid ""
 "Arbitrary alphanumeric code for the import mapping (no special characters or "
 "spaces).  Pending implementation."
 msgstr ""
+"Code alphanumérique arbitraire pour les correspondances d'import (pas de "
+"caractères spéciaux ni d'espaces). Implémentation en cours."
 
 #: app/models/ca_data_importers.php:285
 msgid "Map to table"
-msgstr ""
+msgstr "Correspondance pour la table"
 
 #: app/models/ca_data_importers.php:286
 msgid ""
 "Sets the CollectiveAccess table for the imported data.  Pending "
 "implementation."
 msgstr ""
+"Définit la table de CollectiveAccess pour les données importées. "
+"Implémentation en cours."
 
 #: app/models/ca_data_importers.php:295
 msgid "ignore"
@@ -11500,7 +11548,7 @@ msgstr "demander"
 
 #: app/models/ca_data_importers.php:299
 msgid "Error policy"
-msgstr ""
+msgstr "Traitement des erreurs"
 
 #: app/models/ca_data_importers.php:300
 msgid ""
@@ -11508,6 +11556,10 @@ msgid ""
 "the error, stop the import when an error is encountered and to receive a "
 "prompt when the error is encountered.  Pending implementation."
 msgstr ""
+"Détermine le traitement d'erreur pour les correspondances. Les options "
+"possibles sont d'ignorer les erreurs, d'arrêter l'import lorsqu'une erreur "
+"est rencontrée et d'avoir une alerte lorsque l'erreur est rencontrée. "
+"Implémentation en cours."
 
 #: app/models/ca_data_importers.php:309
 msgid "none"
@@ -11543,13 +11595,15 @@ msgstr "overwrite_on_idno_and_preferred_labels"
 
 #: app/models/ca_data_importers.php:318
 msgid "Existing record policy"
-msgstr ""
+msgstr "Traitement des erreurs actuel"
 
 #: app/models/ca_data_importers.php:319
 msgid ""
 "Determines how existing records are checked for and handled by the import "
 "mapping.  Pending implementation."
 msgstr ""
+"Détermine comment les enregistrements existants sont vérifiés et traités par "
+"la correspondance d'import. Implémentation en cours."
 
 #: app/models/ca_data_importers.php:331
 msgid "Archive mapping?"
@@ -11560,6 +11614,8 @@ msgid ""
 "Set to yes to save the mapping spreadsheet; no to delete it from the server "
 "after import.  Pending implementation."
 msgstr ""
+"Définir à oui pour sauvegarder le tableau de correspondances ; non pour le "
+"supprimer après import. Implémentation en cours."
 
 #: app/models/ca_data_importers.php:344
 msgid "Archive data sets?"
@@ -11570,20 +11626,20 @@ msgid ""
 "Set to yes to save the data spreadsheet or no to delete it from the server "
 "after import.  Pending implementation."
 msgstr ""
+"Définir à oui pour sauvegarder la table des données ou non pour la supprimer "
+"du serveur après import. Implémentation en cours."
 
 #: app/models/ca_data_importers.php:612
 msgid "Warning: refinery %1 does not exist"
-msgstr "Attention : le traitement d'affinage %1 n'existe pas"
+msgstr "Attention : le traitement complémentaire %1 n'existe pas"
 
 #: app/models/ca_data_importers.php:653
 msgid "Mapping target table %1 is invalid\n"
 msgstr "La table %1 est invalide\n"
 
 #: app/models/ca_data_importers.php:670
-#, fuzzy
 msgid "Could not delete existing mapping for %1: %2"
-msgstr ""
-"Impossible d'envoyer la confirmation d'enregistrement par mail à %1 : %2"
+msgstr "Impossible de supprimer la correspondance existante pour %1 : %2"
 
 #: app/models/ca_data_importers.php:687
 msgid "Error creating mapping: %1"
@@ -11595,7 +11651,7 @@ msgstr "Erreur lors de la création du nom de la correspondance : %1"
 
 #: app/models/ca_data_importers.php:702
 msgid "Skipped items for %1 because no common grouping could be found"
-msgstr ""
+msgstr "Eléments ignorés pour %1 parcequ'aucun regroupement n'a pu être trouvé"
 
 #: app/models/ca_data_importers.php:791
 msgid "Reading %1"
@@ -11619,20 +11675,22 @@ msgstr "Import de %1"
 
 #: app/models/ca_data_importers.php:903
 msgid "While inserting imported subject"
-msgstr ""
+msgstr "Lors de l'insertion de l'enregistrement importé"
 
 #: app/models/ca_data_importers.php:1032
 msgid "While adding preferred label to imported subject: %1"
-msgstr ""
+msgstr "Lors de l'ajout du label préféré pour l'enregistrement importé : %1"
 
 #: app/models/ca_data_importers.php:1038
 msgid "While adding non-preferred label to imported subject"
-msgstr ""
+msgstr "Lors de l'ajout d'autres labels pour l'enregistrement importé"
 
 #: app/models/ca_data_importers.php:1050
 msgid ""
 "While updating imported subject with data for attribute %1 with values %2"
 msgstr ""
+"Lors de la mise à jour de l'enregistrement importé pour l'attribut %1 avec "
+"la valeur %2"
 
 #: app/models/ca_data_importers.php:1070
 msgid "While adding entity: %1"
@@ -11640,7 +11698,7 @@ msgstr "Lors de l'ajout de l'entité : %1"
 
 #: app/models/ca_data_importers.php:1076
 msgid "While adding place: %1"
-msgstr ""
+msgstr "Lors de l'ajout du lieu : %1"
 
 #: app/models/ca_data_importers.php:1082
 msgid "While adding collection: %1"
@@ -11648,7 +11706,7 @@ msgstr "Lors de l'ajout de la collection : %1"
 
 #: app/models/ca_data_importers.php:1095
 msgid "While adding label to imported subject"
-msgstr ""
+msgstr "Lors de l'ajout du label à l'enregistrement du sujet"
 
 #: app/models/ca_editor_ui_bundle_placement_type_restrictions.php:46
 msgid "editor ui bundle placement type restriction"
@@ -11923,11 +11981,11 @@ msgstr ""
 
 #: app/models/ca_editor_ui_screens.php:485
 msgid "bubbles (draggable)"
-msgstr ""
+msgstr "bulles (glissables)"
 
 #: app/models/ca_editor_ui_screens.php:486
 msgid "list (not draggable)"
-msgstr ""
+msgstr "liste (non glissable)"
 
 #: app/models/ca_editor_ui_screens.php:490
 msgid "Format of relationship list"
@@ -11935,7 +11993,7 @@ msgstr "Format de la liste de relations"
 
 #: app/models/ca_editor_ui_screens.php:491
 msgid "."
-msgstr ""
+msgstr "."
 
 #: app/models/ca_editor_ui_screens.php:499
 msgid "Sort using"
@@ -11959,14 +12017,13 @@ msgstr "Ordre de tri"
 
 #: app/models/ca_editor_ui_screens.php:514
 msgid "Direction of sort, when not in a user-specified order."
-msgstr ""
+msgstr "Ordre de tri, lorsque le tri n'est pas spécifié par l'utilisateur."
 
 #: app/models/ca_editor_ui_screens.php:521
 msgid "Relationship display template"
 msgstr "Modèle d'affichage des relations"
 
 #: app/models/ca_editor_ui_screens.php:522
-#, fuzzy
 msgid ""
 "Layout for relationship when displayed in list (can include HTML). Element "
 "code tags prefixed with the ^ character can be used to represent the value "
@@ -12015,36 +12072,32 @@ msgid "Restrict to checklist of terms from related collections?"
 msgstr "Restreindre à la liste des termes des collections liées ?"
 
 #: app/models/ca_editor_ui_screens.php:568
-#, fuzzy
 msgid "Will restrict checklist to those terms applied to related collections."
-msgstr "Restreindre à la liste des termes des collections liées"
+msgstr "Restreindre à la liste des termes correspondant aux collections liées"
 
 #: app/models/ca_editor_ui_screens.php:577
 msgid "Restrict checklist to terms related to collection as"
 msgstr "Restreindre à la liste des termes des collections liées"
 
 #: app/models/ca_editor_ui_screens.php:578
-#, fuzzy
 msgid ""
 "Will restrict checklist to terms related to collections with the specified "
 "relationship type. Leave all unselected for no restriction."
 msgstr ""
-"Limite l'affichage aux éléments liés avec le(s) type(s) de relations spécifié"
-"(s). Laisser vide pour ne pas appliquer de restriction."
+"Limite l'affichage aux termes liés aux collections dans le(s) type(s) de "
+"relations spécifié(s). Laisser vide pour ne pas appliquer de restriction."
 
 #: app/models/ca_editor_ui_screens.php:587
-#, fuzzy
 msgid "Checked collection term relationship type"
-msgstr "Utilisé pour les types de relations sélectionnés vers les collections"
+msgstr "Type de relation aux collections sélectionné"
 
 #: app/models/ca_editor_ui_screens.php:588
-#, fuzzy
 msgid ""
 "Specified the relationship used to relate collection-restricted terms to "
 "this object."
 msgstr ""
-"Détermine si les droits d'accès définis pour les collections liées "
-"s'appliquent à cet objet."
+"Spécifie la relation utilisée pour lier les termes liés à la collection à "
+"cet objet."
 
 #: app/models/ca_editor_ui_screens.php:610
 msgid "Open hierarchy browser by default"
@@ -13248,9 +13301,8 @@ msgstr ""
 "L'élément doit correspondre à une liste pour que cela puisse s'appliquer."
 
 #: app/models/ca_metadata_elements.php:109
-#, fuzzy
 msgid "Type-specific settings for metadata element"
-msgstr "Paramètres liés au type de l'élément de métadonnée"
+msgstr "Paramètres spécifiques au type de données pour l'élément de métadonnée"
 
 #: app/models/ca_metadata_elements.php:116
 msgid ""
@@ -15473,13 +15525,12 @@ msgid "SMS number"
 msgstr "Numéro SMS"
 
 #: app/models/ca_users.php:112
-#, fuzzy
 msgid ""
 "Phone number for contact by SMS (text message). The number will be used for "
 "all SMS-based system notifications and alerts to this user."
 msgstr ""
-"L'adresse email de cet utilisateur. L'adresse sera utilisée pour toutes les "
-"notifications et les alertes transmises par email à cet utilisateur."
+"Numéro de téléphone pour un contact par SMS. Le numéro sera utilisé pour les "
+"notifications et les alertes système par SMS pour cet utilisateur."
 
 #: app/models/ca_users.php:120
 msgid "Related entity (optional)"
@@ -15574,29 +15625,39 @@ msgid ""
 "Could not login user %1 after authentication from external database because "
 "user class was not set."
 msgstr ""
+"Impossible de connecter l'utilisateur %1 après authentification de la base "
+"de données externe parce que la classe de l'utilisateur n'est pas définie."
 
 #: app/models/ca_users.php:2686
 msgid ""
 "Could not login user %1 after authentication from external database because "
 "creation of user record failed: %2"
 msgstr ""
+"Impossible de connecter l'utilisateur %1 après authentification de la base "
+"de données externe parce que la création de l'utilisateur a échoué : %2"
 
 #: app/models/ca_users.php:2729
 msgid ""
 "Created new login for user %1 after authentication from external database"
 msgstr ""
+"Création du login utilisateur pour %1 après authentification dans la base de "
+"données externe"
 
 #: app/models/ca_users.php:2736
 msgid ""
 "Could not login user %1 using external database because external "
 "authentication failed"
 msgstr ""
+"Impossible de connecter l'utilisateur %1 à l'aide de la base de données "
+"externe parce que l'authentification externe a échoué"
 
 #: app/models/ca_users.php:2742
 msgid ""
 "Could not login user %1 using external database because login to external "
 "database failed"
 msgstr ""
+"Impossible de connecter l'utilisateur %1 à l'aide de la base de données "
+"externe parce que la connexion à la base d'authentification a échoué"
 
 #: app/models/ca_users_x_groups.php:40
 msgid "user-group assocation"
@@ -15781,7 +15842,7 @@ msgstr "Actions pour le plugin webservices NS11mm MEMEX"
 
 #: app/plugins/recolementSmf/recolementSmfPlugin.php:11
 msgid "Permet de générer les PV de récolement."
-msgstr ""
+msgstr "Permet de générer les PV de récolement."
 
 #: app/plugins/recolementSmf/recolementSmfPlugin.php:42
 msgid "PV de récolement"
@@ -15876,36 +15937,37 @@ msgid "Twitter integration is now set up and ready to go!"
 msgstr "L'intégration Twitter est maintenant configurée !"
 
 #: app/refineries/ATRelatedGetter/ATRelatedGetterRefinery.php:38
-#, fuzzy
 msgid "AT Related Getter"
-msgstr "Personnes liées"
+msgstr "Module d'importation Archivists Toolkit"
 
 #: app/refineries/ATRelatedGetter/ATRelatedGetterRefinery.php:39
 msgid "Fetches data from related Archivists Toolkit tables"
-msgstr ""
+msgstr "Rapatrie des données depuis les tables Archivists Toolkit liées "
 
 #: app/refineries/ATRelatedGetter/ATRelatedGetterRefinery.php:125
 #: app/refineries/ATRelatedGetter/ATRelatedGetterRefinery.php:126
 msgid "Archivists Toolkit table"
-msgstr ""
+msgstr "Table Archivists Toolkit"
 
 #: app/refineries/ATRelatedGetter/ATRelatedGetterRefinery.php:134
 #: app/refineries/ATRelatedGetter/ATRelatedGetterRefinery.php:135
 msgid "Discriminator value"
-msgstr ""
+msgstr "Valeur discriminante"
 
 #: app/refineries/ATRelatedGetter/ATRelatedGetterRefinery.php:143
 #: app/refineries/ATRelatedGetter/ATRelatedGetterRefinery.php:144
 msgid "Archivists Toolkit key field"
-msgstr ""
+msgstr "Champ clé Archivists Toolkit"
 
 #: app/refineries/ATRelatedGetter/ATRelatedGetterRefinery.php:152
 msgid "Map of related table field values"
-msgstr ""
+msgstr "Correspondance des valeurs des champs dans la table liée"
 
 #: app/refineries/ATRelatedGetter/ATRelatedGetterRefinery.php:153
 msgid "Map of related table field values to CollectiveAccess element"
 msgstr ""
+"Correspondance des valeurs de champ dans les tables liées vers l'élément "
+"correspondant dans CollectiveAccess"
 
 #: app/refineries/collectionSplitter/collectionSplitterRefinery.php:37
 msgid "Collection splitter"
@@ -15918,7 +15980,7 @@ msgstr "Séparer les collections"
 #: app/refineries/collectionSplitter/collectionSplitterRefinery.php:160
 msgid ""
 "Sets the value of the delimiter to break on, separating data source values"
-msgstr ""
+msgstr "Défini la valeur du séparateur, qui délimite les valeurs des données"
 
 #: app/refineries/collectionSplitter/collectionSplitterRefinery.php:168
 #: app/refineries/entitySplitter/entitySplitterRefinery.php:150
@@ -15934,6 +15996,11 @@ msgid ""
 "the object will be pulled in as a \"child\" element in the collection "
 "hierarchy."
 msgstr ""
+"Accepte un code sous la forme d'une constante pour le type de relation ou "
+"une référence à l'emplacement dans les données source ou le type peut être "
+"trouvé. Note pour les données : si le type de relation correspond à celui "
+"qui est défini pour le contrôle de hiérarchie, l'objet sera rangé en tant "
+"qu'élément \"enfant\" dans la hiérarchie des collections."
 
 #: app/refineries/collectionSplitter/collectionSplitterRefinery.php:177
 msgid "Collection type"
@@ -15944,6 +16011,9 @@ msgid ""
 "Accepts a constant list item idno from the list collection_types or a "
 "reference to the location in the data source where the type can be found."
 msgstr ""
+"Accepte un élément sous la forme d'une constante pour le type de collection "
+"ou la référence à un emplacement dans les données d'origine ou le type peut "
+"être trouvé."
 
 #: app/refineries/collectionSplitter/collectionSplitterRefinery.php:186
 #: app/refineries/entitySplitter/entitySplitterRefinery.php:168
@@ -15957,6 +16027,9 @@ msgid ""
 "metadataElement code and the location in the data source where the data "
 "values can be found."
 msgstr ""
+"Défini ou fait correspondre les métadonnées de la collection en fonction du "
+"code metadataElement et de l'emplacement dans les données source où les "
+"valeurs peuvent être trouvées."
 
 #: app/refineries/collectionSplitter/collectionSplitterRefinery.php:195
 msgid "Parents"
@@ -15964,7 +16037,7 @@ msgstr "Parents"
 
 #: app/refineries/collectionSplitter/collectionSplitterRefinery.php:196
 msgid "Collection parents to create, if required"
-msgstr ""
+msgstr "Parents de la collection à créer, si requis"
 
 #: app/refineries/collectionSplitter/collectionSplitterRefinery.php:204
 #: app/refineries/entitySplitter/entitySplitterRefinery.php:177
@@ -15979,6 +16052,9 @@ msgid ""
 "if the data source values do not match any values in the CollectiveAccess "
 "system."
 msgstr ""
+"Définit le type de relation par défaut qui sera utilisé si aucun n'est "
+"défini ou si les valeurs de la source de données ne correspondent à aucune "
+"valeur présente dans CollectiveAccess."
 
 #: app/refineries/collectionSplitter/collectionSplitterRefinery.php:213
 msgid "Collection type default"
@@ -15990,6 +16066,9 @@ msgid ""
 "the data source values do not match any values in the CollectiveAccess list "
 "collection_types."
 msgstr ""
+"Définit le type de collection par défaut qui sera utilisé si aucun n'est "
+"défini ou si les valeurs de la source de données ne correspondent à aucune "
+"des valeurs de la liste collection_types de CollectiveAccess."
 
 #: app/refineries/dateJoiner/dateJoinerRefinery.php:37
 msgid "Date joiner"
@@ -15997,7 +16076,7 @@ msgstr "Joindre les dates avec"
 
 #: app/refineries/dateJoiner/dateJoinerRefinery.php:38
 msgid "Joins date fields"
-msgstr ""
+msgstr "Joindre "
 
 #: app/refineries/dateJoiner/dateJoinerRefinery.php:103
 #: app/refineries/dateJoiner/dateJoinerRefinery.php:104
@@ -16013,6 +16092,8 @@ msgid ""
 "Maps the date from the data source that is the beginning of the conjoined "
 "date range."
 msgstr ""
+"Fait correspondre la date de la source de données qui est le début d'une "
+"plage de dates."
 
 #: app/refineries/dateJoiner/dateJoinerRefinery.php:121
 msgid "Date end"
@@ -16023,6 +16104,8 @@ msgid ""
 "Maps the date from the data source that is the end of the conjoined date "
 "range."
 msgstr ""
+"Fait correspondre la date de la source de données qui est la fin d'une plage "
+"de dates."
 
 #: app/refineries/entitySplitter/entitySplitterRefinery.php:37
 msgid "Entity splitter"
@@ -16037,6 +16120,8 @@ msgstr "Sépare les entités"
 msgid ""
 "Sets the value of the delimiter to break on, separating data source values."
 msgstr ""
+"Définit la valeur du délimiteur utilisé pour séparer les valeurs de la "
+"source de données."
 
 #: app/refineries/entitySplitter/entitySplitterRefinery.php:151
 #: app/refineries/placeSplitter/placeSplitterRefinery.php:165
@@ -16044,12 +16129,17 @@ msgid ""
 "Accepts a constant type code for the relationship type or a reference to the "
 "location in the data source where the type can be found."
 msgstr ""
+"Accepte un code du type constante pour le type de relation ou une référence "
+"à l'emplacement dans la source de données ou le type peut être trouvé."
 
 #: app/refineries/entitySplitter/entitySplitterRefinery.php:160
 msgid ""
 "Accepts a constant list item idno from the list entity_types or a reference "
 "to the location in the data source where the type can be found"
 msgstr ""
+"Accepte un identifiant sous la forme d'une constante de la liste "
+"entity_types ou l'emplacement dans les données source ou le type peut être "
+"trouvé"
 
 #: app/refineries/entitySplitter/entitySplitterRefinery.php:169
 msgid ""
@@ -16057,6 +16147,9 @@ msgid ""
 "metadataElement code and the location in the data source where the data "
 "values can be found."
 msgstr ""
+"Définit ou fait correspondre les métadonnées de l'enregistrement entité en "
+"référençant le code metadataElement et l'emplacement dans la source de "
+"données où les valeurs peuvent être trouvées."
 
 #: app/refineries/entitySplitter/entitySplitterRefinery.php:186
 msgid "Entity type default"
@@ -16068,10 +16161,13 @@ msgid ""
 "data source values do not match any values in the CollectiveAccess list "
 "entity_types."
 msgstr ""
+"Définit le type d'entité par défaut qui sera utilisé si aucun n'est défini "
+"ou si les valeurs de la source de données ne correspondent à aucune valeur "
+"de la liste entity_types de CollectiveAccess."
 
 #: app/refineries/measurementsSplitter/measurementsSplitterRefinery.php:37
 msgid "Measurement splitter"
-msgstr ""
+msgstr "Séparateur pour les dimensions"
 
 #: app/refineries/measurementsSplitter/measurementsSplitterRefinery.php:38
 msgid "Splits measurements"
@@ -16114,6 +16210,8 @@ msgid ""
 "Accepts a constant list item idno from the list place_types or a reference "
 "to the location in the data source where the type can be found."
 msgstr ""
+"Accepte un identifiant de la liste place_types ou la référence à un "
+"emplacement dans la source de données où le type peut être trouvé."
 
 #: app/refineries/placeSplitter/placeSplitterRefinery.php:183
 msgid ""
@@ -16121,6 +16219,9 @@ msgid ""
 "metadataElement code and the location in the data source where the data "
 "values can be found."
 msgstr ""
+"Définit ou fait correspondre l'enregistrement de lieu en référençant le code "
+"metadataElement et l'emplacement dans la source de données où les valeurs "
+"peuvent être trouvées"
 
 #: app/refineries/placeSplitter/placeSplitterRefinery.php:191
 #: themes/default/views/administrate/setup/Search/search_controls_html.php:62
@@ -16140,6 +16241,9 @@ msgid ""
 "if the data source values do not match any values in the CollectiveAccess "
 "system"
 msgstr ""
+"Définit le type de relation qui va être utilisé si aucun n'est défini ou si "
+"les valeurs de la source de données ne correspondent à aucune valeur dans "
+"CollectiveAccess"
 
 #: app/refineries/placeSplitter/placeSplitterRefinery.php:209
 msgid "Place type default"
@@ -16151,6 +16255,9 @@ msgid ""
 "data source values do not match any values in the CollectiveAccess list "
 "place_types"
 msgstr ""
+"Définit le type de lieu par défaut qui sera utilisé si aucun n'est défini ou "
+"si les valeurs de la source de données ne correspondent à aucune valeur dans "
+"la liste place_types de CollectiveAccess"
 
 #: app/widgets/advancedSearchForm/advancedSearchFormWidget.php:43
 msgid "Advanced search form"
@@ -17339,11 +17446,11 @@ msgstr ""
 
 #: support/sql/migrations/VersionUpdate77.php:97
 msgid "Could not add missing \"deleted\" field to table ca_list_items"
-msgstr ""
+msgstr "Impossible d'ajouter le champ \"deleted\" à la table ca_list_items"
 
 #: support/sql/migrations/VersionUpdate77.php:100
 msgid "Added missing \"deleted\" field to table ca_list_items"
-msgstr ""
+msgstr "Champ \"deleted\" manquant ajouté à la table ca_list_items"
 
 #: themes/default/views/administrate/access/group_edit_html.php:35
 #: themes/default/views/administrate/access/role_edit_html.php:39
@@ -18334,40 +18441,41 @@ msgid "%1 user interfaces are defined"
 msgstr "%1 interfaces utilisateur sont définies"
 
 #: themes/default/views/batch/editor/batch_queued_html.php:30
-#, fuzzy
 msgid "Batch queued for background processing"
-msgstr "Tâches dans la file d'attente pour un traitement ultérieur"
+msgstr "Traitement par lot placé dans la file d'attente"
 
 #: themes/default/views/batch/editor/batch_queued_html.php:34
 msgid ""
 "Your batch edit has been queued and will be run shortly. You may continue to "
 "work while the batch is processed."
 msgstr ""
+"Votre modification par lot a été placée dans la file d'attente et sera "
+"lancée prochainement. Vous pouvez continuer à travailler pendant le temps du "
+"traitement."
 
 #: themes/default/views/batch/editor/batch_queued_html.php:36
 #: themes/default/views/batch/mediaimport/batch_queued_html.php:37
 msgid ""
 "You will receive email and SMS text messages when processing is complete."
-msgstr ""
+msgstr "Vous recevez "
 
 #: themes/default/views/batch/editor/batch_queued_html.php:39
 #: themes/default/views/batch/mediaimport/batch_queued_html.php:40
 msgid "You will receive an email when processing is complete."
-msgstr ""
+msgstr "Vous recevrez un email lorsque le traitement sera achevé."
 
 #: themes/default/views/batch/editor/batch_queued_html.php:42
 #: themes/default/views/batch/mediaimport/batch_queued_html.php:43
 msgid "You will receive an SMS text message when processing is complete."
-msgstr ""
+msgstr "Vous recevrez un SMS quand le traitement sera terminé."
 
 #: themes/default/views/batch/editor/batch_results_html.php:30
-#, fuzzy
 msgid "Batch processing status"
-msgstr "Etat de la file d'attente"
+msgstr "Statut du traitement par lot"
 
 #: themes/default/views/batch/editor/batch_results_html.php:47
 msgid "Perform another batch edit"
-msgstr ""
+msgstr "Réaliser une autre modification par lot"
 
 #: themes/default/views/batch/editor/batch_results_html.php:60
 #: themes/default/views/batch/mediaimport/batch_results_html.php:60
@@ -18377,7 +18485,7 @@ msgstr "Traitement de %1/%2"
 #: themes/default/views/batch/editor/batch_results_html.php:66
 #: themes/default/views/batch/mediaimport/batch_results_html.php:66
 msgid "%1 processed; %2 errors"
-msgstr ""
+msgstr "%1 traité, %2 erreurs"
 
 #: themes/default/views/batch/editor/batch_results_html.php:75
 #: themes/default/views/batch/mediaimport/batch_results_html.php:81
@@ -18399,6 +18507,8 @@ msgstr "Modification par lot (%1 %2)"
 msgid ""
 "You are about to apply changes to %1 %2. These changes cannot be undone."
 msgstr ""
+"Vous êtes sur le point d'appliquer des changements à %1 %2. Ces changements "
+"ne peuvent pas être annulés."
 
 #: themes/default/views/batch/editor/confirm_html.php:91
 #: themes/default/views/batch/mediaimport/confirm_html.php:87
@@ -18407,44 +18517,39 @@ msgstr "Traitement en arrière-plan"
 
 #: themes/default/views/batch/editor/confirm_html.php:110
 #: themes/default/views/batch/mediaimport/confirm_html.php:106
-#, fuzzy
 msgid "Send email to <strong>%1</strong> when done"
-msgstr "Modifications de <strong>%1</strong> du %2"
+msgstr "Envoi d'email à <strong>%1</strong> une fois terminé"
 
 #: themes/default/views/batch/editor/confirm_html.php:129
 #: themes/default/views/batch/mediaimport/confirm_html.php:125
-#, fuzzy
 msgid "Send SMS to <strong>%1</strong> when done"
-msgstr "Modifications de <strong>%1</strong> du %2"
+msgstr "Envoi de SMS à <strong>%1</strong> une fois terminé"
 
 #: themes/default/views/batch/editor/confirm_html.php:142
 #: themes/default/views/batch/editor/screen_html.php:34
 msgid "Execute batch edit"
-msgstr ""
+msgstr "Exécute les modifications par lot"
 
 #: themes/default/views/batch/mediaimport/batch_queued_html.php:30
-#, fuzzy
 msgid "Media import queued for background processing"
-msgstr "Tâches dans la file d'attente pour un traitement ultérieur"
+msgstr "Import de médias placé dans la file d'attente"
 
 #: themes/default/views/batch/mediaimport/batch_queued_html.php:34
-#, fuzzy
 msgid ""
 "Your media import has been queued and will be run shortly. You may continue "
 "to work while the import is processed."
 msgstr ""
-"Votre demande d'import de médias de <em>%1</em> a été soumise et sera "
-"bientôt traitée. Vous recevrez un email lorsque l'import sera réalisé."
+"Votre demande d'import de médias de <em>%1</em> a été placée dans la file "
+"d'attente et sera bientôt traitée. Vous pouvez continuer à travailler "
+"pendant l'import."
 
 #: themes/default/views/batch/mediaimport/batch_results_html.php:30
-#, fuzzy
 msgid "Media import processing status"
-msgstr "Règles de traitements des média"
+msgstr "Statut de l'import des médias"
 
 #: themes/default/views/batch/mediaimport/batch_results_html.php:47
-#, fuzzy
 msgid "Perform another media import"
-msgstr "Import de média en série"
+msgstr "Réaliser un autre import de médias"
 
 #: themes/default/views/batch/mediaimport/batch_results_html.php:88
 #: themes/default/views/mailTemplates/batch_media_import_completed.tpl:59
@@ -18454,6 +18559,7 @@ msgstr "Traité"
 #: themes/default/views/batch/mediaimport/batch_results_html.php:109
 msgid "Batch edit set <em>%1</em> containing imported media"
 msgstr ""
+"Modification par lot de l'ensemble <em>%1</em> contenant les médias importés"
 
 #: themes/default/views/batch/mediaimport/confirm_html.php:62
 #: app/conf/navigation.conf:3133
@@ -18461,9 +18567,8 @@ msgid "Import media"
 msgstr "Importer les médias…"
 
 #: themes/default/views/batch/mediaimport/confirm_html.php:67
-#, fuzzy
 msgid "You are about to import media from a directory."
-msgstr "Répertoire pour l'import de média"
+msgstr "Vous allez lancer l'import de médias depuis un répertoire."
 
 #: themes/default/views/batch/mediaimport/confirm_html.php:138
 #: themes/default/views/batch/mediaimport/import_options_html.php:35
@@ -18532,7 +18637,7 @@ msgstr "Accès de la représentation<br/>%1"
 
 #: themes/default/views/batch/mediaimport/import_options_html.php:263
 msgid "You are about to import files from <em>%1</em>"
-msgstr ""
+msgstr "Vous êtes en train d'importer les fichiers pour <em>%1</em>"
 
 #: themes/default/views/bundles/bookviewer_html.php:42
 msgid ""
@@ -20491,7 +20596,7 @@ msgstr "Enregistrer la recherche"
 
 #: themes/default/views/find/Search/search_sets_html.php:51
 msgid "Toggle checked"
-msgstr ""
+msgstr "Sélecteur activé"
 
 #: themes/default/views/find/Search/search_sets_html.php:59
 msgid "Create set from results"
@@ -20508,7 +20613,7 @@ msgstr "Créer un ensemble et modifier par lots les résultats"
 
 #: themes/default/views/find/Search/search_sets_html.php:163
 msgid "Created set <i>^set_name</i> with ^num_items ^item_type_name"
-msgstr ""
+msgstr "Ensemble <i>^set_name</i> créé avec ^num_items ^item_type_name"
 
 #: themes/default/views/find/Search/search_sets_html.php:171
 #: themes/default/views/find/Search/search_sets_html.php:174
@@ -20573,10 +20678,13 @@ msgid ""
 "%3 of %4 %5 were processed. %6 had errors. A full list of processed %7 "
 "follows:<br/><br/>"
 msgstr ""
+"Import par lot des médias du répertoire <em>%1</em> terminé (%2).\n"
+"%3 de %4 %5 ont été traités. %6 ont rencontré des erreurs. Voici la liste "
+"des %7 traités : <br/><br/>"
 
 #: themes/default/views/mailTemplates/batch_media_import_completed.tpl:68
 msgid "Imported media were added to the set <em>%1</em>"
-msgstr ""
+msgstr "Les médias importés ont été ajoutés à l'ensemble <em>%1</em>"
 
 #: themes/default/views/mailTemplates/batch_media_import_completed.tpl:71
 #: themes/default/views/mailTemplates/batch_processing_completed.tpl:67
@@ -20589,6 +20697,9 @@ msgid ""
 "%3 of %4 %5 were processed. %6 had errors. A full list of processed %7 "
 "follows:<br/><br/>"
 msgstr ""
+"Le traitement par lot de l'ensemble %1 est terminé (%2).\n"
+"%3 de %4 %5 ont été traités. %6 ont rencontré des erreurs. Voici la liste "
+"des %7 traités :<br/><br/>"
 
 #: themes/default/views/manage/bundle_display_list_html.php:36
 msgid "New display for "
