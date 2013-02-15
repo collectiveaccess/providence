@@ -112,6 +112,15 @@
 			//print_R($va_vals);
 			return $va_vals;
 		}
+		# -------------------------------------------------------	
+		/**
+		 * ATRelatedGetter returns multiple values
+		 *
+		 * @return bool Always true
+		 */
+		public function returnsMultipleValues() {
+			return true;
+		}
 		# -------------------------------------------------------
 	}
 	

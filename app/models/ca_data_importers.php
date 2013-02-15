@@ -965,14 +965,14 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 							if ($o_refinery = RefineryManager::getRefineryInstance($vs_refinery)) {
 								$va_refined_values = $o_refinery->refine($va_content_tree, $va_group, $va_item, $va_row, array('source' => $ps_source));
 							
-								$va_p = array_pop($va_parent);
-								foreach($va_refined_values as $va_refined_value) {
-									$va_parent[] = array_merge($va_p, $va_refined_value);
+								if ($o_refinery->returnsMultipleValues()) {
+									$va_p = array_pop($va_parent);
+									foreach($va_refined_values as $va_refined_value) {
+										$va_parent[] = array_merge($va_p, $va_refined_value);
+									}
+								} else {
+									$va_ptr[$vs_item_terminal] = $vm_val;
 								}
-								//$va_ptr =& $va_parent[sizeof($va_parent)-1];
-								//$va_keys = array_keys($va_ptr);
-								//$vs_key = array_shift($va_keys);
-								//$va_ptr =& $va_ptr[$vs_key];
 								continue(2);
 							}
 						}
@@ -1014,9 +1014,9 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 			//
 			// Process data in subject record
 			//
-			print_r($va_content_tree);
-			die("END\n\n");
-			continue;
+			//print_r($va_content_tree);
+			//die("END\n\n");
+		
 			foreach($va_content_tree as $vs_table_name => $va_content) {
 				if ($vs_table_name == $vs_subject_table_name) {
 					foreach($va_content as $vn_i => $va_element_data) {
