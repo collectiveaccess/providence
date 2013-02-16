@@ -293,6 +293,15 @@ class ca_data_importer_items extends BaseModel {
 			'label' => _t('Suffix'),
 			'description' => _t('Text to append to value prior to import.')
 		);
+		$va_settings['formatWithTemplate'] = array(
+			'formatType' => FT_TEXT,
+			'displayType' => DT_FIELD,
+			'width' => 40, 'height' => 2,
+			'takesLocale' => false,
+			'default' => '',
+			'label' => _t('Format with template'),
+			'description' => _t('Format imported value with provided template. Template may include caret (^) prefixed placeholders that refer to data source values.')
+		);
 		
 		$this->SETTINGS = new ModelSettings($this, 'settings', $va_settings);
 	}

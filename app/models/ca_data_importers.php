@@ -577,7 +577,7 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 					$o_notes = $o_sheet->getCellByColumnAndRow(10, $o_row->getRowIndex());
 					
 					if (!($vs_group = trim((string)$o_group->getValue()))) {
-						$vs_group = '_group_'.(string)$o_source->getValue();
+						$vs_group = '_group_'.(string)$o_source->getValue()."_{$vn_row}";
 					}
 					
 					$vs_source = trim((string)$o_source->getValue());
@@ -960,6 +960,9 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 						$vm_val .= $va_item['settings']['suffix'];
 					}
 					
+					if (isset($va_item['settings']['formatWithTemplate']) && strlen($va_item['settings']['formatWithTemplate'])) {
+						$vm_val = caProcessTemplate($va_item['settings']['formatWithTemplate'], $va_row);
+					}
 					
 					// Get location in content tree for addition of new content
 					$va_item_dest = explode(".",  $va_item['destination']);
@@ -1029,6 +1032,7 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 			//
 			//print_r($va_content_tree);
 			//die("END\n\n");
+			//continue;
 		
 			foreach($va_content_tree as $vs_table_name => $va_content) {
 				if ($vs_table_name == $vs_subject_table_name) {
