@@ -665,7 +665,7 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 		
 		// Remove any existing mapping
 		if ($t_importer->load(array('importer_code' => $va_settings['code']))) {
-			$t_importer->delete(true);
+			$t_importer->delete(true, array('hard' => true));
 			if ($t_importer->numErrors()) {
 				print _t("Could not delete existing mapping for %1: %2", $va_settings['code'], join("; ", $t_importer->getErrors()))."\n";
 				return;
@@ -727,7 +727,7 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 			}
 		}
 		
-		return true;
+		return $t_importer;
 	}
 	# ------------------------------------------------------
 	/**
@@ -944,9 +944,22 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 						if ($va_parent && is_array($va_parent)) { array_pop($va_parent); }	// remove empty container array
 						continue(2);
 					}
+					if (isset($va_item['settings']['skipGroupIfValue']) && is_array($va_item['settings']['skipGroupIfValue']) && strlen($vm_val) && in_array($vm_val, $va_item['settings']['skipGroupIfValue'])) {
+						if ($va_parent && is_array($va_parent)) { array_pop($va_parent); }	// remove empty container array
+						continue(2);
+					}
 					if (isset($va_item['settings']['default']) && strlen($va_item['settings']['default']) && !strlen($vm_val)) {
 						$vm_val = $va_item['settings']['default'];
 					}
+					
+					// Apply prefix/suffix *AFTER* setting default
+					if (isset($va_item['settings']['prefix']) && strlen($va_item['settings']['prefix'])) {
+						$vm_val = $va_item['settings']['prefix'].$vm_val;
+					}
+					if (isset($va_item['settings']['suffix']) && strlen($va_item['settings']['suffix'])) {
+						$vm_val .= $va_item['settings']['suffix'];
+					}
+					
 					
 					// Get location in content tree for addition of new content
 					$va_item_dest = explode(".",  $va_item['destination']);
@@ -1080,6 +1093,18 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 									if ($vn_rel_id = DataMigrationUtils::getCollectionID($va_element_data['preferred_labels']['name'], $va_element_data['_type'], $vn_locale_id, $va_data_for_rel_table, array())) {
 										$t_subject->addRelationship($vs_table_name, $vn_rel_id, strtolower(trim($va_element_data['_relationship_type'])));
 										DataMigrationUtils::postError($t_subject, _t("While adding collection: %1", $va_element_data['_relationship_type']));
+									}
+									break;
+								case 'ca_occurrences':
+									if ($vn_rel_id = DataMigrationUtils::getOccurrenceID($va_element_data['preferred_labels']['name'], $va_element_data['_parent_id'], $va_element_data['_type'], $vn_locale_id, $va_data_for_rel_table, array())) {
+										$t_subject->addRelationship($vs_table_name, $vn_rel_id, strtolower(trim($va_element_data['_relationship_type'])));
+										DataMigrationUtils::postError($t_subject, _t("While adding occurrence: %1", $va_element_data['_relationship_type']));
+									}
+									break;
+								case 'ca_storage_locations':
+									if ($vn_rel_id = DataMigrationUtils::getStorageLocationID($va_element_data['preferred_labels']['name'], $va_element_data['_parent_id'], $va_element_data['_type'], $vn_locale_id, $va_data_for_rel_table, array())) {
+										$t_subject->addRelationship($vs_table_name, $vn_rel_id, strtolower(trim($va_element_data['_relationship_type'])));
+										DataMigrationUtils::postError($t_subject, _t("While adding storage location: %1", $va_element_data['_relationship_type']));
 									}
 									break;
 							 }
