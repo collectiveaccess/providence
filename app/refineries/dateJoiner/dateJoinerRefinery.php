@@ -107,11 +107,54 @@
 					if ($vs_date_day = trim(BaseRefinery::parsePlaceholder($pa_item['settings']['dateJoiner_day'], $pa_source_data, $pa_item))) { $va_date[] = $vs_date_day; }
 					if ($vs_date_year = trim(BaseRefinery::parsePlaceholder($pa_item['settings']['dateJoiner_year'], $pa_source_data, $pa_item))) { $va_date[] = $vs_date_year; }
 		
-					if(sizeof($va_date)) {
-						//$o_tep->setLanguage('en_US');
+					if(sizeof($va_date)) {							// TODO: this is assuming US-style dates for now
 						if ($o_tep->parse(join("/", $va_date))) {
 							return $o_tep->getText();
 						}
+					}
+					break;
+				case 'multiColumnRange':
+					$va_dates = array();
+					
+					$o_tep = new TimeExpressionParser();
+					$va_month_list = $o_tep->getMonthList();
+					
+					// Process start date
+					$va_date = array();
+					if ($vs_date_month = trim(BaseRefinery::parsePlaceholder($pa_item['settings']['dateJoiner_startMonth'], $pa_source_data, $pa_item))) { 
+						if (($vn_m = array_search($vs_date_month, $va_month_list)) !== false) {
+							$vs_date_month = ($vn_m + 1);
+						}
+						$va_date[] = $vs_date_month; 
+					}
+					if ($vs_date_day = trim(BaseRefinery::parsePlaceholder($pa_item['settings']['dateJoiner_startDay'], $pa_source_data, $pa_item))) { $va_date[] = $vs_date_day; }
+					if ($vs_date_year = trim(BaseRefinery::parsePlaceholder($pa_item['settings']['dateJoiner_startYear'], $pa_source_data, $pa_item))) { $va_date[] = $vs_date_year; }
+		
+					if(sizeof($va_date)) {
+						if ($o_tep->parse(join("/", $va_date))) {	// TODO: this is assuming US-style dates for now
+							$va_dates[] = $o_tep->getText();
+						}
+					}
+					
+					// Process end date
+					$va_date = array();
+					if ($vs_date_month = trim(BaseRefinery::parsePlaceholder($pa_item['settings']['dateJoiner_endMonth'], $pa_source_data, $pa_item))) { 
+						if (($vn_m = array_search($vs_date_month, $va_month_list)) !== false) {
+							$vs_date_month = ($vn_m + 1);
+						}
+						$va_date[] = $vs_date_month; 
+					}
+					if ($vs_date_day = trim(BaseRefinery::parsePlaceholder($pa_item['settings']['dateJoiner_endDay'], $pa_source_data, $pa_item))) { $va_date[] = $vs_date_day; }
+					if ($vs_date_year = trim(BaseRefinery::parsePlaceholder($pa_item['settings']['dateJoiner_endYear'], $pa_source_data, $pa_item))) { $va_date[] = $vs_date_year; }
+		
+					if(sizeof($va_date)) {
+						if ($o_tep->parse(join("/", $va_date))) {	// TODO: this is assuming US-style dates for now
+							$va_dates[] = $o_tep->getText();
+						}
+					}
+					
+					if (sizeof($va_dates) > 0) {
+						return join(" - ", $va_dates);
 					}
 					break;
 			}
