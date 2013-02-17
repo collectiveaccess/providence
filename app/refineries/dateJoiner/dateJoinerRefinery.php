@@ -66,26 +66,54 @@
 			
 			$pm_value = preg_replace("![^\d\.A-Za-z\"\"’”]+!", "", $pm_value);
 			
-			$vs_date_expression = $pa_item['settings']['dateJoiner_dateExpression'];
-			$vs_date_start = $pa_item['settings']['dateJoiner_dateStart'];
-			$vs_date_end = $pa_item['settings']['dateJoiner_dateEnd'];
 			
-			$o_tep = new TimeExpressionParser();
+			switch($vs_mode = $pa_item['settings']['dateJoiner_mode']) {
+				default:
+				case 'range':
+					$vs_date_expression = $pa_item['settings']['dateJoiner_expression'];
+					$vs_date_start = $pa_item['settings']['dateJoiner_start'];
+					$vs_date_end = $pa_item['settings']['dateJoiner_end'];
 			
-			if ($vs_date_expression && ($vs_exp = BaseRefinery::parsePlaceholder($vs_date_expression, $pa_source_data, $pa_item))) {
-				if ($o_tep->parse($vs_exp)) {
-					return $o_tep->getText();
-				}
-			}
+					$o_tep = new TimeExpressionParser();
 			
-			$va_date = array();
-			if ($vs_date_start = BaseRefinery::parsePlaceholder($vs_date_start, $pa_source_data, $pa_item)) { $va_date[] = $vs_date_start; }
-			if ($vs_date_end = BaseRefinery::parsePlaceholder($vs_date_end, $pa_source_data, $pa_item)) { $va_date[] = $vs_date_end; }
-			$vs_date_expression = join(" - ", $va_date);
-			if ($vs_date_expression && ($vs_exp = BaseRefinery::parsePlaceholder($vs_date_expression, $pa_source_data, $pa_item))) {
-				if ($o_tep->parse($vs_exp)) {
-					return $o_tep->getText();
-				}
+					if ($vs_date_expression && ($vs_exp = BaseRefinery::parsePlaceholder($vs_date_expression, $pa_source_data, $pa_item))) {
+						if ($o_tep->parse($vs_exp)) {
+							return $o_tep->getText();
+						}
+					}
+			
+					$va_date = array();
+					if ($vs_date_start = BaseRefinery::parsePlaceholder($vs_date_start, $pa_source_data, $pa_item)) { $va_date[] = $vs_date_start; }
+					if ($vs_date_end = BaseRefinery::parsePlaceholder($vs_date_end, $pa_source_data, $pa_item)) { $va_date[] = $vs_date_end; }
+					$vs_date_expression = join(" - ", $va_date);
+					if ($vs_date_expression && ($vs_exp = BaseRefinery::parsePlaceholder($vs_date_expression, $pa_source_data, $pa_item))) {
+						if ($o_tep->parse($vs_exp)) {
+							return $o_tep->getText();
+						}
+					}
+					break;
+					
+				case 'multiColumnDate':
+					$o_tep = new TimeExpressionParser();
+					$va_month_list = $o_tep->getMonthList();
+					
+					$va_date = array();
+					if ($vs_date_month = trim(BaseRefinery::parsePlaceholder($pa_item['settings']['dateJoiner_month'], $pa_source_data, $pa_item))) { 
+						if (($vn_m = array_search($vs_date_month, $va_month_list)) !== false) {
+							$vs_date_month = ($vn_m + 1);
+						}
+						$va_date[] = $vs_date_month; 
+					}
+					if ($vs_date_day = trim(BaseRefinery::parsePlaceholder($pa_item['settings']['dateJoiner_day'], $pa_source_data, $pa_item))) { $va_date[] = $vs_date_day; }
+					if ($vs_date_year = trim(BaseRefinery::parsePlaceholder($pa_item['settings']['dateJoiner_year'], $pa_source_data, $pa_item))) { $va_date[] = $vs_date_year; }
+		
+					if(sizeof($va_date)) {
+						//$o_tep->setLanguage('en_US');
+						if ($o_tep->parse(join("/", $va_date))) {
+							return $o_tep->getText();
+						}
+					}
+					break;
 			}
 			
 			return null;
@@ -102,33 +130,130 @@
 		# -------------------------------------------------------
 	}
 	
-	 BaseRefinery::$s_refinery_settings['dateJoiner'] = array(		
-			'dateJoiner_dateExpression' => array(
+	//{ "mode": multiColumn, "dateMonth": "^4", "dateDay": "^5", "dateYear": "^6"}
+	
+	 BaseRefinery::$s_refinery_settings['dateJoiner'] = array(	
+	 		'dateJoiner_mode' => array(
+				'formatType' => FT_TEXT,
+				'displayType' => DT_SELECT,
+				'width' => 10, 'height' => 1,
+				'takesLocale' => false,
+				'default' => '',
+				'options' => array(
+					_t('Two-column range') => 'range',
+					_t('Multi-column range') => 'multiColumnRange',
+					_t('Multi-column date') => 'multiColumnDate'
+				),
+				'label' => _t('Join mode'),
+				'description' => _t('Determines how dateJoiner joins date values together. Two-column range is the default if mode is not specified.')
+			),	
+			'dateJoiner_expression' => array(
 				'formatType' => FT_TEXT,
 				'displayType' => DT_FIELD,
 				'width' => 10, 'height' => 1,
 				'takesLocale' => false,
 				'default' => '',
 				'label' => _t('Date expression'),
-				'description' => _t('Date expression')
+				'description' => _t('Date expression (For Two-column range)')
 			),
-			'dateJoiner_dateStart' => array(
+			'dateJoiner_start' => array(
 				'formatType' => FT_TEXT,
 				'displayType' => DT_FIELD,
 				'width' => 10, 'height' => 1,
 				'takesLocale' => false,
 				'default' => '',
 				'label' => _t('Date start'),
-				'description' => _t('Maps the date from the data source that is the beginning of the conjoined date range.')
+				'description' => _t('Maps the date from the data source that is the beginning of the conjoined date range. (For Two-column range).')
 			),
-			'dateJoiner_dateEnd' => array(
+			'dateJoiner_end' => array(
 				'formatType' => FT_TEXT,
 				'displayType' => DT_FIELD,
-				'width' => 10, 'height' => 8,
+				'width' => 10, 'height' => 1,
 				'takesLocale' => false,
 				'default' => '',
 				'label' => _t('Date end'),
-				'description' => _t('Maps the date from the data source that is the end of the conjoined date range.')
+				'description' => _t('Maps the date from the data source that is the end of the conjoined date range. (For Two-column range)')
+			),
+			'dateJoiner_startDay' => array(
+				'formatType' => FT_TEXT,
+				'displayType' => DT_FIELD,
+				'width' => 10, 'height' => 1,
+				'takesLocale' => false,
+				'default' => '',
+				'label' => _t('Date start day'),
+				'description' => _t('Maps the day value for the start date from the data source. (For Multi-column range)')
+			),
+			'dateJoiner_startMonth' => array(
+				'formatType' => FT_TEXT,
+				'displayType' => DT_FIELD,
+				'width' => 10, 'height' => 1,
+				'takesLocale' => false,
+				'default' => '',
+				'label' => _t('Date start month'),
+				'description' => _t('Maps the month value for the start date from the data source. (For Multi-column range)')
+			),
+			'dateJoiner_startYear' => array(
+				'formatType' => FT_TEXT,
+				'displayType' => DT_FIELD,
+				'width' => 10, 'height' => 1,
+				'takesLocale' => false,
+				'default' => '',
+				'label' => _t('Date start year'),
+				'description' => _t('Maps the year value for the start date from the data source. (For Multi-column range)')
+			),
+			'dateJoiner_endDay' => array(
+				'formatType' => FT_TEXT,
+				'displayType' => DT_FIELD,
+				'width' => 10, 'height' => 1,
+				'takesLocale' => false,
+				'default' => '',
+				'label' => _t('Date end day'),
+				'description' => _t('Maps the day value for the end date from the data source. (For Multi-column range)')
+			),
+			'dateJoiner_endMonth' => array(
+				'formatType' => FT_TEXT,
+				'displayType' => DT_FIELD,
+				'width' => 10, 'height' => 1,
+				'takesLocale' => false,
+				'default' => '',
+				'label' => _t('Date end month'),
+				'description' => _t('Maps the month value for the end date from the data source. (For Multi-column range)')
+			),
+			'dateJoiner_endYear' => array(
+				'formatType' => FT_TEXT,
+				'displayType' => DT_FIELD,
+				'width' => 10, 'height' => 1,
+				'takesLocale' => false,
+				'default' => '',
+				'label' => _t('Date end year'),
+				'description' => _t('Maps the year value for the end date from the data source. (For Multi-column range)')
+			),
+			'dateJoiner_day' => array(
+				'formatType' => FT_TEXT,
+				'displayType' => DT_FIELD,
+				'width' => 10, 'height' => 1,
+				'takesLocale' => false,
+				'default' => '',
+				'label' => _t('Date day'),
+				'description' => _t('Maps the day value for the date from the data source. (For Multi-column date)')
+			),
+			'dateJoiner_month' => array(
+				'formatType' => FT_TEXT,
+				'displayType' => DT_FIELD,
+				'width' => 10, 'height' => 1,
+				'takesLocale' => false,
+				'default' => '',
+				'label' => _t('Date month'),
+				'description' => _t('Maps the month value for the date from the data source. (For Multi-column date)')
+			),
+			'dateJoiner_year' => array(
+				'formatType' => FT_TEXT,
+				'displayType' => DT_FIELD,
+				'width' => 10, 'height' => 1,
+				'takesLocale' => false,
+				'default' => '',
+				'label' => _t('Date year'),
+				'description' => _t('Maps the year value for the date from the data source. (For Multi-column date)')
 			)
 		);
 ?>

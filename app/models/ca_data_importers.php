@@ -871,7 +871,7 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 			// Get type
 			if ($vn_type_id_mapping_item_id) {
 				// Type is specified in row
-				$vs_type = $t_mapping->getValueFromSource($va_mapping_items[$vn_type_id_mapping_item_id], $o_reader);
+				$vs_type = ca_data_importers::getValueFromSource($va_mapping_items[$vn_type_id_mapping_item_id], $o_reader);
 			} else {
 				// Type is constant for all rows
 				$vs_type = $vs_type_mapping_setting;	
@@ -883,7 +883,7 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 			if ($vn_idno_mapping_item_id) {
 				// idno is specified in row
 				//$vs_idno = $va_row[($va_mapping_items[$vn_idno_mapping_item_id]['source'])];
-				$vs_idno = $t_mapping->getValueFromSource($va_mapping_items[$vn_idno_mapping_item_id], $o_reader);
+				$vs_idno = ca_data_importers::getValueFromSource($va_mapping_items[$vn_idno_mapping_item_id], $o_reader);
 			} else {
 				// TODO: idno is a template
 				
@@ -933,7 +933,7 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 						continue; 
 					}
 					
-					$vm_val = $t_mapping->getValueFromSource($va_item, $o_reader);
+					$vm_val = ca_data_importers::getValueFromSource($va_item, $o_reader);
 		
 					if (isset($va_item['settings']['restrictToTypes']) && is_array($va_item['settings']['restrictToTypes']) && !in_array($vs_type, $va_item['settings']['restrictToTypes'])) {
 						if ($va_parent && is_array($va_parent)) { array_pop($va_parent); }	// remove empty container array
@@ -987,7 +987,7 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 										$va_parent[] = array_merge($va_p, $va_refined_value);
 									}
 								} else {
-									$va_ptr[$vs_item_terminal] = $vm_val;
+									$va_ptr[$vs_item_terminal] = $va_refined_values;
 								}
 								continue(2);
 							}
@@ -1000,13 +1000,13 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 						
 						// Add delimited values
 						foreach($va_val_list as $vs_list_val) {
+							$vs_list_val = ca_data_importers::replaceValue($vs_list_val, $va_item);
 							$va_parent[] = array($vs_item_terminal => array($vs_item_terminal => trim($vs_list_val)));
 						}
 						
 						$vn_row++;
 						continue;	// Don't add "regular" value below
 					}
-					
 					
 					switch($vs_item_terminal) {
 						case 'preferred_labels':
@@ -1149,27 +1149,34 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 	 *
 	 */
 	public function guessSourceFormat($ps_source) {
-			
+		// TODO: implement	
 	}
 	# ------------------------------------------------------
 	/**
 	 *
 	 */
-	public function getValueFromSource($pa_item, $po_reader) {
-		$vm_value = $po_reader->get($pa_item['source']);
+	static public function getValueFromSource($pa_item, $po_reader) {
+		$vm_value = trim($po_reader->get($pa_item['source']));
 		
-		if ($vm_value && is_array($pa_item['settings']['original_values'])) {
-			if (($vn_index = array_search(mb_strtolower($vm_value), $pa_item['settings']['original_values'])) !== false) {
-				$vm_value = $pa_item['settings']['replacement_values'][$vn_index];
+		return ca_data_importers::replaceValue($vm_value, $pa_item);
+	}
+	# ------------------------------------------------------
+	/**
+	 *
+	 */
+	static public function replaceValue($pm_value, $pa_item) {
+		if ($pm_value && is_array($pa_item['settings']['original_values'])) {
+			if (($vn_index = array_search(trim(mb_strtolower($pm_value)), $pa_item['settings']['original_values'])) !== false) {
+				$pm_value = $pa_item['settings']['replacement_values'][$vn_index];
 			}
 		}
 		
-		$vm_value = trim($vm_value);
+		$pm_value = trim($pm_value);
 		
-		if (!$vm_value && isset($pa_item['settings']['default']) && strlen($pa_item['settings']['default'])) {
-			$vm_value = $pa_item['settings']['default'];
+		if (!$pm_value && isset($pa_item['settings']['default']) && strlen($pa_item['settings']['default'])) {
+			$pm_value = $pa_item['settings']['default'];
 		}
-		return $vm_value;
+		return $pm_value;
 	}
 	# ------------------------------------------------------
 }
