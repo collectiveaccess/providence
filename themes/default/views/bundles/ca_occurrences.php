@@ -35,6 +35,8 @@
 	$va_rel_types		= $this->getVar('relationship_types');
 	
 	$vb_read_only		=	((isset($va_settings['readonly']) && $va_settings['readonly'])  || ($this->request->user->getBundleAccessLevel($t_instance->tableName(), 'ca_occurrences') == __CA_BUNDLE_ACCESS_READONLY__));
+	$vb_dont_show_del	=	((isset($va_settings['dontShowDeleteButton']) && $va_settings['dontShowDeleteButton'])) ? true : false;
+	
 	$vb_batch			= 	$this->getVar('batch');
 	
 	$vs_sort			=	((isset($va_settings['sort']) && $va_settings['sort'])) ? $va_settings['sort'] : '';
@@ -61,7 +63,7 @@
 ?>
 		<div id="<?php print $vs_id_prefix; ?>Item_{n}" class="labelInfo listRel">
 <?php
-	if (!$vb_read_only) {
+	if (!$vb_read_only && !$vb_dont_show_del) {
 ?>				
 			<a href="#" class="caDeleteItemButton listRelDeleteButton"><?php print caNavIcon($this->request, __CA_NAV_BUTTON_DEL_BUNDLE__); ?></a>
 <?php
@@ -84,7 +86,7 @@
 			<input type="hidden" name="<?php print $vs_id_prefix; ?>_type_id{n}" id="<?php print $vs_id_prefix; ?>_type_id{n}" value="{type_id}"/>
 			<input type="hidden" name="<?php print $vs_id_prefix; ?>_id{n}" id="<?php print $vs_id_prefix; ?>_id{n}" value="{id}"/>
 <?php
-	if (!$vb_read_only) {
+	if (!$vb_read_only && !$vb_dont_show_del) {
 ?>				
 			<a href="#" class="caDeleteItemButton"><?php print caNavIcon($this->request, __CA_NAV_BUTTON_DEL_BUNDLE__); ?></a>
 <?php
@@ -116,7 +118,7 @@
 					</td>
 					<td>
 						<a href="#" class="caDeleteItemButton"><?php print caNavIcon($this->request, __CA_NAV_BUTTON_DEL_BUNDLE__); ?></a>
-						
+					
 						<a href="<?php print urldecode(caEditorUrl($this->request, 'ca_occurrences', '{occurrence_id}')); ?>" class="caEditItemButton" id="<?php print $vs_id_prefix; ?>_edit_related_{n}"><?php print caNavIcon($this->request, __CA_NAV_BUTTON_GO__); ?></a>
 					</td>
 				</tr>
