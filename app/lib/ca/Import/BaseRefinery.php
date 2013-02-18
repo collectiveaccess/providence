@@ -132,5 +132,14 @@
 		 */
 		abstract function refine(&$pa_destination_data, $pa_group, $pa_item, $pa_source_data, $pa_options=null);
 		# -------------------------------------------------------	
+		/**
+		 * Identifies return value of refinery. If the refinery is designed to return a set of values overwriting all group values this method will return true. If
+		 * the refinery returns a single transformed value intended to be inserted in place of the source value (Eg. a simple single-item mapping) this method
+		 * will return false.
+		 *
+		 * @return bool True if refinery returns multiple values, false if it returns a single value
+		 */
+		abstract function returnsMultipleValues();
+		# -------------------------------------------------------	
 	}
 ?>

@@ -1,6 +1,6 @@
 <?php
 /* ----------------------------------------------------------------------
- * collectionSplitterRefinery.php : 
+ * storageLocationSplitterRefinery.php : 
  * ----------------------------------------------------------------------
  * CollectiveAccess
  * Open-source collections management software
@@ -27,15 +27,16 @@
  */
  	require_once(__CA_LIB_DIR__.'/ca/Import/BaseRefinery.php');
  	require_once(__CA_LIB_DIR__.'/ca/Utils/DataMigrationUtils.php');
+ 	require_once(__CA_MODELS_DIR__.'/ca_storage_locations.php');
  
-	class collectionSplitterRefinery extends BaseRefinery {
+	class storageLocationSplitterRefinery extends BaseRefinery {
 		# -------------------------------------------------------
 		
 		# -------------------------------------------------------
 		public function __construct() {
-			$this->ops_name = 'collectionSplitter';
-			$this->ops_title = _t('Collection splitter');
-			$this->ops_description = _t('Splits collections');
+			$this->ops_name = 'storageLocationSplitter';
+			$this->ops_title = _t('Storage location splitter');
+			$this->ops_description = _t('Splits storage locations');
 			
 			parent::__construct();
 		}
@@ -60,77 +61,59 @@
 			$vs_terminal = array_pop($va_group_dest);
 			$pm_value = $pa_source_data[$pa_item['source']];
 			
-			if ($vs_delimiter = $pa_item['settings']['collectionSplitter_delimiter']) {
-				$va_collections = explode($vs_delimiter, $pm_value);
+			if ($vs_delimiter = $pa_item['settings']['storageLocationSplitter_delimiter']) {
+				$va_locations = explode($vs_delimiter, $pm_value);
 			} else {
-				$va_collections = array($pm_value);
+				$va_locations = array($pm_value);
 			}
 			
 			$va_vals = array();
 			$vn_c = 0;
-			foreach($va_collections as $vn_i => $vs_collection) {
-				if (!$vs_collection = trim($vs_collection)) { continue; }
+			foreach($va_locations as $vn_i => $vs_location) {
+				if (!$vs_location = trim($vs_location)) { continue; }
 				
 				
 				if($vs_terminal == 'name') {
-					return $vs_collection;
+					return $vs_location;
 				}
 			
 				if (in_array($vs_terminal, array('preferred_labels', 'nonpreferred_labels'))) {
-					return array('name' => $vs_collection);	
+					return array('name' => $vs_location);	
 				}
 			
 				// Set label
-				$va_val = array('preferred_labels' => array('name' => $vs_collection));
+				$va_val = array('preferred_labels' => array('name' => $vs_location));
 			
 				// Set relationship type
 				if (
-					($vs_rel_type_opt = $pa_item['settings']['collectionSplitter_relationshipType'])
+					($vs_rel_type_opt = $pa_item['settings']['storageLocationSplitter_relationshipType'])
 				) {
 					if (!($va_val['_relationship_type'] = BaseRefinery::parsePlaceholder($vs_rel_type_opt, $pa_source_data, $pa_item, $vs_delimiter, $vn_c))) {
-						if ($vs_rel_type_opt = $pa_item['settings']['collectionSplitter_relationshipTypeDefault']) {
+						if ($vs_rel_type_opt = $pa_item['settings']['storageLocationSplitter_relationshipTypeDefault']) {
 							$va_val['_relationship_type'] = BaseRefinery::parsePlaceholder($vs_rel_type_opt, $pa_source_data, $pa_item, $vs_delimiter, $vn_c);
 						}
 					}
 				}
 			
-				// Set collection_type
+				// Set storage_location_type
 				if (
-					($vs_type_opt = $pa_item['settings']['collectionSplitter_collectionType'])
+					($vs_type_opt = $pa_item['settings']['storageLocationSplitter_storageLocationType'])
 				) {
-					
 					if (!($va_val['_type'] = BaseRefinery::parsePlaceholder($vs_type_opt, $pa_source_data, $pa_item, $vs_delimiter, $vn_c))) {
-						if($vs_type_opt = $pa_item['settings']['collectionSplitter_collectionTypeDefault']) {
+						if($vs_type_opt = $pa_item['settings']['storageLocationSplitter_storageLocationTypeDefault']) {
 							$va_val['_type'] = BaseRefinery::parsePlaceholder($vs_type_opt, $pa_source_data, $pa_item, $vs_delimiter, $vn_c);
 						}
 					}
 				}
-				// Set relationship type
-				if ($vs_rel_type_opt = $pa_item['settings']['collectionSplitter_relationshipType']) {
-					$va_val['_relationship_type'] = BaseRefinery::parsePlaceholder($vs_rel_type_opt, $pa_source_data, $pa_item, $vs_delimiter, $vn_i);
-				}
-			
-				// Set collection type
-				if ($vs_type_opt = $pa_item['settings']['collectionSplitter_collectionType']) {
-					$va_val['_type'] = BaseRefinery::parsePlaceholder($vs_type_opt, $pa_source_data, $pa_item);
-				}
 				
-				// Set collection parents
-				if ($va_parents = $pa_item['settings']['collectionSplitter_parents']) {
-					print "parents: ";
-					print_R($va_parents);
+				$t_location = new ca_storage_locations();
+				$t_location->load(array('parent_id' => null, 'hierarchy_id' => $vn_hierarchy_id));
+				$va_val['_parent_id'] = $t_location->getPrimaryKey();
 				
-					//$vn_hierarchy_id = caGetListItemID('place_hierarchies', $vs_hierarchy);
-
-					//$t_place = new ca_places();
-					//$t_place->load(array('parent_id' => null, 'hierarchy_id' => $vn_hierarchy_id));
-					//$va_val['_parent_id'] = $t_collection->getPrimaryKey();
-				}
-			
 				// Set attributes
-				if (is_array($pa_item['settings']['collectionSplitter_attributes'])) {
+				if (is_array($pa_item['settings']['storageLocationSplitter_attributes'])) {
 					$va_attr_vals = array();
-					foreach($pa_item['settings']['collectionSplitter_attributes'] as $vs_element_code => $va_attrs) {
+					foreach($pa_item['settings']['storageLocationSplitter_attributes'] as $vs_element_code => $va_attrs) {
 						if(is_array($va_attrs)) {
 							foreach($va_attrs as $vs_k => $vs_v) {
 								$va_attr_vals[$vs_element_code][$vs_k] = BaseRefinery::parsePlaceholder($vs_v, $pa_source_data, $pa_item);
@@ -148,7 +131,7 @@
 		}
 		# -------------------------------------------------------	
 		/**
-		 * collectionSplitter returns multiple values
+		 * storageLocationSplitter returns multiple values
 		 *
 		 * @return bool Always true
 		 */
@@ -158,69 +141,60 @@
 		# -------------------------------------------------------
 	}
 	
-	 BaseRefinery::$s_refinery_settings['collectionSplitter'] = array(		
-			'collectionSplitter_delimiter' => array(
+	 BaseRefinery::$s_refinery_settings['storageLocationSplitter'] = array(		
+			'storageLocationSplitter_delimiter' => array(
 				'formatType' => FT_TEXT,
 				'displayType' => DT_SELECT,
 				'width' => 10, 'height' => 1,
 				'takesLocale' => false,
 				'default' => '',
 				'label' => _t('Delimiter'),
-				'description' => _t('Sets the value of the delimiter to break on, separating data source values')
+				'description' => _t('Sets the value of the delimiter to break on, separating data source values.')
 			),
-			'collectionSplitter_relationshipType' => array(
+			'storageLocationSplitter_relationshipType' => array(
 				'formatType' => FT_TEXT,
 				'displayType' => DT_SELECT,
 				'width' => 10, 'height' => 1,
 				'takesLocale' => false,
 				'default' => '',
 				'label' => _t('Relationship type'),
-				'description' => _t('Accepts a constant type code for the relationship type or a reference to the location in the data source where the type can be found.  Note for object data: if the relationship type matches that set as the hierarchy control, the object will be pulled in as a "child" element in the collection hierarchy.')
+				'description' => _t('Accepts a constant type code for the relationship type or a reference to the location in the data source where the type can be found.')
 			),
-			'collectionSplitter_collectionType' => array(
+			'storageLocationSplitter_storageLocationType' => array(
 				'formatType' => FT_TEXT,
 				'displayType' => DT_SELECT,
 				'width' => 10, 'height' => 1,
 				'takesLocale' => false,
 				'default' => '',
-				'label' => _t('Collection type'),
-				'description' => _t('Accepts a constant list item idno from the list collection_types or a reference to the location in the data source where the type can be found.')
+				'label' => _t('Storage location type'),
+				'description' => _t('Accepts a constant list item idno from the list storage_location_types or a reference to the location in the data source where the type can be found.')
 			),
-			'collectionSplitter_attributes' => array(
+			'storageLocationSplitter_attributes' => array(
 				'formatType' => FT_TEXT,
 				'displayType' => DT_SELECT,
 				'width' => 10, 'height' => 1,
 				'takesLocale' => false,
 				'default' => '',
 				'label' => _t('Attributes'),
-				'description' => _t('Sets or maps metadata for the collection record by referencing the metadataElement code and the location in the data source where the data values can be found.')
+				'description' => _t('Sets or maps metadata for the storage location record by referencing the metadataElement code and the location in the data source where the data values can be found.')
 			),
-			'collectionSplitter_parents' => array(
-				'formatType' => FT_TEXT,
-				'displayType' => DT_SELECT,
-				'width' => 10, 'height' => 1,
-				'takesLocale' => false,
-				'default' => '',
-				'label' => _t('Parents'),
-				'description' => _t('Collection parents to create, if required')
-			),
-			'collectionSplitter_relationshipTypeDefault' => array(
+			'storageLocationSplitter_relationshipTypeDefault' => array(
 				'formatType' => FT_TEXT,
 				'displayType' => DT_FIELD,
 				'width' => 10, 'height' => 1,
 				'takesLocale' => false,
 				'default' => '',
 				'label' => _t('Relationship type default'),
-				'description' => _t('Sets the default relationship type that will be used if none are defined or if the data source values do not match any values in the CollectiveAccess system.')
+				'description' => _t('Sets the default relationship type that will be used if none are defined or if the data source values do not match any values in the CollectiveAccess system')
 			),
-			'collectionSplitter_collectionTypeDefault' => array(
+			'storageLocationSplitter_storageLocationTypeDefault' => array(
 				'formatType' => FT_TEXT,
 				'displayType' => DT_FIELD,
 				'width' => 10, 'height' => 1,
 				'takesLocale' => false,
 				'default' => '',
-				'label' => _t('Collection type default'),
-				'description' => _t('Sets the default collection type that will be used if none are defined or if the data source values do not match any values in the CollectiveAccess list collection_types.')
+				'label' => _t('Storage location type default'),
+				'description' => _t('Sets the default storage location type that will be used if none are defined or if the data source values do not match any values in the CollectiveAccess list storage_location_types')
 			)
 		);
 ?>
