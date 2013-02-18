@@ -194,26 +194,24 @@ class SearchIndexer extends SearchBase {
 			while($qr_all->nextRow()) {
 				$t_instance->load($qr_all->get($t_instance->primaryKey()));
 				$t_instance->doSearchIndexing(array(), true, $this->opo_engine->engineName());
-				//if (($vn_c % 10) == 0) {
-					if ($pb_display_progress && $pb_interactive_display) {
-						print CLIProgressBar::next();
-					}
-					
-					if (($ps_callback) && (!($vn_c % 100))) { 
-						$ps_callback(
-							$vn_c,
-							$vn_num_rows,
-							null, 
-							null,
-							(float)$t_timer->getTime(2),
-							memory_get_usage(true),
-							$va_table_names,
-							$vn_table_num,
-							$t_instance->getProperty('NAME_PLURAL'),
-							$vn_tc+1
-						); 
-					}
-				//}
+				if ($pb_display_progress && $pb_interactive_display) {
+					print CLIProgressBar::next();
+				}
+				
+				if (($ps_callback) && (!($vn_c % 100))) { 
+					$ps_callback(
+						$vn_c,
+						$vn_num_rows,
+						null, 
+						null,
+						(float)$t_timer->getTime(2),
+						memory_get_usage(true),
+						$va_table_names,
+						$vn_table_num,
+						$t_instance->getProperty('NAME_PLURAL'),
+						$vn_tc+1
+					); 
+				}
 				$vn_c++;
 			}
 			$qr_all->free();
@@ -223,9 +221,6 @@ class SearchIndexer extends SearchBase {
 			}
 			$this->opo_engine->optimizeIndex($vn_table_num);
 			
-			if ($pb_display_progress) {
-				//print "\n".str_repeat(" ", 4)."Done! [Indexing for ".$vs_table." took ".caFormatInterval((float)$t_table_timer->getTime(4))."]\n";
-			}
 			$vn_tc++;
 		}
 		
@@ -550,7 +545,7 @@ class SearchIndexer extends SearchBase {
 		// then we need to do this every time we update the indexing for a row; if the engine *does* support incremental indexing then
 		// we can just update the existing indexing with content from the changed fields.
 		//
-		// We also do this indexing if we're in "reindexing" mode. In when reindexing is indicated it means that we need to act as if
+		// We also do this indexing if we're in "reindexing" mode. When reindexing is indicated it means that we need to act as if
 		// we're indexing this row for the first time, and all indexing should be performed.
 if (!$this->opo_engine->can('incremental_reindexing') || $pb_reindex_mode) {
 		if (is_array($va_related_tables = $this->getRelatedIndexingTables($pn_subject_tablenum))) {
