@@ -33,7 +33,7 @@
 	
 ?>
 		<div id="searchRefineBox"><div class="bg">
-			<a href='#' id="hideRefine" onclick='jQuery("#searchRefineBox").slideUp(250); jQuery("#showRefine").show(); return false;'><img src="<?php print $this->request->getThemeUrlPath(); ?>/graphics/icons/collapse.gif" width="11" height="11" border="0"></a>
+			<a href='#' id="hideRefine" onclick='return caHandleResultsUIBoxes("refine", "hide");'><img src="<?php print $this->request->getThemeUrlPath(); ?>/graphics/icons/collapse.gif" width="11" height="11" border="0"></a>
 			<div id="searchRefineContent"><img src="<?php print $this->request->getThemeUrlPath(); ?>/graphics/icons/indicator.gif" alt="<?php print htmlspecialchars(_t('Loading...')); ?>"/></div>
 		</div><!-- end bg --></div><!-- end searchRefineBox -->
 

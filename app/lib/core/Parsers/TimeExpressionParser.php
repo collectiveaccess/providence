@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2006-2012 Whirl-i-Gig
+ * Copyright 2006-2013 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -600,6 +600,8 @@ class TimeExpressionParser {
 			case TEP_STATE_DATE_RANGE_CONJUNCTION:
 				if ($va_token['type'] == TEP_TOKEN_RANGE_CONJUNCTION) {
 					$this->skipToken();
+					if (!$va_dates['start']['day']) { $va_dates['start']['day'] = 1; }
+					if (!$va_dates['start']['month']) { $va_dates['start']['month'] = 1; }
 					$vn_state = TEP_STATE_DATE_RANGE_END_DATE;
 				} else {
 					$this->setParseError($va_token, TEP_ERROR_INVALID_EXPRESSION);
@@ -649,6 +651,7 @@ class TimeExpressionParser {
 			}
 			# -------------------------------------------------------
 		}
+		
 		
 		if ($this->getParseError()) {
 			return false;
@@ -740,9 +743,15 @@ class TimeExpressionParser {
 		# process 6-number year ranges
 		
 		# replace '-' used to express decades (eg. 192-) and centuries (eg. 19--) with underscores since we use '-' for ranges
-		$ps_expression = preg_replace('!([\d]{2})[\-]{2}!', '\1__', $ps_expression);
-		$ps_expression = preg_replace('!([\d]{3})[\-]{1}$!', '\1_', $ps_expression);
-		$ps_expression = preg_replace('!([\d]{3})[\-]{1}[\D]+!', '\1_', $ps_expression);
+		if (preg_match('![\d]{4}\-!', $ps_expression)) {
+			$ps_expression = preg_replace("![\-]{1}!", " - ", $ps_expression);
+		} else {
+			$ps_expression = preg_replace('!([\d]{2})[\-]{2}!', '\1__', $ps_expression);
+			$ps_expression = preg_replace('!([\d]{3})[\-]{1}$!', '\1_', $ps_expression);
+			$ps_expression = preg_replace('!([\d]{3})[\-]{1}[\D]+!', '\1_', $ps_expression);
+		}
+		
+		$ps_expression = preg_replace("![\-]{1}!", " - ", $ps_expression);
 		
 		$va_era_list = array_merge(array_keys($this->opo_language_settings->getAssoc("ADBCTable")), array($this->opo_language_settings->get("dateADIndicator"), $this->opo_language_settings->get("dateBCIndicator")));
 		foreach($va_era_list as $vs_era) {
@@ -795,7 +804,7 @@ class TimeExpressionParser {
 		
 		// support year ranges in the form yyyy/yyyy
 		$ps_expression = preg_replace("!^([\d]{4})/([\d]{4})$!", "$1 - $2", trim($ps_expression));
-
+		
 		return trim($ps_expression);
 	}
 	# -------------------------------------------------------------------

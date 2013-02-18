@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2012 Whirl-i-Gig
+ * Copyright 2012-2013 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -235,20 +235,19 @@
 	});
 	
 	jQuery(document).ready(function() {
-		jQuery('#user_id_autocomplete').autocomplete('<?php print caNavUrl($this->request, 'lookup', 'User', 'Get'); ?>', 
-			{ minChars: 3, matchSubset: 1, matchContains: 1, delay: 800, scroll: true, max: 100, extraParams: { 'inlineCreate': false },
-				formatResult: function(data, value) {
-					return jQuery.trim(value.replace(/<\/?[^>]+>/gi, ''));
+		jQuery('#user_id_autocomplete').autocomplete( 
+			{ 
+				minChars: 3, delay: 800, 
+				source: '<?php print caNavUrl($this->request, 'lookup', 'User', 'Get', array('max' => 100, 'inlineCreate' => 1)); ?>',
+				select: function(event, ui) {
+					var item_id = ui.item.id;
+					if (parseInt(item_id)) {
+						jQuery('#user_id').val(item_id);
+					}
 				}
+				
 			}
 		);
-		
-		jQuery('#user_id_autocomplete').result(function(event, data, formatted) {
-			var item_id = data[1];
-			if (parseInt(item_id)) {
-				jQuery('#user_id').val(item_id);
-			}
-		});
 	});
 
 </script>

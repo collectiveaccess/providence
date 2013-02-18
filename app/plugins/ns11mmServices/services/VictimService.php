@@ -124,6 +124,14 @@ class VictimService extends NS11mmService {
 			'last_modification' => $t_entity->get('ca_entities.lastModified', array("dateFormat" => 'iso8601'))
 		);
 		
+		$va_nonpreferred_labels = $t_entity->get('ca_entities.nonpreferred_labels', array('returnAsArray' => true));
+	
+		foreach($va_nonpreferred_labels as $vn_entity_id => $va_labels) {
+			foreach($va_labels as $vn_i => $va_label) {
+				unset($va_labels[$vn_i]['form_element']);
+			}
+			$va_data['alternate_names'] = $va_labels;
+		}
 		// add place info
 		$va_places = $t_entity->getRelatedItems('ca_places');
 		$t_place = new ca_places();
@@ -240,7 +248,7 @@ class VictimService extends NS11mmService {
 					
 					// reset filesize property to reflect size of version, not size of original
 					foreach($va_reps[$vn_i]['paths'] as $vs_version => $vs_path) {
-						$va_reps[$vn_i]['info'][$vs_version]['PROPERTIES']['filesize'] = filesize($va_reps[$vn_i]['paths'][$vs_version]);
+						$va_reps[$vn_i]['info'][$vs_version]['PROPERTIES']['filesize'] = @filesize($va_reps[$vn_i]['paths'][$vs_version]);
 					}
 					
 					unset($va_reps[$vn_i]['paths']);
@@ -431,7 +439,7 @@ class VictimService extends NS11mmService {
 			}
 			
 			header("Content-type: audio/mpeg");
-			header("Content-length: ".filesize($vs_file));
+			header("Content-length: ".@filesize($vs_file));
 			readfile($vs_file);
 			return;
 		}
