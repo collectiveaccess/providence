@@ -420,7 +420,7 @@
 			$vb_web_set_change_log_unit_id = BaseModel::setChangeLogUnitID();
 			
 			if (!is_array($pa_options)) { $pa_options = array(); }
-			$pa_options['dont_do_search_indexing'] = true;
+			//$pa_options['dont_do_search_indexing'] = true;
 			
 			$va_field_values = $this->getFieldValuesArray();		// get pre-insert field values (including attribute values)
 			
@@ -481,7 +481,7 @@
 			$vb_web_set_change_log_unit_id = BaseModel::setChangeLogUnitID();
 			
 			if (!is_array($pa_options)) { $pa_options = array(); }
-			$pa_options['dont_do_search_indexing'] = true;
+			//$pa_options['dont_do_search_indexing'] = true;
 			
 			$va_field_values = $this->getFieldValuesArray();		// get pre-update field values (including attribute values)
 			// change status for attributes is only available **before** update

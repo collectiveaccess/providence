@@ -37,6 +37,7 @@
 
 	$vs_sort			=	((isset($va_settings['sort']) && $va_settings['sort'])) ? $va_settings['sort'] : '';
 	$vb_read_only		=	((isset($va_settings['readonly']) && $va_settings['readonly'])  || ($this->request->user->getBundleAccessLevel($t_instance->tableName(), 'ca_movements') == __CA_BUNDLE_ACCESS_READONLY__));
+	$vb_dont_show_del	=	((isset($va_settings['dontShowDeleteButton']) && $va_settings['dontShowDeleteButton'])) ? true : false;
 	
 	// params to pass during occurrence lookup
 	$va_lookup_params = (isset($va_settings['restrict_to_type']) && $va_settings['restrict_to_type']) ? array('type' => $va_settings['restrict_to_type'], 'noSubtypes' => (int)$va_settings['dont_include_subtypes_in_type_restriction']) : array();	
@@ -58,7 +59,7 @@
 ?>
 		<div id="<?php print $vs_id_prefix; ?>Item_{n}" class="labelInfo listRel">
 <?php
-	if (!$vb_read_only) {
+	if (!$vb_read_only && !$vb_dont_show_del) {
 ?>				
 			<a href="#" class="caDeleteItemButton listRelDeleteButton"><?php print caNavIcon($this->request, __CA_NAV_BUTTON_DEL_BUNDLE__); ?></a>
 <?php
@@ -81,7 +82,7 @@
 			<input type="hidden" name="<?php print $vs_id_prefix; ?>_type_id{n}" id="<?php print $vs_id_prefix; ?>_type_id{n}" value="{type_id}"/>
 			<input type="hidden" name="<?php print $vs_id_prefix; ?>_id{n}" id="<?php print $vs_id_prefix; ?>_id{n}" value="{id}"/>
 <?php
-	if (!$vb_read_only) {
+	if (!$vb_read_only && !$vb_dont_show_del) {
 ?>				
 			<a href="#" class="caDeleteItemButton"><?php print caNavIcon($this->request, __CA_NAV_BUTTON_DEL_BUNDLE__); ?></a>
 <?php

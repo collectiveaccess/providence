@@ -8,7 +8,7 @@
 /* -------------------------------------------------------------------------------- */
 
 /*==========================================================================*/
-create table ca_data_importer_log
+create table if not exists ca_data_importer_log
 (
    log_id                         int unsigned                   not null AUTO_INCREMENT,
    importer_id                    int unsigned                   not null,
@@ -31,7 +31,7 @@ create table ca_data_importer_log
 
 
 /*==========================================================================*/
-create table ca_data_importer_log_items
+create table if not exists ca_data_importer_log_items
 (
    log_item_id                   int unsigned                   not null AUTO_INCREMENT,
    log_id                        int unsigned                   not null,

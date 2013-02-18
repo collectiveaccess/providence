@@ -76,23 +76,17 @@ define("__CA_SMTP_PORT__", 25);
 #define("__CA_SMTP_PASSWORD__", 'my_smtp_password');
 
 
-# *** 
-# __   __          _                _                  
-# \ \ / /__  _   _( )_ __ ___    __| | ___  _ __   ___ 
-#  \ V / _ \| | | |/| '__/ _ \  / _` |/ _ \| '_ \ / _ \
-#   | | (_) | |_| | | | |  __/ | (_| | (_) | | | |  __/
-#   |_|\___/ \__,_| |_|  \___|  \__,_|\___/|_| |_|\___|
-#                                                     
-# That's it! The settings here should be enough to get you up and running...
-# If they're not you can find help at http://www.collectiveaccess.org/forum
 #
-# ***
+# You can set your time zone here. The default is to use US Eastern Standard Time. 
+# You can, and should, set an explicit time zone if you are not in the Eastern United States.
+# A list of valid time zone settings is available at http://us3.php.net/manual/en/timezones.php
+#
+date_default_timezone_set('America/New_York');
+
 
 # --------------------------------------------------------------------------------------------
-# IF THE INSTALLER FAILS TO FIND THE SYSTEM CONFIGURATION OR SOME OF THE LESS COMMON 
-# OPTIONS NEED CHANGING THEN YOU MAY NEED TO CHANGE ONE OR MORE SETTINGS UNDER THIS LINE
-#
-# Most of the time you won't need to change anything below
+# The following are extra options that you might want to set. If you're not sure
+# what they should be set to you can safely leave them as-is.
 # --------------------------------------------------------------------------------------------
 
 #
@@ -133,6 +127,26 @@ define("__CA_DEFAULT_LOCALE__", "en_US");
 define("__CA_APP_NAME__", "collectiveaccess");
 
 
+
+# *** 
+# __   __          _                _                  
+# \ \ / /__  _   _( )_ __ ___    __| | ___  _ __   ___ 
+#  \ V / _ \| | | |/| '__/ _ \  / _` |/ _ \| '_ \ / _ \
+#   | | (_) | |_| | | | |  __/ | (_| | (_) | | | |  __/
+#   |_|\___/ \__,_| |_|  \___|  \__,_|\___/|_| |_|\___|
+#                                                     
+# That's it! The settings here should be enough to get you up and running...
+# If they're not you can find help at http://www.collectiveaccess.org/forum
+#
+# ***
+
+# --------------------------------------------------------------------------------------------
+# IF THE INSTALLER FAILS TO FIND THE SYSTEM CONFIGURATION OR SOME OF THE LESS COMMON 
+# OPTIONS NEED CHANGING THEN YOU MAY NEED TO CHANGE ONE OR MORE SETTINGS UNDER THIS LINE
+#
+# Most of the time you won't need to change anything below
+# --------------------------------------------------------------------------------------------
+
 #
 # __CA_BASE_DIR__ = the absolute server path to the directory containing your CollectiveAccess installation
 #
@@ -171,15 +185,6 @@ define("__CA_URL_ROOT__", str_replace($_SERVER['DOCUMENT_ROOT'], '', __CA_BASE_D
 #
 define("__CA_SITE_HOSTNAME__", $_SERVER['HTTP_HOST']);
 
-
-#
-# You can set your time zone here. The default is to use US Eastern Standard Time. 
-# You can, and should, set an explicit time zone if you are not in the Eastern United States.
-# A list of valid time zone settings is available at http://us3.php.net/manual/en/timezones.php
-#
-date_default_timezone_set('America/New_York');
-
-
 #
 # If you use PayPal for e-commerce payments then you can set your account information 
 # below by uncommenting the __CA_PAYPAL* lines and assigning them appropriate values
@@ -215,8 +220,7 @@ define("__CA_CONF_DIR__", __CA_APP_DIR__."/conf");
 define("__CA_LOCAL_CONFIG_DIRECTORY__", __CA_CONF_DIR__."/local");
 
 # Set path to instance configuration file
-# (If you want to run several CA distinct instances using a single install
-#  you can add additional configuration files here. See http://trac.collectiveaccess.org/wiki/MultipleInstances)
+# (If you want to run several CA distinct instances using a single install you can add additional configuration files here.)
 $_CA_INSTANCE_CONFIG_FILES = array(
 	'_default_'	=> __CA_CONF_DIR__.'/app.conf'	// the _default_ value must always be defined
 );

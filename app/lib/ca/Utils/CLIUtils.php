@@ -553,11 +553,11 @@
 				return false;
 			}
 			
-			if (!ca_data_importers::loadImporterFromFile($vs_file_path)) {
+			if (!($t_importer = ca_data_importers::loadImporterFromFile($vs_file_path))) {
 				print _t("Could not import '%1'", $vs_file_path)."\n";
 				return false;
 			} else {
-				print _t("Created mapping from '%1'", $vs_file_path)."\n";
+				print _t("Created mapping %1 from %2", CLIUtils::textWithColor($t_importer->get('importer_code'), 'yellow'), $vs_file_path)."\n";
 				return true;
 			}
 		}

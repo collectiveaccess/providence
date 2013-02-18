@@ -2083,7 +2083,21 @@ class BundlableLabelableBaseModelWithAttributes extends LabelableBaseModelWithAt
 			$va_opts = array('relatedItems' => $va_items, 'stripTags' => true);
 			if(strlen(trim($pa_bundle_settings['display_template']))) {
 				$va_opts['template'] = trim($pa_bundle_settings['display_template']);
+			} 
+			
+			// If no display_template set try to get a default out of the app.conf file
+			if (!$va_opts['template']) {
+				if (is_array($va_lookup_settings = $this->getAppConfig()->getList("{$ps_related_table}_lookup_settings"))) {
+					$vs_lookup_delimiter = $this->getAppConfig()->getList("{$ps_related_table}_lookup_delimiter");
+					$va_opts['template'] = join($vs_lookup_delimiter, $va_lookup_settings);
+				}
 			}
+			
+			// If no app.conf default then just show preferred_labels
+			if (!$va_opts['template']) {
+				$va_opts['template'] = "^preferred_labels";
+			}
+			
 			$va_initial_values = caProcessRelationshipLookupLabel($qr_rel_items, $t_rel, $va_opts);
 			
 		}
@@ -3450,7 +3464,7 @@ if (!$vb_batch) {
  	 *		start = item to start return set at; first item is numbered zero; default is 0
  	 *		limit = number of items to limit return set to; default is 1000
  	 *		sort = optional array of bundles to sort returned values on. Currently only supported when getting related values via simple related <table_name> and <table_name>.related invokations. Eg. from a ca_objects results you can use the 'sort' option got get('ca_entities'), get('ca_entities.related') or get('ca_objects.related'). The bundle specifiers are fields with or without tablename. Only those fields returned for the related tables (intrinsics, label fields and attributes) are sortable.
- 	 *		sortDirection = 
+ 	 *		sortDirection = direction of sort. Valid values as "ASC" (ascending) and "DESC" (descending). Default is ASC.
  	 *		showDeleted = if set to true, related items that have been deleted are returned. Default is false.
 	 *		where = optional array of fields and field values to filter returned values on. The fields must be intrinsic and in the same table as the field being "get()'ed" Can be used to filter returned values from primary and related tables. This option can be useful when you want to fetch certain values from a related table. For example, you want to get the relationship source_info values, but only for relationships going to a specific related record. Note that multiple fields/values are effectively AND'ed together - all must match for a row to be returned - and that only equivalence is supported (eg. field equals value).
  	 *		user_id = If set item level access control is performed relative to specified user_id, otherwise defaults to logged in user

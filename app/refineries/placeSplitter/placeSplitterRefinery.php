@@ -142,6 +142,15 @@
 			
 			return $va_vals;
 		}
+		# -------------------------------------------------------	
+		/**
+		 * placeSplitter returns multiple values
+		 *
+		 * @return bool Always true
+		 */
+		public function returnsMultipleValues() {
+			return true;
+		}
 		# -------------------------------------------------------
 	}
 	

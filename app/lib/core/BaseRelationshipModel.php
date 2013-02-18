@@ -314,7 +314,7 @@
 				}
 			}
 			
-			$qr_res = $o_db->query($x="
+			$qr_res = $o_db->query("
 				SELECT *
 				FROM ca_relationship_types crt
 				INNER JOIN ca_relationship_type_labels AS crtl ON crt.type_id = crtl.type_id
@@ -526,8 +526,8 @@
 		# ------------------------------------------------------
 		private function _processRelationshipHierarchy($pn_id, $pa_hier, $pa_types, $pn_level) {
 			$va_types_to_return = array();
-			if(!is_array($pa_hier[$pn_id])) { return null; }
-			if (!is_Array($pa_types[$pn_id])) { print_R($pa_types); print "id was $pn_id<br>";  die;}
+			if(!is_array($pa_hier[$pn_id])) { return array(); }
+			if (!is_array($pa_types[$pn_id])) { return array();}
 			foreach($pa_types[$pn_id] as $vs_sub_types => $va_list) {	// items in this level
 				ksort($va_list);
 				foreach($va_list as $vs_key => $va_list_by_type_id) {

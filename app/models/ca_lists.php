@@ -1271,7 +1271,7 @@ class ca_lists extends BundlableLabelableBaseModelWithAttributes {
 				);
 				
 				if ($pa_options['po_request']) {
-					$vs_url = caNavUrl($pa_options['po_request'], 'lookup', 'ListItem', 'Get', array('list' => ca_lists::getListCode($vn_list_id), 'noSymbols' => 1, 'max' => 100));
+					$vs_url = caNavUrl($pa_options['po_request'], 'lookup', 'ListItem', 'Get', array('list' => ca_lists::getListCode($vn_list_id), 'noInline' => 1, 'noSymbols' => 1, 'max' => 100));
 				} else {
 					// hardcoded default for testing.
 					$vs_url = '/index.php/lookup/ListItem/Get';	
@@ -1281,17 +1281,23 @@ class ca_lists extends BundlableLabelableBaseModelWithAttributes {
 				$vs_buf .= "
 					<script type='text/javascript'>
 						jQuery(document).ready(function() {
-							jQuery('#".$ps_name."_autocomplete').autocomplete({
-									source: '{$vs_url}', minLength: 3, delay: 800,
+							jQuery('#{$ps_name}_autocomplete').autocomplete({
+									source: '{$vs_url}', minLength: 3, delay: 800, html: true,
 									select: function(event, ui) {
-										jQuery('#{$ps_name}').val(ui.item.id);
+										
+										if (parseInt(ui.item.id) > 0) {
+											jQuery('#{$ps_name}').val(ui.item.id);
+										} else {
+											jQuery('#{$ps_name}_autocomplete').val('');
+											jQuery('#{$ps_name}').val('');
+											event.preventDefault();
+										}
 									}
 								}
 							);
 						});
 					</script>
 				";
-				
 				return $vs_buf;
 				break;
 			case 'horiz_hierbrowser':
