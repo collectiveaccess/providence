@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2011 Whirl-i-Gig
+ * Copyright 2011-2013 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -25,7 +25,5 @@
  *
  * ----------------------------------------------------------------------
  */
-	foreach($this->getVar('attribute_value_list') as $vn_id => $vs_value) {
-		print $vs_value."\n";
-	}
+ 	print json_encode($this->getVar('attribute_value_list'));
 ?>

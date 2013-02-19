@@ -1,78 +1,43 @@
-/*
-	Date: 22 October 2012
+/* 
+	Date: 26 December 2012
 	Migration: 73
-	Description: Data structures for export
+	Description:
 */
 
-create table ca_data_exporters (
-	exporter_id				int unsigned			not null AUTO_INCREMENT,
-	exporter_code			varchar(100)			not null,
-	table_num				tinyint unsigned		not null,
-	settings				longtext				not null,
-	primary key (exporter_id)
-) engine=innodb CHARACTER SET utf8 COLLATE utf8_general_ci;
-
-create unique index u_exporter_code on ca_data_exporters(exporter_code);
-create index i_table_num on ca_data_exporters(table_num);
-
-create table ca_data_exporter_labels (
-	label_id				int unsigned			not null AUTO_INCREMENT,
-	exporter_id				int unsigned			not null,
-	locale_id				smallint unsigned		not null,
-	name					varchar(255) 			not null,
-	name_sort				varchar(255)			not null,
-	description				text 					not null,
-	source_info				longtext 				not null,
-	is_preferred			tinyint unsigned 		not null,
-
-	primary key (label_id),
-
-	constraint fk_ca_data_exporter_labels_exporter_id foreign key (exporter_id)
-		references ca_data_exporters (exporter_id) on delete restrict on update restrict,
-
-	constraint fk_ca_data_exporter_labels_locale_id foreign key (locale_id)
-		references ca_locales (locale_id) on delete restrict on update restrict
-) engine=innodb CHARACTER SET utf8 COLLATE utf8_general_ci;
-
-create index i_exporter_id on ca_data_exporter_labels(exporter_id);
-create index i_locale_id on ca_data_exporter_labels(locale_id);
-create index i_name_sort on ca_data_exporter_labels(name_sort);
-create unique index u_all on ca_data_exporter_labels
+/* --------------------------- Batch edit log --------------------------- */
+create table ca_batch_log
 (
-	exporter_id,
-	locale_id,
-	name,
-	is_preferred
-);
+   batch_id                       int unsigned              not null AUTO_INCREMENT,
+   user_id                        int unsigned              not null,
+   log_datetime                   int unsigned              not null,
+   notes                          text                      not null,
+   batch_type                     char(2)                   not null,
+   table_num                      tinyint unsigned          not null,
+   
+   primary key (batch_id), 
+   KEY i_log_datetime (log_datetime),
+   KEY i_user_id (user_id),
+   constraint fk_ca_batch_log_user_id foreign key (user_id)
+      references ca_users (user_id) on delete restrict on update restrict
+) engine=innodb CHARACTER SET utf8 COLLATE utf8_general_ci;
 
-create table ca_data_exporter_items (
-	item_id 				int unsigned			not null AUTO_INCREMENT,
-	parent_id 				int unsigned			not null,
-	exporter_id 			int unsigned			not null,
-	element					varchar(1024)			not null,
-	source 					varchar(1024)			not null,
-	settings				longtext				not null,
-	hier_item_id			int unsigned			not null,
-	hier_left				decimal(30,20) unsigned	not null,
-	hier_right				decimal(30,20) unsigned	not null,
-	vars					longtext				not null,
-
-	primary key (item_id),
-
-	constraint fk_ca_data_exporter_items_exporter_id foreign key (exporter_id)
-		references ca_data_exporters (exporter_id) on delete restrict on update restrict,
-	constraint fk_ca_data_exporter_items_parent_id foreign key (parent_id)
-		references ca_data_exporter_items (item_id) on delete restrict on update restrict
-
-)  engine=innodb CHARACTER SET utf8 COLLATE utf8_general_ci;
-
-create index i_parent_id on ca_data_exporter_items(parent_id);
-create index i_exporter_id on ca_data_exporter_items(exporter_id);
-create index i_hier_left on ca_data_exporter_items(hier_left);
-create index i_hier_right on ca_data_exporter_items(hier_right);
-create index i_hier_item_id on ca_data_exporter_items(hier_item_id);
+create table ca_batch_log_items 
+(
+	batch_id                       int unsigned                   not null,
+	log_id                         bigint                         not null,
+	row_id                         int unsigned                   not null,
+	
+	primary key (batch_id, log_id, row_id), 
+   	KEY i_log_id (log_id),
+    KEY i_row_id (row_id),
+    constraint fk_ca_batch_log_items_batch_id foreign key (batch_id)
+      references ca_batch_log (batch_id) on delete restrict on update restrict,
+    constraint fk_ca_change_log_log_id foreign key (log_id)
+      references ca_change_log (log_id) on delete restrict on update restrict
+) engine=innodb CHARACTER SET utf8 COLLATE utf8_general_ci;
 
 /* -------------------------------------------------------------------------------- */
 
 /* Always add the update to ca_schema_updates at the end of the file */
 INSERT IGNORE INTO ca_schema_updates (version_num, datetime) VALUES (73, unix_timestamp());
+

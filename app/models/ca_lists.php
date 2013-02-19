@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2008-2012 Whirl-i-Gig
+ * Copyright 2008-2013 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -1011,7 +1011,7 @@ class ca_lists extends BundlableLabelableBaseModelWithAttributes {
 	 * Converts list specifier (code or list_id) into a list_id
 	 *
 	 * @param mixed $pm_list_name_or_id List code or list_id
-	 * @return int listva_list_items for the specified list, or null if the list does not exist
+	 * @return int list for the specified list, or null if the list does not exist
 	 */
 	static function getListCode($pm_list_name_or_id) {
 		if (ca_lists::$s_list_code_cache[$pm_list_name_or_id]) {
@@ -1271,7 +1271,7 @@ class ca_lists extends BundlableLabelableBaseModelWithAttributes {
 				);
 				
 				if ($pa_options['po_request']) {
-					$vs_url = caNavUrl($pa_options['po_request'], 'lookup', 'ListItem', 'Get');
+					$vs_url = caNavUrl($pa_options['po_request'], 'lookup', 'ListItem', 'Get', array('list' => ca_lists::getListCode($vn_list_id), 'noInline' => 1, 'noSymbols' => 1, 'max' => 100));
 				} else {
 					// hardcoded default for testing.
 					$vs_url = '/index.php/lookup/ListItem/Get';	
@@ -1281,15 +1281,23 @@ class ca_lists extends BundlableLabelableBaseModelWithAttributes {
 				$vs_buf .= "
 					<script type='text/javascript'>
 						jQuery(document).ready(function() {
-							jQuery('#".$ps_name."_autocomplete').autocomplete('".$vs_url."', {minChars: 3, matchSubset: 1, matchContains: 1, delay: 800, max: 100, extraParams: {list: '".ca_lists::getListCode($vn_list_id)."', noSymbols: 1}});
-							jQuery('#".$ps_name."_autocomplete').result(function(event, data, formatted) {
-									jQuery('#".$ps_name."').val(data[1]);
+							jQuery('#{$ps_name}_autocomplete').autocomplete({
+									source: '{$vs_url}', minLength: 3, delay: 800, html: true,
+									select: function(event, ui) {
+										
+										if (parseInt(ui.item.id) > 0) {
+											jQuery('#{$ps_name}').val(ui.item.id);
+										} else {
+											jQuery('#{$ps_name}_autocomplete').val('');
+											jQuery('#{$ps_name}').val('');
+											event.preventDefault();
+										}
+									}
 								}
 							);
 						});
 					</script>
 				";
-				
 				return $vs_buf;
 				break;
 			case 'horiz_hierbrowser':
@@ -1339,12 +1347,14 @@ class ca_lists extends BundlableLabelableBaseModelWithAttributes {
 			
 		if ($vs_render_as == 'horiz_hierbrowser_with_search') {
 			$vs_buf .= "jQuery('#{$ps_name}_hierarchyBrowserSearch{n}').autocomplete(
-					'".caNavUrl($pa_options['po_request'], 'lookup', 'ListItem', 'Get')."', {minChars: 3, matchSubset: 1, matchContains: 1, delay: 800, extraParams: {list: '".ca_lists::getListCode($vn_list_id)."', noSymbols: 1}}
-				);
-				
-				jQuery('#{$ps_name}_hierarchyBrowserSearch{n}').result(function(event, data, formatted) {
-					oHierBrowser.setUpHierarchy(data[1]);	// jump browser to selected item
-				});";
+					{
+						source: '".caNavUrl($pa_options['po_request'], 'lookup', 'ListItem', 'Get', array('list' => ca_lists::getListCode($vn_list_id), 'noSymbols' => 1))."', 
+						minLength: 3, delay: 800,
+						select: function(event, ui) {
+							oHierBrowser.setUpHierarchy(ui.item.id);	// jump browser to selected item
+						}
+					}
+				);";
 		}
 		$vs_buf .= "});
 	</script>";

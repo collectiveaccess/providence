@@ -46,6 +46,7 @@
 	
 	$va_settings 				= 	$this->getVar('settings');
 	$vb_read_only				=	((isset($va_settings['readonly']) && $va_settings['readonly'])  || ($this->request->user->getBundleAccessLevel($this->getVar('t_instance')->tableName(), $this->getVar('element_code')) == __CA_BUNDLE_ACCESS_READONLY__));
+	$vb_batch					=	$this->getVar('batch');
 	
 	// generate list of inital form values; the bundle Javascript call will
 	// use the template to generate the initial form
@@ -110,10 +111,11 @@
 		$vs_add_label = _t("Add %1", mb_strtolower($vs_element_set_label, 'UTF-8'));
 	}
 	
-	//print "Min/max: ".$this->getVar('min_num_repeats')."/".$this->getVar('max_num_repeats');
-	//print "start: " .$this->getVar('min_num_to_display');
+	if ($vb_batch) {
+		print caBatchEditorAttributeModeControl($vs_id_prefix);
+	}
 ?>
-<div id="<?php print $vs_id_prefix; ?>">
+<div id="<?php print $vs_id_prefix; ?>" <?php print $vb_batch ? "class='editorBatchBundleContent'" : ''; ?>>
 <?php
 	//
 	// The bundle template - used to generate each bundle in the form

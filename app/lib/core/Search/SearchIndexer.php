@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2008-2011 Whirl-i-Gig
+ * Copyright 2008-2013 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -89,7 +89,7 @@ class SearchIndexer extends SearchBase {
 		$va_tables_to_index = $va_tables_by_size = array();
 		foreach($va_table_names as $vs_table) {
 			$vn_table_num = $this->opo_datamodel->getTableNum($vs_table);
-
+			$t_instance = $this->opo_datamodel->getInstanceByTableName($vs_table, true);
 			$va_fields_to_index = $this->getFieldsToIndex($vn_table_num);
 			if (!is_array($va_fields_to_index) || (sizeof($va_fields_to_index) == 0)) {
 				continue;
@@ -99,7 +99,7 @@ class SearchIndexer extends SearchBase {
 			$qr_all->nextRow();
 			$vn_num_rows = (int)$qr_all->get('c');
 
-			$va_tables_to_index[$vs_table] = array('name' => $vs_table, 'num' => $vn_table_num, 'count' => $vn_num_rows);
+			$va_tables_to_index[$vs_table] = array('name' => $vs_table, 'num' => $vn_table_num, 'count' => $vn_num_rows, 'displayName' => $t_instance->getProperty('NAME_PLURAL'));
 			$va_tables_by_size[$vs_table] = $vn_num_rows;
 		}
 		
@@ -141,7 +141,8 @@ class SearchIndexer extends SearchBase {
 			foreach($pa_table_names as $vs_table) {
 				if ($this->opo_datamodel->tableExists($vs_table)) {
 					$vn_num = $this->opo_datamodel->getTableNum($vs_table);
-					$va_table_names[$vn_num] = array('name' => $vs_table, 'num' => $vn_num);
+					$t_instance = $this->opo_datamodel->getInstanceByTableName($vs_table, true);
+					$va_table_names[$vn_num] = array('name' => $vs_table, 'num' => $vn_num, 'displayName' => $t_instance->getProperty('NAME_PLURAL'));
 				}
 			}
 			if (!sizeof($va_table_names)) { return false; }
@@ -160,10 +161,10 @@ class SearchIndexer extends SearchBase {
 		if ($pb_display_progress || $ps_callback) {
 			$va_names = array();
 			foreach($va_table_names as $vn_table_num => $va_table_info) {
-				$va_names[] = $va_table_info['name'];
+				$va_names[] = $va_table_info['displayName'];
 			}
 			if ($pb_display_progress) {
-				print "\nINDEXING TABLES [".join(", ", $va_names)."]\n";
+				print "\nWILL INDEX [".join(", ", $va_names)."]\n\n";
 				$vn_last_message_length = 0;
 			}
 		}
@@ -186,61 +187,45 @@ class SearchIndexer extends SearchBase {
 
 			$vn_num_rows = $qr_all->numRows();
 			if ($pb_display_progress) {
-				print "\n".str_repeat(" ", 4)."PROCESSING TABLE $vs_table... [$vn_num_rows rows]\n";
-				$vn_last_message_length = 0;
+				print CLIProgressBar::start($vn_num_rows, _t('Indexing %1', $t_instance->getProperty('NAME_PLURAL')));
 			}
 
 			$vn_c = 0;
 			while($qr_all->nextRow()) {
 				$t_instance->load($qr_all->get($t_instance->primaryKey()));
 				$t_instance->doSearchIndexing(array(), true, $this->opo_engine->engineName());
-				if (($vn_c % 10) == 0) {
-					if ($pb_display_progress && $pb_interactive_display) {
-						print str_repeat(chr(8), $vn_last_message_length);
-						$vs_message = str_repeat(" ", 8)."{$vs_table}: indexed $vn_c rows (".sprintf("%2.2f", ($vn_c/$vn_num_rows) * 100)."%) [Memory used: ".sprintf("%4.2f mb", (memory_get_usage(true)/ 1048576)).']; [Elapsed time: '.caFormatInterval((float)$t_timer->getTime(2)).']';
-						print $vs_message;
-						$vn_last_message_length = strlen($vs_message);
-					}
-					
-					if (($ps_callback) && (!($vn_c % 100))) { 
-						$ps_callback(
-							$vn_c,
-							$vn_num_rows,
-							null, 
-							null,
-							(float)$t_timer->getTime(2),
-							memory_get_usage(true),
-							$va_table_names,
-							$vn_table_num,
-							$t_instance->getProperty('NAME_PLURAL'),
-							$vn_tc+1
-						); 
-					}
+				if ($pb_display_progress && $pb_interactive_display) {
+					print CLIProgressBar::next();
+				}
+				
+				if (($ps_callback) && (!($vn_c % 100))) { 
+					$ps_callback(
+						$vn_c,
+						$vn_num_rows,
+						null, 
+						null,
+						(float)$t_timer->getTime(2),
+						memory_get_usage(true),
+						$va_table_names,
+						$vn_table_num,
+						$t_instance->getProperty('NAME_PLURAL'),
+						$vn_tc+1
+					); 
 				}
 				$vn_c++;
 			}
 			$qr_all->free();
 			unset($t_instance);
 			if ($pb_display_progress && $pb_interactive_display) {
-				print str_repeat(chr(8), $vn_last_message_length);
-				if ($vn_num_rows == 0) { $vn_num_rows = 1; } // avoid div by zero
-				$vs_message = str_repeat(" ", 8)."$vs_table: indexed $vn_c rows (".sprintf("%2.2f", ($vn_c/$vn_num_rows) * 100)."%)";
-				
-				print $vs_message;
-				$vn_last_message_length = strlen($vs_message);
-
+				print CLIProgressBar::finish();
 			}
 			$this->opo_engine->optimizeIndex($vn_table_num);
 			
-			if ($pb_display_progress) {
-				print "\n".str_repeat(" ", 4)."Done! [Indexing for ".$vs_table." took ".caFormatInterval((float)$t_table_timer->getTime(4))."]\n";
-
-			}
 			$vn_tc++;
 		}
 		
 		if ($pb_display_progress) {
-			print "\n\nDone! [Indexing for ".join(", ", $va_names)." took ".caFormatInterval((float)$t_timer->getTime(4))."]\n";
+			print "\n\n\nDone! [Indexing for ".join(", ", $va_names)." took ".caFormatInterval((float)$t_timer->getTime(4))."]\n";
 		}
 		if ($ps_callback) { 
 			$ps_callback(
@@ -560,7 +545,7 @@ class SearchIndexer extends SearchBase {
 		// then we need to do this every time we update the indexing for a row; if the engine *does* support incremental indexing then
 		// we can just update the existing indexing with content from the changed fields.
 		//
-		// We also do this indexing if we're in "reindexing" mode. In when reindexing is indicated it means that we need to act as if
+		// We also do this indexing if we're in "reindexing" mode. When reindexing is indicated it means that we need to act as if
 		// we're indexing this row for the first time, and all indexing should be performed.
 if (!$this->opo_engine->can('incremental_reindexing') || $pb_reindex_mode) {
 		if (is_array($va_related_tables = $this->getRelatedIndexingTables($pn_subject_tablenum))) {

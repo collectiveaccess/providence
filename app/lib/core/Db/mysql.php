@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2006-2011 Whirl-i-Gig
+ * Copyright 2006-2013 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -101,8 +101,10 @@ class Db_mysql extends DbDriverBase {
 	 */
 	function connect($po_caller, $pa_options) {
 		global $g_connect;
+		if (!is_array($g_connect)) { $g_connect = array(); }
+		$vs_db_connection_key = $pa_options["host"].'/'.$pa_options["database"];
 		
-		if (is_resource($g_connect)) { $this->opr_db = $g_connect; return true;}
+		if (isset($g_connect[$vs_db_connection_key]) && is_resource($g_connect[$vs_db_connection_key])) { $this->opr_db = $g_connect[$vs_db_connection_key]; return true;}
 		
 		if (!function_exists("mysql_connect")) {
 			die(_t("Your PHP installation lacks MySQL support. Please add it and retry..."));
@@ -110,9 +112,9 @@ class Db_mysql extends DbDriverBase {
 		}
 		
 		if (isset($pa_options["persistent_connections"]) && $pa_options["persistent_connections"]) {
-			$this->opr_db = mysql_pconnect($pa_options["host"], $pa_options["username"], $pa_options["password"]);
+			$this->opr_db = @mysql_pconnect($pa_options["host"], $pa_options["username"], $pa_options["password"]);
 		} else {
-			$this->opr_db = mysql_connect($pa_options["host"], $pa_options["username"], $pa_options["password"], true);
+			$this->opr_db = @mysql_connect($pa_options["host"], $pa_options["username"], $pa_options["password"], true);
 		}
 		if (!$this->opr_db) {
 			$po_caller->postError(200, mysql_error(), "Db->mysql->connect()");
@@ -126,7 +128,7 @@ class Db_mysql extends DbDriverBase {
 		mysql_query('SET NAMES \'utf8\'', $this->opr_db);
 		mysql_query('SET character_set_results = NULL', $this->opr_db);	
 		
-		$g_connect = $this->opr_db;
+		$g_connect[$vs_db_connection_key] = $this->opr_db;
 		return true;
 	}
 
@@ -285,10 +287,10 @@ class Db_mysql extends DbDriverBase {
 			$t = new Timer();
 		}
 		if (!($r_res = mysql_query($vs_sql, $this->opr_db))) {
-			print "<pre>".caPrintStacktrace()."</pre>\n";
-			print $vs_sql;
-			print mysql_error($this->opr_db);
-			$opo_statement->postError($this->nativeToDbError(mysql_errno($this->opr_db)), mysql_error($this->opr_db), "Db->mysql->execute()");
+			//print "<pre>".caPrintStacktrace()."</pre>\n";
+			//print $vs_sql;
+			//print mysql_error($this->opr_db);
+			$opo_statement->postError($this->nativeToDbError(mysql_errno($this->opr_db)), mysql_error($this->opr_db)."\n<pre>".caPrintStacktrace()."</pre>", "Db->mysql->execute()");
 			return false;
 		}
 		if (Db::$monitor) {
@@ -656,6 +658,31 @@ class Db_mysql extends DbDriverBase {
 		}
 	}
 
+	/**
+	 * Returns list of engines present in the MySQL installation. The list in an array with
+	 * keys set to engine names and values set to an array of information returned from MySQL
+	 * about each engine. Note that while the MySQL SHOW ENGINES query return information
+	 * about unsupported and disabled engines, getEngines() only returns information
+	 * about engines that are available.
+     *
+	 * @param mixed $po_caller object representation of the calling class, usually Db
+	 * @return array engine list, false on error.
+	 */
+	function getEngines($po_caller) {
+		if ($r_show = mysql_query("SHOW ENGINES", $this->opr_db)) {
+			$va_engines = array();
+			while($va_row = mysql_fetch_assoc($r_show)) {
+				if (!in_array($va_row['Support'], array('YES', 'DEFAULT'))) { continue; }
+				$va_engines[$va_row['Engine']] = $va_row;
+			}
+
+			return $va_engines;
+		} else {
+			$po_caller->postError(280, mysql_error($this->opr_db), "Db->mysql->getEngines()");
+			return false;
+		}
+	}
+	
 	/**
 	 * Converts native datatypes to db datatypes
 	 *

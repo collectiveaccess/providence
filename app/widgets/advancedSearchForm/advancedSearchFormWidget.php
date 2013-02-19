@@ -95,7 +95,8 @@
 			
 			if (!($vn_form_id = (int)$pa_settings["form_code"])) {
 				$va_forms = caExtractValuesByUserLocale($t_form->getForms(array('table' => 'ca_objects', 'user_id' => $this->request->getUserID(), 'access' => __CA_SEARCH_FORM_READ_ACCESS__)));
-				$vn_form_id = array_shift(array_keys($va_forms));
+				$va_tmp = array_keys($va_forms);
+				$vn_form_id = array_shift($va_tmp);
 			}
 			
 			$t_form->load($vn_form_id);

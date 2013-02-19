@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2010 Whirl-i-Gig
+ * Copyright 2010-2013 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -38,9 +38,7 @@
  		# AJAX handlers
  		# -------------------------------------------------------
 		public function Get($pa_additional_query_params=null, $pa_options=null) {
-			//$tt = new Timer();
-			$ps_query = $this->request->getParameter('q', pString);
-			//file_put_contents("/tmp/times", "### QUERY: {$ps_query}\n", FILE_APPEND);
+			$ps_query = trim($this->request->getParameter('term', pString));
 			$va_items = array();
 			if (unicode_strlen($ps_query) >= 3) {
 				try {
@@ -108,79 +106,90 @@
 						$vo_doc = new DOMDocument();
 						//$t = new Timer();
 						$vs_result = @file_get_contents("http://www.ubio.org/webservices/service.php?function=namebank_search&searchName={$ps_query}&sci=1&vern=1&keyCode={$vs_ubio_keycode}",0,$vo_ctx);
-						//file_put_contents("/tmp/times", "uBIO: {$t->getTime(2)}\n", FILE_APPEND);
+					
 						if(strlen($vs_result)>0){
 							$vo_doc->loadXML($vs_result);
 							$vo_resultlist = $vo_doc->getElementsByTagName("value");
 							$i = 0;
-							foreach($vo_resultlist as $vo_result){
-								$vs_name = $vs_id = $vs_package = $vs_cn = "";
-								if($vo_result->parentNode->nodeName == "scientificNames"){
-									foreach($vo_result->childNodes as $vo_field){
-										switch($vo_field->nodeName){
-											case "nameString":
-												$vs_name = base64_decode($vo_field->textContent);
-												break;
-											case "namebankID":
-												$vs_id = $vo_field->textContent;
-												break;
-											case "packageName":
-												$vs_package = $vo_field->textContent;
-												break;
-											default:
-												break;
+							if ($vo_resultlist->length > 0) {
+								foreach($vo_resultlist as $vo_result){
+									$vs_name = $vs_id = $vs_package = $vs_cn = "";
+									if($vo_result->parentNode->nodeName == "scientificNames"){
+										foreach($vo_result->childNodes as $vo_field){
+											switch($vo_field->nodeName){
+												case "nameString":
+													$vs_name = base64_decode($vo_field->textContent);
+													break;
+												case "namebankID":
+													$vs_id = $vo_field->textContent;
+													break;
+												case "packageName":
+													$vs_package = $vo_field->textContent;
+													break;
+												default:
+													break;
+											}
+										}
+									} elseif($vo_result->parentNode->nodeName == "vernacularNames"){
+										foreach($vo_result->childNodes as $vo_field){
+											switch($vo_field->nodeName){
+												case "fullNameStringLink":
+													$vs_name = base64_decode($vo_field->textContent);
+													break;
+												case "namebankIDLink":
+													$vs_id = $vo_field->textContent;
+													break;
+												case "packageName":
+													$vs_package = $vo_field->textContent;
+													break;
+												case "nameString":
+													$vs_cn = base64_decode($vo_field->textContent);
+													break;
+												default:
+													break;
+											}
 										}
 									}
-								} elseif($vo_result->parentNode->nodeName == "vernacularNames"){
-									foreach($vo_result->childNodes as $vo_field){
-										switch($vo_field->nodeName){
-											case "fullNameStringLink":
-												$vs_name = base64_decode($vo_field->textContent);
-												break;
-											case "namebankIDLink":
-												$vs_id = $vo_field->textContent;
-												break;
-											case "packageName":
-												$vs_package = $vo_field->textContent;
-												break;
-											case "nameString":
-												$vs_cn = base64_decode($vo_field->textContent);
-												break;
-											default:
-												break;
+									if(strlen($vs_name)>0 && strlen($vs_id)>0){
+										$va_items["ubio{$vs_id}"] = array(
+											"id" => "uBio:{$vs_id}",
+											"idno" => "uBio:{$vs_id}",
+											"sci_name" => $vs_name.(strlen($vs_package)>0 ? " ({$vs_package}) " : ""),
+											"common_name" => $vs_cn
+										);
+										$va_items["ubio{$vs_id}"]['label'] = $va_items["ubio{$vs_id}"]['sci_name'].($vs_cn ? " ({$vs_cn})" : "")." [uBio:{$vs_id}]";
+										if(++$i == 100){ // let's limit to 100 results, right?
+											break;
 										}
 									}
 								}
-								if(strlen($vs_name)>0 && strlen($vs_id)>0){
-									$va_items["ubio".$vs_id] = array(
-										"idno" => "uBio:{$vs_id}",
-										"sci_name" => $vs_name.(strlen($vs_package)>0 ? " ({$vs_package}) " : ""),
-										"common_name" => $vs_cn
-									);
-									if(++$i == 100){ // let's limit to 100 results, right?
-										break;
-									}
-								}
+							} else {
+								$va_items['error_ubio'] = array(
+									'label' => _t('No results found for %1.', $ps_query),
+									'id' => null
+								);
 							}
 						} else {
 							$va_items['error_ubio'] = array(
-								'msg' => _t('ERROR: uBio web service query failed.'),
+								'label' => _t('ERROR: uBio web service query failed.'),
+								'id' => null
 							);
 						}
 					} else {
 						$va_items['error_ubio'] = array(
-							'msg' => _t('ERROR: No uBio keycode in app.conf.'),
+							'label' => _t('ERROR: No uBio keycode in app.conf.'),
+							'id' => null
 						);
 					}
 				} catch (Exception $e) {
 					$va_items['error'] = array(
-						"msg" => _t('ERROR').':'.$e->getMessage(),
+						'label' => _t('ERROR').':'.$e->getMessage(),
+						'id' => null
 					);
 				}
 			}
 			
 			$this->view->setVar('taxonomy_list', $va_items);
-			//file_put_contents("/tmp/times", "TOTAL: {$tt->getTime(2)}\n", FILE_APPEND);
  			return $this->render('ajax_taxonomy_list_html.php');
 		}
 		# -------------------------------------------------------

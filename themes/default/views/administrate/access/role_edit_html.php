@@ -115,7 +115,7 @@
 	foreach($va_bundle_list as $vs_table => $va_bundles_by_table) {
 		print "<table width='100%'>\n";
 		print "<tr><td colspan='4'><h1>".$va_table_names[$vs_table]."</h1></td></tr>\n";				
-		print "<tr align='center' valign='middle'><th width='180' align='left'>"._t('Element')."</th><th width='180'>"._t('No access')."</th><th width='180'>"._t('Read-only access')."</th><th>"._t('Read/edit access')."</th></tr>\n";
+		print "<tr align='center' valign='middle'><th width='180' align='left'>"._t('Element')."</th><th width='180'><a href='#' onclick='jQuery(\".{$vs_table}_bundle_access_none\").prop(\"checked\", 1); return false;'>"._t('No access')."</a></th><th width='180'><a href='#' onclick='jQuery(\".{$vs_table}_bundle_access_readonly\").prop(\"checked\", 1); return false;'>"._t('Read-only access')."</a></th><th><a href='#' onclick='jQuery(\".{$vs_table}_bundle_access_edit\").prop(\"checked\", 1); return false;'>"._t('Read/edit access')."</a></th></tr>\n";
 		
 		$t_instance = $o_dm->getInstanceByTableName($vs_table, true);
 		$vs_pk = $t_instance->primaryKey();
@@ -128,10 +128,10 @@
 			if (in_array($vs_bundle_name, array('preferred_labels', $vs_pk))) {	// don't allow preferred labels and other critical UI fields to be set to readonly
 				print "<td>-</td>\n";
 			} else {
-				print "<td>".caHTMLRadioButtonInput($vs_table.'_'.$vs_bundle_name, array('value' => __CA_BUNDLE_ACCESS_NONE__), array('checked' => ($vs_access == __CA_BUNDLE_ACCESS_NONE__)))."</td>\n";
+				print "<td>".caHTMLRadioButtonInput($vs_table.'_'.$vs_bundle_name, array('value' => __CA_BUNDLE_ACCESS_NONE__, 'class' => "{$vs_table}_bundle_access_none"), array('checked' => ($vs_access == __CA_BUNDLE_ACCESS_NONE__)))."</td>\n";
 			}
-			print "<td>".caHTMLRadioButtonInput($vs_table.'_'.$vs_bundle_name, array('value' => __CA_BUNDLE_ACCESS_READONLY__), array('checked' => ($vs_access == __CA_BUNDLE_ACCESS_READONLY__)))."</td>\n";
-			print "<td>".caHTMLRadioButtonInput($vs_table.'_'.$vs_bundle_name, array('value' => __CA_BUNDLE_ACCESS_EDIT__), array('checked' => ($vs_access == __CA_BUNDLE_ACCESS_EDIT__)))."</td>\n";
+			print "<td>".caHTMLRadioButtonInput($vs_table.'_'.$vs_bundle_name, array('value' => __CA_BUNDLE_ACCESS_READONLY__, 'class' => "{$vs_table}_bundle_access_readonly"), array('checked' => ($vs_access == __CA_BUNDLE_ACCESS_READONLY__)))."</td>\n";
+			print "<td>".caHTMLRadioButtonInput($vs_table.'_'.$vs_bundle_name, array('value' => __CA_BUNDLE_ACCESS_EDIT__, 'class' => "{$vs_table}_bundle_access_edit"), array('checked' => ($vs_access == __CA_BUNDLE_ACCESS_EDIT__)))."</td>\n";
 		}
 		print "</tr>\n";
 		print "</table>\n";

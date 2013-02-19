@@ -39,7 +39,7 @@
  			parent::__construct($po_request, $po_response, $pa_view_paths);
  		}
  		# -------------------------------------------------------
- 		protected function _initView() {
+ 		protected function _initView($pa_options=null) {
  			JavascriptLoadManager::register('bundleableEditor');
  			JavascriptLoadManager::register('sortableUI');
  			JavascriptLoadManager::register('bundleListEditorUI');

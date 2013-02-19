@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2009 Whirl-i-Gig
+ * Copyright 2009-2013 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -38,7 +38,9 @@
  		# AJAX handlers
  		# -------------------------------------------------------
 		public function Get($pa_additional_query_params=null, $pa_options=null) {
-			$ps_query = $this->request->getParameter('q', pString);
+			if (!($ps_query = $this->request->getParameter('q', pString))) {
+				$ps_query = $this->request->getParameter('term', pString);
+			}
 			$ps_type = $this->request->getParameter('type', pString);
 			$va_vocs = array();
 			$vs_voc_query = '';
@@ -52,9 +54,9 @@
 			if (unicode_strlen($ps_query) >= 3) {
 				try {
 					//
-					// Get up to 50 suggestions as ATOM feed
+					// Get up to 150 suggestions as ATOM feed
 					//
-					$vs_data = @file_get_contents($x="http://id.loc.gov/search/?q=".urlencode($ps_query).$vs_voc_query.'&format=atom&count=150');
+					$vs_data = @file_get_contents("http://id.loc.gov/search/?q=".urlencode($ps_query).$vs_voc_query.'&format=atom&count=150');
 					if ($vs_data) {
 						$o_xml = @simplexml_load_string($vs_data);
 	
@@ -65,7 +67,7 @@
 									$o_links = $o_entry->{'link'};
 									$va_attr = $o_links[0]->attributes();
 									$vs_url = (string)$va_attr->{'href'};
-									$va_items[$vs_url] = array('displayname' => (string)$o_entry->{'title'}, 'idno' => (string)$o_entry->{'id'});
+									$va_items[] = array('label' => (string)$o_entry->{'title'}, 'idno' => (string)$o_entry->{'id'}, 'url' => $vs_url);
 								}
 							}
 						}

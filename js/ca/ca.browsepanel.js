@@ -41,6 +41,7 @@ var caUI = caUI || {};
 			facetSelectID: "browseFacetSelect",
 			
 			useExpose: !((jQuery.browser.msie) && (jQuery.browser.version == 7.0)),
+			useStaticDiv: false,									/* set if you want to use a visible <div> for the browse panel rather than a show/hide overlay <div> */
 			
 			isChanging: false,
 			browseID: null,
@@ -63,10 +64,13 @@ var caUI = caUI || {};
 			}
 			that.isChanging = true;
 			if (!facet) { return; }
-			jQuery("#" + that.panelID).fadeIn(that.panelTransitionSpeed, function() { that.isChanging = false; });
 			
-			if (that.useExpose) { 
-				jQuery("#" + that.panelID).expose({api: true, color: that.exposeBackgroundColor, opacity: that.exposeBackgroundOpacity, zIndex: 99999}).load(); 
+			if (!that.useStaticDiv) {
+				jQuery("#" + that.panelID).fadeIn(that.panelTransitionSpeed, function() { that.isChanging = false; });
+			
+				if (that.useExpose) { 
+					jQuery("#" + that.panelID).expose({api: true, color: that.exposeBackgroundColor, opacity: that.exposeBackgroundOpacity, zIndex: 99999}).load(); 
+				}
 			}
 			if (!modifyID) { modifyID = ''; }
 			
@@ -78,10 +82,13 @@ var caUI = caUI || {};
 		
 		that.hideBrowsePanel = function() {
 			that.isChanging = true;
-			jQuery("#" + that.panelID).fadeOut(that.panelTransitionSpeed, function() { that.isChanging = false; });
 			
-			if (that.useExpose) {
-				jQuery.mask.close();
+			if (!that.useStaticDiv) {
+				jQuery("#" + that.panelID).fadeOut(that.panelTransitionSpeed, function() { that.isChanging = false; });
+			
+				if (that.useExpose) {
+					jQuery.mask.close();
+				}
 			}
 			jQuery("#" + that.panelContentID).empty();
 		}

@@ -1,13 +1,13 @@
 <?php
 /* ----------------------------------------------------------------------
- * lookup/ajax_geonames_list_list_html.php :
+ * lookup/ajax_geonames_list_html.php :
  * ----------------------------------------------------------------------
  * CollectiveAccess
  * Open-source collections management software
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2009 Whirl-i-Gig
+ * Copyright 2009-2013 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -25,13 +25,5 @@
  *
  * ----------------------------------------------------------------------
  */
-	foreach($this->getVar('geonames_list') as $vn_id => $va_item) {
-		print str_replace("|", "-", $va_item['displayname'].
-		    ($va_item['country'] ? ', '.$va_item['country'] : '').
-		    ($va_item['continent'] ? ', '.$va_item['continent'] : '').
-		    ($va_item['lat'] ? " [".$va_item['lat']."," : '').
-		    ($va_item['lng'] ? $va_item['lng']."]" : '').
-		    ($va_item['fcl'] ? " (".$va_item['fcl'].")" : '')
-		)."|".$vn_id."\n";
-	}
+ 	print json_encode($this->getVar('geonames_list'));
 ?>
