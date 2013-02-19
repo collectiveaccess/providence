@@ -2156,7 +2156,7 @@ class BaseModel extends BaseObject {
 					$vn_id = $this->getPrimaryKey();
 					
 					if ((!isset($pa_options['dont_do_search_indexing']) || (!$pa_options['dont_do_search_indexing'])) && !defined('__CA_DONT_DO_SEARCH_INDEXING__')) {
-						$this->doSearchIndexing();
+						$this->doSearchIndexing(null, false);
 					}
 
 					if ($vb_we_set_transaction) { $this->removeTransaction(true); }
@@ -2692,7 +2692,7 @@ class BaseModel extends BaseObject {
 					}
 					if ((!isset($pa_options['dont_do_search_indexing']) || (!$pa_options['dont_do_search_indexing'])) &&  !defined('__CA_DONT_DO_SEARCH_INDEXING__')) {
 						# update search index
-						$this->doSearchIndexing();
+						$this->doSearchIndexing(null, false);
 					}
 														
 					if (is_array($va_rebuild_hierarchical_index)) {

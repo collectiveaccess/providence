@@ -146,7 +146,7 @@
 		<div id="<?php print $vs_id_prefix; ?>Item_{n}" class="labelInfo">
 <?php
 		if (!(bool)$va_settings['useHierarchicalBrowser']) {
-?>
+?>xxx
 				<table class="caListItem">
 					<tr>
 						<td><input type="text" size="60" name="<?php print $vs_id_prefix; ?>_autocomplete{n}" value="{{label}}" id="<?php print $vs_id_prefix; ?>_autocomplete{n}" class="lookupBg"/></td>
@@ -222,7 +222,7 @@
 						jQuery('#<?php print $vs_id_prefix; ?>_hierarchyBrowserSearch{n}').autocomplete(
 							{
 								source: '<?php print caNavUrl($this->request, 'lookup', 'ListItem', 'Get', array('noInline' => 1, 'noSymbols' => 1)); ?>', 
-								minLength: 3, delay: 800, html: false,
+								minLength: 3, delay: 800, html: true,
 								select: function(event, ui) {
 									if (parseInt(ui.item.id) > 0) {
 										<?php print $vs_id_prefix; ?>oHierBrowser{n}.setUpHierarchy(ui.item.id);	// jump browser to selected item

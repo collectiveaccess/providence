@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2009-2012 Whirl-i-Gig
+ * Copyright 2009-2013 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -118,8 +118,6 @@
 						}
 						$o_search->addResultFilter($this->opo_item_instance->tableName().'.'.$this->opo_item_instance->getTypeFieldName(), 'IN', join(",", $va_ids));
 					}
-				} else {
-					$va_ids = null;
 				}
 			
 				// add any additional search elements
@@ -211,7 +209,7 @@
 						}
 						
 						$o_config = Configuration::load();
-						if (!(is_array($va_sorts = $o_config->getList($this->ops_table_name.'_hierarchy_browser_sort_values'))) || !sizeof($va_sorts)) { $va_sorts = null; }
+						if (!(is_array($va_sorts = $o_config->getList($this->ops_table_name.'_hierarchy_browser_sort_values'))) || !sizeof($va_sorts)) { $va_sorts = array(); }
 						foreach($va_sorts as $vn_i => $vs_sort_fld) {
 							$va_tmp = explode(".", $vs_sort_fld);
 							
@@ -248,7 +246,7 @@
 						
 						$va_child_counts = array();
 						if ((($vn_max_items_per_page = $this->request->getParameter('max', pInteger)) < 1) || ($vn_max_items_per_page > 1000)) {
-							$vn_max_items_per_page = null;
+							$vn_max_items_per_page = 100;
 						}
 						$vn_c = 0;
 						
