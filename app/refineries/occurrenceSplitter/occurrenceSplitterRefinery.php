@@ -1,6 +1,6 @@
 <?php
 /* ----------------------------------------------------------------------
- * entitySplitterRefinery.php : 
+ * occurrenceSplitterRefinery.php : 
  * ----------------------------------------------------------------------
  * CollectiveAccess
  * Open-source collections management software
@@ -28,14 +28,14 @@
  	require_once(__CA_LIB_DIR__.'/ca/Import/BaseRefinery.php');
  	require_once(__CA_LIB_DIR__.'/ca/Utils/DataMigrationUtils.php');
  
-	class entitySplitterRefinery extends BaseRefinery {
+	class occurrenceSplitterRefinery extends BaseRefinery {
 		# -------------------------------------------------------
 		
 		# -------------------------------------------------------
 		public function __construct() {
-			$this->ops_name = 'entitySplitter';
-			$this->ops_title = _t('Entity splitter');
-			$this->ops_description = _t('Splits entities');
+			$this->ops_name = 'occurrenceSplitter';
+			$this->ops_title = _t('Occurrence splitter');
+			$this->ops_description = _t('Splits occurrences');
 			
 			parent::__construct();
 		}
@@ -60,66 +60,80 @@
 			$vs_terminal = array_pop($va_group_dest);
 			$pm_value = $pa_source_data[$pa_item['source']];
 			
-			if ($vs_delimiter = $pa_item['settings']['entitySplitter_delimiter']) {
-				$va_entities = explode($vs_delimiter, $pm_value);
+			if ($vs_delimiter = $pa_item['settings']['occurrenceSplitter_delimiter']) {
+				$va_occurrence = explode($vs_delimiter, $pm_value);
 			} else {
-				$va_entities = array($pm_value);
+				$va_occurrence = array($pm_value);
 			}
-			
-			//print_R($pa_item);
 			
 			$va_vals = array();
 			$vn_c = 0;
-			foreach($va_entities as $vn_i => $vs_entity) {
-				if (!($vs_entity = trim($vs_entity))) { continue; }				
-			
-				if (is_array($va_skip_values = $pa_item['settings']['entitySplitter_skipIfValue']) && in_array($vs_entity, $va_skip_values)) {
-					continue;
-				}
-			
-				$va_split_name = DataMigrationUtils::splitEntityName($vs_entity);
-		
-				if(isset($va_split_name[$vs_terminal])) {
-					return $va_split_name[$vs_terminal];
+			foreach($va_occurrence as $vn_i => $vs_occurrence) {
+				if (!$vs_occurrence = trim($vs_occurrence)) { continue; }
+				
+				
+				if($vs_terminal == 'name') {
+					return $vs_occurrence;
 				}
 			
 				if (in_array($vs_terminal, array('preferred_labels', 'nonpreferred_labels'))) {
-					return $va_split_name;	
+					return array('name' => $vs_occurrence);	
 				}
 			
 				// Set label
-				$va_val = array('preferred_labels' => $va_split_name);
+				$va_val = array('preferred_labels' => array('name' => $vs_occurrence));
 			
 				// Set relationship type
 				if (
-					($vs_rel_type_opt = $pa_item['settings']['entitySplitter_relationshipType'])
+					($vs_rel_type_opt = $pa_item['settings']['occurrenceSplitter_relationshipType'])
 				) {
 					if (!($va_val['_relationship_type'] = BaseRefinery::parsePlaceholder($vs_rel_type_opt, $pa_source_data, $pa_item, $vs_delimiter, $vn_c))) {
-						if ($vs_rel_type_opt = $pa_item['settings']['entitySplitter_relationshipTypeDefault']) {
+						if ($vs_rel_type_opt = $pa_item['settings']['occurrenceSplitter_relationshipTypeDefault']) {
 							$va_val['_relationship_type'] = BaseRefinery::parsePlaceholder($vs_rel_type_opt, $pa_source_data, $pa_item, $vs_delimiter, $vn_c);
 						}
 					}
 				}
 			
-				// Set entity_type
+				// Set occurrence_type
 				if (
-					($vs_type_opt = $pa_item['settings']['entitySplitter_entityType'])
+					($vs_type_opt = $pa_item['settings']['occurrenceSplitter_occurrenceType'])
 				) {
 					
 					if (!($va_val['_type'] = BaseRefinery::parsePlaceholder($vs_type_opt, $pa_source_data, $pa_item, $vs_delimiter, $vn_c))) {
-						if($vs_type_opt = $pa_item['settings']['entitySplitter_entityTypeDefault']) {
+						if($vs_type_opt = $pa_item['settings']['occurrenceSplitter_occurrenceTypeDefault']) {
 							$va_val['_type'] = BaseRefinery::parsePlaceholder($vs_type_opt, $pa_source_data, $pa_item, $vs_delimiter, $vn_c);
 						}
 					}
 				}
+				// Set relationship type
+				if ($vs_rel_type_opt = $pa_item['settings']['occurrenceSplitter_relationshipType']) {
+					$va_val['_relationship_type'] = BaseRefinery::parsePlaceholder($vs_rel_type_opt, $pa_source_data, $pa_item, $vs_delimiter, $vn_i);
+				}
+			
+				// Set occurrence type
+				if ($vs_type_opt = $pa_item['settings']['occurrenceSplitter_occurrenceType']) {
+					$va_val['_type'] = BaseRefinery::parsePlaceholder($vs_type_opt, $pa_source_data, $pa_item);
+				}
+				
+				// Set occurrence parents
+				if ($va_parents = $pa_item['settings']['occurrenceSplitter_parents']) {
+					print "parents: ";
+					print_R($va_parents);
+				
+					//$vn_hierarchy_id = caGetListItemID('place_hierarchies', $vs_hierarchy);
+
+					//$t_place = new ca_places();
+					//$t_place->load(array('parent_id' => null, 'hierarchy_id' => $vn_hierarchy_id));
+					//$va_val['_parent_id'] = $t_collection->getPrimaryKey();
+				}
 			
 				// Set attributes
-				if (is_array($pa_item['settings']['entitySplitter_attributes'])) {
+				if (is_array($pa_item['settings']['occurrenceSplitter_attributes'])) {
 					$va_attr_vals = array();
-					foreach($pa_item['settings']['entitySplitter_attributes'] as $vs_element_code => $va_attrs) {
+					foreach($pa_item['settings']['occurrenceSplitter_attributes'] as $vs_element_code => $va_attrs) {
 						if(is_array($va_attrs)) {
 							foreach($va_attrs as $vs_k => $vs_v) {
-								$va_attr_vals[$vs_element_code][$vs_k] = BaseRefinery::parsePlaceholder($vs_v, $pa_source_data, $pa_item, $vs_delimiter, $vn_c);
+								$va_attr_vals[$vs_element_code][$vs_k] = BaseRefinery::parsePlaceholder($vs_v, $pa_source_data, $pa_item);
 							}
 						}
 					}
@@ -134,7 +148,7 @@
 		}
 		# -------------------------------------------------------	
 		/**
-		 * entitySplitter returns multiple values
+		 * occurrenceSplitter returns multiple values
 		 *
 		 * @return bool Always true
 		 */
@@ -144,44 +158,53 @@
 		# -------------------------------------------------------
 	}
 	
-	 BaseRefinery::$s_refinery_settings['entitySplitter'] = array(		
-			'entitySplitter_delimiter' => array(
+	 BaseRefinery::$s_refinery_settings['occurrenceSplitter'] = array(		
+			'occurrenceSplitter_delimiter' => array(
 				'formatType' => FT_TEXT,
 				'displayType' => DT_SELECT,
 				'width' => 10, 'height' => 1,
 				'takesLocale' => false,
 				'default' => '',
 				'label' => _t('Delimiter'),
-				'description' => _t('Sets the value of the delimiter to break on, separating data source values.')
+				'description' => _t('Sets the value of the delimiter to break on, separating data source values')
 			),
-			'entitySplitter_relationshipType' => array(
+			'occurrenceSplitter_relationshipType' => array(
 				'formatType' => FT_TEXT,
 				'displayType' => DT_SELECT,
 				'width' => 10, 'height' => 1,
 				'takesLocale' => false,
 				'default' => '',
 				'label' => _t('Relationship type'),
-				'description' => _t('Accepts a constant type code for the relationship type or a reference to the location in the data source where the type can be found.')
+				'description' => _t('Accepts a constant type code for the relationship type or a reference to the location in the data source where the type can be found.  Note for object data: if the relationship type matches that set as the hierarchy control, the object will be pulled in as a "child" element in the occurrence hierarchy.')
 			),
-			'entitySplitter_entityType' => array(
+			'occurrenceSplitter_occurrenceType' => array(
 				'formatType' => FT_TEXT,
 				'displayType' => DT_SELECT,
 				'width' => 10, 'height' => 1,
 				'takesLocale' => false,
 				'default' => '',
-				'label' => _t('Entity type'),
-				'description' => _t('Accepts a constant list item idno from the list entity_types or a reference to the location in the data source where the type can be found')
+				'label' => _t('Occurrence type'),
+				'description' => _t('Accepts a constant list item idno from the list occurrence_types or a reference to the location in the data source where the type can be found.')
 			),
-			'entitySplitter_attributes' => array(
+			'occurrenceSplitter_attributes' => array(
 				'formatType' => FT_TEXT,
 				'displayType' => DT_SELECT,
 				'width' => 10, 'height' => 1,
 				'takesLocale' => false,
 				'default' => '',
 				'label' => _t('Attributes'),
-				'description' => _t('Sets or maps metadata for the entity record by referencing the metadataElement code and the location in the data source where the data values can be found.')
+				'description' => _t('Sets or maps metadata for the occurrence record by referencing the metadataElement code and the location in the data source where the data values can be found.')
 			),
-			'entitySplitter_relationshipTypeDefault' => array(
+			'occurrenceSplitter_parents' => array(
+				'formatType' => FT_TEXT,
+				'displayType' => DT_SELECT,
+				'width' => 10, 'height' => 1,
+				'takesLocale' => false,
+				'default' => '',
+				'label' => _t('Parents'),
+				'description' => _t('Occurrence parents to create, if required')
+			),
+			'occurrenceSplitter_relationshipTypeDefault' => array(
 				'formatType' => FT_TEXT,
 				'displayType' => DT_FIELD,
 				'width' => 10, 'height' => 1,
@@ -190,23 +213,14 @@
 				'label' => _t('Relationship type default'),
 				'description' => _t('Sets the default relationship type that will be used if none are defined or if the data source values do not match any values in the CollectiveAccess system.')
 			),
-			'entitySplitter_entityTypeDefault' => array(
+			'occurrenceSplitter_occurrenceTypeDefault' => array(
 				'formatType' => FT_TEXT,
 				'displayType' => DT_FIELD,
 				'width' => 10, 'height' => 1,
 				'takesLocale' => false,
 				'default' => '',
-				'label' => _t('Entity type default'),
-				'description' => _t('Sets the default entity type that will be used if none are defined or if the data source values do not match any values in the CollectiveAccess list entity_types.')
-			),
-			'entitySplitter_skipIfValue' => array(
-				'formatType' => FT_TEXT,
-				'displayType' => DT_FIELD,
-				'width' => 10, 'height' => 1,
-				'takesLocale' => false,
-				'default' => '',
-				'label' => _t('Skip if value'),
-				'description' => _t('Skip if imported value is in the specified list of values.')
-			),
+				'label' => _t('Occurrence type default'),
+				'description' => _t('Sets the default occurrence type that will be used if none are defined or if the data source values do not match any values in the CollectiveAccess list occurrence_types.')
+			)
 		);
 ?>
