@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2003-2011 Whirl-i-Gig
+ * Copyright 2003-2013 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -71,6 +71,7 @@ class Media extends BaseObject {
 		Media::$WLMedia_plugin_names = array();
 		$dir = opendir($plugin_dir);
 		while (($plugin = readdir($dir)) !== false) {
+			if ($plugin == "BaseMediaPlugin.php") { continue; }
 			if (preg_match("/^([A-Za-z_]+[A-Za-z0-9_]*).php$/", $plugin, $m)) {
 				Media::$WLMedia_plugin_names[] = $m[1];
 			}
@@ -302,6 +303,82 @@ class Media extends BaseObject {
 		  return "";
 		}
 		return $this->instance->mimetype2typename($mimetype);
+	}
+	# ------------------------------------------------
+	/**
+	 * Return list of file extensions for media formats supported for import
+	 *
+	 * @return array List of file extensions
+	 */
+	public static function getImportFileExtensions() {
+		$o_media = new Media();
+		$va_plugin_names = $o_media->getPluginNames();
+		
+		$va_extensions = array();
+		foreach ($va_plugin_names as $vs_plugin_name) {
+			if (!$va_plugin_info = $o_media->getPlugin($vs_plugin_name)) { continue; }
+			$o_plugin = $va_plugin_info["INSTANCE"];
+			$va_extensions = array_merge($va_extensions, $o_plugin->getImportExtensions());
+		}
+		
+		return array_unique($va_extensions);
+	}
+	# ------------------------------------------------
+	/**
+	 * Return list of mimetypes for media formats supported for import
+	 *
+	 * @return array List of mimetypes
+	 */
+	public static function getImportMimetypes() {
+		$o_media = new Media();
+		$va_plugin_names = $o_media->getPluginNames();
+		
+		$va_extensions = array();
+		foreach ($va_plugin_names as $vs_plugin_name) {
+			if (!$va_plugin_info = $o_media->getPlugin($vs_plugin_name)) { continue; }
+			$o_plugin = $va_plugin_info["INSTANCE"];
+			$va_extensions = array_merge($va_extensions, $o_plugin->getImportMimetypes());
+		}
+		
+		return array_unique($va_extensions);
+	}
+	# ------------------------------------------------
+	/**
+	 * Return list of file extensions for media formats supported for export
+	 *
+	 * @return array List of file extensions
+	 */
+	public static function getExportFileExtensions() {
+		$o_media = new Media();
+		$va_plugin_names = $o_media->getPluginNames();
+		
+		$va_extensions = array();
+		foreach ($va_plugin_names as $vs_plugin_name) {
+			if (!$va_plugin_info = $o_media->getPlugin($vs_plugin_name)) { continue; }
+			$o_plugin = $va_plugin_info["INSTANCE"];
+			$va_extensions = array_merge($va_extensions, $o_plugin->getExportExtensions());
+		}
+		
+		return array_unique($va_extensions);
+	}
+	# ------------------------------------------------
+	/**
+	 * Return list of mimetypes for media formats supported for export
+	 *
+	 * @return array List of mimetypes
+	 */
+	public static function getExportMimetypes() {
+		$o_media = new Media();
+		$va_plugin_names = $o_media->getPluginNames();
+		
+		$va_extensions = array();
+		foreach ($va_plugin_names as $vs_plugin_name) {
+			if (!$va_plugin_info = $o_media->getPlugin($vs_plugin_name)) { continue; }
+			$o_plugin = $va_plugin_info["INSTANCE"];
+			$va_extensions = array_merge($va_extensions, $o_plugin->getExportMimetypes());
+		}
+		
+		return array_unique($va_extensions);
 	}
 	# ------------------------------------------------
 	# --- 
