@@ -1177,18 +1177,27 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 						}
 					}
 					
+					$vn_max_length = (!is_array($vm_val) && isset($va_item['settings']['maxLength']) && (int)$va_item['settings']['maxLength']) ? (int)$va_item['settings']['maxLength'] : null;
+					
 					if (isset($va_item['settings']['delimiter']) && strlen($vs_item_delimiter = $va_item['settings']['delimiter'])) {
 						$va_val_list = explode($vs_item_delimiter, $vm_val);
 						array_pop($va_parent);	// remove empty slot for "regular" value
 						
 						// Add delimited values
 						foreach($va_val_list as $vs_list_val) {
-							$vs_list_val = ca_data_importers::replaceValue($vs_list_val, $va_item);
-							$va_parent[] = array($vs_item_terminal => array($vs_item_terminal => trim($vs_list_val)));
+							$vs_list_val = trim(ca_data_importers::replaceValue($vs_list_val, $va_item));
+							if ($vn_max_length && (mb_strlen($vs_list_val) > $vn_max_length)) {
+								$vs_list_val = mb_substr($vs_list_val, 0, $vn_max_length);
+							}
+							$va_parent[] = array($vs_item_terminal => array($vs_item_terminal => $vs_list_val));
 						}
 						
 						$vn_row++;
 						continue;	// Don't add "regular" value below
+					}
+					
+					if ($vn_max_length && (mb_strlen($vm_val) > $vn_max_length)) {
+						$vm_val = mb_substr($vm_val, 0, $vn_max_length);
 					}
 					
 					switch($vs_item_terminal) {

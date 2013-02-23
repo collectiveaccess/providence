@@ -302,6 +302,15 @@ class ca_data_importer_items extends BaseModel {
 			'label' => _t('Format with template'),
 			'description' => _t('Format imported value with provided template. Template may include caret (^) prefixed placeholders that refer to data source values.')
 		);
+		$va_settings['maxLength'] = array(
+			'formatType' => FT_NUMBER,
+			'displayType' => DT_FIELD,
+			'width' => 10, 'height' => 1,
+			'takesLocale' => false,
+			'default' => '',
+			'label' => _t('Maximum length'),
+			'description' => _t('Truncate to specified length if value exceeds that length.')
+		);
 		
 		$this->SETTINGS = new ModelSettings($this, 'settings', $va_settings);
 	}
