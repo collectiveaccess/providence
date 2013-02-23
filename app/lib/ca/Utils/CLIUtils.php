@@ -35,10 +35,21 @@
   */
 
  	require_once(__CA_LIB_DIR__.'/core/Utils/CLIProgressBar.php');
+ 	require_once(__CA_APP_DIR__.'/helpers/CLIHelpers.php');
 	require_once(__CA_LIB_DIR__."/core/Zend/Console/Getopt.php");
  
 	class CLIUtils {
 		# -------------------------------------------------------
+		/**
+		 * Errors
+		 */
+		private static $errors = array();
+		
+		/**
+		 * Process messages
+		 */
+		private static $messages = array();
+		 
 		/**
 		 * ANSI foreground colors
 		 */ 
@@ -82,7 +93,100 @@
 		 * @return bool True if the function is a caUtils command
 		 */
 		public static function isCommand($ps_function_name) {
-			return (!in_array($ps_function_name, array('isCommand', 'textWithColor', 'textWithBackgroundColor')));
+			return (!in_array($ps_function_name, array('isCommand', 'textWithColor', 'textWithBackgroundColor', 'clearErrors', 'numErrors', 'getErrors', 'addError')));
+		}
+		# -------------------------------------------------------
+		/**
+		 *  Clear list of current messages
+		 *
+		 * @return bool Always returns true
+		 */
+		public static function clearMessages() {
+			CLIUtils::$messages = array();
+			return true;
+		}
+		# -------------------------------------------------------
+		/**
+		 *  Get count of current messages
+		 *
+		 * @return int Number of messages currently posted
+		 */
+		public static function numMessages() {
+			return sizeof(CLIUtils::$messages);
+		}
+		# -------------------------------------------------------
+		/**
+		 *  Get list of posted messages
+		 *
+		 * @return array List of messages 
+		 */
+		public static function getMessages() {
+			return CLIUtils::$messages;
+		}
+		# -------------------------------------------------------
+		/**
+		 *  Add message to message list
+		 *
+		 * @param string $ps_message Message to post
+		 * @param array $pa_options Options are:
+		 *		dontOutput = if set message is not output to screen. Default is false.
+		 *		color = color to render message in. Default is none.
+		 * @return bool Always returns true
+		 */
+		public static function addMessage($ps_message, $pa_options=null) {
+			if (!is_array($pa_options) || !isset($pa_options['dontOutput']) || !$pa_options['dontOutput']) {
+				if (is_array($pa_options) && isset($pa_options['color']) && $pa_options['dontOutput'] && ($pa_options['dontOutput'] != 'none')) {
+					print CLIUtils::textWithColor($ps_message, $pa_options['color'])."\n";
+				} else {
+					print "{$ps_message}\n";
+				}
+			}
+			array_push(CLIUtils::$messages, $ps_message);
+			return true;
+		}
+		# -------------------------------------------------------
+		/**
+		 *  Clear list of current errors
+		 *
+		 * @return bool Always returns true
+		 */
+		public static function clearErrors() {
+			CLIUtils::$errors = array();
+			return true;
+		}
+		# -------------------------------------------------------
+		/**
+		 *  Get count of current errors
+		 *
+		 * @return int Number of errors currently posted
+		 */
+		public static function numErrors() {
+			return sizeof(CLIUtils::$errors);
+		}
+		# -------------------------------------------------------
+		/**
+		 *  Get list of error messages
+		 *
+		 * @return array List of messages for current errors
+		 */
+		public static function getErrors() {
+			return CLIUtils::$errors;
+		}
+		# -------------------------------------------------------
+		/**
+		 *  Add error to current error list
+		 *
+		 * @param string $ps_error Error message to post
+		 * @param array $pa_options Options are:
+		 *		dontOutput = if set error is not output to screen. Default is false.
+		 * @return bool Always returns true
+		 */
+		public static function addError($ps_error, $pa_options=null) {
+			if (!is_array($pa_options) || !isset($pa_options['dontOutput']) || !$pa_options['dontOutput']) {
+				print CLIUtils::textWithColor($ps_error, "red")."\n";
+			}
+			array_push(CLIUtils::$errors, $ps_error);
+			return true;
 		}
 		# -------------------------------------------------------
 		/**
@@ -277,15 +381,16 @@
 					$va_report[] = $vs_path;
 				}
 			}
-			print CLIProgressBar::finish();
+			print CLIProgressBar::finish()."\n";
 			
-			print "\n"._t('There are %1 files total', sizeof($va_contents))."\n";
+			CLIUtils::addMessage(_t('There are %1 files total', sizeof($va_contents)));
+			
 			$vs_percent = sprintf("%2.1f", ($vn_delete_count/sizeof($va_contents)) * 100)."%";
 			
 			if ($vn_delete_count == 1) {
-				print ($vb_delete_opt ? _t("%1 file (%2) was deleted", $vn_delete_count, $vs_percent) : _t("%1 file (%2) is unused", $vn_delete_count, $vs_percent))."\n";
+				CLIUtils::addMessage($vb_delete_opt ? _t("%1 file (%2) was deleted", $vn_delete_count, $vs_percent) : _t("%1 file (%2) is unused", $vn_delete_count, $vs_percent));
 			} else {
-				print ($vb_delete_opt ?  _t("%1 files (%2) were deleted", $vn_delete_count, $vs_percent) : _t("%1 files (%2) are unused", $vn_delete_count, $vs_percent))."\n";
+				CLIUtils::addMessage($vb_delete_opt ?  _t("%1 files (%2) were deleted", $vn_delete_count, $vs_percent) : _t("%1 files (%2) are unused", $vn_delete_count, $vs_percent));
 			}
 			return true;
 		}
@@ -320,16 +425,16 @@
 			require_once(__CA_LIB_DIR__."/ca/ConfigurationExporter.php");
 	
 			if(!class_exists("DOMDocument")){
-				print _t("Sorry, the PHP DOM extension is required to export profiles.")."\n";
-				return;
+				CLIUtils::addError(_t("The PHP DOM extension is required to export profiles"));
+				return false;
 			}
 
 			$vs_output = $po_opts->getOption("output");
 			$va_output = explode("/", $vs_output);
 			array_pop($va_output);
 			if ($vs_output && (!is_dir(join("/", $va_output)))) {
-				print _t("Sorry, cannot write profile to %1.", $vs_output)."\n";
-				return;
+				CLIUtils::addError(__t("Cannot write profile to '%1'", $vs_output));
+				return false;
 			}
 			
 			$vs_profile = ConfigurationExporter::exportConfigurationAsXML($po_opts->getOption("name"), $po_opts->getOption("description"), $po_opts->getOption("base"), $po_opts->getOption("infoURL"));
@@ -377,12 +482,12 @@
 	
 			$vo_tq = new TaskQueue();
 			
-			if (!$po_opts->getOption("quiet")) { print _t("Processing queued tasks...")."\n"; }
+			if (!$po_opts->getOption("quiet")) { CLIUtils::addMessage(_t("Processing queued tasks...")); }
 			$vo_tq->processQueue();		// Process queued tasks
 			
-			if (!$po_opts->getOption("quiet")) { print _t("Processing recurring tasks...")."\n"; }
+			if (!$po_opts->getOption("quiet")) { CLIUtils::addMessage(_t("Processing recurring tasks...")); }
 			$vo_tq->runPeriodicTasks();	// Process recurring tasks implemented in plugins
-			if (!$po_opts->getOption("quiet")) { print _t("Processing complete.")."\n"; }
+			if (!$po_opts->getOption("quiet")) {  CLIUtils::addMessage(_t("Processing complete.")); }
 			
 			return true;
 		}
@@ -454,7 +559,7 @@
 				}
 		
 				if ($t_rep->numErrors()) {
-					print CLIUtils::textWithColor(_t("[ERROR] Error processing media: %1", join('; ', $t_rep->getErrors())), "red")."\n";
+					CLIUtils::addError(_t("Error processing media: %1", join('; ', $t_rep->getErrors())));
 				}
 			}
 			print CLIProgressBar::finish();
@@ -494,7 +599,7 @@
 	
 			$o_config_check = new ConfigurationCheck();
 			if (($vn_current_revision = ConfigurationCheck::getSchemaVersion()) < __CollectiveAccess_Schema_Rev__) {
-				print _t("Are you sure you want to update your CollectiveAccess database from revision %1 to %2?\nNOTE: you should backup your database before applying updates!\n\nType 'y' to proceed or 'N' to cancel, then hit return ", $vn_current_revision, __CollectiveAccess_Schema_Rev__)."\n";
+				CLIUtils::addMessage(_t("Are you sure you want to update your CollectiveAccess database from revision %1 to %2?\nNOTE: you should backup your database before applying updates!\n\nType 'y' to proceed or 'N' to cancel, then hit return ", $vn_current_revision, __CollectiveAccess_Schema_Rev__));
 				flush();
 				ob_flush();
 				$confirmation  =  trim( fgets( STDIN ) );
@@ -511,7 +616,7 @@
 				print CLIProgressBar::finish();
 			} else {
 				print CLIProgressBar::finish();
-				print _t("Database already at revision %1. No update is required.", __CollectiveAccess_Schema_Rev__)."\n";
+				CLIUtils::addMessage(_t("Database already at revision %1. No update is required.", __CollectiveAccess_Schema_Rev__));
 			}
 			
 			return true;
@@ -545,19 +650,20 @@
 			require_once(__CA_MODELS_DIR__."/ca_data_importers.php");
 	
 			if (!($vs_file_path = $po_opts->getOption('file'))) {
-				print _t("You must specify a file!")."\n";
+				CLIUtils::addError(_t("You must specify a file"));
 				return false;
 			}
 			if (!file_exists($vs_file_path)) {
-				print _t("File '%1' does not exist!", $vs_file_path)."\n";
+				CLIUtils::addError(_t("File '%1' does not exist", $vs_file_path));
 				return false;
 			}
 			
 			if (!($t_importer = ca_data_importers::loadImporterFromFile($vs_file_path))) {
-				print _t("Could not import '%1'", $vs_file_path)."\n";
+				CLIUtils::addError(_t("Could not import '%1'", $vs_file_path));
 				return false;
 			} else {
-				print _t("Created mapping %1 from %2", CLIUtils::textWithColor($t_importer->get('importer_code'), 'yellow'), $vs_file_path)."\n";
+				
+				CLIUtils::addMessage(_t("Created mapping %1 from %2", CLIUtils::textWithColor($t_importer->get('importer_code'), 'yellow'), $vs_file_path), array('color' => 'none'));
 				return true;
 			}
 		}
@@ -592,29 +698,30 @@
 			require_once(__CA_MODELS_DIR__."/ca_data_importers.php");
 	
 			if (!($vs_data_source = $po_opts->getOption('source'))) {
-				print _t('You must specify a data source for import')."\n";
+				CLIUtils::addError(_t('You must specify a data source for import'));
 				return false;
 			}
 			if (!$vs_data_source) {
-				print _t('You must specify a source')."\n"."\n";
+				CLIUtils::addError(_t('You must specify a source'));
 				return false;
 			}
 			if (!($vs_mapping = $po_opts->getOption('mapping'))) {
-				print _t('You must specify a mapping')."\n";
+				CLIUtils::addError(_t('You must specify a mapping'));
 				return false;
 			}
 			if (!(ca_data_importers::mappingExists($vs_mapping))) {
-				print _t('Mapping %1 does not exist', $vs_mapping)."\n";
+				CLIUtils::addError(_t('Mapping %1 does not exist', $vs_mapping));
 				return false;
 			}
 			
 			$vs_format = $po_opts->getOption('format');
+			$vs_log_dir = $po_opts->getOption('log');
 			
-			if (!ca_data_importers::importDataFromSource($vs_data_source, $vs_mapping, array('format' => $vs_format, 'showCLIProgressBar' => true))) {
-				print _t("Could not import source %1", $vs_data_source)."\n";
+			if (!ca_data_importers::importDataFromSource($vs_data_source, $vs_mapping, array('format' => $vs_format, 'showCLIProgressBar' => true, 'useNcurses' => caCLIUseNcurses(), 'logDirectory' => $vs_log_dir))) {
+				CLIUtils::addError(_t("Could not import source %1", $vs_data_source));
 				return false;
 			} else {
-				print _t("Imported data from source %1", $vs_data_source)."\n";
+				CLIUtils::addMessage(_t("Imported data from source %1", $vs_data_source));
 				return true;
 			}
 		}
@@ -626,7 +733,8 @@
 			return array(
 				"source|s=s" => _t('Data to import. For files provide the path; for database, OAI and other non-file sources provide a URL.'),
 				"mapping|m=s" => _t('Mapping to import data with.'),
-				"format|f-s" => _t('The format of the data to import. (Ex. XLSX, tab, CSV, mysql, OAI, Filemaker XML, ExcelXML, MARC). If omitted an attempt will be made to automatically identify the data format.')
+				"format|f-s" => _t('The format of the data to import. (Ex. XLSX, tab, CSV, mysql, OAI, Filemaker XML, ExcelXML, MARC). If omitted an attempt will be made to automatically identify the data format.'),
+				"log|l-s" => _t('Path to directory in which to log import details. If not set no logs will be recorded.')
 			);
 		}
 		# -------------------------------------------------------
