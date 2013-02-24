@@ -616,32 +616,44 @@ class ca_list_items extends BundlableLabelableBaseModelWithAttributes implements
 	/**
 	 *
 	 */
-	public function getListItemIDsByName($pn_list_id, $ps_name, $pn_parent_id=null) {
+	public function getListItemIDsByName($pn_list_id, $ps_name, $pn_parent_id=null, $pn_type_id=null) {
 		$o_db = $this->getDb();
 		
-		if ($pn_parent_id) {
-			$qr_res = $o_db->query("
-				SELECT DISTINCT cap.item_id
-				FROM ca_list_items cap
-				INNER JOIN ca_list_item_labels AS capl ON capl.item_id = cap.item_id
-				WHERE
-					(capl.name_singular = ? OR capl.name_plural = ?) AND cap.parent_id = ? AND cap.list_id = ?
-			", (string)$ps_name, (string)$ps_name, (int)$pn_parent_id, (int)$pn_list_id);
-		} else {
-			$qr_res = $o_db->query("
-				SELECT DISTINCT cap.item_id
-				FROM ca_list_items cap
-				INNER JOIN ca_list_item_labels AS capl ON capl.item_id = cap.item_id
-				WHERE
-					(capl.name_singular = ? OR capl.name_plural = ?) AND cap.list_id = ?
-			", (string)$ps_name, (string)$ps_name, (int)$pn_list_id);
-
+		$va_params = array((int)$pn_list_id, (string)$ps_name, (string)$ps_name);
+		
+		$vs_type_sql = '';
+		if ($pn_type_id) {
+			if(sizeof($va_type_ids = caMakeTypeIDList('ca_list_items', array($pn_type_id)))) {
+				$vs_type_sql = " AND cap.type_id IN (?)";
+				$va_params[] = $va_type_ids;
+			}
 		}
+		
+		if ($pn_parent_id) {
+			$vs_parent_sql = " AND cap.parent_id = ?";
+			$va_params[] = (int)$pn_parent_id;
+		} 
+		
+		$qr_res = $o_db->query("
+			SELECT DISTINCT cap.item_id
+			FROM ca_list_items cap
+			INNER JOIN ca_list_item_labels AS capl ON capl.item_id = cap.item_id
+			WHERE
+				cap.list_id = ? AND (capl.name_singular = ? OR capl.name_plural = ?) {$vs_type_sql} {$vs_parent_sql} AND cap.deleted = 0
+		", $va_params);
+		
 		$va_item_ids = array();
 		while($qr_res->nextRow()) {
 			$va_item_ids[] = $qr_res->get('item_id');
 		}
 		return $va_item_ids;
+	}
+	# ------------------------------------------------------
+	/**
+	 * @param array $pa_label_values
+	 */
+	public function getIDsByLabel($pa_label_values, $pn_parent_id=null, $pn_type_id=null) {
+		return $this->getListItemIDsByName($pa_label_values['list_id'], $pa_label_values['name_plural'], $pn_parent_id, $pn_type_id);
 	}
 	# ------------------------------------------------------
  	/**

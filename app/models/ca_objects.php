@@ -1355,10 +1355,10 @@ class ca_objects extends BundlableLabelableBaseModelWithAttributes implements IB
 		
 		$vs_type_sql = '';
 		if ($pn_type_id) {
-			$va_type_ids = caMakeTypeIDList('ca_objects', array($pn_type_id));
-			$pn_type_id = array_shift($va_type_ids);
-			$vs_type_sql = " AND cap.type_id = ?";
-			$va_params[] = (int)$pn_type_id;
+			if(sizeof($va_type_ids = caMakeTypeIDList('ca_objects', array($pn_type_id)))) {
+				$vs_type_sql = " AND cap.type_id IN (?)";
+				$va_params[] = $va_type_ids;
+			}
 		}
 		
 		if ($pn_parent_id) {
@@ -1371,7 +1371,7 @@ class ca_objects extends BundlableLabelableBaseModelWithAttributes implements IB
 				FROM ca_objects cap
 				INNER JOIN ca_object_labels AS capl ON capl.object_id = cap.object_id
 				WHERE
-					capl.name = ? {$vs_type_sql} {$vs_parent_sql}
+					capl.name = ? {$vs_type_sql} {$vs_parent_sql} AND cap.deleted = 0
 			", $va_params);
 		
 		$va_object_ids = array();
@@ -1379,6 +1379,13 @@ class ca_objects extends BundlableLabelableBaseModelWithAttributes implements IB
 			$va_object_ids[] = $qr_res->get('object_id');
 		}
 		return $va_object_ids;
+	}
+	# ------------------------------------------------------
+	/**
+	 *
+	 */
+	public function getIDsByLabel($pa_label_values, $pn_parent_id=null, $pn_type_id=null) {
+		return $this->getObjectIDsByName($pa_label_values['name'], $pn_parent_id, $pn_type_id);
 	}
  	# ------------------------------------------------------
  	# Client services

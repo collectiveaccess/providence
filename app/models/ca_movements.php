@@ -266,5 +266,51 @@ class ca_movements extends BundlableLabelableBaseModelWithAttributes implements 
 		$this->BUNDLES['ca_list_items'] = array('type' => 'related_table', 'repeating' => true, 'label' => _t('Related vocabulary terms'));
 	}
 	# ------------------------------------------------------
+	/**
+	 * Finds movements with a label that matches $ps_name exactly
+	 *
+	 * @param string $ps_name The name to search for
+	 * @return array A list of movement_ids with the specified label
+	 */
+	public function getMovementIDsByName($ps_name, $pn_parent_id=null, $pn_type_id=null) {
+		$o_db = $this->getDb();
+		
+		$va_params = array((string)$ps_name);
+		
+		$vs_type_sql = '';
+		if ($pn_type_id) {
+			if(sizeof($va_type_ids = caMakeTypeIDList('ca_movements', array($pn_type_id)))) {
+				$vs_type_sql = " AND cae.type_id IN (?)";
+				$va_params[] = $va_type_ids;
+			}
+		}
+		
+		if ($pn_parent_id) {
+			$vs_parent_sql = " AND cae.parent_id = ?";
+			$va_params[] = (int)$pn_parent_id;
+		} 
+		
+		$qr_res = $o_db->query("
+			SELECT DISTINCT cae.movement_id
+			FROM ca_movements cae
+			INNER JOIN ca_movement_labels AS cael ON cael.movement_id = cae.movement_id
+			WHERE
+				cael.name = ? {$vs_type_sql} {$vs_parent_sql} AND cae.deleted = 0
+		", $va_params);
+		
+		$va_movement_ids = array();
+		while($qr_res->nextRow()) {
+			$va_movement_ids[] = $qr_res->get('movement_id');
+		}
+		return $va_movement_ids;
+	}
+	# ------------------------------------------------------
+	/**
+	 *
+	 */
+	public function getIDsByLabel($pa_label_values, $pn_parent_id=null, $pn_type_id=null) {
+		return $this->getMovementIDsByName($pa_label_values['name'], $pn_parent_id, $pn_type_id);
+	}
+	# ------------------------------------------------------
 }
 ?>
