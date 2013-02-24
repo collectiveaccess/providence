@@ -93,7 +93,11 @@
 		 * @return bool True if the function is a caUtils command
 		 */
 		public static function isCommand($ps_function_name) {
-			return (!in_array($ps_function_name, array('isCommand', 'textWithColor', 'textWithBackgroundColor', 'clearErrors', 'numErrors', 'getErrors', 'addError')));
+			return (!in_array($ps_function_name, array(
+				'isCommand', 'textWithColor', 'textWithBackgroundColor', 
+				'clearErrors', 'numErrors', 'getErrors', 'addError',
+				'clearMessages', 'numMessages', 'getMessages', 'addMessage'
+			)));
 		}
 		# -------------------------------------------------------
 		/**
@@ -714,10 +718,12 @@
 				return false;
 			}
 			
+			$vb_no_ncurses = (bool)$po_opts->getOption('disable-ncurses');
+			
 			$vs_format = $po_opts->getOption('format');
 			$vs_log_dir = $po_opts->getOption('log');
 			
-			if (!ca_data_importers::importDataFromSource($vs_data_source, $vs_mapping, array('format' => $vs_format, 'showCLIProgressBar' => true, 'useNcurses' => caCLIUseNcurses(), 'logDirectory' => $vs_log_dir))) {
+			if (!ca_data_importers::importDataFromSource($vs_data_source, $vs_mapping, array('format' => $vs_format, 'showCLIProgressBar' => true, 'useNcurses' => !$vb_no_ncurses && caCLIUseNcurses(), 'logDirectory' => $vs_log_dir, 'logLevel' => KLogger::DEBUG))) {
 				CLIUtils::addError(_t("Could not import source %1", $vs_data_source));
 				return false;
 			} else {
@@ -734,7 +740,9 @@
 				"source|s=s" => _t('Data to import. For files provide the path; for database, OAI and other non-file sources provide a URL.'),
 				"mapping|m=s" => _t('Mapping to import data with.'),
 				"format|f-s" => _t('The format of the data to import. (Ex. XLSX, tab, CSV, mysql, OAI, Filemaker XML, ExcelXML, MARC). If omitted an attempt will be made to automatically identify the data format.'),
-				"log|l-s" => _t('Path to directory in which to log import details. If not set no logs will be recorded.')
+				"log|l-s" => _t('Path to directory in which to log import details. If not set no logs will be recorded.'),
+				"disable-ncurses" => _t('If set the ncurses terminal library will not be used to display import progress.'),
+				"dryrun" => _t('If set import is performed without data actually being saved to the database. This is useful for previewing an import for errors.')
 			);
 		}
 		# -------------------------------------------------------
