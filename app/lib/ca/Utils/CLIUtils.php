@@ -723,7 +723,32 @@
 			$vs_format = $po_opts->getOption('format');
 			$vs_log_dir = $po_opts->getOption('log');
 			
-			if (!ca_data_importers::importDataFromSource($vs_data_source, $vs_mapping, array('format' => $vs_format, 'showCLIProgressBar' => true, 'useNcurses' => !$vb_no_ncurses && caCLIUseNcurses(), 'logDirectory' => $vs_log_dir, 'logLevel' => KLogger::DEBUG))) {
+			$vn_log_level = KLogger::INFO;
+			switch($vs_log_level = $po_opts->getOption('log-level')) {
+				case 'DEBUG':
+					$vn_log_level = KLogger::DEBUG;
+					break;
+				case 'NOTICE':
+					$vn_log_level = KLogger::NOTICE;
+					break;
+				case 'WARN':
+					$vn_log_level = KLogger::WARN;
+					break;
+				case 'ERR':
+					$vn_log_level = KLogger::ERR;
+					break;
+				case 'CRIT':
+					$vn_log_level = KLogger::CRIT;
+					break;
+				case 'ALERT':
+					$vn_log_level = KLogger::ALERT;
+					break;
+				default:
+				case 'INFO':
+					$vn_log_level = KLogger::INFO;
+					break;
+			}
+			if (!ca_data_importers::importDataFromSource($vs_data_source, $vs_mapping, array('format' => $vs_format, 'showCLIProgressBar' => true, 'useNcurses' => !$vb_no_ncurses && caCLIUseNcurses(), 'logDirectory' => $vs_log_dir, 'logLevel' => $vn_log_level))) {
 				CLIUtils::addError(_t("Could not import source %1", $vs_data_source));
 				return false;
 			} else {
@@ -741,6 +766,7 @@
 				"mapping|m=s" => _t('Mapping to import data with.'),
 				"format|f-s" => _t('The format of the data to import. (Ex. XLSX, tab, CSV, mysql, OAI, Filemaker XML, ExcelXML, MARC). If omitted an attempt will be made to automatically identify the data format.'),
 				"log|l-s" => _t('Path to directory in which to log import details. If not set no logs will be recorded.'),
+				"log-level|d-s" => _t('Logging threshold. Possible values are, in ascending order of important: DEBUG, INFO, NOTICE, WARN, ERR, CRIT, ALERT. Default is INFO.'),
 				"disable-ncurses" => _t('If set the ncurses terminal library will not be used to display import progress.'),
 				"dryrun" => _t('If set import is performed without data actually being saved to the database. This is useful for previewing an import for errors.')
 			);
