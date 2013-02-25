@@ -37,6 +37,7 @@
 require_once(__CA_LIB_DIR__.'/core/Parsers/PHPExcel/PHPExcel.php');
 require_once(__CA_LIB_DIR__.'/core/Parsers/PHPExcel/PHPExcel/IOFactory.php');
 require_once(__CA_LIB_DIR__.'/ca/Import/BaseDataReader.php');
+require_once(__CA_APP_DIR__.'/helpers/displayHelpers.php');
 
 class ExcelDataReader extends BaseDataReader {
 	# -------------------------------------------------------
@@ -105,7 +106,11 @@ class ExcelDataReader extends BaseDataReader {
 			$vn_col = 0;
 			$vn_last_col_set = null;
 			foreach ($o_cells as $o_cell) {
-				$this->opa_row_buf[] = $vs_val = trim((string)$o_cell->getValue());
+				if (PHPExcel_Shared_Date::isDateTime($o_cell)) {
+					$this->opa_row_buf[] = $vs_val = caGetLocalizedDate(PHPExcel_Shared_Date::ExcelToPHP(trim((string)$o_cell->getValue())));
+				} else {
+					$this->opa_row_buf[] = $vs_val = trim((string)$o_cell->getValue());
+				}
 				if ($vs_val) { $vb_val_was_set = true; $vn_last_col_set = $vn_col;}
 				
 				$vn_col++;

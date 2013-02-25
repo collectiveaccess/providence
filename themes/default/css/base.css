@@ -31,6 +31,14 @@ a:hover{
 
 h2 { font-size: 13px; color: #666; }
 
+h5 {
+	margin: 0px;
+	font-size: 13px; 
+	color: #666; 
+	-webkit-margin-before: 0em;
+	-webkit-margin-after: .5em;
+}
+
 .divide{
 	height:3px;
 	background-color:#DDDDDD;
@@ -174,7 +182,7 @@ h2 { font-size: 13px; color: #666; }
 #leftNav ul.selected { list-style: none; margin: 0px; padding: 3px 0px 3px 0px; display:block; }
 #leftNav ul.arrow { border-top: solid 1px #dce2e9; border-bottom: solid 1px #fff; font-size: 11px; }
 #leftNav ul.arrow li { list-style: none; font-weight: normal; border: 0; padding: 0; margin: 0; }
-#leftNav ul.arrow li a, #leftNav ul.arrow li span { _height: 15px; text-decoration: none; display: block; padding: 3px 0; background: transparent url('../graphics/icons/array_gray.gif') no-repeat 20px 8px; padding-left: 30px; padding-right: 5px; margin: 0; }
+#leftNav ul.arrow li a, #leftNav ul.arrow li span { _height: 15px; text-decoration: none; display: block; padding: 3px 0; background: transparent url('../graphics/icons/arrow_gray.gif') no-repeat 20px 8px; padding-left: 30px; padding-right: 5px; margin: 0; }
 #leftNav ul li a:hover { background-color: #fff; }
 #leftNav ul.arrow li a:hover { background-color: #fff; }
 
@@ -4085,15 +4093,19 @@ div.roundedRel {
 }
 
 div.listRel {
-	font-size: 12px;
+	font-size: 11px;
 	font-weight: normal;
 	padding: 10px;
 	margin-bottom: 5px;
-
+	-moz-border-radius: 5px; 
+	-webkit-border-radius: 5px;
+	-moz-border-radius: 5px; 
+	-webkit-border-bottom-right-radius: 5px;
 	width: 690px;	
-	border: 1px solid #aaaaaa;
+	border: 1px solid #ccc;
 	background-color:#ffffff;
 	min-height: 18px;
+	line-height:1.5em;
 }
 
 .caItemList {

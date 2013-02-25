@@ -187,6 +187,7 @@
  			$t_object = new ca_objects($pn_object_id);
  			if (!($vn_object_id = $t_object->getPrimaryKey())) { return; }
  			
+ 			$pn_representation_id = $this->request->getParameter('representation_id', pInteger);
  			$ps_version = $this->request->getParameter('version', pString);
  			
  			if (!$ps_version) { $ps_version = 'original'; }
@@ -216,6 +217,7 @@
 				$vs_idno = $t_object->get('idno');
 				
 				foreach($va_reps as $vn_representation_id => $va_rep) {
+					if ($pn_representation_id && ($pn_representation_id != $vn_representation_id)) { continue; }
 					$va_rep_info = $va_rep['info'][$ps_version];
 					$vs_idno_proc = preg_replace('![^A-Za-z0-9_\-]+!', '_', $vs_idno);
 					switch($this->request->user->getPreference('downloaded_file_naming')) {

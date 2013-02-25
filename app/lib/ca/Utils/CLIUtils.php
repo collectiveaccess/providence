@@ -285,7 +285,7 @@
 			if ($vn_delete_count == 1) {
 				print ($vb_delete_opt ? _t("%1 file (%2) was deleted", $vn_delete_count, $vs_percent) : _t("%1 file (%2) is unused", $vn_delete_count, $vs_percent))."\n";
 			} else {
-				print ($vb_delete_opt ?  _t("%1 files (%2) were deleted", $vn_delete_count, $vs_percent) : t_("%1 files (%2) are unused", $vn_delete_count, $vs_percent))."\n";
+				print ($vb_delete_opt ?  _t("%1 files (%2) were deleted", $vn_delete_count, $vs_percent) : _t("%1 files (%2) are unused", $vn_delete_count, $vs_percent))."\n";
 			}
 			return true;
 		}
@@ -553,11 +553,11 @@
 				return false;
 			}
 			
-			if (!ca_data_importers::loadImporterFromFile($vs_file_path)) {
+			if (!($t_importer = ca_data_importers::loadImporterFromFile($vs_file_path))) {
 				print _t("Could not import '%1'", $vs_file_path)."\n";
 				return false;
 			} else {
-				print _t("Created mapping from '%1'", $vs_file_path)."\n";
+				print _t("Created mapping %1 from %2", CLIUtils::textWithColor($t_importer->get('importer_code'), 'yellow'), $vs_file_path)."\n";
 				return true;
 			}
 		}

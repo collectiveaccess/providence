@@ -4088,11 +4088,11 @@ create index i_value_decimal2 on ca_attribute_values(value_decimal2);
 create index i_item_id on ca_attribute_values(item_id);
 create index i_value_longtext1 on ca_attribute_values
 (
-   value_longtext1(1024)
+   value_longtext1(500)
 );
 create index i_value_longtext2 on ca_attribute_values
 (
-   value_longtext2(1024)
+   value_longtext2(500)
 );
 
 

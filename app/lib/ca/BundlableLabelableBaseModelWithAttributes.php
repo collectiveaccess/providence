@@ -2083,7 +2083,21 @@ class BundlableLabelableBaseModelWithAttributes extends LabelableBaseModelWithAt
 			$va_opts = array('relatedItems' => $va_items, 'stripTags' => true);
 			if(strlen(trim($pa_bundle_settings['display_template']))) {
 				$va_opts['template'] = trim($pa_bundle_settings['display_template']);
+			} 
+			
+			// If no display_template set try to get a default out of the app.conf file
+			if (!$va_opts['template']) {
+				if (is_array($va_lookup_settings = $this->getAppConfig()->getList("{$ps_related_table}_lookup_settings"))) {
+					$vs_lookup_delimiter = $this->getAppConfig()->getList("{$ps_related_table}_lookup_delimiter");
+					$va_opts['template'] = join($vs_lookup_delimiter, $va_lookup_settings);
+				}
 			}
+			
+			// If no app.conf default then just show preferred_labels
+			if (!$va_opts['template']) {
+				$va_opts['template'] = "^preferred_labels";
+			}
+			
 			$va_initial_values = caProcessRelationshipLookupLabel($qr_rel_items, $t_rel, $va_opts);
 			
 		}

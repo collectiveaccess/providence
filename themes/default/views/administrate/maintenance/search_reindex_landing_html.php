@@ -35,7 +35,7 @@
 	");
 	
 	print caFormTag($this->request, 'reindex', 'caSearchReindexForm', null, 'post', 'multipart/form-data', '_top', array('disableUnsavedChangesWarning' => true, 'noTimestamp' => true));
-	print "<div style='text-align: center'>".caFormSubmitButton($this->request, __CA_NAV_BUTTON_GO__, 'Rebuild search indices', 'caSearchReindexForm', array())."</div>";
+	print "<div style='text-align: center'>".caFormSubmitButton($this->request, __CA_NAV_BUTTON_GO__, _t("Rebuild search indices"), 'caSearchReindexForm', array())."</div>";
 	print "</form>";
 	print "</div>\n";
 ?>

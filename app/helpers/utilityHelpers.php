@@ -307,7 +307,7 @@ function caFileIsIncludable($ps_file) {
 				if ($item != "." && $item != ".." && ($pb_include_hidden_files || (!$pb_include_hidden_files && $item{0} !== '.'))) {
 					$vb_is_dir = is_dir("{$dir}/{$item}");
 					if ($pb_recursive && $vb_is_dir) { 
-						$va_file_list = array_merge($va_file_list, caGetDirectoryContentsAsList("{$dir}/{$item}", true, $pb_include_hidden_files));
+						$va_file_list = array_merge($va_file_list, array_flip(caGetDirectoryContentsAsList("{$dir}/{$item}", true, $pb_include_hidden_files)));
 					} else { 
 						if (!$vb_is_dir) { 
 							$va_file_list["{$dir}/{$item}"] = true;
@@ -320,8 +320,7 @@ function caFileIsIncludable($ps_file) {
 		if ($pb_sort) {
 			ksort($va_file_list);
 		}
-		$va_file_list = array_keys($va_file_list);
-		return $va_file_list;
+		return array_keys($va_file_list);
 	}
 	# ----------------------------------------
 	/**

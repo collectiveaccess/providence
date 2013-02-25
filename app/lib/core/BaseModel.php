@@ -2177,7 +2177,7 @@ class BaseModel extends BaseObject {
 					$vn_id = $this->getPrimaryKey();
 					
 					if ((!isset($pa_options['dont_do_search_indexing']) || (!$pa_options['dont_do_search_indexing'])) && !defined('__CA_DONT_DO_SEARCH_INDEXING__')) {
-						$this->doSearchIndexing();
+						$this->doSearchIndexing(null, false);
 					}
 
 					if ($vb_we_set_transaction) { $this->removeTransaction(true); }
@@ -2713,7 +2713,7 @@ class BaseModel extends BaseObject {
 					}
 					if ((!isset($pa_options['dont_do_search_indexing']) || (!$pa_options['dont_do_search_indexing'])) &&  !defined('__CA_DONT_DO_SEARCH_INDEXING__')) {
 						# update search index
-						$this->doSearchIndexing();
+						$this->doSearchIndexing(null, false);
 					}
 														
 					if (is_array($va_rebuild_hierarchical_index)) {
@@ -3441,6 +3441,8 @@ class BaseModel extends BaseObject {
 				unset($va_media_desc["ORIGINAL_FILENAME"]);
 				unset($va_media_desc["INPUT"]);
 				unset($va_media_desc["VOLUME"]);
+				unset($va_media_desc["_undo_"]);
+				unset($va_media_desc["TRANSFORMATION_HISTORY"]);
 				return array_keys($va_media_desc);
 			}
 		} else {
@@ -8350,11 +8352,6 @@ $pa_options["display_form_field_tips"] = true;
 					$vs_where_sql = "mt.".$va_rel_keys['many_table_field']." = ?";
 				}
 				$va_query_params[] = (int)$this->getPrimaryKey();
-							
-				if ($vn_relation_id) {
-					$vs_relation_id_sql = " AND relation_id <> ?";
-					$va_query_params[] = $vn_relation_id;
-				}
 			
 				$vs_relation_id_fld = ($vb_is_one_table ? "mt.".$va_rel_keys['many_table_field'] : "ot.".$va_rel_keys['one_table_field']);
 				$qr_res = $o_db->query("
@@ -8362,7 +8359,7 @@ $pa_options["display_form_field_tips"] = true;
 					FROM {$va_rel_keys['one_table']} ot
 					INNER JOIN {$va_rel_keys['many_table']} AS mt ON mt.{$va_rel_keys['many_table_field']} = ot.{$va_rel_keys['one_table_field']}
 					WHERE
-						{$vs_where_sql} {$vs_relation_id_sql}
+						{$vs_where_sql}
 				", $va_query_params);
 				if (sizeof($va_ids = $qr_res->getAllFieldValues($vs_relation_id_fld))) {
 					return $va_ids;
