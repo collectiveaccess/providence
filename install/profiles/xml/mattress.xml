@@ -867,14 +867,6 @@
             </label>
           </labels>
         </item>
-        <item idno="deed" enabled="1" default="0">
-          <labels>
-            <label locale="en_US" preferred="1">
-              <name_singular>Deed of gift</name_singular>
-              <name_plural>Deed of gifts</name_plural>
-            </label>
-          </labels>
-        </item>
       </items>
     </list>
     <list code="contact_types" hierarchical="0" system="0" vocabulary="0">
@@ -1204,6 +1196,14 @@
             <label locale="en_US" preferred="1">
               <name_singular>Private</name_singular>
               <name_plural>Private</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="all" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>All</name_singular>
+              <name_plural>All</name_plural>
             </label>
           </labels>
         </item>
@@ -3070,7 +3070,15 @@
         </label>
       </labels>
       <items>
-        <item idno="overall" enabled="1" default="1">
+        <item idno="null" enabled="1" default="1">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular> </name_singular>
+              <name_plural> </name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="overall" enabled="1" default="0">
           <labels>
             <label locale="en_US" preferred="1">
               <name_singular>Overall</name_singular>
@@ -3123,6 +3131,96 @@
             <label locale="en_US" preferred="1">
               <name_singular>Mouth</name_singular>
               <name_plural>Mouth</name_plural>
+            </label>
+          </labels>
+        </item>
+      </items>
+    </list>
+    <list code="yes_no_unknown" hierarchical="0" system="0" vocabulary="0">
+      <labels>
+        <label locale="en_US">
+          <name>Yes/No/Unknown</name>
+        </label>
+      </labels>
+      <items>
+        <item idno="unknown" enabled="1" default="1">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>Unknown</name_singular>
+              <name_plural>Unknown</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="no" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>No</name_singular>
+              <name_plural>No</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="yes" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>Yes</name_singular>
+              <name_plural>Yes</name_plural>
+            </label>
+          </labels>
+        </item>
+      </items>
+    </list>
+    <list code="workflow_statuses" hierarchical="0" system="0" vocabulary="0">
+      <labels>
+        <label locale="en_US">
+          <name>Object workflow statuses</name>
+        </label>
+      </labels>
+      <items>
+        <item idno="new" enabled="1" default="1" value="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>new</name_singular>
+              <name_plural>new</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="editing_in_progress" enabled="1" default="0" value="1">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>editing in progress</name_singular>
+              <name_plural>editing in progress</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="editing_complete" enabled="1" default="0" value="2">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>editing complete</name_singular>
+              <name_plural>editing complete</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="review_in_progress" enabled="1" default="0" value="3">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>review in progress</name_singular>
+              <name_plural>review in progress</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="completed" enabled="1" default="0" value="4">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>completed</name_singular>
+              <name_plural>completed</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="clean_up" enabled="1" default="0" value="5">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>clean up</name_singular>
+              <name_plural>clean up</name_plural>
             </label>
           </labels>
         </item>
@@ -4146,44 +4244,6 @@
       <labels>
         <label locale="en_US">
           <name>Title source</name>
-          <description></description>
-        </label>
-      </labels>
-      <settings>
-        <setting name="fieldWidth">40</setting>
-        <setting name="fieldHeight">1</setting>
-      </settings>
-      <typeRestrictions>
-        <restriction code="r1">
-          <table>ca_occurrences</table>
-          <settings>
-            <setting name="minAttributesPerRow">1</setting>
-            <setting name="maxAttributesPerRow">1</setting>
-            <setting name="minimumAttributeBundlesToDisplay">1</setting>
-          </settings>
-        </restriction>
-        <restriction code="r2">
-          <table>ca_collections</table>
-          <settings>
-            <setting name="minAttributesPerRow">1</setting>
-            <setting name="maxAttributesPerRow">1</setting>
-            <setting name="minimumAttributeBundlesToDisplay">1</setting>
-          </settings>
-        </restriction>
-        <restriction code="r3">
-          <table>ca_objects</table>
-          <settings>
-            <setting name="minAttributesPerRow">1</setting>
-            <setting name="maxAttributesPerRow">1</setting>
-            <setting name="minimumAttributeBundlesToDisplay">1</setting>
-          </settings>
-        </restriction>
-      </typeRestrictions>
-    </metadataElement>
-    <metadataElement code="alt_title_source" datatype="List" list="source">
-      <labels>
-        <label locale="en_US">
-          <name>Alternative title source</name>
           <description></description>
         </label>
       </labels>
@@ -7904,7 +7964,7 @@
           </labels>
           <settings/>
           <elements>
-            <metadataElement code="condition_rating_source" datatype="Text">
+            <metadataElement code="condition_rating_source" datatype="List" list="source">
               <labels>
                 <label locale="en_US">
                   <name>Condition Rating Source</name>
@@ -7912,11 +7972,7 @@
                 </label>
               </labels>
               <settings>
-                <setting name="default_text">Cataloguer</setting>
-                <setting name="fieldWidth">90</setting>
-                <setting name="fieldHeight">3</setting>
-                <setting name="minChars">0</setting>
-                <setting name="maxChars">65535</setting>
+                <setting name="listWidth">40</setting>
               </settings>
             </metadataElement>
           </elements>
@@ -8832,44 +8888,6 @@
         </restriction>
         <restriction code="r2">
           <table>ca_objects</table>
-          <type>document</type>
-          <settings>
-            <setting name="minAttributesPerRow">1</setting>
-            <setting name="maxAttributesPerRow">25</setting>
-            <setting name="minimumAttributeBundlesToDisplay">1</setting>
-          </settings>
-        </restriction>
-        <restriction code="r3">
-          <table>ca_objects</table>
-          <type>image</type>
-          <settings>
-            <setting name="minAttributesPerRow">1</setting>
-            <setting name="maxAttributesPerRow">25</setting>
-            <setting name="minimumAttributeBundlesToDisplay">1</setting>
-          </settings>
-        </restriction>
-        <restriction code="r4">
-          <table>ca_objects</table>
-          <type>limited_edition</type>
-          <includeSubtypes>1</includeSubtypes>
-          <settings>
-            <setting name="minAttributesPerRow">1</setting>
-            <setting name="maxAttributesPerRow">25</setting>
-            <setting name="minimumAttributeBundlesToDisplay">1</setting>
-          </settings>
-        </restriction>
-        <restriction code="r5">
-          <table>ca_objects</table>
-          <type>av</type>
-          <settings>
-            <setting name="minAttributesPerRow">1</setting>
-            <setting name="maxAttributesPerRow">25</setting>
-            <setting name="minimumAttributeBundlesToDisplay">1</setting>
-          </settings>
-        </restriction>
-        <restriction code="r6">
-          <table>ca_objects</table>
-          <type>anecdote</type>
           <settings>
             <setting name="minAttributesPerRow">1</setting>
             <setting name="maxAttributesPerRow">25</setting>
@@ -8976,31 +8994,6 @@
         </restriction>
       </typeRestrictions>
     </metadataElement>
-	<metadataElement code="deed_gift" datatype="List" list="yes_no">
-      <labels>
-        <label locale="en_US">
-          <name>Deed of gift</name>
-          <description></description>
-        </label>
-      </labels>
-      <documentationUrl></documentationUrl>
-      <settings>
-        <setting name="render">radio_buttons</setting>
-        <setting name="fieldWidth">90</setting>
-        <setting name="fieldHeight">1</setting>
-      </settings>
-      <typeRestrictions>
-        <restriction code="r1">
-          <table>ca_objects</table>
-          <type></type>
-          <settings>
-            <setting name="minAttributesPerRow">1</setting>
-            <setting name="maxAttributesPerRow">1</setting>
-            <setting name="minimumAttributeBundlesToDisplay">1</setting>
-          </settings>
-        </restriction>
-      </typeRestrictions>
-    </metadataElement>
     <metadataElement code="version" datatype="Text">
       <labels>
         <label locale="en_US">
@@ -9016,25 +9009,6 @@
       <typeRestrictions>
         <restriction code="r1">
           <table>ca_objects</table>
-          <type>av</type>
-          <settings>
-            <setting name="minAttributesPerRow">1</setting>
-            <setting name="maxAttributesPerRow">255</setting>
-            <setting name="minimumAttributeBundlesToDisplay">1</setting>
-          </settings>
-        </restriction>
-        <restriction code="r2">
-          <table>ca_objects</table>
-          <type>document</type>
-          <settings>
-            <setting name="minAttributesPerRow">1</setting>
-            <setting name="maxAttributesPerRow">255</setting>
-            <setting name="minimumAttributeBundlesToDisplay">1</setting>
-          </settings>
-        </restriction>
-        <restriction code="r3">
-          <table>ca_objects</table>
-          <type>image</type>
           <settings>
             <setting name="minAttributesPerRow">1</setting>
             <setting name="maxAttributesPerRow">255</setting>
@@ -9131,6 +9105,73 @@
         </restriction>
       </typeRestrictions>
     </metadataElement>
+    <metadataElement code="deed_accession" datatype="Container">
+      <labels>
+        <label locale="en_US">
+          <name>Deed of gift</name>
+          <description></description>
+        </label>
+      </labels>
+      <settings>
+        <setting name="doesNotTakeLocale">1</setting>
+      </settings>
+      <elements>
+        <metadataElement code="deed_line1" datatype="Container">
+          <labels>
+            <label locale="en_US">
+              <name>Deed Line 1</name>
+            </label>
+          </labels>
+          <settings/>
+          <elements>
+            <metadataElement code="deed_gift_list" datatype="List" list="yes_no_unknown">
+              <labels>
+                <label locale="en_US">
+                  <name>Deed of gift?</name>
+                  <description></description>
+                </label>
+              </labels>
+              <documentationUrl></documentationUrl>
+              <settings>
+                <setting name="render">radio_buttons</setting>
+              </settings>
+            </metadataElement>
+          </elements>
+        </metadataElement>
+        <metadataElement code="deed_line2" datatype="Container">
+          <labels>
+            <label locale="en_US">
+              <name>Deed Line 2</name>
+            </label>
+          </labels>
+          <settings/>
+          <elements>
+            <metadataElement code="deed_date" datatype="DateRange">
+              <labels>
+                <label locale="en_US">
+                  <name>Deed date</name>
+                </label>
+              </labels>
+              <settings>
+                <setting name="useDatePicker">1</setting>
+                <setting name="fieldWidth">40</setting>
+                <setting name="fieldHeight">1</setting>
+              </settings>
+            </metadataElement>
+          </elements>
+        </metadataElement>
+      </elements>
+      <typeRestrictions>
+        <restriction code="r1">
+          <table>ca_object_lots</table>
+          <settings>
+            <setting name="minAttributesPerRow">1</setting>
+            <setting name="maxAttributesPerRow">1</setting>
+            <setting name="minimumAttributeBundlesToDisplay">1</setting>
+          </settings>
+        </restriction>
+      </typeRestrictions>
+    </metadataElement>
   </elementSets>
   <userInterfaces>
     <userInterface code="object_ui" type="ca_objects">
@@ -9174,9 +9215,6 @@
                 <setting name="add_label" locale="en_US">Add title</setting>
               </settings>
             </placement>
-            <placement code="ca_attribute_title_source">
-              <bundle>ca_attribute_title_source</bundle>
-            </placement>
              <placement code="nonpreferred_labels">
               <bundle>nonpreferred_labels</bundle>
               <settings>
@@ -9184,14 +9222,8 @@
                 <setting name="add_label" locale="en_US">Add title</setting>
               </settings>
              </placement>
-             <placement code="ca_attribute_alt_title_source">
-              <bundle>ca_attribute_alt_title_source</bundle>
-             </placement>
             <placement code="ca_attribute_circulation">
               <bundle>ca_attribute_circulation</bundle>
-            </placement>
-            <placement code="ca_attribute_deed_gift">
-              <bundle>ca_attribute_deed_gift</bundle>
             </placement>
             <placement code="ca_attribute_date">
               <bundle>ca_attribute_date</bundle>
@@ -9780,9 +9812,6 @@
                 <setting name="label" locale="en_US">Title</setting>
                 <setting name="add_label" locale="en_US">Add title</setting>
               </settings>
-            </placement>
-             <placement code="ca_attribute_title_source">
-              <bundle>ca_attribute_title_source</bundle>
             </placement>
             <placement code="idno">
               <bundle>idno</bundle>
@@ -10387,8 +10416,8 @@
             </label>
           </labels>
           <bundlePlacements>
-            <placement code="hierarchy_navigation">
-              <bundle>hierarchy_navigation</bundle>
+            <placement code="hierarchy_location">
+              <bundle>hierarchy_location</bundle>
             </placement>
             <placement code="preferred_labels">
               <bundle>preferred_labels</bundle>
@@ -10405,21 +10434,6 @@
             </placement>
             <placement code="ca_attribute_description">
               <bundle>ca_attribute_description</bundle>
-            </placement>
-          </bundlePlacements>
-        </screen>
-        <screen idno="location" default="0">
-          <labels>
-            <label locale="en_US">
-              <name>Location</name>
-            </label>
-          </labels>
-          <bundlePlacements>
-            <placement code="hierarchy_location">
-              <bundle>hierarchy_navigation</bundle>
-            </placement>
-            <placement code="ca_attribute_georeference">
-              <bundle>ca_attribute_georeference</bundle>
             </placement>
           </bundlePlacements>
         </screen>
@@ -10459,10 +10473,10 @@
         </screen>
       </screens>
     </userInterface>
-    <userInterface code="object_lots_ui" type="ca_object_lots">
+    <userInterface code="accessions_ui" type="ca_object_lots">
       <labels>
         <label locale="en_US">
-          <name>Object lots editor</name>
+          <name>Accessions editor</name>
         </label>
       </labels>
       <screens>
@@ -10504,6 +10518,9 @@
             </placement>
             <placement code="ca_attribute_accession_date">
               <bundle>ca_attribute_accession_date</bundle>
+            </placement>
+             <placement code="ca_attribute_deed_accession">
+              <bundle>ca_attribute_deed_accession</bundle>
             </placement>
             <placement code="ca_attribute_salePrice">
               <bundle>ca_attribute_salePrice</bundle>
@@ -10953,6 +10970,9 @@
             </label>
           </labels>
           <bundlePlacements>
+             <placement code="idno">
+              <bundle>idno</bundle>
+            </placement>
             <placement code="preferred_labels">
               <bundle>preferred_labels</bundle>
               <settings>
@@ -11511,6 +11531,16 @@
             <label locale="en_US">
               <typename>translation by</typename>
               <typename_reverse>translator of</typename_reverse>
+            </label>
+          </labels>
+          <subTypeLeft> </subTypeLeft>
+          <subTypeRight/>
+        </type>
+        <type code="depositor" default="0">
+          <labels>
+            <label locale="en_US">
+              <typename>has as depositor</typename>
+              <typename_reverse>is depositor of</typename_reverse>
             </label>
           </labels>
           <subTypeLeft> </subTypeLeft>
@@ -12176,6 +12206,26 @@
           <subTypeLeft> </subTypeLeft>
           <subTypeRight/>
         </type>
+     	<type code="contributor" default="0">
+          <labels>
+            <label locale="en_US">
+              <typename>was contributor for</typename>
+              <typename_reverse>had as contributor</typename_reverse>
+            </label>
+          </labels>
+          <subTypeLeft> </subTypeLeft>
+          <subTypeRight/>
+        </type>
+        <type code="collaborator" default="0">
+          <labels>
+            <label locale="en_US">
+              <typename>was collaborator for</typename>
+              <typename_reverse>had as collaborator</typename_reverse>
+            </label>
+          </labels>
+          <subTypeLeft> </subTypeLeft>
+          <subTypeRight/>
+        </type>
       </types>
     </relationshipTable>
     <relationshipTable name="ca_object_lots_x_entities">
@@ -12415,6 +12465,16 @@
             <label locale="en_US">
               <typename>was contributor for</typename>
               <typename_reverse>had as contributor</typename_reverse>
+            </label>
+          </labels>
+          <subTypeLeft> </subTypeLeft>
+          <subTypeRight/>
+        </type>
+        <type code="collaborator" default="0">
+          <labels>
+            <label locale="en_US">
+              <typename>was collaborator for</typename>
+              <typename_reverse>had as collaborator</typename_reverse>
             </label>
           </labels>
           <subTypeLeft> </subTypeLeft>
