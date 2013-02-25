@@ -644,5 +644,77 @@
 			return _t("Import data from an Excel XLSX, tab or comma delimited text or XML file. More here...");
 		}
 		# -------------------------------------------------------
+		/**
+		 * 
+		 */
+		public static function regenerate_annotation_previews($po_opts=null) {
+			require_once(__CA_LIB_DIR__."/core/Db.php");
+			require_once(__CA_MODELS_DIR__."/ca_representation_annotations.php");
+	
+			$o_db = new Db();
+	
+			$t_rep = new ca_object_representations();
+			$t_rep->setMode(ACCESS_WRITE);
+	
+			if (!($vn_start = (int)$po_opts->getOption('start_id'))) { $vn_start = null; }
+			if (!($vn_end = (int)$po_opts->getOption('end_id'))) { $vn_end = null; }
+			
+			$vs_sql_where = null;
+			$va_params = array();
+			if (
+				(($vn_start > 0) && ($vn_end > 0) && ($vn_start <= $vn_end)) || (($vn_start > 0) && ($vn_end == null))
+			) {
+				$vs_sql_where = "WHERE annotation_id >= ?";
+				$va_params[] = $vn_start;
+				if ($vn_end) {
+					$vs_sql_where .= " AND annotation_id <= ?";
+					$va_params[] = $vn_end;
+				}
+			}
+			$qr_reps = $o_db->query("
+				SELECT annotation_id 
+				FROM ca_representation_annotations 
+				{$vs_sql_where}
+				ORDER BY annotation_id
+			", $va_params);
+	
+			$vn_total = $qr_reps->numRows();
+			print CLIProgressBar::start($vn_total, _t('Finding annotations'));
+			$vn_c = 1;
+			while($qr_reps->nextRow()) {
+				$t_instance = new ca_representation_annotations($vn_id = $qr_reps->get('annotation_id'));
+				print CLIProgressBar::next(1, _t('Annotation %1', $vn_id));
+				$t_instance->setMode(ACCESS_WRITE);
+				$t_instance->update(array('forcePreviewGeneration' => true));
+		
+				$vn_c++;
+			}
+			print CLIProgressBar::finish();
+		}
+		# -------------------------------------------------------
+		/**
+		 *
+		 */
+		public static function regenerate_annotation_previewsParamList() {
+			return array(
+				"start_id|s-n" => _t('Annotation id to start reloading at'),
+				"end_id|e-n" => _t('Annotation id to end reloading at'),
+			);
+		}
+		# -------------------------------------------------------
+		/**
+		 *
+		 */
+		public static function regenerate_annotation_previewsShortHelp() {
+			return _t("Regenerates annotation preview media for some or all object representation annotations.");
+		}
+		# -------------------------------------------------------
+		/**
+		 *
+		 */
+		public static function regenerate_annotation_previewsHelp() {
+			return _t("Regenerates annotation preview media for some or all object representation annotations.");
+		}
+		# -------------------------------------------------------
 	}
 ?>
