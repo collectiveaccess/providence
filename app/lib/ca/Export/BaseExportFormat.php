@@ -34,6 +34,9 @@
   *
   */
  
+ 	require_once(__CA_LIB_DIR__.'/ca/Export/ExportFormats/ExportXML.php');
+ 	require_once(__CA_LIB_DIR__.'/ca/Export/ExportFormats/ExportMARC.php');
+ 
 	abstract class BaseExportFormat {
 		# -------------------------------------------------------
 		static $s_format_settings = array();
@@ -62,5 +65,7 @@
 		public function getDescription() {
 			return $this->ops_element_description;
 		}
+		# -------------------------------------------------------
+		abstract public function addItem($ps_element,$ps_content);
 		# -------------------------------------------------------
 	}

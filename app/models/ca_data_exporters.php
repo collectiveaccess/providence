@@ -222,16 +222,6 @@ class ca_data_exporters extends BundlableLabelableBaseModelWithAttributes {
 			$this->SETTINGS = new ModelSettings($this, 'settings', array());	
 		}
 
-		$va_settings['restrict_search'] = array(
-			'formatType' => FT_TEXT,
-			'displayType' => DT_FIELD,
-			'width' => 70, 'height' => 1,
-			'takesLocale' => false,
-			'default' => '',
-			'label' => _t('Restrict to search expression'),
-			'description' => _t('Restrict export based on an arbitrary search expression. Only valid for item set exports.')
-		);
-
 		$va_settings['exporter_format'] = array(
 			'formatType' => FT_TEXT,
 			'displayType' => DT_SELECT,
@@ -243,18 +233,24 @@ class ca_data_exporters extends BundlableLabelableBaseModelWithAttributes {
 			'description' => _t('Set exporter type, i.e. the format of the exported data.  Currently supported: XML and MARC')
 		);
 
-		$va_settings['exporter_type'] = array(
+		$va_settings['wrap_before'] = array(
 			'formatType' => FT_TEXT,
-			'displayType' => DT_SELECT,
-			'width' => 40, 'height' => 1,
+			'displayType' => DT_FIELD,
+			'width' => 70, 'height' => 6,
 			'takesLocale' => false,
 			'default' => '',
-			'options' => array(
-				_t('Item set') => 'item_set',
-				_t('Single item') => 'single_item',
-			),
-			'label' => _t('Exporter type'),
-			'description' => _t('Determines the exporter type.')
+			'label' => _t('Wrapping text before export'),
+			'description' => _t('If this exporter is used for an item set export (as opposed to a single item), the text set here will be inserted before the first item. This can for instance be used to wrap a repeating set of XML elements in a single global element. The text has to be valid for the current exporter format.')
+		);
+
+		$va_settings['wrap_after'] = array(
+			'formatType' => FT_TEXT,
+			'displayType' => DT_FIELD,
+			'width' => 70, 'height' => 6,
+			'takesLocale' => false,
+			'default' => '',
+			'label' => _t('Wrapping text after export'),
+			'description' => _t('If this exporter is used for an item set export (as opposed to a single item), the text set here will be inserted after the last item. This can for instance be used to wrap a repeating set of XML elements in a single global element. The text has to be valid for the current exporter format.')
 		);
 
 		$this->SETTINGS = new ModelSettings($this, 'settings', $va_settings);
@@ -262,7 +258,8 @@ class ca_data_exporters extends BundlableLabelableBaseModelWithAttributes {
 	# ------------------------------------------------------
 	public function getAvailableExporterFormats() {
 		return array(
-			'XML' => 'ExportFormatXML',
+			'XML' => 'XML',
+			'MARC' => 'MARC',
 		);
 	}
 	# ------------------------------------------------------
@@ -405,19 +402,109 @@ class ca_data_exporters extends BundlableLabelableBaseModelWithAttributes {
 	}
 	# ------------------------------------------------------
 	/**
-	 * Export data to destination
+	 * Export a record set as defined by the given search expression and the table_num for this exporter.
+	 * This function wraps the record-level exports using the settings 'wrap_before' and 'wrap_after' if they are set.
 	 * @param string $ps_exporter_code defines the exporter to use
-	 * @param string $ps_destination Destination to write export to. This is usually a file name.
-	 * @param int $pn_record_id Identifier of item to export. Only valid (and required) for exporters with exporter_type 'single_item'
-	 * @param array $pa_options Associative array of options
-	 * 		showCLIProgressBar = Show command-line progress bar. Default is false.
-	 * 
+	 * @param string $ps_expression A valid search expression
+	 * @param string $ps_destination Destination filename (we can't keep everything in memory here)
+	 * @param array $pa_options
 	 */
-	static public function exportData($ps_exporter_code, $ps_destination, $pn_record_id=null, $pa_options=array()) {
+	static public function exportRecordsFromSearchExpression($ps_exporter_code, $ps_expression, $ps_destination, $pa_options=array()){
+
+	}
+	# ------------------------------------------------------
+	/**
+	 * Export a single record using the mapping defined by this exporter and return as string
+	 * @param string $ps_exporter_code defines the exporter to use
+	 * @param int $pn_record_id Primary key of the record to export. Record type is determined by the table_num field for this exporter.
+	 * @param array $pa_options
+	 * @return string Exported record as string
+	 */
+	static public function exportRecord($ps_exporter_code, $pn_record_id, $pa_options=array()){
 		$t_exporter = ca_data_exporters::exporterExists($ps_exporter_code);
 		if(!$t_exporter) { return false; }
 
+		switch($t_exporter->getSetting('exporter_format')){
+			case 'XML':
+				$o_export = new ExportXML();
+				break;
+			case 'MARC':
+				$o_export = new ExportMARC();
+				break;
+		}
 
+		foreach($t_exporter->getTopLevelItems() as $va_item){
+			$t_exporter->processExporterItem($va_item['item_id'],$this->get('table_num'),$o_export,$pn_record_id,$pa_options);
+		}
+	}
+	# ------------------------------------------------------
+	/**
+	 * @param array $pa_options
+	 *		ignoreSource = don't switch context if source value is set
+	 */
+	public function processExporterItem($pn_item_id,$pn_table_num,$po_export,$pn_record_id,$pa_options=array()){
+		$vb_ignore_source = (isset($pa_options['ignoreSource']) && $pa_options['ignoreSource']);
+
+		$t_exporter_item = new ca_exporter_items($pn_item_id);
+		$t_record = $this->getAppDatamodel()->getInstanceByTableNum($pn_table_num);
+		if(!$t_record->load($pn_item_id)) { return false; }
+
+		// switch context to different table if necessary and repeat current exporter item for all selected related records
+		if(!$vb_ignore_source && ($vs_source = $t_exporter_item->get('source'))){
+			$va_parsed_source = ca_data_exporters::_parseItemSource($vs_source);
+			if(!$va_parsed_source){ die('invalid value for source'); }
+			$va_related = $t_record->getRelatedItems(
+				$va_parsed_source['table_num'],
+				array(
+					'restrictToTypes' => $va_parsed_source['restrictToTypes'],
+					'restrictToRelationshipTypes' => $va_parsed_source['restrictToRelationshipTypes'],
+					'checkAccess' => $va_parsed_source['checkAccess'],
+				)
+			);
+
+			foreach($va_related as $va_rel){
+				$this->processExporterItem($pn_item_id,$va_parsed_source['table_num'],$po_export,$va_rel['item_id'],$pa_options);
+			}
+
+			return;
+		}
+		// end switch context
+
+		$po_export->addItem('foo','bar');
+		
+		foreach($t_exporter_item->getHierarchyChildren() as $va_child){
+			$this->processExporterItem($va_child['item_id'],$po_export,$pn_record_id,$pa_options);
+		}
+	}
+	# ------------------------------------------------------
+	static public function _parseItemSource($vs_source){
+		// example: ca_objects%restrictToTypes=image|print%restrictToRelationshipTypes=depicts|foobar%checkAccess=1
+		$va_return = array();
+		$o_dm = Datamodel::load();
+
+		$va_tmp = explode('%',$vs_source);
+		$vs_table = array_shift($va_tmp);
+
+		if($vn_table_num = $o_dm->getTableNum($vs_table)){
+			$va_return['table_num'] = $vn_table_num;
+		} else {
+			return false;
+		}
+
+		foreach($va_tmp as $vs_tmp){
+			$va_keyval = explode('=',$vs_tmp);
+			switch($va_keyval[0]){
+				case 'restrictToTypes':
+				case 'restrictToRelationshipTypes':
+				case 'checkAccess':
+					$va_return[$va_keyval[0]] = explode('|',$va_keyval[1]);
+					break;
+				default:
+					return false;
+			}
+		}
+
+		return $va_return;
 	}
 	# ------------------------------------------------------
 	static public function exporterExists($ps_exporter_code) {

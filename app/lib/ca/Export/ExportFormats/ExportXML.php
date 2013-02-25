@@ -32,14 +32,21 @@
 
 require_once(__CA_LIB_DIR__.'/ca/Export/BaseExportFormat.php');	
 
-class ExportFormatXML extends BaseExportFormat {
+class ExportXML extends BaseExportFormat {
 	# ------------------------------------------------------
-	
+	private $opo_dom;
 	# ------------------------------------------------------
 	public function __construct(){
 		$this->ops_name = 'XML';
 		$this->ops_element_description = _t('Values prefixed with @ reference XML attributes. All other values define XML elements. The usual restrictions and naming conventions for XML elements and attributes apply.');
+
+		$this->opo_dom = new DOMDocument('1.0', 'utf-8'); // we might wanna put this into a setting?
+
 		parent::__construct();
+	}
+	# ------------------------------------------------------
+	public function addItem($ps_element,$ps_content){
+
 	}
 	# ------------------------------------------------------
 }

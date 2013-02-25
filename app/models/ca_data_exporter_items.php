@@ -75,7 +75,7 @@ BaseModel::$s_ca_models_definitions['ca_data_exporter_items'] = array(
 				'DISPLAY_WIDTH' => 70, 'DISPLAY_HEIGHT' => 1,
 				'IS_NULL' => false, 
 				'DEFAULT' => '',
-				'LABEL' => _t('Data source'), 'DESCRIPTION' => _t('CollectiveAccess data source to export. This will typically be a bundle name.'),
+				'LABEL' => _t('Data source/context'), 'DESCRIPTION' => _t('This setting can be used to switch the source/context of the export for this exporter item and all children to a different table, for instance to related entities. The element is automatically repeated for all selected related records. Leave empty to inherit context from parent item.'),
 				'BOUNDS_LENGTH' => array(0,1024)
 		),
 		'settings' => array(
@@ -283,6 +283,20 @@ class ca_data_exporter_items extends BaseModel {
 			'default' => '',
 			'label' => _t('Maximum length'),
 			'description' => _t('Truncate to specified length if value exceeds that length.')
+		);
+
+		$va_settings['repeat_element_for_multiple_values'] = array(
+			'formatType' => FT_TEXT,
+			'displayType' => DT_SELECT,
+			'width' => 40, 'height' => 1,
+			'takesLocale' => false,
+			'default' => 0,
+			'options' => array(
+				_t('yes') => 1,
+				_t('no') => 0
+			),
+			'label' => _t('Repeat element for multiple values'),
+			'description' => _t('If the current selector returns multiple values, this setting determines if the element is repeated for each value.')
 		);
 		
 		$this->SETTINGS = new ModelSettings($this, 'settings', $va_settings);
