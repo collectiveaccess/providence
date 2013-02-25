@@ -266,14 +266,14 @@ class ca_data_exporter_items extends BaseModel {
 			'label' => _t('Suffix'),
 			'description' => _t('Text to append to value prior to export.')
 		);
-		$va_settings['formatWithTemplate'] = array(
+		$va_settings['template'] = array(
 			'formatType' => FT_TEXT,
 			'displayType' => DT_FIELD,
-			'width' => 40, 'height' => 2,
+			'width' => 40, 'height' => 1,
 			'takesLocale' => false,
 			'default' => '',
-			'label' => _t('Format with template'),
-			'description' => _t('Format imported value with provided template. Template may include caret (^) prefixed placeholders that refer to data source values.')
+			'label' => _t('Display template'),
+			'description' => _t('Format exported value with provided template. Template may include caret (^) prefixed placeholders that refer to data source values. This setting can also be used to set static values for exporter items without data source.')
 		);
 		$va_settings['maxLength'] = array(
 			'formatType' => FT_NUMBER,
@@ -333,6 +333,9 @@ class ca_data_exporter_items extends BaseModel {
 				$this->SETTINGS->setAvailableSettings($va_current_settings);
 			}
 		}
+
+		// TODO: pull in format specific settings if needed
+
 		if (method_exists($this->SETTINGS, $ps_name)) {
 			return call_user_func_array(array($this->SETTINGS, $ps_name), $pa_arguments);
 		}

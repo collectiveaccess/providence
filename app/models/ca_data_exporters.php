@@ -36,6 +36,11 @@
 
 require_once(__CA_LIB_DIR__.'/core/ModelSettings.php');
 require_once(__CA_LIB_DIR__.'/ca/BundlableLabelableBaseModelWithAttributes.php');
+
+require_once(__CA_LIB_DIR__.'/ca/Export/BaseExportFormat.php');
+require_once(__CA_LIB_DIR__.'/ca/Export/BaseExportRefinery.php');
+require_once(__CA_LIB_DIR__.'/ca/Export/ExportRefineryManager.php');
+
 require_once(__CA_MODELS_DIR__."/ca_data_exporter_labels.php");
 require_once(__CA_MODELS_DIR__."/ca_data_exporter_items.php");
 
@@ -217,32 +222,48 @@ class ca_data_exporters extends BundlableLabelableBaseModelWithAttributes {
 			$this->SETTINGS = new ModelSettings($this, 'settings', array());	
 		}
 
-		if (($t_instance = $this->_DATAMODEL->getInstanceByTableNum($vn_table_num, true)) && method_exists($t_instance, "getTypeListCode")) {
-			$va_settings['restrict_to_types'] = array(
-				'formatType' => FT_TEXT,
-				'displayType' => DT_SELECT,
-				'width' => 100, 'height' => 8,
-				'takesLocale' => false,
-				'default' => '',
-				'useList' => $t_instance->getTypeListCode(),
-				'label' => _t('Restrict to types'),
-				'description' => _t('Restrict export to specific types of item.')
-			);
-		}
-
-		$va_settings['restrict_access'] = array(
+		$va_settings['restrict_search'] = array(
 			'formatType' => FT_TEXT,
-			'displayType' => DT_SELECT,
-			'width' => 100, 'height' => 8,
+			'displayType' => DT_FIELD,
+			'width' => 70, 'height' => 1,
 			'takesLocale' => false,
 			'default' => '',
-			'useList' => 'access_statuses',
-			'label' => _t('Restrict to access status'),
-			'description' => _t('Restrict export based on access status settings.')
+			'label' => _t('Restrict to search expression'),
+			'description' => _t('Restrict export based on an arbitrary search expression. Only valid for item set exports.')
 		);
-		
+
+		$va_settings['exporter_format'] = array(
+			'formatType' => FT_TEXT,
+			'displayType' => DT_SELECT,
+			'width' => 40, 'height' => 1,
+			'takesLocale' => false,
+			'default' => '',
+			'options' => $this->getAvailableExporterFormats(),
+			'label' => _t('Exporter format'),
+			'description' => _t('Set exporter type, i.e. the format of the exported data.  Currently supported: XML and MARC')
+		);
+
+		$va_settings['exporter_type'] = array(
+			'formatType' => FT_TEXT,
+			'displayType' => DT_SELECT,
+			'width' => 40, 'height' => 1,
+			'takesLocale' => false,
+			'default' => '',
+			'options' => array(
+				_t('Item set') => 'item_set',
+				_t('Single item') => 'single_item',
+			),
+			'label' => _t('Exporter type'),
+			'description' => _t('Determines the exporter type.')
+		);
 
 		$this->SETTINGS = new ModelSettings($this, 'settings', $va_settings);
+	}
+	# ------------------------------------------------------
+	public function getAvailableExporterFormats() {
+		return array(
+			'XML' => 'ExportFormatXML',
+		);
 	}
 	# ------------------------------------------------------
 	/**
@@ -278,7 +299,7 @@ class ca_data_exporters extends BundlableLabelableBaseModelWithAttributes {
 	 *                          id_prefix
 	 * @return array array of items, keyed by their primary key
 	 */
-	public function getItems($pa_options){
+	public function getItems($pa_options=array()){
 		if (!($vn_exporter_id = $this->getPrimaryKey())) { return null; }
 
 		$vb_include_settings_form = isset($pa_options['includeSettingsForm']) ? (bool)$pa_options['includeSettingsForm'] : false;
@@ -312,6 +333,10 @@ class ca_data_exporters extends BundlableLabelableBaseModelWithAttributes {
 		return $va_items;
 	}
 	# ------------------------------------------------------
+	public function getTopLevelItems($pa_options=array()){
+		return $this->getItems(array_merge(array('onlyTopLevel' => true),$pa_options));
+	}
+	# ------------------------------------------------------
 	/**
 	 * Add new exporter item to this exporter.
 	 * @param int $pn_parent_id parent id for the new record. can be null
@@ -321,7 +346,7 @@ class ca_data_exporters extends BundlableLabelableBaseModelWithAttributes {
 	 * @param array $pa_vars array of variables to store
 	 * @return ca_data_exporter_items BaseModel representation of the new record
 	 */
-	public function addItem($pn_parent_id=null,$ps_source,$ps_element,$pa_settings,$pa_vars){
+	public function addItem($pn_parent_id=null,$ps_source,$ps_element,$pa_settings,$pa_vars=null){
 		if (!($vn_exporter_id = $this->getPrimaryKey())) { return null; }
 
 		$t_item = new ca_data_exporter_items();
@@ -378,6 +403,30 @@ class ca_data_exporters extends BundlableLabelableBaseModelWithAttributes {
 		}
 		die($this->tableName()." does not implement method {$ps_name}");
 	}
-	# ------------------------------------------------------	
+	# ------------------------------------------------------
+	/**
+	 * Export data to destination
+	 * @param string $ps_exporter_code defines the exporter to use
+	 * @param string $ps_destination Destination to write export to. This is usually a file name.
+	 * @param int $pn_record_id Identifier of item to export. Only valid (and required) for exporters with exporter_type 'single_item'
+	 * @param array $pa_options Associative array of options
+	 * 		showCLIProgressBar = Show command-line progress bar. Default is false.
+	 * 
+	 */
+	static public function exportData($ps_exporter_code, $ps_destination, $pn_record_id=null, $pa_options=array()) {
+		$t_exporter = ca_data_exporters::exporterExists($ps_exporter_code);
+		if(!$t_exporter) { return false; }
+
+
+	}
+	# ------------------------------------------------------
+	static public function exporterExists($ps_exporter_code) {
+		$t_exporter = new ca_data_exporters();
+		if($t_exporter->load(array('exporter_code' => $ps_mapping))) {
+			return $t_exporter;
+		}
+		return false;
+	}
+	# ------------------------------------------------------
 }
 ?>

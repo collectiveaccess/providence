@@ -1,6 +1,6 @@
 <?php
 /** ---------------------------------------------------------------------
- * XML.php : export of XML data
+ * ExportFormatXML.php : defines XML export format
  * ----------------------------------------------------------------------
  * CollectiveAccess
  * Open-source collections management software
@@ -30,16 +30,22 @@
  * ----------------------------------------------------------------------
  */
 
-require_once(__CA_LIB_DIR__.'/ca/Export/Exporter.php');	
+require_once(__CA_LIB_DIR__.'/ca/Export/BaseExportFormat.php');	
 
-class XMLExporter extends Exporter {
+class ExportFormatXML extends BaseExportFormat {
 	# ------------------------------------------------------
 	
 	# ------------------------------------------------------
-	public function __construct($pn_exporter_id){
-		parent::__construct($pn_exporter_id);
+	public function __construct(){
+		$this->ops_name = 'XML';
+		$this->ops_element_description = _t('Values prefixed with @ reference XML attributes. All other values define XML elements. The usual restrictions and naming conventions for XML elements and attributes apply.');
+		parent::__construct();
 	}
 	# ------------------------------------------------------
 }
+
+BaseExportFormat::$s_format_settings['XML'] = array(
+	// do we need this? will see ...
+);
 
 ?>
