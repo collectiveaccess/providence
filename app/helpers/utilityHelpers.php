@@ -293,30 +293,76 @@ function caFileIsIncludable($ps_file) {
 	 * @param string $dir The path to the directory you wish to get the contents list for
 	 * @param bool $pb_recursive Optional. By default caGetDirectoryContentsAsList() will recurse through all sub-directories of $dir; set this to false to only consider files that are in $dir itself.
 	 * @param bool $pb_include_hidden_files Optional. By default caGetDirectoryContentsAsList() does not consider hidden files (files starting with a '.') when calculating file counts. Set this to true to include hidden files in counts. Note that the special UNIX '.' and '..' directory entries are *never* counted as files.
+	 * @param bool $pb_sort Optional. If set paths are returns sorted alphabetically. Default is false.
 	 * @return array An array of file paths.
 	 */
-	function &caGetDirectoryContentsAsList($dir, $pb_recursive=true, $pb_include_hidden_files=false) {
+	function &caGetDirectoryContentsAsList($dir, $pb_recursive=true, $pb_include_hidden_files=false, $pb_sort=false) {
 		$va_file_list = array();
 		if(substr($dir, -1, 1) == "/"){
 			$dir = substr($dir, 0, strlen($dir) - 1);
 		}
-		if ($handle = opendir($dir)) {
-			while (false !== ($item = readdir($handle))) {
+		
+		if($va_paths = scandir($dir, 0)) {
+			foreach($va_paths as $item) {
 				if ($item != "." && $item != ".." && ($pb_include_hidden_files || (!$pb_include_hidden_files && $item{0} !== '.'))) {
 					$vb_is_dir = is_dir("{$dir}/{$item}");
 					if ($pb_recursive && $vb_is_dir) { 
-						$va_file_list = array_merge($va_file_list, caGetDirectoryContentsAsList("{$dir}/{$item}"));
+						$va_file_list = array_merge($va_file_list, caGetDirectoryContentsAsList("{$dir}/{$item}", true, $pb_include_hidden_files));
 					} else { 
 						if (!$vb_is_dir) { 
-							$va_file_list[] = "{$dir}/{$item}";
+							$va_file_list["{$dir}/{$item}"] = true;
 						}
+					}
+				}
+			}
+		}
+		
+		if ($pb_sort) {
+			ksort($va_file_list);
+		}
+		$va_file_list = array_keys($va_file_list);
+		return $va_file_list;
+	}
+	# ----------------------------------------
+	/**
+	 * Returns counts of files and directories for the directory $dir and, optionally, all sub-directories. 
+	 *
+	 * @param string $dir The path to the directory you wish to get the contents list for
+	 * @param bool $pb_recursive Optional. By default caGetDirectoryContentsAsList() will recurse through all sub-directories of $dir; set this to false to only consider files that are in $dir itself.
+	 * @param bool $pb_include_hidden_files Optional. By default caGetDirectoryContentsAsList() does not consider hidden files (files starting with a '.') when calculating file counts. Set this to true to include hidden files in counts. Note that the special UNIX '.' and '..' directory entries are *never* counted as files.
+	 * @return array An array of counts with two keys: 'directories' and 'files'
+	 */
+	function caGetDirectoryContentsCount($dir, $pb_recursive=true, $pb_include_hidden_files=false) {
+		$vn_file_count = 0;
+		if(substr($dir, -1, 1) == "/"){
+			$dir = substr($dir, 0, strlen($dir) - 1);
+		}
+		
+		$va_counts = array(
+			'directories' => 0, 'files' => 0
+		);
+		if ($handle = @opendir($dir)) {
+			while (false !== ($item = readdir($handle))) {
+				if ($item != "." && $item != ".." && ($pb_include_hidden_files || (!$pb_include_hidden_files && $item{0} !== '.'))) {
+					$vb_is_dir = is_dir("{$dir}/{$item}");
+					if ($vb_is_dir) {
+						$va_counts['directories']++;
+					}
+					if ($pb_recursive && $vb_is_dir) { 
+						$va_recursive_counts = caGetDirectoryContentsCount("{$dir}/{$item}", true, $pb_include_hidden_files);
+						$va_counts['files'] += $va_recursive_counts['files'];
+						$va_counts['directories'] += $va_recursive_counts['directories'];
+					} else { 
+						if (!$vb_is_dir) { 
+							$va_counts['files']++;
+						} 
 					}
 				}
 			}
 			closedir($handle);
 		}
 		
-		return $va_file_list;
+		return $va_counts;
 	}
 	# ----------------------------------------
 	/**
@@ -843,7 +889,7 @@ function caFileIsIncludable($ps_file) {
 	 * @param array $pa_sort_keys An array of keys in the second-level array to sort by
 	 * @return array The sorted array
 	*/
-	function caSortArrayByKeyInValue($pa_values, $pa_sort_keys) {
+	function caSortArrayByKeyInValue($pa_values, $pa_sort_keys, $ps_sort_direction="ASC") {
 		$va_sort_keys = array();
 		foreach ($pa_sort_keys as $vs_field) {
 			$va_tmp = explode('.', $vs_field);
@@ -859,6 +905,9 @@ function caFileIsIncludable($ps_file) {
 			$va_sorted_by_key[join('/', $va_key)][$vn_id] = $va_data;
 		}
 		ksort($va_sorted_by_key);
+		if (strtolower($ps_sort_direction) == 'desc') {
+			$va_sorted_by_key = array_reverse($va_sorted_by_key);
+		}
 		
 		$pa_values = array();
 		foreach($va_sorted_by_key as $vs_key => $va_data) {
@@ -1426,4 +1475,117 @@ function caFileIsIncludable($ps_file) {
 		return $pa_array;
 	}
 	# ---------------------------------------
+	/**
+	 * Returns a regexp string to check if a string is a valid roman number
+	 *
+	 * @return string The PCRE regexp
+	 */
+	function caRomanNumeralsRegexp() {
+		return "M{0,4}(CM|CD|D?C{0,3})(XC|XL|L?X{0,3})(IX|IV|V?I{0,3})";
+	}
+	
+	# ---------------------------------------
+	/**
+	 * Detects if a string is a valid roman number
+	 *
+	 * @param string $pa_string The string to analyze
+	 * @return boolean True if string is a roman number, false otherwise
+	 */
+	function caIsRomanNumerals($pa_string) {
+		if ($pa_string === NULL) return false;
+		$pattern = "/^".caRomanNumeralsRegexp()."$/";
+		return preg_match($pattern, $pa_string);
+	}
+	# ---------------------------------------
+	/**
+	 * Converts an arabic int to a roman number
+	 * 
+	 * Source : http://www.go4expert.com/forums/showthread.php?t=4948
+	 *
+	 * @param $input_arabic_numeral The int to convert
+	 * @return string Roman number resulting from the conversion
+	 */
+	function caArabicRoman($num) {
+		// Make sure that we only use the integer portion of the value
+		$n = intval($num);
+		$result = '';
+		
+		// Declare a lookup array that we will use to traverse the number:
+		$lookup = array('M' => 1000, 'CM' => 900, 'D' => 500, 'CD' => 400,
+				'C' => 100, 'XC' => 90, 'L' => 50, 'XL' => 40,
+				'X' => 10, 'IX' => 9, 'V' => 5, 'IV' => 4, 'I' => 1);
+		
+		foreach ($lookup as $roman => $value)
+		{
+			// Determine the number of matches
+			$matches = intval($n / $value);
+		
+			// Store that many characters
+			$result .= str_repeat($roman, $matches);
+		
+			// Substract that from the number
+			$n = $n % $value;
+		}
+		
+		// The Roman numeral should be built, return it
+		return $result;
+	}
+	# ---------------------------------------
+	/**
+	 * Converts a roman number to arabic numerals
+	 *
+	 * Source : pear/Numbers/Roman.php
+	 *
+	 * @param string $roman The string to convert
+	 * @return mixed int if converted, false if no valid roman number supplied   
+	 */
+	function caRomanArabic($roman) {
+		$conv = array(
+            array("letter" => 'I', "number" => 1),
+            array("letter" => 'V', "number" => 5),
+            array("letter" => 'X', "number" => 10),
+            array("letter" => 'L', "number" => 50),
+            array("letter" => 'C', "number" => 100),
+            array("letter" => 'D', "number" => 500),
+            array("letter" => 'M', "number" => 1000),
+            array("letter" => 0,   "number" => 0)
+        );
+        $arabic = 0;
+        $state  = 0;
+        $sidx   = 0;
+        $len    = strlen($roman) - 1;
+        while ($len >= 0) {
+            $i = 0;
+            $sidx = $len;
+            while ($conv[$i]['number'] > 0) {
+                if (strtoupper($roman[$sidx]) == $conv[$i]['letter']) {
+                    if ($state > $conv[$i]['number']) {
+                        $arabic -= $conv[$i]['number'];
+                    } else {
+                        $arabic += $conv[$i]['number'];
+                        $state   = $conv[$i]['number'];
+                    }
+                }
+                $i++;
+            }
+            $len--;
+        }
+        return($arabic);
+	}
+	
+	# ----------------------------------------------------------------
+	/**
+	 *
+	 */
+	function caWriteServerConfigHints() {
+		if (file_exists(__CA_APP_DIR__."/tmp/server_config_hints.txt")) { return false; }
+		return @file_put_contents(__CA_APP_DIR__."/tmp/server_config_hints.txt", serialize(
+			array(
+				'SCRIPT_FILENAME' => $_SERVER['SCRIPT_FILENAME'],
+				'HTTP_HOST' => $_SERVER['HTTP_HOST'],
+				'DOCUMENT_ROOT' => $_SERVER['DOCUMENT_ROOT']
+			)
+		));
+	}
+	# ----------------------------------------
 ?>

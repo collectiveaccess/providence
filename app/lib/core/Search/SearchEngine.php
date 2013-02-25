@@ -182,7 +182,11 @@ class SearchEngine extends SearchBase {
 				$o_parsed_query = $o_query_parser->parse($ps_search, $vs_char_set);
 			} catch (Exception $e) {
 				// Retry search with all non-alphanumeric characters removed
-				$o_parsed_query = $o_query_parser->parse(preg_replace("![^A-Za-z0-9 ]+!", " ", $ps_search), $vs_char_set);
+				try {
+					$o_parsed_query = $o_query_parser->parse(preg_replace("![^A-Za-z0-9 ]+!", " ", $ps_search), $vs_char_set);
+				} catch (Exception $e) {
+					$o_parsed_query = $o_query_parser->parse("", $vs_char_set);
+				}
 			}
 			
 			$va_rewrite_results = $this->_rewriteQuery($o_parsed_query);
@@ -474,19 +478,36 @@ class SearchEngine extends SearchBase {
 							return $pa_hits;
 						}
 						
-						$vs_sortable_value_fld = 'attr_vals.'.$vs_sortable_value_fld;
+						if ((int)$t_element->get('datatype') == 3) {
+							$vs_sortable_value_fld = 'lil.name_plural';
+							
+							$vs_sort_field = array_pop(explode('.', $vs_sortable_value_fld));
+							$vs_locale_where = ($vn_num_locales > 1) ? ', lil.locale_id' : '';
+				
+							$vs_sql = "
+								SELECT attr.row_id, lil.locale_id, lower({$vs_sortable_value_fld}) {$vs_sort_field}
+								FROM ca_attributes attr
+								INNER JOIN ca_attribute_values AS attr_vals ON attr_vals.attribute_id = attr.attribute_id
+								INNER JOIN ca_list_item_labels AS lil ON lil.item_id = attr_vals.item_id
+								INNER JOIN {$vs_browse_tmp_table} ON {$vs_browse_tmp_table}.row_id = attr.row_id
+								WHERE
+									(attr_vals.element_id = ?) AND (attr.table_num = ?) AND (lil.{$vs_sort_field} IS NOT NULL)
+							";
+						} else {
+							$vs_sortable_value_fld = 'attr_vals.'.$vs_sortable_value_fld;
 						
-						$vs_sort_field = array_pop(explode('.', $vs_sortable_value_fld));
-						$vs_locale_where = ($vn_num_locales > 1) ? 'attr.locale_id' : '';
-						$vs_sql = "
-							SELECT attr.row_id, attr.locale_id, lower({$vs_sortable_value_fld}) {$vs_sort_field}
-							FROM ca_attributes attr
-							INNER JOIN ca_attribute_values AS attr_vals ON attr_vals.attribute_id = attr.attribute_id
-							INNER JOIN {$vs_search_tmp_table} ON {$vs_search_tmp_table}.row_id = attr.row_id
-							WHERE
-								(attr_vals.element_id = ?) AND (attr.table_num = ?) AND (attr_vals.{$vs_sort_field} IS NOT NULL)
-						";
-						//print $vs_sql." ; $vn_element_id/; ".$this->opn_tablenum."<br>";
+							$vs_sort_field = array_pop(explode('.', $vs_sortable_value_fld));
+							$vs_locale_where = ($vn_num_locales > 1) ? 'attr.locale_id' : '';
+							$vs_sql = "
+								SELECT attr.row_id, attr.locale_id, lower({$vs_sortable_value_fld}) {$vs_sort_field}
+								FROM ca_attributes attr
+								INNER JOIN ca_attribute_values AS attr_vals ON attr_vals.attribute_id = attr.attribute_id
+								INNER JOIN {$vs_search_tmp_table} ON {$vs_search_tmp_table}.row_id = attr.row_id
+								WHERE
+									(attr_vals.element_id = ?) AND (attr.table_num = ?) AND (attr_vals.{$vs_sort_field} IS NOT NULL)
+							";
+							//print $vs_sql." ; $vn_element_id/; ".$this->opn_tablenum."<br>";
+						}
 						$qr_sort = $this->opo_db->query($vs_sql, (int)$vn_element_id, (int)$this->opn_tablenum);
 						
 						while($qr_sort->nextRow()) {

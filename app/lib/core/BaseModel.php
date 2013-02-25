@@ -1811,7 +1811,7 @@ class BaseModel extends BaseObject {
 			// Set any auto-set hierarchical fields (eg. HIERARCHY_LEFT_INDEX_FLD and HIERARCHY_RIGHT_INDEX_FLD indexing for all and HIERARCHY_ID_FLD for ad-hoc hierarchies) here
 			//
 			$vn_hier_left_index_value = $vn_hier_right_index_value = 0;
-			if ($vb_is_hierarchical = $this->isHierarchical()) {
+			if (($vb_is_hierarchical = $this->isHierarchical()) && (!isset($pa_options['dontSetHierarchicalIndexing']) || !$pa_options['dontSetHierarchicalIndexing'])) {
 				$vn_parent_id = $this->get($this->getProperty('HIERARCHY_PARENT_ID_FLD'));
 				$va_parent_info = $this->_getHierarchyParent($vn_parent_id);
 				
@@ -2156,15 +2156,18 @@ class BaseModel extends BaseObject {
 					$vn_id = $this->getPrimaryKey();
 					
 					if ((!isset($pa_options['dont_do_search_indexing']) || (!$pa_options['dont_do_search_indexing'])) && !defined('__CA_DONT_DO_SEARCH_INDEXING__')) {
-						$this->doSearchIndexing();
+						$this->doSearchIndexing(null, false);
 					}
 
 					if ($vb_we_set_transaction) { $this->removeTransaction(true); }
 					
 					$this->_FIELD_VALUE_CHANGED = array();					
 						
+					if (sizeof(BaseModel::$s_instance_cache[$vs_table_name = $this->tableName()]) > 100) {		// Limit cache to 100 instances per table
+						array_pop(BaseModel::$s_instance_cache[$vs_table_name]);
+					}
 					// Update instance cache
-					BaseModel::$s_instance_cache[$this->tableName()][$vn_id] = $this->_FIELD_VALUES;
+					BaseModel::$s_instance_cache[$vs_table_name][$vn_id] = $this->_FIELD_VALUES;
 					
 					return $vn_id;
 				} else {
@@ -2220,8 +2223,8 @@ class BaseModel extends BaseObject {
 	 *
 	 * @param array $pa_options options array
 	 * possible options (keys):
-	 *		dont_check_circular_references = when dealing with strict monohierarchical lists (also known as trees), you can use this option to disable checks for circuits in the graph
-	 *		update_only_media_versions = when set to an array of valid media version names, media is only processed for the specified versions
+	 *		dontCheckCircularReferences = when dealing with strict monohierarchical lists (also known as trees), you can use this option to disable checks for circuits in the graph
+	 *		updateOnlyMediaVersions = when set to an array of valid media version names, media is only processed for the specified versions
 	 *		force = if set field values are not verified prior to performing the update
 	 * @return bool success state
 	 */
@@ -2281,8 +2284,9 @@ class BaseModel extends BaseObject {
 
 				$vb_we_set_transaction = true;
 			}
-			$o_db = $this->getDb();
 			
+			$o_db = $this->getDb();
+		
 			if ($vb_is_hierarchical = $this->isHierarchical()) {
 				$vs_parent_id_fld 		= $this->getProperty('HIERARCHY_PARENT_ID_FLD');
 				$vs_hier_left_fld 		= $this->getProperty('HIERARCHY_LEFT_INDEX_FLD');
@@ -2296,17 +2300,17 @@ class BaseModel extends BaseObject {
 				
 				$vn_parent_id 			= $this->get($vs_parent_id_fld);
 				
-				
+	if (!isset($pa_options['dontSetHierarchicalIndexing']) || !$pa_options['dontSetHierarchicalIndexing']) {		
 				if (($vn_orig_hier_right - $vn_orig_hier_left) == 0) {
 					$this->_calcHierarchicalIndexing($this->_getHierarchyParent($vn_parent_id));
 					$vn_orig_hier_left 		= $this->get($vs_hier_left_fld);
 					$vn_orig_hier_right 	= $this->get($vs_hier_right_fld);
 				}
-				
+	}			
 				if ($vb_parent_id_changed = $this->changed($vs_parent_id_fld)) {
 					$va_parent_info = $this->_getHierarchyParent($vn_parent_id);
 					
-					if (!$pa_options['dont_check_circular_references']) {
+					if (!$pa_options['dontCheckCircularReferences']) {
 						$va_ids = $this->getHierarchyIDs($this->getPrimaryKey());
 						if (in_array($this->get($vs_parent_id_fld), $va_ids)) {
 							$this->postError(2010,_t("Cannot move %1 under its sub-record", $this->getProperty('NAME_SINGULAR')),"BaseModel->update()");
@@ -2315,69 +2319,64 @@ class BaseModel extends BaseObject {
 						}
 					}
 					
-					//if (is_null($this->getOriginalValue($vs_parent_id_fld))) {
-						// don't allow moves of hierarchy roots - just ignore the move and keep on going with the update
-					//	$this->set($vs_parent_id_fld, null);
-					//	$vb_parent_id_changed = false;
-					//} else {
-					
-						switch($this->getHierarchyType()) {
-							case __CA_HIER_TYPE_SIMPLE_MONO__:	// you only need to set parent_id for this type of hierarchy
-								
-								break;
-							case __CA_HIER_TYPE_MULTI_MONO__:	// you need to set parent_id; you only need to set hierarchy_id if you're creating a root
-								if (!($vn_hierarchy_id = $this->get($this->getProperty('HIERARCHY_ID_FLD')))) {
-									$this->set($this->getProperty('HIERARCHY_ID_FLD'), $va_parent_info[$this->getProperty('HIERARCHY_ID_FLD')]);
-								}
-								
-								if (!($vn_hierarchy_id = $this->get($vs_hier_id_fld))) {
-									$this->postError(2030, _t("Hierarchy ID must be specified for this update"), "BaseModel->update()");
-									if ($vb_we_set_transaction) { $this->removeTransaction(false); }
-									
-									return false;
-								}
-								
-								// Moving between hierarchies
-								if ($this->get($vs_hier_id_fld) != $va_parent_info[$vs_hier_id_fld]) {
-									$vn_hierarchy_id = $va_parent_info[$vs_hier_id_fld];
-									$this->set($this->getProperty('HIERARCHY_ID_FLD'), $vn_hierarchy_id);
+					switch($this->getHierarchyType()) {
+						case __CA_HIER_TYPE_SIMPLE_MONO__:	// you only need to set parent_id for this type of hierarchy
 							
-									if (is_array($va_children = $this->_getHierarchyChildren(array($this->getPrimaryKey())))) {
-										
-										$va_rebuild_hierarchical_index = $va_children;
-									}
-								}
-								
-								break;
-							case __CA_HIER_TYPE_ADHOC_MONO__:	// you need to set parent_id for this hierarchy; you never need to set hierarchy_id
-								if ($va_parent_info) {
-									// set hierarchy to that of root
-									if (sizeof($va_ancestors = $this->getHierarchyAncestors($vn_parent_id, array('idsOnly' => true, 'includeSelf' => true)))) {
-										$vn_hierarchy_id = array_pop($va_ancestors);
-									} else {
-										$vn_hierarchy_id = $this->getPrimaryKey();
-									}
-									$this->set($this->getProperty('HIERARCHY_ID_FLD'), $vn_hierarchy_id);
-								
-									if (is_array($va_children = $this->_getHierarchyChildren(array($this->getPrimaryKey())))) {
-										$va_rebuild_hierarchical_index = $va_children;
-									}
-									
-								
-								} 
-									
-								// if there's no parent then this is a root in which case HIERARCHY_ID_FLD should be set to the primary
-								// key of the row, which we'll know once we insert it (so we must set it after insert)
+							break;
+						case __CA_HIER_TYPE_MULTI_MONO__:	// you need to set parent_id; you only need to set hierarchy_id if you're creating a root
+							if (!($vn_hierarchy_id = $this->get($this->getProperty('HIERARCHY_ID_FLD')))) {
+								$this->set($this->getProperty('HIERARCHY_ID_FLD'), $va_parent_info[$this->getProperty('HIERARCHY_ID_FLD')]);
+							}
 							
-								break;
-							case __CA_HIER_TYPE_MULTI_POLY__:	// TODO: implement
+							if (!($vn_hierarchy_id = $this->get($vs_hier_id_fld))) {
+								$this->postError(2030, _t("Hierarchy ID must be specified for this update"), "BaseModel->update()");
+								if ($vb_we_set_transaction) { $this->removeTransaction(false); }
+								
+								return false;
+							}
 							
-								break;
-							default:
-								die("Invalid hierarchy type: ".$this->getHierarchyType());
-								break;
-						}
+							// Moving between hierarchies
+							if ($this->get($vs_hier_id_fld) != $va_parent_info[$vs_hier_id_fld]) {
+								$vn_hierarchy_id = $va_parent_info[$vs_hier_id_fld];
+								$this->set($this->getProperty('HIERARCHY_ID_FLD'), $vn_hierarchy_id);
 						
+								if (is_array($va_children = $this->_getHierarchyChildren(array($this->getPrimaryKey())))) {
+									
+									$va_rebuild_hierarchical_index = $va_children;
+								}
+							}
+							
+							break;
+						case __CA_HIER_TYPE_ADHOC_MONO__:	// you need to set parent_id for this hierarchy; you never need to set hierarchy_id
+							if ($va_parent_info) {
+								// set hierarchy to that of root
+								if (sizeof($va_ancestors = $this->getHierarchyAncestors($vn_parent_id, array('idsOnly' => true, 'includeSelf' => true)))) {
+									$vn_hierarchy_id = array_pop($va_ancestors);
+								} else {
+									$vn_hierarchy_id = $this->getPrimaryKey();
+								}
+								$this->set($this->getProperty('HIERARCHY_ID_FLD'), $vn_hierarchy_id);
+							
+								if (is_array($va_children = $this->_getHierarchyChildren(array($this->getPrimaryKey())))) {
+									$va_rebuild_hierarchical_index = $va_children;
+								}
+								
+							
+							} 
+								
+							// if there's no parent then this is a root in which case HIERARCHY_ID_FLD should be set to the primary
+							// key of the row, which we'll know once we insert it (so we must set it after insert)
+						
+							break;
+						case __CA_HIER_TYPE_MULTI_POLY__:	// TODO: implement
+						
+							break;
+						default:
+							die("Invalid hierarchy type: ".$this->getHierarchyType());
+							break;
+					}
+					
+	if (!isset($pa_options['dontSetHierarchicalIndexing']) || !$pa_options['dontSetHierarchicalIndexing']) {							
 						if ($va_parent_info) {
 							$va_hier_indexing = $this->_calcHierarchicalIndexing($va_parent_info);
 						} else {
@@ -2385,7 +2384,7 @@ class BaseModel extends BaseObject {
 						}
 						$this->set($this->getProperty('HIERARCHY_LEFT_INDEX_FLD'), $va_hier_indexing['left']);
 						$this->set($this->getProperty('HIERARCHY_RIGHT_INDEX_FLD'), $va_hier_indexing['right']);
-					//}
+	}
 				}
 			}
 
@@ -2586,7 +2585,7 @@ class BaseModel extends BaseObject {
 							break;
 						# -----------------------------
 						case (FT_MEDIA):
-							$va_limit_to_versions = (isset($pa_options['update_only_media_versions']) ? $pa_options['update_only_media_versions'] : null);
+							$va_limit_to_versions = (isset($pa_options['updateOnlyMediaVersions']) ? $pa_options['updateOnlyMediaVersions'] : null);
 							if ($vs_media_sql = $this->_processMedia($vs_field, array('these_versions_only' => $va_limit_to_versions))) {
 								$vs_sql .= $vs_media_sql;
 								$vn_fields_that_have_been_set++;
@@ -2693,7 +2692,7 @@ class BaseModel extends BaseObject {
 					}
 					if ((!isset($pa_options['dont_do_search_indexing']) || (!$pa_options['dont_do_search_indexing'])) &&  !defined('__CA_DONT_DO_SEARCH_INDEXING__')) {
 						# update search index
-						$this->doSearchIndexing();
+						$this->doSearchIndexing(null, false);
 					}
 														
 					if (is_array($va_rebuild_hierarchical_index)) {
@@ -2722,7 +2721,10 @@ class BaseModel extends BaseObject {
 				$this->_FIELD_VALUE_CHANGED = array();
 				
 				// Update instance cache
-				BaseModel::$s_instance_cache[$this->tableName()][$this->getPrimaryKey()] = $this->_FIELD_VALUES;
+				if (sizeof(BaseModel::$s_instance_cache[$vs_table_name = $this->tableName()]) > 100) {		// Limit cache to 100 instances per table
+					array_pop(BaseModel::$s_instance_cache[$vs_table_name]);
+				}
+				BaseModel::$s_instance_cache[$vs_table_name][$this->getPrimaryKey()] = $this->_FIELD_VALUES;
 				return true;
 			} else {
 				if ($vb_we_set_transaction) { $this->removeTransaction(false); }
@@ -2759,6 +2761,7 @@ class BaseModel extends BaseObject {
 	 * to specify which tables to omit when deleting related stuff
 	 */
 	public function delete ($pb_delete_related=false, $pa_options=null, $pa_fields=null, $pa_table_list=null) {
+		if(!is_array($pa_options)) { $pa_options = array(); }
 		$vn_id = $this->getPrimaryKey();
 		if ($this->hasField('deleted') && (!isset($pa_options['hard']) || !$pa_options['hard'])) {
 			$this->setMode(ACCESS_WRITE);
@@ -2904,7 +2907,7 @@ class BaseModel extends BaseObject {
 								while($qr_record_check->nextRow()) {
 									if ($t_related->load($qr_record_check->get($t_related->primaryKey()))) {
 										$t_related->setMode(ACCESS_WRITE);
-										$t_related->delete($pb_delete_related, $pa_options, null, $pa_table_list);
+										$t_related->delete($pb_delete_related, array_merge($pa_options, array('hard' => true)), null, $pa_table_list);
 										
 										if ($t_related->numErrors()) {
 											$this->postError(790, _t("Can't delete item because items related to it have sub-records (%1)", $vs_many_table),"BaseModel->delete()");
@@ -3417,6 +3420,8 @@ class BaseModel extends BaseObject {
 				unset($va_media_desc["ORIGINAL_FILENAME"]);
 				unset($va_media_desc["INPUT"]);
 				unset($va_media_desc["VOLUME"]);
+				unset($va_media_desc["_undo_"]);
+				unset($va_media_desc["TRANSFORMATION_HISTORY"]);
 				return array_keys($va_media_desc);
 			}
 		} else {
@@ -3783,7 +3788,7 @@ class BaseModel extends BaseObject {
 				if (isset($this->_SET_FILES[$ps_field]['options']['undo']) && file_exists($this->_SET_FILES[$ps_field]['options']['undo'])) {
 					if ($volume = $version_info['original']['VOLUME']) {
 						$vi = $this->_MEDIA_VOLUMES->getVolumeInformation($volume);
-						if ($vi["absolutePath"] && ($dirhash = $this->_getDirectoryHash($vi["absolutePath"], $this->getPrimaryKey()))) {
+						if ($vi["absolutePath"] && (strlen($dirhash = $this->_getDirectoryHash($vi["absolutePath"], $this->getPrimaryKey())))) {
 							$magic = rand(0,99999);
 							$vs_filename = $this->_genMediaName($ps_field)."_undo_";
 							$filepath = $vi["absolutePath"]."/".$dirhash."/".$magic."_".$vs_filename;
@@ -3799,7 +3804,6 @@ class BaseModel extends BaseObject {
 						}
 					}
 				}
-				
 				
 				$va_process_these_versions_only = array();
 				if (isset($pa_options['these_versions_only']) && is_array($pa_options['these_versions_only']) && sizeof($pa_options['these_versions_only'])) {
@@ -4318,7 +4322,7 @@ class BaseModel extends BaseObject {
 		if (!is_array($va_media_info)) {
 			return null;
 		}
-			
+		
 		if(isset($pa_options['revert']) && $pa_options['revert'] && isset($va_media_info['_undo_'])) {
 			$vs_path = $vs_undo_path = $this->getMediaPath($ps_field, '_undo_');
 			$va_transformation_history = array();
@@ -5365,6 +5369,10 @@ class BaseModel extends BaseObject {
 							print "<br>$vs_sql<hr>\n";
 						}
 					}
+				} else {				
+					if (($vn_id = $this->get('row_id')) > 0) {	// At a minimum always log self as subject
+						$va_subjects[$this->get('table_num')][] = $vn_id;
+					}
 				}
 			}
 		}
@@ -5383,10 +5391,10 @@ class BaseModel extends BaseObject {
 				INSERT INTO ".$vs_change_log_database."ca_change_log
 				(
 					log_datetime, user_id, unit_id, changetype,
-					logged_table_num, logged_row_id
+					logged_table_num, logged_row_id, batch_id
 				)
 				VALUES
-				(?, ?, ?, ?, ?, ?)
+				(?, ?, ?, ?, ?, ?, ?)
 			"))) {
 				// prepare failed - shouldn't happen
 				return false;
@@ -5420,18 +5428,23 @@ class BaseModel extends BaseObject {
 
 		$vs_snapshot = caSerializeForDatabase($va_snapshot, true);
 
-
 		if (!(($ps_change_type == 'U') && (!sizeof($va_snapshot)))) {
 			// Create primary log entry
+			
+			global $g_change_log_batch_id;	// Log batch_id as set in global by ca_batch_log model (app/models/ca_batch_log.php)
 			$this->opqs_change_log->execute(
 				time(), $pn_user_id, $vn_unit_id, $ps_change_type,
-				$this->tableNum(), $vn_row_id
+				$this->tableNum(), $vn_row_id, ((int)$g_change_log_batch_id ? (int)$g_change_log_batch_id : null)
 			);
 			
 			$vn_log_id = $this->opqs_change_log->getLastInsertID();
 			$this->opqs_change_log_snapshot->execute(
 				$vn_log_id, $vs_snapshot
 			);
+		
+			if ($g_change_log_delegate && method_exists($g_change_log_delegate, "onLogChange")) {
+				call_user_func( array( $g_change_log_delegate, 'onLogChange'), $this->tableNum(), $vn_row_id, $vn_log_id );
+			}
 
 			foreach($va_subjects as $vn_subject_table_num => $va_subject_ids) {
 				foreach($va_subject_ids as $vn_subject_row_id) {
@@ -7200,7 +7213,7 @@ $pa_options["display_form_field_tips"] = true;
 									if ((class_exists("AppController")) && ($app = AppController::getInstance()) && ($req = $app->getRequest())) {
 										JavascriptLoadManager::register('jquery', 'autocomplete');
 										$vs_element .= "<script type='text/javascript'>
-	jQuery('#".$pa_options["id"]."').autocomplete('".caNavUrl($req, 'lookup', 'Intrinsic', 'Get', array('bundle' => $this->tableName().".{$ps_field}"))."', { minChars: 3, matchSubset: 1, matchContains: 1, delay: 800, scroll: true, max: 500, extraParams: { }});
+	jQuery('#".$pa_options["id"]."').autocomplete({ source: '".caNavUrl($req, 'lookup', 'Intrinsic', 'Get', array('bundle' => $this->tableName().".{$ps_field}", "max" => 500))."', minLength: 3, delay: 800});
 </script>";
 									}
 								}
@@ -7528,6 +7541,12 @@ $pa_options["display_form_field_tips"] = true;
 					continue;
 				}
 			}
+			if (isset($va_info['BOUNDS_VALUE']) && is_array($va_info['BOUNDS_VALUE'])) {
+				if ($va_info['BOUNDS_VALUE'][0] > 0) {
+					$va_mandatory_fields[] = $vs_field;
+					continue;
+				}
+			}
 		}
 		
 		return $va_mandatory_fields;
@@ -7733,7 +7752,7 @@ $pa_options["display_form_field_tips"] = true;
 			}
 		}
 		
-		if ((!isset($pa_options['allowDuplicates']) || !$pa_options['allowDuplicates']) && $this->relationshipExists($pm_rel_table_name_or_num, $pn_rel_id, $pm_type_id, $ps_effective_date, $ps_direction)) {
+		if ((!isset($pa_options['allowDuplicates']) || !$pa_options['allowDuplicates']) && $this->relationshipExists($pm_rel_table_name_or_num, $pn_rel_id, $pm_type_id, $ps_effective_date, $ps_direction, array('relation_id' => $pn_relation_id))) {
 			if (isset($pa_options['setErrorOnDuplicate']) && $pa_options['setErrorOnDuplicate']) {
 				$this->postError(1100, _t('Relationship already exists'), 'BaseModel->addRelationship');
 			}
@@ -8188,13 +8207,20 @@ $pa_options["display_form_field_tips"] = true;
 	 * @param mixed $pm_type_id Relationship type type_code or type_id, as defined in the ca_relationship_types table. This is required for all relationships that use relationship types. This includes all of the most common types of relationships.
 	 * @param string $ps_effective_date Optional date expression to qualify relation with. Any expression that the TimeExpressionParser can handle is supported here.
 	 * @param string $ps_direction Optional direction specification for self-relationships (relationships linking two rows in the same table). Valid values are 'ltor' (left-to-right) and  'rtol' (right-to-left); the direction determines which "side" of the relationship the currently loaded row is on: 'ltor' puts the current row on the left side. For many self-relations the direction determines the nature and display text for the relationship.
+	 * @param array $pa_options Options are:
+	 *		relation_id = an optional relation_id to ignore when checking for existence. If you are checking for relations other than one you know exists you can set this to ensure that relationship is not considered.
+	 *
 	 * @return mixed Array of matched relation_ids on success, false on error.
 	 */
-	public function relationshipExists($pm_rel_table_name_or_num, $pn_rel_id, $pm_type_id=null, $ps_effective_date=null, $ps_direction=null) {
+	public function relationshipExists($pm_rel_table_name_or_num, $pn_rel_id, $pm_type_id=null, $ps_effective_date=null, $ps_direction=null, $pa_options=null) {
 		if(!($va_rel_info = $this->_getRelationshipInfo($pm_rel_table_name_or_num))) { 
 			$this->postError(1240, _t('Related table specification "%1" is not valid', $pm_rel_table_name_or_num), 'BaseModel->addRelationship()');
 			return false; 
 		}
+		
+		$vn_relation_id = ((isset($pa_options['relation_id']) && (int)$pa_options['relation_id'])) ? (int)$pa_options['relation_id'] : null;
+		$vs_relation_id_sql = null;
+		
 		$t_item_rel = $va_rel_info['t_item_rel'];
 		
 		if ($pm_type_id && !is_numeric($pm_type_id)) {
@@ -8263,13 +8289,18 @@ $pa_options["display_form_field_tips"] = true;
 				$va_query_params[] = (float)$va_timestamps['start'];
 				$va_query_params[] = (float)$va_timestamps['end'];
 			}
-		
+			
+			if ($vn_relation_id) {
+				$vs_relation_id_sql = " AND relation_id <> ?";
+				$va_query_params[] = $vn_relation_id;
+			}
+			
 			$qr_res = $o_db->query("
 				SELECT relation_id
 				FROM {$vs_rel_table_name}
 				WHERE
 					{$vs_left_field_name} = ? AND {$vs_right_field_name} = ?
-					{$vs_type_sql} {$vs_timestamp_sql}
+					{$vs_type_sql} {$vs_timestamp_sql} {$vs_relation_id_sql}
 			", $va_query_params);
 		
 			$va_ids = $qr_res->getAllFieldValues('relation_id');
@@ -8280,7 +8311,7 @@ $pa_options["display_form_field_tips"] = true;
 					FROM {$vs_rel_table_name}
 					WHERE
 						{$vs_right_field_name} = ? AND {$vs_left_field_name} = ?
-						{$vs_type_sql} {$vs_timestamp_sql}
+						{$vs_type_sql} {$vs_timestamp_sql} {$vs_relation_id_sql}
 				", $va_query_params);
 				
 				$va_ids += $qr_res->getAllFieldValues('relation_id');

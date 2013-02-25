@@ -52,58 +52,56 @@
 	</div>
 	
 	<script type="text/javascript">
-		jQuery('#client_autocomplete').autocomplete('<?php print caNavUrl($this->request, 'lookup', 'User', 'Get'); ?>', 
-			{ minChars: 3, matchSubset: 1, matchContains: 1, delay: 800, scroll: true, max: 100, extraParams: {},
-				formatResult: function(data, value) {
-					return jQuery.trim(value.replace(/<\/?[^>]+>/gi, ''));
+		jQuery('#client_autocomplete').autocomplete( 
+			{ 
+				minLength: 3, delay: 800,
+				source: '<?php print caNavUrl($this->request, 'lookup', 'User', 'Get', array('max' => 100)); ?>',
+				select: function(event, ui) {
+					var user_id = ui.item.id;
+					jQuery('#transaction_user_id').val(user_id);
+					if(data[3]) {
+						jQuery('#caBillingFields input[name=billing_fname]').val(data[3]);
+						jQuery('#caBillingFields input[name=billing_lname]').val(data[4]);
+						jQuery('#caBillingFields input[name=billing_email]').val(data[5]);
+				
+						jQuery('#caShippingFields input[name=shipping_fname]').val(data[3]);
+						jQuery('#caShippingFields input[name=shipping_lname]').val(data[4]);
+						jQuery('#caShippingFields input[name=shipping_email]').val(data[5]);
+				
+						// grab the user's profile information
+						jQuery.getJSON('<?php print caNavUrl($this->request, 'client/orders', 'OrderEditor', 'GetUserProfileInfo'); ?>', { user_id: user_id }, function(d, t, x) { 
+							jQuery('#caBillingFields input[name=billing_organization]').val(d['organization']);
+							jQuery('#caBillingFields input[name=billing_address1]').val(d['address1']);
+							jQuery('#caBillingFields input[name=billing_address2]').val(d['address2']);
+							jQuery('#caBillingFields input[name=billing_city]').val(d['city']);
+							jQuery('#caBillingFields input[name=billing_postal_code]').val(d['postalcode']);
+							jQuery('#caBillingFields input[name=billing_phone]').val(d['phone']);
+							jQuery('#caBillingFields input[name=billing_fax]').val(d['fax']);	//
+					
+							jQuery('#caBillingFields select[name=billing_country]').val(d['country']);
+							jQuery('#billing_country').click();
+					
+							jQuery('#caBillingFields #billing_zone_select').val(d['state']);
+							jQuery('#caBillingFields #billing_zone_text').val(d['state']);
+					
+							jQuery('#caShippingFields input[name=shipping_organization]').val(d['organization']);
+							jQuery('#caShippingFields input[name=shipping_address1]').val(d['address1']);
+							jQuery('#caShippingFields input[name=shipping_address2]').val(d['address2']);
+							jQuery('#caShippingFields input[name=shipping_city]').val(d['city']);
+							jQuery('#caShippingFields input[name=shipping_postal_code]').val(d['postalcode']);
+							jQuery('#caShippingFields input[name=shipping_phone]').val(d['phone']);
+							jQuery('#caShippingFields input[name=shipping_fax]').val(d['fax']);	//
+					
+							jQuery('#caShippingFields select[name=shipping_country]').val(d['country']);
+							jQuery('#shipping_country').click();
+					
+							jQuery('#caShippingFields #shipping_zone_select').val(d['state']);
+							jQuery('#caShippingFields #shipping_zone_text').val(d['state']);
+						});
+					}
 				}
 			}
 		);
-		
-		jQuery('#client_autocomplete').result(function(event, data, formatted) {
-			var user_id = data[1];
-			jQuery('#transaction_user_id').val(user_id);
-			if(data[3]) {
-				jQuery('#caBillingFields input[name=billing_fname]').val(data[3]);
-				jQuery('#caBillingFields input[name=billing_lname]').val(data[4]);
-				jQuery('#caBillingFields input[name=billing_email]').val(data[5]);
-				
-				jQuery('#caShippingFields input[name=shipping_fname]').val(data[3]);
-				jQuery('#caShippingFields input[name=shipping_lname]').val(data[4]);
-				jQuery('#caShippingFields input[name=shipping_email]').val(data[5]);
-				
-				// grab the user's profile information
-				jQuery.getJSON('<?php print caNavUrl($this->request, 'client/orders', 'OrderEditor', 'GetUserProfileInfo'); ?>', { user_id: user_id }, function(d, t, x) { 
-					jQuery('#caBillingFields input[name=billing_organization]').val(d['organization']);
-					jQuery('#caBillingFields input[name=billing_address1]').val(d['address1']);
-					jQuery('#caBillingFields input[name=billing_address2]').val(d['address2']);
-					jQuery('#caBillingFields input[name=billing_city]').val(d['city']);
-					jQuery('#caBillingFields input[name=billing_postal_code]').val(d['postalcode']);
-					jQuery('#caBillingFields input[name=billing_phone]').val(d['phone']);
-					jQuery('#caBillingFields input[name=billing_fax]').val(d['fax']);	//
-					
-					jQuery('#caBillingFields select[name=billing_country]').val(d['country']);
-					jQuery('#billing_country').click();
-					
-					jQuery('#caBillingFields #billing_zone_select').val(d['state']);
-					jQuery('#caBillingFields #billing_zone_text').val(d['state']);
-					
-					jQuery('#caShippingFields input[name=shipping_organization]').val(d['organization']);
-					jQuery('#caShippingFields input[name=shipping_address1]').val(d['address1']);
-					jQuery('#caShippingFields input[name=shipping_address2]').val(d['address2']);
-					jQuery('#caShippingFields input[name=shipping_city]').val(d['city']);
-					jQuery('#caShippingFields input[name=shipping_postal_code]').val(d['postalcode']);
-					jQuery('#caShippingFields input[name=shipping_phone]').val(d['phone']);
-					jQuery('#caShippingFields input[name=shipping_fax]').val(d['fax']);	//
-					
-					jQuery('#caShippingFields select[name=shipping_country]').val(d['country']);
-					jQuery('#shipping_country').click();
-					
-					jQuery('#caShippingFields #shipping_zone_select').val(d['state']);
-					jQuery('#caShippingFields #shipping_zone_text').val(d['state']);
-				});
-			}
-		});
 	</script>
 <?php
 	} else {

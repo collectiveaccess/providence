@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2006-2011 Whirl-i-Gig
+ * Copyright 2006-2013 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -107,16 +107,11 @@ class Db extends DbBase {
 	 *
 	 * Sets up the properties of the Db object and opens a connection to the database.
 	 *
-	 * @param string $ps_config_file_path
+	 * @param string $ps_config_file_path Not used
 	 * @param array $pa_options Database options like username, pw, host, etc - if ommitted, it is fetched from configuration file
 	 * @param bool $pb_die_on_error optional, default is true
 	 */
 	public function Db($ps_config_file_path="", $pa_options=null, $pb_die_on_error=true) {
-		//print "Construct db\n";
-		//debug_print_backtrace();
-		//print "\n\n";
-
-	
 		$this->config = Configuration::load();
 		$this->datamodel = Datamodel::load();
 
@@ -275,7 +270,7 @@ class Db extends DbBase {
 		// If second parameter is array use that as query params for placeholders, otherwise use successive params to fill placeholders
 		if (!($vb_res = $o_stmt->executeWithParamsAsArray(is_array($va_args[0]) ? $va_args[0] : $va_args))) {
 			// copy errors from statement object to Db object
-			$this->errors =& $o_stmt->errors();
+			$this->errors = $o_stmt->errors();
 		} else {
 			$this->opn_last_insert_id = $o_stmt->getLastInsertID();
 		}
@@ -495,6 +490,21 @@ class Db extends DbBase {
 	public function getIndices($ps_table) {
 		if(!$this->connected(true, "Db->getIndices()")) { return false; }
 		return $this->opo_db->getIndices($this, $ps_table);
+	}
+	
+	/**
+	 * Returns list of engines present in the database installation. The list in an array with
+	 * keys set to engine names and values set to an array of information returned from the database
+	 * server about engine that are currently available. Database server such as MySQL may return 
+	 * many engines, while others return only a single standard engine. In general, engines are only
+	 * of concern when you require specific features. CollectiveAccess, for example, requires the 
+	 * MySQL InnoDB engine. getEngines() enables the application to check for it.
+	 *
+	 * @return array An array of available engines, or false on error. The array is key'ed on Engine name. Values are arrays of engine information. This information is varies by database server.
+	 */
+	public function getEngines() {
+		if(!$this->connected(true, "Db->getEngines()")) { return false; }
+		return $this->opo_db->getEngines($this);
 	}
 
 	/**

@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2009-2011 Whirl-i-Gig
+ * Copyright 2009-2013 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -230,9 +230,14 @@
  				$va_settings['regex'] = "(http|ftp|https|rtmp|rtsp):\/\/[\w\-_]+(\.[\w\-_]+)+([\w\-\.,@?^=%&;:/~\+#]*[\w\-\@?^=%&/~\+#])?";
  			}
  			if ($va_settings['regex'] && !preg_match("!".$va_settings['regex']."!", $ps_value)) {
- 				// regex failed
-				$this->postError(1970, _t('%1 is not a valid url', $pa_element_info['displayLabel']), 'UrlAttributeValue->parseValue()');
-				return false;
+ 				// default to http if it's just a hostname + path
+ 				if (!preg_match("!^[A-Za-z]+:\/\/!", $ps_value)) {
+ 					$ps_value = "http://{$ps_value}";
+ 				} else {
+					// regex failed
+					$this->postError(1970, _t('%1 is not a valid url', $pa_element_info['displayLabel']), 'UrlAttributeValue->parseValue()');
+					return false;
+				}
  			}
  			
  			return array(
@@ -262,14 +267,15 @@
  				$vs_bundle_name = $pa_options['t_subject']->tableName().'.'.$pa_element_info['element_code'];
  				
  				if ($pa_options['po_request']) {
- 					$vs_lookup_url	= caNavUrl($pa_options['po_request'], 'lookup', 'AttributeValue', 'Get', array());
+ 					$vs_lookup_url	= caNavUrl($pa_options['po_request'], 'lookup', 'AttributeValue', 'Get', array('bundle' => $vs_bundle_name, 'max' => 500));
  				}
  			}
  			
  			if ($va_settings['suggestExistingValues'] && $vs_lookup_url && $vs_bundle_name) { 
  				$vs_element .= "<script type='text/javascript'>
- 					jQuery('#{fieldNamePrefix}".$pa_element_info['element_id']."_{n}').autocomplete('".$vs_lookup_url."', 
-								{ minChars: 3, matchSubset: 1, matchContains: 1, delay: 800, scroll: true, max: 500, extraParams: { bundle: '".$vs_bundle_name."'}});
+ 					jQuery('#{fieldNamePrefix}".$pa_element_info['element_id']."_{n}').autocomplete( 
+						{ source: '{$vs_lookup_url}', minLength: 3, delay: 800}
+					);
  				</script>\n";
  			}
  			$vs_element .= "

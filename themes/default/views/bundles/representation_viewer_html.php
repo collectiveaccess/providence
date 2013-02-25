@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2011-2012 Whirl-i-Gig
+ * Copyright 2011-2013 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -292,44 +292,49 @@
 	<!-- Controls - only for media overlay -->
 	<div class="caMediaOverlayControls">
 			<div class='close'><a href="#" onclick="caMediaPanel.hidePanel(); return false;" title="close">&nbsp;&nbsp;&nbsp;</a></div>
-<?php			
-			if(caObjectsDisplayDownloadLink($this->request)){
+<?php
+	if ($this->request->user->canDoAction('can_download_media')) {
 ?>
-
 				<div class='download'>
 <?php 
-						# -- get version to download configured in media_display.conf
-						$va_download_display_info = caGetMediaDisplayInfo($vs_display_type, $t_rep->getMediaInfo('media', 'INPUT', 'MIMETYPE'));
-						$vs_download_version = $va_download_display_info['display_version'];
-						print caNavLink($this->request, "<img src='".$this->request->getThemeUrlPath()."/graphics/buttons/downloadWhite.png' border='0' title='"._t("Download Media")."'>", '', 'Detail', 'Object', 'DownloadRepresentation', array('representation_id' => $t_rep->getPrimaryKey(), "object_id" => $t_object->getPrimaryKey(), "download" => 1, "version" => $vs_download_version));
+					if (is_array($va_versions = $this->request->config->getList('ca_object_representation_download_versions'))) {
+						// -- provide user with a choice of versions to download
+						print caFormTag($this->request, 'DownloadMedia', 'caMediaDownloadForm', 'editor/objects/ObjectEditor', 'post', 'multipart/form-data', '_top', array('disableUnsavedChangesWarning' => true, 'noTimestamp' => true));
+						print caHTMLSelect('version', $va_versions, array('style' => 'font-size: 9px;'));
+						print caFormSubmitLink($this->request, "<img src='".$this->request->getThemeUrlPath()."/graphics/buttons/downloadWhite.png' border='0' title='"._t("Download media")."' valign='bottom'/>", '', 'caMediaDownloadForm', 'caMediaDownloadFormButton');
+						print caHTMLHiddenInput("object_id", array('value' => $t_object->getPrimaryKey()));
+						print caHTMLHiddenInput("representation_id", array('value' => $t_rep->getPrimaryKey()));
+						print caHTMLHiddenInput("download", array('value' => 1));
+						print "</form>\n";
+					}
 ?>				
 				</div>
 <?php
-			}
+	}
 ?>
-			<div class='objectInfo'>
+				<div class='objectInfo'>
 <?php
-				$vs_label = $t_object->getLabelForDisplay();
-				print (mb_strlen($vs_label) > 80) ? mb_substr($vs_label, 0, 80)."..." : $vs_label;
+					$vs_label = $t_object->getLabelForDisplay();
+					print (mb_strlen($vs_label) > 80) ? mb_substr($vs_label, 0, 80)."..." : $vs_label;
 				
-				if($t_object->get("idno")){
-					print " [".$t_object->get("idno")."]";
-				}
+					if($t_object->get("idno")){
+						print " [".$t_object->get("idno")."]";
+					}
 ?>			
-			</div>
-			<div class='repNav'>
+				</div>
+				<div class='repNav'>
 <?php
-				if ($vn_id = $this->getVar('previous_representation_id')) {
-					print "<a href='#' onClick='jQuery(\"#{$vs_container_id}\").load(\"".caNavUrl($this->request, 'editor/objects', 'ObjectEditor', $this->request->getAction(), array('representation_id' => (int)$vn_id, 'object_id' => (int)$t_object->getPrimaryKey()))."\");'>←</a>";
-				}
-				if (sizeof($va_reps) > 1) {
-					print ' '._t("%1 of %2", $this->getVar('representation_index'), sizeof($va_reps)).' ';
-				}
-				if ($vn_id = $this->getVar('next_representation_id')) {
-					print "<a href='#' onClick='jQuery(\"#{$vs_container_id}\").load(\"".caNavUrl($this->request, 'editor/objects', 'ObjectEditor', $this->request->getAction(), array('representation_id' => (int)$vn_id, 'object_id' => (int)$t_object->getPrimaryKey()))."\");'>→</a>";
-				}
+					if ($vn_id = $this->getVar('previous_representation_id')) {
+						print "<a href='#' onClick='jQuery(\"#{$vs_container_id}\").load(\"".caNavUrl($this->request, 'editor/objects', 'ObjectEditor', $this->request->getAction(), array('representation_id' => (int)$vn_id, 'object_id' => (int)$t_object->getPrimaryKey()))."\");'>←</a>";
+					}
+					if (sizeof($va_reps) > 1) {
+						print ' '._t("%1 of %2", $this->getVar('representation_index'), sizeof($va_reps)).' ';
+					}
+					if ($vn_id = $this->getVar('next_representation_id')) {
+						print "<a href='#' onClick='jQuery(\"#{$vs_container_id}\").load(\"".caNavUrl($this->request, 'editor/objects', 'ObjectEditor', $this->request->getAction(), array('representation_id' => (int)$vn_id, 'object_id' => (int)$t_object->getPrimaryKey()))."\");'>→</a>";
+					}
 ?>
-			</div>
+				</div>
 <?php
 		if ($vb_use_media_editor) {
 			$va_display_info = caGetMediaDisplayInfo($vs_display_type, $t_rep->getMediaInfo('media', 'INPUT', 'MIMETYPE'));
