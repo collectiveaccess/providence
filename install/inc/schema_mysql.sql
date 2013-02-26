@@ -2213,10 +2213,10 @@ create unique index u_all on ca_data_exporter_labels
 /*==========================================================================*/
 create table ca_data_exporter_items (
    item_id           int unsigned         not null AUTO_INCREMENT,
-   parent_id            int unsigned         not null,
+   parent_id            int unsigned         null,
    exporter_id          int unsigned         not null,
    element              varchar(1024)        not null,
-   source               varchar(1024)        not null,
+   source               varchar(1024)        null,
    settings          longtext          not null,
    hier_item_id         int unsigned         not null,
    hier_left            decimal(30,20) unsigned not null,

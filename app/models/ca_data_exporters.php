@@ -44,6 +44,10 @@ require_once(__CA_LIB_DIR__.'/ca/Export/ExportRefineryManager.php');
 require_once(__CA_MODELS_DIR__."/ca_data_exporter_labels.php");
 require_once(__CA_MODELS_DIR__."/ca_data_exporter_items.php");
 
+require_once(__CA_LIB_DIR__.'/core/Parsers/PHPExcel/PHPExcel.php');
+require_once(__CA_LIB_DIR__.'/core/Parsers/PHPExcel/PHPExcel/IOFactory.php');
+require_once(__CA_LIB_DIR__.'/core/Logging/KLogger/KLogger.php');
+
 BaseModel::$s_ca_models_definitions['ca_data_exporters'] = array(
  	'NAME_SINGULAR' 	=> _t('data exporter'),
  	'NAME_PLURAL' 		=> _t('data exporters'),
@@ -289,11 +293,24 @@ class ca_data_exporters extends BundlableLabelableBaseModelWithAttributes {
 	}
 	# ------------------------------------------------------
 	/**
+	 * Override BaseModel::delete() because the cascading delete implemented there
+	 * doesn't properly remove related items if they're organized in a ad-hoc hierarchy.
+	 */
+	public function delete($pb_delete_related=false, $pa_options=null, $pa_fields=null, $pa_table_list=null){
+		if($pb_delete_related){
+			$this->removeAllItems();
+		}
+
+		return parent::delete($pb_delete_related, $pa_options, $pa_fields, $pa_table_list);
+	}
+	# ------------------------------------------------------
+	/**
 	 * Get all exporter items items for this exporter
 	 * @param array $pa_options available options are:
 	 *                          onlyTopLevel
 	 *                          includeSettingsForm
 	 *                          id_prefix
+	 *                          orderForDeleteCascade
 	 * @return array array of items, keyed by their primary key
 	 */
 	public function getItems($pa_options=array()){
@@ -301,6 +318,7 @@ class ca_data_exporters extends BundlableLabelableBaseModelWithAttributes {
 
 		$vb_include_settings_form = isset($pa_options['includeSettingsForm']) ? (bool)$pa_options['includeSettingsForm'] : false;
 		$vb_only_top_level = isset($pa_options['onlyTopLevel']) ? (bool)$pa_options['onlyTopLevel'] : false;
+		$vb_order_for_delete_cascade = isset($pa_options['orderForDeleteCascade']) ? (bool)$pa_options['orderForDeleteCascade'] : false;
 
 		$vs_id_prefix = isset($pa_options['id_prefix']) ? $pa_options['id_prefix'] : '';
 
@@ -310,11 +328,18 @@ class ca_data_exporters extends BundlableLabelableBaseModelWithAttributes {
 		if($vb_only_top_level){
 			$va_conditions[] ="AND parent_id IS NULL";
 		}
+
+		if($vb_order_for_delete_cascade){
+			$vs_order = "parent_id DESC";
+		} else {
+			$vs_order = "rank ASC";
+		}
+
 		$qr_items = $vo_db->query("
 			SELECT * FROM ca_data_exporter_items
 			WHERE exporter_id = ?
 			" . join(" ",$va_conditions) . " 
-			ORDER BY rank ASC
+			ORDER BY ".$vs_order."
 		",$vn_exporter_id);
 
 		$va_items = array();
@@ -389,6 +414,28 @@ class ca_data_exporters extends BundlableLabelableBaseModelWithAttributes {
 		return false;
 	}
 	# ------------------------------------------------------
+	/**
+	 * Remove all items from this exporter
+	 * @return boolean success state
+	 */
+	public function removeAllItems() {
+		if (!($vn_exporter_id = $this->getPrimaryKey())) { return null; }
+
+		$va_items = $this->getItems(array('orderForDeleteCascade' => true));
+		$t_item = new ca_data_exporter_items();
+		$t_item->setMode(ACCESS_WRITE);
+
+		foreach($va_items as $vn_item_id => $va_item){
+			$t_item->load($vn_item_id);
+			$t_item->delete(true);
+
+			if ($t_item->numErrors()) {
+				$this->errors = array_merge($this->errors, $t_item->errors);
+				return false;
+			}
+		}
+	}
+	# ------------------------------------------------------
 	# Settings
 	# ------------------------------------------------------
 	/**
@@ -399,6 +446,195 @@ class ca_data_exporters extends BundlableLabelableBaseModelWithAttributes {
 			return call_user_func_array(array($this->SETTINGS, $ps_name), $pa_arguments);
 		}
 		die($this->tableName()." does not implement method {$ps_name}");
+	}
+	# ------------------------------------------------------
+	/**
+	 * Load exporter configuration from XLSX file
+	 * @param string $ps_source file path for source XLSX
+	 * @param array $pa_options options
+	 * @return ca_data_exporters BaseModel representation of the new exporter. false/null if there was an error.
+	 */
+	public static function loadExporterFromFile($ps_source, $pa_options=null) {
+		global $g_ui_locale_id;
+		$vn_locale_id = (isset($pa_options['locale_id']) && (int)$pa_options['locale_id']) ? (int)$pa_options['locale_id'] : $g_ui_locale_id;
+
+		$o_excel = PHPExcel_IOFactory::load($ps_source);
+		//$o_excel->setActiveSheet(1);
+		$o_sheet = $o_excel->getActiveSheet();
+
+		$vn_row = 0;
+		
+		$va_settings = array();
+		$va_mappings = array();
+		$va_ids = array();
+
+		foreach ($o_sheet->getRowIterator() as $o_row) {
+			if ($vn_row == 0) {	// skip first row (headers)
+				$vn_row++;
+				continue;
+			}
+
+			$vn_row_num = $o_row->getRowIndex();
+			$o_cell = $o_sheet->getCellByColumnAndRow(0, $vn_row_num);
+			$vs_mode = (string)$o_cell->getValue();
+
+			switch($vs_mode) {
+				case 'Mapping':
+					$o_id = $o_sheet->getCellByColumnAndRow(1, $o_row->getRowIndex());
+					$o_parent = $o_sheet->getCellByColumnAndRow(2, $o_row->getRowIndex());
+					$o_element = $o_sheet->getCellByColumnAndRow(3, $o_row->getRowIndex());
+					$o_source = $o_sheet->getCellByColumnAndRow(4, $o_row->getRowIndex());
+					$o_options = $o_sheet->getCellByColumnAndRow(5, $o_row->getRowIndex());
+					$o_refinery = $o_sheet->getCellByColumnAndRow(6, $o_row->getRowIndex());
+					$o_refinery_settings = $o_sheet->getCellByColumnAndRow(7, $o_row->getRowIndex());
+
+					if($vs_id = trim((string)$o_id->getValue())){
+						$va_ids[] = $vs_id;
+					}
+
+					if($vs_parent_id = trim((string)$o_parent->getValue())){
+						if(!in_array($vs_parent_id, $va_ids) && ($vs_parent_id != $vs_id)){
+							print "Warning: skipped mapping at row {$vn_row_id} because parent id was invalid\n";
+							continue(2);
+						}
+					}
+
+					if (!($vs_element = trim((string)$o_element->getValue()))) { 
+						print "Warning: skipped mapping at row {$vn_row_num} because element was not defined\n";
+						continue(2);
+					}
+
+					$vs_source = trim((string)$o_source->getValue());
+
+					$va_options = null;
+					if ($vs_options_json = (string)$o_options->getValue()) { 
+						if (is_null($va_options = @json_decode($vs_options_json, true))) {
+							print "Warning: invalid options for group {$vs_group}/source {$vs_source}\n";
+						}
+					}
+
+					$vs_refinery = trim((string)$o_refinery->getValue());
+					
+					$va_refinery_options = null;
+					if ($vs_refinery && ($vs_refinery_options_json = (string)$o_refinery_options->getValue())) {
+						// TODO: check refineries
+					}
+
+					$vs_key = (strlen($vs_id)>0 ? $vs_id : md5($vn_row_num));
+
+					$va_mapping[$vs_key] = array(
+						'parent_id' => $vs_parent_id,
+						'element' => $vs_element,
+						'source' => $vs_source,
+						'options' => $va_options,
+						'refinery' => $vs_refinery,
+						'refinery_options' => $va_refinery_options,
+					);
+
+					break;
+				case 'Setting':
+					$o_setting_name = $o_sheet->getCellByColumnAndRow(1, $o_row->getRowIndex());
+					$o_setting_value = $o_sheet->getCellByColumnAndRow(2, $o_row->getRowIndex());
+					$va_settings[(string)$o_setting_name->getValue()] = (string)$o_setting_value->getValue();
+					break;
+				default: // if 1st column is empty, skip
+					continue(2);
+					break;
+			}
+
+			$vn_row++;
+		}
+
+		//print_r($va_mapping);
+		//print_r($va_settings);
+
+		// Do checks on mapping
+		if (!$va_settings['code']) { 
+			print "You must set a code for your mapping!\n";
+			return;
+		}
+
+		$o_dm = Datamodel::load();
+		if (!($t_instance = $o_dm->getInstanceByTableName($va_settings['table']))) {
+			print _t("Mapping target table %1 is invalid\n", $va_settings['table']);
+			return;
+		}
+
+		if (!$va_settings['name']) { $va_settings['name'] = $va_settings['code']; }
+
+		$t_exporter = new ca_data_exporters();
+		$t_exporter->setMode(ACCESS_WRITE);
+
+		// Remove any existing mapping with this code
+		if ($t_exporter->load(array('exporter_code' => $va_settings['code']))) {
+			$t_exporter->delete(true, array('hard' => true));
+			if ($t_exporter->numErrors()) {
+				print _t("Could not delete existing mapping for %1: %2", $va_settings['code'], join("; ", $t_exporter->getErrors()))."\n";
+				return;
+			}
+		}
+
+		// Create new mapping
+		$t_exporter->set('exporter_code', $va_settings['code']);
+		$t_exporter->set('table_num', $t_instance->tableNum());
+
+		$vs_name = $va_settings['name'];
+
+		unset($va_settings['code']);
+		unset($va_settings['table']);
+		unset($va_settings['name']);
+
+		foreach($va_settings as $vs_k => $vs_v) {
+			$t_exporter->setSetting($vs_k, $vs_v);
+		}
+		$t_exporter->insert();
+
+		$t_exporter->addLabel(array('name' => $vs_name), $vn_locale_id, null, true);
+
+		if ($t_exporter->numErrors()) {
+			print _t("Error creating exporter: %1", join("; ", $t_exporter->getErrors()))."\n";
+			return;
+		}
+
+		if ($t_exporter->numErrors()) {
+			print _t("Error creating exporter name: %1", join("; ", $t_exporter->getErrors()))."\n";
+			return;
+		}
+
+		$va_id_map = array();
+		foreach($va_mapping as $vs_mapping_id => $va_info){
+			$va_item_settings = array();
+
+			if (is_array($va_mapping['options'])) {
+				foreach($va_mapping['options'] as $vs_k => $vs_v) {
+					$va_item_settings[$vs_k] = $vs_v;
+				}
+			}
+			if($va_mapping['refinery']){
+				$va_item_settings['refineries'] = array($va_mapping['refinery']);
+			}
+			if (is_array($va_mapping['refinery_options'])) {
+				foreach($va_mapping['refinery_options'] as $vs_k => $vs_v) {
+					$va_item_settings[$va_mapping['refinery'].'_'.$vs_k] = $vs_v;
+				}
+			}	
+			
+			$vn_parent_id = null;
+			if($va_info['parent_id']){ $vn_parent_id = $va_id_map[$va_info['parent_id']]; }
+
+			print_r($va_item_settings);
+
+			$t_item = $t_exporter->addItem($vn_parent_id,$va_info['source'],$va_info['element'],$va_item_settings);
+
+			if ($t_exporter->numErrors()) {
+				print _t("Error adding item to exporter: %1", join("; ", $t_exporter->getErrors()))."\n";
+				return;
+			}
+
+			$va_id_map[$vs_mapping_id] = $t_item->getPrimaryKey();
+		}
+
+		return $t_exporter;		
 	}
 	# ------------------------------------------------------
 	/**
@@ -469,6 +705,8 @@ class ca_data_exporters extends BundlableLabelableBaseModelWithAttributes {
 			return;
 		}
 		// end switch context
+
+		// TODO: do the actual export here
 
 		$po_export->addItem('foo','bar');
 		

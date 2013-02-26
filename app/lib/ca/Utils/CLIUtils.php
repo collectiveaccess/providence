@@ -738,5 +738,52 @@
 			return _t("Regenerates annotation preview media for some or all object representation annotations.");
 		}
 		# -------------------------------------------------------
+		/**
+		 * 
+		 */
+		public static function load_export_mapping($po_opts=null) {
+			require_once(__CA_MODELS_DIR__."/ca_data_exporters.php");
+	
+			if (!($vs_file_path = $po_opts->getOption('file'))) {
+				print _t("You must specify a file!")."\n";
+				return false;
+			}
+			if (!file_exists($vs_file_path)) {
+				print _t("File '%1' does not exist!", $vs_file_path)."\n";
+				return false;
+			}
+			
+			if (!($t_exporter = ca_data_exporters::loadExporterFromFile($vs_file_path))) {
+				print _t("Could not import '%1'", $vs_file_path)."\n";
+				return false;
+			} else {
+				print _t("Created mapping %1 from %2", CLIUtils::textWithColor($t_exporter->get('exporter_code'), 'yellow'), $vs_file_path)."\n";
+				return true;
+			}
+		}
+		# -------------------------------------------------------
+		/**
+		 *
+		 */
+		public static function load_export_mappingParamList() {
+			return array(
+				"file|f=s" => _t('Excel XLSX file to load.')
+			);
+		}
+		# -------------------------------------------------------
+		/**
+		 *
+		 */
+		public static function load_export_mappingShortHelp() {
+			return _t("Load export mapping from Excel XLSX format file.");
+		}
+		# -------------------------------------------------------
+		/**
+		 *
+		 */
+		public static function load_export_mappingHelp() {
+			return _t("Loads export mapping from Excel XLSX format file. More here...");
+		}
+		# -------------------------------------------------------
 	}
 ?>
