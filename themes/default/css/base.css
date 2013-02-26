@@ -5124,3 +5124,17 @@ input[type='text'].ui-autocomplete-loading {
 	
 	margin: 0 auto 0 auto;
 }
+
+/** Debug **/
+
+div#debug {
+	padding: 10px 10px 10px 10px;
+	background-color:#EEEEEE;
+	margin-bottom: 10px;
+}
+
+div#debugLabel {
+	font-size: 14px;
+	color: green;
+	font-weight: bold;
+}
