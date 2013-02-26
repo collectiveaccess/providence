@@ -38,14 +38,14 @@
   * Plugin for processing images using GraphicsMagick command-line executables
   */
 
-include_once(__CA_LIB_DIR__."/core/Plugins/WLPlug.php");
+include_once(__CA_LIB_DIR__."/core/Plugins/Media/BaseMediaPlugin.php");
 include_once(__CA_LIB_DIR__."/core/Plugins/IWLPlugMedia.php");
 include_once(__CA_LIB_DIR__."/core/Parsers/TilepicParser.php");
 include_once(__CA_LIB_DIR__."/core/Configuration.php");
 include_once(__CA_APP_DIR__."/helpers/mediaPluginHelpers.php");
 include_once(__CA_LIB_DIR__."/core/Parsers/MediaMetadata/XMPParser.php");
 
-class WLPlugMediaGraphicsMagick Extends WLPlug Implements IWLPlugMedia {
+class WLPlugMediaGraphicsMagick Extends BaseMediaPlugin Implements IWLPlugMedia {
 	var $errors = array();
 	
 	var $filepath;
