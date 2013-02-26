@@ -522,7 +522,7 @@ class BaseModel extends BaseObject {
 	 * @return bool Current state of logging.
 	 */
 	public function logChanges($pb_log_changes=null) {
-		if (!is_null($pb_purify)) {
+		if (!is_null($pb_log_changes)) {
 			$this->opb_log_changes = (bool)$pb_log_changes;
 		}
 		return $this->opb_log_changes;
