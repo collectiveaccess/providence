@@ -244,8 +244,6 @@ BaseModel::$s_ca_models_definitions['ca_objects'] = array(
 	)
 );
 
-caDebug("BAR","Object definitions");
-
 class ca_objects extends BundlableLabelableBaseModelWithAttributes implements IBundleProvider {
 	# ---------------------------------
 	# --- Object attribute properties
