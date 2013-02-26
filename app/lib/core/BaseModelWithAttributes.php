@@ -1655,7 +1655,7 @@
  				$va_ancestors = array();
  				if ($t_type_instance = $this->getTypeInstance()) {
  					$va_ancestors = $t_type_instance->getHierarchyAncestors(null, array('idsOnly' => true, 'includeSelf' => true));
- 					array_pop($va_ancestors); // remove hierarchy root
+ 					if (is_array($va_ancestors)) { array_pop($va_ancestors); } // remove hierarchy root
  				}
  				
  				if (sizeof($va_ancestors) > 1) {
