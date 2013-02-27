@@ -334,8 +334,11 @@ class VictimService extends NS11mmService {
 		$va_data = array('aliases' => $t_entity->get('ca_entities.nonpreferred_labels.displayname', array('returnAsArray' => true)));
 		
 		$va_entities = $t_entity->getRelatedItems('ca_entities');
+		$va_timestamp = $t_entity->getLastChangeTimestamp($vn_id);
 		foreach($va_entities as $vn_relation_id => $va_rel_info) {
 			if ($t_entity->load($va_rel_info['entity_id'])) {
+				$va_data['lastupdate_timestamp'] =  date('o-m-N',$va_timestamp['timestamp'])."T".date('H:i:s',$va_timestamp['timestamp'])."Z";
+
 				$va_data['relationships'][$va_rel_info['relationship_type_code']][] = array(
 					'id' => $va_rel_info['entity_id'],
 					'displayname' => $t_entity->get('ca_entities.hierarchy.preferred_labels.displayname', array('returnAsArray' => true)),

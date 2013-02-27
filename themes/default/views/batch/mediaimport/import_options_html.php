@@ -26,6 +26,8 @@
  * ----------------------------------------------------------------------
  */
  
+	JavascriptLoadManager::register("fileupload");
+	
  	$t_object = $this->getVar('t_object');
  	$t_rep = $this->getVar('t_rep');
  	
@@ -37,7 +39,13 @@
 		'', 
 		''
 	);
+	
 ?>
+	<div id="batchProcessingTableProgressGroup" style="display: none;">
+		<div class="batchProcessingStatus"><span id="batchProcessingTableStatus" > </span></div>
+		<div id="progressbar"></div>
+	</div>
+
 	<div class="sectionBox">
 <?php
 		print caFormTag($this->request, 'Save/'.$this->request->getActionExtra(), 'caBatchMediaImportForm', null, 'POST', 'multipart/form-data', '_top', array('disableUnsavedChangesWarning' => true, 'noTimestamp' => true));
@@ -65,6 +73,13 @@
 			displayFiles: true,
 			allowFileSelection: false,
 			
+			uploadProgressMessage: "<?php print addslashes(_t("Upload progress: %1")); ?>",
+			uploadProgressID: "batchProcessingTableProgressGroup",
+			uploadProgressBarID: "progressbar",
+			uploadProgressStatusID: "batchProcessingTableStatus",
+			allowDragAndDropUpload: <?php print is_writable($this->request->config->get('batch_media_import_root_directory')) ? "true" : "false"; ?>,
+			dragAndDropUploadUrl: "<?php print caNavUrl($this->request, 'batch', 'MediaImport', 'UploadFiles'); ?>",
+			
 			initItemID: '<?php print $va_last_settings['importFromDirectory']; ?>',
 			indicatorUrl: '<?php print $this->request->getThemeUrlPath(); ?>/graphics/icons/indicator.gif',
 			
@@ -74,6 +89,8 @@
 				if (type == 'DIR') { jQuery('#caDirectoryValue').val(path); }
 			}
 		});
+		
+		jQuery('#progressbar').progressbar({ value: 0 });
 	});
 </script>
 <?php
@@ -265,4 +282,8 @@
 			caConfirmBatchExecutionPanel.showPanel();
 			jQuery('#caConfirmBatchExecutionPanelAlertText').html(msg);
 		}
+		
+		$(document).bind('drop dragover', function (e) {
+			e.preventDefault();
+		});
 	</script>
