@@ -43,7 +43,11 @@ class ExportMARC extends BaseExportFormat {
 	}
 	# ------------------------------------------------------
 	public function processExport($pa_data){
-
+		return "";
+	}
+	# ------------------------------------------------------
+	public function getMappingErrors($t_mapping){
+		return array();
 	}
 	# ------------------------------------------------------
 }

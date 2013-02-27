@@ -634,7 +634,14 @@ class ca_data_exporters extends BundlableLabelableBaseModelWithAttributes {
 			$va_id_map[$vs_mapping_id] = $t_item->getPrimaryKey();
 		}
 
-		return $t_exporter;		
+		$va_errors = ca_data_exporters::checkMapping($t_exporter->get('exporter_code'));
+
+		if(is_array($va_errors) && sizeof($va_errors)>0){
+			foreach($va_errors as $vs_error){ print $vs_error."\n"; }
+			return;
+		}
+
+		return $t_exporter;
 	}
 	# ------------------------------------------------------
 	/**
@@ -647,6 +654,31 @@ class ca_data_exporters extends BundlableLabelableBaseModelWithAttributes {
 	 */
 	static public function exportRecordsFromSearchExpression($ps_exporter_code, $ps_expression, $ps_destination, $pa_options=array()){
 		die('Implementation pending');
+	}
+	# ------------------------------------------------------
+	/**
+	 * Check export mapping for format-specific errors
+	 * @param string $ps_exporter_code code identifying the exporter
+	 * @return array Array of errors. Array has size 0 if no errors occurred.
+	 */
+	static public function checkMapping($ps_exporter_code){
+		$t_mapping = new ca_data_exporters();
+		if(!$t_mapping->load(array('exporter_code' => $ps_exporter_code))){
+			return array(_t("Invalid mapping code"));
+		}
+
+		switch($t_mapping->getSetting('exporter_format')){
+			case 'XML':
+				$o_export = new ExportXML();
+				break;
+			case 'MARC':
+				$o_export = new ExportMARC();
+				break;
+			default:
+				return array(_t("Invalid exporter format"));
+		}
+
+		return $o_export->getMappingErrors($t_mapping);
 	}
 	# ------------------------------------------------------
 	/**
@@ -673,6 +705,8 @@ class ca_data_exporters extends BundlableLabelableBaseModelWithAttributes {
 			case 'MARC':
 				$o_export = new ExportMARC();
 				break;
+			default:
+				return;
 		}
 
 		return $o_export->processExport($va_export);

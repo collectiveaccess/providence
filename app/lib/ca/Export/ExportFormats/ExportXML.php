@@ -30,7 +30,9 @@
  * ----------------------------------------------------------------------
  */
 
-require_once(__CA_LIB_DIR__.'/ca/Export/BaseExportFormat.php');	
+require_once(__CA_LIB_DIR__.'/ca/Export/BaseExportFormat.php');
+require_once(__CA_MODELS_DIR__.'/ca_data_exporters.php');
+require_once(__CA_MODELS_DIR__.'/ca_data_exporter_items.php');
 
 class ExportXML extends BaseExportFormat {
 	# ------------------------------------------------------
@@ -40,7 +42,7 @@ class ExportXML extends BaseExportFormat {
 		$this->ops_name = 'XML';
 		$this->ops_element_description = _t('Values prefixed with @ reference XML attributes. All other values define XML elements. The usual restrictions and naming conventions for XML elements and attributes apply.');
 
-		$this->opo_dom = new DOMDocument('1.0', 'utf-8'); // we might wanna put all this settings?
+		$this->opo_dom = new DOMDocument('1.0', 'utf-8'); // are those settings?
 
 		parent::__construct();
 	}
@@ -86,6 +88,49 @@ class ExportXML extends BaseExportFormat {
 				$this->processItem($va_child,$vo_new_element);
 			}
 		}
+	}
+	# ------------------------------------------------------
+	public function getMappingErrors($t_mapping){
+		$va_errors = array();
+
+		$va_top = $t_mapping->getTopLevelItems();
+		foreach($va_top as $va_item){
+			$va_errors = array_merge($va_errors,$this->getMappingErrorsForItem($va_item));
+		}
+
+		return $va_errors;
+	}
+	# ------------------------------------------------------
+	private function getMappingErrorsForItem($pa_item){
+		$va_errors = array();
+		$t_item = new ca_data_exporter_items($pa_item['item_id']);
+
+
+		// check if element is attribute and if so, if it's valid and if it has a non-attribute parent it belongs to
+		$vs_element = $t_item->get('element');
+		$vs_first = substr($vs_element,0,1);
+		if($vs_first == "@"){
+			$vs_attribute_name = substr($vs_element,1);
+			if(!preg_match("/^[_:A-Za-z][-._:A-Za-z0-9]*$/",$vs_attribute_name)){
+				$va_errors[] = _t("Invalid XML attribute name '%1'",$vs_attribute_name);
+			}
+
+			$t_parent = new ca_data_exporter_items($t_item->get('parent_id'));
+			$vs_parent_first = substr($t_parent->get('element'),0,1);
+			if($vs_parent_first == "@" || !$t_parent->get('element')){
+				$va_errors[] = _t("XML attribute '%1' doesn't have a valid parent element",$vs_attribute_name);	
+			}
+		} else { // plain old XML element -> check for naming convention
+			if(!preg_match("/^[_:A-Za-z][-._:A-Za-z0-9]*$/",$vs_element)){
+				$va_errors[] = _t("Invalid XML element name '%1'",$vs_element);
+			}			
+		}
+
+		foreach($t_item->getHierarchyChildren() as $va_child){
+			$va_errors = array_merge($va_errors,$this->getMappingErrorsForItem($va_child));
+		}
+
+		return $va_errors;
 	}
 	# ------------------------------------------------------
 }

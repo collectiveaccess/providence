@@ -74,4 +74,14 @@
 		 */
 		abstract public function processExport($pa_data);
 		# -------------------------------------------------------
+		/**
+		 * Sanity check export mapping. The exporter model allows creating mappings that don't necessarily make
+		 * sense, e.g. an attribute (@idno) as root of the document. This method is used to detect and report
+		 * such format-specific errors when the mapping is first created. The exporter also refuses to execute
+		 * exports where the mapping has not been verified yet.
+		 * @param ca_data_exporters $t_mapping BaseModel representation of the exporter
+		 * @return array Array containing descriptions of possible issues. Should have size 0 if everything is okay.
+		 */
+		abstract public function getMappingErrors($t_mapping);
+		# -------------------------------------------------------
 	}
