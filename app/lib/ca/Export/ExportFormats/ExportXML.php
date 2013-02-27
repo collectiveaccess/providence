@@ -40,13 +40,52 @@ class ExportXML extends BaseExportFormat {
 		$this->ops_name = 'XML';
 		$this->ops_element_description = _t('Values prefixed with @ reference XML attributes. All other values define XML elements. The usual restrictions and naming conventions for XML elements and attributes apply.');
 
-		$this->opo_dom = new DOMDocument('1.0', 'utf-8'); // we might wanna put this into a setting?
+		$this->opo_dom = new DOMDocument('1.0', 'utf-8'); // we might wanna put all this settings?
 
 		parent::__construct();
 	}
 	# ------------------------------------------------------
-	public function addItem($ps_element,$ps_content){
+	public function processExport($pa_data){
+		// XML exports should usually have only one top-level element (i.e. one root).
+		if(sizeof($pa_data)!=1){ return false; }
 
+		$this->processItem(array_pop($pa_data),$this->opo_dom);
+
+		/* hack for decent formatting */
+		$vs_string = $this->opo_dom->saveXML();
+		
+		$vo_dom = new DOMDocument('1.0', 'utf-8');
+		$vo_dom->preserveWhiteSpace = false;
+		$vo_dom->loadXML($vs_string);
+		$vo_dom->formatOutput = true;
+		return $vo_dom->saveXML();
+	}
+	# ------------------------------------------------------
+	private function processItem($pa_item,$po_parent){
+		if(!($po_parent instanceof DOMNode)) return false;
+
+		//caDebug($pa_item,"Data passed to XML item processor");
+
+		$vs_element = $pa_item['element'];
+		$vs_text = (isset($pa_item['text']) ? $pa_item['text'] : null);
+		$vs_first = substr($vs_element,0,1);
+
+		if($vs_first == "@"){ // attribute
+			// attributes are only valid for DOMElement, not for DOMDocument
+			if(!($po_parent instanceof DOMElement)) return false;
+
+			$vs_rest = substr($vs_element,1);
+			$po_parent->setAttribute($vs_rest, $vs_text);
+		} else { // element
+			$vo_new_element = $this->opo_dom->createElement($vs_element,caEscapeForXML($vs_text));
+			$po_parent->appendChild($vo_new_element);
+		}
+
+		if(is_array($pa_item['children'])){
+			foreach($pa_item['children'] as $va_child){
+				$this->processItem($va_child,$vo_new_element);
+			}
+		}
 	}
 	# ------------------------------------------------------
 }
@@ -55,4 +94,3 @@ BaseExportFormat::$s_format_settings['XML'] = array(
 	// do we need this? will see ...
 );
 
-?>

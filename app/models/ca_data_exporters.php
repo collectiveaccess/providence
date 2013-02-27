@@ -605,22 +605,24 @@ class ca_data_exporters extends BundlableLabelableBaseModelWithAttributes {
 		foreach($va_mapping as $vs_mapping_id => $va_info){
 			$va_item_settings = array();
 
-			if (is_array($va_mapping['options'])) {
-				foreach($va_mapping['options'] as $vs_k => $vs_v) {
+			if (is_array($va_info['options'])) {
+				foreach($va_info['options'] as $vs_k => $vs_v) {
 					$va_item_settings[$vs_k] = $vs_v;
 				}
 			}
-			if($va_mapping['refinery']){
-				$va_item_settings['refineries'] = array($va_mapping['refinery']);
+			if($va_info['refinery']){
+				$va_item_settings['refineries'] = array($va_info['refinery']);
 			}
-			if (is_array($va_mapping['refinery_options'])) {
-				foreach($va_mapping['refinery_options'] as $vs_k => $vs_v) {
-					$va_item_settings[$va_mapping['refinery'].'_'.$vs_k] = $vs_v;
+			if (is_array($va_info['refinery_options'])) {
+				foreach($va_info['refinery_options'] as $vs_k => $vs_v) {
+					$va_item_settings[$va_info['refinery'].'_'.$vs_k] = $vs_v;
 				}
 			}	
 			
 			$vn_parent_id = null;
 			if($va_info['parent_id']){ $vn_parent_id = $va_id_map[$va_info['parent_id']]; }
+
+			//caDebug($va_item_settings,"Settings for new exporter item");
 
 			$t_item = $t_exporter->addItem($vn_parent_id,$va_info['source'],$va_info['element'],$va_item_settings);
 
@@ -658,6 +660,12 @@ class ca_data_exporters extends BundlableLabelableBaseModelWithAttributes {
 		$t_exporter = ca_data_exporters::exporterExists($ps_exporter_code);
 		if(!$t_exporter) { return false; }
 
+		$va_export = array();
+
+		foreach($t_exporter->getTopLevelItems() as $va_item){
+			$va_export[] = $t_exporter->processExporterItem($va_item['item_id'],$t_exporter->get('table_num'),$pn_record_id,$pa_options);
+		}
+
 		switch($t_exporter->getSetting('exporter_format')){
 			case 'XML':
 				$o_export = new ExportXML();
@@ -667,22 +675,23 @@ class ca_data_exporters extends BundlableLabelableBaseModelWithAttributes {
 				break;
 		}
 
-		foreach($t_exporter->getTopLevelItems() as $va_item){
-			$t_exporter->processExporterItem($va_item['item_id'],$t_exporter->get('table_num'),$o_export,$pn_record_id,$pa_options);
-		}
+		return $o_export->processExport($va_export);
 	}
 	# ------------------------------------------------------
 	/**
 	 * @param array $pa_options
 	 *		ignoreSource = don't switch context if source value is set
 	 */
-	public function processExporterItem($pn_item_id,$pn_table_num,$po_export,$pn_record_id,$pa_options=array()){
+	public function processExporterItem($pn_item_id,$pn_table_num,$pn_record_id,$pa_options=array()){
 		$vb_ignore_source = (isset($pa_options['ignoreSource']) && $pa_options['ignoreSource']);
 
 		$t_exporter_item = new ca_data_exporter_items($pn_item_id);
+		$va_item_info = array();
+
 		$t_record = $this->getAppDatamodel()->getInstanceByTableNum($pn_table_num);
 		if(!$t_record->load($pn_item_id)) { return false; }
 
+		/*
 		// switch context to different table if necessary and repeat current exporter item for all selected related records
 		if(!$vb_ignore_source && ($vs_source = $t_exporter_item->get('source'))){
 			$va_parsed_source = ca_data_exporters::_parseItemSource($vs_source);
@@ -697,18 +706,26 @@ class ca_data_exporters extends BundlableLabelableBaseModelWithAttributes {
 			);
 
 			foreach($va_related as $va_rel){
-				$this->processExporterItem($pn_item_id,$va_parsed_source['table_num'],$po_export,$va_rel['item_id'],array_merge(array('ignoreSource' => true),$pa_options));
+				$this->processExporterItem($pn_item_id,$va_parsed_source['table_num'],$va_rel['item_id'],array_merge(array('ignoreSource' => true),$pa_options));
 			}
 
 			return;
 		}
 		// end switch context
+		*/
+		
+		if($vs_template = $t_exporter_item->getSetting('template')){
+			$va_item_info['text'] = caProcessTemplateForIDs($vs_template,$pn_table_num,array($pn_item_id));
+		}
+	
+		$va_item_info['element'] = $t_exporter_item->get('element');
 
 		
-		
 		foreach($t_exporter_item->getHierarchyChildren() as $va_child){
-			$this->processExporterItem($va_child['item_id'],$pn_table_num,$po_export,$pn_record_id,$pa_options);
+			$va_item_info['children'][] = $this->processExporterItem($va_child['item_id'],$pn_table_num,$pn_record_id,$pa_options);
 		}
+
+		return $va_item_info;
 	}
 	# ------------------------------------------------------
 	static public function _parseItemSource($vs_source){

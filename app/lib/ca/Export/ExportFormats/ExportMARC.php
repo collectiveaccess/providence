@@ -42,7 +42,7 @@ class ExportMARC extends BaseExportFormat {
 		parent::__construct();
 	}
 	# ------------------------------------------------------
-	public function addItem($ps_element,$ps_content){
+	public function processExport($pa_data){
 
 	}
 	# ------------------------------------------------------
@@ -52,4 +52,3 @@ BaseExportFormat::$s_format_settings['MARC'] = array(
 	// do we need this? will see ...
 );
 
-?>
