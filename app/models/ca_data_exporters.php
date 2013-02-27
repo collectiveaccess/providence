@@ -668,7 +668,7 @@ class ca_data_exporters extends BundlableLabelableBaseModelWithAttributes {
 		}
 
 		foreach($t_exporter->getTopLevelItems() as $va_item){
-			$t_exporter->processExporterItem($va_item['item_id'],$this->get('table_num'),$o_export,$pn_record_id,$pa_options);
+			$t_exporter->processExporterItem($va_item['item_id'],$t_exporter->get('table_num'),$o_export,$pn_record_id,$pa_options);
 		}
 	}
 	# ------------------------------------------------------
@@ -679,7 +679,7 @@ class ca_data_exporters extends BundlableLabelableBaseModelWithAttributes {
 	public function processExporterItem($pn_item_id,$pn_table_num,$po_export,$pn_record_id,$pa_options=array()){
 		$vb_ignore_source = (isset($pa_options['ignoreSource']) && $pa_options['ignoreSource']);
 
-		$t_exporter_item = new ca_exporter_items($pn_item_id);
+		$t_exporter_item = new ca_data_exporter_items($pn_item_id);
 		$t_record = $this->getAppDatamodel()->getInstanceByTableNum($pn_table_num);
 		if(!$t_record->load($pn_item_id)) { return false; }
 
@@ -707,7 +707,7 @@ class ca_data_exporters extends BundlableLabelableBaseModelWithAttributes {
 		
 		
 		foreach($t_exporter_item->getHierarchyChildren() as $va_child){
-			$this->processExporterItem($va_child['item_id'],$po_export,$pn_record_id,$pa_options);
+			$this->processExporterItem($va_child['item_id'],$pn_table_num,$po_export,$pn_record_id,$pa_options);
 		}
 	}
 	# ------------------------------------------------------
@@ -743,7 +743,7 @@ class ca_data_exporters extends BundlableLabelableBaseModelWithAttributes {
 	# ------------------------------------------------------
 	static public function exporterExists($ps_exporter_code) {
 		$t_exporter = new ca_data_exporters();
-		if($t_exporter->load(array('exporter_code' => $ps_mapping))) {
+		if($t_exporter->load(array('exporter_code' => $ps_exporter_code))) {
 			return $t_exporter;
 		}
 		return false;
