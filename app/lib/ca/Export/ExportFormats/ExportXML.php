@@ -48,6 +48,9 @@ class ExportXML extends BaseExportFormat {
 	}
 	# ------------------------------------------------------
 	public function processExport($pa_data){
+
+		//caDebug($pa_data,"Data to build XML from");
+
 		// XML exports should usually have only one top-level element (i.e. one root).
 		if(sizeof($pa_data)!=1){ return false; }
 
@@ -131,6 +134,10 @@ class ExportXML extends BaseExportFormat {
 		}
 
 		return $va_errors;
+	}
+	# ------------------------------------------------------
+	public function exportSet($pa_items,$ps_filename,$ps_wrap_before=null,$ps_wrap_after=null){
+		return $ps_wrap_before.join("",$pa_items).$ps_wrap_after;
 	}
 	# ------------------------------------------------------
 }
