@@ -622,8 +622,6 @@ class ca_data_exporters extends BundlableLabelableBaseModelWithAttributes {
 			$vn_parent_id = null;
 			if($va_info['parent_id']){ $vn_parent_id = $va_id_map[$va_info['parent_id']]; }
 
-			print_r($va_item_settings);
-
 			$t_item = $t_exporter->addItem($vn_parent_id,$va_info['source'],$va_info['element'],$va_item_settings);
 
 			if ($t_exporter->numErrors()) {
@@ -646,7 +644,7 @@ class ca_data_exporters extends BundlableLabelableBaseModelWithAttributes {
 	 * @param array $pa_options
 	 */
 	static public function exportRecordsFromSearchExpression($ps_exporter_code, $ps_expression, $ps_destination, $pa_options=array()){
-
+		die('Implementation pending');
 	}
 	# ------------------------------------------------------
 	/**
@@ -699,16 +697,14 @@ class ca_data_exporters extends BundlableLabelableBaseModelWithAttributes {
 			);
 
 			foreach($va_related as $va_rel){
-				$this->processExporterItem($pn_item_id,$va_parsed_source['table_num'],$po_export,$va_rel['item_id'],$pa_options);
+				$this->processExporterItem($pn_item_id,$va_parsed_source['table_num'],$po_export,$va_rel['item_id'],array_merge(array('ignoreSource' => true),$pa_options));
 			}
 
 			return;
 		}
 		// end switch context
 
-		// TODO: do the actual export here
-
-		$po_export->addItem('foo','bar');
+		
 		
 		foreach($t_exporter_item->getHierarchyChildren() as $va_child){
 			$this->processExporterItem($va_child['item_id'],$po_export,$pn_record_id,$pa_options);
