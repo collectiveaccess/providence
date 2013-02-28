@@ -205,6 +205,12 @@ class ca_data_exporters extends BundlableLabelableBaseModelWithAttributes {
 	 * Settings delegate - implements methods for setting, getting and using 'settings' var field
 	 */
 	public $SETTINGS;
+
+	/**
+	 * Caches
+	 */
+	public static $s_exporter_cache = array();
+	public static $s_exporter_item_cache = array();
 	
 	# ------------------------------------------------------
 	public function __construct($pn_id=null) {
@@ -654,6 +660,9 @@ class ca_data_exporters extends BundlableLabelableBaseModelWithAttributes {
 	 *		showCLIProgressBar = Show command-line progress bar. Default is false.
 	 */
 	static public function exportRecordsFromSearchExpression($ps_exporter_code, $ps_expression, $ps_filename, $pa_options=array()){
+		ca_data_exporters::$s_exporter_cache = array();
+		ca_data_exporters::$s_exporter_item_cache = array();
+
 		$vb_show_cli_progress_bar 	= (isset($pa_options['showCLIProgressBar']) && ($pa_options['showCLIProgressBar']));
 
 		$t_mapping = new ca_data_exporters();
@@ -734,7 +743,7 @@ class ca_data_exporters extends BundlableLabelableBaseModelWithAttributes {
 	static public function exportRecord($ps_exporter_code, $pn_record_id, $pa_options=array()){
 		$pb_single_record = (isset($pa_options['singleRecord']) && $pa_options['singleRecord']);
 
-		$t_exporter = ca_data_exporters::exporterExists($ps_exporter_code);
+		$t_exporter = ca_data_exporters::loadExporterByCode($ps_exporter_code);
 		if(!$t_exporter) { return false; }
 
 		$va_export = array();
@@ -764,7 +773,7 @@ class ca_data_exporters extends BundlableLabelableBaseModelWithAttributes {
 	public function processExporterItem($pn_item_id,$pn_table_num,$pn_record_id,$pa_options=array()){
 		$vb_ignore_source = (isset($pa_options['ignoreSource']) && $pa_options['ignoreSource']);
 
-		$t_exporter_item = new ca_data_exporter_items($pn_item_id);
+		$t_exporter_item = ca_data_exporters::loadExporterItemByID($pn_item_id);
 		$va_item_info = array();
 
 		/*
@@ -834,10 +843,26 @@ class ca_data_exporters extends BundlableLabelableBaseModelWithAttributes {
 		return $va_return;
 	}
 	# ------------------------------------------------------
-	static public function exporterExists($ps_exporter_code) {
-		$t_exporter = new ca_data_exporters();
-		if($t_exporter->load(array('exporter_code' => $ps_exporter_code))) {
-			return $t_exporter;
+	static public function loadExporterByCode($ps_exporter_code) {
+		if(isset(ca_data_exporters::$s_exporter_cache[$ps_exporter_code])){
+			return ca_data_exporters::$s_exporter_cache[$ps_exporter_code];
+		} else {
+			$t_exporter = new ca_data_exporters();
+			if($t_exporter->load(array('exporter_code' => $ps_exporter_code))) {
+				return ca_data_exporters::$s_exporter_cache[$ps_exporter_code] = $t_exporter;
+			}
+		}
+		return false;
+	}
+	# ------------------------------------------------------
+	static public function loadExporterItemByID($pn_item_id) {
+		if(isset(ca_data_exporters::$s_exporter_item_cache[$pn_item_id])){
+			return ca_data_exporters::$s_exporter_item_cache[$pn_item_id];
+		} else {
+			$t_item = new ca_data_exporter_items();
+			if($t_item->load($pn_item_id)) {
+				return ca_data_exporters::$s_exporter_item_cache[$pn_item_id] = $t_item;
+			}
 		}
 		return false;
 	}

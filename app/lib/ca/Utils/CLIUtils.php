@@ -739,7 +739,7 @@
 				return false;
 			}
 
-			if (!(ca_data_exporters::exporterExists($vs_mapping))) {
+			if (!(ca_data_exporters::loadExporterByCode($vs_mapping))) {
 				print _t('Mapping %1 does not exist', $vs_mapping)."\n";
 				return false;
 			}
