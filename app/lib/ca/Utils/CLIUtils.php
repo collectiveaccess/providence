@@ -901,7 +901,7 @@
 			} else if($vs_id){
 				if($vs_export = ca_data_exporters::exportRecord($vs_mapping, $vs_id, $pa_options=array('singleRecord' => true))){
 					file_put_contents($vs_filename, $vs_export);
-					print _t("Exported data to %1", $vs_filename)."\n";
+					print _t("Exported data to %1", CLIUtils::textWithColor($vs_filename, 'yellow'));
 				} else {
 					print _t("Could not export mapping %1", $vs_mapping)."\n";
 					return false;
@@ -925,7 +925,7 @@
 		public static function export_dataHelp() {
 			return _t("Export data to a MARC or XML file.");
 		}
-				# -------------------------------------------------------
+		# -------------------------------------------------------
 		/**
 		 * 
 		 */
