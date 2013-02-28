@@ -1616,7 +1616,11 @@ function caFileIsIncludable($ps_file) {
 			} else {
 				// simply dump stuff on command line
 				if($vs_label) { print $vs_label.":\n"; }
-				print ($print_r ? print_r($vm_data) : var_export($vm_data));
+				if($print_r) {
+					print_r($vm_data);
+				} else {
+					var_export($vm_data);
+				}
 				print "\n";
 			}
 		}

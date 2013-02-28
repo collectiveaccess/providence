@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2008-2012 Whirl-i-Gig
+ * Copyright 2008-2013 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -393,11 +393,13 @@ class ca_occurrences extends BundlableLabelableBaseModelWithAttributes implement
 			$va_occurrence_hierarchy_root = array(
 				$t_occurrence->get($vs_hier_fld) => array(
 					'occurrence_id' => $vn_pk,
+	 				'item_id' => $vn_pk,
 					'name' => $vs_name = caProcessTemplateForIDs($vs_template, 'ca_occurrences', array($vn_pk)),
 					'hierarchy_id' => $vn_hier_id,
 					'children' => sizeof($va_children)
 				),
 				'occurrence_id' => $vn_pk,
+	 			'item_id' => $vn_pk,
 				'name' => $vs_name,
 				'hierarchy_id' => $vn_hier_id,
 				'children' => sizeof($va_children)
