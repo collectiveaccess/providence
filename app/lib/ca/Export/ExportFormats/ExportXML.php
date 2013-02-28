@@ -103,6 +103,10 @@ class ExportXML extends BaseExportFormat {
 		$va_errors = array();
 
 		$va_top = $t_mapping->getTopLevelItems();
+		if(sizeof($va_top)!==1){
+			$va_errors[] = _t("XML documents must have exactly one root element");
+		}
+
 		foreach($va_top as $va_item){
 			$va_errors = array_merge($va_errors,$this->getMappingErrorsForItem($va_item));
 		}
