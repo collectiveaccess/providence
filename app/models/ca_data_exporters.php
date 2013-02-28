@@ -651,34 +651,49 @@ class ca_data_exporters extends BundlableLabelableBaseModelWithAttributes {
 	 * @param string $ps_expression A valid search expression
 	 * @param string $ps_filename Destination filename (we can't keep everything in memory here)
 	 * @param array $pa_options
+	 *		showCLIProgressBar = Show command-line progress bar. Default is false.
 	 */
 	static public function exportRecordsFromSearchExpression($ps_exporter_code, $ps_expression, $ps_filename, $pa_options=array()){
+		$vb_show_cli_progress_bar 	= (isset($pa_options['showCLIProgressBar']) && ($pa_options['showCLIProgressBar']));
+
 		$t_mapping = new ca_data_exporters();
 		if(!$t_mapping->load(array('exporter_code' => $ps_exporter_code))){
 			return array(_t("Invalid mapping code"));
 		}
 
-		switch($t_mapping->getSetting('exporter_format')){
-			case 'XML':
-				$o_export = new ExportXML();
-				break;
-			case 'MARC':
-				$o_export = new ExportMARC();
-				break;
-			default:
-				return array(_t("Invalid exporter format"));
-		}
+		$vs_wrap_before = $t_mapping->getSetting('wrap_before');
+		$vs_wrap_after = $t_mapping->getSetting('wrap_after');
 
 		$t_instance = $t_mapping->getAppDatamodel()->getInstanceByTableNum($t_mapping->get('table_num'));
 		$o_search = caGetSearchInstance($t_mapping->get('table_num'));
 		$o_result = $o_search->search($ps_expression);
-		$va_results = array();
 
-		while($o_result->nextHit()){
-			$va_results[] = ca_data_exporters::exportRecord($ps_exporter_code,$o_result->get($t_instance->primaryKey()));
+		if($vs_wrap_before){
+			file_put_contents($ps_filename, $vs_wrap_before."\n", FILE_APPEND);
 		}
 
-		return $o_export->exportSet($va_results,$ps_filename,$t_mapping->getSetting('wrap_before'),$t_mapping->getSetting('wrap_after'));
+		if ($vb_show_cli_progress_bar){
+			print CLIProgressBar::start($o_result->numHits(), _t('Processing search result'));
+		}
+
+		while($o_result->nextHit()){
+			$vs_item_export = ca_data_exporters::exportRecord($ps_exporter_code,$o_result->get($t_instance->primaryKey()));
+			file_put_contents($ps_filename, $vs_item_export."\n", FILE_APPEND);
+
+			if ($vb_show_cli_progress_bar) {
+				print CLIProgressBar::next(1, _t("Exporting records ..."));
+			}
+		}
+
+		if($vs_wrap_after){
+			file_put_contents($ps_filename, $vs_wrap_after."\n", FILE_APPEND);
+		}
+
+		if ($vb_show_cli_progress_bar) {
+			print CLIProgressBar::finish();
+		}
+
+		return true;
 	}
 	# ------------------------------------------------------
 	/**
@@ -711,9 +726,12 @@ class ca_data_exporters extends BundlableLabelableBaseModelWithAttributes {
 	 * @param string $ps_exporter_code defines the exporter to use
 	 * @param int $pn_record_id Primary key of the record to export. Record type is determined by the table_num field for this exporter.
 	 * @param array $pa_options
+	 *        singleRecord
 	 * @return string Exported record as string
 	 */
 	static public function exportRecord($ps_exporter_code, $pn_record_id, $pa_options=array()){
+		$pb_single_record = (isset($pa_options['singleRecord']) && $pa_options['singleRecord']);
+
 		$t_exporter = ca_data_exporters::exporterExists($ps_exporter_code);
 		if(!$t_exporter) { return false; }
 
@@ -734,7 +752,7 @@ class ca_data_exporters extends BundlableLabelableBaseModelWithAttributes {
 				return;
 		}
 
-		return $o_export->processExport($va_export);
+		return $o_export->processExport($va_export,$pa_options);
 	}
 	# ------------------------------------------------------
 	/**

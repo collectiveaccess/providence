@@ -47,7 +47,8 @@ class ExportXML extends BaseExportFormat {
 		parent::__construct();
 	}
 	# ------------------------------------------------------
-	public function processExport($pa_data){
+	public function processExport($pa_data,$pa_options=array()){
+		$pb_single_record = (isset($pa_options['singleRecord']) && $pa_options['singleRecord']);
 
 		//caDebug($pa_data,"Data to build XML from");
 
@@ -63,7 +64,10 @@ class ExportXML extends BaseExportFormat {
 		$vo_dom->preserveWhiteSpace = false;
 		$vo_dom->loadXML($vs_string);
 		$vo_dom->formatOutput = true;
-		return $vo_dom->saveXML();
+		
+		// when dealing with a record set export, we don't want <?xml tags in front so
+		// that we can simply dump each record in a file and have valid XML as result
+		return ($pb_single_record ? $vo_dom->saveXML() : $vo_dom->saveXML($vo_dom->firstChild));
 	}
 	# ------------------------------------------------------
 	private function processItem($pa_item,$po_parent){
@@ -134,10 +138,6 @@ class ExportXML extends BaseExportFormat {
 		}
 
 		return $va_errors;
-	}
-	# ------------------------------------------------------
-	public function exportSet($pa_items,$ps_filename,$ps_wrap_before=null,$ps_wrap_after=null){
-		return $ps_wrap_before.join("",$pa_items).$ps_wrap_after;
 	}
 	# ------------------------------------------------------
 }

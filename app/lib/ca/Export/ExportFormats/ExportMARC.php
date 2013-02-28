@@ -42,16 +42,12 @@ class ExportMARC extends BaseExportFormat {
 		parent::__construct();
 	}
 	# ------------------------------------------------------
-	public function processExport($pa_data){
+	public function processExport($pa_data,$pa_options=array()){
 		return "";
 	}
 	# ------------------------------------------------------
 	public function getMappingErrors($t_mapping){
 		return array();
-	}
-	# ------------------------------------------------------
-	public function exportSet($pa_items,$ps_filename,$ps_wrap_before=null,$ps_wrap_after=null){
-		return $ps_wrap_before.join("",$pa_items).$ps_wrap_after;
 	}
 	# ------------------------------------------------------
 }

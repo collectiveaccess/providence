@@ -724,6 +724,13 @@
 				print _t('You must specify a file to write export output to.')."\n";
 				return false;
 			}
+
+			if(@file_put_contents($vs_filename, "") === false){
+				// probably a permission error
+				print _t("Can't write to file %1. Check the permissions.",$vs_filename)."\n";
+				return false;
+			}
+
 			if (!($vs_mapping = $po_opts->getOption('mapping'))) {
 				print _t('You must specify a mapping for export.')."\n";
 				return false;
