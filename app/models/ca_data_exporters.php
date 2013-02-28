@@ -783,7 +783,8 @@ class ca_data_exporters extends BundlableLabelableBaseModelWithAttributes {
 		$t_exporter_item = ca_data_exporters::loadExporterItemByID($pn_item_id);
 		$va_item_info = array();
 
-		// switch context to different table if necessary and repeat current exporter item for all selected related records
+		// switch context to a different set of records if necessary and repeat current exporter item for all those selected records
+		// (e.g. hierarchy children or related items in another table, restricted by types or relationship types)
 		if(!$vb_ignore_source && ($vs_source = $t_exporter_item->get('source'))){
 			$t_instance = $this->getAppDatamodel()->getInstanceByTableNum($pn_table_num);
 			if(!$t_instance->load($pn_record_id)){
@@ -792,25 +793,47 @@ class ca_data_exporters extends BundlableLabelableBaseModelWithAttributes {
 
 			$va_parsed_source = ca_data_exporters::_parseItemSource($vs_source);
 			if(!$va_parsed_source){ return; }
-			$va_related = $t_instance->getRelatedItems(
-				$va_parsed_source['table_num'],
-				array(
-					'restrictToTypes' => $va_parsed_source['restrictToTypes'],
-					'restrictToRelationshipTypes' => $va_parsed_source['restrictToRelationshipTypes'],
-					'checkAccess' => $va_parsed_source['checkAccess'],
-				)
-			);
 
-			$vs_key = $this->getAppDatamodel()->getTablePrimaryKeyName($va_parsed_source['table_num']);
+			if(isset($va_parsed_source['table_num'])){
+				$vn_new_table_num = $va_parsed_source['table_num'];
+			} else {
+				$vn_new_table_num = $pn_table_num;
+			}
+
+			switch($va_parsed_source['mode']){
+				case 'related_table':
+					$va_related = $t_instance->getRelatedItems(
+						$vn_new_table_num,
+						array(
+							'restrictToTypes' => $va_parsed_source['restrictToTypes'],
+							'restrictToRelationshipTypes' => $va_parsed_source['restrictToRelationshipTypes'],
+							'checkAccess' => $va_parsed_source['checkAccess'],
+						)
+					);
+					break;
+				case 'children':
+					$va_related = $t_instance->getHierarchyChildren();
+					break;
+				case 'parent':
+					$va_related = $t_instance->getHierarchyAncestors();
+					break;
+				default:
+					break;
+			}
+
+			$vs_key = $this->getAppDatamodel()->getTablePrimaryKeyName($vn_new_table_num);
 			$va_info = array();
 			foreach($va_related as $va_rel){
-				$va_rel_export = $this->processExporterItem($pn_item_id,$va_parsed_source['table_num'],$va_rel[$vs_key],array_merge(array('ignoreSource' => true),$pa_options));
+				$va_rel_export = $this->processExporterItem($pn_item_id,$vn_new_table_num,$va_rel[$vs_key],array_merge(array('ignoreSource' => true),$pa_options));
 				$va_info = array_merge($va_info,$va_rel_export);
 			}
 
 			return $va_info;
 		}
 		// end switch context
+		
+		// don't prevent context switches for children of context-switched exporter items
+		unset($pa_options['ignoreSource']);
 		
 		if($vs_template = $t_exporter_item->getSetting('template')){
 			$va_item_info['text'] = caProcessTemplateForIDs($vs_template,$pn_table_num,array($pn_record_id));
@@ -836,21 +859,29 @@ class ca_data_exporters extends BundlableLabelableBaseModelWithAttributes {
 		$va_tmp = explode('%',$vs_source);
 		$vs_table = array_shift($va_tmp);
 
-		if($vn_table_num = $o_dm->getTableNum($vs_table)){
+		if($vn_table_num = $o_dm->getTableNum($vs_table)){ // actual table
+			$va_return['mode'] = 'related_table';
 			$va_return['table_num'] = $vn_table_num;
-		} else {
-			return false;
-		}
 
-		foreach($va_tmp as $vs_tmp){
-			$va_keyval = explode('=',$vs_tmp);
-			switch($va_keyval[0]){
-				case 'restrictToTypes':
-				case 'restrictToRelationshipTypes':
-				case 'checkAccess':
-					$va_return[$va_keyval[0]] = explode('|',$va_keyval[1]);
+			foreach($va_tmp as $vs_tmp){
+				$va_keyval = explode('=',$vs_tmp);
+				switch($va_keyval[0]){
+					case 'restrictToTypes':
+					case 'restrictToRelationshipTypes':
+					case 'checkAccess':
+						$va_return[$va_keyval[0]] = explode('|',$va_keyval[1]);
+						break;
+					default:
+						return false;
+				}
+			}
+		} else { // probably some meta-key like 'parent' or 'children'
+			switch($vs_table){
+				case 'parent':
+				case 'children':
+					$va_return['mode'] = $vs_table;
 					break;
-				default:
+				default: // invalid
 					return false;
 			}
 		}
