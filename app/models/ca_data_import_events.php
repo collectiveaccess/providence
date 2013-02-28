@@ -275,10 +275,10 @@ class ca_data_import_events extends BaseModel {
 		
 		$this->opo_data_import_item->setMode(ACCESS_WRITE);
 		$this->opo_data_import_item->set('event_id', $vn_event_id);
-		$this->opo_data_import_item->set('completed_on', "now");
+		$this->opo_data_import_item->set('completed_on', _t("now"));
 		$this->opo_data_import_item->set('elapsed_time', (microtime(true) - $this->opn_start_time));
 	
-		$this->opo_data_import_item->set('success', (bool)$pb_success ? 1 : 0);
+		$this->opo_data_import_item->set('success', (int)$pn_success);
 		$this->opo_data_import_item->set('message', $ps_message);
 		$this->opo_data_import_item->set('row_id', $pn_row_id);
 		

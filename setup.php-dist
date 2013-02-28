@@ -281,6 +281,13 @@ define('__CA_DISABLE_CONFIG_CACHING__', false);
 # comfortable with it. 
 define('__CA_ALLOW_AUTOMATIC_UPDATE_OF_DATABASE__', true);
 
+# If you set this to true the application may print debugging information. This is
+# primarily intended for developers working on custom code. If this is enabled, any
+# variables passed to the the caDebug() function (see app/helpers/utilityHelpers.php)
+# will trigger a detailed output of the variable content. Note that utilityHelpers.php
+# has to be included to use the function, but it usually is.
+define('__CA_ENABLE_DEBUG_OUTPUT__', false);
+
 /* ----------------------------------------------------------------------
  * setup.php : 	defines paths for CollectiveAccess Providence cataloguing module, enables 
  *				the application to find various support files. This is the first file 

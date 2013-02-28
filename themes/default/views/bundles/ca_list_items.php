@@ -146,7 +146,7 @@
 		<div id="<?php print $vs_id_prefix; ?>Item_{n}" class="labelInfo">
 <?php
 		if (!(bool)$va_settings['useHierarchicalBrowser']) {
-?>xxx
+?>
 				<table class="caListItem">
 					<tr>
 						<td><input type="text" size="60" name="<?php print $vs_id_prefix; ?>_autocomplete{n}" value="{{label}}" id="<?php print $vs_id_prefix; ?>_autocomplete{n}" class="lookupBg"/></td>

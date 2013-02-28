@@ -46,13 +46,23 @@
                 </label>
               </labels>
             </item>
-            <item idno="print" enabled="1" default="0">
+            <item idno="print_run" enabled="1" default="0">
               <labels>
                 <label locale="en_US" preferred="1">
-                  <name_singular>Print</name_singular>
-                  <name_plural>Prints</name_plural>
+                  <name_singular>Print Run</name_singular>
+                  <name_plural>Print Runs</name_plural>
                 </label>
               </labels>
+              <items>
+                <item idno="print" enabled="1" default="0">
+                  <labels>
+                    <label locale="en_US" preferred="1">
+                      <name_singular>Print</name_singular>
+                      <name_plural>Prints</name_plural>
+                    </label>
+                  </labels>
+                </item>
+              </items>
             </item>
             <item idno="special_project" enabled="1" default="0">
               <labels>
@@ -146,6 +156,14 @@
                     </label>
                   </labels>
                 </item>
+                <item idno="publication" enabled="1" default="0">
+                  <labels>
+                    <label locale="en_US" preferred="1">
+                      <name_singular>Publication</name_singular>
+                      <name_plural>Publications</name_plural>
+                    </label>
+                  </labels>
+                </item>                
               </items>
             </item>
           </items>
@@ -1334,8 +1352,8 @@
             <item idno="special_project" enabled="1" default="0">
               <labels>
                 <label locale="en_US" preferred="1">
-                  <name_singular>Special Project</name_singular>
-                  <name_plural>Special Projects</name_plural>
+                  <name_singular>Special Project (event)</name_singular>
+                  <name_plural>Special Projects (events)</name_plural>
                 </label>
               </labels>
             </item>
@@ -2729,6 +2747,944 @@
         </item>        
       </items>
     </list>    
+    <list code="keywords" hierarchical="1" system="0" vocabulary="1">
+      <labels>
+        <label locale="en_US">
+          <name>Keywords</name>
+        </label>
+      </labels>
+      <items>
+        <item idno="shapes" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>shapes (abstract)</name_singular>
+              <name_plural>shapes (abstract)</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="blood" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>blood (drops)</name_singular>
+              <name_plural>blood (drops)</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="drips" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>drips</name_singular>
+              <name_plural>drips</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="stabbed" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>stabbed/stabbing</name_singular>
+              <name_plural>stabbed/stabbing</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="hanging" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>hanging</name_singular>
+              <name_plural>hanging</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="exploding" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>exploding</name_singular>
+              <name_plural>exploding</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="breakdance" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>break dance</name_singular>
+              <name_plural>break dance</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="dancing" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>dancing</name_singular>
+              <name_plural>dancing</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="running" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>running</name_singular>
+              <name_plural>running</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="plussign" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>plus sign </name_singular>
+              <name_plural>plus sign </name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="headstand" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>headstand</name_singular>
+              <name_plural>headstand</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="FigureLevitating" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>figure levitating</name_singular>
+              <name_plural>figure levitating</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="Medusaarms" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>Medusa arms</name_singular>
+              <name_plural>Medusa arms</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="tri_legged_figure" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>tri-legged figure</name_singular>
+              <name_plural>tri-legged figure</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="hoopring" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>hoop or ring</name_singular>
+              <name_plural>hoop or ring</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="holethroughbelly" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>hole through belly</name_singular>
+              <name_plural>hole through belly</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="stomp" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>stomp</name_singular>
+              <name_plural>stomp</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="pileoffigures" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>pile of figures</name_singular>
+              <name_plural>pile of figures</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="wingedmermaid" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>winged mermaid</name_singular>
+              <name_plural>winged mermaid</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="waterwaves" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>water waves</name_singular>
+              <name_plural>water waves</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="campfire" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>campfire</name_singular>
+              <name_plural>campfire</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="manger" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>manger</name_singular>
+              <name_plural>manger</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="wingeddog" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>winged mermaid</name_singular>
+              <name_plural>winged mermaid</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="posthumous" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>posthumous</name_singular>
+              <name_plural>posthumous</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="SVA" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>SVA</name_singular>
+              <name_plural>SVA</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="collaboration" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>collaboration</name_singular>
+              <name_plural>collaboration</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="MickeyMouse" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>Mickey Mouse without ears</name_singular>
+              <name_plural>Mickey Mouse without ears</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="personalizecaption" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>personalize/caption</name_singular>
+              <name_plural>personalize/caption</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="antiaparthied" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>anti-aparthied</name_singular>
+              <name_plural>anti-aparthied</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="activism" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>activism</name_singular>
+              <name_plural>activism</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="money" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>money</name_singular>
+              <name_plural>money</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="unfinishedfragment" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>unfinished/fragment</name_singular>
+              <name_plural>unfinished/fragment</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="accompanyingtext" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>accompanying text</name_singular>
+              <name_plural>accompanying text</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="text" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>text</name_singular>
+              <name_plural>text</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="kids" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>kids</name_singular>
+              <name_plural>kids</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="icon" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>icon</name_singular>
+              <name_plural>icon</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="music" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>music</name_singular>
+              <name_plural>music</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="dance" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>dance</name_singular>
+              <name_plural>dance</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="LGBT" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>LGBT</name_singular>
+              <name_plural>LGBT</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="logo" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>logo</name_singular>
+              <name_plural>logo</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="capitalism" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>capitalism</name_singular>
+              <name_plural>capitalism</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="pregnancy" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>pregnancy</name_singular>
+              <name_plural>pregnancy</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="technology" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>technology</name_singular>
+              <name_plural>technology</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="power" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>power</name_singular>
+              <name_plural>power</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="boombox" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>boom box</name_singular>
+              <name_plural>boom box</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="communication" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>communication</name_singular>
+              <name_plural>communication</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="telephone" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>telephone</name_singular>
+              <name_plural>telephone</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="race" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>race</name_singular>
+              <name_plural>race</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="death" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>death</name_singular>
+              <name_plural>death</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="stairs" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>stairs</name_singular>
+              <name_plural>stairs</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="heart" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>heart</name_singular>
+              <name_plural>heart</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="telephone" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>telephone</name_singular>
+              <name_plural>telephone</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="tv_screen" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>tv (screen)</name_singular>
+              <name_plural>tv (screen)</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="world_earth" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>world/earth</name_singular>
+              <name_plural>world/earth</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="fallingman" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>falling man</name_singular>
+              <name_plural>falling man</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="dogman" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>dog-man</name_singular>
+              <name_plural>dog-man</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="airplane" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>airplane</name_singular>
+              <name_plural>airplane</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="wingedbaby" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>winged baby</name_singular>
+              <name_plural>winged baby</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="wingedman" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>winged man (bat-man)</name_singular>
+              <name_plural>winged man (bat-man)</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="lightbulb" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>lightbulb</name_singular>
+              <name_plural>lightbulb</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="vagina" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>vagina</name_singular>
+              <name_plural>vagina</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="2eyed_smiling_face" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>2-eyed smiling face</name_singular>
+              <name_plural>2-eyed smiling face</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="clock" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>clock</name_singular>
+              <name_plural>clock</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="USA" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>USA</name_singular>
+              <name_plural>USA</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="X" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>X</name_singular>
+              <name_plural>X</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="centipede" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>centipede</name_singular>
+              <name_plural>centipede</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="flower" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>flower</name_singular>
+              <name_plural>flower</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="bird" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>bird</name_singular>
+              <name_plural>bird</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="skull" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>skull</name_singular>
+              <name_plural>skull</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="fish" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>fish</name_singular>
+              <name_plural>fish</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="skateboard" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>skateboard</name_singular>
+              <name_plural>skateboard</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="sailboat" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>sailboat</name_singular>
+              <name_plural>sailboat</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="camera" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>camera</name_singular>
+              <name_plural>camera</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="birth" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>birth</name_singular>
+              <name_plural>birth</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="sex" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>sex</name_singular>
+              <name_plural>sex</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="fire" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>fire</name_singular>
+              <name_plural>fire</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="nuclear" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>nuclear</name_singular>
+              <name_plural>nuclear</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="smurf" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>smurf</name_singular>
+              <name_plural>smurf</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="dolphin" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>dolphin</name_singular>
+              <name_plural>dolphin</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="stackedfigures" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>stacked figures (cupman)</name_singular>
+              <name_plural>stacked figures (cupman)</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="pregnant" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>pregnant</name_singular>
+              <name_plural>pregnant</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="MisterSoftee" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>Mister Softee</name_singular>
+              <name_plural>Mister Softee</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="scissors" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>scissors</name_singular>
+              <name_plural>scissors</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="stars" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>star(s)</name_singular>
+              <name_plural>star(s)</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="motherandchild" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>mother and child</name_singular>
+              <name_plural>mother and child</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="StatueofLiberty" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>Statue of Liberty</name_singular>
+              <name_plural>Statue of Liberty</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="AndyMouse" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>Andy Mouse</name_singular>
+              <name_plural>Andy Mouse</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="knifesword" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>knife/sword</name_singular>
+              <name_plural>knife/sword</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="key" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>key</name_singular>
+              <name_plural>key</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="egg" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>egg</name_singular>
+              <name_plural>egg</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="tree" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>tree</name_singular>
+              <name_plural>tree</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="pig" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>pig</name_singular>
+              <name_plural>pig</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="flag" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>flag</name_singular>
+              <name_plural>flag</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="stick" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>stick (club or staff as weapon)</name_singular>
+              <name_plural>stick (club or staff as weapon)</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="selfportrait" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>self-portrait</name_singular>
+              <name_plural>self-portrait</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="dog" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>dog</name_singular>
+              <name_plural>dog</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="baby" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>baby</name_singular>
+              <name_plural>baby</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="penis" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>penis</name_singular>
+              <name_plural>penis</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="radio" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>radio</name_singular>
+              <name_plural>radio</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="MickeyMouse" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>Mickey Mouse</name_singular>
+              <name_plural>Mickey Mouse</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="angel" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>angel</name_singular>
+              <name_plural>angel</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="3eyedsmilingface" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>3 eyed smiling face</name_singular>
+              <name_plural>3 eyed smiling face</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="spaceship" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>spaceship</name_singular>
+              <name_plural>spaceship</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="DJ" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>DJ</name_singular>
+              <name_plural>DJ</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="robot" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>robot</name_singular>
+              <name_plural>robot</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="computer" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>computer</name_singular>
+              <name_plural>computer</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="snake" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>snake</name_singular>
+              <name_plural>snake</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="subway" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>subway</name_singular>
+              <name_plural>subway</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="mural" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>mural</name_singular>
+              <name_plural>mural</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="love" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>love</name_singular>
+              <name_plural>love</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="pyramid" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>pyramid</name_singular>
+              <name_plural>pyramid</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="AIDS_HIV" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>AIDS/HIV</name_singular>
+              <name_plural>AIDS/HIV</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="religion_cross" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>religion/cross</name_singular>
+              <name_plural>religion/cross</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="dollarsignmoney" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>dollar sign/money</name_singular>
+              <name_plural>dollar sign/money</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="DeitchProjects" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>Deitch Projects</name_singular>
+              <name_plural>Deitch Projects</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="Shafrazi" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>Shafrazi</name_singular>
+              <name_plural>Shafrazi</name_plural>
+            </label>
+          </labels>
+        </item>        
+      </items>
+    </list>
+    
   </lists>
   <elementSets>
     <metadataElement code="altID" datatype="Text">
@@ -3242,9 +4198,9 @@
             <setting name="minimumAttributeBundlesToDisplay">1</setting>
           </settings>
         </restriction>
-        <restriction code="r4">
+        <restriction code="x4">
           <table>ca_objects</table>
-          <type>print</type>
+          <type>print_run</type>
           <settings>
             <setting name="minAttributesPerRow">1</setting>
             <setting name="maxAttributesPerRow">3</setting>
@@ -3271,7 +4227,7 @@
         </restriction>
         <restriction code="r7">
           <table>ca_objects</table>
-          <type>other_archival_objects</type>
+          <type>other_archival_object</type>
           <settings>
             <setting name="minAttributesPerRow">1</setting>
             <setting name="maxAttributesPerRow">3</setting>
@@ -3306,7 +4262,7 @@
     <metadataElement code="literature_catalog" datatype="Text">
       <labels>
         <label locale="en_US">
-          <name>Literature/Catalog </name>
+          <name>Bibliography</name>
         </label>
       </labels>
       <settings>
@@ -3438,7 +4394,7 @@
             <setting name="maxAttributesPerRow">1</setting>
             <setting name="minimumAttributeBundlesToDisplay">1</setting>
           </settings>
-        </restriction>
+        </restriction>    
         <restriction code="r5">
           <table>ca_objects</table>
           <type>special_project</type>
@@ -3508,15 +4464,15 @@
             <setting name="minimumAttributeBundlesToDisplay">1</setting>
           </settings>
         </restriction>
-        <restriction code="r4">
+        <restriction code="x4">
           <table>ca_objects</table>
-          <type>print</type>
+          <type>print_run</type>
           <settings>
-            <setting name="minAttributesPerRow">1</setting>
+            <setting name="minAttributesPerRow">0</setting>
             <setting name="maxAttributesPerRow">255</setting>
             <setting name="minimumAttributeBundlesToDisplay">1</setting>
           </settings>
-        </restriction>
+        </restriction>         
         <restriction code="r5">
           <table>ca_objects</table>
           <type>special_project</type>
@@ -3537,7 +4493,7 @@
         </restriction>
         <restriction code="r7">
           <table>ca_objects</table>
-          <type>other_archival_objects</type>
+          <type>other_archival_object</type>
           <settings>
             <setting name="minAttributesPerRow">1</setting>
             <setting name="maxAttributesPerRow">255</setting>
@@ -3594,7 +4550,7 @@
             <setting name="maxAttributesPerRow">1</setting>
             <setting name="minimumAttributeBundlesToDisplay">1</setting>
           </settings>
-        </restriction>
+        </restriction>        
         <restriction code="r5">
           <table>ca_objects</table>
           <type>special_project</type>
@@ -3615,7 +4571,7 @@
         </restriction>
         <restriction code="r7">
           <table>ca_objects</table>
-          <type>other_archival_objects</type>
+          <type>other_archival_object</type>
           <settings>
             <setting name="minAttributesPerRow">0</setting>
             <setting name="maxAttributesPerRow">1</setting>
@@ -3624,18 +4580,103 @@
         </restriction>
       </typeRestrictions>
     </metadataElement>
-    <metadataElement code="condition_notes" datatype="Text">
+    <metadataElement code="condition_notes" datatype="Container">
       <labels>
         <label locale="en_US">
           <name>Condition Notes</name>
         </label>
       </labels>
-      <settings>
-        <setting name="fieldWidth">90</setting>
-        <setting name="fieldHeight">4</setting>
-        <setting name="minChars">0</setting>
-        <setting name="maxChars">65535</setting>
-      </settings>
+      <elements>
+        <metadataElement code="condition_notes_line1" datatype="Container">
+          <labels>
+            <label locale="en_US">
+              <name>Condition Notes</name>
+            </label>
+          </labels>
+          <elements>
+            <metadataElement code="condition_notes_media" datatype="Media">
+              <labels>
+                <label locale="en_US">
+                  <name>Media</name>
+                </label>
+              </labels>
+            </metadataElement>
+            <metadataElement code="date_of_file" datatype="DateRange">
+              <labels>
+                <label locale="en_US">
+                  <name>Date Of File</name>
+                </label>
+              </labels>
+            </metadataElement>
+          </elements>
+        </metadataElement>
+        <metadataElement code="condition_notes_line2" datatype="Container">
+          <labels>
+            <label locale="en_US">
+              <name>Condition Notes</name>
+            </label>
+          </labels>
+          <elements>
+            <metadataElement code="packing_instructions" datatype="Text">
+              <labels>
+                <label locale="en_US">
+                  <name>Packing Instructions</name>
+                </label>
+              </labels>
+              <settings>
+                  <setting name="fieldWidth">90</setting>
+                  <setting name="fieldHeight">4</setting>
+                  <setting name="minChars">0</setting>
+                  <setting name="maxChars">65535</setting>
+              </settings>
+            </metadataElement>
+          </elements>
+        </metadataElement>
+        <metadataElement code="condition_notes_line3" datatype="Container">
+          <labels>
+            <label locale="en_US">
+              <name>Condition Notes</name>
+            </label>
+          </labels>
+          <elements>
+            <metadataElement code="exhibition_number" datatype="Text">
+              <labels>
+                <label locale="en_US">
+                  <name>Exhibition Number</name>
+                </label>
+              </labels>
+              <settings>
+                <setting name="fieldWidth">90</setting>
+                <setting name="fieldHeight">1</setting>
+                <setting name="minChars">0</setting>
+                <setting name="maxChars">65535</setting>
+              </settings>
+            </metadataElement>
+          </elements>
+        </metadataElement>
+        <metadataElement code="condition_notes_line4" datatype="Container">
+          <labels>
+            <label locale="en_US">
+              <name>Condition Notes</name>
+            </label>
+          </labels>
+          <elements>
+            <metadataElement code="general_notes" datatype="Text">
+              <labels>
+                <label locale="en_US">
+                  <name>General Notes</name>
+                </label>
+              </labels>
+              <settings>
+                <setting name="fieldWidth">90</setting>
+                <setting name="fieldHeight">4</setting>
+                <setting name="minChars">0</setting>
+                <setting name="maxChars">65535</setting>
+              </settings>
+            </metadataElement>
+          </elements>
+        </metadataElement>
+      </elements>
       <typeRestrictions>
         <restriction code="objects">
           <table>ca_objects</table>
@@ -3925,7 +4966,7 @@
             <setting name="maxAttributesPerRow">1</setting>
             <setting name="minimumAttributeBundlesToDisplay">1</setting>
           </settings>
-        </restriction>
+        </restriction>        
       </typeRestrictions>
     </metadataElement>
     <metadataElement code="no_paper" datatype="Numeric">
@@ -3941,15 +4982,15 @@
         <setting name="maxChars">65535</setting>
       </settings>
       <typeRestrictions>
-        <restriction code="objects">
+        <restriction code="x4">
           <table>ca_objects</table>
-          <type>print</type>
+          <type>print_run</type>
           <settings>
             <setting name="minAttributesPerRow">0</setting>
             <setting name="maxAttributesPerRow">1</setting>
             <setting name="minimumAttributeBundlesToDisplay">1</setting>
           </settings>
-        </restriction>
+        </restriction>         
       </typeRestrictions>
     </metadataElement>
     <metadataElement code="collab_period" datatype="DateRange">
@@ -3966,15 +5007,15 @@
         <setting name="maxChars">65535</setting>
       </settings>
       <typeRestrictions>
-        <restriction code="r2">
+        <restriction code="x4">
           <table>ca_objects</table>
-          <type>print</type>
+          <type>print_run</type>
           <settings>
             <setting name="minAttributesPerRow">0</setting>
             <setting name="maxAttributesPerRow">100</setting>
             <setting name="minimumAttributeBundlesToDisplay">1</setting>
           </settings>
-        </restriction>
+        </restriction>         
       </typeRestrictions>
     </metadataElement>
     <metadataElement code="approval_date" datatype="DateRange">
@@ -3991,15 +5032,15 @@
         <setting name="maxChars">65535</setting>
       </settings>
       <typeRestrictions>
-        <restriction code="r2">
+        <restriction code="x4">
           <table>ca_objects</table>
-          <type>print</type>
+          <type>print_run</type>
           <settings>
             <setting name="minAttributesPerRow">0</setting>
-            <setting name="maxAttributesPerRow">100</setting>
+            <setting name="maxAttributesPerRow">1</setting>
             <setting name="minimumAttributeBundlesToDisplay">1</setting>
           </settings>
-        </restriction>
+        </restriction>         
       </typeRestrictions>
     </metadataElement>
     <metadataElement code="date_signed" datatype="DateRange">
@@ -4018,6 +5059,7 @@
       <typeRestrictions>
         <restriction code="r2">
           <table>ca_objects</table>
+          <type>print_run</type>
           <settings>
             <setting name="minAttributesPerRow">0</setting>
             <setting name="maxAttributesPerRow">100</setting>
@@ -4039,15 +5081,15 @@
         <setting name="maxChars">65535</setting>
       </settings>
       <typeRestrictions>
-        <restriction code="objects">
+        <restriction code="x4">
           <table>ca_objects</table>
-          <type>print</type>
+          <type>print_run</type>
           <settings>
             <setting name="minAttributesPerRow">0</setting>
             <setting name="maxAttributesPerRow">1</setting>
             <setting name="minimumAttributeBundlesToDisplay">1</setting>
           </settings>
-        </restriction>
+        </restriction>         
       </typeRestrictions>
     </metadataElement>
     <metadataElement code="chop_location" datatype="Text">
@@ -4063,15 +5105,15 @@
         <setting name="maxChars">65535</setting>
       </settings>
       <typeRestrictions>
-        <restriction code="objects">
+        <restriction code="x4">
           <table>ca_objects</table>
-          <type>print</type>
+          <type>print_run</type>
           <settings>
             <setting name="minAttributesPerRow">0</setting>
             <setting name="maxAttributesPerRow">1</setting>
             <setting name="minimumAttributeBundlesToDisplay">1</setting>
           </settings>
-        </restriction>
+        </restriction>         
       </typeRestrictions>
     </metadataElement>
     <metadataElement code="edition_info" datatype="Container">
@@ -4237,15 +5279,15 @@
         </metadataElement>
       </elements>
       <typeRestrictions>
-        <restriction code="objects">
+        <restriction code="x4">
           <table>ca_objects</table>
-          <type>print</type>
+          <type>print_run</type>
           <settings>
             <setting name="minAttributesPerRow">0</setting>
             <setting name="maxAttributesPerRow">255</setting>
             <setting name="minimumAttributeBundlesToDisplay">1</setting>
           </settings>
-        </restriction>
+        </restriction>         
       </typeRestrictions>
     </metadataElement>
 
@@ -4969,7 +6011,7 @@
         <setting name="maxChars">65535</setting>
       </settings>
       <typeRestrictions>
-        <restriction code="r1">
+        <restriction code="r0">
           <table>ca_occurrences</table>
           <type>authentication_project</type>
           <settings>
@@ -4978,6 +6020,51 @@
             <setting name="minimumAttributeBundlesToDisplay">1</setting>
           </settings>
         </restriction>
+        <restriction code="r1">
+          <table>ca_objects</table>
+          <type>sculpture</type>
+          <settings>
+            <setting name="minAttributesPerRow">0</setting>
+            <setting name="maxAttributesPerRow">1</setting>
+            <setting name="minimumAttributeBundlesToDisplay">1</setting>
+          </settings>
+        </restriction>  
+        <restriction code="r2">
+          <table>ca_objects</table>
+          <type>drawing</type>
+          <settings>
+            <setting name="minAttributesPerRow">0</setting>
+            <setting name="maxAttributesPerRow">1</setting>
+            <setting name="minimumAttributeBundlesToDisplay">1</setting>
+          </settings>
+        </restriction>
+        <restriction code="r3">
+          <table>ca_objects</table>
+          <type>painting</type>
+          <settings>
+            <setting name="minAttributesPerRow">0</setting>
+            <setting name="maxAttributesPerRow">1</setting>
+            <setting name="minimumAttributeBundlesToDisplay">1</setting>
+          </settings>
+        </restriction>  
+        <restriction code="r4">
+          <table>ca_objects</table>
+          <type>print</type>
+          <settings>
+            <setting name="minAttributesPerRow">0</setting>
+            <setting name="maxAttributesPerRow">1</setting>
+            <setting name="minimumAttributeBundlesToDisplay">1</setting>
+          </settings>
+        </restriction> 
+        <restriction code="r5">
+          <table>ca_objects</table>
+          <type>special_project</type>
+          <settings>
+            <setting name="minAttributesPerRow">0</setting>
+            <setting name="maxAttributesPerRow">1</setting>
+            <setting name="minimumAttributeBundlesToDisplay">1</setting>
+          </settings>
+        </restriction>         
       </typeRestrictions>
     </metadataElement>
     <metadataElement code="size" datatype="Text">
@@ -5563,6 +6650,80 @@
       </typeRestrictions>
     </metadataElement>
 
+    <metadataElement code="publication_date" datatype="DateRange">
+      <labels>
+        <label locale="en_US">
+          <name>Publication Date</name>
+        </label>
+      </labels>
+      <settings>
+        <setting name="fieldWidth">40</setting>
+        <setting name="fieldHeight">1</setting>
+        <setting name="minChars">0</setting>
+        <setting name="maxChars">65535</setting>
+      </settings>
+      <typeRestrictions>
+        <restriction code="r2">
+          <table>ca_objects</table>
+          <type>publication</type>
+          <settings>
+            <setting name="minAttributesPerRow">0</setting>
+            <setting name="maxAttributesPerRow">100</setting>
+            <setting name="minimumAttributeBundlesToDisplay">1</setting>
+          </settings>
+        </restriction>
+      </typeRestrictions>
+    </metadataElement>
+    <metadataElement code="isbn" datatype="Text">
+      <labels>
+        <label locale="en_US">
+          <name>ISBN Number</name>
+        </label>
+      </labels>
+      <settings>
+        <setting name="fieldWidth">40</setting>
+        <setting name="fieldHeight">1</setting>
+        <setting name="minChars">0</setting>
+        <setting name="maxChars">65535</setting>
+      </settings>
+      <typeRestrictions>
+        <restriction code="lic1">
+          <table>ca_objects</table>
+          <type>publication</type>
+          <settings>
+            <setting name="minAttributesPerRow">0</setting>
+            <setting name="maxAttributesPerRow">1</setting>
+            <setting name="minimumAttributeBundlesToDisplay">1</setting>
+          </settings>
+        </restriction>
+      </typeRestrictions>
+    </metadataElement>
+    <metadataElement code="number_of_pages" datatype="Numeric">
+      <labels>
+        <label locale="en_US">
+          <name>Number of Pages</name>
+          <description/>
+        </label>
+      </labels>
+      <documentationUrl/>
+      <settings>
+        <setting name="fieldWidth">40</setting>
+        <setting name="fieldHeight">1</setting>
+        <setting name="minChars">0</setting>
+        <setting name="maxChars">65535</setting>
+      </settings>
+      <typeRestrictions>
+        <restriction code="r1">
+          <table>ca_objects</table>
+          <type>publication</type>
+          <settings>
+            <setting name="minAttributesPerRow">o</setting>
+            <setting name="maxAttributesPerRow">1</setting>
+            <setting name="minimumAttributeBundlesToDisplay">1</setting>
+          </settings>
+        </restriction>
+      </typeRestrictions>
+    </metadataElement>    
   </elementSets>
   <userInterfaces>
     <userInterface code="object_cataloguers_ui" type="ca_objects">
@@ -5581,7 +6742,6 @@
           <typeRestrictions>
             <restriction code="artwork2" type="drawing"/>
             <restriction code="artwork3" type="painting"/>
-            <restriction code="artwork4" type="print"/>
             <restriction code="artwork5" type="special_project"/>              
             <restriction code="archival_item2" type="other_archival_object"/>  
           </typeRestrictions>  
@@ -5627,10 +6787,19 @@
             </placement>    
             <placement code="ca_attribute_internal_notes">
               <bundle>ca_attribute_internal_notes</bundle>
-            </placement>    
+            </placement>  
+            <placement code="ca_attribute_forgery">
+              <bundle>ca_attribute_forgery</bundle>
+            </placement>            
             <placement code="ca_attribute_external_link">
               <bundle>ca_attribute_external_link</bundle>
-            </placement>    
+            </placement>
+            <placement code="access">
+              <bundle>access</bundle>
+            </placement>
+            <placement code="status">
+              <bundle>status</bundle>
+          </placement>               
           </bundlePlacements>
         </screen>
         <screen idno="basic_archival_photograph" default="1">
@@ -5667,7 +6836,9 @@
             <placement code="ca_related_event">
               <bundle>ca_occurrences</bundle>
                <settings>
-              <setting name="restrict_to_types">kh_event</setting>
+              <setting name="restrict_to_types">exhibition</setting>
+              <setting name="restrict_to_types">personal_event</setting>
+              <setting name="restrict_to_types">special_project</setting>   
               <setting name="label" locale="en_US">Related Event</setting>                 
                </settings>
             </placement> 
@@ -5699,12 +6870,128 @@
            <placement code="ca_list_items">
               <bundle>ca_list_items</bundle>
                <settings>
-              <setting name="label" locale="en_US">Keywords</setting>                 
+              <setting name="label" locale="en_US">Keywords</setting> 
+              <setting name="restrict_to_lists">keywords</setting>   
                </settings>
             </placement> 
             <placement code="ca_attribute_literature_catalog">
               <bundle>ca_attribute_literature_catalog</bundle>
+            </placement>
+            <placement code="access">
+              <bundle>access</bundle>
+            </placement>
+            <placement code="status">
+              <bundle>status</bundle>
+          </placement>              
+          </bundlePlacements>
+        </screen>
+        <screen idno="basic_print_run" default="1">
+          <labels>
+            <label locale="en_US">
+              <name>Basic info</name>
+            </label>
+          </labels>
+          <typeRestrictions>
+            <restriction code="artwork6" type="print_run"/> 
+          </typeRestrictions>  
+          <bundlePlacements>
+            <placement code="idno">
+              <bundle>idno</bundle>
+            </placement>  
+            <placement code="preferred_labels">
+              <bundle>preferred_labels</bundle>
+              <settings>
+                <setting name="label" locale="en_US">Title</setting>
+              </settings>
+            </placement>
+            <placement code="nonpreferred_labels">
+              <bundle>nonpreferred_labels</bundle>
+              <settings>
+                <setting name="label" locale="en_US">Alternate Title</setting>
+              </settings>
+            </placement>
+            <placement code="ca_attribute_description">
+              <bundle>ca_attribute_description</bundle>
+            </placement>
+            <placement code="ca_attribute_date">
+              <bundle>ca_attribute_date</bundle>
+            </placement>
+            <placement code="ca_attribute_medium">
+              <bundle>ca_attribute_medium</bundle>
+            </placement>              
+            <placement code="ca_attribute_medium_text">
+              <bundle>ca_attribute_medium_text</bundle>
+            </placement>         
+            <placement code="ca_attribute_dimensions">
+              <bundle>ca_attribute_dimensions</bundle>
+            </placement>                     
+            <placement code="ca_attribute_literature_catalog">
+              <bundle>ca_attribute_literature_catalog</bundle>
+            </placement>    
+            <placement code="ca_attribute_internal_notes">
+              <bundle>ca_attribute_internal_notes</bundle>
+            </placement>    
+            <placement code="ca_attribute_external_link">
+              <bundle>ca_attribute_external_link</bundle>
+            </placement>
+            <placement code="access">
+              <bundle>access</bundle>
+            </placement>
+            <placement code="status">
+              <bundle>status</bundle>
+          </placement>               
+          </bundlePlacements>
+        </screen>
+        <screen idno="basic_print" default="1">
+          <labels>
+            <label locale="en_US">
+              <name>Basic info</name>
+            </label>
+          </labels>
+          <typeRestrictions>
+            <restriction code="artwork4" type="print"/>
+          </typeRestrictions>  
+          <bundlePlacements>
+            <placement code="idno">
+              <bundle>idno</bundle>
+            </placement>  
+            <placement code="preferred_labels">
+              <bundle>preferred_labels</bundle>
+              <settings>
+                <setting name="label" locale="en_US">Title</setting>
+              </settings>
+            </placement>
+            <placement code="nonpreferred_labels">
+              <bundle>nonpreferred_labels</bundle>
+              <settings>
+                <setting name="label" locale="en_US">Alternate Title</setting>
+              </settings>
+            </placement>
+            <placement code="ca_attribute_description">
+              <bundle>ca_attribute_description</bundle>
+            </placement>
+            <placement code="ca_attribute_source">
+              <bundle>ca_attribute_source</bundle>
+            </placement>
+            <placement code="ca_objects">
+              <bundle>ca_objects</bundle>
+               <settings>
+              <setting name="restrict_to_types">print_run</setting>   
+              <setting name="label" locale="en_US">Related Print Run</setting>                 
+               </settings>
             </placement>             
+            <placement code="ca_attribute_internal_notes">
+              <bundle>ca_attribute_internal_notes</bundle>
+            </placement> 
+            <placement code="ca_attribute_forgery">
+              <bundle>ca_attribute_forgery</bundle>
+            </placement>            
+            <placement code="access">
+              <bundle>access</bundle>
+            </placement>
+            <placement code="status">
+              <bundle>status</bundle>
+          </placement>               
           </bundlePlacements>
         </screen>
         
@@ -5771,7 +7058,16 @@
             </placement>    
             <placement code="ca_attribute_external_link">
               <bundle>ca_attribute_external_link</bundle>
-            </placement>    
+            </placement>
+            <placement code="ca_attribute_forgery">
+              <bundle>ca_attribute_forgery</bundle>
+            </placement>            
+            <placement code="access">
+              <bundle>access</bundle>
+            </placement>
+            <placement code="status">
+              <bundle>status</bundle>
+          </placement>              
           </bundlePlacements>
         </screen>        
         <screen idno="basic2" default="1">
@@ -5820,9 +7116,81 @@
             </placement>             
             <placement code="ca_attribute_internal_notes">
               <bundle>ca_attribute_internal_notes</bundle>
-            </placement>               
+            </placement>
+            <placement code="access">
+              <bundle>access</bundle>
+            </placement>
+            <placement code="status">
+              <bundle>status</bundle>
+          </placement>              
           </bundlePlacements>
         </screen>
+
+        <screen idno="basic_publication" default="1">
+          <labels>
+            <label locale="en_US">
+              <name>Basic info</name>
+            </label>
+          </labels>
+          <typeRestrictions>
+            <restriction code="publication" type="publication"/>  
+          </typeRestrictions>  
+          <bundlePlacements>
+             <placement code="idno">
+              <bundle>idno</bundle>
+            </placement> 
+            <placement code="preferred_labels">
+              <bundle>preferred_labels</bundle>
+              <settings>
+                <setting name="label" locale="en_US">Title</setting>
+              </settings>
+            </placement>
+            <placement code="ca_attribute_publication_date">
+              <bundle>ca_attribute_publication_date</bundle>
+            </placement>
+            <placement code="ca_attribute_isbn">
+              <bundle>ca_attribute_isbn</bundle>
+            </placement>
+            <placement code="ca_attribute_number_of_pages">
+              <bundle>ca_attribute_number_of_pages</bundle>
+            </placement>
+            <placement code="extent">
+              <bundle>extent</bundle>
+              <settings>
+                <setting name="label" locale="en_US">Quantity</setting>
+              </settings>
+            </placement>  
+            <placement code="ca_attribute_edition_information">
+              <bundle>ca_attribute_edition_information</bundle>
+            </placement> 
+            <placement code="ca_attribute_language">
+              <bundle>ca_attribute_language</bundle>
+            </placement>             
+            <placement code="ca_entitiesAuthor">
+              <bundle>ca_entities</bundle>
+              <settings>
+                <setting name="label" locale="en_US">Author</setting>
+                <setting name="restrict_to_types">ind</setting>
+                <setting name="restrict_to_relationship_types">author</setting> 
+              </settings>
+            </placement>  
+            <placement code="ca_entitiesCurator">
+              <bundle>ca_entities</bundle>
+              <settings>
+                <setting name="label" locale="en_US">Curator</setting>
+                <setting name="restrict_to_types">ind</setting>
+                <setting name="restrict_to_relationship_types">curator</setting> 
+              </settings>
+            </placement>              
+            <placement code="access">
+              <bundle>access</bundle>
+            </placement>
+            <placement code="status">
+              <bundle>status</bundle>
+          </placement>              
+          </bundlePlacements>
+        </screen>        
+        
         <screen idno="administrative" default="0">
           <labels>
             <label locale="en_US">
@@ -5833,7 +7201,7 @@
             <restriction code="artwork1" type="sculpture"/>
             <restriction code="artwork2" type="drawing"/>
             <restriction code="artwork3" type="painting"/>
-            <restriction code="artwork4" type="print"/>
+            <restriction code="artwork4" type="print"/>            
             <restriction code="artwork5" type="special_project"/>              
             <restriction code="archival_item2" type="other_archival_object"/>  
           </typeRestrictions>  
@@ -5900,6 +7268,7 @@
             <restriction code="artwork2" type="drawing"/>
             <restriction code="artwork3" type="painting"/>
             <restriction code="artwork4" type="print"/>
+            <restriction code="artwork6" type="print_run"/>            
             <restriction code="artwork5" type="special_project"/>              
             <restriction code="archival_item2" type="other_archival_object"/>  
           </typeRestrictions>  
@@ -5947,11 +7316,15 @@
           </labels>
           <typeRestrictions>
             <restriction code="artwork4" type="print"/>  
+            <restriction code="artwork6" type="print_run"/>            
           </typeRestrictions>  
           <bundlePlacements>
           <placement code="ca_attribute_number">
               <bundle>ca_attribute_number</bundle>
             </placement>
+            <placement code="ca_attribute_signature">
+              <bundle>ca_attribute_signature</bundle>
+            </placement>            
             <placement code="ca_attribute_edition_info">
               <bundle>ca_attribute_edition_info</bundle>
             </placement>
@@ -5972,10 +7345,7 @@
             </placement>
             <placement code="ca_attribute_chop_location">
               <bundle>ca_attribute_chop_location</bundle>
-            </placement>
-            <placement code="ca_attribute_internal_notes">
-              <bundle>ca_attribute_internal_notes</bundle>
-            </placement>            
+            </placement>          
           </bundlePlacements>
         </screen>
         <screen idno="sales" default="0">
@@ -5988,13 +7358,17 @@
             <restriction code="artwork1" type="sculpture"/>
             <restriction code="artwork2" type="drawing"/>
             <restriction code="artwork3" type="painting"/>
-            <restriction code="artwork4" type="print"/>
+            <restriction code="artwork4" type="print"/>            
             <restriction code="artwork5" type="special_project"/>                
           </typeRestrictions>  
           <bundlePlacements>
-          <placement code="ca_attribute_sales_history">
-              <bundle>ca_attribute_sales_history</bundle>
-            </placement>
+            <placement code="ca_occurrences">
+              <bundle>ca_occurrences</bundle>
+              <settings>
+                <setting name="label" locale="en_US">Related Sales</setting>
+                <setting name="restrict_to_types">sale</setting> 
+              </settings>
+            </placement>  
           </bundlePlacements>
         </screen>
         <screen idno="documents" default="0">
@@ -6008,6 +7382,7 @@
             <restriction code="artwork2" type="drawing"/>
             <restriction code="artwork3" type="painting"/>
             <restriction code="artwork4" type="print"/>
+            <restriction code="artwork6" type="print_run"/>            
             <restriction code="artwork5" type="special_project"/>          
           </typeRestrictions>  
           <bundlePlacements>
@@ -6074,6 +7449,9 @@
             </placement>
              <placement code="ca_list_items">
               <bundle>ca_list_items</bundle>
+              <settings>
+                <setting name="restrict_to_lists">keywords</setting> 
+              </settings> 
             </placement>
             <placement code="ca_attribute_lcsh_terms">
               <bundle>ca_attribute_lcsh_terms</bundle>
@@ -6112,6 +7490,12 @@
                 <setting name="label" locale="en_US">Organization</setting>
               </settings>
             </placement>
+            <placement code="access">
+              <bundle>access</bundle>
+            </placement>
+            <placement code="status">
+              <bundle>status</bundle>
+          </placement>  
           </bundlePlacements>
         </screen>
         <screen idno="altnames" default="0">
@@ -6266,6 +7650,12 @@
             <placement code="ca_attribute_external_link">
               <bundle>ca_attribute_external_link</bundle>
             </placement>
+            <placement code="access">
+              <bundle>access</bundle>
+            </placement>
+            <placement code="status">
+              <bundle>status</bundle>
+          </placement>              
           </bundlePlacements>
         </screen>
         <screen idno="basic_kh_personal_event" default="1">
@@ -6319,7 +7709,13 @@
             </placement>            
             <placement code="ca_attribute_description">
               <bundle>ca_attribute_description</bundle>
-            </placement>           
+            </placement> 
+            <placement code="access">
+              <bundle>access</bundle>
+            </placement>
+            <placement code="status">
+              <bundle>status</bundle>
+          </placement>              
           </bundlePlacements>
         </screen>
         <screen idno="basic_licensing_project" default="1">
@@ -6369,6 +7765,12 @@
             <placement code="ca_attribute_description">
               <bundle>ca_attribute_description</bundle>
             </placement> 
+            <placement code="access">
+              <bundle>access</bundle>
+            </placement>
+            <placement code="status">
+              <bundle>status</bundle>
+          </placement>              
           </bundlePlacements>
         </screen>
         <screen idno="licensing_terms" default="0">
@@ -6491,6 +7893,12 @@
             <placement code="ca_attribute_description">
               <bundle>ca_attribute_description</bundle>
             </placement> 
+            <placement code="access">
+              <bundle>access</bundle>
+            </placement>
+            <placement code="status">
+              <bundle>status</bundle>
+          </placement>              
           </bundlePlacements>
         </screen>
         <screen idno="art_info" default="0">
@@ -6655,6 +8063,12 @@
             <placement code="ca_occurrences">
               <bundle>ca_occurrences</bundle>
             </placement>
+             <placement code="ca_list_items">
+              <bundle>ca_list_items</bundle>
+               <settings>
+                 <setting name="restrict_to_lists">keywords</setting> 
+               </settings>
+            </placement>            
           </bundlePlacements>
         </screen>
         <screen idno="relationships_sale" default="0">
@@ -6683,6 +8097,12 @@
               <setting name="label" locale="en_US">Related Authentication</setting>                 
                </settings>
             </placement>
+             <placement code="ca_list_items">
+              <bundle>ca_list_items</bundle>
+               <settings>
+                 <setting name="restrict_to_lists">keywords</setting> 
+               </settings>
+            </placement>            
           </bundlePlacements>
         </screen>
       </screens>
@@ -7223,6 +8643,9 @@
           <bundlePlacements>
             <placement code="ca_list_items">
               <bundle>ca_list_items</bundle>
+              <settings>
+                <setting name="restrict_to_lists">keywords</setting> 
+              </settings>
             </placement>
           </bundlePlacements>
         </screen>
@@ -7368,6 +8791,26 @@
           <subTypeLeft> </subTypeLeft>
           <subTypeRight/>
         </type>
+        <type code="author" default="0">
+          <labels>
+            <label locale="en_US">
+              <typename>was authored by</typename>
+              <typename_reverse>is author of</typename_reverse>
+            </label>
+          </labels>
+          <subTypeLeft> </subTypeLeft>
+          <subTypeRight/>
+        </type>  
+        <type code="curator" default="0">
+          <labels>
+            <label locale="en_US">
+              <typename>was curated by</typename>
+              <typename_reverse>is curator of</typename_reverse>
+            </label>
+          </labels>
+          <subTypeLeft> </subTypeLeft>
+          <subTypeRight/>
+        </type>        
         <type code="purchaser" default="0">
           <labels>
             <label locale="en_US">
@@ -8305,15 +9748,21 @@
         </label>
       </labels>
       <bundlePlacements>
+        <placement code="ca_objects_representations_thumbnail">
+          <bundle>ca_object_representations.media.thumbnail</bundle>
+        </placement>  
         <placement code="idno">
           <bundle>ca_objects.idno</bundle>
         </placement>
-        <placement code="dvd_source">
-          <bundle>ca_objects.dvd_source</bundle>
+        <placement code="altID">
+          <bundle>ca_objects.altID</bundle>
         </placement>
         <placement code="preferred_labels">
           <bundle>ca_objects.preferred_labels</bundle>
         </placement>        
+        <placement code="description">
+          <bundle>ca_objects.despription</bundle>
+        </placement>
         <placement code="date">
           <bundle>ca_objects.date</bundle>
         </placement>
@@ -8384,49 +9833,310 @@
         <placement code="preferred_labels">
           <bundle>ca_occurrences.preferred_labels</bundle>
         </placement>
-        <placement code="license_type">
-          <bundle>ca_occurrences.license_type</bundle>
-        </placement>
         <placement code="product_type">
           <bundle>ca_occurrences.product_type</bundle>
         </placement>
         <placement code="rights">
           <bundle>ca_occurrences.rights</bundle>
-        </placement>          
+        </placement> 
+        <placement code="licensed_territory">
+          <bundle>ca_occurrences.licensed_territory</bundle>
+        </placement>
+        <placement code="license_term">
+          <bundle>ca_occurrences.license_term</bundle>
+        </placement>        
+        <placement code="license_type">
+          <bundle>ca_occurrences.license_type</bundle>
+        </placement>
         <placement code="ca_licensee">
           <bundle>ca_entities</bundle>
           <settings>
             <setting name="restrict_to_relationship_types">licensee</setting>
             <setting name="label" locale="en_US">Licensee</setting>                 
           </settings>
-        </placement> 
-        <placement code="address">
-          <bundle>ca_occurrences.address</bundle>
-        </placement>
-        <placement code="telephone">
-          <bundle>ca_occurrences.telephone</bundle>
-        </placement>
-        <placement code="email">
-          <bundle>ca_occurrences.email</bundle>
-        </placement> 
+        </placement>         
+        <placement code="ca_agent_office">
+          <bundle>ca_entities</bundle>
+          <settings>
+            <setting name="restrict_to_relationship_types">agent_office</setting>
+            <setting name="label" locale="en_US">Agent Office</setting>                 
+          </settings>
+        </placement>  
         <placement code="product_run">
           <bundle>ca_occurrences.product_run</bundle>
-        </placement> 
-        <placement code="licensed_territory">
-          <bundle>ca_occurrences.licensed_territory</bundle>
-        </placement>          
-        <placement code="licensed_territory_notes">
-          <bundle>ca_occurrences.licensed_territory_notes</bundle>
         </placement>  
-        <placement code="language">
-          <bundle>ca_occurrences.language</bundle>
-        </placement>    
         <placement code="length_agreement">
           <bundle>ca_occurrences.length_agreement</bundle>
+        </placement>    
+        <placement code="ca_objects">
+          <bundle>ca_objects</bundle>
+          <settings>
+            <setting name="label" locale="en_US">Licensed Articles</setting>                 
+          </settings>
+        </placement>          
+      </bundlePlacements>
+    </display>    
+    <display code="insurance_report" type="ca_objects" system="1">
+      <labels>
+        <label locale="en_US">
+          <name>Insurance Report - Artworks</name>
+        </label>
+      </labels>
+      <bundlePlacements>
+        <placement code="idno">
+          <bundle>ca_objects.idno</bundle>
+        </placement>
+        <placement code="ca_objects_representations_thumbnail">
+          <bundle>ca_object_representations.media.thumbnail</bundle>
+        </placement>  
+        <placement code="ca_artist">
+          <bundle>ca_entities</bundle>
+          <settings>
+            <setting name="restrict_to_relationship_types">artist</setting>
+            <setting name="label" locale="en_US">Artist</setting>                 
+          </settings>
+        </placement>         
+        <placement code="preferred_labels">
+          <bundle>ca_objects.preferred_labels</bundle>
+        </placement>        
+        <placement code="date">
+          <bundle>ca_objects.date</bundle>
+        </placement>
+        <placement code="medium">
+          <bundle>ca_objects.medium</bundle>
+        </placement>
+        <placement code="mediumtext">
+          <bundle>ca_objects.medium_text</bundle>
+        </placement>        
+        <placement code="dimensions">
+          <bundle>ca_objects.dimensions</bundle>
+        </placement>    
+        <placement code="valuation">
+          <bundle>ca_objects.valuation</bundle>
+        </placement>  
+      </bundlePlacements>
+    </display>
+    <display code="visual_list" type="ca_objects" system="1">
+      <labels>
+        <label locale="en_US">
+          <name>Visual List - Artworks</name>
+        </label>
+      </labels>
+      <bundlePlacements>
+        <placement code="idno">
+          <bundle>ca_objects.idno</bundle>
+        </placement>
+        <placement code="ca_objects_representations_thumbnail">
+          <bundle>ca_object_representations.media.thumbnail</bundle>
+        </placement>  
+        <placement code="ca_artist">
+          <bundle>ca_entities</bundle>
+          <settings>
+            <setting name="restrict_to_relationship_types">artist</setting>
+            <setting name="label" locale="en_US">Artist</setting>                 
+          </settings>
+        </placement>         
+        <placement code="preferred_labels">
+          <bundle>ca_objects.preferred_labels</bundle>
+        </placement>        
+        <placement code="medium">
+          <bundle>ca_objects.medium</bundle>
+        </placement>
+        <placement code="mediumtext">
+          <bundle>ca_objects.medium_text</bundle>
+        </placement>  
+        <placement code="date">
+          <bundle>ca_objects.date</bundle>
+        </placement>      
+        <placement code="dimensions">
+          <bundle>ca_objects.dimensions</bundle>
         </placement> 
         <placement code="description">
-          <bundle>ca_occurrences.description</bundle>
+          <bundle>ca_objects.description</bundle>
+        </placement>         
+        <placement code="internal_notes">
+          <bundle>ca_objects.internal_notes</bundle>
+        </placement>         
+      </bundlePlacements>
+    </display>
+    <display code="location_list" type="ca_objects" system="1">
+      <labels>
+        <label locale="en_US">
+          <name>Location List - Artworks</name>
+        </label>
+      </labels>
+      <bundlePlacements>
+        <placement code="idno">
+          <bundle>ca_objects.idno</bundle>
+        </placement>
+        <placement code="ca_objects_representations_thumbnail">
+          <bundle>ca_object_representations.media.thumbnail</bundle>
+        </placement>  
+        <placement code="ca_artis">
+          <bundle>ca_entities</bundle>
+          <settings>
+            <setting name="restrict_to_relationship_types">artist</setting>
+            <setting name="label" locale="en_US">Artist</setting>                 
+          </settings>
+        </placement>         
+        <placement code="preferred_labels">
+          <bundle>ca_objects.preferred_labels</bundle>
+        </placement>        
+        <placement code="medium">
+          <bundle>ca_objects.medium</bundle>
+        </placement>
+        <placement code="mediumtext">
+          <bundle>ca_objects.medium_text</bundle>
+        </placement> 
+        <placement code="date">
+          <bundle>ca_objects.date</bundle>
+        </placement>       
+        <placement code="dimensions">
+          <bundle>ca_objects.dimensions</bundle>
+        </placement>  
+        <placement code="locations">
+          <bundle>ca_storage_locations</bundle>
+        </placement>          
+      </bundlePlacements>
+    </display>
+    <display code="exhibition_list" type="ca_objects" system="1">
+      <labels>
+        <label locale="en_US">
+          <name>Exhibition List - Artworks</name>
+        </label>
+      </labels>
+      <bundlePlacements>
+        <placement code="idno">
+          <bundle>ca_objects.idno</bundle>
+        </placement>
+        <placement code="ca_objects_representations_thumbnail">
+          <bundle>ca_object_representations.media.thumbnail</bundle>
+        </placement>  
+        <placement code="ca_artist">
+          <bundle>ca_entities</bundle>
+          <settings>
+            <setting name="restrict_to_relationship_types">artist</setting>
+            <setting name="label" locale="en_US">Artist</setting>                 
+          </settings>
+        </placement>         
+        <placement code="preferred_labels">
+          <bundle>ca_objects.preferred_labels</bundle>
+        </placement>        
+        <placement code="medium">
+          <bundle>ca_objects.medium</bundle>
+        </placement>
+        <placement code="mediumtext">
+          <bundle>ca_objects.medium_text</bundle>
+        </placement>  
+        <placement code="date">
+          <bundle>ca_objects.date</bundle>
+        </placement>      
+        <placement code="dimensions">
+          <bundle>ca_objects.dimensions</bundle>
+        </placement>    
+        <placement code="ca_venue">
+          <bundle>ca_entities</bundle>
+          <settings>
+            <setting name="restrict_to_types">org</setting>
+            <setting name="restrict_to_relationship_types">venue</setting>
+            <setting name="label" locale="en_US">Exhibition Venue</setting>                 
+          </settings>
+        </placement>  
+      </bundlePlacements>
+    </display>
+    <display code="condition_report" type="ca_objects" system="1">
+      <labels>
+        <label locale="en_US">
+          <name>Condition Report - Artworks</name>
+        </label>
+      </labels>
+      <bundlePlacements>
+        <placement code="idno">
+          <bundle>ca_objects.idno</bundle>
+        </placement>
+        <placement code="ca_objects_representations_thumbnail">
+          <bundle>ca_object_representations.media.thumbnail</bundle>
+        </placement>  
+        <placement code="ca_artist">
+          <bundle>ca_entities</bundle>
+          <settings>
+            <setting name="restrict_to_relationship_types">artist</setting>
+            <setting name="label" locale="en_US">Artist</setting>                 
+          </settings>
+        </placement>         
+        <placement code="preferred_labels">
+          <bundle>ca_objects.preferred_labels</bundle>
+        </placement>        
+        <placement code="medium">
+          <bundle>ca_objects.medium</bundle>
+        </placement>
+        <placement code="mediumtext">
+          <bundle>ca_objects.medium_text</bundle>
+        </placement>  
+        <placement code="date">
+          <bundle>ca_objects.date</bundle>
+        </placement>      
+        <placement code="dimensions">
+          <bundle>ca_objects.dimensions</bundle>
+        </placement>  
+        <placement code="condition_notes">
+          <bundle>ca_objects.condition_notes</bundle>
+        </placement>          
+        <placement code="condition_ranking">
+          <bundle>ca_objects.condition_ranking</bundle>
         </placement>     
+        <placement code="ranking">
+          <bundle>ca_objects.ranking</bundle>
+        </placement>    
+        <placement code="packing">
+          <bundle>ca_objects.packing</bundle>
+        </placement> 
+      </bundlePlacements>
+    </display>
+    <display code="general_notes" type="ca_objects" system="1">
+      <labels>
+        <label locale="en_US">
+          <name>General Notes - Artworks</name>
+        </label>
+      </labels>
+      <bundlePlacements>
+        <placement code="idno">
+          <bundle>ca_objects.idno</bundle>
+        </placement>
+        <placement code="ca_objects_representations_thumbnail">
+          <bundle>ca_object_representations.media.thumbnail</bundle>
+        </placement>  
+        <placement code="ca_artis">
+          <bundle>ca_entities</bundle>
+          <settings>
+            <setting name="restrict_to_relationship_types">artist</setting>
+            <setting name="label" locale="en_US">Artist</setting>                 
+          </settings>
+        </placement>         
+        <placement code="preferred_labels">
+          <bundle>ca_objects.preferred_labels</bundle>
+        </placement>        
+        <placement code="medium">
+          <bundle>ca_objects.medium</bundle>
+        </placement>
+        <placement code="mediumtext">
+          <bundle>ca_objects.medium_text</bundle>
+        </placement>  
+        <placement code="date">
+          <bundle>ca_objects.date</bundle>
+        </placement>      
+        <placement code="dimensions">
+          <bundle>ca_objects.dimensions</bundle>
+        </placement>    
+        <placement code="internal_notes">
+          <bundle>ca_objects.internal_notes</bundle>
+        </placement> 
+        <placement code="publishing_notes">
+          <bundle>ca_objects.publishing_notes</bundle>
+        </placement> 
+        <placement code="provenance">
+          <bundle>ca_objects.provenance</bundle>
+        </placement>         
       </bundlePlacements>
     </display>    
   </displays>
