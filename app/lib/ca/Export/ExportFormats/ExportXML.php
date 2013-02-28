@@ -92,7 +92,9 @@ class ExportXML extends BaseExportFormat {
 
 		if(is_array($pa_item['children'])){
 			foreach($pa_item['children'] as $va_child){
-				$this->processItem($va_child,$vo_new_element);
+				if(!empty($va_child)){
+					$this->processItem($va_child,$vo_new_element);
+				}
 			}
 		}
 	}

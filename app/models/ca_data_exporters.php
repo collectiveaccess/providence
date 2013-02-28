@@ -776,12 +776,16 @@ class ca_data_exporters extends BundlableLabelableBaseModelWithAttributes {
 		$t_exporter_item = ca_data_exporters::loadExporterItemByID($pn_item_id);
 		$va_item_info = array();
 
-		/*
 		// switch context to different table if necessary and repeat current exporter item for all selected related records
 		if(!$vb_ignore_source && ($vs_source = $t_exporter_item->get('source'))){
+			$t_instance = $this->getAppDatamodel()->getInstanceByTableNum($pn_table_num);
+			if(!$t_instance->load($pn_record_id)){
+				return;
+			}
+
 			$va_parsed_source = ca_data_exporters::_parseItemSource($vs_source);
-			if(!$va_parsed_source){ die('invalid value for source'); }
-			$va_related = $t_record->getRelatedItems(
+			if(!$va_parsed_source){ return; }
+			$va_related = $t_instance->getRelatedItems(
 				$va_parsed_source['table_num'],
 				array(
 					'restrictToTypes' => $va_parsed_source['restrictToTypes'],
@@ -790,24 +794,39 @@ class ca_data_exporters extends BundlableLabelableBaseModelWithAttributes {
 				)
 			);
 
+			$vs_key = $this->getAppDatamodel()->getTablePrimaryKeyName($va_parsed_source['table_num']);
+			$va_info = array();
 			foreach($va_related as $va_rel){
-				$this->processExporterItem($pn_item_id,$va_parsed_source['table_num'],$va_rel['item_id'],array_merge(array('ignoreSource' => true),$pa_options));
+				$va_rel_export = $this->processExporterItem($pn_item_id,$va_parsed_source['table_num'],$va_rel[$vs_key],array_merge(array('ignoreSource' => true),$pa_options));
+				if(!empty($va_rel_export)){
+					$va_info['repeated_element'][] = $va_rel_export;	
+				}
 			}
 
-			return;
+			return $va_info;
 		}
 		// end switch context
-		*/
 		
 		if($vs_template = $t_exporter_item->getSetting('template')){
-			$va_item_info['text'] = caProcessTemplateForIDs($vs_template,$pn_table_num,array($pn_item_id));
+			$va_item_info['text'] = caProcessTemplateForIDs($vs_template,$pn_table_num,array($pn_record_id));
 		}
 	
 		$va_item_info['element'] = $t_exporter_item->get('element');
 
 		
 		foreach($t_exporter_item->getHierarchyChildren() as $va_child){
-			$va_item_info['children'][] = $this->processExporterItem($va_child['item_id'],$pn_table_num,$pn_record_id,$pa_options);
+			$va_child_export = $this->processExporterItem($va_child['item_id'],$pn_table_num,$pn_record_id,$pa_options);
+			if(isset($va_child_export['repeated_element']) && is_array($va_child_export['repeated_element']) && sizeof($va_child_export['repeated_element'])>0){
+				if(is_array($va_item_info['children'])){
+					$va_item_info['children'] = array_merge($va_child_export['repeated_element'],$va_item_info['children']);
+				} else {
+					$va_item_info['children'] = $va_child_export['repeated_element'];
+				}
+			} else {
+				if(sizeof($va_child_export)>0){
+					$va_item_info['children'][] = $va_child_export;
+				}
+			}
 		}
 
 		return $va_item_info;
