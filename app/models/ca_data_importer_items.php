@@ -248,6 +248,32 @@ class ca_data_importer_items extends BaseModel {
 			'label' => _t('Skip group if value'),
 			'description' => _t('Skip all of the elements in the group if value for this element is equal to the specified value(s).')
 		);
+		$va_settings['skipRowIfEmpty'] = array(
+			'formatType' => FT_TEXT,
+			'displayType' => DT_FIELD,
+			'width' => 40, 'height' => 10,
+			'takesLocale' => false,
+			'default' => 0,
+			'options' => array(
+				_t('yes') => 1,
+				_t('no') => 0
+			),
+			'label' => _t('Skip row if empty'),
+			'description' => _t('Skip row if value for this element is empty.  For example, do not import the row if the Description field is empty.')
+		);
+		$va_settings['skipRowIfValue'] = array(
+			'formatType' => FT_TEXT,
+			'displayType' => DT_FIELD,
+			'width' => 40, 'height' => 10,
+			'takesLocale' => false,
+			'default' => 0,
+			'options' => array(
+				_t('yes') => 1,
+				_t('no') => 0
+			),
+			'label' => _t('Skip row if value'),
+			'description' => _t('Skip the row if value for this element is equal to the specified value(s).')
+		);
 		$va_settings['default'] = array(
 			'formatType' => FT_TEXT,
 			'displayType' => DT_FIELD,
@@ -310,6 +336,19 @@ class ca_data_importer_items extends BaseModel {
 			'default' => '',
 			'label' => _t('Maximum length'),
 			'description' => _t('Truncate to specified length if value exceeds that length.')
+		);
+		$va_settings['errorPolicy'] = array(
+			'formatType' => FT_TEXT,
+			'displayType' => DT_FIELD,
+			'width' => 40, 'height' => 1,
+			'takesLocale' => false,
+			'default' => '',
+			'options' => array(
+				_t('ignore') => "ignore",
+				_t('stop') => "stop"
+			),
+			'label' => _t('Error policy'),
+			'description' => _t('Determines how errors are handled for the mapping.  Options are to ignore the error, stop the import when an error is encountered and to receive a prompt when the error is encountered.')
 		);
 		
 		$this->SETTINGS = new ModelSettings($this, 'settings', $va_settings);

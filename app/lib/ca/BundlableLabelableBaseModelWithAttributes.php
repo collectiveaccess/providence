@@ -454,6 +454,7 @@ class BundlableLabelableBaseModelWithAttributes extends LabelableBaseModelWithAt
   	 *		returnAsLink = if true and $ps_field is set to a specific field in a related table, or $ps_field is set to a related table (eg. ca_entities or ca_entities.related) AND the template option is set and returnAllLocales is not set, then returned values will be links. The destination of the link will be the appropriate editor when executed within Providence or the appropriate detail page when executed within Pawtucket or another front-end. Default is false.
  	 *		returnAsLinkText = text to use a content of HTML link. If omitted the url itself is used as the link content.
  	 *		returnAsLinkAttributes = array of attributes to include in link <a> tag. Use this to set class, alt and any other link attributes.
+	 *		returnAsLinkTarget = Optional link target. If any plugin implementing hookGetAsLink() responds to the specified target then the plugin will be used to generate the links rather than CA's default link generator.
 	 */
 	public function get($ps_field, $pa_options=null) {
 		if(!is_array($pa_options)) { $pa_options = array(); }
@@ -462,6 +463,7 @@ class BundlableLabelableBaseModelWithAttributes extends LabelableBaseModelWithAt
 		
 		$vb_return_as_link = 		(isset($pa_options['returnAsLink'])) ? (bool)$pa_options['returnAsLink'] : false;
 		$vs_return_as_link_text = 	(isset($pa_options['returnAsLinkText'])) ? (string)$pa_options['returnAsLinkText'] : '';
+		$vs_return_as_link_target = (isset($pa_options['returnAsLinkTarget'])) ? (string)$pa_options['returnAsLinkTarget'] : '';
 		$vs_return_as_link_attributes = (isset($pa_options['returnAsLinkAttributes']) && is_array($pa_options['returnAsLinkAttributes'])) ? $pa_options['returnAsLinkAttributes'] : array();
 		
 		$vb_return_all_locales = 	(isset($pa_options['returnAllLocales'])) ? (bool)$pa_options['returnAllLocales'] : false;
@@ -534,7 +536,7 @@ class BundlableLabelableBaseModelWithAttributes extends LabelableBaseModelWithAt
 							$va_text = caProcessTemplateForIDs($vs_template, $va_tmp[0], $va_ids, $va_template_opts);
 						
 							if ($vb_return_as_link) {
-								$va_text = caCreateLinksFromText($va_text, $va_tmp[0], $va_ids, $vs_return_as_link_class);
+								$va_text = caCreateLinksFromText($va_text, $va_tmp[0], $va_ids, $vs_return_as_link_class, $vs_return_as_link_target);
 							} 
 						
 							if ($vb_return_as_array) {
@@ -588,7 +590,7 @@ class BundlableLabelableBaseModelWithAttributes extends LabelableBaseModelWithAt
 						$va_text = caProcessTemplateForIDs($vs_template, $va_tmp[0], $va_ids, $va_template_opts);
 						
 						if ($vb_return_as_link) {
-							$va_text = caCreateLinksFromText($va_text, $va_tmp[0], $va_ids, $vs_return_as_link_class);
+							$va_text = caCreateLinksFromText($va_text, $va_tmp[0], $va_ids, $vs_return_as_link_class, $vs_return_as_link_target);
 						} 
 						
 						if ($vb_return_as_array) {
@@ -708,7 +710,7 @@ class BundlableLabelableBaseModelWithAttributes extends LabelableBaseModelWithAt
 					}
 			
 					if ($vb_return_as_link && !$vb_return_all_locales) {
-						$va_items = caCreateLinksFromText($va_items, $va_tmp[0], $va_ids, $vs_return_as_link_class);
+						$va_items = caCreateLinksFromText($va_items, $va_tmp[0], $va_ids, $vs_return_as_link_class, $vs_return_as_link_target);
 					}
 					
 					if($vb_return_as_array) {

@@ -343,21 +343,45 @@ class ca_entities extends BundlableLabelableBaseModelWithAttributes implements I
 	 * @param string $ps_surnamae The surname to search for
 	 * @return array Entity_id's for matching entities
 	 */
-	public function getEntityIDsByName($ps_forename, $ps_surname) {
+	public function getEntityIDsByName($ps_forename, $ps_surname, $pn_parent_id=null, $pn_type_id=null) {
 		$o_db = $this->getDb();
+		
+		$va_params = array((string)$ps_forename, (string)$ps_surname);
+		
+		$vs_type_sql = '';
+		if ($pn_type_id) {
+			if(sizeof($va_type_ids = caMakeTypeIDList('ca_entities', array($pn_type_id)))) {
+				$vs_type_sql = " AND cae.type_id IN (?)";
+				$va_params[] = $va_type_ids;
+			}
+		}
+		
+		if ($pn_parent_id) {
+			$vs_parent_sql = " AND cae.parent_id = ?";
+			$va_params[] = (int)$pn_parent_id;
+		} 
+		
+		
 		$qr_res = $o_db->query("
 			SELECT DISTINCT cae.entity_id
 			FROM ca_entities cae
 			INNER JOIN ca_entity_labels AS cael ON cael.entity_id = cae.entity_id
 			WHERE
-				cael.forename = ? AND cael.surname = ?
-		", (string)$ps_forename, (string)$ps_surname);
+				cael.forename = ? AND cael.surname = ? {$vs_type_sql} {$vs_parent_sql} AND cae.deleted = 0
+		", $va_params);
 		
 		$va_entity_ids = array();
 		while($qr_res->nextRow()) {
 			$va_entity_ids[] = $qr_res->get('entity_id');
 		}
 		return $va_entity_ids;
+	}
+	# ------------------------------------------------------
+	/**
+	 *
+	 */
+	public function getIDsByLabel($pa_label_values, $pn_parent_id=null, $pn_type_id=null) {
+		return $this->getEntityIDsByName($pa_label_values['forename'], $pa_label_values['surname'], $pn_parent_id, $pn_type_id);
 	}
 	# ------------------------------------------------------
 	/**

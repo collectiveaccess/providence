@@ -5,6 +5,7 @@
 	}
 	require_once(__CA_MODELS_DIR__."/ca_locales.php");
 	require_once(__CA_APP_DIR__."/helpers/utilityHelpers.php");
+	require_once(__CA_APP_DIR__."/helpers/CLIHelpers.php");
 	require_once(__CA_LIB_DIR__."/ca/Utils/CLIUtils.php");
 	require_once(__CA_LIB_DIR__."/core/Zend/Console/Getopt.php");
 	
@@ -71,7 +72,17 @@
 			//
 			// Execute command
 			//
+			
 			call_user_func_array("CLIUtils::{$vs_cmd}", array($o_opts));
+			print "\n";
+			if ($vn_n = CLIUtils::numErrors()) {
+				if ($vn_n > 1) {
+					print CLIUtils::textWithColor(_t("(There were %1 errors)", $vn_c), "yellow")."\n";
+				} else {
+					print CLIUtils::textWithColor(_t("(1 error occurred)"), "yellow")."\n";
+				}
+			}
+			print "\n";
 		} else {
 			//
 			// List available commands
