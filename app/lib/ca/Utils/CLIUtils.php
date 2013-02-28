@@ -885,6 +885,11 @@
 				print _t('Mapping %1 does not exist', $vs_mapping)."\n";
 				return false;
 			}
+
+			if(sizeof($va_errors = ca_data_exporters::checkMapping($vs_mapping))>0){
+				print _t("Mapping %1 has errors: %2",$vs_mapping,join("; ",$va_errors))."\n";
+				return false;
+			}
 			
 			if($vs_search){
 				if(!ca_data_exporters::exportRecordsFromSearchExpression($vs_mapping, $vs_search, $vs_filename, array('showCLIProgressBar' => true, 'useNcurses' => true))){

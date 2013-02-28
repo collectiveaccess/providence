@@ -211,6 +211,7 @@ class ca_data_exporters extends BundlableLabelableBaseModelWithAttributes {
 	 */
 	public static $s_exporter_cache = array();
 	public static $s_exporter_item_cache = array();
+	public static $s_mapping_check_cache = array();
 	
 	# ------------------------------------------------------
 	public function __construct($pn_id=null) {
@@ -665,9 +666,12 @@ class ca_data_exporters extends BundlableLabelableBaseModelWithAttributes {
 
 		$vb_show_cli_progress_bar 	= (isset($pa_options['showCLIProgressBar']) && ($pa_options['showCLIProgressBar']));
 
-		$t_mapping = new ca_data_exporters();
-		if(!$t_mapping->load(array('exporter_code' => $ps_exporter_code))){
-			return array(_t("Invalid mapping code"));
+		if(!$t_mapping = ca_data_exporters::loadExporterByCode($ps_exporter_code)){
+			return false;
+		}
+
+		if(sizeof(ca_data_exporters::checkMapping($ps_exporter_code))>0){
+			return false;
 		}
 
 		$vs_wrap_before = $t_mapping->getSetting('wrap_before');
@@ -711,23 +715,26 @@ class ca_data_exporters extends BundlableLabelableBaseModelWithAttributes {
 	 * @return array Array of errors. Array has size 0 if no errors occurred.
 	 */
 	static public function checkMapping($ps_exporter_code){
-		$t_mapping = new ca_data_exporters();
-		if(!$t_mapping->load(array('exporter_code' => $ps_exporter_code))){
-			return array(_t("Invalid mapping code"));
-		}
+		if(isset(ca_data_exporters::$s_mapping_check_cache[$ps_exporter_code]) && is_array(ca_data_exporters::$s_mapping_check_cache[$ps_exporter_code])){
+			return ca_data_exporters::$s_mapping_check_cache[$ps_exporter_code];
+		} else {
+			$t_mapping = new ca_data_exporters();
+			if(!$t_mapping->load(array('exporter_code' => $ps_exporter_code))){
+				return array(_t("Invalid mapping code"));
+			}
 
-		switch($t_mapping->getSetting('exporter_format')){
-			case 'XML':
-				$o_export = new ExportXML();
-				break;
-			case 'MARC':
-				$o_export = new ExportMARC();
-				break;
-			default:
-				return array(_t("Invalid exporter format"));
+			switch($t_mapping->getSetting('exporter_format')){
+				case 'XML':
+					$o_export = new ExportXML();
+					break;
+				case 'MARC':
+					$o_export = new ExportMARC();
+					break;
+				default:
+					return array(_t("Invalid exporter format"));
+			}
+			return ca_data_exporters::$s_mapping_check_cache[$ps_exporter_code] = $o_export->getMappingErrors($t_mapping);
 		}
-
-		return $o_export->getMappingErrors($t_mapping);
 	}
 	# ------------------------------------------------------
 	/**
