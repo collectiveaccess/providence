@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2006-2012 Whirl-i-Gig
+ * Copyright 2006-2013 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -38,14 +38,14 @@
  * Plugin for processing images using GD
  */
 
-include_once(__CA_LIB_DIR__."/core/Plugins/WLPlug.php");
+include_once(__CA_LIB_DIR__."/core/Plugins/Media/BaseMediaPlugin.php");
 include_once(__CA_LIB_DIR__."/core/Plugins/IWLPlugMedia.php");
 include_once(__CA_LIB_DIR__."/core/Parsers/TilepicParser.php");
 include_once(__CA_LIB_DIR__."/core/Configuration.php");
 include_once(__CA_APP_DIR__."/helpers/mediaPluginHelpers.php");
 include_once(__CA_LIB_DIR__."/core/Parsers/MediaMetadata/XMPParser.php");
 
-class WLPlugMediaGD Extends WLPlug Implements IWLPlugMedia {
+class WLPlugMediaGD Extends BaseMediaPlugin Implements IWLPlugMedia {
 	var $errors = array();
 	
 	var $filepath;

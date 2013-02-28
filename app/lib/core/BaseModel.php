@@ -274,6 +274,14 @@ class BaseModel extends BaseObject {
 	 * @access private
 	 */
 	private $opa_php_version;				#
+	
+	/**
+	 * Flag controlling whether changes are written to the change log (ca_change_log)
+	 * Default is true.
+	 *
+	 * @access private
+	 */
+	private $opb_log_changes = true;
 
 
 	# --------------------------------------------------------------------------------
@@ -505,6 +513,19 @@ class BaseModel extends BaseObject {
 			$this->opb_purify_input = (bool)$pb_purify;
 		}
 		return $this->opb_purify_input;
+	}
+	# --------------------------------------------------------------------------------
+	/**
+	 * Sets whether changes are written to the change log or not. Default is to write changes to the log.
+	 *
+	 * @param bool $pb_log_changes If true, changes will be recorded in the change log. By default changes are logged unless explicitly set not to. If omitted then the current state of logging is returned.
+	 * @return bool Current state of logging.
+	 */
+	public function logChanges($pb_log_changes=null) {
+		if (!is_null($pb_log_changes)) {
+			$this->opb_log_changes = (bool)$pb_log_changes;
+		}
+		return $this->opb_log_changes;
 	}
 	# --------------------------------------------------------------------------------
 	# Set/get values
@@ -2156,7 +2177,7 @@ class BaseModel extends BaseObject {
 					$vn_id = $this->getPrimaryKey();
 					
 					if ((!isset($pa_options['dont_do_search_indexing']) || (!$pa_options['dont_do_search_indexing'])) && !defined('__CA_DONT_DO_SEARCH_INDEXING__')) {
-						$this->doSearchIndexing(null, true);
+						$this->doSearchIndexing(null, false);
 					}
 
 					if ($vb_we_set_transaction) { $this->removeTransaction(true); }
@@ -2692,7 +2713,7 @@ class BaseModel extends BaseObject {
 					}
 					if ((!isset($pa_options['dont_do_search_indexing']) || (!$pa_options['dont_do_search_indexing'])) &&  !defined('__CA_DONT_DO_SEARCH_INDEXING__')) {
 						# update search index
-						$this->doSearchIndexing();
+						$this->doSearchIndexing(null, false);
 					}
 														
 					if (is_array($va_rebuild_hierarchical_index)) {
@@ -5275,6 +5296,7 @@ class BaseModel extends BaseObject {
 	 * @param int $pn_user_id user identifier, defaults to null
 	 */
 	private function logChange($ps_change_type, $pn_user_id=null) {
+		if (!$this->logChanges()) { return null; }
 		$vb_is_metadata = $vb_is_metadata_value = false;
 		if ($this->tableName() == 'ca_attributes') {
 			$vb_log_changes_to_self = false;
@@ -5452,6 +5474,7 @@ class BaseModel extends BaseObject {
 				}
 			}
 		}
+		return true;
 	}
 	# --------------------------------------------------------------------------------------------
 	/**

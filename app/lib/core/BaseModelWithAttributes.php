@@ -418,9 +418,8 @@
 				$vb_we_set_transaction = true;
 			}
 			$vb_web_set_change_log_unit_id = BaseModel::setChangeLogUnitID();
-			
 			if (!is_array($pa_options)) { $pa_options = array(); }
-			//$pa_options['dont_do_search_indexing'] = true;
+			$pa_options['dont_do_search_indexing'] = true;
 			
 			$va_field_values = $this->getFieldValuesArray();		// get pre-insert field values (including attribute values)
 			
@@ -448,7 +447,7 @@
 				// set the field values array for this instance
 				$this->setFieldValuesArray($va_field_values_with_updated_attributes);
 				
-				$this->doSearchIndexing($va_fields_changed_array);
+				$this->doSearchIndexing($va_fields_changed_array, true);
 				
 				
 				if ($vb_web_set_change_log_unit_id) { BaseModel::unsetChangeLogUnitID(); }
@@ -481,7 +480,7 @@
 			$vb_web_set_change_log_unit_id = BaseModel::setChangeLogUnitID();
 			
 			if (!is_array($pa_options)) { $pa_options = array(); }
-			//$pa_options['dont_do_search_indexing'] = true;
+			$pa_options['dont_do_search_indexing'] = true;
 			
 			$va_field_values = $this->getFieldValuesArray();		// get pre-update field values (including attribute values)
 			// change status for attributes is only available **before** update
@@ -1656,7 +1655,7 @@
  				$va_ancestors = array();
  				if ($t_type_instance = $this->getTypeInstance()) {
  					$va_ancestors = $t_type_instance->getHierarchyAncestors(null, array('idsOnly' => true, 'includeSelf' => true));
- 					array_pop($va_ancestors); // remove hierarchy root
+ 					if (is_array($va_ancestors)) { array_pop($va_ancestors); } // remove hierarchy root
  				}
  				
  				if (sizeof($va_ancestors) > 1) {
