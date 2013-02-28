@@ -1012,7 +1012,7 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 					if (isset($va_dest_tmp[2])) {
 						$va_preferred_label_mapping_ids[$vn_item_id] = $va_dest_tmp[2];
 					} else {
-						$va_preferred_label_mapping_ids[$vn_item_id] = $t_label->getLabelDisplayField();
+						$va_preferred_label_mapping_ids[$vn_item_id] = $t_subject->getLabelDisplayField();
 					}
 					continue;
 				}
@@ -1334,17 +1334,18 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 								$va_ptr[$t_instance->getLabelDisplayField()] = '';
 								$va_ptr =& $va_ptr[$t_instance->getLabelDisplayField()];
 							}
+							
+							if (!$vb_item_error_policy_is_default || !isset($va_ptr['_errorPolicy'])) {
+								if (is_array($va_ptr)) { $va_ptr['_errorPolicy'] = $vs_item_error_policy; }
+							}
 							$va_ptr = $vm_val;
 							if ($vs_item_terminal == 'preferred_labels') { $vs_preferred_label_for_log = $vm_val; }
 							
-							if (!$vb_item_error_policy_is_default || !isset($va_ptr['_errorPolicy'])) {
-								$va_ptr['_errorPolicy'] = $vs_item_error_policy;
-							}
 							break;
 						default:
 							$va_ptr[$vs_item_terminal] = $vm_val;
 							if (!$vb_item_error_policy_is_default || !isset($va_ptr['_errorPolicy'])) {
-								$va_ptr['_errorPolicy'] = $vs_item_error_policy;
+								if (is_array($va_ptr)) { $va_ptr['_errorPolicy'] = $vs_item_error_policy; }
 							}
 							break;
 					}	

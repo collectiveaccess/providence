@@ -278,7 +278,7 @@
 				
 				$t_place->insert();
 				
-				if ($t_occurrence->numErrors()) {
+				if ($t_place->numErrors()) {
 					if(isset($pa_options['outputErrors']) && $pa_options['outputErrors']) {
 						print "[Error] "._t("Could not insert place %1: %2", $ps_place_name, join('; ', $t_place->getErrors()))."\n";
 					}
