@@ -726,7 +726,9 @@ class ca_data_exporters extends BundlableLabelableBaseModelWithAttributes {
 	 * @param string $ps_exporter_code defines the exporter to use
 	 * @param int $pn_record_id Primary key of the record to export. Record type is determined by the table_num field for this exporter.
 	 * @param array $pa_options
-	 *        singleRecord
+	 *        singleRecord = Gives a signal to the export format implementation that this is a single record export. For certain formats
+	 *        	this might trigger different behavior, for instance the XML export format prepends the item-level output with <?xml ... ?>
+	 *        	in those cases.
 	 * @return string Exported record as string
 	 */
 	static public function exportRecord($ps_exporter_code, $pn_record_id, $pa_options=array()){

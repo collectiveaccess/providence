@@ -716,8 +716,11 @@
 		public static function export_data($po_opts=null) {
 			require_once(__CA_MODELS_DIR__."/ca_data_exporters.php");
 	
-			if (!($vs_search = $po_opts->getOption('search'))) {
-				print _t('You must specify a search expression to select a record set for export.')."\n";
+			$vs_search = $po_opts->getOption('search');
+			$vs_id = $po_opts->getOption('id');
+
+			if (!($vs_search) && !($vs_id)) {
+				print _t('You must specify either an idno or a search expression to select a record or record set for export.')."\n";
 				return false;
 			}
 			if (!($vs_filename = $po_opts->getOption('file'))) {
@@ -741,17 +744,28 @@
 				return false;
 			}
 			
-			if(!ca_data_exporters::exportRecordsFromSearchExpression($vs_mapping, $vs_search, $vs_filename, array('showCLIProgressBar' => true))){
-				print _t("Could not export mapping %1", $vs_mapping)."\n";
-				return false;
-			} else {
-				print _t("Exported data to %1", $vs_filename)."\n";
+			if($vs_search){
+				if(!ca_data_exporters::exportRecordsFromSearchExpression($vs_mapping, $vs_search, $vs_filename, array('showCLIProgressBar' => true, 'useNcurses' => true))){
+					print _t("Could not export mapping %1", $vs_mapping)."\n";
+					return false;
+				} else {
+					print _t("Exported data to %1", $vs_filename)."\n";
+				}	
+			} else if($vs_id){
+				if($vs_export = ca_data_exporters::exportRecord($vs_mapping, $vs_id, $pa_options=array('singleRecord' => true))){
+					file_put_contents($vs_filename, $vs_export);
+					print _t("Exported data to %1", $vs_filename)."\n";
+				} else {
+					print _t("Could not export mapping %1", $vs_mapping)."\n";
+					return false;
+				}
 			}
 		}
 		# -------------------------------------------------------
 		public static function export_dataParamList() {
 			return array(
 				"search|s=s" => _t('Search expression that selects records to export.'),
+				"id|i=s" => _t('Primary key identifier of single item to export.'),
 				"file|f=s" => _t('File to save export to.'),
 				"mapping|m=s" => _t('Mapping to export data with.'),
 			);
