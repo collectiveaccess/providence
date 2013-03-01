@@ -508,32 +508,45 @@ class ca_places extends BundlableLabelableBaseModelWithAttributes implements IBu
 	/**
 	 *
 	 */
-	public function getPlaceIDsByName($ps_name, $pn_parent_id=null) {
+	public function getPlaceIDsByName($ps_name, $pn_parent_id=null, $pn_type_id=null) {
 		$o_db = $this->getDb();
 		
-		if ($pn_parent_id) {
-			$qr_res = $o_db->query("
-				SELECT DISTINCT cap.place_id
-				FROM ca_places cap
-				INNER JOIN ca_place_labels AS capl ON capl.place_id = cap.place_id
-				WHERE
-					capl.name = ? AND cap.parent_id = ?
-			", (string)$ps_name, (int)$pn_parent_id);
-		} else {
-			$qr_res = $o_db->query("
-				SELECT DISTINCT cap.place_id
-				FROM ca_places cap
-				INNER JOIN ca_place_labels AS capl ON capl.place_id = cap.place_id
-				WHERE
-					capl.name = ?
-			", (string)$ps_name);
-
+		$va_params = array((string)$ps_name);
+		
+		$vs_type_sql = '';
+		if ($pn_type_id) {
+			if(sizeof($va_type_ids = caMakeTypeIDList('ca_places', array($pn_type_id)))) {
+				$vs_type_sql = " AND cap.type_id IN (?)";
+				$va_params[] = $va_type_ids;
+			}
 		}
+		
+		if ($pn_parent_id) {
+			$vs_parent_sql = " AND cap.parent_id = ?";
+			$va_params[] = (int)$pn_parent_id;
+		} 
+		
+		
+		$qr_res = $o_db->query("
+			SELECT DISTINCT cap.place_id
+			FROM ca_places cap
+			INNER JOIN ca_place_labels AS capl ON capl.place_id = cap.place_id
+			WHERE
+				capl.name = ? {$vs_type_sql} {$vs_parent_sql} AND cap.deleted = 0
+		", $va_params);
+		
 		$va_place_ids = array();
 		while($qr_res->nextRow()) {
 			$va_place_ids[] = $qr_res->get('place_id');
 		}
 		return $va_place_ids;
+	}
+	# ------------------------------------------------------
+	/**
+	 *
+	 */
+	public function getIDsByLabel($pa_label_values, $pn_parent_id=null, $pn_type_id=null) {
+		return $this->getPlaceIDsByName($pa_label_values['name'], $pn_parent_id, $pn_type_id);
 	}
 	# ------------------------------------------------------
 }

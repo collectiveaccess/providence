@@ -37,6 +37,7 @@
 require_once(__CA_LIB_DIR__.'/core/Datamodel.php');
 require_once(__CA_LIB_DIR__.'/core/Configuration.php');
 require_once(__CA_LIB_DIR__.'/core/Parsers/TimeExpressionParser.php');
+require_once(__CA_LIB_DIR__."/ca/ApplicationPluginManager.php");
 	
 	# ------------------------------------------------------------------------------------------------
 	/**
@@ -2353,11 +2354,17 @@ $ca_relationship_lookup_parse_cache = array();
 	 *
 	 * @return array A list of HTML links
 	 */
-	function caCreateLinksFromText($pa_text, $ps_table_name, $pa_row_ids, $ps_class=null) {
+	function caCreateLinksFromText($pa_text, $ps_table_name, $pa_row_ids, $ps_class=null, $ps_target=null) {
 		if (!in_array(__CA_APP_TYPE__, array('PROVIDENCE', 'PAWTUCKET'))) { return $pa_text; }
 		if (__CA_APP_TYPE__ == 'PAWTUCKET') {
 			$o_config = Configuration::load();
 			if (!$o_config->get("allow_detail_for_{$ps_table_name}")) { return $pa_text; }
+		}
+		
+		$vb_can_handle_target = false;
+		if ($ps_target) {
+			$o_app_plugin_manager = new ApplicationPluginManager();
+			$vb_can_handle_target = $o_app_plugin_manager->hookCanHandleGetAsLinkTarget(array('target' => $ps_target));
 		}
 		
 		// Parse template
@@ -2389,29 +2396,42 @@ $ca_relationship_lookup_parse_cache = array();
 			if (sizeof($va_l_tags)) {
 				$vs_content = $vs_text;
 				foreach($va_l_tags as $va_l) {
-					switch(__CA_APP_TYPE__) {
-						case 'PROVIDENCE':
-							$vs_link_text= caEditorLink($g_request, $va_l['content'], $ps_class, $ps_table_name, $pa_row_ids[$vn_i]);
-							break;
-						case 'PAWTUCKET':
-							$vs_link_text= caDetailLink($g_request, $va_l['content'], $ps_class, $ps_table_name, $pa_row_ids[$vn_i]);
-							break;
+					if ($vb_can_handle_target) {
+						$va_params = array('request' => $g_request, 'content' => $va_l['content'], 'table' => $ps_table_name, 'id' => $pa_row_ids[$vn_i], 'classname' => $ps_class, 'target' => $ps_target, 'additionalParameters' => null, 'options' => null);
+						$va_params = $o_app_plugin_manager->hookGetAsLink($va_params);
+						$vs_link_text = $va_params['tag'];
+					} else {
+						switch(__CA_APP_TYPE__) {
+							case 'PROVIDENCE':
+								$vs_link_text= caEditorLink($g_request, $va_l['content'], $ps_class, $ps_table_name, $pa_row_ids[$vn_i]);
+								break;
+							case 'PAWTUCKET':
+								$vs_link_text= caDetailLink($g_request, $va_l['content'], $ps_class, $ps_table_name, $pa_row_ids[$vn_i]);
+								break;
+						}
+											
 					}
 					
 					$vs_content = str_replace($va_l['directive'], $vs_link_text, $vs_content);
 				}
 				$va_links[] = $vs_content;
 			} else {
-				switch(__CA_APP_TYPE__) {
-					case 'PROVIDENCE':
-						$va_links[] = caEditorLink($g_request, $vs_text, $ps_class, $ps_table_name, $pa_row_ids[$vn_i]);
-						break;
-					case 'PAWTUCKET':
-						$va_links[] = caDetailLink($g_request, $vs_text, $ps_class, $ps_table_name, $pa_row_ids[$vn_i]);
-						break;
-					default:
-						$va_links[] = $vs_text;
-						break;
+				if ($vb_can_handle_target) {
+					$va_params = array('request' => $g_request, 'content' => $vs_text, 'table' => $ps_table_name, 'id' => $pa_row_ids[$vn_i], 'classname' => $ps_class, 'target' => $ps_target, 'additionalParameters' => null, 'options' => null);
+					$va_params = $o_app_plugin_manager->hookGetAsLink($va_params);
+					$va_links[]  = $va_params['tag'];
+				} else {
+					switch(__CA_APP_TYPE__) {
+						case 'PROVIDENCE':
+							$va_links[] = caEditorLink($g_request, $vs_text, $ps_class, $ps_table_name, $pa_row_ids[$vn_i]);
+							break;
+						case 'PAWTUCKET':
+							$va_links[] = caDetailLink($g_request, $vs_text, $ps_class, $ps_table_name, $pa_row_ids[$vn_i]);
+							break;
+						default:
+							$va_links[] = $vs_text;
+							break;
+					}
 				}
 			}
 		}

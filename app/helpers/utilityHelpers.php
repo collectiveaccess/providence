@@ -307,7 +307,7 @@ function caFileIsIncludable($ps_file) {
 				if ($item != "." && $item != ".." && ($pb_include_hidden_files || (!$pb_include_hidden_files && $item{0} !== '.'))) {
 					$vb_is_dir = is_dir("{$dir}/{$item}");
 					if ($pb_recursive && $vb_is_dir) { 
-						$va_file_list = array_merge($va_file_list, caGetDirectoryContentsAsList("{$dir}/{$item}", true, $pb_include_hidden_files));
+						$va_file_list = array_merge($va_file_list, array_flip(caGetDirectoryContentsAsList("{$dir}/{$item}", true, $pb_include_hidden_files)));
 					} else { 
 						if (!$vb_is_dir) { 
 							$va_file_list["{$dir}/{$item}"] = true;
@@ -320,8 +320,7 @@ function caFileIsIncludable($ps_file) {
 		if ($pb_sort) {
 			ksort($va_file_list);
 		}
-		$va_file_list = array_keys($va_file_list);
-		return $va_file_list;
+		return array_keys($va_file_list);
 	}
 	# ----------------------------------------
 	/**
@@ -1586,6 +1585,45 @@ function caFileIsIncludable($ps_file) {
 				'DOCUMENT_ROOT' => $_SERVER['DOCUMENT_ROOT']
 			)
 		));
+	}
+	# ----------------------------------------
+	/**
+	 * Generic debug function for shiny variable output
+	 * @param mixed $vm_data content to print
+	 * @param string $vs_label optional label to prefix the output with
+	 * @param boolean $print_r Flag to switch between print_r() and var_export() for data conversion to string. 
+	 * 		Set $print_r to TRUE when dealing with a recursive data structure as var_export() will generate an error.
+	 */
+	function caDebug($vm_data, $vs_label = null, $print_r = false) {
+		if(defined('__CA_ENABLE_DEBUG_OUTPUT__') && __CA_ENABLE_DEBUG_OUTPUT__) {
+			if(!caIsRunFromCLI()){
+				$vs_string = htmlspecialchars(($print_r ? print_r($vm_data, TRUE) : var_export($vm_data, TRUE)), ENT_QUOTES, 'UTF-8');
+				$vs_string = '<pre>' . $vs_string . '</pre>';
+				$vs_string = trim($vs_label ? "<div id='debugLabel'>$vs_label:</div> $vs_string" : $vs_string);
+				$vs_string = '<div id="debug">'. $vs_string . '</div>';
+
+				global $g_response;
+				if(is_object($g_response)){
+					$g_response->prependContent($vs_string,'debug');
+				} else {
+					// on the off chance that someone wants to debug something that happens before 
+					// the response object is generated (like config checks), print content
+					// to output buffer to avoid headers already sent warning. The output is sent
+					// when someone (e.g. View.php) starts a new buffer.
+					ob_start();
+					print $vs_string;
+				}
+			} else {
+				// simply dump stuff on command line
+				if($vs_label) { print $vs_label.":\n"; }
+				if($print_r) {
+					print_r($vm_data);
+				} else {
+					var_export($vm_data);
+				}
+				print "\n";
+			}
+		}
 	}
 	# ----------------------------------------
 ?>

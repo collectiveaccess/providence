@@ -195,6 +195,7 @@
 		
 		$vs_list_code = $t_instance->getTypeListCode();
 		foreach($pa_types as $vm_type) {
+			if (!$vm_type) { continue; }
 			$vn_type_id = null;
 			if (is_numeric($vm_type)) { 
 				$vn_type_id = (int)$vm_type; 
