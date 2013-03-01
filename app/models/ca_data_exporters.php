@@ -100,13 +100,6 @@ BaseModel::$s_ca_models_definitions['ca_data_exporters'] = array(
 				'DEFAULT' => '',
 				'LABEL' => _t('Settings'), 'DESCRIPTION' => _t('exporter settings')
 		),
-		'vars' => array(
-				'FIELD_TYPE' => FT_VARS, 'DISPLAY_TYPE' => DT_OMIT, 
-				'DISPLAY_WIDTH' => 88, 'DISPLAY_HEIGHT' => 15,
-				'IS_NULL' => false, 
-				'DEFAULT' => '',
-				'LABEL' => 'Variable storage', 'DESCRIPTION' => 'Storage area for exporter variables'
-		),
 	)
 );
 	
@@ -781,7 +774,6 @@ class ca_data_exporters extends BundlableLabelableBaseModelWithAttributes {
 		$vb_ignore_source = (isset($pa_options['ignoreSource']) && $pa_options['ignoreSource']);
 
 		$t_exporter_item = ca_data_exporters::loadExporterItemByID($pn_item_id);
-		$va_item_info = array();
 
 		// switch context to a different set of records if necessary and repeat current exporter item for all those selected records
 		// (e.g. hierarchy children or related items in another table, restricted by types or relationship types)
@@ -834,10 +826,25 @@ class ca_data_exporters extends BundlableLabelableBaseModelWithAttributes {
 		
 		// don't prevent context switches for children of context-switched exporter items
 		unset($pa_options['ignoreSource']);
+
+		$va_item_info = array();
 		
-		if($vs_template = $t_exporter_item->getSetting('template')){
-			$va_item_info['text'] = caProcessTemplateForIDs($vs_template,$pn_table_num,array($pn_record_id));
+		// if user wants current element repeated in case of multiple returned values, go ahead and do that
+		if($vb_repeat = $t_exporter_item->getSetting("repeat_element_for_multiple_values")){
+			if($vs_template = $t_exporter_item->getSetting('template')){
+				caDebug($vs_template,"Template");
+				$va_processed_templates = caProcessTemplateForIDs($vs_template,$pn_table_num,array($pn_record_id),array('returnAsArray' => true));
+				caDebug($va_processed_templates,"Processed template");
+			}
+		} else {
+			if($vs_template = $t_exporter_item->getSetting('template')){
+				$va_item_info['text'] = caProcessTemplateForIDs($vs_template,$pn_table_num,array($pn_record_id));
+			}	
 		}
+		
+		
+		
+		
 	
 		$va_item_info['element'] = $t_exporter_item->get('element');
 

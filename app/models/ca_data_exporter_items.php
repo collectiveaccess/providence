@@ -67,7 +67,15 @@ BaseModel::$s_ca_models_definitions['ca_data_exporter_items'] = array(
 				'DISPLAY_WIDTH' => 70, 'DISPLAY_HEIGHT' => 1,
 				'IS_NULL' => false,
 				'DEFAULT' => '',
-				'LABEL' => _t('External element'), 'DESCRIPTION' => _t('Name of the target element.'),
+				'LABEL' => _t('External element'), 'DESCRIPTION' => _t('Name of the target element. For XML exports this would be the XML element or attribute name.'),
+				'BOUNDS_LENGTH' => array(0,1024)
+		),
+		'context' => array(
+				'FIELD_TYPE' => FT_TEXT, 'DISPLAY_TYPE' => DT_FIELD, 
+				'DISPLAY_WIDTH' => 70, 'DISPLAY_HEIGHT' => 1,
+				'IS_NULL' => false,
+				'DEFAULT' => '',
+				'LABEL' => _t('Export context'), 'DESCRIPTION' => _t('This setting can be used to switch the context of the export for this exporter item and all its children to a different table, for instance to related entities. The element is automatically repeated for all selected related records. Leave empty to inherit context from parent item.'),
 				'BOUNDS_LENGTH' => array(0,1024)
 		),
 		'source' => array(
@@ -75,7 +83,7 @@ BaseModel::$s_ca_models_definitions['ca_data_exporter_items'] = array(
 				'DISPLAY_WIDTH' => 70, 'DISPLAY_HEIGHT' => 1,
 				'IS_NULL' => false, 
 				'DEFAULT' => '',
-				'LABEL' => _t('Data source/context'), 'DESCRIPTION' => _t('This setting can be used to switch the source/context of the export for this exporter item and all children to a different table, for instance to related entities. The element is automatically repeated for all selected related records. Leave empty to inherit context from parent item.'),
+				'LABEL' => _t('Data source'), 'DESCRIPTION' => _t('Determines where the exported data is taken from. This will typically be a bundle name.'),
 				'BOUNDS_LENGTH' => array(0,1024)
 		),
 		'settings' => array(
@@ -105,13 +113,6 @@ BaseModel::$s_ca_models_definitions['ca_data_exporter_items'] = array(
 				'IS_NULL' => false, 
 				'DEFAULT' => '',
 				'LABEL' => 'Hierarchical index - right bound', 'DESCRIPTION' => 'Right-side boundary for nested set-style hierarchical indexing; used to accelerate search and retrieval of hierarchical record sets.'
-		),
-		'vars' => array(
-				'FIELD_TYPE' => FT_VARS, 'DISPLAY_TYPE' => DT_OMIT, 
-				'DISPLAY_WIDTH' => 88, 'DISPLAY_HEIGHT' => 15,
-				'IS_NULL' => false, 
-				'DEFAULT' => '',
-				'LABEL' => 'Variable storage', 'DESCRIPTION' => 'Storage area for exporter item variables'
 		),
 		'rank' => array(
 				'FIELD_TYPE' => FT_NUMBER, 'DISPLAY_TYPE' => DT_FIELD, 
@@ -286,7 +287,7 @@ class ca_data_exporter_items extends BaseModel {
 		);
 
 		$va_settings['repeat_element_for_multiple_values'] = array(
-			'formatType' => FT_TEXT,
+			'formatType' => FT_BIT,
 			'displayType' => DT_SELECT,
 			'width' => 40, 'height' => 1,
 			'takesLocale' => false,
@@ -296,7 +297,7 @@ class ca_data_exporter_items extends BaseModel {
 				_t('no') => 0
 			),
 			'label' => _t('Repeat element for multiple values'),
-			'description' => _t('If the current selector returns multiple values, this setting determines if the element is repeated for each value.')
+			'description' => _t('If the current selector/template returns multiple values, this setting determines if the element is repeated for each value.')
 		);
 		
 		$this->SETTINGS = new ModelSettings($this, 'settings', $va_settings);
