@@ -827,30 +827,54 @@ class ca_data_exporters extends BundlableLabelableBaseModelWithAttributes {
 		}
 		// end switch context
 		
-		// don't prevent context switches for children of context-switched exporter items
+		// Don't prevent context switches for children of context-switched exporter items. This way you can
+		// build cascades for jobs like exporting objects related to the creator of the record in question.
 		unset($pa_options['ignoreContext']);
 
 		$va_item_info = array();
-		
-		// if user wants current element repeated in case of multiple returned values, go ahead and do that
-		if($vb_repeat = $t_exporter_item->getSetting("repeat_element_for_multiple_values")){
-			// TODO: do something
-		}
 
-		if($vs_template = $t_exporter_item->getSetting('template')){
-			$va_item_info['text'] = caProcessTemplateForIDs($vs_template,$pn_table_num,array($pn_record_id));
+		$vs_template = $t_exporter_item->getSetting('template');
+		$vs_source = $t_exporter_item->get('source');
+		$vs_element = $t_exporter_item->get('element');
+		$vb_repeat = $t_exporter_item->getSetting("repeat_element_for_multiple_values");
+
+		if($vs_source) {
+			if(!$vb_repeat){
+				$va_item_info[] = array(
+					'text' => $t_instance->get($vs_source,array('template' => $vs_template)),
+					'element' => $vs_element,
+				);
+			} else { // if user wants current element repeated in case of multiple returned values, go ahead and do that
+				$vs_values = $t_instance->get($vs_source,array('template' => $vs_template, 'delimiter' => ';#;'));
+				$va_tmp = explode(";#;",$vs_values);
+				foreach($va_tmp as $vs_text) {
+					$va_item_info[] = array(
+						'element' => $vs_element,
+						'text' => $vs_text,
+					);
+				}
+			}
+		} else if($vs_template){
+			// templates without source are probably just static text, but you never know
+			// -> run them through processor anyways
+			$va_item_info[] = array(
+				'element' => $vs_element,
+				'text' => caProcessTemplateForIDs($vs_template, $pn_table_num, array($pn_record_id)),
+			);
+		} else { // no source, no template -> probably wrapper
+			$va_item_info[] = array(
+				'element' => $vs_element,
+			);
 		}
-	
-		$va_item_info['element'] = $t_exporter_item->get('element');
 
 		foreach($t_exporter_item->getHierarchyChildren() as $va_child){
-			$va_child_export = $this->processExporterItem($va_child['item_id'],$pn_table_num,$pn_record_id,$pa_options);
-			$va_item_info['children'] = array_merge((array)$va_item_info['children'],$va_child_export);
+			foreach($va_item_info as &$va_item){
+				$va_child_export = $this->processExporterItem($va_child['item_id'],$pn_table_num,$pn_record_id,$pa_options);	
+				$va_item['children'] = array_merge((array)$va_item['children'],$va_child_export);
+			}
 		}
 
-		// Add additional array level because this function is also used for self-repeating items where we 
-		// return lists of items. To keep the return format consistent we make this a list of 1 item as well.
-		return array($va_item_info);
+		return $va_item_info;
 	}
 	# ------------------------------------------------------
 	static public function _parseItemContext($vs_context){
