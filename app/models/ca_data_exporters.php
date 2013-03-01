@@ -746,7 +746,7 @@ class ca_data_exporters extends BundlableLabelableBaseModelWithAttributes {
 	 */
 	static public function exportRecord($ps_exporter_code, $pn_record_id, $pa_options=array()){
 		ca_data_exporters::$s_instance_cache = array();
-		
+
 		$pb_single_record = (isset($pa_options['singleRecord']) && $pa_options['singleRecord']);
 
 		$t_exporter = ca_data_exporters::loadExporterByCode($ps_exporter_code);
@@ -916,6 +916,10 @@ class ca_data_exporters extends BundlableLabelableBaseModelWithAttributes {
 	}
 	# ------------------------------------------------------
 	static public function loadInstanceByID($pn_record_id,$pn_table_num){
+		if(sizeof(ca_data_exporters::$s_instance_cache)>10){
+			array_shift(ca_data_exporters::$s_instance_cache);
+		}
+
 		if(isset(ca_data_exporters::$s_instance_cache[$pn_table_num."/".$pn_record_id])){
 			return ca_data_exporters::$s_instance_cache[$pn_table_num."/".$pn_record_id];
 		} else {
