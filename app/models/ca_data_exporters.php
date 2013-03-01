@@ -205,6 +205,7 @@ class ca_data_exporters extends BundlableLabelableBaseModelWithAttributes {
 	public static $s_exporter_cache = array();
 	public static $s_exporter_item_cache = array();
 	public static $s_mapping_check_cache = array();
+	public static $s_instance_cache = array();
 	
 	# ------------------------------------------------------
 	public function __construct($pn_id=null) {
@@ -744,6 +745,8 @@ class ca_data_exporters extends BundlableLabelableBaseModelWithAttributes {
 	 * @return string Exported record as string
 	 */
 	static public function exportRecord($ps_exporter_code, $pn_record_id, $pa_options=array()){
+		ca_data_exporters::$s_instance_cache = array();
+		
 		$pb_single_record = (isset($pa_options['singleRecord']) && $pa_options['singleRecord']);
 
 		$t_exporter = ca_data_exporters::loadExporterByCode($ps_exporter_code);
@@ -777,14 +780,11 @@ class ca_data_exporters extends BundlableLabelableBaseModelWithAttributes {
 		$vb_ignore_context = (isset($pa_options['ignoreContext']) && $pa_options['ignoreContext']);
 
 		$t_exporter_item = ca_data_exporters::loadExporterItemByID($pn_item_id);
+		$t_instance = ca_data_exporters::loadInstanceByID($pn_record_id,$pn_table_num);
 
 		// switch context to a different set of records if necessary and repeat current exporter item for all those selected records
 		// (e.g. hierarchy children or related items in another table, restricted by types or relationship types)
 		if(!$vb_ignore_context && ($vs_context = $t_exporter_item->get('context'))){
-			$t_instance = $this->getAppDatamodel()->getInstanceByTableNum($pn_table_num);
-			if(!$t_instance->load($pn_record_id)){
-				return;
-			}
 
 			$va_parsed_context = ca_data_exporters::_parseItemContext($vs_context);
 			if(!$va_parsed_context){ return; }
@@ -913,6 +913,19 @@ class ca_data_exporters extends BundlableLabelableBaseModelWithAttributes {
 			}
 		}
 		return false;
+	}
+	# ------------------------------------------------------
+	static public function loadInstanceByID($pn_record_id,$pn_table_num){
+		if(isset(ca_data_exporters::$s_instance_cache[$pn_table_num."/".$pn_record_id])){
+			return ca_data_exporters::$s_instance_cache[$pn_table_num."/".$pn_record_id];
+		} else {
+			$o_dm = Datamodel::load();
+			$t_instance = $o_dm->getInstanceByTableNum($pn_table_num);
+			if(!$t_instance->load($pn_record_id)){
+				return false;
+			}
+			return ca_data_exporters::$s_instance_cache[$pn_table_num."/".$pn_record_id] = $t_instance;
+		}
 	}
 	# ------------------------------------------------------
 }
