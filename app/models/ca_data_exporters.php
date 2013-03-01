@@ -512,7 +512,7 @@ class ca_data_exporters extends BundlableLabelableBaseModelWithAttributes {
 					$va_options = null;
 					if ($vs_options_json = (string)$o_options->getValue()) { 
 						if (is_null($va_options = @json_decode($vs_options_json, true))) {
-							print "Warning: invalid options for group {$vs_group}/source {$vs_source}\n";
+							print "Warning: invalid options for element {$vs_element}\n";
 						}
 					}
 
@@ -833,19 +833,29 @@ class ca_data_exporters extends BundlableLabelableBaseModelWithAttributes {
 
 		$va_item_info = array();
 
-		$vs_template = $t_exporter_item->getSetting('template');
 		$vs_source = $t_exporter_item->get('source');
 		$vs_element = $t_exporter_item->get('element');
 		$vb_repeat = $t_exporter_item->getSetting("repeat_element_for_multiple_values");
 
+		$va_get_options = array();
+
+		if($vs_delimiter = $t_exporter_item->getSetting("delimiter")){
+			$va_get_options['delimiter'] = $vs_delimiter;
+		}
+
+		if($vs_template = $t_exporter_item->getSetting('template')){
+			$va_get_options['template'] = $vs_template;	
+		}
+
 		if($vs_source) {
 			if(!$vb_repeat){
 				$va_item_info[] = array(
-					'text' => $t_instance->get($vs_source,array('template' => $vs_template)),
+					'text' => $t_instance->get($vs_source,$va_get_options),
 					'element' => $vs_element,
 				);
 			} else { // if user wants current element repeated in case of multiple returned values, go ahead and do that
-				$vs_values = $t_instance->get($vs_source,array('template' => $vs_template, 'delimiter' => ';#;'));
+				$va_get_options['delimiter'] = ';#;';
+				$vs_values = $t_instance->get($vs_source,$va_get_options);
 				$va_tmp = explode(";#;",$vs_values);
 				foreach($va_tmp as $vs_text) {
 					$va_item_info[] = array(
@@ -859,12 +869,34 @@ class ca_data_exporters extends BundlableLabelableBaseModelWithAttributes {
 			// -> run them through processor anyways
 			$va_item_info[] = array(
 				'element' => $vs_element,
-				'text' => caProcessTemplateForIDs($vs_template, $pn_table_num, array($pn_record_id)),
+				'text' => caProcessTemplateForIDs($vs_template, $pn_table_num, array($pn_record_id), $va_get_options),
 			);
 		} else { // no source, no template -> probably wrapper
 			$va_item_info[] = array(
 				'element' => $vs_element,
 			);
+		}
+
+		// handle settings
+		$vs_default = $t_exporter_item->getSetting('default');
+		$vs_prefix = $t_exporter_item->getSetting('prefix');
+		$vs_suffix = $t_exporter_item->getSetting('suffix');
+		$vn_maxlength = $t_exporter_item->getSetting('maxLength');
+		
+		foreach($va_item_info as &$va_item){
+			// if text ist empty, fill in default if set
+			// if text isn't empty, respect prefix and suffix
+			if(strlen($va_item['text'])==0){
+				if($vs_default) {
+					$va_item['text'] = $vs_default;
+				}
+			} else if((strlen($vs_prefix)>0) || (strlen($vs_suffix)>0)){
+				$va_item['text'] = $vs_prefix.$va_item['text'].$vs_suffix;
+			}
+
+			if($vn_maxlength && (strlen($va_item['text']) > $vn_maxlength)){
+				$va_item['text'] = substr($va_item['text'], 0, $vn_maxlength)." ...";
+			}
 		}
 
 		foreach($t_exporter_item->getHierarchyChildren() as $va_child){

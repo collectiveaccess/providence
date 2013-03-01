@@ -285,7 +285,6 @@ class ca_data_exporter_items extends BaseModel {
 			'label' => _t('Maximum length'),
 			'description' => _t('Truncate to specified length if value exceeds that length.')
 		);
-
 		$va_settings['repeat_element_for_multiple_values'] = array(
 			'formatType' => FT_BIT,
 			'displayType' => DT_SELECT,
