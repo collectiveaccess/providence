@@ -1634,6 +1634,39 @@ select.searchToolsSelect {
 	font-size: 11px;
 }
 
+/* search visualization - horizontal show hide */
+#showViz, #hideViz {
+	float:right;
+	margin: 1px 0px 0px 10px;
+	text-decoration:none;
+	text-transform:uppercase;
+	color:#828282;
+	font-size:9px;
+}
+#searchVizBox{
+	clear:both;
+	margin: 0px 0px 0px 0px;
+	display:none;
+	font-size:12px;
+	color:#828282;
+}
+#searchVizBox .bg{
+	background-color: #E2E2E2;
+	border:0px;
+	padding:6px 3px 6px 10px;
+}
+
+#searchVizBox .col{
+	float:left;
+	margin-right:15px;
+	color:#333;
+}
+
+select.searchVizSelect {
+	width: 165px;
+	font-size: 11px;
+}
+
 /* search sets - horizontal show hide */
 #showSets, #hideSets {
 	float:right;
@@ -1900,7 +1933,7 @@ div.caMediaOverlayControls {
 	left:0px;
 	z-index: 32000;			/* needs to be on top of caMediaPanel, which has z-index=31000 */
 	/* opacity:.1;	 */
-	opacity: 1.0;
+	opacity: 0.7;
 }
 /* div.caMediaOverlayControls:hover {
 	opacity:1.0;
@@ -5137,4 +5170,10 @@ div#debugLabel {
 	font-size: 14px;
 	color: green;
 	font-weight: bold;
+}
+
+
+/** Visualization **/
+.vizFullScreen {
+	background-color: #000000;
 }

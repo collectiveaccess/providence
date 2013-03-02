@@ -1626,4 +1626,16 @@ function caFileIsIncludable($ps_file) {
 		}
 	}
 	# ----------------------------------------
+	/**
+	 *
+	 *
+	 */
+	function caMakeSearchResult($ps_table, $pa_ids) {
+		$o_dm = Datamodel::load();
+		if ($t_instance = $o_dm->getInstanceByTableName($ps_table, true)) {
+			return $t_instance->makeSearchResult($ps_table, $pa_ids);
+		}
+		return null;
+	}
+	# ----------------------------------------
 ?>

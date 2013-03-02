@@ -1111,7 +1111,7 @@ class SearchResult extends BaseObject {
 							} else {
 								$this->opo_tep->setHistoricTimestamps($va_value[$va_field_info['START']], $va_value[$va_field_info['END']]);
 							}
-							$vs_prop = $this->opo_tep->getText();
+							$vs_prop = $this->opo_tep->getText($pa_options);
 							if ($vb_return_all_locales) {
 								$va_return_values[$vn_row_id][$vn_locale_id][] = $vs_prop;
 							} else {
@@ -1254,12 +1254,12 @@ class SearchResult extends BaseObject {
 							case FT_DATERANGE:
 								$this->opo_tep->init();
 								$this->opo_tep->setUnixTimestamps($va_value[$va_field_info['START']], $va_value[$va_field_info['END']]);
-								$va_value[$va_path_components['field_name']] = $this->opo_tep->getText();
+								$va_value[$va_path_components['field_name']] = $this->opo_tep->getText($pa_options);
 								break;
 							case FT_HISTORIC_DATERANGE:
 								$this->opo_tep->init();
 								$this->opo_tep->setHistoricTimestamps($va_value[$va_field_info['START']], $va_value[$va_field_info['END']]);
-								$va_value[$va_path_components['field_name']] = $this->opo_tep->getText();
+								$va_value[$va_path_components['field_name']] = $this->opo_tep->getText($pa_options);
 								break;
 							case FT_MEDIA:
 								if(!$vs_version = $va_path_components['subfield_name']) {
