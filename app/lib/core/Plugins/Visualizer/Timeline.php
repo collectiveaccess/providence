@@ -121,11 +121,11 @@ class WLPlugVisualizerTimeline Extends BaseVisualizerPlugIn Implements IWLPlugVi
 					'start' => $vs_start,
 					'end' => $vs_end,
 					'isDuration' => ((int)$vn_start != (int)$vn_end) ? true : false,
-					'title' => $vo_data->get($va_source_info['title']),
-					'description' => $vo_data->get($va_source_info['description']),
+					'title' => caProcessTemplateForIDs(strip_tags($va_source_info['display']['title_template']), $vs_table, array($vn_id)),
+					'description' => caProcessTemplateForIDs($va_source_info['display']['description_template'], $vs_table, array($vn_id)),
 					'link' => $po_request ? caEditorUrl($po_request, $vo_data->tableName(), $vn_id) : null,
-					'image' => $va_source_info['image'] ? $vo_data->get($va_source_info['image'], array('returnURL' => true)) : null,
-					'icon' => $va_source_info['icon'] ? $vo_data->get($va_source_info['icon'], array('returnURL' => true)) : null
+					'image' => $va_source_info['display']['image'] ? $vo_data->get($va_source_info['display']['image'], array('returnURL' => true)) : null,
+					'icon' => $va_source_info['display']['icon'] ? $vo_data->get($va_source_info['display']['icon'], array('returnURL' => true)) : null
 				);
 			}
 		}
@@ -196,7 +196,7 @@ class WLPlugVisualizerTimeline Extends BaseVisualizerPlugIn Implements IWLPlugVi
 			},
 			eventSource:	 caTimelineEventSource,
 			date:			'{$vs_default_date}',
-			width:          '80%', 
+			width:          '85%', 
 			intervalUnit:  	{$vs_detail_band_scale}, 
 			intervalPixels: 100,
 			theme: 			theme
@@ -204,7 +204,7 @@ class WLPlugVisualizerTimeline Extends BaseVisualizerPlugIn Implements IWLPlugVi
      Timeline.createBandInfo({
      	 eventSource:	 caTimelineEventSource,
      	 date:			'{$vs_default_date}',
-         width:          '15%', 
+         width:          '10%', 
          intervalUnit:   {$vs_overview_band_scale}, 
          intervalPixels: 200,
          layout: 		'overview',

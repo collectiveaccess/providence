@@ -63,31 +63,46 @@
 		}
 		# --------------------------------------------------------------------------------
 		/**
+		 * Resets table and data to blank values
 		 *
+		 * @return bool Always returns true
 		 */
 		public function reset() {
 			$this->ops_table = null;
 			$this->opa_data = array();
+			
+			return true;
 		}
 		# --------------------------------------------------------------------------------
 		/**
+		 * Sets table that is subject of visualization
 		 *
+		 * @param string $ps_table Table name
+		 *
+		 * @return bool Always returns true
 		 */
 		public function setTable($ps_table) {
 			$this->ops_table = $ps_table;
+			
+			return true;
 		}
 		# --------------------------------------------------------------------------------
 		/**
+		 * Returns name of table to be visualized
 		 *
+		 * @return string
 		 */
 		public function getTable() {
 			return $this->ops_table;
 		}
 		# --------------------------------------------------------------------------------
 		/**
-		 *
+		 * Add data to be rendered.
 		 *
 		 * @param mixed $po_data An model instance subclassed from BundlableLabelableBaseModelWithAttributes or a subclass of SearchResult
+		 * @param bool $pb_reset If true, any previously set data set is removed prior to addition of $po_data. Default is false.
+		 *
+		 * @return bool True on success, false on failure
 		 */
 		public function addData($po_data, $pb_reset=false) {
 			if ($pb_reset) { $this->reset(); }
@@ -100,7 +115,13 @@
 		}
 		# --------------------------------------------------------------------------------
 		/**
+		 * Render the visualization using the currently set data
+		 * 
+		 * @param string $ps_visualization Identifier of visualization to use. The identifier is the language-independent name of the visualization as specified in visualization.conf
+		 * @param string $ps_format Format of rendered visualization. The default, and only supported format at this time, is HTML.
+		 * @param array $pa_options Options to pass to visualization plugins at render-time.
 		 *
+		 * @return string The rendered content
 		 */
 		public function render($ps_visualization, $ps_format='HTML', $pa_options=null) {
 			$this->opn_num_items_rendered = 0;
@@ -146,25 +167,47 @@
 		 * Returns list of configured visualizations
 		 *
 		 * @param string $ps_table
+		 * @param array $pa_options Options are :
+		 *		restrictToTypes = optional list of types relevant to the specified table. Only unrestricted visualizations and visualizations restricted to the specified types will be included.
+		 *
 		 * @return array
 		 */
-		public static function getAvailableVisualizations($ps_table) {
+		public static function getAvailableVisualizations($ps_table, $pa_options=null) {
 			$o_viz = new Visualizer();
 			$o_viz_config = $o_viz->getVisualizationConfig();
 			
-			// TODO: check plugins for validity here
 			
-			return $o_viz_config->getAssoc($ps_table);
+			$va_viz_list = $o_viz_config->getAssoc($ps_table);
+			
+			if(isset($pa_options['restrictToTypes']) && is_array($pa_options['restrictToTypes']) && sizeof($pa_options['restrictToTypes'])) {
+				$va_filter_on_types = caMakeTypeIDList($ps_table, $pa_options['restrictToTypes']);
+				foreach($va_viz_list as $vs_code => $va_viz) {
+					if(isset($va_viz['restrictToTypes']) && is_array($va_viz['restrictToTypes']) && (sizeof($va_viz['restrictToTypes']))) {
+						$va_types = caMakeTypeIDList($ps_table, $va_viz['restrictToTypes']);
+						print_r($va_types);
+						if (sizeof(array_intersect($va_types, $va_filter_on_types)) == 0) {
+							unset($va_viz_list[$vs_code]);
+						}
+					}
+				}
+			}
+			
+			return $va_viz_list;
 		}
 		# --------------------------------------------------------------------------------
 		/**
 		 * Returns list of configured visualizations as HTML form element
 		 *
-		 * @param string $ps_table
+		 * @param string $ps_table Table for which to list available visualizations
+		 * @param string $ps_name Name of returned HTML <select>
+		 * @param array $pa_attributes Optional array of attributes to add to the returned HTML <select> element
+		 * @param array $pa_options Options are any options supported by the caHTMLSelect helper plus:
+		 *		restrictToTypes = optional list of types relevant to the specified table. Only unrestricted visualizations and visualizations restricted to the specified types will be included.
+		 *	
 		 * @return string HTML for a <select> element with available visualizations; will return null if no visualizations are available. 
 		 */
 		public static function getAvailableVisualizationsAsHTMLFormElement($ps_table, $ps_name, $pa_attributes=null, $pa_options=null) {
-			$va_viz = Visualizer::getAvailableVisualizations($ps_table);
+			$va_viz = Visualizer::getAvailableVisualizations($ps_table, $pa_options);
 			if (!is_array($va_viz) || !sizeof($va_viz)) { return null; }
 			$va_valid_viz_codes = null;
 			if (isset($pa_options['data']) && is_subclass_of($pa_options['data'], 'SearchResult')) {
@@ -174,7 +217,7 @@
 			$va_options = array();
 			foreach($va_viz as $vs_viz_code => $va_viz_opt) {
 				if (is_array($va_valid_viz_codes) && !in_array($vs_viz_code, $va_valid_viz_codes)) { continue; }
-				$va_options[$va_viz_opt['displayName']] = $vs_viz_code;
+				$va_options[$va_viz_opt['name']] = $vs_viz_code;
 			}
 			if (!sizeof($va_options)) { return null; }
 			return caHTMLSelect($ps_name, $va_options, $pa_attributes, $pa_options);
@@ -216,7 +259,9 @@
 		/**
 		 * Returns instance of specified plugin, or null if the plugin does not exist
 		 *
-		 * @return 
+		 * @param string $ps_plugin_name Name of plugin. The name is the same as the plugin's filename minus the .php extension.
+		 *
+		 * @return WLPlug BaseVisualizerPlugIn Plugin instance
 		 */
 		public function getVisualizationPlugin($ps_plugin_name) {
 			if (preg_match('![^A-Za-z0-9_\-]+!', $ps_plugin_name)) { return null; }
@@ -230,7 +275,9 @@
 		/**
 		 * Returns list of visualizations that will generate a visible result for the data set
 		 *
-		 * @return 
+		 * @param mixed SearchResult or BundlableLabelableBaseModelWithAttributes instance
+		 *
+		 * @return array List of usable visualizations
 		 */
 		public static function getVisualizationsForData($po_data) {
 			$va_viz_list = Visualizer::getAvailableVisualizations($po_data->tableName());
@@ -250,7 +297,9 @@
 		}
 		# --------------------------------------------------------------------------------
 		/**
+		 * Returns the number of items included in the last-rendered visualization
 		 *
+		 * @return int 
 		 */
 		public function numItemsRendered() {
 			return $this->opn_num_items_rendered;

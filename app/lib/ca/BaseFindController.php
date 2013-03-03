@@ -954,14 +954,13 @@
  		# Visualization
  		# ------------------------------------------------------------------
  		/**
- 		 * 
+ 		 * Generate search/browse results visualization
  		 */
  		public function Viz() {
  			$ps_viz = $this->request->getParameter('viz', pString);
  			
  			$o_viz = new Visualizer($this->ops_tablename);
  			$vo_result = caMakeSearchResult($this->ops_tablename, $this->opo_result_context->getResultList());
- 			
  			$o_viz->addData($vo_result);
  			
  			$this->view->setVar("viz_html", $o_viz->render($ps_viz, "HTML", array('classname' => 'vizFullScreen', 'request' => $this->request)));

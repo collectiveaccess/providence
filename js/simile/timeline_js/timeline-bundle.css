@@ -158,6 +158,7 @@ a.timeline-event-bubble-title {
 }
 
 .timeline-event-bubble-time {
+	margin-top: 5px;
     color: #aaa;
 }
 
@@ -165,6 +166,7 @@ a.timeline-event-bubble-title {
     float: right;
     padding-left: 8px;
     padding-bottom: 8px;
+    margin: 4px;
 }
 
 .timeline-container {

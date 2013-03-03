@@ -267,7 +267,7 @@ class WLPlugGeographicMapOpenLayers Extends BaseGeographicMapPlugIn Implements I
 					popup_{$vs_id} = new OpenLayers.Popup.AnchoredBubble('infoBubble', 
 						 feature.geometry.getBounds().getCenterLonLat(),
 						 null,
-						 feature.data.label,
+						 feature.data.label + feature.data.content,
 						 null, true, onPopupClose);
 					feature.popup = popup_{$vs_id};
 					map_{$vs_id}.addPopup(popup_{$vs_id});

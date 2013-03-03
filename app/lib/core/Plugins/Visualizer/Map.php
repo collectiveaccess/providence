@@ -69,20 +69,23 @@ class WLPlugVisualizerMap Extends BaseVisualizerPlugIn Implements IWLPlugVisuali
 	 *		pathColor - 
 	 *		pathWeight -
 	 *		pathOpacity - 
+	 *		request = current request; required for generation of editor links
 	 */
 	public function render($pa_viz_settings, $ps_format='HTML', $pa_options=null) {
 		if (!($vo_data = $this->getData())) { return null; }
 		
+		$po_request = (isset($pa_options['request']) && $pa_options['request']) ? $pa_options['request'] : null;
 		if (!isset($pa_options['width']) || ((int)$pa_options['width'] < 50)) { $pa_options['width'] = 500; }
 		if (!isset($pa_options['height']) || ((int)$pa_options['height'] < 50)) { $pa_options['height'] = 500; }
 		
 		$o_map = new GeographicMap($pa_options['width'], $pa_options['height'], $pa_options['id']);
+		$this->opn_num_items_rendered = 0;
 		
 		foreach($pa_viz_settings['sources'] as $vs_source_code => $va_source_info) {
-			// TODO: 
-			//		title = $va_source_info['title']
-			//		description = $va_source_info['description']
-			$o_map->mapFrom($vo_data, $va_source_info['data']);
+			$va_ret = $o_map->mapFrom($vo_data, $va_source_info['data'], array('request' => $po_request, 'labelTemplate' => "<p class='vizTitle'>".$va_source_info['display']['title_template']."</div>", 'renderLabelAsLink' => true, 'contentTemplate' => "<p>".$va_source_info['display']['description_template']."</p>"));
+			if (is_array($va_ret) && isset($va_ret['items'])) {
+				$this->opn_num_items_rendered += (int)$va_ret['items'];
+			}
 		}
 		return $o_map->render($ps_format, $pa_options);
 	}

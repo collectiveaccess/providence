@@ -4999,6 +4999,25 @@ div.searchlight-results div.searchlight-selected {
 	clear:left;
 }
 
+.olPopup {
+	border: 1px solid #000000 !important;
+	border-radius:8px !important;
+	box-shadow: 4px 4px 10px rgba(75, 75, 75, 0.75) !important;
+}
+
+.olPopupCloseBox {
+	width:15px  !important;
+	height:16px  !important;
+	margin:0px !important;
+	background-image:url("../graphics/buttons/x.png") !important;
+}
+
+.olPopupContent {
+	margin-left: 10px !important;
+	margin-top: 0px !important;
+	padding: 0px 5px 5px 5px !important;
+}
+
 /* Batch confirmation change */
 #caConfirmBatchExecutionPanel {
 	position: fixed; 
@@ -5176,4 +5195,9 @@ div#debugLabel {
 /** Visualization **/
 .vizFullScreen {
 	background-color: #000000;
+}
+
+.vizTitle {
+	font-weight: bold;
+	margin-top: 5px;
 }

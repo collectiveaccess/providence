@@ -42,7 +42,7 @@
 		<a href='#' id='showTools' onclick='return caHandleResultsUIBoxes("tools", "show");'><?php print _t("Tools"); ?> <img src="<?php print $this->request->getThemeUrlPath(); ?>/graphics/arrows/arrow_right_gray.gif" width="6" height="7" border="0"></a>
 		<a href='#' id='showSets' onclick='return caHandleResultsUIBoxes("sets", "show");'><?php print _t("Sets"); ?> <img src="<?php print $this->request->getThemeUrlPath(); ?>/graphics/arrows/arrow_right_gray.gif" width="6" height="7" border="0"></a>
 <?php
-		if ($vs_viz_list = Visualizer::getAvailableVisualizationsAsHTMLFormElement($vo_result->tableName(), 'viz', array('id' => 'caSearchVizOpts'), array('data' => $vo_result))) {
+		if ($vs_viz_list = Visualizer::getAvailableVisualizationsAsHTMLFormElement($vo_result->tableName(), 'viz', array('id' => 'caSearchVizOpts'), array('data' => $vo_result, 'restrictToTypes' => array($vo_result_context->getTypeRestriction($vb_type_restriction_has_changed))))) {
 ?>
 		<a href='#' id='showViz' onclick='return caHandleResultsUIBoxes("viz", "show");'><?php print _t("Visualization"); ?> <img src="<?php print $this->request->getThemeUrlPath(); ?>/graphics/arrows/arrow_right_gray.gif" width="6" height="7" border="0"></a>
 <?php

@@ -134,6 +134,10 @@ class SearchResult extends BaseObject {
 		return $this->ops_table_name;
 	}
 	# ------------------------------------------------------------------
+	public function primaryKey() {
+		return $this->opo_datamodel->getTablePrimaryKeyName($this->opn_table_num);
+	}
+	# ------------------------------------------------------------------
 	public function numHits() {
 		return $this->opo_engine_result->numHits();
 	}
