@@ -184,7 +184,6 @@
 				foreach($va_viz_list as $vs_code => $va_viz) {
 					if(isset($va_viz['restrictToTypes']) && is_array($va_viz['restrictToTypes']) && (sizeof($va_viz['restrictToTypes']))) {
 						$va_types = caMakeTypeIDList($ps_table, $va_viz['restrictToTypes']);
-						print_r($va_types);
 						if (sizeof(array_intersect($va_types, $va_filter_on_types)) == 0) {
 							unset($va_viz_list[$vs_code]);
 						}
