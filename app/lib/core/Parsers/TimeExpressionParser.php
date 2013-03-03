@@ -2742,6 +2742,8 @@ class TimeExpressionParser {
 	}
 	# -------------------------------------------------------------------
 	function getISODateTime($pa_date, $ps_mode='START', $pa_options=null) {
+		if (!$pa_date['month']) { $pa_date['month'] = ($ps_mode == 'END') ? 12 : 1; }
+		if (!$pa_date['day']) { $pa_date['day'] = ($ps_mode == 'END') ? 31 : 1; }
 		if ($ps_mode = 'FULL') {
 			$vs_date = $pa_date['year'].'-'.sprintf("%02d", $pa_date['month']).'-'.sprintf("%02d", $pa_date['day']);
 			
