@@ -30,15 +30,19 @@
  * ----------------------------------------------------------------------
  */
 
-require_once(__CA_LIB_DIR__.'/ca/Export/BaseExportFormat.php');	
+require_once(__CA_LIB_DIR__.'/ca/Export/BaseExportFormat.php');
 
 class ExportMARC extends BaseExportFormat {
 	# ------------------------------------------------------
 	
 	# ------------------------------------------------------
 	public function __construct(){
+		// only require this when the format is actually used
+		// otherwise this would probably be slightly annoying
+		require_once('File/MARC.php');
+
 		$this->ops_name = 'MARC';
-		$this->ops_element_description = '';
+		$this->ops_element_description = _t('Values reference MARC field identifiers.');
 		parent::__construct();
 	}
 	# ------------------------------------------------------
@@ -55,4 +59,3 @@ class ExportMARC extends BaseExportFormat {
 BaseExportFormat::$s_format_settings['MARC'] = array(
 	// do we need this? will see ...
 );
-
