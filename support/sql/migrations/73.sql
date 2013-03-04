@@ -36,8 +36,8 @@ create table ca_batch_log_items
       references ca_change_log (log_id) on delete restrict on update restrict
 ) engine=innodb CHARACTER SET utf8 COLLATE utf8_general_ci;
 
+
 /* -------------------------------------------------------------------------------- */
 
 /* Always add the update to ca_schema_updates at the end of the file */
 INSERT IGNORE INTO ca_schema_updates (version_num, datetime) VALUES (73, unix_timestamp());
-
