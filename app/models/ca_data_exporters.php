@@ -46,6 +46,8 @@ require_once(__CA_MODELS_DIR__."/ca_data_exporter_items.php");
 
 require_once(__CA_LIB_DIR__.'/core/Parsers/PHPExcel/PHPExcel.php');
 require_once(__CA_LIB_DIR__.'/core/Parsers/PHPExcel/PHPExcel/IOFactory.php');
+
+require_once(__CA_LIB_DIR__.'/ca/ApplicationPluginManager.php');
 require_once(__CA_LIB_DIR__.'/core/Logging/KLogger/KLogger.php');
 
 BaseModel::$s_ca_models_definitions['ca_data_exporters'] = array(
@@ -206,16 +208,20 @@ class ca_data_exporters extends BundlableLabelableBaseModelWithAttributes {
 	public static $s_exporter_item_cache = array();
 	public static $s_mapping_check_cache = array();
 	public static $s_instance_cache = array();
+
+	protected $opo_app_plugin_manager;
 	
 	# ------------------------------------------------------
 	public function __construct($pn_id=null) {
 		// Filter list of tables exporters can be used for to those enabled in current config
 		BaseModel::$s_ca_models_definitions['ca_data_exporters']['FIELDS']['table_num']['BOUNDS_CHOICE_LIST'] = caFilterTableList(BaseModel::$s_ca_models_definitions['ca_data_exporters']['FIELDS']['table_num']['BOUNDS_CHOICE_LIST']);
+
+		$this->opo_app_plugin_manager = new ApplicationPluginManager();
 		
 		global $_ca_data_exporters_settings;
 		parent::__construct($pn_id);
 		
-		//
+		// settings
 		$this->initSettings();
 		
 	}
@@ -769,6 +775,17 @@ class ca_data_exporters extends BundlableLabelableBaseModelWithAttributes {
 				return;
 		}
 
+		// if someone wants to mangle the whole tree ... well, go right ahead
+		$o_manager = new ApplicationPluginManager();
+
+		//caDebug($va_export, "Export before tree plugin hook");
+		if(is_null($va_plugin_export = $o_manager->hookExportRecord(array('exporter_instance' => $t_exporter, 'record_id' => $pn_record_id, 'export' => $va_export)))){
+			return; // skip this record if plugin returns null
+		} else {
+			$va_export = $va_plugin_export['export'];
+		}
+		//caDebug($va_export,"Export after tree plugin hook");
+
 		return $o_export->processExport($va_export,$pa_options);
 	}
 	# ------------------------------------------------------
@@ -877,7 +894,7 @@ class ca_data_exporters extends BundlableLabelableBaseModelWithAttributes {
 			);
 		}
 
-		// handle settings
+		// handle settings and plugin hooks
 		$vs_default = $t_exporter_item->getSetting('default');
 		$vs_prefix = $t_exporter_item->getSetting('prefix');
 		$vs_suffix = $t_exporter_item->getSetting('suffix');
@@ -885,6 +902,13 @@ class ca_data_exporters extends BundlableLabelableBaseModelWithAttributes {
 		$vn_maxlength = $t_exporter_item->getSetting('maxLength');
 		
 		foreach($va_item_info as $vn_key => &$va_item){
+			// if returned value is null then we skip the item
+			if(is_null($va_plugin_item = $this->opo_app_plugin_manager->hookExportItemBeforeSettings(array('instance' => $t_instance, 'exporter_item_instance' => $t_exporter_item, 'export_item' => $va_item)))){
+				continue;
+			} else {
+				$va_item = $va_plugin_item['export_item'];
+			}
+
 			// filter by regexp
 			if((strlen($va_item['text'])>0) && $vs_regexp){
 				if(!preg_match("!".$vs_regexp."!", $va_item['text'])) {
@@ -905,6 +929,13 @@ class ca_data_exporters extends BundlableLabelableBaseModelWithAttributes {
 
 			if($vn_maxlength && (strlen($va_item['text']) > $vn_maxlength)){
 				$va_item['text'] = substr($va_item['text'], 0, $vn_maxlength)." ...";
+			}
+
+			// if returned value is null then we skip the item
+			if(is_null($va_item = $this->opo_app_plugin_manager->hookExportItem(array('instance' => $t_instance, 'exporter_item_instance' => $t_exporter_item, 'export_item' => $va_item)))){
+				continue;
+			} else {
+				$va_item = $va_plugin_item['export_item'];
 			}
 		}
 
