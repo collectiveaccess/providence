@@ -512,7 +512,7 @@ class ca_data_exporters extends BundlableLabelableBaseModelWithAttributes {
 					$va_options = null;
 					if ($vs_options_json = (string)$o_options->getValue()) { 
 						if (is_null($va_options = @json_decode($vs_options_json, true))) {
-							print "Warning: invalid options for element {$vs_element}\n";
+							print "Warning: options for element {$vs_element} are not in proper JSON\n";
 						}
 					}
 
@@ -881,10 +881,19 @@ class ca_data_exporters extends BundlableLabelableBaseModelWithAttributes {
 		$vs_default = $t_exporter_item->getSetting('default');
 		$vs_prefix = $t_exporter_item->getSetting('prefix');
 		$vs_suffix = $t_exporter_item->getSetting('suffix');
+		$vs_regexp = $t_exporter_item->getSetting('filterByRegExp');
 		$vn_maxlength = $t_exporter_item->getSetting('maxLength');
 		
-		foreach($va_item_info as &$va_item){
-			// if text ist empty, fill in default if set
+		foreach($va_item_info as $vn_key => &$va_item){
+			// filter by regexp
+			if((strlen($va_item['text'])>0) && $vs_regexp){
+				if(!preg_match("!".$vs_regexp."!", $va_item['text'])) {
+ 					unset($va_item_info[$vn_key]);
+ 					continue;
+ 				}
+			}
+
+			// if text is empty, fill in default if set
 			// if text isn't empty, respect prefix and suffix
 			if(strlen($va_item['text'])==0){
 				if($vs_default) {

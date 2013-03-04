@@ -298,6 +298,16 @@ class ca_data_exporter_items extends BaseModel {
 			'label' => _t('Repeat element for multiple values'),
 			'description' => _t('If the current selector/template returns multiple values, this setting determines if the element is repeated for each value.')
 		);
+
+		$va_settings['filterByRegExp'] = array(
+			'formatType' => FT_TEXT,
+			'displayType' => DT_FIELD,
+			'width' => 40, 'height' => 1,
+			'takesLocale' => false,
+			'default' => '',
+			'label' => _t('Regular expression filter'),
+			'description' => _t('Any value that does NOT match this PCRE regular expression is filtered and not exported. Insert expression without delimiters.')
+		);
 		
 		$this->SETTINGS = new ModelSettings($this, 'settings', $va_settings);
 	}
