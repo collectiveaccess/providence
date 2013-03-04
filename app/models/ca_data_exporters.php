@@ -932,7 +932,7 @@ class ca_data_exporters extends BundlableLabelableBaseModelWithAttributes {
 			}
 
 			// if returned value is null then we skip the item
-			if(is_null($va_item = $this->opo_app_plugin_manager->hookExportItem(array('instance' => $t_instance, 'exporter_item_instance' => $t_exporter_item, 'export_item' => $va_item)))){
+			if(is_null($va_plugin_item = $this->opo_app_plugin_manager->hookExportItem(array('instance' => $t_instance, 'exporter_item_instance' => $t_exporter_item, 'export_item' => $va_item)))){
 				continue;
 			} else {
 				$va_item = $va_plugin_item['export_item'];
