@@ -369,7 +369,7 @@ class ca_data_exporter_items extends BaseModel {
 	/**
 	 *
 	 */
-	static public function getAvailableRefineries() {
+	/*static public function getAvailableRefineries() {
 		$va_refinery_names = ExportRefineryManager::getRefineryNames();
 		
 		$va_refinery_list = array();
@@ -379,17 +379,17 @@ class ca_data_exporter_items extends BaseModel {
 		}
 		
 		return $va_refinery_list;
-	}
+	}*/
 	# ------------------------------------------------------
 	/**
 	 *
 	 */
-	static public function getRefinerySettings($ps_refinery) {
+	/*astatic public function getRefinerySettings($ps_refinery) {
 		if ($o_refinery = ExportRefineryManager::getRefineryInstance($ps_refinery)) {
 			return $o_refinery->getRefinerySettings();
 		}
 		return null;
-	}
+	}*/
 	# ------------------------------------------------------
 }
 ?>
