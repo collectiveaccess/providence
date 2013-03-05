@@ -148,7 +148,5 @@ class ExportXML extends BaseExportFormat {
 	# ------------------------------------------------------
 }
 
-BaseExportFormat::$s_format_settings['XML'] = array(
-	// do we need this? will see ...
-);
+BaseExportFormat::$s_format_settings['XML'] = array();
 

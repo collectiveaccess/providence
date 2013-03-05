@@ -42,12 +42,54 @@ class ExportMARC extends BaseExportFormat {
 		require_once('File/MARC.php');
 
 		$this->ops_name = 'MARC';
-		$this->ops_element_description = _t('Values reference MARC field identifiers.');
+		$this->ops_element_description = _t('Values reference a combination of MARC 21 field tags and associated indicators separated by a forward slash ("/"), e.g. "300/##". For further information on how to create a MARC mapping, please refer to the CollectiveAccess online documentation.');
 		parent::__construct();
 	}
 	# ------------------------------------------------------
 	public function processExport($pa_data,$pa_options=array()){
-		return "";
+		//caDebug($pa_data,"Data to build MARC from");
+		//caDebug($pa_options,"Export format options");
+
+		$o_record = new File_MARC_Record();
+
+		foreach($pa_data as $va_item){
+			$vs_element = $va_item['element'];
+			if(stripos($vs_element, "/")!==false){ // data field
+				$va_split = explode("/", $vs_element);
+				$vs_tag = $va_split[0];
+				$vs_ind1 = substr($va_split[1], 0, 1);
+				$vs_ind2 = substr($va_split[1], 1, 1);
+				$va_subfields = array();
+
+				// process sub-fields
+				if(is_array($va_item['children'])){
+					foreach($va_item['children'] as $va_child){
+						$va_subfields[] = new File_MARC_Subfield($va_child['element'], $va_child['text']);
+					}	
+				}
+
+				$o_field = new File_MARC_Data_field($vs_tag,$va_subfields,$vs_ind1,$vs_ind2);
+
+			} else { // simple control field
+				$o_field = new File_MARC_Control_Field($vs_element,$va_item['text']);
+			}
+
+			$o_record->appendField($o_field);
+		}
+
+		if(isset($pa_options['settings']['MARC_outputFormat'])){
+			switch($pa_options['settings']['MARC_outputFormat']){
+				case 'raw':
+					return $o_record->toRaw();
+				case 'xml':
+					return $o_record->toXML();
+				case 'readable':
+				default:
+					return $o_record->__toString();
+			}
+		} else {
+			return $o_record->__toString();
+		}
 	}
 	# ------------------------------------------------------
 	public function getMappingErrors($t_mapping){
@@ -57,5 +99,18 @@ class ExportMARC extends BaseExportFormat {
 }
 
 BaseExportFormat::$s_format_settings['MARC'] = array(
-	// do we need this? will see ...
+	'MARC_outputFormat' => array(
+		'formatType' => FT_TEXT,
+		'displayType' => DT_SELECT,
+		'width' => 40, 'height' => 1,
+		'takesLocale' => false,
+		'default' => '',
+		'options' => array(
+			'readable' => 'readable',
+			'raw' => 'raw',
+			'xml' => 'xml',
+		),
+		'label' => _t('MARC export output format'),
+		'description' => _t('Set output format. Currently supported: human-readable MARC21, raw MARC for saving into MARC files and MARCXML.')
+	),
 );
