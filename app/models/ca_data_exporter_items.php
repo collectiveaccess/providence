@@ -363,7 +363,7 @@ class ca_data_exporter_items extends BaseModel {
 	 * Reroutes calls to method implemented by settings delegate to the delegate class
 	 */
 	public function __call($ps_name, $pa_arguments) {
-		if (($ps_name == 'setSetting') && ($pa_arguments[0] == 'refineries')) {
+		/*if (($ps_name == 'setSetting') && ($pa_arguments[0] == 'refineries')) {
 			//
 			// Load refinery-specific settings as refineries are selected
 			//
@@ -376,9 +376,7 @@ class ca_data_exporter_items extends BaseModel {
 				}
 				$this->SETTINGS->setAvailableSettings($va_current_settings);
 			}
-		}
-
-		// TODO: pull in format specific settings if needed
+		}*/
 
 		if (method_exists($this->SETTINGS, $ps_name)) {
 			return call_user_func_array(array($this->SETTINGS, $ps_name), $pa_arguments);

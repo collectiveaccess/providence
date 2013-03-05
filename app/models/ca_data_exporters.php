@@ -265,6 +265,15 @@ class ca_data_exporters extends BundlableLabelableBaseModelWithAttributes {
 		);
 
 		$this->SETTINGS = new ModelSettings($this, 'settings', $va_settings);
+
+		// if exporter_format is set, pull in format-specific settings
+		if($vs_format = $this->getSetting('exporter_format')) {
+			if (is_array($va_format_settings = ca_data_exporters::getFormatSettings($vs_format))) {
+				$va_settings += $va_format_settings;
+			}
+			
+			$this->SETTINGS->setAvailableSettings($va_settings);
+		}
 	}
 	# ------------------------------------------------------
 	public function getAvailableExporterFormats() {
@@ -272,6 +281,10 @@ class ca_data_exporters extends BundlableLabelableBaseModelWithAttributes {
 			'XML' => 'XML',
 			'MARC' => 'MARC',
 		);
+	}
+	# ------------------------------------------------------
+	static public function getFormatSettings($ps_format) {
+		return (isset(BaseExportFormat::$s_format_settings[$ps_format]) ? BaseExportFormat::$s_format_settings[$ps_format] : array());
 	}
 	# ------------------------------------------------------
 	/**
@@ -449,6 +462,17 @@ class ca_data_exporters extends BundlableLabelableBaseModelWithAttributes {
 	 * Reroutes calls to method implemented by settings delegate to the delegate class
 	 */
 	public function __call($ps_name, $pa_arguments) {
+		if (($ps_name == 'setSetting') && ($pa_arguments[0] == 'exporter_format')) {
+			// Load format-specific settings as it is selected
+			if($vs_format = $pa_arguments[1]) {
+				$va_current_settings = $this->SETTINGS->getAvailableSettings();
+				if (is_array($va_format_settings = ca_data_exporters::getFormatSettings($vs_format))) {
+					$va_current_settings += $va_format_settings;
+				}
+				
+				$this->SETTINGS->setAvailableSettings($va_current_settings);
+			}
+		}
 		if (method_exists($this->SETTINGS, $ps_name)) {
 			return call_user_func_array(array($this->SETTINGS, $ps_name), $pa_arguments);
 		}
@@ -595,6 +619,7 @@ class ca_data_exporters extends BundlableLabelableBaseModelWithAttributes {
 		}
 
 		//caDebug($va_mapping,"Extracted mapping from XLSX");
+		//caDebug($va_settings,"Mapping ettings extracted from XLSX");
 
 		// Do checks on mapping
 		if (!$va_settings['code']) { 
@@ -834,6 +859,8 @@ class ca_data_exporters extends BundlableLabelableBaseModelWithAttributes {
 			$va_export = $va_plugin_export['export'];
 		}
 		//caDebug($va_export,"Export after tree plugin hook");
+		
+		$pa_options['settings'] = $t_exporter->getSettings();		
 
 		return $o_export->processExport($va_export,$pa_options);
 	}
