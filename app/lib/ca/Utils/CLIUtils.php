@@ -880,5 +880,41 @@
 			return _t("Regenerates annotation preview media for some or all object representation annotations.");
 		}
 		# -------------------------------------------------------
+		/**
+		 * 
+		 */
+		public static function load_AAT($po_opts=null) {
+			require_once(__CA_APP_DIR__.'/helpers/supportHelpers.php');
+			
+			if (!($vs_file_path = $po_opts->getOption('file'))) {
+				CLIUtils::addError(_t("You must specify a file"));
+				return false;
+			}
+			caLoadAAT($vs_file_path);
+		}
+		# -------------------------------------------------------
+		/**
+		 *
+		 */
+		public static function load_AATParamList() {
+			return array(
+				"file|f=s" => _t('Path to AAT XML file.')
+			);
+		}
+		# -------------------------------------------------------
+		/**
+		 *
+		 */
+		public static function load_AATShortHelp() {
+			return _t("Load Getty Art & Architecture Thesaurus (AAT) into CollectiveAccess.");
+		}
+		# -------------------------------------------------------
+		/**
+		 *
+		 */
+		public static function load_AATHelp() {
+			return _t("Loads the AAT from a Getty-provided XML file.");
+		}
+		# -------------------------------------------------------
 	}
 ?>
