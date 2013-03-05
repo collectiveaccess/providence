@@ -47,6 +47,8 @@ class ExportMARC extends BaseExportFormat {
 	}
 	# ------------------------------------------------------
 	public function processExport($pa_data,$pa_options=array()){
+		$pb_single_record = (isset($pa_options['singleRecord']) && $pa_options['singleRecord']);
+
 		//caDebug($pa_data,"Data to build MARC from");
 		//caDebug($pa_options,"Export format options");
 
@@ -82,7 +84,16 @@ class ExportMARC extends BaseExportFormat {
 				case 'raw':
 					return $o_record->toRaw();
 				case 'xml':
-					return $o_record->toXML();
+					$vs_string = $o_record->toXML();
+		
+					$vo_dom = new DOMDocument('1.0', 'utf-8');
+					$vo_dom->preserveWhiteSpace = false;
+					$vo_dom->loadXML($vs_string);
+					$vo_dom->formatOutput = true;
+					
+					// when dealing with a record set export, we don't want <?xml tags in front so
+					// that we can simply dump each record in a file and have valid XML as result
+					return ($pb_single_record ? $vo_dom->saveXML() : $vo_dom->saveXML($vo_dom->firstChild));
 				case 'readable':
 				default:
 					return $o_record->__toString();
