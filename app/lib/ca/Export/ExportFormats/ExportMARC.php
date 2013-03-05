@@ -93,7 +93,75 @@ class ExportMARC extends BaseExportFormat {
 	}
 	# ------------------------------------------------------
 	public function getMappingErrors($t_mapping){
-		return array();
+		$va_errors = array();
+
+		$va_top = $t_mapping->getTopLevelItems();
+
+		foreach($va_top as $va_item){
+			$t_item = new ca_data_exporter_items($va_item['item_id']);
+
+			$vs_element = $va_item['element'];
+			if(stripos($vs_element,"/") == 3){ // data field in format 300/##
+
+				$va_split = explode("/",$vs_element);
+				if(count($va_split) != 2){
+					$va_errors[] = _t("Invalid MARC element definition %1",$vs_element);
+					continue;
+				}
+
+				$vs_tag = $va_split[0];
+				$vs_indicators = $va_split[1];
+
+				if((!is_numeric($vs_tag)) || strlen($vs_tag)!=3) {
+					// ideally we would check if the tag is valid for MARC21 but that may be a bit excessive
+					$va_errors[] = _t("Invalid tag for MARC data field definition %1",$vs_element);
+				}
+				if((strlen($vs_indicators) != 2) || (!preg_match("/^[a-z0-9\#]{2,2}$/",$vs_indicators))){
+					$va_errors[] = _t("Invalid indicator definition for MARC field %1",$vs_element);
+				}
+
+				// subfields
+				$va_errors = array_merge($va_errors,$this->getSubfieldErrors($t_item,true));
+
+			} else if(is_numeric($vs_element)) { // control field, e.g. 001
+				if(strlen($vs_element)!=3) {
+					// ideally we would check if the tag is valid for MARC21 but that may be a bit excessive
+					$va_errors[] = _t("Invalid tag for MARC control field definition %1",$vs_element);
+				}
+
+				$va_errors = array_merge($va_errors,$this->getSubfieldErrors($t_item,false));
+			} else { // error, top level only allows data and control fields
+				$va_errors[] = _t("Invalid top-level MARC element definition %1",$vs_element);
+
+				$va_errors = array_merge($va_errors,$this->getSubfieldErrors($t_item,false));
+			}
+		}
+
+		return $va_errors;
+	}
+	# ------------------------------------------------------
+	private function getSubfieldErrors($t_item,$pb_subfields_allowed){
+		$va_errors = array();
+
+		$va_children = $t_item->getHierarchyChildren();
+		if((!$pb_subfields_allowed) && (count($va_children)>0)){
+			$va_errors[] = _t("Mapping element %1 can't have subfields",$t_item->get("element"));
+			return $va_errors;
+		}
+
+		foreach($t_item->getHierarchyChildren() as $va_child){
+			$vs_element = $va_child['element'];
+			$t_child = new ca_data_exporter_items($va_child['item_id']);
+
+			if(!preg_match("/^[a-z0-9]{1,1}$/",$vs_element)){
+				$va_errors[] = _t("Subfield definition %1 is invalid",$vs_element);
+			}
+
+			// subfields can't have more subfields
+			$va_errors = array_merge($va_errors,$this->getSubfieldErrors($t_child,false));
+		}
+
+		return $va_errors;
 	}
 	# ------------------------------------------------------
 }
