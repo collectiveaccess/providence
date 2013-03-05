@@ -460,6 +460,7 @@ class ca_list_items extends BundlableLabelableBaseModelWithAttributes implements
 				cli.item_id
 		");
 		
+		$vs_template = $this->getAppConfig()->get('ca_list_hierarchy_browser_display_settings');
 		while ($qr_res->nextRow()) {
 			$vn_hierarchy_id = $qr_res->get('list_id');
 			$va_hierarchies[$vn_hierarchy_id]['list_id'] = $qr_res->get('list_id');		// when we need to edit the list
@@ -475,6 +476,7 @@ class ca_list_items extends BundlableLabelableBaseModelWithAttributes implements
 			if ($qr_children->nextRow()) {
 				$vn_children_count = $qr_children->get('children');
 			}
+			$va_hierarchies[$vn_hierarchy_id]['name'] = caProcessTemplateForIDs($vs_template, 'ca_lists', array($vn_hierarchy_id));
 			$va_hierarchies[$vn_hierarchy_id]['children'] = intval($vn_children_count);
 			$va_hierarchies[$vn_hierarchy_id]['has_children'] = ($vn_children_count > 0) ? 1 : 0;
 		}
