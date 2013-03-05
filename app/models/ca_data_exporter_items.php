@@ -308,6 +308,26 @@ class ca_data_exporter_items extends BaseModel {
 			'label' => _t('Regular expression filter'),
 			'description' => _t('Any value that does NOT match this PCRE regular expression is filtered and not exported. Insert expression without delimiters.')
 		);
+
+		$va_settings['original_values'] = array(
+			'formatType' => FT_TEXT,
+			'displayType' => DT_FIELD,
+			'width' => 40, 'height' => 10,
+			'takesLocale' => false,
+			'default' => '',
+			'label' => _t('Original values'),
+			'description' => _t('Return-separated list of values from the CollectiveAccess source to be replaced. PCRE-style regular expressions are allowed (without delimiters).')
+		);
+
+		$va_settings['replacement_values'] = array(
+			'formatType' => FT_TEXT,
+			'displayType' => DT_FIELD,
+			'width' => 40, 'height' => 10,
+			'takesLocale' => false,
+			'default' => '',
+			'label' => _t('Replacement values'),
+			'description' => _t('Return-separated list of replacement values that correspond to the mapped values from the original data source.')
+		);
 		
 		$this->SETTINGS = new ModelSettings($this, 'settings', $va_settings);
 	}
@@ -364,6 +384,36 @@ class ca_data_exporter_items extends BaseModel {
 			return call_user_func_array(array($this->SETTINGS, $ps_name), $pa_arguments);
 		}
 		die($this->tableName()." does not implement method {$ps_name}");
+	}
+	# ------------------------------------------------------
+	static public function getReplacementArray($ps_searches,$ps_replacements) {
+		if(!$ps_searches) return false;
+
+		$va_searches = explode("\n",$ps_searches);
+		$va_replacements = explode("\n",$ps_replacements);
+		$va_return = array();
+
+
+		foreach($va_searches as $vs_search){
+			$va_return[$vs_search] = array_shift($va_replacements);
+		}
+
+		return $va_return;
+	}
+	# ------------------------------------------------------
+	static public function replaceText($ps_text,$pa_replacements){
+		$vs_original_text = $ps_text;
+
+		if(is_array($pa_replacements)){
+			foreach($pa_replacements as $vs_search => $vs_replace){
+				$ps_text = @preg_replace("!".$vs_search."!", $vs_replace, $ps_text);
+				if(is_null($ps_text)){
+					return $vs_original_text;
+				}
+			}
+		}
+
+		return $ps_text;
 	}
 	# ------------------------------------------------------
 	/**

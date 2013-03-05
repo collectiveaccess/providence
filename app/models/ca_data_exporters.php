@@ -466,8 +466,7 @@ class ca_data_exporters extends BundlableLabelableBaseModelWithAttributes {
 		$vn_locale_id = (isset($pa_options['locale_id']) && (int)$pa_options['locale_id']) ? (int)$pa_options['locale_id'] : $g_ui_locale_id;
 
 		$o_excel = PHPExcel_IOFactory::load($ps_source);
-		//$o_excel->setActiveSheet(1);
-		$o_sheet = $o_excel->getActiveSheet();
+		$o_sheet = $o_excel->getSheet(0);
 
 		$vn_row = 0;
 		
@@ -555,8 +554,47 @@ class ca_data_exporters extends BundlableLabelableBaseModelWithAttributes {
 			$vn_row++;
 		}
 
-		//print_r($va_mapping);
-		//print_r($va_settings);
+		// try to extract replacements from 2nd sheet in file
+		// PHPExcel will throw an exception if there's no such sheet
+		try {
+			$o_sheet = $o_excel->getSheet(1);
+			$vn_row = 0;
+			foreach ($o_sheet->getRowIterator() as $o_row) {
+				if ($vn_row == 0) {	// skip first row (headers)
+					$vn_row++;
+					continue;
+				}
+
+				$vn_row_num = $o_row->getRowIndex();
+				$o_cell = $o_sheet->getCellByColumnAndRow(0, $vn_row_num);
+				$vs_mapping_num = (string)$o_cell->getValue();
+
+				$o_search = $o_sheet->getCellByColumnAndRow(1, $o_row->getRowIndex());
+				$o_replace = $o_sheet->getCellByColumnAndRow(2, $o_row->getRowIndex());
+
+				if(!isset($va_mapping[$vs_mapping_num])){
+					print _t("Replacement sheet references invalid mapping number %1",$vs_mapping_num)."\n";
+					continue;
+				}
+
+				$vs_search = (string)$o_search->getValue();
+				$vs_replace = (string)$o_replace->getValue();
+
+				if(!$vs_search){
+					print _t("Search must be set for each row in the replacement sheet")."\n";
+					continue;
+				}
+
+				$va_mapping[$vs_mapping_num]['options']['original_values'][] = $vs_search;
+				$va_mapping[$vs_mapping_num]['options']['replacement_values'][] = $vs_replace;
+
+				$vn_row++;
+			}
+		} catch(PHPExcel_Exception $e){
+			// noop, because we don't care: mappings without replacements are still valid
+		}
+
+		//caDebug($va_mapping,"Extracted mapping from XLSX");
 
 		// Do checks on mapping
 		if (!$va_settings['code']) { 
@@ -617,7 +655,18 @@ class ca_data_exporters extends BundlableLabelableBaseModelWithAttributes {
 
 			if (is_array($va_info['options'])) {
 				foreach($va_info['options'] as $vs_k => $vs_v) {
-					$va_item_settings[$vs_k] = $vs_v;
+					switch($vs_k){
+						case 'replacement_values':
+						case 'original_values':
+							if(sizeof($vs_v)>0){
+								$va_item_settings[$vs_k] = join("\n",$vs_v);
+							}
+							break;
+						default:
+							$va_item_settings[$vs_k] = $vs_v;
+							break;
+					}
+					
 				}
 			}
 			/*if($va_info['refinery']){
@@ -900,6 +949,11 @@ class ca_data_exporters extends BundlableLabelableBaseModelWithAttributes {
 		$vs_suffix = $t_exporter_item->getSetting('suffix');
 		$vs_regexp = $t_exporter_item->getSetting('filterByRegExp');
 		$vn_maxlength = $t_exporter_item->getSetting('maxLength');
+
+		$vs_original_values = $t_exporter_item->getSetting('original_values');
+		$vs_replacement_values = $t_exporter_item->getSetting('replacement_values');
+
+		$va_replacements = ca_data_exporter_items::getReplacementArray($vs_original_values,$vs_replacement_values);
 		
 		foreach($va_item_info as $vn_key => &$va_item){
 			// if returned value is null then we skip the item
@@ -917,12 +971,13 @@ class ca_data_exporters extends BundlableLabelableBaseModelWithAttributes {
  				}
 			}
 
-			// if text is empty, fill in default if set
+			// do replacements
+			$va_item['text'] = ca_data_exporter_items::replaceText($va_item['text'],$va_replacements);
+
+			// if text is empty, fill in default
 			// if text isn't empty, respect prefix and suffix
 			if(strlen($va_item['text'])==0){
-				if($vs_default) {
-					$va_item['text'] = $vs_default;
-				}
+				if($vs_default) $va_item['text'] = $vs_default;
 			} else if((strlen($vs_prefix)>0) || (strlen($vs_suffix)>0)){
 				$va_item['text'] = $vs_prefix.$va_item['text'].$vs_suffix;
 			}
