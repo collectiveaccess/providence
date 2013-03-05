@@ -165,7 +165,7 @@
 				}	
 				$va_val['_relationship_type'] = str_replace(" ", "_", $va_val['_relationship_type']);
 				$va_val['_relationship_type'] = BaseRefinery::parsePlaceholder($va_val['_relationship_type'], $pa_source_data, $pa_item, $vs_delimiter, $vn_c);
-				print "type=".$va_val['_relationship_type']."\n";
+				//print "type=".$va_val['_relationship_type']."\n";
 				//print_R($pa_item);
 				
 				// Set attributes
