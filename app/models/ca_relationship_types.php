@@ -344,7 +344,9 @@ class ca_relationship_types extends BundlableLabelableBaseModelWithAttributes {
 		
 		$va_relationships = array();
 		while ($qr_res->nextRow()) {
-			$va_relationships[$qr_res->get('type_id')][$qr_res->get('locale_id')] = $qr_res->getRow();
+			$va_row = $qr_res->getRow();
+			$va_row['type_code'] = mb_strtolower($va_row['type_code']);
+			$va_relationships[$qr_res->get('type_id')][$qr_res->get('locale_id')] = $va_row;
 		}
 		return caExtractValuesByUserLocale($va_relationships);
 	}
@@ -358,6 +360,8 @@ class ca_relationship_types extends BundlableLabelableBaseModelWithAttributes {
 		if (!is_array($pa_options)) { $pa_options = array(); }
 		if (!isset($pa_options['create'])) { $pa_options['create'] = false; }
 		if (!isset($pa_options['cache'])) { $pa_options['cache'] = true; }
+		
+		$pm_type_code_or_id = mb_strtolower($pm_type_code_or_id);
 		
 		if (!is_numeric($pm_table_name_or_num)) {
 			$vn_table_num = $this->getAppDatamodel()->getTableNum($pm_table_name_or_num);
