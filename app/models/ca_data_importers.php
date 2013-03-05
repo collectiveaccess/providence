@@ -1302,7 +1302,7 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 						foreach($va_item['settings']['refineries'] as $vs_refinery) {
 							if (!$vs_refinery) { continue; }
 							if ($o_refinery = RefineryManager::getRefineryInstance($vs_refinery)) {
-								$va_refined_values = $o_refinery->refine($va_content_tree, $va_group, $va_item, $va_row, array('source' => $ps_source));
+								$va_refined_values = $o_refinery->refine($va_content_tree, $va_group, $va_item, $va_row, array('source' => $ps_source, 'subject' => $t_subject, 'locale_id' => $vn_locale_id));
 							
 								if ($o_refinery->returnsMultipleValues()) {
 									$va_p = array_pop($va_parent);
