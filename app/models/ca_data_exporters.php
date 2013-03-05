@@ -241,7 +241,7 @@ class ca_data_exporters extends BundlableLabelableBaseModelWithAttributes {
 			'default' => '',
 			'options' => $this->getAvailableExporterFormats(),
 			'label' => _t('Exporter format'),
-			'description' => _t('Set exporter type, i.e. the format of the exported data.  Currently supported: XML and MARC')
+			'description' => _t('Set exporter type, i.e. the format of the exported data. Currently supported: XML, MARC21 and CSV.')
 		);
 
 		$va_settings['wrap_before'] = array(
@@ -280,6 +280,7 @@ class ca_data_exporters extends BundlableLabelableBaseModelWithAttributes {
 		return array(
 			'XML' => 'XML',
 			'MARC' => 'MARC',
+			'CSV' => 'CSV',
 		);
 	}
 	# ------------------------------------------------------
@@ -800,12 +801,16 @@ class ca_data_exporters extends BundlableLabelableBaseModelWithAttributes {
 				return array(_t("Invalid mapping code"));
 			}
 
+			// TODO: maybe auto-load those classes?
 			switch($t_mapping->getSetting('exporter_format')){
 				case 'XML':
 					$o_export = new ExportXML();
 					break;
 				case 'MARC':
 					$o_export = new ExportMARC();
+					break;
+				case 'CSV':
+					$o_export = new ExportCSV();
 					break;
 				default:
 					return array(_t("Invalid exporter format"));
@@ -838,12 +843,16 @@ class ca_data_exporters extends BundlableLabelableBaseModelWithAttributes {
 			$va_export = array_merge($va_export,$t_exporter->processExporterItem($va_item['item_id'],$t_exporter->get('table_num'),$pn_record_id,$pa_options));
 		}
 
+		// TODO: we may wanna auto-load this
 		switch($t_exporter->getSetting('exporter_format')){
 			case 'XML':
 				$o_export = new ExportXML();
 				break;
 			case 'MARC':
 				$o_export = new ExportMARC();
+				break;
+			case 'CSV':
+				$o_export = new ExportCSV();
 				break;
 			default:
 				return;
