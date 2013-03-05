@@ -42,7 +42,7 @@
 	 *
 	 * @return string 
 	 */
-	function caGetSearchInstance($ps_path_to_aat_data=null, $pa_options=null) {
+	function caLoadAAT($ps_path_to_aat_data=null, $pa_options=null) {
 		if (!$ps_path_to_aat_data) { $ps_path_to_aat_data = "./AAT.xml"; }
 		if (!file_exists($ps_path_to_aat_data)) {
 			die("ERROR: cannot find AAT data.\n");
@@ -109,7 +109,7 @@
 
 		// load voc_terms
 		$o_xml = new XMLReader();
-		$o_xml->open('AAT.xml');
+		$o_xml->open($ps_path_to_aat_data);
 	
 		print "READING AAT TERMS...\n";
 	
