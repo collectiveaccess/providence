@@ -134,7 +134,7 @@ abstract class BaseDataReader {
 	 * @return bool
 	 */
 	public function canReadFormat($ps_format) {
-		return in_array($ps_format, $this->opa_formats);
+		return in_array(strtolower($ps_format), $this->opa_formats);	// lowercase $ps_format for case-insensitive matching (format list is already all lower-case)
 	}
 	# -------------------------------------------------------
 	/**
