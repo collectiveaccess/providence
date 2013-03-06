@@ -360,7 +360,15 @@ class ca_data_importer_items extends BaseModel {
 			'label' => _t('Error policy'),
 			'description' => _t('Determines how errors are handled for the mapping.  Options are to ignore the error, stop the import when an error is encountered and to receive a prompt when the error is encountered.')
 		);
-		
+		$va_settings['relationshipType'] = array(
+			'formatType' => FT_TEXT,
+			'displayType' => DT_FIELD,
+			'width' => 40, 'height' => 2,
+			'takesLocale' => false,
+			'default' => '',
+			'label' => _t('Relationship type'),
+			'description' => _t('Relationship type to use when linking to a related record.')
+		);
 		$this->SETTINGS = new ModelSettings($this, 'settings', $va_settings);
 	}
 	# ------------------------------------------------------
