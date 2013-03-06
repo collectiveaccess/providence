@@ -728,6 +728,113 @@ class ca_data_exporters extends BundlableLabelableBaseModelWithAttributes {
 
 		return $t_exporter;
 	}
+	/**
+	 * Export a set of records across different database entities with different mappings.
+	 * This is usually used to construct RDF graphs or similar structures, hence the name of the function.
+	 * @param string $ps_config Path to a configuration file that defines how the graph is built
+	 * @param string $ps_filename Destination filename (we can't keep everything in memory here)
+	 * @param array $pa_options
+	 *		showCLIProgressBar = Show command-line progress bar. Default is false.
+	 * @return boolean success state
+	 */
+	static public function exportRDFMode($ps_config, $ps_filename, $pa_options=array()){
+		$vb_show_cli_progress_bar = (isset($pa_options['showCLIProgressBar']) && ($pa_options['showCLIProgressBar']));
+
+		if(!($o_config = Configuration::load($ps_config))){
+			return false;
+		}
+
+		$o_dm = Datamodel::load();
+
+		$vs_wrap_before = $o_config->get('wrap_before');
+		$vs_wrap_after = $o_config->get('wrap_after');
+		$va_nodes = $o_config->get('nodes');
+		//caDebug($va_nodes,"Node config");
+
+		if($vs_wrap_before){
+			file_put_contents($ps_filename, $vs_wrap_before."\n", FILE_APPEND);
+		}
+
+		$va_records_to_export = array();
+		
+		if(is_array($va_nodes)){
+			foreach($va_nodes as $va_mapping){
+				if(!$t_mapping = ca_data_exporters::loadExporterByCode($va_mapping['mapping'])){
+					return false;
+				}
+
+				$vn_table = $t_mapping->get('table_num');
+				$vs_key = $o_dm->getTablePrimaryKeyName($vn_table);
+
+				$vs_search = isset($va_mapping['restrictBySearch']) ? $va_mapping['restrictBySearch'] : "*";
+				$o_search = caGetSearchInstance($vn_table);
+				$o_result = $o_search->search($vs_search);
+
+				if ($vb_show_cli_progress_bar){
+					print CLIProgressBar::start($o_result->numHits(), $vs_msg = _t('Adding %1 mapping records to set',$va_mapping['mapping']));
+				}
+
+				while($o_result->nextHit()){
+					if ($vb_show_cli_progress_bar) {
+						print CLIProgressBar::next(1, $vs_msg);
+					}
+					
+					$va_records_to_export[$vn_table."/".$o_result->get($vs_key)] = $t_mapping->get('exporter_code');
+
+					if(is_array($va_mapping['related'])){
+						foreach($va_mapping['related'] as $va_related_nodes){
+							if(!$t_related_mapping = ca_data_exporters::loadExporterByCode($va_related_nodes['mapping'])){
+								continue;
+							}
+
+							$vn_rel_table = $t_related_mapping->get('table_num');
+							$vs_rel_table = $o_dm->getTableName($vn_rel_table);
+							$vs_rel_key = $o_dm->getTablePrimaryKeyName($vn_rel_table);
+
+							$va_restrict_to_types = is_array($va_related_nodes['restrictToTypes']) ? $va_related_nodes['restrictToTypes'] : null;
+							$va_restrict_to_rel_types = is_array($va_related_nodes['restrictToRelationshipTypes']) ? $va_related_nodes['restrictToRelationshipTypes'] : null;
+
+
+							$va_related = $o_result->get($vs_rel_table,array('returnAsArray' => true, 'restrictToTypes' => $va_restrict_to_types, 'restrictToRelationshipTypes' => $va_restrict_to_rel_types));
+							foreach($va_related as $va_rel){
+								if(!isset($va_records_to_export[$vn_rel_table."/".$va_rel[$vs_rel_key]])) {
+									$va_records_to_export[$vn_rel_table."/".$va_rel[$vs_rel_key]] = $t_related_mapping->get('exporter_code');
+								}
+							}
+						}
+					}
+				}
+
+				if ($vb_show_cli_progress_bar) {
+					print CLIProgressBar::finish();
+				}
+			}
+		}
+
+		if ($vb_show_cli_progress_bar){
+				print CLIProgressBar::start(sizeof($va_records_to_export), $vs_msg = _t('Exporting record set'));
+		}
+
+		foreach($va_records_to_export as $vs_key => $vs_mapping){
+			$va_split = explode("/",$vs_key);
+			$vs_item_export = ca_data_exporters::exportRecord($vs_mapping,$va_split[1]);
+			file_put_contents($ps_filename, $vs_item_export."\n", FILE_APPEND);
+
+			if ($vb_show_cli_progress_bar) {
+				print CLIProgressBar::next(1, $vs_msg);
+			}
+		}
+
+		if($vs_wrap_after){
+			file_put_contents($ps_filename, $vs_wrap_after."\n", FILE_APPEND);
+		}
+
+		if ($vb_show_cli_progress_bar) {
+			print CLIProgressBar::finish();
+		}
+
+		return true;
+	}
 	# ------------------------------------------------------
 	/**
 	 * Export a record set as defined by the given search expression and the table_num for this exporter.
@@ -737,6 +844,7 @@ class ca_data_exporters extends BundlableLabelableBaseModelWithAttributes {
 	 * @param string $ps_filename Destination filename (we can't keep everything in memory here)
 	 * @param array $pa_options
 	 *		showCLIProgressBar = Show command-line progress bar. Default is false.
+	 * @return boolean success state
 	 */
 	static public function exportRecordsFromSearchExpression($ps_exporter_code, $ps_expression, $ps_filename, $pa_options=array()){
 		ca_data_exporters::$s_exporter_cache = array();

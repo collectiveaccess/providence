@@ -860,9 +860,10 @@
 	
 			$vs_search = $po_opts->getOption('search');
 			$vs_id = $po_opts->getOption('id');
+			$vb_rdf = (bool)$po_opts->getOption('rdf');
 
-			if (!($vs_search) && !($vs_id)) {
-				print _t('You must specify either an idno or a search expression to select a record or record set for export.')."\n";
+			if (!$vb_rdf && !$vs_search && !$vs_id) {
+				print _t('You must specify either an idno or a search expression to select a record or record set for export or activate RDF mode.')."\n";
 				return false;
 			}
 			if (!($vs_filename = $po_opts->getOption('file'))) {
@@ -875,6 +876,30 @@
 				print _t("Can't write to file %1. Check the permissions.",$vs_filename)."\n";
 				return false;
 			}
+
+			// RDF mode
+			if($vb_rdf){
+				if (!($vs_config = $po_opts->getOption('config'))) {
+					print _t('You must specify a configuration file that contains the export definition for the RDF mode.')."\n";
+					return false;
+				}
+
+				// test config syntax
+				if(!Configuration::load($vs_config)){
+					print _t('Syntax error in configuration file %s.',$vs_config)."\n";
+					return false;
+				}
+
+				if(ca_data_exporters::exportRDFMode($vs_config,$vs_filename,array('showCLIProgressBar' => true))){
+					print _t("Exported data to %1", CLIUtils::textWithColor($vs_filename, 'yellow'));
+					return true;
+				} else {
+					print _t("Could not run RDF mode export")."\n";
+					return false;
+				}
+			}
+			
+			// Search or ID mode
 
 			if (!($vs_mapping = $po_opts->getOption('mapping'))) {
 				print _t('You must specify a mapping for export.')."\n";
@@ -913,8 +938,10 @@
 			return array(
 				"search|s=s" => _t('Search expression that selects records to export.'),
 				"id|i=s" => _t('Primary key identifier of single item to export.'),
-				"file|f=s" => _t('File to save export to.'),
+				"file|f=s" => _t('Required. File to save export to.'),
 				"mapping|m=s" => _t('Mapping to export data with.'),
+				"rdf" => _t('Switches to RDF export mode. You can use this to assemble record-level exports across authorities with multiple mappings in a single export (usually an RDF graph). -s, -i and -m are ignored and -c is required.'),
+				"config|c=s" => _t('Configuration file for RDF export mode.'),
 			);
 		}
 		# -------------------------------------------------------
