@@ -26,6 +26,7 @@ class CLIProgressBar
      */
     protected static $defaults = array(
         'format' => "\r:message::padding:%.01f%% %2\$d/%3\$d ETC: %4\$s. Elapsed: %5\$s [%6\$s]",
+        'ncursesFormat' => ":message::padding:%.01f%% %2\$d/%3\$d ETC: %4\$s. Elapsed: %5\$s [%6\$s]",
         'message' => 'Running',
         'size' => 30,
         'width' => null
@@ -71,6 +72,11 @@ class CLIProgressBar
      * What's the total number of times we're going to call set 
      */
     protected static $total;
+    
+    /**
+     * Optional ncurses window to render progress bar into
+     */
+    protected static $window = null;
 
     /**
      * Show a progress bar, actually not usually called explicitly. Called by next()
@@ -151,6 +157,12 @@ class CLIProgressBar
         $return = str_replace(':message:', $message, $return);
         $return = str_replace(':padding:', $padding, $return);
 
+		if (self::$window) {
+			ncurses_mvwaddstr(self::$window, 1, 2, $return);
+			ncurses_refresh();
+			ncurses_wrefresh(self::$window);
+			return '';
+		}
         return $return;
     }
 
@@ -163,6 +175,11 @@ class CLIProgressBar
     public static function finish()
     {
         self::reset();
+        if (self::$window) {
+        	ncurses_mvwaddstr(self::$window, 1, 2, "\n");
+			ncurses_refresh();
+			ncurses_wrefresh(self::$window);
+        }
         return "\n";
     }
 
@@ -207,16 +224,25 @@ class CLIProgressBar
         if (empty($options['total'])) {
             $options['total'] = 0;
         }
+        
+        self::$window =  $options['window'];
 
         self::$done = $options['done'];
-        self::$format = $options['format'];
-        self::$message = $options['message'];
+        self::$format =  (!self::$window) ? $options['format'] : $options['ncursesFormat'];
+        self::$message = CLIProgressBar::stripReturns($options['message']);
         self::$size = $options['size'];
         self::$start = $options['start'];
         self::$total = $options['total'];
         self::setWidth($options['width']);
     }
 
+	/**
+     * 
+     */
+	public static function stripReturns($text) {
+		return preg_replace('![\r\n\t]+!', ' ', $text);
+	}
+	
     /**
      * change the message to be used the next time the display method is called
      * 
@@ -227,7 +253,7 @@ class CLIProgressBar
      */
     public static function setMessage($message = '')
     {
-        self::$message = $message;
+        self::$message = CLIProgressBar::stripReturns($message);
     }
 
     /**
@@ -256,7 +282,7 @@ class CLIProgressBar
     public static function start($total = null, $message = '', $options = array())
     {
         if ($message) {
-            $options['message'] = $message;
+            $options['message'] = CLIProgressBar::stripReturns($message);
         }
         $options['total'] = $total;
         $options['start'] = time();
@@ -330,9 +356,14 @@ class CLIProgressBar
     protected static function setWidth($width = null)
     {
         if ($width === null) {
-            if (DIRECTORY_SEPARATOR === '/') {
-                $width = `tput cols`;
-            }
+        	if (self::$window) {
+        		ncurses_getmaxyx(self::$window, $vn_max_y, $vn_max_x);
+        		$width = $vn_max_x - 4;
+        	} else {
+				if (DIRECTORY_SEPARATOR === '/') {
+					$width = `tput cols`;
+				}
+			}
             if ($width < 80) {
                 $width = 80;
             }
