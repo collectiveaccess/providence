@@ -2739,6 +2739,14 @@
       </items>
     </list>
     <!-- vocab lists -->
+    <list code="aat" hierarchical="1" system="0" vocabulary="1">
+      <labels>
+        <label locale="en_US">
+          <name>Art &amp; Architecture Thesaurus</name>
+        </label>
+      </labels>
+      <items/>
+    </list>
     <list code="associated_concepts" hierarchical="1" system="0" vocabulary="1">
       <labels>
         <label locale="en_US">
@@ -13051,24 +13059,47 @@
         </label>
       </labels>
       <elements>
-        <metadataElement code="internal_multi" datatype="List" list="note_box">
+      	<metadataElement code="NoteLine1" datatype="Container">
           <labels>
             <label locale="en_US">
-              <name></name>
+              <name>Note line 1</name>
             </label>
           </labels>
-          <settings>
-            <setting name="render">radio_buttons</setting>
-            <setting name="fieldWidth">40</setting>
-            <setting name="fieldHeight">1</setting>
-            <setting name="minChars">0</setting>
-            <setting name="maxChars">65535</setting>
-          </settings>
+          <elements>
+            <metadataElement code="is_internal" datatype="List" list="yes_no">
+			  <labels>
+				<label locale="en_US">
+				  <name>Internal</name>
+				</label>
+			  </labels>
+			  <settings>
+				<setting name="render">radio_buttons</setting>
+				<setting name="fieldWidth">40</setting>
+				<setting name="fieldHeight">1</setting>
+				<setting name="minChars">0</setting>
+				<setting name="maxChars">65535</setting>
+			  </settings>
+			</metadataElement>
+			<metadataElement code="multipart" datatype="List" list="yes_no">
+			  <labels>
+				<label locale="en_US">
+				  <name>Multipart</name>
+				</label>
+			  </labels>
+			  <settings>
+				<setting name="render">radio_buttons</setting>
+				<setting name="fieldWidth">40</setting>
+				<setting name="fieldHeight">1</setting>
+				<setting name="minChars">0</setting>
+				<setting name="maxChars">65535</setting>
+			  </settings>
+			</metadataElement>
+          </elements>          
         </metadataElement>
         <metadataElement code="NoteLine2" datatype="Container">
           <labels>
             <label locale="en_US">
-              <name></name>
+              <name>Note line 2</name>
             </label>
           </labels>
           <elements>
@@ -13090,7 +13121,7 @@
         <metadataElement code="NoteLine3" datatype="Container">
           <labels>
             <label locale="en_US">
-              <name></name>
+              <name>Note line 3</name>
             </label>
           </labels>
           <elements>
@@ -14309,6 +14340,32 @@
     </metadataElement>
     <!-- general object elements -->
     <metadataElement code="containerID" datatype="Text">
+      <labels>
+        <label locale="en_US">
+          <name>Box/Folder number</name>
+          <description></description>
+        </label>
+      </labels>
+      <documentationUrl></documentationUrl>
+      <settings>
+        <setting name="fieldWidth">70</setting>
+        <setting name="fieldHeight">1</setting>
+        <setting name="minChars">0</setting>
+        <setting name="maxChars">65535</setting>
+      </settings>
+      <typeRestrictions>
+        <restriction code="r1">
+          <table>ca_objects</table>
+          <settings>
+            <setting name="minAttributesPerRow">1</setting>
+            <setting name="maxAttributesPerRow">1</setting>
+            <setting name="minimumAttributeBundlesToDisplay">1</setting>
+          </settings>
+        </restriction>
+      </typeRestrictions>
+    </metadataElement>
+    <!-- 2D/3D elements -->
+    <metadataElement code="lcshFull" datatype="LCSH">
       <labels>
         <label locale="en_US">
           <name>Box/Folder number</name>
@@ -22150,6 +22207,346 @@
           <subTypeLeft> </subTypeLeft>
           <subTypeRight/>
         </type>
+        <type code="Designer" default="0">
+			 <labels>
+				<label locale="en_US">
+				 <typename>Designer</typename>
+				 <typename_reverse>Designer</typename_reverse>
+				</label>
+			 </labels>
+			 <subTypeLeft></subTypeLeft>
+			 <subTypeRight/>
+			</type>
+			<type code="Artist" default="0">
+			 <labels>
+				<label locale="en_US">
+				 <typename>Artist</typename>
+				 <typename_reverse>Artist</typename_reverse>
+				</label>
+			 </labels>
+			 <subTypeLeft></subTypeLeft>
+			 <subTypeRight/>
+			</type>
+			<type code="Collector" default="0">
+			 <labels>
+				<label locale="en_US">
+				 <typename>Collector</typename>
+				 <typename_reverse>Collector</typename_reverse>
+				</label>
+			 </labels>
+			 <subTypeLeft></subTypeLeft>
+			 <subTypeRight/>
+			</type>
+			<type code="Illustrator" default="0">
+			 <labels>
+				<label locale="en_US">
+				 <typename>Illustrator</typename>
+				 <typename_reverse>Illustrator</typename_reverse>
+				</label>
+			 </labels>
+			 <subTypeLeft></subTypeLeft>
+			 <subTypeRight/>
+			</type>
+			<type code="Photographer" default="0">
+			 <labels>
+				<label locale="en_US">
+				 <typename>Photographer</typename>
+				 <typename_reverse>Photographer</typename_reverse>
+				</label>
+			 </labels>
+			 <subTypeLeft></subTypeLeft>
+			 <subTypeRight/>
+			</type>
+			<type code="Architect" default="0">
+			 <labels>
+				<label locale="en_US">
+				 <typename>Architect</typename>
+				 <typename_reverse>Architect</typename_reverse>
+				</label>
+			 </labels>
+			 <subTypeLeft></subTypeLeft>
+			 <subTypeRight/>
+			</type>
+			<type code="Woodcutter" default="0">
+			 <labels>
+				<label locale="en_US">
+				 <typename>Woodcutter</typename>
+				 <typename_reverse>Woodcutter</typename_reverse>
+				</label>
+			 </labels>
+			 <subTypeLeft></subTypeLeft>
+			 <subTypeRight/>
+			</type>
+			<type code="Correspondent" default="0">
+			 <labels>
+				<label locale="en_US">
+				 <typename>Correspondent</typename>
+				 <typename_reverse>Correspondent</typename_reverse>
+				</label>
+			 </labels>
+			 <subTypeLeft></subTypeLeft>
+			 <subTypeRight/>
+			</type>
+			<type code="Client" default="0">
+			 <labels>
+				<label locale="en_US">
+				 <typename>Client</typename>
+				 <typename_reverse>Client</typename_reverse>
+				</label>
+			 </labels>
+			 <subTypeLeft></subTypeLeft>
+			 <subTypeRight/>
+			</type>
+			<type code="Distributor" default="0">
+			 <labels>
+				<label locale="en_US">
+				 <typename>Distributor</typename>
+				 <typename_reverse>Distributor</typename_reverse>
+				</label>
+			 </labels>
+			 <subTypeLeft></subTypeLeft>
+			 <subTypeRight/>
+			</type>
+			<type code="Etcher" default="0">
+			 <labels>
+				<label locale="en_US">
+				 <typename>Etcher</typename>
+				 <typename_reverse>Etcher</typename_reverse>
+				</label>
+			 </labels>
+			 <subTypeLeft></subTypeLeft>
+			 <subTypeRight/>
+			</type>
+			<type code="Typographer" default="0">
+			 <labels>
+				<label locale="en_US">
+				 <typename>Typographer</typename>
+				 <typename_reverse>Typographer</typename_reverse>
+				</label>
+			 </labels>
+			 <subTypeLeft></subTypeLeft>
+			 <subTypeRight/>
+			</type>
+			<type code="Creator" default="0">
+			 <labels>
+				<label locale="en_US">
+				 <typename>Creator</typename>
+				 <typename_reverse>Creator</typename_reverse>
+				</label>
+			 </labels>
+			 <subTypeLeft></subTypeLeft>
+			 <subTypeRight/>
+			</type>
+			<type code="Printmaker" default="0">
+			 <labels>
+				<label locale="en_US">
+				 <typename>Printmaker</typename>
+				 <typename_reverse>Printmaker</typename_reverse>
+				</label>
+			 </labels>
+			 <subTypeLeft></subTypeLeft>
+			 <subTypeRight/>
+			</type>
+			<type code="Publisher" default="0">
+			 <labels>
+				<label locale="en_US">
+				 <typename>Publisher</typename>
+				 <typename_reverse>Publisher</typename_reverse>
+				</label>
+			 </labels>
+			 <subTypeLeft></subTypeLeft>
+			 <subTypeRight/>
+			</type>
+			<type code="Donor" default="0">
+			 <labels>
+				<label locale="en_US">
+				 <typename>Donor</typename>
+				 <typename_reverse>Donor</typename_reverse>
+				</label>
+			 </labels>
+			 <subTypeLeft></subTypeLeft>
+			 <subTypeRight/>
+			</type>
+			<type code="Teacher" default="0">
+			 <labels>
+				<label locale="en_US">
+				 <typename>Teacher</typename>
+				 <typename_reverse>Teacher</typename_reverse>
+				</label>
+			 </labels>
+			 <subTypeLeft></subTypeLeft>
+			 <subTypeRight/>
+			</type>
+			<type code="Depicted" default="0">
+			 <labels>
+				<label locale="en_US">
+				 <typename>Depicted</typename>
+				 <typename_reverse>Depicted</typename_reverse>
+				</label>
+			 </labels>
+			 <subTypeLeft></subTypeLeft>
+			 <subTypeRight/>
+			</type>
+			<type code="Interviewer" default="0">
+			 <labels>
+				<label locale="en_US">
+				 <typename>Interviewer</typename>
+				 <typename_reverse>Interviewer</typename_reverse>
+				</label>
+			 </labels>
+			 <subTypeLeft></subTypeLeft>
+			 <subTypeRight/>
+			</type>
+			<type code="Recipient" default="0">
+			 <labels>
+				<label locale="en_US">
+				 <typename>Recipient</typename>
+				 <typename_reverse>Recipient</typename_reverse>
+				</label>
+			 </labels>
+			 <subTypeLeft></subTypeLeft>
+			 <subTypeRight/>
+			</type>
+			<type code="Annotator" default="0">
+			 <labels>
+				<label locale="en_US">
+				 <typename>Annotator</typename>
+				 <typename_reverse>Annotator</typename_reverse>
+				</label>
+			 </labels>
+			 <subTypeLeft></subTypeLeft>
+			 <subTypeRight/>
+			</type>
+			<type code="exhibition_curator" default="0">
+			 <labels>
+				<label locale="en_US">
+				 <typename>Curator of an exhibition</typename>
+				 <typename_reverse>Curator of an exhibition</typename_reverse>
+				</label>
+			 </labels>
+			 <subTypeLeft></subTypeLeft>
+			 <subTypeRight/>
+			</type>
+			<type code="Contributor" default="0">
+			 <labels>
+				<label locale="en_US">
+				 <typename>Contributor</typename>
+				 <typename_reverse>Contributor</typename_reverse>
+				</label>
+			 </labels>
+			 <subTypeLeft></subTypeLeft>
+			 <subTypeRight/>
+			</type>
+			<type code="Producer" default="0">
+			 <labels>
+				<label locale="en_US">
+				 <typename>Producer</typename>
+				 <typename_reverse>Producer</typename_reverse>
+				</label>
+			 </labels>
+			 <subTypeLeft></subTypeLeft>
+			 <subTypeRight/>
+			</type>
+			<type code="Author" default="0">
+			 <labels>
+				<label locale="en_US">
+				 <typename>Author</typename>
+				 <typename_reverse>Author</typename_reverse>
+				</label>
+			 </labels>
+			 <subTypeLeft></subTypeLeft>
+			 <subTypeRight/>
+			</type>
+			<type code="Commentator" default="0">
+			 <labels>
+				<label locale="en_US">
+				 <typename>Commentator for written text</typename>
+				 <typename_reverse>Commentator for written text</typename_reverse>
+				</label>
+			 </labels>
+			 <subTypeLeft></subTypeLeft>
+			 <subTypeRight/>
+			</type>
+			<type code="Interviewee" default="0">
+			 <labels>
+				<label locale="en_US">
+				 <typename>Interviewee</typename>
+				 <typename_reverse>Interviewee</typename_reverse>
+				</label>
+			 </labels>
+			 <subTypeLeft></subTypeLeft>
+			 <subTypeRight/>
+			</type>
+			<type code="Compiler" default="0">
+			 <labels>
+				<label locale="en_US">
+				 <typename>Compiler</typename>
+				 <typename_reverse>Compiler</typename_reverse>
+				</label>
+			 </labels>
+			 <subTypeLeft></subTypeLeft>
+			 <subTypeRight/>
+			</type>
+			<type code="Licensee" default="0">
+			 <labels>
+				<label locale="en_US">
+				 <typename>Licensee</typename>
+				 <typename_reverse>Licensee</typename_reverse>
+				</label>
+			 </labels>
+			 <subTypeLeft></subTypeLeft>
+			 <subTypeRight/>
+			</type>
+			<type code="Collaborator" default="0">
+			 <labels>
+				<label locale="en_US">
+				 <typename>Collaborator</typename>
+				 <typename_reverse>Collaborator</typename_reverse>
+				</label>
+			 </labels>
+			 <subTypeLeft></subTypeLeft>
+			 <subTypeRight/>
+			</type>
+			<type code="Associated_name" default="0">
+			 <labels>
+				<label locale="en_US">
+				 <typename>Associated name</typename>
+				 <typename_reverse>Associated name</typename_reverse>
+				</label>
+			 </labels>
+			 <subTypeLeft></subTypeLeft>
+			 <subTypeRight/>
+			</type>
+			<type code="Owner" default="0">
+			 <labels>
+				<label locale="en_US">
+				 <typename>Owner</typename>
+				 <typename_reverse>Owner</typename_reverse>
+				</label>
+			 </labels>
+			 <subTypeLeft></subTypeLeft>
+			 <subTypeRight/>
+			</type>
+			<type code="Sponsor" default="0">
+			 <labels>
+				<label locale="en_US">
+				 <typename>Sponsor</typename>
+				 <typename_reverse>Sponsor</typename_reverse>
+				</label>
+			 </labels>
+			 <subTypeLeft></subTypeLeft>
+			 <subTypeRight/>
+			</type>
+			<type code="Sculptor" default="0">
+			 <labels>
+				<label locale="en_US">
+				 <typename>Sculptor</typename>
+				 <typename_reverse>Sculptor</typename_reverse>
+				</label>
+			 </labels>
+			 <subTypeLeft></subTypeLeft>
+			 <subTypeRight/>
+			</type>
       </types>
     </relationshipTable>
     <relationshipTable name="ca_entities_x_vocabulary_terms">
