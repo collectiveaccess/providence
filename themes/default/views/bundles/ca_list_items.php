@@ -90,7 +90,7 @@
 					<tr>
 						<td class="attributeListItem">
 <?php
-	if ($vs_checklist = ca_lists::getListAsHTMLFormElement(null, $vs_id_prefix."_id{n}", null, array('render' => 'checklist', 'limitToItemsRelatedToCollections' => $t_instance->get('ca_collections.collection_id', array('returnAsArray' => true)), 'limitToItemsRelatedToCollectionWithRelationshipTypes' => $va_settings['restrictToTermsOnCollectionWithRelationshipType'], 'maxColumns' => 3))) {
+	if ($vs_checklist = ca_lists::getListAsHTMLFormElement(null, $vs_id_prefix."_id{n}", null, array('render' => 'checklist', 'limitToItemsRelatedToCollections' => $t_instance->get('ca_collections.collection_id', array('returnAsArray' => true)), 'limitToItemsRelatedToCollectionWithRelationshipTypes' => $va_settings['restrictToTermsOnCollectionWithRelationshipType'], 'limitToListIDs' => $va_settings['restrict_to_lists'], 'maxColumns' => 3))) {
 		print $vs_checklist;
 	} else {
 ?>
