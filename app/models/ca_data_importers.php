@@ -1522,7 +1522,7 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 											break;
 										}
 									
-										$va_element_content['locale_id'] = $vn_locale_id;
+										if (is_array($va_element_content)) { $va_element_content['locale_id'] = $vn_locale_id; }
 										
 										$t_subject->addAttribute($va_element_content, $vs_element);
 										
@@ -1657,6 +1657,7 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 									}
 									break;
 								case 'ca_list_items':
+									$va_data_for_rel_table['is_enabled'] = 1;
 									if (
 										(isset($va_element_data['idno']['idno']) && ($t_list_item = ca_list_items::find(array('idno' => $va_element_data['idno']['idno']))) && ($vn_rel_id = $t_list_item->getPrimaryKey()))
 										||
