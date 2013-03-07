@@ -511,6 +511,7 @@ class ca_data_exporters extends BundlableLabelableBaseModelWithAttributes {
 
 			switch($vs_mode) {
 				case 'Mapping':
+				case 'Constant':
 					$o_id = $o_sheet->getCellByColumnAndRow(1, $o_row->getRowIndex());
 					$o_parent = $o_sheet->getCellByColumnAndRow(2, $o_row->getRowIndex());
 					$o_element = $o_sheet->getCellByColumnAndRow(3, $o_row->getRowIndex());
@@ -538,6 +539,13 @@ class ca_data_exporters extends BundlableLabelableBaseModelWithAttributes {
 
 					$vs_context = trim((string)$o_context->getValue());
 					$vs_source = trim((string)$o_source->getValue());
+
+					if ($vs_mode == 'Constant') {
+						if(strlen($vs_source)<1){ // ignore constant rows without value
+							continue;
+						}
+						$vs_source = "_CONSTANT_:{$vs_source}";
+					}
 
 					$va_options = null;
 					if ($vs_options_json = (string)$o_options->getValue()) { 
@@ -1058,20 +1066,29 @@ class ca_data_exporters extends BundlableLabelableBaseModelWithAttributes {
 		}
 
 		if($vs_source) {
-			if(!$vb_repeat){
+			$va_matches = array();
+			// CONSTANT value
+			if(preg_match("/^_CONSTANT_:(.*)$/",$vs_source,$va_matches)){
 				$va_item_info[] = array(
-					'text' => $t_instance->get($vs_source,$va_get_options),
+					'text' => trim($va_matches[1]),
 					'element' => $vs_element,
 				);
-			} else { // if user wants current element repeated in case of multiple returned values, go ahead and do that
-				$va_get_options['delimiter'] = ';#;';
-				$vs_values = $t_instance->get($vs_source,$va_get_options);
-				$va_tmp = explode(";#;",$vs_values);
-				foreach($va_tmp as $vs_text) {
+			} else {
+				if(!$vb_repeat){
 					$va_item_info[] = array(
+						'text' => $t_instance->get($vs_source,$va_get_options),
 						'element' => $vs_element,
-						'text' => $vs_text,
 					);
+				} else { // if user wants current element repeated in case of multiple returned values, go ahead and do that
+					$va_get_options['delimiter'] = ';#;';
+					$vs_values = $t_instance->get($vs_source,$va_get_options);
+					$va_tmp = explode(";#;",$vs_values);
+					foreach($va_tmp as $vs_text) {
+						$va_item_info[] = array(
+							'element' => $vs_element,
+							'text' => $vs_text,
+						);
+					}
 				}
 			}
 		} else if($vs_template){
