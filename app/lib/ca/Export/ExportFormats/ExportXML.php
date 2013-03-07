@@ -60,8 +60,6 @@ class ExportXML extends BaseExportFormat {
 		// when dealing with a record set export, we don't want <?xml tags in front so
 		// that we can simply dump each record in a file and have valid XML as result
 		$vs_xml = $pb_single_record ? $this->opo_dom->saveXML() : $this->opo_dom->saveXML($this->opo_dom->firstChild);
-		caDebug($vs_xml,"BEFORE");
-		caDebug(caFormatXML($vs_xml),"AFTER");
 		return caFormatXML($vs_xml);
 	}
 	# ------------------------------------------------------
