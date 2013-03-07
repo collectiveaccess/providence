@@ -1124,6 +1124,9 @@ class ca_data_exporters extends BundlableLabelableBaseModelWithAttributes {
 				$va_item = $va_plugin_item['export_item'];
 			}
 
+			// do replacements
+			$va_item['text'] = ca_data_exporter_items::replaceText($va_item['text'],$va_replacements);
+
 			// filter by regexp
 			if((strlen($va_item['text'])>0) && $vs_regexp){
 				if(!preg_match("!".$vs_regexp."!", $va_item['text'])) {
@@ -1131,9 +1134,6 @@ class ca_data_exporters extends BundlableLabelableBaseModelWithAttributes {
  					continue;
  				}
 			}
-
-			// do replacements
-			$va_item['text'] = ca_data_exporter_items::replaceText($va_item['text'],$va_replacements);
 
 			// if text is empty, fill in default
 			// if text isn't empty, respect prefix and suffix
