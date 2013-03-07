@@ -42,9 +42,7 @@ class ExportXML extends BaseExportFormat {
 		$this->ops_name = 'XML';
 		$this->ops_element_description = _t('Values prefixed with @ reference XML attributes. All other values define XML elements. The usual restrictions and naming conventions for XML elements and attributes apply.');
 
-		$this->opo_dom = new DOMDocument('1.0'); // are those settings?
-		$this->opo_dom->formatOutput = TRUE;
-		$this->opo_dom->preserveWhiteSpace = TRUE;
+		$this->opo_dom = new DOMDocument('1.0','utf-8'); // are those settings?
 
 		parent::__construct();
 	}
@@ -61,7 +59,8 @@ class ExportXML extends BaseExportFormat {
 		
 		// when dealing with a record set export, we don't want <?xml tags in front so
 		// that we can simply dump each record in a file and have valid XML as result
-		return ($pb_single_record ? $this->opo_dom->saveXML() : $this->opo_dom->saveXML($this->opo_dom->firstChild));
+		$vs_xml = $pb_single_record ? $this->opo_dom->saveXML() : $this->opo_dom->saveXML($this->opo_dom->firstChild);
+		return caFormatXML($vs_xml);
 	}
 	# ------------------------------------------------------
 	private function processItem($pa_item,$po_parent){
