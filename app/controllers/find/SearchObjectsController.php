@@ -70,8 +70,7 @@
 			$this->opa_views = array(
 				'thumbnail' => _t('thumbnails'),
 				'full' => _t('full'),
-				'list' => _t('list'),
-				//'map' => _t('map')
+				'list' => _t('list')
 			 );
 			 
 			 $this->opa_sorts = array_merge(array(

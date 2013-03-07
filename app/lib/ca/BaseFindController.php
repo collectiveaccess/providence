@@ -42,6 +42,7 @@
 	require_once(__CA_LIB_DIR__."/core/Parsers/ZipFile.php");
 	require_once(__CA_LIB_DIR__."/core/AccessRestrictions.php");
  	require_once(__CA_LIB_DIR__.'/core/Print/PrintForms.php');
+ 	require_once(__CA_LIB_DIR__.'/ca/Visualizer.php');
  	require_once(__CA_LIB_DIR__.'/core/Parsers/dompdf/dompdf_config.inc.php');
  	
 	class BaseFindController extends ActionController {
@@ -940,46 +941,6 @@
 			$this->view->setVar('items_per_page', $this->opa_items_per_page);
 			$this->view->setVar('current_items_per_page', $vn_items_per_page);
 			
- 			// Get current display list and put into tools view
- 			//$vn_display_id 			= $this->opo_result_context->getCurrentBundleDisplay();
- 			//$t_display = new ca_bundle_displays();
- 			//$va_displays = array('0' => _t('Default'));
- 			
-			//	$va_display_list = caExtractValuesByUserLocale($t_display->getBundleDisplays(array('table' => $this->ops_tablename, 'user_id' => $this->request->getUserID())));
-			//	foreach($va_display_list as $va_display) {
-			//		$va_displays[$va_display['display_id']] = unicode_substr($va_display['name'],0, 25);
-			//	}
- 			
- 			//$this->view->setVar('display_lists', $va_displays);	
- 			//$this->view->setVar('current_display_list', $vn_display_id);
- 			
- 			
- 			//$this->view->setVar('print_forms', $this->getPrintForms());
- 			
- 			//$vn_table_num = $this->opo_datamodel->getTableNum($this->ops_tablename);
- 			
- 			//$t_mappings = new ca_bundle_mappings();
-			//$va_mappings = $t_mappings->getAvailableMappings($vn_table_num, array('E', 'X'));
-			
-			//$va_export_options = array(
-			//	array(
-			//		'name' => _t('Tab delimited'),
-			//		'code' => '_tab'
-			//	),
-			//	array(
-			//		'name' => _t('Comma delimited (CSV)'),
-			//		'code' => '_csv'
-			//	)
-			//);
-			
-			//foreach($va_mappings as $vn_mapping_id => $va_mapping_info) {
-			//	$va_export_options[] = array(
-			//		'name' => $va_mapping_info['name'],
-			//		'code' => $va_mapping_info['mapping_id']
-			//	);
-			//}
-			//$this->view->setVar('export_formats', $va_export_options);
- 			
  			//
  			// Available sets
  			//
@@ -988,6 +949,30 @@
 
 			$this->view->setVar('last_search', $this->opo_result_context->getSearchExpression());
  			
+ 		}
+ 		# ------------------------------------------------------------------
+ 		# Visualization
+ 		# ------------------------------------------------------------------
+ 		/**
+ 		 * Generate search/browse results visualization
+ 		 */
+ 		public function Viz() {
+ 			$ps_viz = $this->request->getParameter('viz', pString);
+ 			
+ 			$o_viz = new Visualizer($this->ops_tablename);
+ 			$vo_result = caMakeSearchResult($this->ops_tablename, $this->opo_result_context->getResultList());
+ 			
+ 			if ($vo_result) {
+ 				$o_viz->addData($vo_result);
+ 				$this->view->setVar('num_items_total', $vo_result->numHits());
+ 			}
+ 			$this->view->setVar("viz_html", $o_viz->render($ps_viz, "HTML", array('classname' => 'vizFullScreen', 'request' => $this->request)));
+ 			
+ 			$o_dm = Datamodel::load();
+ 			$this->view->setVar('t_item', $o_dm->getInstanceByTableName($this->ops_tablename, true));
+ 			$this->view->setVar('num_items_rendered', $o_viz->numItemsRendered());
+ 			
+ 			$this->render('Results/viz_html.php');
  		}
  		# ------------------------------------------------------------------
 	}
