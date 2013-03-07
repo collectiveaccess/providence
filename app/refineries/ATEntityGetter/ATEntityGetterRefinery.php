@@ -90,7 +90,7 @@
 			$qr_rel_names = $o_db->query("
 				SELECT n.*, adn.* 
 				FROM ArchDescriptionNames adn
-				INNER JOIN Names AS N ON n.nameId = adn.primaryNameId
+				INNER JOIN Names AS n ON n.nameId = adn.primaryNameId
 				WHERE
 					adn.{$vs_key} = ?
 			", $pa_source_data[$vs_key]);
