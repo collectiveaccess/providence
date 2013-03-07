@@ -326,24 +326,6 @@
                         </label>
                       </labels>
                     <items>
-                    <item idno="box" enabled="1" default="0">
-                      <labels>
-                        <label locale="en_US" preferred="1">
-                          <name_singular>Box</name_singular>
-                          <name_plural>Boxes</name_plural>
-                        </label>
-                      </labels>
-                      <items>
-                        <item idno="folder" enabled="1" default="0">
-                          <labels>
-                            <label locale="en_US" preferred="1">
-                              <name_singular>Folder</name_singular>
-                              <name_plural>Folders</name_plural>
-                            </label>
-                          </labels>
-                        </item>
-                      </items>
-                    </item>
                   </items>
                  </item>
                 </items>
@@ -583,6 +565,31 @@
         </item>
       </items>
     </list>
+    <list code="object_representation_types" hierarchical="0" system="0" vocabulary="0">
+      <labels>
+        <label locale="en_US">
+          <name>Object representation types</name>
+        </label>
+      </labels>
+      <items>
+        <item idno="page" enabled="1" default="1">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>page</name_singular>
+              <name_plural>pages</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="document" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>document</name_singular>
+              <name_plural>documents</name_plural>
+            </label>
+          </labels>
+        </item>
+      </items>
+    </list>
     <!-- collection/entity lists -->
     <list code="collection_date_types" hierarchical="0" system="0" vocabulary="0">
       <labels>
@@ -596,14 +603,6 @@
             <label locale="en_US" preferred="1">
               <name_singular> </name_singular>
               <name_plural> </name_plural>
-            </label>
-          </labels>
-        </item>
-        <item idno="expression" enabled="1" default="0">
-          <labels>
-            <label locale="en_US" preferred="1">
-              <name_singular>expression</name_singular>
-              <name_plural>expression</name_plural>
             </label>
           </labels>
         </item>
@@ -753,215 +752,6 @@
             </label>
           </labels>
         </item>             
-      </items>
-    </list>
-    <list code="instance_types" hierarchical="0" system="0" vocabulary="0">
-      <labels>
-        <label locale="en_US">
-          <name>Instance Type</name>
-        </label>
-      </labels>
-      <items>
-        <item idno="bin" enabled="1" default="0">
-          <labels>
-            <label locale="en_US" preferred="1">
-              <name_singular>bin</name_singular>
-              <name_plural>bins</name_plural>
-            </label>
-          </labels>
-        </item>
-        <item idno="binder" enabled="1" default="0">
-          <labels>
-            <label locale="en_US" preferred="1">
-              <name_singular>binder</name_singular>
-              <name_plural>binders</name_plural>
-            </label>
-          </labels>
-        </item>
-        <item idno="box" enabled="1" default="0">
-          <labels>
-            <label locale="en_US" preferred="1">
-              <name_singular>box</name_singular>
-              <name_plural>boxes</name_plural>
-            </label>
-          </labels>
-        </item>
-        <item idno="box_folder" enabled="1" default="0">
-          <labels>
-            <label locale="en_US" preferred="1">
-              <name_singular>box-Folder</name_singular>
-              <name_plural>box-Folders</name_plural>
-            </label>
-          </labels>
-        </item>
-        <item idno="carton" enabled="1" default="0">
-          <labels>
-            <label locale="en_US" preferred="1">
-              <name_singular>carton</name_singular>
-              <name_plural>cartons</name_plural>
-            </label>
-          </labels>
-        </item>
-        <item idno="cassette" enabled="1" default="0">
-          <labels>
-            <label locale="en_US" preferred="1">
-              <name_singular>cassette</name_singular>
-              <name_plural>cassettes</name_plural>
-            </label>
-          </labels>
-        </item>
-        <item idno="disc" enabled="1" default="0">
-          <labels>
-            <label locale="en_US" preferred="1">
-              <name_singular>disc</name_singular>
-              <name_plural>discs</name_plural>
-            </label>
-          </labels>
-        </item>
-        <item idno="drawer" enabled="1" default="0">
-          <labels>
-            <label locale="en_US" preferred="1">
-              <name_singular>drawer</name_singular>
-              <name_plural>drawers</name_plural>
-            </label>
-          </labels>
-        </item>
-        <item idno="dvd_case" enabled="1" default="0">
-          <labels>
-            <label locale="en_US" preferred="1">
-              <name_singular>DVD-case</name_singular>
-              <name_plural>DVD-cases</name_plural>
-            </label>
-          </labels>
-        </item>
-        <item idno="entry_no" enabled="1" default="0">
-          <labels>
-            <label locale="en_US" preferred="1">
-              <name_singular>entry number</name_singular>
-              <name_plural>entry numbers</name_plural>
-            </label>
-          </labels>
-        </item>
-        <item idno="envelope" enabled="1" default="0">
-          <labels>
-            <label locale="en_US" preferred="1">
-              <name_singular>envelope</name_singular>
-              <name_plural>envelopes</name_plural>
-            </label>
-          </labels>
-        </item>
-        <item idno="folder" enabled="1" default="0">
-          <labels>
-            <label locale="en_US" preferred="1">
-              <name_singular>folder</name_singular>
-              <name_plural>folders</name_plural>
-            </label>
-          </labels>
-        </item>
-        <item idno="frame" enabled="1" default="0">
-          <labels>
-            <label locale="en_US" preferred="1">
-              <name_singular>frame</name_singular>
-              <name_plural>frames</name_plural>
-            </label>
-          </labels>
-        </item>
-        <item idno="hive" enabled="1" default="0">
-          <labels>
-            <label locale="en_US" preferred="1">
-              <name_singular>hive</name_singular>
-              <name_plural>hives</name_plural>
-            </label>
-          </labels>
-        </item>
-        <item idno="map_case" enabled="1" default="0">
-          <labels>
-            <label locale="en_US" preferred="1">
-              <name_singular>map case</name_singular>
-              <name_plural>map cases</name_plural>
-            </label>
-          </labels>
-        </item>
-        <item idno="object" enabled="1" default="0">
-          <labels>
-            <label locale="en_US" preferred="1">
-              <name_singular>object</name_singular>
-              <name_plural>objects</name_plural>
-            </label>
-          </labels>
-        </item>
-        <item idno="oversize" enabled="1" default="0">
-          <labels>
-            <label locale="en_US" preferred="1">
-              <name_singular>oversize</name_singular>
-              <name_plural>oversizes</name_plural>
-            </label>
-          </labels>
-        </item>
-        <item idno="page" enabled="1" default="0">
-          <labels>
-            <label locale="en_US" preferred="1">
-              <name_singular>page</name_singular>
-              <name_plural>pages</name_plural>
-            </label>
-          </labels>
-        </item>
-        <item idno="reel" enabled="1" default="0">
-          <labels>
-            <label locale="en_US" preferred="1">
-              <name_singular>reel</name_singular>
-              <name_plural>reels</name_plural>
-            </label>
-          </labels>
-        </item>
-        <item idno="reel_frame" enabled="1" default="0">
-          <labels>
-            <label locale="en_US" preferred="1">
-              <name_singular>reel frame</name_singular>
-              <name_plural>reel frames</name_plural>
-            </label>
-          </labels>
-        </item>
-        <item idno="roll" enabled="1" default="0">
-          <labels>
-            <label locale="en_US" preferred="1">
-              <name_singular>roll</name_singular>
-              <name_plural>rolls</name_plural>
-            </label>
-          </labels>
-        </item>
-        <item idno="section" enabled="1" default="0">
-          <labels>
-            <label locale="en_US" preferred="1">
-              <name_singular>section</name_singular>
-              <name_plural>sections</name_plural>
-            </label>
-          </labels>
-        </item>
-        <item idno="slot" enabled="1" default="0">
-          <labels>
-            <label locale="en_US" preferred="1">
-              <name_singular>slot</name_singular>
-              <name_plural>slots</name_plural>
-            </label>
-          </labels>
-        </item>
-        <item idno="tube" enabled="1" default="0">
-          <labels>
-            <label locale="en_US" preferred="1">
-              <name_singular>tube</name_singular>
-              <name_plural>tubes</name_plural>
-            </label>
-          </labels>
-        </item>
-        <item idno="volume" enabled="1" default="0">
-          <labels>
-            <label locale="en_US" preferred="1">
-              <name_singular>volume</name_singular>
-              <name_plural>volumes</name_plural>
-            </label>
-          </labels>
-        </item>
       </items>
     </list>
     <list code="note_box" hierarchical="0" system="0" vocabulary="0">
@@ -2949,6 +2739,14 @@
       </items>
     </list>
     <!-- vocab lists -->
+    <list code="aat" hierarchical="1" system="0" vocabulary="1">
+      <labels>
+        <label locale="en_US">
+          <name>Art &amp; Architecture Thesaurus</name>
+        </label>
+      </labels>
+      <items/>
+    </list>
     <list code="associated_concepts" hierarchical="1" system="0" vocabulary="1">
       <labels>
         <label locale="en_US">
@@ -13017,72 +12815,6 @@
           </settings>
         </restriction>
       </typeRestrictions>
-    </metadataElement>
-    <metadataElement code="InstanceType" datatype="List" list="instance_types">
-      <labels>
-        <label locale="en_US">
-          <name>Instance Type</name>
-        </label>
-      </labels>
-      <settings>
-        <setting name="fieldWidth">40</setting>
-        <setting name="fieldHeight">1</setting>
-        <setting name="minChars">0</setting>
-        <setting name="maxChars">65535</setting>
-      </settings>
-      <typeRestrictions>
-        <restriction code="r1">
-          <table>ca_collections</table>
-          <type>box</type>
-          <settings>
-            <setting name="minAttributesPerRow">1</setting>
-            <setting name="maxAttributesPerRow">10</setting>
-            <setting name="minimumAttributeBundlesToDisplay">1</setting>
-          </settings>
-        </restriction>
-        <restriction code="r2">
-          <table>ca_collections</table>
-          <type>folder</type>
-          <settings>
-            <setting name="minAttributesPerRow">1</setting>
-            <setting name="maxAttributesPerRow">10</setting>
-            <setting name="minimumAttributeBundlesToDisplay">1</setting>
-          </settings>
-        </restriction>
-      </typeRestrictions>
-    </metadataElement>
-    <metadataElement code="ContainerBarcode" datatype="Text">
-      <labels>
-        <label locale="en_US">
-          <name>Container Barcode</name>
-        </label>
-      </labels>
-      <settings>
-        <setting name="fieldWidth">40</setting>
-        <setting name="fieldHeight">1</setting>
-        <setting name="minChars">0</setting>
-        <setting name="maxChars">65535</setting>
-      </settings>
-      <typeRestrictions>
-        <restriction code="r1">
-          <table>ca_collections</table>
-          <type>box</type>
-          <settings>
-            <setting name="minAttributesPerRow">0</setting>
-            <setting name="maxAttributesPerRow">10</setting>
-            <setting name="minimumAttributeBundlesToDisplay">1</setting>
-          </settings>
-        </restriction>
-        <restriction code="r2">
-          <table>ca_collections</table>
-          <type>folder</type>
-          <settings>
-            <setting name="minAttributesPerRow">0</setting>
-            <setting name="maxAttributesPerRow">10</setting>
-            <setting name="minimumAttributeBundlesToDisplay">1</setting>
-          </settings>
-        </restriction>
-      </typeRestrictions>
     </metadataElement>   
     <metadataElement code="LcshNames" datatype="LCSH">
       <labels>
@@ -13327,24 +13059,47 @@
         </label>
       </labels>
       <elements>
-        <metadataElement code="internal_multi" datatype="List" list="note_box">
+      	<metadataElement code="NoteLine1" datatype="Container">
           <labels>
             <label locale="en_US">
-              <name></name>
+              <name>Note line 1</name>
             </label>
           </labels>
-          <settings>
-            <setting name="render">radio_buttons</setting>
-            <setting name="fieldWidth">40</setting>
-            <setting name="fieldHeight">1</setting>
-            <setting name="minChars">0</setting>
-            <setting name="maxChars">65535</setting>
-          </settings>
+          <elements>
+            <metadataElement code="is_internal" datatype="List" list="yes_no">
+			  <labels>
+				<label locale="en_US">
+				  <name>Internal</name>
+				</label>
+			  </labels>
+			  <settings>
+				<setting name="render">radio_buttons</setting>
+				<setting name="fieldWidth">40</setting>
+				<setting name="fieldHeight">1</setting>
+				<setting name="minChars">0</setting>
+				<setting name="maxChars">65535</setting>
+			  </settings>
+			</metadataElement>
+			<metadataElement code="multipart" datatype="List" list="yes_no">
+			  <labels>
+				<label locale="en_US">
+				  <name>Multipart</name>
+				</label>
+			  </labels>
+			  <settings>
+				<setting name="render">radio_buttons</setting>
+				<setting name="fieldWidth">40</setting>
+				<setting name="fieldHeight">1</setting>
+				<setting name="minChars">0</setting>
+				<setting name="maxChars">65535</setting>
+			  </settings>
+			</metadataElement>
+          </elements>          
         </metadataElement>
         <metadataElement code="NoteLine2" datatype="Container">
           <labels>
             <label locale="en_US">
-              <name></name>
+              <name>Note line 2</name>
             </label>
           </labels>
           <elements>
@@ -13366,7 +13121,7 @@
         <metadataElement code="NoteLine3" datatype="Container">
           <labels>
             <label locale="en_US">
-              <name></name>
+              <name>Note line 3</name>
             </label>
           </labels>
           <elements>
@@ -14583,6 +14338,32 @@
         </restriction>
       </typeRestrictions>
     </metadataElement>
+    <!-- general object elements -->
+    <metadataElement code="containerID" datatype="Text">
+      <labels>
+        <label locale="en_US">
+          <name>Box/Folder number</name>
+          <description></description>
+        </label>
+      </labels>
+      <documentationUrl></documentationUrl>
+      <settings>
+        <setting name="fieldWidth">70</setting>
+        <setting name="fieldHeight">1</setting>
+        <setting name="minChars">0</setting>
+        <setting name="maxChars">65535</setting>
+      </settings>
+      <typeRestrictions>
+        <restriction code="r1">
+          <table>ca_objects</table>
+          <settings>
+            <setting name="minAttributesPerRow">1</setting>
+            <setting name="maxAttributesPerRow">1</setting>
+            <setting name="minimumAttributeBundlesToDisplay">1</setting>
+          </settings>
+        </restriction>
+      </typeRestrictions>
+    </metadataElement>
     <!-- 2D/3D elements -->
     <metadataElement code="lcshFull" datatype="LCSH">
       <labels>
@@ -14649,7 +14430,7 @@
     <metadataElement code="titleSet" datatype="Container">
       <labels>
         <label locale="en_US">
-          <name>Title Set</name>
+          <name>Title</name>
         </label>
       </labels>
       <settings/>
@@ -14691,7 +14472,7 @@
     <metadataElement code="inscriptionSet" datatype="Container">
       <labels>
         <label locale="en_US">
-          <name>Inscription Set</name>
+          <name>Inscription</name>
           <description>All marks or written words added to the object at the time of production or
             in its subsequent history, including signatures, dates, dedications, texts, and
             colophons, as well as marks, such as the stamps of silversmiths, publishers, or
@@ -14826,7 +14607,7 @@
     <metadataElement code="measurementSet" datatype="Container">
       <labels>
         <label locale="en_US">
-          <name>Measurements Set</name>
+          <name>Measurements</name>
           <description>The physical size, shape, scale, dimensions, or format of the Work or Image.
             Dimensions may include such measurements as volume, weight, area or running
             time.</description>
@@ -14926,7 +14707,7 @@
     <metadataElement code="rightsSet" datatype="Container">
       <labels>
         <label locale="en_US">
-          <name>Rights Set</name>
+          <name>Rights</name>
           <description>Information about the copyright status and the rights holder for a work,
             collection, or image. The optional notes sub-element may include any justifications,
             conditions, or restraints on use, contact or licensing information, or other
@@ -15106,7 +14887,7 @@
     <metadataElement code="descriptionSet" datatype="Container">
       <labels>
         <label locale="en_US">
-          <name>Description Set</name>
+          <name>Description</name>
           <description>A free-text note about the Work, Collection, or Image, including comments,
             description, or interpretation, that gives additional information not recorded in other
             categories. For element-specific notes, use the optional notes subelement.</description>
@@ -15205,7 +14986,7 @@
     <metadataElement code="dateSet" datatype="Container">
       <labels>
         <label locale="en_US">
-          <name>Dates Set</name>
+          <name>Dates</name>
           <description>Date or range of dates associated with the creation, design, production,
             presentation, performance, construction, or alteration, etc. of the work or image. See CCO Chapter 4: Stylistic and Chronological
             Information for a more thorough discussion of dates.</description>
@@ -16218,31 +15999,19 @@
         </restriction>
       </typeRestrictions>
     </metadataElement>
-    <metadataElement code="pbcoreGenre" datatype="Container">
-      <labels>
-        <label locale="en_US">
-          <name>Genre</name>
-          <description>The descriptor genre describes the manner in which the work of a media item is presented, viewed or heard by a user. It indicates the structure of the presentation, as well as the topical nature of the content in a generalized form. If genre keywords are assigned to a media item using the descriptor genre and the terms used are derived from a specific authority or classification scheme, use genreAuthorityUsed to identify whose vocabularies and terms were used. PBcore supplies its own picklist of terms, but others may be employed as long as the authority for a picklist is identified.</description>
-        </label>
-      </labels>
-      <documentationUrl>http://www.pbcore.org/PBCore/genre.html</documentationUrl>
-      <settings/>
-      <elements>
-            <metadataElement code="genre" datatype="List" list="pbcore_genre_types">
-              <labels>
-                <label locale="en_US">
-                  <name>Genre</name>
-                </label>
-              </labels>
-              <documentationUrl>http://www.pbcore.org/PBCore/genre.html</documentationUrl>
-              <settings>
-                <setting name="fieldWidth">70</setting>
-                <setting name="fieldHeight">1</setting>
-                <setting name="minChars">0</setting>
-                <setting name="maxChars">255</setting>
-              </settings>
-            </metadataElement>
-      </elements>
+    <metadataElement code="pbcoreGenre" datatype="List" list="pbcore_genre_types">
+        <labels>
+          <label locale="en_US">
+            <name>Genre</name>
+          </label>
+        </labels>
+        <documentationUrl>http://www.pbcore.org/PBCore/genre.html</documentationUrl>
+        <settings>
+          <setting name="fieldWidth">70</setting>
+          <setting name="fieldHeight">1</setting>
+          <setting name="minChars">0</setting>
+          <setting name="maxChars">255</setting>
+        </settings>
       <typeRestrictions>
         <restriction code="r1">
           <table>ca_occurrences</table>
@@ -16257,7 +16026,7 @@
     <metadataElement code="pbcoreCoverageTemporal" datatype="Container">
       <labels>
         <label locale="en_US">
-          <name>Temporal coverage</name>
+          <name>Temporal Coverage</name>
           <description>Coverage in intellectual content may also be expressed temporally by a date, period, era, or time-based event. Enter a date/time or range of date/times. You can be a specific (eg. 07/14/2001 @ 10:54:01am) or as general (circa 2001) as required.</description>
         </label>
       </labels>
@@ -16328,7 +16097,7 @@
     <metadataElement code="pbcoreCoverageSpatial" datatype="List" list="tgn">
       <labels>
         <label locale="en_US">
-          <name>Spatial coverage</name>
+          <name>Spatial Coverage</name>
           <description></description>
         </label>
       </labels>
@@ -17695,6 +17464,9 @@
                 <setting name="label" locale="en_US">Object Identifier</setting>
               </settings>
             </placement>
+             <placement code="ca_attribute_containerID">
+              <bundle>ca_attribute_containerID</bundle>
+             </placement>
             <placement code="preferred_labels">
               <bundle>preferred_labels</bundle>
               <settings>
@@ -17776,6 +17548,9 @@
                 <setting name="label" locale="en_US">Object Identifier</setting>
               </settings>
             </placement>
+            <placement code="ca_attribute_containerID">
+              <bundle>ca_attribute_containerID</bundle>
+             </placement>
             <placement code="preferred_labels">
               <bundle>preferred_labels</bundle>
               <settings>
@@ -17861,6 +17636,9 @@
                 <setting name="label" locale="en_US">Object Identifier</setting>
               </settings>
             </placement>
+            <placement code="ca_attribute_containerID">
+              <bundle>ca_attribute_containerID</bundle>
+             </placement>
             <placement code="preferred_labels">
               <bundle>preferred_labels</bundle>
               <settings>
@@ -17953,6 +17731,9 @@
                 <setting name="label" locale="en_US">Object Identifier</setting>
               </settings>
             </placement>
+            <placement code="ca_attribute_containerID">
+              <bundle>ca_attribute_containerID</bundle>
+             </placement>
             <placement code="preferred_labels">
               <bundle>preferred_labels</bundle>
               <settings>
@@ -18050,6 +17831,9 @@
                 <setting name="label" locale="en_US">Object Identifier</setting>
               </settings>
             </placement>
+            <placement code="ca_attribute_containerID">
+              <bundle>ca_attribute_containerID</bundle>
+             </placement>
             <placement code="preferred_labels">
               <bundle>preferred_labels</bundle>
               <settings>
@@ -18147,6 +17931,9 @@
                 <setting name="label" locale="en_US">Object Identifier</setting>
               </settings>
             </placement>
+            <placement code="ca_attribute_containerID">
+              <bundle>ca_attribute_containerID</bundle>
+             </placement>
             <placement code="preferred_labels">
               <bundle>preferred_labels</bundle>
               <settings>
@@ -18240,6 +18027,9 @@
                 <setting name="label" locale="en_US">Identifier</setting>
               </settings>
             </placement>
+            <placement code="ca_attribute_containerID">
+              <bundle>ca_attribute_containerID</bundle>
+             </placement>
             <placement code="preferred_labels">
               <bundle>preferred_labels</bundle>
               <settings>
@@ -18577,7 +18367,7 @@
               <bundle>ca_list_items</bundle>
               <settings>
                 <setting name="restrict_to_lists">people</setting>
-                <setting name="label" locale="en_US">Occucation (AAT)</setting>
+                <setting name="label" locale="en_US">Occupation (AAT)</setting>
                 <setting name="add_label" locale="en_US">Add occupation</setting>
               </settings>
               </placement>
@@ -18840,7 +18630,7 @@
               <bundle>ca_list_items</bundle>
               <settings>
                 <setting name="restrict_to_lists">ns_local_vocab</setting>
-                <setting name="add_label" locale="en_US">Local Vocabulary</setting>
+                <setting name="label" locale="en_US">Local Vocabulary Terms</setting>
                 <setting name="add_label" locale="en_US">add term</setting>
               </settings>
             </placement>
@@ -19216,68 +19006,7 @@
               </settings>
             </placement>
           </bundlePlacements>
-        </screen>      
-        <screen idno="basic_box_folder" default="1">
-          <labels>
-            <label locale="en_US">
-              <name>Basic info</name>
-            </label>
-          </labels>
-           <typeRestrictions>
-            <restriction code="box" type="box"/>
-            <restriction code="folder" type="folder"/>
-           </typeRestrictions>           
-          <bundlePlacements>
-            <placement code="hierarchy_location">
-              <bundle>hierarchy_location</bundle>
-              <settings>
-                <setting name="label" locale="en_US">Location in Hierarchy</setting>
-              </settings>
-            </placement> 
-            <placement code="ca_attribute_CollectionDate">
-              <bundle>ca_attribute_CollectionDate</bundle>
-            </placement>
-            <placement code="ca_attribute_Language">
-              <bundle>ca_attribute_Language</bundle>
-            </placement>
-             <placement code="ca_attribute_RepositoryProcessingNote">
-              <bundle>ca_attribute_RepositoryProcessingNote</bundle>
-            </placement>
-             <placement code="ca_attribute_Repository">
-              <bundle>ca_attribute_Repository</bundle>
-             </placement>          
-             <placement code="ca_attribute_ExtentNewSchool">
-              <bundle>ca_attribute_ExtentNewSchool</bundle>
-             </placement> 
-             <placement code="ca_attribute_InstanceType">
-              <bundle>ca_attribute_InstanceType</bundle>
-             </placement> 
-             <placement code="idno">
-              <bundle>idno</bundle>
-              <settings>
-                <setting name="label" locale="en_US">Container Indicator</setting>
-              </settings>
-             </placement>           
-             <placement code="ca_attribute_PersistentID">
-              <bundle>ca_attribute_PersistentID</bundle>
-            </placement> 
-             <placement code="ca_attribute_ContainerBarcode">
-              <bundle>ca_attribute_ContainerBarcode</bundle>
-             </placement>              
-              <placement code="status">
-              <bundle>status</bundle>
-              <settings>
-                <setting name="label" locale="en_US">Record Status</setting>
-              </settings>
-            </placement>
-            <placement code="access">
-              <bundle>access</bundle>
-              <settings>
-                <setting name="label" locale="en_US">Record Access</setting>
-              </settings>
-            </placement>
-          </bundlePlacements>
-        </screen>             
+        </screen>                   
         <screen idno="names" default="0">
           <labels>
             <label locale="en_US">
@@ -19437,9 +19166,6 @@
           <labels>
             <label locale="en_US">
               <name>Relationships</name>
-            </label>
-            <label locale="fr_FR">
-              <name>Relations</name>
             </label>
           </labels>
           <bundlePlacements>
@@ -20012,8 +19738,8 @@
         <type code="architect" default="1">
           <labels>
             <label locale="en_US">
-              <typename>architect</typename>
-              <typename_reverse>architect</typename_reverse>
+              <typename>has as architect</typename>
+              <typename_reverse>is architect of</typename_reverse>
             </label>
           </labels>
           <subTypeLeft> </subTypeLeft>
@@ -20022,8 +19748,8 @@
         <type code="artist" default="0">
           <labels>
             <label locale="en_US">
-              <typename>artist</typename>
-              <typename_reverse>artist</typename_reverse>
+              <typename>has as artist</typename>
+              <typename_reverse>is artist of</typename_reverse>
             </label>
           </labels>
           <subTypeLeft> </subTypeLeft>
@@ -20032,8 +19758,8 @@
         <type code="author" default="0">
           <labels>
             <label locale="en_US">
-              <typename>author</typename>
-              <typename_reverse>author</typename_reverse>
+              <typename>has as author</typename>
+              <typename_reverse>is author of</typename_reverse>
             </label>
           </labels>
           <subTypeLeft> </subTypeLeft>
@@ -20042,8 +19768,8 @@
         <type code="cartographer" default="0">
           <labels>
             <label locale="en_US">
-              <typename>cartographer</typename>
-              <typename_reverse>cartographer</typename_reverse>
+              <typename>has as cartographer</typename>
+              <typename_reverse>is cartographer of</typename_reverse>
             </label>
           </labels>
           <subTypeLeft> </subTypeLeft>
@@ -20052,8 +19778,8 @@
         <type code="choreographer" default="0">
           <labels>
             <label locale="en_US">
-              <typename>choreographer</typename>
-              <typename_reverse>choreographer</typename_reverse>
+              <typename>has as choreographer</typename>
+              <typename_reverse>is choreographer of</typename_reverse>
             </label>
           </labels>
           <subTypeLeft> </subTypeLeft>
@@ -20062,8 +19788,8 @@
         <type code="compiler" default="0">
           <labels>
             <label locale="en_US">
-              <typename>compiler</typename>
-              <typename_reverse>compiler</typename_reverse>
+              <typename>has as compiler</typename>
+              <typename_reverse>is compiler of</typename_reverse>
             </label>
           </labels>
           <subTypeLeft> </subTypeLeft>
@@ -20072,8 +19798,8 @@
         <type code="composer" default="0">
           <labels>
             <label locale="en_US">
-              <typename>composer</typename>
-              <typename_reverse>composer</typename_reverse>
+              <typename>has as composer</typename>
+              <typename_reverse>is composer of</typename_reverse>
             </label>
           </labels>
           <subTypeLeft> </subTypeLeft>
@@ -20082,8 +19808,8 @@
         <type code="designer" default="0">
           <labels>
             <label locale="en_US">
-              <typename>designer</typename>
-              <typename_reverse>designer</typename_reverse>
+              <typename>has as designer</typename>
+              <typename_reverse>is designer of</typename_reverse>
             </label>
           </labels>
           <subTypeLeft> </subTypeLeft>
@@ -20092,8 +19818,8 @@
         <type code="enacting_jurisdiction" default="0">
           <labels>
             <label locale="en_US">
-              <typename>enacting jurisdiction</typename>
-              <typename_reverse>enacting jurisdiction</typename_reverse>
+              <typename>has as enacting jurisdiction</typename>
+              <typename_reverse>is enacting jurisdiction of</typename_reverse>
             </label>
           </labels>
           <subTypeLeft> </subTypeLeft>
@@ -20102,8 +19828,8 @@
         <type code="filmmaker" default="0">
           <labels>
             <label locale="en_US">
-              <typename>filmmaker</typename>
-              <typename_reverse>filmmaker</typename_reverse>
+              <typename>has as filmmaker</typename>
+              <typename_reverse>is filmmaker of</typename_reverse>
             </label>
           </labels>
           <subTypeLeft> </subTypeLeft>
@@ -20112,8 +19838,8 @@
         <type code="interviewee" default="0">
           <labels>
             <label locale="en_US">
-              <typename>interviewee</typename>
-              <typename_reverse>interviewee</typename_reverse>
+              <typename>has as interviewee</typename>
+              <typename_reverse>is interviewee of</typename_reverse>
             </label>
           </labels>
           <subTypeLeft> </subTypeLeft>
@@ -20122,8 +19848,8 @@
         <type code="interviewer" default="0">
           <labels>
             <label locale="en_US">
-              <typename>interviewer</typename>
-              <typename_reverse>interviewer</typename_reverse>
+              <typename>has as interviewer</typename>
+              <typename_reverse>is interviewer of</typename_reverse>
             </label>
           </labels>
           <subTypeLeft> </subTypeLeft>
@@ -20132,8 +19858,8 @@
         <type code="inventor" default="0">
           <labels>
             <label locale="en_US">
-              <typename>inventor</typename>
-              <typename_reverse>inventor</typename_reverse>
+              <typename>has as inventor</typename>
+              <typename_reverse>is inventor of</typename_reverse>
             </label>
           </labels>
           <subTypeLeft> </subTypeLeft>
@@ -20142,8 +19868,8 @@
         <type code="landscape_architect" default="0">
           <labels>
             <label locale="en_US">
-              <typename>landscape architect</typename>
-              <typename_reverse>landscape architect</typename_reverse>
+              <typename>has as landscape architect</typename>
+              <typename_reverse>is landscape architect of</typename_reverse>
             </label>
           </labels>
           <subTypeLeft> </subTypeLeft>
@@ -20152,8 +19878,8 @@
         <type code="librettist" default="0">
           <labels>
             <label locale="en_US">
-              <typename>librettist</typename>
-              <typename_reverse>librettist</typename_reverse>
+              <typename>has as librettist</typename>
+              <typename_reverse>is librettist of</typename_reverse>
             </label>
           </labels>
           <subTypeLeft> </subTypeLeft>
@@ -20162,8 +19888,8 @@
         <type code="lyricist" default="0">
           <labels>
             <label locale="en_US">
-              <typename>lyricist</typename>
-              <typename_reverse>lyricist</typename_reverse>
+              <typename>has as lyricist</typename>
+              <typename_reverse>is lyricist of</typename_reverse>
             </label>
           </labels>
           <subTypeLeft> </subTypeLeft>
@@ -20172,8 +19898,8 @@
         <type code="photographer" default="0">
           <labels>
             <label locale="en_US">
-              <typename>photographer</typename>
-              <typename_reverse>photographer</typename_reverse>
+              <typename>has as photographer</typename>
+              <typename_reverse>is photographer of</typename_reverse>
             </label>
           </labels>
           <subTypeLeft> </subTypeLeft>
@@ -20182,8 +19908,8 @@
         <type code="praeses" default="0">
           <labels>
             <label locale="en_US">
-              <typename>praeses</typename>
-              <typename_reverse>praeses</typename_reverse>
+              <typename>has as praeses</typename>
+              <typename_reverse>is praeses of</typename_reverse>
             </label>
           </labels>
           <subTypeLeft> </subTypeLeft>
@@ -20192,8 +19918,8 @@
         <type code="programmer" default="0">
           <labels>
             <label locale="en_US">
-              <typename>programmer</typename>
-              <typename_reverse>programmer</typename_reverse>
+              <typename>has as programmer</typename>
+              <typename_reverse>is programmer of</typename_reverse>
             </label>
           </labels>
           <subTypeLeft> </subTypeLeft>
@@ -20202,8 +19928,8 @@
         <type code="respondent" default="0">
           <labels>
             <label locale="en_US">
-              <typename>respondent</typename>
-              <typename_reverse>respondent</typename_reverse>
+              <typename>has as respondent</typename>
+              <typename_reverse>is respondent of</typename_reverse>
             </label>
           </labels>
           <subTypeLeft> </subTypeLeft>
@@ -20212,8 +19938,8 @@
         <type code="screenwriter" default="0">
           <labels>
             <label locale="en_US">
-              <typename>screenwriter</typename>
-              <typename_reverse>screenwriter</typename_reverse>
+              <typename>has as screenwriter</typename>
+              <typename_reverse>is screenwriter of</typename_reverse>
             </label>
           </labels>
           <subTypeLeft> </subTypeLeft>
@@ -20222,8 +19948,8 @@
         <type code="sculptor" default="0">
           <labels>
             <label locale="en_US">
-              <typename>sculptor</typename>
-              <typename_reverse>sculptor</typename_reverse>
+              <typename>has as sculptor</typename>
+              <typename_reverse>is sculptor of</typename_reverse>
             </label>
           </labels>
           <subTypeLeft> </subTypeLeft>
@@ -20233,8 +19959,8 @@
         <type code="addressee" default="0">
           <labels>
             <label locale="en_US">
-              <typename>addressee</typename>
-              <typename_reverse>addressee</typename_reverse>
+              <typename>has as addressee</typename>
+              <typename_reverse>is addressee of</typename_reverse>
             </label>
           </labels>
           <subTypeLeft> </subTypeLeft>
@@ -20243,8 +19969,8 @@
         <type code="appellant" default="0">
           <labels>
             <label locale="en_US">
-              <typename>appellant</typename>
-              <typename_reverse>appellant</typename_reverse>
+              <typename>has as appellant</typename>
+              <typename_reverse>is appellant of</typename_reverse>
             </label>
           </labels>
           <subTypeLeft> </subTypeLeft>
@@ -20253,8 +19979,8 @@
         <type code="appellee" default="0">
           <labels>
             <label locale="en_US">
-              <typename>appellee</typename>
-              <typename_reverse>appellee</typename_reverse>
+              <typename>has as appellee</typename>
+              <typename_reverse>is appellee of</typename_reverse>
             </label>
           </labels>
           <subTypeLeft> </subTypeLeft>
@@ -20263,8 +19989,8 @@
         <type code="court_governed" default="0">
           <labels>
             <label locale="en_US">
-              <typename>court governed</typename>
-              <typename_reverse>court governed</typename_reverse>
+              <typename>has as court governed</typename>
+              <typename_reverse>is court governed of</typename_reverse>
             </label>
           </labels>
           <subTypeLeft> </subTypeLeft>
@@ -20273,8 +19999,8 @@
         <type code="dedicator" default="0">
           <labels>
             <label locale="en_US">
-              <typename>dedicator</typename>
-              <typename_reverse>dedicator</typename_reverse>
+              <typename>has as dedicator</typename>
+              <typename_reverse>is dedicator of</typename_reverse>
             </label>
           </labels>
           <subTypeLeft> </subTypeLeft>
@@ -20283,8 +20009,8 @@
         <type code="dedicatee" default="0">
           <labels>
             <label locale="en_US">
-              <typename>dedicatee</typename>
-              <typename_reverse>dedicatee</typename_reverse>
+              <typename>has as dedicatee</typename>
+              <typename_reverse>is dedicatee of</typename_reverse>
             </label>
           </labels>
           <subTypeLeft> </subTypeLeft>
@@ -20293,8 +20019,8 @@
         <type code="defendant" default="0">
           <labels>
             <label locale="en_US">
-              <typename>defendant</typename>
-              <typename_reverse>defendant</typename_reverse>
+              <typename>has as defendant</typename>
+              <typename_reverse>is defendant of</typename_reverse>
             </label>
           </labels>
           <subTypeLeft> </subTypeLeft>
@@ -20303,8 +20029,8 @@
         <type code="degree" default="0">
           <labels>
             <label locale="en_US">
-              <typename>degree granting institution</typename>
-              <typename_reverse>degree granting institution</typename_reverse>
+              <typename>has as degree granting institution</typename>
+              <typename_reverse>is degree granting institution of</typename_reverse>
             </label>
           </labels>
           <subTypeLeft> </subTypeLeft>
@@ -20313,8 +20039,8 @@
         <type code="director" default="0">
           <labels>
             <label locale="en_US">
-              <typename>director</typename>
-              <typename_reverse>director</typename_reverse>
+              <typename>has as director</typename>
+              <typename_reverse>is director of</typename_reverse>
             </label>
           </labels>
           <subTypeLeft> </subTypeLeft>
@@ -20323,8 +20049,8 @@
         <type code="film_director" default="0">
           <labels>
             <label locale="en_US">
-              <typename>film director</typename>
-              <typename_reverse>film director</typename_reverse>
+              <typename>has as film director</typename>
+              <typename_reverse>is film director of</typename_reverse>
             </label>
           </labels>
           <subTypeLeft> </subTypeLeft>
@@ -20333,8 +20059,8 @@
         <type code="radio_director" default="0">
           <labels>
             <label locale="en_US">
-              <typename>radio director</typename>
-              <typename_reverse>radio director</typename_reverse>
+              <typename>has as radio director</typename>
+              <typename_reverse>is radio director of</typename_reverse>
             </label>
           </labels>
           <subTypeLeft> </subTypeLeft>
@@ -20343,8 +20069,8 @@
         <type code="television_director" default="0">
           <labels>
             <label locale="en_US">
-              <typename>television director</typename>
-              <typename_reverse>television director</typename_reverse>
+              <typename>has as television director</typename>
+              <typename_reverse>is television director of</typename_reverse>
             </label>
           </labels>
           <subTypeLeft> </subTypeLeft>
@@ -20353,8 +20079,8 @@
         <type code="director_photography" default="0">
           <labels>
             <label locale="en_US">
-              <typename>director of photography</typename>
-              <typename_reverse>director of photography</typename_reverse>
+              <typename>has as director of photography</typename>
+              <typename_reverse>is director of photography of</typename_reverse>
             </label>
           </labels>
           <subTypeLeft> </subTypeLeft>
@@ -20363,8 +20089,8 @@
         <type code="honouree" default="0">
           <labels>
             <label locale="en_US">
-              <typename>honouree</typename>
-              <typename_reverse>honouree</typename_reverse>
+              <typename>has as honouree</typename>
+              <typename_reverse>is honouree of</typename_reverse>
             </label>
           </labels>
           <subTypeLeft> </subTypeLeft>
@@ -20373,8 +20099,8 @@
         <type code="host_institution" default="0">
           <labels>
             <label locale="en_US">
-              <typename>host institution</typename>
-              <typename_reverse>host institution</typename_reverse>
+              <typename>has as host institution</typename>
+              <typename_reverse>is host institution of</typename_reverse>
             </label>
           </labels>
           <subTypeLeft> </subTypeLeft>
@@ -20383,8 +20109,8 @@
         <type code="issuing_body" default="0">
           <labels>
             <label locale="en_US">
-              <typename>issuing body</typename>
-              <typename_reverse>issuing body</typename_reverse>
+              <typename>has as issuing body</typename>
+              <typename_reverse>is issuing body of</typename_reverse>
             </label>
           </labels>
           <subTypeLeft> </subTypeLeft>
@@ -20393,8 +20119,8 @@
         <type code="judge" default="0">
           <labels>
             <label locale="en_US">
-              <typename>judge</typename>
-              <typename_reverse>judge</typename_reverse>
+              <typename>has as judge</typename>
+              <typename_reverse>is judge of</typename_reverse>
             </label>
           </labels>
           <subTypeLeft> </subTypeLeft>
@@ -20403,8 +20129,8 @@
         <type code="jurisdiction_governed" default="0">
           <labels>
             <label locale="en_US">
-              <typename>jurisdiction governed</typename>
-              <typename_reverse>jurisdiction governed</typename_reverse>
+              <typename>has as jurisdiction governed</typename>
+              <typename_reverse>is jurisdiction governed of</typename_reverse>
             </label>
           </labels>
           <subTypeLeft> </subTypeLeft>
@@ -20413,8 +20139,8 @@
         <type code="plaintiff" default="0">
           <labels>
             <label locale="en_US">
-              <typename>plaintiff</typename>
-              <typename_reverse>plaintiff</typename_reverse>
+              <typename>has as plaintiff</typename>
+              <typename_reverse>is plaintiff of</typename_reverse>
             </label>
           </labels>
           <subTypeLeft> </subTypeLeft>
@@ -20423,8 +20149,8 @@
         <type code="producer" default="0">
           <labels>
             <label locale="en_US">
-              <typename>producer</typename>
-              <typename_reverse>producer</typename_reverse>
+              <typename>has as producer</typename>
+              <typename_reverse>is producer of</typename_reverse>
             </label>
           </labels>
           <subTypeLeft> </subTypeLeft>
@@ -20433,8 +20159,8 @@
         <type code="film_producer" default="0">
           <labels>
             <label locale="en_US">
-              <typename>film producer</typename>
-              <typename_reverse>film producer</typename_reverse>
+              <typename>has as film producer</typename>
+              <typename_reverse>is film producer of</typename_reverse>
             </label>
           </labels>
           <subTypeLeft> </subTypeLeft>
@@ -20443,8 +20169,8 @@
         <type code="radio_producer" default="0">
           <labels>
             <label locale="en_US">
-              <typename>radio producer</typename>
-              <typename_reverse>radio producer</typename_reverse>
+              <typename>has as radio producer</typename>
+              <typename_reverse>is radio producer of</typename_reverse>
             </label>
           </labels>
           <subTypeLeft> </subTypeLeft>
@@ -20453,8 +20179,8 @@
         <type code="television_producer" default="0">
           <labels>
             <label locale="en_US">
-              <typename>television producer</typename>
-              <typename_reverse>television producer</typename_reverse>
+              <typename>has as television producer</typename>
+              <typename_reverse>is television producer of</typename_reverse>
             </label>
           </labels>
           <subTypeLeft> </subTypeLeft>
@@ -20463,8 +20189,8 @@
         <type code="production_company" default="0">
           <labels>
             <label locale="en_US">
-              <typename>production company</typename>
-              <typename_reverse>production company</typename_reverse>
+              <typename>has as production company</typename>
+              <typename_reverse>is production company of</typename_reverse>
             </label>
           </labels>
           <subTypeLeft> </subTypeLeft>
@@ -20473,8 +20199,8 @@
         <type code="sponsoring_body" default="0">
           <labels>
             <label locale="en_US">
-              <typename>sponsoring body</typename>
-              <typename_reverse>sponsoring body</typename_reverse>
+              <typename>has as sponsoring body</typename>
+              <typename_reverse>is sponsoring body of</typename_reverse>
             </label>
           </labels>
           <subTypeLeft> </subTypeLeft>
@@ -20484,8 +20210,8 @@
         <type code="abridger" default="0">
           <labels>
             <label locale="en_US">
-              <typename>abridger</typename>
-              <typename_reverse>abridger</typename_reverse>
+              <typename>has as abridger</typename>
+              <typename_reverse>is abridger of</typename_reverse>
             </label>
           </labels>
           <subTypeLeft> </subTypeLeft>
@@ -20494,8 +20220,8 @@
         <type code="animator" default="0">
           <labels>
             <label locale="en_US">
-              <typename>animator</typename>
-              <typename_reverse>animator</typename_reverse>
+              <typename>has as animator</typename>
+              <typename_reverse>is animator of</typename_reverse>
             </label>
           </labels>
           <subTypeLeft> </subTypeLeft>
@@ -20504,8 +20230,8 @@
         <type code="arranger_music" default="0">
           <labels>
             <label locale="en_US">
-              <typename>arranger of music</typename>
-              <typename_reverse>arranger of music</typename_reverse>
+              <typename>has as arranger of music</typename>
+              <typename_reverse>is arranger of music of</typename_reverse>
             </label>
           </labels>
           <subTypeLeft> </subTypeLeft>
@@ -20514,8 +20240,8 @@
         <type code="art_director" default="0">
           <labels>
             <label locale="en_US">
-              <typename>art director</typename>
-              <typename_reverse>art director</typename_reverse>
+              <typename>has as art director</typename>
+              <typename_reverse>is art director of</typename_reverse>
             </label>
           </labels>
           <subTypeLeft> </subTypeLeft>
@@ -20524,8 +20250,8 @@
         <type code="costume_designer" default="0">
           <labels>
             <label locale="en_US">
-              <typename>costume designer</typename>
-              <typename_reverse>costume designer</typename_reverse>
+              <typename>has as costume designer</typename>
+              <typename_reverse>is costume designer of</typename_reverse>
             </label>
           </labels>
           <subTypeLeft> </subTypeLeft>
@@ -20534,8 +20260,8 @@
         <type code="court_reporter" default="0">
           <labels>
             <label locale="en_US">
-              <typename>court reporter</typename>
-              <typename_reverse>court reporter</typename_reverse>
+              <typename>has as court reporter</typename>
+              <typename_reverse>is court reporter of</typename_reverse>
             </label>
           </labels>
           <subTypeLeft> </subTypeLeft>
@@ -20544,8 +20270,8 @@
         <type code="draftsman" default="0">
           <labels>
             <label locale="en_US">
-              <typename>draftsman</typename>
-              <typename_reverse>draftsman</typename_reverse>
+              <typename>has as draftsman</typename>
+              <typename_reverse>is draftsman of</typename_reverse>
             </label>
           </labels>
           <subTypeLeft> </subTypeLeft>
@@ -20554,8 +20280,8 @@
         <type code="editor" default="0">
           <labels>
             <label locale="en_US">
-              <typename>editor</typename>
-              <typename_reverse>editor</typename_reverse>
+              <typename>has as editor</typename>
+              <typename_reverse>is editor of</typename_reverse>
             </label>
           </labels>
           <subTypeLeft> </subTypeLeft>
@@ -20564,8 +20290,8 @@
         <type code="editor_compilation" default="0">
           <labels>
             <label locale="en_US">
-              <typename>editor of compilation</typename>
-              <typename_reverse>editor of compilation</typename_reverse>
+              <typename>has as editor of compilation</typename>
+              <typename_reverse>is editor of compilation of</typename_reverse>
             </label>
           </labels>
           <subTypeLeft> </subTypeLeft>
@@ -20574,8 +20300,8 @@
         <type code="editor_moving_image" default="0">
           <labels>
             <label locale="en_US">
-              <typename>editor of moving image work</typename>
-              <typename_reverse>editor of moving image work</typename_reverse>
+              <typename>has as editor of moving image work</typename>
+              <typename_reverse>is editor of moving image work of</typename_reverse>
             </label>
           </labels>
           <subTypeLeft> </subTypeLeft>
@@ -20584,8 +20310,8 @@
         <type code="illustrator" default="0">
           <labels>
             <label locale="en_US">
-              <typename>illustrator</typename>
-              <typename_reverse>illustrator</typename_reverse>
+              <typename>has as illustrator</typename>
+              <typename_reverse>is illustrator of</typename_reverse>
             </label>
           </labels>
           <subTypeLeft> </subTypeLeft>
@@ -20594,8 +20320,8 @@
         <type code="musical_director" default="0">
           <labels>
             <label locale="en_US">
-              <typename>musical director</typename>
-              <typename_reverse>musical director</typename_reverse>
+              <typename>has as musical director</typename>
+              <typename_reverse>is musical director of</typename_reverse>
             </label>
           </labels>
           <subTypeLeft> </subTypeLeft>
@@ -20604,8 +20330,8 @@
         <type code="performer" default="0">
           <labels>
             <label locale="en_US">
-              <typename>performer</typename>
-              <typename_reverse>performer</typename_reverse>
+              <typename>has as performer</typename>
+              <typename_reverse>is performer of</typename_reverse>
             </label>
           </labels>
           <subTypeLeft> </subTypeLeft>
@@ -20614,8 +20340,8 @@
         <type code="actor" default="0">
           <labels>
             <label locale="en_US">
-              <typename>actor</typename>
-              <typename_reverse>actor</typename_reverse>
+              <typename>has as actor</typename>
+              <typename_reverse>is actor of</typename_reverse>
             </label>
           </labels>
           <subTypeLeft> </subTypeLeft>
@@ -20624,8 +20350,8 @@
         <type code="commentator" default="0">
           <labels>
             <label locale="en_US">
-              <typename>commentator</typename>
-              <typename_reverse>commentator</typename_reverse>
+              <typename>has as commentator</typename>
+              <typename_reverse>is commentator of</typename_reverse>
             </label>
           </labels>
           <subTypeLeft> </subTypeLeft>
@@ -20634,8 +20360,8 @@
         <type code="conductor" default="0">
           <labels>
             <label locale="en_US">
-              <typename>conductor</typename>
-              <typename_reverse>conductor</typename_reverse>
+              <typename>has as conductor</typename>
+              <typename_reverse>is conductor of</typename_reverse>
             </label>
           </labels>
           <subTypeLeft> </subTypeLeft>
@@ -20644,8 +20370,8 @@
         <type code="dancer" default="0">
           <labels>
             <label locale="en_US">
-              <typename>dancer</typename>
-              <typename_reverse>dancer</typename_reverse>
+              <typename>has as dancer</typename>
+              <typename_reverse>is dancer of</typename_reverse>
             </label>
           </labels>
           <subTypeLeft> </subTypeLeft>
@@ -20654,8 +20380,8 @@
         <type code="host" default="0">
           <labels>
             <label locale="en_US">
-              <typename>host</typename>
-              <typename_reverse>host</typename_reverse>
+              <typename>has as host</typename>
+              <typename_reverse>is host of</typename_reverse>
             </label>
           </labels>
           <subTypeLeft> </subTypeLeft>
@@ -20664,8 +20390,8 @@
         <type code="instrumentalist" default="0">
           <labels>
             <label locale="en_US">
-              <typename>instrumentalist</typename>
-              <typename_reverse>instrumentalist</typename_reverse>
+              <typename>has as instrumentalist</typename>
+              <typename_reverse>is instrumentalist of</typename_reverse>
             </label>
           </labels>
           <subTypeLeft> </subTypeLeft>
@@ -20674,8 +20400,8 @@
         <type code="moderator" default="0">
           <labels>
             <label locale="en_US">
-              <typename>moderator</typename>
-              <typename_reverse>moderator</typename_reverse>
+              <typename>has as moderator</typename>
+              <typename_reverse>is moderator of</typename_reverse>
             </label>
           </labels>
           <subTypeLeft> </subTypeLeft>
@@ -20684,8 +20410,8 @@
         <type code="narrator" default="0">
           <labels>
             <label locale="en_US">
-              <typename>narrator</typename>
-              <typename_reverse>narrator</typename_reverse>
+              <typename>has as narrator</typename>
+              <typename_reverse>is narrator of</typename_reverse>
             </label>
           </labels>
           <subTypeLeft> </subTypeLeft>
@@ -20694,8 +20420,8 @@
         <type code="onscreen_presenter" default="0">
           <labels>
             <label locale="en_US">
-              <typename>on-screen presenter</typename>
-              <typename_reverse>on-screen presenter</typename_reverse>
+              <typename>has as on-screen presenter</typename>
+              <typename_reverse>is on-screen presenter of</typename_reverse>
             </label>
           </labels>
           <subTypeLeft> </subTypeLeft>
@@ -20704,8 +20430,8 @@
         <type code="panelist" default="0">
           <labels>
             <label locale="en_US">
-              <typename>panelist</typename>
-              <typename_reverse>panelist</typename_reverse>
+              <typename>has as panelist</typename>
+              <typename_reverse>is panelist of</typename_reverse>
             </label>
           </labels>
           <subTypeLeft> </subTypeLeft>
@@ -20714,8 +20440,8 @@
         <type code="puppeteer" default="0">
           <labels>
             <label locale="en_US">
-              <typename>puppeteer</typename>
-              <typename_reverse>puppeteer</typename_reverse>
+              <typename>has as puppeteer</typename>
+              <typename_reverse>is puppeteer of</typename_reverse>
             </label>
           </labels>
           <subTypeLeft> </subTypeLeft>
@@ -20724,8 +20450,8 @@
         <type code="singer" default="0">
           <labels>
             <label locale="en_US">
-              <typename>singer</typename>
-              <typename_reverse>singer</typename_reverse>
+              <typename>has as singer</typename>
+              <typename_reverse>is singer of</typename_reverse>
             </label>
           </labels>
           <subTypeLeft> </subTypeLeft>
@@ -20734,8 +20460,8 @@
         <type code="speaker" default="0">
           <labels>
             <label locale="en_US">
-              <typename>speaker</typename>
-              <typename_reverse>speaker</typename_reverse>
+              <typename>has as speaker</typename>
+              <typename_reverse>is speaker of</typename_reverse>
             </label>
           </labels>
           <subTypeLeft> </subTypeLeft>
@@ -20744,8 +20470,8 @@
         <type code="storyteller" default="0">
           <labels>
             <label locale="en_US">
-              <typename>storyteller</typename>
-              <typename_reverse>storyteller</typename_reverse>
+              <typename>has as storyteller</typename>
+              <typename_reverse>is storyteller of</typename_reverse>
             </label>
           </labels>
           <subTypeLeft> </subTypeLeft>
@@ -20754,8 +20480,8 @@
         <type code="teacher" default="0">
           <labels>
             <label locale="en_US">
-              <typename>teacher</typename>
-              <typename_reverse>teacher</typename_reverse>
+              <typename>has as teacher</typename>
+              <typename_reverse>is teacher of</typename_reverse>
             </label>
           </labels>
           <subTypeLeft> </subTypeLeft>
@@ -20764,8 +20490,8 @@
         <type code="presenter" default="0">
           <labels>
             <label locale="en_US">
-              <typename>presenter</typename>
-              <typename_reverse>presenter</typename_reverse>
+              <typename>has as presenter</typename>
+              <typename_reverse>is presenter of</typename_reverse>
             </label>
           </labels>
           <subTypeLeft> </subTypeLeft>
@@ -20774,8 +20500,8 @@
         <type code="production_designer" default="0">
           <labels>
             <label locale="en_US">
-              <typename>production designer</typename>
-              <typename_reverse>production designer</typename_reverse>
+              <typename>has as production designer</typename>
+              <typename_reverse>is production designer of</typename_reverse>
             </label>
           </labels>
           <subTypeLeft> </subTypeLeft>
@@ -20784,8 +20510,8 @@
         <type code="recording_engineer" default="0">
           <labels>
             <label locale="en_US">
-              <typename>recording engineer</typename>
-              <typename_reverse>recording engineer</typename_reverse>
+              <typename>has as recording engineer</typename>
+              <typename_reverse>is recording engineer of</typename_reverse>
             </label>
           </labels>
           <subTypeLeft> </subTypeLeft>
@@ -20794,8 +20520,8 @@
         <type code="recordist" default="0">
           <labels>
             <label locale="en_US">
-              <typename>recordist</typename>
-              <typename_reverse>recordist</typename_reverse>
+              <typename>has as recordist</typename>
+              <typename_reverse>is recordist of</typename_reverse>
             </label>
           </labels>
           <subTypeLeft> </subTypeLeft>
@@ -20804,8 +20530,8 @@
         <type code="stage_director" default="0">
           <labels>
             <label locale="en_US">
-              <typename>stage director</typename>
-              <typename_reverse>stage director</typename_reverse>
+              <typename>has as stage director</typename>
+              <typename_reverse>is stage director of</typename_reverse>
             </label>
           </labels>
           <subTypeLeft> </subTypeLeft>
@@ -20814,8 +20540,8 @@
         <type code="surveyor" default="0">
           <labels>
             <label locale="en_US">
-              <typename>surveyor</typename>
-              <typename_reverse>surveyor</typename_reverse>
+              <typename>has as surveyor</typename>
+              <typename_reverse>is surveyor of</typename_reverse>
             </label>
           </labels>
           <subTypeLeft> </subTypeLeft>
@@ -20824,8 +20550,8 @@
         <type code="transcriber" default="0">
           <labels>
             <label locale="en_US">
-              <typename>transcriber</typename>
-              <typename_reverse>transcriber</typename_reverse>
+              <typename>has as transcriber</typename>
+              <typename_reverse>is transcriber of</typename_reverse>
             </label>
           </labels>
           <subTypeLeft> </subTypeLeft>
@@ -20834,8 +20560,8 @@
         <type code="translator" default="0">
           <labels>
             <label locale="en_US">
-              <typename>translator</typename>
-              <typename_reverse>translator</typename_reverse>
+              <typename>has as translator</typename>
+              <typename_reverse>is translator of</typename_reverse>
             </label>
           </labels>
           <subTypeLeft> </subTypeLeft>
@@ -20844,8 +20570,8 @@
         <type code="writer_added_commentary" default="0">
           <labels>
             <label locale="en_US">
-              <typename>writer of added commentary</typename>
-              <typename_reverse>writer of added commentary</typename_reverse>
+              <typename>has as writer of added commentary</typename>
+              <typename_reverse>is writer of added commentary of</typename_reverse>
             </label>
           </labels>
           <subTypeLeft> </subTypeLeft>
@@ -20854,8 +20580,8 @@
         <type code="writer_added_text" default="0">
           <labels>
             <label locale="en_US">
-              <typename>writer of added text</typename>
-              <typename_reverse>writer of added text</typename_reverse>
+              <typename>has as writer of added text</typename>
+              <typename_reverse>is writer of added text of</typename_reverse>
             </label>
           </labels>
           <subTypeLeft> </subTypeLeft>
@@ -20864,8 +20590,8 @@
         <type code="writer_added_lyrics" default="0">
           <labels>
             <label locale="en_US">
-              <typename>writer of added lyrics</typename>
-              <typename_reverse>writer of added lyrics</typename_reverse>
+              <typename>has as writer of added lyrics</typename>
+              <typename_reverse>is writer of added lyrics of</typename_reverse>
             </label>
           </labels>
           <subTypeLeft> </subTypeLeft>
@@ -20875,8 +20601,8 @@
         <type code="publisher" default="0">
           <labels>
             <label locale="en_US">
-              <typename>publisher</typename>
-              <typename_reverse>publisher</typename_reverse>
+              <typename>has as publisher</typename>
+              <typename_reverse>is publisher of</typename_reverse>
             </label>
           </labels>
           <subTypeLeft> </subTypeLeft>
@@ -20885,8 +20611,8 @@
         <type code="contributor" default="0">
           <labels>
             <label locale="en_US">
-              <typename>contributor</typename>
-              <typename_reverse>contributor</typename_reverse>
+              <typename>has as contributor</typename>
+              <typename_reverse>is contributor of</typename_reverse>
             </label>
           </labels>
           <subTypeLeft> </subTypeLeft>
@@ -20895,8 +20621,8 @@
         <type code="inscriber" default="0">
           <labels>
             <label locale="en_US">
-              <typename>inscribed by</typename>
-              <typename_reverse>inscriber</typename_reverse>
+              <typename>has as inscribed by</typename>
+              <typename_reverse>is inscriber of</typename_reverse>
             </label>
           </labels>
           <subTypeLeft> </subTypeLeft>
@@ -20905,8 +20631,8 @@
         <type code="rights_holder" default="0">
           <labels>
             <label locale="en_US">
-              <typename>rights holder</typename>
-              <typename_reverse>rights holder</typename_reverse>
+              <typename>has as rights holder</typename>
+              <typename_reverse>is rights holder of</typename_reverse>
             </label>
           </labels>
           <subTypeLeft> </subTypeLeft>
@@ -20915,8 +20641,8 @@
         <type code="commissioner" default="0">
           <labels>
             <label locale="en_US">
-              <typename>commissioner</typename>
-              <typename_reverse>commissioner</typename_reverse>
+              <typename>has as commissioner</typename>
+              <typename_reverse>is commissioner of</typename_reverse>
             </label>
           </labels>
           <subTypeLeft> </subTypeLeft>
@@ -20926,35 +20652,15 @@
     </relationshipTable>
     <relationshipTable name="ca_objects_x_occurrences">
       <types>
-        <type code="depicts" default="1">
+        <type code="manifestation" default="1">
           <labels>
             <label locale="en_US">
-              <typename>depicts</typename>
-              <typename_reverse>is depicted by</typename_reverse>
+              <typename>has as work</typename>
+              <typename_reverse>is manifestation of</typename_reverse>
             </label>
           </labels>
           <subTypeLeft> </subTypeLeft>
           <subTypeRight>event</subTypeRight>
-        </type>
-        <type code="used" default="0">
-          <labels>
-            <label locale="en_US">
-              <typename>was used in</typename>
-              <typename_reverse>used</typename_reverse>
-            </label>
-          </labels>
-          <subTypeLeft> </subTypeLeft>
-          <subTypeRight>event</subTypeRight>
-        </type>
-        <type code="describes" default="0">
-          <labels>
-            <label locale="en_US">
-              <typename>describes</typename>
-              <typename_reverse>is described by</typename_reverse>
-            </label>
-          </labels>
-          <subTypeLeft> </subTypeLeft>
-          <subTypeRight/>
         </type>
       </types>
     </relationshipTable>
@@ -21155,8 +20861,8 @@
               <typename_reverse>is related to</typename_reverse>
             </label>
           </labels>
-          <subTypeLeft>event</subTypeLeft>
-          <subTypeRight>event</subTypeRight>
+          <subTypeLeft></subTypeLeft>
+          <subTypeRight></subTypeRight>
         </type>
       </types>
     </relationshipTable>
@@ -21179,8 +20885,8 @@
         <type code="creation" default="1">
           <labels>
             <label locale="en_US">
-              <typename>creation</typename>
-              <typename_reverse>creation</typename_reverse>
+              <typename>has as creation location</typename>
+              <typename_reverse>is creation location of</typename_reverse>
             </label>
           </labels>
           <subTypeLeft> </subTypeLeft>
@@ -21189,8 +20895,8 @@
         <type code="discovery" default="0">
           <labels>
             <label locale="en_US">
-              <typename>discovery</typename>
-              <typename_reverse>discovery</typename_reverse>
+              <typename>has as discovery location</typename>
+              <typename_reverse>is discovery location of</typename_reverse>
             </label>
           </labels>
           <subTypeLeft/>
@@ -21199,8 +20905,8 @@
         <type code="formerOwner" default="0">
           <labels>
             <label locale="en_US">
-              <typename>former owner</typename>
-              <typename_reverse>former owner</typename_reverse>
+              <typename>has as former owner location</typename>
+              <typename_reverse>is former owner location of</typename_reverse>
             </label>
           </labels>
           <subTypeLeft> </subTypeLeft>
@@ -21209,8 +20915,8 @@
         <type code="formerRepository" default="0">
           <labels>
             <label locale="en_US">
-              <typename>former repository</typename>
-              <typename_reverse>former repository</typename_reverse>
+              <typename>has as former repository</typename>
+              <typename_reverse>is former repository of</typename_reverse>
             </label>
           </labels>
           <subTypeLeft> </subTypeLeft>
@@ -21219,8 +20925,8 @@
         <type code="formerSite" default="0">
           <labels>
             <label locale="en_US">
-              <typename>former site</typename>
-              <typename_reverse>former site</typename_reverse>
+              <typename>has as former site</typename>
+              <typename_reverse>is former site of</typename_reverse>
             </label>
           </labels>
           <subTypeLeft> </subTypeLeft>
@@ -21229,8 +20935,8 @@
         <type code="installation" default="0">
           <labels>
             <label locale="en_US">
-              <typename>installation</typename>
-              <typename_reverse>installation</typename_reverse>
+              <typename>has as installation location</typename>
+              <typename_reverse>is installation location of</typename_reverse>
             </label>
           </labels>
           <subTypeLeft> </subTypeLeft>
@@ -21239,8 +20945,8 @@
         <type code="intended" default="0">
           <labels>
             <label locale="en_US">
-              <typename>intended</typename>
-              <typename_reverse>intended</typename_reverse>
+              <typename>has as intended location</typename>
+              <typename_reverse>is intended location of</typename_reverse>
             </label>
           </labels>
           <subTypeLeft> </subTypeLeft>
@@ -21249,8 +20955,8 @@
         <type code="other" default="0">
           <labels>
             <label locale="en_US">
-              <typename>other</typename>
-              <typename_reverse>other</typename_reverse>
+              <typename>has as other location</typename>
+              <typename_reverse>is other location of</typename_reverse>
             </label>
           </labels>
           <subTypeLeft> </subTypeLeft>
@@ -21259,8 +20965,8 @@
         <type code="owner" default="0">
           <labels>
             <label locale="en_US">
-              <typename>owner</typename>
-              <typename_reverse>owner</typename_reverse>
+              <typename>has as owner location</typename>
+              <typename_reverse>is owner location of</typename_reverse>
             </label>
           </labels>
           <subTypeLeft> </subTypeLeft>
@@ -21269,8 +20975,8 @@
         <type code="performance" default="0">
           <labels>
             <label locale="en_US">
-              <typename>performance</typename>
-              <typename_reverse>performance</typename_reverse>
+              <typename>has as performance location</typename>
+              <typename_reverse>is performance location of</typename_reverse>
             </label>
           </labels>
           <subTypeLeft> </subTypeLeft>
@@ -21279,8 +20985,8 @@
         <type code="publication" default="0">
           <labels>
             <label locale="en_US">
-              <typename>publication</typename>
-              <typename_reverse>publication</typename_reverse>
+              <typename>has as publication location</typename>
+              <typename_reverse>is publication location of</typename_reverse>
             </label>
           </labels>
           <subTypeLeft> </subTypeLeft>
@@ -21289,8 +20995,8 @@
         <type code="repository" default="0">
           <labels>
             <label locale="en_US">
-              <typename>repository</typename>
-              <typename_reverse>repository</typename_reverse>
+              <typename>has as repository location</typename>
+              <typename_reverse>is repository location of</typename_reverse>
             </label>
           </labels>
           <subTypeLeft> </subTypeLeft>
@@ -21299,8 +21005,8 @@
         <type code="site" default="0">
           <labels>
             <label locale="en_US">
-              <typename>site</typename>
-              <typename_reverse>site</typename_reverse>
+              <typename>has as site</typename>
+              <typename_reverse>is site of</typename_reverse>
             </label>
           </labels>
           <subTypeLeft> </subTypeLeft>
@@ -21348,8 +21054,8 @@
         <type code="identity" default="0">
           <labels>
             <label locale="en_US">
-              <typename>alternate identity</typename>
-              <typename_reverse>real identity</typename_reverse>
+              <typename>alternate identity is</typename>
+              <typename_reverse>real identity is</typename_reverse>
             </label>
           </labels>
           <subTypeLeft> </subTypeLeft>
@@ -21359,8 +21065,8 @@
         <type code="employee" default="0">
           <labels>
             <label locale="en_US">
-              <typename>employee</typename>
-              <typename_reverse>employeer</typename_reverse>
+              <typename>is employee of</typename>
+              <typename_reverse>is employer of</typename_reverse>
             </label>
           </labels>
           <subTypeLeft>person</subTypeLeft>
@@ -21369,7 +21075,7 @@
         <type code="founder" default="0">
           <labels>
             <label locale="en_US">
-              <typename>founder</typename>
+              <typename>is founder of</typename>
               <typename_reverse>founded organization</typename_reverse>
             </label>
           </labels>
@@ -21420,8 +21126,8 @@
         <type code="predecessor" default="0">
           <labels>
             <label locale="en_US">
-              <typename>pedecessor</typename>
-              <typename_reverse>successor</typename_reverse>
+              <typename>pedecessor is</typename>
+              <typename_reverse>successor is</typename_reverse>
             </label>
           </labels>
           <subTypeLeft></subTypeLeft>
@@ -21496,483 +21202,483 @@
     <relationshipTable name="ca_entities_x_occurrences">
         <types>
         <!-- Creators -->
-        <type code="architect" default="1">
-          <labels>
-            <label locale="en_US">
-              <typename>architect</typename>
-              <typename_reverse>architect</typename_reverse>
-            </label>
-          </labels>
-          <subTypeLeft> </subTypeLeft>
-          <subTypeRight/>
-        </type>
-        <type code="artist" default="0">
-          <labels>
-            <label locale="en_US">
-              <typename>artist</typename>
-              <typename_reverse>artist</typename_reverse>
-            </label>
-          </labels>
-          <subTypeLeft> </subTypeLeft>
-          <subTypeRight/>
-        </type>
-        <type code="author" default="0">
-          <labels>
-            <label locale="en_US">
-              <typename>author</typename>
-              <typename_reverse>author</typename_reverse>
-            </label>
-          </labels>
-          <subTypeLeft> </subTypeLeft>
-          <subTypeRight/>
-        </type>
-        <type code="cartographer" default="0">
-          <labels>
-            <label locale="en_US">
-              <typename>cartographer</typename>
-              <typename_reverse>cartographer</typename_reverse>
-            </label>
-          </labels>
-          <subTypeLeft> </subTypeLeft>
-          <subTypeRight/>
-        </type>
-        <type code="choreographer" default="0">
-          <labels>
-            <label locale="en_US">
-              <typename>choreographer</typename>
-              <typename_reverse>choreographer</typename_reverse>
-            </label>
-          </labels>
-          <subTypeLeft> </subTypeLeft>
-          <subTypeRight/>
-        </type>
-        <type code="compiler" default="0">
-          <labels>
-            <label locale="en_US">
-              <typename>compiler</typename>
-              <typename_reverse>compiler</typename_reverse>
-            </label>
-          </labels>
-          <subTypeLeft> </subTypeLeft>
-          <subTypeRight/>
-        </type>
-        <type code="composer" default="0">
-          <labels>
-            <label locale="en_US">
-              <typename>composer</typename>
-              <typename_reverse>composer</typename_reverse>
-            </label>
-          </labels>
-          <subTypeLeft> </subTypeLeft>
-          <subTypeRight/>
-        </type>
-        <type code="designer" default="0">
-          <labels>
-            <label locale="en_US">
-              <typename>designer</typename>
-              <typename_reverse>designer</typename_reverse>
-            </label>
-          </labels>
-          <subTypeLeft> </subTypeLeft>
-          <subTypeRight/>
-        </type>
-        <type code="enacting_jurisdiction" default="0">
-          <labels>
-            <label locale="en_US">
-              <typename>enacting jurisdiction</typename>
-              <typename_reverse>enacting jurisdiction</typename_reverse>
-            </label>
-          </labels>
-          <subTypeLeft> </subTypeLeft>
-          <subTypeRight/>
-        </type>
-        <type code="filmmaker" default="0">
-          <labels>
-            <label locale="en_US">
-              <typename>filmmaker</typename>
-              <typename_reverse>filmmaker</typename_reverse>
-            </label>
-          </labels>
-          <subTypeLeft> </subTypeLeft>
-          <subTypeRight/>
-        </type>
-        <type code="interviewee" default="0">
-          <labels>
-            <label locale="en_US">
-              <typename>interviewee</typename>
-              <typename_reverse>interviewee</typename_reverse>
-            </label>
-          </labels>
-          <subTypeLeft> </subTypeLeft>
-          <subTypeRight/>
-        </type>
-        <type code="interviewer" default="0">
-          <labels>
-            <label locale="en_US">
-              <typename>interviewer</typename>
-              <typename_reverse>interviewer</typename_reverse>
-            </label>
-          </labels>
-          <subTypeLeft> </subTypeLeft>
-          <subTypeRight/>
-        </type>
-        <type code="inventor" default="0">
-          <labels>
-            <label locale="en_US">
-              <typename>inventor</typename>
-              <typename_reverse>inventor</typename_reverse>
-            </label>
-          </labels>
-          <subTypeLeft> </subTypeLeft>
-          <subTypeRight/>
-        </type>
-        <type code="landscape_architect" default="0">
-          <labels>
-            <label locale="en_US">
-              <typename>landscape architect</typename>
-              <typename_reverse>landscape architect</typename_reverse>
-            </label>
-          </labels>
-          <subTypeLeft> </subTypeLeft>
-          <subTypeRight/>
-        </type>
-        <type code="librettist" default="0">
-          <labels>
-            <label locale="en_US">
-              <typename>librettist</typename>
-              <typename_reverse>librettist</typename_reverse>
-            </label>
-          </labels>
-          <subTypeLeft> </subTypeLeft>
-          <subTypeRight/>
-        </type>
-        <type code="lyricist" default="0">
-          <labels>
-            <label locale="en_US">
-              <typename>lyricist</typename>
-              <typename_reverse>lyricist</typename_reverse>
-            </label>
-          </labels>
-          <subTypeLeft> </subTypeLeft>
-          <subTypeRight/>
-        </type>
-        <type code="photographer" default="0">
-          <labels>
-            <label locale="en_US">
-              <typename>photographer</typename>
-              <typename_reverse>photographer</typename_reverse>
-            </label>
-          </labels>
-          <subTypeLeft> </subTypeLeft>
-          <subTypeRight/>
-        </type>
-        <type code="praeses" default="0">
-          <labels>
-            <label locale="en_US">
-              <typename>praeses</typename>
-              <typename_reverse>praeses</typename_reverse>
-            </label>
-          </labels>
-          <subTypeLeft> </subTypeLeft>
-          <subTypeRight/>
-        </type>
-        <type code="programmer" default="0">
-          <labels>
-            <label locale="en_US">
-              <typename>programmer</typename>
-              <typename_reverse>programmer</typename_reverse>
-            </label>
-          </labels>
-          <subTypeLeft> </subTypeLeft>
-          <subTypeRight/>
-        </type>
-        <type code="respondent" default="0">
-          <labels>
-            <label locale="en_US">
-              <typename>respondent</typename>
-              <typename_reverse>respondent</typename_reverse>
-            </label>
-          </labels>
-          <subTypeLeft> </subTypeLeft>
-          <subTypeRight/>
-        </type>
-        <type code="screenwriter" default="0">
-          <labels>
-            <label locale="en_US">
-              <typename>screenwriter</typename>
-              <typename_reverse>screenwriter</typename_reverse>
-            </label>
-          </labels>
-          <subTypeLeft> </subTypeLeft>
-          <subTypeRight/>
-        </type>
-        <type code="sculptor" default="0">
-          <labels>
-            <label locale="en_US">
-              <typename>sculptor</typename>
-              <typename_reverse>sculptor</typename_reverse>
-            </label>
-          </labels>
-          <subTypeLeft> </subTypeLeft>
-          <subTypeRight/>
-        </type>
+          <type code="architect" default="1">
+            <labels>
+              <label locale="en_US">              
+                <typename>is architect of</typename>
+                <typename_reverse>has as architect</typename_reverse>
+              </label>
+            </labels>
+            <subTypeLeft> </subTypeLeft>
+            <subTypeRight/>
+          </type>
+          <type code="artist" default="0">
+            <labels>
+              <label locale="en_US">
+                <typename>is artist of</typename>
+                <typename_reverse>has as artist</typename_reverse>
+              </label>
+            </labels>
+            <subTypeLeft> </subTypeLeft>
+            <subTypeRight/>
+          </type>
+          <type code="author" default="0">
+            <labels>
+              <label locale="en_US">
+                <typename>is author of</typename>
+                <typename_reverse>has as author</typename_reverse>
+              </label>
+            </labels>
+            <subTypeLeft> </subTypeLeft>
+            <subTypeRight/>
+          </type>
+          <type code="cartographer" default="0">
+            <labels>
+              <label locale="en_US">
+                <typename>is cartographer of</typename>
+                <typename_reverse>has as cartographer</typename_reverse>
+              </label>
+            </labels>
+            <subTypeLeft> </subTypeLeft>
+            <subTypeRight/>
+          </type>
+          <type code="choreographer" default="0">
+            <labels>
+              <label locale="en_US">
+                <typename>is choreographer of</typename>
+                <typename_reverse>has as choreographer</typename_reverse>
+              </label>
+            </labels>
+            <subTypeLeft> </subTypeLeft>
+            <subTypeRight/>
+          </type>
+          <type code="compiler" default="0">
+            <labels>
+              <label locale="en_US">
+                <typename>is compiler of</typename>
+                <typename_reverse>has as compiler</typename_reverse>
+              </label>
+            </labels>
+            <subTypeLeft> </subTypeLeft>
+            <subTypeRight/>
+          </type>
+          <type code="composer" default="0">
+            <labels>
+              <label locale="en_US">
+                <typename>is composer of</typename>
+                <typename_reverse>has as composer</typename_reverse>
+              </label>
+            </labels>
+            <subTypeLeft> </subTypeLeft>
+            <subTypeRight/>
+          </type>
+          <type code="designer" default="0">
+            <labels>
+              <label locale="en_US">
+                <typename>is designer of</typename>
+                <typename_reverse>has as designer</typename_reverse>
+              </label>
+            </labels>
+            <subTypeLeft> </subTypeLeft>
+            <subTypeRight/>
+          </type>
+          <type code="enacting_jurisdiction" default="0">
+            <labels>
+              <label locale="en_US">
+                <typename>is enacting jurisdiction of</typename>
+                <typename_reverse>has as enacting jurisdiction</typename_reverse>
+              </label>
+            </labels>
+            <subTypeLeft> </subTypeLeft>
+            <subTypeRight/>
+          </type>
+          <type code="filmmaker" default="0">
+            <labels>
+              <label locale="en_US">
+                <typename>is filmmaker of</typename>
+                <typename_reverse>has as filmmaker</typename_reverse>
+              </label>
+            </labels>
+            <subTypeLeft> </subTypeLeft>
+            <subTypeRight/>
+          </type>
+          <type code="interviewee" default="0">
+            <labels>
+              <label locale="en_US">
+                <typename>is interviewee of</typename>
+                <typename_reverse>has as interviewee</typename_reverse>
+              </label>
+            </labels>
+            <subTypeLeft> </subTypeLeft>
+            <subTypeRight/>
+          </type>
+          <type code="interviewer" default="0">
+            <labels>
+              <label locale="en_US">
+                <typename>is interviewer of</typename>
+                <typename_reverse>has as interviewer</typename_reverse>
+              </label>
+            </labels>
+            <subTypeLeft> </subTypeLeft>
+            <subTypeRight/>
+          </type>
+          <type code="inventor" default="0">
+            <labels>
+              <label locale="en_US">
+                <typename>is inventor of</typename>
+                <typename_reverse>has as inventor</typename_reverse>
+              </label>
+            </labels>
+            <subTypeLeft> </subTypeLeft>
+            <subTypeRight/>
+          </type>
+          <type code="landscape_architect" default="0">
+            <labels>
+              <label locale="en_US">
+                <typename>is landscape architect of</typename>
+                <typename_reverse>has as landscape architect</typename_reverse>
+              </label>
+            </labels>
+            <subTypeLeft> </subTypeLeft>
+            <subTypeRight/>
+          </type>
+          <type code="librettist" default="0">
+            <labels>
+              <label locale="en_US">
+                <typename>is librettist of</typename>
+                <typename_reverse>has as librettist</typename_reverse>
+              </label>
+            </labels>
+            <subTypeLeft> </subTypeLeft>
+            <subTypeRight/>
+          </type>
+          <type code="lyricist" default="0">
+            <labels>
+              <label locale="en_US">
+                <typename>is lyricist of</typename>
+                <typename_reverse>has as lyricist</typename_reverse>
+              </label>
+            </labels>
+            <subTypeLeft> </subTypeLeft>
+            <subTypeRight/>
+          </type>
+          <type code="photographer" default="0">
+            <labels>
+              <label locale="en_US">
+                <typename>is photographer of</typename>
+                <typename_reverse>has as photographer</typename_reverse>
+              </label>
+            </labels>
+            <subTypeLeft> </subTypeLeft>
+            <subTypeRight/>
+          </type>
+          <type code="praeses" default="0">
+            <labels>
+              <label locale="en_US">
+                <typename>is praeses of</typename>
+                <typename_reverse>has as praeses</typename_reverse>
+              </label>
+            </labels>
+            <subTypeLeft> </subTypeLeft>
+            <subTypeRight/>
+          </type>
+          <type code="programmer" default="0">
+            <labels>
+              <label locale="en_US">
+                <typename>is programmer of</typename>
+                <typename_reverse>has as programmer</typename_reverse>
+              </label>
+            </labels>
+            <subTypeLeft> </subTypeLeft>
+            <subTypeRight/>
+          </type>
+          <type code="respondent" default="0">
+            <labels>
+              <label locale="en_US">
+                <typename>is respondent of</typename>
+                <typename_reverse>has as respondent</typename_reverse>
+              </label>
+            </labels>
+            <subTypeLeft> </subTypeLeft>
+            <subTypeRight/>
+          </type>
+          <type code="screenwriter" default="0">
+            <labels>
+              <label locale="en_US">
+                <typename>is screenwriter of</typename>
+                <typename_reverse>has as screenwriter</typename_reverse>
+              </label>
+            </labels>
+            <subTypeLeft> </subTypeLeft>
+            <subTypeRight/>
+          </type>
+          <type code="sculptor" default="0">
+            <labels>
+              <label locale="en_US">
+                <typename>is sculptor of</typename>
+                <typename_reverse>has as sculptor</typename_reverse>
+              </label>
+            </labels>
+            <subTypeLeft> </subTypeLeft>
+            <subTypeRight/>
+          </type>
         <!-- Non-creators -->
-        <type code="addressee" default="0">
-          <labels>
-            <label locale="en_US">
-              <typename>addressee</typename>
-              <typename_reverse>addressee</typename_reverse>
-            </label>
-          </labels>
-          <subTypeLeft> </subTypeLeft>
-          <subTypeRight/>
-        </type>
-        <type code="appellant" default="0">
-          <labels>
-            <label locale="en_US">
-              <typename>appellant</typename>
-              <typename_reverse>appellant</typename_reverse>
-            </label>
-          </labels>
-          <subTypeLeft> </subTypeLeft>
-          <subTypeRight/>
-        </type>
-        <type code="appellee" default="0">
-          <labels>
-            <label locale="en_US">
-              <typename>appellee</typename>
-              <typename_reverse>appellee</typename_reverse>
-            </label>
-          </labels>
-          <subTypeLeft> </subTypeLeft>
-          <subTypeRight/>
-        </type>
-        <type code="court_governed" default="0">
-          <labels>
-            <label locale="en_US">
-              <typename>court governed</typename>
-              <typename_reverse>court governed</typename_reverse>
-            </label>
-          </labels>
-          <subTypeLeft> </subTypeLeft>
-          <subTypeRight/>
-        </type>
-        <type code="dedicator" default="0">
-          <labels>
-            <label locale="en_US">
-              <typename>dedicator</typename>
-              <typename_reverse>dedicator</typename_reverse>
-            </label>
-          </labels>
-          <subTypeLeft> </subTypeLeft>
-          <subTypeRight/>
-        </type>
-        <type code="dedicatee" default="0">
-          <labels>
-            <label locale="en_US">
-              <typename>dedicatee</typename>
-              <typename_reverse>dedicatee</typename_reverse>
-            </label>
-          </labels>
-          <subTypeLeft> </subTypeLeft>
-          <subTypeRight/>
-        </type>
-        <type code="defendant" default="0">
-          <labels>
-            <label locale="en_US">
-              <typename>defendant</typename>
-              <typename_reverse>defendant</typename_reverse>
-            </label>
-          </labels>
-          <subTypeLeft> </subTypeLeft>
-          <subTypeRight/>
-        </type>
-        <type code="degree" default="0">
-          <labels>
-            <label locale="en_US">
-              <typename>degree granting institution</typename>
-              <typename_reverse>degree granting institution</typename_reverse>
-            </label>
-          </labels>
-          <subTypeLeft> </subTypeLeft>
-          <subTypeRight/>
-        </type>
-        <type code="director" default="0">
-          <labels>
-            <label locale="en_US">
-              <typename>director</typename>
-              <typename_reverse>director</typename_reverse>
-            </label>
-          </labels>
-          <subTypeLeft> </subTypeLeft>
-          <subTypeRight/>
-        </type>
-        <type code="film_director" default="0">
-          <labels>
-            <label locale="en_US">
-              <typename>film director</typename>
-              <typename_reverse>film director</typename_reverse>
-            </label>
-          </labels>
-          <subTypeLeft> </subTypeLeft>
-          <subTypeRight/>
-        </type>
-        <type code="radio_director" default="0">
-          <labels>
-            <label locale="en_US">
-              <typename>radio director</typename>
-              <typename_reverse>radio director</typename_reverse>
-            </label>
-          </labels>
-          <subTypeLeft> </subTypeLeft>
-          <subTypeRight/>
-        </type>
-        <type code="television_director" default="0">
-          <labels>
-            <label locale="en_US">
-              <typename>television director</typename>
-              <typename_reverse>television director</typename_reverse>
-            </label>
-          </labels>
-          <subTypeLeft> </subTypeLeft>
-          <subTypeRight/>
-        </type>
-        <type code="director_photography" default="0">
-          <labels>
-            <label locale="en_US">
-              <typename>director of photography</typename>
-              <typename_reverse>director of photography</typename_reverse>
-            </label>
-          </labels>
-          <subTypeLeft> </subTypeLeft>
-          <subTypeRight/>
-        </type>
-        <type code="honouree" default="0">
-          <labels>
-            <label locale="en_US">
-              <typename>honouree</typename>
-              <typename_reverse>honouree</typename_reverse>
-            </label>
-          </labels>
-          <subTypeLeft> </subTypeLeft>
-          <subTypeRight/>
-        </type>
-        <type code="host_institution" default="0">
-          <labels>
-            <label locale="en_US">
-              <typename>host institution</typename>
-              <typename_reverse>host institution</typename_reverse>
-            </label>
-          </labels>
-          <subTypeLeft> </subTypeLeft>
-          <subTypeRight/>
-        </type>
-        <type code="issuing_body" default="0">
-          <labels>
-            <label locale="en_US">
-              <typename>issuing body</typename>
-              <typename_reverse>issuing body</typename_reverse>
-            </label>
-          </labels>
-          <subTypeLeft> </subTypeLeft>
-          <subTypeRight/>
-        </type>
-        <type code="judge" default="0">
-          <labels>
-            <label locale="en_US">
-              <typename>judge</typename>
-              <typename_reverse>judge</typename_reverse>
-            </label>
-          </labels>
-          <subTypeLeft> </subTypeLeft>
-          <subTypeRight/>
-        </type>
-        <type code="jurisdiction_governed" default="0">
-          <labels>
-            <label locale="en_US">
-              <typename>jurisdiction governed</typename>
-              <typename_reverse>jurisdiction governed</typename_reverse>
-            </label>
-          </labels>
-          <subTypeLeft> </subTypeLeft>
-          <subTypeRight/>
-        </type>
-        <type code="plaintiff" default="0">
-          <labels>
-            <label locale="en_US">
-              <typename>plaintiff</typename>
-              <typename_reverse>plaintiff</typename_reverse>
-            </label>
-          </labels>
-          <subTypeLeft> </subTypeLeft>
-          <subTypeRight/>
-        </type>
-        <type code="producer" default="0">
-          <labels>
-            <label locale="en_US">
-              <typename>producer</typename>
-              <typename_reverse>producer</typename_reverse>
-            </label>
-          </labels>
-          <subTypeLeft> </subTypeLeft>
-          <subTypeRight/>
-        </type>
-        <type code="film_producer" default="0">
-          <labels>
-            <label locale="en_US">
-              <typename>film producer</typename>
-              <typename_reverse>film producer</typename_reverse>
-            </label>
-          </labels>
-          <subTypeLeft> </subTypeLeft>
-          <subTypeRight/>
-        </type>
-        <type code="radio_producer" default="0">
-          <labels>
-            <label locale="en_US">
-              <typename>radio producer</typename>
-              <typename_reverse>radio producer</typename_reverse>
-            </label>
-          </labels>
-          <subTypeLeft> </subTypeLeft>
-          <subTypeRight/>
-        </type>
-        <type code="television_producer" default="0">
-          <labels>
-            <label locale="en_US">
-              <typename>television producer</typename>
-              <typename_reverse>television producer</typename_reverse>
-            </label>
-          </labels>
-          <subTypeLeft> </subTypeLeft>
-          <subTypeRight/>
-        </type>
-        <type code="production_company" default="0">
-          <labels>
-            <label locale="en_US">
-              <typename>production company</typename>
-              <typename_reverse>production company</typename_reverse>
-            </label>
-          </labels>
-          <subTypeLeft> </subTypeLeft>
-          <subTypeRight/>
-        </type>
-        <type code="sponsoring_body" default="0">
-          <labels>
-            <label locale="en_US">
-              <typename>sponsoring body</typename>
-              <typename_reverse>sponsoring body</typename_reverse>
-            </label>
-          </labels>
-          <subTypeLeft> </subTypeLeft>
-          <subTypeRight/>
-        </type>
+          <type code="addressee" default="0">
+            <labels>
+              <label locale="en_US">
+                <typename>is addressee of</typename>
+                <typename_reverse>has as addressee</typename_reverse>
+              </label>
+            </labels>
+            <subTypeLeft> </subTypeLeft>
+            <subTypeRight/>
+          </type>
+          <type code="appellant" default="0">
+            <labels>
+              <label locale="en_US">
+                <typename>is appellant of</typename>
+                <typename_reverse>has as appellant</typename_reverse>
+              </label>
+            </labels>
+            <subTypeLeft> </subTypeLeft>
+            <subTypeRight/>
+          </type>
+          <type code="appellee" default="0">
+            <labels>
+              <label locale="en_US">
+                <typename>is appellee of</typename>
+                <typename_reverse>has as appellee</typename_reverse>
+              </label>
+            </labels>
+            <subTypeLeft> </subTypeLeft>
+            <subTypeRight/>
+          </type>
+          <type code="court_governed" default="0">
+            <labels>
+              <label locale="en_US">
+                <typename>is court governed of</typename>
+                <typename_reverse>has as court governed</typename_reverse>
+              </label>
+            </labels>
+            <subTypeLeft> </subTypeLeft>
+            <subTypeRight/>
+          </type>
+          <type code="dedicator" default="0">
+            <labels>
+              <label locale="en_US">
+                <typename>is dedicator of</typename>
+                <typename_reverse>has as dedicator</typename_reverse>
+              </label>
+            </labels>
+            <subTypeLeft> </subTypeLeft>
+            <subTypeRight/>
+          </type>
+          <type code="dedicatee" default="0">
+            <labels>
+              <label locale="en_US">
+                <typename>is dedicatee of</typename>
+                <typename_reverse>has as dedicatee</typename_reverse>
+              </label>
+            </labels>
+            <subTypeLeft> </subTypeLeft>
+            <subTypeRight/>
+          </type>
+          <type code="defendant" default="0">
+            <labels>
+              <label locale="en_US">
+                <typename>is defendant of</typename>
+                <typename_reverse>has as defendant</typename_reverse>
+              </label>
+            </labels>
+            <subTypeLeft> </subTypeLeft>
+            <subTypeRight/>
+          </type>
+          <type code="degree" default="0">
+            <labels>
+              <label locale="en_US">
+                <typename>is degree granting institution of</typename>
+                <typename_reverse>has as degree granting institution</typename_reverse>
+              </label>
+            </labels>
+            <subTypeLeft> </subTypeLeft>
+            <subTypeRight/>
+          </type>
+          <type code="director" default="0">
+            <labels>
+              <label locale="en_US">
+                <typename>is director of</typename>
+                <typename_reverse>has as director</typename_reverse>
+              </label>
+            </labels>
+            <subTypeLeft> </subTypeLeft>
+            <subTypeRight/>
+          </type>
+          <type code="film_director" default="0">
+            <labels>
+              <label locale="en_US">
+                <typename>is film director of</typename>
+                <typename_reverse>has as film director</typename_reverse>
+              </label>
+            </labels>
+            <subTypeLeft> </subTypeLeft>
+            <subTypeRight/>
+          </type>
+          <type code="radio_director" default="0">
+            <labels>
+              <label locale="en_US">
+                <typename>is radio director of</typename>
+                <typename_reverse>has as radio director</typename_reverse>
+              </label>
+            </labels>
+            <subTypeLeft> </subTypeLeft>
+            <subTypeRight/>
+          </type>
+          <type code="television_director" default="0">
+            <labels>
+              <label locale="en_US">
+                <typename>is television director of</typename>
+                <typename_reverse>has as television director</typename_reverse>
+              </label>
+            </labels>
+            <subTypeLeft> </subTypeLeft>
+            <subTypeRight/>
+          </type>
+          <type code="director_photography" default="0">
+            <labels>
+              <label locale="en_US">
+                <typename>is director of photography of</typename>
+                <typename_reverse>has as director of photography</typename_reverse>
+              </label>
+            </labels>
+            <subTypeLeft> </subTypeLeft>
+            <subTypeRight/>
+          </type>
+          <type code="honouree" default="0">
+            <labels>
+              <label locale="en_US">
+                <typename>is honouree of</typename>
+                <typename_reverse>has as honouree</typename_reverse>
+              </label>
+            </labels>
+            <subTypeLeft> </subTypeLeft>
+            <subTypeRight/>
+          </type>
+          <type code="host_institution" default="0">
+            <labels>
+              <label locale="en_US">
+                <typename>is host institution of</typename>
+                <typename_reverse>has as host institution</typename_reverse>
+              </label>
+            </labels>
+            <subTypeLeft> </subTypeLeft>
+            <subTypeRight/>
+          </type>
+          <type code="issuing_body" default="0">
+            <labels>
+              <label locale="en_US">
+                <typename>is issuing body of</typename>
+                <typename_reverse>has as issuing body</typename_reverse>
+              </label>
+            </labels>
+            <subTypeLeft> </subTypeLeft>
+            <subTypeRight/>
+          </type>
+          <type code="judge" default="0">
+            <labels>
+              <label locale="en_US">
+                <typename>is judge of</typename>
+                <typename_reverse>has as judge</typename_reverse>
+              </label>
+            </labels>
+            <subTypeLeft> </subTypeLeft>
+            <subTypeRight/>
+          </type>
+          <type code="jurisdiction_governed" default="0">
+            <labels>
+              <label locale="en_US">
+                <typename>is jurisdiction governed of</typename>
+                <typename_reverse>has as jurisdiction governed</typename_reverse>
+              </label>
+            </labels>
+            <subTypeLeft> </subTypeLeft>
+            <subTypeRight/>
+          </type>
+          <type code="plaintiff" default="0">
+            <labels>
+              <label locale="en_US">
+                <typename>is plaintiff of</typename>
+                <typename_reverse>has as plaintiff</typename_reverse>
+              </label>
+            </labels>
+            <subTypeLeft> </subTypeLeft>
+            <subTypeRight/>
+          </type>
+          <type code="producer" default="0">
+            <labels>
+              <label locale="en_US">
+                <typename>is producer of</typename>
+                <typename_reverse>has as producer</typename_reverse>
+              </label>
+            </labels>
+            <subTypeLeft> </subTypeLeft>
+            <subTypeRight/>
+          </type>
+          <type code="film_producer" default="0">
+            <labels>
+              <label locale="en_US">
+                <typename>is film producer of</typename>
+                <typename_reverse>has as film producer</typename_reverse>
+              </label>
+            </labels>
+            <subTypeLeft> </subTypeLeft>
+            <subTypeRight/>
+          </type>
+          <type code="radio_producer" default="0">
+            <labels>
+              <label locale="en_US">
+                <typename>is radio producer of</typename>
+                <typename_reverse>has as radio producer</typename_reverse>
+              </label>
+            </labels>
+            <subTypeLeft> </subTypeLeft>
+            <subTypeRight/>
+          </type>
+          <type code="television_producer" default="0">
+            <labels>
+              <label locale="en_US">
+                <typename>is television producer of</typename>
+                <typename_reverse>has as television producer</typename_reverse>
+              </label>
+            </labels>
+            <subTypeLeft> </subTypeLeft>
+            <subTypeRight/>
+          </type>
+          <type code="production_company" default="0">
+            <labels>
+              <label locale="en_US">
+                <typename>is production company of</typename>
+                <typename_reverse>has as production company</typename_reverse>
+              </label>
+            </labels>
+            <subTypeLeft> </subTypeLeft>
+            <subTypeRight/>
+          </type>
+          <type code="sponsoring_body" default="0">
+            <labels>
+              <label locale="en_US">
+                <typename>is sponsoring body of</typename>
+                <typename_reverse>has as sponsoring body</typename_reverse>
+              </label>
+            </labels>
+            <subTypeLeft> </subTypeLeft>
+            <subTypeRight/>
+          </type>
         <!-- Corporate body -->
-        <type code="abridger" default="0">
+       <type code="abridger" default="0">
           <labels>
             <label locale="en_US">
-              <typename>abridger</typename>
-              <typename_reverse>abridger</typename_reverse>
+              <typename>is abridger of</typename>
+              <typename_reverse>has as abridger</typename_reverse>
             </label>
           </labels>
           <subTypeLeft> </subTypeLeft>
@@ -21981,8 +21687,8 @@
         <type code="animator" default="0">
           <labels>
             <label locale="en_US">
-              <typename>animator</typename>
-              <typename_reverse>animator</typename_reverse>
+              <typename>is animator of</typename>
+              <typename_reverse>has as animator</typename_reverse>
             </label>
           </labels>
           <subTypeLeft> </subTypeLeft>
@@ -21991,8 +21697,8 @@
         <type code="arranger_music" default="0">
           <labels>
             <label locale="en_US">
-              <typename>arranger of music</typename>
-              <typename_reverse>arranger of music</typename_reverse>
+              <typename>is arranger of music of</typename>
+              <typename_reverse>has as arranger of music</typename_reverse>
             </label>
           </labels>
           <subTypeLeft> </subTypeLeft>
@@ -22001,8 +21707,8 @@
         <type code="art_director" default="0">
           <labels>
             <label locale="en_US">
-              <typename>art director</typename>
-              <typename_reverse>art director</typename_reverse>
+              <typename>is art director of</typename>
+              <typename_reverse>has as art director</typename_reverse>
             </label>
           </labels>
           <subTypeLeft> </subTypeLeft>
@@ -22011,8 +21717,8 @@
         <type code="costume_designer" default="0">
           <labels>
             <label locale="en_US">
-              <typename>costume designer</typename>
-              <typename_reverse>costume designer</typename_reverse>
+              <typename>is costume designer of</typename>
+              <typename_reverse>has as costume designer</typename_reverse>
             </label>
           </labels>
           <subTypeLeft> </subTypeLeft>
@@ -22021,8 +21727,8 @@
         <type code="court_reporter" default="0">
           <labels>
             <label locale="en_US">
-              <typename>court reporter</typename>
-              <typename_reverse>court reporter</typename_reverse>
+              <typename>is court reporter of</typename>
+              <typename_reverse>has as court reporter</typename_reverse>
             </label>
           </labels>
           <subTypeLeft> </subTypeLeft>
@@ -22031,8 +21737,8 @@
         <type code="draftsman" default="0">
           <labels>
             <label locale="en_US">
-              <typename>draftsman</typename>
-              <typename_reverse>draftsman</typename_reverse>
+              <typename>is draftsman of</typename>
+              <typename_reverse>has as draftsman</typename_reverse>
             </label>
           </labels>
           <subTypeLeft> </subTypeLeft>
@@ -22041,8 +21747,8 @@
         <type code="editor" default="0">
           <labels>
             <label locale="en_US">
-              <typename>editor</typename>
-              <typename_reverse>editor</typename_reverse>
+              <typename>is editor of</typename>
+              <typename_reverse>has as editor</typename_reverse>
             </label>
           </labels>
           <subTypeLeft> </subTypeLeft>
@@ -22051,8 +21757,8 @@
         <type code="editor_compilation" default="0">
           <labels>
             <label locale="en_US">
-              <typename>editor of compilation</typename>
-              <typename_reverse>editor of compilation</typename_reverse>
+              <typename>is editor of compilation of</typename>
+              <typename_reverse>has as editor of compilation</typename_reverse>
             </label>
           </labels>
           <subTypeLeft> </subTypeLeft>
@@ -22061,8 +21767,8 @@
         <type code="editor_moving_image" default="0">
           <labels>
             <label locale="en_US">
-              <typename>editor of moving image work</typename>
-              <typename_reverse>editor of moving image work</typename_reverse>
+              <typename>is editor of moving image work of</typename>
+              <typename_reverse>has as editor of moving image work</typename_reverse>
             </label>
           </labels>
           <subTypeLeft> </subTypeLeft>
@@ -22071,8 +21777,8 @@
         <type code="illustrator" default="0">
           <labels>
             <label locale="en_US">
-              <typename>illustrator</typename>
-              <typename_reverse>illustrator</typename_reverse>
+              <typename>is illustrator of</typename>
+              <typename_reverse>has as illustrator</typename_reverse>
             </label>
           </labels>
           <subTypeLeft> </subTypeLeft>
@@ -22081,8 +21787,8 @@
         <type code="musical_director" default="0">
           <labels>
             <label locale="en_US">
-              <typename>musical director</typename>
-              <typename_reverse>musical director</typename_reverse>
+              <typename>is musical director of</typename>
+              <typename_reverse>has as musical director</typename_reverse>
             </label>
           </labels>
           <subTypeLeft> </subTypeLeft>
@@ -22091,8 +21797,8 @@
         <type code="performer" default="0">
           <labels>
             <label locale="en_US">
-              <typename>performer</typename>
-              <typename_reverse>performer</typename_reverse>
+              <typename>is performer of</typename>
+              <typename_reverse>has as performer</typename_reverse>
             </label>
           </labels>
           <subTypeLeft> </subTypeLeft>
@@ -22101,8 +21807,8 @@
         <type code="actor" default="0">
           <labels>
             <label locale="en_US">
-              <typename>actor</typename>
-              <typename_reverse>actor</typename_reverse>
+              <typename>is actor of</typename>
+              <typename_reverse>has as actor</typename_reverse>
             </label>
           </labels>
           <subTypeLeft> </subTypeLeft>
@@ -22111,8 +21817,8 @@
         <type code="commentator" default="0">
           <labels>
             <label locale="en_US">
-              <typename>commentator</typename>
-              <typename_reverse>commentator</typename_reverse>
+              <typename>is commentator of</typename>
+              <typename_reverse>has as commentator</typename_reverse>
             </label>
           </labels>
           <subTypeLeft> </subTypeLeft>
@@ -22121,8 +21827,8 @@
         <type code="conductor" default="0">
           <labels>
             <label locale="en_US">
-              <typename>conductor</typename>
-              <typename_reverse>conductor</typename_reverse>
+              <typename>is conductor of</typename>
+              <typename_reverse>has as conductor</typename_reverse>
             </label>
           </labels>
           <subTypeLeft> </subTypeLeft>
@@ -22131,8 +21837,8 @@
         <type code="dancer" default="0">
           <labels>
             <label locale="en_US">
-              <typename>dancer</typename>
-              <typename_reverse>dancer</typename_reverse>
+              <typename>is dancer of</typename>
+              <typename_reverse>has as dancer</typename_reverse>
             </label>
           </labels>
           <subTypeLeft> </subTypeLeft>
@@ -22141,8 +21847,8 @@
         <type code="host" default="0">
           <labels>
             <label locale="en_US">
-              <typename>host</typename>
-              <typename_reverse>host</typename_reverse>
+              <typename>is host of</typename>
+              <typename_reverse>has as host</typename_reverse>
             </label>
           </labels>
           <subTypeLeft> </subTypeLeft>
@@ -22151,8 +21857,8 @@
         <type code="instrumentalist" default="0">
           <labels>
             <label locale="en_US">
-              <typename>instrumentalist</typename>
-              <typename_reverse>instrumentalist</typename_reverse>
+              <typename>is instrumentalist of</typename>
+              <typename_reverse>has as instrumentalist</typename_reverse>
             </label>
           </labels>
           <subTypeLeft> </subTypeLeft>
@@ -22161,8 +21867,8 @@
         <type code="moderator" default="0">
           <labels>
             <label locale="en_US">
-              <typename>moderator</typename>
-              <typename_reverse>moderator</typename_reverse>
+              <typename>is moderator of</typename>
+              <typename_reverse>has as moderator</typename_reverse>
             </label>
           </labels>
           <subTypeLeft> </subTypeLeft>
@@ -22171,8 +21877,8 @@
         <type code="narrator" default="0">
           <labels>
             <label locale="en_US">
-              <typename>narrator</typename>
-              <typename_reverse>narrator</typename_reverse>
+              <typename>is narrator of</typename>
+              <typename_reverse>has as narrator</typename_reverse>
             </label>
           </labels>
           <subTypeLeft> </subTypeLeft>
@@ -22181,8 +21887,8 @@
         <type code="onscreen_presenter" default="0">
           <labels>
             <label locale="en_US">
-              <typename>on-screen presenter</typename>
-              <typename_reverse>on-screen presenter</typename_reverse>
+              <typename>is on-screen presenter of</typename>
+              <typename_reverse>has as on-screen presenter</typename_reverse>
             </label>
           </labels>
           <subTypeLeft> </subTypeLeft>
@@ -22191,8 +21897,8 @@
         <type code="panelist" default="0">
           <labels>
             <label locale="en_US">
-              <typename>panelist</typename>
-              <typename_reverse>panelist</typename_reverse>
+              <typename>is panelist of</typename>
+              <typename_reverse>has as panelist</typename_reverse>
             </label>
           </labels>
           <subTypeLeft> </subTypeLeft>
@@ -22201,8 +21907,8 @@
         <type code="puppeteer" default="0">
           <labels>
             <label locale="en_US">
-              <typename>puppeteer</typename>
-              <typename_reverse>puppeteer</typename_reverse>
+              <typename>is puppeteer of</typename>
+              <typename_reverse>has as puppeteer</typename_reverse>
             </label>
           </labels>
           <subTypeLeft> </subTypeLeft>
@@ -22211,8 +21917,8 @@
         <type code="singer" default="0">
           <labels>
             <label locale="en_US">
-              <typename>singer</typename>
-              <typename_reverse>singer</typename_reverse>
+              <typename>is singer of</typename>
+              <typename_reverse>has as singer</typename_reverse>
             </label>
           </labels>
           <subTypeLeft> </subTypeLeft>
@@ -22221,8 +21927,8 @@
         <type code="speaker" default="0">
           <labels>
             <label locale="en_US">
-              <typename>speaker</typename>
-              <typename_reverse>speaker</typename_reverse>
+              <typename>is speaker of</typename>
+              <typename_reverse>has as speaker</typename_reverse>
             </label>
           </labels>
           <subTypeLeft> </subTypeLeft>
@@ -22231,8 +21937,8 @@
         <type code="storyteller" default="0">
           <labels>
             <label locale="en_US">
-              <typename>storyteller</typename>
-              <typename_reverse>storyteller</typename_reverse>
+              <typename>is storyteller of</typename>
+              <typename_reverse>has as storyteller</typename_reverse>
             </label>
           </labels>
           <subTypeLeft> </subTypeLeft>
@@ -22241,8 +21947,8 @@
         <type code="teacher" default="0">
           <labels>
             <label locale="en_US">
-              <typename>teacher</typename>
-              <typename_reverse>teacher</typename_reverse>
+              <typename>is teacher of</typename>
+              <typename_reverse>has as teacher</typename_reverse>
             </label>
           </labels>
           <subTypeLeft> </subTypeLeft>
@@ -22251,8 +21957,8 @@
         <type code="presenter" default="0">
           <labels>
             <label locale="en_US">
-              <typename>presenter</typename>
-              <typename_reverse>presenter</typename_reverse>
+              <typename>is presenter of</typename>
+              <typename_reverse>has as presenter</typename_reverse>
             </label>
           </labels>
           <subTypeLeft> </subTypeLeft>
@@ -22261,8 +21967,8 @@
         <type code="production_designer" default="0">
           <labels>
             <label locale="en_US">
-              <typename>production designer</typename>
-              <typename_reverse>production designer</typename_reverse>
+              <typename>is production designer of</typename>
+              <typename_reverse>has as production designer</typename_reverse>
             </label>
           </labels>
           <subTypeLeft> </subTypeLeft>
@@ -22271,8 +21977,8 @@
         <type code="recording_engineer" default="0">
           <labels>
             <label locale="en_US">
-              <typename>recording engineer</typename>
-              <typename_reverse>recording engineer</typename_reverse>
+              <typename>is recording engineer of</typename>
+              <typename_reverse>has as recording engineer</typename_reverse>
             </label>
           </labels>
           <subTypeLeft> </subTypeLeft>
@@ -22281,8 +21987,8 @@
         <type code="recordist" default="0">
           <labels>
             <label locale="en_US">
-              <typename>recordist</typename>
-              <typename_reverse>recordist</typename_reverse>
+              <typename>is recordist of</typename>
+              <typename_reverse>has as recordist</typename_reverse>
             </label>
           </labels>
           <subTypeLeft> </subTypeLeft>
@@ -22291,8 +21997,8 @@
         <type code="stage_director" default="0">
           <labels>
             <label locale="en_US">
-              <typename>stage director</typename>
-              <typename_reverse>stage director</typename_reverse>
+              <typename>is stage director of</typename>
+              <typename_reverse>has as stage director</typename_reverse>
             </label>
           </labels>
           <subTypeLeft> </subTypeLeft>
@@ -22301,8 +22007,8 @@
         <type code="surveyor" default="0">
           <labels>
             <label locale="en_US">
-              <typename>surveyor</typename>
-              <typename_reverse>surveyor</typename_reverse>
+              <typename>is surveyor of</typename>
+              <typename_reverse>has as surveyor</typename_reverse>
             </label>
           </labels>
           <subTypeLeft> </subTypeLeft>
@@ -22311,8 +22017,8 @@
         <type code="transcriber" default="0">
           <labels>
             <label locale="en_US">
-              <typename>transcriber</typename>
-              <typename_reverse>transcriber</typename_reverse>
+              <typename>is transcriber of</typename>
+              <typename_reverse>has as transcriber</typename_reverse>
             </label>
           </labels>
           <subTypeLeft> </subTypeLeft>
@@ -22321,8 +22027,8 @@
         <type code="translator" default="0">
           <labels>
             <label locale="en_US">
-              <typename>translator</typename>
-              <typename_reverse>translator</typename_reverse>
+              <typename>is translator of</typename>
+              <typename_reverse>has as translator</typename_reverse>
             </label>
           </labels>
           <subTypeLeft> </subTypeLeft>
@@ -22331,8 +22037,8 @@
         <type code="writer_added_commentary" default="0">
           <labels>
             <label locale="en_US">
-              <typename>writer of added commentary</typename>
-              <typename_reverse>writer of added commentary</typename_reverse>
+              <typename>is writer of added commentary of</typename>
+              <typename_reverse>has as writer of added commentary</typename_reverse>
             </label>
           </labels>
           <subTypeLeft> </subTypeLeft>
@@ -22341,8 +22047,8 @@
         <type code="writer_added_text" default="0">
           <labels>
             <label locale="en_US">
-              <typename>writer of added text</typename>
-              <typename_reverse>writer of added text</typename_reverse>
+              <typename>is writer of added text of</typename>
+              <typename_reverse>has as writer of added text</typename_reverse>
             </label>
           </labels>
           <subTypeLeft> </subTypeLeft>
@@ -22351,8 +22057,8 @@
         <type code="writer_added_lyrics" default="0">
           <labels>
             <label locale="en_US">
-              <typename>writer of added lyrics</typename>
-              <typename_reverse>writer of added lyrics</typename_reverse>
+              <typename>is writer of added lyrics of</typename>
+              <typename_reverse>has as writer of added lyrics</typename_reverse>
             </label>
           </labels>
           <subTypeLeft> </subTypeLeft>
@@ -22362,8 +22068,8 @@
         <type code="publisher" default="0">
           <labels>
             <label locale="en_US">
-              <typename>publisher</typename>
-              <typename_reverse>publisher</typename_reverse>
+              <typename>is publisher of</typename>
+              <typename_reverse>has as publisher</typename_reverse>
             </label>
           </labels>
           <subTypeLeft> </subTypeLeft>
@@ -22372,8 +22078,8 @@
         <type code="contributor" default="0">
           <labels>
             <label locale="en_US">
-              <typename>contributor</typename>
-              <typename_reverse>contributor</typename_reverse>
+              <typename>is contributor of</typename>
+              <typename_reverse>has as contributor</typename_reverse>
             </label>
           </labels>
           <subTypeLeft> </subTypeLeft>
@@ -22382,8 +22088,8 @@
         <type code="inscriber" default="0">
           <labels>
             <label locale="en_US">
-              <typename>inscribed by</typename>
-              <typename_reverse>inscriber</typename_reverse>
+              <typename>is inscriber of</typename>
+              <typename_reverse>has as inscribed by</typename_reverse>
             </label>
           </labels>
           <subTypeLeft> </subTypeLeft>
@@ -22392,8 +22098,8 @@
         <type code="rights_holder" default="0">
           <labels>
             <label locale="en_US">
-              <typename>rights holder</typename>
-              <typename_reverse>rights holder</typename_reverse>
+              <typename>is rights holder of</typename>
+              <typename_reverse>has as rights holder</typename_reverse>
             </label>
           </labels>
           <subTypeLeft> </subTypeLeft>
@@ -22402,23 +22108,13 @@
         <type code="commissioner" default="0">
           <labels>
             <label locale="en_US">
-              <typename>commissioner</typename>
-              <typename_reverse>commissioner</typename_reverse>
+              <typename>is commissioner of</typename>
+              <typename_reverse>has as commissioner</typename_reverse>
             </label>
           </labels>
           <subTypeLeft> </subTypeLeft>
           <subTypeRight/>
         </type>
-          <type code="distributor" default="0">
-            <labels>
-              <label locale="en_US">
-                <typename>distributor</typename>
-                <typename_reverse>distributor</typename_reverse>
-              </label>
-            </labels>
-            <subTypeLeft> </subTypeLeft>
-            <subTypeRight/>
-          </type>
       </types>
     </relationshipTable>
     <relationshipTable name="ca_object_lots_x_entities">
@@ -22485,6 +22181,346 @@
           <subTypeLeft> </subTypeLeft>
           <subTypeRight/>
         </type>
+        <type code="Designer" default="0">
+			 <labels>
+				<label locale="en_US">
+				 <typename>Designer</typename>
+				 <typename_reverse>Designer</typename_reverse>
+				</label>
+			 </labels>
+			 <subTypeLeft></subTypeLeft>
+			 <subTypeRight/>
+			</type>
+			<type code="Artist" default="0">
+			 <labels>
+				<label locale="en_US">
+				 <typename>Artist</typename>
+				 <typename_reverse>Artist</typename_reverse>
+				</label>
+			 </labels>
+			 <subTypeLeft></subTypeLeft>
+			 <subTypeRight/>
+			</type>
+			<type code="Collector" default="0">
+			 <labels>
+				<label locale="en_US">
+				 <typename>Collector</typename>
+				 <typename_reverse>Collector</typename_reverse>
+				</label>
+			 </labels>
+			 <subTypeLeft></subTypeLeft>
+			 <subTypeRight/>
+			</type>
+			<type code="Illustrator" default="0">
+			 <labels>
+				<label locale="en_US">
+				 <typename>Illustrator</typename>
+				 <typename_reverse>Illustrator</typename_reverse>
+				</label>
+			 </labels>
+			 <subTypeLeft></subTypeLeft>
+			 <subTypeRight/>
+			</type>
+			<type code="Photographer" default="0">
+			 <labels>
+				<label locale="en_US">
+				 <typename>Photographer</typename>
+				 <typename_reverse>Photographer</typename_reverse>
+				</label>
+			 </labels>
+			 <subTypeLeft></subTypeLeft>
+			 <subTypeRight/>
+			</type>
+			<type code="Architect" default="0">
+			 <labels>
+				<label locale="en_US">
+				 <typename>Architect</typename>
+				 <typename_reverse>Architect</typename_reverse>
+				</label>
+			 </labels>
+			 <subTypeLeft></subTypeLeft>
+			 <subTypeRight/>
+			</type>
+			<type code="Woodcutter" default="0">
+			 <labels>
+				<label locale="en_US">
+				 <typename>Woodcutter</typename>
+				 <typename_reverse>Woodcutter</typename_reverse>
+				</label>
+			 </labels>
+			 <subTypeLeft></subTypeLeft>
+			 <subTypeRight/>
+			</type>
+			<type code="Correspondent" default="0">
+			 <labels>
+				<label locale="en_US">
+				 <typename>Correspondent</typename>
+				 <typename_reverse>Correspondent</typename_reverse>
+				</label>
+			 </labels>
+			 <subTypeLeft></subTypeLeft>
+			 <subTypeRight/>
+			</type>
+			<type code="Client" default="0">
+			 <labels>
+				<label locale="en_US">
+				 <typename>Client</typename>
+				 <typename_reverse>Client</typename_reverse>
+				</label>
+			 </labels>
+			 <subTypeLeft></subTypeLeft>
+			 <subTypeRight/>
+			</type>
+			<type code="Distributor" default="0">
+			 <labels>
+				<label locale="en_US">
+				 <typename>Distributor</typename>
+				 <typename_reverse>Distributor</typename_reverse>
+				</label>
+			 </labels>
+			 <subTypeLeft></subTypeLeft>
+			 <subTypeRight/>
+			</type>
+			<type code="Etcher" default="0">
+			 <labels>
+				<label locale="en_US">
+				 <typename>Etcher</typename>
+				 <typename_reverse>Etcher</typename_reverse>
+				</label>
+			 </labels>
+			 <subTypeLeft></subTypeLeft>
+			 <subTypeRight/>
+			</type>
+			<type code="Typographer" default="0">
+			 <labels>
+				<label locale="en_US">
+				 <typename>Typographer</typename>
+				 <typename_reverse>Typographer</typename_reverse>
+				</label>
+			 </labels>
+			 <subTypeLeft></subTypeLeft>
+			 <subTypeRight/>
+			</type>
+			<type code="Creator" default="0">
+			 <labels>
+				<label locale="en_US">
+				 <typename>Creator</typename>
+				 <typename_reverse>Creator</typename_reverse>
+				</label>
+			 </labels>
+			 <subTypeLeft></subTypeLeft>
+			 <subTypeRight/>
+			</type>
+			<type code="Printmaker" default="0">
+			 <labels>
+				<label locale="en_US">
+				 <typename>Printmaker</typename>
+				 <typename_reverse>Printmaker</typename_reverse>
+				</label>
+			 </labels>
+			 <subTypeLeft></subTypeLeft>
+			 <subTypeRight/>
+			</type>
+			<type code="Publisher" default="0">
+			 <labels>
+				<label locale="en_US">
+				 <typename>Publisher</typename>
+				 <typename_reverse>Publisher</typename_reverse>
+				</label>
+			 </labels>
+			 <subTypeLeft></subTypeLeft>
+			 <subTypeRight/>
+			</type>
+			<type code="Donor" default="0">
+			 <labels>
+				<label locale="en_US">
+				 <typename>Donor</typename>
+				 <typename_reverse>Donor</typename_reverse>
+				</label>
+			 </labels>
+			 <subTypeLeft></subTypeLeft>
+			 <subTypeRight/>
+			</type>
+			<type code="Teacher" default="0">
+			 <labels>
+				<label locale="en_US">
+				 <typename>Teacher</typename>
+				 <typename_reverse>Teacher</typename_reverse>
+				</label>
+			 </labels>
+			 <subTypeLeft></subTypeLeft>
+			 <subTypeRight/>
+			</type>
+			<type code="Depicted" default="0">
+			 <labels>
+				<label locale="en_US">
+				 <typename>Depicted</typename>
+				 <typename_reverse>Depicted</typename_reverse>
+				</label>
+			 </labels>
+			 <subTypeLeft></subTypeLeft>
+			 <subTypeRight/>
+			</type>
+			<type code="Interviewer" default="0">
+			 <labels>
+				<label locale="en_US">
+				 <typename>Interviewer</typename>
+				 <typename_reverse>Interviewer</typename_reverse>
+				</label>
+			 </labels>
+			 <subTypeLeft></subTypeLeft>
+			 <subTypeRight/>
+			</type>
+			<type code="Recipient" default="0">
+			 <labels>
+				<label locale="en_US">
+				 <typename>Recipient</typename>
+				 <typename_reverse>Recipient</typename_reverse>
+				</label>
+			 </labels>
+			 <subTypeLeft></subTypeLeft>
+			 <subTypeRight/>
+			</type>
+			<type code="Annotator" default="0">
+			 <labels>
+				<label locale="en_US">
+				 <typename>Annotator</typename>
+				 <typename_reverse>Annotator</typename_reverse>
+				</label>
+			 </labels>
+			 <subTypeLeft></subTypeLeft>
+			 <subTypeRight/>
+			</type>
+			<type code="exhibition_curator" default="0">
+			 <labels>
+				<label locale="en_US">
+				 <typename>Curator of an exhibition</typename>
+				 <typename_reverse>Curator of an exhibition</typename_reverse>
+				</label>
+			 </labels>
+			 <subTypeLeft></subTypeLeft>
+			 <subTypeRight/>
+			</type>
+			<type code="Contributor" default="0">
+			 <labels>
+				<label locale="en_US">
+				 <typename>Contributor</typename>
+				 <typename_reverse>Contributor</typename_reverse>
+				</label>
+			 </labels>
+			 <subTypeLeft></subTypeLeft>
+			 <subTypeRight/>
+			</type>
+			<type code="Producer" default="0">
+			 <labels>
+				<label locale="en_US">
+				 <typename>Producer</typename>
+				 <typename_reverse>Producer</typename_reverse>
+				</label>
+			 </labels>
+			 <subTypeLeft></subTypeLeft>
+			 <subTypeRight/>
+			</type>
+			<type code="Author" default="0">
+			 <labels>
+				<label locale="en_US">
+				 <typename>Author</typename>
+				 <typename_reverse>Author</typename_reverse>
+				</label>
+			 </labels>
+			 <subTypeLeft></subTypeLeft>
+			 <subTypeRight/>
+			</type>
+			<type code="Commentator" default="0">
+			 <labels>
+				<label locale="en_US">
+				 <typename>Commentator for written text</typename>
+				 <typename_reverse>Commentator for written text</typename_reverse>
+				</label>
+			 </labels>
+			 <subTypeLeft></subTypeLeft>
+			 <subTypeRight/>
+			</type>
+			<type code="Interviewee" default="0">
+			 <labels>
+				<label locale="en_US">
+				 <typename>Interviewee</typename>
+				 <typename_reverse>Interviewee</typename_reverse>
+				</label>
+			 </labels>
+			 <subTypeLeft></subTypeLeft>
+			 <subTypeRight/>
+			</type>
+			<type code="Compiler" default="0">
+			 <labels>
+				<label locale="en_US">
+				 <typename>Compiler</typename>
+				 <typename_reverse>Compiler</typename_reverse>
+				</label>
+			 </labels>
+			 <subTypeLeft></subTypeLeft>
+			 <subTypeRight/>
+			</type>
+			<type code="Licensee" default="0">
+			 <labels>
+				<label locale="en_US">
+				 <typename>Licensee</typename>
+				 <typename_reverse>Licensee</typename_reverse>
+				</label>
+			 </labels>
+			 <subTypeLeft></subTypeLeft>
+			 <subTypeRight/>
+			</type>
+			<type code="Collaborator" default="0">
+			 <labels>
+				<label locale="en_US">
+				 <typename>Collaborator</typename>
+				 <typename_reverse>Collaborator</typename_reverse>
+				</label>
+			 </labels>
+			 <subTypeLeft></subTypeLeft>
+			 <subTypeRight/>
+			</type>
+			<type code="Associated_name" default="0">
+			 <labels>
+				<label locale="en_US">
+				 <typename>Associated name</typename>
+				 <typename_reverse>Associated name</typename_reverse>
+				</label>
+			 </labels>
+			 <subTypeLeft></subTypeLeft>
+			 <subTypeRight/>
+			</type>
+			<type code="Owner" default="0">
+			 <labels>
+				<label locale="en_US">
+				 <typename>Owner</typename>
+				 <typename_reverse>Owner</typename_reverse>
+				</label>
+			 </labels>
+			 <subTypeLeft></subTypeLeft>
+			 <subTypeRight/>
+			</type>
+			<type code="Sponsor" default="0">
+			 <labels>
+				<label locale="en_US">
+				 <typename>Sponsor</typename>
+				 <typename_reverse>Sponsor</typename_reverse>
+				</label>
+			 </labels>
+			 <subTypeLeft></subTypeLeft>
+			 <subTypeRight/>
+			</type>
+			<type code="Sculptor" default="0">
+			 <labels>
+				<label locale="en_US">
+				 <typename>Sculptor</typename>
+				 <typename_reverse>Sculptor</typename_reverse>
+				</label>
+			 </labels>
+			 <subTypeLeft></subTypeLeft>
+			 <subTypeRight/>
+			</type>
       </types>
     </relationshipTable>
     <relationshipTable name="ca_entities_x_vocabulary_terms">
@@ -22567,7 +22603,7 @@
             </label>
           </labels>
           <subTypeLeft> </subTypeLeft>
-          <subTypeRight>event</subTypeRight>
+          <subTypeRight></subTypeRight>
         </type>
       </types>
     </relationshipTable>
@@ -22741,6 +22777,21 @@
   <logins>
     <login user_name="admin" password="neongreen" fname="CollectiveAccess"
       lname="Administrator" email="info@collectiveaccess.org">
+      <role code="admin"/>
+      <group code="admin"/>
+    </login>
+    <login user_name="wendy" password="calvinklein" fname="Wendy"
+      lname="Scheir" email="scheirw@newschool.edu">
+      <role code="admin"/>
+      <group code="admin"/>
+    </login>
+    <login user_name="liza" password="donnakaran" fname="Liza"
+      lname=" Harrell-Edge" email="harrelle@newschool.edu">
+      <role code="admin"/>
+      <group code="admin"/>
+    </login>
+    <login user_name="jenny" password="perryellis" fname="Jenny"
+      lname="Swadosh" email="swadoshj@newschool.edu">
       <role code="admin"/>
       <group code="admin"/>
     </login>

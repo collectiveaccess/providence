@@ -203,15 +203,14 @@
  					$ps_value = $vn_id;
  				}
  			}
- 			
  			if (!$vb_require_value && !(int)$ps_value) {
  				return array(
 					'value_longtext1' => null,
 					'item_id' => null
 				);
  			} 
- 			if (!is_numeric($ps_value)) { 
- 				$this->postError(1970, _t('Item_id is not valid for element %1',$pa_element_info["element_code"]), 'ListAttributeValue->parseValue()');
+ 			if (strlen($ps_value) && !is_numeric($ps_value)) { 
+ 				$this->postError(1970, _t('Item_id %2 is not valid for element %1',$pa_element_info["element_code"], $ps_value), 'ListAttributeValue->parseValue()');
 				return false;
 			}
  			$t_item = new ca_list_items((int)$ps_value);
@@ -219,7 +218,8 @@
  				if ($ps_value) {
  					$this->postError(1970, _t('%1 is not a valid list item_id for %2 [%3]', $ps_value, $pa_element_info['displayLabel'], $pa_element_info['element_code']), 'ListAttributeValue->parseValue()');
  				} else {
- 					$this->postError(1970, _t('Value %1 [%2] cannot be blank', $pa_element_info['displayLabel'], $pa_element_info['element_code']), 'ListAttributeValue->parseValue()');
+ 					//$this->postError(1970, _t('Value %1 [%2] cannot be blank', $pa_element_info['displayLabel'], $pa_element_info['element_code']), 'ListAttributeValue->parseValue()');
+ 					return null;
  				}
 				return false;
  			}

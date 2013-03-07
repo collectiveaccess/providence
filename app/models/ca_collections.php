@@ -385,7 +385,7 @@ class ca_collections extends BundlableLabelableBaseModelWithAttributes implement
 			FROM ca_collections cae
 			INNER JOIN ca_collection_labels AS cael ON cael.collection_id = cae.collection_id
 			WHERE
-				cael.name = ? {$vs_type_sql} {$vs_parent_sql} AND cael.deleted = 0
+				cael.name = ? {$vs_type_sql} {$vs_parent_sql} AND cae.deleted = 0
 			", $va_params);
 		
 		$va_collection_ids = array();

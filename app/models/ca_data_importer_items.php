@@ -241,12 +241,17 @@ class ca_data_importer_items extends BaseModel {
 			'width' => 40, 'height' => 10,
 			'takesLocale' => false,
 			'default' => 0,
-			'options' => array(
-				_t('yes') => 1,
-				_t('no') => 0
-			),
 			'label' => _t('Skip group if value'),
 			'description' => _t('Skip all of the elements in the group if value for this element is equal to the specified value(s).')
+		);
+		$va_settings['skipGroupIfNotValue'] = array(
+			'formatType' => FT_TEXT,
+			'displayType' => DT_FIELD,
+			'width' => 40, 'height' => 10,
+			'takesLocale' => false,
+			'default' => 0,
+			'label' => _t('Skip group if not value'),
+			'description' => _t('Skip all of the elements in the group if value for this element is not equal to any of the specified values(s).')
 		);
 		$va_settings['skipRowIfEmpty'] = array(
 			'formatType' => FT_TEXT,
@@ -267,12 +272,17 @@ class ca_data_importer_items extends BaseModel {
 			'width' => 40, 'height' => 10,
 			'takesLocale' => false,
 			'default' => 0,
-			'options' => array(
-				_t('yes') => 1,
-				_t('no') => 0
-			),
 			'label' => _t('Skip row if value'),
 			'description' => _t('Skip the row if value for this element is equal to the specified value(s).')
+		);
+		$va_settings['skipRowIfNotValue'] = array(
+			'formatType' => FT_TEXT,
+			'displayType' => DT_FIELD,
+			'width' => 40, 'height' => 10,
+			'takesLocale' => false,
+			'default' => 0,
+			'label' => _t('Skip row if value is not'),
+			'description' => _t('Skip the row if value for this element is not equal to any of the specified value(s).')
 		);
 		$va_settings['default'] = array(
 			'formatType' => FT_TEXT,
@@ -350,7 +360,15 @@ class ca_data_importer_items extends BaseModel {
 			'label' => _t('Error policy'),
 			'description' => _t('Determines how errors are handled for the mapping.  Options are to ignore the error, stop the import when an error is encountered and to receive a prompt when the error is encountered.')
 		);
-		
+		$va_settings['relationshipType'] = array(
+			'formatType' => FT_TEXT,
+			'displayType' => DT_FIELD,
+			'width' => 40, 'height' => 2,
+			'takesLocale' => false,
+			'default' => '',
+			'label' => _t('Relationship type'),
+			'description' => _t('Relationship type to use when linking to a related record.')
+		);
 		$this->SETTINGS = new ModelSettings($this, 'settings', $va_settings);
 	}
 	# ------------------------------------------------------
