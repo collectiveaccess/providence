@@ -70,7 +70,6 @@ create table if not exists ca_data_import_event_log
       references ca_data_import_items (item_id) on delete restrict on update restrict
 ) engine=innodb CHARACTER SET utf8 COLLATE utf8_general_ci;
 
-
 /* -------------------------------------------------------------------------------- */
 
 /* Always add the update to ca_schema_updates at the end of the file */
