@@ -89,10 +89,13 @@ require_once(__CA_LIB_DIR__."/ca/ApplicationPluginManager.php");
 				$va_preferred_locales[$g_ui_locale] = true;
 			}
 		}
-		$g_user_locale_rules[$ps_item_locale] = $va_rules = array(
+
+		$va_rules = array(
 			'preferred' => $va_preferred_locales,	/* all of these locales will display if available */
 			'fallback' => $va_fallback_locales		/* the first of these that is available will display, but only if none of the preferred locales are available */
 		);
+
+		if($ps_item_locale){ $g_user_locale_rules[$ps_item_locale] = $va_rules; }
 		
 		return $va_rules;
 	}

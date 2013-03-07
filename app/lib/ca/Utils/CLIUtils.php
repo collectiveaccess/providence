@@ -811,6 +811,151 @@
 		/**
 		 * 
 		 */
+		public static function load_export_mapping($po_opts=null) {
+			require_once(__CA_MODELS_DIR__."/ca_data_exporters.php");
+	
+			if (!($vs_file_path = $po_opts->getOption('file'))) {
+				print _t("You must specify a file!")."\n";
+				return false;
+			}
+			if (!file_exists($vs_file_path)) {
+				print _t("File '%1' does not exist!", $vs_file_path)."\n";
+				return false;
+			}
+			
+			if (!($t_exporter = ca_data_exporters::loadExporterFromFile($vs_file_path))) {
+				print _t("Could not import '%1'", $vs_file_path)."\n";
+				return false;
+			} else {
+				print _t("Created mapping %1 from %2", CLIUtils::textWithColor($t_exporter->get('exporter_code'), 'yellow'), $vs_file_path)."\n";
+				return true;
+			}
+		}
+		# -------------------------------------------------------
+		/**
+		 *
+		 */
+		public static function load_export_mappingParamList() {
+			return array(
+				"file|f=s" => _t('Excel XLSX file to load.')
+			);
+		}
+		# -------------------------------------------------------
+		/**
+		 *
+		 */
+		public static function load_export_mappingShortHelp() {
+			return _t("Load export mapping from Excel XLSX format file.");
+		}
+		# -------------------------------------------------------
+		/**
+		 *
+		 */
+		public static function load_export_mappingHelp() {
+			return _t("Loads export mapping from Excel XLSX format file. More here...");
+		}
+		# -------------------------------------------------------
+		public static function export_data($po_opts=null) {
+			require_once(__CA_MODELS_DIR__."/ca_data_exporters.php");
+	
+			$vs_search = $po_opts->getOption('search');
+			$vs_id = $po_opts->getOption('id');
+			$vb_rdf = (bool)$po_opts->getOption('rdf');
+
+			if (!$vb_rdf && !$vs_search && !$vs_id) {
+				print _t('You must specify either an idno or a search expression to select a record or record set for export or activate RDF mode.')."\n";
+				return false;
+			}
+			if (!($vs_filename = $po_opts->getOption('file'))) {
+				print _t('You must specify a file to write export output to.')."\n";
+				return false;
+			}
+
+			if(@file_put_contents($vs_filename, "") === false){
+				// probably a permission error
+				print _t("Can't write to file %1. Check the permissions.",$vs_filename)."\n";
+				return false;
+			}
+
+			// RDF mode
+			if($vb_rdf){
+				if (!($vs_config = $po_opts->getOption('config'))) {
+					print _t('You must specify a configuration file that contains the export definition for the RDF mode.')."\n";
+					return false;
+				}
+
+				// test config syntax
+				if(!Configuration::load($vs_config)){
+					print _t('Syntax error in configuration file %s.',$vs_config)."\n";
+					return false;
+				}
+
+				if(ca_data_exporters::exportRDFMode($vs_config,$vs_filename,array('showCLIProgressBar' => true))){
+					print _t("Exported data to %1", CLIUtils::textWithColor($vs_filename, 'yellow'));
+					return true;
+				} else {
+					print _t("Could not run RDF mode export")."\n";
+					return false;
+				}
+			}
+			
+			// Search or ID mode
+
+			if (!($vs_mapping = $po_opts->getOption('mapping'))) {
+				print _t('You must specify a mapping for export.')."\n";
+				return false;
+			}
+
+			if (!(ca_data_exporters::loadExporterByCode($vs_mapping))) {
+				print _t('Mapping %1 does not exist', $vs_mapping)."\n";
+				return false;
+			}
+
+			if(sizeof($va_errors = ca_data_exporters::checkMapping($vs_mapping))>0){
+				print _t("Mapping %1 has errors: %2",$vs_mapping,join("; ",$va_errors))."\n";
+				return false;
+			}
+			
+			if($vs_search){
+				if(!ca_data_exporters::exportRecordsFromSearchExpression($vs_mapping, $vs_search, $vs_filename, array('showCLIProgressBar' => true, 'useNcurses' => true))){
+					print _t("Could not export mapping %1", $vs_mapping)."\n";
+					return false;
+				} else {
+					print _t("Exported data to %1", $vs_filename)."\n";
+				}	
+			} else if($vs_id){
+				if($vs_export = ca_data_exporters::exportRecord($vs_mapping, $vs_id, $pa_options=array('singleRecord' => true))){
+					file_put_contents($vs_filename, $vs_export);
+					print _t("Exported data to %1", CLIUtils::textWithColor($vs_filename, 'yellow'));
+				} else {
+					print _t("Could not export mapping %1", $vs_mapping)."\n";
+					return false;
+				}
+			}
+		}
+		# -------------------------------------------------------
+		public static function export_dataParamList() {
+			return array(
+				"search|s=s" => _t('Search expression that selects records to export.'),
+				"id|i=s" => _t('Primary key identifier of single item to export.'),
+				"file|f=s" => _t('Required. File to save export to.'),
+				"mapping|m=s" => _t('Mapping to export data with.'),
+				"rdf" => _t('Switches to RDF export mode. You can use this to assemble record-level exports across authorities with multiple mappings in a single export (usually an RDF graph). -s, -i and -m are ignored and -c is required.'),
+				"config|c=s" => _t('Configuration file for RDF export mode.'),
+			);
+		}
+		# -------------------------------------------------------
+		public static function export_dataShortHelp() {
+			return _t("Export data to a MARC or XML file.");
+		}
+		# -------------------------------------------------------
+		public static function export_dataHelp() {
+			return _t("Export data to a MARC or XML file.");
+		}
+		# -------------------------------------------------------
+		/**
+		 * 
+		 */
 		public static function regenerate_annotation_previews($po_opts=null) {
 			require_once(__CA_LIB_DIR__."/core/Db.php");
 			require_once(__CA_MODELS_DIR__."/ca_representation_annotations.php");
@@ -878,6 +1023,42 @@
 		 */
 		public static function regenerate_annotation_previewsHelp() {
 			return _t("Regenerates annotation preview media for some or all object representation annotations.");
+		}
+		# -------------------------------------------------------
+		/**
+		 * 
+		 */
+		public static function load_AAT($po_opts=null) {
+			require_once(__CA_APP_DIR__.'/helpers/supportHelpers.php');
+			
+			if (!($vs_file_path = $po_opts->getOption('file'))) {
+				CLIUtils::addError(_t("You must specify a file"));
+				return false;
+			}
+			caLoadAAT($vs_file_path);
+		}
+		# -------------------------------------------------------
+		/**
+		 *
+		 */
+		public static function load_AATParamList() {
+			return array(
+				"file|f=s" => _t('Path to AAT XML file.')
+			);
+		}
+		# -------------------------------------------------------
+		/**
+		 *
+		 */
+		public static function load_AATShortHelp() {
+			return _t("Load Getty Art & Architecture Thesaurus (AAT) into CollectiveAccess.");
+		}
+		# -------------------------------------------------------
+		/**
+		 *
+		 */
+		public static function load_AATHelp() {
+			return _t("Loads the AAT from a Getty-provided XML file.");
 		}
 		# -------------------------------------------------------
 	}

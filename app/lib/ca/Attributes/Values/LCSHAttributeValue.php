@@ -152,7 +152,8 @@
  		# ------------------------------------------------------------------
  		/**
  		 * @param array $pa_options Supported options are
- 		 *		asHTML - if set, URL is returned as an HTML link to the LOC definition of the term
+ 		 *		asHTML = if set URL is returned as an HTML link to the LOC definition of the term
+ 		 *		asText = if set only text portion, without LCSH identifier, is returned
  		 * @return string The term
  		 */
 		public function getDisplayValue($pa_options=null) {
@@ -162,6 +163,9 @@
 					return "<a href='http://id.loc.gov/authorities/sh".$va_matches[1]."' target='_lcsh_details'>".$vs_value.'</a>';
 				}
 			} 
+			if (isset($pa_options['asText']) && $pa_options['asText']) {
+				return preg_replace('![ ]*\[[^\]]*\]!', '', $this->ops_text_value);
+			}
 			return $this->ops_text_value;
 		}
 		# ------------------------------------------------------------------
@@ -177,6 +181,12 @@
  			$o_config = Configuration::load();
  			
  			$ps_value = trim(preg_replace("![\t\n\r]+!", ' ', $ps_value));
+ 			
+ 			// Try to convert LCSH display format into parse-able format, to avoid unwanted lookups
+ 			if(preg_match("!^([^\[]+)[ ]*\[(info:lc[^\]]+)\]!", $ps_value, $va_matches)) {
+ 				$ps_value = $va_matches[0]."|".$va_matches[1];
+ 			}
+ 			
 			if (trim($ps_value)) {
 				$va_tmp = explode('|', $ps_value);
 				if (sizeof($va_tmp) > 1) {

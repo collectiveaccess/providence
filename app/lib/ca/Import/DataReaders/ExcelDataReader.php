@@ -55,7 +55,7 @@ class ExcelDataReader extends BaseDataReader {
 		$this->ops_title = _t('Excel XLSX data reader');
 		$this->ops_description = _t('Reads Microsoft Excel XLSX files');
 		
-		$this->opa_formats = array('XLS', 'XLSX');
+		$this->opa_formats = array('xls', 'xlsx');	// must be all lowercase to allow for case-insensitive matching
 	}
 	# -------------------------------------------------------
 	/**

@@ -126,7 +126,7 @@
 				$t_entity->set('access', isset($pa_values['access']) ? $pa_values['access'] : 0);
 				$t_entity->set('status', isset($pa_values['status']) ? $pa_values['status'] : 0);
 				
-				if (!($vs_idno = isset($pa_values['idno']) ? $pa_values['idno'] : null)) {
+				if (!($vs_idno = isset($pa_values['idno']) ? (string)$pa_values['idno'] : null)) {
 					if(isset($pa_options['generateIdnoWithTemplate']) && $pa_options['generateIdnoWithTemplate']) {
 						$vs_idno = $t_entity->setIdnoTWithTemplate($pa_options['generateIdnoWithTemplate'], array('dontSetValue' => true));
 					}
@@ -266,7 +266,7 @@
 				$t_place->set('access', isset($pa_values['access']) ? $pa_values['access'] : 0);
 				$t_place->set('status', isset($pa_values['status']) ? $pa_values['status'] : 0);
 				
-				if (!($vs_idno = isset($pa_values['idno']) ? $pa_values['idno'] : null)) {
+				if (!($vs_idno = isset($pa_values['idno']) ? (string)$pa_values['idno'] : null)) {
 					if(isset($pa_options['generateIdnoWithTemplate']) && $pa_options['generateIdnoWithTemplate']) {
 						$vs_idno = $t_entity->setIdnoTWithTemplate($pa_options['generateIdnoWithTemplate'], array('dontSetValue' => true));
 					}
@@ -412,7 +412,7 @@
 				$t_occurrence->set('access', isset($pa_values['access']) ? $pa_values['access'] : 0);
 				$t_occurrence->set('status', isset($pa_values['status']) ? $pa_values['status'] : 0);
 				
-				if (!($vs_idno = isset($pa_values['idno']) ? $pa_values['idno'] : null)) {
+				if (!($vs_idno = isset($pa_values['idno']) ? (string)$pa_values['idno'] : null)) {
 					if(isset($pa_options['generateIdnoWithTemplate']) && $pa_options['generateIdnoWithTemplate']) {
 						$vs_idno = $t_occurrence->setIdnoTWithTemplate($pa_options['generateIdnoWithTemplate'], array('dontSetValue' => true));
 					}
@@ -678,7 +678,7 @@
 				$t_collection->set('access', isset($pa_values['access']) ? $pa_values['access'] : 0);
 				$t_collection->set('status', isset($pa_values['status']) ? $pa_values['status'] : 0);
 				
-				if (!($vs_idno = isset($pa_values['idno']) ? $pa_values['idno'] : null)) {
+				if (!($vs_idno = isset($pa_values['idno']) ? (string)$pa_values['idno'] : null)) {
 					if(isset($pa_options['generateIdnoWithTemplate']) && $pa_options['generateIdnoWithTemplate']) {
 						$vs_idno = $t_collection->setIdnoTWithTemplate($pa_options['generateIdnoWithTemplate'], array('dontSetValue' => true));
 					}
@@ -818,7 +818,7 @@
 				$t_location->set('access', isset($pa_values['access']) ? $pa_values['access'] : 0);
 				$t_location->set('status', isset($pa_values['status']) ? $pa_values['status'] : 0);
 				
-				if (!($vs_idno = isset($pa_values['idno']) ? $pa_values['idno'] : null)) {
+				if (!($vs_idno = isset($pa_values['idno']) ? (string)$pa_values['idno'] : null)) {
 					if(isset($pa_options['generateIdnoWithTemplate']) && $pa_options['generateIdnoWithTemplate']) {
 						$vs_idno = $t_entity->setIdnoTWithTemplate($pa_options['generateIdnoWithTemplate'], array('dontSetValue' => true));
 					}
@@ -956,7 +956,7 @@
 				$t_object->set('access', isset($pa_values['access']) ? $pa_values['access'] : 0);
 				$t_object->set('status', isset($pa_values['status']) ? $pa_values['status'] : 0);
 				
-				if (!($vs_idno = isset($pa_values['idno']) ? $pa_values['idno'] : null)) {
+				if (!($vs_idno = isset($pa_values['idno']) ? (string)$pa_values['idno'] : null)) {
 					if(isset($pa_options['generateIdnoWithTemplate']) && $pa_options['generateIdnoWithTemplate']) {
 						$vs_idno = $t_entity->setIdnoTWithTemplate($pa_options['generateIdnoWithTemplate'], array('dontSetValue' => true));
 					}
@@ -1096,7 +1096,7 @@
 				$t_loan->set('access', isset($pa_values['access']) ? $pa_values['access'] : 0);
 				$t_loan->set('status', isset($pa_values['status']) ? $pa_values['status'] : 0);
 				
-				if (!($vs_idno = isset($pa_values['idno']) ? $pa_values['idno'] : null)) {
+				if (!($vs_idno = isset($pa_values['idno']) ? (string)$pa_values['idno'] : null)) {
 					if(isset($pa_options['generateIdnoWithTemplate']) && $pa_options['generateIdnoWithTemplate']) {
 						$vs_idno = $t_loan->setIdnoTWithTemplate($pa_options['generateIdnoWithTemplate'], array('dontSetValue' => true));
 					}

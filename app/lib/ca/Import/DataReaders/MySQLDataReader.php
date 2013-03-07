@@ -56,7 +56,7 @@ class MySQLDataReader extends BaseDataReader {
 		$this->ops_title = _t('MySQL data reader');
 		$this->ops_description = _t('Reads data from MySQL databases');
 		
-		$this->opa_formats = array('MYSQL');
+		$this->opa_formats = array('mysql');	// must be all lowercase to allow for case-insensitive matching
 	}
 	# -------------------------------------------------------
 	/**

@@ -2009,16 +2009,18 @@ class TimeExpressionParser {
 			$vs_datetime_conjunction = $va_datetime_conjunctions[0];
 		}
 	
-		$va_unix_dates = $this->getUnixTimestamps();
+	
+		$va_dates = $this->getHistoricTimestamps();
+		if (!$va_dates['start']) {
+			$va_unix_dates = $this->getUnixTimestamps();
 		
-		if (($va_unix_dates['start'] != null) && ($va_unix_dates['start'] != -1)) {
-			// convert unix timestamps for historic timestamp format for evaluation
-			$va_dates = array(
-				'start' 	=> $this->unixToHistoricTimestamp($va_unix_dates['start']),
-				'end' 		=> $this->unixToHistoricTimestamp($va_unix_dates['end'])
-			);
-		} else {
-			$va_dates = $this->getHistoricTimestamps();
+			if (($va_unix_dates['start'] != null) && ($va_unix_dates['start'] != -1)) {
+				// convert unix timestamps for historic timestamp format for evaluation
+				$va_dates = array(
+					'start' 	=> $this->unixToHistoricTimestamp($va_unix_dates['start']),
+					'end' 		=> $this->unixToHistoricTimestamp($va_unix_dates['end'])
+				);
+			} 
 		}
 		
 		// only return times?
