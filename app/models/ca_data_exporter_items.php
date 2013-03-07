@@ -328,6 +328,16 @@ class ca_data_exporter_items extends BaseModel {
 			'label' => _t('Replacement values'),
 			'description' => _t('Return-separated list of replacement values that correspond to the mapped values from the original data source.')
 		);
+
+		$va_settings['locale'] = array(
+			'formatType' => FT_TEXT,
+			'displayType' => DT_FIELD,
+			'width' => 40, 'height' => 1,
+			'takesLocale' => false,
+			'default' => '',
+			'label' => _t('Locale'),
+			'description' => _t('Locale code to use to get the field values. If not set, the system/user default is used.')
+		);
 		
 		$this->SETTINGS = new ModelSettings($this, 'settings', $va_settings);
 	}

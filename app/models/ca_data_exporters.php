@@ -1065,6 +1065,10 @@ class ca_data_exporters extends BundlableLabelableBaseModelWithAttributes {
 			$va_get_options['template'] = $vs_template;	
 		}
 
+		if($vs_locale = $t_exporter_item->getSetting('locale')){
+			$va_get_options['locale'] = $vs_locale;
+		}
+
 		if($vs_source) {
 			$va_matches = array();
 			// CONSTANT value
