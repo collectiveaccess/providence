@@ -826,7 +826,7 @@ class ca_data_exporters extends BundlableLabelableBaseModelWithAttributes {
 		foreach($va_records_to_export as $vs_key => $vs_mapping){
 			$va_split = explode("/",$vs_key);
 			$vs_item_export = ca_data_exporters::exportRecord($vs_mapping,$va_split[1]);
-			file_put_contents($ps_filename, $vs_item_export."\n", FILE_APPEND);
+			file_put_contents($ps_filename, trim($vs_item_export)."\n", FILE_APPEND);
 
 			if ($vb_show_cli_progress_bar) {
 				print CLIProgressBar::next(1, $vs_msg);
@@ -1036,9 +1036,11 @@ class ca_data_exporters extends BundlableLabelableBaseModelWithAttributes {
 
 			$vs_key = $this->getAppDatamodel()->getTablePrimaryKeyName($vn_new_table_num);
 			$va_info = array();
-			foreach($va_related as $va_rel){
-				$va_rel_export = $this->processExporterItem($pn_item_id,$vn_new_table_num,$va_rel[$vs_key],array_merge(array('ignoreContext' => true),$pa_options));
-				$va_info = array_merge($va_info,$va_rel_export);
+			if(is_array($va_related)){
+				foreach($va_related as $va_rel){
+					$va_rel_export = $this->processExporterItem($pn_item_id,$vn_new_table_num,$va_rel[$vs_key],array_merge(array('ignoreContext' => true),$pa_options));
+					$va_info = array_merge($va_info,$va_rel_export);
+				}
 			}
 
 			return $va_info;
@@ -1063,6 +1065,10 @@ class ca_data_exporters extends BundlableLabelableBaseModelWithAttributes {
 
 		if($vs_template = $t_exporter_item->getSetting('template')){
 			$va_get_options['template'] = $vs_template;	
+		}
+
+		if($vs_locale = $t_exporter_item->getSetting('locale')){
+			$va_get_options['locale'] = $vs_locale;
 		}
 
 		if($vs_source) {
