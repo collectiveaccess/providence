@@ -93,7 +93,7 @@ BaseModel::$s_ca_models_definitions['ca_data_exporters'] = array(
 					_t('object representations') => 56,
 					_t('representation annotations') => 82,
 					_t('lists') => 36,
-					_t('list items') => 33
+					_t('list items') => 33,
 				)
 		),
 		'settings' => array(
@@ -214,9 +214,6 @@ class ca_data_exporters extends BundlableLabelableBaseModelWithAttributes {
 	
 	# ------------------------------------------------------
 	public function __construct($pn_id=null) {
-		// Filter list of tables exporters can be used for to those enabled in current config
-		BaseModel::$s_ca_models_definitions['ca_data_exporters']['FIELDS']['table_num']['BOUNDS_CHOICE_LIST'] = caFilterTableList(BaseModel::$s_ca_models_definitions['ca_data_exporters']['FIELDS']['table_num']['BOUNDS_CHOICE_LIST']);
-
 		$this->opo_app_plugin_manager = new ApplicationPluginManager();
 		
 		global $_ca_data_exporters_settings;
@@ -672,12 +669,12 @@ class ca_data_exporters extends BundlableLabelableBaseModelWithAttributes {
 		}
 		$t_exporter->insert();
 
-		$t_exporter->addLabel(array('name' => $vs_name), $vn_locale_id, null, true);
-
 		if ($t_exporter->numErrors()) {
 			print _t("Error creating exporter: %1", join("; ", $t_exporter->getErrors()))."\n";
 			return;
 		}
+
+		$t_exporter->addLabel(array('name' => $vs_name), $vn_locale_id, null, true);
 
 		if ($t_exporter->numErrors()) {
 			print _t("Error creating exporter name: %1", join("; ", $t_exporter->getErrors()))."\n";
@@ -1157,9 +1154,6 @@ class ca_data_exporters extends BundlableLabelableBaseModelWithAttributes {
 				$va_item = $va_plugin_item['export_item'];
 			}
 
-			// do replacements
-			$va_item['text'] = ca_data_exporter_items::replaceText($va_item['text'],$va_replacements);
-
 			// filter by regexp
 			if((strlen($va_item['text'])>0) && $vs_regexp){
 				if(!preg_match("!".$vs_regexp."!", $va_item['text'])) {
@@ -1167,6 +1161,9 @@ class ca_data_exporters extends BundlableLabelableBaseModelWithAttributes {
  					continue;
  				}
 			}
+
+			// do replacements
+			$va_item['text'] = ca_data_exporter_items::replaceText($va_item['text'],$va_replacements);
 
 			// if text is empty, fill in default
 			// if text isn't empty, respect prefix and suffix
