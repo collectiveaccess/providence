@@ -1434,7 +1434,7 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 					continue;
 				}
 				
-				if (sizeof($va_preferred_label_mapping_ids)) {
+				if (sizeof($va_preferred_label_mapping_ids) && ($t_subject->getPreferredLabelCount() > 0)) {
 					$t_subject->removeAllLabels(__CA_LABEL_TYPE_PREFERRED__);
 					if ($vs_error = DataMigrationUtils::postError($t_subject, _t("Could not update remove preferred labels from matched record"), array('dontOutputLevel' => true, 'dontPrint' => true))) {
 						ca_data_importers::logImportError($vs_error, array("window" => $r_errors, 'log' => $o_log, 'skip' => true));
@@ -1475,9 +1475,9 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 											$vb_output_subject_preferred_label = true;
 										}
 										
-										if ($vs_error = DataMigrationUtils::postError($t_subject, _t("[%1] Could not add preferred label:", $vs_idno), __CA_DATA_IMPORT_ERROR__, array('dontOutputLevel' => true, 'dontPrint' => true))) {
+										if ($vs_error = DataMigrationUtils::postError($t_subject, _t("[%1] Could not add preferred label. Record was deleted because no preferred label could be applied: ", $vs_idno), __CA_DATA_IMPORT_ERROR__, array('dontOutputLevel' => true, 'dontPrint' => true))) {
 											ca_data_importers::logImportError($vs_error, array("window" => $r_errors, 'log' => $o_log, 'skip' => true));
-											$t_subject->delete(true, array('hard' => true));
+											$t_subject->delete(true, array('hard' => false));
 											
 											if ($vs_import_error_policy == 'stop') {
 												$o_log->logAlert(_t('Import stopped due to import error policy %1', $vs_import_error_policy));
@@ -1701,7 +1701,7 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 // 										
 			$o_log->logDebug(_t('Finished inserting content tree for %1 at %2 seconds into database', $vs_idno, $t->getTime(4)));
 			
-			if(!$vb_output_subject_preferred_label) {
+			if(!$vb_output_subject_preferred_label && ($t_subject->getPreferredLabelCount() == 0)) {
 				$t_subject->addLabel(
 					array($t_subject->getLabelDisplayField() => '???'), $vn_locale_id, null, true
 				);
