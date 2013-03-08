@@ -43,6 +43,7 @@ require_once(__CA_LIB_DIR__.'/ca/Export/BaseExportFormat.php');
 
 require_once(__CA_MODELS_DIR__."/ca_data_exporter_labels.php");
 require_once(__CA_MODELS_DIR__."/ca_data_exporter_items.php");
+require_once(__CA_MODELS_DIR__."/ca_sets.php");
 
 require_once(__CA_LIB_DIR__.'/core/Parsers/PHPExcel/PHPExcel.php');
 require_once(__CA_LIB_DIR__.'/core/Parsers/PHPExcel/PHPExcel/IOFactory.php');
@@ -1024,6 +1025,19 @@ class ca_data_exporters extends BundlableLabelableBaseModelWithAttributes {
 						)
 					);
 					break;
+				case 'sets':
+					$t_set = new ca_sets();
+					$va_set_options = array();
+					if(isset($va_parsed_context['restrictToTypes'])){
+						$va_set_options['setType'] = $va_parsed_context['restrictToTypes'];
+					}
+					$va_set_options['setIDsOnly'] = true;
+					$va_set_ids = $t_set->getSetsForItem($pn_table_num,$t_instance->getPrimaryKey(),$va_set_options);
+					$va_related = array();
+					foreach(array_unique($va_set_ids) as $vn_pk){
+						$va_related[] = array('set_id' => intval($vn_pk));
+					}
+					break;
 				case 'children':
 					$va_related = $t_instance->getHierarchyChildren();
 					break;
@@ -1180,7 +1194,12 @@ class ca_data_exporters extends BundlableLabelableBaseModelWithAttributes {
 		$vs_table = array_shift($va_tmp);
 
 		if($vn_table_num = $o_dm->getTableNum($vs_table)){ // actual table
-			$va_return['mode'] = 'related_table';
+			if($vs_table == "ca_sets"){
+				$va_return['mode'] = 'sets';
+			} else {
+				$va_return['mode'] = 'related_table';	
+			}
+			
 			$va_return['table_num'] = $vn_table_num;
 
 			foreach($va_tmp as $vs_tmp){
