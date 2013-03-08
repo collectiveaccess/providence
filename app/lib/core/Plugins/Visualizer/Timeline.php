@@ -231,6 +231,7 @@ class WLPlugVisualizerTimeline Extends BaseVisualizerPlugIn Implements IWLPlugVi
 	 */
 	public function canHandle($po_data, $pa_viz_settings) {
 		$vn_cur_pos = $po_data->currentIndex();
+		if ($vn_cur_pos < 0) { $vn_cur_pos = 0; }
 		$po_data->seek(0);
 		
 		$va_sources = $pa_viz_settings['sources'];

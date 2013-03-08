@@ -177,18 +177,21 @@
 			$o_viz_config = $o_viz->getVisualizationConfig();
 			
 			
-			$va_viz_list = $o_viz_config->getAssoc($ps_table);
+			if (is_array($va_viz_list = $o_viz_config->getAssoc($ps_table))) {
 			
-			if(isset($pa_options['restrictToTypes']) && is_array($pa_options['restrictToTypes']) && sizeof($pa_options['restrictToTypes'])) {
-				$va_filter_on_types = caMakeTypeIDList($ps_table, $pa_options['restrictToTypes']);
-				foreach($va_viz_list as $vs_code => $va_viz) {
-					if(isset($va_viz['restrictToTypes']) && is_array($va_viz['restrictToTypes']) && (sizeof($va_viz['restrictToTypes']))) {
-						$va_types = caMakeTypeIDList($ps_table, $va_viz['restrictToTypes']);
-						if (sizeof(array_intersect($va_types, $va_filter_on_types)) == 0) {
-							unset($va_viz_list[$vs_code]);
+				if(isset($pa_options['restrictToTypes']) && is_array($pa_options['restrictToTypes']) && sizeof($pa_options['restrictToTypes'])) {
+					$va_filter_on_types = caMakeTypeIDList($ps_table, $pa_options['restrictToTypes']);
+					foreach($va_viz_list as $vs_code => $va_viz) {
+						if(isset($va_viz['restrictToTypes']) && is_array($va_viz['restrictToTypes']) && (sizeof($va_viz['restrictToTypes']))) {
+							$va_types = caMakeTypeIDList($ps_table, $va_viz['restrictToTypes']);
+							if (sizeof(array_intersect($va_types, $va_filter_on_types)) == 0) {
+								unset($va_viz_list[$vs_code]);
+							}
 						}
 					}
 				}
+			} else {
+				return array();
 			}
 			
 			return $va_viz_list;
@@ -202,11 +205,20 @@
 		 * @param array $pa_attributes Optional array of attributes to add to the returned HTML <select> element
 		 * @param array $pa_options Options are any options supported by the caHTMLSelect helper plus:
 		 *		restrictToTypes = optional list of types relevant to the specified table. Only unrestricted visualizations and visualizations restricted to the specified types will be included.
-		 *	
+		 *		resultContext =
 		 * @return string HTML for a <select> element with available visualizations; will return null if no visualizations are available. 
 		 */
 		public static function getAvailableVisualizationsAsHTMLFormElement($ps_table, $ps_name, $pa_attributes=null, $pa_options=null) {
 			$va_viz = Visualizer::getAvailableVisualizations($ps_table, $pa_options);
+			$vo_result_context = (isset($pa_options['resultContext']) && ($pa_options['resultContext'] instanceOf ResultContext)) ? $pa_options['resultContext'] : null;
+			if ($vo_result_context && ($vo_result_context->getParameter('availableVisualizationChecked') > 0)) {
+				if ($vo_result_context->getParameter('availableVisualizationCount') > 0) {
+					return $vo_result_context->getParameter('availableVisualizationHTMLSelect');
+				} else {
+					return null;
+				}
+			}
+			
 			if (!is_array($va_viz) || !sizeof($va_viz)) { return null; }
 			$va_valid_viz_codes = null;
 			if (isset($pa_options['data']) && is_subclass_of($pa_options['data'], 'SearchResult')) {
@@ -218,8 +230,24 @@
 				if (is_array($va_valid_viz_codes) && !in_array($vs_viz_code, $va_valid_viz_codes)) { continue; }
 				$va_options[$va_viz_opt['name']] = $vs_viz_code;
 			}
-			if (!sizeof($va_options)) { return null; }
-			return caHTMLSelect($ps_name, $va_options, $pa_attributes, $pa_options);
+			if (!sizeof($va_options)) { 
+				if ($vo_result_context) {
+					$vo_result_context->setParameter('availableVisualizationChecked', 1);
+					$vo_result_context->setParameter('availableVisualizationHTMLSelect', '');
+					$vo_result_context->setParameter('availableVisualizationCount', 0);
+					$vo_result_context->saveContext();
+				}
+				return null; 
+			}
+			
+			$vs_html = caHTMLSelect($ps_name, $va_options, $pa_attributes, $pa_options);
+			if ($vo_result_context) {
+				$vo_result_context->setParameter('availableVisualizationChecked', 1);
+				$vo_result_context->setParameter('availableVisualizationHTMLSelect', $vs_html);
+				$vo_result_context->setParameter('availableVisualizationCount', sizeof($va_options));
+				$vo_result_context->saveContext();
+			}
+			return $vs_html;
 		}
 		# --------------------------------------------------------------------------------
 		/**

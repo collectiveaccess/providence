@@ -93,7 +93,7 @@ BaseModel::$s_ca_models_definitions['ca_data_exporters'] = array(
 					_t('object representations') => 56,
 					_t('representation annotations') => 82,
 					_t('lists') => 36,
-					_t('list items') => 33
+					_t('list items') => 33,
 				)
 		),
 		'settings' => array(
@@ -214,9 +214,6 @@ class ca_data_exporters extends BundlableLabelableBaseModelWithAttributes {
 	
 	# ------------------------------------------------------
 	public function __construct($pn_id=null) {
-		// Filter list of tables exporters can be used for to those enabled in current config
-		BaseModel::$s_ca_models_definitions['ca_data_exporters']['FIELDS']['table_num']['BOUNDS_CHOICE_LIST'] = caFilterTableList(BaseModel::$s_ca_models_definitions['ca_data_exporters']['FIELDS']['table_num']['BOUNDS_CHOICE_LIST']);
-
 		$this->opo_app_plugin_manager = new ApplicationPluginManager();
 		
 		global $_ca_data_exporters_settings;
@@ -672,12 +669,12 @@ class ca_data_exporters extends BundlableLabelableBaseModelWithAttributes {
 		}
 		$t_exporter->insert();
 
-		$t_exporter->addLabel(array('name' => $vs_name), $vn_locale_id, null, true);
-
 		if ($t_exporter->numErrors()) {
 			print _t("Error creating exporter: %1", join("; ", $t_exporter->getErrors()))."\n";
 			return;
 		}
+
+		$t_exporter->addLabel(array('name' => $vs_name), $vn_locale_id, null, true);
 
 		if ($t_exporter->numErrors()) {
 			print _t("Error creating exporter name: %1", join("; ", $t_exporter->getErrors()))."\n";
@@ -737,6 +734,7 @@ class ca_data_exporters extends BundlableLabelableBaseModelWithAttributes {
 
 		return $t_exporter;
 	}
+	# ------------------------------------------------------
 	/**
 	 * Export a set of records across different database entities with different mappings.
 	 * This is usually used to construct RDF graphs or similar structures, hence the name of the function.
@@ -768,10 +766,6 @@ class ca_data_exporters extends BundlableLabelableBaseModelWithAttributes {
 		
 		if(is_array($va_nodes)){
 			foreach($va_nodes as $va_mapping){
-				if(!$t_mapping = ca_data_exporters::loadExporterByCode($va_mapping['mapping'])){
-					return false;
-				}
-
 				$vn_table = $t_mapping->get('table_num');
 				$vs_key = $o_dm->getTablePrimaryKeyName($vn_table);
 
@@ -788,7 +782,7 @@ class ca_data_exporters extends BundlableLabelableBaseModelWithAttributes {
 						print CLIProgressBar::next(1, $vs_msg);
 					}
 					
-					$va_records_to_export[$vn_table."/".$o_result->get($vs_key)] = $t_mapping->get('exporter_code');
+					$va_records_to_export[$vn_table."/".$o_result->get($vs_key)] = $va_mapping['mapping'];
 
 					if(is_array($va_mapping['related'])){
 						foreach($va_mapping['related'] as $va_related_nodes){
@@ -826,8 +820,12 @@ class ca_data_exporters extends BundlableLabelableBaseModelWithAttributes {
 
 		foreach($va_records_to_export as $vs_key => $vs_mapping){
 			$va_split = explode("/",$vs_key);
-			$vs_item_export = ca_data_exporters::exportRecord($vs_mapping,$va_split[1]);
-			file_put_contents($ps_filename, trim($vs_item_export)."\n", FILE_APPEND);
+			$va_mappings = explode("/", $vs_mapping);
+
+			foreach($va_mappings as $vs_mapping){
+				$vs_item_export = ca_data_exporters::exportRecord($vs_mapping,$va_split[1]);
+				file_put_contents($ps_filename, trim($vs_item_export)."\n", FILE_APPEND);
+			}
 
 			if ($vb_show_cli_progress_bar) {
 				print CLIProgressBar::next(1, $vs_msg);
@@ -1157,9 +1155,6 @@ class ca_data_exporters extends BundlableLabelableBaseModelWithAttributes {
 				$va_item = $va_plugin_item['export_item'];
 			}
 
-			// do replacements
-			$va_item['text'] = ca_data_exporter_items::replaceText($va_item['text'],$va_replacements);
-
 			// filter by regexp
 			if((strlen($va_item['text'])>0) && $vs_regexp){
 				if(!preg_match("!".$vs_regexp."!", $va_item['text'])) {
@@ -1167,6 +1162,9 @@ class ca_data_exporters extends BundlableLabelableBaseModelWithAttributes {
  					continue;
  				}
 			}
+
+			// do replacements
+			$va_item['text'] = ca_data_exporter_items::replaceText($va_item['text'],$va_replacements);
 
 			// if text is empty, fill in default
 			// if text isn't empty, respect prefix and suffix
