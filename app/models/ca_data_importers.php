@@ -367,6 +367,55 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 	}
 	# ------------------------------------------------------
 	/**
+	 * Return list of available data importers
+	 *
+	 * @param int $pn_table_num
+	 * @param array $pa_options
+	 * 
+	 * @return array
+	 */
+	static public function getImporters($pn_table_num=null, $pa_options=null) {
+		$o_db = new Db();
+		
+		$t_importer = new ca_data_importers();
+		$vo_dm = $t_importer->getAppDatamodel();
+		
+		$va_sql_wheres = array("(deleted = 0)");
+		$va_sql_params = array();
+		if((int)$pn_table_num) {
+			$va_sql_wheres[] = "(di.table_num = ?)";
+			$va_sql_params[] = (int)$pn_table_num;
+		}
+		
+		
+		$vs_sql_wheres = sizeof($va_sql_wheres) ? " WHERE ".join(" AND ", $va_sql_wheres) : "";
+		
+		$qr_res = $o_db->query("
+			SELECT *
+			FROM ca_data_importers di
+			{$vs_sql_wheres}
+		", $va_sql_params);
+	
+		$va_importers = array();
+		$va_ids = array();
+		
+		while($qr_res->nextRow()) {
+			$va_row = $qr_res->getRow();
+			$va_ids[] = $vn_id = $va_row['importer_id'];
+			$va_importers[$vn_id] = $va_row;
+			
+			$t_instance = $vo_dm->getInstanceByTableNum($va_row['table_num'], true);
+			$va_importers[$vn_id]['importer_type'] = $t_instance->getProperty('NAME_PLURAL');
+		}
+		
+		$va_labels = $t_importer->getPreferredDisplayLabelsForIDs($va_ids);
+		foreach($va_labels as $vn_id => $vs_label) {
+			$va_importers[$vn_id]['label'] = $vs_label;
+		}
+		return $va_importers;
+	}
+	# ------------------------------------------------------
+	/**
 	 *
 	 */
 	public function addImportItem($pa_values){
