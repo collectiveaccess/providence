@@ -230,18 +230,19 @@ class WLPlugVisualizerTimeline Extends BaseVisualizerPlugIn Implements IWLPlugVi
 	 * @return bool True if data can be visualized
 	 */
 	public function canHandle($po_data, $pa_viz_settings) {
+		$vn_cur_pos = $po_data->currentIndex();
 		$po_data->seek(0);
 		
 		$va_sources = $pa_viz_settings['sources'];
 		while($po_data->nextHit()) {
 			foreach($va_sources as $vs_source_code => $va_source_info) {
 				if (trim($po_data->get($va_source_info['data']))) {
-					$po_data->seek(0);
+					$po_data->seek($vn_cur_pos);
 					return true;
 				}
 			}
 		}
-		$po_data->seek(0);
+		$po_data->seek($vn_cur_pos);
 		return false;
 	}
 	# ------------------------------------------------
