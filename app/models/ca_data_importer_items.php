@@ -369,6 +369,15 @@ class ca_data_importer_items extends BaseModel {
 			'label' => _t('Relationship type'),
 			'description' => _t('Relationship type to use when linking to a related record.')
 		);
+		$va_settings['convertNewlinesToHTML'] = array(
+			'formatType' => FT_TEXT,
+			'displayType' => DT_FIELD,
+			'width' => 40, 'height' => 2,
+			'takesLocale' => false,
+			'default' => '',
+			'label' => _t('Convert newlines to HTML'),
+			'description' => _t('Convert newline characters in text to HTML &lt;BR/&gt; tags.')
+		);
 		$this->SETTINGS = new ModelSettings($this, 'settings', $va_settings);
 	}
 	# ------------------------------------------------------

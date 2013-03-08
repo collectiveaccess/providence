@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2010-2012 Whirl-i-Gig
+ * Copyright 2010-2013 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -59,6 +59,15 @@
 			$this->ops_find_type = $ps_find_type;
 			
 			$this->getContext();
+		}
+		# ------------------------------------------------------------------
+		/**
+		 * Returns table name of result context (eg. what kind of item is the find result composed of?)
+		 *
+		 * @return string
+		 */
+		public function tableName() {
+			return $this->ops_table_name;
 		}
 		# ------------------------------------------------------------------
 		# Context getter/setters

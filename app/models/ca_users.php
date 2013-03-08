@@ -2443,7 +2443,7 @@ class ca_users extends BaseModel {
 			return $this->authenticateExtDB($ps_username,$ps_password);
 		}
 		
-		if ($this->load(array("user_name" => $ps_username))) {
+		if ((strlen($ps_username) > 0) && $this->load(array("user_name" => $ps_username))) {
 			if ($this->verify($ps_password) && $this->isActive()) {
 				return true;
 			}

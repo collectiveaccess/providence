@@ -1104,7 +1104,22 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 			$vs_idno = null;
 			if ($vn_idno_mapping_item_id) {
 				// idno is specified in row
-				$vs_idno = ca_data_importers::getValueFromSource($va_mapping_items[$vn_idno_mapping_item_id], $o_reader);
+				$vs_idno = ca_data_importers::getValueFromSource($va_mapping_items[$vn_idno_mapping_item_id], $o_reader);				
+				
+				if (isset($va_mapping_items[$vn_idno_mapping_item_id]['settings']['default']) && strlen($va_mapping_items[$vn_idno_mapping_item_id]['settings']['default']) && !strlen($vs_idno)) {
+					$vs_idno = $va_mapping_items[$vn_idno_mapping_item_id]['settings']['default'];
+				}
+				// Apply prefix/suffix *AFTER* setting default
+				if (isset($va_mapping_items[$vn_idno_mapping_item_id]['settings']['prefix']) && strlen($va_mapping_items[$vn_idno_mapping_item_id]['settings']['prefix'])) {
+					$vs_idno = $va_mapping_items[$vn_idno_mapping_item_id]['settings']['prefix'].$vs_idno;
+				}
+				if (isset($va_mapping_items[$vn_idno_mapping_item_id]['settings']['suffix']) && strlen($va_mapping_items[$vn_idno_mapping_item_id]['settings']['suffix'])) {
+					$vs_idno .= $va_mapping_items[$vn_idno_mapping_item_id]['settings']['suffix'];
+				}
+				
+				if (isset($va_mapping_items[$vn_idno_mapping_item_id]['settings']['formatWithTemplate']) && strlen($va_mapping_items[$vn_idno_mapping_item_id]['settings']['formatWithTemplate'])) {
+					$vs_idno = caProcessTemplate($va_mapping_items[$vn_idno_mapping_item_id]['settings']['formatWithTemplate'], $va_row);
+				}
 			} else {
 				$vs_idno = "%";
 			}
@@ -1219,6 +1234,10 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 				
 				foreach($va_items as $vn_item_id => $va_item) {
 					$vm_val = ca_data_importers::getValueFromSource($va_item, $o_reader);
+					
+					if (isset($va_item['settings']['convertNewlinesToHTML']) && (bool)$va_item['settings']['convertNewlinesToHTML'] && is_string($vm_val)) {
+						$vm_val = nl2br($vm_val);
+					}
 					
 					// Get location in content tree for addition of new content
 					$va_item_dest = explode(".",  $va_item['destination']);

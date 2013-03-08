@@ -72,7 +72,7 @@ abstract class BaseDataReader {
 	 * @param array $pa_options
 	 * @return bool
 	 */
-	abstract function read($ps_source, $pa_options);
+	abstract function read($ps_source, $pa_options=null);
 	# -------------------------------------------------------
 	/**
 	 * 
