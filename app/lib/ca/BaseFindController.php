@@ -964,13 +964,13 @@
  			
  			if ($vo_result) {
  				$o_viz->addData($vo_result);
- 				$this->view->setVar('num_items_total', $vo_result->numHits());
+ 				$this->view->setVar('num_items_total', (int)$vo_result->numHits());
  			}
  			$this->view->setVar("viz_html", $o_viz->render($ps_viz, "HTML", array('classname' => 'vizFullScreen', 'request' => $this->request)));
  			
  			$o_dm = Datamodel::load();
  			$this->view->setVar('t_item', $o_dm->getInstanceByTableName($this->ops_tablename, true));
- 			$this->view->setVar('num_items_rendered', $o_viz->numItemsRendered());
+ 			$this->view->setVar('num_items_rendered', (int)$o_viz->numItemsRendered());
  			
  			$this->render('Results/viz_html.php');
  		}
