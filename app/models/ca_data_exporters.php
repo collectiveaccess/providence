@@ -1014,6 +1014,8 @@ class ca_data_exporters extends BundlableLabelableBaseModelWithAttributes {
 				$vn_new_table_num = $pn_table_num;
 			}
 
+			$vs_key = $this->getAppDatamodel()->getTablePrimaryKeyName($vn_new_table_num);
+
 			switch($va_parsed_context['mode']){
 				case 'related_table':
 					$va_related = $t_instance->getRelatedItems(
@@ -1037,20 +1039,29 @@ class ca_data_exporters extends BundlableLabelableBaseModelWithAttributes {
 					$va_set_ids = $t_set->getSetsForItem($pn_table_num,$t_instance->getPrimaryKey(),$va_set_options);
 					$va_related = array();
 					foreach(array_unique($va_set_ids) as $vn_pk){
-						$va_related[] = array('set_id' => intval($vn_pk));
+						$va_related[] = array($vs_key => intval($vn_pk));
 					}
 					break;
 				case 'children':
 					$va_related = $t_instance->getHierarchyChildren();
 					break;
 				case 'parent':
-					$va_related = $t_instance->getHierarchyAncestors();
+					$va_related = array();
+					if($vs_parent_id_fld = $t_instance->getProperty("HIERARCHY_PARENT_ID_FLD")){
+						$va_related[] = array($vs_key => $t_instance->get($vs_parent_id_fld));
+					}
+					break;
+				case 'ancestors':
+					$va_parents = $t_instance->getHierarchyAncestors(null,array('idsOnly' => true));
+					$va_related = array();
+					foreach(array_unique($va_parents) as $vn_pk){
+						$va_related[] = array($vs_key => intval($vn_pk));
+					}
 					break;
 				default:
 					break;
 			}
-
-			$vs_key = $this->getAppDatamodel()->getTablePrimaryKeyName($vn_new_table_num);
+			
 			$va_info = array();
 			if(is_array($va_related)){
 				foreach($va_related as $va_rel){
@@ -1222,6 +1233,7 @@ class ca_data_exporters extends BundlableLabelableBaseModelWithAttributes {
 		} else { // probably some meta-key like 'parent' or 'children'
 			switch($vs_table){
 				case 'parent':
+				case 'ancestors':
 				case 'children':
 					$va_return['mode'] = $vs_table;
 					break;
