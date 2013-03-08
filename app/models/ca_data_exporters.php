@@ -1006,7 +1006,7 @@ class ca_data_exporters extends BundlableLabelableBaseModelWithAttributes {
 		if(!$vb_ignore_context && ($vs_context = $t_exporter_item->get('context'))){
 
 			$va_parsed_context = ca_data_exporters::_parseItemContext($vs_context);
-			if(!$va_parsed_context){ return; }
+			if(!$va_parsed_context){ return array(); }
 
 			if(isset($va_parsed_context['table_num'])){
 				$vn_new_table_num = $va_parsed_context['table_num'];
