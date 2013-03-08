@@ -1028,8 +1028,10 @@ class ca_data_exporters extends BundlableLabelableBaseModelWithAttributes {
 				case 'sets':
 					$t_set = new ca_sets();
 					$va_set_options = array();
-					if(isset($va_parsed_context['restrictToTypes'])){
-						$va_set_options['setType'] = $va_parsed_context['restrictToTypes'];
+					if(isset($va_parsed_context['restrictToTypes'][0])){
+						// the utility used below doesn't support passing multiple types so we just pass the first.
+						// this should be enough for 99.99% of the actual use cases anyway
+						$va_set_options['setType'] = $va_parsed_context['restrictToTypes'][0];
 					}
 					$va_set_options['setIDsOnly'] = true;
 					$va_set_ids = $t_set->getSetsForItem($pn_table_num,$t_instance->getPrimaryKey(),$va_set_options);
@@ -1194,10 +1196,13 @@ class ca_data_exporters extends BundlableLabelableBaseModelWithAttributes {
 		$vs_table = array_shift($va_tmp);
 
 		if($vn_table_num = $o_dm->getTableNum($vs_table)){ // actual table
-			if($vs_table == "ca_sets"){
-				$va_return['mode'] = 'sets';
-			} else {
-				$va_return['mode'] = 'related_table';	
+			switch($vs_table){
+				case 'ca_sets':
+					$va_return['mode'] = 'sets';
+					break;
+				default:
+					$va_return['mode'] = 'related_table';
+					break;	
 			}
 			
 			$va_return['table_num'] = $vn_table_num;
