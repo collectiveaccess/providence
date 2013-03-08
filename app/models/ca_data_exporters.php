@@ -734,6 +734,7 @@ class ca_data_exporters extends BundlableLabelableBaseModelWithAttributes {
 
 		return $t_exporter;
 	}
+	# ------------------------------------------------------
 	/**
 	 * Export a set of records across different database entities with different mappings.
 	 * This is usually used to construct RDF graphs or similar structures, hence the name of the function.
@@ -765,10 +766,6 @@ class ca_data_exporters extends BundlableLabelableBaseModelWithAttributes {
 		
 		if(is_array($va_nodes)){
 			foreach($va_nodes as $va_mapping){
-				if(!$t_mapping = ca_data_exporters::loadExporterByCode($va_mapping['mapping'])){
-					return false;
-				}
-
 				$vn_table = $t_mapping->get('table_num');
 				$vs_key = $o_dm->getTablePrimaryKeyName($vn_table);
 
@@ -785,7 +782,7 @@ class ca_data_exporters extends BundlableLabelableBaseModelWithAttributes {
 						print CLIProgressBar::next(1, $vs_msg);
 					}
 					
-					$va_records_to_export[$vn_table."/".$o_result->get($vs_key)] = $t_mapping->get('exporter_code');
+					$va_records_to_export[$vn_table."/".$o_result->get($vs_key)] = $va_mapping['mapping'];
 
 					if(is_array($va_mapping['related'])){
 						foreach($va_mapping['related'] as $va_related_nodes){
@@ -823,8 +820,12 @@ class ca_data_exporters extends BundlableLabelableBaseModelWithAttributes {
 
 		foreach($va_records_to_export as $vs_key => $vs_mapping){
 			$va_split = explode("/",$vs_key);
-			$vs_item_export = ca_data_exporters::exportRecord($vs_mapping,$va_split[1]);
-			file_put_contents($ps_filename, trim($vs_item_export)."\n", FILE_APPEND);
+			$va_mappings = explode("/", $vs_mapping);
+
+			foreach($va_mappings as $vs_mapping){
+				$vs_item_export = ca_data_exporters::exportRecord($vs_mapping,$va_split[1]);
+				file_put_contents($ps_filename, trim($vs_item_export)."\n", FILE_APPEND);
+			}
 
 			if ($vb_show_cli_progress_bar) {
 				print CLIProgressBar::next(1, $vs_msg);
