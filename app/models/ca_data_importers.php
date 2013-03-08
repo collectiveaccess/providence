@@ -371,8 +371,9 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 	 *
 	 * @param int $pn_table_num
 	 * @param array $pa_options
+	 *		countOnly = return number of importers available rather than a list of importers
 	 * 
-	 * @return array
+	 * @return mixed List of importers, or integer count of importers if countOnly option is set
 	 */
 	static public function getImporters($pn_table_num=null, $pa_options=null) {
 		$o_db = new Db();
@@ -399,6 +400,10 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 		$va_importers = array();
 		$va_ids = array();
 		
+		if (isset($pa_options['countOnly']) && $pa_options['countOnly']) {
+			return (int)$qr_res->numRows();
+		}
+		
 		while($qr_res->nextRow()) {
 			$va_row = $qr_res->getRow();
 			$va_ids[] = $vn_id = $va_row['importer_id'];
@@ -413,6 +418,17 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 			$va_importers[$vn_id]['label'] = $vs_label;
 		}
 		return $va_importers;
+	}
+	# ------------------------------------------------------
+	/**
+	 * Returns count of available data importers
+	 *
+	 * @param int $pn_table_num
+	 * 
+	 * @return int
+	 */
+	static public function getImporterCount($pn_table_num=null) {
+		return ca_data_importers::getImporters($pn_table_num, array('countOnly' => true));
 	}
 	# ------------------------------------------------------
 	/**
