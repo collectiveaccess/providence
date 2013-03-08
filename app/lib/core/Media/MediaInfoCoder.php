@@ -219,7 +219,7 @@ class MediaInfoCoder {
 		$o_config = Configuration::load();
 		if ($o_config->get('use_pdfjs_viewer')) {
 			foreach($va_media_info as $vs_version => $va_info) {
-				if ($va_info['MIMETYPE'] == 'application/pdf') {
+				if (isset($va_info['MIMETYPE']) && ($va_info['MIMETYPE'] == 'application/pdf')) {
 					JavascriptLoadManager::register("pdfjs");
 				}
 			}
@@ -279,7 +279,7 @@ class MediaInfoCoder {
 		$o_config = Configuration::load();
 		if ($o_config->get('use_pdfjs_viewer')) {
 			foreach($va_media_info as $vs_version => $va_info) {
-				if ($va_info['MIMETYPE'] == 'application/pdf') {
+				if (isset($va_info['MIMETYPE']) && ($va_info['MIMETYPE'] == 'application/pdf')) {
 					JavascriptLoadManager::register("pdfjs");
 				}
 			}
