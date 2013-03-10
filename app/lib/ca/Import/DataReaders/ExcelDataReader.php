@@ -53,9 +53,10 @@ class ExcelDataReader extends BaseDataReader {
 		parent::__construct($ps_source, $pa_options);
 		
 		$this->ops_title = _t('Excel XLSX data reader');
+		$this->ops_display_name = _t('Excel XLS/XLSX');
 		$this->ops_description = _t('Reads Microsoft Excel XLSX files');
 		
-		$this->opa_formats = array('xls', 'xlsx');	// must be all lowercase to allow for case-insensitive matching
+		$this->opa_formats = array('xlsx');	// must be all lowercase to allow for case-insensitive matching
 	}
 	# -------------------------------------------------------
 	/**
@@ -170,6 +171,15 @@ class ExcelDataReader extends BaseDataReader {
 	 */
 	public function numRows() {
 		return $this->opo_handle->getActiveSheet()->getHighestRow();
+	}
+	# -------------------------------------------------------
+	/**
+	 * 
+	 * 
+	 * @return int
+	 */
+	public function getInputType() {
+		return __CA_DATA_READER_INPUT_FILE__;
 	}
 	# -------------------------------------------------------
 }

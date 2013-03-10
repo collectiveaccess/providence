@@ -66,7 +66,13 @@
 			if ($req->isLoggedIn()) {
 				set_time_limit(3600*24); // if it takes more than 24 hours we're in trouble
 			
-				//$va_errors = BatchProcessor::importMediaFromDirectory($this->request, array_merge($this->opa_options, array('progressCallback' => 'caIncrementBatchMetadataImportProgress', 'reportCallback' => 'caCreateBatchMediaImportResultsReport')));
+				$va_errors = BatchProcessor::importMetadata(
+					$req, 
+					(isset($_FILES['sourceFile']['tmp_name']) && $_FILES['sourceFile']['tmp_name']) ? $_FILES['sourceFile']['tmp_name'] : $req->getParameter('sourceUrl', pString),
+					$req->getParameter('importer_id', pInteger),
+					$req->getParameter('inputFormat', pString),
+					array_merge($this->opa_options, array('progressCallback' => 'caIncrementBatchMetadataImportProgress', 'reportCallback' => 'caUpdateBatchMetadataImportResultsReport'))
+				);
 			}
 		}	
 		# -------------------------------------------------------

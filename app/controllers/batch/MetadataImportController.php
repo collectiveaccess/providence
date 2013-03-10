@@ -74,6 +74,7 @@
  		 */
  		public function Index($pa_values=null, $pa_options=null) {
 			JavascriptLoadManager::register('tableList');
+			JavascriptLoadManager::register('fileupload');
 		
  			$va_importers = ca_data_importers::getImporters();
  			$this->view->setVar('importer_list', $va_importers);
@@ -98,7 +99,34 @@
  			// Load mapping
  			
  			// Return to mapping list
-			$this->Index();
+			$this->Edit();
+ 		}
+ 		# -------------------------------------------------------
+ 		/**
+ 		 * 
+ 		 *
+ 		 * 
+ 		 */
+ 		public function UploadImporters() {
+ 			$va_response = array('uploadMessage' => '', 'skippedMessage' => '');
+ 			
+				foreach($_FILES as $vs_param => $va_file) {
+					foreach($va_file['name'] as $vn_i => $vs_name) {
+						if ($t_importer = ca_data_importers::loadImporterFromFile($va_file['tmp_name'][$vn_i], $va_errors)) {
+							$va_response['copied'][$vs_name] = true;
+						} else {
+							$va_response['skipped'][$vs_name] = true;
+						}
+					}
+				}
+			
+			$va_response['uploadMessage'] = (($vn_upload_count = sizeof($va_response['copied'])) == 1) ? _t('Uploaded %1 worksheet', $vn_upload_count) : _t('Uploaded %1 worksheets', $vn_upload_count);
+			if (is_array($va_response['skipped']) && ($vn_skip_count = sizeof($va_response['skipped'])) && !$va_response['error']) {
+				$va_response['skippedMessage'] = ($vn_skip_count == 1) ? _t('Skipped %1 worksheet', $vn_skip_count) : _t('Skipped %1 worksheet', $vn_skip_count);
+			}
+			
+ 			$this->view->setVar('response', $va_response);
+ 			$this->render('mediaimport/file_upload_response_json.php');
  		}
  		# -------------------------------------------------------
  		/**
@@ -107,7 +135,12 @@
  		 * 
  		 */
  		public function Run() {
- 		
+			JavascriptLoadManager::register('fileupload');
+			
+ 			$t_importer = $this->getImporterInstance();
+ 			
+ 			$this->view->setVar('t_importer', $t_importer);
+ 			
 			$this->render('metadataimport/importer_run_html.php');
  		}
  		# -------------------------------------------------------
@@ -116,11 +149,34 @@
  		 *
  		 * 
  		 */
- 		public function Import() {
- 			// Import data using provided source + importer
+ 		public function ImportData() {
+ 			$t_importer = $this->getImporterInstance();
  			
- 			// Show progress bar...
+ 			// Can user batch import media?
+ 			if (!$this->request->user->canDoAction('can_batch_import_media')) {
+ 			//	$this->response->setRedirect($this->request->config->get('error_display_url').'/n/3210?r='.urlencode($this->request->getFullUrlPath()));
+ 			//	return;
+ 			}
  			
+ 			$va_options = array(
+ 				'sendMail' => (bool)$this->request->getParameter('send_email_when_done', pInteger), 
+ 				'sendSMS' => (bool)$this->request->getParameter('send_sms_when_done', pInteger), 
+ 				
+ 				'locale_id' => $g_ui_locale_id,
+ 				'user_id' => $this->request->getUserID()
+ 			);
+ 			
+ 			$va_last_settings = $va_options;
+ 			$va_last_settings['importer_id'] = $this->request->getParameter("importer_id", pInteger); 
+ 			$va_last_settings['inputFormat'] = $this->request->getParameter("inputFormat", pString); 
+ 			$this->request->user->setVar('batch_metadata_last_settings', $va_last_settings);
+ 			
+ 			$this->view->setVar("t_subject", $t_importer->getAppDatamodel()->getInstanceByTableNum($t_importer->get('table_num'), true));
+ 		
+			// run now
+			$app = AppController::getInstance();
+			$app->registerPlugin(new BatchMetadataImportProgress($this->request, $va_options));
+			$this->render('metadataimport/batch_results_html.php');
  		}
  		# -------------------------------------------------------
  		/**

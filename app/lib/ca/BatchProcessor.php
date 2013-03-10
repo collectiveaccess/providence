@@ -604,5 +604,99 @@
 			return array('errors' => $va_errors, 'notices' => $va_notices, 'processing_time' => caFormatInterval($vn_elapsed_time));
 		}
 		# ----------------------------------------
+		/**
+		 * @param array $pa_options
+		 *		progressCallback =
+		 *		reportCallback = 
+		 *		sendMail = 
+		 *		log = log directory path
+		 * 		logLevel = KLogger loglevel. Default is "INFO"
+		 */
+		public static function importMetadata($po_request, $ps_source, $ps_importer, $ps_input_format, $pa_options=null) {
+			$va_errors = $va_noticed = array();
+			$vn_start_time = time();
+			
+			$o_config = Configuration::load();
+			if (!(ca_data_importers::mappingExists($ps_importer))) {
+				$va_errors['general'] = array(
+					'idno' => "*",
+					'label' => "*",
+					'errors' => array(_t('Importer %1 does not exist', $ps_importer)),
+					'status' => 'ERROR'
+				);
+				return false;
+			}
+			
+			$vs_log_dir = isset($pa_options['log']) ? $pa_options['log'] : null;
+			
+			$vn_log_level = KLogger::INFO;
+			switch($vs_log_level = isset($pa_options['logLevel']) ? $pa_options['logLevel'] : "INFO") {
+				case 'DEBUG':
+					$vn_log_level = KLogger::DEBUG;
+					break;
+				case 'NOTICE':
+					$vn_log_level = KLogger::NOTICE;
+					break;
+				case 'WARN':
+					$vn_log_level = KLogger::WARN;
+					break;
+				case 'ERR':
+					$vn_log_level = KLogger::ERR;
+					break;
+				case 'CRIT':
+					$vn_log_level = KLogger::CRIT;
+					break;
+				case 'ALERT':
+					$vn_log_level = KLogger::ALERT;
+					break;
+				default:
+				case 'INFO':
+					$vn_log_level = KLogger::INFO;
+					break;
+			}
+		
+			if (!ca_data_importers::importDataFromSource($ps_source, $ps_importer, array('log' => $o_config->get('batch_metadata_import_log_directory'), 'request' => $po_request,'format' => $ps_input_format, 'showCLIProgressBar' => false, 'useNcurses' => false, 'progressCallback' => isset($pa_options['progressCallback']) ? $pa_options['progressCallback'] : null, 'reportCallback' => isset($pa_options['reportCallback']) ? $pa_options['reportCallback'] : null,  'logDirectory' => $vs_log_dir, 'logLevel' => $vn_log_level))) {
+				$va_errors['general'] = array(
+					'idno' => "*",
+					'label' => "*",
+					'errors' => array(_t("Could not import source %1", $vs_data_source)),
+					'status' => 'ERROR'
+				);
+				return false;
+			} else {
+				$va_notices['general'] = array(
+					'idno' => "*",
+					'label' => "*",
+					'errors' => array(_t("Imported data from source %1", $vs_data_source)),
+					'status' => 'SUCCESS'
+				);
+				//return true;
+			}
+			
+			$vn_elapsed_time = time() - $vn_start_time;
+			
+			
+			if (isset($pa_options['sendMail']) && $pa_options['sendMail']) {
+				if ($vs_email = trim($po_request->user->get('email'))) {
+					caSendMessageUsingView($po_request, array($vs_email => $po_request->user->get('fname').' '.$po_request->user->get('lname')), __CA_ADMIN_EMAIL__, _t('[%1] Batch metadata import completed', $po_request->config->get('app_display_name')), 'batch_metadata_import_completed.tpl', 
+						array(
+							'notices' => $va_notices, 'errors' => $va_errors,
+							'numErrors' => sizeof($va_errors), 'numProcessed' => sizeof($va_notices),
+							'subjectNameSingular' => _t('row'),
+							'subjectNamePlural' => _t('rows'),
+							'startedOn' => $vs_started_on,
+							'completedOn' => caGetLocalizedDate(time()),
+							'elapsedTime' => caFormatInterval($vn_elapsed_time)
+						)
+					);
+				}
+			}
+			
+			if (isset($pa_options['sendSMS']) && $pa_options['sendSMS']) {
+				SMS::send($po_request->getUserID(), _t("[%1] Metadata import processing for begun at %2 is complete", $po_request->config->get('app_display_name'),  $vs_started_on));
+			}
+			return array('errors' => $va_errors, 'notices' => $va_notices, 'processing_time' => caFormatInterval($vn_elapsed_time));
+		}
+		# ----------------------------------------
 	}
 ?>

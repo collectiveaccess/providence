@@ -684,8 +684,8 @@
 				return false;
 			}
 			
-			if (!($t_importer = ca_data_importers::loadImporterFromFile($vs_file_path))) {
-				CLIUtils::addError(_t("Could not import '%1'", $vs_file_path));
+			if (!($t_importer = ca_data_importers::loadImporterFromFile($vs_file_path, $va_errors))) {
+				CLIUtils::addError(_t("Could not import '%1': %2", $vs_file_path, join("; ", $va_errors)));
 				return false;
 			} else {
 				
