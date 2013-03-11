@@ -510,6 +510,7 @@ class ca_data_exporters extends BundlableLabelableBaseModelWithAttributes {
 			switch($vs_mode) {
 				case 'Mapping':
 				case 'Constant':
+				case 'RepeatMappings':
 					$o_id = $o_sheet->getCellByColumnAndRow(1, $o_row->getRowIndex());
 					$o_parent = $o_sheet->getCellByColumnAndRow(2, $o_row->getRowIndex());
 					$o_element = $o_sheet->getCellByColumnAndRow(3, $o_row->getRowIndex());
@@ -559,24 +560,63 @@ class ca_data_exporters extends BundlableLabelableBaseModelWithAttributes {
 						// TODO: check refineries
 					}*/
 
-					$vs_key = (strlen($vs_id)>0 ? $vs_id : md5($vn_row_num));
+					$vs_key = (strlen($vs_id)>0 ? $vs_id : md5($vn_row));
 
 					$va_mapping[$vs_key] = array(
 						'parent_id' => $vs_parent_id,
 						'element' => $vs_element,
 						'context' => $vs_context,
-						'source' => $vs_source,
+						'source' => ($vs_mode == "RepeatMappings" ? null : $vs_source),
 						'options' => $va_options,
 						/*'refinery' => $vs_refinery,
 						'refinery_options' => $va_refinery_options,*/
 					);
+
+					// allow mapping repitition
+					if($vs_mode == 'RepeatMappings'){
+						if(strlen($vs_source)<1) {// ignore repitition rows without value
+							continue;
+						}
+
+						$va_mapping_items_to_repeat = explode(",",$vs_source);
+
+						foreach($va_mapping_items_to_repeat as $vs_mapping_item_to_repeat) {
+							if(!is_array($va_mapping[$vs_mapping_item_to_repeat])){
+								print "Couldn't repeat mapping item {$vs_mapping_item_to_repeat}\n";
+								continue;
+							}
+
+							$va_new_items = array();
+
+							// add item to repeat under current item
+
+							$va_new_items[$vs_key."/".$vs_mapping_item_to_repeat] = $va_mapping[$vs_mapping_item_to_repeat];
+							$va_new_items[$vs_key."/".$vs_mapping_item_to_repeat]['parent_id'] = $vs_key;
+
+							// Find children of item to repeat (and their children) and add them as well, preserving the hierarchy
+							// the code below banks on the fact that hierarchy children are always defined AFTER their parents
+							// in the mapping document.
+
+							$va_keys_to_lookup = array($vs_mapping_item_to_repeat);
+
+							foreach($va_mapping as $vs_item_key => $va_item){
+								if(in_array($va_item['parent_id'], $va_keys_to_lookup)){
+									$va_keys_to_lookup[] = $vs_key;
+									$va_new_items[$vs_key."/".$vs_item_key] = $va_item;
+									$va_new_items[$vs_key."/".$vs_item_key]['parent_id'] = $vs_key . ($va_item['parent_id'] ? "/".$va_item['parent_id'] : "");
+								}
+							}
+
+							$va_mapping = array_merge($va_mapping,$va_new_items);
+						}
+					}
 
 					break;
 				case 'Setting':
 					$o_setting_name = $o_sheet->getCellByColumnAndRow(1, $o_row->getRowIndex());
 					$o_setting_value = $o_sheet->getCellByColumnAndRow(2, $o_row->getRowIndex());
 					$va_settings[(string)$o_setting_name->getValue()] = (string)$o_setting_value->getValue();
-					break;
+					break;	
 				default: // if 1st column is empty, skip
 					continue(2);
 					break;
