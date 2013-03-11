@@ -1177,27 +1177,28 @@ function caFileIsIncludable($ps_file) {
 		
 		// scan each line and adjust indent based on opening/closing tags
 		while ($token !== false) : 
+			$indent = 0;
 			// test for the various tag states
 			
 			// 1. open and closing tags on same line - no change
 			if (preg_match('/.+<\/\w[^>]*>$/', $token, $matches)) : 
-				$indent=0;
+				$indent = 0;
 			// 2. closing tag - outdent now
 			elseif (preg_match('/^<\/\w/', $token, $matches)) :
 				$pad -= 2;
 			// 3. opening tag - don't pad this one, only subsequent tags
 			elseif (preg_match('/^<\w[^>]*[^\/]>.*$/', $token, $matches)) :
-				$indent=2;
+				$indent = 2;
 			// 4. no indentation needed
 			else :
 				$indent = 0; 
 			endif;
 			
 			// pad the line with the required number of leading spaces
-			$line	= str_pad($token, strlen($token)+$pad, ' ', STR_PAD_LEFT);
+			$line = str_pad($token, strlen($token)+$pad, ' ', STR_PAD_LEFT);
 			$result .= $line . "\n"; // add to the cumulative result, with linefeed
-			$token	 = strtok("\n"); // get the next token
-			$pad	+= $indent; // update the pad size for subsequent lines
+			$token = strtok("\n"); // get the next token
+			$pad += $indent; // update the pad size for subsequent lines
 		endwhile; 
 		
 		return $result;

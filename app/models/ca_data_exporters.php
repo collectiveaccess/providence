@@ -499,8 +499,7 @@ class ca_data_exporters extends BundlableLabelableBaseModelWithAttributes {
 		$va_ids = array();
 
 		foreach ($o_sheet->getRowIterator() as $o_row) {
-			if ($vn_row == 0) {	// skip first row (headers)
-				$vn_row++;
+			if ($vn_row++ == 0) {	// skip first row (headers)
 				continue;
 			}
 
@@ -526,13 +525,13 @@ class ca_data_exporters extends BundlableLabelableBaseModelWithAttributes {
 
 					if($vs_parent_id = trim((string)$o_parent->getValue())){
 						if(!in_array($vs_parent_id, $va_ids) && ($vs_parent_id != $vs_id)){
-							print "Warning: skipped mapping at row {$vn_row_id} because parent id was invalid\n";
+							print "Warning: skipped mapping at row {$vn_row} because parent id was invalid\n";
 							continue(2);
 						}
 					}
 
 					if (!($vs_element = trim((string)$o_element->getValue()))) { 
-						print "Warning: skipped mapping at row {$vn_row_num} because element was not defined\n";
+						print "Warning: skipped mapping at row {$vn_row} because element was not defined\n";
 						continue(2);
 					}
 
@@ -582,8 +581,6 @@ class ca_data_exporters extends BundlableLabelableBaseModelWithAttributes {
 					continue(2);
 					break;
 			}
-
-			$vn_row++;
 		}
 
 		// try to extract replacements from 2nd sheet in file
