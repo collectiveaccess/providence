@@ -94,6 +94,7 @@ BaseModel::$s_ca_models_definitions['ca_data_exporters'] = array(
 					_t('representation annotations') => 82,
 					_t('lists') => 36,
 					_t('list items') => 33,
+					_t('sets') => 103,
 				)
 		),
 		'settings' => array(
@@ -766,6 +767,14 @@ class ca_data_exporters extends BundlableLabelableBaseModelWithAttributes {
 		
 		if(is_array($va_nodes)){
 			foreach($va_nodes as $va_mapping){
+				$va_mapping_names = explode("/",$va_mapping['mapping']);
+				foreach($va_mapping_names as $vs_mapping_name){
+					if(!($t_mapping = ca_data_exporters::loadExporterByCode($vs_mapping_name))){
+						print _t("Invalid mapping %1",$vs_mapping_name)."\n";
+						return;
+					}	
+				}
+
 				$vn_table = $t_mapping->get('table_num');
 				$vs_key = $o_dm->getTablePrimaryKeyName($vn_table);
 
@@ -1082,7 +1091,8 @@ class ca_data_exporters extends BundlableLabelableBaseModelWithAttributes {
 		$vs_element = $t_exporter_item->get('element');
 		$vb_repeat = $t_exporter_item->getSetting("repeat_element_for_multiple_values");
 
-		$va_get_options = array();
+		// always return URL for export, not an HTML tag
+		$va_get_options = array('returnURL' => true);
 
 		if($vs_delimiter = $t_exporter_item->getSetting("delimiter")){
 			$va_get_options['delimiter'] = $vs_delimiter;
