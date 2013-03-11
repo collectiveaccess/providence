@@ -94,6 +94,7 @@ BaseModel::$s_ca_models_definitions['ca_data_exporters'] = array(
 					_t('representation annotations') => 82,
 					_t('lists') => 36,
 					_t('list items') => 33,
+					_t('sets') => 103,
 				)
 		),
 		'settings' => array(
@@ -498,8 +499,7 @@ class ca_data_exporters extends BundlableLabelableBaseModelWithAttributes {
 		$va_ids = array();
 
 		foreach ($o_sheet->getRowIterator() as $o_row) {
-			if ($vn_row == 0) {	// skip first row (headers)
-				$vn_row++;
+			if ($vn_row++ == 0) {	// skip first row (headers)
 				continue;
 			}
 
@@ -510,6 +510,7 @@ class ca_data_exporters extends BundlableLabelableBaseModelWithAttributes {
 			switch($vs_mode) {
 				case 'Mapping':
 				case 'Constant':
+				case 'RepeatMappings':
 					$o_id = $o_sheet->getCellByColumnAndRow(1, $o_row->getRowIndex());
 					$o_parent = $o_sheet->getCellByColumnAndRow(2, $o_row->getRowIndex());
 					$o_element = $o_sheet->getCellByColumnAndRow(3, $o_row->getRowIndex());
@@ -525,13 +526,13 @@ class ca_data_exporters extends BundlableLabelableBaseModelWithAttributes {
 
 					if($vs_parent_id = trim((string)$o_parent->getValue())){
 						if(!in_array($vs_parent_id, $va_ids) && ($vs_parent_id != $vs_id)){
-							print "Warning: skipped mapping at row {$vn_row_id} because parent id was invalid\n";
+							print "Warning: skipped mapping at row {$vn_row} because parent id was invalid\n";
 							continue(2);
 						}
 					}
 
 					if (!($vs_element = trim((string)$o_element->getValue()))) { 
-						print "Warning: skipped mapping at row {$vn_row_num} because element was not defined\n";
+						print "Warning: skipped mapping at row {$vn_row} because element was not defined\n";
 						continue(2);
 					}
 
@@ -559,30 +560,68 @@ class ca_data_exporters extends BundlableLabelableBaseModelWithAttributes {
 						// TODO: check refineries
 					}*/
 
-					$vs_key = (strlen($vs_id)>0 ? $vs_id : md5($vn_row_num));
+					$vs_key = (strlen($vs_id)>0 ? $vs_id : md5($vn_row));
 
 					$va_mapping[$vs_key] = array(
 						'parent_id' => $vs_parent_id,
 						'element' => $vs_element,
 						'context' => $vs_context,
-						'source' => $vs_source,
+						'source' => ($vs_mode == "RepeatMappings" ? null : $vs_source),
 						'options' => $va_options,
 						/*'refinery' => $vs_refinery,
 						'refinery_options' => $va_refinery_options,*/
 					);
+
+					// allow mapping repitition
+					if($vs_mode == 'RepeatMappings'){
+						if(strlen($vs_source)<1) {// ignore repitition rows without value
+							continue;
+						}
+
+						$va_mapping_items_to_repeat = explode(",",$vs_source);
+
+						foreach($va_mapping_items_to_repeat as $vs_mapping_item_to_repeat) {
+							$vs_mapping_item_to_repeat = trim($vs_mapping_item_to_repeat);
+							if(!is_array($va_mapping[$vs_mapping_item_to_repeat])){
+								print "Couldn't repeat mapping item {$vs_mapping_item_to_repeat}\n";
+								continue;
+							}
+
+							$va_new_items = array();
+
+							// add item to repeat under current item
+
+							$va_new_items[$vs_key."/".$vs_mapping_item_to_repeat] = $va_mapping[$vs_mapping_item_to_repeat];
+							$va_new_items[$vs_key."/".$vs_mapping_item_to_repeat]['parent_id'] = $vs_key;
+
+							// Find children of item to repeat (and their children) and add them as well, preserving the hierarchy
+							// the code below banks on the fact that hierarchy children are always defined AFTER their parents
+							// in the mapping document.
+
+							$va_keys_to_lookup = array($vs_mapping_item_to_repeat);
+
+							foreach($va_mapping as $vs_item_key => $va_item){
+								if(in_array($va_item['parent_id'], $va_keys_to_lookup)){
+									$va_keys_to_lookup[] = $vs_key;
+									$va_new_items[$vs_key."/".$vs_item_key] = $va_item;
+									$va_new_items[$vs_key."/".$vs_item_key]['parent_id'] = $vs_key . ($va_item['parent_id'] ? "/".$va_item['parent_id'] : "");
+								}
+							}
+
+							$va_mapping = array_merge($va_mapping,$va_new_items);
+						}
+					}
 
 					break;
 				case 'Setting':
 					$o_setting_name = $o_sheet->getCellByColumnAndRow(1, $o_row->getRowIndex());
 					$o_setting_value = $o_sheet->getCellByColumnAndRow(2, $o_row->getRowIndex());
 					$va_settings[(string)$o_setting_name->getValue()] = (string)$o_setting_value->getValue();
-					break;
+					break;	
 				default: // if 1st column is empty, skip
 					continue(2);
 					break;
 			}
-
-			$vn_row++;
 		}
 
 		// try to extract replacements from 2nd sheet in file
@@ -766,6 +805,14 @@ class ca_data_exporters extends BundlableLabelableBaseModelWithAttributes {
 		
 		if(is_array($va_nodes)){
 			foreach($va_nodes as $va_mapping){
+				$va_mapping_names = explode("/",$va_mapping['mapping']);
+				foreach($va_mapping_names as $vs_mapping_name){
+					if(!($t_mapping = ca_data_exporters::loadExporterByCode($vs_mapping_name))){
+						print _t("Invalid mapping %1",$vs_mapping_name)."\n";
+						return;
+					}	
+				}
+
 				$vn_table = $t_mapping->get('table_num');
 				$vs_key = $o_dm->getTablePrimaryKeyName($vn_table);
 
@@ -1080,9 +1127,14 @@ class ca_data_exporters extends BundlableLabelableBaseModelWithAttributes {
 
 		$vs_source = $t_exporter_item->get('source');
 		$vs_element = $t_exporter_item->get('element');
-		$vb_repeat = $t_exporter_item->getSetting("repeat_element_for_multiple_values");
+		$vb_repeat = $t_exporter_item->getSetting('repeat_element_for_multiple_values');
 
-		$va_get_options = array();
+		// always return URL for export, not an HTML tag
+		$va_get_options = array('returnURL' => true);
+
+		if($t_exporter_item->getSetting('convertCodesToDisplayText')){
+			$va_get_options['convertCodesToDisplayText'] = true;
+		}
 
 		if($vs_delimiter = $t_exporter_item->getSetting("delimiter")){
 			$va_get_options['delimiter'] = $vs_delimiter;

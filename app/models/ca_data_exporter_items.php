@@ -285,6 +285,7 @@ class ca_data_exporter_items extends BaseModel {
 			'label' => _t('Maximum length'),
 			'description' => _t('Truncate to specified length if value exceeds that length.')
 		);
+		
 		$va_settings['repeat_element_for_multiple_values'] = array(
 			'formatType' => FT_BIT,
 			'displayType' => DT_SELECT,
@@ -297,6 +298,20 @@ class ca_data_exporter_items extends BaseModel {
 			),
 			'label' => _t('Repeat element for multiple values'),
 			'description' => _t('If the current selector/template returns multiple values, this setting determines if the element is repeated for each value.')
+		);
+
+		$va_settings['convertCodesToDisplayText'] = array(
+			'formatType' => FT_BIT,
+			'displayType' => DT_SELECT,
+			'width' => 40, 'height' => 1,
+			'takesLocale' => false,
+			'default' => 0,
+			'options' => array(
+				_t('yes') => 1,
+				_t('no') => 0
+			),
+			'label' => _t('Convert codes to display text'),
+			'description' => _t('If set, id values refering to foreign keys are returned as preferred label text in the current locale.')
 		);
 
 		$va_settings['filterByRegExp'] = array(

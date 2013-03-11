@@ -379,7 +379,7 @@
 				if (!preg_match('!_ca_object_representation!', $vs_path)) { continue; } // skip non object representation files
 				if (!$va_paths[$vs_path]) { 
 					$vn_delete_count++;
-					if ($vb_delete) {
+					if ($vb_delete_opt) {
 						unlink($vs_path);
 					}
 					$va_report[] = $vs_path;
