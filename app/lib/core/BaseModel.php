@@ -4647,11 +4647,6 @@ class BaseModel extends BaseObject {
 			#--- delete file
 			@unlink($this->getFilePath($field));
 			#--- delete conversions
-			#
-			# TODO: wvWWare MSWord conversion to HTML generates untracked graphics files for embedded images... they are currently
-			# *not* deleted when the file and associated conversions are deleted. We will need to parse the HTML to derive the names
-			# of these files...
-			#
 			foreach ($this->getFileConversions($field) as $vs_format => $va_file_conversion) {
 				@unlink($this->getFileConversionPath($field, $vs_format));
 			}
