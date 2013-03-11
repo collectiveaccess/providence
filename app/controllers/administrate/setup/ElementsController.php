@@ -43,7 +43,7 @@ class ElementsController extends BaseEditorController {
 		parent::__construct($po_request, $po_response, $pa_view_paths);
 	}
 	# -------------------------------------------------------
-	public function ListElements() {
+	public function Index() {
 		JavascriptLoadManager::register('tableList');
 	
 		$vo_dm = Datamodel::load();

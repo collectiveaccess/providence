@@ -757,7 +757,7 @@ class Configuration {
  * kind of configuration value was found.
  */
 	function get($ps_key) {
-		if (Configuration::$s_get_cache[$this->ops_md5_path][$ps_key]) { return Configuration::$s_get_cache[$this->ops_md5_path][$ps_key]; } 
+		if (isset(Configuration::$s_get_cache[$this->ops_md5_path][$ps_key]) && Configuration::$s_get_cache[$this->ops_md5_path][$ps_key]) { return Configuration::$s_get_cache[$this->ops_md5_path][$ps_key]; } 
 		$this->ops_error = "";
 
 		$vs_tmp = $this->getScalar($ps_key);

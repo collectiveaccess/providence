@@ -27,7 +27,7 @@
  */
  
 	$vo_result 					= $this->getVar('result');
-	$vs_controller_name 	= $this->getVar('controller');
+	$vs_controller_name 		= $this->getVar('controller');
 	$vn_num_hits				= $this->getVar('num_hits');
 	
 	$va_previous_link_params 	= array('page' => $this->getVar('page') - 1);

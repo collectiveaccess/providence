@@ -253,6 +253,7 @@
 				if ($vb_criteria_have_changed) {
 					// Put the results id list into the results context - we used this for previous/next navigation
 					$this->opo_result_context->setResultList($vo_result->getPrimaryKeyValues());
+					$this->opo_result_context->setParameter('availableVisualizationChecked', 0);
 				}
 				
 				$vo_result->seek(0);	

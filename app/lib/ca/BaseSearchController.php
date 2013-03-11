@@ -224,6 +224,7 @@
 				}
  				if($vb_is_new_search || $vb_criteria_have_changed) {
 					$this->opo_result_context->setResultList($vo_result->getPrimaryKeyValues());
+					$this->opo_result_context->setParameter('availableVisualizationChecked', 0);
 					$vn_page_num = 1;
 				}
  				$this->view->setVar('num_hits', $vo_result->numHits());

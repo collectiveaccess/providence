@@ -43,6 +43,7 @@ require_once(__CA_LIB_DIR__.'/ca/Export/BaseExportFormat.php');
 
 require_once(__CA_MODELS_DIR__."/ca_data_exporter_labels.php");
 require_once(__CA_MODELS_DIR__."/ca_data_exporter_items.php");
+require_once(__CA_MODELS_DIR__."/ca_sets.php");
 
 require_once(__CA_LIB_DIR__.'/core/Parsers/PHPExcel/PHPExcel.php');
 require_once(__CA_LIB_DIR__.'/core/Parsers/PHPExcel/PHPExcel/IOFactory.php');
@@ -92,7 +93,7 @@ BaseModel::$s_ca_models_definitions['ca_data_exporters'] = array(
 					_t('object representations') => 56,
 					_t('representation annotations') => 82,
 					_t('lists') => 36,
-					_t('list items') => 33
+					_t('list items') => 33,
 				)
 		),
 		'settings' => array(
@@ -213,9 +214,6 @@ class ca_data_exporters extends BundlableLabelableBaseModelWithAttributes {
 	
 	# ------------------------------------------------------
 	public function __construct($pn_id=null) {
-		// Filter list of tables exporters can be used for to those enabled in current config
-		BaseModel::$s_ca_models_definitions['ca_data_exporters']['FIELDS']['table_num']['BOUNDS_CHOICE_LIST'] = caFilterTableList(BaseModel::$s_ca_models_definitions['ca_data_exporters']['FIELDS']['table_num']['BOUNDS_CHOICE_LIST']);
-
 		$this->opo_app_plugin_manager = new ApplicationPluginManager();
 		
 		global $_ca_data_exporters_settings;
@@ -671,12 +669,12 @@ class ca_data_exporters extends BundlableLabelableBaseModelWithAttributes {
 		}
 		$t_exporter->insert();
 
-		$t_exporter->addLabel(array('name' => $vs_name), $vn_locale_id, null, true);
-
 		if ($t_exporter->numErrors()) {
 			print _t("Error creating exporter: %1", join("; ", $t_exporter->getErrors()))."\n";
 			return;
 		}
+
+		$t_exporter->addLabel(array('name' => $vs_name), $vn_locale_id, null, true);
 
 		if ($t_exporter->numErrors()) {
 			print _t("Error creating exporter name: %1", join("; ", $t_exporter->getErrors()))."\n";
@@ -736,6 +734,7 @@ class ca_data_exporters extends BundlableLabelableBaseModelWithAttributes {
 
 		return $t_exporter;
 	}
+	# ------------------------------------------------------
 	/**
 	 * Export a set of records across different database entities with different mappings.
 	 * This is usually used to construct RDF graphs or similar structures, hence the name of the function.
@@ -767,10 +766,6 @@ class ca_data_exporters extends BundlableLabelableBaseModelWithAttributes {
 		
 		if(is_array($va_nodes)){
 			foreach($va_nodes as $va_mapping){
-				if(!$t_mapping = ca_data_exporters::loadExporterByCode($va_mapping['mapping'])){
-					return false;
-				}
-
 				$vn_table = $t_mapping->get('table_num');
 				$vs_key = $o_dm->getTablePrimaryKeyName($vn_table);
 
@@ -787,7 +782,7 @@ class ca_data_exporters extends BundlableLabelableBaseModelWithAttributes {
 						print CLIProgressBar::next(1, $vs_msg);
 					}
 					
-					$va_records_to_export[$vn_table."/".$o_result->get($vs_key)] = $t_mapping->get('exporter_code');
+					$va_records_to_export[$vn_table."/".$o_result->get($vs_key)] = $va_mapping['mapping'];
 
 					if(is_array($va_mapping['related'])){
 						foreach($va_mapping['related'] as $va_related_nodes){
@@ -825,8 +820,12 @@ class ca_data_exporters extends BundlableLabelableBaseModelWithAttributes {
 
 		foreach($va_records_to_export as $vs_key => $vs_mapping){
 			$va_split = explode("/",$vs_key);
-			$vs_item_export = ca_data_exporters::exportRecord($vs_mapping,$va_split[1]);
-			file_put_contents($ps_filename, trim($vs_item_export)."\n", FILE_APPEND);
+			$va_mappings = explode("/", $vs_mapping);
+
+			foreach($va_mappings as $vs_mapping){
+				$vs_item_export = ca_data_exporters::exportRecord($vs_mapping,$va_split[1]);
+				file_put_contents($ps_filename, trim($vs_item_export)."\n", FILE_APPEND);
+			}
 
 			if ($vb_show_cli_progress_bar) {
 				print CLIProgressBar::next(1, $vs_msg);
@@ -1005,13 +1004,15 @@ class ca_data_exporters extends BundlableLabelableBaseModelWithAttributes {
 		if(!$vb_ignore_context && ($vs_context = $t_exporter_item->get('context'))){
 
 			$va_parsed_context = ca_data_exporters::_parseItemContext($vs_context);
-			if(!$va_parsed_context){ return; }
+			if(!$va_parsed_context){ return array(); }
 
 			if(isset($va_parsed_context['table_num'])){
 				$vn_new_table_num = $va_parsed_context['table_num'];
 			} else {
 				$vn_new_table_num = $pn_table_num;
 			}
+
+			$vs_key = $this->getAppDatamodel()->getTablePrimaryKeyName($vn_new_table_num);
 
 			switch($va_parsed_context['mode']){
 				case 'related_table':
@@ -1024,17 +1025,41 @@ class ca_data_exporters extends BundlableLabelableBaseModelWithAttributes {
 						)
 					);
 					break;
+				case 'sets':
+					$t_set = new ca_sets();
+					$va_set_options = array();
+					if(isset($va_parsed_context['restrictToTypes'][0])){
+						// the utility used below doesn't support passing multiple types so we just pass the first.
+						// this should be enough for 99.99% of the actual use cases anyway
+						$va_set_options['setType'] = $va_parsed_context['restrictToTypes'][0];
+					}
+					$va_set_options['setIDsOnly'] = true;
+					$va_set_ids = $t_set->getSetsForItem($pn_table_num,$t_instance->getPrimaryKey(),$va_set_options);
+					$va_related = array();
+					foreach(array_unique($va_set_ids) as $vn_pk){
+						$va_related[] = array($vs_key => intval($vn_pk));
+					}
+					break;
 				case 'children':
 					$va_related = $t_instance->getHierarchyChildren();
 					break;
 				case 'parent':
-					$va_related = $t_instance->getHierarchyAncestors();
+					$va_related = array();
+					if($vs_parent_id_fld = $t_instance->getProperty("HIERARCHY_PARENT_ID_FLD")){
+						$va_related[] = array($vs_key => $t_instance->get($vs_parent_id_fld));
+					}
+					break;
+				case 'ancestors':
+					$va_parents = $t_instance->getHierarchyAncestors(null,array('idsOnly' => true));
+					$va_related = array();
+					foreach(array_unique($va_parents) as $vn_pk){
+						$va_related[] = array($vs_key => intval($vn_pk));
+					}
 					break;
 				default:
 					break;
 			}
-
-			$vs_key = $this->getAppDatamodel()->getTablePrimaryKeyName($vn_new_table_num);
+			
 			$va_info = array();
 			if(is_array($va_related)){
 				foreach($va_related as $va_rel){
@@ -1130,9 +1155,6 @@ class ca_data_exporters extends BundlableLabelableBaseModelWithAttributes {
 				$va_item = $va_plugin_item['export_item'];
 			}
 
-			// do replacements
-			$va_item['text'] = ca_data_exporter_items::replaceText($va_item['text'],$va_replacements);
-
 			// filter by regexp
 			if((strlen($va_item['text'])>0) && $vs_regexp){
 				if(!preg_match("!".$vs_regexp."!", $va_item['text'])) {
@@ -1140,6 +1162,9 @@ class ca_data_exporters extends BundlableLabelableBaseModelWithAttributes {
  					continue;
  				}
 			}
+
+			// do replacements
+			$va_item['text'] = ca_data_exporter_items::replaceText($va_item['text'],$va_replacements);
 
 			// if text is empty, fill in default
 			// if text isn't empty, respect prefix and suffix
@@ -1180,7 +1205,15 @@ class ca_data_exporters extends BundlableLabelableBaseModelWithAttributes {
 		$vs_table = array_shift($va_tmp);
 
 		if($vn_table_num = $o_dm->getTableNum($vs_table)){ // actual table
-			$va_return['mode'] = 'related_table';
+			switch($vs_table){
+				case 'ca_sets':
+					$va_return['mode'] = 'sets';
+					break;
+				default:
+					$va_return['mode'] = 'related_table';
+					break;	
+			}
+			
 			$va_return['table_num'] = $vn_table_num;
 
 			foreach($va_tmp as $vs_tmp){
@@ -1198,6 +1231,7 @@ class ca_data_exporters extends BundlableLabelableBaseModelWithAttributes {
 		} else { // probably some meta-key like 'parent' or 'children'
 			switch($vs_table){
 				case 'parent':
+				case 'ancestors':
 				case 'children':
 					$va_return['mode'] = $vs_table;
 					break;
