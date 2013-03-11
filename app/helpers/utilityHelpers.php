@@ -1184,17 +1184,17 @@ function caFileIsIncludable($ps_file) {
 				$indent=0;
 			// 2. closing tag - outdent now
 			elseif (preg_match('/^<\/\w/', $token, $matches)) :
-				$pad--;
+				$pad -= 2;
 			// 3. opening tag - don't pad this one, only subsequent tags
 			elseif (preg_match('/^<\w[^>]*[^\/]>.*$/', $token, $matches)) :
-				$indent=1;
+				$indent=2;
 			// 4. no indentation needed
 			else :
 				$indent = 0; 
 			endif;
 			
 			// pad the line with the required number of leading spaces
-			$line	= str_pad($token, strlen($token)+$pad, " ", STR_PAD_LEFT);
+			$line	= str_pad($token, strlen($token)+$pad, ' ', STR_PAD_LEFT);
 			$result .= $line . "\n"; // add to the cumulative result, with linefeed
 			$token	 = strtok("\n"); // get the next token
 			$pad	+= $indent; // update the pad size for subsequent lines
