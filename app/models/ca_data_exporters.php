@@ -581,6 +581,7 @@ class ca_data_exporters extends BundlableLabelableBaseModelWithAttributes {
 						$va_mapping_items_to_repeat = explode(",",$vs_source);
 
 						foreach($va_mapping_items_to_repeat as $vs_mapping_item_to_repeat) {
+							$vs_mapping_item_to_repeat = trim($vs_mapping_item_to_repeat);
 							if(!is_array($va_mapping[$vs_mapping_item_to_repeat])){
 								print "Couldn't repeat mapping item {$vs_mapping_item_to_repeat}\n";
 								continue;
@@ -1126,10 +1127,14 @@ class ca_data_exporters extends BundlableLabelableBaseModelWithAttributes {
 
 		$vs_source = $t_exporter_item->get('source');
 		$vs_element = $t_exporter_item->get('element');
-		$vb_repeat = $t_exporter_item->getSetting("repeat_element_for_multiple_values");
+		$vb_repeat = $t_exporter_item->getSetting('repeat_element_for_multiple_values');
 
 		// always return URL for export, not an HTML tag
 		$va_get_options = array('returnURL' => true);
+
+		if($t_exporter_item->getSetting('convertCodesToDisplayText')){
+			$va_get_options['convertCodesToDisplayText'] = true;
+		}
 
 		if($vs_delimiter = $t_exporter_item->getSetting("delimiter")){
 			$va_get_options['delimiter'] = $vs_delimiter;
