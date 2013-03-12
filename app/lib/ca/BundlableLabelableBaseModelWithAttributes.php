@@ -4054,6 +4054,7 @@ if (!$vb_batch) {
 			$pa_options['request']
 		) {
 			$this->opo_idno_plugin_instance->setValue($this->get($ps_field));
+			if (method_exists($this, "getTypeCode")) { $this->opo_idno_plugin_instance->setType($this->getTypeCode()); }
 			$vs_element = $this->opo_idno_plugin_instance->htmlFormElement(
 										$ps_field,  
 										$va_errors, 
