@@ -578,6 +578,8 @@ class ca_data_exporters extends BundlableLabelableBaseModelWithAttributes {
 							continue;
 						}
 
+						$va_new_items = array();
+
 						$va_mapping_items_to_repeat = explode(",",$vs_source);
 
 						foreach($va_mapping_items_to_repeat as $vs_mapping_item_to_repeat) {
@@ -586,8 +588,6 @@ class ca_data_exporters extends BundlableLabelableBaseModelWithAttributes {
 								print "Couldn't repeat mapping item {$vs_mapping_item_to_repeat}\n";
 								continue;
 							}
-
-							$va_new_items = array();
 
 							// add item to repeat under current item
 
@@ -607,9 +607,9 @@ class ca_data_exporters extends BundlableLabelableBaseModelWithAttributes {
 									$va_new_items[$vs_key."/".$vs_item_key]['parent_id'] = $vs_key . ($va_item['parent_id'] ? "/".$va_item['parent_id'] : "");
 								}
 							}
-
-							$va_mapping = array_merge($va_mapping,$va_new_items);
 						}
+
+						$va_mapping = array_merge($va_mapping,$va_new_items);
 					}
 
 					break;
@@ -1128,6 +1128,13 @@ class ca_data_exporters extends BundlableLabelableBaseModelWithAttributes {
 		$vs_source = $t_exporter_item->get('source');
 		$vs_element = $t_exporter_item->get('element');
 		$vb_repeat = $t_exporter_item->getSetting('repeat_element_for_multiple_values');
+
+		// if omitIfEmpty is set and returns nothing, we ignore this exporter item and all children
+		if($vs_omit_if_empty = $t_exporter_item->getSetting('omitIfEmpty')){
+			if(!(strlen($t_instance->get($vs_omit_if_empty))>0)){
+				return array();
+			}
+		}
 
 		// always return URL for export, not an HTML tag
 		$va_get_options = array('returnURL' => true);
