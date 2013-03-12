@@ -118,6 +118,7 @@ class SearchEngine extends SearchBase {
 	 *		search_source = optional source indicator text to record in log for search
 	 *		checkAccess = optional array of access values to filter results on
 	 *		showDeleted = if set to true, related items that have been deleted are returned. Default is false.
+	 *		deletedOnly = if set to true, only deleted items are returned. Default is false.
 	 *		limitToModifiedOn = if set returned results will be limited to rows modified within the specified date range. The value should be a date/time expression parse-able by TimeExpressionParser
 	 *		sets = if value is a list of set_ids, only rows that are members of those sets will be returned
 	 *		user_id = If set item level access control is performed relative to specified user_id, otherwise defaults to logged in user
@@ -182,7 +183,11 @@ class SearchEngine extends SearchBase {
 				$o_parsed_query = $o_query_parser->parse($ps_search, $vs_char_set);
 			} catch (Exception $e) {
 				// Retry search with all non-alphanumeric characters removed
-				$o_parsed_query = $o_query_parser->parse(preg_replace("![^A-Za-z0-9 ]+!", " ", $ps_search), $vs_char_set);
+				try {
+					$o_parsed_query = $o_query_parser->parse(preg_replace("![^A-Za-z0-9 ]+!", " ", $ps_search), $vs_char_set);
+				} catch (Exception $e) {
+					$o_parsed_query = $o_query_parser->parse("", $vs_char_set);
+				}
 			}
 			
 			$va_rewrite_results = $this->_rewriteQuery($o_parsed_query);
@@ -192,8 +197,12 @@ class SearchEngine extends SearchBase {
 			//print "<div style='background:#FFFFFF; padding: 5px; border: 1px dotted #666666;'><strong>DEBUG: </strong>".$ps_search.'/'.$vs_search."</div>";
 
 			// Filter deleted records out of final result
-			if ((!isset($pa_options['showDeleted']) || !$pa_options['showDeleted']) && $t_table->hasField('deleted')) {
-				$this->addResultFilter($this->ops_tablename.'.deleted', '=', '0');
+			if ((isset($pa_options['deletedOnly']) && $pa_options['deletedOnly']) && $t_table->hasField('deleted')) {
+				$this->addResultFilter($this->ops_tablename.'.deleted', '=', '1');
+			} else {
+				if ((!isset($pa_options['showDeleted']) || !$pa_options['showDeleted']) && $t_table->hasField('deleted')) {
+					$this->addResultFilter($this->ops_tablename.'.deleted', '=', '0');
+				}
 			}
 			
 			if (isset($pa_options['checkAccess']) && (is_array($pa_options['checkAccess']) && sizeof($pa_options['checkAccess']))) {
@@ -488,6 +497,7 @@ class SearchEngine extends SearchBase {
 								INNER JOIN {$vs_browse_tmp_table} ON {$vs_browse_tmp_table}.row_id = attr.row_id
 								WHERE
 									(attr_vals.element_id = ?) AND (attr.table_num = ?) AND (lil.{$vs_sort_field} IS NOT NULL)
+								ORDER BY lil.{$vs_sort_field}
 							";
 						} else {
 							$vs_sortable_value_fld = 'attr_vals.'.$vs_sortable_value_fld;
@@ -501,6 +511,7 @@ class SearchEngine extends SearchBase {
 								INNER JOIN {$vs_search_tmp_table} ON {$vs_search_tmp_table}.row_id = attr.row_id
 								WHERE
 									(attr_vals.element_id = ?) AND (attr.table_num = ?) AND (attr_vals.{$vs_sort_field} IS NOT NULL)
+								ORDER BY attr_vals.{$vs_sort_field}
 							";
 							//print $vs_sql." ; $vn_element_id/; ".$this->opn_tablenum."<br>";
 						}

@@ -124,6 +124,14 @@ class VictimService extends NS11mmService {
 			'last_modification' => $t_entity->get('ca_entities.lastModified', array("dateFormat" => 'iso8601'))
 		);
 		
+		$va_nonpreferred_labels = $t_entity->get('ca_entities.nonpreferred_labels', array('returnAsArray' => true));
+	
+		foreach($va_nonpreferred_labels as $vn_entity_id => $va_labels) {
+			foreach($va_labels as $vn_i => $va_label) {
+				unset($va_labels[$vn_i]['form_element']);
+			}
+			$va_data['alternate_names'] = $va_labels;
+		}
 		// add place info
 		$va_places = $t_entity->getRelatedItems('ca_places');
 		$t_place = new ca_places();
@@ -240,7 +248,7 @@ class VictimService extends NS11mmService {
 					
 					// reset filesize property to reflect size of version, not size of original
 					foreach($va_reps[$vn_i]['paths'] as $vs_version => $vs_path) {
-						$va_reps[$vn_i]['info'][$vs_version]['PROPERTIES']['filesize'] = filesize($va_reps[$vn_i]['paths'][$vs_version]);
+						$va_reps[$vn_i]['info'][$vs_version]['PROPERTIES']['filesize'] = @filesize($va_reps[$vn_i]['paths'][$vs_version]);
 					}
 					
 					unset($va_reps[$vn_i]['paths']);
@@ -326,8 +334,11 @@ class VictimService extends NS11mmService {
 		$va_data = array('aliases' => $t_entity->get('ca_entities.nonpreferred_labels.displayname', array('returnAsArray' => true)));
 		
 		$va_entities = $t_entity->getRelatedItems('ca_entities');
+		$va_timestamp = $t_entity->getLastChangeTimestamp($vn_id);
 		foreach($va_entities as $vn_relation_id => $va_rel_info) {
 			if ($t_entity->load($va_rel_info['entity_id'])) {
+				$va_data['lastupdate_timestamp'] =  date('o-m-N',$va_timestamp['timestamp'])."T".date('H:i:s',$va_timestamp['timestamp'])."Z";
+
 				$va_data['relationships'][$va_rel_info['relationship_type_code']][] = array(
 					'id' => $va_rel_info['entity_id'],
 					'displayname' => $t_entity->get('ca_entities.hierarchy.preferred_labels.displayname', array('returnAsArray' => true)),
@@ -431,7 +442,7 @@ class VictimService extends NS11mmService {
 			}
 			
 			header("Content-type: audio/mpeg");
-			header("Content-length: ".filesize($vs_file));
+			header("Content-length: ".@filesize($vs_file));
 			readfile($vs_file);
 			return;
 		}

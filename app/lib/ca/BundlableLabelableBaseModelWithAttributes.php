@@ -454,6 +454,7 @@ class BundlableLabelableBaseModelWithAttributes extends LabelableBaseModelWithAt
   	 *		returnAsLink = if true and $ps_field is set to a specific field in a related table, or $ps_field is set to a related table (eg. ca_entities or ca_entities.related) AND the template option is set and returnAllLocales is not set, then returned values will be links. The destination of the link will be the appropriate editor when executed within Providence or the appropriate detail page when executed within Pawtucket or another front-end. Default is false.
  	 *		returnAsLinkText = text to use a content of HTML link. If omitted the url itself is used as the link content.
  	 *		returnAsLinkAttributes = array of attributes to include in link <a> tag. Use this to set class, alt and any other link attributes.
+	 *		returnAsLinkTarget = Optional link target. If any plugin implementing hookGetAsLink() responds to the specified target then the plugin will be used to generate the links rather than CA's default link generator.
 	 */
 	public function get($ps_field, $pa_options=null) {
 		if(!is_array($pa_options)) { $pa_options = array(); }
@@ -462,6 +463,7 @@ class BundlableLabelableBaseModelWithAttributes extends LabelableBaseModelWithAt
 		
 		$vb_return_as_link = 		(isset($pa_options['returnAsLink'])) ? (bool)$pa_options['returnAsLink'] : false;
 		$vs_return_as_link_text = 	(isset($pa_options['returnAsLinkText'])) ? (string)$pa_options['returnAsLinkText'] : '';
+		$vs_return_as_link_target = (isset($pa_options['returnAsLinkTarget'])) ? (string)$pa_options['returnAsLinkTarget'] : '';
 		$vs_return_as_link_attributes = (isset($pa_options['returnAsLinkAttributes']) && is_array($pa_options['returnAsLinkAttributes'])) ? $pa_options['returnAsLinkAttributes'] : array();
 		
 		$vb_return_all_locales = 	(isset($pa_options['returnAllLocales'])) ? (bool)$pa_options['returnAllLocales'] : false;
@@ -534,7 +536,7 @@ class BundlableLabelableBaseModelWithAttributes extends LabelableBaseModelWithAt
 							$va_text = caProcessTemplateForIDs($vs_template, $va_tmp[0], $va_ids, $va_template_opts);
 						
 							if ($vb_return_as_link) {
-								$va_text = caCreateLinksFromText($va_text, $va_tmp[0], $va_ids, $vs_return_as_link_class);
+								$va_text = caCreateLinksFromText($va_text, $va_tmp[0], $va_ids, $vs_return_as_link_class, $vs_return_as_link_target);
 							} 
 						
 							if ($vb_return_as_array) {
@@ -588,7 +590,7 @@ class BundlableLabelableBaseModelWithAttributes extends LabelableBaseModelWithAt
 						$va_text = caProcessTemplateForIDs($vs_template, $va_tmp[0], $va_ids, $va_template_opts);
 						
 						if ($vb_return_as_link) {
-							$va_text = caCreateLinksFromText($va_text, $va_tmp[0], $va_ids, $vs_return_as_link_class);
+							$va_text = caCreateLinksFromText($va_text, $va_tmp[0], $va_ids, $vs_return_as_link_class, $vs_return_as_link_target);
 						} 
 						
 						if ($vb_return_as_array) {
@@ -708,7 +710,7 @@ class BundlableLabelableBaseModelWithAttributes extends LabelableBaseModelWithAt
 					}
 			
 					if ($vb_return_as_link && !$vb_return_all_locales) {
-						$va_items = caCreateLinksFromText($va_items, $va_tmp[0], $va_ids, $vs_return_as_link_class);
+						$va_items = caCreateLinksFromText($va_items, $va_tmp[0], $va_ids, $vs_return_as_link_class, $vs_return_as_link_target);
 					}
 					
 					if($vb_return_as_array) {
@@ -2068,13 +2070,38 @@ class BundlableLabelableBaseModelWithAttributes extends LabelableBaseModelWithAt
 		if (isset($pa_bundle_settings['restrictToTermsRelatedToCollection']) && $pa_bundle_settings['restrictToTermsRelatedToCollection']) {
 			$va_get_related_opts['restrict_to_relationship_types'] = $pa_bundle_settings['restrictToTermsOnCollectionUseRelationshipType'];
 		}
+		
+		if ($pa_bundle_settings['sort']) {
+			$va_get_related_opts['sort'] = $pa_bundle_settings['sort'];
+			$va_get_related_opts['sortDirection'] = $pa_bundle_settings['sortDirection'];
+		}
 		if (sizeof($va_items = $this->getRelatedItems($ps_related_table, $va_get_related_opts))) {
 			$t_rel = $this->getAppDatamodel()->getInstanceByTableName($ps_related_table, true);
 			$vs_rel_pk = $t_rel->primaryKey();
 			$va_ids = caExtractArrayValuesFromArrayOfArrays($va_items, $vs_rel_pk);
 			$qr_rel_items = $t_item->makeSearchResult($t_rel->tableNum(), $va_ids);	
 			
-			$va_initial_values = caProcessRelationshipLookupLabel($qr_rel_items, $t_rel, array('relatedItems' => $va_items, 'stripTags' => true));
+			
+			$va_opts = array('relatedItems' => $va_items, 'stripTags' => true);
+			if(strlen(trim($pa_bundle_settings['display_template']))) {
+				$va_opts['template'] = trim($pa_bundle_settings['display_template']);
+			} 
+			
+			// If no display_template set try to get a default out of the app.conf file
+			if (!$va_opts['template']) {
+				if (is_array($va_lookup_settings = $this->getAppConfig()->getList("{$ps_related_table}_lookup_settings"))) {
+					$vs_lookup_delimiter = $this->getAppConfig()->getList("{$ps_related_table}_lookup_delimiter");
+					$va_opts['template'] = join($vs_lookup_delimiter, $va_lookup_settings);
+				}
+			}
+			
+			// If no app.conf default then just show preferred_labels
+			if (!$va_opts['template']) {
+				$va_opts['template'] = "^preferred_labels";
+			}
+			
+			$va_initial_values = caProcessRelationshipLookupLabel($qr_rel_items, $t_rel, $va_opts);
+			
 		}
 		
 		$va_force_new_values = array();
@@ -3439,6 +3466,7 @@ if (!$vb_batch) {
  	 *		start = item to start return set at; first item is numbered zero; default is 0
  	 *		limit = number of items to limit return set to; default is 1000
  	 *		sort = optional array of bundles to sort returned values on. Currently only supported when getting related values via simple related <table_name> and <table_name>.related invokations. Eg. from a ca_objects results you can use the 'sort' option got get('ca_entities'), get('ca_entities.related') or get('ca_objects.related'). The bundle specifiers are fields with or without tablename. Only those fields returned for the related tables (intrinsics, label fields and attributes) are sortable.
+ 	 *		sortDirection = direction of sort. Valid values as "ASC" (ascending) and "DESC" (descending). Default is ASC.
  	 *		showDeleted = if set to true, related items that have been deleted are returned. Default is false.
 	 *		where = optional array of fields and field values to filter returned values on. The fields must be intrinsic and in the same table as the field being "get()'ed" Can be used to filter returned values from primary and related tables. This option can be useful when you want to fetch certain values from a related table. For example, you want to get the relationship source_info values, but only for relationships going to a specific related record. Note that multiple fields/values are effectively AND'ed together - all must match for a row to be returned - and that only equivalence is supported (eg. field equals value).
  	 *		user_id = If set item level access control is performed relative to specified user_id, otherwise defaults to logged in user
@@ -3472,6 +3500,7 @@ if (!$vb_batch) {
 		
 		if(isset($pa_options['sort']) && !is_array($pa_options['sort'])) { $pa_options['sort'] = array($pa_options['sort']); }
 		$va_sort_fields = (isset($pa_options['sort']) && is_array($pa_options['sort'])) ? $pa_options['sort'] : null;
+		$vs_sort_direction = (isset($pa_options['sortDirection']) && $pa_options['sortDirection']) ? $pa_options['sortDirection'] : null;
 		
 		if (!$va_row_ids && ($vn_row_id > 0)) {
 			$va_row_ids = array($vn_row_id);
@@ -3953,7 +3982,7 @@ if (!$vb_batch) {
 			}
 			
 			// Perform sort
-			$va_rels = caSortArrayByKeyInValue($va_rels, $va_sort_fields);
+			$va_rels = caSortArrayByKeyInValue($va_rels, $va_sort_fields, $vs_sort_direction);
 		}
 		
 		return $va_rels;

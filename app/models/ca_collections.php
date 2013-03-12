@@ -361,21 +361,45 @@ class ca_collections extends BundlableLabelableBaseModelWithAttributes implement
 	 * @param string $ps_name The name to search for
 	 * @return array A list of collection_ids with the specified label
 	 */
-	public function getCollectionIDsByName($ps_name) {
+	public function getCollectionIDsByName($ps_name, $pn_parent_id=null, $pn_type_id=null) {
 		$o_db = $this->getDb();
+		
+		$va_params = array((string)$ps_name);
+		
+		$vs_type_sql = '';
+		if ($pn_type_id) {
+			if(sizeof($va_type_ids = caMakeTypeIDList('ca_collections', array($pn_type_id)))) {
+				$vs_type_sql = " AND cae.type_id in (?)";
+				$va_params[] = $va_type_ids;
+			}
+		}
+		
+		if ($pn_parent_id) {
+			$vs_parent_sql = " AND cae.parent_id = ?";
+			$va_params[] = (int)$pn_parent_id;
+		} 
+		
+		
 		$qr_res = $o_db->query("
 			SELECT DISTINCT cae.collection_id
 			FROM ca_collections cae
 			INNER JOIN ca_collection_labels AS cael ON cael.collection_id = cae.collection_id
 			WHERE
-				cael.name = ?
-		", (string)$ps_name);
+				cael.name = ? {$vs_type_sql} {$vs_parent_sql} AND cae.deleted = 0
+			", $va_params);
 		
 		$va_collection_ids = array();
 		while($qr_res->nextRow()) {
 			$va_collection_ids[] = $qr_res->get('collection_id');
 		}
 		return $va_collection_ids;
+	}
+	# ------------------------------------------------------
+	/**
+	 *
+	 */
+	public function getIDsByLabel($pa_label_values, $pn_parent_id=null, $pn_type_id=null) {
+		return $this->getCollectionIDsByName($pa_label_values['name'], $pn_parent_id, $pn_type_id);
 	}
 	# ------------------------------------------------------
 	/**

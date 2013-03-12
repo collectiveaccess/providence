@@ -344,7 +344,9 @@ class ca_relationship_types extends BundlableLabelableBaseModelWithAttributes {
 		
 		$va_relationships = array();
 		while ($qr_res->nextRow()) {
-			$va_relationships[$qr_res->get('type_id')][$qr_res->get('locale_id')] = $qr_res->getRow();
+			$va_row = $qr_res->getRow();
+			$va_row['type_code'] = mb_strtolower($va_row['type_code']);
+			$va_relationships[$qr_res->get('type_id')][$qr_res->get('locale_id')] = $va_row;
 		}
 		return caExtractValuesByUserLocale($va_relationships);
 	}
@@ -358,6 +360,8 @@ class ca_relationship_types extends BundlableLabelableBaseModelWithAttributes {
 		if (!is_array($pa_options)) { $pa_options = array(); }
 		if (!isset($pa_options['create'])) { $pa_options['create'] = false; }
 		if (!isset($pa_options['cache'])) { $pa_options['cache'] = true; }
+		
+		$pm_type_code_or_id = mb_strtolower($pm_type_code_or_id);
 		
 		if (!is_numeric($pm_table_name_or_num)) {
 			$vn_table_num = $this->getAppDatamodel()->getTableNum($pm_table_name_or_num);
@@ -609,13 +613,21 @@ class ca_relationship_types extends BundlableLabelableBaseModelWithAttributes {
 	 * Override insert() to set table_num to whatever the parent is
 	 */
 	public function insert($pa_options=null) {
-		$t_root_rel_type = new ca_relationship_types($this->get('parent_id'));
+		if ($vn_parent_id = $this->get('parent_id')) {
+			$t_root_rel_type = new ca_relationship_types($vn_parent_id);
 		
-		if ($t_root_rel_type->get('table_num')) {
-			$this->set('table_num', $t_root_rel_type->get('table_num'));
+			if ($vn_table_num = $t_root_rel_type->get('table_num')) {
+				$this->set('table_num', $vn_table_num);
+			}
 		}
+		
+		$vb_we_set_transaction = false;
 		if (!$this->inTransaction()) {
-			$this->setTransaction(new Transaction());
+			$o_trans = new Transaction();
+			$this->setTransaction($o_trans);
+			$vb_we_set_transaction = true;
+		} else {
+			$o_trans = $this->getTransaction();
 		}
 		if ($this->get('is_default')) {
 			$this->getDb()->query("
@@ -624,13 +636,14 @@ class ca_relationship_types extends BundlableLabelableBaseModelWithAttributes {
 				WHERE table_num = ?
 			", (int)$t_root_rel_type->get('table_num'));
 		}
-		$vn_rc = parent::insert($pa_options);
-		
-		
-		if ($this->numErrors()) {
-			$this->getTransaction()->rollback();
+		if (!($vn_rc = parent::insert($pa_options))) {
+			if ($vb_we_set_transaction) {
+				$o_trans->rollback();
+			}
 		} else {
-			$this->getTransaction()->commit();
+			if ($vb_we_set_transaction) {
+				$o_trans->commit();
+			}
 		}
 		return $vn_rc;
 	}
@@ -639,12 +652,22 @@ class ca_relationship_types extends BundlableLabelableBaseModelWithAttributes {
 	 * Override update() to set table_num to whatever the parent is
 	 */
 	public function update($pa_options=null) {
-		$t_root_rel_type = new ca_relationship_types($this->get('parent_id'));
-		$this->set('table_num', $t_root_rel_type->get('table_num'));
-		
-		if (!$this->inTransaction()) {
-			$this->setTransaction(new Transaction());
+		if ($vn_parent_id = $this->get('parent_id')) {
+			$t_root_rel_type = new ca_relationship_types($vn_parent_id);
+			if ($vn_table_num = $t_root_rel_type->get('table_num')) {
+				$this->set('table_num', $vn_table_num);
+			}
 		}
+		
+		$vb_we_set_transaction = false;
+		if (!$this->inTransaction()) {
+			$o_trans = new Transaction();
+			$this->setTransaction($o_trans);
+			$vb_we_set_transaction = true;
+		} else {
+			$o_trans = $this->getTransaction();
+		}
+		
 		if ($this->get('is_default')) {
 			$this->getDb()->query("
 				UPDATE ca_relationship_types 
@@ -652,13 +675,16 @@ class ca_relationship_types extends BundlableLabelableBaseModelWithAttributes {
 				WHERE table_num = ?
 			", (int)$t_root_rel_type->get('table_num'));
 		}
-		$vn_rc = parent::update($pa_options);
-		
-		if ($this->numErrors()) {
-			$this->getTransaction()->rollback();
+		if (!($vn_rc = parent::update($pa_options))) {
+			if ($vb_we_set_transaction) {
+				$o_trans->rollback();
+			}
 		} else {
-			$this->getTransaction()->commit();
+			if ($vb_we_set_transaction) {
+				$o_trans->commit();
+			}
 		}
+		
 		return $vn_rc;
 	}
 	# ------------------------------------------------------

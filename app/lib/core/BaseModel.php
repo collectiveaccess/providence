@@ -274,6 +274,14 @@ class BaseModel extends BaseObject {
 	 * @access private
 	 */
 	private $opa_php_version;				#
+	
+	/**
+	 * Flag controlling whether changes are written to the change log (ca_change_log)
+	 * Default is true.
+	 *
+	 * @access private
+	 */
+	private $opb_log_changes = true;
 
 
 	# --------------------------------------------------------------------------------
@@ -505,6 +513,19 @@ class BaseModel extends BaseObject {
 			$this->opb_purify_input = (bool)$pb_purify;
 		}
 		return $this->opb_purify_input;
+	}
+	# --------------------------------------------------------------------------------
+	/**
+	 * Sets whether changes are written to the change log or not. Default is to write changes to the log.
+	 *
+	 * @param bool $pb_log_changes If true, changes will be recorded in the change log. By default changes are logged unless explicitly set not to. If omitted then the current state of logging is returned.
+	 * @return bool Current state of logging.
+	 */
+	public function logChanges($pb_log_changes=null) {
+		if (!is_null($pb_log_changes)) {
+			$this->opb_log_changes = (bool)$pb_log_changes;
+		}
+		return $this->opb_log_changes;
 	}
 	# --------------------------------------------------------------------------------
 	# Set/get values
@@ -2156,7 +2177,7 @@ class BaseModel extends BaseObject {
 					$vn_id = $this->getPrimaryKey();
 					
 					if ((!isset($pa_options['dont_do_search_indexing']) || (!$pa_options['dont_do_search_indexing'])) && !defined('__CA_DONT_DO_SEARCH_INDEXING__')) {
-						$this->doSearchIndexing();
+						$this->doSearchIndexing(null, false);
 					}
 
 					if ($vb_we_set_transaction) { $this->removeTransaction(true); }
@@ -2692,7 +2713,7 @@ class BaseModel extends BaseObject {
 					}
 					if ((!isset($pa_options['dont_do_search_indexing']) || (!$pa_options['dont_do_search_indexing'])) &&  !defined('__CA_DONT_DO_SEARCH_INDEXING__')) {
 						# update search index
-						$this->doSearchIndexing();
+						$this->doSearchIndexing(null, false);
 					}
 														
 					if (is_array($va_rebuild_hierarchical_index)) {
@@ -3420,6 +3441,8 @@ class BaseModel extends BaseObject {
 				unset($va_media_desc["ORIGINAL_FILENAME"]);
 				unset($va_media_desc["INPUT"]);
 				unset($va_media_desc["VOLUME"]);
+				unset($va_media_desc["_undo_"]);
+				unset($va_media_desc["TRANSFORMATION_HISTORY"]);
 				return array_keys($va_media_desc);
 			}
 		} else {
@@ -3786,7 +3809,7 @@ class BaseModel extends BaseObject {
 				if (isset($this->_SET_FILES[$ps_field]['options']['undo']) && file_exists($this->_SET_FILES[$ps_field]['options']['undo'])) {
 					if ($volume = $version_info['original']['VOLUME']) {
 						$vi = $this->_MEDIA_VOLUMES->getVolumeInformation($volume);
-						if ($vi["absolutePath"] && ($dirhash = $this->_getDirectoryHash($vi["absolutePath"], $this->getPrimaryKey()))) {
+						if ($vi["absolutePath"] && (strlen($dirhash = $this->_getDirectoryHash($vi["absolutePath"], $this->getPrimaryKey())))) {
 							$magic = rand(0,99999);
 							$vs_filename = $this->_genMediaName($ps_field)."_undo_";
 							$filepath = $vi["absolutePath"]."/".$dirhash."/".$magic."_".$vs_filename;
@@ -3802,7 +3825,6 @@ class BaseModel extends BaseObject {
 						}
 					}
 				}
-				
 				
 				$va_process_these_versions_only = array();
 				if (isset($pa_options['these_versions_only']) && is_array($pa_options['these_versions_only']) && sizeof($pa_options['these_versions_only'])) {
@@ -4321,7 +4343,7 @@ class BaseModel extends BaseObject {
 		if (!is_array($va_media_info)) {
 			return null;
 		}
-			
+		
 		if(isset($pa_options['revert']) && $pa_options['revert'] && isset($va_media_info['_undo_'])) {
 			$vs_path = $vs_undo_path = $this->getMediaPath($ps_field, '_undo_');
 			$va_transformation_history = array();
@@ -4625,11 +4647,6 @@ class BaseModel extends BaseObject {
 			#--- delete file
 			@unlink($this->getFilePath($field));
 			#--- delete conversions
-			#
-			# TODO: wvWWare MSWord conversion to HTML generates untracked graphics files for embedded images... they are currently
-			# *not* deleted when the file and associated conversions are deleted. We will need to parse the HTML to derive the names
-			# of these files...
-			#
 			foreach ($this->getFileConversions($field) as $vs_format => $va_file_conversion) {
 				@unlink($this->getFileConversionPath($field, $vs_format));
 			}
@@ -5274,6 +5291,7 @@ class BaseModel extends BaseObject {
 	 * @param int $pn_user_id user identifier, defaults to null
 	 */
 	private function logChange($ps_change_type, $pn_user_id=null) {
+		if (!$this->logChanges()) { return null; }
 		$vb_is_metadata = $vb_is_metadata_value = false;
 		if ($this->tableName() == 'ca_attributes') {
 			$vb_log_changes_to_self = false;
@@ -5451,6 +5469,7 @@ class BaseModel extends BaseObject {
 				}
 			}
 		}
+		return true;
 	}
 	# --------------------------------------------------------------------------------------------
 	/**
@@ -7755,7 +7774,6 @@ $pa_options["display_form_field_tips"] = true;
 			if (isset($pa_options['setErrorOnDuplicate']) && $pa_options['setErrorOnDuplicate']) {
 				$this->postError(1100, _t('Relationship already exists'), 'BaseModel->addRelationship');
 			}
-			print "foo";
 			return false;
 		}
 		
@@ -8329,11 +8347,6 @@ $pa_options["display_form_field_tips"] = true;
 					$vs_where_sql = "mt.".$va_rel_keys['many_table_field']." = ?";
 				}
 				$va_query_params[] = (int)$this->getPrimaryKey();
-							
-				if ($vn_relation_id) {
-					$vs_relation_id_sql = " AND relation_id <> ?";
-					$va_query_params[] = $vn_relation_id;
-				}
 			
 				$vs_relation_id_fld = ($vb_is_one_table ? "mt.".$va_rel_keys['many_table_field'] : "ot.".$va_rel_keys['one_table_field']);
 				$qr_res = $o_db->query("
@@ -8341,7 +8354,7 @@ $pa_options["display_form_field_tips"] = true;
 					FROM {$va_rel_keys['one_table']} ot
 					INNER JOIN {$va_rel_keys['many_table']} AS mt ON mt.{$va_rel_keys['many_table_field']} = ot.{$va_rel_keys['one_table_field']}
 					WHERE
-						{$vs_where_sql} {$vs_relation_id_sql}
+						{$vs_where_sql}
 				", $va_query_params);
 				if (sizeof($va_ids = $qr_res->getAllFieldValues($vs_relation_id_fld))) {
 					return $va_ids;
@@ -9582,6 +9595,93 @@ $pa_options["display_form_field_tips"] = true;
 		}
 		
 		return false;
+	}
+	# --------------------------------------------------------------------------------------------
+	/**
+	 * Find row(s) with fields having values matching specific values. By default a model instance for the
+	 * first row matching the criteria is returned. A list of all matches can be optionally returned using the returnAsArray option.
+	 *
+	 * @param array $pa_values An array of values to match. Keys are field names. This must be an array with at least one key-value pair where the key is a valid field name for the model.
+	 * @param array $pa_options Options are:
+	 *		transaction = optional Transaction instance. If set then all database access is done within the context of the transaction
+	 *		returnAsArray = if set an array of instances is returned with all matches, or matches up to the specified limit
+	 *		limit = if returnAsArray is set, limits number of returned matches
+	 *
+	 * @return mixed An instance of the model with the first found match; if returnAsArray option is set then an array with some or all matches, subject to the limit option, is returned.
+	 */
+	public static function find($pa_values, $pa_options=null) {
+		if (!is_array($pa_values) || (sizeof($pa_values) == 0)) { return null; }
+		
+		$vs_table = get_called_class();
+		$o_instance = new $vs_table;
+		
+		$va_sql_wheres = array();
+		foreach ($pa_values as $vs_field => $vm_value) {
+			# support case where fieldname is in format table.fieldname
+			if (preg_match("/([\w_]+)\.([\w_]+)/", $vs_field, $va_matches)) {
+				if ($va_matches[1] != $vs_table) {
+					if ($o_instance->_DATAMODEL->tableExists($va_matches[1])) {
+						//$this->postError(715,_t("BaseModel '%1' cannot be accessed with this class", $matches[1]), "BaseModel->load()");
+						return false;
+					} else {
+						//$this->postError(715, _t("BaseModel '%1' does not exist", $matches[1]), "BaseModel->load()");
+						return false;
+					}
+				}
+				$vs_field = $matches[2]; # get field name alone
+			}
+
+			if (!$o_instance->hasField($vs_field)) {
+				//$this->postError(716,_t("Field '%1' does not exist", $vs_field), "BaseModel->load()");
+				return false;
+			}
+
+			if ($o_instance->_getFieldTypeType($vs_field) == 0) {
+				if (!is_numeric($vm_value) && !is_null($vm_value)) {
+					$vm_value = intval($vm_value);
+				}
+			} else {
+				$vm_value = $o_instance->quote($vs_field, is_null($vm_value) ? '' : $vm_value);
+			}
+
+			if (is_null($vm_value)) {
+				$va_sql_wheres[] = "($vs_field IS NULL)";
+			} else {
+				if ($vm_value === '') { continue; }
+				$va_sql_wheres[] = "($vs_field = $vm_value)";
+			}
+		}
+		$vs_sql = "SELECT * FROM {$vs_table} WHERE ".join(" AND ", $va_sql_wheres);
+		
+		if (isset($pa_options['transaction']) && ($pa_options['transaction'] instanceof Transaction)) {
+			$o_db = $pa_options['transaction']->getDb();
+		} else {
+			$o_db = new Db();
+		}
+		
+		$vn_limit = (isset($pa_options['limit']) && ((int)$pa_options['limit'] > 0)) ? (int)$pa_options['limit'] : null;
+		
+		$qr_res = $o_db->query($vs_sql);
+		
+		$vn_c = 0;
+		$va_instances = array();
+		
+		$vs_pk = $o_instance->primaryKey();
+		
+		while($qr_res->nextRow()) {
+			$o_instance = new $vs_table;
+			if ($o_instance->load($qr_res->get($vs_pk))) {
+				$va_instances[] = $o_instance;
+				$vn_c++;
+				if ($vn_limit && ($vn_c >= $vn_limit)) { break; }
+			}
+		}
+		
+		if (isset($pa_options['returnAsArray']) && $pa_options['returnAsArray']) {
+			return $va_instances;
+		} else {
+			return array_shift($va_instances);
+		}
 	}
 	# --------------------------------------------------------------------------------------------
 	/**

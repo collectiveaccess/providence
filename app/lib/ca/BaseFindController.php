@@ -42,6 +42,7 @@
 	require_once(__CA_LIB_DIR__."/core/Parsers/ZipFile.php");
 	require_once(__CA_LIB_DIR__."/core/AccessRestrictions.php");
  	require_once(__CA_LIB_DIR__.'/core/Print/PrintForms.php');
+ 	require_once(__CA_LIB_DIR__.'/ca/Visualizer.php');
  	require_once(__CA_LIB_DIR__.'/core/Parsers/dompdf/dompdf_config.inc.php');
  	
 	class BaseFindController extends ActionController {
@@ -207,10 +208,10 @@
 					'name' => _t('PDF (Chart)'),
 					'code' => '_pdf'
 				),
-				array(
-					'name' => _t('PDF (Long)'),
-					'code' => '_pdflong'
-				),				
+			//	array(
+			//		'name' => _t('PDF (Long)'),
+			//		'code' => '_pdflong'
+			//	),				
 				array(
 					'name' => _t('PDF (Thumbnails)'),
 					'code' => '_pdfthumb' 
@@ -258,6 +259,7 @@
  		 * Returns list of available label print formats
  		 */
  		public function getPrintForms() {
+ 			require_once(__CA_LIB_DIR__.'/core/Print/PrintForms.php');
 			return PrintForms::getAvailableForms($this->request->config->get($this->ops_tablename.'_print_forms'));
 		}
 		# -------------------------------------------------------
@@ -526,45 +528,81 @@
 			
 			switch($ps_output_type) {
 				case '_pdf':
+// 			header("Content-Disposition: attachment; filename=export_results.pdf");
+// 			header("Content-type: application/pdf");
+// 					$vs_content = $this->render('Results/'.$this->ops_tablename.'_pdf_results_html.php');
+// 				
+// 					$o_pdf = new DOMPDF();
+// 					// Page sizes: 'letter', 'legal', 'A4'
+// 					// Orientation:  'portrait' or 'landscape'
+// 					$o_pdf->set_paper("letter", "landscape");
+// 					$o_pdf->load_html($vs_content, 'utf-8');
+// 					$o_pdf->render();
+// 					$o_pdf->stream("results.pdf");
+					require_once(__CA_LIB_DIR__."/core/Print/html2pdf/html2pdf.class.php");
+					
+					try {
+						$vs_content = $this->render('Results/'.$this->ops_tablename.'_pdf_results_html.php');
+						$vo_html2pdf = new HTML2PDF('L','letter','en');
+						$vo_html2pdf->setDefaultFont("dejavusans");
+						$vo_html2pdf->setTestIsImage(false);
+						$vo_html2pdf->WriteHTML($vs_content);
+						
 			header("Content-Disposition: attachment; filename=export_results.pdf");
 			header("Content-type: application/pdf");
-					$vs_content = $this->render('Results/'.$this->ops_tablename.'_pdf_results_html.php');
-				
-					$o_pdf = new DOMPDF();
-					// Page sizes: 'letter', 'legal', 'A4'
-					// Orientation:  'portrait' or 'landscape'
-					$o_pdf->set_paper("letter", "landscape");
-					$o_pdf->load_html($vs_content, 'utf-8');
-					$o_pdf->render();
-					$o_pdf->stream("results.pdf");
+			
+						$vo_html2pdf->Output('results.pdf');
+						$vb_printed_properly = true;
+					} catch (Exception $e) {
+						$vb_printed_properly = false;
+						$this->postError(3100, _t("Could not generate PDF"),"BaseEditorController->PrintSummary()");
+					}
 					return;
 					break;
 				case '_pdfthumb':
+// 			header("Content-Disposition: attachment; filename=export_results.pdf");
+// 			header("Content-type: application/pdf");
+// 					$vs_content = $this->render('Results/'.$this->ops_tablename.'_pdf_results_thumb_html.php');
+// 				
+// 					$o_pdf = new DOMPDF();
+// 					// Page sizes: 'letter', 'legal', 'A4'
+// 					// Orientation:  'portrait' or 'landscape'
+// 					$o_pdf->set_paper("letter", "landscape");
+// 					$o_pdf->load_html($vs_content, 'utf-8');
+// 					$o_pdf->render();
+// 					$o_pdf->stream("results.pdf");
+					require_once(__CA_LIB_DIR__."/core/Print/html2pdf/html2pdf.class.php");
+					
+					try {
+						$vs_content = $this->render('Results/'.$this->ops_tablename.'_pdf_results_thumb_html.php');
+						$vo_html2pdf = new HTML2PDF('L','letter','en');
+						$vo_html2pdf->setDefaultFont("dejavusans");
+						$vo_html2pdf->setTestIsImage(false);
+						$vo_html2pdf->WriteHTML($vs_content);
+						
 			header("Content-Disposition: attachment; filename=export_results.pdf");
 			header("Content-type: application/pdf");
-					$vs_content = $this->render('Results/'.$this->ops_tablename.'_pdf_results_thumb_html.php');
-				
-					$o_pdf = new DOMPDF();
-					// Page sizes: 'letter', 'legal', 'A4'
-					// Orientation:  'portrait' or 'landscape'
-					$o_pdf->set_paper("letter", "landscape");
-					$o_pdf->load_html($vs_content, 'utf-8');
-					$o_pdf->render();
-					$o_pdf->stream("results.pdf");
+			
+						$vo_html2pdf->Output('thumb_results.pdf');
+						$vb_printed_properly = true;
+					} catch (Exception $e) {
+						$vb_printed_properly = false;
+						$this->postError(3100, _t("Could not generate PDF"),"BaseEditorController->PrintSummary()");
+					}
 					return;
 					break;	
-				case '_pdflong':
-			header("Content-Disposition: attachment; filename=export_results.pdf");
-			header("Content-type: application/pdf");
-					$vs_content = $this->render('Results/'.$this->ops_tablename.'_pdf_results_long_html.php');
-				
-					$o_pdf = new DOMPDF();
-					// Page sizes: 'letter', 'legal', 'A4'
-					// Orientation:  'portrait' or 'landscape'
-					$o_pdf->set_paper("letter", "landscape");
-					$o_pdf->load_html($vs_content, 'utf-8');
-					$o_pdf->render();
-					$o_pdf->stream("results.pdf");
+// 				case '_pdflong':
+// 			header("Content-Disposition: attachment; filename=export_results.pdf");
+// 			header("Content-type: application/pdf");
+// 					$vs_content = $this->render('Results/'.$this->ops_tablename.'_pdf_results_long_html.php');
+// 				
+// 					$o_pdf = new DOMPDF();
+// 					// Page sizes: 'letter', 'legal', 'A4'
+// 					// Orientation:  'portrait' or 'landscape'
+// 					$o_pdf->set_paper("letter", "landscape");
+// 					$o_pdf->load_html($vs_content, 'utf-8');
+// 					$o_pdf->render();
+// 					$o_pdf->stream("results.pdf");
 					return;
 					break;					
 				case '_csv':
@@ -903,46 +941,6 @@
 			$this->view->setVar('items_per_page', $this->opa_items_per_page);
 			$this->view->setVar('current_items_per_page', $vn_items_per_page);
 			
- 			// Get current display list and put into tools view
- 			//$vn_display_id 			= $this->opo_result_context->getCurrentBundleDisplay();
- 			//$t_display = new ca_bundle_displays();
- 			//$va_displays = array('0' => _t('Default'));
- 			
-			//	$va_display_list = caExtractValuesByUserLocale($t_display->getBundleDisplays(array('table' => $this->ops_tablename, 'user_id' => $this->request->getUserID())));
-			//	foreach($va_display_list as $va_display) {
-			//		$va_displays[$va_display['display_id']] = unicode_substr($va_display['name'],0, 25);
-			//	}
- 			
- 			//$this->view->setVar('display_lists', $va_displays);	
- 			//$this->view->setVar('current_display_list', $vn_display_id);
- 			
- 			
- 			//$this->view->setVar('print_forms', $this->getPrintForms());
- 			
- 			//$vn_table_num = $this->opo_datamodel->getTableNum($this->ops_tablename);
- 			
- 			//$t_mappings = new ca_bundle_mappings();
-			//$va_mappings = $t_mappings->getAvailableMappings($vn_table_num, array('E', 'X'));
-			
-			//$va_export_options = array(
-			//	array(
-			//		'name' => _t('Tab delimited'),
-			//		'code' => '_tab'
-			//	),
-			//	array(
-			//		'name' => _t('Comma delimited (CSV)'),
-			//		'code' => '_csv'
-			//	)
-			//);
-			
-			//foreach($va_mappings as $vn_mapping_id => $va_mapping_info) {
-			//	$va_export_options[] = array(
-			//		'name' => $va_mapping_info['name'],
-			//		'code' => $va_mapping_info['mapping_id']
-			//	);
-			//}
-			//$this->view->setVar('export_formats', $va_export_options);
- 			
  			//
  			// Available sets
  			//
@@ -951,6 +949,30 @@
 
 			$this->view->setVar('last_search', $this->opo_result_context->getSearchExpression());
  			
+ 		}
+ 		# ------------------------------------------------------------------
+ 		# Visualization
+ 		# ------------------------------------------------------------------
+ 		/**
+ 		 * Generate search/browse results visualization
+ 		 */
+ 		public function Viz() {
+ 			$ps_viz = $this->request->getParameter('viz', pString);
+ 			
+ 			$o_viz = new Visualizer($this->ops_tablename);
+ 			$vo_result = caMakeSearchResult($this->ops_tablename, $this->opo_result_context->getResultList());
+ 			
+ 			if ($vo_result) {
+ 				$o_viz->addData($vo_result);
+ 				$this->view->setVar('num_items_total', (int)$vo_result->numHits());
+ 			}
+ 			$this->view->setVar("viz_html", $o_viz->render($ps_viz, "HTML", array('classname' => 'vizFullScreen', 'request' => $this->request)));
+ 			
+ 			$o_dm = Datamodel::load();
+ 			$this->view->setVar('t_item', $o_dm->getInstanceByTableName($this->ops_tablename, true));
+ 			$this->view->setVar('num_items_rendered', (int)$o_viz->numItemsRendered());
+ 			
+ 			$this->render('Results/viz_html.php');
  		}
  		# ------------------------------------------------------------------
 	}

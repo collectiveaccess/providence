@@ -75,6 +75,15 @@
  			return false;
  		}
  		# -------------------------------------------------------
+ 		/**
+ 		 * If instance was just saved grant current user access
+ 		 */
+ 		public function _afterSave($pt_subject, $pb_is_insert) {
+ 			if ($pb_is_insert && $pt_subject->getPrimaryKey()) {
+ 				$pt_subject->addUsers(array($this->request->getUserID() => __CA_BUNDLE_DISPLAY_EDIT_ACCESS__));
+ 			}
+ 		}
+ 		# -------------------------------------------------------
  		# Sidebar info handler
  		# -------------------------------------------------------
  		public function Info($pa_parameters) {

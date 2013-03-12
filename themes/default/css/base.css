@@ -31,6 +31,14 @@ a:hover{
 
 h2 { font-size: 13px; color: #666; }
 
+h5 {
+	margin: 0px;
+	font-size: 13px; 
+	color: #666; 
+	-webkit-margin-before: 0em;
+	-webkit-margin-after: .5em;
+}
+
 .divide{
 	height:3px;
 	background-color:#DDDDDD;
@@ -174,7 +182,7 @@ h2 { font-size: 13px; color: #666; }
 #leftNav ul.selected { list-style: none; margin: 0px; padding: 3px 0px 3px 0px; display:block; }
 #leftNav ul.arrow { border-top: solid 1px #dce2e9; border-bottom: solid 1px #fff; font-size: 11px; }
 #leftNav ul.arrow li { list-style: none; font-weight: normal; border: 0; padding: 0; margin: 0; }
-#leftNav ul.arrow li a, #leftNav ul.arrow li span { _height: 15px; text-decoration: none; display: block; padding: 3px 0; background: transparent url('../graphics/icons/array_gray.gif') no-repeat 20px 8px; padding-left: 30px; padding-right: 5px; margin: 0; }
+#leftNav ul.arrow li a, #leftNav ul.arrow li span { _height: 15px; text-decoration: none; display: block; padding: 3px 0; background: transparent url('../graphics/icons/arrow_gray.gif') no-repeat 20px 8px; padding-left: 30px; padding-right: 5px; margin: 0; }
 #leftNav ul li a:hover { background-color: #fff; }
 #leftNav ul.arrow li a:hover { background-color: #fff; }
 
@@ -233,6 +241,18 @@ h2 { font-size: 13px; color: #666; }
 }
 
 #inspectorChangeTypeButton {
+	float: right;
+	font-size: 10px;
+	padding: 2px !important;
+	margin: 0px;
+	text-align:right;
+}
+
+#inspectorLotMediaDownload {
+	width: 190px;
+}
+
+#inspectorLotMediaDownloadButton {
 	float: right;
 	font-size: 10px;
 	padding: 2px !important;
@@ -969,66 +989,12 @@ div.hint {
 	color: transparent;
 }
 
-
 /* form field tooltips */
-#tooltip {
-	position: absolute;
-	z-index: 3000;
-	padding: 5px;
-	/*opacity: 0.85;
-	border: 1px solid #111;
-	background-color: #eee;*/
+.tooltipFormat h3 {
+	padding: 0px 0px 10px 0px !important;
+	margin: 0px !important;
+	font-color: #000000 !important;
 }
-#tooltip h3, #tooltip div { margin: 0; }
-
-#tooltip.tooltipFormat {
-	font-family: Arial;
-	border: none;
-	width: 210px;
-	padding:15px;
-	/*height: 135px;
-	opacity: 0.8;
-	background: url('../graphics/backgrounds/tooltip_box.png');*/
-	-moz-border-radius: 10px; 
-	-webkit-border-top: 10px;
-	border-radius: 10px;
-	-moz-box-shadow: 2px 2px 5px #adadad;
-	-webkit-box-shadow: 2px 2px 5px #adadad;
-	box-shadow: 2px 2px 5px #adadad;
-	background-color:#FFFFFF;
-	color:#000000;
-	font-size:11px;
-	border:1px solid #adadad;
-}
-#tooltip.tooltipFormat h3 {
-	margin-bottom: 0.25em;
-	font-size: 10pt;
-	width: 220px;
-	text-align: center;
-}
-#tooltip.tooltipFormat div { 
-	/*width: 205px;
-	height: 130px;
-	text-align: left;
-	overflow: hidden;*/
-	margin: 0px;
-}
-
-#tooltip.resizeableTooltip {
-	font-family: Arial;
-	border: none;
-	padding:3px;
-	opacity: 1.0;
-}
-
-#tooltip.resizeableTooltip h3 {
-	margin-bottom: 0.25em;
-	font-size: 10pt;
-	text-align: center;
-	opacity: 1.0;
-}
-
-
 
 /*** Button styles ***/
 div.button{
@@ -1668,6 +1634,39 @@ select.searchToolsSelect {
 	font-size: 11px;
 }
 
+/* search visualization - horizontal show hide */
+#showViz, #hideViz {
+	float:right;
+	margin: 1px 0px 0px 10px;
+	text-decoration:none;
+	text-transform:uppercase;
+	color:#828282;
+	font-size:9px;
+}
+#searchVizBox{
+	clear:both;
+	margin: 0px 0px 0px 0px;
+	display:none;
+	font-size:12px;
+	color:#828282;
+}
+#searchVizBox .bg{
+	background-color: #E2E2E2;
+	border:0px;
+	padding:6px 3px 6px 10px;
+}
+
+#searchVizBox .col{
+	float:left;
+	margin-right:15px;
+	color:#333;
+}
+
+select.searchVizSelect {
+	width: 165px;
+	font-size: 11px;
+}
+
 /* search sets - horizontal show hide */
 #showSets, #hideSets {
 	float:right;
@@ -1934,7 +1933,7 @@ div.caMediaOverlayControls {
 	left:0px;
 	z-index: 32000;			/* needs to be on top of caMediaPanel, which has z-index=31000 */
 	/* opacity:.1;	 */
-	opacity: 1.0;
+	opacity: 0.7;
 }
 /* div.caMediaOverlayControls:hover {
 	opacity:1.0;
@@ -4126,6 +4125,22 @@ div.roundedRel {
 	border-radius: 10px;
 }
 
+div.listRel {
+	font-size: 11px;
+	font-weight: normal;
+	padding: 10px;
+	margin-bottom: 5px;
+	-moz-border-radius: 5px; 
+	-webkit-border-radius: 5px;
+	-moz-border-radius: 5px; 
+	-webkit-border-bottom-right-radius: 5px;
+	width: 690px;	
+	border: 1px solid #ccc;
+	background-color:#ffffff;
+	min-height: 18px;
+	line-height:1.5em;
+}
+
 .caItemList {
 	margin-top: 10px;
 }
@@ -4165,6 +4180,10 @@ div.roundedRel {
 .roundedRel .caDeleteItemButton {
 	position: relative;
 	top: 3px;
+}
+
+.listRel .caDeleteItemButton {
+	float: right;
 }
 
 div.preferenceSectionDivider {
@@ -4980,6 +4999,25 @@ div.searchlight-results div.searchlight-selected {
 	clear:left;
 }
 
+.olPopup {
+	border: 1px solid #000000 !important;
+	border-radius:8px !important;
+	box-shadow: 4px 4px 10px rgba(75, 75, 75, 0.75) !important;
+}
+
+.olPopupCloseBox {
+	width:15px  !important;
+	height:16px  !important;
+	margin:0px !important;
+	background-image:url("../graphics/buttons/x.png") !important;
+}
+
+.olPopupContent {
+	margin-left: 10px !important;
+	margin-top: 0px !important;
+	padding: 0px 5px 5px 5px !important;
+}
+
 /* Batch confirmation change */
 #caConfirmBatchExecutionPanel {
 	position: fixed; 
@@ -5128,4 +5166,38 @@ div.quickAddTypeList {
 
 input[type='text'].ui-autocomplete-loading {
     background: white url('../graphics/icons/indicator.gif') right center no-repeat;
+}
+
+.caAnnotationMediaPlayerContainer {
+	width: 725px;
+	height: 32px;
+}
+.caAnnotationMediaPlayer {
+	
+	margin: 0 auto 0 auto;
+}
+
+/** Debug **/
+
+div#debug {
+	padding: 10px 10px 10px 10px;
+	background-color:#EEEEEE;
+	margin-bottom: 10px;
+}
+
+div#debugLabel {
+	font-size: 14px;
+	color: green;
+	font-weight: bold;
+}
+
+
+/** Visualization **/
+.vizFullScreen {
+	background-color: #000000;
+}
+
+.vizTitle {
+	font-weight: bold;
+	margin-top: 5px;
 }

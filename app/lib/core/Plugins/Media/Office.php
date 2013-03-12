@@ -38,7 +38,7 @@
  * Plugin for processing Microsoft Word and Excel documents
  */
  
-include_once(__CA_LIB_DIR__."/core/Plugins/WLPlug.php");
+include_once(__CA_LIB_DIR__."/core/Plugins/Media/BaseMediaPlugin.php");
 include_once(__CA_LIB_DIR__."/core/Plugins/IWLPlugMedia.php");
 include_once(__CA_LIB_DIR__."/core/Configuration.php");
 include_once(__CA_LIB_DIR__."/core/Media.php");
@@ -50,7 +50,7 @@ include_once(__CA_LIB_DIR__."/core/Zend/Search/Lucene/Document/Docx.php");
 include_once(__CA_LIB_DIR__."/core/Zend/Search/Lucene/Document/Xlsx.php");
 include_once(__CA_LIB_DIR__."/core/Zend/Search/Lucene/Document/Pptx.php");
 
-class WLPlugMediaOffice Extends WLPlug Implements IWLPlugMedia {
+class WLPlugMediaOffice Extends BaseMediaPlugin Implements IWLPlugMedia {
 	var $errors = array();
 	
 	var $filepath;

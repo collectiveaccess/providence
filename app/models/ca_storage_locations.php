@@ -331,32 +331,44 @@ class ca_storage_locations extends BundlableLabelableBaseModelWithAttributes imp
 	/**
 	 *
 	 */
-	public function getLocationIDsByName($ps_name, $pn_parent_id=null) {
+	public function getLocationIDsByName($ps_name, $pn_parent_id=null, $pn_type_id=null) {
 		$o_db = $this->getDb();
 		
-		if ($pn_parent_id) {
-			$qr_res = $o_db->query("
-				SELECT DISTINCT casl.location_id
-				FROM ca_storage_locations casl
-				INNER JOIN ca_storage_location_labels AS casll ON casll.location_id = casl.location_id
-				WHERE
-					casll.name = ? AND casl.parent_id = ?
-			", (string)$ps_name, (int)$pn_parent_id);
-		} else {
-			$qr_res = $o_db->query("
-				SELECT DISTINCT casl.location_id
-				FROM ca_storage_locations casl
-				INNER JOIN ca_storage_location_labels AS casll ON casll.location_id = casl.location_id
-				WHERE
-					casll.name = ?
-			", (string)$ps_name);
-
+		$va_params = array((string)$ps_name);
+		
+		$vs_type_sql = '';
+		if ($pn_type_id) {
+			if(sizeof($va_type_ids = caMakeTypeIDList('ca_storage_locations', array($pn_type_id)))) {
+				$vs_type_sql = " AND casl.type_id IN (?)";
+				$va_params[] = $va_type_ids;
+			}
 		}
+		
+		if ($pn_parent_id) {
+			$vs_parent_sql = " AND casl.parent_id = ?";
+			$va_params[] = (int)$pn_parent_id;
+		} 
+		
+		$qr_res = $o_db->query("
+			SELECT DISTINCT casl.location_id
+			FROM ca_storage_locations casl
+			INNER JOIN ca_storage_location_labels AS casll ON casll.location_id = casl.location_id
+			WHERE
+				casll.name = ? {$vs_type_sql} {$vs_parent_sql} AND casl.deleted = 0
+		", $va_params);
+		
 		$va_location_ids = array();
 		while($qr_res->nextRow()) {
 			$va_location_ids[] = $qr_res->get('location_id');
 		}
 		return $va_location_ids;
+	}
+	# ------------------------------------------------------
+	/**
+	 *
+	 */
+	public function getIDsByLabel($pa_label_values, $pn_parent_id=null, $pn_type_id=null) {
+		return $this->getLocationIDsByName($pa_label_values['name'], $pn_parent_id, $pn_type_id);
 	}
 	# ------------------------------------------------------
 }
