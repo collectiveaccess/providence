@@ -51,6 +51,10 @@ class ExportMARC extends BaseExportFormat {
 
 		//caDebug($pa_data,"Data to build MARC from");
 		//caDebug($pa_options,"Export format options");
+		
+		if(!class_exists("File_MARC_Record")){
+			return false;
+		}
 
 		$o_record = new File_MARC_Record();
 
