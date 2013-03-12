@@ -291,6 +291,7 @@
 						$vn_label_pk_val = $qr_labels->get($vs_label_pk);
 						print CLIProgressBar::next();
 						if ($t_label->load($vn_label_pk_val)) {
+							$t_table->logChanges(false);
 							$t_label->setMode(ACCESS_WRITE);
 							$t_label->update();
 						}
@@ -303,6 +304,7 @@
 					$vn_pk_val = $qr_res->get($vs_pk);
 					print CLIProgressBar::next();
 					if ($t_table->load($vn_pk_val)) {
+						$t_table->logChanges(false);
 						$t_table->setMode(ACCESS_WRITE);
 						$t_table->update();
 					}
