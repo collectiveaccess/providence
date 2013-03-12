@@ -13,27 +13,6 @@
  * limitations under the License.
  */
 
-* {
-  padding: 0;
-  margin: 0;
-}
-
-html {
-  height: 100%;
-}
-
-body {
-  height: 100%;
-  /* background-color: #404040; */
-  /* background-image: url(images/texture.png); */
-}
-
-body,
-input,
-button,
-select {
-  font: message-box;
-}
 
 .hidden {
   display: none;
