@@ -73,6 +73,10 @@
 			), $this->opa_sorts);
 			
 			$this->opo_browse = new OccurrenceBrowse($this->opo_result_context->getParameter('browse_id'), 'providence');
+			 
+ 			JavascriptLoadManager::register('imageScroller');
+ 			JavascriptLoadManager::register('tabUI');
+ 			JavascriptLoadManager::register('panel');
 		}
  		# -------------------------------------------------------
  		/**

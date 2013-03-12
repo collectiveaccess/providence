@@ -3476,6 +3476,7 @@ if (!$va_facet_info['show_all_when_first_facet'] || ($this->numCriteria() > 0)) 
 									INNER JOIN {$vs_browse_tmp_table} ON {$vs_browse_tmp_table}.row_id = attr.row_id
 									WHERE
 										(attr_vals.element_id = ?) AND (attr.table_num = ?) AND (lil.{$vs_sort_field} IS NOT NULL)
+									ORDER BY lil.{$vs_sort_field}
 								";
 							} else {
 								$vs_sortable_value_fld = 'attr_vals.'.$vs_sortable_value_fld;
@@ -3490,6 +3491,7 @@ if (!$va_facet_info['show_all_when_first_facet'] || ($this->numCriteria() > 0)) 
 									INNER JOIN {$vs_browse_tmp_table} ON {$vs_browse_tmp_table}.row_id = attr.row_id
 									WHERE
 										(attr_vals.element_id = ?) AND (attr.table_num = ?) AND (attr_vals.{$vs_sort_field} IS NOT NULL)
+									ORDER BY attr_vals.{$vs_sort_field}
 								";
 								//print $vs_sql." ; $vn_element_id/; ".$this->opn_browse_table_num."<br>";
 							}

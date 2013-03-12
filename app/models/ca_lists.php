@@ -1045,11 +1045,12 @@ class ca_lists extends BundlableLabelableBaseModelWithAttributes {
 	 *  value = if set, the <select> will have default selection set to the item whose *value* matches the option value. If none is set then the first item in the list will be selected
 	 *  key = ca_list_item field to be used as value for the <select> element list; can be set to either item_id or item_value; default is item_id
 	 *	width = the display width of the list in characters or pixels
-	 *  limitToItemsWithID =
-	 *  omitItemsWithID = 
+	 *  limitToItemsWithID = An optional array of list item_ids. Item_ids not in the array will be omitted from the returned list.
+	 *  omitItemsWithID = An optional array of list item_ids. Item_ids in the array will be omitted from the returned list.
 	 *	
-	 *	limitToItemsRelatedToCollections = array of collection_id or idno
-	 *	limitToItemsRelatedToCollectionWithRelationshipTypes = array of type name or type_id
+	 *	limitToItemsRelatedToCollections = an array of collection_ids or collection idno's; returned items will be restricted to those attached to the specified collections
+	 *	limitToItemsRelatedToCollectionWithRelationshipTypes = array of collection type names or type_ids; returned items will be restricted to those attached to the specified collectionss with the specified relationship type
+	 *	limitToListIDs = array of list_ids to restrict returned items to when using "limitToItemsRelatedToCollections"
 	 * 
 	 * @return string - HTML code for the <select> element; empty string if the list is empty
 	 */
@@ -1088,9 +1089,27 @@ class ca_lists extends BundlableLabelableBaseModelWithAttributes {
 				if (sizeof($va_collection_ids)) {
 					$qr_collections = $t_list->makeSearchResult('ca_collections', $va_collection_ids, array('restrictToRelationshipTypes' => isset($pa_options['limitToItemsRelatedToCollectionWithRelationshipTypes']) ? $pa_options['limitToItemsRelatedToCollectionWithRelationshipTypes'] : null));
 					
-					
+					$va_item_ids = array();
 					while($qr_collections->nextHit()) {
 						$va_list_items = $qr_collections->get('ca_list_items', array('returnAsArray' => true));
+						foreach($va_list_items as $vn_rel_id => $va_list_item) {
+							$va_item_ids[$vn_rel_id] = $va_list_item['item_id'];
+						}
+					}
+					
+					if ($va_limit_to_lists = ((isset($pa_options['limitToLists']) && is_array($pa_options['limitToLists'])) ? $pa_options['limitToLists'] : null)) {
+						// filter out items from tables we don't want
+					
+						$qr_list_items = $t_list->makeSearchResult("ca_list_items", array_values($va_item_ids));
+						while($qr_list_items->nextHit()) {
+							if (!in_array($qr_list_items->get('ca_list_items.list_id'), $va_limit_to_lists)) {
+								if (is_array($va_k = array_keys($va_item_ids, $qr_list_items->get('ca_list_items.item_id')))) {
+									foreach($va_k as $vs_k) {
+										unset($va_list_items[$vs_k]);
+									}
+								}
+							}
+						}
 					}
 				}
 			} else {

@@ -4647,11 +4647,6 @@ class BaseModel extends BaseObject {
 			#--- delete file
 			@unlink($this->getFilePath($field));
 			#--- delete conversions
-			#
-			# TODO: wvWWare MSWord conversion to HTML generates untracked graphics files for embedded images... they are currently
-			# *not* deleted when the file and associated conversions are deleted. We will need to parse the HTML to derive the names
-			# of these files...
-			#
 			foreach ($this->getFileConversions($field) as $vs_format => $va_file_conversion) {
 				@unlink($this->getFileConversionPath($field, $vs_format));
 			}
@@ -9600,6 +9595,93 @@ $pa_options["display_form_field_tips"] = true;
 		}
 		
 		return false;
+	}
+	# --------------------------------------------------------------------------------------------
+	/**
+	 * Find row(s) with fields having values matching specific values. By default a model instance for the
+	 * first row matching the criteria is returned. A list of all matches can be optionally returned using the returnAsArray option.
+	 *
+	 * @param array $pa_values An array of values to match. Keys are field names. This must be an array with at least one key-value pair where the key is a valid field name for the model.
+	 * @param array $pa_options Options are:
+	 *		transaction = optional Transaction instance. If set then all database access is done within the context of the transaction
+	 *		returnAsArray = if set an array of instances is returned with all matches, or matches up to the specified limit
+	 *		limit = if returnAsArray is set, limits number of returned matches
+	 *
+	 * @return mixed An instance of the model with the first found match; if returnAsArray option is set then an array with some or all matches, subject to the limit option, is returned.
+	 */
+	public static function find($pa_values, $pa_options=null) {
+		if (!is_array($pa_values) || (sizeof($pa_values) == 0)) { return null; }
+		
+		$vs_table = get_called_class();
+		$o_instance = new $vs_table;
+		
+		$va_sql_wheres = array();
+		foreach ($pa_values as $vs_field => $vm_value) {
+			# support case where fieldname is in format table.fieldname
+			if (preg_match("/([\w_]+)\.([\w_]+)/", $vs_field, $va_matches)) {
+				if ($va_matches[1] != $vs_table) {
+					if ($o_instance->_DATAMODEL->tableExists($va_matches[1])) {
+						//$this->postError(715,_t("BaseModel '%1' cannot be accessed with this class", $matches[1]), "BaseModel->load()");
+						return false;
+					} else {
+						//$this->postError(715, _t("BaseModel '%1' does not exist", $matches[1]), "BaseModel->load()");
+						return false;
+					}
+				}
+				$vs_field = $matches[2]; # get field name alone
+			}
+
+			if (!$o_instance->hasField($vs_field)) {
+				//$this->postError(716,_t("Field '%1' does not exist", $vs_field), "BaseModel->load()");
+				return false;
+			}
+
+			if ($o_instance->_getFieldTypeType($vs_field) == 0) {
+				if (!is_numeric($vm_value) && !is_null($vm_value)) {
+					$vm_value = intval($vm_value);
+				}
+			} else {
+				$vm_value = $o_instance->quote($vs_field, is_null($vm_value) ? '' : $vm_value);
+			}
+
+			if (is_null($vm_value)) {
+				$va_sql_wheres[] = "($vs_field IS NULL)";
+			} else {
+				if ($vm_value === '') { continue; }
+				$va_sql_wheres[] = "($vs_field = $vm_value)";
+			}
+		}
+		$vs_sql = "SELECT * FROM {$vs_table} WHERE ".join(" AND ", $va_sql_wheres);
+		
+		if (isset($pa_options['transaction']) && ($pa_options['transaction'] instanceof Transaction)) {
+			$o_db = $pa_options['transaction']->getDb();
+		} else {
+			$o_db = new Db();
+		}
+		
+		$vn_limit = (isset($pa_options['limit']) && ((int)$pa_options['limit'] > 0)) ? (int)$pa_options['limit'] : null;
+		
+		$qr_res = $o_db->query($vs_sql);
+		
+		$vn_c = 0;
+		$va_instances = array();
+		
+		$vs_pk = $o_instance->primaryKey();
+		
+		while($qr_res->nextRow()) {
+			$o_instance = new $vs_table;
+			if ($o_instance->load($qr_res->get($vs_pk))) {
+				$va_instances[] = $o_instance;
+				$vn_c++;
+				if ($vn_limit && ($vn_c >= $vn_limit)) { break; }
+			}
+		}
+		
+		if (isset($pa_options['returnAsArray']) && $pa_options['returnAsArray']) {
+			return $va_instances;
+		} else {
+			return array_shift($va_instances);
+		}
 	}
 	# --------------------------------------------------------------------------------------------
 	/**

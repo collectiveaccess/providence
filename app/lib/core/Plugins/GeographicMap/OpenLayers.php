@@ -74,10 +74,15 @@ class WLPlugGeographicMapOpenLayers Extends BaseGeographicMapPlugIn Implements I
 		$o_config = Configuration::load();
 		
 		list($vn_width, $vn_height) = $this->getDimensions();
-		$vn_width = intval($vn_width);
-		$vn_height = intval($vn_height);
-		if ($vn_width < 1) { $vn_width = 690; }
-		if ($vn_height < 1) { $vn_height = 300; }
+		
+		if (!preg_match('!^[\d]+%$!', $vn_width)) {
+			$vn_width = intval($vn_width)."px";
+			if ($vn_width < 1) { $vn_width = 690; }
+		}
+		if (!preg_match('!^[\d]+%$!', $vn_height)) {
+			$vn_height = intval($vn_height)."px";
+			if ($vn_height < 1) { $vn_height = 300; }
+		}
 		
 		$va_options = caGetOptions($pa_options, array());
 		
@@ -134,7 +139,8 @@ class WLPlugGeographicMapOpenLayers Extends BaseGeographicMapPlugIn Implements I
 			case 'HTML':
 			default:
 				
-				$vs_buf = "
+				$vs_buf = "<div style='width:{$vn_width}; height:{$vn_height}' id='{$vs_id}' ".((isset($pa_options['classname']) && $pa_options['classname']) ? "class='".$pa_options['classname']."'" : "")."> </div>\n";
+				$vs_buf .= "
 <script type='text/javascript'>;
 	jQuery(document).ready(function() {
 		var map_{$vs_id} = new OpenLayers.Map({
@@ -170,7 +176,7 @@ class WLPlugGeographicMapOpenLayers Extends BaseGeographicMapPlugIn Implements I
 			})
 		});
 ";
-
+		
 		$va_locs = $va_paths = array();
 		foreach($va_map_items as $o_map_item) {
 			$va_coords = $o_map_item->getCoordinates();
@@ -261,7 +267,7 @@ class WLPlugGeographicMapOpenLayers Extends BaseGeographicMapPlugIn Implements I
 					popup_{$vs_id} = new OpenLayers.Popup.AnchoredBubble('infoBubble', 
 						 feature.geometry.getBounds().getCenterLonLat(),
 						 null,
-						 feature.data.label,
+						 feature.data.label + feature.data.content,
 						 null, true, onPopupClose);
 					feature.popup = popup_{$vs_id};
 					map_{$vs_id}.addPopup(popup_{$vs_id});

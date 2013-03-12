@@ -38,6 +38,7 @@ require_once(__CA_LIB_DIR__.'/core/Parsers/PHPExcel/PHPExcel.php');
 require_once(__CA_LIB_DIR__.'/core/Parsers/PHPExcel/PHPExcel/IOFactory.php');
 require_once(__CA_LIB_DIR__.'/ca/Import/BaseDataReader.php');
 
+
 class MySQLDataReader extends BaseDataReader {
 	# -------------------------------------------------------
 	private $opo_handle = null;
@@ -54,9 +55,10 @@ class MySQLDataReader extends BaseDataReader {
 		parent::__construct($ps_source, $pa_options);
 		
 		$this->ops_title = _t('MySQL data reader');
+		$this->ops_display_name = _t('MySQL database');
 		$this->ops_description = _t('Reads data from MySQL databases');
 		
-		$this->opa_formats = array('MYSQL');
+		$this->opa_formats = array('mysql');	// must be all lowercase to allow for case-insensitive matching
 	}
 	# -------------------------------------------------------
 	/**
@@ -169,6 +171,24 @@ class MySQLDataReader extends BaseDataReader {
 	 */
 	public function numRows() {
 		return $this->opo_rows->numRows();
+	}
+	# -------------------------------------------------------
+	/**
+	 * 
+	 * 
+	 * @return int
+	 */
+	public function inputType() {
+		return $this->opo_rows->numRows();
+	}
+	# -------------------------------------------------------
+	/**
+	 * 
+	 * 
+	 * @return int
+	 */
+	public function getInputType() {
+		return __CA_DATA_READER_INPUT_URL__;
 	}
 	# -------------------------------------------------------
 }
