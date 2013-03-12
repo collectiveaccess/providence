@@ -2178,7 +2178,14 @@ class BundlableLabelableBaseModelWithAttributes extends LabelableBaseModelWithAt
 	}
 	# ------------------------------------------------------
 	/**
+	 *  
 	 *
+	 * @param mixed $pm_screen
+	 * @param RequestHTTP $po_request The current request
+	 * @param array $pa_options Options are:
+	 *		dontReturnSerialIdno = if set idno's are always returned as set in the request rather than being returns as SERIAL values if so configured.
+	 *
+	 * @return array
 	 */
 	public function extractValuesFromRequest($pm_screen, $po_request, $pa_options) {
 		
@@ -2201,9 +2208,9 @@ class BundlableLabelableBaseModelWithAttributes extends LabelableBaseModelWithAt
 				
 				switch($vs_f) {
 					case $vs_idno_field:
-						if ($this->opo_idno_plugin_instance) {
+						if (($this->opo_idno_plugin_instance) && !$pa_options['dontReturnSerialIdno']) {
 							$this->opo_idno_plugin_instance->setDb($this->getDb());
-							$va_values['intrinsic'][$vs_f] = $this->opo_idno_plugin_instance->htmlFormValue($vs_idno_field);
+							$va_values['intrinsic'][$vs_f] = $this->opo_idno_plugin_instance->htmlFormValue($vs_idno_field, null, true);
 						} else {
 							$va_values['intrinsic'][$vs_f] = $po_request->getParameter($vs_f, pString);
 						}

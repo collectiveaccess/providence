@@ -1043,12 +1043,17 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 		
 		$po_request = isset($pa_options['request']) ? $pa_options['request'] : null;
 		
+		$o_config = Configuration::load();
+		
 		if (!is_array($pa_options) || !isset($pa_options['logLevel']) || !$pa_options['logLevel']) {
 			$pa_options['logLevel'] = KLogger::INFO;
 		}
 		if (!is_array($pa_options) || !isset($pa_options['logDirectory']) || !$pa_options['logDirectory'] || !file_exists($pa_options['logDirectory'])) {
-			$pa_options['logDirectory'] = ".";
+			if (!($pa_options['logDirectory'] = $o_config->get('batch_metadata_import_log_directory'))) {
+				$pa_options['logDirectory'] = ".";
+			}
 		}
+		
 		$o_log = new KLogger($pa_options['logDirectory'], $pa_options['logLevel']);
 		
 		$vb_show_cli_progress_bar 	= (isset($pa_options['showCLIProgressBar']) && ($pa_options['showCLIProgressBar'])) ? true : false;
