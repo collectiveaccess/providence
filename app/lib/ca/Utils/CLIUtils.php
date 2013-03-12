@@ -537,16 +537,39 @@
 			if (!($vn_start = (int)$po_opts->getOption('start_id'))) { $vn_start = null; }
 			if (!($vn_end = (int)$po_opts->getOption('end_id'))) { $vn_end = null; }
 			
+			
+			if ($vn_id = (int)$po_opts->getOption('id')) { 
+				$vn_start = $vn_id; 
+				$vn_end = $vn_id; 
+			}
+			
+			$va_ids = array();
+			if ($vs_ids = (string)$po_opts->getOption('ids')) { 
+				if (sizeof($va_tmp = explode(",", $vs_ids))) {
+					foreach($va_tmp as $vn_id) {
+						if ((int)$vn_id > 0) {
+							$va_ids[] = (int)$vn_id;
+						}
+					}
+				}
+			}
+			
 			$vs_sql_where = null;
 			$va_params = array();
-			if (
-				(($vn_start > 0) && ($vn_end > 0) && ($vn_start <= $vn_end)) || (($vn_start > 0) && ($vn_end == null))
-			) {
-				$vs_sql_where = "WHERE representation_id >= ?";
-				$va_params[] = $vn_start;
-				if ($vn_end) {
-					$vs_sql_where .= " AND representation_id <= ?";
-					$va_params[] = $vn_end;
+			
+			if (sizeof($va_ids)) {
+				$vs_sql_where = "WHERE representation_id IN (?)";
+				$va_params[] = $va_ids;
+			} else {
+				if (
+					(($vn_start > 0) && ($vn_end > 0) && ($vn_start <= $vn_end)) || (($vn_start > 0) && ($vn_end == null))
+				) {
+					$vs_sql_where = "WHERE representation_id >= ?";
+					$va_params[] = $vn_start;
+					if ($vn_end) {
+						$vs_sql_where .= " AND representation_id <= ?";
+						$va_params[] = $vn_end;
+					}
 				}
 			}
 	
@@ -599,7 +622,9 @@
 				"mimetypes|m-s" => _t("Limit re-processing to specified mimetype(s) or mimetype stubs. Separate multiple mimetypes with commas."),
 				"versions|v-s" => _t("Limit re-processing to specified versions. Separate multiple versions with commas."),
 				"start_id|s-n" => _t('Representation id to start reloading at'),
-				"end_id|e-n" => _t('Representation id to end reloading at')
+				"end_id|e-n" => _t('Representation id to end reloading at'),
+				"id|i-n" => _t('Representation id reloading'),
+				"ids|l-s" => _t('Comma separated list of representation ids to reload')
 			);
 		}
 		# -------------------------------------------------------
