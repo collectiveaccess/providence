@@ -115,6 +115,17 @@
 	 * @return bool True if setup.php is located and loaded, false if setup.php could not be found.
 	 */
 	function _caUtilsLoadSetupPHP() {
+		
+		// try to get hostname off of argv since we need that before anything else in a multi-database installation
+		if (isset($_SERVER['argv']) && is_array($_SERVER['argv'])) {
+			foreach($_SERVER['argv'] as $vs_opt) {
+				if (preg_match("!^\-\-hostname\=([A-Za-z0-9_\-\.]+)!", $vs_opt, $va_matches) || preg_match("!^\-h\=([A-Za-z0-9_\-\.]+)!", $vs_opt, $va_matches)) {
+					$_SERVER['HTTP_HOST'] = $va_matches[1];
+					break;
+				}
+			}
+		}
+		
 		// Look for environment variable
 		$vs_path = getenv("COLLECTIVEACCESS_HOME");
 		if (file_exists("{$vs_path}/setup.php")) {

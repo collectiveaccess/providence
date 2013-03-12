@@ -143,7 +143,7 @@
 			$this->view->setVar('t_ui', $t_ui);
 			$this->view->setVar('screen', $va_nav['defaultScreen']);
 			
-			$va_field_values = $t_subject->extractValuesFromRequest($va_nav['defaultScreen'], $this->request, array('ui_instance' => $t_ui));
+			$va_field_values = $t_subject->extractValuesFromRequest($va_nav['defaultScreen'], $this->request, array('ui_instance' => $t_ui, 'dontReturnSerialIdno' => true));
 			
 			// Set intrinsics
 			if (is_array($va_field_values['intrinsic'])) {
