@@ -3556,12 +3556,13 @@ if (!$vb_batch) {
 		$va_selects = array();
 		$va_joins_post_add = array();
 		
+		$vs_related_table = $t_rel_item->tableName();
+		if ($t_rel_item->hasField('type_id')) { $va_selects[] = $vs_related_table.'.type_id item_type_id'; }
+		
 		// TODO: get these field names from models
 		if ($t_item_rel) {
 			//define table names
 			$vs_linking_table = $t_item_rel->tableName();
-			$vs_related_table = $t_rel_item->tableName();
-			if ($t_rel_item->hasField('type_id')) { $va_selects[] = $vs_related_table.'.type_id item_type_id'; }
 			
 			$va_selects[] = $vs_related_table.'.'.$t_rel_item->primaryKey();
 			
@@ -4054,6 +4055,7 @@ if (!$vb_batch) {
 			$pa_options['request']
 		) {
 			$this->opo_idno_plugin_instance->setValue($this->get($ps_field));
+			if (method_exists($this, "getTypeCode")) { $this->opo_idno_plugin_instance->setType($this->getTypeCode()); }
 			$vs_element = $this->opo_idno_plugin_instance->htmlFormElement(
 										$ps_field,  
 										$va_errors, 
