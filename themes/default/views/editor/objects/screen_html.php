@@ -58,6 +58,7 @@
 			if ($vb_can_edit) { print $vs_control_box; }
 ?>
 			<input type='hidden' name='object_id' value='<?php print $vn_object_id; ?>'/>
+			<input type='hidden' name='collection_id' value='<?php print $this->request->getParameter('collection_id', pInteger); ?>'/>
 			<input type='hidden' name='above_id' value='<?php print $vn_above_id; ?>'/>
 		</form>
 	</div>
