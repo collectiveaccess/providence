@@ -637,13 +637,17 @@ class ca_data_exporters extends BundlableLabelableBaseModelWithAttributes {
 
 				$vn_row_num = $o_row->getRowIndex();
 				$o_cell = $o_sheet->getCellByColumnAndRow(0, $vn_row_num);
-				$vs_mapping_num = (string)$o_cell->getValue();
+				$vs_mapping_num = trim((string)$o_cell->getValue());
+
+				if(strlen($vs_mapping_num)<1){
+					continue;
+				}
 
 				$o_search = $o_sheet->getCellByColumnAndRow(1, $o_row->getRowIndex());
 				$o_replace = $o_sheet->getCellByColumnAndRow(2, $o_row->getRowIndex());
 
 				if(!isset($va_mapping[$vs_mapping_num])){
-					print _t("Replacement sheet references invalid mapping number %1",$vs_mapping_num)."\n";
+					print _t("Warning: Replacement sheet references invalid mapping number '%1'. Ignoring row.",$vs_mapping_num)."\n";
 					continue;
 				}
 
@@ -651,7 +655,7 @@ class ca_data_exporters extends BundlableLabelableBaseModelWithAttributes {
 				$vs_replace = (string)$o_replace->getValue();
 
 				if(!$vs_search){
-					print _t("Search must be set for each row in the replacement sheet")."\n";
+					print _t("Warning: Search must be set for each row in the replacement sheet. Ignoring row for mapping '%1'",$vs_mapping_num)."\n";
 					continue;
 				}
 
@@ -1108,6 +1112,7 @@ class ca_data_exporters extends BundlableLabelableBaseModelWithAttributes {
 			}
 			
 			$va_info = array();
+
 			if(is_array($va_related)){
 				foreach($va_related as $va_rel){
 					$va_rel_export = $this->processExporterItem($pn_item_id,$vn_new_table_num,$va_rel[$vs_key],array_merge(array('ignoreContext' => true),$pa_options));
