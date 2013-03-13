@@ -1972,31 +1972,83 @@ class BundlableLabelableBaseModelWithAttributes extends LabelableBaseModelWithAt
 		$va_ancestors_by_locale = array();
 		$vs_pk = $this->primaryKey();
 		
-		
 		$vs_idno_field = $this->getProperty('ID_NUMBERING_ID_FIELD');
 		foreach($va_ancestor_list as $vn_ancestor_id => $va_info) {
-			if (!$va_info['NODE']['parent_id']) { continue; }
-			if (!($va_info['NODE']['name'] =  $va_info['NODE'][$vs_display_fld])) {		// copy display field content into 'name' which is used by bundle for display
-				if (!($va_info['NODE']['name'] = $va_info['NODE'][$vs_idno_field])) { $va_info['NODE']['name'] = '???'; }
-			}
+			//if (!$va_info['NODE']['parent_id']) { continue; }
+			
 			$vn_locale_id = isset($va_info['NODE']['locale_id']) ? $va_info['NODE']['locale_id'] : null;
-			$va_ancestors_by_locale[$va_info['NODE'][$vs_pk]][$vn_locale_id] = $va_info['NODE'];
+			$va_ancestor = array(
+				'item_id' => $vn_item_id = $va_info['NODE'][$vs_pk],
+				'parent_id' => $va_info['NODE']['parent_id'],
+				'label' => $va_info['NODE'][$vs_display_fld] ? $va_info['NODE'][$vs_display_fld] : $va_info['NODE'][$vs_idno_field],
+				'idno' => $va_info['NODE'][$vs_idno_field],
+				'locale_id' => $vn_locale_id,
+				'table' => $this->tableName()
+				
+			);
+			$va_ancestors_by_locale[$vn_item_id][$vn_locale_id] = $va_ancestor;
 		}
 		
-		$va_ancestor_list = array_reverse(caExtractValuesByUserLocale($va_ancestors_by_locale));
-		
-		// push hierarchy name onto front of list
-		if ($vs_hier_name = $this->getHierarchyName($vn_id)) {
-			array_unshift($va_ancestor_list, array(
-				'name' => $vs_hier_name
-			));
-		}
+		$va_ancestor_list = array_reverse(caExtractValuesByUserLocale($va_ancestors_by_locale), true);
+
 		if (!$this->getPrimaryKey()) {
 			$va_ancestor_list[null] = array(
 				$this->primaryKey() => '',
 				$this->getLabelDisplayField() => _t('New %1', $this->getProperty('NAME_SINGULAR'))
 			);
 		}
+		
+		$o_view->setVar('object_collection_collection_ancestors', array()); // collections to display as object parents when ca_objects_x_collections_hierarchy_enabled is enabled
+		if (($this->tableName() == 'ca_objects') && $this->getAppConfig()->get('ca_objects_x_collections_hierarchy_enabled')) {
+			$vs_object_collection_rel_type = $this->getAppConfig()->get('ca_objects_x_collections_hierarchy_relationship_type');
+			// Is object part of a collection?
+			
+			$va_object_ids = array_keys($va_ancestor_list);
+			$vn_top_object_id = array_shift($va_object_ids);
+			if ($vn_top_object_id != $this->getPrimaryKey()) { 
+				$t_object = $this->getAppDatamodel()->getInstanceByTableName("ca_objects", true);
+				$t_object->load($vn_top_object_id); 
+			} else { 
+				$t_object = $this;
+			}
+			if(is_array($va_collections = $t_object->getRelatedItems('ca_collections', array('restrictToRelationshipTypes' => array($vs_object_collection_rel_type))))) {
+				$va_related_collections_by_level = array();
+				foreach($va_collections as $vn_relation_id => $va_collection) {
+					$va_related_collections_by_level[$va_collection['collection_id']] = array(
+						'item_id' => $va_collection['collection_id'],
+						'parent_id' => $va_collection['parent_id'],
+						'label' => $va_collection['label'],
+						'idno' => $va_collection['idno'],
+						'table' => 'ca_collections'
+					);
+					$t_collection = new ca_collections();
+					if (!($va_collection_ancestor_list = $t_collection->getHierarchyAncestors($va_collection['collection_id'], array(
+						'additionalTableToJoin' => 'ca_collection_labels', 
+						'additionalTableJoinType' => 'LEFT',
+						'additionalTableSelectFields' => array('name', 'locale_id'),
+						'additionalTableWheres' => array('(ca_collection_labels.is_preferred = 1 OR ca_collection_labels.is_preferred IS NULL)'),
+						'includeSelf' => false
+					)))) {
+						$va_collection_ancestor_list = array();
+					}
+					$vn_i = 1;
+					foreach($va_collection_ancestor_list as $vn_id => $va_collection_ancestor) {
+						$va_related_collections_by_level[$va_collection_ancestor['NODE']['collection_id']] = array(
+							'item_id' => $va_collection_ancestor['NODE']['collection_id'],
+							'parent_id' => $va_collection_ancestor['NODE']['parent_id'],
+							'label' => $va_collection_ancestor['NODE']['name'],
+							'idno' => $va_collection_ancestor['NODE']['idno'],
+							'table' => 'ca_collections'
+						);
+						$vn_i++;
+					}
+					break; // only process the first collection (for now)
+				}
+				$o_view->setVar('object_collection_collection_ancestors', array_reverse($va_related_collections_by_level, true));
+				//print_R($va_collection_ancestor_list);
+			}
+		}
+		
 		
 		$o_view->setVar('parent_id', $vn_parent_id);
 		$o_view->setVar('ancestors', $va_ancestor_list);
@@ -2542,12 +2594,34 @@ if (!$vb_batch) {
 }
 		
 if (!$vb_batch) {		// hierarchy moves are not supported in batch mode
-		if ($this->getPrimaryKey() && $this->HIERARCHY_PARENT_ID_FLD && ($vn_parent_id = $po_request->getParameter($vs_form_prefix.'HierLocation_new_parent_id', pInteger))) {
-			$this->set($this->HIERARCHY_PARENT_ID_FLD, $vn_parent_id);
+
+		$va_parent_tmp = explode("-", $x=$po_request->getParameter($vs_form_prefix.'HierLocation_new_parent_id', pString));
+		$vn_parent_id = array_pop($va_parent_tmp);
+		if (sizeof($va_parent_tmp) > 0) { $vs_parent_table = array_pop($va_parent_tmp); } else { $vs_parent_table = $this->tableName(); }
+		
+		if ($this->getPrimaryKey() && $this->HIERARCHY_PARENT_ID_FLD && ($vn_parent_id)) {
+			
+			if ($vs_parent_table == $this->tableName()) {
+				$this->set($this->HIERARCHY_PARENT_ID_FLD, $vn_parent_id);
+			} else {
+				if ((bool)$this->getAppConfig()->get('ca_objects_x_collections_hierarchy_enabled') && ($vs_parent_table == 'ca_collections') && ($this->tableName() == 'ca_objects') && ($vs_coll_rel_type = $this->getAppConfig()->get('ca_objects_x_collections_hierarchy_relationship_type'))) {
+					// link object to collection
+					$this->removeRelationships('ca_collections', $vs_coll_rel_type);
+					$this->set($this->HIERARCHY_PARENT_ID_FLD, null);
+					$this->set($this->HIERARCHY_ID_FLD, $this->getPrimaryKey());
+					if (!($this->addRelationship('ca_collections', $vn_parent_id, $vs_coll_rel_type))) {
+						$this->postError(2510, _t('Could not move object under collection: %1', join("; ", $this->getErrors())), "BundlableLabelableBaseModelWithAttributes->saveBundlesForScreen()");
+					}
+				}
+			}
 		} else {
 			if ($this->getPrimaryKey() && $this->HIERARCHY_PARENT_ID_FLD && ($this->HIERARCHY_TYPE == __CA_HIER_TYPE_ADHOC_MONO__) && isset($_REQUEST[$vs_form_prefix.'HierLocation_new_parent_id']) && (!(bool)$_REQUEST[$vs_form_prefix.'HierLocation_new_parent_id'])) {
 				$this->set($this->HIERARCHY_PARENT_ID_FLD, null);
 				$this->set($this->HIERARCHY_ID_FLD, $this->getPrimaryKey());
+				
+				if ((bool)$this->getAppConfig()->get('ca_objects_x_collections_hierarchy_enabled') && ($this->tableName() == 'ca_objects') && ($vs_coll_rel_type = $this->getAppConfig()->get('ca_objects_x_collections_hierarchy_relationship_type'))) {
+					$this->removeRelationships('ca_collections', $vs_coll_rel_type);
+				}
 			}
 		}
 }

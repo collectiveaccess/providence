@@ -359,8 +359,9 @@
  			# trigger "SaveItem" hook 
  		
 			$this->opo_app_plugin_manager->hookSaveItem(array('id' => $vn_subject_id, 'table_num' => $t_subject->tableNum(), 'table_name' => $t_subject->tableName(), 'instance' => $t_subject, 'is_insert' => $vb_is_insert));
- 			if (method_exists($this, "postSave")) {
  			
+ 			if (method_exists($this, "postSave")) {
+ 				$this->postSave($t_subject, $vb_is_insert);
  			}
  			$this->render('screen_html.php');
  		}
@@ -1408,6 +1409,15 @@
 							'includeSelf' => false
 						)
 					), $vs_pk, $vs_display_field, 'idno'));
+					
+					$this->view->setVar('object_collection_collection_ancestors', array()); // collections to display as object parents when ca_objects_x_collections_hierarchy_enabled is enabled
+					if (($t_item->tableName() == 'ca_objects') && $t_item->getAppConfig()->get('ca_objects_x_collections_hierarchy_enabled')) {
+						// Is object part of a collection?
+						if(is_array($va_collections = $t_item->getRelatedItems('ca_collections'))) {
+							$this->view->setVar('object_collection_collection_ancestors', $va_collections);
+						}
+					}
+					
 					$this->view->setVar('ancestors', $va_ancestors);
 					
 					$va_children = caExtractValuesByUserLocaleFromHierarchyChildList(
