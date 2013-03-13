@@ -94,7 +94,10 @@ var caUI = caUI || {};
 							var panelUrl = options.quickaddUrl;
 							if (ui.item._query) { panelUrl += '/q/' + escape(ui.item._query); }
 							if (options && options.types) {
-								options.types = options.types.join(",");
+								console.log(options.types);
+								if(Object.prototype.toString.call(options.types) === '[object Array]') {
+									options.types = options.types.join(",");
+								}
 								if (options.types.length > 0) {
 									panelUrl += '/types/' + options.types;
 								}

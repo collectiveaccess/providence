@@ -578,6 +578,8 @@ class ca_data_exporters extends BundlableLabelableBaseModelWithAttributes {
 							continue;
 						}
 
+						$va_new_items = array();
+
 						$va_mapping_items_to_repeat = explode(",",$vs_source);
 
 						foreach($va_mapping_items_to_repeat as $vs_mapping_item_to_repeat) {
@@ -586,8 +588,6 @@ class ca_data_exporters extends BundlableLabelableBaseModelWithAttributes {
 								print "Couldn't repeat mapping item {$vs_mapping_item_to_repeat}\n";
 								continue;
 							}
-
-							$va_new_items = array();
 
 							// add item to repeat under current item
 
@@ -607,9 +607,9 @@ class ca_data_exporters extends BundlableLabelableBaseModelWithAttributes {
 									$va_new_items[$vs_key."/".$vs_item_key]['parent_id'] = $vs_key . ($va_item['parent_id'] ? "/".$va_item['parent_id'] : "");
 								}
 							}
-
-							$va_mapping = array_merge($va_mapping,$va_new_items);
 						}
+
+						$va_mapping = array_merge($va_mapping,$va_new_items);
 					}
 
 					break;
@@ -637,13 +637,17 @@ class ca_data_exporters extends BundlableLabelableBaseModelWithAttributes {
 
 				$vn_row_num = $o_row->getRowIndex();
 				$o_cell = $o_sheet->getCellByColumnAndRow(0, $vn_row_num);
-				$vs_mapping_num = (string)$o_cell->getValue();
+				$vs_mapping_num = trim((string)$o_cell->getValue());
+
+				if(strlen($vs_mapping_num)<1){
+					continue;
+				}
 
 				$o_search = $o_sheet->getCellByColumnAndRow(1, $o_row->getRowIndex());
 				$o_replace = $o_sheet->getCellByColumnAndRow(2, $o_row->getRowIndex());
 
 				if(!isset($va_mapping[$vs_mapping_num])){
-					print _t("Replacement sheet references invalid mapping number %1",$vs_mapping_num)."\n";
+					print _t("Warning: Replacement sheet references invalid mapping number '%1'. Ignoring row.",$vs_mapping_num)."\n";
 					continue;
 				}
 
@@ -651,8 +655,16 @@ class ca_data_exporters extends BundlableLabelableBaseModelWithAttributes {
 				$vs_replace = (string)$o_replace->getValue();
 
 				if(!$vs_search){
-					print _t("Search must be set for each row in the replacement sheet")."\n";
+					print _t("Warning: Search must be set for each row in the replacement sheet. Ignoring row for mapping '%1'",$vs_mapping_num)."\n";
 					continue;
+				}
+
+				// look for replacements
+				foreach($va_mapping as $vs_k => &$va_v){
+					if(preg_match("!/".$vs_mapping_num."$!",$vs_k)){
+						$va_v['options']['original_values'][] = $vs_search;
+						$va_v['options']['replacement_values'][] = $vs_replace;
+					}
 				}
 
 				$va_mapping[$vs_mapping_num]['options']['original_values'][] = $vs_search;
@@ -1108,6 +1120,7 @@ class ca_data_exporters extends BundlableLabelableBaseModelWithAttributes {
 			}
 			
 			$va_info = array();
+
 			if(is_array($va_related)){
 				foreach($va_related as $va_rel){
 					$va_rel_export = $this->processExporterItem($pn_item_id,$vn_new_table_num,$va_rel[$vs_key],array_merge(array('ignoreContext' => true),$pa_options));
@@ -1129,6 +1142,13 @@ class ca_data_exporters extends BundlableLabelableBaseModelWithAttributes {
 		$vs_element = $t_exporter_item->get('element');
 		$vb_repeat = $t_exporter_item->getSetting('repeat_element_for_multiple_values');
 
+		// if omitIfEmpty is set and returns nothing, we ignore this exporter item and all children
+		if($vs_omit_if_empty = $t_exporter_item->getSetting('omitIfEmpty')){
+			if(!(strlen($t_instance->get($vs_omit_if_empty))>0)){
+				return array();
+			}
+		}
+
 		// always return URL for export, not an HTML tag
 		$va_get_options = array('returnURL' => true);
 
@@ -1141,7 +1161,7 @@ class ca_data_exporters extends BundlableLabelableBaseModelWithAttributes {
 		}
 
 		if($vs_template = $t_exporter_item->getSetting('template')){
-			$va_get_options['template'] = $vs_template;	
+			$va_get_options['template'] = $vs_template;
 		}
 
 		if($vs_locale = $t_exporter_item->getSetting('locale')){
@@ -1179,7 +1199,7 @@ class ca_data_exporters extends BundlableLabelableBaseModelWithAttributes {
 			// -> run them through processor anyways
 			$va_item_info[] = array(
 				'element' => $vs_element,
-				'text' => caProcessTemplateForIDs($vs_template, $pn_table_num, array($pn_record_id), $va_get_options),
+				'text' => caProcessTemplateForIDs($vs_template, $pn_table_num, array($pn_record_id), array()),
 			);
 		} else { // no source, no template -> probably wrapper
 			$va_item_info[] = array(
