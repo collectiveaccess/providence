@@ -591,8 +591,8 @@ class ca_data_exporters extends BundlableLabelableBaseModelWithAttributes {
 
 							// add item to repeat under current item
 
-							$va_new_items[$vs_key."/".$vs_mapping_item_to_repeat] = $va_mapping[$vs_mapping_item_to_repeat];
-							$va_new_items[$vs_key."/".$vs_mapping_item_to_repeat]['parent_id'] = $vs_key;
+							$va_new_items[$vs_key."_:_".$vs_mapping_item_to_repeat] = $va_mapping[$vs_mapping_item_to_repeat];
+							$va_new_items[$vs_key."_:_".$vs_mapping_item_to_repeat]['parent_id'] = $vs_key;
 
 							// Find children of item to repeat (and their children) and add them as well, preserving the hierarchy
 							// the code below banks on the fact that hierarchy children are always defined AFTER their parents
@@ -602,11 +602,12 @@ class ca_data_exporters extends BundlableLabelableBaseModelWithAttributes {
 
 							foreach($va_mapping as $vs_item_key => $va_item){
 								if(in_array($va_item['parent_id'], $va_keys_to_lookup)){
-									$va_keys_to_lookup[] = $vs_key;
-									$va_new_items[$vs_key."/".$vs_item_key] = $va_item;
-									$va_new_items[$vs_key."/".$vs_item_key]['parent_id'] = $vs_key . ($va_item['parent_id'] ? "/".$va_item['parent_id'] : "");
+									$va_keys_to_lookup[] = $vs_item_key;
+									$va_new_items[$vs_key."_:_".$vs_item_key] = $va_item;
+									$va_new_items[$vs_key."_:_".$vs_item_key]['parent_id'] = $vs_key . ($va_item['parent_id'] ? "_:_".$va_item['parent_id'] : "");
 								}
 							}
+
 						}
 
 						$va_mapping = array_merge($va_mapping,$va_new_items);
@@ -661,7 +662,7 @@ class ca_data_exporters extends BundlableLabelableBaseModelWithAttributes {
 
 				// look for replacements
 				foreach($va_mapping as $vs_k => &$va_v){
-					if(preg_match("!/".$vs_mapping_num."$!",$vs_k)){
+					if(preg_match("!\_\:\_".$vs_mapping_num."$!",$vs_k)){
 						$va_v['options']['original_values'][] = $vs_search;
 						$va_v['options']['replacement_values'][] = $vs_replace;
 					}
