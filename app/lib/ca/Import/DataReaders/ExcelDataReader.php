@@ -108,7 +108,10 @@ class ExcelDataReader extends BaseDataReader {
 			$vn_last_col_set = null;
 			foreach ($o_cells as $o_cell) {
 				if (PHPExcel_Shared_Date::isDateTime($o_cell)) {
-					$this->opa_row_buf[] = $vs_val = caGetLocalizedDate(PHPExcel_Shared_Date::ExcelToPHP(trim((string)$o_cell->getValue())));
+					if (!($vs_val = caGetLocalizedDate(PHPExcel_Shared_Date::ExcelToPHP(trim((string)$o_cell->getValue()))))) {
+						$vs_val = trim((string)$o_cell->getValue());
+					}
+					$this->opa_row_buf[] = $vs_val;
 				} else {
 					$this->opa_row_buf[] = $vs_val = trim((string)$o_cell->getValue());
 				}
