@@ -42,6 +42,10 @@
 			<th style="width:10px; text-align:center;" class='list-header-nosort'>
 				<input type='checkbox' name='record' value='' id='addItemToSetSelectAllControl' class='addItemToSetControl' onchange="jQuery('.addItemToSetControl').attr('checked', jQuery('#addItemToSetSelectAllControl').attr('checked'));"/>
 			</th>
+			<th class='list-header-nosort'>
+				<?php print ($vs_default_action	== "Edit" ? _t("Edit") : _t("View")); ?>
+			</th>
+
 	<?php
 			// output headers
 			$vn_id_count = 0;
@@ -49,10 +53,10 @@
 				if ($va_display_item['is_sortable']) {
 					if ($vs_current_sort == $va_display_item['bundle_sort']) {
 						print "<th class='list-header-sorted-asc'><span id='listHeader".$vn_id_count."'><nobr>".((unicode_strlen($va_display_item['display']) > 17) ? strip_tags(mb_substr($va_display_item['display'], 0, 15))."..." : $va_display_item['display'])."</nobr></span></th>";
-						TooltipManager::add('#listHeader'.$vn_id_count , 'Currently sorting by '.$va_display_item['display']);
+						TooltipManager::add('#listHeader'.$vn_id_count , _t("Currently sorting by ").$va_display_item['display']);
 					} else {
 						print "<th class='list-header-unsorted'><span id='listHeader1".$vn_id_count."'><nobr>".caNavLink($this->request, ((unicode_strlen($va_display_item['display']) > 17) ? strip_tags(mb_substr($va_display_item['display'], 0, 15))."..." : $va_display_item['display']), '', $this->request->getModulePath(), $this->request->getController(), 'Index', array('sort' => $va_display_item['bundle_sort'])) ."</nobr></span></th>";
-						TooltipManager::add('#listHeader1'.$vn_id_count , 'Click to sort by '.$va_display_item['display']);
+						TooltipManager::add('#listHeader1'.$vn_id_count , _t("Click to sort by ").$va_display_item['display']);
 					}
 				} else {
 					print "<th class='list-header-nosort'><span id='listHeader2".$vn_id_count."'><nobr>".((unicode_strlen($va_display_item['display']) > 17) ? strip_tags(mb_substr($va_display_item['display'], 0, 15))."..." : $va_display_item['display'])."</nobr></span></th>";
@@ -61,9 +65,6 @@
 				$vn_id_count++;
 			}
 	?>
-			<th class='list-header-nosort'>
-				<?php print ($vs_default_action	== "Edit" ? _t("Edit") : _t("View")); ?>
-			</th>
 			</tr></thead><tbody>
 	<?php
 			$i = 0;
@@ -86,10 +87,10 @@
 						<input type='checkbox' name='add_to_set_ids' value='<?php print (int)$vn_representation_id; ?>' class="addItemToSetControl" />
 					</td>
 	<?php
+					print "<td style='width:5%;'>".caNavLink($this->request, caNavIcon($this->request, __CA_NAV_BUTTON_EDIT__), '', 'editor/object_representations', 'ObjectRepresentationEditor', $vs_action, array('representation_id' => $vn_representation_id))."</td>";
 					foreach($va_display_list as $vn_placement_id => $va_display_item) {
 						print "<td>".$t_display->getDisplayValue($vo_result, $vn_placement_id, array('request' => $this->request))."</td>";
 					}
-					print "<td style='width:5%;'>".caNavLink($this->request, caNavIcon($this->request, __CA_NAV_BUTTON_EDIT__), '', 'editor/object_representations', 'ObjectRepresentationEditor', $vs_action, array('representation_id' => $vn_representation_id))."</td>";
 	?>	
 				</tr>
 	<?php
