@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2012 Whirl-i-Gig
+ * Copyright 2012-2013 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -48,7 +48,7 @@
  		 * Returned data is JSON format
  		 */
 		public function Get($pa_additional_query_params=null, $pa_options=null) {
-			$ps_query = $this->request->getParameter('q', pString);
+			$ps_query = $this->request->getParameter('term', pString);
 			$pb_exact = $this->request->getParameter('exact', pInteger);
 			$ps_exclude = $this->request->getParameter('exclude', pString);
 			$va_excludes = explode(";", $ps_exclude);
@@ -138,18 +138,24 @@
 				$qr_res->setOption('dontPrefetchAttributes', true);
 				
 				$va_objects = caProcessRelationshipLookupLabel($qr_res, new ca_objects(), $va_opts);
-				
+				foreach($va_objects as $vn_object_id => $va_object) {
+					$va_objects[$vn_object_id]['id'] = 'ca_objects-'.$va_objects[$vn_object_id]['id'];
+				}
 				
 				if ($vs_hier_fld && ($vn_restrict_to_hier_id = $this->request->getParameter('currentHierarchyOnly', pInteger))) {
-					$o_collection_search->addResultFilter('ca_collections.hier_collection_id', '=', (int)$vn_restrict_to_hier_id);
+					//$o_collection_search->addResultFilter('ca_collections.hier_collection_id', '=', (int)$vn_restrict_to_hier_id);
 					
 					// How to restrict objects?
 				}
 				$qr_res = $o_collection_search->search('('.$ps_query.(intval($pb_exact) ? '' : '*').')'.$vs_type_query.$vs_additional_query_params, array('search_source' => 'Lookup', 'no_cache' => false, 'sort' => 'ca_collections.idno_sort'));
+	
 				$qr_res->setOption('prefetch', $pn_limit);
 				$qr_res->setOption('dontPrefetchAttributes', true);
 				
 				$va_collections = caProcessRelationshipLookupLabel($qr_res, new ca_collections(), $va_opts);
+				foreach($va_collections as $vn_collection_id => $va_collection) {
+					$va_collections[$vn_collection_id]['id'] = 'ca_collections-'.$va_collections[$vn_collection_id]['id'];
+				}
 			}
 			if (!is_array($va_objects)) { $va_objects = array(); }
 			$this->view->setVar('object_list', $va_objects);
@@ -411,7 +417,6 @@
  			
  			$pn_id = $this->request->getParameter('id', pString);
 		
-		
 			$va_params = $this->getItemIDComponents($pn_id, 'ca_objects');
 			$vs_table = $va_params['table'];
 			$vn_id = $va_params['id'];
@@ -436,8 +441,24 @@
  				$va_cross_table_items = $t_item->getRelatedItems('ca_collections');
  				
  				if(is_array($va_cross_table_items)) {
+ 					$t_collection = new ca_collections();
  					foreach($va_cross_table_items as $vn_x_item_id => $va_x_item) {
  						array_unshift($va_ancestors, 'ca_collections-'.$va_x_item['collection_id']);
+ 						
+ 						if (!($va_collection_ancestor_list = $t_collection->getHierarchyAncestors($va_x_item['collection_id'], array(
+							'additionalTableToJoin' => 'ca_collection_labels', 
+							'additionalTableJoinType' => 'LEFT',
+							'additionalTableSelectFields' => array('name', 'locale_id'),
+							'additionalTableWheres' => array('(ca_collection_labels.is_preferred = 1 OR ca_collection_labels.is_preferred IS NULL)'),
+							'includeSelf' => false
+						)))) {
+							$va_collection_ancestor_list = array();
+						}
+						foreach($va_collection_ancestor_list as $vn_id => $va_collection_ancestor) {
+							array_unshift($va_ancestors, 'ca_collections-'.$va_collection_ancestor['NODE']['collection_id']);
+						}
+ 						
+ 						break;	// for now only show first one
  					}
  				}
  			}

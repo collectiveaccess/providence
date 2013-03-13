@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2009-2012 Whirl-i-Gig
+ * Copyright 2009-2013 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -63,7 +63,8 @@
  		# -------------------------------------------------------
 		public function Get($pa_additional_query_params=null, $pa_options=null) {
 			if (!$this->ops_search_class) { return null; }
-			$ps_query = $this->request->getParameter('q', pString);
+			$ps_query = $this->request->getParameter('term', pString); 
+			
 			$pb_exact = $this->request->getParameter('exact', pInteger);
 			$ps_exclude = $this->request->getParameter('exclude', pString);
 			$va_excludes = explode(";", $ps_exclude);
@@ -117,8 +118,6 @@
 						}
 						$o_search->addResultFilter($this->opo_item_instance->tableName().'.'.$this->opo_item_instance->getTypeFieldName(), 'IN', join(",", $va_ids));
 					}
-				} else {
-					$va_ids = null;
 				}
 			
 				// add any additional search elements
@@ -210,7 +209,7 @@
 						}
 						
 						$o_config = Configuration::load();
-						if (!(is_array($va_sorts = $o_config->getList($this->ops_table_name.'_hierarchy_browser_sort_values'))) || !sizeof($va_sorts)) { $va_sorts = null; }
+						if (!(is_array($va_sorts = $o_config->getList($this->ops_table_name.'_hierarchy_browser_sort_values'))) || !sizeof($va_sorts)) { $va_sorts = array(); }
 						foreach($va_sorts as $vn_i => $vs_sort_fld) {
 							$va_tmp = explode(".", $vs_sort_fld);
 							
@@ -228,60 +227,53 @@
 						if (!in_array($vs_sort_dir = strtolower($o_config->get($this->ops_table_name.'_hierarchy_browser_sort_direction')), array('asc', 'desc'))) {
 							$vs_sort_dir = 'asc';
 						}
-						$qr_children = $t_item->getHierarchyChildrenAsQuery(
-											$t_item->getPrimaryKey(), 
-											array(
-												'additionalTableToJoin' => $vs_label_table_name,
-												'additionalTableJoinType' => 'LEFT',
-												'additionalTableSelectFields' => array($vs_label_display_field_name, 'locale_id'),
-												'additionalTableWheres' => $va_additional_wheres,
-												'returnChildCounts' => true
-											)
-						);
-						
+
 						$va_items = array();
+						if (is_array($va_item_ids = $t_item->getHierarchyChildren($t_item->getPrimaryKey(), array('idsOnly' => true))) && sizeof($va_item_ids)) {
+							$qr_children = $t_item->makeSearchResult($t_item->tableName(), $va_item_ids);
+							$va_child_counts = $t_item->getHierarchyChildCountsForIDs($va_item_ids);
 						
-						if (!($vs_item_template = trim($o_config->get("{$vs_table_name}_hierarchy_browser_display_settings")))) {
-							$vs_item_template = "^{$vs_table_name}.preferred_labels.{$vs_label_display_field_name}";
-						}
-						
-						$va_child_counts = array();
-						if ((($vn_max_items_per_page = $this->request->getParameter('max', pInteger)) < 1) || ($vn_max_items_per_page > 1000)) {
-							$vn_max_items_per_page = null;
-						}
-						$vn_c = 0;
-						
-						while($qr_children->nextRow()) {
-							$va_tmp = array(
-								$vs_pk => $vn_id = $qr_children->get($this->ops_table_name.'.'.$vs_pk),
-								'item_id' => $vn_id,
-								'parent_id' => $qr_children->get($this->ops_table_name.'.parent_id'),
-								'idno' => $qr_children->get($this->ops_table_name.'.idno'),
-								$vs_label_display_field_name => $qr_children->get($this->ops_table_name.'.preferred_labels.'.$vs_label_display_field_name),
-								'locale_id' => $qr_children->get($this->ops_table_name.'.'.'locale_id')
-							);
-							if (!$va_tmp[$vs_label_display_field_name]) { $va_tmp[$vs_label_display_field_name] = $va_tmp['idno']; }
-							if (!$va_tmp[$vs_label_display_field_name]) { $va_tmp[$vs_label_display_field_name] = '???'; }
-							
-							$va_tmp['name'] = caProcessTemplateForIDs($vs_item_template, $vs_table_name, array($va_tmp[$vs_pk]));
-							
-							// Child count is only valid if has_children is not null
-							$va_tmp['children'] = $qr_children->get('has_children') ? $qr_children->get('child_count') : 0;
-							
-							if (is_array($va_sorts)) {
-								$vs_sort_acc = array();
-								foreach($va_sorts as $vs_sort) {
-									$vs_sort_acc[] = $qr_children->get($vs_sort);
-								}
-								$va_tmp['sort'] = join(";", $vs_sort_acc);
+							if (!($vs_item_template = trim($o_config->get("{$vs_table_name}_hierarchy_browser_display_settings")))) {
+								$vs_item_template = "^{$vs_table_name}.preferred_labels.{$vs_label_display_field_name}";
 							}
-							
-							$va_items[$va_tmp[$vs_pk]][$va_tmp['locale_id']] = $va_tmp;
-							
-							$vn_c++;
-						}
 						
-						$va_items_for_locale = caExtractValuesByUserLocale($va_items);
+							if ((($vn_max_items_per_page = $this->request->getParameter('max', pInteger)) < 1) || ($vn_max_items_per_page > 1000)) {
+								$vn_max_items_per_page = 100;
+							}
+							$vn_c = 0;
+						
+							while($qr_children->nextHit()) {
+								$va_tmp = array(
+									$vs_pk => $vn_id = $qr_children->get($this->ops_table_name.'.'.$vs_pk),
+									'item_id' => $vn_id,
+									'parent_id' => $qr_children->get($this->ops_table_name.'.parent_id'),
+									'idno' => $qr_children->get($this->ops_table_name.'.idno'),
+									$vs_label_display_field_name => $qr_children->get($this->ops_table_name.'.preferred_labels.'.$vs_label_display_field_name),
+									'locale_id' => $qr_children->get($this->ops_table_name.'.'.'locale_id')
+								);
+								if (!$va_tmp[$vs_label_display_field_name]) { $va_tmp[$vs_label_display_field_name] = $va_tmp['idno']; }
+								if (!$va_tmp[$vs_label_display_field_name]) { $va_tmp[$vs_label_display_field_name] = '???'; }
+							
+								$va_tmp['name'] = caProcessTemplateForIDs($vs_item_template, $vs_table_name, array($va_tmp[$vs_pk]));
+							
+								// Child count is only valid if has_children is not null
+								$va_tmp['children'] = isset($va_child_counts[$vn_id]) ? (int)$va_child_counts[$vn_id] : 0;
+							
+								if (is_array($va_sorts)) {
+									$vs_sort_acc = array();
+									foreach($va_sorts as $vs_sort) {
+										$vs_sort_acc[] = $qr_children->get($vs_sort, array('sortable' => true));
+									}
+									$va_tmp['sort'] = join(";", $vs_sort_acc);
+								}
+							
+								$va_items[$va_tmp[$vs_pk]][$va_tmp['locale_id']] = $va_tmp;
+							
+								$vn_c++;
+							}
+						
+							$va_items_for_locale = caExtractValuesByUserLocale($va_items);
+						}
 						
 						$vs_rank_fld = $t_item->getProperty('RANK');
 						
@@ -313,7 +305,7 @@
 					}
 				}
 				$va_items_for_locale['_primaryKey'] = $t_item->primaryKey();	// pass the name of the primary key so the hierbrowser knows where to look for item_id's
- 				$va_items_for_locale['_itemCount'] = $qr_children ? $qr_children->numRows() : 0;
+ 				$va_items_for_locale['_itemCount'] = $qr_children ? $qr_children->numHits() : 0;
  			
  				$va_level_data[$pn_id] = $va_items_for_locale;
  			}

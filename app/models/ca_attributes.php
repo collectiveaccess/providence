@@ -459,15 +459,10 @@ class ca_attributes extends BaseModel {
 			$o_config = Configuration::load();
 		}
 		
-		// TODO: does {fieldNamePrefix} need to be hardcoded? Does it matter?
-		// TODO: use appropriate element labels to label elements
-		
 		$vn_width = 25;
 		$vn_max_length = 255;
 		
 		$vs_element = Attribute::valueHTMLFormElement($pa_element_info['datatype'], $pa_element_info, $pa_options);
-		
-		// TODO: formalize, cleanup and document formatting code
 		
 		$ps_format = isset($pa_options['format']) ? $pa_options['format'] : null;
 		

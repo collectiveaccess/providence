@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2012 Whirl-i-Gig
+ * Copyright 2012-2013 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -86,10 +86,13 @@
 						var inputID = jQuery("#<?php print $vs_form_name.$vs_field_name_prefix.$vs_n; ?>").parent().data('autocompleteInputID');
 						var itemIDID = jQuery("#<?php print $vs_form_name.$vs_field_name_prefix.$vs_n; ?>").parent().data('autocompleteItemIDID');
 						var typeIDID = jQuery("#<?php print $vs_form_name.$vs_field_name_prefix.$vs_n; ?>").parent().data('autocompleteTypeIDID');
-						
+						var relationbundle = jQuery("#<?php print $vs_form_name.$vs_field_name_prefix.$vs_n; ?>").parent().data('relationbundle');
+					
 						jQuery('#' + inputID).val(resp.display);
 						jQuery('#' + itemIDID).val(resp.id);
 						jQuery('#' + typeIDID).val(resp.type_id);
+						
+						relationbundle.select(null, resp);
 						
 						jQuery.jGrowl('<?php print addslashes(_t('Created %1 ', $t_subject->getTypeName())); ?> <em>' + resp.display + '</em>', { header: '<?php print addslashes(_t('Quick add %1', $t_subject->getTypeName())); ?>' }); 
 						jQuery("#<?php print $vs_form_name.$vs_field_name_prefix.$vs_n; ?>").parent().data('panel').hidePanel();

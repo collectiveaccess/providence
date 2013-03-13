@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2008-2012 Whirl-i-Gig
+ * Copyright 2008-2013 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -1011,7 +1011,7 @@ class ca_lists extends BundlableLabelableBaseModelWithAttributes {
 	 * Converts list specifier (code or list_id) into a list_id
 	 *
 	 * @param mixed $pm_list_name_or_id List code or list_id
-	 * @return int listva_list_items for the specified list, or null if the list does not exist
+	 * @return int list for the specified list, or null if the list does not exist
 	 */
 	static function getListCode($pm_list_name_or_id) {
 		if (ca_lists::$s_list_code_cache[$pm_list_name_or_id]) {
@@ -1045,11 +1045,12 @@ class ca_lists extends BundlableLabelableBaseModelWithAttributes {
 	 *  value = if set, the <select> will have default selection set to the item whose *value* matches the option value. If none is set then the first item in the list will be selected
 	 *  key = ca_list_item field to be used as value for the <select> element list; can be set to either item_id or item_value; default is item_id
 	 *	width = the display width of the list in characters or pixels
-	 *  limitToItemsWithID =
-	 *  omitItemsWithID = 
+	 *  limitToItemsWithID = An optional array of list item_ids. Item_ids not in the array will be omitted from the returned list.
+	 *  omitItemsWithID = An optional array of list item_ids. Item_ids in the array will be omitted from the returned list.
 	 *	
-	 *	limitToItemsRelatedToCollections = array of collection_id or idno
-	 *	limitToItemsRelatedToCollectionWithRelationshipTypes = array of type name or type_id
+	 *	limitToItemsRelatedToCollections = an array of collection_ids or collection idno's; returned items will be restricted to those attached to the specified collections
+	 *	limitToItemsRelatedToCollectionWithRelationshipTypes = array of collection type names or type_ids; returned items will be restricted to those attached to the specified collectionss with the specified relationship type
+	 *	limitToListIDs = array of list_ids to restrict returned items to when using "limitToItemsRelatedToCollections"
 	 * 
 	 * @return string - HTML code for the <select> element; empty string if the list is empty
 	 */
@@ -1088,9 +1089,27 @@ class ca_lists extends BundlableLabelableBaseModelWithAttributes {
 				if (sizeof($va_collection_ids)) {
 					$qr_collections = $t_list->makeSearchResult('ca_collections', $va_collection_ids, array('restrictToRelationshipTypes' => isset($pa_options['limitToItemsRelatedToCollectionWithRelationshipTypes']) ? $pa_options['limitToItemsRelatedToCollectionWithRelationshipTypes'] : null));
 					
-					
+					$va_item_ids = array();
 					while($qr_collections->nextHit()) {
 						$va_list_items = $qr_collections->get('ca_list_items', array('returnAsArray' => true));
+						foreach($va_list_items as $vn_rel_id => $va_list_item) {
+							$va_item_ids[$vn_rel_id] = $va_list_item['item_id'];
+						}
+					}
+					
+					if ($va_limit_to_lists = ((isset($pa_options['limitToLists']) && is_array($pa_options['limitToLists'])) ? $pa_options['limitToLists'] : null)) {
+						// filter out items from tables we don't want
+					
+						$qr_list_items = $t_list->makeSearchResult("ca_list_items", array_values($va_item_ids));
+						while($qr_list_items->nextHit()) {
+							if (!in_array($qr_list_items->get('ca_list_items.list_id'), $va_limit_to_lists)) {
+								if (is_array($va_k = array_keys($va_item_ids, $qr_list_items->get('ca_list_items.item_id')))) {
+									foreach($va_k as $vs_k) {
+										unset($va_list_items[$vs_k]);
+									}
+								}
+							}
+						}
 					}
 				}
 			} else {
@@ -1271,7 +1290,7 @@ class ca_lists extends BundlableLabelableBaseModelWithAttributes {
 				);
 				
 				if ($pa_options['po_request']) {
-					$vs_url = caNavUrl($pa_options['po_request'], 'lookup', 'ListItem', 'Get');
+					$vs_url = caNavUrl($pa_options['po_request'], 'lookup', 'ListItem', 'Get', array('list' => ca_lists::getListCode($vn_list_id), 'noInline' => 1, 'noSymbols' => 1, 'max' => 100));
 				} else {
 					// hardcoded default for testing.
 					$vs_url = '/index.php/lookup/ListItem/Get';	
@@ -1281,15 +1300,23 @@ class ca_lists extends BundlableLabelableBaseModelWithAttributes {
 				$vs_buf .= "
 					<script type='text/javascript'>
 						jQuery(document).ready(function() {
-							jQuery('#".$ps_name."_autocomplete').autocomplete('".$vs_url."', {minChars: 3, matchSubset: 1, matchContains: 1, delay: 800, max: 100, extraParams: {list: '".ca_lists::getListCode($vn_list_id)."', noSymbols: 1}});
-							jQuery('#".$ps_name."_autocomplete').result(function(event, data, formatted) {
-									jQuery('#".$ps_name."').val(data[1]);
+							jQuery('#{$ps_name}_autocomplete').autocomplete({
+									source: '{$vs_url}', minLength: 3, delay: 800, html: true,
+									select: function(event, ui) {
+										
+										if (parseInt(ui.item.id) > 0) {
+											jQuery('#{$ps_name}').val(ui.item.id);
+										} else {
+											jQuery('#{$ps_name}_autocomplete').val('');
+											jQuery('#{$ps_name}').val('');
+											event.preventDefault();
+										}
+									}
 								}
 							);
 						});
 					</script>
 				";
-				
 				return $vs_buf;
 				break;
 			case 'horiz_hierbrowser':
@@ -1339,12 +1366,14 @@ class ca_lists extends BundlableLabelableBaseModelWithAttributes {
 			
 		if ($vs_render_as == 'horiz_hierbrowser_with_search') {
 			$vs_buf .= "jQuery('#{$ps_name}_hierarchyBrowserSearch{n}').autocomplete(
-					'".caNavUrl($pa_options['po_request'], 'lookup', 'ListItem', 'Get')."', {minChars: 3, matchSubset: 1, matchContains: 1, delay: 800, extraParams: {list: '".ca_lists::getListCode($vn_list_id)."', noSymbols: 1}}
-				);
-				
-				jQuery('#{$ps_name}_hierarchyBrowserSearch{n}').result(function(event, data, formatted) {
-					oHierBrowser.setUpHierarchy(data[1]);	// jump browser to selected item
-				});";
+					{
+						source: '".caNavUrl($pa_options['po_request'], 'lookup', 'ListItem', 'Get', array('list' => ca_lists::getListCode($vn_list_id), 'noSymbols' => 1))."', 
+						minLength: 3, delay: 800,
+						select: function(event, ui) {
+							oHierBrowser.setUpHierarchy(ui.item.id);	// jump browser to selected item
+						}
+					}
+				);";
 		}
 		$vs_buf .= "});
 	</script>";

@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2006-2012 Whirl-i-Gig
+ * Copyright 2006-2013 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -38,7 +38,7 @@
  * Plugin for processing audio media using ffmpeg
  */
 
-include_once(__CA_LIB_DIR__."/core/Plugins/WLPlug.php");
+include_once(__CA_LIB_DIR__."/core/Plugins/Media/BaseMediaPlugin.php");
 include_once(__CA_LIB_DIR__."/core/Plugins/IWLPlugMedia.php");
 include_once(__CA_LIB_DIR__."/core/Parsers/getid3/getid3.php");
 include_once(__CA_LIB_DIR__."/core/Configuration.php");
@@ -46,7 +46,7 @@ include_once(__CA_APP_DIR__."/helpers/mediaPluginHelpers.php");
 include_once(__CA_APP_DIR__."/helpers/utilityHelpers.php");
 include_once(__CA_LIB_DIR__."/core/Parsers/OggParser.php");
 
-class WLPlugMediaAudio Extends WLPlug Implements IWLPlugMedia {
+class WLPlugMediaAudio Extends BaseMediaPlugin Implements IWLPlugMedia {
 
 	var $errors = array();
 

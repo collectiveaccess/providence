@@ -1,22 +1,58 @@
-#!/usr/local/bin/php
+#!/usr/bin/env php
 <?php
-	define('__CollectiveAccess_IS_PROCESSING TASKQUEUE__', 1);
-	$vs_basepath = dirname($_SERVER['SCRIPT_FILENAME']);
-	if(!file_exists($vs_basepath.'/setup.php')) {
-		die("ERROR: Can't load setup.php. Please create the file in the same directory as this script or create a symbolic link to the one in your web root.\n");
+/** ---------------------------------------------------------------------
+ * app/lib/ca/Utils/CLIUtils.php :
+ * ----------------------------------------------------------------------
+ * CollectiveAccess
+ * Open-source collections management software
+ * ----------------------------------------------------------------------
+ *
+ * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
+ * Copyright 2013 Whirl-i-Gig
+ *
+ * For more information visit http://www.CollectiveAccess.org
+ *
+ * This program is free software; you may redistribute it and/or modify it under
+ * the terms of the provided license as published by Whirl-i-Gig
+ *
+ * CollectiveAccess is distributed in the hope that it will be useful, but
+ * WITHOUT ANY WARRANTIES whatsoever, including any implied warranty of 
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  
+ *
+ * This source code is free and modifiable under the terms of 
+ * GNU General Public License. (http://www.gnu.org/copyleft/gpl.html). See
+ * the "license.txt" file for details, or visit the CollectiveAccess web site at
+ * http://www.CollectiveAccess.org
+ *
+ * @package CollectiveAccess
+ * @subpackage Utils
+ * @license http://www.gnu.org/copyleft/gpl.html GNU Public License version 3
+ *
+ * ----------------------------------------------------------------------
+ */
+ 
+// This script maintains compatibility with older installations that invoke processing of the
+// task queue by calling the now-deprecated processTaskQueue.php utility script.
+// That script has been subsumed into the caUtils command-line application.
+//
+// This script merely calls caUtils to run its process-task-queue command in "quiet" mode
+
+
+// Run process-task-queue utility
+	$vs_hostname = isset($argv[1]) ? $argv[1] : null;
+	$argv = array('caUtils', 'process-task-queue', '--quiet');
+	if ($vs_hostname) {
+		$argv[] = "--hostname={$vs_hostname}";
 	}
+	$argc = sizeof($argv);
+	$_SERVER['argv'] = $argv;
+	$_SERVER['argc'] = $argc;
 	
-	if (!$argv[1]) {
-		die("\nprocessTaskQueue.php: processing pending tasks on the task queue.\n\nUSAGE: processTaskQueue.php 'instance_name'\nExample: ./processTaskQueue.php 'www.mycollection.org'\n");
-	}
-	
-	$_SERVER['HTTP_HOST'] = $argv[1];
-	
-	require_once($vs_basepath.'/setup.php');
-	# Set environment variable to point at app config file
-	require_once(__CA_LIB_DIR__."/core/TaskQueue.php");
-	
-	$vo_tq = new TaskQueue();
-	$vo_tq->processQueue();		// Process queued tasks
-	$vo_tq->runPeriodicTasks();	// Process recurring tasks implemented in plugins
+	ob_start();
+	$va_cwd = explode("/", $_SERVER['SCRIPT_FILENAME']);
+	array_pop($va_cwd);
+	array_pop($va_cwd);
+	chdir(join("/", $va_cwd));
+	require(join("/", $va_cwd)."/bin/caUtils");
+	ob_clean();
 ?>

@@ -841,6 +841,7 @@ class ca_objects extends BundlableLabelableBaseModelWithAttributes implements IB
  	 *		original_filename - the name of the file being uploaded; will be recorded in the database and used as the filename when the file is subsequently downloaded
  	 *		rank - a numeric rank used to order the representations when listed
  	 *		returnRepresentation = if set the newly created ca_object_representations instance is returned rather than the link_id of the newly created ca_objects_x_object_representations record
+ 	 *
  	 * @return mixed Returns primary key (link_id) of the ca_objects_x_object_representations row linking the newly created representation to the object; if the 'returnRepresentation' is set then an instance for the newly created ca_object_representations is returned instead; boolean false is returned on error
  	 */
  	public function addRepresentation($ps_media_path, $pn_type_id, $pn_locale_id, $pn_status, $pn_access, $pb_is_primary, $pa_values=null, $pa_options=null) {
@@ -1344,34 +1345,47 @@ class ca_objects extends BundlableLabelableBaseModelWithAttributes implements IB
 	 *
 	 * @param string $ps_name The label value to search for
 	 * @param int $pn_parent_id Optional parent_id. If specified search is restricted to direct children of the specified parent object.
+	 * @param int $pn_type_id Optional type_id.
 	 * @return array An array of object_ids
 	 */
-	public function getObjectIDsByName($ps_name, $pn_parent_id=null) {
+	public function getObjectIDsByName($ps_name, $pn_parent_id=null, $pn_type_id=null) {
 		$o_db = $this->getDb();
 		
-		if ($pn_parent_id) {
-			$qr_res = $o_db->query("
-				SELECT DISTINCT cap.object_id
-				FROM ca_objects cap
-				INNER JOIN ca_object_labels AS capl ON capl.object_id = cap.object_id
-				WHERE
-					capl.name = ? AND cap.parent_id = ?
-			", (string)$ps_name, (int)$pn_parent_id);
-		} else {
-			$qr_res = $o_db->query("
-				SELECT DISTINCT cap.object_id
-				FROM ca_objects cap
-				INNER JOIN ca_object_labels AS capl ON capl.object_id = cap.object_id
-				WHERE
-					capl.name = ?
-			", (string)$ps_name);
-
+		$va_params = array((string)$ps_name);
+		
+		$vs_type_sql = '';
+		if ($pn_type_id) {
+			if(sizeof($va_type_ids = caMakeTypeIDList('ca_objects', array($pn_type_id)))) {
+				$vs_type_sql = " AND cap.type_id IN (?)";
+				$va_params[] = $va_type_ids;
+			}
 		}
+		
+		if ($pn_parent_id) {
+			$vs_parent_sql = " AND cap.parent_id = ?";
+			$va_params[] = (int)$pn_parent_id;
+		} 
+		
+		$qr_res = $o_db->query($x="
+				SELECT DISTINCT cap.object_id
+				FROM ca_objects cap
+				INNER JOIN ca_object_labels AS capl ON capl.object_id = cap.object_id
+				WHERE
+					capl.name = ? {$vs_type_sql} {$vs_parent_sql} AND cap.deleted = 0
+			", $va_params);
+		
 		$va_object_ids = array();
 		while($qr_res->nextRow()) {
 			$va_object_ids[] = $qr_res->get('object_id');
 		}
 		return $va_object_ids;
+	}
+	# ------------------------------------------------------
+	/**
+	 *
+	 */
+	public function getIDsByLabel($pa_label_values, $pn_parent_id=null, $pn_type_id=null) {
+		return $this->getObjectIDsByName($pa_label_values['name'], $pn_parent_id, $pn_type_id);
 	}
  	# ------------------------------------------------------
  	# Client services

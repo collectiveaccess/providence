@@ -293,30 +293,75 @@ function caFileIsIncludable($ps_file) {
 	 * @param string $dir The path to the directory you wish to get the contents list for
 	 * @param bool $pb_recursive Optional. By default caGetDirectoryContentsAsList() will recurse through all sub-directories of $dir; set this to false to only consider files that are in $dir itself.
 	 * @param bool $pb_include_hidden_files Optional. By default caGetDirectoryContentsAsList() does not consider hidden files (files starting with a '.') when calculating file counts. Set this to true to include hidden files in counts. Note that the special UNIX '.' and '..' directory entries are *never* counted as files.
+	 * @param bool $pb_sort Optional. If set paths are returns sorted alphabetically. Default is false.
 	 * @return array An array of file paths.
 	 */
-	function &caGetDirectoryContentsAsList($dir, $pb_recursive=true, $pb_include_hidden_files=false) {
+	function &caGetDirectoryContentsAsList($dir, $pb_recursive=true, $pb_include_hidden_files=false, $pb_sort=false) {
 		$va_file_list = array();
 		if(substr($dir, -1, 1) == "/"){
 			$dir = substr($dir, 0, strlen($dir) - 1);
 		}
-		if ($handle = opendir($dir)) {
-			while (false !== ($item = readdir($handle))) {
+		
+		if($va_paths = scandir($dir, 0)) {
+			foreach($va_paths as $item) {
 				if ($item != "." && $item != ".." && ($pb_include_hidden_files || (!$pb_include_hidden_files && $item{0} !== '.'))) {
 					$vb_is_dir = is_dir("{$dir}/{$item}");
 					if ($pb_recursive && $vb_is_dir) { 
-						$va_file_list = array_merge($va_file_list, caGetDirectoryContentsAsList("{$dir}/{$item}"));
+						$va_file_list = array_merge($va_file_list, array_flip(caGetDirectoryContentsAsList("{$dir}/{$item}", true, $pb_include_hidden_files)));
 					} else { 
 						if (!$vb_is_dir) { 
-							$va_file_list[] = "{$dir}/{$item}";
+							$va_file_list["{$dir}/{$item}"] = true;
 						}
+					}
+				}
+			}
+		}
+		
+		if ($pb_sort) {
+			ksort($va_file_list);
+		}
+		return array_keys($va_file_list);
+	}
+	# ----------------------------------------
+	/**
+	 * Returns counts of files and directories for the directory $dir and, optionally, all sub-directories. 
+	 *
+	 * @param string $dir The path to the directory you wish to get the contents list for
+	 * @param bool $pb_recursive Optional. By default caGetDirectoryContentsAsList() will recurse through all sub-directories of $dir; set this to false to only consider files that are in $dir itself.
+	 * @param bool $pb_include_hidden_files Optional. By default caGetDirectoryContentsAsList() does not consider hidden files (files starting with a '.') when calculating file counts. Set this to true to include hidden files in counts. Note that the special UNIX '.' and '..' directory entries are *never* counted as files.
+	 * @return array An array of counts with two keys: 'directories' and 'files'
+	 */
+	function caGetDirectoryContentsCount($dir, $pb_recursive=true, $pb_include_hidden_files=false) {
+		$vn_file_count = 0;
+		if(substr($dir, -1, 1) == "/"){
+			$dir = substr($dir, 0, strlen($dir) - 1);
+		}
+		
+		$va_counts = array(
+			'directories' => 0, 'files' => 0
+		);
+		if ($handle = @opendir($dir)) {
+			while (false !== ($item = readdir($handle))) {
+				if ($item != "." && $item != ".." && ($pb_include_hidden_files || (!$pb_include_hidden_files && $item{0} !== '.'))) {
+					$vb_is_dir = is_dir("{$dir}/{$item}");
+					if ($vb_is_dir) {
+						$va_counts['directories']++;
+					}
+					if ($pb_recursive && $vb_is_dir) { 
+						$va_recursive_counts = caGetDirectoryContentsCount("{$dir}/{$item}", true, $pb_include_hidden_files);
+						$va_counts['files'] += $va_recursive_counts['files'];
+						$va_counts['directories'] += $va_recursive_counts['directories'];
+					} else { 
+						if (!$vb_is_dir) { 
+							$va_counts['files']++;
+						} 
 					}
 				}
 			}
 			closedir($handle);
 		}
 		
-		return $va_file_list;
+		return $va_counts;
 	}
 	# ----------------------------------------
 	/**
@@ -843,7 +888,7 @@ function caFileIsIncludable($ps_file) {
 	 * @param array $pa_sort_keys An array of keys in the second-level array to sort by
 	 * @return array The sorted array
 	*/
-	function caSortArrayByKeyInValue($pa_values, $pa_sort_keys) {
+	function caSortArrayByKeyInValue($pa_values, $pa_sort_keys, $ps_sort_direction="ASC") {
 		$va_sort_keys = array();
 		foreach ($pa_sort_keys as $vs_field) {
 			$va_tmp = explode('.', $vs_field);
@@ -859,6 +904,9 @@ function caFileIsIncludable($ps_file) {
 			$va_sorted_by_key[join('/', $va_key)][$vn_id] = $va_data;
 		}
 		ksort($va_sorted_by_key);
+		if (strtolower($ps_sort_direction) == 'desc') {
+			$va_sorted_by_key = array_reverse($va_sorted_by_key);
+		}
 		
 		$pa_values = array();
 		foreach($va_sorted_by_key as $vs_key => $va_data) {
@@ -1115,6 +1163,45 @@ function caFileIsIncludable($ps_file) {
 		}
 	
 		return $result.$newLine;
+	}
+	# ---------------------------------------
+	function caFormatXML($ps_xml){  
+		// add marker linefeeds to aid the pretty-tokeniser (adds a linefeed between all tag-end boundaries)
+		$xml = preg_replace('/(>)(<)(\/*)/', "$1\n$2$3", $ps_xml);
+		
+		// now indent the tags
+		$token = strtok($xml, "\n");
+		$result	= ''; // holds formatted version as it is built
+		$pad = 0; // initial indent
+		$matches = array(); // returns from preg_matches()
+		
+		// scan each line and adjust indent based on opening/closing tags
+		while ($token !== false) : 
+			$indent = 0;
+			// test for the various tag states
+			
+			// 1. open and closing tags on same line - no change
+			if (preg_match('/.+<\/\w[^>]*>$/', $token, $matches)) : 
+				$indent = 0;
+			// 2. closing tag - outdent now
+			elseif (preg_match('/^<\/\w/', $token, $matches)) :
+				$pad -= 2;
+			// 3. opening tag - don't pad this one, only subsequent tags
+			elseif (preg_match('/^<\w[^>]*[^\/]>.*$/', $token, $matches)) :
+				$indent = 2;
+			// 4. no indentation needed
+			else :
+				$indent = 0; 
+			endif;
+			
+			// pad the line with the required number of leading spaces
+			$line = str_pad($token, strlen($token)+$pad, ' ', STR_PAD_LEFT);
+			$result .= $line . "\n"; // add to the cumulative result, with linefeed
+			$token = strtok("\n"); // get the next token
+			$pad += $indent; // update the pad size for subsequent lines
+		endwhile; 
+		
+		return $result;
 	}
 	# ---------------------------------------
 	/**
@@ -1456,7 +1543,6 @@ function caFileIsIncludable($ps_file) {
 	 * @param $input_arabic_numeral The int to convert
 	 * @return string Roman number resulting from the conversion
 	 */
-	
 	function caArabicRoman($num) {
 		// Make sure that we only use the integer portion of the value
 		$n = intval($num);
@@ -1482,7 +1568,7 @@ function caFileIsIncludable($ps_file) {
 		// The Roman numeral should be built, return it
 		return $result;
 	}
-
+	# ---------------------------------------
 	/**
 	 * Converts a roman number to arabic numerals
 	 *
@@ -1491,7 +1577,6 @@ function caFileIsIncludable($ps_file) {
 	 * @param string $roman The string to convert
 	 * @return mixed int if converted, false if no valid roman number supplied   
 	 */
-	
 	function caRomanArabic($roman) {
 		$conv = array(
             array("letter" => 'I', "number" => 1),
@@ -1524,5 +1609,72 @@ function caFileIsIncludable($ps_file) {
             $len--;
         }
         return($arabic);
-	}	
+	}
+	
+	# ----------------------------------------------------------------
+	/**
+	 *
+	 */
+	function caWriteServerConfigHints() {
+		if (file_exists(__CA_APP_DIR__."/tmp/server_config_hints.txt")) { return false; }
+		return @file_put_contents(__CA_APP_DIR__."/tmp/server_config_hints.txt", serialize(
+			array(
+				'SCRIPT_FILENAME' => $_SERVER['SCRIPT_FILENAME'],
+				'HTTP_HOST' => $_SERVER['HTTP_HOST'],
+				'DOCUMENT_ROOT' => $_SERVER['DOCUMENT_ROOT']
+			)
+		));
+	}
+	# ----------------------------------------
+	/**
+	 * Generic debug function for shiny variable output
+	 * @param mixed $vm_data content to print
+	 * @param string $vs_label optional label to prefix the output with
+	 * @param boolean $print_r Flag to switch between print_r() and var_export() for data conversion to string. 
+	 * 		Set $print_r to TRUE when dealing with a recursive data structure as var_export() will generate an error.
+	 */
+	function caDebug($vm_data, $vs_label = null, $print_r = false) {
+		if(defined('__CA_ENABLE_DEBUG_OUTPUT__') && __CA_ENABLE_DEBUG_OUTPUT__) {
+			if(!caIsRunFromCLI()){
+				$vs_string = htmlspecialchars(($print_r ? print_r($vm_data, TRUE) : var_export($vm_data, TRUE)), ENT_QUOTES, 'UTF-8');
+				$vs_string = '<pre>' . $vs_string . '</pre>';
+				$vs_string = trim($vs_label ? "<div id='debugLabel'>$vs_label:</div> $vs_string" : $vs_string);
+				$vs_string = '<div id="debug">'. $vs_string . '</div>';
+
+				global $g_response;
+				if(is_object($g_response)){
+					$g_response->prependContent($vs_string,'debug');
+				} else {
+					// on the off chance that someone wants to debug something that happens before 
+					// the response object is generated (like config checks), print content
+					// to output buffer to avoid headers already sent warning. The output is sent
+					// when someone (e.g. View.php) starts a new buffer.
+					ob_start();
+					print $vs_string;
+				}
+			} else {
+				// simply dump stuff on command line
+				if($vs_label) { print $vs_label.":\n"; }
+				if($print_r) {
+					print_r($vm_data);
+				} else {
+					var_export($vm_data);
+				}
+				print "\n";
+			}
+		}
+	}
+	# ----------------------------------------
+	/**
+	 *
+	 *
+	 */
+	function caMakeSearchResult($ps_table, $pa_ids) {
+		$o_dm = Datamodel::load();
+		if ($t_instance = $o_dm->getInstanceByTableName($ps_table, true)) {
+			return $t_instance->makeSearchResult($ps_table, $pa_ids);
+		}
+		return null;
+	}
+	# ----------------------------------------
 ?>

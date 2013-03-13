@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2008-2012 Whirl-i-Gig
+ * Copyright 2008-2013 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -58,6 +58,7 @@
 			if ($vb_can_edit) { print $vs_control_box; }
 ?>
 			<input type='hidden' name='object_id' value='<?php print $vn_object_id; ?>'/>
+			<input type='hidden' name='collection_id' value='<?php print $this->request->getParameter('collection_id', pInteger); ?>'/>
 			<input type='hidden' name='above_id' value='<?php print $vn_above_id; ?>'/>
 		</form>
 	</div>

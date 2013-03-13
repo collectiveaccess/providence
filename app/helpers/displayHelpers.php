@@ -37,6 +37,7 @@
 require_once(__CA_LIB_DIR__.'/core/Datamodel.php');
 require_once(__CA_LIB_DIR__.'/core/Configuration.php');
 require_once(__CA_LIB_DIR__.'/core/Parsers/TimeExpressionParser.php');
+require_once(__CA_LIB_DIR__."/ca/ApplicationPluginManager.php");
 	
 	# ------------------------------------------------------------------------------------------------
 	/**
@@ -88,10 +89,13 @@ require_once(__CA_LIB_DIR__.'/core/Parsers/TimeExpressionParser.php');
 				$va_preferred_locales[$g_ui_locale] = true;
 			}
 		}
-		$g_user_locale_rules[$ps_item_locale] = $va_rules = array(
+
+		$va_rules = array(
 			'preferred' => $va_preferred_locales,	/* all of these locales will display if available */
 			'fallback' => $va_fallback_locales		/* the first of these that is available will display, but only if none of the preferred locales are available */
 		);
+
+		if($ps_item_locale){ $g_user_locale_rules[$ps_item_locale] = $va_rules; }
 		
 		return $va_rules;
 	}
@@ -314,16 +318,19 @@ require_once(__CA_LIB_DIR__.'/core/Parsers/TimeExpressionParser.php');
 			$vs_output .= caHTMLHiddenInput('remapToID', array('value' => '', 'id' => 'remapToID'));
 			$vs_output .= "<script type='text/javascript'>";
 			
-			$va_service_info = caJSONLookupServiceUrl($po_request, $t_instance->tableName());
+			$va_service_info = caJSONLookupServiceUrl($po_request, $t_instance->tableName(), array('noSymbols' => 1, 'exclude' => (int)$t_instance->getPrimaryKey(), 'table_num' => (int)$t_instance->get('table_num')));
 			$vs_output .= "jQuery(document).ready(function() {";
 			$vs_output .= "jQuery('#remapTo').autocomplete(
-					'".$va_service_info['search']."', {minChars: 3, matchSubset: 1, matchContains: 1, delay: 800, scroll: true, max: 100, extraParams: {noSymbols: 1, exclude: ".(int)$t_instance->getPrimaryKey().", table_num: ".(int)$t_instance->get('table_num')."}}
+					{
+						source: '".$va_service_info['search']."', html: true,
+						minLength: 3, delay: 800,
+						select: function(event, ui) {
+							jQuery('#remapToID').val(ui.item.id);
+							jQuery('#caReferenceHandlingClear').css('display', 'inline');
+						}
+					}
 				);";
 				
-			$vs_output.= "jQuery('#remapTo').result(function(event, data, formatted) {
-					jQuery('#remapToID').val(data[1]);
-					jQuery('#caReferenceHandlingClear').css('display', 'inline');
-				});";
 			$vs_output .= "jQuery('#caReferenceHandlingRemap').click(function() {
 				jQuery('#remapTo').attr('disabled', false);
 			});
@@ -496,8 +503,10 @@ require_once(__CA_LIB_DIR__.'/core/Parsers/TimeExpressionParser.php');
 		});
 </script>
 <div id=\"editorFieldListHTML\">";
-		foreach($pa_bundle_list as $vs_anchor => $va_info) {
-			$vs_buf .= "<a href=\"#\" onclick=\"jQuery.scrollTo('a[name={$vs_anchor}]', {duration: 350, offset: -80 }); return false;\" class=\"editorFieldListLink\">".$va_info['name']."</a><br/>";
+		if (is_array($pa_bundle_list)) { 
+			foreach($pa_bundle_list as $vs_anchor => $va_info) {
+				$vs_buf .= "<a href=\"#\" onclick=\"jQuery.scrollTo('a[name={$vs_anchor}]', {duration: 350, offset: -80 }); return false;\" class=\"editorFieldListLink\">".$va_info['name']."</a><br/>";
+			}	
 		}
 		$vs_buf .= "</div>\n";
 		
@@ -582,9 +591,23 @@ require_once(__CA_LIB_DIR__.'/core/Parsers/TimeExpressionParser.php');
 					$vs_buf .= "<strong>"._t("Viewing %1", $vs_type_name).": </strong>\n";
 				}
 					
+				$vs_label = '';
 				if ($vs_get_spec = $po_view->request->config->get("{$vs_table_name}_inspector_display_title")) {
 					$vs_label = caProcessTemplateForIDs($vs_get_spec, $vs_table_name, array($t_item->getPrimaryKey()));
 				} else {
+					$va_object_collection_collection_ancestors = $po_view->getVar('object_collection_collection_ancestors');
+					if (
+						($t_item->tableName() == 'ca_objects') && 
+						$t_item->getAppConfig()->get('ca_objects_x_collections_hierarchy_enabled') && 
+						is_array($va_object_collection_collection_ancestors) && sizeof($va_object_collection_collection_ancestors)
+					) {
+						$va_collection_links = array();
+						foreach($va_object_collection_collection_ancestors as $va_collection_ancestor) {
+							$va_collection_links[] = caEditorLink($po_view->request, $va_collection_ancestor['label'], '', 'ca_collections', $va_collection_ancestor['collection_id']);
+						}
+						$vs_label .= join(" / ", $va_collection_links).' &gt; ';
+					}
+					
 					if (method_exists($t_item, 'getLabelForDisplay')) {
 						$vn_parent_index = (sizeof($va_ancestors) - 1);
 						if ($vn_parent_id && (($vs_table_name != 'ca_places') || ($vn_parent_index > 0))) {
@@ -592,12 +615,12 @@ require_once(__CA_LIB_DIR__.'/core/Parsers/TimeExpressionParser.php');
 							$vs_disp_fld = $t_item->getLabelDisplayField();
 							
 							if ($va_parent['NODE'][$vs_disp_fld] && ($vs_editor_link = caEditorLink($po_view->request, $va_parent['NODE'][$vs_disp_fld], '', $vs_table_name, $va_parent['NODE'][$t_item->primaryKey()]))) {
-								$vs_label = $vs_editor_link.' &gt; '.$t_item->getLabelForDisplay();
+								$vs_label .= $vs_editor_link.' &gt; '.$t_item->getLabelForDisplay();
 							} else {
-								$vs_label = ($va_parent['NODE'][$vs_disp_fld] ? $va_parent['NODE'][$vs_disp_fld].' &gt; ' : '').$t_item->getLabelForDisplay();
+								$vs_label .= ($va_parent['NODE'][$vs_disp_fld] ? $va_parent['NODE'][$vs_disp_fld].' &gt; ' : '').$t_item->getLabelForDisplay();
 							}
 						} else {
-							$vs_label = $t_item->getLabelForDisplay();
+							$vs_label .= $t_item->getLabelForDisplay();
 							if (($vs_table_name === 'ca_editor_uis') && (in_array($po_view->request->getAction(), array('EditScreen', 'DeleteScreen', 'SaveScreen')))) {
 								$t_screen = new ca_editor_ui_screens($po_view->request->getParameter('screen_id', pInteger));
 								if (!($vs_screen_name = $t_screen->getLabelForDisplay())) {
@@ -608,7 +631,7 @@ require_once(__CA_LIB_DIR__.'/core/Parsers/TimeExpressionParser.php');
 							
 						}
 					} else {
-						$vs_label = $t_item->get('name');
+						$vs_label .= $t_item->get('name');
 					}
 				}
 				
@@ -699,7 +722,14 @@ require_once(__CA_LIB_DIR__.'/core/Parsers/TimeExpressionParser.php');
 			// Output lot info for ca_object_lots
 			//
 			if (($vs_table_name === 'ca_object_lots') && $t_item->getPrimaryKey()) {
-				$vs_buf .= "<br/><strong>".((($vn_num_objects = $t_item->numObjects()) == 1) ? _t('Lot contains %1 object', $vn_num_objects) : _t('Lot contains %1 objects', $vn_num_objects))."</strong>\n";
+				$vs_buf .= "<div id='inspectorLotMediaDownload'><strong>".((($vn_num_objects = $t_item->numObjects()) == 1) ? _t('Lot contains %1 object', $vn_num_objects) : _t('Lot contains %1 objects', $vn_num_objects))."</strong>\n";
+				
+				if ($vn_num_objects > 0) {
+					$vs_buf .= caNavLink($po_view->request, caNavIcon($po_view->request, __CA_NAV_BUTTON_DOWNLOAD__), "button", $po_view->request->getModulePath(), $po_view->request->getController(), 'getLotMedia', array('lot_id' => $t_item->getPrimaryKey(), 'download' => 1), array('id' => 'inspectorLotMediaDownloadButton'));
+				}
+				$vs_buf .= "</div>\n";
+				
+				TooltipManager::add('#inspectorLotMediaDownloadButton', _t("Download all media associated with objects in this lot."));
 			
 				if (((bool)$po_view->request->config->get('allow_automated_renumbering_of_objects_in_a_lot')) && ($va_nonconforming_objects = $t_item->getObjectsWithNonConformingIdnos())) {
 				
@@ -738,8 +768,7 @@ require_once(__CA_LIB_DIR__.'/core/Parsers/TimeExpressionParser.php');
 	jQuery(document).ready(function() {
 		jQuery('#objectLotsNonConformingNumberList').hide();
 	});
-</script>\n";
-				
+</script>\n";	
 			}
 			
 			//
@@ -784,7 +813,14 @@ require_once(__CA_LIB_DIR__.'/core/Parsers/TimeExpressionParser.php');
 			// Output extra useful info for sets
 			//
 			if ($vs_table_name === 'ca_sets') {
-				$vs_buf .= "<div><strong>"._t("Number of items")."</strong>: ".$t_item->getItemCount(array('user_id' => $po_view->request->getUserID()))."<br/>\n";
+				
+				$vn_set_item_count = $t_item->getItemCount(array('user_id' => $po_view->request->getUserID()));
+				
+				if (($vn_set_item_count > 0) && ($po_view->request->user->canDoAction('can_batch_edit_'.$o_dm->getTableName($t_item->get('table_num'))))) {
+					$vs_buf .= caNavButton($po_view->request, __CA_NAV_BUTTON_BATCH_EDIT__, _t('Batch edit'), 'batch', 'Editor', 'Edit', array('set_id' => $t_item->getPrimaryKey()), array(), array('icon_position' => __CA_NAV_BUTTON_ICON_POS_LEFT__, 'use_class' => 'editorBatchSetEditorLink', 'no_background' => true, 'dont_show_content' => true));
+				}
+				
+				$vs_buf .= "<div><strong>"._t("Number of items")."</strong>: {$vn_set_item_count}<br/>\n";
 					
 				if ($t_item->getPrimaryKey()) {
 					
@@ -1090,6 +1126,22 @@ require_once(__CA_LIB_DIR__.'/core/Parsers/TimeExpressionParser.php');
 					$vs_buf .= caFormSubmitLink($po_view->request, caNavIcon($po_view->request, __CA_NAV_BUTTON_ADD__), '', 'NewChildForm');
 					$vs_buf .= "</form></div>\n";
 				}
+				
+				if (($t_item->tableName() == 'ca_collections') && $po_view->request->config->get('ca_objects_x_collections_hierarchy_enabled')) {
+					$t_object = new ca_objects();
+					if ((bool)$po_view->request->config->get('ca_objects_enforce_strict_type_hierarchy')) {
+						// strict menu
+						$vs_type_list = $t_object->getTypeListAsHTMLFormElement('type_id', array('style' => 'width: 90px; font-size: 9px;'), array('childrenOfCurrentTypeOnly' => true, 'directChildrenOnly' => ($po_view->request->config->get($vs_table_name.'_enforce_strict_type_hierarchy') == '~') ? false : true, 'returnHierarchyLevels' => true, 'access' => __CA_BUNDLE_ACCESS_EDIT__));
+					} else {
+						// all types
+						$vs_type_list = $t_object->getTypeListAsHTMLFormElement('type_id', array('style' => 'width: 90px; font-size: 9px;'), array('access' => __CA_BUNDLE_ACCESS_EDIT__));
+					}
+					$vs_buf .= '<div style="border-top: 1px solid #aaaaaa; margin-top: 5px; font-size: 10px;">';
+					$vs_buf .= caFormTag($po_view->request, 'Edit', 'NewChildObjectForm', 'editor/objects/ObjectEditor', 'post', 'multipart/form-data', '_top', array('disableUnsavedChangesWarning' => true));
+					$vs_buf .= _t('Add a %1 under this', $vs_type_list).caHTMLHiddenInput('object_id', array('value' => '0')).caHTMLHiddenInput('collection_id', array('value' => $t_item->getPrimaryKey()));
+					$vs_buf .= caFormSubmitLink($po_view->request, caNavIcon($po_view->request, __CA_NAV_BUTTON_ADD__), '', 'NewChildObjectForm');
+					$vs_buf .= "</form></div>\n";
+				}
 			}
 		}
 		
@@ -1297,6 +1349,96 @@ require_once(__CA_LIB_DIR__.'/core/Parsers/TimeExpressionParser.php');
 	}
 	# ------------------------------------------------------------------------------------------------
 	/**
+	 * Generates standard-format inspector panels for editors
+	 *
+	 * @param View $po_view Inspector view object
+	 * @param array $pa_options Optional array of options. Supported options are:
+	 *		backText = a string to use as the "back" button text; default is "Results"
+	 *
+	 * @return string HTML implementing the inspector
+	 */
+	function caBatchEditorInspector($po_view, $pa_options=null) {
+		require_once(__CA_MODELS_DIR__.'/ca_sets.php');
+		
+		$t_set 				= $po_view->getVar('t_set');
+		$t_item 				= $po_view->getVar('t_item');
+		
+		$o_result_context		= $po_view->getVar('result_context');
+		$t_ui 					= $po_view->getVar('t_ui');
+		
+		$o_dm = Datamodel::load();
+	
+		// action extra to preserve currently open screen across next/previous links
+		//$vs_screen_extra 	= ($po_view->getVar('screen')) ? '/'.$po_view->getVar('screen') : '';
+		
+		$vs_buf = '<h3 class="nextPrevious">'.caNavLink($po_view->request, 'Back', '', 'manage', 'Set', 'ListSets')."</h3>\n";
+
+		$vs_color = null;
+		if ($t_type) { $vs_color = trim($t_type->get('color')); } 
+		if (!$vs_color && $t_ui) { $vs_color = trim($t_ui->get('color')); }
+		if (!$vs_color) { $vs_color = "444444"; }
+		
+		$vs_buf .= "<h4><div id='caColorbox' style='border: 6px solid #{$vs_color}; padding-bottom:15px;'>\n";
+		
+		
+		$vn_item_count = $t_set->getItemCount(array('user_id' => $po_view->request->getUserID()));
+		$vs_item_name = ($vn_item_count == 1) ? $t_item->getProperty("NAME_SINGULAR"): $t_item->getProperty("NAME_PLURAL");
+		
+		$vs_buf .= "<strong>"._t("Batch editing %1 %2 in set", $vn_item_count, $vs_item_name).": </strong>\n";
+		
+		
+		if (!($vs_label = $t_set->getLabelForDisplay())) {
+			if (!($vs_label = $t_set->get('set_code'))) {
+				$vs_label = '['._t('BLANK').']'; 
+			}
+		}
+		
+		if($t_set->haveAccessToSet($po_view->request->getUserID(), __CA_SET_EDIT_ACCESS__)) {
+			$vs_label = caEditorLink($po_view->request, $vs_label, '', 'ca_sets', $t_set->getPrimaryKey());
+		}
+	
+		
+		$vs_buf .= "<div style='width:190px; overflow:hidden;'>{$vs_watch}{$vs_label}"."<a title='$vs_idno'>".($vs_idno ? " ({$vs_idno})" : '')."</a></div>\n";
+
+		
+		// -------------------------------------------------------------------------------------
+	
+		$vs_buf .= "<div>"._t('Set contains <em>%1</em>', join(", ", $t_set->getTypesForItems()))."</div>\n";
+		
+		$vs_buf .= "</div></h4>\n";
+		
+	
+		return $vs_buf;
+	}
+	# ------------------------------------------------------------------------------------------------
+	/**
+	 * Generates standard-format inspector panels for editors
+	 *
+	 * @param View $po_view Inspector view object
+	 * @param array $pa_options Optional array of options. Supported options are:
+	 *		backText = a string to use as the "back" button text; default is "Results"
+	 *
+	 * @return string HTML implementing the inspector
+	 */
+	function caBatchMediaImportInspector($po_view, $pa_options=null) {
+		$vs_color = "444444"; 
+		$vs_buf .= "<h4><div id='caColorbox' style='border: 6px solid #{$vs_color}; padding-bottom:15px;'>\n";
+		$vs_buf .= "<strong>"._t("Batch import media")."</strong>\n";
+		
+		$vs_batch_media_import_root_directory = $po_view->request->config->get('batch_media_import_root_directory');
+		$vs_buf .= "<p>"._t('<strong>Server directory:</strong> %1', $vs_batch_media_import_root_directory)."</p>\n";
+
+		// Show the counts here is nice but can bog the server down when the import directory is an NFS or SAMBA mount
+		//$va_counts = caGetDirectoryContentsCount($vs_batch_media_import_root_directory, true, false, false); 
+		//$vs_buf .= "<p>"._t('<strong>Directories on server:</strong> %1', $va_counts['directories'])."<br/>\n";
+		//$vs_buf .= _t('<strong>Files on server:</strong> %1', $va_counts['files'])."<p>\n";
+
+		$vs_buf .= "</div></h4>\n";
+		
+		return $vs_buf;
+	}
+	# ------------------------------------------------------------------------------------------------
+	/**
 	  *
 	  */
 	function caFilterTableList($pa_tables) {
@@ -1305,7 +1447,6 @@ require_once(__CA_LIB_DIR__.'/core/Parsers/TimeExpressionParser.php');
 		$o_dm = Datamodel::load();
 		
 		// assume table display names (*not actual database table names*) are keys and table_nums are values
-		
 		$va_filtered_tables = array();
 		foreach($pa_tables as $vs_display_name => $vn_table_num) {
 			$vs_display_name = mb_strtolower($vs_display_name, 'UTF-8');
@@ -1321,12 +1462,13 @@ require_once(__CA_LIB_DIR__.'/core/Parsers/TimeExpressionParser.php');
 					foreach($va_types as $vn_item_id => $va_type_info) {
 						$va_type_labels[] = mb_strtolower($va_type_info['name_plural'], 'UTF-8');
 					}
-					
 					if (sizeof($va_type_labels)) {
 						if (mb_strlen($vs_label = join('/', $va_type_labels)) > 50) {
 							$vs_label = mb_substr($vs_label, 0, 60).'...';
 						}
 						$va_filtered_tables[$vs_label] = $vn_table_num;
+					} else {
+						$va_filtered_tables[$vs_display_name] = $vn_table_num;
 					}
 					break;
 				default:	
@@ -1545,10 +1687,9 @@ require_once(__CA_LIB_DIR__.'/core/Parsers/TimeExpressionParser.php');
 			foreach($va_tags as $vs_tag) {
 				$va_tmp = explode('.', $vs_tag);
 				$vs_last_element = $va_tmp[sizeof($va_tmp)-1];
-				$va_tag_opt_tmp = explode(";", $vs_last_element);
+				$va_tag_opt_tmp = explode("%", $vs_last_element);
 				if (sizeof($va_tag_opt_tmp) > 1) {
 					array_shift($va_tag_opt_tmp); // get rid of getspec
-					
 					foreach($va_tag_opt_tmp as $vs_tag_opt_raw) {
 						$va_tag_tmp = explode("=", $vs_tag_opt_raw);
 						$va_tag_tmp[0] = trim($va_tag_tmp[0]);
@@ -1800,6 +1941,32 @@ require_once(__CA_LIB_DIR__.'/core/Parsers/TimeExpressionParser.php');
 	}
 	# ------------------------------------------------------------------------------------------------
 	/**
+	 * Normalize arbitrarily precise date expression to century, decade, year, month or day
+	 *
+	 * @param string $ps_expression A valid date expression parseable by the TimeExpressionParser class
+	 * @param string $ps_normalization Level to normalize to. Valid values are centuries, decades, years, months, days
+	 * @param array $pa_options
+	 *			delimiter = A string to join multiple values with when returning normalized date range as a string. Default is semicolon followed by space ("; ")
+	 *			returnAsArray = If set an array of normalized values will be returned rather than a string. Default is false.
+	 * @return mixes The normalized expression. If the expression normalizes to multiple values (eg. a range of years being normalized to months) then the values will be joined with a delimiter and returned as a string unless the "returnAsArray" option is set.
+	 */
+	function caNormalizeDateRange($ps_expression, $ps_normalization, $pa_options=null) {
+		$o_tep = new TimeExpressionParser();
+		if ($o_tep->parse($ps_expression)) {
+			$va_dates = $o_tep->getHistoricTimestamps();
+			$va_vals= $o_tep->normalizeDateRange($va_dates['start'], $va_dates['end'], $ps_normalization);
+			
+			if (isset($pa_options['returnAsArray']) && $pa_options['returnAsArray']) {
+				return $va_vals;
+			} else {
+				$vs_delimiter = isset($pa_options['returnAsArray']) ? $pa_options['returnAsArray'] : "; ";
+				return join($vs_delimiter, $va_vals);
+			}
+		}
+		return null;
+	}
+	# ------------------------------------------------------------------------------------------------
+	/**
 	 * Returns text describing dimensions of object representation
 	 *
 	 * @param DbResult or ca_object_representations instance $po_rep An object containing representation data. Can be either a DbResult object (ie. a query result) or ca_object_representations instance (an instance representing a row in the ca_object_representation class)
@@ -1863,7 +2030,8 @@ require_once(__CA_LIB_DIR__.'/core/Parsers/TimeExpressionParser.php');
 	 *		config = 
 	 *		limit = maximum number of items to return; if omitted all items are returned
 	 *		inlineCreateMessage = 
-	 *		inlineCreateQuery = 
+	 *		inlineCreateQuery =
+	 *		template = 
 	 * @return mixed 
 	 */
 global $ca_relationship_lookup_parse_cache;
@@ -1877,7 +2045,7 @@ $ca_relationship_lookup_parse_cache = array();
 		$vs_idno_fld 					= $pt_rel->getProperty('ID_NUMBERING_ID_FIELD');
 		$vs_idno_sort_fld 				= $pt_rel->getProperty('ID_NUMBERING_SORT_FIELD');
 		$vs_rel_pk 						= $pt_rel->primaryKey();
-		$vs_rel_table						= $pt_rel->tableName();
+		$vs_rel_table					= $pt_rel->tableName();
 		
 		if (!isset($pa_options['config']) || !is_object($pa_options['config'])) {
 			$o_config = Configuration::load();
@@ -1892,6 +2060,8 @@ $ca_relationship_lookup_parse_cache = array();
 		$ps_empty_result_message = (isset($pa_options['emptyResultMessage'])) ? (string)$pa_options['emptyResultMessage'] : null;
 		$ps_empty_result_query = (isset($pa_options['emptyResultQuery'])) ? (string)$pa_options['emptyResultQuery'] : null;
 		
+		$vs_template = (isset($pa_options['template'])) ? (string)$pa_options['template'] : null;
+		$vs_cache_key = md5($vs_display_format);
 		
 		$va_exclude = (isset($pa_options['exclude']) && is_array($pa_options['exclude'])) ? $pa_options['exclude'] : array();
 		
@@ -1903,10 +2073,10 @@ $ca_relationship_lookup_parse_cache = array();
 		$vb_use_new_display_format = false;
 		$va_bundles = array();
 		$vs_display_delimiter = '';
-		if (isset($ca_relationship_lookup_parse_cache[$vs_rel_table])) {
-			$va_bundles = $ca_relationship_lookup_parse_cache[$vs_rel_table]['bundles'];
-			$va_display_format = $ca_relationship_lookup_parse_cache[$vs_rel_table]['display_format'];
-			$vs_display_delimiter = $ca_relationship_lookup_parse_cache[$vs_rel_table]['delimiter'];
+		if (isset($ca_relationship_lookup_parse_cache[$vs_rel_table][$vs_cache_key])) {
+			$va_bundles = $ca_relationship_lookup_parse_cache[$vs_rel_table][$vs_cache_key]['bundles'];
+			$va_display_format = $ca_relationship_lookup_parse_cache[$vs_rel_table][$vs_cache_key]['display_format'];
+			$vs_display_delimiter = $ca_relationship_lookup_parse_cache[$vs_rel_table][$vs_cache_key]['delimiter'];
 			$vb_use_new_display_format = true;
 		} else {
 			if (($vs_display_format = $o_config->get($vs_rel_table.'_lookup_settings')) && !is_array($vs_display_format)) {				
@@ -1919,13 +2089,13 @@ $ca_relationship_lookup_parse_cache = array();
 			} else {
 				if (is_array($va_display_format = $o_config->getList($vs_rel_table.'_lookup_settings'))) {
 					$vb_use_new_display_format = true;
-					
+				
 					if(!($vs_display_delimiter = $o_config->get($vs_rel_table.'_lookup_delimiter'))) {
 						$vs_display_delimiter = ' ';
 					} else {
 						$vs_display_delimiter = " {$vs_display_delimiter} ";
 					}
-					
+				
 					foreach($va_display_format as $vs_display_element) {
 						if (preg_match_all('!\^{1}([A-Za-z0-9\._]+)!', $vs_display_element, $va_matches)) {
 							$va_bundles = array_merge($va_bundles, $va_matches[1]);
@@ -1933,7 +2103,7 @@ $ca_relationship_lookup_parse_cache = array();
 					}
 				}
 			}
-			$ca_relationship_lookup_parse_cache[$vs_rel_table] = array(
+			$ca_relationship_lookup_parse_cache[$vs_rel_table][$vs_cache_key] = array(
 				'bundles' => $va_bundles,
 				'display_format' => $va_display_format,
 				'delimiter' => $vs_display_delimiter
@@ -2023,6 +2193,10 @@ $ca_relationship_lookup_parse_cache = array();
 						$va_related_item_info[$vn_id] = $va_display_value;
 					} else {
 						$va_related_item_info[$vn_id] = $vs_display_value;
+					}
+					
+					if ($vs_template) {
+						$va_item['_display'] = caProcessTemplateForIDs($vs_template, $vs_rel_table, array($vn_id), array('returnAsArray' => false, 'returnAsLink' => true));
 					}
 					
 					$va_items[$vn_id] = $va_item;
@@ -2124,7 +2298,7 @@ $ca_relationship_lookup_parse_cache = array();
 			$va_initial_values[$va_item['relation_id'] ? (int)$va_item['relation_id'] : $va_item[$vs_rel_pk]] = array_merge(
 				$va_item,
 				array(
-					'_display' => $vs_display
+					'label' => $vs_display
 				)
 			);
 		}
@@ -2132,7 +2306,7 @@ $ca_relationship_lookup_parse_cache = array();
 		if($vb_include_inline_add_message) {
 			$va_initial_values[0] = 
 				array(
-					'_display' => $ps_inline_create_message,
+					'label' => $ps_inline_create_message,
 					'id' => 0,
 					$vs_rel_pk => 0,
 					'_query' => $ps_inline_create_query
@@ -2141,7 +2315,7 @@ $ca_relationship_lookup_parse_cache = array();
 			if ($vb_include_empty_result_message) {
 				$va_initial_values[0] = 
 					array(
-						'_display' => $ps_empty_result_message,
+						'label' => $ps_empty_result_message,
 						'id' => -1,
 						$vs_rel_pk => -1,
 						'_query' => $ps_empty_result_query
@@ -2213,11 +2387,17 @@ $ca_relationship_lookup_parse_cache = array();
 	 *
 	 * @return array A list of HTML links
 	 */
-	function caCreateLinksFromText($pa_text, $ps_table_name, $pa_row_ids, $ps_class=null) {
+	function caCreateLinksFromText($pa_text, $ps_table_name, $pa_row_ids, $ps_class=null, $ps_target=null) {
 		if (!in_array(__CA_APP_TYPE__, array('PROVIDENCE', 'PAWTUCKET'))) { return $pa_text; }
 		if (__CA_APP_TYPE__ == 'PAWTUCKET') {
 			$o_config = Configuration::load();
 			if (!$o_config->get("allow_detail_for_{$ps_table_name}")) { return $pa_text; }
+		}
+		
+		$vb_can_handle_target = false;
+		if ($ps_target) {
+			$o_app_plugin_manager = new ApplicationPluginManager();
+			$vb_can_handle_target = $o_app_plugin_manager->hookCanHandleGetAsLinkTarget(array('target' => $ps_target));
 		}
 		
 		// Parse template
@@ -2249,29 +2429,42 @@ $ca_relationship_lookup_parse_cache = array();
 			if (sizeof($va_l_tags)) {
 				$vs_content = $vs_text;
 				foreach($va_l_tags as $va_l) {
-					switch(__CA_APP_TYPE__) {
-						case 'PROVIDENCE':
-							$vs_link_text= caEditorLink($g_request, $va_l['content'], $ps_class, $ps_table_name, $pa_row_ids[$vn_i]);
-							break;
-						case 'PAWTUCKET':
-							$vs_link_text= caDetailLink($g_request, $va_l['content'], $ps_class, $ps_table_name, $pa_row_ids[$vn_i]);
-							break;
+					if ($vb_can_handle_target) {
+						$va_params = array('request' => $g_request, 'content' => $va_l['content'], 'table' => $ps_table_name, 'id' => $pa_row_ids[$vn_i], 'classname' => $ps_class, 'target' => $ps_target, 'additionalParameters' => null, 'options' => null);
+						$va_params = $o_app_plugin_manager->hookGetAsLink($va_params);
+						$vs_link_text = $va_params['tag'];
+					} else {
+						switch(__CA_APP_TYPE__) {
+							case 'PROVIDENCE':
+								$vs_link_text= caEditorLink($g_request, $va_l['content'], $ps_class, $ps_table_name, $pa_row_ids[$vn_i]);
+								break;
+							case 'PAWTUCKET':
+								$vs_link_text= caDetailLink($g_request, $va_l['content'], $ps_class, $ps_table_name, $pa_row_ids[$vn_i]);
+								break;
+						}
+											
 					}
 					
 					$vs_content = str_replace($va_l['directive'], $vs_link_text, $vs_content);
 				}
 				$va_links[] = $vs_content;
 			} else {
-				switch(__CA_APP_TYPE__) {
-					case 'PROVIDENCE':
-						$va_links[] = caEditorLink($g_request, $vs_text, $ps_class, $ps_table_name, $pa_row_ids[$vn_i]);
-						break;
-					case 'PAWTUCKET':
-						$va_links[] = caDetailLink($g_request, $vs_text, $ps_class, $ps_table_name, $pa_row_ids[$vn_i]);
-						break;
-					default:
-						$va_links[] = $vs_text;
-						break;
+				if ($vb_can_handle_target) {
+					$va_params = array('request' => $g_request, 'content' => $vs_text, 'table' => $ps_table_name, 'id' => $pa_row_ids[$vn_i], 'classname' => $ps_class, 'target' => $ps_target, 'additionalParameters' => null, 'options' => null);
+					$va_params = $o_app_plugin_manager->hookGetAsLink($va_params);
+					$va_links[]  = $va_params['tag'];
+				} else {
+					switch(__CA_APP_TYPE__) {
+						case 'PROVIDENCE':
+							$va_links[] = caEditorLink($g_request, $vs_text, $ps_class, $ps_table_name, $pa_row_ids[$vn_i]);
+							break;
+						case 'PAWTUCKET':
+							$va_links[] = caDetailLink($g_request, $vs_text, $ps_class, $ps_table_name, $pa_row_ids[$vn_i]);
+							break;
+						default:
+							$va_links[] = $vs_text;
+							break;
+					}
 				}
 			}
 		}

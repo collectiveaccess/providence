@@ -58,6 +58,17 @@
  			return parent::Edit($va_values, $pa_options);
  		}
  		# -------------------------------------------------------
+ 		/**
+ 		 *
+ 		 */
+ 		public function postSave($t_object, $pb_is_insert) {
+ 			if ( $this->request->config->get('ca_objects_x_collections_hierarchy_enabled') && ($vs_coll_rel_type = $this->request->config->get('ca_objects_x_collections_hierarchy_relationship_type')) && ($pn_collection_id = $this->request->getParameter('collection_id', pInteger))) {
+ 				if (!($t_object->addRelationship('ca_collections', $pn_collection_id, $vs_coll_rel_type))) {
+ 					$this->notification->addNotification(_t("Could not add parent collection to object", __NOTIFICATION_TYPE_ERROR__));
+ 				}
+ 			}
+ 		}
+ 		# -------------------------------------------------------
  		# AJAX handlers
  		# -------------------------------------------------------
  		/**
@@ -74,9 +85,17 @@
  		public function GetRepresentationInfo() {
  			list($vn_object_id, $t_object) = $this->_initView();
  			$pn_representation_id 	= $this->request->getParameter('representation_id', pInteger);
- 			if(!$vn_object_id) { $vn_object_id = 0; }
+ 		
  			$t_rep = new ca_object_representations($pn_representation_id);
  			
+ 			if(!$vn_object_id) { 
+ 				if (is_array($va_object_ids = $t_rep->get('ca_objects.object_id', array('returnAsArray' => true))) && sizeof($va_object_ids)) {
+ 					$vn_object_id = array_shift($va_object_ids);
+ 				} else {
+ 					$this->postError(1100, _t('Invalid object/representation'), 'ObjectEditorController->GetRepresentationInfo');
+ 					return;
+ 				}
+ 			}
  			$va_opts = array('display' => 'media_overlay', 'object_id' => $vn_object_id, 'containerID' => 'caMediaPanelContentArea');
  			if (strlen($vs_use_book_viewer = $this->request->getParameter('use_book_viewer', pInteger))) { $va_opts['use_book_viewer'] = (bool)$vs_use_book_viewer; }
  
@@ -99,11 +118,17 @@
  			$pn_representation_id 	= $this->request->getParameter('representation_id', pInteger);
  			$pb_reload 	= (bool)$this->request->getParameter('reload', pInteger);
  			
- 			if(!$vn_object_id) { $vn_object_id = 0; }
  			$t_rep = new ca_object_representations($pn_representation_id);
- 			if (!$t_rep->getPrimaryKey()) {
- 				// error - invalid representation_id
+ 			
+ 			if(!$vn_object_id) { 
+ 				if (is_array($va_object_ids = $t_rep->get('ca_objects.object_id', array('returnAsArray' => true))) && sizeof($va_object_ids)) {
+ 					$vn_object_id = array_shift($va_object_ids);
+ 				} else {
+ 					$this->postError(1100, _t('Invalid object/representation'), 'ObjectEditorController->GetRepresentationEditor');
+ 					return;
+ 				}
  			}
+ 			
  			$va_opts = array('display' => 'media_editor', 'object_id' => $vn_object_id, 'containerID' => 'caMediaPanelContentArea', 'mediaEditor' => true, 'noControls' => $pb_reload);
  			if (strlen($vs_use_book_viewer = $this->request->getParameter('use_book_viewer', pInteger))) { $va_opts['use_book_viewer'] = (bool)$vs_use_book_viewer; }
  
@@ -173,6 +198,7 @@
  			$t_object = new ca_objects($pn_object_id);
  			if (!($vn_object_id = $t_object->getPrimaryKey())) { return; }
  			
+ 			$pn_representation_id = $this->request->getParameter('representation_id', pInteger);
  			$ps_version = $this->request->getParameter('version', pString);
  			
  			if (!$ps_version) { $ps_version = 'original'; }
@@ -202,6 +228,7 @@
 				$vs_idno = $t_object->get('idno');
 				
 				foreach($va_reps as $vn_representation_id => $va_rep) {
+					if ($pn_representation_id && ($pn_representation_id != $vn_representation_id)) { continue; }
 					$va_rep_info = $va_rep['info'][$ps_version];
 					$vs_idno_proc = preg_replace('![^A-Za-z0-9_\-]+!', '_', $vs_idno);
 					switch($this->request->user->getPreference('downloaded_file_naming')) {

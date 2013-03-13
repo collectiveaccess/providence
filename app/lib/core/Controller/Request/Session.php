@@ -50,7 +50,11 @@ class Session {
 	# ----------------------------------------
 	# --- Constructor
 	# ----------------------------------------
-	public function __construct() {
+	/**
+	 * @param string $ps_app_name An app name to use if no app name is configured in the application configuration file.
+	 * @param bool $pb_dont_create_new_session No new session will be created if set to true. Default is false.
+	 */
+	public function __construct($ps_app_name=null, $pb_dont_create_new_session=false) {
  		$o_config = Configuration::load();
 		# --- Init
 		if (defined("__CA_MICROTIME_START_OF_REQUEST__")) {
@@ -60,14 +64,16 @@ class Session {
 		}
 		
 		# --- Read configuration
-		$this->name = $o_config->get("app_name");
+		$this->name = ($vs_app_name = $o_config->get("app_name")) ? $vs_app_name : $ps_app_name;
 		$this->domain = $o_config->get("session_domain");
 		$this->lifetime = $o_config->get("session_lifetime");
 		
-		session_name($this->name);
-		ini_set("session.gc_maxlifetime", $this->lifetime); 
-		session_set_cookie_params($this->lifetime, '/', $this->domain);
-		session_start();
+		if (!$pb_dont_create_new_session) {
+			session_name($this->name);
+			ini_set("session.gc_maxlifetime", $this->lifetime); 
+			session_set_cookie_params($this->lifetime, '/', $this->domain);
+			session_start();
+		}
 	}
 
 	# ----------------------------------------

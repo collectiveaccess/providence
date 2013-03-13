@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2009-2012 Whirl-i-Gig
+ * Copyright 2009-2013 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -152,7 +152,8 @@
  		# ------------------------------------------------------------------
  		/**
  		 * @param array $pa_options Supported options are
- 		 *		asHTML - if set, URL is returned as an HTML link to the LOC definition of the term
+ 		 *		asHTML = if set URL is returned as an HTML link to the LOC definition of the term
+ 		 *		asText = if set only text portion, without LCSH identifier, is returned
  		 * @return string The term
  		 */
 		public function getDisplayValue($pa_options=null) {
@@ -162,6 +163,9 @@
 					return "<a href='http://id.loc.gov/authorities/sh".$va_matches[1]."' target='_lcsh_details'>".$vs_value.'</a>';
 				}
 			} 
+			if (isset($pa_options['asText']) && $pa_options['asText']) {
+				return preg_replace('![ ]*\[[^\]]*\]!', '', $this->ops_text_value);
+			}
 			return $this->ops_text_value;
 		}
 		# ------------------------------------------------------------------
@@ -178,18 +182,59 @@
  			
  			$ps_value = trim(preg_replace("![\t\n\r]+!", ' ', $ps_value));
  			
+ 			// Try to convert LCSH display format into parse-able format, to avoid unwanted lookups
+ 			if(preg_match("!^([^\[]+)[ ]*\[(info:lc[^\]]+)\]!", $ps_value, $va_matches)) {
+ 				$ps_value = $va_matches[0]."|".$va_matches[1];
+ 			}
+ 			
 			if (trim($ps_value)) {
 				$va_tmp = explode('|', $ps_value);
+				if (sizeof($va_tmp) > 1) {
 				
-				$vs_url = str_replace('info:lc/', 'http://id.loc.gov/authorities/', $va_tmp[1]);
+					$vs_url = str_replace('info:lc/', 'http://id.loc.gov/authorities/', $va_tmp[1]);
 				
-				$va_tmp1 = explode('/', $va_tmp[1]);
-				$vs_id = array_pop($va_tmp1);
-				return array(
-					'value_longtext1' => $va_tmp[0],						// text
-					'value_longtext2' => $vs_url,							// uri
-					'value_decimal1' => is_numeric($vs_id) ? $vs_id : null	// id
-				);
+					$va_tmp1 = explode('/', $va_tmp[1]);
+					$vs_id = array_pop($va_tmp1);
+					return array(
+						'value_longtext1' => $va_tmp[0],						// text
+						'value_longtext2' => $vs_url,							// uri
+						'value_decimal1' => is_numeric($vs_id) ? $vs_id : null	// id
+					);
+				} else {
+					$vs_data = @file_get_contents("http://id.loc.gov/search/?q=".urlencode($ps_value).'&format=atom&count=5');
+					if ($vs_data) {
+						$o_xml = @simplexml_load_string($vs_data);
+	
+						$vs_label = $vs_url = $vs_id = null;
+						if ($o_xml) {
+							$o_entries = $o_xml->{'entry'};
+							if ($o_entries && sizeof($o_entries)) {
+								foreach($o_entries as $o_entry) {
+									$o_links = $o_entry->{'link'};
+									$va_attr = $o_links[0]->attributes();
+									
+									$vs_label = (string)$o_entry->{'title'};
+									
+									$vs_url = str_replace('http://id.loc.gov/', 'info:lc/', (string)$va_attr->{'href'});
+									$vs_id = (string)$o_entry->{'id'};
+								}
+							}
+						}
+						if ($vs_url) {
+							return array(
+								'value_longtext1' => $vs_label." [{$vs_url}]",						// text
+								'value_longtext2' => $vs_url,							// uri
+								'value_decimal1' => is_numeric($vs_id) ? $vs_id : null	// id
+							);
+						} else {
+							$this->postError(1970, _t('Could not get results from LCSH service for %1', $ps_value), 'LCSHAttributeValue->parseValue()');
+							return false;
+						}
+					} else {
+						$this->postError(1970, _t('Could not get results from LCSH service for %1', $ps_value), 'LCSHAttributeValue->parseValue()');
+						return false;
+					}
+				}
 			}
 			return array(
 				'value_longtext1' => '',	// text
@@ -227,7 +272,7 @@
 				);
 				
 			if ($pa_options['po_request']) {
-				$vs_url = caNavUrl($pa_options['po_request'], 'lookup', 'LCSH', 'Get');
+				$vs_url = caNavUrl($pa_options['po_request'], 'lookup', 'LCSH', 'Get', array('max' => 100, 'element_id' => (int)$pa_element_info['element_id']));
 			} else {
 				// hardcoded default for testing.
 				$vs_url = '/index.php/lookup/LCSH/Get';	
@@ -239,20 +284,22 @@
 			$vs_element .= "
 				<script type='text/javascript'>
 					jQuery(document).ready(function() {
-						jQuery('#lcsh_".$pa_element_info['element_id']."_autocomplete{n}').autocomplete('".$vs_url."', {minChars: 3, matchSubset: 1, matchContains: 1, delay: 800, max: 100, extraParams: {element_id: ".(int)$pa_element_info['element_id']."}});
-						jQuery('#lcsh_".$pa_element_info['element_id']."_autocomplete{n}').result(function(event, data, formatted) {
-								jQuery('#{fieldNamePrefix}".$pa_element_info['element_id']."_{n}').val(data[0] + '|' + data[1]);
-							}
-						);
+						jQuery('#lcsh_".$pa_element_info['element_id']."_autocomplete{n}').autocomplete(
+							{ source: '{$vs_url}', minLength: 3, delay: 800, 
+								select: function( event, ui ) {
+									jQuery('#{fieldNamePrefix}".$pa_element_info['element_id']."_{n}').val(ui.item.label + ' [' + ui.item.idno + ']|' + ui.item.url);
+     							}
+     						}
+						).click(function() { this.select(); });
 						
 						if ('{{".$pa_element_info['element_id']."}}') {
 							var re = /\[info:lc([^\]]+)\]/; 
-							var r = re.exec('{".$pa_element_info['element_id']."}');
+							var r = re.exec('{{".$pa_element_info['element_id']."}}');
 							var lcsh_id = (r) ? r[1] : null;
 							
 							if (!lcsh_id) {
 								re = /\[sh([^\]]+)\]/; 
-								var r = re.exec('{".$pa_element_info['element_id']."}');
+								var r = re.exec('{{".$pa_element_info['element_id']."}}');
 								var lcsh_id = (r) ? '/authorities/subjects/sh' + r[1] : null;
 							}
 							

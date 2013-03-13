@@ -418,7 +418,6 @@
 				$vb_we_set_transaction = true;
 			}
 			$vb_web_set_change_log_unit_id = BaseModel::setChangeLogUnitID();
-			
 			if (!is_array($pa_options)) { $pa_options = array(); }
 			$pa_options['dont_do_search_indexing'] = true;
 			
@@ -448,7 +447,7 @@
 				// set the field values array for this instance
 				$this->setFieldValuesArray($va_field_values_with_updated_attributes);
 				
-				$this->doSearchIndexing($va_fields_changed_array);
+				$this->doSearchIndexing($va_fields_changed_array, true);
 				
 				
 				if ($vb_web_set_change_log_unit_id) { BaseModel::unsetChangeLogUnitID(); }
@@ -1045,6 +1044,8 @@
 			if (!is_array($pa_options)) { $pa_options = array(); }
 			if (!is_array($pa_bundle_settings)) { $pa_bundle_settings = array(); }
 			
+			$vb_batch = (isset($pa_options['batch']) && $pa_options['batch']) ? true : false;
+			
 			if (!($t_element = $this->_getElementInstance($pm_element_code_or_id))) {
 				return false;
 			}
@@ -1146,9 +1147,10 @@
 			$o_view->setVar('render_mode', $t_element->getSetting('render'));	// only set for list attributes (as of 26 Sept 2010 at least)
 			
 			if ($t_restriction = $this->getTypeRestrictionInstance($t_element->get('element_id'))) {
-				$o_view->setVar('min_num_repeats', $t_restriction->getSetting('minAttributesPerRow'));
-				$o_view->setVar('max_num_repeats', $t_restriction->getSetting('maxAttributesPerRow'));
-				$o_view->setVar('min_num_to_display', $t_restriction->getSetting('minimumAttributeBundlesToDisplay'));
+				// If batch mode force minimums to zero
+				$o_view->setVar('max_num_repeats', $vb_batch  ? 9999 : $t_restriction->getSetting('maxAttributesPerRow'));
+				$o_view->setVar('min_num_repeats', $vb_batch ? 0 : $t_restriction->getSetting('minAttributesPerRow'));
+				$o_view->setVar('min_num_to_display', $vb_batch ? 1 : $t_restriction->getSetting('minimumAttributeBundlesToDisplay'));
 			}
 			
 			// these are lists of associative arrays representing attributes that were rejected in a save() action
@@ -1165,6 +1167,9 @@
 			
 			// pass bundle settings to view
 			$o_view->setVar('settings', $pa_bundle_settings);
+			
+			// Is this being used in the batch editor?
+			$o_view->setVar('batch', (bool)(isset($pa_options['batch']) && $pa_options['batch']));
 			
 			return $o_view->render('ca_attributes.php');
 		}
@@ -1650,7 +1655,7 @@
  				$va_ancestors = array();
  				if ($t_type_instance = $this->getTypeInstance()) {
  					$va_ancestors = $t_type_instance->getHierarchyAncestors(null, array('idsOnly' => true, 'includeSelf' => true));
- 					array_pop($va_ancestors); // remove hierarchy root
+ 					if (is_array($va_ancestors)) { array_pop($va_ancestors); } // remove hierarchy root
  				}
  				
  				if (sizeof($va_ancestors) > 1) {
@@ -1695,6 +1700,20 @@
 				}
  			}
  			BaseModelWithAttributes::$s_applicable_element_code_cache[$this->tableNum().'/'.$pn_type_id.'/'.($pb_include_sub_element_codes ? 1 : 0)] = $va_codes;
+ 			return $va_codes;
+ 		}
+ 		# ------------------------------------------------------------------
+		/**
+		 *
+		 */
+ 		public function getApplicableElementCodesForTypes($pa_type_ids, $pb_include_sub_element_codes=false, $pb_dont_cache=true) {
+ 			$va_codes = array();
+ 			foreach($pa_type_ids as $vn_i => $vn_type_id) {
+ 				$va_tmp = $this->getApplicableElementCodes($vn_type_id, $pb_include_sub_element_codes, $pb_dont_cache);
+ 				foreach($va_tmp as $vn_element_id => $vs_element_code) {
+ 					$va_codes[$vn_element_id] = $vs_element_code;
+ 				}
+ 			}
  			return $va_codes;
  		}
 		# ------------------------------------------------------------------

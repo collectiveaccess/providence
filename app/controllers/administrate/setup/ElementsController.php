@@ -43,7 +43,7 @@ class ElementsController extends BaseEditorController {
 		parent::__construct($po_request, $po_response, $pa_view_paths);
 	}
 	# -------------------------------------------------------
-	public function ListElements() {
+	public function Index() {
 		JavascriptLoadManager::register('tableList');
 	
 		$vo_dm = Datamodel::load();
@@ -76,16 +76,19 @@ class ElementsController extends BaseEditorController {
 			/* BaseModel::getHierarchyChildren orders by PK, but we need to order by rank */
 			$vo_db = new Db();
 			$qr_result = $vo_db->query("
-				SELECT * 
+				SELECT cmel.*, cme.* 
 				FROM ca_metadata_elements cme
-				INNER JOIN ca_metadata_element_labels AS cmel ON cme.element_id = cmel.element_id
+				LEFT JOIN ca_metadata_element_labels AS cmel ON cme.element_id = cmel.element_id
 				WHERE
 					cme.parent_id = ?
 				ORDER BY
 					cme.rank
 			",(int)$t_element->get('element_id'));
+			
 			while($qr_result->nextRow()){
-				$va_sub_elements[$qr_result->get('element_id')][$qr_result->get('locale_id')] = $qr_result->getRow();
+				$va_row = $qr_result->getRow();
+				if (!$va_row['name']) { $va_row['name'] = $va_row['element_code']; }
+				$va_sub_elements[$qr_result->get('element_id')][$qr_result->get('locale_id')] = $va_row;
 			}
 			$va_sub_elements = caExtractValuesByUserLocale($va_sub_elements);
 			$this->view->setVar('sub_elements',$va_sub_elements);
