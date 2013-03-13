@@ -659,6 +659,14 @@ class ca_data_exporters extends BundlableLabelableBaseModelWithAttributes {
 					continue;
 				}
 
+				// look for replacements
+				foreach($va_mapping as $vs_k => &$va_v){
+					if(preg_match("!/".$vs_mapping_num."$!",$vs_k)){
+						$va_v['options']['original_values'][] = $vs_search;
+						$va_v['options']['replacement_values'][] = $vs_replace;
+					}
+				}
+
 				$va_mapping[$vs_mapping_num]['options']['original_values'][] = $vs_search;
 				$va_mapping[$vs_mapping_num]['options']['replacement_values'][] = $vs_replace;
 
