@@ -1153,7 +1153,7 @@ class ca_data_exporters extends BundlableLabelableBaseModelWithAttributes {
 		}
 
 		if($vs_template = $t_exporter_item->getSetting('template')){
-			$va_get_options['template'] = $vs_template;	
+			$va_get_options['template'] = $vs_template;
 		}
 
 		if($vs_locale = $t_exporter_item->getSetting('locale')){
@@ -1191,7 +1191,7 @@ class ca_data_exporters extends BundlableLabelableBaseModelWithAttributes {
 			// -> run them through processor anyways
 			$va_item_info[] = array(
 				'element' => $vs_element,
-				'text' => caProcessTemplateForIDs($vs_template, $pn_table_num, array($pn_record_id), $va_get_options),
+				'text' => caProcessTemplateForIDs($vs_template, $pn_table_num, array($pn_record_id), array()),
 			);
 		} else { // no source, no template -> probably wrapper
 			$va_item_info[] = array(
