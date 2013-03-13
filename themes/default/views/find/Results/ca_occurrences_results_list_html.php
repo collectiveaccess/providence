@@ -43,6 +43,10 @@
 			<th style="width:10px; text-align:center;" class='list-header-nosort'>
 				<input type='checkbox' name='record' value='' id='addItemToSetSelectAllControl' class='addItemToSetControl' onchange="jQuery('.addItemToSetControl').attr('checked', jQuery('#addItemToSetSelectAllControl').attr('checked'));"/>
 			</th>
+			<th class='list-header-nosort'>
+				<?php print ($vs_default_action	== "Edit" ? _t("Edit") : _t("View")); ?>
+			</th>
+			
 	<?php
 			// output headers
 			$vn_id_count = 0;
@@ -62,9 +66,6 @@
 				$vn_id_count++;
 			}
 	?>
-			<th class='list-header-nosort'>
-				<?php print ($vs_default_action	== "Edit" ? _t("Edit") : _t("View")); ?>
-			</th>
 			</tr></thead><tbody>
 	<?php
 			$i = 0;
@@ -87,10 +88,10 @@
 						<input type='checkbox' name='add_to_set_ids' value='<?php print (int)$vn_occurrence_id; ?>' class="addItemToSetControl" />
 					</td>
 	<?php
+					print "<td style='width:5%;'>".caNavLink($this->request, caNavIcon($this->request, __CA_NAV_BUTTON_EDIT__), '', 'editor/occurrences', 'OccurrenceEditor', $vs_action, array('occurrence_id' => $vn_occurrence_id))."</td>";
 					foreach($va_display_list as $vn_placement_id => $va_display_item) {
 						print "<td>".$t_display->getDisplayValue($vo_result, $vn_placement_id, array('request' => $this->request))."</td>";
 					}
-					print "<td style='width:5%;'>".caNavLink($this->request, caNavIcon($this->request, __CA_NAV_BUTTON_EDIT__), '', 'editor/occurrences', 'OccurrenceEditor', $vs_action, array('occurrence_id' => $vn_occurrence_id))."</td>";
 	?>	
 				</tr>
 	<?php
