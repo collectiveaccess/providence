@@ -1166,6 +1166,13 @@ class ca_data_exporters extends BundlableLabelableBaseModelWithAttributes {
 		}
 
 		if($vs_locale = $t_exporter_item->getSetting('locale')){
+			// the global UI locale for some reason has a higher priority
+			// than the locale setting in BaseModelWithAttributes::get
+			// which is why we unset it here and restore it later
+			global $g_ui_locale;
+			$vs_old_ui_locale = $g_ui_locale;
+			$g_ui_locale = null;
+
 			$va_get_options['locale'] = $vs_locale;
 		}
 
@@ -1206,6 +1213,11 @@ class ca_data_exporters extends BundlableLabelableBaseModelWithAttributes {
 			$va_item_info[] = array(
 				'element' => $vs_element,
 			);
+		}
+
+		// reset UI locale if we unset it
+		if($vs_locale){
+			$g_ui_locale = $vs_old_ui_locale;
 		}
 
 		// handle settings and plugin hooks
