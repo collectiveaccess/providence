@@ -156,7 +156,7 @@
  		# ------------------------------------------------------------------
  		public function parseValue($ps_value, $pa_element_info) {
  			global $g_ui_locale;
- 			$ps_value = trim($ps_value);
+ 			$ps_value = caConvertFractionalNumberToDecimal(trim($ps_value), $g_ui_locale);
  			
  			$va_settings = $this->getSettingValuesFromElementArray($pa_element_info, array('requireValue'));
  			if (!$va_settings['requireValue'] && !$ps_value) {
@@ -181,7 +181,7 @@
  					
  					$vs_value  = 0;
  					foreach($va_values as $vs_v) {
-						$vs_value += caConvertFractionalNumberToDecimal(trim($vs_v));
+ 						$vs_value += caConvertLocaleSpecificFloat(trim($vs_v), $g_ui_locale);
 					}
 					
 					switch($vs_unit_expression) {
