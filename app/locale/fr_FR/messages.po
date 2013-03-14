@@ -3,7 +3,7 @@ msgstr ""
 "Project-Id-Version: CollectiveAccess\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2013-02-12 21:22+0100\n"
-"PO-Revision-Date: 2013-03-13 15:27+0100\n"
+"PO-Revision-Date: 2013-03-13 18:00+0100\n"
 "Last-Translator: Gautier MICHELIN <gm@ideesculture.com>\n"
 "Language-Team: francais <ideesculture@gmail.com>\n"
 "Language: fr_FR\n"
@@ -4214,7 +4214,7 @@ msgstr "%1 n'est pas une unité de mesure valide"
 #: app/lib/ca/Attributes/Values/WeightAttributeValue.php:230
 #: app/lib/ca/Attributes/Values/WeightAttributeValue.php:237
 msgid "%1 is not a valid measurement"
-msgstr "%1 n'est pas une mesure valide"
+msgstr "%1 ne contient pas une mesure valide"
 
 #: app/lib/ca/Attributes/Values/LengthAttributeValue.php:260
 #: app/lib/ca/Attributes/Values/WeightAttributeValue.php:243
