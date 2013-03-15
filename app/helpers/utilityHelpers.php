@@ -789,6 +789,7 @@ function caFileIsIncludable($ps_file) {
 	 * @return float The converted value
 	 */
 	function caConvertLocaleSpecificFloat($ps_value, $locale = "en_US") {
+		if (!function_exists("NumberFormatter")) { return $ps_value; }
 		$fmt = new NumberFormatter($locale, NumberFormatter::DECIMAL );
 		return (float)$fmt->parse($ps_value);
 	}
@@ -802,6 +803,7 @@ function caFileIsIncludable($ps_file) {
 	 * @return float The converted value
 	 */
 	function caConvertFloatToLocale($ps_value, $locale = "en_US") {
+		if (!function_exists("NumberFormatter")) { return $ps_value; }
 		$fmt = new NumberFormatter($locale, NumberFormatter::DECIMAL );
 		return $fmt->format($ps_value);
 	}
@@ -814,6 +816,7 @@ function caFileIsIncludable($ps_file) {
 	 * @return float The converted value
 	 */
 	function caGetDecimalSeparator($locale = "en_US") {
+		if (!function_exists("NumberFormatter")) { return $ps_value; }
 		if ($locale != "en_US") {
 			$fmt = new NumberFormatter($locale, NumberFormatter::DECIMAL );
 			return $fmt->getSymbol(NumberFormatter::DECIMAL_SEPARATOR_SYMBOL);
