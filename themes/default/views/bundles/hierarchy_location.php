@@ -173,12 +173,15 @@
 			
 			$va_path = array();
 			$va_object_collection_collection_ancestors = $this->getVar('object_collection_collection_ancestors');
+			$vb_do_objects_x_collections_hierarchy = false;
 			if ($vb_objects_x_collections_hierarchy_enabled && is_array($va_object_collection_collection_ancestors)) {
 				$pa_ancestors = $va_object_collection_collection_ancestors + $pa_ancestors;
+				$vb_do_objects_x_collections_hierarchy = true;
 			}
 			
 			if (is_array($pa_ancestors) && sizeof($pa_ancestors) > 0) {
 				foreach($pa_ancestors as $vn_id => $va_item) {
+					$vs_item_id = $vb_do_objects_x_collections_hierarchy ? ($va_item['table'].'-'.$va_item['item_id']) : $va_item['item_id'];
 					if($vn_id === '') {
 						$va_path[] = "<a href='#'>"._t('New %1', $t_subject->getTypeName())."</a>";
 					} else {
@@ -186,7 +189,7 @@
 						if (($va_item['table'] != $t_subject->tableName()) || ($va_item['item_id'] && ($va_item['item_id'] != $pn_id))) {
 							$va_path[] = '<a href="'.caEditorUrl($this->request, $va_item['table'], $va_item['item_id']).'">'.$vs_label.'</a>';
 						} else {
-							$va_path[] = "<a href='#' onclick='jQuery(\"#".$ps_id_prefix."HierarchyBrowserContainer\").slideDown(250); o".$ps_id_prefix."HierarchyBrowser.setUpHierarchy(".intval($va_item['item_id'])."); return false;'>".$vs_label."</a>";
+							$va_path[] = "<a href='#' onclick='jQuery(\"#{$ps_id_prefix}HierarchyBrowserContainer\").slideDown(250); o{$ps_id_prefix}ExploreHierarchyBrowser.setUpHierarchy(\"{$vs_item_id}\"); return false;'>{$vs_label}</a>";
 						}
 					}
 				}
@@ -345,9 +348,10 @@
 	}
 ?>
 
-		jQuery("#<?php print $ps_id_prefix; ?>browseToggle").click(function() {
+		jQuery("#<?php print $ps_id_prefix; ?>browseToggle").click(function(e, opts) {
 			_init<?php print $ps_id_prefix; ?>ExploreHierarchyBrowser();
-			jQuery("#<?php print $ps_id_prefix; ?>HierarchyBrowserContainer").slideToggle(350, function() { 
+			var delay = (opts && opts.delay && (parseInt(opts.delay) >= 0)) ? opts.delay :  250;
+			jQuery("#<?php print $ps_id_prefix; ?>HierarchyBrowserContainer").slideToggle(delay, function() { 
 				jQuery("#<?php print $ps_id_prefix; ?>browseToggle").html((this.style.display == 'block') ? '<?php print '<span class="form-button">'._t('Close browser').'</span>';?>' : '<?php print '<span class="form-button">'._t('Show Hierarchy').'</span>';?>');
 			}); 
 			return false;
@@ -534,7 +538,7 @@
 <?php
 	if (isset($pa_bundle_settings['open_hierarchy']) && (bool)$pa_bundle_settings['open_hierarchy']) {
 ?>
-		jQuery("#<?php print $ps_id_prefix; ?>browseToggle").trigger("click");
+		jQuery("#<?php print $ps_id_prefix; ?>browseToggle").trigger("click", { "delay" : 0 });
 <?php
 	}
 ?>

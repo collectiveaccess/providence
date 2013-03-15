@@ -126,8 +126,6 @@
 				
 				// do search
 				$va_opts = array('exclude' => $va_excludes, 'limit' => $pn_limit);
-				$va_opts['emptyResultQuery'] = $ps_query;
-				$va_opts['emptyResultMessage'] = _t('No matches found for <em>%1</em>', $ps_query);
 				
 				if ($vs_hier_fld && ($vn_restrict_to_hier_id = $this->request->getParameter('currentHierarchyOnly', pInteger))) {
 					$o_object_search->addResultFilter('ca_objects.hier_object_id', '=', (int)$vn_restrict_to_hier_id);
@@ -137,30 +135,36 @@
 				$qr_res->setOption('prefetch', $pn_limit);
 				$qr_res->setOption('dontPrefetchAttributes', true);
 				
-				$va_objects = caProcessRelationshipLookupLabel($qr_res, new ca_objects(), $va_opts);
-				foreach($va_objects as $vn_object_id => $va_object) {
-					$va_objects[$vn_object_id]['id'] = 'ca_objects-'.$va_objects[$vn_object_id]['id'];
+				if (is_array($va_objects = caProcessRelationshipLookupLabel($qr_res, new ca_objects(), $va_opts))) {
+					foreach($va_objects as $vn_object_id => $va_object) {
+						$va_objects[$vn_object_id]['id'] = 'ca_objects-'.$va_objects[$vn_object_id]['id'];
+					}
 				}
 				
-				if ($vs_hier_fld && ($vn_restrict_to_hier_id = $this->request->getParameter('currentHierarchyOnly', pInteger))) {
+				//if ($vs_hier_fld && ($vn_restrict_to_hier_id = $this->request->getParameter('currentHierarchyOnly', pInteger))) {
 					//$o_collection_search->addResultFilter('ca_collections.hier_collection_id', '=', (int)$vn_restrict_to_hier_id);
 					
 					// How to restrict objects?
-				}
+				//}
 				$qr_res = $o_collection_search->search('('.$ps_query.(intval($pb_exact) ? '' : '*').')'.$vs_type_query.$vs_additional_query_params, array('search_source' => 'Lookup', 'no_cache' => false, 'sort' => 'ca_collections.idno_sort'));
 	
 				$qr_res->setOption('prefetch', $pn_limit);
 				$qr_res->setOption('dontPrefetchAttributes', true);
 				
-				$va_collections = caProcessRelationshipLookupLabel($qr_res, new ca_collections(), $va_opts);
-				foreach($va_collections as $vn_collection_id => $va_collection) {
-					$va_collections[$vn_collection_id]['id'] = 'ca_collections-'.$va_collections[$vn_collection_id]['id'];
+				if (is_array($va_collections = caProcessRelationshipLookupLabel($qr_res, new ca_collections(), $va_opts))) {
+					foreach($va_collections as $vn_collection_id => $va_collection) {
+						$va_collections[$vn_collection_id]['id'] = 'ca_collections-'.$va_collections[$vn_collection_id]['id'];
+					}
 				}
 			}
 			if (!is_array($va_objects)) { $va_objects = array(); }
-			$this->view->setVar('object_list', $va_objects);
-			
 			if (!is_array($va_collections)) { $va_collections = array(); }
+			
+			if (!sizeof($va_objects) && !sizeof($va_collections)) {
+				$va_objects[-1] = _t('No matches found for <em>%1</em>', $ps_query);
+			}
+			
+			$this->view->setVar('object_list', $va_objects);
 			$this->view->setVar('collection_list', $va_collections);
  			return $this->render(str_replace(' ', '_', 'ajax_object_collection_list_html.php'));
 		}
@@ -319,7 +323,7 @@
 								'item_id' => $vs_table.'-'.$vn_id,
 								'parent_id' => $qr_children->get($vs_table.'.parent_id'),
 								'idno' => $qr_children->get($vs_table.'.idno'),
-								$vs_label_display_field_name => $qr_children->get($vs_table.'.preferred_labels.'.$vs_label_display_field_name),
+								//$vs_label_display_field_name => $qr_children->get($vs_table.'.preferred_labels.'.$vs_label_display_field_name),
 								'locale_id' => $qr_children->get($vs_table.'.'.'locale_id')
 							);
 							if (!$va_tmp[$vs_label_display_field_name]) { $va_tmp[$vs_label_display_field_name] = $va_tmp['idno']; }
@@ -349,8 +353,9 @@
 						$va_ids = array();
 						foreach($va_cross_table_items as $vn_x_item_id => $va_x_item) {
 							$va_items[$vn_x_item_id][$va_x_item['locale_id']] = $va_x_item;
-							$va_x_item_extracted = caExtractValuesByUserLocale(array(0 => $va_x_item['labels']));
-							$va_items[$va_x_item['object_id']][$va_x_item['locale_id']]['name'] = $va_x_item_extracted[0];
+							//$va_x_item_extracted = caExtractValuesByUserLocale(array(0 => $va_x_item['labels']));
+							//$va_items[$va_x_item['object_id']][$va_x_item['locale_id']]['name'] = $va_x_item_extracted[0];
+							
 							$va_items[$va_x_item['object_id']][$va_x_item['locale_id']]['item_id'] = 'ca_objects-'.$va_x_item['object_id'];
 							$va_items[$va_x_item['object_id']][$va_x_item['locale_id']]['parent_id'] = $vn_id;
 							
@@ -361,11 +366,18 @@
 							$va_ids[] = $va_x_item['object_id'];
 						}
 						
+						if (!($vs_item_template = trim($o_config->get("ca_objects_hierarchy_browser_display_settings")))) {
+							$vs_item_template = "^ca_objects.preferred_labels.name";
+						}
 						if(sizeof($va_ids)) {
 							$va_child_counts = $t_object->getHierarchyChildCountsForIDs($va_ids);
-						
+							$va_templates = caProcessTemplateForIDs($vs_item_template, 'ca_objects', $va_ids, array('returnAsArray' => true));
+						//print_R($va_templates);
 							foreach($va_child_counts as $vn_id => $vn_c) {
 								$va_items[$vn_id][$va_x_item['locale_id']]['children'] = $vn_c;
+							}
+							foreach($va_ids as $vn_i => $vn_id) {
+								$va_items[$vn_id][$va_x_item['locale_id']]['name'] = $va_templates[$vn_i];
 							}
 						}
 						
