@@ -1768,7 +1768,7 @@ require_once(__CA_LIB_DIR__."/ca/ApplicationPluginManager.php");
 				}
 				
 				if (!isset($va_relationship_values[$vs_pk_val])) { $va_relationship_values[$vs_pk_val] = array(0 => null); }
-				
+
 				foreach($va_relationship_values[$vs_pk_val] as $vn_relation_id => $va_relationship_value_array) {
 					if (isset($va_relationship_value_array[$vs_tag]) && !(isset($pa_options['showHierarchicalLabels']) && $pa_options['showHierarchicalLabels'] && ($vs_tag == 'label'))) {
 						$vs_val = $va_relationship_value_array[$vs_tag];
@@ -1787,7 +1787,7 @@ require_once(__CA_LIB_DIR__."/ca/ApplicationPluginManager.php");
 								} else {
 									$vs_get_spec = $vs_tag;
 								}
-								$vs_val = $qr_res->get($vs_get_spec, $pa_options);
+								$va_val = $qr_res->get($vs_get_spec, array_merge($pa_options, array('returnAsArray' => true)));
 							} else {
 								if ($va_tmp[0] == $ps_tablename) { array_shift($va_tmp); }	// get rid of primary table if it's in the field spec
 							
@@ -1802,14 +1802,15 @@ require_once(__CA_LIB_DIR__."/ca/ApplicationPluginManager.php");
 								}
 								
 								$vs_get_spec = "{$ps_tablename}.".join(".", $va_tmp);
-								$vs_val = $qr_res->get($vs_get_spec, $pa_options);
+								$va_val = $qr_res->get($vs_get_spec, array_merge($pa_options, array('returnAsArray' => true)));
 							}
 						}
 					}
-						
-					$va_tag_val_list[$vn_i][$vs_tag] = $vs_val;
-					if (strlen($vs_val) > 0) {
-						$va_defined_tag_list[$vn_i][$vs_tag] = true;
+					foreach($va_val as $vn_j => $vs_val) {
+						$va_tag_val_list[$vn_i][$vn_j][$vs_tag] = $vs_val;
+						if (strlen($vs_val) > 0) {
+							$va_defined_tag_list[$vn_i][$vs_tag] = true;
+						}
 					}
 				}
 			}
@@ -1818,6 +1819,12 @@ require_once(__CA_LIB_DIR__."/ca/ApplicationPluginManager.php");
 		}
 
 		foreach($va_tag_val_list as $vn_i => $va_tag_vals) {
+			foreach($va_tag_vals as $vn_j => $va_tags) {
+				foreach($va_tags as $vs_t => $vs_v) {
+					$va_tag_list[$vs_t] = true;
+				}
+			}
+		
 			// Process <ifdef> (IF DEFined)
 			foreach($va_ifdefs as $vs_code => $va_def_con) { 
 				if (strpos($vs_code, "|") !== false) {
@@ -1832,11 +1839,11 @@ require_once(__CA_LIB_DIR__."/ca/ApplicationPluginManager.php");
 				foreach($va_tag_list as $vs_tag_to_test) {
 					switch($vs_bool) {
 						case 'OR':
-							if (isset($va_tag_vals[$vs_tag_to_test]) && strlen($va_tag_vals[$vs_tag_to_test])) { $vb_output = true; break(2); }			// any must be defined; if any is defined output
+							if (isset($va_tag_list[$vs_tag_to_test]) && strlen($va_tag_list[$vs_tag_to_test])) { $vb_output = true; break(2); }			// any must be defined; if any is defined output
 							break;
 						case 'AND':
 						default:
-							if (!isset($va_tag_vals[$vs_tag_to_test]) || !strlen($va_tag_vals[$vs_tag_to_test])) { $vb_output = false; break(2); }		// all must be defined; if any is not defined don't output
+							if (!isset($va_tag_list[$vs_tag_to_test]) || !strlen($va_tag_list[$vs_tag_to_test])) { $vb_output = false; break(2); }		// all must be defined; if any is not defined don't output
 							break;
 					}
 				}
@@ -1865,11 +1872,11 @@ require_once(__CA_LIB_DIR__."/ca/ApplicationPluginManager.php");
 				foreach($va_tag_list as $vs_tag_to_test) {
 					switch($vs_bool) {
 						case 'OR':
-							if (!isset($va_tag_vals[$vs_tag_to_test]) || !strlen($va_tag_vals[$vs_tag_to_test])) { $vb_output = true; break(2); }		// any must be not defined; if anything is not set output
+							if (!isset($va_tag_list[$vs_tag_to_test]) || !strlen($va_tag_list[$vs_tag_to_test])) { $vb_output = true; break(2); }		// any must be not defined; if anything is not set output
 							break;
 						case 'AND':
 						default:
-							if (isset($va_tag_vals[$vs_tag_to_test]) && strlen($va_tag_vals[$vs_tag_to_test])) { $vb_output = false; break(2); }	// all must be not defined; if anything is set don't output
+							if (isset($va_tag_list[$vs_tag_to_test]) && strlen($va_tag_list[$vs_tag_to_test])) { $vb_output = false; break(2); }	// all must be not defined; if anything is set don't output
 							break;
 					}
 					
@@ -1948,10 +1955,15 @@ require_once(__CA_LIB_DIR__."/ca/ApplicationPluginManager.php");
 				}
 			} 
 			
-			
-			foreach($va_tag_vals as $vs_tag => $vs_val) {
-				$va_proc_templates[$vn_i] = str_replace('^'.$vs_tag, $vs_val, $va_proc_templates[$vn_i]);
+			$va_pt_vals = array();
+			foreach($va_tag_vals as $x => $va_values_by_tag) {
+				$vs_pt = $va_proc_templates[$vn_i];
+				foreach($va_values_by_tag as $vs_tag => $vs_val) {
+					$vs_pt = str_replace('^'.$vs_tag, $vs_val, $vs_pt);
+				}
+				$va_pt_vals[] = $vs_pt;
 			}
+			$va_proc_templates[$vn_i] = join($vs_delimiter, $va_pt_vals);
 		}
 		
 		if ($vb_return_as_array) {
