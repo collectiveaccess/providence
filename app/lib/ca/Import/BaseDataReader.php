@@ -33,6 +33,13 @@
 /**
  *
  */
+ 
+ 
+/**
+ * Input type constants. Returned by inputType() to indicate what sort of input this reader takes (eg. File or URL)
+ */ 
+define("__CA_DATA_READER_INPUT_FILE__", 0);
+define("__CA_DATA_READER_INPUT_URL__", 1);
 
 abstract class BaseDataReader {
 	# -------------------------------------------------------
@@ -42,9 +49,14 @@ abstract class BaseDataReader {
 	protected $ops_source;
 	
 	/**
-	 * Display name for data reader
+	 * Display title for data reader
 	 */
 	protected $ops_title = '???';
+	
+	/**
+	 * Display name for formats reader handles (used in drop-downs)
+	 */
+	protected $ops_display_name = '???';
 	
 	/**
 	 * Description of data reader
@@ -72,7 +84,7 @@ abstract class BaseDataReader {
 	 * @param array $pa_options
 	 * @return bool
 	 */
-	abstract function read($ps_source, $pa_options);
+	abstract function read($ps_source, $pa_options=null);
 	# -------------------------------------------------------
 	/**
 	 * 
@@ -115,6 +127,15 @@ abstract class BaseDataReader {
 	 * 
 	 * @return string
 	 */
+	public function getDisplayName() {
+		return $this->ops_display_name;
+	}
+	# -------------------------------------------------------
+	/**
+	 * 
+	 * 
+	 * @return string
+	 */
 	public function getDescription() {
 		return $this->ops_description;
 	}
@@ -134,7 +155,7 @@ abstract class BaseDataReader {
 	 * @return bool
 	 */
 	public function canReadFormat($ps_format) {
-		return in_array($ps_format, $this->opa_formats);
+		return in_array(strtolower($ps_format), $this->opa_formats);	// lowercase $ps_format for case-insensitive matching (format list is already all lower-case)
 	}
 	# -------------------------------------------------------
 	/**
@@ -149,5 +170,14 @@ abstract class BaseDataReader {
 			'available' => true,
 		);
 	}
+	# -------------------------------------------------------
+	/**
+	 * Indicates whether the reader takes a file or URL as input. The 
+	 * __CA_DATA_READER_INPUT_FILE__ constant is returned if file input is required, 
+	 * __CA_DATA_READER_INPUT_URL__ if a URL is required
+	 * 
+	 * @return int
+	 */
+	abstract function getInputType();
 	# -------------------------------------------------------
 }

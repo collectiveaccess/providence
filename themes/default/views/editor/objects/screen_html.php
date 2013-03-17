@@ -58,10 +58,11 @@
 			if ($vb_can_edit) { print $vs_control_box; }
 ?>
 			<input type='hidden' name='object_id' value='<?php print $vn_object_id; ?>'/>
+			<input type='hidden' name='collection_id' value='<?php print $this->request->getParameter('collection_id', pInteger); ?>'/>
 			<input type='hidden' name='above_id' value='<?php print $vn_above_id; ?>'/>
 		</form>
 	</div>
 
 	<div class="editorBottomPadding"><!-- empty --></div>
 	
-	<?php print caEditorFieldList($va_bundle_list); ?>
+	<?php print caSetupEditorScreenOverlays($this->request, $t_object, $va_bundle_list); ?>

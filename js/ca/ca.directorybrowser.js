@@ -63,6 +63,13 @@ var caUI = caUI || {};
 			
 			displayCurrentSelectionOnLoad: true,
 			
+			allowDragAndDropUpload: true,
+			dragAndDropUploadUrl: null,
+			uploadProgressID: null,
+			uploadProgressBarID: null,
+			uploadProgressStatusID: null,
+			uploadProgressMessage: "%1",
+			
 			indicatorUrl: '',
 			openDirectoryIcon: '',
 			folderIcon: '',
@@ -177,6 +184,58 @@ var caUI = caUI || {};
 			that.queueHierarchyLevelDataLoad(level, item_id, is_init, newLevelDivID, newLevelListID, selected_item_id, 0, fetchData);
 			
 			that.levelLists[level] = newLevelDivID;
+			
+			var cpath = that.selectedItemIDs.slice(0,level);
+			
+			if (that.allowDragAndDropUpload && that.dragAndDropUploadUrl) {
+				jQuery('#' + newLevelDivID).fileupload({
+					dataType: 'json',
+					url: that.dragAndDropUploadUrl + "?path=" + encodeURIComponent("/" + cpath.join("/")),
+					dropZone: jQuery('#' + newLevelDivID),
+					singleFileUploads: false,
+					done: function (e, data) {
+						if (data.result.error) {
+							if (that.uploadProgressStatusID) {
+								jQuery("#" + that.uploadProgressID).show(250);
+								jQuery("#" + that.uploadProgressStatusID).html(data.result.error);
+								setTimeout(function() {
+									jQuery("#" + that.uploadProgressID).hide(250);
+								}, 3000);
+							}
+						} else {
+							var msg = [];
+							
+							if (data.result.uploadMessage) {
+								msg.push(data.result.uploadMessage);
+							}
+							if (data.result.skippedMessage) {
+								msg.push(data.result.skippedMessage);
+							}
+							jQuery("#" + that.uploadProgressStatusID).html(msg.join('; '));
+							setTimeout(function() {
+									jQuery("#" + that.uploadProgressID).hide(250);
+								}, 3000);
+							that.setUpHierarchyLevel(level, item_id, is_init, selected_item_id, true);	// reload file list
+						}
+					},
+					progressall: function (e, data) {
+						if (that.uploadProgressID) {
+							if (jQuery("#" + that.uploadProgressID).css('display') == 'none') {
+								jQuery("#" + that.uploadProgressID).show(250);
+							}
+							var progress = parseInt(data.loaded / data.total * 100, 10);
+							if (that.uploadProgressBarID) {
+								jQuery('#' + that.uploadProgressBarID).progressbar("value", progress);
+							}
+							if (that.uploadProgressStatusID) {
+								var msg = that.uploadProgressMessage;
+								jQuery("#" + that.uploadProgressStatusID).html(msg.replace("%1", that.formatFilesize(data.loaded) + " (" + progress + "%)"));
+							}
+						}
+					}
+				});
+			}
+			
 			return newLevelDiv;
 		}
 		// --------------------------------------------------------------------------------
@@ -251,9 +310,7 @@ var caUI = caUI || {};
 					jQuery.each(data, function(i, item) {
 						if (!item) { return; }
 						if (item['item_id']) {
-							//if ((is_init) && (level == 0) && (!that.selectedItemIDs[0])) {
-								//that.selectItem(level, item['item_id'], null, item[that.hasChildrenIndicator], item);
-							//}
+							
 							if (that.selectedItemIDs[level] == item['item_id']) {
 								foundSelected = true;
 								if (level >= (that.selectedItemIDs.length - 1)) {
@@ -317,7 +374,7 @@ var caUI = caUI || {};
 							
 							if (item.type == 'DIR') {
 								// open directory navigation
-								if (!that.readOnly && (item.children > 0)) {
+								if (!that.readOnly) { // && (item.children > 0)) {
 									jQuery('#' + newLevelListID + " li:last a:first").click(function() { 								
 										var l = jQuery(this).parent().parent().parent().parent().data('level');
 										var item_id = jQuery(this).data('item_id');
@@ -473,6 +530,46 @@ var caUI = caUI || {};
 			indicator.style.left = '50%';
 			indicator.style.top = '50%';
 			jQuery('#' + newLevelDivID).append(indicator);
+		}
+		// --------------------------------------------------------------------------------
+		// Convert file size in bytes to display format 
+		//
+		// @param string The file size in bytes
+		//
+		that.formatFilesize = function(filesize) {
+			if (filesize >= 1073741824) {
+				filesize = that.formatNumber(filesize / 1073741824, 2, '.', '') + ' Gb';
+			} else { 
+				if (filesize >= 1048576) {
+					filesize = that.formatNumber(filesize / 1048576, 2, '.', '') + ' Mb';
+				} else { 
+					if (filesize >= 1024) {
+						filesize = that.formatNumber(filesize / 1024, 0) + ' Kb';
+					} else {
+						filesize = that.formatNumber(filesize, 0) + ' bytes';
+					};
+				};
+			};
+			return filesize;
+		};
+		
+		that.formatNumber = function formatNumber( number, decimals, dec_point, thousands_sep ) {
+			// http://kevin.vanzonneveld.net
+			// +   original by: Jonas Raoni Soares Silva (http://www.jsfromhell.com)
+			// +   improved by: Kevin van Zonneveld (http://kevin.vanzonneveld.net)
+			// +     bugfix by: Michael White (http://crestidg.com)
+			// +     bugfix by: Benjamin Lupton
+			// +     bugfix by: Allan Jensen (http://www.winternet.no)
+			// +    revised by: Jonas Raoni Soares Silva (http://www.jsfromhell.com)    
+			// *     example 1: number_format(1234.5678, 2, '.', '');
+			// *     returns 1: 1234.57     
+ 
+			var n = number, c = isNaN(decimals = Math.abs(decimals)) ? 2 : decimals;
+			var d = dec_point == undefined ? "," : dec_point;
+			var t = thousands_sep == undefined ? "." : thousands_sep, s = n < 0 ? "-" : "";
+			var i = parseInt(n = Math.abs(+n || 0).toFixed(c)) + "", j = (j = i.length) > 3 ? j % 3 : 0;
+ 
+			return s + (j ? i.substr(0, j) + t : "") + i.substr(j).replace(/(\d{3})(?=\d)/g, "$1" + t) + (c ? d + Math.abs(n - i).toFixed(c).slice(2) : "");
 		}
 		// --------------------------------------------------------------------------------
 		// Remove spinning progress indicator from specified level <div> 

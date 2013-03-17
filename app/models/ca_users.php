@@ -2443,7 +2443,7 @@ class ca_users extends BaseModel {
 			return $this->authenticateExtDB($ps_username,$ps_password);
 		}
 		
-		if ($this->load(array("user_name" => $ps_username))) {
+		if ((strlen($ps_username) > 0) && $this->load(array("user_name" => $ps_username))) {
 			if ($this->verify($ps_password) && $this->isActive()) {
 				return true;
 			}
@@ -3024,7 +3024,7 @@ class ca_users extends BaseModel {
 		
 		$vn_default_access = (int)$this->getAppConfig()->get('default_type_access_level');
 		
-		$va_type_ids = array();
+		$va_type_ids = null;
 		foreach($va_roles as $vn_role_id => $va_role_info) {
 			$va_vars = caUnserializeForDatabase($va_role_info['vars']);
 			
@@ -3033,6 +3033,7 @@ class ca_users extends BaseModel {
 					list($vs_table, $vn_type_id) = explode(".", $vs_key);
 					
 					if ($vs_table != $ps_table_name) { continue; }
+					if (!is_array($va_type_ids)) { $va_type_ids = array(); }
 					if($vn_access >= $pn_access) {
 						$va_type_ids[] = $vn_type_id;
 					}

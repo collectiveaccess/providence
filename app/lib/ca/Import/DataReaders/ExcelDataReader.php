@@ -37,6 +37,7 @@
 require_once(__CA_LIB_DIR__.'/core/Parsers/PHPExcel/PHPExcel.php');
 require_once(__CA_LIB_DIR__.'/core/Parsers/PHPExcel/PHPExcel/IOFactory.php');
 require_once(__CA_LIB_DIR__.'/ca/Import/BaseDataReader.php');
+require_once(__CA_APP_DIR__.'/helpers/displayHelpers.php');
 
 class ExcelDataReader extends BaseDataReader {
 	# -------------------------------------------------------
@@ -52,9 +53,10 @@ class ExcelDataReader extends BaseDataReader {
 		parent::__construct($ps_source, $pa_options);
 		
 		$this->ops_title = _t('Excel XLSX data reader');
+		$this->ops_display_name = _t('Excel XLS/XLSX');
 		$this->ops_description = _t('Reads Microsoft Excel XLSX files');
 		
-		$this->opa_formats = array('XLS', 'XLSX');
+		$this->opa_formats = array('xlsx');	// must be all lowercase to allow for case-insensitive matching
 	}
 	# -------------------------------------------------------
 	/**
@@ -105,7 +107,14 @@ class ExcelDataReader extends BaseDataReader {
 			$vn_col = 0;
 			$vn_last_col_set = null;
 			foreach ($o_cells as $o_cell) {
-				$this->opa_row_buf[] = $vs_val = trim((string)$o_cell->getValue());
+				if (PHPExcel_Shared_Date::isDateTime($o_cell)) {
+					if (!($vs_val = caGetLocalizedDate(PHPExcel_Shared_Date::ExcelToPHP(trim((string)$o_cell->getValue()))))) {
+						$vs_val = trim((string)$o_cell->getValue());
+					}
+					$this->opa_row_buf[] = $vs_val;
+				} else {
+					$this->opa_row_buf[] = $vs_val = trim((string)$o_cell->getValue());
+				}
 				if ($vs_val) { $vb_val_was_set = true; $vn_last_col_set = $vn_col;}
 				
 				$vn_col++;
@@ -165,6 +174,15 @@ class ExcelDataReader extends BaseDataReader {
 	 */
 	public function numRows() {
 		return $this->opo_handle->getActiveSheet()->getHighestRow();
+	}
+	# -------------------------------------------------------
+	/**
+	 * 
+	 * 
+	 * @return int
+	 */
+	public function getInputType() {
+		return __CA_DATA_READER_INPUT_FILE__;
 	}
 	# -------------------------------------------------------
 }

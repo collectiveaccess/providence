@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2009-2011 Whirl-i-Gig
+ * Copyright 2009-2013 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -230,9 +230,14 @@
  				$va_settings['regex'] = "(http|ftp|https|rtmp|rtsp):\/\/[\w\-_]+(\.[\w\-_]+)+([\w\-\.,@?^=%&;:/~\+#]*[\w\-\@?^=%&/~\+#])?";
  			}
  			if ($va_settings['regex'] && !preg_match("!".$va_settings['regex']."!", $ps_value)) {
- 				// regex failed
-				$this->postError(1970, _t('%1 is not a valid url', $pa_element_info['displayLabel']), 'UrlAttributeValue->parseValue()');
-				return false;
+ 				// default to http if it's just a hostname + path
+ 				if (!preg_match("!^[A-Za-z]+:\/\/!", $ps_value)) {
+ 					$ps_value = "http://{$ps_value}";
+ 				} else {
+					// regex failed
+					$this->postError(1970, _t('%1 is not a valid url', $pa_element_info['displayLabel']), 'UrlAttributeValue->parseValue()');
+					return false;
+				}
  			}
  			
  			return array(
@@ -248,7 +253,7 @@
  				array(
  					'size' => (isset($pa_options['width']) && $pa_options['width'] > 0) ? $pa_options['width'] : $va_settings['fieldWidth'],
  					'height' => (isset($pa_options['height']) && $pa_options['height'] > 0) ? $pa_options['height'] : $va_settings['fieldHeight'], 
- 					'value' => '{{'.$pa_element_info['element_id'].'}}', 
+ 					'value' => '{{{'.$pa_element_info['element_id'].'}}}', 
  					'maxlength' => $va_settings['maxChars'],
  					'id' => '{fieldNamePrefix}'.$pa_element_info['element_id'].'_{n}',
  					'class' => 'urlBg'

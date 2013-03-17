@@ -31,6 +31,14 @@ a:hover{
 
 h2 { font-size: 13px; color: #666; }
 
+h5 {
+	margin: 0px;
+	font-size: 13px; 
+	color: #666; 
+	-webkit-margin-before: 0em;
+	-webkit-margin-after: .5em;
+}
+
 .divide{
 	height:3px;
 	background-color:#DDDDDD;
@@ -174,7 +182,7 @@ h2 { font-size: 13px; color: #666; }
 #leftNav ul.selected { list-style: none; margin: 0px; padding: 3px 0px 3px 0px; display:block; }
 #leftNav ul.arrow { border-top: solid 1px #dce2e9; border-bottom: solid 1px #fff; font-size: 11px; }
 #leftNav ul.arrow li { list-style: none; font-weight: normal; border: 0; padding: 0; margin: 0; }
-#leftNav ul.arrow li a, #leftNav ul.arrow li span { _height: 15px; text-decoration: none; display: block; padding: 3px 0; background: transparent url('../graphics/icons/array_gray.gif') no-repeat 20px 8px; padding-left: 30px; padding-right: 5px; margin: 0; }
+#leftNav ul.arrow li a, #leftNav ul.arrow li span { _height: 15px; text-decoration: none; display: block; padding: 3px 0; background: transparent url('../graphics/icons/arrow_gray.gif') no-repeat 20px 8px; padding-left: 30px; padding-right: 5px; margin: 0; }
 #leftNav ul li a:hover { background-color: #fff; }
 #leftNav ul.arrow li a:hover { background-color: #fff; }
 
@@ -1626,6 +1634,39 @@ select.searchToolsSelect {
 	font-size: 11px;
 }
 
+/* search visualization - horizontal show hide */
+#showViz, #hideViz {
+	float:right;
+	margin: 1px 0px 0px 10px;
+	text-decoration:none;
+	text-transform:uppercase;
+	color:#828282;
+	font-size:9px;
+}
+#searchVizBox{
+	clear:both;
+	margin: 0px 0px 0px 0px;
+	display:none;
+	font-size:12px;
+	color:#828282;
+}
+#searchVizBox .bg{
+	background-color: #E2E2E2;
+	border:0px;
+	padding:6px 3px 6px 10px;
+}
+
+#searchVizBox .col{
+	float:left;
+	margin-right:15px;
+	color:#333;
+}
+
+select.searchVizSelect {
+	width: 165px;
+	font-size: 11px;
+}
+
 /* search sets - horizontal show hide */
 #showSets, #hideSets {
 	float:right;
@@ -1892,7 +1933,7 @@ div.caMediaOverlayControls {
 	left:0px;
 	z-index: 32000;			/* needs to be on top of caMediaPanel, which has z-index=31000 */
 	/* opacity:.1;	 */
-	opacity: 1.0;
+	opacity: 0.7;
 }
 /* div.caMediaOverlayControls:hover {
 	opacity:1.0;
@@ -2116,6 +2157,8 @@ table.attributeListItem {
 	top: 0px;
 	left: 0px;
 	
+	z-index: 31000;			/* needs to be on top of menu bar, which has z-index=30000 */
+	
 	display: none;
 	
 	-moz-border-radius-: 10px; 
@@ -2151,6 +2194,66 @@ a.editorFieldListLink {
 
 /* container for HTML code that files #editorFieldList */
 #editorFieldListHTML {
+	display: none;
+}
+
+#caHierarchyOverviewHeader {
+	font-size: 13px;
+	font-weight: bold;
+	text-align: left;
+	color: #666;
+	margin: 5px;
+	height:16px;
+}
+
+#caHierarchyOverviewPanel {
+	position: fixed;
+	background: #ffffff;
+	opacity: 0.8;
+	width: 920px;
+	height: 380px;
+	padding: 8px;
+	border: 2px solid #000000;
+	top: 0px;
+	left: 0px;
+	
+	z-index: 31000;			/* needs to be on top of menu bar, which has z-index=30000 */
+	
+	display: none;
+	
+	-moz-border-radius-: 10px; 
+	-webkit-border-radius: 10px;
+	-moz-border-radius: 10px; 
+}
+
+a.caHierarchyOverviewLink {
+	font-size: 12px;
+	text-decoration: none;
+	font-family: Verdana, Arial, Helvetica, sans-serif;
+	line-height: 18px;
+}
+
+#caHierarchyOverviewContentArea {
+	overflow: auto;
+	font-size: 12px;
+	text-decoration: none;
+	font-family: Verdana, Arial, Helvetica, sans-serif;
+	line-height: 18px;
+	
+	width: 100%;
+	height: 90%;
+}
+
+#caHierarchyOverviewPanel #caHierarchyOverviewClose{
+	float: right;
+	width:15px;
+	height:16px;
+	margin:5px;
+	background-image:url("../graphics/buttons/x.png");
+}
+
+/* container for HTML code that files #caHierarchyOverviewPanel */
+#caHierarchyOverviewPanelHTML {
 	display: none;
 }
 
@@ -2468,7 +2571,6 @@ a.hierarchyBrowserLevelEditButton {
 }
 
 div.hierarchyBrowseTab {
-	height: 245px;
 	width: 712px;
 	overflow: hidden;
 	font-weight: normal;
@@ -4085,15 +4187,19 @@ div.roundedRel {
 }
 
 div.listRel {
-	font-size: 12px;
+	font-size: 11px;
 	font-weight: normal;
 	padding: 10px;
 	margin-bottom: 5px;
-
+	-moz-border-radius: 5px; 
+	-webkit-border-radius: 5px;
+	-moz-border-radius: 5px; 
+	-webkit-border-bottom-right-radius: 5px;
 	width: 690px;	
-	border: 1px solid #aaaaaa;
+	border: 1px solid #ccc;
 	background-color:#ffffff;
 	min-height: 18px;
+	line-height:1.5em;
 }
 
 .caItemList {
@@ -4954,6 +5060,25 @@ div.searchlight-results div.searchlight-selected {
 	clear:left;
 }
 
+.olPopup {
+	border: 1px solid #000000 !important;
+	border-radius:8px !important;
+	box-shadow: 4px 4px 10px rgba(75, 75, 75, 0.75) !important;
+}
+
+.olPopupCloseBox {
+	width:15px  !important;
+	height:16px  !important;
+	margin:0px !important;
+	background-image:url("../graphics/buttons/x.png") !important;
+}
+
+.olPopupContent {
+	margin-left: 10px !important;
+	margin-top: 0px !important;
+	padding: 0px 5px 5px 5px !important;
+}
+
 /* Batch confirmation change */
 #caConfirmBatchExecutionPanel {
 	position: fixed; 
@@ -5081,7 +5206,7 @@ div.dialogHeader {
 }
 
 div.quickAddFormTopPadding {
-	height: 50px;
+	height: 40px;
 }
 
 div.quickAddErrorContainer {
@@ -5111,4 +5236,29 @@ input[type='text'].ui-autocomplete-loading {
 .caAnnotationMediaPlayer {
 	
 	margin: 0 auto 0 auto;
+}
+
+/** Debug **/
+
+div#debug {
+	padding: 10px 10px 10px 10px;
+	background-color:#EEEEEE;
+	margin-bottom: 10px;
+}
+
+div#debugLabel {
+	font-size: 14px;
+	color: green;
+	font-weight: bold;
+}
+
+
+/** Visualization **/
+.vizFullScreen {
+	background-color: #000000;
+}
+
+.vizTitle {
+	font-weight: bold;
+	margin-top: 5px;
 }

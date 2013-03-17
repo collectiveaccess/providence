@@ -223,8 +223,8 @@ class ca_data_importer_items extends BaseModel {
 			'description' => _t('Return-separated list of CollectiveAccess list item idnos that correspond to the mapped values from the original data source.  For example sound recording (entered in the Original values column) maps to audio_digital, which is entered here in the Replacement values column.')
 		);
 		$va_settings['skipGroupIfEmpty'] = array(
-			'formatType' => FT_NUMBER,
-			'displayType' => DT_SELECT,
+			'formatType' => FT_TEXT,
+			'displayType' => DT_FIELD,
 			'width' => 40, 'height' => 10,
 			'takesLocale' => false,
 			'default' => 0,
@@ -233,7 +233,56 @@ class ca_data_importer_items extends BaseModel {
 				_t('no') => 0
 			),
 			'label' => _t('Skip group if empty'),
-			'description' => _t('Skip all of the proceeding elements in the group if value for this element is empty.  For example, a field called Description Type would be irrelevant if the Description field is empty.')
+			'description' => _t('Skip all of the elements in the group if value for this element is empty.  For example, a field called Description Type would be irrelevant if the Description field is empty.')
+		);
+		$va_settings['skipGroupIfValue'] = array(
+			'formatType' => FT_TEXT,
+			'displayType' => DT_FIELD,
+			'width' => 40, 'height' => 10,
+			'takesLocale' => false,
+			'default' => 0,
+			'label' => _t('Skip group if value'),
+			'description' => _t('Skip all of the elements in the group if value for this element is equal to the specified value(s).')
+		);
+		$va_settings['skipGroupIfNotValue'] = array(
+			'formatType' => FT_TEXT,
+			'displayType' => DT_FIELD,
+			'width' => 40, 'height' => 10,
+			'takesLocale' => false,
+			'default' => 0,
+			'label' => _t('Skip group if not value'),
+			'description' => _t('Skip all of the elements in the group if value for this element is not equal to any of the specified values(s).')
+		);
+		$va_settings['skipRowIfEmpty'] = array(
+			'formatType' => FT_TEXT,
+			'displayType' => DT_FIELD,
+			'width' => 40, 'height' => 10,
+			'takesLocale' => false,
+			'default' => 0,
+			'options' => array(
+				_t('yes') => 1,
+				_t('no') => 0
+			),
+			'label' => _t('Skip row if empty'),
+			'description' => _t('Skip row if value for this element is empty.  For example, do not import the row if the Description field is empty.')
+		);
+		$va_settings['skipRowIfValue'] = array(
+			'formatType' => FT_TEXT,
+			'displayType' => DT_FIELD,
+			'width' => 40, 'height' => 10,
+			'takesLocale' => false,
+			'default' => 0,
+			'label' => _t('Skip row if value'),
+			'description' => _t('Skip the row if value for this element is equal to the specified value(s).')
+		);
+		$va_settings['skipRowIfNotValue'] = array(
+			'formatType' => FT_TEXT,
+			'displayType' => DT_FIELD,
+			'width' => 40, 'height' => 10,
+			'takesLocale' => false,
+			'default' => 0,
+			'label' => _t('Skip row if value is not'),
+			'description' => _t('Skip the row if value for this element is not equal to any of the specified value(s).')
 		);
 		$va_settings['default'] = array(
 			'formatType' => FT_TEXT,
@@ -262,7 +311,73 @@ class ca_data_importer_items extends BaseModel {
 			'label' => _t('Restrict to types'),
 			'description' => _t('Restricts the the mapping to only records of the designated type.  For example the Duration field is only applicable to objects of the type moving_image and not photograph.')
 		);
-		
+		$va_settings['prefix'] = array(
+			'formatType' => FT_TEXT,
+			'displayType' => DT_FIELD,
+			'width' => 10, 'height' => 1,
+			'takesLocale' => false,
+			'default' => '',
+			'label' => _t('Prefix'),
+			'description' => _t('Text to prepend to value prior to import.')
+		);
+		$va_settings['suffix'] = array(
+			'formatType' => FT_TEXT,
+			'displayType' => DT_FIELD,
+			'width' => 10, 'height' => 1,
+			'takesLocale' => false,
+			'default' => '',
+			'label' => _t('Suffix'),
+			'description' => _t('Text to append to value prior to import.')
+		);
+		$va_settings['formatWithTemplate'] = array(
+			'formatType' => FT_TEXT,
+			'displayType' => DT_FIELD,
+			'width' => 40, 'height' => 2,
+			'takesLocale' => false,
+			'default' => '',
+			'label' => _t('Format with template'),
+			'description' => _t('Format imported value with provided template. Template may include caret (^) prefixed placeholders that refer to data source values.')
+		);
+		$va_settings['maxLength'] = array(
+			'formatType' => FT_NUMBER,
+			'displayType' => DT_FIELD,
+			'width' => 10, 'height' => 1,
+			'takesLocale' => false,
+			'default' => '',
+			'label' => _t('Maximum length'),
+			'description' => _t('Truncate to specified length if value exceeds that length.')
+		);
+		$va_settings['errorPolicy'] = array(
+			'formatType' => FT_TEXT,
+			'displayType' => DT_FIELD,
+			'width' => 40, 'height' => 1,
+			'takesLocale' => false,
+			'default' => '',
+			'options' => array(
+				_t('ignore') => "ignore",
+				_t('stop') => "stop"
+			),
+			'label' => _t('Error policy'),
+			'description' => _t('Determines how errors are handled for the mapping.  Options are to ignore the error, stop the import when an error is encountered and to receive a prompt when the error is encountered.')
+		);
+		$va_settings['relationshipType'] = array(
+			'formatType' => FT_TEXT,
+			'displayType' => DT_FIELD,
+			'width' => 40, 'height' => 2,
+			'takesLocale' => false,
+			'default' => '',
+			'label' => _t('Relationship type'),
+			'description' => _t('Relationship type to use when linking to a related record.')
+		);
+		$va_settings['convertNewlinesToHTML'] = array(
+			'formatType' => FT_TEXT,
+			'displayType' => DT_FIELD,
+			'width' => 40, 'height' => 2,
+			'takesLocale' => false,
+			'default' => '',
+			'label' => _t('Convert newlines to HTML'),
+			'description' => _t('Convert newline characters in text to HTML &lt;BR/&gt; tags.')
+		);
 		$this->SETTINGS = new ModelSettings($this, 'settings', $va_settings);
 	}
 	# ------------------------------------------------------

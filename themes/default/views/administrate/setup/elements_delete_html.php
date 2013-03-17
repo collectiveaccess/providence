@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2009-2011 Whirl-i-Gig
+ * Copyright 2009-2013 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -31,6 +31,6 @@
 ?>
 <div class="sectionBox">
 <?php
-	print caDeleteWarningBox($this->request, $t_element, $t_element->getLabelForDisplay(false), 'administrate/setup', 'Elements', 'ListElements', array('element_id' => $vn_element_id));
+	print caDeleteWarningBox($this->request, $t_element, $t_element->getLabelForDisplay(false), 'administrate/setup', 'Elements', 'Index', array('element_id' => $vn_element_id));
 ?>
 </div>

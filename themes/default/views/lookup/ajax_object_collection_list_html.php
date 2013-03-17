@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2012 Whirl-i-Gig
+ * Copyright 2012-2013 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -25,10 +25,5 @@
  *
  * ----------------------------------------------------------------------
  */
- 	foreach($this->getVar('collection_list') as $vn_item_id => $va_item) {
-		print str_replace("|", "-", $va_item['_display'])."|ca_collections-".$vn_item_id."|".$va_item['type_id']."|".$va_item['_query']."\n";
-	}
-	foreach($this->getVar('object_list') as $vn_item_id => $va_item) {
-		print str_replace("|", "-", $va_item['_display'])."|ca_objects-".$vn_item_id."|".$va_item['type_id']."|".$va_item['_query']."\n";
-	}
+ 	print json_encode($this->getVar('collection_list') + $this->getVar('object_list'));
 ?>

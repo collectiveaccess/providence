@@ -80,7 +80,7 @@
 		if (is_array($pa_errors) && sizeof($pa_errors)) {
 			$vs_buf .= '<div class="batchProcessingReportSectionHead">'._t('Errors occurred').':</div><ul>';
 			foreach($pa_errors as $vs_f => $va_error) {
-				$vs_buf .= "<li><em>[{$vs_f}]: ".$va_error['message']."</li>";
+				$vs_buf .= "<li><em>[{$vs_f}]:</em> ".$va_error['message']."</li>";
 			}
 			$vs_buf .= "</ul>";
 		}

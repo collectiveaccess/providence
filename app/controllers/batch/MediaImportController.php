@@ -107,6 +107,12 @@
 				_t('Import only media that can be matched with existing records') => 'ALWAYS_MATCH',
 				_t('Import all media, creating new records for each') => 'DONT_MATCH'
 			), array(), array('value' => $va_last_settings['importMode'])));
+			
+			$this->view->setVar('match_mode', caHTMLSelect('match_mode', array(
+				_t('Match using file name') => 'FILE_NAME',
+				_t('Match using directory name') => 'DIRECTORY_NAME',
+				_t('Match using directory name, then file name') => 'FILE_AND_DIRECTORY_NAMES'
+			), array(), array('value' => $va_last_settings['matchMode'])));
  			
  			$this->view->setVar('ca_objects_type_list', $t_object->getTypeListAsHTMLFormElement('ca_objects_type_id', null, array('value' => $va_last_settings['ca_objects_type_id'])));
  			$this->view->setVar('ca_object_representations_type_list', $t_rep->getTypeListAsHTMLFormElement('ca_object_representations_type_id', null, array('value' => $va_last_settings['ca_object_representations_type_id'])));
@@ -149,7 +155,7 @@
  				return;
  			}
  			
- 			if (!is_dir($vs_batch_media_import_root_directory.'/'.$vs_directory)) { die("does not exist: ".$vs_batch_media_import_root_directory.'/'.$vs_directory);
+ 			if (!is_dir($vs_batch_media_import_root_directory.'/'.$vs_directory)) {
  				$this->response->setRedirect($this->request->config->get('error_display_url').'/n/3250?r='.urlencode($this->request->getFullUrlPath()));
  				return;
  			}
@@ -167,7 +173,9 @@
  				
  				'importFromDirectory' => $vs_batch_media_import_root_directory.'/'.$vs_directory,
  				'includeSubDirectories' => (bool)$this->request->getParameter('include_subdirectories', pInteger),
+ 				'deleteMediaOnImport' => (bool)$this->request->getParameter('delete_media_on_import', pInteger),
  				'importMode' => $this->request->getParameter('import_mode', pString),
+ 				'matchMode' => $this->request->getParameter('match_mode', pString),
  				'ca_objects_type_id' => $this->request->getParameter('ca_objects_type_id', pInteger),
  				'ca_object_representations_type_id' => $this->request->getParameter('ca_object_representations_type_id', pInteger),
  				'ca_objects_status' => $this->request->getParameter('ca_objects_status', pInteger),
@@ -387,6 +395,61 @@
  			$this->view->setVar("ancestors", $va_ancestors);
  			
  			$this->render('mediaimport/directory_ancestors_json.php');
+ 		}
+ 		# ------------------------------------------------------------------
+ 		/**
+ 		 *
+ 		 */
+ 		public function UploadFiles() {
+ 			$ps_directory = $this->request->getParameter('path', pString);
+ 			$vs_batch_media_import_root_directory = $this->request->config->get('batch_media_import_root_directory');
+ 			
+ 			if (preg_match("!/\.\.!", $ps_directory) || preg_match("!\.\./!", $ps_directory)) { 
+ 				$this->response->setRedirect($this->request->config->get('error_display_url').'/n/3250?r='.urlencode($this->request->getFullUrlPath()));
+ 				return;
+ 			}
+ 			
+ 			if (!is_dir($vs_batch_media_import_root_directory.'/'.$ps_directory)) {
+ 				$this->response->setRedirect($this->request->config->get('error_display_url').'/n/3250?r='.urlencode($this->request->getFullUrlPath()));
+ 				return;
+ 			}
+ 			
+ 			// Can user batch import media?
+ 			if (!$this->request->user->canDoAction('can_batch_import_media')) {
+ 				$this->response->setRedirect($this->request->config->get('error_display_url').'/n/3210?r='.urlencode($this->request->getFullUrlPath()));
+ 				return;
+ 			}
+ 			
+ 			$o_media = new Media();
+ 			$va_extensions = Media::getImportFileExtensions();
+ 			
+ 			$va_response = array('path' => $ps_directory, 'uploadMessage' => '', 'skippedMessage' => '');
+ 			
+ 			if (!is_writeable($vs_batch_media_import_root_directory.$ps_directory)) {
+ 				$va_response['error'] = _t('Cannot write file: directory %1 is not accessible', $ps_directory);
+ 			} else {
+				foreach($_FILES as $vs_param => $va_file) {
+					foreach($va_file['name'] as $vn_i => $vs_name) {
+						if (!in_array(pathinfo($vs_name, PATHINFO_EXTENSION), $va_extensions)) { 
+							$va_response['skipped'][$vs_name] = true;
+							continue; 
+						}
+						if (copy($va_file['tmp_name'][$vn_i], $vs_batch_media_import_root_directory.$ps_directory."/".$vs_name)) {
+							$va_response['copied'][$vs_name] = true;
+						} else {
+							$va_response['skipped'][$vs_name] = true;
+						}
+					}
+				}
+			}
+			
+			$va_response['uploadMessage'] = (($vn_upload_count = sizeof($va_response['copied'])) == 1) ? _t('Uploaded %1 file', $vn_upload_count) : _t('Uploaded %1 files', $vn_upload_count);
+			if (is_array($va_response['skipped']) && ($vn_skip_count = sizeof($va_response['skipped'])) && !$va_response['error']) {
+				$va_response['skippedMessage'] = ($vn_skip_count == 1) ? _t('Skipped %1 file', $vn_skip_count) : _t('Skipped %1 files', $vn_skip_count);
+			}
+			
+ 			$this->view->setVar('response', $va_response);
+ 			$this->render('mediaimport/file_upload_response_json.php');
  		}
 		# ------------------------------------------------------------------
  		# Sidebar info handler

@@ -134,6 +134,10 @@ class SearchResult extends BaseObject {
 		return $this->ops_table_name;
 	}
 	# ------------------------------------------------------------------
+	public function primaryKey() {
+		return $this->opo_datamodel->getTablePrimaryKeyName($this->opn_table_num);
+	}
+	# ------------------------------------------------------------------
 	public function numHits() {
 		return $this->opo_engine_result->numHits();
 	}
@@ -393,7 +397,8 @@ class SearchResult extends BaseObject {
  	 *				If $ps_field is set to refer to a URL metadata element and returnAsLink is set then the returned values will be HTML links using the URL value.
  	 *		returnAsLinkText = text to use a content of HTML link. If omitted the url itself is used as the link content.
  	 *		returnAsLinkAttributes = array of attributes to include in link <a> tag. Use this to set class, alt and any other link attributes.
- 	 * 
+ 	 * 		returnAsLinkTarget = Optional link target. If any plugin implementing hookGetAsLink() responds to the specified target then the plugin will be used to generate the links rather than CA's default link generator.
+ 	 *
  	 *		sort = optional array of bundles to sort returned values on. Currently only supported when getting related values via simple related <table_name> and <table_name>.related invokations. Eg. from a ca_objects results you can use the 'sort' option got get('ca_entities'), get('ca_entities.related') or get('ca_objects.related'). The bundle specifiers are fields with or without tablename. Only those fields returned for the related tables (intrinsics and label fields) are sortable. You cannot sort on attributes.
 	 *		where = optional array of fields and field values to filter returned values on. The fields must be intrinsic and in the same table as the field being "get()'ed" Can be used to filter returned values from primary and related tables. This option can be useful when you want to fetch certain values from a related table. For example, you want to get the relationship source_info values, but only for relationships going to a specific related record. Note that multiple fields/values are effectively AND'ed together - all must match for a row to be returned - and that only equivalence is supported (eg. field equals value).
 	 */
@@ -412,6 +417,7 @@ class SearchResult extends BaseObject {
 
 		$vb_return_as_link = 		(isset($pa_options['returnAsLink'])) ? (bool)$pa_options['returnAsLink'] : false;
 		$vs_return_as_link_text = 	(isset($pa_options['returnAsLinkText'])) ? (string)$pa_options['returnAsLinkText'] : '';
+		$vs_return_as_link_target = (isset($pa_options['returnAsLinkTarget'])) ? (string)$pa_options['returnAsLinkTarget'] : '';
 		$vs_return_as_link_attributes = (isset($pa_options['returnAsLinkAttributes']) && is_array($pa_options['returnAsLinkAttributes'])) ? $pa_options['returnAsLinkAttributes'] : array();
 			
 		$va_original_path_components = $va_path_components = $this->getFieldPathComponents($ps_field);
@@ -500,7 +506,7 @@ class SearchResult extends BaseObject {
 		}
 		
 		if (!($t_instance = $this->opo_datamodel->getInstanceByTableName($va_path_components['table_name'], true))) { return null; }	// Bad table
-		
+		$t_original_instance = $t_instance;	// $t_original_instance will always be the as-called subject; optimizations may results in $t_instance being transformed into a different model
 //
 // Simple related table get: 
 //			<table>
@@ -558,7 +564,7 @@ class SearchResult extends BaseObject {
 							$va_template_opts = array();
 							$va_template_opts['relationshipValues'][$va_relation_info[$vs_pk]][$va_relation_info['relation_id']]['relationship_typename'] = $va_relation_info['relationship_typename'];
 							$vs_text = $vs_template ? caProcessTemplateForIDs($vs_template, $t_instance->tableName(), array($va_relation_info[$vs_pk]), $va_template_opts) : join("; ", $va_relation_info['labels']);
-							$va_link = caCreateLinksFromText(array($vs_text), $va_original_path_components['table_name'], array($va_relation_info[$vs_pk]), $vs_return_as_link_class);
+							$va_link = caCreateLinksFromText(array($vs_text), $va_original_path_components['table_name'], array($va_relation_info[$vs_pk]), $vs_return_as_link_class, $vs_return_as_link_target);
 							$va_links[$vn_relation_id] = array_pop($va_link);
 						} else {
 							$va_related_items[$vn_relation_id]['labels'] = $va_relation_info['labels'];
@@ -598,7 +604,7 @@ class SearchResult extends BaseObject {
 				$va_text = caProcessTemplateForIDs($vs_template, $t_instance->tableNum(), $va_row_ids, array_merge($va_template_opts, array('relationshipValues' => $va_relationship_values, 'showHierarchicalLabels' => $vb_show_hierarachy)));
 							
 				if ($vb_return_as_link) {
-					$va_links = caCreateLinksFromText($va_text, $va_original_path_components['table_name'], $va_row_ids, $vs_return_as_link_class);
+					$va_links = caCreateLinksFromText($va_text, $va_original_path_components['table_name'], $va_row_ids, $vs_return_as_link_class, $vs_return_as_link_target);
 					
 					return join($vs_delimiter, $va_links);
 				} 
@@ -715,7 +721,7 @@ class SearchResult extends BaseObject {
 					
 					if ($vb_return_as_link) {
 						if (!$vb_return_all_locales) {
-							$va_vals = caCreateLinksFromText($va_vals, $va_original_path_components['table_name'], $va_ids, $vs_return_as_link_class);
+							$va_vals = caCreateLinksFromText($va_vals, $va_original_path_components['table_name'], $va_ids, $vs_return_as_link_class, $vs_return_as_link_target);
 						}
 					}
 	
@@ -920,7 +926,7 @@ class SearchResult extends BaseObject {
 							$vs_value = caProcessTemplateForIDs($vs_template, $va_path_components['table_name'], array($va_ids[$vn_i][$vs_pk]), array('returnAsArray' => false));
 							
 							if ($vb_return_as_link) {
-								$va_return_values_tmp[$vn_i] = array_pop(caCreateLinksFromText(array($vs_value), $va_original_path_components['table_name'], array($va_ids[$vn_i]), $vs_return_as_link_class));
+								$va_return_values_tmp[$vn_i] = array_pop(caCreateLinksFromText(array($vs_value), $va_original_path_components['table_name'], array($va_ids[$vn_i]), $vs_return_as_link_class, $vs_return_as_link_target));
 							} else {
 								$va_return_values_tmp[$vn_i] = $vs_value;
 							}
@@ -932,7 +938,7 @@ class SearchResult extends BaseObject {
 			} else {
 // return scalar
 				if ($vb_return_as_link && $vb_is_related) {
-					$va_return_values = caCreateLinksFromText($va_return_values, $va_original_path_components['table_name'], $va_ids, $vs_return_as_link_class);
+					$va_return_values = caCreateLinksFromText($va_return_values, $va_original_path_components['table_name'], $va_ids, $vs_return_as_link_class, $vs_return_as_link_target);
 				}
 				if (isset($pa_options['convertLineBreaks']) && $pa_options['convertLineBreaks']) {
 					return caConvertLineBreaks(join($vs_delimiter, $va_return_values));
@@ -1109,7 +1115,7 @@ class SearchResult extends BaseObject {
 							} else {
 								$this->opo_tep->setHistoricTimestamps($va_value[$va_field_info['START']], $va_value[$va_field_info['END']]);
 							}
-							$vs_prop = $this->opo_tep->getText();
+							$vs_prop = $this->opo_tep->getText($pa_options);
 							if ($vb_return_all_locales) {
 								$va_return_values[$vn_row_id][$vn_locale_id][] = $vs_prop;
 							} else {
@@ -1136,7 +1142,7 @@ class SearchResult extends BaseObject {
 					}
 				} else {
 					// Attributes
-					$vs_pk = $t_instance->primaryKey();
+					$vs_pk = $t_original_instance->primaryKey();
 					$vb_is_related = ($this->ops_table_name !== $va_path_components['table_name']);
 					$va_ids = array();
 					
@@ -1202,7 +1208,7 @@ class SearchResult extends BaseObject {
 				}
 				if ($vb_return_as_link && $vb_is_related) {
 					if (!$vb_return_all_locales) {
-						$va_return_values = caCreateLinksFromText($va_return_values, $va_original_path_components['table_name'], $va_ids, $vs_return_as_link_class);
+						$va_return_values = caCreateLinksFromText($va_return_values, $va_original_path_components['table_name'], $va_ids, $vs_return_as_link_class, $vs_return_as_link_target);
 					}
 				}
 				
@@ -1252,12 +1258,12 @@ class SearchResult extends BaseObject {
 							case FT_DATERANGE:
 								$this->opo_tep->init();
 								$this->opo_tep->setUnixTimestamps($va_value[$va_field_info['START']], $va_value[$va_field_info['END']]);
-								$va_value[$va_path_components['field_name']] = $this->opo_tep->getText();
+								$va_value[$va_path_components['field_name']] = $this->opo_tep->getText($pa_options);
 								break;
 							case FT_HISTORIC_DATERANGE:
 								$this->opo_tep->init();
 								$this->opo_tep->setHistoricTimestamps($va_value[$va_field_info['START']], $va_value[$va_field_info['END']]);
-								$va_value[$va_path_components['field_name']] = $this->opo_tep->getText();
+								$va_value[$va_path_components['field_name']] = $this->opo_tep->getText($pa_options);
 								break;
 							case FT_MEDIA:
 								if(!$vs_version = $va_path_components['subfield_name']) {
@@ -1332,7 +1338,7 @@ class SearchResult extends BaseObject {
 				}
 				
 				if ($vb_return_as_link && $vb_is_related) {
-					$va_return_values = caCreateLinksFromText($va_return_values, $va_original_path_components['table_name'], $va_ids, $vs_return_as_link_class);
+					$va_return_values = caCreateLinksFromText($va_return_values, $va_original_path_components['table_name'], $va_ids, $vs_return_as_link_class, $vs_return_as_link_target);
 				}
 				
 				if (isset($pa_options['convertLineBreaks']) && $pa_options['convertLineBreaks']) {

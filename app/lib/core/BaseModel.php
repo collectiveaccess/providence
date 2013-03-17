@@ -274,6 +274,14 @@ class BaseModel extends BaseObject {
 	 * @access private
 	 */
 	private $opa_php_version;				#
+	
+	/**
+	 * Flag controlling whether changes are written to the change log (ca_change_log)
+	 * Default is true.
+	 *
+	 * @access private
+	 */
+	private $opb_log_changes = true;
 
 
 	# --------------------------------------------------------------------------------
@@ -505,6 +513,19 @@ class BaseModel extends BaseObject {
 			$this->opb_purify_input = (bool)$pb_purify;
 		}
 		return $this->opb_purify_input;
+	}
+	# --------------------------------------------------------------------------------
+	/**
+	 * Sets whether changes are written to the change log or not. Default is to write changes to the log.
+	 *
+	 * @param bool $pb_log_changes If true, changes will be recorded in the change log. By default changes are logged unless explicitly set not to. If omitted then the current state of logging is returned.
+	 * @return bool Current state of logging.
+	 */
+	public function logChanges($pb_log_changes=null) {
+		if (!is_null($pb_log_changes)) {
+			$this->opb_log_changes = (bool)$pb_log_changes;
+		}
+		return $this->opb_log_changes;
 	}
 	# --------------------------------------------------------------------------------
 	# Set/get values
@@ -2156,7 +2177,7 @@ class BaseModel extends BaseObject {
 					$vn_id = $this->getPrimaryKey();
 					
 					if ((!isset($pa_options['dont_do_search_indexing']) || (!$pa_options['dont_do_search_indexing'])) && !defined('__CA_DONT_DO_SEARCH_INDEXING__')) {
-						$this->doSearchIndexing();
+						$this->doSearchIndexing(null, false);
 					}
 
 					if ($vb_we_set_transaction) { $this->removeTransaction(true); }
@@ -2692,7 +2713,7 @@ class BaseModel extends BaseObject {
 					}
 					if ((!isset($pa_options['dont_do_search_indexing']) || (!$pa_options['dont_do_search_indexing'])) &&  !defined('__CA_DONT_DO_SEARCH_INDEXING__')) {
 						# update search index
-						$this->doSearchIndexing();
+						$this->doSearchIndexing(null, false);
 					}
 														
 					if (is_array($va_rebuild_hierarchical_index)) {
@@ -4626,11 +4647,6 @@ class BaseModel extends BaseObject {
 			#--- delete file
 			@unlink($this->getFilePath($field));
 			#--- delete conversions
-			#
-			# TODO: wvWWare MSWord conversion to HTML generates untracked graphics files for embedded images... they are currently
-			# *not* deleted when the file and associated conversions are deleted. We will need to parse the HTML to derive the names
-			# of these files...
-			#
 			foreach ($this->getFileConversions($field) as $vs_format => $va_file_conversion) {
 				@unlink($this->getFileConversionPath($field, $vs_format));
 			}
@@ -5275,6 +5291,7 @@ class BaseModel extends BaseObject {
 	 * @param int $pn_user_id user identifier, defaults to null
 	 */
 	private function logChange($ps_change_type, $pn_user_id=null) {
+		if (!$this->logChanges()) { return null; }
 		$vb_is_metadata = $vb_is_metadata_value = false;
 		if ($this->tableName() == 'ca_attributes') {
 			$vb_log_changes_to_self = false;
@@ -5452,6 +5469,7 @@ class BaseModel extends BaseObject {
 				}
 			}
 		}
+		return true;
 	}
 	# --------------------------------------------------------------------------------------------
 	/**
@@ -7928,20 +7946,40 @@ $pa_options["display_form_field_tips"] = true;
 	 * Remove all relations with the specified table from the currently loaded row
 	 *
 	 * @param mixed $pm_rel_table_name_or_num Table name (eg. "ca_entities") or number as defined in datamodel.conf of table containing row to removes relationships to.
+	 * @param mixed $pm_type_id If set to a relationship type code or numeric type_id, only relationships with the specified type are removed.
 	 * @return boolean True on success, false on error
 	 */
-	public function removeRelationships($pm_rel_table_name_or_num) {
+	public function removeRelationships($pm_rel_table_name_or_num, $pm_type_id=null) {
 		if (!($vn_row_id = $this->getPrimaryKey())) { return null; }
 		if(!($va_rel_info = $this->_getRelationshipInfo($pm_rel_table_name_or_num))) { return null; }
 		$t_item_rel = $va_rel_info['t_item_rel'];
 		
+		if ($pm_type_id && !is_numeric($pm_type_id)) {
+			$t_rel_type = new ca_relationship_types();
+			if ($vs_linking_table = $t_rel_type->getRelationshipTypeTable($this->tableName(), $t_item_rel->tableName())) {
+				$pn_type_id = $t_rel_type->getRelationshipTypeID($vs_linking_table, $pm_type_id);
+			}
+		} else {
+			$pn_type_id = $pm_type_id;
+		}
+		
+		$vs_type_limit_sql = '';
+		$va_sql_params = array();
+		if ($pn_type_id) {
+			$vs_type_limit_sql = " AND type_id = ?";
+			$va_sql_params[] = $pn_type_id;
+		}
+		
 		$o_db = $this->getDb();
 		
 		if ($t_item_rel->tableName() == $this->getSelfRelationTableName()) {
+			array_unshift($va_sql_params, (int)$vn_row_id);
+			array_unshift($va_sql_params, (int)$vn_row_id);
 			$qr_res = $o_db->query("
 				SELECT relation_id FROM ".$t_item_rel->tableName()." 
 				WHERE ".$t_item_rel->getLeftTableFieldName()." = ? OR ".$t_item_rel->getRightTableFieldName()." = ?
-			", (int)$vn_row_id, (int)$vn_row_id);
+					{$vs_type_limit_sql}
+			", $va_sql_params);
 			
 			while($qr_res->nextRow()) {
 				if (!$this->removeRelationship($pm_rel_table_name_or_num, $qr_res->get('relation_id'))) { 
@@ -7949,9 +7987,12 @@ $pa_options["display_form_field_tips"] = true;
 				}
 			}
 		} else {
+			array_unshift($va_sql_params, (int)$vn_row_id);
 			$qr_res = $o_db->query("
-				SELECT relation_id FROM ".$t_item_rel->tableName()." WHERE ".$this->primaryKey()." = ?
-			", (int)$vn_row_id);
+				SELECT relation_id FROM ".$t_item_rel->tableName()." 
+				WHERE ".$this->primaryKey()." = ?
+					{$vs_type_limit_sql}
+			", $va_sql_params);
 			
 			while($qr_res->nextRow()) {
 				if (!$this->removeRelationship($pm_rel_table_name_or_num, $qr_res->get('relation_id'))) { 
@@ -9577,6 +9618,93 @@ $pa_options["display_form_field_tips"] = true;
 		}
 		
 		return false;
+	}
+	# --------------------------------------------------------------------------------------------
+	/**
+	 * Find row(s) with fields having values matching specific values. By default a model instance for the
+	 * first row matching the criteria is returned. A list of all matches can be optionally returned using the returnAsArray option.
+	 *
+	 * @param array $pa_values An array of values to match. Keys are field names. This must be an array with at least one key-value pair where the key is a valid field name for the model.
+	 * @param array $pa_options Options are:
+	 *		transaction = optional Transaction instance. If set then all database access is done within the context of the transaction
+	 *		returnAsArray = if set an array of instances is returned with all matches, or matches up to the specified limit
+	 *		limit = if returnAsArray is set, limits number of returned matches
+	 *
+	 * @return mixed An instance of the model with the first found match; if returnAsArray option is set then an array with some or all matches, subject to the limit option, is returned.
+	 */
+	public static function find($pa_values, $pa_options=null) {
+		if (!is_array($pa_values) || (sizeof($pa_values) == 0)) { return null; }
+		
+		$vs_table = get_called_class();
+		$o_instance = new $vs_table;
+		
+		$va_sql_wheres = array();
+		foreach ($pa_values as $vs_field => $vm_value) {
+			# support case where fieldname is in format table.fieldname
+			if (preg_match("/([\w_]+)\.([\w_]+)/", $vs_field, $va_matches)) {
+				if ($va_matches[1] != $vs_table) {
+					if ($o_instance->_DATAMODEL->tableExists($va_matches[1])) {
+						//$this->postError(715,_t("BaseModel '%1' cannot be accessed with this class", $matches[1]), "BaseModel->load()");
+						return false;
+					} else {
+						//$this->postError(715, _t("BaseModel '%1' does not exist", $matches[1]), "BaseModel->load()");
+						return false;
+					}
+				}
+				$vs_field = $matches[2]; # get field name alone
+			}
+
+			if (!$o_instance->hasField($vs_field)) {
+				//$this->postError(716,_t("Field '%1' does not exist", $vs_field), "BaseModel->load()");
+				return false;
+			}
+
+			if ($o_instance->_getFieldTypeType($vs_field) == 0) {
+				if (!is_numeric($vm_value) && !is_null($vm_value)) {
+					$vm_value = intval($vm_value);
+				}
+			} else {
+				$vm_value = $o_instance->quote($vs_field, is_null($vm_value) ? '' : $vm_value);
+			}
+
+			if (is_null($vm_value)) {
+				$va_sql_wheres[] = "($vs_field IS NULL)";
+			} else {
+				if ($vm_value === '') { continue; }
+				$va_sql_wheres[] = "($vs_field = $vm_value)";
+			}
+		}
+		$vs_sql = "SELECT * FROM {$vs_table} WHERE ".join(" AND ", $va_sql_wheres);
+		
+		if (isset($pa_options['transaction']) && ($pa_options['transaction'] instanceof Transaction)) {
+			$o_db = $pa_options['transaction']->getDb();
+		} else {
+			$o_db = new Db();
+		}
+		
+		$vn_limit = (isset($pa_options['limit']) && ((int)$pa_options['limit'] > 0)) ? (int)$pa_options['limit'] : null;
+		
+		$qr_res = $o_db->query($vs_sql);
+		
+		$vn_c = 0;
+		$va_instances = array();
+		
+		$vs_pk = $o_instance->primaryKey();
+		
+		while($qr_res->nextRow()) {
+			$o_instance = new $vs_table;
+			if ($o_instance->load($qr_res->get($vs_pk))) {
+				$va_instances[] = $o_instance;
+				$vn_c++;
+				if ($vn_limit && ($vn_c >= $vn_limit)) { break; }
+			}
+		}
+		
+		if (isset($pa_options['returnAsArray']) && $pa_options['returnAsArray']) {
+			return $va_instances;
+		} else {
+			return array_shift($va_instances);
+		}
 	}
 	# --------------------------------------------------------------------------------------------
 	/**
