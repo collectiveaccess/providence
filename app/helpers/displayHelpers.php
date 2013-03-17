@@ -490,11 +490,31 @@ require_once(__CA_LIB_DIR__."/ca/ApplicationPluginManager.php");
 	 *
 	 * @return string 
 	 */
-	function caEditorFieldList($pa_bundle_list, $pa_options=null) {
+	function caSetupEditorScreenOverlays($po_request, $pt_subject, $pa_bundle_list, $pa_options=null) {
+		$vs_buf = '';
+		if ($pt_subject->isHierarchical()) {
+			$vs_buf .= caEditorHierarchyOverview($po_request, $pt_subject->tableName(), $pt_subject->getPrimaryKey(), $pa_options);
+		}
+		$vs_buf .= caEditorFieldList($po_request, $pa_bundle_list, $pa_options);	
+		
+		return $vs_buf;
+	}
+	# ------------------------------------------------------------------------------------------------
+	/**
+	 * 
+	 *
+	 * @param array $pa_bundle_list 
+	 * @param array $pa_options Optional array of options. Supported options are:
+	 *		NONE
+	 *
+	 * @return string 
+	 */
+	function caEditorFieldList($po_request, $pa_bundle_list, $pa_options=null) {
 		$vs_buf = "<script type=\"text/javascript\">
 		jQuery(document).ready(function() {
 			jQuery(document).bind('keydown.ctrl_f', function() {
-				caEditorFieldList.showPanel(null);
+				caHierarchyOverviewPanel.hidePanel({dontCloseMask:1});
+				caEditorFieldList.showPanel();
 			});
 			jQuery('#editorFieldListContentArea').html(jQuery(\"#editorFieldListHTML\").html());
 			jQuery('#editorFieldListContentArea a').click(function() {
@@ -509,6 +529,40 @@ require_once(__CA_LIB_DIR__."/ca/ApplicationPluginManager.php");
 			}	
 		}
 		$vs_buf .= "</div>\n";
+		
+		return $vs_buf;
+	}
+	# ------------------------------------------------------------------------------------------------
+	/**
+	 * 
+	 *
+	 * @param array $pa_bundle_list 
+	 * @param array $pa_options Optional array of options. Supported options are:
+	 *		NONE
+	 *
+	 * @return string 
+	 */
+	function caEditorHierarchyOverview($po_request, $ps_table, $pn_id, $pa_options=null) {
+		$o_dm = Datamodel::load();
+		$t_subject = $o_dm->getInstanceByTableName($ps_table, true);
+		$vs_buf = "<script type=\"text/javascript\">
+		jQuery(document).ready(function() {
+			jQuery(document).bind('keydown.ctrl_h', function() {
+				caEditorFieldList.hidePanel({dontCloseMask:1});
+				
+				var url;
+				if (jQuery('#caHierarchyOverviewContentArea').html().length == 0) {
+					url = '".caNavUrl($po_request, $po_request->getModulePath(), $po_request->getController(), 'getHierarchyForDisplay', array($t_subject->primaryKey() => $pn_id))."';
+				}
+				caHierarchyOverviewPanel.showPanel(url, null, false);
+			});
+			jQuery('#caHierarchyOverviewContentArea').html('');
+			jQuery('#caHierarchyOverviewContentArea a').click(function() {
+				caHierarchyOverviewPanel.hidePanel();
+			});
+		});
+</script>
+\n";
 		
 		return $vs_buf;
 	}

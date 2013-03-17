@@ -1366,6 +1366,20 @@
 			
 			$this->render('../generic/ajax_toggle_item_watch_json.php');
 		}
+		# -------------------------------------------------------
+ 		/**
+ 		 * xxx
+ 		 *
+ 		 * @param array $pa_options Array of options passed through to _initView 
+ 		 */
+ 		public function getHierarchyForDisplay($pa_options=null) {
+ 			list($vn_subject_id, $t_subject) = $this->_initView();
+ 			
+ 			$vs_hierarchy_display = $t_subject->getHierarchyNavigationHTMLFormBundle($this->request, 'caHierarchyOverviewPanelBrowser', array(), array('open_hierarchy' => true, 'no_close_button' => true, 'hierarchy_browse_tab_class' => 'foo'));
+ 			$this->view->setVar('hierarchy_display', $vs_hierarchy_display);
+ 			
+ 			$this->render("../generic/ajax_hierarchy_overview_html.php");
+ 		}
 		# ------------------------------------------------------------------
  		# Sidebar info handler
  		# ------------------------------------------------------------------

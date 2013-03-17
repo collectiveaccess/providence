@@ -60,7 +60,7 @@
 <?php
 	if ($pn_id > 0) {
 ?>
-			<div class="buttonPosition"><a href="#" id="<?php print $ps_id_prefix; ?>browseToggle" class="form-button"><span class="form-button"><?php print _t('Show in browser'); ?></span></a></div>
+			<div class="buttonPosition" <?php print (isset($pa_bundle_settings['no_close_button']) && $pa_bundle_settings['no_close_button']) ? "style='display: none;'" : ""; ?>><a href="#" id="<?php print $ps_id_prefix; ?>browseToggle" class="form-button"><span class="form-button"><?php print _t('Show in browser'); ?></span></a></div>
 <?php
 	}
 	
@@ -99,9 +99,9 @@
 					<li><a href="#<?php print $ps_id_prefix; ?>HierarchyBrowserTabs-explore" onclick='_init<?php print $ps_id_prefix; ?>ExploreHierarchyBrowser();'><span>Explore</span></a></li>
 			</ul>
 			
-			<div id="<?php print $ps_id_prefix; ?>HierarchyBrowserTabs-explore" class="hierarchyBrowseTab">	
+			<div id="<?php print $ps_id_prefix; ?>HierarchyBrowserTabs-explore" class="<?php print (isset($pa_bundle_settings['hierarchy_browse_tab_class']) && $pa_bundle_settings['hierarchy_browse_tab_class']) ? $pa_bundle_settings['hierarchy_browse_tab_class'] : "hierarchyBrowseTab"; ?>">	
 				<div class="hierarchyBrowserMessageContainer">
-					<?php print _t('Use the browser to explore the hierarchy. You can edit other hierarchy items by clicking on the arrow.'); ?>
+					<?php print _t('Use the browser to explore the hierarchy. You may edit other hierarchy items by clicking on the arrows.'); ?>
 				</div>
 				<div id="<?php print $ps_id_prefix; ?>HierarchyBrowser" class="hierarchyBrowserSmall">
 					<!-- Content for hierarchy browser is dynamically inserted here by ca.hierbrowser -->
