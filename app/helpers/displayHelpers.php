@@ -1770,11 +1770,12 @@ require_once(__CA_LIB_DIR__."/ca/ApplicationPluginManager.php");
 				if (!isset($va_relationship_values[$vs_pk_val])) { $va_relationship_values[$vs_pk_val] = array(0 => null); }
 
 				foreach($va_relationship_values[$vs_pk_val] as $vn_relation_id => $va_relationship_value_array) {
+					$va_val = null;
 					if (isset($va_relationship_value_array[$vs_tag]) && !(isset($pa_options['showHierarchicalLabels']) && $pa_options['showHierarchicalLabels'] && ($vs_tag == 'label'))) {
-						$vs_val = $va_relationship_value_array[$vs_tag];
+						$va_val = array($vs_val = $va_relationship_value_array[$vs_tag]);
 					} else {
 						if (isset($va_related_values[$vs_pk_val][$vs_tag])) {
-							$vs_val = $va_related_values[$vs_pk_val][$vs_tag];
+							$va_val = array($vs_val = $va_related_values[$vs_pk_val][$vs_tag]);
 						} else {
 							// see if this is a reference to a related table
 							if (($ps_tablename != $va_tmp[0]) && ($t_tmp = $o_dm->getInstanceByTableName($va_tmp[0], true))) {	// if the part of the tag before a "." (or the tag itself if there are no periods) is a related table then try to fetch it as related to the current record
@@ -1806,10 +1807,13 @@ require_once(__CA_LIB_DIR__."/ca/ApplicationPluginManager.php");
 							}
 						}
 					}
-					foreach($va_val as $vn_j => $vs_val) {
-						$va_tag_val_list[$vn_i][$vn_j][$vs_tag] = $vs_val;
-						if (strlen($vs_val) > 0) {
-							$va_defined_tag_list[$vn_i][$vs_tag] = true;
+				
+					if (is_array($va_val)) {
+						foreach($va_val as $vn_j => $vs_val) {
+							$va_tag_val_list[$vn_i][$vn_j][$vs_tag] = $vs_val;
+							if ((is_array($vs_val) && (sizeof($vs_val))) || (strlen($vs_val) > 0)) {
+								$va_defined_tag_list[$vn_i][$vs_tag] = true;
+							}
 						}
 					}
 				}
@@ -1817,7 +1821,7 @@ require_once(__CA_LIB_DIR__."/ca/ApplicationPluginManager.php");
 		
 			$vn_i++;
 		}
-
+		
 		foreach($va_tag_val_list as $vn_i => $va_tag_vals) {
 			foreach($va_tag_vals as $vn_j => $va_tags) {
 				foreach($va_tags as $vs_t => $vs_v) {
