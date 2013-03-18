@@ -1048,6 +1048,12 @@ class ca_data_exporters extends BundlableLabelableBaseModelWithAttributes {
 				case 'children':
 					$va_related = $t_instance->getHierarchyChildren();
 					break;
+				case 'parent':
+					$va_related = array();
+					if($vs_parent_id_fld = $t_instance->getProperty("HIERARCHY_PARENT_ID_FLD")){
+						$va_related[] = array($vs_key => $t_instance->get($vs_parent_id_fld));
+					}
+					break;
 				case 'ca_sets':
 					$t_set = new ca_sets();
 					$va_set_options = array();
