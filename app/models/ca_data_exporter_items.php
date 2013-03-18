@@ -363,6 +363,46 @@ class ca_data_exporter_items extends BaseModel {
 			'label' => _t('Omit if empty'),
 			'description' => _t('Omit this item and all its children if this CollectiveAccess bundle specifier returns an empty result.')
 		);
+
+		$va_settings['context'] = array(
+			'formatType' => FT_TEXT,
+			'displayType' => DT_FIELD,
+			'width' => 70, 'height' => 1,
+			'takesLocale' => false,
+			'default' => '',
+			'label' => _t('Export context'),
+			'description' => _t('This setting can be used to switch the context of the export for this exporter item and all its children to a different table, for instance to related entities. The element is automatically repeated for all selected related records. Leave empty to inherit context from parent item.')
+		);
+
+		$va_settings['restrictToTypes'] = array(
+			'formatType' => FT_TEXT,
+			'displayType' => DT_FIELD,
+			'width' => 10, 'height' => 1,
+			'takesLocale' => false,
+			'default' => '',
+			'label' => _t('Restrict to types'),
+			'description' => _t('Restricts the context of the mapping to only records of the designated type. Only valid when context is set.')
+		);
+
+		$va_settings['restrictToRelationshipTypes'] = array(
+			'formatType' => FT_TEXT,
+			'displayType' => DT_FIELD,
+			'width' => 10, 'height' => 1,
+			'takesLocale' => false,
+			'default' => '',
+			'label' => _t('Restrict to relationship types'),
+			'description' => _t('Restricts the context of the mapping to only records related with the designated relationship type. Only valid when context is set.')
+		);
+
+		$va_settings['checkAccess'] = array(
+			'formatType' => FT_TEXT,
+			'displayType' => DT_FIELD,
+			'width' => 10, 'height' => 1,
+			'takesLocale' => false,
+			'default' => '',
+			'label' => _t('Check access'),
+			'description' => _t('Restricts the context of the mapping to only records with one of the designated access values. Only valid when context is set.')
+		);
 		
 		$this->SETTINGS = new ModelSettings($this, 'settings', $va_settings);
 	}

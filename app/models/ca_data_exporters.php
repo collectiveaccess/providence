@@ -383,12 +383,11 @@ class ca_data_exporters extends BundlableLabelableBaseModelWithAttributes {
 	 * Add new exporter item to this exporter.
 	 * @param int $pn_parent_id parent id for the new record. can be null
 	 * @param string $ps_element name of the target element
-	 * @param string $ps_context context for new element
 	 * @param string $ps_source value for 'source' field. this will typicall be a bundle name
 	 * @param array $pa_settings array of user settings
 	 * @return ca_data_exporter_items BaseModel representation of the new record
 	 */
-	public function addItem($pn_parent_id=null,$ps_element,$ps_context,$ps_source,$pa_settings=array()){
+	public function addItem($pn_parent_id=null,$ps_element,$ps_source,$pa_settings=array()){
 		if (!($vn_exporter_id = $this->getPrimaryKey())) { return null; }
 
 		$t_item = new ca_data_exporter_items();
@@ -396,7 +395,6 @@ class ca_data_exporters extends BundlableLabelableBaseModelWithAttributes {
 		$t_item->set('parent_id',$pn_parent_id);
 		$t_item->set('exporter_id',$vn_exporter_id);
 		$t_item->set('element',$ps_element);
-		$t_item->set('context',$ps_context);
 		$t_item->set('source',$ps_source);
 
 		foreach($pa_settings as $vs_key => $vs_value){
@@ -514,9 +512,8 @@ class ca_data_exporters extends BundlableLabelableBaseModelWithAttributes {
 					$o_id = $o_sheet->getCellByColumnAndRow(1, $o_row->getRowIndex());
 					$o_parent = $o_sheet->getCellByColumnAndRow(2, $o_row->getRowIndex());
 					$o_element = $o_sheet->getCellByColumnAndRow(3, $o_row->getRowIndex());
-					$o_context = $o_sheet->getCellByColumnAndRow(4, $o_row->getRowIndex());
-					$o_source = $o_sheet->getCellByColumnAndRow(5, $o_row->getRowIndex());
-					$o_options = $o_sheet->getCellByColumnAndRow(6, $o_row->getRowIndex());
+					$o_source = $o_sheet->getCellByColumnAndRow(4, $o_row->getRowIndex());
+					$o_options = $o_sheet->getCellByColumnAndRow(5, $o_row->getRowIndex());
 					/*$o_refinery = $o_sheet->getCellByColumnAndRow(7, $o_row->getRowIndex());
 					$o_refinery_settings = $o_sheet->getCellByColumnAndRow(8, $o_row->getRowIndex());*/
 
@@ -536,7 +533,6 @@ class ca_data_exporters extends BundlableLabelableBaseModelWithAttributes {
 						continue(2);
 					}
 
-					$vs_context = trim((string)$o_context->getValue());
 					$vs_source = trim((string)$o_source->getValue());
 
 					if ($vs_mode == 'Constant') {
@@ -565,7 +561,6 @@ class ca_data_exporters extends BundlableLabelableBaseModelWithAttributes {
 					$va_mapping[$vs_key] = array(
 						'parent_id' => $vs_parent_id,
 						'element' => $vs_element,
-						'context' => $vs_context,
 						'source' => ($vs_mode == "RepeatMappings" ? null : $vs_source),
 						'options' => $va_options,
 						/*'refinery' => $vs_refinery,
@@ -767,7 +762,7 @@ class ca_data_exporters extends BundlableLabelableBaseModelWithAttributes {
 
 			//caDebug($va_item_settings,"Settings for new exporter item");
 
-			$t_item = $t_exporter->addItem($vn_parent_id,$va_info['element'],$va_info['context'],$va_info['source'],$va_item_settings);
+			$t_item = $t_exporter->addItem($vn_parent_id,$va_info['element'],$va_info['source'],$va_item_settings);
 
 			if ($t_exporter->numErrors()) {
 				print _t("Error adding item to exporter: %1", join("; ", $t_exporter->getErrors()))."\n";
@@ -1061,38 +1056,38 @@ class ca_data_exporters extends BundlableLabelableBaseModelWithAttributes {
 
 		// switch context to a different set of records if necessary and repeat current exporter item for all those selected records
 		// (e.g. hierarchy children or related items in another table, restricted by types or relationship types)
-		if(!$vb_ignore_context && ($vs_context = $t_exporter_item->get('context'))){
+		if(!$vb_ignore_context && ($vs_context = $t_exporter_item->getSetting('context'))){
 
-			$va_parsed_context = ca_data_exporters::_parseItemContext($vs_context);
-			if(!$va_parsed_context){ return array(); }
+			$va_restrict_to_types = $va_restrict_to_rel_types = $va_check_access = null;
 
-			if(isset($va_parsed_context['table_num'])){
-				$vn_new_table_num = $va_parsed_context['table_num'];
-			} else {
-				$vn_new_table_num = $pn_table_num;
+			if($vs_types = $t_exporter_item->getSetting('restrictToTypes')){
+				$va_restrict_to_types = explode(',', $vs_types);
 			}
 
-			$vs_key = $this->getAppDatamodel()->getTablePrimaryKeyName($vn_new_table_num);
+			if($vs_rel_types = $t_exporter_item->getSetting('restrictToRelationshipTypes')){
+				$va_restrict_to_rel_types = explode(',', $vs_rel_types);
+			}
 
-			switch($va_parsed_context['mode']){
-				case 'related_table':
-					$va_related = $t_instance->getRelatedItems(
-						$vn_new_table_num,
-						array(
-							'restrictToTypes' => $va_parsed_context['restrictToTypes'],
-							'restrictToRelationshipTypes' => $va_parsed_context['restrictToRelationshipTypes'],
-							'checkAccess' => $va_parsed_context['checkAccess'],
-						)
-					);
+			if($vs_check_access = $t_exporter_item->getSetting('checkAccess')){
+				$va_check_access = explode(',', $vs_check_access);
+			}
+
+			$vs_key = $this->getAppDatamodel()->getTablePrimaryKeyName($vs_context);
+			$vn_new_table_num = $this->getAppDatamodel()->getTableNum($vs_context);
+
+			switch($vs_context){
+				case 'children':
+					$va_related = $t_instance->getHierarchyChildren();
 					break;
-				case 'sets':
+				case 'ca_sets':
 					$t_set = new ca_sets();
 					$va_set_options = array();
-					if(isset($va_parsed_context['restrictToTypes'][0])){
+					if(isset($va_restrict_to_types[0])){
 						// the utility used below doesn't support passing multiple types so we just pass the first.
 						// this should be enough for 99.99% of the actual use cases anyway
-						$va_set_options['setType'] = $va_parsed_context['restrictToTypes'][0];
+						$va_set_options['setType'] = $va_restrict_to_types[0];
 					}
+					$va_set_options['checkAccess'] = $va_check_access;
 					$va_set_options['setIDsOnly'] = true;
 					$va_set_ids = $t_set->getSetsForItem($pn_table_num,$t_instance->getPrimaryKey(),$va_set_options);
 					$va_related = array();
@@ -1100,23 +1095,19 @@ class ca_data_exporters extends BundlableLabelableBaseModelWithAttributes {
 						$va_related[] = array($vs_key => intval($vn_pk));
 					}
 					break;
-				case 'children':
-					$va_related = $t_instance->getHierarchyChildren();
-					break;
-				case 'parent':
-					$va_related = array();
-					if($vs_parent_id_fld = $t_instance->getProperty("HIERARCHY_PARENT_ID_FLD")){
-						$va_related[] = array($vs_key => $t_instance->get($vs_parent_id_fld));
+				default: // plain old related table
+					if($vn_new_table_num) {
+						$va_related = $t_instance->getRelatedItems(
+							$vs_context,
+							array(
+								'restrictToTypes' => $va_restrict_to_types,
+								'restrictToRelationshipTypes' => $va_restrict_to_rel_types,
+								'checkAccess' => $va_check_access,
+							)
+						);
+					} else {
+						return array();
 					}
-					break;
-				case 'ancestors':
-					$va_parents = $t_instance->getHierarchyAncestors(null,array('idsOnly' => true));
-					$va_related = array();
-					foreach(array_unique($va_parents) as $vn_pk){
-						$va_related[] = array($vs_key => intval($vn_pk));
-					}
-					break;
-				default:
 					break;
 			}
 			
@@ -1279,53 +1270,6 @@ class ca_data_exporters extends BundlableLabelableBaseModelWithAttributes {
 		}
 
 		return $va_item_info;
-	}
-	# ------------------------------------------------------
-	static public function _parseItemContext($vs_context){
-		// example: ca_objects%restrictToTypes=image|print%restrictToRelationshipTypes=depicts|foobar%checkAccess=1
-		$va_return = array();
-		$o_dm = Datamodel::load();
-
-		$va_tmp = explode('%',$vs_context);
-		$vs_table = array_shift($va_tmp);
-
-		if($vn_table_num = $o_dm->getTableNum($vs_table)){ // actual table
-			switch($vs_table){
-				case 'ca_sets':
-					$va_return['mode'] = 'sets';
-					break;
-				default:
-					$va_return['mode'] = 'related_table';
-					break;	
-			}
-			
-			$va_return['table_num'] = $vn_table_num;
-
-			foreach($va_tmp as $vs_tmp){
-				$va_keyval = explode('=',$vs_tmp);
-				switch($va_keyval[0]){
-					case 'restrictToTypes':
-					case 'restrictToRelationshipTypes':
-					case 'checkAccess':
-						$va_return[$va_keyval[0]] = explode('|',$va_keyval[1]);
-						break;
-					default:
-						return false;
-				}
-			}
-		} else { // probably some meta-key like 'parent' or 'children'
-			switch($vs_table){
-				case 'parent':
-				case 'ancestors':
-				case 'children':
-					$va_return['mode'] = $vs_table;
-					break;
-				default: // invalid
-					return false;
-			}
-		}
-
-		return $va_return;
 	}
 	# ------------------------------------------------------
 	static public function loadExporterByCode($ps_exporter_code) {
