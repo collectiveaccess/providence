@@ -1041,8 +1041,14 @@ class ca_data_exporters extends BundlableLabelableBaseModelWithAttributes {
 			$va_restrict_to_rel_types = $t_exporter_item->getSetting('restrictToRelationshipTypes');
 			$va_check_access = $t_exporter_item->getSetting('checkAccess');
 
-			$vs_key = $this->getAppDatamodel()->getTablePrimaryKeyName($vs_context);
 			$vn_new_table_num = $this->getAppDatamodel()->getTableNum($vs_context);
+
+			if($vn_new_table_num){ // switch to new table
+				$vs_key = $this->getAppDatamodel()->getTablePrimaryKeyName($vs_context);
+			} else { // this table, i.e. hierarchy context switch
+				$vs_key = $t_instance->primaryKey();
+				$vn_new_table_num = $pn_table_num;
+			}
 
 			switch($vs_context){
 				case 'children':
@@ -1052,6 +1058,13 @@ class ca_data_exporters extends BundlableLabelableBaseModelWithAttributes {
 					$va_related = array();
 					if($vs_parent_id_fld = $t_instance->getProperty("HIERARCHY_PARENT_ID_FLD")){
 						$va_related[] = array($vs_key => $t_instance->get($vs_parent_id_fld));
+					}
+					break;
+				case 'ancestors':
+					$va_parents = $t_instance->getHierarchyAncestors(null,array('idsOnly' => true));
+					$va_related = array();
+					foreach(array_unique($va_parents) as $vn_pk){
+						$va_related[] = array($vs_key => intval($vn_pk));
 					}
 					break;
 				case 'ca_sets':
