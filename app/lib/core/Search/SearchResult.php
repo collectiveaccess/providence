@@ -1101,7 +1101,7 @@ class SearchResult extends BaseObject {
 	
 			if ($vb_return_as_array) {
 // return array (intrinsics or labels in primary or related table)
-				if ($t_instance->hasField($va_path_components['field_name']) && ($va_path_components['table_name'] === $this->ops_table_name)) {
+				if ($t_instance->hasField($va_path_components['field_name'])) {// && ($va_path_components['table_name'] === $this->ops_table_name)) {
 					// Intrinsic
 					$va_field_info = $t_instance->getFieldInfo($va_path_components['field_name']);
 					
