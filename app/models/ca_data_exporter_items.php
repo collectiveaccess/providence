@@ -438,21 +438,6 @@ class ca_data_exporter_items extends BaseModel {
 	 * Reroutes calls to method implemented by settings delegate to the delegate class
 	 */
 	public function __call($ps_name, $pa_arguments) {
-		/*if (($ps_name == 'setSetting') && ($pa_arguments[0] == 'refineries')) {
-			//
-			// Load refinery-specific settings as refineries are selected
-			//
-			if(is_array($pa_arguments[1])) {
-				$va_current_settings = $this->SETTINGS->getAvailableSettings();
-				foreach($pa_arguments[1] as $vs_refinery) {
-					if (is_array($va_refinery_settings = ca_data_exporter_items::getRefinerySettings($vs_refinery))) {
-						$va_current_settings += $va_refinery_settings;
-					}
-				}
-				$this->SETTINGS->setAvailableSettings($va_current_settings);
-			}
-		}*/
-
 		if (method_exists($this->SETTINGS, $ps_name)) {
 			return call_user_func_array(array($this->SETTINGS, $ps_name), $pa_arguments);
 		}
@@ -488,31 +473,6 @@ class ca_data_exporter_items extends BaseModel {
 
 		return $ps_text;
 	}
-	# ------------------------------------------------------
-	/**
-	 *
-	 */
-	/*static public function getAvailableRefineries() {
-		$va_refinery_names = ExportRefineryManager::getRefineryNames();
-		
-		$va_refinery_list = array();
-		foreach($va_refinery_names as $vs_name) {
-			$o_refinery = ExportRefineryManager::getRefineryInstance($vs_name);
-			$va_refinery_list[$vs_name] = $o_refinery->getTitle();
-		}
-		
-		return $va_refinery_list;
-	}*/
-	# ------------------------------------------------------
-	/**
-	 *
-	 */
-	/*astatic public function getRefinerySettings($ps_refinery) {
-		if ($o_refinery = ExportRefineryManager::getRefineryInstance($ps_refinery)) {
-			return $o_refinery->getRefinerySettings();
-		}
-		return null;
-	}*/
 	# ------------------------------------------------------
 }
 ?>

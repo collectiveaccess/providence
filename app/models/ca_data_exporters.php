@@ -38,8 +38,6 @@ require_once(__CA_LIB_DIR__.'/core/ModelSettings.php');
 require_once(__CA_LIB_DIR__.'/ca/BundlableLabelableBaseModelWithAttributes.php');
 
 require_once(__CA_LIB_DIR__.'/ca/Export/BaseExportFormat.php');
-//require_once(__CA_LIB_DIR__.'/ca/Export/BaseExportRefinery.php');
-//require_once(__CA_LIB_DIR__.'/ca/Export/ExportRefineryManager.php');
 
 require_once(__CA_MODELS_DIR__."/ca_data_exporter_labels.php");
 require_once(__CA_MODELS_DIR__."/ca_data_exporter_items.php");
@@ -514,8 +512,6 @@ class ca_data_exporters extends BundlableLabelableBaseModelWithAttributes {
 					$o_element = $o_sheet->getCellByColumnAndRow(3, $o_row->getRowIndex());
 					$o_source = $o_sheet->getCellByColumnAndRow(4, $o_row->getRowIndex());
 					$o_options = $o_sheet->getCellByColumnAndRow(5, $o_row->getRowIndex());
-					/*$o_refinery = $o_sheet->getCellByColumnAndRow(7, $o_row->getRowIndex());
-					$o_refinery_settings = $o_sheet->getCellByColumnAndRow(8, $o_row->getRowIndex());*/
 
 					if($vs_id = trim((string)$o_id->getValue())){
 						$va_ids[] = $vs_id;
@@ -549,13 +545,6 @@ class ca_data_exporters extends BundlableLabelableBaseModelWithAttributes {
 						}
 					}
 
-					/*$vs_refinery = trim((string)$o_refinery->getValue());
-					
-					$va_refinery_options = null;
-					if ($vs_refinery && ($vs_refinery_options_json = (string)$o_refinery_options->getValue())) {
-						// TODO: check refineries
-					}*/
-
 					$vs_key = (strlen($vs_id)>0 ? $vs_id : md5($vn_row));
 
 					$va_mapping[$vs_key] = array(
@@ -563,8 +552,6 @@ class ca_data_exporters extends BundlableLabelableBaseModelWithAttributes {
 						'element' => $vs_element,
 						'source' => ($vs_mode == "RepeatMappings" ? null : $vs_source),
 						'options' => $va_options,
-						/*'refinery' => $vs_refinery,
-						'refinery_options' => $va_refinery_options,*/
 					);
 
 					// allow mapping repitition
@@ -748,14 +735,6 @@ class ca_data_exporters extends BundlableLabelableBaseModelWithAttributes {
 					
 				}
 			}
-			/*if($va_info['refinery']){
-				$va_item_settings['refineries'] = array($va_info['refinery']);
-			}
-			if (is_array($va_info['refinery_options'])) {
-				foreach($va_info['refinery_options'] as $vs_k => $vs_v) {
-					$va_item_settings[$va_info['refinery'].'_'.$vs_k] = $vs_v;
-				}
-			}*/	
 			
 			$vn_parent_id = null;
 			if($va_info['parent_id']){ $vn_parent_id = $va_id_map[$va_info['parent_id']]; }
