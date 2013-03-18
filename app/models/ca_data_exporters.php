@@ -1037,19 +1037,9 @@ class ca_data_exporters extends BundlableLabelableBaseModelWithAttributes {
 		// (e.g. hierarchy children or related items in another table, restricted by types or relationship types)
 		if(!$vb_ignore_context && ($vs_context = $t_exporter_item->getSetting('context'))){
 
-			$va_restrict_to_types = $va_restrict_to_rel_types = $va_check_access = null;
-
-			if($vs_types = $t_exporter_item->getSetting('restrictToTypes')){
-				$va_restrict_to_types = explode(',', $vs_types);
-			}
-
-			if($vs_rel_types = $t_exporter_item->getSetting('restrictToRelationshipTypes')){
-				$va_restrict_to_rel_types = explode(',', $vs_rel_types);
-			}
-
-			if($vs_check_access = $t_exporter_item->getSetting('checkAccess')){
-				$va_check_access = explode(',', $vs_check_access);
-			}
+			$va_restrict_to_types = $t_exporter_item->getSetting('restrictToTypes');
+			$va_restrict_to_rel_types = $t_exporter_item->getSetting('restrictToRelationshipTypes');
+			$va_check_access = $t_exporter_item->getSetting('checkAccess');
 
 			$vs_key = $this->getAppDatamodel()->getTablePrimaryKeyName($vs_context);
 			$vn_new_table_num = $this->getAppDatamodel()->getTableNum($vs_context);
