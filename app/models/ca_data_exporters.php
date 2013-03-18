@@ -937,6 +937,49 @@ class ca_data_exporters extends BundlableLabelableBaseModelWithAttributes {
 	}
 	# ------------------------------------------------------
 	/**
+	 * Export set of records from a given SearchResult object to an array of strings with the individual exports, keyed by primary key.
+	 * The behavior is tailored towards the needs of the OAIPMHService.
+	 * 
+	 * @param string $ps_exporter_code defines the exporter to use
+	 * @param SearchResult $po_result search result as object
+	 * @param  array $pa_options
+	 * 		'start' =
+	 *   	'limit' = 
+	 * @return array exported data
+	 */
+	static public function exportRecordsFromSearchResultToArray($ps_exporter_code, $po_result, $pa_options=null){
+		$vn_start = isset($pa_options['start']) ? (int)$pa_options['start'] : 0;
+		$vn_limit = isset($pa_options['limit']) ? (int)$pa_options['limit'] : 0;
+
+		ca_data_exporters::$s_exporter_cache = array();
+		ca_data_exporters::$s_exporter_item_cache = array();
+
+		require_once(__CA_LIB_DIR__.'/core/Search/SearchResult.php');
+		if(!($po_result instanceof SearchResult)) { return false; }
+		if(!($t_mapping = ca_data_exporters::loadExporterByCode($ps_exporter_code))){ return false; }
+		if(sizeof(ca_data_exporters::checkMapping($ps_exporter_code))>0){ return false; }
+
+		$t_instance = $t_mapping->getAppDatamodel()->getInstanceByTableNum($t_mapping->get('table_num'));
+
+		if (($vn_start > 0) && ($vn_start < $po_result->numHits())) { 
+			$po_result->seek($vn_start); 
+		}
+
+		$va_return = array();
+		$vn_i = 0;
+		while($po_result->nextHit()){
+			if ($vn_limit && ($vn_i >= $vn_limit)) { break; }
+
+			$vn_pk_val = $po_result->get($t_instance->primaryKey());
+			$va_return[$vn_pk_val] = ca_data_exporters::exportRecord($ps_exporter_code,$vn_pk_val);
+
+			$vn_i++;
+		}
+
+		return $va_return;
+	}
+	# ------------------------------------------------------
+	/**
 	 * Check export mapping for format-specific errors
 	 * @param string $ps_exporter_code code identifying the exporter
 	 * @return array Array of errors. Array has size 0 if no errors occurred.
