@@ -123,6 +123,7 @@ class OAIPMHService extends BaseService {
 		parent::__construct($this->opo_request);
 	
 		$this->oaiData = new DomDocument('1.0', 'UTF-8');
+		$this->oaiData->preserveWhiteSpace = false;
 		$this->oaiData->formatOutput = true;
 		$this->oaiData->xmlStandalone = true;
 	
@@ -262,9 +263,10 @@ class OAIPMHService extends BaseService {
 			'adminEmail'        => $this->opa_provider_info['admin_email'],
 			'earliestDatestamp' => self::unixToUtc($t_change_log->getEarliestTimestampForIDs($this->opa_provider_info['target'], null)),
 			'deletedRecord'     => 'transient',
-			'granularity'       => self::OAI_GRANULARITY_STRING);
-		$identify = $this->createElementWithChildren($oaiData,
-			$oaiData->documentElement, 'Identify', $elements);
+			'granularity'       => self::OAI_GRANULARITY_STRING
+		);
+
+		$identify = $this->createElementWithChildren($oaiData,$oaiData->documentElement, 'Identify', $elements);
 
 		if(extension_loaded('zlib') && ini_get('zlib.output_compression')) {
 			$gzip = $oaiData->createElement('compression', 'gzip');
@@ -646,7 +648,7 @@ class OAIPMHService extends BaseService {
 				),
 			'version' => __CollectiveAccess__,
 			'URL' => 'http://collectiveaccess.org'
-			);
+		);
 		$o_toolkit = $this->createElementWithChildren($pa_oai_data, $po_parent_element, 'toolkit', $va_elements);
 		$o_toolkit->setAttribute('xsi:schemaLocation', "$vs_toolkit_namespace $vs_toolkit_schema");
 		$o_toolkit->setAttribute('xmlns', $vs_toolkit_namespace);
@@ -745,7 +747,7 @@ class OAIPMHService extends BaseService {
 		if($vs_from && $vs_until && $vs_from_gran != $vs_until_gran) {
 			$this->throwError(self::OAI_ERR_BAD_ARGUMENT, _t("Date/time parameter of differing granularity"));
 		}
-	
+
 		if ($vs_metadata_prefix) {
 			if(in_array($vs_metadata_prefix, $this->getMetadataFormats())){
 				return !$this->error;
