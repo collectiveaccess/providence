@@ -444,15 +444,16 @@ class OAIPMHService extends BaseService {
 	 */
 	private function listResponse($oaiData, $verb, $metadataPrefix, $cursor, $set, $from, $until) {
 		$listLimit = $this->_listLimit;
-	
 		$o_dm = Datamodel::load();
-		$vs_table = $this->opa_provider_info['target'];
-		$t_instance = $o_dm->getInstanceByTableName($vs_table, true);
+		// by this point, the mapping code was checked to be valid
+		$t_exporter = ca_data_exporters::loadExporterByCode($this->getMappingCode());
+		$t_instance = $o_dm->getInstanceByTableNum($t_exporter->get('table_num'), true);
 		$vs_pk = $t_instance->primaryKey();
 		$va_access_values = caGetUserAccessValues($this->opo_request, $this->opa_provider_info);
 	
 		$vb_show_deleted = (bool)$this->opa_provider_info['show_deleted'];
 		$vb_dont_cache = (bool)$this->opa_provider_info['dont_cache'];
+		$vs_table = $t_instance->tableName();
 	
 		if(!($o_search = caGetSearchInstance($vs_table))) { 
 			$this->throwError(self::OAI_ERR_BAD_ARGUMENT);
@@ -519,14 +520,12 @@ class OAIPMHService extends BaseService {
 			}
 		
 			// Export data using metadata mapping
-			$o_exporter = new DataExporter();
-			$va_items = $o_exporter->export($this->getMappingCode(), $qr_res, null, array('returnDom' => false, 'start' => $cursor, 'limit' => $listLimit));
-		
+			$va_items = ca_data_exporters::exportRecordsFromSearchResultToArray($this->getMappingCode(),$qr_res);
 			if (is_array($va_items) && sizeof($va_items)) {
 				$va_timestamps = $t_change_log->getLastChangeTimestampsForIDs($vs_table, array_keys($va_items));
 				foreach($va_items as $vn_id => $vs_item_xml) {
 				
-					if ($vb_show_deleted && $va_deleted_items[$vn_id]) {						
+					if ($vb_show_deleted && $va_deleted_items[$vn_id]) {
 						$headerData = array(
 							'identifier' => OaiIdentifier::itemToOaiId($vn_id),
 							// TODO: how do we efficiently fish out the date the "access" field was changed to private? 
@@ -561,21 +560,21 @@ class OAIPMHService extends BaseService {
 				}
 			} 
 			if($rows > ($cursor + $listLimit)) {
-				$token = $this->createResumptionToken($verb,
-													  $metadataPrefix,
-													  $cursor + $listLimit,
-													  $set,
-													  $from,
-													  $until);
+				$token = $this->createResumptionToken(
+					$verb,
+					$metadataPrefix,
+					$cursor + $listLimit,
+					$set,
+					$from,
+					$until
+				);
 
 				$tokenElement = $oaiData->createElement('resumptionToken', $token['key']);
-				$tokenElement->setAttribute('expirationDate',
-					self::unixToUtc($token['expiration']));
+				$tokenElement->setAttribute('expirationDate',self::unixToUtc($token['expiration']));
 				$tokenElement->setAttribute('completeListSize', $rows);
 				$tokenElement->setAttribute('cursor', $cursor);
 				$verbElement->appendChild($tokenElement);
-			}
-			else if($cursor != 0) {
+			} else if($cursor != 0) {
 				$tokenElement = $this->oaiData->createElement('resumptionToken');
 				$verbElement->appendChild($tokenElement);
 			}
@@ -718,9 +717,9 @@ class OAIPMHService extends BaseService {
 			$this->throwError(self::OAI_ERR_BAD_ARGUMENT, _t("Duplicate parameters in request"));
 		}
 	
-	
 		if((!($vs_metadata_prefix = $this->opo_request->getParameter('metadataPrefix', pString))) && ((in_array('metadataPrefix', $pa_required_parameters)) || (in_array('metadataPrefix', $pa_optional_parameters))) && $this->opa_provider_info['default_format']) {
 			$_REQUEST['metadataPrefix'] = $vs_metadata_prefix = $this->opa_provider_info['default_format'];
+			$this->opo_request->setParameter('metadataPrefix', $vs_metadata_prefix, 'REQUEST');
 		}
 	
 		$va_keys = array_keys($_REQUEST);
