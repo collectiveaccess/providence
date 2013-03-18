@@ -223,6 +223,11 @@ class ItemService extends BaseJSONService {
 			//
 
 			$va_related_items = $t_instance->get($vs_rel_table,array("returnAsArray" => true));
+			
+			if($this->ops_table == "ca_objects" && $vs_rel_table=="ca_object_representations") {
+				$va_return['representations'] = $t_instance->getRepresentations(array('preview170', 'medium'));
+			}
+			
 			if(is_array($va_related_items) && sizeof($va_related_items)>0){
 				$va_return["related"][$vs_rel_table] = array_values($va_related_items);
 			}

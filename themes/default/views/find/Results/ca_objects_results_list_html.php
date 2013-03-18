@@ -53,10 +53,10 @@
 				if ($va_display_item['is_sortable']) {
 					if ($vs_current_sort == $va_display_item['bundle_sort']) {
 						print "<th class='list-header-sorted-asc'><span id='listHeader".$vn_id_count."'><nobr>".((unicode_strlen($va_display_item['display']) > 30) ? strip_tags(mb_substr($va_display_item['display'], 0, 27))."..." : $va_display_item['display'])."</nobr></span></th>";
-						TooltipManager::add('#listHeader'.$vn_id_count , 'Currently sorting by '.$va_display_item['display']);
+						TooltipManager::add('#listHeader'.$vn_id_count , _t("Currently sorting by ").$va_display_item['display']);
 					} else {
 						print "<th class='list-header-unsorted'><span id='listHeader1".$vn_id_count."'><nobr>".caNavLink($this->request, ((unicode_strlen($va_display_item['display']) > 30) ? strip_tags(mb_substr($va_display_item['display'], 0, 27))."..." : $va_display_item['display']), '', $this->request->getModulePath(), $this->request->getController(), 'Index', array('sort' => $va_display_item['bundle_sort'])) ."</nobr></span></th>";
-						TooltipManager::add('#listHeader1'.$vn_id_count , 'Click to sort by '.$va_display_item['display']);
+						TooltipManager::add('#listHeader1'.$vn_id_count , _t("Click to sort by ").$va_display_item['display']);
 					}
 				} else {
 					print "<th class='list-header-nosort'><span id='listHeader2".$vn_id_count."'><nobr>".((unicode_strlen($va_display_item['display']) > 30) ? strip_tags(mb_substr($va_display_item['display'], 0, 27))."..." : $va_display_item['display'])."</nobr></span></th>";

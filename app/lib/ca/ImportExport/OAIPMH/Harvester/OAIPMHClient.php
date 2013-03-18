@@ -89,13 +89,15 @@
 		 */ 
 		public function fetch($ps_base_url, $pa_arguments) {
 			// Add set spec
-			if ($vs_set = $this->ops_set) {
-				$pa_arguments['set'] = $vs_set;
-			}
+			if (!isset($pa_arguments['resumptionToken'])) {
+				if ($vs_set = $this->ops_set) {
+					$pa_arguments['set'] = $vs_set;
+				}
 		
-			if ($this->ops_from && $this->ops_to ) {
-				$pa_arguments['from'] = $this->ops_from;
-				$pa_arguments['to'] = $this->ops_to;
+				if ($this->ops_from && $this->ops_to ) {
+					$pa_arguments['from'] = $this->ops_from;
+					$pa_arguments['to'] = $this->ops_to;
+				}
 			}
 			
 			$vs_request_url = $this->getRequestURL($ps_base_url, $pa_arguments);
@@ -106,16 +108,24 @@
 			if ($this->ops_username) {
 				$o_context = stream_context_create(array(
 					'http' => array(
-					'header'  => "Authorization: Basic " . base64_encode($this->ops_username.":".$this->ops_password)
+					'header'  => "Authorization: Basic " . base64_encode($this->ops_username.":".$this->ops_password),
+					'timeout' => 120
 					)
 				));
 			}
 			
 			//print "DEBUG: FETCH URL {$vs_request_url}\n";
-			if (!($vs_content = @file_get_contents($vs_request_url, false, $o_context))) {
+			if (!($vs_content = file_get_contents($vs_request_url, false, $o_context))) {
 				return null;
 			}
-				//print "content=$vs_content";
+			$vs_content = str_replace('<dc:dc xmlns:dc="http://purl.org/dc/elements/1.1/">', '<oai_dc:dc xmlns:oai_dc="http://www.openarchives.org/OAI/2.0/oai_dc/"
+                    xmlns:dc="http://purl.org/dc/elements/1.1/"
+                    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+                    xsi:schemaLocation="http://www.openarchives.org/OAI/2.0/oai_dc/ http://www.openarchives.org/OAI/2.0/oai_dc.xsd">', $vs_content);
+                    
+            $vs_content = str_replace('xmlns:oai_dc="http://www.openarchives.org/OAI/2.0/"', 'xmlns:oai_dc="http://www.openarchives.org/OAI/2.0/oai_dc/"', $vs_content);            
+            $vs_content = str_replace("</dc:dc>", "</oai_dc:dc>", $vs_content);
+			//	print "content=$vs_content"; die;
 			try {
         		$this->o_response = new SimpleXMLIterator($vs_content);
 			} catch (exception $e) {

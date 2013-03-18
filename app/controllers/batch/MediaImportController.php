@@ -107,6 +107,12 @@
 				_t('Import only media that can be matched with existing records') => 'ALWAYS_MATCH',
 				_t('Import all media, creating new records for each') => 'DONT_MATCH'
 			), array(), array('value' => $va_last_settings['importMode'])));
+			
+			$this->view->setVar('match_mode', caHTMLSelect('match_mode', array(
+				_t('Match using file name') => 'FILE_NAME',
+				_t('Match using directory name') => 'DIRECTORY_NAME',
+				_t('Match using directory name, then file name') => 'FILE_AND_DIRECTORY_NAMES'
+			), array(), array('value' => $va_last_settings['matchMode'])));
  			
  			$this->view->setVar('ca_objects_type_list', $t_object->getTypeListAsHTMLFormElement('ca_objects_type_id', null, array('value' => $va_last_settings['ca_objects_type_id'])));
  			$this->view->setVar('ca_object_representations_type_list', $t_rep->getTypeListAsHTMLFormElement('ca_object_representations_type_id', null, array('value' => $va_last_settings['ca_object_representations_type_id'])));
@@ -167,7 +173,9 @@
  				
  				'importFromDirectory' => $vs_batch_media_import_root_directory.'/'.$vs_directory,
  				'includeSubDirectories' => (bool)$this->request->getParameter('include_subdirectories', pInteger),
+ 				'deleteMediaOnImport' => (bool)$this->request->getParameter('delete_media_on_import', pInteger),
  				'importMode' => $this->request->getParameter('import_mode', pString),
+ 				'matchMode' => $this->request->getParameter('match_mode', pString),
  				'ca_objects_type_id' => $this->request->getParameter('ca_objects_type_id', pInteger),
  				'ca_object_representations_type_id' => $this->request->getParameter('ca_object_representations_type_id', pInteger),
  				'ca_objects_status' => $this->request->getParameter('ca_objects_status', pInteger),

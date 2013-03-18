@@ -60,4 +60,4 @@
 
 	<div class="editorBottomPadding"><!-- empty --></div>
 	
-	<?php print caEditorFieldList($va_bundle_list); ?>
+	<?php print caSetupEditorScreenOverlays($this->request, $t_tour, $va_bundle_list); ?>

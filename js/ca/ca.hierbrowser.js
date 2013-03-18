@@ -580,7 +580,7 @@ if (that.uiStyle == 'horizontal') {
 			}
 			
 			if (that.currentSelectionIDID) {
-				jQuery('#' + that.currentSelectionIDID).attr('value', null);
+				jQuery('#' + that.currentSelectionIDID).attr('value', "X");		// X=extract
 			}
 			jQuery("#hierBrowser_" + that.name + "_extract_container").css('opacity', 1.0);
 			

@@ -264,7 +264,10 @@
  			}
  			
  			$vb_include_subdirectories 			= (bool)$pa_options['includeSubDirectories'];
+ 			$vb_delete_media_on_import			= (bool)$pa_options['deleteMediaOnImport'];
+ 			
  			$vs_import_mode 					= $pa_options['importMode'];
+ 			$vs_match_mode 						= $pa_options['matchMode'];
  			$vn_object_type_id 					= $pa_options['ca_objects_type_id'];
  			$vn_rep_type_id 					= $pa_options['ca_object_representations_type_id'];
  			
@@ -359,6 +362,8 @@
  			foreach($va_files_to_process as $vs_file) {
  				$va_tmp = explode("/", $vs_file);
  				$f = array_pop($va_tmp);
+ 				$d = array_pop($va_tmp);
+ 				array_push($va_tmp, $d);
  				$vs_directory = join("/", $va_tmp);
  				
  				$vs_relative_directory = preg_replace("!{$vs_batch_media_import_root_directory}[/]*!", "", $vs_directory); 
@@ -381,23 +386,39 @@
 				if (in_array($vs_import_mode, array('TRY_TO_MATCH', 'ALWAYS_MATCH'))) {
 					foreach($va_regex_list as $vs_regex_name => $va_regex_info) {
 						foreach($va_regex_info['regexes'] as $vs_regex) {
-							if (preg_match('!'.$vs_regex.'!', $f, $va_matches)) {
-								if (!$vs_idno || (strlen($va_matches[1]) < strlen($vs_idno))) {
-									$vs_idno = $va_matches[1];
-								}
-								if (!$vs_modified_filename || (strlen($vs_modified_filename)  > strlen($va_matches[1]))) {
-									$vs_modified_filename = $va_matches[1];
-								}
+							$va_names_to_match = array();
+							switch($vs_match_mode) {
+								case 'DIRECTORY_NAME':
+									$va_names_to_match = array($d);
+									break;
+								case 'FILE_AND_DIRECTORY_NAMES':
+									$va_names_to_match = array($f, $d);
+									break;
+								default:
+								case 'FILE_NAME':
+									$va_names_to_match = array($f);
+									break;
+							}
+						
+							foreach($va_names_to_match as $vs_match_name) {
+								if (preg_match('!'.$vs_regex.'!', $vs_match_name, $va_matches)) {
+									if (!$vs_idno || (strlen($va_matches[1]) < strlen($vs_idno))) {
+										$vs_idno = $va_matches[1];
+									}
+									if (!$vs_modified_filename || (strlen($vs_modified_filename)  > strlen($va_matches[1]))) {
+										$vs_modified_filename = $va_matches[1];
+									}
 								
-								if ($t_object->load(array('idno' => $va_matches[1], 'deleted' => 0))) {
+									if ($t_object->load(array('idno' => $va_matches[1], 'deleted' => 0))) {
 								
-									$va_notices[$vs_relative_directory.'/'.$f.'_match'] = array(
-										'idno' => $t_object->get($t_object->getProperty('ID_NUMBERING_ID_FIELD')),
- 										'label' => $t_object->getLabelForDisplay(),
- 										'message' => _t('Matched media %1 from %2 to object using %2', $f, $vs_relative_directory, $vs_regex_name),
- 										'status' => 'MATCHED'
- 									);
-									break(2);
+										$va_notices[$vs_relative_directory.'/'.$vs_match_name.'_match'] = array(
+											'idno' => $t_object->get($t_object->getProperty('ID_NUMBERING_ID_FIELD')),
+											'label' => $t_object->getLabelForDisplay(),
+											'message' => _t('Matched media %1 from %2 to object using %2', $f, $vs_relative_directory, $vs_regex_name),
+											'status' => 'MATCHED'
+										);
+										break(3);
+									}
 								}
 							}
 						}
@@ -439,7 +460,11 @@
 						);
 						$o_trans->rollback();
 						continue;
-					}	
+					} else {
+						if ($vb_delete_media_on_import) {
+							@unlink($vs_directory.'/'.$f);
+						}
+					}
 				} else {
 					// should we create new object?
 					if (in_array($vs_import_mode, array('TRY_TO_MATCH', 'DONT_MATCH'))) {
@@ -519,6 +544,10 @@
 							);
 							$o_trans->rollback();
 							continue;
+						} else {
+							if ($vb_delete_media_on_import) {
+								@unlink($vs_directory.'/'.$f);
+							}
 						}
 					}
 				}

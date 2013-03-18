@@ -26,6 +26,8 @@
  * ----------------------------------------------------------------------
  */
  
+ 			JavascriptLoadManager::register('tableList');
+ 			
 	$t_order = $this->getVar('t_order');
 	$t_order->set('order_type', 'L');
 	$vn_order_id = (int)$t_order->getPrimaryKey();
@@ -226,18 +228,22 @@
 			print "<b>"._t("Cost Breakdown").":</b> ".join(" + ", $va_output);
 		}
 ?></div>
-<?php
-	;
-?>
+
 	<div >
 		<?php print "<h1>".((($vn_item_count = sizeof($va_items)) != 1) ? _t("%1 Items", $vn_item_count) : _t("%1 Item", $vn_item_count))." <span style='font-size:.65em;'>".caNavLink($this->request, _t('Manage'), '', 'client/library', 'OrderEditor', 'ItemList', array('order_id' => $vn_order_id))."</span> <span style='font-size:.65em;'>".caNavLink($this->request, _t('Print checklist'), '', 'client/library', 'OrderEditor', 'GetCheckList', array('order_id' => $vn_order_id))."</span></h1>"; ?>
 	</div>
 	
+	<script language="JavaScript" type="text/javascript">
+		jQuery(document).ready(function(){
+			jQuery('#caLoanList').caFormatListTable();
+		});
+	</script>
 <?php
-print "<table cellspacing='0' style='padding: 0px 5px 0px 5px;'>";
-print "<tr style='font-weight:bold; text-transform: uppercase; background-color: #f1f1f1;'><td width='200'>"._t('Item Name')."</td><td>"._t('ID')."</td><td>"._t('Checkout Date')."</td><td>"._t('Due Date')."</td><td>"._t('Returned')."</td></tr>";
+print "<table id='caLoanList' class='listtable' width='100%' border='0' cellpadding='0' cellspacing='0'>";
+print "<thead><tr style='font-weight:bold; text-transform: uppercase; background-color: #f1f1f1;'><th width='200' class='list-header-unsorted'>"._t('Item Name')."</th><th class='list-header-unsorted'>"._t('ID')."</th><th class='list-header-unsorted'>"._t('Checkout Date')."</th><th class='list-header-unsorted'>"._t('Due Date')."</th><th class='list-header-unsorted'>"._t('Returned')."</th></tr></thead>";
 $va_outstanding = 0;
 $va_overdue = 0;
+print "<tbody>\n";
 foreach ($va_items as $va_item) {
 	$vn_object_id = $va_item['object_id'];
 	print "<tr>";
@@ -264,6 +270,7 @@ foreach ($va_items as $va_item) {
 		".itemTitle{$vn_object_id}", "<table><tr><td>".$va_item['thumbnail_tag']."</td><td><b>".$va_item['idno']."<br/><br/></b>".$va_item['name']."</td></tr></table>"
 	);
 }
+print "</tbody>\n";
 print "</table>";
 
 if ($va_outstanding != 0) {

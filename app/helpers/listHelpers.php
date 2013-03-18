@@ -65,4 +65,17 @@ require_once(__CA_MODELS_DIR__.'/ca_lists.php');
 		return $t_list->getItemFromListForDisplay($ps_list_code, $ps_idno, $pb_return_plural);
 	}
 	# ---------------------------------------
+	/**
+	 * Fetch item_id for item with specified label. Value must match exactly.
+	 *
+	 * @param string $ps_list_code List code
+	 * @param string $ps_label The label value to search for
+	 * @return int item_id of list item or null if no matching item was found
+	 */
+	function caGetListItemIDForLabel($ps_list_code, $ps_label) {
+		$t_list = new ca_lists();
+		
+		return $t_list->getItemIDFromListByLabel($ps_list_code, $ps_label);
+	}
+	# ---------------------------------------
 ?>

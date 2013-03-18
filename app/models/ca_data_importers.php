@@ -792,7 +792,7 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 		}
 		
 		// If no formats then default to everything
-		if (!$va_settings['inputFormats'] || !is_array($va_settings['inputFormats']) || !sizeof($va_settings['inputFormats'])) {
+		if (!isset($va_settings['inputFormats']) || !is_array($va_settings['inputFormats']) || !sizeof($va_settings['inputFormats'])) {
 			$va_settings['inputFormats'] = array_values(ca_data_importers::getAvailableInputFormats());
 		}
 		
@@ -1152,6 +1152,7 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 			return false;
 		}
 		$t_subject->setTransaction($o_trans);
+		$vs_subject_table_name = $t_subject->tableName();
 		
 		$t_label = $t_subject->getLabelTableInstance();
 		$t_label->setTransaction($o_trans);

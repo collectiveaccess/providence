@@ -104,6 +104,8 @@
 					$va_opts['checked'] = 1;
 				} 
 				print caHTMLCheckboxInput('include_subdirectories', $va_opts).' '._t('Include all sub-directories'); 
+				$va_opts['style'] = 'margin-left: 10px';
+				print caHTMLCheckboxInput('delete_media_on_import', $va_opts).' '._t('Delete media after import'); 
 ?>	
 				</div>
 			</div>
@@ -115,6 +117,18 @@
 						<p>
 <?php
 			print $this->getVar('import_mode');
+?>	
+						</p>
+					</div>
+				</div>
+		</div>
+		<div class='bundleLabel'>
+			<span class="formLabelText"><?php print _t('Matching'); ?></span> 
+				<div class="bundleContainer">
+					<div class="caLabelList" >
+						<p>
+<?php
+			print $this->getVar('match_mode');
 ?>	
 						</p>
 					</div>
