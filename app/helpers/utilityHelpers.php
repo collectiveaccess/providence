@@ -1498,6 +1498,19 @@ function caFileIsIncludable($ps_file) {
 	}
 	# ---------------------------------------
 	/**
+	 * Determines if current request was via service.php
+	 *
+	 * @return boolean true if request addressed service.php, false if not
+	 */
+	function caIsServiceRequest() {
+		if(isset($_SERVER['SCRIPT_NAME']) && ($_SERVER['SCRIPT_NAME'] == '/service.php')){
+			return true;
+		} else {
+			return false;
+		}
+	}
+	# ---------------------------------------
+	/**
 	 * 
 	 *
 	 * @param array $pa_options
@@ -1659,24 +1672,7 @@ function caFileIsIncludable($ps_file) {
 	 */
 	function caDebug($vm_data, $vs_label = null, $print_r = false) {
 		if(defined('__CA_ENABLE_DEBUG_OUTPUT__') && __CA_ENABLE_DEBUG_OUTPUT__) {
-			if(!caIsRunFromCLI()){
-				$vs_string = htmlspecialchars(($print_r ? print_r($vm_data, TRUE) : var_export($vm_data, TRUE)), ENT_QUOTES, 'UTF-8');
-				$vs_string = '<pre>' . $vs_string . '</pre>';
-				$vs_string = trim($vs_label ? "<div id='debugLabel'>$vs_label:</div> $vs_string" : $vs_string);
-				$vs_string = '<div id="debug">'. $vs_string . '</div>';
-
-				global $g_response;
-				if(is_object($g_response)){
-					$g_response->prependContent($vs_string,'debug');
-				} else {
-					// on the off chance that someone wants to debug something that happens before 
-					// the response object is generated (like config checks), print content
-					// to output buffer to avoid headers already sent warning. The output is sent
-					// when someone (e.g. View.php) starts a new buffer.
-					ob_start();
-					print $vs_string;
-				}
-			} else {
+			if(caIsRunFromCLI()){
 				// simply dump stuff on command line
 				if($vs_label) { print $vs_label.":\n"; }
 				if($print_r) {
@@ -1685,6 +1681,33 @@ function caFileIsIncludable($ps_file) {
 					var_export($vm_data);
 				}
 				print "\n";
+				return;
+			} else if (caIsServiceRequest()){
+				$vs_data = caEscapeForXML(($print_r ? print_r($vm_data, TRUE) : var_export($vm_data, TRUE)));
+				if($vs_label){
+					$vs_string = '<debugLabel>' . $vs_label . '</debugLabel>' . "\n";
+				} else {
+					$vs_string = "";
+				}
+				$vs_string .= '<debug>' . $vs_data . '</debug>';
+				$vs_string .= "\n\n";
+			} else {
+				$vs_string = htmlspecialchars(($print_r ? print_r($vm_data, TRUE) : var_export($vm_data, TRUE)), ENT_QUOTES, 'UTF-8');
+				$vs_string = '<pre>' . $vs_string . '</pre>';
+				$vs_string = trim($vs_label ? "<div id='debugLabel'>$vs_label:</div> $vs_string" : $vs_string);
+				$vs_string = '<div id="debug">'. $vs_string . '</div>';
+			}
+
+			global $g_response;
+			if(is_object($g_response)){
+				$g_response->prependContent($vs_string,'debug');
+			} else {
+				// on the off chance that someone wants to debug something that happens before 
+				// the response object is generated (like config checks), print content
+				// to output buffer to avoid headers already sent warning. The output is sent
+				// when someone (e.g. View.php) starts a new buffer.
+				ob_start();
+				print $vs_string;
 			}
 		}
 	}
