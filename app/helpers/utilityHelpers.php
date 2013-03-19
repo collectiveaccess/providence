@@ -1196,6 +1196,7 @@ function caFileIsIncludable($ps_file) {
 			"paddingString" => " ",
 			"paddingMultiplier" => 2,
 			"wordwrapCData" => false,
+			"multipleLineCData" => false,
 		);
 
 		$vr_input = fopen('data://text/plain,'.$ps_xml, 'r');
