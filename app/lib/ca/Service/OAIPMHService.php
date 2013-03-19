@@ -308,7 +308,7 @@ class OAIPMHService extends BaseService {
 		$oaiData->documentElement->appendChild($listMetadataFormats);
 		foreach($this->opa_provider_info['formats'] as $vs_format => $va_format) {
 			$elements = array( 
-				'metadataPrefix'    => $va_format['metadataPrefix'],
+				'metadataPrefix'    => $vs_format,
 				'schema'            => $va_format['schema'],
 				'metadataNamespace' => $va_format['metadataNamespace'],
 			);
@@ -613,26 +613,6 @@ class OAIPMHService extends BaseService {
 		$o_cache->save($va_token_info, $vs_key);
 	
 		return $va_token_info;
-	}
-	# -------------------------------------------------------
-	/**
-	 * Returns list of valid data exporter mapping codes usable for the current provider
-	 *
-	 * @return array flat list of codes
-	 */
-	private function getMetadataFormats() {
-		$va_configured_formats = is_array($this->opa_provider_info['formats']) ? $this->opa_provider_info['formats'] : array();
-		$va_metadata_formats = array();
-
-		foreach($va_configured_formats as $vs_format => $va_config) {
-			if(!isset($va_config['mapping']) || !$va_config['mapping']){ continue; }
-
-			if(ca_data_exporters::loadExporterByCode($va_config['mapping'])){
-				$va_metadata_formats[] = $va_config['mapping'];
-			}
-		}
-	
-		return $va_metadata_formats;
 	}
 	# -------------------------------------------------------
 	/**
