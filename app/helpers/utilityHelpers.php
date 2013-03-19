@@ -1668,7 +1668,7 @@ function caFileIsIncludable($ps_file) {
 				print "\n";
 				return;
 			} else if (caIsServiceRequest()){
-				$vs_data = caEscapeForXML(($print_r ? print_r($vm_data, TRUE) : var_export($vm_data, TRUE)));
+				$vs_data = ($print_r ? print_r($vm_data, TRUE) : var_export($vm_data, TRUE));
 				if($vs_label){
 					$vs_string = '<debugLabel>' . $vs_label . '</debugLabel>' . "\n";
 				} else {
