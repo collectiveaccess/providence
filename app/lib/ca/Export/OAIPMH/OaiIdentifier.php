@@ -77,6 +77,7 @@ class OaiIdentifier {
 		//must set xmlns attribute manually to avoid DOM extension appending 
 		//default: prefix to element name
 		$oaiIdentifier->setAttribute('xmlns', self::OAI_IDENTIFIER_NAMESPACE_URI);
+		$oaiIdentifier->setAttribute('xmlns:xsi', "http://www.w3.org/2001/XMLSchema-instance");
 		$oaiIdentifier->setAttribute('xsi:schemaLocation',self::OAI_IDENTIFIER_NAMESPACE_URI . ' ' . self::OAI_IDENTIFIER_SCHEMA_URI);
    }
 }

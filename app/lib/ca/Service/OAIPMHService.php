@@ -523,7 +523,7 @@ class OAIPMHService extends BaseService {
 			}
 		
 			// Export data using metadata mapping
-			$va_items = ca_data_exporters::exportRecordsFromSearchResultToArray($this->getMappingCode(),$qr_res);
+			$va_items = ca_data_exporters::exportRecordsFromSearchResultToArray($this->getMappingCode(),$qr_res,array('start' => $cursor, 'limit' => $listLimit));
 			if (is_array($va_items) && sizeof($va_items)) {
 				$va_timestamps = $t_change_log->getLastChangeTimestampsForIDs($vs_table, array_keys($va_items));
 				foreach($va_items as $vn_id => $vs_item_xml) {
@@ -556,7 +556,9 @@ class OAIPMHService extends BaseService {
 							$this->createElementWithChildren($oaiData, $recordElement, 'header', $headerData);
 							$metadataElement = $oaiData->createElement('metadata');
 							$o_doc_src = DomDocument::loadXML($vs_item_xml);
-							$metadataElement->appendChild($oaiData->importNode($o_doc_src->documentElement, true));
+							if($o_doc_src) { // just in case the xml fails to load through DomDocument for some reason (e.g. a bad mapping or very weird characters)
+								$metadataElement->appendChild($oaiData->importNode($o_doc_src->documentElement, true));
+							}
 							$recordElement->appendChild($metadataElement);
 						}
 					}
