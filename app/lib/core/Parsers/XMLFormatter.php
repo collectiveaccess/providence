@@ -105,6 +105,16 @@ class XML_Formatter
 		"inputEOL" => "\n",
 		"outputEOL" => "\n"
 	);
+
+	/**
+	 * Indicates previous parser state:
+	 * 	0: non-empty text inside an element
+	 * 	1: non-empty opening tag for element
+	 * 	2: empty opening (and closing as in <foo />) tag for element
+	 * 	3: non-empty closing element
+	 * @var integer
+	 */
+	protected $_prev = 0;
 	
 	/**
      * Constructor
@@ -151,6 +161,10 @@ class XML_Formatter
      */
 	protected function _cbElementStart($parser, $name, Array $attributes)
 	{
+		if($this->_prev == 1) {
+			fwrite($this->_output, "\n");
+		}
+
 		$idx = xml_get_current_byte_index($this->_parser);
 		
 		$this->_empty = $this->_buffer[$idx - $this->_offset] == '/';
@@ -160,9 +174,14 @@ class XML_Formatter
 			$attrs .= " " . $key . "=\"" . $val . "\"";
 		}
 		
-		fwrite($this->_output, $this->_getPaddingStr() . "<" . $name . $attrs . ($this->_empty ? ' />' : '>') . "\n");
+		fwrite($this->_output, $this->_getPaddingStr() . "<" . $name . $attrs . ($this->_empty ? ' />' : '>'));
 		
-		if (!$this->_empty) ++$this->_depth;
+		if ($this->_empty) {
+			$this->_prev = 2;	
+		} else {
+			++$this->_depth;
+			$this->_prev = 1;
+		}
 	}
 	
 	/**
@@ -175,9 +194,13 @@ class XML_Formatter
 	protected function _cbElementEnd($parser, $name)
 	{
 		if (!$this->_empty) {
+			if($this->_prev == 2){
+				fwrite($this->_output, "\n");
+			}
 			--$this->_depth;
 			
-			fwrite($this->_output, $this->_getPaddingStr() . "</" . $name . ">" . "\n");
+			fwrite($this->_output, (($this->_prev == 0) ? "" : $this->_getPaddingStr()) . "</" . $name . ">" . "\n");
+			$this->_prev = 3;
 		} else {
 			$this->_empty = false;
 		}
@@ -199,6 +222,7 @@ class XML_Formatter
 		$data = trim($data);
 			
 		if (strlen($data)) {
+			$this->_prev = 0;
 			$pad = $this->_getPaddingStr();
 			
 			if ($this->_options["multipleLineCData"]) {
@@ -214,7 +238,7 @@ class XML_Formatter
 				$data = wordwrap($data, $this->_options["wordwrapCData"], $this->_options["outputEOL"] . $pad, false);
 			}
 			
-			fwrite($this->_output, $pad . $data . "\n");
+			fwrite($this->_output, $data);
 		}
 	}
 	
