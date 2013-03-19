@@ -762,6 +762,11 @@ class OAIPMHService extends BaseService {
 		}
 
 		$this->exporter = ca_data_exporters::loadExporterByCode($this->getMappingCode());
+
+		if($this->exporter->getSetting('exporter_format') != "XML"){
+			$this->throwError(self::OAI_ERR_BAD_ARGUMENT, _t("Selected mapping %1 is invalid",$this->getMappingCode()));
+		}
+
 		$this->table = $this->exporter->getAppDatamodel()->getTableName($this->exporter->get('table_num'));
 
 		return !$this->error;
