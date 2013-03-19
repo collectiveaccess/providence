@@ -161,7 +161,7 @@ class XML_Formatter
      */
 	protected function _cbElementStart($parser, $name, Array $attributes)
 	{
-		if($this->_prev == 1) {
+		if($this->_prev == 1 || $this->_prev == 2) {
 			fwrite($this->_output, "\n");
 		}
 
@@ -238,7 +238,7 @@ class XML_Formatter
 				$data = wordwrap($data, $this->_options["wordwrapCData"], $this->_options["outputEOL"] . $pad, false);
 			}
 			
-			fwrite($this->_output, $data);
+			fwrite($this->_output, caEscapeForXML($data));
 		}
 	}
 	
