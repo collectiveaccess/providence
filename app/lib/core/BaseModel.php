@@ -8341,15 +8341,19 @@ $pa_options["display_form_field_tips"] = true;
 				$va_rel_keys = $va_rel_info['rel_keys'];
 				$vb_is_one_table = ($this->tableName() == $va_rel_keys['one_table']) ? true : false;
 			
+				$vs_where_sql = "(ot.".$va_rel_keys['one_table_field']." = ?) AND (mt.".$va_rel_keys['many_table_field']." = ?)";
+				
 				if ($vb_is_one_table) {
-					$vs_where_sql = "ot.".$va_rel_keys['one_table_field']." = ?";
+					$va_query_params[] = (int)$this->getPrimaryKey();
+					$va_query_params[] = (int)$pn_rel_id;
 				} else {
-					$vs_where_sql = "mt.".$va_rel_keys['many_table_field']." = ?";
+					$va_query_params[] = (int)$pn_rel_id;
+					$va_query_params[] = (int)$this->getPrimaryKey();	
 				}
-				$va_query_params[] = (int)$this->getPrimaryKey();
+				
 			
 				$vs_relation_id_fld = ($vb_is_one_table ? "mt.".$va_rel_keys['many_table_field'] : "ot.".$va_rel_keys['one_table_field']);
-				$qr_res = $o_db->query("
+				$qr_res = $o_db->query($x="
 					SELECT {$vs_relation_id_fld}
 					FROM {$va_rel_keys['one_table']} ot
 					INNER JOIN {$va_rel_keys['many_table']} AS mt ON mt.{$va_rel_keys['many_table_field']} = ot.{$va_rel_keys['one_table_field']}
