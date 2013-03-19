@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2011 Whirl-i-Gig
+ * Copyright 2011-2013 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -111,6 +111,16 @@ class OAIPMHService extends BaseService {
 	 * Base url of the provider
 	 */
 	private $_baseUrl;
+
+	/**
+	 * ca_data_exporters object representing the selected mapping (as soon as it's been selected, i.e. on request)
+	 */
+	private $exporter;
+
+	/**
+	 * 'target' table name for the current request
+	 */
+	private $table;
 	
 	# -------------------------------------------------------
 	/** 
@@ -296,12 +306,11 @@ class OAIPMHService extends BaseService {
 		}
 		$listMetadataFormats = $oaiData->createElement('ListMetadataFormats');
 		$oaiData->documentElement->appendChild($listMetadataFormats);
-		foreach($this->getMetadataFormats() as $vs_format => $o_format) {
-			if (!method_exists($o_format, 'getMetadataPrefix')) { continue; }
+		foreach($this->opa_provider_info['formats'] as $vs_format => $va_format) {
 			$elements = array( 
-				'metadataPrefix'    => $o_format->getMetadataPrefix(),
-				'schema'            => $o_format->getMetadataSchema(),
-				'metadataNamespace' => $o_format->getMetadataNamespace()
+				'metadataPrefix'    => $va_format['metadataPrefix'],
+				'schema'            => $va_format['schema'],
+				'metadataNamespace' => $va_format['metadataNamespace'],
 			);
 			$this->createElementWithChildren($oaiData, $listMetadataFormats, 'metadataFormat', $elements);
 		}
@@ -322,8 +331,7 @@ class OAIPMHService extends BaseService {
 	
 		$o_dm = Datamodel::load();
 	
-		$t_exporter = ca_data_exporters::loadExporterByCode($this->getMappingCode());
-		$t_item = $o_dm->getInstanceByTableNum($t_exporter->get('table_num'),true);
+		$t_item = $o_dm->getInstanceByTableName($this->table,true);
 	
 		if (!($t_item->load($vs_item_id))) {
 			// error - identifier invalid
@@ -352,16 +360,13 @@ class OAIPMHService extends BaseService {
 	# -------------------------------------------------------
 	/**
 	 * Responds to ListSets OAI verb
-	 *
-	 * 
 	 */
 	private function listSets($oaiData) {
-		
 		$listSets = $oaiData->createElement('ListSets');     
 		$oaiData->documentElement->appendChild($listSets);
 	
 		if ($vs_facet_name = $this->opa_provider_info['setFacet']) {
-			$o_browse = caGetBrowseInstance($this->opa_provider_info['target']);
+			$o_browse = caGetBrowseInstance($this->table);
 		
 			if (($vs_query = $this->opa_provider_info['query']) && ($vs_query != "*")) {
 				$o_browse->addCriteria("_search", $vs_query);
@@ -371,12 +376,11 @@ class OAIPMHService extends BaseService {
 	
 			foreach($va_facet as $vn_id => $va_info) {
 				$elements = array( 
-							'setSpec' => $va_info['id'],
-							'setName' => caEscapeForXml($va_info['label'])
-						);
+					'setSpec' => $va_info['id'],
+					'setName' => caEscapeForXml($va_info['label'])
+				);
 				$this->createElementWithChildren($this->oaiData, $listSets, 'set', $elements);
 			}
-		
 		}
 	}
 	# -------------------------------------------------------
@@ -446,8 +450,7 @@ class OAIPMHService extends BaseService {
 		$listLimit = $this->_listLimit;
 		$o_dm = Datamodel::load();
 		// by this point, the mapping code was checked to be valid
-		$t_exporter = ca_data_exporters::loadExporterByCode($this->getMappingCode());
-		$t_instance = $o_dm->getInstanceByTableNum($t_exporter->get('table_num'), true);
+		$t_instance = $o_dm->getInstanceByTableName($this->table, true);
 		$vs_pk = $t_instance->primaryKey();
 		$va_access_values = caGetUserAccessValues($this->opo_request, $this->opa_provider_info);
 	
@@ -621,9 +624,11 @@ class OAIPMHService extends BaseService {
 		$va_configured_formats = is_array($this->opa_provider_info['formats']) ? $this->opa_provider_info['formats'] : array();
 		$va_metadata_formats = array();
 
-		foreach($va_configured_formats as $vs_format) {
-			if(ca_data_exporters::loadExporterByCode($vs_format)){
-				$va_metadata_formats[] = $vs_format;
+		foreach($va_configured_formats as $vs_format => $va_config) {
+			if(!isset($va_config['mapping']) || !$va_config['mapping']){ continue; }
+
+			if(ca_data_exporters::loadExporterByCode($va_config['mapping'])){
+				$va_metadata_formats[] = $va_config['mapping'];
 			}
 		}
 	
@@ -746,14 +751,18 @@ class OAIPMHService extends BaseService {
 		if($vs_from && $vs_until && $vs_from_gran != $vs_until_gran) {
 			$this->throwError(self::OAI_ERR_BAD_ARGUMENT, _t("Date/time parameter of differing granularity"));
 		}
+		if(!is_array($this->opa_provider_info['formats'])){
+			$this->throwError(self::OAI_ERR_CANNOT_DISSEMINATE_FORMAT, _t("Invalid format configuration"));
+		}
 
 		if ($vs_metadata_prefix) {
-			if(in_array($vs_metadata_prefix, $this->getMetadataFormats())){
-				return !$this->error;
-			} else {
+			if(!in_array($vs_metadata_prefix, array_keys($this->opa_provider_info['formats']))){
 				$this->throwError(self::OAI_ERR_CANNOT_DISSEMINATE_FORMAT, _t("Unknown format %1",$vs_metadata_prefix));			
 			}
 		}
+
+		$this->exporter = ca_data_exporters::loadExporterByCode($this->getMappingCode());
+		$this->table = $this->exporter->getAppDatamodel()->getTableName($this->exporter->get('table_num'));
 
 		return !$this->error;
 	}
@@ -824,11 +833,18 @@ class OAIPMHService extends BaseService {
 	 */
 	public function getMappingCode() {
 		$ps_metadata_prefix = $this->opo_request->getParameter('metadata_prefix', pString);
-		if ($ps_metadata_prefix && in_array($ps_metadata_prefix,$this->getMetadataFormats())){
-			return $ps_metadata_prefix;
-		} else {
-			return $this->opa_provider_info['default_format'];
+
+		if(!$ps_metadata_prefix && isset($this->opa_provider_info['default_format'])) {
+			$ps_metadata_prefix = $this->opa_provider_info['default_format'];
 		}
+			
+		if(is_array($this->opa_provider_info['formats'][$ps_metadata_prefix])){
+			if(isset($this->opa_provider_info['formats'][$ps_metadata_prefix]['mapping'])){
+				return $this->opa_provider_info['formats'][$ps_metadata_prefix]['mapping'];
+			}
+		}
+
+		return false;
 	}	
 	# -------------------------------------------------------	
 }
