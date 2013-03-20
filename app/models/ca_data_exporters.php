@@ -167,13 +167,13 @@ class ca_data_exporters extends BundlableLabelableBaseModelWithAttributes {
 	# Change logging
 	# ------------------------------------------------------
 	protected $UNIT_ID_FIELD = null;
-	protected $LOG_CHANGES_TO_SELF = false;
+	protected $LOG_CHANGES_TO_SELF = true;
 	protected $LOG_CHANGES_USING_AS_SUBJECT = array(
 		"FOREIGN_KEYS" => array(
 		
 		),
 		"RELATED_TABLES" => array(
-		
+			"ca_data_exporter_items", "ca_data_exporter_labels"
 		)
 	);	
 	
@@ -452,6 +452,63 @@ class ca_data_exporters extends BundlableLabelableBaseModelWithAttributes {
 		}
 	}
 	# ------------------------------------------------------
+	/**
+	 * Return list of available data exporters
+	 *
+	 * @param int $pn_table_num
+	 * @param array $pa_options
+	 *		countOnly = return number of exporters available rather than a list of exporters
+	 * 
+	 * @return mixed List of exporters, or integer count of exporters if countOnly option is set
+	 */
+	static public function getExporters($pn_table_num=null, $pa_options=null) {
+		$o_db = new Db();
+		
+		$t_exporter = new ca_data_exporters();
+		$vo_dm = $t_exporter->getAppDatamodel();
+		
+		$va_sql_params = array();
+		if((int)$pn_table_num) {
+			$va_sql_wheres[] = "(de.table_num = ?)";
+			$va_sql_params[] = (int)$pn_table_num;
+		}
+		
+		
+		$vs_sql_wheres = sizeof($va_sql_wheres) ? " WHERE ".join(" AND ", $va_sql_wheres) : "";
+		
+		$qr_res = $o_db->query("
+			SELECT *
+			FROM ca_data_exporters de
+			{$vs_sql_wheres}
+		", $va_sql_params);
+	
+		$va_exporters = array();
+		$va_ids = array();
+		
+		if (isset($pa_options['countOnly']) && $pa_options['countOnly']) {
+			return (int)$qr_res->numRows();
+		}
+		
+		while($qr_res->nextRow()) {
+			$va_row = $qr_res->getRow();
+			$va_ids[] = $vn_id = $va_row['exporter_id'];
+			$va_exporters[$vn_id] = $va_row;
+			
+			$t_instance = $vo_dm->getInstanceByTableNum($va_row['table_num'], true);
+			$va_exporters[$vn_id]['exporter_type'] = $t_instance->getProperty('NAME_PLURAL');
+			
+			$va_exporters[$vn_id]['settings'] = caUnserializeForDatabase($va_row['settings']);
+			$va_exporters[$vn_id]['last_modified_on'] = $t_exporter->getLastChangeTimestamp($vn_id, array('timestampOnly' => true));
+		}
+		
+		$va_labels = $t_exporter->getPreferredDisplayLabelsForIDs($va_ids);
+		foreach($va_labels as $vn_id => $vs_label) {
+			$va_exporters[$vn_id]['label'] = $vs_label;
+		}
+		
+		return $va_exporters;
+	}
+	# ------------------------------------------------------
 	# Settings
 	# ------------------------------------------------------
 	/**
@@ -478,12 +535,15 @@ class ca_data_exporters extends BundlableLabelableBaseModelWithAttributes {
 	/**
 	 * Load exporter configuration from XLSX file
 	 * @param string $ps_source file path for source XLSX
+	 * @param array $pa_errors call-by-reference array to store and "return" error messages
 	 * @param array $pa_options options
 	 * @return ca_data_exporters BaseModel representation of the new exporter. false/null if there was an error.
 	 */
-	public static function loadExporterFromFile($ps_source, $pa_options=null) {
+	public static function loadExporterFromFile($ps_source, &$pa_errors, $pa_options=null) {
 		global $g_ui_locale_id;
 		$vn_locale_id = (isset($pa_options['locale_id']) && (int)$pa_options['locale_id']) ? (int)$pa_options['locale_id'] : $g_ui_locale_id;
+
+		$pa_errors = array();
 
 		$o_excel = PHPExcel_IOFactory::load($ps_source);
 		$o_sheet = $o_excel->getSheet(0);
@@ -519,13 +579,13 @@ class ca_data_exporters extends BundlableLabelableBaseModelWithAttributes {
 
 					if($vs_parent_id = trim((string)$o_parent->getValue())){
 						if(!in_array($vs_parent_id, $va_ids) && ($vs_parent_id != $vs_id)){
-							print "Warning: skipped mapping at row {$vn_row} because parent id was invalid\n";
+							$pa_errors[] = _t("Warning: skipped mapping at row %1 because parent id was invalid",$vn_row);
 							continue(2);
 						}
 					}
 
 					if (!($vs_element = trim((string)$o_element->getValue()))) { 
-						print "Warning: skipped mapping at row {$vn_row} because element was not defined\n";
+						$pa_errors[] = _t("Warning: skipped mapping at row %1 because element was not defined",$vn_row);
 						continue(2);
 					}
 
@@ -541,7 +601,7 @@ class ca_data_exporters extends BundlableLabelableBaseModelWithAttributes {
 					$va_options = null;
 					if ($vs_options_json = (string)$o_options->getValue()) { 
 						if (is_null($va_options = @json_decode($vs_options_json, true))) {
-							print "Warning: options for element {$vs_element} are not in proper JSON\n";
+							$pa_errors[] = _t("Warning: options for element %1 are not in proper JSON",$vs_element);
 						}
 					}
 
@@ -567,7 +627,7 @@ class ca_data_exporters extends BundlableLabelableBaseModelWithAttributes {
 						foreach($va_mapping_items_to_repeat as $vs_mapping_item_to_repeat) {
 							$vs_mapping_item_to_repeat = trim($vs_mapping_item_to_repeat);
 							if(!is_array($va_mapping[$vs_mapping_item_to_repeat])){
-								print "Couldn't repeat mapping item {$vs_mapping_item_to_repeat}\n";
+								$pa_errors[] = _t("Couldn't repeat mapping item %1",$vs_mapping_item_to_repeat);
 								continue;
 							}
 
@@ -630,7 +690,7 @@ class ca_data_exporters extends BundlableLabelableBaseModelWithAttributes {
 				$o_replace = $o_sheet->getCellByColumnAndRow(2, $o_row->getRowIndex());
 
 				if(!isset($va_mapping[$vs_mapping_num])){
-					print _t("Warning: Replacement sheet references invalid mapping number '%1'. Ignoring row.",$vs_mapping_num)."\n";
+					$pa_errors[] = _t("Warning: Replacement sheet references invalid mapping number '%1'. Ignoring row.",$vs_mapping_num);
 					continue;
 				}
 
@@ -638,7 +698,7 @@ class ca_data_exporters extends BundlableLabelableBaseModelWithAttributes {
 				$vs_replace = (string)$o_replace->getValue();
 
 				if(!$vs_search){
-					print _t("Warning: Search must be set for each row in the replacement sheet. Ignoring row for mapping '%1'",$vs_mapping_num)."\n";
+					$pa_errors[] = _t("Warning: Search must be set for each row in the replacement sheet. Ignoring row for mapping '%1'",$vs_mapping_num);
 					continue;
 				}
 
@@ -664,13 +724,13 @@ class ca_data_exporters extends BundlableLabelableBaseModelWithAttributes {
 
 		// Do checks on mapping
 		if (!$va_settings['code']) { 
-			print "You must set a code for your mapping!\n";
+			$pa_errors[] = _t("Error: You must set a code for your mapping!");
 			return;
 		}
 
 		$o_dm = Datamodel::load();
 		if (!($t_instance = $o_dm->getInstanceByTableName($va_settings['table']))) {
-			print _t("Mapping target table %1 is invalid\n", $va_settings['table']);
+			$pa_errors[] = _t("Error: Mapping target table %1 is invalid!", $va_settings['table']);
 			return;
 		}
 
@@ -683,7 +743,7 @@ class ca_data_exporters extends BundlableLabelableBaseModelWithAttributes {
 		if ($t_exporter->load(array('exporter_code' => $va_settings['code']))) {
 			$t_exporter->delete(true, array('hard' => true));
 			if ($t_exporter->numErrors()) {
-				print _t("Could not delete existing mapping for %1: %2", $va_settings['code'], join("; ", $t_exporter->getErrors()))."\n";
+				$pa_errors[] = _t("Could not delete existing mapping for %1: %2", $va_settings['code'], join("; ", $t_exporter->getErrors()));
 				return;
 			}
 		}
@@ -704,14 +764,14 @@ class ca_data_exporters extends BundlableLabelableBaseModelWithAttributes {
 		$t_exporter->insert();
 
 		if ($t_exporter->numErrors()) {
-			print _t("Error creating exporter: %1", join("; ", $t_exporter->getErrors()))."\n";
+			$pa_errors[] = _t("Error creating exporter: %1", join("; ", $t_exporter->getErrors()));
 			return;
 		}
 
 		$t_exporter->addLabel(array('name' => $vs_name), $vn_locale_id, null, true);
 
 		if ($t_exporter->numErrors()) {
-			print _t("Error creating exporter name: %1", join("; ", $t_exporter->getErrors()))."\n";
+			$pa_errors[] = _t("Error creating exporter name: %1", join("; ", $t_exporter->getErrors()));
 			return;
 		}
 
@@ -744,17 +804,17 @@ class ca_data_exporters extends BundlableLabelableBaseModelWithAttributes {
 			$t_item = $t_exporter->addItem($vn_parent_id,$va_info['element'],$va_info['source'],$va_item_settings);
 
 			if ($t_exporter->numErrors()) {
-				print _t("Error adding item to exporter: %1", join("; ", $t_exporter->getErrors()))."\n";
+				$pa_errors[] = _t("Error adding item to exporter: %1", join("; ", $t_exporter->getErrors()));
 				return;
 			}
 
 			$va_id_map[$vs_mapping_id] = $t_item->getPrimaryKey();
 		}
 
-		$va_errors = ca_data_exporters::checkMapping($t_exporter->get('exporter_code'));
+		$va_mapping_errors = ca_data_exporters::checkMapping($t_exporter->get('exporter_code'));
 
-		if(is_array($va_errors) && sizeof($va_errors)>0){
-			foreach($va_errors as $vs_error){ print $vs_error."\n"; }
+		if(is_array($va_mapping_errors) && sizeof($va_mapping_errors)>0){
+			$pa_errors = array_merge($pa_errors,$va_mapping_errors);
 			return;
 		}
 

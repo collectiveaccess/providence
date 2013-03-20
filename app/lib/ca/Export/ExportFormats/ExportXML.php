@@ -102,7 +102,7 @@ class ExportXML extends BaseExportFormat {
 
 		$va_top = $t_mapping->getTopLevelItems();
 		if(sizeof($va_top)!==1){
-			$va_errors[] = _t("XML documents must have exactly one root element");
+			$va_errors[] = _t("Error: XML documents must have exactly one root element");
 		}
 
 		foreach($va_top as $va_item){
@@ -123,17 +123,17 @@ class ExportXML extends BaseExportFormat {
 		if($vs_first == "@"){
 			$vs_attribute_name = substr($vs_element,1);
 			if(!preg_match("/^[_:A-Za-z][-._:A-Za-z0-9]*$/",$vs_attribute_name)){
-				$va_errors[] = _t("Invalid XML attribute name '%1'",$vs_attribute_name);
+				$va_errors[] = _t("Error: Invalid XML attribute name '%1'",$vs_attribute_name);
 			}
 
 			$t_parent = new ca_data_exporter_items($t_item->get('parent_id'));
 			$vs_parent_first = substr($t_parent->get('element'),0,1);
 			if($vs_parent_first == "@" || !$t_parent->get('element')){
-				$va_errors[] = _t("XML attribute '%1' doesn't have a valid parent element",$vs_attribute_name);	
+				$va_errors[] = _t("Error: XML attribute '%1' doesn't have a valid parent element",$vs_attribute_name);	
 			}
 		} else { // plain old XML element -> check for naming convention
 			if(!preg_match("/^[_:A-Za-z][-._:A-Za-z0-9]*$/",$vs_element)){
-				$va_errors[] = _t("Invalid XML element name '%1'",$vs_element);
+				$va_errors[] = _t("Error: Invalid XML element name '%1'",$vs_element);
 			}			
 		}
 
