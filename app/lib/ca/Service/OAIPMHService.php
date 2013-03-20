@@ -362,6 +362,10 @@ class OAIPMHService extends BaseService {
 	 * Responds to ListSets OAI verb
 	 */
 	private function listSets($oaiData) {
+		$va_access_values = caGetUserAccessValues($this->opo_request, $this->opa_provider_info);
+		$vb_show_deleted = (bool)$this->opa_provider_info['show_deleted'];
+		$vb_dont_enforce_access_settings = (bool)$this->opa_provider_info['dont_enforce_access_settings'];
+
 		$listSets = $oaiData->createElement('ListSets');     
 		$oaiData->documentElement->appendChild($listSets);
 	
@@ -372,7 +376,7 @@ class OAIPMHService extends BaseService {
 				$o_browse->addCriteria("_search", $vs_query);
 			}
 			$o_browse->execute();
-			$va_facet = $o_browse->getFacet($vs_facet_name);
+			$va_facet = $o_browse->getFacet($vs_facet_name,array('checkAccess' => ($vb_dont_enforce_access_settings ? null : $va_access_values)));
 	
 			foreach($va_facet as $vn_id => $va_info) {
 				$elements = array( 
@@ -455,6 +459,7 @@ class OAIPMHService extends BaseService {
 		$va_access_values = caGetUserAccessValues($this->opo_request, $this->opa_provider_info);
 	
 		$vb_show_deleted = (bool)$this->opa_provider_info['show_deleted'];
+		$vb_dont_enforce_access_settings = (bool)$this->opa_provider_info['dont_enforce_access_settings'];
 		$vb_dont_cache = (bool)$this->opa_provider_info['dont_cache'];
 		$vs_table = $t_instance->tableName();
 	
@@ -476,7 +481,7 @@ class OAIPMHService extends BaseService {
 				$o_browse->addCriteria("_search", $vs_query);
 			}
 			$o_browse->addCriteria($this->opa_provider_info['setFacet'], $set);
-			$o_browse->execute(array('showDeleted' => $vb_show_deleted, 'no_cache' => $vb_dont_cache, 'limitToModifiedOn' => $vs_range, 'checkAccess' => $vb_show_deleted ? null : $va_access_values));
+			$o_browse->execute(array('showDeleted' => $vb_show_deleted, 'no_cache' => $vb_dont_cache, 'limitToModifiedOn' => $vs_range, 'checkAccess' => $vb_dont_enforce_access_settings ? null : $va_access_values));
 			$qr_res = $o_browse->getResults();
 		} else {
 			$qr_res = $o_search->search(strlen($this->opa_provider_info['query']) ? $this->opa_provider_info['query'] : "*", array('no_cache' => $vb_dont_cache, 'limitToModifiedOn' => $vs_range, 'showDeleted' => $vb_show_deleted, 'checkAccess' => $vb_show_deleted ? null : $va_access_values));
