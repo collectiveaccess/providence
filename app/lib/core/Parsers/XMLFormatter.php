@@ -163,7 +163,7 @@ class XML_Formatter
      */
 	protected function _cbElementStart($parser, $name, Array $attributes)
 	{
-		if($this->_prev != PREV_WAS_TEXT) {
+		if($this->_prev != self::PREV_WAS_TEXT) {
 			fwrite($this->_output, $this->_options["outputEOL"]);
 		}
 
@@ -198,13 +198,13 @@ class XML_Formatter
 		if (!$this->_empty) {
 			--$this->_depth;
 
-			if(($this->_prev == PREV_WAS_CLOSING_TAG) || ($this->_prev == PREV_WAS_EMPTY_TAG)){
+			if(($this->_prev == self::PREV_WAS_CLOSING_TAG) || ($this->_prev == self::PREV_WAS_EMPTY_TAG)){
 				fwrite($this->_output, $this->_options["outputEOL"]);
 			}
 			
-			fwrite($this->_output, (($this->_prev == PREV_WAS_TEXT) ? "" : $this->_getPaddingStr()) . "</" . $name . ">");
+			fwrite($this->_output, (($this->_prev == self::PREV_WAS_TEXT) ? "" : $this->_getPaddingStr()) . "</" . $name . ">");
 
-			$this->_prev = PREV_WAS_CLOSING_TAG;
+			$this->_prev = self::PREV_WAS_CLOSING_TAG;
 		} else {
 			$this->_empty = false;
 		}
@@ -223,7 +223,7 @@ class XML_Formatter
 			
 		if (strlen($data)) {
 
-			$this->_prev = PREV_WAS_TEXT;
+			$this->_prev = self::PREV_WAS_TEXT;
 			
 			if ($this->_options["wordwrapCData"]) {
 				$pad = $this->_getPaddingStr();
