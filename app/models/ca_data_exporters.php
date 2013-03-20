@@ -660,7 +660,7 @@ class ca_data_exporters extends BundlableLabelableBaseModelWithAttributes {
 		}
 
 		//caDebug($va_mapping,"Extracted mapping from XLSX");
-		//caDebug($va_settings,"Mapping ettings extracted from XLSX");
+		//caDebug($va_settings,"Mapping settings extracted from XLSX");
 
 		// Do checks on mapping
 		if (!$va_settings['code']) { 

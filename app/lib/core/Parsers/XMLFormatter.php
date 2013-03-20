@@ -99,20 +99,22 @@ class XML_Formatter
 		"bufferSize" => 4096,
 		"paddingString" => " ",
 		"paddingMultiplier" => 4,
-		"formatCData" => true,
-		"multipleLineCData" => true,
 		"wordwrapCData" => 75,
 		"inputEOL" => "\n",
 		"outputEOL" => "\n"
 	);
 
 	/**
-	 * Indicates previous parser state:
-	 * 	0: non-empty text inside an element
-	 * 	1: non-empty opening tag for element
-	 * 	2: empty opening (and closing as in <foo />) tag for element
-	 * 	3: non-empty closing element
-	 * @var integer
+	 * Constants describing the previous parser state
+	 */
+	const PREV_WAS_OPENING_TAG = 1;
+	const PREV_WAS_TEXT = 2;
+	const PREV_WAS_CLOSING_TAG = 3;
+	const PREV_WAS_EMPTY_TAG = 4;
+
+	/**
+	 * Indicates previous parser state
+	 * Used to determine line breaks and indentation
 	 */
 	protected $_prev = 0;
 	
@@ -161,8 +163,8 @@ class XML_Formatter
      */
 	protected function _cbElementStart($parser, $name, Array $attributes)
 	{
-		if($this->_prev == 1 || $this->_prev == 2) {
-			fwrite($this->_output, "\n");
+		if($this->_prev != PREV_WAS_TEXT) {
+			fwrite($this->_output, $this->_options["outputEOL"]);
 		}
 
 		$idx = xml_get_current_byte_index($this->_parser);
@@ -177,10 +179,10 @@ class XML_Formatter
 		fwrite($this->_output, $this->_getPaddingStr() . "<" . $name . $attrs . ($this->_empty ? ' />' : '>'));
 		
 		if ($this->_empty) {
-			$this->_prev = 2;	
+			$this->_prev = self::PREV_WAS_EMPTY_TAG;	
 		} else {
 			++$this->_depth;
-			$this->_prev = 1;
+			$this->_prev = self::PREV_WAS_OPENING_TAG;
 		}
 	}
 	
@@ -194,13 +196,15 @@ class XML_Formatter
 	protected function _cbElementEnd($parser, $name)
 	{
 		if (!$this->_empty) {
-			if($this->_prev == 2){
-				fwrite($this->_output, "\n");
-			}
 			--$this->_depth;
+
+			if(($this->_prev == PREV_WAS_CLOSING_TAG) || ($this->_prev == PREV_WAS_EMPTY_TAG)){
+				fwrite($this->_output, $this->_options["outputEOL"]);
+			}
 			
-			fwrite($this->_output, (($this->_prev == 0) ? "" : $this->_getPaddingStr()) . "</" . $name . ">" . "\n");
-			$this->_prev = 3;
+			fwrite($this->_output, (($this->_prev == PREV_WAS_TEXT) ? "" : $this->_getPaddingStr()) . "</" . $name . ">");
+
+			$this->_prev = PREV_WAS_CLOSING_TAG;
 		} else {
 			$this->_empty = false;
 		}
@@ -214,27 +218,16 @@ class XML_Formatter
      * @return void
      */
 	protected function _cbCharacterData($parser, $data)
-	{
-		if (!$this->_options["formatCData"]) {
-			return;
-		}
-		
+	{	
 		$data = trim($data);
 			
 		if (strlen($data)) {
-			$this->_prev = 0;
-			$pad = $this->_getPaddingStr();
-			
-			if ($this->_options["multipleLineCData"]) {
-				
-				// remove all tabs
-				$data = str_replace("\t", "", $data);
-				
-				// append each line with a padding string
-				$data = implode($this->_options["inputEOL"] . $pad, explode($this->_options["inputEOL"], $data));
-			}
+
+			$this->_prev = PREV_WAS_TEXT;
 			
 			if ($this->_options["wordwrapCData"]) {
+				$pad = $this->_getPaddingStr();
+
 				$data = wordwrap($data, $this->_options["wordwrapCData"], $this->_options["outputEOL"] . $pad, false);
 			}
 			

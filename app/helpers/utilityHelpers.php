@@ -1196,7 +1196,6 @@ function caFileIsIncludable($ps_file) {
 			"paddingString" => " ",
 			"paddingMultiplier" => 2,
 			"wordwrapCData" => false,
-			"multipleLineCData" => false,
 		);
 
 		$vr_input = fopen('data://text/plain,'.$ps_xml, 'r');
@@ -1207,7 +1206,7 @@ function caFileIsIncludable($ps_file) {
 		try {
 			$vo_formatter->format();
 			rewind($vr_output);
-			return stream_get_contents($vr_output);
+			return stream_get_contents($vr_output)."\n";
 		} catch (EXception $e) {
 			return false;
 		}
