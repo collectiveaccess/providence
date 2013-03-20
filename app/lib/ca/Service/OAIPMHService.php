@@ -271,7 +271,7 @@ class OAIPMHService extends BaseService {
 			'baseURL'           => $this->_baseUrl,
 			'protocolVersion'   => self::OAI_PMH_PROTOCOL_VERSION,
 			'adminEmail'        => $this->opa_provider_info['admin_email'],
-			'earliestDatestamp' => self::unixToUtc($t_change_log->getEarliestTimestampForIDs($this->opa_provider_info['target'], null)),
+			'earliestDatestamp' => self::unixToUtc($t_change_log->getEarliestTimestampForIDs($this->table, null)),
 			'deletedRecord'     => 'transient',
 			'granularity'       => self::OAI_GRANULARITY_STRING
 		);
@@ -470,7 +470,7 @@ class OAIPMHService extends BaseService {
 		$vs_range = ($from && $until) ? "{$from} {$vs_conj} {$until}" : '';
    
 		if ($set && $this->opa_provider_info['setFacet']) {
-			$o_browse = caGetBrowseInstance($this->opa_provider_info['target']);
+			$o_browse = caGetBrowseInstance($this->table);
 		
 			if (($vs_query = $this->opa_provider_info['query']) && ($vs_query != "*")) {
 				$o_browse->addCriteria("_search", $vs_query);
