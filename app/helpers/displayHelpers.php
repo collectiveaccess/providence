@@ -490,11 +490,31 @@ require_once(__CA_LIB_DIR__."/ca/ApplicationPluginManager.php");
 	 *
 	 * @return string 
 	 */
-	function caEditorFieldList($pa_bundle_list, $pa_options=null) {
+	function caSetupEditorScreenOverlays($po_request, $pt_subject, $pa_bundle_list, $pa_options=null) {
+		$vs_buf = '';
+		if ($pt_subject->isHierarchical()) {
+			$vs_buf .= caEditorHierarchyOverview($po_request, $pt_subject->tableName(), $pt_subject->getPrimaryKey(), $pa_options);
+		}
+		$vs_buf .= caEditorFieldList($po_request, $pa_bundle_list, $pa_options);	
+		
+		return $vs_buf;
+	}
+	# ------------------------------------------------------------------------------------------------
+	/**
+	 * 
+	 *
+	 * @param array $pa_bundle_list 
+	 * @param array $pa_options Optional array of options. Supported options are:
+	 *		NONE
+	 *
+	 * @return string 
+	 */
+	function caEditorFieldList($po_request, $pa_bundle_list, $pa_options=null) {
 		$vs_buf = "<script type=\"text/javascript\">
 		jQuery(document).ready(function() {
 			jQuery(document).bind('keydown.ctrl_f', function() {
-				caEditorFieldList.showPanel(null);
+				caHierarchyOverviewPanel.hidePanel({dontCloseMask:1});
+				caEditorFieldList.showPanel();
 			});
 			jQuery('#editorFieldListContentArea').html(jQuery(\"#editorFieldListHTML\").html());
 			jQuery('#editorFieldListContentArea a').click(function() {
@@ -509,6 +529,40 @@ require_once(__CA_LIB_DIR__."/ca/ApplicationPluginManager.php");
 			}	
 		}
 		$vs_buf .= "</div>\n";
+		
+		return $vs_buf;
+	}
+	# ------------------------------------------------------------------------------------------------
+	/**
+	 * 
+	 *
+	 * @param array $pa_bundle_list 
+	 * @param array $pa_options Optional array of options. Supported options are:
+	 *		NONE
+	 *
+	 * @return string 
+	 */
+	function caEditorHierarchyOverview($po_request, $ps_table, $pn_id, $pa_options=null) {
+		$o_dm = Datamodel::load();
+		$t_subject = $o_dm->getInstanceByTableName($ps_table, true);
+		$vs_buf = "<script type=\"text/javascript\">
+		jQuery(document).ready(function() {
+			jQuery(document).bind('keydown.ctrl_h', function() {
+				caEditorFieldList.hidePanel({dontCloseMask:1});
+				
+				var url;
+				if (jQuery('#caHierarchyOverviewContentArea').html().length == 0) {
+					url = '".caNavUrl($po_request, $po_request->getModulePath(), $po_request->getController(), 'getHierarchyForDisplay', array($t_subject->primaryKey() => $pn_id))."';
+				}
+				caHierarchyOverviewPanel.showPanel(url, null, false);
+			});
+			jQuery('#caHierarchyOverviewContentArea').html('');
+			jQuery('#caHierarchyOverviewContentArea a').click(function() {
+				caHierarchyOverviewPanel.hidePanel();
+			});
+		});
+</script>
+\n";
 		
 		return $vs_buf;
 	}
@@ -1716,11 +1770,12 @@ require_once(__CA_LIB_DIR__."/ca/ApplicationPluginManager.php");
 				if (!isset($va_relationship_values[$vs_pk_val])) { $va_relationship_values[$vs_pk_val] = array(0 => null); }
 
 				foreach($va_relationship_values[$vs_pk_val] as $vn_relation_id => $va_relationship_value_array) {
+					$va_val = null;
 					if (isset($va_relationship_value_array[$vs_tag]) && !(isset($pa_options['showHierarchicalLabels']) && $pa_options['showHierarchicalLabels'] && ($vs_tag == 'label'))) {
-						$vs_val = $va_relationship_value_array[$vs_tag];
+						$va_val = array($vs_val = $va_relationship_value_array[$vs_tag]);
 					} else {
 						if (isset($va_related_values[$vs_pk_val][$vs_tag])) {
-							$vs_val = $va_related_values[$vs_pk_val][$vs_tag];
+							$va_val = array($vs_val = $va_related_values[$vs_pk_val][$vs_tag]);
 						} else {
 							// see if this is a reference to a related table
 							if (($ps_tablename != $va_tmp[0]) && ($t_tmp = $o_dm->getInstanceByTableName($va_tmp[0], true))) {	// if the part of the tag before a "." (or the tag itself if there are no periods) is a related table then try to fetch it as related to the current record
@@ -1752,10 +1807,13 @@ require_once(__CA_LIB_DIR__."/ca/ApplicationPluginManager.php");
 							}
 						}
 					}
-					foreach($va_val as $vn_j => $vs_val) {
-						$va_tag_val_list[$vn_i][$vn_j][$vs_tag] = $vs_val;
-						if (strlen($vs_val) > 0) {
-							$va_defined_tag_list[$vn_i][$vs_tag] = true;
+				
+					if (is_array($va_val)) {
+						foreach($va_val as $vn_j => $vs_val) {
+							$va_tag_val_list[$vn_i][$vn_j][$vs_tag] = $vs_val;
+							if ((is_array($vs_val) && (sizeof($vs_val))) || (strlen($vs_val) > 0)) {
+								$va_defined_tag_list[$vn_i][$vs_tag] = true;
+							}
 						}
 					}
 				}
@@ -1763,7 +1821,7 @@ require_once(__CA_LIB_DIR__."/ca/ApplicationPluginManager.php");
 		
 			$vn_i++;
 		}
-
+		
 		foreach($va_tag_val_list as $vn_i => $va_tag_vals) {
 			foreach($va_tag_vals as $vn_j => $va_tags) {
 				foreach($va_tags as $vs_t => $vs_v) {

@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2011-2012 Whirl-i-Gig
+ * Copyright 2011-2013 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -60,4 +60,4 @@
 
 	<div class="editorBottomPadding"><!-- empty --></div>
 	
-	<?php print caEditorFieldList($va_bundle_list); ?>
+	<?php print caSetupEditorScreenOverlays($this->request, $t_loan, $va_bundle_list); ?>

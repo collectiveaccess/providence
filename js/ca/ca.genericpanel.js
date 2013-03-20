@@ -60,7 +60,7 @@ var caUI = caUI || {};
 		// --------------------------------------------------------------------------------
 		// Define methods
 		// --------------------------------------------------------------------------------
-		that.showPanel = function(url, onCloseCallback) {
+		that.showPanel = function(url, onCloseCallback, clearOnClose) {
 			that.setZoom(that.allowMobileSafariZooming);
 			that.isChanging = true;
 			
@@ -87,7 +87,9 @@ var caUI = caUI || {};
 						that.hidePanel();
 					})
 				} : null);
-				that.clearOnClose = true;
+				that.clearOnClose = (clearOnClose == undefined) ? true : clearOnClose;
+			} else {
+				if (clearOnClose != undefined) { that.clearOnClose = clearOnClose; }
 			}
 			
 			if (that.onOpenCallback) {
@@ -95,7 +97,7 @@ var caUI = caUI || {};
 			}
 		}
 		
-		that.hidePanel = function() {
+		that.hidePanel = function(opts) {
 			if (that.onCloseCallback) {
 				that.onCloseCallback();
 			}
@@ -103,7 +105,7 @@ var caUI = caUI || {};
 			that.isChanging = true;
 			jQuery('#' + that.panelID).fadeOut(that.panelTransitionSpeed, function() { that.isChanging = false; });
 			
-			if (that.useExpose) {
+			if (that.useExpose && (!opts || !opts.dontCloseMask)) {
 				jQuery.mask.close();
 			}
 			
