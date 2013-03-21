@@ -861,6 +861,11 @@
 				
 				return false;
 			} else {
+				if(is_array($va_errors) && sizeof($va_errors)){
+					foreach($va_errors as $vs_error){
+						CLIUtils::addMessage(_t("Warning").":".$vs_error);
+					}
+				}
 				print _t("Created mapping %1 from %2", CLIUtils::textWithColor($t_exporter->get('exporter_code'), 'yellow'), $vs_file_path)."\n";
 				return true;
 			}

@@ -578,6 +578,7 @@ require_once(__CA_LIB_DIR__."/ca/ApplicationPluginManager.php");
 	 */
 	function caEditorInspector($po_view, $pa_options=null) {
 		require_once(__CA_MODELS_DIR__.'/ca_sets.php');
+		require_once(__CA_MODELS_DIR__.'/ca_data_exporters.php');
 		
 		$t_item 				= $po_view->getVar('t_item');
 		$vs_table_name = $t_item->tableName();
@@ -1214,6 +1215,31 @@ require_once(__CA_LIB_DIR__."/ca/ApplicationPluginManager.php");
 			TooltipManager::add("#caDuplicateItemButton", "<h2>"._t('Duplicate this %1', mb_strtolower($vs_type_name, 'UTF-8'))."</h2>
 			"._t("Click the [+] button to create and open for editing a duplicate of this %1. By default virtually all aspects of the %2 will be duplicated. You can exclude certain types of content from duplicates using settings in your user preferences under 'Duplication.'", mb_strtolower($vs_type_name, 'UTF-8'), mb_strtolower($vs_type_name, 'UTF-8')));
 		}
+
+
+		if($po_view->request->user->canDoAction('can_export_'.$vs_table_name) && $t_item->getPrimaryKey() && (sizeof(ca_data_exporters::getExporters($t_item->tableNum()))>0)) {
+			$vs_buf .= '<div style="border-top: 1px solid #aaaaaa; margin-top: 5px; font-size: 10px; text-align: right;" id="caExportItemButton">';
+				
+			$vs_buf .= _t('Export this %1', mb_strtolower($vs_type_name, 'UTF-8'))." ";
+			$vs_buf .= "<a class='button' onclick='jQuery(\"#exporterFormList\").show();' style='text-align:right;' href='#'>".caNavIcon($po_view->request, __CA_NAV_BUTTON_ADD__)."</a>";
+
+			$vs_buf .= caFormTag($po_view->request, 'ExportSingleData', 'caExportForm', 'batch/MetadataExport', 'post', 'multipart/form-data', '_top', array('disableUnsavedChangesWarning' => true));
+			$vs_buf .= "<div id='exporterFormList'>";
+			$vs_buf .= ca_data_exporters::getExporterListAsHTMLFormElement('exporter_id', $t_item->tableNum(), array('id' => 'caExporterList'),array('width' => '120px'));
+			$vs_buf .= caHTMLHiddenInput('item_id', array('value' => $t_item->getPrimaryKey()));
+			$vs_buf .= caFormSubmitLink($po_view->request, _t('Export')." &rsaquo;", "button", "caExportForm");
+			$vs_buf .= "</div>\n";
+			$vs_buf .= "</form>";
+				
+			$vs_buf .= "</div>";
+
+			$vs_buf .= "<script type='text/javascript'>";
+			$vs_buf .= "jQuery(document).ready(function() {";
+			$vs_buf .= "jQuery(\"#exporterFormList\").hide();";
+			$vs_buf .= "});";
+			$vs_buf .= "</script>";
+		}
+		
 		
 		// -------------------------------------------------------------------------------------
 	

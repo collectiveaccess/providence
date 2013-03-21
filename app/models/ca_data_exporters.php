@@ -496,6 +496,7 @@ class ca_data_exporters extends BundlableLabelableBaseModelWithAttributes {
 			
 			$t_instance = $vo_dm->getInstanceByTableNum($va_row['table_num'], true);
 			$va_exporters[$vn_id]['exporter_type'] = $t_instance->getProperty('NAME_PLURAL');
+			$va_exporters[$vn_id]['exporter_type_singular'] = $t_instance->getProperty('NAME_SINGULAR');
 			
 			$va_exporters[$vn_id]['settings'] = caUnserializeForDatabase($va_row['settings']);
 			$va_exporters[$vn_id]['last_modified_on'] = $t_exporter->getLastChangeTimestamp($vn_id, array('timestampOnly' => true));
@@ -507,6 +508,27 @@ class ca_data_exporters extends BundlableLabelableBaseModelWithAttributes {
 		}
 		
 		return $va_exporters;
+	}
+	# ------------------------------------------------------
+	/**
+	 * Returns list of available data exporters as HTML form element
+	 */
+	static public function getExporterListAsHTMLFormElement($ps_name, $pn_table_num=null, $pa_attributes=null, $pa_options=null) {
+		$va_importers = ca_data_exporters::getExporters($pn_table_num, $pa_options);
+		
+		$va_opts = array();
+		foreach($va_importers as $vn_importer_id => $va_importer_info) {
+			$va_opts[$va_importer_info['label']." (".$va_importer_info['exporter_code'].")"] = $va_importer_info['exporter_id'];
+		}
+		ksort($va_opts);
+		return caHTMLSelect($ps_name, $va_opts, $pa_attributes, $pa_options);
+	}
+	# ------------------------------------------------------
+	/**
+	 * Returns count of available data exporters
+	 */
+	static public function getExporterCount($pn_table_num=null) {
+		return ca_data_exporters::getExporters($pn_table_num, array('countOnly' => true));
 	}
 	# ------------------------------------------------------
 	# Settings
@@ -815,7 +837,6 @@ class ca_data_exporters extends BundlableLabelableBaseModelWithAttributes {
 
 		if(is_array($va_mapping_errors) && sizeof($va_mapping_errors)>0){
 			$pa_errors = array_merge($pa_errors,$va_mapping_errors);
-			return;
 		}
 
 		return $t_exporter;
@@ -1082,9 +1103,7 @@ class ca_data_exporters extends BundlableLabelableBaseModelWithAttributes {
 	 * @return string Exported record as string
 	 */
 	static public function exportRecord($ps_exporter_code, $pn_record_id, $pa_options=array()){
-		ca_data_exporters::$s_instance_cache = array();
-
-		$pb_single_record = (isset($pa_options['singleRecord']) && $pa_options['singleRecord']);
+		ca_data_exporters::$s_instance_cache = array();		
 
 		$t_exporter = ca_data_exporters::loadExporterByCode($ps_exporter_code);
 		if(!$t_exporter) { return false; }
@@ -1121,7 +1140,7 @@ class ca_data_exporters extends BundlableLabelableBaseModelWithAttributes {
 		}
 		//caDebug($va_export,"Export after tree plugin hook");
 		
-		$pa_options['settings'] = $t_exporter->getSettings();		
+		$pa_options['settings'] = $t_exporter->getSettings();
 
 		return $o_export->processExport($va_export,$pa_options);
 	}
