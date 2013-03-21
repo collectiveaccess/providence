@@ -44,6 +44,34 @@ class ExportMARC extends BaseExportFormat {
 		parent::__construct();
 	}
 	# ------------------------------------------------------
+	public function getFileExtension($pa_settings) {
+		if(!($vs_format = $pa_settings['MARC_outputFormat'])) { return 'txt'; }
+		
+		switch($vs_format){
+			case 'raw':
+				return 'mrc';
+			case 'xml':
+				return 'xml';
+			case 'readable':
+			default:
+				return 'txt';
+		}
+	}
+	# ------------------------------------------------------
+	public function getContentType($pa_settings) {
+		if(!($vs_format = $pa_settings['MARC_outputFormat'])) { return 'text/plain'; }
+		
+		switch($vs_format){
+			case 'raw':
+				return 'application/marc';
+			case 'xml':
+				return 'text/xml';
+			case 'readable':
+			default:
+				return 'text/plain';
+		}
+	}
+	# ------------------------------------------------------
 	public function processExport($pa_data,$pa_options=array()){
 		$pb_single_record = (isset($pa_options['singleRecord']) && $pa_options['singleRecord']);
 
@@ -181,7 +209,7 @@ BaseExportFormat::$s_format_settings['MARC'] = array(
 		'displayType' => DT_SELECT,
 		'width' => 40, 'height' => 1,
 		'takesLocale' => false,
-		'default' => '',
+		'default' => 'readable',
 		'options' => array(
 			'readable' => 'readable',
 			'raw' => 'raw',

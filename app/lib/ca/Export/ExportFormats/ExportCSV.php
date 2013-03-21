@@ -42,6 +42,14 @@ class ExportCSV extends BaseExportFormat {
 		parent::__construct();
 	}
 	# ------------------------------------------------------
+	public function getFileExtension($pa_settings) {
+		return 'csv';
+	}
+	# ------------------------------------------------------
+	public function getContentType($pa_settings) {
+		return 'text/csv';
+	}
+	# ------------------------------------------------------
 	public function processExport($pa_data,$pa_options=array()){
 		//caDebug($pa_data,"Data to build CSV from");
 		//caDebug($pa_options,"Export format options");

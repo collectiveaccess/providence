@@ -47,6 +47,14 @@ class ExportXML extends BaseExportFormat {
 		parent::__construct();
 	}
 	# ------------------------------------------------------
+	public function getFileExtension($pa_settings) {
+		return 'xml';
+	}
+	# ------------------------------------------------------
+	public function getContentType($pa_settings) {
+		return 'text/xml';
+	}
+	# ------------------------------------------------------
 	public function processExport($pa_data,$pa_options=array()){
 		$pb_single_record = (isset($pa_options['singleRecord']) && $pa_options['singleRecord']);
 

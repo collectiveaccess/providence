@@ -531,6 +531,50 @@ class ca_data_exporters extends BundlableLabelableBaseModelWithAttributes {
 		return ca_data_exporters::getExporters($pn_table_num, array('countOnly' => true));
 	}
 	# ------------------------------------------------------
+	/**
+	 * Get file extension for downloadable files, depending on the format
+	 */
+	public function getFileExtension(){
+		// TODO: we may wanna auto-load this
+		switch($this->getSetting('exporter_format')){
+			case 'XML':
+				$o_export = new ExportXML();
+				break;
+			case 'MARC':
+				$o_export = new ExportMARC();
+				break;
+			case 'CSV':
+				$o_export = new ExportCSV();
+				break;
+			default:
+				return;
+		}
+
+		return $o_export->getFileExtension($this->getSettings());
+	}
+	# ------------------------------------------------------
+	/**
+	 * Get content type for downloadable file
+	 */
+	public function getContentType(){
+		// TODO: we may wanna auto-load this
+		switch($this->getSetting('exporter_format')){
+			case 'XML':
+				$o_export = new ExportXML();
+				break;
+			case 'MARC':
+				$o_export = new ExportMARC();
+				break;
+			case 'CSV':
+				$o_export = new ExportCSV();
+				break;
+			default:
+				return;
+		}
+
+		return $o_export->getContentType($this->getSettings());
+	}
+	# ------------------------------------------------------
 	# Settings
 	# ------------------------------------------------------
 	/**
@@ -982,27 +1026,42 @@ class ca_data_exporters extends BundlableLabelableBaseModelWithAttributes {
 			return false;
 		}
 
+		$vn_start_time = time();
+
+		$po_request = isset($pa_options['request']) ? $pa_options['request'] : null;
+
 		$vs_wrap_before = $t_mapping->getSetting('wrap_before');
 		$vs_wrap_after = $t_mapping->getSetting('wrap_after');
 
 		$t_instance = $t_mapping->getAppDatamodel()->getInstanceByTableNum($t_mapping->get('table_num'));
 		$o_search = caGetSearchInstance($t_mapping->get('table_num'));
 		$o_result = $o_search->search($ps_expression);
+		$vn_num_items = $o_result->numHits();
 
 		if($vs_wrap_before){
 			file_put_contents($ps_filename, $vs_wrap_before."\n", FILE_APPEND);
 		}
 
 		if ($vb_show_cli_progress_bar){
-			print CLIProgressBar::start($o_result->numHits(), _t('Processing search result'));
+			print CLIProgressBar::start($vn_num_items, _t('Processing search result'));
 		}
 
+		if ($po_request && isset($pa_options['progressCallback']) && ($ps_callback = $pa_options['progressCallback'])) {
+			$ps_callback($po_request, 0, $vn_num_items, _t("Exporting result for search expression '%1'", $ps_expression), (time() - $vn_start_time), memory_get_usage(true), 0);
+		}
+		$vn_num_processed = 0;
 		while($o_result->nextHit()){
 			$vs_item_export = ca_data_exporters::exportRecord($ps_exporter_code,$o_result->get($t_instance->primaryKey()));
 			file_put_contents($ps_filename, $vs_item_export."\n", FILE_APPEND);
 
 			if ($vb_show_cli_progress_bar) {
 				print CLIProgressBar::next(1, _t("Exporting records ..."));
+			}
+
+			$vn_num_processed++;
+
+			if ($po_request && isset($pa_options['progressCallback']) && ($ps_callback = $pa_options['progressCallback'])) {
+				$ps_callback($po_request, $vn_num_processed, $vn_num_items, _t("Exporting ... [%1/%2]", $vn_num_processed, $vn_num_items), (time() - $vn_start_time), memory_get_usage(true), $vn_num_processed); 
 			}
 		}
 
@@ -1012,6 +1071,10 @@ class ca_data_exporters extends BundlableLabelableBaseModelWithAttributes {
 
 		if ($vb_show_cli_progress_bar) {
 			print CLIProgressBar::finish();
+		}
+
+		if ($po_request && isset($pa_options['progressCallback']) && ($ps_callback = $pa_options['progressCallback'])) {
+			$ps_callback($po_request, $vn_num_items, $vn_num_items, _t('Export completed'), (time() - $vn_start_time), memory_get_usage(true), $vn_num_processed);
 		}
 
 		return true;
