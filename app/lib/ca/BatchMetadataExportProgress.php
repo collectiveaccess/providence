@@ -1,13 +1,13 @@
 <?php
 /** ---------------------------------------------------------------------
- * app/lib/ca/BatchMetadataExportProgress.php : 
+ * app/lib/ca/BatchMetadataExportProgress.php : AppController plugin to add page shell around content
  * ----------------------------------------------------------------------
  * CollectiveAccess
  * Open-source collections management software
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2013 Whirl-i-Gig
+ * Copyright 2011 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -36,20 +36,15 @@
   * after the web UI page has been sent to the client
   */
  
+ 	require_once(__CA_LIB_DIR__.'/core/Datamodel.php');
  	require_once(__CA_LIB_DIR__.'/core/Controller/AppController/AppControllerPlugin.php');
- 	require_once(__CA_LIB_DIR__.'/ca/BatchProcessor.php');
  
 	class BatchMetadataExportProgress extends AppControllerPlugin {
 		# -------------------------------------------------------
-		private $request;
-		private $opa_options;
+		
 		# -------------------------------------------------------
-		public function __construct($po_request, $pa_options=null) {
-			$this->request = $po_request;
-			$this->opa_options = is_array($pa_options) ? $pa_options : array();
-		}
-		# -------------------------------------------------------
-		public function dispatchLoopShutdown() {	
+		public function dispatchLoopShutdown() {
+
 			//
 			// Force output to be sent - we need the client to have the page before
 			// we start flushing progress bar updates
@@ -61,20 +56,26 @@
 			$resp->clearContent();
 			
 			//
-			// Do batch processing
+			// Do export
 			//
+			
 			if ($req->isLoggedIn()) {
 				set_time_limit(3600*24); // if it takes more than 24 hours we're in trouble
-			
-				$va_errors = BatchProcessor::importMetadata(
-					$req, 
-					(isset($_FILES['sourceFile']['tmp_name']) && $_FILES['sourceFile']['tmp_name']) ? $_FILES['sourceFile']['tmp_name'] : $req->getParameter('sourceUrl', pString),
-					$req->getParameter('exporter_id', pInteger),
-					$req->getParameter('inputFormat', pString),
-					array_merge($this->opa_options, array('progressCallback' => 'caIncrementBatchMetadataExportProgess', 'reportCallback' => 'caUpdateBatchMetadataImportResultsReport'))
-				);
+				$vn_id = $req->getParameter('exporter_id',pInteger);
+				$vs_search = $req->getParameter('search',pString);
+
+				$t_exporter = new ca_data_exporters($vn_id);
+
+				$vs_file = tempnam(caGetTempDirPath(), 'export');
+				ca_data_exporters::exportRecordsFromSearchExpression($t_exporter->get('exporter_code'), $vs_search, $vs_file, array('request' => $req, 'progressCallback' => 'caIncrementBatchMetadataExportProgress'));
 			}
-		}	
+
+			// export done, move file to application tmp dir and create download link (separate action in the export controller)
+			$vs_new_filename = $vn_id."_".md5($vs_file);
+			rename($vs_file, __CA_APP_DIR__.'/tmp/'.$vs_new_filename);
+
+			caExportAddDownloadLink($req,$vs_new_filename);
+		}
 		# -------------------------------------------------------
 	}
 ?>

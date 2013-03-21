@@ -113,10 +113,9 @@
  			
  			$this->view->setVar("t_subject", $t_exporter->getAppDatamodel()->getInstanceByTableNum($t_exporter->get('table_num'), true));
  			
-			$vs_search = $this->request->getParameter('search', pString);
-			$vs_file = tempnam(caGetTempDirPath(),'export');
-
-			ca_data_exporters::exportRecordsFromSearchExpression($t_exporter->get('exporter_code'), $vs_search, $vs_file);
+			// run now
+			$app = AppController::getInstance();
+			$app->registerPlugin(new BatchMetadataExportProgress($this->request));
 
 			$this->render('metadataexport/export_results_html.php');
  		}
@@ -157,6 +156,28 @@
 			}
 		}
 		# -------------------------------------------------------
+		public function DownloadExport(){
+			// this has to be bullet-proof, otherwise someone could use it to download
+			// files from our tmp dir (and potentially elsewhere)
+
+			$ps_file = trim($this->request->getParameter('file',pString));
+			$va_matches = array();
+			if($ps_file && preg_match("/^([0-9]+)\_[0-9a-f]{32,32}$/", $ps_file, $va_matches)){
+				if(file_exists(__CA_APP_DIR__.'/tmp/'.$ps_file)){
+					if($va_matches[1]){
+						$t_exporter = new ca_data_exporters($va_matches[1]);
+						if($t_exporter->getPrimaryKey()){
+							$this->view->setVar('file',__CA_APP_DIR__.'/tmp/'.$ps_file);
+							$this->view->setVar('extension',$t_exporter->getFileExtension());
+							$this->view->setVar('content_type',$t_exporter->getContentType());
+						}
+					}
+				}
+			}
+
+			$this->render('metadataexport/download_batch_html.php');
+		}
+		# -------------------------------------------------------
 		# Utilities
 		# -------------------------------------------------------
 		private function getExporterInstance($pb_set_view_vars=true, $pn_exporter_id=null) {
@@ -170,23 +191,6 @@
 			}
 			return $t_exporter;
 		}
-		# ------------------------------------------------------------------
- 		# Sidebar info handler
- 		# ------------------------------------------------------------------
- 		/**
- 		 * Sets up view variables for upper-left-hand info panel (aka. "inspector"). Actual rendering is performed by calling sub-class.
- 		 *
- 		 * @param array $pa_parameters Array of parameters as specified in navigation.conf, including primary key value and type_id
- 		 */
- 		public function info($pa_parameters) {
- 			$o_dm = Datamodel::load();
- 			$t_exporter = $this->getExporterInstance(false);
- 			$this->view->setVar('t_item', $t_exporter);
-			$this->view->setVar('result_context', $this->opo_result_context);
-			$this->view->setVar('screen', $this->request->getActionExtra());	
-			
- 			return $this->render('metadataexport/widget_exporter_info_html.php', true);
- 		}
 		# ------------------------------------------------------------------
  	}
  ?>

@@ -27,6 +27,7 @@
  */
 
 $t_exporter = $this->getVar('t_exporter');
+$va_exporters = ca_data_exporters::getExporters($t_exporter->get('table_num'));
 
 print $vs_control_box = caFormControlBox(
 		CaFormSubmitButton($this->request, __CA_NAV_BUTTON_SAVE__, _t("Execute data export"), 'caBatchMetadataExportForm').' '.
@@ -36,15 +37,18 @@ print $vs_control_box = caFormControlBox(
 	);
 ?>
 <div class="sectionBox">
+	<div class='formLabel' style='margin-bottom:20px'><?php print _t("You are about to export a set of <em>%1</em> using the <em>%2</em> exporter",$va_exporters[$t_exporter->getPrimaryKey()]['exporter_type'],$t_exporter->getLabelForDisplay()); ?></div>
 <?php
 		print caFormTag($this->request, 'ExportData/'.$this->request->getActionExtra(), 'caBatchMetadataExportForm', null, 'POST', 'multipart/form-data', '_top', array('disableUnsavedChangesWarning' => true, 'noTimestamp' => true));
 
-		print "<div class='formLabel'>"._t('Exporter')."<br>\n".ca_data_exporters::getExporterListAsHTMLFormElement('exporter_id', null, array('id' => 'caExporterList'), array('value' => $t_exporter->getPrimaryKey()))."</div>\n";
+		print caHTMLHiddenInput('exporter_id', array('value' => $t_exporter->getPrimaryKey()));
+
 		print "<div class='formLabel' id='caExportSearchExprContainer'>"._t('Search expression')."<br>\n".caHTMLTextInput('search', array('id' => 'caExportSearchExpr'), array('width' => '300px'))."</div>\n";
 ?>
 		</form>
 </div>
 <?php
 	print $vs_control_box; 
+
 ?>
 <div class="editorBottomPadding"><!-- empty --></div>
