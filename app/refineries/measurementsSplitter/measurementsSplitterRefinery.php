@@ -79,7 +79,7 @@
 				if (!sizeof($va_measurements)) { break; }
 				
 				$vs_measurement = array_shift($va_measurements);
-				if (!preg_match("![^\d\.{$vs_delimiter} ]+!", $vs_measurement)) {
+				if (trim($vs_measurement) && !preg_match("![^\d\.{$vs_delimiter} ]+!", $vs_measurement)) {
 					$vs_measurement .= " {$vs_units}";
 				}
 				$vs_measurement = preg_replace("![ ]+!", " ", $vs_measurement);
@@ -91,6 +91,15 @@
 				}
 			
 				
+			}
+			
+			// Set attributes
+			if (is_array($pa_item['settings']['measurementsSplitter_attributes'])) {
+				$va_attr_vals = array();
+				foreach($pa_item['settings']['measurementsSplitter_attributes'] as $vs_element_code => $vs_v) {
+					$va_attr_vals[$vs_element_code] = BaseRefinery::parsePlaceholder($vs_v, $pa_source_data, $pa_item);
+				}
+				$va_val = array_merge($va_val, $va_attr_vals);
 			}
 			return array(0 => array($vs_terminal => $va_val));
 		}
@@ -133,6 +142,15 @@
 				'default' => '',
 				'label' => _t('Elements'),
 				'description' => _t('Element list')
+			),
+			'measurementsSplitter_attributes' => array(
+				'formatType' => FT_TEXT,
+				'displayType' => DT_SELECT,
+				'width' => 10, 'height' => 1,
+				'takesLocale' => false,
+				'default' => '',
+				'label' => _t('Attributes'),
+				'description' => _t('Sets or maps metadata for the list item record by referencing the metadataElement code and the location in the data source where the data values can be found.')
 			)
 		);
 ?>
