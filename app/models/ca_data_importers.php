@@ -1476,6 +1476,11 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 						continue; 
 					}
 					
+					if($vn_idno_mapping_item_id && ($vn_item_id == $vn_idno_mapping_item_id)) { 
+						if ($va_parent && is_array($va_parent)) { array_pop($va_parent); }	// remove empty container array
+						continue; 
+					}
+					
 					// Apply prefix/suffix *AFTER* setting default
 					if (isset($va_item['settings']['prefix']) && strlen($va_item['settings']['prefix'])) {
 						$vm_val = $va_item['settings']['prefix'].$vm_val;
@@ -1977,7 +1982,11 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 	 *
 	 */
 	static public function getValueFromSource($pa_item, $po_reader) {
-		$vm_value = trim($po_reader->get($pa_item['source']));
+		if (preg_match('!^_CONSTANT_:[^:]+:(.*)$!', $pa_item['source'], $va_matches)) {
+			$vm_value = $va_matches[1];
+		} else {
+			$vm_value = trim($po_reader->get($pa_item['source']));
+		}
 		
 		return ca_data_importers::replaceValue($vm_value, $pa_item);
 	}
