@@ -1,6 +1,6 @@
 <?php
 /* ----------------------------------------------------------------------
- * batch/metadataexport/export_results_html.php :
+ * manage/export/download_batch_html.php:
  * ----------------------------------------------------------------------
  * CollectiveAccess
  * Open-source collections management software
@@ -26,14 +26,16 @@
  * ----------------------------------------------------------------------
  */
 
-$t_exporter = $this->getVar('t_exporter');
-$vs_export = $this->getVar('export');
-$vn_id = $this->getVar('item_id');
-$vs_ext = $t_exporter->getFileExtension();
-$vs_content_type = $t_exporter->getContentType();
-
-header('Content-Type: '.$vs_content_type.'; charset=UTF-8');
-header('Content-Disposition: attachment; filename="'.$vn_id.".".$vs_ext.'"');
-header('Content-Transfer-Encoding: binary');
-print $vs_export;
-exit();
+$vs_file = $this->getVar('file');
+$vs_ext = $this->getVar('extension');
+$vs_content_type = $this->getVar('content_type');
+if(!$vs_file){
+	print _t('Invalid parameters');
+} else {
+	header('Content-Type: '.$vs_content_type.'; charset=UTF-8');
+	header('Content-Disposition: attachment; filename="batch_export.'.$vs_ext.'"');
+	header('Content-Transfer-Encoding: binary');
+	readfile($vs_file);
+	@unlink($vs_file);
+	exit();	
+}

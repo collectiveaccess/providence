@@ -1,6 +1,6 @@
 <?php
 /* ----------------------------------------------------------------------
- * themes/default/views/batch/metadataimport/importer_delete_html.php :
+ * 
  * ----------------------------------------------------------------------
  * CollectiveAccess
  * Open-source collections management software
@@ -15,22 +15,25 @@
  * the terms of the provided license as published by Whirl-i-Gig
  *
  * CollectiveAccess is distributed in the hope that it will be useful, but
- * WITHOUT ANY WARRANTIES whatsoever, including any implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+ * WITHOUT ANY WARRANTIES whatsoever, including any implied warranty of 
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  
  *
- * This source code is free and modifiable under the terms of
+ * This source code is free and modifiable under the terms of 
  * GNU General Public License. (http://www.gnu.org/copyleft/gpl.html). See
  * the "license.txt" file for details, or visit the CollectiveAccess web site at
  * http://www.CollectiveAccess.org
  *
  * ----------------------------------------------------------------------
  */
-
-	$t_exporter = $this->getVar('t_exporter');
-	$vn_exporter_id = $this->getVar('exporter_id');
+ 
+	$vn_exporter_count 	= $this->getVar('exporter_count');
 ?>
-<div class="sectionBox">
-<?php
-	print caDeleteWarningBox($this->request, $t_exporter, $t_exporter->getLabelForDisplay(false), 'batch', 'MetadataImport', 'Index', array('exporter_id' => $vn_exporter_id));
-?>
-</div>
+<h3><?php print _t('Your data exporters'); ?>:
+<div><?php
+	if ($vn_exporter_count == 1) {
+		print _t("1 mapping is available for export");
+	} else {
+		print _t("%1 mappings are available for export", $vn_exporter_count);
+	}
+?></div>
+</h3>

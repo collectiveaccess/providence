@@ -1,6 +1,6 @@
 <?php
 /* ----------------------------------------------------------------------
- * app/views/batch/metadataexport/exporter_list_html.php :
+ * manage/export/exporter_list_html.php:
  * ----------------------------------------------------------------------
  * CollectiveAccess
  * Open-source collections management software
@@ -29,12 +29,16 @@
 $va_exporter_list = $this->getVar('exporter_list');
 
 if (!$this->request->isAjax()) {
+    if(sizeof($va_exporter_list)>0){
 ?>
 <script language="JavaScript" type="text/javascript">
 	jQuery(document).ready(function(){
 		jQuery('#caExporterList').caFormatListTable();
 	});
 </script>
+<?php
+    }
+?>
 <div class="sectionBox">
 	<?php
 		print caFormControlBox(
@@ -93,9 +97,9 @@ if (!$this->request->isAjax()) {
 					<?php print caGetLocalizedDate($va_exporter['last_modified_on'], array('dateFormat' => 'delimited')); ?>
 				</td>
 				<td>
-					<!--<?php print caNavButton($this->request, __CA_NAV_BUTTON_EDIT__, _t("Edit"), 'batch', 'MetadataExport', 'Edit', array('exporter_id' => $va_exporter['exporter_id']), array(), array('icon_position' => __CA_NAV_BUTTON_ICON_POS_LEFT__, 'use_class' => 'list-button', 'no_background' => true, 'dont_show_content' => true)); ?>-->
-					<?php print caNavButton($this->request, __CA_NAV_BUTTON_DELETE__, _t("Delete"), 'batch', 'MetadataExport', 'Delete', array('exporter_id' => $va_exporter['exporter_id']), array(), array('icon_position' => __CA_NAV_BUTTON_ICON_POS_LEFT__, 'use_class' => 'list-button', 'no_background' => true, 'dont_show_content' => true)); ?>
-					<?php print caNavButton($this->request, __CA_NAV_BUTTON_GO__, _t("Export data"), 'batch', 'MetadataExport', 'Run', array('exporter_id' => $va_exporter['exporter_id']), array(), array('icon_position' => __CA_NAV_BUTTON_ICON_POS_LEFT__, 'use_class' => 'list-button', 'no_background' => true, 'dont_show_content' => true)); ?>
+					<!--<?php print caNavButton($this->request, __CA_NAV_BUTTON_EDIT__, _t("Edit"), 'manage', 'MetadataExport', 'Edit', array('exporter_id' => $va_exporter['exporter_id']), array(), array('icon_position' => __CA_NAV_BUTTON_ICON_POS_LEFT__, 'use_class' => 'list-button', 'no_background' => true, 'dont_show_content' => true)); ?>-->
+					<?php print caNavButton($this->request, __CA_NAV_BUTTON_DELETE__, _t("Delete"), 'manage', 'MetadataExport', 'Delete', array('exporter_id' => $va_exporter['exporter_id']), array(), array('icon_position' => __CA_NAV_BUTTON_ICON_POS_LEFT__, 'use_class' => 'list-button', 'no_background' => true, 'dont_show_content' => true)); ?>
+					<?php print caNavButton($this->request, __CA_NAV_BUTTON_GO__, _t("Export data"), 'manage', 'MetadataExport', 'Run', array('exporter_id' => $va_exporter['exporter_id']), array(), array('icon_position' => __CA_NAV_BUTTON_ICON_POS_LEFT__, 'use_class' => 'list-button', 'no_background' => true, 'dont_show_content' => true)); ?>
 				</td>
 			</tr>
 <?php
@@ -116,7 +120,7 @@ if (!$this->request->isAjax()) {
 		
 		jQuery('#exporterUploadArea').fileupload({
 			dataType: 'json',
-			url: '<?php print caNavUrl($this->request, 'batch', 'MetadataExport', 'UploadExporters'); ?>',
+			url: '<?php print caNavUrl($this->request, 'manage', 'MetadataExport', 'UploadExporters'); ?>',
 			dropZone: jQuery('#exporterUploadArea'),
 			singleFileUploads: false,
 			done: function (e, data) {
@@ -141,7 +145,7 @@ if (!$this->request->isAjax()) {
 							jQuery("#batchProcessingTableProgressGroup").hide(250);
 						}, 3000);
 				}
-				jQuery("#caExporterListContainer").load("<?php print caNavUrl($this->request, 'batch', 'MetadataExport', 'Index'); ?>");
+				jQuery("#caExporterListContainer").load("<?php print caNavUrl($this->request, 'manage', 'MetadataExport', 'Index'); ?>");
 			},
 			progressall: function (e, data) {
 				jQuery("#exporterUploadArea").hide(150);

@@ -1,6 +1,6 @@
 <?php
 /* ----------------------------------------------------------------------
- * app/views/batch/metadataexport/exporter_run_html.php :
+ * manage/export/exporter_run_html.php :
  * ----------------------------------------------------------------------
  * CollectiveAccess
  * Open-source collections management software
@@ -31,7 +31,7 @@ $va_exporters = ca_data_exporters::getExporters($t_exporter->get('table_num'));
 
 print $vs_control_box = caFormControlBox(
 		CaFormSubmitButton($this->request, __CA_NAV_BUTTON_SAVE__, _t("Execute data export"), 'caBatchMetadataExportForm').' '.
-		caNavButton($this->request, __CA_NAV_BUTTON_CANCEL__, _t("Cancel"), 'batch', 'MetadataExport', 'Index', array()),
+		caNavButton($this->request, __CA_NAV_BUTTON_CANCEL__, _t("Cancel"), 'manage', 'MetadataExport', 'Index', array()),
 		'', 
 		''
 	);

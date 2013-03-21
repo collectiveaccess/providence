@@ -1,6 +1,6 @@
 <?php
 /* ----------------------------------------------------------------------
- * views/batch/metadataexport/export_results_html.php
+ * manage/export/export_results_html.php
  * ----------------------------------------------------------------------
  * CollectiveAccess
  * Open-source collections management software
@@ -65,7 +65,7 @@
 
 	function caExportAddDownloadLink($po_request,$vs_filename){
 		print "<script type='text/javascript'>";
-		print "jQuery('#exportDownloadLink').html(\"".caNavLink($po_request,_t("Download export"),null,'batch','MetadataExport','DownloadExport',array('file' => $vs_filename),array('style' => 'font-size: 14px;'))."\");";
+		print "jQuery('#exportDownloadLink').html(\"".caNavLink($po_request,_t("Download export"),null,'manage','MetadataExport','DownloadExport',array('file' => $vs_filename),array('style' => 'font-size: 14px;'))."\");";
 		print "</script>";
 		caFlushOutput();
 	}

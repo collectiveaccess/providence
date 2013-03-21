@@ -1,13 +1,13 @@
 <?php
 /** ---------------------------------------------------------------------
- * app/lib/ca/MetadataExportController.php : 
+ * app/controllers/manage/MetadataExportController.php : 
  * ----------------------------------------------------------------------
  * CollectiveAccess
  * Open-source collections management software
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2012-2013 Whirl-i-Gig
+ * Copyright 2013 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -75,7 +75,7 @@
 		
  			$va_exporters = ca_data_exporters::getExporters();
  			$this->view->setVar('exporter_list', $va_exporters);
- 			$this->render('metadataexport/exporter_list_html.php');
+ 			$this->render('export/exporter_list_html.php');
  		}
  		# -------------------------------------------------------
  		public function UploadExporters() {
@@ -97,7 +97,7 @@
 			}
 			
  			$this->view->setVar('response', $va_response);
- 			$this->render('metadataexport/file_upload_response_json.php');
+ 			$this->render('export/file_upload_response_json.php');
  		}
  		# -------------------------------------------------------
  		public function Run() {
@@ -105,7 +105,7 @@
  			
  			$this->view->setVar('t_exporter', $t_exporter);
  			
-			$this->render('metadataexport/exporter_run_html.php');
+			$this->render('export/exporter_run_html.php');
  		}
  		# -------------------------------------------------------
  		public function ExportData() {
@@ -117,7 +117,7 @@
 			$app = AppController::getInstance();
 			$app->registerPlugin(new BatchMetadataExportProgress($this->request));
 
-			$this->render('metadataexport/export_results_html.php');
+			$this->render('export/export_results_html.php');
  		}
  		# -------------------------------------------------------
  		public function ExportSingleData() {
@@ -131,7 +131,7 @@
 
  			$this->view->setVar("export", $vs_export);
 
- 			$this->render('metadataexport/export_single_results_html.php');
+ 			$this->render('export/export_single_results_html.php');
  		}
  		# -------------------------------------------------------
 		public function Delete($pa_values=null) {
@@ -152,7 +152,7 @@
 				$this->Index();
 				return;
 			} else {
-				$this->render('metadataexport/exporter_delete_html.php');
+				$this->render('export/exporter_delete_html.php');
 			}
 		}
 		# -------------------------------------------------------
@@ -175,7 +175,7 @@
 				}
 			}
 
-			$this->render('metadataexport/download_batch_html.php');
+			$this->render('export/download_batch_html.php');
 		}
 		# -------------------------------------------------------
 		# Utilities
@@ -191,6 +191,22 @@
 			}
 			return $t_exporter;
 		}
+		# ------------------------------------------------------------------
+ 		# Sidebar info handler
+ 		# ------------------------------------------------------------------
+ 		/**
+ 		 * Sets up view variables for upper-left-hand info panel (aka. "inspector"). Actual rendering is performed by calling sub-class.
+ 		 *
+ 		 * @param array $pa_parameters Array of parameters as specified in navigation.conf, including primary key value and type_id
+ 		 */
+ 		public function Info($pa_parameters) {
+ 			$o_dm = Datamodel::load();
+ 			$t_exporter = $this->getExporterInstance(false);
+ 			$this->view->setVar('t_item', $t_exporter);
+			$this->view->setVar('exporter_count', ca_data_exporters::getExporterCount());
+			
+ 			return $this->render('export/widget_exporter_list_html.php', true);
+ 		}
 		# ------------------------------------------------------------------
  	}
  ?>
