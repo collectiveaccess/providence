@@ -1101,7 +1101,7 @@ class SearchResult extends BaseObject {
 	
 			if ($vb_return_as_array) {
 // return array (intrinsics or labels in primary or related table)
-				if ($t_instance->hasField($va_path_components['field_name']) && ($va_path_components['table_name'] === $this->ops_table_name)) {
+				if ($t_instance->hasField($va_path_components['field_name'])) {// && ($va_path_components['table_name'] === $this->ops_table_name)) {
 					// Intrinsic
 					$va_field_info = $t_instance->getFieldInfo($va_path_components['field_name']);
 					
@@ -1124,19 +1124,46 @@ class SearchResult extends BaseObject {
 							break;
 						default:
 							// is intrinsic field in primary table
+							$vb_supports_preferred = (bool)$t_instance->hasField('is_preferred');
 							foreach($va_value_list as $vn_id => $va_values_by_locale) {
 								foreach($va_values_by_locale as $vn_locale_id => $va_values) {
 									foreach($va_values as $vn_i => $va_value) {
-										if (($vb_get_preferred_labels_only) && (!$va_value['is_preferred'])) { continue; }
-										if (($vb_get_nonpreferred_labels_only) && ($va_value['is_preferred'])) { continue; }
+										if (($vb_get_preferred_labels_only) && ($vb_supports_preferred) && (!$va_value['is_preferred'])) { continue; }
+										if (($vb_get_nonpreferred_labels_only) && ($vb_supports_preferred) && ($va_value['is_preferred'])) { continue; }
+										
+										$vs_prop = $va_value[$va_path_components['field_name']];
+										if (isset($pa_options['convertCodesToDisplayText']) && $pa_options['convertCodesToDisplayText'] && ($vs_list_code = $t_instance->getFieldInfo($va_path_components['field_name'],"LIST_CODE"))) {
+											$vs_prop = $t_list->getItemFromListForDisplayByItemID($vs_list_code, $vs_prop);
+										} else {
+											if (isset($pa_options['convertCodesToDisplayText']) && $pa_options['convertCodesToDisplayText'] && ($vs_list_code = $t_instance->getFieldInfo($va_path_components['field_name'],"LIST"))) {
+												$vs_prop = $t_list->getItemFromListForDisplayByItemValue($vs_list_code, $vs_prop);
+											} else {
+												if (isset($pa_options['convertCodesToDisplayText']) && $pa_options['convertCodesToDisplayText'] && ($va_path_components['field_name'] === 'locale_id') && ((int)$vs_prop > 0)) {
+													$t_locale = new ca_locales($vs_prop);
+													$vs_prop = $t_locale->getName();
+												} else {
+													if (isset($pa_options['convertCodesToDisplayText']) && $pa_options['convertCodesToDisplayText'] && (is_array($va_list = $t_instance->getFieldInfo($va_path_components['field_name'],"BOUNDS_CHOICE_LIST")))) {
+														foreach($va_list as $vs_option => $vs_value) {
+															if ($vs_value == $vs_prop) {
+																$vs_prop = $vs_option;
+																break;
+															}
+														}
+													}
+												}
+											}
+										}
 										
 										if ($vb_return_all_locales) {
-											$va_return_values[$vn_row_id][$vn_locale_id][] = $va_value[$va_path_components['field_name']];
+											$va_return_values[$vn_row_id][$vn_locale_id][] = $vs_prop; //$va_value[$va_path_components['field_name']];
 										} else {
-											$va_return_values[] = $va_value[$va_path_components['field_name']];
+											$va_return_values[$vn_row_id][$vn_locale_id] = $vs_prop; //$va_value[$va_path_components['field_name']];
 										}
 									}
 								}
+							}
+							if (!$vb_return_all_locales) {
+								$va_return_values = array_values(caExtractValuesByUserLocale($va_return_values));
 							}
 							break;
 					}

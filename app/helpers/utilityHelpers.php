@@ -731,9 +731,10 @@ function caFileIsIncludable($ps_file) {
 	 * Both text fractions (ex. 3/4) and Unicode fraction glyphs (ex. ¾) may be used.
 	 *
 	 * @param string $ps_fractional_expression String including fractional expression to convert
+	 * @param string $locale The locale of the string to use the right decimal separator
 	 * @return string $ps_fractional_expression with fractions replaced with decimal equivalents
 	 */
-	function caConvertFractionalNumberToDecimal($ps_fractional_expression) {
+	function caConvertFractionalNumberToDecimal($ps_fractional_expression, $locale="en_US") {
 		// convert ascii fractions (eg. 1/2) to decimal
 		if (preg_match('!^([\d]*)[ ]*([\d]+)/([\d]+)!', $ps_fractional_expression, $va_matches)) {
 			if ((float)$va_matches[2] > 0) {
@@ -743,13 +744,15 @@ function caFileIsIncludable($ps_file) {
 			}
 			$vn_val = sprintf("%4.3f", ((float)$va_matches[1] + $vn_val));
 			
+			$vn_val = caConvertFloatToLocale($vn_val, $locale);
 			$ps_fractional_expression = str_replace($va_matches[0], $vn_val, $ps_fractional_expression);
 		} else {
+			$sep = caGetDecimalSeparator($locale);
 			// replace unicode fractions with decimal equivalents
 			foreach(array(
-				'½' => '.5','⅓' => '.333',
-				'⅔' => '.667','¼' => '.25',
-				'¾' => '.75') as $vs_glyph => $vs_val
+				'½' => $sep.'5', '⅓' => $sep.'333',
+				'⅔' => $sep.'667', '¼' => $sep.'25',
+				'¾'	=> $sep.'75') as $vs_glyph => $vs_val
 			) {
 				$ps_fractional_expression = preg_replace('![ ]*'.$vs_glyph.'!u', $vs_val, $ps_fractional_expression);	
 			}
@@ -782,22 +785,43 @@ function caFileIsIncludable($ps_file) {
 	 * format needed for calculations (eg 54.33)
 	 *
 	 * @param string $ps_value The value to convert
+	 * @param string $locale The locale of the value
 	 * @return float The converted value
 	 */
-	function caConvertLocaleSpecificFloat($ps_value) {
-		$va_locale = localeconv();
-		$va_search = array(
-			$va_locale['decimal_point'], 
-			$va_locale['mon_decimal_point'], 
-			$va_locale['thousands_sep'], 
-			$va_locale['mon_thousands_sep'], 
-			$va_locale['currency_symbol'], 
-			$va_locale['int_curr_symbol']
-		);
-		$va_replace = array('.', '.', '', '', '', '');
-	
-		$vs_converted_value = str_replace($va_search, $va_replace, $ps_value);
-		return (float)$vs_converted_value;
+	function caConvertLocaleSpecificFloat($ps_value, $locale = "en_US") {
+		if (!function_exists("NumberFormatter")) { return $ps_value; }
+		$fmt = new NumberFormatter($locale, NumberFormatter::DECIMAL );
+		return (float)$fmt->parse($ps_value);
+	}
+	# ---------------------------------------
+	/**
+	 * Takes a standard formatted float (eg. 54.33) and converts it to the locale
+	 * format needed for display (eg 54,33)
+	 *
+	 * @param string $ps_value The value to convert
+	 * @param string $locale Which locale is to be used to return the value
+	 * @return float The converted value
+	 */
+	function caConvertFloatToLocale($ps_value, $locale = "en_US") {
+		if (!function_exists("NumberFormatter")) { return $ps_value; }
+		$fmt = new NumberFormatter($locale, NumberFormatter::DECIMAL );
+		return $fmt->format($ps_value);
+	}
+	# ---------------------------------------
+	/**
+	 * Get the decimal separator
+	 *
+	 * @param string $ps_value The value to convert
+	 * @param string $locale Which locale is to be used to return the value
+	 * @return float The converted value
+	 */
+	function caGetDecimalSeparator($locale = "en_US") {
+		if (!function_exists("NumberFormatter")) { return $ps_value; }
+		if ($locale != "en_US") {
+			$fmt = new NumberFormatter($locale, NumberFormatter::DECIMAL );
+			return $fmt->getSymbol(NumberFormatter::DECIMAL_SEPARATOR_SYMBOL);
+		}
+		return ".";
 	}
 	# ---------------------------------------
 	/**
@@ -1166,42 +1190,26 @@ function caFileIsIncludable($ps_file) {
 	}
 	# ---------------------------------------
 	function caFormatXML($ps_xml){  
-		// add marker linefeeds to aid the pretty-tokeniser (adds a linefeed between all tag-end boundaries)
-		$xml = preg_replace('/(>)(<)(\/*)/', "$1\n$2$3", $ps_xml);
-		
-		// now indent the tags
-		$token = strtok($xml, "\n");
-		$result	= ''; // holds formatted version as it is built
-		$pad = 0; // initial indent
-		$matches = array(); // returns from preg_matches()
-		
-		// scan each line and adjust indent based on opening/closing tags
-		while ($token !== false) : 
-			$indent = 0;
-			// test for the various tag states
-			
-			// 1. open and closing tags on same line - no change
-			if (preg_match('/.+<\/\w[^>]*>$/', $token, $matches)) : 
-				$indent = 0;
-			// 2. closing tag - outdent now
-			elseif (preg_match('/^<\/\w/', $token, $matches)) :
-				$pad -= 2;
-			// 3. opening tag - don't pad this one, only subsequent tags
-			elseif (preg_match('/^<\w[^>]*[^\/]>.*$/', $token, $matches)) :
-				$indent = 2;
-			// 4. no indentation needed
-			else :
-				$indent = 0; 
-			endif;
-			
-			// pad the line with the required number of leading spaces
-			$line = str_pad($token, strlen($token)+$pad, ' ', STR_PAD_LEFT);
-			$result .= $line . "\n"; // add to the cumulative result, with linefeed
-			$token = strtok("\n"); // get the next token
-			$pad += $indent; // update the pad size for subsequent lines
-		endwhile; 
-		
-		return $result;
+		require_once(__CA_LIB_DIR__.'/core/Parsers/XMLFormatter.php');
+
+		$va_options = array(
+			"paddingString" => " ",
+			"paddingMultiplier" => 2,
+			"wordwrapCData" => false,
+		);
+
+		$vr_input = fopen('data://text/plain,'.$ps_xml, 'r');
+		$vr_output = fopen('php://temp', 'w+');
+
+		$vo_formatter = new XML_Formatter($vr_input, $vr_output, $va_options);
+
+		try {
+			$vo_formatter->format();
+			rewind($vr_output);
+			return stream_get_contents($vr_output)."\n";
+		} catch (EXception $e) {
+			return false;
+		}
 	}
 	# ---------------------------------------
 	/**
@@ -1474,6 +1482,19 @@ function caFileIsIncludable($ps_file) {
 	}
 	# ---------------------------------------
 	/**
+	 * Determines if current request was via service.php
+	 *
+	 * @return boolean true if request addressed service.php, false if not
+	 */
+	function caIsServiceRequest() {
+		if(isset($_SERVER['SCRIPT_NAME']) && ($_SERVER['SCRIPT_NAME'] == '/service.php')){
+			return true;
+		} else {
+			return false;
+		}
+	}
+	# ---------------------------------------
+	/**
 	 * 
 	 *
 	 * @param array $pa_options
@@ -1635,24 +1656,7 @@ function caFileIsIncludable($ps_file) {
 	 */
 	function caDebug($vm_data, $vs_label = null, $print_r = false) {
 		if(defined('__CA_ENABLE_DEBUG_OUTPUT__') && __CA_ENABLE_DEBUG_OUTPUT__) {
-			if(!caIsRunFromCLI()){
-				$vs_string = htmlspecialchars(($print_r ? print_r($vm_data, TRUE) : var_export($vm_data, TRUE)), ENT_QUOTES, 'UTF-8');
-				$vs_string = '<pre>' . $vs_string . '</pre>';
-				$vs_string = trim($vs_label ? "<div id='debugLabel'>$vs_label:</div> $vs_string" : $vs_string);
-				$vs_string = '<div id="debug">'. $vs_string . '</div>';
-
-				global $g_response;
-				if(is_object($g_response)){
-					$g_response->prependContent($vs_string,'debug');
-				} else {
-					// on the off chance that someone wants to debug something that happens before 
-					// the response object is generated (like config checks), print content
-					// to output buffer to avoid headers already sent warning. The output is sent
-					// when someone (e.g. View.php) starts a new buffer.
-					ob_start();
-					print $vs_string;
-				}
-			} else {
+			if(caIsRunFromCLI()){
 				// simply dump stuff on command line
 				if($vs_label) { print $vs_label.":\n"; }
 				if($print_r) {
@@ -1661,6 +1665,33 @@ function caFileIsIncludable($ps_file) {
 					var_export($vm_data);
 				}
 				print "\n";
+				return;
+			} else if (caIsServiceRequest()){
+				$vs_data = ($print_r ? print_r($vm_data, TRUE) : var_export($vm_data, TRUE));
+				if($vs_label){
+					$vs_string = '<debugLabel>' . $vs_label . '</debugLabel>' . "\n";
+				} else {
+					$vs_string = "";
+				}
+				$vs_string .= '<debug>' . $vs_data . '</debug>';
+				$vs_string .= "\n\n";
+			} else {
+				$vs_string = htmlspecialchars(($print_r ? print_r($vm_data, TRUE) : var_export($vm_data, TRUE)), ENT_QUOTES, 'UTF-8');
+				$vs_string = '<pre>' . $vs_string . '</pre>';
+				$vs_string = trim($vs_label ? "<div id='debugLabel'>$vs_label:</div> $vs_string" : $vs_string);
+				$vs_string = '<div id="debug">'. $vs_string . '</div>';
+			}
+
+			global $g_response;
+			if(is_object($g_response)){
+				$g_response->prependContent($vs_string,'debug');
+			} else {
+				// on the off chance that someone wants to debug something that happens before 
+				// the response object is generated (like config checks), print content
+				// to output buffer to avoid headers already sent warning. The output is sent
+				// when someone (e.g. View.php) starts a new buffer.
+				ob_start();
+				print $vs_string;
 			}
 		}
 	}

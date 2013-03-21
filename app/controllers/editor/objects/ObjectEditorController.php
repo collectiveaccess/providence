@@ -58,6 +58,17 @@
  			return parent::Edit($va_values, $pa_options);
  		}
  		# -------------------------------------------------------
+ 		/**
+ 		 *
+ 		 */
+ 		public function postSave($t_object, $pb_is_insert) {
+ 			if ( $this->request->config->get('ca_objects_x_collections_hierarchy_enabled') && ($vs_coll_rel_type = $this->request->config->get('ca_objects_x_collections_hierarchy_relationship_type')) && ($pn_collection_id = $this->request->getParameter('collection_id', pInteger))) {
+ 				if (!($t_object->addRelationship('ca_collections', $pn_collection_id, $vs_coll_rel_type))) {
+ 					$this->notification->addNotification(_t("Could not add parent collection to object", __NOTIFICATION_TYPE_ERROR__));
+ 				}
+ 			}
+ 		}
+ 		# -------------------------------------------------------
  		# AJAX handlers
  		# -------------------------------------------------------
  		/**
