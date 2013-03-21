@@ -1308,8 +1308,16 @@
 			return is_array($va_attributes[$vn_element_id]) ? $va_attributes[$vn_element_id] : array();
 		}
 		# ------------------------------------------------------------------
-		// returns an array of all attributes with the specified element_id attached to the current row
-		public function getAttributeCountByElement($pm_element_code_or_id) {
+		/**
+		 * 
+		 *
+		 * @param mixed $pm_element_code_or_id
+		 * @param array $pa_options
+		 *
+		 *
+		 * @return int Number of attributes attached to the current row for the specified metadata element
+		 */
+		public function getAttributeCountByElement($pm_element_code_or_id, $pa_options=null) {
 			if (!($vn_row_id = $this->getPrimaryKey())) { 
 				if (isset($pa_options['row_id']) && $pa_options['row_id']) {
 					$vn_row_id = $pa_options['row_id'];
