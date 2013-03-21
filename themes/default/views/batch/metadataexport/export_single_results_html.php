@@ -29,36 +29,11 @@
 $t_exporter = $this->getVar('t_exporter');
 $vs_export = $this->getVar('export');
 $vn_id = $this->getVar('item_id');
+$vs_ext = $t_exporter->getFileExtension();
+$vs_content_type = $t_exporter->getContentType();
 
-switch($t_exporter->getSetting('exporter_type')){
-	case 'CSV':
-		header('Content-Type: text/csv; charset=UTF-8');
-		$vs_ext = ".csv";
-		break;
-	case 'MARC':
-		switch($t_exporter->getSetting('MARC_outputFormat')){
-			case 'readable':
-				header('Content-Type: text/plain; charset=UTF-8');
-				$vs_ext = ".txt";
-			case 'raw':
-				header('Content-Type: application/marc; charset=UTF-8');
-				$vs_ext = ".mrc";
-				break;
-			case 'xml':
-			default:
-				header('Content-Type: text/xml; charset=UTF-8');
-				$vs_ext = ".xml";
-				break;	
-		}
-		break;
-	case 'XML':
-	default:
-		header('Content-Type: text/xml; charset=UTF-8');
-		$vs_ext = ".xml";
-		break;
-}
-
-header('Content-Disposition: attachment; filename="'.$vn_id.$vs_ext.'"');
+header('Content-Type: '.$vs_content_type.'; charset=UTF-8');
+header('Content-Disposition: attachment; filename="'.$vn_id.".".$vs_ext.'"');
 header('Content-Transfer-Encoding: binary');
 print $vs_export;
 exit();
