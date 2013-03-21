@@ -3559,7 +3559,7 @@ if (!$vb_batch) {
 			case 3:
 				$t_item_rel = $this->getAppDatamodel()->getTableInstance($va_path[1]);
 				$t_rel_item = $this->getAppDatamodel()->getTableInstance($va_path[2]);
-				$vs_key = 'relation_id';
+				$vs_key = $t_item_rel->primaryKey(); //'relation_id';
 				break;
 			case 2:
 				$t_item_rel = null;
@@ -3726,7 +3726,7 @@ if (!$vb_batch) {
 		
 		if ($vs_idno_fld = $t_rel_item->getProperty('ID_NUMBERING_ID_FIELD')) { $va_selects[] = $t_rel_item->tableName().'.'.$vs_idno_fld; }
 		if ($vs_idno_sort_fld = $t_rel_item->getProperty('ID_NUMBERING_SORT_FIELD')) { $va_selects[] = $t_rel_item->tableName().'.'.$vs_idno_sort_fld; }
-	
+
 		$va_selects[] = $va_path[1].'.'.$vs_key;	
 		
 		if (isset($pa_options['fields']) && is_array($pa_options['fields'])) {
@@ -3929,7 +3929,7 @@ if (!$vb_batch) {
 			
 			//print "<pre>$vs_sql</pre>\n";
 			$qr_res = $o_db->query($vs_sql);
-
+			
 			if ($vb_uses_relationship_types)  { 
 				$va_rel_types = $t_rel->getRelationshipInfo($t_item_rel->tableName()); 
 				$vs_left_table = $t_item_rel->getLeftTableName();

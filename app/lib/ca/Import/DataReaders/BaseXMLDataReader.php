@@ -84,14 +84,20 @@ class BaseXMLDataReader extends BaseDataReader {
 		$this->opa_row_buf = array();
 		foreach($o_row as $vs_name => $o_tag) {
 			$vs_key = $vs_name;
-			if ($this->opb_tag_names_as_case_insensitive) { $vs_key = strtolower($vs_key); }
 			$this->opa_row_buf[$vs_key] = (string)$o_row->{$vs_name};
+			if ($this->opb_tag_names_as_case_insensitive) { 
+				$vs_key = strtolower($vs_key);
+				$this->opa_row_buf[$vs_key] = (string)$o_row->{$vs_name};
+			}
 		}
 		
 		if ($this->opb_use_row_tag_attributes_as_row_level_values) {
 			foreach($o_row->attributes() as $vs_name => $vs_val) {
-				if ($this->opb_tag_names_as_case_insensitive) { $vs_name = strtolower($vs_name); }
 				$this->opa_row_buf[$vs_name] = (string)$vs_val;
+				if ($this->opb_tag_names_as_case_insensitive) { 
+					$vs_name = strtolower($vs_name);
+					$this->opa_row_buf[$vs_name] = (string)$vs_val;
+				}
 			}
 		}
 		
@@ -137,7 +143,11 @@ class BaseXMLDataReader extends BaseDataReader {
 	 */
 	public function getRow($pa_options=null) {
 		if (is_array($this->opa_row_buf)) {
-			return $this->opa_row_buf;
+			$va_row = $this->opa_row_buf;
+			foreach($va_row as $vs_k => $vs_v) {
+				$va_row["/{$vs_k}"] = $vs_v;
+			}
+			return $va_row;
 		}
 		
 		return null;	

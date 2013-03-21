@@ -55,7 +55,7 @@
 		$va_public_access_settings = isset($pa_options['public_access_settings']) && is_array($pa_options['public_access_settings']) ? $pa_options['public_access_settings'] : (array)$po_request->config->getList('public_access_settings');
 	
 		if (!$vb_dont_enforce_access_settings) {
-			$vb_is_privileged = caUserIsPrivileged($po_request, $po_config);
+			$vb_is_privileged = caUserIsPrivileged($po_request, $pa_options);
 			if($vb_is_privileged) {
 				return $va_privileged_access_settings;
 			} else {
