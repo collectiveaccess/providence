@@ -679,6 +679,12 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 		$va_mappings = array();
 		
 		$va_refineries = RefineryManager::getRefineryNames();
+		
+		$va_refinery_ci_map = array();
+		foreach($va_refineries as $vs_refinery) {
+			$va_refinery_ci_map[strtolower($vs_refinery)] = $vs_refinery;
+		}
+		
 		foreach ($o_sheet->getRowIterator() as $o_row) {
 			if ($vn_row == 0) {	// skip first row
 				$vn_row++;
@@ -733,13 +739,15 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 					
 					$va_options = null;
 					if ($vs_options_json = (string)$o_options->getValue()) { 
+						// encode newlines
+						$vs_options_json = preg_replace("![\r\n]!", "\\\\n", $vs_options_json);
 						if (is_null($va_options = @json_decode($vs_options_json, true))) {
 							$pa_errors[] = _t("Warning: invalid options for group %1/source %2", $vs_group, $vs_source);
 						}
 					}
 					
 					if ($vs_mode == 'Mapping') {
-						$vs_refinery = trim((string)$o_refinery->getValue());
+						$vs_refinery = $va_refinery_ci_map[strtolower(trim((string)$o_refinery->getValue()))];
 					
 						$va_refinery_options = null;
 						if ($vs_refinery && ($vs_refinery_options_json = (string)$o_refinery_options->getValue())) {
@@ -1514,7 +1522,6 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 							if (!$vs_refinery) { continue; }
 							if ($o_refinery = RefineryManager::getRefineryInstance($vs_refinery)) {
 								$va_refined_values = $o_refinery->refine($va_content_tree, $va_group, $va_item, $va_row, array('source' => $ps_source, 'subject' => $t_subject, 'locale_id' => $vn_locale_id));
-							
 								if ($o_refinery->returnsMultipleValues()) {
 									$va_p = array_pop($va_parent);
 									foreach($va_refined_values as $va_refined_value) {
@@ -1527,6 +1534,8 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 								}
 								
 								continue(2);
+							} else {
+								$o_log->logError(_t('[%1] Invalid refinery %2 specified', $vs_idno, $vs_refinery));
 							}
 						}
 					}
