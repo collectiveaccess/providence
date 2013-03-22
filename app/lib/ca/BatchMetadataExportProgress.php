@@ -71,10 +71,12 @@
 			}
 
 			// export done, move file to application tmp dir and create download link (separate action in the export controller)
-			$vs_new_filename = $vn_id."_".md5($vs_file);
-			rename($vs_file, __CA_APP_DIR__.'/tmp/'.$vs_new_filename);
+			if(filesize($vs_file)){
+				$vs_new_filename = $vn_id."_".md5($vs_file);
+				rename($vs_file, __CA_APP_DIR__.'/tmp/'.$vs_new_filename);
 
-			caExportAddDownloadLink($req,$vs_new_filename);
+				caExportAddDownloadLink($req,$vs_new_filename);
+			}
 		}
 		# -------------------------------------------------------
 	}

@@ -1016,19 +1016,22 @@ class ca_data_exporters extends BundlableLabelableBaseModelWithAttributes {
 		ca_data_exporters::$s_exporter_cache = array();
 		ca_data_exporters::$s_exporter_item_cache = array();
 
-		$vb_show_cli_progress_bar 	= (isset($pa_options['showCLIProgressBar']) && ($pa_options['showCLIProgressBar']));
+		$vb_show_cli_progress_bar = (isset($pa_options['showCLIProgressBar']) && ($pa_options['showCLIProgressBar']));
+		$po_request = isset($pa_options['request']) ? $pa_options['request'] : null;
 
 		if(!$t_mapping = ca_data_exporters::loadExporterByCode($ps_exporter_code)){
 			return false;
 		}
 
-		if(sizeof(ca_data_exporters::checkMapping($ps_exporter_code))>0){
+		$va_errors = ca_data_exporters::checkMapping($ps_exporter_code);
+		if(sizeof($va_errors)>0){
+			if ($po_request && isset($pa_options['progressCallback']) && ($ps_callback = $pa_options['progressCallback'])) {
+				$ps_callback($po_request, 0, -1, _t('Export failed: %1',join("; ",$va_errors)), 0, memory_get_usage(true), 0);
+			}
 			return false;
 		}
 
 		$vn_start_time = time();
-
-		$po_request = isset($pa_options['request']) ? $pa_options['request'] : null;
 
 		$vs_wrap_before = $t_mapping->getSetting('wrap_before');
 		$vs_wrap_after = $t_mapping->getSetting('wrap_after');
@@ -1047,7 +1050,11 @@ class ca_data_exporters extends BundlableLabelableBaseModelWithAttributes {
 		}
 
 		if ($po_request && isset($pa_options['progressCallback']) && ($ps_callback = $pa_options['progressCallback'])) {
-			$ps_callback($po_request, 0, $vn_num_items, _t("Exporting result for search expression '%1'", $ps_expression), (time() - $vn_start_time), memory_get_usage(true), 0);
+			if($vn_num_items>0) {
+				$ps_callback($po_request, 0, $vn_num_items, _t("Exporting result for search expression '%1'", $ps_expression), (time() - $vn_start_time), memory_get_usage(true), 0);
+			} else {
+				$ps_callback($po_request, 0, -1, _t('Found no records to export'), (time() - $vn_start_time), memory_get_usage(true), 0);
+			}
 		}
 		$vn_num_processed = 0;
 		while($o_result->nextHit()){

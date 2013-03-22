@@ -31,7 +31,7 @@
 
 
 <div class="batchProcessingTableProgressGroup">
-	<div id="batchProcessingTableStatus" class="batchProcessingStatus"> </div>
+	<div id="batchProcessingTableStatus" class="batchProcessingStatus" style="overflow:scroll;"> </div>
 	<div id="progressbar"></div>
 </div>
 
