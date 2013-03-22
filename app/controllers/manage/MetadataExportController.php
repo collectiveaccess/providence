@@ -215,11 +215,18 @@
  		 */
  		public function Info($pa_parameters) {
  			$o_dm = Datamodel::load();
- 			$t_exporter = $this->getExporterInstance(false);
- 			$this->view->setVar('t_item', $t_exporter);
-			$this->view->setVar('exporter_count', ca_data_exporters::getExporterCount());
-			
- 			return $this->render('export/widget_exporter_list_html.php', true);
+
+ 			if($this->request->getAction()=="Index"){
+	 			$t_exporter = $this->getExporterInstance(false);
+	 			$this->view->setVar('t_item', $t_exporter);
+				$this->view->setVar('exporter_count', ca_data_exporters::getExporterCount());
+				
+	 			return $this->render('export/widget_exporter_list_html.php', true);
+ 			} else {
+ 				$t_exporter = $this->getExporterInstance();
+	 			$this->view->setVar('t_item', $t_exporter);
+ 				return $this->render('export/widget_exporter_info_html.php', true);
+ 			}
  		}
 		# ------------------------------------------------------------------
  	}
