@@ -40,20 +40,9 @@ require_once(__CA_APP_DIR__.'/helpers/displayHelpers.php');
 class BaseXMLDataReader extends BaseDataReader {
 	# -------------------------------------------------------
 	/**
-	 * Name of XML namespace. Set to null if no namespace is used.
+	 * 
 	 */
-	protected $ops_namespace = null;
-	
-	/**
-	 * Name of top-level tag in XML format
-	 */
-	protected $ops_top_level_tag = null;
-	
-	/**
-	 * Name of row-level tag – the tag that encloses each row to be read – in the XML format
-	 * It is assumed that this tag is a direct child of the top level tag
-	 */
-	protected $ops_row_level_tag = null;
+	protected $ops_xpath = null;
 	
 	/**
 	 * Merge attributes of row-level tag into record as regular values?
@@ -73,6 +62,7 @@ class BaseXMLDataReader extends BaseDataReader {
 	
 	private $opo_handle = null;
 	private $opo_xml = null;
+	private $opo_xpath = null;
 	private $opa_row_buf = array();
 	private $opn_current_row = 0;
 	# -------------------------------------------------------
@@ -98,12 +88,14 @@ class BaseXMLDataReader extends BaseDataReader {
 	 */
 	public function read($ps_source, $pa_options=null) {
 		//die("read source $ps_source");
-		$this->opo_xml = simplexml_load_file($ps_source);
+		$this->opo_xml = DOMDocument::load($ps_source);
+		$this->opo_xpath = new DOMXPath($this->opo_xml);
 		
-		$vs_path = "//".($this->ops_namespace ? $this->ops_namespace.':' : '').$this->ops_top_level_tag."/".($this->ops_namespace ? $this->ops_namespace.':' : '').$this->ops_row_level_tag;
+		if ($this->ops_xml_namespace_prefix && $this->ops_xml_namespace) {
+			$this->opo_xpath->registerNamespace($this->ops_xml_namespace_prefix, $this->ops_xml_namespace);
+		}
+		$this->opo_handle = $this->opo_xpath->query($this->ops_xpath);
 
-		$this->opo_handle = $this->opo_xml->xpath($vs_path);
-	
 		$this->opn_current_row = 0;
 		return $this->opo_handle ? true : false;
 	}
@@ -117,27 +109,34 @@ class BaseXMLDataReader extends BaseDataReader {
 	 */
 	public function nextRow() {
 		
-		if (!($o_row = $this->opo_handle[$this->opn_current_row])) { return false; }
+		//if (!($o_row = $this->opo_handle[$this->opn_current_row])) { return false; }
+		if (!($o_row = $this->opo_handle->item($this->opn_current_row))) { return false; }
 		
 		$this->opa_row_buf = array();
-		foreach($o_row->children($this->ops_namespace, $this->ops_namespace ? true : false) as $vs_name => $o_tag) {
-			$vs_key = $vs_name;
-			$this->opa_row_buf[$vs_key] = (string)$o_tag;
+		$vn_l = (int)$o_row->childNodes->length;
+		
+		for($vn_i=0; $vn_i < $vn_l; $vn_i++) {
+			$o_node = $o_row->childNodes->item($vn_i);
+			$vs_key = $o_node->nodeName;
+			$this->opa_row_buf[$vs_key] = (string)$o_node->nodeValue;
 			if ($this->opb_tag_names_as_case_insensitive) { 
-				$vs_key = strtolower($vs_key);
-				$this->opa_row_buf[$vs_key] = (string)$o_tag;
+				$this->opa_row_buf[strtolower($vs_key)] = $this->opa_row_buf[$vs_key];
 			}
 		}
 
-		if ($this->opb_use_row_tag_attributes_as_row_level_values) {
-			foreach($o_row->attributes() as $vs_name => $vs_val) {
-				$this->opa_row_buf[$vs_name] = (string)$vs_val;
-				if ($this->opb_tag_names_as_case_insensitive) { 
-					$vs_name = strtolower($vs_name);
-					$this->opa_row_buf[$vs_name] = (string)$vs_val;
-				}
-			}
-		}
+		 if ($this->opb_use_row_tag_attributes_as_row_level_values && $o_row->hasAttributes()) {
+		 	$o_attributes = $o_row->attributes;
+		 	$vn_l = $o_attributes->length;
+		 	
+			for($vn_i=0; $vn_i < $vn_l; $vn_i++) {
+				$o_node = $o_attributes->item($vn_i);
+				$vs_key = $o_node->nodeName;
+ 				$this->opa_row_buf[$vs_key] = (string)$o_node->nodeValue;
+ 				if ($this->opb_tag_names_as_case_insensitive) { 
+ 					$this->opa_row_buf[strtolower($vs_key)] = $this->opa_row_buf[$vs_key];
+ 				}
+ 			}
+ 		}
 		
 		$this->opn_current_row++;
 		if ($this->opn_current_row > $this->numRows()) { return false; }
@@ -197,7 +196,7 @@ class BaseXMLDataReader extends BaseDataReader {
 	 * @return int
 	 */
 	public function numRows() {
-		return sizeof($this->opo_handle);
+		return (int)$this->opo_handle->length;
 	}
 	# -------------------------------------------------------
 	/**
@@ -210,3 +209,4 @@ class BaseXMLDataReader extends BaseDataReader {
 	}
 	# -------------------------------------------------------
 }
+?>

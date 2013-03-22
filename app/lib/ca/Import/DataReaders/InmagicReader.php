@@ -40,20 +40,22 @@ require_once(__CA_APP_DIR__.'/helpers/displayHelpers.php');
 class InmagicReader extends BaseXMLDataReader {
 	# -------------------------------------------------------
 	/**
-	 * Name of XML namespace. Set to null if no namespace is used.
+	 * XPath to select
 	 */
-	protected $ops_namespace = 'inm';
+	protected $ops_xml_namespace = 'http://www.inmagic.com/webpublisher/query';
+	
 	
 	/**
-	 * Name of top-level tag in XML format
+	 * XPath to select
 	 */
-	protected $ops_top_level_tag = 'Recordset';
+	protected $ops_xml_namespace_prefix = 'inm';
+	
 	
 	/**
-	 * Name of row-level tag – the tag that encloses each row to be read – in the XML format
-	 * It is assumed that this tag is a direct child of the top level tag
+	 * XPath to select
 	 */
-	protected $ops_row_level_tag = 'Record';
+	protected $ops_xpath = '//inm:Recordset/inm:Record';
+	
 	
 	/**
 	 * Merge attributes of row-level tag into record as regular values?
