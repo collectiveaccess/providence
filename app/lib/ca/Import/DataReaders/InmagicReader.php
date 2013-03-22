@@ -1,6 +1,6 @@
 <?php
 /** ---------------------------------------------------------------------
- * FMPDSOResultReader.php : 
+ * InmagicReader.php : 
  * ----------------------------------------------------------------------
  * CollectiveAccess
  * Open-source collections management software
@@ -37,23 +37,23 @@
 require_once(__CA_LIB_DIR__.'/ca/Import/DataReaders/BaseXMLDataReader.php');
 require_once(__CA_APP_DIR__.'/helpers/displayHelpers.php');
 
-class FMPDSOResultReader extends BaseXMLDataReader {
+class InmagicReader extends BaseXMLDataReader {
 	# -------------------------------------------------------
 	/**
 	 * Name of XML namespace. Set to null if no namespace is used.
 	 */
-	protected $ops_namespace = null;
+	protected $ops_namespace = 'inm';
 	
 	/**
 	 * Name of top-level tag in XML format
 	 */
-	protected $ops_top_level_tag = 'FMPDSORESULT';
+	protected $ops_top_level_tag = 'Recordset';
 	
 	/**
 	 * Name of row-level tag – the tag that encloses each row to be read – in the XML format
 	 * It is assumed that this tag is a direct child of the top level tag
 	 */
-	protected $ops_row_level_tag = 'ROW';
+	protected $ops_row_level_tag = 'Record';
 	
 	/**
 	 * Merge attributes of row-level tag into record as regular values?
@@ -78,11 +78,11 @@ class FMPDSOResultReader extends BaseXMLDataReader {
 	public function __construct($ps_source=null, $pa_options=null){
 		parent::__construct($ps_source, $pa_options);
 		
-		$this->ops_title = _t('FMPro DSOResult XML Reader');
-		$this->ops_display_name = _t('FMPro DSOResult');
-		$this->ops_description = _t('Reads Filemaker Pro DSOResult-format XML files');
+		$this->ops_title = _t('Inmagic XML Reader');
+		$this->ops_display_name = _t('Inmagick XML');
+		$this->ops_description = _t('Reads Inmagic XML files');
 		
-		$this->opa_formats = array('fmpdso');	// must be all lowercase to allow for case-insensitive matching
+		$this->opa_formats = array('inmagic');	// must be all lowercase to allow for case-insensitive matching
 	}
 	# -------------------------------------------------------
 }
