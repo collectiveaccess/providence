@@ -136,14 +136,18 @@
  				return;
  			}
 
- 			$this->view->setVar("t_subject", $t_subject);
+ 			$va_errors = ca_data_exporters::checkMapping($t_exporter->get('exporter_code'));
+ 			if(is_array($va_errors) && (sizeof($va_errors)>0)){
+ 				$this->view->setVar("errors",$va_errors);
+ 			} else {
+	 			$this->view->setVar("t_subject", $t_subject);
+	 			$vn_id = $this->request->getParameter('item_id', pInteger);
+	 			$this->view->setVar('item_id',$vn_id);
 
- 			$vn_id = $this->request->getParameter('item_id', pInteger);
- 			$this->view->setVar('item_id',$vn_id);
+	 			$vs_export = ca_data_exporters::exportRecord($t_exporter->get('exporter_code'), $vn_id, array('singleRecord' => true));
 
- 			$vs_export = ca_data_exporters::exportRecord($t_exporter->get('exporter_code'), $vn_id, array('singleRecord' => true));
-
- 			$this->view->setVar("export", $vs_export);
+	 			$this->view->setVar("export", $vs_export);
+ 			}
 
  			$this->render('export/export_single_results_html.php');
  		}
@@ -216,7 +220,7 @@
  		public function Info($pa_parameters) {
  			$o_dm = Datamodel::load();
 
- 			if($this->request->getAction()=="Index"){
+ 			if(($this->request->getAction()=="Index") || ($this->request->getAction()=="Delete")){
 	 			$t_exporter = $this->getExporterInstance(false);
 	 			$this->view->setVar('t_item', $t_exporter);
 				$this->view->setVar('exporter_count', ca_data_exporters::getExporterCount());

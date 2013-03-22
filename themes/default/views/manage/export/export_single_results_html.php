@@ -32,8 +32,23 @@ $vn_id = $this->getVar('item_id');
 $vs_ext = $t_exporter->getFileExtension();
 $vs_content_type = $t_exporter->getContentType();
 
-header('Content-Type: '.$vs_content_type.'; charset=UTF-8');
-header('Content-Disposition: attachment; filename="'.$vn_id.".".$vs_ext.'"');
-header('Content-Transfer-Encoding: binary');
-print $vs_export;
-exit();
+$va_errors = $this->getVar('errors');
+
+if($va_errors && is_array($va_errors)){
+	print "<div class='notification-error-box'><h2 style='margin-left:25px;'>"._t("Export mapping has errors")."</h2>";
+	print "<ul>";
+
+	foreach($va_errors as $vs_error){
+		print "<li class='notification-error-box'>$vs_error</li>";
+	}
+
+	print "</ul></div>";
+} else {
+
+	header('Content-Type: '.$vs_content_type.'; charset=UTF-8');
+	header('Content-Disposition: attachment; filename="'.$vn_id.".".$vs_ext.'"');
+	header('Content-Transfer-Encoding: binary');
+	print $vs_export;
+	exit();
+
+}
