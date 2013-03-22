@@ -109,6 +109,12 @@
  		}
  		# -------------------------------------------------------
  		public function ExportData() {
+ 			// Can user batch export?
+ 			if (!$this->request->user->canDoAction('can_batch_export_metadata')) {
+ 				$this->response->setRedirect($this->request->config->get('error_display_url').'/n/3210?r='.urlencode($this->request->getFullUrlPath()));
+ 				return;
+ 			}
+
  			$t_exporter = $this->getExporterInstance();
  			
  			$this->view->setVar("t_subject", $t_exporter->getAppDatamodel()->getInstanceByTableNum($t_exporter->get('table_num'), true));
@@ -120,9 +126,17 @@
 			$this->render('export/export_results_html.php');
  		}
  		# -------------------------------------------------------
- 		public function ExportSingleData() {
+ 		public function ExportSingleData() { 	
  			$t_exporter = $this->getExporterInstance();
- 			$this->view->setVar("t_subject", $t_exporter->getAppDatamodel()->getInstanceByTableNum($t_exporter->get('table_num'), true));
+ 			$t_subject = $t_exporter->getAppDatamodel()->getInstanceByTableNum($t_exporter->get('table_num'), true);
+
+ 			// Can user export records of this type?
+ 			if (!$this->request->user->canDoAction('can_export_'.$t_subject->tableName())) {
+ 				$this->response->setRedirect($this->request->config->get('error_display_url').'/n/3210?r='.urlencode($this->request->getFullUrlPath()));
+ 				return;
+ 			}
+
+ 			$this->view->setVar("t_subject", $t_subject);
 
  			$vn_id = $this->request->getParameter('item_id', pInteger);
  			$this->view->setVar('item_id',$vn_id);
