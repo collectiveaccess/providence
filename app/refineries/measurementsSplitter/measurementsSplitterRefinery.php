@@ -70,36 +70,36 @@
 				$vs_delimiter = '';
 				$va_measurements = array($pm_value);
 			}
-			
-			$va_elements = $pa_item['settings']['measurementsSplitter_elements'];
 		
-			$va_val = array();
-			foreach($va_elements as $vn_i => $va_element) {
-				if (!is_array($va_element)) { continue; }
-				if (!sizeof($va_measurements)) { break; }
+			$va_val = array();	
+			if(is_array($va_elements = $pa_item['settings']['measurementsSplitter_elements'])) {
+				foreach($va_elements as $vn_i => $va_element) {
+					if (!is_array($va_element)) { continue; }
+					if (!sizeof($va_measurements)) { break; }
 				
-				$vs_measurement = array_shift($va_measurements);
-				if (trim($vs_measurement) && !preg_match("![^\d\.{$vs_delimiter} ]+!", $vs_measurement)) {
-					$vs_measurement .= " {$vs_units}";
-				}
-				$vs_measurement = preg_replace("![ ]+!", " ", $vs_measurement);
+					$vs_measurement = array_shift($va_measurements);
+					if (trim($vs_measurement) && !preg_match("![^\d\.{$vs_delimiter} ]+!", $vs_measurement)) {
+						$vs_measurement .= " {$vs_units}";
+					}
+					$vs_measurement = preg_replace("![ ]+!", " ", $vs_measurement);
 			
-				// Set label
-				$va_val[$va_element['quantityElement']] = $vs_measurement;
-				if (isset($va_element['typeElement']) && $va_element['typeElement']) {
-					$va_val[$va_element['typeElement']] = BaseRefinery::parsePlaceholder($va_element["type"], $pa_source_data, $pa_item);
-				}
+					// Set label
+					$va_val[$va_element['quantityElement']] = $vs_measurement;
+					if (isset($va_element['typeElement']) && $va_element['typeElement']) {
+						$va_val[$va_element['typeElement']] = BaseRefinery::parsePlaceholder($va_element["type"], $pa_source_data, $pa_item);
+					}
 			
 				
-			}
-			
-			// Set attributes
-			if (is_array($pa_item['settings']['measurementsSplitter_attributes'])) {
-				$va_attr_vals = array();
-				foreach($pa_item['settings']['measurementsSplitter_attributes'] as $vs_element_code => $vs_v) {
-					$va_attr_vals[$vs_element_code] = BaseRefinery::parsePlaceholder($vs_v, $pa_source_data, $pa_item);
 				}
-				$va_val = array_merge($va_val, $va_attr_vals);
+			
+				// Set attributes
+				if (is_array($pa_item['settings']['measurementsSplitter_attributes'])) {
+					$va_attr_vals = array();
+					foreach($pa_item['settings']['measurementsSplitter_attributes'] as $vs_element_code => $vs_v) {
+						$va_attr_vals[$vs_element_code] = BaseRefinery::parsePlaceholder($vs_v, $pa_source_data, $pa_item);
+					}
+					$va_val = array_merge($va_val, $va_attr_vals);
+				}
 			}
 			return array(0 => array($vs_terminal => $va_val));
 		}
