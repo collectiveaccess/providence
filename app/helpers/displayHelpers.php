@@ -1791,6 +1791,7 @@ require_once(__CA_LIB_DIR__."/ca/ApplicationPluginManager.php");
 								} else {
 									$vs_get_spec = $vs_tag;
 								}
+								
 								$va_val = $qr_res->get($vs_get_spec, array_merge($pa_options, array('returnAsArray' => true)));
 							} else {
 								if ($va_tmp[0] == $ps_tablename) { array_shift($va_tmp); }	// get rid of primary table if it's in the field spec
@@ -1806,10 +1807,26 @@ require_once(__CA_LIB_DIR__."/ca/ApplicationPluginManager.php");
 								}
 								
 								$vs_get_spec = "{$ps_tablename}.".join(".", $va_tmp);
-								$va_val = $qr_res->get($vs_get_spec, array_merge($pa_options, array('returnAsArray' => true)));
+								$va_val_tmp = $qr_res->get($vs_get_spec, array_merge($pa_options, array('returnAsArray' => true)));
+								
+								$va_val = array();
+								
+								if (is_array($va_val_tmp)) {
+									foreach($va_val_tmp as $vn_attr_id => $vm_attr_val) {
+										if(is_array($vm_attr_val)) {
+											foreach($vm_attr_val as $vs_k => $vs_v) {
+												$va_val[] = $vs_v;
+											}
+										} else {
+											$va_val[] = $vm_attr_val;
+										}
+									}
+								}
+								
 							}
 						}
 					}
+					
 				
 					if (is_array($va_val)) {
 						foreach($va_val as $vn_j => $vs_val) {
