@@ -164,6 +164,30 @@ class WLPlugVisualizerTimeline Extends BaseVisualizerPlugIn Implements IWLPlugVi
 			$vs_overview_band_scale = " Timeline.DateTime.DAY";	
 		}
 		
+		$va_highlight_spans = array();
+		$vs_highlight_span = '';
+		if (isset($pa_options['highlightSpans']) && is_array($pa_options['highlightSpans'])) {
+			foreach($pa_options['highlightSpans'] as $vs_span_name => $va_span_info) {
+				$va_range = caGetISODates($va_span_info['range']);
+				$vs_span_color = (isset($va_span_info['color']) && $va_span_info['color']) ? $va_span_info['color'] : '#FFC080';
+				$vs_start_label = (isset($va_span_info['startLabel']) && $va_span_info['startLabel']) ? $va_span_info['startLabel'] : '';
+				$vs_end_label = (isset($va_span_info['endLabel']) && $va_span_info['endLabel']) ? $va_span_info['endLabel'] : '';
+				$vs_span_css_class = (isset($va_span_info['class']) && $va_span_info['class']) ? $va_span_info['class'] : 't-highlight1';
+				$va_highlight_spans[] = "new Timeline.SpanHighlightDecorator({
+						dateTimeFormat: 'iso8601',
+                        startDate:  '".$va_range['start']."',
+                        endDate:    '".$va_range['end']."',
+                        color:      '{$vs_span_color}', 
+                        opacity:    50,
+                        startLabel: '{$vs_start_label}', 
+                        endLabel:   '{$vs_end_label}',
+                        cssClass: '{$vs_span_css_class}'
+                    })";
+			}
+			
+			$vs_highlight_span = "caTimelineBands[0].decorators = [".join(",\n", $va_highlight_spans)."];";
+		}
+		
 		$vs_buf = "
 	<div id='caResultTimeline' style='width: {$vn_width}; height: {$vn_height}; border: 1px solid #aaa'></div>
 <script type='text/javascript'>
@@ -213,7 +237,9 @@ class WLPlugVisualizerTimeline Extends BaseVisualizerPlugIn Implements IWLPlugVi
    ];
 	caTimelineBands[1].syncWith = 0;
 	caTimelineBands[1].highlight = true;
-
+	
+	{$vs_highlight_span}
+	
 	var caTimeline = Timeline.create(document.getElementById('caResultTimeline'), caTimelineBands);
 </script>	
 ";
