@@ -1121,6 +1121,27 @@ class SearchResult extends BaseObject {
 							} else {
 								$va_return_values[] = $vs_prop;
 							}
+						case FT_MEDIA:
+							if(!$vs_version = $va_path_components['subfield_name']) {
+								$vs_version = "largeicon";
+							}
+							if (isset($pa_options['unserialize']) && $pa_options['unserialize']) {
+								return caUnserializeForDatabase($va_value[$va_path_components['field_name']]);
+							} else {
+								$o_media_settings = new MediaProcessingSettings($va_path_components['table_name'], $va_path_components['field_name']);
+								$va_versions = $o_media_settings->getMediaTypeVersions('*');
+							
+								if (!isset($va_versions[$vs_version])) {
+									$va_tmp = array_keys($va_versions);
+									$vs_version = array_shift($va_tmp);
+								}
+								
+								if (isset($pa_options['returnURL']) && ($pa_options['returnURL'])) {
+									$va_return_values[$vn_row_id][$vn_locale_id][] = $this->getMediaUrl($va_path_components['table_name'].'.'.$va_path_components['field_name'], $vs_version, $pa_options);
+								} else {
+									$va_return_values[] = $this->getMediaTag($va_path_components['table_name'].'.'.$va_path_components['field_name'], $vs_version, $pa_options);
+								}
+							}
 							break;
 						default:
 							// is intrinsic field in primary table
