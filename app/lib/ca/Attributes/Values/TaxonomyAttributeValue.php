@@ -145,7 +145,7 @@
 					$va_return = array(
 						'value_longtext1' => $vs_text,	// text
 						'value_longtext2' => $vs_detail_uri,
-						'value_decimal1' => $vs_id,	// id
+						'value_decimal1' => intval($vs_id),	// id
 					);
 				}
 			}
