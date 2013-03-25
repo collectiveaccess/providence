@@ -634,12 +634,10 @@
 			
 			$va_semi_context = array(
 				'history' => $va_context['history'],
-				'page' => $va_context['page'],
-				'result_list' => $va_context['result_list']
+				'page' => $va_context['page']
 			);
 			unset($va_context['history']);
 			unset($va_context['page']);
-			unset($va_context['result_list']);
 			
 			$o_storage = $this->getPersistentStorageInstance();
 			$o_storage->setVar('result_context_'.$this->ops_table_name.'_'.$vs_find_type, $va_context);

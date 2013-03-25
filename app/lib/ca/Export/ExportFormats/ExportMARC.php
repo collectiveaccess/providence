@@ -37,13 +37,39 @@ class ExportMARC extends BaseExportFormat {
 	
 	# ------------------------------------------------------
 	public function __construct(){
-		// only require this when the format is actually used
-		// otherwise this would probably be slightly annoying
-		require_once('File/MARC.php');
+		require_once(__CA_LIB_DIR__.'/core/Parsers/File_MARC/MARC.php');
 
 		$this->ops_name = 'MARC';
 		$this->ops_element_description = _t('Values reference a combination of MARC 21 field tags and associated indicators separated by a forward slash ("/"), e.g. "300/##". For further information on how to create a MARC mapping, please refer to the CollectiveAccess online documentation.');
 		parent::__construct();
+	}
+	# ------------------------------------------------------
+	public function getFileExtension($pa_settings) {
+		if(!($vs_format = $pa_settings['MARC_outputFormat'])) { return 'txt'; }
+		
+		switch($vs_format){
+			case 'raw':
+				return 'mrc';
+			case 'xml':
+				return 'xml';
+			case 'readable':
+			default:
+				return 'txt';
+		}
+	}
+	# ------------------------------------------------------
+	public function getContentType($pa_settings) {
+		if(!($vs_format = $pa_settings['MARC_outputFormat'])) { return 'text/plain'; }
+		
+		switch($vs_format){
+			case 'raw':
+				return 'application/marc';
+			case 'xml':
+				return 'text/xml';
+			case 'readable':
+			default:
+				return 'text/plain';
+		}
 	}
 	# ------------------------------------------------------
 	public function processExport($pa_data,$pa_options=array()){
@@ -51,10 +77,6 @@ class ExportMARC extends BaseExportFormat {
 
 		//caDebug($pa_data,"Data to build MARC from");
 		//caDebug($pa_options,"Export format options");
-		
-		if(!class_exists("File_MARC_Record")){
-			return false;
-		}
 
 		$o_record = new File_MARC_Record();
 
@@ -187,7 +209,7 @@ BaseExportFormat::$s_format_settings['MARC'] = array(
 		'displayType' => DT_SELECT,
 		'width' => 40, 'height' => 1,
 		'takesLocale' => false,
-		'default' => '',
+		'default' => 'readable',
 		'options' => array(
 			'readable' => 'readable',
 			'raw' => 'raw',

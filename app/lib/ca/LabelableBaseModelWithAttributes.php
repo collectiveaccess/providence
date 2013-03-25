@@ -428,6 +428,8 @@
 						$vs_label_table_name = $this->getLabelTableName();
 						$t_label_instance = $this->getLabelTableInstance();
 						$vs_display_field = ($t_label_instance->hasField($va_tmp[2])) ? $va_tmp[2] : $this->getLabelDisplayField();
+						
+						$vn_top_id = null;
 						if (!($va_ancestor_list = $this->getHierarchyAncestors(null, array(
 							'additionalTableToJoin' => $vs_label_table_name, 
 							'additionalTableJoinType' => 'LEFT',
@@ -436,6 +438,40 @@
 							'includeSelf' => true
 						)))) {
 							$va_ancestor_list = array();
+						} else {
+							foreach($va_ancestor_list as $vn_i => $va_node) {
+								$va_ancestor_list[$vn_i]['NODE']['id'] = $vn_top_id = $va_node['NODE'][$vs_pk];
+							}
+						}
+						
+						if (($this->tableName() == 'ca_objects') && $this->getAppConfig()->get('ca_objects_x_collections_hierarchy_enabled') && ($vs_coll_rel_type = $this->getAppConfig()->get('ca_objects_x_collections_hierarchy_relationship_type'))) {
+							require_once(__CA_MODELS_DIR__.'/ca_objects.php');
+							if ($this->getPrimaryKey() == $vn_top_id) {
+								$t_object = $this;
+							} else {
+								$t_object = new ca_objects($vn_top_id);
+							}
+							
+							if (is_array($va_collections = $t_object->getRelatedItems('ca_collections', array('restrictToRelationshipTypes' => $vs_coll_rel_type)))) {
+								require_once(__CA_MODELS_DIR__.'/ca_collections.php');
+								$t_collection = new ca_collections();
+								foreach($va_collections as $vn_i => $va_collection) {
+									if (($va_collections_ancestor_list = $t_collection->getHierarchyAncestors($va_collection['collection_id'], array(
+										'additionalTableToJoin' => 'ca_collection_labels', 
+										'additionalTableJoinType' => 'INNER',
+										'additionalTableSelectFields' => array('*'),
+										'additionalTableWheres' => array('(ca_collection_labels.is_preferred = 1)'),
+										'includeSelf' => true
+									)))) {
+										foreach($va_collections_ancestor_list as $vn_i => $va_node) {
+											$va_collections_ancestor_list[$vn_i]['NODE']['id'] = $va_node['NODE']['collection_id'];
+										}
+										$va_ancestor_list = array_merge($va_ancestor_list, $va_collections_ancestor_list);
+									}
+									
+									break; // for now only process first collection (no polyhierarchies)
+								}
+							}
 						}
 						
 						// remove root and children if so desired
@@ -456,10 +492,10 @@
 						foreach($va_ancestor_list as $vn_i => $va_item) {
 							if ($vb_check_access && !in_array($va_item['NODE']['access'], $pa_options['checkAccess'])) { continue; }
 							if ($vs_template) {
-								$va_tmp[$va_item['NODE'][$vs_pk]] = caProcessTemplate($vs_template, $va_item['NODE'], array('removePrefix' => 'preferred_labels.'));
+								$va_tmp[$va_item['NODE']['id']] = caProcessTemplate($vs_template, $va_item['NODE'], array('removePrefix' => 'preferred_labels.'));
 							} else {
 								if ($vs_label = $va_item['NODE'][$vs_display_field]) {
-									$va_tmp[$va_item['NODE'][$vs_pk]] = $vs_label;
+									$va_tmp[$va_item['NODE']['id']] = $vs_label;
 								}
 							}
 						}
@@ -474,7 +510,7 @@
 						}
 						
 						if ($vs_direction == 'ASC') {
-							$va_tmp = array_reverse($va_tmp);
+							$va_tmp = array_reverse($va_tmp, true);
 						}
 						
 						if ($vb_return_as_array) {

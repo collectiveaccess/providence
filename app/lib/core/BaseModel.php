@@ -7946,20 +7946,40 @@ $pa_options["display_form_field_tips"] = true;
 	 * Remove all relations with the specified table from the currently loaded row
 	 *
 	 * @param mixed $pm_rel_table_name_or_num Table name (eg. "ca_entities") or number as defined in datamodel.conf of table containing row to removes relationships to.
+	 * @param mixed $pm_type_id If set to a relationship type code or numeric type_id, only relationships with the specified type are removed.
 	 * @return boolean True on success, false on error
 	 */
-	public function removeRelationships($pm_rel_table_name_or_num) {
+	public function removeRelationships($pm_rel_table_name_or_num, $pm_type_id=null) {
 		if (!($vn_row_id = $this->getPrimaryKey())) { return null; }
 		if(!($va_rel_info = $this->_getRelationshipInfo($pm_rel_table_name_or_num))) { return null; }
 		$t_item_rel = $va_rel_info['t_item_rel'];
 		
+		if ($pm_type_id && !is_numeric($pm_type_id)) {
+			$t_rel_type = new ca_relationship_types();
+			if ($vs_linking_table = $t_rel_type->getRelationshipTypeTable($this->tableName(), $t_item_rel->tableName())) {
+				$pn_type_id = $t_rel_type->getRelationshipTypeID($vs_linking_table, $pm_type_id);
+			}
+		} else {
+			$pn_type_id = $pm_type_id;
+		}
+		
+		$vs_type_limit_sql = '';
+		$va_sql_params = array();
+		if ($pn_type_id) {
+			$vs_type_limit_sql = " AND type_id = ?";
+			$va_sql_params[] = $pn_type_id;
+		}
+		
 		$o_db = $this->getDb();
 		
 		if ($t_item_rel->tableName() == $this->getSelfRelationTableName()) {
+			array_unshift($va_sql_params, (int)$vn_row_id);
+			array_unshift($va_sql_params, (int)$vn_row_id);
 			$qr_res = $o_db->query("
 				SELECT relation_id FROM ".$t_item_rel->tableName()." 
 				WHERE ".$t_item_rel->getLeftTableFieldName()." = ? OR ".$t_item_rel->getRightTableFieldName()." = ?
-			", (int)$vn_row_id, (int)$vn_row_id);
+					{$vs_type_limit_sql}
+			", $va_sql_params);
 			
 			while($qr_res->nextRow()) {
 				if (!$this->removeRelationship($pm_rel_table_name_or_num, $qr_res->get('relation_id'))) { 
@@ -7967,9 +7987,12 @@ $pa_options["display_form_field_tips"] = true;
 				}
 			}
 		} else {
+			array_unshift($va_sql_params, (int)$vn_row_id);
 			$qr_res = $o_db->query("
-				SELECT relation_id FROM ".$t_item_rel->tableName()." WHERE ".$this->primaryKey()." = ?
-			", (int)$vn_row_id);
+				SELECT relation_id FROM ".$t_item_rel->tableName()." 
+				WHERE ".$this->primaryKey()." = ?
+					{$vs_type_limit_sql}
+			", $va_sql_params);
 			
 			while($qr_res->nextRow()) {
 				if (!$this->removeRelationship($pm_rel_table_name_or_num, $qr_res->get('relation_id'))) { 
@@ -8350,7 +8373,6 @@ $pa_options["display_form_field_tips"] = true;
 					$va_query_params[] = (int)$pn_rel_id;
 					$va_query_params[] = (int)$this->getPrimaryKey();	
 				}
-				
 			
 				$vs_relation_id_fld = ($vb_is_one_table ? "mt.".$va_rel_keys['many_table_field'] : "ot.".$va_rel_keys['one_table_field']);
 				$qr_res = $o_db->query($x="

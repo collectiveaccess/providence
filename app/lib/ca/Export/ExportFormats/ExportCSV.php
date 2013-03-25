@@ -37,13 +37,17 @@ class ExportCSV extends BaseExportFormat {
 	
 	# ------------------------------------------------------
 	public function __construct(){
-		// only require this when the format is actually used
-		// otherwise this would probably be slightly annoying
-		require_once('File/MARC.php');
-
 		$this->ops_name = 'CSV';
 		$this->ops_element_description = _t('Values are column numbers (indexing starts at 1).');
 		parent::__construct();
+	}
+	# ------------------------------------------------------
+	public function getFileExtension($pa_settings) {
+		return 'csv';
+	}
+	# ------------------------------------------------------
+	public function getContentType($pa_settings) {
+		return 'text/csv';
 	}
 	# ------------------------------------------------------
 	public function processExport($pa_data,$pa_options=array()){

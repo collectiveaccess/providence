@@ -2157,6 +2157,8 @@ table.attributeListItem {
 	top: 0px;
 	left: 0px;
 	
+	z-index: 31000;			/* needs to be on top of menu bar, which has z-index=30000 */
+	
 	display: none;
 	
 	-moz-border-radius-: 10px; 
@@ -2192,6 +2194,66 @@ a.editorFieldListLink {
 
 /* container for HTML code that files #editorFieldList */
 #editorFieldListHTML {
+	display: none;
+}
+
+#caHierarchyOverviewHeader {
+	font-size: 13px;
+	font-weight: bold;
+	text-align: left;
+	color: #666;
+	margin: 5px;
+	height:16px;
+}
+
+#caHierarchyOverviewPanel {
+	position: fixed;
+	background: #ffffff;
+	opacity: 0.8;
+	width: 920px;
+	height: 380px;
+	padding: 8px;
+	border: 2px solid #000000;
+	top: 0px;
+	left: 0px;
+	
+	z-index: 31000;			/* needs to be on top of menu bar, which has z-index=30000 */
+	
+	display: none;
+	
+	-moz-border-radius-: 10px; 
+	-webkit-border-radius: 10px;
+	-moz-border-radius: 10px; 
+}
+
+a.caHierarchyOverviewLink {
+	font-size: 12px;
+	text-decoration: none;
+	font-family: Verdana, Arial, Helvetica, sans-serif;
+	line-height: 18px;
+}
+
+#caHierarchyOverviewContentArea {
+	overflow: auto;
+	font-size: 12px;
+	text-decoration: none;
+	font-family: Verdana, Arial, Helvetica, sans-serif;
+	line-height: 18px;
+	
+	width: 100%;
+	height: 90%;
+}
+
+#caHierarchyOverviewPanel #caHierarchyOverviewClose{
+	float: right;
+	width:15px;
+	height:16px;
+	margin:5px;
+	background-image:url("../graphics/buttons/x.png");
+}
+
+/* container for HTML code that files #caHierarchyOverviewPanel */
+#caHierarchyOverviewPanelHTML {
 	display: none;
 }
 
@@ -2509,7 +2571,6 @@ a.hierarchyBrowserLevelEditButton {
 }
 
 div.hierarchyBrowseTab {
-	height: 245px;
 	width: 712px;
 	overflow: hidden;
 	font-weight: normal;
@@ -5145,7 +5206,7 @@ div.dialogHeader {
 }
 
 div.quickAddFormTopPadding {
-	height: 50px;
+	height: 40px;
 }
 
 div.quickAddErrorContainer {
@@ -5179,13 +5240,13 @@ input[type='text'].ui-autocomplete-loading {
 
 /** Debug **/
 
-div#debug {
+div.debug {
 	padding: 10px 10px 10px 10px;
 	background-color:#EEEEEE;
 	margin-bottom: 10px;
 }
 
-div#debugLabel {
+div.debugLabel {
 	font-size: 14px;
 	color: green;
 	font-weight: bold;

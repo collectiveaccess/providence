@@ -3,7 +3,7 @@ msgstr ""
 "Project-Id-Version: CollectiveAccess\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2013-02-12 21:22+0100\n"
-"PO-Revision-Date: 2013-02-19 10:17+0100\n"
+"PO-Revision-Date: 2013-03-13 18:00+0100\n"
 "Last-Translator: Gautier MICHELIN <gm@ideesculture.com>\n"
 "Language-Team: francais <ideesculture@gmail.com>\n"
 "Language: fr_FR\n"
@@ -4214,7 +4214,7 @@ msgstr "%1 n'est pas une unité de mesure valide"
 #: app/lib/ca/Attributes/Values/WeightAttributeValue.php:230
 #: app/lib/ca/Attributes/Values/WeightAttributeValue.php:237
 msgid "%1 is not a valid measurement"
-msgstr "%1 n'est pas une mesure valide"
+msgstr "%1 ne contient pas une mesure valide"
 
 #: app/lib/ca/Attributes/Values/LengthAttributeValue.php:260
 #: app/lib/ca/Attributes/Values/WeightAttributeValue.php:243
@@ -16884,8 +16884,8 @@ msgid ""
 "Showing the last %1 <span style='font-weight:bold; text-transform:"
 "lowercase;'>%2</span> created"
 msgstr ""
-"Afficher le dernier <span style='font-weight:bold; text-transform:"
-"lowercase;'>%2</span> %1 créé"
+"<span style='font-weight:bold; text-transform:lowercase;'>%2</span> <small>"
+"(%1 derniers)</small>"
 
 #: app/widgets/recentlyCreated/views/main_html.php:45
 #: app/widgets/recordsByStatus/views/main_html.php:43
@@ -17655,7 +17655,7 @@ msgstr "Confirmer le mot de passe"
 
 #: themes/default/views/administrate/access/user_list_html.php:43
 msgid "Show %1 users"
-msgstr "Afficher %1 utilisateurs"
+msgstr "Afficher les utilisateurs : %1"
 
 #: themes/default/views/administrate/access/user_list_html.php:44
 msgid "New user"
@@ -17669,11 +17669,11 @@ msgstr "Outils"
 
 #: themes/default/views/administrate/access/user_list_html.php:55
 msgid "%1 users"
-msgstr "%1 utilisateurs"
+msgstr "Utilisateurs : %1 "
 
 #: themes/default/views/administrate/access/user_list_html.php:61
 msgid "Login name"
-msgstr "Nom de session"
+msgstr "Login"
 
 #: themes/default/views/administrate/access/user_list_html.php:70
 msgid "Active?"
@@ -17681,7 +17681,7 @@ msgstr "Actif ?"
 
 #: themes/default/views/administrate/access/user_tools_html.php:35
 msgid "Download user report as"
-msgstr "Télécharger le rapport"
+msgstr "Télécharger la liste des utilisateurs "
 
 #: themes/default/views/administrate/maintenance/acl_reindex_landing_html.php:29
 #: themes/default/views/administrate/maintenance/acl_reindex_landing_html.php:38
@@ -21548,7 +21548,7 @@ msgstr "Contrôle d'accès"
 
 #: app/conf/navigation.conf:2469
 msgid "User logins"
-msgstr "Logins utilisateurs"
+msgstr "Utilisateurs"
 
 #: app/conf/navigation.conf:2476
 msgid "User groups"
@@ -21556,7 +21556,7 @@ msgstr "Groupes d'utilisateurs"
 
 #: app/conf/navigation.conf:2483
 msgid "Access roles"
-msgstr "Types d'accès"
+msgstr "Rôles"
 
 #: app/conf/navigation.conf:2492
 msgid "Logs"

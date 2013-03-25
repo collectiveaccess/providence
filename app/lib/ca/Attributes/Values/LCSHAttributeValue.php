@@ -37,6 +37,7 @@
  	require_once(__CA_LIB_DIR__.'/ca/Attributes/Values/IAttributeValue.php');
  	require_once(__CA_LIB_DIR__.'/ca/Attributes/Values/AttributeValue.php');
  	require_once(__CA_LIB_DIR__.'/core/Configuration.php');
+	require_once(__CA_LIB_DIR__."/core/Zend/Http/Client.php");
  	require_once(__CA_LIB_DIR__.'/core/BaseModel.php');	// we use the BaseModel field type (FT_*) and display type (DT_*) constants
  	
  	global $_ca_attribute_settings;
@@ -201,25 +202,25 @@
 						'value_decimal1' => is_numeric($vs_id) ? $vs_id : null	// id
 					);
 				} else {
-					$vs_data = @file_get_contents("http://id.loc.gov/search/?q=".urlencode($ps_value).'&format=atom&count=5');
-					if ($vs_data) {
-						$o_xml = @simplexml_load_string($vs_data);
+					$ps_value = str_replace(array("‘", "’", "“", "”"), array("'", "'", '"', '"'), $ps_value);
+					$vs_service_url = "http://id.loc.gov/authorities/label/".rawurlencode($ps_value);
+					$o_client = new Zend_Http_Client($vs_service_url);
+					$o_client->setConfig(array(
+						'maxredirects' => 0,
+						'timeout'      => 30));
+					$o_response = $o_client->request(Zend_Http_Client::HEAD);
 	
-						$vs_label = $vs_url = $vs_id = null;
-						if ($o_xml) {
-							$o_entries = $o_xml->{'entry'};
-							if ($o_entries && sizeof($o_entries)) {
-								foreach($o_entries as $o_entry) {
-									$o_links = $o_entry->{'link'};
-									$va_attr = $o_links[0]->attributes();
-									
-									$vs_label = (string)$o_entry->{'title'};
-									
-									$vs_url = str_replace('http://id.loc.gov/', 'info:lc/', (string)$va_attr->{'href'});
-									$vs_id = (string)$o_entry->{'id'};
-								}
-							}
-						}
+					$vn_status = $o_response->getStatus();
+					$va_headers = $o_response->getHeaders();
+					
+					if (($vn_status == 302) && (isset($va_headers['X-preflabel'])) && $va_headers['X-preflabel']) {
+						$vs_url = $va_headers['Location'];
+						$va_url = explode("/", $vs_url);
+						$vs_id = array_pop($va_url);
+						$vs_label = $va_headers['X-preflabel'];
+						
+						$vs_url = str_replace('http://id.loc.gov/', 'info:lc/', $vs_url);
+						
 						if ($vs_url) {
 							return array(
 								'value_longtext1' => $vs_label." [{$vs_url}]",						// text

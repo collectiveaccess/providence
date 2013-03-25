@@ -490,11 +490,31 @@ require_once(__CA_LIB_DIR__."/ca/ApplicationPluginManager.php");
 	 *
 	 * @return string 
 	 */
-	function caEditorFieldList($pa_bundle_list, $pa_options=null) {
+	function caSetupEditorScreenOverlays($po_request, $pt_subject, $pa_bundle_list, $pa_options=null) {
+		$vs_buf = '';
+		if ($pt_subject->isHierarchical()) {
+			$vs_buf .= caEditorHierarchyOverview($po_request, $pt_subject->tableName(), $pt_subject->getPrimaryKey(), $pa_options);
+		}
+		$vs_buf .= caEditorFieldList($po_request, $pa_bundle_list, $pa_options);	
+		
+		return $vs_buf;
+	}
+	# ------------------------------------------------------------------------------------------------
+	/**
+	 * 
+	 *
+	 * @param array $pa_bundle_list 
+	 * @param array $pa_options Optional array of options. Supported options are:
+	 *		NONE
+	 *
+	 * @return string 
+	 */
+	function caEditorFieldList($po_request, $pa_bundle_list, $pa_options=null) {
 		$vs_buf = "<script type=\"text/javascript\">
 		jQuery(document).ready(function() {
 			jQuery(document).bind('keydown.ctrl_f', function() {
-				caEditorFieldList.showPanel(null);
+				caHierarchyOverviewPanel.hidePanel({dontCloseMask:1});
+				caEditorFieldList.showPanel();
 			});
 			jQuery('#editorFieldListContentArea').html(jQuery(\"#editorFieldListHTML\").html());
 			jQuery('#editorFieldListContentArea a').click(function() {
@@ -514,6 +534,40 @@ require_once(__CA_LIB_DIR__."/ca/ApplicationPluginManager.php");
 	}
 	# ------------------------------------------------------------------------------------------------
 	/**
+	 * 
+	 *
+	 * @param array $pa_bundle_list 
+	 * @param array $pa_options Optional array of options. Supported options are:
+	 *		NONE
+	 *
+	 * @return string 
+	 */
+	function caEditorHierarchyOverview($po_request, $ps_table, $pn_id, $pa_options=null) {
+		$o_dm = Datamodel::load();
+		$t_subject = $o_dm->getInstanceByTableName($ps_table, true);
+		$vs_buf = "<script type=\"text/javascript\">
+		jQuery(document).ready(function() {
+			jQuery(document).bind('keydown.ctrl_h', function() {
+				caEditorFieldList.hidePanel({dontCloseMask:1});
+				
+				var url;
+				if (jQuery('#caHierarchyOverviewContentArea').html().length == 0) {
+					url = '".caNavUrl($po_request, $po_request->getModulePath(), $po_request->getController(), 'getHierarchyForDisplay', array($t_subject->primaryKey() => $pn_id))."';
+				}
+				caHierarchyOverviewPanel.showPanel(url, null, false);
+			});
+			jQuery('#caHierarchyOverviewContentArea').html('');
+			jQuery('#caHierarchyOverviewContentArea a').click(function() {
+				caHierarchyOverviewPanel.hidePanel();
+			});
+		});
+</script>
+\n";
+		
+		return $vs_buf;
+	}
+	# ------------------------------------------------------------------------------------------------
+	/**
 	 * Generates standard-format inspector panels for editors
 	 *
 	 * @param View $po_view Inspector view object
@@ -524,6 +578,7 @@ require_once(__CA_LIB_DIR__."/ca/ApplicationPluginManager.php");
 	 */
 	function caEditorInspector($po_view, $pa_options=null) {
 		require_once(__CA_MODELS_DIR__.'/ca_sets.php');
+		require_once(__CA_MODELS_DIR__.'/ca_data_exporters.php');
 		
 		$t_item 				= $po_view->getVar('t_item');
 		$vs_table_name = $t_item->tableName();
@@ -591,9 +646,23 @@ require_once(__CA_LIB_DIR__."/ca/ApplicationPluginManager.php");
 					$vs_buf .= "<strong>"._t("Viewing %1", $vs_type_name).": </strong>\n";
 				}
 					
+				$vs_label = '';
 				if ($vs_get_spec = $po_view->request->config->get("{$vs_table_name}_inspector_display_title")) {
 					$vs_label = caProcessTemplateForIDs($vs_get_spec, $vs_table_name, array($t_item->getPrimaryKey()));
 				} else {
+					$va_object_collection_collection_ancestors = $po_view->getVar('object_collection_collection_ancestors');
+					if (
+						($t_item->tableName() == 'ca_objects') && 
+						$t_item->getAppConfig()->get('ca_objects_x_collections_hierarchy_enabled') && 
+						is_array($va_object_collection_collection_ancestors) && sizeof($va_object_collection_collection_ancestors)
+					) {
+						$va_collection_links = array();
+						foreach($va_object_collection_collection_ancestors as $va_collection_ancestor) {
+							$va_collection_links[] = caEditorLink($po_view->request, $va_collection_ancestor['label'], '', 'ca_collections', $va_collection_ancestor['collection_id']);
+						}
+						$vs_label .= join(" / ", $va_collection_links).' &gt; ';
+					}
+					
 					if (method_exists($t_item, 'getLabelForDisplay')) {
 						$vn_parent_index = (sizeof($va_ancestors) - 1);
 						if ($vn_parent_id && (($vs_table_name != 'ca_places') || ($vn_parent_index > 0))) {
@@ -601,12 +670,12 @@ require_once(__CA_LIB_DIR__."/ca/ApplicationPluginManager.php");
 							$vs_disp_fld = $t_item->getLabelDisplayField();
 							
 							if ($va_parent['NODE'][$vs_disp_fld] && ($vs_editor_link = caEditorLink($po_view->request, $va_parent['NODE'][$vs_disp_fld], '', $vs_table_name, $va_parent['NODE'][$t_item->primaryKey()]))) {
-								$vs_label = $vs_editor_link.' &gt; '.$t_item->getLabelForDisplay();
+								$vs_label .= $vs_editor_link.' &gt; '.$t_item->getLabelForDisplay();
 							} else {
-								$vs_label = ($va_parent['NODE'][$vs_disp_fld] ? $va_parent['NODE'][$vs_disp_fld].' &gt; ' : '').$t_item->getLabelForDisplay();
+								$vs_label .= ($va_parent['NODE'][$vs_disp_fld] ? $va_parent['NODE'][$vs_disp_fld].' &gt; ' : '').$t_item->getLabelForDisplay();
 							}
 						} else {
-							$vs_label = $t_item->getLabelForDisplay();
+							$vs_label .= $t_item->getLabelForDisplay();
 							if (($vs_table_name === 'ca_editor_uis') && (in_array($po_view->request->getAction(), array('EditScreen', 'DeleteScreen', 'SaveScreen')))) {
 								$t_screen = new ca_editor_ui_screens($po_view->request->getParameter('screen_id', pInteger));
 								if (!($vs_screen_name = $t_screen->getLabelForDisplay())) {
@@ -617,7 +686,7 @@ require_once(__CA_LIB_DIR__."/ca/ApplicationPluginManager.php");
 							
 						}
 					} else {
-						$vs_label = $t_item->get('name');
+						$vs_label .= $t_item->get('name');
 					}
 				}
 				
@@ -1112,6 +1181,22 @@ require_once(__CA_LIB_DIR__."/ca/ApplicationPluginManager.php");
 					$vs_buf .= caFormSubmitLink($po_view->request, caNavIcon($po_view->request, __CA_NAV_BUTTON_ADD__), '', 'NewChildForm');
 					$vs_buf .= "</form></div>\n";
 				}
+				
+				if (($t_item->tableName() == 'ca_collections') && $po_view->request->config->get('ca_objects_x_collections_hierarchy_enabled')) {
+					$t_object = new ca_objects();
+					if ((bool)$po_view->request->config->get('ca_objects_enforce_strict_type_hierarchy')) {
+						// strict menu
+						$vs_type_list = $t_object->getTypeListAsHTMLFormElement('type_id', array('style' => 'width: 90px; font-size: 9px;'), array('childrenOfCurrentTypeOnly' => true, 'directChildrenOnly' => ($po_view->request->config->get($vs_table_name.'_enforce_strict_type_hierarchy') == '~') ? false : true, 'returnHierarchyLevels' => true, 'access' => __CA_BUNDLE_ACCESS_EDIT__));
+					} else {
+						// all types
+						$vs_type_list = $t_object->getTypeListAsHTMLFormElement('type_id', array('style' => 'width: 90px; font-size: 9px;'), array('access' => __CA_BUNDLE_ACCESS_EDIT__));
+					}
+					$vs_buf .= '<div style="border-top: 1px solid #aaaaaa; margin-top: 5px; font-size: 10px;">';
+					$vs_buf .= caFormTag($po_view->request, 'Edit', 'NewChildObjectForm', 'editor/objects/ObjectEditor', 'post', 'multipart/form-data', '_top', array('disableUnsavedChangesWarning' => true));
+					$vs_buf .= _t('Add a %1 under this', $vs_type_list).caHTMLHiddenInput('object_id', array('value' => '0')).caHTMLHiddenInput('collection_id', array('value' => $t_item->getPrimaryKey()));
+					$vs_buf .= caFormSubmitLink($po_view->request, caNavIcon($po_view->request, __CA_NAV_BUTTON_ADD__), '', 'NewChildObjectForm');
+					$vs_buf .= "</form></div>\n";
+				}
 			}
 		}
 		
@@ -1130,6 +1215,31 @@ require_once(__CA_LIB_DIR__."/ca/ApplicationPluginManager.php");
 			TooltipManager::add("#caDuplicateItemButton", "<h2>"._t('Duplicate this %1', mb_strtolower($vs_type_name, 'UTF-8'))."</h2>
 			"._t("Click the [+] button to create and open for editing a duplicate of this %1. By default virtually all aspects of the %2 will be duplicated. You can exclude certain types of content from duplicates using settings in your user preferences under 'Duplication.'", mb_strtolower($vs_type_name, 'UTF-8'), mb_strtolower($vs_type_name, 'UTF-8')));
 		}
+
+
+		if($po_view->request->user->canDoAction('can_export_'.$vs_table_name) && $t_item->getPrimaryKey() && (sizeof(ca_data_exporters::getExporters($t_item->tableNum()))>0)) {
+			$vs_buf .= '<div style="border-top: 1px solid #aaaaaa; margin-top: 5px; font-size: 10px; text-align: right;" id="caExportItemButton">';
+				
+			$vs_buf .= _t('Export this %1', mb_strtolower($vs_type_name, 'UTF-8'))." ";
+			$vs_buf .= "<a class='button' onclick='jQuery(\"#exporterFormList\").show();' style='text-align:right;' href='#'>".caNavIcon($po_view->request, __CA_NAV_BUTTON_ADD__)."</a>";
+
+			$vs_buf .= caFormTag($po_view->request, 'ExportSingleData', 'caExportForm', 'manage/MetadataExport', 'post', 'multipart/form-data', '_top', array('disableUnsavedChangesWarning' => true));
+			$vs_buf .= "<div id='exporterFormList'>";
+			$vs_buf .= ca_data_exporters::getExporterListAsHTMLFormElement('exporter_id', $t_item->tableNum(), array('id' => 'caExporterList'),array('width' => '120px'));
+			$vs_buf .= caHTMLHiddenInput('item_id', array('value' => $t_item->getPrimaryKey()));
+			$vs_buf .= caFormSubmitLink($po_view->request, _t('Export')." &rsaquo;", "button", "caExportForm");
+			$vs_buf .= "</div>\n";
+			$vs_buf .= "</form>";
+				
+			$vs_buf .= "</div>";
+
+			$vs_buf .= "<script type='text/javascript'>";
+			$vs_buf .= "jQuery(document).ready(function() {";
+			$vs_buf .= "jQuery(\"#exporterFormList\").hide();";
+			$vs_buf .= "});";
+			$vs_buf .= "</script>";
+		}
+		
 		
 		// -------------------------------------------------------------------------------------
 	
@@ -1409,6 +1519,28 @@ require_once(__CA_LIB_DIR__."/ca/ApplicationPluginManager.php");
 	}
 	# ------------------------------------------------------------------------------------------------
 	/**
+	 * Generates standard-format inspector panels for editors
+	 *
+	 * @param View $po_view Inspector view object
+	 *
+	 * @return string HTML implementing the inspector
+	 */
+	function caBatchMetadataExportInspector($po_view) {
+		$vs_color = "444444"; 
+		$vs_buf .= "<h3 class='nextPrevious'>".caNavLink($po_view->request, _('Back to list'), '', 'manage', 'MetadataExport', 'Index', $pa_other_params=null, $pa_attributes=null)."</h3>";
+		$vs_buf .= "<h4><div id='caColorbox' style='border: 6px solid #{$vs_color}; padding-bottom:15px;'>\n";
+
+		$vs_buf .= "<strong>"._t("Batch export metadata")."</strong>\n";
+
+		$t_item = $po_view->getVar("t_item");
+		$vs_buf .= "<p>"._t("Selected exporter").":<br />".$t_item->getLabelForDisplay()."</p>";
+		
+		$vs_buf .= "</div></h4>\n";
+		
+		return $vs_buf;
+	}
+	# ------------------------------------------------------------------------------------------------
+	/**
 	  *
 	  */
 	function caFilterTableList($pa_tables) {
@@ -1519,7 +1651,10 @@ require_once(__CA_LIB_DIR__."/ca/ApplicationPluginManager.php");
 		$vs_remove_prefix = isset($pa_options['removePrefix']) ? $pa_options['removePrefix'] : null;
 		
 		$va_tags = array();
-		if (preg_match_all("!\^([A-Za-z0-9_\.]+)!", $ps_template, $va_matches)) {
+		if (preg_match_all("!\^([\/A-Za-z0-9_\.]+)!", $ps_template, $va_matches)) {
+			foreach($va_matches[1] as $vn_i => $vs_possible_tag) {
+				$va_matches[1][$vn_i] = rtrim($vs_possible_tag, "/.");	// remove trailing slashes and periods
+			}
 			$va_tags = $va_matches[1];
 		}
 		
@@ -1684,13 +1819,14 @@ require_once(__CA_LIB_DIR__."/ca/ApplicationPluginManager.php");
 				}
 				
 				if (!isset($va_relationship_values[$vs_pk_val])) { $va_relationship_values[$vs_pk_val] = array(0 => null); }
-				
+
 				foreach($va_relationship_values[$vs_pk_val] as $vn_relation_id => $va_relationship_value_array) {
+					$va_val = null;
 					if (isset($va_relationship_value_array[$vs_tag]) && !(isset($pa_options['showHierarchicalLabels']) && $pa_options['showHierarchicalLabels'] && ($vs_tag == 'label'))) {
-						$vs_val = $va_relationship_value_array[$vs_tag];
+						$va_val = array($vs_val = $va_relationship_value_array[$vs_tag]);
 					} else {
 						if (isset($va_related_values[$vs_pk_val][$vs_tag])) {
-							$vs_val = $va_related_values[$vs_pk_val][$vs_tag];
+							$va_val = array($vs_val = $va_related_values[$vs_pk_val][$vs_tag]);
 						} else {
 							// see if this is a reference to a related table
 							if (($ps_tablename != $va_tmp[0]) && ($t_tmp = $o_dm->getInstanceByTableName($va_tmp[0], true))) {	// if the part of the tag before a "." (or the tag itself if there are no periods) is a related table then try to fetch it as related to the current record
@@ -1703,7 +1839,8 @@ require_once(__CA_LIB_DIR__."/ca/ApplicationPluginManager.php");
 								} else {
 									$vs_get_spec = $vs_tag;
 								}
-								$vs_val = $qr_res->get($vs_get_spec, $pa_options);
+								
+								$va_val = $qr_res->get($vs_get_spec, array_merge($pa_options, array('returnAsArray' => true)));
 							} else {
 								if ($va_tmp[0] == $ps_tablename) { array_shift($va_tmp); }	// get rid of primary table if it's in the field spec
 							
@@ -1718,22 +1855,48 @@ require_once(__CA_LIB_DIR__."/ca/ApplicationPluginManager.php");
 								}
 								
 								$vs_get_spec = "{$ps_tablename}.".join(".", $va_tmp);
-								$vs_val = $qr_res->get($vs_get_spec, $pa_options);
+								$va_val_tmp = $qr_res->get($vs_get_spec, array_merge($pa_options, array('returnAsArray' => true)));
+								
+								$va_val = array();
+								
+								if (is_array($va_val_tmp)) {
+									foreach($va_val_tmp as $vn_attr_id => $vm_attr_val) {
+										if(is_array($vm_attr_val)) {
+											foreach($vm_attr_val as $vs_k => $vs_v) {
+												$va_val[] = $vs_v;
+											}
+										} else {
+											$va_val[] = $vm_attr_val;
+										}
+									}
+								}
+								
 							}
 						}
 					}
-						
-					$va_tag_val_list[$vn_i][$vs_tag] = $vs_val;
-					if (strlen($vs_val) > 0) {
-						$va_defined_tag_list[$vn_i][$vs_tag] = true;
+					
+				
+					if (is_array($va_val)) {
+						foreach($va_val as $vn_j => $vs_val) {
+							$va_tag_val_list[$vn_i][$vn_j][$vs_tag] = $vs_val;
+							if ((is_array($vs_val) && (sizeof($vs_val))) || (strlen($vs_val) > 0)) {
+								$va_defined_tag_list[$vn_i][$vs_tag] = true;
+							}
+						}
 					}
 				}
 			}
 		
 			$vn_i++;
 		}
-
+		
 		foreach($va_tag_val_list as $vn_i => $va_tag_vals) {
+			foreach($va_tag_vals as $vn_j => $va_tags) {
+				foreach($va_tags as $vs_t => $vs_v) {
+					$va_tag_list[$vs_t] = true;
+				}
+			}
+		
 			// Process <ifdef> (IF DEFined)
 			foreach($va_ifdefs as $vs_code => $va_def_con) { 
 				if (strpos($vs_code, "|") !== false) {
@@ -1748,11 +1911,11 @@ require_once(__CA_LIB_DIR__."/ca/ApplicationPluginManager.php");
 				foreach($va_tag_list as $vs_tag_to_test) {
 					switch($vs_bool) {
 						case 'OR':
-							if (isset($va_tag_vals[$vs_tag_to_test]) && strlen($va_tag_vals[$vs_tag_to_test])) { $vb_output = true; break(2); }			// any must be defined; if any is defined output
+							if (isset($va_tag_list[$vs_tag_to_test]) && strlen($va_tag_list[$vs_tag_to_test])) { $vb_output = true; break(2); }			// any must be defined; if any is defined output
 							break;
 						case 'AND':
 						default:
-							if (!isset($va_tag_vals[$vs_tag_to_test]) || !strlen($va_tag_vals[$vs_tag_to_test])) { $vb_output = false; break(2); }		// all must be defined; if any is not defined don't output
+							if (!isset($va_tag_list[$vs_tag_to_test]) || !strlen($va_tag_list[$vs_tag_to_test])) { $vb_output = false; break(2); }		// all must be defined; if any is not defined don't output
 							break;
 					}
 				}
@@ -1781,11 +1944,11 @@ require_once(__CA_LIB_DIR__."/ca/ApplicationPluginManager.php");
 				foreach($va_tag_list as $vs_tag_to_test) {
 					switch($vs_bool) {
 						case 'OR':
-							if (!isset($va_tag_vals[$vs_tag_to_test]) || !strlen($va_tag_vals[$vs_tag_to_test])) { $vb_output = true; break(2); }		// any must be not defined; if anything is not set output
+							if (!isset($va_tag_list[$vs_tag_to_test]) || !strlen($va_tag_list[$vs_tag_to_test])) { $vb_output = true; break(2); }		// any must be not defined; if anything is not set output
 							break;
 						case 'AND':
 						default:
-							if (isset($va_tag_vals[$vs_tag_to_test]) && strlen($va_tag_vals[$vs_tag_to_test])) { $vb_output = false; break(2); }	// all must be not defined; if anything is set don't output
+							if (isset($va_tag_list[$vs_tag_to_test]) && strlen($va_tag_list[$vs_tag_to_test])) { $vb_output = false; break(2); }	// all must be not defined; if anything is set don't output
 							break;
 					}
 					
@@ -1864,10 +2027,15 @@ require_once(__CA_LIB_DIR__."/ca/ApplicationPluginManager.php");
 				}
 			} 
 			
-			
-			foreach($va_tag_vals as $vs_tag => $vs_val) {
-				$va_proc_templates[$vn_i] = str_replace('^'.$vs_tag, $vs_val, $va_proc_templates[$vn_i]);
+			$va_pt_vals = array();
+			foreach($va_tag_vals as $x => $va_values_by_tag) {
+				$vs_pt = $va_proc_templates[$vn_i];
+				foreach($va_values_by_tag as $vs_tag => $vs_val) {
+					$vs_pt = str_replace('^'.$vs_tag, $vs_val, $vs_pt);
+				}
+				$va_pt_vals[] = $vs_pt;
 			}
+			$va_proc_templates[$vn_i] = join($vs_delimiter, $va_pt_vals);
 		}
 		
 		if ($vb_return_as_array) {
@@ -2121,7 +2289,7 @@ $ca_relationship_lookup_parse_cache = array();
 					
 					foreach($va_bundles as $vs_bundle_name) {
 						if (in_array($vs_bundle_name, array('_parent', '_hierarchy'))) { continue;}
-						if (!($vs_value = trim($qr_rel_items->get($vs_bundle_name, array('delimiter' => $vs_display_delimiter))))) { 
+						if (!($vs_value = trim($qr_rel_items->get($vs_bundle_name, array('delimiter' => $vs_display_delimiter, 'convertCodesToDisplayText' => true))))) { 
 							if ((!isset($pa_options['stripTags']) || !$pa_options['stripTags']) &&  (sizeof($va_tmp = explode('.', $vs_bundle_name)) == 3)) {		// is tag media?
 								$vs_value = trim($qr_rel_items->getMediaTag($va_tmp[0].'.'.$va_tmp[1], $va_tmp[2]));
 							}

@@ -65,21 +65,26 @@
 		 * @param $po_record_xml 
 		 */
 		protected function harvestRecord($po_record_xml){
-			$va_record = $po_record_xml->metadata->children(self::OAI_DC_NAMESPACE)->children(self::DUBLIN_CORE_NAMESPACE);
+			$va_header_attr = $po_record_xml->header->attributes();
 			
 			$va_data = array();
+			// Add header fields to returned record data
+			$va_data['oai_identifier'] = $po_record_xml->header->identifier;
+			$va_data['oai_datestamp'] = $po_record_xml->header->datestamp;
+			$va_data['oai_status'] = $po_record_xml->header->status;
+			
+			if ((string)$va_header_attr->{'status'} == 'deleted') { return $va_data; }
+			
+			$va_record = $po_record_xml->metadata->children(self::OAI_DC_NAMESPACE)->children(self::DUBLIN_CORE_NAMESPACE);
+			
 			foreach($this->opa_dc_elements as $vs_element) {
-				 if (isset($va_record->$vs_element)) {
-				 	foreach($va_record->$vs_element as $vs_value) {
+				 if ($va_record && strval($va_record->{$vs_element}) && ($va_record->{$vs_element}->count())) {
+				 	foreach($va_record->{$vs_element} as $vs_value) {
 				 		$va_data[$vs_element][] = (string)$vs_value;
 				 	}
 				 }
 			}
 			
-			// Add header fields to returned record data
-			$va_data['oai_identifier'] = $po_record_xml->header->identifier;
-			$va_data['oai_datestamp'] = $po_record_xml->header->datestamp;
-			$va_data['oai_status'] = $po_record_xml->header->status;
 			return $va_data;
 		}
 		# -------------------------------------------------------
