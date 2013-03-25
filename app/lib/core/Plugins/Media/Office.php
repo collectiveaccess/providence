@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2008-2012 Whirl-i-Gig
+ * Copyright 2008-2013 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -307,10 +307,10 @@ class WLPlugMediaOffice Extends BaseMediaPlugin Implements IWLPlugMedia {
 								)
 							);
 							$this->handle['content'] = $o_doc->getFieldUtf8Value('body');
-							return 'WORD';
 						} catch (Exception $e) {
 							// noop
 						}
+						return 'WORD';
 					}
 					if (substr($vs_file, 0, 3) == 'xl/') {
 						try {
@@ -323,11 +323,11 @@ class WLPlugMediaOffice Extends BaseMediaPlugin Implements IWLPlugMedia {
 								)
 							);
 							$this->handle['content'] = $o_doc->getFieldUtf8Value('body');
-							return 'EXCEL';
+							
 						} catch (Exception $e) {
 							// noop
-							
 						}
+						return 'EXCEL';
 					}
 					
 					if (substr($vs_file, 0, 4) == 'ppt/') {
@@ -341,10 +341,10 @@ class WLPlugMediaOffice Extends BaseMediaPlugin Implements IWLPlugMedia {
 								)
 							);
 							$this->handle['content'] = $o_doc->getFieldUtf8Value('body');
-							return 'PPT';
 						} catch (Exception $e) {
 							// noop
 						}
+						return 'PPT';
 					}
 				}
 			}
