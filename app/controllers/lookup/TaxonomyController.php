@@ -154,10 +154,10 @@
 										$va_items["ubio{$vs_id}"] = array(
 											"id" => "uBio:{$vs_id}",
 											"idno" => "uBio:{$vs_id}",
-											"sci_name" => $vs_name.(strlen($vs_package)>0 ? " ({$vs_package}) " : ""),
+											"sci_name" => trim($vs_name.(strlen($vs_package)>0 ? " ({$vs_package}) " : "")),
 											"common_name" => $vs_cn
 										);
-										$va_items["ubio{$vs_id}"]['label'] = $va_items["ubio{$vs_id}"]['sci_name'].($vs_cn ? " ({$vs_cn})" : "")." [uBio:{$vs_id}]";
+										$va_items["ubio{$vs_id}"]['label'] = $va_items["ubio{$vs_id}"]['sci_name'].((strlen($vs_cn)>0) ? " ({$vs_cn})" : "")." [uBio:{$vs_id}]";
 										if(++$i == 100){ // let's limit to 100 results, right?
 											break;
 										}
