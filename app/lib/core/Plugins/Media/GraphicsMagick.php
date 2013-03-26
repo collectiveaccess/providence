@@ -81,6 +81,7 @@ class WLPlugMediaGraphicsMagick Extends BaseMediaPlugin Implements IWLPlugMedia 
 			"image/x-sony-sr2"	=> "sr2",
 			"image/x-sony-srf"	=> "srf",
 			"image/x-sigma-x3f"	=> "x3f",
+			"application/dicom" => "dcm",
 		),
 		"EXPORT" => array(
 			"image/jpeg" 		=> "jpg",
@@ -104,6 +105,7 @@ class WLPlugMediaGraphicsMagick Extends BaseMediaPlugin Implements IWLPlugMedia 
 			"image/x-sony-sr2"	=> "sr2",
 			"image/x-sony-srf"	=> "srf",
 			"image/x-sigma-x3f"	=> "x3f",
+			"application/dicom" => "dcm",
 		),
 		"TRANSFORMATIONS" => array(
 			"SCALE" 			=> array("width", "height", "mode", "antialiasing", "trim_edges", "crop_from"),
@@ -140,7 +142,7 @@ class WLPlugMediaGraphicsMagick Extends BaseMediaPlugin Implements IWLPlugMedia 
 			'version'			=> 'W'	// required of all plug-ins
 		),
 		
-		"NAME" => "ImageMagick"
+		"NAME" => "GraphicsMagick"
 	);
 	
 	var $typenames = array(
@@ -165,6 +167,7 @@ class WLPlugMediaGraphicsMagick Extends BaseMediaPlugin Implements IWLPlugMedia 
 		"image/x-sony-sr2"	=> "Sony SR2 RAW Image",
 		"image/x-sony-srf"	=> "Sony SRF RAW Image",
 		"image/x-sigma-x3f"	=> "Sigma X3F RAW Image",
+		"application/dicom" => "DICOM medical imaging data",
 	);
 	
 	var $magick_names = array(
@@ -189,6 +192,7 @@ class WLPlugMediaGraphicsMagick Extends BaseMediaPlugin Implements IWLPlugMedia 
 		"image/x-sony-sr2"	=> "SR2",
 		"image/x-sony-srf"	=> "SRF",
 		"image/x-sigma-x3f"	=> "X3F",
+		"application/dicom" => "DCM",
 	);
 	
 	#
