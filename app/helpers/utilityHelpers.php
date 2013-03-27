@@ -418,6 +418,15 @@ function caFileIsIncludable($ps_file) {
 		return true;
 	}
 	# ----------------------------------------
+	function caIsArchive($ps_filename){
+		// what once was the PHAR extension is built in since PHP 5.3
+		// can actually handle zip and tar.gz (and probably a lot more)
+		if(!class_exists("PharData")) return false; 
+		$list = @scandir('phar://'.$ps_filename);
+	
+		return (bool)$list;
+	}
+	# ----------------------------------------
 	function caGetOSFamily() {
 		switch(strtoupper(substr(PHP_OS, 0, 3))	) {
 			case 'WIN':
