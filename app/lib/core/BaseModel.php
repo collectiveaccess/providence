@@ -3731,6 +3731,45 @@ class BaseModel extends BaseObject {
 					}
 				}
 
+				// allow adding zip and (gzipped) tape archives
+				$vb_is_archive = false;
+				$vs_original_filename = $this->_SET_FILES[$ps_field]['original_filename'];
+				$vs_original_tmpname = $this->_SET_FILES[$ps_field]['tmp_name'];
+				$va_matches = array();
+
+				if(preg_match("/(\.zip|\.tar\.gz|\.tgz)$/",$vs_original_filename,$va_matches)){
+					$vs_archive_extension = $va_matches[1];
+
+					// add file extension to temporary file if necessary; otherwise phar barfs when handling the archive
+					$va_tmp = array();
+					preg_match("/[.]*\.([a-zA-Z0-9]+)$/",$va_archive_files[0],$va_tmp);
+					if(!isset($va_tmp[1])){
+						@rename($this->_SET_FILES[$ps_field]['tmp_name'], $this->_SET_FILES[$ps_field]['tmp_name'].$vs_archive_extension);
+						$this->_SET_FILES[$ps_field]['tmp_name'] = $this->_SET_FILES[$ps_field]['tmp_name'].$vs_archive_extension;
+					}
+
+					if(caIsArchive($this->_SET_FILES[$ps_field]['tmp_name'])){
+						$va_archive_files = caGetDirectoryContentsAsList('phar://'.$this->_SET_FILES[$ps_field]['tmp_name']);
+						if(sizeof($va_archive_files)>0){
+							// get first file we encounter in the archive and use it to generate them previews
+							$vb_is_archive = true;
+							$vs_archive = $this->_SET_FILES[$ps_field]['tmp_name'];
+							$va_tmp = array();
+
+							// copy primary file from the archive to temporary file (with extension so that *Magick can identify properly)
+							preg_match("/[.]*\.([a-zA-Z0-9]+)$/",$va_archive_files[0],$va_tmp);
+							$vs_primary_file_tmp = tempnam(caGetTempDirPath(), "caArchivePrimary").".".$va_tmp[1];
+							@copy($va_archive_files[0], $vs_primary_file_tmp);
+							$this->_SET_FILES[$ps_field]['tmp_name'] = $vs_primary_file_tmp;
+						}
+					}
+
+					if(!$vb_is_archive) { // something went wrong (i.e. no valid or empty archive) -> restore previous state
+						@rename($this->_SET_FILES[$ps_field]['tmp_name'].$vs_archive_extension, $vs_original_tmpname);
+						$this->_SET_FILES[$ps_field]['tmp_name'] = $vs_original_tmpname;
+					}
+				}
+
 				// ImageMagick partly relies on file extensions to properly identify images (RAW images in particular)
 				// therefore we rename the temporary file here (using the extension of the original filename, if any)
 				$va_matches = array();
@@ -3756,6 +3795,7 @@ class BaseModel extends BaseObject {
 					$this->postError(1600, ($input_mimetype) ? _t("File type %1 not accepted by %2", $input_mimetype, $ps_field) : _t("Unknown file type not accepted by %1", $ps_field),"BaseModel->_processMedia()");
 					set_time_limit($vn_max_execution_time);
 					if ($vb_is_fetched_file) { @unlink($vs_tmp_file); }
+					if ($vb_is_archive) { @unlink($vs_archive); @unlink($vs_primary_file_tmp); }
 					return false;
 				}
 
@@ -3764,6 +3804,7 @@ class BaseModel extends BaseObject {
 					$this->errors = array_merge($this->errors, $m->errors());	// copy into model plugin errors
 					set_time_limit($vn_max_execution_time);
 					if ($vb_is_fetched_file) { @unlink($vs_tmp_file); }
+					if ($vb_is_archive) { @unlink($vs_archive); @unlink($vs_primary_file_tmp); }
 					return false;
 				}
 				
@@ -3931,6 +3972,7 @@ class BaseModel extends BaseObject {
 							$m->cleanup();
 							set_time_limit($vn_max_execution_time);
 							if ($vb_is_fetched_file) { @unlink($vs_tmp_file); }
+							if ($vb_is_archive) { @unlink($vs_archive); @unlink($vs_primary_file_tmp); }
 							return false;
 						}
 
@@ -3938,6 +3980,7 @@ class BaseModel extends BaseObject {
 							$this->postError(1600, _t("Could not create subdirectory for uploaded file in %1. Please ask your administrator to check the permissions of your media directory.", $vi["absolutePath"]),"BaseModel->_processMedia()");
 							set_time_limit($vn_max_execution_time);
 							if ($vb_is_fetched_file) { @unlink($vs_tmp_file); }
+							if ($vb_is_archive) { @unlink($vs_archive); @unlink($vs_primary_file_tmp); }
 							return false;
 						}
 
@@ -3973,6 +4016,7 @@ class BaseModel extends BaseObject {
 								$m->cleanup();
 								set_time_limit($vn_max_execution_time);
 								if ($vb_is_fetched_file) { @unlink($vs_tmp_file); }
+								if ($vb_is_archive) { @unlink($vs_archive); @unlink($vs_primary_file_tmp); }
 								return false;
 							}
 							
@@ -4075,6 +4119,7 @@ class BaseModel extends BaseObject {
 							$m->cleanup();
 							set_time_limit($vn_max_execution_time);
 							if ($vb_is_fetched_file) { @unlink($vs_tmp_file); }
+							if ($vb_is_archive) { @unlink($vs_archive); @unlink($vs_primary_file_tmp); }
 							return false;
 						}
 
@@ -4082,6 +4127,7 @@ class BaseModel extends BaseObject {
 							$this->postError(1600, _t("Could not create subdirectory for uploaded file in %1. Please ask your administrator to check the permissions of your media directory.", $vi["absolutePath"]),"BaseModel->_processMedia()");
 							set_time_limit($vn_max_execution_time);
 							if ($vb_is_fetched_file) { @unlink($vs_tmp_file); }
+							if ($vb_is_archive) { @unlink($vs_archive); @unlink($vs_primary_file_tmp); }
 							return false;
 						}
 						$magic = rand(0,99999);
@@ -4092,6 +4138,7 @@ class BaseModel extends BaseObject {
 							$m->cleanup();
 							set_time_limit($vn_max_execution_time);
 							if ($vb_is_fetched_file) { @unlink($vs_tmp_file); }
+							if ($vb_is_archive) { @unlink($vs_archive); @unlink($vs_primary_file_tmp); }
 							return false;
 							break;
 						} else {
@@ -4236,30 +4283,46 @@ class BaseModel extends BaseObject {
 						$this->errors = $o_tq->errors;
 					}
 				} else {
-					// Generate preview frames for media that support that (Eg. video)
-					// and add them as "multifiles" assuming the current model supports that (ca_object_representations does)
-					if (!sizeof($va_process_these_versions_only) && ((bool)$this->_CONFIG->get('video_preview_generate_frames') || (bool)$this->_CONFIG->get('document_preview_generate_pages')) && method_exists($this, 'addFile')) {
-						$va_preview_frame_list = $m->writePreviews(
-							array(
-								'width' => $m->get("width"), 
-								'height' => $m->get("height"),
-								'minNumberOfFrames' => $this->_CONFIG->get('video_preview_min_number_of_frames'),
-								'maxNumberOfFrames' => $this->_CONFIG->get('video_preview_max_number_of_frames'),
-								'numberOfPages' => $this->_CONFIG->get('document_preview_max_number_of_pages'),
-								'frameInterval' => $this->_CONFIG->get('video_preview_interval_between_frames'),
-								'pageInterval' => $this->_CONFIG->get('document_preview_interval_between_pages'),
-								'startAtTime' => $this->_CONFIG->get('video_preview_start_at'),
-								'endAtTime' => $this->_CONFIG->get('video_preview_end_at'),
-								'startAtPage' => $this->_CONFIG->get('document_preview_start_page'),
-								'outputDirectory' => __CA_APP_DIR__.'/tmp'
-							)
-						);
-						
-						$this->removeAllFiles();		// get rid of any previously existing frames (they might be hanging around if we're editing an existing record)
-						if (is_array($va_preview_frame_list)) {
-							foreach($va_preview_frame_list as $vn_time => $vs_frame) {
-								$this->addFile($vs_frame, $vn_time, true);	// the resource path for each frame is it's time, in seconds (may be fractional) for video, or page number for documents
-								@unlink($vs_frame);		// clean up tmp preview frame file
+					// if we have an archive at hand, add all files in archive as multifiles
+					if ($vb_is_archive){
+						if(method_exists($this, 'addFile')){
+							foreach($va_archive_files as $vs_archive_file){
+								$vs_tmp = tempnam(caGetTempDirPath(), 'caArchiveContent');
+								@copy($vs_archive_file,$vs_tmp);
+								$t_file = $this->addFile($vs_tmp);
+								@unlink($vs_tmp);
+								if($t_file->numErrors()>0){
+									$this->clearErrors();
+									$this->postError(1600, _t("Couldn't process one of the files in the archive: %1",basename($vs_archive_file)));
+								}
+							}
+						}
+					} else {
+						// Generate preview frames for media that support that (Eg. video)
+						// and add them as "multifiles" assuming the current model supports that (ca_object_representations does)
+						if (!sizeof($va_process_these_versions_only) && ((bool)$this->_CONFIG->get('video_preview_generate_frames') || (bool)$this->_CONFIG->get('document_preview_generate_pages')) && method_exists($this, 'addFile')) {
+							$va_preview_frame_list = $m->writePreviews(
+								array(
+									'width' => $m->get("width"), 
+									'height' => $m->get("height"),
+									'minNumberOfFrames' => $this->_CONFIG->get('video_preview_min_number_of_frames'),
+									'maxNumberOfFrames' => $this->_CONFIG->get('video_preview_max_number_of_frames'),
+									'numberOfPages' => $this->_CONFIG->get('document_preview_max_number_of_pages'),
+									'frameInterval' => $this->_CONFIG->get('video_preview_interval_between_frames'),
+									'pageInterval' => $this->_CONFIG->get('document_preview_interval_between_pages'),
+									'startAtTime' => $this->_CONFIG->get('video_preview_start_at'),
+									'endAtTime' => $this->_CONFIG->get('video_preview_end_at'),
+									'startAtPage' => $this->_CONFIG->get('document_preview_start_page'),
+									'outputDirectory' => __CA_APP_DIR__.'/tmp'
+								)
+							);
+							
+							$this->removeAllFiles();		// get rid of any previously existing frames (they might be hanging around if we're editing an existing record)
+							if (is_array($va_preview_frame_list)) {
+								foreach($va_preview_frame_list as $vn_time => $vs_frame) {
+									$this->addFile($vs_frame, $vn_time, true);	// the resource path for each frame is it's time, in seconds (may be fractional) for video, or page number for documents
+									@unlink($vs_frame);		// clean up tmp preview frame file
+								}
 							}
 						}
 					}
@@ -4323,6 +4386,7 @@ class BaseModel extends BaseObject {
 		}
 		set_time_limit($vn_max_execution_time);
 		if ($vb_is_fetched_file) { @unlink($vs_tmp_file); }
+		if ($vb_is_archive) { @unlink($vs_archive); @unlink($vs_primary_file_tmp); }
 		return $vs_sql;
 	}
 	# --------------------------------------------------------------------------------
