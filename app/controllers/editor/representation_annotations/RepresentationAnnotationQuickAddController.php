@@ -49,7 +49,13 @@
  		public function Save($pa_options=null) {
  			return parent::Save(array('loadSubject' => true, 'dontCheckQuickAddAction' => true));
  		}
- 		
+ 		# -------------------------------------------------------
+ 		protected function _initView($pa_options=null) {
+ 			list($t_subject, $t_ui) = parent::_initView($pa_options);
+			$t_subject->loadProperties($pa_options['forceSubjectValues']['type_code']);
+			
+			return array($t_subject, $t_ui);
+ 		}
  		# -------------------------------------------------------
  		/**
  		 * 

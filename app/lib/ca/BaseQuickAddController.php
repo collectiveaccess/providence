@@ -368,8 +368,6 @@
 					$t_subject->set($vs_f, $vs_v);
 				}
 			}
-			
-			$t_subject->loadProperties($pa_options['forceSubjectValues']['type_code']);
  			
 			// empty (ie. new) rows don't have a type_id set, which means we'll have no idea which attributes to display
 			// so we get the type_id off of the request
