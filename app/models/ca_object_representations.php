@@ -424,6 +424,9 @@ class ca_object_representations extends BundlableLabelableBaseModelWithAttribute
 				}				
 			}
 		}
+
+		$this->removeAllFiles();
+
 		return parent::delete($pb_delete_related, $pa_options, $pa_fields, $pa_table_list);
 	}
 	# ------------------------------------------------------
