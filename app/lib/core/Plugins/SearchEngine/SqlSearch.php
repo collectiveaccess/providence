@@ -632,12 +632,20 @@ class WLPlugSearchEngineSqlSearch extends BaseSearchPlugin implements IWLPlugSea
 							}
 							if (!sizeof($va_words)) { continue(3); }
 							
+							$va_ap_tmp = explode(".", $vs_access_point);
+							$vn_fld_table = $vn_fld_num = null;
+							if(sizeof($va_ap_tmp) == 2) {
+								$vn_fld_table = (int)$this->opo_datamodel->getTableNum($va_ap_tmp[0]);
+								$vn_fld_num = (int)$this->opo_datamodel->getFieldNum($va_ap_tmp[0], $va_ap_tmp[1]);
+								$vs_fld_limit_sql = " AND (ca.field_table_num = {$vn_fld_table} AND ca.field_num = {$vn_fld_num})";
+							}
+							
 							$vs_direct_sql_query = "
 										SELECT ca.row_id, 1
 										FROM ca_sql_search_words sw 
 										INNER JOIN ca_sql_search_word_index ca ON sw.word_id = ca.word_id 
 										^JOIN
-										WHERE sw.word IN (".join(",", array_keys($va_words)).") AND ca.table_num = ?
+										WHERE sw.word IN (".join(",", array_keys($va_words)).") AND ca.table_num = ? {$vs_fld_limit_sql}
 										".($this->getOption('omitPrivateIndexing') ? " AND ca.access = 0" : '')."
 										GROUP BY ca.row_id, ca.field_table_num, ca.field_num, ca.field_row_id 
 										HAVING count(distinct ca.word_id) = ".sizeof($va_words);

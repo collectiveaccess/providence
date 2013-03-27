@@ -1081,7 +1081,9 @@
 												INNER JOIN ca_attribute_values ON ca_attribute_values.attribute_id = ca_attributes.attribute_id
 												WHERE
 													(ca_attribute_values.element_id = ?) {$vs_attr_sql}";
-											//print "$vs_sql [".intval($vs_target_browse_table_num)."/".$vn_element_id."/".$vn_row_id."]<hr>";print_R($va_attr_values);
+											//caDebug($vs_sql);
+											//caDebug(intval($vs_target_browse_table_num)."/".$vn_element_id."/".$vn_row_id);
+											//caDebug($va_attr_values);
 											$qr_res = $this->opo_db->query($vs_sql, $va_attr_values);
 										} else {
 											
@@ -3337,7 +3339,6 @@ if (!$va_facet_info['show_all_when_first_facet'] || ($this->numCriteria() > 0)) 
 						if (!is_null($vs_single_value) && !$vb_single_value_is_present) {
 							return array();
 						}
-						
 						return caExtractValuesByUserLocale($va_facet);
 					}
 					break;

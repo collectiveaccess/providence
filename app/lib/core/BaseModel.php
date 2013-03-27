@@ -8375,7 +8375,7 @@ $pa_options["display_form_field_tips"] = true;
 				}
 			
 				$vs_relation_id_fld = ($vb_is_one_table ? "mt.".$va_rel_keys['many_table_field'] : "ot.".$va_rel_keys['one_table_field']);
-				$qr_res = $o_db->query("
+				$qr_res = $o_db->query($x="
 					SELECT {$vs_relation_id_fld}
 					FROM {$va_rel_keys['one_table']} ot
 					INNER JOIN {$va_rel_keys['many_table']} AS mt ON mt.{$va_rel_keys['many_table_field']} = ot.{$va_rel_keys['one_table_field']}

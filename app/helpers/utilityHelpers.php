@@ -1681,13 +1681,13 @@ function caFileIsIncludable($ps_file) {
 			} else {
 				$vs_string = htmlspecialchars(($print_r ? print_r($vm_data, TRUE) : var_export($vm_data, TRUE)), ENT_QUOTES, 'UTF-8');
 				$vs_string = '<pre>' . $vs_string . '</pre>';
-				$vs_string = trim($vs_label ? "<div id='debugLabel'>$vs_label:</div> $vs_string" : $vs_string);
-				$vs_string = '<div id="debug">'. $vs_string . '</div>';
+				$vs_string = trim($vs_label ? "<div class='debugLabel'>$vs_label:</div> $vs_string" : $vs_string);
+				$vs_string = '<div class="debug">'. $vs_string . '</div>';
 			}
 
 			global $g_response;
 			if(is_object($g_response)){
-				$g_response->prependContent($vs_string,'debug');
+				$g_response->addContent($vs_string,'default');
 			} else {
 				// on the off chance that someone wants to debug something that happens before 
 				// the response object is generated (like config checks), print content
