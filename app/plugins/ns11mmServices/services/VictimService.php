@@ -166,15 +166,44 @@ class VictimService extends NS11mmService {
 		// add affiliations
 		$va_entities = $t_entity->getRelatedItems('ca_entities', array('restrict_to_relationship_types' => array('employer', 'affiliation')));
 		$t_rel_entity = new ca_entities();
-		
+
+		$va_units = array();		
 		foreach($va_entities as $vn_relation_id => $va_rel_info) {
 			if ($t_rel_entity->load($va_rel_info['entity_id'])) {
+				$va_display_names = $t_rel_entity->get('ca_entities.hierarchy.preferred_labels.displayname', array('returnAsArray' => true));
+				
+				if ($va_rel_info['relationship_type_code'] == 'affiliation') {
+					if (sizeof($va_display_names) > 1) {
+						$va_units[] = array_pop($va_display_names);
+					}
+				} else {
+					if (sizeof($va_display_names) > 1) {
+						array_pop($va_display_names);
+					}
+				}
 				$va_data['affiliations'][$va_rel_info['relationship_type_code']][] = array(
-					'displayname' => $t_rel_entity->get('ca_entities.hierarchy.preferred_labels.displayname', array('returnAsArray' => true)),
+					'displayname' => $va_display_names,
 					'id' => $va_rel_info['entity_id'],
 					'aliases' => array_values($t_rel_entity->get('ca_entities.nonpreferred_labels.displayname', array('returnAsArray' => true)))
 				);
 			}
+		}
+		
+		// add group
+		$va_data['affiliations']['group'][] = array(
+			'displayname' => array($t_entity->get('ca_entities.groupName')),
+			'id' => -1,
+			'aliases' => array()
+		);
+
+		// Map bottom level of two level affiliation to fake "unit" relationship
+		// This let's the Memorial Table CMS easily make the unit value searchable
+		foreach($va_units as $vs_unit) {
+			$va_data['affiliations']['unit'][] = array(
+				'displayname' => array($vs_unit),
+				'id' => -1,
+				'aliases' => array()
+			);
 		}
 		
 		return $this->makeResponse($va_data);
@@ -330,22 +359,53 @@ class VictimService extends NS11mmService {
 	public function relationships(){
 		if (!is_object($t_entity = $this->_checkEntity())) { return $t_entity; }
 		$vn_id = $t_entity->getPrimaryKey();
+		$vs_group = $t_entity->get('ca_entities.groupName');
 		
 		$va_data = array('aliases' => $t_entity->get('ca_entities.nonpreferred_labels.displayname', array('returnAsArray' => true)));
 		
 		$va_entities = $t_entity->getRelatedItems('ca_entities');
 		$va_timestamp = $t_entity->getLastChangeTimestamp($vn_id);
+		
+		$va_units = array();
 		foreach($va_entities as $vn_relation_id => $va_rel_info) {
 			if ($t_entity->load($va_rel_info['entity_id'])) {
 				$va_data['lastupdate_timestamp'] =  date('o-m-N',$va_timestamp['timestamp'])."T".date('H:i:s',$va_timestamp['timestamp'])."Z";
 
+				$va_display_names = $t_entity->get('ca_entities.hierarchy.preferred_labels.displayname', array('returnAsArray' => true));
+				if ($va_rel_info['relationship_type_code'] == 'affiliation') {
+					if (sizeof($va_display_names) > 1) {
+						$va_units[] = array_pop($va_display_names);
+					}
+				} else {
+					if (sizeof($va_display_names) > 1) {
+						array_pop($va_display_names);
+					}
+				}
 				$va_data['relationships'][$va_rel_info['relationship_type_code']][] = array(
 					'id' => $va_rel_info['entity_id'],
-					'displayname' => $t_entity->get('ca_entities.hierarchy.preferred_labels.displayname', array('returnAsArray' => true)),
+					'displayname' => $va_display_names,
 					'aliases' => $t_entity->get('ca_entities.nonpreferred_labels.displayname', array('returnAsArray' => true))
 				);
 			}
 		}
+		
+		// Map bottom level of two level affiliation to fake "unit" relationship
+		// This let's the Memorial Table CMS easily make the unit value searchable
+		foreach($va_units as $vs_unit) {
+			$va_data['relationships']['unit'][] = array(
+				'displayname' => array($vs_unit),
+				'id' => -1,
+				'aliases' => array()
+			);
+		}
+		
+		
+		// add group
+		$va_data['relationships']['group'][] = array(
+			'displayname' => array($vs_group),
+			'id' => -1,
+			'aliases' => array()
+		);
 		
 		return $this->makeResponse($va_data);
 	}

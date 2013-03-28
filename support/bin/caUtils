@@ -77,7 +77,7 @@
 			print "\n";
 			if ($vn_n = CLIUtils::numErrors()) {
 				if ($vn_n > 1) {
-					print CLIUtils::textWithColor(_t("(There were %1 errors)", $vn_c), "yellow")."\n";
+					print CLIUtils::textWithColor(_t("(There were %1 errors)", $vn_n), "yellow")."\n";
 				} else {
 					print CLIUtils::textWithColor(_t("(1 error occurred)"), "yellow")."\n";
 				}

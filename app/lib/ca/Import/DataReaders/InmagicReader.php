@@ -1,6 +1,6 @@
 <?php
 /** ---------------------------------------------------------------------
- * FMPDSOResultReader.php : 
+ * InmagicReader.php : 
  * ----------------------------------------------------------------------
  * CollectiveAccess
  * Open-source collections management software
@@ -37,24 +37,24 @@
 require_once(__CA_LIB_DIR__.'/ca/Import/DataReaders/BaseXMLDataReader.php');
 require_once(__CA_APP_DIR__.'/helpers/displayHelpers.php');
 
-class FMPDSOResultReader extends BaseXMLDataReader {
+class InmagicReader extends BaseXMLDataReader {
 	# -------------------------------------------------------
 	/**
 	 * XPath to select
 	 */
-	protected $ops_xml_namespace = 'http://www.filemaker.com/fmpdsoresult';
+	protected $ops_xml_namespace = 'http://www.inmagic.com/webpublisher/query';
 	
 	
 	/**
 	 * XPath to select
 	 */
-	protected $ops_xml_namespace_prefix = 'n';
+	protected $ops_xml_namespace_prefix = 'inm';
 	
 	
 	/**
 	 * XPath to select
 	 */
-	protected $ops_xpath = '/n:FMPDSORESULT/n:ROW';
+	protected $ops_xpath = '//inm:Recordset/inm:Record';
 	
 	
 	/**
@@ -64,7 +64,6 @@ class FMPDSOResultReader extends BaseXMLDataReader {
 	 * referred to in import mappings as plain old record values
 	 */
 	protected $opb_use_row_tag_attributes_as_row_level_values = true;
-
 	
 	/**
 	 * Treat tag names as case insensitive?
@@ -81,11 +80,11 @@ class FMPDSOResultReader extends BaseXMLDataReader {
 	public function __construct($ps_source=null, $pa_options=null){
 		parent::__construct($ps_source, $pa_options);
 		
-		$this->ops_title = _t('FMPro DSOResult XML Reader');
-		$this->ops_display_name = _t('FMPro DSOResult');
-		$this->ops_description = _t('Reads Filemaker Pro DSOResult-format XML files');
+		$this->ops_title = _t('Inmagic XML Reader');
+		$this->ops_display_name = _t('Inmagick XML');
+		$this->ops_description = _t('Reads Inmagic XML files');
 		
-		$this->opa_formats = array('fmpdso');	// must be all lowercase to allow for case-insensitive matching
+		$this->opa_formats = array('inmagic');	// must be all lowercase to allow for case-insensitive matching
 	}
 	# -------------------------------------------------------
 }
