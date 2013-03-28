@@ -1196,9 +1196,13 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 		}		
 		
 		
-		// Analyze mapping for figure out where type, idno and preferred label are coming from
+		// Analyze mapping for figure out where type, idno, preferred label and other mandatory fields are coming from
 		$vn_type_id_mapping_item_id = $vn_idno_mapping_item_id = null;
 		$va_preferred_label_mapping_ids = array();
+		$va_mandatory_field_mapping_ids = array();
+		
+		$va_mandatory_fields = $t_subject->getMandatoryFields();
+		
 		foreach($va_mapping_items as $vn_item_id => $va_item) {
 			$vs_destination = $va_item['destination'];
 			
@@ -1220,6 +1224,13 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 				case "{$vs_subject_table}.{$vs_idno_fld}":
 					$vn_idno_mapping_item_id = $vn_item_id;
 					break;
+			}
+			
+			foreach($va_mandatory_fields as $vs_mandatory_field) {
+				if ($vs_mandatory_field == $vs_type_id_fld) { continue; }	// type is handled separately
+				if ($vs_destination == "{$vs_subject_table}.{$vs_mandatory_field}") {
+					$va_mandatory_field_mapping_ids[$vs_mandatory_field] = $vn_item_id;
+				}
 			}
 		}
 		
@@ -1283,7 +1294,7 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 			// Get type
 			if ($vn_type_id_mapping_item_id) {
 				// Type is specified in row
-				$vs_type = ca_data_importers::getValueFromSource($va_mapping_items[$vn_type_id_mapping_item_id], $o_reader);
+				$vs_type = ca_data_importers::getValueFromSource($va_mapping_items[$va_mandatory_field_mapping_ids[$vs_type_id_fld]], $o_reader);
 			} else {
 				// Type is constant for all rows
 				$vs_type = $vs_type_mapping_setting;	
@@ -1480,7 +1491,7 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 					}
 					
 					
-					if($vn_type_id_mapping_item_id && ($vn_item_id == $vn_type_id_mapping_item_id)) { 
+					if (($vn_type_id_mapping_item_id && ($vn_item_id == $vn_type_id_mapping_item_id)) || (in_array($vn_item_id, $va_mandatory_field_mapping_ids))) {
 						if ($va_parent && is_array($va_parent)) { array_pop($va_parent); }	// remove empty container array
 						continue; 
 					}
@@ -1613,6 +1624,10 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 					$t_subject->setIdnoTWithTemplate($vs_idno);
 				} else {
 					$t_subject->set($vs_idno_fld, $vs_idno);
+				}
+				
+				foreach($va_mandatory_field_mapping_ids as $vs_mandatory_field => $vs_mandatory_field_value) {
+					$t_subject->set($vs_mandatory_field, $vs_mandatory_field_value);
 				}
 				
 				$t_subject->insert();
