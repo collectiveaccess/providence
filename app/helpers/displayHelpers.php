@@ -1519,7 +1519,7 @@ require_once(__CA_LIB_DIR__."/ca/ApplicationPluginManager.php");
 	}
 	# ------------------------------------------------------------------------------------------------
 	/**
-	 * Generates standard-format inspector panels for editors
+	 * Generates standard-format inspector panels for exporters
 	 *
 	 * @param View $po_view Inspector view object
 	 *
@@ -1527,7 +1527,7 @@ require_once(__CA_LIB_DIR__."/ca/ApplicationPluginManager.php");
 	 */
 	function caBatchMetadataExportInspector($po_view) {
 		$vs_color = "444444"; 
-		$vs_buf .= "<h3 class='nextPrevious'>".caNavLink($po_view->request, _('Back to list'), '', 'manage', 'MetadataExport', 'Index', $pa_other_params=null, $pa_attributes=null)."</h3>";
+		$vs_buf .= "<h3 class='nextPrevious'>".caNavLink($po_view->request, _t('Back to list'), '', 'manage', 'MetadataExport', 'Index', $pa_other_params=null, $pa_attributes=null)."</h3>";
 		$vs_buf .= "<h4><div id='caColorbox' style='border: 6px solid #{$vs_color}; padding-bottom:15px;'>\n";
 
 		$vs_buf .= "<strong>"._t("Batch export metadata")."</strong>\n";
