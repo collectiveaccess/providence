@@ -34,36 +34,38 @@
    *
    */
    
-	require(__CA_LIB_DIR__."/core/Zend/Translate.php");
-	require(__CA_LIB_DIR__."/core/Zend/Registry.php");
-	require(__CA_APP_DIR__."/helpers/initializeLocale.php");
+	require_once(__CA_LIB_DIR__."/core/Zend/Translate.php");
+	require_once(__CA_LIB_DIR__."/core/Zend/Cache.php");
+	require_once(__CA_LIB_DIR__."/core/Zend/Registry.php");
+	require_once(__CA_APP_DIR__."/helpers/utilityHelpers.php");
+	require_once(__CA_APP_DIR__."/helpers/initializeLocale.php");
 
 	if (isset($_COOKIE['CA_'.__CA_APP_NAME__.'_ui_locale'])) {
 		$g_ui_locale = $_COOKIE['CA_'.__CA_APP_NAME__.'_ui_locale'];
 		initializeLocale($g_ui_locale);
 	}
 	
-	require(__CA_APP_DIR__."/helpers/utilityHelpers.php");
-	require(__CA_APP_DIR__."/helpers/navigationHelpers.php");
-	require(__CA_APP_DIR__."/helpers/mailHelpers.php");
-	require(__CA_APP_DIR__."/helpers/clientServicesHelpers.php");
+	require_once(__CA_APP_DIR__."/helpers/utilityHelpers.php");
+	require_once(__CA_APP_DIR__."/helpers/navigationHelpers.php");
+	require_once(__CA_APP_DIR__."/helpers/mailHelpers.php");
+	require_once(__CA_APP_DIR__."/helpers/clientServicesHelpers.php");
 	
-	require(__CA_LIB_DIR__."/core/ApplicationMonitor.php");
-	require(__CA_LIB_DIR__."/core/BaseModel.php");
-	require(__CA_LIB_DIR__."/core/Controller/AppController.php");
+	require_once(__CA_LIB_DIR__."/core/ApplicationMonitor.php");
+	require_once(__CA_LIB_DIR__."/core/BaseModel.php");
+	require_once(__CA_LIB_DIR__."/core/Controller/AppController.php");
 	
-	require(__CA_LIB_DIR__."/ca/Search/DidYouMean.php");
+	require_once(__CA_LIB_DIR__."/ca/Search/DidYouMean.php");
 	
-	require(__CA_LIB_DIR__."/ca/MetaTagManager.php");
-	require(__CA_LIB_DIR__."/ca/JavascriptLoadManager.php");
-	require(__CA_LIB_DIR__."/ca/TooltipManager.php");
-	require(__CA_LIB_DIR__."/ca/FooterManager.php");
+	require_once(__CA_LIB_DIR__."/ca/MetaTagManager.php");
+	require_once(__CA_LIB_DIR__."/ca/JavascriptLoadManager.php");
+	require_once(__CA_LIB_DIR__."/ca/TooltipManager.php");
+	require_once(__CA_LIB_DIR__."/ca/FooterManager.php");
 
-	require(__CA_LIB_DIR__."/ca/AppNavigation.php");
+	require_once(__CA_LIB_DIR__."/ca/AppNavigation.php");
 	
-	require(__CA_LIB_DIR__."/core/Controller/ActionController.php");
+	require_once(__CA_LIB_DIR__."/core/Controller/ActionController.php");
 	
-	require(__CA_MODELS_DIR__."/ca_acl.php");
+	require_once(__CA_MODELS_DIR__."/ca_acl.php");
 	
 	// initialize Tooltip manager
 	TooltipManager::init();
