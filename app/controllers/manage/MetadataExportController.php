@@ -140,6 +140,8 @@
  			if(is_array($va_errors) && (sizeof($va_errors)>0)){
  				$this->view->setVar("errors",$va_errors);
  			} else {
+ 				set_time_limit(3600);
+
 	 			$this->view->setVar("t_subject", $t_subject);
 	 			$vn_id = $this->request->getParameter('item_id', pInteger);
 	 			$this->view->setVar('item_id',$vn_id);
