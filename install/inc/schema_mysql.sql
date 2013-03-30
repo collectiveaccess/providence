@@ -425,8 +425,8 @@ create table ca_object_representations
    mimetype                       varchar(255)                   null,
    original_filename              varchar(1024)                  not null,
    media                          longblob                       not null,
-   media_metadata                 longblob                       not null,
-   media_content                  longtext                       not null,
+   media_metadata                 longblob                       null,
+   media_content                  longtext                       null,
    deleted                        tinyint unsigned               not null default 0,
    is_template                    tinyint unsigned               not null default 0,
    commenting_status              tinyint unsigned               not null default 0,
@@ -6790,7 +6790,7 @@ create table ca_sql_search_word_index (
   table_num tinyint(3) unsigned not null,
   row_id int(10) unsigned not null,
   field_table_num tinyint(3) unsigned not null,
-  field_num tinyint(3) unsigned not null,
+  field_num smallint unsigned not null,
   field_row_id int(10) unsigned not null,
   rel_type_id smallint unsigned not null default 0,
   word_id int(10) unsigned not null,
@@ -6827,5 +6827,5 @@ create table ca_schema_updates (
 ) engine=innodb CHARACTER SET utf8 COLLATE utf8_general_ci;
 
 /* Indicate up to what migration this schema definition covers */
-/* CURRENT MIGRATION: 81 */
-INSERT IGNORE INTO ca_schema_updates (version_num, datetime) VALUES (81, unix_timestamp());
+/* CURRENT MIGRATION: 82 */
+INSERT IGNORE INTO ca_schema_updates (version_num, datetime) VALUES (82, unix_timestamp());
