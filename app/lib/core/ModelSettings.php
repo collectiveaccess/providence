@@ -114,8 +114,6 @@
 				(isset($va_setting_info['showLists']) && $va_setting_info['showLists'])
 				||
 				(isset($va_setting_info['showVocabularies']) && $va_setting_info['showVocabularies'])
-				||
-				(isset($va_setting_info['showSortableBundlesFor']) && $va_setting_info['showSortableBundlesFor'])
 			) { 
 				if (!is_array($pm_value)) { $pm_value = array($pm_value); }
 				
@@ -327,6 +325,31 @@
 						$va_attributes['checked'] = '1';
 					}
 					$vs_return .= caHTMLCheckboxInput($vs_input_name, $va_attributes, array());
+					break;
+				
+				# --------------------------------------------
+				case DT_COLORPICKER:
+					$va_attributes = array('value' => $vs_value, 'id' => $vs_input_id);
+					$vs_return .= caHTMLHiddenInput($vs_input_name, $va_attributes, array());
+					$vs_return .= "<div id='{$vs_input_id}_colorchip' class='colorpicker_chip' style='background-color: #{$vs_value}'><!-- empty --></div>";
+					$vs_return .= "<script type='text/javascript'>jQuery(document).ready(function() { jQuery('#{$vs_input_name}_colorchip').ColorPicker({
+								onShow: function (colpkr) {
+									jQuery(colpkr).fadeIn(500);
+									return false;
+								},
+								onHide: function (colpkr) {
+									jQuery(colpkr).fadeOut(500);
+									return false;
+								},
+								onChange: function (hsb, hex, rgb) {
+									jQuery('#{$vs_input_name}').val(hex);
+									jQuery('#{$vs_input_name}_colorchip').css('backgroundColor', '#' + hex);
+								},
+								color: jQuery('#".$pa_options["name"]."').val()
+							})}); </script>\n";
+							
+							JavascriptLoadManager::register('jquery', 'colorpicker');
+							
 					break;
 				# --------------------------------------------
 				case DT_SELECT:
