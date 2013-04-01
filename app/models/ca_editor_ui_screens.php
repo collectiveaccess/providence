@@ -441,6 +441,29 @@ class ca_editor_ui_screens extends BundlableLabelableBaseModelWithAttributes {
 								'width' => "100px", 'height' => 1,
 								'label' => _t('Use rich text editor'),
 								'description' => _t('Check this option if you want to use a word-processor like editor with this text field. If you expect users to enter rich text (italic, bold, underline) then you might want to enable this.')
+							),
+							'sort' => array(
+								'formatType' => FT_TEXT,
+								'displayType' => DT_SELECT,
+								'width' => "200px", 'height' => "1",
+								'takesLocale' => false,
+								'default' => '1',
+								'label' => _t('Sort using'),
+								//'showSortableBundlesFor' => $t_rel->tableName(),
+								'description' => _t('Method used to sort repeating values.')
+							),
+							'sortDirection' => array(
+								'formatType' => FT_TEXT,
+								'displayType' => DT_SELECT,
+								'width' => "200px", 'height' => "1",
+								'takesLocale' => false,
+								'default' => 'ASC',
+								'options' => array(
+									_t('Ascending') => 'ASC',
+									_t('Descending') => 'DESC'
+								),
+								'label' => _t('Sort direction'),
+								'description' => _t('Direction of sort.')
 							)
 						);
 					}
@@ -512,6 +535,24 @@ class ca_editor_ui_screens extends BundlableLabelableBaseModelWithAttributes {
 							),
 							'label' => _t('Sort direction'),
 							'description' => _t('Direction of sort, when not in a user-specified order.')
+						),
+						'colorFirstItem' => array(
+							'formatType' => FT_TEXT,
+							'displayType' => DT_COLORPICKER,
+							'width' => "10", 'height' => "1",
+							'takesLocale' => false,
+							'default' => '',
+							'label' => _t('First item color'),
+							'description' => _t('If set first item in list will use this color.')
+						),
+						'colorLastItem' => array(
+							'formatType' => FT_TEXT,
+							'displayType' => DT_COLORPICKER,
+							'width' => "10", 'height' => "1",
+							'takesLocale' => false,
+							'default' => '',
+							'label' => _t('Last item color'),
+							'description' => _t('If set last item in list will use this color.')
 						),
 						'dontShowDeleteButton' => array(
 							'formatType' => FT_TEXT,
