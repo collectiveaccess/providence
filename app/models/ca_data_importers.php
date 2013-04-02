@@ -1294,12 +1294,11 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 			// Get type
 			if ($vn_type_id_mapping_item_id) {
 				// Type is specified in row
-				$vs_type = ca_data_importers::getValueFromSource($va_mapping_items[$va_mandatory_field_mapping_ids[$vs_type_id_fld]], $o_reader);
+				$vs_type = ca_data_importers::getValueFromSource($va_mapping_items[$vn_type_id_mapping_item_id], $o_reader);
 			} else {
 				// Type is constant for all rows
 				$vs_type = $vs_type_mapping_setting;	
 			}
-			
 			
 			// Get idno
 			$vs_idno = null;
