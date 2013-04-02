@@ -145,7 +145,7 @@ class MARCDataReader extends BaseDataReader {
 						if (strlen($vs_ind1) && ($vs_ind1 != $o_field->getIndicator(1))) { continue; }
 						if (strlen($vs_ind2) && ($vs_ind2 != $o_field->getIndicator(2))) { continue; }
 				
-						$o_subfield = $o_field->getSubfields($ps_subcode);
+						$o_subfield = $o_field->getSubfield($ps_subcode);
 						$va_content[] = $o_subfield->getData();
 						break;
 				}
