@@ -1753,6 +1753,7 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 									default:
 										if ($t_subject->hasField($vs_element)) {
 											$t_subject->set($vs_element, $va_element_content[$vs_element]);
+											$t_subject->update();
 											break;
 										}
 									
