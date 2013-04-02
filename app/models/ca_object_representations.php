@@ -103,7 +103,7 @@ BaseModel::$s_ca_models_definitions['ca_object_representations'] = array(
 		'media_metadata' => array(
 				'FIELD_TYPE' => FT_VARS, 'DISPLAY_TYPE' => DT_OMIT, 
 				'DISPLAY_WIDTH' => 88, 'DISPLAY_HEIGHT' => 15,
-				'IS_NULL' => false, 
+				'IS_NULL' => true, 
 				'DEFAULT' => '',
 				'DONT_PROCESS_DURING_INSERT_UPDATE' => true,
 				
@@ -114,7 +114,7 @@ BaseModel::$s_ca_models_definitions['ca_object_representations'] = array(
 		'media_content' => array(
 				'FIELD_TYPE' => FT_TEXT, 'DISPLAY_TYPE' => DT_OMIT, 
 				'DISPLAY_WIDTH' => 88, 'DISPLAY_HEIGHT' => 15,
-				'IS_NULL' => false, 
+				'IS_NULL' => true, 
 				'DEFAULT' => '',
 				'DONT_PROCESS_DURING_INSERT_UPDATE' => true,
 				

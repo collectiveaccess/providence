@@ -1160,7 +1160,12 @@
 			$o_view->setVar('failed_update_attribute_list', $this->getFailedAttributeUpdates($pm_element_code_or_id));
 		
 			// set the list of existing attributes for the current row
-			$o_view->setVar('attribute_list', $this->getAttributesByElement($t_element->get('element_id')));
+			
+			$vs_sort = $pa_bundle_settings['sort'];
+			$vs_sort_dir = $pa_bundle_settings['sortDirection'];
+			$va_attribute_list = $this->getAttributesByElement($t_element->get('element_id'), array('sort' => $vs_sort, 'sortDirection' => $vs_sort_dir));
+			
+			$o_view->setVar('attribute_list', $va_attribute_list);
 			
 			// pass list of element default values
 			$o_view->setVar('element_value_defaults', $va_element_value_defaults);
@@ -1293,7 +1298,16 @@
 			return $va_attributes_without_element_ids;
 		}
 		# ------------------------------------------------------------------
-		// returns an array of all attributes with the specified element_id attached to the current row
+		/**
+		 * Returns an array of all attributes with the specified element_id attached to the current row
+		 *
+		 * @param mixed $pm_element_code_or_id
+		 * @param array $pa_options Options include
+		 *		sort = 
+		 *		sortDirection = 
+		 *
+		 * @return array
+		 */
 		public function getAttributesByElement($pm_element_code_or_id, $pa_options=null) {
 			if (isset($pa_options['row_id']) && $pa_options['row_id']) {
 				$vn_row_id = $pa_options['row_id'];
@@ -1305,7 +1319,38 @@
 			$vn_element_id = $this->_getElementID($pm_element_code_or_id);
 			$va_attributes = ca_attributes::getAttributes($this->getDb(), $this->tableNum(), $vn_row_id, array($vn_element_id), array());
 		
-			return is_array($va_attributes[$vn_element_id]) ? $va_attributes[$vn_element_id] : array();
+			$va_attribute_list =  is_array($va_attributes[$vn_element_id]) ? $va_attributes[$vn_element_id] : array();
+			
+			$vs_sort_dir = (isset($pa_options['sort']) && (in_array(strtolower($pa_options['sortDirection']), array('asc', 'desc')))) ? strtolower($pa_options['sortDirection']) : 'asc';	
+			if (isset($pa_options['sort']) && ($vs_sort = $pa_options['sort'])) {
+				$va_tmp = array();
+				foreach($va_attribute_list as $vn_id => $o_attribute) {
+					$va_attribute_values = $o_attribute->getValues();
+					foreach($va_attribute_values as $o_attribute_value) {
+						if ($o_attribute_value->getElementCode() == $vs_sort) {
+							$va_tmp[$o_attribute_value->getSortValue()][$vn_id] = $o_attribute;
+						}
+					}
+				}
+				
+				ksort($va_tmp);
+			
+				if ($vs_sort_dir == 'desc') {
+					$va_tmp = array_reverse($va_tmp);
+				}
+				
+				$va_attribute_list = array();
+				foreach($va_tmp as $vs_key => $va_attr_values) {
+					$va_attribute_list += $va_attr_values;
+				}
+			} else {
+				// handle reverse sorting of "natural" (creation) order
+				if ($vs_sort_dir == 'desc') {
+					$va_attribute_list = array_reverse($va_attribute_list);
+				}
+			}
+			
+			return $va_attribute_list;
 		}
 		# ------------------------------------------------------------------
 		/**
