@@ -239,7 +239,7 @@
 		 * 	'name' => sets the name of the HTML form element explicitly, otherwise 'setting_<name_of_setting>' is used
 		 * 	'id' => sets the id of the HTML form element explicitly, otherwise 'setting_<name_of_setting>' is used
 		 *  'value' => sets the value of the HTML form element explicitly, otherwise the current value for the setting in the loaded row is used
-		 * 'label_id' => sets the id of the label for the setting form element (used to link tools tips to the label); if not set then the default is to set it to  'setting_<name_of_setting>_label'
+		 *  'label_id' => sets the id of the label for the setting form element (used to link tools tips to the label); if not set then the default is to set it to  'setting_<name_of_setting>_label'
 		 */ 
 		public function settingHTMLFormElement($ps_setting, $pa_options=null) {
 			if(!$this->isValidSetting($ps_setting)) {
@@ -421,7 +421,7 @@
 							$vs_select_element = caHTMLSelect($vs_input_name, $va_rel_opts, $va_attr, $va_opts);
 						}
 					} else {
-						if ($va_properties['showSortableBundlesFor']) {
+						if (strlen($va_properties['showSortableBundlesFor']) > 0) {
  							require_once(__CA_MODELS_DIR__.'/ca_metadata_elements.php');
  							
  							$o_dm = Datamodel::load();
@@ -432,11 +432,34 @@
 							
 							$va_select_opts = array(
 								_t('User defined sort order') => '',
+								_t('Order created') => 'relation_id',		// forces sorting by relationship primary key  - aka order relationships were created
 								_t('Preferred label') => $va_properties['showSortableBundlesFor'].".preferred_labels.".$t_rel->getLabelDisplayField()
 							);
 							foreach($va_elements as $vn_element_id => $va_element) {
 								if(!$va_element['display_label']) { continue; }
 								$va_select_opts[_t('Element: %1', $va_element['display_label'])] = $va_properties['showSortableBundlesFor'].".".$va_element['element_code'];
+							}
+							
+							$va_opts = array('id' => $vs_input_id, 'width' => $vn_width, 'height' => $vn_height, 'value' => is_array($vs_value) ? $vs_value[0] : $vs_value, 'values' => is_array($vs_value) ? $vs_value : array($vs_value));
+							$vs_select_element = caHTMLSelect($vs_input_name, $va_select_opts, array(), $va_opts);
+						} elseif((int)$va_properties['showSortableElementsFor'] > 0) {
+							require_once(__CA_MODELS_DIR__.'/ca_metadata_elements.php');
+ 							$o_dm = Datamodel::load();
+ 							if (!($t_rel = $o_dm->getInstanceByTableNum($va_properties['showSortableElementsFor'], true))) {
+ 								break;
+ 							}
+ 							
+ 							$t_element = new ca_metadata_elements($va_properties['showSortableElementsFor']);
+ 							if (!$t_element->getPrimaryKey()) { return ''; }
+ 							$va_elements = $t_element->getElementsInSet();
+							
+							$va_select_opts = array(
+								_t('Order created') => '',
+							);
+							foreach($va_elements as $vn_i => $va_element) {
+								if ((int)$va_element['element_id'] == (int)$va_properties['showSortableElementsFor']) { continue; }
+								if(!$va_element['display_label']) { continue; }
+								$va_select_opts[_t('Element: %1', $va_element['display_label'])] = $va_element['element_code'];
 							}
 							
 							$va_opts = array('id' => $vs_input_id, 'width' => $vn_width, 'height' => $vn_height, 'value' => is_array($vs_value) ? $vs_value[0] : $vs_value, 'values' => is_array($vs_value) ? $vs_value : array($vs_value));

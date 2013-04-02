@@ -427,44 +427,44 @@ class ca_editor_ui_screens extends BundlableLabelableBaseModelWithAttributes {
 					);
 					break;
 				case 'attribute':
+					$va_additional_settings = array(
+						'sort' => array(
+							'formatType' => FT_TEXT,
+							'displayType' => DT_SELECT,
+							'width' => "200px", 'height' => "1",
+							'takesLocale' => false,
+							'default' => '1',
+							'label' => _t('Sort using'),
+							'showSortableElementsFor' => $va_elements[preg_replace('!ca_attribute_!', '', $vs_bundle)]['element_id'],
+							'description' => _t('Method used to sort repeating values.')
+						),
+						'sortDirection' => array(
+							'formatType' => FT_TEXT,
+							'displayType' => DT_SELECT,
+							'width' => "200px", 'height' => "1",
+							'takesLocale' => false,
+							'default' => 'ASC',
+							'options' => array(
+								_t('Ascending') => 'ASC',
+								_t('Descending') => 'DESC'
+							),
+							'label' => _t('Sort direction'),
+							'description' => _t('Direction of sort.')
+						)
+					);
 					if ($va_elements[preg_replace('!ca_attribute_!', '', $vs_bundle)]['datatype'] == 1) {		// 1=text
-						$va_additional_settings = array(
-							'usewysiwygeditor' => array(
-								'formatType' => FT_TEXT,
-								'displayType' => DT_SELECT,
-								'options' => array(
-									_t('yes') => 1,
-									_t('no') => 0,
-									_t('use default') => null
-								),
-								'default' => '',
-								'width' => "100px", 'height' => 1,
-								'label' => _t('Use rich text editor'),
-								'description' => _t('Check this option if you want to use a word-processor like editor with this text field. If you expect users to enter rich text (italic, bold, underline) then you might want to enable this.')
+						$va_additional_settings['usewysiwygeditor'] = array(
+							'formatType' => FT_TEXT,
+							'displayType' => DT_SELECT,
+							'options' => array(
+								_t('yes') => 1,
+								_t('no') => 0,
+								_t('use default') => null
 							),
-							'sort' => array(
-								'formatType' => FT_TEXT,
-								'displayType' => DT_SELECT,
-								'width' => "200px", 'height' => "1",
-								'takesLocale' => false,
-								'default' => '1',
-								'label' => _t('Sort using'),
-								//'showSortableBundlesFor' => $t_rel->tableName(),
-								'description' => _t('Method used to sort repeating values.')
-							),
-							'sortDirection' => array(
-								'formatType' => FT_TEXT,
-								'displayType' => DT_SELECT,
-								'width' => "200px", 'height' => "1",
-								'takesLocale' => false,
-								'default' => 'ASC',
-								'options' => array(
-									_t('Ascending') => 'ASC',
-									_t('Descending') => 'DESC'
-								),
-								'label' => _t('Sort direction'),
-								'description' => _t('Direction of sort.')
-							)
+							'default' => '',
+							'width' => "100px", 'height' => 1,
+							'label' => _t('Use rich text editor'),
+							'description' => _t('Check this option if you want to use a word-processor like editor with this text field. If you expect users to enter rich text (italic, bold, underline) then you might want to enable this.')
 						);
 					}
 					break;
