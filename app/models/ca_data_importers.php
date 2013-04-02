@@ -1355,7 +1355,7 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 						break;
 					case 'merge_on_idno_and_preferred_labels':
 					case 'merge_on_idno':
-						if (!$vb_idno_is_template && $t_subject->load(array('idno' => $vs_idno))) {
+						if (!$vb_idno_is_template && $t_subject->load(array($t_subject->getProperty('ID_NUMBERING_ID_FIELD') => $vs_idno))) {
 							$o_log->logInfo(_t('[%1] Merged with existing record matched on identifer by policy %2', $vs_idno, $vs_existing_record_policy));
 							break;
 						}
@@ -1489,7 +1489,6 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 					if (isset($va_item['settings']['default']) && strlen($va_item['settings']['default']) && !strlen($vm_val)) {
 						$vm_val = $va_item['settings']['default'];
 					}
-					
 					
 					if (($vn_type_id_mapping_item_id && ($vn_item_id == $vn_type_id_mapping_item_id)) || (in_array($vn_item_id, $va_mandatory_field_mapping_ids))) {
 						if ($va_parent && is_array($va_parent)) { array_pop($va_parent); }	// remove empty container array
