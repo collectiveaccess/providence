@@ -211,7 +211,15 @@
 		# -------------------------------------------------------
 		private function getElements() {
 			if (($vs_format = $this->getFormat()) && ($vs_type = $this->getType())) {
-				return $this->opa_formats[$vs_format][$vs_type]['elements'];
+				if (is_array($this->opa_formats[$vs_format][$vs_type]['elements'])) {
+					$vb_is_child = $this->isChild();
+					$va_elements = array();
+					foreach($this->opa_formats[$vs_format][$vs_type]['elements'] as $vs_k => $va_element_info) {
+						if (!$vb_is_child && isset($va_element_info['child_only']) && (bool)$va_element_info['child_only']) { continue; }
+						$va_elements[$vs_k] = $va_element_info;
+					}
+				}
+				return $va_elements;
 			}
 			return null;
 		}
@@ -667,10 +675,23 @@
 		}
 		# -------------------------------------------------------
 		/**
+		 * Generates an id numbering template (text with "%" characters where serial values should be inserted)
+		 * from a value. The elements in the value that are generated as SERIAL incrementing numbers will be replaced
+		 * with "%" characters, resulting is a template suitable for use with BundlableLabelableBaseModelWithAttributes::setIdnoTWithTemplate
+		 * If the $pb_no_placeholders parameter is set to true then SERIAL values are omitted altogether from the returned template.
 		 *
+		 * Note that when the number of element replacements is limited, the elements are counted right-to-left. This means that
+		 * if you limit the template to two replacements, the *rightmost* two SERIAL elements will be replaced with placeholders.
 		 *
+		 * @see BundlableLabelableBaseModelWithAttributes::setIdnoTWithTemplate
+		 *
+		 * @param string $ps_value The id number to use as the basis of the template
+		 * @param int $pn_max_num_replacements The maximum number of elements to replace with placeholders. Set to 0 (or omit) to replace all SERIAL elements.
+		 * @param bool $pb_no_placeholders If set SERIAL elements are omitted altogether rather than being replaced with placeholder values
+		 *
+		 * @return string A template
 		 */
-		public function makeTemplateFromValue($ps_value, $pn_max_num_replacements=0) {
+		public function makeTemplateFromValue($ps_value, $pn_max_num_replacements=0, $pb_no_placeholders=false) {
 			$vs_separator = $this->getSeparator();
 			$va_values = explode($vs_separator, $ps_value);
 			
@@ -689,9 +710,11 @@
 					$vn_num_serial_elements_seen++;
 						
 					if ($pn_max_num_replacements <= 0) {	// replace all
+						if ($pb_no_placeholders) { unset($va_values[$vn_i]); $vn_i++; continue; }
 						$va_values[$vn_i] = '%';
 					} else {
 						if (($vn_num_serial_elements - $vn_num_serial_elements_seen) < $pn_max_num_replacements) {
+							if ($pb_no_placeholders) { unset($va_values[$vn_i]); $vn_i++; continue; }
 							$va_values[$vn_i] = '%';
 						}
 					}

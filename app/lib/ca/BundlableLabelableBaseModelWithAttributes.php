@@ -78,6 +78,9 @@ class BundlableLabelableBaseModelWithAttributes extends LabelableBaseModelWithAt
 		}
 		$this->initLabelDefinitions();
 		
+		if ($this->isHierarchical() && $this->opo_idno_plugin_instance) {
+			$this->opo_idno_plugin_instance->isChild((($vs_parent_id_fld = $this->getProperty('HIERARCHY_PARENT_ID_FLD')) && $this->get($vs_parent_id_fld) > 0) ? true : false);
+		}
 		return $vn_rc;
 	}
 	# ------------------------------------------------------
@@ -443,8 +446,19 @@ class BundlableLabelableBaseModelWithAttributes extends LabelableBaseModelWithAt
 			return false;
 		}
 		
-		if (in_array($this->getProperty('ID_NUMBERING_ID_FIELD'), $pa_fields)) {
-			if (!$this->_validateIncomingAdminIDNo(true, true)) { return false; }
+		if ($this->opo_idno_plugin_instance) {
+			// If attempting to set parent_id, then flag record as child for id numbering purposes
+			$this->opo_idno_plugin_instance->isChild(((($vs_parent_id_fld = $this->getProperty('HIERARCHY_PARENT_ID_FLD')) && isset($pa_fields[$vs_parent_id_fld]) && ($pa_fields[$vs_parent_id_fld] > 0)) || ($this->get($vs_parent_id_fld))) ? true : false);
+		
+			if (in_array($this->getProperty('ID_NUMBERING_ID_FIELD'), $pa_fields)) {
+				if (!$this->_validateIncomingAdminIDNo(true, true)) { 
+					if (!$this->get($vs_parent_id_fld) && isset($pa_fields[$vs_parent_id_fld]) && ($pa_fields[$vs_parent_id_fld] > 0)) {
+						// If we failed to set parent_id and there wasn't a parent_id set already then revert child status in id numbering
+						$this->opo_idno_plugin_instance->isChild(false); 
+					}
+					return false; 
+				}
+			}
 		}
 		
 		return parent::set($pa_fields, "", $pa_options);
@@ -4094,6 +4108,11 @@ if (!$vb_batch) {
 			&&
 			$pa_options['request']
 		) {
+			
+			if ($this->get($this->getProperty('HIERARCHY_PARENT_ID_FLD'))) { $this->opo_idno_plugin_instance->isChild(true); }	// if it has a parent_id then set the id numbering plugin using "child_only" numbering schemes (if defined)
+			if (!$this->getPrimaryKey() && $this->opo_idno_plugin_instance->isChild()) {
+				$this->set('idno', $this->opo_idno_plugin_instance->makeTemplateFromValue($this->get('idno'), 1, true));	// chop off last serial element
+			}
 			$this->opo_idno_plugin_instance->setValue($this->get($ps_field));
 			if (method_exists($this, "getTypeCode")) { $this->opo_idno_plugin_instance->setType($this->getTypeCode()); }
 			$vs_element = $this->opo_idno_plugin_instance->htmlFormElement(
