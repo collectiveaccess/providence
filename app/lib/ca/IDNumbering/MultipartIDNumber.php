@@ -659,15 +659,52 @@
 			return join($vs_separator, $va_element_controls).$vs_js;
 		}
 		# -------------------------------------------------------
-		public function htmlFormValue($ps_name, $vs_value=null, $pb_dont_mark_serial_value_as_used=false, $pb_generate_for_search_form=false, $pb_always_generate_serial_values=false) {
-			$va_tmp = $this->htmlFormValuesAsArray($ps_name, $vs_value, $pb_dont_mark_serial_value_as_used, $pb_generate_for_search_form, $pb_always_generate_serial_values);
+		public function htmlFormValue($ps_name, $ps_value=null, $pb_dont_mark_serial_value_as_used=false, $pb_generate_for_search_form=false, $pb_always_generate_serial_values=false) {
+			$va_tmp = $this->htmlFormValuesAsArray($ps_name, $ps_value, $pb_dont_mark_serial_value_as_used, $pb_generate_for_search_form, $pb_always_generate_serial_values);
 			if (!($vs_separator = $this->getSeparator())) { $vs_separator = ''; }
 			
 			return (is_array($va_tmp)) ? join($vs_separator, $va_tmp) : null;	
 		}
 		# -------------------------------------------------------
-		public function htmlFormValuesAsArray($ps_name, $vs_value=null, $pb_dont_mark_serial_value_as_used=false, $pb_generate_for_search_form=false, $pb_always_generate_serial_values=false) {
-			if (is_null($vs_value)) {
+		/**
+		 *
+		 *
+		 */
+		public function makeTemplateFromValue($ps_value, $pn_max_num_replacements=0) {
+			$vs_separator = $this->getSeparator();
+			$va_values = explode($vs_separator, $ps_value);
+			
+			$va_elements = $this->getElements();
+			$vn_num_serial_elements = 0;
+			foreach($va_elements as $vs_element_name => $va_element_info) {
+				if ($va_element_info['type'] == 'SERIAL') { $vn_num_serial_elements++; }
+			}
+			
+			$vn_i = 0;
+			$vn_num_serial_elements_seen = 0;
+			foreach($va_elements as $vs_element_name => $va_element_info) {
+				if ($vn_i >= sizeof($va_values)) { break; }
+				
+				if ($va_element_info['type'] == 'SERIAL') {
+					$vn_num_serial_elements_seen++;
+						
+					if ($pn_max_num_replacements <= 0) {	// replace all
+						$va_values[$vn_i] = '%';
+					} else {
+						if (($vn_num_serial_elements - $vn_num_serial_elements_seen) < $pn_max_num_replacements) {
+							$va_values[$vn_i] = '%';
+						}
+					}
+				}
+				
+				$vn_i++;
+			}
+			
+			return join($vs_separator, $va_values);
+		}
+		# -------------------------------------------------------
+		public function htmlFormValuesAsArray($ps_name, $ps_value=null, $pb_dont_mark_serial_value_as_used=false, $pb_generate_for_search_form=false, $pb_always_generate_serial_values=false) {
+			if (is_null($ps_value)) {
 				if(isset($_REQUEST[$ps_name]) && $_REQUEST[$ps_name]) { return $_REQUEST[$ps_name]; }
 			}
 			if (!is_array($va_element_list = $this->getElements())) { return null; }
@@ -675,11 +712,11 @@
 			$va_element_names = array_keys($va_element_list);
 			$vs_separator = $this->getSeparator();
 			$va_element_values = array();
-			if ($vs_value) {
+			if ($ps_value) {
 				if ($vs_separator) {
-					$va_tmp = explode($vs_separator, $vs_value);
+					$va_tmp = explode($vs_separator, $ps_value);
 				} else {
-					$va_tmp = array($vs_value);
+					$va_tmp = array($ps_value);
 				}
 				foreach($va_element_names as $vs_element_name) {
 					if (!sizeof($va_tmp)) { break; }
@@ -770,9 +807,9 @@
 						if ($pb_generate_for_search_form) {
 							$vs_element .= "<option value='' SELECTED='1'>-</option>";
 						}
-						foreach($va_element_info['values'] as $vs_value) {
-							if ($vs_value == $vs_element_value) { $SELECTED = 'SELECTED="1"'; } else { $SELECTED = ''; }
-							$vs_element .= '<option '.$SELECTED.'>'.$vs_value.'</option>';
+						foreach($va_element_info['values'] as $ps_value) {
+							if ($ps_value == $vs_element_value) { $SELECTED = 'SELECTED="1"'; } else { $SELECTED = ''; }
+							$vs_element .= '<option '.$SELECTED.'>'.$ps_value.'</option>';
 						}
 						
 						if (!$pb_generate_for_search_form) {

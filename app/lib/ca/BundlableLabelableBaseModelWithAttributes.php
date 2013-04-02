@@ -48,9 +48,7 @@ define('__CA_BUNDLE_ACCESS_EDIT__', 2);
 
 class BundlableLabelableBaseModelWithAttributes extends LabelableBaseModelWithAttributes implements IBundleProvider {
 	# ------------------------------------------------------
-	protected $BUNDLES = array(
-		
-	);
+	protected $BUNDLES = array();
 	
 	protected $opo_idno_plugin_instance;
 	
@@ -323,30 +321,38 @@ class BundlableLabelableBaseModelWithAttributes extends LabelableBaseModelWithAt
 		
 		// Calculate identifier using numbering plugin
 		if ($vs_idno_fld) {
+			$vb_needs_suffix_generated = false;
 			if (method_exists($this, "getIDNoPlugInInstance") && ($o_numbering_plugin = $this->getIDNoPlugInInstance())) {
-				if (!($vs_sep = $o_numbering_plugin->getSeparator())) { $vs_sep = '-'; }
-				if (!is_array($va_idno_values = $o_numbering_plugin->htmlFormValuesAsArray($vs_idno_fld, $this->get($vs_idno_fld), false, false, true))) { $va_idno_values = array(); }
+				if (!($vs_sep = $o_numbering_plugin->getSeparator())) { $vs_sep = '-'; }	// Must have a separator or you can get inexplicable numbers as numeric increments are appended string-style
+				
+				$vs_idno_template = $o_numbering_plugin->makeTemplateFromValue($this->get($vs_idno_fld), 1);	// make template out of original idno by replacing last SERIAL element with "%"
+				if (!preg_match("!%$!", $vs_idno_template)) { $vb_needs_suffix_generated = true; }
+				
+				if (!is_array($va_idno_values = $o_numbering_plugin->htmlFormValuesAsArray($vs_idno_fld, $vs_idno_template, false, false, false))) { $va_idno_values = array(); }
 
-				$t_dupe->set($vs_idno_fld, join($vs_sep, $va_idno_values));	// true=always set serial values, even if they already have a value; this let's us use the original pattern while replacing the serial value every time through
+				$t_dupe->set($vs_idno_fld, $vs_idno = join($vs_sep, $va_idno_values));	
 			} 
 			
 			if (!($vs_idno_stub = trim($t_dupe->get($vs_idno_fld)))) {
 				$vs_idno_stub = trim($this->get($vs_idno_fld));
 			}
+	
 			if ($vs_idno_stub) {
-				$t_lookup = $this->_DATAMODEL->getInstanceByTableName($this->tableName());
+				if ($vb_needs_suffix_generated) {
+					$t_lookup = $this->_DATAMODEL->getInstanceByTableName($this->tableName());
 				
-				$va_tmp = $vs_sep ? preg_split("![{$vs_sep}]+!", $vs_idno_stub) : array($vs_idno_stub);
-				$vs_suffix = is_array($va_tmp) ? array_pop($va_tmp) : '';
-				if (!is_numeric($vs_suffix)) { 
-					$vs_suffix = 0; 
-				} else {
-					$vs_idno_stub = preg_replace("!{$vs_suffix}$!", '', $vs_idno_stub);	
+					$va_tmp = $vs_sep ? preg_split("![{$vs_sep}]+!", $vs_idno_stub) : array($vs_idno_stub);
+					$vs_suffix = is_array($va_tmp) ? array_pop($va_tmp) : '';
+					if (!is_numeric($vs_suffix)) { 
+						$vs_suffix = 0; 
+					} else {
+						$vs_idno_stub = preg_replace("!{$vs_suffix}$!", '', $vs_idno_stub);	
+					}
+					do {
+						$vs_suffix = (int)$vs_suffix + 1;
+						$vs_idno = trim($vs_idno_stub).$vs_sep.trim($vs_suffix);	// force separator if none defined otherwise you end up with agglutinative numbers
+					} while($t_lookup->load(array($vs_idno_fld => $vs_idno)));
 				}
-				do {
-					$vs_suffix = (int)$vs_suffix + 1;
-					$vs_idno = trim($vs_idno_stub).$vs_sep.trim($vs_suffix);	// force separator if none defined otherwise you end up with agglutinative numbers
-				} while($t_lookup->load(array($vs_idno_fld => $vs_idno)));
 			} else {
 				$vs_idno = "???";
 			}
