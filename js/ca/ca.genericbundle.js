@@ -41,6 +41,7 @@ var caUI = caUI || {};
 			templateClassName: 'caItemTemplate',
 			initialValueTemplateClassName: 'caItemTemplate',
 			itemListClassName: 'caItemList',
+			listItemClassName: 'caRelatedItem',
 			itemClassName: 'labelInfo',
 			localeClassName: 'labelLocale',
 			addButtonClassName: 'caAddItemButton',
@@ -61,6 +62,8 @@ var caUI = caUI || {};
 			readonly: 0,
 			
 			sortInitialValuesBy: null,
+			firstItemColor: null,
+			lastItemColor: null,
 			
 			isSortable: false,
 			listSortOrderID: null,
@@ -322,7 +325,18 @@ var caUI = caUI || {};
 			if (this.getCount() >= this.maxRepeats) {
 				jQuery(this.container + " ." + this.addButtonClassName).hide();	
 			} else {
-				jQuery(this.container + " ." + this.addButtonClassName).show(200);
+				jQuery(this.container).show(200);
+			}
+			
+			// colorize
+			if ((options.firstItemColor) || (options.lastItemColor)) {
+				jQuery(this.container + " ." + options.listItemClassName).css('background-color', '');
+				if (options.firstItemColor) {
+					jQuery(this.container + " ." + options.listItemClassName + ":first").css('background-color', '#' + options.firstItemColor);
+				}
+				if (options.lastItemColor) {
+					jQuery(this.container + " ." + options.listItemClassName + ":last").css('background-color', '#' + options.lastItemColor);
+				}
 			}
 			return this;
 		};
@@ -427,6 +441,10 @@ var caUI = caUI || {};
 			if (that.listSortItems) {
 				opts['items'] = that.listSortItems;
 			}
+			opts['stop'] = function(e, ui) {
+				that.updateBundleFormState();
+			};
+			
 			jQuery(that.container + " .caItemList").sortable(opts);
 			
 			that._updateSortOrderListIDFormElement();

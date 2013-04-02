@@ -3991,13 +3991,20 @@ if (!$vb_batch) {
 		//
 		if (is_array($va_sort_fields) && sizeof($va_rels)) {
 			$va_ids = array();
+			$vs_rel_pk = $t_rel_item->primaryKey();
 			foreach($va_rels as $vn_i => $va_rel) {
-				$va_ids[] = $va_rel[$t_rel_item->primaryKey()];
+				$va_ids[] = $va_rel[$vs_rel_pk];
 			}
 			
 			// Handle sorting on attribute values
 			$vs_rel_pk = $t_rel_item->primaryKey();
-			foreach($va_sort_fields as $vs_sort_field) {
+			foreach($va_sort_fields as $vn_x => $vs_sort_field) {
+				if ($vs_sort_field == 'relation_id') { // sort by relationship primary key
+					if ($t_item_rel) { 
+						$va_sort_fields[$vn_x] = $vs_sort_field = $t_item_rel->tableName().'.'.$t_item_rel->primaryKey();
+					} 
+					continue;
+				}
 				$va_tmp = explode('.', $vs_sort_field);
 				if ($va_tmp[0] == $vs_related_table_name) {
 					$qr_rel = $t_rel_item->makeSearchResult($va_tmp[0], $va_ids);
@@ -4013,7 +4020,6 @@ if (!$vb_batch) {
 							}
 						}
 					}
-					
 				}
 			}
 			
