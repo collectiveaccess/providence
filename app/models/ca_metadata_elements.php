@@ -296,10 +296,18 @@ class ca_metadata_elements extends LabelableBaseModelWithAttributes implements I
 		$va_hier = $this->getHierarchyAsList($pn_element_id);
 		$va_element_set = array();
 		
+		$va_element_ids = array();
+		foreach($va_hier as $va_element) {
+			$va_element_ids[] = $va_element['NODE']['element_id'];
+		}
+		
+		// Get labels
+		$va_labels = $this->getPreferredDisplayLabelsForIDs($va_element_ids);
+		
 		$va_root = null;
 		foreach($va_hier as $va_element) {
 			$va_element['NODE']['settings'] = unserialize(base64_decode($va_element['NODE']['settings']));	// decode settings vars into associative array
-			
+			$va_element['NODE']['display_label'] = $va_labels[$va_element['NODE']['element_id']];
 			if (!trim($va_element['NODE']['parent_id'])) {
 				$va_root = $va_element['NODE'];
 			} else {
