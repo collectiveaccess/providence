@@ -137,16 +137,16 @@ class MARCDataReader extends BaseDataReader {
 		if ($o_fields = $o_record->getFields($ps_code)) {
 			$va_content = array();
 			foreach($o_fields as $o_field) {
-				switch(get_class($o_field)) {
+				switch($vs_class = get_class($o_field)) {
 					case 'File_MARC_Control_Field':
 						continue;
 						break;
 					default:
 						if (strlen($vs_ind1) && ($vs_ind1 != $o_field->getIndicator(1))) { continue; }
 						if (strlen($vs_ind2) && ($vs_ind2 != $o_field->getIndicator(2))) { continue; }
-				
+			
 						$o_subfield = $o_field->getSubfield($ps_subcode);
-						$va_content[] = $o_subfield->getData();
+						$va_content[] = is_object($o_subfield) ? $o_subfield->getData() : '';
 						break;
 				}
 			}
@@ -179,7 +179,7 @@ class MARCDataReader extends BaseDataReader {
 							if (!($vs_ind1 = $o_field->getIndicator(1))) { $vs_ind1 = "#"; }
 							if (!($vs_ind2 = $o_field->getIndicator(2))) { $vs_ind2 = "#"; }
 					
-							$va_row[$o_field->getTag().'/'.$o_subfield->getCode()] = $va_row[$o_field->getTag().'/'.$o_subfield->getCode().'/'.$vs_ind1.$vs_ind2] = $o_subfield->getData();
+							$va_row[$o_field->getTag().'/'.$o_subfield->getCode()] = $va_row[$o_field->getTag().'/'.$o_subfield->getCode().'/'.$vs_ind1.$vs_ind2] = is_object($o_subfield) ? $o_subfield->getData() : '';
 						 }
 						 break;
 				}
