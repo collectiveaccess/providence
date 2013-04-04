@@ -81,6 +81,7 @@ class WLPlugMediaGraphicsMagick Extends BaseMediaPlugin Implements IWLPlugMedia 
 			"image/x-sony-sr2"	=> "sr2",
 			"image/x-sony-srf"	=> "srf",
 			"image/x-sigma-x3f"	=> "x3f",
+			"application/dicom" => "dcm",
 		),
 		"EXPORT" => array(
 			"image/jpeg" 		=> "jpg",
@@ -104,6 +105,7 @@ class WLPlugMediaGraphicsMagick Extends BaseMediaPlugin Implements IWLPlugMedia 
 			"image/x-sony-sr2"	=> "sr2",
 			"image/x-sony-srf"	=> "srf",
 			"image/x-sigma-x3f"	=> "x3f",
+			"application/dicom" => "dcm",
 		),
 		"TRANSFORMATIONS" => array(
 			"SCALE" 			=> array("width", "height", "mode", "antialiasing", "trim_edges", "crop_from"),
@@ -140,7 +142,7 @@ class WLPlugMediaGraphicsMagick Extends BaseMediaPlugin Implements IWLPlugMedia 
 			'version'			=> 'W'	// required of all plug-ins
 		),
 		
-		"NAME" => "ImageMagick"
+		"NAME" => "GraphicsMagick"
 	);
 	
 	var $typenames = array(
@@ -165,6 +167,7 @@ class WLPlugMediaGraphicsMagick Extends BaseMediaPlugin Implements IWLPlugMedia 
 		"image/x-sony-sr2"	=> "Sony SR2 RAW Image",
 		"image/x-sony-srf"	=> "Sony SRF RAW Image",
 		"image/x-sigma-x3f"	=> "Sigma X3F RAW Image",
+		"application/dicom" => "DICOM medical imaging data",
 	);
 	
 	var $magick_names = array(
@@ -189,6 +192,7 @@ class WLPlugMediaGraphicsMagick Extends BaseMediaPlugin Implements IWLPlugMedia 
 		"image/x-sony-sr2"	=> "SR2",
 		"image/x-sony-srf"	=> "SRF",
 		"image/x-sigma-x3f"	=> "X3F",
+		"application/dicom" => "DCM",
 	);
 	
 	#
@@ -848,7 +852,66 @@ class WLPlugMediaGraphicsMagick Extends BaseMediaPlugin Implements IWLPlugMedia 
 	 */
 	# This method must be implemented for plug-ins that can output preview frames for videos or pages for documents
 	public function &writePreviews($ps_filepath, $pa_options) {
-		return null;
+		if(!caMediaPluginGraphicsMagickInstalled($this->ops_graphicsmagick_path)) { return false; }
+
+		if (!isset($pa_options['outputDirectory']) || !$pa_options['outputDirectory'] || !file_exists($pa_options['outputDirectory'])) {
+			if (!($vs_tmp_dir = $this->opo_config->get("taskqueue_tmp_directory"))) {
+				// no dir
+				return false;
+			}
+		} else {
+			$vs_tmp_dir = $pa_options['outputDirectory'];
+		}
+
+		$va_output = array();
+		exec($this->ops_graphicsmagick_path.' identify -format "%m\n" '.caEscapeShellArg($this->filepath)." 2> /dev/null", $va_output, $vn_return);
+
+		// don't extract previews from "normal" images (the output line count is always # of files + 1)
+		if(sizeof($va_output)<=2) { return false; } 
+
+		$vs_output_file_prefix = tempnam($vs_tmp_dir, 'caMultipagePreview');
+		$vs_output_file = $vs_output_file_prefix.'_%05d.jpg';
+
+		exec($this->ops_graphicsmagick_path.' convert '.caEscapeShellArg($this->filepath)." +adjoin ".$vs_output_file." 2> /dev/null", $va_output, $vn_return);
+
+		$vn_i = 0;
+		$va_files = array();
+		while(file_exists($vs_output_file_prefix.sprintf("_%05d", $vn_i).'.jpg')) {
+			// add image to list
+			$va_files[$vn_i] = $vs_output_file_prefix.sprintf("_%05d", $vn_i).'.jpg';
+			$vn_i++;
+		}
+
+		@unlink($vs_output_file_prefix);
+		return $va_files;
+	}
+	# ------------------------------------------------
+	public function joinArchiveContents($pa_files, $pa_options = array()) {
+		if(!is_array($pa_files)) { return false; }
+
+		if (!caMediaPluginGraphicsMagickInstalled($this->ops_graphicsmagick_path)) { return false; }
+
+		$vs_archive_original = tempnam(caGetTempDirPath(), "caArchiveOriginal");
+		@rename($vs_archive_original, $vs_archive_original.".tif");
+		$vs_archive_original = $vs_archive_original.".tif";
+
+		$va_acceptable_files = array();
+		foreach($pa_files as $vs_file){
+			if(file_exists($vs_file)){
+				if($this->_graphicsMagickIdentify($vs_file)){
+					$va_acceptable_files[] = $vs_file;
+				}
+			}
+		}
+
+		if(sizeof($va_acceptable_files)){
+			exec($this->ops_graphicsmagick_path." convert ".join(" ",$va_acceptable_files)." ".$vs_archive_original, $va_output, $vn_return);
+			if($vn_return === 0){
+				return $vs_archive_original;
+			}
+		}
+
+		return false;
 	}
 	# ------------------------------------------------
 	public function getOutputFormats() {
@@ -933,7 +996,7 @@ class WLPlugMediaGraphicsMagick Extends BaseMediaPlugin Implements IWLPlugMedia 
 	# ------------------------------------------------
 	private function _graphicsMagickIdentify($ps_filepath) {
 		if (caMediaPluginGraphicsMagickInstalled($this->ops_graphicsmagick_path)) {
-			exec($this->ops_graphicsmagick_path.' identify -format "%m;" '.caEscapeShellArg($ps_filepath)." 2> /dev/null", $va_output, $vn_return);
+			exec($this->ops_graphicsmagick_path.' identify -format "%m;" '.caEscapeShellArg($ps_filepath.'[0]')." 2> /dev/null", $va_output, $vn_return);
 			$va_types = explode(";", $va_output[0]);
 			return $this->magickToMimeType($va_types[0]);	// force use of first image in multi-page TIFF
 		}

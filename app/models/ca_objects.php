@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2008-2012 Whirl-i-Gig
+ * Copyright 2008-2013 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -40,6 +40,7 @@ require_once(__CA_MODELS_DIR__."/ca_object_representations.php");
 require_once(__CA_MODELS_DIR__."/ca_objects_x_object_representations.php");
 require_once(__CA_MODELS_DIR__."/ca_commerce_orders.php");
 require_once(__CA_MODELS_DIR__."/ca_commerce_order_items.php");
+require_once(__CA_MODELS_DIR__."/ca_object_lots.php");
 require_once(__CA_APP_DIR__."/helpers/mediaPluginHelpers.php");
 
 
@@ -414,6 +415,26 @@ class ca_objects extends BundlableLabelableBaseModelWithAttributes implements IB
 		$this->BUNDLES['hierarchy_location'] = array('type' => 'special', 'repeating' => false, 'label' => _t('Location in hierarchy'));
 		
 		$this->BUNDLES['ca_commerce_order_history'] = array('type' => 'special', 'repeating' => true, 'label' => _t('Order history'));
+	}
+	# ------------------------------------------------------
+	/**
+	 * Override set() to do idno_stub lookups on lots
+	 *
+	 */
+	public function set($pa_fields, $pm_value="", $pa_options=null) {
+		if (!is_array($pa_fields)) {
+			$pa_fields = array($pa_fields => $pm_value);
+		}
+		foreach($pa_fields as $vs_fld => $vs_val) {
+			if (($vs_fld == 'lot_id') && (preg_match("![\d]+!", $vs_val))) {
+				$t_lot = new ca_object_lots();
+				if ($t_lot->load(array('idno_stub' => $vs_val))) {
+					$vn_lot_id = (int)$t_lot->getPrimaryKey();
+					$pa_fields[$vs_fld] = $vn_lot_id;
+				}
+			}
+		}
+		return parent::set($pa_fields, null, $pa_options);
 	}
 	# ------------------------------------------------------
 	public function delete($pb_delete_related=false, $pa_options=null, $pa_fields=null, $pa_table_list=null){

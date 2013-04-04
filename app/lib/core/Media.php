@@ -246,6 +246,14 @@ class Media extends BaseObject {
 		return $this->instance->writePreviews($this->filepath, $pa_options);
 	}
 	# ----------------------------------------------------------
+	public function joinArchiveContents($pa_files, $pa_options = array()) {
+		if (!$this->instance) { return false; }
+	
+		if (!method_exists($this->instance, 'joinArchiveContents')) { return false; }
+		$this->instance->set('version', '');
+		return $this->instance->joinArchiveContents($pa_files, $pa_options);
+	}
+	# ----------------------------------------------------------
 	/**
 	 *
 	 */
