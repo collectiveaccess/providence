@@ -527,9 +527,9 @@ class SearchEngine extends SearchBase {
 							$va_row = $qr_sort->getRow();
 							if (!$va_row['row_id']) { continue; }
 							if ($vn_num_locales > 1) {
-								$va_sorted_hits[$va_row['row_id']][$va_row['locale_id']] = trim(str_replace(array("'", '"'), array('', ''), $va_row[$vs_sort_field]));
+								$va_sorted_hits[$va_row['row_id']][$va_row['locale_id']] .= trim(str_replace(array("'", '"'), array('', ''), $va_row[$vs_sort_field]));
 							} else {
-								$va_sorted_hits[$va_row['row_id']] = trim(str_replace(array("'", '"'), array('', ''), $va_row[$vs_sort_field]));
+								$va_sorted_hits[$va_row['row_id']] .= trim(str_replace(array("'", '"'), array('', ''), $va_row[$vs_sort_field]));
 							}
 							unset($pa_hits[$va_row['row_id']]);
 						}

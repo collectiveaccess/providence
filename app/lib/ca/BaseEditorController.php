@@ -171,8 +171,10 @@
  				}
  			}
  			
- 			// get default screen
  			
+ 			//
+ 			// get default screen
+ 			//
  			if (!($vn_type_id = $t_subject->getTypeID())) {
  				$vn_type_id = $this->request->getParameter($t_subject->getTypeFieldName(), pInteger);
  			}
@@ -909,6 +911,12 @@
  				// an existing record since it is only relevant for newly created records.
  				if (!$vn_subject_id) {
  					$this->view->setVar('above_id', $vn_above_id = $this->request->getParameter('above_id', pInteger));
+ 					$t_subject->set($vs_parent_id_fld, $vn_parent_id);
+ 					
+ 					$t_parent = $this->opo_datamodel->getInstanceByTableName($this->ops_table_name);
+ 					if ($t_parent->load($vn_parent_id)) {
+ 						$t_subject->set('idno', $t_parent->get('idno'));
+ 					}
  				}
  				return array($vn_subject_id, $t_subject, $t_ui, $vn_parent_id, $vn_above_id);
  			}
