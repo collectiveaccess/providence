@@ -1,13 +1,13 @@
 <?php
 /** ---------------------------------------------------------------------
- * app/helpers/listHelpers.php : miscellaneous functions
+ * app/helpers/tourHelpers.php : miscellaneous functions
  * ----------------------------------------------------------------------
  * CollectiveAccess
  * Open-source collections management software
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2011-2013 Whirl-i-Gig
+ * Copyright 2013 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -34,76 +34,50 @@
    *
    */
    
-require_once(__CA_MODELS_DIR__.'/ca_lists.php');
-require_once(__CA_MODELS_DIR__.'/ca_list_labels.php');
-require_once(__CA_MODELS_DIR__.'/ca_list_items.php');
+require_once(__CA_MODELS_DIR__.'/ca_tours.php');
+require_once(__CA_MODELS_DIR__.'/ca_tour_labels.php');
+require_once(__CA_MODELS_DIR__.'/ca_tour_stops.php');
 
 	
 	# ---------------------------------------
 	/**
-	 * Fetch item_id for item with specified idno in list
+	 * Fetch tour_id for tour with specified idno or label
 	 *
-	 * @param string $ps_list List code or list label
-	 * @return int list_id of list or null if no matching list was found
+	 * @param string $ps_tour Tour code or tour label
+	 * @return int tour_id of tour or null if no matching tour was found
 	 */
-	function caGetListID($ps_list) {
-		$t_list = new ca_lists();
+	function caGetTourID($ps_tour) {
+		$t_tour = new ca_tours();
 		
-		if (is_numeric($ps_list)) {
-			if ($t_list->load((int)$ps_list)) {
-				return $t_list->getPrimaryKey();
+		if (is_numeric($ps_tour)) {
+			if ($t_tour->load((int)$ps_tour)) {
+				return $t_tour->getPrimaryKey();
 			}
 		}
 		
-		if ($t_list->load(array('list_code' => $ps_list))) {
-			return $t_list->getPrimaryKey();
+		if ($t_tour->load(array('tour_code' => $ps_tour))) {
+			return $t_tour->getPrimaryKey();
 		}
 		
-		$t_label = new ca_list_labels();
-		if ($t_label->load(array('name' => $ps_list))) {
-			return $t_label->get('list_id');
+		$t_label = new ca_tour_labels();
+		if ($t_label->load(array('name' => $ps_tour))) {
+			return $t_label->get('tour_id');
 		}
 		return null;
 	}
 	# ---------------------------------------
 	/**
-	 * Fetch item_id for item with specified idno in list
+	 * Fetch stop_id for stop with specified idno in tour
 	 *
-	 * @param string $ps_list_code List code
-	 * @param string $ps_idno idno of item to get item_id for
+	 * @param string $ps_tour_code Tour code
+	 * @param string $ps_idno idno of stop to return stop_id for
 	 * @return int item_id of list item or null if no matching item was found
 	 */
-	function caGetListItemID($ps_list_code, $ps_idno) {
-		$t_list = new ca_lists();
+	function caGetTourStopID($ps_tour_code, $ps_idno) {
+		$vn_tour_id = caGetTourID($ps_tour_code);
 		
-		return $t_list->getItemIDFromList($ps_list_code, $ps_idno);
-	}
-	# ---------------------------------------
-	/**
-	 * Fetch display label in current locale for item with specified idno in list
-	 *
-	 * @param string $ps_list_code List code
-	 * @param string $ps_idno idno of item to get label for
-	 * @param bool $pb_return_plural If true, return plural version of label. Default is to return singular version of label.
-	 * @return string The label of the list item, or null if no matching item was found
-	 */
-	function caGetListItemForDisplay($ps_list_code, $ps_idno, $pb_return_plural=false) {
-		$t_list = new ca_lists();
-		
-		return $t_list->getItemFromListForDisplay($ps_list_code, $ps_idno, $pb_return_plural);
-	}
-	# ---------------------------------------
-	/**
-	 * Fetch item_id for item with specified label. Value must match exactly.
-	 *
-	 * @param string $ps_list_code List code
-	 * @param string $ps_label The label value to search for
-	 * @return int item_id of list item or null if no matching item was found
-	 */
-	function caGetListItemIDForLabel($ps_list_code, $ps_label) {
-		$t_list = new ca_lists();
-		
-		return $t_list->getItemIDFromListByLabel($ps_list_code, $ps_label);
+		$t_stop = new ca_tour_stops();
+		return $t_stop->load(array('tour_id' => $vn_tour_id, 'idno' => $ps_idno));
 	}
 	# ---------------------------------------
 ?>
