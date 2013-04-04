@@ -56,8 +56,14 @@
 		 *
 		 */
 		public function refine(&$pa_destination_data, $pa_group, $pa_item, $pa_source_data, $pa_options=null) {
+			global $g_ui_locale_id;
+			
+			$o_log = (isset($pa_options['log']) && is_object($pa_options['log'])) ? $pa_options['log'] : null;
+			
 			$va_group_dest = explode(".", $pa_group['destination']);
 			$vs_terminal = array_pop($va_group_dest);
+			$va_group_dest[] = $vs_terminal; // put terminal back on end
+			
 			$pm_value = $pa_source_data[$pa_item['source']];
 			
 			if ($vs_delimiter = $pa_item['settings']['listItemSplitter_delimiter']) {
@@ -68,6 +74,7 @@
 			
 			$va_vals = array();
 			$vn_c = 0;
+			
 			foreach($va_list_items as $vn_i => $vs_list_item) {
 				if (!$vs_list_item = trim($vs_list_item)) { continue; }
 				
@@ -82,18 +89,7 @@
 			
 				// Set label
 				$va_val = array('preferred_labels' => array('name_singular' => $vs_list_item, 'name_plural' => $vs_list_item));
-			
-				// Set relationship type
-				if (
-					($vs_rel_type_opt = $pa_item['settings']['listItemSplitter_relationshipType'])
-				) {
-					if (!($va_val['_relationship_type'] = BaseRefinery::parsePlaceholder($vs_rel_type_opt, $pa_source_data, $pa_item, $vs_delimiter, $vn_c))) {
-						if ($vs_rel_type_opt = $pa_item['settings']['listItemSplitter_relationshipTypeDefault']) {
-							$va_val['_relationship_type'] = BaseRefinery::parsePlaceholder($vs_rel_type_opt, $pa_source_data, $pa_item, $vs_delimiter, $vn_c);
-						}
-					}
-				}
-			
+					
 				// Set list_item_type
 				if (
 					($vs_type_opt = $pa_item['settings']['listItemSplitter_listItemType'])
@@ -119,12 +115,15 @@
 				$va_val['list_id'] = $vn_list_id;
 				
 				$t_item = new ca_list_items();
-				$t_item->load(array('parent_id' => null, 'list_id' => $vn_list_id));	// get root
-				$va_val['_parent_id'] = $t_item->getPrimaryKey();
+				if ($pa_item['settings']['listItemSplitter_parent'] && $t_item->load(array('idno' => $pa_item['settings']['listItemSplitter_parent'], 'list_id' => $vn_list_id))) {
+					$va_val['_parent_id'] = $t_item->getPrimaryKey();
+				} else {
+					$va_val['_parent_id'] = null;
+				}
 				
 				// Set attributes
+				$va_attr_vals = array();
 				if (is_array($pa_item['settings']['listItemSplitter_attributes'])) {
-					$va_attr_vals = array();
 					foreach($pa_item['settings']['listItemSplitter_attributes'] as $vs_element_code => $va_attrs) {
 						if(is_array($va_attrs)) {
 							foreach($va_attrs as $vs_k => $vs_v) {
@@ -135,7 +134,31 @@
 					$va_val = array_merge($va_val, $va_attr_vals);
 				}
 				
-				$va_vals[] = $va_val;
+				
+				if ($vs_terminal == 'ca_list_items') {	
+	// related list item
+					// Set relationship type
+					if (
+						($vs_rel_type_opt = $pa_item['settings']['listItemSplitter_relationshipType'])
+					) {
+						if (!($va_val['_relationship_type'] = BaseRefinery::parsePlaceholder($vs_rel_type_opt, $pa_source_data, $pa_item, $vs_delimiter, $vn_c))) {
+							if ($vs_rel_type_opt = $pa_item['settings']['listItemSplitter_relationshipTypeDefault']) {
+								$va_val['_relationship_type'] = BaseRefinery::parsePlaceholder($vs_rel_type_opt, $pa_source_data, $pa_item, $vs_delimiter, $vn_c);
+							}
+						}
+					}
+					$va_vals[] = $va_val;
+				} else {							
+	// list item in an attribute
+					if ($vn_item_id = DataMigrationUtils::getListItemID($va_val['list_id'], $vs_list_item, $va_element_data['_type'], $g_ui_locale_id, array_merge($va_attr_vals, array('parent_id' => $va_val['_parent_id'], 'is_enabled' => true), $pa_options))) {
+						$va_vals[] = array($vs_terminal => array($vs_terminal => $vn_item_id));
+					} else {
+						if ($o_log) {
+							$o_log->logError(_t('[listItemSplitterRefinery] Could not add list item %1 to list %2', $vs_list_item, $va_val['list_id']));
+						}
+					}
+				}
+				
 				$vn_c++;
 			}
 			
@@ -216,6 +239,15 @@
 				'default' => '',
 				'label' => _t('List item type default'),
 				'description' => _t('Sets the default list item type that will be used if none are defined or if the data source values do not match any values in the CollectiveAccess list list_item_types')
-			)
+			),
+			'listItemSplitter_parent' => array(
+				'formatType' => FT_TEXT,
+				'displayType' => DT_FIELD,
+				'width' => 10, 'height' => 1,
+				'takesLocale' => false,
+				'default' => '',
+				'label' => _t('Parent'),
+				'description' => _t('Parent list item')
+			),
 		);
 ?>
