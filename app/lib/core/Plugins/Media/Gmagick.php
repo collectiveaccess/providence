@@ -936,6 +936,7 @@ class WLPlugMediaGmagick Extends BaseMediaPlugin Implements IWLPlugMedia {
 	 */
 	# This method must be implemented for plug-ins that can output preview frames for videos or pages for documents
 	public function &writePreviews($ps_filepath, $pa_options) {
+		return null;
 		if(!$this->handle) { return false; }
 		if($this->handle->getnumberimages() < 2) { return false; } // don't generate previews for single images
 
@@ -953,11 +954,18 @@ class WLPlugMediaGmagick Extends BaseMediaPlugin Implements IWLPlugMedia {
 		$va_files = array();
 		$vn_i = 0;
 
-		foreach($this->handle as $image){
-			$image->writeimage($vs_output_file_prefix.sprintf("_%05d", $vn_i).".jpg");
+		do {
+			$this->handle->writeimage($vs_output_file_prefix.sprintf("_%05d", $vn_i).".jpg");
 			$va_files[$vn_i] = $vs_output_file_prefix.sprintf("_%05d", $vn_i).'.jpg';
 			$vn_i++;
-		}
+
+			try{
+				$this->handle->nextimage();
+			} catch(Exception $e){
+				break;
+			}
+
+		} while($this->handle->hasnextimage());
 
 		@unlink($vs_output_file_prefix);
 		return $va_files;
