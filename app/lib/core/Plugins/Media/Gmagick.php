@@ -937,6 +937,38 @@ class WLPlugMediaGmagick Extends BaseMediaPlugin Implements IWLPlugMedia {
 	# This method must be implemented for plug-ins that can output preview frames for videos or pages for documents
 	public function &writePreviews($ps_filepath, $pa_options) {
 		return null;
+		if(!$this->handle) { return false; }
+		if($this->handle->getnumberimages() < 2) { return false; } // don't generate previews for single images
+
+		if (!isset($pa_options['outputDirectory']) || !$pa_options['outputDirectory'] || !file_exists($pa_options['outputDirectory'])) {
+			if (!($vs_tmp_dir = $this->opo_config->get("taskqueue_tmp_directory"))) {
+				// no dir
+				return false;
+			}
+		} else {
+			$vs_tmp_dir = $pa_options['outputDirectory'];
+		}
+
+		$vs_output_file_prefix = tempnam($vs_tmp_dir, 'caMultipagePreview');
+
+		$va_files = array();
+		$vn_i = 0;
+
+		do {
+			$this->handle->writeimage($vs_output_file_prefix.sprintf("_%05d", $vn_i).".jpg");
+			$va_files[$vn_i] = $vs_output_file_prefix.sprintf("_%05d", $vn_i).'.jpg';
+			$vn_i++;
+
+			try{
+				$this->handle->nextimage();
+			} catch(Exception $e){
+				break;
+			}
+
+		} while($this->handle->hasnextimage());
+
+		@unlink($vs_output_file_prefix);
+		return $va_files;
 	}
 	# ------------------------------------------------
 	public function getOutputFormats() {
