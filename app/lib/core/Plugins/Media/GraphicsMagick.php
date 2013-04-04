@@ -933,7 +933,7 @@ class WLPlugMediaGraphicsMagick Extends BaseMediaPlugin Implements IWLPlugMedia 
 	# ------------------------------------------------
 	private function _graphicsMagickIdentify($ps_filepath) {
 		if (caMediaPluginGraphicsMagickInstalled($this->ops_graphicsmagick_path)) {
-			exec($this->ops_graphicsmagick_path.' identify -format "%m;" '.caEscapeShellArg($ps_filepath)." 2> /dev/null", $va_output, $vn_return);
+			exec($this->ops_graphicsmagick_path.' identify -format "%m;" '.caEscapeShellArg($ps_filepath.'[0]')." 2> /dev/null", $va_output, $vn_return);
 			$va_types = explode(";", $va_output[0]);
 			return $this->magickToMimeType($va_types[0]);	// force use of first image in multi-page TIFF
 		}
