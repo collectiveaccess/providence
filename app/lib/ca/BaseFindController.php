@@ -105,7 +105,8 @@
 						'placement_id' => $vn_placement_id,
 						'bundle_name' => $va_display_item['bundle_name'],
 						'display' => $vs_header,
-						'settings' => $va_settings
+						'settings' => $va_settings,
+						'allowInlineEditing' => $va_display_item['allowInlineEditing']
 					);
 				}
 			}

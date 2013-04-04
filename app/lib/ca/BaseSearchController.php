@@ -318,6 +318,135 @@
 			}
  		}
  		# -------------------------------------------------------
+ 		/**
+ 		 *
+ 		 */
+ 		public function getPartialResult($pa_options=null) {
+ 			parent::Index($pa_options);
+ 			
+ 			$po_search = isset($pa_options['search']) ? $pa_options['search'] : null;
+ 			
+ 			$pn_start = $this->request->getParameter('start', pInteger);
+ 			
+ 			if (!($vn_items_per_page = $this->opo_result_context->getItemsPerPage())) { 
+ 				$vn_items_per_page = $this->opn_items_per_page_default; 
+ 				$this->opo_result_context->setItemsPerPage($vn_items_per_page);
+ 			}
+ 			
+ 			$vs_search 				= $this->opo_result_context->getSearchExpression();
+ 			
+ 			
+ 			if (!($vs_sort 	= $this->opo_result_context->getCurrentSort())) { 
+ 				$va_tmp = array_keys($this->opa_sorts);
+ 				$vs_sort = array_shift($va_tmp); 
+ 			}
+ 			$vs_sort_direction = $this->opo_result_context->getCurrentSortDirection();
+			$vn_display_id 	= $this->opo_result_context->getCurrentBundleDisplay();
+ 			
+ 			if (!$this->opn_type_restriction_id) { $this->opn_type_restriction_id = ''; }
+ 			$this->view->setVar('type_id', $this->opn_type_restriction_id);
+ 			
+ 			// Get attribute sorts
+ 			$va_sortable_elements = ca_metadata_elements::getSortableElements($this->ops_tablename, $this->opn_type_restriction_id);
+ 			
+ 			if (!is_array($this->opa_sorts)) { $this->opa_sorts = array(); }
+ 			foreach($va_sortable_elements as $vn_element_id => $va_sortable_element) {
+ 				$this->opa_sorts[$this->ops_tablename.'.'.$va_sortable_element['element_code']] = $va_sortable_element['display_label'];
+ 			}
+ 			
+ 			if ($pa_options['appendToSearch']) {
+ 				$vs_append_to_search .= " AND (".$pa_options['appendToSearch'].")";
+ 			}
+			//
+			// Execute the search
+			//
+			if($vs_search && ($vs_search != "")){ /* any request? */
+				$va_search_opts = array(
+					'sort' => $vs_sort, 
+					'sort_direction' => $vs_sort_direction, 
+					'appendToSearch' => $vs_append_to_search,
+					'checkAccess' => $va_access_values,
+					'no_cache' => $vb_is_new_search,
+					'dontCheckFacetAvailability' => true,
+					'filterNonPrimaryRepresentations' => true
+				);
+				if ($vb_is_new_search ||isset($pa_options['saved_search']) || (is_subclass_of($po_search, "BrowseEngine") && !$po_search->numCriteria()) ) {
+					$vs_browse_classname = get_class($po_search);
+ 					$po_search = new $vs_browse_classname;
+ 					if (is_subclass_of($po_search, "BrowseEngine")) {
+ 						$po_search->addCriteria('_search', $vs_search);
+ 						
+ 						if (method_exists($this, "hookBeforeNewSearch")) {
+ 							$this->hookBeforeNewSearch($po_search);
+ 						}
+ 					}
+ 					
+ 					$this->opo_result_context->setParameter('show_type_id', null);
+ 				}
+ 				
+ 				if ($this->opn_type_restriction_id) {
+ 					$po_search->setTypeRestrictions(array($this->opn_type_restriction_id));
+ 				}
+ 				
+ 				$vb_criteria_have_changed = false;
+ 				if (is_subclass_of($po_search, "BrowseEngine")) { 					
+					//
+					// Restrict facets to specific group for main browse landing page (if set in app.conf config)
+					// 			
+					if ($vs_facet_group = $this->request->config->get($this->ops_tablename.'_search_refine_facet_group')) {
+						$po_search->setFacetGroup($vs_facet_group);
+					}
+					
+ 					$vb_criteria_have_changed = $po_search->criteriaHaveChanged();
+					$po_search->execute($va_search_opts);
+					
+					$this->opo_result_context->setParameter('browse_id', $po_search->getBrowseID());
+					
+					if ($vs_group_name = $this->request->config->get('browse_facet_group_for_'.$this->ops_tablename)) {
+ 						$po_search->setFacetGroup($vs_group_name);
+ 					}
+ 					
+					$vo_result = $po_search->getResults($va_search_opts);
+				} else {
+					$vo_result = $po_search->search($vs_search, $va_search_opts);
+				}
+				$this->opo_result_context->validateCache();
+				
+				// Only prefetch what we need
+				$vo_result->setOption('prefetch', $vn_items_per_page);
+				
+ 				if($vb_is_new_search || $vb_criteria_have_changed) {
+					$this->opo_result_context->setResultList($vo_result->getPrimaryKeyValues());
+					$this->opo_result_context->setParameter('availableVisualizationChecked', 0);
+					$vn_page_num = 1;
+				}
+ 				$this->view->setVar('result', $vo_result);
+ 			}
+ 			
+ 			$va_results = array();
+ 			$vo_result->seek($pn_start);
+ 			
+ 			
+ 			$t_display = $this->view->getVar('t_display');
+ 			$va_display_list = $this->view->getVar('display_list');
+ 			
+ 			$vn_c = 0;
+ 			while($vo_result->nextHit()) {
+ 				$va_result = array();
+ 				foreach($va_display_list as $vn_placement_id => $va_placement) {
+ 					
+ 					$va_result[str_replace(".", "-", $va_placement['bundle_name'])] = $t_display->getDisplayValue($vo_result, $vn_placement_id, array('request' => $this->request));
+ 				}
+ 				$va_results[] = $va_result;
+ 				
+ 				$vn_c++;
+ 				
+ 				if ($vn_c >= $vn_items_per_page) { break; }
+ 			}
+ 			$this->view->setVar('results', $va_results);
+ 			$this->render('Results/ajax_partial_results_json.php');
+ 		}
+ 		# -------------------------------------------------------
 		# Navigation (menu bar)
 		# -------------------------------------------------------
  		public function _genTypeNav($pa_params) {

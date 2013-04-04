@@ -440,8 +440,9 @@ class ca_bundle_displays extends BundlableLabelableBaseModelWithAttributes {
 			return array(); 
 		}
 		
-		if (!$pb_no_cache && isset(ca_bundle_displays::$s_placement_list_cache[$vn_display_id]) && ca_bundle_displays::$s_placement_list_cache[$vn_display_id]) {
-			return ca_bundle_displays::$s_placement_list_cache[$vn_display_id];
+		$vs_cache_key = $vn_display_id.'/'.($pb_settings_only ? 1 : 0);
+		if (!$pb_no_cache && isset(ca_bundle_displays::$s_placement_list_cache[$vs_cache_key]) && ca_bundle_displays::$s_placement_list_cache[$vs_cache_key]) {
+			return ca_bundle_displays::$s_placement_list_cache[$vs_cache_key];
 		}
 		
 		$o_dm = $this->getAppDatamodel();
@@ -459,9 +460,11 @@ class ca_bundle_displays extends BundlableLabelableBaseModelWithAttributes {
 		$va_placements = array();
 	
 		if ($qr_res->numRows() > 0) {
+			$vs_subject_table = $o_dm->getTableName($this->get('table_num'));
 			$t_placement = new ca_bundle_display_placements();
 			while($qr_res->nextRow()) {
 				$vs_bundle_name = $qr_res->get('bundle_name');
+				$va_bundle_name = explode(".", $vs_bundle_name);
 				
 				$va_placements[$vn_placement_id = (int)$qr_res->get('placement_id')] = $qr_res->getRow();
 				$va_placements[$vn_placement_id]['settings'] = $va_settings = caUnserializeForDatabase($qr_res->get('settings'));
@@ -474,13 +477,19 @@ class ca_bundle_displays extends BundlableLabelableBaseModelWithAttributes {
 					$t_instance = $o_dm->getInstanceByTableName($va_tmp[0], true);
 					$va_placements[$vn_placement_id]['display'] = ($t_instance ? $t_instance->getDisplayLabel($vs_bundle_name) : "???");
 				}
+				
+				if ($va_bundle_name[0] == $vs_subject_table) {
+					$va_placements[$vn_placement_id]['allowInlineEditing'] = true;
+				} else {
+					$va_placements[$vn_placement_id]['allowInlineEditing'] = false;
+				}
 			}
 		} else {
 			if ($pb_return_all_available_if_empty) {
 				$va_placements = $this->getAvailableBundles($this->get('table_num'));
 			}
 		}
-		return ca_bundle_displays::$s_placement_list_cache[$vn_display_id] = $va_placements;
+		return ca_bundle_displays::$s_placement_list_cache[$vs_cache_key] = $va_placements;
 	}
 	# ------------------------------------------------------
 	/**

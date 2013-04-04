@@ -1711,4 +1711,24 @@ function caFileIsIncludable($ps_file) {
 		return null;
 	}
 	# ----------------------------------------
+	/**
+	 *
+	 */
+	function caExtractValuesFromArrayList($pa_array, $ps_key, $pa_options=null) {
+		$vb_preserve_keys = (isset($pa_options['preserveKeys'])) ? (bool)$pa_options['preserveKeys'] : true;
+		$vb_include_blanks = (isset($pa_options['includeBlanks'])) ? (bool)$pa_options['includeBlanks'] : false;
+		
+		$va_extracted_values = array();
+		foreach($pa_array as $vs_k => $va_v) {
+			if (!$vb_include_blanks && (!isset($va_v[$ps_key]) ||(strlen($va_v[$ps_key]) == 0))) { continue; }
+			if ($vb_preserve_keys) {
+				$va_extracted_values[$vs_k] = $va_v[$ps_key];
+			} else {
+				$va_extracted_values[] = $va_v[$ps_key];
+			}
+		}
+		
+		return $va_extracted_values;
+	}
+	# ----------------------------------------
 ?>
