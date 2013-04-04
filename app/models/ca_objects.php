@@ -426,7 +426,7 @@ class ca_objects extends BundlableLabelableBaseModelWithAttributes implements IB
 			$pa_fields = array($pa_fields => $pm_value);
 		}
 		foreach($pa_fields as $vs_fld => $vs_val) {
-			if (($vs_fld == 'lot_id') && (preg_match("![\d]+!", $vs_val))) {
+			if (($vs_fld == 'lot_id') && (preg_match("![^\d]+!", $vs_val))) {
 				$t_lot = new ca_object_lots();
 				if ($t_lot->load(array('idno_stub' => $vs_val))) {
 					$vn_lot_id = (int)$t_lot->getPrimaryKey();
