@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2011-2012 Whirl-i-Gig
+ * Copyright 2011-2013 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -38,6 +38,7 @@ require_once(__CA_LIB_DIR__.'/ca/BundlableLabelableBaseModelWithAttributes.php')
 require_once(__CA_LIB_DIR__.'/ca/IHierarchy.php');
 require_once(__CA_MODELS_DIR__.'/ca_tours.php');
 require_once(__CA_MODELS_DIR__.'/ca_locales.php');
+require_once(__CA_APP_DIR__.'/helpers/tourHelpers.php');
 
 
 BaseModel::$s_ca_models_definitions['ca_tour_stops'] = array(
@@ -321,6 +322,24 @@ class ca_tour_stops extends BundlableLabelableBaseModelWithAttributes {
 		
 		$this->BUNDLES['hierarchy_navigation'] = array('type' => 'special', 'repeating' => false, 'label' => _t('Hierarchy navigation'));
 		$this->BUNDLES['hierarchy_location'] = array('type' => 'special', 'repeating' => false, 'label' => _t('Location in hierarchy'));
+	}
+	# ------------------------------------------------------
+	/**
+	 * Override set() to do idno lookups on tours
+	 *
+	 */
+	public function set($pa_fields, $pm_value="", $pa_options=null) {
+		if (!is_array($pa_fields)) {
+			$pa_fields = array($pa_fields => $pm_value);
+		}
+		foreach($pa_fields as $vs_fld => $vs_val) {
+			if (($vs_fld == 'tour_id') && (preg_match("![^\d]+!", $vs_val))) {
+				if ($vn_tour_id = caGetTourID($vs_val)) {
+					$pa_fields[$vs_fld] = $vn_tour_id;
+				}
+			}
+		}
+		return parent::set($pa_fields, null, $pa_options);
 	}
 	# ------------------------------------------------------
 	/**
