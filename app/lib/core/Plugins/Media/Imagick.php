@@ -1020,8 +1020,32 @@ class WLPlugMediaImagick Extends BaseMediaPlugin Implements IWLPlugMedia {
 		return $va_files;
 	}
 	# ------------------------------------------------
-	public function joinArchiveContents($pa_files, $pa_options) {
-		return null;
+	public function joinArchiveContents($pa_files, $pa_options = array()) {
+		if(!is_array($pa_files)) { return false; }
+
+		$vs_archive_original = tempnam(caGetTempDirPath(), "caArchiveOriginal");
+		@rename($vs_archive_original, $vs_archive_original.".tif");
+		$vs_archive_original = $vs_archive_original.".tif";
+
+		$vo_orig = new Imagick();
+
+		foreach($pa_files as $vs_file){
+			if(file_exists($vs_file)){
+				$vo_imagick = new Imagick();
+
+				if($vo_imagick->readImage($vs_file)){
+					$vo_orig->addImage($vo_imagick);
+				}
+			}
+		}
+
+		if($vo_orig->getNumberImages() > 0){
+			if($vo_orig->writeImages($vs_archive_original,true)){
+				return $vs_archive_original;
+			}
+		}
+
+		return false;
 	}
 	# ------------------------------------------------
 	public function getOutputFormats() {

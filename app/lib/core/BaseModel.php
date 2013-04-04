@@ -3757,6 +3757,7 @@ class BaseModel extends BaseObject {
 							$va_tmp = array();
 
 							// copy primary file from the archive to temporary file (with extension so that *Magick can identify properly)
+							// this is basically a fallback. if the code below fails, we still have a 'fake' original
 							preg_match("/[.]*\.([a-zA-Z0-9]+)$/",$va_archive_files[0],$va_tmp);
 							$vs_primary_file_tmp = tempnam(caGetTempDirPath(), "caArchivePrimary").".".$va_tmp[1];
 							@copy($va_archive_files[0], $vs_primary_file_tmp);
@@ -3764,7 +3765,7 @@ class BaseModel extends BaseObject {
 
 							// prepare to join archive contents to form a better downloadable "original" than the zip/tgz archive (e.g. a multi-page tiff)
 							// to do that, we have to 'extract' the archive so that command-line utilities like *Magick can operate
-							caRemoveDirectory(caGetTempDirPath().'/caArchiveExtract'); // remove left-overs, just to be sure
+							@caRemoveDirectory(caGetTempDirPath().'/caArchiveExtract'); // remove left-overs, just to be sure we don't include other files in the tiff
 							$va_archive_tmp_files = array();
 							@mkdir(caGetTempDirPath().'/caArchiveExtract');
 							foreach($va_archive_files as $vs_archive_file){
@@ -3820,21 +3821,26 @@ class BaseModel extends BaseObject {
 					return false;
 				}
 
-				// join archive contents to form a better downloadable original than the zip/tgz archive (e.g. a multi-page tiff)
-				if($vb_is_archive && is_array($va_archive_tmp_files)){
+				// if necessary, join archive contents to form a better downloadable "original" than the zip/tgz archive (e.g. a multi-page tiff)
+				// by this point, a backend plugin was picked using the first file of the archive. this backend is also used to prepare the new original.
+				if($vb_is_archive && (sizeof($va_archive_tmp_files)>0)){
 					if($vs_archive_original = $m->joinArchiveContents($va_archive_tmp_files)){
+						// mangle filename, so that the uploaded archive.zip becomes archive.tif or archive.gif or whatever extension the Media plugin prefers
 						$va_new_original_pathinfo = pathinfo($vs_archive_original);
 						$va_archive_pathinfo = pathinfo($this->_SET_FILES[$ps_field]['original_filename']);
 						$this->_SET_FILES[$ps_field]['original_filename'] = $va_archive_pathinfo['filename'].".".$va_new_original_pathinfo['extension'];
+
+						// this is now our original, disregard the uploaded archive
 						$this->_SET_FILES[$ps_field]['tmp_name'] = $vs_archive_original;
 
+						// re-run mimetype detection and read on the new original
+						$m->reset();
 						$input_mimetype = $m->divineFileFormat($vs_archive_original);
 						$input_type = $o_media_proc_settings->canAccept($input_mimetype);
 						$m->read($vs_archive_original);
-						caDebug($vs_archive_original);
-						caDebug($input_mimetype);
-						caDebug($input_type);
 					}
+
+					@caRemoveDirectory(caGetTempDirPath().'/caArchiveExtract');
 				}
 				
 				$va_media_objects['_original'] = $m;
@@ -4312,46 +4318,30 @@ class BaseModel extends BaseObject {
 						$this->errors = $o_tq->errors;
 					}
 				} else {
-					// if we have an archive at hand, add all files in archive as multifiles
-					if ($vb_is_archive){
-						if(method_exists($this, 'addFile')){
-							foreach($va_archive_files as $vs_archive_file){
-								$vs_tmp = tempnam(caGetTempDirPath(), 'caArchiveContent');
-								@copy($vs_archive_file,$vs_tmp);
-								$t_file = $this->addFile($vs_tmp);
-								@unlink($vs_tmp);
-								if($t_file->numErrors()>0){
-									$this->clearErrors();
-									$this->postError(1600, _t("Couldn't process one of the files in the archive: %1",basename($vs_archive_file)));
-								}
-							}
-						}
-					} else {
-						// Generate preview frames for media that support that (Eg. video)
-						// and add them as "multifiles" assuming the current model supports that (ca_object_representations does)
-						if (!sizeof($va_process_these_versions_only) && ((bool)$this->_CONFIG->get('video_preview_generate_frames') || (bool)$this->_CONFIG->get('document_preview_generate_pages')) && method_exists($this, 'addFile')) {
-							$va_preview_frame_list = $m->writePreviews(
-								array(
-									'width' => $m->get("width"), 
-									'height' => $m->get("height"),
-									'minNumberOfFrames' => $this->_CONFIG->get('video_preview_min_number_of_frames'),
-									'maxNumberOfFrames' => $this->_CONFIG->get('video_preview_max_number_of_frames'),
-									'numberOfPages' => $this->_CONFIG->get('document_preview_max_number_of_pages'),
-									'frameInterval' => $this->_CONFIG->get('video_preview_interval_between_frames'),
-									'pageInterval' => $this->_CONFIG->get('document_preview_interval_between_pages'),
-									'startAtTime' => $this->_CONFIG->get('video_preview_start_at'),
-									'endAtTime' => $this->_CONFIG->get('video_preview_end_at'),
-									'startAtPage' => $this->_CONFIG->get('document_preview_start_page'),
-									'outputDirectory' => __CA_APP_DIR__.'/tmp'
-								)
-							);
+					// Generate preview frames for media that support that (Eg. video)
+					// and add them as "multifiles" assuming the current model supports that (ca_object_representations does)
+					if (!sizeof($va_process_these_versions_only) && ((bool)$this->_CONFIG->get('video_preview_generate_frames') || (bool)$this->_CONFIG->get('document_preview_generate_pages')) && method_exists($this, 'addFile')) {
+						$va_preview_frame_list = $m->writePreviews(
+							array(
+								'width' => $m->get("width"), 
+								'height' => $m->get("height"),
+								'minNumberOfFrames' => $this->_CONFIG->get('video_preview_min_number_of_frames'),
+								'maxNumberOfFrames' => $this->_CONFIG->get('video_preview_max_number_of_frames'),
+								'numberOfPages' => $this->_CONFIG->get('document_preview_max_number_of_pages'),
+								'frameInterval' => $this->_CONFIG->get('video_preview_interval_between_frames'),
+								'pageInterval' => $this->_CONFIG->get('document_preview_interval_between_pages'),
+								'startAtTime' => $this->_CONFIG->get('video_preview_start_at'),
+								'endAtTime' => $this->_CONFIG->get('video_preview_end_at'),
+								'startAtPage' => $this->_CONFIG->get('document_preview_start_page'),
+								'outputDirectory' => __CA_APP_DIR__.'/tmp'
+							)
+						);
 							
-							$this->removeAllFiles();		// get rid of any previously existing frames (they might be hanging around if we're editing an existing record)
-							if (is_array($va_preview_frame_list)) {
-								foreach($va_preview_frame_list as $vn_time => $vs_frame) {
-									$this->addFile($vs_frame, $vn_time, true);	// the resource path for each frame is it's time, in seconds (may be fractional) for video, or page number for documents
-									@unlink($vs_frame);		// clean up tmp preview frame file
-								}
+						$this->removeAllFiles();		// get rid of any previously existing frames (they might be hanging around if we're editing an existing record)
+						if (is_array($va_preview_frame_list)) {
+							foreach($va_preview_frame_list as $vn_time => $vs_frame) {
+								$this->addFile($vs_frame, $vn_time, true);	// the resource path for each frame is it's time, in seconds (may be fractional) for video, or page number for documents
+								@unlink($vs_frame);		// clean up tmp preview frame file
 							}
 						}
 					}

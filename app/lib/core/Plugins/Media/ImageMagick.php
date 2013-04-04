@@ -908,7 +908,7 @@ class WLPlugMediaImageMagick Extends BaseMediaPlugin Implements IWLPlugMedia {
 				}
 			}
 		}
-		caDebug($va_acceptable_files);
+
 		if(sizeof($va_acceptable_files)){
 			exec($this->ops_imagemagick_path."/convert ".join(" ",$va_acceptable_files)." ".$vs_archive_original, $va_output, $vn_return);
 			if($vn_return === 0){

@@ -978,8 +978,31 @@ class WLPlugMediaGmagick Extends BaseMediaPlugin Implements IWLPlugMedia {
 		return $va_files;*/
 	}
 	# ------------------------------------------------
-	public function joinArchiveContents($pa_files, $pa_options) {
-		return null;
+	public function joinArchiveContents($pa_files, $pa_options = array()) {
+		/*if(!is_array($pa_files)) { return false; }
+
+		$vs_archive_original = tempnam(caGetTempDirPath(), "caArchiveOriginal");
+		@rename($vs_archive_original, $vs_archive_original.".tif");
+		$vs_archive_original = $vs_archive_original.".tif";
+
+		$vo_orig = new Gmagick();
+
+		foreach($pa_files as $vs_file){
+			if(file_exists($vs_file)){
+				$vo_r = new Gmagick($vs_file);
+				if($vo_r){
+					$vo_orig = $vo_orig->addimage($vo_r);
+				}
+			}
+		}
+
+		if($vo_orig->getnumberimages() > 0){
+			if($vo_orig->writeimage($vs_archive_original,true)){
+				return $vs_archive_original;
+			}
+		}*/
+
+		return false;
 	}
 	# ------------------------------------------------
 	public function getOutputFormats() {
