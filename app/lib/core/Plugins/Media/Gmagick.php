@@ -936,8 +936,11 @@ class WLPlugMediaGmagick Extends BaseMediaPlugin Implements IWLPlugMedia {
 	 */
 	# This method must be implemented for plug-ins that can output preview frames for videos or pages for documents
 	public function &writePreviews($ps_filepath, $pa_options) {
-		return null;
-		if(!$this->handle) { return false; }
+		// disable feature until multi-image object traversal works as intended in the gmagick extension
+		// the traversal works but writeimage always takes the first image in a sequence no matter where you set the pointer (with nextimage())
+		return null; 
+
+		/*if(!$this->handle) { return false; }
 		if($this->handle->getnumberimages() < 2) { return false; } // don't generate previews for single images
 
 		if (!isset($pa_options['outputDirectory']) || !$pa_options['outputDirectory'] || !file_exists($pa_options['outputDirectory'])) {
@@ -968,7 +971,7 @@ class WLPlugMediaGmagick Extends BaseMediaPlugin Implements IWLPlugMedia {
 		} while($this->handle->hasnextimage());
 
 		@unlink($vs_output_file_prefix);
-		return $va_files;
+		return $va_files;*/
 	}
 	# ------------------------------------------------
 	public function getOutputFormats() {
