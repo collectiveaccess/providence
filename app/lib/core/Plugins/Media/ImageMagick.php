@@ -860,6 +860,34 @@ class WLPlugMediaImageMagick Extends BaseMediaPlugin Implements IWLPlugMedia {
 		return null;
 	}
 	# ------------------------------------------------
+	public function joinArchiveContents($pa_files, $pa_options = array()) {
+		if(!is_array($pa_files)) { return false; }
+
+		if (!caMediaPluginImageMagickInstalled($this->ops_imagemagick_path)) { return false; }
+
+		$vs_archive_original = tempnam(caGetTempDirPath(), "caArchiveOriginal");
+		@rename($vs_archive_original, $vs_archive_original.".tif");
+		$vs_archive_original = $vs_archive_original.".tif";
+
+		$va_acceptable_files = array();
+		foreach($pa_files as $vs_file){
+			if(file_exists($vs_file)){
+				if($this->_imageMagickIdentify($vs_file)){
+					$va_acceptable_files[] = $vs_file;
+				}
+			}
+		}
+		caDebug($va_acceptable_files);
+		if(sizeof($va_acceptable_files)){
+			exec($this->ops_imagemagick_path."/convert ".join(" ",$va_acceptable_files)." ".$vs_archive_original, $va_output, $vn_return);
+			if($vn_return === 0){
+				return $vs_archive_original;
+			}
+		}
+
+		return false;
+	}
+	# ------------------------------------------------
 	public function getOutputFormats() {
 		return $this->info["EXPORT"];
 	}

@@ -3761,6 +3761,18 @@ class BaseModel extends BaseObject {
 							$vs_primary_file_tmp = tempnam(caGetTempDirPath(), "caArchivePrimary").".".$va_tmp[1];
 							@copy($va_archive_files[0], $vs_primary_file_tmp);
 							$this->_SET_FILES[$ps_field]['tmp_name'] = $vs_primary_file_tmp;
+
+							// prepare to join archive contents to form a better downloadable "original" than the zip/tgz archive (e.g. a multi-page tiff)
+							// to do that, we have to 'extract' the archive so that command-line utilities like *Magick can operate
+							caRemoveDirectory(caGetTempDirPath().'/caArchiveExtract'); // remove left-overs, just to be sure
+							$va_archive_tmp_files = array();
+							@mkdir(caGetTempDirPath().'/caArchiveExtract');
+							foreach($va_archive_files as $vs_archive_file){
+								$vs_basename = basename($vs_archive_file);
+								$vs_tmp_file_name = caGetTempDirPath().'/caArchiveExtract/'.str_replace(" ", "_", $vs_basename);
+								$va_archive_tmp_files[] = $vs_tmp_file_name;
+								@copy($vs_archive_file,$vs_tmp_file_name);
+							}
 						}
 					}
 
@@ -3806,6 +3818,23 @@ class BaseModel extends BaseObject {
 					if ($vb_is_fetched_file) { @unlink($vs_tmp_file); }
 					if ($vb_is_archive) { @unlink($vs_archive); @unlink($vs_primary_file_tmp); }
 					return false;
+				}
+
+				// join archive contents to form a better downloadable original than the zip/tgz archive (e.g. a multi-page tiff)
+				if($vb_is_archive && is_array($va_archive_tmp_files)){
+					if($vs_archive_original = $m->joinArchiveContents($va_archive_tmp_files)){
+						$va_new_original_pathinfo = pathinfo($vs_archive_original);
+						$va_archive_pathinfo = pathinfo($this->_SET_FILES[$ps_field]['original_filename']);
+						$this->_SET_FILES[$ps_field]['original_filename'] = $va_archive_pathinfo['filename'].".".$va_new_original_pathinfo['extension'];
+						$this->_SET_FILES[$ps_field]['tmp_name'] = $vs_archive_original;
+
+						$input_mimetype = $m->divineFileFormat($vs_archive_original);
+						$input_type = $o_media_proc_settings->canAccept($input_mimetype);
+						$m->read($vs_archive_original);
+						caDebug($vs_archive_original);
+						caDebug($input_mimetype);
+						caDebug($input_type);
+					}
 				}
 				
 				$va_media_objects['_original'] = $m;

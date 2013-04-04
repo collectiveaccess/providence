@@ -855,6 +855,10 @@ class WLPlugMediaGraphicsMagick Extends BaseMediaPlugin Implements IWLPlugMedia 
 		return null;
 	}
 	# ------------------------------------------------
+	public function joinArchiveContents($pa_files, $pa_options) {
+		return null;
+	}
+	# ------------------------------------------------
 	public function getOutputFormats() {
 		return $this->info["EXPORT"];
 	}
