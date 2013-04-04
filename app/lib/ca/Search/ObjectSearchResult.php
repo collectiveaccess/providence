@@ -68,7 +68,7 @@ class ObjectSearchResult extends BaseSearchResult {
 			$va_criteria = array('ca_object_representations.deleted = 0');
 		}
 		$this->opa_tables['ca_object_representations'] = array(
-			'fieldList' => array('ca_object_representations.media', 'ca_object_representations.representation_id', 'ca_object_representations.access', 'ca_object_representations.md5', 'ca_object_representations.mimetype'),
+			'fieldList' => array('ca_object_representations.media', 'ca_object_representations.representation_id', 'ca_object_representations.access', 'ca_object_representations.md5', 'ca_object_representations.mimetype', 'ca_object_representations.original_filename'),
 			'joinTables' => array('ca_objects_x_object_representations'),
 			'criteria' => $va_criteria
 		);
@@ -87,7 +87,7 @@ class ObjectSearchResult extends BaseSearchResult {
 			$va_criteria = array('ca_object_representations.deleted = 0');
 		}
 		$this->opa_tables['ca_object_representations'] = array(
-			'fieldList' => array('ca_object_representations.media', 'ca_object_representations.representation_id', 'ca_object_representations.access', 'ca_object_representations.md5', 'ca_object_representations.mimetype'),
+			'fieldList' => array('ca_object_representations.media', 'ca_object_representations.representation_id', 'ca_object_representations.access', 'ca_object_representations.md5', 'ca_object_representations.mimetype', 'ca_object_representations.original_filename'),
 			'joinTables' => array('ca_objects_x_object_representations'),
 			'criteria' => $va_criteria
 		);

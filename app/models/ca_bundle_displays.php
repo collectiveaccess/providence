@@ -1053,6 +1053,21 @@ class ca_bundle_displays extends BundlableLabelableBaseModelWithAttributes {
 						);
 					}
 				}
+				
+				$t_rep = new ca_object_representations();
+				foreach(array('mimetype', 'md5', 'original_filename') as $vs_rep_field) {
+					$vs_bundle = 'ca_object_representations.'.$vs_rep_field;
+					$vs_display = "<div id='bundleDisplayEditorBundle_ca_object_representations_{$vs_rep_field}'><span class='bundleDisplayEditorPlacementListItemTitle'>".caUcFirstUTF8Safe($t_rep->getProperty('NAME_SINGULAR'))."</span> ".($vs_label = $t_rep->getDisplayLabel($vs_bundle))."</div>";
+					
+					$va_available_bundles[strip_tags($vs_display)][$vs_bundle] = array(
+						'bundle' => $vs_bundle,
+						'display' => ($vs_format == 'simple') ? $vs_label : $vs_display,
+						'description' => $vs_description = $t_rep->getDisplayDescription($vs_bundle),
+						'settingsForm' => $t_placement->getHTMLSettingForm(array('id' => $vs_bundle.'_0')),
+						'settings' => array()
+					);
+				}
+				
 			}
 		}
 		

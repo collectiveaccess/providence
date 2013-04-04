@@ -48,9 +48,7 @@ define('__CA_BUNDLE_ACCESS_EDIT__', 2);
 
 class BundlableLabelableBaseModelWithAttributes extends LabelableBaseModelWithAttributes implements IBundleProvider {
 	# ------------------------------------------------------
-	protected $BUNDLES = array(
-		
-	);
+	protected $BUNDLES = array();
 	
 	protected $opo_idno_plugin_instance;
 	
@@ -80,6 +78,9 @@ class BundlableLabelableBaseModelWithAttributes extends LabelableBaseModelWithAt
 		}
 		$this->initLabelDefinitions();
 		
+		if ($this->isHierarchical() && $this->opo_idno_plugin_instance) {
+			$this->opo_idno_plugin_instance->isChild((($vs_parent_id_fld = $this->getProperty('HIERARCHY_PARENT_ID_FLD')) && $this->get($vs_parent_id_fld) > 0) ? true : false);
+		}
 		return $vn_rc;
 	}
 	# ------------------------------------------------------
@@ -323,30 +324,38 @@ class BundlableLabelableBaseModelWithAttributes extends LabelableBaseModelWithAt
 		
 		// Calculate identifier using numbering plugin
 		if ($vs_idno_fld) {
+			$vb_needs_suffix_generated = false;
 			if (method_exists($this, "getIDNoPlugInInstance") && ($o_numbering_plugin = $this->getIDNoPlugInInstance())) {
-				if (!($vs_sep = $o_numbering_plugin->getSeparator())) { $vs_sep = '-'; }
-				if (!is_array($va_idno_values = $o_numbering_plugin->htmlFormValuesAsArray($vs_idno_fld, $this->get($vs_idno_fld), false, false, true))) { $va_idno_values = array(); }
+				if (!($vs_sep = $o_numbering_plugin->getSeparator())) { $vs_sep = '-'; }	// Must have a separator or you can get inexplicable numbers as numeric increments are appended string-style
+				
+				$vs_idno_template = $o_numbering_plugin->makeTemplateFromValue($this->get($vs_idno_fld), 1);	// make template out of original idno by replacing last SERIAL element with "%"
+				if (!preg_match("!%$!", $vs_idno_template)) { $vb_needs_suffix_generated = true; }
+				
+				if (!is_array($va_idno_values = $o_numbering_plugin->htmlFormValuesAsArray($vs_idno_fld, $vs_idno_template, false, false, false))) { $va_idno_values = array(); }
 
-				$t_dupe->set($vs_idno_fld, join($vs_sep, $va_idno_values));	// true=always set serial values, even if they already have a value; this let's us use the original pattern while replacing the serial value every time through
+				$t_dupe->set($vs_idno_fld, $vs_idno = join($vs_sep, $va_idno_values));	
 			} 
 			
 			if (!($vs_idno_stub = trim($t_dupe->get($vs_idno_fld)))) {
 				$vs_idno_stub = trim($this->get($vs_idno_fld));
 			}
+	
 			if ($vs_idno_stub) {
-				$t_lookup = $this->_DATAMODEL->getInstanceByTableName($this->tableName());
+				if ($vb_needs_suffix_generated) {
+					$t_lookup = $this->_DATAMODEL->getInstanceByTableName($this->tableName());
 				
-				$va_tmp = $vs_sep ? preg_split("![{$vs_sep}]+!", $vs_idno_stub) : array($vs_idno_stub);
-				$vs_suffix = is_array($va_tmp) ? array_pop($va_tmp) : '';
-				if (!is_numeric($vs_suffix)) { 
-					$vs_suffix = 0; 
-				} else {
-					$vs_idno_stub = preg_replace("!{$vs_suffix}$!", '', $vs_idno_stub);	
+					$va_tmp = $vs_sep ? preg_split("![{$vs_sep}]+!", $vs_idno_stub) : array($vs_idno_stub);
+					$vs_suffix = is_array($va_tmp) ? array_pop($va_tmp) : '';
+					if (!is_numeric($vs_suffix)) { 
+						$vs_suffix = 0; 
+					} else {
+						$vs_idno_stub = preg_replace("!{$vs_suffix}$!", '', $vs_idno_stub);	
+					}
+					do {
+						$vs_suffix = (int)$vs_suffix + 1;
+						$vs_idno = trim($vs_idno_stub).$vs_sep.trim($vs_suffix);	// force separator if none defined otherwise you end up with agglutinative numbers
+					} while($t_lookup->load(array($vs_idno_fld => $vs_idno)));
 				}
-				do {
-					$vs_suffix = (int)$vs_suffix + 1;
-					$vs_idno = trim($vs_idno_stub).$vs_sep.trim($vs_suffix);	// force separator if none defined otherwise you end up with agglutinative numbers
-				} while($t_lookup->load(array($vs_idno_fld => $vs_idno)));
 			} else {
 				$vs_idno = "???";
 			}
@@ -437,8 +446,19 @@ class BundlableLabelableBaseModelWithAttributes extends LabelableBaseModelWithAt
 			return false;
 		}
 		
-		if (in_array($this->getProperty('ID_NUMBERING_ID_FIELD'), $pa_fields)) {
-			if (!$this->_validateIncomingAdminIDNo(true, true)) { return false; }
+		if ($this->opo_idno_plugin_instance) {
+			// If attempting to set parent_id, then flag record as child for id numbering purposes
+			$this->opo_idno_plugin_instance->isChild(((($vs_parent_id_fld = $this->getProperty('HIERARCHY_PARENT_ID_FLD')) && isset($pa_fields[$vs_parent_id_fld]) && ($pa_fields[$vs_parent_id_fld] > 0)) || ($this->get($vs_parent_id_fld))) ? true : false);
+		
+			if (in_array($this->getProperty('ID_NUMBERING_ID_FIELD'), $pa_fields)) {
+				if (!$this->_validateIncomingAdminIDNo(true, true)) { 
+					if (!$this->get($vs_parent_id_fld) && isset($pa_fields[$vs_parent_id_fld]) && ($pa_fields[$vs_parent_id_fld] > 0)) {
+						// If we failed to set parent_id and there wasn't a parent_id set already then revert child status in id numbering
+						$this->opo_idno_plugin_instance->isChild(false); 
+					}
+					return false; 
+				}
+			}
 		}
 		
 		return parent::set($pa_fields, "", $pa_options);
@@ -3991,13 +4011,20 @@ if (!$vb_batch) {
 		//
 		if (is_array($va_sort_fields) && sizeof($va_rels)) {
 			$va_ids = array();
+			$vs_rel_pk = $t_rel_item->primaryKey();
 			foreach($va_rels as $vn_i => $va_rel) {
-				$va_ids[] = $va_rel[$t_rel_item->primaryKey()];
+				$va_ids[] = $va_rel[$vs_rel_pk];
 			}
 			
 			// Handle sorting on attribute values
 			$vs_rel_pk = $t_rel_item->primaryKey();
-			foreach($va_sort_fields as $vs_sort_field) {
+			foreach($va_sort_fields as $vn_x => $vs_sort_field) {
+				if ($vs_sort_field == 'relation_id') { // sort by relationship primary key
+					if ($t_item_rel) { 
+						$va_sort_fields[$vn_x] = $vs_sort_field = $t_item_rel->tableName().'.'.$t_item_rel->primaryKey();
+					} 
+					continue;
+				}
 				$va_tmp = explode('.', $vs_sort_field);
 				if ($va_tmp[0] == $vs_related_table_name) {
 					$qr_rel = $t_rel_item->makeSearchResult($va_tmp[0], $va_ids);
@@ -4013,7 +4040,6 @@ if (!$vb_batch) {
 							}
 						}
 					}
-					
 				}
 			}
 			
@@ -4082,6 +4108,11 @@ if (!$vb_batch) {
 			&&
 			$pa_options['request']
 		) {
+			
+			if ($this->get($this->getProperty('HIERARCHY_PARENT_ID_FLD'))) { $this->opo_idno_plugin_instance->isChild(true); }	// if it has a parent_id then set the id numbering plugin using "child_only" numbering schemes (if defined)
+			if (!$this->getPrimaryKey() && $this->opo_idno_plugin_instance->isChild()) {
+				$this->set('idno', $this->opo_idno_plugin_instance->makeTemplateFromValue($this->get('idno'), 1, true));	// chop off last serial element
+			}
 			$this->opo_idno_plugin_instance->setValue($this->get($ps_field));
 			if (method_exists($this, "getTypeCode")) { $this->opo_idno_plugin_instance->setType($this->getTypeCode()); }
 			$vs_element = $this->opo_idno_plugin_instance->htmlFormElement(
