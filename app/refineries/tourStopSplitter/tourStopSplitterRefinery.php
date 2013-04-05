@@ -1,6 +1,6 @@
 <?php
 /* ----------------------------------------------------------------------
- * listItemSplitterRefinery.php : 
+ * tourStopSplitterRefinery.php : 
  * ----------------------------------------------------------------------
  * CollectiveAccess
  * Open-source collections management software
@@ -28,14 +28,14 @@
  	require_once(__CA_LIB_DIR__.'/ca/Import/BaseRefinery.php');
  	require_once(__CA_LIB_DIR__.'/ca/Utils/DataMigrationUtils.php');
  
-	class listItemSplitterRefinery extends BaseRefinery {
+	class tourStopSplitterRefinery extends BaseRefinery {
 		# -------------------------------------------------------
 		
 		# -------------------------------------------------------
 		public function __construct() {
-			$this->ops_name = 'listItemSplitter';
-			$this->ops_title = _t('List item splitter');
-			$this->ops_description = _t('Splits list items');
+			$this->ops_name = 'tourStopSplitter';
+			$this->ops_title = _t('Tour stop splitter');
+			$this->ops_description = _t('Splits tour stops');
 			
 			parent::__construct();
 		}
@@ -56,75 +56,76 @@
 		 *
 		 */
 		public function refine(&$pa_destination_data, $pa_group, $pa_item, $pa_source_data, $pa_options=null) {
-			global $g_ui_locale_id;
-			
-			$o_log = (isset($pa_options['log']) && is_object($pa_options['log'])) ? $pa_options['log'] : null;
-			
 			$va_group_dest = explode(".", $pa_group['destination']);
 			$vs_terminal = array_pop($va_group_dest);
-			$va_group_dest[] = $vs_terminal; // put terminal back on end
-			
 			$pm_value = $pa_source_data[$pa_item['source']];
 			
-			if ($vs_delimiter = $pa_item['settings']['listItemSplitter_delimiter']) {
-				$va_list_items = explode($vs_delimiter, $pm_value);
+			if ($vs_delimiter = $pa_item['settings']['tourStopSplitter_delimiter']) {
+				$va_tour_stops = explode($vs_delimiter, $pm_value);
 			} else {
-				$va_list_items = array($pm_value);
+				$va_tour_stops = array($pm_value);
 			}
 			
 			$va_vals = array();
 			$vn_c = 0;
-			
-			foreach($va_list_items as $vn_i => $vs_list_item) {
-				if (!$vs_list_item = trim($vs_list_item)) { continue; }
+			foreach($va_tour_stops as $vn_i => $vs_tour_stop) {
+				if (!$vs_tour_stop = trim($vs_tour_stop)) { continue; }
 				
 				
 				if(in_array($vs_terminal, array('name_singular', 'name_plural'))) {
-					return $vs_list_item;
+					return $vs_tour_stop;
 				}
 			
 				if (in_array($vs_terminal, array('preferred_labels', 'nonpreferred_labels'))) {
-					return array('name_singular' => $vs_list_item, 'name_plural' => $vs_list_item);	
+					return array('name_singular' => $vs_tour_stop, 'name_plural' => $vs_tour_stop);	
 				}
 			
 				// Set label
-				$va_val = array('preferred_labels' => array('name_singular' => $vs_list_item, 'name_plural' => $vs_list_item));
-					
-				// Set list_item_type
+				$va_val = array('preferred_labels' => array('name_singular' => $vs_tour_stop, 'name_plural' => $vs_tour_stop));
+			
+				// Set relationship type
 				if (
-					($vs_type_opt = $pa_item['settings']['listItemSplitter_listItemType'])
+					($vs_rel_type_opt = $pa_item['settings']['tourStopSplitter_relationshipType'])
+				) {
+					if (!($va_val['_relationship_type'] = BaseRefinery::parsePlaceholder($vs_rel_type_opt, $pa_source_data, $pa_item, $vs_delimiter, $vn_c))) {
+						if ($vs_rel_type_opt = $pa_item['settings']['tourStopSplitter_relationshipTypeDefault']) {
+							$va_val['_relationship_type'] = BaseRefinery::parsePlaceholder($vs_rel_type_opt, $pa_source_data, $pa_item, $vs_delimiter, $vn_c);
+						}
+					}
+				}
+			
+				// Set tour_stop_type
+				if (
+					($vs_type_opt = $pa_item['settings']['tourStopSplitter_tourStopType'])
 				) {
 					if (!($va_val['_type'] = BaseRefinery::parsePlaceholder($vs_type_opt, $pa_source_data, $pa_item, $vs_delimiter, $vn_c))) {
-						if($vs_type_opt = $pa_item['settings']['listItemSplitter_listItemTypeDefault']) {
+						if($vs_type_opt = $pa_item['settings']['tourStopSplitter_tourStopTypeDefault']) {
 							$va_val['_type'] = BaseRefinery::parsePlaceholder($vs_type_opt, $pa_source_data, $pa_item, $vs_delimiter, $vn_c);
 						}
 					}
 				}
 				
-				// Set list 
-				$vn_list_id = null;
-				if ($vs_list = $pa_item['settings']['listItemSplitter_list']) {
-					$vn_list_id = caGetListID($vs_list);
+				// Set tour 
+				$vn_tour_id = null;
+				if ($vs_tour = $pa_item['settings']['tourStopSplitter_tour']) {
+					$vn_tour_id = caGetTourID($vs_tour);
 				}
-				if (!$vn_list_id) {
-					// No list = bail!
+				if (!$vn_tour_id) {
+					// No tour = bail!
 					// TODO: log this
 					return array();
 				} 
 				
-				$va_val['list_id'] = $vn_list_id;
+				$va_val['tour_id'] = $vn_tour_id;
 				
-				$t_item = new ca_list_items();
-				if ($pa_item['settings']['listItemSplitter_parent'] && $t_item->load(array('idno' => $pa_item['settings']['listItemSplitter_parent'], 'list_id' => $vn_list_id))) {
-					$va_val['_parent_id'] = $t_item->getPrimaryKey();
-				} else {
-					$va_val['_parent_id'] = null;
-				}
+				$t_item = new ca_tour_stops();
+				$t_item->load(array('parent_id' => null, 'tour_id' => $vn_tour_id));	// get root
+				$va_val['_parent_id'] = $t_item->getPrimaryKey();
 				
 				// Set attributes
-				$va_attr_vals = array();
-				if (is_array($pa_item['settings']['listItemSplitter_attributes'])) {
-					foreach($pa_item['settings']['listItemSplitter_attributes'] as $vs_element_code => $va_attrs) {
+				if (is_array($pa_item['settings']['tourStopSplitter_attributes'])) {
+					$va_attr_vals = array();
+					foreach($pa_item['settings']['tourStopSplitter_attributes'] as $vs_element_code => $va_attrs) {
 						if(is_array($va_attrs)) {
 							foreach($va_attrs as $vs_k => $vs_v) {
 								$va_attr_vals[$vs_element_code][$vs_k] = BaseRefinery::parsePlaceholder($vs_v, $pa_source_data, $pa_item);
@@ -134,31 +135,7 @@
 					$va_val = array_merge($va_val, $va_attr_vals);
 				}
 				
-				
-				if ($vs_terminal == 'ca_list_items') {	
-	// related list item
-					// Set relationship type
-					if (
-						($vs_rel_type_opt = $pa_item['settings']['listItemSplitter_relationshipType'])
-					) {
-						if (!($va_val['_relationship_type'] = BaseRefinery::parsePlaceholder($vs_rel_type_opt, $pa_source_data, $pa_item, $vs_delimiter, $vn_c))) {
-							if ($vs_rel_type_opt = $pa_item['settings']['listItemSplitter_relationshipTypeDefault']) {
-								$va_val['_relationship_type'] = BaseRefinery::parsePlaceholder($vs_rel_type_opt, $pa_source_data, $pa_item, $vs_delimiter, $vn_c);
-							}
-						}
-					}
-					$va_vals[] = $va_val;
-				} else {							
-	// list item in an attribute
-					if ($vn_item_id = DataMigrationUtils::getListItemID($va_val['list_id'], $vs_list_item, $va_element_data['_type'], $g_ui_locale_id, array_merge($va_attr_vals, array('parent_id' => $va_val['_parent_id'], 'is_enabled' => true), $pa_options))) {
-						$va_vals[] = array($vs_terminal => array($vs_terminal => $vn_item_id));
-					} else {
-						if ($o_log) {
-							$o_log->logError(_t('[listItemSplitterRefinery] Could not add list item %1 to list %2', $vs_list_item, $va_val['list_id']));
-						}
-					}
-				}
-				
+				$va_vals[] = $va_val;
 				$vn_c++;
 			}
 			
@@ -166,7 +143,7 @@
 		}
 		# -------------------------------------------------------	
 		/**
-		 * listItemSplitter returns multiple values
+		 * tourStopSplitter returns multiple values
 		 *
 		 * @return bool Always true
 		 */
@@ -176,8 +153,8 @@
 		# -------------------------------------------------------
 	}
 	
-	 BaseRefinery::$s_refinery_settings['listItemSplitter'] = array(		
-			'listItemSplitter_delimiter' => array(
+	 BaseRefinery::$s_refinery_settings['tourStopSplitter'] = array(		
+			'tourStopSplitter_delimiter' => array(
 				'formatType' => FT_TEXT,
 				'displayType' => DT_SELECT,
 				'width' => 10, 'height' => 1,
@@ -186,7 +163,7 @@
 				'label' => _t('Delimiter'),
 				'description' => _t('Sets the value of the delimiter to break on, separating data source values.')
 			),
-			'listItemSplitter_relationshipType' => array(
+			'tourStopSplitter_relationshipType' => array(
 				'formatType' => FT_TEXT,
 				'displayType' => DT_SELECT,
 				'width' => 10, 'height' => 1,
@@ -195,34 +172,34 @@
 				'label' => _t('Relationship type'),
 				'description' => _t('Accepts a constant type code for the relationship type or a reference to the location in the data source where the type can be found.')
 			),
-			'listItemSplitter_listItemType' => array(
+			'tourStopSplitter_tourStopType' => array(
 				'formatType' => FT_TEXT,
 				'displayType' => DT_SELECT,
 				'width' => 10, 'height' => 1,
 				'takesLocale' => false,
 				'default' => '',
-				'label' => _t('List item type'),
-				'description' => _t('Accepts a constant list item idno from the list list_item_types or a reference to the location in the data source where the type can be found.')
+				'label' => _t('Tour stop type'),
+				'description' => _t('Accepts a constant list item idno from the list tour_stop_types or a reference to the location in the data source where the type can be found.')
 			),
-			'listItemSplitter_attributes' => array(
+			'tourStopSplitter_attributes' => array(
 				'formatType' => FT_TEXT,
 				'displayType' => DT_SELECT,
 				'width' => 10, 'height' => 1,
 				'takesLocale' => false,
 				'default' => '',
 				'label' => _t('Attributes'),
-				'description' => _t('Sets or maps metadata for the list item record by referencing the metadataElement code and the location in the data source where the data values can be found.')
+				'description' => _t('Sets or maps metadata for the tour stop record by referencing the metadataElement code and the location in the data source where the data values can be found.')
 			),
-			'listItemSplitter_list' => array(
+			'tourStopSplitter_tour' => array(
 				'formatType' => FT_TEXT,
 				'displayType' => DT_SELECT,
 				'width' => 10, 'height' => 1,
 				'takesLocale' => false,
 				'default' => '',
-				'label' => _t('List'),
-				'description' => _t('Identifies the root node of the list item list to add items to.')
+				'label' => _t('Tour'),
+				'description' => _t('Identifies the tour to add the stop to.')
 			),
-			'listItemSplitter_relationshipTypeDefault' => array(
+			'tourStopSplitter_relationshipTypeDefault' => array(
 				'formatType' => FT_TEXT,
 				'displayType' => DT_FIELD,
 				'width' => 10, 'height' => 1,
@@ -231,23 +208,14 @@
 				'label' => _t('Relationship type default'),
 				'description' => _t('Sets the default relationship type that will be used if none are defined or if the data source values do not match any values in the CollectiveAccess system')
 			),
-			'listItemSplitter_listItemTypeDefault' => array(
+			'tourStopSplitter_tourStopTypeDefault' => array(
 				'formatType' => FT_TEXT,
 				'displayType' => DT_FIELD,
 				'width' => 10, 'height' => 1,
 				'takesLocale' => false,
 				'default' => '',
-				'label' => _t('List item type default'),
-				'description' => _t('Sets the default list item type that will be used if none are defined or if the data source values do not match any values in the CollectiveAccess list list_item_types')
-			),
-			'listItemSplitter_parent' => array(
-				'formatType' => FT_TEXT,
-				'displayType' => DT_FIELD,
-				'width' => 10, 'height' => 1,
-				'takesLocale' => false,
-				'default' => '',
-				'label' => _t('Parent'),
-				'description' => _t('Parent list item')
-			),
+				'label' => _t('Tour stop type default'),
+				'description' => _t('Sets the default tour stop type that will be used if none are defined or if the data source values do not match any values in the CollectiveAccess list tour_stop_types')
+			)
 		);
 ?>

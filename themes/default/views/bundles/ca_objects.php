@@ -40,6 +40,9 @@
 	$vb_read_only		=	((isset($va_settings['readonly']) && $va_settings['readonly'])  || ($this->request->user->getBundleAccessLevel($t_instance->tableName(), 'ca_objects') == __CA_BUNDLE_ACCESS_READONLY__));
 	$vb_dont_show_del	=	((isset($va_settings['dontShowDeleteButton']) && $va_settings['dontShowDeleteButton'])) ? true : false;
 	
+	$vs_first_color 	= 	((isset($va_settings['colorFirstItem']) && $va_settings['colorFirstItem'])) ? $va_settings['colorFirstItem'] : '';
+	$vs_last_color 		= 	((isset($va_settings['colorLastItem']) && $va_settings['colorLastItem'])) ? $va_settings['colorLastItem'] : '';
+	
 	// params to pass during occurrence lookup
 	$va_lookup_params = (isset($va_settings['restrict_to_type']) && $va_settings['restrict_to_type']) ? array('type' => $va_settings['restrict_to_type'], 'noSubtypes' => (int)$va_settings['dont_include_subtypes_in_type_restriction']) : array();
 
@@ -60,7 +63,7 @@
 	switch($va_settings['list_format']) {
 		case 'list':
 ?>
-		<div id="<?php print $vs_id_prefix; ?>Item_{n}" class="labelInfo listRel">
+		<div id="<?php print $vs_id_prefix; ?>Item_{n}" class="labelInfo listRel caRelatedItem">
 <?php
 	if (!$vb_read_only && !$vb_dont_show_del) {
 ?>				
@@ -79,7 +82,7 @@
 		case 'bubbles':
 		default:
 ?>
-		<div id="<?php print $vs_id_prefix; ?>Item_{n}" class="labelInfo roundedRel">
+		<div id="<?php print $vs_id_prefix; ?>Item_{n}" class="labelInfo roundedRel caRelatedItem">
 			<a href="<?php print urldecode(caEditorUrl($this->request, 'ca_objects', '{object_id}')); ?>" class="caEditItemButton" id="<?php print $vs_id_prefix; ?>_edit_related_{n}">{{label}}</a>
 
 			<input type="hidden" name="<?php print $vs_id_prefix; ?>_type_id{n}" id="<?php print $vs_id_prefix; ?>_type_id{n}" value="{type_id}"/>
@@ -106,7 +109,7 @@
 	switch($va_settings['list_format']) {
 		case 'list':
 ?>
-		<div id="<?php print $vs_id_prefix; ?>Item_{n}" class="labelInfo listRel">
+		<div id="<?php print $vs_id_prefix; ?>Item_{n}" class="labelInfo listRel caRelatedItem">
 <?php
 	if (!$vb_read_only && !$vb_dont_show_del) {
 ?>				
@@ -125,7 +128,7 @@
 		case 'bubbles':
 		default:
 ?>
-		<div id="<?php print $vs_id_prefix; ?>Item_{n}" class="labelInfo roundedRel">
+		<div id="<?php print $vs_id_prefix; ?>Item_{n}" class="labelInfo roundedRel caRelatedItem">
 			<a href="<?php print urldecode(caEditorUrl($this->request, 'ca_objects', '{object_id}')); ?>" class="caEditItemButton" id="<?php print $vs_id_prefix; ?>_edit_related_{n}">{{{{label}}}}</a>
 			({{relationship_typename}})
 			<input type="hidden" name="<?php print $vs_id_prefix; ?>_type_id{n}" id="<?php print $vs_id_prefix; ?>_type_id{n}" value="{type_id}"/>
@@ -153,7 +156,7 @@
 ?>
 	<textarea class='caNewItemTemplate' style='display: none;'>
 		<div style="clear: both; width: 1px; height: 1px;"><!-- empty --></div>
-		<div id="<?php print $vs_id_prefix; ?>Item_{n}" class="labelInfo">
+		<div id="<?php print $vs_id_prefix; ?>Item_{n}" class="labelInfo caRelatedItem">
 			<table class="caListItem">
 				<tr>
 					<td>
@@ -224,6 +227,7 @@
 			templateClassName: 'caNewItemTemplate',
 			initialValueTemplateClassName: 'caItemTemplate',
 			itemListClassName: 'caItemList',
+			listItemClassName: 'caRelatedItem',
 			addButtonClassName: 'caAddItemButton',
 			deleteButtonClassName: 'caDeleteItemButton',
 			hideOnNewIDList: ['<?php print $vs_id_prefix; ?>_edit_related_'],
@@ -234,6 +238,8 @@
 			isSortable: <?php print ($vb_read_only || $vs_sort) ? "false" : "true"; ?>,
 			listSortOrderID: '<?php print $vs_id_prefix; ?>BundleList',
 			listSortItems: 'div.roundedRel',
+			firstItemColor: '<?php print $vs_first_color; ?>',
+			lastItemColor: '<?php print $vs_last_color; ?>',
 <?php
 	if ($t_subject->tableName() == 'ca_object_representations') {
 ?>

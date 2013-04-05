@@ -83,6 +83,7 @@ class WLPlugMediaGmagick Extends BaseMediaPlugin Implements IWLPlugMedia {
 			"image/x-sony-srf"	=> "srf",
 			"image/x-sigma-x3f"	=> "x3f",
 			"image/x-dcraw"	=> "raw",
+			"application/dicom" => "dcm",
 		),
 		"EXPORT" => array(
 			"image/jpeg" 		=> "jpg",
@@ -107,6 +108,7 @@ class WLPlugMediaGmagick Extends BaseMediaPlugin Implements IWLPlugMedia {
 			"image/x-sony-srf"	=> "srf",
 			"image/x-sigma-x3f"	=> "x3f",
 			"image/x-dcraw"	=> "raw",
+			"application/dicom" => "dcm",
 		),
 		"TRANSFORMATIONS" => array(
 			"SCALE" 			=> array("width", "height", "mode", "antialiasing"),
@@ -169,6 +171,7 @@ class WLPlugMediaGmagick Extends BaseMediaPlugin Implements IWLPlugMedia {
 		"image/x-sony-srf"	=> "Sony SRF RAW Image",
 		"image/x-sigma-x3f"	=> "Sigma X3F RAW Image",
 		"image/x-dcraw"	=> "RAW Image",
+		"application/dicom" => "DICOM medical imaging data",
 	);
 	
 	var $magick_names = array(
@@ -194,6 +197,7 @@ class WLPlugMediaGmagick Extends BaseMediaPlugin Implements IWLPlugMedia {
 		"image/x-sony-srf"	=> "SRF",
 		"image/x-sigma-x3f"	=> "X3F",
 		"image/x-dcraw"		=> "RAW",
+		"application/dicom" => "DCM",
 	);
 	
 	#
@@ -936,7 +940,69 @@ class WLPlugMediaGmagick Extends BaseMediaPlugin Implements IWLPlugMedia {
 	 */
 	# This method must be implemented for plug-ins that can output preview frames for videos or pages for documents
 	public function &writePreviews($ps_filepath, $pa_options) {
-		return null;
+		// disable feature until multi-image object traversal works as intended in the gmagick extension
+		// the traversal works but writeimage always takes the first image in a sequence no matter where you set the pointer (with nextimage())
+		return null; 
+
+		/*if(!$this->handle) { return false; }
+		if($this->handle->getnumberimages() < 2) { return false; } // don't generate previews for single images
+
+		if (!isset($pa_options['outputDirectory']) || !$pa_options['outputDirectory'] || !file_exists($pa_options['outputDirectory'])) {
+			if (!($vs_tmp_dir = $this->opo_config->get("taskqueue_tmp_directory"))) {
+				// no dir
+				return false;
+			}
+		} else {
+			$vs_tmp_dir = $pa_options['outputDirectory'];
+		}
+
+		$vs_output_file_prefix = tempnam($vs_tmp_dir, 'caMultipagePreview');
+
+		$va_files = array();
+		$vn_i = 0;
+
+		do {
+			$this->handle->writeimage($vs_output_file_prefix.sprintf("_%05d", $vn_i).".jpg");
+			$va_files[$vn_i] = $vs_output_file_prefix.sprintf("_%05d", $vn_i).'.jpg';
+			$vn_i++;
+
+			try{
+				$this->handle->nextimage();
+			} catch(Exception $e){
+				break;
+			}
+
+		} while($this->handle->hasnextimage());
+
+		@unlink($vs_output_file_prefix);
+		return $va_files;*/
+	}
+	# ------------------------------------------------
+	public function joinArchiveContents($pa_files, $pa_options = array()) {
+		/*if(!is_array($pa_files)) { return false; }
+
+		$vs_archive_original = tempnam(caGetTempDirPath(), "caArchiveOriginal");
+		@rename($vs_archive_original, $vs_archive_original.".tif");
+		$vs_archive_original = $vs_archive_original.".tif";
+
+		$vo_orig = new Gmagick();
+
+		foreach($pa_files as $vs_file){
+			if(file_exists($vs_file)){
+				$vo_r = new Gmagick($vs_file);
+				if($vo_r){
+					$vo_orig = $vo_orig->addimage($vo_r);
+				}
+			}
+		}
+
+		if($vo_orig->getnumberimages() > 0){
+			if($vo_orig->writeimage($vs_archive_original,true)){
+				return $vs_archive_original;
+			}
+		}*/
+
+		return false;
 	}
 	# ------------------------------------------------
 	public function getOutputFormats() {

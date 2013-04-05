@@ -39,8 +39,8 @@
  * @example   marc_yaz.php Pretty print a MARC record retrieved through the PECL yaz extension
  */
 
-require_once 'PEAR/Exception.php';
-require_once 'Structures/LinkedList/Double.php';
+require_once __CA_LIB_DIR__.'/core/Parsers/PEAR/Exception.php';
+require_once __CA_LIB_DIR__.'/core/Parsers/Structures/LinkedList/Double.php';
 require_once __CA_LIB_DIR__.'/core/Parsers/File_MARC/MARCBASE.php';
 require_once __CA_LIB_DIR__.'/core/Parsers/File_MARC/MARC/Record.php';
 require_once __CA_LIB_DIR__.'/core/Parsers/File_MARC/MARC/Field.php';
