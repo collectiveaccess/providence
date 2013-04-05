@@ -2440,7 +2440,9 @@ class ca_users extends BaseModel {
 		}
 		
 		if($this->opo_auth_config->get("use_extdb")){
-			return $this->authenticateExtDB($ps_username,$ps_password);
+			if($vn_rc = $this->authenticateExtDB($ps_username,$ps_password)) {
+				return $vn_rc;
+			}
 		}
 		
 		if ((strlen($ps_username) > 0) && $this->load(array("user_name" => $ps_username))) {
@@ -2683,7 +2685,7 @@ class ca_users extends BaseModel {
 					$this->insert();
 					if(!$this->getPrimaryKey()){
 						// log record creation failed
-						$o_log->log(array('CODE' => 'LOGF', 'SOURCE' => 'ca_users/extdb', 'MESSAGE' => _t('Could not login user %1 after authentication from external database because creation of user record failed: %2', $ps_username, join("; ", $this->getErrors()))));
+						$o_log->log(array('CODE' => 'LOGF', 'SOURCE' => 'ca_users/extdb', 'MESSAGE' => _t('Could not login user %1 after authentication from external database because creation of user record failed: %2 [%3]', $ps_username, join("; ", $this->getErrors()), $_SERVER['REMOTE_ADDR'])));
 						return false;
 					} 
 					
@@ -2726,20 +2728,20 @@ class ca_users extends BaseModel {
 					$this->setMode($vn_mode);
 					
 					// TODO: log user creation
-					$o_log->log(array('CODE' => 'LOGN', 'SOURCE' => 'ca_users/extdb', 'MESSAGE' => _t('Created new login for user %1 after authentication from external database', $ps_username)));
+					$o_log->log(array('CODE' => 'LOGN', 'SOURCE' => 'ca_users/extdb', 'MESSAGE' => _t('Created new login for user %1 after authentication from external database [%2]', $ps_username, $_SERVER['REMOTE_ADDR'])));
 						
 				}		
 			
 				return true;
 			} else {
 				// authentication failed
-				$o_log->log(array('CODE' => 'LOGF', 'SOURCE' => 'ca_users/extdb', 'MESSAGE' => _t('Could not login user %1 using external database because external authentication failed', $ps_username)));
+				//$o_log->log(array('CODE' => 'LOGF', 'SOURCE' => 'ca_users/extdb', 'MESSAGE' => _t('Could not login user %1 using external database because external authentication failed [%2]', $ps_username, $_SERVER['REMOTE_ADDR'])));
 						
 				return false;
 			}
 		} else {
 			// couldn't connect to external database
-			$o_log->log(array('CODE' => 'LOGF', 'SOURCE' => 'ca_users/extdb', 'MESSAGE' => _t('Could not login user %1 using external database because login to external database failed', $ps_username)));
+			$o_log->log(array('CODE' => 'LOGF', 'SOURCE' => 'ca_users/extdb', 'MESSAGE' => _t('Could not login user %1 using external database because login to external database failed [%2]', $ps_username, $_SERVER['REMOTE_ADDR'])));
 						
 			return false;
 		}
