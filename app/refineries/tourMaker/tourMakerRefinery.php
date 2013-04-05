@@ -154,7 +154,7 @@
 				'takesLocale' => false,
 				'default' => '',
 				'label' => _t('Collection type'),
-				'description' => _t('Accepts a constant list item idno from the list collection_types or a reference to the location in the data source where the type can be found.')
+				'description' => _t('Accepts a constant list item idno from the list tour_types or a reference to the location in the data source where the type can be found.')
 			),
 			'tourMaker_attributes' => array(
 				'formatType' => FT_TEXT,
@@ -163,7 +163,7 @@
 				'takesLocale' => false,
 				'default' => '',
 				'label' => _t('Attributes'),
-				'description' => _t('Sets or maps metadata for the collection record by referencing the metadataElement code and the location in the data source where the data values can be found.')
+				'description' => _t('Sets or maps metadata for the tour record by referencing the metadataElement code or the location in the data source where the data values can be found.')
 			),
 			'tourMaker_tourTypeDefault' => array(
 				'formatType' => FT_TEXT,
@@ -172,7 +172,7 @@
 				'takesLocale' => false,
 				'default' => '',
 				'label' => _t('Collection type default'),
-				'description' => _t('Sets the default collection type that will be used if none are defined or if the data source values do not match any values in the CollectiveAccess list collection_types.')
+				'description' => _t('Sets the default tour type that will be used if none are defined or if the data source values do not match any values in the CollectiveAccess list tour_types.')
 			)
 		);
 ?>
