@@ -492,7 +492,7 @@ require_once(__CA_LIB_DIR__."/ca/ApplicationPluginManager.php");
 	 */
 	function caSetupEditorScreenOverlays($po_request, $pt_subject, $pa_bundle_list, $pa_options=null) {
 		$vs_buf = '';
-		if ($pt_subject->isHierarchical()) {
+		if ($pt_subject && $pt_subject->isHierarchical()) {
 			$vs_buf .= caEditorHierarchyOverview($po_request, $pt_subject->tableName(), $pt_subject->getPrimaryKey(), $pa_options);
 		}
 		$vs_buf .= caEditorFieldList($po_request, $pa_bundle_list, $pa_options);	
