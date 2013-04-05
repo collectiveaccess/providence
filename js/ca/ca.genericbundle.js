@@ -325,7 +325,7 @@ var caUI = caUI || {};
 			if (this.getCount() >= this.maxRepeats) {
 				jQuery(this.container + " ." + this.addButtonClassName).hide();	
 			} else {
-				jQuery(this.container).show(200);
+				jQuery(this.container + " ." + this.addButtonClassName).show();
 			}
 			
 			// colorize
