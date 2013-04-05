@@ -768,59 +768,6 @@ class WLPlugMediaAudio Extends BaseMediaPlugin Implements IWLPlugMedia {
 					case 'text':
 						return "<a href='$ps_url'>".(($pa_options["text_only"]) ? $pa_options["text_only"] : "Listen to MP3")."</a>";
 						break;
-					case 'jplayer':
-						JavascriptLoadManager::register("jplayer");
-						$vn_width = ($pa_options["viewer_width"] > 0) ? $pa_options["viewer_width"] : 400;
-						$vn_height = ($pa_options["viewer_height"] > 0) ? $pa_options["viewer_height"] : 95;
-						ob_start();
-?>
-			<div style="width: <?php print $vn_width; ?>px; height: <?php print $vn_height; ?>px;">
-			<div id="<?php print $vs_id; ?>" class="jp-jplayer"></div>
-			  <div class="jp-audio">
-				<div class="jp-type-single">
-				  <div id="jp_interface_1" class="jp-interface">
-					<ul class="jp-controls">
-					  <li><a href="#" class="jp-play" tabindex="1">play</a></li>
-					  <li><a href="#" class="jp-pause" tabindex="1">pause</a></li>
-					  <li><a href="#" class="jp-stop" tabindex="1">stop</a></li>
-					  <li><a href="#" class="jp-mute" tabindex="1">mute</a></li>
-					  <li><a href="#" class="jp-unmute" tabindex="1">unmute</a></li>
-					</ul>
-					<div class="jp-progress">
-					  <div class="jp-seek-bar">
-						<div class="jp-play-bar"></div>
-					  </div>
-					</div>
-					<div class="jp-volume-bar">
-					  <div class="jp-volume-bar-value"></div>
-					</div>
-					<div class="jp-current-time"></div>
-					<div class="jp-duration"></div>
-				  </div>
-				  <div id="jp_playlist_1" class="jp-playlist">
-					<ul>
-					  <li></li>
-					</ul>
-				  </div>
-				</div>
-			  </div>
-			</div>
-			
-				<script type="text/javascript">
-					jQuery(document).ready(function() {
-						jQuery("#<?php print $vs_id; ?>").jPlayer( {
-							ready: function () {
-								jQuery(this).jPlayer("setMedia", { mp3: "<?php print $ps_url; ?>" });
-							},
-							swfPath: "<?php print $viewer_base_url; ?>/js/jquery/jquery-jplayer",
-							supplied: "mp3",
-							solution: "html,flash"
-						});
-					});
-				</script>
-<?php
-						return ob_get_clean();
-						break;
 					default:
 						JavascriptLoadManager::register("mediaelement");
 						
