@@ -270,9 +270,6 @@
 		if ($vb_use_pdfjs_viewer && $this->request->config->get('use_pdfjs_viewer')) {
 			// PDFjs
 ?>
-<script type="text/javascript">
-	
-</script>
 <div id="outerContainer">
 
       <div id="sidebarContainer">
