@@ -26,14 +26,16 @@ function HandsontableScrollLoad() {
 				for(var i =curRowIndex; i < curRowIndex + 12; i++) {
 					rowCheckMap[i] = true;	
 				}
-				jQuery.getJSON( settings.dataLoadUrl, { start: curRowIndex }, function(newData, textStatus, jqXHR) {
-					//console.log("Got data for s=" + curRowIndex);
+				
+				var rowHeaders = table.getRowHeader();
+				jQuery.getJSON( settings.dataLoadUrl, { start: curRowIndex, n: 100 }, function(newData, textStatus, jqXHR) {
 					jQuery.each(newData, function(k, v) {
 						var rowIndex = curRowIndex + parseInt(k);
+						
 						rowCheckMap[rowIndex] = true;
 						data[rowIndex] = v;
+						rowHeaders[rowIndex] = settings.editLinkFormat.replace("%1", v['item_id']);
 					});
-					
 					table.render();
 				});
 			}

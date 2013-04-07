@@ -1892,6 +1892,7 @@ Handsontable.Core = function (rootElement, settings) {
    * @return {Array|String}
    */
   this.getRowHeader = function (row) {
+  	if (row == undefined) { return priv.settings.rowHeaders; }	// MOD for CA 7 April 2013
     if (Object.prototype.toString.call(priv.settings.rowHeaders) === '[object Array]' && priv.settings.rowHeaders[row] !== void 0) {
       return priv.settings.rowHeaders[row];
     }
@@ -5741,7 +5742,7 @@ WalkontableScroll.prototype.scrollVertical = function (delta) {
         }
       }
     }
-     Handsontable.PluginHooks.run(self, 'scrollVertical', { "row" : newOffsetRow, "instance" : this.instance });
+     Handsontable.PluginHooks.run(self, 'scrollVertical', { "row" : newOffsetRow, "instance" : this.instance });	// MOD for CA 7 April 2013
   }
   else if (newOffsetRow < 0) {
     newOffsetRow = 0;
@@ -5795,7 +5796,7 @@ WalkontableScroll.prototype.scrollHorizontal = function (delta) {
         }
       }
     }
-    Handsontable.PluginHooks.run(self, 'scrollHorizontal', { "col" : newOffsetColumn, "instance" : this.instance });
+    Handsontable.PluginHooks.run(self, 'scrollHorizontal', { "col" : newOffsetColumn, "instance" : this.instance });	// MOD for CA 4 April 2013
   }
   else if (newOffsetColumn < 0) {
     newOffsetColumn = 0;
