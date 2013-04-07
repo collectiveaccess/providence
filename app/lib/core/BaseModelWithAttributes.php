@@ -1691,7 +1691,15 @@
 		}
 		# ------------------------------------------------------------------
 		/**
-		 * Returns list of metdata element codes applicable to the current row. If there is no loaded row and $pn_type_id
+		 *
+		 */
+		public function hasElement($ps_element_code) {
+			$va_codes = $this->getApplicableElementCodes(null, false, false);
+			return (in_array($ps_element_code, $va_codes));
+		}
+		# ------------------------------------------------------------------
+		/**
+		 * Returns list of metadata element codes applicable to the current row. If there is no loaded row and $pn_type_id
 		 * is not set then all attributes applicable to the model as a whole (regardless of type restrictions) are returned.
 		 *
 		 * Normally only top-level attribute codes are returned. This is good: in general you should only be dealing with attributes
