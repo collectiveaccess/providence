@@ -106,7 +106,9 @@
 						'bundle_name' => $va_display_item['bundle_name'],
 						'display' => $vs_header,
 						'settings' => $va_settings,
-						'allowInlineEditing' => $va_display_item['allowInlineEditing']
+						'allowInlineEditing' => $va_display_item['allowInlineEditing'],
+						'inlineEditingType' => $va_display_item['inlineEditingType'],
+						'inlineEditingListValues' => $va_display_item['inlineEditingListValues']
 					);
 				}
 			}

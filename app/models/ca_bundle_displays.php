@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2010-2012 Whirl-i-Gig
+ * Copyright 2010-2013 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -40,6 +40,7 @@ require_once(__CA_MODELS_DIR__.'/ca_bundle_displays.php');
 require_once(__CA_MODELS_DIR__.'/ca_bundle_display_placements.php'); 
 require_once(__CA_MODELS_DIR__.'/ca_bundle_displays_x_user_groups.php'); 
 require_once(__CA_MODELS_DIR__.'/ca_metadata_elements.php'); 
+require_once(__CA_MODELS_DIR__.'/ca_lists.php'); 
 require_once(__CA_LIB_DIR__."/core/Parsers/htmlpurifier/HTMLPurifier.standalone.php");
 
 define('__CA_BUNDLE_DISPLAY_NO_ACCESS__', 0);
@@ -448,6 +449,8 @@ class ca_bundle_displays extends BundlableLabelableBaseModelWithAttributes {
 		$o_dm = $this->getAppDatamodel();
 		$o_db = $this->getDb();
 		
+		$t_list = new ca_lists();
+		
 		$qr_res = $o_db->query("
 			SELECT placement_id, bundle_name, settings
 			FROM ca_bundle_display_placements
@@ -461,6 +464,7 @@ class ca_bundle_displays extends BundlableLabelableBaseModelWithAttributes {
 	
 		if ($qr_res->numRows() > 0) {
 			$vs_subject_table = $o_dm->getTableName($this->get('table_num'));
+			$t_subject = $o_dm->getInstanceByTableNum($this->get('table_num'), true);
 			$t_placement = new ca_bundle_display_placements();
 			while($qr_res->nextRow()) {
 				$vs_bundle_name = $qr_res->get('bundle_name');
@@ -479,9 +483,68 @@ class ca_bundle_displays extends BundlableLabelableBaseModelWithAttributes {
 				}
 				
 				if ($va_bundle_name[0] == $vs_subject_table) {
-					$va_placements[$vn_placement_id]['allowInlineEditing'] = true;
+					// Only primary fields are inline-editable
+					
+					// Check if it is one of the types of fields that is inline editable
+					if ($va_bundle_name[1] == 'preferred_labels') {
+						// Preferred labels are inline editable
+						$va_placements[$vn_placement_id]['allowInlineEditing'] = true;
+						$va_placements[$vn_placement_id]['inlineEditingType'] = DT_FIELD;
+					} elseif ($t_subject->hasField($va_bundle_name[1])) {
+						//
+						// Intrinsics are editable, except for type_id
+						//
+						if ($va_bundle_name[1] == $t_subject->getTypeFieldName()) {
+							$va_placements[$vn_placement_id]['allowInlineEditing'] = false;
+							$va_placements[$vn_placement_id]['inlineEditingType'] = null;
+						} else {
+							$va_placements[$vn_placement_id]['allowInlineEditing'] = true;
+							switch($t_subject->getFieldInfo($va_bundle_name[1], 'DISPLAY_TYPE')) {
+								case 'DT_SELECT':
+									if (($vs_list_code = $t_subject->getFieldInfo($va_bundle_name[1], 'LIST')) || ($vs_list_code = $t_subject->getFieldInfo($va_bundle_name[1], 'LIST_CODE'))) {
+										$va_placements[$vn_placement_id]['inlineEditingType'] = DT_SELECT;
+										$va_placements[$vn_placement_id]['inlineEditingListValues'] = array_values($t_list->getItemsForList($vs_list_code, array('labelsOnly' => true)));
+									} else {
+										$va_placements[$vn_placement_id]['inlineEditingType'] = DT_FIELD;
+									}
+									break;
+								default:
+									$va_placements[$vn_placement_id]['inlineEditingType'] = DT_FIELD;
+									break;
+							}
+						}
+					} elseif ($t_subject->hasElement($va_bundle_name[1])) {
+						$vn_data_type = ca_metadata_elements::getElementDatatype($va_bundle_name[1]);
+						switch($vn_data_type) {
+							case 1:
+							case 2:
+							case 5:
+							case 6:
+							case 8:
+							case 9:
+							case 10:
+							case 11:
+							case 12:
+								$va_placements[$vn_placement_id]['allowInlineEditing'] = true;
+								$va_placements[$vn_placement_id]['inlineEditingType'] = DT_FIELD;
+								break;
+							case 3:	// lists not supported yet
+								$va_placements[$vn_placement_id]['allowInlineEditing'] = false;
+								$va_placements[$vn_placement_id]['inlineEditingType'] = null;
+								break;
+							default:
+								$va_placements[$vn_placement_id]['allowInlineEditing'] = false;
+								$va_placements[$vn_placement_id]['inlineEditingType'] = null;
+								break;
+						}
+					} else {
+						$va_placements[$vn_placement_id]['allowInlineEditing'] = false;
+						$va_placements[$vn_placement_id]['inlineEditingType'] = null;
+					}
 				} else {
+					// Related bundles are never inline-editable (for now)
 					$va_placements[$vn_placement_id]['allowInlineEditing'] = false;
+					$va_placements[$vn_placement_id]['inlineEditingType'] = null;
 				}
 			}
 		} else {

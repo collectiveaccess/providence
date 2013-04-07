@@ -35,8 +35,8 @@
 	if($vo_result) {
 		$vs_view = $this->getVar('current_view');
 		if ($vo_result->numHits() == 0) { $vs_view = 'no_results'; }
-		
-		if ($vs_view != 'map') { print $this->render('Results/paging_controls_html.php'); }
+		if ($vs_view == 'editable') { $this->setVar('dontShowPages', true); }
+		print $this->render('Results/paging_controls_html.php');
 		print $this->render('Results/search_options_html.php');
 ?>
 
@@ -62,7 +62,7 @@
 ?>		
 	</div><!-- end sectionbox -->
 <?php
-		if ($vs_view != 'map') { print $this->render('Results/paging_controls_minimal_html.php'); }
+		print $this->render('Results/paging_controls_minimal_html.php');
 	}
 ?>
 </div><!-- end resultbox -->

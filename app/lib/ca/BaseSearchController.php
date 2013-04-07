@@ -328,9 +328,11 @@
  			
  			$pn_start = $this->request->getParameter('start', pInteger);
  			
- 			if (!($vn_items_per_page = $this->opo_result_context->getItemsPerPage())) { 
- 				$vn_items_per_page = $this->opn_items_per_page_default; 
- 				$this->opo_result_context->setItemsPerPage($vn_items_per_page);
+ 			if (!($vn_items_per_page = $this->request->getParameter('n', pInteger))) {
+				if (!($vn_items_per_page = $this->opo_result_context->getItemsPerPage())) { 
+					$vn_items_per_page = $this->opn_items_per_page_default; 
+					$this->opo_result_context->setItemsPerPage($vn_items_per_page);
+				}
  			}
  			
  			$vs_search 				= $this->opo_result_context->getSearchExpression();
@@ -432,7 +434,7 @@
  			
  			$vn_c = 0;
  			while($vo_result->nextHit()) {
- 				$va_result = array();
+ 				$va_result = array("item_id" => $vo_result->get($vo_result->primaryKey()));
  				foreach($va_display_list as $vn_placement_id => $va_placement) {
  					
  					$va_result[str_replace(".", "-", $va_placement['bundle_name'])] = $t_display->getDisplayValue($vo_result, $vn_placement_id, array('request' => $this->request));

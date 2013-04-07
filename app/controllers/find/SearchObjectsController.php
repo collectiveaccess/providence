@@ -106,6 +106,104 @@
  		}
  		# -------------------------------------------------------
  		/**
+ 		 *
+ 		 */ 
+ 		public function saveInlineEdit($pa_options=null) {
+ 			global $g_ui_locale_id;
+ 			
+ 			$ps_table = $this->request->getParameter('table', pString);
+ 			$ps_bundle = $this->request->getParameter('bundle', pString);
+ 			$pa_bundle = explode("-", $ps_bundle);
+ 			$pn_id = $this->request->getParameter('id', pInteger);
+ 			$ps_val = $this->request->getParameter('value', pString);
+ 			
+ 			$vs_resp = array();
+ 			$o_dm = Datamodel::load();
+ 			if (!($t_instance = $o_dm->getInstanceByTableName($ps_table, true))) {
+ 				$va_resp = array(
+ 					'error' => 100,
+ 					'message' => _t('Invalid table: %1', $ps_table)
+ 				);
+ 			} else {
+				if (!$t_instance->load($pn_id)) {
+					$va_resp = array(
+						'error' => 100,
+						'message' => _t('Invalid id: %1', $pn_id)
+					);
+				} else {
+					if ($pa_bundle[0] == 'preferred_labels') {
+						$vn_label_id = $t_instance->getPreferredLabelID($g_ui_locale_id);
+						
+						$va_label_values = array();
+						if (sizeof($pa_bundle) == 1) {
+							// is generic "preferred_labels"
+							$va_label_values[$t_instance->getLabelDisplayField()] = $ps_val;
+						} else {
+							$vs_preferred_label_element = $pa_bundle[1];
+							$va_label_values[$vs_preferred_label_element] = $ps_val;
+						}
+						
+						if ($vn_label_id) {
+							$t_instance->editLabel($vn_label_id, $va_label_values, $g_ui_locale_id, null, true);	// TODO: what about type?
+						} else {
+							$t_instance->addLabel($va_label_values, $g_ui_locale_id, null, true);
+						}
+						
+						if ($t_instance->numErrors()) {
+							$va_resp = array(
+								'error' => 100,
+								'message' => _t('Could not set preferred label %1 to %2: %3', $ps_bundle, $ps_val, join("; ", $t_instance->getErrors()))
+							);
+						} else {
+							$va_resp = array(
+								'error' => 0,
+								'message' => _t('Set preferred label %1 to %2', $ps_bundle, $ps_val)
+							);
+						}
+					} elseif ($t_instance->hasField($ps_bundle)) {
+					
+						$va_resp = array(
+							'error' => 0,
+							'message' => _t('Set %1 to %2', $ps_bundle, $ps_val)
+						);
+					} elseif ($t_instance->hasElement($ps_bundle)) {
+						// Check it it repeats?
+						
+						// Check if it's a supported type?
+						
+						$t_instance->setMode(ACCESS_WRITE);
+						$t_instance->replaceAttribute(array(
+							'locale_id' => $g_ui_locale_id,
+							$ps_bundle => $ps_val
+						), $ps_bundle);
+						
+						$t_instance->update();
+						
+						if ($t_instance->numErrors()) {
+							$va_resp = array(
+								'error' => 100,
+								'message' => _t('Could not set %1 to %2: %3', $ps_bundle, $ps_val, join("; ", $t_instance->getErrors()))
+							);
+						} else {
+							$va_resp = array(
+								'error' => 0,
+								'message' => _t('Set %1 to %2', $ps_bundle, $ps_val),
+								'value' => $t_instance->get($ps_table.'.'.$ps_bundle)
+							);
+						}
+					} else {
+						$va_resp = array(
+							'error' => 100,
+							'message' => _t('Invalid bundle: %1', $ps_bundle)
+						);
+					}
+				}
+			}
+ 			
+ 			print json_encode($va_resp);
+ 		}
+ 		# -------------------------------------------------------
+ 		/**
  		 * QuickLook
  		 */
  		public function QuickLook() {
