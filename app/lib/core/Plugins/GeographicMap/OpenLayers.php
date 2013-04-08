@@ -237,8 +237,8 @@ class WLPlugGeographicMapOpenLayers Extends BaseGeographicMapPlugIn Implements I
 			$va_buf = array();
 			$va_ajax_ids = array();
 				
-			$vs_label = $va_path['label'];
-			$vs_content = $va_path['content'];
+			$vs_label = preg_replace("![\n\r]+!", " ", addslashes($va_path['label']));
+			$vs_content = preg_replace("![\n\r]+!", " ", addslashes($va_path['content']));
 			$vs_ajax_url = preg_replace("![\n\r]+!", " ", ($va_path['ajaxContentUrl'] ? addslashes($va_path['ajaxContentUrl']."/id/".$va_path['ajaxContentID']) : ''));
 	
 			

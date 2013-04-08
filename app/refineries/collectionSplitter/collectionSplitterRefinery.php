@@ -116,15 +116,15 @@
 				}
 				
 				// Set collection parents
+				global $g_ui_locale_id;
 				if ($va_parents = $pa_item['settings']['collectionSplitter_parents']) {
-					print "parents: ";
-					print_R($va_parents);
-				
-					//$vn_hierarchy_id = caGetListItemID('place_hierarchies', $vs_hierarchy);
-
-					//$t_place = new ca_places();
-					//$t_place->load(array('parent_id' => null, 'hierarchy_id' => $vn_hierarchy_id));
-					//$va_val['_parent_id'] = $t_collection->getPrimaryKey();
+					if (!is_array($va_parents)) { $va_parents = array($va_parents); }
+					$vn_collection_id = null;
+						
+					foreach($va_parents as $vn_i => $vs_parent) {
+						$vn_collection_id = DataMigrationUtils::getCollectionID($vs_parent, $va_val['_type'], $g_ui_locale_id, array('idno' => $vs_parent, 'parent_id' => $vn_collection_id), $pa_options);
+					}
+					$va_val['parent_id'] = $vn_collection_id;
 				}
 			
 				// Set attributes

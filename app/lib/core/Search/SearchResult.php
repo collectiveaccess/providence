@@ -1109,17 +1109,63 @@ class SearchResult extends BaseObject {
 					switch($va_field_info['FIELD_TYPE']) {
 						case FT_DATERANGE:
 						case FT_HISTORIC_DATERANGE:
-							$this->opo_tep->init();
-							if ($va_field_info['FIELD_TYPE'] == FT_DATERANGE) {
-								$this->opo_tep->setUnixTimestamps($va_value[$va_field_info['START']], $va_value[$va_field_info['END']]);
-							} else {
-								$this->opo_tep->setHistoricTimestamps($va_value[$va_field_info['START']], $va_value[$va_field_info['END']]);
+							foreach($va_value_list as $vn_id => $va_values_by_locale) {
+								foreach($va_values_by_locale as $vn_locale_id => $va_values) {
+									foreach($va_values as $vn_i => $va_value) {
+										$this->opo_tep->init();
+										if ($va_field_info['FIELD_TYPE'] == FT_DATERANGE) {
+											$this->opo_tep->setUnixTimestamps($va_value[$va_field_info['START']], $va_value[$va_field_info['END']]);
+										} else {
+											$this->opo_tep->setHistoricTimestamps($va_value[$va_field_info['START']], $va_value[$va_field_info['END']]);
+										}
+										$vs_prop = $this->opo_tep->getText($pa_options);
+										if ($vb_return_all_locales) {
+											$va_return_values[$vn_row_id][$vn_locale_id][] = $vs_prop;
+										} else {
+											$va_return_values[] = $vs_prop;
+										}
+									}
+								}
 							}
-							$vs_prop = $this->opo_tep->getText($pa_options);
-							if ($vb_return_all_locales) {
-								$va_return_values[$vn_row_id][$vn_locale_id][] = $vs_prop;
-							} else {
-								$va_return_values[] = $vs_prop;
+						case FT_MEDIA:
+							if(!$vs_version = $va_path_components['subfield_name']) {
+								$vs_version = "largeicon";
+							}
+							foreach($va_value_list as $vn_id => $va_values_by_locale) {
+								foreach($va_values_by_locale as $vn_locale_id => $va_values) {
+									foreach($va_values as $vn_i => $va_value) {
+										if (isset($pa_options['unserialize']) && $pa_options['unserialize']) {
+											$vs_prop = caUnserializeForDatabase($va_value[$va_path_components['field_name']]);
+											if ($vb_return_all_locales) {
+												$va_return_values[$vn_row_id][$vn_locale_id][] = $vs_prop;
+											} else {
+												$va_return_values[] = $vs_prop;
+											}
+										} else {
+											$o_media_settings = new MediaProcessingSettings($va_path_components['table_name'], $va_path_components['field_name']);
+											$va_versions = $o_media_settings->getMediaTypeVersions('*');
+							
+											if (!isset($va_versions[$vs_version])) {
+												$va_tmp = array_keys($va_versions);
+												$vs_version = array_shift($va_tmp);
+											}
+								
+											if ($vb_return_all_locales) {
+												if (isset($pa_options['returnURL']) && ($pa_options['returnURL'])) {
+													$va_return_values[$vn_row_id][$vn_locale_id][] = $this->getMediaUrl($va_path_components['table_name'].'.'.$va_path_components['field_name'], $vs_version, $pa_options);
+												} else {
+													$va_return_values[$vn_row_id][$vn_locale_id][] = $this->getMediaTag($va_path_components['table_name'].'.'.$va_path_components['field_name'], $vs_version, $pa_options);
+												}
+											} else {
+												if (isset($pa_options['returnURL']) && ($pa_options['returnURL'])) {
+													$va_return_values[] = $this->getMediaUrl($va_path_components['table_name'].'.'.$va_path_components['field_name'], $vs_version, $pa_options);
+												} else {
+													$va_return_values[] = $this->getMediaTag($va_path_components['table_name'].'.'.$va_path_components['field_name'], $vs_version, $pa_options);
+												}
+											}
+										}
+									}
+								}
 							}
 							break;
 						default:

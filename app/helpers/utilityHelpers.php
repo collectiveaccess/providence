@@ -54,32 +54,35 @@ global $ca_translation_cache;
 $ca_translation_cache = array();
 function _t($ps_key) {
 	global $ca_translation_cache, $_;
-	global $_;
 	
-	if (!sizeof(func_get_args()) && isset($ca_translation_cache[$ps_key])) { return $ca_translation_cache[$ps_key]; }
-	
-	if (is_array($_)) {
-		$vs_str = $ps_key;
-		foreach($_ as $o_locale) {
-			if ($o_locale->isTranslated($ps_key)) {
-				$vs_str = $o_locale->_($ps_key);
-				break;
-			}
-		}
-	} else {
-		if (!is_object($_)) { 
+	if (!isset($ca_translation_cache[$ps_key])) {
+		if (is_array($_)) {
 			$vs_str = $ps_key;
+			foreach($_ as $o_locale) {
+				if ($o_locale->isTranslated($ps_key)) {
+					$vs_str = $o_locale->_($ps_key);
+					break;
+				}
+			}
 		} else {
-			$vs_str = $_->_($ps_key);
-		} 
+			if (!is_object($_)) { 
+				$vs_str = $ps_key;
+			} else {
+				$vs_str = $_->_($ps_key);
+			} 
+		}
+		$ca_translation_cache[$ps_key] = $vs_str;
+	} else {
+		$vs_str = $ca_translation_cache[$ps_key];
 	}
+	
 	if (sizeof($va_args = func_get_args()) > 1) {
 		$vn_num_args = sizeof($va_args) - 1;
 		for($vn_i=$vn_num_args; $vn_i >= 1; $vn_i--) {
 			$vs_str = str_replace("%{$vn_i}", $va_args[$vn_i], $vs_str);
 		}
 	}
-	return $ca_translation_cache[$ps_key] = $vs_str;
+	return $vs_str;
 }
 
 /**
@@ -416,6 +419,15 @@ function caFileIsIncludable($ps_file) {
 		unlink ($vs_new_file);
 		
 		return true;
+	}
+	# ----------------------------------------
+	function caIsArchive($ps_filename){
+		// what once was the PHAR extension is built in since PHP 5.3
+		// can actually handle zip and tar.gz (and probably a lot more)
+		if(!class_exists("PharData")) return false; 
+		$list = @scandir('phar://'.$ps_filename);
+	
+		return (bool)$list;
 	}
 	# ----------------------------------------
 	function caGetOSFamily() {
@@ -1678,13 +1690,13 @@ function caFileIsIncludable($ps_file) {
 			} else {
 				$vs_string = htmlspecialchars(($print_r ? print_r($vm_data, TRUE) : var_export($vm_data, TRUE)), ENT_QUOTES, 'UTF-8');
 				$vs_string = '<pre>' . $vs_string . '</pre>';
-				$vs_string = trim($vs_label ? "<div id='debugLabel'>$vs_label:</div> $vs_string" : $vs_string);
-				$vs_string = '<div id="debug">'. $vs_string . '</div>';
+				$vs_string = trim($vs_label ? "<div class='debugLabel'>$vs_label:</div> $vs_string" : $vs_string);
+				$vs_string = '<div class="debug">'. $vs_string . '</div>';
 			}
 
 			global $g_response;
 			if(is_object($g_response)){
-				$g_response->prependContent($vs_string,'debug');
+				$g_response->addContent($vs_string,'default');
 			} else {
 				// on the off chance that someone wants to debug something that happens before 
 				// the response object is generated (like config checks), print content

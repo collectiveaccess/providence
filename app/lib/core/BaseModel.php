@@ -3731,6 +3731,60 @@ class BaseModel extends BaseObject {
 					}
 				}
 
+				// allow adding zip and (gzipped) tape archives
+				$vb_is_archive = false;
+				$vs_original_filename = $this->_SET_FILES[$ps_field]['original_filename'];
+				$vs_original_tmpname = $this->_SET_FILES[$ps_field]['tmp_name'];
+				$va_matches = array();
+
+				if(preg_match("/(\.zip|\.tar\.gz|\.tgz)$/",$vs_original_filename,$va_matches)){
+					$vs_archive_extension = $va_matches[1];
+
+					// add file extension to temporary file if necessary; otherwise phar barfs when handling the archive
+					$va_tmp = array();
+					preg_match("/[.]*\.([a-zA-Z0-9]+)$/",$va_archive_files[0],$va_tmp);
+					if(!isset($va_tmp[1])){
+						@rename($this->_SET_FILES[$ps_field]['tmp_name'], $this->_SET_FILES[$ps_field]['tmp_name'].$vs_archive_extension);
+						$this->_SET_FILES[$ps_field]['tmp_name'] = $this->_SET_FILES[$ps_field]['tmp_name'].$vs_archive_extension;
+					}
+
+					if(caIsArchive($this->_SET_FILES[$ps_field]['tmp_name'])){
+						$va_archive_files = caGetDirectoryContentsAsList('phar://'.$this->_SET_FILES[$ps_field]['tmp_name']);
+						if(sizeof($va_archive_files)>0){
+							// get first file we encounter in the archive and use it to generate them previews
+							$vb_is_archive = true;
+							$vs_archive = $this->_SET_FILES[$ps_field]['tmp_name'];
+							$va_tmp = array();
+
+							// copy primary file from the archive to temporary file (with extension so that *Magick can identify properly)
+							// this is basically a fallback. if the code below fails, we still have a 'fake' original
+							preg_match("/[.]*\.([a-zA-Z0-9]+)$/",$va_archive_files[0],$va_tmp);
+							$vs_primary_file_tmp = tempnam(caGetTempDirPath(), "caArchivePrimary");
+							@unlink($vs_primary_file_tmp);
+							$vs_primary_file_tmp = $vs_primary_file_tmp.".".$va_tmp[1];
+							@copy($va_archive_files[0], $vs_primary_file_tmp);
+							$this->_SET_FILES[$ps_field]['tmp_name'] = $vs_primary_file_tmp;
+
+							// prepare to join archive contents to form a better downloadable "original" than the zip/tgz archive (e.g. a multi-page tiff)
+							// to do that, we have to 'extract' the archive so that command-line utilities like *Magick can operate
+							@caRemoveDirectory(caGetTempDirPath().'/caArchiveExtract'); // remove left-overs, just to be sure we don't include other files in the tiff
+							$va_archive_tmp_files = array();
+							@mkdir(caGetTempDirPath().'/caArchiveExtract');
+							foreach($va_archive_files as $vs_archive_file){
+								$vs_basename = basename($vs_archive_file);
+								$vs_tmp_file_name = caGetTempDirPath().'/caArchiveExtract/'.str_replace(" ", "_", $vs_basename);
+								$va_archive_tmp_files[] = $vs_tmp_file_name;
+								@copy($vs_archive_file,$vs_tmp_file_name);
+							}
+						}
+					}
+
+					if(!$vb_is_archive) { // something went wrong (i.e. no valid or empty archive) -> restore previous state
+						@rename($this->_SET_FILES[$ps_field]['tmp_name'].$vs_archive_extension, $vs_original_tmpname);
+						$this->_SET_FILES[$ps_field]['tmp_name'] = $vs_original_tmpname;
+					}
+				}
+
 				// ImageMagick partly relies on file extensions to properly identify images (RAW images in particular)
 				// therefore we rename the temporary file here (using the extension of the original filename, if any)
 				$va_matches = array();
@@ -3756,6 +3810,7 @@ class BaseModel extends BaseObject {
 					$this->postError(1600, ($input_mimetype) ? _t("File type %1 not accepted by %2", $input_mimetype, $ps_field) : _t("Unknown file type not accepted by %1", $ps_field),"BaseModel->_processMedia()");
 					set_time_limit($vn_max_execution_time);
 					if ($vb_is_fetched_file) { @unlink($vs_tmp_file); }
+					if ($vb_is_archive) { @unlink($vs_archive); @unlink($vs_primary_file_tmp); }
 					return false;
 				}
 
@@ -3764,7 +3819,30 @@ class BaseModel extends BaseObject {
 					$this->errors = array_merge($this->errors, $m->errors());	// copy into model plugin errors
 					set_time_limit($vn_max_execution_time);
 					if ($vb_is_fetched_file) { @unlink($vs_tmp_file); }
+					if ($vb_is_archive) { @unlink($vs_archive); @unlink($vs_primary_file_tmp); }
 					return false;
+				}
+
+				// if necessary, join archive contents to form a better downloadable "original" than the zip/tgz archive (e.g. a multi-page tiff)
+				// by this point, a backend plugin was picked using the first file of the archive. this backend is also used to prepare the new original.
+				if($vb_is_archive && (sizeof($va_archive_tmp_files)>0)){
+					if($vs_archive_original = $m->joinArchiveContents($va_archive_tmp_files)){
+						// mangle filename, so that the uploaded archive.zip becomes archive.tif or archive.gif or whatever extension the Media plugin prefers
+						$va_new_original_pathinfo = pathinfo($vs_archive_original);
+						$va_archive_pathinfo = pathinfo($this->_SET_FILES[$ps_field]['original_filename']);
+						$this->_SET_FILES[$ps_field]['original_filename'] = $va_archive_pathinfo['filename'].".".$va_new_original_pathinfo['extension'];
+
+						// this is now our original, disregard the uploaded archive
+						$this->_SET_FILES[$ps_field]['tmp_name'] = $vs_archive_original;
+
+						// re-run mimetype detection and read on the new original
+						$m->reset();
+						$input_mimetype = $m->divineFileFormat($vs_archive_original);
+						$input_type = $o_media_proc_settings->canAccept($input_mimetype);
+						$m->read($vs_archive_original);
+					}
+
+					@caRemoveDirectory(caGetTempDirPath().'/caArchiveExtract');
 				}
 				
 				$va_media_objects['_original'] = $m;
@@ -3931,6 +4009,7 @@ class BaseModel extends BaseObject {
 							$m->cleanup();
 							set_time_limit($vn_max_execution_time);
 							if ($vb_is_fetched_file) { @unlink($vs_tmp_file); }
+							if ($vb_is_archive) { @unlink($vs_archive); @unlink($vs_primary_file_tmp); @unlink($vs_archive_original); }
 							return false;
 						}
 
@@ -3938,6 +4017,7 @@ class BaseModel extends BaseObject {
 							$this->postError(1600, _t("Could not create subdirectory for uploaded file in %1. Please ask your administrator to check the permissions of your media directory.", $vi["absolutePath"]),"BaseModel->_processMedia()");
 							set_time_limit($vn_max_execution_time);
 							if ($vb_is_fetched_file) { @unlink($vs_tmp_file); }
+							if ($vb_is_archive) { @unlink($vs_archive); @unlink($vs_primary_file_tmp); @unlink($vs_archive_original); }
 							return false;
 						}
 
@@ -3973,6 +4053,7 @@ class BaseModel extends BaseObject {
 								$m->cleanup();
 								set_time_limit($vn_max_execution_time);
 								if ($vb_is_fetched_file) { @unlink($vs_tmp_file); }
+								if ($vb_is_archive) { @unlink($vs_archive); @unlink($vs_primary_file_tmp); @unlink($vs_archive_original); }
 								return false;
 							}
 							
@@ -4075,6 +4156,7 @@ class BaseModel extends BaseObject {
 							$m->cleanup();
 							set_time_limit($vn_max_execution_time);
 							if ($vb_is_fetched_file) { @unlink($vs_tmp_file); }
+							if ($vb_is_archive) { @unlink($vs_archive); @unlink($vs_primary_file_tmp); @unlink($vs_archive_original); }
 							return false;
 						}
 
@@ -4082,6 +4164,7 @@ class BaseModel extends BaseObject {
 							$this->postError(1600, _t("Could not create subdirectory for uploaded file in %1. Please ask your administrator to check the permissions of your media directory.", $vi["absolutePath"]),"BaseModel->_processMedia()");
 							set_time_limit($vn_max_execution_time);
 							if ($vb_is_fetched_file) { @unlink($vs_tmp_file); }
+							if ($vb_is_archive) { @unlink($vs_archive); @unlink($vs_primary_file_tmp); @unlink($vs_archive_original); }
 							return false;
 						}
 						$magic = rand(0,99999);
@@ -4092,6 +4175,7 @@ class BaseModel extends BaseObject {
 							$m->cleanup();
 							set_time_limit($vn_max_execution_time);
 							if ($vb_is_fetched_file) { @unlink($vs_tmp_file); }
+							if ($vb_is_archive) { @unlink($vs_archive); @unlink($vs_primary_file_tmp); @unlink($vs_archive_original); }
 							return false;
 							break;
 						} else {
@@ -4254,7 +4338,7 @@ class BaseModel extends BaseObject {
 								'outputDirectory' => __CA_APP_DIR__.'/tmp'
 							)
 						);
-						
+							
 						$this->removeAllFiles();		// get rid of any previously existing frames (they might be hanging around if we're editing an existing record)
 						if (is_array($va_preview_frame_list)) {
 							foreach($va_preview_frame_list as $vn_time => $vs_frame) {
@@ -4323,6 +4407,7 @@ class BaseModel extends BaseObject {
 		}
 		set_time_limit($vn_max_execution_time);
 		if ($vb_is_fetched_file) { @unlink($vs_tmp_file); }
+		if ($vb_is_archive) { @unlink($vs_archive); @unlink($vs_primary_file_tmp); @unlink($vs_archive_original); }
 		return $vs_sql;
 	}
 	# --------------------------------------------------------------------------------
@@ -8375,7 +8460,7 @@ $pa_options["display_form_field_tips"] = true;
 				}
 			
 				$vs_relation_id_fld = ($vb_is_one_table ? "mt.".$va_rel_keys['many_table_field'] : "ot.".$va_rel_keys['one_table_field']);
-				$qr_res = $o_db->query("
+				$qr_res = $o_db->query($x="
 					SELECT {$vs_relation_id_fld}
 					FROM {$va_rel_keys['one_table']} ot
 					INNER JOIN {$va_rel_keys['many_table']} AS mt ON mt.{$va_rel_keys['many_table_field']} = ot.{$va_rel_keys['one_table_field']}

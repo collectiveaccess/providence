@@ -123,11 +123,17 @@ class SearchEngine extends SearchBase {
 	 *		sets = if value is a list of set_ids, only rows that are members of those sets will be returned
 	 *		user_id = If set item level access control is performed relative to specified user_id, otherwise defaults to logged in user
 	 *		dontFilterByACL = if true ACL checking is not performed on results
+	 *		appendToSearch = 
+	 *
 	 * @return SearchResult Results packages in a SearchResult object, or sub-class of SearchResult if an instance was passed in $po_result
 	 * @uses TimeExpressionParser::parse
 	 */
 	public function doSearch($ps_search, $po_result=null, $pa_options=null) {
 		global $AUTH_CURRENT_USER_ID;
+		
+		if ($vs_append_to_search = (isset($pa_options['appendToSearch'])) ? ' '.$pa_options['appendToSearch'] : '') {
+			$ps_search .= $vs_append_to_search;
+		}
 		
 		$t = new Timer();
 		if (!is_array($pa_options)) { $pa_options = array(); }
@@ -521,9 +527,9 @@ class SearchEngine extends SearchBase {
 							$va_row = $qr_sort->getRow();
 							if (!$va_row['row_id']) { continue; }
 							if ($vn_num_locales > 1) {
-								$va_sorted_hits[$va_row['row_id']][$va_row['locale_id']] = trim(str_replace(array("'", '"'), array('', ''), $va_row[$vs_sort_field]));
+								$va_sorted_hits[$va_row['row_id']][$va_row['locale_id']] .= trim(str_replace(array("'", '"'), array('', ''), $va_row[$vs_sort_field]));
 							} else {
-								$va_sorted_hits[$va_row['row_id']] = trim(str_replace(array("'", '"'), array('', ''), $va_row[$vs_sort_field]));
+								$va_sorted_hits[$va_row['row_id']] .= trim(str_replace(array("'", '"'), array('', ''), $va_row[$vs_sort_field]));
 							}
 							unset($pa_hits[$va_row['row_id']]);
 						}

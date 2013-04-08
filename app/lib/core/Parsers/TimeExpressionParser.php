@@ -1457,6 +1457,21 @@ class TimeExpressionParser {
 		if (in_array($vs_token_lc, array('.',','))) {
 			return array('value' => $vs_token, 'type' => TEP_TOKEN_PUNCTUATION);
 		}
+
+		// century with ordinalSuffix
+		$va_ordinals = $this->opo_language_settings->getList("ordinalSuffixes");
+		$va_ordinals[] = $this->opo_language_settings->get("ordinalSuffixDefault");
+		foreach($va_ordinals as $vs_ordinal){
+			if(substr($vs_token_lc, 0 - strlen($vs_ordinal)) == $vs_ordinal){
+				$vn_cent = substr($vs_token_lc,0,strlen($vs_token_lc) - strlen($vs_ordinal));
+				if(preg_match("/^\d+$/",$vn_cent)){ // could use is_numeric here but this seems safer
+					$va_next_tok = $this->peekToken();
+					if($va_next_tok['type'] == TEP_TOKEN_ALPHA){ // must not be TEP_TOKEN_ALPHA_MONTH, as in 28. Januar 1985
+						return array('value' => $vs_token, 'type' => TEP_TOKEN_ALPHA);	
+					}
+				}
+			}
+		}
 		
 		// Meridians (AM/PM)
 		$va_meridian_lookup = $this->opo_language_settings->getAssoc("meridianTable");

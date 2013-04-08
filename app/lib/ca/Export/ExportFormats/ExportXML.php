@@ -47,6 +47,14 @@ class ExportXML extends BaseExportFormat {
 		parent::__construct();
 	}
 	# ------------------------------------------------------
+	public function getFileExtension($pa_settings) {
+		return 'xml';
+	}
+	# ------------------------------------------------------
+	public function getContentType($pa_settings) {
+		return 'text/xml';
+	}
+	# ------------------------------------------------------
 	public function processExport($pa_data,$pa_options=array()){
 		$pb_single_record = (isset($pa_options['singleRecord']) && $pa_options['singleRecord']);
 
@@ -57,10 +65,18 @@ class ExportXML extends BaseExportFormat {
 
 		$this->processItem(array_pop($pa_data),$this->opo_dom);
 		
+		// format, then reload as DOMDocument
+		// unfortunately DOMDocument is still unable to format
+		// arbitrary documents so we have to pre-format them
+		$vs_xml = caFormatXML($this->opo_dom->saveXML());
+		$vo_doc = new DOMDocument();
+		$vo_doc->formatOutput = true;
+		$vo_doc->preserveWhiteSpace = false;
+		$vo_doc->loadXML($vs_xml);
+
 		// when dealing with a record set export, we don't want <?xml tags in front so
 		// that we can simply dump each record in a file and have valid XML as result
-		$vs_xml = $pb_single_record ? $this->opo_dom->saveXML() : $this->opo_dom->saveXML($this->opo_dom->firstChild);
-		return caFormatXML($vs_xml);
+		return ($pb_single_record ? $vo_doc->saveXML() : $vo_doc->saveXML($vo_doc->firstChild));
 	}
 	# ------------------------------------------------------
 	private function processItem($pa_item,$po_parent){

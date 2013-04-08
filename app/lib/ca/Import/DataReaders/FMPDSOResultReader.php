@@ -40,15 +40,22 @@ require_once(__CA_APP_DIR__.'/helpers/displayHelpers.php');
 class FMPDSOResultReader extends BaseXMLDataReader {
 	# -------------------------------------------------------
 	/**
-	 * Name of top-level tag in XML format
+	 * XPath to select
 	 */
-	protected $ops_top_level_tag = 'FMPDSORESULT';
+	protected $ops_xml_namespace = 'http://www.filemaker.com/fmpdsoresult';
+	
 	
 	/**
-	 * Name of row-level tag – the tag that encloses each row to be read – in the XML format
-	 * It is assumed that this tag is a direct child of the top level tag
+	 * XPath to select
 	 */
-	protected $ops_row_level_tag = 'ROW';
+	protected $ops_xml_namespace_prefix = 'n';
+	
+	
+	/**
+	 * XPath to select
+	 */
+	protected $ops_xpath = '/n:FMPDSORESULT/n:ROW';
+	
 	
 	/**
 	 * Merge attributes of row-level tag into record as regular values?
@@ -57,6 +64,7 @@ class FMPDSOResultReader extends BaseXMLDataReader {
 	 * referred to in import mappings as plain old record values
 	 */
 	protected $opb_use_row_tag_attributes_as_row_level_values = true;
+
 	
 	/**
 	 * Treat tag names as case insensitive?

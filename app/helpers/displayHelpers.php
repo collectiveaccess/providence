@@ -492,7 +492,7 @@ require_once(__CA_LIB_DIR__."/ca/ApplicationPluginManager.php");
 	 */
 	function caSetupEditorScreenOverlays($po_request, $pt_subject, $pa_bundle_list, $pa_options=null) {
 		$vs_buf = '';
-		if ($pt_subject->isHierarchical()) {
+		if ($pt_subject && $pt_subject->isHierarchical()) {
 			$vs_buf .= caEditorHierarchyOverview($po_request, $pt_subject->tableName(), $pt_subject->getPrimaryKey(), $pa_options);
 		}
 		$vs_buf .= caEditorFieldList($po_request, $pa_bundle_list, $pa_options);	
@@ -578,6 +578,7 @@ require_once(__CA_LIB_DIR__."/ca/ApplicationPluginManager.php");
 	 */
 	function caEditorInspector($po_view, $pa_options=null) {
 		require_once(__CA_MODELS_DIR__.'/ca_sets.php');
+		require_once(__CA_MODELS_DIR__.'/ca_data_exporters.php');
 		
 		$t_item 				= $po_view->getVar('t_item');
 		$vs_table_name = $t_item->tableName();
@@ -1214,6 +1215,31 @@ require_once(__CA_LIB_DIR__."/ca/ApplicationPluginManager.php");
 			TooltipManager::add("#caDuplicateItemButton", "<h2>"._t('Duplicate this %1', mb_strtolower($vs_type_name, 'UTF-8'))."</h2>
 			"._t("Click the [+] button to create and open for editing a duplicate of this %1. By default virtually all aspects of the %2 will be duplicated. You can exclude certain types of content from duplicates using settings in your user preferences under 'Duplication.'", mb_strtolower($vs_type_name, 'UTF-8'), mb_strtolower($vs_type_name, 'UTF-8')));
 		}
+
+
+		if($po_view->request->user->canDoAction('can_export_'.$vs_table_name) && $t_item->getPrimaryKey() && (sizeof(ca_data_exporters::getExporters($t_item->tableNum()))>0)) {
+			$vs_buf .= '<div style="border-top: 1px solid #aaaaaa; margin-top: 5px; font-size: 10px; text-align: right;" id="caExportItemButton">';
+				
+			$vs_buf .= _t('Export this %1', mb_strtolower($vs_type_name, 'UTF-8'))." ";
+			$vs_buf .= "<a class='button' onclick='jQuery(\"#exporterFormList\").show();' style='text-align:right;' href='#'>".caNavIcon($po_view->request, __CA_NAV_BUTTON_ADD__)."</a>";
+
+			$vs_buf .= caFormTag($po_view->request, 'ExportSingleData', 'caExportForm', 'manage/MetadataExport', 'post', 'multipart/form-data', '_top', array('disableUnsavedChangesWarning' => true));
+			$vs_buf .= "<div id='exporterFormList'>";
+			$vs_buf .= ca_data_exporters::getExporterListAsHTMLFormElement('exporter_id', $t_item->tableNum(), array('id' => 'caExporterList'),array('width' => '120px'));
+			$vs_buf .= caHTMLHiddenInput('item_id', array('value' => $t_item->getPrimaryKey()));
+			$vs_buf .= caFormSubmitLink($po_view->request, _t('Export')." &rsaquo;", "button", "caExportForm");
+			$vs_buf .= "</div>\n";
+			$vs_buf .= "</form>";
+				
+			$vs_buf .= "</div>";
+
+			$vs_buf .= "<script type='text/javascript'>";
+			$vs_buf .= "jQuery(document).ready(function() {";
+			$vs_buf .= "jQuery(\"#exporterFormList\").hide();";
+			$vs_buf .= "});";
+			$vs_buf .= "</script>";
+		}
+		
 		
 		// -------------------------------------------------------------------------------------
 	
@@ -1487,6 +1513,28 @@ require_once(__CA_LIB_DIR__."/ca/ApplicationPluginManager.php");
 		//$vs_buf .= "<p>"._t('<strong>Directories on server:</strong> %1', $va_counts['directories'])."<br/>\n";
 		//$vs_buf .= _t('<strong>Files on server:</strong> %1', $va_counts['files'])."<p>\n";
 
+		$vs_buf .= "</div></h4>\n";
+		
+		return $vs_buf;
+	}
+	# ------------------------------------------------------------------------------------------------
+	/**
+	 * Generates standard-format inspector panels for exporters
+	 *
+	 * @param View $po_view Inspector view object
+	 *
+	 * @return string HTML implementing the inspector
+	 */
+	function caBatchMetadataExportInspector($po_view) {
+		$vs_color = "444444"; 
+		$vs_buf .= "<h3 class='nextPrevious'>".caNavLink($po_view->request, _t('Back to list'), '', 'manage', 'MetadataExport', 'Index', $pa_other_params=null, $pa_attributes=null)."</h3>";
+		$vs_buf .= "<h4><div id='caColorbox' style='border: 6px solid #{$vs_color}; padding-bottom:15px;'>\n";
+
+		$vs_buf .= "<strong>"._t("Batch export metadata")."</strong>\n";
+
+		$t_item = $po_view->getVar("t_item");
+		$vs_buf .= "<p>"._t("Selected exporter").":<br />".$t_item->getLabelForDisplay()."</p>";
+		
 		$vs_buf .= "</div></h4>\n";
 		
 		return $vs_buf;
@@ -1791,6 +1839,7 @@ require_once(__CA_LIB_DIR__."/ca/ApplicationPluginManager.php");
 								} else {
 									$vs_get_spec = $vs_tag;
 								}
+								
 								$va_val = $qr_res->get($vs_get_spec, array_merge($pa_options, array('returnAsArray' => true)));
 							} else {
 								if ($va_tmp[0] == $ps_tablename) { array_shift($va_tmp); }	// get rid of primary table if it's in the field spec
@@ -1806,10 +1855,26 @@ require_once(__CA_LIB_DIR__."/ca/ApplicationPluginManager.php");
 								}
 								
 								$vs_get_spec = "{$ps_tablename}.".join(".", $va_tmp);
-								$va_val = $qr_res->get($vs_get_spec, array_merge($pa_options, array('returnAsArray' => true)));
+								$va_val_tmp = $qr_res->get($vs_get_spec, array_merge($pa_options, array('returnAsArray' => true)));
+								
+								$va_val = array();
+								
+								if (is_array($va_val_tmp)) {
+									foreach($va_val_tmp as $vn_attr_id => $vm_attr_val) {
+										if(is_array($vm_attr_val)) {
+											foreach($vm_attr_val as $vs_k => $vs_v) {
+												$va_val[] = $vs_v;
+											}
+										} else {
+											$va_val[] = $vm_attr_val;
+										}
+									}
+								}
+								
 							}
 						}
 					}
+					
 				
 					if (is_array($va_val)) {
 						foreach($va_val as $vn_j => $vs_val) {

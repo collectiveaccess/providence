@@ -6,7 +6,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2010-2012 Whirl-i-Gig
+ * Copyright 2010-2013 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -51,6 +51,8 @@ var caUI = caUI || {};
 			onCloseCallback: null,
 			
 			center: false,
+			centerHorizontal: false,
+			centerVertical : false,
 			
 			isChanging: false,
 			clearOnClose: false
@@ -65,15 +67,18 @@ var caUI = caUI || {};
 			that.isChanging = true;
 			
 			
-			if (that.center) {
-				jQuery('#' + that.panelID).css("top", ((jQuery(window).height() - jQuery('#' + that.panelID).height())/2) + "px");
+			if (that.center || that.centerHorizontal) {
 				jQuery('#' + that.panelID).css("left", ((jQuery(window).width() - jQuery('#' + that.panelID).width())/2) + "px");
+			}
+			
+			if (that.center || that.centerVertical) {
+				jQuery('#' + that.panelID).css("top", ((jQuery(window).height() - jQuery('#' + that.panelID).height())/2) + "px");
 			}
 			
 			jQuery('#' + that.panelID).fadeIn(that.panelTransitionSpeed, function() { that.isChanging = false; });
 			
 			if (that.useExpose) { 
-				jQuery('#' + that.panelID).expose({api: true, color: that.exposeBackgroundColor , opacity: that.exposeBackgroundOpacity}).load(); 
+				jQuery('#' + that.panelID).expose({api: true, color: that.exposeBackgroundColor , opacity: that.exposeBackgroundOpacity, closeOnClick : false, closeOnEsc: true}).load(); 
 			}
 			
 			if (onCloseCallback) {
@@ -143,12 +148,12 @@ var caUI = caUI || {};
 		// --------------------------------------------------------------------------------
 		jQuery(document).ready(function() {
 			// hide panel if click is outside of panel
-			jQuery(document).click(function(event) {
-				var p = jQuery(event.target).parents().map(function() { return this.id; }).get();
-				if (!that.isChanging && that.panelIsVisible() && (jQuery.inArray(that.panelID, p) == -1)) {
-					that.hidePanel();
-				}
-			});
+			//jQuery(document).click(function(event) {
+			//	var p = jQuery(event.target).parents().map(function() { return this.id; }).get();
+			//	if (!that.isChanging && that.panelIsVisible() && (jQuery.inArray(that.panelID, p) == -1)) {
+				//	that.hidePanel();
+			//	}
+			//});
 			
 			// hide panel if escape key is clicked
 			jQuery(document).keyup(function(event) {
