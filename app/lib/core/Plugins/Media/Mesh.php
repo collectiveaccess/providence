@@ -43,6 +43,7 @@ include_once(__CA_LIB_DIR__."/core/Plugins/IWLPlugMedia.php");
 include_once(__CA_LIB_DIR__."/core/Configuration.php");
 include_once(__CA_LIB_DIR__."/core/Media.php");
 include_once(__CA_APP_DIR__."/helpers/mediaPluginHelpers.php");
+include_once(__CA_LIB_DIR__."/core/Parsers/PlyToStl.php");
 
 class WLPlugMediaMesh extends BaseMediaPlugin implements IWLPlugMedia {
 	var $errors = array();
@@ -108,6 +109,11 @@ class WLPlugMediaMesh extends BaseMediaPlugin implements IWLPlugMedia {
 	# ------------------------------------------------
 	public function __construct() {
 		$this->description = _t('Accepts files describing 3D models');
+
+		$this->opo_config = Configuration::load();
+		$vs_external_app_config_path = $this->opo_config->get('external_applications');
+		$this->opo_external_app_config = Configuration::load($vs_external_app_config_path);
+		$this->ops_python_path = $this->opo_external_app_config->get('python_app');
 	}
 	# ------------------------------------------------
 	# Tell WebLib what kinds of media this plug-in supports
@@ -133,6 +139,8 @@ class WLPlugMediaMesh extends BaseMediaPlugin implements IWLPlugMedia {
 		if ($ps_filepath == '') {
 			return '';
 		}
+
+		$this->filepath = $ps_filepath;
 
 		// PLY and STL are basically a simple text files describing polygons
 		// SURF is binary but with a plain text meta part at the beginning
@@ -164,6 +172,7 @@ class WLPlugMediaMesh extends BaseMediaPlugin implements IWLPlugMedia {
 			}
 		}
 
+		$this->filepath = null;
 		return '';
 	}
 	# ----------------------------------------------------------
@@ -280,7 +289,20 @@ class WLPlugMediaMesh extends BaseMediaPlugin implements IWLPlugMedia {
 		if (!($vs_ext = $this->info["EXPORT"][$ps_mimetype])) {
 			$this->postError(1610, _t("Can't convert file to %1", $ps_mimetype), "WLPlugMediaMesh->write()");
 			return false;
-		} 
+		}
+
+		# pretty restricted, but we can convert ply to stl!
+		if(($ps_mimetype == 'application/stl') && ($this->properties['mimetype'] == 'application/ply')){
+			if(file_exists($this->filepath)){
+				if(PlyToStl::convert($this->filepath,$ps_filepath.'.stl')){
+					return $ps_filepath.'.stl';	
+				} else {
+					@unlink($ps_filepath.'.stl');
+					$this->postError(1610, _t("Couldn't convert ply model to stl"), "WLPlugMediaMesh->write()");
+					return false;
+				}
+			}
+		}
 		
 		# use default media icons
 		return __CA_MEDIA_3D_DEFAULT_ICON__;
@@ -341,6 +363,8 @@ class WLPlugMediaMesh extends BaseMediaPlugin implements IWLPlugMedia {
 	}
 	# ------------------------------------------------
 	public function htmlTag($ps_url, $pa_properties, $pa_options=null, $pa_volume_info=null) {
+		JavascriptLoadManager::register('3dmodels');
+
 		if (!is_array($pa_options)) { $pa_options = array(); }
 		
 		$vn_width = $pa_options["viewer_width"] ? $pa_options["viewer_width"] : 820;
@@ -348,8 +372,8 @@ class WLPlugMediaMesh extends BaseMediaPlugin implements IWLPlugMedia {
 
 		$vs_id = $pa_options["id"] ? $pa_options["id"] : "mesh_canvas";
 
-		if(in_array($pa_properties['mimetype'], array("application/ply", "application/stl"))){
-			JavascriptLoadManager::register('3dmodels');
+		if(in_array($pa_properties['mimetype'], array("application/stl"))){
+			caDebug($ps_url);
 			ob_start();
 ?>
 <canvas id="<?php print $vs_id; ?>" style="border: 1px solid;" width="<?php print $vn_width; ?>" height="<?php print $vn_height; ?>" ></canvas>
