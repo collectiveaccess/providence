@@ -733,6 +733,34 @@ class ca_lists extends BundlableLabelableBaseModelWithAttributes {
 	/**
 	 *
 	 */
+	public function getItemFromListByLabel($pm_list_name_or_id, $ps_label_name) {
+		if (isset(ca_lists::$s_list_item_get_cache[$pm_list_name_or_id.'/'.$ps_label_name])) {
+			return ca_lists::$s_list_item_get_cache[$pm_list_name_or_id.'/'.$ps_label_name];
+		}
+	
+		$vn_list_id = $this->_getListID($pm_list_name_or_id);
+		if (isset(ca_lists::$s_list_item_get_cache[$vn_list_id.'/'.$ps_label_name])) {
+			return ca_lists::$s_list_item_get_cache[$vn_list_id.'/'.$ps_label_name];
+		}
+		$o_db = $this->getDb();
+		$qr_res = $o_db->query("
+			SELECT *
+			FROM ca_list_items cli
+			INNER JOIN ca_list_item_labels AS clil ON clil.item_id = cli.item_id
+			WHERE
+				(cli.deleted = 0) AND (cli.list_id = ?) AND ((clil.name_singular = ?) OR (clil.name_plural = ?))
+		", (int)$vn_list_id, (string)$ps_label_name, (string)$ps_label_name);
+		
+		if ($qr_res->nextRow()) {
+			return ca_lists::$s_list_item_get_cache[$vn_list_id.'/'.$ps_label_name] = ca_lists::$s_list_item_get_cache[$pm_list_name_or_id.'/'.$ps_label_name] = $qr_res->getRow();
+		}
+		return ca_lists::$s_list_item_get_cache[$vn_list_id.'/'.$ps_label_name] = ca_lists::$s_list_item_get_cache[$pm_list_name_or_id.'/'.$ps_label_name]  = null;
+
+	}
+	# ------------------------------------------------------
+	/**
+	 *
+	 */
 	public function getItemFromListForDisplay($pm_list_name_or_id, $ps_idno, $pb_return_plural=false) {
 	
 		if (isset(ca_lists::$s_list_item_display_cache[$ps_idno])) {
