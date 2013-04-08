@@ -283,7 +283,7 @@ class WLPlugMediaMesh extends BaseMediaPlugin implements IWLPlugMedia {
 		} 
 		
 		# use default media icons
-		return __CA_MEDIA_3D_DEFAULT_ICON__;;
+		return __CA_MEDIA_3D_DEFAULT_ICON__;
 	}
 	# ------------------------------------------------
 	/** 
@@ -343,7 +343,29 @@ class WLPlugMediaMesh extends BaseMediaPlugin implements IWLPlugMedia {
 	public function htmlTag($ps_url, $pa_properties, $pa_options=null, $pa_volume_info=null) {
 		if (!is_array($pa_options)) { $pa_options = array(); }
 		
-		return ''; // maybe a 3D viewer some day
+		$vn_width = $pa_options["viewer_width"] ? $pa_options["viewer_width"] : 820;
+		$vn_height = $pa_options["viewer_height"] ? $pa_options["viewer_height"] : 520;
+
+		$vs_id = $pa_options["id"] ? $pa_options["id"] : "mesh_canvas";
+
+		if(in_array($pa_properties['mimetype'], array("application/ply", "application/stl"))){
+			JavascriptLoadManager::register('3dmodels');
+			ob_start();
+?>
+<canvas id="<?php print $vs_id; ?>" style="border: 1px solid;" width="<?php print $vn_width; ?>" height="<?php print $vn_height; ?>" ></canvas>
+<script type="text/javascript">
+	var canvas = document.getElementById('<?php print $vs_id; ?>');
+	var viewer = new JSC3D.Viewer(canvas);
+	viewer.setParameter('SceneUrl', '<?php print $ps_url; ?>');
+	viewer.setParameter('RenderMode', 'flat');
+	viewer.init();
+	viewer.update();
+</script>
+<?php
+			return ob_get_clean();
+		} else {
+			return caGetDefaultMediaIconTag(__CA_MEDIA_3D_DEFAULT_ICON__,$vn_width,$vn_height);
+		}
 	}
 	# ------------------------------------------------
 	public function cleanup() {
