@@ -75,8 +75,8 @@ class WLPlugMediaMesh extends BaseMediaPlugin implements IWLPlugMedia {
 		),
 		
 		"PROPERTIES" => array(
-			"width" 			=> 'R',
-			"height" 			=> 'R',
+			"width" 			=> 'W',
+			"height" 			=> 'W',
 			"version_width" 	=> 'R', // width version icon should be output at (set by transform())
 			"version_height" 	=> 'R',	// height version icon should be output at (set by transform())
 			"mimetype" 			=> 'W',
@@ -272,6 +272,9 @@ class WLPlugMediaMesh extends BaseMediaPlugin implements IWLPlugMedia {
 	# ----------------------------------------------------------
 	public function write($ps_filepath, $ps_mimetype) {
 		if (!$this->handle) { return false; }
+
+		$this->properties["width"] = $this->properties["version_width"];
+		$this->properties["height"] = $this->properties["version_height"];
 		
 		# is mimetype valid?
 		if (!($vs_ext = $this->info["EXPORT"][$ps_mimetype])) {
@@ -280,7 +283,7 @@ class WLPlugMediaMesh extends BaseMediaPlugin implements IWLPlugMedia {
 		} 
 		
 		# use default media icons
-		return __CA_MEDIA_DOCUMENT_DEFAULT_ICON__;
+		return __CA_MEDIA_3D_DEFAULT_ICON__;;
 	}
 	# ------------------------------------------------
 	/** 
