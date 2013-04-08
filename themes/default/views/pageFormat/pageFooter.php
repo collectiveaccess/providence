@@ -94,7 +94,7 @@
 				},
 				onCloseCallback: function() {
 					jQuery('#topNavContainer').show(250);
-					caResultsEditorCloseFullScreen(true);
+					caResultsEditor.caResultsEditorCloseFullScreen(true);
 				}
 			});
 			
