@@ -995,7 +995,7 @@
  		 *
  		 */
  		public function getPartialResult($pa_options=null) {
- 			parent::Index($pa_options);
+ 			self::Index($pa_options);
  			
  			$po_search = isset($pa_options['search']) ? $pa_options['search'] : null;
  			
