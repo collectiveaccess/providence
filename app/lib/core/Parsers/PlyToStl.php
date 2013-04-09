@@ -45,8 +45,8 @@ class PlyToStl {
 	protected $opn_element_face = 0;
 	protected $opn_element_vertex = 0;
 
-	protected $opa_vertices = array();
-	protected $opa_faces = array();
+	protected $opa_vertices;
+	protected $opa_faces;
 	# ------------------------------------------------
 	public function __construct($ps_ply){
 		$this->ops_ply = $ps_ply;
@@ -65,16 +65,25 @@ class PlyToStl {
 		$vn_v = $vn_f = 0;
 
 		if ($vo_handle) {
-			// process headers
+			if(($vs_line = fgets($vo_handle)) !== false){
+				// make sure we're dealing with a ply file
+				if(!PlyToStl::startswith($vs_line,'ply')){
+					return false;
+				}
+			}
+
 			while (($vs_line = fgets($vo_handle)) !== false) {
 				switch($vn_mode){
 					case PlyToStl::MODE_HEADER:
 						
+						// process headers (face and element count)
 						if(PlyToStl::startswith($vs_line,'element face')){
-							$this->opn_element_face = PlyToStl::getword($vs_line,2);
+							$this->opn_element_face = intval(PlyToStl::getword($vs_line,2));
+							$this->opa_faces = new SplFixedArray($this->opn_element_face);
 						}
 						if(PlyToStl::startswith($vs_line,'element vertex')){
-							$this->opn_element_vertex = PlyToStl::getword($vs_line,2);
+							$this->opn_element_vertex = intval(PlyToStl::getword($vs_line,2));
+							$this->opa_vertices = new SplFixedArray($this->opn_element_vertex);
 						}
 						// end of header reached, switch to vertex mode (they're next in the file)
 						if(PlyToStl::startswith($vs_line,'end_header')){
