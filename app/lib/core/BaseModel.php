@@ -4185,6 +4185,8 @@ class BaseModel extends BaseObject {
 								($vs_output_file === __CA_MEDIA_AUDIO_DEFAULT_ICON__)
 								||
 								($vs_output_file === __CA_MEDIA_DOCUMENT_DEFAULT_ICON__)
+								||
+								($vs_output_file === __CA_MEDIA_3D_DEFAULT_ICON__)
 							) {
 								$vs_use_icon = $vs_output_file;
 							}
