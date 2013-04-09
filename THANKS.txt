@@ -19,6 +19,7 @@ MediaElement (http://mediaelementjs.com)
 PHPExcel (http://phpexcel.codeplex.com)
 DOMPDF (http://code.google.com/p/dompdf/)
 File_MARC PEAR module (http://pear.php.net/package/File_MARC/)
+JSC3D (https://code.google.com/p/jsc3d/)
 
 CollectiveAccess uses icons from The Noun Project (http://thenounproject.com) covered 
 under the Creative Commons - Attribution (CC BY 3.0) license.
