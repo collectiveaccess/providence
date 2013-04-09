@@ -105,29 +105,64 @@ class PlyToStl {
 						);
 
 						$vn_f++;
-						// face count reached, switch to faces
+						// face count reached, we're done
 						if($vn_f == $this->opn_element_face){
 							$vn_mode = PlyToStl::MODE_NONE;
 							break 2;
 						}
 						break;
-					case PlyToStl::MODE_NONE:
 					default:
 						break; // shouldn't happen
 				}
 			}
 
-			print sizeof($this->opa_vertices)."\n";
-			print sizeof($this->opa_faces)."\n";
-
 			fclose($vo_handle);
 		}
 	}
 	# ------------------------------------------------
+	public function writeStl($ps_stl){
+
+		// truncate file
+		if(@file_put_contents($ps_stl, "") === false){
+			return false; // probably permission error
+		}
+
+		if((sizeof($this->opa_faces) < 1) || (sizeof($this->opa_vertices) < 1)){
+			return false; // invalid ply or not parsed yet
+		}
+
+		$vo_handle = @fopen($ps_stl,"w");
+
+		fwrite($vo_handle,"solid collectiveaccess_generated_stl\n");
+
+		foreach($this->opa_faces as $va_face){
+			// calculate normal (the 'right hand rule')
+			$p0 = $this->opa_vertices[$va_face[0]];
+			$p1 = $this->opa_vertices[$va_face[1]];
+			$p2 = $this->opa_vertices[$va_face[2]];
+
+			$u = PlyToStl::vec_sub($p1,$p0);
+			$w = PlyToStl::vec_sub($p2,$p0);
+			$n = PlyToStl::vec_crossprod($u,$w);
+
+			// add triangle
+			fprintf($vo_handle,"facet normal %f %f %f\n",$n[0],$n[1],$n[2]);
+			fwrite($vo_handle," outer loop\n");
+			fprintf($vo_handle, "  vertex %f %f %f\n",$p0[0],$p0[1],$p0[2]);
+			fprintf($vo_handle, "  vertex %f %f %f\n",$p1[0],$p1[1],$p1[2]);
+			fprintf($vo_handle, "  vertex %f %f %f\n",$p2[0],$p2[1],$p2[2]);
+			fwrite($vo_handle," endloop\n");
+			fwrite($vo_handle,"endfacet\n");
+		}
+
+		file_put_contents($ps_stl, "endsolid collectiveaccess_generated_stl\n",FILE_APPEND);
+
+		return true;
+	}
+	# ------------------------------------------------
 	public static function convert($ps_ply,$ps_stl){
 		$o_ply2stl = new PlyToStl($ps_ply);
-
-		return false;
+		return $o_ply2stl->writeStl($ps_stl);
 	}
 	# ------------------------------------------------
 	public static function startswith($ps_haystack, $ps_needle){
@@ -143,5 +178,20 @@ class PlyToStl {
 		}
 	}
 	# ------------------------------------------------
+	public static function vec_sub($a,$b){
+		return array(
+			($a[0] - $b[0]),
+			($a[1] - $b[1]),
+			($a[2] - $b[2])
+		);
+	}
+	# ------------------------------------------------
+	public static function vec_crossprod($a,$b){
+		return array(
+			($a[1]*$b[2] - $a[2]*$b[1]),
+			($a[2]*$b[0] - $a[0]*$b[2]),
+			($a[0]*$b[1] - $a[1]*$b[0]),
+		);
+	}
+	# ------------------------------------------------
 }
-

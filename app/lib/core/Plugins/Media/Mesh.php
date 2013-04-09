@@ -292,7 +292,7 @@ class WLPlugMediaMesh extends BaseMediaPlugin implements IWLPlugMedia {
 		}
 
 		# pretty restricted, but we can convert ply to stl!
-		if(($ps_mimetype == 'application/stl') && ($this->properties['mimetype'] == 'application/ply')){
+		if(($this->properties['mimetype'] == 'application/ply') && ($ps_mimetype == 'application/stl')){
 			if(file_exists($this->filepath)){
 				if(PlyToStl::convert($this->filepath,$ps_filepath.'.stl')){
 					return $ps_filepath.'.stl';	
@@ -373,7 +373,6 @@ class WLPlugMediaMesh extends BaseMediaPlugin implements IWLPlugMedia {
 		$vs_id = $pa_options["id"] ? $pa_options["id"] : "mesh_canvas";
 
 		if(in_array($pa_properties['mimetype'], array("application/stl"))){
-			caDebug($ps_url);
 			ob_start();
 ?>
 <canvas id="<?php print $vs_id; ?>" style="border: 1px solid;" width="<?php print $vn_width; ?>" height="<?php print $vn_height; ?>" ></canvas>
