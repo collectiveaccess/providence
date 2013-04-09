@@ -5742,7 +5742,6 @@ WalkontableScroll.prototype.scrollVertical = function (delta) {
         }
       }
     }
-     Handsontable.PluginHooks.run(self, 'scrollVertical', { "row" : newOffsetRow, "instance" : this.instance });	// MOD for CA 7 April 2013
   }
   else if (newOffsetRow < 0) {
     newOffsetRow = 0;
@@ -5750,6 +5749,7 @@ WalkontableScroll.prototype.scrollVertical = function (delta) {
 
   if (newOffsetRow !== offsetRow) {
     this.instance.update('offsetRow', newOffsetRow);
+    Handsontable.PluginHooks.run(self, 'scrollVertical', { "row" : newOffsetRow, "instance" : this.instance });	// MOD for CA 7 April 2013
   }
   return this.instance;
 };
@@ -5796,7 +5796,6 @@ WalkontableScroll.prototype.scrollHorizontal = function (delta) {
         }
       }
     }
-    Handsontable.PluginHooks.run(self, 'scrollHorizontal', { "col" : newOffsetColumn, "instance" : this.instance });	// MOD for CA 4 April 2013
   }
   else if (newOffsetColumn < 0) {
     newOffsetColumn = 0;
@@ -5804,6 +5803,7 @@ WalkontableScroll.prototype.scrollHorizontal = function (delta) {
 
   if (newOffsetColumn !== offsetColumn) {
     this.instance.update('offsetColumn', newOffsetColumn);
+    Handsontable.PluginHooks.run(self, 'scrollHorizontal', { "col" : newOffsetColumn, "instance" : this.instance });	// MOD for CA 4 April 2013
   }
   return this.instance;
 };

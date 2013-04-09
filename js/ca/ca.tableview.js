@@ -49,10 +49,11 @@ var caUI = caUI || {};
 			currentRowClassName: 'caResultsEditorCurrentRow',
 			currentColClassName: 'caResultsEditorCurrentCol',
 			readOnlyCellClassName: 'caResultsEditorReadOnlyCell',
+			statusDisplayClassName: 'caResultsEditorStatusDisplay',
 			
 			saveMessage: "Saving...",
 			errorMessagePrefix: "[Error]",
-			saveSuccessMessage: "Saved changes"
+			saveSuccessMessage: "Saved changes",
 		}, options);
 		
 	
@@ -135,12 +136,13 @@ var caUI = caUI || {};
 			
 			dataLoadUrl: that.dataLoadUrl,
 			editLinkFormat: that.editLinkFormat,
+			statusDisplayClassName: that.statusDisplayClassName,
 			
 			onChange: function (change, source) {
 				if ((source === 'loadData') || (source === 'updateAfterRequest')) {
 				  return; //don't save this change
 				}
-				jQuery(".caResultsEditorStatusDisplay").html(that.saveMessage).fadeIn(500);
+				jQuery("." + that.statusDisplayClassName).html(that.saveMessage).fadeIn(500);
 				
 				var ht = jQuery(this).data('handsontable');
 				var item_id = ht.getDataAtRowProp(parseInt(change[0]), 'item_id');
@@ -152,12 +154,12 @@ var caUI = caUI || {};
 				jQuery.getJSON(that.dataSaveUrl, { 'table' : table, 'bundle': bundle, 'id': item_id, 'value' : change[0][3] },
 				function(data) {
 					if (data.error > 0) {
-						jQuery(".caResultsEditorStatusDisplay").html(that.errorMessagePrefix + ": " + data.message);
+						jQuery("." + that.statusDisplayClassName).html(that.errorMessagePrefix + ": " + data.message);
 						ht.setDataAtRowProp(parseInt(change[0]), change[0][1], change[0][2], 'updateAfterRequest');
 					} else {
-						jQuery(".caResultsEditorStatusDisplay").html(that.saveSuccessMessage);
+						jQuery("." + that.statusDisplayClassName).html(that.saveSuccessMessage);
 						if (data.value != undefined) { ht.setDataAtRowProp(parseInt(change[0]), change[0][1], data.value, 'updateAfterRequest'); }
-						setInterval(function() { jQuery('.caResultsEditorStatusDisplay').fadeOut(500); }, 5000);
+						setTimeout(function() { jQuery('.' + that.statusDisplayClassName).fadeOut(500); }, 5000);
 					}
 				});
 			}
