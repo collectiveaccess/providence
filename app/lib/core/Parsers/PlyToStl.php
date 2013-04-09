@@ -102,7 +102,11 @@ class PlyToStl {
 						break;
 
 					case PlyToStl::MODE_VERTEX:
-						$this->opa_vertices[$vn_v] = array(
+						// instead of simply adding a (memory-consuming) PHP array here, we pack
+						// the values we need in a binary string. this is much more memory-efficient,
+						// especially in combination with using SplFixedArray
+						$this->opa_vertices[$vn_v] = pack(
+							"f*",
 							floatval(PlyToStl::getword($vs_line,0)),
 							floatval(PlyToStl::getword($vs_line,1)),
 							floatval(PlyToStl::getword($vs_line,2))
@@ -116,12 +120,15 @@ class PlyToStl {
 						break;
 
 					case PlyToStl::MODE_FACES;
-						// little hack to get around php's stupid (but flexible) array implementation that consumes way too much memory:
-						// use string (8 bit characters) to pack integers. the default implementation uses something like 200bits per integer
-						$this->opa_faces[$vn_f] = str_repeat(chr(0), 3);
-						$this->opa_faces[$vn_f][0] = chr(intval(PlyToStl::getword($vs_line,1)) & 0xff);
-						$this->opa_faces[$vn_f][0] = chr(intval(PlyToStl::getword($vs_line,2)) & 0xff);
-						$this->opa_faces[$vn_f][0] = chr(intval(PlyToStl::getword($vs_line,3)) & 0xff);
+						// instead of simply adding a (memory-consuming) PHP array here, we pack
+						// the values we need in a binary string. this is much more memory-efficient,
+						// especially in combination with using SplFixedArray
+						$this->opa_faces[$vn_f] = pack(
+							"I*",
+							intval(PlyToStl::getword($vs_line,1)),
+							intval(PlyToStl::getword($vs_line,2)),
+							intval(PlyToStl::getword($vs_line,3))
+						);
 
 						$vn_f++;
 						// face count reached, we're done
@@ -157,21 +164,22 @@ class PlyToStl {
 		foreach($this->opa_faces as $vs_face){
 			// calculate normal (the 'right hand rule')
 
-			// have to unpack from string first
-			$p0 = $this->opa_vertices[ord($vs_face[0])];
-			$p1 = $this->opa_vertices[ord($vs_face[1])];
-			$p2 = $this->opa_vertices[ord($vs_face[2])];
+			// have to unpack from strings first
+			$pa_unpack = unpack("I*",$vs_face);
+			$p1 = array_values(unpack("f*",$this->opa_vertices[$pa_unpack[1]]));
+			$p2 = array_values(unpack("f*",$this->opa_vertices[$pa_unpack[2]]));
+			$p3 = array_values(unpack("f*",$this->opa_vertices[$pa_unpack[3]]));
 
-			$u = PlyToStl::vec_sub($p1,$p0);
-			$w = PlyToStl::vec_sub($p2,$p0);
+			$u = PlyToStl::vec_sub($p2,$p1);
+			$w = PlyToStl::vec_sub($p3,$p1);
 			$n = PlyToStl::vec_crossprod($u,$w);
 
 			// add triangle
 			fprintf($vo_handle,"facet normal %f %f %f\n",$n[0],$n[1],$n[2]);
 			fwrite($vo_handle," outer loop\n");
-			fprintf($vo_handle, "  vertex %f %f %f\n",$p0[0],$p0[1],$p0[2]);
 			fprintf($vo_handle, "  vertex %f %f %f\n",$p1[0],$p1[1],$p1[2]);
 			fprintf($vo_handle, "  vertex %f %f %f\n",$p2[0],$p2[1],$p2[2]);
+			fprintf($vo_handle, "  vertex %f %f %f\n",$p3[0],$p3[1],$p3[2]);
 			fwrite($vo_handle," endloop\n");
 			fwrite($vo_handle,"endfacet\n");
 		}
