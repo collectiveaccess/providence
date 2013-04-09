@@ -30,9 +30,7 @@
  * ----------------------------------------------------------------------
  */
  
- /**
-  *
-  */
+require_once(__CA_LIB_DIR__.'/core/Db.php');
  
 class PlyToStl {
 	# ------------------------------------------------
@@ -47,6 +45,8 @@ class PlyToStl {
 
 	protected $opa_vertices;
 	protected $opa_faces;
+
+	protected $opo_db;
 	# ------------------------------------------------
 	public function __construct($ps_ply){
 		$this->ops_ply = $ps_ply;
@@ -54,6 +54,15 @@ class PlyToStl {
 		if($ps_ply){
 			$this->parse();
 		}
+
+		/*$this->opo_db = new Db();
+		$this->opo_db->query("
+			CREATE TEMPORARY TABLE  (
+				row_id int unsigned not null,
+					
+				primary key (row_id)
+			) engine=memory;
+		");*/
 	}
 	# ------------------------------------------------
 	public function parse() {
@@ -107,11 +116,12 @@ class PlyToStl {
 						break;
 
 					case PlyToStl::MODE_FACES;
-						$this->opa_faces[$vn_f] = array(
-							floatval(PlyToStl::getword($vs_line,1)),
-							floatval(PlyToStl::getword($vs_line,2)),
-							floatval(PlyToStl::getword($vs_line,3))
-						);
+						// little hack to get around php's stupid (but flexible) array implementation that consumes way too much memory:
+						// use string (8 bit characters) to pack integers. the default implementation uses something like 200bits per integer
+						$this->opa_faces[$vn_f] = str_repeat(chr(0), 3);
+						$this->opa_faces[$vn_f][0] = chr(intval(PlyToStl::getword($vs_line,1)) & 0xff);
+						$this->opa_faces[$vn_f][0] = chr(intval(PlyToStl::getword($vs_line,2)) & 0xff);
+						$this->opa_faces[$vn_f][0] = chr(intval(PlyToStl::getword($vs_line,3)) & 0xff);
 
 						$vn_f++;
 						// face count reached, we're done
@@ -144,11 +154,13 @@ class PlyToStl {
 
 		fwrite($vo_handle,"solid collectiveaccess_generated_stl\n");
 
-		foreach($this->opa_faces as $va_face){
+		foreach($this->opa_faces as $vs_face){
 			// calculate normal (the 'right hand rule')
-			$p0 = $this->opa_vertices[$va_face[0]];
-			$p1 = $this->opa_vertices[$va_face[1]];
-			$p2 = $this->opa_vertices[$va_face[2]];
+
+			// have to unpack from string first
+			$p0 = $this->opa_vertices[ord($vs_face[0])];
+			$p1 = $this->opa_vertices[ord($vs_face[1])];
+			$p2 = $this->opa_vertices[ord($vs_face[2])];
 
 			$u = PlyToStl::vec_sub($p1,$p0);
 			$w = PlyToStl::vec_sub($p2,$p0);
