@@ -3762,7 +3762,15 @@ class BaseModel extends BaseObject {
 							$vs_primary_file_tmp = tempnam(caGetTempDirPath(), "caArchivePrimary");
 							@unlink($vs_primary_file_tmp);
 							$vs_primary_file_tmp = $vs_primary_file_tmp.".".$va_tmp[1];
-							@copy($va_archive_files[0], $vs_primary_file_tmp);
+
+							if(!@copy($va_archive_files[0], $vs_primary_file_tmp)){
+								$this->postError(1600, _t("Couldn't extract first file from archive. There is probably a invalid character in a directory or file name inside the archive"),"BaseModel->_processMedia()");
+								set_time_limit($vn_max_execution_time);
+								if ($vb_is_fetched_file) { @unlink($vs_tmp_file); }
+								if ($vb_is_archive) { @unlink($vs_archive); @unlink($vs_primary_file_tmp); }
+								return false;
+							}
+							
 							$this->_SET_FILES[$ps_field]['tmp_name'] = $vs_primary_file_tmp;
 
 							// prepare to join archive contents to form a better downloadable "original" than the zip/tgz archive (e.g. a multi-page tiff)
