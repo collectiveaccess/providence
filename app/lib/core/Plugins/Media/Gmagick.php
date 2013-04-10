@@ -489,6 +489,7 @@ class WLPlugMediaGmagick Extends BaseMediaPlugin Implements IWLPlugMedia {
 					$handle->setimageindex(0);		// force use of first image in multi-page TIFF
 					$this->handle = $handle;
 					$this->filepath = $ps_filepath;
+
 					
 					$this->metadata = array();
 					
@@ -924,7 +925,22 @@ class WLPlugMediaGmagick Extends BaseMediaPlugin Implements IWLPlugMedia {
 			
 			# write the file
 			try {
-				if ((!$this->handle->writeimage($ps_filepath.".".$ext)) || (!file_exists($ps_filepath.".".$ext))) {
+				if (!$this->handle->writeimage($ps_filepath.".".$ext)) {
+					$this->postError(1610, _t("Error writing file"), "WLPlugGmagick->write()");
+					return false;
+				}
+
+				if(!file_exists($ps_filepath.".".$ext)){
+					if($this->handle->getnumberimages() > 1){
+						if(file_exists($ps_filepath."-1.".$ext)){
+							@rename($ps_filepath."-0.".$ext,$ps_filepath.".".$ext);
+							$this->properties["mimetype"] = $mimetype;
+							$this->properties["typename"] = $this->handle->getimageformat();
+
+							return $ps_filepath.".".$ext;
+						}
+					}
+
 					$this->postError(1610, _t("Error writing file"), "WLPlugGmagick->write()");
 					return false;
 				}
