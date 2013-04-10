@@ -591,7 +591,7 @@ class ca_object_representations extends BundlableLabelableBaseModelWithAttribute
  		$va_sorted_annotations = array();
  		foreach($va_annotations as $vs_key => $va_values) {
  			foreach($va_values as $va_val) {
- 				$vs_label = array_shift($va_labels_for_locale[$va_val['annotation_id']]);
+ 				$vs_label = is_array($va_labels_for_locale[$va_val['annotation_id']]) ? array_shift($va_labels_for_locale[$va_val['annotation_id']]) : '';
  				$va_val['labels'] = $va_labels[$va_val['annotation_id']] ? $va_labels[$va_val['annotation_id']] : array();
  				$va_val['label'] = $vs_label;
  				$va_sorted_annotations[$va_val['annotation_id']] = $va_val;
