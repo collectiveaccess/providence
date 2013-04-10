@@ -937,6 +937,13 @@ class WLPlugMediaGmagick Extends BaseMediaPlugin Implements IWLPlugMedia {
 							$this->properties["mimetype"] = $mimetype;
 							$this->properties["typename"] = $this->handle->getimageformat();
 
+							// get rid of other pages
+							$i = 1;
+							while(file_exists($vs_f = $ps_filepath."-".$i.".".$ext)){
+								@unlink($vs_f);
+								$i++;
+							}
+
 							return $ps_filepath.".".$ext;
 						}
 					}
