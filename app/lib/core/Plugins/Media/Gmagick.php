@@ -45,6 +45,10 @@ include_once(__CA_LIB_DIR__."/core/Configuration.php");
 include_once(__CA_APP_DIR__."/helpers/mediaPluginHelpers.php");
 include_once(__CA_LIB_DIR__."/core/Parsers/MediaMetadata/XMPParser.php");
 
+include_once(__CA_LIB_DIR__."/core/Plugins/Media/GraphicsMagick.php");
+include_once(__CA_LIB_DIR__."/core/Plugins/Media/ImageMagick.php");
+include_once(__CA_LIB_DIR__."/core/Plugins/Media/Imagick.php");
+
 class WLPlugMediaGmagick Extends BaseMediaPlugin Implements IWLPlugMedia {
 	var $errors = array();
 	
@@ -230,6 +234,8 @@ class WLPlugMediaGmagick Extends BaseMediaPlugin Implements IWLPlugMedia {
 		$this->opo_config = Configuration::load();
 		$vs_external_app_config_path = $this->opo_config->get('external_applications');
 		$this->opo_external_app_config = Configuration::load($vs_external_app_config_path);
+		$this->ops_graphicsmagick_path = $this->opo_external_app_config->get('graphicsmagick_app');
+		$this->ops_imagemagick_path = $this->opo_external_app_config->get('imagemagick_path');
 		$this->ops_CoreImage_path = $this->opo_external_app_config->get('coreimagetool_app');
 		
 		$this->ops_dcraw_path = $this->opo_external_app_config->get('dcraw_app');
@@ -918,7 +924,7 @@ class WLPlugMediaGmagick Extends BaseMediaPlugin Implements IWLPlugMedia {
 			
 			# write the file
 			try {
-				if ( !$this->handle->writeimage($ps_filepath.".".$ext ) ) {
+				if ((!$this->handle->writeimage($ps_filepath.".".$ext)) || (!file_exists($ps_filepath.".".$ext))) {
 					$this->postError(1610, _t("Error writing file"), "WLPlugGmagick->write()");
 					return false;
 				}
@@ -940,69 +946,48 @@ class WLPlugMediaGmagick Extends BaseMediaPlugin Implements IWLPlugMedia {
 	 */
 	# This method must be implemented for plug-ins that can output preview frames for videos or pages for documents
 	public function &writePreviews($ps_filepath, $pa_options) {
-		// disable feature until multi-image object traversal works as intended in the gmagick extension
+		// gmagick multi-image object traversal seems to be broken
 		// the traversal works but writeimage always takes the first image in a sequence no matter where you set the pointer (with nextimage())
-		return null; 
-
-		/*if(!$this->handle) { return false; }
-		if($this->handle->getnumberimages() < 2) { return false; } // don't generate previews for single images
-
-		if (!isset($pa_options['outputDirectory']) || !$pa_options['outputDirectory'] || !file_exists($pa_options['outputDirectory'])) {
-			if (!($vs_tmp_dir = $this->opo_config->get("taskqueue_tmp_directory"))) {
-				// no dir
-				return false;
-			}
-		} else {
-			$vs_tmp_dir = $pa_options['outputDirectory'];
+		// until this is fixed, we're going to try and use one of the other plugins to do this
+		
+		if(caMediaPluginGraphicsMagickInstalled($this->ops_graphicsmagick_path)){
+			$vo_plugin = new WLPlugMediaGraphicsMagick();
+		} else if(caMediaPluginImagickInstalled()){
+			$vo_plugin = new WLPlugMediaImagick();
+		} else if(caMediaPluginImageMagickInstalled($this->ops_imagemagick_path)){
+			$vo_plugin = new WLPlugMediaImageMagick();
 		}
 
-		$vs_output_file_prefix = tempnam($vs_tmp_dir, 'caMultipagePreview');
+		if(is_object($vo_plugin) && file_exists($this->filepath)){
+			$vo_plugin->register();
 
-		$va_files = array();
-		$vn_i = 0;
+			// read original file
+			$vo_plugin->divineFileFormat($this->filepath);
+			$vo_plugin->read($this->filepath);
 
-		do {
-			$this->handle->writeimage($vs_output_file_prefix.sprintf("_%05d", $vn_i).".jpg");
-			$va_files[$vn_i] = $vs_output_file_prefix.sprintf("_%05d", $vn_i).'.jpg';
-			$vn_i++;
-
-			try{
-				$this->handle->nextimage();
-			} catch(Exception $e){
-				break;
-			}
-
-		} while($this->handle->hasnextimage());
-
-		@unlink($vs_output_file_prefix);
-		return $va_files;*/
+			$va_return = $vo_plugin->writePreviews($ps_filepath,$pa_options);
+			return $va_return;
+		} else {
+			return null;
+		}
 	}
 	# ------------------------------------------------
 	public function joinArchiveContents($pa_files, $pa_options = array()) {
-		/*if(!is_array($pa_files)) { return false; }
-
-		$vs_archive_original = tempnam(caGetTempDirPath(), "caArchiveOriginal");
-		@rename($vs_archive_original, $vs_archive_original.".tif");
-		$vs_archive_original = $vs_archive_original.".tif";
-
-		$vo_orig = new Gmagick();
-
-		foreach($pa_files as $vs_file){
-			if(file_exists($vs_file)){
-				$vo_r = new Gmagick($vs_file);
-				if($vo_r){
-					$vo_orig = $vo_orig->addimage($vo_r);
-				}
-			}
+		// the gmagick multi image feature seems broken -> try and use one of the other plugins to do this
+		if(caMediaPluginGraphicsMagickInstalled($this->ops_graphicsmagick_path)){
+			$vo_plugin = new WLPlugMediaGraphicsMagick();
+		} else if(caMediaPluginImagickInstalled()){
+			$vo_plugin = new WLPlugMediaImagick();
+		} else if(caMediaPluginImageMagickInstalled($this->ops_imagemagick_path)){
+			$vo_plugin = new WLPlugMediaImageMagick();
 		}
 
-		if($vo_orig->getnumberimages() > 0){
-			if($vo_orig->writeimage($vs_archive_original,true)){
-				return $vs_archive_original;
-			}
-		}*/
-
-		return false;
+		if(is_object($vo_plugin)){
+			$vo_plugin->register();
+			return $vo_plugin->joinArchiveContents($pa_files,$pa_options);	
+		} else {
+			return false;
+		}
 	}
 	# ------------------------------------------------
 	public function getOutputFormats() {
@@ -1075,9 +1060,9 @@ class WLPlugMediaGmagick Extends BaseMediaPlugin Implements IWLPlugMedia {
 			case Gmagick::COLORSPACE_SRGB:
 				$vs_colorspace = 'SRGB';
 				break;
-			case Gmagick::COLORSPACE_HSB:
+			/*case Gmagick::COLORSPACE_HSB:
 				$vs_colorspace = 'HSB';
-				break;
+				break;*/
 			case Gmagick::COLORSPACE_HSL:
 				$vs_colorspace = 'HSL';
 				break;
