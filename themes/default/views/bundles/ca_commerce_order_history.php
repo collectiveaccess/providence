@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2012 Whirl-i-Gig
+ * Copyright 2012-2013 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -39,8 +39,10 @@
 	$va_errors = array();
 	
 	$va_orders = $t_subject->getClientHistory($vs_order_type);
+	
+	print caEditorBundleShowHideControl($this->request, $vs_id_prefix.$vn_table_num.'OrderHistory');
 ?>
-<div id="<?php print $vs_id_prefix.$vn_table_num.'_sets'; ?>">
+<div id="<?php print $vs_id_prefix.$vn_table_num.'OrderHistory'; ?>">
 	<div class="bundleContainer">
 <?php
 	if ($vs_order_type == 'L') {

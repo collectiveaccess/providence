@@ -56,6 +56,9 @@
  		# -------------------------------------------------------
  		public function __construct(&$po_request, &$po_response, $pa_view_paths=null) {
  			parent::__construct($po_request, $po_response, $pa_view_paths);
+ 			
+ 			JavascriptLoadManager::register('bundleListEditorUI');
+ 			JavascriptLoadManager::register('panel');
 			
  			JavascriptLoadManager::register('bundleListEditorUI');
  			
@@ -72,8 +75,6 @@
  		 *
  		 */
  		public function Edit($pa_values=null, $pa_options=null) {
- 			JavascriptLoadManager::register('panel');
- 			
  			list($vn_subject_id, $t_subject, $t_ui, $vn_parent_id, $vn_above_id) = $this->_initView($pa_options);
  			$vs_mode = $this->request->getParameter('mode', pString);
  			

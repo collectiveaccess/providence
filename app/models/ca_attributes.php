@@ -241,6 +241,7 @@ class ca_attributes extends BaseModel {
 		$va_elements = $t_element->getElementsInSet();
 		
 		$vb_dont_create_attribute = true;
+		$t = new Timer();
 		foreach($va_elements as $va_element) {
 			if ($va_element['datatype'] == 0) { continue; }	// 0 is always 'container' ...
 			
@@ -433,7 +434,7 @@ class ca_attributes extends BaseModel {
 	static public function getElementInstance($pm_element_code_or_id) {
 		if (isset(ca_attributes::$s_ca_attributes_element_instance_cache[$pm_element_code_or_id])) { return ca_attributes::$s_ca_attributes_element_instance_cache[$pm_element_code_or_id]; }
 		
-		require_once(__CA_MODELS_DIR__.'/ca_metadata_elements.php');	// defer inclusion until runtime to ensure baseclasses are already loaded, otherwise you get circular dependencies
+		//require_once(__CA_MODELS_DIR__.'/ca_metadata_elements.php');	// defer inclusion until runtime to ensure baseclasses are already loaded, otherwise you get circular dependencies
 		$t_element = new ca_metadata_elements();
 		
 		if (!is_numeric($pm_element_code_or_id)) {
@@ -746,6 +747,10 @@ class ca_attributes extends BaseModel {
 			}
 		}
 		return $va_attrs;
+	}
+	# ------------------------------------------------------
+	protected function logChange($ps_change_type, $pn_user_id=null) {
+		//noop
 	}
 	# ------------------------------------------------------
 	/**

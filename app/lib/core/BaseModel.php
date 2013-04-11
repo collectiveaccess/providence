@@ -1886,7 +1886,9 @@ class BaseModel extends BaseObject {
 			
 			$va_many_to_one_relations = $this->_DATAMODEL->getManyToOneRelations($this->tableName());
 
+			$va_need_to_set_rank_for = array();
 			foreach($this->FIELDS as $vs_field => $va_attr) {
+			
 				$vs_field_type = $va_attr["FIELD_TYPE"];				# field type
 				$vs_field_value = $this->get($vs_field, array("TIMECODE_FORMAT" => "RAW"));
 				
@@ -2053,10 +2055,11 @@ class BaseModel extends BaseObject {
 						case (FT_BIT):
 							if (!$vb_is_hierarchical) {
 								if ((isset($this->RANK)) && ($vs_field == $this->RANK) && (!$this->get($this->RANK))) {
-									$qr_fmax = $o_db->query("SELECT MAX(".$this->RANK.") m FROM ".$this->TABLE);
-									$qr_fmax->nextRow();
-									$vs_field_value = $qr_fmax->get("m")+1;
-									$this->set($vs_field, $vs_field_value);
+									//$qr_fmax = $o_db->query("SELECT MAX(".$this->RANK.") m FROM ".$this->TABLE);
+									//$qr_fmax->nextRow();
+									//$vs_field_value = $qr_fmax->get("m")+1;
+									//$this->set($vs_field, $vs_field_value);
+									$va_need_to_set_rank_for[] = $vs_field;
 								}
 							}
 							$vs_fields .= "$vs_field,";
@@ -2118,15 +2121,23 @@ class BaseModel extends BaseObject {
 				$vs_fields = substr($vs_fields,0,strlen($vs_fields)-1);	# remove trailing comma
 				$vs_values = substr($vs_values,0,strlen($vs_values)-1);	# remove trailing comma
 
-
 				$vs_sql = "INSERT INTO ".$this->TABLE." ($vs_fields) VALUES ($vs_values)";
 
 				if ($this->debug) echo $vs_sql;
 				$o_db->query($vs_sql);
-				
 				if ($o_db->numErrors() == 0) {
-					if ($this->getFieldInfo($this->primaryKey(), "IDENTITY")) {
-						$this->_FIELD_VALUES[$this->primaryKey()] = $o_db->getLastInsertID();
+					if ($this->getFieldInfo($vs_pk = $this->primaryKey(), "IDENTITY")) {
+						$this->_FIELD_VALUES[$vs_pk] = $vn_new_id = $o_db->getLastInsertID();
+						
+						if (sizeof($va_need_to_set_rank_for)) {
+							$va_sql_sets = array();
+							foreach($va_need_to_set_rank_for as $vs_rank_fld) {
+								$va_sql_sets[] = "{$vs_rank_fld} = {$vn_new_id}";
+							}
+							$o_db->query("
+								UPDATE ".$this->TABLE." SET ".join(", ", $va_sql_sets)." WHERE {$vs_pk} = {$vn_new_id}
+							");
+						}
 					}
 
 					if ((sizeof($va_media_fields) > 0) || (sizeof($va_file_fields) > 0) || ($this->getHierarchyType() == __CA_HIER_TYPE_ADHOC_MONO__)) {
@@ -2169,7 +2180,6 @@ class BaseModel extends BaseObject {
 
 					$this->_FILES_CLEAR = array();
 					$this->logChange("I");
-
 
 					#
 					# update search index
@@ -2444,7 +2454,6 @@ class BaseModel extends BaseObject {
 					$vs_field_value_is_null = 0;
 				}
 
-
 				# --- check ->one relations
 				if (isset($va_many_to_one_relations[$vs_field]) && $va_many_to_one_relations[$vs_field]) {
 					# Nothing to verify if key is null
@@ -2674,7 +2683,7 @@ class BaseModel extends BaseObject {
 						if ($vb_we_set_transaction) { $this->removeTransaction(false); }
 						return false;
 					} else {
-						if (($vb_is_hierarchical) && ($vb_parent_id_changed)) {
+						if ((($vb_is_hierarchical) && ($vb_parent_id_changed)) && (!isset($pa_options['dontSetHierarchicalIndexing']) || !$pa_options['dontSetHierarchicalIndexing'])){
 							// recalulate left/right indexing of sub-records
 							
 							$vn_interval_start = $this->get($vs_hier_left_fld);
@@ -5385,7 +5394,8 @@ class BaseModel extends BaseObject {
 	 * @param string $ps_change_type 'I', 'U' or 'D', meaning INSERT, UPDATE or DELETE
 	 * @param int $pn_user_id user identifier, defaults to null
 	 */
-	private function logChange($ps_change_type, $pn_user_id=null) {
+	protected function logChange($ps_change_type, $pn_user_id=null) {
+		if(defined('__CA_DONT_LOG_CHANGES__')) { return null; }
 		if (!$this->logChanges()) { return null; }
 		$vb_is_metadata = $vb_is_metadata_value = false;
 		if ($this->tableName() == 'ca_attributes') {
@@ -7705,7 +7715,6 @@ $pa_options["display_form_field_tips"] = true;
 			$this->postError(1240, _t('Related table specification "%1" is not valid', $pm_rel_table_name_or_num), 'BaseModel->addRelationship()');
 			return false; 
 		}
-		
 		$t_item_rel = $va_rel_info['t_item_rel'];
 		
 		if ($pm_type_id && !is_numeric($pm_type_id)) {
@@ -7731,7 +7740,6 @@ $pa_options["display_form_field_tips"] = true;
 			}
 			return false;
 		}
-		
 
 		if ($va_rel_info['related_table_name'] == $this->tableName()) {
 			// is self relation
@@ -7750,6 +7758,7 @@ $pa_options["display_form_field_tips"] = true;
 			if(!is_null($ps_effective_date)){ $t_item_rel->set('effective_date', $ps_effective_date); }
 			if(!is_null($ps_source_info)){ $t_item_rel->set("source_info",$ps_source_info); }
 			$t_item_rel->insert();
+			
 			if ($t_item_rel->numErrors()) {
 				$this->errors = $t_item_rel->errors;
 				return false;
@@ -7757,8 +7766,6 @@ $pa_options["display_form_field_tips"] = true;
 		} else {
 			switch(sizeof($va_rel_info['path'])) {
 				case 3:		// many-to-many relationship
-					$t_rel = $this->getAppDatamodel()->getTableInstance($va_rel_info['related_table_name']);
-					
 					$t_item_rel->setMode(ACCESS_WRITE);
 					
 					$vs_left_table = $t_item_rel->getLeftTableName();
@@ -7812,7 +7819,7 @@ $pa_options["display_form_field_tips"] = true;
 						$this->setMode(ACCESS_WRITE);
 						$this->set($va_rel_info['rel_keys']['many_table_field'], $pn_rel_id);
 						$this->update();
-						
+					
 						if ($this->numErrors()) {
 							return false;
 						}
@@ -8290,8 +8297,8 @@ $pa_options["display_form_field_tips"] = true;
 	 *
 	 */
 	private function _getRelationshipInfo($pm_rel_table_name_or_num) {
-		if (isset(BaseModel::$s_relationship_info_cache[$this->tableName()][$pm_rel_table_name_or_num])) {
-			return BaseModel::$s_relationship_info_cache[$this->tableName()][$pm_rel_table_name_or_num];
+		if (isset(BaseModel::$s_relationship_info_cache[$vs_table = $this->tableName()][$pm_rel_table_name_or_num])) {
+			return BaseModel::$s_relationship_info_cache[$vs_table][$pm_rel_table_name_or_num];
 		}
 		if (is_numeric($pm_rel_table_name_or_num)) {
 			$vs_related_table_name = $this->getAppDataModel()->getTableName($pm_rel_table_name_or_num);
@@ -8300,7 +8307,7 @@ $pa_options["display_form_field_tips"] = true;
 		}
 		
 		$va_rel_keys = array();
-		if ($this->tableName() == $vs_related_table_name) {
+		if ($vs_table == $vs_related_table_name) {
 			// self relations
 			if ($vs_self_relation_table = $this->getSelfRelationTableName()) {
 				$t_item_rel = $this->getAppDatamodel()->getInstanceByTableName($vs_self_relation_table, true);
@@ -8308,7 +8315,7 @@ $pa_options["display_form_field_tips"] = true;
 				return null;
 			}
 		} else {
-			$va_path = array_keys($this->getAppDatamodel()->getPath($this->tableName(), $vs_related_table_name));
+			$va_path = array_keys($this->getAppDatamodel()->getPath($vs_table, $vs_related_table_name));
 			
 			switch(sizeof($va_path)) {
 				case 3:
@@ -8316,8 +8323,8 @@ $pa_options["display_form_field_tips"] = true;
 					break;
 				case 2:
 					$t_item_rel = $this->getAppDatamodel()->getInstanceByTableName($va_path[1], true);
-					if (!sizeof($va_rel_keys = $this->_DATAMODEL->getOneToManyRelations($this->tableName(), $va_path[1]))) {
-						$va_rel_keys = $this->_DATAMODEL->getOneToManyRelations($va_path[1], $this->tableName());
+					if (!sizeof($va_rel_keys = $this->_DATAMODEL->getOneToManyRelations($vs_table, $va_path[1]))) {
+						$va_rel_keys = $this->_DATAMODEL->getOneToManyRelations($va_path[1], $vs_table);
 					}
 					break;
 				default:
@@ -8327,7 +8334,7 @@ $pa_options["display_form_field_tips"] = true;
 			}
 		}
 		
-		return BaseModel::$s_relationship_info_cache[$this->tableName()][$vs_related_table_name] = BaseModel::$s_relationship_info_cache[$this->tableName()][$pm_rel_table_name_or_num] = array(
+		return BaseModel::$s_relationship_info_cache[$vs_table][$vs_related_table_name] = BaseModel::$s_relationship_info_cache[$vs_table][$pm_rel_table_name_or_num] = array(
 			'related_table_name' => $vs_related_table_name,
 			'path' => $va_path,
 			'rel_keys' => $va_rel_keys,
