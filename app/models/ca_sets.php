@@ -568,6 +568,7 @@ class ca_sets extends BundlableLabelableBaseModelWithAttributes implements IBund
 			while($qr_table_nums->nextRow()) {
 				$o_dm = $this->getAppDatamodel();
 				$t_instance = $o_dm->getInstanceByTableNum($vn_table_num = (int)$qr_table_nums->get('table_num'), true);
+				if (!$t_instance) { continue; }
 				
 				$va_item_wheres = $va_sql_wheres;
 				$va_item_wheres[] = "(cs.table_num = {$vn_table_num})";
