@@ -44,9 +44,9 @@ var caUI = caUI || {};
 			that.bundles.push(id);
 			that.bundleStates[id] = (that.cookieJar.get(id) == 'closed') ? "closed" : "open";
 			if (that.bundleStates[id] == "closed") {
-				that.close(id);
+				that.close(id, true);
 			} else {
-				that.open(id);
+				that.open(id, true);
 			}
 		}
 		
@@ -71,13 +71,13 @@ var caUI = caUI || {};
 		}
 		
 		// Open bundle
-		that.open = function(id) {
+		that.open = function(id, dontAnimate) {
 			if (id === undefined) {
 				jQuery.each(that.bundles, function(k, id) {
 					that.open(id);
 				});
 			} else {
-				jQuery("#" + id).slideDown(250);
+				jQuery("#" + id).slideDown(dontAnimate ? 0 : 250);
 				that.bundleStates[id] = 'open';
 				that.cookieJar.set(id, 'open');
 				jQuery("#" + id + "VisToggleButton").rotate({ duration:500, angle: 0, animateTo: 180 });
@@ -86,13 +86,13 @@ var caUI = caUI || {};
 		}
 		
 		// Close bundle
-		that.close = function(id) {
+		that.close = function(id, dontAnimate) {
 			if (id === undefined) {
 				jQuery.each(that.bundles, function(k, id) {
 					that.close(id);
 				});
 			} else {
-				jQuery("#" + id).slideUp(250);
+				jQuery("#" + id).slideUp(dontAnimate ? 0 : 250);
 				that.bundleStates[id] = 'closed';
 				that.cookieJar.set(id, 'closed');
 				jQuery("#" + id + "VisToggleButton").rotate({ duration:500, angle: 180, animateTo: 0 });
