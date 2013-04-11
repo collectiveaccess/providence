@@ -512,14 +512,17 @@ class ca_object_representations extends BundlableLabelableBaseModelWithAttribute
  				cra.representation_id = ? {$vs_access_sql}
  		", (int)$vn_representation_id);
  		
- 		return $qr_annotations->numRows();
+ 		return (int)$qr_annotations->numRows();
  	}
  	# ------------------------------------------------------
  	/**
  	 * Returns data for annotations attached to current representation
  	 *
  	 * @param array $pa_options Optional array of options. Supported options are:
- 	 *			checkAccess - array of access codes to filter count by. Only annotations with an access value set to one of the specified values will be returned
+ 	 *			checkAccess = array of access codes to filter count by. Only annotations with an access value set to one of the specified values will be returned
+ 	 *			start =
+ 	 *			max = 
+ 	 *			labelsOnly =
  	 * @return array List of annotations attached to the current representation, key'ed on annotation_id. Value is an array will all values; annotation labels are returned in the current locale.
  	 */
  	public function getAnnotations($pa_options=null) {
@@ -547,6 +550,10 @@ class ca_object_representations extends BundlableLabelableBaseModelWithAttribute
  		
  		$vs_sort_by_property = $this->getAnnotationSortProperty();
  		$va_annotations = array();
+ 		
+ 		$vn_start = (is_array($pa_options) && isset($pa_options['start']) && ((int)$pa_options['start'] > 0)) ? (int)$pa_options['start'] : null;
+ 		$vn_max = (is_array($pa_options) && isset($pa_options['max']) && ((int)$pa_options['max'] > 0)) ? (int)$pa_options['max'] : 0;
+ 		
  		while($qr_annotations->nextRow()) {
  			$va_tmp = $qr_annotations->getRow();
  			$o_coder->setPropertyValues($qr_annotations->getVars('props'));
@@ -562,6 +569,8 @@ class ca_object_representations extends BundlableLabelableBaseModelWithAttribute
  			$va_annotations[$vs_sort_key][$qr_annotations->get('annotation_id')] = $va_tmp;
  		}
  		
+ 		ksort($va_annotations, SORT_NUMERIC);
+ 		
  		// get annotation labels
  		$qr_annotation_labels = $o_db->query("
  			SELECT 	cral.annotation_id, cral.locale_id, cral.name, cral.label_id
@@ -573,22 +582,30 @@ class ca_object_representations extends BundlableLabelableBaseModelWithAttribute
  		
  		$va_labels = array();
  		while($qr_annotation_labels->nextRow()) {
- 			$va_labels[$qr_annotation_labels->get('annotation_id')][$qr_annotation_labels->get('locale_id')] = $qr_annotation_labels->get('name');
+ 			$va_labels[$qr_annotation_labels->get('annotation_id')][$qr_annotation_labels->get('locale_id')][] = $qr_annotation_labels->get('name');
  		}
  		
- 		if (!isset($pa_options['dontExtractValuesByUserLocale']) || !$pa_options['dontExtractValuesByUserLocale']) {
- 			$va_labels = caExtractValuesByUserLocale($va_labels);
- 		}
+ 		$va_labels_for_locale = caExtractValuesByUserLocale($va_labels);
  		
- 		ksort($va_annotations);
  		
  		$va_sorted_annotations = array();
  		foreach($va_annotations as $vs_key => $va_values) {
  			foreach($va_values as $va_val) {
+ 				$vs_label = is_array($va_labels_for_locale[$va_val['annotation_id']]) ? array_shift($va_labels_for_locale[$va_val['annotation_id']]) : '';
  				$va_val['labels'] = $va_labels[$va_val['annotation_id']] ? $va_labels[$va_val['annotation_id']] : array();
+ 				$va_val['label'] = $vs_label;
  				$va_sorted_annotations[$va_val['annotation_id']] = $va_val;
  			}
  		}
+ 		
+ 		if (($vn_start > 0) || ($vn_max > 0)) {
+ 			if ($vn_max > 0) {
+ 				$va_sorted_annotations = array_slice($va_sorted_annotations, (int)$vn_start, (int)$vn_max);
+ 			} else {
+ 				$va_sorted_annotations = array_slice($va_sorted_annotations, (int)$vn_start);
+ 			}
+ 		}
+ 		
  		return $va_sorted_annotations;
  	} 
  	# ------------------------------------------------------
@@ -834,11 +851,11 @@ class ca_object_representations extends BundlableLabelableBaseModelWithAttribute
 		$o_view->setVar('settings', $pa_bundle_settings);
 		
 		$va_inital_values = array();
-		if (sizeof($va_items = $this->getAnnotations(array('dontExtractValuesByUserLocale' => true)))) {
+		if (sizeof($va_items = $this->getAnnotations())) {
 			$t_rel = $this->getAppDatamodel()->getInstanceByTableName('ca_representation_annotations', true);
 			$vs_rel_pk = $t_rel->primaryKey();
 			foreach ($va_items as $vn_id => $va_item) {
-				if (!($vs_label = $va_item['labels'][$va_item['locale_id']])) { $vs_label = ''; }
+				if (!($vs_label = $va_item['label'])) { $vs_label = ''; }
 				$va_inital_values[$va_item[$t_item->primaryKey()]] = array_merge($va_item, array('id' => $va_item[$vs_rel_pk], 'item_type_id' => $va_item['item_type_id'], 'relationship_type_id' => $va_item['relationship_type_id'], 'label' => $vs_label));
 			}
 		}
@@ -852,7 +869,7 @@ class ca_object_representations extends BundlableLabelableBaseModelWithAttribute
  	 *
  	 */
  	protected function _processRepresentationAnnotations($po_request, $ps_form_prefix, $ps_placement_code) {
- 		$va_rel_items = $this->getAnnotations(array('dontExtractValuesByUserLocale' => true));
+ 		$va_rel_items = $this->getAnnotations();
 		$o_coder = $this->getAnnotationPropertyCoderInstance($this->getAnnotationType());
 		foreach($va_rel_items as $vn_id => $va_rel_item) {
 			$this->clearErrors();

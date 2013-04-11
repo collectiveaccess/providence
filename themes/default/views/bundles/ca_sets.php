@@ -46,6 +46,8 @@
 	
 	if ($vb_batch) {
 		print caBatchEditorSetsModeControl($vn_table_num, $vs_id_prefix);
+	} else {
+		print caEditorBundleShowHideControl($this->request, $vs_id_prefix.$vn_table_num.'_sets');
 	}
 ?>
 <div id="<?php print $vs_id_prefix.$vn_table_num.'_sets'; ?>" <?php print $vb_batch ? "class='editorBatchBundleContent'" : ''; ?>>

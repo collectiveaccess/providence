@@ -444,11 +444,7 @@
 							$vs_select_element = caHTMLSelect($vs_input_name, $va_select_opts, array(), $va_opts);
 						} elseif((int)$va_properties['showSortableElementsFor'] > 0) {
 							require_once(__CA_MODELS_DIR__.'/ca_metadata_elements.php');
- 							$o_dm = Datamodel::load();
- 							if (!($t_rel = $o_dm->getInstanceByTableNum($va_properties['showSortableElementsFor'], true))) {
- 								break;
- 							}
- 							
+							
  							$t_element = new ca_metadata_elements($va_properties['showSortableElementsFor']);
  							if (!$t_element->getPrimaryKey()) { return ''; }
  							$va_elements = $t_element->getElementsInSet();

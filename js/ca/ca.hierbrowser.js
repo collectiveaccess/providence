@@ -91,7 +91,7 @@ var caUI = caUI || {};
 			_pageLoadsForLevel:[],				// log of which pages per-level have been loaded already
 			_queuedLoadsForLevel: [],			// parameters for pending loads per-level
 			
-			maxItemsPerHierarchyLevelPage: 25	// maximum number of items to load at one time into a level
+			maxItemsPerHierarchyLevelPage: 300	// maximum number of items to load at one time into a level
 		}, options);
 		
 		if (!that.levelDataUrl) { 

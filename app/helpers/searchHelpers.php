@@ -93,6 +93,10 @@ require_once(__CA_MODELS_DIR__.'/ca_lists.php');
 				require_once(__CA_LIB_DIR__.'/ca/Search/ObjectRepresentationSearch.php');
 				return new ObjectRepresentationSearch();
 				break;
+			case 'ca_representation_annotations':
+				require_once(__CA_LIB_DIR__.'/ca/Search/RepresentationAnnotationSearch.php');
+				return new RepresentationAnnotationSearch();
+				break;
 			case 'ca_item_comments':
 				require_once(__CA_LIB_DIR__.'/ca/Search/ItemCommentSearch.php');
 				return new ItemCommentSearch();
@@ -210,6 +214,12 @@ require_once(__CA_MODELS_DIR__.'/ca_lists.php');
 			case 56:
 				$vs_module = 'find';
 				$vs_controller = ($vb_return_advanced) ? 'SearchObjectRepresentationsAdvanced' : 'SearchObjectRepresentations';
+				$vs_action = 'Index';
+				break;
+			case 'ca_representation_annotations':
+			case 82:
+				$vs_module = 'find';
+				$vs_controller = ($vb_return_advanced) ? 'SearchRepresentationAnnotationsAdvanced' : 'SearchRepresentationAnnotations';
 				$vs_action = 'Index';
 				break;
 			case 'ca_relationship_types':

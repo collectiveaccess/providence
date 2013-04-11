@@ -412,7 +412,7 @@ class ca_editor_uis extends BundlableLabelableBaseModelWithAttributes {
 		foreach($va_screens as $vn_screen_id => $va_screen_labels_by_locale) {
 			if (is_array($va_screens_with_bundles) && !isset($va_screens_with_bundles[$vn_screen_id])) { unset($va_screens[$vn_screen_id]); continue; }
 			foreach($va_screen_labels_by_locale as $vn_locale_id => $va_restriction_info) {
-				if (!is_array($va_screens[$vn_screen_id][$vn_screen_locale_id]['typeRestrictions'])) { continue; }
+				if (!is_array($va_screens[$vn_screen_id][$vn_locale_id]['typeRestrictions'])) { continue; }
 				$va_screens[$vn_screen_id][$vn_locale_id]['typeRestrictionsForDisplay'] = join(', ', $va_screens[$vn_screen_id][$vn_locale_id]['typeRestrictions']);
 			}
 		}

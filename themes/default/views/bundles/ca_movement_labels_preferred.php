@@ -40,7 +40,9 @@
 	$vb_batch			= $this->getVar('batch');
 	if ($vb_batch) {
 		print caBatchEditorPreferredLabelsModeControl($t_label, $vs_id_prefix);
-	}	
+	} else {
+		print caEditorBundleShowHideControl($this->request, $vs_id_prefix.'Labels');
+	}
 ?>
 <div id="<?php print $vs_id_prefix; ?>Labels" <?php print $vb_batch ? "class='editorBatchBundleContent'" : ''; ?>>
 <?php
