@@ -80,8 +80,12 @@ var caUI = caUI || {};
 				jQuery("#" + id).slideDown(dontAnimate ? 0 : 250);
 				that.bundleStates[id] = 'open';
 				that.cookieJar.set(id, 'open');
-				jQuery("#" + id + "VisToggleButton").rotate({ duration:500, angle: 0, animateTo: 180 });
-
+				
+				if (dontAnimate) {
+					jQuery("#" + id + "VisToggleButton").rotate({ angle: 180 });
+				} else {
+					jQuery("#" + id + "VisToggleButton").rotate({ duration:500, angle: 0, animateTo: 180 });
+				}
 			}			
 		}
 		
@@ -95,7 +99,12 @@ var caUI = caUI || {};
 				jQuery("#" + id).slideUp(dontAnimate ? 0 : 250);
 				that.bundleStates[id] = 'closed';
 				that.cookieJar.set(id, 'closed');
-				jQuery("#" + id + "VisToggleButton").rotate({ duration:500, angle: 180, animateTo: 0 });
+				
+				if (dontAnimate) {
+					jQuery("#" + id + "VisToggleButton").rotate({ angle: 0 });
+				} else {
+					jQuery("#" + id + "VisToggleButton").rotate({ duration:500, angle: 180, animateTo: 0 });
+				}
 			}
 		}
 		
