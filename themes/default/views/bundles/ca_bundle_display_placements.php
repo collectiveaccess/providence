@@ -39,7 +39,7 @@
 	
 	print caEditorBundleShowHideControl($this->request, $vs_id_prefix.'BundleDisplayPlacements');
 ?>
-<div class="bundleDisplayPlacementEditorContainer" id="<?php print $vs_id_prefix; >BundleDisplayPlacements">
+<div class="bundleDisplayPlacementEditorContainer" id="<?php print $vs_id_prefix; ?>BundleDisplayPlacements">
 	<div id="bundleDisplayPlacementEditor" class="bundleDisplayPlacementEditor">
 		<div class="bundleDisplayPlacementEditorHelpText"><?php print _t("Drag your selection from column to column to edit the contents of the display."); ?></div>
 		<table>
