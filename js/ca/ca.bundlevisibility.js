@@ -82,7 +82,7 @@ var caUI = caUI || {};
 				that.cookieJar.set(id, 'open');
 				
 				if (dontAnimate) {
-					jQuery("#" + id + "VisToggleButton").rotate({ angle: 0 });
+					jQuery("#" + id + "VisToggleButton").rotate({ angle: 180 });
 				} else {
 					jQuery("#" + id + "VisToggleButton").rotate({ duration:500, angle: 0, animateTo: 180 });
 				}
@@ -101,7 +101,7 @@ var caUI = caUI || {};
 				that.cookieJar.set(id, 'closed');
 				
 				if (dontAnimate) {
-					jQuery("#" + id + "VisToggleButton").rotate({ angle: 180 });
+					jQuery("#" + id + "VisToggleButton").rotate({ angle: 0 });
 				} else {
 					jQuery("#" + id + "VisToggleButton").rotate({ duration:500, angle: 180, animateTo: 0 });
 				}
