@@ -86,7 +86,8 @@
  			if ($t_subject->getAppConfig()->get('perform_type_access_checking')) {
  				$va_restrict_to_types = caGetTypeRestrictionsForUser($this->ops_table_name, array('access' => __CA_BUNDLE_ACCESS_EDIT__));
  			}
- 			if (is_array($va_restrict_to_types) && !in_array($t_subject->get('type_id'), $va_restrict_to_types)) {
+ 			
+ 			if (($vn_type_id = $t_subject->get('type_id')) && is_array($va_restrict_to_types) && !in_array($vn_type_id, $va_restrict_to_types)) {
  				$this->response->setRedirect($this->request->config->get('error_display_url').'/n/2560?r='.urlencode($this->request->getFullUrlPath()));
  				return;
  			}

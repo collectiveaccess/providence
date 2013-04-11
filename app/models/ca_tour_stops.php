@@ -441,6 +441,51 @@ class ca_tour_stops extends BundlableLabelableBaseModelWithAttributes {
  		
  		return true;
  	}
+	# ------------------------------------------------------
+	/**
+	 *
+	 */
+	public function getTourStopIDsByName($ps_name, $pn_parent_id=null, $pn_type_id=null) {
+		$o_db = $this->getDb();
+		
+		$va_params = array((string)$ps_name);
+		
+		$vs_type_sql = '';
+		if ($pn_type_id) {
+			if(sizeof($va_type_ids = caMakeTypeIDList('ca_tour_stops', array($pn_type_id)))) {
+				$vs_type_sql = " AND cap.type_id IN (?)";
+				$va_params[] = $va_type_ids;
+			}
+		}
+		
+		if ($pn_parent_id) {
+			$vs_parent_sql = " AND cap.parent_id = ?";
+			$va_params[] = (int)$pn_parent_id;
+		} 
+		
+		
+		$qr_res = $o_db->query("
+			SELECT DISTINCT cap.stop_id
+			FROM ca_tour_stops cap
+			INNER JOIN ca_tour_stop_labels AS capl ON capl.stop_id = cap.stop_id
+			WHERE
+				capl.name = ? {$vs_type_sql} {$vs_parent_sql} AND cap.deleted = 0
+		", $va_params);
+		
+		$va_stop_ids = array();
+		while($qr_res->nextRow()) {
+			$va_stop_ids[] = $qr_res->get('stop_id');
+		}
+		return $va_stop_ids;
+	}
+	# ------------------------------------------------------
+	/**
+	 *
+	 */
+	public function getIDsByLabel($pa_label_values, $pn_parent_id=null, $pn_type_id=null) {
+		return $this->getTourStopIDsByName($pa_label_values['name'], $pn_parent_id, $pn_type_id);
+	}
+	# ------------------------------------------------------
 	 # ------------------------------------------------------
 }
 ?>

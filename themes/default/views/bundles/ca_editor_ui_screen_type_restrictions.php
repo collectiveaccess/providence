@@ -36,7 +36,6 @@
  		}
  	}
 ?>
-
 	<div>
 		<div class="bundleContainer">
 			<div class="caItemList">

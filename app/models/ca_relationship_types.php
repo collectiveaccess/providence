@@ -240,6 +240,18 @@ class ca_relationship_types extends BundlableLabelableBaseModelWithAttributes {
 	 */
 	static $s_relationship_type_id_cache = array();
 	
+	
+	/**
+	 * @var cached relationship type_ids as loaded/created by getRelationshipTypeID()
+	 */
+	//static $s_relationship_type_id_cache = array();
+	
+	
+	/**
+	 * @var cached relationship tables; used by getRelationshipTypeTable()
+	 */
+	static $s_relationship_type_table_cache = array();
+	
 	# ------------------------------------------------------
 	# --- Constructor
 	#
@@ -455,15 +467,16 @@ class ca_relationship_types extends BundlableLabelableBaseModelWithAttributes {
 	 * @return string The name of a table relating the specified tables 
 	 */
 	 public function getRelationshipTypeTable($ps_table1, $ps_table2) {
+	 	if (isset(ca_relationship_types::$s_relationship_type_table_cache[$ps_table1][$ps_table2])) { return ca_relationship_types::$s_relationship_type_table_cache[$ps_table1][$ps_table2]; }
 	 	$va_path = array_keys($this->getAppDatamodel()->getPath($ps_table1, $ps_table2));
 	 	switch(sizeof($va_path)) {
 	 		case 2:
 			case 3:
-				return $va_path[1];
+				return ca_relationship_types::$s_relationship_type_table_cache[$ps_table1][$ps_table2] = $va_path[1];
 				break;
 		}
 		
-		return null;
+		return ca_relationship_types::$s_relationship_type_table_cache[$ps_table1][$ps_table2] = null;
 	 }
 	 # ------------------------------------------------------
 	/**
