@@ -54,8 +54,9 @@
 		$vn_init_id = $pn_id;
 	}
 	
+	print caEditorBundleShowHideControl($this->request, $ps_id_prefix.$t_subject->tableNum().'HierNavigation');
 ?>	
-	<div class="bundleContainer">
+	<div class="bundleContainer" id="<?php print $ps_id_prefix.$t_subject->tableNum(); ?>HierNavigation">
 		<div class="hierNav">
 <?php
 	if ($pn_id > 0) {

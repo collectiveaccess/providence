@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2009-2012 Whirl-i-Gig
+ * Copyright 2009-2013 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -37,6 +37,8 @@
 	$vs_type_plural 		= $this->getVar('type_plural');
 	$va_lookup_urls 		= $this->getVar('lookup_urls');
 	$vn_table_num 			= $t_set->get('table_num');
+	
+	print caEditorBundleShowHideControl($this->request, $vs_id_prefix.'setItemEditor');
 ?>
 <div id="<?php print $vs_id_prefix; ?>setItemEditor" class='setItemEditor'>
 <?php

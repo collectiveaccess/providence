@@ -39,6 +39,7 @@
 	$va_initial_values = $this->getVar('initialValues');
 	if (!is_array($va_initial_values)) { $va_initial_values = array(); }
 	
+	print caEditorBundleShowHideControl($this->request, $vs_id_prefix.$t_item->tableNum().'_rel');
 ?>
 <div id="<?php print $vs_id_prefix.$t_item->tableNum().'_rel'; ?>">
 <?php

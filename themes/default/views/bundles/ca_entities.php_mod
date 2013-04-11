@@ -40,21 +40,21 @@
 	
 	$vb_batch			=	$this->getVar('batch');
 	
-	$vs_first_color 	= 	((isset($va_settings['colorFirstItem']) && $va_settings['colorFirstItem'])) ? $va_settings['colorFirstItem'] : '';
-	$vs_last_color 		= 	((isset($va_settings['colorLastItem']) && $va_settings['colorLastItem'])) ? $va_settings['colorLastItem'] : '';
-	
-	
 	// params to pass during entity lookup
 	$va_lookup_params = (isset($va_settings['restrict_to_type']) && $va_settings['restrict_to_type']) ? array('type' => $va_settings['restrict_to_type'], 'noSubtypes' => (int)$va_settings['dont_include_subtypes_in_type_restriction']) : array();
 
 	if ($vb_batch) {
 		print caBatchEditorRelationshipModeControl($t_item, $vs_id_prefix);
-	} else {
-		print caEditorBundleShowHideControl($this->request, $vs_id_prefix.$t_item->tableNum().'_rel');
 	}
 ?>
+<span style='float:left; margin-left:7px;'>
+
+<a href='#' class='open' onclick='$("div.<?php print $vs_id_prefix;?>").show("slow"); $(".open").hide("fast", "linear"); $(".close").show("fast", "linear");  return false;'><img src="<?php print $this->request->getThemeUrlPath(); ?>/graphics/arrows/expand.jpg" border="0"/></a>
+<a href='#' class='close' style="display:none;" onclick='$("div.<?php print $vs_id_prefix;?>").hide("slow"); $(".close").hide("fast", "linear"); $(".open").show("fast", "linear"); return false;'><img src="<?php print $this->request->getThemeUrlPath(); ?>/graphics/arrows/collapse.jpg" border="0"/></a></span>
+
 <div id="<?php print $vs_id_prefix.$t_item->tableNum().'_rel'; ?>" <?php print $vb_batch ? "class='editorBatchBundleContent'" : ''; ?>>
-<?php
+
+<?php 
 
 	//
 	// Template to generate display for existing items
@@ -65,7 +65,7 @@
 	switch($va_settings['list_format']) {
 		case 'list':
 ?>
-		<div id="<?php print $vs_id_prefix; ?>Item_{n}" class="labelInfo listRel caRelatedItem">
+		<div id="<?php print $vs_id_prefix; ?>Item_{n}" class="labelInfo listRel">
 <?php
 	if (!$vb_read_only && !$vb_dont_show_del) {
 ?>				
@@ -84,7 +84,7 @@
 		case 'bubbles':
 		default:
 ?>
-		<div id="<?php print $vs_id_prefix; ?>Item_{n}" class="labelInfo roundedRel caRelatedItem">
+		<div id="<?php print $vs_id_prefix; ?>Item_{n}" class="labelInfo roundedRel">
 			<a href="<?php print urldecode(caEditorUrl($this->request, 'ca_entities', '{entity_id}')); ?>" class="caEditItemButton" id="<?php print $vs_id_prefix; ?>_edit_related_{n}">{{label}}</a>
 			({{relationship_typename}})
 			<input type="hidden" name="<?php print $vs_id_prefix; ?>_type_id{n}" id="<?php print $vs_id_prefix; ?>_type_id{n}" value="{type_id}"/>
@@ -130,7 +130,7 @@
 		</div>
 	</textarea>
 	
-	<div class="bundleContainer">
+	<div class="bundleContainer <?php print $vs_id_prefix;?>" style="display:none;">
 <?php
 	if(sizeof($this->getVar('initialValues')) && !$vb_read_only && !$vs_sort) {
 ?>
@@ -203,7 +203,6 @@
 			templateClassName: 'caNewItemTemplate',
 			initialValueTemplateClassName: 'caItemTemplate',
 			itemListClassName: 'caItemList',
-			listItemClassName: 'caRelatedItem',
 			addButtonClassName: 'caAddItemButton',
 			deleteButtonClassName: 'caDeleteItemButton',
 			hideOnNewIDList: ['<?php print $vs_id_prefix; ?>_edit_related_'],
@@ -217,9 +216,7 @@
 			listSortItems: 'div.roundedRel',
 			autocompleteInputID: '<?php print $vs_id_prefix; ?>_autocomplete',
 			quickaddPanel: caRelationQuickAddPanel<?php print $vs_id_prefix; ?>,
-			quickaddUrl: '<?php print caNavUrl($this->request, 'editor/entities', 'EntityQuickAdd', 'Form', array('entity_id' => 0)); ?>',
-			firstItemColor: '<?php print $vs_first_color; ?>',
-			lastItemColor: '<?php print $vs_last_color; ?>'
+			quickaddUrl: '<?php print caNavUrl($this->request, 'editor/entities', 'EntityQuickAdd', 'Form', array('entity_id' => 0)); ?>'
 		});
 	});
 </script>

@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2011-2012 Whirl-i-Gig
+ * Copyright 2011-2013 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -40,6 +40,7 @@
 	$va_initial_values = $this->getVar('initialValues');
 	if (!is_array($va_initial_values)) { $va_initial_values = array(); }
 	
+	print caEditorBundleShowHideControl($this->request, $vs_id_prefix.$t_item->tableNum().'_rel');
 ?>
 <div id="<?php print $vs_id_prefix.$t_item->tableNum().'_rel'; ?>">
 <?php
