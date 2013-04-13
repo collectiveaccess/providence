@@ -693,7 +693,7 @@
 		 */
 		public function makeTemplateFromValue($ps_value, $pn_max_num_replacements=0, $pb_no_placeholders=false) {
 			$vs_separator = $this->getSeparator();
-			$va_values = explode($vs_separator, $ps_value);
+			$va_values = $vs_separator ? explode($vs_separator, $ps_value) : array($ps_value);
 			
 			$va_elements = $this->getElements();
 			$vn_num_serial_elements = 0;
