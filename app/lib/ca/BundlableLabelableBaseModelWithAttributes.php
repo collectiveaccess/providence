@@ -1303,7 +1303,7 @@ class BundlableLabelableBaseModelWithAttributes extends LabelableBaseModelWithAt
 					case 'ca_object_lots':
 						if ($this->_CONFIG->get($ps_bundle_name.'_disable')) { break; }		// don't display if master "disable" switch is set
 						
-						$pa_lot_options = array();
+						$pa_lot_options = array('batch' => $vb_batch);
 						if ($vn_lot_id = $pa_options['request']->getParameter('lot_id', pInteger)) {
 							$pa_lot_options['force'][] = $vn_lot_id;
 						}

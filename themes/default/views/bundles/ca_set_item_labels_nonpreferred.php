@@ -65,7 +65,7 @@
 	</div>
 </div>
 <script type="text/javascript">
-	caUI.initLabelBundle('#<?php print $vs_id_prefix; ?>Labels', {
+	caUI.initLabelBundle('#<?php print $vs_id_prefix; ?>NPLabels', {
 		mode: 'nonpreferred',
 		fieldNamePrefix: '<?php print $vs_id_prefix; ?>',
 		templateValues: ['caption', 'locale_id', 'type_id'],
