@@ -152,9 +152,9 @@
 		jQuery(document).ready(function() {
 			jQuery('#".$ps_id_prefix."Labels_batch_mode_select').change(function() {
 				if ((jQuery(this).val() == '_disabled_') || (jQuery(this).val() == '_delete_')) {
-					jQuery('#".$ps_id_prefix."Labels').slideUp(250);
+					jQuery('#".$ps_id_prefix."NPLabels').slideUp(250);
 				} else {
-					jQuery('#".$ps_id_prefix."Labels').slideDown(250);
+					jQuery('#".$ps_id_prefix."NPLabels').slideDown(250);
 				}
 			});
 		});
