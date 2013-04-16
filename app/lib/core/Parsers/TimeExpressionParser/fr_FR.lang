@@ -6,7 +6,7 @@ wordsWithSpaces = [ap JC,ap J-C,ap. J-C,ap. J.-C.,apres JC,après J-C,apres J.-C
 
 # Words containing spaces replacement : complete with the chosen replacement. You MUST use the replacement
 # in each value defined in this file, not the original string. Do not use punctuation in the replacement string.
-wordsWithSpacesReplacements = [apjc,apjc,apjc,apjc,apjc,apjc,apjc,apjc,apjc,apjc,avjc,avjc,avjc,avjc,avjc,avjc]
+wordsWithSpacesReplacements = [apjc,apjc,apjc,apjc,apjc,apjc,apjc,apjc,apjc,apjc,avjc,avjc,avjc,avjc,avjc,avjc,avjc]
 
 # List month names; used whenever name of month needs to be displayed
 monthList = [janvier, fevrier, mars, avril, mai, juin, juillet, aout, septembre, octobre, novembre, decembre]
