@@ -95,7 +95,10 @@ BaseModel::$s_ca_models_definitions['ca_sets'] = array(
 					_t('Storage locations') => 89,
 					_t('Object representations') => 56,
 					_t('Loans') => 133,
-					_t('Movements') => 137
+					_t('Movements') => 137,
+					_t('List items') => 33,
+					_t('Tours') => 153,
+					_t('Tour stops') => 155
 				)
 		),
 		'type_id' => array(
@@ -568,6 +571,7 @@ class ca_sets extends BundlableLabelableBaseModelWithAttributes implements IBund
 			while($qr_table_nums->nextRow()) {
 				$o_dm = $this->getAppDatamodel();
 				$t_instance = $o_dm->getInstanceByTableNum($vn_table_num = (int)$qr_table_nums->get('table_num'), true);
+				if (!$t_instance) { continue; }
 				
 				$va_item_wheres = $va_sql_wheres;
 				$va_item_wheres[] = "(cs.table_num = {$vn_table_num})";

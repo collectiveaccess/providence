@@ -154,7 +154,10 @@
 		}
 	});
 </script>
-<div class="bundleContainer">
+<?php
+	print caEditorBundleShowHideControl($this->request, $ps_id_prefix.$t_subject->tableNum().'HierLocation');
+?>
+<div class="bundleContainer" id="<?php print $ps_id_prefix.$t_subject->tableNum(); ?>HierLocation">
 	<div class="hierNav" >
 <?php
 			if(sizeof($va_errors)) {

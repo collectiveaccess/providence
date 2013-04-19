@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2009-2012 Whirl-i-Gig
+ * Copyright 2009-2013 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -37,8 +37,9 @@
 	
 	$vb_read_only		=	((isset($va_settings['readonly']) && $va_settings['readonly'])  || ($this->request->user->getBundleAccessLevel('ca_search_forms', 'nonpreferred_labels') == __CA_BUNDLE_ACCESS_READONLY__));
 	
+	print caEditorBundleShowHideControl($this->request, $vs_id_prefix.'NPLabels');	
 ?>
-<div id="<?php print $vs_id_prefix; ?>Labels">
+<div id="<?php print $vs_id_prefix; ?>NPLabels">
 <?php
 	//
 	// The bundle template - used to generate each bundle in the form
@@ -65,7 +66,7 @@
 	</div>
 </div>
 <script type="text/javascript">
-	caUI.initLabelBundle('#<?php print $vs_id_prefix; ?>Labels', {
+	caUI.initLabelBundle('#<?php print $vs_id_prefix; ?>NPLabels', {
 		mode: 'nonpreferred',
 		fieldNamePrefix: '<?php print $vs_id_prefix; ?>',
 		templateValues: ['name', 'locale_id', 'type_id'],

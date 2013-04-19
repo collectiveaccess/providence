@@ -81,7 +81,7 @@ class InmagicReader extends BaseXMLDataReader {
 		parent::__construct($ps_source, $pa_options);
 		
 		$this->ops_title = _t('Inmagic XML Reader');
-		$this->ops_display_name = _t('Inmagick XML');
+		$this->ops_display_name = _t('Inmagic XML');
 		$this->ops_description = _t('Reads Inmagic XML files');
 		
 		$this->opa_formats = array('inmagic');	// must be all lowercase to allow for case-insensitive matching

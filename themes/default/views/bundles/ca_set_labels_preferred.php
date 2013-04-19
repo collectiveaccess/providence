@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2009-2011 Whirl-i-Gig
+ * Copyright 2009-2013 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -37,6 +37,7 @@
 	
 	$vb_read_only		=	((isset($va_settings['readonly']) && $va_settings['readonly'])  || ($this->request->user->getBundleAccessLevel('ca_sets', 'preferred_labels') == __CA_BUNDLE_ACCESS_READONLY__));
 
+	print caEditorBundleShowHideControl($this->request, $vs_id_prefix.'Labels');
 ?>
 <div id="<?php print $vs_id_prefix; ?>Labels">
 <?php

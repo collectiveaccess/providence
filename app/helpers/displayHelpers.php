@@ -520,6 +520,8 @@ require_once(__CA_LIB_DIR__."/ca/ApplicationPluginManager.php");
 			jQuery('#editorFieldListContentArea a').click(function() {
 				caEditorFieldList.hidePanel();
 			});
+			
+			if(caBundleVisibilityManager) { caBundleVisibilityManager.setAll(); }
 		});
 </script>
 <div id=\"editorFieldListHTML\">";
@@ -1306,6 +1308,7 @@ require_once(__CA_LIB_DIR__."/ca/ApplicationPluginManager.php");
 				$vs_more_info .= "<div><strong>".((sizeof($va_links) == 1) ? _t("In set") : _t("In sets"))."</strong> ".join(", ", $va_links)."</div>\n";
 			}
 			
+			
 			// export options		
 			if ($vn_item_id && $vs_select = $po_view->getVar('available_mappings_as_html_select')) {
 				$vs_more_info .= "<div class='inspectorExportControls'>".caFormTag($po_view->request, 'exportItem', 'caExportForm', null, 'post', 'multipart/form-data', '_top', array('disableUnsavedChangesWarning' => true));
@@ -1357,6 +1360,16 @@ require_once(__CA_LIB_DIR__."/ca/ApplicationPluginManager.php");
 				$vs_buf .= $vs_more_info."</div>\n";
 			}
 		}
+		
+		//
+		// Expand/collapse all editing form bundles
+		//
+		$vs_buf .= "<div style='padding: 5px; text-align: center;'><a href='#' onclick='caBundleVisibilityManager.open(); return false;' style='margin-right: 5px;'>"._t("Expand")."</a> ";
+		$vs_buf .= "<a href='#' onclick='caBundleVisibilityManager.close(); return false;'>"._t("Collapse")."</a></div>";
+		
+		
+		
+		
 		$vs_buf .= "</div></h4>\n";
 		
 		$vs_buf .= "<script type='text/javascript'>
@@ -2607,6 +2620,22 @@ $ca_relationship_lookup_parse_cache = array();
 			}
 		}
 		return $va_links;
+	}
+	# ---------------------------------------
+	/**
+	 * Generates batch mode control HTML for metadata attribute bundles
+	 *
+	 * @param string $ps_id_prefix
+	 * 
+	 * @return string HTML implementing the control
+	 */
+	function caEditorBundleShowHideControl($po_request, $ps_id_prefix) {
+		$vs_buf = "<span style='float:right; margin-right:7px;'>";
+		$vs_buf .= "<a href='#' onclick='caBundleVisibilityManager.toggle(\"{$ps_id_prefix}\");  return false;'><img src=\"".$po_request->getThemeUrlPath()."/graphics/arrows/expand.jpg\" border=\"0\" id=\"{$ps_id_prefix}VisToggleButton\"/></a>";
+		$vs_buf .= "</span>\n";	
+		$vs_buf .= "<script type='text/javascript'>jQuery(document).ready(function() { caBundleVisibilityManager.registerBundle('{$ps_id_prefix}'); }); </script>";	
+		
+		return $vs_buf;
 	}
 	# ------------------------------------------------------------------
 ?>
