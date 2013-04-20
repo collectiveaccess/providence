@@ -1725,7 +1725,7 @@ require_once(__CA_LIB_DIR__."/ca/ApplicationPluginManager.php");
 		$vs_delimiter = (isset($pa_options['delimiter'])) ? $pa_options['delimiter'] : '; ';
 		
 		$va_tags = array();
-		if (preg_match_all("!\^([A-Za-z0-9_\.]+[^ \t\r\n\"\'<>\(\)\{\}\/,]*)!", $ps_template, $va_matches)) {
+		if (preg_match_all("!\^([A-Za-z0-9_\.]+[^ \t\r\n\"\'<>\(\)\{\}\/,;\[\]]*)!", $ps_template, $va_matches)) {
 			$va_tags = $va_matches[1];
 		}
 		
@@ -2042,9 +2042,19 @@ require_once(__CA_LIB_DIR__."/ca/ApplicationPluginManager.php");
 			
 			$va_pt_vals = array();
 			foreach($va_tag_vals as $x => $va_values_by_tag) {
+				//
+				// Need to sort tags by length descending (longest first)
+				// so that when we go to substitute and you have a tag followed by itself with a suffix
+				// (ex. ^measurements and ^measurements2) we don't substitute both for the stub (ex. ^measurements)
+				//
+				$va_tags = array_keys($va_values_by_tag);
+				usort($va_tags, function($a, $b) {
+					return strlen($b) - strlen($a);
+				});
+				
 				$vs_pt = $va_proc_templates[$vn_i];
-				foreach($va_values_by_tag as $vs_tag => $vs_val) {
-					$vs_pt = str_replace('^'.$vs_tag, $vs_val, $vs_pt);
+				foreach($va_tags as $vs_tag) {
+					$vs_pt = str_replace('^'.$vs_tag, $va_values_by_tag[$vs_tag], $vs_pt);
 				}
 				$va_pt_vals[] = $vs_pt;
 			}
