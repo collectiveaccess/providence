@@ -89,6 +89,8 @@
 			$t_display = $this->opo_datamodel->getInstanceByTableName('ca_bundle_displays', true); 
 			$t_display->load($vn_display_id);
 			
+			$vs_view = $this->opo_result_context->getCurrentView();
+			
 			if ($vn_display_id && ($t_display->haveAccessToDisplay($this->request->getUserID(), __CA_BUNDLE_DISPLAY_READ_ACCESS__))) {
 				$va_placements = $t_display->getPlacements(array('settingsOnly' => true));
 				foreach($va_placements as $vn_placement_id => $va_display_item) {
@@ -107,6 +109,14 @@
 						'display' => $vs_header,
 						'settings' => $va_settings
 					);
+					
+					if ($vs_view == 'editable') {
+						$va_display_list[$vn_placement_id] = array_merge($va_display_list[$vn_placement_id], array(
+							'allowInlineEditing' => $va_display_item['allowInlineEditing'],
+							'inlineEditingType' => $va_display_item['inlineEditingType'],
+							'inlineEditingListValues' => $va_display_item['inlineEditingListValues']
+						));
+					}
 				}
 			}
 			
@@ -136,6 +146,10 @@
 			
  			$this->view->setVar('current_display_list', $vn_display_id);
  			$this->view->setVar('t_display', $t_display);
+ 			
+ 			if ($vs_view == 'editable') {
+ 				$this->view->setVar('columns', $this->getInlineEditColumns($va_display_list));
+ 			}
  			
  			// figure out which items in the display are sortable
  			if (method_exists($t_model, 'getApplicableElementCodes')) {
@@ -974,6 +988,331 @@
  			
  			$this->render('Results/viz_html.php');
  		}
+ 		# ------------------------------------------------------------------
+ 		# Results-based inline editing
+ 		# ------------------------------------------------------------------
+ 		/**
+ 		 *
+ 		 */
+ 		public function getPartialResult($pa_options=null) {
+ 			self::Index($pa_options);
+ 			
+ 			$po_search = isset($pa_options['search']) ? $pa_options['search'] : null;
+ 			
+ 			$pn_start = $this->request->getParameter('start', pInteger);
+ 			
+ 			if (!($vn_items_per_page = $this->request->getParameter('n', pInteger))) {
+				if (!($vn_items_per_page = $this->opo_result_context->getItemsPerPage())) { 
+					$vn_items_per_page = $this->opn_items_per_page_default; 
+					$this->opo_result_context->setItemsPerPage($vn_items_per_page);
+				}
+ 			}
+ 			
+ 			$vs_search 				= $this->opo_result_context->getSearchExpression();
+ 			
+ 			
+ 			if (!($vs_sort 	= $this->opo_result_context->getCurrentSort())) { 
+ 				$va_tmp = array_keys($this->opa_sorts);
+ 				$vs_sort = array_shift($va_tmp); 
+ 			}
+ 			$vs_sort_direction = $this->opo_result_context->getCurrentSortDirection();
+			$vn_display_id 	= $this->opo_result_context->getCurrentBundleDisplay();
+ 			
+ 			if (!$this->opn_type_restriction_id) { $this->opn_type_restriction_id = ''; }
+ 			$this->view->setVar('type_id', $this->opn_type_restriction_id);
+ 			
+ 			// Get attribute sorts
+ 			$va_sortable_elements = ca_metadata_elements::getSortableElements($this->ops_tablename, $this->opn_type_restriction_id);
+ 			
+ 			if (!is_array($this->opa_sorts)) { $this->opa_sorts = array(); }
+ 			foreach($va_sortable_elements as $vn_element_id => $va_sortable_element) {
+ 				$this->opa_sorts[$this->ops_tablename.'.'.$va_sortable_element['element_code']] = $va_sortable_element['display_label'];
+ 			}
+ 			
+ 			if ($pa_options['appendToSearch']) {
+ 				$vs_append_to_search .= " AND (".$pa_options['appendToSearch'].")";
+ 			}
+			//
+			// Execute the search
+			//
+			if($vs_search && ($vs_search != "")){ /* any request? */
+				$va_search_opts = array(
+					'sort' => $vs_sort, 
+					'sort_direction' => $vs_sort_direction, 
+					'appendToSearch' => $vs_append_to_search,
+					'checkAccess' => $va_access_values,
+					'no_cache' => $vb_is_new_search,
+					'dontCheckFacetAvailability' => true,
+					'filterNonPrimaryRepresentations' => true
+				);
+				if ($vb_is_new_search ||isset($pa_options['saved_search']) || (is_subclass_of($po_search, "BrowseEngine") && !$po_search->numCriteria()) ) {
+					$vs_browse_classname = get_class($po_search);
+ 					$po_search = new $vs_browse_classname;
+ 					if (is_subclass_of($po_search, "BrowseEngine")) {
+ 						$po_search->addCriteria('_search', $vs_search);
+ 						
+ 						if (method_exists($this, "hookBeforeNewSearch")) {
+ 							$this->hookBeforeNewSearch($po_search);
+ 						}
+ 					}
+ 					
+ 					$this->opo_result_context->setParameter('show_type_id', null);
+ 				}
+ 				
+ 				if ($this->opn_type_restriction_id) {
+ 					$po_search->setTypeRestrictions(array($this->opn_type_restriction_id));
+ 				}
+ 				
+ 				$vb_criteria_have_changed = false;
+ 				if (is_subclass_of($po_search, "BrowseEngine")) { 					
+					//
+					// Restrict facets to specific group for main browse landing page (if set in app.conf config)
+					// 			
+					if ($vs_facet_group = $this->request->config->get($this->ops_tablename.'_search_refine_facet_group')) {
+						$po_search->setFacetGroup($vs_facet_group);
+					}
+					
+ 					$vb_criteria_have_changed = $po_search->criteriaHaveChanged();
+					$po_search->execute($va_search_opts);
+					
+					$this->opo_result_context->setParameter('browse_id', $po_search->getBrowseID());
+					
+					if ($vs_group_name = $this->request->config->get('browse_facet_group_for_'.$this->ops_tablename)) {
+ 						$po_search->setFacetGroup($vs_group_name);
+ 					}
+ 					
+					$vo_result = $po_search->getResults($va_search_opts);
+				} else {
+					$vo_result = $po_search->search($vs_search, $va_search_opts);
+				}
+				$this->opo_result_context->validateCache();
+				
+				// Only prefetch what we need
+				$vo_result->setOption('prefetch', $vn_items_per_page);
+				
+ 				if($vb_is_new_search || $vb_criteria_have_changed) {
+					$this->opo_result_context->setResultList($vo_result->getPrimaryKeyValues());
+					$this->opo_result_context->setParameter('availableVisualizationChecked', 0);
+					$vn_page_num = 1;
+				}
+ 				$this->view->setVar('result', $vo_result);
+ 			}
+ 			
+ 			$va_results = array();
+ 			$vo_result->seek($pn_start);
+ 			
+ 			
+ 			$t_display = $this->view->getVar('t_display');
+ 			$va_display_list = $this->view->getVar('display_list');
+ 			
+ 			$vn_c = 0;
+ 			while($vo_result->nextHit()) {
+ 				$va_result = array("item_id" => $vo_result->get($vo_result->primaryKey()));
+ 				foreach($va_display_list as $vn_placement_id => $va_placement) {
+ 					
+ 					$va_result[str_replace(".", "-", $va_placement['bundle_name'])] = $t_display->getDisplayValue($vo_result, $vn_placement_id, array('request' => $this->request));
+ 				}
+ 				$va_results[] = $va_result;
+ 				
+ 				$vn_c++;
+ 				
+ 				if ($vn_c >= $vn_items_per_page) { break; }
+ 			}
+ 			$this->view->setVar('results', $va_results);
+ 			$this->render('Results/ajax_partial_results_json.php');
+ 		}
+ 		# ------------------------------------------------------------------
+ 		/**
+ 		 *
+ 		 */ 
+ 		public function saveInlineEdit($pa_options=null) {
+ 			global $g_ui_locale_id;
+ 			
+ 			$ps_table = $this->request->getParameter('table', pString);
+ 			$ps_bundle = $this->request->getParameter('bundle', pString);
+ 			$pa_bundle = explode("-", $ps_bundle);
+ 			$pn_id = $this->request->getParameter('id', pInteger);
+ 			$ps_val = $this->request->getParameter('value', pString);
+ 			
+ 			$vs_resp = array();
+ 			$o_dm = Datamodel::load();
+ 			if (!($t_instance = $o_dm->getInstanceByTableName($ps_table, true))) {
+ 				$va_resp = array(
+ 					'error' => 100,
+ 					'message' => _t('Invalid table: %1', $ps_table)
+ 				);
+ 			} else {
+				if (!$t_instance->load($pn_id)) {
+					$va_resp = array(
+						'error' => 100,
+						'message' => _t('Invalid id: %1', $pn_id)
+					);
+				} else {
+					if (!$t_instance->isSaveable($this->request)) {
+						$va_resp = array(
+							'error' => 100,
+							'message' => _t('You are not allowed to edit this.')
+						);
+					} elseif ($pa_bundle[0] == 'preferred_labels') {
+						if ($this->request->user->getBundleAccessLevel($ps_table, $pa_bundle[0]) != __CA_BUNDLE_ACCESS_EDIT__) {
+							$va_resp = array(
+								'error' => 100,
+								'message' => _t('You are not allowed to edit this.')
+							);
+						} else {
+							$vn_label_id = $t_instance->getPreferredLabelID($g_ui_locale_id);
+						
+							$va_label_values = array();
+							if (sizeof($pa_bundle) == 1) {
+								// is generic "preferred_labels"
+								$va_label_values[$t_instance->getLabelDisplayField()] = $ps_val;
+							} else {
+								$vs_preferred_label_element = $pa_bundle[1];
+								$va_label_values[$vs_preferred_label_element] = $ps_val;
+							}
+						
+							if ($vn_label_id) {
+								$t_instance->editLabel($vn_label_id, $va_label_values, $g_ui_locale_id, null, true);	// TODO: what about type?
+							} else {
+								$t_instance->addLabel($va_label_values, $g_ui_locale_id, null, true);
+							}
+						
+							if ($t_instance->numErrors()) {
+								$va_resp = array(
+									'error' => 100,
+									'message' => _t('Could not set preferred label %1 to %2: %3', $ps_bundle, $ps_val, join("; ", $t_instance->getErrors()))
+								);
+							} else {
+								$va_resp = array(
+									'error' => 0,
+									'message' => _t('Set preferred label %1 to %2', $ps_bundle, $ps_val)
+								);
+							}
+						}
+					} elseif ($t_instance->hasField($ps_bundle)) {
+						if ($this->request->user->getBundleAccessLevel($ps_table, $ps_bundle) != __CA_BUNDLE_ACCESS_EDIT__) {
+							$va_resp = array(
+								'error' => 100,
+								'message' => _t('You are not allowed to edit this.')
+							);
+						} else {
+							// is it a list?
+							$t_list = new ca_lists();
+							$t_instance->setMode(ACCESS_WRITE);
+							if (($vs_list_code = $t_instance->getFieldInfo($ps_bundle, 'LIST')) && ($va_item = $t_list->getItemFromListByLabel($vs_list_code, $ps_val))) {
+								$t_instance->set($ps_bundle, $va_item['item_value']);
+							} elseif (($vs_list_code = $t_instance->getFieldInfo($ps_bundle, 'LIST_CODE')) && ($vn_item_id = $t_list->getItemIDFromListByLabel($vs_list_code, $ps_val))) {
+								$t_instance->set($ps_bundle, $vn_item_id);
+							} else {
+								$t_instance->set($ps_bundle, $ps_val);
+							}
+							$t_instance->update();
+						
+							if ($t_instance->numErrors()) {
+								$va_resp = array(
+									'error' => 100,
+									'message' => _t('Could not set %1 to %2: %3', $ps_bundle, $ps_val, join("; ", $t_instance->getErrors()))
+								);
+							} else {
+								$va_resp = array(
+									'error' => 0,
+									'message' => _t('Set %1 to %2', $ps_bundle, $ps_val)
+								);
+							}
+						}
+					} elseif ($t_instance->hasElement($ps_bundle)) {
+						// Check if it repeats?
+						if ($vn_count = $t_instance->getAttributeCountByElement($ps_bundle) > 1) {
+							$va_resp = array(
+								'error' => 100,
+								'message' => _t('Cannot edit <em>%1</em> here because it has multiple values. Try editing it directly.', mb_strtolower($t_instance->getDisplayLabel("{$ps_table}.{$ps_bundle}")))
+							);
+						} elseif(!in_array(ca_metadata_elements::getElementDatatype($ps_bundle), array(1,2,5,6,8,9,10,11,12))) {
+							// Check if it's a supported type?
+							$va_resp = array(
+								'error' => 100,
+								'message' => _t('Cannot edit <em>%1</em> here. Try editing it directly.', mb_strtolower($t_instance->getDisplayLabel("{$ps_table}.{$ps_bundle}")))
+							);
+						} elseif ($this->request->user->getBundleAccessLevel($ps_table, $ps_bundle) != __CA_BUNDLE_ACCESS_EDIT__) {
+							$va_resp = array(
+								'error' => 100,
+								'message' => _t('You are not allowed to edit this.')
+							);
+						} else {
+							// Do edit
+							$t_instance->setMode(ACCESS_WRITE);
+							$t_instance->replaceAttribute(array(
+								'locale_id' => $g_ui_locale_id,
+								$ps_bundle => $ps_val
+							), $ps_bundle);
+					
+							$t_instance->update();
+					
+							if ($t_instance->numErrors()) {
+								$va_resp = array(
+									'error' => 100,
+									'message' => _t('Could not set %1 to %2: %3', $ps_bundle, $ps_val, join("; ", $t_instance->getErrors()))
+								);
+							} else {
+								$va_resp = array(
+									'error' => 0,
+									'message' => _t('Set %1 to %2', $ps_bundle, $ps_val),
+									'value' => $t_instance->get($ps_table.'.'.$ps_bundle)
+								);
+							}
+						}
+					} else {
+						$va_resp = array(
+							'error' => 100,
+							'message' => _t('Invalid bundle: %1', $ps_bundle)
+						);
+					}
+				}
+			}
+ 			
+ 			$this->view->setVar('results', $va_resp);
+ 			$this->render('Results/ajax_save_inline_edit_json.php');
+ 		}
+ 		# ------------------------------------------------------------------
+ 		/**
+ 		 *
+ 		 */ 
+ 		public function getInlineEditColumns($pa_display_list, $pa_options=null) {
+ 			$va_bundle_names = caExtractValuesFromArrayList($pa_display_list, 'bundle_name', array('preserveKeys' => true));
+			$va_column_spec = array();
+
+			foreach($va_bundle_names as $vn_placement_id => $vs_bundle_name) {
+				if (!(bool)$pa_display_list[$vn_placement_id]['allowInlineEditing']) {
+					// Read only
+					$va_column_spec[] = array(
+						'data' => str_replace(".", "-", $vs_bundle_name), 
+						'readOnly' => !(bool)$pa_display_list[$vn_placement_id]['allowInlineEditing']
+					);
+					continue;
+				}
+		
+				switch($pa_display_list[$vn_placement_id]['inlineEditingType']) {
+					case DT_SELECT:
+						$va_column_spec[] = array(
+							'data' => str_replace(".", "-", $vs_bundle_name), 
+							'readOnly' => false,
+							'type' => 'DT_SELECT',
+							'source' => $pa_display_list[$vn_placement_id]['inlineEditingListValues'],
+							'strict' => true
+						);
+						break;
+					default:
+						$va_column_spec[] = array(
+							'data' => str_replace(".", "-", $vs_bundle_name), 
+							'readOnly' => false,
+							'type' => 'DT_FIELD'
+						);
+						break;
+				}
+			}
+			
+			return $va_column_spec;
+		}
  		# ------------------------------------------------------------------
 	}
 ?>

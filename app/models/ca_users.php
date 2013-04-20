@@ -2845,7 +2845,7 @@ class ca_users extends BaseModel {
 			return $vn_locale_id;
 		}
 		
-		return __CA_DEFAULT_LOCALE__;
+		return $t_locale->localeCodeToID(__CA_DEFAULT_LOCALE__);
 	}
 	# ----------------------------------------
 	/**
