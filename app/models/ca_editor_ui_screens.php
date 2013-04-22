@@ -260,7 +260,6 @@ class ca_editor_ui_screens extends BundlableLabelableBaseModelWithAttributes {
 			$this->errors = array_merge($this->errors, $t_placement->errors);
 			return false;
 		}
-		unset($_SESSION['screen_cache']);
 		return $t_placement->getPrimaryKey();
 	}
 	# ------------------------------------------------------
@@ -290,7 +289,6 @@ class ca_editor_ui_screens extends BundlableLabelableBaseModelWithAttributes {
 			}
 			
 			unset(ca_editor_ui_screens::$s_placement_list_cache[$vn_screen_id]);
-			unset($_SESSION['screen_cache']);
 			return true;
 		}
 		return false;
@@ -749,7 +747,6 @@ class ca_editor_ui_screens extends BundlableLabelableBaseModelWithAttributes {
 			$this->errors = $t_restriction->errors();
 			return false;
 		}
-		unset($_SESSION['screen_cache']);
 		return true;
 	}
 	# ----------------------------------------
@@ -795,7 +792,6 @@ class ca_editor_ui_screens extends BundlableLabelableBaseModelWithAttributes {
 				}
 			}
 		}
-		unset($_SESSION['screen_cache']);
 		return true;
 	}
 	# ----------------------------------------
