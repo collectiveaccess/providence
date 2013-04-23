@@ -129,7 +129,10 @@
 						'placement_id' => $this->ops_tablename.'.'.$vs_idno_fld,
 						'bundle_name' => $this->ops_tablename.'.'.$vs_idno_fld,
 						'display' => $t_model->getDisplayLabel($this->ops_tablename.'.'.$vs_idno_fld),
-						'settings' => array()
+						'settings' => array(),
+						'allowInlineEditing' => true,
+						'inlineEditingType' => DT_FIELD,
+						'inlineEditingListValues' => array()
 					);
 				}
 				
@@ -139,7 +142,10 @@
 						'placement_id' => $this->ops_tablename.'.preferred_labels',
 						'bundle_name' => $this->ops_tablename.'.preferred_labels',
 						'display' => $t_label->getDisplayLabel($t_label->tableName().'.'.$t_label->getDisplayField()),
-						'settings' => array()
+						'settings' => array(),
+						'allowInlineEditing' => true,
+						'inlineEditingType' => DT_FIELD,
+						'inlineEditingListValues' => array()
 					);
 				}
 			}
