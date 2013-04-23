@@ -150,6 +150,9 @@
 						'inlineEditingListValues' => array()
 					);
 				}
+				if ($vs_view == 'editable') {
+					JavascriptLoadManager::register('panel');
+				}
 			}
 			
  			$this->view->setVar('current_display_list', $vn_display_id);
