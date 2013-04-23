@@ -786,23 +786,5 @@ class RequestHTTP extends Request {
 		return false;
 	}
 	# ----------------------------------------
-	# Authorization
-	# ----------------------------------------
-	public function userActionIsAllowed($ps_user_action) {
-	
-	}
-	# ----------------------------------------
-	public function fieldAccessIsAllowed($pm_table, $pm_field) {
-	
-	}
-	# ----------------------------------------
-	public function rowAccessIsAllowed($pm_table, $pm_field, $pn_row_id) {
-	
-	}
-	# ----------------------------------------
-	public function canAccessTab($ps_tabname) {
-	
-	}
-	# ----------------------------------------
  }
  ?>
