@@ -2058,7 +2058,7 @@ require_once(__CA_LIB_DIR__."/ca/ApplicationPluginManager.php");
 				}
 				$va_pt_vals[] = $vs_pt;
 			}
-			$va_proc_templates[$vn_i] = join($vs_delimiter, $va_pt_vals);
+			$va_proc_templates[$vn_i] = join(isset($pa_options['delimiter']) ? $pa_options['delimiter'] : $vs_delimiter, $va_pt_vals);
 		}
 		
 		if ($vb_return_as_array) {
