@@ -66,15 +66,17 @@ function HandsontableScrollLoad() {
 
 						rowCheckMap[rowIndex] = true;
 						data[rowIndex] = v;
-						rowHeaders[rowIndex] = settings.editLinkFormat.replace("%1", v['item_id']);
+						rowHeaders[rowIndex] = (rowIndex + 1) + " " + settings.editLinkFormat.replace("%1", v['item_id']);
 					});
 					if (end >= numRows) { 
 						jQuery("." + settings.statusDisplayClassName).html("Loading complete"); 
+						setTimeout(function() {
+							jQuery("." + settings.statusDisplayClassName).fadeOut(500);
+						}, 5000);
 						table.updateSettings({columnSorting: true});
 						table.render();
 					}
 					isAutoloading = false;
-					//table.render();
 				});
 				return;
 			}
@@ -88,13 +90,14 @@ function HandsontableScrollLoad() {
 		setInterval(autoload, autoLoadInterval);
 	};
 
-	this.scrollVertical = function (d) {
+	this.scrollDone = function () {
 		if (!doCheck) { return; }
 
 		var settings = table.getSettings();
 		var data = settings.data;
 
-		var curRowIndex = parseInt(d.row);
+		var curRowIndex = parseInt(table.rowOffset());
+		var numRows = parseInt(table.countRows());
 		
 		// Load for empty rows up to half of rows before current
 		var i = curRowIndex;
@@ -111,25 +114,29 @@ function HandsontableScrollLoad() {
 		// If start row is not empty then look ahead and see if there's anything that needs to be loaded up ahead
 		if(rowCheckMap[curRowIndex]) {
 			for(i = curRowIndex; i <= curRowIndex + Math.ceil(maxToLoad/2); i++) {
+				if (curRowIndex >= numRows) { break; }
 				if(!rowCheckMap[i]) {
 					curRowIndex = i;
 					break;
 				}
 			}
 		}
-		
+		if (curRowIndex >= numRows) { return; }
 		if(!rowCheckMap[curRowIndex]) {
 			//console.log("Load data starting at " + curRowIndex + " for " + maxToLoad + " rows");
 			
 			userIsLoading = true;
-			jQuery.getJSON( settings.dataLoadUrl, { start: curRowIndex, n: maxToLoad }, function(newData, textStatus, jqXHR) {
+			var n = numRows - curRowIndex;
+			if (n > maxToLoad) { n = maxToLoad; }
+			if (n <= 0) { return; }
+			jQuery.getJSON( settings.dataLoadUrl, { start: curRowIndex, n: n }, function(newData, textStatus, jqXHR) {
 				jQuery.each(newData, function(k, v) {
 					var rowHeaders = table.getRowHeader();
 					var rowIndex = curRowIndex + parseInt(k);
 
 					rowCheckMap[rowIndex] = true;
 					data[rowIndex] = v;
-					rowHeaders[rowIndex] = settings.editLinkFormat.replace("%1", v['item_id']);
+					rowHeaders[rowIndex] = (rowIndex + 1) + " " + settings.editLinkFormat.replace("%1", v['item_id']);
 				});
 				userIsLoading = false;
 				table.render();
@@ -140,5 +147,4 @@ function HandsontableScrollLoad() {
 var htScrollLoad = new HandsontableScrollLoad();
 
 Handsontable.PluginHooks.push('afterInit', htScrollLoad.afterInit);
-Handsontable.PluginHooks.push('scrollVertical', htScrollLoad.scrollVertical);
-//Handsontable.PluginHooks.push('scrollHorizontal', htScrollLoad.scrollHorizontal);
+Handsontable.PluginHooks.push('scrollDone', htScrollLoad.scrollDone);

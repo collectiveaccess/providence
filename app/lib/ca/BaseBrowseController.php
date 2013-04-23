@@ -636,6 +636,14 @@
  			return join("; ", $va_buf);
   		}
  		# -------------------------------------------------------
+ 		/**
+ 		 *
+ 		 */ 
+ 		public function getPartialResult($pa_options=null) {
+ 			$pa_options['search'] = $this->opo_browse;
+ 			return parent::getPartialResult($pa_options);
+ 		}
+ 		# -------------------------------------------------------
  		# Sidebar info handler
  		# -------------------------------------------------------
  		public function Tools($pa_parameters) {

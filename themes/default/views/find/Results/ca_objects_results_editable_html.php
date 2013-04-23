@@ -29,38 +29,24 @@
 	
 	$t_display				= $this->getVar('t_display');
 	$va_display_list 		= $this->getVar('display_list');
-	$va_columns		 		= $this->getVar('columns');
 	$vo_result 				= $this->getVar('result');
 	
 	$vn_num_hits			= $vo_result->numHits();
 	$vs_subject_table 		= $vo_result->tableName();
-	$vs_pk 					= $vo_result->primaryKey();
-	$vn_items_per_page 		= 100; //$this->getVar('current_items_per_page');
 	
-	$vn_item_count 			= 0;
-			
-	$va_results = array();
+	$va_columns		 		= $this->getVar('columns');
+	$va_column_headers 		= $this->getVar('columnHeaders');
+	$va_row_headers 		= $this->getVar('rowHeaders');
 	
-	$va_row_headers = array();
-	while(($vn_item_count < $vn_items_per_page) && $vo_result->nextHit()) {
-		$va_result = array('item_id' => $vn_id = $vo_result->get($vs_pk));
-		
-		foreach($va_display_list as $vn_placement_id => $va_bundle_info) {
-			$va_result[str_replace(".", "-", $va_bundle_info['bundle_name'])] = $t_display->getDisplayValue($vo_result, $vn_placement_id, array('request' => $this->request));
-		}
-		
-		$va_results[] = $va_result;
-		
-		$va_row_headers[] = caEditorLink($this->request, caNavIcon($this->request, __CA_NAV_BUTTON_EDIT__), 'caResultsEditorEditLink', $vs_subject_table, $vn_id);
-		$vn_item_count++;
-	}
-	$va_column_headers = caExtractValuesFromArrayList($va_display_list, 'display', array('preserveKeys' => false));
+	$va_initial_data 		= $this->getVar('initialData');
+
 ?>
 <div id="caResultsEditorWrapper">
 	<div id="scrollingResults" class="caResultsEditorContainer">
 		<div id="caResultsEditorGrid" class="caResultsEditorContent"></div>
+		<a href="#" onclick="caResultsEditor.caResultsEditorOpenFullScreen();" class="caResultsEditorToggleFullScreenButton"><?php print caHTMLImage($this->request->getThemeUrlPath()."/graphics/buttons/fullscreen.png", array('width' => 14, 'height' => 14, 'alt' => _t('Full screen'))); ?></a>
+		
 		<div id="caResultsEditorStatusDisplay" class="caResultsEditorStatusDisplay"> </div>
-		<a href="#" onclick="caResultsEditor.caResultsEditorOpenFullScreen();" class="caResultsEditorToggleFullScreenButton"><?php print _t("Full screen"); ?></a>
 		
 		<div class="caResultsEditorControls" id="caResultsEditorControls">
 			<div class='info'><?php print $vn_num_hits.' '.$this->request->datamodel->getTableProperty($vs_subject_table, ($vn_num_hits == 1) ? 'NAME_SINGULAR' : 'NAME_PLURAL'); ?></div>
@@ -74,10 +60,8 @@
 	var caResultsEditor;
 	jQuery(document).ready(function() {
 		caResultsEditor = caUI.initTableView('#caResultsEditorGrid', {
-			initialData: <?php print json_encode($va_results); ?>,
+			initialData: <?php print json_encode(is_array($va_initial_data) ? $va_initial_data : array()); ?>,
 			rowCount: <?php print $vo_result->numHits(); ?>,
-			contextMenu: false,
-			columnSorting: false,
 			
 			dataLoadUrl: '<?php print caNavUrl($this->request, $this->request->getModulePath(), $this->request->getController(), "getPartialResult"); ?>',
 			dataSaveUrl: '<?php print caNavUrl($this->request, $this->request->getModulePath(), $this->request->getController(), "saveInlineEdit"); ?>',
@@ -91,9 +75,11 @@
 			currentColClassName: 'caResultsEditorCurrentCol',
 			readOnlyCellClassName: 'caResultsEditorReadOnlyCell',
 			
-			saveMessage: "Saving...",
-			errorMessagePrefix: "[Error]",
-			saveSuccessMessage: "Saved changes"
+			statusDisplayID: 'caResultsEditorStatusDisplay',
+			
+			saveMessage: '<?php print _t("Saving..."); ?>',
+			errorMessagePrefix: '<?php print _t("[Error]"); ?>',
+			saveSuccessMessage: '<?php print _t("Saved changes"); ?>'
 		});
 	});
 </script>

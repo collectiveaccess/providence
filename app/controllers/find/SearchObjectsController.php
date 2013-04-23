@@ -98,14 +98,6 @@
  		}
  		# -------------------------------------------------------
  		/**
- 		 *
- 		 */ 
- 		public function getPartialResult($pa_options=null) {
- 			$pa_options['search'] = $this->opo_browse;
- 			return parent::getPartialResult($pa_options);
- 		}
- 		# -------------------------------------------------------
- 		/**
  		 * QuickLook
  		 */
  		public function QuickLook() {

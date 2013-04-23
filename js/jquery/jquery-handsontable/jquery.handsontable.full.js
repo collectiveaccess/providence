@@ -3864,7 +3864,8 @@ Handsontable.PluginHooks = {
     walkontableConfig: [],
     afterDestroy: [],
     scrollVertical: [],
-    scrollHorizontal: []
+    scrollHorizontal: [],
+    scrollDone: []
   },
 
   push: function (key, fn) {
@@ -4067,7 +4068,7 @@ function HandsontableColumnSorting() {
       this.rootElement.on('click.handsontable', '.columnSorting', function (e) {
         var $target = $(e.target);
         if ($target.is('.columnSorting')) {
-          var col = $target.closest('th').index();
+          var col = $target.closest('th').index() + instance.colOffset();	// MOD for CA 23 April 2013
           if (instance.getSettings().rowHeaders) {
             col--;
           }
@@ -5830,30 +5831,36 @@ WalkontableScroll.prototype.scrollViewport = function (coords) {
   viewportColumns = viewportColumns || 1;
 
   if (viewportRows < totalRows) {
+  	var delta;
     if (coords[0] > offsetRow + viewportRows - 1) {
-      this.scrollVertical(coords[0] - (offsetRow + viewportRows - 1));
+      this.scrollVertical(delta=(coords[0] - (offsetRow + viewportRows - 1)));
     }
     else if (coords[0] < offsetRow) {
-      this.scrollVertical(coords[0] - offsetRow);
+      this.scrollVertical(delta = (coords[0] - offsetRow));
     }
     else {
-      this.scrollVertical(0); //Craig's issue: remove row from the last scroll page should scroll viewport a row up if needed
+      this.scrollVertical(delta=0); //Craig's issue: remove row from the last scroll page should scroll viewport a row up if needed
     }
+    
+    Handsontable.PluginHooks.run(self, 'scrollDone', { "type" : 'vertical', "dragDelta" : delta });
   }
   else {
     //this.scrollVertical(coords[0] - offsetRow); //this should not be needed anymore
   }
 
   if (viewportColumns > 0 && viewportColumns < totalColumns) {
+  	var delta;
     if (coords[1] > offsetColumn + viewportColumns - 1) {
-      this.scrollHorizontal(coords[1] - (offsetColumn + viewportColumns - 1));
+      this.scrollHorizontal(delta = (coords[1] - (offsetColumn + viewportColumns - 1)));
     }
     else if (coords[1] < offsetColumn) {
-      this.scrollHorizontal(coords[1] - offsetColumn);
+      this.scrollHorizontal(delta = (coords[1] - offsetColumn));
     }
     else {
-      this.scrollHorizontal(0); //Craig's issue
+      this.scrollHorizontal(delta=0); //Craig's issue
     }
+    
+	 Handsontable.PluginHooks.run(self, 'scrollDone', { "type" : 'horizontal', "dragDelta" : delta });	// MOD for CA 11 April 2013
   }
   else {
     //this.scrollHorizontal(coords[1] - offsetColumn); //this should not be needed anymore
@@ -5915,6 +5922,7 @@ function WalkontableScrollbar(instance, type) {
       that.dragTimeout = null;
       dragDelta = type === 'vertical' ? y : x;
       that.onScroll(dragDelta);
+      Handsontable.PluginHooks.run(self, 'scrollDone', { "type" : type, "dragDelta" : dragDelta });	// MOD for CA 11 April 2013
     }
   });
   that.skipRefresh = false;
