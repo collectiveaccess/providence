@@ -528,9 +528,31 @@ class ca_bundle_displays extends BundlableLabelableBaseModelWithAttributes {
 								$va_placements[$vn_placement_id]['allowInlineEditing'] = true;
 								$va_placements[$vn_placement_id]['inlineEditingType'] = DT_FIELD;
 								break;
-							case 3:	// lists not supported yet
-								$va_placements[$vn_placement_id]['allowInlineEditing'] = false;
-								$va_placements[$vn_placement_id]['inlineEditingType'] = null;
+							case 3:	// lists
+								if ($t_element = ca_metadata_elements::getInstance($va_bundle_name[1])) {
+									switch($t_element->getSetting('render')) {
+										case 'select':
+										case 'yes_no_checkboxes':
+										case 'radio_buttons':
+										case 'checklist':
+											$va_placements[$vn_placement_id]['allowInlineEditing'] = true;
+											$va_placements[$vn_placement_id]['inlineEditingType'] = DT_SELECT;
+											$va_placements[$vn_placement_id]['inlineEditingListValues'] = array_values($t_list->getItemsForList($t_element->get("list_id"), array('labelsOnly' => true)));
+											break;
+										case 'lookup':
+										case 'horiz_hierbrowser':
+										case 'horiz_hierbrowser_with_search':
+										case 'vert_hierbrowser':
+											$va_placements[$vn_placement_id]['allowInlineEditing'] = true;
+											$va_placements[$vn_placement_id]['inlineEditingType'] = DT_LOOKUP;	
+											$va_placements[$vn_placement_id]['inlineEditingList'] = $t_element->get('list_id');
+											break;
+										default: // if it's a render setting we don't know about it's not editable
+											$va_placements[$vn_placement_id]['allowInlineEditing'] = false;
+											$va_placements[$vn_placement_id]['inlineEditingType'] = null;
+											break;
+									}
+								}
 								break;
 							default:
 								$va_placements[$vn_placement_id]['allowInlineEditing'] = false;
