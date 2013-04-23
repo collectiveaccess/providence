@@ -36,7 +36,7 @@ var caUI = caUI || {};
 			initialData: null,
 			rowCount: null,		// number of rows in result set to display
 			contextMenu: false,
-			columnSorting: false,
+			columnSorting: true,
 			
 			dataLoadUrl: null,
 			dataSaveUrl: null,
@@ -54,6 +54,11 @@ var caUI = caUI || {};
 			saveMessage: "Saving...",
 			errorMessagePrefix: "[Error]",
 			saveSuccessMessage: "Saved changes",
+			
+			lastLookupIDMap: null,
+			
+			saveQueue: [],
+			saveQueueIsRunning: false
 		}, options);
 		
 	
@@ -69,7 +74,7 @@ var caUI = caUI || {};
 			return td;
 		};
 		
-		that.myAutocompleteRenderer = function(instance, td, row, col, prop, value, cellProperties) {
+		that.autocompleteRenderer = function(instance, td, row, col, prop, value, cellProperties) {
 			Handsontable.AutocompleteCell.renderer.apply(this, arguments);
 			td.style.fontStyle = 'italic';
 		}
@@ -79,7 +84,7 @@ var caUI = caUI || {};
 			jQuery(that.container).toggleClass('caResultsEditorContentFullScreen');
 		
 			caResultsEditorPanel.showPanel();
-		
+			
 			jQuery('#scrollingResults').toggleClass('caResultsEditorContainerFullScreen').prependTo('#caResultsEditorPanelContentArea'); 
 		
 			jQuery('.caResultsEditorToggleFullScreenButton').hide();
@@ -110,13 +115,94 @@ var caUI = caUI || {};
 		jQuery.each(that.columns, function(i, v) {
 			switch(that.columns[i]['type']) {
 				case 'DT_SELECT':
-					that.columns[i]['type'] = { renderer: that.myAutocompleteRenderer, editor: Handsontable.AutocompleteEditor, options: { items: 100 } };
+					that.columns[i]['type'] = { renderer: that.autocompleteRenderer, editor: Handsontable.AutocompleteEditor, options: { items: 100 } };
+					break;
+				case 'DT_LOOKUP':
+					that.columns[i]['type'] = { renderer: that.autocompleteRenderer, editor: Handsontable.AutocompleteEditor, options: { items: 100 } };
+					that.columns[i]['source'] = function (query, process) {
+						$.ajax({
+							url: that.columns[i]['lookupURL'],
+							data: {
+								term: query,
+								list: that.columns[i]['list'],
+								simple: 0
+							},
+							success: function (response) {
+								var labels = [];
+								that.lastLookupIDMap = {};
+								for(var k in response) {
+									labels.push(response[k]['label']);
+									that.lastLookupIDMap[response[k]['label']] = k;
+								}
+								process(labels);
+							}
+						})
+					};
 					break;
 				default:
 					that.columns[i]['type'] = { renderer: that.htmlRenderer };
 					break;
 			}
 		});
+		// --------------------------------------------------------------------------------
+		
+		that.save = function(change) {
+			that.saveQueue.push(change);
+			that._runSaveQueue();
+		};
+		// --------------------------------------------------------------------------------
+		
+		that._runSaveQueue = function() {
+			if (that.saveQueueIsRunning) { 
+				console.log("Queue is already running");	
+				return false;
+			}
+			
+			that.saveQueueIsRunning = true;
+			var q = that.saveQueue;
+			
+			if (!q.length) { 
+				that.saveQueueIsRunning = false;
+				return false;
+			}
+			
+			var ht = jQuery(that.container).data('handsontable');
+			
+			// make map from item_id to row, and vice-versa
+			var rowToItemID = {}, itemIDToRow = {}, rowData = {};
+			jQuery.each(q, function(k, v) {
+				rowToItemID[v['change'][0][0]] = v['id'];
+				itemIDToRow[v['id']] = v['change'][0][0];
+				rowData[v['change'][0][0]] = v;
+			});
+			
+			that.saveQueue = [];
+			jQuery.getJSON(that.dataSaveUrl, { changes: q },
+				function(data) {
+					if (data.errors && (data.errors instanceof Object)) {
+						var errorMessages = [];
+						jQuery.each(data.errors, function(k, v) {
+							errorMessages.push(that.errorMessagePrefix + ": " + v.message);
+							ht.setDataAtRowProp(itemIDToRow[k], rowData[itemIDToRow[k]]['change'][0][1], rowData[itemIDToRow[k]]['change'][0][2], 'updateAfterRequest');
+						});
+						jQuery("." + that.statusDisplayClassName).html(errorMessages.join('; '));
+					} else {
+						jQuery("." + that.statusDisplayClassName).html(that.saveSuccessMessage);
+						
+						jQuery.each(data.messages, function(k, v) {
+							ht.setDataAtRowProp(itemIDToRow[k], rowData[itemIDToRow[k]]['change'][0][1], v['value'], 'updateAfterRequest');
+						});
+						setTimeout(function() { jQuery('.' + that.statusDisplayClassName).fadeOut(500); }, 5000);
+					}
+					
+					that.saveQueueIsRunning = false;
+					that._runSaveQueue(); // anything else to save?
+				}
+			);
+			
+			return true;
+		};
+		// --------------------------------------------------------------------------------
 		
 		var ht = jQuery(that.container).handsontable({
 			data: that.initialData,
@@ -126,7 +212,7 @@ var caUI = caUI || {};
 			minRows: that.rowCount,
 			maxRows: that.rowCount,
 			contextMenu: that.contextMenu,
-			columnSorting: that.contextMenu,
+			columnSorting: that.columnSorting,
 			
 			currentRowClassName: that.currentRowClassName,
 			currentColClassName: that.currentColClassName,
@@ -151,21 +237,19 @@ var caUI = caUI || {};
 				var table = pieces.shift();
 				var bundle = pieces.join('-');
 				
-				jQuery.getJSON(that.dataSaveUrl, { 'table' : table, 'bundle': bundle, 'id': item_id, 'value' : change[0][3] },
-				function(data) {
-					if (data.error > 0) {
-						jQuery("." + that.statusDisplayClassName).html(that.errorMessagePrefix + ": " + data.message);
-						ht.setDataAtRowProp(parseInt(change[0]), change[0][1], change[0][2], 'updateAfterRequest');
-					} else {
-						jQuery("." + that.statusDisplayClassName).html(that.saveSuccessMessage);
-						if (data.value != undefined) { ht.setDataAtRowProp(parseInt(change[0]), change[0][1], data.value, 'updateAfterRequest'); }
-						setTimeout(function() { jQuery('.' + that.statusDisplayClassName).fadeOut(500); }, 5000);
+				if (that.lastLookupIDMap) {
+					if (that.lastLookupIDMap[change[0][3]]) {
+						change[0][3] = that.lastLookupIDMap[change[0][3]];
 					}
-				});
+				}
+				that.lastLookupIDMap = null;
+				
+				that.save({ 'table' : table, 'bundle': bundle, 'id': item_id, 'value' : change[0][3], 'change' : change, 'source': source });
 			}
-			
 		});
 		
 		return that;
+		
+		// --------------------------------------------------------------------------------
 	};	
 })(jQuery);
