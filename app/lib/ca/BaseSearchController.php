@@ -370,10 +370,12 @@
  			if (is_array($va_hier)) {
  				
  				$va_types_by_parent_id = array();
- 				$vn_root_id = null;
+ 				$vn_root_id = $t_list->getRootItemIDForList($t_subject->getTypeListCode());
+
+ 				// organize items by parent id, exclude root
 				foreach($va_hier as $vn_item_id => $va_item) {
+					if ($vn_item_id == $vn_root_id) { continue; } // skip root
 					if (is_array($va_restrict_to_types) && !in_array($vn_item_id, $va_restrict_to_types)) { continue; }
-					if (!$vn_root_id) { $vn_root_id = $va_item['parent_id']; continue; }
 					$va_types_by_parent_id[$va_item['parent_id']][] = $va_item;
 				}
 				foreach($va_hier as $vn_item_id => $va_item) {
