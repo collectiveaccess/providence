@@ -65,7 +65,8 @@
  		public function __construct(&$po_request, &$po_response, $pa_view_paths=null) {
  			parent::__construct($po_request, $po_response, $pa_view_paths);
 			$this->opa_views = array(
-				'list' => _t('list')
+				'list' => _t('list'),
+				'editable' => _t('editable')
 			 );
 			 
 			 $this->opa_sorts = array_merge(array(
@@ -88,6 +89,7 @@
  			$pa_options['search'] = $this->opo_browse;
  			JavascriptLoadManager::register('imageScroller');
  			JavascriptLoadManager::register('tabUI');
+ 			JavascriptLoadManager::register('panel');
  			return parent::Index($pa_options);
  		}
  		# -------------------------------------------------------

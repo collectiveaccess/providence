@@ -71,6 +71,7 @@ define("DT_COLORPICKER", 10);
 define("DT_TIMECODE", 12);
 define("DT_COUNTRY_LIST", 13);
 define("DT_STATEPROV_LIST", 14);
+define("DT_LOOKUP", 15);
 # ------------------------------------------------------------------------------------
 # --- Access mode constants
 # ------------------------------------------------------------------------------------

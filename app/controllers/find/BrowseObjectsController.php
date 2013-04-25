@@ -90,14 +90,6 @@
  		}
  		# -------------------------------------------------------
  		/**
- 		 *
- 		 */ 
- 		public function getPartialResult($pa_options=null) {
- 			$pa_options['search'] = $this->opo_browse;
- 			return parent::getPartialResult($pa_options);
- 		}
- 		# -------------------------------------------------------
- 		/**
  		 * Ajax action that returns info on a mapped location based upon the 'id' request parameter.
  		 * 'id' is a list of object_ids to display information before. Each integer id is separated by a semicolon (";")
  		 * The "ca_objects_results_map_balloon_html" view in Results/ is used to render the content.

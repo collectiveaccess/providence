@@ -846,12 +846,13 @@ class ca_users extends BaseModel {
 					FROM ca_user_roles wur
 					INNER JOIN ca_users_x_roles AS wuxr ON wuxr.role_id = wur.role_id
 					WHERE wuxr.user_id = ?
-					ORDER BY wur.rank
 				", (int)$pn_user_id);
 				
 				$va_roles = array();
 				while($qr_res->nextRow()) {
-					$va_roles[$qr_res->get("role_id")] = $qr_res->getRow();
+					$va_row = $qr_res->getRow();
+					$va_row['vars'] = caUnserializeForDatabase($va_row['vars']);
+					$va_roles[$va_row['role_id']] = $va_row;
 				}
 				
 				return ca_users::$s_user_role_cache[$pn_user_id] = $va_roles;
@@ -1146,14 +1147,14 @@ class ca_users extends BaseModel {
 					INNER JOIN ca_groups_x_roles AS wgxr ON wgxr.role_id = wur.role_id
 					INNER JOIN ca_users_x_groups AS wuxg ON wuxg.group_id = wgxr.group_id
 					WHERE wuxg.user_id = ?
-					ORDER BY wur.rank
 				", (int)$pn_user_id);
 				
 				$va_roles = array();
 				while($qr_res->nextRow()) {
-					$va_roles[$qr_res->get("role_id")] = $qr_res->getRow();
+					$va_row = $qr_res->getRow();
+					$va_row['vars'] = caUnserializeForDatabase($va_row['vars']);
+					$va_roles[$va_row['role_id']] = $va_row;
 				}
-				
 				return ca_users::$s_group_role_cache[$pn_user_id] = $va_roles;
 			}
 		} else {
@@ -2943,12 +2944,10 @@ class ca_users extends BaseModel {
 	public function getBundleAccessLevel($ps_table_name, $ps_bundle_name) {
 		$vs_cache_key = $ps_table_name.'/'.$ps_bundle_name."/".$this->getPrimaryKey();
 		if (isset(ca_users::$s_user_bundle_access_cache[$vs_cache_key])) { return ca_users::$s_user_bundle_access_cache[$vs_cache_key]; }
-		
 		$va_roles = array_merge($this->getUserRoles(), $this->getGroupRoles());
-		
 		$vn_access = -1;
 		foreach($va_roles as $vn_role_id => $va_role_info) {
-			$va_vars = caUnserializeForDatabase($va_role_info['vars']);
+			$va_vars = $va_role_info['vars'];
 			
 			if (is_array($va_vars['bundle_access_settings'])) {
 				if (isset($va_vars['bundle_access_settings'][$ps_table_name.'.'.$ps_bundle_name]) && ((int)$va_vars['bundle_access_settings'][$ps_table_name.'.'.$ps_bundle_name] > $vn_access)) {
@@ -2964,11 +2963,12 @@ class ca_users extends BaseModel {
 				}
 			}
 		}
-		
 		if ($vn_access < 0) {
 			$vn_access = (int)$this->getAppConfig()->get('default_bundle_access_level');
 		}
+		
 		ca_users::$s_user_bundle_access_cache[$vs_cache_key] = $vn_access;
+		
 		return $vn_access;
 	}
 	# ----------------------------------------
@@ -2993,7 +2993,7 @@ class ca_users extends BaseModel {
 		}
 		$vn_access = -1;
 		foreach($va_roles as $vn_role_id => $va_role_info) {
-			$va_vars = caUnserializeForDatabase($va_role_info['vars']);
+			$va_vars = $va_role_info['vars'];
 			
 			if (is_array($va_vars['type_access_settings'])) {
 				if (isset($va_vars['type_access_settings'][$ps_table_name.'.'.$vn_type_id]) && ((int)$va_vars['type_access_settings'][$ps_table_name.'.'.$vn_type_id] > $vn_access)) {
@@ -3028,7 +3028,7 @@ class ca_users extends BaseModel {
 		
 		$va_type_ids = null;
 		foreach($va_roles as $vn_role_id => $va_role_info) {
-			$va_vars = caUnserializeForDatabase($va_role_info['vars']);
+			$va_vars = $va_role_info['vars'];
 			
 			if (is_array($va_vars['type_access_settings'])) {
 				foreach($va_vars['type_access_settings'] as $vs_key => $vn_access) {

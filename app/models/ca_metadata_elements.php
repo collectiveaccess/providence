@@ -231,6 +231,8 @@ class ca_metadata_elements extends LabelableBaseModelWithAttributes implements I
 	static $s_settings_cache = array();
 	static $s_setting_value_cache = array();
 	
+	static $s_element_instance_cache = array();
+	
 	# ------------------------------------------------------
 	# --- Constructor
 	#
@@ -848,23 +850,32 @@ class ca_metadata_elements extends LabelableBaseModelWithAttributes implements I
 		
 		return $va_restrictions;
 	}
-	
 	# ------------------------------------------------------
 	/**
 	 * 
 	 */
 	static public function getElementDatatype($pm_element_code_or_id) {
-		$vo_db = new Db();
+		if ($t_element = ca_metadata_elements::getInstance($pm_element_code_or_id)) {
+			return $t_element->get('datatype');
+		}
 		
-		$vn_element_id = null;		
+		return null;
+	}
+	# ------------------------------------------------------
+	/**
+	 * 
+	 */
+	static public function getInstance($pm_element_code_or_id) {
+		if (isset(ca_metadata_elements::$s_element_instance_cache[$pm_element_code_or_id])) { return ca_metadata_elements::$s_element_instance_cache[$pm_element_code_or_id]; }
+		
 		$t_element = new ca_metadata_elements(is_numeric($pm_element_code_or_id) ? $pm_element_code_or_id : null);
 		
 		if (!($vn_element_id = $t_element->getPrimaryKey())) {
 			if ($t_element->load(array('element_code' => $pm_element_code_or_id))) {
-				return $t_element->get('datatype');	
+				return ca_metadata_elements::$s_element_instance_cache[$t_element->getPrimaryKey()] = ca_metadata_elements::$s_element_instance_cache[$t_element->get('element_code')] = $t_element;
 			}
 		} else {
-			return $t_element->get('datatype');
+			return ca_metadata_elements::$s_element_instance_cache[$vn_element_id] = ca_metadata_elements::$s_element_instance_cache[$t_element->get('element_code')] = $t_element;
 		}
 		return null;
 	}
