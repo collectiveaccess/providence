@@ -10,4 +10,6 @@ CKEDITOR.editorConfig = function( config )
 	// config.uiColor = '#AADC6E';
 	config.extraPlugins='onchange'; 
 	config.minimumChangeMilliseconds = 100; 
+	config.disableNativeSpellChecker = false;
+	config.browserContextMenuOnCtrl = true;
 };
