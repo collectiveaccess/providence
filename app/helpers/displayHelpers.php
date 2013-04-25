@@ -521,7 +521,7 @@ require_once(__CA_LIB_DIR__."/ca/ApplicationPluginManager.php");
 				caEditorFieldList.hidePanel();
 			});
 			
-			if(caBundleVisibilityManager) { caBundleVisibilityManager.setAll(); }
+			if (typeof caBundleVisibilityManager !== 'undefined') { caBundleVisibilityManager.setAll(); }
 		});
 </script>
 <div id=\"editorFieldListHTML\">";
