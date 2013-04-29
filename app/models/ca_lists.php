@@ -932,8 +932,13 @@ class ca_lists extends BundlableLabelableBaseModelWithAttributes {
 	/**
 	 *
 	 */
-	public function getRootItemIDForList($pm_list_name_or_id) {
-		$vn_list_id = $this->_getListID($pm_list_name_or_id);
+	public function getRootItemIDForList($pm_list_name_or_id=null) {
+		if ($pm_list_name_or_id) {
+			$vn_list_id = $this->_getListID($pm_list_name_or_id);
+		} else {
+			$vn_list_id = $this->get('list_id');
+		}
+		if (!$vn_list_id) { return null; }
 		
 		$o_db = $this->getDb();
 		$qr_res = $o_db->query("
