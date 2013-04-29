@@ -632,7 +632,7 @@ class ca_object_representations extends BundlableLabelableBaseModelWithAttribute
 			$this->errors = $o_coder->errors;
 			return false;
 		}
- 		
+		
  		$t_annotation = new ca_representation_annotations();
  		$t_annotation->setMode(ACCESS_WRITE);
  		
