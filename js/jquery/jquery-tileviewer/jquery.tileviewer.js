@@ -63,7 +63,9 @@ var methods = {
             lock_annotations: true,
             
             annotationLoadUrl: null,
-            annotationSaveUrl: null
+            annotationSaveUrl: null,
+            
+            defaultAnnotationLabel: "?"
         };
 
         return this.each(function() {
@@ -122,7 +124,12 @@ var methods = {
                     },
                     
                     annotations: [], // annotations list
+                    changedAnnotations: [],		// indices of annotations that need to be saved
                     annotationAreas: [],
+                    annotationsToSave: [],
+                    annotationsToDelete: [],
+                    
+                    isSavingAnnotations: false,	// flag indicating save is pending
                     
                     magnifier_canvas: document.createElement("canvas"),
                     //current mouse position (client pos)
@@ -209,30 +216,63 @@ var methods = {
                     		//console.log(data);
                     		jQuery.each(data, function(k, v) {
                     			v['index'] = k;
+                    			v['x'] = parseFloat(v['x']);
+                    			v['y'] = parseFloat(v['y']);
+                    			v['w'] = parseFloat(v['w']);
+                    			v['h'] = parseFloat(v['h']);
                     			view.annotations.push(v);
                     		});
                     	});
                     },
                     
+                    /**
+                     * Record annotation changes for subsequent commit
+                     */
                     save_annotations: function(toSave, toDelete) {
-                    	console.log("Save annotations to " + options.annotationSaveUrl);
+                    	console.log("Save annotations");
                     	
-                    	var annotationsToSave = [];
                     	for(var i in toSave) {
-                    		annotationsToSave.push(view.annotations[toSave[i]]);
+                    		view.annotationsToSave.push(view.annotations[toSave[i]]);
                     	}
                     	
-                    	var annotationsToDelete = [];
                     	for(var i in toDelete) {
-                    		annotationsToDelete.push(view.annotations[toDelete[i]].annotation_id);
+                    		view.annotationsToDelete.push(view.annotations[toDelete[i]].annotation_id);
                     	}
                     	
-                    	jQuery.getJSON(options.annotationSaveUrl, { save: annotationsToSave, delete: annotationsToDelete }, function(data) {
+                    	view.commit_annotation_changes();
+                    },
+                    
+                    /**
+                     * Write annotations to database
+                     */
+                	commit_annotation_changes: function() {
+                    	if (view.isSavingAnnotations) { 
+                    		console.log("Cannot commit now; save is pending");
+                    		return false; 
+                    	}
+                    	if ((view.annotationsToSave.length == 0) && (view.annotationsToDelete.length == 0)) {
+                    		console.log("Cannot commit now; nothing to save");
+                    		return false;
+                    	}
+                    	view.isSavingAnnotations = true;
+                    	console.log("Commit annotations to " + options.annotationSaveUrl);
+                    	
+                    	jQuery.getJSON(options.annotationSaveUrl, { save: view.annotationsToSave, delete: view.annotationsToDelete }, function(data) {
                     		if (data['annotation_ids']) {
                     			for(var index in data['annotation_ids']) {
                     				view.annotations[index]['annotation_id'] = data['annotation_ids'][index];
+                    				var i = view.changedAnnotations.indexOf(index);
+                    				if (i !== -1) {
+                    					view.changedAnnotations.splice(i, 1);
+                    				}
                     			}
                     		}
+                    		console.log(view.annotationsToDelete);
+                    		view.annotationsToSave = [];
+                    		view.annotationsToDelete = [];
+                    		
+                    		view.isSavingAnnotations = false;
+                    		view.commit_annotation_changes();
                     	});
                     },
                     
@@ -294,20 +334,18 @@ var methods = {
 									// circle around point
 									ctx.beginPath();
 									ctx.arc(
-										x = (((annotation.x + (annotation.w/2))/100) * layerWidth * layerMag) + layer.xpos,
-										y = (((annotation.y + (annotation.h/2))/100) * layerHeight * layerMag) + layer.ypos,
+										x = (((parseFloat(annotation.x) + (annotation.w/2))/100) * layerWidth * layerMag) + layer.xpos,
+										y = (((parseFloat(annotation.y) + (annotation.h/2))/100) * layerHeight * layerMag) + layer.ypos,
 										r = (((annotation.w/2)/100) * layerWidth * layerMag),
 										0,2*Math.PI
 									);
 									ctx.stroke();
-									
 									
 									// stick
 									var t = -1*Math.PI/4, cx, cy;
 									ctx.moveTo(cx = r * Math.cos(t) + x, cy = r * Math.sin(t) + y);
 									ctx.lineTo(cx + 50, cy - 50);
 									ctx.stroke();
-									
 									// text box
 									//ctx.font="14px Arial";
 									view.write_text(annotation.label, "14px Arial",cx + 50, cy - 50, 100, 18);
@@ -359,30 +397,28 @@ var methods = {
 						return phraseArray;
 					},
                     
-                    drag_annotation: function(i, dx, dy, pageX, pageY) {
+                    drag_annotation: function(i, dx, dy, clickX, clickY) {
+                    	var offset = $(view.canvas).offset();
                     	var factor = Math.pow(2,layer.level);
                     	
-                    	// Is this a resize drag or a translation drag?
-                    	var clickX = pageX - layer.xpos;
-                    	var clickY = pageY - layer.ypos;
+                    	clickX -= layer.xpos;
+                    	clickY -= layer.ypos;
                     	
-                    	var annotationX = ((layer.info.width/factor) * (layer.tilesize/256)) * (view.annotations[i].x/100);
+                    	var annotationX = (((layer.info.width/factor) * (layer.tilesize/256)) * (view.annotations[i].x/100));
                     	var annotationY = ((layer.info.height/factor) * (layer.tilesize/256)) * (view.annotations[i].y/100);
                     	
                     	var annotationW = ((layer.info.width/factor) * (layer.tilesize/256)) * (view.annotations[i].w/100);
                     	var annotationH = ((layer.info.height/factor) * (layer.tilesize/256)) * (view.annotations[i].h/100);
                     	
-                    	var rClickX = ((pageX - layer.xpos)/((layer.info.width/factor) * (layer.tilesize/256))) * 100;
-                    	var rClickY = ((pageY - layer.ypos)/((layer.info.height/factor) * (layer.tilesize/256))) * 100;
- 
- 
+                    	var rClickX = ((clickX)/((layer.info.width/factor) * (layer.tilesize/256))) * 100;
+                    	var rClickY = ((clickY)/((layer.info.height/factor) * (layer.tilesize/256))) * 100;
+
  if (view.annotations[i]['type'] == 'rect') { // only rects allow resizing                   	
-                    	//console.log(clickX, clickY, annotationX, annotationY);
                 
                 // Scaling	
                 var rMinAllowedWidth = 0.2;
                 var rMinAllowedHeight = 0.2;	
-                    
+                
                     	if (((Math.abs(clickX - annotationX) < 5) && (Math.abs(clickY - annotationY) < 5)) || (view.isAnnotationResize == 'LU')) {
                     		view.isAnnotationResize = 'LU';
                     		var d = view.annotations[i].x - rClickX;
@@ -391,10 +427,13 @@ var methods = {
                     		view.annotations[i].w += d;
                     		
                     		d = view.annotations[i].y - rClickY;
-                    		if(view.annotations[i].h + d < rMinAllowedHeight) { return; }
+                    		if((d == 0) || (view.annotations[i].h + d < rMinAllowedHeight)) { return; }
                     		view.annotations[i].y = rClickY;
                     		view.annotations[i].h += d;
                     		jQuery("body").css('cursor', 'nw-resize');
+                    		
+                    		view.make_annotation_dirty(i);
+                    		view.draw();
                     		return;
                     	}
                     	
@@ -405,10 +444,13 @@ var methods = {
                     		view.annotations[i].w += d;
                     		
                     		d = view.annotations[i].y - rClickY;
-                    		if(view.annotations[i].h + d < rMinAllowedHeight) { return; }
+                    		if((d==0) || (view.annotations[i].h + d < rMinAllowedHeight)) { return; }
                     		view.annotations[i].y = rClickY;
                     		view.annotations[i].h += d;
                     		jQuery("body").css('cursor', 'ne-resize');
+                    		
+                    		view.make_annotation_dirty(i);
+                    		view.draw();
                     		return;
                     	}
                     	
@@ -420,9 +462,12 @@ var methods = {
                     		view.annotations[i].w += d;
                     		
                     		d = rClickY - (view.annotations[i].y + view.annotations[i].h);
-                    		if(view.annotations[i].h + d < rMinAllowedHeight) { return; }
+                    		if((d==0) || (view.annotations[i].h + d < rMinAllowedHeight)) { return; }
                     		view.annotations[i].h += d;
                     		jQuery("body").css('cursor', 'sw-resize');
+                    		
+                    		view.make_annotation_dirty(i);
+                    		view.draw();
                     		return;
                     	}
                     	
@@ -433,50 +478,63 @@ var methods = {
                     		view.annotations[i].w += d;
                     		
                     		d = rClickY - (view.annotations[i].y + view.annotations[i].h);
-                    		if(view.annotations[i].h + d < rMinAllowedHeight) { return; }
+                    		if((d==0) || (view.annotations[i].h + d < rMinAllowedHeight)) { return; }
+                    		var b= view.annotations[i].h;
                     		view.annotations[i].h += d;
                     		jQuery("body").css('cursor', 'se-resize');
+                    		
+                    		view.make_annotation_dirty(i);
+                    		view.draw();
                     		return;
                     	}
                     	
                     	if ((Math.abs(clickX - annotationX) < 5) || (view.isAnnotationResize == 'L')) {
                     		view.isAnnotationResize = 'L';
                     		var d = view.annotations[i].x - rClickX;
-                    		
-                    		if(view.annotations[i].w + d < rMinAllowedWidth) { return; }
+                    		if((d==0) || (view.annotations[i].w + d < rMinAllowedWidth)) { return; }
                     		view.annotations[i].x = rClickX;
                     		view.annotations[i].w += d;
                     		jQuery("body").css('cursor', 'w-resize');
+                    		
+                    		view.make_annotation_dirty(i);
+                    		view.draw();
                     		return;
                     	}
                     	
                     	if ((Math.abs(clickX - (annotationX + annotationW)) < 5) || (view.isAnnotationResize == 'R')) {
                     		view.isAnnotationResize = 'R';
                     		var d = rClickX - (view.annotations[i].x + view.annotations[i].w);
-                    		if(view.annotations[i].w + d < rMinAllowedWidth) { return; }
+                    		if((d==0) || (view.annotations[i].w + d < rMinAllowedWidth)) { return; }
                     		view.annotations[i].w += d;
                     		jQuery("body").css('cursor', 'e-resize');
+                    		
+                    		view.make_annotation_dirty(i);
+							view.draw();
                     		return;
                     	}
                     	
                     	if ((Math.abs(clickY - annotationY) < 5) || (view.isAnnotationResize == 'U')) {
                     		view.isAnnotationResize = 'U';
                     		var d = view.annotations[i].y - rClickY;
-                    		if(view.annotations[i].h + d < rMinAllowedHeight) { return; }
+                    		if((d==0) || (view.annotations[i].h + d < rMinAllowedHeight)) { return; }
                     		view.annotations[i].y = rClickY;
                     		view.annotations[i].h += d;
-                    		
                     		jQuery("body").css('cursor', 'n-resize');
+                    		
+                    		view.make_annotation_dirty(i);
+							view.draw();
                     		return;
                     	}
                     	
                     	if ((Math.abs(clickY - (annotationY + annotationH)) < 5) || (view.isAnnotationResize == 'D')) {
                     		view.isAnnotationResize = 'D';
                     		var d = rClickY - (view.annotations[i].y + view.annotations[i].h);
-                    		if(view.annotations[i].h + d < rMinAllowedHeight) { return; }
+                    		if((d==0) || (view.annotations[i].h + d < rMinAllowedHeight)) { return; }
                     		view.annotations[i].h += d;
-                    		
                     		jQuery("body").css('cursor', 's-resize');
+                    		
+                    		view.make_annotation_dirty(i);
+							view.draw();
                     		return;
                     	}
  }                   	
@@ -484,6 +542,8 @@ var methods = {
 						view.annotations[i].x = (((dx + view.dragAnnotationLastCoords.x - layer.xpos)/((layer.info.width/factor) * (layer.tilesize/256))) * 100) - (view.annotations[i].w/2);
 						view.annotations[i].y = (((dy + view.dragAnnotationLastCoords.y - layer.ypos)/((layer.info.height/factor) * (layer.tilesize/256))) * 100) - (view.annotations[i].h/2);
 						
+						view.make_annotation_dirty(i);
+						view.draw();
 						return;
                     },
                     
@@ -492,12 +552,14 @@ var methods = {
                     		default:
                     		case 'rect':
 								view.annotations.push({
-									type: type, x: x, y: y, w: 10, h: 10, index: view.annotations.length
+									type: type, x: x, y: y, w: 10, h: 10, index: view.annotations.length,
+									label: options.defaultAnnotationLabel
 								});
 								break;
 							case 'point':
 								view.annotations.push({
-									type: type, x: x, y: y, w: 1, h: 1, index: view.annotations.length
+									type: type, x: x, y: y, w: 1, h: 1, index: view.annotations.length,
+									label: options.defaultAnnotationLabel
 								});
 								break;
 						}
@@ -507,8 +569,8 @@ var methods = {
                     
                     delete_annotation: function(i) {
 						view.save_annotations([], [i]);
+						view.commit_annotation_changes();
 						
-						view.save_annotations([], [i]);
                     	view.annotations[i] = null;
                     	view.draw_annotations();
                     },
@@ -533,6 +595,22 @@ var methods = {
                     	
                     	return foundAnnotation;
                     },
+                   
+                   	make_annotation_dirty: function(i) {
+                   	 	if (view.changedAnnotations.indexOf(i) === -1) { view.changedAnnotations.push(i); }
+                   	},
+                   	
+                   	annotation_is_dirty: function(i) {
+                   	 	return (view.changedAnnotations.indexOf(i) >= 0);
+                   	},
+                   	
+                   	get_dirty_annotation_list: function(i) {
+                   	 	return view.changedAnnotations;
+                   	},
+                   	
+                   	clear_dirty_annotation_list: function(i) {
+                   	 	view.changedAnnotations = [];
+                   	},
                     
                     update_controls: function() {
                         if (!$(view.controls).html()) {
@@ -717,6 +795,7 @@ var methods = {
 							//
 							
 							jQuery(view.canvas).bind('swipemove', function(e, m) {
+                				var offset = $(view.canvas).offset();
 								var desc = m.description.split(/:/);
 								if ((desc[0] != 'swipemove') || (desc[1] != '1')) {
 									return false;
@@ -727,7 +806,7 @@ var methods = {
 								}
 							
 								if (view.dragAnnotation) {
-									view.drag_annotation(view.dragAnnotation, m.delta[0].lastX, m.delta[0].lastY, m.originalEvent.pageX, m.originalEvent.pageY);
+									view.drag_annotation(view.dragAnnotation, m.delta[0].lastX, m.delta[0].lastY, m.originalEvent.pageX - offset.left, m.originalEvent.pageY - offset.top);
 								} else {
 									layer.xpos += m.delta[0].lastX;
 									layer.ypos += m.delta[0].lastY;
@@ -1319,6 +1398,7 @@ var methods = {
                     var offset = $(view.canvas).offset();
                     var x = e.pageX - offset.left;
                     var y = e.pageY - offset.top;
+                    
                     var factor = Math.pow(2,layer.level);
                     
                     var x_relative = ((x - layer.xpos)/((layer.info.width/factor) * (layer.tilesize/256))) * 100;
@@ -1338,7 +1418,7 @@ var methods = {
 						)) {
 							view.selectedAnnotation = view.dragAnnotation = curAnnotation.index;
 							
-							view.dragAnnotationLastCoords = {x: e.pageX, y: e.pageY};
+							view.dragAnnotationLastCoords = {x: x, y: y};
 							view.draw_annotations();
 						} else {                    	
 							// Add annotation?
@@ -1423,7 +1503,7 @@ var methods = {
                     document.body.style.cursor="auto";
                     view.mousedown = false;
                     view.dragAnnotation = view.isAnnotationResize = null;
-                    if(view.selectedAnnotation !== null) {
+                    if(view.annotation_is_dirty(view.selectedAnnotation)) {
                     	view.save_annotations([view.selectedAnnotation], []);
                     }
             		jQuery("body").css('cursor', 'auto');
@@ -1435,10 +1515,10 @@ var methods = {
                     var y = e.pageY - offset.top;
                     
                     if (!options.lock_annotations && options.display_annotations && view.dragAnnotation) {
-                    	view.drag_annotation(view.dragAnnotation, Math.ceil(e.pageX - view.dragAnnotationLastCoords.x), Math.ceil(e.pageY - view.dragAnnotationLastCoords.y), e.pageX, e.pageY);
+                    	view.drag_annotation(view.dragAnnotation, Math.ceil(x - view.dragAnnotationLastCoords.x), Math.ceil(y - view.dragAnnotationLastCoords.y), x, y);
     					
-    					view.dragAnnotationLastCoords.x = e.pageX;
-    					view.dragAnnotationLastCoords.y = e.pageY;
+    					view.dragAnnotationLastCoords.x = x;
+    					view.dragAnnotationLastCoords.y = y;
                     	return;
                     }
                     
