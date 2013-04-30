@@ -173,6 +173,12 @@
 							text: res['set_name'],
 							selected: 1
 						}));
+						console.log(res);
+						// add new set to search by set drop-down
+						jQuery("select.searchSetSelect").append($("<option/>", {
+							value: 'set:"' + res['set_code'] + '"',
+							text: res['set_name']
+						}));
 					}
 				} else { 
 					jQuery.jGrowl(res['error'], { header: '<?php print addslashes(_t('Create set')); ?>' });

@@ -8,7 +8,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2012 Whirl-i-Gig
+ * Copyright 2012-2013 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -33,7 +33,8 @@
 		print json_encode(array(
 			'status' 						=> 'ok', 
 			'set_id' 						=> $this->getVar('set_id'), 
-			'set_name' 						=> $this->getVar('set_name'), 
+			'set_name' 						=> $this->getVar('set_name'),
+			'set_code' 						=> $this->getVar('set_code'), 
 			'num_items_added' 				=> $this->getVar('num_items_added')
 		));
 	}
