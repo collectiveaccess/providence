@@ -765,7 +765,12 @@
  		public function createSetFromResult() {
  			global $g_ui_locale_id;
  			
- 			$va_row_ids = $this->opo_result_context->getResultList();
+ 			$vs_mode = $this->request->getParameter('mode', pString);
+ 			if ($vs_mode == 'from_checked') {
+ 				$va_row_ids = explode(";", $this->request->getParameter('item_ids', pString));
+ 			} else {
+ 				$va_row_ids = $this->opo_result_context->getResultList();
+ 			}
  			
  			$vn_added_items_count = 0;
  			if (is_array($va_row_ids) && sizeof($va_row_ids)) {
