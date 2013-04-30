@@ -350,6 +350,11 @@
  			if ($t_item->getPrimaryKey()) { 
  				$va_ancestors = array_reverse($t_item->getHierarchyAncestors(null, array('includeSelf' => true, 'idsOnly' => true)));
  			}
+ 			
+ 			// Force ids to ints to prevent jQuery from getting confused
+ 			// (jQuery.getJSON() incorrectly parses arrays of numbers-as-strings)
+ 			$va_ancestors = array_map('intval', $va_ancestors);
+ 			
  			$this->view->setVar('ancestors', $va_ancestors);
  			return $this->render(str_replace(' ', '_', $this->ops_name_singular).'_hierarchy_ancestors_json.php');
  		}

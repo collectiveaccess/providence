@@ -287,6 +287,29 @@ if (that.uiStyle == 'horizontal') {
 					that._queuedLoadsForLevel[l].splice(i,1);
 				}
 			}
+			
+			if (is_init) {
+				// attempt to renumber levels if required (sometimes first level is suppressed)
+				var needsLevelShift = true;
+				for(var k in itemIDsToLevelInfo) {
+					if (itemIDsToLevelInfo[k]['level'] === 0) {
+						needsLevelShift = false;
+						break;
+					}
+				}
+				
+				if (needsLevelShift) {
+					for(var k in itemIDsToLevelInfo) {
+						var oldLevel = itemIDsToLevelInfo[k]['level'];
+						var newLevel = oldLevel - 1;
+						var re = new RegExp("_" + oldLevel + "$");
+						itemIDsToLevelInfo[k]['newLevelDivID'] = itemIDsToLevelInfo[k]['newLevelDivID'].replace(re, "_" + newLevel);
+						itemIDsToLevelInfo[k]['newLevelListID'] = itemIDsToLevelInfo[k]['newLevelListID'].replace(re, "_" + newLevel);
+						itemIDsToLevelInfo[k]['level']--;
+					}
+				}
+			}
+			
 			if (!id_list.length) { return; }
 			
 			var start = 0;
@@ -298,6 +321,7 @@ if (that.uiStyle == 'horizontal') {
 					
 					if (!itemIDsToLevelInfo[item_id]) { return; }
 					var level = itemIDsToLevelInfo[item_id]['level'];
+					
 					var is_init = itemIDsToLevelInfo[item_id]['is_init'];
 					var newLevelDivID = itemIDsToLevelInfo[item_id]['newLevelDivID'];
 					var newLevelListID = itemIDsToLevelInfo[item_id]['newLevelListID'];
