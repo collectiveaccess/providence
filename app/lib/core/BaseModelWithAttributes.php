@@ -447,7 +447,7 @@
 				// set the field values array for this instance
 				$this->setFieldValuesArray($va_field_values_with_updated_attributes);
 				
-				$this->doSearchIndexing($va_fields_changed_array, true);
+				$this->doSearchIndexing($va_fields_changed_array);	// TODO: SHOULD SECOND PARAM (REINDEX) BE "TRUE"?
 				
 				
 				if ($vb_web_set_change_log_unit_id) { BaseModel::unsetChangeLogUnitID(); }
