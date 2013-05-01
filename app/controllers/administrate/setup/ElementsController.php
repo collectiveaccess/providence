@@ -71,7 +71,6 @@ class ElementsController extends BaseEditorController {
 			
 		$va_initial_values = array();
 		if($t_element->getPrimaryKey()){
-			//$t_element->getHierarchyChildrenAsQuery();
 			$va_sub_elements = array();
 			/* BaseModel::getHierarchyChildren orders by PK, but we need to order by rank */
 			$vo_db = new Db();
