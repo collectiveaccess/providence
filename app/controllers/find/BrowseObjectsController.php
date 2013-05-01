@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2009-2010 Whirl-i-Gig
+ * Copyright 2009-2013 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -71,7 +71,7 @@
 				'thumbnail' => _t('thumbnails'),
 				'full' => _t('full'),
 				'list' => _t('list'),
-				'map' => _t('map')
+				'editable' => _t('editable')
 			);
 			 
 			$this->opa_sorts = array_merge(array(
@@ -85,7 +85,8 @@
  			JavascriptLoadManager::register('imageScroller');
  			JavascriptLoadManager::register('tabUI');
  			JavascriptLoadManager::register('panel');
- 			parent::Index(false, $pa_options);
+ 			
+ 			parent::Index($pa_options);
  		}
  		# -------------------------------------------------------
  		/**

@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2009-2011 Whirl-i-Gig
+ * Copyright 2009-2013 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -53,6 +53,8 @@
 				if (!is_array($va_activity_list = $o_req->session->getVar($pa_params['table_name'].'_history_id_list'))) {
 					$va_activity_list = array();
 				}
+				
+				if (!method_exists($pa_params['instance'], "getTypeID")) { return $pa_params; }
 				
 				// TODO: This should be a configurable preference of some kind
 				$vn_max_num_items_in_activity_menu = 20;
@@ -171,6 +173,9 @@
 								break;
 							case 'ca_object_representations':
 								$vs_priv_name = 'can_edit_ca_objects';
+								break;
+							case 'ca_tour_stops':
+								$vs_priv_name = 'can_edit_ca_tours';
 								break;
 							default:
 								$vs_priv_name = 'can_edit_'.$vs_table_name;

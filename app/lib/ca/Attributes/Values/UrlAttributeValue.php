@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2009-2011 Whirl-i-Gig
+ * Copyright 2009-2013 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -174,13 +174,29 @@
  		# ------------------------------------------------------------------
  		/**
  		 * @param array $pa_options Supported options are
- 		 *		asHTML - if set, URL is returned as an HTML link 
- 		 * @return string The url
+ 		 *		asHTML = if set, URL is returned as a simple HTML link with target set to _url_details (deprecated)
+ 		 *		returnAsLink = if set, URL is returned as a link formatted according to settings in the other returnAsLink* options described below
+ 		 *		returnAsLinkText = text to use a content of HTML link. If omitted the url itself is used as the link content.
+ 		 *		returnAsLinkAttributes = array of attributes to include in link <a> tag. Use this to set class, alt and any other link attributes.
+ 		 *		
+ 		 * @return string The url or link HTML
  		 */
 		public function getDisplayValue($pa_options=null) {
 			if (isset($pa_options['asHTML']) && $pa_options['asHTML']) {
-				return "<a href='".$this->ops_text_value."' target='_url_details'>".$this->ops_text_value.'</a>';
+				return caHTMLLink($this->ops_text_value, array('href' => $this->ops_text_value, 'target' => '_url_details'));
 			} 
+			
+			$vs_return_as_link = 				(isset($pa_options['returnAsLink'])) ? (bool)$pa_options['returnAsLink'] : false;
+			if ($vs_return_as_link) {
+				$vs_return_as_link_text = 			(isset($pa_options['returnAsLinkText'])) ? (string)$pa_options['returnAsLinkText'] : '';
+				$va_return_as_link_attributes = 	(isset($pa_options['returnAsLinkAttributes']) && is_array($pa_options['returnAsLinkAttributes'])) ? $pa_options['returnAsLinkAttributes'] : array();
+			
+				$va_return_as_link_attributes['href'] = $this->ops_text_value;
+			
+				if (!$vs_return_as_link_text) { $vs_return_as_link_text = $this->ops_text_value; }
+				return caHTMLLink($vs_return_as_link_text, $va_return_as_link_attributes);
+			}
+			
 			return $this->ops_text_value;
 		}
  		# ------------------------------------------------------------------
@@ -214,9 +230,14 @@
  				$va_settings['regex'] = "(http|ftp|https|rtmp|rtsp):\/\/[\w\-_]+(\.[\w\-_]+)+([\w\-\.,@?^=%&;:/~\+#]*[\w\-\@?^=%&/~\+#])?";
  			}
  			if ($va_settings['regex'] && !preg_match("!".$va_settings['regex']."!", $ps_value)) {
- 				// regex failed
-				$this->postError(1970, _t('%1 is not a valid url', $pa_element_info['displayLabel']), 'UrlAttributeValue->parseValue()');
-				return false;
+ 				// default to http if it's just a hostname + path
+ 				if (!preg_match("!^[A-Za-z]+:\/\/!", $ps_value)) {
+ 					$ps_value = "http://{$ps_value}";
+ 				} else {
+					// regex failed
+					$this->postError(1970, _t('%1 is not a valid url', $pa_element_info['displayLabel']), 'UrlAttributeValue->parseValue()');
+					return false;
+				}
  			}
  			
  			return array(
@@ -232,7 +253,7 @@
  				array(
  					'size' => (isset($pa_options['width']) && $pa_options['width'] > 0) ? $pa_options['width'] : $va_settings['fieldWidth'],
  					'height' => (isset($pa_options['height']) && $pa_options['height'] > 0) ? $pa_options['height'] : $va_settings['fieldHeight'], 
- 					'value' => '{{'.$pa_element_info['element_id'].'}}', 
+ 					'value' => '{{{'.$pa_element_info['element_id'].'}}}', 
  					'maxlength' => $va_settings['maxChars'],
  					'id' => '{fieldNamePrefix}'.$pa_element_info['element_id'].'_{n}',
  					'class' => 'urlBg'
@@ -246,14 +267,15 @@
  				$vs_bundle_name = $pa_options['t_subject']->tableName().'.'.$pa_element_info['element_code'];
  				
  				if ($pa_options['po_request']) {
- 					$vs_lookup_url	= caNavUrl($pa_options['po_request'], 'lookup', 'AttributeValue', 'Get', array());
+ 					$vs_lookup_url	= caNavUrl($pa_options['po_request'], 'lookup', 'AttributeValue', 'Get', array('bundle' => $vs_bundle_name, 'max' => 500));
  				}
  			}
  			
  			if ($va_settings['suggestExistingValues'] && $vs_lookup_url && $vs_bundle_name) { 
  				$vs_element .= "<script type='text/javascript'>
- 					jQuery('#{fieldNamePrefix}".$pa_element_info['element_id']."_{n}').autocomplete('".$vs_lookup_url."', 
-								{ minChars: 3, matchSubset: 1, matchContains: 1, delay: 800, scroll: true, max: 500, extraParams: { bundle: '".$vs_bundle_name."'}});
+ 					jQuery('#{fieldNamePrefix}".$pa_element_info['element_id']."_{n}').autocomplete( 
+						{ source: '{$vs_lookup_url}', minLength: 3, delay: 800}
+					);
  				</script>\n";
  			}
  			$vs_element .= "

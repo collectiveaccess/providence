@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2008-2012 Whirl-i-Gig
+ * Copyright 2008-2013 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -43,7 +43,7 @@
  			JavascriptLoadManager::register('panel');
  		}
  		# -------------------------------------------------------
- 		public function Edit() {
+ 		public function Edit($pa_values=null, $pa_options=null) {
  			$va_values = array();
  			
  			if ($vn_lot_id = $this->request->getParameter('lot_id', pInteger)) {
@@ -55,7 +55,18 @@
 				}
  			}
  			
- 			return parent::Edit($va_values);
+ 			return parent::Edit($va_values, $pa_options);
+ 		}
+ 		# -------------------------------------------------------
+ 		/**
+ 		 *
+ 		 */
+ 		public function postSave($t_object, $pb_is_insert) {
+ 			if ( $this->request->config->get('ca_objects_x_collections_hierarchy_enabled') && ($vs_coll_rel_type = $this->request->config->get('ca_objects_x_collections_hierarchy_relationship_type')) && ($pn_collection_id = $this->request->getParameter('collection_id', pInteger))) {
+ 				if (!($t_object->addRelationship('ca_collections', $pn_collection_id, $vs_coll_rel_type))) {
+ 					$this->notification->addNotification(_t("Could not add parent collection to object", __NOTIFICATION_TYPE_ERROR__));
+ 				}
+ 			}
  		}
  		# -------------------------------------------------------
  		# AJAX handlers
@@ -74,9 +85,17 @@
  		public function GetRepresentationInfo() {
  			list($vn_object_id, $t_object) = $this->_initView();
  			$pn_representation_id 	= $this->request->getParameter('representation_id', pInteger);
- 			if(!$vn_object_id) { $vn_object_id = 0; }
+ 		
  			$t_rep = new ca_object_representations($pn_representation_id);
  			
+ 			if(!$vn_object_id) { 
+ 				if (is_array($va_object_ids = $t_rep->get('ca_objects.object_id', array('returnAsArray' => true))) && sizeof($va_object_ids)) {
+ 					$vn_object_id = array_shift($va_object_ids);
+ 				} else {
+ 					$this->postError(1100, _t('Invalid object/representation'), 'ObjectEditorController->GetRepresentationInfo');
+ 					return;
+ 				}
+ 			}
  			$va_opts = array('display' => 'media_overlay', 'object_id' => $vn_object_id, 'containerID' => 'caMediaPanelContentArea');
  			if (strlen($vs_use_book_viewer = $this->request->getParameter('use_book_viewer', pInteger))) { $va_opts['use_book_viewer'] = (bool)$vs_use_book_viewer; }
  
@@ -99,15 +118,92 @@
  			$pn_representation_id 	= $this->request->getParameter('representation_id', pInteger);
  			$pb_reload 	= (bool)$this->request->getParameter('reload', pInteger);
  			
- 			if(!$vn_object_id) { $vn_object_id = 0; }
  			$t_rep = new ca_object_representations($pn_representation_id);
- 			if (!$t_rep->getPrimaryKey()) {
- 				// error - invalid representation_id
+ 			
+ 			if(!$vn_object_id) { 
+ 				if (is_array($va_object_ids = $t_rep->get('ca_objects.object_id', array('returnAsArray' => true))) && sizeof($va_object_ids)) {
+ 					$vn_object_id = array_shift($va_object_ids);
+ 				} else {
+ 					$this->postError(1100, _t('Invalid object/representation'), 'ObjectEditorController->GetRepresentationEditor');
+ 					return;
+ 				}
  			}
+ 			
  			$va_opts = array('display' => 'media_editor', 'object_id' => $vn_object_id, 'containerID' => 'caMediaPanelContentArea', 'mediaEditor' => true, 'noControls' => $pb_reload);
  			if (strlen($vs_use_book_viewer = $this->request->getParameter('use_book_viewer', pInteger))) { $va_opts['use_book_viewer'] = (bool)$vs_use_book_viewer; }
  
  			$this->response->addContent($t_rep->getRepresentationViewerHTMLBundle($this->request, $va_opts));
+ 		}
+ 		# -------------------------------------------------------
+ 		/**
+ 		 *
+ 		 */ 
+ 		public function GetAnnotations() {
+ 			$pn_representation_id = $this->request->getParameter('representation_id', pInteger);
+ 			$t_rep = new ca_object_representations($pn_representation_id);
+ 			
+ 			$va_annotations_raw = $t_rep->getAnnotations();
+ 			$va_annotations = array();
+ 			
+ 			foreach($va_annotations_raw as $vn_annotation_id => $va_annotation) {
+ 				$va_annotations[] = array(
+ 					'annotation_id' => $va_annotation['annotation_id'],
+ 					'x' => (float)$va_annotation['x'],
+ 					'y' => (float)$va_annotation['y'],
+ 					'w' => (float)$va_annotation['w'],
+ 					'h' => (float)$va_annotation['h'],
+ 					'label' => (string)$va_annotation['label'],
+ 					'description' => (string)$va_annotation['description'],
+ 					'type' => (string)$va_annotation['type_raw'],
+ 					'options' => $va_annotation['options']
+ 				);
+ 			}
+ 			
+ 			$this->view->setVar('annotations', $va_annotations);
+ 			$this->render('ajax_representation_annotations_json.php');
+ 		}
+ 		# -------------------------------------------------------
+ 		/**
+ 		 *
+ 		 */ 
+ 		public function SaveAnnotations() {
+ 			global $g_ui_locale_id;
+ 			$pn_representation_id = $this->request->getParameter('representation_id', pInteger);
+ 			$t_rep = new ca_object_representations($pn_representation_id);
+ 			
+ 			$pa_annotations = $this->request->getParameter('save', pArray);
+ 		
+ 			$va_annotation_ids = array();
+ 			if (is_array($pa_annotations)) {
+ 				foreach($pa_annotations as $vn_i => $va_annotation) {
+ 					$vs_label = (isset($va_annotation['label']) && ($va_annotation['label'])) ? $va_annotation['label'] : "???";
+ 					if (isset($va_annotation['annotation_id']) && ($vn_annotation_id = $va_annotation['annotation_id'])) {
+ 						// edit existing annotation
+ 						$t_rep->editAnnotation($vn_annotation_id, $g_ui_locale_id, $va_annotation, 0, 0);
+ 						$va_annotation_ids[$va_annotation['index']] = $vn_annotation_id;
+ 						// TODO: allow editing of label
+ 					} else {
+ 						// new annotation
+ 						$va_annotation_ids[$va_annotation['index']] = $t_rep->addAnnotation($vs_label, $g_ui_locale_id, $this->request->getUserID(), $va_annotation, 0, 0);
+ 					}
+ 				}
+ 			}
+ 			$va_annotations = array(
+ 				'error' => $t_rep->numErrors() ? join("; ", $t_rep->getErrors()) : null,
+ 				'annotation_ids' => $va_annotation_ids
+ 			);
+ 			
+ 			$pa_annotations = $this->request->getParameter('delete', pArray);
+ 			
+ 			if (is_array($pa_annotations)) {
+ 				foreach($pa_annotations as $vn_to_delete_annotation_id) {
+ 					$t_rep->removeAnnotation($vn_to_delete_annotation_id);
+ 				}
+ 			}
+ 			
+ 			
+ 			$this->view->setVar('annotations', $va_annotations);
+ 			$this->render('ajax_representation_annotations_json.php');
  		}
  		# -------------------------------------------------------
  		/**
@@ -168,11 +264,12 @@
  		 * objects in the same object hierarchy as the specified object. Used by the book viewer interfacce to 
  		 * initiate a download.
  		 */ 
- 		public function DownloadMedia() {
+ 		public function DownloadMedia($pa_options=null) {
  			$pn_object_id = $this->request->getParameter('object_id', pInteger);
  			$t_object = new ca_objects($pn_object_id);
  			if (!($vn_object_id = $t_object->getPrimaryKey())) { return; }
  			
+ 			$pn_representation_id = $this->request->getParameter('representation_id', pInteger);
  			$ps_version = $this->request->getParameter('version', pString);
  			
  			if (!$ps_version) { $ps_version = 'original'; }
@@ -202,6 +299,7 @@
 				$vs_idno = $t_object->get('idno');
 				
 				foreach($va_reps as $vn_representation_id => $va_rep) {
+					if ($pn_representation_id && ($pn_representation_id != $vn_representation_id)) { continue; }
 					$va_rep_info = $va_rep['info'][$ps_version];
 					$vs_idno_proc = preg_replace('![^A-Za-z0-9_\-]+!', '_', $vs_idno);
 					switch($this->request->user->getPreference('downloaded_file_naming')) {

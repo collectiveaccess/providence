@@ -34,7 +34,7 @@
 	");
 	
 	print caFormTag($this->request, 'reindex', 'caHierarchicalReindexForm', null, 'post', 'multipart/form-data', '_top', array('disableUnsavedChangesWarning' => true, 'noTimestamp' => true));
-	print "<div style='text-align: center'>".caFormSubmitButton($this->request, __CA_NAV_BUTTON_GO__, 'Rebuild hierarchical indices', 'caHierarchicalReindexForm', array())."</div>";
+	print "<div style='text-align: center'>".caFormSubmitButton($this->request, __CA_NAV_BUTTON_GO__, _t("Rebuild hierarchical indices"), 'caHierarchicalReindexForm', array())."</div>";
 	print "</form>";
 	print "</div>\n";
 ?>

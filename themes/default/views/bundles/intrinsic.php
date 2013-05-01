@@ -28,6 +28,10 @@
  
 	$vs_id_prefix 			= $this->getVar('placement_code').$this->getVar('id_prefix');
  	$vs_element 			= $this->getVar('form_element');
+ 	$va_settings 			= $this->getVar('settings');
+ 	$t_instance				= $this->getVar('t_instance');
+ 	$vs_bundle_name 		= $this->getVar('bundle_name');
+ 	$vb_batch				= $this->getVar('batch');
  	
  	$va_errors = array();
  	if(is_array($va_action_errors = $this->getVar('errors'))) {
@@ -35,13 +39,27 @@
  			$va_errors[] = $o_error->getErrorDescription();
  		}
  	}
+ 	if ($vb_batch) {
+		print caBatchEditorIntrinsicModeControl($t_instance, $vs_bundle_name);
+	} else {
+		print caEditorBundleShowHideControl($this->request, "intrinsic_{$vs_bundle_name}");
+	}
 ?>
-
 	<div>
-		<div class="bundleContainer">
+<?php
+	if (isset($va_settings['forACLAccessScreen']) && $va_settings['forACLAccessScreen']) {
+?>
+		<div class="globalAccess">	
+			<div class='title'><?php print $t_instance->getFieldInfo($vs_bundle_name, 'LABEL'); ?></div>
+			<p>
+<?php
+	} else {
+?>
+		<div class="bundleContainer <?php print $vb_batch ? "editorBatchBundleContent" : ''; ?>" id="intrinsic_<?php print $vs_bundle_name; ?>">
 			<div class="caItemList">
 				<div class="labelInfo">	
 <?php
+	}
 					if (is_array($va_errors) && sizeof($va_errors)) {
 ?>
 						<span class="formLabelError"><?php print join('; ', $va_errors); ?></span>
@@ -60,9 +78,17 @@
 ?>
 					<br style="clear: both;"/>
 <?php
-	}
+	}	
+	if (isset($va_settings['forACLAccessScreen']) && $va_settings['forACLAccessScreen']) {
+?>
+		</p>
+<?php
+	} else {
 ?>
 				</div>
 			</div>
+<?php
+	}
+?>
 		</div>
 	</div>

@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2004-2011 Whirl-i-Gig
+ * Copyright 2004-2013 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -1717,6 +1717,7 @@ class TilepicParser {
 		#
 		try {
 			$h = new Gmagick($ps_filepath);
+			$h->setimageindex(0);	// force use of first image in multi-page TIFF
 		} catch (Exception $e){
 			$this->error = "Couldn't open image $ps_filepath";
 			return false;
@@ -1916,6 +1917,9 @@ class TilepicParser {
 	}
 	# ------------------------------------------------------------------------------------
 	function encode_gd ($ps_filepath, $ps_output_path, $pa_options) {
+		if (!($vs_tilepic_tmpdir = $this->opo_config->get('tilepic_tmpdir'))) {
+			$vs_tilepic_tmpdir = caGetTempDirPath();
+		}
 		
 		if (!($magick = $this->mimetype2magick[$pa_options["output_mimetype"]])) {
 			$this->error = "Invalid output format";
@@ -2057,25 +2061,26 @@ class TilepicParser {
 					return false;
 				}
 				
-				ob_start();
+				$vs_gd_tmp = tempnam($vs_tilepic_tmpdir, 'tpc_gd_tmp');
 				switch($pa_options["output_mimetype"]) {
 					case 'image/gif':
-						imagegif($r_slice);
+						imagegif($r_slice, $vs_gd_tmp);
 						break;
 					case 'image/jpeg':
 						if ($pa_options["quality"] > 0) {
-							imagejpeg($r_slice, '', $pa_options["quality"]);
+							imagejpeg($r_slice, $vs_gd_tmp, $pa_options["quality"]);
 						} else {
-							imagejpeg($r_slice);
+							imagejpeg($r_slice, $vs_gd_tmp);
 						}
 						break;
 					case 'image/png':
-						imagepng($r_slice);
+						imagepng($r_slice, $vs_gd_tmp);
 						break;
 					default:
 						die("Invalid output format ".$pa_options["output_mimetype"]);
 				}
-				$vs_image = ob_get_clean();
+				$vs_image = file_get_contents($vs_gd_tmp);
+				@unlink($vs_gd_tmp);
 				
 				$layer_list[sizeof($layer_list)-1][] = $vs_image;
 				imagedestroy($r_slice);

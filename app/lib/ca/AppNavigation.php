@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2007-2010 Whirl-i-Gig
+ * Copyright 2007-2013 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -546,7 +546,8 @@
 			$vs_buf = '';
 			$vs_cur_selection = $this->getPathStub($ps_cur_selection, 2);
 			
-			$vs_last_selected_path_item = array_pop(explode('/', $ps_cur_selection));
+			$va_cur_selection = explode('/', $ps_cur_selection);
+			$vs_last_selected_path_item = array_pop($va_cur_selection);
 			
 			foreach($pa_navinfo as $vs_nav => $va_nav_info) {
 				if (isset($va_nav_info['hide']) && $va_nav_info['hide']) { continue; }
@@ -689,7 +690,9 @@
 				}
 			} else {
 				$vs_buf .= caNavLink($this->opo_request, $vs_display_name, (($ps_cur_selection == $ps_base_path.'/'.$ps_key) ? 'sf-menu-selected' : ''), $va_defaults['module'], $va_defaults['controller'], $va_defaults['action'], $va_additional_params, $pa_attributes)."\n";
-			
+				if (is_array($pa_iteminfo['typeRestrictions']) && $pa_iteminfo['typeRestrictions']) {
+					TooltipManager::add("#".$pa_attributes['id'], (sizeof($pa_iteminfo['typeRestrictions']) == 1) ? _t("For type <em>%1</em>", join(", ", $pa_iteminfo['typeRestrictions'])) : _t("For types <em>%1</em>", join(", ", $pa_iteminfo['typeRestrictions'])));
+				}
 				if ($ps_cur_selection == $ps_base_path.'/'.$ps_key) {
 					if (!is_array($va_nav_defaults = $this->opo_request->session->getVar('ca_app_nav_defaults'))) {
 						$va_nav_defaults = array();

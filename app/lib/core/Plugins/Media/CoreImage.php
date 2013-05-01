@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2010-2012 Whirl-i-Gig
+ * Copyright 2010-2013 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -38,14 +38,14 @@
  * Plugin for processing images using CoreImage (Mac OS X only)
  */
 
-include_once(__CA_LIB_DIR__."/core/Plugins/WLPlug.php");
+include_once(__CA_LIB_DIR__."/core/Plugins/Media/BaseMediaPlugin.php");
 include_once(__CA_LIB_DIR__."/core/Plugins/IWLPlugMedia.php");
 include_once(__CA_LIB_DIR__."/core/Parsers/TilepicParser.php");
 include_once(__CA_LIB_DIR__."/core/Configuration.php");
 include_once(__CA_APP_DIR__."/helpers/mediaPluginHelpers.php");
 include_once(__CA_LIB_DIR__."/core/Parsers/MediaMetadata/XMPParser.php");
 
-class WLPlugMediaCoreImage Extends WLPlug Implements IWLPlugMedia {
+class WLPlugMediaCoreImage Extends BaseMediaPlugin Implements IWLPlugMedia {
 	var $errors = array();
 	
 	var $filepath;
@@ -846,7 +846,7 @@ class WLPlugMediaCoreImage Extends WLPlug Implements IWLPlugMedia {
 			$va_metadata = array();
 			
 			if(function_exists('exif_read_data')) {
-				if (is_array($va_exif = @exif_read_data($ps_filepath, 'EXIF', true, false))) { $va_metadata['EXIF'] = $va_exif; }
+				if (is_array($va_exif = caSanitizeArray(@exif_read_data($ps_filepath, 'EXIF', true, false)))) { $va_metadata['EXIF'] = $va_exif; }
 			}
 			
 			$o_xmp = new XMPParser();

@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2009-2011 Whirl-i-Gig
+ * Copyright 2009-2013 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -39,6 +39,7 @@
  	require_once(__CA_LIB_DIR__.'/core/Configuration.php');
  	require_once(__CA_LIB_DIR__.'/core/Parsers/KmlParser.php');
  	require_once(__CA_LIB_DIR__.'/core/BaseModel.php');	// we use the BaseModel field type (FT_*) and display type (DT_*) constants
+ 	require_once(__CA_LIB_DIR__.'/core/GeographicMap.php');
  	
  	require_once(__CA_APP_DIR__.'/helpers/gisHelpers.php');
  
@@ -127,9 +128,12 @@
  		private $ops_path_value;
  		private $opn_latitude;
  		private $opn_longitude;
+ 		
+ 		private $opo_geo_plugin;
  		# ------------------------------------------------------------------
  		public function __construct($pa_value_array=null) {
  			parent::__construct($pa_value_array);
+ 			$this->opo_geo_plugin = new GeographicMap();
  		}
  		# ------------------------------------------------------------------
  		public function loadTypeSpecificValueFromRow($pa_value_array) {
@@ -177,7 +181,7 @@
 			return $this->ops_path_value;
 		}
  		# ------------------------------------------------------------------
- 		public function parseValue($ps_value, $pa_element_info) {
+ 		public function parseValue($ps_value, $pa_element_info) {	
  			$va_settings = $this->getSettingValuesFromElementArray(
  				$pa_element_info, 
  				array('mustNotBeBlank')
@@ -186,9 +190,9 @@
  			if (is_array($ps_value) && $ps_value['_uploaded_file']) {
  				$o_kml = new KmlParser($ps_value['tmp_name']);
  				$va_placemarks = $o_kml->getPlacemarks();
- 				
- 				$va_coords = array();
+ 				$va_features = array();
  				foreach($va_placemarks as $va_placemark) {
+ 					$va_coords = array();
  					switch($va_placemark['type']) {
  						case 'POINT':
  							$va_coords[] = $va_placemark['latitude'].','.$va_placemark['longitude'];
@@ -199,15 +203,17 @@
 							}	
  							break;
  					}
+ 					if (sizeof($va_coords)) {
+						$va_features[] = join(';', $va_coords);
+					}
  				}
  				
- 				if (sizeof($va_coords)) {
- 					$ps_value = '['.join(';', $va_coords).']';
+ 				if (sizeof($va_features)) {
+ 					$ps_value = '['.join(':', $va_features).']';
  				} else {
  					$ps_value = '';
  				}
  			}
- 			
  			$ps_value = trim(preg_replace("![\t\n\r]+!", ' ', $ps_value));
  			
  			if (!trim($ps_value)) {
@@ -226,32 +232,37 @@
  				preg_match("!^([^\[]*)[\[]{1}([^\]]+)[\]]{1}$!", $ps_value, $va_matches)
  			) {
  			
- 				$va_point_list = preg_split("/[;]+/", $va_matches[2]);
+ 				$va_feature_list = preg_split("/[:]+/", $va_matches[2]);
  				
- 				$va_parsed_points = array();
- 				$vs_first_lat = $vs_first_long = '';
- 				foreach($va_point_list as $vs_point) {
-					$va_tmp = preg_split("/[ ]*[,\/][ ]*/", $vs_point);
-					
-					// convert from degrees minutes seconds to decimal format
-					if (caGISisDMS($va_tmp[0])) {
-						$va_tmp[0] = caGISminutesToSignedDecimal($va_tmp[0]);
-					} else {
-						$va_tmp[0] = caGISDecimalToSignedDecimal($va_tmp[0]);
+ 				$va_feature_list_proc = array();
+ 				foreach($va_feature_list as $vs_feature) {
+ 					$va_point_list = preg_split("/[;]+/", $vs_feature);
+					$va_parsed_points = array();
+					$vs_first_lat = $vs_first_long = '';
+					foreach($va_point_list as $vs_point) {
+						$va_tmp = preg_split("/[ ]*[,\/][ ]*/", $vs_point);
+						
+						// convert from degrees minutes seconds to decimal format
+						if (caGISisDMS($va_tmp[0])) {
+							$va_tmp[0] = caGISminutesToSignedDecimal($va_tmp[0]);
+						} else {
+							$va_tmp[0] = caGISDecimalToSignedDecimal($va_tmp[0]);
+						}
+						if (caGISisDMS($va_tmp[1])) {
+							$va_tmp[1] = caGISminutesToSignedDecimal($va_tmp[1]);
+						} else {
+							$va_tmp[1] = caGISDecimalToSignedDecimal($va_tmp[1]);
+						}
+						
+						$va_parsed_points[] = $va_tmp[0].','.$va_tmp[1];
+						if (!$vs_first_lat) { $vs_first_lat = $va_tmp[0]; }
+						if (!$vs_first_long) { $vs_first_long = $va_tmp[1]; }
 					}
-					if (caGISisDMS($va_tmp[1])) {
-						$va_tmp[1] = caGISminutesToSignedDecimal($va_tmp[1]);
-					} else {
-						$va_tmp[1] = caGISDecimalToSignedDecimal($va_tmp[1]);
-					}
-					
-					$va_parsed_points[] = $va_tmp[0].','.$va_tmp[1];
-					if (!$vs_first_lat) { $vs_first_lat = $va_tmp[0]; }
-					if (!$vs_first_long) { $vs_first_long = $va_tmp[1]; }
+					$va_feature_list_proc[] = join(';', $va_parsed_points);
 				}
  				return array(
 					'value_longtext1' => $va_matches[1],
-					'value_longtext2' => join(';', $va_parsed_points),
+					'value_longtext2' => join(':', $va_feature_list_proc),
 					'value_decimal1' => $vs_first_lat,		// latitude
 					'value_decimal2' => $vs_first_long		// longitude
 				);	
@@ -297,76 +308,14 @@
  			if (isset($pa_options['forSearch']) && $pa_options['forSearch']) {
  				return caHTMLTextInput("{fieldNamePrefix}".$pa_element_info['element_id']."_{n}", array('id' => "{fieldNamePrefix}".$pa_element_info['element_id']."_{n}", 'value' => $pa_options['value']), $pa_options);
  			}
- 			
- 			$o_config = Configuration::load();
- 			
- 			if (!in_array($vs_map_type = $o_config->get('google_maps_default_type'), array('ROADMAP', 'SATELLITE', 'HYBRID', 'TERRAIN'))) {
- 				$vs_map_type = 'ROADMAP';
+ 			if ((!isset($pa_options['baseLayer']) || !$pa_options['baseLayer']) || (isset($pa_options['po_request']) && ($pa_options['po_request']))) {
+ 				if ($vs_base_layer_pref = $pa_options['po_request']->user->getPreference('maps_base_layer')) {
+ 					// Prefs don't have quotes in them, so we need to restore here
+ 					$vs_base_layer_pref = preg_replace("!\(([A-Za-z0-9_\-]+)\)!", "('\\1')", $vs_base_layer_pref);
+ 					$pa_options['baseLayer'] = $vs_base_layer_pref;
+ 				}
  			}
- 			
- 			
- 			JavascriptLoadManager::register('maps');
- 			$va_settings = $this->getSettingValuesFromElementArray($pa_element_info, array('fieldWidth', 'fieldHeight'));
- 			$vs_element = 	'<div id="mapholder_'.$pa_element_info['element_id'].'_{n}" class="mapholder">';
-				$vs_element .= 	'<div class="mapCoordInput">';
-				$vs_element .= 		'<div class="mapSearchBox">';
-				$vs_element .=				'<input type="text" class="mapSearchText" name="searchtext"  id="{fieldNamePrefix}'.$pa_element_info['element_id'].'_{n}" size="60" value="'._t('Search for geographic location').'..." autocomplete="off"/>';
-				$vs_element .=				'<div class="mapSearchSuggest"></div>';
-				$vs_element .=				'<a href="#" class="button">'._t('Upload KML file').' &rsaquo;</a>';
-				$vs_element .= 		'</div>';
-				$vs_element .= 	'</div>';
-	 			$vs_element .=		'<div class="mapKMLInput" style="display: none;">';
-	 			$vs_element .=			_t("Select KML or KMZ file").': <input type="file" name="{fieldNamePrefix}'.$pa_element_info['element_id'].'_{n}"/><a href="#" class="button">'._t('Use map').' &rsaquo;</a>';
-	 			$vs_element .=		'</div>';
-	 			$vs_element .=		'<div class="map" style="width:695px; height:300px;"></div>';
-		 		$vs_element .= 		'<script type="text/javascript">';
-			 			$vs_element .= 		"jQuery(document).ready(function() {
-			 			var mID_{n} = ".$pa_element_info['element_id'].";
-			 									var mapdata = {
-				 									mapID : mID_{n},
-				 									mapholder : jQuery('#mapholder_' + mID_{n} + '_{n}'),
-				 									searchDefaultText : '"._t('Search for geographic location')."...',
-				 									searchTextID:  '{fieldNamePrefix}".$pa_element_info['element_id']."_search_text{n}', 
-													zoomlevel : 12,
-													initialLocation : null,
-													map : null,
-													geocoder : null,
-													marker : null,
-													markers : null,
-													selectionIndex : -1,
-													coordinates : \"{{{".$pa_element_info['element_id']."}}}\"
-		 										};
-		 										
-			 									var mapOptions = {
-													zoom: 12,
-													mapTypeControl: ".((bool)$o_config->get('google_maps_show_map_type_controls') ? 'true' : 'false').",
-													mapTypeControlOptions: {
-														style: google.maps.MapTypeControlStyle.DEFAULT
-													},
-													navigationControl: ".((bool)$o_config->get('google_maps_show_navigation_controls') ? 'true' : 'false').",
-													navigationControlOptions: {
-														style: google.maps.NavigationControlStyle.DEFAULT
-													},
-													scaleControl: ".((bool)$o_config->get('google_maps_show_scale_controls') ? 'true' : 'false').",
-													scaleControlOptions: {
-														style: google.maps.ScaleControlStyle.DEFAULT
-													},
-													disableDefaultUI: false,
-													mapTypeId: google.maps.MapTypeId.{$vs_map_type}
-												};
-												/* Initialization of the map */
-												if ('{n}'.substring(0,3) == 'new') {
-													initNewMap(mapdata,mapOptions);
-												} else {
-													initExistingMap(mapdata,mapOptions);
-												}
-												initMapsApp(mapdata);
-											});";
-			$vs_element .= 		'</script>';
-			$vs_element .= '<input class="coordinates mapCoordinateDisplay" type="text" name="{fieldNamePrefix}'.$pa_element_info['element_id'].'_{n}" size="80"/>';
- 			$vs_element .=	'</div>';
- 			
- 			return $vs_element;
+ 			return $this->opo_geo_plugin->getAttributeBundleHTML($pa_element_info, $pa_options);
  		}
  		# ------------------------------------------------------------------
  		public function getAvailableSettings() {
@@ -381,7 +330,7 @@
 		 * @return string Name of sort field
 		 */
 		public function sortField() {
-			return 'value_longtext1';
+			return 'value_decimal1';
 		}
  		# ------------------------------------------------------------------
 	}

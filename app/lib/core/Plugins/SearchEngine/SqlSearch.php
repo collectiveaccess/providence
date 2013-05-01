@@ -632,12 +632,20 @@ class WLPlugSearchEngineSqlSearch extends BaseSearchPlugin implements IWLPlugSea
 							}
 							if (!sizeof($va_words)) { continue(3); }
 							
+							$va_ap_tmp = explode(".", $vs_access_point);
+							$vn_fld_table = $vn_fld_num = null;
+							if(sizeof($va_ap_tmp) == 2) {
+								$vn_fld_table = (int)$this->opo_datamodel->getTableNum($va_ap_tmp[0]);
+								$vn_fld_num = (int)$this->opo_datamodel->getFieldNum($va_ap_tmp[0], $va_ap_tmp[1]);
+								$vs_fld_limit_sql = " AND (ca.field_table_num = {$vn_fld_table} AND ca.field_num = {$vn_fld_num})";
+							}
+							
 							$vs_direct_sql_query = "
 										SELECT ca.row_id, 1
 										FROM ca_sql_search_words sw 
 										INNER JOIN ca_sql_search_word_index ca ON sw.word_id = ca.word_id 
 										^JOIN
-										WHERE sw.word IN (".join(",", array_keys($va_words)).") AND ca.table_num = ?
+										WHERE sw.word IN (".join(",", array_keys($va_words)).") AND ca.table_num = ? {$vs_fld_limit_sql}
 										".($this->getOption('omitPrivateIndexing') ? " AND ca.access = 0" : '')."
 										GROUP BY ca.row_id, ca.field_table_num, ca.field_num, ca.field_row_id 
 										HAVING count(distinct ca.word_id) = ".sizeof($va_words);
@@ -1001,6 +1009,8 @@ class WLPlugSearchEngineSqlSearch extends BaseSearchPlugin implements IWLPlugSea
 						
 						if (!sizeof($va_sql_where)) { continue; }
 						$vs_sql_where = join(' OR ', $va_sql_where);
+					} else {
+						$va_ft_terms = $va_ft_like_terms = $va_ft_like_terms = array();
 					}
 					
 					
@@ -1068,17 +1078,15 @@ class WLPlugSearchEngineSqlSearch extends BaseSearchPlugin implements IWLPlugSea
 									$vs_direct_sql_query = str_replace('^JOIN', "", $vs_direct_sql_query);
 								}
 								$vs_sql = "
-									DELETE FROM {$ps_dest_table} WHERE row_id IN
-									(SELECT swi.row_id
-									FROM ca_sql_search_word_index swi
-									INNER JOIN ca_sql_search_words AS sw ON sw.word_id = swi.word_id
-									WHERE
-										{$vs_sql_where}
+									DELETE FROM {$ps_dest_table} 
+									USING {$ps_dest_table}, ca_sql_search_words sw, ca_sql_search_word_index swi
+									WHERE 
+										".($vs_sql_where ? "{$vs_sql_where} AND " : "")."
+										{$ps_dest_table}.row_id = swi.row_id AND
+										sw.word_id = swi.word_id
 										AND
 										swi.table_num = ?
 										".($this->getOption('omitPrivateIndexing') ? " AND swi.access = 0" : '')."
-									GROUP BY
-										swi.row_id)
 								";
 							
 								//print "$vs_sql<hr>";

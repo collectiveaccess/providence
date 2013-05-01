@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2009 Whirl-i-Gig
+ * Copyright 2009-2013 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -46,14 +46,12 @@
  		/**
  		 * Returns content for overlay containing details for object representation
  		 */ 
- 		public function GetRepresentationInfo() {
- 			list($vn_object_id, $t_object) = $this->_initView();
- 			$pn_representation_id = $this->request->getParameter('representation_id', pInteger);
+ 		public function getRepresentationInfo() {
+ 			list($pn_representation_id, $t_rep) = $this->_initView();
 			
  			$ps_version = $this->request->getParameter('version', pString);
  			
  			$this->view->setVar('representation_id', $pn_representation_id);
- 			$t_rep = new ca_object_representations($pn_representation_id);
  			$this->view->setVar('t_object_representation', $t_rep);
  			
  			$this->view->setVar('versions', $va_versions = $t_rep->getMediaVersions('media'));
@@ -75,15 +73,52 @@
  			
  			return $this->render('ajax_object_representation_info_html.php');
  		}
+ 		
  		# -------------------------------------------------------
- 		public function DownloadRepresentation() {
-			
- 			list($vn_object_id, $t_object) = $this->_initView();
- 			$pn_representation_id = $this->request->getParameter('representation_id', pInteger);
+ 		/**
+ 		 * Return representation annotation editor
+ 		 *
+ 		 * Expects the following request parameters: 
+ 		 *		representation_id = the id of the ca_object_representations record for which to edit annotations
+ 		 *
+ 		 *	Optional request parameters:
+ 		 *		none (yet)
+ 		 */ 
+ 		public function getAnnotationEditor() {
+ 			list($pn_representation_id, $t_rep) = $this->_initView();
+ 			
+ 			// Get player
+ 			$this->view->setVar('player', $t_rep->getMediaTag('media', 'mp3', array('viewer_width' => '952px', 'viewer_height' => '36px', 'id' => 'caAnnotationEditorMediaPlayer', 'class' => 'caAnnotationEditorMediaPlayer')));
+ 			
+ 			// Get # clips
+ 			$this->view->setVar('annotation_count', (int)$t_rep->getAnnotationCount());
+ 			
+ 			if(!is_array($va_annotations = $t_rep->getAnnotations())) { $va_annotations = array(); }
+ 			$this->view->setVar('annotation_map', array_values($va_annotations));
+ 			
+ 			return $this->render('ajax_representation_annotation_editor_html.php');
+ 		}
+ 		# -------------------------------------------------------
+ 		/**
+ 		 * 
+ 		 */
+ 		public function getAnnotationList() {
+ 			list($pn_representation_id, $t_rep) = $this->_initView();
+ 			$vn_start = $this->request->getParameter('s', pInteger);
+ 			$vn_max = $this->request->getParameter('n', pInteger);
+ 		 	
+ 			$this->view->setVar('annotation_count', (int)$t_rep->getAnnotationCount());
+ 			$this->view->setVar('annotation_list', $t_rep->getAnnotations(array('start' => $vn_start, 'max' => $vn_max)));
+ 			
+ 			return $this->render('ajax_representation_annotation_list_json.php');
+ 		}
+ 		# -------------------------------------------------------
+ 		public function downloadRepresentation() {
+ 			list($pn_representation_id, $t_rep) = $this->_initView();
+ 			
  			$ps_version = $this->request->getParameter('version', pString);
  			
  			$this->view->setVar('representation_id', $pn_representation_id);
- 			$t_rep = new ca_object_representations($pn_representation_id);
  			$this->view->setVar('t_object_representation', $t_rep);
  			
  			$va_versions = $t_rep->getMediaVersions('media');

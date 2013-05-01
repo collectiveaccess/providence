@@ -45,7 +45,7 @@
 	print caFormTag($this->request, 'SetAccess', 'caAccessControlList');
 ?>	
 	<div class='globalAccess'>
-		<div class='title'><?php print _t('Global Access'); ?></div>
+		<div class='title'><?php print _t('Global access'); ?></div>
 <?php 	
 		$va_global_access = $t_instance->getACLWorldAccess(array('returnAsInitialValuesForBundle' => true));
 		$va_global_access_status = $va_global_access['access_display'];
@@ -85,8 +85,7 @@
 		print $t_instance->getACLGroupHTMLFormBundle($this->request, 'caAccessControlList');
 		
 		print caHTMLHiddenInput($t_instance->primaryKey(), array('value' => $t_instance->getPrimaryKey()));
-	?>
-		</form>		
+	?>	
 		<h2><?php print _t('User access'); ?></h2>
 	<?php
 		print $t_instance->getACLUserHTMLFormBundle($this->request, 'caAccessControlList');
@@ -102,10 +101,18 @@
 ?>
 		<div id='editUserAccessLink' class='editLink'><a href='#' onclick='jQuery("#editUserAccess").show(250); jQuery("#editUserAccessLink").hide()'><img src='<?php print $this->request->getThemeUrlPath() ?>/graphics/buttons/edit.png' border='0' /> <?php print _t('Create an Exception'); ?></a></div>
 <?php
-		}
+		}		
 ?>
-		
 		<div style='width:100%; clear:both; height: 1px;'></div>
 	</div>
+<?php
+		if ($t_instance->hasField('acl_inherit_from_ca_collections')) {
+			print $t_instance->getBundleFormHTML('acl_inherit_from_ca_collections', 'acl_inherit_from_ca_collections', array('forACLAccessScreen' => true), array('request' => $this->request));
+		}
+		if ($t_instance->hasField('acl_inherit_from_parent')) {
+			print $t_instance->getBundleFormHTML('acl_inherit_from_parent', 'acl_inherit_from_parent', array('forACLAccessScreen' => true), array('request' => $this->request));
+		}
+?>
+	</form>	
 	<div class="editorBottomPadding"><!-- empty --></div>
 </div>

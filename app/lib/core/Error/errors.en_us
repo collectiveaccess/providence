@@ -76,6 +76,7 @@
 780 = Record can't be deleted because it is in use
 790 = Record can't be deleted because it has sub-records
 795 = Data has been changed since load
+799 = Cannot do dry run when inside transaction
 
 # --- Web sessions/auth errors
 800 = Couldn't add session_id to database
@@ -113,6 +114,8 @@
 1220 = Invalid table parameter
 1230 = Parent must be specified
 1240 = Invalid table specification
+1250 = Could not save ACL inheritance settings
+1260 = No user interface is available for this editor
 
 # --- File errors
 1500 = File not found
@@ -194,6 +197,7 @@
 2560 = Item is not correct type
 2570 = Can't change access control list for this item
 2580 = You do not have access to this item
+2585 = You cannot quickadd
 
 # --- Object representation errors
 2700 = Could not update primary flag for representation
@@ -222,3 +226,9 @@
 
 # --- Summary printing errors
 3100 = Could not generate PDF
+
+# --- Batch editing errors
+3200 = Invalid set
+3210 = Batch editing is not allowed
+3220 = Set is empty
+3250 = Invalid directory

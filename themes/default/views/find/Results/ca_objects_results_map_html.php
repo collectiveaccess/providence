@@ -33,7 +33,7 @@ $vn_num_hits 			= $this->getVar('num_hits');
 $va_access_values 		= $this->getVar('access_values');
 
 if($vo_result && $this->request->config->get('ca_objects_map_attribute')){
-	$o_map = new GeographicMap(740, 450, 'map');
+	$o_map = new GeographicMap(740, 450, 'map2');
 	
 	$va_map_stats = $o_map->mapFrom($vo_result, $this->request->config->get('ca_objects_map_attribute'), array("ajaxContentUrl" => caNavUrl($this->request, $this->request->getModulePath(), $this->request->getController(), 'getMapItemInfo'), 'request' => $this->request, 'checkAccess' => $va_access_values));
 	// map_stats is an array with two keys: 'points' = number of unique markers; 'items' = number of results hits than were plotted at least once on the map
@@ -52,7 +52,7 @@ if($vo_result && $this->request->config->get('ca_objects_map_attribute')){
 			</script>
 <?php		
 		}
-		print "<div>".$o_map->render('HTML', array('delimiter' => "<br/>"))."</div>";
+		print "<div id='map2' style='width: 740px; height: 450px;'> </div><div>".$o_map->render('HTML', array('delimiter' => "<br/>"))."</div>";
 	} else {
 ?>
 	<div>

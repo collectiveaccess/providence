@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2010-2011 Whirl-i-Gig
+ * Copyright 2010-2013 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -61,6 +61,15 @@
 		 */
 		public function getAvailableSettings() {
 			return $this->opa_settings_defs;
+		}
+		# ------------------------------------------------------
+		/**
+		 * Sets the associative array of setting descriptions (but *not* the setting values)
+		 * The keys of this array are the setting codes, the values associative arrays containing
+		 * info about the setting itself (label, description type of value, how to display an entry element for the setting in a form)
+		 */
+		public function setAvailableSettings($pa_settings) {
+			$this->opa_settings_defs = $pa_settings;
 		}
 		# ------------------------------------------------------
 		/**
@@ -134,6 +143,10 @@
 									
 									if ($vn_list_id) {
 										$pm_value[$vn_i] = $vn_list_id;
+									}
+								} else {
+									if ($va_setting_info['showSortableBundlesFor']) {
+										
 									}
 								}
 							}
@@ -226,7 +239,7 @@
 		 * 	'name' => sets the name of the HTML form element explicitly, otherwise 'setting_<name_of_setting>' is used
 		 * 	'id' => sets the id of the HTML form element explicitly, otherwise 'setting_<name_of_setting>' is used
 		 *  'value' => sets the value of the HTML form element explicitly, otherwise the current value for the setting in the loaded row is used
-		 * 'label_id' => sets the id of the label for the setting form element (used to link tools tips to the label); if not set then the default is to set it to  'setting_<name_of_setting>_label'
+		 *  'label_id' => sets the id of the label for the setting form element (used to link tools tips to the label); if not set then the default is to set it to  'setting_<name_of_setting>_label'
 		 */ 
 		public function settingHTMLFormElement($ps_setting, $pa_options=null) {
 			if(!$this->isValidSetting($ps_setting)) {
@@ -313,6 +326,31 @@
 					}
 					$vs_return .= caHTMLCheckboxInput($vs_input_name, $va_attributes, array());
 					break;
+				
+				# --------------------------------------------
+				case DT_COLORPICKER:
+					$va_attributes = array('value' => $vs_value, 'id' => $vs_input_id);
+					$vs_return .= caHTMLHiddenInput($vs_input_name, $va_attributes, array());
+					$vs_return .= "<div id='{$vs_input_id}_colorchip' class='colorpicker_chip' style='background-color: #{$vs_value}'><!-- empty --></div>";
+					$vs_return .= "<script type='text/javascript'>jQuery(document).ready(function() { jQuery('#{$vs_input_name}_colorchip').ColorPicker({
+								onShow: function (colpkr) {
+									jQuery(colpkr).fadeIn(500);
+									return false;
+								},
+								onHide: function (colpkr) {
+									jQuery(colpkr).fadeOut(500);
+									return false;
+								},
+								onChange: function (hsb, hex, rgb) {
+									jQuery('#{$vs_input_name}').val(hex);
+									jQuery('#{$vs_input_name}_colorchip').css('backgroundColor', '#' + hex);
+								},
+								color: jQuery('#".$pa_options["name"]."').val()
+							})}); </script>\n";
+							
+							JavascriptLoadManager::register('jquery', 'colorpicker');
+							
+					break;
 				# --------------------------------------------
 				case DT_SELECT:
  					include_once(__CA_MODELS_DIR__.'/ca_relationship_types.php');
@@ -327,6 +365,9 @@
 							$va_rels = $t_rel->getRelationshipInfo($vs_rel_table);
 							
 							$va_rel_opts = array();
+							if (isset($va_properties['allowNull']) && $va_properties['allowNull']) {
+								$va_rel_opts['-'] = null;
+							}
 							foreach($va_rels as $vn_type_id => $va_rel_type_info) {
 								if (!$va_rel_type_info['parent_id']) { continue; }
 								$va_rel_opts[$va_rel_type_info['typename'].'/'.$va_rel_type_info['typename_reverse']] = $va_rel_type_info['type_id'];
@@ -351,17 +392,23 @@
 						}
 						
 						$va_attr = array();
-						if ($vn_height > 1) { $va_attr['multiple'] = 1; $vs_input_name .= '[]'; }
+						if ($vn_height > 1) { 
+							$va_attr['multiple'] = 1; $vs_input_name .= '[]'; 
+						}
 						
 						$va_opts = array('id' => $vs_input_id, 'width' => $vn_width, 'height' => $vn_height);
 						if ($vn_height > 1) {
 							if ($vs_value && !is_array($vs_value)) { $vs_value = array($vs_value); }
 							$va_opts['values'] = $vs_value;
 						} else {
-							if ($vs_value) {
-								$va_opts['value'] = $vs_value;
+							if (is_array($vs_value)) {
+								$va_opts['value'] = array_pop($vs_value);
 							} else {
-								$va_opts['value'] = null;
+								if ($vs_value) {
+									$va_opts['value'] = $vs_value;
+								} else {
+									$va_opts['value'] = null;
+								}
 							}
 						}
 						
@@ -370,16 +417,57 @@
 							if(!isset($va_opts['value'])) { $va_opts['value'] = -1; }		// make sure default list item is never selected
 							$vs_select_element = $t_list->getListAsHTMLFormElement($vs_list_code, $vs_input_name, $va_attr, $va_opts);
 						} else {
-							if(!isset($va_opts['value'])) { $va_opts['value'] = -1; }		// make sure default list item is never selecteds
+							if(!isset($va_opts['value'])) { $va_opts['value'] = -1; }		// make sure default list item is never selected
 							$vs_select_element = caHTMLSelect($vs_input_name, $va_rel_opts, $va_attr, $va_opts);
 						}
 					} else {
-					
-						if ($vn_height > 1) { $va_attr['multiple'] = 1; $vs_input_name .= '[]'; }
+						if (strlen($va_properties['showSortableBundlesFor']) > 0) {
+ 							require_once(__CA_MODELS_DIR__.'/ca_metadata_elements.php');
+ 							
+ 							$o_dm = Datamodel::load();
+ 							if (!($t_rel = $o_dm->getInstanceByTableName($va_properties['showSortableBundlesFor'], true))) {
+ 								break;
+ 							}
+							$va_elements = ca_metadata_elements::getSortableElements($va_properties['showSortableBundlesFor']);
+							
+							$va_select_opts = array(
+								_t('User defined sort order') => '',
+								_t('Order created') => 'relation_id',		// forces sorting by relationship primary key  - aka order relationships were created
+								_t('Preferred label') => $va_properties['showSortableBundlesFor'].".preferred_labels.".$t_rel->getLabelDisplayField()
+							);
+							foreach($va_elements as $vn_element_id => $va_element) {
+								if(!$va_element['display_label']) { continue; }
+								$va_select_opts[_t('Element: %1', $va_element['display_label'])] = $va_properties['showSortableBundlesFor'].".".$va_element['element_code'];
+							}
+							
+							$va_opts = array('id' => $vs_input_id, 'width' => $vn_width, 'height' => $vn_height, 'value' => is_array($vs_value) ? $vs_value[0] : $vs_value, 'values' => is_array($vs_value) ? $vs_value : array($vs_value));
+							$vs_select_element = caHTMLSelect($vs_input_name, $va_select_opts, array(), $va_opts);
+						} elseif((int)$va_properties['showSortableElementsFor'] > 0) {
+							require_once(__CA_MODELS_DIR__.'/ca_metadata_elements.php');
+							
+ 							$t_element = new ca_metadata_elements($va_properties['showSortableElementsFor']);
+ 							if (!$t_element->getPrimaryKey()) { return ''; }
+ 							$va_elements = $t_element->getElementsInSet();
+							
+							$va_select_opts = array(
+								_t('Order created') => '',
+							);
+							foreach($va_elements as $vn_i => $va_element) {
+								if ((int)$va_element['element_id'] == (int)$va_properties['showSortableElementsFor']) { continue; }
+								if(!$va_element['display_label']) { continue; }
+								$va_select_opts[_t('Element: %1', $va_element['display_label'])] = $va_element['element_code'];
+							}
+							
+							$va_opts = array('id' => $vs_input_id, 'width' => $vn_width, 'height' => $vn_height, 'value' => is_array($vs_value) ? $vs_value[0] : $vs_value, 'values' => is_array($vs_value) ? $vs_value : array($vs_value));
+							$vs_select_element = caHTMLSelect($vs_input_name, $va_select_opts, array(), $va_opts);
+						} else {
+							// Regular drop-down with configured options
+							if ($vn_height > 1) { $va_attr['multiple'] = 1; $vs_input_name .= '[]'; }
 						
-						$va_opts = array('id' => $vs_input_id, 'width' => $vn_width, 'height' => $vn_height, 'value' => is_array($vs_value) ? $vs_value[0] : $vs_value, 'values' => is_array($vs_value) ? $vs_value : array($vs_value));
-						if(!isset($va_opts['value'])) { $va_opts['value'] = -1; }		// make sure default list item is never selected
-						$vs_select_element = caHTMLSelect($vs_input_name, $va_properties['options'], array(), $va_opts);
+							$va_opts = array('id' => $vs_input_id, 'width' => $vn_width, 'height' => $vn_height, 'value' => is_array($vs_value) ? $vs_value[0] : $vs_value, 'values' => is_array($vs_value) ? $vs_value : array($vs_value));
+							if(!isset($va_opts['value'])) { $va_opts['value'] = -1; }		// make sure default list item is never selected
+							$vs_select_element = caHTMLSelect($vs_input_name, $va_properties['options'], array(), $va_opts);
+						}
 					}
 					
 					

@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2008-2012 Whirl-i-Gig
+ * Copyright 2008-2013 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -34,6 +34,7 @@
    *
    */
 require_once(__CA_LIB_DIR__."/core/AccessRestrictions.php");
+require_once(__CA_LIB_DIR__."/core/Logging/Eventlog.php");
 require_once(__CA_APP_DIR__.'/models/ca_user_roles.php');
 include_once(__CA_APP_DIR__."/helpers/utilityHelpers.php");
 require_once(__CA_APP_DIR__.'/models/ca_user_groups.php');
@@ -103,6 +104,21 @@ BaseModel::$s_ca_models_definitions['ca_users'] = array(
 				'LABEL' => _t('E-mail'), 'DESCRIPTION' => _t('The e-mail address of this user. The address will be used for all mail-based system notifications and alerts to this user.'),
 				'BOUNDS_LENGTH' => array(0,255)
 		),
+		'sms_number' => array(
+				'FIELD_TYPE' => FT_TEXT, 'DISPLAY_TYPE' => DT_FIELD, 
+				'DISPLAY_WIDTH' => 60, 'DISPLAY_HEIGHT' => 1,
+				'IS_NULL' => false, 
+				'DEFAULT' => '',
+				'LABEL' => _t('SMS number'), 'DESCRIPTION' => _t('Phone number for contact by SMS (text message). The number will be used for all SMS-based system notifications and alerts to this user.'),
+				'BOUNDS_LENGTH' => array(0,30)
+		),
+		'entity_id' => array(
+				'FIELD_TYPE' => FT_NUMBER, 'DISPLAY_TYPE' => DT_FIELD, 
+				'DISPLAY_WIDTH' => 40, 'DISPLAY_HEIGHT' => 1,
+				'IS_NULL' => true, 
+				'DEFAULT' => '',
+				'LABEL' => _t('Related entity (optional)'), 'DESCRIPTION' => _t('The entity this user login is associated with.')
+		),
 		'vars' => array(
 				'FIELD_TYPE' => FT_VARS, 'DISPLAY_TYPE' => DT_OMIT, 
 				'DISPLAY_WIDTH' => 88, 'DISPLAY_HEIGHT' => 15,
@@ -146,13 +162,6 @@ BaseModel::$s_ca_models_definitions['ca_users'] = array(
 				'DEFAULT' => '',
 				'LABEL' => _t('Confirmation key'), 'DESCRIPTION' => _t('Confirmation key used for email verification.'),
 				'BOUNDS_LENGTH' => array(0,32)
-		),
-		'entity_id' => array(
-				'FIELD_TYPE' => FT_NUMBER, 'DISPLAY_TYPE' => DT_FIELD, 
-				'DISPLAY_WIDTH' => 40, 'DISPLAY_HEIGHT' => 1,
-				'IS_NULL' => true, 
-				'DEFAULT' => '',
-				'LABEL' => _t('Entity'), 'DESCRIPTION' => _t('The entity this user login is associated with.')
 		)
  	)
 );
@@ -386,7 +395,7 @@ class ca_users extends BaseModel {
 	 * @access public
 	 * @return bool Returns true if no error, false if error occurred
 	 */	
-	public function delete() {
+	public function delete($pb_delete_related=false, $pa_options=null, $pa_fields=null, $pa_table_list=null) {
 		$this->clearErrors();
 		$this->set('userclass', 255);
 		return $this->update();
@@ -837,12 +846,13 @@ class ca_users extends BaseModel {
 					FROM ca_user_roles wur
 					INNER JOIN ca_users_x_roles AS wuxr ON wuxr.role_id = wur.role_id
 					WHERE wuxr.user_id = ?
-					ORDER BY wur.rank
 				", (int)$pn_user_id);
 				
 				$va_roles = array();
 				while($qr_res->nextRow()) {
-					$va_roles[$qr_res->get("role_id")] = $qr_res->getRow();
+					$va_row = $qr_res->getRow();
+					$va_row['vars'] = caUnserializeForDatabase($va_row['vars']);
+					$va_roles[$va_row['role_id']] = $va_row;
 				}
 				
 				return ca_users::$s_user_role_cache[$pn_user_id] = $va_roles;
@@ -1137,14 +1147,14 @@ class ca_users extends BaseModel {
 					INNER JOIN ca_groups_x_roles AS wgxr ON wgxr.role_id = wur.role_id
 					INNER JOIN ca_users_x_groups AS wuxg ON wuxg.group_id = wgxr.group_id
 					WHERE wuxg.user_id = ?
-					ORDER BY wur.rank
 				", (int)$pn_user_id);
 				
 				$va_roles = array();
 				while($qr_res->nextRow()) {
-					$va_roles[$qr_res->get("role_id")] = $qr_res->getRow();
+					$va_row = $qr_res->getRow();
+					$va_row['vars'] = caUnserializeForDatabase($va_row['vars']);
+					$va_roles[$va_row['role_id']] = $va_row;
 				}
-				
 				return ca_users::$s_group_role_cache[$pn_user_id] = $va_roles;
 			}
 		} else {
@@ -1343,7 +1353,10 @@ class ca_users extends BaseModel {
 			if (!isset($va_prefs)) {
 				return isset($va_pref_info["default"]) ? $va_pref_info["default"] : null;
 			}
-			return isset($va_prefs[$ps_pref]) ? $va_prefs[$ps_pref] : ($va_pref_info["default"] ? $va_pref_info["default"] : null);
+			if(isset($va_prefs[$ps_pref])) {
+				return (!is_null($va_prefs[$ps_pref])) ? $va_prefs[$ps_pref] : ($va_pref_info["default"] ? $va_pref_info["default"] : null);
+			}
+			return ($va_pref_info["default"] ? $va_pref_info["default"] : null);
 		} else {
 			$this->postError(920, _t("%1 is not a valid user preference", $ps_pref),"User->getPreference()");
 			return null;
@@ -1475,11 +1488,34 @@ class ca_users extends BaseModel {
 				case 'FT_NUMBER':
 					if (isset($va_pref_info["value"]) && is_array($va_pref_info["value"])) {
 						# make sure value within length bounds
-						if (!(($ps_value >= $va_pref_info["value"]["minimum"]) && ($ps_value <= $va_pref_info["value"]["maximum"]))) {
-							if ($pb_post_errors) {
-								$this->postError(921, _t("Value for %1 must be between %2 and %3", $va_pref_info["label"], $va_pref_info["value"]["minimum"], $va_pref_info["value"]["maximum"]),"User->isValidPreferenceValue()");
+						
+						if (strlen($va_pref_info["value"]["minimum"]) && ($va_pref_info["value"]["maximum"])) {
+							if (!(($ps_value >= $va_pref_info["value"]["minimum"]) && ($ps_value <= $va_pref_info["value"]["maximum"]))) {
+								if ($pb_post_errors) {
+									$this->postError(921, _t("Value for %1 must be between %2 and %3", $va_pref_info["label"], $va_pref_info["value"]["minimum"], $va_pref_info["value"]["maximum"]),"User->isValidPreferenceValue()");
+								}
+								return false;
 							}
-							return false;
+						} else {
+							if (strlen($va_pref_info["value"]["minimum"])) {
+								if ($ps_value < $va_pref_info["value"]["minimum"]) {
+									if ($pb_post_errors) {
+										if($va_pref_info["value"]["minimum"] == 1) {
+											$this->postError(921, _t("%1 must be set", $va_pref_info["label"], $va_pref_info["value"]["minimum"], $va_pref_info["value"]["maximum"]),"User->isValidPreferenceValue()");
+										} else {
+											$this->postError(921, _t("Value for %1 must be greater than %2", $va_pref_info["label"], $va_pref_info["value"]["minimum"]),"User->isValidPreferenceValue()");
+										}
+									}
+									return false;
+								}
+							} else {
+								if ($ps_value > $va_pref_info["value"]["maximum"]) {
+									if ($pb_post_errors) {
+										$this->postError(921, _t("Value for %1 must be less than %2", $va_pref_info["label"], $va_pref_info["value"]["maximum"]),"User->isValidPreferenceValue()");
+									}
+									return false;
+								}
+							}
 						}
 					}
 					break;
@@ -1487,11 +1523,34 @@ class ca_users extends BaseModel {
 				case 'FT_TEXT':
 					if (isset($va_pref_info["length"]) && is_array($va_pref_info["length"])) { 
 						# make sure value within length bounds
-						if (!((strlen($ps_value) >= $va_pref_info["length"]["minimum"]) && (strlen($ps_value) <= $va_pref_info["length"]["maximum"]))){
-							if ($pb_post_errors) {
-								$this->postError(921, _t("Value for %1 must be between %2 and %3 characters", $va_pref_info["label"], $va_pref_info["length"]["minimum"], $va_pref_info["length"]["maximum"]),"User->isValidPreferenceValue()");
+						
+						if (strlen($va_pref_info["length"]["minimum"]) && ($va_pref_info["length"]["maximum"])) {
+							if (!((strlen($ps_value) >= $va_pref_info["length"]["minimum"]) && (strlen($ps_value) <= $va_pref_info["length"]["maximum"]))){
+								if ($pb_post_errors) {
+									$this->postError(921, _t("Value for %1 must be between %2 and %3 characters", $va_pref_info["label"], $va_pref_info["length"]["minimum"], $va_pref_info["length"]["maximum"]),"User->isValidPreferenceValue()");
+								}
+								return false;
 							}
-							return false;
+						} else {
+							if (strlen($va_pref_info["length"]["minimum"])) {
+								if ($ps_value < $va_pref_info["length"]["minimum"]) {
+									if ($pb_post_errors) {
+										if($va_pref_info["length"]["minimum"] == 1) {
+											$this->postError(921, _t("%1 must be set", $va_pref_info["label"], $va_pref_info["length"]["minimum"], $va_pref_info["length"]["maximum"]),"User->isValidPreferenceValue()");
+										} else {
+											$this->postError(921, _t("Value for %1 must be greater than %2 characters", $va_pref_info["label"], $va_pref_info["length"]["minimum"]),"User->isValidPreferenceValue()");
+										}
+									}
+									return false;
+								}
+							} else {
+								if ($ps_value > $va_pref_info["length"]["maximum"]) {
+									if ($pb_post_errors) {
+										$this->postError(921, _t("Value for %1 must be less than %2 characters", $va_pref_info["label"], $va_pref_info["length"]["maximum"]),"User->isValidPreferenceValue()");
+									}
+									return false;
+								}
+							}
 						}
 					}
 					break;
@@ -1562,6 +1621,7 @@ class ca_users extends BaseModel {
 	 *		field_errors = array of error messages to display on preference element
 	 *		useTable = if true and displayType for element in DT_CHECKBOXES checkboxes will be formatted in a table with numTableColumns columns
 	 *		numTableColumns = Number of columns to use when formatting checkboxes as a table. Default, if omitted, is 3
+	 *		genericUIList = forces FT_*_EDITOR_UI to return single UI list for table rather than by type
 	 * @return string HTML code to generate form widget
 	 */	
 	public function preferenceHtmlFormElement($ps_pref, $ps_format=null, $pa_options=null) {
@@ -1683,7 +1743,7 @@ class ca_users extends BaseModel {
 							$va_values = $this->getPreference($ps_pref);
 							if (!is_array($va_values)) { $va_values = array(); }
 							
-							if (method_exists($t_instance, 'getTypeFieldName') && ($t_instance->getTypeFieldName())) {
+							if (method_exists($t_instance, 'getTypeFieldName') && ($t_instance->getTypeFieldName()) && (!isset($pa_options['genericUIList']) || !$pa_options['genericUIList'])) {
 								
 								$vs_output = '';
 								$va_ui_list_by_type = $this->_getUIListByType($vn_table_num);
@@ -2375,12 +2435,18 @@ class ca_users extends BaseModel {
 	 * in order to make a decision; $pa_options is an associative array of User handler-specific
 	 * keys and values that can contain such information
 	 */
-	public function authenticate(&$ps_username, $ps_password="", $pa_options="") {
+	public function authenticate(&$ps_username, $ps_password="", $pa_options=null) {
 		if($this->opo_auth_config->get("use_ldap")){
 			return $this->authenticateLDAP($ps_username,$ps_password);
 		}
 		
-		if ($this->load(array("user_name" => $ps_username))) {
+		if($this->opo_auth_config->get("use_extdb")){
+			if($vn_rc = $this->authenticateExtDB($ps_username,$ps_password)) {
+				return $vn_rc;
+			}
+		}
+		
+		if ((strlen($ps_username) > 0) && $this->load(array("user_name" => $ps_username))) {
 			if ($this->verify($ps_password) && $this->isActive()) {
 				return true;
 			}
@@ -2397,7 +2463,7 @@ class ca_users extends BaseModel {
 		}
 		return false;
 	}
-	
+	# ----------------------------------------
 	/**
 	 * Do LDAP authentification (creates user based on directory 
 	 * information and config preferences in authentication.conf)
@@ -2514,6 +2580,175 @@ class ca_users extends BaseModel {
 	}
 	# ----------------------------------------
 	/**
+	 * Do authentification against an external database (creates user based on directory 
+	 * information and config preferences in authentication.conf)
+	 * @param string $ps_username username
+	 * @param string $ps_password password
+	 */
+	private function authenticateExtDB($ps_username="",$ps_password=""){
+		$o_log = new Eventlog();
+		
+		// external database config
+		$vs_extdb_host = $this->opo_auth_config->get("extdb_host");
+		$vs_extdb_username = $this->opo_auth_config->get("extdb_username");
+		$vs_extdb_password = $this->opo_auth_config->get("extdb_password");
+		$vs_extdb_database = $this->opo_auth_config->get("extdb_database");
+		$vs_extdb_db_type = $this->opo_auth_config->get("extdb_db_type");
+		
+		
+		$o_ext_db = new Db(null, array(
+			'host' 		=> $vs_extdb_host,
+			'username' 	=> $vs_extdb_username,
+			'password' 	=> $vs_extdb_password,
+			'database' 	=> $vs_extdb_database,
+			'type' 		=> $vs_extdb_db_type,
+			'persistent_connections' => true
+		), false);
+		if($o_ext_db->connected()){
+			$vs_extdb_table = $this->opo_auth_config->get("extdb_table");
+			$vs_extdb_username_field = $this->opo_auth_config->get("extdb_username_field");
+			$vs_extdb_password_field = $this->opo_auth_config->get("extdb_password_field");
+			
+			switch(strtolower($this->opo_auth_config->get("extdb_password_hash_type"))) {
+				case 'md5':
+					$ps_password_proc = md5($ps_password);
+					break;
+				case 'sha1':
+					$ps_password_proc = sha1($ps_password);
+					break;
+				default:
+					$ps_password_proc = $ps_password;
+					break;
+			}
+		
+			// Authenticate user against extdb
+			$qr_auth = $o_ext_db->query("
+				SELECT * FROM {$vs_extdb_table} WHERE {$vs_extdb_username_field} = ? AND {$vs_extdb_password_field} = ?
+			", array($ps_username, $ps_password_proc));
+			
+			if($qr_auth && $qr_auth->nextRow()) {
+				if(!$this->load(array("user_name" => $ps_username))){ // first user login, authentication via extdb successful
+				
+				// Set username/password
+					$this->set("user_name",$ps_username);
+					$this->set("password",$ps_password);
+					
+				
+				// Determine value for ca_users.active
+					$vn_active = (int)$this->opo_auth_config->get('extdb_default_active');
+					
+					$va_extdb_active_field_map = $this->opo_auth_config->getAssoc('extdb_active_field_map');
+					if (($vs_extdb_active_field = $this->opo_auth_config->get('extdb_active_field')) && is_array($va_extdb_active_field_map)) {
+						
+						if (isset($va_extdb_active_field_map[$vs_active_val = $qr_auth->get($vs_extdb_active_field)])) {
+							$vn_active = (int)$va_extdb_active_field_map[$vs_active_val];
+						}
+					}
+					$this->set("active",$vn_active);
+					
+					
+				// Determine value for ca_users.user_class
+					$vs_extdb_access_value = strtolower($this->opo_auth_config->get('extdb_default_access'));
+					
+					$va_extdb_access_field_map = $this->opo_auth_config->getAssoc('extdb_access_field_map');
+					if (($vs_extdb_access_field = $this->opo_auth_config->get('extdb_access_field')) && is_array($va_extdb_access_field_map)) {
+						
+						if (isset($va_extdb_access_field_map[$vs_access_val = $qr_auth->get($vs_extdb_access_field)])) {
+							$vs_extdb_access_value = strtolower($va_extdb_access_field_map[$vs_access_val]);
+						}
+					}
+					
+					switch($vs_extdb_access_value) {
+						case 'public':
+							$vn_user_class = 1;
+							break;
+						case 'full':
+							$vn_user_class = 0;
+							break;
+						default:
+							// Can't log in - no access
+							$o_log->log(array('CODE' => 'LOGF', 'SOURCE' => 'ca_users/extdb', 'MESSAGE' => _t('Could not login user %1 after authentication from external database because user class was not set.', $ps_username)));
+							return false;
+							break;
+					}
+					$this->set('userclass', $vn_user_class);
+					
+				// map fields
+					if (is_array($va_extdb_user_field_map = $this->opo_auth_config->getAssoc('extdb_user_field_map'))) {
+						foreach($va_extdb_user_field_map as $vs_extdb_field => $vs_ca_field) {
+							$this->set($vs_ca_field, $qr_auth->get($vs_extdb_field));
+						}
+					}
+
+					$vn_mode = $this->getMode();
+					$this->setMode(ACCESS_WRITE);
+
+					$this->insert();
+					if(!$this->getPrimaryKey()){
+						// log record creation failed
+						$o_log->log(array('CODE' => 'LOGF', 'SOURCE' => 'ca_users/extdb', 'MESSAGE' => _t('Could not login user %1 after authentication from external database because creation of user record failed: %2 [%3]', $ps_username, join("; ", $this->getErrors()), $_SERVER['REMOTE_ADDR'])));
+						return false;
+					} 
+					
+				// map preferences
+					if (is_array($va_extdb_user_pref_map = $this->opo_auth_config->getAssoc('extdb_user_pref_map'))) {
+						foreach($va_extdb_user_pref_map as $vs_extdb_field => $vs_ca_pref) {
+							$this->setPreference($vs_ca_pref, $qr_auth->get($vs_extdb_field));
+						}
+					}
+					$this->update();
+					
+
+				// set user roles
+					$va_extdb_user_roles = $this->opo_auth_config->getAssoc('extdb_default_roles');
+					
+					$va_extdb_roles_field_map = $this->opo_auth_config->getAssoc('extdb_roles_field_map');
+					if (($vs_extdb_roles_field = $this->opo_auth_config->get('extdb_roles_field')) && is_array($va_extdb_roles_field_map)) {
+						
+						if (isset($va_extdb_roles_field_map[$vs_roles_val = $qr_auth->get($vs_extdb_roles_field)])) {
+							$va_extdb_user_roles = $va_extdb_roles_field_map[$vs_roles_val];
+						}
+					}
+					if(!is_array($va_extdb_user_roles)) { $va_extdb_user_roles = array(); }
+					if(sizeof($va_extdb_user_roles)) { $this->addRoles($va_extdb_user_roles); }
+
+				// set user groups
+					$va_extdb_user_groups = $this->opo_auth_config->getAssoc('extdb_default_groups');
+					
+					$va_extdb_groups_field_map = $this->opo_auth_config->getAssoc('extdb_groups_field_map');
+					if (($vs_extdb_groups_field = $this->opo_auth_config->get('extdb_groups_field')) && is_array($va_extdb_groups_field_map)) {
+						
+						if (isset($va_extdb_groups_field_map[$vs_groups_val = $qr_auth->get($vs_extdb_groups_field)])) {
+							$va_extdb_user_groups = $va_extdb_groups_field_map[$vs_groups_val];
+						}
+					}
+					if(!is_array($va_extdb_user_groups)) { $va_extdb_user_groups = array(); }
+					if(sizeof($va_extdb_user_groups)) { $this->addToGroups($va_extdb_user_groups); }
+
+				// restore mode
+					$this->setMode($vn_mode);
+					
+					// TODO: log user creation
+					$o_log->log(array('CODE' => 'LOGN', 'SOURCE' => 'ca_users/extdb', 'MESSAGE' => _t('Created new login for user %1 after authentication from external database [%2]', $ps_username, $_SERVER['REMOTE_ADDR'])));
+						
+				}		
+			
+				return true;
+			} else {
+				// authentication failed
+				//$o_log->log(array('CODE' => 'LOGF', 'SOURCE' => 'ca_users/extdb', 'MESSAGE' => _t('Could not login user %1 using external database because external authentication failed [%2]', $ps_username, $_SERVER['REMOTE_ADDR'])));
+						
+				return false;
+			}
+		} else {
+			// couldn't connect to external database
+			$o_log->log(array('CODE' => 'LOGF', 'SOURCE' => 'ca_users/extdb', 'MESSAGE' => _t('Could not login user %1 using external database because login to external database failed [%2]', $ps_username, $_SERVER['REMOTE_ADDR'])));
+						
+			return false;
+		}
+	}
+	# ----------------------------------------
+	/**
 	 * 
 	 * Looks IP address up in ca_ips database. Returns true and loads information for the 
 	 * IP if the address is in the database, or false if the address is not in the database.
@@ -2576,6 +2811,9 @@ class ca_users extends BaseModel {
 	 *
 	 */
 	public function getPreferredUILocale() {
+		if (!(defined("__CA_DEFAULT_LOCALE__"))) { 
+			define("__CA_DEFAULT_LOCALE__", "en_US"); // if all else fails...
+		}
 		$t_locale = new ca_locales();
 		if ($vs_locale = $this->getPreference('ui_locale')) {
 			return $vs_locale;
@@ -2586,13 +2824,16 @@ class ca_users extends BaseModel {
 			return $va_default_locales[0];
 		}
 		
-		die(_t("No default UI locale is available"));
+		return __CA_DEFAULT_LOCALE__;
 	}
 	# ----------------------------------------
 	/**
 	 *
 	 */
 	public function getPreferredUILocaleID() {
+		if (!(defined("__CA_DEFAULT_LOCALE__"))) {
+			define("__CA_DEFAULT_LOCALE__", "en_US"); // if all else fails...
+		}
 		$t_locale = new ca_locales();
 		if ($vs_locale = $this->getPreference('ui_locale')) {
 			if ($vn_locale_id = $t_locale->localeCodeToID($vs_locale)) {
@@ -2604,7 +2845,8 @@ class ca_users extends BaseModel {
 		if (sizeof($va_default_locales) && $vn_locale_id = $t_locale->localeCodeToID($va_default_locales[0])) {
 			return $vn_locale_id;
 		}
-		die(_t("No default UI locale is available"));
+		
+		return $t_locale->localeCodeToID(__CA_DEFAULT_LOCALE__);
 	}
 	# ----------------------------------------
 	/**
@@ -2702,12 +2944,10 @@ class ca_users extends BaseModel {
 	public function getBundleAccessLevel($ps_table_name, $ps_bundle_name) {
 		$vs_cache_key = $ps_table_name.'/'.$ps_bundle_name."/".$this->getPrimaryKey();
 		if (isset(ca_users::$s_user_bundle_access_cache[$vs_cache_key])) { return ca_users::$s_user_bundle_access_cache[$vs_cache_key]; }
-		
 		$va_roles = array_merge($this->getUserRoles(), $this->getGroupRoles());
-		
 		$vn_access = -1;
 		foreach($va_roles as $vn_role_id => $va_role_info) {
-			$va_vars = caUnserializeForDatabase($va_role_info['vars']);
+			$va_vars = $va_role_info['vars'];
 			
 			if (is_array($va_vars['bundle_access_settings'])) {
 				if (isset($va_vars['bundle_access_settings'][$ps_table_name.'.'.$ps_bundle_name]) && ((int)$va_vars['bundle_access_settings'][$ps_table_name.'.'.$ps_bundle_name] > $vn_access)) {
@@ -2723,11 +2963,12 @@ class ca_users extends BaseModel {
 				}
 			}
 		}
-		
 		if ($vn_access < 0) {
 			$vn_access = (int)$this->getAppConfig()->get('default_bundle_access_level');
 		}
+		
 		ca_users::$s_user_bundle_access_cache[$vs_cache_key] = $vn_access;
+		
 		return $vn_access;
 	}
 	# ----------------------------------------
@@ -2752,7 +2993,7 @@ class ca_users extends BaseModel {
 		}
 		$vn_access = -1;
 		foreach($va_roles as $vn_role_id => $va_role_info) {
-			$va_vars = caUnserializeForDatabase($va_role_info['vars']);
+			$va_vars = $va_role_info['vars'];
 			
 			if (is_array($va_vars['type_access_settings'])) {
 				if (isset($va_vars['type_access_settings'][$ps_table_name.'.'.$vn_type_id]) && ((int)$va_vars['type_access_settings'][$ps_table_name.'.'.$vn_type_id] > $vn_access)) {
@@ -2785,15 +3026,16 @@ class ca_users extends BaseModel {
 		
 		$vn_default_access = (int)$this->getAppConfig()->get('default_type_access_level');
 		
-		$va_type_ids = array();
+		$va_type_ids = null;
 		foreach($va_roles as $vn_role_id => $va_role_info) {
-			$va_vars = caUnserializeForDatabase($va_role_info['vars']);
+			$va_vars = $va_role_info['vars'];
 			
 			if (is_array($va_vars['type_access_settings'])) {
 				foreach($va_vars['type_access_settings'] as $vs_key => $vn_access) {
 					list($vs_table, $vn_type_id) = explode(".", $vs_key);
 					
 					if ($vs_table != $ps_table_name) { continue; }
+					if (!is_array($va_type_ids)) { $va_type_ids = array(); }
 					if($vn_access >= $pn_access) {
 						$va_type_ids[] = $vn_type_id;
 					}

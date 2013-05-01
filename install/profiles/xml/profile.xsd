@@ -326,8 +326,8 @@
 										<xs:complexType>
 											<xs:simpleContent>
 												<xs:extension base="xs:string">
-												<xs:attribute name="code" type="xs:string"/>
-												<xs:attribute name="type" type="xs:string"/>
+												<xs:attribute name="code" type="xs:string" use="required"/>
+												<xs:attribute name="type" type="xs:string" use="required"/>
 												</xs:extension>
 											</xs:simpleContent>
 										</xs:complexType>
@@ -346,6 +346,39 @@
 	</xs:complexType>
 
 	<xs:complexType name="bundlePlacements">
+		<xs:sequence>
+			<xs:element name="placement" minOccurs="0" maxOccurs="unbounded">
+				<xs:complexType>
+					<xs:sequence>
+						<xs:element name="bundle" type="xs:string" minOccurs="1" maxOccurs="1"/>
+						<xs:element name="settings" minOccurs="0" maxOccurs="1">
+							<xs:complexType>
+								<xs:sequence>
+									<xs:element name="setting" minOccurs="0" maxOccurs="unbounded">
+										<xs:complexType>
+											<xs:simpleContent>
+												<xs:extension base="xs:string">
+												<xs:attribute name="name" type="xs:string"
+												use="required"/>
+												<xs:attribute name="option" type="xs:string"
+												use="optional"/>
+												<xs:attribute name="locale" type="xs:string"
+												use="optional"/>
+												</xs:extension>
+											</xs:simpleContent>
+										</xs:complexType>
+									</xs:element>
+								</xs:sequence>
+							</xs:complexType>
+						</xs:element>
+					</xs:sequence>
+					<xs:attribute name="code" type="codeType" use="required"/>
+				</xs:complexType>
+			</xs:element>
+		</xs:sequence>
+	</xs:complexType>
+	
+	<xs:complexType name="searchFormBundlePlacements">
 		<xs:sequence>
 			<xs:element name="placement" minOccurs="0" maxOccurs="unbounded">
 				<xs:complexType>
@@ -392,6 +425,7 @@
 					</xs:sequence>
 					<xs:attribute name="code" type="elementCodeType" use="required"/>
 					<xs:attribute name="default" type="booleanType" use="required"/>
+					<xs:attribute name="rank" type="xs:integer" use="optional"/>
 				</xs:complexType>
 			</xs:element>
 		</xs:sequence>
@@ -630,7 +664,7 @@
 												</xs:sequence>
 											</xs:complexType>
 										</xs:element>
-										<xs:element name="bundlePlacements" type="bundlePlacements"
+										<xs:element name="bundlePlacements" type="searchFormBundlePlacements"
 											minOccurs="1" maxOccurs="1"/>
 									</xs:sequence>
 									<xs:attribute name="code" type="codeType" use="required"/>

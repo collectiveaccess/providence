@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2012 Whirl-i-Gig
+ * Copyright 2012-2013 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -38,14 +38,18 @@
  * Plugin for processing images using GraphicsMagick via the Gmagick PECL extension
 */
 
-include_once(__CA_LIB_DIR__."/core/Plugins/WLPlug.php");
+include_once(__CA_LIB_DIR__."/core/Plugins/Media/BaseMediaPlugin.php");
 include_once(__CA_LIB_DIR__."/core/Plugins/IWLPlugMedia.php");
 include_once(__CA_LIB_DIR__."/core/Parsers/TilepicParser.php");
 include_once(__CA_LIB_DIR__."/core/Configuration.php");
 include_once(__CA_APP_DIR__."/helpers/mediaPluginHelpers.php");
 include_once(__CA_LIB_DIR__."/core/Parsers/MediaMetadata/XMPParser.php");
 
-class WLPlugMediaGmagick Extends WLPlug Implements IWLPlugMedia {
+include_once(__CA_LIB_DIR__."/core/Plugins/Media/GraphicsMagick.php");
+include_once(__CA_LIB_DIR__."/core/Plugins/Media/ImageMagick.php");
+include_once(__CA_LIB_DIR__."/core/Plugins/Media/Imagick.php");
+
+class WLPlugMediaGmagick Extends BaseMediaPlugin Implements IWLPlugMedia {
 	var $errors = array();
 	
 	var $ps_filepath;
@@ -83,6 +87,7 @@ class WLPlugMediaGmagick Extends WLPlug Implements IWLPlugMedia {
 			"image/x-sony-srf"	=> "srf",
 			"image/x-sigma-x3f"	=> "x3f",
 			"image/x-dcraw"	=> "raw",
+			"application/dicom" => "dcm",
 		),
 		"EXPORT" => array(
 			"image/jpeg" 		=> "jpg",
@@ -107,6 +112,7 @@ class WLPlugMediaGmagick Extends WLPlug Implements IWLPlugMedia {
 			"image/x-sony-srf"	=> "srf",
 			"image/x-sigma-x3f"	=> "x3f",
 			"image/x-dcraw"	=> "raw",
+			"application/dicom" => "dcm",
 		),
 		"TRANSFORMATIONS" => array(
 			"SCALE" 			=> array("width", "height", "mode", "antialiasing"),
@@ -169,6 +175,7 @@ class WLPlugMediaGmagick Extends WLPlug Implements IWLPlugMedia {
 		"image/x-sony-srf"	=> "Sony SRF RAW Image",
 		"image/x-sigma-x3f"	=> "Sigma X3F RAW Image",
 		"image/x-dcraw"	=> "RAW Image",
+		"application/dicom" => "DICOM medical imaging data",
 	);
 	
 	var $magick_names = array(
@@ -194,6 +201,7 @@ class WLPlugMediaGmagick Extends WLPlug Implements IWLPlugMedia {
 		"image/x-sony-srf"	=> "SRF",
 		"image/x-sigma-x3f"	=> "X3F",
 		"image/x-dcraw"		=> "RAW",
+		"application/dicom" => "DCM",
 	);
 	
 	#
@@ -226,6 +234,8 @@ class WLPlugMediaGmagick Extends WLPlug Implements IWLPlugMedia {
 		$this->opo_config = Configuration::load();
 		$vs_external_app_config_path = $this->opo_config->get('external_applications');
 		$this->opo_external_app_config = Configuration::load($vs_external_app_config_path);
+		$this->ops_graphicsmagick_path = $this->opo_external_app_config->get('graphicsmagick_app');
+		$this->ops_imagemagick_path = $this->opo_external_app_config->get('imagemagick_path');
 		$this->ops_CoreImage_path = $this->opo_external_app_config->get('coreimagetool_app');
 		
 		$this->ops_dcraw_path = $this->opo_external_app_config->get('dcraw_app');
@@ -476,14 +486,16 @@ class WLPlugMediaGmagick Extends WLPlug Implements IWLPlugMedia {
 				
 				try {
 					$handle = new Gmagick($ps_filepath);
+					$handle->setimageindex(0);		// force use of first image in multi-page TIFF
 					$this->handle = $handle;
 					$this->filepath = $ps_filepath;
+
 					
 					$this->metadata = array();
 					
 					// exif
 					if(function_exists('exif_read_data')) {
-						if (is_array($va_exif = @exif_read_data($ps_filepath, 'EXIF', true, false))) { 							
+						if (is_array($va_exif = caSanitizeArray(@exif_read_data($ps_filepath, 'EXIF', true, false)))) { 							
 							//
 							// Rotate incoming image as needed
 							//
@@ -518,6 +530,7 @@ class WLPlugMediaGmagick Extends WLPlug Implements IWLPlugMedia {
 									}
 								}
 							}
+	
 							$this->metadata['EXIF'] = $va_exif;
 						}
 					}
@@ -826,7 +839,14 @@ class WLPlugMediaGmagick Extends WLPlug Implements IWLPlugMedia {
 				break;
 			# -----------------------
 			case "SHARPEN":
-				# noop
+				$radius = $parameters["radius"];
+				if ($radius < .1) { $radius = 1; }
+				$sigma = $parameters["sigma"];
+				if ($sigma < .1) { $sigma = 1; }
+				if ( !$this->handle->sharpenImage( $radius, $sigma) ) {
+					$this->postError(1610, _t("Error during image sharpen"), "WLPlugGmagick->transform:SHARPEN()");
+					return false;
+				}
 				break;
 			# -----------------------
 			case "UNSHARPEN_MASK":
@@ -905,7 +925,29 @@ class WLPlugMediaGmagick Extends WLPlug Implements IWLPlugMedia {
 			
 			# write the file
 			try {
-				if ( !$this->handle->writeimage($ps_filepath.".".$ext ) ) {
+				if (!$this->handle->writeimage($ps_filepath.".".$ext)) {
+					$this->postError(1610, _t("Error writing file"), "WLPlugGmagick->write()");
+					return false;
+				}
+
+				if(!file_exists($ps_filepath.".".$ext)){
+					if($this->handle->getnumberimages() > 1){
+						if(file_exists($ps_filepath."-1.".$ext)){
+							@rename($ps_filepath."-0.".$ext,$ps_filepath.".".$ext);
+							$this->properties["mimetype"] = $mimetype;
+							$this->properties["typename"] = $this->handle->getimageformat();
+
+							// get rid of other pages
+							$i = 1;
+							while(file_exists($vs_f = $ps_filepath."-".$i.".".$ext)){
+								@unlink($vs_f);
+								$i++;
+							}
+
+							return $ps_filepath.".".$ext;
+						}
+					}
+
 					$this->postError(1610, _t("Error writing file"), "WLPlugGmagick->write()");
 					return false;
 				}
@@ -927,7 +969,48 @@ class WLPlugMediaGmagick Extends WLPlug Implements IWLPlugMedia {
 	 */
 	# This method must be implemented for plug-ins that can output preview frames for videos or pages for documents
 	public function &writePreviews($ps_filepath, $pa_options) {
-		return null;
+		// gmagick multi-image object traversal seems to be broken
+		// the traversal works but writeimage always takes the first image in a sequence no matter where you set the pointer (with nextimage())
+		// until this is fixed, we're going to try and use one of the other plugins to do this
+		
+		if(caMediaPluginGraphicsMagickInstalled($this->ops_graphicsmagick_path)){
+			$vo_plugin = new WLPlugMediaGraphicsMagick();
+		} else if(caMediaPluginImagickInstalled()){
+			$vo_plugin = new WLPlugMediaImagick();
+		} else if(caMediaPluginImageMagickInstalled($this->ops_imagemagick_path)){
+			$vo_plugin = new WLPlugMediaImageMagick();
+		}
+
+		if(is_object($vo_plugin) && file_exists($this->filepath)){
+			$vo_plugin->register();
+
+			// read original file
+			$vo_plugin->divineFileFormat($this->filepath);
+			$vo_plugin->read($this->filepath);
+
+			$va_return = $vo_plugin->writePreviews($ps_filepath,$pa_options);
+			return $va_return;
+		} else {
+			return null;
+		}
+	}
+	# ------------------------------------------------
+	public function joinArchiveContents($pa_files, $pa_options = array()) {
+		// the gmagick multi image feature seems broken -> try and use one of the other plugins to do this
+		if(caMediaPluginGraphicsMagickInstalled($this->ops_graphicsmagick_path)){
+			$vo_plugin = new WLPlugMediaGraphicsMagick();
+		} else if(caMediaPluginImagickInstalled()){
+			$vo_plugin = new WLPlugMediaImagick();
+		} else if(caMediaPluginImageMagickInstalled($this->ops_imagemagick_path)){
+			$vo_plugin = new WLPlugMediaImageMagick();
+		}
+
+		if(is_object($vo_plugin)){
+			$vo_plugin->register();
+			return $vo_plugin->joinArchiveContents($pa_files,$pa_options);	
+		} else {
+			return false;
+		}
 	}
 	# ------------------------------------------------
 	public function getOutputFormats() {
@@ -1000,9 +1083,9 @@ class WLPlugMediaGmagick Extends WLPlug Implements IWLPlugMedia {
 			case Gmagick::COLORSPACE_SRGB:
 				$vs_colorspace = 'SRGB';
 				break;
-			case Gmagick::COLORSPACE_HSB:
+			/*case Gmagick::COLORSPACE_HSB:
 				$vs_colorspace = 'HSB';
-				break;
+				break;*/
 			case Gmagick::COLORSPACE_HSL:
 				$vs_colorspace = 'HSL';
 				break;

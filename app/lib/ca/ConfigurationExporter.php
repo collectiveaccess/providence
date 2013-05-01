@@ -50,12 +50,11 @@ require_once(__CA_MODELS_DIR__."/ca_search_form_placements.php");
 
 final class ConfigurationExporter {
 	# -------------------------------------------------------
-	private static $opa_error_messages;
-	private static $opo_config;
-	private static $opo_db;
-	private static $opo_dom;
-	private static $opt_locale;
-	private static $opo_dm;
+	private $opo_config;
+	private $opo_dm;
+	private $opo_db;
+	private $opt_locale;
+	private $opo_dom;
 	# -------------------------------------------------------
 
 	# -------------------------------------------------------
@@ -148,7 +147,7 @@ final class ConfigurationExporter {
 		$vo_locales = $this->opo_dom->createElement("locales");
 
 		while($qr_locales->nextRow()){	
-			$vo_locale = $this->opo_dom->createElement("locale",$this->xmlentities($qr_locales->get("name")));
+			$vo_locale = $this->opo_dom->createElement("locale",caEscapeForXML($qr_locales->get("name")));
 			$vo_locale->setAttribute("lang", $qr_locales->get("language"));
 			$vo_locale->setAttribute("country", $qr_locales->get("country"));
 
@@ -184,13 +183,19 @@ final class ConfigurationExporter {
 			}
 			$vo_labels = $this->opo_dom->createElement("labels");
 			$qr_list_labels = $this->opo_db->query("SELECT * FROM ca_list_labels WHERE list_id=?",$qr_lists->get("list_id"));
-			while($qr_list_labels->nextRow()) {
-				$vo_label = $this->opo_dom->createElement("label");
 
-				$vo_label->setAttribute("locale", $this->opt_locale->localeIDToCode($qr_list_labels->get("locale_id")));
-				$vo_label->appendChild($this->opo_dom->createElement("name",$this->xmlentities($qr_list_labels->get("name"))));
+			// label-less lists are ignored
+			if($qr_list_labels->numRows() == 0){
+				continue;
+			} else {
+				while($qr_list_labels->nextRow()) {
+					$vo_label = $this->opo_dom->createElement("label");
 
-				$vo_labels->appendChild($vo_label);
+					$vo_label->setAttribute("locale", $this->opt_locale->localeIDToCode($qr_list_labels->get("locale_id")));
+					$vo_label->appendChild($this->opo_dom->createElement("name",caEscapeForXML($qr_list_labels->get("name"))));
+
+					$vo_labels->appendChild($vo_label);
+				}
 			}
 
 			$vo_list->appendChild($vo_labels);
@@ -227,15 +232,25 @@ final class ConfigurationExporter {
 
 			$vo_labels = $this->opo_dom->createElement("labels");
 			$qr_list_item_labels = $this->opo_db->query("SELECT * FROM ca_list_item_labels WHERE item_id=?",$qr_items->get("item_id"));
-			while($qr_list_item_labels->nextRow()) {
+			// if there are no labels, add static empty label so that we are still schema-conform
+			if($qr_list_item_labels->numRows() == 0){
 				$vo_label = $this->opo_dom->createElement("label");
-
-				$vo_label->setAttribute("locale", $this->opt_locale->localeIDToCode($qr_list_item_labels->get("locale_id")));
-				$vo_label->setAttribute("preferred", $qr_list_item_labels->get("is_preferred"));
-				$vo_label->appendChild($this->opo_dom->createElement("name_singular",$this->xmlentities($qr_list_item_labels->get("name_singular"))));
-				$vo_label->appendChild($this->opo_dom->createElement("name_plural",$this->xmlentities($qr_list_item_labels->get("name_plural"))));
-
+				$vo_label->setAttribute("preferred", "1");
+				$vo_label->setAttribute("locale", "en_US");
+				$vo_label->appendChild($this->opo_dom->createElement("name_singular"));
+				$vo_label->appendChild($this->opo_dom->createElement("name_plural"));
 				$vo_labels->appendChild($vo_label);
+			} else {
+				while($qr_list_item_labels->nextRow()) {
+					$vo_label = $this->opo_dom->createElement("label");
+
+					$vo_label->setAttribute("locale", $this->opt_locale->localeIDToCode($qr_list_item_labels->get("locale_id")));
+					$vo_label->setAttribute("preferred", $qr_list_item_labels->get("is_preferred"));
+					$vo_label->appendChild($this->opo_dom->createElement("name_singular",caEscapeForXML($qr_list_item_labels->get("name_singular"))));
+					$vo_label->appendChild($this->opo_dom->createElement("name_plural",caEscapeForXML($qr_list_item_labels->get("name_plural"))));
+
+					$vo_labels->appendChild($vo_label);
+				}
 			}
 
 			$vo_item->appendChild($vo_labels);
@@ -275,9 +290,9 @@ final class ConfigurationExporter {
 				$vo_label = $this->opo_dom->createElement("label");
 
 				$vo_label->setAttribute("locale", $this->opt_locale->localeIDToCode($qr_element_labels->get("locale_id")));
-				$vo_label->appendChild($this->opo_dom->createElement("name",$this->xmlentities($qr_element_labels->get("name"))));
+				$vo_label->appendChild($this->opo_dom->createElement("name",caEscapeForXML($qr_element_labels->get("name"))));
 				if(strlen(trim($qr_element_labels->get("description")))>0){
-					$vo_label->appendChild($this->opo_dom->createElement("description",$this->xmlentities($qr_element_labels->get("description"))));
+					$vo_label->appendChild($this->opo_dom->createElement("description",caEscapeForXML($qr_element_labels->get("description"))));
 				}		
 
 				$vo_labels->appendChild($vo_label);
@@ -380,9 +395,9 @@ final class ConfigurationExporter {
 				$vo_label = $this->opo_dom->createElement("label");
 
 				$vo_label->setAttribute("locale", $this->opt_locale->localeIDToCode($qr_element_labels->get("locale_id")));
-				$vo_label->appendChild($this->opo_dom->createElement("name",$this->xmlentities($qr_element_labels->get("name"))));
+				$vo_label->appendChild($this->opo_dom->createElement("name",caEscapeForXML($qr_element_labels->get("name"))));
 				if(strlen(trim($qr_element_labels->get("description")))>0){
-					$vo_label->appendChild($this->opo_dom->createElement("description",$this->xmlentities($qr_element_labels->get("description"))));
+					$vo_label->appendChild($this->opo_dom->createElement("description",caEscapeForXML($qr_element_labels->get("description"))));
 				}		
 
 				$vo_labels->appendChild($vo_label);
@@ -439,7 +454,7 @@ final class ConfigurationExporter {
 				$vo_label = $this->opo_dom->createElement("label");
 
 				$vo_label->setAttribute("locale", $this->opt_locale->localeIDToCode($qr_ui_labels->get("locale_id")));
-				$vo_label->appendChild($this->opo_dom->createElement("name",$this->xmlentities($qr_ui_labels->get("name"))));
+				$vo_label->appendChild($this->opo_dom->createElement("name",caEscapeForXML($qr_ui_labels->get("name"))));
 
 				$vo_labels->appendChild($vo_label);
 			}
@@ -465,9 +480,9 @@ final class ConfigurationExporter {
 					$vo_label = $this->opo_dom->createElement("label");
 
 					$vo_label->setAttribute("locale", $this->opt_locale->localeIDToCode($qr_screen_labels->get("locale_id")));
-					$vo_label->appendChild($this->opo_dom->createElement("name",$this->xmlentities($qr_screen_labels->get("name"))));
+					$vo_label->appendChild($this->opo_dom->createElement("name",caEscapeForXML($qr_screen_labels->get("name"))));
 					if(strlen(trim($qr_screen_labels->get("description")))>0){
-						$vo_label->appendChild($this->opo_dom->createElement("description",$this->xmlentities($qr_screen_labels->get("description"))));
+						$vo_label->appendChild($this->opo_dom->createElement("description",caEscapeForXML($qr_screen_labels->get("description"))));
 					}
 					$vo_labels->appendChild($vo_label);
 				}
@@ -500,7 +515,7 @@ final class ConfigurationExporter {
 					$vo_placements->appendChild($vo_placement);
 					
 					$vo_placement->setAttribute("code", $this->makeIDNO($va_placement["placement_code"]));
-					$vo_placement->appendChild($this->opo_dom->createElement("bundle",$this->xmlentities($va_placement["bundle"])));
+					$vo_placement->appendChild($this->opo_dom->createElement("bundle",caEscapeForXML($va_placement["bundle"])));
 					
 					if(is_array($va_placement["settings"])){
 						$vo_settings = $this->opo_dom->createElement("settings");
@@ -509,6 +524,10 @@ final class ConfigurationExporter {
 							if(!is_array($va_values)){
 								$va_values = array($va_values);
 							}
+							
+							// account for legacy settings
+							if($vs_setting=="restrict_to_type") $vs_setting = "restrict_to_types";
+							
 							foreach($va_values as $vs_key => $vs_value){
 								if(strlen($vs_value)>0){
 									$vo_setting = $this->opo_dom->createElement("setting",$vs_value);
@@ -592,8 +611,8 @@ final class ConfigurationExporter {
 				$vo_label = $this->opo_dom->createElement("label");
 
 				$vo_label->setAttribute("locale", $this->opt_locale->localeIDToCode($qr_type_labels->get("locale_id")));
-				$vo_label->appendChild($this->opo_dom->createElement("typename",$this->xmlentities($qr_type_labels->get("typename"))));
-				$vo_label->appendChild($this->opo_dom->createElement("typename_reverse",$this->xmlentities($qr_type_labels->get("typename_reverse"))));
+				$vo_label->appendChild($this->opo_dom->createElement("typename",caEscapeForXML($qr_type_labels->get("typename"))));
+				$vo_label->appendChild($this->opo_dom->createElement("typename_reverse",caEscapeForXML($qr_type_labels->get("typename_reverse"))));
 
 				$vo_labels->appendChild($vo_label);
 			}
@@ -716,7 +735,7 @@ final class ConfigurationExporter {
 				$vo_label = $this->opo_dom->createElement("label");
 
 				$vo_label->setAttribute("locale", $this->opt_locale->localeIDToCode($qr_form_labels->get("locale_id")));
-				$vo_label->appendChild($this->opo_dom->createElement("name",$this->xmlentities($qr_form_labels->get("name"))));
+				$vo_label->appendChild($this->opo_dom->createElement("name",caEscapeForXML($qr_form_labels->get("name"))));
 
 				$vo_labels->appendChild($vo_label);
 			}
@@ -749,7 +768,7 @@ final class ConfigurationExporter {
 			while($qr_placements->nextRow()){
 				$vo_placement = $this->opo_dom->createElement("placement");
 				$vo_placements->appendChild($vo_placement);
-				$vo_placement->appendChild($this->opo_dom->createElement("bundle",$this->xmlentities($qr_placements->get("bundle_name"))));
+				$vo_placement->appendChild($this->opo_dom->createElement("bundle",caEscapeForXML($qr_placements->get("bundle_name"))));
 
 				$t_placement = new ca_search_form_placements($qr_placements->get("placement_id"));
 
@@ -858,16 +877,9 @@ final class ConfigurationExporter {
 	# -------------------------------------------------------
 	// Utilities
 	# -------------------------------------------------------
-	private function xmlentities($ps_string){
-		$ps_string = str_replace(">", "&gt;", $ps_string);
-		$ps_string = str_replace("<", "&lt;", $ps_string);
-		$ps_string = str_replace("", "&quot;", $ps_string);
-		return str_replace("&", "&amp;", $ps_string);
-	}
-	# -------------------------------------------------------
 	private function makeIDNO($ps_idno){
 		if(strlen($ps_idno)>0){
-			return preg_replace("/[^\pL\pN]/","_",$ps_idno);
+			return preg_replace("/[^-_a-zA-Z0-9]/","_",$ps_idno);
 		} else {
 			return "default";
 		}

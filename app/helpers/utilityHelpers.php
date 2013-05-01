@@ -54,32 +54,35 @@ global $ca_translation_cache;
 $ca_translation_cache = array();
 function _t($ps_key) {
 	global $ca_translation_cache, $_;
-	global $_;
 	
-	if (!sizeof(func_get_args()) && isset($ca_translation_cache[$ps_key])) { return $ca_translation_cache[$ps_key]; }
-	
-	if (is_array($_)) {
-		$vs_str = $ps_key;
-		foreach($_ as $o_locale) {
-			if ($o_locale->isTranslated($ps_key)) {
-				$vs_str = $o_locale->_($ps_key);
-				break;
-			}
-		}
-	} else {
-		if (!is_object($_)) { 
+	if (!isset($ca_translation_cache[$ps_key])) {
+		if (is_array($_)) {
 			$vs_str = $ps_key;
+			foreach($_ as $o_locale) {
+				if ($o_locale->isTranslated($ps_key)) {
+					$vs_str = $o_locale->_($ps_key);
+					break;
+				}
+			}
 		} else {
-			$vs_str = $_->_($ps_key);
-		} 
+			if (!is_object($_)) { 
+				$vs_str = $ps_key;
+			} else {
+				$vs_str = $_->_($ps_key);
+			} 
+		}
+		$ca_translation_cache[$ps_key] = $vs_str;
+	} else {
+		$vs_str = $ca_translation_cache[$ps_key];
 	}
+	
 	if (sizeof($va_args = func_get_args()) > 1) {
 		$vn_num_args = sizeof($va_args) - 1;
 		for($vn_i=$vn_num_args; $vn_i >= 1; $vn_i--) {
 			$vs_str = str_replace("%{$vn_i}", $va_args[$vn_i], $vs_str);
 		}
 	}
-	return $ca_translation_cache[$ps_key] = $vs_str;
+	return $vs_str;
 }
 
 /**
@@ -293,30 +296,75 @@ function caFileIsIncludable($ps_file) {
 	 * @param string $dir The path to the directory you wish to get the contents list for
 	 * @param bool $pb_recursive Optional. By default caGetDirectoryContentsAsList() will recurse through all sub-directories of $dir; set this to false to only consider files that are in $dir itself.
 	 * @param bool $pb_include_hidden_files Optional. By default caGetDirectoryContentsAsList() does not consider hidden files (files starting with a '.') when calculating file counts. Set this to true to include hidden files in counts. Note that the special UNIX '.' and '..' directory entries are *never* counted as files.
+	 * @param bool $pb_sort Optional. If set paths are returns sorted alphabetically. Default is false.
 	 * @return array An array of file paths.
 	 */
-	function &caGetDirectoryContentsAsList($dir, $pb_recursive=true, $pb_include_hidden_files=false) {
+	function &caGetDirectoryContentsAsList($dir, $pb_recursive=true, $pb_include_hidden_files=false, $pb_sort=false) {
 		$va_file_list = array();
 		if(substr($dir, -1, 1) == "/"){
 			$dir = substr($dir, 0, strlen($dir) - 1);
 		}
-		if ($handle = opendir($dir)) {
-			while (false !== ($item = readdir($handle))) {
+		
+		if($va_paths = scandir($dir, 0)) {
+			foreach($va_paths as $item) {
 				if ($item != "." && $item != ".." && ($pb_include_hidden_files || (!$pb_include_hidden_files && $item{0} !== '.'))) {
 					$vb_is_dir = is_dir("{$dir}/{$item}");
 					if ($pb_recursive && $vb_is_dir) { 
-						$va_file_list = array_merge($va_file_list, caGetDirectoryContentsAsList("{$dir}/{$item}"));
+						$va_file_list = array_merge($va_file_list, array_flip(caGetDirectoryContentsAsList("{$dir}/{$item}", true, $pb_include_hidden_files)));
 					} else { 
 						if (!$vb_is_dir) { 
-							$va_file_list[] = "{$dir}/{$item}";
+							$va_file_list["{$dir}/{$item}"] = true;
 						}
+					}
+				}
+			}
+		}
+		
+		if ($pb_sort) {
+			ksort($va_file_list);
+		}
+		return array_keys($va_file_list);
+	}
+	# ----------------------------------------
+	/**
+	 * Returns counts of files and directories for the directory $dir and, optionally, all sub-directories. 
+	 *
+	 * @param string $dir The path to the directory you wish to get the contents list for
+	 * @param bool $pb_recursive Optional. By default caGetDirectoryContentsAsList() will recurse through all sub-directories of $dir; set this to false to only consider files that are in $dir itself.
+	 * @param bool $pb_include_hidden_files Optional. By default caGetDirectoryContentsAsList() does not consider hidden files (files starting with a '.') when calculating file counts. Set this to true to include hidden files in counts. Note that the special UNIX '.' and '..' directory entries are *never* counted as files.
+	 * @return array An array of counts with two keys: 'directories' and 'files'
+	 */
+	function caGetDirectoryContentsCount($dir, $pb_recursive=true, $pb_include_hidden_files=false) {
+		$vn_file_count = 0;
+		if(substr($dir, -1, 1) == "/"){
+			$dir = substr($dir, 0, strlen($dir) - 1);
+		}
+		
+		$va_counts = array(
+			'directories' => 0, 'files' => 0
+		);
+		if ($handle = @opendir($dir)) {
+			while (false !== ($item = readdir($handle))) {
+				if ($item != "." && $item != ".." && ($pb_include_hidden_files || (!$pb_include_hidden_files && $item{0} !== '.'))) {
+					$vb_is_dir = is_dir("{$dir}/{$item}");
+					if ($vb_is_dir) {
+						$va_counts['directories']++;
+					}
+					if ($pb_recursive && $vb_is_dir) { 
+						$va_recursive_counts = caGetDirectoryContentsCount("{$dir}/{$item}", true, $pb_include_hidden_files);
+						$va_counts['files'] += $va_recursive_counts['files'];
+						$va_counts['directories'] += $va_recursive_counts['directories'];
+					} else { 
+						if (!$vb_is_dir) { 
+							$va_counts['files']++;
+						} 
 					}
 				}
 			}
 			closedir($handle);
 		}
 		
-		return $va_file_list;
+		return $va_counts;
 	}
 	# ----------------------------------------
 	/**
@@ -371,6 +419,15 @@ function caFileIsIncludable($ps_file) {
 		unlink ($vs_new_file);
 		
 		return true;
+	}
+	# ----------------------------------------
+	function caIsArchive($ps_filename){
+		// what once was the PHAR extension is built in since PHP 5.3
+		// can actually handle zip and tar.gz (and probably a lot more)
+		if(!class_exists("PharData")) return false; 
+		$list = @scandir('phar://'.$ps_filename);
+	
+		return (bool)$list;
 	}
 	# ----------------------------------------
 	function caGetOSFamily() {
@@ -686,9 +743,10 @@ function caFileIsIncludable($ps_file) {
 	 * Both text fractions (ex. 3/4) and Unicode fraction glyphs (ex. ¾) may be used.
 	 *
 	 * @param string $ps_fractional_expression String including fractional expression to convert
+	 * @param string $locale The locale of the string to use the right decimal separator
 	 * @return string $ps_fractional_expression with fractions replaced with decimal equivalents
 	 */
-	function caConvertFractionalNumberToDecimal($ps_fractional_expression) {
+	function caConvertFractionalNumberToDecimal($ps_fractional_expression, $locale="en_US") {
 		// convert ascii fractions (eg. 1/2) to decimal
 		if (preg_match('!^([\d]*)[ ]*([\d]+)/([\d]+)!', $ps_fractional_expression, $va_matches)) {
 			if ((float)$va_matches[2] > 0) {
@@ -698,13 +756,15 @@ function caFileIsIncludable($ps_file) {
 			}
 			$vn_val = sprintf("%4.3f", ((float)$va_matches[1] + $vn_val));
 			
+			$vn_val = caConvertFloatToLocale($vn_val, $locale);
 			$ps_fractional_expression = str_replace($va_matches[0], $vn_val, $ps_fractional_expression);
 		} else {
+			$sep = caGetDecimalSeparator($locale);
 			// replace unicode fractions with decimal equivalents
 			foreach(array(
-				'½' => '.5','⅓' => '.333',
-				'⅔' => '.667','¼' => '.25',
-				'¾' => '.75') as $vs_glyph => $vs_val
+				'½' => $sep.'5', '⅓' => $sep.'333',
+				'⅔' => $sep.'667', '¼' => $sep.'25',
+				'¾'	=> $sep.'75') as $vs_glyph => $vs_val
 			) {
 				$ps_fractional_expression = preg_replace('![ ]*'.$vs_glyph.'!u', $vs_val, $ps_fractional_expression);	
 			}
@@ -737,22 +797,43 @@ function caFileIsIncludable($ps_file) {
 	 * format needed for calculations (eg 54.33)
 	 *
 	 * @param string $ps_value The value to convert
+	 * @param string $locale The locale of the value
 	 * @return float The converted value
 	 */
-	function caConvertLocaleSpecificFloat($ps_value) {
-		$va_locale = localeconv();
-		$va_search = array(
-			$va_locale['decimal_point'], 
-			$va_locale['mon_decimal_point'], 
-			$va_locale['thousands_sep'], 
-			$va_locale['mon_thousands_sep'], 
-			$va_locale['currency_symbol'], 
-			$va_locale['int_curr_symbol']
-		);
-		$va_replace = array('.', '.', '', '', '', '');
-	
-		$vs_converted_value = str_replace($va_search, $va_replace, $ps_value);
-		return (float)$vs_converted_value;
+	function caConvertLocaleSpecificFloat($ps_value, $locale = "en_US") {
+		if (!function_exists("NumberFormatter")) { return $ps_value; }
+		$fmt = new NumberFormatter($locale, NumberFormatter::DECIMAL );
+		return (float)$fmt->parse($ps_value);
+	}
+	# ---------------------------------------
+	/**
+	 * Takes a standard formatted float (eg. 54.33) and converts it to the locale
+	 * format needed for display (eg 54,33)
+	 *
+	 * @param string $ps_value The value to convert
+	 * @param string $locale Which locale is to be used to return the value
+	 * @return float The converted value
+	 */
+	function caConvertFloatToLocale($ps_value, $locale = "en_US") {
+		if (!function_exists("NumberFormatter")) { return $ps_value; }
+		$fmt = new NumberFormatter($locale, NumberFormatter::DECIMAL );
+		return $fmt->format($ps_value);
+	}
+	# ---------------------------------------
+	/**
+	 * Get the decimal separator
+	 *
+	 * @param string $ps_value The value to convert
+	 * @param string $locale Which locale is to be used to return the value
+	 * @return float The converted value
+	 */
+	function caGetDecimalSeparator($locale = "en_US") {
+		if (!function_exists("NumberFormatter")) { return $ps_value; }
+		if ($locale != "en_US") {
+			$fmt = new NumberFormatter($locale, NumberFormatter::DECIMAL );
+			return $fmt->getSymbol(NumberFormatter::DECIMAL_SEPARATOR_SYMBOL);
+		}
+		return ".";
 	}
 	# ---------------------------------------
 	/**
@@ -843,7 +924,7 @@ function caFileIsIncludable($ps_file) {
 	 * @param array $pa_sort_keys An array of keys in the second-level array to sort by
 	 * @return array The sorted array
 	*/
-	function caSortArrayByKeyInValue($pa_values, $pa_sort_keys) {
+	function caSortArrayByKeyInValue($pa_values, $pa_sort_keys, $ps_sort_direction="ASC") {
 		$va_sort_keys = array();
 		foreach ($pa_sort_keys as $vs_field) {
 			$va_tmp = explode('.', $vs_field);
@@ -859,6 +940,9 @@ function caFileIsIncludable($ps_file) {
 			$va_sorted_by_key[join('/', $va_key)][$vn_id] = $va_data;
 		}
 		ksort($va_sorted_by_key);
+		if (strtolower($ps_sort_direction) == 'desc') {
+			$va_sorted_by_key = array_reverse($va_sorted_by_key);
+		}
 		
 		$pa_values = array();
 		foreach($va_sorted_by_key as $vs_key => $va_data) {
@@ -895,11 +979,20 @@ function caFileIsIncludable($ps_file) {
 	 *
 	 * @param string $ps_string The string to process
 	 */
-	function caUcFirstUTF8Safe($ps_string) {
-		$vn_strlen = mb_strlen($ps_string, 'UTF-8');
-		$vs_first_char = mb_substr($ps_string, 0, 1, 'UTF-8');
-		$vs_tmp = mb_substr($ps_string, 1, $vn_strlen - 1, 'UTF-8');
-		return mb_strtoupper($vs_first_char, 'UTF-8').$vs_tmp;
+	function caUcFirstUTF8Safe($ps_string, $pb_capitalize_all_words=false) {
+		if ($pb_capitalize_all_words) {
+			$va_words = preg_split('![ ]+!', $ps_string);
+		} else {
+			$va_words = array($ps_string);
+		}
+		
+		$va_proc_words = array();
+		foreach($va_words as $vs_string) {
+			$vn_strlen = mb_strlen($vs_string, 'UTF-8');
+			$vs_first_char = mb_substr($vs_string, 0, 1, 'UTF-8');
+			$va_proc_words[] = mb_strtoupper($vs_first_char, 'UTF-8').mb_substr($vs_string, 1, $vn_strlen - 1, 'UTF-8');
+		}
+		return join(' ', $va_proc_words);
 	}
 	# ---------------------------------------
 	/**
@@ -1105,13 +1198,36 @@ function caFileIsIncludable($ps_file) {
 			$prevChar = $char;
 		}
 	
-		return $result;
+		return $result.$newLine;
+	}
+	# ---------------------------------------
+	function caFormatXML($ps_xml){  
+		require_once(__CA_LIB_DIR__.'/core/Parsers/XMLFormatter.php');
+
+		$va_options = array(
+			"paddingString" => " ",
+			"paddingMultiplier" => 2,
+			"wordwrapCData" => false,
+		);
+
+		$vr_input = fopen('data://text/plain,'.$ps_xml, 'r');
+		$vr_output = fopen('php://temp', 'w+');
+
+		$vo_formatter = new XML_Formatter($vr_input, $vr_output, $va_options);
+
+		try {
+			$vo_formatter->format();
+			rewind($vr_output);
+			return stream_get_contents($vr_output)."\n";
+		} catch (EXception $e) {
+			return false;
+		}
 	}
 	# ---------------------------------------
 	/**
 	  * Parses natural language date and returns pair of Unix timestamps defining date/time range
 	  *
-	  * @param string $ps_date_expression A valid date/time expression as described in http://wiki.collectiveaccess.org/index.php?title=DateAndTimeFormats
+	  * @param string $ps_date_expression A valid date/time expression as described in http://docs.collectiveaccess.org/wiki/Date_and_Time_Formats
 	  * @return array The start and end timestamps for the parsed date/time range. Array contains values key'ed under 0 and 1 and 'start' and 'end'; null is returned if expression cannot be parsed.
 	  */
 	function caDateToUnixTimestamps($ps_date_expression) {
@@ -1125,7 +1241,7 @@ function caFileIsIncludable($ps_file) {
 	/**
 	  * Parses natural language date and returns a Unix timestamp 
 	  *
-	  * @param string $ps_date_expression A valid date/time expression as described in http://wiki.collectiveaccess.org/index.php?title=DateAndTimeFormats
+	  * @param string $ps_date_expression A valid date/time expression as described in http://docs.collectiveaccess.org/wiki/Date_and_Time_Formats
 	  * @return int A Unix timestamp for the date expression or null if expression cannot be parsed.
 	  */
 	function caDateToUnixTimestamp($ps_date_expression) {
@@ -1133,6 +1249,20 @@ function caFileIsIncludable($ps_file) {
 		if ($o_tep->parse($ps_date_expression)) {
 			$va_date = $o_tep->getUnixTimestamps();
 			return $va_date['start'];
+		}
+		return null;
+	}
+	# ---------------------------------------
+	/**
+	  * Parses natural language date and returns pair of historic timestamps defining date/time range
+	  *
+	  * @param string $ps_date_expression A valid date/time expression as described in http://docs.collectiveaccess.org/wiki/Date_and_Time_Formats
+	  * @return array The start and end timestamps for the parsed date/time range. Array contains values key'ed under 0 and 1 and 'start' and 'end'; null is returned if expression cannot be parsed.
+	  */
+	function caDateToHistoricTimestamps($ps_date_expression) {
+		$o_tep = new TimeExpressionParser();
+		if ($o_tep->parse($ps_date_expression)) {
+			return $o_tep->getHistoricTimestamps();
 		}
 		return null;
 	}
@@ -1350,4 +1480,264 @@ function caFileIsIncludable($ps_file) {
 		return $ps_text;
 	}
 	# ---------------------------------------
+	/**
+	 * Determines if current request was from from command line
+	 *
+	 * @return boolean True if request wasrun from command line, false if not
+	 */
+	function caIsRunFromCLI() {
+		if(php_sapi_name() == 'cli' && empty($_SERVER['REMOTE_ADDR'])) {
+			return true;
+		} else {
+			return false;
+		}
+	}
+	# ---------------------------------------
+	/**
+	 * Determines if current request was via service.php
+	 *
+	 * @return boolean true if request addressed service.php, false if not
+	 */
+	function caIsServiceRequest() {
+		if(isset($_SERVER['SCRIPT_NAME']) && ($_SERVER['SCRIPT_NAME'] == '/service.php')){
+			return true;
+		} else {
+			return false;
+		}
+	}
+	# ---------------------------------------
+	/**
+	 * 
+	 *
+	 * @param array $pa_options
+	 * @param array $pa_defaults
+	 * @return array
+	 */
+	function caGetOptions($pa_options, $pa_defaults) {
+		$va_proc_options = $pa_options;
+		
+		foreach($pa_defaults as $vs_opt => $vs_opt_default_val) {
+			if (!isset($va_proc_options[$vs_opt])) { $va_proc_options[$vs_opt] = $vs_opt_default_val; }
+		}
+		return $va_proc_options;
+	}
+	# ---------------------------------------
+	/**
+	 * Removes from supplied array values that begin with binary (non-character) data. 
+	 * Arrays may be of any depth. 
+	 *
+	 * Note that function is of limited use outside of the case it was designed for: to remove binary entries from extracted EXIF metadata arrays.
+	 *
+	 * @param array $pa_array The array to sanitize
+	 * @param array $pa_options No options are currently supported
+	 * @return array The sanitized array
+	 */
+	function caSanitizeArray($pa_array, $pa_options=null) {
+		if (!is_array($pa_array)) { return array(); }
+		foreach($pa_array as $vn_k => $vm_v) {
+			if (is_array($vm_v)) {
+				$pa_array[$vn_k] = caSanitizeArray($vm_v);
+			} else {
+				if (!preg_match("!^[\p{L}\p{N}\p{P}]+!", $vm_v)) {
+					unset($pa_array[$vn_k]);
+				}
+			}
+		}
+		return $pa_array;
+	}
+	# ---------------------------------------
+	/**
+	 * Returns a regexp string to check if a string is a valid roman number
+	 *
+	 * @return string The PCRE regexp
+	 */
+	function caRomanNumeralsRegexp() {
+		return "M{0,4}(CM|CD|D?C{0,3})(XC|XL|L?X{0,3})(IX|IV|V?I{0,3})";
+	}
+	
+	# ---------------------------------------
+	/**
+	 * Detects if a string is a valid roman number
+	 *
+	 * @param string $pa_string The string to analyze
+	 * @return boolean True if string is a roman number, false otherwise
+	 */
+	function caIsRomanNumerals($pa_string) {
+		if ($pa_string === NULL) return false;
+		$pattern = "/^".caRomanNumeralsRegexp()."$/";
+		return preg_match($pattern, $pa_string);
+	}
+	# ---------------------------------------
+	/**
+	 * Converts an arabic int to a roman number
+	 * 
+	 * Source : http://www.go4expert.com/forums/showthread.php?t=4948
+	 *
+	 * @param $input_arabic_numeral The int to convert
+	 * @return string Roman number resulting from the conversion
+	 */
+	function caArabicRoman($num) {
+		// Make sure that we only use the integer portion of the value
+		$n = intval($num);
+		$result = '';
+		
+		// Declare a lookup array that we will use to traverse the number:
+		$lookup = array('M' => 1000, 'CM' => 900, 'D' => 500, 'CD' => 400,
+				'C' => 100, 'XC' => 90, 'L' => 50, 'XL' => 40,
+				'X' => 10, 'IX' => 9, 'V' => 5, 'IV' => 4, 'I' => 1);
+		
+		foreach ($lookup as $roman => $value)
+		{
+			// Determine the number of matches
+			$matches = intval($n / $value);
+		
+			// Store that many characters
+			$result .= str_repeat($roman, $matches);
+		
+			// Substract that from the number
+			$n = $n % $value;
+		}
+		
+		// The Roman numeral should be built, return it
+		return $result;
+	}
+	# ---------------------------------------
+	/**
+	 * Converts a roman number to arabic numerals
+	 *
+	 * Source : pear/Numbers/Roman.php
+	 *
+	 * @param string $roman The string to convert
+	 * @return mixed int if converted, false if no valid roman number supplied   
+	 */
+	function caRomanArabic($roman) {
+		$conv = array(
+            array("letter" => 'I', "number" => 1),
+            array("letter" => 'V', "number" => 5),
+            array("letter" => 'X', "number" => 10),
+            array("letter" => 'L', "number" => 50),
+            array("letter" => 'C', "number" => 100),
+            array("letter" => 'D', "number" => 500),
+            array("letter" => 'M', "number" => 1000),
+            array("letter" => 0,   "number" => 0)
+        );
+        $arabic = 0;
+        $state  = 0;
+        $sidx   = 0;
+        $len    = strlen($roman) - 1;
+        while ($len >= 0) {
+            $i = 0;
+            $sidx = $len;
+            while ($conv[$i]['number'] > 0) {
+                if (strtoupper($roman[$sidx]) == $conv[$i]['letter']) {
+                    if ($state > $conv[$i]['number']) {
+                        $arabic -= $conv[$i]['number'];
+                    } else {
+                        $arabic += $conv[$i]['number'];
+                        $state   = $conv[$i]['number'];
+                    }
+                }
+                $i++;
+            }
+            $len--;
+        }
+        return($arabic);
+	}
+	
+	# ----------------------------------------------------------------
+	/**
+	 *
+	 */
+	function caWriteServerConfigHints() {
+		if (file_exists(__CA_APP_DIR__."/tmp/server_config_hints.txt")) { return false; }
+		return @file_put_contents(__CA_APP_DIR__."/tmp/server_config_hints.txt", serialize(
+			array(
+				'SCRIPT_FILENAME' => $_SERVER['SCRIPT_FILENAME'],
+				'HTTP_HOST' => $_SERVER['HTTP_HOST'],
+				'DOCUMENT_ROOT' => $_SERVER['DOCUMENT_ROOT']
+			)
+		));
+	}
+	# ----------------------------------------
+	/**
+	 * Generic debug function for shiny variable output
+	 * @param mixed $vm_data content to print
+	 * @param string $vs_label optional label to prefix the output with
+	 * @param boolean $print_r Flag to switch between print_r() and var_export() for data conversion to string. 
+	 * 		Set $print_r to TRUE when dealing with a recursive data structure as var_export() will generate an error.
+	 */
+	function caDebug($vm_data, $vs_label = null, $print_r = false) {
+		if(defined('__CA_ENABLE_DEBUG_OUTPUT__') && __CA_ENABLE_DEBUG_OUTPUT__) {
+			if(caIsRunFromCLI()){
+				// simply dump stuff on command line
+				if($vs_label) { print $vs_label.":\n"; }
+				if($print_r) {
+					print_r($vm_data);
+				} else {
+					var_export($vm_data);
+				}
+				print "\n";
+				return;
+			} else if (caIsServiceRequest()){
+				$vs_data = ($print_r ? print_r($vm_data, TRUE) : var_export($vm_data, TRUE));
+				if($vs_label){
+					$vs_string = '<debugLabel>' . $vs_label . '</debugLabel>' . "\n";
+				} else {
+					$vs_string = "";
+				}
+				$vs_string .= '<debug>' . $vs_data . '</debug>';
+				$vs_string .= "\n\n";
+			} else {
+				$vs_string = htmlspecialchars(($print_r ? print_r($vm_data, TRUE) : var_export($vm_data, TRUE)), ENT_QUOTES, 'UTF-8');
+				$vs_string = '<pre>' . $vs_string . '</pre>';
+				$vs_string = trim($vs_label ? "<div class='debugLabel'>$vs_label:</div> $vs_string" : $vs_string);
+				$vs_string = '<div class="debug">'. $vs_string . '</div>';
+			}
+
+			global $g_response;
+			if(is_object($g_response)){
+				$g_response->addContent($vs_string,'default');
+			} else {
+				// on the off chance that someone wants to debug something that happens before 
+				// the response object is generated (like config checks), print content
+				// to output buffer to avoid headers already sent warning. The output is sent
+				// when someone (e.g. View.php) starts a new buffer.
+				ob_start();
+				print $vs_string;
+			}
+		}
+	}
+	# ----------------------------------------
+	/**
+	 *
+	 *
+	 */
+	function caMakeSearchResult($ps_table, $pa_ids) {
+		$o_dm = Datamodel::load();
+		if ($t_instance = $o_dm->getInstanceByTableName($ps_table, true)) {
+			return $t_instance->makeSearchResult($ps_table, $pa_ids);
+		}
+		return null;
+	}
+	# ----------------------------------------
+	/**
+	 *
+	 */
+	function caExtractValuesFromArrayList($pa_array, $ps_key, $pa_options=null) {
+		$vb_preserve_keys = (isset($pa_options['preserveKeys'])) ? (bool)$pa_options['preserveKeys'] : true;
+		$vb_include_blanks = (isset($pa_options['includeBlanks'])) ? (bool)$pa_options['includeBlanks'] : false;
+		
+		$va_extracted_values = array();
+		foreach($pa_array as $vs_k => $va_v) {
+			if (!$vb_include_blanks && (!isset($va_v[$ps_key]) ||(strlen($va_v[$ps_key]) == 0))) { continue; }
+			if ($vb_preserve_keys) {
+				$va_extracted_values[$vs_k] = $va_v[$ps_key];
+			} else {
+				$va_extracted_values[] = $va_v[$ps_key];
+			}
+		}
+		
+		return $va_extracted_values;
+	}
+	# ----------------------------------------
 ?>

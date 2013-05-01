@@ -1,23 +1,31 @@
 # *** use ONLY lowercase letters in lists: input will be forced to lowercase for comparison ***
 
+# Keywords containing spaces : CA parser use the space as a separator to treat the date entered and
+# CANNOT treat expression containing a space as a single one as "av. J.-C." in french.
+wordsWithSpaces = [ap JC,ap J-C,ap. J-C,ap. J.-C.,apres JC,après J-C,apres J.-C.,apr. J.-C.,apr. J-C,apr J-C,av JC,av J-C,av. J-C,av. J.-C.,avant JC,avant J-C,avant J.-C.]
+
+# Words containing spaces replacement : complete with the chosen replacement. You MUST use the replacement
+# in each value defined in this file, not the original string. Do not use punctuation in the replacement string.
+wordsWithSpacesReplacements = [apjc,apjc,apjc,apjc,apjc,apjc,apjc,apjc,apjc,apjc,avjc,avjc,avjc,avjc,avjc,avjc,avjc]
+
 # List month names; used whenever name of month needs to be displayed
-monthList = [janvier, février, mars, avril, mai, juin, juillet, août, septembre, octobre, novembre, décembre]
+monthList = [janvier, fevrier, mars, avril, mai, juin, juillet, aout, septembre, octobre, novembre, decembre]
 
 # *** the following list of months is for display and *SHOULD* be capitalized where appropriate
-monthListDisplay = [Janvier, Février, Mars, Avril, Mai, Juin, Juillet, Août, Septembre, Octobre, Novembre, Décembre]
+monthListDisplay = [janvier, février, mars, avril, mai, juin, juillet, août, septembre, octobre, novembre, décembre]
 
 # Hash table mapping acceptable month names to the display names defined in 'monthList'
 # http://fr.wikipedia.org/wiki/Mois
 # code à trois caratères et abreviations courantes
 monthTable = {
 	jan = janvier, janv. = janvier,
-	fév = février, févr. = février,
+	fev = fevrier, fevr. = fevrier,
 	mar = mars, mars = mars,
 	avr = avril, avr. = avril,
 	mai = mai,
-	jun = juin, juin = juin
+	jun = juin, juin = juin,
 	jul = juillet, juill. = juillet,
-	aoû = août, 
+	aou = aout,
 	sep = septembre, sept. = septembre,
 	oct = octobre, oct. = octobre,
 	nov = novembre, nov. = novembre,
@@ -28,16 +36,15 @@ monthTable = {
 dayListDisplay = [Dimanche, Lundi, Mardi, Mercredi, Jeudi, Vendredi, Samedi]
 
 #rangePreConjunctions = [from, between]
-rangePreConjunctions = [depuis, après]
+rangePreConjunctions = [du,entre,de]
 
 #rangeConjunctions = [to, -, and, .., through]
-# ???
-rangeConjunctions = [to, -, et, .., through]
+rangeConjunctions = [-, ..., au, et, a]
 
-dateTimeConjunctions = [at,@]
+dateTimeConjunctions = [a,@]
 
 dateDelimiters = [/,-,.]
-timeDelimiters = [:,.]
+timeDelimiters = [:,h,min]
 
 timeAMMeridian = am
 timePMMeridian = pm
@@ -47,8 +54,7 @@ meridianTable = {
 	p.m. = pm
 }
 
-# ???
-dateCircaIndicator = [circa, c, c., ca, ca.]
+dateCircaIndicator = [vers, environ, autour de, <>, <approximatif>, circa, c, c., ca, ca., cca.]
 dateUncertaintyIndicator = [~]
 #dateUncertaintyYearIndicator = [y]
 dateUncertaintyYearIndicator = [a]
@@ -56,13 +62,23 @@ dateUncertaintyYearIndicator = [a]
 dateUncertaintyDayIndicator = [j]
 
 # What to use to indicate a geological date ("millions of years ago")
-dateMYA = [mya]
+dateMYA = [Ma]
 
-dateADIndicator = ad
-dateBCIndicator = bc
+dateADIndicator = EC
+dateBCIndicator = av. J.-C.
 ADBCTable = {
-	a.d. = ad,
-	b.c. = bc
+	ad = ap. J.-C.,
+	a.d. = ap. J.-C.,
+	AD = ap. J.-C.,
+	bc = av. J.-C.,
+	b.c. = av. J.-C.,
+	BC = av. J.-C.,
+	c.e. = ap. J.-C.,
+	b.c.e. = av. J.-C.,
+	ce = ap. J.-C.,
+	bce = av. J.-C.,
+	avjc = av. J.-C.,
+	apjc = ap. J.-C.
 }
 
 #nowDate = [now]
@@ -75,28 +91,28 @@ yesterdayDate = [hier]
 tomorrowDate = [demain]
 
 #presentDate = [present, ?, ??, ???, ????]
-presentDate = [présent, ?, ??, ???, ????]
+presentDate = [present, ?, ??, ???, ????]
 #beforeQualifier = [before]
 beforeQualifier = [avant]
 #diedQualifier = [d., d, died]
 diedQualifier = [m., m, mort]
 #afterQualifier = [after]
-afterQualifier = [après]
+afterQualifier = [apres]
 #bornQualifier = [b., b, born]
 # ??? "né le", "née le"  
-bornQualifier = [n., n, né]
+bornQualifier = [n., n, ne]
 
 # Text to indicate century (as in "20th century")
-centuryIndicator = [century, jahrhundert, cent]
+centuryIndicator = [S., s., siecle, century, cent]
 
-# Text to indicate decdae (as in "1920s")
+# Text to indicate decade (as in "1920s")
 decadeIndicator = [s]
 
 # list of numeric suffixes, starting with the one for zero
 # (eg. 0th, 1st, 2nd, 3rd would be a list like so: [th, st, nd, rd])
 #ordinalSuffixes = [th, st, nd, rd]
 # ??? à revoir
-ordinalSuffixes = [th, er, e, e]
+ordinalSuffixes = [e, er, e, e]
 #ordinalSuffixDefault = th
 ordinalSuffixDefault = e
 
@@ -117,10 +133,10 @@ definiteArticles = [le]
 # Indefinite articles
 #indefiniteArticles = [a, an]
 # ??? une 
-indefiniteArticles = [un]
+indefiniteArticles = [un, au]
 
 # Seasons
-winterSeason = [winter]
-springSeason = [spring]
-summerSeason = [summer]
-autumnSeason = [autumn, fall]
+winterSeason = [hiver]
+springSeason = [printemps]
+summerSeason = [ete]
+autumnSeason = [automne]

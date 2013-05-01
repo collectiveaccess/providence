@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2010-2011 Whirl-i-Gig
+ * Copyright 2010-2013 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -87,7 +87,7 @@
 			);
 		}
 		# -------------------------------------------------------
-		public function renderWidget($ps_widget_id, $pa_settings) {
+		public function renderWidget($ps_widget_id, &$pa_settings) {
 			parent::renderWidget($ps_widget_id, $pa_settings);
 			$this->opo_view->setVar('request', $this->getRequest());
 			
@@ -95,7 +95,8 @@
 			
 			if (!($vn_form_id = (int)$pa_settings["form_code"])) {
 				$va_forms = caExtractValuesByUserLocale($t_form->getForms(array('table' => 'ca_objects', 'user_id' => $this->request->getUserID(), 'access' => __CA_SEARCH_FORM_READ_ACCESS__)));
-				$vn_form_id = array_shift(array_keys($va_forms));
+				$va_tmp = array_keys($va_forms);
+				$vn_form_id = array_shift($va_tmp);
 			}
 			
 			$t_form->load($vn_form_id);

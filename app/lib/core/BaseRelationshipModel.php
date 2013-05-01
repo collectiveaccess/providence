@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2009-2012 Whirl-i-Gig
+ * Copyright 2009-2013 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -38,8 +38,68 @@
  require_once(__CA_LIB_DIR__.'/core/IRelationshipModel.php');
  require_once(__CA_APP_DIR__.'/helpers/htmlFormHelpers.php');
  require_once(__CA_MODELS_DIR__.'/ca_relationship_types.php');
+ require_once(__CA_MODELS_DIR__.'/ca_acl.php');
  
 	class BaseRelationshipModel extends BaseModel implements IRelationshipModel {
+		# ------------------------------------------------------
+		/**
+		 * 
+		 */
+		public function insert($pa_options=null) {
+			if ($vn_rc = parent::insert($pa_options)) {
+				$t_left = $this->getAppDatamodel()->getInstanceByTableNum($this->getLeftTableNum());
+				$t_right = $this->getAppDatamodel()->getInstanceByTableNum($this->getRightTableNum());
+				
+				foreach(array($this->getRightTableName() => $t_left, $this->getLeftTableName() => $t_right) as $vs_other_table_name => $t_instance) {
+					if ((bool)$t_instance->getProperty('SUPPORTS_ACL_INHERITANCE')) {
+						if (is_array($va_inheritors = $t_instance->getProperty('ACL_INHERITANCE_LIST')) && in_array($vs_other_table_name, $va_inheritors)) {
+							ca_acl::applyACLInheritanceToRelatedRowFromRow($t_instance, ($vs_other_table_name == $this->getLeftTableName()) ? $this->get($this->getRightTableFieldName()) : $this->get($this->getLeftTableFieldName()), $vs_other_table_name, ($vs_other_table_name == $this->getLeftTableName()) ? $this->get($this->getLeftTableFieldName()) : $this->get($this->getRightTableFieldName()));
+						}
+					}
+				}
+			}
+			return $vn_rc;
+		}
+		# ------------------------------------------------------
+		/**
+		 * 
+		 */
+		public function update($pa_options=null) {
+			if ($vn_rc = parent::update($pa_options)) {
+				$t_left = $this->getAppDatamodel()->getInstanceByTableNum($this->getLeftTableNum());
+				$t_right = $this->getAppDatamodel()->getInstanceByTableNum($this->getRightTableNum());
+				
+				foreach(array($this->getRightTableName() => $t_left, $this->getLeftTableName() => $t_right) as $vs_other_table_name => $t_instance) {
+					if ((bool)$t_instance->getProperty('SUPPORTS_ACL_INHERITANCE')) {
+						if (is_array($va_inheritors = $t_instance->getProperty('ACL_INHERITANCE_LIST')) && in_array($vs_other_table_name, $va_inheritors)) {
+							ca_acl::applyACLInheritanceToRelatedRowFromRow($t_instance, ($vs_other_table_name == $this->getLeftTableName()) ? $this->get($this->getRightTableFieldName()) : $this->get($this->getLeftTableFieldName()), $vs_other_table_name, ($vs_other_table_name == $this->getLeftTableName()) ? $this->get($this->getLeftTableFieldName()) : $this->get($this->getRightTableFieldName()));
+						}
+					}
+				}
+			}
+			return $vn_rc;
+		}
+		# ------------------------------------------------------
+		/**
+		 * 
+		 */
+		public function delete($pb_delete_related=false, $pa_options=null, $pa_fields=null, $pa_table_list=null) {
+			$t_left = $this->getAppDatamodel()->getInstanceByTableNum($this->getLeftTableNum());
+			$vn_left_id = $this->get($this->getLeftTableFieldName());
+			$vn_right_id = $this->get($this->getRightTableFieldName());
+			
+			$t_right = $this->getAppDatamodel()->getInstanceByTableNum($this->getRightTableNum());
+			if ($vn_rc = parent::delete($pb_delete_related, $pa_options, $pa_fields, $pa_table_list)) {
+				foreach(array($this->getRightTableName() => $t_left, $this->getLeftTableName() => $t_right) as $vs_other_table_name => $t_instance) {
+					if ((bool)$t_instance->getProperty('SUPPORTS_ACL_INHERITANCE')) {
+						if (is_array($va_inheritors = $t_instance->getProperty('ACL_INHERITANCE_LIST')) && in_array($vs_other_table_name, $va_inheritors)) {
+							ca_acl::applyACLInheritanceToRelatedRowFromRow($t_instance, ($vs_other_table_name == $this->getLeftTableName()) ? $vn_right_id : $vn_left_id, $vs_other_table_name, ($vs_other_table_name == $this->getLeftTableName()) ? $vn_left_id : $vn_right_id, array('deleteACLOnly' => true));
+						}
+					}
+				}
+			}
+			return $vn_rc;
+		}
 		# ------------------------------------------------------
 		/**
 		 * Returns name of the "left" table (by convention the table mentioned first in the relationship table name)
@@ -156,15 +216,26 @@
 					AND (crt.parent_id IS NOT NULL)
 					{$vs_restrict_to_relationship_type_sql}
 			";
-			//print $vs_sql.'--'.$this->tableNum()."<hr>";
 	
 			$qr_res = $o_db->query($vs_sql, $this->tableNum());
 			
 			$va_types = array();
 			while($qr_res->nextRow()) {
-				$va_types[$qr_res->get('type_id')][$qr_res->get('locale_id')] = $qr_res->getRow();
+				$vs_key = '';
+				if (strlen($vs_rank = $qr_res->get('rank'))) {
+					$vs_key .= (int)sprintf("%08d", (int)$qr_res->get('rank'));
+				}
+				$vs_key .= $qr_res->get('typename_forward');
+				$va_types[$vs_key][(int)$qr_res->get('type_id')][(int)$qr_res->get('locale_id')] = $qr_res->getRow();
 			}
-			return caExtractValuesByUserLocale($va_types, null, null, array());
+			ksort($va_types, SORT_NUMERIC);
+			$va_sorted_types = array();
+			foreach($va_types as $vs_k => $va_v) {
+				foreach($va_v as $vn_type_id => $va_types_by_locale) {
+					$va_sorted_types[$vn_type_id] = $va_types_by_locale;
+				}
+			}
+			return caExtractValuesByUserLocale($va_sorted_types, null, null, array());
 		}
 		# ------------------------------------------------------
 		/**
@@ -213,7 +284,8 @@
 			$vs_right_table_name = $this->getRightTableName();
 			
 			$o_db = $this->getDb();
-				
+			$t_rel_type = new ca_relationship_types();
+					
 			$vs_restrict_to_relationship_type_sql = '';
 			if (isset($pa_options['restrict_to_relationship_types']) && $pa_options['restrict_to_relationship_types']) {
 				if(!is_array($pa_options['restrict_to_relationship_types'])) {
@@ -221,7 +293,6 @@
 				}
 				if(sizeof($pa_options['restrict_to_relationship_types'])) {
 					$va_restrict_to_type_list = array();
-					$t_rel_type = new ca_relationship_types();
 					
 					foreach($pa_options['restrict_to_relationship_types'] as $vs_type_code) {
 						if (!strlen(trim($vs_type_code))) { continue; }
@@ -248,10 +319,10 @@
 				FROM ca_relationship_types crt
 				INNER JOIN ca_relationship_type_labels AS crtl ON crt.type_id = crtl.type_id
 				WHERE
-					(crt.table_num = ?) AND (crt.parent_id IS NOT NULL)
+					(crt.table_num = ?)
 					{$vs_restrict_to_relationship_type_sql}
-			", $this->tableNum());			
-				
+			", $this->tableNum());		
+			
 			// Support hierarchical subtypes - if the subtype restriction is a type with parents then include those as well
 			// Allows subtypes to "inherit" bindings from parent types
 			$t_list_item = new ca_list_items($pn_type_id);
@@ -260,53 +331,51 @@
 			}
 			// remove hierarchy root from ancestor list, otherwise invalid bindings 
 			// from root nodes (which are not "real" rel types) may be inherited
-			$va_ancestor_ids = array_diff($va_ancestor_ids, array($t_list_item->getHierarchyRootID()));
+			array_pop($va_ancestor_ids);
 			
 			$va_types = array();
 			$va_parent_ids = array();
 			$vn_l = 0;
+							
+			$vn_root_id = ($t_rel_type->load(array('parent_id' => null, 'table_num' =>  $this->tableNum()))) ? $t_rel_type->getPrimaryKey() : null;
+			$va_hier = array();
 			
 			if ($vs_left_table_name === $vs_right_table_name) {
 				// ----------------------------------------------------------------------------------------
 				// self relationship
 				while($qr_res->nextRow()) {
-					$vn_parent_id = $qr_res->get('parent_id');
-					if (($vn_i = array_search($vn_parent_id, $va_parent_ids)) === false) {
-						$va_parent_ids[] = $vn_parent_id; 
-						$vn_l++;
-					} else {
-						if ($vn_i < sizeof($va_parent_ids) - 1) {
-							$vn_l = sizeof($va_parent_ids) - 1 - $vn_i;
-						}
-					}
 					$va_row = $qr_res->getRow();
+					
+					$vn_parent_id = $va_row['parent_id'];
+					$va_hier[$vn_parent_id][] = $va_row['type_id'];
+					
 					
 					// skip type if it has a subtype set and it's not in our list
 					$vs_subtype_orientation = null;
 					$vs_subtype = null;
 					if (
-						$qr_res->get('sub_type_left_id') && !(((in_array($qr_res->get('sub_type_left_id'), $va_ancestor_ids))))
+						$va_row['sub_type_left_id'] && !(((in_array($va_row['sub_type_left_id'], $va_ancestor_ids))))
 					) { // not left
 						
-						if ($qr_res->get('sub_type_right_id') && !((in_array($qr_res->get('sub_type_right_id'), $va_ancestor_ids)))) {
+						if ($va_row['sub_type_right_id'] && !((in_array($va_row['sub_type_right_id'], $va_ancestor_ids)))) {
 							// not left and not right
 							continue;
 						} else {
 							// not left and right
-							$vs_subtype = $qr_res->get('sub_type_left_id');	
+							$vs_subtype = $va_row['sub_type_left_id'];	
 							$vs_subtype_orientation = "left";
 						}
 					} else if (
-						$qr_res->get('sub_type_left_id') && in_array($qr_res->get('sub_type_left_id'), $va_ancestor_ids)
+						$va_row['sub_type_left_id'] && in_array($va_row['sub_type_left_id'], $va_ancestor_ids)
 					) { // left
-						if ($qr_res->get('sub_type_right_id') && ((in_array($qr_res->get('sub_type_right_id'), $va_ancestor_ids)))) {
+						if ($va_row['sub_type_right_id'] && ((in_array($va_row['sub_type_right_id'], $va_ancestor_ids)))) {
 							// left and right
-							$vs_subtype = $qr_res->get('sub_type_right_id');
+							$vs_subtype = $va_row['sub_type_right_id'];
 							$vs_subtype_orientation = "";
 						} else {
 							// left and not right
 							$vs_subtype_orientation = "right";
-							$vs_subtype = $qr_res->get('sub_type_right_id');	
+							$vs_subtype = $va_row['sub_type_right_id'];	
 						}
 					}
 					if (!$vs_subtype) { $vs_subtype = 'NULL'; }
@@ -314,31 +383,35 @@
 					switch($vs_subtype_orientation) {
 						case 'left':
 							$va_tmp = $va_row;
-							$va_tmp['typename'] =  str_repeat('&#160;&#160;&#160;', $vn_l-1).$va_tmp['typename_reverse'];
+							$vs_key = (strlen($va_tmp['rank']) > 0)  ? sprintf("%08d", (int)$va_tmp['rank']).preg_replace('![^A-Za-z0-9_]+!', '_', $va_tmp['typename_reverse']) : preg_replace('![^A-Za-z0-9_]+!', '_', $va_tmp['typename_reverse']);
+							$va_tmp['typename'] = $va_tmp['typename_reverse'];
 							unset($va_tmp['typename_reverse']);		// we pass the typename adjusted for direction in 'typename', so there's no need to include typename_reverse in the returned values
 
-							$va_types[$vs_subtype][$qr_res->get('type_id')][$qr_res->get('locale_id')] = $va_tmp;	
+							$va_types[$vn_parent_id][$vs_subtype][$vs_key][$va_row['type_id']][$va_row['locale_id']] = $va_tmp;	
 							
 							break;
 						case 'right':
 							$va_tmp = $va_row;
-							$va_tmp['typename'] =  str_repeat('&#160;&#160;&#160;', $vn_l-1).$va_tmp['typename'];
+							
+							$vs_key = (strlen($va_tmp['rank']) > 0)  ? sprintf("%08d", (int)$va_tmp['rank']).preg_replace('![^A-Za-z0-9_]+!', '_', $va_tmp['typename']) : preg_replace('![^A-Za-z0-9_]+!', '_', $va_tmp['typename']);
+							//$va_tmp['typename'] = $va_tmp['typename'];
 							unset($va_tmp['typename_reverse']);		// we pass the typename adjusted for direction in 'typename', so there's no need to include typename_reverse in the returned values
 
-							$va_types[$vs_subtype][$qr_res->get('type_id')][$qr_res->get('locale_id')] = $va_tmp;
+							$va_types[$vn_parent_id][$vs_subtype][$vs_key][$va_row['type_id']][$va_row['locale_id']] = $va_tmp;
 							break;
 						default:
 							$va_tmp = $va_row;
-							if ($va_tmp['typename'] == $va_tmp['typename_reverse']) {
+							if (trim($va_tmp['typename']) == trim($va_tmp['typename_reverse'])) {
 								//
 								// If the sides of the self-relationship are the same then treat it like a normal relationship type: one entry in the
 								// list and a plain type_id value
 								//
-								$va_tmp['typename'] =  str_repeat('&#160;&#160;&#160;', $vn_l-1).$va_tmp['typename'];
 								unset($va_tmp['typename_reverse']);		// we pass the typename adjusted for direction in 'typename', so there's no need to include typename_reverse in the returned values
 	
-									$va_tmp['direction'] = null;
-								$va_types[$vs_subtype][$qr_res->get('type_id')][$qr_res->get('locale_id')] = $va_tmp;
+								$va_tmp['direction'] = null;
+								
+								$vs_key = (strlen($va_tmp['rank']) > 0)  ? sprintf("%08d", (int)$va_tmp['rank']).preg_replace('![^A-Za-z0-9_]+!', '_', $va_tmp['typename']) : preg_replace('![^A-Za-z0-9_]+!', '_', $va_tmp['typename']);
+								$va_types[$vn_parent_id][$vs_subtype][$vs_key][$va_row['type_id']][$va_row['locale_id']] = $va_tmp;
 								
 							} else {
 								//
@@ -346,96 +419,145 @@
 								// indicate the directionality of the typename (ltor = left to right = "typename"; rtor = right to left = "typename_reverse")
 								//
 								$va_tmp = $va_row;
-								$va_tmp['typename'] =  str_repeat('&#160;&#160;&#160;', $vn_l-1).$va_tmp['typename'];
+								//$va_tmp['typename'] =  $va_tmp['typename'];
 								unset($va_tmp['typename_reverse']);		// we pass the typename adjusted for direction in 'typename', so there's no need to include typename_reverse in the returned values
 	
+								$vs_key = (strlen($va_tmp['rank']) > 0)  ? sprintf("%08d", (int)$va_tmp['rank']).preg_replace('![^A-Za-z0-9_]+!', '_', $va_tmp['typename']) : preg_replace('![^A-Za-z0-9_]+!', '_', $va_tmp['typename']);
 								$va_tmp['direction'] = 'ltor';
-								$va_types[$vs_subtype]['ltor_'.$qr_res->get('type_id')][$qr_res->get('locale_id')] = $va_tmp;
+								$va_types[$vn_parent_id][$vs_subtype][$vs_key]['ltor_'.$va_row['type_id']][$va_row['locale_id']] = $va_tmp;
 								
 								$va_tmp = $va_row;
-								$va_tmp['typename'] =  str_repeat('&#160;&#160;&#160;', $vn_l-1).$va_tmp['typename_reverse'];
+								$va_tmp['typename'] =  $va_tmp['typename_reverse'];
 								unset($va_tmp['typename_reverse']);		// we pass the typename adjusted for direction in 'typename', so there's no need to include typename_reverse in the returned values
 		
+								$vs_key = (strlen($va_tmp['rank']) > 0)  ? sprintf("%08d", (int)$va_tmp['rank']).preg_replace('![^A-Za-z0-9_]+!', '_', $va_tmp['typename_reverse']) : preg_replace('![^A-Za-z0-9_]+!', '_', $va_tmp['typename_reverse']);
 								$va_tmp['direction'] = 'rtol';
-								$va_types[$vs_subtype]['rtol_'.$qr_res->get('type_id')][$qr_res->get('locale_id')] = $va_tmp;
+								$va_types[$vn_parent_id][$vs_subtype][$vs_key]['rtol_'.$va_row['type_id']][$va_row['locale_id']] = $va_tmp;
 							}
 							
 							break;
 					}
-					
-					$va_processed_types = array('_type_map' => array());
-					$va_subtype_lookups = array();
-					foreach($va_types as $vs_subtype => $va_types_by_locale) {
-					
-						// include mapping from parent type used in restriction to child types that inherit the binding
-						if ((!$vs_subtype != 'NULL') && (!isset($va_subtype_lookups[$vs_subtype]) || !$va_subtype_lookups[$vs_subtype])) {
-							$va_children = $t_list_item->getHierarchyChildren($vs_subtype, array('idsOnly' => true));
-							foreach($va_children as $vn_child) {
-								$va_processed_types['_type_map'][$vn_child] = $vs_subtype;
-							}
-							$va_subtype_lookups[$vs_subtype] = true;
-						}
-						
-						$va_processed_types[$vs_subtype] = caExtractValuesByUserLocale($va_types_by_locale, null, null, array('returnList' => true));
-					}
-					
 				}
-			} else {
-				// ----------------------------------------------------------------------------------------
-				// regular relationship
-				if (!in_array($ps_orientation, array($vs_left_table_name, $vs_right_table_name))) { return array(); }
 				
+					
+				$va_types = $this->_processRelationshipHierarchy($vn_root_id, $va_hier, $va_types, 1);
 				
-				while($qr_res->nextRow()) {
-					$vn_parent_id = $qr_res->get('parent_id');
-					if (($vn_i = array_search($vn_parent_id, $va_parent_ids)) === false) {
-						$va_parent_ids[] = $vn_parent_id; 
-						$vn_l++;
-					} else {
-						if ($vn_i < sizeof($va_parent_ids) - 1) {
-							$vn_l = sizeof($va_parent_ids) - 1 - $vn_i;
-						}
-					}
-					
-					$va_row = $qr_res->getRow();
-					if ($ps_orientation == $vs_left_table_name) {
-						// right-to-left
-						
-						// skip type if it has a subtype set and it's not in our list
-						if (!((!$qr_res->get('sub_type_left_id') || (in_array($qr_res->get('sub_type_left_id'), $va_ancestor_ids))))) { continue; }
-						$vs_subtype = $qr_res->get('sub_type_right_id');
-						$va_row['typename'] =  str_repeat('&#160;&#160;&#160;', $vn_l-1).$va_row['typename'];
-					} else {
-						// left-to-right
-						
-						// skip type if it has a subtype set and it's not in our list
-						if (!((!$qr_res->get('sub_type_right_id') || (in_array($qr_res->get('sub_type_right_id'), $va_ancestor_ids))))) { continue; }
-						$vs_subtype = $qr_res->get('sub_type_left_id');	
-						
-						$va_row['typename'] = str_repeat('&#160;&#160;&#160;', $vn_l-1).$va_row['typename_reverse'];
-					}
-					unset($va_row['typename_reverse']);		// we pass the typename adjusted for direction in 'typename', so there's no need to include typename_reverse in the returned values
-					if (!$vs_subtype) { $vs_subtype = 'NULL'; }
-					
-					
-					$va_types[$vs_subtype][$qr_res->get('type_id')][$qr_res->get('locale_id')] = $va_row;
-				}
 				$va_processed_types = array('_type_map' => array());
 				$va_subtype_lookups = array();
-				foreach($va_types as $vs_subtype => $va_types_by_locale) {
+
+				foreach($va_types as $vs_subtype => $va_types_by_subtype) {
+					$va_types_by_locale = array();
+					foreach($va_types_by_subtype as $vs_key => $va_types_by_key) {
+						$va_types_by_locale += $va_types_by_key;
+					}
 				
 					// include mapping from parent type used in restriction to child types that inherit the binding
-					if ((!$vs_subtype != 'NULL') && (!isset($va_subtype_lookups[$vs_subtype]) || !$va_subtype_lookups[$vs_subtype])) {
+					if (($vs_subtype != 'NULL') && (!isset($va_subtype_lookups[$vs_subtype]) || !$va_subtype_lookups[$vs_subtype])) {
 						$va_children = $t_list_item->getHierarchyChildren($vs_subtype, array('idsOnly' => true));
 						foreach($va_children as $vn_child) {
 							$va_processed_types['_type_map'][$vn_child] = $vs_subtype;
 						}
 						$va_subtype_lookups[$vs_subtype] = true;
 					}
-					$va_processed_types[$vs_subtype] = caExtractValuesByUserLocale($va_types_by_locale, null, null, array('returnList' => true));
+					$va_processed_types[$vs_subtype] = caExtractValuesByUserLocale($va_types_by_locale, null, null, array('returnList' => true));					
+				}
+				
+			} else {
+				// ----------------------------------------------------------------------------------------
+				// regular relationship
+				if (!in_array($ps_orientation, array($vs_left_table_name, $vs_right_table_name))) { return array(); }
+				while($qr_res->nextRow()) {
+					$va_row = $qr_res->getRow();
+					
+					$vn_parent_id = $va_row['parent_id'];
+					$va_hier[$vn_parent_id][] = $va_row['type_id'];
+					
+					if ($ps_orientation == $vs_left_table_name) {
+						// right-to-left
+						
+						// skip type if it has a subtype set and it's not in our list
+						if (!((!$va_row['sub_type_left_id'] || (in_array($va_row['sub_type_left_id'], $va_ancestor_ids))))) { continue; }
+						$vs_subtype = $va_row['sub_type_right_id'];
+						
+						$vs_key = (strlen($va_row['rank']) > 0)  ? sprintf("%08d", (int)$va_row['rank']).preg_replace('![^A-Za-z0-9_]+!', '_', $va_row['typename']) : preg_replace('![^A-Za-z0-9_]+!', '_', $va_row['typename']);
+							
+					} else {
+						// left-to-right
+						
+						// skip type if it has a subtype set and it's not in our list
+						if (!((!$va_row['sub_type_right_id'] || (in_array($va_row['sub_type_right_id'], $va_ancestor_ids))))) { continue; }
+						$vs_subtype = $va_row['sub_type_left_id'];	
+						
+						$va_row['typename'] = $va_row['typename_reverse'];
+						
+						$vs_key = (strlen($va_row['rank']) > 0)  ? sprintf("%08d", (int)$va_row['rank']).preg_replace('![^A-Za-z0-9_]+!', '_', $va_row['typename_reverse']) : preg_replace('![^A-Za-z0-9_]+!', '_', $va_row['typename_reverse']);
+					}
+					unset($va_row['typename_reverse']);		// we pass the typename adjusted for direction in '_display', so there's no need to include typename_reverse in the returned values
+					if (!$vs_subtype) { $vs_subtype = 'NULL'; }
+					
+					$vn_type_id = $va_row['type_id'];
+					$va_types[$vn_parent_id][$vs_subtype][$vs_key][$vn_type_id][$va_row['locale_id']] = $va_row;
+				}
+				
+				$va_types = $this->_processRelationshipHierarchy($vn_root_id, $va_hier, $va_types, 1);
+			
+				$va_processed_types = array('_type_map' => array());
+				$va_subtype_lookups = array();
+			
+				foreach($va_types as $vs_subtype => $va_types_by_subtype) {
+					$va_types_by_locale = array();
+					foreach($va_types_by_subtype as $vs_key => $va_types_by_key) {
+						foreach($va_types_by_key as $vn_locale_id => $va_t) {
+							if (!is_array($va_types_by_locale[$vn_locale_id])) { $va_types_by_locale[$vn_locale_id] = array(); }
+							$va_types_by_locale[$vn_locale_id] += $va_t;
+						}
+					}
+					
+					// include mapping from parent type used in restriction to child types that inherit the binding
+					if (($vs_subtype != 'NULL') && (!isset($va_subtype_lookups[$vs_subtype]) || !$va_subtype_lookups[$vs_subtype])) {
+						$va_children = $t_list_item->getHierarchyChildren($vs_subtype, array('idsOnly' => true));
+						foreach($va_children as $vn_child) {
+							$va_processed_types['_type_map'][$vn_child] = $vs_subtype;
+						}
+						$va_subtype_lookups[$vs_subtype] = true;
+					}
+					
+					$va_processed_types[$vs_subtype] = caExtractValuesByUserLocale($va_types_by_locale, null, null, array('returnList' => true));					
 				}
 			}
 			return $va_processed_types;
+		}
+		# ------------------------------------------------------
+		private function _processRelationshipHierarchy($pn_id, $pa_hier, $pa_types, $pn_level) {
+			$va_types_to_return = array();
+			if(!is_array($pa_hier[$pn_id])) { return array(); }
+			if (!is_array($pa_types[$pn_id])) { return array();}
+			foreach($pa_types[$pn_id] as $vs_sub_types => $va_list) {	// items in this level
+				ksort($va_list);
+				foreach($va_list as $vs_key => $va_list_by_type_id) {
+					foreach($va_list_by_type_id as $vn_type_id => $va_item) {
+						$va_types_to_return[$vs_sub_types][$vs_key][$vn_type_id] = $va_item;		// output item
+					
+						// look for sub items
+						if (is_array($pa_hier[$vn_type_id])) {
+							if (is_array($va_tmp = $this->_processRelationshipHierarchy($vn_type_id, $pa_hier, $pa_types, $pn_level + 1))) {
+								foreach($va_tmp as $x_vs_sub_types => $x_va_list) {
+									foreach($x_va_list as $x_vs_key => $x_va_list_by_type_id) {
+										foreach($x_va_list_by_type_id as $x_vn_type_id => $x_va_item) {
+											foreach($x_va_item as $vn_i => $x_va_item_entry) {
+												$x_va_item[$vn_i]['typename'] = '&#160;&#160;&#160;&#160;'.$x_va_item_entry['typename'] ;
+											}
+											$va_types_to_return[$x_vs_sub_types][$x_vs_key][$x_vn_type_id] = $x_va_item;
+										}
+									}
+								}
+							}
+						}
+					}
+				}
+			}
+			
+			return $va_types_to_return;
 		}
 		# ------------------------------------------------------
 	}

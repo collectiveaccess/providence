@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2008-2012 Whirl-i-Gig
+ * Copyright 2008-2013 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -46,7 +46,7 @@
 			
 			$va_form_elements = $t_lot->getBundleFormHTMLForScreen($this->request->getActionExtra(), array(
 									'request' => $this->request, 
-									'formName' => 'ObjectLotEditorForm'));
+									'formName' => 'ObjectLotEditorForm'), $va_bundle_list);
 									
 			print join("\n", $va_form_elements);
 			
@@ -57,3 +57,5 @@
 	</div>
 
 	<div class="editorBottomPadding"><!-- empty --></div>
+	
+	<?php print caSetupEditorScreenOverlays($this->request, $t_lot, $va_bundle_list); ?>

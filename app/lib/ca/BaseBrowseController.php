@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2009-2012 Whirl-i-Gig
+ * Copyright 2009-2013 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -82,8 +82,14 @@
 			}
  		}
  		# -------------------------------------------------------
- 		function Index($pb_dont_render_view=false, $pa_options=null) {
- 			parent::Index($po_search, $pa_options);
+ 		/**
+ 		 *
+ 		 */
+ 		public function Index($pa_options=null) {
+ 			$po_search = isset($pa_options['search']) ? $pa_options['search'] : null;
+ 			$pb_dont_render_view = (isset($pa_options['dontRenderView']) && (bool)$pa_options['dontRenderView']) ? true : false;
+ 			
+ 			parent::Index($pa_options);
  			JavascriptLoadManager::register('browsable');
 			JavascriptLoadManager::register('hierBrowser');
  			
@@ -116,12 +122,19 @@
  			}
  			
  			if (!($vs_view 			= $this->opo_result_context->getCurrentView())) { 
- 				$vs_view = $this->ops_view_default ? $this->ops_view_default : array_shift(array_keys($this->opa_views)); 
+ 				$va_tmp = array_keys($this->opa_views);
+ 				$vs_view = $this->ops_view_default ? $this->ops_view_default : array_shift($va_tmp); 
  				$this->opo_result_context->setCurrentView($vs_view);
  			}
- 			if (!isset($this->opa_views[$vs_view])) { $vs_view = array_shift(array_keys($this->opa_views)); }
+ 			if (!isset($this->opa_views[$vs_view])) { 
+ 				$va_tmp = array_keys($this->opa_views);
+ 				$vs_view = array_shift($va_tmp); 
+ 			}
  			
- 			if (!($vs_sort 	= $this->opo_result_context->getCurrentSort())) { $vs_sort = array_shift(array_keys($this->opa_sorts)); }
+ 			if (!($vs_sort 	= $this->opo_result_context->getCurrentSort())) { 
+ 				$va_tmp = array_keys($this->opa_sorts);
+ 				$vs_sort = array_shift($va_tmp); 
+ 			}
 			$vs_sort_direction = $this->opo_result_context->getCurrentSortDirection();
 			
  			if (!$vn_page_num || $vb_criteria_have_changed) { $vn_page_num = 1; }
@@ -240,6 +253,7 @@
 				if ($vb_criteria_have_changed) {
 					// Put the results id list into the results context - we used this for previous/next navigation
 					$this->opo_result_context->setResultList($vo_result->getPrimaryKeyValues());
+					$this->opo_result_context->setParameter('availableVisualizationChecked', 0);
 				}
 				
 				$vo_result->seek(0);	
@@ -348,7 +362,9 @@
  			$this->view->setVar('facet_name', $ps_facet_name);
  			
  			$this->view->setVar('individual_group_display', isset($va_facet_info['individual_group_display']) ? (bool)$va_facet_info['individual_group_display'] : false);
- 			
+
+ 			// this should be 'facet' but we don't want to render all old 'ajax_browse_facet_html' views (pawtucket themes) unusable
+ 			$this->view->setVar('grouped_facet',$this->opo_browse->getFacetWithGroups($ps_facet_name, $va_facet_info["group_mode"], $vs_grouping, array('sort' => 'name', 'checkAccess' => $va_access_values)));
  			
  			// generate type menu and type value list for related authority table facet
  			if ($va_facet_info['type'] === 'authority') {
@@ -386,84 +402,107 @@
  			
  			$va_facet = $this->opo_browse->getFacet($ps_facet_name, array('sort' => 'name', 'checkAccess' => $va_access_values));
  			
- 			$pn_id = $this->request->getParameter('id', pInteger);
- 			//if ((!($pn_id = $this->request->getParameter('id', pInteger))) && method_exists($t_item, "getHierarchyList")) { 
- 			//	$pn_id = $this->request->getParameter('root_item_id', pInteger);	
- 			//}
+			$pa_ids = explode(";", $ps_ids = $this->request->getParameter('id', pString));
+			if (!sizeof($pa_ids)) { $pa_ids = array(null); }
  			
- 			$va_json_data = array('_primaryKey' => 'id');
- 			
- 			switch($va_facet_info['type']) {
- 				case 'attribute':
- 					// is it a list attribute?
- 					$t_element = new ca_metadata_elements();
- 					if ($t_element->load(array('element_code' => $va_facet_info['element_code']))) {
- 						if ($t_element->get('datatype') == 3) { // 3=list
-							if (!$pn_id) {
-								//if (!($pn_id = $this->opo_result_context->getParameter($ps_facet_name.'_browse_last_id'))) {
+			$va_level_data = array();
+ 	
+ 			if ((($vn_max_items_per_page = $this->request->getParameter('max', pInteger)) < 1) || ($vn_max_items_per_page > 1000)) {
+				$vn_max_items_per_page = null;
+			}
+						
+ 			foreach($pa_ids as $pn_id) {
+ 				$va_json_data = array('_primaryKey' => 'item_id');
+				
+				$va_tmp = explode(":", $pn_id);
+				$vn_id = $va_tmp[0];
+				$vn_start = (int)$va_tmp[1];
+				if($vn_start < 0) { $vn_start = 0; }
+				
+ 				switch($va_facet_info['type']) {
+					case 'attribute':
+						// is it a list attribute?
+						$t_element = new ca_metadata_elements();
+						if ($t_element->load(array('element_code' => $va_facet_info['element_code']))) {
+							if ($t_element->get('datatype') == 3) { // 3=list
+								if (!$vn_id) {
 									$t_list = new ca_lists();
-									$pn_id = $t_list->getRootListItemID($t_element->get('list_id'));
-								//}
-							}
-							foreach($va_facet as $vn_i => $va_item) {
-								if ($va_item['parent_id'] == $pn_id) {
-									$va_item['name'] = $va_item['label'];
-									$va_item['children'] = $va_item['child_count'];
-									unset($va_item['label']);
-									unset($va_item['child_count']);
-									$va_json_data[$va_item['id']] = $va_item;
+									$vn_id = $t_list->getRootListItemID($t_element->get('list_id'));
+								}
+								foreach($va_facet as $vn_i => $va_item) {
+									if ($va_item['parent_id'] == $vn_id) {
+										$va_item['item_id'] = $va_item['id'];
+										$va_item['name'] = $va_item['label'];
+										$va_item['children'] = $va_item['child_count'];
+										unset($va_item['label']);
+										unset($va_item['child_count']);
+										unset($va_item['id']);
+										$va_json_data[$va_item['item_id']] = $va_item;
+									}
 								}
 							}
- 						}
- 					}
- 					break;
- 				case 'label':
- 					// label facet
- 					$va_facet_info['table'] = $this->ops_tablename;
- 					// fall through to default case
- 				default:
-					if(!$pn_id) {
-						$ps_table_name = $va_facet_info['table'];
-						require_once(__CA_MODELS_DIR__.'/'.$ps_table_name.'.php');
-						$t_item = new $ps_table_name($pn_id);
-						$pn_id = $vn_root = $t_item->getHierarchyRootID();
-						$va_hierarchy_list = $t_item->getHierarchyList(true);
-						
-						$vn_last_id = null;
-						foreach($va_hierarchy_list as $vn_i => $va_item) {
-							$va_item['id'] = $va_item[$t_item->primaryKey()];
-							if (!isset($va_facet[$va_item['id']]) && ($vn_root == $va_item['id'])) { continue; }
-							unset($va_item['item_id']);
-							unset($va_item['parent_id']);
-							unset($va_item['label']);
-							$va_json_data[$va_item['id']] = $va_item;
-							$vn_last_id = $va_item['id'];
 						}
-						if (sizeof($va_json_data) == 2) {	// if only one hierarchy root (root +  _primaryKey in array) then don't bother showing it
-							$pn_id = $vn_last_id;
-							unset($va_json_data[$vn_last_id]);
-						}
-					}
-					if ($pn_id) {
-						foreach($va_facet as $vn_i => $va_item) {
-							if ($va_item['parent_id'] == $pn_id) {
-								$va_item['name'] = $va_item['label'];
-								$va_item['children'] = $va_item['child_count'];
-								unset($va_item['label']);
-								unset($va_item['child_count']);
-								$va_json_data[$va_item['id']] = $va_item;
+						break;
+					case 'label':
+						// label facet
+						$va_facet_info['table'] = $this->ops_tablename;
+						// fall through to default case
+					default:
+						if(!$vn_id) {
+							$va_hier_ids = $this->opo_browse->getHierarchyIDsForFacet($ps_facet_name, array('checkAccess' => $va_access_values));
+							$t_item = $this->opo_datamodel->getInstanceByTableName($va_facet_info['table']);
+							$t_item->load($vn_id);
+							$vn_id = $vn_root = $t_item->getHierarchyRootID();
+							$va_hierarchy_list = $t_item->getHierarchyList(true);
+							
+							$vn_last_id = null;
+							$vn_c = 0;
+							foreach($va_hierarchy_list as $vn_i => $va_item) {
+								if (!in_array($vn_i, $va_hier_ids)) { continue; }	// only show hierarchies that have items in browse result
+								if ($vn_start <= $vn_c) {
+									$va_item['item_id'] = $va_item[$t_item->primaryKey()];
+									if (!isset($va_facet[$va_item['item_id']]) && ($vn_root == $va_item['item_id'])) { continue; }
+									unset($va_item['parent_id']);
+									unset($va_item['label']);
+									$va_json_data[$va_item['item_id']] = $va_item;
+									$vn_last_id = $va_item['item_id'];
+								}
+								$vn_c++;
+								if (!is_null($vn_max_items_per_page) && ($vn_c >= ($vn_max_items_per_page + $vn_start))) { break; }
+							}
+							if (sizeof($va_json_data) == 2) {	// if only one hierarchy root (root +  _primaryKey in array) then don't bother showing it
+								$vn_id = $vn_last_id;
+								unset($va_json_data[$vn_last_id]);
 							}
 						}
-					}
-					break;
+						if ($vn_id) {
+							$vn_c = 0;
+							foreach($va_facet as $vn_i => $va_item) {
+								if ($va_item['parent_id'] == $vn_id) {
+									if ($vn_start <= $vn_c) {
+										$va_item['item_id'] = $va_item['id'];
+										$va_item['name'] = $va_item['label'];
+										$va_item['children'] = $va_item['child_count'];
+										unset($va_item['label']);
+										unset($va_item['child_count']);
+										unset($va_item['id']);
+										$va_json_data[$va_item['item_id']] = $va_item;
+									}									
+									$vn_c++;
+									if (!is_null($vn_max_items_per_page) && ($vn_c >= ($vn_max_items_per_page + $vn_start))) { break; }
+								}
+							}
+						}
+						break;
+				}
+				$va_level_data[$pn_id] = $va_json_data;
 			}
-			
  			if (!trim($this->request->getParameter('init', pString))) {
 				$this->opo_result_context->setParameter($ps_facet_name.'_browse_last_id', $pn_id);
 				$this->opo_result_context->saveContext();
 			}
  			
- 			$this->view->setVar('facet_list', $va_json_data);
+ 			$this->view->setVar('facet_list', $va_level_data);
  		
  			return $this->render('Browse/facet_hierarchy_level_json.php');
  		}
@@ -502,9 +541,8 @@
  					$va_facet_info['table'] = $this->ops_tablename;
  					// fall through to default case
  				default:
-					$ps_table_name = $va_facet_info['table'];
-					require_once(__CA_MODELS_DIR__.'/'.$ps_table_name.'.php');
-					$t_item = new $ps_table_name($pn_id);
+					$t_item = $this->opo_datamodel->getInstanceByTableName($va_facet_info['table']);
+					$t_item->load($pn_id);
 					
 					if (method_exists($t_item, "getHierarchyList")) { 
 						$va_access_values = caGetUserAccessValues($this->request);
@@ -598,10 +636,18 @@
  			return join("; ", $va_buf);
   		}
  		# -------------------------------------------------------
+ 		/**
+ 		 *
+ 		 */ 
+ 		public function getPartialResult($pa_options=null) {
+ 			$pa_options['search'] = $this->opo_browse;
+ 			return parent::getPartialResult($pa_options);
+ 		}
+ 		# -------------------------------------------------------
  		# Sidebar info handler
  		# -------------------------------------------------------
  		public function Tools($pa_parameters) {
- 			parent::Tools($pa_parameters, $po_search);
+ 			parent::Tools($pa_parameters);
 			
 			$this->view->setVar('mode_type_singular', $this->browseName('singular'));
 			$this->view->setVar('mode_type_plural', $this->browseName('plural'));

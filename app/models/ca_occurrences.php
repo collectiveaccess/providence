@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2008-2012 Whirl-i-Gig
+ * Copyright 2008-2013 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -338,6 +338,8 @@ class ca_occurrences extends BundlableLabelableBaseModelWithAttributes implement
 	 */
 	 public function getHierarchyList($pb_dummy=false) {
 	 	$vn_pk = $this->getPrimaryKey();
+	 	$vs_template = $this->getAppConfig()->get('ca_occurrences_hierarchy_browser_display_settings');
+	 	
 	 	if (!$vn_pk) { 
 	 		$o_db = new Db();
 	 		if (is_array($va_type_ids = caMergeTypeRestrictionLists($this, array())) && sizeof($va_type_ids)) {
@@ -365,7 +367,7 @@ class ca_occurrences extends BundlableLabelableBaseModelWithAttributes implement
 	 		while($qr_res->nextRow()) {
 	 			$va_hiers[$vn_occurrence_id = $qr_res->get('occurrence_id')] = array(
 	 				'occurrence_id' => $vn_occurrence_id,
-	 				'name' => $va_labels[$vn_occurrence_id],
+	 				'name' => caProcessTemplateForIDs($vs_template, 'ca_occurrences', array($vn_occurrence_id)),
 	 				'hierarchy_id' => $vn_occurrence_id,
 	 				'children' => (int)$qr_res->get('c')
 	 			);
@@ -391,12 +393,14 @@ class ca_occurrences extends BundlableLabelableBaseModelWithAttributes implement
 			$va_occurrence_hierarchy_root = array(
 				$t_occurrence->get($vs_hier_fld) => array(
 					'occurrence_id' => $vn_pk,
-					'name' => $vs_label,
+	 				'item_id' => $vn_pk,
+					'name' => $vs_name = caProcessTemplateForIDs($vs_template, 'ca_occurrences', array($vn_pk)),
 					'hierarchy_id' => $vn_hier_id,
 					'children' => sizeof($va_children)
 				),
 				'occurrence_id' => $vn_pk,
-				'name' => $vs_label,
+	 			'item_id' => $vn_pk,
+				'name' => $vs_name,
 				'hierarchy_id' => $vn_hier_id,
 				'children' => sizeof($va_children)
 			);
@@ -429,32 +433,44 @@ class ca_occurrences extends BundlableLabelableBaseModelWithAttributes implement
 	/**
 	 *
 	 */
-	public function getOccurrenceIDsByName($ps_name, $pn_parent_id=null) {
+	public function getOccurrenceIDsByName($ps_name, $pn_parent_id=null, $pn_type_id=null) {
 		$o_db = $this->getDb();
 		
-		if ($pn_parent_id) {
-			$qr_res = $o_db->query("
-				SELECT DISTINCT cap.occurrence_id
-				FROM ca_occurrences cap
-				INNER JOIN ca_occurrence_labels AS capl ON capl.occurrence_id = cap.occurrence_id
-				WHERE
-					capl.name = ? AND cap.parent_id = ?
-			", (string)$ps_name, (int)$pn_parent_id);
-		} else {
-			$qr_res = $o_db->query("
-				SELECT DISTINCT cap.occurrence_id
-				FROM ca_occurrences cap
-				INNER JOIN ca_occurrence_labels AS capl ON capl.occurrence_id = cap.occurrence_id
-				WHERE
-					capl.name = ?
-			", (string)$ps_name);
-
+		$va_params = array((string)$ps_name);
+		
+		$vs_type_sql = '';
+		if ($pn_type_id) {
+			if(sizeof($va_type_ids = caMakeTypeIDList('ca_occurrences', array($pn_type_id)))) {
+				$vs_type_sql = " AND cap.type_id IN (?)";
+				$va_params[] = $va_type_ids;
+			}
 		}
+		
+		if ($pn_parent_id) {
+			$vs_parent_sql = " AND cap.parent_id = ?";
+			$va_params[] = (int)$pn_parent_id;
+		} 
+		
+		$qr_res = $o_db->query($x="
+				SELECT DISTINCT cap.occurrence_id
+				FROM ca_occurrences cap
+				INNER JOIN ca_occurrence_labels AS capl ON capl.occurrence_id = cap.occurrence_id
+				WHERE
+					capl.name = ? {$vs_type_sql} {$vs_parent_sql} AND cap.deleted = 0
+			", $va_params);
+		
 		$va_occurrence_ids = array();
 		while($qr_res->nextRow()) {
 			$va_occurrence_ids[] = $qr_res->get('occurrence_id');
 		}
 		return $va_occurrence_ids;
+	}
+	# ------------------------------------------------------
+	/**
+	 *
+	 */
+	public function getIDsByLabel($pa_label_values, $pn_parent_id=null, $pn_type_id=null) {
+		return $this->getOccurrenceIDsByName($pa_label_values['name'], $pn_parent_id, $pn_type_id);
 	}
 	# ------------------------------------------------------
 }

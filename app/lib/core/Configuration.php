@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2000-2011 Whirl-i-Gig
+ * Copyright 2000-2012 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -757,7 +757,7 @@ class Configuration {
  * kind of configuration value was found.
  */
 	function get($ps_key) {
-		if (Configuration::$s_get_cache[$this->ops_md5_path][$ps_key]) { return Configuration::$s_get_cache[$this->ops_md5_path][$ps_key]; } 
+		if (isset(Configuration::$s_get_cache[$this->ops_md5_path][$ps_key]) && Configuration::$s_get_cache[$this->ops_md5_path][$ps_key]) { return Configuration::$s_get_cache[$this->ops_md5_path][$ps_key]; } 
 		$this->ops_error = "";
 
 		$vs_tmp = $this->getScalar($ps_key);
@@ -803,7 +803,7 @@ class Configuration {
 		if (isset($this->ops_config_settings["scalars"][$ps_key])) {
 			return $this->ops_config_settings["scalars"][$ps_key];
 		} else {
-			return null;
+			return false;
 		}
 	}
 	/* ---------------------------------------- */

@@ -93,14 +93,20 @@
 				});
 				
 				jQuery('#browseSearch').autocomplete(
-					'<?php print caNavUrl($this->request, 'lookup', 'Place', 'Get', array()); ?>', {minChars: 3, matchSubset: 1, matchContains: 1, delay: 800}
-				);
-				jQuery('#browseSearch').result(function(event, data, formatted) {
-					oHierBrowser.setUpHierarchy(data[1]);	// jump browser to selected item
-					if (stateCookieJar.get('placeBrowserIsClosed') == 1) {
-						jQuery("#browseToggle").click();
+					{
+						minLength: 3, delay: 800,
+						source: '<?php print caNavUrl($this->request, 'lookup', 'Place', 'Get', array('noInline' => 1)); ?>',
+						search: function(event, ui) {
+							if (parseInt(ui.item.id)) {
+								oHierBrowser.setUpHierarchy(ui.item.id);	// jump browser to selected item
+								if (stateCookieJar.get('placeBrowserIsClosed') == 1) {
+									jQuery("#browseToggle").click();
+								}
+							}
+							jQuery('#browseSearch').val('');
+						}
 					}
-				});
+				);
 				jQuery("#browseToggle").click(function() {
 					jQuery("#browse").slideToggle(350, function() { 
 						stateCookieJar.set('placeBrowserIsClosed', (this.style.display == 'block') ? 0 : 1); 

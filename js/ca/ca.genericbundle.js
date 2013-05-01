@@ -6,7 +6,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2008-2012 Whirl-i-Gig
+ * Copyright 2008-2013 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -41,6 +41,7 @@ var caUI = caUI || {};
 			templateClassName: 'caItemTemplate',
 			initialValueTemplateClassName: 'caItemTemplate',
 			itemListClassName: 'caItemList',
+			listItemClassName: 'caRelatedItem',
 			itemClassName: 'labelInfo',
 			localeClassName: 'labelLocale',
 			addButtonClassName: 'caAddItemButton',
@@ -48,6 +49,7 @@ var caUI = caUI || {};
 			showOnNewIDList: [],
 			hideOnNewIDList: [],
 			enableOnNewIDList: [],
+			disableOnExistingIDList: [],
 			counter: 0,
 			minRepeats: 0,
 			maxRepeats: 65535,
@@ -58,6 +60,10 @@ var caUI = caUI || {};
 			incrementLocalesForNewBundles: true,
 			defaultValues: {},
 			readonly: 0,
+			
+			sortInitialValuesBy: null,
+			firstItemColor: null,
+			lastItemColor: null,
 			
 			isSortable: false,
 			listSortOrderID: null,
@@ -77,7 +83,7 @@ var caUI = caUI || {};
 		}
 		
 		that.showUnsavedChangesWarning = function(b) {
-			if(typeof caUI.utils.showUnsavedChangesWarning === 'function') {
+			if(caUI && caUI.utils && typeof caUI.utils.showUnsavedChangesWarning === 'function') {
 				if (b === undefined) { b = true; }
 				caUI.utils.showUnsavedChangesWarning(b);
 			}
@@ -183,7 +189,7 @@ var caUI = caUI || {};
 					if (typeof(this.initialValues[id][info[1]]) == 'boolean') {
 						this.initialValues[id][info[1]] = (this.initialValues[id][info[1]]) ? '1' : '0';
 					}
-					jQuery(this.container + " #" + element_id + " option[value=" + this.initialValues[id][info[1]] +"]").attr('selected', true);
+					jQuery(this.container + " #" + element_id + " option[value=" + this.initialValues[id][info[1]] +"]").prop('selected', true);
 				}
 			}
 			
@@ -239,9 +245,20 @@ var caUI = caUI || {};
 						jQuery(that.container + ' #' + hide_id +'new_' + curCount).hide();}
 					);
 				}
+				
 				if (this.enableOnNewIDList.length > 0) {
-					jQuery.each(this.enableOnNewIDList, function(i, enable_id) { 
-						jQuery(that.container + ' #' + enable_id +'new_' + curCount).attr('disabled', false); }
+					jQuery.each(this.enableOnNewIDList, 
+						function(i, enable_id) { 
+							jQuery(that.container + ' #' + enable_id +'new_' + curCount).prop('disabled', false); 
+						}
+					);
+				}
+			} else {
+				if (this.disableOnExistingIDList.length > 0) {
+					jQuery.each(this.disableOnExistingIDList, 
+						function(i, disable_id) { 
+							jQuery(that.container + ' #' + disable_id + id).prop('disabled', true); 
+						}
 					);
 				}
 			}
@@ -258,15 +275,21 @@ var caUI = caUI || {};
 				if (defaultLocaleSelectedIndex !== false) {
 					if (jQuery(this.container + " #" + this.fieldNamePrefix + "locale_id_" + templateValues.n +" option:eq(" + defaultLocaleSelectedIndex + ")").length) {
 						// There's a locale drop-dow to mess with
-						jQuery(this.container + " #" + this.fieldNamePrefix + "locale_id_" + templateValues.n +" option:eq(" + defaultLocaleSelectedIndex + ")").attr('selected', true);
+						jQuery(this.container + " #" + this.fieldNamePrefix + "locale_id_" + templateValues.n +" option:eq(" + defaultLocaleSelectedIndex + ")").prop('selected', true);
 					} else {
 						// No locale drop-down, or it somehow doesn't include the locale we want
 						jQuery(this.container + " #" + this.fieldNamePrefix + "locale_id_" + templateValues.n).after("<input type='hidden' name='" + this.fieldNamePrefix + "locale_id_" + templateValues.n + "' value='" + that.defaultLocaleID + "'/>");
 						jQuery(this.container + " #" + this.fieldNamePrefix + "locale_id_" + templateValues.n).remove();
-						
 					}
 				} else {
-				  jQuery(this.container + " #" + this.fieldNamePrefix + "locale_id_" + templateValues.n +" option[value=" + that.defaultLocaleID + "]").attr('selected', true);
+					if (jQuery(this.container + " #" + this.fieldNamePrefix + "locale_id_" + templateValues.n +" option[value=" + that.defaultLocaleID + "]").length) {
+						// There's a locale drop-dow to mess with
+						jQuery(this.container + " #" + this.fieldNamePrefix + "locale_id_" + templateValues.n +" option[value=" + that.defaultLocaleID + "]").prop('selected', true);
+					} else {
+						// No locale drop-down, or it somehow doesn't include the locale we want
+						jQuery(this.container + " #" + this.fieldNamePrefix + "locale_id_" + templateValues.n).after("<input type='hidden' name='" + this.fieldNamePrefix + "locale_id_" + templateValues.n + "' value='" + that.defaultLocaleID + "'/>");
+						jQuery(this.container + " #" + this.fieldNamePrefix + "locale_id_" + templateValues.n).remove();
+					}
 				}
 			}
 			
@@ -302,7 +325,18 @@ var caUI = caUI || {};
 			if (this.getCount() >= this.maxRepeats) {
 				jQuery(this.container + " ." + this.addButtonClassName).hide();	
 			} else {
-				jQuery(this.container + " ." + this.addButtonClassName).show(200);
+				jQuery(this.container + " ." + this.addButtonClassName).show();
+			}
+			
+			// colorize
+			if ((options.firstItemColor) || (options.lastItemColor)) {
+				jQuery(this.container + " ." + options.listItemClassName).css('background-color', '');
+				if (options.firstItemColor) {
+					jQuery(this.container + " ." + options.listItemClassName + ":first").css('background-color', '#' + options.firstItemColor);
+				}
+				if (options.lastItemColor) {
+					jQuery(this.container + " ." + options.listItemClassName + ":last").css('background-color', '#' + options.lastItemColor);
+				}
 			}
 			return this;
 		};
@@ -344,8 +378,24 @@ var caUI = caUI || {};
 		
 		// create initial values
 		var initalizedCount = 0;
+		var initialValuesSorted = [];
+		
+		// create an array so we can sort
 		jQuery.each(that.initialValues, function(k, v) {
-			that.addToBundle(k, v, true);
+			v['_key'] = k;
+			initialValuesSorted.push(v);
+		});
+		
+		// perform configured sort
+		if (that.sortInitialValuesBy) {
+			initialValuesSorted.sort(function(a, b) { 
+				return a[that.sortInitialValuesBy] - b[that.sortInitialValuesBy];
+			});
+		}
+		
+		// create the bundles
+		jQuery.each(initialValuesSorted, function(k, v) {
+			that.addToBundle(v['_key'], v, true);
 			initalizedCount++;
 		});
 		
@@ -391,6 +441,10 @@ var caUI = caUI || {};
 			if (that.listSortItems) {
 				opts['items'] = that.listSortItems;
 			}
+			opts['stop'] = function(e, ui) {
+				that.updateBundleFormState();
+			};
+			
 			jQuery(that.container + " .caItemList").sortable(opts);
 			
 			that._updateSortOrderListIDFormElement();

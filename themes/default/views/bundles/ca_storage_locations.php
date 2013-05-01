@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2009-2012 Whirl-i-Gig
+ * Copyright 2009-2013 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -35,28 +35,65 @@
 	$va_settings 		= $this->getVar('settings');
 	$vs_add_label 		= $this->getVar('add_label');
 	$va_rel_types		= $this->getVar('relationship_types');
-	
+	$vb_batch			= $this->getVar('batch');
+
+	$vs_first_color 	= 	((isset($va_settings['colorFirstItem']) && $va_settings['colorFirstItem'])) ? $va_settings['colorFirstItem'] : '';
+	$vs_last_color 		= 	((isset($va_settings['colorLastItem']) && $va_settings['colorLastItem'])) ? $va_settings['colorLastItem'] : '';
+		
+	$vs_sort			=	((isset($va_settings['sort']) && $va_settings['sort'])) ? $va_settings['sort'] : '';
 	$vb_read_only		=	((isset($va_settings['readonly']) && $va_settings['readonly'])  || ($this->request->user->getBundleAccessLevel($t_instance->tableName(), 'ca_storage_locations') == __CA_BUNDLE_ACCESS_READONLY__));
+	$vb_dont_show_del	=	((isset($va_settings['dontShowDeleteButton']) && $va_settings['dontShowDeleteButton'])) ? true : false;
 	
 	$va_initial_values	= $this->getVar('initialValues');
 	
 	// params to pass during occurrence lookup
 	$va_lookup_params = (isset($va_settings['restrict_to_type']) && $va_settings['restrict_to_type']) ? array('type' => $va_settings['restrict_to_type'], 'noSubtypes' => (int)$va_settings['dont_include_subtypes_in_type_restriction']) : array();
+
+	if ($vb_batch) {
+		print caBatchEditorRelationshipModeControl($t_item, $vs_id_prefix);
+	} else {
+		print caEditorBundleShowHideControl($this->request, $vs_id_prefix.$t_item->tableNum().'_rel');
+	}
 ?>
-<div id="<?php print $vs_id_prefix.$t_item->tableNum().'_rel'; ?>">
+<div id="<?php print $vs_id_prefix.$t_item->tableNum().'_rel'; ?>" <?php print $vb_batch ? "class='editorBatchBundleContent'" : ''; ?>>
 <?php
 	//
 	// Template to generate display for existing items
 	//
 ?>
-	<textarea class='caItemTemplate' style='display: none;'>
-		<div id="<?php print $vs_id_prefix; ?>Item_{n}" class="labelInfo roundedRel">
-			<a href="<?php print urldecode(caEditorUrl($this->request, 'ca_storage_locations', '{location_id}')); ?>" class="caEditItemButton" id="<?php print $vs_id_prefix; ?>_edit_related_{n}">{{_display}}</a>
-			({{relationship_typename}})
+	<textarea class='caItemTemplate' style='display: none;' <?php print $vb_batch ? "class='editorBatchBundleContent'" : ''; ?>>
+<?php
+	switch($va_settings['list_format']) {
+		case 'list':
+?>
+		<div id="<?php print $vs_id_prefix; ?>Item_{n}" class="labelInfo listRel caRelatedItem">
+<?php
+	if (!$vb_read_only && !$vb_dont_show_del) {
+?>				
+			<a href="#" class="caDeleteItemButton listRelDeleteButton"><?php print caNavIcon($this->request, __CA_NAV_BUTTON_DEL_BUNDLE__); ?></a>
+<?php
+	}
+?>
+			<a href="<?php print urldecode(caEditorUrl($this->request, 'ca_occurrences', '{occurrence_id}')); ?>" class="caEditItemButton" id="<?php print $vs_id_prefix; ?>_edit_related_{n}"></a>
+<?php
+			print caGetRelationDisplayString($this->request, 'ca_storage_locations', array(), array('display' => '_display', 'makeLink' => false));
+?>
+			<input type="hidden" name="<?php print $vs_id_prefix; ?>_type_id{n}" id="<?php print $vs_id_prefix; ?>_type_id{n}" value="{type_id}"/>
+			<input type="hidden" name="<?php print $vs_id_prefix; ?>_id{n}" id="<?php print $vs_id_prefix; ?>_id{n}" value="{id}"/>
+		</div>
+<?php
+			break;
+		case 'bubbles':
+		default:
+?>
+		<div id="<?php print $vs_id_prefix; ?>Item_{n}" class="labelInfo roundedRel caRelatedItem">
+<?php
+			print caGetRelationDisplayString($this->request, 'ca_storage_locations', array('class' => 'caEditItemButton', 'id' => "{$vs_id_prefix}_edit_related_{n}"), array('display' => 'label', 'makeLink' => true));
+?>
 			<input type="hidden" name="<?php print $vs_id_prefix; ?>_type_id{n}" id="<?php print $vs_id_prefix; ?>_type_id{n}" value="{type_id}"/>
 			<input type="hidden" name="<?php print $vs_id_prefix; ?>_id{n}" id="<?php print $vs_id_prefix; ?>_id{n}" value="{id}"/>
 <?php
-	if (!$vb_read_only) {
+	if (!$vb_read_only && !$vb_dont_show_del) {
 ?>				
 			<a href="#" class="caDeleteItemButton"><?php print caNavIcon($this->request, __CA_NAV_BUTTON_DEL_BUNDLE__); ?></a>
 <?php
@@ -65,6 +102,9 @@
 			<div style="display: none;" class="itemName">{label}</div>
 			<div style="display: none;" class="itemIdno">{idno_sort}</div>
 		</div>
+<?php
+	}
+?>
 	</textarea>
 <?php
 	//
@@ -73,14 +113,14 @@
 ?>
 	<textarea class='caNewItemTemplate' style='display: none;'>
 		<div style="clear: both; width: 1px; height: 1px;"><!-- empty --></div>
-		<div id="<?php print $vs_id_prefix; ?>Item_{n}" class="labelInfo">
+		<div id="<?php print $vs_id_prefix; ?>Item_{n}" class="labelInfo caRelatedItem">
 <?php
 	if (!(bool)$va_settings['useHierarchicalBrowser']) {
 ?>
 			<table class="caListItem">
 				<tr>
 					<td>
-						<input type="text" size="60" name="<?php print $vs_id_prefix; ?>_autocomplete{n}" value="{{_display}}" id="<?php print $vs_id_prefix; ?>_autocomplete{n}" class="lookupBg"/>
+						<input type="text" size="60" name="<?php print $vs_id_prefix; ?>_autocomplete{n}" value="{{label}}" id="<?php print $vs_id_prefix; ?>_autocomplete{n}" class="lookupBg"/>
 					</td>
 					<td>
 						<select name="<?php print $vs_id_prefix; ?>_type_id{n}" id="<?php print $vs_id_prefix; ?>_type_id{n}" style="display: none;"></select>
@@ -134,17 +174,23 @@
 						
 						currentSelectionDisplayID: '<?php print $vs_id_prefix; ?>_browseCurrentSelectionText{n}',
 						onSelection: function(item_id, parent_id, name, display, type_id) {
-							caRelationBundle<?php print $vs_id_prefix; ?>.select('{n}', [0, item_id, type_id], display);
+							caRelationBundle<?php print $vs_id_prefix; ?>.select('{n}', {id: item_id, type_id: type_id}, display);
 						}
 					});
 					
 					jQuery('#<?php print $vs_id_prefix; ?>_hierarchyBrowserSearch{n}').autocomplete(
-						'<?php print caNavUrl($this->request, 'lookup', 'StorageLocation', 'Get'); ?>', {minChars: 3, matchSubset: 1, matchContains: 1, delay: 800, extraParams: {}}
+						{
+							source: '<?php print caNavUrl($this->request, 'lookup', 'StorageLocation', 'Get', array('noInline' => 1)); ?>',
+							minLength: 3, delay: 800, html: true,
+							select: function(event, ui) {
+								if (parseInt(ui.item.id) > 0) {
+									<?php print $vs_id_prefix; ?>oHierBrowser{n}.setUpHierarchy(ui.item.id);	// jump browser to selected item
+								}
+								event.preventDefault();
+								jQuery('#<?php print $vs_id_prefix; ?>_hierarchyBrowserSearch{n}').val('');
+							}
+						}
 					);
-					
-					jQuery('#<?php print $vs_id_prefix; ?>_hierarchyBrowserSearch{n}').result(function(event, data, formatted) {
-						<?php print $vs_id_prefix; ?>oHierBrowser{n}.setUpHierarchy(data[1]);	// jump browser to selected item
-					});
 				});
 			</script>
 <?php
@@ -155,7 +201,7 @@
 	
 	<div class="bundleContainer">
 <?php
-	if(sizeof($va_initial_values) && !$vb_read_only) {
+	if(sizeof($va_initial_values) && !$vb_read_only && !$vs_sort) {
 ?>
 		<div class="caItemListSortControlTrigger" id="<?php print $vs_id_prefix; ?>caItemListSortControlTrigger">
 			<?php print _t('Sort by'); ?>
@@ -185,21 +231,47 @@
 ?>
 	</div>
 </div>
-			
+	
+<div id="caRelationQuickAddPanel<?php print $vs_id_prefix; ?>" class="caRelationQuickAddPanel"> 
+	<div id="caRelationQuickAddPanel<?php print $vs_id_prefix; ?>ContentArea">
+	<div class='dialogHeader'><?php print _t('Quick Add', $t_item->getProperty('NAME_SINGULAR')); ?></div>
+		
+	</div>
+</div>		
 <script type="text/javascript">
+	var caRelationQuickAddPanel<?php print $vs_id_prefix; ?>;
 	var caRelationBundle<?php print $vs_id_prefix; ?>;
 	jQuery(document).ready(function() {
 		jQuery('#<?php print $vs_id_prefix; ?>caItemListSortControlTrigger').click(function() { jQuery('#<?php print $vs_id_prefix; ?>caItemListSortControls').slideToggle(200); });
 		jQuery('#<?php print $vs_id_prefix; ?>caItemListSortControls a.caItemListSortControl').click(function() {jQuery('#<?php print $vs_id_prefix; ?>caItemListSortControls').slideUp(200); });
 		
+		if (caUI.initPanel) {
+			caRelationQuickAddPanel<?php print $vs_id_prefix; ?> = caUI.initPanel({ 
+				panelID: "caRelationQuickAddPanel<?php print $vs_id_prefix; ?>",						/* DOM ID of the <div> enclosing the panel */
+				panelContentID: "caRelationQuickAddPanel<?php print $vs_id_prefix; ?>ContentArea",		/* DOM ID of the content area <div> in the panel */
+				exposeBackgroundColor: "#000000",				
+				exposeBackgroundOpacity: 0.7,					
+				panelTransitionSpeed: 400,						
+				closeButtonSelector: ".close",
+				center: true,
+				onOpenCallback: function() {
+					jQuery("#topNavContainer").hide(250);
+				},
+				onCloseCallback: function() {
+					jQuery("#topNavContainer").show(250);
+				}
+			});
+		}
+		
 		caRelationBundle<?php print $vs_id_prefix; ?> = caUI.initRelationBundle('#<?php print $vs_id_prefix.$t_item->tableNum().'_rel'; ?>', {
 			fieldNamePrefix: '<?php print $vs_id_prefix; ?>_',
-			templateValues: ['_display', 'type_id', 'id'],
+			templateValues: ['label', 'type_id', 'id'],
 			initialValues: <?php print json_encode($va_initial_values); ?>,
 			itemID: '<?php print $vs_id_prefix; ?>Item_',
 			templateClassName: 'caNewItemTemplate',
 			initialValueTemplateClassName: 'caItemTemplate',
 			itemListClassName: 'caItemList',
+			listItemClassName: 'caRelatedItem',
 			addButtonClassName: 'caAddItemButton',
 			deleteButtonClassName: 'caDeleteItemButton',
 			hideOnNewIDList: ['<?php print $vs_id_prefix; ?>_edit_related_'],
@@ -208,14 +280,19 @@
 			autocompleteUrl: '<?php print caNavUrl($this->request, 'lookup', 'StorageLocation', 'Get', $va_lookup_params); ?>',
 			minChars:1,
 			readonly: <?php print $vb_read_only ? "true" : "false"; ?>,
-			isSortable: <?php print $vb_read_only ? "false" : "true"; ?>,
+			isSortable: <?php print ($vb_read_only || $vs_sort) ? "false" : "true"; ?>,
 			listSortOrderID: '<?php print $vs_id_prefix; ?>BundleList',
-			listSortItems: 'div.roundedRel'
+			listSortItems: 'div.roundedRel',			
+			autocompleteInputID: '<?php print $vs_id_prefix; ?>_autocomplete',
+			quickaddPanel: caRelationQuickAddPanel<?php print $vs_id_prefix; ?>,
+			quickaddUrl: '<?php print caNavUrl($this->request, 'editor/storage_locations', 'StorageLocationQuickAdd', 'Form', array('location_id' => 0)); ?>',
+			firstItemColor: '<?php print $vs_first_color; ?>',
+			lastItemColor: '<?php print $vs_last_color; ?>'
 		});
 	});
 </script>
 <?php
 	foreach($va_initial_values as $vn_id => $va_info) {
-		TooltipManager::add("#{$vs_id_prefix}_edit_related_{$vn_id}", "<h2>".$va_info['_display']."</h2>");
+		TooltipManager::add("#{$vs_id_prefix}_edit_related_{$vn_id}", "<h2>".$va_info['label']."</h2>");
 	}
 ?>

@@ -89,11 +89,21 @@
 				return null; 
 			}
 			
-			$va_mapping_rels = $o_mapping->getRelationships();
-			
+			$va_mapping_rels = $o_mapping->getGroups(null, array('includeRules' => true));
+		
 			$va_mapping_rels_by_group = array();
 			foreach($va_mapping_rels as $vn_i => $va_rel_info) {
-				$va_mapping_rels_by_group[$va_rel_info['group_code']][] = $va_rel_info;
+				$va_rule_proc = array();	
+				foreach($va_rel_info['rules'] as $va_rule) {
+					$va_rule_proc = array(
+						'destination' => $va_rel_info['external_base_path'].$va_rule['external_path_suffix'],
+						'target' => $va_rel_info['ca_base_path'].'.'.$va_rule['ca_path_suffix']
+					);
+				}
+			
+				if (sizeof($va_rule_proc)) {
+					$va_mapping_rels_by_group[$va_rel_info['group_code']][] = $va_rule_proc;
+				}
 			}
 			
 			$o_dm = Datamodel::load();
@@ -101,11 +111,12 @@
 			
 			$va_settings = $o_mapping->get('settings');
 			$t_list = new ca_lists();
-			$pa_options['type_id'] = $t_list->getItemIDFromList($t_instance->getTypeListCode(), $va_settings['type']);
+			$pa_options['type_id'] = $t_list->getItemIDFromList($t_instance->getTypeListCode(), 'object'); //$va_settings['type']);
 			$pa_options['settings'] = $va_settings;
 			$pa_options['mapping_code'] = $o_mapping->get('mapping_code');
+			$pa_options['mappings_by_group'] = $va_mapping_rels_by_group;
 
-			return $this->opo_format->import($pm_data, $this, $va_mapping_rels_by_group, $t_instance, $pa_options);
+			return $this->opo_format->import($pm_data, $this, $pa_options);
 		}
 		# -------------------------------------------------------
 		/**
@@ -154,12 +165,12 @@
 			
 			foreach($pa_mappings_by_group as $vs_group => $va_mappings) {
 				foreach($va_mappings as $vn_i => $va_mapping) {
-					$va_tmp = explode('.', $va_mapping['bundle_name'].'.'.$va_mapping['element_name']);
+					$va_tmp = explode('.', $va_mapping['target']);
 					$va_dest_elements = explode('/', $va_mapping['destination']);
 					
 					if (($va_tmp[0] == $po_instance->tableName()) && ($va_tmp[1] == $vs_idno_fld)) {
-						
 						$va_b = $pa_record;
+						
 						foreach($va_dest_elements as $vs_x) {
 							if (!$vs_x) { continue; }
 							if (!($va_b = $va_b[$vs_x])) { break; }
@@ -190,7 +201,7 @@
 			//
 			
 			if (!$vs_idno_value && !$vs_pref_label_value && (!isset($pa_record['_alt_identifer']) || !$pa_record['_alt_identifer'])) { return null; }		// skip blanks
-			
+	
 			$va_idno_value_array = array($vs_idno_fld => $vs_idno_value);
 			$va_label_value_array = array($vs_pref_label_fld => $vs_pref_label_value);
 			$va_alt_value_array = array($vs_idno_fld => $pa_record['_alt_identifer']);
@@ -224,7 +235,7 @@
 				}
 			} else {
 				$po_instance->set('locale_id', $g_ui_locale_id);
-				$po_instance->set('type_id', $pa_options['type_id']);
+				$po_instance->set('type_id', 'object');//$pa_options['type_id']);
 				$po_instance->set('access', 0);
 				$po_instance->set('status', 0);
 			}
@@ -249,7 +260,7 @@
 					
 					
 					$va_settings = $va_mapping['settings'];
-					$vn_locale_id = $g_ui_locale_id; // Maybe set from per-mapping setting at some point?
+					$vn_locale_id = 1; //$g_ui_locale_id; // Maybe set from per-mapping setting at some point?
 				
 				
 					// Set preferred list_id for imported list items
@@ -262,7 +273,7 @@
 						}
 					}
 					
-					$va_bundle_path_elements = explode('.', $va_mapping['bundle_name'].'.'.$va_mapping['element_name']);
+					$va_bundle_path_elements = explode('.', $va_mapping['target']);
 					$va_dest_path_elements = explode('/', $va_mapping['destination']);
 					
 					$va_dest_name_parts = explode(':', $va_dest_path_elements[sizeof($va_dest_path_elements) - 1]);
@@ -356,6 +367,7 @@
 
 					// Loop through values
 					$va_cur_dest_path_elements = $va_dest_path_elements;
+				
 					foreach($va_val as $vn_index => $vm_val) {
 						if (!$vm_val) { continue; }
 						$va_dest_path_elements = $va_cur_dest_path_elements;
@@ -390,11 +402,13 @@
 							if ($po_instance->hasField($va_bundle_path_elements[1])) {
 								// intrinsic field
 								$po_instance->set($va_bundle_path_elements[1], $vs_val);
+								print "Set ".$va_bundle_path_elements[1]." to $vs_val \n";
 							} else {
 								switch($va_bundle_path_elements[1]) {
 									case 'preferred_labels':
 										$va_preferred_labels[$vn_locale_id][$va_bundle_path_elements[2]] = $vs_val;
 										if (!$vb_is_fixed_value) { $vb_actual_value_was_set = true; }
+										print "set label to $vs_val\n";
 										break;
 									case 'nonpreferred_labels':
 										$va_nonpreferred_labels[$vn_locale_id][$vn_index][$va_bundle_path_elements[2]] = $vs_val;
@@ -404,9 +418,8 @@
 										// attribute?
 										
 										if (!$va_bundle_path_elements[2]) { $va_bundle_path_elements[2] = $va_bundle_path_elements[1]; }
-										
 										if ($t_element->load(array('element_code' =>$va_bundle_path_elements[2]))) {
-										 
+										
 											switch($t_element->get('datatype')) {
 												case 3:	// list
 													$vn_item_id = null;
@@ -449,8 +462,8 @@
 							
 							if (!$vm_val) { continue; }
 							if($t_rel = $o_dm->getInstanceByTableName($va_bundle_path_elements[0], true)) {
-								
-								$vp_ptr =& $va_related[$vs_group][$va_mapping['bundle_name']][$vn_index];
+								$va_tmp = explode(".", $va_mapping['target']);
+								$vp_ptr =& $va_related[$vs_group][$va_tmp[0]][$vn_index];
 								
 								$va_all_dest_path_elements = explode('/', $va_mapping['destination']);
 								foreach($va_all_dest_path_elements as $vs_element) {
@@ -475,8 +488,9 @@
 								
 								if ($vb_is_set) {
 									$vp_ptr = $vm_val;
-									if ($va_mapping['element_name'] == '_relationship_type') {
-										$va_related[$vs_group][$va_mapping['bundle_name']][$vn_index]['_relationship_type'] = $vm_val;
+									$va_tmp = explode(".", $va_mapping['target']);
+									if ($va_tmp[1] == '_relationship_type') {
+										$va_related[$vs_group][$va_tmp[0]][$vn_index]['_relationship_type'] = $vm_val;
 									}
 									$vb_actual_value_was_set = true;
 								}
@@ -516,6 +530,7 @@
 			// --------------------------------
 			// Write data to database
 			// --------------------------------
+			print_R($va_attributes);
 			foreach($va_attributes as $vs_parent_element => $va_value_list) {
 				
 				if (($vb_update_existing_record)  && isset($pa_options['settings']['removeExistingAttributesOnUpdate']) && $pa_options['settings']['removeExistingAttributesOnUpdate']) {
@@ -618,7 +633,7 @@
 			}
 			
 			// Log insert
-			$po_data_import_event->addItem((int)$po_instance->tableNum(), (int)$po_instance->getPrimaryKey(), (string)($vb_update_existing_record ? 'U' : 'I'));
+			//$po_data_import_event->addItem((int)$po_instance->tableNum(), (int)$po_instance->getPrimaryKey(), (string)($vb_update_existing_record ? 'U' : 'I'));
 			
 			
 			// Needs to have a label if one is not defined

@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2009-2012 Whirl-i-Gig
+ * Copyright 2009-2013 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -38,14 +38,14 @@
  * Plugin for processing images using ImageMagick via the Imagick PECL extension
 */
 
-include_once(__CA_LIB_DIR__."/core/Plugins/WLPlug.php");
+include_once(__CA_LIB_DIR__."/core/Plugins/Media/BaseMediaPlugin.php");
 include_once(__CA_LIB_DIR__."/core/Plugins/IWLPlugMedia.php");
 include_once(__CA_LIB_DIR__."/core/Parsers/TilepicParser.php");
 include_once(__CA_LIB_DIR__."/core/Configuration.php");
 include_once(__CA_APP_DIR__."/helpers/mediaPluginHelpers.php");
 include_once(__CA_LIB_DIR__."/core/Parsers/MediaMetadata/XMPParser.php");
 
-class WLPlugMediaImagick Extends WLPlug Implements IWLPlugMedia {
+class WLPlugMediaImagick Extends BaseMediaPlugin Implements IWLPlugMedia {
 	var $errors = array();
 	
 	var $ps_filepath;
@@ -83,6 +83,7 @@ class WLPlugMediaImagick Extends WLPlug Implements IWLPlugMedia {
 			"image/x-sony-srf"	=> "srf",
 			"image/x-sigma-x3f"	=> "x3f",
 			"image/x-dcraw"	=> "raw",
+			"application/dicom" => "dcm",
 		),
 		"EXPORT" => array(
 			"image/jpeg" 		=> "jpg",
@@ -107,6 +108,7 @@ class WLPlugMediaImagick Extends WLPlug Implements IWLPlugMedia {
 			"image/x-sony-srf"	=> "srf",
 			"image/x-sigma-x3f"	=> "x3f",
 			"image/x-dcraw"	=> "raw",
+			"application/dicom" => "dcm",
 		),
 		"TRANSFORMATIONS" => array(
 			"SCALE" 			=> array("width", "height", "mode", "antialiasing"),
@@ -169,6 +171,7 @@ class WLPlugMediaImagick Extends WLPlug Implements IWLPlugMedia {
 		"image/x-sony-srf"	=> "Sony SRF RAW Image",
 		"image/x-sigma-x3f"	=> "Sigma X3F RAW Image",
 		"image/x-dcraw"	=> "RAW Image",
+		"application/dicom" => "DICOM medical imaging data",
 	);
 	
 	var $magick_names = array(
@@ -194,6 +197,7 @@ class WLPlugMediaImagick Extends WLPlug Implements IWLPlugMedia {
 		"image/x-sony-srf"	=> "SRF",
 		"image/x-sigma-x3f"	=> "X3F",
 		"image/x-dcraw"	=> "RAW",
+		"application/dicom" => "DCM",
 	);
 	
 	#
@@ -509,7 +513,7 @@ class WLPlugMediaImagick Extends WLPlug Implements IWLPlugMedia {
 					
 					// exif
 					if(function_exists('exif_read_data')) {
-						if (is_array($va_exif = @exif_read_data($ps_filepath, 'EXIF', true, false))) { 							
+						if (is_array($va_exif = caSanitizeArray(@exif_read_data($ps_filepath, 'EXIF', true, false)))) { 							
 							//
 							// Rotate incoming image as needed
 							//
@@ -989,7 +993,59 @@ class WLPlugMediaImagick Extends WLPlug Implements IWLPlugMedia {
 	 */
 	# This method must be implemented for plug-ins that can output preview frames for videos or pages for documents
 	public function &writePreviews($ps_filepath, $pa_options) {
-		return null;
+		if(!$this->handle) { return false; }
+		if($this->handle->getNumberImages() < 2) { return false; } // don't generate previews for single images
+
+		if (!isset($pa_options['outputDirectory']) || !$pa_options['outputDirectory'] || !file_exists($pa_options['outputDirectory'])) {
+			if (!($vs_tmp_dir = $this->opo_config->get("taskqueue_tmp_directory"))) {
+				// no dir
+				return false;
+			}
+		} else {
+			$vs_tmp_dir = $pa_options['outputDirectory'];
+		}
+
+		$vs_output_file_prefix = tempnam($vs_tmp_dir, 'caMultipagePreview');
+
+		$va_files = array();
+		$vn_i = 0;
+
+		foreach($this->handle as $image){
+			$image->writeImage($vs_output_file_prefix.sprintf("_%05d", $vn_i).".jpg");
+			$va_files[$vn_i] = $vs_output_file_prefix.sprintf("_%05d", $vn_i).'.jpg';
+			$vn_i++;
+		}
+
+		@unlink($vs_output_file_prefix);
+		return $va_files;
+	}
+	# ------------------------------------------------
+	public function joinArchiveContents($pa_files, $pa_options = array()) {
+		if(!is_array($pa_files)) { return false; }
+
+		$vs_archive_original = tempnam(caGetTempDirPath(), "caArchiveOriginal");
+		@rename($vs_archive_original, $vs_archive_original.".tif");
+		$vs_archive_original = $vs_archive_original.".tif";
+
+		$vo_orig = new Imagick();
+
+		foreach($pa_files as $vs_file){
+			if(file_exists($vs_file)){
+				$vo_imagick = new Imagick();
+
+				if($vo_imagick->readImage($vs_file)){
+					$vo_orig->addImage($vo_imagick);
+				}
+			}
+		}
+
+		if($vo_orig->getNumberImages() > 0){
+			if($vo_orig->writeImages($vs_archive_original,true)){
+				return $vs_archive_original;
+			}
+		}
+
+		return false;
 	}
 	# ------------------------------------------------
 	public function getOutputFormats() {

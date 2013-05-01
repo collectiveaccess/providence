@@ -75,7 +75,7 @@
 ?>
 					<br/><br/>
 <?php
-					_p('Don\'t see a suitable profile? Browse our <a href="http://www.CollectiveAccess.org/support/library" target="_blank">installation profile library</a> for additional configurations developed by the CollectiveAccess user community. To install a new profile simply copy the file into the <i>install/profiles</i> directory on your server and reload the installer in your web browser.');
+					_p('Don\'t see a suitable profile? Browse our <a href="http://www.CollectiveAccess.org/support/library" target="_blank">installation profile library</a> for additional configurations developed by the CollectiveAccess user community. To install a new profile simply copy the file into the <i>install/profiles/xml</i> directory on your server and reload the installer in your web browser.');
 ?>
 				</div>
 			</div><!-- end formItem -->

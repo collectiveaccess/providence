@@ -46,8 +46,8 @@
  			}
  		}
  		# -------------------------------------------------------
- 		public function Edit() {
- 			$vn_ret = parent::Edit();
+ 		public function Edit($pa_values=null, $pa_options=null) {
+ 			$vn_ret = parent::Edit($pa_values, $pa_options);
  			
  			$t_subject = $this->view->getVar("t_subject");
  			$t_set = new ca_sets($vn_set_id = $t_subject->get('set_id'));

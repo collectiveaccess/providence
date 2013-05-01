@@ -44,7 +44,7 @@
 	
 	$vs_searchNav = "<div class='searchNav'>";
 		
-	if($this->getVar('num_pages') > 1){
+	if(($this->getVar('num_pages') > 1) && !$this->getVar('dontShowPages')){
 		$vs_searchNav .= "<div class='nav'>";
 		if ($this->getVar('page') > 1) {
 			$vs_searchNav .= "<a href='#' onclick='jQuery(\"#resultBox\").load(\"".caNavUrl($this->request, 'find', $this->request->getController(), $this->request->getAction(), $va_previous_link_params)."\"); return false;' class='button'>&lsaquo; Previous</a>";

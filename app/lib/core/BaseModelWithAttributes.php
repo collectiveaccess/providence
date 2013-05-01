@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2008-2012 Whirl-i-Gig
+ * Copyright 2008-2013 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -48,6 +48,7 @@
 		static $s_element_id_lookup_cache = array();
  		static $s_element_instance_cache = array();
  		static $s_element_code_lookup_cache = array();
+ 		static $s_element_datatype_lookup_cache = array();
 		# ------------------------------------------------------------------
 		protected $opa_failed_attribute_inserts;
 		protected $opa_failed_attribute_updates;
@@ -82,7 +83,7 @@
 			$vn_element_id = $t_element->getPrimaryKey();
 			
 			// check restriction min/max settings
-			$t_restriction = $t_element->getTypeRestrictionInstance($this->tableNum(), $this->getTypeID());
+			$t_restriction = $t_element->getTypeRestrictionInstanceForElement($this->tableNum(), $this->getTypeID());
 			if (!$t_restriction) { return null; }		// attribute not bound to this type
 			$vn_min = $t_restriction->getSetting('minAttributesPerRow');
 			$vn_max = $t_restriction->getSetting('maxAttributesPerRow');
@@ -241,7 +242,7 @@
 			// check restriction min/max settings
 			if (!isset($pa_options['dontCheckMinMax']) || !$pa_options['dontCheckMinMax']) { 
 				if (!($t_element = $this->_getElementInstance($t_attr->get('element_id')))) { return false; }
-				$t_restriction = $t_element->getTypeRestrictionInstance($this->tableNum(), $this->getTypeID());
+				$t_restriction = $t_element->getTypeRestrictionInstanceForElement($this->tableNum(), $this->getTypeID());
 				if (!$t_restriction) { return null; }		// attribute not bound to this type
 				$vn_min = $t_restriction->getSetting('minAttributesPerRow');
 				$vn_max = $t_restriction->getSetting('maxAttributesPerRow');
@@ -291,11 +292,16 @@
 		}
 		# ------------------------------------------------------------------
 		/** 
-		 * removes all attributes from current row of specified element, or all attributes regardless of 
+		 * Removes all attributes from current row of specified element, or all attributes regardless of 
 		 * element if $pm_element_code_or_id is omitted
 		 *
-		 * Note that this method does not respect the minAttributesPerRow type restriction setting. It always
-		 * removes *all* attributes
+		 * Note that this method respects the minAttributesPerRow type restriction setting and will only delete attributes until the minimum permissible
+		 * number of reached. If you wish to remove *all* attributes, ignoring any minAttributesPerRow constraints, pass the 'force' option set to true. 
+		 *
+		 * @param mixed $pm_element_code_or_id
+		 * @param array $pa_options Options are:
+		 *		force = if set to true all attributes are removed, even if there is a non-zero minAttributesPerRow constraint set
+		 * @return bool True on success, false on error
 		 */
 		public function removeAttributes($pm_element_code_or_id=null, $pa_options=null) {
 			if(!$this->getPrimaryKey()) { return null; }
@@ -304,7 +310,7 @@
 				$va_attributes = $this->getAttributesByElement($pm_element_code_or_id);
 			
 				foreach($va_attributes as $o_attribute) {
-					$this->removeAttribute($o_attribute->getAttributeID());
+					$this->removeAttribute($o_attribute->getAttributeID(), null, null, array('dontCheckMinMax' => isset($pa_options['force']) && $pa_options['force']));
 				}
 			} else {
 				if(is_array($va_element_codes = $this->getApplicableElementCodes($this->getTypeID(), false, false))) {
@@ -312,7 +318,7 @@
 						$va_attributes = $this->getAttributesByElement($vs_element_code);
 			
 						foreach($va_attributes as $o_attribute) {
-							$this->removeAttribute($o_attribute->getAttributeID());
+							$this->removeAttribute($o_attribute->getAttributeID(), null, null, array('dontCheckMinMax' => isset($pa_options['force']) && $pa_options['force']));
 						}
 					}
 				}
@@ -395,7 +401,7 @@
 			return $va_field_values;
 		}
 		# ------------------------------------------------------------------
-		public function load($pm_id=null) {
+		public function load($pm_id=null, $pb_use_cache=true) {
 			$this->init();
 			$this->setFieldValuesArray(array());
 			if ($vn_c = parent::load($pm_id)) {
@@ -412,7 +418,6 @@
 				$vb_we_set_transaction = true;
 			}
 			$vb_web_set_change_log_unit_id = BaseModel::setChangeLogUnitID();
-			
 			if (!is_array($pa_options)) { $pa_options = array(); }
 			$pa_options['dont_do_search_indexing'] = true;
 			
@@ -442,7 +447,7 @@
 				// set the field values array for this instance
 				$this->setFieldValuesArray($va_field_values_with_updated_attributes);
 				
-				$this->doSearchIndexing($va_fields_changed_array);
+				$this->doSearchIndexing($va_fields_changed_array);	// TODO: SHOULD SECOND PARAM (REINDEX) BE "TRUE"?
 				
 				
 				if ($vb_web_set_change_log_unit_id) { BaseModel::unsetChangeLogUnitID(); }
@@ -501,7 +506,7 @@
 			return false;
 		}
 		# ------------------------------------------------------------------
-		public function delete($pb_delete_related=false, $pa_options=null) {
+		public function delete($pb_delete_related=false, $pa_options=null, $pa_fields=null, $pa_table_list=null) {
 			$vb_web_set_change_log_unit_id = BaseModel::setChangeLogUnitID();
 			
 			if (!$this->inTransaction()) {
@@ -511,7 +516,7 @@
 			if (!is_array($pa_options)) { $pa_options = array(); }
 			
 			$vn_id = $this->getPrimaryKey();
-			if(parent::delete($pb_delete_related)) {
+			if(parent::delete($pb_delete_related, $pa_options, $pa_fields, $pa_table_list)) {
 				// Delete any associated attributes and attribute_values
 				if (!($qr_res = $this->getDb()->query("
 					DELETE FROM ca_attribute_values 
@@ -574,7 +579,7 @@
 									foreach($va_values as $vs_sub_code => $vs_value) {
 										if (!$t_element = $this->_getElementInstance($vs_sub_code)) { continue; }
 										
-										switch($t_element->get('datatype')) {
+										switch((int)$t_element->get('datatype')) {
 											case 3:		// list
 												$va_list_item = $t_list->getItemFromListByItemID($t_element->get('list_id'), $vs_value);
 												$vs_value = $vs_value.":".$va_list_item['idno'];
@@ -636,12 +641,16 @@
 		 *
 		 * @param $pa_options array - array of options for get; in addition to the standard get() options, will also pass through options to attribute value handlers
 		 *		Supported options include:
-		 *				locale = 
-		 *				returnAsArray = if true, return an array, otherwise return a string (default is false)
-		 *				returnAllLocales = 
-		 *				template = 
-		 *				delimiter = 
-		 *				convertCodesToDisplayText =
+		 *			locale = 
+		 *			returnAsArray = if true, return an array, otherwise return a string (default is false)
+		 *			returnAllLocales = 
+		 *			template = 
+		 *			delimiter = 
+		 *			convertCodesToDisplayText =
+ 	 	 *			returnAsLink = if true and $ps_field is a URL attribute and returnAllLocales is not set, then returned values will be links. Default is false.
+ 	 	 *			returnAsLinkText = *For URL attributes only* Text to use a content of HTML link. If omitted the url itself is used as the link content. 	 	 
+ 	 	 *			returnAsLinkAttributes = array of attributes to include in link <a> tag. Use this to set class, alt and any other link attributes.
+		 *
 		 * @return mixed - 
 		 *
 		 * 
@@ -653,6 +662,11 @@
 			$vs_delimiter = 				(isset($pa_options['delimiter'])) ? $pa_options['delimiter'] : ' ';
 			$vb_return_as_array = 		(isset($pa_options['returnAsArray'])) ? (bool)$pa_options['returnAsArray'] : false;
 			$vb_return_all_locales = 	(isset($pa_options['returnAllLocales'])) ? (bool)$pa_options['returnAllLocales'] : false;
+			
+			$vb_return_as_link = 		(isset($pa_options['returnAsLink'])) ? (bool)$pa_options['returnAsLink'] : false;
+			$vs_return_as_link_text = 	(isset($pa_options['returnAsLinkText'])) ? (string)$pa_options['returnAsLinkText'] : '';
+			$vs_return_as_link_attributes = 	(isset($pa_options['returnAsLinkAttributes'])) ? (string)$pa_options['returnAsLinkAttributes'] : array();
+			
 			if ($vb_return_all_locales && !$vb_return_as_array) { $vb_return_as_array = true; }
 			if (!isset($pa_options['convertCodesToDisplayText'])) { $pa_options['convertCodesToDisplayText'] = false; }
 		
@@ -722,9 +736,20 @@
 							if (!$vb_return_as_array) {
 								return $t_instance->getAttributesForDisplay($va_tmp[1], $vs_template, $pa_options);
 							} else {
-								$va_values = $t_instance->getAttributeDisplayValues($va_tmp[1], $t_instance->getPrimaryKey(), $pa_options);
+								$va_values = $t_instance->getAttributeDisplayValues($va_tmp[1], $vn_row_id = $t_instance->getPrimaryKey(), $pa_options);
 								if (!$vb_return_all_locales) {
 									$va_values = array_shift($va_values);
+									
+									if ($vs_template) {
+										$va_values_tmp = array();
+										foreach($va_values as $vn_i => $va_value_list) {
+											foreach($va_value_list as $vn_attr_id => $va_attr_data) {
+												$va_values_tmp[] = caProcessTemplateForIDs($vs_template, $va_tmp[0], array($vn_row_id), array_merge($pa_options, array('returnAsArray' => false, 'placeholderPrefix' => $va_tmp[1])));
+											}
+										}
+				
+										$va_values = $va_values_tmp;
+									}
 								}
 								return $va_values;
 							}
@@ -737,11 +762,12 @@
 						if ($va_tmp[0] === $t_instance->tableName()) {
 							if (!$t_instance->hasField($va_tmp[1])) {
 								// try it as an attribute
+									
 								if (!$vb_return_as_array) {
 									if (!$vs_template) { $vs_template = '^'.$va_tmp[2]; }
 									return $t_instance->getAttributesForDisplay($va_tmp[1], $vs_template, $pa_options);
 								} else {
-									$va_values = $t_instance->getAttributeDisplayValues($va_tmp[1], $t_instance->getPrimaryKey(), $pa_options);
+									$va_values = $t_instance->getAttributeDisplayValues($va_tmp[1], $vn_row_id = $t_instance->getPrimaryKey(), $pa_options);
 									$va_subvalues = array();
 									
 									if ($vb_return_all_locales) {
@@ -758,12 +784,15 @@
 										foreach($va_values as $vn_id => $va_attribute_values) {
 											foreach($va_attribute_values as $vn_attribute_id => $va_data) {
 												if(isset($va_data[$va_tmp[2]])) {
-													$va_subvalues[$vn_attribute_id] = $va_data[$va_tmp[2]];
+													if ($vs_template) { 
+														$va_subvalues[$vn_attribute_id] = caProcessTemplateForIDs($vs_template, $va_tmp[0], array($vn_row_id), array_merge($pa_options, array('returnAsArray' => false, 'placeholderPrefix' => $va_tmp[1])));
+													} else {
+														$va_subvalues[$vn_attribute_id] = $va_data;
+													}
 												}
 											}
 										}
 									}
-									
 									return $va_subvalues;
 								}
 							}
@@ -868,6 +897,7 @@
 		 * @param array $pa_attributes An optional array of HTML attributes to place into the returned <select> tag
 		 * @param array $pa_options An array of options. Supported options are anything supported by ca_lists::getListAsHTMLFormElement as well as:
 		 *		childrenOfCurrentTypeOnly = Returns only types below the current type
+		 *		restrictToTypes = Array of type_ids to restrict type list to
 		 * @return string HTML for list element
 		 */ 
 		public function getTypeListAsHTMLFormElement($ps_name, $pa_attributes=null, $pa_options=null) {
@@ -877,6 +907,14 @@
 			}
 			
 			$pa_options['limitToItemsWithID'] = caGetTypeRestrictionsForUser($this->tableName(), $pa_options);
+			
+			if (isset($pa_options['restrictToTypes']) && is_array($pa_options['restrictToTypes'])) {
+				if (!$pa_options['limitToItemsWithID'] || !is_array($pa_options['limitToItemsWithID'])) {
+					$pa_options['limitToItemsWithID'] = $pa_options['restrictToTypes'];
+				} else {
+					$pa_options['limitToItemsWithID'] = array_intersect($pa_options['limitToItemsWithID'], $pa_options['restrictToTypes']);
+				}
+			}
 			
 			return $t_list->getListAsHTMLFormElement($this->getTypeListCode(), $ps_name, $pa_attributes, $pa_options);
 		}
@@ -1006,6 +1044,8 @@
 			if (!is_array($pa_options)) { $pa_options = array(); }
 			if (!is_array($pa_bundle_settings)) { $pa_bundle_settings = array(); }
 			
+			$vb_batch = (isset($pa_options['batch']) && $pa_options['batch']) ? true : false;
+			
 			if (!($t_element = $this->_getElementInstance($pm_element_code_or_id))) {
 				return false;
 			}
@@ -1062,6 +1102,9 @@
 					$vs_br = "";
 				}
 
+				if (isset($pa_bundle_settings['usewysiwygeditor']) && strlen($pa_bundle_settings['usewysiwygeditor']) == 0) {
+					unset($pa_bundle_settings['usewysiwygeditor']);	// let null usewysiwygeditor bundle option fall back to metadata element setting
+				}
 				$va_elements_by_container[$va_element['parent_id']][] = $vs_br.ca_attributes::attributeHtmlFormElement($va_element, array_merge($pa_bundle_settings, array_merge($pa_options, array(
 					'label' => (sizeof($va_element_set) > 1) ? $va_label['name'] : '',
 					'description' => $va_label['description'],
@@ -1104,9 +1147,10 @@
 			$o_view->setVar('render_mode', $t_element->getSetting('render'));	// only set for list attributes (as of 26 Sept 2010 at least)
 			
 			if ($t_restriction = $this->getTypeRestrictionInstance($t_element->get('element_id'))) {
-				$o_view->setVar('min_num_repeats', $t_restriction->getSetting('minAttributesPerRow'));
-				$o_view->setVar('max_num_repeats', $t_restriction->getSetting('maxAttributesPerRow'));
-				$o_view->setVar('min_num_to_display', $t_restriction->getSetting('minimumAttributeBundlesToDisplay'));
+				// If batch mode force minimums to zero
+				$o_view->setVar('max_num_repeats', $vb_batch  ? 9999 : $t_restriction->getSetting('maxAttributesPerRow'));
+				$o_view->setVar('min_num_repeats', $vb_batch ? 0 : $t_restriction->getSetting('minAttributesPerRow'));
+				$o_view->setVar('min_num_to_display', $vb_batch ? 1 : $t_restriction->getSetting('minimumAttributeBundlesToDisplay'));
 			}
 			
 			// these are lists of associative arrays representing attributes that were rejected in a save() action
@@ -1116,13 +1160,21 @@
 			$o_view->setVar('failed_update_attribute_list', $this->getFailedAttributeUpdates($pm_element_code_or_id));
 		
 			// set the list of existing attributes for the current row
-			$o_view->setVar('attribute_list', $this->getAttributesByElement($t_element->get('element_id')));
+			
+			$vs_sort = $pa_bundle_settings['sort'];
+			$vs_sort_dir = $pa_bundle_settings['sortDirection'];
+			$va_attribute_list = $this->getAttributesByElement($t_element->get('element_id'), array('sort' => $vs_sort, 'sortDirection' => $vs_sort_dir));
+			
+			$o_view->setVar('attribute_list', $va_attribute_list);
 			
 			// pass list of element default values
 			$o_view->setVar('element_value_defaults', $va_element_value_defaults);
 			
 			// pass bundle settings to view
 			$o_view->setVar('settings', $pa_bundle_settings);
+			
+			// Is this being used in the batch editor?
+			$o_view->setVar('batch', (bool)(isset($pa_options['batch']) && $pa_options['batch']));
 			
 			return $o_view->render('ca_attributes.php');
 		}
@@ -1246,7 +1298,16 @@
 			return $va_attributes_without_element_ids;
 		}
 		# ------------------------------------------------------------------
-		// returns an array of all attributes with the specified element_id attached to the current row
+		/**
+		 * Returns an array of all attributes with the specified element_id attached to the current row
+		 *
+		 * @param mixed $pm_element_code_or_id
+		 * @param array $pa_options Options include
+		 *		sort = 
+		 *		sortDirection = 
+		 *
+		 * @return array
+		 */
 		public function getAttributesByElement($pm_element_code_or_id, $pa_options=null) {
 			if (isset($pa_options['row_id']) && $pa_options['row_id']) {
 				$vn_row_id = $pa_options['row_id'];
@@ -1258,11 +1319,50 @@
 			$vn_element_id = $this->_getElementID($pm_element_code_or_id);
 			$va_attributes = ca_attributes::getAttributes($this->getDb(), $this->tableNum(), $vn_row_id, array($vn_element_id), array());
 		
-			return is_array($va_attributes[$vn_element_id]) ? $va_attributes[$vn_element_id] : array();
+			$va_attribute_list =  is_array($va_attributes[$vn_element_id]) ? $va_attributes[$vn_element_id] : array();
+			
+			$vs_sort_dir = (isset($pa_options['sort']) && (in_array(strtolower($pa_options['sortDirection']), array('asc', 'desc')))) ? strtolower($pa_options['sortDirection']) : 'asc';	
+			if (isset($pa_options['sort']) && ($vs_sort = $pa_options['sort'])) {
+				$va_tmp = array();
+				foreach($va_attribute_list as $vn_id => $o_attribute) {
+					$va_attribute_values = $o_attribute->getValues();
+					foreach($va_attribute_values as $o_attribute_value) {
+						if ($o_attribute_value->getElementCode() == $vs_sort) {
+							$va_tmp[$o_attribute_value->getSortValue()][$vn_id] = $o_attribute;
+						}
+					}
+				}
+				
+				ksort($va_tmp);
+			
+				if ($vs_sort_dir == 'desc') {
+					$va_tmp = array_reverse($va_tmp);
+				}
+				
+				$va_attribute_list = array();
+				foreach($va_tmp as $vs_key => $va_attr_values) {
+					$va_attribute_list += $va_attr_values;
+				}
+			} else {
+				// handle reverse sorting of "natural" (creation) order
+				if ($vs_sort_dir == 'desc') {
+					$va_attribute_list = array_reverse($va_attribute_list);
+				}
+			}
+			
+			return $va_attribute_list;
 		}
 		# ------------------------------------------------------------------
-		// returns an array of all attributes with the specified element_id attached to the current row
-		public function getAttributeCountByElement($pm_element_code_or_id) {
+		/**
+		 * 
+		 *
+		 * @param mixed $pm_element_code_or_id
+		 * @param array $pa_options
+		 *
+		 *
+		 * @return int Number of attributes attached to the current row for the specified metadata element
+		 */
+		public function getAttributeCountByElement($pm_element_code_or_id, $pa_options=null) {
 			if (!($vn_row_id = $this->getPrimaryKey())) { 
 				if (isset($pa_options['row_id']) && $pa_options['row_id']) {
 					$vn_row_id = $pa_options['row_id'];
@@ -1311,7 +1411,7 @@
 		 * @param $pm_element_code_or_id string|integer -
 		 * @param $pn_row_id integer -
 		 * @param $pa_options array -
-		 *				convertLinkBreaks - if set to true, will attemp to convert line break characters to HTML <p> and <br> tags; default is false.
+		 *				convertLineBreaks - if set to true, will attempt to convert line break characters to HTML <p> and <br> tags; default is false.
 		 *				locale - if set to a valid locale_id or locale code, values will be returned in locale *if available*, otherwise will fallback to values in languages that are available using the standard fallback mechanism. Default is to use user's current locale.
 		 *				returnAllLocales - if set to true, values for all locales are returned, locale option is ignored and the returned array is indexed first by attribute_id and then by locale_id. Default is false.
 		 *				indexByRowID - if true first index of returned array is $pn_row_id, otherwise it is the element_id of the retrieved metadata element	
@@ -1337,7 +1437,8 @@
 					} else {
 						$vn_list_id = null;
 					}
-					if (isset($pa_options['convertLinkBreaks']) && $pa_options['convertLinkBreaks']) {
+					
+					if (isset($pa_options['convertLineBreaks']) && $pa_options['convertLineBreaks']) {
 						$vs_converted_value = preg_replace("!(\n|\r\n){2}!","<p/>",$o_value->getDisplayValue(array_merge($pa_options, array('list_id' => $vn_list_id))));
 						$va_display_values[$vs_element_code] = preg_replace("![\n]{1}!","<br/>",$vs_converted_value);
 					} else {
@@ -1413,7 +1514,7 @@
 	     *
 	     * Supported options
 	     *	delimiter = text to use between attribute values; default is a single space
-	     *	convertLinkBreaks = if true will convert line breaks to HTML <br/> tags for display in a web browser; default is false
+	     *	convertLineBreaks = if true will convert line breaks to HTML <br/> tags for display in a web browser; default is false
 		 */
 		public function getAttributesForDisplay($pm_element_code_or_id, $ps_template=null, $pa_options=null) {
 			if (!($vn_row_id = $this->getPrimaryKey())) { 
@@ -1437,31 +1538,8 @@
 			}
 			
 			if ($ps_template) {
-				$va_templated_values = array();
-				foreach($va_tmp as $vn_id => $va_value_list) {
-					foreach($va_value_list as $va_value) {
-						$vs_template = $ps_template;
-						
-						$va_element_codes = array_keys($va_value);
-						usort($va_element_codes, "caLengthSortHelper");
-						
-						foreach($va_element_codes as $vn_i => $vs_element_code) {
-							if ($vs_value = $va_value[$vs_element_code]) {
-								$vs_template = str_replace("^".$vs_element_code, $vs_value, $vs_template);
-							} else {
-								$vs_template = preg_replace("![^A-Za-z0-9_\^ ]*\^{$vs_element_code}[ ]*[^A-Za-z0-9_ ]*!", '', $vs_template);
-							}
-						}
-						
-						if ($vs_template) { $va_templated_values[] = $vs_template; }
-					}
-				}
-				$va_proc_templates[$vn_i] = preg_replace("![^A-Za-z0-9_\^ ]*\^{$vs_tag}[^A-Za-z0-9_ ]*!", '', $va_proc_templates[$vn_i]);
-				$vs_text = preg_replace('![^A-Za-z0-9_\^ ]*\^[A-Za-z0-9_\-]+[^A-Za-z0-9_ ]*!', '', join($vs_delimiter, $va_templated_values)); // remove un-replaced tags
-				if (isset($pa_options['convertLineBreaks']) && $pa_options['convertLineBreaks']) {
-					$vs_text = caConvertLineBreaks($vs_text);
-				}
-				return $vs_text;
+				unset($pa_options['template']);
+				return caProcessTemplateForIDs($ps_template, $this->tableNum(), array($vn_row_id), array_merge($pa_options, array('placeholderPrefix' => $t_element->get('element_code'))));
 			} else {
 				// no template
 				$va_attribute_list = array();
@@ -1525,7 +1603,7 @@
 			
 			$vs_table = $this->tableName();
 			foreach($va_elements as $vn_element_id => $vs_element_code) {
-				$va_vals = $this->get("{$vs_table}.{$vs_element_code}", array("returnAsArray" => true, "returnAllLocales" => true));
+				$va_vals = $this->get("{$vs_table}.{$vs_element_code}", array("returnAsArray" => true, "returnAllLocales" => true, 'forDuplication' => true));
 				if (!is_array($va_vals)) { continue; }
 				foreach($va_vals as $vn_id => $va_vals_by_locale) {
 					foreach($va_vals_by_locale as $vn_locale_id => $va_vals_by_attr_id) {
@@ -1613,7 +1691,15 @@
 		}
 		# ------------------------------------------------------------------
 		/**
-		 * Returns list of metdata element codes applicable to the current row. If there is no loaded row and $pn_type_id
+		 *
+		 */
+		public function hasElement($ps_element_code) {
+			$va_codes = $this->getApplicableElementCodes(null, false, false);
+			return (in_array($ps_element_code, $va_codes));
+		}
+		# ------------------------------------------------------------------
+		/**
+		 * Returns list of metadata element codes applicable to the current row. If there is no loaded row and $pn_type_id
 		 * is not set then all attributes applicable to the model as a whole (regardless of type restrictions) are returned.
 		 *
 		 * Normally only top-level attribute codes are returned. This is good: in general you should only be dealing with attributes
@@ -1630,7 +1716,7 @@
  				$va_ancestors = array();
  				if ($t_type_instance = $this->getTypeInstance()) {
  					$va_ancestors = $t_type_instance->getHierarchyAncestors(null, array('idsOnly' => true, 'includeSelf' => true));
- 					array_pop($va_ancestors); // remove hierarchy root
+ 					if (is_array($va_ancestors)) { array_pop($va_ancestors); } // remove hierarchy root
  				}
  				
  				if (sizeof($va_ancestors) > 1) {
@@ -1675,6 +1761,20 @@
 				}
  			}
  			BaseModelWithAttributes::$s_applicable_element_code_cache[$this->tableNum().'/'.$pn_type_id.'/'.($pb_include_sub_element_codes ? 1 : 0)] = $va_codes;
+ 			return $va_codes;
+ 		}
+ 		# ------------------------------------------------------------------
+		/**
+		 *
+		 */
+ 		public function getApplicableElementCodesForTypes($pa_type_ids, $pb_include_sub_element_codes=false, $pb_dont_cache=true) {
+ 			$va_codes = array();
+ 			foreach($pa_type_ids as $vn_i => $vn_type_id) {
+ 				$va_tmp = $this->getApplicableElementCodes($vn_type_id, $pb_include_sub_element_codes, $pb_dont_cache);
+ 				foreach($va_tmp as $vn_element_id => $vs_element_code) {
+ 					$va_codes[$vn_element_id] = $vs_element_code;
+ 				}
+ 			}
  			return $va_codes;
  		}
 		# ------------------------------------------------------------------
@@ -1755,6 +1855,7 @@
 				$this->postError(1950, _t("Element code or id must not be blank"), "BaseModelWithAttributes->_getElementInstance()");
 				return false;
 			}
+			
  			if (isset(BaseModelWithAttributes::$s_element_instance_cache[$pm_element_code_or_id]) && BaseModelWithAttributes::$s_element_instance_cache[$pm_element_code_or_id]) {
  				return BaseModelWithAttributes::$s_element_instance_cache[$pm_element_code_or_id];
  			}
@@ -1790,6 +1891,15 @@
 			
 			BaseModelWithAttributes::$s_element_id_lookup_cache[$t_element->getPrimaryKey()] = BaseModelWithAttributes::$s_element_id_lookup_cache[$t_element->get('element_code')] = $t_element->getPrimaryKey();
 			return BaseModelWithAttributes::$s_element_code_lookup_cache[$t_element->get('element_code')] = BaseModelWithAttributes::$s_element_code_lookup_cache[$t_element->getPrimaryKey()] = $t_element->get('element_code');
+		}
+		# ------------------------------------------------------------------
+		public function _getElementDatatype($pm_element_code_or_id) {
+			if (isset(BaseModelWithAttributes::$s_element_datatype_lookup_cache[$pm_element_code_or_id])) { return BaseModelWithAttributes::$s_element_datatype_lookup_cache[$pm_element_code_or_id]; }
+		
+			if (!($t_element = $this->_getElementInstance($pm_element_code_or_id))) { return null; }
+			
+			BaseModelWithAttributes::$s_element_id_lookup_cache[$t_element->getPrimaryKey()] = BaseModelWithAttributes::$s_element_id_lookup_cache[$t_element->get('element_code')] = $t_element->getPrimaryKey();
+			return BaseModelWithAttributes::$s_element_datatype_lookup_cache[$t_element->getPrimaryKey()] = BaseModelWithAttributes::$s_element_datatype_lookup_cache[$t_element->get('element_code')] = $t_element->get('datatype');
 		}
 		# ------------------------------------------------------------------
 	}

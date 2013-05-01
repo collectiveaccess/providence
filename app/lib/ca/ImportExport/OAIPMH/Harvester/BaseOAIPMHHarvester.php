@@ -131,19 +131,19 @@
 			
 			$this->opo_data_import_event->insert();
 		
-			$this->_harvest();
+			$this->_harvest(null, $pa_options);
 		}
 		# -------------------------------------------------------
 		/** 
 		 *
 		 */
-		private function _harvest($ps_resumption_token=null) {
+		private function _harvest($ps_resumption_token=null, $pa_options=null) {
 			$va_settings = array(
 				'verb' => 'ListRecords', 'metadataPrefix' => $this::METADATA_PREFIX
 			);
 			
 			if ($ps_resumption_token) {
-				$va_settings['resumptionToken'] = $ps_resumption_token;
+				$va_settings = array('verb' => 'ListRecords', 'resumptionToken' => $ps_resumption_token);
 			}
 			
 			$va_res = $this->opo_client->fetch($this->ops_base_url, $va_settings);
@@ -172,13 +172,13 @@
 				if ($va_data['oai_status'] === 'deleted') {
 					// TODO: do we want to support OAI-triggered deletion of records?
 				} else {
-					$this->opo_processor->importRecord($va_data, $this->opo_data_import_event, array('debug' => $this->opb_debug, 'skipElements' => $this->opa_skip_elements));
+					$this->opo_processor->importRecord($va_data, $this->opo_data_import_event, array_merge(array('debug' => $this->opb_debug, 'skipElements' => $this->opa_skip_elements), $pa_options) );
 				}
 				$va_data = $this->opo_app_plugin_manager->hookOAIAfterRecordImport(array('url' => $this->ops_base_url, 'record' => $va_data, 'metadata_prefix' => $this::METADATA_PREFIX));
 			}
 			
 			if ($vs_resumption_token = $this->opo_client->getResumptionToken()) {
-				$this->_harvest($vs_resumption_token);
+				$this->_harvest($vs_resumption_token, $pa_options);
 			}
 		
 			return true;
