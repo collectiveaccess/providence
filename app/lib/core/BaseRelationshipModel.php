@@ -34,13 +34,13 @@
   *
   */
  
- require_once(__CA_LIB_DIR__.'/core/BaseModel.php');
+ require_once(__CA_LIB_DIR__.'/ca/BundlableLabelableBaseModelWithAttributes.php');
  require_once(__CA_LIB_DIR__.'/core/IRelationshipModel.php');
  require_once(__CA_APP_DIR__.'/helpers/htmlFormHelpers.php');
  require_once(__CA_MODELS_DIR__.'/ca_relationship_types.php');
  require_once(__CA_MODELS_DIR__.'/ca_acl.php');
  
-	class BaseRelationshipModel extends BaseModel implements IRelationshipModel {
+	class BaseRelationshipModel extends BundlableLabelableBaseModelWithAttributes implements IRelationshipModel {
 		# ------------------------------------------------------
 		/**
 		 * 
