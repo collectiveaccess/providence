@@ -1183,7 +1183,7 @@ class BaseModel extends BaseObject {
 					case (FT_HISTORIC_DATERANGE):
 						$vs_start_field_name = $this->getFieldInfo($vs_field,"START");
 						$vs_end_field_name = $this->getFieldInfo($vs_field,"END");
-												
+						
 						$vn_start_date = isset($this->_FIELD_VALUES[$vs_start_field_name]) ? $this->_FIELD_VALUES[$vs_start_field_name] : null;
 						$vn_end_date = isset($this->_FIELD_VALUES[$vs_end_field_name]) ? $this->_FIELD_VALUES[$vs_end_field_name] : null;
 						if (($this->DIRECT_DATETIMES) || ($pa_options["SET_DIRECT_DATE"])) {
@@ -4953,7 +4953,14 @@ class BaseModel extends BaseObject {
 		$this->clearErrors();
 		reset($this->FIELDS);
 		while (list($field, $attr) = each($this->FIELDS)) {
-			echo "{$field} = ".$this->_FIELD_VALUES[$field]."<BR>\n";
+			switch($attr['FIELD_TYPE']) {
+				case FT_HISTORIC_DATERANGE:
+					echo "{$field} = ".$this->_FIELD_VALUES[$attr['START']]."/".$this->_FIELD_VALUES[$attr['END']]."<BR>\n";
+					break;
+				default:
+					echo "{$field} = ".$this->_FIELD_VALUES[$field]."<BR>\n";
+					break;
+			}
 		}
 	}
 	# --------------------------------------------------------------------------------
