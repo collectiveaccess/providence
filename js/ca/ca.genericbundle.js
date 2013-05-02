@@ -263,6 +263,21 @@ var caUI = caUI || {};
 				}
 			}
 		
+			// attach interstitial edit button
+			if (this.interstitialButtonClassName) {
+				if (!this.readonly) {
+					jQuery(this.container + " #" +this.itemID + templateValues.n + " ." + this.interstitialButtonClassName).click(function() { 
+						// Trigger interstitial edit panel
+						console.log( initialValues);
+						options.interstitialPanel.showPanel(options.interstitialUrl + "/relation_id/" + initialValues['relation_id']);
+						jQuery('#' + options.interstitialPanel.getPanelContentID()).data('panel', options.interstitialPanel);
+						return false; 
+					});
+				} else {
+					jQuery(this.container + " #" +this.itemID + templateValues.n + " ." + this.interstitialButtonClassName).css("display", "none");
+				}
+			}
+		
 			// attach delete button
 			if (!this.readonly) {
 				jQuery(this.container + " #" +this.itemID + templateValues.n + " ." + this.deleteButtonClassName).click(function() { that.deleteFromBundle(templateValues.n); return false; });

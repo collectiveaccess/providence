@@ -89,92 +89,94 @@ class BundlableLabelableBaseModelWithAttributes extends LabelableBaseModelWithAt
 	 * against the ca_lists list for the table (as defined by getTypeListCode())
 	 */ 
 	public function insert($pa_options=null) {
-		global $AUTH_CURRENT_USER_ID;
-		$vb_we_set_transaction = false;
+		if (!is_a($this, "BaseRelationshipModel")) {
+			global $AUTH_CURRENT_USER_ID;
+			$vb_we_set_transaction = false;
 		
-		if (!$this->inTransaction()) {
-			$this->setTransaction(new Transaction($this->getDb()));
-			$vb_we_set_transaction = true;
-		}
-		
-		$this->opo_app_plugin_manager->hookBeforeBundleInsert(array('id' => null, 'table_num' => $this->tableNum(), 'table_name' => $this->tableName(), 'instance' => $this));
-		
-		$vb_web_set_change_log_unit_id = BaseModel::setChangeLogUnitID();
-		
-		// check that type_id is valid for this table
-		$t_list = new ca_lists();
-		$vn_type_id = $this->get($this->getTypeFieldName());
-		$va_field_info = $this->getFieldInfo($this->getTypeFieldName());
-		
-		$vb_error = false;
-		if ($this->getTypeFieldName() && !(!$vn_type_id && $va_field_info['IS_NULL'])) {
-			if (!($vn_ret = $t_list->itemIsEnabled($this->getTypeListCode(), $vn_type_id))) {
-				$va_type_list = $this->getTypeList(array('directChildrenOnly' => false, 'returnHierarchyLevels' => true, 'item_id' => null));
-				if (!isset($va_type_list[$vn_type_id])) {
-					$this->postError(2510, _t("Type must be specified"), "BundlableLabelableBaseModelWithAttributes->insert()");
-				} else {
-					if(is_null($vn_ret)) {
-						$this->postError(2510, _t("<em>%1</em> is invalid", $va_type_list[$vn_type_id]['name_singular']), "BundlableLabelableBaseModelWithAttributes->insert()");
-					} else {
-						$this->postError(2510, _t("<em>%1</em> is not enabled", $va_type_list[$vn_type_id]['name_singular']), "BundlableLabelableBaseModelWithAttributes->insert()");
-					}
-				}
-				$vb_error = true;
+			if (!$this->inTransaction()) {
+				$this->setTransaction(new Transaction($this->getDb()));
+				$vb_we_set_transaction = true;
 			}
 		
-			if ($this->HIERARCHY_PARENT_ID_FLD && (bool)$this->getAppConfig()->get($this->tableName().'_enforce_strict_type_hierarchy')) {
-				// strict means if it has a parent is can only have types that are direct sub-types of the parent's type
-				// and if it is the root of the hierarchy it can only take a top-level type
-				if ($vn_parent_id = $this->get($this->HIERARCHY_PARENT_ID_FLD)) {
-					// is child
-					$t_parent = $this->_DATAMODEL->getInstanceByTableName($this->tableName());
-					if ($t_parent->load($vn_parent_id)) {
-						$vn_parent_type_id = $t_parent->getTypeID();
-						$va_type_list = $t_parent->getTypeList(array('directChildrenOnly' => ($this->getAppConfig()->get($this->tableName().'_enforce_strict_type_hierarchy') == '~') ? false : true, 'childrenOfCurrentTypeOnly' => true, 'returnHierarchyLevels' => true));
+			$this->opo_app_plugin_manager->hookBeforeBundleInsert(array('id' => null, 'table_num' => $this->tableNum(), 'table_name' => $this->tableName(), 'instance' => $this));
+		
+			$vb_web_set_change_log_unit_id = BaseModel::setChangeLogUnitID();
+		
+			// check that type_id is valid for this table
+			$t_list = new ca_lists();
+			$vn_type_id = $this->get($this->getTypeFieldName());
+			$va_field_info = $this->getFieldInfo($this->getTypeFieldName());
+		
+			$vb_error = false;
+			if ($this->getTypeFieldName() && !(!$vn_type_id && $va_field_info['IS_NULL'])) {
+				if (!($vn_ret = $t_list->itemIsEnabled($this->getTypeListCode(), $vn_type_id))) {
+					$va_type_list = $this->getTypeList(array('directChildrenOnly' => false, 'returnHierarchyLevels' => true, 'item_id' => null));
+					if (!isset($va_type_list[$vn_type_id])) {
+						$this->postError(2510, _t("Type must be specified"), "BundlableLabelableBaseModelWithAttributes->insert()");
+					} else {
+						if(is_null($vn_ret)) {
+							$this->postError(2510, _t("<em>%1</em> is invalid", $va_type_list[$vn_type_id]['name_singular']), "BundlableLabelableBaseModelWithAttributes->insert()");
+						} else {
+							$this->postError(2510, _t("<em>%1</em> is not enabled", $va_type_list[$vn_type_id]['name_singular']), "BundlableLabelableBaseModelWithAttributes->insert()");
+						}
+					}
+					$vb_error = true;
+				}
+		
+				if ($this->HIERARCHY_PARENT_ID_FLD && (bool)$this->getAppConfig()->get($this->tableName().'_enforce_strict_type_hierarchy')) {
+					// strict means if it has a parent is can only have types that are direct sub-types of the parent's type
+					// and if it is the root of the hierarchy it can only take a top-level type
+					if ($vn_parent_id = $this->get($this->HIERARCHY_PARENT_ID_FLD)) {
+						// is child
+						$t_parent = $this->_DATAMODEL->getInstanceByTableName($this->tableName());
+						if ($t_parent->load($vn_parent_id)) {
+							$vn_parent_type_id = $t_parent->getTypeID();
+							$va_type_list = $t_parent->getTypeList(array('directChildrenOnly' => ($this->getAppConfig()->get($this->tableName().'_enforce_strict_type_hierarchy') == '~') ? false : true, 'childrenOfCurrentTypeOnly' => true, 'returnHierarchyLevels' => true));
 
-						if (!isset($va_type_list[$this->getTypeID()])) {
-							$va_type_list = $this->getTypeList(array('directChildrenOnly' => false, 'returnHierarchyLevels' => true, 'item_id' => null));
+							if (!isset($va_type_list[$this->getTypeID()])) {
+								$va_type_list = $this->getTypeList(array('directChildrenOnly' => false, 'returnHierarchyLevels' => true, 'item_id' => null));
 
-							$this->postError(2510, _t("<em>%1</em> is not a valid type for a child record of type <em>%2</em>", $va_type_list[$this->getTypeID()]['name_singular'], $va_type_list[$vn_parent_type_id]['name_singular']), "BundlableLabelableBaseModelWithAttributes->insert()");
+								$this->postError(2510, _t("<em>%1</em> is not a valid type for a child record of type <em>%2</em>", $va_type_list[$this->getTypeID()]['name_singular'], $va_type_list[$vn_parent_type_id]['name_singular']), "BundlableLabelableBaseModelWithAttributes->insert()");
+								$vb_error = true;
+							}
+						} else {
+							// error - no parent?
+							$this->postError(2510, _t("No parent was found when verifying type of new child"), "BundlableLabelableBaseModelWithAttributes->insert()");
 							$vb_error = true;
 						}
 					} else {
-						// error - no parent?
-						$this->postError(2510, _t("No parent was found when verifying type of new child"), "BundlableLabelableBaseModelWithAttributes->insert()");
-						$vb_error = true;
-					}
-				} else {
-					// is root
-					$va_type_list = $this->getTypeList(array('directChildrenOnly' => true, 'item_id' => null));
-					if (!isset($va_type_list[$this->getTypeID()])) {
-						$va_type_list = $this->getTypeList(array('directChildrenOnly' => false, 'returnHierarchyLevels' => true, 'item_id' => null));
+						// is root
+						$va_type_list = $this->getTypeList(array('directChildrenOnly' => true, 'item_id' => null));
+						if (!isset($va_type_list[$this->getTypeID()])) {
+							$va_type_list = $this->getTypeList(array('directChildrenOnly' => false, 'returnHierarchyLevels' => true, 'item_id' => null));
 						
-						$this->postError(2510, _t("<em>%1</em> is not a valid type for a top-level record", $va_type_list[$this->getTypeID()]['name_singular']), "BundlableLabelableBaseModelWithAttributes->insert()");
-						$vb_error = true;
+							$this->postError(2510, _t("<em>%1</em> is not a valid type for a top-level record", $va_type_list[$this->getTypeID()]['name_singular']), "BundlableLabelableBaseModelWithAttributes->insert()");
+							$vb_error = true;
+						}
 					}
 				}
 			}
-		}
 		
-		if (!$this->_validateIncomingAdminIDNo(true, true)) { $vb_error =  true; }
+			if (!$this->_validateIncomingAdminIDNo(true, true)) { $vb_error =  true; }
 		
-		if ($vb_error) {			
-			// push all attributes onto errored list
-			$va_inserted_attributes_that_errored = array();
-			foreach($this->opa_attributes_to_add as $va_info) {
-				$va_inserted_attributes_that_errored[$va_info['element']][] = $va_info['values'];
-			}
-			foreach($va_inserted_attributes_that_errored as $vs_element => $va_list) {
-				$this->setFailedAttributeInserts($vs_element, $va_list);
-			}
+			if ($vb_error) {			
+				// push all attributes onto errored list
+				$va_inserted_attributes_that_errored = array();
+				foreach($this->opa_attributes_to_add as $va_info) {
+					$va_inserted_attributes_that_errored[$va_info['element']][] = $va_info['values'];
+				}
+				foreach($va_inserted_attributes_that_errored as $vs_element => $va_list) {
+					$this->setFailedAttributeInserts($vs_element, $va_list);
+				}
 			
-			if ($vb_web_set_change_log_unit_id) { BaseModel::unsetChangeLogUnitID(); }
-			if ($vb_we_set_transaction) { $this->removeTransaction(false); }
-			$this->_FIELD_VALUES[$this->primaryKey()] = null;		// clear primary key set by BaseModel::insert()
-			return false;
-		}
+				if ($vb_web_set_change_log_unit_id) { BaseModel::unsetChangeLogUnitID(); }
+				if ($vb_we_set_transaction) { $this->removeTransaction(false); }
+				$this->_FIELD_VALUES[$this->primaryKey()] = null;		// clear primary key set by BaseModel::insert()
+				return false;
+			}
 		
-		$this->_generateSortableIdentifierValue();
+			$this->_generateSortableIdentifierValue();
+		}
 		
 		// stash attributes to add
 		$va_attributes_added = $this->opa_attributes_to_add;
@@ -2678,6 +2680,7 @@ if (!$vb_batch) {		// hierarchy moves are not supported in batch mode
 		}
 
 		// save preferred labels
+if ($this->getProperty('LABEL_TABLE_NAME')) {
 		$vb_check_for_dupe_labels = $this->_CONFIG->get('allow_duplicate_labels_for_'.$this->tableName()) ? false : true;
 		$vb_error_inserting_pref_label = false;
 		if (is_array($va_fields_by_type['preferred_label'])) {
@@ -2763,10 +2766,11 @@ if (!$vb_batch) {
 				}
 			}
 		}
-		
+	}	
 		// Add default label if needed (ie. if the user has failed to set at least one label or if they have deleted all existing labels)
 		// This ensures at least one label is present for the record. If no labels are present then the 
 		// record may not be found in queries
+	if ($this->getProperty('LABEL_TABLE_NAME')) {
 		if ($vb_error_inserting_pref_label || !$this->addDefaultLabel($vn_new_label_locale_id)) {
 			if (!$vb_error_inserting_pref_label) { $po_request->addActionErrors($this->errors(), 'preferred_labels'); }
 			
@@ -2779,11 +2783,12 @@ if (!$vb_batch) {
 			}
 			return false;
 		}
+	}
 		unset($va_inserted_attributes_by_element);
 
 	
 		// save non-preferred labels
-		if (isset($va_fields_by_type['nonpreferred_label']) && is_array($va_fields_by_type['nonpreferred_label'])) {
+		if ($this->getProperty('LABEL_TABLE_NAME') && isset($va_fields_by_type['nonpreferred_label']) && is_array($va_fields_by_type['nonpreferred_label'])) {
 if (!$vb_batch) {	
 			foreach($va_fields_by_type['nonpreferred_label'] as $vs_placement_code => $vs_f) {
 				// check for existing labels to update (or delete)
