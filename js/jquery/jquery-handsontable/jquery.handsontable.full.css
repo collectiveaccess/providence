@@ -286,6 +286,8 @@ NumericRenderer
   -webkit-border-radius: 4px;
   -moz-border-radius: 4px;
   border-radius: 4px;
+  max-height: 300px;
+  overflow: scroll;
 }
 
 .handsontable .typeahead li {

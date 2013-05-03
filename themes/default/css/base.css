@@ -1705,7 +1705,12 @@ select.searchSetsSelect {
 div.searchSetsToggle {
 	font-size: 9px;
 }
-a.searchSetsToggle {
+
+div.searchSetsBatchEdit {
+	font-size: 9px;
+}
+
+a.searchSetsToggle, a.searchSetsBatchEdit {
 	font-size: 9px;
 	text-decoration: none;
 }
@@ -5677,6 +5682,7 @@ div.dialogHeader div.close a {
  .caResultsEditorContainer {
 	position: relative;
 	background: #ffffff;
+	overflow: hidden;
  }
  
 .caResultsEditorContainerFullScreen {
@@ -5695,7 +5701,7 @@ div.dialogHeader div.close a {
  .caResultsEditorContentFullScreen {
  	width: 1024px; 
 	height: 600px; 
-	overflow: scroll;
+	overflow: hidden;
  }
  
  a.caResultsEditorToggleFullScreenButton {
@@ -5703,7 +5709,6 @@ div.dialogHeader div.close a {
 	color: #134959;
 	text-decoration: none;
 	font-size: 11px;
-	font-weight:bold;
 	padding: 10px;
  }
  
@@ -5731,7 +5736,7 @@ div.dialogHeader div.close a {
  
  #caResultsEditorStatusDisplay {
  	margin-top: 10px;
- 	font-size: 14px;
+ 	font-size: 12px;
 	font-family: Verdana, Arial, Helvetica, sans-serif;
 	font-weight: bold;
  }
@@ -5771,7 +5776,7 @@ div.caResultsEditorControls {
 	bottom:0px;
 	left:0px;
 	z-index: 32000;			/* needs to be on top of caResultsEditorPanel, which has z-index=31000 */
-	opacity: 0.7;
+	opacity: 1.0;
 	display: none;
 	height: 12px;
 }
@@ -5825,6 +5830,6 @@ div.caResultsEditorControls .info{
 }
 
 .caResultsEditorReadOnlyCell {
-	background-color: #efefef !important;
+	background-color: #dcdcdc !important;
 	color: #333333  !important;
 }

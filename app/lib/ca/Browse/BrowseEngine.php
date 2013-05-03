@@ -1062,7 +1062,7 @@
 													$va_attr_sql[] = "(ca_attribute_values.{$vs_f} IN (?))";
 													$va_attr_values[] = $va_item_ids;
 												} else {
-													$va_attr_sql[] = "(ca_attribute_values.{$vs_f} = ?)";
+													$va_attr_sql[] = "(ca_attribute_values.{$vs_f} ".(is_null($vs_v) ? " IS " : " = ")." ?)";
 													$va_attr_values[] = $vs_v;
 												}
 											}

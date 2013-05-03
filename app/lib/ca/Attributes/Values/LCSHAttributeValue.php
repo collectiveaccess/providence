@@ -197,8 +197,8 @@
 					$va_tmp1 = explode('/', $va_tmp[1]);
 					$vs_id = array_pop($va_tmp1);
 					return array(
-						'value_longtext1' => $va_tmp[0],						// text
-						'value_longtext2' => $vs_url,							// uri
+						'value_longtext1' => trim($va_tmp[0]),						// text
+						'value_longtext2' => trim($vs_url),							// uri
 						'value_decimal1' => is_numeric($vs_id) ? $vs_id : null	// id
 					);
 				} else {
@@ -223,8 +223,8 @@
 						
 						if ($vs_url) {
 							return array(
-								'value_longtext1' => $vs_label." [{$vs_url}]",						// text
-								'value_longtext2' => $vs_url,							// uri
+								'value_longtext1' => trim($vs_label)." [{$vs_url}]",						// text
+								'value_longtext2' => trim($vs_url),							// uri
 								'value_decimal1' => is_numeric($vs_id) ? $vs_id : null	// id
 							);
 						} else {

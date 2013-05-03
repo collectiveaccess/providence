@@ -521,7 +521,7 @@ require_once(__CA_LIB_DIR__."/ca/ApplicationPluginManager.php");
 				caEditorFieldList.hidePanel();
 			});
 			
-			if(caBundleVisibilityManager) { caBundleVisibilityManager.setAll(); }
+			if (typeof caBundleVisibilityManager !== 'undefined') { caBundleVisibilityManager.setAll(); }
 		});
 </script>
 <div id=\"editorFieldListHTML\">";
@@ -2058,13 +2058,44 @@ require_once(__CA_LIB_DIR__."/ca/ApplicationPluginManager.php");
 				}
 				$va_pt_vals[] = $vs_pt;
 			}
-			$va_proc_templates[$vn_i] = join($vs_delimiter, $va_pt_vals);
+			$va_proc_templates[$vn_i] = join(isset($pa_options['delimiter']) ? $pa_options['delimiter'] : $vs_delimiter, $va_pt_vals);
 		}
 		
 		if ($vb_return_as_array) {
 			return $va_proc_templates;
 		}
 		return join($vs_delimiter, $va_proc_templates);
+	}
+	# ------------------------------------------------------------------------------------------------
+	/**
+	 * Returns display string for relationship bundles. Used by themes/default/bundles/ca_entities.php and the like.
+	 *
+	 * @param string $ps_table
+	 *
+	 * @return string 
+	 */
+	function caGetRelationDisplayString($po_request, $ps_table, $pa_attributes=null, $pa_options=null) {
+		$o_config = Configuration::load();
+		$o_dm = Datamodel::load();
+		$vs_relationship_type_display_position = strtolower($o_config->get($ps_table.'_lookup_relationship_type_position'));
+		$vs_attr_str = _caHTMLMakeAttributeString(is_array($pa_attributes) ? $pa_attributes : array());
+		$vs_display = "{".((isset($pa_options['display']) && $pa_options['display']) ? $pa_options['display'] : "_display")."}";
+		if (isset($pa_options['makeLink']) && $pa_options['makeLink']) {
+			$vs_display = "<a href='".caEditorUrl($po_request, $ps_table, '{'.$o_dm->getTablePrimaryKeyName($ps_table).'}')."' {$vs_attr_str}>{$vs_display}</a>";
+		}
+		
+		switch($vs_relationship_type_display_position) {
+			case 'left':
+				return "({{relationship_typename}}) {$vs_display}";
+				break;
+			case 'none':
+				return "{$vs_display}";
+				break;
+			default:
+			case 'right':
+				return "{$vs_display} ({{relationship_typename}})";
+				break;
+		}
 	}
 	# ------------------------------------------------------------------------------------------------
 	/**

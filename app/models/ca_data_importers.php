@@ -1527,6 +1527,10 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 					// Is it a constant value?
 					if (preg_match("!^_CONSTANT_:[\d]+:(.*)!", $va_item['source'], $va_matches)) {
 						$va_ptr[$vs_item_terminal] = $va_matches[1];		// Set it and go onto the next item
+						
+						if (($vs_target_table == $vs_subject_table_name) && (($vs_k =array_search($vn_item_id, $va_mandatory_field_mapping_ids)) !== false)) {
+							$va_mandatory_field_values[$vs_k] = $vm_val;
+						}
 						continue;
 					}
 					

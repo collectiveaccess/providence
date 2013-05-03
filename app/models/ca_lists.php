@@ -932,8 +932,13 @@ class ca_lists extends BundlableLabelableBaseModelWithAttributes {
 	/**
 	 *
 	 */
-	public function getRootItemIDForList($pm_list_name_or_id) {
-		$vn_list_id = $this->_getListID($pm_list_name_or_id);
+	public function getRootItemIDForList($pm_list_name_or_id=null) {
+		if ($pm_list_name_or_id) {
+			$vn_list_id = $this->_getListID($pm_list_name_or_id);
+		} else {
+			$vn_list_id = $this->get('list_id');
+		}
+		if (!$vn_list_id) { return null; }
 		
 		$o_db = $this->getDb();
 		$qr_res = $o_db->query("
@@ -1142,12 +1147,12 @@ class ca_lists extends BundlableLabelableBaseModelWithAttributes {
 						}
 					}
 					
-					if ($va_limit_to_lists = ((isset($pa_options['limitToLists']) && is_array($pa_options['limitToLists'])) ? $pa_options['limitToLists'] : null)) {
+					if ($va_limit_to_listIDs = ((isset($pa_options['limitToListIDs']) && is_array($pa_options['limitToListIDs'])) ? $pa_options['limitToListIDs'] : null)) {
 						// filter out items from tables we don't want
 					
 						$qr_list_items = $t_list->makeSearchResult("ca_list_items", array_values($va_item_ids));
 						while($qr_list_items->nextHit()) {
-							if (!in_array($qr_list_items->get('ca_list_items.list_id'), $va_limit_to_lists)) {
+							if (!in_array($qr_list_items->get('ca_list_items.list_id'), $va_limit_to_listIDs)) {
 								if (is_array($va_k = array_keys($va_item_ids, $qr_list_items->get('ca_list_items.item_id')))) {
 									foreach($va_k as $vs_k) {
 										unset($va_list_items[$vs_k]);
