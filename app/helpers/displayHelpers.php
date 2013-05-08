@@ -2081,7 +2081,7 @@ require_once(__CA_LIB_DIR__."/ca/ApplicationPluginManager.php");
 		$vs_attr_str = _caHTMLMakeAttributeString(is_array($pa_attributes) ? $pa_attributes : array());
 		$vs_display = "{".((isset($pa_options['display']) && $pa_options['display']) ? $pa_options['display'] : "_display")."}";
 		if (isset($pa_options['makeLink']) && $pa_options['makeLink']) {
-			$vs_display = "<a href='".caEditorUrl($po_request, $ps_table, '{'.$o_dm->getTablePrimaryKeyName($ps_table).'}')."' {$vs_attr_str}>{$vs_display}</a>";
+			$vs_display = "<a href='".urldecode(caEditorUrl($po_request, $ps_table, '{'.$o_dm->getTablePrimaryKeyName($ps_table).'}'))."' {$vs_attr_str}>{$vs_display}</a>";
 		}
 		
 		switch($vs_relationship_type_display_position) {
