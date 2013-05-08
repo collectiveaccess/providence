@@ -1326,7 +1326,14 @@ class ca_objects extends BundlableLabelableBaseModelWithAttributes implements IB
 			}
 			$va_media[$qr_res->get('object_id')] = $va_media_tags;
 		}
-		return $va_media;
+		
+		// Preserve order of input ids
+		$va_media_sorted = array();
+		foreach($pa_ids as $vn_object_id) {
+			$va_media_sorted[$vn_object_id] = $va_media[$vn_object_id];
+		} 
+		
+		return $va_media_sorted;
 	}
 	# ------------------------------------------------------------------
 	/**
