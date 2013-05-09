@@ -370,10 +370,6 @@ class ca_attribute_values extends BaseModel {
 		return parent::delete($pb_delete_related, $pa_options, $pa_fields, $pa_table_list);
 	}
 	# ------------------------------------------------------
-	protected function logChange($ps_change_type, $pn_user_id=null) {
-		//noop
-	}
-	# ------------------------------------------------------
 	/**
 	 *
 	 */

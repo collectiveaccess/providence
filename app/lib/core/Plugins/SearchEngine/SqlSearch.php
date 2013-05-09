@@ -802,7 +802,7 @@ class WLPlugSearchEngineSqlSearch extends BaseSearchPlugin implements IWLPlugSea
 																INNER JOIN ca_attributes AS ca ON ca.attribute_id = cav.attribute_id
 																^JOIN
 																WHERE
-																	(cav.element_id = '{$vs_fld_num}') AND (ca.table_num = ?)
+																	(cav.element_id = {$vn_fld_num}) AND (ca.table_num = ?)
 																	AND
 																	(
 																		(cav.value_decimal1 BETWEEN ".floatval($va_dates['start'])." AND ".floatval($va_dates['end']).")
@@ -821,7 +821,7 @@ class WLPlugSearchEngineSqlSearch extends BaseSearchPlugin implements IWLPlugSea
 																INNER JOIN ca_attributes AS ca ON ca.attribute_id = cav.attribute_id
 																^JOIN
 																WHERE
-																	(cav.element_id = '{$vs_fld_num}') AND (ca.table_num = ?)
+																	(cav.element_id = {$vn_fld_num}) AND (ca.table_num = ?)
 																	AND
 																	(
 																		(cav.value_decimal1 BETWEEN ".floatval($va_dates['start'])." AND ".floatval($va_dates['end']).")
@@ -847,7 +847,7 @@ class WLPlugSearchEngineSqlSearch extends BaseSearchPlugin implements IWLPlugSea
 															INNER JOIN ca_attributes AS ca ON ca.attribute_id = cav.attribute_id
 															^JOIN
 															WHERE
-																(cav.element_id = '{$vs_fld_num}') AND (ca.table_num = ?)
+																(cav.element_id = {$vn_fld_num}) AND (ca.table_num = ?)
 																AND
 																(cav.value_decimal1 BETWEEN {$va_coords['min_latitude']} AND {$va_coords['max_latitude']})
 																AND
@@ -868,7 +868,7 @@ class WLPlugSearchEngineSqlSearch extends BaseSearchPlugin implements IWLPlugSea
 														INNER JOIN ca_attributes AS ca ON ca.attribute_id = cav.attribute_id
 														^JOIN
 														WHERE
-															(cav.element_id = '{$vs_fld_num}') AND (ca.table_num = ?)
+															(cav.element_id = {$vn_fld_num}) AND (ca.table_num = ?)
 															AND
 															(cav.value_decimal1 = ".floatval($vn_amount).")
 															AND
@@ -887,7 +887,7 @@ class WLPlugSearchEngineSqlSearch extends BaseSearchPlugin implements IWLPlugSea
 														INNER JOIN ca_attributes AS ca ON ca.attribute_id = cav.attribute_id
 														^JOIN
 														WHERE
-															(cav.element_id = '{$vs_fld_num}') AND (ca.table_num = ?)
+															(cav.element_id = {$vn_fld_num}) AND (ca.table_num = ?)
 															AND
 															(cav.value_decimal1 = ".floatval($vn_len).")
 															
@@ -904,7 +904,7 @@ class WLPlugSearchEngineSqlSearch extends BaseSearchPlugin implements IWLPlugSea
 														INNER JOIN ca_attributes AS ca ON ca.attribute_id = cav.attribute_id
 														^JOIN
 														WHERE
-															(cav.element_id = '{$vs_fld_num}') AND (ca.table_num = ?)
+															(cav.element_id = {$vn_fld_num}) AND (ca.table_num = ?)
 															AND
 															(cav.value_decimal1 = ".floatval($vn_weight).")
 															
@@ -921,7 +921,7 @@ class WLPlugSearchEngineSqlSearch extends BaseSearchPlugin implements IWLPlugSea
 														INNER JOIN ca_attributes AS ca ON ca.attribute_id = cav.attribute_id
 														^JOIN
 														WHERE
-															(cav.element_id = '{$vs_fld_num}') AND (ca.table_num = ?)
+															(cav.element_id = {$vn_fld_num}) AND (ca.table_num = ?)
 															AND
 															(cav.value_decimal1 = ".floatval($vn_timecode).")
 															
@@ -934,7 +934,7 @@ class WLPlugSearchEngineSqlSearch extends BaseSearchPlugin implements IWLPlugSea
 														INNER JOIN ca_attributes AS ca ON ca.attribute_id = cav.attribute_id
 														^JOIN
 														WHERE
-															(cav.element_id = '{$vs_fld_num}') AND (ca.table_num = ?)
+															(cav.element_id = {$vn_fld_num}) AND (ca.table_num = ?)
 															AND
 															(cav.value_integer1 = ".intval(array_shift($va_raw_terms)).")
 															
@@ -947,7 +947,7 @@ class WLPlugSearchEngineSqlSearch extends BaseSearchPlugin implements IWLPlugSea
 														INNER JOIN ca_attributes AS ca ON ca.attribute_id = cav.attribute_id
 														^JOIN
 														WHERE
-															(cav.element_id = '{$vs_fld_num}') AND (ca.table_num = ?)
+															(cav.element_id = {$vn_fld_num}) AND (ca.table_num = ?)
 															AND
 															(cav.value_decimal1 = ".floatval(array_shift($va_raw_terms)).")
 															

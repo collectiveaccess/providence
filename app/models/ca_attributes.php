@@ -755,10 +755,6 @@ class ca_attributes extends BaseModel {
 		return $va_attrs;
 	}
 	# ------------------------------------------------------
-	protected function logChange($ps_change_type, $pn_user_id=null) {
-		//noop
-	}
-	# ------------------------------------------------------
 	/**
 	 * Retrieves attribute value for a list of rows
 	 *
