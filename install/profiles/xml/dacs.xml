@@ -2928,12 +2928,6 @@
             <placement code="ca_attribute_relatedmaterial">
               <bundle>ca_attribute_relatedmaterial</bundle>
             </placement>
-            <placement code="ca_objects">
-              <bundle>ca_objects</bundle>
-            </placement>
-            <placement code="ca_collections">
-              <bundle>ca_collections</bundle>
-            </placement>
             <placement code="ca_attribute_bibliography">
               <bundle>ca_attribute_bibliography</bundle>
             </placement>
@@ -2954,6 +2948,16 @@
             </placement>
             <placement code="ca_storage_locations">
               <bundle>ca_storage_locations</bundle>
+            </placement>
+             <placement code="ca_entities">
+              <bundle>ca_entities</bundle>
+            </placement>
+            <placement code="ca_events">
+              <bundle>ca_occurrences</bundle>
+              <settings>
+                <setting name="restrict_to_type">event</setting>
+                <setting name="label" locale="en_US">Related events</setting>
+              </settings>
             </placement>
           </bundlePlacements>
         </screen>
@@ -2994,22 +2998,6 @@
              <placement code="ca_attribute_LcshGeo">
               <bundle>ca_attribute_LcshGeo</bundle>
              </placement>
-            <placement code="ca_collections">
-              <bundle>ca_collections</bundle>
-            </placement>
-            <placement code="ca_objects">
-              <bundle>ca_objects</bundle>
-            </placement>
-            <placement code="ca_entities">
-              <bundle>ca_entities</bundle>
-            </placement>
-            <placement code="ca_events">
-              <bundle>ca_occurrences</bundle>
-              <settings>
-                <setting name="restrict_to_type">event</setting>
-                <setting name="label" locale="en_US">Related events</setting>
-              </settings>
-            </placement>
           </bundlePlacements>
         </screen>
         <screen idno="media" default="0">
