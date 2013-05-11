@@ -490,15 +490,18 @@ class ca_objects extends BundlableLabelableBaseModelWithAttributes implements IB
 					
 					if ($t_object_x_rep->numErrors()) {
 						$this->errors = $t_object_x_rep->errors;
-						if ($vb_we_set_transaction) { $this->removeTransaction(false);}
+						if ($vb_we_set_transaction) { $o_t->rollback();}
 						return false;
 					}
 				}
 			}
+		} else {
+			if ($vb_we_set_transaction) { $o_t->rollback(); }
+			return false;
 		}
 		
 		
-		if ($vb_we_set_transaction) { $this->removeTransaction(true);}
+		if ($vb_we_set_transaction) { $o_t->commit();}
 		return $t_dupe;
 	}
 	# ------------------------------------------------------
