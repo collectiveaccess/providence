@@ -126,7 +126,7 @@ if (that.uiStyle == 'horizontal') {
 			if (!item_id) { that.setUpHierarchyLevel(0, that.useAsRootID ? that.useAsRootID : 0, 1, null, true); return; }
 			that.levelLists = [];
 			that.selectedItemIDs = [];
-			jQuery.getJSON(that.initDataUrl, { id: item_id, bundle: that.bundle}, function(data) {
+			jQuery.getJSON(that.initDataUrl, { id: item_id, bundle: that.bundle}, function(data, e, x) {
 				if (data.length) {
 					that.selectedItemIDs = data.join(';').split(';');
 					
@@ -141,8 +141,14 @@ if (that.uiStyle == 'horizontal') {
 				} else {
 					data = [that.useAsRootID ? that.useAsRootID : 0];
 				}
+				
+				if (data[0] == data[1]) {	// workaround for jQuery(?) but that replicates first item of list in json array
+					data.shift();
+				}
 				var l = 0;
+				console.log("mod", data);
 				jQuery.each(data, function(i, id) {
+					console.log("setup", i, id, item_id);
 					that.setUpHierarchyLevel(i, id, 1, item_id);
 					l++;
 				});
