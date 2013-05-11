@@ -1642,7 +1642,9 @@
 				$t_dupe->setTransaction($this->getTransaction());
 			}
 			
-			return $t_dupe->copyAttributesTo($this->getPrimaryKey());
+			$vn_rc = $t_dupe->copyAttributesTo($this->getPrimaryKey());
+			$this->errors = $t_dupe->errors;
+			return $vn_rc;
 		}
 		# ------------------------------------------------------------------
 		// --- Methods to manage bindings between elements and tables
