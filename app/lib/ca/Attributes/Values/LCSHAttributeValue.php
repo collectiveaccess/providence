@@ -186,6 +186,9 @@
  			// Try to convert LCSH display format into parse-able format, to avoid unwanted lookups
  			if(preg_match("!^([^\[]+)[ ]*\[(info:lc[^\]]+)\]!", $ps_value, $va_matches)) {
  				$ps_value = $va_matches[0]."|".$va_matches[1];
+ 			} elseif (preg_match("!^([^\[]+)[ ]*\[(sh[^\]]+)\]!", $ps_value, $va_matches)) {
+ 				// Convert old-style "[sh*]" format identifiers
+ 				$ps_value = $va_matches[0]."|".$va_matches[1];
  			}
  			
 			if (trim($ps_value)) {
