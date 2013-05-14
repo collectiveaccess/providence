@@ -356,22 +356,31 @@ class ca_lists extends BundlableLabelableBaseModelWithAttributes {
 	 * 
 	 * @param $pm_list_name_or_id mixed - list_code or list_id of desired list
 	 * @param $pa_options array - optional array of options. Supported options include:
-	 *			returnHierarchyLevels - if true list is returned with 'LEVEL' field set to hierarchical level of item, and items are returned in order such that if you loop through the returned list and indent each item according to its level you get a nicely formatted hierarchical display. Default is false.
-	 * 			includeSelf - if true, the specified item is included in the returned set of items; [default is false]
-	 *			directChildrenOnly - if true, only children immediately below the specified item are returned; [default is false]
-	 * 			type_id - optional list item type to limit returned items by; default is to not limit by type (eg. type_id = null)
-	 *			item_id - optional item_id to use as root of hierarchy for returned items; if this is not set (the default) then all items in the list are returned
-	 *			extractValuesByUserLocale - if true then values are processed to be appropriate for current user locale; default is false:  return values for all locales
-	 *			sort - If set to a __CA_LISTS_SORT_BY_*__ constant, will force the list to be sorted by that criteria overriding the sort order set in the ca_lists.default_sort field
-	 *			idsOnly - if true, only the primary key id values of the list items are returned
+	 *			returnHierarchyLevels =		if true list is returned with 'LEVEL' field set to hierarchical level of item, and items are returned in order such that if you loop through the returned list and indent each item according to its level you get a nicely formatted hierarchical display. Default is false.
+	 * 			extractValuesByUserLocale = if true then values are processed to be appropriate for current user locale; default is false:  return values for all locales
+	 *			directChildrenOnly =	 	if true, only children immediately below the specified item are returned; [default is false]
+	 * 			includeSelf =	if true, the specified item is included in the returned set of items; [default is false]
+	 *			type_id = 		optional list item type to limit returned items by; default is to not limit by type (eg. type_id = null)
+	 *			item_id =		optional item_id to use as root of hierarchy for returned items; if this is not set (the default) then all items in the list are returned
+	 *			sort =			if set to a __CA_LISTS_SORT_BY_*__ constant, will force the list to be sorted by that criteria overriding the sort order set in the ca_lists.default_sort field
+	 *			idsOnly = 		if true, only the primary key id values of the list items are returned
+	 *			labelsOnly = 	if true only labels in the current locale are returns in an array key'ed on item_id
 	 *
-	 * @return array - list of items indexed first on item_id and then on locale_id of label
+	 * @return array List of items indexed first on item_id and then on locale_id of label
 	 */
 	public function getItemsForList($pm_list_name_or_id, $pa_options=null) {
 		$vn_list_id = $this->_getListID($pm_list_name_or_id);
 		if (!is_array($pa_options)) { $pa_options = array(); }
 		if (!isset($pa_options['returnHierarchyLevels'])) { $pa_options['returnHierarchyLevels'] = false; }
 		if ((isset($pa_options['directChildrenOnly']) && $pa_options['directChildrenOnly'])) { $pa_options['returnHierarchyLevels'] = false; }
+	
+		$vb_labels_only = false;
+		if (isset($pa_options['labelsOnly']) && $pa_options['labelsOnly']) {
+			$pa_options['extractValuesByUserLocale'] = true;
+			$pa_options['returnHierarchyLevels'] = false;
+			
+			$vb_labels_only = true;
+		}
 	
 		$vs_cache_key = caMakeCacheKeyFromOptions(array_merge($pa_options, array('list_id' => $vn_list_id)));
 		
@@ -470,6 +479,14 @@ class ca_lists extends BundlableLabelableBaseModelWithAttributes {
 						$va_items[$va_row['item_id']] = $va_row;
 					}
 				}
+			}
+			
+			if ($vb_labels_only) {
+				$va_labels = array();
+				foreach($va_items as $vn_item_id => $va_row) {
+					$va_labels[$vn_item_id] = $va_row['name_plural'];
+				}
+				return $va_labels;
 			}
 		} else {
 			// hierarchical output
@@ -716,6 +733,34 @@ class ca_lists extends BundlableLabelableBaseModelWithAttributes {
 	/**
 	 *
 	 */
+	public function getItemFromListByLabel($pm_list_name_or_id, $ps_label_name) {
+		if (isset(ca_lists::$s_list_item_get_cache[$pm_list_name_or_id.'/'.$ps_label_name])) {
+			return ca_lists::$s_list_item_get_cache[$pm_list_name_or_id.'/'.$ps_label_name];
+		}
+	
+		$vn_list_id = $this->_getListID($pm_list_name_or_id);
+		if (isset(ca_lists::$s_list_item_get_cache[$vn_list_id.'/'.$ps_label_name])) {
+			return ca_lists::$s_list_item_get_cache[$vn_list_id.'/'.$ps_label_name];
+		}
+		$o_db = $this->getDb();
+		$qr_res = $o_db->query("
+			SELECT *
+			FROM ca_list_items cli
+			INNER JOIN ca_list_item_labels AS clil ON clil.item_id = cli.item_id
+			WHERE
+				(cli.deleted = 0) AND (cli.list_id = ?) AND ((clil.name_singular = ?) OR (clil.name_plural = ?))
+		", (int)$vn_list_id, (string)$ps_label_name, (string)$ps_label_name);
+		
+		if ($qr_res->nextRow()) {
+			return ca_lists::$s_list_item_get_cache[$vn_list_id.'/'.$ps_label_name] = ca_lists::$s_list_item_get_cache[$pm_list_name_or_id.'/'.$ps_label_name] = $qr_res->getRow();
+		}
+		return ca_lists::$s_list_item_get_cache[$vn_list_id.'/'.$ps_label_name] = ca_lists::$s_list_item_get_cache[$pm_list_name_or_id.'/'.$ps_label_name]  = null;
+
+	}
+	# ------------------------------------------------------
+	/**
+	 *
+	 */
 	public function getItemFromListForDisplay($pm_list_name_or_id, $ps_idno, $pb_return_plural=false) {
 	
 		if (isset(ca_lists::$s_list_item_display_cache[$ps_idno])) {
@@ -887,8 +932,13 @@ class ca_lists extends BundlableLabelableBaseModelWithAttributes {
 	/**
 	 *
 	 */
-	public function getRootItemIDForList($pm_list_name_or_id) {
-		$vn_list_id = $this->_getListID($pm_list_name_or_id);
+	public function getRootItemIDForList($pm_list_name_or_id=null) {
+		if ($pm_list_name_or_id) {
+			$vn_list_id = $this->_getListID($pm_list_name_or_id);
+		} else {
+			$vn_list_id = $this->get('list_id');
+		}
+		if (!$vn_list_id) { return null; }
 		
 		$o_db = $this->getDb();
 		$qr_res = $o_db->query("
@@ -1097,12 +1147,12 @@ class ca_lists extends BundlableLabelableBaseModelWithAttributes {
 						}
 					}
 					
-					if ($va_limit_to_lists = ((isset($pa_options['limitToLists']) && is_array($pa_options['limitToLists'])) ? $pa_options['limitToLists'] : null)) {
+					if ($va_limit_to_listIDs = ((isset($pa_options['limitToListIDs']) && is_array($pa_options['limitToListIDs'])) ? $pa_options['limitToListIDs'] : null)) {
 						// filter out items from tables we don't want
 					
 						$qr_list_items = $t_list->makeSearchResult("ca_list_items", array_values($va_item_ids));
 						while($qr_list_items->nextHit()) {
-							if (!in_array($qr_list_items->get('ca_list_items.list_id'), $va_limit_to_lists)) {
+							if (!in_array($qr_list_items->get('ca_list_items.list_id'), $va_limit_to_listIDs)) {
 								if (is_array($va_k = array_keys($va_item_ids, $qr_list_items->get('ca_list_items.item_id')))) {
 									foreach($va_k as $vs_k) {
 										unset($va_list_items[$vs_k]);

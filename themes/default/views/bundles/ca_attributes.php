@@ -113,6 +113,8 @@
 	
 	if ($vb_batch) {
 		print caBatchEditorAttributeModeControl($vs_id_prefix);
+	} else {
+		print caEditorBundleShowHideControl($this->request, $vs_id_prefix);
 	}
 ?>
 <div id="<?php print $vs_id_prefix; ?>" <?php print $vb_batch ? "class='editorBatchBundleContent'" : ''; ?>>

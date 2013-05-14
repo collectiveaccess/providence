@@ -41,6 +41,8 @@
  	}
  	if ($vb_batch) {
 		print caBatchEditorIntrinsicModeControl($t_instance, $vs_bundle_name);
+	} else {
+		print caEditorBundleShowHideControl($this->request, "intrinsic_{$vs_bundle_name}");
 	}
 ?>
 	<div>

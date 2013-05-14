@@ -244,7 +244,8 @@ class ca_attribute_values extends BaseModel {
 	public function addValue($ps_value, $pa_element_info, $pn_attribute_id) {
 		$this->clear();
 		
-		$t_element = new ca_metadata_elements($pa_element_info['element_id']);
+		//$t_element = new ca_metadata_elements($pa_element_info['element_id']);
+		$t_element = ca_attributes::getElementInstance($pa_element_info['element_id']);
 		
 		$this->setMode(ACCESS_WRITE);
 		$this->set('attribute_id', $pn_attribute_id);
@@ -301,7 +302,8 @@ class ca_attribute_values extends BaseModel {
 	public function editValue($ps_value) {
 		if (!$this->getPrimaryKey()) { return null; }
 		
-		$t_element = new ca_metadata_elements($this->get('element_id'));
+		//$t_element = new ca_metadata_elements($this->get('element_id'));
+		$t_element = ca_attributes::getElementInstance($this->get('element_id'));
 		$pa_element_info = $t_element->getFieldValuesArray();
 		
 		$this->setMode(ACCESS_WRITE);
@@ -351,7 +353,8 @@ class ca_attribute_values extends BaseModel {
 	 *
 	 */
 	public function delete($pb_delete_related=false, $pa_options=null, $pa_fields=null, $pa_table_list=null) {
-		$t_element = new ca_metadata_elements($this->get('element_id'));
+		//$t_element = new ca_metadata_elements($this->get('element_id'));
+		$t_element = ca_attributes::getElementInstance($this->get('element_id'));
 		switch($vn_data_type = $t_element->get('datatype')) {
 			case 15:		// FT_FILE
 				$this->useBlobAsFileField(true);			// force value_blob field to be treated as FT_FILE field by BaseModel

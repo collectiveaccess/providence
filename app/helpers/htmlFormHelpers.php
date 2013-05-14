@@ -295,8 +295,6 @@
 	 */
 	function caHTMLImage($ps_url, $pa_options=null) {
 		if (!is_array($pa_options)) { $pa_options = array(); }
-		//if (!isset($pa_options["width"])) $pa_options["width"] = 100;
-		//if (!isset($pa_options["height"])) $pa_options["height"] = 100;
 		
 		$va_attributes = array('src' => $ps_url);
 		foreach(array('name', 'id',
@@ -347,14 +345,13 @@
 			$vn_viewer_width = 				$pa_options["viewer_width"];
 			$vn_viewer_height = 			$pa_options["viewer_height"];
 			
+			$vs_annotation_load_url	=		isset($pa_options["annotation_load_url"]) ? $pa_options["annotation_load_url"] : null;
+			$vs_annotation_save_url	=		isset($pa_options["annotation_save_url"]) ? $pa_options["annotation_save_url"] : null;
+			
 			if (!($vs_viewer_base_url =			(string)$pa_options["viewer_base_url"])) {
 				$vs_viewer_base_url = __CA_URL_ROOT__;
 			}
 			$vb_directly_embed_flash = (bool)$pa_options['directly_embed_flash'];
-			
-			if(!$viewer_label_processor_url = $pa_options["tilepic_label_processor_url"]) {
-				$viewer_label_processor_url = $vs_viewer_base_url."/viewers/apps/labels.php";
-			}
 			
 			$vn_label_typecode = 			intval($pa_options["tilepic_label_typecode"]);
 			
@@ -369,7 +366,7 @@
 				if (!$vn_viewer_height) { $vn_viewer_height = 500; }
 			}
 
-			$vs_flash_vars = "tpViewerUrl={$vs_viewer_base_url}/viewers/apps/tilepic.php&tpLabelProcessorURL={$viewer_label_processor_url}&tpImageUrl={$ps_url}&tpWidth={$vn_width}&tpHeight={$vn_height}&tpInitMagnification={$vn_init_magnification}&tpScales={$vn_layers}&tpRatio={$vn_ratio}&tpTileWidth={$vn_tile_width}&tpTileHeight={$vn_tile_height}&tpUseLabels={$vb_use_labels}&tpEditLabels={$vb_edit_labels}&tpParameterList={$vs_parameter_list}{$vs_app_parameters}&labelTypecode={$vn_label_typecode}&labelDefaultTitle=".urlencode($vs_label_title)."&labelTitleReadOnly={$vn_label_title_readonly}";
+			$vs_flash_vars = "tpViewerUrl={$vs_viewer_base_url}/viewers/apps/tilepic.php&tpImageUrl={$ps_url}&tpWidth={$vn_width}&tpHeight={$vn_height}&tpInitMagnification={$vn_init_magnification}&tpScales={$vn_layers}&tpRatio={$vn_ratio}&tpTileWidth={$vn_tile_width}&tpTileHeight={$vn_tile_height}&tpUseLabels={$vb_use_labels}&tpEditLabels={$vb_edit_labels}&tpParameterList={$vs_parameter_list}{$vs_app_parameters}&labelTypecode={$vn_label_typecode}&labelDefaultTitle=".urlencode($vs_label_title)."&labelTitleReadOnly={$vn_label_title_readonly}";
 			
 			$vs_error_tag = ($pa_options['alt_image_tag']) ? $pa_options['alt_image_tag'] : '';
 			
@@ -394,6 +391,8 @@ $vs_tag = "
 								height: '{$vn_viewer_height}',
 								magnifier: false,
 								buttonUrlPath: '{$vs_viewer_base_url}/themes/default/graphics/buttons',
+								annotationLoadUrl: '{$vs_annotation_load_url}',
+								annotationSaveUrl: '{$vs_annotation_save_url}',
 								info: {
 									width: '{$vn_width}',
 									height: '{$vn_height}',

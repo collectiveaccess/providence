@@ -412,7 +412,7 @@
 			}
 						
  			foreach($pa_ids as $pn_id) {
- 				$va_json_data = array('_primaryKey' => 'id');
+ 				$va_json_data = array('_primaryKey' => 'item_id');
 				
 				$va_tmp = explode(":", $pn_id);
 				$vn_id = $va_tmp[0];
@@ -431,11 +431,13 @@
 								}
 								foreach($va_facet as $vn_i => $va_item) {
 									if ($va_item['parent_id'] == $vn_id) {
+										$va_item['item_id'] = $va_item['id'];
 										$va_item['name'] = $va_item['label'];
 										$va_item['children'] = $va_item['child_count'];
 										unset($va_item['label']);
 										unset($va_item['child_count']);
-										$va_json_data[$va_item['id']] = $va_item;
+										unset($va_item['id']);
+										$va_json_data[$va_item['item_id']] = $va_item;
 									}
 								}
 							}
@@ -458,12 +460,12 @@
 							foreach($va_hierarchy_list as $vn_i => $va_item) {
 								if (!in_array($vn_i, $va_hier_ids)) { continue; }	// only show hierarchies that have items in browse result
 								if ($vn_start <= $vn_c) {
-									$va_item['id'] = $va_item[$t_item->primaryKey()];
-									if (!isset($va_facet[$va_item['id']]) && ($vn_root == $va_item['id'])) { continue; }
+									$va_item['item_id'] = $va_item[$t_item->primaryKey()];
+									if (!isset($va_facet[$va_item['item_id']]) && ($vn_root == $va_item['item_id'])) { continue; }
 									unset($va_item['parent_id']);
 									unset($va_item['label']);
-									$va_json_data[$va_item['id']] = $va_item;
-									$vn_last_id = $va_item['id'];
+									$va_json_data[$va_item['item_id']] = $va_item;
+									$vn_last_id = $va_item['item_id'];
 								}
 								$vn_c++;
 								if (!is_null($vn_max_items_per_page) && ($vn_c >= ($vn_max_items_per_page + $vn_start))) { break; }
@@ -478,11 +480,13 @@
 							foreach($va_facet as $vn_i => $va_item) {
 								if ($va_item['parent_id'] == $vn_id) {
 									if ($vn_start <= $vn_c) {
+										$va_item['item_id'] = $va_item['id'];
 										$va_item['name'] = $va_item['label'];
 										$va_item['children'] = $va_item['child_count'];
 										unset($va_item['label']);
 										unset($va_item['child_count']);
-										$va_json_data[$va_item['id']] = $va_item;
+										unset($va_item['id']);
+										$va_json_data[$va_item['item_id']] = $va_item;
 									}									
 									$vn_c++;
 									if (!is_null($vn_max_items_per_page) && ($vn_c >= ($vn_max_items_per_page + $vn_start))) { break; }
@@ -631,6 +635,14 @@
  			
  			return join("; ", $va_buf);
   		}
+ 		# -------------------------------------------------------
+ 		/**
+ 		 *
+ 		 */ 
+ 		public function getPartialResult($pa_options=null) {
+ 			$pa_options['search'] = $this->opo_browse;
+ 			return parent::getPartialResult($pa_options);
+ 		}
  		# -------------------------------------------------------
  		# Sidebar info handler
  		# -------------------------------------------------------

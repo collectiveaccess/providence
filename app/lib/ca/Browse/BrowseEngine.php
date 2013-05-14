@@ -1062,7 +1062,7 @@
 													$va_attr_sql[] = "(ca_attribute_values.{$vs_f} IN (?))";
 													$va_attr_values[] = $va_item_ids;
 												} else {
-													$va_attr_sql[] = "(ca_attribute_values.{$vs_f} = ?)";
+													$va_attr_sql[] = "(ca_attribute_values.{$vs_f} ".(is_null($vs_v) ? " IS " : " = ")." ?)";
 													$va_attr_values[] = $vs_v;
 												}
 											}
@@ -2431,7 +2431,7 @@
 								INNER JOIN ca_list_item_labels AS lil ON lil.item_id = li.item_id
 								{$vs_join_sql}
 								WHERE
-									ca_lists.list_code = ? {$vs_where_sql} {$vs_order_by}";
+									ca_lists.list_code = ?  AND lil.is_preferred = 1 {$vs_where_sql} {$vs_order_by}";
 							//print $vs_sql." [$vs_list_name]";
 							$qr_res = $this->opo_db->query($vs_sql, $vs_list_name);
 							
@@ -3502,9 +3502,9 @@ if (!$va_facet_info['show_all_when_first_facet'] || ($this->numCriteria() > 0)) 
 								$va_row = $qr_sort->getRow();
 								if (!$va_row['row_id']) { continue; }
 								if ($vn_num_locales > 1) {
-									$va_sorted_hits[$va_row['row_id']][$va_row['locale_id']] = trim(str_replace(array("'", '"'), array('', ''), $va_row[$vs_sort_field]));
+									$va_sorted_hits[$va_row['row_id']][$va_row['locale_id']] .= trim(str_replace(array("'", '"'), array('', ''), $va_row[$vs_sort_field]));
 								} else {
-									$va_sorted_hits[$va_row['row_id']] = trim(str_replace(array("'", '"'), array('', ''), $va_row[$vs_sort_field]));
+									$va_sorted_hits[$va_row['row_id']] .= trim(str_replace(array("'", '"'), array('', ''), $va_row[$vs_sort_field]));
 								}
 								unset($pa_hits[$va_row['row_id']]);
 							}

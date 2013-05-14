@@ -1129,6 +1129,25 @@
 			return $this->getLabels($pa_locale_ids, __CA_LABEL_TYPE_PREFERRED__, $pb_dont_cache, $pa_options);
 		}
 		# ------------------------------------------------------------------
+		/**
+		 * Returns label_id for preferred label with given locale attached to currently loaded row
+		 *
+		 * @param int locale_id 
+		 * @return int The label_id
+		 */
+ 		public function getPreferredLabelID($pn_locale_id) {
+			$va_labels = $this->getLabels(array($pn_locale_id), __CA_LABEL_TYPE_PREFERRED__);
+			foreach($va_labels as $vn_id => $va_labels_by_locale) {
+				foreach($va_labels_by_locale as $vn_locale_id => $va_label_list) {
+					foreach($va_label_list as $vn_i => $va_label) {
+						return $va_label['label_id'];
+					}
+				}
+			}
+			
+			return null;
+		}
+		# ------------------------------------------------------------------
 		/** 
 		 * Returns a list of non-preferred labels, optionally limited to the locales specified in the array $pa_locale_ids.
 		 * The returned list is an array with the same structure as returned by getLabels()

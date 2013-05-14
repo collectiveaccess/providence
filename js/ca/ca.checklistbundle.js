@@ -1,12 +1,12 @@
 /* ----------------------------------------------------------------------
- * js/ca/ca.checklistBundle.js
+ * js/ca/ca.checklistbundle.js
  * ----------------------------------------------------------------------
  * CollectiveAccess
  * Open-source collections management software
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2010-2012 Whirl-i-Gig
+ * Copyright 2010-2013 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *

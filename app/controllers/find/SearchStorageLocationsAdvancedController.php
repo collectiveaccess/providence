@@ -65,9 +65,8 @@
  		public function __construct(&$po_request, &$po_response, $pa_view_paths=null) {
  			parent::__construct($po_request, $po_response, $pa_view_paths);
 			$this->opa_views = array(
-				'thumbnail' => _t('thumbnails'),
-				'full' => _t('full'),
-				'list' => _t('list')
+				'list' => _t('list'),
+				'editable' => _t('editable')
 			 );
 			 
 			 $this->opa_sorts = array_merge(array(

@@ -40,6 +40,7 @@ require_once (__CA_LIB_DIR__."/core/BaseObject.php");
 define("__CA_MEDIA_VIDEO_DEFAULT_ICON__", 'video');
 define("__CA_MEDIA_AUDIO_DEFAULT_ICON__", 'audio');
 define("__CA_MEDIA_DOCUMENT_DEFAULT_ICON__", 'document');
+define("__CA_MEDIA_3D_DEFAULT_ICON__", '3d');
 
 class Media extends BaseObject {
 	# ----------------------------------------------------------
@@ -244,6 +245,14 @@ class Media extends BaseObject {
 		if (!method_exists($this->instance, 'writePreviews')) { return false; }
 		$this->instance->set('version', '');
 		return $this->instance->writePreviews($this->filepath, $pa_options);
+	}
+	# ----------------------------------------------------------
+	public function joinArchiveContents($pa_files, $pa_options = array()) {
+		if (!$this->instance) { return false; }
+	
+		if (!method_exists($this->instance, 'joinArchiveContents')) { return false; }
+		$this->instance->set('version', '');
+		return $this->instance->joinArchiveContents($pa_files, $pa_options);
 	}
 	# ----------------------------------------------------------
 	/**

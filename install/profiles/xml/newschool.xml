@@ -326,7 +326,15 @@
                         </label>
                       </labels>
                     <items>
-                  </items>
+                      <item idno="folder" enabled="1" default="0">
+                        <labels>
+                          <label locale="en_US" preferred="1">
+                            <name_singular>Folder</name_singular>
+                            <name_plural>Folders</name_plural>
+                          </label>
+                        </labels>
+                      </item>
+                    </items>
                  </item>
                 </items>
                </item>
@@ -1043,6 +1051,14 @@
         </label>
       </labels>
       <items>
+        <item idno="null" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular> </name_singular>
+              <name_plural> </name_plural>
+            </label>
+          </labels>
+        </item>
         <item idno="corpname" enabled="1" default="0">
           <labels>
             <label locale="en_US" preferred="1">
@@ -11976,7 +11992,7 @@
       <documentationUrl>http://dublincore.org/documents/dcmi-terms/#terms-description</documentationUrl>
       <settings>
         <setting name="usewysiwygeditor">1</setting>
-        <setting name="fieldWidth">70</setting>
+        <setting name="fieldWidth">100</setting>
         <setting name="fieldHeight">6</setting>
         <setting name="minChars">0</setting>
         <setting name="maxChars">65535</setting>
@@ -12025,7 +12041,7 @@
         </label>
       </labels>
       <settings>
-        <setting name="fieldWidth">90</setting>
+        <setting name="fieldWidth">100</setting>
         <setting name="fieldHeight">2</setting>
         <setting name="minChars">0</setting>
         <setting name="maxChars">65535</setting>
@@ -12082,7 +12098,7 @@
                 </label>
               </labels>
               <settings>
-                <setting name="fieldWidth">70</setting>
+                <setting name="fieldWidth">100</setting>
                 <setting name="fieldHeight">2</setting>
                 <setting name="minChars">0</setting>
                 <setting name="maxChars">65535</setting>
@@ -12105,7 +12121,7 @@
                 </label>
               </labels>
               <settings>
-                <setting name="fieldWidth">70</setting>
+                <setting name="fieldWidth">100</setting>
                 <setting name="fieldHeight">2</setting>
               </settings>
             </metadataElement>
@@ -12163,7 +12179,7 @@
         </label>
       </labels>
       <settings>
-        <setting name="fieldWidth">70</setting>
+        <setting name="fieldWidth">80</setting>
         <setting name="fieldHeight">1</setting>
         <setting name="minChars">1</setting>
         <setting name="maxChars">65535</setting>
@@ -12196,7 +12212,7 @@
         </label>
       </labels>
       <settings>
-        <setting name="fieldWidth">90</setting>
+        <setting name="fieldWidth">100</setting>
         <setting name="fieldHeight">4</setting>
         <setting name="minChars">0</setting>
         <setting name="maxChars">65535</setting>
@@ -12277,7 +12293,7 @@
                 </label>
               </labels>
               <settings>
-                <setting name="fieldWidth">90</setting>
+                <setting name="fieldWidth">100</setting>
                 <setting name="fieldHeight">1</setting>
                 <setting name="minChars">0</setting>
                 <setting name="maxChars">65535</setting>
@@ -12300,7 +12316,7 @@
                 </label>
               </labels>
               <settings>
-                <setting name="fieldWidth">40</setting>
+                <setting name="fieldWidth">60</setting>
                 <setting name="fieldHeight">1</setting>
                 <setting name="minChars">0</setting>
                 <setting name="maxChars">65535</setting>
@@ -12379,7 +12395,7 @@
         </label>
       </labels>
       <settings>
-        <setting name="fieldWidth">70</setting>
+        <setting name="fieldWidth">100</setting>
         <setting name="fieldHeight">1</setting>
         <setting name="minChars">1</setting>
         <setting name="maxChars">65535</setting>
@@ -12413,51 +12429,6 @@
       </typeRestrictions>
     </metadataElement>
     <!-- collection elements -->
-    <metadataElement code="TitleType" datatype="List" list="title_types">
-      <labels>
-        <label locale="en_US">
-          <name>Title Type</name>
-        </label>
-      </labels>
-      <typeRestrictions>
-        <restriction code="collections">
-          <table>ca_collections</table>
-          <type>collection</type>
-          <settings>
-            <setting name="minAttributesPerRow">0</setting>
-            <setting name="maxAttributesPerRow">1</setting>
-            <setting name="minimumAttributeBundlesToDisplay">1</setting>
-          </settings>
-        </restriction>
-        <restriction code="collections">
-          <table>ca_collections</table>
-          <type>series</type>
-          <settings>
-            <setting name="minAttributesPerRow">0</setting>
-            <setting name="maxAttributesPerRow">1</setting>
-            <setting name="minimumAttributeBundlesToDisplay">1</setting>
-          </settings>
-        </restriction>
-        <restriction code="collections">
-          <table>ca_collections</table>
-          <type>subseries</type>
-          <settings>
-            <setting name="minAttributesPerRow">0</setting>
-            <setting name="maxAttributesPerRow">1</setting>
-            <setting name="minimumAttributeBundlesToDisplay">1</setting>
-          </settings>
-        </restriction>
-        <restriction code="collections">
-          <table>ca_collections</table>
-          <type>subsubseries</type>
-          <settings>
-            <setting name="minAttributesPerRow">0</setting>
-            <setting name="maxAttributesPerRow">1</setting>
-            <setting name="minimumAttributeBundlesToDisplay">1</setting>
-          </settings>
-        </restriction>
-      </typeRestrictions>
-    </metadataElement>
     <metadataElement code="CollectionDate" datatype="Container">
       <labels>
         <label locale="en_US">
@@ -12483,7 +12454,7 @@
                 </label>
               </labels>
               <settings>
-                <setting name="fieldWidth">90</setting>
+                <setting name="fieldWidth">66</setting>
                 <setting name="fieldHeight">1</setting>
                 <setting name="minChars">0</setting>
                 <setting name="maxChars">65535</setting>
@@ -12506,7 +12477,7 @@
                 </label>
               </labels>
               <settings>
-                <setting name="fieldWidth">40</setting>
+                <setting name="fieldWidth">57</setting>
                 <setting name="fieldHeight">1</setting>
                 <setting name="minChars">0</setting>
                 <setting name="maxChars">65535</setting>
@@ -12529,33 +12500,7 @@
         <restriction code="r1">
           <table>ca_collections</table>
           <type>collection</type>
-          <settings>
-            <setting name="minAttributesPerRow">1</setting>
-            <setting name="maxAttributesPerRow">3</setting>
-            <setting name="minimumAttributeBundlesToDisplay">1</setting>
-          </settings>
-        </restriction>
-        <restriction code="r2">
-          <table>ca_collections</table>
-          <type>series</type>
-          <settings>
-            <setting name="minAttributesPerRow">1</setting>
-            <setting name="maxAttributesPerRow">3</setting>
-            <setting name="minimumAttributeBundlesToDisplay">1</setting>
-          </settings>
-        </restriction>
-        <restriction code="r3">
-          <table>ca_collections</table>
-          <type>subseries</type>
-          <settings>
-            <setting name="minAttributesPerRow">1</setting>
-            <setting name="maxAttributesPerRow">3</setting>
-            <setting name="minimumAttributeBundlesToDisplay">1</setting>
-          </settings>
-        </restriction>
-        <restriction code="r4">
-          <table>ca_collections</table>
-          <type>subsubseries</type>
+          <includeSubtypes>1</includeSubtypes>
           <settings>
             <setting name="minAttributesPerRow">1</setting>
             <setting name="maxAttributesPerRow">3</setting>
@@ -12580,33 +12525,7 @@
         <restriction code="r1">
           <table>ca_collections</table>
           <type>collection</type>
-          <settings>
-            <setting name="minAttributesPerRow">1</setting>
-            <setting name="maxAttributesPerRow">10</setting>
-            <setting name="minimumAttributeBundlesToDisplay">1</setting>
-          </settings>
-        </restriction>
-        <restriction code="r2">
-          <table>ca_collections</table>
-          <type>series</type>
-          <settings>
-            <setting name="minAttributesPerRow">1</setting>
-            <setting name="maxAttributesPerRow">10</setting>
-            <setting name="minimumAttributeBundlesToDisplay">1</setting>
-          </settings>
-        </restriction>
-        <restriction code="r3">
-          <table>ca_collections</table>
-          <type>subseries</type>
-          <settings>
-            <setting name="minAttributesPerRow">1</setting>
-            <setting name="maxAttributesPerRow">10</setting>
-            <setting name="minimumAttributeBundlesToDisplay">1</setting>
-          </settings>
-        </restriction>
-        <restriction code="r4">
-          <table>ca_collections</table>
-          <type>subsubseries</type>
+          <includeSubtypes>1</includeSubtypes>
           <settings>
             <setting name="minAttributesPerRow">1</setting>
             <setting name="maxAttributesPerRow">10</setting>
@@ -12622,7 +12541,7 @@
         </label>
       </labels>
       <settings>
-        <setting name="fieldWidth">90</setting>
+        <setting name="fieldWidth">100</setting>
         <setting name="fieldHeight">6</setting>
         <setting name="minChars">0</setting>
         <setting name="maxChars">65535</setting>
@@ -12631,33 +12550,7 @@
         <restriction code="r1">
           <table>ca_collections</table>
           <type>collection</type>
-          <settings>
-            <setting name="minAttributesPerRow">1</setting>
-            <setting name="maxAttributesPerRow">1</setting>
-            <setting name="minimumAttributeBundlesToDisplay">1</setting>
-          </settings>
-        </restriction>
-        <restriction code="r2">
-          <table>ca_collections</table>
-          <type>series</type>
-          <settings>
-            <setting name="minAttributesPerRow">1</setting>
-            <setting name="maxAttributesPerRow">1</setting>
-            <setting name="minimumAttributeBundlesToDisplay">1</setting>
-          </settings>
-        </restriction>
-        <restriction code="r3">
-          <table>ca_collections</table>
-          <type>subseries</type>
-          <settings>
-            <setting name="minAttributesPerRow">1</setting>
-            <setting name="maxAttributesPerRow">1</setting>
-            <setting name="minimumAttributeBundlesToDisplay">1</setting>
-          </settings>
-        </restriction>
-        <restriction code="r4">
-          <table>ca_collections</table>
-          <type>subsubseries</type>
+          <includeSubtypes>1</includeSubtypes>
           <settings>
             <setting name="minAttributesPerRow">1</setting>
             <setting name="maxAttributesPerRow">1</setting>
@@ -12683,33 +12576,7 @@
         <restriction code="r1">
           <table>ca_collections</table>
           <type>collection</type>
-          <settings>
-            <setting name="minAttributesPerRow">0</setting>
-            <setting name="maxAttributesPerRow">10</setting>
-            <setting name="minimumAttributeBundlesToDisplay">1</setting>
-          </settings>
-        </restriction>
-        <restriction code="r2">
-          <table>ca_collections</table>
-          <type>series</type>
-          <settings>
-            <setting name="minAttributesPerRow">0</setting>
-            <setting name="maxAttributesPerRow">10</setting>
-            <setting name="minimumAttributeBundlesToDisplay">1</setting>
-          </settings>
-        </restriction>
-        <restriction code="r3">
-          <table>ca_collections</table>
-          <type>subseries</type>
-          <settings>
-            <setting name="minAttributesPerRow">0</setting>
-            <setting name="maxAttributesPerRow">10</setting>
-            <setting name="minimumAttributeBundlesToDisplay">1</setting>
-          </settings>
-        </restriction>
-        <restriction code="r4">
-          <table>ca_collections</table>
-          <type>subsubseries</type>
+          <includeSubtypes>1</includeSubtypes>
           <settings>
             <setting name="minAttributesPerRow">0</setting>
             <setting name="maxAttributesPerRow">10</setting>
@@ -12768,7 +12635,7 @@
                 </label>
               </labels>
               <settings>
-                <setting name="fieldWidth">90</setting>
+                <setting name="fieldWidth">100</setting>
                 <setting name="fieldHeight">6</setting>
                 <setting name="minChars">0</setting>
                 <setting name="maxChars">65500</setting>
@@ -12781,33 +12648,7 @@
         <restriction code="r1">
           <table>ca_collections</table>
           <type>collection</type>
-          <settings>
-            <setting name="minAttributesPerRow">0</setting>
-            <setting name="maxAttributesPerRow">1</setting>
-            <setting name="minimumAttributeBundlesToDisplay">1</setting>
-          </settings>
-        </restriction>
-        <restriction code="r2">
-          <table>ca_collections</table>
-          <type>series</type>
-          <settings>
-            <setting name="minAttributesPerRow">0</setting>
-            <setting name="maxAttributesPerRow">1</setting>
-            <setting name="minimumAttributeBundlesToDisplay">1</setting>
-          </settings>
-        </restriction>
-        <restriction code="r3">
-          <table>ca_collections</table>
-          <type>subseries</type>
-          <settings>
-            <setting name="minAttributesPerRow">0</setting>
-            <setting name="maxAttributesPerRow">1</setting>
-            <setting name="minimumAttributeBundlesToDisplay">1</setting>
-          </settings>
-        </restriction>
-        <restriction code="r4">
-          <table>ca_collections</table>
-          <type>subsubseries</type>
+          <includeSubtypes>1</includeSubtypes>
           <settings>
             <setting name="minAttributesPerRow">0</setting>
             <setting name="maxAttributesPerRow">1</setting>
@@ -12825,40 +12666,14 @@
       </labels>
       <settings>
         <setting name="vocabulary">cs:http://id.loc.gov/authorities/names</setting>
-        <setting name="fieldWidth">100</setting>
+        <setting name="fieldWidth">60</setting>
         <setting name="fieldHeight">1</setting>
       </settings>
       <typeRestrictions>
         <restriction code="r1">
           <table>ca_collections</table>
           <type>collection</type>
-          <settings>
-            <setting name="minAttributesPerRow">0</setting>
-            <setting name="maxAttributesPerRow">10</setting>
-            <setting name="minimumAttributeBundlesToDisplay">1</setting>
-          </settings>
-        </restriction>
-        <restriction code="r2">
-          <table>ca_collections</table>
-          <type>series</type>
-          <settings>
-            <setting name="minAttributesPerRow">0</setting>
-            <setting name="maxAttributesPerRow">10</setting>
-            <setting name="minimumAttributeBundlesToDisplay">1</setting>
-          </settings>
-        </restriction>
-        <restriction code="r3">
-          <table>ca_collections</table>
-          <type>subseries</type>
-          <settings>
-            <setting name="minAttributesPerRow">0</setting>
-            <setting name="maxAttributesPerRow">10</setting>
-            <setting name="minimumAttributeBundlesToDisplay">1</setting>
-          </settings>
-        </restriction>
-        <restriction code="r4">
-          <table>ca_collections</table>
-          <type>subsubseries</type>
+          <includeSubtypes>1</includeSubtypes>
           <settings>
             <setting name="minAttributesPerRow">0</setting>
             <setting name="maxAttributesPerRow">10</setting>
@@ -12884,40 +12699,14 @@
       </labels>
       <settings>
         <setting name="vocabulary">cs:http://id.loc.gov/authorities/subjects</setting>
-        <setting name="fieldWidth">100</setting>
+        <setting name="fieldWidth">60</setting>
         <setting name="fieldHeight">1</setting>
       </settings>
       <typeRestrictions>
         <restriction code="r1">
           <table>ca_collections</table>
           <type>collection</type>
-          <settings>
-            <setting name="minAttributesPerRow">0</setting>
-            <setting name="maxAttributesPerRow">10</setting>
-            <setting name="minimumAttributeBundlesToDisplay">1</setting>
-          </settings>
-        </restriction>
-        <restriction code="r2">
-          <table>ca_collections</table>
-          <type>series</type>
-          <settings>
-            <setting name="minAttributesPerRow">0</setting>
-            <setting name="maxAttributesPerRow">10</setting>
-            <setting name="minimumAttributeBundlesToDisplay">1</setting>
-          </settings>
-        </restriction>
-        <restriction code="r3">
-          <table>ca_collections</table>
-          <type>subseries</type>
-          <settings>
-            <setting name="minAttributesPerRow">0</setting>
-            <setting name="maxAttributesPerRow">10</setting>
-            <setting name="minimumAttributeBundlesToDisplay">1</setting>
-          </settings>
-        </restriction>
-        <restriction code="r4">
-          <table>ca_collections</table>
-          <type>subsubseries</type>
+          <includeSubtypes>1</includeSubtypes>
           <settings>
             <setting name="minAttributesPerRow">0</setting>
             <setting name="maxAttributesPerRow">10</setting>
@@ -12943,40 +12732,14 @@
       </labels>
       <settings>
         <setting name="vocabulary">cs:http://id.loc.gov/vocabulary/geographicAreas</setting>
-        <setting name="fieldWidth">100</setting>
+        <setting name="fieldWidth">60</setting>
         <setting name="fieldHeight">1</setting>
       </settings>
       <typeRestrictions>
         <restriction code="r1">
           <table>ca_collections</table>
           <type>collection</type>
-          <settings>
-            <setting name="minAttributesPerRow">0</setting>
-            <setting name="maxAttributesPerRow">10</setting>
-            <setting name="minimumAttributeBundlesToDisplay">1</setting>
-          </settings>
-        </restriction>
-        <restriction code="r2">
-          <table>ca_collections</table>
-          <type>series</type>
-          <settings>
-            <setting name="minAttributesPerRow">0</setting>
-            <setting name="maxAttributesPerRow">10</setting>
-            <setting name="minimumAttributeBundlesToDisplay">1</setting>
-          </settings>
-        </restriction>
-        <restriction code="r3">
-          <table>ca_collections</table>
-          <type>subseries</type>
-          <settings>
-            <setting name="minAttributesPerRow">0</setting>
-            <setting name="maxAttributesPerRow">10</setting>
-            <setting name="minimumAttributeBundlesToDisplay">1</setting>
-          </settings>
-        </restriction>
-        <restriction code="r4">
-          <table>ca_collections</table>
-          <type>subsubseries</type>
+          <includeSubtypes>1</includeSubtypes>
           <settings>
             <setting name="minAttributesPerRow">0</setting>
             <setting name="maxAttributesPerRow">10</setting>
@@ -13002,40 +12765,14 @@
       </labels>
       <settings>
         <setting name="vocabulary">cs:http://id.loc.gov/authorities/genreForms</setting>
-        <setting name="fieldWidth">100</setting>
+        <setting name="fieldWidth">60</setting>
         <setting name="fieldHeight">1</setting>
       </settings>
       <typeRestrictions>
         <restriction code="r1">
           <table>ca_collections</table>
           <type>collection</type>
-          <settings>
-            <setting name="minAttributesPerRow">0</setting>
-            <setting name="maxAttributesPerRow">10</setting>
-            <setting name="minimumAttributeBundlesToDisplay">1</setting>
-          </settings>
-        </restriction>
-        <restriction code="r2">
-          <table>ca_collections</table>
-          <type>series</type>
-          <settings>
-            <setting name="minAttributesPerRow">0</setting>
-            <setting name="maxAttributesPerRow">10</setting>
-            <setting name="minimumAttributeBundlesToDisplay">1</setting>
-          </settings>
-        </restriction>
-        <restriction code="r3">
-          <table>ca_collections</table>
-          <type>subseries</type>
-          <settings>
-            <setting name="minAttributesPerRow">0</setting>
-            <setting name="maxAttributesPerRow">10</setting>
-            <setting name="minimumAttributeBundlesToDisplay">1</setting>
-          </settings>
-        </restriction>
-        <restriction code="r4">
-          <table>ca_collections</table>
-          <type>subsubseries</type>
+          <includeSubtypes>1</includeSubtypes>
           <settings>
             <setting name="minAttributesPerRow">0</setting>
             <setting name="maxAttributesPerRow">10</setting>
@@ -13110,7 +12847,7 @@
                 </label>
               </labels>
               <settings>
-                <setting name="fieldWidth">90</setting>
+                <setting name="fieldWidth">100</setting>
                 <setting name="fieldHeight">1</setting>
                 <setting name="minChars">0</setting>
                 <setting name="maxChars">65535</setting>
@@ -13133,7 +12870,7 @@
               </labels>
               <settings>
                 <setting name="usewysiwygeditor">1</setting>
-                <setting name="fieldWidth">90</setting>
+                <setting name="fieldWidth">100</setting>
                 <setting name="fieldHeight">6</setting>
                 <setting name="minChars">0</setting>
                 <setting name="maxChars">65535</setting>
@@ -13159,33 +12896,7 @@
         <restriction code="r1">
           <table>ca_collections</table>
           <type>collection</type>
-          <settings>
-            <setting name="minAttributesPerRow">0</setting>
-            <setting name="maxAttributesPerRow">30</setting>
-            <setting name="minimumAttributeBundlesToDisplay">1</setting>
-          </settings>
-        </restriction>
-        <restriction code="r2">
-          <table>ca_collections</table>
-          <type>series</type>
-          <settings>
-            <setting name="minAttributesPerRow">0</setting>
-            <setting name="maxAttributesPerRow">30</setting>
-            <setting name="minimumAttributeBundlesToDisplay">1</setting>
-          </settings>
-        </restriction>
-        <restriction code="r3">
-          <table>ca_collections</table>
-          <type>subseries</type>
-          <settings>
-            <setting name="minAttributesPerRow">0</setting>
-            <setting name="maxAttributesPerRow">30</setting>
-            <setting name="minimumAttributeBundlesToDisplay">1</setting>
-          </settings>
-        </restriction>
-        <restriction code="r4">
-          <table>ca_collections</table>
-          <type>subsubseries</type>
+          <includeSubtypes>1</includeSubtypes>
           <settings>
             <setting name="minAttributesPerRow">0</setting>
             <setting name="maxAttributesPerRow">30</setting>
@@ -13245,7 +12956,7 @@
         </label>
       </labels>
       <settings>
-        <setting name="fieldWidth">70</setting>
+        <setting name="fieldWidth">100</setting>
         <setting name="fieldHeight">1</setting>
         <setting name="minChars">0</setting>
         <setting name="maxChars">65535</setting>
@@ -13270,7 +12981,7 @@
       </labels>
       <settings>
         <setting name="default_text">Collection guide available in electronic format</setting>
-        <setting name="fieldWidth">70</setting>
+        <setting name="fieldWidth">100</setting>
         <setting name="fieldHeight">1</setting>
         <setting name="minChars">0</setting>
         <setting name="maxChars">65535</setting>
@@ -13308,7 +13019,7 @@
                 </label>
               </labels>
               <settings>
-                <setting name="fieldWidth">70</setting>
+                <setting name="fieldWidth">100</setting>
                 <setting name="fieldHeight">1</setting>
                 <setting name="minChars">0</setting>
                 <setting name="maxChars">65535</setting>
@@ -13330,7 +13041,7 @@
                 </label>
               </labels>
               <settings>
-                <setting name="fieldWidth">70</setting>
+                <setting name="fieldWidth">100</setting>
                 <setting name="fieldHeight">1</setting>
                 <setting name="minChars">0</setting>
                 <setting name="maxChars">65535</setting>
@@ -13352,7 +13063,7 @@
                 </label>
               </labels>
               <settings>
-                <setting name="fieldWidth">70</setting>
+                <setting name="fieldWidth">100</setting>
                 <setting name="fieldHeight">1</setting>
                 <setting name="minChars">0</setting>
                 <setting name="maxChars">65535</setting>
@@ -13381,7 +13092,7 @@
       </labels>
       <settings>
         <setting name="useDatePicker">1</setting>
-        <setting name="fieldWidth">40</setting>
+        <setting name="fieldWidth">92</setting>
         <setting name="fieldHeight">1</setting>
         <setting name="minChars">0</setting>
         <setting name="maxChars">255</setting>
@@ -13405,7 +13116,7 @@
         </label>
       </labels>
       <settings>
-        <setting name="fieldWidth">70</setting>
+        <setting name="fieldWidth">100</setting>
         <setting name="fieldHeight">3</setting>
         <setting name="minChars">0</setting>
         <setting name="maxChars">65535</setting>
@@ -13429,7 +13140,7 @@
         </label>
       </labels>
       <settings>
-        <setting name="fieldWidth">70</setting>
+        <setting name="fieldWidth">100</setting>
         <setting name="fieldHeight">3</setting>
         <setting name="minChars">0</setting>
         <setting name="maxChars">65535</setting>
@@ -13453,7 +13164,7 @@
         </label>
       </labels>
       <settings>
-        <setting name="fieldWidth">70</setting>
+        <setting name="fieldWidth">100</setting>
         <setting name="fieldHeight">3</setting>
         <setting name="minChars">0</setting>
         <setting name="maxChars">65535</setting>
@@ -13477,7 +13188,7 @@
         </label>
       </labels>
       <settings>
-        <setting name="fieldWidth">70</setting>
+        <setting name="fieldWidth">100</setting>
         <setting name="fieldHeight">3</setting>
         <setting name="minChars">0</setting>
         <setting name="maxChars">65535</setting>
@@ -13501,7 +13212,7 @@
         </label>
       </labels>
       <settings>
-        <setting name="fieldWidth">70</setting>
+        <setting name="fieldWidth">100</setting>
         <setting name="fieldHeight">3</setting>
         <setting name="minChars">0</setting>
         <setting name="maxChars">65535</setting>
@@ -13539,7 +13250,7 @@
                 </label>
               </labels>
               <settings>
-                <setting name="fieldWidth">70</setting>
+                <setting name="fieldWidth">100</setting>
                 <setting name="fieldHeight">3</setting>
                 <setting name="minChars">0</setting>
                 <setting name="maxChars">65535</setting>
@@ -13555,7 +13266,7 @@
           </labels>
           <settings>
             <setting name="useDatePicker">1</setting>
-            <setting name="fieldWidth">40</setting>
+            <setting name="fieldWidth">60</setting>
             <setting name="fieldHeight">1</setting>
             <setting name="minChars">0</setting>
             <setting name="maxChars">255</setting>
@@ -13706,7 +13417,7 @@
             </label>
           </labels>
           <settings>
-            <setting name="fieldWidth">40</setting>
+            <setting name="fieldWidth">50</setting>
             <setting name="fieldHeight">1</setting>
           </settings>
         </metadataElement>
@@ -13717,7 +13428,7 @@
             </label>
           </labels>
           <settings>
-            <setting name="fieldWidth">40</setting>
+            <setting name="fieldWidth">50</setting>
           </settings>
         </metadataElement>
       </elements>
@@ -13778,7 +13489,7 @@
                 </label>
               </labels>
               <settings>
-                <setting name="fieldWidth">70</setting>
+                <setting name="fieldWidth">100</setting>
                 <setting name="fieldHeight">1</setting>
                 <setting name="minChars">0</setting>
                 <setting name="maxChars">255</setting>
@@ -13801,7 +13512,7 @@
                 </label>
               </labels>
               <settings>
-                <setting name="fieldWidth">70</setting>
+                <setting name="fieldWidth">100</setting>
                 <setting name="fieldHeight">1</setting>
                 <setting name="minChars">0</setting>
                 <setting name="maxChars">255</setting>
@@ -13824,7 +13535,7 @@
                 </label>
               </labels>
               <settings>
-                <setting name="fieldWidth">20</setting>
+                <setting name="fieldWidth">23</setting>
                 <setting name="fieldHeight">1</setting>
                 <setting name="minChars">0</setting>
                 <setting name="maxChars">255</setting>
@@ -13850,7 +13561,7 @@
                 </label>
               </labels>
               <settings>
-                <setting name="fieldWidth">10</setting>
+                <setting name="fieldWidth">20</setting>
                 <setting name="fieldHeight">1</setting>
                 <setting name="minChars">0</setting>
                 <setting name="maxChars">255</setting>
@@ -13863,7 +13574,7 @@
                 </label>
               </labels>
               <settings>
-                <setting name="fieldWidth">15</setting>
+                <setting name="fieldWidth">30</setting>
                 <setting name="fieldHeight">1</setting>
                 <setting name="minChars">0</setting>
                 <setting name="maxChars">255</setting>
@@ -13948,7 +13659,7 @@
         </label>
       </labels>
       <settings>
-        <setting name="fieldWidth">70</setting>
+        <setting name="fieldWidth">100</setting>
         <setting name="fieldHeight">1</setting>
         <setting name="minChars">0</setting>
         <setting name="maxChars">65535</setting>
@@ -14003,7 +13714,7 @@
               </labels>
               <settings>
                 <setting name="usewysiwygeditor">1</setting>
-                <setting name="fieldWidth">110</setting>
+                <setting name="fieldWidth">100</setting>
                 <setting name="fieldHeight">6</setting>
                 <setting name="minChars">0</setting>
                 <setting name="maxChars">65535</setting>
@@ -14026,7 +13737,7 @@
                 </label>
               </labels>
               <settings>
-                <setting name="fieldWidth">70</setting>
+                <setting name="fieldWidth">100</setting>
                 <setting name="fieldHeight">1</setting>
                 <setting name="minChars">0</setting>
                 <setting name="maxChars">65535</setting>
@@ -14072,7 +13783,7 @@
                 </label>
               </labels>
               <settings>
-                <setting name="fieldWidth">110</setting>
+                <setting name="fieldWidth">100</setting>
                 <setting name="fieldHeight">1</setting>
                 <setting name="minChars">0</setting>
                 <setting name="maxChars">255</setting>
@@ -14095,7 +13806,7 @@
                 </label>
               </labels>
               <settings>
-                <setting name="fieldWidth">70</setting>
+                <setting name="fieldWidth">100</setting>
                 <setting name="fieldHeight">2</setting>
                 <setting name="minChars">0</setting>
                 <setting name="maxChars">65535</setting>
@@ -14122,7 +13833,7 @@
         </label>
       </labels>
       <settings>
-        <setting name="fieldWidth">70</setting>
+        <setting name="fieldWidth">100</setting>
         <setting name="fieldHeight">2</setting>
         <setting name="minChars">0</setting>
         <setting name="maxChars">65535</setting>
@@ -14145,7 +13856,7 @@
         </label>
       </labels>
       <settings>
-        <setting name="fieldWidth">70</setting>
+        <setting name="fieldWidth">100</setting>
         <setting name="fieldHeight">2</setting>
         <setting name="minChars">0</setting>
         <setting name="maxChars">65535</setting>
@@ -14169,7 +13880,7 @@
         </label>
       </labels>
       <settings>
-        <setting name="fieldWidth">70</setting>
+        <setting name="fieldWidth">100</setting>
         <setting name="fieldHeight">1</setting>
         <setting name="minChars">0</setting>
         <setting name="maxChars">65535</setting>
@@ -14193,7 +13904,7 @@
         </label>
       </labels>
       <settings>
-        <setting name="fieldWidth">70</setting>
+        <setting name="fieldWidth">100</setting>
         <setting name="fieldHeight">1</setting>
         <setting name="minChars">0</setting>
         <setting name="maxChars">65535</setting>
@@ -14237,7 +13948,7 @@
     <metadataElement code="agentDateSet" datatype="Container">
       <labels>
         <label locale="en_US">
-          <name>Agent Dates Set</name>
+          <name>Agent Dates</name>
           <description/>
         </label>
       </labels>
@@ -14258,13 +13969,26 @@
                 </label>
               </labels>
               <settings>
-                <setting name="fieldWidth">90</setting>
+                <setting name="fieldWidth">60</setting>
                 <setting name="fieldHeight">1</setting>
                 <setting name="minChars">0</setting>
                 <setting name="maxChars">255</setting>
               </settings>
             </metadataElement>
-          </elements>
+          <metadataElement code="agentDateTypes" datatype="List" list="agent_date_types">
+            <labels>
+              <label locale="en_US">
+                <name>Type</name>
+              </label>
+            </labels>
+            <settings>
+              <setting name="fieldWidth">40</setting>
+              <setting name="fieldHeight">1</setting>
+              <setting name="minChars">0</setting>
+              <setting name="maxChars">255</setting>
+            </settings>
+        </metadataElement>
+         </elements>
         </metadataElement>
         <metadataElement code="agentDate_line2" datatype="Container">
           <labels>
@@ -14281,30 +14005,7 @@
                 </label>
               </labels>
               <settings>
-                <setting name="fieldWidth">90</setting>
-                <setting name="fieldHeight">1</setting>
-                <setting name="minChars">0</setting>
-                <setting name="maxChars">255</setting>
-              </settings>
-            </metadataElement>
-          </elements>
-        </metadataElement>
-        <metadataElement code="agentDate_line3" datatype="Container">
-          <labels>
-            <label locale="en_US">
-              <name>Dates line 2</name>
-            </label>
-          </labels>
-          <settings/>
-          <elements>
-            <metadataElement code="agentDateTypes" datatype="List" list="agent_date_types">
-              <labels>
-                <label locale="en_US">
-                  <name>Type</name>
-                </label>
-              </labels>
-              <settings>
-                <setting name="fieldWidth">40</setting>
+                <setting name="fieldWidth">52</setting>
                 <setting name="fieldHeight">1</setting>
                 <setting name="minChars">0</setting>
                 <setting name="maxChars">255</setting>
@@ -14348,33 +14049,7 @@
       </labels>
       <documentationUrl></documentationUrl>
       <settings>
-        <setting name="fieldWidth">70</setting>
-        <setting name="fieldHeight">1</setting>
-        <setting name="minChars">0</setting>
-        <setting name="maxChars">65535</setting>
-      </settings>
-      <typeRestrictions>
-        <restriction code="r1">
-          <table>ca_objects</table>
-          <settings>
-            <setting name="minAttributesPerRow">1</setting>
-            <setting name="maxAttributesPerRow">1</setting>
-            <setting name="minimumAttributeBundlesToDisplay">1</setting>
-          </settings>
-        </restriction>
-      </typeRestrictions>
-    </metadataElement>
-    <!-- 2D/3D elements -->
-    <metadataElement code="lcshFull" datatype="LCSH">
-      <labels>
-        <label locale="en_US">
-          <name>Box/Folder number</name>
-          <description></description>
-        </label>
-      </labels>
-      <documentationUrl></documentationUrl>
-      <settings>
-        <setting name="fieldWidth">70</setting>
+        <setting name="fieldWidth">64</setting>
         <setting name="fieldHeight">1</setting>
         <setting name="minChars">0</setting>
         <setting name="maxChars">65535</setting>
@@ -14399,7 +14074,7 @@
         </label>
       </labels>
       <settings>
-        <setting name="fieldWidth">70</setting>
+        <setting name="fieldWidth">60</setting>
         <setting name="fieldHeight">1</setting>
       </settings>
       <typeRestrictions>
@@ -14524,7 +14199,7 @@
                 </label>
               </labels>
               <settings>
-                <setting name="fieldWidth">80</setting>
+                <setting name="fieldWidth">100</setting>
                 <setting name="fieldHeight">3</setting>
                 <setting name="minChars">0</setting>
                 <setting name="maxChars">65535</setting>
@@ -14547,7 +14222,7 @@
                 </label>
               </labels>
               <settings>
-                <setting name="fieldWidth">80</setting>
+                <setting name="fieldWidth">100</setting>
                 <setting name="fieldHeight">1</setting>
                 <setting name="minChars">0</setting>
                 <setting name="maxChars">255</setting>
@@ -14757,7 +14432,7 @@
                 </label>
               </labels>
               <settings>
-                <setting name="fieldWidth">80</setting>
+                <setting name="fieldWidth">100</setting>
                 <setting name="fieldHeight">3</setting>
                 <setting name="minChars">0</setting>
                 <setting name="maxChars">255</setting>
@@ -14769,29 +14444,6 @@
           <labels>
             <label locale="en_US">
               <name>Rights Type</name>
-            </label>
-          </labels>
-          <settings/>
-          <elements>
-            <metadataElement code="rightType" datatype="List" list="rights_types">
-              <labels>
-                <label locale="en_US">
-                  <name>Rights Type</name>
-                </label>
-              </labels>
-              <settings>
-                <setting name="fieldWidth">40</setting>
-                <setting name="fieldHeight">1</setting>
-                <setting name="minChars">0</setting>
-                <setting name="maxChars">255</setting>
-              </settings>
-            </metadataElement>
-          </elements>
-        </metadataElement>
-        <metadataElement code="rights_line3" datatype="Container">
-          <labels>
-            <label locale="en_US">
-              <name>Rights Note</name>
             </label>
           </labels>
           <settings/>
@@ -14809,6 +14461,20 @@
                 <setting name="maxChars">255</setting>
               </settings>
             </metadataElement>
+            <metadataElement code="rightType" datatype="List" list="rights_types">
+              <labels>
+                <label locale="en_US">
+                  <name>Rights Type</name>
+                </label>
+              </labels>
+              <settings>
+                <setting name="fieldWidth">40</setting>
+                <setting name="fieldHeight">1</setting>
+                <setting name="minChars">0</setting>
+                <setting name="maxChars">255</setting>
+              </settings>
+            </metadataElement>
+            
           </elements>
         </metadataElement>
       </elements>
@@ -14863,7 +14529,7 @@
         </label>
       </labels>
       <settings>
-        <setting name="fieldWidth">80</setting>
+        <setting name="fieldWidth">100</setting>
         <setting name="fieldHeight">3</setting>
         <setting name="minChars">0</setting>
         <setting name="maxChars">255</setting>
@@ -14935,7 +14601,7 @@
                 </label>
               </labels>
               <settings>
-                <setting name="fieldWidth">80</setting>
+                <setting name="fieldWidth">100</setting>
                 <setting name="fieldHeight">6</setting>
                 <setting name="minChars">0</setting>
                 <setting name="maxChars">65535</setting>
@@ -15035,7 +14701,20 @@
                 </label>
               </labels>
               <settings>
-                <setting name="fieldWidth">80</setting>
+                <setting name="fieldWidth">66</setting>
+                <setting name="fieldHeight">1</setting>
+                <setting name="minChars">0</setting>
+                <setting name="maxChars">255</setting>
+              </settings>
+            </metadataElement>
+            <metadataElement code="dateTypes" datatype="List" list="general_date_types">
+              <labels>
+                <label locale="en_US">
+                  <name>Type</name>
+                </label>
+              </labels>
+              <settings>
+                <setting name="fieldWidth">40</setting>
                 <setting name="fieldHeight">1</setting>
                 <setting name="minChars">0</setting>
                 <setting name="maxChars">255</setting>
@@ -15058,30 +14737,7 @@
                 </label>
               </labels>
               <settings>
-                <setting name="fieldWidth">80</setting>
-                <setting name="fieldHeight">1</setting>
-                <setting name="minChars">0</setting>
-                <setting name="maxChars">255</setting>
-              </settings>
-            </metadataElement>
-          </elements>
-        </metadataElement>
-        <metadataElement code="setDate_line3" datatype="Container">
-          <labels>
-            <label locale="en_US">
-              <name>Dates Line 2</name>
-            </label>
-          </labels>
-          <settings/>
-          <elements>
-            <metadataElement code="dateTypes" datatype="List" list="general_date_types">
-              <labels>
-                <label locale="en_US">
-                  <name>Type</name>
-                </label>
-              </labels>
-              <settings>
-                <setting name="fieldWidth">40</setting>
+                <setting name="fieldWidth">58</setting>
                 <setting name="fieldHeight">1</setting>
                 <setting name="minChars">0</setting>
                 <setting name="maxChars">255</setting>
@@ -15531,7 +15187,7 @@
                 </label>
               </labels>
               <settings>
-                <setting name="fieldWidth">110</setting>
+                <setting name="fieldWidth">100</setting>
                 <setting name="fieldHeight">1</setting>
                 <setting name="minChars">0</setting>
                 <setting name="maxChars">255</setting>
@@ -15554,7 +15210,7 @@
                 </label>
               </labels>
               <settings>
-                <setting name="fieldWidth">110</setting>
+                <setting name="fieldWidth">100</setting>
                 <setting name="fieldHeight">1</setting>
                 <setting name="minChars">0</setting>
                 <setting name="maxChars">255</setting>
@@ -15577,7 +15233,7 @@
                 </label>
               </labels>
               <settings>
-                <setting name="fieldWidth">20</setting>
+                <setting name="fieldWidth">25</setting>
                 <setting name="fieldHeight">1</setting>
                 <setting name="minChars">0</setting>
                 <setting name="maxChars">255</setting>
@@ -15590,7 +15246,7 @@
                 </label>
               </labels>
               <settings>
-                <setting name="fieldWidth">20</setting>
+                <setting name="fieldWidth">25</setting>
                 <setting name="fieldHeight">1</setting>
                 <setting name="minChars">0</setting>
                 <setting name="maxChars">255</setting>
@@ -15603,7 +15259,7 @@
                 </label>
               </labels>
               <settings>
-                <setting name="fieldWidth">20</setting>
+                <setting name="fieldWidth">25</setting>
                 <setting name="fieldHeight">1</setting>
                 <setting name="minChars">0</setting>
                 <setting name="maxChars">255</setting>
@@ -15640,7 +15296,7 @@
         </label>
       </labels>
       <settings>
-        <setting name="fieldWidth">70</setting>
+        <setting name="fieldWidth">100</setting>
         <setting name="fieldHeight">1</setting>
         <setting name="minChars">0</setting>
         <setting name="maxChars">65535</setting>
@@ -15665,7 +15321,7 @@
         </label>
       </labels>
       <settings>
-        <setting name="fieldWidth">90</setting>
+        <setting name="fieldWidth">100</setting>
         <setting name="fieldHeight">2</setting>
         <setting name="minChars">0</setting>
         <setting name="maxChars">65535</setting>
@@ -15688,7 +15344,7 @@
         </label>
       </labels>
       <settings>
-        <setting name="fieldWidth">40</setting>
+        <setting name="fieldWidth">100</setting>
         <setting name="fieldHeight">1</setting>
         <setting name="minChars">0</setting>
         <setting name="maxChars">65535</setting>
@@ -15763,7 +15419,7 @@
           </labels>
           <settings>
             <setting name="useDatePicker">1</setting>
-            <setting name="fieldWidth">40</setting>
+            <setting name="fieldWidth">60</setting>
             <setting name="fieldHeight">1</setting>
             <setting name="minChars">0</setting>
             <setting name="maxChars">65535</setting>
@@ -15818,7 +15474,7 @@
               </labels>
               <documentationUrl>http://www.pbcore.org/PBCore/extension.html</documentationUrl>
               <settings>
-                <setting name="fieldWidth">70</setting>
+                <setting name="fieldWidth">100</setting>
                 <setting name="fieldHeight">1</setting>
                 <setting name="minChars">0</setting>
                 <setting name="maxChars">255</setting>
@@ -15842,7 +15498,7 @@
               </labels>
               <documentationUrl>http://www.pbcore.org/PBCore/extension.html</documentationUrl>
               <settings>
-                <setting name="fieldWidth">70</setting>
+                <setting name="fieldWidth">100</setting>
                 <setting name="fieldHeight">1</setting>
                 <setting name="minChars">0</setting>
                 <setting name="maxChars">255</setting>
@@ -15866,7 +15522,7 @@
               </labels>
               <documentationUrl>http://www.pbcore.org/PBCore/extension.html</documentationUrl>
               <settings>
-                <setting name="fieldWidth">70</setting>
+                <setting name="fieldWidth">100</setting>
                 <setting name="fieldHeight">1</setting>
                 <setting name="minChars">0</setting>
                 <setting name="maxChars">65535</setting>
@@ -15913,7 +15569,7 @@
           </labels>
           <documentationUrl>http://www.pbcore.org/PBCore/identifier.html</documentationUrl>
           <settings>
-            <setting name="fieldWidth">40</setting>
+            <setting name="fieldWidth">50</setting>
             <setting name="fieldHeight">1</setting>
             <setting name="minChars">0</setting>
             <setting name="maxChars">65535</setting>
@@ -15927,7 +15583,7 @@
           </labels>
           <documentationUrl>http://www.pbcore.org/PBCore/identifierSource.html</documentationUrl>
           <settings>
-            <setting name="fieldWidth">40</setting>
+            <setting name="fieldWidth">50</setting>
             <setting name="fieldHeight">1</setting>
             <setting name="minChars">0</setting>
             <setting name="maxChars">65535</setting>
@@ -16005,7 +15661,7 @@
               </labels>
               <documentationUrl>http://www.pbcore.org/PBCore/description.html</documentationUrl>
               <settings>
-                <setting name="fieldWidth">70</setting>
+                <setting name="fieldWidth">100</setting>
                 <setting name="fieldHeight">5</setting>
                 <setting name="minChars">0</setting>
                 <setting name="maxChars">65535</setting>
@@ -16033,7 +15689,7 @@
         </labels>
         <documentationUrl>http://www.pbcore.org/PBCore/genre.html</documentationUrl>
         <settings>
-          <setting name="fieldWidth">70</setting>
+          <setting name="fieldWidth">100</setting>
           <setting name="fieldHeight">1</setting>
           <setting name="minChars">0</setting>
           <setting name="maxChars">255</setting>
@@ -16058,7 +15714,7 @@
       </labels>
       <documentationUrl>http://www.pbcore.org/PBCore/coverage.html</documentationUrl>
       <settings>
-        <setting name="fieldWidth">70</setting>
+        <setting name="fieldWidth">100</setting>
         <setting name="fieldHeight">1</setting>
       </settings>
       <elements>
@@ -16077,7 +15733,7 @@
               </label>
             </labels>
             <settings>
-              <setting name="fieldWidth">90</setting>
+              <setting name="fieldWidth">66</setting>
               <setting name="fieldHeight">1</setting>
               <setting name="minChars">0</setting>
               <setting name="maxChars">255</setting>
@@ -16100,7 +15756,7 @@
               </label>
             </labels>
             <settings>
-              <setting name="fieldWidth">90</setting>
+              <setting name="fieldWidth">58</setting>
               <setting name="fieldHeight">1</setting>
               <setting name="minChars">0</setting>
               <setting name="maxChars">255</setting>
@@ -16170,7 +15826,7 @@
           </labels>
           <documentationUrl>http://www.pbcore.org/PBCore/relation.html</documentationUrl>
           <settings>
-            <setting name="fieldWidth">40</setting>
+            <setting name="fieldWidth">60</setting>
             <setting name="fieldHeight">1</setting>
             <setting name="minChars">1</setting>
             <setting name="maxChars">65535</setting>
@@ -16188,45 +15844,68 @@
         </restriction>
       </typeRestrictions>
     </metadataElement>
-    <metadataElement code="pbcoreRightsSummary" datatype="Text">
+    <metadataElement code="pbcoreRights" datatype="Container">
       <labels>
         <label locale="en_US">
-          <name>Rights Summary</name>
+          <name>Rights</name>
           <description>Use the descriptor rightsSummary as an all-purpose container field to identify information about copyrights and property rights held in and over a media item, whether they are open access or restricted in some way. If dates, times and availability periods are associated with a right, include them. End user permissions, constraints and obligations may also be identified, as needed.</description>
         </label>
       </labels>
       <documentationUrl>http://www.pbcore.org/PBCore/rightsSummary.html</documentationUrl>
-      <settings>
-        <setting name="default_text">To publish images of material from this collection, permission must be obtained in writing from the New School Archives and Special Collections. Please contact: archivist@newschool.edu.</setting>
-        <setting name="fieldWidth">80</setting>
-        <setting name="fieldHeight">5</setting>
-        <setting name="minChars">0</setting>
-        <setting name="maxChars">65535</setting>
-      </settings>
-      <typeRestrictions>
-        <restriction code="r1">
-          <table>ca_occurrences</table>
-          <settings>
-            <setting name="minAttributesPerRow">1</setting>
-            <setting name="maxAttributesPerRow">1</setting>
-          </settings>
-        </restriction>
-      </typeRestrictions>
-    </metadataElement>
-    <metadataElement code="pbcoreRightsLink" datatype="Url">
-      <labels>
-        <label locale="en_US">
-          <name>Rights Link</name>
-          <description></description>
-        </label>
-      </labels>
-      <documentationUrl>http://www.pbcore.org/v2/elements/pbcoredescriptiondocument/pbcorerightssummary/rightslink/</documentationUrl>
-      <settings>
-        <setting name="fieldWidth">90</setting>
-        <setting name="fieldHeight">1</setting>
-        <setting name="minChars">0</setting>
-        <setting name="maxChars">65535</setting>
-      </settings>
+      <settings/>
+      <elements>
+        <metadataElement code="pBrights_line1" datatype="Container">
+          <labels>
+            <label locale="en_US">
+              <name>Rights line 1</name>
+            </label>
+          </labels>
+          <settings/>
+          <elements>
+            <metadataElement code="pbcoreRightsSummary" datatype="Text">
+              <labels>
+                <label locale="en_US">
+                  <name>Rights Summary</name>
+                  <description>Use the descriptor rightsSummary as an all-purpose container field to identify information about copyrights and property rights held in and over a media item, whether they are open access or restricted in some way. If dates, times and availability periods are associated with a right, include them. End user permissions, constraints and obligations may also be identified, as needed.</description>
+                </label>
+              </labels>
+              <documentationUrl>http://www.pbcore.org/PBCore/rightsSummary.html</documentationUrl>
+              <settings>
+                <setting name="default_text">To publish images of material from this collection, permission must be obtained in writing from the New School Archives and Special Collections. Please contact: archivist@newschool.edu.</setting>
+                <setting name="fieldWidth">100</setting>
+                <setting name="fieldHeight">5</setting>
+                <setting name="minChars">0</setting>
+                <setting name="maxChars">65535</setting>
+              </settings>
+            </metadataElement>
+          </elements>
+        </metadataElement>
+        <metadataElement code="pBrights_line2" datatype="Container">
+          <labels>
+            <label locale="en_US">
+              <name>Rights line 2</name>
+            </label>
+          </labels>
+          <settings/>
+          <elements>
+            <metadataElement code="pbcoreRightsLink" datatype="Url">
+              <labels>
+                <label locale="en_US">
+                  <name>Rights Link</name>
+                  <description></description>
+                </label>
+              </labels>
+              <documentationUrl>http://www.pbcore.org/v2/elements/pbcoredescriptiondocument/pbcorerightssummary/rightslink/</documentationUrl>
+              <settings>
+                <setting name="fieldWidth">92</setting>
+                <setting name="fieldHeight">1</setting>
+                <setting name="minChars">0</setting>
+                <setting name="maxChars">65535</setting>
+              </settings>
+            </metadataElement>
+          </elements>
+        </metadataElement>
+      </elements>
       <typeRestrictions>
         <restriction code="r1">
           <table>ca_occurrences</table>
@@ -16481,7 +16160,7 @@
       </labels>
       <documentationUrl>http://www.pbcore.org/PBCore/formatTimeStart.html</documentationUrl>
       <settings>
-        <setting name="fieldWidth">80</setting>
+        <setting name="fieldWidth">60</setting>
         <setting name="fieldHeight">1</setting>
         <setting name="minChars">0</setting>
         <setting name="maxChars">65535</setting>
@@ -16508,7 +16187,7 @@
       </labels>
       <documentationUrl>http://www.pbcore.org/PBCore/formatDuration.html</documentationUrl>
       <settings>
-        <setting name="fieldWidth">80</setting>
+        <setting name="fieldWidth">60</setting>
         <setting name="fieldHeight">1</setting>
         <setting name="minChars">0</setting>
         <setting name="maxChars">65535</setting>
@@ -16535,7 +16214,7 @@
       </labels>
       <documentationUrl>http://www.pbcore.org/PBCore/formatDataRate.html</documentationUrl>
       <settings>
-        <setting name="fieldWidth">80</setting>
+        <setting name="fieldWidth">100</setting>
         <setting name="fieldHeight">1</setting>
         <setting name="minChars">0</setting>
         <setting name="maxChars">65535</setting>
@@ -16570,7 +16249,7 @@
       </labels>
       <documentationUrl></documentationUrl>
       <settings>
-        <setting name="fieldWidth">80</setting>
+        <setting name="fieldWidth">100</setting>
         <setting name="fieldHeight">1</setting>
         <setting name="minChars">0</setting>
         <setting name="maxChars">65535</setting>
@@ -16632,7 +16311,7 @@
       </labels>
       <documentationUrl>http://www.pbcore.org/PBCore/formatTracks.html</documentationUrl>
       <settings>
-        <setting name="fieldWidth">80</setting>
+        <setting name="fieldWidth">100</setting>
         <setting name="fieldHeight">1</setting>
         <setting name="minChars">0</setting>
         <setting name="maxChars">65535</setting>
@@ -16659,7 +16338,7 @@
       </labels>
       <documentationUrl>http://www.pbcore.org/PBCore/formatChannelConfiguration.html</documentationUrl>
       <settings>
-        <setting name="fieldWidth">80</setting>
+        <setting name="fieldWidth">100</setting>
         <setting name="fieldHeight">1</setting>
         <setting name="minChars">0</setting>
         <setting name="maxChars">65535</setting>
@@ -16731,7 +16410,7 @@
                 </label>
               </labels>
               <settings>
-                <setting name="fieldWidth">80</setting>
+                <setting name="fieldWidth">100</setting>
                 <setting name="fieldHeight">1</setting>
                 <setting name="minChars">0</setting>
                 <setting name="maxChars">255</setting>
@@ -16756,7 +16435,7 @@
                 </label>
               </labels>
               <settings>
-                <setting name="fieldWidth">80</setting>
+                <setting name="fieldWidth">100</setting>
                 <setting name="fieldHeight">1</setting>
                 <setting name="minChars">0</setting>
                 <setting name="maxChars">255</setting>
@@ -16781,7 +16460,7 @@
                 </label>
               </labels>
               <settings>
-                <setting name="fieldWidth">80</setting>
+                <setting name="fieldWidth">100</setting>
                 <setting name="fieldHeight">1</setting>
                 <setting name="minChars">0</setting>
                 <setting name="maxChars">255</setting>
@@ -16806,7 +16485,7 @@
                 </label>
               </labels>
               <settings>
-                <setting name="fieldWidth">80</setting>
+                <setting name="fieldWidth">100</setting>
                 <setting name="fieldHeight">1</setting>
                 <setting name="minChars">0</setting>
                 <setting name="maxChars">255</setting>
@@ -16832,7 +16511,7 @@
               </labels>
               <documentationUrl>http://www.pbcore.org/PBCore/formatEncoding.html</documentationUrl>
               <settings>
-                <setting name="fieldWidth">80</setting>
+                <setting name="fieldWidth">100</setting>
                 <setting name="fieldHeight">1</setting>
                 <setting name="minChars">0</setting>
                 <setting name="maxChars">255</setting>
@@ -16857,7 +16536,7 @@
                 </label>
               </labels>
               <settings>
-                <setting name="fieldWidth">80</setting>
+                <setting name="fieldWidth">100</setting>
                 <setting name="fieldHeight">1</setting>
                 <setting name="minChars">0</setting>
                 <setting name="maxChars">255</setting>
@@ -16882,7 +16561,7 @@
                 </label>
               </labels>
               <settings>
-                <setting name="fieldWidth">80</setting>
+                <setting name="fieldWidth">100</setting>
                 <setting name="fieldHeight">1</setting>
                 <setting name="minChars">0</setting>
                 <setting name="maxChars">255</setting>
@@ -16907,7 +16586,7 @@
                 </label>
               </labels>
               <settings>
-                <setting name="fieldWidth">80</setting>
+                <setting name="fieldWidth">100</setting>
                 <setting name="fieldHeight">1</setting>
                 <setting name="minChars">0</setting>
                 <setting name="maxChars">255</setting>
@@ -16933,7 +16612,7 @@
               </labels>
               <documentationUrl>http://www.pbcore.org/PBCore/formatBitDepth.html</documentationUrl>
               <settings>
-                <setting name="fieldWidth">80</setting>
+                <setting name="fieldWidth">100</setting>
                 <setting name="fieldHeight">1</setting>
                 <setting name="minChars">0</setting>
                 <setting name="maxChars">255</setting>
@@ -16959,7 +16638,7 @@
               </labels>
               <documentationUrl>http://www.pbcore.org/PBCore/formatSamplingRate.html</documentationUrl>
               <settings>
-                <setting name="fieldWidth">80</setting>
+                <setting name="fieldWidth">100</setting>
                 <setting name="fieldHeight">1</setting>
                 <setting name="minChars">0</setting>
                 <setting name="maxChars">255</setting>
@@ -16985,7 +16664,7 @@
               </labels>
               <documentationUrl>http://www.pbcore.org/PBCore/formatFrameSize.html</documentationUrl>
               <settings>
-                <setting name="fieldWidth">80</setting>
+                <setting name="fieldWidth">100</setting>
                 <setting name="fieldHeight">1</setting>
                 <setting name="minChars">0</setting>
                 <setting name="maxChars">255</setting>
@@ -17011,7 +16690,7 @@
               </labels>
               <documentationUrl>http://www.pbcore.org/PBCore/formatAspectRatio.html</documentationUrl>
               <settings>
-                <setting name="fieldWidth">80</setting>
+                <setting name="fieldWidth">100</setting>
                 <setting name="fieldHeight">1</setting>
                 <setting name="minChars">0</setting>
                 <setting name="maxChars">255</setting>
@@ -17037,7 +16716,7 @@
               </labels>
               <documentationUrl>http://www.pbcore.org/PBCore/formatFrameRate.html</documentationUrl>
               <settings>
-                <setting name="fieldWidth">80</setting>
+                <setting name="fieldWidth">100</setting>
                 <setting name="fieldHeight">1</setting>
                 <setting name="minChars">0</setting>
                 <setting name="maxChars">255</setting>
@@ -17063,7 +16742,7 @@
               </labels>
               <documentationUrl>http://www.pbcore.org/PBCore/formatLanguage.html</documentationUrl>
               <settings>
-                <setting name="fieldWidth">80</setting>
+                <setting name="fieldWidth">100</setting>
                 <setting name="fieldHeight">1</setting>
                 <setting name="minChars">0</setting>
                 <setting name="maxChars">255</setting>
@@ -17088,7 +16767,7 @@
                 </label>
               </labels>
               <settings>
-                <setting name="fieldWidth">80</setting>
+                <setting name="fieldWidth">100</setting>
                 <setting name="fieldHeight">3</setting>
                 <setting name="minChars">0</setting>
                 <setting name="maxChars">255</setting>
@@ -17119,7 +16798,7 @@
       </labels>
       <documentationUrl>http://www.pbcore.org/PBCore/annotation.html</documentationUrl>
       <settings>
-        <setting name="fieldWidth">80</setting>
+        <setting name="fieldWidth">100</setting>
         <setting name="fieldHeight">5</setting>
         <setting name="minChars">0</setting>
         <setting name="maxChars">65535</setting>
@@ -17170,7 +16849,7 @@
                 </label>
               </labels>
               <settings>
-                <setting name="fieldWidth">90</setting>
+                <setting name="fieldWidth">66</setting>
                 <setting name="fieldHeight">1</setting>
                 <setting name="minChars">0</setting>
                 <setting name="maxChars">65535</setting>
@@ -17193,7 +16872,7 @@
                 </label>
               </labels>
               <settings>
-                <setting name="fieldWidth">40</setting>
+                <setting name="fieldWidth">58</setting>
                 <setting name="fieldHeight">1</setting>
                 <setting name="minChars">0</setting>
                 <setting name="maxChars">65535</setting>
@@ -17323,7 +17002,7 @@
       </labels>
       <documentationUrl>http://pbcore.org/PBCore/alternativeModes.html</documentationUrl>
       <settings>
-        <setting name="fieldWidth">80</setting>
+        <setting name="fieldWidth">100</setting>
         <setting name="fieldHeight">1</setting>
         <setting name="minChars">0</setting>
         <setting name="maxChars">65535</setting>
@@ -17385,7 +17064,7 @@
       </labels>
       <documentationUrl></documentationUrl>
       <settings>
-        <setting name="fieldWidth">80</setting>
+        <setting name="fieldWidth">57</setting>
         <setting name="fieldHeight">1</setting>
         <setting name="minChars">0</setting>
         <setting name="maxChars">65535</setting>
@@ -17444,9 +17123,6 @@
           <bundlePlacements>
             <placement code="hier_location">
               <bundle>hierarchy_location</bundle>
-               <settings>
-                <setting name="label" locale="en_US">Related Collection</setting>
-              </settings>
             </placement>
              <placement code="ca_attribute_wtClippings">
               <bundle>ca_attribute_wtClippings</bundle>
@@ -17498,6 +17174,8 @@
               <settings>
                 <setting name="label" locale="en_US">Title</setting>
                 <setting name="add_label" locale="en_US">Add title</setting>
+                <setting name="height">1</setting>
+                <setting name="width">100</setting>
               </settings>
             </placement>
              <placement code="nonpreferred_labels">
@@ -17505,6 +17183,8 @@
                 <settings>
                 <setting name="label" locale="en_US">Alternate Title</setting>
                 <setting name="add_label" locale="en_US">Add alternate title</setting>
+                  <setting name="height">1</setting>
+                <setting name="width">100</setting>
               </settings>
             </placement>
             <placement code="ca_creator">
@@ -17561,9 +17241,6 @@
           <bundlePlacements>
             <placement code="hier_location">
               <bundle>hierarchy_location</bundle>
-               <settings>
-                <setting name="label" locale="en_US">Related Collection</setting>
-              </settings>
             </placement>
             <placement code="ca_attribute_wtThree">
               <bundle>ca_attribute_wtThree</bundle>
@@ -17582,6 +17259,8 @@
               <settings>
                 <setting name="label" locale="en_US">Title</setting>
                 <setting name="add_label" locale="en_US">Add title</setting>
+                 <setting name="height">1</setting>
+                <setting name="width">100</setting>
               </settings>
             </placement>
             <placement code="nonpreferred_labels">
@@ -17589,6 +17268,8 @@
                 <settings>
                 <setting name="label" locale="en_US">Alternate Title</setting>
                 <setting name="add_label" locale="en_US">Add alternate title</setting>
+                   <setting name="height">1</setting>
+                <setting name="width">100</setting>
               </settings>
             </placement>
             <placement code="ca_creator">
@@ -17649,9 +17330,6 @@
           <bundlePlacements>
             <placement code="hier_location">
               <bundle>hierarchy_location</bundle>
-               <settings>
-                <setting name="label" locale="en_US">Related Collection</setting>
-              </settings>
             </placement>
             <placement code="ca_attribute_wtPhotographic">
               <bundle>ca_attribute_wtPhotographic</bundle>
@@ -17670,6 +17348,8 @@
               <settings>
                 <setting name="label" locale="en_US">Title</setting>
                 <setting name="add_label" locale="en_US">Add title</setting>
+                 <setting name="height">1</setting>
+                <setting name="width">100</setting>
               </settings>
             </placement>
             <placement code="nonpreferred_labels">
@@ -17677,6 +17357,8 @@
                 <settings>
                 <setting name="label" locale="en_US">Alternate Title</setting>
                 <setting name="add_label" locale="en_US">Add alternate title</setting>
+                   <setting name="height">1</setting>
+                <setting name="width">100</setting>
               </settings>
             </placement>
             <placement code="ca_creator">
@@ -17744,9 +17426,6 @@
           <bundlePlacements>
             <placement code="hier_location">
               <bundle>hierarchy_location</bundle>
-               <settings>
-                <setting name="label" locale="en_US">Related Collection</setting>
-              </settings>
             </placement>
             <placement code="ca_attribute_wtPosters">
               <bundle>ca_attribute_wtPosters</bundle>
@@ -17765,6 +17444,8 @@
               <settings>
                 <setting name="label" locale="en_US">Title</setting>
                 <setting name="add_label" locale="en_US">Add title</setting>
+                 <setting name="height">1</setting>
+                <setting name="width">100</setting>
               </settings>
             </placement>
             <placement code="nonpreferred_labels">
@@ -17772,6 +17453,8 @@
                 <settings>
                 <setting name="label" locale="en_US">Alternate Title</setting>
                 <setting name="add_label" locale="en_US">Add alternate title</setting>
+                   <setting name="height">1</setting>
+                <setting name="width">100</setting>
               </settings>
             </placement>
             <placement code="ca_creator">
@@ -17844,9 +17527,6 @@
           <bundlePlacements>
             <placement code="hier_location">
               <bundle>hierarchy_location</bundle>
-               <settings>
-                <setting name="label" locale="en_US">Related Collection</setting>
-              </settings>
             </placement>
             <placement code="ca_attribute_wtPlans">
               <bundle>ca_attribute_wtPlans</bundle>
@@ -17865,6 +17545,8 @@
               <settings>
                 <setting name="label" locale="en_US">Title</setting>
                 <setting name="add_label" locale="en_US">Add title</setting>
+                 <setting name="height">1</setting>
+                <setting name="width">100</setting>
               </settings>
             </placement>
             <placement code="nonpreferred_labels">
@@ -17872,6 +17554,8 @@
                 <settings>
                 <setting name="label" locale="en_US">Alternate Title</setting>
                 <setting name="add_label" locale="en_US">Add alternate title</setting>
+                   <setting name="height">1</setting>
+                <setting name="width">100</setting>
               </settings>
             </placement>
             <placement code="ca_creator">
@@ -17944,9 +17628,6 @@
           <bundlePlacements>
             <placement code="hier_location">
               <bundle>hierarchy_location</bundle>
-               <settings>
-                <setting name="label" locale="en_US">Related Collection</setting>
-              </settings>
             </placement>
              <placement code="ca_attribute_wtProofs">
               <bundle>ca_attribute_wtProofs</bundle>
@@ -17965,6 +17646,8 @@
               <settings>
                 <setting name="label" locale="en_US">Title</setting>
                 <setting name="add_label" locale="en_US">Add title</setting>
+                 <setting name="height">1</setting>
+                <setting name="width">100</setting>
               </settings>
             </placement>
             <placement code="nonpreferred_labels">
@@ -17972,6 +17655,8 @@
                 <settings>
                 <setting name="label" locale="en_US">Alternate Title</setting>
                 <setting name="add_label" locale="en_US">Add alternate title</setting>
+                   <setting name="height">1</setting>
+                <setting name="width">100</setting>
               </settings>
             </placement>
             <placement code="ca_creator">
@@ -18031,9 +17716,6 @@
           <bundlePlacements>
             <placement code="hier_location">
               <bundle>hierarchy_location</bundle>
-               <settings>
-                <setting name="label" locale="en_US">Related Collection</setting>
-              </settings>
             </placement>
             <placement code="ca_occurrences">
               <bundle>ca_occurrences</bundle>
@@ -18060,6 +17742,8 @@
               <bundle>preferred_labels</bundle>
               <settings>
                 <setting name="label" locale="en_US">Short Name</setting>
+                 <setting name="height">1</setting>
+                <setting name="width">100</setting>
               </settings>
             </placement>
             <placement code="ca_attribute_pbcoreTitleTypes">
@@ -18581,12 +18265,16 @@
               <settings>
                 <setting name="label" locale="en_US">Title</setting>
                 <setting name="add_label" locale="en_US">Add title</setting>
+                 <setting name="height">1</setting>
+                <setting name="width">100</setting>
               </settings>
             </placement>
             <placement code="nonpreferred_labels">
               <bundle>nonpreferred_labels</bundle>
               <settings>
                 <setting name="label" locale="en_US">Alternate titles</setting>
+                 <setting name="height">1</setting>
+                <setting name="width">100</setting>
               </settings>
             </placement>
             <placement code="idno">
@@ -18757,11 +18445,8 @@
                 <setting name="add_label" locale="en_US">Add publishers</setting>
               </settings>
             </placement>
-            <placement code="ca_attribute_pbcoreRightsSummary">
-              <bundle>ca_attribute_pbcoreRightsSummary</bundle>
-            </placement>
-            <placement code="ca_attribute_pbcoreRightsLink">
-              <bundle>ca_attribute_pbcoreRightsLink</bundle>
+            <placement code="ca_attribute_pbcoreRights">
+              <bundle>ca_attribute_pbcoreRights</bundle>
             </placement>
           </bundlePlacements>
         </screen>
@@ -18807,6 +18492,8 @@
               <settings>
                 <setting name="label" locale="en_US">Name</setting>
                 <setting name="add_label" locale="en_US">Add name</setting>
+                 <setting name="height">1</setting>
+                <setting name="width">100</setting>
               </settings>
             </placement>
             <placement code="idno">
@@ -18886,6 +18573,8 @@
               <settings>
                 <setting name="label" locale="en_US">Alternate Names</setting>
                 <setting name="add_label" locale="en_US">Add alternate name</setting>
+                 <setting name="height">1</setting>
+                <setting name="width">100</setting>
               </settings>
             </placement>
           </bundlePlacements>
@@ -18911,19 +18600,15 @@
           <bundlePlacements>
             <placement code="hierarchy_location">
               <bundle>hierarchy_location</bundle>
-              <settings>
-                <setting name="label" locale="en_US">Location in Hierarchy</setting>
-              </settings>
             </placement>
             <placement code="preferred_labels">
               <bundle>preferred_labels</bundle>
               <settings>
                 <setting name="label" locale="en_US">Title</setting>
+                 <setting name="height">1</setting>
+                <setting name="width">100</setting>
               </settings>
             </placement>
-            <placement code="ca_attribute_TitleType">
-              <bundle>ca_attribute_TitleType</bundle>
-            </placement> 
             <placement code="idno">
               <bundle>idno</bundle>
               <settings>
@@ -18972,23 +18657,20 @@
             <restriction code="series" type="series"/>
             <restriction code="subseries" type="subseries"/>
             <restriction code="subsubseries" type="subsubseries"/>
+             <restriction code="folder" type="folder"/>
            </typeRestrictions>          
           <bundlePlacements>
             <placement code="hierarchy_location">
               <bundle>hierarchy_location</bundle>
-              <settings>
-                <setting name="label" locale="en_US">Location in Hierarchy</setting>
-              </settings>
             </placement>
             <placement code="preferred_labels">
               <bundle>preferred_labels</bundle>
               <settings>
                 <setting name="label" locale="en_US">Title</setting>
+                 <setting name="height">1</setting>
+                <setting name="width">100</setting>
               </settings>
             </placement>
-            <placement code="ca_attribute_TitleType">
-              <bundle>ca_attribute_TitleType</bundle>
-            </placement> 
             <placement code="idno">
               <bundle>idno</bundle>
               <settings>
@@ -19044,6 +18726,7 @@
              <restriction code="series" type="series"/>
             <restriction code="subseries" type="subseries"/>
              <restriction code="subsubseries" type="subsubseries"/>
+             <restriction code="folder" type="folder"/>
            </typeRestrictions>                   
           <bundlePlacements>
             <placement code="ca_attribute_LcshNames">
@@ -19133,6 +18816,7 @@
             <restriction code="series" type="series"/>
             <restriction code="subseries" type="subseries"/>
              <restriction code="subsubseries" type="subsubseries"/>
+             <restriction code="folder" type="folder"/>
            </typeRestrictions>           
           <bundlePlacements>
             <placement code="ca_attribute_CollectionNote">
@@ -22800,6 +22484,44 @@
       </types>
     </relationshipTable>
   </relationshipTypes>
+  <searchForms>
+    <searchForm code="ca_objects_adv_search" type="ca_objects" system="1">
+      <labels>
+        <label locale="en_US">
+          <name>Extended search</name>
+        </label>
+      </labels>
+      <settings>
+        <setting name="form_width">3</setting>
+      </settings>
+      <bundlePlacements>
+        <placement code="preferred_labels">
+          <bundle>ca_object_labels.name</bundle>
+          <settings>
+            <setting name="label" locale="en_US">Title</setting>
+          </settings>
+        </placement>
+        <placement code="idno">
+          <bundle>ca_objects.idno</bundle>
+        </placement>
+        <placement code="type_id">
+          <bundle>ca_objects.type_id</bundle>
+        </placement>
+        <placement code="ca_entities">
+          <bundle>ca_entity_labels.displayname</bundle>
+          <settings>
+            <setting name="label" locale="en_US">Entity Name</setting>
+          </settings>
+        </placement>
+        <placement code="access">
+          <bundle>ca_objects.access</bundle>
+        </placement>
+        <placement code="status">
+          <bundle>ca_objects.status</bundle>
+        </placement>
+      </bundlePlacements>
+    </searchForm>
+  </searchForms>
   <logins>
     <login user_name="admin" password="neongreen" fname="CollectiveAccess"
       lname="Administrator" email="info@collectiveaccess.org">

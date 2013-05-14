@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2011-2012 Whirl-i-Gig
+ * Copyright 2011-2013 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -38,6 +38,7 @@ require_once(__CA_LIB_DIR__.'/ca/BundlableLabelableBaseModelWithAttributes.php')
 require_once(__CA_LIB_DIR__.'/ca/IHierarchy.php');
 require_once(__CA_MODELS_DIR__.'/ca_tours.php');
 require_once(__CA_MODELS_DIR__.'/ca_locales.php');
+require_once(__CA_APP_DIR__.'/helpers/tourHelpers.php');
 
 
 BaseModel::$s_ca_models_definitions['ca_tour_stops'] = array(
@@ -324,6 +325,24 @@ class ca_tour_stops extends BundlableLabelableBaseModelWithAttributes {
 	}
 	# ------------------------------------------------------
 	/**
+	 * Override set() to do idno lookups on tours
+	 *
+	 */
+	public function set($pa_fields, $pm_value="", $pa_options=null) {
+		if (!is_array($pa_fields)) {
+			$pa_fields = array($pa_fields => $pm_value);
+		}
+		foreach($pa_fields as $vs_fld => $vs_val) {
+			if (($vs_fld == 'tour_id') && (preg_match("![^\d]+!", $vs_val))) {
+				if ($vn_tour_id = caGetTourID($vs_val)) {
+					$pa_fields[$vs_fld] = $vn_tour_id;
+				}
+			}
+		}
+		return parent::set($pa_fields, null, $pa_options);
+	}
+	# ------------------------------------------------------
+	/**
 	 * Return array containing information about all hierarchies, including their root_id's
 	 * For non-adhoc hierarchies such as places, this call returns the contents of the place_hierarchies list
 	 * with some extra information such as the # of top-level items in each hierarchy.
@@ -422,6 +441,51 @@ class ca_tour_stops extends BundlableLabelableBaseModelWithAttributes {
  		
  		return true;
  	}
+	# ------------------------------------------------------
+	/**
+	 *
+	 */
+	public function getTourStopIDsByName($ps_name, $pn_parent_id=null, $pn_type_id=null) {
+		$o_db = $this->getDb();
+		
+		$va_params = array((string)$ps_name);
+		
+		$vs_type_sql = '';
+		if ($pn_type_id) {
+			if(sizeof($va_type_ids = caMakeTypeIDList('ca_tour_stops', array($pn_type_id)))) {
+				$vs_type_sql = " AND cap.type_id IN (?)";
+				$va_params[] = $va_type_ids;
+			}
+		}
+		
+		if ($pn_parent_id) {
+			$vs_parent_sql = " AND cap.parent_id = ?";
+			$va_params[] = (int)$pn_parent_id;
+		} 
+		
+		
+		$qr_res = $o_db->query("
+			SELECT DISTINCT cap.stop_id
+			FROM ca_tour_stops cap
+			INNER JOIN ca_tour_stop_labels AS capl ON capl.stop_id = cap.stop_id
+			WHERE
+				capl.name = ? {$vs_type_sql} {$vs_parent_sql} AND cap.deleted = 0
+		", $va_params);
+		
+		$va_stop_ids = array();
+		while($qr_res->nextRow()) {
+			$va_stop_ids[] = $qr_res->get('stop_id');
+		}
+		return $va_stop_ids;
+	}
+	# ------------------------------------------------------
+	/**
+	 *
+	 */
+	public function getIDsByLabel($pa_label_values, $pn_parent_id=null, $pn_type_id=null) {
+		return $this->getTourStopIDsByName($pa_label_values['name'], $pn_parent_id, $pn_type_id);
+	}
+	# ------------------------------------------------------
 	 # ------------------------------------------------------
 }
 ?>

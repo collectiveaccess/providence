@@ -1248,6 +1248,7 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 		$vn_row = 0;
 		ca_data_importers::$s_num_records_processed = 0;
 		while ($o_reader->nextRow()) {
+			$va_mandatory_field_values = array();
 			$vs_preferred_label_for_log = null;
 			
 		
@@ -1437,7 +1438,6 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 						$va_ptr =& $va_ptr[sizeof($va_ptr)-1];
 					}
 				}
-				
 				foreach($va_items as $vn_item_id => $va_item) {
 					$vm_val = ca_data_importers::getValueFromSource($va_item, $o_reader);
 					
@@ -1488,8 +1488,8 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 					if (isset($va_item['settings']['default']) && strlen($va_item['settings']['default']) && !strlen($vm_val)) {
 						$vm_val = $va_item['settings']['default'];
 					}
-					
-					if (($vn_type_id_mapping_item_id && ($vn_item_id == $vn_type_id_mapping_item_id)) || (in_array($vn_item_id, $va_mandatory_field_mapping_ids))) {
+				
+					if (($vn_type_id_mapping_item_id && ($vn_item_id == $vn_type_id_mapping_item_id))) {
 						if ($va_parent && is_array($va_parent)) { array_pop($va_parent); }	// remove empty container array
 						continue; 
 					}
@@ -1527,6 +1527,10 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 					// Is it a constant value?
 					if (preg_match("!^_CONSTANT_:[\d]+:(.*)!", $va_item['source'], $va_matches)) {
 						$va_ptr[$vs_item_terminal] = $va_matches[1];		// Set it and go onto the next item
+						
+						if (($vs_target_table == $vs_subject_table_name) && (($vs_k =array_search($vn_item_id, $va_mandatory_field_mapping_ids)) !== false)) {
+							$va_mandatory_field_values[$vs_k] = $vm_val;
+						}
 						continue;
 					}
 					
@@ -1535,7 +1539,7 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 						foreach($va_item['settings']['refineries'] as $vs_refinery) {
 							if (!$vs_refinery) { continue; }
 							if ($o_refinery = RefineryManager::getRefineryInstance($vs_refinery)) {
-								$va_refined_values = $o_refinery->refine($va_content_tree, $va_group, $va_item, $va_row, array('source' => $ps_source, 'subject' => $t_subject, 'locale_id' => $vn_locale_id));
+								$va_refined_values = $o_refinery->refine($va_content_tree, $va_group, $va_item, $va_row, array('source' => $ps_source, 'subject' => $t_subject, 'locale_id' => $vn_locale_id, 'log' => $o_log, 'transaction' => $o_trans, 'importEvent' => $o_event, 'importEventSource' => $pn_row));
 								if ($o_refinery->returnsMultipleValues()) {
 									$va_p = array_pop($va_parent);
 									foreach($va_refined_values as $va_refined_value) {
@@ -1547,6 +1551,9 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 									$va_ptr[$vs_item_terminal] = $va_refined_values;
 								}
 								
+								if (($vs_target_table == $vs_subject_table_name) && (($vs_k =array_search($vn_item_id, $va_mandatory_field_mapping_ids)) !== false)) {
+									$va_mandatory_field_values[$vs_k] = $vm_val;
+								}
 								continue(2);
 							} else {
 								$o_log->logError(_t('[%1] Invalid refinery %2 specified', $vs_idno, $vs_refinery));
@@ -1554,6 +1561,11 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 						}
 					}
 					
+					
+					if (($vs_target_table == $vs_subject_table_name) && (($vs_k =array_search($vn_item_id, $va_mandatory_field_mapping_ids)) !== false)) {
+						$va_mandatory_field_values[$vs_k] = $vm_val;
+					}
+							
 					$vn_max_length = (!is_array($vm_val) && isset($va_item['settings']['maxLength']) && (int)$va_item['settings']['maxLength']) ? (int)$va_item['settings']['maxLength'] : null;
 					
 					if (isset($va_item['settings']['delimiter']) && strlen($vs_item_delimiter = $va_item['settings']['delimiter'])) {
@@ -1576,6 +1588,7 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 					if ($vn_max_length && (mb_strlen($vm_val) > $vn_max_length)) {
 						$vm_val = mb_substr($vm_val, 0, $vn_max_length);
 					}
+					
 					
 					switch($vs_item_terminal) {
 						case 'preferred_labels':
@@ -1624,8 +1637,8 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 					$t_subject->set($vs_idno_fld, $vs_idno);
 				}
 				
-				foreach($va_mandatory_field_mapping_ids as $vs_mandatory_field => $vs_mandatory_field_value) {
-					$t_subject->set($vs_mandatory_field, $vs_mandatory_field_value);
+				foreach($va_mandatory_field_mapping_ids as $vs_mandatory_field => $vn_mandatory_mapping_item_id) {
+					$t_subject->set($vs_mandatory_field, $va_mandatory_field_values[$vs_mandatory_field]);
 				}
 				
 				$t_subject->insert();
@@ -1817,9 +1830,10 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 										||
 										($vn_rel_id = DataMigrationUtils::getPlaceID($va_element_data['preferred_labels']['name'], $va_element_data['_parent_id'], $va_element_data['_type'], $vn_locale_id, $va_data_for_rel_table, array('log' => $o_log, 'transaction' => $o_trans, 'importEvent' => $o_event, 'importEventSource' => $pn_row)))
 									) {
+									
 										if (!$va_element_data['_relationship_type']) { break; }
 										$t_subject->addRelationship($vs_table_name, $vn_rel_id, trim($va_element_data['_relationship_type']));
-										
+
 										if ($vs_error = DataMigrationUtils::postError($t_subject, _t("[%1] Could not add related place with relationship %2:", $vs_idno, trim($va_element_data['_relationship_type'])), __CA_DATA_IMPORT_ERROR__, array('dontOutputLevel' => true, 'dontPrint' => true))) {
 											ca_data_importers::logImportError($vs_error, $va_log_import_error_opts);
 											if ($vs_item_error_policy == 'stop') {
@@ -1896,7 +1910,7 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 									if (
 										(isset($va_element_data['idno']['idno']) && ($t_list_item = ca_list_items::find(array('idno' => $va_element_data['idno']['idno']))) && ($vn_rel_id = $t_list_item->getPrimaryKey()))
 										||
-										($vn_rel_id = DataMigrationUtils::getListItemID($va_data_for_rel_table['list_id'], $va_element_data['preferred_labels']['name_singular'], $va_element_data['_type'], $vn_locale_id, $va_data_for_rel_table, array('log' => $o_log, 'transaction' => $o_trans, 'importEvent' => $o_event, 'importEventSource' => $pn_row)))
+										($vn_rel_id = DataMigrationUtils::getListItemID($va_data_for_rel_table['list_id'], $va_element_data['preferred_labels']['name_singular'], $va_element_data['_type'], $vn_locale_id, array_merge($va_data_for_rel_table, array('parent_id' => $va_element_data['_parent'])), array('log' => $o_log, 'transaction' => $o_trans, 'importEvent' => $o_event, 'importEventSource' => $pn_row)))
 									) {
 										if (!$va_element_data['_relationship_type']) { break; }
 										$t_subject->addRelationship($vs_table_name, $vn_rel_id, trim($va_element_data['_relationship_type']));

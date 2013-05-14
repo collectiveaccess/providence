@@ -63,7 +63,8 @@
  		public function __construct(&$po_request, &$po_response, $pa_view_paths=null) {
  			parent::__construct($po_request, $po_response, $pa_view_paths);
 			$this->opa_views = array(
-				'list' => _t('list')
+				'list' => _t('list'),
+				'editable' => _t('editable')
 			 );
 			 
 			  $this->opa_sorts = array_merge(array(
@@ -75,10 +76,6 @@
 			 ), $this->opa_sorts);
 			 
 			 $this->opo_browse = new EntityBrowse($this->opo_result_context->getParameter('browse_id'), 'providence');
-			 
- 			JavascriptLoadManager::register('imageScroller');
- 			JavascriptLoadManager::register('tabUI');
- 			JavascriptLoadManager::register('panel');
 		}
  		# -------------------------------------------------------
  		/**

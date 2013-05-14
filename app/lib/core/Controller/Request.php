@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2007-2008 Whirl-i-Gig
+ * Copyright 2007-2013 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -33,14 +33,10 @@
  /**
   *
   */
- 
-if (!defined("__Request.php__")) {
-	define("__Request.php__", 1);
-}
-
 require_once(__CA_LIB_DIR__."/core/Error.php");
 require_once(__CA_LIB_DIR__."/core/Controller/Request/Session.php");
 require_once(__CA_LIB_DIR__."/core/Configuration.php");
+require_once(__CA_LIB_DIR__."/core/Datamodel.php");
 require_once(__CA_LIB_DIR__."/core/Logging/Eventlog.php");
 require_once(__CA_MODELS_DIR__."/ca_users.php");
 
@@ -127,6 +123,14 @@ class Request {
  */	
 	public $config;
 	
+/**
+ * Datamodel object containing application data schema.
+ * You may use the object referenced by this property as a convenient way to access the datamodel 
+ *
+ * @access public
+ */	
+	public $datamodel;
+	
 	
 	private $opa_params;
 	
@@ -205,6 +209,7 @@ class Request {
  */	
 	public function __construct () {
 		$this->config = Configuration::load();
+		$this->datamodel = Datamodel::load();
 		
 		$this->opa_params = array();
 		$this->opa_action_errors = array();
@@ -216,6 +221,14 @@ class Request {
 	public function getAppConfig() {
 		return $this->config;
 	}
+	
+/**
+ * Returns application datamodel object
+ */
+	public function getAppDatamodel() {
+		return $this->datamodel;
+	}
+	
 /**
  * Reloads application configuration object
  */

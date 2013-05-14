@@ -104,11 +104,8 @@
 				$vs_display_field = $this->getProperty('LABEL_DISPLAY_FIELD');
 				
 				$o_tep = new TimeExpressionParser();
-				$vn_locale_id = $this->get('locale_id');
 				
-				$t_locale = new ca_locales($vn_locale_id);
-				
-				$o_tep->setLanguage($t_locale->getCode());
+				$o_tep->setLanguage(ca_locales::localeIDToCode($this->get('locale_id')));
 				$o_lang_settings = $o_tep->getLanguageSettings();
 				$vs_display_value = trim(preg_replace('![^\p{L}0-9 ]+!u', ' ', $this->get($vs_display_field)));
 				

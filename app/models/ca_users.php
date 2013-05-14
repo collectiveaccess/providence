@@ -846,12 +846,13 @@ class ca_users extends BaseModel {
 					FROM ca_user_roles wur
 					INNER JOIN ca_users_x_roles AS wuxr ON wuxr.role_id = wur.role_id
 					WHERE wuxr.user_id = ?
-					ORDER BY wur.rank
 				", (int)$pn_user_id);
 				
 				$va_roles = array();
 				while($qr_res->nextRow()) {
-					$va_roles[$qr_res->get("role_id")] = $qr_res->getRow();
+					$va_row = $qr_res->getRow();
+					$va_row['vars'] = caUnserializeForDatabase($va_row['vars']);
+					$va_roles[$va_row['role_id']] = $va_row;
 				}
 				
 				return ca_users::$s_user_role_cache[$pn_user_id] = $va_roles;
@@ -1146,14 +1147,14 @@ class ca_users extends BaseModel {
 					INNER JOIN ca_groups_x_roles AS wgxr ON wgxr.role_id = wur.role_id
 					INNER JOIN ca_users_x_groups AS wuxg ON wuxg.group_id = wgxr.group_id
 					WHERE wuxg.user_id = ?
-					ORDER BY wur.rank
 				", (int)$pn_user_id);
 				
 				$va_roles = array();
 				while($qr_res->nextRow()) {
-					$va_roles[$qr_res->get("role_id")] = $qr_res->getRow();
+					$va_row = $qr_res->getRow();
+					$va_row['vars'] = caUnserializeForDatabase($va_row['vars']);
+					$va_roles[$va_row['role_id']] = $va_row;
 				}
-				
 				return ca_users::$s_group_role_cache[$pn_user_id] = $va_roles;
 			}
 		} else {
@@ -2440,7 +2441,9 @@ class ca_users extends BaseModel {
 		}
 		
 		if($this->opo_auth_config->get("use_extdb")){
-			return $this->authenticateExtDB($ps_username,$ps_password);
+			if($vn_rc = $this->authenticateExtDB($ps_username,$ps_password)) {
+				return $vn_rc;
+			}
 		}
 		
 		if ((strlen($ps_username) > 0) && $this->load(array("user_name" => $ps_username))) {
@@ -2683,7 +2686,7 @@ class ca_users extends BaseModel {
 					$this->insert();
 					if(!$this->getPrimaryKey()){
 						// log record creation failed
-						$o_log->log(array('CODE' => 'LOGF', 'SOURCE' => 'ca_users/extdb', 'MESSAGE' => _t('Could not login user %1 after authentication from external database because creation of user record failed: %2', $ps_username, join("; ", $this->getErrors()))));
+						$o_log->log(array('CODE' => 'LOGF', 'SOURCE' => 'ca_users/extdb', 'MESSAGE' => _t('Could not login user %1 after authentication from external database because creation of user record failed: %2 [%3]', $ps_username, join("; ", $this->getErrors()), $_SERVER['REMOTE_ADDR'])));
 						return false;
 					} 
 					
@@ -2726,20 +2729,20 @@ class ca_users extends BaseModel {
 					$this->setMode($vn_mode);
 					
 					// TODO: log user creation
-					$o_log->log(array('CODE' => 'LOGN', 'SOURCE' => 'ca_users/extdb', 'MESSAGE' => _t('Created new login for user %1 after authentication from external database', $ps_username)));
+					$o_log->log(array('CODE' => 'LOGN', 'SOURCE' => 'ca_users/extdb', 'MESSAGE' => _t('Created new login for user %1 after authentication from external database [%2]', $ps_username, $_SERVER['REMOTE_ADDR'])));
 						
 				}		
 			
 				return true;
 			} else {
 				// authentication failed
-				$o_log->log(array('CODE' => 'LOGF', 'SOURCE' => 'ca_users/extdb', 'MESSAGE' => _t('Could not login user %1 using external database because external authentication failed', $ps_username)));
+				//$o_log->log(array('CODE' => 'LOGF', 'SOURCE' => 'ca_users/extdb', 'MESSAGE' => _t('Could not login user %1 using external database because external authentication failed [%2]', $ps_username, $_SERVER['REMOTE_ADDR'])));
 						
 				return false;
 			}
 		} else {
 			// couldn't connect to external database
-			$o_log->log(array('CODE' => 'LOGF', 'SOURCE' => 'ca_users/extdb', 'MESSAGE' => _t('Could not login user %1 using external database because login to external database failed', $ps_username)));
+			$o_log->log(array('CODE' => 'LOGF', 'SOURCE' => 'ca_users/extdb', 'MESSAGE' => _t('Could not login user %1 using external database because login to external database failed [%2]', $ps_username, $_SERVER['REMOTE_ADDR'])));
 						
 			return false;
 		}
@@ -2843,7 +2846,7 @@ class ca_users extends BaseModel {
 			return $vn_locale_id;
 		}
 		
-		return __CA_DEFAULT_LOCALE__;
+		return $t_locale->localeCodeToID(__CA_DEFAULT_LOCALE__);
 	}
 	# ----------------------------------------
 	/**
@@ -2941,12 +2944,10 @@ class ca_users extends BaseModel {
 	public function getBundleAccessLevel($ps_table_name, $ps_bundle_name) {
 		$vs_cache_key = $ps_table_name.'/'.$ps_bundle_name."/".$this->getPrimaryKey();
 		if (isset(ca_users::$s_user_bundle_access_cache[$vs_cache_key])) { return ca_users::$s_user_bundle_access_cache[$vs_cache_key]; }
-		
 		$va_roles = array_merge($this->getUserRoles(), $this->getGroupRoles());
-		
 		$vn_access = -1;
 		foreach($va_roles as $vn_role_id => $va_role_info) {
-			$va_vars = caUnserializeForDatabase($va_role_info['vars']);
+			$va_vars = $va_role_info['vars'];
 			
 			if (is_array($va_vars['bundle_access_settings'])) {
 				if (isset($va_vars['bundle_access_settings'][$ps_table_name.'.'.$ps_bundle_name]) && ((int)$va_vars['bundle_access_settings'][$ps_table_name.'.'.$ps_bundle_name] > $vn_access)) {
@@ -2962,11 +2963,12 @@ class ca_users extends BaseModel {
 				}
 			}
 		}
-		
 		if ($vn_access < 0) {
 			$vn_access = (int)$this->getAppConfig()->get('default_bundle_access_level');
 		}
+		
 		ca_users::$s_user_bundle_access_cache[$vs_cache_key] = $vn_access;
+		
 		return $vn_access;
 	}
 	# ----------------------------------------
@@ -2991,7 +2993,7 @@ class ca_users extends BaseModel {
 		}
 		$vn_access = -1;
 		foreach($va_roles as $vn_role_id => $va_role_info) {
-			$va_vars = caUnserializeForDatabase($va_role_info['vars']);
+			$va_vars = $va_role_info['vars'];
 			
 			if (is_array($va_vars['type_access_settings'])) {
 				if (isset($va_vars['type_access_settings'][$ps_table_name.'.'.$vn_type_id]) && ((int)$va_vars['type_access_settings'][$ps_table_name.'.'.$vn_type_id] > $vn_access)) {
@@ -3026,7 +3028,7 @@ class ca_users extends BaseModel {
 		
 		$va_type_ids = null;
 		foreach($va_roles as $vn_role_id => $va_role_info) {
-			$va_vars = caUnserializeForDatabase($va_role_info['vars']);
+			$va_vars = $va_role_info['vars'];
 			
 			if (is_array($va_vars['type_access_settings'])) {
 				foreach($va_vars['type_access_settings'] as $vs_key => $vn_access) {

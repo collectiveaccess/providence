@@ -18,7 +18,7 @@
 //
 // $Id: Tar.php,v 1.19 2004/05/08 09:56:26 vblavet Exp $
 
-require_once(__PHPWEBLIB_DIR__.'/parsers/PEAR.php');
+require_once(__CA_LIB_DIR__.'/core/Parsers/PEAR.php');
 
 
 define ('ARCHIVE_TAR_ATT_SEPARATOR', 90001);

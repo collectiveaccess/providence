@@ -56,7 +56,12 @@
  		# -------------------------------------------------------
  		public function __construct(&$po_request, &$po_response, $pa_view_paths=null) {
  			parent::__construct($po_request, $po_response, $pa_view_paths);
+ 			
+ 			JavascriptLoadManager::register('bundleListEditorUI');
+ 			JavascriptLoadManager::register('panel');
 			
+ 			JavascriptLoadManager::register('bundleListEditorUI');
+ 			
  			$this->opo_datamodel = Datamodel::load();
  			$this->opo_app_plugin_manager = new ApplicationPluginManager();
  			$this->opo_result_context = new ResultContext($po_request, $this->ops_table_name, ResultContext::getLastFind($po_request, $this->ops_table_name));
@@ -70,8 +75,6 @@
  		 *
  		 */
  		public function Edit($pa_values=null, $pa_options=null) {
- 			JavascriptLoadManager::register('panel');
- 			
  			list($vn_subject_id, $t_subject, $t_ui, $vn_parent_id, $vn_above_id) = $this->_initView($pa_options);
  			$vs_mode = $this->request->getParameter('mode', pString);
  			
@@ -1190,9 +1193,10 @@
  			if (is_array($va_hier)) {
  				
  				$va_types_by_parent_id = array();
- 				$vn_root_id = null;
+ 				$vn_root_id = $t_list->getRootItemIDForList($t_subject->getTypeListCode());
+
 				foreach($va_hier as $vn_item_id => $va_item) {
-					if (!$vn_root_id) { $vn_root_id = $va_item['parent_id']; continue; }
+					if ($vn_item_id == $vn_root_id) { continue; } // skip root
 					$va_types_by_parent_id[$va_item['parent_id']][] = $va_item;
 				}
 				foreach($va_hier as $vn_item_id => $va_item) {

@@ -242,6 +242,13 @@ class ca_representation_annotations extends BundlableLabelableBaseModelWithAttri
 	protected $opo_type_config = null;
 	
 	# ------------------------------------------------------
+	# Search
+	# ------------------------------------------------------
+	protected $SEARCH_CLASSNAME = 'RepresentationAnnotationSearch';
+	protected $SEARCH_RESULT_CLASSNAME = 'RepresentationAnnotationSearchResult';
+	
+	
+	# ------------------------------------------------------
 	# ACL
 	# ------------------------------------------------------
 	protected $SUPPORTS_ACL = true;
@@ -293,6 +300,10 @@ class ca_representation_annotations extends BundlableLabelableBaseModelWithAttri
 	public function insert($pa_options=null) {
 		$this->set('type_code', $vs_type = $this->getAnnotationType());
 		$this->opo_annotations_properties = $this->loadProperties($vs_type);
+		if (!$this->opo_annotations_properties) {
+			$this->postError(1101, _t('No type code set'), 'ca_representation_annotations->insert');
+			return false;
+		}
 		if (!$this->opo_annotations_properties->validate()) {
 			$this->errors = $this->opo_annotations_properties->errors;
 			return false;
@@ -367,7 +378,7 @@ class ca_representation_annotations extends BundlableLabelableBaseModelWithAttri
 	}
 	# ------------------------------------------------------
  	public function getPropertyList() {
- 		return $this->opo_annotations_properties->getPropertyList();
+ 		return is_object($this->opo_annotations_properties) ? $this->opo_annotations_properties->getPropertyList() : array();
  	}
  	# ------------------------------------------------------
  	public function getPropertyHTMLFormElement($ps_property, $pa_attributes=null) {
