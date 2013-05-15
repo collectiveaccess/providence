@@ -1743,7 +1743,7 @@ require_once(__CA_LIB_DIR__."/ca/ApplicationPluginManager.php");
 		// Parse template
 		$o_dom = new DOMDocument('1.0', 'utf-8');
 		libxml_use_internal_errors(true);								// don't reported mangled HTML errors
-		$o_dom->loadHTML($ps_template);
+		$o_dom->loadHTML('<?xml encoding="utf-8">'.$ps_template);
 		libxml_clear_errors();
 		
 		$o_ifdefs = $o_dom->getElementsByTagName("ifdef");				// if defined
@@ -1757,7 +1757,7 @@ require_once(__CA_LIB_DIR__."/ca/ApplicationPluginManager.php");
 		foreach($o_ifdefs as $o_ifdef) {
 			if (!$o_ifdef) { continue; }
 			
-			$vs_html = $o_dom->saveHTML($o_ifdef);
+			$vs_html = $o_dom->saveXML($o_ifdef);
 			$vs_content = preg_replace("!^<[^\>]+>!", "", $vs_html);
 			$vs_content = preg_replace("!<[^\>]+>$!", "", $vs_content);
 			
@@ -1768,7 +1768,7 @@ require_once(__CA_LIB_DIR__."/ca/ApplicationPluginManager.php");
 		foreach($o_ifnotdefs as $o_ifnotdef) {
 			if (!$o_ifnotdef) { continue; }
 			
-			$vs_html = $o_dom->saveHTML($o_ifnotdef);
+			$vs_html = $o_dom->saveXML($o_ifnotdef);
 			$vs_content = preg_replace("!^<[^\>]+>!", "", $vs_html);
 			$vs_content = preg_replace("!<[^\>]+>$!", "", $vs_content);
 			
@@ -1778,7 +1778,7 @@ require_once(__CA_LIB_DIR__."/ca/ApplicationPluginManager.php");
 		$va_mores = array();
 		foreach($o_mores as $o_more) {
 			if (!$o_more) { continue; }
-			$vs_html = $o_dom->saveHTML($o_more);
+			$vs_html = $o_dom->saveXML($o_more);
 			$vs_content = preg_replace("!^<[^\>]+>!", "", $vs_html);
 			$vs_content = preg_replace("!<[^\>]+>$!", "", $vs_content);
 			$va_mores[] = array('directive' => $vs_html, 'content' => $vs_content);
@@ -1787,7 +1787,7 @@ require_once(__CA_LIB_DIR__."/ca/ApplicationPluginManager.php");
 		$va_betweens = array();
 		foreach($o_betweens as $o_between) {
 			if (!$o_between) { continue; }
-			$vs_html = $o_dom->saveHTML($o_between);
+			$vs_html = $o_dom->saveXML($o_between);
 			$vs_content = preg_replace("!^<[^\>]+>!", "", $vs_html);
 			$vs_content = preg_replace("!<[^\>]+>$!", "", $vs_content);
 			$va_betweens[] = array('directive' => $vs_html, 'content' => $vs_content);
@@ -1832,7 +1832,7 @@ require_once(__CA_LIB_DIR__."/ca/ApplicationPluginManager.php");
 				}
 				
 				if (!isset($va_relationship_values[$vs_pk_val])) { $va_relationship_values[$vs_pk_val] = array(0 => null); }
-
+				
 				foreach($va_relationship_values[$vs_pk_val] as $vn_relation_id => $va_relationship_value_array) {
 					$va_val = null;
 					if (isset($va_relationship_value_array[$vs_tag]) && !(isset($pa_options['showHierarchicalLabels']) && $pa_options['showHierarchicalLabels'] && ($vs_tag == 'label'))) {
@@ -2605,7 +2605,7 @@ $ca_relationship_lookup_parse_cache = array();
 		if (!$g_request) { return $pa_text; }
 		
 		foreach($pa_text as $vn_i => $vs_text) {
-			$o_dom->loadHTML($vs_text);
+			$o_dom->loadHTML('<?xml encoding="utf-8">'.$vs_text);		// Needs XML declaration to force it to consider the text as UTF-8. Please don't ask why. No one knows.
 			libxml_clear_errors();
 			
 			$va_l_tags = array();
@@ -2613,7 +2613,7 @@ $ca_relationship_lookup_parse_cache = array();
 		
 			foreach($o_links as $o_link) {
 				if (!$o_link) { continue; }
-				$vs_html = $o_dom->saveHTML($o_link);
+				$vs_html = $o_dom->saveXML($o_link);
 				$vs_content = preg_replace("!^<[^\>]+>!", "", $vs_html);
 				$vs_content = preg_replace("!<[^\>]+>$!", "", $vs_content);
 		
