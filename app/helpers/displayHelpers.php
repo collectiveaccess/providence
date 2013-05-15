@@ -1924,11 +1924,11 @@ require_once(__CA_LIB_DIR__."/ca/ApplicationPluginManager.php");
 				foreach($va_tag_list as $vs_tag_to_test) {
 					switch($vs_bool) {
 						case 'OR':
-							if (isset($va_tag_list[$vs_tag_to_test]) && strlen($va_tag_list[$vs_tag_to_test])) { $vb_output = true; break(2); }			// any must be defined; if any is defined output
+							if (isset($va_tags[$vs_tag_to_test]) && strlen($va_tags[$vs_tag_to_test])) { $vb_output = true; break(2); }			// any must be defined; if any is defined output
 							break;
 						case 'AND':
 						default:
-							if (!isset($va_tag_list[$vs_tag_to_test]) || !strlen($va_tag_list[$vs_tag_to_test])) { $vb_output = false; break(2); }		// all must be defined; if any is not defined don't output
+							if (!isset($va_tags[$vs_tag_to_test]) || !strlen($va_tags[$vs_tag_to_test])) { $vb_output = false; break(2); }		// all must be defined; if any is not defined don't output
 							break;
 					}
 				}
@@ -2081,7 +2081,7 @@ require_once(__CA_LIB_DIR__."/ca/ApplicationPluginManager.php");
 		$vs_attr_str = _caHTMLMakeAttributeString(is_array($pa_attributes) ? $pa_attributes : array());
 		$vs_display = "{".((isset($pa_options['display']) && $pa_options['display']) ? $pa_options['display'] : "_display")."}";
 		if (isset($pa_options['makeLink']) && $pa_options['makeLink']) {
-			$vs_display = "<a href='".caEditorUrl($po_request, $ps_table, '{'.$o_dm->getTablePrimaryKeyName($ps_table).'}')."' {$vs_attr_str}>{$vs_display}</a>";
+			$vs_display = "<a href='".urldecode(caEditorUrl($po_request, $ps_table, '{'.$o_dm->getTablePrimaryKeyName($ps_table).'}'))."' {$vs_attr_str}>{$vs_display}</a>";
 		}
 		
 		switch($vs_relationship_type_display_position) {
@@ -2230,6 +2230,8 @@ global $ca_relationship_lookup_parse_cache;
 $ca_relationship_lookup_parse_cache = array();
 	function caProcessRelationshipLookupLabel($qr_rel_items, $pt_rel, $pa_options=null) {
 		global $ca_relationship_lookup_parse_cache;
+		
+		$va_initial_values = array();
 		
 		$vb_is_hierarchical 			= $pt_rel->isHierarchical();
 		$vs_hier_parent_id_fld 			= $pt_rel->getProperty('HIERARCHY_PARENT_ID_FLD');
@@ -2424,7 +2426,7 @@ $ca_relationship_lookup_parse_cache = array();
 		if (isset($pa_options['relatedItems']) && is_array($pa_options['relatedItems'])) {
 			$va_tmp = array();
 			foreach ($pa_options['relatedItems'] as $vn_relation_id => $va_relation) {
-				$va_items[$va_relation[$vs_rel_pk]]['relation_id'] = $vn_relation_id;
+				$va_items[$va_relation[$vs_rel_pk]]['relation_id'] = $va_relation['relation_id'];
 				$va_items[$va_relation[$vs_rel_pk]]['relationship_type_id'] = $va_items[$va_relation[$vs_rel_pk]]['type_id'] = ($va_relation['direction']) ?  $va_relation['direction'].'_'.$va_relation['relationship_type_id'] : $va_relation['relationship_type_id'];
 				$va_items[$va_relation[$vs_rel_pk]]['relationship_typename'] = $va_relation['relationship_typename'];
 				$va_items[$va_relation[$vs_rel_pk]]['idno'] = $va_relation[$vs_idno_fld];
