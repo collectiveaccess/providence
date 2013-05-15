@@ -1743,7 +1743,7 @@ require_once(__CA_LIB_DIR__."/ca/ApplicationPluginManager.php");
 		// Parse template
 		$o_dom = new DOMDocument('1.0', 'utf-8');
 		libxml_use_internal_errors(true);								// don't reported mangled HTML errors
-		$o_dom->loadHTML($ps_template);
+		$o_dom->loadHTML('<?xml encoding="utf-8">'.$ps_template);
 		libxml_clear_errors();
 		
 		$o_ifdefs = $o_dom->getElementsByTagName("ifdef");				// if defined
@@ -1753,11 +1753,13 @@ require_once(__CA_LIB_DIR__."/ca/ApplicationPluginManager.php");
 		
 		$o_options = $o_dom->getElementsByTagName("options");
 		
+		
+		
 		$va_ifdefs = array();
 		foreach($o_ifdefs as $o_ifdef) {
 			if (!$o_ifdef) { continue; }
 			
-			$vs_html = $o_dom->saveHTML($o_ifdef);
+			$vs_html = $o_dom->saveXML($o_ifdef);
 			$vs_content = preg_replace("!^<[^\>]+>!", "", $vs_html);
 			$vs_content = preg_replace("!<[^\>]+>$!", "", $vs_content);
 			
@@ -1768,7 +1770,7 @@ require_once(__CA_LIB_DIR__."/ca/ApplicationPluginManager.php");
 		foreach($o_ifnotdefs as $o_ifnotdef) {
 			if (!$o_ifnotdef) { continue; }
 			
-			$vs_html = $o_dom->saveHTML($o_ifnotdef);
+			$vs_html = $o_dom->saveXML($o_ifnotdef);
 			$vs_content = preg_replace("!^<[^\>]+>!", "", $vs_html);
 			$vs_content = preg_replace("!<[^\>]+>$!", "", $vs_content);
 			
@@ -1778,7 +1780,7 @@ require_once(__CA_LIB_DIR__."/ca/ApplicationPluginManager.php");
 		$va_mores = array();
 		foreach($o_mores as $o_more) {
 			if (!$o_more) { continue; }
-			$vs_html = $o_dom->saveHTML($o_more);
+			$vs_html = $o_dom->saveXML($o_more);
 			$vs_content = preg_replace("!^<[^\>]+>!", "", $vs_html);
 			$vs_content = preg_replace("!<[^\>]+>$!", "", $vs_content);
 			$va_mores[] = array('directive' => $vs_html, 'content' => $vs_content);
@@ -1787,7 +1789,7 @@ require_once(__CA_LIB_DIR__."/ca/ApplicationPluginManager.php");
 		$va_betweens = array();
 		foreach($o_betweens as $o_between) {
 			if (!$o_between) { continue; }
-			$vs_html = $o_dom->saveHTML($o_between);
+			$vs_html = $o_dom->saveXML($o_between);
 			$vs_content = preg_replace("!^<[^\>]+>!", "", $vs_html);
 			$vs_content = preg_replace("!<[^\>]+>$!", "", $vs_content);
 			$va_betweens[] = array('directive' => $vs_html, 'content' => $vs_content);
@@ -1832,7 +1834,7 @@ require_once(__CA_LIB_DIR__."/ca/ApplicationPluginManager.php");
 				}
 				
 				if (!isset($va_relationship_values[$vs_pk_val])) { $va_relationship_values[$vs_pk_val] = array(0 => null); }
-
+				
 				foreach($va_relationship_values[$vs_pk_val] as $vn_relation_id => $va_relationship_value_array) {
 					$va_val = null;
 					if (isset($va_relationship_value_array[$vs_tag]) && !(isset($pa_options['showHierarchicalLabels']) && $pa_options['showHierarchicalLabels'] && ($vs_tag == 'label'))) {
@@ -1924,11 +1926,11 @@ require_once(__CA_LIB_DIR__."/ca/ApplicationPluginManager.php");
 				foreach($va_tag_list as $vs_tag_to_test) {
 					switch($vs_bool) {
 						case 'OR':
-							if (isset($va_tag_list[$vs_tag_to_test]) && strlen($va_tag_list[$vs_tag_to_test])) { $vb_output = true; break(2); }			// any must be defined; if any is defined output
+							if (isset($va_tags[$vs_tag_to_test]) && strlen($va_tags[$vs_tag_to_test])) { $vb_output = true; break(2); }			// any must be defined; if any is defined output
 							break;
 						case 'AND':
 						default:
-							if (!isset($va_tag_list[$vs_tag_to_test]) || !strlen($va_tag_list[$vs_tag_to_test])) { $vb_output = false; break(2); }		// all must be defined; if any is not defined don't output
+							if (!isset($va_tags[$vs_tag_to_test]) || !strlen($va_tags[$vs_tag_to_test])) { $vb_output = false; break(2); }		// all must be defined; if any is not defined don't output
 							break;
 					}
 				}
@@ -2060,6 +2062,9 @@ require_once(__CA_LIB_DIR__."/ca/ApplicationPluginManager.php");
 			}
 			$va_proc_templates[$vn_i] = join(isset($pa_options['delimiter']) ? $pa_options['delimiter'] : $vs_delimiter, $va_pt_vals);
 		}
+		
+		// Transform links
+		$va_proc_templates = caCreateLinksFromText($va_proc_templates, $ps_tablename, $pa_row_ids);
 		
 		if ($vb_return_as_array) {
 			return $va_proc_templates;
@@ -2230,6 +2235,8 @@ global $ca_relationship_lookup_parse_cache;
 $ca_relationship_lookup_parse_cache = array();
 	function caProcessRelationshipLookupLabel($qr_rel_items, $pt_rel, $pa_options=null) {
 		global $ca_relationship_lookup_parse_cache;
+		
+		$va_initial_values = array();
 		
 		$vb_is_hierarchical 			= $pt_rel->isHierarchical();
 		$vs_hier_parent_id_fld 			= $pt_rel->getProperty('HIERARCHY_PARENT_ID_FLD');
@@ -2424,7 +2431,7 @@ $ca_relationship_lookup_parse_cache = array();
 		if (isset($pa_options['relatedItems']) && is_array($pa_options['relatedItems'])) {
 			$va_tmp = array();
 			foreach ($pa_options['relatedItems'] as $vn_relation_id => $va_relation) {
-				$va_items[$va_relation[$vs_rel_pk]]['relation_id'] = $vn_relation_id;
+				$va_items[$va_relation[$vs_rel_pk]]['relation_id'] = $va_relation['relation_id'];
 				$va_items[$va_relation[$vs_rel_pk]]['relationship_type_id'] = $va_items[$va_relation[$vs_rel_pk]]['type_id'] = ($va_relation['direction']) ?  $va_relation['direction'].'_'.$va_relation['relationship_type_id'] : $va_relation['relationship_type_id'];
 				$va_items[$va_relation[$vs_rel_pk]]['relationship_typename'] = $va_relation['relationship_typename'];
 				$va_items[$va_relation[$vs_rel_pk]]['idno'] = $va_relation[$vs_idno_fld];
@@ -2603,7 +2610,7 @@ $ca_relationship_lookup_parse_cache = array();
 		if (!$g_request) { return $pa_text; }
 		
 		foreach($pa_text as $vn_i => $vs_text) {
-			$o_dom->loadHTML($vs_text);
+			$o_dom->loadHTML('<?xml encoding="utf-8">'.$vs_text);		// Needs XML declaration to force it to consider the text as UTF-8. Please don't ask why. No one knows.
 			libxml_clear_errors();
 			
 			$va_l_tags = array();
@@ -2611,7 +2618,7 @@ $ca_relationship_lookup_parse_cache = array();
 		
 			foreach($o_links as $o_link) {
 				if (!$o_link) { continue; }
-				$vs_html = $o_dom->saveHTML($o_link);
+				$vs_html = $o_dom->saveXML($o_link);
 				$vs_content = preg_replace("!^<[^\>]+>!", "", $vs_html);
 				$vs_content = preg_replace("!<[^\>]+>$!", "", $vs_content);
 		

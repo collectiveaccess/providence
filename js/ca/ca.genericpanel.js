@@ -62,7 +62,7 @@ var caUI = caUI || {};
 		// --------------------------------------------------------------------------------
 		// Define methods
 		// --------------------------------------------------------------------------------
-		that.showPanel = function(url, onCloseCallback, clearOnClose) {
+		that.showPanel = function(url, onCloseCallback, clearOnClose, postData) {
 			that.setZoom(that.allowMobileSafariZooming);
 			that.isChanging = true;
 			
@@ -86,8 +86,9 @@ var caUI = caUI || {};
 			}
 			
 			// Apply close behavior to selected elements
+			if (!postData) { postData = {}; }
 			if (url) {
-				jQuery('#' + that.panelContentID).load(url, that.closeButtonSelector ? function() {			
+				jQuery('#' + that.panelContentID).load(url, postData, that.closeButtonSelector ? function() {			
 					jQuery(that.closeButtonSelector).click(function() {
 						that.hidePanel();
 					})
