@@ -1753,6 +1753,8 @@ require_once(__CA_LIB_DIR__."/ca/ApplicationPluginManager.php");
 		
 		$o_options = $o_dom->getElementsByTagName("options");
 		
+		
+		
 		$va_ifdefs = array();
 		foreach($o_ifdefs as $o_ifdef) {
 			if (!$o_ifdef) { continue; }
@@ -2060,6 +2062,9 @@ require_once(__CA_LIB_DIR__."/ca/ApplicationPluginManager.php");
 			}
 			$va_proc_templates[$vn_i] = join(isset($pa_options['delimiter']) ? $pa_options['delimiter'] : $vs_delimiter, $va_pt_vals);
 		}
+		
+		// Transform links
+		$va_proc_templates = caCreateLinksFromText($va_proc_templates, $ps_tablename, $pa_row_ids);
 		
 		if ($vb_return_as_array) {
 			return $va_proc_templates;
