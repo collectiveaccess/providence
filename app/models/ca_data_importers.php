@@ -1337,7 +1337,6 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 			// Look for existing record?
 			//
 			if ($vs_existing_record_policy != 'none') {
-				
 				switch($vs_existing_record_policy) {
 					case 'skip_on_idno':
 						if (!$vb_idno_is_template && $t_subject->load(array($t_subject->getProperty('ID_NUMBERING_ID_FIELD') => $vs_idno))) {
@@ -1535,7 +1534,7 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 						foreach($va_item['settings']['refineries'] as $vs_refinery) {
 							if (!$vs_refinery) { continue; }
 							if ($o_refinery = RefineryManager::getRefineryInstance($vs_refinery)) {
-								$va_refined_values = $o_refinery->refine($va_content_tree, $va_group, $va_item, $va_row, array('source' => $ps_source, 'subject' => $t_subject, 'locale_id' => $vn_locale_id, 'log' => $o_log, 'transaction' => $o_trans, 'importEvent' => $o_event, 'importEventSource' => $pn_row));
+								$va_refined_values = $o_refinery->refine($va_content_tree, $va_group, $va_item, $va_row, array('source' => $ps_source, 'subject' => $t_subject, 'locale_id' => $vn_locale_id, 'log' => $o_log, 'transaction' => $o_trans, 'importEvent' => $o_event, 'importEventSource' => $pn_row, 'mapping' => $t_mapping));
 								if ($o_refinery->returnsMultipleValues()) {
 									$va_p = array_pop($va_parent);
 									foreach($va_refined_values as $va_refined_value) {
@@ -1610,6 +1609,22 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 					}	
 				}
 				
+			}
+			
+			//
+			// Process out self-relationships
+			//
+			if(is_array($va_content_tree[$vs_subject_table])) {
+				$va_self_related_content = array();
+				foreach($va_content_tree[$vs_subject_table] as $vn_i => $va_element_data) {
+					if (isset($va_element_data['_relationship_type'])) {
+						$va_self_related_content[] = $va_element_data;
+						unset($va_content_tree[$vs_subject_table][$vn_i]);
+					}
+				}
+				if (sizeof($va_self_related_content) > 0) {
+					$va_content_tree["related.{$vs_subject_table}"] = $va_self_related_content;
+				}
 			}
 			
 			$vn_row++;
@@ -1695,7 +1710,6 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 				
 				$o_log->logDebug(_t('Updated idno %1 at %2 seconds', $vs_idno, $t->getTime(4)));
 			}
-			
 		
 			foreach($va_content_tree as $vs_table_name => $va_content) {
 				if ($vs_table_name == $vs_subject_table) {		
@@ -1791,7 +1805,7 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 					} 
 				} else {
 					// related
-					
+					$vs_table_name = str_replace("related.", "", $vs_table_name);
 					foreach($va_content as $vn_i => $va_element_data) {
 							$va_data_for_rel_table = $va_element_data;
 							unset($va_data_for_rel_table['preferred_labels']);
@@ -1807,7 +1821,8 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 										($vn_rel_id = DataMigrationUtils::getEntityID($va_element_data['preferred_labels'], $va_element_data['_type'], $vn_locale_id, $va_data_for_rel_table, array('log' => $o_log, 'transaction' => $o_trans, 'importEvent' => $o_event, 'importEventSource' => $pn_row)))
 									) {
 										if (!$va_element_data['_relationship_type']) { break; }
-										$t_subject->addRelationship($vs_table_name, $vn_rel_id, trim($va_element_data['_relationship_type']));
+									//print_R($va_element_data['_interstitial']);
+										$t_subject->addRelationship($vs_table_name, $vn_rel_id, trim($va_element_data['_relationship_type']), null, null, null, null, array('interstitialValues' => $va_element_data['_interstitial']));
 										
 										if ($vs_error = DataMigrationUtils::postError($t_subject, _t("[%1] Could not add related entity with relationship %2", $vs_idno, trim($va_element_data['_relationship_type'])), __CA_DATA_IMPORT_ERROR__, array('dontOutputLevel' => true, 'dontPrint' => true))) {
 											ca_data_importers::logImportError($vs_error, $va_log_import_error_opts);

@@ -1740,4 +1740,11 @@ function caFileIsIncludable($ps_file) {
 		return $va_extracted_values;
 	}
 	# ----------------------------------------
+	/**
+	 *
+	 */
+	function caIsAssociativeArray($pa_array) {
+	  return (bool)count(array_filter(array_keys($pa_array), 'is_string'));
+	}
+	# ----------------------------------------
 ?>

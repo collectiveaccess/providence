@@ -64,19 +64,35 @@
 			$this->init();
 		}
 		# ------------------------------------------------------------------
+		/**
+		 *
+		 */
+		public function clear() {
+			parent::clear();
+			$this->init();
+		}
+		# ------------------------------------------------------------------
+		/**
+		 *
+		 */
 		public function init() {
 			$this->opa_failed_attribute_inserts = array();
 			$this->opa_failed_attribute_updates = array();
 			$this->_initAttributeQueues();
 		}
 		# ------------------------------------------------------------------
+		/**
+		 *
+		 */
 		private function _initAttributeQueues() {
 			$this->opa_attributes_to_add = array();
 			$this->opa_attributes_to_edit = array();
 			$this->opa_attributes_to_remove = array();
 		}
 		# ------------------------------------------------------------------
-		// create an attribute linked to the current row using values in $pa_values
+		/**
+		 * create an attribute linked to the current row using values in $pa_values
+		 */
 		public function addAttribute($pa_values, $pm_element_code_or_id, $ps_error_source=null) {
 			if (!($t_element = $this->_getElementInstance($pm_element_code_or_id))) { return false; }
 			if ($t_element->get('parent_id') > 0) { return false; }

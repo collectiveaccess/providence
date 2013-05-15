@@ -4892,5 +4892,117 @@ $pa_options["display_form_field_tips"] = true;
 		return false;
 	}
 	# --------------------------------------------------------------------------------------------
+	/**
+	 * Creates a relationship between the currently loaded row and the specified row.
+	 *
+	 * @param mixed $pm_rel_table_name_or_num Table name (eg. "ca_entities") or number as defined in datamodel.conf of table containing row to creation relationship to.
+	 * @param int $pn_rel_id primary key value of row to creation relationship to.
+	 * @param mixed $pm_type_id Relationship type type_code or type_id, as defined in the ca_relationship_types table. This is required for all relationships that use relationship types. This includes all of the most common types of relationships.
+	 * @param string $ps_effective_date Optional date expression to qualify relation with. Any expression that the TimeExpressionParser can handle is supported here.
+	 * @param string $ps_source_info Text field for storing information about source of relationship. Not currently used.
+	 * @param string $ps_direction Optional direction specification for self-relationships (relationships linking two rows in the same table). Valid values are 'ltor' (left-to-right) and  'rtol' (right-to-left); the direction determines which "side" of the relationship the currently loaded row is on: 'ltor' puts the current row on the left side. For many self-relations the direction determines the nature and display text for the relationship.
+	 * @param array $pa_options Array of additional options:
+	 *		allowDuplicates = if set to true, attempts to add a relationship that already exists will succeed. Default is false – duplicate relationships will not be created.
+	 *		setErrorOnDuplicate = if set to true, an error will be set if an attempt is made to add a duplicate relationship. Default is false – don't set error. addRelationship() will always return false when creation of a duplicate relationship fails, no matter how the setErrorOnDuplicate option is set.
+	 * @return boolean BaseRelationshipModel Loaded relationship model instance on success, false on error.
+	 */
+	public function addRelationship($pm_rel_table_name_or_num, $pn_rel_id, $pm_type_id=null, $ps_effective_date=null, $ps_source_info=null, $ps_direction=null, $pn_rank=null, $pa_options=null) {
+		global $g_ui_locale_id;
+		
+		if ($t_rel = parent::addRelationship($pm_rel_table_name_or_num, $pn_rel_id, $pm_type_id, $ps_effective_date, $ps_source_info, $ps_direction, $pn_rank, $pa_options)) {
+			if ($t_rel->numErrors()) {
+				$this->errors = $t_rel->errors;
+				return false;
+			}
+			// are there interstitials to add?
+			if (isset($pa_options['interstitialValues']) && is_array($pa_options['interstitialValues'])) {
+				$t_rel->setMode(ACCESS_WRITE);
+				
+				foreach($pa_options['interstitialValues'] as $vs_element => $va_value) { 	
+					if ($t_rel->hasField($vs_element)) {
+						$t_rel->set($vs_element, $va_value);
+						continue;
+					}				
+					if (is_array($va_value)) {
+						if (!isset($va_value['locale_id'])) {
+							$va_value['locale_id'] = $g_ui_locale_id ? $g_ui_locale_id : ca_locales::getDefaultCataloguingLocaleID();
+						}
+						// array of values (complex multi-valued attribute)
+						$t_rel->addAttribute($va_value, $vs_element);
+					} else {
+						// scalar value (simple single value attribute)
+						if ($va_value) {
+							$t_rel->addAttribute(array(
+								'locale_id' => $pn_locale_id,
+								$vs_element => $va_value
+							), $vs_element);
+						}
+					}
+				}
+				$t_rel->update();
+				
+				if ($t_rel->numErrors()) {
+					$this->errors = $t_rel->errors;
+					return false;
+				}
+			}
+		}
+		return $t_rel;
+	}
+	# --------------------------------------------------------------------------------------------
+	/**
+	 * Edits the data in an existing relationship between the currently loaded row and the specified row.
+	 *
+	 * @param mixed $pm_rel_table_name_or_num Table name (eg. "ca_entities") or number as defined in datamodel.conf of table containing row to create relationships to.
+	 * @param int $pn_relation_id primary key value of the relation to edit.
+	 * @param int $pn_rel_id primary key value of row to creation relationship to.
+	 * @param mixed $pm_type_id Relationship type type_code or type_id, as defined in the ca_relationship_types table. This is required for all relationships that use relationship types. This includes all of the most common types of relationships.
+	 * @param string $ps_effective_date Optional date expression to qualify relation with. Any expression that the TimeExpressionParser can handle is supported here.
+	 * @param string $ps_source_info Text field for storing information about source of relationship. Not currently used.
+	 * @param string $ps_direction Optional direction specification for self-relationships (relationships linking two rows in the same table). Valid values are 'ltor' (left-to-right) and  'rtol' (right-to-left); the direction determines which "side" of the relationship the currently loaded row is on: 'ltor' puts the current row on the left side. For many self-relations the direction determines the nature and display text for the relationship.
+	 * @param array $pa_options Array of additional options:
+	 *		allowDuplicates = if set to true, attempts to edit a relationship to match one that already exists will succeed. Default is false – duplicate relationships will not be created.
+	 *		setErrorOnDuplicate = if set to true, an error will be set if an attempt is made to create a duplicate relationship. Default is false – don't set error. editRelationship() will always return false when editing of a relationship fails, no matter how the setErrorOnDuplicate option is set.
+	 * @return BaseRelationshipModel Loaded relationship model instance on success, false on error.
+	 */
+	public function editRelationship($pm_rel_table_name_or_num, $pn_relation_id, $pn_rel_id, $pm_type_id=null, $ps_effective_date=null, $pa_source_info=null, $ps_direction=null, $pn_rank=null, $pa_options=null) {
+		global $g_ui_locale_id;
+		
+		if ($t_rel = parent::editRelationship($pm_rel_table_name_or_num, $pn_relation_id, $pn_rel_id, $pm_type_id, $ps_effective_date, $ps_source_info, $ps_direction, $pn_rank, $pa_options)) {
+			// are there interstitials to add?
+			if (isset($pa_options['interstitialValues']) && is_array($pa_options['interstitialValues'])) {
+				$t_rel->setMode(ACCESS_WRITE);
+				
+				foreach($pa_options['interstitialValues'] as $vs_element => $va_value) { 	
+					if ($t_rel->hasField($vs_element)) {
+						$t_rel->set($vs_element, $va_value);
+						continue;
+					}				
+					if (is_array($va_value)) {
+						if (!isset($va_value['locale_id'])) {
+							$va_value['locale_id'] = $g_ui_locale_id ? $g_ui_locale_id : ca_locales::getDefaultCataloguingLocaleID();
+						}
+						// array of values (complex multi-valued attribute)
+						$t_rel->replaceAttribute($va_value, $vs_element);
+					} else {
+						// scalar value (simple single value attribute)
+						if ($va_value) {
+							$t_rel->replaceAttribute(array(
+								'locale_id' => $pn_locale_id,
+								$vs_element => $va_value
+							), $vs_element);
+						}
+					}
+				}
+				$t_rel->update();
+				if ($t_rel->numErrors()) {
+					$this->errors = $t_rel->errors;
+					return false;
+				}
+			}
+		}
+		return $t_rel;
+	}
+	# --------------------------------------------------------------------------------------------
 }
 ?>

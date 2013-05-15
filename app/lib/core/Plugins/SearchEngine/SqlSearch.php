@@ -637,7 +637,7 @@ class WLPlugSearchEngineSqlSearch extends BaseSearchPlugin implements IWLPlugSea
 							if(sizeof($va_ap_tmp) == 2) {
 								$vn_fld_table = (int)$this->opo_datamodel->getTableNum($va_ap_tmp[0]);
 								$vn_fld_num = (int)$this->opo_datamodel->getFieldNum($va_ap_tmp[0], $va_ap_tmp[1]);
-								$vs_fld_limit_sql = " AND (ca.field_table_num = {$vn_fld_table} AND ca.field_num = {$vn_fld_num})";
+								$vs_fld_limit_sql = " AND (ca.field_table_num = {$vn_fld_table} AND ca.field_num = 'I{$vn_fld_num}')";
 							}
 							
 							$vs_direct_sql_query = "
@@ -763,14 +763,17 @@ class WLPlugSearchEngineSqlSearch extends BaseSearchPlugin implements IWLPlugSea
 							if ($t_table) {
 								$vs_table_num = $t_table->tableNum();
 								if (is_numeric($vs_field)) {
-									$vs_fld_num = $vs_field;
+									$vs_fld_num = 'I'.$vs_field;
+									$vn_fld_num = (int)$vs_field;
 								} else {
-									$vs_fld_num = $this->getFieldNum($vs_table, $vs_field);
+									$vn_fld_num = (int)$this->getFieldNum($vs_table, $vs_field);
+									$vs_fld_num = 'I'.$vn_fld_num;
 									
-									if (!$vs_fld_num) {
+									if (!$vn_fld_num) {
 										$t_element = new ca_metadata_elements();
 										if ($t_element->load(array('element_code' => ($vs_sub_field ? $vs_sub_field : $vs_field)))) {
-											$vs_fld_num = $t_element->getPrimaryKey();
+											$vn_fld_num = $t_element->getPrimaryKey();
+											$vs_fld_num = 'A'.$vn_fld_num;
 											
 											//
 											// For certain types of attributes we can directly query the
@@ -799,7 +802,7 @@ class WLPlugSearchEngineSqlSearch extends BaseSearchPlugin implements IWLPlugSea
 																INNER JOIN ca_attributes AS ca ON ca.attribute_id = cav.attribute_id
 																^JOIN
 																WHERE
-																	(cav.element_id = ".intval($vs_fld_num).") AND (ca.table_num = ?)
+																	(cav.element_id = '{$vs_fld_num}') AND (ca.table_num = ?)
 																	AND
 																	(
 																		(cav.value_decimal1 BETWEEN ".floatval($va_dates['start'])." AND ".floatval($va_dates['end']).")
@@ -818,7 +821,7 @@ class WLPlugSearchEngineSqlSearch extends BaseSearchPlugin implements IWLPlugSea
 																INNER JOIN ca_attributes AS ca ON ca.attribute_id = cav.attribute_id
 																^JOIN
 																WHERE
-																	(cav.element_id = ".intval($vs_fld_num).") AND (ca.table_num = ?)
+																	(cav.element_id = '{$vs_fld_num}') AND (ca.table_num = ?)
 																	AND
 																	(
 																		(cav.value_decimal1 BETWEEN ".floatval($va_dates['start'])." AND ".floatval($va_dates['end']).")
@@ -844,7 +847,7 @@ class WLPlugSearchEngineSqlSearch extends BaseSearchPlugin implements IWLPlugSea
 															INNER JOIN ca_attributes AS ca ON ca.attribute_id = cav.attribute_id
 															^JOIN
 															WHERE
-																(cav.element_id = ".intval($vs_fld_num).") AND (ca.table_num = ?)
+																(cav.element_id = '{$vs_fld_num}') AND (ca.table_num = ?)
 																AND
 																(cav.value_decimal1 BETWEEN {$va_coords['min_latitude']} AND {$va_coords['max_latitude']})
 																AND
@@ -865,7 +868,7 @@ class WLPlugSearchEngineSqlSearch extends BaseSearchPlugin implements IWLPlugSea
 														INNER JOIN ca_attributes AS ca ON ca.attribute_id = cav.attribute_id
 														^JOIN
 														WHERE
-															(cav.element_id = ".intval($vs_fld_num).") AND (ca.table_num = ?)
+															(cav.element_id = '{$vs_fld_num}') AND (ca.table_num = ?)
 															AND
 															(cav.value_decimal1 = ".floatval($vn_amount).")
 															AND
@@ -884,7 +887,7 @@ class WLPlugSearchEngineSqlSearch extends BaseSearchPlugin implements IWLPlugSea
 														INNER JOIN ca_attributes AS ca ON ca.attribute_id = cav.attribute_id
 														^JOIN
 														WHERE
-															(cav.element_id = ".intval($vs_fld_num).") AND (ca.table_num = ?)
+															(cav.element_id = '{$vs_fld_num}') AND (ca.table_num = ?)
 															AND
 															(cav.value_decimal1 = ".floatval($vn_len).")
 															
@@ -901,7 +904,7 @@ class WLPlugSearchEngineSqlSearch extends BaseSearchPlugin implements IWLPlugSea
 														INNER JOIN ca_attributes AS ca ON ca.attribute_id = cav.attribute_id
 														^JOIN
 														WHERE
-															(cav.element_id = ".intval($vs_fld_num).") AND (ca.table_num = ?)
+															(cav.element_id = '{$vs_fld_num}') AND (ca.table_num = ?)
 															AND
 															(cav.value_decimal1 = ".floatval($vn_weight).")
 															
@@ -918,7 +921,7 @@ class WLPlugSearchEngineSqlSearch extends BaseSearchPlugin implements IWLPlugSea
 														INNER JOIN ca_attributes AS ca ON ca.attribute_id = cav.attribute_id
 														^JOIN
 														WHERE
-															(cav.element_id = ".intval($vs_fld_num).") AND (ca.table_num = ?)
+															(cav.element_id = '{$vs_fld_num}') AND (ca.table_num = ?)
 															AND
 															(cav.value_decimal1 = ".floatval($vn_timecode).")
 															
@@ -931,7 +934,7 @@ class WLPlugSearchEngineSqlSearch extends BaseSearchPlugin implements IWLPlugSea
 														INNER JOIN ca_attributes AS ca ON ca.attribute_id = cav.attribute_id
 														^JOIN
 														WHERE
-															(cav.element_id = ".intval($vs_fld_num).") AND (ca.table_num = ?)
+															(cav.element_id = '{$vs_fld_num}') AND (ca.table_num = ?)
 															AND
 															(cav.value_integer1 = ".intval(array_shift($va_raw_terms)).")
 															
@@ -944,20 +947,17 @@ class WLPlugSearchEngineSqlSearch extends BaseSearchPlugin implements IWLPlugSea
 														INNER JOIN ca_attributes AS ca ON ca.attribute_id = cav.attribute_id
 														^JOIN
 														WHERE
-															(cav.element_id = ".intval($vs_fld_num).") AND (ca.table_num = ?)
+															(cav.element_id = '{$vs_fld_num}') AND (ca.table_num = ?)
 															AND
 															(cav.value_decimal1 = ".floatval(array_shift($va_raw_terms)).")
 															
 													";
 													break;
-												default:
-													$vs_table_num = 4; // attributes
-													break;
 											}
 										}
 									}
 								}
-								if ($t_table->getFieldInfo($t_table->fieldName($vs_fld_num), 'FIELD_TYPE') == FT_BIT) {
+								if ($t_table->getFieldInfo($t_table->fieldName($vn_fld_num), 'FIELD_TYPE') == FT_BIT) {
 									$vb_ft_bit_optimization = true;
 								}
 							}
@@ -972,8 +972,8 @@ class WLPlugSearchEngineSqlSearch extends BaseSearchPlugin implements IWLPlugSea
 					if (!$vs_direct_sql_query) {
 						$va_sql_where = array();
 						if (sizeof($va_ft_terms)) {
-							if (($t_table) && (strlen($vs_fld_num) > 0)) {
-								$va_sql_where[] = "((swi.field_table_num = ".intval($vs_table_num).") AND (swi.field_num = ".intval($vs_fld_num).") AND (sw.word IN (".join(',', $va_ft_terms).")))";
+							if (($t_table) && (strlen($vs_fld_num) > 1)) {
+								$va_sql_where[] = "((swi.field_table_num = ".intval($vs_table_num).") AND (swi.field_num = '{$vs_fld_num}') AND (sw.word IN (".join(',', $va_ft_terms).")))";
 							} else {
 								if (sizeof($va_ft_terms) == 1) {
 									$va_sql_where[] =  "(sw.word = ".$va_ft_terms[0].")";
@@ -992,16 +992,16 @@ class WLPlugSearchEngineSqlSearch extends BaseSearchPlugin implements IWLPlugSea
 									$va_tmp[] = '(sw.word LIKE \''.$this->opo_db->escape(trim($vs_term)).'%\')';
 								}
 							}
-							if (($t_table) && (strlen($vs_fld_num) > 0)) {
-								$va_sql_where[] = "((swi.field_table_num = ".intval($vs_table_num).") AND (swi.field_num = ".intval($vs_fld_num).") AND (".join(' AND ', $va_tmp)."))";
+							if (($t_table) && (strlen($vs_fld_num) > 1)) {
+								$va_sql_where[] = "((swi.field_table_num = ".intval($vs_table_num).") AND (swi.field_num = '{$vs_fld_num}') AND (".join(' AND ', $va_tmp)."))";
 							} else {
 								$va_sql_where[] =  "(".join(' AND ', $va_tmp).")";
 							}
 						}
 						
 						if (sizeof($va_ft_stem_terms)) {
-							if (($t_table) && (strlen($vs_fld_num) > 0)) {
-								$va_sql_where[] = "((swi.field_table_num = ".intval($vs_table_num).") AND (swi.field_num = ".intval($vs_fld_num).") AND (sw.stem IN (".join(',', $va_ft_stem_terms).")))";
+							if (($t_table) && (strlen($vs_fld_num) > 1)) {
+								$va_sql_where[] = "((swi.field_table_num = ".intval($vs_table_num).") AND (swi.field_num = '{$vs_fld_num}') AND (sw.stem IN (".join(',', $va_ft_stem_terms).")))";
 							} else {
 								$va_sql_where[] =  "(sw.stem IN (".join(',', $va_ft_stem_terms)."))";
 							}
@@ -1164,13 +1164,14 @@ class WLPlugSearchEngineSqlSearch extends BaseSearchPlugin implements IWLPlugSea
 		
 		if (!isset($pa_options['datatype'])) { $pa_options['datatype'] = null; }
 		
-		if ($pn_content_tablenum == 4) { 	// is attribute (4=ca_attributes)
-			preg_match('!([\d]+)$!u', $ps_content_fieldname, $va_matches);
-			$vn_field_num = intval($va_matches[1]);
+		if (preg_match("!^A([\d]+)$!", $ps_content_fieldname, $va_matches)) {
+			//preg_match('!([\d]+)$!u', $ps_content_fieldname, $va_matches);
+			$vn_field_num_proc = $va_matches[1];
+			$vn_field_num = $ps_content_fieldname;
 			
 			// do we need to index this (don't index attribute types that we'll search directly)
-			if (WLPlugSearchEngineSqlSearch::$s_metadata_elements[$vn_field_num]) {
-				switch(WLPlugSearchEngineSqlSearch::$s_metadata_elements[$vn_field_num]['datatype']) {
+			if (WLPlugSearchEngineSqlSearch::$s_metadata_elements[$vn_field_num_proc]) {
+				switch(WLPlugSearchEngineSqlSearch::$s_metadata_elements[$vn_field_num_proc]['datatype']) {
 					case 0:		//container
 					case 2:		//daterange
 					case 4:		//geocode
@@ -1188,14 +1189,14 @@ class WLPlugSearchEngineSqlSearch extends BaseSearchPlugin implements IWLPlugSea
 		} else {
 			switch($ps_content_fieldname) {
 				case '_hier_ancestors':
-					$vn_field_num = 255;
+					$vn_field_num = '_hier_ancestors';
 					break;
 				case '_count':
-					$vn_field_num = 254;
+					$vn_field_num = '_count';
 					break;
 				default:
 					// is regular field in some table
-					$vn_field_num = $this->getFieldNum($pn_content_tablenum, $ps_content_fieldname);
+					$vn_field_num = 'I'.$this->getFieldNum($pn_content_tablenum, $ps_content_fieldname);
 					break;
 			}
 		}
@@ -1230,7 +1231,7 @@ class WLPlugSearchEngineSqlSearch extends BaseSearchPlugin implements IWLPlugSea
 			$vn_table_num= (int)$va_tmp[0];
 			$vn_row_id= (int)$va_tmp[1];
 			$vn_content_table_num = (int)$va_tmp[2];
-			$vn_content_field_num = (int)$va_tmp[3];
+			$vn_content_field_num = $va_tmp[3];
 			$vn_content_row_id = (int)$va_tmp[4];
 			$vn_boost= (int)$va_tmp[5];
 			$vn_access= (int)$va_tmp[6];
@@ -1243,7 +1244,7 @@ class WLPlugSearchEngineSqlSearch extends BaseSearchPlugin implements IWLPlugSea
 				if(!strlen((string)$vs_word)) { continue; }
 				if (!($vn_word_id = (int)$this->getWordID((string)$vs_word))) { continue; }
 				
-				$va_row_sql[$vn_segment][] = '('.$vn_table_num.','.$vn_row_id.','.$vn_content_table_num.','.$vn_content_field_num.','.$vn_content_row_id.','.$vn_word_id.','.$vn_boost.','.$vn_access.')';	
+				$va_row_sql[$vn_segment][] = '('.$vn_table_num.','.$vn_row_id.','.$vn_content_table_num.',\''.$vn_content_field_num.'\','.$vn_content_row_id.','.$vn_word_id.','.$vn_boost.','.$vn_access.')';	
 				$vn_seq++;
 				
 				if (sizeof($va_row_sql[$vn_segment]) > $this->getOption('maxWordIndexInsertSegmentSize')) { $vn_segment++; }
