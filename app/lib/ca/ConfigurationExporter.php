@@ -212,7 +212,7 @@ final class ConfigurationExporter {
 	}
 	# -------------------------------------------------------
 	private function getListItemsAsDOM($pn_parent_id){
-		$qr_items = $this->opo_db->query("SELECT * FROM ca_list_items WHERE parent_id=?",$pn_parent_id);
+		$qr_items = $this->opo_db->query("SELECT * FROM ca_list_items WHERE parent_id=? AND deleted=0",$pn_parent_id);
 
 		if(!$qr_items->numRows()){
 			return false;
