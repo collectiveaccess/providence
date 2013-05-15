@@ -447,7 +447,7 @@
 				// set the field values array for this instance
 				$this->setFieldValuesArray($va_field_values_with_updated_attributes);
 				
-				$this->doSearchIndexing($va_fields_changed_array, true);
+				$this->doSearchIndexing($va_fields_changed_array);	// TODO: SHOULD SECOND PARAM (REINDEX) BE "TRUE"?
 				
 				
 				if ($vb_web_set_change_log_unit_id) { BaseModel::unsetChangeLogUnitID(); }
@@ -1642,7 +1642,9 @@
 				$t_dupe->setTransaction($this->getTransaction());
 			}
 			
-			return $t_dupe->copyAttributesTo($this->getPrimaryKey());
+			$vn_rc = $t_dupe->copyAttributesTo($this->getPrimaryKey());
+			$this->errors = $t_dupe->errors;
+			return $vn_rc;
 		}
 		# ------------------------------------------------------------------
 		// --- Methods to manage bindings between elements and tables

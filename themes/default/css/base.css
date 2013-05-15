@@ -1705,7 +1705,12 @@ select.searchSetsSelect {
 div.searchSetsToggle {
 	font-size: 9px;
 }
-a.searchSetsToggle {
+
+div.searchSetsBatchEdit {
+	font-size: 9px;
+}
+
+a.searchSetsToggle, a.searchSetsBatchEdit {
 	font-size: 9px;
 	text-decoration: none;
 }

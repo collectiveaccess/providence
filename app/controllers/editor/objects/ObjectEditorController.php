@@ -138,6 +138,77 @@
  		/**
  		 *
  		 */ 
+ 		public function GetAnnotations() {
+ 			$pn_representation_id = $this->request->getParameter('representation_id', pInteger);
+ 			$t_rep = new ca_object_representations($pn_representation_id);
+ 			
+ 			$va_annotations_raw = $t_rep->getAnnotations();
+ 			$va_annotations = array();
+ 			
+ 			foreach($va_annotations_raw as $vn_annotation_id => $va_annotation) {
+ 				$va_annotations[] = array(
+ 					'annotation_id' => $va_annotation['annotation_id'],
+ 					'x' => (float)$va_annotation['x'],
+ 					'y' => (float)$va_annotation['y'],
+ 					'w' => (float)$va_annotation['w'],
+ 					'h' => (float)$va_annotation['h'],
+ 					'label' => (string)$va_annotation['label'],
+ 					'description' => (string)$va_annotation['description'],
+ 					'type' => (string)$va_annotation['type_raw'],
+ 					'options' => $va_annotation['options']
+ 				);
+ 			}
+ 			
+ 			$this->view->setVar('annotations', $va_annotations);
+ 			$this->render('ajax_representation_annotations_json.php');
+ 		}
+ 		# -------------------------------------------------------
+ 		/**
+ 		 *
+ 		 */ 
+ 		public function SaveAnnotations() {
+ 			global $g_ui_locale_id;
+ 			$pn_representation_id = $this->request->getParameter('representation_id', pInteger);
+ 			$t_rep = new ca_object_representations($pn_representation_id);
+ 			
+ 			$pa_annotations = $this->request->getParameter('save', pArray);
+ 		
+ 			$va_annotation_ids = array();
+ 			if (is_array($pa_annotations)) {
+ 				foreach($pa_annotations as $vn_i => $va_annotation) {
+ 					$vs_label = (isset($va_annotation['label']) && ($va_annotation['label'])) ? $va_annotation['label'] : "???";
+ 					if (isset($va_annotation['annotation_id']) && ($vn_annotation_id = $va_annotation['annotation_id'])) {
+ 						// edit existing annotation
+ 						$t_rep->editAnnotation($vn_annotation_id, $g_ui_locale_id, $va_annotation, 0, 0);
+ 						$va_annotation_ids[$va_annotation['index']] = $vn_annotation_id;
+ 						// TODO: allow editing of label
+ 					} else {
+ 						// new annotation
+ 						$va_annotation_ids[$va_annotation['index']] = $t_rep->addAnnotation($vs_label, $g_ui_locale_id, $this->request->getUserID(), $va_annotation, 0, 0);
+ 					}
+ 				}
+ 			}
+ 			$va_annotations = array(
+ 				'error' => $t_rep->numErrors() ? join("; ", $t_rep->getErrors()) : null,
+ 				'annotation_ids' => $va_annotation_ids
+ 			);
+ 			
+ 			$pa_annotations = $this->request->getParameter('delete', pArray);
+ 			
+ 			if (is_array($pa_annotations)) {
+ 				foreach($pa_annotations as $vn_to_delete_annotation_id) {
+ 					$t_rep->removeAnnotation($vn_to_delete_annotation_id);
+ 				}
+ 			}
+ 			
+ 			
+ 			$this->view->setVar('annotations', $va_annotations);
+ 			$this->render('ajax_representation_annotations_json.php');
+ 		}
+ 		# -------------------------------------------------------
+ 		/**
+ 		 *
+ 		 */ 
  		public function ProcessMedia() {
  			list($vn_object_id, $t_object) = $this->_initView();
  			$pn_representation_id 	= $this->request->getParameter('representation_id', pInteger);

@@ -126,7 +126,7 @@ if (that.uiStyle == 'horizontal') {
 			if (!item_id) { that.setUpHierarchyLevel(0, that.useAsRootID ? that.useAsRootID : 0, 1, null, true); return; }
 			that.levelLists = [];
 			that.selectedItemIDs = [];
-			jQuery.getJSON(that.initDataUrl, { id: item_id, bundle: that.bundle}, function(data) {
+			jQuery.getJSON(that.initDataUrl, { id: item_id, bundle: that.bundle}, function(data, e, x) {
 				if (data.length) {
 					that.selectedItemIDs = data.join(';').split(';');
 					
@@ -141,8 +141,14 @@ if (that.uiStyle == 'horizontal') {
 				} else {
 					data = [that.useAsRootID ? that.useAsRootID : 0];
 				}
+				
+				if (data[0] == data[1]) {	// workaround for jQuery(?) but that replicates first item of list in json array
+					data.shift();
+				}
 				var l = 0;
+				console.log("mod", data);
 				jQuery.each(data, function(i, id) {
+					console.log("setup", i, id, item_id);
 					that.setUpHierarchyLevel(i, id, 1, item_id);
 					l++;
 				});
@@ -287,6 +293,29 @@ if (that.uiStyle == 'horizontal') {
 					that._queuedLoadsForLevel[l].splice(i,1);
 				}
 			}
+			
+			if (is_init) {
+				// attempt to renumber levels if required (sometimes first level is suppressed)
+				var needsLevelShift = true;
+				for(var k in itemIDsToLevelInfo) {
+					if (itemIDsToLevelInfo[k]['level'] === 0) {
+						needsLevelShift = false;
+						break;
+					}
+				}
+				
+				if (needsLevelShift) {
+					for(var k in itemIDsToLevelInfo) {
+						var oldLevel = itemIDsToLevelInfo[k]['level'];
+						var newLevel = oldLevel - 1;
+						var re = new RegExp("_" + oldLevel + "$");
+						itemIDsToLevelInfo[k]['newLevelDivID'] = itemIDsToLevelInfo[k]['newLevelDivID'].replace(re, "_" + newLevel);
+						itemIDsToLevelInfo[k]['newLevelListID'] = itemIDsToLevelInfo[k]['newLevelListID'].replace(re, "_" + newLevel);
+						itemIDsToLevelInfo[k]['level']--;
+					}
+				}
+			}
+			
 			if (!id_list.length) { return; }
 			
 			var start = 0;
@@ -298,6 +327,7 @@ if (that.uiStyle == 'horizontal') {
 					
 					if (!itemIDsToLevelInfo[item_id]) { return; }
 					var level = itemIDsToLevelInfo[item_id]['level'];
+					
 					var is_init = itemIDsToLevelInfo[item_id]['is_init'];
 					var newLevelDivID = itemIDsToLevelInfo[item_id]['newLevelDivID'];
 					var newLevelListID = itemIDsToLevelInfo[item_id]['newLevelListID'];

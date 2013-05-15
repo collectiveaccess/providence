@@ -765,8 +765,14 @@
  		public function createSetFromResult() {
  			global $g_ui_locale_id;
  			
- 			$va_row_ids = $this->opo_result_context->getResultList();
+ 			$vs_mode = $this->request->getParameter('mode', pString);
+ 			if ($vs_mode == 'from_checked') {
+ 				$va_row_ids = explode(";", $this->request->getParameter('item_ids', pString));
+ 			} else {
+ 				$va_row_ids = $this->opo_result_context->getResultList();
+ 			}
  			
+ 			$vs_set_code = null;
  			$vn_added_items_count = 0;
  			if (is_array($va_row_ids) && sizeof($va_row_ids)) {
 				$t_model = $this->opo_datamodel->getInstanceByTableName($this->ops_tablename, true);
@@ -778,7 +784,7 @@
 				$t_set->set('user_id', $this->request->getUserID());
 				$t_set->set('type_id', $this->request->config->get('ca_sets_default_type'));
 				$t_set->set('table_num', $t_model->tableNum());
-				$t_set->set('set_code', mb_substr(preg_replace("![^A-Za-z0-9_\-]+!", "_", $vs_set_name), 0, 100));
+				$t_set->set('set_code', $vs_set_code = mb_substr(preg_replace("![^A-Za-z0-9_\-]+!", "_", $vs_set_name), 0, 100));
 			
 				$t_set->insert();
 				
@@ -794,6 +800,7 @@
 			$this->view->setVar('set_id', $t_set->getPrimaryKey());
 			$this->view->setVar('t_set', $t_set);
 			$this->view->setVar('set_name', $vs_set_name);
+			$this->view->setVar('set_code', $vs_set_code);
 			$this->view->setVar('num_items_added', $vn_added_items_count);
  			$this->render('Results/ajax_create_set_from_result_json.php');
  		}

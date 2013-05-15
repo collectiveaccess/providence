@@ -443,7 +443,7 @@ class ca_objects extends BundlableLabelableBaseModelWithAttributes implements IB
 			// check if representation is in use anywhere else 
 			$qr_res = $this->getDb()->query("SELECT count(*) c FROM ca_objects_x_object_representations WHERE object_id <> ? AND representation_id = ?", (int)$this->getPrimaryKey(), (int)$va_rep["representation_id"]);
 			if ($qr_res->nextRow() && ($qr_res->get('c') == 0)) {
-				$this->removeRepresentation($va_rep["representation_id"]);
+				$this->removeRepresentation($va_rep["representation_id"], array('dontCheckPrimaryValue' => true));
 			}
 		}
 
@@ -490,15 +490,18 @@ class ca_objects extends BundlableLabelableBaseModelWithAttributes implements IB
 					
 					if ($t_object_x_rep->numErrors()) {
 						$this->errors = $t_object_x_rep->errors;
-						if ($vb_we_set_transaction) { $this->removeTransaction(false);}
+						if ($vb_we_set_transaction) { $o_t->rollback();}
 						return false;
 					}
 				}
 			}
+		} else {
+			if ($vb_we_set_transaction) { $o_t->rollback(); }
+			return false;
 		}
 		
 		
-		if ($vb_we_set_transaction) { $this->removeTransaction(true);}
+		if ($vb_we_set_transaction) { $o_t->commit();}
 		return $t_dupe;
 	}
 	# ------------------------------------------------------
@@ -1326,7 +1329,14 @@ class ca_objects extends BundlableLabelableBaseModelWithAttributes implements IB
 			}
 			$va_media[$qr_res->get('object_id')] = $va_media_tags;
 		}
-		return $va_media;
+		
+		// Preserve order of input ids
+		$va_media_sorted = array();
+		foreach($pa_ids as $vn_object_id) {
+			$va_media_sorted[$vn_object_id] = $va_media[$vn_object_id];
+		} 
+		
+		return $va_media_sorted;
 	}
 	# ------------------------------------------------------------------
 	/**

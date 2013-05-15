@@ -1,13 +1,13 @@
 <?php
 /* ----------------------------------------------------------------------
- * app/widgets/links/views/main_html.php : 
+ * editor/objects/ajax_representation_annotations_json.php : 
  * ----------------------------------------------------------------------
  * CollectiveAccess
  * Open-source collections management software
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2010-2012 Whirl-i-Gig
+ * Copyright 2013 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -25,14 +25,6 @@
  *
  * ----------------------------------------------------------------------
  */
- 
- 	$po_request			= $this->getVar('request');
-?>
 
-<div class="dashboardWidgetContentContainer">
-	<ul>
-		<li><a href="http://www.collectiveaccess.org"><?php print _t("Project website"); ?>: http://www.collectiveaccess.org</a></li>
-		<li><a href="http://docs.collectiveaccess.org"><?php print _t("Documentation"); ?>: http://docs.collectiveaccess.org</a></li>
-		<li><a href="http://www.collectiveaccess.org/forum/"><?php print _t("Forum"); ?>: http://www.collectiveaccess.org/forum/</a></li>
-	</ul>
-</div>
+	print json_encode($this->getVar('annotations'));	
+?>
