@@ -1924,11 +1924,11 @@ require_once(__CA_LIB_DIR__."/ca/ApplicationPluginManager.php");
 				foreach($va_tag_list as $vs_tag_to_test) {
 					switch($vs_bool) {
 						case 'OR':
-							if (isset($va_tag_list[$vs_tag_to_test]) && strlen($va_tag_list[$vs_tag_to_test])) { $vb_output = true; break(2); }			// any must be defined; if any is defined output
+							if (isset($va_tags[$vs_tag_to_test]) && strlen($va_tags[$vs_tag_to_test])) { $vb_output = true; break(2); }			// any must be defined; if any is defined output
 							break;
 						case 'AND':
 						default:
-							if (!isset($va_tag_list[$vs_tag_to_test]) || !strlen($va_tag_list[$vs_tag_to_test])) { $vb_output = false; break(2); }		// all must be defined; if any is not defined don't output
+							if (!isset($va_tags[$vs_tag_to_test]) || !strlen($va_tags[$vs_tag_to_test])) { $vb_output = false; break(2); }		// all must be defined; if any is not defined don't output
 							break;
 					}
 				}
