@@ -655,9 +655,10 @@ if (!$this->opo_engine->can('incremental_reindexing') || $pb_reindex_mode) {
 //
 // BEGIN: Index attributes in related tables
 //						
+							$vb_is_attr = false;
 							if (substr($vs_rel_field, 0, 14) === '_ca_attribute_') {
 								if (!preg_match('!^_ca_attribute_(.*)$!', $vs_rel_field, $va_matches)) { continue; }
-			
+								
 								if($va_data['DONT_INDEX'] && is_array($va_data['DONT_INDEX'])){
 									$vb_cont = false;
 									foreach($va_data["DONT_INDEX"] as $vs_exclude_type){
@@ -669,6 +670,8 @@ if (!$this->opo_engine->can('incremental_reindexing') || $pb_reindex_mode) {
 									if($vb_cont) continue; // skip excluded attribute type
 								}
 			
+								$vb_is_attr = true;
+								
 								$va_data['datatype'] = (int)$this->_getElementDataType($va_matches[1]);
 			
 								switch($va_data['datatype']) {
@@ -743,7 +746,11 @@ if (!$this->opo_engine->can('incremental_reindexing') || $pb_reindex_mode) {
 								case '_hier_ancestors':
 									break;
 								default:
-									$this->opo_engine->indexField($vn_related_tablenum, 'A'.$va_matches[1], $qr_res->get($vs_related_pk), trim($va_field_data[$vs_rel_field]), $va_rel_field_info);
+									if ($vb_is_attr) {
+										$this->opo_engine->indexField($vn_related_tablenum, 'A'.$va_matches[1], $qr_res->get($vs_related_pk), trim($va_field_data[$vs_rel_field]), $va_rel_field_info);
+									} else {
+										$this->opo_engine->indexField($vn_related_tablenum, $this->opo_datamodel->getFieldNum($vs_related_table, $vs_rel_field), $qr_res->get($vs_related_pk), trim($va_field_data[$vs_rel_field]), $va_rel_field_info);
+									}
 									break;	
 							}
 //
