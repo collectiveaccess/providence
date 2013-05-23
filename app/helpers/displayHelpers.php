@@ -1836,7 +1836,10 @@ require_once(__CA_LIB_DIR__."/ca/ApplicationPluginManager.php");
 				if (!isset($va_relationship_values[$vs_pk_val])) { $va_relationship_values[$vs_pk_val] = array(0 => null); }
 				
 				foreach($va_relationship_values[$vs_pk_val] as $vn_relation_id => $va_relationship_value_array) {
+					$vb_is_related = false;
+					$va_related_ids = array();
 					$va_val = null;
+					
 					if (isset($va_relationship_value_array[$vs_tag]) && !(isset($pa_options['showHierarchicalLabels']) && $pa_options['showHierarchicalLabels'] && ($vs_tag == 'label'))) {
 						$va_val = array($vs_val = $va_relationship_value_array[$vs_tag]);
 					} else {
@@ -1855,9 +1858,19 @@ require_once(__CA_LIB_DIR__."/ca/ApplicationPluginManager.php");
 									$vs_get_spec = $vs_tag;
 								}
 								
+								$va_spec_bits = explode(".", $vs_get_spec);
+								if ((sizeof($va_spec_bits) == 1) && ($o_dm->getTableNum($va_spec_bits[0]))) { 
+									$vs_get_spec .= ".preferred_labels";
+								}
 								$va_val = $qr_res->get($vs_get_spec, array_merge($pa_options, array('returnAsArray' => true)));
+								$vb_is_related = true;
+								$va_related_ids = $qr_res->get($va_tmp[0].".".$o_dm->getTablePrimaryKeyName($va_tmp[0]), array('returnAsArray' => true));
 							} else {
 								if ($va_tmp[0] == $ps_tablename) { array_shift($va_tmp); }	// get rid of primary table if it's in the field spec
+							
+								if (!sizeof($va_tmp)) {
+									$va_tmp[] = "preferred_labels";
+								}
 							
 								if (isset($pa_options['showHierarchicalLabels']) && $pa_options['showHierarchicalLabels']) {
 									if ($va_tmp[1] == 'preferred_labels') {
@@ -1892,6 +1905,10 @@ require_once(__CA_LIB_DIR__."/ca/ApplicationPluginManager.php");
 					
 				
 					if (is_array($va_val)) {
+						if($vb_is_related) { 
+							$va_val = caCreateLinksFromText($va_val, $va_tmp[0], $va_related_ids); 
+						}
+						
 						foreach($va_val as $vn_j => $vs_val) {
 							$va_tag_val_list[$vn_i][$vn_j][$vs_tag] = $vs_val;
 							if ((is_array($vs_val) && (sizeof($vs_val))) || (strlen($vs_val) > 0)) {
