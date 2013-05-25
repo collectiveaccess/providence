@@ -1165,7 +1165,6 @@ class WLPlugSearchEngineSqlSearch extends BaseSearchPlugin implements IWLPlugSea
 		if (!isset($pa_options['datatype'])) { $pa_options['datatype'] = null; }
 		
 		if (preg_match("!^A([\d]+)$!", $ps_content_fieldname, $va_matches)) {
-			//preg_match('!([\d]+)$!u', $ps_content_fieldname, $va_matches);
 			$vn_field_num_proc = $va_matches[1];
 			$vn_field_num = $ps_content_fieldname;
 			
@@ -1196,7 +1195,12 @@ class WLPlugSearchEngineSqlSearch extends BaseSearchPlugin implements IWLPlugSea
 					break;
 				default:
 					// is regular field in some table
-					$vn_field_num = 'I'.$this->getFieldNum($pn_content_tablenum, $ps_content_fieldname);
+					if (is_numeric($ps_content_fieldname)) {
+						$vn_field_num = $ps_content_fieldname;
+					} else {
+						$vn_field_num = $this->getFieldNum($pn_content_tablenum, $ps_content_fieldname);
+					}
+					$vn_field_num = "I{$vn_field_num}";
 					break;
 			}
 		}
@@ -1318,26 +1322,26 @@ class WLPlugSearchEngineSqlSearch extends BaseSearchPlugin implements IWLPlugSea
 		}
 	}
 	# ------------------------------------------------
-	public function removeRowIndexing($pn_subject_tablenum, $pn_subject_row_id, $pn_field_table_num=null, $pn_field_num=null, $pn_field_row_id=null) {
+	public function removeRowIndexing($pn_subject_tablenum, $pn_subject_row_id, $ps_field_table_num=null, $pn_field_num=null, $pn_field_row_id=null) {
 	
 		//print "[SqlSearchDebug] removeRowIndexing: $pn_subject_tablenum/$pn_subject_row_id<br>\n"; 
 		
 		// remove dependent row indexing
-		if ($pn_subject_tablenum && $pn_subject_row_id && $pn_field_table_num && $pn_field_row_id && strlen($pn_field_num)) {
-			//print "DELETE ROW WITH FIELD NUM $pn_subject_tablenum/$pn_subject_row_id/$pn_field_table_num/$pn_field_num/$pn_field_row_id<br>";
-			return $this->opqr_delete_with_field_row_id_and_num->execute($pn_subject_tablenum, $pn_subject_row_id, $pn_field_table_num, $pn_field_num, $pn_field_row_id);
+		if ($pn_subject_tablenum && $pn_subject_row_id && $ps_field_table_num && $pn_field_row_id && strlen($pn_field_num)) {
+			//print "DELETE ROW WITH FIELD NUM $pn_subject_tablenum/$pn_subject_row_id/$ps_field_table_num/$pn_field_num/$pn_field_row_id<br>";
+			return $this->opqr_delete_with_field_row_id_and_num->execute($pn_subject_tablenum, $pn_subject_row_id, $ps_field_table_num, $pn_field_num, $pn_field_row_id);
 		} else {
-			if ($pn_subject_tablenum && $pn_subject_row_id && $pn_field_table_num && $pn_field_row_id) {
-				//print "DELETE ROW $pn_subject_tablenum/$pn_subject_row_id/$pn_field_table_num/$pn_field_row_id<br>";
-				return $this->opqr_delete_with_field_row_id->execute($pn_subject_tablenum, $pn_subject_row_id, $pn_field_table_num, $pn_field_row_id);
+			if ($pn_subject_tablenum && $pn_subject_row_id && $ps_field_table_num && $pn_field_row_id) {
+				//print "DELETE ROW $pn_subject_tablenum/$pn_subject_row_id/$ps_field_table_num/$pn_field_row_id<br>";
+				return $this->opqr_delete_with_field_row_id->execute($pn_subject_tablenum, $pn_subject_row_id, $ps_field_table_num, $pn_field_row_id);
 			} else {
-				if ($pn_field_table_num && !is_null($pn_field_num)) {
-					//print "DELETE FIELD $pn_subject_tablenum/$pn_subject_row_id/$pn_field_table_num/$pn_field_num<br>";
-					return $this->opqr_delete_with_field_num->execute($pn_subject_tablenum, $pn_subject_row_id, $pn_field_table_num, $pn_field_num);
+				if ($ps_field_table_num && !is_null($pn_field_num)) {
+					//print "DELETE FIELD $pn_subject_tablenum/$pn_subject_row_id/$ps_field_table_num/$pn_field_num<br>";
+					return $this->opqr_delete_with_field_num->execute($pn_subject_tablenum, $pn_subject_row_id, $ps_field_table_num, $pn_field_num);
 				} else {
-					if (!$pn_subject_tablenum && !$pn_subject_row_id && $pn_field_table_num && $pn_field_row_id) {
-						//print "DELETE DEP $pn_field_table_num/$pn_field_row_id<br>";
-						$this->opqr_delete_dependent_sql->execute($pn_field_table_num, $pn_field_row_id);
+					if (!$pn_subject_tablenum && !$pn_subject_row_id && $ps_field_table_num && $pn_field_row_id) {
+						//print "DELETE DEP $ps_field_table_num/$pn_field_row_id<br>";
+						$this->opqr_delete_dependent_sql->execute($ps_field_table_num, $pn_field_row_id);
 					} else {
 						//print "DELETE ALL $pn_subject_tablenum/$pn_subject_row_id<br>";
 						return $this->opqr_delete->execute($pn_subject_tablenum, $pn_subject_row_id);
@@ -1347,10 +1351,17 @@ class WLPlugSearchEngineSqlSearch extends BaseSearchPlugin implements IWLPlugSea
 		}
 	}
 	# ------------------------------------------------
-	public function updateIndexingInPlace($pn_subject_tablenum, $pa_subject_row_ids, $pn_content_tablenum, $pn_content_fieldnum, $pn_content_row_id, $pm_content, $pa_options=null) {
+	public function updateIndexingInPlace($pn_subject_tablenum, $pa_subject_row_ids, $pn_content_tablenum, $ps_content_fieldnum, $pn_content_row_id, $pm_content, $pa_options=null) {
+		
+		if ($pn_content_tablenum == 4) {
+			$ps_content_fieldnum = "A{$ps_content_fieldnum}";
+		} else {
+			$ps_content_fieldnum = "I{$ps_content_fieldnum}";
+		}
+		
 		// Find existing indexing for this subject and content 	
 		foreach($pa_subject_row_ids as $vn_subject_row_id) {
-			$this->removeRowIndexing($pn_subject_tablenum, $vn_subject_row_id, $pn_content_tablenum, $pn_content_fieldnum, $pn_content_row_id);
+			$this->removeRowIndexing($pn_subject_tablenum, $vn_subject_row_id, $pn_content_tablenum, $ps_content_fieldnum, $pn_content_row_id);
 		}
 		
 		$va_words = $this->_tokenize($pm_content);
@@ -1370,16 +1381,16 @@ class WLPlugSearchEngineSqlSearch extends BaseSearchPlugin implements IWLPlugSea
 		$pn_subject_tablenum = (int)$pn_subject_tablenum;
 		$vn_row_id = (int)$vn_row_id;
 		$pn_content_tablenum = (int)$pn_content_tablenum;
-		$pn_content_fieldnum = (int)$pn_content_fieldnum;
 		$pn_content_row_id = (int)$pn_content_row_id;
 		$vn_boost = (int)$vn_boost;
 		$vn_access = (int)$vn_access;
+		
 		
 		foreach($pa_subject_row_ids as $vn_row_id) {
 			$vn_seq = 0;
 			foreach($va_words as $vs_word) {
 				if (!($vn_word_id = $this->getWordID($vs_word))) { continue; }
-				$va_row_insert_sql[] = "(".$pn_subject_tablenum.",".$vn_row_id.",".$pn_content_tablenum.",".$pn_content_fieldnum.",".$pn_content_row_id.", ".$vn_word_id.", ".$vn_boost.",".$vn_private.")";
+				$va_row_insert_sql[] = "({$pn_subject_tablenum}, {$vn_row_id}, {$pn_content_tablenum}, '{$ps_content_fieldnum}', {$pn_content_row_id}, {$vn_word_id}, {$vn_boost}, {$vn_private})";
 				$vn_seq++;
 			}
 		}
