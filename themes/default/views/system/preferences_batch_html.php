@@ -74,3 +74,5 @@
 	print $vs_control_box;
 ?>
 </div>
+
+	<div class="editorBottomPadding"><!-- empty --></div>
