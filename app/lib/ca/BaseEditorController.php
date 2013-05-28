@@ -38,12 +38,10 @@
  	require_once(__CA_MODELS_DIR__."/ca_metadata_elements.php");
  	require_once(__CA_MODELS_DIR__."/ca_attributes.php");
  	require_once(__CA_MODELS_DIR__."/ca_attribute_values.php");
- 	require_once(__CA_MODELS_DIR__."/ca_bundle_mappings.php");
  	require_once(__CA_MODELS_DIR__."/ca_bundle_displays.php");
  	require_once(__CA_LIB_DIR__."/core/Datamodel.php");
  	require_once(__CA_LIB_DIR__."/ca/ApplicationPluginManager.php");
  	require_once(__CA_LIB_DIR__."/ca/ResultContext.php");
-	require_once(__CA_LIB_DIR__."/ca/ImportExport/DataExporter.php");
 	require_once(__CA_LIB_DIR__."/core/Logging/Eventlog.php");
  
  	class BaseEditorController extends ActionController {
@@ -1327,10 +1325,10 @@
  			list($vn_subject_id, $t_subject) = $this->_initView();
 			$pn_mapping_id = $this->request->getParameter('mapping_id', pInteger);
 			
-			$o_export = new DataExporter();
-			$this->view->setVar('export_mimetype', $o_export->exportMimetype($pn_mapping_id));
-			$this->view->setVar('export_data', $o_export->export($pn_mapping_id, $t_subject, null, array('returnOutput' => true, 'returnAsString' => true)));
-			$this->view->setVar('export_filename', preg_replace('![\W]+!', '_', substr($t_subject->getLabelForDisplay(), 0, 40).'_'.$o_export->exportTarget($pn_mapping_id)).'.'.$o_export->exportFileExtension($pn_mapping_id));
+			//$o_export = new DataExporter();
+			//$this->view->setVar('export_mimetype', $o_export->exportMimetype($pn_mapping_id));
+			//$this->view->setVar('export_data', $o_export->export($pn_mapping_id, $t_subject, null, array('returnOutput' => true, 'returnAsString' => true)));
+			//$this->view->setVar('export_filename', preg_replace('![\W]+!', '_', substr($t_subject->getLabelForDisplay(), 0, 40).'_'.$o_export->exportTarget($pn_mapping_id)).'.'.$o_export->exportFileExtension($pn_mapping_id));
 			
 			$this->render('../generic/export_xml.php');
 		}
