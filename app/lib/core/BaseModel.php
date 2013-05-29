@@ -2200,7 +2200,6 @@ class BaseModel extends BaseObject {
 					}
 					// Update instance cache
 					BaseModel::$s_instance_cache[$vs_table_name][$vn_id] = $this->_FIELD_VALUES;
-					
 					return $vn_id;
 				} else {
 					foreach($o_db->errors() as $o_e) {
@@ -7716,7 +7715,7 @@ $pa_options["display_form_field_tips"] = true;
 	 * @param array $pa_options Array of additional options:
 	 *		allowDuplicates = if set to true, attempts to add a relationship that already exists will succeed. Default is false – duplicate relationships will not be created.
 	 *		setErrorOnDuplicate = if set to true, an error will be set if an attempt is made to add a duplicate relationship. Default is false – don't set error. addRelationship() will always return false when creation of a duplicate relationship fails, no matter how the setErrorOnDuplicate option is set.
-	 * @return boolean True on success, false on error.
+	 * @return BaseRelationshipModel Loaded relationship model instance on success, false on error.
 	 */
 	public function addRelationship($pm_rel_table_name_or_num, $pn_rel_id, $pm_type_id=null, $ps_effective_date=null, $ps_source_info=null, $ps_direction=null, $pn_rank=null, $pa_options=null) {
 		if(!($va_rel_info = $this->_getRelationshipInfo($pm_rel_table_name_or_num))) { 
@@ -7724,6 +7723,10 @@ $pa_options["display_form_field_tips"] = true;
 			return false; 
 		}
 		$t_item_rel = $va_rel_info['t_item_rel'];
+		$t_item_rel->clear();
+		//if ($this->inTransaction()) {
+		//	$t_item_rel->setTransaction($this->getTransaction());
+		//}
 		
 		if ($pm_type_id && !is_numeric($pm_type_id)) {
 			$t_rel_type = new ca_relationship_types();
@@ -7771,6 +7774,7 @@ $pa_options["display_form_field_tips"] = true;
 				$this->errors = $t_item_rel->errors;
 				return false;
 			}
+			return $t_item_rel;
 		} else {
 			switch(sizeof($va_rel_info['path'])) {
 				case 3:		// many-to-many relationship
@@ -7799,6 +7803,8 @@ $pa_options["display_form_field_tips"] = true;
 						$this->errors = $t_item_rel->errors;
 						return false;
 					}
+					
+					return $t_item_rel;
 					break;
 				case 2:		// many-to-one relationship
 					if ($this->tableName() == $va_rel_info['rel_keys']['one_table']) {
@@ -7823,6 +7829,7 @@ $pa_options["display_form_field_tips"] = true;
 								return false;
 							}
 						}
+						return $t_item_rel;
 					} else {
 						$this->setMode(ACCESS_WRITE);
 						$this->set($va_rel_info['rel_keys']['many_table_field'], $pn_rel_id);
@@ -7831,6 +7838,7 @@ $pa_options["display_form_field_tips"] = true;
 						if ($this->numErrors()) {
 							return false;
 						}
+						return $this;
 					}
 					break;
 				default:
@@ -7838,7 +7846,7 @@ $pa_options["display_form_field_tips"] = true;
 					break;
 			}
 		}		
-		return true;
+		return false;
 	}
 	# --------------------------------------------------------------------------------------------
 	/**
@@ -7854,7 +7862,7 @@ $pa_options["display_form_field_tips"] = true;
 	 * @param array $pa_options Array of additional options:
 	 *		allowDuplicates = if set to true, attempts to edit a relationship to match one that already exists will succeed. Default is false – duplicate relationships will not be created.
 	 *		setErrorOnDuplicate = if set to true, an error will be set if an attempt is made to create a duplicate relationship. Default is false – don't set error. editRelationship() will always return false when editing of a relationship fails, no matter how the setErrorOnDuplicate option is set.
-	 * @return boolean True on success, false on error.
+	 * @return BaseRelationshipModel Loaded relationship model instance on success, false on error.
 	 */
 	public function editRelationship($pm_rel_table_name_or_num, $pn_relation_id, $pn_rel_id, $pm_type_id=null, $ps_effective_date=null, $pa_source_info=null, $ps_direction=null, $pn_rank=null, $pa_options=null) {
 		if(!($va_rel_info = $this->_getRelationshipInfo($pm_rel_table_name_or_num))) { 
@@ -7909,6 +7917,7 @@ $pa_options["display_form_field_tips"] = true;
 					$this->errors = $t_item_rel->errors;
 					return false;
 				}
+				return $t_item_rel;
 			}
 		} else {
 			switch(sizeof($va_rel_info['path'])) {
@@ -7938,7 +7947,7 @@ $pa_options["display_form_field_tips"] = true;
 							return false;
 						}
 						
-						return true;
+						return $t_item_rel;
 					}
 				case 2:		// many-to-one relations
 					if ($this->tableName() == $va_rel_info['rel_keys']['one_table']) {
@@ -7951,6 +7960,7 @@ $pa_options["display_form_field_tips"] = true;
 								$this->errors = $t_item_rel->errors;
 								return false;
 							}
+							return $t_item_rel;
 						}
 						
 						if ($t_item_rel->load($pn_rel_id)) {
@@ -7962,6 +7972,7 @@ $pa_options["display_form_field_tips"] = true;
 								$this->errors = $t_item_rel->errors;
 								return false;
 							}
+							return $t_item_rel;
 						}
 					} else {
 						$this->setMode(ACCESS_WRITE);
@@ -7971,6 +7982,7 @@ $pa_options["display_form_field_tips"] = true;
 						if ($this->numErrors()) {
 							return false;
 						}
+						return $this;
 					}
 					break;
 				default:

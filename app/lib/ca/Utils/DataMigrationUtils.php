@@ -140,6 +140,7 @@
 				unset($pa_values['idno']);
 				unset($pa_values['source_id']);
 				unset($pa_values['lifespan']);
+				unset($pa_values['_interstitial']);
 				
 				$t_entity->insert();
 				
