@@ -35,9 +35,7 @@
   */
   
  	require_once(__CA_LIB_DIR__.'/ca/ResultContext.php');
-	require_once(__CA_LIB_DIR__."/ca/ImportExport/DataExporter.php");
  	require_once(__CA_MODELS_DIR__.'/ca_bundle_displays.php');
- 	require_once(__CA_MODELS_DIR__."/ca_bundle_mappings.php");
  	require_once(__CA_MODELS_DIR__."/ca_sets.php");
 	require_once(__CA_LIB_DIR__."/core/Parsers/ZipFile.php");
 	require_once(__CA_LIB_DIR__."/core/AccessRestrictions.php");
@@ -221,8 +219,8 @@
  			
  			# --- export options used to export search results - in tools show hide under page bar
  			$vn_table_num = $this->opo_datamodel->getTableNum($this->ops_tablename);
- 			$t_mappings = new ca_bundle_mappings();
-			$va_mappings = $t_mappings->getAvailableMappings($vn_table_num, array('E', 'X'));
+ 			//$t_mappings = new ca_bundle_mappings();
+			$va_mappings = array(); //$t_mappings->getAvailableMappings($vn_table_num, array('E', 'X'));
 			
 			$va_export_options = array(
 				array(
@@ -647,32 +645,32 @@
 					$vs_mimetype = "text/plain";
 				default:
 					if ((int)$ps_output_type) {
-						$o_exporter = new DataExporter();
-						if (!sizeof($va_buf = $o_exporter->export((int)$ps_output_type, $po_result, null, array('returnOutput' => true)))) {
-							$this->response->setHTTPResponseCode(206, 'No action');		// nothing to export
-							return;
-						}
-						$vs_export_target = $o_exporter->exportTarget((int)$ps_output_type);
-						$vs_file_extension = $o_exporter->exportFileExtension((int)$ps_output_type);
-						$vs_output_file_name = mb_substr(preg_replace("/[^A-Za-z0-9\-]+/", '_', $ps_output_filename.'_'.$vs_export_target), 0, 30);
-						if(sizeof($va_buf) == 1) {		// single record - output as file
-							header("Content-Disposition: attachment; filename=export_".$vs_output_file_name.".".$vs_file_extension);
-							header("Content-type: text/xml");
-							$this->opo_response->addContent($va_buf[0], 'view');	
-							return;
-						} else {		// more than one record... create a ZIP file
-							header("Content-Disposition: attachment; filename=export_".$vs_output_file_name.".zip");
-							header("Content-type: application/zip");
-							$o_zip = new ZipFile();
-							
-							$vn_i = 1;
-							foreach($va_buf as $vs_buf) {
-								$o_zip->addFile($vs_buf, $vs_export_target.'_'.$vn_i.'.'.$vs_file_extension);
-								$vn_i++;
-							}
-							$this->opo_response->addContent($o_zip->output(ZIPFILE_RETURN_STRING), 'view');	
-							return;
-						}
+						// $o_exporter = new DataExporter();
+// 						if (!sizeof($va_buf = $o_exporter->export((int)$ps_output_type, $po_result, null, array('returnOutput' => true)))) {
+// 							$this->response->setHTTPResponseCode(206, 'No action');		// nothing to export
+// 							return;
+// 						}
+// 						$vs_export_target = $o_exporter->exportTarget((int)$ps_output_type);
+// 						$vs_file_extension = $o_exporter->exportFileExtension((int)$ps_output_type);
+// 						$vs_output_file_name = mb_substr(preg_replace("/[^A-Za-z0-9\-]+/", '_', $ps_output_filename.'_'.$vs_export_target), 0, 30);
+// 						if(sizeof($va_buf) == 1) {		// single record - output as file
+// 							header("Content-Disposition: attachment; filename=export_".$vs_output_file_name.".".$vs_file_extension);
+// 							header("Content-type: text/xml");
+// 							$this->opo_response->addContent($va_buf[0], 'view');	
+// 							return;
+// 						} else {		// more than one record... create a ZIP file
+// 							header("Content-Disposition: attachment; filename=export_".$vs_output_file_name.".zip");
+// 							header("Content-type: application/zip");
+// 							$o_zip = new ZipFile();
+// 							
+// 							$vn_i = 1;
+// 							foreach($va_buf as $vs_buf) {
+// 								$o_zip->addFile($vs_buf, $vs_export_target.'_'.$vn_i.'.'.$vs_file_extension);
+// 								$vn_i++;
+// 							}
+// 							$this->opo_response->addContent($o_zip->output(ZIPFILE_RETURN_STRING), 'view');	
+// 							return;
+// 						}
 					}
 					$vs_delimiter = "\t";	
 					break;
