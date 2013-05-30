@@ -1462,8 +1462,8 @@
 			$this->view->setVar('screen', $this->request->getActionExtra());						// name of screen
 			$this->view->setVar('result_context', $this->getResultContext());
 			
-			$t_mappings = new ca_bundle_mappings();
-			$va_mappings = $t_mappings->getAvailableMappings($t_item->tableNum(), array('E', 'X'));
+//			$t_mappings = new ca_bundle_mappings();
+			$va_mappings = array(); //$t_mappings->getAvailableMappings($t_item->tableNum(), array('E', 'X'));
 			
 			$va_export_options = array();
 			foreach($va_mappings as $vn_mapping_id => $va_mapping_info) {
