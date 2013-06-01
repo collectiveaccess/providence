@@ -3911,7 +3911,7 @@ if (!$va_facet_info['show_all_when_first_facet'] || ($this->numCriteria() > 0)) 
 			$va_type_list = $t_instance->getTypeList();
 			
 			foreach($pa_type_codes_or_ids as $vs_code_or_id) {
-				if (!$vs_code_or_id) { continue; }
+				if (!trim($vs_code_or_id)) { continue; }
 				if (!is_numeric($vs_code_or_id)) {
 					$vn_type_id = $t_list->getItemIDFromList($vs_list_name, $vs_code_or_id);
 				} else {

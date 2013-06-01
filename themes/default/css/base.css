@@ -2583,6 +2583,7 @@ div.hierarchyBrowserCurrentSelection {
 
 span.hierarchyBrowserCurrentSelectionText {
 	font-weight: normal;
+	font-style: italic;
 }
 
 div.hierarchyBrowserSearchBar {
