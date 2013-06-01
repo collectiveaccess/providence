@@ -5775,7 +5775,7 @@
     </metadataElement>
     
 
-    <metadataElement code="number" datatype="Numeric">
+    <metadataElement code="number" datatype="Text">
       <labels>
         <label locale="en_US">
           <name>Number</name>
@@ -5799,7 +5799,7 @@
         </restriction>        
       </typeRestrictions>
     </metadataElement>
-    <metadataElement code="no_paper" datatype="Numeric">
+    <metadataElement code="no_paper" datatype="Text">
       <labels>
         <label locale="en_US">
           <name>No. Paper</name>
