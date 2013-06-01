@@ -1540,6 +1540,7 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 							if (!$vs_refinery) { continue; }
 							if ($o_refinery = RefineryManager::getRefineryInstance($vs_refinery)) {
 								$va_refined_values = $o_refinery->refine($va_content_tree, $va_group, $va_item, $va_row, array('source' => $ps_source, 'subject' => $t_subject, 'locale_id' => $vn_locale_id, 'log' => $o_log, 'transaction' => $o_trans, 'importEvent' => $o_event, 'importEventSource' => $pn_row));
+							
 								if ($o_refinery->returnsMultipleValues()) {
 									$va_p = array_pop($va_parent);
 									foreach($va_refined_values as $va_refined_value) {
@@ -1804,6 +1805,26 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 							unset($va_data_for_rel_table['_parent_id']);
 							
 							switch($vs_table_name) {
+								case 'ca_objects':
+									if (
+										(isset($va_element_data['idno']['idno']) && ($t_object = ca_objects::find(array('idno' => $va_element_data['idno']['idno']))) && ($vn_rel_id = $t_object->getPrimaryKey()))
+										||
+										($vn_rel_id = DataMigrationUtils::getObjectID($va_element_data['preferred_labels'], $va_element_data['_type'], $vn_locale_id, $va_data_for_rel_table, array('log' => $o_log, 'transaction' => $o_trans, 'importEvent' => $o_event, 'importEventSource' => $pn_row)))
+									) {
+										if (!$va_element_data['_relationship_type']) { break; }
+										$t_subject->addRelationship($vs_table_name, $vn_rel_id, trim($va_element_data['_relationship_type']));
+										
+										if ($vs_error = DataMigrationUtils::postError($t_subject, _t("[%1] Could not add related object with relationship %2", $vs_idno, trim($va_element_data['_relationship_type'])), __CA_DATA_IMPORT_ERROR__, array('dontOutputLevel' => true, 'dontPrint' => true))) {
+											ca_data_importers::logImportError($vs_error, $va_log_import_error_opts);
+											if ($vs_item_error_policy == 'stop') {
+												$o_log->logAlert(_t('Import stopped due to mapping error policy'));
+												if($vb_use_ncurses) { ncurses_end(); }
+												$o_trans->rollback();
+												return false;
+											}
+										}
+									}
+									break;
 								case 'ca_entities':
 									if (
 										(isset($va_element_data['idno']['idno']) && ($t_entity = ca_entities::find(array('idno' => $va_element_data['idno']['idno']))) && ($vn_rel_id = $t_entity->getPrimaryKey()))
@@ -1916,6 +1937,20 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 										$t_subject->addRelationship($vs_table_name, $vn_rel_id, trim($va_element_data['_relationship_type']));
 										
 										if ($vs_error = DataMigrationUtils::postError($t_subject, _t("[%1] Could not add related list item with relationship %2:", $vs_idno, trim($va_element_data['_relationship_type'])), __CA_DATA_IMPORT_ERROR__, array('dontOutputLevel' => true, 'dontPrint' => true))) {
+											ca_data_importers::logImportError($vs_error, $va_log_import_error_opts);
+											if ($vs_item_error_policy == 'stop') {
+												$o_log->logAlert(_t('Import stopped due to mapping error policy'));
+												if($vb_use_ncurses) { ncurses_end(); }
+												$o_trans->rollback();
+												return false;
+											}
+										}
+									}
+									break;
+								case 'ca_object_representations':
+									if (($vs_subject_table_name == 'ca_objects') && $va_element_data['media']['media']) {
+										if (!($t_subject->addRepresentation($va_element_data['media']['media'], "front", $vn_locale_id, 0, 0, true, $va_element_data))) {
+											$vs_error = join("; ", $t_subject->getErrors());
 											ca_data_importers::logImportError($vs_error, $va_log_import_error_opts);
 											if ($vs_item_error_policy == 'stop') {
 												$o_log->logAlert(_t('Import stopped due to mapping error policy'));
