@@ -1949,7 +1949,9 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 									break;
 								case 'ca_object_representations':
 									if (($vs_subject_table_name == 'ca_objects') && $va_element_data['media']['media']) {
-										if (!($t_subject->addRepresentation($va_element_data['media']['media'], "front", $vn_locale_id, 0, 0, true, $va_element_data))) {
+										$va_attributes = $va_element_data;
+										unset($va_attributes['media']);
+										if (!($t_subject->addRepresentation($va_element_data['media']['media'], isset($va_element_data['_type']) ? $va_element_data['_type'] : caGetDefaultItemID('object_representation_types'), $vn_locale_id, 0, 0, true, $va_attributes))) {
 											$vs_error = join("; ", $t_subject->getErrors());
 											ca_data_importers::logImportError($vs_error, $va_log_import_error_opts);
 											if ($vs_item_error_policy == 'stop') {
