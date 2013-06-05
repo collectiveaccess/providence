@@ -416,7 +416,7 @@ class SearchIndexer extends SearchBase {
 											/* index each element of the container */
 											foreach($vo_attribute->getValues() as $vo_value) {
 												$vn_list_id = $this->_getElementListID($vo_value->getElementID());											
-												$this->opo_engine->indexField(4, "A".$vo_value->getElementID(), $vo_attribute->getAttributeID(), $vo_value->getDisplayValue($vn_list_id), $va_data);	// 4 = ca_attributes																																															
+												$this->opo_engine->indexField($pn_subject_tablenum, "A".$vo_value->getElementID(), $vo_attribute->getAttributeID(), $vo_value->getDisplayValue($vn_list_id), $va_data);																																															
 											}
 										}
 									} else {
