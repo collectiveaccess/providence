@@ -17124,6 +17124,12 @@
             <placement code="hier_location">
               <bundle>hierarchy_location</bundle>
             </placement>
+            <placement code="ca_collections">
+              <bundle>ca_collections</bundle>
+               <settings>
+                <setting name="label" locale="en_US">Related Collection</setting>
+              </settings>
+             </placement>
              <placement code="ca_attribute_wtClippings">
               <bundle>ca_attribute_wtClippings</bundle>
             </placement>
@@ -17242,6 +17248,12 @@
             <placement code="hier_location">
               <bundle>hierarchy_location</bundle>
             </placement>
+            <placement code="ca_collections">
+              <bundle>ca_collections</bundle>
+               <settings>
+                <setting name="label" locale="en_US">Related Collection</setting>
+              </settings>
+             </placement>
             <placement code="ca_attribute_wtThree">
               <bundle>ca_attribute_wtThree</bundle>
               </placement>
@@ -17331,6 +17343,12 @@
             <placement code="hier_location">
               <bundle>hierarchy_location</bundle>
             </placement>
+            <placement code="ca_collections">
+              <bundle>ca_collections</bundle>
+               <settings>
+                <setting name="label" locale="en_US">Related Collection</setting>
+              </settings>
+             </placement>
             <placement code="ca_attribute_wtPhotographic">
               <bundle>ca_attribute_wtPhotographic</bundle>
               </placement>
@@ -17427,6 +17445,12 @@
             <placement code="hier_location">
               <bundle>hierarchy_location</bundle>
             </placement>
+            <placement code="ca_collections">
+              <bundle>ca_collections</bundle>
+               <settings>
+                <setting name="label" locale="en_US">Related Collection</setting>
+              </settings>
+             </placement>
             <placement code="ca_attribute_wtPosters">
               <bundle>ca_attribute_wtPosters</bundle>
               </placement>
@@ -17528,6 +17552,12 @@
             <placement code="hier_location">
               <bundle>hierarchy_location</bundle>
             </placement>
+            <placement code="ca_collections">
+              <bundle>ca_collections</bundle>
+               <settings>
+                <setting name="label" locale="en_US">Related Collection</setting>
+              </settings>
+             </placement>
             <placement code="ca_attribute_wtPlans">
               <bundle>ca_attribute_wtPlans</bundle>
               </placement>
@@ -17629,6 +17659,12 @@
             <placement code="hier_location">
               <bundle>hierarchy_location</bundle>
             </placement>
+            <placement code="ca_collections">
+              <bundle>ca_collections</bundle>
+               <settings>
+                <setting name="label" locale="en_US">Related Collection</setting>
+              </settings>
+             </placement>
              <placement code="ca_attribute_wtProofs">
               <bundle>ca_attribute_wtProofs</bundle>
               </placement>
@@ -17717,6 +17753,12 @@
             <placement code="hier_location">
               <bundle>hierarchy_location</bundle>
             </placement>
+            <placement code="ca_collections">
+              <bundle>ca_collections</bundle>
+               <settings>
+                <setting name="label" locale="en_US">Related Collection</setting>
+              </settings>
+             </placement>
             <placement code="ca_occurrences">
               <bundle>ca_occurrences</bundle>
               <settings>
@@ -18233,7 +18275,7 @@
         </screen>
       </screens>
     </userInterface>
-    <userInterface code="standard_occurrences_ui" type="ca_occurrences">
+    <userInterface code="occurrences_ui" type="ca_occurrences">
       <labels>
         <label locale="en_US">
           <name>Occurrences editor</name>
@@ -18336,7 +18378,7 @@
                 <setting name="restrict_to_lists">visual_works</setting>
                 <setting name="restrict_to_lists">exchange_media</setting>
                 <setting name="restrict_to_lists">information_forms</setting>
-                <setting name="label" locale="en_US">Art &amp; Architecture Thesaurus</setting>
+                <setting name="label" locale="en_US">Art &amp; Architecture Thesaurus/Occupation</setting>
                 <setting name="add_label" locale="en_US">Add subject</setting>
               </settings>
             </placement>
@@ -18884,6 +18926,8 @@
                <settings>
                 <setting name="label" locale="en_US">Related Objects</setting>
                 <setting name="add_label" locale="en_US">Add related objects</setting>
+                <setting name="list_format">list</setting>
+                <setting name="display_template"><![CDATA[(^ca_objects.idno) <l>^ca_objects.preferred_labels</l> <ifdef code="ca_occurrences.preferred_labels">(Work: </ifdef><l>^ca_occurrences.preferred_labels</l><ifdef code="ca_occurrences.preferred_labels">)</ifdef>]]></setting>
               </settings>
             </placement>
             <placement code="ca_entities">
@@ -22448,6 +22492,60 @@
       </types>
     </relationshipTable>
   </relationshipTypes>
+  <displays>
+  <display code="hierarchy" type="ca_collections" system="1">
+    <labels>
+      <label locale="en_US">
+        <name>Hierarchical path</name>
+      </label>
+    </labels>
+    <bundlePlacements>
+      <placement code="preferred_labels">
+        <bundle>ca_collections.preferred_labels</bundle>
+        <settings>
+          <setting name="label" locale="en_US">Title</setting>
+          <setting name="format">^ca_collections.hierarchy.preferred_labels.name%delimiter=_➜_</setting>
+        </settings>
+      </placement>
+      <placement code="idno">
+        <bundle>ca_collections.idno</bundle>
+        <settings>
+          <setting name="label" locale="en_US">Identifier</setting>
+        </settings>
+      </placement>
+    </bundlePlacements>
+  </display>
+ <display code="obj_hierarchy" type="ca_objects" system="1">
+      <labels>
+        <label locale="en_US">
+          <name>Hierarchical path</name>
+        </label>
+      </labels>
+      <bundlePlacements>
+        <placement code="preferred_labels">
+          <bundle>ca_objects.preferred_labels</bundle>
+          <settings>
+            <setting name="label" locale="en_US">Title</setting>
+          </settings>
+        </placement>
+        <placement code="idno">
+          <bundle>ca_objects.idno</bundle>
+          <settings>
+            <setting name="label" locale="en_US">Identifier</setting>
+          </settings>
+        </placement>
+        <placement code="collections">
+          <bundle>ca_collections</bundle>
+          <settings>
+            <setting name="render">makeEditorLink</setting>
+            <setting name="label" locale="en_US">Related Collections</setting>
+            <setting name="delimiter"> ➔ </setting>
+            <setting name="show_hierarchy">1</setting>
+          </settings>
+        </placement>
+      </bundlePlacements>
+    </display>
+</displays>
   <searchForms>
     <searchForm code="ca_objects_adv_search" type="ca_objects" system="1">
       <labels>
