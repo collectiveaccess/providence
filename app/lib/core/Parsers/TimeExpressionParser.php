@@ -2387,9 +2387,14 @@ class TimeExpressionParser {
 			// catch decade dates
 					$vs_start_year = $this->_dateToText(array('year' => $va_start_pieces['year'], 'era' => $va_start_pieces['era'], 'uncertainty' => $va_start_pieces['uncertainty'], 'uncertainty_units' => $va_start_pieces['uncertainty_units']), $pa_options);
 					$vs_end_year = $this->_dateToText(array('year' => $va_end_pieces['year'], 'era' => $va_end_pieces['era'], 'uncertainty' => $va_end_pieces['uncertainty'], 'uncertainty_units' => $va_end_pieces['uncertainty_units']), $pa_options);
-						
 					if ((($vs_start_year % 10) == 0) && ($vs_end_year == ($vs_start_year + 9))) {
-						return $vs_start_year.'s';
+						$va_decade_indicators = $this->opo_language_settings->getList("decadeIndicator");
+						if(is_array($va_decade_indicators)){
+							$vs_decade_indicator = array_shift($va_decade_indicators);
+						} else {
+							$vs_decade_indicator = "s";
+						}
+						return $vs_start_year.$vs_decade_indicator;
 					} else {
 						// catch century dates
 						if ((($va_start_pieces['year'] % 100) == 0) && ($va_end_pieces['year'] == ($va_start_pieces['year'] + 99))) {
