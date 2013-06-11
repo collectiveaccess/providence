@@ -218,6 +218,25 @@ class SolrConfiguration {
 							
 							$va_element_opts = array();
 							switch($va_element_info['datatype']) {
+							    case 0: //container
+									/* Retrieve child elements of the container. */
+									$qr_container_elements = $o_db->query('
+										SELECT *
+										FROM ca_metadata_elements
+										WHERE parent_id = ?',$va_element_info['element_id']);		
+									
+									while($qr_container_elements->nextRow()){
+										/* For each child if it is a container itself, retrieve its own children elements, which are actuall elements*/
+										$qr_container_grand_children_elements = $o_db->query('
+											SELECT *
+											FROM ca_metadata_elements
+											WHERE parent_id = ?',$qr_container_elements -> get('element_id'));	
+										while($qr_container_grand_children_elements->nextRow()){
+											$container_element_code = $qr_container_grand_children_elements -> get('element_code');
+											$va_table_fields[$container_element_code] = array_merge($va_opts, array('type' => 'text'));											
+										}																			
+									}																	
+									break;							
 								case 1: // text
 								case 3:	// list
 								case 5:	// url
