@@ -308,8 +308,8 @@
  			if (isset($pa_options['forSearch']) && $pa_options['forSearch']) {
  				return caHTMLTextInput("{fieldNamePrefix}".$pa_element_info['element_id']."_{n}", array('id' => "{fieldNamePrefix}".$pa_element_info['element_id']."_{n}", 'value' => $pa_options['value']), $pa_options);
  			}
- 			if ((!isset($pa_options['baseLayer']) || !$pa_options['baseLayer']) || (isset($pa_options['po_request']) && ($pa_options['po_request']))) {
- 				if ($vs_base_layer_pref = $pa_options['po_request']->user->getPreference('maps_base_layer')) {
+ 			if ((!isset($pa_options['baseLayer']) || !$pa_options['baseLayer']) || (isset($pa_options['request']) && ($pa_options['request']))) {
+ 				if ($vs_base_layer_pref = $pa_options['request']->user->getPreference('maps_base_layer')) {
  					// Prefs don't have quotes in them, so we need to restore here
  					$vs_base_layer_pref = preg_replace("!\(([A-Za-z0-9_\-]+)\)!", "('\\1')", $vs_base_layer_pref);
  					$pa_options['baseLayer'] = $vs_base_layer_pref;
