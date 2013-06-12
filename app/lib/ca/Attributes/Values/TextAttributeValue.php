@@ -242,24 +242,20 @@
  				$o_config = Configuration::load();
  				if (!is_array($va_toolbar_config = $o_config->getAssoc('wysiwyg_editor_toolbar'))) { $va_toolbar_config = array(); }
  				JavascriptLoadManager::register("ckeditor");
- 				$vs_class = 'jqueryCkeditor';
  				
  				$vs_element = "<script type='text/javascript'>jQuery(document).ready(function() {
- 			var e = CKEDITOR.instances['{fieldNamePrefix}".$pa_element_info['element_id']."_{n}'];
-    		if (e) { e.destroy(true); }
-			jQuery('#{fieldNamePrefix}".$pa_element_info['element_id']."_{n}').ckeditor(function() {
-				this.on( 'change', function(e) { 
-					if (caUI && caUI.utils) { caUI.utils.showUnsavedChangesWarning(true);  }
-				 });
-			},
-			{
-				toolbar: ".json_encode(array_values($va_toolbar_config)).",
-				width: '{$vs_width}',
-				height: '{$vs_height}',
-				toolbarLocation: 'top',
-				enterMode: CKEDITOR.ENTER_BR
-			}
-		);
+						var ckEditor = CKEDITOR.replace( '{fieldNamePrefix}".$pa_element_info['element_id']."_{n}',
+						{
+							toolbar : ".json_encode(array_values($va_toolbar_config)).", /* this does the magic */
+							width: '{$vs_width}',
+							height: '{$vs_height}',
+							toolbarLocation: 'top',
+							enterMode: CKEDITOR.ENTER_BR
+						});
+						
+						ckEditor.on('instanceReady', function(){ 
+							 ckEditor.document.on( 'keydown', function(e) {if (caUI && caUI.utils) { caUI.utils.showUnsavedChangesWarning(true); } });
+						});
  	});									
 </script>";
 			}
@@ -271,7 +267,7 @@
  					'height' => $vs_height, 
  					'value' => '{{'.$pa_element_info['element_id'].'}}', 
  					'maxlength' => $va_settings['maxChars'],
- 					'id' => '{fieldNamePrefix}'.$pa_element_info['element_id'].'_{n}', 'class' => $vs_class
+ 					'id' => '{fieldNamePrefix}'.$pa_element_info['element_id'].'_{n}', 'class' => "{$vs_class}".($va_settings['usewysiwygeditor'] ? " ckeditor" : '')
  				)
  			);
  			
