@@ -279,11 +279,11 @@
  			if (isset($pa_options['t_subject']) && is_object($pa_options['t_subject'])) {
  				$vs_bundle_name = $pa_options['t_subject']->tableName().'.'.$pa_element_info['element_code'];
  				
- 				if ($pa_options['po_request']) {
+ 				if ($pa_options['request']) {
  					if (isset($pa_options['lookupUrl']) && $pa_options['lookupUrl']) {
  						$vs_lookup_url = $pa_options['lookupUrl'];
  					} else {
- 						$vs_lookup_url	= caNavUrl($pa_options['po_request'], 'lookup', 'AttributeValue', 'Get', array('max' => 500, 'bundle' => $vs_bundle_name));
+ 						$vs_lookup_url	= caNavUrl($pa_options['request'], 'lookup', 'AttributeValue', 'Get', array('max' => 500, 'bundle' => $vs_bundle_name));
  					}
  				}
  			}

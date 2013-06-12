@@ -1109,7 +1109,7 @@
 					'label' => (sizeof($va_element_set) > 1) ? $va_label['name'] : '',
 					'description' => $va_label['description'],
 					't_subject' => $this,
-					'po_request' => $po_request,
+					'request' => $po_request,
 					'ps_form_name' => $ps_form_name,
 					'format' => ''
 				))));
@@ -1231,7 +1231,7 @@
 					'label' => $va_label['name'],
 					'description' => $va_label['description'],
 					't_subject' => $this,
-					'po_request' => $po_request,
+					'request' => $po_request,
 					'nullOption' => '-',
 					'value' => $vs_value,
 					'forSearch' => true
