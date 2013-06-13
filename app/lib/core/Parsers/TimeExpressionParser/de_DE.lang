@@ -60,6 +60,7 @@ nowDate = [jetzt,now]
 todayDate = [heute]
 yesterdayDate = [gestern]
 tomorrowDate = [morgen]
+undatedDate = [undated, unknown]
 
 presentDate = [gegenwart, ?, ??, ???, ????]
 beforeQualifier = [vor]

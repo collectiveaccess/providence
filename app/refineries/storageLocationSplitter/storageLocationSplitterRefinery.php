@@ -70,8 +70,34 @@
 			$va_vals = array();
 			$vn_c = 0;
 			foreach($va_locations as $vn_i => $vs_location) {
-				if (!$vs_location = trim($vs_location)) { continue; }
+				if (!($vs_location = trim($vs_location))) { continue; }
 				
+				if ($vs_hier_delimiter = $pa_item['settings']['storageLocationSplitter_hierarchicalDelimiter']) {
+					$va_location_hier = explode($vs_hier_delimiter, $vs_location);
+					if (sizeof($va_location_hier) > 1) {
+						$vs_location = array_pop($va_location_hier);
+						
+						global $g_ui_locale_id;
+						$vn_location_id = null;
+					
+						if (!is_array($va_types = $pa_item['settings']['storageLocationSplitter_hierarchicalStorageLocationTypes'])) {
+							$va_types = array();
+						}
+						
+						foreach($va_location_hier as $vn_i => $vs_parent) {
+							if (sizeof($va_types) > 0)  { 
+								$vs_type = array_shift($va_types); 
+							} else { 
+								if (!($vs_type = $pa_item['settings']['storageLocationSplitter_storageLocationType'])) {
+									$vs_type = $pa_item['settings']['storageLocationSplitter_storageLocationTypeDefault'];
+								}
+							}
+							if (!$vs_type) { break; }
+							$vn_location_id = DataMigrationUtils::getStorageLocationID($vs_parent, $vn_location_id, $vs_type, $g_ui_locale_id, array('idno' => $vs_parent, 'parent_id' => $vn_location_id), $pa_options);
+						}
+						$va_val['parent_id'] = $vn_location_id;
+					}
+				}
 				
 				if($vs_terminal == 'name') {
 					return $vs_location;
@@ -107,8 +133,8 @@
 				}
 				
 				$t_location = new ca_storage_locations();
-				$t_location->load(array('parent_id' => null, 'hierarchy_id' => $vn_hierarchy_id));
-				$va_val['_parent_id'] = $t_location->getPrimaryKey();
+				$t_location->load(array('parent_id' => $va_val['parent_id'], 'hierarchy_id' => $vn_hierarchy_id, 'deleted' => 0));
+				$va_val['_parent_id'] = $va_val['parent_id'];
 				
 				// Set attributes
 				if (is_array($pa_item['settings']['storageLocationSplitter_attributes'])) {
@@ -150,6 +176,24 @@
 				'default' => '',
 				'label' => _t('Delimiter'),
 				'description' => _t('Sets the value of the delimiter to break on, separating data source values.')
+			),
+			'storageLocationSplitter_hierarchicalDelimiter' => array(
+				'formatType' => FT_TEXT,
+				'displayType' => DT_SELECT,
+				'width' => 10, 'height' => 1,
+				'takesLocale' => false,
+				'default' => '',
+				'label' => _t('Hierarchical delimiter'),
+				'description' => _t('Sets the value of the delimiter to break hierarchical values on.')
+			),
+			'storageLocationSplitter_hierarchicalStorageLocationTypes' => array(
+				'formatType' => FT_TEXT,
+				'displayType' => DT_SELECT,
+				'width' => 10, 'height' => 1,
+				'takesLocale' => false,
+				'default' => '',
+				'label' => _t('Hierarchical storage location types'),
+				'description' => _t('A semicolon-delimited list of storage location types to apply to hierarchical storage locations extracted using the hierarchical delimiter.')
 			),
 			'storageLocationSplitter_relationshipType' => array(
 				'formatType' => FT_TEXT,
