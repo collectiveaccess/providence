@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2008-2011 Whirl-i-Gig
+ * Copyright 2008-2013 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -287,8 +287,8 @@
  			if (isset($pa_options['t_subject']) && is_object($pa_options['t_subject'])) {
  				$vs_bundle_name = $pa_options['t_subject']->tableName().'.'.$pa_element_info['element_code'];
  				
- 				if ($pa_options['po_request']) {
- 					$vs_lookup_url	= caNavUrl($pa_options['po_request'], 'lookup', 'AttributeValue', 'Get', array('bundle' => $vs_bundle_name, 'max' => 500));
+ 				if ($pa_options['request']) {
+ 					$vs_lookup_url	= caNavUrl($pa_options['request'], 'lookup', 'AttributeValue', 'Get', array('bundle' => $vs_bundle_name, 'max' => 500));
  				}
  			}
  			

@@ -4998,90 +4998,6 @@ create table ca_bundle_displays_x_users (
 
 
 /*==========================================================================*/
-create table ca_bundle_mappings (
-	mapping_id		int unsigned not null primary key auto_increment,
-	
-	direction		char(1) not null,
-	table_num		tinyint unsigned not null,
-	mapping_code	varchar(100) null,
-	target			varchar(100) not null,
-    access          tinyint unsigned not null default 0,
-	settings		text not null,
-	
-	UNIQUE KEY u_mapping_code (mapping_code),
-	KEY i_target (target)
-) engine=innodb CHARACTER SET utf8 COLLATE utf8_general_ci;
-
-
-/*==========================================================================*/
-create table ca_bundle_mapping_labels (
-	label_id		int unsigned not null primary key auto_increment,
-	mapping_id		int unsigned null references ca_bundle_mappings(mapping_id),
-	locale_id		smallint unsigned not null references ca_locales(locale_id),
-	name			varchar(255) not null,
-	name_sort		varchar(255) not null,
-	description		text not null,
-	source_info		longtext not null,
-	is_preferred	tinyint unsigned not null,
-	
-	KEY i_mapping_id (mapping_id),
-	KEY i_locale_id (locale_id)
-) engine=innodb CHARACTER SET utf8 COLLATE utf8_general_ci;
-
-
-/*==========================================================================*/
-create table ca_bundle_mapping_groups (
-	group_id				int unsigned not null primary key auto_increment,
-	mapping_id			int unsigned not null references ca_bundle_mappings(mapping_id),
-	
-	group_code			varchar(100) not null,
-	
-	ca_base_path 			varchar(512) not null,
-	external_base_path	varchar(512) not null,	
-	
-	settings			text not null,
-	notes				text not null,
-	rank                 int unsigned not null default 0,
-	
-	KEY i_mapping_id (mapping_id),
-	UNIQUE KEY i_group_code (group_code, mapping_id)
-) engine=innodb CHARACTER SET utf8 COLLATE utf8_general_ci;
-
-
-/*==========================================================================*/
-create table ca_bundle_mapping_group_labels (
-	label_id		int unsigned not null primary key auto_increment,
-	group_id		int unsigned null references ca_bundle_mapping_groups(group_id),
-	locale_id		smallint unsigned not null references ca_locales(locale_id),
-	name			varchar(255) not null,
-	name_sort		varchar(255) not null,
-	description		text not null,
-	source_info		longtext not null,
-	is_preferred	tinyint unsigned not null,
-	
-	KEY i_group_id (group_id),
-	KEY i_locale_id (locale_id)
-) engine=innodb CHARACTER SET utf8 COLLATE utf8_general_ci;
-
-
-/*==========================================================================*/
-create table ca_bundle_mapping_rules (
-	rule_id				int unsigned not null primary key auto_increment,
-	group_id			int unsigned not null references ca_bundle_mapping_groups(group_id),
-	
-	ca_path_suffix 				varchar(512) not null,
-	external_path_suffix		varchar(512) not null,	
-	
-	settings			text not null,
-	notes				text not null,
-	
-	rank                 int unsigned not null default 0,
-	
-	KEY i_group_id (group_id)
-) engine=innodb CHARACTER SET utf8 COLLATE utf8_general_ci;
-
-
-/*==========================================================================*/
 /* Support for tour content
 /*==========================================================================*/
 create table ca_tours
@@ -6827,5 +6743,5 @@ create table ca_schema_updates (
 ) engine=innodb CHARACTER SET utf8 COLLATE utf8_general_ci;
 
 /* Indicate up to what migration this schema definition covers */
-/* CURRENT MIGRATION: 83 */
-INSERT IGNORE INTO ca_schema_updates (version_num, datetime) VALUES (83, unix_timestamp());
+/* CURRENT MIGRATION: 84 */
+INSERT IGNORE INTO ca_schema_updates (version_num, datetime) VALUES (84, unix_timestamp());

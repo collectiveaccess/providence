@@ -413,9 +413,10 @@ class SearchIndexer extends SearchBase {
 									
 									if (sizeof($va_attributes)) { 
 										foreach($va_attributes as $vo_attribute) {
+											/* index each element of the container */
 											foreach($vo_attribute->getValues() as $vo_value) {
-												$vn_list_id = $this->_getElementListID($vo_value->getElementID());
-												$this->opo_engine->indexField($pn_subject_tablenum, 'A'.$vo_value->getElementID(), $vo_attribute->getAttributeID(), $vo_value->getDisplayValue($vn_list_id), $va_data);	// 4 = ca_attributes
+												$vn_list_id = $this->_getElementListID($vo_value->getElementID());											
+												$this->opo_engine->indexField($pn_subject_tablenum, "A".$vo_value->getElementID(), $vo_attribute->getAttributeID(), $vo_value->getDisplayValue($vn_list_id), $va_data);																																															
 											}
 										}
 									} else {
@@ -503,23 +504,23 @@ class SearchIndexer extends SearchBase {
  										}
  									}
 									$va_content[$t_item->get('idno')] = true;
- 								} 
+ 								}  else {
+									// is this field related to something?
+									if (is_array($va_rels = $this->opo_datamodel->getManyToOneRelations($vs_subject_tablename)) && ($va_rels[$vs_field])) {
+										if (isset($va_rels[$vs_field])) {
+											if ($pa_changed_fields[$vs_field]) {
+												$pb_reindex_mode = true;	// trigger full reindex of record so it reflects text of related item (if so indexed)
+											}
+										}
+										$this->opo_engine->indexField($pn_subject_tablenum, $vs_field, $pn_subject_row_id, $pn_content, $va_data);
+									}
+								}
 								$va_content[$pa_field_data[$vs_field]] = true;
 								$this->opo_engine->indexField($pn_subject_tablenum, $vs_field, $pn_subject_row_id, join(" ", array_keys($va_content)), $va_data);
 								break;
 							}
 							
-							// is this field related to something?
-							if (is_array($va_rels = $this->opo_datamodel->getManyToOneRelations($vs_subject_tablename)) && ($va_rels[$vs_field])) {
-								if (isset($va_rels[$vs_field])) {
-									if ($pa_changed_fields[$vs_field]) {
-										$pb_reindex_mode = true;	// trigger full reindex of record so it reflects text of related item (if so indexed)
-									}
-								}
-								$this->opo_engine->indexField($pn_subject_tablenum, $vs_field, $pn_subject_row_id, $pn_content, $va_data);
-							} else {
-								$this->opo_engine->indexField($pn_subject_tablenum, $vs_field, $pn_subject_row_id, $pn_content, $va_data);
-							}
+							$this->opo_engine->indexField($pn_subject_tablenum, $vs_field, $pn_subject_row_id, $pn_content, $va_data);
 						}
 						break;
 				}
