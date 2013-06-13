@@ -250,8 +250,8 @@ class GeoNamesAttributeValue extends AttributeValue implements IAttributeValue {
 				)
 			);
 
-		if ($pa_options['po_request']) {
-			$vs_url = caNavUrl($pa_options['po_request'], 'lookup', 'GeoNames', 'Get', array('max' => 100));
+		if ($pa_options['request']) {
+			$vs_url = caNavUrl($pa_options['request'], 'lookup', 'GeoNames', 'Get', array('max' => 100));
 		}
 
 		$vs_element .= '</div>';

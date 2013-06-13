@@ -64,6 +64,7 @@ define("TEP_TOKEN_SEASON_WINTER", 22);
 define("TEP_TOKEN_SEASON_SPRING", 23);
 define("TEP_TOKEN_SEASON_SUMMER", 24);
 define("TEP_TOKEN_SEASON_AUTUMN", 25);
+define("TEP_TOKEN_UNDATED", 26);
 
 # --- Meridian types
 define("TEP_MERIDIAN_AM", 0);
@@ -340,6 +341,24 @@ class TimeExpressionParser {
 								$vb_can_accept = true;
 								break;
 							
+							# ----------------------
+							case TEP_TOKEN_UNDATED:
+								$va_dates['start']  = array(
+									'month' => null, 'day' => null, 'year' => nu,
+									'hours' => null, 'minutes' => null, 'seconds' => null,
+									'uncertainty' => 0, 'uncertainty_units' => '', 'is_circa' => 0, 'is_undated' => true
+								);
+								$va_dates['end']  = array(
+									'month' => null, 'day' => null, 'year' => null,
+									'hours' => null, 'minutes' => null, 'seconds' => null,
+									'uncertainty' => 0, 'uncertainty_units' => '', 'is_circa' => 0, 'is_undated' => true
+								);
+								
+								$this->skipToken();
+								$vn_state = TEP_STATE_ACCEPT;
+								$vb_can_accept = true;
+								
+								break;
 							# ----------------------
 							case TEP_TOKEN_ALPHA:
 								#
@@ -1415,6 +1434,11 @@ class TimeExpressionParser {
 		
 		$vs_token = trim(array_shift($this->opa_tokens));
 		$vs_token_lc = mb_strtolower($vs_token, 'UTF-8');
+		
+		// undated
+		if (in_array($vs_token_lc, $this->opo_language_settings->getList("undatedDate"))) {
+			return array('value' => $vs_token, 'type' => TEP_TOKEN_UNDATED);
+		}
 		// today
 		if (in_array($vs_token_lc, $this->opo_language_settings->getList("todayDate"))) {
 			return array('value' => $vs_token, 'type' => TEP_TOKEN_TODAY);
@@ -1746,7 +1770,16 @@ class TimeExpressionParser {
 				$pa_dates['end'] = $pa_dates['start']; 
 			}
 		}
+		
+		if ($pa_dates['start']['is_undated']) {
+			$this->opn_start_unixtime = null;
+			$this->opn_end_unixtime = null;
 			
+			$this->opn_start_historic = null;
+			$this->opn_end_historic = null;
+			
+			return true;
+		}
 		if (!$pa_dates['start']['month'] && !$pa_dates['start']['year']) {
 			# time-only expression
 			
@@ -1978,9 +2011,9 @@ class TimeExpressionParser {
 	# Accessors
 	# -------------------------------------------------------------------
 	public function getHistoricTimestamps() {
-		if ($this->opn_start_historic == null) {
-			return false;
-		}
+		//if ($this->opn_start_historic == null) {
+		//	return false;
+		//}
 		
 		return array(
 			0 => $this->opn_start_historic, 1 => $this->opn_end_historic,
@@ -2090,6 +2123,7 @@ class TimeExpressionParser {
 	
 	
 		$va_dates = $this->getHistoricTimestamps();
+		
 		if (!$va_dates['start']) {
 			$va_unix_dates = $this->getUnixTimestamps();
 		
@@ -2102,6 +2136,15 @@ class TimeExpressionParser {
 			} 
 		}
 		
+		// is it undated?
+		if (($va_dates['start'] === null) && ($va_dates['end'] === null)) {
+			if (is_array($va_undated = $this->opo_language_settings->getList('undatedDate'))) {
+				return array_shift($va_undated);
+			} 
+			return "????";
+		}
+	
+		
 		// only return times?
 		if (isset($pa_options['timeOnly']) && $pa_options['timeOnly']) {
 			$va_start_pieces = $this->getHistoricDateParts($va_dates['start']);
@@ -2112,13 +2155,15 @@ class TimeExpressionParser {
 			return $this->_timerangeToText($vn_start, $vn_end, $pa_options);
 		}
 		if (isset($va_dates['start']) && ($va_dates['start'] != null)) {
+			
+		
 			//
 			// Date-time expression using historic timestamps
 			//
 			$va_start_pieces = $this->getHistoricDateParts($va_dates['start']);
 			
 			$va_end_pieces = $this->getHistoricDateParts($va_dates['end']);
-		
+				
 			if ($pa_options['start_as_iso8601']) {
 				return $this->getISODateTime($va_start_pieces, 'FULL', $pa_options);
 			}
@@ -2140,7 +2185,7 @@ class TimeExpressionParser {
 			}
 			
 		
-			if ($va_start_pieces['year'] == 0) {		// date in not known
+			if ($va_start_pieces['year'] == 0) {		// year is not known
 				$va_start_pieces['year'] = '????';
 				$pa_options['dateFormat'] = 'delimited';		// always output dates with unknown years as delimited as that is the only format that supports them
 			}
@@ -2387,9 +2432,14 @@ class TimeExpressionParser {
 			// catch decade dates
 					$vs_start_year = $this->_dateToText(array('year' => $va_start_pieces['year'], 'era' => $va_start_pieces['era'], 'uncertainty' => $va_start_pieces['uncertainty'], 'uncertainty_units' => $va_start_pieces['uncertainty_units']), $pa_options);
 					$vs_end_year = $this->_dateToText(array('year' => $va_end_pieces['year'], 'era' => $va_end_pieces['era'], 'uncertainty' => $va_end_pieces['uncertainty'], 'uncertainty_units' => $va_end_pieces['uncertainty_units']), $pa_options);
-						
 					if ((($vs_start_year % 10) == 0) && ($vs_end_year == ($vs_start_year + 9))) {
-						return $vs_start_year.'s';
+						$va_decade_indicators = $this->opo_language_settings->getList("decadeIndicator");
+						if(is_array($va_decade_indicators)){
+							$vs_decade_indicator = array_shift($va_decade_indicators);
+						} else {
+							$vs_decade_indicator = "s";
+						}
+						return $vs_start_year.$vs_decade_indicator;
 					} else {
 						// catch century dates
 						if ((($va_start_pieces['year'] % 100) == 0) && ($va_end_pieces['year'] == ($va_start_pieces['year'] + 99))) {
@@ -2463,18 +2513,17 @@ class TimeExpressionParser {
 	public function setHistoricTimestamps($pn_start, $pn_end) {
 		if (
 				(
-					(($pn_start > 0) && ($pn_start <= $pn_end)) 
+					(($pn_start >= 0) && ($pn_start <= $pn_end)) 
 					||
-					(($pn_end < 0) && ($pn_start >= $pn_end))
+					(($pn_end <= 0) && ($pn_start >= $pn_end))
 					||
-					(($pn_start < 0) && ($pn_start <= $pn_end))
+					(($pn_start <= 0) && ($pn_start <= $pn_end))
 				) 
-				&&
-				(($pn_start != 0) && ($pn_end != 0))
 				
 		){
 			$this->opn_start_historic = $pn_start;
 			$this->opn_end_historic = $pn_end;
+			return true;
 		} else {
 			return false;
 		}

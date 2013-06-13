@@ -196,13 +196,13 @@ class OccurrenceAttributeValue extends AttributeValue implements IAttributeValue
 			);
 
 		$va_params = array('max' => 50);
-		if ($pa_options['po_request']) {
+		if ($pa_options['request']) {
 			if($pa_element_info['settings']['restrictToOccurrenceTypeIdno'] && $pa_element_info['settings']['restrictToOccurrenceTypeIdno'] != ''){
 				$va_params = array("type" => $pa_element_info['settings']['restrictToOccurrenceTypeIdno']);
 			} else {
 				$va_params = null;
 			}
-			$vs_url = caNavUrl($pa_options['po_request'], 'lookup', 'Occurrence', 'Get', $va_params);
+			$vs_url = caNavUrl($pa_options['request'], 'lookup', 'Occurrence', 'Get', $va_params);
 		} else {
 			// hardcoded default for testing.
 			$vs_url = '/index.php/lookup/Occurrence/Get';
