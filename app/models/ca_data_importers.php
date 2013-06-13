@@ -1722,7 +1722,7 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 								switch($vs_element) {
 									case 'preferred_labels':									
 										$t_subject->addLabel(
-											$va_element_content, $vn_locale_id, null, true
+											$va_element_content, $vn_locale_id, isset($va_element_content['type_id']) ? $va_element_content['type_id'] : null, true
 										);
 										if ($t_subject->numErrors() == 0) {
 											$vb_output_subject_preferred_label = true;
@@ -1752,7 +1752,7 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 										break;
 									case 'nonpreferred_labels':									
 										$t_subject->addLabel(
-											$va_element_content, $vn_locale_id, null, false
+											$va_element_content, $vn_locale_id, isset($va_element_content['type_id']) ? $va_element_content['type_id'] : null, false
 										);
 										
 										if ($vs_error = DataMigrationUtils::postError($t_subject, _t("[%1] Could not add non-preferred label:", $vs_idno), __CA_DATA_IMPORT_ERROR__, array('dontOutputLevel' => true, 'dontPrint' => true))) {
