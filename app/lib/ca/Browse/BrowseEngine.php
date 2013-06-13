@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2009-2012 Whirl-i-Gig
+ * Copyright 2009-2013 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -2740,7 +2740,7 @@
 							$qr_res = $this->opo_db->query($vs_sql);
 						
 							if ($qr_res->nextRow()) {
-								return ((int)$qr_res->numRows() > 1) ? true : false;
+								return ((int)$qr_res->numRows() > 0) ? true : false;
 							}
 							return false;
 						} else {
