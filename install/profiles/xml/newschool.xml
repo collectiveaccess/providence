@@ -17579,6 +17579,7 @@
               <settings>
                 <setting name="restrict_to_lists">repositories</setting>
                 <setting name="restrictToTermsRelatedToCollection">1</setting>
+                <setting name="restrictToTermsOnCollectionUseRelationshipType">described</setting>
                 <setting name="label" locale="en_US">Repository</setting>
                 <setting name="add_label" locale="en_US">add repository</setting>
               </settings>
@@ -17715,6 +17716,7 @@
               <settings>
                 <setting name="restrict_to_lists">repositories</setting>
                 <setting name="restrictToTermsRelatedToCollection">1</setting>
+                <setting name="restrictToTermsOnCollectionUseRelationshipType">described</setting>
                 <setting name="label" locale="en_US">Repository</setting>
                 <setting name="add_label" locale="en_US">add repository</setting>
               </settings>
