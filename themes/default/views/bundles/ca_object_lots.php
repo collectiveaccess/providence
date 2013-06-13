@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2009-2012 Whirl-i-Gig
+ * Copyright 2009-2013 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -213,10 +213,12 @@
 			templateClassName: 'caNewItemTemplate',
 			initialValueTemplateClassName: 'caItemTemplate',
 			itemListClassName: 'caItemList',
+			listItemClassName: 'caRelatedItem',
 			addButtonClassName: 'caAddItemButton',
 			deleteButtonClassName: 'caDeleteItemButton',
 			hideOnNewIDList: ['<?php print $vs_id_prefix; ?>_edit_related_'],
 			autocompleteUrl: '<?php print caNavUrl($this->request, 'lookup', 'ObjectLot', 'Get', $va_lookup_params); ?>',
+			types: <?php print json_encode($va_settings['restrict_to_types']); ?>,
 <?php
 	if ($t_subject->tableName() == 'ca_objects') {
 ?>
@@ -229,6 +231,8 @@
 ?>
 			relationshipTypes: <?php print json_encode($this->getVar('relationship_types_by_sub_type')); ?>,
 			templateValues: ['label', 'idno_stub', 'id', 'type_id'],
+			firstItemColor: '<?php print $vs_first_color; ?>',
+			lastItemColor: '<?php print $vs_last_color; ?>',
 <?php
 	}
 ?>

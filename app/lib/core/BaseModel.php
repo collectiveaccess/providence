@@ -1124,6 +1124,7 @@ class BaseModel extends BaseObject {
 								} else {
 									$va_timestamps = $o_tep->parseDatetime($vm_value);
 								}
+								
 								if (!$va_timestamps) {
 									$this->postError(1805, $o_tep->getParseErrorMessage(), 'BaseModel->set()');
 									return false;
@@ -1978,7 +1979,7 @@ class BaseModel extends BaseObject {
 								return false;
 							}
 							if (is_null($v)) { $v = 'null'; }
-							$vs_values .= $v.",";		# output as is
+							$vs_values .= "{$v},";		# output as is
 							break;
 						# -----------------------------
 						case (FT_TIME):
@@ -1995,7 +1996,7 @@ class BaseModel extends BaseObject {
 								return false;
 							}
 							if (is_null($v)) { $v = 'null'; }
-							$vs_values .= $v.",";		# output as is
+							$vs_values .= "{$v},";		# output as is
 							break;
 						# -----------------------------
 						case (FT_TIMESTAMP):	# insert on stamp
@@ -2022,21 +2023,22 @@ class BaseModel extends BaseObject {
 								return false;
 							}
 							if (!is_numeric($this->_FIELD_VALUES[$start_field_name]) && !($va_attr["IS_NULL"] && is_null($this->_FIELD_VALUES[$start_field_name]))) {
+								print_r($this->_FIELD_VALUES); print "f=$start_field_name"; print_R($va_attr); print json_encode($this->_FIELD_VALUES);
 								$this->postError(1100, _t("Starting date is invalid"),"BaseModel->insert()");
 								if ($vb_we_set_transaction) { $this->removeTransaction(false); }
 								return false;
 							}
-							if (is_null($this->_FIELD_VALUES[$start_field_name])) { $this->_FIELD_VALUES[$start_field_name] = 'null'; }
+							if (is_null($this->_FIELD_VALUES[$start_field_name])) { $vm_start_val = 'null'; } else { $vm_start_val = $this->_FIELD_VALUES[$start_field_name]; }
 							
 							if (!is_numeric($this->_FIELD_VALUES[$end_field_name]) && !($va_attr["IS_NULL"] && is_null($this->_FIELD_VALUES[$end_field_name]))) {
 								$this->postError(1100,_t("Ending date is invalid"),"BaseModel->insert()");
 								if ($vb_we_set_transaction) { $this->removeTransaction(false); }
 								return false;
 							}
-							if (is_null($this->_FIELD_VALUES[$end_field_name])) { $this->_FIELD_VALUES[$end_field_name] = 'null'; }
+							if (is_null($this->_FIELD_VALUES[$end_field_name])) { $vm_end_val = 'null'; } else { $end_field_name = $this->_FIELD_VALUES[$end_field_name]; }
 							
-							$vs_fields .= "$start_field_name, $end_field_name,";
-							$vs_values .= $this->_FIELD_VALUES[$start_field_name].", ".$this->_FIELD_VALUES[$end_field_name].",";
+							$vs_fields .= "{$start_field_name}, {$end_field_name},";
+							$vs_values .= "{$vm_start_val}, {$vm_end_val},";
 
 							break;
 						# -----------------------------
@@ -2060,17 +2062,17 @@ class BaseModel extends BaseObject {
 								if ($vb_we_set_transaction) { $this->removeTransaction(false); }
 								return false;
 							}
-							if (is_null($this->_FIELD_VALUES[$start_field_name])) { $this->_FIELD_VALUES[$start_field_name] = 'null'; }
+							if (is_null($this->_FIELD_VALUES[$start_field_name])) { $vm_start_val = 'null'; } else { $vm_start_val = $this->_FIELD_VALUES[$start_field_name]; }
 							
 							if (!is_numeric($this->_FIELD_VALUES[$end_field_name])&& !($va_attr["IS_NULL"] && is_null($this->_FIELD_VALUES[$end_field_name]))) {
 								$this->postError(1100,_t("Ending time is invalid"),"BaseModel->insert()");
 								if ($vb_we_set_transaction) { $this->removeTransaction(false); }
 								return false;
 							}
-							if (is_null($this->_FIELD_VALUES[$end_field_name])) { $this->_FIELD_VALUES[$end_field_name] = 'null'; }
+							if (is_null($this->_FIELD_VALUES[$end_field_name])) { $vm_end_val = 'null'; } else { $end_field_name = $this->_FIELD_VALUES[$end_field_name]; }
 							
-							$vs_fields .= "$start_field_name, $end_field_name,";
-							$vs_values .= $this->_FIELD_VALUES[$start_field_name].", ".$this->_FIELD_VALUES[$end_field_name].",";
+							$vs_fields .= "{$start_field_name}, {$end_field_name},";
+							$vs_values .= "{$vm_start_val}, {$vm_end_val},";
 
 							break;
 						# -----------------------------
@@ -2147,6 +2149,7 @@ class BaseModel extends BaseObject {
 				$vs_sql = "INSERT INTO ".$this->TABLE." ($vs_fields) VALUES ($vs_values)";
 
 				if ($this->debug) echo $vs_sql;
+				
 				$o_db->query($vs_sql);
 				if ($o_db->numErrors() == 0) {
 					if ($this->getFieldInfo($vs_pk = $this->primaryKey(), "IDENTITY")) {
@@ -2603,16 +2606,16 @@ class BaseModel extends BaseObject {
 								if ($vb_we_set_transaction) { $this->removeTransaction(false); }
 								return false;
 							}
-							if (is_null($this->_FIELD_VALUES[$start_field_name])) { $this->_FIELD_VALUES[$start_field_name] = 'null'; }
+							if (is_null($this->_FIELD_VALUES[$start_field_name])) { $vm_start_val = 'null'; } else { $vm_start_val = $this->_FIELD_VALUES[$start_field_name]; }
 							
 							if (!is_numeric($this->_FIELD_VALUES[$end_field_name]) && !($va_attr["IS_NULL"] && is_null($this->_FIELD_VALUES[$end_field_name]))) {
 								$this->postError(1100,_t("Ending date is invalid"),"BaseModel->update()");
 								if ($vb_we_set_transaction) { $this->removeTransaction(false); }
 								return false;
 							}
-							if (is_null($this->_FIELD_VALUES[$end_field_name])) { $this->_FIELD_VALUES[$end_field_name] = 'null'; }
+							if (is_null($this->_FIELD_VALUES[$end_field_name])) { $vm_end_val = 'null'; } else { $vm_end_val = $this->_FIELD_VALUES[$end_field_name]; }
 							
-							$vs_sql .= "{$start_field_name} = ".$this->_FIELD_VALUES[$start_field_name].", {$end_field_name} = ".$this->_FIELD_VALUES[$end_field_name].",";
+							$vs_sql .= "{$start_field_name} = {$vm_start_val}, {$end_field_name} = {$vm_end_val},";
 							$vn_fields_that_have_been_set++;
 							break;
 						# -----------------------------
@@ -2636,16 +2639,16 @@ class BaseModel extends BaseObject {
 								if ($vb_we_set_transaction) { $this->removeTransaction(false); }
 								return false;
 							}
-							if (is_null($this->_FIELD_VALUES[$start_field_name])) { $this->_FIELD_VALUES[$start_field_name] = 'null'; }
+							if (is_null($this->_FIELD_VALUES[$start_field_name])) { $vm_start_val = 'null'; } else { $vm_start_val = $this->_FIELD_VALUES[$start_field_name]; }
 							
 							if (!is_numeric($this->_FIELD_VALUES[$end_field_name]) && !($va_attr["IS_NULL"] && is_null($this->_FIELD_VALUES[$end_field_name]))) {
 								$this->postError(1100,_t("Ending time is invalid"),"BaseModel->update()");
 								if ($vb_we_set_transaction) { $this->removeTransaction(false); }
 								return false;
 							}
-							if (is_null($this->_FIELD_VALUES[$end_field_name])) { $this->_FIELD_VALUES[$end_field_name] = 'null'; }
+							if (is_null($this->_FIELD_VALUES[$end_field_name])) { $vm_end_val = 'null'; } else { $vm_end_val = $this->_FIELD_VALUES[$end_field_name]; }
 							
-							$vs_sql .= "{$start_field_name} = ".$this->_FIELD_VALUES[$start_field_name].", {$end_field_name} = ".$this->_FIELD_VALUES[$end_field_name].",";
+							$vs_sql .= "{$start_field_name} = {$vm_start_val}, {$end_field_name} = {$vm_end_val},";
 							$vn_fields_that_have_been_set++;
 							break;
 						# -----------------------------
