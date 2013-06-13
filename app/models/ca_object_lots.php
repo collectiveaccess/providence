@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2008-2012 Whirl-i-Gig
+ * Copyright 2008-2013 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -248,6 +248,11 @@ class ca_object_lots extends BundlableLabelableBaseModelWithAttributes {
 	protected $ID_NUMBERING_SORT_FIELD = 'idno_stub_sort';		// name of field containing version of identifier for sorting (is normalized with padding to sort numbers properly)
 
 	# ------------------------------------------------------
+	# Self-relations
+	# ------------------------------------------------------
+	protected $SELF_RELATION_TABLE_NAME = 'ca_object_lots_x_object_lots';
+	
+	# ------------------------------------------------------
 	# Search
 	# ------------------------------------------------------
 	protected $SEARCH_CLASSNAME = 'ObjectLotSearch';
@@ -289,6 +294,7 @@ class ca_object_lots extends BundlableLabelableBaseModelWithAttributes {
 		
 		$this->BUNDLES['ca_loans'] = array('type' => 'related_table', 'repeating' => true, 'label' => _t('Related loans'));
 		$this->BUNDLES['ca_movements'] = array('type' => 'related_table', 'repeating' => true, 'label' => _t('Related movements'));
+		$this->BUNDLES['ca_object_lots'] = array('type' => 'related_table', 'repeating' => true, 'label' => _t('Related lots'));
 		
 		$this->BUNDLES['ca_list_items'] = array('type' => 'related_table', 'repeating' => true, 'label' => _t('Related vocabulary terms'));
 		$this->BUNDLES['ca_sets'] = array('type' => 'special', 'repeating' => true, 'label' => _t('Sets'));

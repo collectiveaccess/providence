@@ -1773,7 +1773,7 @@ create table ca_objects_x_objects
    object_left_id                 int unsigned               not null,
    object_right_id                int unsigned               not null,
    type_id                        smallint unsigned              not null,
-   source_notes                   text                           not null,
+   source_info                    text                           not null,
    sdatetime                      decimal(30,20),
    edatetime                      decimal(30,20),
    label_left_id                  int unsigned                   null,
@@ -2989,7 +2989,7 @@ create table ca_object_representations_x_object_representations
    representation_left_id                 int unsigned               not null,
    representation_right_id                int unsigned               not null,
    type_id                        smallint unsigned              not null,
-   source_notes                   text                           not null,
+   source_info                    text                           not null,
    sdatetime                      decimal(30,20),
    edatetime                      decimal(30,20),
    label_left_id                  int unsigned                   null,
@@ -3474,6 +3474,51 @@ create unique index u_all on ca_object_lots_x_vocabulary_terms (
 );
 create index i_label_left_id on ca_object_lots_x_vocabulary_terms(label_left_id);
 create index i_label_right_id on ca_object_lots_x_vocabulary_terms(label_right_id);
+
+
+/*==========================================================================*/
+create table ca_object_lots_x_object_lots
+(
+   relation_id                    int unsigned                   not null AUTO_INCREMENT,
+   lot_left_id                    int unsigned               not null,
+   lot_right_id                   int unsigned               not null,
+   type_id                        smallint unsigned              not null,
+   source_info                    longtext                       not null,
+   sdatetime                      decimal(30,20),
+   edatetime                      decimal(30,20),
+   label_left_id                  int unsigned                   null,
+   label_right_id                 int unsigned                   null,
+   rank                           int unsigned                   not null default 0,
+   primary key (relation_id),
+   constraint fk_ca_object_lots_x_object_lots_type_id foreign key (type_id)
+      references ca_relationship_types (type_id) on delete restrict on update restrict,
+      
+   constraint fk_ca_object_lots_x_object_lots_lot_left_id foreign key (lot_left_id)
+      references ca_object_lots (lot_id) on delete restrict on update restrict,
+      
+   constraint fk_ca_object_lots_x_object_lots_lot_right_id foreign key (lot_right_id)
+      references ca_object_lots (lot_id) on delete restrict on update restrict,
+      
+   constraint fk_ca_object_lots_x_object_lots_label_left_id foreign key (label_left_id)
+      references ca_object_lot_labels (label_id) on delete restrict on update restrict,
+      
+   constraint fk_ca_object_lots_x_object_lots_label_right_id foreign key (label_right_id)
+      references ca_object_lot_labels (label_id) on delete restrict on update restrict
+) engine=innodb CHARACTER SET utf8 COLLATE utf8_general_ci;
+
+create index i_lot_left_id on ca_object_lots_x_object_lots(lot_left_id);
+create index i_lot_right_id on ca_object_lots_x_object_lots(lot_right_id);
+create index i_type_id on ca_object_lots_x_object_lots(type_id);
+create unique index u_all on ca_object_lots_x_object_lots
+(
+   lot_left_id,
+   lot_right_id,
+   type_id,
+   sdatetime,
+   edatetime
+);
+create index i_label_left_id on ca_object_lots_x_object_lots(label_left_id);
+create index i_label_right_id on ca_object_lots_x_object_lots(label_right_id);
 
 
 /*==========================================================================*/
@@ -5386,7 +5431,7 @@ create table ca_tour_stops_x_tour_stops
    stop_left_id                 int unsigned               not null,
    stop_right_id                int unsigned               not null,
    type_id                        smallint unsigned              not null,
-   source_notes                   text                           not null,
+   source_info                    text                           not null,
    sdatetime                      decimal(30,20),
    edatetime                      decimal(30,20),
    label_left_id                  int unsigned                   null,
@@ -5431,7 +5476,7 @@ create table ca_storage_locations_x_storage_locations
    location_left_id                 int unsigned               not null,
    location_right_id                int unsigned               not null,
    type_id                        smallint unsigned              not null,
-   source_notes                   text                           not null,
+   source_info                    text                           not null,
    sdatetime                      decimal(30,20),
    edatetime                      decimal(30,20),
    label_left_id                  int unsigned                   null,
@@ -5881,7 +5926,7 @@ create table ca_loans_x_loans
    loan_left_id                 int unsigned               not null,
    loan_right_id                int unsigned               not null,
    type_id                        smallint unsigned              not null,
-   source_notes                   text                           not null,
+   source_info                    text                           not null,
    sdatetime                      decimal(30,20),
    edatetime                      decimal(30,20),
    label_left_id                  int unsigned                   null,
@@ -6151,7 +6196,7 @@ create table ca_movements_x_movements
    movement_left_id                 int unsigned               not null,
    movement_right_id                int unsigned               not null,
    type_id                        smallint unsigned              not null,
-   source_notes                   text                           not null,
+   source_info                    text                           not null,
    sdatetime                      decimal(30,20),
    edatetime                      decimal(30,20),
    label_left_id                  int unsigned                   null,
@@ -6743,5 +6788,5 @@ create table ca_schema_updates (
 ) engine=innodb CHARACTER SET utf8 COLLATE utf8_general_ci;
 
 /* Indicate up to what migration this schema definition covers */
-/* CURRENT MIGRATION: 84 */
-INSERT IGNORE INTO ca_schema_updates (version_num, datetime) VALUES (84, unix_timestamp());
+/* CURRENT MIGRATION: 86 */
+INSERT IGNORE INTO ca_schema_updates (version_num, datetime) VALUES (86, unix_timestamp());
