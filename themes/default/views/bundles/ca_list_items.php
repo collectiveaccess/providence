@@ -100,11 +100,16 @@
 		print $vs_checklist;
 	} else {
 ?>
-		<h2><?php print _t('No collection subjects'); ?></h2>
+		<h2><?php print _t('No collection terms selected'); ?></h2>
+<?php
+	}
+	
+	if (isset($va_settings['restrictToTermsOnCollectionUseRelationshipType']) && is_array($va_settings['restrictToTermsOnCollectionUseRelationshipType'])) {
+?>
+							<input type="hidden" name="<?php print $vs_id_prefix; ?>_type_id{n}" id="<?php print $vs_id_prefix; ?>_type_id{n}" value="<?php print array_pop($va_settings['restrictToTermsOnCollectionUseRelationshipType']); ?>"/>
 <?php
 	}
 ?>
-							<input type="hidden" name="<?php print $vs_id_prefix; ?>_type_id{n}" id="<?php print $vs_id_prefix; ?>_type_id{n}" value="<?php print array_pop($va_settings['restrictToTermsOnCollectionUseRelationshipType']); ?>"/>
 						</td>
 <?php
 	if (!(bool)$va_settings['restrictToTermsRelatedToCollection']) {
