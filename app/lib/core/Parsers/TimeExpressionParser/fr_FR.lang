@@ -89,6 +89,7 @@ todayDate = [aujourd'hui]
 yesterdayDate = [hier]
 #tomorrowDate = [tomorrow]
 tomorrowDate = [demain]
+undatedDate = [undated, unknown]
 
 #presentDate = [present, ?, ??, ???, ????]
 presentDate = [présent, ?, ??, ???, ????]

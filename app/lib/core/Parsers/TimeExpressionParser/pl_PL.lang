@@ -59,6 +59,7 @@ nowDate = [teraz]
 todayDate = [dzisiaj]
 yesterdayDate = [wczoraj]
 tomorrowDate = [jutro]
+undatedDate = [undated, unknown]
 
 presentDate = [ obecnie, ?, ??, ???, ???? ]
 beforeQualifier = [ przed, poprzedza, wcześniej niż ]
