@@ -2124,16 +2124,6 @@ class TimeExpressionParser {
 	
 		$va_dates = $this->getHistoricTimestamps();
 		
-		
-		// is it undated?
-		if (($va_dates['start'] === null) && ($va_dates['end'] === null)) {
-			if (is_array($va_undated = $this->opo_language_settings->getList('undatedDate'))) {
-				return array_shift($va_undated);
-			} 
-			return "????";
-		}
-	
-		
 		if (!$va_dates['start']) {
 			$va_unix_dates = $this->getUnixTimestamps();
 		
@@ -2145,6 +2135,15 @@ class TimeExpressionParser {
 				);
 			} 
 		}
+		
+		// is it undated?
+		if (($va_dates['start'] === null) && ($va_dates['end'] === null)) {
+			if (is_array($va_undated = $this->opo_language_settings->getList('undatedDate'))) {
+				return array_shift($va_undated);
+			} 
+			return "????";
+		}
+	
 		
 		// only return times?
 		if (isset($pa_options['timeOnly']) && $pa_options['timeOnly']) {
