@@ -1624,8 +1624,8 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 			//
 			// Process data in subject record
 			//
-			print_r($va_content_tree);
-			die("END\n\n");
+			//print_r($va_content_tree);
+			//die("END\n\n");
 			//continue;
 			
 			if (!$t_subject->getPrimaryKey()) {
