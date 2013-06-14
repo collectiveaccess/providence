@@ -6,7 +6,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2009-2012 Whirl-i-Gig
+ * Copyright 2009-2013 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -146,9 +146,7 @@ if (that.uiStyle == 'horizontal') {
 					data.shift();
 				}
 				var l = 0;
-				console.log("mod", data);
 				jQuery.each(data, function(i, id) {
-					console.log("setup", i, id, item_id);
 					that.setUpHierarchyLevel(i, id, 1, item_id);
 					l++;
 				});
