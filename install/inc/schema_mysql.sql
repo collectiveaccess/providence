@@ -1774,7 +1774,6 @@ create table ca_objects_x_objects
    object_right_id                int unsigned               not null,
    type_id                        smallint unsigned              not null,
    source_info                   text                           not null,
-   source_info                    text                           not null,
    sdatetime                      decimal(30,20),
    edatetime                      decimal(30,20),
    label_left_id                  int unsigned                   null,
