@@ -1124,6 +1124,7 @@ class BaseModel extends BaseObject {
 								} else {
 									$va_timestamps = $o_tep->parseDatetime($vm_value);
 								}
+								
 								if (!$va_timestamps) {
 									$this->postError(1805, $o_tep->getParseErrorMessage(), 'BaseModel->set()');
 									return false;
@@ -1967,33 +1968,35 @@ class BaseModel extends BaseObject {
 						case (FT_HISTORIC_DATE):
 							$vs_fields .= "$vs_field,";
 							$v = isset($this->_FIELD_VALUES[$vs_field]) ? $this->_FIELD_VALUES[$vs_field] : null;
-							if ($v == '') {
+							if ((($v == '') || is_null($v)) && !$va_attr["IS_NULL"]) {
 								$this->postError(1805, _t("Date is undefined but field %1 does not support NULL values", $vs_field),"BaseModel->insert()");
 								if ($vb_we_set_transaction) { $this->removeTransaction(false); }
 								return false;
 							}
-							if (!is_numeric($v)) {
+							if (!is_numeric($v) && !(is_null($v) && $va_attr["IS_NULL"])) {
 								$this->postError(1100, _t("Date is invalid for %1", $vs_field),"BaseModel->insert()");
 								if ($vb_we_set_transaction) { $this->removeTransaction(false); }
 								return false;
 							}
-							$vs_values .= $v.",";		# output as is
+							if (is_null($v)) { $v = 'null'; }
+							$vs_values .= "{$v},";		# output as is
 							break;
 						# -----------------------------
 						case (FT_TIME):
 							$vs_fields .= $vs_field.",";
 							$v = isset($this->_FIELD_VALUES[$vs_field]) ? $this->_FIELD_VALUES[$vs_field] : null;
-							if ($v == "") {
+							if ((($v == '') || is_null($v)) && !$va_attr["IS_NULL"]) {
 								$this->postError(1805, _t("Time is undefined but field %1 does not support NULL values", $vs_field),"BaseModel->insert()");
 								if ($vb_we_set_transaction) { $this->removeTransaction(false); }
 								return false;
 							}
-							if (!is_numeric($v)) {
+							if (!is_numeric($v) && !(is_null($v) && $va_attr["IS_NULL"])) {
 								$this->postError(1100, _t("Time is invalid for ", $vs_field),"BaseModel->insert()");
 								if ($vb_we_set_transaction) { $this->removeTransaction(false); }
 								return false;
 							}
-							$vs_values .= $v.",";		# output as is
+							if (is_null($v)) { $v = 'null'; }
+							$vs_values .= "{$v},";		# output as is
 							break;
 						# -----------------------------
 						case (FT_TIMESTAMP):	# insert on stamp
@@ -2008,47 +2011,68 @@ class BaseModel extends BaseObject {
 							$start_field_name = $va_attr["START"];
 							$end_field_name = $va_attr["END"];
 
-							if (($this->_FIELD_VALUES[$start_field_name] == "") || ($this->_FIELD_VALUES[$end_field_name] == "")) {
+							if (
+								!$va_attr["IS_NULL"]
+								&&
+								((($$this->_FIELD_VALUES[$start_field_name] == '') || is_null($this->_FIELD_VALUES[$start_field_name]))
+								||
+								(($$this->_FIELD_VALUES[$end_field_name] == '') || is_null($this->_FIELD_VALUES[$end_field_name])))
+							) {
 								$this->postError(1805, _t("Daterange is undefined but field does not support NULL values"),"BaseModel->insert()");
 								if ($vb_we_set_transaction) { $this->removeTransaction(false); }
 								return false;
 							}
-							if (!is_numeric($this->_FIELD_VALUES[$start_field_name])) {
+							if (!is_numeric($this->_FIELD_VALUES[$start_field_name]) && !($va_attr["IS_NULL"] && is_null($this->_FIELD_VALUES[$start_field_name]))) {
+								print_r($this->_FIELD_VALUES); print "f=$start_field_name"; print_R($va_attr); print json_encode($this->_FIELD_VALUES);
 								$this->postError(1100, _t("Starting date is invalid"),"BaseModel->insert()");
 								if ($vb_we_set_transaction) { $this->removeTransaction(false); }
 								return false;
 							}
-							if (!is_numeric($this->_FIELD_VALUES[$end_field_name])) {
+							if (is_null($this->_FIELD_VALUES[$start_field_name])) { $vm_start_val = 'null'; } else { $vm_start_val = $this->_FIELD_VALUES[$start_field_name]; }
+							
+							if (!is_numeric($this->_FIELD_VALUES[$end_field_name]) && !($va_attr["IS_NULL"] && is_null($this->_FIELD_VALUES[$end_field_name]))) {
 								$this->postError(1100,_t("Ending date is invalid"),"BaseModel->insert()");
 								if ($vb_we_set_transaction) { $this->removeTransaction(false); }
 								return false;
 							}
-							$vs_fields .= "$start_field_name, $end_field_name,";
-							$vs_values .= $this->_FIELD_VALUES[$start_field_name].", ".$this->_FIELD_VALUES[$end_field_name].",";
+							if (is_null($this->_FIELD_VALUES[$end_field_name])) { $vm_end_val = 'null'; } else { $end_field_name = $this->_FIELD_VALUES[$end_field_name]; }
+							
+							$vs_fields .= "{$start_field_name}, {$end_field_name},";
+							$vs_values .= "{$vm_start_val}, {$vm_end_val},";
 
 							break;
 						# -----------------------------
 						case (FT_TIMERANGE):
 							$start_field_name = $va_attr["START"];
 							$end_field_name = $va_attr["END"];
-
-							if (($this->_FIELD_VALUES[$start_field_name] == "") || ($this->_FIELD_VALUES[$end_field_name] == "")) {
+							
+							if (
+								!$va_attr["IS_NULL"]
+								&&
+								((($$this->_FIELD_VALUES[$start_field_name] == '') || is_null($this->_FIELD_VALUES[$start_field_name]))
+								||
+								(($$this->_FIELD_VALUES[$end_field_name] == '') || is_null($this->_FIELD_VALUES[$end_field_name])))
+							) {
 								$this->postError(1805,_t("Time range is undefined but field does not support NULL values"),"BaseModel->insert()");
 								if ($vb_we_set_transaction) { $this->removeTransaction(false); }
 								return false;
 							}
-							if (!is_numeric($this->_FIELD_VALUES[$start_field_name])) {
+							if (!is_numeric($this->_FIELD_VALUES[$start_field_name])&& !($va_attr["IS_NULL"] && is_null($this->_FIELD_VALUES[$start_field_name]))) {
 								$this->postError(1100,_t("Starting time is invalid"),"BaseModel->insert()");
 								if ($vb_we_set_transaction) { $this->removeTransaction(false); }
 								return false;
 							}
-							if (!is_numeric($this->_FIELD_VALUES[$end_field_name])) {
+							if (is_null($this->_FIELD_VALUES[$start_field_name])) { $vm_start_val = 'null'; } else { $vm_start_val = $this->_FIELD_VALUES[$start_field_name]; }
+							
+							if (!is_numeric($this->_FIELD_VALUES[$end_field_name])&& !($va_attr["IS_NULL"] && is_null($this->_FIELD_VALUES[$end_field_name]))) {
 								$this->postError(1100,_t("Ending time is invalid"),"BaseModel->insert()");
 								if ($vb_we_set_transaction) { $this->removeTransaction(false); }
 								return false;
 							}
-							$vs_fields .= "$start_field_name, $end_field_name,";
-							$vs_values .= $this->_FIELD_VALUES[$start_field_name].", ".$this->_FIELD_VALUES[$end_field_name].",";
+							if (is_null($this->_FIELD_VALUES[$end_field_name])) { $vm_end_val = 'null'; } else { $end_field_name = $this->_FIELD_VALUES[$end_field_name]; }
+							
+							$vs_fields .= "{$start_field_name}, {$end_field_name},";
+							$vs_values .= "{$vm_start_val}, {$vm_end_val},";
 
 							break;
 						# -----------------------------
@@ -2125,6 +2149,7 @@ class BaseModel extends BaseObject {
 				$vs_sql = "INSERT INTO ".$this->TABLE." ($vs_fields) VALUES ($vs_values)";
 
 				if ($this->debug) echo $vs_sql;
+				
 				$o_db->query($vs_sql);
 				if ($o_db->numErrors() == 0) {
 					if ($this->getFieldInfo($vs_pk = $this->primaryKey(), "IDENTITY")) {
@@ -2519,32 +2544,36 @@ class BaseModel extends BaseObject {
 						case (FT_DATE):
 						case (FT_HISTORIC_DATE):
 							$vm_val = isset($this->_FIELD_VALUES[$vs_field]) ? $this->_FIELD_VALUES[$vs_field] : null;
-							if ($vm_val == "") {
+							if ((($vm_val == '') || is_null($vm_val)) && !$va_attr["IS_NULL"]) {
 								$this->postError(1805,_t("Date is undefined but field does not support NULL values"),"BaseModel->update()");
 								if ($vb_we_set_transaction) { $this->removeTransaction(false); }
 								return false;
 							}
-							if (!is_numeric($vm_val)) {
+							if (!is_numeric($vm_val) && !(is_null($vm_val) && $va_attr["IS_NULL"])) {
 								$this->postError(1100,_t("Date is invalid for %1", $vs_field),"BaseModel->update()");
 								if ($vb_we_set_transaction) { $this->removeTransaction(false); }
 								return false;
 							}
+							if (is_null($vm_val)) { $vm_val = 'null'; }
+							
 							$vs_sql .= "{$vs_field} = {$vm_val},";		# output as is
 							$vn_fields_that_have_been_set++;
 							break;
 						# -----------------------------
 						case (FT_TIME):
 							$vm_val = isset($this->_FIELD_VALUES[$vs_field]) ? $this->_FIELD_VALUES[$vs_field] : null;
-							if ($vm_val == "") {
+							if ((($vm_val == '') || is_null($vm_val)) && !$va_attr["IS_NULL"]) {
 								$this->postError(1805, _t("Time is undefined but field does not support NULL values"),"BaseModel->update()");
 								if ($vb_we_set_transaction) { $this->removeTransaction(false); }
 								return false;
 							}
-							if (!is_numeric($vm_val)) {
+							if (!is_numeric($vm_val) && !(is_null($vm_val) && $va_attr["IS_NULL"])) {
 								$this->postError(1100, _t("Time is invalid for %1", $vs_field),"BaseModel->update()");
 								if ($vb_we_set_transaction) { $this->removeTransaction(false); }
 								return false;
 							}
+							if (is_null($vm_val)) { $vm_val = 'null'; }
+							
 							$vs_sql .= "{$vs_field} = {$vm_val},";		# output as is
 							$vn_fields_that_have_been_set++;
 							break;
@@ -2558,48 +2587,68 @@ class BaseModel extends BaseObject {
 						# -----------------------------
 						case (FT_DATERANGE):
 						case (FT_HISTORIC_DATERANGE):
-							$vn_start_field_name = $va_attr["START"];
-							$vn_end_field_name = $va_attr["END"];
+							$start_field_name = $va_attr["START"];
+							$end_field_name = $va_attr["END"];
 
-							if (($this->_FIELD_VALUES[$vn_start_field_name] == "") || ($this->_FIELD_VALUES[$vn_end_field_name] == "")) {
+							if (
+								!$va_attr["IS_NULL"]
+								&&
+								((($$this->_FIELD_VALUES[$start_field_name] == '') || is_null($this->_FIELD_VALUES[$start_field_name]))
+								||
+								(($$this->_FIELD_VALUES[$end_field_name] == '') || is_null($this->_FIELD_VALUES[$end_field_name])))
+							) {
 								$this->postError(1805,_t("Daterange is undefined but field does not support NULL values"),"BaseModel->update()");
 								if ($vb_we_set_transaction) { $this->removeTransaction(false); }
 								return false;
 							}
-							if (!is_numeric($this->_FIELD_VALUES[$vn_start_field_name])) {
+							if (!is_numeric($this->_FIELD_VALUES[$start_field_name]) && !($va_attr["IS_NULL"] && is_null($this->_FIELD_VALUES[$start_field_name]))) {
 								$this->postError(1100,_t("Starting date is invalid"),"BaseModel->update()");
 								if ($vb_we_set_transaction) { $this->removeTransaction(false); }
 								return false;
 							}
-							if (!is_numeric($this->_FIELD_VALUES[$vn_end_field_name])) {
+							if (is_null($this->_FIELD_VALUES[$start_field_name])) { $vm_start_val = 'null'; } else { $vm_start_val = $this->_FIELD_VALUES[$start_field_name]; }
+							
+							if (!is_numeric($this->_FIELD_VALUES[$end_field_name]) && !($va_attr["IS_NULL"] && is_null($this->_FIELD_VALUES[$end_field_name]))) {
 								$this->postError(1100,_t("Ending date is invalid"),"BaseModel->update()");
 								if ($vb_we_set_transaction) { $this->removeTransaction(false); }
 								return false;
 							}
-							$vs_sql .= "{$vn_start_field_name} = ".$this->_FIELD_VALUES[$vn_start_field_name].", {$vn_end_field_name} = ".$this->_FIELD_VALUES[$vn_end_field_name].",";
+							if (is_null($this->_FIELD_VALUES[$end_field_name])) { $vm_end_val = 'null'; } else { $vm_end_val = $this->_FIELD_VALUES[$end_field_name]; }
+							
+							$vs_sql .= "{$start_field_name} = {$vm_start_val}, {$end_field_name} = {$vm_end_val},";
 							$vn_fields_that_have_been_set++;
 							break;
 						# -----------------------------
 						case (FT_TIMERANGE):
-							$vn_start_field_name = $va_attr["START"];
-							$vn_end_field_name = $va_attr["END"];
+							$start_field_name = $va_attr["START"];
+							$end_field_name = $va_attr["END"];
 
-							if (($this->_FIELD_VALUES[$vn_start_field_name] == "") || ($this->_FIELD_VALUES[$vn_end_field_name] == "")) {
+							if (
+								!$va_attr["IS_NULL"]
+								&&
+								((($$this->_FIELD_VALUES[$start_field_name] == '') || is_null($this->_FIELD_VALUES[$start_field_name]))
+								||
+								(($$this->_FIELD_VALUES[$end_field_name] == '') || is_null($this->_FIELD_VALUES[$end_field_name])))
+							) {
 								$this->postError(1805,_t("Time range is undefined but field does not support NULL values"),"BaseModel->update()");
 								if ($vb_we_set_transaction) { $this->removeTransaction(false); }
 								return false;
 							}
-							if (!is_numeric($this->_FIELD_VALUES[$vn_start_field_name])) {
+							if (!is_numeric($this->_FIELD_VALUES[$start_field_name]) && !($va_attr["IS_NULL"] && is_null($this->_FIELD_VALUES[$start_field_name]))) {
 								$this->postError(1100,_t("Starting time is invalid"),"BaseModel->update()");
 								if ($vb_we_set_transaction) { $this->removeTransaction(false); }
 								return false;
 							}
-							if (!is_numeric($this->_FIELD_VALUES[$vn_end_field_name])) {
+							if (is_null($this->_FIELD_VALUES[$start_field_name])) { $vm_start_val = 'null'; } else { $vm_start_val = $this->_FIELD_VALUES[$start_field_name]; }
+							
+							if (!is_numeric($this->_FIELD_VALUES[$end_field_name]) && !($va_attr["IS_NULL"] && is_null($this->_FIELD_VALUES[$end_field_name]))) {
 								$this->postError(1100,_t("Ending time is invalid"),"BaseModel->update()");
 								if ($vb_we_set_transaction) { $this->removeTransaction(false); }
 								return false;
 							}
-							$vs_sql .= "{$vn_start_field_name} = ".$this->_FIELD_VALUES[$vn_start_field_name].", {$vn_end_field_name} = ".$this->_FIELD_VALUES[$vn_end_field_name].",";
+							if (is_null($this->_FIELD_VALUES[$end_field_name])) { $vm_end_val = 'null'; } else { $vm_end_val = $this->_FIELD_VALUES[$end_field_name]; }
+							
+							$vs_sql .= "{$start_field_name} = {$vm_start_val}, {$end_field_name} = {$vm_end_val},";
 							$vn_fields_that_have_been_set++;
 							break;
 						# -----------------------------

@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2009-2011 Whirl-i-Gig
+ * Copyright 2009-2013 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -188,7 +188,8 @@
 			
 			switch($vs_currency_specifier) {
 				case '$':
-					$vs_currency_specifier = 'USD';
+					$o_config = Configuration::load();
+					$vs_currency_specifier = ($vs_dollars_are_this = $o_config->get('default_dollar_currency')) ? $vs_dollars_are_this : 'USD';
 					break;
 				case '¥':
 					$vs_currency_specifier = 'JPY';

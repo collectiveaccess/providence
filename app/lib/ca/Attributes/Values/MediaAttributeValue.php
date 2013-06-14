@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2009-2012 Whirl-i-Gig
+ * Copyright 2009-2013 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -192,14 +192,14 @@
 				
 				$vs_tag = $this->opo_media_info_coder->getMediaTag($this->opa_media_data, $vs_version, $pa_options);
 				
-				if (is_object($pa_options['po_request'])) {
-					$vs_view_url = urldecode(caNavUrl($pa_options['po_request'], $pa_options['po_request']->getModulePath(), $pa_options['po_request']->getController(), 'GetMediaInfo', array('value_id' => $this->opn_value_id)));
+				if (is_object($pa_options['request'])) {
+					$vs_view_url = urldecode(caNavUrl($pa_options['request'], $pa_options['request']->getModulePath(), $pa_options['request']->getController(), 'GetMediaInfo', array('value_id' => $this->opn_value_id)));
 					$vs_val = "<div id='caMediaAttribute".$this->opn_value_id."' class='attributeMediaInfoContainer'>";
 					
 					
 					$vs_val .= "<div class='attributeMediaThumbnail'>";
 					$vs_val .= "<a href='#' onclick='caMediaPanel.showPanel(\"{$vs_view_url}\"); return false;'>{$vs_tag}</a>";
-					$vs_val .= urlDecode(caNavLink($pa_options['po_request'], caNavIcon($pa_options['po_request'], __CA_NAV_BUTTON_DOWNLOAD__, null, array('align' => 'middle')), '', $pa_options['po_request']->getModulePath(), $pa_options['po_request']->getController(), 'DownloadMedia', array('download' => 1, 'value_id' => $this->opn_value_id), array('class' => 'attributeDownloadButton')));
+					$vs_val .= urlDecode(caNavLink($pa_options['request'], caNavIcon($pa_options['request'], __CA_NAV_BUTTON_DOWNLOAD__, null, array('align' => 'middle')), '', $pa_options['request']->getModulePath(), $pa_options['request']->getController(), 'DownloadMedia', array('download' => 1, 'value_id' => $this->opn_value_id), array('class' => 'attributeDownloadButton')));
 					$vs_val .= "</div>";
 					
 					if ($pa_options['showMediaInfo']) {

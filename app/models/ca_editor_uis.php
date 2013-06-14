@@ -92,10 +92,8 @@ BaseModel::$s_ca_models_definitions['ca_editor_uis'] = array(
 					_t('movements') => 137,
 					_t('tours') => 153,
 					_t('tour stops') => 155,
-					_t('object events') => 45,
 					_t('object representations') => 56,
 					_t('representation annotations') => 82,
-					_t('object lot events') => 38,
 					_t('sets') => 103,
 					_t('set items') => 105,
 					_t('lists') => 36,
@@ -104,9 +102,7 @@ BaseModel::$s_ca_models_definitions['ca_editor_uis'] = array(
 					_t('displays') => 124,
 					_t('relationship types') => 79,
 					_t('user interfaces') => 101,
-					_t('user interface screens') => 100,
-					_t('import/export mappings') => 128,
-					_t('import/export mapping groups') => 130
+					_t('user interface screens') => 100
 				)
 		),
 		'color' => array(
@@ -503,10 +499,9 @@ class ca_editor_uis extends BundlableLabelableBaseModelWithAttributes {
 		if (!($va_screens = $this->getScreens($po_request, $pn_type_id))) { return false; }
 		
 		$va_nav = array();
-		
 		$vn_default_screen_id = null;
 		foreach($va_screens as $va_screen) {
-			if(isset($pa_options['restrictToTypes']) && is_array($pa_options['restrictToTypes'] && is_array($va_screen['typeRestrictions']) && (sizeof($va_screen['typeRestrictions']) > 0))) {
+			if(isset($pa_options['restrictToTypes']) && is_array($pa_options['restrictToTypes']) && is_array($va_screen['typeRestrictions']) && (sizeof($va_screen['typeRestrictions']) > 0)) {
 				$vb_skip = true;
 				foreach($pa_options['restrictToTypes'] as $vn_res_type_id => $vs_res_type) {
 					if (isset($va_screen['typeRestrictions'][$vn_res_type_id]) && $va_screen['typeRestrictions'][$vn_res_type_id]) {
