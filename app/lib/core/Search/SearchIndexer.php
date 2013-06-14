@@ -484,6 +484,13 @@ class SearchIndexer extends SearchBase {
 							if ($vb_can_do_incremental_indexing && (!$pb_reindex_mode) && (!isset($pa_changed_fields[$vs_field])) && ($vs_field != $t_subject->primaryKey()) ) {	// skip unchanged
 								continue;
 							}
+						
+							// specialized identifier (idno) processing; used IDNumbering plugin to generate searchable permutations of identifier
+							if (((isset($va_data['INDEX_AS_IDNO']) && $va_data['INDEX_AS_IDNO']) || in_array('INDEX_AS_IDNO', $va_data)) && method_exists($t_subject, "getIDNoPlugInInstance") && ($o_idno = $t_subject->getIDNoPlugInInstance())) {
+								$va_values = $o_idno->getIndexValues($pa_field_data[$vs_field]);
+								$this->opo_engine->indexField($pn_subject_tablenum, $vs_field, $pn_subject_row_id, join(" ", $va_values), $va_data);
+								continue;
+							}
 							
 							$va_field_list = $t_subject->getFieldsArray();
 							if(in_array($va_field_list[$vs_field]['FIELD_TYPE'],array(FT_DATERANGE,FT_HISTORIC_DATERANGE))) {
