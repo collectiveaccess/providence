@@ -29,7 +29,7 @@
  	require_once(__CA_MODELS_DIR__."/ca_movements.php");
  	require_once(__CA_LIB_DIR__."/ca/BaseQuickAddController.php");
  
- 	class CollectionQuickAddController extends BaseQuickAddController {
+ 	class MovementQuickAddController extends BaseQuickAddController {
  		# -------------------------------------------------------
  		protected $ops_table_name = 'ca_movements';		// name of "subject" table (what we're editing)
  		# -------------------------------------------------------
