@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2007-2012 Whirl-i-Gig
+ * Copyright 2007-2013 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -708,7 +708,7 @@ function caFileIsIncludable($ps_file) {
 			if(isset($pa_options['html']) && $pa_options['html']) {
 				$va_buf[] = array($va_line['file'], $va_line['class'], $va_line['function'], $va_line['line']);
 			} else {
-				$va_buf[] = $va_line['file'].':'.($va_line['class'] ? $va_line['class'].':' : '').$va_line['function'].'@'.$va_line['line'];
+				$va_buf[] = $va_line['file'].':'.($va_line['class'] ? $va_line['class'].':' : '').$va_line['function'].'@'.$va_line['line']."<br/>\n";
 			}
 		}
 		
@@ -1509,6 +1509,18 @@ function caFileIsIncludable($ps_file) {
 	/**
 	 * 
 	 *
+	 * @param mixed $ps_options
+	 * @param array $pa_options
+	 * @param mixed $pm_default
+	 * @return mixed
+	 */
+	function caGetOption($ps_option, $pa_options, $pm_default=null) {
+		return (isset($pa_options[$ps_option]) && !is_null($pa_options[$ps_option])) ? $pa_options[$ps_option] : $pm_default;
+	}
+	# ---------------------------------------
+	/**
+	 * 
+	 *
 	 * @param array $pa_options
 	 * @param array $pa_defaults
 	 * @return array
@@ -1738,6 +1750,13 @@ function caFileIsIncludable($ps_file) {
 		}
 		
 		return $va_extracted_values;
+	}
+	# ----------------------------------------
+	/**
+	 *
+	 */
+	function caIsAssociativeArray($pa_array) {
+	  return (bool)count(array_filter(array_keys($pa_array), 'is_string'));
 	}
 	# ----------------------------------------
 ?>
