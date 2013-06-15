@@ -1022,7 +1022,7 @@ function caFileIsIncludable($ps_file) {
 			'file_locking' => true,				/* cache corruption avoidance */
 			'read_control' => false,			/* no read control */
 			'file_name_prefix' => $ps_prefix,	/* prefix of cache files */
-			'cache_file_umask' => 0700			/* permissions of cache files */
+			'cache_file_perm' => 0700			/* permissions of cache files */
 		);
 
 
