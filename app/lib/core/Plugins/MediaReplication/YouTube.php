@@ -145,7 +145,7 @@ class WLPlugMediaReplicationYouTube Extends BaseMediaReplicationPlugin Implement
 		//}
 		
 		$this->opa_request_list[$o_new_entry->getVideoID()] = array('entry' => $o_video_entry, 'errors' => array());
-		return $o_new_entry->getVideoID();
+		return $this->info['NAME']."://".$o_new_entry->getVideoID();
 	}
 	# ------------------------------------------------
 	/**
@@ -155,6 +155,8 @@ class WLPlugMediaReplicationYouTube Extends BaseMediaReplicationPlugin Implement
 		if (!($o_client = $this->getClient())) {
 			throw new Exception(_t('Could not connect to YouTube'));
 		}
+		$ps_request_token = preg_replace("!^".$this->info['NAME']."://!", "", $ps_request_token); // remove plugin identifier
+		
 		$this->opa_request_list[$ps_request_token]['errors'] = array();
 		
 		$o_video_entry = $o_client->getVideoEntry($ps_request_token);
@@ -189,6 +191,7 @@ class WLPlugMediaReplicationYouTube Extends BaseMediaReplicationPlugin Implement
 	 *
 	 */
 	public function getReplicationErrors($ps_request_token) {
+		$ps_request_token = preg_replace("!^".$this->info['NAME']."://!", "", $ps_request_token); // remove plugin identifier
 		if ($this->getReplicationStatus($ps_request_token) == __CA_MEDIA_REPLICATION_STATUS_ERROR__) {
 			return is_array($va_errors = $this->opa_request_list[$ps_request_token]['errors']) ? $va_errors : array();
 		}
@@ -202,6 +205,7 @@ class WLPlugMediaReplicationYouTube Extends BaseMediaReplicationPlugin Implement
 		if (!($o_client = $this->getClient())) {
 			throw new Exception(_t('Could not connect to YouTube'));
 		}
+		$ps_request_token = preg_replace("!^".$this->info['NAME']."://!", "", $ps_request_token); // remove plugin identifier
 		$this->opa_request_list[$ps_request_token]['errors'] = array();
 		
 		$o_video_entry = $o_client->getVideoEntry($ps_request_token);
@@ -219,7 +223,8 @@ class WLPlugMediaReplicationYouTube Extends BaseMediaReplicationPlugin Implement
 	/**
 	 *
 	 */
-	public function removeReplication($ps_key, $pa_options=null) {
+	public function removeReplication($ps_request_token, $pa_options=null) {
+		$ps_request_token = preg_replace("!^".$this->info['NAME']."://!", "", $ps_request_token); // remove plugin identifier
 	
 	}
 	# ------------------------------------------------

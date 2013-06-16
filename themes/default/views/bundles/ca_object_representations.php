@@ -210,6 +210,17 @@
 						</div>
 					</td>
 				</tr>
+				
+				<tr>
+					<td colspan="6">
+						<div id="{fieldNamePrefix}media_metadata_container_{n}" >
+							<a href="#" onclick="jQuery('#{fieldNamePrefix}media_replication{n}').slideToggle(300, function() { if(jQuery('#{fieldNamePrefix}media_replication{n}').css('display') == 'block') {jQuery('#{fieldNamePrefix}media_replication{n}').load('<?php print caNavUrl($this->request, $this->request->getModulePath(), $this->request->getController(), 'MediaReplicationControls', array('representation_id' => '')); ?>{n}'); } }); return false;"><?php print "<div style='margin-top:5px; width:11px; float:left;'><img src='".$this->request->getThemeUrlPath()."/graphics/icons/downarrow.jpg' border='0' height='11px' width='11px'/></div>"?><?php print _t('Replication'); ?></a>
+							<div style="text-align:left; display: none;" id="{fieldNamePrefix}media_replication{n}" class="editorObjectRepresentationMetadata">
+									<?php print caBusyIndicatorIcon($this->request).' '._t('Loading'); ?>
+							</div>
+						</div>
+					</td>
+				</tr>
 			</table>
 		</div>
 <?php
@@ -241,7 +252,7 @@
 	jQuery(document).ready(function() {
 		caUI.initBundle('#<?php print $vs_id_prefix.$t_item->tableNum().'_rel'; ?>', {
 			fieldNamePrefix: '<?php print $vs_id_prefix; ?>_',
-			templateValues: ['status', 'access', 'is_primary', 'media', 'locale_id', 'icon', 'type', 'dimensions', 'filename', 'num_multifiles', 'metadata', 'type_id', 'typename', 'fetched_from'],
+			templateValues: ['representation_id', 'status', 'access', 'is_primary', 'media', 'locale_id', 'icon', 'type', 'dimensions', 'filename', 'num_multifiles', 'metadata', 'type_id', 'typename', 'fetched_from'],
 			initialValues: <?php print json_encode($va_inital_values); ?>,
 			errors: <?php print json_encode($va_errors); ?>,
 			forceNewValues: <?php print json_encode($va_failed_inserts); ?>,

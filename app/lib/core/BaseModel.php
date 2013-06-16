@@ -4648,7 +4648,7 @@ class BaseModel extends BaseObject {
 	public function getAvailableMediaReplicationTargets($ps_field, $ps_version='original') {
 		if (!($va_targets = $this->getMediaReplicationTargets($ps_field, $ps_version))) { return null; }
 	
-		$va_used_targets = is_array($va_media_info['REPLICATION_STATUS']) ? array_keys($va_media_info['REPLICATION_STATUS']) : array();
+		$va_used_targets = array_keys($this->getUsedMediaReplicationTargets($ps_field, $ps_version));
 	
 		foreach($va_used_targets as $vs_used_target) {
 			unset($va_targets[$vs_used_target]);
@@ -4683,7 +4683,11 @@ class BaseModel extends BaseObject {
 		if (!($va_targets = $this->getMediaReplicationTargets($ps_field, $ps_version))) { return null; }
 		
 		$va_media_info = $this->getMediaInfo($ps_field);
-		$va_used_targets = is_array($va_media_info['REPLICATION_STATUS']) ? array_keys($va_media_info['REPLICATION_STATUS']) : array();
+		//$va_used_targets = is_array($va_media_info['REPLICATION_STATUS']) ? array_keys($va_media_info['REPLICATION_STATUS']) : array();
+		$va_used_targets = array();
+		foreach($va_media_info['REPLICATION_STATUS'] as $vs_used_target => $vn_target_status) {
+			if ($vn_target_status != __CA_MEDIA_REPLICATION_STATE_ERROR__) { $va_used_targets[] = $vs_used_target; }
+		}
 	
 		foreach($va_targets as $vs_target => $va_target_info) {
 			if (!in_array($vs_target, $va_used_targets)) { unset($va_targets[$vs_target]); }
@@ -4723,12 +4727,13 @@ class BaseModel extends BaseObject {
 			$vs_key = null;
 		} else {		
 			// Do replication right now, in-process
-				// mark replication as started
+			// (mark replication as started)
 				
 			$va_media_info = $this->getMediaInfo($ps_field);
 			$va_media_info['REPLICATION_STATUS'][$ps_target] = __CA_MEDIA_REPLICATION_STATE_UPLOADING__;
 			$va_media_info['REPLICATION_LOG'][$ps_target][] = array('STATUS' => __CA_MEDIA_REPLICATION_STATE_UPLOADING__, 'DATETIME' => time());
 			$va_media_info['REPLICATION_KEYS'][$ps_target] = null;
+			
 			$this->setMediaInfo($ps_field, $va_media_info);
 			$this->setMode(ACCESS_WRITE);
 			$this->update();
