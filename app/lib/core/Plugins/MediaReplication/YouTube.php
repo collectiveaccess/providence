@@ -98,7 +98,7 @@ class WLPlugMediaReplicationYouTube Extends BaseMediaReplicationPlugin Implement
 	/**
 	 * @return string Unique request token. The token can be used on subsequent calls to fetch information about the replication request
 	 */
-	public function initiateReplication($ps_key, $ps_filepath, $pa_data, $pa_options=null) {
+	public function initiateReplication($ps_filepath, $pa_data, $pa_options=null) {
 		if (!($o_client = $this->getClient())) {
 			throw new Exception(_t('Could not connect to YouTube'));
 		}
@@ -134,29 +134,17 @@ class WLPlugMediaReplicationYouTube Extends BaseMediaReplicationPlugin Implement
 		// Optionally set some developer tags
 		//$o_video_entry->setVideoDeveloperTags(array('Uploaded_by_CollectiveAccess'));
 
-		// Optionally set the video's location
-		//$yt->registerPackage('Zend_Gdata_Geo');
-		//$yt->registerPackage('Zend_Gdata_Geo_Extension');
-		//$where = $yt->newGeoRssWhere();
-		//$position = $yt->newGmlPos('37.0 -122.0');
-		//$where->point = $yt->newGmlPoint($position);
-		//$myVideoEntry->setWhere($where);
-
-		// Try to upload the video, catching a Zend_Gdata_App_HttpException
-		// if availableor just a regular Zend_Gdata_App_Exception
-
-		try {
+		//try {
 			$o_new_entry = $o_client->insertEntry($o_video_entry,
 							 WLPlugMediaReplicationYouTube::$s_upload_url,
 							 'Zend_Gdata_YouTube_VideoEntry');
-		} catch (Zend_Gdata_App_HttpException $o_http_exception) {
-			echo $o_http_exception->getRawResponseBody();
-		} catch (Zend_Gdata_App_Exception $e) {
-			echo $e->getMessage();
-		}
-		print "id=".$o_new_entry->getVideoID()."\n\n";
+		//} catch (Zend_Gdata_App_HttpException $o_http_exception) {
+			//echo $o_http_exception->getRawResponseBody();
+		//} catch (Zend_Gdata_App_Exception $e) {
+		//	echo $e->getMessage();
+		//}
 		
-		$this->opa_request_list[$o_new_entry->getVideoID()] = $o_video_entry;
+		$this->opa_request_list[$o_new_entry->getVideoID()] = array('entry' => $o_video_entry, 'errors' => array());
 		return $o_new_entry->getVideoID();
 	}
 	# ------------------------------------------------
@@ -167,51 +155,65 @@ class WLPlugMediaReplicationYouTube Extends BaseMediaReplicationPlugin Implement
 		if (!($o_client = $this->getClient())) {
 			throw new Exception(_t('Could not connect to YouTube'));
 		}
-		//if (!isset($this->opa_request_list[$ps_request_token])) { print "skip\n";return null; }
+		$this->opa_request_list[$ps_request_token]['errors'] = array();
 		
 		$o_video_entry = $o_client->getVideoEntry($ps_request_token);
-		//$o_video_entry = $this->opa_request_list[$ps_request_token];
+
+		$o_state = $o_video_entry->getVideoState();
 		
-		try {
-			$o_control = $o_video_entry->getControl();
-		} catch (Zend_Gdata_App_Exception $e) {
-			echo $e->getMessage();
-			print "fail";
-		}
-
-		if ($o_control instanceof Zend_Gdata_App_Extension_Control) {
-			//if ($o_control->getDraft() != null &&
-			//	$o_control->getDraft()->getText() == 'yes') {
-				$o_state = $o_video_entry->getVideoState();
-
-				if ($o_state instanceof Zend_Gdata_YouTube_Extension_State) {
-					print 'Upload status: '
-						  . $o_state->getName()
-						  .' '. $o_state->getText();
+		$vs_state = ($o_state instanceof Zend_Gdata_YouTube_Extension_State) ? $o_state->getName() : null;
+		
+		switch($vs_state) {
+			case 'processing':
+				return __CA_MEDIA_REPLICATION_STATUS_PROCESSING__;
+				break;
+			case 'rejected':
+				$this->opa_request_list[$ps_request_token]['errors'][$o_state->getText()]++;
+				return __CA_MEDIA_REPLICATION_STATUS_ERROR__;
+				break;
+				
+			default:
+				if ($o_video_entry->getVideoWatchPageUrl()) {
+					return __CA_MEDIA_REPLICATION_STATUS_COMPLETE__;
 				} else {
-					print 'Not able to retrieve the video status information'
-						  .' yet. ' . "Please try again shortly.\n";
+					$this->opa_request_list[$ps_request_token]['errors'][_t("Unknown error")]++;
+					return __CA_MEDIA_REPLICATION_STATUS_ERROR__;
 				}
-			//} else {
-			//	print "Nothing yet\n";
-			//}
-		} else {
-			print "no control"; print_R($o_control);
+				break;
 		}
+		
+		return __CA_MEDIA_REPLICATION_STATUS_UNKNOWN__;
 	}
 	# ------------------------------------------------
 	/**
 	 *
 	 */
 	public function getReplicationErrors($ps_request_token) {
-	
+		if ($this->getReplicationStatus($ps_request_token) == __CA_MEDIA_REPLICATION_STATUS_ERROR__) {
+			return is_array($va_errors = $this->opa_request_list[$ps_request_token]['errors']) ? $va_errors : array();
+		}
+		return array();
 	}
 	# ------------------------------------------------
 	/**
 	 *
 	 */
 	public function getReplicationInfo($ps_request_token) {
-	
+		if (!($o_client = $this->getClient())) {
+			throw new Exception(_t('Could not connect to YouTube'));
+		}
+		$this->opa_request_list[$ps_request_token]['errors'] = array();
+		
+		$o_video_entry = $o_client->getVideoEntry($ps_request_token);
+		
+		return array(
+			'id' => $o_video_entry->getVideoId(),
+			'title' => $o_video_entry->getVideoTitle(),
+			'description' => $o_video_entry->getVideoDescription(),
+			'viewCount' => $o_video_entry->getVideoViewCount(),
+			'pageUrl' => $o_video_entry->getVideoWatchPageUrl(),
+			'playUrl' => $o_video_entry->getFlashPlayerUrl()
+		);
 	}
 	# ------------------------------------------------
 	/**

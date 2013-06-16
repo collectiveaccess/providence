@@ -31,7 +31,7 @@
 		/**
 		 * @return string Unique request token. The token can be used on subsequent calls to fetch information about the replication request
 		 */
-		public function initiateReplication($ps_key, $ps_filepath, $pa_data, $pa_options=null);
+		public function initiateReplication($ps_filepath, $pa_data, $pa_options=null);
 		
 		/**
 		 *

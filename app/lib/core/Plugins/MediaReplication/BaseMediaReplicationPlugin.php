@@ -38,6 +38,12 @@ include_once(__CA_LIB_DIR__."/core/Plugins/WLPlug.php");
 include_once(__CA_LIB_DIR__."/core/Plugins/IWLPlugMediaReplication.php");
 include_once(__CA_LIB_DIR__."/core/Configuration.php");
 
+define('__CA_MEDIA_REPLICATION_STATUS_UNKNOWN__', 0);
+define('__CA_MEDIA_REPLICATION_STATUS_UPLOADING__', 1);
+define('__CA_MEDIA_REPLICATION_STATUS_PROCESSING__', 2);
+define('__CA_MEDIA_REPLICATION_STATUS_COMPLETE__', 3);
+define('__CA_MEDIA_REPLICATION_STATUS_ERROR__', 4);
+
 abstract class BaseMediaReplicationPlugIn Extends WLPlug {
 	// properties for this plugin instance
 	protected $properties = array(
@@ -68,7 +74,7 @@ abstract class BaseMediaReplicationPlugIn Extends WLPlug {
 	/**
 	 * @return string Unique request token. The token can be used on subsequent calls to fetch information about the replication request
 	 */
-	abstract public function initiateReplication($ps_key, $ps_filepath, $pa_data, $pa_options=null);
+	abstract public function initiateReplication($ps_filepath, $pa_data, $pa_options=null);
 	# ------------------------------------------------
 	/**
 	 *
