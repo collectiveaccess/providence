@@ -135,6 +135,8 @@ class SearchEngine extends SearchBase {
 			$ps_search .= $vs_append_to_search;
 		}
 		
+		$ps_search = str_replace("[BLANK]", '"[BLANK]"', $ps_search);	// the special [BLANK] search term, which returns records that have *no* content in a specific fields, has to be quoted in order to protect the square brackets from the parser.
+		
 		$t = new Timer();
 		if (!is_array($pa_options)) { $pa_options = array(); }
 		$vn_limit = (isset($pa_options['limit']) && ($pa_options['limit'] > 0)) ? (int)$pa_options['limit'] : null;
@@ -783,6 +785,7 @@ class SearchEngine extends SearchBase {
 					}
 				}
 				
+				if (sizeof($va_terms['signs']) > 0) { array_pop($va_terms['signs']); }
 				return $va_terms;
 			}
 		}

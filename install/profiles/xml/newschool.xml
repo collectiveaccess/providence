@@ -632,7 +632,7 @@
         </item>
       </items>
     </list>
-    <list code="repositories" hierarchical="0" system="0" vocabulary="0">
+    <list code="repositories" hierarchical="0" system="0" vocabulary="1">
       <labels>
         <label locale="en_US">
           <name>Repositories</name>
@@ -762,31 +762,6 @@
         </item>             
       </items>
     </list>
-    <list code="note_box" hierarchical="0" system="0" vocabulary="0">
-      <labels>
-        <label locale="en_US">
-          <name>Internal/Multi-Part</name>
-        </label>
-      </labels>
-      <items>
-        <item idno="internal" enabled="1" default="0">
-          <labels>
-            <label locale="en_US" preferred="1">
-              <name_singular>internal</name_singular>
-              <name_plural>internal</name_plural>
-            </label>
-          </labels>
-        </item>
-        <item idno="multi_part" enabled="1" default="0">
-          <labels>
-            <label locale="en_US" preferred="1">
-              <name_singular>multi-part</name_singular>
-              <name_plural>multi-part</name_plural>
-            </label>
-          </labels>
-        </item>
-      </items>
-    </list>
     <list code="note_types" hierarchical="0" system="0" vocabulary="0">
       <labels>
         <label locale="en_US">
@@ -799,6 +774,14 @@
             <label locale="en_US" preferred="1">
               <name_singular> </name_singular>
               <name_plural> </name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="abstract" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>abstract</name_singular>
+              <name_plural>abstracts</name_plural>
             </label>
           </labels>
         </item>
@@ -826,51 +809,11 @@
             </label>
           </labels>
         </item>
-        <item idno="conditions_governing_use" enabled="1" default="0">
-          <labels>
-            <label locale="en_US" preferred="1">
-              <name_singular>conditions governing use</name_singular>
-              <name_plural>conditions governing use</name_plural>
-            </label>
-          </labels>
-        </item>
-        <item idno="copyright_notice" enabled="1" default="0">
-          <labels>
-            <label locale="en_US" preferred="1">
-              <name_singular>copyright notice</name_singular>
-              <name_plural>copyright notice</name_plural>
-            </label>
-          </labels>
-        </item>
         <item idno="system_of_arrangement" enabled="1" default="0">
           <labels>
             <label locale="en_US" preferred="1">
               <name_singular>arrangement</name_singular>
               <name_plural>arrangement</name_plural>
-            </label>
-          </labels>
-        </item>
-        <item idno="biblio" enabled="1" default="0">
-          <labels>
-            <label locale="en_US" preferred="1">
-              <name_singular>bibliography</name_singular>
-              <name_plural>bibliography</name_plural>
-            </label>
-          </labels>
-        </item>
-        <item idno="existence_and_location_of_originals" enabled="1" default="0">
-          <labels>
-            <label locale="en_US" preferred="1">
-              <name_singular>existence and location of originals</name_singular>
-              <name_plural>existence and location of originals</name_plural>
-            </label>
-          </labels>
-        </item>
-        <item idno="location_of_copies" enabled="1" default="0">
-          <labels>
-            <label locale="en_US" preferred="1">
-              <name_singular>existence and location of copies</name_singular>
-              <name_plural>existence and location of copies</name_plural>
             </label>
           </labels>
         </item>
@@ -898,30 +841,6 @@
             </label>
           </labels>
         </item>
-        <item idno="appraisal" enabled="1" default="0">
-          <labels>
-            <label locale="en_US" preferred="1">
-              <name_singular>appraisal</name_singular>
-              <name_plural>appraisals</name_plural>
-            </label>
-          </labels>
-        </item>
-        <item idno="accruals" enabled="1" default="0">
-          <labels>
-            <label locale="en_US" preferred="1">
-              <name_singular>accruals</name_singular>
-              <name_plural>accruals</name_plural>
-            </label>
-          </labels>
-        </item>
-        <item idno="publication_note" enabled="1" default="0">
-          <labels>
-            <label locale="en_US" preferred="1">
-              <name_singular>publication note</name_singular>
-              <name_plural>publication notes</name_plural>
-            </label>
-          </labels>
-        </item>
         <item idno="general_note" enabled="1" default="0">
           <labels>
             <label locale="en_US" preferred="1">
@@ -929,111 +848,7 @@
               <name_plural>general notes</name_plural>
             </label>
           </labels>
-        </item>
-        <item idno="general_phys_description" enabled="1" default="0">
-          <labels>
-            <label locale="en_US" preferred="1">
-              <name_singular>general physical description</name_singular>
-              <name_plural>general physical descriptions</name_plural>
-            </label>
-          </labels>
-        </item>
-        <item idno="dimensions" enabled="1" default="0">
-          <labels>
-            <label locale="en_US" preferred="1">
-              <name_singular>dimensions note</name_singular>
-              <name_plural>dimensions notes</name_plural>
-            </label>
-          </labels>
-        </item>
-        <item idno="file_plan" enabled="1" default="0">
-          <labels>
-            <label locale="en_US" preferred="1">
-              <name_singular>file plan</name_singular>
-              <name_plural>file plans</name_plural>
-            </label>
-          </labels>
-        </item>
-        <item idno="language" enabled="1" default="0">
-          <labels>
-            <label locale="en_US" preferred="1">
-              <name_singular>language of materials note</name_singular>
-              <name_plural>language of materials notes</name_plural>
-            </label>
-          </labels>
-        </item>   
-        <item idno="legal_status" enabled="1" default="0">
-          <labels>
-            <label locale="en_US" preferred="1">
-              <name_singular>legal status</name_singular>
-              <name_plural>legal status</name_plural>
-            </label>
-          </labels>
         </item> 
-        <item idno="location_note" enabled="1" default="0">
-          <labels>
-            <label locale="en_US" preferred="1">
-              <name_singular>location note</name_singular>
-              <name_plural>location notes</name_plural>
-            </label>
-          </labels>
-        </item> 
-        <item idno="material_note" enabled="1" default="0">
-          <labels>
-            <label locale="en_US" preferred="1">
-              <name_singular>material specific details note</name_singular>
-              <name_plural>material specific details notes</name_plural>
-            </label>
-          </labels>
-        </item>    
-        <item idno="other_finding_aids_note" enabled="1" default="0">
-          <labels>
-            <label locale="en_US" preferred="1">
-              <name_singular>other finding aids note</name_singular>
-              <name_plural>other finding aids notes</name_plural>
-            </label>
-          </labels>
-        </item> 
-        <item idno="physical_facet_note" enabled="1" default="0">
-          <labels>
-            <label locale="en_US" preferred="1">
-              <name_singular>physical facet note</name_singular>
-              <name_plural>physical facet notes</name_plural>
-            </label>
-          </labels>
-        </item> 
-        <item idno="preferred_citation_note" enabled="1" default="0">
-          <labels>
-            <label locale="en_US" preferred="1">
-              <name_singular>preferred citation</name_singular>
-              <name_plural>preferred citation</name_plural>
-            </label>
-          </labels>
-        </item> 
-        <item idno="preservation_needs" enabled="1" default="0">
-          <labels>
-            <label locale="en_US" preferred="1">
-              <name_singular>preservation needs</name_singular>
-              <name_plural>preservation needs</name_plural>
-            </label>
-          </labels>
-        </item>
-        <item idno="processing_info" enabled="1" default="0">
-          <labels>
-            <label locale="en_US" preferred="1">
-              <name_singular>processing information</name_singular>
-              <name_plural>processing information</name_plural>
-            </label>
-          </labels>
-        </item>   
-        <item idno="seperated_materials" enabled="1" default="0">
-          <labels>
-            <label locale="en_US" preferred="1">
-              <name_singular>seperated materials note</name_singular>
-              <name_plural>seperated materials notes</name_plural>
-            </label>
-          </labels>
-        </item>   
         <item idno="summary" enabled="1" default="0">
           <labels>
             <label locale="en_US" preferred="1">
@@ -1051,118 +866,6 @@
         </label>
       </labels>
       <items>
-        <item idno="null" enabled="1" default="0">
-          <labels>
-            <label locale="en_US" preferred="1">
-              <name_singular> </name_singular>
-              <name_plural> </name_plural>
-            </label>
-          </labels>
-        </item>
-        <item idno="corpname" enabled="1" default="0">
-          <labels>
-            <label locale="en_US" preferred="1">
-              <name_singular>Corporate Name</name_singular>
-              <name_plural>Corporate Names</name_plural>
-            </label>
-          </labels>
-        </item>
-        <item idno="date" enabled="1" default="0">
-          <labels>
-            <label locale="en_US" preferred="1">
-              <name_singular>Date</name_singular>
-              <name_plural>Dates</name_plural>
-            </label>
-          </labels>
-        </item>
-        <item idno="emph" enabled="1" default="0">
-          <labels>
-            <label locale="en_US" preferred="1">
-              <name_singular>Emphasis</name_singular>
-              <name_plural>Emphasis</name_plural>
-            </label>
-          </labels>
-        </item>
-        <item idno="extref" enabled="1" default="0">
-          <labels>
-            <label locale="en_US" preferred="1">
-              <name_singular>Extended Reference</name_singular>
-              <name_plural>Extended References</name_plural>
-            </label>
-          </labels>
-        </item>
-        <item idno="famname" enabled="1" default="0">
-          <labels>
-            <label locale="en_US" preferred="1">
-              <name_singular>Family Name</name_singular>
-              <name_plural>Family Names</name_plural>
-            </label>
-          </labels>
-        </item>
-        <item idno="function" enabled="1" default="0">
-          <labels>
-            <label locale="en_US" preferred="1">
-              <name_singular>Function</name_singular>
-              <name_plural>Functions</name_plural>
-            </label>
-          </labels>
-        </item>
-        <item idno="genreform" enabled="1" default="0">
-          <labels>
-            <label locale="en_US" preferred="1">
-              <name_singular>Genre/Physical Characteristic</name_singular>
-              <name_plural>Genre/Physical Characteristics</name_plural>
-            </label>
-          </labels>
-        </item>
-        <item idno="geoname" enabled="1" default="0">
-          <labels>
-            <label locale="en_US" preferred="1">
-              <name_singular>Geographic Name</name_singular>
-              <name_plural>Geographic Names</name_plural>
-            </label>
-          </labels>
-        </item>
-        <item idno="name" enabled="1" default="0">
-          <labels>
-            <label locale="en_US" preferred="1">
-              <name_singular>Name</name_singular>
-              <name_plural>Names</name_plural>
-            </label>
-          </labels>
-        </item>
-        <item idno="occupation" enabled="1" default="0">
-          <labels>
-            <label locale="en_US" preferred="1">
-              <name_singular>Occupation</name_singular>
-              <name_plural>Occupations</name_plural>
-            </label>
-          </labels>
-        </item>
-        <item idno="persname" enabled="1" default="0">
-          <labels>
-            <label locale="en_US" preferred="1">
-              <name_singular>Personal Name</name_singular>
-              <name_plural>Personal Names</name_plural>
-            </label>
-          </labels>
-        </item>
-        <item idno="ref" enabled="1" default="0">
-          <labels>
-            <label locale="en_US" preferred="1">
-              <name_singular>Reference</name_singular>
-              <name_plural>Reference</name_plural>
-            </label>
-          </labels>
-        </item>
-        <item idno="subject" enabled="1" default="0">
-          <labels>
-            <label locale="en_US" preferred="1">
-              <name_singular>Subject</name_singular>
-              <name_plural>Subject</name_plural>
-            </label>
-          </labels>
-        </item>
         <item idno="title" enabled="1" default="1">
           <labels>
             <label locale="en_US" preferred="1">
@@ -12688,6 +12391,14 @@
             <setting name="minimumAttributeBundlesToDisplay">1</setting>
           </settings>
         </restriction>
+        <restriction code="ca_occurrences">
+          <table>ca_occurrences</table>
+          <settings>
+            <setting name="minAttributesPerRow">0</setting>
+            <setting name="maxAttributesPerRow">100</setting>
+            <setting name="minimumAttributeBundlesToDisplay">1</setting>
+          </settings>
+        </restriction>
       </typeRestrictions>
     </metadataElement>
     <metadataElement code="LcshTopical" datatype="LCSH">
@@ -12715,6 +12426,14 @@
         </restriction>
         <restriction code="ca_objects">
           <table>ca_objects</table>
+          <settings>
+            <setting name="minAttributesPerRow">0</setting>
+            <setting name="maxAttributesPerRow">100</setting>
+            <setting name="minimumAttributeBundlesToDisplay">1</setting>
+          </settings>
+        </restriction>
+        <restriction code="ca_occurrences">
+          <table>ca_occurrences</table>
           <settings>
             <setting name="minAttributesPerRow">0</setting>
             <setting name="maxAttributesPerRow">100</setting>
@@ -12796,43 +12515,6 @@
         </label>
       </labels>
       <elements>
-      	<metadataElement code="NoteLine1" datatype="Container">
-          <labels>
-            <label locale="en_US">
-              <name>Note line 1</name>
-            </label>
-          </labels>
-          <elements>
-            <metadataElement code="is_internal" datatype="List" list="yes_no">
-			  <labels>
-				<label locale="en_US">
-				  <name>Internal</name>
-				</label>
-			  </labels>
-			  <settings>
-				<setting name="render">radio_buttons</setting>
-				<setting name="fieldWidth">40</setting>
-				<setting name="fieldHeight">1</setting>
-				<setting name="minChars">0</setting>
-				<setting name="maxChars">65535</setting>
-			  </settings>
-			</metadataElement>
-			<metadataElement code="multipart" datatype="List" list="yes_no">
-			  <labels>
-				<label locale="en_US">
-				  <name>Multipart</name>
-				</label>
-			  </labels>
-			  <settings>
-				<setting name="render">radio_buttons</setting>
-				<setting name="fieldWidth">40</setting>
-				<setting name="fieldHeight">1</setting>
-				<setting name="minChars">0</setting>
-				<setting name="maxChars">65535</setting>
-			  </settings>
-			</metadataElement>
-          </elements>          
-        </metadataElement>
         <metadataElement code="NoteLine2" datatype="Container">
           <labels>
             <label locale="en_US">
@@ -14069,7 +13751,7 @@
     <metadataElement code="lcshFull" datatype="LCSH">
       <labels>
         <label locale="en_US">
-          <name>Library of Congress Subject Headings</name>
+          <name>Library of Congress Authorities</name>
           <description>Library of Congress Subject headings describing this object. To add a new heading simply type the first few letters of the heading and choose the desired one from the displayed list of possible matches.</description>
         </label>
       </labels>
@@ -17892,10 +17574,14 @@
                 <setting name="add_label" locale="en_US">Add annotation</setting>
               </settings>
             </placement>
-            <placement code="ca_attribute_pbcoreFormatLocation">
-              <bundle>ca_attribute_pbcoreFormatLocation</bundle>
+            <placement code="ca_repo">
+              <bundle>ca_list_items</bundle>
               <settings>
-                <setting name="add_label" locale="en_US">Add location</setting>
+                <setting name="restrict_to_lists">repositories</setting>
+                <setting name="restrictToTermsRelatedToCollection">1</setting>
+                <setting name="restrictToTermsOnCollectionUseRelationshipType">described</setting>
+                <setting name="label" locale="en_US">Repository</setting>
+                <setting name="add_label" locale="en_US">add repository</setting>
               </settings>
             </placement>
             <placement code="ca_attribute_pbcoreFormatColors">
@@ -18025,6 +17711,16 @@
                 <setting name="add_label" locale="en_US">Add technique</setting>
               </settings>
               </placement>
+            <placement code="ca_repo">
+              <bundle>ca_list_items</bundle>
+              <settings>
+                <setting name="restrict_to_lists">repositories</setting>
+                <setting name="restrictToTermsRelatedToCollection">1</setting>
+                <setting name="restrictToTermsOnCollectionUseRelationshipType">described</setting>
+                <setting name="label" locale="en_US">Repository</setting>
+                <setting name="add_label" locale="en_US">add repository</setting>
+              </settings>
+            </placement>
             <placement code="status">
               <bundle>status</bundle>
               <settings>
@@ -18292,8 +17988,10 @@
             <placement code="ca_objects">
               <bundle>ca_objects</bundle>
               <settings>
-                <setting name="restrict_to_type"> </setting>
                 <setting name="label" locale="en_US">Related Instantiations</setting>
+                <setting name="add_label" locale="en_US">Add related instantiations</setting>
+                <setting name="list_format">list</setting>
+                <setting name="display_template"><![CDATA[(^ca_objects.idno) <l>^ca_objects.preferred_labels</l> <ifdef code="ca_collections.preferred_labels">(Collection: </ifdef><l>^ca_collections.preferred_labels</l><ifdef code="ca_collections.preferred_labels">)</ifdef>]]></setting>
               </settings>
             </placement>
             <placement code="status">
@@ -18331,16 +18029,19 @@
             <placement code="ca_attribute_pbcoreGenre">
               <bundle>ca_attribute_pbcoreGenre</bundle>
             </placement>
-            <placement code="ca_attribute_lcshFull">
-              <bundle>ca_attribute_lcshFull</bundle>
+            <placement code="ca_attribute_LcshTopical">
+              <bundle>ca_attribute_LcshTopical</bundle>
             </placement>
             <placement code="ca_ulan">
               <bundle>ca_list_items</bundle>
               <settings>
                 <setting name="restrict_to_lists">ulan</setting>
-                <setting name="label" locale="en_US">ULAN/LCNAF</setting>
-                <setting name="add_label" locale="en_US">add ULAN/LCNAF</setting>
+                <setting name="label" locale="en_US">ULAN</setting>
+                <setting name="add_label" locale="en_US">add ULAN</setting>
               </settings>
+            </placement>
+             <placement code="ca_attribute_LcshNames">
+              <bundle>ca_attribute_LcshNames</bundle>
             </placement>
             <placement code="ca_aat">
               <bundle>ca_list_items</bundle>
@@ -18386,7 +18087,7 @@
               <bundle>ca_list_items</bundle>
               <settings>
                 <setting name="restrict_to_lists">ns_local_vocab</setting>
-                <setting name="label" locale="en_US">Local Vocabulary Terms</setting>
+                <setting name="label" locale="en_US">New School Local Subject Authority</setting>
                 <setting name="add_label" locale="en_US">add term</setting>
               </settings>
             </placement>
@@ -18663,12 +18364,14 @@
             <placement code="ca_attribute_Language">
               <bundle>ca_attribute_Language</bundle>
             </placement>
-             <placement code="ca_attribute_RepositoryProcessingNote">
-              <bundle>ca_attribute_RepositoryProcessingNote</bundle>
-            </placement>
-             <placement code="ca_attribute_Repository">
-              <bundle>ca_attribute_Repository</bundle>
-             </placement>         
+             <placement code="ca_repo">
+              <bundle>ca_list_items</bundle>
+              <settings>
+                <setting name="restrict_to_lists">repositories</setting>
+                <setting name="label" locale="en_US">Repository</setting>
+                <setting name="add_label" locale="en_US">add repository</setting>
+              </settings>
+            </placement>   
              <placement code="ca_attribute_ExtentNewSchool">
               <bundle>ca_attribute_ExtentNewSchool</bundle>
              </placement>            
@@ -18774,15 +18477,17 @@
             <placement code="ca_attribute_LcshNames">
               <bundle>ca_attribute_LcshNames</bundle>
             </placement>
+            <placement code="ca_ulan">
+              <bundle>ca_list_items</bundle>
+              <settings>
+                <setting name="restrict_to_lists">ulan</setting>
+                <setting name="label" locale="en_US">ULAN</setting>
+                <setting name="add_label" locale="en_US">add ULAN</setting>
+              </settings>
+            </placement>
              <placement code="ca_attribute_LcshTopical">
               <bundle>ca_attribute_LcshTopical</bundle>
              </placement>
-             <placement code="ca_attribute_LcshGeo">
-              <bundle>ca_attribute_LcshGeo</bundle>
-             </placement>
-             <placement code="ca_attribute_LcshGenre">
-              <bundle>ca_attribute_LcshGenre</bundle>
-             </placement> 
             <placement code="ca_aat">
               <bundle>ca_list_items</bundle>
               <settings>
@@ -18836,7 +18541,7 @@
         <screen idno="notes_collection" default="0">
           <labels>
             <label locale="en_US">
-              <name>Notes &amp; Deaccessions</name>
+              <name>Notes</name>
             </label>
           </labels>
            <typeRestrictions>
@@ -18864,54 +18569,6 @@
             <placement code="ca_attribute_CollectionNote">
               <bundle>ca_attribute_CollectionNote</bundle>
             </placement>        
-          </bundlePlacements>
-        </screen>
-        <screen idno="finding_aid_data" default="0">
-          <labels>
-            <label locale="en_US">
-              <name>Finding Aid Data</name>
-            </label>
-          </labels>            
-           <typeRestrictions>
-            <restriction code="collection" type="collection"/>
-          </typeRestrictions>
-          <bundlePlacements>
-            <placement code="ca_attribute_FAIdentifier">
-              <bundle>ca_attribute_FAIdentifier</bundle>
-            </placement>
-            <placement code="ca_attribute_FALocation">
-              <bundle>ca_attribute_FALocation</bundle>
-            </placement>
-            <placement code="ca_attribute_FATitle">
-              <bundle>ca_attribute_FATitle</bundle>
-            </placement>          
-            <placement code="ca_attribute_FADate">
-              <bundle>ca_attribute_FADate</bundle>
-            </placement>              
-             <placement code="ca_attribute_Author">
-              <bundle>ca_attribute_Author</bundle>
-            </placement>   
-            <placement code="ca_attribute_DescriptionRule">
-              <bundle>ca_attribute_DescriptionRule</bundle>
-            </placement>
-            <placement code="ca_attribute_FALanguage">
-              <bundle>ca_attribute_FALanguage</bundle>
-            </placement>               
-            <placement code="ca_attribute_SponsorNote">
-              <bundle>ca_attribute_SponsorNote</bundle>
-            </placement>   
-            <placement code="ca_attribute_EditionStatement">
-              <bundle>ca_attribute_EditionStatement</bundle>
-            </placement>   
-            <placement code="ca_attribute_Series">
-              <bundle>ca_attribute_Series</bundle>
-            </placement>   
-            <placement code="ca_attribute_RevisionInfo">
-              <bundle>ca_attribute_RevisionInfo</bundle>
-            </placement>               
-            <placement code="ca_attribute_FindingAidStatus">
-              <bundle>ca_attribute_FindingAidStatus</bundle>
-            </placement>
           </bundlePlacements>
         </screen>        
         <screen idno="relationships" default="0">
@@ -19448,6 +19105,7 @@
         </screen>
       </screens>
     </userInterface>
+    
   </userInterfaces>
   <relationshipTypes>
     <relationshipTable name="ca_objects_x_entities">
@@ -22346,6 +22004,16 @@
             <label locale="en_US">
               <typename>is described by</typename>
               <typename_reverse>describes</typename_reverse>
+            </label>
+          </labels>
+          <subTypeLeft> </subTypeLeft>
+          <subTypeRight/>
+        </type>
+        <type code="depicts" default="0">
+          <labels>
+            <label locale="en_US">
+              <typename>depicts</typename>
+              <typename_reverse>is depicted by</typename_reverse>
             </label>
           </labels>
           <subTypeLeft> </subTypeLeft>

@@ -88,7 +88,7 @@ class CollectiveAccessDataReader extends BaseDataReader {
 		$this->opn_current_row = 0;
 		
 		try {
-			$this->opo_client = new Client($u="http://".$va_url['user'].":".$va_url['pass']."@".$va_url['host'].($vs_path ? "/".$vs_path : ""));
+			$this->opo_client = new Client("http://".$va_url['user'].":".$va_url['pass']."@".$va_url['host'].($vs_path ? "/".$vs_path : ""));
 			$request = $this->opo_client->get("/service.php/find/{$vs_table}?".$va_url['query']);
 			$response = $request->send();
 			$data = $response->json();
@@ -119,13 +119,14 @@ class CollectiveAccessDataReader extends BaseDataReader {
 			
 			$this->opn_current_row++;
 			try {
-				$request = $this->opo_client->get($x="/service.php/item/{$this->ops_table}/id/{$vn_id}?pretty=1&format=import");
+				$request = $this->opo_client->get("/service.php/item/{$this->ops_table}/id/{$vn_id}?pretty=1&format=import");
 				$response = $request->send();
 				$data = $response->json();
 				//print_R($data);
 				$this->opa_row_buf[$this->opn_current_row] = $data;
 			} catch (Exception $e) {
-				return false;
+				//return false;
+				return $this->nextRow();	// try the next row?
 			}
 			
 		

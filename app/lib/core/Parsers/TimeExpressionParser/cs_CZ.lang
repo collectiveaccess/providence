@@ -60,6 +60,7 @@ nowDate = [nyní,now]
 todayDate = [dnes]
 yesterdayDate = [včera]
 tomorrowDate = [zítra]
+undatedDate = [undated, unknown]
 
 presentDate = [současnost, ?, ??, ???, ????]
 beforeQualifier = [před, do]
