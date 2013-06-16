@@ -4683,10 +4683,11 @@ class BaseModel extends BaseObject {
 		if (!($va_targets = $this->getMediaReplicationTargets($ps_field, $ps_version))) { return null; }
 		
 		$va_media_info = $this->getMediaInfo($ps_field);
-		//$va_used_targets = is_array($va_media_info['REPLICATION_STATUS']) ? array_keys($va_media_info['REPLICATION_STATUS']) : array();
 		$va_used_targets = array();
-		foreach($va_media_info['REPLICATION_STATUS'] as $vs_used_target => $vn_target_status) {
-			if ($vn_target_status != __CA_MEDIA_REPLICATION_STATE_ERROR__) { $va_used_targets[] = $vs_used_target; }
+		if (is_array($va_media_info['REPLICATION_STATUS'])) {
+			foreach($va_media_info['REPLICATION_STATUS'] as $vs_used_target => $vn_target_status) {
+				if ($vn_target_status != __CA_MEDIA_REPLICATION_STATE_ERROR__) { $va_used_targets[] = $vs_used_target; }
+			}
 		}
 	
 		foreach($va_targets as $vs_target => $va_target_info) {
