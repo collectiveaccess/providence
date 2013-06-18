@@ -1200,7 +1200,7 @@ class WLPlugSearchEngineSqlSearch extends BaseSearchPlugin implements IWLPlugSea
 				}
 			}
 		} else {
-			switch($ps_content_fieldname) {
+			switch((string)$ps_content_fieldname) {
 				case '_hier_ancestors':
 					$vn_field_num = '_hier_ancestors';
 					break;
@@ -1219,7 +1219,7 @@ class WLPlugSearchEngineSqlSearch extends BaseSearchPlugin implements IWLPlugSea
 			}
 		}
 		
-		if (!(string)$pm_content) { 
+		if (strlen((string)$pm_content) == 0) { 
 			//print "BLANK FOR ".$pn_content_tablenum.'/'.$vn_field_num.'/'.$pn_content_row_id.'/'.$vn_boost."\n";
 			$va_words = null;
 		} else {
@@ -1231,7 +1231,7 @@ class WLPlugSearchEngineSqlSearch extends BaseSearchPlugin implements IWLPlugSea
 				$va_words = preg_split("![ ]+!", (string)$pm_content);
 			}
 		}
-		//$this->opa_doc_content_buffer[$pn_content_tablenum.'/'.$vn_field_num.'/'.$pn_content_row_id.'/'.$vn_boost] = $va_words;
+		
 		WLPlugSearchEngineSqlSearch::$s_doc_content_buffer[$this->opn_indexing_subject_tablenum.'/'.$this->opn_indexing_subject_row_id.'/'.$pn_content_tablenum.'/'.$vn_field_num.'/'.$pn_content_row_id.'/'.$vn_boost.'/'.$vn_private] = $va_words;
 	}
 	# ------------------------------------------------
