@@ -52,6 +52,8 @@
 			print "<tr><td>{$va_target_info['name']} (<em>{$va_target_info['type']}</em>)</td><td>{$va_status['status']}</td></tr>\n";
 		}
 		print "</table>\n";
+	} else {
+		print _t('No replication targets are available')."\n";
 	}
 ?>
 	</div>
