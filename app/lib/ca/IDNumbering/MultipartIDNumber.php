@@ -698,6 +698,13 @@
 				}
 				$va_output_values[] = $vs_value_proc;
 			}
+			
+			// generate version without trailing letters after number (eg. KHF-134b => KHF-134)
+			$va_tmp = $va_output_values;
+			foreach($va_tmp as $vs_value_proc) {
+				$va_output_values[] = preg_replace("!([\d]+)[A-Za-z]+$!", "$1", $vs_value_proc);
+			}
+			
 			return array_unique($va_output_values);
 		}
 		# -------------------------------------------------------
