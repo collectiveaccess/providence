@@ -480,6 +480,21 @@ class ca_relationship_types extends BundlableLabelableBaseModelWithAttributes {
 	 }
 	 # ------------------------------------------------------
 	/**
+	 * Returns instance of many-to-many table using relationship types between two tables
+	 *
+	 * @param string $ps_table1 A valid table name
+	 * @param string $ps_table2 A valid table name
+	 * @return BaseRelationshipModel An model instance for the table relating the specified tables 
+	 */
+	 static public function getRelationshipTypeInstance($ps_table1, $ps_table2) {
+	 	$t_rel = new ca_relationship_types();
+	 	if ($vs_table = $t_rel->getRelationshipTypeTable($ps_table1, $ps_table2)) {
+	 		return $t_rel->getAppDatamodel()->getInstanceByTableName($vs_table);
+	 	}
+	 	return null;
+	 }
+	 # ------------------------------------------------------
+	/**
 	 * Converts a list of relationship type_code string and/or numeric type_ids to a list of numeric type_ids
 	 *
 	 * @param string $ps_relationship_table The name of the relationship table that the types are valid for (Eg. ca_objects_x_entities)
