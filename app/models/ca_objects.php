@@ -668,7 +668,7 @@ class ca_objects extends BundlableLabelableBaseModelWithAttributes implements IB
  	# Representations
  	# ------------------------------------------------------
  	/**
- 	 * Returns array containing representation_ids for all representations linked to the currently loaded ca_objects row
+ 	 * Returns array with keys for representation_ids for all representations linked to the currently loaded ca_objects row
  	 *
  	 * @param array $pa_options An array of options. Supported options are:
  	 *		return_primary_only - If true then only the primary representation will be returned
