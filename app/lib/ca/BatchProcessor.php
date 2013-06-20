@@ -284,8 +284,17 @@
  			$vn_set_id	 						= $pa_options['set_id'];
  			
  			$vn_locale_id						= $pa_options['locale_id'];
+ 		
+ 			$va_relationship_type_id_for = array();
+ 			if (is_array($va_create_relationship_for = $pa_options['create_relationship_for'])) {
+				foreach($va_create_relationship_for as $vs_rel_table) {
+					$va_relationship_type_id_for[$vs_rel_table] = $pa_options['relationship_type_id_for_'.$vs_rel_table];
+				}
+			}
+ 			
  			if (!$vn_locale_id) { $vn_locale_id = $g_ui_locale_id; }
  			
+ 			$va_extracted_idnos_from_filename = array();
  			$va_files_to_process = caGetDirectoryContentsAsList($pa_options['importFromDirectory'], $vb_include_subdirectories);
  			
  			if ($vs_set_mode == 'add') {
@@ -408,6 +417,8 @@
 									if (!$vs_modified_filename || (strlen($vs_modified_filename)  > strlen($va_matches[1]))) {
 										$vs_modified_filename = $va_matches[1];
 									}
+									
+									$va_extracted_idnos_from_filename[] = $va_matches[1];
 								
 									if ($t_object->load(array('idno' => $va_matches[1], 'deleted' => 0))) {
 								
@@ -564,6 +575,35 @@
 						$t_set->addItem($t_object->getPrimaryKey(), null, $po_request->getUserID());
 					}
 					$o_log->addItem($t_object->getPrimaryKey(), $t_object->getErrors());
+					
+					// Create relationships?
+					if(is_array($va_create_relationship_for) && sizeof($va_create_relationship_for) && is_array($va_extracted_idnos_from_filename) && sizeof($va_extracted_idnos_from_filename)) {
+						foreach($va_extracted_idnos_from_filename as $vs_idno) {
+							foreach($va_create_relationship_for as $vs_rel_table) {
+								if (!isset($va_relationship_type_id_for[$vs_rel_table]) || !$va_relationship_type_id_for[$vs_rel_table]) { continue; }
+								$t_rel = $t_object->getAppDatamodel()->getInstanceByTableName($vs_rel_table);
+								if ($t_rel->load(array($t_rel->getProperty('ID_NUMBERING_ID_FIELD') => $vs_idno))) {
+									$t_object->addRelationship($vs_rel_table, $t_rel->getPrimaryKey(), $va_relationship_type_id_for[$vs_rel_table]);
+								
+									if (!$t_object->numErrors()) {
+										$va_notices[$t_object->getPrimaryKey().'_rel'] = array(
+											'idno' => $t_object->get($t_object->getProperty('ID_NUMBERING_ID_FIELD')),
+											'label' => $vs_label = $t_object->getLabelForDisplay(),
+											'message' => _t('Added relationship between <em>%1</em> and %2 <em>%3</em>', $vs_label, $t_rel->getProperty('NAME_SINGULAR'), $t_rel->getLabelForDisplay()),
+											'status' => 'RELATED'
+										);
+									} else {
+										$va_notices[$t_object->getPrimaryKey()] = array(
+											'idno' => $t_object->get($t_object->getProperty('ID_NUMBERING_ID_FIELD')),
+											'label' => $vs_label = $t_object->getLabelForDisplay(),
+											'message' => _t('Could not add relationship between <em>%1</em> and %2 <em>%3</em>: %4', $vs_label, $t_rel->getProperty('NAME_SINGULAR'), $t_rel->getLabelForDisplay(), join("; ", $t_object->getErrors())),
+											'status' => 'ERROR'
+										);
+									}
+								}
+							}
+						}
+					}
 				} else {
 					$va_notices[$vs_relative_directory.'/'.$f] = array(
 						'idno' => '',
