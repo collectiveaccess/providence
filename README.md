@@ -11,6 +11,10 @@ CollectiveAccess is a collaboration between Whirl-i-Gig and partner institutions
 ----Useful Links:----
 
    Documentation: http://docs.collectiveaccess.org/wiki/Main_Page
+   
+   Tour: http://collectiveaccess.org/tour
+   
+   Demo: http://demo.collectiveaccess.org/
 
    Installation instructions: http://docs.collectiveaccess.org/wiki/Installing_Providence
 
