@@ -7,7 +7,8 @@ Providence is the “back-end” cataloging component of CollectiveAccess, a web
 
 CollectiveAccess is a collaboration between Whirl-i-Gig and partner institutions in North America and Europe with projects in 5 continents. The software is freely available under the open source GNU Public License, meaning it’s not only free to download and use but that users are encouraged to share and distribute code.
 
-Useful Links:
+
+----Useful Links:----
 
    Documentation: http://docs.collectiveaccess.org/wiki/Main_Page
 
@@ -21,7 +22,8 @@ Useful Links:
 
    Bug Tracker: http://clangers.collectiveaccess.org/jira/secure/Dashboard.jspa
 
-Other modules:
+
+----Other modules:----
 
    Pawtucket: https://github.com/collectiveaccess/pawtucket (The public access front-end application for Providence)
     
