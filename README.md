@@ -9,20 +9,20 @@ CollectiveAccess is a collaboration between Whirl-i-Gig and partner institutions
 
 Useful Links:
 
-    Documentation: http://docs.collectiveaccess.org/wiki/Main_Page
+   Documentation: http://docs.collectiveaccess.org/wiki/Main_Page
 
-    Installation instructions: http://docs.collectiveaccess.org/wiki/Installing_Providence
+   Installation instructions: http://docs.collectiveaccess.org/wiki/Installing_Providence
 
-    Upgrade instructions: http://docs.collectiveaccess.org/wiki/Upgrading_Providence
+   Upgrade instructions: http://docs.collectiveaccess.org/wiki/Upgrading_Providence
 
-    Release Notes for 1.4:  http://docs.collectiveaccess.org/wiki/Release_Notes_for_Providence_1.4
+   Release Notes for 1.4:  http://docs.collectiveaccess.org/wiki/Release_Notes_for_Providence_1.4
 
-    Forum: http://www.collectiveaccess.org/support/forum
+   Forum: http://www.collectiveaccess.org/support/forum
 
-    Bug Tracker: http://clangers.collectiveaccess.org/jira/secure/Dashboard.jspa
+   Bug Tracker: http://clangers.collectiveaccess.org/jira/secure/Dashboard.jspa
 
 Other modules:
 
-    Pawtucket: https://github.com/collectiveaccess/pawtucket (The public access front-end application for Providence)
+   Pawtucket: https://github.com/collectiveaccess/pawtucket (The public access front-end application for Providence)
     
-    Tiverton: https://github.com/collectiveaccess/tiverton (A simple map-based data browser for Providence)
+   Tiverton: https://github.com/collectiveaccess/tiverton (A simple map-based data browser for Providence)
