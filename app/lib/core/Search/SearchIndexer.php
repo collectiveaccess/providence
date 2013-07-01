@@ -421,7 +421,7 @@ class SearchIndexer extends SearchBase {
 											/* index each element of the container */
 											foreach($vo_attribute->getValues() as $vo_value) {
 												$vn_list_id = $this->_getElementListID($vo_value->getElementID());											
-												$this->opo_engine->indexField($pn_subject_tablenum, "A".$vo_value->getElementID(), $vo_attribute->getAttributeID(), $vo_value->getDisplayValue($vn_list_id), $va_data);																																															
+												$this->opo_engine->indexField($pn_subject_tablenum, 'A'.$vo_value->getElementID(), $vo_attribute->getAttributeID(), $vo_value->getDisplayValue($vn_list_id), $va_data);																																															
 											}
 										}
 									} else {
@@ -971,7 +971,11 @@ if (!$vb_can_do_incremental_indexing || $pb_reindex_mode) {
 	}
 	# ------------------------------------------------
 	/**
-	 * 
+	 * Determine if any of the fields to index are in the list of changed field nums
+	 *
+	 * @param array $pa_fields_to_index Array of fields to index as returned by SearchBase::getFieldsToIndex()
+	 * @param array $pa_changed_field_nums Array of fields that have changed, where array keys are field names and array values are field number codes (Eg. I15 or A4)
+	 * @return bool
 	 */
 	private function _indexedFieldsHaveChanged($pa_fields_to_index, $pa_changed_field_nums) {
 		foreach($pa_fields_to_index as $vs_field => $va_indexing_info) {

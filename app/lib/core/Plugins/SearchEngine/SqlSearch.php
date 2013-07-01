@@ -1376,12 +1376,6 @@ class WLPlugSearchEngineSqlSearch extends BaseSearchPlugin implements IWLPlugSea
 	# ------------------------------------------------
 	public function updateIndexingInPlace($pn_subject_tablenum, $pa_subject_row_ids, $pn_content_tablenum, $ps_content_fieldnum, $pn_content_row_id, $pm_content, $pa_options=null) {
 		
-		if ($pn_content_tablenum == 4) {
-			$ps_content_fieldnum = "A{$ps_content_fieldnum}";
-		} else {
-			$ps_content_fieldnum = "I{$ps_content_fieldnum}";
-		}
-		
 		// Find existing indexing for this subject and content 	
 		foreach($pa_subject_row_ids as $vn_subject_row_id) {
 			$this->removeRowIndexing($pn_subject_tablenum, $vn_subject_row_id, $pn_content_tablenum, $ps_content_fieldnum, $pn_content_row_id);
