@@ -1352,22 +1352,22 @@ class WLPlugSearchEngineSqlSearch extends BaseSearchPlugin implements IWLPlugSea
 		// remove dependent row indexing
 		if ($pn_subject_tablenum && $pn_subject_row_id && $ps_field_table_num && $pn_field_row_id && strlen($pn_field_num)) {
 			//print "DELETE ROW WITH FIELD NUM $pn_subject_tablenum/$pn_subject_row_id/$ps_field_table_num/$pn_field_num/$pn_field_row_id<br>";
-			return $this->opqr_delete_with_field_row_id_and_num->execute($pn_subject_tablenum, $pn_subject_row_id, $ps_field_table_num, $pn_field_num, $pn_field_row_id);
+			return $this->opqr_delete_with_field_row_id_and_num->execute((int)$pn_subject_tablenum, (int)$pn_subject_row_id, (int)$ps_field_table_num, (string)$pn_field_num, (int)$pn_field_row_id);
 		} else {
 			if ($pn_subject_tablenum && $pn_subject_row_id && $ps_field_table_num && $pn_field_row_id) {
 				//print "DELETE ROW $pn_subject_tablenum/$pn_subject_row_id/$ps_field_table_num/$pn_field_row_id<br>";
-				return $this->opqr_delete_with_field_row_id->execute($pn_subject_tablenum, $pn_subject_row_id, $ps_field_table_num, $pn_field_row_id);
+				return $this->opqr_delete_with_field_row_id->execute((int)$pn_subject_tablenum, (int)$pn_subject_row_id, (int)$ps_field_table_num, (int)$pn_field_row_id);
 			} else {
 				if ($ps_field_table_num && !is_null($pn_field_num)) {
 					//print "DELETE FIELD $pn_subject_tablenum/$pn_subject_row_id/$ps_field_table_num/$pn_field_num<br>";
-					return $this->opqr_delete_with_field_num->execute($pn_subject_tablenum, $pn_subject_row_id, $ps_field_table_num, $pn_field_num);
+					return $this->opqr_delete_with_field_num->execute((int)$pn_subject_tablenum, (int)$pn_subject_row_id, (int)$ps_field_table_num, (string)$pn_field_num);
 				} else {
 					if (!$pn_subject_tablenum && !$pn_subject_row_id && $ps_field_table_num && $pn_field_row_id) {
 						//print "DELETE DEP $ps_field_table_num/$pn_field_row_id<br>";
-						$this->opqr_delete_dependent_sql->execute($ps_field_table_num, $pn_field_row_id);
+						$this->opqr_delete_dependent_sql->execute((int)$ps_field_table_num, (int)$pn_field_row_id);
 					} else {
 						//print "DELETE ALL $pn_subject_tablenum/$pn_subject_row_id<br>";
-						return $this->opqr_delete->execute($pn_subject_tablenum, $pn_subject_row_id);
+						return $this->opqr_delete->execute((int)$pn_subject_tablenum, (int)$pn_subject_row_id);
 					}
 				}
 			}
