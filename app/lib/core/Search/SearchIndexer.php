@@ -1066,7 +1066,7 @@ if (!$vb_can_do_incremental_indexing || $pb_reindex_mode) {
 						
 						$va_fields_to_index = $this->getFieldsToIndex($vn_dep_tablenum, $vs_rel_table);
 						
-						if (is_array($pa_changed_field_nums) && !$this->_indexedFieldsHaveChanged($va_fields_to_index, $pa_changed_field_nums)) { continue; }
+						if (is_array($pa_changed_field_nums) && !$this->_indexedFieldsHaveChanged($va_fields_to_index, $pa_changed_field_nums)) { continue; } // check if the current field actually needs indexing; only do this check if we've been passed a list of changed fields, otherwise we have to assume that everything has changed
 						
 						$va_full_path = $va_table_list;
 						array_unshift($va_full_path, $vs_dep_table);
