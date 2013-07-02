@@ -767,209 +767,211 @@ class WLPlugSearchEngineSqlSearch extends BaseSearchPlugin implements IWLPlugSea
 							if ($vs_table && $vs_field) {
 								$t_table = $this->opo_datamodel->getInstanceByTableName($vs_table, true);
 								if ($t_table) {
-								$vs_table_num = $t_table->tableNum();
-								if (is_numeric($vs_field)) {
-									$vs_fld_num = 'I'.$vs_field;
-									$vn_fld_num = (int)$vs_field;
-								} else {
-									$vn_fld_num = (int)$this->getFieldNum($vs_table, $vs_field);
-									$vs_fld_num = 'I'.$vn_fld_num;
-									
-									if (!$vn_fld_num) {
-										$t_element = new ca_metadata_elements();
-										if ($t_element->load(array('element_code' => ($vs_sub_field ? $vs_sub_field : $vs_field)))) {
-											$vn_fld_num = $t_element->getPrimaryKey();
-											$vs_fld_num = 'A'.$vn_fld_num;
-											
-							if (!$vb_is_blank_search) {
-											//
-											// For certain types of attributes we can directly query the
-											// attributes in the database rather than using the full text index
-											// This allows us to do "intelligent" querying... for example on date ranges
-											// parsed from natural language input and for length dimensions using unit conversion
-											//
-											switch($t_element->get('datatype')) {
-												case 2:		// dates		
-													$vb_all_numbers = true;
-													foreach($va_raw_terms as $vs_term) {
-														if (!is_numeric($vs_term)) {
-															$vb_all_numbers = false;
-															break;
-														}
-													}
-													$vs_raw_term = join(' ', $va_raw_terms);
-													$vb_exact = ($vs_raw_term{0} == "#") ? true : false;	// dates prepended by "#" are considered "exact" or "contained - the matched dates must be wholly contained by the search term
-													if ($vb_exact) {
-														$vs_raw_term = substr($vs_raw_term, 1);
-														if ($this->opo_tep->parse($vs_raw_term)) {
-															$va_dates = $this->opo_tep->getHistoricTimestamps();
-															$vs_direct_sql_query = "
-																SELECT ca.row_id, 1
-																FROM ca_attribute_values cav
-																INNER JOIN ca_attributes AS ca ON ca.attribute_id = cav.attribute_id
-																^JOIN
-																WHERE
-																	(cav.element_id = {$vn_fld_num}) AND (ca.table_num = ?)
-																	AND
-																	(
-																		(cav.value_decimal1 BETWEEN ".floatval($va_dates['start'])." AND ".floatval($va_dates['end']).")
-																		AND
-																		(cav.value_decimal2 BETWEEN ".floatval($va_dates['start'])." AND ".floatval($va_dates['end']).")
-																	)
-																	
-															";
-														}
-													} else {
-														if ($this->opo_tep->parse($vs_raw_term)) {
-															$va_dates = $this->opo_tep->getHistoricTimestamps();
-															$vs_direct_sql_query = "
-																SELECT ca.row_id, 1
-																FROM ca_attribute_values cav
-																INNER JOIN ca_attributes AS ca ON ca.attribute_id = cav.attribute_id
-																^JOIN
-																WHERE
-																	(cav.element_id = {$vn_fld_num}) AND (ca.table_num = ?)
-																	AND
-																	(
-																		(cav.value_decimal1 BETWEEN ".floatval($va_dates['start'])." AND ".floatval($va_dates['end']).")
-																		OR
-																		(cav.value_decimal2 BETWEEN ".floatval($va_dates['start'])." AND ".floatval($va_dates['end']).")
-																		OR
-																		(cav.value_decimal1 <= ".floatval($va_dates['start'])." AND cav.value_decimal2 >= ".floatval($va_dates['end']).")	
-																	)
-																	
-															";
-														}
-													}
-													break;
-												case 4:		// geocode
-													$t_geocode = new GeocodeAttributeValue();
-													// If it looks like a lat/long pair that has been tokenized by Lucene
-													// into oblivion rehydrate it here.
-													if ($va_coords = caParseGISSearch(join(' ', $va_raw_terms))) {
-														
-														$vs_direct_sql_query = "
-															SELECT ca.row_id, 1
-															FROM ca_attribute_values cav
-															INNER JOIN ca_attributes AS ca ON ca.attribute_id = cav.attribute_id
-															^JOIN
-															WHERE
-																(cav.element_id = {$vn_fld_num}) AND (ca.table_num = ?)
-																AND
-																(cav.value_decimal1 BETWEEN {$va_coords['min_latitude']} AND {$va_coords['max_latitude']})
-																AND
-																(cav.value_decimal2 BETWEEN {$va_coords['min_longitude']} AND {$va_coords['max_longitude']})
-																
-														";
-													}
-													break;
-												case 6:		// currency
-													$t_cur = new CurrencyAttributeValue();
-													$va_parsed_value = $t_cur->parseValue(join(' ', $va_raw_terms), $t_element->getFieldValuesArray());
-													$vn_amount = $va_parsed_value['value_decimal1'];
-													$vs_currency = preg_replace('![^A-Z0-9]+!', '', $va_parsed_value['value_longtext1']);
-													
-													$vs_direct_sql_query = "
-														SELECT ca.row_id, 1
-														FROM ca_attribute_values cav
-														INNER JOIN ca_attributes AS ca ON ca.attribute_id = cav.attribute_id
-														^JOIN
-														WHERE
-															(cav.element_id = {$vn_fld_num}) AND (ca.table_num = ?)
-															AND
-															(cav.value_decimal1 = ".floatval($vn_amount).")
-															AND
-															(cav.value_longtext1 = '".$this->opo_db->escape($vs_currency)."')
-															
-													";
-													break;
-												case 8:		// length
-													$t_len = new LengthAttributeValue();
-													$va_parsed_value = $t_len->parseValue(array_shift($va_raw_terms), $t_element->getFieldValuesArray());
-													$vn_len = $va_parsed_value['value_decimal1'];	// this is always in meters so we can compare this value to the one in the database
-													
-													$vs_direct_sql_query = "
-														SELECT ca.row_id, 1
-														FROM ca_attribute_values cav
-														INNER JOIN ca_attributes AS ca ON ca.attribute_id = cav.attribute_id
-														^JOIN
-														WHERE
-															(cav.element_id = {$vn_fld_num}) AND (ca.table_num = ?)
-															AND
-															(cav.value_decimal1 = ".floatval($vn_len).")
-															
-													";
-													break;
-												case 9:		// weight
-													$t_weight = new WeightAttributeValue();
-													$va_parsed_value = $t_weight->parseValue(array_shift($va_raw_terms), $t_element->getFieldValuesArray());
-													$vn_weight = $va_parsed_value['value_decimal1'];	// this is always in kilograms so we can compare this value to the one in the database
-													
-													$vs_direct_sql_query = "
-														SELECT ca.row_id, 1
-														FROM ca_attribute_values cav
-														INNER JOIN ca_attributes AS ca ON ca.attribute_id = cav.attribute_id
-														^JOIN
-														WHERE
-															(cav.element_id = {$vn_fld_num}) AND (ca.table_num = ?)
-															AND
-															(cav.value_decimal1 = ".floatval($vn_weight).")
-															
-													";
-													break;
-												case 10:	// timecode
-													$t_timecode = new TimecodeAttributeValue();
-													$va_parsed_value = $t_timecode->parseValue(join(' ', $va_raw_terms), $t_element->getFieldValuesArray());
-													$vn_timecode = $va_parsed_value['value_decimal1'];
-													
-													$vs_direct_sql_query = "
-														SELECT ca.row_id, 1
-														FROM ca_attribute_values cav
-														INNER JOIN ca_attributes AS ca ON ca.attribute_id = cav.attribute_id
-														^JOIN
-														WHERE
-															(cav.element_id = {$vn_fld_num}) AND (ca.table_num = ?)
-															AND
-															(cav.value_decimal1 = ".floatval($vn_timecode).")
-															
-													";
-													break;
-												case 11: 	// integer
-													$vs_direct_sql_query = "
-														SELECT ca.row_id, 1
-														FROM ca_attribute_values cav
-														INNER JOIN ca_attributes AS ca ON ca.attribute_id = cav.attribute_id
-														^JOIN
-														WHERE
-															(cav.element_id = {$vn_fld_num}) AND (ca.table_num = ?)
-															AND
-															(cav.value_integer1 = ".intval(array_shift($va_raw_terms)).")
-															
-													";
-													break;
-												case 12:	// decimal
-													$vs_direct_sql_query = "
-														SELECT ca.row_id, 1
-														FROM ca_attribute_values cav
-														INNER JOIN ca_attributes AS ca ON ca.attribute_id = cav.attribute_id
-														^JOIN
-														WHERE
-															(cav.element_id = {$vn_fld_num}) AND (ca.table_num = ?)
-															AND
-															(cav.value_decimal1 = ".floatval(array_shift($va_raw_terms)).")
-															
-													";
-													break;
-											}
+									$vs_table_num = $t_table->tableNum();
+									if (is_numeric($vs_field)) {
+										$vs_fld_num = 'I'.$vs_field;
+										$vn_fld_num = (int)$vs_field;
+									} else {
+										$vn_fld_num = (int)$this->getFieldNum($vs_table, $vs_field);
+										$vs_fld_num = 'I'.$vn_fld_num;
 										
-							}	
+										if (!$vn_fld_num) {
+											$t_element = new ca_metadata_elements();
+											if ($t_element->load(array('element_code' => ($vs_sub_field ? $vs_sub_field : $vs_field)))) {
+												$vn_fld_num = $t_element->getPrimaryKey();
+												$vs_fld_num = 'A'.$vn_fld_num;
+												
+												if (!$vb_is_blank_search) {
+													//
+													// For certain types of attributes we can directly query the
+													// attributes in the database rather than using the full text index
+													// This allows us to do "intelligent" querying... for example on date ranges
+													// parsed from natural language input and for length dimensions using unit conversion
+													//
+													switch($t_element->get('datatype')) {
+														case 2:		// dates		
+															$vb_all_numbers = true;
+															foreach($va_raw_terms as $vs_term) {
+																if (!is_numeric($vs_term)) {
+																	$vb_all_numbers = false;
+																	break;
+																}
+															}
+															$vs_raw_term = join(' ', $va_raw_terms);
+															$vb_exact = ($vs_raw_term{0} == "#") ? true : false;	// dates prepended by "#" are considered "exact" or "contained - the matched dates must be wholly contained by the search term
+															if ($vb_exact) {
+																$vs_raw_term = substr($vs_raw_term, 1);
+																if ($this->opo_tep->parse($vs_raw_term)) {
+																	$va_dates = $this->opo_tep->getHistoricTimestamps();
+																	$vs_direct_sql_query = "
+																		SELECT ca.row_id, 1
+																		FROM ca_attribute_values cav
+																		INNER JOIN ca_attributes AS ca ON ca.attribute_id = cav.attribute_id
+																		^JOIN
+																		WHERE
+																			(cav.element_id = {$vn_fld_num}) AND (ca.table_num = ?)
+																			AND
+																			(
+																				(cav.value_decimal1 BETWEEN ".floatval($va_dates['start'])." AND ".floatval($va_dates['end']).")
+																				AND
+																				(cav.value_decimal2 BETWEEN ".floatval($va_dates['start'])." AND ".floatval($va_dates['end']).")
+																			)
+																			
+																	";
+																}
+															} else {
+																if ($this->opo_tep->parse($vs_raw_term)) {
+																	$va_dates = $this->opo_tep->getHistoricTimestamps();
+																	$vs_direct_sql_query = "
+																		SELECT ca.row_id, 1
+																		FROM ca_attribute_values cav
+																		INNER JOIN ca_attributes AS ca ON ca.attribute_id = cav.attribute_id
+																		^JOIN
+																		WHERE
+																			(cav.element_id = {$vn_fld_num}) AND (ca.table_num = ?)
+																			AND
+																			(
+																				(cav.value_decimal1 BETWEEN ".floatval($va_dates['start'])." AND ".floatval($va_dates['end']).")
+																				OR
+																				(cav.value_decimal2 BETWEEN ".floatval($va_dates['start'])." AND ".floatval($va_dates['end']).")
+																				OR
+																				(cav.value_decimal1 <= ".floatval($va_dates['start'])." AND cav.value_decimal2 >= ".floatval($va_dates['end']).")	
+																			)
+																			
+																	";
+																}
+															}
+															break;
+														case 4:		// geocode
+															$t_geocode = new GeocodeAttributeValue();
+															// If it looks like a lat/long pair that has been tokenized by Lucene
+															// into oblivion rehydrate it here.
+															if ($va_coords = caParseGISSearch(join(' ', $va_raw_terms))) {
+																
+																$vs_direct_sql_query = "
+																	SELECT ca.row_id, 1
+																	FROM ca_attribute_values cav
+																	INNER JOIN ca_attributes AS ca ON ca.attribute_id = cav.attribute_id
+																	^JOIN
+																	WHERE
+																		(cav.element_id = {$vn_fld_num}) AND (ca.table_num = ?)
+																		AND
+																		(cav.value_decimal1 BETWEEN {$va_coords['min_latitude']} AND {$va_coords['max_latitude']})
+																		AND
+																		(cav.value_decimal2 BETWEEN {$va_coords['min_longitude']} AND {$va_coords['max_longitude']})
+																		
+																";
+															}
+															break;
+														case 6:		// currency
+															$t_cur = new CurrencyAttributeValue();
+															$va_parsed_value = $t_cur->parseValue(join(' ', $va_raw_terms), $t_element->getFieldValuesArray());
+															$vn_amount = $va_parsed_value['value_decimal1'];
+															$vs_currency = preg_replace('![^A-Z0-9]+!', '', $va_parsed_value['value_longtext1']);
+															
+															$vs_direct_sql_query = "
+																SELECT ca.row_id, 1
+																FROM ca_attribute_values cav
+																INNER JOIN ca_attributes AS ca ON ca.attribute_id = cav.attribute_id
+																^JOIN
+																WHERE
+																	(cav.element_id = {$vn_fld_num}) AND (ca.table_num = ?)
+																	AND
+																	(cav.value_decimal1 = ".floatval($vn_amount).")
+																	AND
+																	(cav.value_longtext1 = '".$this->opo_db->escape($vs_currency)."')
+																	
+															";
+															break;
+														case 8:		// length
+															$t_len = new LengthAttributeValue();
+															$va_parsed_value = $t_len->parseValue(array_shift($va_raw_terms), $t_element->getFieldValuesArray());
+															$vn_len = $va_parsed_value['value_decimal1'];	// this is always in meters so we can compare this value to the one in the database
+															
+															$vs_direct_sql_query = "
+																SELECT ca.row_id, 1
+																FROM ca_attribute_values cav
+																INNER JOIN ca_attributes AS ca ON ca.attribute_id = cav.attribute_id
+																^JOIN
+																WHERE
+																	(cav.element_id = {$vn_fld_num}) AND (ca.table_num = ?)
+																	AND
+																	(cav.value_decimal1 = ".floatval($vn_len).")
+																	
+															";
+															break;
+														case 9:		// weight
+															$t_weight = new WeightAttributeValue();
+															$va_parsed_value = $t_weight->parseValue(array_shift($va_raw_terms), $t_element->getFieldValuesArray());
+															$vn_weight = $va_parsed_value['value_decimal1'];	// this is always in kilograms so we can compare this value to the one in the database
+															
+															$vs_direct_sql_query = "
+																SELECT ca.row_id, 1
+																FROM ca_attribute_values cav
+																INNER JOIN ca_attributes AS ca ON ca.attribute_id = cav.attribute_id
+																^JOIN
+																WHERE
+																	(cav.element_id = {$vn_fld_num}) AND (ca.table_num = ?)
+																	AND
+																	(cav.value_decimal1 = ".floatval($vn_weight).")
+																	
+															";
+															break;
+														case 10:	// timecode
+															$t_timecode = new TimecodeAttributeValue();
+															$va_parsed_value = $t_timecode->parseValue(join(' ', $va_raw_terms), $t_element->getFieldValuesArray());
+															$vn_timecode = $va_parsed_value['value_decimal1'];
+															
+															$vs_direct_sql_query = "
+																SELECT ca.row_id, 1
+																FROM ca_attribute_values cav
+																INNER JOIN ca_attributes AS ca ON ca.attribute_id = cav.attribute_id
+																^JOIN
+																WHERE
+																	(cav.element_id = {$vn_fld_num}) AND (ca.table_num = ?)
+																	AND
+																	(cav.value_decimal1 = ".floatval($vn_timecode).")
+																	
+															";
+															break;
+														case 11: 	// integer
+															$vs_direct_sql_query = "
+																SELECT ca.row_id, 1
+																FROM ca_attribute_values cav
+																INNER JOIN ca_attributes AS ca ON ca.attribute_id = cav.attribute_id
+																^JOIN
+																WHERE
+																	(cav.element_id = {$vn_fld_num}) AND (ca.table_num = ?)
+																	AND
+																	(cav.value_integer1 = ".intval(array_shift($va_raw_terms)).")
+																	
+															";
+															break;
+														case 12:	// decimal
+															$vs_direct_sql_query = "
+																SELECT ca.row_id, 1
+																FROM ca_attribute_values cav
+																INNER JOIN ca_attributes AS ca ON ca.attribute_id = cav.attribute_id
+																^JOIN
+																WHERE
+																	(cav.element_id = {$vn_fld_num}) AND (ca.table_num = ?)
+																	AND
+																	(cav.value_decimal1 = ".floatval(array_shift($va_raw_terms)).")
+																	
+															";
+															break;
+													}
+												}	
+											} else { // neither table fields nor elements, i.e. 'virtual' fields like _count or _hier_ancestors, should 
+												$vn_fld_num = false;
+												$vs_fld_num = $vs_field;
+											}
 										}
 									}
+									if ($t_table->getFieldInfo($t_table->fieldName($vn_fld_num), 'FIELD_TYPE') == FT_BIT) {
+										$vb_ft_bit_optimization = true;
+									}
 								}
-								if ($t_table->getFieldInfo($t_table->fieldName($vn_fld_num), 'FIELD_TYPE') == FT_BIT) {
-									$vb_ft_bit_optimization = true;
-								}
-							}
 							}
 						}
 					}
@@ -1200,7 +1202,7 @@ class WLPlugSearchEngineSqlSearch extends BaseSearchPlugin implements IWLPlugSea
 				}
 			}
 		} else {
-			switch($ps_content_fieldname) {
+			switch((string)$ps_content_fieldname) {
 				case '_hier_ancestors':
 					$vn_field_num = '_hier_ancestors';
 					break;
@@ -1219,7 +1221,7 @@ class WLPlugSearchEngineSqlSearch extends BaseSearchPlugin implements IWLPlugSea
 			}
 		}
 		
-		if (!(string)$pm_content) { 
+		if (strlen((string)$pm_content) == 0) { 
 			//print "BLANK FOR ".$pn_content_tablenum.'/'.$vn_field_num.'/'.$pn_content_row_id.'/'.$vn_boost."\n";
 			$va_words = null;
 		} else {
@@ -1231,7 +1233,7 @@ class WLPlugSearchEngineSqlSearch extends BaseSearchPlugin implements IWLPlugSea
 				$va_words = preg_split("![ ]+!", (string)$pm_content);
 			}
 		}
-		//$this->opa_doc_content_buffer[$pn_content_tablenum.'/'.$vn_field_num.'/'.$pn_content_row_id.'/'.$vn_boost] = $va_words;
+		
 		WLPlugSearchEngineSqlSearch::$s_doc_content_buffer[$this->opn_indexing_subject_tablenum.'/'.$this->opn_indexing_subject_row_id.'/'.$pn_content_tablenum.'/'.$vn_field_num.'/'.$pn_content_row_id.'/'.$vn_boost.'/'.$vn_private] = $va_words;
 	}
 	# ------------------------------------------------
@@ -1350,22 +1352,22 @@ class WLPlugSearchEngineSqlSearch extends BaseSearchPlugin implements IWLPlugSea
 		// remove dependent row indexing
 		if ($pn_subject_tablenum && $pn_subject_row_id && $ps_field_table_num && $pn_field_row_id && strlen($pn_field_num)) {
 			//print "DELETE ROW WITH FIELD NUM $pn_subject_tablenum/$pn_subject_row_id/$ps_field_table_num/$pn_field_num/$pn_field_row_id<br>";
-			return $this->opqr_delete_with_field_row_id_and_num->execute($pn_subject_tablenum, $pn_subject_row_id, $ps_field_table_num, $pn_field_num, $pn_field_row_id);
+			return $this->opqr_delete_with_field_row_id_and_num->execute((int)$pn_subject_tablenum, (int)$pn_subject_row_id, (int)$ps_field_table_num, (string)$pn_field_num, (int)$pn_field_row_id);
 		} else {
 			if ($pn_subject_tablenum && $pn_subject_row_id && $ps_field_table_num && $pn_field_row_id) {
 				//print "DELETE ROW $pn_subject_tablenum/$pn_subject_row_id/$ps_field_table_num/$pn_field_row_id<br>";
-				return $this->opqr_delete_with_field_row_id->execute($pn_subject_tablenum, $pn_subject_row_id, $ps_field_table_num, $pn_field_row_id);
+				return $this->opqr_delete_with_field_row_id->execute((int)$pn_subject_tablenum, (int)$pn_subject_row_id, (int)$ps_field_table_num, (int)$pn_field_row_id);
 			} else {
 				if ($ps_field_table_num && !is_null($pn_field_num)) {
 					//print "DELETE FIELD $pn_subject_tablenum/$pn_subject_row_id/$ps_field_table_num/$pn_field_num<br>";
-					return $this->opqr_delete_with_field_num->execute($pn_subject_tablenum, $pn_subject_row_id, $ps_field_table_num, $pn_field_num);
+					return $this->opqr_delete_with_field_num->execute((int)$pn_subject_tablenum, (int)$pn_subject_row_id, (int)$ps_field_table_num, (string)$pn_field_num);
 				} else {
 					if (!$pn_subject_tablenum && !$pn_subject_row_id && $ps_field_table_num && $pn_field_row_id) {
 						//print "DELETE DEP $ps_field_table_num/$pn_field_row_id<br>";
-						$this->opqr_delete_dependent_sql->execute($ps_field_table_num, $pn_field_row_id);
+						$this->opqr_delete_dependent_sql->execute((int)$ps_field_table_num, (int)$pn_field_row_id);
 					} else {
 						//print "DELETE ALL $pn_subject_tablenum/$pn_subject_row_id<br>";
-						return $this->opqr_delete->execute($pn_subject_tablenum, $pn_subject_row_id);
+						return $this->opqr_delete->execute((int)$pn_subject_tablenum, (int)$pn_subject_row_id);
 					}
 				}
 			}
@@ -1373,12 +1375,6 @@ class WLPlugSearchEngineSqlSearch extends BaseSearchPlugin implements IWLPlugSea
 	}
 	# ------------------------------------------------
 	public function updateIndexingInPlace($pn_subject_tablenum, $pa_subject_row_ids, $pn_content_tablenum, $ps_content_fieldnum, $pn_content_row_id, $pm_content, $pa_options=null) {
-		
-		if ($pn_content_tablenum == 4) {
-			$ps_content_fieldnum = "A{$ps_content_fieldnum}";
-		} else {
-			$ps_content_fieldnum = "I{$ps_content_fieldnum}";
-		}
 		
 		// Find existing indexing for this subject and content 	
 		foreach($pa_subject_row_ids as $vn_subject_row_id) {

@@ -187,9 +187,17 @@
  				'set_id' => $this->request->getParameter('set_id', pInteger),
  				'idnoMode' => $this->request->getParameter('idno_mode', pString),
  				'idno' => $this->request->getParameter('idno', pString),
+ 				'idno' => $this->request->getParameter('idno', pString),
  				'locale_id' => $g_ui_locale_id,
  				'user_id' => $this->request->getUserID()
  			);
+ 			
+ 			if (is_array($va_create_relationships_for = $this->request->getParameter('create_relationship_for', pArray))) {
+ 				$va_options['create_relationship_for'] = $va_create_relationships_for;
+ 				foreach($va_create_relationships_for as $vs_rel_table) {
+ 					$va_options['relationship_type_id_for_'.$vs_rel_table] = $this->request->getParameter('relationship_type_id_for_'.$vs_rel_table, pString);
+ 				}
+ 			}
  			
  			$va_last_settings = $va_options;
  			$va_last_settings['importFromDirectory'] = preg_replace("!{$vs_batch_media_import_root_directory}[/]*!", "", $va_last_settings['importFromDirectory']); 
