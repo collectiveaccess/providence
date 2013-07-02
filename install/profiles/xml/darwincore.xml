@@ -1,5 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
-<profile xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="profile.xsd" useForConfiguration="1" base="base" infoUrl="http://providence.collectiveaccess.org/wiki/DarwinCoreInstallationProfile">
+<profile xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:noNamespaceSchemaLocation="profile.xsd" useForConfiguration="1" base="base"
+  infoUrl="http://providence.collectiveaccess.org/wiki/DarwinCoreInstallationProfile">
   <profileName>[Standard] DarwinCore</profileName>
   <profileDescription>Use this profile if you want a system that is compliant with simple Darwin Core</profileDescription>
   <locales>
@@ -1080,14 +1082,6 @@
             <setting name="minimumAttributeBundlesToDisplay">1</setting>
           </settings>
         </restriction>
-        <restriction code="r7">
-          <table>ca_object_events</table>
-          <settings>
-            <setting name="minAttributesPerRow">0</setting>
-            <setting name="maxAttributesPerRow">1</setting>
-            <setting name="minimumAttributeBundlesToDisplay">1</setting>
-          </settings>
-        </restriction>
       </typeRestrictions>
     </metadataElement>
     <metadataElement code="description_source" datatype="Text">
@@ -1705,14 +1699,6 @@
             <setting name="minimumAttributeBundlesToDisplay">1</setting>
           </settings>
         </restriction>
-        <restriction code="r7">
-          <table>ca_object_events</table>
-          <settings>
-            <setting name="minAttributesPerRow">0</setting>
-            <setting name="maxAttributesPerRow">1</setting>
-            <setting name="minimumAttributeBundlesToDisplay">1</setting>
-          </settings>
-        </restriction>
       </typeRestrictions>
     </metadataElement>
     <metadataElement code="dcModified" datatype="DateRange">
@@ -1773,14 +1759,6 @@
         </restriction>
         <restriction code="r6">
           <table>ca_object_lots</table>
-          <settings>
-            <setting name="minAttributesPerRow">0</setting>
-            <setting name="maxAttributesPerRow">1</setting>
-            <setting name="minimumAttributeBundlesToDisplay">1</setting>
-          </settings>
-        </restriction>
-        <restriction code="r7">
-          <table>ca_object_events</table>
           <settings>
             <setting name="minAttributesPerRow">0</setting>
             <setting name="maxAttributesPerRow">1</setting>
@@ -1853,14 +1831,6 @@
             <setting name="minimumAttributeBundlesToDisplay">1</setting>
           </settings>
         </restriction>
-        <restriction code="r7">
-          <table>ca_object_events</table>
-          <settings>
-            <setting name="minAttributesPerRow">0</setting>
-            <setting name="maxAttributesPerRow">1</setting>
-            <setting name="minimumAttributeBundlesToDisplay">1</setting>
-          </settings>
-        </restriction>
       </typeRestrictions>
     </metadataElement>
     <metadataElement code="dcRights" datatype="Text">
@@ -1921,14 +1891,6 @@
         </restriction>
         <restriction code="r6">
           <table>ca_object_lots</table>
-          <settings>
-            <setting name="minAttributesPerRow">0</setting>
-            <setting name="maxAttributesPerRow">1</setting>
-            <setting name="minimumAttributeBundlesToDisplay">1</setting>
-          </settings>
-        </restriction>
-        <restriction code="r7">
-          <table>ca_object_events</table>
           <settings>
             <setting name="minAttributesPerRow">0</setting>
             <setting name="maxAttributesPerRow">1</setting>
@@ -2001,14 +1963,6 @@
             <setting name="minimumAttributeBundlesToDisplay">1</setting>
           </settings>
         </restriction>
-        <restriction code="r7">
-          <table>ca_object_events</table>
-          <settings>
-            <setting name="minAttributesPerRow">0</setting>
-            <setting name="maxAttributesPerRow">1</setting>
-            <setting name="minimumAttributeBundlesToDisplay">1</setting>
-          </settings>
-        </restriction>
       </typeRestrictions>
     </metadataElement>
     <metadataElement code="institutionID" datatype="Text">
@@ -2075,14 +2029,6 @@
             <setting name="minimumAttributeBundlesToDisplay">1</setting>
           </settings>
         </restriction>
-        <restriction code="r7">
-          <table>ca_object_events</table>
-          <settings>
-            <setting name="minAttributesPerRow">0</setting>
-            <setting name="maxAttributesPerRow">1</setting>
-            <setting name="minimumAttributeBundlesToDisplay">1</setting>
-          </settings>
-        </restriction>
       </typeRestrictions>
     </metadataElement>
     <metadataElement code="collectionID" datatype="Text">
@@ -2141,14 +2087,6 @@
             <setting name="minimumAttributeBundlesToDisplay">1</setting>
           </settings>
         </restriction>
-        <restriction code="r7">
-          <table>ca_object_events</table>
-          <settings>
-            <setting name="minAttributesPerRow">0</setting>
-            <setting name="maxAttributesPerRow">1</setting>
-            <setting name="minimumAttributeBundlesToDisplay">1</setting>
-          </settings>
-        </restriction>
       </typeRestrictions>
     </metadataElement>
     <metadataElement code="datasetID" datatype="Text">
@@ -2201,14 +2139,6 @@
         </restriction>
         <restriction code="r6">
           <table>ca_object_lots</table>
-          <settings>
-            <setting name="minAttributesPerRow">0</setting>
-            <setting name="maxAttributesPerRow">1</setting>
-            <setting name="minimumAttributeBundlesToDisplay">1</setting>
-          </settings>
-        </restriction>
-        <restriction code="r7">
-          <table>ca_object_events</table>
           <settings>
             <setting name="minAttributesPerRow">0</setting>
             <setting name="maxAttributesPerRow">1</setting>
@@ -2281,14 +2211,6 @@
             <setting name="minimumAttributeBundlesToDisplay">1</setting>
           </settings>
         </restriction>
-        <restriction code="r7">
-          <table>ca_object_events</table>
-          <settings>
-            <setting name="minAttributesPerRow">0</setting>
-            <setting name="maxAttributesPerRow">1</setting>
-            <setting name="minimumAttributeBundlesToDisplay">1</setting>
-          </settings>
-        </restriction>
       </typeRestrictions>
     </metadataElement>
     <metadataElement code="collectionCode" datatype="Text">
@@ -2349,14 +2271,6 @@
         </restriction>
         <restriction code="r6">
           <table>ca_object_lots</table>
-          <settings>
-            <setting name="minAttributesPerRow">0</setting>
-            <setting name="maxAttributesPerRow">1</setting>
-            <setting name="minimumAttributeBundlesToDisplay">1</setting>
-          </settings>
-        </restriction>
-        <restriction code="r7">
-          <table>ca_object_events</table>
           <settings>
             <setting name="minAttributesPerRow">0</setting>
             <setting name="maxAttributesPerRow">1</setting>
@@ -2429,14 +2343,6 @@
             <setting name="minimumAttributeBundlesToDisplay">1</setting>
           </settings>
         </restriction>
-        <restriction code="r7">
-          <table>ca_object_events</table>
-          <settings>
-            <setting name="minAttributesPerRow">0</setting>
-            <setting name="maxAttributesPerRow">1</setting>
-            <setting name="minimumAttributeBundlesToDisplay">1</setting>
-          </settings>
-        </restriction>
       </typeRestrictions>
     </metadataElement>
     <metadataElement code="ownerInstitutionCode" datatype="Text">
@@ -2497,14 +2403,6 @@
         </restriction>
         <restriction code="r6">
           <table>ca_object_lots</table>
-          <settings>
-            <setting name="minAttributesPerRow">0</setting>
-            <setting name="maxAttributesPerRow">1</setting>
-            <setting name="minimumAttributeBundlesToDisplay">1</setting>
-          </settings>
-        </restriction>
-        <restriction code="r7">
-          <table>ca_object_events</table>
           <settings>
             <setting name="minAttributesPerRow">0</setting>
             <setting name="maxAttributesPerRow">1</setting>
@@ -2577,14 +2475,6 @@
             <setting name="minimumAttributeBundlesToDisplay">1</setting>
           </settings>
         </restriction>
-        <restriction code="r7">
-          <table>ca_object_events</table>
-          <settings>
-            <setting name="minAttributesPerRow">0</setting>
-            <setting name="maxAttributesPerRow">1</setting>
-            <setting name="minimumAttributeBundlesToDisplay">1</setting>
-          </settings>
-        </restriction>
       </typeRestrictions>
     </metadataElement>
     <metadataElement code="informationWithheld" datatype="Text">
@@ -2645,14 +2535,6 @@
         </restriction>
         <restriction code="r6">
           <table>ca_object_lots</table>
-          <settings>
-            <setting name="minAttributesPerRow">0</setting>
-            <setting name="maxAttributesPerRow">1</setting>
-            <setting name="minimumAttributeBundlesToDisplay">1</setting>
-          </settings>
-        </restriction>
-        <restriction code="r7">
-          <table>ca_object_events</table>
           <settings>
             <setting name="minAttributesPerRow">0</setting>
             <setting name="maxAttributesPerRow">1</setting>
@@ -2725,14 +2607,6 @@
             <setting name="minimumAttributeBundlesToDisplay">1</setting>
           </settings>
         </restriction>
-        <restriction code="r7">
-          <table>ca_object_events</table>
-          <settings>
-            <setting name="minAttributesPerRow">0</setting>
-            <setting name="maxAttributesPerRow">1</setting>
-            <setting name="minimumAttributeBundlesToDisplay">1</setting>
-          </settings>
-        </restriction>
       </typeRestrictions>
     </metadataElement>
     <metadataElement code="dynamicProperties" datatype="Text">
@@ -2793,14 +2667,6 @@
         </restriction>
         <restriction code="r6">
           <table>ca_object_lots</table>
-          <settings>
-            <setting name="minAttributesPerRow">0</setting>
-            <setting name="maxAttributesPerRow">1</setting>
-            <setting name="minimumAttributeBundlesToDisplay">1</setting>
-          </settings>
-        </restriction>
-        <restriction code="r7">
-          <table>ca_object_events</table>
           <settings>
             <setting name="minAttributesPerRow">0</setting>
             <setting name="maxAttributesPerRow">1</setting>
@@ -5387,7 +5253,8 @@
         </restriction>
       </typeRestrictions>
     </metadataElement>
-    <metadataElement code="georeferenceVerificationStatus" datatype="List" list="georef_verification">
+    <metadataElement code="georeferenceVerificationStatus" datatype="List"
+      list="georef_verification">
       <labels>
         <label locale="en_US">
           <name>georeferenceVerificationStatus</name>
@@ -8640,7 +8507,8 @@
         </screen>
       </screens>
     </userInterface>
-    <userInterface code="representation_annotation_cataloguers_ui" type="ca_representation_annotations">
+    <userInterface code="representation_annotation_cataloguers_ui"
+      type="ca_representation_annotations">
       <labels>
         <label locale="en_US">
           <name>Representation annotation editor</name>
@@ -8720,52 +8588,6 @@
           <bundlePlacements>
             <placement code="nonpreferred_labels">
               <bundle>nonpreferred_labels</bundle>
-            </placement>
-          </bundlePlacements>
-        </screen>
-      </screens>
-    </userInterface>
-    <userInterface code="object_event_cataloguers_ui" type="ca_object_events">
-      <labels>
-        <label locale="en_US">
-          <name>Object event editor</name>
-        </label>
-      </labels>
-      <screens>
-        <screen idno="basic" default="1">
-          <labels>
-            <label locale="en_US">
-              <name>Basic info</name>
-            </label>
-          </labels>
-          <bundlePlacements>
-            <placement code="ca_attribute_description">
-              <bundle>ca_attribute_description</bundle>
-            </placement>
-          </bundlePlacements>
-        </screen>
-        <screen idno="relationships" default="0">
-          <labels>
-            <label locale="en_US">
-              <name>Relationships</name>
-            </label>
-          </labels>
-          <bundlePlacements>
-            <placement code="ca_entities">
-              <bundle>ca_entities</bundle>
-            </placement>
-            <placement code="ca_places">
-              <bundle>ca_places</bundle>
-            </placement>
-            <placement code="ca_events">
-              <bundle>ca_occurrences</bundle>
-              <settings>
-                <setting name="restrict_to_type">event</setting>
-                <setting name="label" locale="en_US">Related events</setting>
-              </settings>
-            </placement>
-            <placement code="ca_storage_locations">
-              <bundle>ca_storage_locations</bundle>
             </placement>
           </bundlePlacements>
         </screen>
@@ -8878,7 +8700,7 @@
             </label>
           </labels>
           <subTypeLeft> </subTypeLeft>
-          <subTypeRight></subTypeRight>
+          <subTypeRight/>
         </type>
         <type code="described" default="0">
           <labels>
@@ -8888,7 +8710,7 @@
             </label>
           </labels>
           <subTypeLeft> </subTypeLeft>
-          <subTypeRight></subTypeRight>
+          <subTypeRight/>
         </type>
         <type code="determined" default="0">
           <labels>
@@ -8898,7 +8720,7 @@
             </label>
           </labels>
           <subTypeLeft>interview</subTypeLeft>
-          <subTypeRight></subTypeRight>
+          <subTypeRight/>
         </type>
         <type code="donated" default="0">
           <labels>
@@ -8908,7 +8730,7 @@
             </label>
           </labels>
           <subTypeLeft> </subTypeLeft>
-          <subTypeRight></subTypeRight>
+          <subTypeRight/>
         </type>
         <type code="owned" default="0">
           <labels>
@@ -8918,7 +8740,7 @@
             </label>
           </labels>
           <subTypeLeft> </subTypeLeft>
-          <subTypeRight></subTypeRight>
+          <subTypeRight/>
         </type>
         <type code="publisher" default="0">
           <labels>
@@ -8928,7 +8750,7 @@
             </label>
           </labels>
           <subTypeLeft> </subTypeLeft>
-          <subTypeRight></subTypeRight>
+          <subTypeRight/>
         </type>
         <type code="discover" default="0">
           <labels>
@@ -8938,7 +8760,7 @@
             </label>
           </labels>
           <subTypeLeft> </subTypeLeft>
-          <subTypeRight></subTypeRight>
+          <subTypeRight/>
         </type>
       </types>
     </relationshipTable>
@@ -8952,7 +8774,7 @@
             </label>
           </labels>
           <subTypeLeft> </subTypeLeft>
-          <subTypeRight></subTypeRight>
+          <subTypeRight/>
         </type>
       </types>
     </relationshipTable>
@@ -8966,7 +8788,7 @@
             </label>
           </labels>
           <subTypeLeft> </subTypeLeft>
-          <subTypeRight></subTypeRight>
+          <subTypeRight/>
         </type>
         <type code="located" default="0">
           <labels>
@@ -8976,7 +8798,7 @@
             </label>
           </labels>
           <subTypeLeft>image</subTypeLeft>
-          <subTypeRight></subTypeRight>
+          <subTypeRight/>
         </type>
         <type code="depicts" default="1">
           <labels>
@@ -8986,7 +8808,7 @@
             </label>
           </labels>
           <subTypeLeft> </subTypeLeft>
-          <subTypeRight></subTypeRight>
+          <subTypeRight/>
         </type>
         <type code="describes" default="0">
           <labels>
@@ -8996,7 +8818,7 @@
             </label>
           </labels>
           <subTypeLeft> </subTypeLeft>
-          <subTypeRight></subTypeRight>
+          <subTypeRight/>
         </type>
       </types>
     </relationshipTable>
@@ -9044,7 +8866,7 @@
             </label>
           </labels>
           <subTypeLeft> </subTypeLeft>
-          <subTypeRight></subTypeRight>
+          <subTypeRight/>
         </type>
         <type code="similar" default="0">
           <labels>
@@ -9054,7 +8876,7 @@
             </label>
           </labels>
           <subTypeLeft> </subTypeLeft>
-          <subTypeRight></subTypeRight>
+          <subTypeRight/>
         </type>
         <type code="duplicate" default="0">
           <labels>
@@ -9064,7 +8886,7 @@
             </label>
           </labels>
           <subTypeLeft> </subTypeLeft>
-          <subTypeRight></subTypeRight>
+          <subTypeRight/>
         </type>
         <type code="part_of" default="0">
           <labels>
@@ -9074,7 +8896,7 @@
             </label>
           </labels>
           <subTypeLeft> </subTypeLeft>
-          <subTypeRight></subTypeRight>
+          <subTypeRight/>
         </type>
       </types>
     </relationshipTable>
@@ -9088,7 +8910,7 @@
             </label>
           </labels>
           <subTypeLeft> </subTypeLeft>
-          <subTypeRight></subTypeRight>
+          <subTypeRight/>
         </type>
         <type code="depicts" default="0">
           <labels>
@@ -9098,7 +8920,7 @@
             </label>
           </labels>
           <subTypeLeft> </subTypeLeft>
-          <subTypeRight></subTypeRight>
+          <subTypeRight/>
         </type>
       </types>
     </relationshipTable>
@@ -9122,7 +8944,7 @@
             </label>
           </labels>
           <subTypeLeft> </subTypeLeft>
-          <subTypeRight></subTypeRight>
+          <subTypeRight/>
         </type>
         <type code="spouse" default="1">
           <labels>
@@ -9166,7 +8988,7 @@
             </label>
           </labels>
           <subTypeLeft> </subTypeLeft>
-          <subTypeRight></subTypeRight>
+          <subTypeRight/>
         </type>
         <type code="residence" default="0">
           <labels>
@@ -9176,7 +8998,7 @@
             </label>
           </labels>
           <subTypeLeft> </subTypeLeft>
-          <subTypeRight></subTypeRight>
+          <subTypeRight/>
         </type>
         <type code="workplace" default="0">
           <labels>
@@ -9186,7 +9008,7 @@
             </label>
           </labels>
           <subTypeLeft> </subTypeLeft>
-          <subTypeRight></subTypeRight>
+          <subTypeRight/>
         </type>
         <type code="ownership" default="0">
           <labels>
@@ -9196,7 +9018,7 @@
             </label>
           </labels>
           <subTypeLeft> </subTypeLeft>
-          <subTypeRight></subTypeRight>
+          <subTypeRight/>
         </type>
         <type code="built_by" default="0">
           <labels>
@@ -9206,7 +9028,7 @@
             </label>
           </labels>
           <subTypeLeft> </subTypeLeft>
-          <subTypeRight></subTypeRight>
+          <subTypeRight/>
         </type>
       </types>
     </relationshipTable>
@@ -9244,7 +9066,7 @@
             </label>
           </labels>
           <subTypeLeft> </subTypeLeft>
-          <subTypeRight></subTypeRight>
+          <subTypeRight/>
         </type>
         <type code="provider" default="0">
           <labels>
@@ -9254,7 +9076,7 @@
             </label>
           </labels>
           <subTypeLeft> </subTypeLeft>
-          <subTypeRight></subTypeRight>
+          <subTypeRight/>
         </type>
       </types>
     </relationshipTable>
@@ -9268,7 +9090,7 @@
             </label>
           </labels>
           <subTypeLeft> </subTypeLeft>
-          <subTypeRight></subTypeRight>
+          <subTypeRight/>
         </type>
       </types>
     </relationshipTable>
@@ -9282,7 +9104,7 @@
             </label>
           </labels>
           <subTypeLeft> </subTypeLeft>
-          <subTypeRight></subTypeRight>
+          <subTypeRight/>
         </type>
       </types>
     </relationshipTable>
@@ -9296,7 +9118,7 @@
             </label>
           </labels>
           <subTypeLeft> </subTypeLeft>
-          <subTypeRight></subTypeRight>
+          <subTypeRight/>
         </type>
       </types>
     </relationshipTable>
@@ -9310,7 +9132,7 @@
             </label>
           </labels>
           <subTypeLeft> </subTypeLeft>
-          <subTypeRight></subTypeRight>
+          <subTypeRight/>
         </type>
       </types>
     </relationshipTable>
@@ -9324,7 +9146,7 @@
             </label>
           </labels>
           <subTypeLeft> </subTypeLeft>
-          <subTypeRight></subTypeRight>
+          <subTypeRight/>
         </type>
       </types>
     </relationshipTable>
@@ -9338,7 +9160,7 @@
             </label>
           </labels>
           <subTypeLeft> </subTypeLeft>
-          <subTypeRight></subTypeRight>
+          <subTypeRight/>
         </type>
       </types>
     </relationshipTable>
@@ -9366,7 +9188,7 @@
             </label>
           </labels>
           <subTypeLeft> </subTypeLeft>
-          <subTypeRight></subTypeRight>
+          <subTypeRight/>
         </type>
       </types>
     </relationshipTable>
@@ -9394,7 +9216,7 @@
             </label>
           </labels>
           <subTypeLeft> </subTypeLeft>
-          <subTypeRight></subTypeRight>
+          <subTypeRight/>
         </type>
       </types>
     </relationshipTable>
@@ -9408,7 +9230,7 @@
             </label>
           </labels>
           <subTypeLeft> </subTypeLeft>
-          <subTypeRight></subTypeRight>
+          <subTypeRight/>
         </type>
       </types>
     </relationshipTable>
@@ -9422,7 +9244,7 @@
             </label>
           </labels>
           <subTypeLeft> </subTypeLeft>
-          <subTypeRight></subTypeRight>
+          <subTypeRight/>
         </type>
       </types>
     </relationshipTable>
@@ -9436,7 +9258,7 @@
             </label>
           </labels>
           <subTypeLeft> </subTypeLeft>
-          <subTypeRight></subTypeRight>
+          <subTypeRight/>
         </type>
       </types>
     </relationshipTable>
@@ -9450,7 +9272,7 @@
             </label>
           </labels>
           <subTypeLeft> </subTypeLeft>
-          <subTypeRight></subTypeRight>
+          <subTypeRight/>
         </type>
         <type code="illustrated" default="1">
           <labels>
@@ -9460,7 +9282,7 @@
             </label>
           </labels>
           <subTypeLeft> </subTypeLeft>
-          <subTypeRight></subTypeRight>
+          <subTypeRight/>
         </type>
       </types>
     </relationshipTable>
@@ -9474,7 +9296,7 @@
             </label>
           </labels>
           <subTypeLeft> </subTypeLeft>
-          <subTypeRight></subTypeRight>
+          <subTypeRight/>
         </type>
         <type code="describes" default="1">
           <labels>
@@ -9484,7 +9306,7 @@
             </label>
           </labels>
           <subTypeLeft> </subTypeLeft>
-          <subTypeRight></subTypeRight>
+          <subTypeRight/>
         </type>
       </types>
     </relationshipTable>
@@ -9498,7 +9320,7 @@
             </label>
           </labels>
           <subTypeLeft> </subTypeLeft>
-          <subTypeRight></subTypeRight>
+          <subTypeRight/>
         </type>
         <type code="describes" default="1">
           <labels>
@@ -9508,7 +9330,7 @@
             </label>
           </labels>
           <subTypeLeft> </subTypeLeft>
-          <subTypeRight></subTypeRight>
+          <subTypeRight/>
         </type>
       </types>
     </relationshipTable>
@@ -9546,7 +9368,7 @@
             </label>
           </labels>
           <subTypeLeft> </subTypeLeft>
-          <subTypeRight></subTypeRight>
+          <subTypeRight/>
         </type>
       </types>
     </relationshipTable>
