@@ -1157,7 +1157,7 @@ class ca_lists extends BundlableLabelableBaseModelWithAttributes {
 					}
 
 
-					if (is_array($va_limit_to_listIDs)){
+					if (is_array($va_limit_to_listIDs) && sizeof($va_item_ids)){
 						// filter out items from tables we don't want
 					
 						$qr_list_items = $t_list->makeSearchResult("ca_list_items", array_values($va_item_ids));
