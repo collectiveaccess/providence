@@ -62,6 +62,11 @@ class SearchIndexer extends SearchBase {
 	 */
 	static public $s_SearchIndexer_element_list_id_cache = array();
 	
+	/** 
+	 * Global cache array for field numbers
+	 */
+	static public $s_SearchIndexer_field_num_cache = array();
+	
 	private $opo_metadata_element = null;
 
 	# ------------------------------------------------
@@ -416,7 +421,7 @@ class SearchIndexer extends SearchBase {
 											/* index each element of the container */
 											foreach($vo_attribute->getValues() as $vo_value) {
 												$vn_list_id = $this->_getElementListID($vo_value->getElementID());											
-												$this->opo_engine->indexField($pn_subject_tablenum, "A".$vo_value->getElementID(), $vo_attribute->getAttributeID(), $vo_value->getDisplayValue($vn_list_id), $va_data);																																															
+												$this->opo_engine->indexField($pn_subject_tablenum, 'A'.$vo_value->getElementID(), $vo_attribute->getAttributeID(), $vo_value->getDisplayValue($vn_list_id), $va_data);																																															
 											}
 										}
 									} else {
@@ -545,7 +550,7 @@ class SearchIndexer extends SearchBase {
 		//
 		// We also do this indexing if we're in "reindexing" mode. When reindexing is indicated it means that we need to act as if
 		// we're indexing this row for the first time, and all indexing should be performed.
-if (!$this->opo_engine->can('incremental_reindexing') || $pb_reindex_mode) {
+if (!$vb_can_do_incremental_indexing || $pb_reindex_mode) {
 		if (is_array($va_related_tables = $this->getRelatedIndexingTables($pn_subject_tablenum))) {
 			if (!$vb_started_indexing) {
 				$this->opo_engine->startRowIndexing($pn_subject_tablenum, $pn_subject_row_id);
@@ -836,13 +841,19 @@ if (!$this->opo_engine->can('incremental_reindexing') || $pb_reindex_mode) {
 			
 			$va_changed_field_nums = array();
 			foreach(array_keys($pa_changed_fields) as $vs_f) {
-				$va_changed_field_nums[$vs_f] = $t_subject->fieldNum($vs_f);	
+				if ($t_subject->hasField($vs_f)) {
+					$va_changed_field_nums[$vs_f] = 'I'.$t_subject->fieldNum($vs_f);
+				} else {
+					if (preg_match('!^_ca_attribute_([\d]+)$!', $vs_f, $va_matches)) {
+						$va_changed_field_nums[$vs_f] = 'A'.$this->_getElementListCode($va_matches[1]);
+					}
+				}	
 			}
 			
 			//
 			// reindex rows in dependent tables that use the subject_row_id
 			//
-			$va_rows_to_reindex = $this->_getDependentRowsForSubject($pn_subject_tablenum, $pn_subject_row_id, $va_deps);
+			$va_rows_to_reindex = $this->_getDependentRowsForSubject($pn_subject_tablenum, $pn_subject_row_id, $va_deps, $va_changed_field_nums);
 			
 			if ($vb_can_do_incremental_indexing) { 
 				$va_rows_to_reindex_by_row_id = array();
@@ -960,9 +971,38 @@ if (!$this->opo_engine->can('incremental_reindexing') || $pb_reindex_mode) {
 	}
 	# ------------------------------------------------
 	/**
+	 * Determine if any of the fields to index are in the list of changed field nums
+	 *
+	 * @param array $pa_fields_to_index Array of fields to index as returned by SearchBase::getFieldsToIndex()
+	 * @param array $pa_changed_field_nums Array of fields that have changed, where array keys are field names and array values are field number codes (Eg. I15 or A4)
+	 * @return bool
+	 */
+	private function _indexedFieldsHaveChanged($pa_fields_to_index, $pa_changed_field_nums) {
+		foreach($pa_fields_to_index as $vs_field => $va_indexing_info) {
+			switch($vs_field) {
+				case '_hier_ancestors':
+					// noop
+					break;
+				case '_count':
+					// noop
+					break;
+				default:
+					$vn_fld_num = null;
+					if (is_array($pa_changed_field_nums)) {
+						if (isset($pa_changed_field_nums[$vs_field]) && $pa_changed_field_nums[$vs_field]) {
+							return true;
+						}
+					}
+					break;
+			}
+		}
+		return false;
+	}
+	# ------------------------------------------------
+	/**
 	 * Returns an array with info about rows that need to be reindexed due to change in content for the given subject
 	 */
-	private function _getDependentRowsForSubject($pn_subject_tablenum, $pn_subject_row_id, $va_deps) {
+	private function _getDependentRowsForSubject($pn_subject_tablenum, $pn_subject_row_id, $va_deps, $pa_changed_field_nums=null) {
 		$va_dependent_rows = array();
 		$vs_subject_tablename = $this->opo_datamodel->getTableName($pn_subject_tablenum);
 		
@@ -1024,10 +1064,13 @@ if (!$this->opo_engine->can('incremental_reindexing') || $pb_reindex_mode) {
 						if (!in_array($vs_rel_table, $va_table_list)) { $va_table_list[] = $vs_rel_table; }
 						if (!in_array($vs_subject_tablename, $va_table_list)) { continue; }
 						
+						$va_fields_to_index = $this->getFieldsToIndex($vn_dep_tablenum, $vs_rel_table);
+						
+						if (is_array($pa_changed_field_nums) && !$this->_indexedFieldsHaveChanged($va_fields_to_index, $pa_changed_field_nums)) { continue; } // check if the current field actually needs indexing; only do this check if we've been passed a list of changed fields, otherwise we have to assume that everything has changed
+						
 						$va_full_path = $va_table_list;
 						array_unshift($va_full_path, $vs_dep_table);
 						$qr_rel_rows = $this->_getRelatedRows(array_reverse($va_full_path), isset($va_table_key_list[$vs_list_name]) ? $va_table_key_list[$vs_list_name] : null, $vs_subject_tablename, $pn_subject_row_id);
-						$va_fields_to_index = $this->getFieldsToIndex($vn_dep_tablenum, $vs_rel_table);
 						
 						if ($qr_rel_rows) {
 							while($qr_rel_rows->nextRow()) {
@@ -1040,10 +1083,27 @@ if (!$this->opo_engine->can('incremental_reindexing') || $pb_reindex_mode) {
 											$vn_fld_num = '_count';
 											break;
 										default:
-											if (!($vn_fld_num = $this->opo_datamodel->getFieldNum($vs_rel_table, $vs_field))) { continue; }
+											$vn_fld_num = null;
+											if (isset(SearchIndexer::$s_SearchIndexer_field_num_cache[$pn_subject_tablenum][$vs_field])) { 
+												$vn_fld_num = SearchIndexer::$s_SearchIndexer_field_num_cache[$pn_subject_tablenum][$vs_field]; 
+												break;
+											}
+											
+											if (is_array($pa_changed_field_nums)) {
+												if (isset($pa_changed_field_nums[$vs_field]) && $pa_changed_field_nums[$vs_field]) {
+													SearchIndexer::$s_SearchIndexer_field_num_cache[$pn_subject_tablenum][$vs_field] = $vn_fld_num = $pa_changed_field_nums[$vs_field];
+												}
+											} else {
+												if (preg_match('!^_ca_attribute_([\d]+)$!', $vs_field, $va_matches)) {
+													SearchIndexer::$s_SearchIndexer_field_num_cache[$pn_subject_tablenum][$vs_field] = $vn_fld_num = 'A'.$va_matches[1];
+												} else {
+													SearchIndexer::$s_SearchIndexer_field_num_cache[$pn_subject_tablenum][$vs_field] = $vn_fld_num = 'I'.$this->opo_datamodel->getFieldNum($vs_rel_table, $vs_field);
+												}
+											}
 											break;
 									}
 									
+									if (!$vn_fld_num) { continue; }
 									
 									$vn_fld_row_id = $qr_rel_rows->get($vn_rel_pk);
 									$vn_row_id = $qr_rel_rows->get($vs_dep_pk);
@@ -1236,6 +1296,7 @@ if (!$this->opo_engine->can('incremental_reindexing') || $pb_reindex_mode) {
 		$vn_element_id =  $qr_res->get('element_id');
 		SearchIndexer::$s_SearchIndexer_element_data_type_cache[$ps_element_code] = SearchIndexer::$s_SearchIndexer_element_data_type_cache[$vn_element_id] = $qr_res->get('datatype');
 		SearchIndexer::$s_SearchIndexer_element_list_id_cache[$ps_element_code] = SearchIndexer::$s_SearchIndexer_element_list_id_cache[$vn_element_id] = $qr_res->get('list_id');
+		SearchIndexer::$s_SearchIndexer_element_id_cache[$vn_element_id] = $ps_element_code;
 		return SearchIndexer::$s_SearchIndexer_element_id_cache[$ps_element_code] = $vn_element_id;
 	}
 	# ------------------------------------------------
@@ -1253,6 +1314,14 @@ if (!$this->opo_engine->can('incremental_reindexing') || $pb_reindex_mode) {
 	private function _getElementListID($ps_element_code) {
 		$vn_element_id = $this->_getElementID($ps_element_code);	// ensures $s_SearchIndexer_element_data_type_cache[$ps_element_code] is populated
 		return SearchIndexer::$s_SearchIndexer_element_list_id_cache[$vn_element_id];
+	}
+	# ------------------------------------------------
+	/**
+	 * Returns element_code of ca_metadata_element with specified element_id or NULL if the element doesn't exist
+	 */
+	private function _getElementListCode($pn_element_id) {
+		$vn_element_id = $this->_getElementID($pn_element_id);	// ensures $s_SearchIndexer_element_id_cache[$vn_element_id] is populated
+		return SearchIndexer::$s_SearchIndexer_element_id_cache[$vn_element_id];
 	}
 	# ------------------------------------------------
 }

@@ -29,6 +29,7 @@
 	JavascriptLoadManager::register("fileupload");
 	
  	$t_object = $this->getVar('t_object');
+ 	$o_config = $t_object->getAppConfig();
  	$t_rep = $this->getVar('t_rep');
  	
  	$va_last_settings = $this->getVar('batch_mediaimport_last_settings');
@@ -163,6 +164,9 @@
 				<div class="caLabelList" id="caMediaImportSetControls">
 					<p>
 						<table>
+<?php
+	if (is_array($this->getVar('available_sets')) && sizeof($this->getVar('available_sets'))) {
+?>
 							<tr>
 								<td><?php 
 									$va_attrs = array('value' => 'add', 'checked' => 1, 'id' => 'caAddToSet');
@@ -171,6 +175,9 @@
 								?></td>
 								<td class='formLabel'><?php print _t('Add imported media to set %1', caHTMLSelect('set_id', $this->getVar('available_sets'), array('id' => 'caAddToSetID', 'class' => 'searchSetsSelect', 'width' => '300px'), array('value' => null, 'width' => '170px'))); ?></td>
 							</tr>
+<?php
+	}
+?>
 							<tr>
 								<td><?php 
 									$va_attrs = array('value' => 'create', 'id' => 'caCreateSet');
@@ -219,7 +226,7 @@
 						<table>
 							<tr>
 								<td><?php 
-									$va_attrs = array('value' => 'form', 'id' => 'caIdnoFormMode');
+									$va_attrs = array('value' => 'form', 'checked' => 1, 'id' => 'caIdnoFormMode');
 									if (isset($va_last_settings['idnoMode']) && ($va_last_settings['idnoMode'] == 'form')) { $va_attrs['checked'] = 1; }
 									print caHTMLRadioButtonInput('idno_mode', $va_attrs); 
 								?></td>
@@ -273,6 +280,46 @@
 ?>									
 									</td>								
 								</tr>
+							</table>
+						</p>
+					</div>
+				</div>
+		</div>
+		
+		<div class='bundleLabel'>
+			<span class="formLabelText"><?php print _t('Relationships'); ?></span> 
+				<div class="bundleContainer">
+					<div class="caLabelList" >
+						<p class="bundleDisplayPlacementEditorHelpText">
+<?php
+	print _t('Relationships will be created by matching the identifier extracted from the media file name with identifiers in related records.');
+?>
+						</p>
+						<p>
+							<table>
+<?php
+	foreach(array('ca_entities', 'ca_places', 'ca_occurrences', 'ca_collections') as $vs_rel_table) {
+		if ($o_config->get("{$vs_rel_table}_disable")) { continue; }
+		if (!($t_rel_table = $t_object->getAppDatamodel()->getInstanceByTableName($vs_rel_table))) { continue; }
+		$t_rel = ca_relationship_types::getRelationshipTypeInstance('ca_objects', $vs_rel_table);
+		if (!$t_rel) { continue; }
+?>
+								<tr>
+									<td class='formLabel'>
+<?php 
+			print caHTMLCheckboxInput('create_relationship_for[]', array('value' => $vs_rel_table,  'id' => "caCreateRelationshipForMedia{$vs_rel_table}", 'onclick' => "jQuery('#caRelationshipTypeIdFor{$vs_rel_table}').prop('disabled', !jQuery('#caCreateRelationshipForMedia{$vs_rel_table}').prop('checked'))"), array('dontConvertAttributeQuotesToEntities' => true)); 
+			print ' '._t("to %1 with relationship type", $t_rel_table->getProperty('NAME_SINGULAR'));
+?>									
+									</td>
+									<td class='formLabel'>
+<?php 
+			print $t_rel->getRelationshipTypesAsHTMLSelect('ltor', null, null, array('name' => "relationship_type_id_for_{$vs_rel_table}", 'id' => "caRelationshipTypeIdFor{$vs_rel_table}", 'disabled' => 1));
+?>							
+									</td>								
+								</tr>
+<?php
+	}
+?>
 							</table>
 						</p>
 					</div>

@@ -1147,7 +1147,17 @@ class ca_lists extends BundlableLabelableBaseModelWithAttributes {
 						}
 					}
 					
+
 					if ($va_limit_to_listIDs = ((isset($pa_options['limitToListIDs']) && is_array($pa_options['limitToListIDs'])) ? $pa_options['limitToListIDs'] : null)) {
+						// for some reason the option comes back as array(0 => null) if no list is selected in UI
+						// -> have to make sure to catch this case here
+						if((sizeof($va_limit_to_listIDs)==1) && empty($va_limit_to_listIDs[0])){
+							$va_limit_to_listIDs = null;
+						}
+					}
+
+
+					if (is_array($va_limit_to_listIDs) && sizeof($va_item_ids)){
 						// filter out items from tables we don't want
 					
 						$qr_list_items = $t_list->makeSearchResult("ca_list_items", array_values($va_item_ids));
