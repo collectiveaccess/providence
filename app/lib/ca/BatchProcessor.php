@@ -206,6 +206,26 @@
 		}
 		# ----------------------------------------
 		/**
+		 * Compare file name to entries in skip-file list and return true if file matches any entry.
+		 */
+		private static function _skipFile($ps_file, $pa_skip_list) {
+			foreach($pa_skip_list as $vn_i => $vs_skip) {
+				if (strpos($vs_skip, "*") !== false) {
+					// is wildcard
+					$vs_skip = str_replace("\\*", ".*", preg_quote($vs_skip, "!"));
+					if (preg_match($x="!^{$vs_skip}$!", $ps_file)) { return true; }
+				} elseif((substr($vs_skip, 0, 1) == '/') && (substr($vs_skip, -1, 1) == '/')) {
+					// is regex
+					$vs_skip = substr($vs_skip, 1, strlen($vs_skip) - 2);
+					if (preg_match("!".preg_quote($vs_skip, "!")."!", $ps_file)) { return true; }
+				} else {
+					if ($ps_file == $vs_skip) { return true; }
+				}
+			}
+			return false;
+		}
+		# ----------------------------------------
+		/**
 		 * @param array $pa_options
 		 *		progressCallback =
 		 *		reportCallback = 
@@ -284,6 +304,7 @@
  			$vn_set_id	 						= $pa_options['set_id'];
  			
  			$vn_locale_id						= $pa_options['locale_id'];
+ 			$vs_skip_file_list					= $pa_options['skipFileList'];
  		
  			$va_relationship_type_id_for = array();
  			if (is_array($va_create_relationship_for = $pa_options['create_relationship_for'])) {
@@ -294,7 +315,6 @@
  			
  			if (!$vn_locale_id) { $vn_locale_id = $g_ui_locale_id; }
  			
- 			$va_extracted_idnos_from_filename = array();
  			$va_files_to_process = caGetDirectoryContentsAsList($pa_options['importFromDirectory'], $vb_include_subdirectories);
  			
  			if ($vs_set_mode == 'add') {
@@ -365,6 +385,14 @@
 			$va_regex_list = $po_request->config->getAssoc('mediaFilenameToObjectIdnoRegexes');
  			if (!is_array($va_regex_list)) { $va_regex_list = array(); }
  			
+ 			// Get list of files (or file name patterns) to skip
+ 			$va_skip_list = preg_split("![\r\n]+!", $vs_skip_file_list);
+ 			foreach($va_skip_list as $vn_i => $vs_skip) {
+ 				if (!strlen($va_skip_list[$vn_i] = trim($vs_skip))) {
+ 					unset($va_skip_list[$vn_i]);
+ 				}
+ 			}
+ 			
  			$vn_c = 0;
  			$vn_start_time = time();
  			$va_report = array();
@@ -374,6 +402,9 @@
  				$d = array_pop($va_tmp);
  				array_push($va_tmp, $d);
  				$vs_directory = join("/", $va_tmp);
+ 				
+ 				// Skip file names using $vs_skip_file_list
+ 				if (BatchProcessor::_skipFile($f, $va_skip_list)) { continue; }
  				
  				$vs_relative_directory = preg_replace("!{$vs_batch_media_import_root_directory}[/]*!", "", $vs_directory); 
  				
@@ -392,7 +423,8 @@
 				$t_object->setTransaction($o_trans);
 				
 				$vs_modified_filename = $f;
-				if (in_array($vs_import_mode, array('TRY_TO_MATCH', 'ALWAYS_MATCH'))) {
+				$va_extracted_idnos_from_filename = array();
+				if (in_array($vs_import_mode, array('TRY_TO_MATCH', 'ALWAYS_MATCH')) || (is_array($va_create_relationship_for) && sizeof($va_create_relationship_for))) {
 					foreach($va_regex_list as $vs_regex_name => $va_regex_info) {
 						foreach($va_regex_info['regexes'] as $vs_regex) {
 							$va_names_to_match = array();
@@ -408,7 +440,7 @@
 									$va_names_to_match = array($f);
 									break;
 							}
-						
+							
 							foreach($va_names_to_match as $vs_match_name) {
 								if (preg_match('!'.$vs_regex.'!', $vs_match_name, $va_matches)) {
 									if (!$vs_idno || (strlen($va_matches[1]) < strlen($vs_idno))) {
@@ -417,18 +449,19 @@
 									if (!$vs_modified_filename || (strlen($vs_modified_filename)  > strlen($va_matches[1]))) {
 										$vs_modified_filename = $va_matches[1];
 									}
-									
 									$va_extracted_idnos_from_filename[] = $va_matches[1];
 								
-									if ($t_object->load(array('idno' => $va_matches[1], 'deleted' => 0))) {
+									if (in_array($vs_import_mode, array('TRY_TO_MATCH', 'ALWAYS_MATCH'))) {
+										if ($t_object->load(array('idno' => $va_matches[1], 'deleted' => 0))) {
 								
-										$va_notices[$vs_relative_directory.'/'.$vs_match_name.'_match'] = array(
-											'idno' => $t_object->get($t_object->getProperty('ID_NUMBERING_ID_FIELD')),
-											'label' => $t_object->getLabelForDisplay(),
-											'message' => _t('Matched media %1 from %2 to object using %2', $f, $vs_relative_directory, $vs_regex_name),
-											'status' => 'MATCHED'
-										);
-										break(3);
+											$va_notices[$vs_relative_directory.'/'.$vs_match_name.'_match'] = array(
+												'idno' => $t_object->get($t_object->getProperty('ID_NUMBERING_ID_FIELD')),
+												'label' => $t_object->getLabelForDisplay(),
+												'message' => _t('Matched media %1 from %2 to object using %2', $f, $vs_relative_directory, $vs_regex_name),
+												'status' => 'MATCHED'
+											);
+											break(3);
+										}
 									}
 								}
 							}
@@ -485,15 +518,22 @@
 						$t_object->set('status', $vn_object_status);
 						$t_object->set('access', $vn_object_access);
 						
-						if ($vs_idno_mode === 'filename') {
-							// use the filename as identifier
-							$t_object->set('idno', $vs_modified_filename);
-						} else {
-							// Calculate identifier using numbering plugin
-							$o_numbering_plugin = $t_object->getIDNoPlugInInstance();
-							if (!($vs_sep = $o_numbering_plugin->getSeparator())) { $vs_sep = ''; }
-							if (!is_array($va_idno_values = $o_numbering_plugin->htmlFormValuesAsArray('idno', $vs_object_idno, false, false, true))) { $va_idno_values = array(); }
-							$t_object->set('idno', join($vs_sep, $va_idno_values));	// true=always set serial values, even if they already have a value; this let's us use the original pattern while replacing the serial value every time through
+						switch($vs_idno_mode) {
+							case 'filename':
+								// use the filename as identifier
+								$t_object->set('idno', $f);
+								break;
+							case 'directory_and_filename':
+								// use the directory + filename as identifier
+								$t_object->set('idno', $d.'/'.$f);
+								break;
+							default:
+								// Calculate identifier using numbering plugin
+								$o_numbering_plugin = $t_object->getIDNoPlugInInstance();
+								if (!($vs_sep = $o_numbering_plugin->getSeparator())) { $vs_sep = ''; }
+								if (!is_array($va_idno_values = $o_numbering_plugin->htmlFormValuesAsArray('idno', $vs_object_idno, false, false, true))) { $va_idno_values = array(); }
+								$t_object->set('idno', join($vs_sep, $va_idno_values));	// true=always set serial values, even if they already have a value; this let's us use the original pattern while replacing the serial value every time through
+								break;
 						}
 						
 						$t_object->insert();
