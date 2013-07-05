@@ -213,7 +213,7 @@
 				if (strpos($vs_skip, "*") !== false) {
 					// is wildcard
 					$vs_skip = str_replace("\\*", ".*", preg_quote($vs_skip, "!"));
-					if (preg_match($x="!^{$vs_skip}$!", $ps_file)) { return true; }
+					if (preg_match("!^{$vs_skip}$!", $ps_file)) { return true; }
 				} elseif((substr($vs_skip, 0, 1) == '/') && (substr($vs_skip, -1, 1) == '/')) {
 					// is regex
 					$vs_skip = substr($vs_skip, 1, strlen($vs_skip) - 2);
