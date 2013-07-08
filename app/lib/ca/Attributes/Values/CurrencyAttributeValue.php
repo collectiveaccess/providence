@@ -176,8 +176,20 @@
  					$vs_currency_specifier = trim($va_matches[2]);
  					$vs_value = preg_replace('/[^\d\.\-]/', '', trim($va_matches[1]));
  				} else {
- 					$this->postError(1970, _t('%1 is not a valid currency value; be sure to include a currency symbol', $pa_element_info['displayLabel']), 'CurrencyAttributeValue->parseValue()');
-					return false;
+ 					// try plain old decimal without currency, if default currency is set
+ 					$o_config = Configuration::load();
+ 					if(($vs_default_currency = $o_config->get('default_currency')) && (strlen($vs_default_currency) == 3)){
+ 						if (preg_match("!^([\d\.]+)$!", trim($ps_value), $va_matches)){
+ 							$vs_currency_specifier = $vs_default_currency;
+ 							$vs_value = preg_replace('/[^\d\.\-]/', '', trim($va_matches[1]));
+						} else {
+							$this->postError(1970, _t('%1 is not a valid currency value; be sure to include a currency symbol', $pa_element_info['displayLabel']), 'CurrencyAttributeValue->parseValue()');
+							return false;
+						}
+ 					} else {
+ 						$this->postError(1970, _t('%1 is not a valid currency value; be sure to include a currency symbol', $pa_element_info['displayLabel']), 'CurrencyAttributeValue->parseValue()');
+						return false;
+ 					}
  				}
  			}
  				 				
