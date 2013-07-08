@@ -152,7 +152,7 @@
  		}
  		# ------------------------------------------------------------------
 		public function getDisplayValue($pa_options=null) {
-			
+
 			$o_locale = Zend_Registry::get('Zend_Locale');
 			$vs_format = Zend_Locale_Data::getContent($o_locale, 'currencynumber');
 
@@ -213,7 +213,12 @@
  			// get UI locale from registry and convert string to actual php float
  			// based on rules for this locale (e.g. most non-US locations use 10.000,00 as notation)
  			$o_locale = Zend_Registry::get('Zend_Locale');
- 			$vn_value = Zend_Locale_Format::getNumber($vs_decimal_value, array('locale' => $o_locale, 'precision' => 2));
+ 			try {
+ 				$vn_value = Zend_Locale_Format::getNumber($vs_decimal_value, array('locale' => $o_locale, 'precision' => 2));
+ 			} catch (Zend_Locale_Exception $e){
+ 				$this->postError(1970, _t('%1 does not use a valid decimal notation for your locale', $pa_element_info['displayLabel']), 'CurrencyAttributeValue->parseValue()');
+ 				return false;
+ 			}
 			
 			switch($vs_currency_specifier) {
 				case '$':
