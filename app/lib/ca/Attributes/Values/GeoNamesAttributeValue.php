@@ -285,7 +285,7 @@ class GeoNamesAttributeValue extends AttributeValue implements IAttributeValue {
 
 			$vs_element .= "
 					var re = /\[([\d\.\-,; ]+)\]/;
-					var r = re.exec('{".$pa_element_info['element_id']."}');
+					var r = re.exec('{{".$pa_element_info['element_id']."}}');
 					var latlong = (r) ? r[1] : null;
 
 					if (latlong) {

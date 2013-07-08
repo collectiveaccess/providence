@@ -189,7 +189,7 @@
 							<tr>
 								<td><?php 
 									$va_attrs = array('value' => 'none', 'id' => 'caNoSet');
-									if (isset($va_last_settings['setMode']) && ($va_last_settings['setMode'] == 'none')) { $va_attrs['checked'] = 1; }
+									if (!((isset($va_last_settings['setMode']) && (in_array($va_last_settings['setMode'], array('add', 'create')))))) { $va_attrs['checked'] = 1; }
 									print caHTMLRadioButtonInput('set_mode', $va_attrs); 
 								?></td>
 								<td class='formLabel'><?php print _t('Do not associate imported media with a set'); ?></td>
@@ -240,6 +240,14 @@
 								?></td>
 								<td class='formLabel'><?php print _t('Set object identifier to file name'); ?></td>
 							</tr>
+							<tr>
+								<td><?php 
+									$va_attrs = array('value' => 'directory_and_filename', 'id' => 'caIdnoDirectoryAndFilenameMode');
+									if (isset($va_last_settings['idnoMode']) && ($va_last_settings['idnoMode'] == 'directory_and_filename')) { $va_attrs['checked'] = 1; }
+									print caHTMLRadioButtonInput('idno_mode', $va_attrs); 
+								?></td>
+								<td class='formLabel'><?php print _t('Set object identifier to directory and file name'); ?></td>
+							</tr>
 						</table>
 						<script type="text/javascript">
 							jQuery(document).ready(function() {
@@ -247,6 +255,9 @@
 									jQuery("#caIdnoFormModeForm input").prop('disabled', false);
 								});
 								jQuery("#caIdnoFilenameMode").click(function() {
+									jQuery("#caIdnoFormModeForm input").prop('disabled', true);
+								});
+								jQuery("#caIdnoDirectoryAndFilenameMode").click(function() {
 									jQuery("#caIdnoFormModeForm input").prop('disabled', true);
 								});
 								
@@ -321,6 +332,24 @@
 	}
 ?>
 							</table>
+						</p>
+					</div>
+				</div>
+		</div>
+		<div class='bundleLabel'>
+			<span class="formLabelText"><?php print _t('Skip files'); ?></span> 
+				<div class="bundleContainer">
+					<div class="caLabelList" >
+						<p class="bundleDisplayPlacementEditorHelpText">
+<?php
+	print _t('List names of files you wish to skip during import below, one per line. You may use asterisks ("*") as wildcards to make partial matches. Values enclosed in "/" characters will be treated as <a href="http://www.pcre.org/pcre.txt" target="_new">Perl-compatible regular expressions</a>.');
+?>
+						</p>
+						<p>
+<?php 
+			print caHTMLTextInput('skip_file_list', array('value' => $va_last_settings['skipFileList'],  'id' => "caSkipFilesList"), array('width' => '700px', 'height' => '100px')); 
+
+?>
 						</p>
 					</div>
 				</div>

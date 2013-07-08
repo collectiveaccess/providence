@@ -88,7 +88,7 @@
 					$vn_x++;
 					$vn_row_c = 0;
 					foreach($va_row_ids as $vn_row_id => $vs_label) {
-						print "{$vs_label}".caNavLink($this->request, 'x', 'close', $this->request->getModulePath(), $this->request->getController(), 'removeCriteria', array('facet' => $vs_facet_name, 'id' => $vn_row_id))."\n";
+						print "{$vs_label}".caNavLink($this->request, 'x', 'close', $this->request->getModulePath(), $this->request->getController(), 'removeCriteria', array('facet' => $vs_facet_name, 'id' => urlencode($vn_row_id)))."\n";
 						$vn_row_c++;
 					}
 					

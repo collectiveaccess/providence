@@ -189,7 +189,8 @@
  				'idno' => $this->request->getParameter('idno', pString),
  				'idno' => $this->request->getParameter('idno', pString),
  				'locale_id' => $g_ui_locale_id,
- 				'user_id' => $this->request->getUserID()
+ 				'user_id' => $this->request->getUserID(),
+ 				'skipFileList' => $this->request->getParameter('skip_file_list', pString)
  			);
  			
  			if (is_array($va_create_relationships_for = $this->request->getParameter('create_relationship_for', pArray))) {
