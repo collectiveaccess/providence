@@ -4,6 +4,15 @@
 
 	<!-- GLOBAL SIMPLE TYPE DEFS -->
 
+	<xs:simpleType name="stringRequired">
+		<xs:annotation>
+			<xs:documentation>non-empty strings only</xs:documentation>
+		</xs:annotation>
+		<xs:restriction base="xs:string">
+			<xs:minLength value="1"/>
+		</xs:restriction>
+	</xs:simpleType>	
+
 	<xs:simpleType name="booleanType">
 		<xs:restriction base="xs:integer">
 			<xs:minInclusive value="0"/>
@@ -25,7 +34,7 @@
 
 	<xs:simpleType name="localeType">
 		<xs:restriction base="xs:string">
-			<xs:pattern value="[a-z][a-z]_[A-Z][A-Z]"/>
+			<xs:pattern value="[a-z]{2,3}_[A-Z][A-Z]"/>
 		</xs:restriction>
 	</xs:simpleType>
 
@@ -94,10 +103,8 @@
 			<xs:element name="label" minOccurs="1" maxOccurs="unbounded">
 				<xs:complexType>
 					<xs:sequence>
-						<xs:element name="name_singular" type="xs:string" minOccurs="1"
-							maxOccurs="1"/>
-						<xs:element name="name_plural" type="xs:string" minOccurs="1" maxOccurs="1"
-						/>
+						<xs:element name="name_singular" type="stringRequired" minOccurs="1"	maxOccurs="1"/>
+						<xs:element name="name_plural" type="stringRequired" minOccurs="1" maxOccurs="1"/>
 					</xs:sequence>
 					<xs:attribute name="locale" type="localeType" use="required"/>
 					<xs:attribute name="preferred" type="booleanType" use="required"/>
@@ -239,8 +246,7 @@
 					</xs:sequence>
 				</xs:complexType>
 			</xs:element>
-			<xs:element name="typeRestrictions" type="typeRestrictions" minOccurs="1" maxOccurs="1"
-			/>
+			<xs:element name="typeRestrictions" type="typeRestrictions" minOccurs="1" maxOccurs="1"/>
 		</xs:sequence>
 		<xs:attribute name="code" type="elementCodeType" use="required"/>
 		<xs:attribute name="datatype" type="datatypeList" use="required"/>
@@ -326,7 +332,7 @@
 										<xs:complexType>
 											<xs:simpleContent>
 												<xs:extension base="xs:string">
-												<xs:attribute name="code" type="xs:string" use="required"/>
+												<xs:attribute name="code" type="xs:string" use="optional"/>
 												<xs:attribute name="type" type="xs:string" use="required"/>
 												</xs:extension>
 											</xs:simpleContent>
