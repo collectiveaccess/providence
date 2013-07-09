@@ -130,10 +130,28 @@
 	'maxResults' => array(
 		'formatType' => FT_NUMBER,
 		'displayType' => DT_FIELD,
-		'default' => 25,
+		'default' => 20,
 		'width' => 5, 'height' => 1,
 		'label' => _t('Maximum number of GeoNames results'),
 		'description' => _t('Determines the maximum number of results returned by GeoNames. Tweak this number if you want to speed up lookups.')
+	),
+	'gnElements' => array(
+		'formatType' => FT_TEXT,
+		'displayType' => DT_FIELD,
+		'default' => 'name,countryName,continentCode',
+		'width' => 90, 'height' => 4,
+		'label' => _t('GeoNames elements'),
+		'validForRootOnly' => 1,
+		'description' => _t('Comma-separated list of GeoNames attributes to be pulled from the service to build the text representation for the selected location. See http://www.geonames.org/export/geonames-search.html for further reference, including the available element names. Note that latitude and longitude are always added to the text value to enable map display.')
+	),
+	'gnDelimiter' => array(
+		'formatType' => FT_TEXT,
+		'displayType' => DT_FIELD,
+		'default' => ', ',
+		'width' => 10, 'height' => 1,
+		'label' => _t('GeoNames element delimiter'),
+		'validForRootOnly' => 1,
+		'description' => _t('Delimiter to use between multiple values pulled from GeoNames service.')
 	),
 );
 
@@ -234,12 +252,14 @@ class GeoNamesAttributeValue extends AttributeValue implements IAttributeValue {
 		}
  		$o_config = Configuration::load();
 
- 		$va_settings = $this->getSettingValuesFromElementArray($pa_element_info, array('fieldWidth', 'fieldHeight', 'disableMap', 'maxResults'));
+ 		$va_settings = $this->getSettingValuesFromElementArray($pa_element_info, array('fieldWidth', 'fieldHeight', 'disableMap', 'maxResults', 'gnElements', 'gnDelimiter'));
 
- 		$vn_max_results = (isset($va_settings['maxResults']) ? intval($va_settings['maxResults']) : 25);
+ 		$vn_max_results = (isset($va_settings['maxResults']) ? intval($va_settings['maxResults']) : 20);
+ 		$vs_gn_elements = $va_settings['gnElements'];
+ 		$vs_gn_delimiter = $va_settings['gnDelimiter'];
 
  		if ($pa_options['request']) {
-			$vs_url = caNavUrl($pa_options['request'], 'lookup', 'GeoNames', 'Get', array('maxRows' => $vn_max_results));
+			$vs_url = caNavUrl($pa_options['request'], 'lookup', 'GeoNames', 'Get', array('maxRows' => $vn_max_results, 'gnElements' => urlencode($vs_gn_elements), 'gnDelimiter' => urlencode($vs_gn_delimiter)));
 		}
 
  		$vs_element = '<div id="geonames_'.$pa_element_info['element_id'].'_input{n}">'.
