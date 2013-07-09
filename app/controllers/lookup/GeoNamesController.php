@@ -40,6 +40,8 @@ class GeoNamesController extends ActionController {
 	public function Get($pa_additional_query_params=null, $pa_options=null) {
 		global $g_ui_locale_id;
 
+		$vn_max = $this->request->getParameter('maxRows', pInteger);
+
 		$ps_query = $this->request->getParameter('term', pString);
 		$ps_type = $this->request->getParameter('type', pString);
 		$vo_conf = Configuration::load();
@@ -54,7 +56,8 @@ class GeoNamesController extends ActionController {
 				"q" => $ps_query,
 				"lang" => $vs_lang,
 				'style' => 'full',
-				'username' => $vs_user
+				'username' => $vs_user,
+				'maxRows' => $vn_max
 			);
 
 			foreach ($va_params as $vs_key => $vs_value) {

@@ -126,7 +126,15 @@
 		'label' => _t('Value delimiter'),
 		'validForRootOnly' => 1,
 		'description' => _t('Delimiter to use between multiple values when used in a display.')
-	)
+	),
+	'maxResults' => array(
+		'formatType' => FT_NUMBER,
+		'displayType' => DT_FIELD,
+		'default' => 25,
+		'width' => 5, 'height' => 1,
+		'label' => _t('Maximum number of GeoNames results'),
+		'description' => _t('Determines the maximum number of results returned by GeoNames. Tweak this number if you want to speed up lookups.')
+	),
 );
 
 class GeoNamesAttributeValue extends AttributeValue implements IAttributeValue {
@@ -226,9 +234,13 @@ class GeoNamesAttributeValue extends AttributeValue implements IAttributeValue {
 		}
  		$o_config = Configuration::load();
 
- 		$va_settings = $this->getSettingValuesFromElementArray($pa_element_info, array('fieldWidth', 'fieldHeight', 'disableMap'));
+ 		$va_settings = $this->getSettingValuesFromElementArray($pa_element_info, array('fieldWidth', 'fieldHeight', 'disableMap', 'maxResults'));
 
-		JavascriptLoadManager::register('maps');
+ 		$vn_max_results = (isset($va_settings['maxResults']) ? intval($va_settings['maxResults']) : 25);
+
+ 		if ($pa_options['request']) {
+			$vs_url = caNavUrl($pa_options['request'], 'lookup', 'GeoNames', 'Get', array('maxRows' => $vn_max_results));
+		}
 
  		$vs_element = '<div id="geonames_'.$pa_element_info['element_id'].'_input{n}">'.
  			caHTMLTextInput(
@@ -250,11 +262,8 @@ class GeoNamesAttributeValue extends AttributeValue implements IAttributeValue {
 				)
 			);
 
-		if ($pa_options['request']) {
-			$vs_url = caNavUrl($pa_options['request'], 'lookup', 'GeoNames', 'Get', array('max' => 100));
-		}
-
 		$vs_element .= '</div>';
+
 		$vs_element .= "
 			<script type='text/javascript'>
 				jQuery(document).ready(function() {
@@ -272,6 +281,9 @@ class GeoNamesAttributeValue extends AttributeValue implements IAttributeValue {
 		";
 
 		if(!$va_settings["disableMap"]){
+
+			JavascriptLoadManager::register('maps');
+
 			$vs_element .= "
 				<div id='map_".$pa_element_info['element_id']."{n}' style='width:700px; height:160px;'>
 
