@@ -1049,6 +1049,8 @@ if (!$vb_can_do_incremental_indexing || $pb_reindex_mode) {
 					$va_indexing_info = $this->getTableIndexingInfo($vn_dep_tablenum, $vs_rel_table);
 					$vn_rel_tablenum = $this->opo_datamodel->getTableNum($vs_rel_table);
 					$vn_rel_pk = $this->opo_datamodel->getTablePrimaryKeyName($vn_rel_tablenum);
+					$t_rel = $this->opo_datamodel->getInstanceByTableNum($vn_rel_tablenum, true);
+					
 					if (is_array($va_indexing_info['tables']) && (sizeof($va_indexing_info['tables']))) {
 						$va_table_path = $va_indexing_info['tables'];
 					} else {
@@ -1065,9 +1067,9 @@ if (!$vb_can_do_incremental_indexing || $pb_reindex_mode) {
 						if (!in_array($vs_subject_tablename, $va_table_list)) { continue; }
 						
 						$va_fields_to_index = $this->getFieldsToIndex($vn_dep_tablenum, $vs_rel_table);
-						
+			if ($vs_rel_table == $vs_subject_tablename) {
 						if (is_array($pa_changed_field_nums) && !$this->_indexedFieldsHaveChanged($va_fields_to_index, $pa_changed_field_nums)) { continue; } // check if the current field actually needs indexing; only do this check if we've been passed a list of changed fields, otherwise we have to assume that everything has changed
-						
+			}			
 						$va_full_path = $va_table_list;
 						array_unshift($va_full_path, $vs_dep_table);
 						$qr_rel_rows = $this->_getRelatedRows(array_reverse($va_full_path), isset($va_table_key_list[$vs_list_name]) ? $va_table_key_list[$vs_list_name] : null, $vs_subject_tablename, $pn_subject_row_id);
@@ -1084,22 +1086,17 @@ if (!$vb_can_do_incremental_indexing || $pb_reindex_mode) {
 											break;
 										default:
 											$vn_fld_num = null;
-											if (isset(SearchIndexer::$s_SearchIndexer_field_num_cache[$pn_subject_tablenum][$vs_field])) { 
-												$vn_fld_num = SearchIndexer::$s_SearchIndexer_field_num_cache[$pn_subject_tablenum][$vs_field]; 
+											if (isset(SearchIndexer::$s_SearchIndexer_field_num_cache[$vn_rel_tablenum][$vs_field])) { 
+												$vn_fld_num = SearchIndexer::$s_SearchIndexer_field_num_cache[$vn_rel_tablenum][$vs_field]; 
 												break;
 											}
 											
-											if (is_array($pa_changed_field_nums)) {
-												if (isset($pa_changed_field_nums[$vs_field]) && $pa_changed_field_nums[$vs_field]) {
-													SearchIndexer::$s_SearchIndexer_field_num_cache[$pn_subject_tablenum][$vs_field] = $vn_fld_num = $pa_changed_field_nums[$vs_field];
-												}
+											if (preg_match('!^_ca_attribute_([\d]+)$!', $vs_field, $va_matches)) {
+												SearchIndexer::$s_SearchIndexer_field_num_cache[$vn_rel_tablenum][$vs_field] = $vn_fld_num = 'A'.$va_matches[1];
 											} else {
-												if (preg_match('!^_ca_attribute_([\d]+)$!', $vs_field, $va_matches)) {
-													SearchIndexer::$s_SearchIndexer_field_num_cache[$pn_subject_tablenum][$vs_field] = $vn_fld_num = 'A'.$va_matches[1];
-												} else {
-													SearchIndexer::$s_SearchIndexer_field_num_cache[$pn_subject_tablenum][$vs_field] = $vn_fld_num = 'I'.$this->opo_datamodel->getFieldNum($vs_rel_table, $vs_field);
-												}
+												SearchIndexer::$s_SearchIndexer_field_num_cache[$vn_rel_tablenum][$vs_field] = $vn_fld_num = 'I'.$t_rel->fieldNum($vs_field);
 											}
+							
 											break;
 									}
 									
@@ -1130,6 +1127,7 @@ if (!$vb_can_do_incremental_indexing || $pb_reindex_mode) {
 				}
 			}
 		}
+		
 		return $va_dependent_rows;
 	}
 	# ------------------------------------------------
