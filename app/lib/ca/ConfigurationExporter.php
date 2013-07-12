@@ -408,10 +408,13 @@ final class ConfigurationExporter {
 
 			$vo_settings = $this->opo_dom->createElement("settings");
 			if(is_array($va_settings = $t_element->getSettings())){
-				foreach($va_settings as $vs_setting => $vs_value){
-					$vo_setting = $this->opo_dom->createElement("setting",$vs_value);
-					$vo_setting->setAttribute("name", $vs_setting);
-					$vo_settings->appendChild($vo_setting);
+				foreach($va_settings as $vs_setting => $va_values){
+					if(!is_array($va_values)) { $va_values = array($va_values); }
+					foreach($va_values as $vs_value){
+						$vo_setting = $this->opo_dom->createElement("setting",$vs_value);
+						$vo_setting->setAttribute("name", $vs_setting);
+						$vo_settings->appendChild($vo_setting);
+					}
 				}
 			}
 			$vo_element->appendChild($vo_settings);
