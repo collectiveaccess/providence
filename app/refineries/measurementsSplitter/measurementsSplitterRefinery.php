@@ -35,7 +35,7 @@
 		public function __construct() {
 			$this->ops_name = 'measurementsSplitter';
 			$this->ops_title = _t('Measurement splitter');
-			$this->ops_description = _t('Splits measurements');
+			$this->ops_description = _t('Splits strings representing physical measurements into individual quantities.');
 			
 			parent::__construct();
 		}
@@ -56,6 +56,8 @@
 		 *
 		 */
 		public function refine(&$pa_destination_data, $pa_group, $pa_item, $pa_source_data, $pa_options=null) {
+			$o_log = (isset($pa_options['log']) && is_object($pa_options['log'])) ? $pa_options['log'] : null;
+			
 			$va_group_dest = explode(".", $pa_group['destination']);
 			$vs_terminal = array_pop($va_group_dest);
 			$pm_value = $pa_source_data[$pa_item['source']];
@@ -64,11 +66,15 @@
 			
 			$vs_units = $pa_item['settings']['measurementsSplitter_units'];
 			
-			if ($vs_delimiter = $pa_item['settings']['measurementsSplitter_delimiter']) {
-				$va_measurements = explode($vs_delimiter, $pm_value);
+			if (is_array($pm_value)) {
+				$va_measurements = $pm_value;	// for input formats that support repeating values
 			} else {
-				$vs_delimiter = '';
-				$va_measurements = array($pm_value);
+				if ($vs_delimiter = $pa_item['settings']['measurementsSplitter_delimiter']) {
+					$va_measurements = explode($vs_delimiter, $pm_value);
+				} else {
+					$vs_delimiter = '';
+					$va_measurements = array($pm_value);
+				}
 			}
 		
 			$va_val = array();	
@@ -88,14 +94,14 @@
 					if (isset($va_element['typeElement']) && $va_element['typeElement']) {
 						$va_val[$va_element['typeElement']] = BaseRefinery::parsePlaceholder($va_element["type"], $pa_source_data, $pa_item);
 					}
-			
-				
 				}
 			
 				// Set attributes
 				if (is_array($pa_item['settings']['measurementsSplitter_attributes'])) {
 					$va_attr_vals = array();
 					foreach($pa_item['settings']['measurementsSplitter_attributes'] as $vs_element_code => $vs_v) {
+						// BaseRefinery::parsePlaceholder may return an array if the input format supports repeated values (as XML does)
+						// but we only supports non-repeating attribute values, so we join any values here and call it a day.
 						$va_attr_vals[$vs_element_code] = BaseRefinery::parsePlaceholder($vs_v, $pa_source_data, $pa_item);
 					}
 					$va_val = array_merge($va_val, $va_attr_vals);

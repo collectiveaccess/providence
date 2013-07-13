@@ -56,16 +56,11 @@
 		 *
 		 */
 		public function refine(&$pa_destination_data, $pa_group, $pa_item, $pa_source_data, $pa_options=null) {
+			$o_log = (isset($pa_options['log']) && is_object($pa_options['log'])) ? $pa_options['log'] : null;
+			$o_trans = (isset($pa_options['transaction']) && ($pa_options['transaction'] instanceof Transaction)) ? $pa_options['transaction'] : null;
+			
 			$va_group_dest = explode(".", $pa_group['destination']);
 			$vs_terminal = array_pop($va_group_dest);
-			// $pm_value = $pa_source_data[$pa_item['source']];
-// 			
-// 			if ($vs_delimiter = $pa_item['settings']['ATEntityGetter_delimiter']) {
-// 				$va_entities = explode($vs_delimiter, $pm_value);
-// 			} else {
-// 				$va_entities = array($pm_value);
-// 			}
-// 			
 
 			$va_url = parse_url($pa_options['source']);
 		
@@ -146,15 +141,11 @@
 				if (
 					($vs_entity_type)
 				) {
-					
-					if (!($va_val['_type'] = BaseRefinery::parsePlaceholder($vs_entity_type, $pa_source_data, $pa_item, $vs_delimiter, $vn_c))) {
-						if($vs_type_opt = $pa_item['settings']['ATEntityGetter_entityTypeDefault']) {
-							$va_val['_type'] = BaseRefinery::parsePlaceholder($vs_type_opt, $pa_source_data, $pa_item, $vs_delimiter, $vn_c);
-						}
-					}
+					$va_val['_type'] = BaseRefinery::parsePlaceholder($vs_entity_type, $pa_source_data, $pa_item, $vs_delimiter, $vn_c);
 				}
-				
-				
+				if((!isset($va_val['_type']) || !$va_val['_type']) && ($vs_type_opt = $pa_item['settings']['ATEntityGetter_entityTypeDefault'])) {
+					$va_val['_type'] = BaseRefinery::parsePlaceholder($vs_type_opt, $pa_source_data, $pa_item, $vs_delimiter, $vn_c);
+				}
 				
 				// Set relationship type
 				
@@ -165,8 +156,6 @@
 				}	
 				$va_val['_relationship_type'] = str_replace(" ", "_", $va_val['_relationship_type']);
 				$va_val['_relationship_type'] = BaseRefinery::parsePlaceholder($va_val['_relationship_type'], $pa_source_data, $pa_item, $vs_delimiter, $vn_c);
-				//print "type=".$va_val['_relationship_type']."\n";
-				//print_R($pa_item);
 				
 				// Set attributes
 				if (is_array($pa_item['settings']['ATEntityGetter_attributes'])) {
