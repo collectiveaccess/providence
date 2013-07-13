@@ -1428,6 +1428,7 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 				$vs_target_table = $va_group_tmp[0];
 				if (!($t_target = $o_dm->getInstanceByTableName($vs_target_table, true))) {
 					// Invalid target table
+					$o_log->logWarning(_t('[%1] Skipped group %2 because target %3 is invalid', $vs_idno, $vn_group_id, $vs_target_table));
 					continue;
 				}
 			
@@ -1450,38 +1451,30 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 						$vs_item_terminal = $va_item_dest[sizeof($va_item_dest)-1];
 					
 						if (isset($va_item['settings']['restrictToTypes']) && is_array($va_item['settings']['restrictToTypes']) && !in_array($vs_type, $va_item['settings']['restrictToTypes'])) {
-							//if ($va_parent && is_array($va_parent)) { array_pop($va_parent); }	// remove empty container array
 							$o_log->logInfo(_t('[%1] Skipped row %2 because of type restriction', $vs_idno, $vn_row));
 							continue(2);
 						}
-					
 						if (isset($va_item['settings']['skipGroupIfEmpty']) && (bool)$va_item['settings']['skipGroupIfEmpty'] && !strlen($vm_val)) {
-							//if ($va_parent && is_array($va_parent)) { array_pop($va_parent); }	// remove empty container array
 							$o_log->logInfo(_t('[%1] Skipped group %2 because value for %3 is empty', $vs_idno, $vn_group_id, $vs_item_terminal));
 							continue(2);
 						}
 						if (isset($va_item['settings']['skipGroupIfValue']) && is_array($va_item['settings']['skipGroupIfValue']) && strlen($vm_val) && in_array($vm_val, $va_item['settings']['skipGroupIfValue'])) {
-							//if ($va_parent && is_array($va_parent)) { array_pop($va_parent); }	// remove empty container array
 							$o_log->logInfo(_t('[%1] Skipped group %2 because value for %3 matches value %4', $vs_idno, $vn_group_id, $vs_item_terminal, $vm_val));
 							continue(2);
 						}
 						if (isset($va_item['settings']['skipGroupIfNotValue']) && is_array($va_item['settings']['skipGroupIfNotValue']) && strlen($vm_val) && !in_array($vm_val, $va_item['settings']['skipGroupIfNotValue'])) {
-							//if ($va_parent && is_array($va_parent)) { array_pop($va_parent); }	// remove empty container array
 							$o_log->logInfo(_t('[%1] Skipped group %2 because value for %3 matches is not in list of values', $vs_idno, $vn_group_id, $vs_item_terminal));
 							continue(2);
 						}
 						if (isset($va_item['settings']['skipRowIfEmpty']) && (bool)$va_item['settings']['skipRowIfEmpty'] && !strlen($vm_val)) {
-							//if ($va_parent && is_array($va_parent)) { array_pop($va_parent); }	// remove empty container array
 							$o_log->logInfo(_t('[%1] Skipped row %2 because value for %3 in group %4 is empty', $vs_idno, $vn_row, $vs_item_terminal, $vn_group_id));
 							continue(3);
 						}
 						if (isset($va_item['settings']['skipRowIfValue']) && is_array($va_item['settings']['skipRowIfValue']) && strlen($vm_val) && in_array($vm_val, $va_item['settings']['skipRowIfValue'])) {
-							//if ($va_parent && is_array($va_parent)) { array_pop($va_parent); }	// remove empty container array
 							$o_log->logInfo(_t('[%1] Skipped row %2 because value for %3 in group %4 matches value %5', $vs_idno, $vn_row, $vs_item_terminal, $vn_group_id));
 							continue(3);
 						}
 						if (isset($va_item['settings']['skipRowIfNotValue']) && is_array($va_item['settings']['skipRowIfNotValue']) && strlen($vm_val) && !in_array($vm_val, $va_item['settings']['skipRowIfNotValue'])) {
-							//if ($va_parent && is_array($va_parent)) { array_pop($va_parent); }	// remove empty container array
 							$o_log->logInfo(_t('[%1] Skipped row %2 because value for %3 in group %4 is not in list of values', $vs_idno, $vn_row, $vs_item_terminal, $vn_group_id, $vm_val));
 							continue(3);
 						}
@@ -1490,12 +1483,10 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 						}
 				
 						if (($vn_type_id_mapping_item_id && ($vn_item_id == $vn_type_id_mapping_item_id))) {
-							//if ($va_parent && is_array($va_parent)) { array_pop($va_parent); }	// remove empty container array
 							continue; 
 						}
 					
 						if($vn_idno_mapping_item_id && ($vn_item_id == $vn_idno_mapping_item_id)) { 
-							//if ($va_parent && is_array($va_parent)) { array_pop($va_parent); }	// remove empty container array
 							continue; 
 						}
 					
@@ -1521,7 +1512,7 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 					
 						//
 						if (isset($va_item['settings']['relationshipType']) && strlen($vs_rel_type = $va_item['settings']['relationshipType']) && ($vs_target_table != $vs_subject_table)) {
-							$va_parent[sizeof($va_parent)-1]['_relationship_type'] = $vs_rel_type;
+							$va_group_buf[$vn_c]['_relationship_type'] = $vs_rel_type;
 						}
 					
 						// Is it a constant value?
@@ -1573,7 +1564,6 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 					
 						if (isset($va_item['settings']['delimiter']) && strlen($vs_item_delimiter = $va_item['settings']['delimiter'])) {
 							$va_val_list = explode($vs_item_delimiter, $vm_val);
-							array_pop($va_parent);	// remove empty slot for "regular" value
 						
 							// Add delimited values
 							foreach($va_val_list as $vs_list_val) {
@@ -1581,7 +1571,7 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 								if ($vn_max_length && (mb_strlen($vs_list_val) > $vn_max_length)) {
 									$vs_list_val = mb_substr($vs_list_val, 0, $vn_max_length);
 								}
-								$va_parent[] = array($vs_item_terminal => array($vs_item_terminal => $vs_list_val, '_errorPolicy' => $vs_item_error_policy));
+								$va_group_buf[$vn_c] = array($vs_item_terminal => array($vs_item_terminal => $vs_list_val, '_errorPolicy' => $vs_item_error_policy));
 							}
 						
 							$vn_row++;
