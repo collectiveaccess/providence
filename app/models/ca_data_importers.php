@@ -1571,7 +1571,7 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 								if ($vn_max_length && (mb_strlen($vs_list_val) > $vn_max_length)) {
 									$vs_list_val = mb_substr($vs_list_val, 0, $vn_max_length);
 								}
-								$va_group_buf[$vn_c] = array($vs_item_terminal => array($vs_item_terminal => $vs_list_val, '_errorPolicy' => $vs_item_error_policy));
+								$va_group_buf[$vn_c] = array($vs_item_terminal => $vs_list_val, '_errorPolicy' => $vs_item_error_policy);
 							}
 						
 							$vn_row++;
@@ -1623,6 +1623,7 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 			$vn_row++;
 				
 			$o_log->logDebug(_t('Finished building content tree for %1 at %2 seconds', $vs_idno, $t->getTime(4)));
+			$o_log->logDebug(_t("Content tree is\n%1", print_R($va_content_tree, true)));
 			
 			//
 			// Process data in subject record
