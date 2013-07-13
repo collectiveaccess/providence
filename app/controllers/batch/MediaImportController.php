@@ -55,6 +55,11 @@
  		#
  		# -------------------------------------------------------
  		public function __construct(&$po_request, &$po_response, $pa_view_paths=null) {
+ 			// Can user batch import media?
+ 			if (!$po_request->user->canDoAction('can_batch_import_media')) {
+ 				$po_response->setRedirect($po_request->config->get('error_display_url').'/n/3210?r='.urlencode($po_request->getFullUrlPath()));
+ 				return;
+ 			}
  			
  			JavascriptLoadManager::register('bundleableEditor');
  			JavascriptLoadManager::register('panel');
@@ -86,12 +91,6 @@
  			$t_rep = new ca_object_representations();
  			$t_rep->set('status', $va_last_settings['ca_object_representations_status']);
  			$t_rep->set('access', $va_last_settings['ca_object_representations_access']);
- 			
- 			// Can user batch import media?
- 			if (!$this->request->user->canDoAction('can_batch_import_media')) {
- 				$this->response->setRedirect($this->request->config->get('error_display_url').'/n/3210?r='.urlencode($this->request->getFullUrlPath()));
- 				return;
- 			}
  			
  			$va_nav = $t_ui->getScreensAsNavConfigFragment($this->request, $vn_type_id, $this->request->getModulePath(), $this->request->getController(), $this->request->getAction(),
 				array(),
@@ -157,12 +156,6 @@
  			
  			if (!is_dir($vs_batch_media_import_root_directory.'/'.$vs_directory)) {
  				$this->response->setRedirect($this->request->config->get('error_display_url').'/n/3250?r='.urlencode($this->request->getFullUrlPath()));
- 				return;
- 			}
- 			
- 			// Can user batch import media?
- 			if (!$this->request->user->canDoAction('can_batch_import_media')) {
- 				$this->response->setRedirect($this->request->config->get('error_display_url').'/n/3210?r='.urlencode($this->request->getFullUrlPath()));
  				return;
  			}
  			
@@ -420,12 +413,6 @@
  			
  			if (!is_dir($vs_batch_media_import_root_directory.'/'.$ps_directory)) {
  				$this->response->setRedirect($this->request->config->get('error_display_url').'/n/3250?r='.urlencode($this->request->getFullUrlPath()));
- 				return;
- 			}
- 			
- 			// Can user batch import media?
- 			if (!$this->request->user->canDoAction('can_batch_import_media')) {
- 				$this->response->setRedirect($this->request->config->get('error_display_url').'/n/3210?r='.urlencode($this->request->getFullUrlPath()));
  				return;
  			}
  			
