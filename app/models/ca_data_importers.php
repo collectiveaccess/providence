@@ -1067,6 +1067,7 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 			}
 		}
 		
+		if (!is_writeable($pa_options['logDirectory'])) { $pa_options['logDirectory'] = caGetTempDirPath(); }
 		$o_log = new KLogger($pa_options['logDirectory'], $pa_options['logLevel']);
 		
 		$vb_show_cli_progress_bar 	= (isset($pa_options['showCLIProgressBar']) && ($pa_options['showCLIProgressBar'])) ? true : false;
@@ -1431,197 +1432,204 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 				}
 			
 				
-				unset($va_parent);
-				$va_ptr =& $va_content_tree;
+				$va_group_buf = array();
 				
-				foreach($va_group_tmp as $vs_tmp) {
-					if(!is_array($va_ptr[$vs_tmp])) { $va_ptr[$vs_tmp] = array(); }
-					$va_ptr =& $va_ptr[$vs_tmp];
-					if ($vs_tmp == $vs_target_table) {	// add numeric index after table to ensure repeat values don't overwrite each other
-						$va_parent =& $va_ptr;
-						$va_ptr[] = array();
-						$va_ptr =& $va_ptr[sizeof($va_ptr)-1];
-					}
-				}
 				foreach($va_items as $vn_item_id => $va_item) {
-					$vm_val = ca_data_importers::getValueFromSource($va_item, $o_reader);
+					$va_vals = ca_data_importers::getValueFromSource($va_item, $o_reader, array('returnAsArray' => true));
 					
-					if (isset($va_item['settings']['convertNewlinesToHTML']) && (bool)$va_item['settings']['convertNewlinesToHTML'] && is_string($vm_val)) {
-						$vm_val = nl2br($vm_val);
-					}
-					
-					// Get location in content tree for addition of new content
-					$va_item_dest = explode(".",  $va_item['destination']);
-					$vs_item_terminal = $va_item_dest[sizeof($va_item_dest)-1];
-					
-					if (isset($va_item['settings']['restrictToTypes']) && is_array($va_item['settings']['restrictToTypes']) && !in_array($vs_type, $va_item['settings']['restrictToTypes'])) {
-						if ($va_parent && is_array($va_parent)) { array_pop($va_parent); }	// remove empty container array
-						$o_log->logInfo(_t('[%1] Skipped row %2 because of type restriction', $vs_idno, $vn_row));
-						continue(2);
-					}
-					
-					if (isset($va_item['settings']['skipGroupIfEmpty']) && (bool)$va_item['settings']['skipGroupIfEmpty'] && !strlen($vm_val)) {
-						if ($va_parent && is_array($va_parent)) { array_pop($va_parent); }	// remove empty container array
-						$o_log->logInfo(_t('[%1] Skipped group %2 because value for %3 is empty', $vs_idno, $vn_group_id, $vs_item_terminal));
-						continue(2);
-					}
-					if (isset($va_item['settings']['skipGroupIfValue']) && is_array($va_item['settings']['skipGroupIfValue']) && strlen($vm_val) && in_array($vm_val, $va_item['settings']['skipGroupIfValue'])) {
-						if ($va_parent && is_array($va_parent)) { array_pop($va_parent); }	// remove empty container array
-						$o_log->logInfo(_t('[%1] Skipped group %2 because value for %3 matches value %4', $vs_idno, $vn_group_id, $vs_item_terminal, $vm_val));
-						continue(2);
-					}
-					if (isset($va_item['settings']['skipGroupIfNotValue']) && is_array($va_item['settings']['skipGroupIfNotValue']) && strlen($vm_val) && !in_array($vm_val, $va_item['settings']['skipGroupIfNotValue'])) {
-						if ($va_parent && is_array($va_parent)) { array_pop($va_parent); }	// remove empty container array
-						$o_log->logInfo(_t('[%1] Skipped group %2 because value for %3 matches is not in list of values', $vs_idno, $vn_group_id, $vs_item_terminal));
-						continue(2);
-					}
-					if (isset($va_item['settings']['skipRowIfEmpty']) && (bool)$va_item['settings']['skipRowIfEmpty'] && !strlen($vm_val)) {
-						if ($va_parent && is_array($va_parent)) { array_pop($va_parent); }	// remove empty container array
-						$o_log->logInfo(_t('[%1] Skipped row %2 because value for %3 in group %4 is empty', $vs_idno, $vn_row, $vs_item_terminal, $vn_group_id));
-						continue(3);
-					}
-					if (isset($va_item['settings']['skipRowIfValue']) && is_array($va_item['settings']['skipRowIfValue']) && strlen($vm_val) && in_array($vm_val, $va_item['settings']['skipRowIfValue'])) {
-						if ($va_parent && is_array($va_parent)) { array_pop($va_parent); }	// remove empty container array
-						$o_log->logInfo(_t('[%1] Skipped row %2 because value for %3 in group %4 matches value %5', $vs_idno, $vn_row, $vs_item_terminal, $vn_group_id));
-						continue(3);
-					}
-					if (isset($va_item['settings']['skipRowIfNotValue']) && is_array($va_item['settings']['skipRowIfNotValue']) && strlen($vm_val) && !in_array($vm_val, $va_item['settings']['skipRowIfNotValue'])) {
-						if ($va_parent && is_array($va_parent)) { array_pop($va_parent); }	// remove empty container array
-						$o_log->logInfo(_t('[%1] Skipped row %2 because value for %3 in group %4 is not in list of values', $vs_idno, $vn_row, $vs_item_terminal, $vn_group_id, $vm_val));
-						continue(3);
-					}
-					if (isset($va_item['settings']['default']) && strlen($va_item['settings']['default']) && !strlen($vm_val)) {
-						$vm_val = $va_item['settings']['default'];
-					}
-				
-					if (($vn_type_id_mapping_item_id && ($vn_item_id == $vn_type_id_mapping_item_id))) {
-						if ($va_parent && is_array($va_parent)) { array_pop($va_parent); }	// remove empty container array
-						continue; 
-					}
-					
-					if($vn_idno_mapping_item_id && ($vn_item_id == $vn_idno_mapping_item_id)) { 
-						if ($va_parent && is_array($va_parent)) { array_pop($va_parent); }	// remove empty container array
-						continue; 
-					}
-					
-					// Apply prefix/suffix *AFTER* setting default
-					if (isset($va_item['settings']['prefix']) && strlen($va_item['settings']['prefix'])) {
-						$vm_val = $va_item['settings']['prefix'].$vm_val;
-					}
-					if (isset($va_item['settings']['suffix']) && strlen($va_item['settings']['suffix'])) {
-						$vm_val .= $va_item['settings']['suffix'];
-					}
-					
-					if (isset($va_item['settings']['formatWithTemplate']) && strlen($va_item['settings']['formatWithTemplate'])) {
-						$vm_val = caProcessTemplate($va_item['settings']['formatWithTemplate'], $va_row);
-					}
-					
-					
-					// Get mapping error policy
-					$vb_item_error_policy_is_default = false;
-					if (!isset($va_item['settings']['errorPolicy']) || !in_array($vs_item_error_policy = $va_item['settings']['errorPolicy'], array('ignore', 'stop'))) {
-						$vs_item_error_policy = 'ignore';
-						$vb_item_error_policy_is_default = true;
-					}
-					
-					//
-					if (isset($va_item['settings']['relationshipType']) && strlen($vs_rel_type = $va_item['settings']['relationshipType']) && ($vs_target_table != $vs_subject_table)) {
-						$va_parent[sizeof($va_parent)-1]['_relationship_type'] = $vs_rel_type;
-					}
-					
-					// Is it a constant value?
-					if (preg_match("!^_CONSTANT_:[\d]+:(.*)!", $va_item['source'], $va_matches)) {
-						$va_ptr[$vs_item_terminal] = $va_matches[1];		// Set it and go onto the next item
+					$vn_c = -1;
+					foreach($va_vals as $vn_i => $vm_val) {
+						$vn_c++;
 						
+						if (isset($va_item['settings']['convertNewlinesToHTML']) && (bool)$va_item['settings']['convertNewlinesToHTML'] && is_string($vm_val)) {
+							$vm_val = nl2br($vm_val);
+						}
+					
+						// Get location in content tree for addition of new content
+						$va_item_dest = explode(".",  $va_item['destination']);
+						$vs_item_terminal = $va_item_dest[sizeof($va_item_dest)-1];
+					
+						if (isset($va_item['settings']['restrictToTypes']) && is_array($va_item['settings']['restrictToTypes']) && !in_array($vs_type, $va_item['settings']['restrictToTypes'])) {
+							//if ($va_parent && is_array($va_parent)) { array_pop($va_parent); }	// remove empty container array
+							$o_log->logInfo(_t('[%1] Skipped row %2 because of type restriction', $vs_idno, $vn_row));
+							continue(2);
+						}
+					
+						if (isset($va_item['settings']['skipGroupIfEmpty']) && (bool)$va_item['settings']['skipGroupIfEmpty'] && !strlen($vm_val)) {
+							//if ($va_parent && is_array($va_parent)) { array_pop($va_parent); }	// remove empty container array
+							$o_log->logInfo(_t('[%1] Skipped group %2 because value for %3 is empty', $vs_idno, $vn_group_id, $vs_item_terminal));
+							continue(2);
+						}
+						if (isset($va_item['settings']['skipGroupIfValue']) && is_array($va_item['settings']['skipGroupIfValue']) && strlen($vm_val) && in_array($vm_val, $va_item['settings']['skipGroupIfValue'])) {
+							//if ($va_parent && is_array($va_parent)) { array_pop($va_parent); }	// remove empty container array
+							$o_log->logInfo(_t('[%1] Skipped group %2 because value for %3 matches value %4', $vs_idno, $vn_group_id, $vs_item_terminal, $vm_val));
+							continue(2);
+						}
+						if (isset($va_item['settings']['skipGroupIfNotValue']) && is_array($va_item['settings']['skipGroupIfNotValue']) && strlen($vm_val) && !in_array($vm_val, $va_item['settings']['skipGroupIfNotValue'])) {
+							//if ($va_parent && is_array($va_parent)) { array_pop($va_parent); }	// remove empty container array
+							$o_log->logInfo(_t('[%1] Skipped group %2 because value for %3 matches is not in list of values', $vs_idno, $vn_group_id, $vs_item_terminal));
+							continue(2);
+						}
+						if (isset($va_item['settings']['skipRowIfEmpty']) && (bool)$va_item['settings']['skipRowIfEmpty'] && !strlen($vm_val)) {
+							//if ($va_parent && is_array($va_parent)) { array_pop($va_parent); }	// remove empty container array
+							$o_log->logInfo(_t('[%1] Skipped row %2 because value for %3 in group %4 is empty', $vs_idno, $vn_row, $vs_item_terminal, $vn_group_id));
+							continue(3);
+						}
+						if (isset($va_item['settings']['skipRowIfValue']) && is_array($va_item['settings']['skipRowIfValue']) && strlen($vm_val) && in_array($vm_val, $va_item['settings']['skipRowIfValue'])) {
+							//if ($va_parent && is_array($va_parent)) { array_pop($va_parent); }	// remove empty container array
+							$o_log->logInfo(_t('[%1] Skipped row %2 because value for %3 in group %4 matches value %5', $vs_idno, $vn_row, $vs_item_terminal, $vn_group_id));
+							continue(3);
+						}
+						if (isset($va_item['settings']['skipRowIfNotValue']) && is_array($va_item['settings']['skipRowIfNotValue']) && strlen($vm_val) && !in_array($vm_val, $va_item['settings']['skipRowIfNotValue'])) {
+							//if ($va_parent && is_array($va_parent)) { array_pop($va_parent); }	// remove empty container array
+							$o_log->logInfo(_t('[%1] Skipped row %2 because value for %3 in group %4 is not in list of values', $vs_idno, $vn_row, $vs_item_terminal, $vn_group_id, $vm_val));
+							continue(3);
+						}
+						if (isset($va_item['settings']['default']) && strlen($va_item['settings']['default']) && !strlen($vm_val)) {
+							$vm_val = $va_item['settings']['default'];
+						}
+				
+						if (($vn_type_id_mapping_item_id && ($vn_item_id == $vn_type_id_mapping_item_id))) {
+							//if ($va_parent && is_array($va_parent)) { array_pop($va_parent); }	// remove empty container array
+							continue; 
+						}
+					
+						if($vn_idno_mapping_item_id && ($vn_item_id == $vn_idno_mapping_item_id)) { 
+							//if ($va_parent && is_array($va_parent)) { array_pop($va_parent); }	// remove empty container array
+							continue; 
+						}
+					
+						// Apply prefix/suffix *AFTER* setting default
+						if (isset($va_item['settings']['prefix']) && strlen($va_item['settings']['prefix'])) {
+							$vm_val = $va_item['settings']['prefix'].$vm_val;
+						}
+						if (isset($va_item['settings']['suffix']) && strlen($va_item['settings']['suffix'])) {
+							$vm_val .= $va_item['settings']['suffix'];
+						}
+					
+						if (isset($va_item['settings']['formatWithTemplate']) && strlen($va_item['settings']['formatWithTemplate'])) {
+							$vm_val = caProcessTemplate($va_item['settings']['formatWithTemplate'], $va_row);
+						}
+					
+					
+						// Get mapping error policy
+						$vb_item_error_policy_is_default = false;
+						if (!isset($va_item['settings']['errorPolicy']) || !in_array($vs_item_error_policy = $va_item['settings']['errorPolicy'], array('ignore', 'stop'))) {
+							$vs_item_error_policy = 'ignore';
+							$vb_item_error_policy_is_default = true;
+						}
+					
+						//
+						if (isset($va_item['settings']['relationshipType']) && strlen($vs_rel_type = $va_item['settings']['relationshipType']) && ($vs_target_table != $vs_subject_table)) {
+							$va_parent[sizeof($va_parent)-1]['_relationship_type'] = $vs_rel_type;
+						}
+					
+						// Is it a constant value?
+						if (preg_match("!^_CONSTANT_:[\d]+:(.*)!", $va_item['source'], $va_matches)) {
+							$va_group_buf[$vn_c][$vs_item_terminal] = $va_matches[1];		// Set it and go onto the next item
+						
+							if (($vs_target_table == $vs_subject_table_name) && (($vs_k =array_search($vn_item_id, $va_mandatory_field_mapping_ids)) !== false)) {
+								$va_mandatory_field_values[$vs_k] = $vm_val;
+							}
+							continue;
+						}
+					
+						// Perform refinery call (if required)
+						if (isset($va_item['settings']['refineries']) && is_array($va_item['settings']['refineries'])) {
+							foreach($va_item['settings']['refineries'] as $vs_refinery) {
+								if (!$vs_refinery) { continue; }
+								
+								if ($o_refinery = RefineryManager::getRefineryInstance($vs_refinery)) {
+									$va_refined_values = $o_refinery->refine($va_content_tree, $va_group, $va_item, $va_row, array('source' => $ps_source, 'subject' => $t_subject, 'locale_id' => $vn_locale_id, 'log' => $o_log, 'transaction' => $o_trans, 'importEvent' => $o_event, 'importEventSource' => $vn_row));
+									if (!$va_refined_values || (is_array($va_refined_values) && !sizeof($va_refined_values))) { continue(2); }
+									
+									if ($o_refinery->returnsMultipleValues()) {
+										foreach($va_refined_values as $va_refined_value) {
+											$va_refined_value['_errorPolicy'] = $vs_item_error_policy;
+											$va_group_buf[$vn_c] = $va_refined_value;
+											$vn_c++;
+										}
+									} else {
+										$va_group_buf[$vn_c]['_errorPolicy'] = $vs_item_error_policy;
+										$va_group_buf[$vn_c][$vs_item_terminal] = $va_refined_values;
+									}
+								
+									if (($vs_target_table == $vs_subject_table_name) && (($vs_k =array_search($vn_item_id, $va_mandatory_field_mapping_ids)) !== false)) {
+										$va_mandatory_field_values[$vs_k] = $vm_val;
+									}
+									continue(2);
+								} else {
+									$o_log->logError(_t('[%1] Invalid refinery %2 specified', $vs_idno, $vs_refinery));
+								}
+							}
+						}
+					
+					
 						if (($vs_target_table == $vs_subject_table_name) && (($vs_k =array_search($vn_item_id, $va_mandatory_field_mapping_ids)) !== false)) {
 							$va_mandatory_field_values[$vs_k] = $vm_val;
 						}
-						continue;
-					}
-					
-					// Perform refinery call (if required)
-					if (isset($va_item['settings']['refineries']) && is_array($va_item['settings']['refineries'])) {
-						foreach($va_item['settings']['refineries'] as $vs_refinery) {
-							if (!$vs_refinery) { continue; }
-							if ($o_refinery = RefineryManager::getRefineryInstance($vs_refinery)) {
-								$va_refined_values = $o_refinery->refine($va_content_tree, $va_group, $va_item, $va_row, array('source' => $ps_source, 'subject' => $t_subject, 'locale_id' => $vn_locale_id, 'log' => $o_log, 'transaction' => $o_trans, 'importEvent' => $o_event, 'importEventSource' => $vn_row));
 							
-								if ($o_refinery->returnsMultipleValues()) {
-									$va_p = array_pop($va_parent);
-									foreach($va_refined_values as $va_refined_value) {
-										$va_refined_value['_errorPolicy'] = $vs_item_error_policy;
-										$va_parent[] = array_merge($va_p, $va_refined_value);
-									}
-								} else {
-									$va_ptr['_errorPolicy'] = $vs_item_error_policy;
-									$va_ptr[$vs_item_terminal] = $va_refined_values;
+						$vn_max_length = (!is_array($vm_val) && isset($va_item['settings']['maxLength']) && (int)$va_item['settings']['maxLength']) ? (int)$va_item['settings']['maxLength'] : null;
+					
+						if (isset($va_item['settings']['delimiter']) && strlen($vs_item_delimiter = $va_item['settings']['delimiter'])) {
+							$va_val_list = explode($vs_item_delimiter, $vm_val);
+							array_pop($va_parent);	// remove empty slot for "regular" value
+						
+							// Add delimited values
+							foreach($va_val_list as $vs_list_val) {
+								$vs_list_val = trim(ca_data_importers::replaceValue($vs_list_val, $va_item));
+								if ($vn_max_length && (mb_strlen($vs_list_val) > $vn_max_length)) {
+									$vs_list_val = mb_substr($vs_list_val, 0, $vn_max_length);
+								}
+								$va_parent[] = array($vs_item_terminal => array($vs_item_terminal => $vs_list_val, '_errorPolicy' => $vs_item_error_policy));
+							}
+						
+							$vn_row++;
+							continue;	// Don't add "regular" value below
+						}
+					
+						if ($vn_max_length && (mb_strlen($vm_val) > $vn_max_length)) {
+							$vm_val = mb_substr($vm_val, 0, $vn_max_length);
+						}
+						
+						switch($vs_item_terminal) {
+							case 'preferred_labels':
+							case 'nonpreferred_labels':
+								if ($t_instance = $o_dm->getInstanceByTableName($vs_target_table, true)) {
+									$va_group_buf[$vn_c][$t_instance->getLabelDisplayField()] = $vm_val;
+								}
+							
+								if (!$vb_item_error_policy_is_default || !isset($va_group_buf[$vn_c]['_errorPolicy'])) {
+									if (is_array($va_group_buf[$vn_c])) { $va_group_buf[$vn_c]['_errorPolicy'] = $vs_item_error_policy; }
 								}
 								
-								if (($vs_target_table == $vs_subject_table_name) && (($vs_k =array_search($vn_item_id, $va_mandatory_field_mapping_ids)) !== false)) {
-									$va_mandatory_field_values[$vs_k] = $vm_val;
+								if ($vs_item_terminal == 'preferred_labels') { $vs_preferred_label_for_log = $vm_val; }
+							
+								break;
+							default:
+								$va_group_buf[$vn_c][$vs_item_terminal] = $vm_val;
+								if (!$vb_item_error_policy_is_default || !isset($va_group_buf[$vn_c]['_errorPolicy'])) {
+									if (is_array($va_group_buf[$vn_c])) { $va_group_buf[$vn_c]['_errorPolicy'] = $vs_item_error_policy; }
 								}
-								continue(2);
-							} else {
-								$o_log->logError(_t('[%1] Invalid refinery %2 specified', $vs_idno, $vs_refinery));
-							}
+								break;
 						}
-					}
-					
-					
-					if (($vs_target_table == $vs_subject_table_name) && (($vs_k =array_search($vn_item_id, $va_mandatory_field_mapping_ids)) !== false)) {
-						$va_mandatory_field_values[$vs_k] = $vm_val;
-					}
-							
-					$vn_max_length = (!is_array($vm_val) && isset($va_item['settings']['maxLength']) && (int)$va_item['settings']['maxLength']) ? (int)$va_item['settings']['maxLength'] : null;
-					
-					if (isset($va_item['settings']['delimiter']) && strlen($vs_item_delimiter = $va_item['settings']['delimiter'])) {
-						$va_val_list = explode($vs_item_delimiter, $vm_val);
-						array_pop($va_parent);	// remove empty slot for "regular" value
-						
-						// Add delimited values
-						foreach($va_val_list as $vs_list_val) {
-							$vs_list_val = trim(ca_data_importers::replaceValue($vs_list_val, $va_item));
-							if ($vn_max_length && (mb_strlen($vs_list_val) > $vn_max_length)) {
-								$vs_list_val = mb_substr($vs_list_val, 0, $vn_max_length);
-							}
-							$va_parent[] = array($vs_item_terminal => array($vs_item_terminal => $vs_list_val, '_errorPolicy' => $vs_item_error_policy));
-						}
-						
-						$vn_row++;
-						continue;	// Don't add "regular" value below
-					}
-					
-					if ($vn_max_length && (mb_strlen($vm_val) > $vn_max_length)) {
-						$vm_val = mb_substr($vm_val, 0, $vn_max_length);
-					}
-					
-					
-					switch($vs_item_terminal) {
-						case 'preferred_labels':
-						case 'nonpreferred_labels':
-							if ($t_instance = $o_dm->getInstanceByTableName($vs_target_table, true)) {
-								$va_ptr[$t_instance->getLabelDisplayField()] = '';
-								$va_ptr =& $va_ptr[$t_instance->getLabelDisplayField()];
-							}
-							
-							if (!$vb_item_error_policy_is_default || !isset($va_ptr['_errorPolicy'])) {
-								if (is_array($va_ptr)) { $va_ptr['_errorPolicy'] = $vs_item_error_policy; }
-							}
-							$va_ptr = $vm_val;
-							if ($vs_item_terminal == 'preferred_labels') { $vs_preferred_label_for_log = $vm_val; }
-							
-							break;
-						default:
-							$va_ptr[$vs_item_terminal] = $vm_val;
-							if (!$vb_item_error_policy_is_default || !isset($va_ptr['_errorPolicy'])) {
-								if (is_array($va_ptr)) { $va_ptr['_errorPolicy'] = $vs_item_error_policy; }
-							}
-							break;
-					}	
+					} // end foreach($va_vals as $vm_val)
 				}
 				
+				foreach($va_group_buf as $vn_i => $va_group_data) {	
+					$va_ptr =& $va_content_tree;
+					foreach($va_group_tmp as $vs_tmp) {
+						if(!is_array($va_ptr[$vs_tmp])) { $va_ptr[$vs_tmp] = array(); }
+						$va_ptr =& $va_ptr[$vs_tmp];
+						if ($vs_tmp == $vs_target_table) {	// add numeric index after table to ensure repeat values don't overwrite each other
+							$va_parent =& $va_ptr;
+							$va_ptr[] = array();
+							$va_ptr =& $va_ptr[sizeof($va_ptr)-1];
+						}
+					}
+					$va_ptr = $va_group_data;
+				}
 			}
-			
 			$vn_row++;
 				
 			$o_log->logDebug(_t('Finished building content tree for %1 at %2 seconds', $vs_idno, $t->getTime(4)));
@@ -2081,14 +2089,33 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 	/**
 	 *
 	 */
-	static public function getValueFromSource($pa_item, $po_reader) {
+	static public function getValueFromSource($pa_item, $po_reader, $pa_options=null) {
+		$pb_return_as_array = caGetOption('returnAsArray', $pa_options, false);
+		$ps_delimiter = caGetOption('delimiter', $pa_options, ';');
 		if (preg_match('!^_CONSTANT_:[^:]+:(.*)$!', $pa_item['source'], $va_matches)) {
 			$vm_value = $va_matches[1];
 		} else {
-			$vm_value = trim($po_reader->get($pa_item['source']));
+			if ($po_reader->valuesCanRepeat()) {
+				$vm_value = $po_reader->get($pa_item['source'], array('returnAsArray' => true));
+				foreach($vm_value as $vs_k => $vs_v) {
+					$vm_value[$vs_k] = ca_data_importers::replaceValue(trim($vs_v), $pa_item);
+				}
+				if ($pb_return_as_array) {
+					return $vm_value;
+				} else {
+					return join($ps_delimiter, $vm_value);
+				}
+			} else {
+				$vm_value = trim($po_reader->get($pa_item['source']));
+			}
 		}
 		
-		return ca_data_importers::replaceValue($vm_value, $pa_item);
+		$vm_value = ca_data_importers::replaceValue($vm_value, $pa_item);
+		
+		if ($pb_return_as_array) {
+			return is_array($vm_value) ? $vm_value : array($vm_value);
+		}
+		return $vm_value;
 	}
 	# ------------------------------------------------------
 	/**
