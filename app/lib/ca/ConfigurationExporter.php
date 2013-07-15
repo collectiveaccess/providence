@@ -409,6 +409,7 @@ final class ConfigurationExporter {
 			$vo_settings = $this->opo_dom->createElement("settings");
 			if(is_array($va_settings = $t_element->getSettings())){
 				foreach($va_settings as $vs_setting => $va_values){
+					if(is_null($va_values)) { continue; }
 					if(!is_array($va_values)) { $va_values = array($va_values); }
 					foreach($va_values as $vs_value){
 						$vo_setting = $this->opo_dom->createElement("setting",$vs_value);
@@ -538,21 +539,28 @@ final class ConfigurationExporter {
 						
 						if(is_array($va_placement["settings"])){
 							$vo_settings = $this->opo_dom->createElement("settings");
-
 							foreach($va_placement["settings"] as $vs_setting => $va_values){
-								if(!is_array($va_values)){
-									$va_values = array($va_values);
-								}
+								if(is_null($va_values)) { continue; }
+								if(!is_array($va_values)){ $va_values = array($va_values); }
 								
 								// account for legacy settings
 								if($vs_setting=="restrict_to_type") $vs_setting = "restrict_to_types";
 								
 								foreach($va_values as $vs_key => $vs_value){
 									if(strlen($vs_value)>0){
-										$vo_setting = $this->opo_dom->createElement("setting",$vs_value);
+										if($vs_value == 0 || $vs_value == "0"){ // caExcapeForXML mangles zero values for some reason -> catch them here.
+											$vs_setting_val = $vs_value;
+										} else {
+											$vs_setting_val = caEscapeForXML($vs_value);
+										}
+										$vo_setting = @$this->opo_dom->createElement("setting",$vs_setting_val);
 										$vo_setting->setAttribute("name", $vs_setting);
-										if($vs_setting=="label" || $vs_setting=="add_label" || $vs_setting="description"){
-											$vo_setting->setAttribute("locale", $vs_key);
+										if($vs_setting=="label" || $vs_setting=="add_label" || $vs_setting=="description"){
+											if(preg_match("/^[a-z]{2,3}\_[A-Z]{2,3}$/",$vs_key)){
+												$vo_setting->setAttribute("locale", $vs_key);
+											} else {
+												continue;
+											}
 										}
 										$vo_settings->appendChild($vo_setting);
 									}
