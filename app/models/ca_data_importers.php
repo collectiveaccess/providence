@@ -99,6 +99,13 @@ BaseModel::$s_ca_models_definitions['ca_data_importers'] = array(
 				'DEFAULT' => '',
 				'LABEL' => _t('Settings'), 'DESCRIPTION' => _t('Importer settings')
 		),
+		'rules' => array(
+				'FIELD_TYPE' => FT_VARS, 'DISPLAY_TYPE' => DT_OMIT, 
+				'DISPLAY_WIDTH' => 88, 'DISPLAY_HEIGHT' => 15,
+				'IS_NULL' => false, 
+				'DEFAULT' => '',
+				'LABEL' => _t('Rules'), 'DESCRIPTION' => _t('Importer rules')
+		),
 		'worksheet' => array(
 				'FIELD_TYPE' => FT_FILE, 'DISPLAY_TYPE' => DT_FIELD, 
 				'DISPLAY_WIDTH' => 10, 'DISPLAY_HEIGHT' => 1,
@@ -676,6 +683,7 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 		$vn_row = 0;
 		
 		$va_settings = array();
+		$va_rules = array();
 		$va_mappings = array();
 		
 		$va_refineries = RefineryManager::getRefineryNames();
@@ -698,13 +706,13 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 			$o_cell = $o_sheet->getCellByColumnAndRow(0, $vn_row_num);
 			$vs_mode = (string)$o_cell->getValue();
 			
-			switch($vs_mode) {
+			switch(strtolower($vs_mode)) {
 				default:
-				case 'SKIP':
+				case 'skip':
 					continue(2);
 					break;
-				case 'Mapping':
-				case 'Constant':
+				case 'mapping':
+				case 'constant':
 					$o_source = $o_sheet->getCellByColumnAndRow(1, $o_row->getRowIndex());
 					$o_dest = $o_sheet->getCellByColumnAndRow(2, $o_row->getRowIndex());
 					
@@ -781,7 +789,7 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 					);
 					
 					break;
-				case 'Setting':
+				case 'setting':
 					$o_setting_name = $o_sheet->getCellByColumnAndRow(1, $o_row->getRowIndex());
 					$o_setting_value = $o_sheet->getCellByColumnAndRow(2, $o_row->getRowIndex());
 					
@@ -793,6 +801,17 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 							$va_settings[$vs_setting_name] = (string)$o_setting_value->getValue();
 							break;
 					}
+					break;
+				case 'rule':
+					$o_rule_trigger = $o_sheet->getCellByColumnAndRow(1, $o_row->getRowIndex());
+					$o_rule_action = $o_sheet->getCellByColumnAndRow(2, $o_row->getRowIndex());
+					
+					$va_actions = preg_split("/[\n\r]+/", (string)$o_rule_action->getValue());
+					$va_rules[] = array(
+						'trigger' => (string)$o_rule_trigger->getValue(),
+						'actions' => $va_actions
+					);
+					
 					break;
 			}
 			$vn_row++;
@@ -836,6 +855,7 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 		// Create new mapping
 		$t_importer->set('importer_code', $va_settings['code']);
 		$t_importer->set('table_num', $t_instance->tableNum());
+		$t_importer->set('rules', $va_rules);
 		
 		unset($va_settings['code']);
 		unset($va_settings['table']);
