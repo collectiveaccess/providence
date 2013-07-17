@@ -68,7 +68,7 @@
 						));
 
 						if($vs_proxy_auth){
-							$va_context_options['http']['header'] = "Proxy-Authorization: Basic {$vs_prosy_auth}";
+							$va_context_options['http']['header'] = "Proxy-Authorization: Basic {$vs_proxy_auth}";
 						}
 
 						$vo_context = stream_context_create($va_context_options);
