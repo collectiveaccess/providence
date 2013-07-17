@@ -1209,7 +1209,7 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 		
 		// get mapping rules
 		$va_mapping_rules = $t_mapping->getRules();
-		print_r($va_mapping_rules);
+		
 		// get mapping groups
 		$va_mapping_groups = $t_mapping->getGroups();
 		$va_mapping_items = $t_mapping->getItems();
