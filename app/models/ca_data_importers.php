@@ -45,6 +45,7 @@ require_once(__CA_MODELS_DIR__."/ca_data_import_events.php");
 require_once(__CA_LIB_DIR__.'/core/Parsers/PHPExcel/PHPExcel.php');
 require_once(__CA_LIB_DIR__.'/core/Parsers/PHPExcel/PHPExcel/IOFactory.php');
 require_once(__CA_LIB_DIR__.'/core/Logging/KLogger/KLogger.php');
+require_once(__CA_LIB_DIR__.'/core/Parsers/ExpressionParser.php');
 require_once(__CA_LIB_DIR__.'/core/Db/Transaction.php');
 
 BaseModel::$s_ca_models_definitions['ca_data_importers'] = array(
@@ -659,6 +660,15 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 	}
 	# ------------------------------------------------------
 	/**
+	 *
+	 */
+	public function getRules(){
+		$va_rules = $this->get('rules');
+		if (!is_array($va_rules)) { $va_rules = array(); }
+		return $va_rules;
+	}
+	# ------------------------------------------------------
+	/**
 	 * Reroutes calls to method implemented by settings delegate to the delegate class
 	 */
 	public function __call($ps_name, $pa_arguments) {
@@ -1197,6 +1207,9 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 		$vs_type_id_fld = $t_subject->getTypeFieldName();
 		$vs_idno_fld = $t_subject->getProperty('ID_NUMBERING_ID_FIELD');
 		
+		// get mapping rules
+		$va_mapping_rules = $t_mapping->getRules();
+		print_r($va_mapping_rules);
 		// get mapping groups
 		$va_mapping_groups = $t_mapping->getGroups();
 		$va_mapping_items = $t_mapping->getItems();
@@ -1313,6 +1326,35 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 			$va_row = $o_reader->getRow();
 			
 			//
+			// Apply rules
+			//
+			foreach($va_mapping_rules as $va_rule) {
+				if (!isset($va_rule['trigger']) || !$va_rule['trigger']) { continue; }
+				if (!isset($va_rule['actions']) || !is_array($va_rule['actions']) || !sizeof($va_rule['actions'])) { continue; }
+
+				$vm_ret = ExpressionParser::evaluate($va_rule['trigger'], $va_row);
+				if (!ExpressionParser::hadError() && (bool)$vm_ret) {
+					foreach($va_rule['actions'] as $vs_action) {
+						$va_action = explode(":", $vs_action);
+						
+						switch($vs_action_code = strtolower($va_action[0])) {
+							// TODO: add support for "SET" action
+							
+							case 'skip':
+							default:
+								if ($vs_action_code != 'skip') {
+									$o_log->logInfo(_t('Row was skipped using rule "%1" with default action because an invalid action ("%2") was specified', $va_rule['trigger'], $vs_action_code));
+								} else {
+									$o_log->logDebug(_t('Row was skipped using rule "%1" with action"%2"', $va_rule['trigger'], $vs_action_code));
+								}
+								continue(4);
+								break;
+						}
+					}
+				}
+			}
+			
+			//
 			// Perform mapping and insert
 			//
 			
@@ -1399,7 +1441,7 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 							$t_subject->setMode(ACCESS_WRITE);
 							$t_subject->delete(true, array('hard' => true));
 							if ($t_subject->numErrors()) {
-								$o_log->logError(_t('[%1] Could not delete existing record matched on identifier by policy %2', $vs_idno, $vs_existing_record_policy));
+								ca_data_importers::logImportError(_t('[%1] Could not delete existing record matched on identifier by policy %2', $vs_idno, $vs_existing_record_policy));
 								// Don't stop?
 							} else {
 								$o_log->logInfo(_t('[%1] Overwrote existing record matched on identifier by policy %2', $vs_idno, $vs_existing_record_policy));
@@ -1415,7 +1457,7 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 							$t_subject->delete(true, array('hard' => true));
 							
 							if ($t_subject->numErrors()) {
-								$o_log->logError(_t('[%1] Could not delete existing record matched on label by policy %2', $vs_idno, $vs_existing_record_policy));
+								ca_data_importers::logImportError(_t('[%1] Could not delete existing record matched on label by policy %2', $vs_idno, $vs_existing_record_policy));
 								// Don't stop?
 							} else {
 								$o_log->logInfo(_t('[%1] Overwrote existing record matched on label by policy %2', $vs_idno, $vs_existing_record_policy));
@@ -1570,7 +1612,7 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 									}
 									continue(2);
 								} else {
-									$o_log->logError(_t('[%1] Invalid refinery %2 specified', $vs_idno, $vs_refinery));
+									ca_data_importers::logImportError(_t('[%1] Invalid refinery %2 specified', $vs_idno, $vs_refinery));
 								}
 							}
 						}

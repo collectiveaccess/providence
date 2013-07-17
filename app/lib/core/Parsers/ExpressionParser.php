@@ -85,6 +85,7 @@ class ExpressionParser {
 	private $ops_error = "";					// error message
 	private $opn_error = 0;						// error code (one of the EEP_ERROR_* codes above; 0 indicates no error)
 	
+	static $s_last_error = null;
 	
     # -------------------------------------------------------------------
 	# Lexical analysis
@@ -94,17 +95,25 @@ class ExpressionParser {
 		
 		$vn_i = 0;
 		$vb_in_quoted_literal = false;
+		$vb_in_variable_name = false;
 		$vb_escaped = false;
 		$vs_buf = '';
         while ($vn_i < strlen($ps_expression)) {
         	$vs_c = $ps_expression[$vn_i];
         	
         	switch($vs_c) {
+        		case '^':
+        			if ($vs_buf == '') {
+        				$vb_in_variable_name = true;
+        				$vs_buf .= $vs_c;
+        			}
+        			break;
         		case '\\':
         			if (!$vb_escaped) { $vb_escaped = 2; }
         			break;
         		case '"':
         		case "'":
+        			$vb_in_variable_name = false;
         			if (!$vb_escaped && !$vb_in_quoted_literal) {
         				$vb_in_quoted_literal = true;
         				$vs_buf = '';
@@ -129,6 +138,7 @@ class ExpressionParser {
         			if ($vb_in_quoted_literal) {
         				$vs_buf .= $vs_c;
         			} else {
+        				if (($vs_c == '/') && $vb_in_variable_name) { $vs_buf .= $vs_c; break; }	// forward slashes are treated as literals in variable names so we can use XML tag paths as varnames
         				if (($vs_buf == '') && ($vs_c == '-') && is_numeric($ps_expression[$vn_i + 1])) { $vs_buf = '-'; break; }
         				if (strlen($vs_buf) > 0) { array_push($this->opa_tokens, $vs_buf); }
         				$vs_buf = '';
@@ -184,6 +194,7 @@ class ExpressionParser {
         			if (!$vb_in_quoted_literal) {
         				if (strlen($vs_buf) > 0) { array_push($this->opa_tokens, $vs_buf); }
         				$vs_buf = '';
+        				$vb_in_variable_name = false;
         				break;
         			}
         		default:
@@ -265,9 +276,10 @@ class ExpressionParser {
 		}
 		
 		// variable
-		if (preg_match('!^\^[A-Za-z0-9]+[A-Za-z0-9_]*$!', $vs_token_lc)) {
+		if (preg_match('!^\^[A-Za-z0-9\/]+[A-Za-z0-9_\.:\-\/]*$!', $vs_token_lc)) {
 			$va_variables = $this->getVariables();
 			$vs_varname = substr($vs_token, 1);
+			if (is_array($va_variables[$vs_varname])) { $va_variables[$vs_varname] = join("", $va_variables[$vs_varname]); }	// we need to join multiple values
 			return array('value' => isset($va_variables[$vs_varname]) ? $va_variables[$vs_varname] : null, 'type' => EEP_TOKEN_VARIABLE, 'varname' => $vs_varname);
 		}
 		
@@ -543,75 +555,164 @@ class ExpressionParser {
 		
 		while(sizeof($pa_operators)) {
 			$va_op = array_pop($pa_operators);
-			$vm_operand2 = array_pop($pa_operands); 
-			$vm_operand1 = array_pop($pa_operands); 
+			$va_operand2 = array_pop($pa_operands); 
+			$va_operand1 = array_pop($pa_operands); 
+		
+			if (!is_array($va_operand1)) { $va_operand1 = array($va_operand1); }
+			if (!is_array($va_operand2)) { $va_operand2 = array($va_operand2); }
 		
 			switch($va_op['type']) {
 				case EEP_TOKEN_MATH_OP:
 					switch($va_op['value']) {
-						case '+':
-							return (float)$vm_operand1 + (float)$vm_operand2;
+						case '+':	
+							$vm_res1 = null;		
+							foreach($va_operand1 as $vm_operand1) {
+								if (!is_numeric($vm_operand1)) {
+									$vm_res1 .= (string)$vm_operand1 ;
+								} else {
+									$vm_res1 += (float)$vm_operand1;
+								}
+							}
+							$vm_res2 = null;
+							foreach($va_operand2 as $vm_operand2) {
+								if (!is_numeric($vm_operand2)) {
+									$vm_res2 .= (string)$vm_operand2 ;
+								} else {
+									$vm_res2 += (float)$vm_operand2;
+								}
+							}
+							
+							if (!is_numeric($vm_res1) || !is_numeric($vm_res2)) {
+								return (string)$vm_res1 . (string)$vm_res2;
+							} else {
+								return (float)$vm_res1 + (float)$vm_res2;
+							}
 							break;
 						case '-':
-							return (float)$vm_operand1 - (float)$vm_operand2;
+							$vm_res1 = $vm_res2 = 0;		
+							foreach($va_operand1 as $vm_operand1) { $vm_res1 += (float)$vm_operand1; }
+							foreach($va_operand2 as $vm_operand2) { $vm_res2 += (float)$vm_operand2; }
+							return (float)$vm_res1 - (float)$vm_res2;
 							break;
 						case '*':
-							return (float)$vm_operand1 * (float)$vm_operand2;
+							$vm_res1 = $vm_res2 = 0;		
+							foreach($va_operand1 as $vm_operand1) { $vm_res1 += (float)$vm_operand1; }
+							foreach($va_operand2 as $vm_operand2) { $vm_res2 += (float)$vm_operand2; }
+							return (float)$vm_res1 * (float)$vm_res2;
 							break;
 						case '/':
-							if ((float)$vm_operand2 == 0) { return null; }
-							return (float)$vm_operand1 / (float)$vm_operand2;
+							$vm_res1 = $vm_res2 = 0;		
+							foreach($va_operand1 as $vm_operand1) { $vm_res1 += (float)$vm_operand1; }
+							foreach($va_operand2 as $vm_operand2) { $vm_res2 += (float)$vm_operand2; }
+							if ((float)$vm_res2 == 0) { return null; }
+							return (float)$vm_res1 / (float)$vm_res2;
 							break;
 					}
 					break;
 				case EEP_TOKEN_COMPARISON_OP:
 					switch($va_op['value']) {
 						case '<':
-							return ((float)$vm_operand1 < (float)$vm_operand2);
+							foreach($va_operand1 as $vm_operand1) {
+								foreach($va_operand2 as $vm_operand2) {
+									if ((float)$vm_operand1 < (float)$vm_operand2) { return true;}
+								}
+							}
+							return false;
 							break;
 						case '>':
-							return ((float)$vm_operand1 > (float)$vm_operand2);
+							foreach($va_operand1 as $vm_operand1) {
+								foreach($va_operand2 as $vm_operand2) {
+									return ((float)$vm_operand1 > (float)$vm_operand2);
+								}
+							}
+							return false;
 							break;
 						case '<=':
-							return ((float)$vm_operand1 <= (float)$vm_operand2);
+							foreach($va_operand1 as $vm_operand1) {
+								foreach($va_operand2 as $vm_operand2) {
+									if ((float)$vm_operand1 <= (float)$vm_operand2) { return true; }
+								}
+							}
+							return false;
 							break;
 						case '>=':
-							return ((float)$vm_operand1 >= (float)$vm_operand2);
+							foreach($va_operand1 as $vm_operand1) {
+								foreach($va_operand2 as $vm_operand2) {
+									if ((float)$vm_operand1 >= (float)$vm_operand2) { return true; }
+								}
+							}
+							return false;
 							break;
 						case '<>':
 						case '!=':
-							return ($vm_operand1 <> $vm_operand2);
+							foreach($va_operand1 as $vm_operand1) {
+								foreach($va_operand2 as $vm_operand2) {
+									if ($vm_operand1 <> $vm_operand2) { return true; }
+								}
+							}
+							return false;
 							break;
 						case '=':
-							return ($vm_operand1 == $vm_operand2);
+							foreach($va_operand1 as $vm_operand1) {
+								foreach($va_operand2 as $vm_operand2) {
+									if ($vm_operand1 == $vm_operand2) { return true; }
+								}
+							}
+							return false;
 							break;
 					}
 					break;
 				case EEP_TOKEN_LOGICAL_OP:
 					switch(strtolower($va_op['value'])) {
 						case 'and':
-							return $vm_operand1 && $vm_operand2;
+							foreach($va_operand1 as $vm_operand1) {
+								foreach($va_operand2 as $vm_operand2) {
+									if ($vm_operand1 && $vm_operand2) { return true; }
+								}
+							}
+							return false;
 							break;
 						case 'or':
-							return $vm_operand1 || $vm_operand2;
+							foreach($va_operand1 as $vm_operand1) {
+								foreach($va_operand2 as $vm_operand2) {
+									if ($vm_operand1 || $vm_operand2) { return true; }
+								}
+							}
+							return false;
 							break;
 					}
 					break;
 				case EEP_TOKEN_REGEX_OP:
 					switch(strtolower($va_op['value'])) {
 						case '=~':
-							return preg_match($vm_operand2, $vm_operand1);
+							foreach($va_operand1 as $vm_operand1) {
+								foreach($va_operand2 as $vm_operand2) {
+									if(preg_match($vm_operand2, $vm_operand1)) { return true; }
+								}		
+							}
+							return false;
 							break;
 						case '!~':
-							return !preg_match($vm_operand2, $vm_operand1);
+							foreach($va_operand1 as $vm_operand1) {
+								foreach($va_operand2 as $vm_operand2) {
+									if(!preg_match($vm_operand2, $vm_operand1)) { return true; }
+								}
+							}
+							return false;
 							break;
 					}
 					break;
 				case EEP_TOKEN_IN_OP:
-					return in_array($vm_operand1, $vm_operand2);
+					foreach($va_operand1 as $vm_operand1) {
+						if (in_array($vm_operand1, $vm_operand2)) { return true; }
+					}
+					return false;
 					break;
 				case EEP_TOKEN_NOT_IN_OP:
-					return !in_array($vm_operand1, $vm_operand2);
+					foreach($va_operand1 as $vm_operand1) {
+						if (!in_array($vm_operand1, $vm_operand2)) { return true; }
+					}
+					return false;
 					break;
 			}
 		}
@@ -676,7 +777,7 @@ class ExpressionParser {
 
         $vm_ret = $this->parse($ps_expression, $pa_variables);
         
-        //print "erro=".$this->getParseError()."\n";
+        ExpressionParser::$s_last_error = $this->getParseError();
         
         return ($this->getParseError() != 0) ? null : $vm_ret;
     }
@@ -687,6 +788,13 @@ class ExpressionParser {
     static public function evaluate($ps_expression, $pa_variables=null) {
         $e = new ExpressionParser();
         return $e->evaluateExpression($ps_expression, $pa_variables);
+    }
+    # -------------------------------------------------------------------
+    /**
+     * 
+     */
+    static public function hadError() {
+    	return ExpressionParser::$s_last_error;
     }
 	# -------------------------------------------------------------------
 }
