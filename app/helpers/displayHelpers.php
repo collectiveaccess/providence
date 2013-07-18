@@ -1140,22 +1140,6 @@ require_once(__CA_LIB_DIR__."/ca/ApplicationPluginManager.php");
 				}
 			}
 			
-			
-			//
-			// Output extra useful info for bundle mapping groups
-			// 
-			if ($vs_table_name === 'ca_bundle_mapping_groups') {
-				$t_mapping = new ca_bundle_mappings($vn_mapping_id = $t_item->get('mapping_id'));
-				$vs_buf .= "<strong>"._t("Part of")."</strong>: ".caEditorLink($po_view->request, $t_mapping->getLabelForDisplay(), '', 'ca_bundle_mappings', $vn_mapping_id) ."<br/>\n";
-				
-				$vn_content_table_num = $t_mapping->get('table_num');
-				$vs_buf .= "<br/><strong>"._t("Type of content")."</strong>: ".caGetTableDisplayName($vn_content_table_num)."<br/>\n";
-				$vs_buf .= "<strong>"._t("Type")."</strong>: ".$t_mapping->getChoiceListValue('direction', $t_mapping->get('direction'))."<br/>\n";
-				$vs_buf .= "<strong>"._t("Target format")."</strong>: ".$t_mapping->get('target')."<br/>\n";
-
-				$vs_buf .= "<strong>"._t("Number of rules")."</strong>: ".$t_item->getRuleCount()."<br/>\n";
-			}
-			
 		// -------------------------------------------------------------------------------------
 		// Hierarchies
 		
@@ -2684,10 +2668,10 @@ $ca_relationship_lookup_parse_cache = array();
 				} else {
 					switch(__CA_APP_TYPE__) {
 						case 'PROVIDENCE':
-							$va_links[] = caEditorLink($g_request, $vs_text, $ps_class, $ps_table_name, $pa_row_ids[$vn_i]);
+							$va_links[] = ($vs_link = caEditorLink($g_request, $vs_text, $ps_class, $ps_table_name, $pa_row_ids[$vn_i])) ? $vs_link : $vs_text;
 							break;
 						case 'PAWTUCKET':
-							$va_links[] = caDetailLink($g_request, $vs_text, $ps_class, $ps_table_name, $pa_row_ids[$vn_i]);
+							$va_links[] = ($vs_link = caDetailLink($g_request, $vs_text, $ps_class, $ps_table_name, $pa_row_ids[$vn_i])) ? $vs_link : $vs_text;
 							break;
 						default:
 							$va_links[] = $vs_text;
