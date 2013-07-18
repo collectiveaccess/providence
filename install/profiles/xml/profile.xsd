@@ -115,7 +115,7 @@
 
 	<xs:complexType name="elementLabels">
 		<xs:sequence>
-			<xs:element name="label" minOccurs="1" maxOccurs="unbounded">
+			<xs:element name="label" minOccurs="0" maxOccurs="unbounded">
 				<xs:complexType>
 					<xs:sequence>
 						<xs:element name="name" type="xs:string" minOccurs="1" maxOccurs="1"/>
@@ -256,7 +256,7 @@
 	<xs:complexType name="metadataSubElement">
 		<!-- metadata element without type restriction -->
 		<xs:sequence>
-			<xs:element name="labels" type="elementLabels" minOccurs="1" maxOccurs="1"/>
+			<xs:element name="labels" type="elementLabels" minOccurs="0" maxOccurs="1"/>
 			<xs:element name="documentationUrl" type="xs:anyURI" minOccurs="0" maxOccurs="1"/>
 			<xs:element name="settings" minOccurs="0" maxOccurs="1">
 				<xs:complexType>

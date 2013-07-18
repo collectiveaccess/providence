@@ -35,7 +35,7 @@
 		public function __construct() {
 			$this->ops_name = 'collectionSplitter';
 			$this->ops_title = _t('Collection splitter');
-			$this->ops_description = _t('Splits collections');
+			$this->ops_description = _t('Provides several collection-related import functions: splitting of multiple collections in a string into individual values, mapping of type and relationship type for related collections, and merging collection data with names.');
 			
 			parent::__construct();
 		}
@@ -56,21 +56,26 @@
 		 *
 		 */
 		public function refine(&$pa_destination_data, $pa_group, $pa_item, $pa_source_data, $pa_options=null) {
+			$o_log = (isset($pa_options['log']) && is_object($pa_options['log'])) ? $pa_options['log'] : null;
+			
 			$va_group_dest = explode(".", $pa_group['destination']);
 			$vs_terminal = array_pop($va_group_dest);
 			$pm_value = $pa_source_data[$pa_item['source']];
 			
-			if ($vs_delimiter = $pa_item['settings']['collectionSplitter_delimiter']) {
-				$va_collections = explode($vs_delimiter, $pm_value);
+			if (is_array($pm_value)) {
+				$va_collections = $pm_value;	// for input formats that support repeating values
 			} else {
-				$va_collections = array($pm_value);
+				if ($vs_delimiter = $pa_item['settings']['collectionSplitter_delimiter']) {
+					$va_collections = explode($vs_delimiter, $pm_value);
+				} else {
+					$va_collections = array($pm_value);
+				}
 			}
 			
 			$va_vals = array();
 			$vn_c = 0;
 			foreach($va_collections as $vn_i => $vs_collection) {
 				if (!$vs_collection = trim($vs_collection)) { continue; }
-				
 				
 				if($vs_terminal == 'name') {
 					return $vs_collection;
@@ -87,32 +92,34 @@
 				if (
 					($vs_rel_type_opt = $pa_item['settings']['collectionSplitter_relationshipType'])
 				) {
-					if (!($va_val['_relationship_type'] = BaseRefinery::parsePlaceholder($vs_rel_type_opt, $pa_source_data, $pa_item, $vs_delimiter, $vn_c))) {
-						if ($vs_rel_type_opt = $pa_item['settings']['collectionSplitter_relationshipTypeDefault']) {
-							$va_val['_relationship_type'] = BaseRefinery::parsePlaceholder($vs_rel_type_opt, $pa_source_data, $pa_item, $vs_delimiter, $vn_c);
-						}
-					}
+					$va_val['_relationship_type'] = BaseRefinery::parsePlaceholder($vs_rel_type_opt, $pa_source_data, $pa_item, $vs_delimiter, $vn_c);
 				}
-			
+				
+				if (
+					(!isset($va_val['_relationship_type']) || !$va_val['_relationship_type']) 
+					&& 
+					($vs_rel_type_opt = $pa_item['settings']['collectionSplitter_relationshipTypeDefault'])	
+				) {
+					$va_val['_relationship_type'] = BaseRefinery::parsePlaceholder($vs_rel_type_opt, $pa_source_data, $pa_item, $vs_delimiter, $vn_c);
+				}
+				
+				if ((!isset($va_val['_relationship_type']) || !$va_val['_relationship_type']) && $o_log) {
+					$o_log->logWarning(_t('[collectionSplitterRefinery] No relationship type is set for collection %1', $vs_collection));
+				}
+				
 				// Set collection_type
 				if (
 					($vs_type_opt = $pa_item['settings']['collectionSplitter_collectionType'])
 				) {
-					
-					if (!($va_val['_type'] = BaseRefinery::parsePlaceholder($vs_type_opt, $pa_source_data, $pa_item, $vs_delimiter, $vn_c))) {
-						if($vs_type_opt = $pa_item['settings']['collectionSplitter_collectionTypeDefault']) {
-							$va_val['_type'] = BaseRefinery::parsePlaceholder($vs_type_opt, $pa_source_data, $pa_item, $vs_delimiter, $vn_c);
-						}
-					}
+					$va_val['_type'] = BaseRefinery::parsePlaceholder($vs_type_opt, $pa_source_data, $pa_item, $vs_delimiter, $vn_c);
 				}
-				// Set relationship type
-				if ($vs_rel_type_opt = $pa_item['settings']['collectionSplitter_relationshipType']) {
-					$va_val['_relationship_type'] = BaseRefinery::parsePlaceholder($vs_rel_type_opt, $pa_source_data, $pa_item, $vs_delimiter, $vn_i);
+				
+				if((!isset($va_val['_type']) || !$va_val['_type']) && ($vs_type_opt = $pa_item['settings']['collectionSplitter_collectionTypeDefault'])) {
+					$va_val['_type'] = BaseRefinery::parsePlaceholder($vs_type_opt, $pa_source_data, $pa_item, $vs_delimiter, $vn_c);
 				}
-			
-				// Set collection type
-				if ($vs_type_opt = $pa_item['settings']['collectionSplitter_collectionType']) {
-					$va_val['_type'] = BaseRefinery::parsePlaceholder($vs_type_opt, $pa_source_data, $pa_item);
+				
+				if ((!isset($va_val['_type']) || !$va_val['_type']) && $o_log) {
+					$o_log->logWarning(_t('[collectionSplitterRefinery] No collection type is set for collection %1', $vs_collection));
 				}
 				
 				// Set collection parents
@@ -123,6 +130,8 @@
 						
 					foreach($va_parents as $vn_i => $vs_parent) {
 						$vn_collection_id = DataMigrationUtils::getCollectionID($vs_parent, $va_val['_type'], $g_ui_locale_id, array('idno' => $vs_parent, 'parent_id' => $vn_collection_id), $pa_options);
+						
+						if ($o_log) { $o_log->logDebug(_t('[collectionSplitterRefinery] Got parent %1 with collection_id %2 for %3', $vs_parent, $vn_collection_id, $vs_collection)); }
 					}
 					$va_val['parent_id'] = $vn_collection_id;
 				}
@@ -133,8 +142,13 @@
 					foreach($pa_item['settings']['collectionSplitter_attributes'] as $vs_element_code => $va_attrs) {
 						if(is_array($va_attrs)) {
 							foreach($va_attrs as $vs_k => $vs_v) {
-								$va_attr_vals[$vs_element_code][$vs_k] = BaseRefinery::parsePlaceholder($vs_v, $pa_source_data, $pa_item);
+								// BaseRefinery::parsePlaceholder may return an array if the input format supports repeated values (as XML does)
+								// DataMigrationUtils::getCollectionID(), which ca_data_importers::importDataFromSource() uses to create related collections
+								// only supports non-repeating attribute values, so we join any values here and call it a day.
+								$va_attr_vals[$vs_element_code][$vs_k] = (is_array($vm_v = BaseRefinery::parsePlaceholder($vs_v, $pa_source_data, $pa_item, $vs_delimiter, $vn_c))) ? join(" ", $vm_v) : $vm_v;
 							}
+						} else {
+							$va_attr_vals[$vs_element_code][$vs_element_code] = (is_array($vm_v = BaseRefinery::parsePlaceholder($va_attrs, $pa_source_data, $pa_item, $vs_delimiter, $vn_c))) ? join(" ", $vm_v) : $vm_v;
 						}
 					}
 					$va_val = array_merge($va_val, $va_attr_vals);
