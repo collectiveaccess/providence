@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2007-2012 Whirl-i-Gig
+ * Copyright 2007-2013 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -1022,7 +1022,7 @@ function caFileIsIncludable($ps_file) {
 			'file_locking' => true,				/* cache corruption avoidance */
 			'read_control' => false,			/* no read control */
 			'file_name_prefix' => $ps_prefix,	/* prefix of cache files */
-			'cache_file_umask' => 0700			/* permissions of cache files */
+			'cache_file_perm' => 0700			/* permissions of cache files */
 		);
 
 
@@ -1504,6 +1504,18 @@ function caFileIsIncludable($ps_file) {
 		} else {
 			return false;
 		}
+	}
+	# ---------------------------------------
+	/**
+	 * 
+	 *
+	 * @param mixed $ps_options
+	 * @param array $pa_options
+	 * @param mixed $pm_default
+	 * @return mixed
+	 */
+	function caGetOption($ps_option, $pa_options, $pm_default=null) {
+		return (isset($pa_options[$ps_option]) && !is_null($pa_options[$ps_option])) ? $pa_options[$ps_option] : $pm_default;
 	}
 	# ---------------------------------------
 	/**

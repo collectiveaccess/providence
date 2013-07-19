@@ -1155,6 +1155,13 @@ require_once(__CA_LIB_DIR__."/ca/ApplicationPluginManager.php");
 
 				$vs_buf .= "<strong>"._t("Number of rules")."</strong>: ".$t_item->getRuleCount()."<br/>\n";
 			}
+
+			//
+			// Output configurable additional info from config, if set
+			// 
+			if ($vs_additional_info = $po_view->request->config->get("{$vs_table_name}_inspector_additional_info")) {
+				$vs_buf .= "<br/>".caProcessTemplateForIDs($vs_additional_info, $vs_table_name, array($t_item->getPrimaryKey()))."<br/>\n";
+			}
 			
 		// -------------------------------------------------------------------------------------
 		// Hierarchies
@@ -1706,6 +1713,7 @@ require_once(__CA_LIB_DIR__."/ca/ApplicationPluginManager.php");
 	 *		relatedValues = array of field values to return in template when directly referenced. Array should be indexed numerically in parallel with $pa_row_ids
 	 *		relationshipValues = array of field values to return in template for relationship when directly referenced. Should be indexed by row_id and then by relation_id
 	 *		placeholderPrefix = 
+	 *		requireLinkTags = if set then links are only added when explicitly defined with <l> tags. Default is to make the entire text a link in the absence of <l> tags.
 	 * @return mixed Output of processed templates
 	 */
 	function caProcessTemplateForIDs($ps_template, $pm_tablename_or_num, $pa_row_ids, $pa_options=null) {
@@ -1743,7 +1751,7 @@ require_once(__CA_LIB_DIR__."/ca/ApplicationPluginManager.php");
 		// Parse template
 		$o_dom = new DOMDocument('1.0', 'utf-8');
 		libxml_use_internal_errors(true);								// don't reported mangled HTML errors
-		$o_dom->loadHTML($ps_template);
+		$o_dom->loadHTML('<?xml encoding="utf-8">'.$ps_template);
 		libxml_clear_errors();
 		
 		$o_ifdefs = $o_dom->getElementsByTagName("ifdef");				// if defined
@@ -1753,11 +1761,13 @@ require_once(__CA_LIB_DIR__."/ca/ApplicationPluginManager.php");
 		
 		$o_options = $o_dom->getElementsByTagName("options");
 		
+		
+		
 		$va_ifdefs = array();
 		foreach($o_ifdefs as $o_ifdef) {
 			if (!$o_ifdef) { continue; }
 			
-			$vs_html = $o_dom->saveHTML($o_ifdef);
+			$vs_html = $o_dom->saveXML($o_ifdef);
 			$vs_content = preg_replace("!^<[^\>]+>!", "", $vs_html);
 			$vs_content = preg_replace("!<[^\>]+>$!", "", $vs_content);
 			
@@ -1768,7 +1778,7 @@ require_once(__CA_LIB_DIR__."/ca/ApplicationPluginManager.php");
 		foreach($o_ifnotdefs as $o_ifnotdef) {
 			if (!$o_ifnotdef) { continue; }
 			
-			$vs_html = $o_dom->saveHTML($o_ifnotdef);
+			$vs_html = $o_dom->saveXML($o_ifnotdef);
 			$vs_content = preg_replace("!^<[^\>]+>!", "", $vs_html);
 			$vs_content = preg_replace("!<[^\>]+>$!", "", $vs_content);
 			
@@ -1778,7 +1788,7 @@ require_once(__CA_LIB_DIR__."/ca/ApplicationPluginManager.php");
 		$va_mores = array();
 		foreach($o_mores as $o_more) {
 			if (!$o_more) { continue; }
-			$vs_html = $o_dom->saveHTML($o_more);
+			$vs_html = $o_dom->saveXML($o_more);
 			$vs_content = preg_replace("!^<[^\>]+>!", "", $vs_html);
 			$vs_content = preg_replace("!<[^\>]+>$!", "", $vs_content);
 			$va_mores[] = array('directive' => $vs_html, 'content' => $vs_content);
@@ -1787,7 +1797,7 @@ require_once(__CA_LIB_DIR__."/ca/ApplicationPluginManager.php");
 		$va_betweens = array();
 		foreach($o_betweens as $o_between) {
 			if (!$o_between) { continue; }
-			$vs_html = $o_dom->saveHTML($o_between);
+			$vs_html = $o_dom->saveXML($o_between);
 			$vs_content = preg_replace("!^<[^\>]+>!", "", $vs_html);
 			$vs_content = preg_replace("!<[^\>]+>$!", "", $vs_content);
 			$va_betweens[] = array('directive' => $vs_html, 'content' => $vs_content);
@@ -1832,9 +1842,12 @@ require_once(__CA_LIB_DIR__."/ca/ApplicationPluginManager.php");
 				}
 				
 				if (!isset($va_relationship_values[$vs_pk_val])) { $va_relationship_values[$vs_pk_val] = array(0 => null); }
-
+				
 				foreach($va_relationship_values[$vs_pk_val] as $vn_relation_id => $va_relationship_value_array) {
+					$vb_is_related = false;
+					$va_related_ids = array();
 					$va_val = null;
+					
 					if (isset($va_relationship_value_array[$vs_tag]) && !(isset($pa_options['showHierarchicalLabels']) && $pa_options['showHierarchicalLabels'] && ($vs_tag == 'label'))) {
 						$va_val = array($vs_val = $va_relationship_value_array[$vs_tag]);
 					} else {
@@ -1853,9 +1866,19 @@ require_once(__CA_LIB_DIR__."/ca/ApplicationPluginManager.php");
 									$vs_get_spec = $vs_tag;
 								}
 								
+								$va_spec_bits = explode(".", $vs_get_spec);
+								if ((sizeof($va_spec_bits) == 1) && ($o_dm->getTableNum($va_spec_bits[0]))) { 
+									$vs_get_spec .= ".preferred_labels";
+								}
 								$va_val = $qr_res->get($vs_get_spec, array_merge($pa_options, array('returnAsArray' => true)));
+								$vb_is_related = true;
+								$va_related_ids = $qr_res->get($va_tmp[0].".".$o_dm->getTablePrimaryKeyName($va_tmp[0]), array('returnAsArray' => true));
 							} else {
 								if ($va_tmp[0] == $ps_tablename) { array_shift($va_tmp); }	// get rid of primary table if it's in the field spec
+							
+								if (!sizeof($va_tmp)) {
+									$va_tmp[] = "preferred_labels";
+								}
 							
 								if (isset($pa_options['showHierarchicalLabels']) && $pa_options['showHierarchicalLabels']) {
 									if ($va_tmp[1] == 'preferred_labels') {
@@ -1890,13 +1913,22 @@ require_once(__CA_LIB_DIR__."/ca/ApplicationPluginManager.php");
 					
 				
 					if (is_array($va_val)) {
-						foreach($va_val as $vn_j => $vs_val) {
-							$va_tag_val_list[$vn_i][$vn_j][$vs_tag] = $vs_val;
-							if ((is_array($vs_val) && (sizeof($vs_val))) || (strlen($vs_val) > 0)) {
-								$va_defined_tag_list[$vn_i][$vs_tag] = true;
-							}
+						if($vb_is_related) { 
+							$va_val = caCreateLinksFromText($va_val, $va_tmp[0], $va_related_ids, null, null, $pa_options); 
 						}
-					}
+						
+						if (sizeof($va_val) > 0) {
+							foreach($va_val as $vn_j => $vs_val) {
+								$va_tag_val_list[$vn_i][$vn_j][$vs_tag] = $vs_val;
+								if ((is_array($vs_val) && (sizeof($vs_val))) || (strlen($vs_val) > 0)) {
+									$va_defined_tag_list[$vn_i][$vs_tag] = true;
+								}
+							}
+						} else {
+							$va_tag_val_list[$vn_i][0][$vs_tag] = null;
+							$va_defined_tag_list[$vn_i][$vs_tag] = false;
+						}
+					} 
 				}
 			}
 		
@@ -2060,6 +2092,9 @@ require_once(__CA_LIB_DIR__."/ca/ApplicationPluginManager.php");
 			}
 			$va_proc_templates[$vn_i] = join(isset($pa_options['delimiter']) ? $pa_options['delimiter'] : $vs_delimiter, $va_pt_vals);
 		}
+		
+		// Transform links
+		$va_proc_templates = caCreateLinksFromText($va_proc_templates, $ps_tablename, $pa_row_ids, null, null, $pa_options);
 		
 		if ($vb_return_as_array) {
 			return $va_proc_templates;
@@ -2578,10 +2613,12 @@ $ca_relationship_lookup_parse_cache = array();
 	 * @param string $ps_table_name The name of the table/record to which the links refer
 	 * @param array $pa_row_ids Array of row_ids to link to. Values must correspond by index with those in $pa_text
 	 * @param string $ps_class Optional CSS class to apply to links
+	 * @param array $pa_options Supported options are:
+	 *		requireLinkTags = if set then links are only added when explicitly defined with <l> tags. Default is to make the entire text a link in the absence of <l> tags.
 	 *
 	 * @return array A list of HTML links
 	 */
-	function caCreateLinksFromText($pa_text, $ps_table_name, $pa_row_ids, $ps_class=null, $ps_target=null) {
+	function caCreateLinksFromText($pa_text, $ps_table_name, $pa_row_ids, $ps_class=null, $ps_target=null, $pa_options=null) {
 		if (!in_array(__CA_APP_TYPE__, array('PROVIDENCE', 'PAWTUCKET'))) { return $pa_text; }
 		if (__CA_APP_TYPE__ == 'PAWTUCKET') {
 			$o_config = Configuration::load();
@@ -2605,7 +2642,7 @@ $ca_relationship_lookup_parse_cache = array();
 		if (!$g_request) { return $pa_text; }
 		
 		foreach($pa_text as $vn_i => $vs_text) {
-			$o_dom->loadHTML($vs_text);
+			$o_dom->loadHTML('<?xml encoding="utf-8">'.$vs_text);		// Needs XML declaration to force it to consider the text as UTF-8. Please don't ask why. No one knows.
 			libxml_clear_errors();
 			
 			$va_l_tags = array();
@@ -2613,7 +2650,7 @@ $ca_relationship_lookup_parse_cache = array();
 		
 			foreach($o_links as $o_link) {
 				if (!$o_link) { continue; }
-				$vs_html = $o_dom->saveHTML($o_link);
+				$vs_html = $o_dom->saveXML($o_link);
 				$vs_content = preg_replace("!^<[^\>]+>!", "", $vs_html);
 				$vs_content = preg_replace("!<[^\>]+>$!", "", $vs_content);
 		
@@ -2643,6 +2680,10 @@ $ca_relationship_lookup_parse_cache = array();
 				}
 				$va_links[] = $vs_content;
 			} else {
+				if (isset($pa_options['requireLinkTags']) && $pa_options['requireLinkTags']) { 
+					$va_links[] = $vs_text;
+					continue;
+				}
 				if ($vb_can_handle_target) {
 					$va_params = array('request' => $g_request, 'content' => $vs_text, 'table' => $ps_table_name, 'id' => $pa_row_ids[$vn_i], 'classname' => $ps_class, 'target' => $ps_target, 'additionalParameters' => null, 'options' => null);
 					$va_params = $o_app_plugin_manager->hookGetAsLink($va_params);

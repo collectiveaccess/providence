@@ -100,11 +100,16 @@
 		print $vs_checklist;
 	} else {
 ?>
-		<h2><?php print _t('No collection subjects'); ?></h2>
+		<h2><?php print _t('No collection terms selected'); ?></h2>
+<?php
+	}
+	
+	if (isset($va_settings['restrictToTermsOnCollectionUseRelationshipType']) && is_array($va_settings['restrictToTermsOnCollectionUseRelationshipType'])) {
+?>
+							<input type="hidden" name="<?php print $vs_id_prefix; ?>_type_id{n}" id="<?php print $vs_id_prefix; ?>_type_id{n}" value="<?php print array_pop($va_settings['restrictToTermsOnCollectionUseRelationshipType']); ?>"/>
 <?php
 	}
 ?>
-							<input type="hidden" name="<?php print $vs_id_prefix; ?>_type_id{n}" id="<?php print $vs_id_prefix; ?>_type_id{n}" value="<?php print array_pop($va_settings['restrictToTermsOnCollectionUseRelationshipType']); ?>"/>
 						</td>
 <?php
 	if (!(bool)$va_settings['restrictToTermsRelatedToCollection']) {
@@ -123,7 +128,7 @@
 ?>
 		<div id="<?php print $vs_id_prefix; ?>Item_{n}" class="labelInfo roundedRel caRelatedItem">
 <?php
-			print caGetRelationDisplayString($this->request, 'ca_list_items', array('class' => 'caEditItemButton', 'id' => "{$vs_id_prefix}_edit_related_{n}"), array('display' => 'label', 'makeLink' => true));
+			print caGetRelationDisplayString($this->request, 'ca_list_items', array('class' => 'caEditItemButton', 'id' => "{$vs_id_prefix}_edit_related_{n}"), array('display' => '_display', 'makeLink' => true));
 ?>
 			<input type="hidden" name="<?php print $vs_id_prefix; ?>_type_id{n}" id="<?php print $vs_id_prefix; ?>_type_id{n}" value="{type_id}"/>
 			<input type="hidden" name="<?php print $vs_id_prefix; ?>_id{n}" id="<?php print $vs_id_prefix; ?>_id{n}" value="{id}"/>
@@ -188,9 +193,11 @@
 				<div style="float: right;">
 					<div class='hierarchyBrowserSearchBar'><?php print _t('Search'); ?>: <input type='text' id='<?php print $vs_id_prefix; ?>_hierarchyBrowserSearch{n}' class='hierarchyBrowserSearchBar' name='search' value='' size='40'/></div>
 				</div>
-				<div style="float: left;">
+				<div style="float: left;" class="hierarchyBrowserCurrentSelectionText">
 					<select name="<?php print $vs_id_prefix; ?>_type_id{n}" id="<?php print $vs_id_prefix; ?>_type_id{n}" style="display: none;"></select>
 					<input type="hidden" name="<?php print $vs_id_prefix; ?>_id{n}" id="<?php print $vs_id_prefix; ?>_id{n}" value="{id}"/>
+					
+					<span class="hierarchyBrowserCurrentSelectionText" id="<?php print $vs_id_prefix; ?>_browseCurrentSelectionText{n}"> </span>
 				</div>	
 				
 				<script type='text/javascript'>
@@ -213,10 +220,11 @@
 							
 							editButtonIcon: '<img src="<?php print $this->request->getThemeUrlPath(); ?>/graphics/buttons/arrow_grey_right.gif" border="0" title="Edit"/>',
 							
-							initItemID: <?php print $vn_browse_last_id; ?>,
+							//initItemID: <?php print $vn_browse_last_id; ?>,
 							useAsRootID: <?php print $vn_use_as_root_id; ?>,
 							indicatorUrl: '<?php print $this->request->getThemeUrlPath(); ?>/graphics/icons/indicator.gif',
 							
+							displayCurrentSelectionOnLoad: false,
 							currentSelectionDisplayID: '<?php print $vs_id_prefix; ?>_browseCurrentSelectionText{n}',
 							onSelection: function(item_id, parent_id, name, display, type_id) {
 								if (!init) {	// Don't actually select the init value, otherwise if you save w/no selection you get "phantom" relationships

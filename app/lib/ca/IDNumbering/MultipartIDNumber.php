@@ -487,6 +487,9 @@
 		# -------------------------------------------------------
 		/**
 		 * Returns sortable value padding according to the format of the specified format and type
+		 *
+		 * @param string $ps_value
+		 * @return string
 		 */
 		public function getSortableValue($ps_value=null) {
 			$vs_separator = $this->getSeparator();
@@ -583,6 +586,126 @@
 				}
 			}
 			return join($vs_separator, $va_output);
+		}
+		# -------------------------------------------------------
+		/**
+		 * Return a list of modified identifier values suitable for search indexing according to the format of the specified format and type
+		 * Modifications include removal of leading zeros, stemming and more.
+		 *
+		 * @param string $ps_value
+		 * @return array
+		 */
+		public function getIndexValues($ps_value=null) {
+			$vs_separator = $this->getSeparator();
+			if (!is_array($va_elements_normal_order = $this->getElements())) { $va_elements_normal_order = array(); }
+			$va_element_names_normal_order = array_keys($va_elements_normal_order);
+			
+			if (!($va_elements = $this->getElementOrderForSort())) { $va_elements = $va_element_names_normal_order; }
+			if($vs_separator) {
+				$va_element_vals = explode($vs_separator, $ps_value ? $ps_value : $this->getValue());
+			} else {
+				$va_element_vals = array($ps_value ? $ps_value : $this->getValue());
+			}
+			$va_output = array();
+		
+			$vn_i = 0;
+			
+			$va_output = array();
+			$vn_max_value_count = 0;
+			
+			// element-specific processing
+			foreach($va_elements as $vn_x => $vs_element) {
+				$va_element_info = $va_elements_normal_order[$vs_element];
+				$vn_i = array_search($vs_element, $va_element_names_normal_order);
+				
+				switch($va_element_info['type']) {
+					case 'LIST':
+						$va_output[$vn_i] = array($va_element_vals[$vn_i]);
+						break;
+					case 'CONSTANT':
+						$va_output[$vn_i] = array($va_element_vals[$vn_i]);
+						break;
+					case 'FREE':
+					case 'ALPHANUMERIC':
+						$va_output[$vn_i] = array($va_element_vals[$vn_i]);
+						if ((int)$va_element_vals[$vn_i] > 0) {
+							$va_output[$vn_i][] = (int)$va_element_vals[$vn_i];
+						}
+						
+						break;
+					case 'SERIAL':
+					case 'NUMERIC':
+					case 'MONTH':
+					case 'DAY':
+					case 'YEAR':
+						$va_output[$vn_i] = array($va_element_vals[$vn_i]);
+						if (preg_match('!^([0]+)([\d]+)$!', $va_element_vals[$vn_i], $va_matches)) {
+							for($vn_i=0; $vn_i < sizeof($va_matches[1]); $vn_i++) {
+								$va_output[$vn_i][] = substr($va_element_vals[$vn_i], $vn_i);
+							}
+						}
+						break;
+					default:
+						$va_output[$vn_i] = array($va_element_vals[$vn_i]);
+						break;
+				}
+				
+				if ($vn_max_value_count < sizeof($va_output[$vn_i])) { $vn_max_value_count = sizeof($va_output[$vn_i]); }
+			}
+			
+			$va_output_values = array();
+			
+			// Generate permutations from element-specific processing
+			for($vn_c=0; $vn_c < $vn_max_value_count; $vn_c++) {
+				$va_output_values_buf = array();
+				
+				foreach($va_elements as $vn_x => $vs_element) {
+					if (!isset($va_output[$vn_i][0])) { continue; }
+					
+					$vn_i = array_search($vs_element, $va_element_names_normal_order);
+					if (isset($va_output[$vn_i][$vn_c])) {
+						$va_output_values_buf[] = $va_output[$vn_i][$vn_c];
+					} else {
+						$va_output_values_buf[] = $va_output[$vn_i][0];
+					}
+				}
+				
+				$va_output_values[] = join($vs_separator, $va_output_values_buf);
+			}
+			
+			// generate incremental "stems" of identifier by exploding on punctuation
+			if(preg_match_all("![^A-Za-z0-9]+!", $ps_value, $va_delimiters)) {
+				$va_element_values = preg_split("![^A-Za-z0-9]+!", $ps_value);
+				$va_acc = array();
+				foreach($va_element_values as $vn_x => $vs_element_value) {
+					$va_acc[] = $vs_element_value;
+					$va_output_values[] = join('', $va_acc);
+					if (is_numeric($vs_element_value)) {
+						array_pop($va_acc);
+						$va_acc[] = (int)$vs_element_value;
+						$va_output_values[] = join('', $va_acc);
+					}
+					if (sizeof($va_delimiters[0]) > 0) { $va_acc[] = array_shift($va_delimiters[0]); }
+				}
+			}
+			
+			// generate versions without leading zeros
+			$va_output_values[] = preg_replace("!^[0]+!", "", $ps_value);	// remove leading zeros
+			if (preg_match_all("!([^0-9]+)([0]+)!", $ps_value, $va_matches)) {
+				$vs_value_proc = $ps_value;
+				for($vn_x=0; $vn_x < sizeof($va_matches[0]); $vn_x++) {
+					$vs_value_proc = str_replace($va_matches[0][$vn_x], $va_matches[1][$vn_x], $vs_value_proc);
+				}
+				$va_output_values[] = $vs_value_proc;
+			}
+			
+			// generate version without trailing letters after number (eg. KHF-134b => KHF-134)
+			$va_tmp = $va_output_values;
+			foreach($va_tmp as $vs_value_proc) {
+				$va_output_values[] = preg_replace("!([\d]+)[A-Za-z]+$!", "$1", $vs_value_proc);
+			}
+			
+			return array_unique($va_output_values);
 		}
 		# -------------------------------------------------------
 		# User interace (HTML)

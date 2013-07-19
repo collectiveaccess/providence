@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2009-2012 Whirl-i-Gig
+ * Copyright 2009-2013 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -2740,7 +2740,7 @@
 							$qr_res = $this->opo_db->query($vs_sql);
 						
 							if ($qr_res->nextRow()) {
-								return ((int)$qr_res->numRows() > 1) ? true : false;
+								return ((int)$qr_res->numRows() > 0) ? true : false;
 							}
 							return false;
 						} else {
@@ -2971,8 +2971,11 @@
 					//
 					// Convert related item type_code specs in restrict_to_types and exclude_types lists to numeric type_ids we need for the query
 					//
-					$va_restrict_to_types = $this->_convertTypeCodesToIDs($va_restrict_to_types, array('instance' => $t_rel_item));
-					$va_exclude_types = $this->_convertTypeCodesToIDs($va_exclude_types, array('instance' => $t_rel_item));
+					$va_restrict_to_types = $this->_convertTypeCodesToIDs($va_restrict_to_types, array('instance' => $t_rel_item, 'dontExpandHierarchically' => true));
+					$va_exclude_types = $this->_convertTypeCodesToIDs($va_exclude_types, array('instance' => $t_rel_item, 'dontExpandHierarchically' => true));
+					
+					$va_restrict_to_types_expanded = $this->_convertTypeCodesToIDs($va_restrict_to_types, array('instance' => $t_rel_item));
+					$va_exclude_types_expanded = $this->_convertTypeCodesToIDs($va_exclude_types, array('instance' => $t_rel_item));
 					
 			
 					// look up relationship type restrictions
@@ -3024,11 +3027,12 @@ if (!$va_facet_info['show_all_when_first_facet'] || ($this->numCriteria() > 0)) 
 					}
 					
 					if (is_array($va_restrict_to_types) && (sizeof($va_restrict_to_types) > 0) && method_exists($t_rel_item, "getTypeList")) {
-						$va_wheres[] = "{$vs_rel_table_name}.type_id IN (".join(',', $va_restrict_to_types).")";
+						$va_wheres[] = "{$vs_rel_table_name}.type_id IN (".join(',', $va_restrict_to_types_expanded).")";
+						$va_selects[] = "{$vs_rel_table_name}.type_id";
 					}
 					
 					if (is_array($va_exclude_types) && (sizeof($va_exclude_types) > 0) && method_exists($t_rel_item, "getTypeList")) {
-						$va_wheres[] = "{$vs_rel_table_name}.type_id NOT IN (".join(',', $va_exclude_types).")";
+						$va_wheres[] = "{$vs_rel_table_name}.type_id NOT IN (".join(',', $va_exclude_types_expanded).")";
 					}
 					
 					if ((sizeof($va_restrict_to_relationship_types) > 0) && is_object($t_item_rel)) {
@@ -3199,8 +3203,15 @@ if (!$va_facet_info['show_all_when_first_facet'] || ($this->numCriteria() > 0)) 
 							//if (isset($va_facet_items[$vn_id])) { continue; } --- we can't do this as then we don't detect items that have multiple rel_type_ids... argh.
 							if (isset($va_criteria[$vn_id])) { continue; }		// skip items that are used as browse critera - don't want to browse on something you're already browsing on
 							
-							
 							if (!$va_facet_items[$va_fetched_row[$vs_rel_pk]]) {
+							
+								
+								if ($va_fetched_row[$vs_hier_parent_id_fld]) {
+									$va_facet_parents[$va_fetched_row[$vs_hier_parent_id_fld]] = true;
+								}
+								if (is_array($va_restrict_to_types) && sizeof($va_restrict_types) && $va_fetched_row['type_id'] && !in_array($va_fetched_row['type_id'], $va_restrict_to_types)) {
+									continue; 
+								}
 								$va_facet_items[$va_fetched_row[$vs_rel_pk]] = array(
 									'id' => $va_fetched_row[$vs_rel_pk],
 									'type_id' => array(),
@@ -3210,9 +3221,6 @@ if (!$va_facet_info['show_all_when_first_facet'] || ($this->numCriteria() > 0)) 
 									'child_count' => 0
 								);
 								
-								if ($va_fetched_row[$vs_hier_parent_id_fld]) {
-									$va_facet_parents[$va_fetched_row[$vs_hier_parent_id_fld]] = true;
-								}
 								if (!is_null($vs_single_value) && ($va_fetched_row[$vs_rel_pk] == $vs_single_value)) {
 									$vb_single_value_is_present = true;
 								}

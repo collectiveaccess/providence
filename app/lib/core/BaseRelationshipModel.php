@@ -241,7 +241,7 @@
 		/**
 		 * Returns an HTML <select> element of relationship types with values=type_id and option text = to the typename
 		 */
-		public function getRelationshipTypesAsHTMLSelect($ps_orientation, $pn_sub_type_left_id=null, $pn_sub_type_right_id=null) {
+		public function getRelationshipTypesAsHTMLSelect($ps_orientation, $pn_sub_type_left_id=null, $pn_sub_type_right_id=null, $pa_options=null) {
 			$vs_left_table_name = $this->getLeftTableName();
 			$vs_right_table_name = $this->getRightTableName();
 			if (!in_array($ps_orientation, array($vs_left_table_name, $vs_right_table_name))) { $ps_orientation = $vs_left_table_name; }
@@ -264,7 +264,9 @@
 				$va_options[str_repeat("&#160;&#160;&#160;", $vn_l-1).(($ps_orientation == $vs_left_table_name) ? $va_type['typename'] : $va_type['typename_reverse'])] = $va_type['type_id'];
 			}
 			
-			return caHTMLSelect('type_id', $va_options);
+			$vs_name = caGetOption('name', $pa_options, 'type_id');
+			
+			return caHTMLSelect($vs_name, $va_options, $pa_options);
 		}
 		# ------------------------------------------------------
 		/**

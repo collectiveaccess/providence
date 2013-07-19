@@ -1905,124 +1905,6 @@
         </item>
       </items>
     </list>
-    <list code="object_event_types" hierarchical="1" system="0" vocabulary="0">
-      <labels>
-        <label locale="en_US">
-          <name>Object event types</name>
-        </label>
-        <label locale="en_CA">
-          <name>Object event types</name>
-        </label>
-        <label locale="fr_FR">
-          <name>Types d\'événements d\'objet</name>
-        </label>
-        <label locale="sv_SE">
-          <name>Objekt händelsetyper</name>
-        </label>
-      </labels>
-      <items>
-        <item idno="movement" enabled="1" default="1">
-          <labels>
-            <label locale="en_US" preferred="1">
-              <name_singular>movement</name_singular>
-              <name_plural>movements</name_plural>
-            </label>
-            <label locale="en_CA" preferred="1">
-              <name_singular>movement</name_singular>
-              <name_plural>movements</name_plural>
-            </label>
-            <label locale="fr_FR" preferred="1">
-              <name_singular>mouvement</name_singular>
-              <name_plural>mouvements</name_plural>
-            </label>
-            <label locale="sv_SE" preferred="1">
-              <name_singular>förflyttning</name_singular>
-              <name_plural>förflyttningar</name_plural>
-            </label>
-          </labels>
-        </item>
-        <item idno="condition_assessment" enabled="1" default="0">
-          <labels>
-            <label locale="en_US" preferred="1">
-              <name_singular>condition assessment</name_singular>
-              <name_plural>condition assessments</name_plural>
-            </label>
-            <label locale="en_CA" preferred="1">
-              <name_singular>condition assessment</name_singular>
-              <name_plural>condition assessments</name_plural>
-            </label>
-            <label locale="fr_FR" preferred="1">
-              <name_singular>évaluation de l\'état</name_singular>
-              <name_plural>évaluations de l\'état</name_plural>
-            </label>
-            <label locale="sv_SE" preferred="1">
-              <name_singular>tillståndsbedömning</name_singular>
-              <name_plural>tillståndsbedömningar</name_plural>
-            </label>
-          </labels>
-        </item>
-        <item idno="loss" enabled="1" default="0">
-          <labels>
-            <label locale="en_US" preferred="1">
-              <name_singular>loss</name_singular>
-              <name_plural>losses</name_plural>
-            </label>
-            <label locale="en_CA" preferred="1">
-              <name_singular>loss</name_singular>
-              <name_plural>losses</name_plural>
-            </label>
-            <label locale="fr_FR" preferred="1">
-              <name_singular>perte</name_singular>
-              <name_plural>pertes</name_plural>
-            </label>
-            <label locale="sv_SE" preferred="1">
-              <name_singular>förlust</name_singular>
-              <name_plural>förluster</name_plural>
-            </label>
-          </labels>
-        </item>
-        <item idno="damage" enabled="1" default="0">
-          <labels>
-            <label locale="en_US" preferred="1">
-              <name_singular>damage</name_singular>
-              <name_plural>damages</name_plural>
-            </label>
-            <label locale="en_CA" preferred="1">
-              <name_singular>damage</name_singular>
-              <name_plural>damages</name_plural>
-            </label>
-            <label locale="fr_FR" preferred="1">
-              <name_singular>dommage</name_singular>
-              <name_plural>dommages</name_plural>
-            </label>
-            <label locale="sv_SE" preferred="1">
-              <name_singular>skada</name_singular>
-              <name_plural>skador</name_plural>
-            </label>
-          </labels>
-        </item>
-        <item idno="deaccession" enabled="1" default="0">
-          <labels>
-            <label locale="en_US" preferred="1">
-              <name_singular>deaccession</name_singular>
-              <name_plural>deaccessions</name_plural>
-            </label>
-            <label locale="en_CA" preferred="1">
-              <name_singular>deaccession</name_singular>
-              <name_plural>deaccessions</name_plural>
-            </label>
-            <label locale="fr_FR" preferred="1">
-              <name_singular>retrait d\'inventaire</name_singular>
-              <name_plural>retraits d\'inventaire</name_plural>
-            </label>
-            <label locale="sv_SE" preferred="1">
-              <name_singular>avyttring</name_singular>
-              <name_plural>avyttring</name_plural>
-            </label>
-          </labels>
-        </item>
-      </items>
-    </list>
     <list code="object_representation_types" hierarchical="1" system="0" vocabulary="0">
       <labels>
         <label locale="en_US">
@@ -5063,6 +4945,33 @@
             <label locale="sv_SE">
               <typename>har som en del av</typename>
               <typename_reverse>är en del av</typename_reverse>
+            </label>
+          </labels>
+          <subTypeLeft> </subTypeLeft>
+          <subTypeRight></subTypeRight>
+        </type>
+      </types>
+    </relationshipTable>
+    
+    <relationshipTable name="ca_object_lots_x_object_lots">
+      <types>
+        <type code="related" default="1">
+          <labels>
+            <label locale="en_US">
+              <typename>is related to</typename>
+              <typename_reverse>is related to</typename_reverse>
+            </label>
+            <label locale="en_CA">
+              <typename>is related to</typename>
+              <typename_reverse>is related to</typename_reverse>
+            </label>
+            <label locale="fr_FR">
+              <typename>est lié à</typename>
+              <typename_reverse>est lié à</typename_reverse>
+            </label>
+            <label locale="sv_SE">
+              <typename>är relaterad till</typename>
+              <typename_reverse>är relaterad till</typename_reverse>
             </label>
           </labels>
           <subTypeLeft> </subTypeLeft>

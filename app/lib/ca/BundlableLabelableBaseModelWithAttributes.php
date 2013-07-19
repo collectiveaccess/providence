@@ -297,7 +297,7 @@ class BundlableLabelableBaseModelWithAttributes extends LabelableBaseModelWithAt
 		
 		// create new instance
 		if (!($t_dupe = $this->_DATAMODEL->getInstanceByTableName($this->tableName()))) { 
-			if ($vb_we_set_transaction) { $this->removeTransaction(false);}
+			if ($vb_we_set_transaction) { $o_t->rollback();}
 			return null;
 		}
 		$t_dupe->purify($this->purify());
@@ -309,7 +309,7 @@ class BundlableLabelableBaseModelWithAttributes extends LabelableBaseModelWithAt
 					$this->set($this->getProperty('HIERARCHY_ID_FLD'), null);
 				} else {
 					// Don't allow duping of hierarchy roots for non-adhoc hierarchies
-					if ($vb_we_set_transaction) { $this->removeTransaction(false);}
+					if ($vb_we_set_transaction) { $o_t->rollback();}
 					$this->postError(2055, _t("Cannot duplicate root of hierarchy"), "BundlableLabelableBaseModelWithAttributes->duplicate()");
 					return null;
 				}
@@ -373,8 +373,7 @@ class BundlableLabelableBaseModelWithAttributes extends LabelableBaseModelWithAt
 		
 		if ($t_dupe->numErrors()) {
 			$this->errors = $t_dupe->errors;
-			$this->removeTransaction(false);
-			if ($vb_we_set_transaction) { $this->removeTransaction(false);}
+			if ($vb_we_set_transaction) { $o_t->rollback();}
 			return false;
 		}
 		
@@ -392,7 +391,7 @@ class BundlableLabelableBaseModelWithAttributes extends LabelableBaseModelWithAt
 					);
 					if ($t_dupe->numErrors()) {
 						$this->errors = $t_dupe->errors;
-						if ($vb_we_set_transaction) { $this->removeTransaction(false);}
+						if ($vb_we_set_transaction) { $o_t->rollback();}
 						return false;
 					}
 				}
@@ -402,7 +401,8 @@ class BundlableLabelableBaseModelWithAttributes extends LabelableBaseModelWithAt
 		// duplicate attributes
 		if ($vb_duplicate_attributes) {
 			if (!$t_dupe->copyAttributesFrom($this->getPrimaryKey())) {
-				if ($vb_we_set_transaction) { $this->removeTransaction(false);}
+				$this->errors = $t_dupe->errors;
+				if ($vb_we_set_transaction) { $o_t->rollback();}
 				return false;
 			}
 		}
@@ -414,12 +414,12 @@ class BundlableLabelableBaseModelWithAttributes extends LabelableBaseModelWithAt
 			if (!in_array($vs_rel_table, $va_duplicate_relationships)) { continue; }
 			if ($this->copyRelationships($vs_rel_table, $t_dupe->getPrimaryKey()) === false) {
 				$this->errors = $t_dupe->errors;
-				if ($vb_we_set_transaction) { $this->removeTransaction(false);}
+				if ($vb_we_set_transaction) { $o_t->rollback();}
 				return false;
 			}
 		}
 		
-		if ($vb_we_set_transaction) { $this->removeTransaction(true);}
+		if ($vb_we_set_transaction) { $o_t->commit();}
 		return $t_dupe;
 	}	
 	# ------------------------------------------------------
@@ -544,12 +544,15 @@ class BundlableLabelableBaseModelWithAttributes extends LabelableBaseModelWithAt
 							unset($va_template_opts['template']);
 							$va_template_opts['returnAsLink'] = false;
 							$va_template_opts['returnAsArray'] = true;
+							$va_template_opts['requireLinkTags'] = true;
 						
 							$va_ids = array();
 							if (is_array($va_rel_items = $this->get($va_tmp[0], $va_template_opts))) {
 								foreach($va_rel_items as $vn_rel_id => $va_rel_item) {
 									$va_ids[] = $va_rel_item[$vs_pk];
 									$va_template_opts['relationshipValues'][$va_rel_item[$vs_pk]][$va_rel_item['relation_id']]['relationship_typename'] = $va_rel_item['relationship_typename'];
+									$va_template_opts['relationshipValues'][$va_rel_item[$vs_pk]][$va_rel_item['relation_id']]['relationship_type_id'] = $va_rel_item['relationship_type_id'];
+									$va_template_opts['relationshipValues'][$va_rel_item[$vs_pk]][$va_rel_item['relation_id']]['label'] = $va_rel_item['label'];
 								}
 							} else {
 								$va_rel_items = array();
@@ -598,6 +601,7 @@ class BundlableLabelableBaseModelWithAttributes extends LabelableBaseModelWithAt
 						unset($va_template_opts['template']);
 						$va_template_opts['returnAsLink'] = false;
 						$va_template_opts['returnAsArray'] = true;
+						$va_template_opts['requireLinkTags'] = true;
 						
 						$va_ids = array();
 						if (is_array($va_rel_items = $this->get($va_tmp[0], $va_template_opts))) {
@@ -1306,7 +1310,7 @@ class BundlableLabelableBaseModelWithAttributes extends LabelableBaseModelWithAt
 						if ($this->_CONFIG->get($ps_bundle_name.'_disable')) { break; }		// don't display if master "disable" switch is set
 						
 						$pa_lot_options = array('batch' => $vb_batch);
-						if ($vn_lot_id = $pa_options['request']->getParameter('lot_id', pInteger)) {
+						if (($this->tableName() != 'ca_object_lots') && ($vn_lot_id = $pa_options['request']->getParameter('lot_id', pInteger))) {
 							$pa_lot_options['force'][] = $vn_lot_id;
 						}
 						$vs_element = $this->getRelatedHTMLFormBundle($pa_options['request'], $pa_options['formName'].'_'.$ps_bundle_name, $ps_bundle_name, $ps_placement_code, $pa_bundle_settings, $pa_lot_options);	
@@ -1744,7 +1748,14 @@ class BundlableLabelableBaseModelWithAttributes extends LabelableBaseModelWithAt
 						# --------------------
 						default:
 							if ($va_tmp[0] != $this->tableName()) {
-								return caHTMLTextInput($ps_field, array('value' => $pa_options['values'][$ps_field], 'size' => $pa_options['width'], 'id' => str_replace('.', '_', $ps_field)));
+								switch(sizeof($va_tmp)) {
+									case 1:
+										return caHTMLTextInput($ps_field, array('value' => $pa_options['values'][$ps_field], 'size' => $pa_options['width'], 'id' => str_replace('.', '_', $ps_field)));
+									case 2:
+									case 3:
+										return $t_instance->htmlFormElementForSearch($po_request, $ps_field, $pa_options);
+										break;
+								}
 							}
 							break;
 						# --------------------
@@ -3491,6 +3502,23 @@ if (!$vb_batch) {
  	}
  	# ------------------------------------------------------
  	/**
+ 	 *
+ 	 */
+ 	public function getRelatedItemsAsSearchResult($pm_rel_table_name_or_num, $pa_options=null) {
+ 		if (is_array($va_related_items = $this->getRelatedItems($pm_rel_table_name_or_num, $pa_options))) {
+ 			$vs_pk = $this->getAppDataModel()->getTablePrimaryKeyName($pm_rel_table_name_or_num);
+ 			
+ 			$va_ids = array();
+ 			foreach($va_related_items as $vn_relation_id => $va_item) {
+ 				$va_ids[] = $va_item[$vs_pk];
+ 			}
+ 			
+ 			return $this->makeSearchResult($pm_rel_table_name_or_num, $va_ids);
+ 		}
+ 		return null;
+ 	}
+ 	# ------------------------------------------------------
+ 	/**
  	 * Returns list of items in the specified table related to the currently loaded row.
  	 * 
  	 * @param $pm_rel_table_name_or_num - the table name or table number of the item type you want to get a list of (eg. if you are calling this on an ca_objects instance passing 'ca_entities' here will get you a list of entities related to the object)
@@ -4259,15 +4287,16 @@ $pa_options["display_form_field_tips"] = true;
 		$pn_table_num = $this->getAppDataModel()->getTableNum($pm_rel_table_name_or_num);
 		if (!($t_instance = $this->getAppDataModel()->getInstanceByTableNum($pn_table_num))) { return null; }
 	
-		foreach($pa_ids as $vn_id) {
-			if (!is_numeric($vn_id)) { 
-				return false;
+		$va_ids = array();
+		foreach($pa_ids as $vn_i => $vn_id) {
+			if (is_numeric($vn_id)) { 
+				$va_ids[] = $vn_id;
 			}
 		}
 	
 		if (!($vs_search_result_class = $t_instance->getProperty('SEARCH_RESULT_CLASSNAME'))) { return null; }
 		require_once(__CA_LIB_DIR__.'/ca/Search/'.$vs_search_result_class.'.php');
-		$o_data = new WLPlugSearchEngineCachedResult($pa_ids, $t_instance->tableNum());
+		$o_data = new WLPlugSearchEngineCachedResult($va_ids, $t_instance->tableNum());
 		$o_res = new $vs_search_result_class();
 		$o_res->init($o_data, array());
 		

@@ -4,7 +4,7 @@
 	line-height: 0%; /*without this, there will be a weird bottom space..*/
 }
 .tileviewer #canvas {
-	border: 1px #cc0000 solid;
+	
 }
 
 .tileviewer #annotationCanvas {
