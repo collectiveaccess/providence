@@ -704,13 +704,13 @@ class ExpressionParser {
 					break;
 				case EEP_TOKEN_IN_OP:
 					foreach($va_operand1 as $vm_operand1) {
-						if (in_array($vm_operand1, $vm_operand2)) { return true; }
+						if (in_array($vm_operand1, $va_operand2)) { return true; }
 					}
 					return false;
 					break;
 				case EEP_TOKEN_NOT_IN_OP:
 					foreach($va_operand1 as $vm_operand1) {
-						if (!in_array($vm_operand1, $vm_operand2)) { return true; }
+						if (!in_array($vm_operand1, $va_operand2)) { return true; }
 					}
 					return false;
 					break;
