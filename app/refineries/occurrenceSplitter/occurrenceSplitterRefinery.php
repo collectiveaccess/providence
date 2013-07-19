@@ -30,7 +30,7 @@
  
 	class occurrenceSplitterRefinery extends BaseRefinery {
 		# -------------------------------------------------------
-		
+		private $opb_returns_multiple_values = true;
 		# -------------------------------------------------------
 		public function __construct() {
 			$this->ops_name = 'occurrenceSplitter';
@@ -56,6 +56,7 @@
 		 *
 		 */
 		public function refine(&$pa_destination_data, $pa_group, $pa_item, $pa_source_data, $pa_options=null) {
+			$this->opb_returns_multiple_values = true;
 			$o_log = (isset($pa_options['log']) && is_object($pa_options['log'])) ? $pa_options['log'] : null;
 			
 			$va_group_dest = explode(".", $pa_group['destination']);
@@ -78,11 +79,12 @@
 				if (!$vs_occurrence = trim($vs_occurrence)) { continue; }
 				
 				if($vs_terminal == 'name') {
+					$this->opb_returns_multiple_values = false;
 					return $vs_occurrence;
 				}
 			
 				if (in_array($vs_terminal, array('preferred_labels', 'nonpreferred_labels'))) {
-					return array('name' => $vs_occurrence);	
+					return array(0 => array('name' => $vs_occurrence));	
 				}
 			
 				// Set label
@@ -158,10 +160,10 @@
 		/**
 		 * occurrenceSplitter returns multiple values
 		 *
-		 * @return bool Always true
+		 * @return bool
 		 */
 		public function returnsMultipleValues() {
-			return true;
+			return $this->opb_returns_multiple_values;
 		}
 		# -------------------------------------------------------
 	}
