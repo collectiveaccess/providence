@@ -4449,10 +4449,14 @@ class BaseModel extends BaseObject {
 						$vs_sql .= " ".$vs_metadata_field_name." = ".$this->quote(caSerializeForDatabase($media_metadata, true)).",";
 					}
 				
-					
 					if (($vs_content_field_name = $o_media_proc_settings->getMetadataContentName()) && $this->hasField($vs_content_field_name)) {
 						$this->_FIELD_VALUES[$vs_content_field_name] = $this->quote($m->getExtractedText());
 						$vs_sql .= " ".$vs_content_field_name." = ".$this->_FIELD_VALUES[$vs_content_field_name].",";
+					}
+					
+					if (($vs_content_location_field_name = $o_media_proc_settings->getMetadataContentLocationsName()) && $this->hasField($vs_content_location_field_name)) {
+						$this->set($vs_content_location_field_name, $va_extracted_text_locations = $m->getExtractedTextLocations());
+						$vs_sql .= " ".$vs_content_location_field_name." = ".$this->quote(caSerializeForDatabase($va_extracted_text_locations, true)).",";
 					}
 				} else {
 					# error - invalid media
