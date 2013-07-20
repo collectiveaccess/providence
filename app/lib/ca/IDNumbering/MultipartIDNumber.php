@@ -610,7 +610,7 @@
 		
 			$vn_i = 0;
 			
-			$va_output = array();
+			$va_output = array(join($vs_separator, $va_element_vals));
 			$vn_max_value_count = 0;
 			
 			// element-specific processing
