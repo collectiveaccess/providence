@@ -427,6 +427,7 @@ create table ca_object_representations
    media                          longblob                       not null,
    media_metadata                 longblob                       null,
    media_content                  longtext                       null,
+   media_content_locations        longblob                       null,
    deleted                        tinyint unsigned               not null default 0,
    is_template                    tinyint unsigned               not null default 0,
    commenting_status              tinyint unsigned               not null default 0,
@@ -6789,5 +6790,5 @@ create table ca_schema_updates (
 ) engine=innodb CHARACTER SET utf8 COLLATE utf8_general_ci;
 
 /* Indicate up to what migration this schema definition covers */
-/* CURRENT MIGRATION: 88 */
-INSERT IGNORE INTO ca_schema_updates (version_num, datetime) VALUES (88, unix_timestamp());
+/* CURRENT MIGRATION: 89 */
+INSERT IGNORE INTO ca_schema_updates (version_num, datetime) VALUES (89, unix_timestamp());

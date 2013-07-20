@@ -122,6 +122,17 @@ BaseModel::$s_ca_models_definitions['ca_object_representations'] = array(
 				
 				'LABEL' => _t('Media content'), 'DESCRIPTION' => _t('Media content')
 		),
+		'media_content_locations' => array(
+				'FIELD_TYPE' => FT_VARS, 'DISPLAY_TYPE' => DT_OMIT, 
+				'DISPLAY_WIDTH' => 88, 'DISPLAY_HEIGHT' => 15,
+				'IS_NULL' => true, 
+				'DEFAULT' => '',
+				'DONT_PROCESS_DURING_INSERT_UPDATE' => true,
+				
+				'ALLOW_BUNDLE_ACCESS_CHECK' => true,
+				
+				'LABEL' => _t('Media content locations'), 'DESCRIPTION' => 'Location of content within document. Used for in-document searching'
+		),
 		'md5' => array(
 				'FIELD_TYPE' => FT_TEXT, 'DISPLAY_TYPE' => DT_FIELD, 
 				'DISPLAY_WIDTH' => 40, 'DISPLAY_HEIGHT' => 1,
