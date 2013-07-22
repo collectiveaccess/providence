@@ -1767,6 +1767,26 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 				$o_log->logDebug(_t('Updated idno %1 at %2 seconds', $vs_idno, $t->getTime(4)));
 			}
 			
+			// Mark self-relations as related
+			foreach($va_content_tree as $vs_table_name => $va_content) {
+				if ($vs_table_name == $vs_subject_table) {	
+					$va_self_relations = array();
+					$va_primary_data = array();
+					foreach($va_content as $vn_i => $va_element_data) {
+						if(isset($va_element_data['_relationship_type'])) {
+							print "self";
+							$va_self_relations[] = $va_element_data;
+						} else {
+							print "primary";
+							$va_primary_data[] = $va_element_data;
+						}
+					}
+					if(sizeof($va_self_relations) > 0) {
+						$va_content_tree[$vs_table_name] = $va_primary_data;
+						$va_content_tree["{$vs_table_name}_RELATED"] = $va_self_relations;
+					} 
+				}
+			}
 		
 			foreach($va_content_tree as $vs_table_name => $va_content) {
 				if ($vs_table_name == $vs_subject_table) {		
@@ -1862,6 +1882,7 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 					} 
 				} else {
 					// related
+					$vs_table_name = preg_replace('!_RELATED$!', '', $vs_table_name);
 					
 					foreach($va_content as $vn_i => $va_element_data) {
 							$va_data_for_rel_table = $va_element_data;
