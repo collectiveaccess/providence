@@ -128,6 +128,13 @@ DV.model.Annotations.prototype = {
     this.viewer.api.redraw(true);
     if (_.isEmpty(this.byId)) this.viewer.open('ViewDocument');
   },
+  
+  // Kill all annotations
+  removeAllAnnotations : function(anno) {
+ 	for(var k in this.byId) {
+ 		this.removeAnnotation(this.byId[k]);
+ 	}
+  },
 
   // Offsets all document pages based on interleaved page annotations.
   updateAnnotationOffsets: function(){

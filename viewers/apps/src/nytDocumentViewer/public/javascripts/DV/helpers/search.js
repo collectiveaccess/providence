@@ -151,6 +151,28 @@ _.extend(DV.Schema.helpers, {
 
     this.elements.window[0].scrollTop = match.position().top - 50;
     if (searchResponse) searchResponse.highlighted = index;
+    
+    // Remove any existing annotations 
+    this.viewer.api.removeAllAnnotations();
+    
+    // Add ones for the current search
+    var firstPage = null;
+    for(var p in searchResponse.locations) {
+    	if (firstPage == null) { firstPage = p; }
+    	for(var l in searchResponse.locations[p]) {
+			var loc = searchResponse.locations[p][l];
+			var locStr = parseInt(loc.x1) + ", " + parseInt(loc.y1) + ", " + parseInt(loc.x2) + ", " + parseInt(loc.y2);
+			//console.log("create annotation at", locStr);
+			this.viewer.api.addAnnotation({
+			  title     : searchResponse.query,
+			  page      : p,
+			  content   : '',
+			  location  : { 'image': locStr }
+			});
+		}
+	}
+	
+	if (firstPage != null) { this.viewer.api.setCurrentPage(firstPage); }
 
     // cleanup
     highlightsOnThisPage = null;

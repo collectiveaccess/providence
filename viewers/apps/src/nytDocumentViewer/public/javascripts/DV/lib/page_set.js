@@ -178,7 +178,6 @@ DV.PageSet.prototype.showAnnotation = function(argHash, showHash){
       this.viewer.activeAnnotation.hide();
     }
     this.setActiveAnnotation(argHash.id, showHash.edit);
-
     var isPage = this.viewer.models.annotations.byId[argHash.id].type == 'page';
     var nudge  = isPage ? -7 : 36;
     var offset = argHash.top - nudge;

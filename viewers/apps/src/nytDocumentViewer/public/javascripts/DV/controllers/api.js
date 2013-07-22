@@ -205,6 +205,10 @@ DV.Api.prototype = {
     this.viewer.pageSet.showAnnotation(anno, {active: true, edit : true});
     return anno;
   },
+  
+  removeAllAnnotations : function() {
+  	this.viewer.models.annotations.removeAllAnnotations();
+  },
 
   // Register a callback for when an annotation is saved.
   onAnnotationSave : function(callback) {
@@ -230,6 +234,7 @@ DV.Api.prototype = {
 
   // set the state. This takes "ViewDocument," "ViewThumbnails", "ViewText"
   setState : function(state) {
+  	console.log("state", state);
     this.viewer.open(state);
   },
 
