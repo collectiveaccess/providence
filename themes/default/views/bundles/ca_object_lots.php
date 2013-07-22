@@ -233,6 +233,7 @@
 		caRelationBundle<?php print $vs_id_prefix; ?> = caUI.initRelationBundle('#<?php print $vs_id_prefix.$t_item->tableNum().'_rel'; ?>', {
 			fieldNamePrefix: '<?php print $vs_id_prefix; ?>_',
 			initialValues: <?php print json_encode($va_initial_values); ?>,
+			initialValueOrder: <?php print json_encode(array_keys($va_initial_values)); ?>,
 			forceNewValues: <?php print json_encode($va_force_new_values); ?>,
 			itemID: '<?php print $vs_id_prefix; ?>Item_',
 			templateClassName: 'caNewItemTemplate',

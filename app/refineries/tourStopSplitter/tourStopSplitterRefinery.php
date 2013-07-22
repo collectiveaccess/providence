@@ -30,7 +30,7 @@
  
 	class tourStopSplitterRefinery extends BaseRefinery {
 		# -------------------------------------------------------
-		
+		private $opb_returns_multiple_values = true;
 		# -------------------------------------------------------
 		public function __construct() {
 			$this->ops_name = 'tourStopSplitter';
@@ -56,6 +56,7 @@
 		 *
 		 */
 		public function refine(&$pa_destination_data, $pa_group, $pa_item, $pa_source_data, $pa_options=null) {
+			$this->opb_returns_multiple_values = true;
 			$o_log = (isset($pa_options['log']) && is_object($pa_options['log'])) ? $pa_options['log'] : null;
 			
 			$va_group_dest = explode(".", $pa_group['destination']);
@@ -78,11 +79,12 @@
 				if (!$vs_tour_stop = trim($vs_tour_stop)) { continue; }
 				
 				if(in_array($vs_terminal, array('name_singular', 'name_plural'))) {
+					$this->opb_returns_multiple_values = false;
 					return $vs_tour_stop;
 				}
 			
 				if (in_array($vs_terminal, array('preferred_labels', 'nonpreferred_labels'))) {
-					return array('name_singular' => $vs_tour_stop, 'name_plural' => $vs_tour_stop);	
+					return array(0 => array('name_singular' => $vs_tour_stop, 'name_plural' => $vs_tour_stop));	
 				}
 			
 				// Set label
@@ -163,10 +165,10 @@
 		/**
 		 * tourStopSplitter returns multiple values
 		 *
-		 * @return bool Always true
+		 * @return bool
 		 */
 		public function returnsMultipleValues() {
-			return true;
+			return $this->opb_returns_multiple_values;
 		}
 		# -------------------------------------------------------
 	}

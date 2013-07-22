@@ -283,6 +283,7 @@
 			fieldNamePrefix: '<?php print $vs_id_prefix; ?>_',
 			templateValues: ['label', 'id', 'type_id', 'typename', 'idno', 'label', 'idno_sort'],
 			initialValues: <?php print json_encode($va_initial_values); ?>,
+			initialValueOrder: <?php print json_encode(array_keys($va_initial_values)); ?>,
 			itemID: '<?php print $vs_id_prefix; ?>Item_',
 			templateClassName: 'caNewItemTemplate',
 			initialValueTemplateClassName: 'caItemTemplate',

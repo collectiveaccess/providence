@@ -30,7 +30,7 @@
  
 	class listItemSplitterRefinery extends BaseRefinery {
 		# -------------------------------------------------------
-		
+		private $opb_returns_multiple_values = true;
 		# -------------------------------------------------------
 		public function __construct() {
 			$this->ops_name = 'listItemSplitter';
@@ -56,6 +56,7 @@
 		 *
 		 */
 		public function refine(&$pa_destination_data, $pa_group, $pa_item, $pa_source_data, $pa_options=null) {
+			$this->opb_returns_multiple_values = true;
 			global $g_ui_locale_id;
 			$o_log = (isset($pa_options['log']) && is_object($pa_options['log'])) ? $pa_options['log'] : null;
 			
@@ -82,11 +83,12 @@
 				if (!$vs_list_item = trim($vs_list_item)) { continue; }
 				
 				if(in_array($vs_terminal, array('name_singular', 'name_plural'))) {
+					$this->opb_returns_multiple_values = false;
 					return $vs_list_item;
 				}
 			
 				if (in_array($vs_terminal, array('preferred_labels', 'nonpreferred_labels'))) {
-					return array('name_singular' => $vs_list_item, 'name_plural' => $vs_list_item);	
+					return array(0 => array('name_singular' => $vs_list_item, 'name_plural' => $vs_list_item));	
 				}
 			
 				// Set label
@@ -178,10 +180,10 @@
 		/**
 		 * listItemSplitter returns multiple values
 		 *
-		 * @return bool Always true
+		 * @return bool
 		 */
 		public function returnsMultipleValues() {
-			return true;
+			return $this->opb_returns_multiple_values;
 		}
 		# -------------------------------------------------------
 	}
