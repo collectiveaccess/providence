@@ -91,7 +91,6 @@
 				}
 			
 				if (in_array($vs_terminal, array('preferred_labels', 'nonpreferred_labels'))) {
-					$this->opb_returns_multiple_values = true;
 					return array(0 => array($vs_terminal => $va_split_name));	
 				}
 			
@@ -189,7 +188,7 @@
 		/**
 		 * entitySplitter returns multiple values
 		 *
-		 * @return bool Always true
+		 * @return bool
 		 */
 		public function returnsMultipleValues() {
 			return $this->opb_returns_multiple_values;
