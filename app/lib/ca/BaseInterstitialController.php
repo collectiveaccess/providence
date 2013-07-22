@@ -108,33 +108,36 @@
  			
  			$t_ui = ca_editor_uis::loadDefaultUI($this->ops_table_name, $this->request, $vn_type_id, array('editorPref' => 'interstitial'));
  			
- 			// Get default screen (this is all we show in quickadd, even if the UI has multiple screens)
- 			$va_nav = $t_ui->getScreensAsNavConfigFragment($this->request, $vn_type_id, $this->request->getModulePath(), $this->request->getController(), $this->request->getAction(),
-				array(),
-				array()
-			);
  			
-			$this->view->setVar('t_ui', $t_ui);
-			$this->view->setVar('screen', $va_nav['defaultScreen']);
 			
-			$va_field_values = $t_subject->extractValuesFromRequest($va_nav['defaultScreen'], $this->request, array('ui_instance' => $t_ui, 'dontReturnSerialIdno' => true));
-			
-			
-			
-			if (!$t_ui->getPrimaryKey()) {
+			if (!$t_ui || !$t_ui->getPrimaryKey()) {
 				$this->notification->addNotification(_t('There is no configuration available for this editor. Check your system configuration and ensure there is at least one valid configuration for this type of editor.'), __NOTIFICATION_TYPE_ERROR__);
+				$va_field_values = array();
+			} else {
+				// Get default screen (this is all we show in quickadd, even if the UI has multiple screens)
+				$va_nav = $t_ui->getScreensAsNavConfigFragment($this->request, $vn_type_id, $this->request->getModulePath(), $this->request->getController(), $this->request->getAction(),
+					array(),
+					array()
+				);
+ 			
+				$this->view->setVar('t_ui', $t_ui);
+				$this->view->setVar('screen', $va_nav['defaultScreen']);
+				
+				$va_field_values = $t_subject->extractValuesFromRequest($va_nav['defaultScreen'], $this->request, array('ui_instance' => $t_ui, 'dontReturnSerialIdno' => true));
 			}
-			
+		
+		
 			# Trigger "EditItem" hook 
 			$this->opo_app_plugin_manager->hookEditItem(array('id' => null, 'table_num' => $t_subject->tableNum(), 'table_name' => $t_subject->tableName(), 'instance' => $t_subject));
-			
+		
 			// Set form unique identifiers
 			$this->view->setVar('fieldNamePrefix', $_REQUEST['_formName']);
 			$this->view->setVar('n', $vs_n);
-			
+		
 			$this->view->setVar('q', $this->request->getParameter('q', pString));
-			
+		
 			$this->view->setVar('default_parent_id', $this->opo_result_context->getParameter($t_subject->tableName().'_last_parent_id'));
+		
 			
 			$this->render('interstitial/interstitial_html.php');
  		}

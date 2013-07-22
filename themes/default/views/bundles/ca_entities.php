@@ -67,14 +67,10 @@
 		<div id="<?php print $vs_id_prefix; ?>Item_{n}" class="labelInfo listRel caRelatedItem">
 <?php
 	if (!$vb_read_only) {
-?>				
-			<a href="#" class="caEditRelButton listRelEditButton">E<?php print caNavIcon($this->request, __CA_NAV_BUTTON_EDIT_BUNDLE__); ?></a>
-<?php
+?><a href="#" class="caInterstitialEditButton listRelEditButton"><?php print caNavIcon($this->request, __CA_NAV_BUTTON_INTERSTITIAL_EDIT_BUNDLE__); ?></a><?php
 	}
 	if (!$vb_read_only && !$vb_dont_show_del) {
-?>				
-			<a href="#" class="caDeleteItemButton listRelDeleteButton"><?php print caNavIcon($this->request, __CA_NAV_BUTTON_DEL_BUNDLE__); ?></a>
-<?php
+?><a href="#" class="caDeleteItemButton listRelDeleteButton"><?php print caNavIcon($this->request, __CA_NAV_BUTTON_DEL_BUNDLE__); ?></a><?php
 	}
 ?>
 			<a href="<?php print urldecode(caEditorUrl($this->request, 'ca_occurrences', '{occurrence_id}')); ?>" class="caEditItemButton" id="<?php print $vs_id_prefix; ?>_edit_related_{n}"></a>
@@ -98,14 +94,10 @@
 			<input type="hidden" name="<?php print $vs_id_prefix; ?>_id{n}" id="<?php print $vs_id_prefix; ?>_id{n}" value="{id}"/>
 <?php
 	if (!$vb_read_only) {
-?>				
-			<a href="#" class="caEditRelButton listRelEditButton">E<?php print caNavIcon($this->request, __CA_NAV_BUTTON_EDIT_BUNDLE__); ?></a>
-<?php
+?><a href="#" class="caInterstitialEditButton listRelEditButton"><?php print caNavIcon($this->request, __CA_NAV_BUTTON_INTERSTITIAL_EDIT_BUNDLE__); ?></a><?php
 	}
 	if (!$vb_read_only && !$vb_dont_show_del) {
-?>			
-			<a href="#" class="caDeleteItemButton"><?php print caNavIcon($this->request, __CA_NAV_BUTTON_DEL_BUNDLE__); ?></a>
-<?php
+?><a href="#" class="caDeleteItemButton"><?php print caNavIcon($this->request, __CA_NAV_BUTTON_DEL_BUNDLE__); ?></a><?php
 	}
 ?>			
 			<div style="display: none;" class="itemName">{surname}</div>
@@ -252,7 +244,7 @@
 			quickaddPanel: caRelationQuickAddPanel<?php print $vs_id_prefix; ?>,
 			quickaddUrl: '<?php print caNavUrl($this->request, 'editor/entities', 'EntityQuickAdd', 'Form', array('entity_id' => 0)); ?>',
 			
-			interstitialButtonClassName: 'caEditRelButton',
+			interstitialButtonClassName: 'caInterstitialEditButton',
 			interstitialPanel: caRelationEditorPanel<?php print $vs_id_prefix; ?>,
 			interstitialUrl: '<?php print caNavUrl($this->request, 'editor', 'Interstitial', 'Form', array('t' => $t_item_rel->tableName())); ?>',
 			firstItemColor: '<?php print $vs_first_color; ?>',

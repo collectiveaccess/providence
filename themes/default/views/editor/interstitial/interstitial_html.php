@@ -57,12 +57,19 @@
 <?php
 
 			
-			$va_form_elements = $t_subject->getBundleFormHTMLForScreen($this->getVar('screen'), array(
+			if(is_array($va_form_elements = $t_subject->getBundleFormHTMLForScreen($this->getVar('screen'), array(
 					'request' => $this->request, 
 					'formName' => $vs_form_name.$vs_field_name_prefix.$vs_n
-			));
+			)))) {
 			
-			print join("\n", $va_form_elements);
+				print join("\n", $va_form_elements);
+			} else {
+			
+			//TODO better errors
+?>
+	<h2><?php print _t("No user interface defined"); ?></h2>
+<?php
+			}
 ?>
 		<input type='hidden' name='_formName' value='<?php print $vs_form_name.$vs_field_name_prefix.$vs_n; ?>'/>
 		<input type='hidden' name='screen' value='<?php print htmlspecialchars($this->getVar('screen')); ?>'/>

@@ -1790,7 +1790,7 @@ class BundlableLabelableBaseModelWithAttributes extends LabelableBaseModelWithAt
  		} else {
  			$t_ui = ca_editor_uis::loadDefaultUI($this->tableName(), $pa_options['request'], $this->getTypeID());
  		}
- 		
+ 		if (!$t_ui) { return false; }
  		if (isset($pa_options['bundles']) && is_array($pa_options['bundles'])) {
  			$va_bundles = $pa_options['bundles'];
  		} else {
@@ -2172,6 +2172,7 @@ class BundlableLabelableBaseModelWithAttributes extends LabelableBaseModelWithAt
 	 *
 	 */
 	protected function getBundleListsForScreen($pm_screen, $po_request, $t_ui, $pa_options=null) {
+		if(!$t_ui) { return; }
 		$va_bundles = $t_ui->getScreenBundlePlacements($pm_screen);
 		
 		// sort fields by type
