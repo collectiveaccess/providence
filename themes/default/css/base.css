@@ -4238,12 +4238,16 @@ div.listRel {
 	border-radius: 6px;
 }
 
-.roundedRel .caDeleteItemButton {
+.roundedRel .caDeleteItemButton, .roundedRel .caInterstitialEditButton {
 	position: relative;
 	top: 3px;
 }
 
-.listRel .caDeleteItemButton {
+.listRel .caDeleteItemButton, .listRel .caInterstitialEditButton {
+	float: right;
+}
+
+.listRel .caInterstitialEditButton {
 	float: right;
 }
 

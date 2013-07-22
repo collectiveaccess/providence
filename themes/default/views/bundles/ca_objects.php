@@ -138,10 +138,11 @@
 			<input type="hidden" name="<?php print $vs_id_prefix; ?>_type_id{n}" id="<?php print $vs_id_prefix; ?>_type_id{n}" value="{type_id}"/>
 			<input type="hidden" name="<?php print $vs_id_prefix; ?>_id{n}" id="<?php print $vs_id_prefix; ?>_id{n}" value="{id}"/>
 <?php
+	if (!$vb_read_only) {
+?><a href="#" class="caInterstitialEditButton listRelEditButton"><?php print caNavIcon($this->request, __CA_NAV_BUTTON_INTERSTITIAL_EDIT_BUNDLE__); ?></a><?php
+	}
 	if (!$vb_read_only && !$vb_dont_show_del) {
-?>				
-			<a href="#" class="caDeleteItemButton"><?php print caNavIcon($this->request, __CA_NAV_BUTTON_DEL_BUNDLE__); ?></a>
-<?php
+?><a href="#" class="caDeleteItemButton"><?php print caNavIcon($this->request, __CA_NAV_BUTTON_DEL_BUNDLE__); ?></a><?php
 	}
 ?>			
 			<div style="display: none;" class="itemName">{label}</div>
@@ -217,7 +218,14 @@
 ?>
 	</div>
 </div>
-			
+		
+<div id="caRelationEditorPanel<?php print $vs_id_prefix; ?>" class="caRelationQuickAddPanel"> 
+	<div id="caRelationEditorPanel<?php print $vs_id_prefix; ?>ContentArea">
+	<div class='dialogHeader'><?php print _t('Relation editor', $t_item->getProperty('NAME_SINGULAR')); ?></div>
+		
+	</div>
+</div>			
+	
 <script type="text/javascript">
 	var caRelationBundle<?php print $vs_id_prefix; ?>;
 	jQuery(document).ready(function() {
@@ -244,6 +252,10 @@
 			listSortItems: 'div.roundedRel',
 			firstItemColor: '<?php print $vs_first_color; ?>',
 			lastItemColor: '<?php print $vs_last_color; ?>',
+			
+			interstitialButtonClassName: 'caInterstitialEditButton',
+			interstitialPanel: caRelationEditorPanel<?php print $vs_id_prefix; ?>,
+			interstitialUrl: '<?php print caNavUrl($this->request, 'editor', 'Interstitial', 'Form', array('t' => $t_item_rel->tableName())); ?>',
 <?php
 	if ($t_subject->tableName() == 'ca_object_representations') {
 ?>

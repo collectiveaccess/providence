@@ -57,7 +57,7 @@
 		}
 	}
 
-	// params to pass during occurrence lookup
+	// params to pass during lookup
 	$va_lookup_params = (isset($va_settings['restrict_to_type']) && $va_settings['restrict_to_type']) ? array('type' => $va_settings['restrict_to_type'], 'noSubtypes' => (int)$va_settings['dont_include_subtypes_in_type_restriction']) : array();
 
 	if ($vb_batch) {
@@ -127,9 +127,10 @@
 			<input type="hidden" name="<?php print $vs_id_prefix; ?>_id{n}" id="<?php print $vs_id_prefix; ?>_id{n}" value="{id}"/>
 <?php
 	if (!$vb_read_only) {
-?>				
-			<a href="#" class="caDeleteItemButton"><?php print caNavIcon($this->request, __CA_NAV_BUTTON_DEL_BUNDLE__); ?></a>
-<?php
+?><a href="#" class="caInterstitialEditButton listRelEditButton"><?php print caNavIcon($this->request, __CA_NAV_BUTTON_INTERSTITIAL_EDIT_BUNDLE__); ?></a><?php
+	}
+	if (!$vb_read_only) {
+?><a href="#" class="caDeleteItemButton"><?php print caNavIcon($this->request, __CA_NAV_BUTTON_DEL_BUNDLE__); ?></a><?php
 	}
 ?>		
 			<div style="display: none;" class="itemName">{label}</div>
@@ -205,6 +206,13 @@
 		
 	</div>
 </div>	
+<div id="caRelationEditorPanel<?php print $vs_id_prefix; ?>" class="caRelationQuickAddPanel"> 
+	<div id="caRelationEditorPanel<?php print $vs_id_prefix; ?>ContentArea">
+	<div class='dialogHeader'><?php print _t('Relation editor', $t_item->getProperty('NAME_SINGULAR')); ?></div>
+		
+	</div>
+</div>	
+
 <script type="text/javascript">
 	var caRelationQuickAddPanel<?php print $vs_id_prefix; ?>;
 	var caRelationBundle<?php print $vs_id_prefix; ?>;
@@ -258,6 +266,10 @@
 			templateValues: ['label', 'idno_stub', 'id', 'type_id'],
 			firstItemColor: '<?php print $vs_first_color; ?>',
 			lastItemColor: '<?php print $vs_last_color; ?>',
+			
+			interstitialButtonClassName: 'caInterstitialEditButton',
+			interstitialPanel: caRelationEditorPanel<?php print $vs_id_prefix; ?>,
+			interstitialUrl: '<?php print caNavUrl($this->request, 'editor', 'Interstitial', 'Form', array('t' => $t_subject->tableName())); ?>',
 <?php
 	}
 ?>
