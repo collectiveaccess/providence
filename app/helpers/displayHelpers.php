@@ -1762,7 +1762,6 @@ require_once(__CA_LIB_DIR__."/ca/ApplicationPluginManager.php");
 		$o_options = $o_dom->getElementsByTagName("options");
 		
 		
-		
 		$va_ifdefs = array();
 		foreach($o_ifdefs as $o_ifdef) {
 			if (!$o_ifdef) { continue; }
@@ -1871,6 +1870,16 @@ require_once(__CA_LIB_DIR__."/ca/ApplicationPluginManager.php");
 									$vs_get_spec .= ".preferred_labels";
 								}
 								$va_val = $qr_res->get($vs_get_spec, array_merge($pa_options, array('returnAsArray' => true)));
+								
+								if (($va_spec_bits[1] == 'hierarchy') || (($va_spec_bits[1] == 'related') && ($va_spec_bits[1] == 'hierarchy'))) {
+									$va_val_proc = array();
+									foreach($va_val as $vn_i => $va_hier) {
+										$va_val_proc[] = join(isset($va_tag_opts['delimiter']) ? $va_tag_opts['delimiter'] :  "; ", $va_hier);
+									}
+									$va_val = $va_val_proc;
+								}
+								
+								
 								$vb_is_related = true;
 								$va_related_ids = $qr_res->get($va_tmp[0].".".$o_dm->getTablePrimaryKeyName($va_tmp[0]), array('returnAsArray' => true));
 							} else {
