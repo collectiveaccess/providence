@@ -775,7 +775,7 @@ class WLPlugSearchEngineSqlSearch extends BaseSearchPlugin implements IWLPlugSea
 										$vn_fld_num = (int)$this->getFieldNum($vs_table, $vs_field);
 										$vs_fld_num = 'I'.$vn_fld_num;
 										
-										if (!$vn_fld_num) {
+										if (is_null($vn_fld_num)) {
 											$t_element = new ca_metadata_elements();
 											if ($t_element->load(array('element_code' => ($vs_sub_field ? $vs_sub_field : $vs_field)))) {
 												$vn_fld_num = $t_element->getPrimaryKey();

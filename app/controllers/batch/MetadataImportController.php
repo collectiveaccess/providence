@@ -54,6 +54,10 @@
  		#
  		# -------------------------------------------------------
  		public function __construct(&$po_request, &$po_response, $pa_view_paths=null) {
+ 			if (!$po_request->user->canDoAction('can_batch_import_metadata')) {
+ 				$po_response->setRedirect($po_request->config->get('error_display_url').'/n/3210?r='.urlencode($po_request->getFullUrlPath()));
+ 				return;
+ 			}
  			
  			JavascriptLoadManager::register('bundleableEditor');
  			JavascriptLoadManager::register('panel');
@@ -152,10 +156,8 @@
  		public function ImportData() {
  			$t_importer = $this->getImporterInstance();
  			
- 			// Can user batch import media?
- 			if (!$this->request->user->canDoAction('can_batch_import_media')) {
- 			//	$this->response->setRedirect($this->request->config->get('error_display_url').'/n/3210?r='.urlencode($this->request->getFullUrlPath()));
- 			//	return;
+ 			if (!$t_subject = $t_importer->getAppDatamodel()->getInstanceByTableNum($t_importer->get('table_num'), true)) {
+ 				return $this->Index();
  			}
  			
  			$va_options = array(
@@ -171,7 +173,7 @@
  			$va_last_settings['inputFormat'] = $this->request->getParameter("inputFormat", pString); 
  			$this->request->user->setVar('batch_metadata_last_settings', $va_last_settings);
  			
- 			$this->view->setVar("t_subject", $t_importer->getAppDatamodel()->getInstanceByTableNum($t_importer->get('table_num'), true));
+ 			$this->view->setVar("t_subject", $t_subject);
  		
 			// run now
 			$app = AppController::getInstance();

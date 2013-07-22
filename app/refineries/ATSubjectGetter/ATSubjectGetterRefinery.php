@@ -56,18 +56,13 @@
 		 *
 		 */
 		public function refine(&$pa_destination_data, $pa_group, $pa_item, $pa_source_data, $pa_options=null) {
+			$o_log = (isset($pa_options['log']) && is_object($pa_options['log'])) ? $pa_options['log'] : null;
+			$o_trans = (isset($pa_options['transaction']) && ($pa_options['transaction'] instanceof Transaction)) ? $pa_options['transaction'] : null;
+			
 			$va_group_dest = explode(".", $pa_group['destination']);
 			$vs_terminal = array_pop($va_group_dest);
 			
 			$vs_subject_table = $pa_options['subject']->tableName();
-			// $pm_value = $pa_source_data[$pa_item['source']];
-// 			
-// 			if ($vs_delimiter = $pa_item['settings']['ATSubjectGetter_delimiter']) {
-// 				$va_entities = explode($vs_delimiter, $pm_value);
-// 			} else {
-// 				$va_entities = array($pm_value);
-// 			}
-// 			
 
 			$va_url = parse_url($pa_options['source']);
 		
@@ -106,7 +101,6 @@
 			while($qr_rel_names->nextRow()) {
 				// Extract item values from record
 				$va_row = $qr_rel_names->getRow();
-			//print_r($va_row); 
 				$va_split_name = array();
 				
 				// TODO: create hierarchy...
@@ -115,13 +109,13 @@
 				$vs_subject_source = $va_row['subjectSource'];
 				
 				// split name ...
-						$va_split_name = array();
-						$va_split_name['name_singular'] = $vs_subject;
-						$va_split_name['name_plural'] = $vs_subject;
-						$va_split_name['description'] = "{$vs_subject_type}\n\n{$vs_subject_source}";
+				$va_split_name = array();
+				$va_split_name['name_singular'] = $vs_subject;
+				$va_split_name['name_plural'] = $vs_subject;
+				$va_split_name['description'] = "{$vs_subject_type}\n\n{$vs_subject_source}";
 				
 				if (!($va_target = $va_targets[$vs_subject_source])) { 
-					print "no target for {$vs_subject_source}\n";
+					if ($o_log) { $o_log->logError(_t("[ATSubjectGetterRefinery] No target for %1", $vs_subject_source)); }
 					continue;
 				}
 				
@@ -145,10 +139,7 @@
 			
 			
 				// Set item_type
-				if (
-					($va_item_type)
-				) {
-					
+				if ($va_item_type) {
 					if (!($va_val['_type'] = BaseRefinery::parsePlaceholder($va_item_type, $pa_source_data, $pa_item, $vs_delimiter, $vn_c))) {
 						if($vs_type_opt = $pa_item['settings']['ATSubjectGetter_itemTypeDefault']) {
 							$va_val['_type'] = BaseRefinery::parsePlaceholder($vs_type_opt, $pa_source_data, $pa_item, $vs_delimiter, $vn_c);
@@ -169,7 +160,7 @@
 						}
 					}	
 					
-				$va_val['list_id'] = $va_target['list'];
+					$va_val['list_id'] = $va_target['list'];
 				
 					$va_val['_relationship_type'] = BaseRefinery::parsePlaceholder($va_val['_relationship_type'], $pa_source_data, $pa_item);
 				
@@ -201,7 +192,6 @@
 				$vn_c++;
 			}
 			
-			//print_R($va_vals);
 			return $va_vals;
 		}
 		# -------------------------------------------------------	
