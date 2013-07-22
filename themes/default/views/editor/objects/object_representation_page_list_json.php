@@ -43,11 +43,12 @@
 		'sections' => $va_sections,
 		'resources' => array(
 			'page' => array(
-				'image' => '',
+				'image' => '', 'text' => caNavUrl($this->request,  'editor/objects', 'ObjectEditor', 'GetRepresentationAsText', array('object_id' => $pn_object_id, 'representation_id' => $pn_representation_id))."/page/{page}",
 				'object_id' => $pn_object_id, 'representation_id' => $pn_representation_id
 			),
 			'pageList' => $va_pages,
-			'downloadUrl' => in_array($vs_content_mode, array('multiple_representations', 'hierarchy_of_representations')) ? caNavUrl($this->request, 'editor/objects', 'ObjectEditor', 'DownloadMedia', array('object_id' => $pn_object_id, 'representation_id' => $pn_representation_id, 'download' => 1, 'version' => 'original')) : caNavUrl($this->request, 'editor/objects', 'ObjectEditor', 'DownloadRepresentation', array('object_id' => $pn_object_id, 'representation_id' => $pn_representation_id, 'download' => 1, 'version' => 'original'))
+			'downloadUrl' => in_array($vs_content_mode, array('multiple_representations', 'hierarchy_of_representations')) ? caNavUrl($this->request, 'editor/objects', 'ObjectEditor', 'DownloadMedia', array('object_id' => $pn_object_id, 'representation_id' => $pn_representation_id, 'download' => 1, 'version' => 'original')) : caNavUrl($this->request, 'editor/objects', 'ObjectEditor', 'DownloadRepresentation', array('object_id' => $pn_object_id, 'representation_id' => $pn_representation_id, 'download' => 1, 'version' => 'original')),
+			'search' => caNavUrl($this->request,  'editor/objects', 'ObjectEditor', 'SearchWithinMedia', array('object_id' => $pn_object_id, 'representation_id' => $pn_representation_id))."/q/{query}"
 		)
 	));
 ?>

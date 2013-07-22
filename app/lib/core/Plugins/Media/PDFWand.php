@@ -379,17 +379,18 @@ class WLPlugMediaPDFWand Extends BaseMediaPlugin implements IWLPlugMedia {
 		
 		$this->filepath = $ps_filepath;
 		
-		// Try to extract text
-		if (caMediaPluginPdftotextInstalled($this->ops_pdftotext_path)) {
-			$vs_tmp_filename = tempnam('/tmp', 'CA_PDF_TEXT');
-			exec($this->ops_pdftotext_path.' -q -enc UTF-8 '.caEscapeShellArg($ps_filepath).' '.caEscapeShellArg($vs_tmp_filename));
-			$vs_extracted_text = file_get_contents($vs_tmp_filename);
-			$this->handle['content'] = $this->ohandle['content'] = $vs_extracted_text;
-			@unlink($vs_tmp_filename);
-		}
 		
 		// Try to extract positions of text using PDFMiner (http://www.unixuser.org/~euske/python/pdfminer/index.html)
 		if (caPDFMinerInstalled($this->ops_pdfminer_path)) { 
+		
+			
+			// Try to extract text
+			$vs_tmp_filename = tempnam('/tmp', 'CA_PDF_TEXT');
+			exec($this->ops_pdfminer_path.'/pdf2txt.py -t text '.caEscapeShellArg($ps_filepath).' > '.caEscapeShellArg($vs_tmp_filename));
+			$vs_extracted_text = file_get_contents($vs_tmp_filename);
+			$this->handle['content'] = $this->ohandle['content'] = $vs_extracted_text;
+			@unlink($vs_tmp_filename);
+	
 			$vs_tmp_filename = tempnam('/tmp', 'CA_PDF_TEXT_LOCATIONS');
 			exec($this->ops_pdfminer_path.'/pdf2txt.py -t xml '.caEscapeShellArg($ps_filepath).' > '.caEscapeShellArg($vs_tmp_filename));
 			
@@ -400,6 +401,7 @@ class WLPlugMediaPDFWand Extends BaseMediaPlugin implements IWLPlugMedia {
 			$va_locations = array();
 			$vn_current_page = null;
 			$vs_text_line_content = '';
+			$vs_page_content = '';
 			$va_text_line_locs = array();
 			$vb_in_text_element = false;
 			$va_current_text_loc = null;
@@ -408,7 +410,11 @@ class WLPlugMediaPDFWand Extends BaseMediaPlugin implements IWLPlugMedia {
 			while ($xml->read()) {
 				switch ($xml->name) {
 					case 'page':		// new page
-						if ($xml->nodeType == XMLReader::END_ELEMENT) { continue; }
+						if ($xml->nodeType == XMLReader::END_ELEMENT) { 
+							$va_locations['__pages__'][$vn_current_page] = $vs_page_content;
+							$vs_page_content = '';
+							continue; 
+						}
 						$vs_text_line_content = '';
 						$vn_current_page = (int)$xml->getAttribute('id');
 						break;
@@ -442,8 +448,14 @@ class WLPlugMediaPDFWand Extends BaseMediaPlugin implements IWLPlugMedia {
 							}
 						} else {
 							// new line of text
+							$vs_page_content .= $vs_text_line_content;
 							$vs_text_line_content = '';
 							$va_text_line_locs = array();
+						}
+						break;
+					case 'textbox':
+						if ($xml->nodeType == XMLReader::END_ELEMENT) {
+							$vs_page_content .= "\n";
 						}
 						break;
 					case 'text':
@@ -473,6 +485,15 @@ class WLPlugMediaPDFWand Extends BaseMediaPlugin implements IWLPlugMedia {
 			
 			$this->handle['content_by_location'] = $this->ohandle['content_by_location'] = $va_locations;
 			@unlink($vs_tmp_filename);	
+		} else {			
+			// Try to extract text
+			if (caMediaPluginPdftotextInstalled($this->ops_pdftotext_path)) {
+				$vs_tmp_filename = tempnam('/tmp', 'CA_PDF_TEXT');
+				exec($this->ops_pdftotext_path.' -q -enc UTF-8 '.caEscapeShellArg($ps_filepath).' '.caEscapeShellArg($vs_tmp_filename));
+				$vs_extracted_text = file_get_contents($vs_tmp_filename);
+				$this->handle['content'] = $this->ohandle['content'] = $vs_extracted_text;
+				@unlink($vs_tmp_filename);
+			}
 		}
 			
 		return true;	

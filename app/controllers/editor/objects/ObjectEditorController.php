@@ -460,6 +460,72 @@
  			$this->render('object_representation_page_list_json.php');
  		}
  		# -------------------------------------------------------
+ 		/**
+ 		 * 
+ 		 */ 
+ 		public function SearchWithinMedia() {
+ 			$pn_object_id = $this->request->getParameter('object_id', pInteger);
+ 			$pn_representation_id = $this->request->getParameter('representation_id', pInteger);
+ 			$ps_q = $this->request->getParameter('q', pString);
+ 			
+ 			$t_rep = new ca_object_representations($pn_representation_id);
+ 			$va_word_index = $t_rep->get('media_content_locations');
+ 			
+ 			$va_results = array(
+ 				'matches' => 0,
+ 				'results' => array(),
+ 				'locations' => array(),
+ 				'query' => $ps_q
+ 			);
+ 			if (isset($va_word_index[$ps_q]) && is_array($va_word_index[$ps_q]) && sizeof($va_word_index[$ps_q])) {
+ 				$va_pages = array();
+ 				foreach($va_word_index[$ps_q] as $va_hit) {
+ 					$va_results['results'][] = $va_hit['p'];
+ 					
+ 					$x1_percent = $va_hit['x1']/612;
+ 					$x2_percent = $va_hit['x2']/612;
+ 					$y1_percent = (792-$va_hit['y2']) / 792;
+ 					$y2_percent = (792-$va_hit['y1']) / 792;
+ 					
+ 					$x1r = ($x1_percent * 700) + 2;
+ 					$x2r = ($x2_percent * 700) + 12;
+ 					
+ 					$y1r = $y1_percent * 906;
+ 					$y2r = $y2_percent * 906;
+ 					
+ 					$va_results['locations'][$va_hit['p']][] = array('x1' => $x1r, 'y1' => $y1r, 'x2' => $x2r, 'y2' => $y2r);
+ 				}
+ 				$va_results['matches'] = sizeof($va_results['results']);
+ 			}
+ 			
+ 			$this->view->setVar('results', $va_results);
+ 			
+ 			$this->render('object_representation_within_media_search_results_json.php');
+ 		}
+ 		# -------------------------------------------------------
+ 		/**
+ 		 * 
+ 		 */ 
+ 		public function GetRepresentationAsText() {
+ 			$pn_object_id = $this->request->getParameter('object_id', pInteger);
+ 			$pn_representation_id = $this->request->getParameter('representation_id', pInteger);
+ 			$ps_q = $this->request->getParameter('q', pString);
+ 			$pn_p = $this->request->getParameter('page', pInteger);
+ 			
+ 			$t_rep = new ca_object_representations($pn_representation_id);
+ 			$va_word_index = $t_rep->get('media_content_locations');
+ 			
+ 			$va_content  = $va_word_index['__pages__'];
+ 			if (is_array($va_content)) {
+ 				$vs_content = isset($va_content[$pn_p]) ? $va_content[$pn_p] : $va_content[1];
+ 			} else {
+ 				$vs_content = $va_content;
+ 			}
+ 			$this->view->setVar('content', $vs_content);
+ 			
+ 			$this->render('object_representation_extracted_text_html.php');
+ 		}
+ 		# -------------------------------------------------------
  		# Sidebar info handler
  		# -------------------------------------------------------
  		public function info($pa_parameters) {
