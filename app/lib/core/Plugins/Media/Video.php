@@ -92,6 +92,7 @@ class WLPlugMediaVideo Extends BaseMediaPlugin Implements IWLPlugMedia {
 			"video/mpeg" 						=> "mp4",
 			"audio/mpeg"						=> "mp3",
 			"image/jpeg"						=> "jpg",
+			"image/png"							=> "png",
 			"video/mp4" 						=> "m4v",
 			"video/ogg"							=> "ogg",
 			"video/x-matroska"					=> "webm"
@@ -154,6 +155,7 @@ class WLPlugMediaVideo Extends BaseMediaPlugin Implements IWLPlugMedia {
 		"video/mpeg" 						=> "MPEG",
 		"audio/mpeg"						=> "MP3 audio",
 		"image/jpeg"						=> "JPEG",
+		"image/png"							=> "PNG",
 		"video/mp4" 						=> "MPEG-4",
 		"video/ogg"							=> "Ogg Theora",
 		"video/x-matroska"					=> "WebM"
@@ -660,6 +662,34 @@ class WLPlugMediaVideo Extends BaseMediaPlugin Implements IWLPlugMedia {
 						@unlink($filepath.".".$ext);
 						// try again, with -ss 1 (seems to work consistently on some files where other -ss values won't work)
 						exec($this->ops_path_to_ffmpeg." -i ".caEscapeShellArg($this->filepath)." -f image2 -ss ".($vn_start_secs)." -t 1 -s {$vn_preview_width}x{$vn_preview_height} -y ".caEscapeShellArg($filepath.".".$ext). ((caGetOSFamily() == OS_POSIX) ? " 2> /dev/null" : ""), $va_output, $vn_return);
+					}
+
+					if (($vn_return < 0) || ($vn_return > 1) || (!@filesize($filepath.".".$ext))) {
+						@unlink($filepath.".".$ext);
+						// don't throw error as ffmpeg cannot generate frame still from all file
+					}
+				}
+
+				$this->properties["mimetype"] = $mimetype;
+				$this->properties["typename"] = isset($this->typenames[$mimetype]) ? $this->typenames[$mimetype] : $mimetype;
+
+				break;
+			# ------------------------------------
+			case 'image/png':
+				$vn_preview_width = $this->properties["width"];
+				$vn_preview_height = $this->properties["height"];
+
+				if ((caMediaPluginFFfmpegInstalled($this->ops_path_to_ffmpeg)) && ($this->handle["mime_type"] != "application/x-shockwave-flash")) {
+					if (($vn_start_secs = $this->properties["duration"]/8) > 120) { 
+						$vn_start_secs = 120;		// always take a frame from the first two minutes to ensure performance (ffmpeg gets slow if it has to seek far into a movie to extract a frame)
+					}
+					
+					
+					exec($this->ops_path_to_ffmpeg." -i ".caEscapeShellArg($this->filepath)." -vcodec png -ss ".($vn_start_secs)." -t 0.04 -s {$vn_preview_width}x{$vn_preview_height} -y ".caEscapeShellArg($filepath.".".$ext). ((caGetOSFamily() == OS_POSIX) ? " 2> /dev/null" : ""), $va_output, $vn_return);
+					if (($vn_return < 0) || ($vn_return > 1) || (!@filesize($filepath.".".$ext))) {
+						@unlink($filepath.".".$ext);
+						// try again, with -ss 1 (seems to work consistently on some files where other -ss values won't work)
+						exec($this->ops_path_to_ffmpeg." -i ".caEscapeShellArg($this->filepath)." -vcodec png -ss ".($vn_start_secs)." -t 1 -s {$vn_preview_width}x{$vn_preview_height} -y ".caEscapeShellArg($filepath.".".$ext). ((caGetOSFamily() == OS_POSIX) ? " 2> /dev/null" : ""), $va_output, $vn_return);
 					}
 
 					if (($vn_return < 0) || ($vn_return > 1) || (!@filesize($filepath.".".$ext))) {
