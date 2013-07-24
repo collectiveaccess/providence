@@ -1151,7 +1151,15 @@ require_once(__CA_LIB_DIR__."/ca/ApplicationPluginManager.php");
 			// 
 
 			if ($vs_additional_info = $po_view->request->config->get("{$vs_table_name}_inspector_additional_info")) {
-				$vs_buf .= "<br/>".caProcessTemplateForIDs($vs_additional_info, $vs_table_name, array($t_item->getPrimaryKey()))."<br/>\n";
+				if(is_array($vs_additional_info)){
+					$vs_buf .= "<br/>";
+					foreach($vs_additional_info as $vs_info){
+						$vs_buf .= caProcessTemplateForIDs($vs_info, $vs_table_name, array($t_item->getPrimaryKey()),array('requireLinkTags' => true))."<br/>\n";
+					}
+				} else {
+					$vs_buf .= "<br/>".caProcessTemplateForIDs($vs_additional_info, $vs_table_name, array($t_item->getPrimaryKey()),array('requireLinkTags' => true))."<br/>\n";
+				}
+				
 			}
 			
 		// -------------------------------------------------------------------------------------
