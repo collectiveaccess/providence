@@ -43,7 +43,8 @@
 		'sections' => $va_sections,
 		'resources' => array(
 			'page' => array(
-				'image' => '', 'text' => caNavUrl($this->request,  'editor/objects', 'ObjectEditor', 'GetRepresentationAsText', array('object_id' => $pn_object_id, 'representation_id' => $pn_representation_id))."/page/{page}",
+				'image' => '', 
+				//'text' => caNavUrl($this->request,  'editor/objects', 'ObjectEditor', 'GetRepresentationAsText', array('object_id' => $pn_object_id, 'representation_id' => $pn_representation_id))."/page/{page}",
 				'object_id' => $pn_object_id, 'representation_id' => $pn_representation_id
 			),
 			'pageList' => $va_pages,

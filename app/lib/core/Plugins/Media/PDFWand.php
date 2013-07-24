@@ -443,7 +443,7 @@ class WLPlugMediaPDFWand Extends BaseMediaPlugin implements IWLPlugMedia {
 								} else {
 									if(is_null($vn_start)) { $vn_start = $vn_i; }
 									$vn_end = $vn_i;
-									$vs_acc .= mb_substr($vs_text_line_content, $vn_i, 1);
+									$vs_acc .= ($vs_c = mb_substr($vs_text_line_content, $vn_i, 1));
 								}
 							}
 						} else {

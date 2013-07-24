@@ -32,6 +32,7 @@
  	require_once(__CA_LIB_DIR__."/core/Media.php");
  	require_once(__CA_LIB_DIR__."/core/Media/MediaProcessingSettings.php");
  	require_once(__CA_LIB_DIR__."/ca/BaseEditorController.php");
+	require_once(__CA_LIB_DIR__."/ca/MediaContentLocationIndexer.php");
  	
  
  	class ObjectEditorController extends BaseEditorController {
@@ -468,30 +469,45 @@
  			$pn_representation_id = $this->request->getParameter('representation_id', pInteger);
  			$ps_q = $this->request->getParameter('q', pString);
  			
- 			$t_rep = new ca_object_representations($pn_representation_id);
- 			$va_word_index = $t_rep->get('media_content_locations');
  			
+			$o_search_config = Configuration::load($this->request->config->get('search_config'));
+ 			$vs_indexing_regex = $o_search_config->get('indexing_tokenizer_regex');
+ 			$va_words = preg_split("![{$vs_indexing_regex}]!", $ps_q);
+ 			$va_hits = array();
+ 			
+ 			foreach($va_words as $vs_word) {
+ 				$va_hits =  array_merge($va_hits, MediaContentLocationIndexer::find('ca_object_representations', $pn_representation_id, $vs_word));
+ 			}
  			$va_results = array(
  				'matches' => 0,
  				'results' => array(),
  				'locations' => array(),
  				'query' => $ps_q
  			);
- 			if (isset($va_word_index[$ps_q]) && is_array($va_word_index[$ps_q]) && sizeof($va_word_index[$ps_q])) {
+ 			$t_rep = new ca_object_representations($pn_representation_id);
+ 			$va_media_info = $t_rep->getMediaInfo('media');
+ 	
+ 			if (is_array($va_hits) && sizeof($va_hits)) {
+ 				$vn_page_width = $va_media_info['INPUT']['WIDTH'];
+ 				$vn_page_height = $va_media_info['INPUT']['HEIGHT'];
+ 			
+ 				$vn_page_image_width = $va_media_info['large']['WIDTH'];
+ 				$vn_page_image_height = $va_media_info['large']['HEIGHT'];
+ 			
  				$va_pages = array();
- 				foreach($va_word_index[$ps_q] as $va_hit) {
+ 				foreach($va_hits as $va_hit) {
  					$va_results['results'][] = $va_hit['p'];
  					
- 					$x1_percent = $va_hit['x1']/612;
- 					$x2_percent = $va_hit['x2']/612;
- 					$y1_percent = (792-$va_hit['y2']) / 792;
- 					$y2_percent = (792-$va_hit['y1']) / 792;
+ 					$x1_percent = $va_hit['x1']/$vn_page_width;
+ 					$x2_percent = $va_hit['x2']/$vn_page_width;
+ 					$y1_percent = ($vn_page_height-$va_hit['y2']) / $vn_page_height;
+ 					$y2_percent = ($vn_page_height-$va_hit['y1']) / $vn_page_height;
  					
- 					$x1r = ($x1_percent * 700) + 2;
- 					$x2r = ($x2_percent * 700) + 12;
+ 					$x1r = ($x1_percent * $vn_page_image_width) + 2;
+ 					$x2r = ($x2_percent * $vn_page_image_width) + 12;
  					
- 					$y1r = $y1_percent * 906;
- 					$y2r = $y2_percent * 906;
+ 					$y1r = $y1_percent * $vn_page_image_height;
+ 					$y2r = $y2_percent * $vn_page_image_height;
  					
  					$va_results['locations'][$va_hit['p']][] = array('x1' => $x1r, 'y1' => $y1r, 'x2' => $x2r, 'y2' => $y2r);
  				}
@@ -501,29 +517,6 @@
  			$this->view->setVar('results', $va_results);
  			
  			$this->render('object_representation_within_media_search_results_json.php');
- 		}
- 		# -------------------------------------------------------
- 		/**
- 		 * 
- 		 */ 
- 		public function GetRepresentationAsText() {
- 			$pn_object_id = $this->request->getParameter('object_id', pInteger);
- 			$pn_representation_id = $this->request->getParameter('representation_id', pInteger);
- 			$ps_q = $this->request->getParameter('q', pString);
- 			$pn_p = $this->request->getParameter('page', pInteger);
- 			
- 			$t_rep = new ca_object_representations($pn_representation_id);
- 			$va_word_index = $t_rep->get('media_content_locations');
- 			
- 			$va_content  = $va_word_index['__pages__'];
- 			if (is_array($va_content)) {
- 				$vs_content = isset($va_content[$pn_p]) ? $va_content[$pn_p] : $va_content[1];
- 			} else {
- 				$vs_content = $va_content;
- 			}
- 			$this->view->setVar('content', $vs_content);
- 			
- 			$this->render('object_representation_extracted_text_html.php');
  		}
  		# -------------------------------------------------------
  		# Sidebar info handler

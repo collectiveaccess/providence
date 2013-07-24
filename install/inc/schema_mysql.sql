@@ -427,7 +427,6 @@ create table ca_object_representations
    media                          longblob                       not null,
    media_metadata                 longblob                       null,
    media_content                  longtext                       null,
-   media_content_locations        longblob                       null,
    deleted                        tinyint unsigned               not null default 0,
    is_template                    tinyint unsigned               not null default 0,
    commenting_status              tinyint unsigned               not null default 0,
@@ -494,6 +493,24 @@ create table ca_object_representation_multifiles (
 
 create index i_resource_path on ca_object_representation_multifiles(resource_path(255));
 create index i_representation_id on ca_object_representation_multifiles(representation_id);
+
+
+/*==========================================================================*/
+create table ca_media_content_locations
+(
+   table_num                      tinyint unsigned            not null,
+   row_id                         int unsigned                not null,
+   content                        text                        not null,
+   page                           int unsigned                not null,
+   x1                             decimal(6,2)                not null,
+   y1                             decimal(6,2)                not null,
+   x2                             decimal(6,2)                not null,
+   y2                             decimal(6,2)                not null
+) engine=myisam CHARACTER SET utf8 COLLATE utf8_general_ci;
+
+create index i_row_id on ca_media_content_locations(row_id, table_num, page);
+create index i_content on ca_media_content_locations(content(255));
+create fulltext index f_content on ca_media_content_locations(content);
 
 
 /*==========================================================================*/

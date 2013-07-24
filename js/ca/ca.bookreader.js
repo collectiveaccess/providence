@@ -57,7 +57,7 @@ var caUI = caUI || {};
 			closeButton: that.closeButton,
 			sectionsAreSelectable: that.sectionsAreSelectable,
 			selectionRecordURL: that.selectionRecordURL,
-			search: true, text: true
+			search: true, text: false
 		  });
 		
 		// --------------------------------------------------------------------------------
