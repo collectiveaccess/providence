@@ -1145,6 +1145,14 @@ require_once(__CA_LIB_DIR__."/ca/ApplicationPluginManager.php");
 					$vs_buf .= "<strong>".$t_item->getFieldInfo('shipping_method', 'LABEL')."</strong>: ".$t_item->getChoiceListValue('shipping_method', $vn_shipping_method)."<br/>\n";
 				}
 			}
+
+			//
+			// Output configurable additional info from config, if set
+			// 
+
+			if ($vs_additional_info = $po_view->request->config->get("{$vs_table_name}_inspector_additional_info")) {
+				$vs_buf .= "<br/>".caProcessTemplateForIDs($vs_additional_info, $vs_table_name, array($t_item->getPrimaryKey()))."<br/>\n";
+			}
 			
 		// -------------------------------------------------------------------------------------
 		// Hierarchies
