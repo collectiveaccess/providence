@@ -360,25 +360,6 @@ DV.Schema.helpers = {
       }
     },
 
-    // TODO: This function is not currently being called. Candidate for removal.
-
-    // setWindowSize: function(windowDimensions){
-    //   var viewer          = this.viewer;
-    //   var elements        = this.elements;
-    //   var headerHeight    = elements.header.outerHeight() + 15;
-    //   var offset          = DV.jQuery(this.viewer.options.container).offset().top;
-    //   var uiHeight        = Math.round((windowDimensions.height) - headerHeight - offset);
-    //
-    //   // doc window
-    //   elements.window.css({ height: uiHeight, width: windowDimensions.width-267 });
-    //
-    //   // well
-    //   elements.well.css( { height: uiHeight });
-    //
-    //   // store this for later
-    //   viewer.windowDimensions = windowDimensions;
-    // },
-
     toggleContent: function(toggleClassName){
       this.elements.viewer.removeClass('DV-viewText DV-viewSearch DV-viewDocument DV-viewAnnotations DV-viewThumbnails').addClass('DV-'+toggleClassName);
     },

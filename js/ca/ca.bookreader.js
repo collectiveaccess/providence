@@ -56,7 +56,8 @@ var caUI = caUI || {};
 			downloadButton: that.downloadButton,
 			closeButton: that.closeButton,
 			sectionsAreSelectable: that.sectionsAreSelectable,
-			selectionRecordURL: that.selectionRecordURL
+			selectionRecordURL: that.selectionRecordURL,
+			search: true, text: false
 		  });
 		
 		// --------------------------------------------------------------------------------

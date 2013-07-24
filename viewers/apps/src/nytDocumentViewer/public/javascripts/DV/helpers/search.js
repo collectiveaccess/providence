@@ -4,14 +4,39 @@ _.extend(DV.Schema.helpers, {
       this.viewer.searchResponse = response;
       var hasResults = (response.results.length > 0) ? true : false;
 
-      var text = hasResults ? 'of '+response.results.length + ' ' : ' ';
-      this.viewer.$('span.DV-totalSearchResult').text(text);
-      this.viewer.$('span.DV-searchQuery').text(response.query);
+      //var text = hasResults ? 'of '+response.results.length + ' ' : ' ';
+     // this.viewer.$('span.DV-totalSearchResult').text(text);
+      //this.viewer.$('span.DV-searchQuery').text(response.query);
       if (hasResults) {
         // this.viewer.history.save('search/p'+response.results[0]+'/'+response.query);
         var currentPage = this.viewer.models.document.currentPage();
         var page = (_.include(response.results, currentPage)) ? currentPage : response.results[0];
-        this.events.loadText(page - 1, this.highlightSearchResponses);
+       // this.events.loadText(page - 1, this.highlightSearchResponses);
+       	 
+//
+// Plot search hits as annotations
+//
+		// Remove any existing annotations 
+		this.viewer.api.removeAllAnnotations();
+
+		// Add ones for the current search
+		var firstPage = null;
+		for(var p in response.locations) {
+			if (firstPage == null) { firstPage = p; }
+			for(var l in response.locations[p]) {
+				var loc = response.locations[p][l];
+				var locStr = parseInt(loc.x1) + ", " + parseInt(loc.y1) + ", " + parseInt(loc.x2) + ", " + parseInt(loc.y2);
+				//console.log("create annotation at", locStr);
+				this.viewer.api.addAnnotation({
+				  title     : response.query,
+				  page      : p,
+				  content   : '',
+				  location  : { 'image': locStr }
+				}, false);
+			}
+			this.viewer.api.setCurrentPage(firstPage);
+		}
+	
       } else {
         this.highlightSearchResponses();
       }
@@ -38,7 +63,7 @@ _.extend(DV.Schema.helpers, {
 
     this.elements.currentPage.text(pageNumber);
     this.viewer.$('.DV-pageNumberContainer input').val(pageNumber);
-
+console.log("state", this.viewer.state);
     if(this.viewer.state === 'ViewDocument' ||
        this.viewer.state === 'ViewThumbnails'){
       // this.viewer.history.save('document/p'+pageNumber);
@@ -151,6 +176,8 @@ _.extend(DV.Schema.helpers, {
 
     this.elements.window[0].scrollTop = match.position().top - 50;
     if (searchResponse) searchResponse.highlighted = index;
+
+	if (firstPage != null) { this.viewer.api.setCurrentPage(firstPage); }
 
     // cleanup
     highlightsOnThisPage = null;

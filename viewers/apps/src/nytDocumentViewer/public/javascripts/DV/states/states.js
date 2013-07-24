@@ -84,8 +84,12 @@ DV.Schema.states = {
 
     this.helpers.getSearchResponse(searchRequest);
     this.acceptInput.deny();
+    console.log("view search");
+    
+    this.helpers.addObserver('drawPages');
+    this.helpers.toggleContent('viewDocument');
 
-    this.helpers.toggleContent('viewSearch');
+   // this.helpers.toggleContent('viewSearch');
 
     return true;
   },
