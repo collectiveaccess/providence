@@ -204,24 +204,27 @@ _.extend(DV.Schema.helpers, {
     var showAnnotations = this.showAnnotations();
     var showPages       = this.models.document.totalPages > 1;
     var showSearch      = (this.viewer.options.search !== false) &&
-                          (this.viewer.options.text !== false) &&
+                          //(this.viewer.options.text !== false) &&
                           (!this.viewer.options.width || (this.viewer.options.width >= 540) || (this.viewer.options.width == '100%'));
     var noFooter = (!showAnnotations && !showPages && !showSearch && !this.viewer.options.sidebar);
-
     // Hide annotations, if there are none:
     var $annotationsView = this.viewer.$('.DV-annotationView');
     $annotationsView[showAnnotations ? 'show' : 'hide']();
 
-    // Hide the text tab, if it's disabled.
+    
+    // Show the search box if enabled
     if (showSearch) {
       this.elements.viewer.addClass('DV-searchable');
       this.viewer.$('input.DV-searchInput', containerEl).placeholder({
         message: 'Search',
         clearClassName: 'DV-searchInput-show-search-cancel'
       });
-    } else {
-      this.viewer.$('.DV-textView').hide();
-    }
+    } 
+    
+    // Hide the text tab, if it's disabled.
+	if (!this.viewer.options.text) {
+		this.viewer.$('.DV-textView').hide();
+	}
 
     // Hide the Pages tab if there is only 1 page in the document.
     if (!showPages) {
