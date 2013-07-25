@@ -100,8 +100,10 @@
 		}
 	} else {
 		// set labels for replacement in blank lookups	
-		foreach($va_element_ids as $vn_element_id) {
-			$va_template_tags[] = "{$vn_element_id}_label";
+		if (is_array($va_element_ids)) {
+			foreach($va_element_ids as $vn_element_id) {
+				$va_template_tags[] = "{$vn_element_id}_label";
+			}
 		}
 	}
 	
