@@ -220,6 +220,28 @@
 		}
 		return array_keys($va_type_ids);
 	}
+	# ------------------------------------------------------
+	/**
+	 * Converts the given list of relationship type names or relationship type_ids into an expanded list of numeric type_ids suitable for enforcing relationship type restrictions. Processing
+	 * includes expansion of types to include subtypes and conversion of any type codes to type_ids.
+	 *
+	 * @param mixed $pm_table_name_or_num Table name or number to which types apply
+	 * @param array $pa_types List of type codes and/or type_ids that are the basis of the list
+	 * @param array $pa_options Array of options:
+	 * 		dont_include_subtypes_in_type_restriction = if set, returned list is not expanded to include subtypes
+	 *		dontIncludeSubtypesInTypeRestriction = synonym for dont_include_subtypes_in_type_restriction
+	 *
+	 * @return array List of numeric type_ids
+	 */
+	function caMakeRelationshipTypeIDList($pm_table_name_or_num, $pa_types, $pa_options=null) {
+		$o_dm = Datamodel::load();
+		if(isset($pa_options['dontIncludeSubtypesInTypeRestriction']) && (!isset($pa_options['dont_include_subtypes_in_type_restriction']) || !$pa_options['dont_include_subtypes_in_type_restriction'])) { $pa_options['dont_include_subtypes_in_type_restriction'] = $pa_options['dontIncludeSubtypesInTypeRestriction']; }
+	 	
+		$pa_options['includeChildren'] = (isset($pa_options['dont_include_subtypes_in_type_restriction']) && $pa_options['dont_include_subtypes_in_type_restriction']) ? false : true;
+		
+		$t_rel_type = new ca_relationship_types();
+		return $t_rel_type->relationshipTypeListToIDs($pm_table_name_or_num, $pa_types, $pa_options);
+	}
 	# ---------------------------------------------------------------------------------------------
 	/**
 	 * Merges types specified with any specified "restrict_to_types"/"restrictToTypes" option, user access settings and types configured in app.conf

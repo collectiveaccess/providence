@@ -65,7 +65,8 @@
 			
 			if(is_array($va_form_elements = $t_subject->getBundleFormHTMLForScreen($this->getVar('screen'), array(
 					'request' => $this->request, 
-					'formName' => $vs_form_name.$vs_field_name_prefix.$vs_n
+					'formName' => $vs_form_name.$vs_field_name_prefix.$vs_n,
+					'restrictToTypes' => array($t_subject->get('type_id'))
 			)))) {
 			
 				print join("\n", $va_form_elements);
@@ -88,7 +89,7 @@
 				jQuery.post('<?php print caNavUrl($this->request, "editor", "Interstitial", "Save"); ?>', jQuery("#<?php print $vs_form_name.$vs_field_name_prefix.$vs_n; ?>").serialize(), function(resp, textStatus) {
 				
 					if (resp.status == 0) {
-						jQuery.jGrowl('<?php print addslashes(_t('Saved changes ')); ?> <em>' + resp.display + '</em>', { header: '<?php print addslashes(_t('Edit %1', $t_subject->getProperty('NAME_SINGULAR'))); ?>' }); 
+						jQuery.jGrowl('<?php print addslashes(_t('Saved changes to')); ?> <em>' + resp.display + '</em>', { header: '<?php print addslashes(_t('Edit %1', $t_subject->getProperty('NAME_SINGULAR'))); ?>' }); 
 						jQuery("#<?php print $vs_form_name.$vs_field_name_prefix.$vs_n; ?>").parent().data('panel').hidePanel();
 					} else {
 						// error

@@ -1388,11 +1388,15 @@ class BundlableLabelableBaseModelWithAttributes extends LabelableBaseModelWithAt
 					// This bundle is only available when editing objects of type ca_editor_uis
 					case 'ca_editor_ui_type_restrictions':
 						if ($vb_batch) { return null; } // not supported in batch mode
+						if (($t_instance = $this->getAppDatamodel()->getInstanceByTableNum($this->get('editor_type'), true)) && (is_subclass_of($t_instance, 'BaseRelationshipModel'))) { return null; } // interstitial forms don't support UI type restrictions
 						$vs_element .= $this->getTypeRestrictionsHTMLFormBundle($pa_options['request'], $pa_options['formName'].'_'.$ps_bundle_name, $pa_options);
 						break;
 					# -------------------------------
 					// This bundle is only available when editing objects of type ca_editor_ui_screens
 					case 'ca_editor_ui_screen_type_restrictions':
+						$t_editor = new ca_editor_uis($this->get('ui_id'));
+						if (
+							$t_editor && ($t_instance = $this->getAppDatamodel()->getInstanceByTableNum($t_editor->get('editor_type'), true)) && (is_subclass_of($t_instance, 'BaseRelationshipModel'))) { return null; } // interstitial forms don't support UI type restrictions
 						$vs_element .= $this->getTypeRestrictionsHTMLFormBundle($pa_options['request'], $pa_options['formName'].'_'.$ps_bundle_name, $pa_options);
 						break;
 					# -------------------------------
@@ -1803,13 +1807,24 @@ class BundlableLabelableBaseModelWithAttributes extends LabelableBaseModelWithAt
 		
 		$va_bundles_present = array();
 		if (is_array($va_bundles)) {
-			$vs_type_id_fld = isset($this->ATTRIBUTE_TYPE_ID_FLD) ? $this->ATTRIBUTE_TYPE_ID_FLD : null;
-			$vs_hier_parent_id_fld = isset($this->HIERARCHY_PARENT_ID_FLD) ? $this->HIERARCHY_PARENT_ID_FLD : null;
-			
-			if(isset($pa_options['restrictToTypes']) && is_array($pa_options['restrictToTypes'])) {
-				$va_valid_element_codes = $this->getApplicableElementCodesForTypes($x=caMakeTypeIDList($this->tableName(), $pa_options['restrictToTypes']));
+			if (is_subclass_of($this, 'BaseRelationshipModel')) {
+				$vs_type_id_fld = $this->getTypeFieldName();
+				if(isset($pa_options['restrictToTypes']) && is_array($pa_options['restrictToTypes'])) {
+					$va_valid_element_codes = $this->getApplicableElementCodesForTypes(caMakeRelationshipTypeIDList($this->tableName(), $pa_options['restrictToTypes']));
+				} else {
+					$va_valid_element_codes = null;
+				}
 			} else {
-				$va_valid_element_codes = null;
+				$vs_type_id_fld = isset($this->ATTRIBUTE_TYPE_ID_FLD) ? $this->ATTRIBUTE_TYPE_ID_FLD : null;
+			
+			
+				$vs_hier_parent_id_fld = isset($this->HIERARCHY_PARENT_ID_FLD) ? $this->HIERARCHY_PARENT_ID_FLD : null;
+			
+				if(isset($pa_options['restrictToTypes']) && is_array($pa_options['restrictToTypes'])) {
+					$va_valid_element_codes = $this->getApplicableElementCodesForTypes(caMakeTypeIDList($this->tableName(), $pa_options['restrictToTypes']));
+				} else {
+					$va_valid_element_codes = null;
+				}
 			}
 			
 			$vn_c = 0;

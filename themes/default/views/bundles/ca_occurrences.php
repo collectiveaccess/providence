@@ -204,23 +204,23 @@
 					jQuery("#topNavContainer").show(250);
 				}
 			});
+					
+			caRelationEditorPanel<?php print $vs_id_prefix; ?> = caUI.initPanel({ 
+				panelID: "caRelationEditorPanel<?php print $vs_id_prefix; ?>",						/* DOM ID of the <div> enclosing the panel */
+				panelContentID: "caRelationEditorPanel<?php print $vs_id_prefix; ?>ContentArea",		/* DOM ID of the content area <div> in the panel */
+				exposeBackgroundColor: "#000000",				
+				exposeBackgroundOpacity: 0.7,					
+				panelTransitionSpeed: 400,						
+				closeButtonSelector: ".close",
+				center: true,
+				onOpenCallback: function() {
+				jQuery("#topNavContainer").hide(250);
+				},
+				onCloseCallback: function() {
+					jQuery("#topNavContainer").show(250);
+				}
+			});
 		}
-		
-		caRelationEditorPanel<?php print $vs_id_prefix; ?> = caUI.initPanel({ 
-			panelID: "caRelationEditorPanel<?php print $vs_id_prefix; ?>",						/* DOM ID of the <div> enclosing the panel */
-			panelContentID: "caRelationEditorPanel<?php print $vs_id_prefix; ?>ContentArea",		/* DOM ID of the content area <div> in the panel */
-			exposeBackgroundColor: "#000000",				
-			exposeBackgroundOpacity: 0.7,					
-			panelTransitionSpeed: 400,						
-			closeButtonSelector: ".close",
-			center: true,
-			onOpenCallback: function() {
-			jQuery("#topNavContainer").hide(250);
-			},
-			onCloseCallback: function() {
-				jQuery("#topNavContainer").show(250);
-			}
-		});
 		
 		caRelationBundle<?php print $vs_id_prefix; ?> = caUI.initRelationBundle('#<?php print $vs_id_prefix.$t_item->tableNum().'_rel'; ?>', {
 			fieldNamePrefix: '<?php print $vs_id_prefix; ?>_',
