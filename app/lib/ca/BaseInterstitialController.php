@@ -106,7 +106,7 @@
  			//$this->request->setParameter('type_id', $vn_type_id);
  			//$t_subject->set('type_id', $vn_type_id);
  			
- 			$t_ui = ca_editor_uis::loadDefaultUI($this->ops_table_name, $this->request, $vn_type_id, array('editorPref' => 'interstitial'));
+ 			$t_ui = ca_editor_uis::loadDefaultUI($this->ops_table_name, $this->request, null, array('editorPref' => 'interstitial'));
  			
  			
 			

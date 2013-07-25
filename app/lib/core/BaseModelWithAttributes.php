@@ -1730,7 +1730,9 @@
  			 	return $va_tmp;
  			 }
  			
- 			if (isset($this->ATTRIBUTE_TYPE_ID_FLD) && (($pn_type_id) || (($pn_type_id = $this->get($this->ATTRIBUTE_TYPE_ID_FLD)) > 0))) {
+ 			if (
+ 				(isset($this->ATTRIBUTE_TYPE_ID_FLD) && (($pn_type_id) || (($pn_type_id = $this->get($this->ATTRIBUTE_TYPE_ID_FLD)) > 0)))
+ 			) {
  				$va_ancestors = array();
  				if ($t_type_instance = $this->getTypeInstance()) {
  					$va_ancestors = $t_type_instance->getHierarchyAncestors(null, array('idsOnly' => true, 'includeSelf' => true));
@@ -1742,8 +1744,11 @@
  				} else {
  					$vs_type_sql = '((camtr.type_id = '.intval($pn_type_id).') OR (camtr.type_id IS NULL)) AND ';
  				}
- 			} else {
- 				$vs_type_sql = '';
+ 			} elseif (is_subclass_of($this, "BaseRelationshipModel")) {
+ 				if (!$pn_type_id) { $pn_type_id = self::get('type_id'); }
+ 				$vs_type_sql = '((camtr.type_id = '.intval($pn_type_id).') OR (camtr.type_id IS NULL)) AND ';
+			} else {
+				$vs_type_sql = '';
  			}
  			
  			$o_db = $this->getDb();
