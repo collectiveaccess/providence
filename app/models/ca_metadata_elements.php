@@ -844,7 +844,7 @@ class ca_metadata_elements extends LabelableBaseModelWithAttributes implements I
 		$o_dm = Datamodel::load();
 		$t_list = new ca_lists();
 		while($qr_restrictions->nextRow()) {
-			$t_table = $o_dm->getInstanceByTableNum($qr_restrictions->get('table_num'), true);
+			if (!($t_table = $o_dm->getInstanceByTableNum($qr_restrictions->get('table_num'), true))) { continue; }
 			
 			if ($vn_type_id = $qr_restrictions->get('type_id')) {
 				$vs_type_name = $t_list->getItemForDisplayByItemID($vn_type_id);
