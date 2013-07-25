@@ -269,6 +269,7 @@ class ca_metadata_type_restrictions extends BaseModel {
 			foreach($va_rels as $vn_table_num => $va_rel_table_info) {
 				BaseModel::$s_ca_models_definitions['ca_metadata_type_restrictions']['FIELDS']['table_num']['BOUNDS_CHOICE_LIST'][$va_rel_table_info['name']] = $vn_table_num;
 			}
+			BaseModel::$s_ca_models_definitions['ca_metadata_type_restrictions']['FIELDS']['table_num']['BOUNDS_CHOICE_LIST'] = caFilterTableList(BaseModel::$s_ca_models_definitions['ca_metadata_type_restrictions']['FIELDS']['table_num']['BOUNDS_CHOICE_LIST'], array('sort' => true));
 			
 			ca_metadata_type_restrictions::$s_loaded_relationship_tables = true;
 		}
