@@ -40,20 +40,26 @@
 	$vb_can_edit	 	= true; //$t_subject->isSaveable($this->request);
 	
 	$vs_form_name = "InterstitialEditorForm";
+		
+	$t_left= $t_subject->getLeftTableInstance();
+	$t_right= $t_subject->getRightTableInstance();
+	$vs_rel_name = "<em>".$t_left->getTypeName()."</em> ⇔ <em>".$t_right->getTypeName()."</em>";
 ?>		
 <form action="#" name="<?php print $vs_form_name; ?>" method="POST" enctype="multipart/form-data" id="<?php print $vs_form_name.$vs_field_name_prefix.$vs_n; ?>">
 	<div class='dialogHeader quickAddDialogHeader'><?php 
-	print "<div class='quickAddTypeList'>"._t('Edit relation')."</div>"; 
+	print "<div class='quickAddTypeList'>"._t('Edit %1 relationship', $vs_rel_name)."</div>"; 
 	
-	if ($vb_can_edit) {
-		print "<div style='float: right;'>".caJSButton($this->request, __CA_NAV_BUTTON_SAVE__, _t("Save changes to %1", $t_subject->getProperty('NAME_SINGULAR')), "{$vs_form_name}{$vs_field_name_prefix}{$vs_n}", array("onclick" => "caSave{$vs_form_name}{$vs_field_name_prefix}{$vs_n}(event);"))
+	if ($vb_can_edit) {	
+		print "<div style='float: right;'>".caJSButton($this->request, __CA_NAV_BUTTON_SAVE__, _t("Save"), "{$vs_form_name}{$vs_field_name_prefix}{$vs_n}", array("onclick" => "caSave{$vs_form_name}{$vs_field_name_prefix}{$vs_n}(event);"))
 		.' '.caJSButton($this->request, __CA_NAV_BUTTON_CANCEL__, _t("Cancel"), "{$vs_form_name}{$vs_field_name_prefix}{$vs_n}", array("onclick" => "jQuery(\"#{$vs_form_name}".$vs_field_name_prefix.$vs_n."\").parent().data(\"panel\").hidePanel();"))."</div><br style='clear: both;'/>\n";
 	}
 ?>
 	</div>
+
+	<div class="quickAddErrorContainer" id="<?php print $vs_form_name; ?>Errors<?php print $vs_field_name_prefix.$vs_n; ?>"> </div>
+
 	<div class="quickAddSectionBox" id="{$vs_form_name}Container<?php print $vs_field_name_prefix.$vs_n; ?>">
 		<div class="quickAddFormTopPadding"><!-- empty --></div>
-			<div class="quickAddErrorContainer" id="<?php print $vs_form_name; ?>Errors<?php print $vs_field_name_prefix.$vs_n; ?>"> </div>
 <?php
 
 			
@@ -77,8 +83,6 @@
 		<input type='hidden' name='relation_id' value='<?php print $t_subject->getPrimaryKey(); ?>'/>
 		<input type='hidden' name='type_id' value='<?php print $t_subject->get('type_id'); ?>'/>
 		
-		
-
 		<script type="text/javascript">
 			function caSave<?php print $vs_form_name.$vs_field_name_prefix.$vs_n; ?>(e) {
 				jQuery.post('<?php print caNavUrl($this->request, "editor", "Interstitial", "Save"); ?>', jQuery("#<?php print $vs_form_name.$vs_field_name_prefix.$vs_n; ?>").serialize(), function(resp, textStatus) {

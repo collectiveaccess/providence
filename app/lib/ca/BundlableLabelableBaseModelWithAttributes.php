@@ -941,7 +941,7 @@ class BundlableLabelableBaseModelWithAttributes extends LabelableBaseModelWithAt
 	 *
 	 */
 	protected function initLabelDefinitions() {
-		$this->BUNDLES = array(
+		$this->BUNDLES = (is_subclass_of($this, "BaseRelationshipModel")) ? array() : array(
 			'preferred_labels' 			=> array('type' => 'preferred_label', 'repeating' => true, 'label' => _t("Preferred labels")),
 			'nonpreferred_labels' 		=> array('type' => 'nonpreferred_label', 'repeating' => true,  'label' => _t("Non-preferred labels")),
 		);

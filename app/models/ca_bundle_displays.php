@@ -93,7 +93,6 @@ BaseModel::$s_ca_models_definitions['ca_bundle_displays'] = array(
 					_t('movements') => 137,
 					_t('tours') => 153,
 					_t('tour stops') => 155,
-					//_t('object events') => 45,
 					_t('object representations') => 56,
 					_t('representation annotations') => 82,
 					//_t('lists') => 36,
