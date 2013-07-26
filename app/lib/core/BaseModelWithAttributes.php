@@ -1730,6 +1730,7 @@
  			 	return $va_tmp;
  			 }
  			
+ 			$vs_type_sql = '';
  			if (
  				(isset($this->ATTRIBUTE_TYPE_ID_FLD) && (($pn_type_id) || (($pn_type_id = $this->get($this->ATTRIBUTE_TYPE_ID_FLD)) > 0)))
  			) {
@@ -1746,10 +1747,8 @@
  				}
  			} elseif (is_subclass_of($this, "BaseRelationshipModel")) {
  				if (!$pn_type_id) { $pn_type_id = self::get('type_id'); }
- 				$vs_type_sql = '((camtr.type_id = '.intval($pn_type_id).') OR (camtr.type_id IS NULL)) AND ';
-			} else {
-				$vs_type_sql = '';
- 			}
+ 				if ($pn_type_id > 0) { $vs_type_sql = '((camtr.type_id = '.intval($pn_type_id).') OR (camtr.type_id IS NULL)) AND '; }
+			} 
  			
  			$o_db = $this->getDb();
  			
