@@ -1653,7 +1653,10 @@ class ca_bundle_displays extends BundlableLabelableBaseModelWithAttributes {
 			$pa_options['asHTML'] = true;
 		}
 		
-	
+		if(!$pa_options['template']) {		// default template to preferred labels of item we're pulling
+			$pa_options['template'] = "^{$vs_bundle_name}";
+		}
+		
 		if (!$pa_options['forReport'] && isset($pa_options['makeEditorLink']) && $pa_options['makeEditorLink'] && isset($pa_options['request']) && $pa_options['request']) {
 			if ($t_instance = $this->getAppDatamodel()->getInstanceByTableName($va_tmp[0], true)) {
 				$va_tmp2 = $va_tmp;
