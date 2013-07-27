@@ -74,7 +74,7 @@
 			
 			foreach($va_tours as $pm_value) {
 				if (!$pm_value) { 
-					if ($o_log) { $o_log->logWarning(_t('[tourMakerRefinery] No value set for tour')); }
+					if ($o_log) { $o_log->logWarn(_t('[tourMakerRefinery] No value set for tour')); }
 					return null;
 				}
 			
@@ -93,7 +93,7 @@
 				}
 			
 				if ((!isset($vs_type) || !$vs_type) && $o_log) {
-					$o_log->logWarning(_t('[tourMakerRefinery] No tour type is set for tour %1', $pm_value));
+					$o_log->logWarn(_t('[tourMakerRefinery] No tour type is set for tour %1', $pm_value));
 				}
 			
 				// Create tour

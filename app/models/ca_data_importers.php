@@ -686,6 +686,9 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 		$vn_locale_id = (isset($pa_options['locale_id']) && (int)$pa_options['locale_id']) ? (int)$pa_options['locale_id'] : $g_ui_locale_id;
 		$pa_errors = array();
 		
+		
+		$o_log = new KLogger($pa_options['logDirectory'], $pa_options['logLevel']);
+		
 		$o_excel = PHPExcel_IOFactory::load($ps_source);
 		//$o_excel->setActiveSheet(1);
 		$o_sheet = $o_excel->getActiveSheet();
@@ -748,10 +751,12 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 					
 					if (!$vs_source) { 
 						$pa_errors[] = _t("Warning: skipped mapping at row %1 because source was not defined", $vn_row_num);
+						if ($o_log) { $o_log->logWarn(_t("[loadImporterFromFile:%1] Skipped mapping at row %2 because source was not defined", $ps_source, $vn_row_num)); }
 						continue(2);
 					}
 					if (!$vs_destination) { 
 						$pa_errors[] = _t("Warning: skipped mapping at row %1 because destination was not defined", $vn_row_num);
+						if ($o_log) { $o_log->logWarn(_t("[loadImporterFromFile:%1] Skipped mapping at row %2 because destination was not defined", $ps_source, $vn_row_num)); }
 						continue(2);
 					}
 					
@@ -761,6 +766,7 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 						$vs_options_json = preg_replace("![\r\n]!", "\\\\n", $vs_options_json);
 						if (is_null($va_options = @json_decode($vs_options_json, true))) {
 							$pa_errors[] = _t("Warning: invalid options for group %1/source %2", $vs_group, $vs_source);
+							if ($o_log) { $o_log->logWarn(_t("[loadImporterFromFile:%1] Invalid options for group %2/source %3", $ps_source, $vs_group, $vs_source)); }
 						}
 					}
 					
@@ -771,9 +777,11 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 						if ($vs_refinery && ($vs_refinery_options_json = (string)$o_refinery_options->getValue())) {
 							if (!in_array($vs_refinery, $va_refineries)) {
 								$pa_errors[] = _t("Warning: refinery %1 does not exist", $vs_refinery)."\n";
+								if ($o_log) { $o_log->logWarn(_t("[loadImporterFromFile:%1] Invalid options for group %2/source %3", $ps_source, $vs_group, $vs_source)); }
 							} else {
 								if (is_null($va_refinery_options = json_decode($vs_refinery_options_json, true))) {
 									$pa_errors[] = _t("Warning: invalid refinery options for group %1/source %2 = %3", $vs_group, $vs_source, $vs_refinery_options_json);
+									if ($o_log) { $o_log->logWarn( _t("[loadImporterFromFile:%1] Invalid refinery options for group %2/source %3 = %4", $ps_source, $vs_group, $vs_source, $vs_refinery_options_json)); }
 								}
 							}
 						}
@@ -830,6 +838,7 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 		// Do checks on mapping
 		if (!$va_settings['code']) { 
 			$pa_errors[] = _t("You must set a code for your mapping!");
+			if ($o_log) { $o_log->logError(_t("[loadImporterFromFile:%1] You must set a code for your mapping!", $ps_source)); }
 			return;
 		}
 		
@@ -841,6 +850,7 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 		$o_dm = Datamodel::load();
 		if (!($t_instance = $o_dm->getInstanceByTableName($va_settings['table']))) {
 			$pa_errors[] = _t("Mapping target table %1 is invalid\n", $va_settings['table']);
+			if ($o_log) {  $o_log->logError(_t("[loadImporterFromFile:%1] Mapping target table %2 is invalid\n", $ps_source, $va_settings['table'])); }
 			return;
 		}
 		
@@ -858,6 +868,7 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 			$t_importer->delete(true, array('hard' => true));
 			if ($t_importer->numErrors()) {
 				$pa_errors[] = _t("Could not delete existing mapping for %1: %2", $va_settings['code'], join("; ", $t_importer->getErrors()))."\n";
+				if ($o_log) { $o_log->logError(_t("[loadImporterFromFile:%1] Could not delete existing mapping for %2: %3", $ps_source, $va_settings['code'], join("; ", $t_importer->getErrors()))); }
 				return;
 			}
 		}
@@ -876,6 +887,7 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 		
 		if ($t_importer->numErrors()) {
 			$pa_errors[] = _t("Error creating mapping: %1", join("; ", $t_importer->getErrors()))."\n";
+			if ($o_log) { $o_log->logError(_t("[loadImporterFromFile:%1] Error creating mapping: %2", $ps_source, join("; ", $t_importer->getErrors()))); }
 			return;
 		}
 		
@@ -883,6 +895,7 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 		
 		if ($t_importer->numErrors()) {
 			$pa_errors[] = _t("Error creating mapping name: %1", join("; ", $t_importer->getErrors()))."\n";
+			if ($o_log) {  $o_log->logError(_t("[loadImporterFromFile:%1] Error creating mapping: %2", $ps_source, join("; ", $t_importer->getErrors()))); }
 			return;
 		}
 		
@@ -891,6 +904,7 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 			if (!$vs_group_dest) { 
 				$va_item = array_shift(array_shift($va_mappings_for_group));
 				$pa_errors[] = _t("Skipped items for %1 because no common grouping could be found", $va_item['destination'])."\n";
+				if ($o_log) { $o_log->logWarn(_t("[loadImporterFromFile:%1] Skipped items for %2 because no common grouping could be found", $ps_source, $va_item['destination'])); }
 				continue;
 			}
 			
@@ -1334,12 +1348,11 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 
 				$vm_ret = ExpressionParser::evaluate($va_rule['trigger'], $va_row);
 				if (!ExpressionParser::hadError() && (bool)$vm_ret) {
-					foreach($va_rule['actions'] as $vs_action) {
-						$va_action = explode(":", $vs_action);
-						
-						switch($vs_action_code = strtolower($va_action[0])) {
-							// TODO: add support for "SET" action
-							
+					foreach($va_rule['actions'] as $va_action) {
+						switch($vs_action_code = strtolower($va_action['action'])) {
+							case 'set':
+								$va_row[$va_action['target']] = $va_action['value']; // TODO: transform value using mapping rules?
+								break;
 							case 'skip':
 							default:
 								if ($vs_action_code != 'skip') {
@@ -1489,7 +1502,7 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 				$vs_target_table = $va_group_tmp[0];
 				if (!($t_target = $o_dm->getInstanceByTableName($vs_target_table, true))) {
 					// Invalid target table
-					$o_log->logWarning(_t('[%1] Skipped group %2 because target %3 is invalid', $vs_idno, $vn_group_id, $vs_target_table));
+					$o_log->logWarn(_t('[%1] Skipped group %2 because target %3 is invalid', $vs_idno, $vn_group_id, $vs_target_table));
 					continue;
 				}
 			
@@ -1790,10 +1803,8 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 					$va_primary_data = array();
 					foreach($va_content as $vn_i => $va_element_data) {
 						if(isset($va_element_data['_relationship_type'])) {
-							print "self";
 							$va_self_relations[] = $va_element_data;
 						} else {
-							print "primary";
 							$va_primary_data[] = $va_element_data;
 						}
 					}
@@ -1935,7 +1946,6 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 										($vn_rel_id = DataMigrationUtils::getEntityID($va_element_data['preferred_labels'], $va_element_data['_type'], $vn_locale_id, $va_data_for_rel_table, array('log' => $o_log, 'transaction' => $o_trans, 'importEvent' => $o_event, 'importEventSource' => $vn_row)))
 									) {
 										if (!$va_element_data['_relationship_type']) { break; }
-									//print_R($va_element_data['_interstitial']);
 										$t_subject->addRelationship($vs_table_name, $vn_rel_id, trim($va_element_data['_relationship_type']), null, null, null, null, array('interstitialValues' => $va_element_data['_interstitial']));
 										
 										if ($vs_error = DataMigrationUtils::postError($t_subject, _t("[%1] Could not add related entity with relationship %2", $vs_idno, trim($va_element_data['_relationship_type'])), __CA_DATA_IMPORT_ERROR__, array('dontOutputLevel' => true, 'dontPrint' => true))) {

@@ -529,7 +529,7 @@ class Installer {
 					$t_restriction->insert();
 
 					if ($t_restriction->numErrors()) {
-						$this->addError("There was an error while inserting type restriction $vs_restriction_code for metadata element $vs_element_code: ".join("; ",$t_restriction->getErrors()));
+						$this->addError("There was an error while inserting type restriction {$vs_restriction_code} for metadata element {$vs_element_code}: ".join("; ",$t_restriction->getErrors()));
 					}
 				}
 			}
