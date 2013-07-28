@@ -669,7 +669,7 @@
 			$vs_event_source = (isset($pa_options['importEventSource']) && $pa_options['importEventSource']) ? $pa_options['importEventSource'] : "?";
 			$o_log = (isset($pa_options['log']) && $pa_options['log'] instanceof KLogger) ? $pa_options['log'] : null;
 
-			if (sizeof($va_collection_ids = $t_collection->getCollectionIDsByName($ps_collection_name)) == 0) {
+			if (sizeof($va_collection_ids = $t_collection->getCollectionIDsByName($ps_collection_name, isset($pa_values['parent_id']) ? $pa_values['parent_id'] : null)) == 0) {
 				if (isset($pa_options['dontCreate']) && $pa_options['dontCreate']) { return false; }
 				if ($o_event) { $o_event->beginItem($vs_event_source, 'ca_collections', 'I'); }
 				

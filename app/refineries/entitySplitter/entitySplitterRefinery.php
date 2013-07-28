@@ -109,7 +109,7 @@
 				}
 				
 				if ((!isset($va_val['_relationship_type']) || !$va_val['_relationship_type']) && $o_log) {
-					$o_log->logWarning(_t('[entitySplitterRefinery] No relationship type is set for entity %1', $vs_entity));
+					$o_log->logWarn(_t('[entitySplitterRefinery] No relationship type is set for entity %1', $vs_entity));
 				}
 				
 				// Set entity_type
@@ -124,7 +124,7 @@
 				}
 				
 				if ((!isset($va_val['_type']) || !$va_val['_type']) && $o_log) {
-					$o_log->logWarning(_t('[entitySplitterRefinery] No entity type is set for entity %1', $vs_entity));
+					$o_log->logWarn(_t('[entitySplitterRefinery] No entity type is set for entity %1', $vs_entity));
 				}
 			
 				// Set attributes

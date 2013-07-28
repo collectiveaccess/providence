@@ -78,7 +78,7 @@
 						if ($o_tep->parse($vs_exp)) {
 							return $o_tep->getText();
 						} else {
-							if ($o_log) { $o_log->logWarning(_t('[dateJoinerRefinery] Could not parse date expression %1 assembled from range', $vs_exp)); }
+							if ($o_log) { $o_log->logWarn(_t('[dateJoinerRefinery] Could not parse date expression %1 assembled from range', $vs_exp)); }
 						}
 					}
 			
@@ -90,7 +90,7 @@
 						if ($o_tep->parse($vs_exp)) {
 							return $o_tep->getText();
 						} else {
-							if ($o_log) { $o_log->logWarning(_t('[dateJoinerRefinery] Could not parse date expression %1 assembled from range', $vs_exp)); }
+							if ($o_log) { $o_log->logWarn(_t('[dateJoinerRefinery] Could not parse date expression %1 assembled from range', $vs_exp)); }
 						}
 					}
 					break;
@@ -112,7 +112,7 @@
 						if ($o_tep->parse(join("/", $va_date))) {
 							return $o_tep->getText();
 						} else {
-							if ($o_log) { $o_log->logWarning(_t('[dateJoinerRefinery] Could not parse date expression %1 assembled from multiColumnDate', join("/", $va_date))); }
+							if ($o_log) { $o_log->logWarn(_t('[dateJoinerRefinery] Could not parse date expression %1 assembled from multiColumnDate', join("/", $va_date))); }
 						}
 					}
 					break;
@@ -136,7 +136,7 @@
 						if ($o_tep->parse(join("/", $va_date))) {	// TODO: this is assuming US-style dates for now
 							$va_dates[] = $o_tep->getText();
 						} else {
-							if ($o_log) { $o_log->logWarning(_t('[dateJoinerRefinery] Could not parse date expression %1 assembled from multiColumnRange', join("/", $va_date))); }
+							if ($o_log) { $o_log->logWarn(_t('[dateJoinerRefinery] Could not parse date expression %1 assembled from multiColumnRange', join("/", $va_date))); }
 						}
 					}
 					
@@ -155,7 +155,7 @@
 						if ($o_tep->parse(join("/", $va_date))) {	// TODO: this is assuming US-style dates for now
 							$va_dates[] = $o_tep->getText();
 						} else {
-							if ($o_log) { $o_log->logWarning(_t('[dateJoinerRefinery] Could not parse date expression %1 assembled from multiColumnRange', join("/", $va_date))); }
+							if ($o_log) { $o_log->logWarn(_t('[dateJoinerRefinery] Could not parse date expression %1 assembled from multiColumnRange', join("/", $va_date))); }
 						}
 					}
 					

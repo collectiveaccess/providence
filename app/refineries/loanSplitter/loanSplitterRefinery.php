@@ -102,7 +102,7 @@
 				}
 				
 				if ((!isset($va_val['_relationship_type']) || !$va_val['_relationship_type']) && $o_log) {
-					$o_log->logWarning(_t('[loanSplitterRefinery] No relationship type is set for loan %1', $vs_loan));
+					$o_log->logWarn(_t('[loanSplitterRefinery] No relationship type is set for loan %1', $vs_loan));
 				}
 	
 				// Set loan_type
@@ -117,7 +117,7 @@
 				}
 				
 				if ((!isset($va_val['_type']) || !$va_val['_type']) && $o_log) {
-					$o_log->logWarning(_t('[loanSplitterRefinery] No loan type is set for loan %1', $vs_loan));
+					$o_log->logWarn(_t('[loanSplitterRefinery] No loan type is set for loan %1', $vs_loan));
 				}
 			
 				// Set attributes

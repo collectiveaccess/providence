@@ -102,7 +102,7 @@
 				}
 				
 				if ((!isset($va_val['_relationship_type']) || !$va_val['_relationship_type']) && $o_log) {
-					$o_log->logWarning(_t('[tourStopSplitterRefinery] No relationship type is set for tour stop %1', $vs_tour_stop));
+					$o_log->logWarn(_t('[tourStopSplitterRefinery] No relationship type is set for tour stop %1', $vs_tour_stop));
 				}
 				
 				// Set tour_stop_type
@@ -117,7 +117,7 @@
 				}
 				
 				if ((!isset($va_val['_type']) || !$va_val['_type']) && $o_log) {
-					$o_log->logWarning(_t('[tourStopSplitterRefinery] No collection type is set for tour stop %1', $vs_tour_stop));
+					$o_log->logWarn(_t('[tourStopSplitterRefinery] No collection type is set for tour stop %1', $vs_tour_stop));
 				}
 				
 				// Set tour 
@@ -127,7 +127,7 @@
 				}
 				if (!$vn_tour_id) {
 					// No tour = bail!
-					if($o_log) { $o_log->logWarning(_t('[tourStopSplitterRefinery] Could not find tour %1 to relate stop stops to.', $vs_tour_stop)); }
+					if($o_log) { $o_log->logWarn(_t('[tourStopSplitterRefinery] Could not find tour %1 to relate stop stops to.', $vs_tour_stop)); }
 					return array();
 				} 
 				

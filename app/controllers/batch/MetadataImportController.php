@@ -116,7 +116,7 @@
  			
 				foreach($_FILES as $vs_param => $va_file) {
 					foreach($va_file['name'] as $vn_i => $vs_name) {
-						if ($t_importer = ca_data_importers::loadImporterFromFile($va_file['tmp_name'][$vn_i], $va_errors)) {
+						if ($t_importer = ca_data_importers::loadImporterFromFile($va_file['tmp_name'][$vn_i], $va_errors, array('logDirectory' => $this->request->config->get('batch_metadata_import_log_directory'), 'logLevel' => KLogger::INFO))) {
 							$va_response['copied'][$vs_name] = true;
 						} else {
 							$va_response['skipped'][$vs_name] = true;
