@@ -1817,12 +1817,12 @@
 		 */
 		public function getTypeRestrictionInstance($pn_element_id) {
 			$t_restriction = new ca_metadata_type_restrictions();
-			if ($t_restriction->load(array('element_id' => (int)$pn_element_id, 'table_num' => (int)$this->tableNum(), 'type_id' => $this->get($this->ATTRIBUTE_TYPE_ID_FLD)))) {
+			if (is_subclass_of($this, 'BaseRelationshipModel') && ($t_restriction->load(array('element_id' => (int)$pn_element_id, 'table_num' => (int)$this->tableNum(), 'type_id' => $this->get('type_id'))))) {
 				return $t_restriction;
-			} else {
-				if ($t_restriction->load(array('element_id' => (int)$pn_element_id, 'table_num' => (int)$this->tableNum(), 'type_id' => null))) {
-					return $t_restriction;
-				}
+			} elseif ($t_restriction->load(array('element_id' => (int)$pn_element_id, 'table_num' => (int)$this->tableNum(), 'type_id' => $this->get($this->ATTRIBUTE_TYPE_ID_FLD)))) {
+				return $t_restriction;
+			} elseif ($t_restriction->load(array('element_id' => (int)$pn_element_id, 'table_num' => (int)$this->tableNum(), 'type_id' => null))) {
+				return $t_restriction;
 			}
 			
 			// try going up the hierarchy to find one that we can inherit from
