@@ -406,6 +406,12 @@ class ca_editor_ui_screens extends BundlableLabelableBaseModelWithAttributes {
 				case 'intrinsic':
 					$va_field_info = $t_instance->getFieldInfo($vs_bundle);
 					if (isset($va_field_info['DONT_ALLOW_IN_UI']) && $va_field_info['DONT_ALLOW_IN_UI']) { continue(2); }
+					if (is_subclass_of($t_instance, 'BaseRelationshipModel')) {
+						if (isset($va_field_info['IDENTITY']) && $va_field_info['IDENTITY']) { continue(2); }
+						if ($t_instance->getTypeFieldName() == $vs_bundle) { continue(2); }
+						if ($t_instance->getLeftTableFieldName() == $vs_bundle) { continue(2); }
+						if ($t_instance->getRightTableFieldName() == $vs_bundle) { continue(2); }
+					}
 					break;
 				case 'preferred_label':
 				case 'nonpreferred_label':

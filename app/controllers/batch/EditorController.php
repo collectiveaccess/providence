@@ -56,6 +56,7 @@
  			
  			JavascriptLoadManager::register('bundleListEditorUI');
  			JavascriptLoadManager::register('bundleableEditor');
+ 			JavascriptLoadManager::register('bundleListEditorUI');
  			JavascriptLoadManager::register('panel');
  			
  			parent::__construct($po_request, $po_response, $pa_view_paths);

@@ -217,9 +217,25 @@ class ca_editor_uis extends BundlableLabelableBaseModelWithAttributes {
 
 	protected $FIELDS;
 	
+	
+	static $s_loaded_relationship_tables = false;
+	
 	# ----------------------------------------
 	public function __construct($pn_id=null) {
 		parent::__construct($pn_id);
+		
+		if (!ca_editor_uis::$s_loaded_relationship_tables) {
+			require_once(__CA_MODELS_DIR__.'/ca_relationship_types.php');
+			$t_rel = new ca_relationship_types();
+			$va_rels = $t_rel->getRelationshipsUsingTypes();
+			
+			$o_dm = Datamodel::load();
+			foreach($va_rels as $vn_table_num => $va_rel_table_info) {
+				BaseModel::$s_ca_models_definitions['ca_editor_uis']['FIELDS']['editor_type']['BOUNDS_CHOICE_LIST'][$va_rel_table_info['name']] = $vn_table_num;
+			}
+			
+			ca_editor_uis::$s_loaded_relationship_tables = true;
+		}
 	}
 	# ------------------------------------------------------
 	protected function initLabelDefinitions() {

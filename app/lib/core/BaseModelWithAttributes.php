@@ -64,19 +64,35 @@
 			$this->init();
 		}
 		# ------------------------------------------------------------------
+		/**
+		 *
+		 */
+		public function clear() {
+			parent::clear();
+			$this->init();
+		}
+		# ------------------------------------------------------------------
+		/**
+		 *
+		 */
 		public function init() {
 			$this->opa_failed_attribute_inserts = array();
 			$this->opa_failed_attribute_updates = array();
 			$this->_initAttributeQueues();
 		}
 		# ------------------------------------------------------------------
+		/**
+		 *
+		 */
 		private function _initAttributeQueues() {
 			$this->opa_attributes_to_add = array();
 			$this->opa_attributes_to_edit = array();
 			$this->opa_attributes_to_remove = array();
 		}
 		# ------------------------------------------------------------------
-		// create an attribute linked to the current row using values in $pa_values
+		/**
+		 * create an attribute linked to the current row using values in $pa_values
+		 */
 		public function addAttribute($pa_values, $pm_element_code_or_id, $ps_error_source=null) {
 			if (!($t_element = $this->_getElementInstance($pm_element_code_or_id))) { return false; }
 			if ($t_element->get('parent_id') > 0) { return false; }
@@ -1714,7 +1730,10 @@
  			 	return $va_tmp;
  			 }
  			
- 			if (isset($this->ATTRIBUTE_TYPE_ID_FLD) && (($pn_type_id) || (($pn_type_id = $this->get($this->ATTRIBUTE_TYPE_ID_FLD)) > 0))) {
+ 			$vs_type_sql = '';
+ 			if (
+ 				(isset($this->ATTRIBUTE_TYPE_ID_FLD) && (($pn_type_id) || (($pn_type_id = $this->get($this->ATTRIBUTE_TYPE_ID_FLD)) > 0)))
+ 			) {
  				$va_ancestors = array();
  				if ($t_type_instance = $this->getTypeInstance()) {
  					$va_ancestors = $t_type_instance->getHierarchyAncestors(null, array('idsOnly' => true, 'includeSelf' => true));
@@ -1726,9 +1745,10 @@
  				} else {
  					$vs_type_sql = '((camtr.type_id = '.intval($pn_type_id).') OR (camtr.type_id IS NULL)) AND ';
  				}
- 			} else {
- 				$vs_type_sql = '';
- 			}
+ 			} elseif (is_subclass_of($this, "BaseRelationshipModel")) {
+ 				if (!$pn_type_id) { $pn_type_id = self::get('type_id'); }
+ 				if ($pn_type_id > 0) { $vs_type_sql = '((camtr.type_id = '.intval($pn_type_id).') OR (camtr.type_id IS NULL)) AND '; }
+			} 
  			
  			$o_db = $this->getDb();
  			
@@ -1797,12 +1817,12 @@
 		 */
 		public function getTypeRestrictionInstance($pn_element_id) {
 			$t_restriction = new ca_metadata_type_restrictions();
-			if ($t_restriction->load(array('element_id' => (int)$pn_element_id, 'table_num' => (int)$this->tableNum(), 'type_id' => $this->get($this->ATTRIBUTE_TYPE_ID_FLD)))) {
+			if (is_subclass_of($this, 'BaseRelationshipModel') && ($t_restriction->load(array('element_id' => (int)$pn_element_id, 'table_num' => (int)$this->tableNum(), 'type_id' => $this->get('type_id'))))) {
 				return $t_restriction;
-			} else {
-				if ($t_restriction->load(array('element_id' => (int)$pn_element_id, 'table_num' => (int)$this->tableNum(), 'type_id' => null))) {
-					return $t_restriction;
-				}
+			} elseif ($t_restriction->load(array('element_id' => (int)$pn_element_id, 'table_num' => (int)$this->tableNum(), 'type_id' => $this->get($this->ATTRIBUTE_TYPE_ID_FLD)))) {
+				return $t_restriction;
+			} elseif ($t_restriction->load(array('element_id' => (int)$pn_element_id, 'table_num' => (int)$this->tableNum(), 'type_id' => null))) {
+				return $t_restriction;
 			}
 			
 			// try going up the hierarchy to find one that we can inherit from

@@ -538,9 +538,11 @@ class ca_metadata_elements extends LabelableBaseModelWithAttributes implements I
 	 * @param $pm_table_name_or_num mixed Optional table name or number to filter list with. If specified then only elements that have a type restriction to the table are returned. If omitted (default) then all elements, regardless of type restrictions, are returned.
 	 * @param $pm_type_name_or_id mixed Optional type code or type_id to restrict elements to.  If specified then only elements that have a type restriction to the specified table and type are returned. 
 	 * @param $pb_use_cache boolean Optional control for list cache; if true [default] then the will be cached for the request; if false the list will be generated from the database. The list is always generated at least once in the current request - there is no inter-request caching
+	 * @param $pa_data_types array Optional list of element data types to filter on.
+	 *
 	 * @return array A List of elements. Each list item is an array with keys set to field names; there is one additional value added with key "display_label" set to the display label of the element in the current locale
 	 */
-	public static function getElementsAsList($pb_root_elements_only=false, $pm_table_name_or_num=null, $pm_type_name_or_id=null, $pb_use_cache=true, $pb_return_stats=false, $pb_index_by_element_code=false){
+	public static function getElementsAsList($pb_root_elements_only=false, $pm_table_name_or_num=null, $pm_type_name_or_id=null, $pb_use_cache=true, $pb_return_stats=false, $pb_index_by_element_code=false, $pa_data_types=null){
 		$o_dm = Datamodel::load();
 		$vn_table_num = $o_dm->getTableNum($pm_table_name_or_num);
 		
@@ -613,6 +615,10 @@ class ca_metadata_elements extends LabelableBaseModelWithAttributes implements I
 		while($qr_tmp->nextRow()){
 			$vn_element_id = $qr_tmp->get('element_id');
 			$vs_element_code = $qr_tmp->get('element_code');
+			$vs_datatype = $qr_tmp->get('datatype');
+			
+			if (is_array($pa_data_types) && !in_array($vs_datatype, $pa_data_types)) { continue; }
+			
 			foreach($t_element->getFields() as $vs_field){
 				$va_record[$vs_field] = $qr_tmp->get($vs_field);
 			}
@@ -838,7 +844,7 @@ class ca_metadata_elements extends LabelableBaseModelWithAttributes implements I
 		$o_dm = Datamodel::load();
 		$t_list = new ca_lists();
 		while($qr_restrictions->nextRow()) {
-			$t_table = $o_dm->getInstanceByTableNum($qr_restrictions->get('table_num'), true);
+			if (!($t_table = $o_dm->getInstanceByTableNum($qr_restrictions->get('table_num'), true))) { continue; }
 			
 			if ($vn_type_id = $qr_restrictions->get('type_id')) {
 				$vs_type_name = $t_list->getItemForDisplayByItemID($vn_type_id);

@@ -381,6 +381,9 @@ class ca_entities extends BundlableLabelableBaseModelWithAttributes implements I
 	 *
 	 */
 	public function getIDsByLabel($pa_label_values, $pn_parent_id=null, $pn_type_id=null) {
+		if (!isset($pa_label_values['forename']) && !isset($pa_label_values['surname']) && isset($pa_label_values['displayname'])) {
+			$pa_label_values = DataMigrationUtils::splitEntityName($pa_label_values['displayname']);
+		}
 		return $this->getEntityIDsByName($pa_label_values['forename'], $pa_label_values['surname'], $pn_parent_id, $pn_type_id);
 	}
 	# ------------------------------------------------------

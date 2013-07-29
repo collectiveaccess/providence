@@ -158,7 +158,7 @@
 					}
 					
 					if ((!isset($va_val['_relationship_type']) || !$va_val['_relationship_type']) && $o_log) {
-						$o_log->logWarning(_t('[listItemSplitterRefinery] No relationship type is set for item %1', $vs_list_item));
+						$o_log->logWarn(_t('[listItemSplitterRefinery] No relationship type is set for item %1', $vs_list_item));
 					}
 					
 					$va_vals[] = $va_val;

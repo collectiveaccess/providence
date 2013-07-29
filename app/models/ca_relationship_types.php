@@ -497,16 +497,16 @@ class ca_relationship_types extends BundlableLabelableBaseModelWithAttributes {
 	/**
 	 * Converts a list of relationship type_code string and/or numeric type_ids to a list of numeric type_ids
 	 *
-	 * @param string $ps_relationship_table The name of the relationship table that the types are valid for (Eg. ca_objects_x_entities)
+	 * @param mixed $pm_table_name_or_num The name or number of the relationship table that the types are valid for (Eg. ca_objects_x_entities)
 	 * @param array $pa_list A list of relationship type_code string and/or numeric type_ids
 	 * @param array $pa_options Optional array of options. Support options are:
 	 *			includeChildren = If set to true, ids of children of relationship types are included in the returned values
 	 * @return array A list of corresponding type_ids 
 	 */
-	 public function relationshipTypeListToIDs($ps_relationship_table, $pa_list, $pa_options=null) {
+	 public function relationshipTypeListToIDs($pm_table_name_or_num, $pa_list, $pa_options=null) {
 	 	$va_rel_ids = array();
 		foreach($pa_list as $vm_type) {
-			if ($vn_type_id = $this->getRelationshipTypeID($ps_relationship_table, $vm_type)) {
+			if ($vn_type_id = $this->getRelationshipTypeID($pm_table_name_or_num, $vm_type)) {
 				$va_rel_ids[] = $vn_type_id;
 			}
 		}
@@ -526,17 +526,17 @@ class ca_relationship_types extends BundlableLabelableBaseModelWithAttributes {
 	/**
 	 * Converts a list of relationship type_code string and/or numeric type_ids to a list of  type_code strings
 	 *
-	 * @param string $ps_relationship_table The name of the relationship table that the types are valid for (Eg. ca_objects_x_entities)
+	 * @param mixed $pm_table_name_or_num The name or number of the relationship table that the types are valid for (Eg. ca_objects_x_entities)
 	 * @param array $pa_list A list of relationship type_code string and/or numeric type_ids
 	 * @param array $pa_options Optional array of options. Support options are:
 	 *			includeChildren = If set to true, ids of children of relationship types are included in the returned values
 	 * @return array A list of corresponding type_codes 
 	 */
-	 public function relationshipTypeListToTypeCodes($ps_relationship_table, $pa_list, $pa_options=null) {
-	 	if (!is_numeric($ps_relationship_table)) {
-			$vn_table_num = $this->getAppDatamodel()->getTableNum($ps_relationship_table);
+	 public function relationshipTypeListToTypeCodes($pm_table_name_or_num, $pa_list, $pa_options=null) {
+	 	if (!is_numeric($pm_table_name_or_num)) {
+			$vn_table_num = $this->getAppDatamodel()->getTableNum($pm_table_name_or_num);
 		} else {
-			$vn_table_num = $ps_relationship_table;
+			$vn_table_num = $pm_table_name_or_num;
 		}
 		
 		if (!is_array($pa_list)) { $pa_list = array($pa_list); }
