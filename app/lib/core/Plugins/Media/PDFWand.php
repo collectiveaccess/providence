@@ -411,7 +411,7 @@ class WLPlugMediaPDFWand Extends BaseMediaPlugin implements IWLPlugMedia {
 				switch ($xml->name) {
 					case 'page':		// new page
 						if ($xml->nodeType == XMLReader::END_ELEMENT) { 
-							$va_locations['__pages__'][$vn_current_page] = $vs_page_content;
+							//$va_locations['__pages__'][$vn_current_page] = $vs_page_content;
 							$vs_page_content = '';
 							continue; 
 						}
