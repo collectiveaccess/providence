@@ -32,14 +32,16 @@ _.extend(DV.Schema.helpers, {
 				  page      : p,
 				  content   : '',
 				  location  : { 'image': locStr }
-				}, false);
+				}, false, false);
 			}
-			this.viewer.api.setCurrentPage(firstPage);
 		}
 	
+		this.viewer.api.setCurrentPage(firstPage);
       } else {
         this.highlightSearchResponses();
       }
+      
+	  this.viewer.api.redraw(true);
     }, this);
 
     var failResponse = function() {
@@ -63,7 +65,7 @@ _.extend(DV.Schema.helpers, {
 
     this.elements.currentPage.text(pageNumber);
     this.viewer.$('.DV-pageNumberContainer input').val(pageNumber);
-console.log("state", this.viewer.state);
+    
     if(this.viewer.state === 'ViewDocument' ||
        this.viewer.state === 'ViewThumbnails'){
       // this.viewer.history.save('document/p'+pageNumber);

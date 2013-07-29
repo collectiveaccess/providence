@@ -140,9 +140,12 @@ DV.PageSet.prototype.draw = function(pageCollection){
 };
 
 DV.PageSet.prototype.redraw = function(stopResetOfPosition, redrawAnnotations) {
-  if (this.pages['p0']) this.pages['p0'].draw({ force: true, forceAnnotationRedraw : redrawAnnotations });
-  if (this.pages['p1']) this.pages['p1'].draw({ force: true, forceAnnotationRedraw : redrawAnnotations });
-  if (this.pages['p2']) this.pages['p2'].draw({ force: true, forceAnnotationRedraw : redrawAnnotations });
+	// TODO [SK]: this redraw causes problem on sequential searches by loading the wrong page images
+	// Must fix because while commenting out fixes the page image issue it causes redraw issues when zooming
+	//
+  //if (this.pages['p0']) this.pages['p0'].draw({ force: true, forceAnnotationRedraw : redrawAnnotations });
+  //if (this.pages['p1']) this.pages['p1'].draw({ force: true, forceAnnotationRedraw : redrawAnnotations });
+ // if (this.pages['p2']) this.pages['p2'].draw({ force: true, forceAnnotationRedraw : redrawAnnotations });
 
   if(redrawAnnotations && this.viewer.activeAnnotation){
     this.viewer.helpers.jump(this.viewer.activeAnnotation.page.index,this.viewer.activeAnnotation.position.top - 37);

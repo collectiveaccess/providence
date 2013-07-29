@@ -180,7 +180,7 @@ DV.Api.prototype = {
     
     // TODO: Re-rendering components seems to break the next and previous buttons
     // For now we just skip it but am not sure if this will break something else?
-    //this.viewer.helpers.renderComponents();
+    this.viewer.helpers.renderComponents();
     if (redrawAll) {
       this.viewer.elements.window.removeClass('DV-coverVisible');
       this.viewer.pageSet.buildPages({noNotes : true});
@@ -201,12 +201,13 @@ DV.Api.prototype = {
   },
 
   // Add a new annotation to the document, prefilled to any extent.
-  addAnnotation : function(anno, show) {
+  addAnnotation : function(anno, show, redraw) {
   	if (show == undefined) { show = true; }
+  	if (redraw == undefined) { redraw = true; }
   	
     anno = this.viewer.schema.loadAnnotation(anno);
     this.viewer.models.annotations.sortAnnotations();
-    this.redraw(true);
+    if (redraw) { this.redraw(true); }
    // if (show) { this.viewer.pageSet.showAnnotation(anno, {active: true, edit : true}); }
     return anno;
   },
@@ -239,7 +240,6 @@ DV.Api.prototype = {
 
   // set the state. This takes "ViewDocument," "ViewThumbnails", "ViewText"
   setState : function(state) {
-  	console.log("state", state);
     this.viewer.open(state);
   },
 

@@ -46,7 +46,7 @@ DV.Schema.states = {
       this.elements.annotations.css({zoom : 0});
       this.elements.annotations.css({zoom : 1});
     }
-
+    
     this.helpers.toggleContent('viewAnnotations');
     this.compiled.next();
     return true;
@@ -84,7 +84,6 @@ DV.Schema.states = {
 
     this.helpers.getSearchResponse(searchRequest);
     this.acceptInput.deny();
-    console.log("view search");
     
     this.helpers.addObserver('drawPages');
     this.helpers.toggleContent('viewDocument');
