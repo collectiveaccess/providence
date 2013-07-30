@@ -103,7 +103,7 @@
 				}
 				
 				if ((!isset($va_val['_relationship_type']) || !$va_val['_relationship_type']) && $o_log) {
-					$o_log->logWarning(_t('[placeSplitterRefinery] No relationship type is set for place %1', $vs_place));
+					$o_log->logWarn(_t('[placeSplitterRefinery] No relationship type is set for place %1', $vs_place));
 				}
 			
 				// Set place_type
@@ -118,7 +118,7 @@
 				}
 				
 				if ((!isset($va_val['_type']) || !$va_val['_type']) && $o_log) {
-					$o_log->logWarning(_t('[placeSplitterRefinery] No place type is set for place %1', $vs_place));
+					$o_log->logWarn(_t('[placeSplitterRefinery] No place type is set for place %1', $vs_place));
 				}
 				
 				// Set place hierarchy
