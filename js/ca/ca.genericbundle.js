@@ -382,7 +382,6 @@ var caUI = caUI || {};
 		};
 		
 		that._updateSortOrderListIDFormElement = function() {
-		console.log("foo");
 			if (!that.listSortOrderID) { return false; }
 			var sort_list = [];
 			jQuery.each(jQuery(that.container + " ." + that.itemListClassName + " ." + that.itemClassName), function(k, v) { 
