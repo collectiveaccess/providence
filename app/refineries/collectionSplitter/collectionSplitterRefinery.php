@@ -132,7 +132,7 @@
 				}
 			
 				// Set attributes
-				if (is_array($va_attr_vals = caProcessRefineryAttributes($pa_attributes, $pa_source_data, $pa_item, $vs_delimiter, $vn_c, $o_log))) {
+				if (is_array($va_attr_vals = caProcessRefineryAttributes($pa_item['settings']['collectionSplitter_attributes'], $pa_source_data, $pa_item, $vs_delimiter, $vn_c, $o_log))) {
 					$va_val = array_merge($va_val, $va_attr_vals);
 				}
 				
