@@ -5,6 +5,11 @@ _.extend(DV.Schema.helpers, {
     if (this.viewer.options.showAnnotations === false) return false;
     return _.size(this.models.annotations.byId) > 0;
   },
+  
+  numAnnotations : function() {
+    if (this.viewer.options.showAnnotations === false) return 0;
+    return _.size(this.models.annotations.byId);
+  },
 
   renderViewer: function(){
     var doc         = this.viewer.schema.document;
@@ -204,25 +209,27 @@ _.extend(DV.Schema.helpers, {
     var showAnnotations = this.showAnnotations();
     var showPages       = this.models.document.totalPages > 1;
     var showSearch      = (this.viewer.options.search !== false) &&
-                          (this.viewer.options.text !== false) &&
-                          (!this.viewer.options.width || this.viewer.options.width >= 540);
+                          //(this.viewer.options.text !== false) &&
+                          (!this.viewer.options.width || (this.viewer.options.width >= 540) || (this.viewer.options.width == '100%'));
     var noFooter = (!showAnnotations && !showPages && !showSearch && !this.viewer.options.sidebar);
-
-
     // Hide annotations, if there are none:
     var $annotationsView = this.viewer.$('.DV-annotationView');
     $annotationsView[showAnnotations ? 'show' : 'hide']();
-
-    // Hide the text tab, if it's disabled.
+	if (showAnnotations) { $('div.DV-annotationView span.DV-trigger').html('Results (' + this.numAnnotations() + ')'); }
+    
+    // Show the search box if enabled
     if (showSearch) {
       this.elements.viewer.addClass('DV-searchable');
       this.viewer.$('input.DV-searchInput', containerEl).placeholder({
         message: 'Search',
         clearClassName: 'DV-searchInput-show-search-cancel'
       });
-    } else {
-      this.viewer.$('.DV-textView').hide();
-    }
+    } 
+    
+    // Hide the text tab, if it's disabled.
+	if (!this.viewer.options.text) {
+		this.viewer.$('.DV-textView').hide();
+	}
 
     // Hide the Pages tab if there is only 1 page in the document.
     if (!showPages) {
@@ -245,9 +252,13 @@ _.extend(DV.Schema.helpers, {
     if (showPages || this.viewer.options.sidebar) {
       var navControls = JST.navControls({
         totalPages: this.viewer.schema.data.totalPages,
-        totalAnnotations: this.viewer.schema.data.totalAnnotations
+        totalAnnotations: this.numAnnotations()
       });
       this.viewer.$('.DV-navControlsContainer').html(navControls);
+      
+      // Re-establish next/previous button actions
+    	this.viewer.$('.DV-navControls').delegate('span.DV-next','click', this.viewer.compiled.next);
+		this.viewer.$('.DV-navControls').delegate('span.DV-previous','click', this.viewer.compiled.previous);
     }
 
     this.viewer.$('.DV-fullscreenControl').remove();

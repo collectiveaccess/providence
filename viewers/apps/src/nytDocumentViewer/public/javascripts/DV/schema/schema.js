@@ -47,7 +47,11 @@ DV.Schema.prototype.loadAnnotation = function(anno) {
   anno.type   = anno.location && anno.location.image ? 'region' : 'page';
   if (anno.type === 'region') {
     var loc = DV.jQuery.map(anno.location.image.split(','), function(n, i) { return parseInt(n, 10); });
-    anno.y1 = loc[0]; anno.x2 = loc[1]; anno.y2 = loc[2]; anno.x1 = loc[3];
+    
+    // Changed coordinate order here to be what one would expect (well, what I would expect at least)
+    // Previously it has been y1, x2, y2, x1
+    // Now it is x1, y1, x2, y2
+    anno.y1 = loc[1]; anno.x2 = loc[2]; anno.y2 = loc[3]; anno.x1 = loc[0];
   }else if(anno.type === 'page'){
     anno.y1 = 0; anno.x2 = 0; anno.y2 = 0; anno.x1 = 0;
   }

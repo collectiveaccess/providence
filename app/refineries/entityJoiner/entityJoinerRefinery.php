@@ -109,7 +109,7 @@
 				}
 				
 				if ((!isset($va_val['_relationship_type']) || !$va_val['_relationship_type']) && $o_log) {
-					$o_log->logWarning(_t('[entityJoinerRefinery] No relationship type is set for entity %1', $vs_entity));
+					$o_log->logWarn(_t('[entityJoinerRefinery] No relationship type is set for entity %1', $vs_entity));
 				}
 			
 				// Set entity_type
@@ -124,21 +124,11 @@
 				}
 				
 				if ((!isset($va_val['_type']) || !$va_val['_type']) && $o_log) {
-					$o_log->logWarning(_t('[entityJoinerRefinery] No entity type is set for entity %1', $vs_entity));
+					$o_log->logWarn(_t('[entityJoinerRefinery] No entity type is set for entity %1', $vs_entity));
 				}
 			
 				// Set attributes
-				if (is_array($pa_item['settings']['entityJoiner_attributes'])) {
-					$va_attr_vals = array();
-					foreach($pa_item['settings']['entityJoiner_attributes'] as $vs_element_code => $va_attrs) {
-						if(is_array($va_attrs)) {
-							foreach($va_attrs as $vs_k => $vs_v) {
-								$va_attr_vals[$vs_element_code][$vs_k] = BaseRefinery::parsePlaceholder($vs_v, $pa_source_data, $pa_item);
-							}
-						} else {
-							$va_attr_vals[$vs_element_code][$vs_element_code] = BaseRefinery::parsePlaceholder($va_attrs, $pa_source_data, $pa_item);
-						}
-					}
+				if (is_array($va_attr_vals = caProcessRefineryAttributes($pa_item['settings']['entityJoiner_attributes'], $pa_source_data, $pa_item, null, $vn_c, $o_log))) {
 					$va_val = array_merge($va_val, $va_attr_vals);
 				}
 				

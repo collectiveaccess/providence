@@ -771,7 +771,13 @@ require_once(__CA_LIB_DIR__."/ca/ApplicationPluginManager.php");
 					$vs_lot_displayname = "Lot {$vn_lot_id}";	
 				}
 				if ($vs_lot_displayname) {
-					$vs_buf .= "<strong>".($vb_is_currently_part_of_lot ? _t('Part of lot') : _t('Will be part of lot'))."</strong>: " . caNavLink($po_view->request, $vs_lot_displayname, '', 'editor/object_lots', 'ObjectLotEditor', 'Edit', array('lot_id' => $vn_lot_id));
+					if(!($vs_part_of_lot_msg = $po_view->request->config->get("ca_objects_inspector_part_of_lot_msg"))){
+						$vs_part_of_lot_msg = _t('Part of lot');
+					}
+					if(!($vs_will_be_part_of_lot_msg = $po_view->request->config->get("ca_objects_inspector_will_be_part_of_lot_msg"))){
+						$vs_will_be_part_of_lot_msg = _t('Will be part of lot');
+					}
+					$vs_buf .= "<strong>".($vb_is_currently_part_of_lot ? $vs_part_of_lot_msg : $vs_will_be_part_of_lot_msg)."</strong>: " . caNavLink($po_view->request, $vs_lot_displayname, '', 'editor/object_lots', 'ObjectLotEditor', 'Edit', array('lot_id' => $vn_lot_id));
 				}
 			}
 			
@@ -1139,21 +1145,21 @@ require_once(__CA_LIB_DIR__."/ca/ApplicationPluginManager.php");
 					$vs_buf .= "<strong>".$t_item->getFieldInfo('shipping_method', 'LABEL')."</strong>: ".$t_item->getChoiceListValue('shipping_method', $vn_shipping_method)."<br/>\n";
 				}
 			}
-			
-			
-			//
-			// Output extra useful info for bundle mapping groups
-			// 
-			if ($vs_table_name === 'ca_bundle_mapping_groups') {
-				$t_mapping = new ca_bundle_mappings($vn_mapping_id = $t_item->get('mapping_id'));
-				$vs_buf .= "<strong>"._t("Part of")."</strong>: ".caEditorLink($po_view->request, $t_mapping->getLabelForDisplay(), '', 'ca_bundle_mappings', $vn_mapping_id) ."<br/>\n";
-				
-				$vn_content_table_num = $t_mapping->get('table_num');
-				$vs_buf .= "<br/><strong>"._t("Type of content")."</strong>: ".caGetTableDisplayName($vn_content_table_num)."<br/>\n";
-				$vs_buf .= "<strong>"._t("Type")."</strong>: ".$t_mapping->getChoiceListValue('direction', $t_mapping->get('direction'))."<br/>\n";
-				$vs_buf .= "<strong>"._t("Target format")."</strong>: ".$t_mapping->get('target')."<br/>\n";
 
-				$vs_buf .= "<strong>"._t("Number of rules")."</strong>: ".$t_item->getRuleCount()."<br/>\n";
+			//
+			// Output configurable additional info from config, if set
+			// 
+
+			if ($vs_additional_info = $po_view->request->config->get("{$vs_table_name}_inspector_additional_info")) {
+				if(is_array($vs_additional_info)){
+					$vs_buf .= "<br/>";
+					foreach($vs_additional_info as $vs_info){
+						$vs_buf .= caProcessTemplateForIDs($vs_info, $vs_table_name, array($t_item->getPrimaryKey()),array('requireLinkTags' => true))."<br/>\n";
+					}
+				} else {
+					$vs_buf .= "<br/>".caProcessTemplateForIDs($vs_additional_info, $vs_table_name, array($t_item->getPrimaryKey()),array('requireLinkTags' => true))."<br/>\n";
+				}
+				
 			}
 			
 		// -------------------------------------------------------------------------------------
@@ -1556,7 +1562,7 @@ require_once(__CA_LIB_DIR__."/ca/ApplicationPluginManager.php");
 	/**
 	  *
 	  */
-	function caFilterTableList($pa_tables) {
+	function caFilterTableList($pa_tables, $pa_options=null) {
 		require_once(__CA_MODELS_DIR__.'/ca_occurrences.php');
 		$o_config = Configuration::load();
 		$o_dm = Datamodel::load();
@@ -1565,11 +1571,25 @@ require_once(__CA_LIB_DIR__."/ca/ApplicationPluginManager.php");
 		$va_filtered_tables = array();
 		foreach($pa_tables as $vs_display_name => $vn_table_num) {
 			$vs_display_name = mb_strtolower($vs_display_name, 'UTF-8');
-			$vs_table_name = $o_dm->getTableName($vn_table_num);
+			$t_instance = $o_dm->getInstanceByTableNum($vn_table_num, true);
+			$vs_table_name = $t_instance->tableName();
 			
-			if ((int)($o_config->get($vs_table_name.'_disable'))) { continue; }
+			if (is_subclass_of($t_instance, "BaseRelationshipModel")) {
+				$vs_left_table_name = $t_instance->getLeftTableName();
+				if ($vs_left_table_name == 'ca_tour_stops') { $vs_left_table_name = 'ca_tours'; }
+				$vs_right_table_name = $t_instance->getRightTableName();
+				if ($vs_right_table_name == 'ca_tour_stops') { $vs_right_table_name = 'ca_tours'; }
+				
+				if ((int)($o_config->get("{$vs_left_table_name}_disable"))) { continue; }
+				if ((int)($o_config->get("{$vs_right_table_name}_disable"))) { continue; }
+			} else {
+				if ((int)($o_config->get($vs_table_name.'_disable'))) { continue; }
+			}
 			
 			switch($vs_table_name) {
+				case 'ca_tour_stops':
+					if ((int)($o_config->get('ca_tours_disable'))) { continue(2); }
+					break;
 				case 'ca_occurrences':
 					$t_occ = new ca_occurrences();	
 					$va_types = $t_occ->getTypeList();
@@ -1591,6 +1611,11 @@ require_once(__CA_LIB_DIR__."/ca/ApplicationPluginManager.php");
 					break;
 			}
 		}
+		
+		if (caGetOption("sort", $pa_options, true)) {
+			ksort($va_filtered_tables);
+		}
+		
 		return $va_filtered_tables;
 	}
 	# ------------------------------------------------------------------------------------------------
@@ -1755,7 +1780,6 @@ require_once(__CA_LIB_DIR__."/ca/ApplicationPluginManager.php");
 		$o_options = $o_dom->getElementsByTagName("options");
 		
 		
-		
 		$va_ifdefs = array();
 		foreach($o_ifdefs as $o_ifdef) {
 			if (!$o_ifdef) { continue; }
@@ -1864,6 +1888,16 @@ require_once(__CA_LIB_DIR__."/ca/ApplicationPluginManager.php");
 									$vs_get_spec .= ".preferred_labels";
 								}
 								$va_val = $qr_res->get($vs_get_spec, array_merge($pa_options, array('returnAsArray' => true)));
+								
+								if (($va_spec_bits[1] == 'hierarchy') || (($va_spec_bits[1] == 'related') && ($va_spec_bits[1] == 'hierarchy'))) {
+									$va_val_proc = array();
+									foreach($va_val as $vn_i => $va_hier) {
+										$va_val_proc[] = join(isset($va_tag_opts['delimiter']) ? $va_tag_opts['delimiter'] :  "; ", $va_hier);
+									}
+									$va_val = $va_val_proc;
+								}
+								
+								
 								$vb_is_related = true;
 								$va_related_ids = $qr_res->get($va_tmp[0].".".$o_dm->getTablePrimaryKeyName($va_tmp[0]), array('returnAsArray' => true));
 							} else {
@@ -2684,10 +2718,10 @@ $ca_relationship_lookup_parse_cache = array();
 				} else {
 					switch(__CA_APP_TYPE__) {
 						case 'PROVIDENCE':
-							$va_links[] = caEditorLink($g_request, $vs_text, $ps_class, $ps_table_name, $pa_row_ids[$vn_i]);
+							$va_links[] = ($vs_link = caEditorLink($g_request, $vs_text, $ps_class, $ps_table_name, $pa_row_ids[$vn_i])) ? $vs_link : $vs_text;
 							break;
 						case 'PAWTUCKET':
-							$va_links[] = caDetailLink($g_request, $vs_text, $ps_class, $ps_table_name, $pa_row_ids[$vn_i]);
+							$va_links[] = ($vs_link = caDetailLink($g_request, $vs_text, $ps_class, $ps_table_name, $pa_row_ids[$vn_i])) ? $vs_link : $vs_text;
 							break;
 						default:
 							$va_links[] = $vs_text;

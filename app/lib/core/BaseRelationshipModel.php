@@ -34,13 +34,13 @@
   *
   */
  
- require_once(__CA_LIB_DIR__.'/core/BaseModel.php');
+ require_once(__CA_LIB_DIR__.'/ca/BundlableLabelableBaseModelWithAttributes.php');
  require_once(__CA_LIB_DIR__.'/core/IRelationshipModel.php');
  require_once(__CA_APP_DIR__.'/helpers/htmlFormHelpers.php');
  require_once(__CA_MODELS_DIR__.'/ca_relationship_types.php');
  require_once(__CA_MODELS_DIR__.'/ca_acl.php');
  
-	class BaseRelationshipModel extends BaseModel implements IRelationshipModel {
+	class BaseRelationshipModel extends BundlableLabelableBaseModelWithAttributes implements IRelationshipModel {
 		# ------------------------------------------------------
 		/**
 		 * 
@@ -560,6 +560,38 @@
 			}
 			
 			return $va_types_to_return;
+		}
+		
+		# ------------------------------------------------------
+		/**
+		 * 
+		 */
+		public function getLeftTableInstance() {
+			$t_left = $this->getAppDatamodel()->getInstanceByTableName($this->RELATIONSHIP_LEFT_TABLENAME, true);
+			
+			if ($t_left && $t_left->load($this->get($this->getLeftTableFieldName()))) {
+				return $t_left;
+			}
+			return null;
+		}
+		# ------------------------------------------------------
+		/**
+		 * 
+		 */
+		public function getRightTableInstance() {
+			$t_right = $this->getAppDatamodel()->getInstanceByTableName($this->RELATIONSHIP_RIGHT_TABLENAME, true);
+			
+			if ($t_right && $t_right->load($this->get($this->getRightTableFieldName()))) {
+				return $t_right;
+			}
+			return null;
+		}
+		# ------------------------------------------------------
+		/**
+		 * 
+		 */
+		public function getTypeID() {
+			return BaseModel::get('type_id');
 		}
 		# ------------------------------------------------------
 	}

@@ -31,7 +31,7 @@
  
 	class storageLocationSplitterRefinery extends BaseRefinery {
 		# -------------------------------------------------------
-		
+		private $opb_returns_multiple_values = true;
 		# -------------------------------------------------------
 		public function __construct() {
 			$this->ops_name = 'storageLocationSplitter';
@@ -57,6 +57,7 @@
 		 *
 		 */
 		public function refine(&$pa_destination_data, $pa_group, $pa_item, $pa_source_data, $pa_options=null) {
+			$this->opb_returns_multiple_values = true;
 			$o_log = (isset($pa_options['log']) && is_object($pa_options['log'])) ? $pa_options['log'] : null;
 			
 			$va_group_dest = explode(".", $pa_group['destination']);
@@ -106,11 +107,12 @@
 				}
 				
 				if($vs_terminal == 'name') {
+					$this->opb_returns_multiple_values = false;
 					return $vs_location;
 				}
 			
 				if (in_array($vs_terminal, array('preferred_labels', 'nonpreferred_labels'))) {
-					return array('name' => $vs_location);	
+					return array(0 => array('name' => $vs_location));	
 				}
 			
 				// Set label
@@ -128,7 +130,7 @@
 				}
 				
 				if ((!isset($va_val['_relationship_type']) || !$va_val['_relationship_type']) && $o_log) {
-					$o_log->logWarning(_t('[storageLocationSplitterRefinery] No relationship type is set for location %1', $vs_location));
+					$o_log->logWarn(_t('[storageLocationSplitterRefinery] No relationship type is set for location %1', $vs_location));
 				}
 			
 				// Set storage_location_type
@@ -143,7 +145,7 @@
 				}
 				
 				if ((!isset($va_val['_type']) || !$va_val['_type']) && $o_log) {
-					$o_log->logWarning(_t('[storageLocationSplitterRefinery] No storage location type is set for location %1', $vs_location));
+					$o_log->logWarn(_t('[storageLocationSplitterRefinery] No storage location type is set for location %1', $vs_location));
 				}
 				
 				$t_location = new ca_storage_locations();
@@ -181,10 +183,10 @@
 		/**
 		 * storageLocationSplitter returns multiple values
 		 *
-		 * @return bool Always true
+		 * @return bool
 		 */
 		public function returnsMultipleValues() {
-			return true;
+			return $this->opb_returns_multiple_values;
 		}
 		# -------------------------------------------------------
 	}

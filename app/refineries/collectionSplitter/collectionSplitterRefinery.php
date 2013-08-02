@@ -27,10 +27,12 @@
  */
  	require_once(__CA_LIB_DIR__.'/ca/Import/BaseRefinery.php');
  	require_once(__CA_LIB_DIR__.'/ca/Utils/DataMigrationUtils.php');
+	require_once(__CA_LIB_DIR__.'/core/Parsers/ExpressionParser.php');
+	require_once(__CA_APP_DIR__.'/helpers/importHelpers.php');
  
 	class collectionSplitterRefinery extends BaseRefinery {
 		# -------------------------------------------------------
-		
+		private $opb_returns_multiple_values = true;
 		# -------------------------------------------------------
 		public function __construct() {
 			$this->ops_name = 'collectionSplitter';
@@ -56,6 +58,7 @@
 		 *
 		 */
 		public function refine(&$pa_destination_data, $pa_group, $pa_item, $pa_source_data, $pa_options=null) {
+			$this->opb_returns_multiple_values = true;
 			$o_log = (isset($pa_options['log']) && is_object($pa_options['log'])) ? $pa_options['log'] : null;
 			
 			$va_group_dest = explode(".", $pa_group['destination']);
@@ -78,11 +81,12 @@
 				if (!$vs_collection = trim($vs_collection)) { continue; }
 				
 				if($vs_terminal == 'name') {
+					$this->opb_returns_multiple_values = false;
 					return $vs_collection;
 				}
 			
 				if (in_array($vs_terminal, array('preferred_labels', 'nonpreferred_labels'))) {
-					return array('name' => $vs_collection);	
+					return array(0 => array('name' => $vs_collection));	
 				}
 			
 				// Set label
@@ -104,7 +108,7 @@
 				}
 				
 				if ((!isset($va_val['_relationship_type']) || !$va_val['_relationship_type']) && $o_log) {
-					$o_log->logWarning(_t('[collectionSplitterRefinery] No relationship type is set for collection %1', $vs_collection));
+					$o_log->logWarn(_t('[collectionSplitterRefinery] No relationship type is set for collection %1', $vs_collection));
 				}
 				
 				// Set collection_type
@@ -119,38 +123,16 @@
 				}
 				
 				if ((!isset($va_val['_type']) || !$va_val['_type']) && $o_log) {
-					$o_log->logWarning(_t('[collectionSplitterRefinery] No collection type is set for collection %1', $vs_collection));
+					$o_log->logWarn(_t('[collectionSplitterRefinery] No collection type is set for collection %1', $vs_collection));
 				}
 				
 				// Set collection parents
-				global $g_ui_locale_id;
 				if ($va_parents = $pa_item['settings']['collectionSplitter_parents']) {
-					if (!is_array($va_parents)) { $va_parents = array($va_parents); }
-					$vn_collection_id = null;
-						
-					foreach($va_parents as $vn_i => $vs_parent) {
-						$vn_collection_id = DataMigrationUtils::getCollectionID($vs_parent, $va_val['_type'], $g_ui_locale_id, array('idno' => $vs_parent, 'parent_id' => $vn_collection_id), $pa_options);
-						
-						if ($o_log) { $o_log->logDebug(_t('[collectionSplitterRefinery] Got parent %1 with collection_id %2 for %3', $vs_parent, $vn_collection_id, $vs_collection)); }
-					}
-					$va_val['parent_id'] = $vn_collection_id;
+					$va_val['parent_id'] = caProcessRefineryParents('collectionSplitterRefinery', 'ca_collections', $va_parents, $pa_source_data, $pa_item, $vs_delimiter, $vn_c, $o_log);
 				}
 			
 				// Set attributes
-				if (is_array($pa_item['settings']['collectionSplitter_attributes'])) {
-					$va_attr_vals = array();
-					foreach($pa_item['settings']['collectionSplitter_attributes'] as $vs_element_code => $va_attrs) {
-						if(is_array($va_attrs)) {
-							foreach($va_attrs as $vs_k => $vs_v) {
-								// BaseRefinery::parsePlaceholder may return an array if the input format supports repeated values (as XML does)
-								// DataMigrationUtils::getCollectionID(), which ca_data_importers::importDataFromSource() uses to create related collections
-								// only supports non-repeating attribute values, so we join any values here and call it a day.
-								$va_attr_vals[$vs_element_code][$vs_k] = (is_array($vm_v = BaseRefinery::parsePlaceholder($vs_v, $pa_source_data, $pa_item, $vs_delimiter, $vn_c))) ? join(" ", $vm_v) : $vm_v;
-							}
-						} else {
-							$va_attr_vals[$vs_element_code][$vs_element_code] = (is_array($vm_v = BaseRefinery::parsePlaceholder($va_attrs, $pa_source_data, $pa_item, $vs_delimiter, $vn_c))) ? join(" ", $vm_v) : $vm_v;
-						}
-					}
+				if (is_array($va_attr_vals = caProcessRefineryAttributes($pa_item['settings']['collectionSplitter_attributes'], $pa_source_data, $pa_item, $vs_delimiter, $vn_c, $o_log))) {
 					$va_val = array_merge($va_val, $va_attr_vals);
 				}
 				
@@ -164,10 +146,10 @@
 		/**
 		 * collectionSplitter returns multiple values
 		 *
-		 * @return bool Always true
+		 * @return bool
 		 */
 		public function returnsMultipleValues() {
-			return true;
+			return $this->opb_returns_multiple_values;
 		}
 		# -------------------------------------------------------
 	}

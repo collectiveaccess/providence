@@ -100,8 +100,10 @@
 		}
 	} else {
 		// set labels for replacement in blank lookups	
-		foreach($va_element_ids as $vn_element_id) {
-			$va_template_tags[] = "{$vn_element_id}_label";
+		if (is_array($va_element_ids)) {
+			foreach($va_element_ids as $vn_element_id) {
+				$va_template_tags[] = "{$vn_element_id}_label";
+			}
 		}
 	}
 	
@@ -179,6 +181,7 @@
 		fieldNamePrefix: '<?php print $vs_id_prefix; ?>_',
 		templateValues: [<?php print join(',', caQuoteList($va_template_tags)); ?>],
 		initialValues: <?php print json_encode($va_initial_values); ?>,
+		initialValueOrder: <?php print json_encode(array_keys($va_initial_values)); ?>,
 		errors: <?php print json_encode($va_errors); ?>,
 		itemID: '<?php print $vs_id_prefix; ?>Item_',
 		templateClassName: 'caItemTemplate',
@@ -195,6 +198,7 @@
 		fieldNamePrefix: '<?php print $vs_id_prefix; ?>_',
 		templateValues: [<?php print join(',', caQuoteList($va_template_tags)); ?>],
 		initialValues: <?php print json_encode($va_initial_values); ?>,
+		initialValueOrder: <?php print json_encode(array_keys($va_initial_values)); ?>,
 		forceNewValues: <?php print json_encode($va_failed_inserts); ?>,
 		errors: <?php print json_encode($va_errors); ?>,
 		itemID: '<?php print $vs_id_prefix; ?>Item_',
