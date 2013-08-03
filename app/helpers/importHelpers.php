@@ -57,9 +57,9 @@
 		$vn_id = null;
 			
 		foreach(array_reverse($pa_parents) as $vn_i => $va_parent) {
-			$vs_name = BaseRefinery::parsePlaceholder($va_parent['name'], $pa_source_data, $pa_item, $ps_delimiter, $pn_c);
-			$vs_idno = BaseRefinery::parsePlaceholder($va_parent['idno'], $pa_source_data, $pa_item, $ps_delimiter, $pn_c);
-			$vs_type = BaseRefinery::parsePlaceholder($va_parent['type'], $pa_source_data, $pa_item, $ps_delimiter, $pn_c);
+			$vs_name = BaseRefinery::parsePlaceholder($va_parent['name'], $pa_source_data, $pa_item, $ps_delimiter, $pn_c, array('returnAsString' => true, 'delimiter' => ' '));
+			$vs_idno = BaseRefinery::parsePlaceholder($va_parent['idno'], $pa_source_data, $pa_item, $ps_delimiter, $pn_c, array('returnAsString' => true, 'delimiter' => ' '));
+			$vs_type = BaseRefinery::parsePlaceholder($va_parent['type'], $pa_source_data, $pa_item, $ps_delimiter, $pn_c, array('returnAsString' => true, 'delimiter' => ' '));
 			if (!$vs_name && !$vs_idno) { continue; }
 			if (!$vs_name) { $vs_name = $vs_idno; }
 			
