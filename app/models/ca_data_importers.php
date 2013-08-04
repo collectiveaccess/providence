@@ -1105,6 +1105,7 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 		if (!is_array($pa_options) || !isset($pa_options['logLevel']) || !$pa_options['logLevel']) {
 			$pa_options['logLevel'] = KLogger::INFO;
 		}
+		
 		if (!is_array($pa_options) || !isset($pa_options['logDirectory']) || !$pa_options['logDirectory'] || !file_exists($pa_options['logDirectory'])) {
 			if (!($pa_options['logDirectory'] = $o_config->get('batch_metadata_import_log_directory'))) {
 				$pa_options['logDirectory'] = ".";
@@ -1796,25 +1797,6 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 				$o_log->logDebug(_t('Updated idno %1 at %2 seconds', $vs_idno, $t->getTime(4)));
 			}
 			
-			// Mark self-relations as related
-			foreach($va_content_tree as $vs_table_name => $va_content) {
-				if ($vs_table_name == $vs_subject_table) {	
-					$va_self_relations = array();
-					$va_primary_data = array();
-					foreach($va_content as $vn_i => $va_element_data) {
-						if(isset($va_element_data['_relationship_type'])) {
-							$va_self_relations[] = $va_element_data;
-						} else {
-							$va_primary_data[] = $va_element_data;
-						}
-					}
-					if(sizeof($va_self_relations) > 0) {
-						$va_content_tree[$vs_table_name] = $va_primary_data;
-						$va_content_tree["{$vs_table_name}_RELATED"] = $va_self_relations;
-					} 
-				}
-			}
-		
 			foreach($va_content_tree as $vs_table_name => $va_content) {
 				if ($vs_table_name == $vs_subject_table) {		
 					foreach($va_content as $vn_i => $va_element_data) {
@@ -1909,7 +1891,7 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 					} 
 				} else {
 					// related
-					$vs_table_name = preg_replace('!_RELATED$!', '', $vs_table_name);
+					$vs_table_name = preg_replace('!^related\.!', '', $vs_table_name);
 					
 					foreach($va_content as $vn_i => $va_element_data) {
 							$va_data_for_rel_table = $va_element_data;
