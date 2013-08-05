@@ -4238,12 +4238,16 @@ div.listRel {
 	border-radius: 6px;
 }
 
-.roundedRel .caDeleteItemButton {
+.roundedRel .caDeleteItemButton, .roundedRel .caInterstitialEditButton {
 	position: relative;
 	top: 3px;
 }
 
-.listRel .caDeleteItemButton {
+.listRel .caDeleteItemButton, .listRel .caInterstitialEditButton {
+	float: right;
+}
+
+.listRel .caInterstitialEditButton {
 	float: right;
 }
 
@@ -5209,14 +5213,16 @@ div.quickAddFormTopPadding {
 	height: 40px;
 }
 
-div.quickAddErrorContainer {
-	width: 860px;
-	display: none;
-}
-
 div.quickAddDialogHeader {
 	position: fixed; 
 	width: 890px; 
+	z-index:33000;
+}
+
+div.quickAddErrorContainer {
+	position: fixed; 
+	width: 890px;
+	display: none;
 	z-index:33000;
 }
 

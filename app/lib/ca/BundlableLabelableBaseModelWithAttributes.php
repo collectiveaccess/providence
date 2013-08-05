@@ -89,92 +89,94 @@ class BundlableLabelableBaseModelWithAttributes extends LabelableBaseModelWithAt
 	 * against the ca_lists list for the table (as defined by getTypeListCode())
 	 */ 
 	public function insert($pa_options=null) {
-		global $AUTH_CURRENT_USER_ID;
-		$vb_we_set_transaction = false;
+		if (!is_a($this, "BaseRelationshipModel")) {
+			global $AUTH_CURRENT_USER_ID;
+			$vb_we_set_transaction = false;
 		
-		if (!$this->inTransaction()) {
-			$this->setTransaction(new Transaction($this->getDb()));
-			$vb_we_set_transaction = true;
-		}
-		
-		$this->opo_app_plugin_manager->hookBeforeBundleInsert(array('id' => null, 'table_num' => $this->tableNum(), 'table_name' => $this->tableName(), 'instance' => $this));
-		
-		$vb_web_set_change_log_unit_id = BaseModel::setChangeLogUnitID();
-		
-		// check that type_id is valid for this table
-		$t_list = new ca_lists();
-		$vn_type_id = $this->get($this->getTypeFieldName());
-		$va_field_info = $this->getFieldInfo($this->getTypeFieldName());
-		
-		$vb_error = false;
-		if ($this->getTypeFieldName() && !(!$vn_type_id && $va_field_info['IS_NULL'])) {
-			if (!($vn_ret = $t_list->itemIsEnabled($this->getTypeListCode(), $vn_type_id))) {
-				$va_type_list = $this->getTypeList(array('directChildrenOnly' => false, 'returnHierarchyLevels' => true, 'item_id' => null));
-				if (!isset($va_type_list[$vn_type_id])) {
-					$this->postError(2510, _t("Type must be specified"), "BundlableLabelableBaseModelWithAttributes->insert()");
-				} else {
-					if(is_null($vn_ret)) {
-						$this->postError(2510, _t("<em>%1</em> is invalid", $va_type_list[$vn_type_id]['name_singular']), "BundlableLabelableBaseModelWithAttributes->insert()");
-					} else {
-						$this->postError(2510, _t("<em>%1</em> is not enabled", $va_type_list[$vn_type_id]['name_singular']), "BundlableLabelableBaseModelWithAttributes->insert()");
-					}
-				}
-				$vb_error = true;
+			if (!$this->inTransaction()) {
+				$this->setTransaction(new Transaction($this->getDb()));
+				$vb_we_set_transaction = true;
 			}
 		
-			if ($this->HIERARCHY_PARENT_ID_FLD && (bool)$this->getAppConfig()->get($this->tableName().'_enforce_strict_type_hierarchy')) {
-				// strict means if it has a parent is can only have types that are direct sub-types of the parent's type
-				// and if it is the root of the hierarchy it can only take a top-level type
-				if ($vn_parent_id = $this->get($this->HIERARCHY_PARENT_ID_FLD)) {
-					// is child
-					$t_parent = $this->_DATAMODEL->getInstanceByTableName($this->tableName());
-					if ($t_parent->load($vn_parent_id)) {
-						$vn_parent_type_id = $t_parent->getTypeID();
-						$va_type_list = $t_parent->getTypeList(array('directChildrenOnly' => ($this->getAppConfig()->get($this->tableName().'_enforce_strict_type_hierarchy') == '~') ? false : true, 'childrenOfCurrentTypeOnly' => true, 'returnHierarchyLevels' => true));
+			$this->opo_app_plugin_manager->hookBeforeBundleInsert(array('id' => null, 'table_num' => $this->tableNum(), 'table_name' => $this->tableName(), 'instance' => $this));
+		
+			$vb_web_set_change_log_unit_id = BaseModel::setChangeLogUnitID();
+		
+			// check that type_id is valid for this table
+			$t_list = new ca_lists();
+			$vn_type_id = $this->get($this->getTypeFieldName());
+			$va_field_info = $this->getFieldInfo($this->getTypeFieldName());
+		
+			$vb_error = false;
+			if ($this->getTypeFieldName() && !(!$vn_type_id && $va_field_info['IS_NULL'])) {
+				if (!($vn_ret = $t_list->itemIsEnabled($this->getTypeListCode(), $vn_type_id))) {
+					$va_type_list = $this->getTypeList(array('directChildrenOnly' => false, 'returnHierarchyLevels' => true, 'item_id' => null));
+					if (!isset($va_type_list[$vn_type_id])) {
+						$this->postError(2510, _t("Type must be specified"), "BundlableLabelableBaseModelWithAttributes->insert()");
+					} else {
+						if(is_null($vn_ret)) {
+							$this->postError(2510, _t("<em>%1</em> is invalid", $va_type_list[$vn_type_id]['name_singular']), "BundlableLabelableBaseModelWithAttributes->insert()");
+						} else {
+							$this->postError(2510, _t("<em>%1</em> is not enabled", $va_type_list[$vn_type_id]['name_singular']), "BundlableLabelableBaseModelWithAttributes->insert()");
+						}
+					}
+					$vb_error = true;
+				}
+		
+				if ($this->HIERARCHY_PARENT_ID_FLD && (bool)$this->getAppConfig()->get($this->tableName().'_enforce_strict_type_hierarchy')) {
+					// strict means if it has a parent is can only have types that are direct sub-types of the parent's type
+					// and if it is the root of the hierarchy it can only take a top-level type
+					if ($vn_parent_id = $this->get($this->HIERARCHY_PARENT_ID_FLD)) {
+						// is child
+						$t_parent = $this->_DATAMODEL->getInstanceByTableName($this->tableName());
+						if ($t_parent->load($vn_parent_id)) {
+							$vn_parent_type_id = $t_parent->getTypeID();
+							$va_type_list = $t_parent->getTypeList(array('directChildrenOnly' => ($this->getAppConfig()->get($this->tableName().'_enforce_strict_type_hierarchy') == '~') ? false : true, 'childrenOfCurrentTypeOnly' => true, 'returnHierarchyLevels' => true));
 
-						if (!isset($va_type_list[$this->getTypeID()])) {
-							$va_type_list = $this->getTypeList(array('directChildrenOnly' => false, 'returnHierarchyLevels' => true, 'item_id' => null));
+							if (!isset($va_type_list[$this->getTypeID()])) {
+								$va_type_list = $this->getTypeList(array('directChildrenOnly' => false, 'returnHierarchyLevels' => true, 'item_id' => null));
 
-							$this->postError(2510, _t("<em>%1</em> is not a valid type for a child record of type <em>%2</em>", $va_type_list[$this->getTypeID()]['name_singular'], $va_type_list[$vn_parent_type_id]['name_singular']), "BundlableLabelableBaseModelWithAttributes->insert()");
+								$this->postError(2510, _t("<em>%1</em> is not a valid type for a child record of type <em>%2</em>", $va_type_list[$this->getTypeID()]['name_singular'], $va_type_list[$vn_parent_type_id]['name_singular']), "BundlableLabelableBaseModelWithAttributes->insert()");
+								$vb_error = true;
+							}
+						} else {
+							// error - no parent?
+							$this->postError(2510, _t("No parent was found when verifying type of new child"), "BundlableLabelableBaseModelWithAttributes->insert()");
 							$vb_error = true;
 						}
 					} else {
-						// error - no parent?
-						$this->postError(2510, _t("No parent was found when verifying type of new child"), "BundlableLabelableBaseModelWithAttributes->insert()");
-						$vb_error = true;
-					}
-				} else {
-					// is root
-					$va_type_list = $this->getTypeList(array('directChildrenOnly' => true, 'item_id' => null));
-					if (!isset($va_type_list[$this->getTypeID()])) {
-						$va_type_list = $this->getTypeList(array('directChildrenOnly' => false, 'returnHierarchyLevels' => true, 'item_id' => null));
+						// is root
+						$va_type_list = $this->getTypeList(array('directChildrenOnly' => true, 'item_id' => null));
+						if (!isset($va_type_list[$this->getTypeID()])) {
+							$va_type_list = $this->getTypeList(array('directChildrenOnly' => false, 'returnHierarchyLevels' => true, 'item_id' => null));
 						
-						$this->postError(2510, _t("<em>%1</em> is not a valid type for a top-level record", $va_type_list[$this->getTypeID()]['name_singular']), "BundlableLabelableBaseModelWithAttributes->insert()");
-						$vb_error = true;
+							$this->postError(2510, _t("<em>%1</em> is not a valid type for a top-level record", $va_type_list[$this->getTypeID()]['name_singular']), "BundlableLabelableBaseModelWithAttributes->insert()");
+							$vb_error = true;
+						}
 					}
 				}
 			}
-		}
 		
-		if (!$this->_validateIncomingAdminIDNo(true, true)) { $vb_error =  true; }
+			if (!$this->_validateIncomingAdminIDNo(true, true)) { $vb_error =  true; }
 		
-		if ($vb_error) {			
-			// push all attributes onto errored list
-			$va_inserted_attributes_that_errored = array();
-			foreach($this->opa_attributes_to_add as $va_info) {
-				$va_inserted_attributes_that_errored[$va_info['element']][] = $va_info['values'];
-			}
-			foreach($va_inserted_attributes_that_errored as $vs_element => $va_list) {
-				$this->setFailedAttributeInserts($vs_element, $va_list);
-			}
+			if ($vb_error) {			
+				// push all attributes onto errored list
+				$va_inserted_attributes_that_errored = array();
+				foreach($this->opa_attributes_to_add as $va_info) {
+					$va_inserted_attributes_that_errored[$va_info['element']][] = $va_info['values'];
+				}
+				foreach($va_inserted_attributes_that_errored as $vs_element => $va_list) {
+					$this->setFailedAttributeInserts($vs_element, $va_list);
+				}
 			
-			if ($vb_web_set_change_log_unit_id) { BaseModel::unsetChangeLogUnitID(); }
-			if ($vb_we_set_transaction) { $this->removeTransaction(false); }
-			$this->_FIELD_VALUES[$this->primaryKey()] = null;		// clear primary key set by BaseModel::insert()
-			return false;
-		}
+				if ($vb_web_set_change_log_unit_id) { BaseModel::unsetChangeLogUnitID(); }
+				if ($vb_we_set_transaction) { $this->removeTransaction(false); }
+				$this->_FIELD_VALUES[$this->primaryKey()] = null;		// clear primary key set by BaseModel::insert()
+				return false;
+			}
 		
-		$this->_generateSortableIdentifierValue();
+			$this->_generateSortableIdentifierValue();
+		}
 		
 		// stash attributes to add
 		$va_attributes_added = $this->opa_attributes_to_add;
@@ -939,7 +941,7 @@ class BundlableLabelableBaseModelWithAttributes extends LabelableBaseModelWithAt
 	 *
 	 */
 	protected function initLabelDefinitions() {
-		$this->BUNDLES = array(
+		$this->BUNDLES = (is_subclass_of($this, "BaseRelationshipModel")) ? array() : array(
 			'preferred_labels' 			=> array('type' => 'preferred_label', 'repeating' => true, 'label' => _t("Preferred labels")),
 			'nonpreferred_labels' 		=> array('type' => 'nonpreferred_label', 'repeating' => true,  'label' => _t("Non-preferred labels")),
 		);
@@ -1386,11 +1388,15 @@ class BundlableLabelableBaseModelWithAttributes extends LabelableBaseModelWithAt
 					// This bundle is only available when editing objects of type ca_editor_uis
 					case 'ca_editor_ui_type_restrictions':
 						if ($vb_batch) { return null; } // not supported in batch mode
+						if (($t_instance = $this->getAppDatamodel()->getInstanceByTableNum($this->get('editor_type'), true)) && (is_subclass_of($t_instance, 'BaseRelationshipModel'))) { return null; } // interstitial forms don't support UI type restrictions
 						$vs_element .= $this->getTypeRestrictionsHTMLFormBundle($pa_options['request'], $pa_options['formName'].'_'.$ps_bundle_name, $pa_options);
 						break;
 					# -------------------------------
 					// This bundle is only available when editing objects of type ca_editor_ui_screens
 					case 'ca_editor_ui_screen_type_restrictions':
+						$t_editor = new ca_editor_uis($this->get('ui_id'));
+						if (
+							$t_editor && ($t_instance = $this->getAppDatamodel()->getInstanceByTableNum($t_editor->get('editor_type'), true)) && (is_subclass_of($t_instance, 'BaseRelationshipModel'))) { return null; } // interstitial forms don't support UI type restrictions
 						$vs_element .= $this->getTypeRestrictionsHTMLFormBundle($pa_options['request'], $pa_options['formName'].'_'.$ps_bundle_name, $pa_options);
 						break;
 					# -------------------------------
@@ -1788,7 +1794,7 @@ class BundlableLabelableBaseModelWithAttributes extends LabelableBaseModelWithAt
  		} else {
  			$t_ui = ca_editor_uis::loadDefaultUI($this->tableName(), $pa_options['request'], $this->getTypeID());
  		}
- 		
+ 		if (!$t_ui) { return false; }
  		if (isset($pa_options['bundles']) && is_array($pa_options['bundles'])) {
  			$va_bundles = $pa_options['bundles'];
  		} else {
@@ -1801,13 +1807,24 @@ class BundlableLabelableBaseModelWithAttributes extends LabelableBaseModelWithAt
 		
 		$va_bundles_present = array();
 		if (is_array($va_bundles)) {
-			$vs_type_id_fld = isset($this->ATTRIBUTE_TYPE_ID_FLD) ? $this->ATTRIBUTE_TYPE_ID_FLD : null;
-			$vs_hier_parent_id_fld = isset($this->HIERARCHY_PARENT_ID_FLD) ? $this->HIERARCHY_PARENT_ID_FLD : null;
-			
-			if(isset($pa_options['restrictToTypes']) && is_array($pa_options['restrictToTypes'])) {
-				$va_valid_element_codes = $this->getApplicableElementCodesForTypes($x=caMakeTypeIDList($this->tableName(), $pa_options['restrictToTypes']));
+			if (is_subclass_of($this, 'BaseRelationshipModel')) {
+				$vs_type_id_fld = $this->getTypeFieldName();
+				if(isset($pa_options['restrictToTypes']) && is_array($pa_options['restrictToTypes'])) {
+					$va_valid_element_codes = $this->getApplicableElementCodesForTypes(caMakeRelationshipTypeIDList($this->tableName(), $pa_options['restrictToTypes']));
+				} else {
+					$va_valid_element_codes = null;
+				}
 			} else {
-				$va_valid_element_codes = null;
+				$vs_type_id_fld = isset($this->ATTRIBUTE_TYPE_ID_FLD) ? $this->ATTRIBUTE_TYPE_ID_FLD : null;
+			
+			
+				$vs_hier_parent_id_fld = isset($this->HIERARCHY_PARENT_ID_FLD) ? $this->HIERARCHY_PARENT_ID_FLD : null;
+			
+				if(isset($pa_options['restrictToTypes']) && is_array($pa_options['restrictToTypes'])) {
+					$va_valid_element_codes = $this->getApplicableElementCodesForTypes(caMakeTypeIDList($this->tableName(), $pa_options['restrictToTypes']));
+				} else {
+					$va_valid_element_codes = null;
+				}
 			}
 			
 			$vn_c = 0;
@@ -2170,6 +2187,7 @@ class BundlableLabelableBaseModelWithAttributes extends LabelableBaseModelWithAt
 	 *
 	 */
 	protected function getBundleListsForScreen($pm_screen, $po_request, $t_ui, $pa_options=null) {
+		if(!$t_ui) { return; }
 		$va_bundles = $t_ui->getScreenBundlePlacements($pm_screen);
 		
 		// sort fields by type
@@ -2689,6 +2707,7 @@ if (!$vb_batch) {		// hierarchy moves are not supported in batch mode
 		}
 
 		// save preferred labels
+if ($this->getProperty('LABEL_TABLE_NAME')) {
 		$vb_check_for_dupe_labels = $this->_CONFIG->get('allow_duplicate_labels_for_'.$this->tableName()) ? false : true;
 		$vb_error_inserting_pref_label = false;
 		if (is_array($va_fields_by_type['preferred_label'])) {
@@ -2774,10 +2793,11 @@ if (!$vb_batch) {
 				}
 			}
 		}
-		
+	}	
 		// Add default label if needed (ie. if the user has failed to set at least one label or if they have deleted all existing labels)
 		// This ensures at least one label is present for the record. If no labels are present then the 
 		// record may not be found in queries
+	if ($this->getProperty('LABEL_TABLE_NAME')) {
 		if ($vb_error_inserting_pref_label || !$this->addDefaultLabel($vn_new_label_locale_id)) {
 			if (!$vb_error_inserting_pref_label) { $po_request->addActionErrors($this->errors(), 'preferred_labels'); }
 			
@@ -2790,11 +2810,12 @@ if (!$vb_batch) {
 			}
 			return false;
 		}
+	}
 		unset($va_inserted_attributes_by_element);
 
 	
 		// save non-preferred labels
-		if (isset($va_fields_by_type['nonpreferred_label']) && is_array($va_fields_by_type['nonpreferred_label'])) {
+		if ($this->getProperty('LABEL_TABLE_NAME') && isset($va_fields_by_type['nonpreferred_label']) && is_array($va_fields_by_type['nonpreferred_label'])) {
 if (!$vb_batch) {	
 			foreach($va_fields_by_type['nonpreferred_label'] as $vs_placement_code => $vs_f) {
 				// check for existing labels to update (or delete)
@@ -4919,6 +4940,118 @@ $pa_options["display_form_field_tips"] = true;
 			return $vs_gen_idno;
 		}
 		return false;
+	}
+	# --------------------------------------------------------------------------------------------
+	/**
+	 * Creates a relationship between the currently loaded row and the specified row.
+	 *
+	 * @param mixed $pm_rel_table_name_or_num Table name (eg. "ca_entities") or number as defined in datamodel.conf of table containing row to creation relationship to.
+	 * @param int $pn_rel_id primary key value of row to creation relationship to.
+	 * @param mixed $pm_type_id Relationship type type_code or type_id, as defined in the ca_relationship_types table. This is required for all relationships that use relationship types. This includes all of the most common types of relationships.
+	 * @param string $ps_effective_date Optional date expression to qualify relation with. Any expression that the TimeExpressionParser can handle is supported here.
+	 * @param string $ps_source_info Text field for storing information about source of relationship. Not currently used.
+	 * @param string $ps_direction Optional direction specification for self-relationships (relationships linking two rows in the same table). Valid values are 'ltor' (left-to-right) and  'rtol' (right-to-left); the direction determines which "side" of the relationship the currently loaded row is on: 'ltor' puts the current row on the left side. For many self-relations the direction determines the nature and display text for the relationship.
+	 * @param array $pa_options Array of additional options:
+	 *		allowDuplicates = if set to true, attempts to add a relationship that already exists will succeed. Default is false – duplicate relationships will not be created.
+	 *		setErrorOnDuplicate = if set to true, an error will be set if an attempt is made to add a duplicate relationship. Default is false – don't set error. addRelationship() will always return false when creation of a duplicate relationship fails, no matter how the setErrorOnDuplicate option is set.
+	 * @return boolean BaseRelationshipModel Loaded relationship model instance on success, false on error.
+	 */
+	public function addRelationship($pm_rel_table_name_or_num, $pn_rel_id, $pm_type_id=null, $ps_effective_date=null, $ps_source_info=null, $ps_direction=null, $pn_rank=null, $pa_options=null) {
+		global $g_ui_locale_id;
+		
+		if ($t_rel = parent::addRelationship($pm_rel_table_name_or_num, $pn_rel_id, $pm_type_id, $ps_effective_date, $ps_source_info, $ps_direction, $pn_rank, $pa_options)) {
+			if ($t_rel->numErrors()) {
+				$this->errors = $t_rel->errors;
+				return false;
+			}
+			// are there interstitials to add?
+			if (isset($pa_options['interstitialValues']) && is_array($pa_options['interstitialValues'])) {
+				$t_rel->setMode(ACCESS_WRITE);
+				
+				foreach($pa_options['interstitialValues'] as $vs_element => $va_value) { 	
+					if ($t_rel->hasField($vs_element)) {
+						$t_rel->set($vs_element, $va_value);
+						continue;
+					}				
+					if (is_array($va_value)) {
+						if (!isset($va_value['locale_id'])) {
+							$va_value['locale_id'] = $g_ui_locale_id ? $g_ui_locale_id : ca_locales::getDefaultCataloguingLocaleID();
+						}
+						// array of values (complex multi-valued attribute)
+						$t_rel->addAttribute($va_value, $vs_element);
+					} else {
+						// scalar value (simple single value attribute)
+						if ($va_value) {
+							$t_rel->addAttribute(array(
+								'locale_id' => $pn_locale_id,
+								$vs_element => $va_value
+							), $vs_element);
+						}
+					}
+				}
+				$t_rel->update();
+				
+				if ($t_rel->numErrors()) {
+					$this->errors = $t_rel->errors;
+					return false;
+				}
+			}
+		}
+		return $t_rel;
+	}
+	# --------------------------------------------------------------------------------------------
+	/**
+	 * Edits the data in an existing relationship between the currently loaded row and the specified row.
+	 *
+	 * @param mixed $pm_rel_table_name_or_num Table name (eg. "ca_entities") or number as defined in datamodel.conf of table containing row to create relationships to.
+	 * @param int $pn_relation_id primary key value of the relation to edit.
+	 * @param int $pn_rel_id primary key value of row to creation relationship to.
+	 * @param mixed $pm_type_id Relationship type type_code or type_id, as defined in the ca_relationship_types table. This is required for all relationships that use relationship types. This includes all of the most common types of relationships.
+	 * @param string $ps_effective_date Optional date expression to qualify relation with. Any expression that the TimeExpressionParser can handle is supported here.
+	 * @param string $ps_source_info Text field for storing information about source of relationship. Not currently used.
+	 * @param string $ps_direction Optional direction specification for self-relationships (relationships linking two rows in the same table). Valid values are 'ltor' (left-to-right) and  'rtol' (right-to-left); the direction determines which "side" of the relationship the currently loaded row is on: 'ltor' puts the current row on the left side. For many self-relations the direction determines the nature and display text for the relationship.
+	 * @param array $pa_options Array of additional options:
+	 *		allowDuplicates = if set to true, attempts to edit a relationship to match one that already exists will succeed. Default is false – duplicate relationships will not be created.
+	 *		setErrorOnDuplicate = if set to true, an error will be set if an attempt is made to create a duplicate relationship. Default is false – don't set error. editRelationship() will always return false when editing of a relationship fails, no matter how the setErrorOnDuplicate option is set.
+	 * @return BaseRelationshipModel Loaded relationship model instance on success, false on error.
+	 */
+	public function editRelationship($pm_rel_table_name_or_num, $pn_relation_id, $pn_rel_id, $pm_type_id=null, $ps_effective_date=null, $pa_source_info=null, $ps_direction=null, $pn_rank=null, $pa_options=null) {
+		global $g_ui_locale_id;
+		
+		if ($t_rel = parent::editRelationship($pm_rel_table_name_or_num, $pn_relation_id, $pn_rel_id, $pm_type_id, $ps_effective_date, $ps_source_info, $ps_direction, $pn_rank, $pa_options)) {
+			// are there interstitials to add?
+			if (isset($pa_options['interstitialValues']) && is_array($pa_options['interstitialValues'])) {
+				$t_rel->setMode(ACCESS_WRITE);
+				
+				foreach($pa_options['interstitialValues'] as $vs_element => $va_value) { 	
+					if ($t_rel->hasField($vs_element)) {
+						$t_rel->set($vs_element, $va_value);
+						continue;
+					}				
+					if (is_array($va_value)) {
+						if (!isset($va_value['locale_id'])) {
+							$va_value['locale_id'] = $g_ui_locale_id ? $g_ui_locale_id : ca_locales::getDefaultCataloguingLocaleID();
+						}
+						// array of values (complex multi-valued attribute)
+						$t_rel->replaceAttribute($va_value, $vs_element);
+					} else {
+						// scalar value (simple single value attribute)
+						if ($va_value) {
+							$t_rel->replaceAttribute(array(
+								'locale_id' => $pn_locale_id,
+								$vs_element => $va_value
+							), $vs_element);
+						}
+					}
+				}
+				$t_rel->update();
+				if ($t_rel->numErrors()) {
+					$this->errors = $t_rel->errors;
+					return false;
+				}
+			}
+		}
+		return $t_rel;
 	}
 	# --------------------------------------------------------------------------------------------
 }

@@ -130,7 +130,7 @@
 				}
 				
 				if ((!isset($va_val['_relationship_type']) || !$va_val['_relationship_type']) && $o_log) {
-					$o_log->logWarning(_t('[storageLocationSplitterRefinery] No relationship type is set for location %1', $vs_location));
+					$o_log->logWarn(_t('[storageLocationSplitterRefinery] No relationship type is set for location %1', $vs_location));
 				}
 			
 				// Set storage_location_type
@@ -145,7 +145,7 @@
 				}
 				
 				if ((!isset($va_val['_type']) || !$va_val['_type']) && $o_log) {
-					$o_log->logWarning(_t('[storageLocationSplitterRefinery] No storage location type is set for location %1', $vs_location));
+					$o_log->logWarn(_t('[storageLocationSplitterRefinery] No storage location type is set for location %1', $vs_location));
 				}
 				
 				$t_location = new ca_storage_locations();

@@ -94,7 +94,7 @@
 		/**
 		 *
 		 */
-		public static function parsePlaceholder($ps_placeholder, $pa_source_data, $pa_item, $ps_delimiter=null, $pn_index=0) {
+		public static function parsePlaceholder($ps_placeholder, $pa_source_data, $pa_item, $ps_delimiter=null, $pn_index=0, $pa_options=null) {
 			$ps_placeholder = trim($ps_placeholder);
 			if ($ps_placeholder[0] == '^') {
 				$vm_val = $pa_source_data[substr($ps_placeholder, 1)];
@@ -108,6 +108,11 @@
 						$vs_val = $pa_item['settings']['replacement_values'][$vn_i];
 					}
 					$vm_val[$vn_i] = trim($vs_val);
+				}
+				
+				if (caGetOption("returnAsString", $pa_options, false)) {
+					$vs_delimiter = caGetOption("delimiter", $pa_options, '');
+					return join($vs_delimiter, $vm_val);
 				}
 				return $vm_val;
 			}

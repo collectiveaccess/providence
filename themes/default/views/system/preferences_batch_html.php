@@ -52,8 +52,9 @@
 	
 	foreach(array(
 		'ca_objects', 'ca_object_lots', 'ca_entities', 'ca_places', 'ca_occurrences', 'ca_collections', 'ca_storage_locations',
-		'ca_loans', 'ca_movements'
+		'ca_loans', 'ca_movements', 'ca_tours', 'ca_tour_stops'
 	) as $vs_table) {
+		if ($this->request->config->get($vs_table.'_disable')) { continue; }
 		$t_instance = $o_dm->getInstanceByTableName($vs_table, true);
 		print "<h2>"._t('Batch user interface for %1', $t_instance->getProperty('NAME_PLURAL'))."</h2>";
 		
@@ -73,6 +74,6 @@
 <?php
 	print $vs_control_box;
 ?>
-</div>
 
 	<div class="editorBottomPadding"><!-- empty --></div>
+</div>

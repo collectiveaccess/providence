@@ -1562,7 +1562,7 @@ require_once(__CA_LIB_DIR__."/ca/ApplicationPluginManager.php");
 	/**
 	  *
 	  */
-	function caFilterTableList($pa_tables) {
+	function caFilterTableList($pa_tables, $pa_options=null) {
 		require_once(__CA_MODELS_DIR__.'/ca_occurrences.php');
 		$o_config = Configuration::load();
 		$o_dm = Datamodel::load();
@@ -1571,11 +1571,25 @@ require_once(__CA_LIB_DIR__."/ca/ApplicationPluginManager.php");
 		$va_filtered_tables = array();
 		foreach($pa_tables as $vs_display_name => $vn_table_num) {
 			$vs_display_name = mb_strtolower($vs_display_name, 'UTF-8');
-			$vs_table_name = $o_dm->getTableName($vn_table_num);
+			$t_instance = $o_dm->getInstanceByTableNum($vn_table_num, true);
+			$vs_table_name = $t_instance->tableName();
 			
-			if ((int)($o_config->get($vs_table_name.'_disable'))) { continue; }
+			if (is_subclass_of($t_instance, "BaseRelationshipModel")) {
+				$vs_left_table_name = $t_instance->getLeftTableName();
+				if ($vs_left_table_name == 'ca_tour_stops') { $vs_left_table_name = 'ca_tours'; }
+				$vs_right_table_name = $t_instance->getRightTableName();
+				if ($vs_right_table_name == 'ca_tour_stops') { $vs_right_table_name = 'ca_tours'; }
+				
+				if ((int)($o_config->get("{$vs_left_table_name}_disable"))) { continue; }
+				if ((int)($o_config->get("{$vs_right_table_name}_disable"))) { continue; }
+			} else {
+				if ((int)($o_config->get($vs_table_name.'_disable'))) { continue; }
+			}
 			
 			switch($vs_table_name) {
+				case 'ca_tour_stops':
+					if ((int)($o_config->get('ca_tours_disable'))) { continue(2); }
+					break;
 				case 'ca_occurrences':
 					$t_occ = new ca_occurrences();	
 					$va_types = $t_occ->getTypeList();
@@ -1597,6 +1611,11 @@ require_once(__CA_LIB_DIR__."/ca/ApplicationPluginManager.php");
 					break;
 			}
 		}
+		
+		if (caGetOption("sort", $pa_options, true)) {
+			ksort($va_filtered_tables);
+		}
+		
 		return $va_filtered_tables;
 	}
 	# ------------------------------------------------------------------------------------------------

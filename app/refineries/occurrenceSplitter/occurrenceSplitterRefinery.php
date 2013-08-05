@@ -102,7 +102,7 @@
 				}
 				
 				if ((!isset($va_val['_relationship_type']) || !$va_val['_relationship_type']) && $o_log) {
-					$o_log->logWarning(_t('[occurrenceSplitterRefinery] No relationship type is set for occurrence %1', $vs_occurrence));
+					$o_log->logWarn(_t('[occurrenceSplitterRefinery] No relationship type is set for occurrence %1', $vs_occurrence));
 				}
 			
 				// Set occurrence_type
@@ -117,7 +117,7 @@
 				}
 				
 				if ((!isset($va_val['_type']) || !$va_val['_type']) && $o_log) {
-					$o_log->logWarning(_t('[occurrenceSplitterRefinery] No occurrence type is set for occurrence %1', $vs_occurrence));
+					$o_log->logWarn(_t('[occurrenceSplitterRefinery] No occurrence type is set for occurrence %1', $vs_occurrence));
 				}
 				
 				// Set occurrence parents
