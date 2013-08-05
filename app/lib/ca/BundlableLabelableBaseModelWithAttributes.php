@@ -3440,7 +3440,8 @@ if (!$vb_batch) {
 					$vs_direction = $va_tmp[0];
 				}
 				
-				$this->editRelationship($ps_bundlename, $va_rel_item[$vs_key], $vn_id, $vn_type_id, null, null, $vs_direction, $vn_rank);	
+				$vs_effective_daterange = $po_request->getParameter($ps_form_prefix.'_'.$ps_bundlename.'_effective_date'.$va_rel_item[$vs_key], pString);
+				$this->editRelationship($ps_bundlename, $va_rel_item[$vs_key], $vn_id, $vn_type_id, $vs_effective_daterange, null, $vs_direction, $vn_rank);	
 					
 				if ($this->numErrors()) {
 					$po_request->addActionErrors($this->errors(), $ps_bundlename);
@@ -3909,8 +3910,10 @@ if (!$vb_batch) {
 					}
 							
 					if ($vb_uses_effective_dates) {	// return effective dates as display/parse-able text
-						$va_rels[$vs_sort_key][$vn_id]['_key'] = $o_tep->setHistoricTimestamps($va_rels[$vs_sort_key][$vn_id]['sdatetime'], $va_rels[$vs_sort_key][$vn_id]['edatetime']);	
-						$va_rels[$vs_sort_key][$vn_id]['effective_date'] = $o_tep->getText();
+						if ($va_rels[$vs_sort_key][$vn_id]['sdatetime'] || $va_rels[$vs_sort_key][$vn_id]['edatetime']) {
+							$o_tep->setHistoricTimestamps($va_rels[$vs_sort_key][$vn_id]['sdatetime'], $va_rels[$vs_sort_key][$vn_id]['edatetime']);	
+							$va_rels[$vs_sort_key][$vn_id]['effective_date'] = $o_tep->getText();
+						}
 					}
 					
 					$va_rels[$vs_sort_key][$vn_id]['labels'][$qr_res->get('locale_id')] =  ($vb_return_labels_as_array) ? $va_row : $vs_display_label;
@@ -4025,8 +4028,10 @@ if (!$vb_batch) {
 				}
 				
 				if ($vb_uses_effective_dates) {	// return effective dates as display/parse-able text
-					$va_rels[$vs_v]['_key'] = $o_tep->setHistoricTimestamps($va_rels[$vs_v]['sdatetime'], $va_rels[$vs_v]['edatetime']);	
-					$va_rels[$vs_v]['effective_date'] = $o_tep->getText();
+					if ($va_rels[$vs_v]['sdatetime'] || $va_rels[$vs_v]['edatetime']) {
+						$o_tep->setHistoricTimestamps($va_rels[$vs_v]['sdatetime'], $va_rels[$vs_v]['edatetime']);
+						$va_rels[$vs_v]['effective_date'] = $o_tep->getText();
+					}
 				}
 				
 				$va_rels[$vs_v]['labels'][$qr_res->get('locale_id')] =  ($vb_return_labels_as_array) ? $va_row : $vs_display_label;

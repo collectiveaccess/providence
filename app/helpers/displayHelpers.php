@@ -2496,6 +2496,7 @@ $ca_relationship_lookup_parse_cache = array();
 				$va_items[$va_relation[$vs_rel_pk]]['idno_sort'] = $va_relation[$vs_idno_sort_fld];
 				$va_items[$va_relation[$vs_rel_pk]]['label'] = $va_relation['label'];
 				$va_items[$va_relation[$vs_rel_pk]]['direction'] = $va_relation['direction'];
+				$va_items[$va_relation[$vs_rel_pk]]['effective_date'] = $va_relation['effective_date'];
 				
 				if (isset($va_relation['surname'])) {		// pass forename and surname entity label fields to support proper sorting by name
 					$va_items[$va_relation[$vs_rel_pk]]['surname'] = $va_relation['surname'];
