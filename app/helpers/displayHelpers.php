@@ -2097,24 +2097,21 @@ require_once(__CA_LIB_DIR__."/ca/ApplicationPluginManager.php");
 						$vs_template = preg_replace('!'.$va_between['directive'].'!', '', $vs_template, 1);
 					}
 				}
-				//foreach($va_tag_vals as $x => $va_values_by_tag) {
-					//
-					// Need to sort tags by length descending (longest first)
-					// so that when we go to substitute and you have a tag followed by itself with a suffix
-					// (ex. ^measurements and ^measurements2) we don't substitute both for the stub (ex. ^measurements)
-					//
-					//$va_tags = array_keys($va_values_by_tag);
-					$va_tags_tmp = array_keys($va_tags);
-					usort($va_tags_tmp, function($a, $b) {
-						return strlen($b) - strlen($a);
-					});
-				
-					$vs_pt = $vs_template;
-					foreach($va_tags_tmp as $vs_tag) {
-						$vs_pt = str_replace('^'.$vs_tag, $va_tags[$vs_tag], $vs_pt);
-					}
-					$va_pt_vals[] = $vs_pt;
-				//}
+				//
+				// Need to sort tags by length descending (longest first)
+				// so that when we go to substitute and you have a tag followed by itself with a suffix
+				// (ex. ^measurements and ^measurements2) we don't substitute both for the stub (ex. ^measurements)
+				//
+				$va_tags_tmp = array_keys($va_tags);
+				usort($va_tags_tmp, function($a, $b) {
+					return strlen($b) - strlen($a);
+				});
+			
+				$vs_pt = $vs_template;
+				foreach($va_tags_tmp as $vs_tag) {
+					$vs_pt = str_replace('^'.$vs_tag, $va_tags[$vs_tag], $vs_pt);
+				}
+				$va_pt_vals[] = $vs_pt;
 			}
 			
 			
