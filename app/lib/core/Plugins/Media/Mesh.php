@@ -213,15 +213,6 @@ class WLPlugMediaMesh extends BaseMediaPlugin implements IWLPlugMedia {
 	}
 	# ------------------------------------------------
 	/**
-	 * Returns text content for indexing, or empty string if plugin doesn't support text extraction
-	 *
-	 * @return String Extracted text
-	 */
-	public function getExtractedText() {
-		return '';
-	}
-	# ------------------------------------------------
-	/**
 	 * Returns array of extracted metadata, key'ed by metadata type or empty array if plugin doesn't support metadata extraction
 	 *
 	 * @return Array Extracted metadata

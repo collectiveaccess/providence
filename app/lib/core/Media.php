@@ -190,6 +190,11 @@ class Media extends BaseObject {
 		return $this->instance->getExtractedText();
 	}
 	# ----------------------------------------------------------
+	public function getExtractedTextLocations() {
+		if (!$this->instance) { return false; }
+		return $this->instance->getExtractedTextLocations();
+	}
+	# ----------------------------------------------------------
 	public function getExtractedMetadata() {
 		if (!$this->instance) { return false; }
 		return $this->instance->getExtractedMetadata();

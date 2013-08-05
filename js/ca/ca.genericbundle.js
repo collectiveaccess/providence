@@ -468,7 +468,7 @@ var caUI = caUI || {};
 			};
 			
 			jQuery(that.container + " .caItemList").sortable(opts);
-			
+			that._updateSortOrderListIDFormElement();
 		}
 		
 		that.updateBundleFormState();

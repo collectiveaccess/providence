@@ -119,14 +119,25 @@ DV.model.Annotations.prototype = {
   },
 
   // Removes a given annotation from the Annotations model (and DOM).
-  removeAnnotation : function(anno) {
+  removeAnnotation : function(anno, redraw) {
+  	if (redraw == undefined) { redraw = true; }
+  	
     delete this.byId[anno.id];
     var i = anno.page - 1;
     this.byPage[i] = _.without(this.byPage[i], anno);
     this.sortAnnotations();
     DV.jQuery('#DV-annotation-' + anno.id + ', #DV-listAnnotation-' + anno.id).remove();
-    this.viewer.api.redraw(true);
+    
+    if (redraw) { this.viewer.api.redraw(true); }
     if (_.isEmpty(this.byId)) this.viewer.open('ViewDocument');
+  },
+  
+  // Kill all annotations
+  removeAllAnnotations : function(anno) {
+ 	for(var k in this.byId) {
+ 		this.removeAnnotation(this.byId[k], false);
+ 	}
+ 	this.viewer.api.redraw(true);
   },
 
   // Offsets all document pages based on interleaved page annotations.

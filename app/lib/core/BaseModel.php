@@ -121,6 +121,7 @@ require_once(__CA_APP_DIR__."/helpers/utilityHelpers.php");
 require_once(__CA_APP_DIR__."/helpers/gisHelpers.php");
 require_once(__CA_LIB_DIR__."/ca/ApplicationPluginManager.php");
 require_once(__CA_LIB_DIR__."/core/Parsers/htmlpurifier/HTMLPurifier.standalone.php");
+require_once(__CA_LIB_DIR__."/ca/MediaContentLocationIndexer.php");
 
 /**
  * Base class for all database table classes. Implements database insert/update/delete
@@ -4448,10 +4449,19 @@ class BaseModel extends BaseObject {
 						$vs_sql .= " ".$vs_metadata_field_name." = ".$this->quote(caSerializeForDatabase($media_metadata, true)).",";
 					}
 				
-					
 					if (($vs_content_field_name = $o_media_proc_settings->getMetadataContentName()) && $this->hasField($vs_content_field_name)) {
 						$this->_FIELD_VALUES[$vs_content_field_name] = $this->quote($m->getExtractedText());
 						$vs_sql .= " ".$vs_content_field_name." = ".$this->_FIELD_VALUES[$vs_content_field_name].",";
+					}
+					
+					if(is_array($va_locs = $m->getExtractedTextLocations())) {
+						MediaContentLocationIndexer::clear($this->tableNum(), $this->getPrimaryKey());
+						foreach($va_locs as $vs_content => $va_loc_list) {
+							foreach($va_loc_list as $va_loc) {
+								MediaContentLocationIndexer::index($this->tableNum(), $this->getPrimaryKey(), $vs_content, $va_loc['p'], $va_loc['x1'], $va_loc['y1'], $va_loc['x2'], $va_loc['y2']);
+							}
+						}
+						MediaContentLocationIndexer::write();
 					}
 				} else {
 					# error - invalid media

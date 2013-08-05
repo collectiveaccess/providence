@@ -181,6 +181,9 @@ require_once(__CA_LIB_DIR__."/core/Db.php");
 				return null;
 			}
 			$va_access_points =  $va_info['_access_points'];
+			foreach($va_access_points as $vs_k => $va_v) {
+				$va_access_points[mb_strtolower($vs_k)] = $va_v;
+			}
 			return is_array($va_access_points) ? $va_access_points : array();
 		}
 		# -------------------------------------------------

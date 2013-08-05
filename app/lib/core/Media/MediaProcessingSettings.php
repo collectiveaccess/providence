@@ -234,6 +234,18 @@ class MediaProcessingSettings {
 		return $vs_field_name;
 	}
 	# ---------------------------------------------------
+	public function getMetadataContentLocationsName() {
+		$vs_field_name = null;
+		if ($this->opa_table_settings) {
+			$vs_field_name = $this->opa_table_settings['MEDIA_CONTENT_LOCATIONS'];
+		} else {
+			if($this->opo_config_settings) {
+				$vs_field_name = $this->opa_config_settings_as_array['MEDIA_CONTENT_LOCATIONS'];
+			}
+		}
+		return $vs_field_name;
+	}
+	# ---------------------------------------------------
 	/**
 	 * Returns the name of the media version that should be used as the default for display for the specified mimetype
 	 * This is only a suggestion - it's the version to display in the absence of any overriding value provided by the user
