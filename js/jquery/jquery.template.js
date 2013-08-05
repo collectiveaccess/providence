@@ -51,9 +51,15 @@ jQuery.fn.template = function( objValues ){
  			objValueSlashed = objValueSlashed.replace(/["]/g, '\\"');
  			objValueSlashed = objValueSlashed.replace(/[\']/g, "\\'");
  			
- 			// Replace the value with quotes converted to entities {{n}}
+ 			// Replace the value with version where entities are converted to text  {{{{n}}}}
 			strHTML = strHTML.replace(
-				new RegExp( "\{\\{\\{" + strSafeKey + "\\}\\}\\}", "gi" ),
+				new RegExp( "\\{\\{\\{\\{" + strSafeKey + "\\}\\}\\}\\}", "gi" ),
+				jQuery("<div>" + objValues[ strKey ] + "</div>").text()
+				);
+				
+ 			// Replace the value with quotes converted to entities {{{n}}}
+			strHTML = strHTML.replace(
+				new RegExp( "\\{\\{\\{" + strSafeKey + "\\}\\}\\}", "gi" ),
 				objValueSlashed
 				);
 			// Replace the value with quotes converted to entities {{n}}
@@ -72,7 +78,8 @@ jQuery.fn.template = function( objValues ){
 		// At this point, our HTML will have fully replaced
 		// values. Now, let's convert it into a jQuery DOM
 		// element and return it.
-		return( jQuery( strHTML ) );
+		
+		return( jQuery( jQuery.trim(strHTML) ) );
  
 	} else {
  

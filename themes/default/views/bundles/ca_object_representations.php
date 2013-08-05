@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2009-2012 Whirl-i-Gig
+ * Copyright 2009-2013 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -37,7 +37,7 @@
 	$va_settings 		= $this->getVar('settings');
 
 	$vb_read_only		=	(isset($va_settings['readonly']) && $va_settings['readonly']);
-	
+	$vb_batch			=	$this->getVar('batch');
 	
 	$vb_allow_fetching_from_urls = $this->request->getAppConfig()->get('allow_fetching_of_media_from_remote_urls');
 	
@@ -49,6 +49,9 @@
 	$va_errors = array();
 	
 	if (sizeof($va_reps)) {
+		$o_type_config = Configuration::load($t_item->getAppConfig()->get('annotation_type_config'));
+ 		$va_annotation_type_mappings = $o_type_config->getAssoc('mappings');
+ 		
 		foreach ($va_reps as $va_rep) {
 			$vn_num_multifiles = $va_rep['num_multifiles'];
 			$vs_extracted_metadata = caFormatMediaMetadata(caUnserializeForDatabase($va_rep['media_metadata']));
@@ -60,6 +63,8 @@
 				'is_primary' => ($va_rep['is_primary'] == 1) ? true : false, 
 				'locale_id' => $va_rep['locale_id'], 
 				'icon' => $va_rep['tags']['thumbnail'], 
+				'mimetype' => $va_rep['info']['original']['PROPERTIES']['mimetype'], 
+				'annotation_type' => isset($va_annotation_type_mappings[$va_rep['info']['original']['PROPERTIES']['mimetype']]) ? $va_annotation_type_mappings[$va_rep['info']['original']['PROPERTIES']['mimetype']] : null,
 				'type' => $va_rep['info']['original']['PROPERTIES']['typename'], 
 				'dimensions' => $va_rep['dimensions']['original'], 
 				'filename' => $va_rep['info']['original_filename'],
@@ -89,8 +94,34 @@
 			}
 		}
 	}
+	
+	if ($vb_batch) {
+		print "<div class='editorBatchModeControl'>"._t("In batch")." ".
+			caHTMLSelect($vs_id_prefix.$t_item->tableNum()."_rel_batch_mode", array(
+				_t("do not use") => "_disabled_", 
+				_t('add to each item') => '_add_', 
+				_t('replace values') => '_replace_',
+				_t('remove all values') => '_delete_'
+			), array('id' => $vs_id_prefix.$t_item->tableNum()."_rel_batch_mode_select"))."</div>\n";
 ?>
-<div id="<?php print $vs_id_prefix.$t_item->tableNum().'_rel'; ?>">
+	<script type="text/javascript">
+		jQuery(document).ready(function() {
+			jQuery('#<?php print $vs_id_prefix.$t_item->tableNum(); ?>_rel_batch_mode_select').change(function() {
+				if ((jQuery(this).val() == '_disabled_') || (jQuery(this).val() == '_delete_')) {
+					jQuery('#<?php print $vs_id_prefix.$t_item->tableNum().'_rel'; ?>').slideUp(250);
+				} else {
+					jQuery('#<?php print $vs_id_prefix.$t_item->tableNum().'_rel'; ?>').slideDown(250);
+				}
+			});
+			jQuery('#<?php print $vs_id_prefix.$t_item->tableNum().'_rel'; ?>').hide();
+		});
+	</script>
+<?php
+	} else {
+		print caEditorBundleShowHideControl($this->request, $vs_id_prefix.$t_item->tableNum().'_rel');
+	}
+?>
+<div id="<?php print $vs_id_prefix.$t_item->tableNum().'_rel'; ?>" <?php print $vb_batch ? "class='editorBatchBundleContent'" : ''; ?>>
 <?php
 	//
 	// The bundle template - used to generate each bundle in the form
@@ -154,6 +185,8 @@
 							<div style="margin: 10px 0 0 0;"><?php print urldecode(caNavButton($this->request, __CA_NAV_BUTTON_DOWNLOAD__, 'Download', 'editor/objects', 'ObjectEditor', 'DownloadRepresentation', array('version' => 'original', 'representation_id' => "{n}", 'object_id' => $t_subject->getPrimaryKey(), 'download' => 1), array('id' => "{fieldNamePrefix}download_{n}"), array('no_background' => true, 'dont_show_content' => true))); ?></div>
 						
 							<div style="margin: 10px 0 0 0;"><?php print urldecode(caNavLink($this->request, caNavIcon($this->request, __CA_NAV_BUTTON_EDIT__), '', 'editor/object_representations', 'ObjectRepresentationEditor', 'Edit', array('representation_id' => "{n}"), array('id' => "{fieldNamePrefix}edit_{n}"))); ?></div>
+							
+							<div style="margin: 10px 0 0 0;" class="caAnnotationEditorLaunchButton annotationType{annotation_type}"><a href="#" onclick="caAnnotationEditor<?php print $vs_id_prefix; ?>.showPanel('<?php print urldecode(caNavUrl($this->request, 'editor/object_representations', 'ObjectRepresentationEditor', 'GetAnnotationEditor', array('representation_id' => '{n}'))); ?>'); return false;"><img src='<?php print $this->request->getThemeUrlPath()."/graphics/buttons/clock.png"; ?>' border='0' height='16px' width='16px'/></a></div>
 						</div>
 					</td>
 
@@ -179,9 +212,6 @@
 				</tr>
 			</table>
 		</div>
-		<script type="text/javascript">
-			jQuery("#{fieldNamePrefix}type_id_{n}").attr('disabled', true);
-		</script>
 <?php
 	print TooltipManager::getLoadHTML('bundle_ca_object_representations');
 ?>
@@ -207,26 +237,53 @@
 ?>
 			
 <script type="text/javascript">
-	caUI.initBundle('#<?php print $vs_id_prefix.$t_item->tableNum().'_rel'; ?>', {
-		fieldNamePrefix: '<?php print $vs_id_prefix; ?>_',
-		templateValues: ['status', 'access', 'is_primary', 'media', 'locale_id', 'icon', 'type', 'dimensions', 'filename', 'num_multifiles', 'metadata', 'type_id', 'typename', 'fetched_from'],
-		initialValues: <?php print json_encode($va_inital_values); ?>,
-		errors: <?php print json_encode($va_errors); ?>,
-		forceNewValues: <?php print json_encode($va_failed_inserts); ?>,
-		itemID: '<?php print $vs_id_prefix; ?>Item_',
-		templateClassName: 'caItemTemplate',
-		itemListClassName: 'caItemList',
-		itemClassName: 'labelInfo',
-		addButtonClassName: 'caAddItemButton',
-		deleteButtonClassName: 'caDeleteItemButton',
-		showOnNewIDList: ['<?php print $vs_id_prefix; ?>_media_', '<?php print $vs_id_prefix; ?>_type_id_div_'],
-		hideOnNewIDList: ['<?php print $vs_id_prefix; ?>_media_show_update_', '<?php print $vs_id_prefix; ?>_edit_','<?php print $vs_id_prefix; ?>_download_', '<?php print $vs_id_prefix; ?>_media_metadata_container_'],
-		enableOnNewIDList: ['<?php print $vs_id_prefix; ?>_type_id_'],
-		showEmptyFormsOnLoad: 1,
-		readonly: <?php print $vb_read_only ? "true" : "false"; ?>,
-		isSortable: <?php print !$vb_read_only ? "true" : "false"; ?>,
-		listSortOrderID: '<?php print $vs_id_prefix; ?>_ObjectRepresentationBundleList',
-		defaultLocaleID: <?php print ca_locales::getDefaultCataloguingLocaleID(); ?>
+	var caAnnotationEditor<?php print $vs_id_prefix; ?>;
+	jQuery(document).ready(function() {
+		caUI.initBundle('#<?php print $vs_id_prefix.$t_item->tableNum().'_rel'; ?>', {
+			fieldNamePrefix: '<?php print $vs_id_prefix; ?>_',
+			templateValues: ['status', 'access', 'is_primary', 'media', 'locale_id', 'icon', 'type', 'dimensions', 'filename', 'num_multifiles', 'metadata', 'type_id', 'typename', 'fetched_from'],
+			initialValues: <?php print json_encode($va_inital_values); ?>,
+			errors: <?php print json_encode($va_errors); ?>,
+			forceNewValues: <?php print json_encode($va_failed_inserts); ?>,
+			itemID: '<?php print $vs_id_prefix; ?>Item_',
+			templateClassName: 'caItemTemplate',
+			itemListClassName: 'caItemList',
+			itemClassName: 'labelInfo',
+			addButtonClassName: 'caAddItemButton',
+			deleteButtonClassName: 'caDeleteItemButton',
+			showOnNewIDList: ['<?php print $vs_id_prefix; ?>_media_', '<?php print $vs_id_prefix; ?>_type_id_div_'],
+			hideOnNewIDList: ['<?php print $vs_id_prefix; ?>_media_show_update_', '<?php print $vs_id_prefix; ?>_edit_','<?php print $vs_id_prefix; ?>_download_', '<?php print $vs_id_prefix; ?>_media_metadata_container_'],
+			enableOnNewIDList: ['<?php print $vs_id_prefix; ?>_type_id_'],
+			disableOnExistingIDList: ['<?php print $vs_id_prefix; ?>_type_id_'],
+			showEmptyFormsOnLoad: 1,
+			readonly: <?php print $vb_read_only ? "true" : "false"; ?>,
+			isSortable: <?php print !$vb_read_only ? "true" : "false"; ?>,
+			listSortOrderID: '<?php print $vs_id_prefix; ?>_ObjectRepresentationBundleList',
+			defaultLocaleID: <?php print ca_locales::getDefaultCataloguingLocaleID(); ?>
 		
+		});
+		if (caUI.initPanel) {
+			caAnnotationEditor<?php print $vs_id_prefix; ?> = caUI.initPanel({ 
+				panelID: "caAnnotationEditor<?php print $vs_id_prefix; ?>",						/* DOM ID of the <div> enclosing the panel */
+				panelContentID: "caAnnotationEditor<?php print $vs_id_prefix; ?>ContentArea",		/* DOM ID of the content area <div> in the panel */
+				exposeBackgroundColor: "#000000",				
+				exposeBackgroundOpacity: 0.7,					
+				panelTransitionSpeed: 400,						
+				closeButtonSelector: ".close",
+				centerHorizontal: true,
+				onOpenCallback: function() {
+					jQuery("#topNavContainer").hide(250);
+				},
+				onCloseCallback: function() {
+					jQuery("#topNavContainer").show(250);
+				}
+			});
+		}
+		
+		jQuery("body").append('<div id="caAnnotationEditor<?php print $vs_id_prefix; ?>" class="caAnnotationEditorPanel"><div id="caAnnotationEditor<?php print $vs_id_prefix; ?>ContentArea" class="caAnnotationEditorPanelContentArea"></div></div>');
+	
+		// Hide annotation editor links for non-timebased media
+		jQuery(".caAnnotationEditorLaunchButton").hide();
+		jQuery(".annotationTypeTimeBasedAudio, .annotationTypeTimeBasedAudio").show();
 	});
 </script>

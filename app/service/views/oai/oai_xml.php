@@ -27,5 +27,5 @@
  */
 
 	$oaiData = $this->getVar('oaiData');
-	print $oaiData->saveXML();
+	print caFormatXML($oaiData->saveXML());
 ?>

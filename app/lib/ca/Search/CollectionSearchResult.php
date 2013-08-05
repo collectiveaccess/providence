@@ -51,3 +51,4 @@ class CollectionSearchResult extends BaseSearchResult {
 	}
 	# -------------------------------------
 }
+?>

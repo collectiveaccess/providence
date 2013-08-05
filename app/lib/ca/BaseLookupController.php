@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2009-2012 Whirl-i-Gig
+ * Copyright 2009-2013 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -62,14 +62,19 @@
  		# AJAX handlers
  		# -------------------------------------------------------
 		public function Get($pa_additional_query_params=null, $pa_options=null) {
+			header("Content-type: application/json");
+			
 			if (!$this->ops_search_class) { return null; }
-			$ps_query = $this->request->getParameter('q', pString);
+			$ps_query = $this->request->getParameter('term', pString); 
+			
 			$pb_exact = $this->request->getParameter('exact', pInteger);
 			$ps_exclude = $this->request->getParameter('exclude', pString);
 			$va_excludes = explode(";", $ps_exclude);
 			$ps_type = $this->request->getParameter('type', pString);
 			$ps_types = $this->request->getParameter('types', pString);
 			$pb_no_subtypes = (bool)$this->request->getParameter('noSubtypes', pInteger);
+			$pb_quickadd = (bool)$this->request->getParameter('quickadd', pInteger);
+			$pb_no_inline = (bool)$this->request->getParameter('noInline', pInteger);
 			
 			if (!($pn_limit = $this->request->getParameter('limit', pInteger))) { $pn_limit = 100; }
 			$va_items = array();
@@ -115,8 +120,6 @@
 						}
 						$o_search->addResultFilter($this->opo_item_instance->tableName().'.'.$this->opo_item_instance->getTypeFieldName(), 'IN', join(",", $va_ids));
 					}
-				} else {
-					$va_ids = null;
 				}
 			
 				// add any additional search elements
@@ -154,9 +157,23 @@
 				$qr_res->setOption('prefetch', $pn_limit);
 				$qr_res->setOption('dontPrefetchAttributes', true);
 				
-				$va_items = caProcessRelationshipLookupLabel($qr_res, $this->opo_item_instance, array('exclude' => $va_excludes, 'limit' => $pn_limit, 'inlineCreateQuery' => $ps_query, 'inlineCreateMessage' => _t('<em>%1</em> does not exist. Create?', $ps_query)));
+				$va_opts = array('exclude' => $va_excludes, 'limit' => $pn_limit);
+				if(!$pb_no_inline && ($pb_quickadd || ($this->request->user && $this->request->user->canDoAction('can_quickadd_'.$this->opo_item_instance->tableName())))) {
+					$va_opts['inlineCreateQuery'] = $ps_query;
+					$va_opts['inlineCreateMessage'] = _t('<em>%1</em> does not exist. Create?', $ps_query);
+				} else {
+					$va_opts['emptyResultQuery'] = $ps_query;
+					$va_opts['emptyResultMessage'] = _t('No matches found for <em>%1</em>', $ps_query);
+				}
+				
+				$va_items = caProcessRelationshipLookupLabel($qr_res, $this->opo_item_instance, $va_opts);
 			}
 			if (!is_array($va_items)) { $va_items = array(); }
+			
+			// Optional output simple list of labels instead of full data format
+			if ((bool)$this->request->getParameter('simple', pInteger)) { 
+				$va_items = caExtractValuesFromArrayList($va_items, 'label', array('preserveKeys' => false)); 
+			}
 			$this->view->setVar(str_replace(' ', '_', $this->ops_name_singular).'_list', $va_items);
  			return $this->render(str_replace(' ', '_', 'ajax_'.$this->ops_name_singular.'_list_html.php'));
 		}
@@ -166,63 +183,140 @@
  		 * Returned data is JSON format
  		 */
  		public function GetHierarchyLevel() {
+ 			header("Content-type: application/json");
+ 			
 			$ps_bundle = (string)$this->request->getParameter('bundle', pString);
-			
+			$pa_ids = explode(";", $ps_ids = $this->request->getParameter('id', pString));
+			if (!sizeof($pa_ids)) { $pa_ids = array(null); }
 			$t_item = $this->opo_item_instance;
 			if (!$t_item->isHierarchical()) { return; }
 			
-			$va_items_for_locale = array();
- 			if ((!($pn_id = $this->request->getParameter('id', pInteger))) && method_exists($t_item, "getHierarchyList")) { 
- 				$pn_id = $this->request->getParameter('root_item_id', pInteger);
- 				$t_item->load($pn_id);
- 				// no id so by default return list of available hierarchies
- 				$va_items_for_locale = $t_item->getHierarchyList();
- 			} else {
-				if ($t_item->load($pn_id)) {		// id is the id of the parent for the level we're going to return
+			$va_level_data = array();
+			foreach($pa_ids as $pn_id) {
+				$va_tmp = explode(":", $pn_id);
+				$vn_id = $va_tmp[0];
+				$vn_start = (int)$va_tmp[1];
+				if($vn_start < 0) { $vn_start = 0; }
 				
-					$vs_label_table_name = $this->opo_item_instance->getLabelTableName();
-					$vs_label_display_field_name = $this->opo_item_instance->getLabelDisplayField();
-					$vs_pk = $this->opo_item_instance->primaryKey();
-					
-					$va_additional_wheres = array();
-					$t_label_instance = $this->opo_item_instance->getLabelTableInstance();
-					if ($t_label_instance && $t_label_instance->hasField('is_preferred')) {
-						$va_additional_wheres[] = "(({$vs_label_table_name}.is_preferred = 1) OR ({$vs_label_table_name}.is_preferred IS NULL))";
-					}
-					
-					$qr_children = $t_item->getHierarchyChildrenAsQuery(
-										$t_item->getPrimaryKey(), 
-										array(
-											'additionalTableToJoin' => $vs_label_table_name,
-											'additionalTableJoinType' => 'LEFT',
-											'additionalTableSelectFields' => array($vs_label_display_field_name, 'locale_id'),
-											'additionalTableWheres' => $va_additional_wheres,
-											'returnChildCounts' => true
-										)
-					);
-					
-					$va_items = array();
-					while($qr_children->nextRow()) {
-						$va_tmp = $qr_children->getRow();
+				$va_items_for_locale = array();
+				if ((!($vn_id)) && method_exists($t_item, "getHierarchyList")) { 
+					$vn_id = (int)$this->request->getParameter('root_item_id', pInteger);
+					$t_item->load($vn_id);
+					// no id so by default return list of available hierarchies
+					$va_items_for_locale = $t_item->getHierarchyList();
+				} else {
+					if ($t_item->load($vn_id)) {		// id is the id of the parent for the level we're going to return
+						$vs_table_name = $t_item->tableName();
+						$vs_label_table_name = $this->opo_item_instance->getLabelTableName();
+						$vs_label_display_field_name = $this->opo_item_instance->getLabelDisplayField();
+						$vs_pk = $this->opo_item_instance->primaryKey();
 						
-						if (!$va_tmp[$vs_label_display_field_name]) { $va_tmp[$vs_label_display_field_name] = $va_tmp['idno']; }
-						if (!$va_tmp[$vs_label_display_field_name]) { $va_tmp[$vs_label_display_field_name] = '???'; }
-						$va_tmp['name'] = $va_tmp[$vs_label_display_field_name];
+						$va_additional_wheres = array();
+						$t_label_instance = $this->opo_item_instance->getLabelTableInstance();
+						if ($t_label_instance && $t_label_instance->hasField('is_preferred')) {
+							$va_additional_wheres[] = "(({$vs_label_table_name}.is_preferred = 1) OR ({$vs_label_table_name}.is_preferred IS NULL))";
+						}
 						
-						// Child count is only valid if has_children is not null
-						$va_tmp['children'] = $qr_children->get('has_children') ? $qr_children->get('child_count') : 0;
-						$va_items[$qr_children->get($this->ops_table_name.'.'.$vs_pk)][$qr_children->get($this->ops_table_name.'.'.'locale_id')] = $va_tmp;
+						$o_config = Configuration::load();
+						if (!(is_array($va_sorts = $o_config->getList($this->ops_table_name.'_hierarchy_browser_sort_values'))) || !sizeof($va_sorts)) { $va_sorts = array(); }
+						foreach($va_sorts as $vn_i => $vs_sort_fld) {
+							$va_tmp = explode(".", $vs_sort_fld);
+							
+							if ($va_tmp[1] == 'preferred_labels') {
+								$va_tmp[0] = $vs_label_table_name;
+								if (!($va_tmp[1] = $va_tmp[2])) {
+									$va_tmp[1] = $vs_label_display_field_name;
+								}
+								unset($va_tmp[2]);
+								
+								$va_sorts[$vn_i] = join(".", $va_tmp);
+							}
+						}
+						
+						if (!in_array($vs_sort_dir = strtolower($o_config->get($this->ops_table_name.'_hierarchy_browser_sort_direction')), array('asc', 'desc'))) {
+							$vs_sort_dir = 'asc';
+						}
+
+						$va_items = array();
+						if (is_array($va_item_ids = $t_item->getHierarchyChildren($t_item->getPrimaryKey(), array('idsOnly' => true))) && sizeof($va_item_ids)) {
+							$qr_children = $t_item->makeSearchResult($t_item->tableName(), $va_item_ids);
+							$va_child_counts = $t_item->getHierarchyChildCountsForIDs($va_item_ids);
+						
+							if (!($vs_item_template = trim($o_config->get("{$vs_table_name}_hierarchy_browser_display_settings")))) {
+								$vs_item_template = "^{$vs_table_name}.preferred_labels.{$vs_label_display_field_name}";
+							}
+						
+							if ((($vn_max_items_per_page = $this->request->getParameter('max', pInteger)) < 1) || ($vn_max_items_per_page > 1000)) {
+								$vn_max_items_per_page = 100;
+							}
+							$vn_c = 0;
+						
+							while($qr_children->nextHit()) {
+								$va_tmp = array(
+									$vs_pk => $vn_id = $qr_children->get($this->ops_table_name.'.'.$vs_pk),
+									'item_id' => $vn_id,
+									'parent_id' => $qr_children->get($this->ops_table_name.'.parent_id'),
+									'idno' => $qr_children->get($this->ops_table_name.'.idno'),
+									$vs_label_display_field_name => $qr_children->get($this->ops_table_name.'.preferred_labels.'.$vs_label_display_field_name),
+									'locale_id' => $qr_children->get($this->ops_table_name.'.'.'locale_id')
+								);
+								if (!$va_tmp[$vs_label_display_field_name]) { $va_tmp[$vs_label_display_field_name] = $va_tmp['idno']; }
+								if (!$va_tmp[$vs_label_display_field_name]) { $va_tmp[$vs_label_display_field_name] = '???'; }
+							
+								$va_tmp['name'] = caProcessTemplateForIDs($vs_item_template, $vs_table_name, array($va_tmp[$vs_pk]), array('requireLinkTags' => true));
+							
+								// Child count is only valid if has_children is not null
+								$va_tmp['children'] = isset($va_child_counts[$vn_id]) ? (int)$va_child_counts[$vn_id] : 0;
+							
+								if (is_array($va_sorts)) {
+									$vs_sort_acc = array();
+									foreach($va_sorts as $vs_sort) {
+										$vs_sort_acc[] = $qr_children->get($vs_sort, array('sortable' => true));
+									}
+									$va_tmp['sort'] = join(";", $vs_sort_acc);
+								}
+							
+								$va_items[$va_tmp[$vs_pk]][$va_tmp['locale_id']] = $va_tmp;
+							
+								$vn_c++;
+							}
+						
+							$va_items_for_locale = caExtractValuesByUserLocale($va_items);
+						}
+						
+						$vs_rank_fld = $t_item->getProperty('RANK');
+						
+						$va_sorted_items = array();
+						foreach($va_items_for_locale as $vn_id => $va_node) {
+							$vs_key = preg_replace('![^A-Za-z0-9]!', '_', $va_node['name']);
+						
+							if (isset($va_node['sort']) && $va_node['sort']) {
+								$va_sorted_items[$va_node['sort']][$vs_key] = $va_node;
+							} else {
+								if ($vs_rank_fld && ($vs_rank = (int)sprintf("%08d", $va_node[$vs_rank_fld]))) {
+									$va_sorted_items[$vs_rank][$vs_key] = $va_node;
+								} else {
+									$va_sorted_items[$vs_key][$vs_key] = $va_node;
+								}
+							}
+						}
+						ksort($va_sorted_items);
+						if ($vs_sort_dir == 'desc') { $va_sorted_items = array_reverse($va_sorted_items); }
+						$va_items_for_locale = array();
+						
+						$va_sorted_items = array_slice($va_sorted_items, $vn_start, $vn_max_items_per_page);
+						
+						foreach($va_sorted_items as $vs_k => $va_v) {
+							ksort($va_v);
+							if ($vs_sort_dir == 'desc') { $va_v = array_reverse($va_v); }
+							$va_items_for_locale = array_merge($va_items_for_locale, $va_v);
+						}
 					}
-					
-					$va_items_for_locale = caExtractValuesByUserLocale($va_items);
-					
-					$va_sorted_items = array();
-					foreach($va_items_for_locale as $vn_id => $va_node) {
-						$va_sorted_items[($vs_key = preg_replace('![^A-Za-z0-9]!', '_', $va_node['name']).'_'.$vn_id) ? $vs_key : '000'] = $va_node;
-					}
-					ksort($va_sorted_items);
-					$va_items_for_locale = $va_sorted_items;
 				}
+				$va_items_for_locale['_primaryKey'] = $t_item->primaryKey();	// pass the name of the primary key so the hierbrowser knows where to look for item_id's
+ 				$va_items_for_locale['_itemCount'] = $qr_children ? $qr_children->numHits() : 0;
+ 			
+ 				$va_level_data[$pn_id] = $va_items_for_locale;
  			}
  			
  			if (!$this->request->getParameter('init', pInteger)) {
@@ -233,12 +327,11 @@
  				//
  				// ... so the hierbrowser passes an extra 'init' parameters set to 1 if the GetHierarchyLevel() call
  				// is part of a browser initialization
- 				$this->request->session->setVar($this->ops_table_name.'_'.$ps_bundle.'_browse_last_id', $pn_id);
+ 				$this->request->session->setVar($this->ops_table_name.'_'.$ps_bundle.'_browse_last_id', array_pop($pa_ids));
  			}
  			
- 			$va_items_for_locale['_primaryKey'] = $t_item->primaryKey();	// pass the name of the primary key so the hierbrowser knows where to look for item_id's
  			
- 			$this->view->setVar(str_replace(' ', '_', $this->ops_name_singular).'_list', $va_items_for_locale);
+ 			$this->view->setVar(str_replace(' ', '_', $this->ops_name_singular).'_list', $va_level_data);
  			
  			return $this->render(str_replace(' ', '_', $this->ops_name_singular).'_hierarchy_level_json.php');
  		}
@@ -248,6 +341,8 @@
  		 * Returned data is JSON format
  		 */
  		public function GetHierarchyAncestorList() {
+ 			header("Content-type: application/json");
+ 			
  			$pn_id = $this->request->getParameter('id', pInteger);
  			$t_item = new $this->ops_table_name($pn_id);
  			
@@ -255,6 +350,11 @@
  			if ($t_item->getPrimaryKey()) { 
  				$va_ancestors = array_reverse($t_item->getHierarchyAncestors(null, array('includeSelf' => true, 'idsOnly' => true)));
  			}
+ 			
+ 			// Force ids to ints to prevent jQuery from getting confused
+ 			// (jQuery.getJSON() incorrectly parses arrays of numbers-as-strings)
+ 			$va_ancestors = array_map('intval', $va_ancestors);
+ 			
  			$this->view->setVar('ancestors', $va_ancestors);
  			return $this->render(str_replace(' ', '_', $this->ops_name_singular).'_hierarchy_ancestors_json.php');
  		}
@@ -263,6 +363,8 @@
  		 *
  		 */
 		public function IDNo() {
+			header("Content-type: application/json");
+			
 			$va_ids = array();
 			if ($vs_idno_field = $this->opo_item_instance->getProperty('ID_NUMBERING_ID_FIELD')) {
 				$pn_id =  $this->request->getParameter('id', pInteger);
@@ -287,6 +389,8 @@
  		 * Can be used to determine if a value that needs to be unique is actually unique.
  		 */
 		public function Intrinsic() {
+			header("Content-type: application/json");
+			
 			$pn_table_num 	=  $this->request->getParameter('table_num', pInteger);
 			$ps_field 				=  $this->request->getParameter('field', pString);
 			$ps_val 				=  $this->request->getParameter('n', pString);
@@ -339,3 +443,4 @@
 		}
  		# -------------------------------------------------------
  	}
+?>

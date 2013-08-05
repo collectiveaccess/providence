@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2009 Whirl-i-Gig
+ * Copyright 2009-2013 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -37,8 +37,10 @@
  		# -------------------------------------------------------
  		# AJAX handlers
  		# -------------------------------------------------------
-		public function Get() {
-			$ps_query = $this->request->getParameter('q', pString);
+		public function Get($pa_additional_query_params=null, $pa_options=null) {
+			if (!($ps_query = $this->request->getParameter('q', pString))) {
+				$ps_query = $this->request->getParameter('term', pString);
+			}
 			$ps_type = $this->request->getParameter('type', pString);
 			$va_vocs = array();
 			$vs_voc_query = '';
@@ -48,13 +50,34 @@
 					$vs_voc_query .= '&q='.urlencode($vs_voc);
 				}
 			}
+			$vo_conf = Configuration::load();
 			$va_items = array();
 			if (unicode_strlen($ps_query) >= 3) {
 				try {
-					//
-					// Get up to 50 suggestions as ATOM feed
-					//
-					$vs_data = @file_get_contents($x="http://id.loc.gov/search/?q=".urlencode($ps_query).$vs_voc_query.'&format=atom&count=150');
+					$vs_url = "http://id.loc.gov/search/?q=".urlencode($ps_query).$vs_voc_query.'&format=atom&count=150';
+
+					if($vs_proxy = $vo_conf->get('web_services_proxy_url')){ /* proxy server is configured */
+
+						if(($vs_proxy_user = $vo_conf->get('web_services_proxy_auth_user')) && ($vs_proxy_pass = $vo_conf->get('web_services_proxy_auth_pw'))){
+							$vs_proxy_auth = base64_encode("{$vs_proxy_user}:{$vs_proxy_pass}");
+						}
+
+						$va_context_options = array( 'http' => array(
+							'proxy' => $vs_proxy,
+							'request_fulluri' => true
+						));
+
+						if($vs_proxy_auth){
+							$va_context_options['http']['header'] = "Proxy-Authorization: Basic {$vs_proxy_auth}";
+						}
+
+						$vo_context = stream_context_create($va_context_options);
+						$vs_data = @file_get_contents($vs_url, false, $vo_context);
+
+					} else {
+						$vs_data = @file_get_contents($vs_url);
+					}
+
 					if ($vs_data) {
 						$o_xml = @simplexml_load_string($vs_data);
 	
@@ -65,7 +88,7 @@
 									$o_links = $o_entry->{'link'};
 									$va_attr = $o_links[0]->attributes();
 									$vs_url = (string)$va_attr->{'href'};
-									$va_items[$vs_url] = array('displayname' => (string)$o_entry->{'title'}, 'idno' => (string)$o_entry->{'id'});
+									$va_items[] = array('label' => (string)$o_entry->{'title'}, 'idno' => (string)$o_entry->{'id'}, 'url' => $vs_url);
 								}
 							}
 						}

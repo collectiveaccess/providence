@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2008-2011 Whirl-i-Gig
+ * Copyright 2008-2013 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -71,7 +71,7 @@
 				'thumbnail' => _t('thumbnails'),
 				'full' => _t('full'),
 				'list' => _t('list'),
-				'map' => _t('map')
+				'editable' => _t('editable')
 			 );
 			 
 			 $this->opa_sorts = array_merge(array(
@@ -90,10 +90,11 @@
  		 * (eg. ObjectSearch for objects, EntitySearch for entities) and pass it to BaseSearchController->Index() 
  		 */ 
  		public function Index($pa_options=null) {
+ 			$pa_options['search'] = $this->opo_browse;
  			JavascriptLoadManager::register('imageScroller');
  			JavascriptLoadManager::register('tabUI');
  			JavascriptLoadManager::register('panel');
- 			return parent::Index($this->opo_browse, $pa_options);
+ 			return parent::Index($pa_options);
  		}
  		# -------------------------------------------------------
  		/**
@@ -139,7 +140,7 @@
  		 */ 
  		public function Tools($pa_parameters) {
  			// pass instance of subject-appropriate search object as second parameter (ex. for an object search this is an instance of ObjectSearch()
- 			return parent::Tools($pa_parameters, new ObjectSearch());
+ 			return parent::Tools($pa_parameters);
  		}
  		# -------------------------------------------------------
  	}

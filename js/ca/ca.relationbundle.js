@@ -6,7 +6,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2009-2011 Whirl-i-Gig
+ * Copyright 2009-2013 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -66,42 +66,84 @@ var caUI = caUI || {};
 					types.push({type_id: typeList[i].type_id, typename: typeList[i].typename, direction: typeList[i].direction});
 				}
 			}
-			//jQuery('#' + options.itemID + id + ' select[name=' + options.fieldNamePrefix + 'type_id' + id + ']').data('item_type_id', item_type_id);
-
-			//jQuery.each(types, function (i, t) {
-			//	var type_direction = (t.direction) ? t.direction+ "_" : '';
-			//	jQuery('#' + options.itemID + id + ' select[name=' + options.fieldNamePrefix + 'type_id' + id + ']').append("<option value='" + type_direction + t.type_id + "'>" +  t.typename + "</option>");
-			//});
-			
-			//var direction = (values['direction']) ? values['direction'] + "_" : '';
-			//if (jQuery('#' + options.itemID + id + ' select option[value=' + direction + values['relationship_type_id'] + ']').attr('selected', '1').length  == 0) {
-			//	jQuery('#' + options.itemID + id + ' select option[value=' + values['relationship_type_id'] + ']').attr('selected', '1');
-			//}
 		}
 		
 		options.onAddItem = function(id, options, isNew) {
 			if (!isNew) { return; }
 			
 			var autocompleter_id = options.itemID + id + ' #' + options.fieldNamePrefix + 'autocomplete' + id;
-			jQuery('#' + autocompleter_id).autocomplete(options.autocompleteUrl, 
-				jQuery.extend({ minChars: ((parseInt(options.minChars) > 0) ? options.minChars : 3), matchSubset: 1, matchContains: 1, delay: 800, scroll: true, max: 100, extraParams: options.extraParams,
-					formatResult: function(data, value) {
-						return jQuery.trim(value.replace(/<\/?[^>]+>/gi, ''));
+
+			jQuery('#' + autocompleter_id).autocomplete( 
+				jQuery.extend({ minLength: ((parseInt(options.minChars) > 0) ? options.minChars : 3), delay: 800, html: true,
+					source: function( request, response ) {
+						$.ajax({
+							url: options.autocompleteUrl,
+							dataType: "json",
+							data: jQuery.extend(options.extraParams, { term: request.term }),
+							success: function( data ) {
+								response(data);
+							}
+						});
+					}, 
+					select: function( event, ui ) {
+						if (options.autocompleteOptions && options.autocompleteOptions.onSelect) {
+							if (!options.autocompleteOptions.onSelect(autocompleter_id, ui.item)) { return false; }
+						}
+						
+						if(!parseInt(ui.item.id) && options.quickaddPanel) {
+							var panelUrl = options.quickaddUrl;
+							//if (ui.item._query) { panelUrl += '/q/' + escape(ui.item._query); }
+							if (options && options.types) {
+								if(Object.prototype.toString.call(options.types) === '[object Array]') {
+									options.types = options.types.join(",");
+								}
+								if (options.types.length > 0) {
+									panelUrl += '/types/' + options.types;
+								}
+							}
+							//if (options.fieldNamePrefix && (options.fieldNamePrefix.length > 0)) {
+							//	panelUrl += '/field_name_prefix/' + options.fieldNamePrefix;
+							//}
+							options.quickaddPanel.showPanel(panelUrl, null, null, {q: ui.item._query, field_name_prefix: options.fieldNamePrefix});
+							jQuery('#' + options.quickaddPanel.getPanelContentID()).data('autocompleteInputID', autocompleter_id);
+							jQuery('#' + options.quickaddPanel.getPanelContentID()).data('autocompleteItemIDID', options.itemID + id + ' #' + options.fieldNamePrefix + 'id' + id);
+							jQuery('#' + options.quickaddPanel.getPanelContentID()).data('autocompleteTypeIDID', options.itemID + id + ' #' + options.fieldNamePrefix + 'type_id' + id);
+							jQuery('#' + options.quickaddPanel.getPanelContentID()).data('panel', options.quickaddPanel);
+							jQuery('#' + options.quickaddPanel.getPanelContentID()).data('relationbundle', that);
+					
+							jQuery('#' + options.quickaddPanel.getPanelContentID()).data('autocompleteInput', jQuery("#" + options.autocompleteInputID + id).val());
+					
+							jQuery("#" + options.autocompleteInputID + id).val('');
+							
+							event.preventDefault();
+							return;
+						} else {
+							if(!parseInt(ui.item.id) || (ui.item.id <= 0)) {
+								jQuery('#' + autocompleter_id).val('');  // no matches so clear text input
+								event.preventDefault();
+								return;
+							}
+						}
+						options.select(id, ui.item);
+						
+						jQuery('#' + autocompleter_id).val(jQuery.trim(ui.item.label.replace(/<\/?[^>]+>/gi, '')));
+						event.preventDefault();
+					},
+					change: function( event, ui ) {
+						// If nothing has been selected remove all content from autocompleter text input
+						if(!jQuery('#' + options.itemID + id + ' #' + options.fieldNamePrefix + 'id' + id).val()) {
+							jQuery('#' + autocompleter_id).val('');
+						}
 					}
 				}, options.autocompleteOptions)
-			);
-			
-			jQuery('#' + autocompleter_id).result(function(event, data, formatted) {
-				if (options.autocompleteOptions && options.autocompleteOptions.onSelect) {
-					if (!options.autocompleteOptions.onSelect(autocompleter_id, data)) { return false; }
-				}
-				options.select(id, data, formatted);
-			});
+			).click(function() { this.select(); });
 		}
 		
-		options.select = function(id, data, formatted) {
-			var item_id = data[1];
-			var type_id = (data[2]) ? data[2] : '';
+		options.select = function(id, data) {
+			if (!id) { id = 'new_' + (that.getCount() - 1); } // default to current "new" option
+			var item_id = data.id;
+			var type_id = (data.type_id) ? data.type_id : '';
+			if (parseInt(item_id) < 0) { return; }
 			
 			jQuery('#' + options.itemID + id + ' #' + options.fieldNamePrefix + 'id' + id).val(item_id);
 			jQuery('#' + options.itemID + id + ' #' + options.fieldNamePrefix + 'type_id' + id).css('display', 'inline');

@@ -46,6 +46,7 @@
 	
 	$va_settings 				= 	$this->getVar('settings');
 	$vb_read_only				=	((isset($va_settings['readonly']) && $va_settings['readonly'])  || ($this->request->user->getBundleAccessLevel($this->getVar('t_instance')->tableName(), $this->getVar('element_code')) == __CA_BUNDLE_ACCESS_READONLY__));
+	$vb_batch					=	$this->getVar('batch');
 	
 	// generate list of inital form values; the bundle Javascript call will
 	// use the template to generate the initial form
@@ -66,7 +67,7 @@
 					// copy value from failed update into form (so user can correct it)
 					$vs_display_val = $va_failed_updates[$vn_attr_id][$vn_element_id];
 				} else {
-					$vs_display_val = $o_value->getDisplayValue(array('po_request' => $this->request));
+					$vs_display_val = $o_value->getDisplayValue(array('request' => $this->request));
 				}
 				
 				$va_initial_values[$vn_attr_id][$vn_element_id] = $vs_display_val;
@@ -99,8 +100,10 @@
 		}
 	} else {
 		// set labels for replacement in blank lookups	
-		foreach($va_element_ids as $vn_element_id) {
-			$va_template_tags[] = "{$vn_element_id}_label";
+		if (is_array($va_element_ids)) {
+			foreach($va_element_ids as $vn_element_id) {
+				$va_template_tags[] = "{$vn_element_id}_label";
+			}
 		}
 	}
 	
@@ -110,10 +113,13 @@
 		$vs_add_label = _t("Add %1", mb_strtolower($vs_element_set_label, 'UTF-8'));
 	}
 	
-	//print "Min/max: ".$this->getVar('min_num_repeats')."/".$this->getVar('max_num_repeats');
-	//print "start: " .$this->getVar('min_num_to_display');
+	if ($vb_batch) {
+		print caBatchEditorAttributeModeControl($vs_id_prefix);
+	} else {
+		print caEditorBundleShowHideControl($this->request, $vs_id_prefix);
+	}
 ?>
-<div id="<?php print $vs_id_prefix; ?>">
+<div id="<?php print $vs_id_prefix; ?>" <?php print $vb_batch ? "class='editorBatchBundleContent'" : ''; ?>>
 <?php
 	//
 	// The bundle template - used to generate each bundle in the form
@@ -175,6 +181,7 @@
 		fieldNamePrefix: '<?php print $vs_id_prefix; ?>_',
 		templateValues: [<?php print join(',', caQuoteList($va_template_tags)); ?>],
 		initialValues: <?php print json_encode($va_initial_values); ?>,
+		initialValueOrder: <?php print json_encode(array_keys($va_initial_values)); ?>,
 		errors: <?php print json_encode($va_errors); ?>,
 		itemID: '<?php print $vs_id_prefix; ?>Item_',
 		templateClassName: 'caItemTemplate',
@@ -191,6 +198,7 @@
 		fieldNamePrefix: '<?php print $vs_id_prefix; ?>_',
 		templateValues: [<?php print join(',', caQuoteList($va_template_tags)); ?>],
 		initialValues: <?php print json_encode($va_initial_values); ?>,
+		initialValueOrder: <?php print json_encode(array_keys($va_initial_values)); ?>,
 		forceNewValues: <?php print json_encode($va_failed_inserts); ?>,
 		errors: <?php print json_encode($va_errors); ?>,
 		itemID: '<?php print $vs_id_prefix; ?>Item_',

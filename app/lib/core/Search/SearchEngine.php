@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2007-2012 Whirl-i-Gig
+ * Copyright 2007-2013 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -94,6 +94,14 @@ class SearchEngine extends SearchBase {
 	# Search
 	# ------------------------------------------------------------------
 	/**
+	 *
+	 */
+	public function search($ps_search, $pa_options=null) {
+		$vs_append_to_search = (isset($pa_options['appendToSearch'])) ? ' '.$pa_options['appendToSearch'] : '';
+		return $this->search($ps_search.$vs_append_to_search, null, $pa_options);
+	}
+	# ------------------------------------------------------------------
+	/**
 	 * Performs a search by calling the search() method on the underlying search engine plugin
 	 * Information about all searches is logged to ca_search_log
 	 *
@@ -110,15 +118,24 @@ class SearchEngine extends SearchBase {
 	 *		search_source = optional source indicator text to record in log for search
 	 *		checkAccess = optional array of access values to filter results on
 	 *		showDeleted = if set to true, related items that have been deleted are returned. Default is false.
+	 *		deletedOnly = if set to true, only deleted items are returned. Default is false.
 	 *		limitToModifiedOn = if set returned results will be limited to rows modified within the specified date range. The value should be a date/time expression parse-able by TimeExpressionParser
 	 *		sets = if value is a list of set_ids, only rows that are members of those sets will be returned
 	 *		user_id = If set item level access control is performed relative to specified user_id, otherwise defaults to logged in user
 	 *		dontFilterByACL = if true ACL checking is not performed on results
+	 *		appendToSearch = 
+	 *
 	 * @return SearchResult Results packages in a SearchResult object, or sub-class of SearchResult if an instance was passed in $po_result
 	 * @uses TimeExpressionParser::parse
 	 */
-	public function search($ps_search, $po_result=null, $pa_options=null) {
+	public function doSearch($ps_search, $po_result=null, $pa_options=null) {
 		global $AUTH_CURRENT_USER_ID;
+		
+		if ($vs_append_to_search = (isset($pa_options['appendToSearch'])) ? ' '.$pa_options['appendToSearch'] : '') {
+			$ps_search .= $vs_append_to_search;
+		}
+		
+		$ps_search = str_replace("[BLANK]", '"[BLANK]"', $ps_search);	// the special [BLANK] search term, which returns records that have *no* content in a specific fields, has to be quoted in order to protect the square brackets from the parser.
 		
 		$t = new Timer();
 		if (!is_array($pa_options)) { $pa_options = array(); }
@@ -174,7 +191,11 @@ class SearchEngine extends SearchBase {
 				$o_parsed_query = $o_query_parser->parse($ps_search, $vs_char_set);
 			} catch (Exception $e) {
 				// Retry search with all non-alphanumeric characters removed
-				$o_parsed_query = $o_query_parser->parse(preg_replace("![^A-Za-z0-9 ]+!", " ", $ps_search), $vs_char_set);
+				try {
+					$o_parsed_query = $o_query_parser->parse(preg_replace("![^A-Za-z0-9 ]+!", " ", $ps_search), $vs_char_set);
+				} catch (Exception $e) {
+					$o_parsed_query = $o_query_parser->parse("", $vs_char_set);
+				}
 			}
 			
 			$va_rewrite_results = $this->_rewriteQuery($o_parsed_query);
@@ -184,8 +205,12 @@ class SearchEngine extends SearchBase {
 			//print "<div style='background:#FFFFFF; padding: 5px; border: 1px dotted #666666;'><strong>DEBUG: </strong>".$ps_search.'/'.$vs_search."</div>";
 
 			// Filter deleted records out of final result
-			if ((!isset($pa_options['showDeleted']) || !$pa_options['showDeleted']) && $t_table->hasField('deleted')) {
-				$this->addResultFilter($this->ops_tablename.'.deleted', '=', '0');
+			if ((isset($pa_options['deletedOnly']) && $pa_options['deletedOnly']) && $t_table->hasField('deleted')) {
+				$this->addResultFilter($this->ops_tablename.'.deleted', '=', '1');
+			} else {
+				if ((!isset($pa_options['showDeleted']) || !$pa_options['showDeleted']) && $t_table->hasField('deleted')) {
+					$this->addResultFilter($this->ops_tablename.'.deleted', '=', '0');
+				}
 			}
 			
 			if (isset($pa_options['checkAccess']) && (is_array($pa_options['checkAccess']) && sizeof($pa_options['checkAccess']))) {
@@ -241,7 +266,7 @@ class SearchEngine extends SearchBase {
 			));
 		}
 		if ($po_result) {
-			$po_result->init($o_res, $this->opa_tables);
+			$po_result->init($o_res, $this->opa_tables, $pa_options);
 			return $po_result;
 		} else {
 			return new SearchResult($o_res, $this->opa_tables);
@@ -340,7 +365,7 @@ class SearchEngine extends SearchBase {
 					LEFT OUTER JOIN ca_acl ON {$vs_search_tmp_table}.row_id = ca_acl.row_id AND ca_acl.table_num = ?
 					WHERE
 						ca_acl.row_id IS NULL;
-				", array((int)$this->opn_browse_table_num));
+				", array((int)$this->opn_tablenum));
 				
 				while($qr_sort->nextRow()) {
 					$va_row = $qr_sort->getRow();
@@ -433,6 +458,22 @@ class SearchEngine extends SearchBase {
 			
 			$va_tmp = explode('.', $vs_field);
 			
+			// Rewrite for <table>.preferred_labels.* syntax
+			if ($va_tmp[1] == 'preferred_labels') {
+				if ($t_labeled_item_table = $this->opo_datamodel->getInstanceByTableName($va_tmp[0], true)) {
+					if ($t_label_table = $t_labeled_item_table->getLabelTableInstance()) {
+						$va_tmp2 = array($t_label_table->tableName());
+						if (isset($va_tmp[2]) && $t_label_table->hasField($va_tmp[2])) {
+							$va_tmp2[] = $va_tmp[2];
+						} else {
+							$va_tmp2[] = $t_labeled_item_table->getLabelDisplayField();
+						}
+						$va_tmp = $va_tmp2;
+						$vs_field = join(".", $va_tmp);
+					}
+				}
+			}
+			
 			if ($va_tmp[0] == $vs_table_name) {
 				//
 				// sort field is in search table
@@ -446,30 +487,51 @@ class SearchEngine extends SearchBase {
 					if ($t_element->load(array('element_code' => $vs_sort_element_code))) {
 						$vn_element_id = $t_element->getPrimaryKey();
 						
-						if (!($vs_sortable_value_fld = 'attr_vals.'.Attribute::getSortFieldForDatatype($t_element->get('datatype')))) {
+						if (!($vs_sortable_value_fld = Attribute::getSortFieldForDatatype($t_element->get('datatype')))) {
 							return $pa_hits;
 						}
 						
-						$vs_sort_field = array_pop(explode('.', $vs_sortable_value_fld));
-						$vs_locale_where = ($vn_num_locales > 1) ? 'attr.locale_id' : '';
-						$vs_sql = "
-							SELECT attr.row_id, attr.locale_id, lower({$vs_sortable_value_fld}) {$vs_sort_field}
-							FROM ca_attributes attr
-							INNER JOIN ca_attribute_values AS attr_vals ON attr_vals.attribute_id = attr.attribute_id
-							INNER JOIN {$vs_search_tmp_table} ON {$vs_search_tmp_table}.row_id = attr.row_id
-							WHERE
-								(attr_vals.element_id = ?) AND (attr.table_num = ?) AND (attr_vals.{$vs_sort_field} IS NOT NULL)
-						";
-						//print $vs_sql." ; $vn_element_id/; ".$this->opn_browse_table_num."<br>";
-						$qr_sort = $this->opo_db->query($vs_sql, (int)$vn_element_id, (int)$this->opn_browse_table_num);
+						if ((int)$t_element->get('datatype') == 3) {
+							$vs_sortable_value_fld = 'lil.name_plural';
+							
+							$vs_sort_field = array_pop(explode('.', $vs_sortable_value_fld));
+							$vs_locale_where = ($vn_num_locales > 1) ? ', lil.locale_id' : '';
+				
+							$vs_sql = "
+								SELECT attr.row_id, lil.locale_id, lower({$vs_sortable_value_fld}) {$vs_sort_field}
+								FROM ca_attributes attr
+								INNER JOIN ca_attribute_values AS attr_vals ON attr_vals.attribute_id = attr.attribute_id
+								INNER JOIN ca_list_item_labels AS lil ON lil.item_id = attr_vals.item_id
+								INNER JOIN {$vs_browse_tmp_table} ON {$vs_browse_tmp_table}.row_id = attr.row_id
+								WHERE
+									(attr_vals.element_id = ?) AND (attr.table_num = ?) AND (lil.{$vs_sort_field} IS NOT NULL)
+								ORDER BY lil.{$vs_sort_field}
+							";
+						} else {
+							$vs_sortable_value_fld = 'attr_vals.'.$vs_sortable_value_fld;
+						
+							$vs_sort_field = array_pop(explode('.', $vs_sortable_value_fld));
+							$vs_locale_where = ($vn_num_locales > 1) ? 'attr.locale_id' : '';
+							$vs_sql = "
+								SELECT attr.row_id, attr.locale_id, lower({$vs_sortable_value_fld}) {$vs_sort_field}
+								FROM ca_attributes attr
+								INNER JOIN ca_attribute_values AS attr_vals ON attr_vals.attribute_id = attr.attribute_id
+								INNER JOIN {$vs_search_tmp_table} ON {$vs_search_tmp_table}.row_id = attr.row_id
+								WHERE
+									(attr_vals.element_id = ?) AND (attr.table_num = ?) AND (attr_vals.{$vs_sort_field} IS NOT NULL)
+								ORDER BY attr_vals.{$vs_sort_field}
+							";
+							//print $vs_sql." ; $vn_element_id/; ".$this->opn_tablenum."<br>";
+						}
+						$qr_sort = $this->opo_db->query($vs_sql, (int)$vn_element_id, (int)$this->opn_tablenum);
 						
 						while($qr_sort->nextRow()) {
 							$va_row = $qr_sort->getRow();
 							if (!$va_row['row_id']) { continue; }
 							if ($vn_num_locales > 1) {
-								$va_sorted_hits[$va_row['row_id']][$va_row['locale_id']] = trim(str_replace(array("'", '"'), array('', ''), $va_row[$vs_sort_field]));
+								$va_sorted_hits[$va_row['row_id']][$va_row['locale_id']] .= trim(str_replace(array("'", '"'), array('', ''), $va_row[$vs_sort_field]));
 							} else {
-								$va_sorted_hits[$va_row['row_id']] = trim(str_replace(array("'", '"'), array('', ''), $va_row[$vs_sort_field]));
+								$va_sorted_hits[$va_row['row_id']] .= trim(str_replace(array("'", '"'), array('', ''), $va_row[$vs_sort_field]));
 							}
 							unset($pa_hits[$va_row['row_id']]);
 						}
@@ -553,7 +615,8 @@ class SearchEngine extends SearchBase {
 			// Grab values and index for sorting later
 			//
 			
-			$vs_sort_field = array_pop(explode('.', $vs_sortable_value_fld));
+			$va_tmp = explode('.', $vs_sortable_value_fld);
+			$vs_sort_field = array_pop($va_tmp);
 			$vs_join_sql = join("\n", $va_joins);
 			$vs_sql = "
 				SELECT {$vs_table_name}.{$vs_table_pk}{$vs_locale_where}, lower({$vs_sortable_value_fld}) {$vs_sort_field}
@@ -700,9 +763,9 @@ class SearchEngine extends SearchBase {
 		if (sizeof($va_access_points = $this->getAccessPoints($this->opn_tablenum))) {
 			// if field is access point then do rewrite
 			if (
-				isset($va_access_points[$vs_fld]) 
+				isset($va_access_points[$vs_fld_lc = mb_strtolower($vs_fld)]) 
 				&&
-				($va_ap_info = $va_access_points[$vs_fld])
+				($va_ap_info = $va_access_points[$vs_fld_lc])
 			) {
 				$va_fields = isset($va_ap_info['fields']) ? $va_ap_info['fields'] : null;
 				if (!in_array($vs_bool = strtoupper($va_ap_info['boolean']), array('AND', 'OR'))) {
@@ -722,6 +785,7 @@ class SearchEngine extends SearchBase {
 					}
 				}
 				
+				if (sizeof($va_terms['signs']) > 0) { array_pop($va_terms['signs']); }
 				return $va_terms;
 			}
 		}
@@ -973,7 +1037,7 @@ class SearchEngine extends SearchBase {
 		
 		$this->opa_search_type_ids = array();
 		foreach($pa_type_codes_or_ids as $vs_code_or_id) {
-			if (!(int)$vs_code_or_id) { continue; }
+			if (!strlen($vs_code_or_id)) { continue; }
 			if (!is_numeric($vs_code_or_id)) {
 				$vn_type_id = $t_list->getItemIDFromList($vs_list_name, $vs_code_or_id);
 			} else {
@@ -990,7 +1054,6 @@ class SearchEngine extends SearchBase {
 				$this->opa_search_type_ids = array_merge($this->opa_search_type_ids, $va_ids);
 			}
 		}
-		
 		return true;
 	}
 	# ------------------------------------------------------

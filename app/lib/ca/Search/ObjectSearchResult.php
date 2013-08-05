@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2008-2012 Whirl-i-Gig
+ * Copyright 2008-2013 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -52,14 +52,47 @@ class ObjectSearchResult extends BaseSearchResult {
 	# -------------------------------------
 	/**
 	 * Override init to set ca_representations join params
+	 *
+	 * @param IWLPlugSearchEngineResult $po_engine_result
+	 * @param array $pa_tables
+	 * @param array $pa_options Options are:
+	 *		filterNonPrimaryRepresentations = If set only primary representations are returned. This can improve performance somewhat in most cases. Default is true.
 	 */
-	public function init($po_engine_result, $pa_tables) {
+	public function init($po_engine_result, $pa_tables, $pa_options=null) {
 		parent::init($po_engine_result, $pa_tables);
+		
+		if (!isset($pa_options['filterNonPrimaryRepresentations'])) { $pa_options['filterNonPrimaryRepresentations'] = true; }
+		if ($pa_options['filterNonPrimaryRepresentations']) {
+			$va_criteria = array('ca_objects_x_object_representations.is_primary = 1', 'ca_object_representations.deleted = 0');
+		} else {
+			$va_criteria = array('ca_object_representations.deleted = 0');
+		}
 		$this->opa_tables['ca_object_representations'] = array(
-			'fieldList' => array('ca_object_representations.media', 'ca_object_representations.representation_id', 'ca_object_representations.access'),
+			'fieldList' => array('ca_object_representations.media', 'ca_object_representations.representation_id', 'ca_object_representations.access', 'ca_object_representations.md5', 'ca_object_representations.mimetype', 'ca_object_representations.original_filename'),
 			'joinTables' => array('ca_objects_x_object_representations'),
-			'criteria' => array('ca_objects_x_object_representations.is_primary = 1', 'ca_object_representations.deleted = 0')
+			'criteria' => $va_criteria
 		);
+	}
+	# -------------------------------------
+	/**
+	 * Set if non-primary representations are filtered from returned results
+	 *
+	 * @param bool $pb_filter IF true non primary representations will be filtered from returned results
+	 * @return bool Always returns true
+	 */
+	public function filterNonPrimaryRepresentations($pb_filter) {
+		if ($pb_filter) {
+			$va_criteria = array('ca_objects_x_object_representations.is_primary = 1', 'ca_object_representations.deleted = 0');
+		} else {
+			$va_criteria = array('ca_object_representations.deleted = 0');
+		}
+		$this->opa_tables['ca_object_representations'] = array(
+			'fieldList' => array('ca_object_representations.media', 'ca_object_representations.representation_id', 'ca_object_representations.access', 'ca_object_representations.md5', 'ca_object_representations.mimetype', 'ca_object_representations.original_filename'),
+			'joinTables' => array('ca_objects_x_object_representations'),
+			'criteria' => $va_criteria
+		);
+		
+		return true;
 	}
 	# -------------------------------------
 	/**
@@ -111,7 +144,7 @@ class ObjectSearchResult extends BaseSearchResult {
 	/**
 	 *
 	 */
-	public function getMediaInfo($ps_field, $ps_version, $ps_key=null, $pa_options=null) {
+	public function getMediaInfo($ps_field, $ps_version=null, $ps_key=null, $pa_options=null) {
 		$va_tmp = explode('.', $ps_field);
 		
 		if (($va_tmp[0] === 'ca_object_representations') && ($va_tmp[1] !== 'access')) {
@@ -120,7 +153,7 @@ class ObjectSearchResult extends BaseSearchResult {
 				return null;
 			}
 		}
-		return parent::getMediaInfo($ps_field, $ps_version, $ps_key, 0, $pa_options);
+		return parent::getMediaInfo($ps_field, $ps_version, $ps_key, $pa_options);
 	}
 	# ------------------------------------------------------
  	/**

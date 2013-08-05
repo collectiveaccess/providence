@@ -28,7 +28,7 @@
  	
  	$t_subject = 			$this->getVar('t_subject');
  	$vs_table = 			$t_subject->tableName();
- 	$va_lookup_urls = 		caJSONLookupServiceUrl($this->request, $vs_table);
+ 	$va_lookup_urls = 		caJSONLookupServiceUrl($this->request, $vs_table, array('noInline' => 1));
  	$vo_result_context =	$this->getVar('result_context');
  	
  	$vs_type_id_form_element = '';
@@ -112,14 +112,21 @@
 					});
 					
 					jQuery('#BasicSearchInput').autocomplete(
-						'<?php print $va_lookup_urls['search']; ?>', {minChars: 3, matchSubset: 1, matchContains: 1, delay: 800}
-					);
-					jQuery('#BasicSearchInput').result(function(event, data, formatted) {
-						oHierBrowser.setUpHierarchy(data[1]);	// jump browser to selected item
-						if (stateCookieJar.get('<?php print $vs_table; ?>BrowserIsClosed') == 1) {
-							jQuery("#browseToggle").click();
+						{
+							minLength: 3, delay: 800, html: true,
+							source: '<?php print $va_lookup_urls['search']; ?>',
+							select: function(event, ui) {
+								if (parseInt(ui.item.id) > 0) {
+									oHierBrowser.setUpHierarchy(ui.item.id);	// jump browser to selected item
+									if (stateCookieJar.get('<?php print $vs_table; ?>BrowserIsClosed') == 1) {
+										jQuery("#browseToggle").click();
+									}
+								}
+								event.preventDefault();
+								jQuery('#BasicSearchInput').val('');
+							}
 						}
-					});
+					);
 					jQuery("#browseToggle").click(function() {
 						jQuery("#browse").slideToggle(350, function() { 
 							stateCookieJar.set('<?php print $vs_table; ?>BrowserIsClosed', (this.style.display == 'block') ? 0 : 1); 

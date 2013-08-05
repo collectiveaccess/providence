@@ -766,14 +766,21 @@ class Installer {
 		$t_rel_type->setMode(ACCESS_WRITE);
 
 
-
+		$vn_rank_default = (int)$t_rel_type->getFieldInfo('rank', 'DEFAULT');
 		foreach($po_relationship_types->children() as $vo_type) {
 			$vs_type_code = self::getAttribute($vo_type, "code");
 			$vn_default = self::getAttribute($vo_type, "default");
+			$vn_rank = (int)self::getAttribute($vo_type, "rank");
 
 			$t_rel_type->set('table_num', $pn_table_num);
 			$t_rel_type->set('type_code', $vs_type_code);
 			$t_rel_type->set("parent_id", $pn_parent_id);
+			
+			if ($vn_rank > 0) {
+				$t_rel_type->set("rank", $vn_rank);
+			} else {
+				$t_rel_type->set("rank", $vn_rank_default);
+			}
 
 			$t_rel_type->set('sub_type_left_id', null);
 			$t_rel_type->set('sub_type_right_id', null);
@@ -928,7 +935,7 @@ class Installer {
 		$o_config = Configuration::load();
 		$va_available_bundles = $t_display->getAvailableBundles(null, array('no_cache' => true));
 		
-		$vn_i = 0;
+		$vn_i = 1;
 		foreach($po_placements->children() as $vo_placement){
 			$vs_code = self::getAttribute($vo_item, "code");
 			$vs_bundle = (string)$vo_placement->bundle;
@@ -1069,27 +1076,28 @@ class Installer {
 
 		$t_group = new ca_user_groups();
 		$t_group->setMode(ACCESS_WRITE);
-
-		foreach($va_groups as $vs_group_code => $vo_group) {
-			$t_group->set('name', trim((string) $vo_group->name));
-			$t_group->set('description', trim((string) $vo_group->description));
-			$t_group->set('code', $vs_group_code);
-			$t_group->set('parent_id', null);
-			$t_group->insert();
-
-			$va_roles = array();
-
-			if($vo_group->roles){
-				foreach($vo_group->roles->children() as $vo_role){
-					$va_roles[] = trim((string) $vo_role);
+		if (is_array($va_groups)) {
+			foreach($va_groups as $vs_group_code => $vo_group) {
+				$t_group->set('name', trim((string) $vo_group->name));
+				$t_group->set('description', trim((string) $vo_group->description));
+				$t_group->set('code', $vs_group_code);
+				$t_group->set('parent_id', null);
+				$t_group->insert();
+	
+				$va_roles = array();
+	
+				if($vo_group->roles){
+					foreach($vo_group->roles->children() as $vo_role){
+						$va_roles[] = trim((string) $vo_role);
+					}
 				}
-			}
-
-			$t_group->addRoles($va_roles);
-
-			if ($t_group->numErrors()) {
-				$this->addError("There were errors inserting user group {$vs_group_code}: ".join("; ",$t_group->getErrors()));
-				return false;
+	
+				$t_group->addRoles($va_roles);
+	
+				if ($t_group->numErrors()) {
+					$this->addError("There were errors inserting user group {$vs_group_code}: ".join("; ",$t_group->getErrors()));
+					return false;
+				}
 			}
 		}
 

@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2010-2011 Whirl-i-Gig
+ * Copyright 2010-2013 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -93,14 +93,14 @@
 			$vs_buf = '';
 			if (!is_array(TooltipManager::$opa_tooltips)) { TooltipManager::init(); }
 			if (isset(TooltipManager::$opa_tooltips[$ps_namespace]) && sizeof(TooltipManager::$opa_tooltips[$ps_namespace])) {
-				$vs_buf = "<script type='text/javascript'>\njQuery(document).ready(function() {\n<!-- BEGIN tooltip output -->\n";
+				$vs_buf = "<script type='text/javascript'>\njQuery(document).ready(function() {\n";
 			
 				foreach(TooltipManager::$opa_tooltips[$ps_namespace] as $vs_id => $vs_content) {
 					$vs_class = (isset(TooltipManager::$opa_namespace_classes[$ps_namespace]) && TooltipManager::$opa_namespace_classes[$ps_namespace]) ? TooltipManager::$opa_namespace_classes[$ps_namespace] : "tooltipFormat";
-					$vs_buf .= "jQuery('{$vs_id}').tooltip({ track: false, extraClass: '{$vs_class}', showURL: false, bodyHandler: function() { return '".preg_replace('![\n\r]{1}!', ' ', addslashes($vs_content))."'; }});";
+					$vs_buf .= "jQuery('{$vs_id}').tooltip({ tooltipClass: '{$vs_class}', show: 150, hide: 150, items: '*', content: function() { return '".preg_replace('![\n\r]{1}!', ' ', addslashes($vs_content))."'; }});";
 				}
 				
-				$vs_buf .= "});\n<!-- END tooltip output -->\n</script>\n";
+				$vs_buf .= "});\n</script>\n";
 				
 			}
 			return $vs_buf;

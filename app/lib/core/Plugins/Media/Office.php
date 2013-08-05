@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2008-2012 Whirl-i-Gig
+ * Copyright 2008-2013 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -38,7 +38,7 @@
  * Plugin for processing Microsoft Word and Excel documents
  */
  
-include_once(__CA_LIB_DIR__."/core/Plugins/WLPlug.php");
+include_once(__CA_LIB_DIR__."/core/Plugins/Media/BaseMediaPlugin.php");
 include_once(__CA_LIB_DIR__."/core/Plugins/IWLPlugMedia.php");
 include_once(__CA_LIB_DIR__."/core/Configuration.php");
 include_once(__CA_LIB_DIR__."/core/Media.php");
@@ -50,7 +50,7 @@ include_once(__CA_LIB_DIR__."/core/Zend/Search/Lucene/Document/Docx.php");
 include_once(__CA_LIB_DIR__."/core/Zend/Search/Lucene/Document/Xlsx.php");
 include_once(__CA_LIB_DIR__."/core/Zend/Search/Lucene/Document/Pptx.php");
 
-class WLPlugMediaOffice Extends WLPlug Implements IWLPlugMedia {
+class WLPlugMediaOffice Extends BaseMediaPlugin Implements IWLPlugMedia {
 	var $errors = array();
 	
 	var $filepath;
@@ -200,7 +200,7 @@ class WLPlugMediaOffice Extends WLPlug Implements IWLPlugMedia {
 			return '';
 		}
 		
-		if ($r_fp = fopen($ps_filepath, "r")) {
+		if ($r_fp = @fopen($ps_filepath, "r")) {
 			$vs_sig = fgets($r_fp, 9);
 			if ($this->isWord972000doc($vs_sig, $r_fp)) {
 				$this->properties = $this->handle = $this->ohandle = array(
@@ -307,10 +307,10 @@ class WLPlugMediaOffice Extends WLPlug Implements IWLPlugMedia {
 								)
 							);
 							$this->handle['content'] = $o_doc->getFieldUtf8Value('body');
-							return 'WORD';
 						} catch (Exception $e) {
 							// noop
 						}
+						return 'WORD';
 					}
 					if (substr($vs_file, 0, 3) == 'xl/') {
 						try {
@@ -323,11 +323,11 @@ class WLPlugMediaOffice Extends WLPlug Implements IWLPlugMedia {
 								)
 							);
 							$this->handle['content'] = $o_doc->getFieldUtf8Value('body');
-							return 'EXCEL';
+							
 						} catch (Exception $e) {
 							// noop
-							
 						}
+						return 'EXCEL';
 					}
 					
 					if (substr($vs_file, 0, 4) == 'ppt/') {
@@ -341,10 +341,10 @@ class WLPlugMediaOffice Extends WLPlug Implements IWLPlugMedia {
 								)
 							);
 							$this->handle['content'] = $o_doc->getFieldUtf8Value('body');
-							return 'PPT';
 						} catch (Exception $e) {
 							// noop
 						}
+						return 'PPT';
 					}
 				}
 			}

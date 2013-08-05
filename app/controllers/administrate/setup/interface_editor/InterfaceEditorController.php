@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2011 Whirl-i-Gig
+ * Copyright 2011-2013 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -39,7 +39,7 @@
  			parent::__construct($po_request, $po_response, $pa_view_paths);
  		}
  		# -------------------------------------------------------
- 		protected function _initView() {
+ 		protected function _initView($pa_options=null) {
  			JavascriptLoadManager::register('bundleableEditor');
  			JavascriptLoadManager::register('sortableUI');
  			JavascriptLoadManager::register('bundleListEditorUI');
@@ -49,6 +49,15 @@
  				$va_init[1]->set('editor_type', $this->request->getParameter('editor_type', pInteger));
  			}
  			return $va_init;
+ 		}
+ 		# -------------------------------------------------------
+ 		/**
+ 		 * If instance was just saved grant current user access
+ 		 */
+ 		public function _afterSave($pt_subject, $pb_is_insert) {
+ 			if ($pb_is_insert && $pt_subject->getPrimaryKey()) {
+ 				$pt_subject->addUsers(array($this->request->getUserID() => __CA_BUNDLE_DISPLAY_EDIT_ACCESS__));
+ 			}
  		}
  		# -------------------------------------------------------
  		# Sidebar info handler

@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2008-2012 Whirl-i-Gig
+ * Copyright 2008-2013 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -126,7 +126,33 @@
 		'label' => _t('Value delimiter'),
 		'validForRootOnly' => 1,
 		'description' => _t('Delimiter to use between multiple values when used in a display.')
-	)
+	),
+	'maxResults' => array(
+		'formatType' => FT_NUMBER,
+		'displayType' => DT_FIELD,
+		'default' => 20,
+		'width' => 5, 'height' => 1,
+		'label' => _t('Maximum number of GeoNames results'),
+		'description' => _t('Determines the maximum number of results returned by GeoNames. Tweak this number if you want to speed up lookups.')
+	),
+	'gnElements' => array(
+		'formatType' => FT_TEXT,
+		'displayType' => DT_FIELD,
+		'default' => 'name,countryName,continentCode',
+		'width' => 90, 'height' => 4,
+		'label' => _t('GeoNames elements'),
+		'validForRootOnly' => 1,
+		'description' => _t('Comma-separated list of GeoNames attributes to be pulled from the service to build the text representation for the selected location. See http://www.geonames.org/export/geonames-search.html for further reference, including the available element names. Note that latitude and longitude are always added to the text value to enable map display.')
+	),
+	'gnDelimiter' => array(
+		'formatType' => FT_TEXT,
+		'displayType' => DT_FIELD,
+		'default' => ', ',
+		'width' => 10, 'height' => 1,
+		'label' => _t('GeoNames element delimiter'),
+		'validForRootOnly' => 1,
+		'description' => _t('Delimiter to use between multiple values pulled from GeoNames service.')
+	),
 );
 
 class GeoNamesAttributeValue extends AttributeValue implements IAttributeValue {
@@ -143,6 +169,11 @@ class GeoNamesAttributeValue extends AttributeValue implements IAttributeValue {
  		$this->ops_uri_value =  $pa_value_array['value_longtext2'];
  	}
  	# ------------------------------------------------------------------
+ 	/**
+ 	 * @param array $pa_options Options are:
+ 	 *		forDuplication = returns full text + Geonames URL suitable for setting a duplicate attribute. Used in BaseModelWithAttributes::copyAttributesTo()
+ 	 * @return string GeoNames value
+ 	 */
 	public function getDisplayValue($pa_options=null) {
 		if(isset($pa_options['coordinates']) && $pa_options['coordinates']) {
 			if (preg_match("!\[([^\]]+)!", $this->ops_text_value, $va_matches)) {
@@ -156,7 +187,12 @@ class GeoNamesAttributeValue extends AttributeValue implements IAttributeValue {
 				return array('latitude' => null, 'longitude' => null, 'path' => null, 'label' => $this->ops_text_value);
 			}
 		}
-		return $this->ops_text_value;
+		
+		if(isset($pa_options['forDuplication']) && $pa_options['forDuplication']) {
+			return $this->ops_text_value.'|'.$this->ops_uri_value;
+		}
+
+		return $this->ops_text_value.' [id:'.$this->ops_uri_value.']';
 	}
 	# ------------------------------------------------------------------
 	public function getTextValue(){
@@ -167,13 +203,15 @@ class GeoNamesAttributeValue extends AttributeValue implements IAttributeValue {
 		return $this->ops_uri_value;
 	}
 	# ------------------------------------------------------------------
+	/**
+	 *
+	 */
 	public function parseValue($ps_value, $pa_element_info) {
  		$ps_value = trim(preg_replace("![\t\n\r]+!", ' ', $ps_value));
 		$vo_conf = Configuration::load();
 		$vs_user = trim($vo_conf->get("geonames_user"));
 
 		$va_settings = $this->getSettingValuesFromElementArray($pa_element_info, array('canBeEmpty'));
-
 		if (!$ps_value) {
  			if(!$va_settings["canBeEmpty"]){
 				$this->postError(1970, _t('Entry was blank.'), 'GeoNamesAttributeValue->parseValue()');
@@ -181,11 +219,12 @@ class GeoNamesAttributeValue extends AttributeValue implements IAttributeValue {
 			}
 			return array();
  		} else {
-			$va_tmp = explode('|', $ps_value);
-
-			$vs_text = $va_tmp[0];
-			$vs_id = $va_tmp[1];
-			
+ 			$vs_text = $ps_value;
+ 			$vs_id = null;
+			if (preg_match("! \[id:([0-9]+)\]$!", $vs_text, $va_matches)) {
+				$vs_id = $va_matches[1];
+				$vs_text = preg_replace("! \[id:[0-9]+\]$!", "", $ps_value);
+			}
 			if (!$vs_id) {
 				if(!$va_settings["canBeEmpty"]){
 					$this->postError(1970, _t('Entry was blank.'), 'GeoNamesAttributeValue->parseValue()');
@@ -193,11 +232,10 @@ class GeoNamesAttributeValue extends AttributeValue implements IAttributeValue {
 				}
 				return array();
 			}
-			$vs_url = "http://api.geonames.org/get?geonameId={$vs_id}&style=full&username={$vs_user}";
 
 			return array(
 				'value_longtext1' => $vs_text,
-				'value_longtext2' => $vs_url,
+				'value_longtext2' => $vs_id,
 			);
 		}
 	}
@@ -214,9 +252,15 @@ class GeoNamesAttributeValue extends AttributeValue implements IAttributeValue {
 		}
  		$o_config = Configuration::load();
 
- 		$va_settings = $this->getSettingValuesFromElementArray($pa_element_info, array('fieldWidth', 'fieldHeight', 'disableMap'));
+ 		$va_settings = $this->getSettingValuesFromElementArray($pa_element_info, array('fieldWidth', 'fieldHeight', 'disableMap', 'maxResults', 'gnElements', 'gnDelimiter'));
 
-		JavascriptLoadManager::register('maps');
+ 		$vn_max_results = (isset($va_settings['maxResults']) ? intval($va_settings['maxResults']) : 20);
+ 		$vs_gn_elements = $va_settings['gnElements'];
+ 		$vs_gn_delimiter = $va_settings['gnDelimiter'];
+
+ 		if ($pa_options['request']) {
+			$vs_url = caNavUrl($pa_options['request'], 'lookup', 'GeoNames', 'Get', array('maxRows' => $vn_max_results, 'gnElements' => urlencode($vs_gn_elements), 'gnDelimiter' => urlencode($vs_gn_delimiter)));
+		}
 
  		$vs_element = '<div id="geonames_'.$pa_element_info['element_id'].'_input{n}">'.
  			caHTMLTextInput(
@@ -238,24 +282,28 @@ class GeoNamesAttributeValue extends AttributeValue implements IAttributeValue {
 				)
 			);
 
-		if ($pa_options['po_request']) {
-			$vs_url = caNavUrl($pa_options['po_request'], 'lookup', 'GeoNames', 'Get');
-		}
-
 		$vs_element .= '</div>';
+
 		$vs_element .= "
 			<script type='text/javascript'>
 				jQuery(document).ready(function() {
-					jQuery('#geonames_".$pa_element_info['element_id']."_autocomplete{n}').autocomplete('".$vs_url."', { max: 50, minChars: 3, matchSubset: 1, matchContains: 1, delay: 800});
-					jQuery('#geonames_".$pa_element_info['element_id']."_autocomplete{n}').result(function(event, data, formatted) {
-							jQuery('#{fieldNamePrefix}".$pa_element_info['element_id']."_{n}').val(data[0] + '|' + data[1]);
+					jQuery('#geonames_".$pa_element_info['element_id']."_autocomplete{n}').autocomplete(
+						{ 
+							source: '{$vs_url}',
+							minLength: 3, delay: 800,
+							select: function(event, ui) {
+								jQuery('#{fieldNamePrefix}".$pa_element_info['element_id']."_{n}').val(ui.item.label + ' [id:' + ui.item.id + ']');
+							}
 						}
-					);
+					).click(function() { this.select(); });
 				});
 			</script>
 		";
 
 		if(!$va_settings["disableMap"]){
+
+			JavascriptLoadManager::register('maps');
+
 			$vs_element .= "
 				<div id='map_".$pa_element_info['element_id']."{n}' style='width:700px; height:160px;'>
 
@@ -269,7 +317,7 @@ class GeoNamesAttributeValue extends AttributeValue implements IAttributeValue {
 
 			$vs_element .= "
 					var re = /\[([\d\.\-,; ]+)\]/;
-					var r = re.exec('{".$pa_element_info['element_id']."}');
+					var r = re.exec('{{".$pa_element_info['element_id']."}}');
 					var latlong = (r) ? r[1] : null;
 
 					if (latlong) {

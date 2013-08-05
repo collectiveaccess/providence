@@ -31,7 +31,7 @@
 	$_SESSION = array();	
 	error_reporting(E_ALL ^ E_NOTICE);
 	set_time_limit(7200);
-	ini_set("memory_limit", "128M");	
+	ini_set("memory_limit", "256M");	
 	
 	// Check existence of setup.php
 	if (!file_exists('../setup.php')) {

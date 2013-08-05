@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2009-2012 Whirl-i-Gig
+ * Copyright 2009-2013 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -83,6 +83,7 @@ BaseModel::$s_ca_models_definitions['ca_sets'] = array(
 				'DONT_USE_AS_BUNDLE' => true,
 				'IS_NULL' => false, 
 				'DEFAULT' => '',
+				'BOUNDS_VALUE' => array(1,255),
 				'LABEL' => _t('Set content'), 'DESCRIPTION' => _t('Determines what kind of items (objects, entities, places, etc.) are stored by the set.'),
 				'BOUNDS_CHOICE_LIST' => array(
 					_t('Objects') => 57,
@@ -92,9 +93,13 @@ BaseModel::$s_ca_models_definitions['ca_sets'] = array(
 					_t('Occurrences') => 67,
 					_t('Collections') => 13,
 					_t('Storage locations') => 89,
-					_t('Object representations') => 56
-				),
-				'BOUNDS_LENGTH' => array(1,100)
+					_t('Object representations') => 56,
+					_t('Loans') => 133,
+					_t('Movements') => 137,
+					_t('List items') => 33,
+					_t('Tours') => 153,
+					_t('Tour stops') => 155
+				)
 		),
 		'type_id' => array(
 				'FIELD_TYPE' => FT_NUMBER, 'DISPLAY_TYPE' => DT_SELECT, 
@@ -102,6 +107,7 @@ BaseModel::$s_ca_models_definitions['ca_sets'] = array(
 				'IS_NULL' => false, 
 				'DEFAULT' => '',
 				'LIST_CODE' => 'set_types',
+				'BOUNDS_VALUE' => array(1,255),
 				'LABEL' => _t('Type'), 'DESCRIPTION' => _t('The type of the set determines what sorts of information the set and each item in the set can have associated with them.')
 		),
 		'set_code' => array(
@@ -413,6 +419,10 @@ class ca_sets extends BundlableLabelableBaseModelWithAttributes implements IBund
 	 *			row_id = if set to an integer only sets containing the specified row are returned
 	 *			setIDsOnly = if set to true only set_id values are returned, in a simple array
 	 *			omitCounts = 
+	 *			all = 
+	 *			allUsers =
+	 *			publicUsers =
+	 *			name = 
 	 * @return array A list of sets keyed by set_id and then locale_id. Keys for the per-locale value array include: set_id, set_code, status, public access, owner user_id, content table_num, set type_id, set name, number of items in the set (item_count), set type name for display and set content type name for display. If setIDsOnly option is set then a simple array of set_id values is returned instead.
 	 */
 	public function getSets($pa_options=null) {
@@ -423,6 +433,7 @@ class ca_sets extends BundlableLabelableBaseModelWithAttributes implements IBund
 		$pn_access = isset($pa_options['access']) ? $pa_options['access'] : null;
 		$pb_set_ids_only = isset($pa_options['setIDsOnly']) ? (bool)$pa_options['setIDsOnly'] : false;
 		$pb_omit_counts = isset($pa_options['omitCounts']) ? (bool)$pa_options['omitCounts'] : false;
+		$ps_set_name = isset($pa_options['name']) ? $pa_options['name'] : null;
 		
 		$pn_row_id = (isset($pa_options['row_id']) && ((int)$pa_options['row_id'])) ? (int)$pa_options['row_id'] : null;
 		
@@ -439,8 +450,10 @@ class ca_sets extends BundlableLabelableBaseModelWithAttributes implements IBund
 		$o_db = $this->getDb();
 		
 		$va_sql_wheres = array("(cs.deleted = 0)");
+		$va_sql_params = array();
 		if ($vn_table_num) {
-			$va_sql_wheres[] = "(cs.table_num = ".intval($vn_table_num).")";
+			$va_sql_wheres[] = "(cs.table_num = ?)";
+			$va_sql_params[] = (int)$vn_table_num;
 		}
 		
 		if ($pb_set_ids_only) {
@@ -452,78 +465,96 @@ class ca_sets extends BundlableLabelableBaseModelWithAttributes implements IBund
 			);
 		}
 		
-		if ($pn_user_id && !$this->getAppConfig()->get('dont_enforce_access_control_for_ca_sets')) {
-			$o_dm = $this->getAppDatamodel();
-			$t_user = $o_dm->getInstanceByTableName('ca_users', true);
-			$t_user->load($pn_user_id);
-			
-			if ($t_user->getPrimaryKey()) {
-				$vs_access_sql = ($pn_access > 0) ? " AND (access >= ".intval($pn_access).")" : "";
-				if (is_array($va_groups = $t_user->getUserGroups()) && sizeof($va_groups)) {
-					$vs_sql = "(
-						(cs.user_id = ".intval($pn_user_id).") OR 
-						(cs.set_id IN (
-								SELECT set_id 
-								FROM ca_sets_x_user_groups 
-								WHERE 
-									group_id IN (".join(',', array_keys($va_groups)).") {$vs_access_sql}
-									AND
-									(
-										 (sdatetime IS NULL AND edatetime IS NULL)
-										 OR 
-										 (
-										 	sdatetime <= ".time()." AND edatetime >= ".time()."
-										 )
-									)
+		if (isset($pa_options['all']) && $pa_options['all']) {
+			$va_sql_wheres[] = "(cs.user_id IN (SELECT user_id FROM ca_users WHERE userclass != 255))";
+		} elseif (isset($pa_options['allUsers']) && $pa_options['allUsers']) {
+			$va_sql_wheres[] = "(cs.user_id IN (SELECT user_id FROM ca_users WHERE userclass = 0))";
+		} elseif (isset($pa_options['publicUsers']) && $pa_options['publicUsers']) {
+			$va_sql_wheres[] = "(cs.user_id IN (SELECT user_id FROM ca_users WHERE userclass = 1))";
+		} else {
+			if ($pn_user_id && !$this->getAppConfig()->get('dont_enforce_access_control_for_ca_sets')) {
+				$o_dm = $this->getAppDatamodel();
+				$t_user = $o_dm->getInstanceByTableName('ca_users', true);
+				$t_user->load($pn_user_id);
+				
+				if ($t_user->getPrimaryKey()) {
+					$vs_access_sql = ($pn_access > 0) ? " AND (access >= ".intval($pn_access).")" : "";
+					if (is_array($va_groups = $t_user->getUserGroups()) && sizeof($va_groups)) {
+						$vs_sql = "(
+							(cs.user_id = ".intval($pn_user_id).") OR 
+							(cs.set_id IN (
+									SELECT set_id 
+									FROM ca_sets_x_user_groups 
+									WHERE 
+										group_id IN (".join(',', array_keys($va_groups)).") {$vs_access_sql}
+										AND
+										(
+											 (sdatetime IS NULL AND edatetime IS NULL)
+											 OR 
+											 (
+												sdatetime <= ".time()." AND edatetime >= ".time()."
+											 )
+										)
+								)
 							)
-						)
-					)";
-				} else {
-					$vs_sql = "(cs.user_id = {$pn_user_id})";
+						)";
+					} else {
+						$vs_sql = "(cs.user_id = {$pn_user_id})";
+					}
+					
+					$vs_sql .= " OR (cs.set_id IN (
+											SELECT set_id 
+											FROM ca_sets_x_users 
+											WHERE 
+												user_id = {$pn_user_id} {$vs_access_sql}
+												AND
+												(
+													 (sdatetime IS NULL AND edatetime IS NULL)
+													 OR 
+													 (
+														sdatetime <= ".time()." AND edatetime >= ".time()."
+													 )
+												)
+										)
+									)";
+					
+					
+					$va_sql_wheres[] = "({$vs_sql})";
 				}
-				
-				$vs_sql .= " OR (cs.set_id IN (
-										SELECT set_id 
-										FROM ca_sets_x_users 
-										WHERE 
-											user_id = {$pn_user_id} {$vs_access_sql}
-											AND
-											(
-												 (sdatetime IS NULL AND edatetime IS NULL)
-												 OR 
-												 (
-													sdatetime <= ".time()." AND edatetime >= ".time()."
-												 )
-											)
-									)
-								)";
-				
-				
-				$va_sql_wheres[] = "({$vs_sql})";
 			}
 		}
 		
 		if (!is_null($pa_public_access) && is_array($pa_public_access) && sizeof($pa_public_access)) {
-			$va_sql_wheres[] = "(cs.access IN (".join(', ', $pa_public_access)."))";
+			$va_sql_wheres[] = "(cs.access IN (?))";
+			$va_sql_params[] = $pa_public_access;
 		}
 		
 		if (isset($pm_type) && $pm_type) {
 			if(is_numeric($pm_type)){
-				$va_sql_wheres[] = "(cs.type_id = ".intval($pm_type).")";
+				$va_sql_wheres[] = "(cs.type_id = ?)";
+				$va_sql_params[] = (int)$pm_type;
 			}else{
 				# --- look up code of set type
 				$t_list = new ca_lists();
 				$vn_type_id = $t_list->getItemIDFromList("set_types", $pm_type);
 				if($vn_type_id){
-					$va_sql_wheres[] = "(cs.type_id = {$vn_type_id})";
+					$va_sql_wheres[] = "(cs.type_id = ?)";
+					$va_sql_params[] = (int)$vn_type_id;
 				}
 			}
 		}
 		
 		if ($pn_row_id > 0) {
-			$va_sql_wheres[] = "((csi.row_id = {$pn_row_id}) AND (csi.table_num = {$vn_table_num}))";
+			$va_sql_wheres[] = "((csi.row_id = ?) AND (csi.table_num = ?))";
 			$va_extra_joins[] = "INNER JOIN ca_set_items AS csi ON cs.set_id = csi.set_id";
 			$va_sql_selects[] = 'csi.item_id';
+			$va_sql_params[] = (int)$pn_row_id;
+			$va_sql_params[] = (int)$vn_table_num;
+		}
+		
+		if ($ps_set_name) { 
+			$va_sql_wheres[] = "(csl.name = ?)";
+			$va_sql_params[] = (string)$ps_set_name;
 		}
 		
 		if (!$pb_set_ids_only && !$pb_omit_counts) {
@@ -534,12 +565,13 @@ class ca_sets extends BundlableLabelableBaseModelWithAttributes implements IBund
 				INNER JOIN ca_set_items AS csi ON cs.set_id = csi.set_id
 				".(sizeof($va_sql_wheres) ? 'WHERE ' : '')."
 				".join(' AND ', $va_sql_wheres)."
-			");
+			", $va_sql_params);
 			
 			$va_item_counts = array();
 			while($qr_table_nums->nextRow()) {
 				$o_dm = $this->getAppDatamodel();
 				$t_instance = $o_dm->getInstanceByTableNum($vn_table_num = (int)$qr_table_nums->get('table_num'), true);
+				if (!$t_instance) { continue; }
 				
 				$va_item_wheres = $va_sql_wheres;
 				$va_item_wheres[] = "(cs.table_num = {$vn_table_num})";
@@ -554,7 +586,7 @@ class ca_sets extends BundlableLabelableBaseModelWithAttributes implements IBund
 					".(sizeof($va_item_wheres) ? 'WHERE ' : '')."
 					".join(' AND ', $va_item_wheres)."
 					GROUP BY cs.set_id
-				");
+				", $va_sql_params);
 				while($qr_res->nextRow()) {
 					$va_item_counts[(int)$qr_res->get('set_id')] = (int)$qr_res->get('item_count');
 				}
@@ -571,7 +603,7 @@ class ca_sets extends BundlableLabelableBaseModelWithAttributes implements IBund
 				".(sizeof($va_sql_wheres) ? 'WHERE ' : '')."
 				".join(' AND ', $va_sql_wheres)."
 				ORDER BY csl.name
-			");
+			", $va_sql_params);
 			$va_sets = array();
 			$o_dm = $this->getAppDatamodel();
 			$va_type_name_cache = array();
@@ -595,10 +627,11 @@ class ca_sets extends BundlableLabelableBaseModelWithAttributes implements IBund
 					SELECT ".join(', ', $va_sql_selects)."
 					FROM ca_sets cs
 					INNER JOIN ca_users AS u ON cs.user_id = u.user_id
+					LEFT JOIN ca_set_labels AS csl ON cs.set_id = csl.set_id
 					".join("\n", $va_extra_joins)."
 					".(sizeof($va_sql_wheres) ? 'WHERE ' : '')."
 					".join(' AND ', $va_sql_wheres)."
-				");
+				", $va_sql_params);
 				return $qr_res->getAllFieldValues("set_id");
 			} else {
 				$qr_res = $o_db->query("
@@ -610,7 +643,7 @@ class ca_sets extends BundlableLabelableBaseModelWithAttributes implements IBund
 					".join("\n", $va_extra_joins)."
 					".(sizeof($va_sql_wheres) ? 'WHERE ' : '')."
 					".join(' AND ', $va_sql_wheres)."
-				");
+				", $va_sql_params);
 				$t_list = new ca_lists();
 				while($qr_res->nextRow()) {
 					$vn_table_num = $qr_res->get('table_num');
@@ -731,10 +764,12 @@ class ca_sets extends BundlableLabelableBaseModelWithAttributes implements IBund
 	 * @param int $pn_user_id user_id of user to check set access for
 	 * @param int $pn_access type of access required. Use __CA_SET_READ_ACCESS__ for read-only access or __CA_SET_EDIT_ACCESS__ for editing (full) access
 	 * @param int $pn_set_id The id of the set to check. If omitted then currently loaded set will be checked.
+	 * @param array $pa_options No options yet
 	 * @return bool True if user has access, false if not
 	 */
-	public function haveAccessToSet($pn_user_id, $pn_access, $pn_set_id=null) {
+	public function haveAccessToSet($pn_user_id, $pn_access, $pn_set_id=null, $pa_options=null) {
 		if ($this->getAppConfig()->get('dont_enforce_access_control_for_ca_sets')) { return true; }
+		
 		if ($pn_set_id) { 
 			$vn_set_id = $pn_set_id; 
 			$t_set = new ca_sets($vn_set_id);
@@ -760,6 +795,15 @@ class ca_sets extends BundlableLabelableBaseModelWithAttributes implements IBund
 		if (($t_set->get('access') > 0) && ($pn_access == __CA_SET_READ_ACCESS__)) {	 // public sets are readable by all
 			return ca_sets::$s_have_access_to_set_cache[$vn_set_id.'/'.$pn_user_id.'/'.$pn_access] = true; 
 		}
+		
+		//
+		// If user is admin or has set admin privs allow them access to the set
+		//
+		$t_user = new ca_users();
+		if ($t_user->load($pn_user_id) && ($t_user->canDoAction('is_administrator') || $t_user->canDoAction('can_administrate_sets'))) { 
+			return ca_sets::$s_have_access_to_set_cache[$vn_set_id.'/'.$pn_user_id.'/'.$pn_access] = true;
+		}
+		
 		
 		$o_db =  $this->getDb();
 		$qr_res = $o_db->query($vs_sql="
@@ -939,7 +983,45 @@ class ca_sets extends BundlableLabelableBaseModelWithAttributes implements IBund
 	}
 	# ------------------------------------------------------
 	/**
-	 * Removes all instances of the specified item from the set as specified by the row_id
+	 * Add a list of row_ids to the currently loaded set with minimal overhead.
+	 * Note: this method doesn't check access rights for the set
+	 *
+	 * @param int $pa_row_ids
+	 * @return int Returns item_id of newly created set item entry. The item_id is a unique identifier for the row_id in the city at the specified position (rank). It is *not* the same as the row_id.
+	 */
+	public function addItems($pa_row_ids) {
+		$vn_set_id = $this->getPrimaryKey();
+		if (!$vn_set_id) { return false; } 
+		if (!is_array($pa_row_ids)) { return false; } 
+		if (!sizeof($pa_row_ids)) { return false; } 
+		
+		$vn_table_num = $this->get('table_num');
+		$vn_type_id = $this->get('type_id');
+		
+		$vn_c = 0;
+		foreach($pa_row_ids as $vn_row_id) {
+			// Add it to the set
+			$t_item = new ca_set_items();
+			$t_item->setMode(ACCESS_WRITE);
+			$t_item->set('set_id', $vn_set_id);
+			$t_item->set('table_num', $vn_table_num);
+			$t_item->set('row_id', $vn_row_id);
+			$t_item->set('type_id', $vn_type_id);
+		
+			$t_item->insert();
+		
+			if ($t_item->numErrors()) {
+				$this->errors = $t_item->errors;
+				//return false;
+			} else {
+				$vn_c++;
+			}
+		}
+		return $vn_c;
+	}
+	# ------------------------------------------------------
+	/**
+	 * Removes all instances of the specified set item from the set as specified by the row_id
 	 *
 	 * @param int $pn_row_id The row_id of the item to remove
 	 * @param int $pn_user_id Option user_id of user to check set access for; if no user_id is specified then no access checking is done
@@ -962,7 +1044,7 @@ class ca_sets extends BundlableLabelableBaseModelWithAttributes implements IBund
 	}
 	# ------------------------------------------------------
 	/**
-	 * Removes the specified item from the set as specified by the item_id
+	 * Removes the specified set item from the set as specified by the item_id
 	 *
 	 * @param int $pn_item_id The item_id of the ca_set_items row in the set
 	 * @param int $pn_user_id Option user_id of user to check set access for; if no user_id is specified then no access checking is done
@@ -983,6 +1065,36 @@ class ca_sets extends BundlableLabelableBaseModelWithAttributes implements IBund
 			return true;
 		}
 		return true;
+	}
+	# ------------------------------------------------------
+	/**
+	 * Removes the specified set item as specified by row_id from all sets in which it is a member.
+	 *
+	 * @param mixed $pm_table_name_or_num Name or number of table
+	 * @param int $pn_row_id The row_id of the item to remove from sets
+	 * @param int $pn_user_id Option user_id of user to check set access for; if no user_id is specified then no access checking is done
+	 * @return bool True on success, false if item was not removed from one or more sets due to error or access restrictions
+	 */
+	public function removeItemFromAllSets($pm_table_name_or_num, $pn_row_id, $pn_user_id=null) {
+		if (!($vn_table_num = $this->_getTableNum($pm_table_name_or_num))) { return null; }
+		
+		$t_item = new ca_set_items();
+		$t_item->setMode(ACCESS_WRITE);
+		
+		$va_set_ids = $this->getSetIDsForItem($vn_table_num, $pn_row_id);
+		$vb_skipped = false;
+		foreach($va_set_ids as $vn_set_id) {
+			if ($pn_user_id && (!$t_set->haveAccessToSet($pn_user_id, __CA_SET_EDIT_ACCESS__, $vn_set_id))) { $vb_skipped = true; continue; }
+			
+			if ($t_item->load(array('set_id' => $vn_set_id, 'row_id' => $pn_row_id))) {
+				$t_item->delete(true);
+				if ($t_item->numErrors()) {
+					$this->errors = $t_item->errors;
+					return false;
+				}
+			}	
+		}
+		return !$vb_skipped;
 	}
 	# ------------------------------------------------------
 	/**
@@ -1152,7 +1264,8 @@ class ca_sets extends BundlableLabelableBaseModelWithAttributes implements IBund
 		
 		$vs_label_join_sql = '';
 		if ($t_rel_label_table) {
-			$vs_label_join_sql = "LEFT JOIN ".$t_rel_label_table->tableName()." AS rel_label ON rel.".$t_rel_table->primaryKey()." = rel_label.".$t_rel_table->primaryKey()."\n";
+			if ($t_rel_label_table->hasField("is_preferred")) { $vs_preferred_sql = " AND rel_label.is_preferred = 1 "; }
+			$vs_label_join_sql = "LEFT JOIN ".$t_rel_label_table->tableName()." AS rel_label ON rel.".$t_rel_table->primaryKey()." = rel_label.".$t_rel_table->primaryKey()." {$vs_preferred_sql}\n";
 		}
 		
 		
@@ -1367,6 +1480,54 @@ LEFT JOIN ca_object_representations AS cor ON coxor.representation_id = cor.repr
 		return 0;
 	}
 	# ------------------------------------------------------
+	/**
+	 * Returns list of types present for items in set
+	 *
+	 * @param array $pa_options
+	 *		user_id - Restricts access to sets accessible by the current user. If omitted then all sets, regardless of access are returned.
+	 *		checkAccess - Restricts returned sets to those with an public access level with the specified values. If omitted sets are returned regardless of public access (ca_sets.access) value. Can be a single value or array if you wish to filter on multiple public access values.
+	 *
+	 * @return array List of types. Keys are integer type_ids, values are plural type names for the current locale
+	 */
+	public function getTypesForItems($pa_options=null) {
+		if(!($vn_set_id = $this->getPrimaryKey())) { return null; }
+		if (!is_array($pa_options)) { $pa_options = array(); }
+		if ($pa_options['user_id'] && !$this->haveAccessToSet($pa_options['user_id'], __CA_SET_READ_ACCESS__)) { return false; }
+		
+		$o_db = $this->getDb();
+		
+		$o_dm = $this->getAppDatamodel();
+		if (!($t_rel_table = $o_dm->getInstanceByTableNum($this->get('table_num'), true))) { return null; }
+		if (!($vs_type_id_fld = $t_rel_table->getTypeFieldName())) { return array(); }
+		
+		// get set items
+		$vs_access_sql = '';
+		if (isset($pa_options['checkAccess']) && is_array($pa_options['checkAccess']) && sizeof($pa_options['checkAccess']) && $t_rel_table->hasField('access')) {
+			$vs_access_sql = ' AND rel.access IN ('.join(',', $pa_options['checkAccess']).')';
+		}
+		
+		$vs_deleted_sql = '';
+		if ($t_rel_table->hasField('deleted')) {
+			$vs_deleted_sql = ' AND rel.deleted = 0';
+		}
+		
+		$va_type_list = method_exists($t_rel_table, "getTypeList") ? $t_rel_table->getTypeList() : array();
+		
+		$qr_res = $o_db->query("
+			SELECT distinct rel.{$vs_type_id_fld}
+			FROM ca_set_items casi
+			INNER JOIN ".$t_rel_table->tableName()." AS rel ON rel.".$t_rel_table->primaryKey()." = casi.row_id
+			WHERE
+				casi.set_id = ? {$vs_access_sql} {$vs_deleted_sql}
+		", array($vn_set_id));
+		
+		$va_type_ids = array();
+		while($qr_res->nextRow()) {
+			$va_type_ids[$vn_type_id = $qr_res->get($vs_type_id_fld)] = $va_type_list[$vn_type_id]['name_plural'];
+		}
+		return $va_type_ids;
+	}
+	# ------------------------------------------------------
 	# Bundles
 	# ------------------------------------------------------
 	/**
@@ -1449,6 +1610,8 @@ LEFT JOIN ca_object_representations AS cor ON coxor.representation_id = cor.repr
  			$vn_i++;
  		}
  		$o_view->setVar('initial_values', $va_initial_values);
+ 		
+ 		$o_view->setVar('batch', (bool)(isset($pa_options['batch']) && $pa_options['batch']));
  		
 		return $o_view->render('ca_sets.php');
 	}

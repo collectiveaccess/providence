@@ -86,6 +86,15 @@ BaseModel::$s_ca_models_definitions['ca_commerce_orders'] = array(
 				'IS_NULL' => false, 
 				'LABEL' => _t('Order number'), 'DESCRIPTION' => _t('Unique identifying number for order.')
 		),
+		'sales_agent' => array(
+				'FIELD_TYPE' => FT_TEXT, 'DISPLAY_TYPE' => DT_FIELD, 
+				'DISPLAY_WIDTH' => 80, 'DISPLAY_HEIGHT' => 1,
+				'IS_NULL' => false, 
+				'DEFAULT' => '',
+				'LOOKUP' => true,
+				'LABEL' => _t('Sales agent'), 'DESCRIPTION' => _t('Optional note indicating who sales agent for sale was.'),
+				'BOUNDS_LENGTH' => array(0,1024)
+		),
 		'shipping_fname' => array(
 				'FIELD_TYPE' => FT_TEXT, 'DISPLAY_TYPE' => DT_FIELD, 
 				'DISPLAY_WIDTH' => 40, 'DISPLAY_HEIGHT' => 1,
@@ -107,6 +116,7 @@ BaseModel::$s_ca_models_definitions['ca_commerce_orders'] = array(
 				'DISPLAY_WIDTH' => 80, 'DISPLAY_HEIGHT' => 1,
 				'IS_NULL' => false, 
 				'DEFAULT' => '',
+				'LOOKUP' => true,
 				'LABEL' => _t('Organization'), 'DESCRIPTION' => _t('Ship to: organization.'),
 				'BOUNDS_LENGTH' => array(0,255)
 		),
@@ -204,6 +214,7 @@ BaseModel::$s_ca_models_definitions['ca_commerce_orders'] = array(
 				'DISPLAY_WIDTH' => 80, 'DISPLAY_HEIGHT' => 1,
 				'IS_NULL' => false, 
 				'DEFAULT' => '',
+				'LOOKUP' => true,
 				'LABEL' => _t('Organization'), 'DESCRIPTION' => _t('Bill to: organization.'),
 				'BOUNDS_LENGTH' => array(0,255)
 		),
@@ -1391,6 +1402,19 @@ class ca_commerce_orders extends BaseModel {
 				
 				while($qr_rep_count->nextRow()) {
 					$va_rep_counts[(int)$qr_rep_count->get('item_id')] = (int)$qr_rep_count->get('c');
+					$va_item_to_rep_ids[(int)$qr_rep_count->get('item_id')] = (int)$qr_rep_count->get('representation_id');
+				}
+				
+				$qr_rep_count = $o_db->query("
+					SELECT o.item_id, coixor.representation_id
+					FROM ca_commerce_order_items o
+					INNER JOIN ca_objects_x_object_representations AS coixor ON o.object_id = coixor.object_id
+					INNER JOIN ca_object_representations AS o_r ON o_r.representation_id = coixor.representation_id
+					WHERE
+						o.item_id IN (?) AND o_r.deleted = 0 AND coixor.is_primary = 1
+				", array($va_item_ids));
+				
+				while($qr_rep_count->nextRow()) {
 					$va_item_to_rep_ids[(int)$qr_rep_count->get('item_id')] = (int)$qr_rep_count->get('representation_id');
 				}
 			}

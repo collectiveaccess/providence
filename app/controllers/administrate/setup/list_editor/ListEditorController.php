@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2009-2011 Whirl-i-Gig
+ * Copyright 2009-2013 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -40,8 +40,8 @@
  			parent::__construct($po_request, $po_response, $pa_view_paths);
  		}
  		# -------------------------------------------------------
- 		public function Edit($pa_values=null) {
- 			parent::Edit($pa_values);
+ 		public function Edit($pa_values = NULL, $pa_options = NULL) {
+ 			parent::Edit($pa_values, $pa_options);
  			
  			// Set last browse ID so when we return to the ca_list_items hierarchy browser from 
  			// the editing screen it defaults to the list we just edited

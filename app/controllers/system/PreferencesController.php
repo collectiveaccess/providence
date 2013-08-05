@@ -50,6 +50,18 @@
  			$this->render('preferences_cataloguing_html.php');
  		}
  		# -------------------------------------------------------
+ 		public function EditBatchPrefs() {
+ 			$this->view->setVar('t_user', $this->request->user);
+ 			$this->view->setVar('group', 'batch');
+ 			$this->render('preferences_batch_html.php');
+ 		}
+ 		# -------------------------------------------------------
+ 		public function EditQuickAddPrefs() {
+ 			$this->view->setVar('t_user', $this->request->user);
+ 			$this->view->setVar('group', 'quickadd');
+ 			$this->render('preferences_quickadd_html.php');
+ 		}
+ 		# -------------------------------------------------------
  		public function EditUnitsPrefs() {
  			$this->view->setVar('t_user', $this->request->user);
  			$this->view->setVar('group', 'units');
@@ -100,6 +112,38 @@
 						}
 					}
 					$vs_view_name = 'preferences_cataloguing_html.php';
+ 					break;
+ 				case 'EditBatchPrefs':
+ 					$vs_group = 'batch';
+ 					
+ 					$va_ui_prefs = array();
+					foreach($this->request->user->getValidPreferences($vs_group) as $vs_pref) {
+					
+						foreach($_REQUEST AS $vs_k => $vs_v) {
+							if (preg_match("!pref_{$vs_pref}!", $vs_k, $va_matches)) {
+								$this->request->user->setPreference($vs_pref, $vs_v);
+							}
+						}
+					}
+					$vs_view_name = 'preferences_batch_html.php';
+ 					break;
+ 				case 'EditQuickAddPrefs':
+ 					$vs_group = 'quickadd';
+ 				
+ 					$va_ui_prefs = array();
+					foreach($this->request->user->getValidPreferences($vs_group) as $vs_pref) {
+					
+						foreach($_REQUEST AS $vs_k => $vs_v) {
+							if (preg_match("!pref_{$vs_pref}_([\d]+)!", $vs_k, $va_matches)) {
+								$va_ui_prefs[$vs_pref][$va_matches[1]] = $vs_v;
+							}
+						}
+					
+						foreach($va_ui_prefs as $vs_pref => $va_values ){
+							$this->request->user->setPreference($vs_pref, $va_values);
+						}
+					}
+					$vs_view_name = 'preferences_quickadd_html.php';
  					break;
  				case 'EditMediaPrefs':
  					$vs_group = 'media';
@@ -157,12 +201,9 @@
 							$g_ui_locale_id = $this->request->user->getPreferredUILocaleID();			// get current UI locale as locale_id	 			(available as global)
 							$g_ui_locale = $this->request->user->getPreferredUILocale();				// get current UI locale as locale string 			(available as global)
 							
-							if(!file_exists($vs_locale_path = __CA_APP_DIR__.'/locale/user/'.$g_ui_locale.'/messages.mo')) {
-								$vs_locale_path = __CA_APP_DIR__.'/locale/'.$g_ui_locale.'/messages.mo';
-							}
-							$_ = new Zend_Translate('gettext',$vs_locale_path, $g_ui_locale);
-							$_locale = new Zend_Locale($g_ui_locale);
-							Zend_Registry::set('Zend_Locale', $_locale);
+							if(!initializeLocale($g_ui_locale)) die("Error loading locale ".$g_ui_locale);
+							global $ca_translation_cache;
+							$ca_translation_cache = array();				
 							
 							// reload menu bar
 							AppNavigation::clearMenuBarCache($this->request);

@@ -38,13 +38,13 @@
  * Plugin for processing XML documents
  */
  
-include_once(__CA_LIB_DIR__."/core/Plugins/WLPlug.php");
+include_once(__CA_LIB_DIR__."/core/Plugins/Media/BaseMediaPlugin.php");
 include_once(__CA_LIB_DIR__."/core/Plugins/IWLPlugMedia.php");
 include_once(__CA_LIB_DIR__."/core/Configuration.php");
 include_once(__CA_LIB_DIR__."/core/Media.php");
 include_once(__CA_APP_DIR__."/helpers/mediaPluginHelpers.php");
 
-class WLPlugMediaXMLDoc Extends WLPlug Implements IWLPlugMedia {
+class WLPlugMediaXMLDoc Extends BaseMediaPlugin Implements IWLPlugMedia {
 	var $errors = array();
 	
 	var $filepath;
@@ -136,7 +136,7 @@ class WLPlugMediaXMLDoc Extends WLPlug Implements IWLPlugMedia {
 			return '';
 		}
 		
-		if ($r_fp = fopen($ps_filepath, "r")) {
+		if ($r_fp = @fopen($ps_filepath, "r")) {
 			$vs_sig = fgets($r_fp, 10); 
 			if (preg_match('!<\?xml!', $vs_sig)) {
 				$this->properties = $this->handle = $this->ohandle = array(

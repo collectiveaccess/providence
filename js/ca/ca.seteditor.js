@@ -6,7 +6,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2010-2011 Whirl-i-Gig
+ * Copyright 2010-2013 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -59,24 +59,24 @@ var caUI = caUI || {};
 		that.initSetEditor = function() {
 			
 			// setup autocompleter
-			jQuery('#' + that.setItemAutocompleteID).autocomplete(that.lookupURL, {
-				minChars: 3, matchSubset: 1, matchContains: 1,  max: 50,
-				formatItem: function(data) { return data[0]; },
-				formatResult: function(data, value) { return jQuery.trim(value.replace(/<\/?[^>]+>/gi, '')); }
-			});
-			
-			jQuery('#' + that.setItemAutocompleteID).result(function(event, data, formatted) {
-				jQuery.getJSON(that.itemInfoURL, {'set_id': that.setID, 'table_num': that.table_num, 'row_id': data[1]} , 
-					function(data) { 
-						if(data.status != 'ok') { 
-							alert("Error getting item information");
-						} else {
-							that.addItemToSet(data.item_id, data, true, true);
-							jQuery('#' + that.setItemAutocompleteID).attr('value', '');
-						}
+			jQuery('#' + that.setItemAutocompleteID).autocomplete(
+				{
+					source: that.lookupURL,
+					minLength: 3, max: 50, html: true,
+					select: function(event, ui) {
+						jQuery.getJSON(that.itemInfoURL, {'set_id': that.setID, 'table_num': that.table_num, 'row_id': ui.item.id} , 
+							function(data) { 
+								if(data.status != 'ok') { 
+									alert("Error getting item information");
+								} else {
+									that.addItemToSet(data.item_id, data, true, true);
+									jQuery('#' + that.setItemAutocompleteID).attr('value', '');
+								}
+							}
+						);
 					}
-				);
-			});
+				}
+			);
 			
 			// add initial items
 			if (that.initialValues) {

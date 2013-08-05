@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2011 Whirl-i-Gig
+ * Copyright 2011-2013 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -64,7 +64,8 @@
  		public function __construct(&$po_request, &$po_response, $pa_view_paths=null) {
  			parent::__construct($po_request, $po_response, $pa_view_paths);
 			$this->opa_views = array(
-				'list' => _t('list')
+				'list' => _t('list'),
+				'editable' => _t('editable')
 			 );
 			 
 			 $this->opa_sorts = array_merge(array(
@@ -81,9 +82,10 @@
  		 * (eg. ObjectSearch for objects, TourSearch for tours) and pass it to BaseAdvancedSearchController->Index() 
  		 */ 
  		public function Index($pa_options=null) {
+ 			$pa_options['search'] = $this->opo_browse;
  			JavascriptLoadManager::register('imageScroller');
  			JavascriptLoadManager::register('tabUI');
- 			return parent::Index($this->opo_browse, $pa_options);
+ 			return parent::Index($pa_options);
  		}
  		# -------------------------------------------------------
  		/**
@@ -101,7 +103,7 @@
  		 * Returns "search tools" widget
  		 */ 
  		public function Tools($pa_parameters) {
- 			return parent::Tools($pa_parameters, new TourSearch());
+ 			return parent::Tools($pa_parameters);
  		}
  		# -------------------------------------------------------
  	}

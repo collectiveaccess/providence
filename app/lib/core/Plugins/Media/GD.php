@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2006-2012 Whirl-i-Gig
+ * Copyright 2006-2013 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -38,14 +38,14 @@
  * Plugin for processing images using GD
  */
 
-include_once(__CA_LIB_DIR__."/core/Plugins/WLPlug.php");
+include_once(__CA_LIB_DIR__."/core/Plugins/Media/BaseMediaPlugin.php");
 include_once(__CA_LIB_DIR__."/core/Plugins/IWLPlugMedia.php");
 include_once(__CA_LIB_DIR__."/core/Parsers/TilepicParser.php");
 include_once(__CA_LIB_DIR__."/core/Configuration.php");
 include_once(__CA_APP_DIR__."/helpers/mediaPluginHelpers.php");
 include_once(__CA_LIB_DIR__."/core/Parsers/MediaMetadata/XMPParser.php");
 
-class WLPlugMediaGD Extends WLPlug Implements IWLPlugMedia {
+class WLPlugMediaGD Extends BaseMediaPlugin Implements IWLPlugMedia {
 	var $errors = array();
 	
 	var $filepath;
@@ -316,15 +316,6 @@ class WLPlugMediaGD Extends WLPlug Implements IWLPlugMedia {
 	}
 	# ------------------------------------------------
 	/**
-	 * Returns text content for indexing, or empty string if plugin doesn't support text extraction
-	 *
-	 * @return String Extracted text
-	 */
-	public function getExtractedText() {
-		return '';
-	}
-	# ------------------------------------------------
-	/**
 	 * Returns array of extracted metadata, key'ed by metadata type or empty array if plugin doesn't support metadata extraction
 	 *
 	 * @return Array Extracted metadata
@@ -368,7 +359,7 @@ class WLPlugMediaGD Extends WLPlug Implements IWLPlugMedia {
 					break;
 				case IMAGETYPE_JPEG:
 					if(function_exists('exif_read_data')) {
-						$this->metadata["EXIF"] = $va_exif = @exif_read_data($filepath, 'EXIF', true, false);
+						$this->metadata["EXIF"] = $va_exif = caSanitizeArray(@exif_read_data($filepath, 'EXIF', true, false));
 						
 						
 						//
@@ -640,7 +631,7 @@ class WLPlugMediaGD Extends WLPlug Implements IWLPlugMedia {
 						"layers" => $this->properties["layers"],
 					)					
 				))) {
-					$this->postError(1610, $this->handle->error, "WLPlugTilepic->write()");	
+					$this->postError(1610, $tp->error, "WLPlugTilepic->write()");	
 					return false;
 				}
 			}
@@ -650,7 +641,7 @@ class WLPlugMediaGD Extends WLPlug Implements IWLPlugMedia {
 			}
 			$this->properties["mimetype"] = "image/tilepic";
 			$this->properties["typename"] = "Tilepic";
-			return true;
+			return $filepath;
 		} else {
 			# is mimetype valid?
 			if (!($ext = $this->info["EXPORT"][$mimetype])) {
@@ -694,7 +685,7 @@ class WLPlugMediaGD Extends WLPlug Implements IWLPlugMedia {
 			$this->properties["mimetype"] = $mimetype;
 			$this->properties["typename"] = $vs_typename;
 			
-			return true;
+			return $filepath.".".$ext;
 		}
 	}
 	# ------------------------------------------------

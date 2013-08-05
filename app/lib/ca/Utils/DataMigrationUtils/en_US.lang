@@ -12,3 +12,5 @@ titles = [
 	F/O, F/Lt, Pilot, Flight Sergeant, LAC, WAAC, Cftsmn, Able Seaman, Trooper, WOI, Gunner,
 	RSM, RQMS, Dispatcher, Lance Corporal
 ]
+
+corporation_suffixes = [inc, inc., llc, incorporated]

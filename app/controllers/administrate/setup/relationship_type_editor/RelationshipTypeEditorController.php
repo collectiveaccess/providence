@@ -39,7 +39,7 @@
  			parent::__construct($po_request, $po_response, $pa_view_paths);
  		}
  		# -------------------------------------------------------
- 		public function Edit() {
+ 		public function Edit($pa_values=null, $pa_options=null) {
  			$o_result_context = new ResultContext($this->request, 'ca_relationship_types', 'basic_search');
  			
  			$va_cur_result = $o_result_context->getResultList();

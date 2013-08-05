@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2011 Whirl-i-Gig
+ * Copyright 2011-2013 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -29,14 +29,14 @@
  	require_once(__CA_MODELS_DIR__."/ca_metadata_elements.php");
  
  	//
- 	// This lookup controller doesn't extent BaseLookupController
+ 	// This lookup controller doesn't extend BaseLookupController
  	// since direct lookups on attributes are handled specially – not via the search engine
  	class AttributeValueController extends ActionController {
  		# -------------------------------------------------------
  		# AJAX handlers
  		# -------------------------------------------------------
 		public function Get($pa_additional_query_params=null, $pa_options=null) {
-			$ps_query = $this->request->getParameter('q', pString);
+			$ps_query = $this->request->getParameter('term', pString);
 			$ps_bundle = $this->request->getParameter('bundle', pString);
 			
 			$va_tmp = explode('.', $ps_bundle);
@@ -57,6 +57,11 @@
 			
 			if ((int)$t_element->getSetting('suggestExistingValues') !== 1) {
 				print _t("Value suggestion is not supported for this metadata element");
+				return null;
+			}
+			
+			if ($this->request->user->getBundleAccessLevel($va_tmp[0], $vs_tmp[1]) == __CA_BUNDLE_ACCESS_NONE__) {
+				print _t("You do not have access to this bundle");
 				return null;
 			}
 			
