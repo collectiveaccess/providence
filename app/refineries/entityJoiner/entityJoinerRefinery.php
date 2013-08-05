@@ -128,17 +128,7 @@
 				}
 			
 				// Set attributes
-				if (is_array($pa_item['settings']['entityJoiner_attributes'])) {
-					$va_attr_vals = array();
-					foreach($pa_item['settings']['entityJoiner_attributes'] as $vs_element_code => $va_attrs) {
-						if(is_array($va_attrs)) {
-							foreach($va_attrs as $vs_k => $vs_v) {
-								$va_attr_vals[$vs_element_code][$vs_k] = BaseRefinery::parsePlaceholder($vs_v, $pa_source_data, $pa_item);
-							}
-						} else {
-							$va_attr_vals[$vs_element_code][$vs_element_code] = BaseRefinery::parsePlaceholder($va_attrs, $pa_source_data, $pa_item);
-						}
-					}
+				if (is_array($va_attr_vals = caProcessRefineryAttributes($pa_item['settings']['entityJoiner_attributes'], $pa_source_data, $pa_item, null, $vn_c, $o_log))) {
 					$va_val = array_merge($va_val, $va_attr_vals);
 				}
 				

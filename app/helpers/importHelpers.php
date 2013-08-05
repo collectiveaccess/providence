@@ -55,11 +55,12 @@
 		
 		if (!is_array($pa_parents)) { $pa_parents = array($pa_parents); }
 		$vn_id = null;
-			
-		foreach(array_reverse($pa_parents) as $vn_i => $va_parent) {
-			$vs_name = BaseRefinery::parsePlaceholder($va_parent['name'], $pa_source_data, $pa_item, $ps_delimiter, $pn_c);
-			$vs_idno = BaseRefinery::parsePlaceholder($va_parent['idno'], $pa_source_data, $pa_item, $ps_delimiter, $pn_c);
-			$vs_type = BaseRefinery::parsePlaceholder($va_parent['type'], $pa_source_data, $pa_item, $ps_delimiter, $pn_c);
+		
+		$pa_parents = array_reverse($pa_parents);
+		foreach($pa_parents as $vn_i => $va_parent) {
+			$vs_name = BaseRefinery::parsePlaceholder($va_parent['name'], $pa_source_data, $pa_item, $ps_delimiter, $pn_c, array('returnAsString' => true, 'delimiter' => ' '));
+			$vs_idno = BaseRefinery::parsePlaceholder($va_parent['idno'], $pa_source_data, $pa_item, $ps_delimiter, $pn_c, array('returnAsString' => true, 'delimiter' => ' '));
+			$vs_type = BaseRefinery::parsePlaceholder($va_parent['type'], $pa_source_data, $pa_item, $ps_delimiter, $pn_c, array('returnAsString' => true, 'delimiter' => ' '));
 			if (!$vs_name && !$vs_idno) { continue; }
 			if (!$vs_name) { $vs_name = $vs_idno; }
 			
@@ -104,9 +105,9 @@
 								default:
 									if ($o_log) { 
 										if ($vs_action_code != 'skip') {
-											$o_log->logInfo(_t('[{$ps_refinery_name}] Parent was skipped using rule "%1" with default action because an invalid action ("%2") was specified', $va_rule['trigger'], $vs_action_code));
+											$o_log->logInfo(_t('[%3] Parent was skipped using rule "%1" with default action because an invalid action ("%2") was specified', $va_rule['trigger'], $vs_action_code, $ps_refinery_name));
 										} else {
-											$o_log->logDebug(_t('[{$ps_refinery_name}] Parent was skipped using rule "%1" with action"%2"', $va_rule['trigger'], $vs_action_code));
+											$o_log->logDebug(_t('[%3] Parent was skipped using rule "%1" with action"%2"', $va_rule['trigger'], $vs_action_code, $ps_refinery_name));
 										}
 									}
 									continue(4);
@@ -127,7 +128,7 @@
 					return null;
 					break;	
 			}
-			if ($o_log) { $o_log->logDebug(_t('[{$ps_refinery_name}] Got parent %1 ($%2) with collection_id %3 and type %4 for %5', $vs_name, $vs_idno, $vn_id, $vs_type, $vs_name)); }
+			if ($o_log) { $o_log->logDebug(_t('[%6] Got parent %1 (%2) with collection_id %3 and type %4 for %5', $vs_name, $vs_idno, $vn_id, $vs_type, $vs_name, $ps_refinery_name)); }
 		}
 		return $vn_id;
 	}
