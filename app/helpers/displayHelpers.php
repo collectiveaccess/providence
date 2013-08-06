@@ -1751,7 +1751,7 @@ require_once(__CA_LIB_DIR__."/ca/ApplicationPluginManager.php");
 		$vs_delimiter = (isset($pa_options['delimiter'])) ? $pa_options['delimiter'] : '; ';
 		
 		$va_tags = array();
-		if (preg_match_all("!\^([A-Za-z0-9_\.]+[^ \t\r\n\"\'<>\(\)\{\}\/,\[\]]*)!", $ps_template, $va_matches)) {
+		if (preg_match_all("!\^([A-Za-z0-9_\.]+[^ \^\t\r\n\"\'<>\(\)\{\}\/,\[\]]*)!", $ps_template, $va_matches)) {
 			$va_tags = $va_matches[1];
 		}
 		
@@ -2106,7 +2106,7 @@ require_once(__CA_LIB_DIR__."/ca/ApplicationPluginManager.php");
 				usort($va_tags_tmp, function($a, $b) {
 					return strlen($b) - strlen($a);
 				});
-			
+		
 				$vs_pt = $vs_template;
 				foreach($va_tags_tmp as $vs_tag) {
 					$vs_pt = str_replace('^'.$vs_tag, $va_tags[$vs_tag], $vs_pt);
@@ -2124,6 +2124,7 @@ require_once(__CA_LIB_DIR__."/ca/ApplicationPluginManager.php");
 		if ($vb_return_as_array) {
 			return $va_proc_templates;
 		}
+		
 		return join($vs_delimiter, $va_proc_templates);
 	}
 	# ------------------------------------------------------------------------------------------------
