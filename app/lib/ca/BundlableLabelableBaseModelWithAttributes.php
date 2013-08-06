@@ -719,7 +719,7 @@ class BundlableLabelableBaseModelWithAttributes extends LabelableBaseModelWithAt
 							// Get related attributes
 							if ($t_instance->load($va_related_item[$t_instance->primaryKey()])) {
 								if (isset($va_tmp[1])) {
-									if ($vm_val = $t_instance->get($va_tmp[1], $pa_options)) {
+									if ($vm_val = $t_instance->get(join(".", $va_tmp), $pa_options)) {
 										if ($vb_return_as_link && !$vb_return_as_array && !$vb_return_all_locales) {
 											$va_items[] = $vm_val;
 										} else {

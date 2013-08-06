@@ -352,12 +352,12 @@ class WLPlugSearchEngineSqlSearch extends BaseSearchPlugin implements IWLPlugSea
 		
 		$va_hits = array();
 		while($qr_res->nextRow()) {
+			$va_row = $qr_res->getRow();
 			$va_hits[] = array(
 				'subject_id' => $pn_subject_tablenum,
-				'subject_row_id' => $qr_res->get('row_id', array('binary' => true)),
+				'subject_row_id' => $va_row['row_id']
 			);
 		}
-
 		return new WLPlugSearchEngineSqlSearchResult($va_hits, $pn_subject_tablenum);
 	}
 	# -------------------------------------------------------
