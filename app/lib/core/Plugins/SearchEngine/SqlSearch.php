@@ -404,13 +404,16 @@ class WLPlugSearchEngineSqlSearch extends BaseSearchPlugin implements IWLPlugSea
 					case 4:	// geocode
 					case 8:	// length
 					case 9:	// weight
-						return array('table_num' => $vs_table_num, 'element_id' => $t_element->getPrimaryKey(), 'datatype' => $t_element->get('datatype'), 'element_info' => $t_element->getFieldValuesArray());
+						// noop
+						break;
+					default:
+						return array('table_num' => $vs_table_num, 'element_id' => $t_element->getPrimaryKey(), 'field_num' => 'A'.$t_element->getPrimaryKey(), 'datatype' => $t_element->get('datatype'), 'element_info' => $t_element->getFieldValuesArray());
 						break;
 				
 				}
 			}
 		} else {
-			return array('table_num' => $vs_table_num, 'field_num' => $vs_fld_num, 'datatype' => null);
+			return array('table_num' => $vs_table_num, 'field_num' => 'I'.$vs_fld_num, 'field_num_raw' => $vs_fld_num, 'datatype' => null);
 		}
 
 		return null;
@@ -637,9 +640,10 @@ class WLPlugSearchEngineSqlSearch extends BaseSearchPlugin implements IWLPlugSea
 							$va_ap_tmp = explode(".", $vs_access_point);
 							$vn_fld_table = $vn_fld_num = null;
 							if(sizeof($va_ap_tmp) == 2) {
-								$vn_fld_table = (int)$this->opo_datamodel->getTableNum($va_ap_tmp[0]);
-								$vn_fld_num = (int)$this->opo_datamodel->getFieldNum($va_ap_tmp[0], $va_ap_tmp[1]);
-								$vs_fld_limit_sql = " AND (ca.field_table_num = {$vn_fld_table} AND ca.field_num = 'I{$vn_fld_num}')";
+								$va_element = $this->_getElementIDForAccessPoint($vs_access_point);
+								$vs_fld_num = $va_element['field_num'];
+								$vs_fld_table_num = $va_element['table_num'];
+								$vs_fld_limit_sql = " AND (ca.field_table_num = {$vs_fld_table_num} AND ca.field_num = '{$vs_fld_num}')";
 							}
 							
 							$vs_direct_sql_query = "
@@ -772,10 +776,10 @@ class WLPlugSearchEngineSqlSearch extends BaseSearchPlugin implements IWLPlugSea
 										$vs_fld_num = 'I'.$vs_field;
 										$vn_fld_num = (int)$vs_field;
 									} else {
-										$vn_fld_num = (int)$this->getFieldNum($vs_table, $vs_field);
+										$vn_fld_num = $this->getFieldNum($vs_table, $vs_field);
 										$vs_fld_num = 'I'.$vn_fld_num;
 										
-										if (is_null($vn_fld_num)) {
+										if (!strlen($vn_fld_num)) {
 											$t_element = new ca_metadata_elements();
 											if ($t_element->load(array('element_code' => ($vs_sub_field ? $vs_sub_field : $vs_field)))) {
 												$vn_fld_num = $t_element->getPrimaryKey();
