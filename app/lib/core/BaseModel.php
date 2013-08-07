@@ -3375,9 +3375,9 @@ class BaseModel extends BaseObject {
 	 * @return mixed media information
 	 */
 	public function &getMediaInfo($ps_field, $ps_version=null, $ps_property=null) {
-		$va_media_info = $this->get($ps_field, array('USE_MEDIA_FIELD_VALUES' => true));
+		$va_media_info = self::get($ps_field, array('USE_MEDIA_FIELD_VALUES' => true));
 		if (!is_array($va_media_info)) {
-			return "";
+			return '';
 		}
 		
 		#
