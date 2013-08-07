@@ -1101,5 +1101,82 @@ class ca_metadata_elements extends LabelableBaseModelWithAttributes implements I
 		return parent::htmlFormElement($ps_field, $ps_format, $pa_options);
 	}
 	# ------------------------------------------------------
+	/**
+	  *
+	  */
+	public function getPresetsAsHTMLFormElement($pa_options=null) {
+		if (!($vn_element_id = $this->getPrimaryKey())) { return null; }		// element must be loaded
+	
+		$o_presets = Configuration::load(__CA_APP_DIR__."/conf/attributePresets.conf");
+		
+		if ($va_presets = $o_presets->getAssoc($this->get('element_code'))) {
+			$vs_form_element_name = caGetOption('name', $pa_options, "{fieldNamePrefix}_presets_{n}");
+		
+			$va_opts = array(_t('SELECT PRESET') => '');
+			foreach($va_presets as $vs_code => $va_preset) {
+				$va_opts[$va_preset['name']] = $vs_code;
+			}
+			
+			$va_attr = array(
+				'id' => $vs_form_element_name,
+				'onchange' => "caHandlePresets_{fieldNamePrefix}(jQuery(this).val(),\"{n}\");",
+				'style' => 'font-size: 9px;'
+			);
+			
+			$vs_buf = caHTMLSelect($vs_form_element_name, $va_opts, $va_attr, $pa_options);
+			
+			return $vs_buf;
+		}
+		return null;
+	}
+	# ------------------------------------------------------
+	/**
+	  *
+	  */
+	public function getPresetsJavascript($ps_field_prefix, $pa_options=null) {
+		if (!($vn_element_id = $this->getPrimaryKey())) { return null; }		// element must be loaded
+	
+		$o_presets = Configuration::load(__CA_APP_DIR__."/conf/attributePresets.conf");
+		
+		if ($va_presets = $o_presets->getAssoc($this->get('element_code'))) {
+			$va_elements = $this->getElementsInSet();
+			//print_R($va_elements);
+			$va_element_code_to_ids = $va_element_info = array();
+			foreach($va_elements as $va_element) {
+				$va_element_code_to_ids[$va_element['element_code']] = $va_element['element_id'];
+				$va_element_info[$va_element['element_code']] = $va_element;
+			}
+			
+			foreach($va_presets as $vs_code => $va_preset) {
+				foreach($va_preset['values'] as $vs_k => $vs_v) {
+					if(!$va_element_code_to_ids[$vs_k]) { continue; }
+					
+					switch((int)$va_element_info[$vs_k]['datatype']) {
+						case 3:
+							$va_presets[$vs_code]['values'][$va_element_code_to_ids[$vs_k]] = caGetListItemID($va_element_info[$vs_k]['list_id'], $vs_v);
+							break;
+						default: 
+							$va_presets[$vs_code]['values'][$va_element_code_to_ids[$vs_k]] = $vs_v;
+							break;
+					}
+					unset($va_presets[$vs_code]['values'][$vs_k]);
+				}
+			}
+			
+			$vs_buf .= "\n
+	function caHandlePresets_{$ps_field_prefix}_(s, n) {
+		var presets = ".json_encode($va_presets).";
+		if (presets[s]){ 
+			for(var k in presets[s]['values']) {
+				if (!presets[s]['values'][k]) { continue; }
+				jQuery('#{$ps_field_prefix}' + '_' + k + '_' + n + '').val(presets[s]['values'][k]);
+			}
+		}
+	}\n";
+			return $vs_buf;
+		}
+		return null;
+	}
+	# ------------------------------------------------------
 }
 ?>
