@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2008-2010 Whirl-i-Gig
+ * Copyright 2008-2013 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -37,8 +37,8 @@ require_once(__CA_LIB_DIR__.'/core/BaseRelationshipModel.php');
 
 
 BaseModel::$s_ca_models_definitions['ca_object_representations_x_places'] = array(
- 	'NAME_SINGULAR' 	=> _t('representation ⇔ place relationship'),
- 	'NAME_PLURAL' 		=> _t('representation ⇔ place relationships'),
+ 	'NAME_SINGULAR' 	=> _t('object representation ⇔ place relationship'),
+ 	'NAME_PLURAL' 		=> _t('object representation ⇔ place relationships'),
  	'FIELDS' 			=> array(
  		'relation_id' => array(
 				'FIELD_TYPE' => FT_NUMBER, 'DISPLAY_TYPE' => DT_HIDDEN, 
