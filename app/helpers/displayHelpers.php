@@ -1744,6 +1744,7 @@ require_once(__CA_LIB_DIR__."/ca/ApplicationPluginManager.php");
 			return $vb_return_as_array ? array() : "";
 		}
 		unset($pa_options['returnAsArray']);
+		if(!isset($pa_options['requireLinkTags'])) { $pa_options['requireLinkTags'] = true; }
 		
 		$o_dm = Datamodel::load();
 		$ps_tablename = is_numeric($pm_tablename_or_num) ? $o_dm->getTableName($pm_tablename_or_num) : $pm_tablename_or_num;
@@ -1965,7 +1966,7 @@ require_once(__CA_LIB_DIR__."/ca/ApplicationPluginManager.php");
 				
 					if (is_array($va_val)) {
 						if($vb_is_related) { 
-							$va_val = caCreateLinksFromText($va_val, $va_tmp[0], $va_related_ids, null, null, $pa_options); 
+						//	$va_val = caCreateLinksFromText($va_val, $va_tmp[0], $va_related_ids, null, null, $pa_options); 
 						}
 						
 						if (sizeof($va_val) > 0) {
