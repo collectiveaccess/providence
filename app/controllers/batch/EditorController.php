@@ -193,12 +193,12 @@
  			if (!isset($pa_options['ui']) && !$pa_options['ui']) {
  				$pa_options['ui'] = $this->request->user->getPreference("batch_".$t_subject->tableName()."_editor_ui");
  			}
- 			if (isset($pa_options['ui']) && $pa_options['ui']) {
- 				if (is_numeric($pa_options['ui'])) {
- 					$t_ui->load((int)$pa_options['ui']);
+ 			if (isset($pa_options['ui']['__all__']) && $pa_options['ui']['__all__']) {
+ 				if (is_numeric($pa_options['ui']['__all__'])) {
+ 					$t_ui->load((int)$pa_options['ui']['__all__']);
  				}
  				if (!$t_ui->getPrimaryKey()) {
- 					$t_ui->load(array('editor_code' => $pa_options['ui']));
+ 					$t_ui->load(array('editor_code' => $pa_options['ui']['__all__']));
  				}
  			}
  			

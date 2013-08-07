@@ -798,7 +798,7 @@ class ca_metadata_elements extends LabelableBaseModelWithAttributes implements I
 		$o_dm = Datamodel::load();
 		while($qr_use_counts->nextRow()) {
 			if (preg_match('!^ca_attribute_([A-Za-z0-9_\-]+)$!', $qr_use_counts->get('bundle_name'), $va_matches)) {
-				$t_table = $o_dm->getInstanceByTableNum($qr_use_counts->get('editor_type'), true);
+				if (!($t_table = $o_dm->getInstanceByTableNum($qr_use_counts->get('editor_type'), true))) { continue; }
 				$va_counts_by_attribute[$va_matches[1]][$t_table->getProperty('NAME_PLURAL')] = $qr_use_counts->get('c');
 			}
 		}

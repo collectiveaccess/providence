@@ -719,7 +719,7 @@ class BundlableLabelableBaseModelWithAttributes extends LabelableBaseModelWithAt
 							// Get related attributes
 							if ($t_instance->load($va_related_item[$t_instance->primaryKey()])) {
 								if (isset($va_tmp[1])) {
-									if ($vm_val = $t_instance->get($va_tmp[1], $pa_options)) {
+									if ($vm_val = $t_instance->get(join(".", $va_tmp), $pa_options)) {
 										if ($vb_return_as_link && !$vb_return_as_array && !$vb_return_all_locales) {
 											$va_items[] = $vm_val;
 										} else {
@@ -2141,7 +2141,7 @@ class BundlableLabelableBaseModelWithAttributes extends LabelableBaseModelWithAt
 			// If no display_template set try to get a default out of the app.conf file
 			if (!$va_opts['template']) {
 				if (is_array($va_lookup_settings = $this->getAppConfig()->getList("{$ps_related_table}_lookup_settings"))) {
-					$vs_lookup_delimiter = $this->getAppConfig()->getList("{$ps_related_table}_lookup_delimiter");
+					if (!($vs_lookup_delimiter = $this->getAppConfig()->get("{$ps_related_table}_lookup_delimiter"))) { $vs_lookup_delimiter = ''; }
 					$va_opts['template'] = join($vs_lookup_delimiter, $va_lookup_settings);
 				}
 			}
@@ -2150,7 +2150,6 @@ class BundlableLabelableBaseModelWithAttributes extends LabelableBaseModelWithAt
 			if (!$va_opts['template']) {
 				$va_opts['template'] = "^preferred_labels";
 			}
-			
 			$va_initial_values = caProcessRelationshipLookupLabel($qr_rel_items, $t_rel, $va_opts);
 			
 		}
@@ -3440,7 +3439,8 @@ if (!$vb_batch) {
 					$vs_direction = $va_tmp[0];
 				}
 				
-				$this->editRelationship($ps_bundlename, $va_rel_item[$vs_key], $vn_id, $vn_type_id, null, null, $vs_direction, $vn_rank);	
+				$vs_effective_daterange = $po_request->getParameter($ps_form_prefix.'_'.$ps_bundlename.'_effective_date'.$va_rel_item[$vs_key], pString);
+				$this->editRelationship($ps_bundlename, $va_rel_item[$vs_key], $vn_id, $vn_type_id, $vs_effective_daterange, null, $vs_direction, $vn_rank);	
 					
 				if ($this->numErrors()) {
 					$po_request->addActionErrors($this->errors(), $ps_bundlename);
@@ -3909,8 +3909,10 @@ if (!$vb_batch) {
 					}
 							
 					if ($vb_uses_effective_dates) {	// return effective dates as display/parse-able text
-						$va_rels[$vs_sort_key][$vn_id]['_key'] = $o_tep->setHistoricTimestamps($va_rels[$vs_sort_key][$vn_id]['sdatetime'], $va_rels[$vs_sort_key][$vn_id]['edatetime']);	
-						$va_rels[$vs_sort_key][$vn_id]['effective_date'] = $o_tep->getText();
+						if ($va_rels[$vs_sort_key][$vn_id]['sdatetime'] || $va_rels[$vs_sort_key][$vn_id]['edatetime']) {
+							$o_tep->setHistoricTimestamps($va_rels[$vs_sort_key][$vn_id]['sdatetime'], $va_rels[$vs_sort_key][$vn_id]['edatetime']);	
+							$va_rels[$vs_sort_key][$vn_id]['effective_date'] = $o_tep->getText();
+						}
 					}
 					
 					$va_rels[$vs_sort_key][$vn_id]['labels'][$qr_res->get('locale_id')] =  ($vb_return_labels_as_array) ? $va_row : $vs_display_label;
@@ -4025,8 +4027,10 @@ if (!$vb_batch) {
 				}
 				
 				if ($vb_uses_effective_dates) {	// return effective dates as display/parse-able text
-					$va_rels[$vs_v]['_key'] = $o_tep->setHistoricTimestamps($va_rels[$vs_v]['sdatetime'], $va_rels[$vs_v]['edatetime']);	
-					$va_rels[$vs_v]['effective_date'] = $o_tep->getText();
+					if ($va_rels[$vs_v]['sdatetime'] || $va_rels[$vs_v]['edatetime']) {
+						$o_tep->setHistoricTimestamps($va_rels[$vs_v]['sdatetime'], $va_rels[$vs_v]['edatetime']);
+						$va_rels[$vs_v]['effective_date'] = $o_tep->getText();
+					}
 				}
 				
 				$va_rels[$vs_v]['labels'][$qr_res->get('locale_id')] =  ($vb_return_labels_as_array) ? $va_row : $vs_display_label;
