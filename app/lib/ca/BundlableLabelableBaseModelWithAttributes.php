@@ -2141,7 +2141,7 @@ class BundlableLabelableBaseModelWithAttributes extends LabelableBaseModelWithAt
 			// If no display_template set try to get a default out of the app.conf file
 			if (!$va_opts['template']) {
 				if (is_array($va_lookup_settings = $this->getAppConfig()->getList("{$ps_related_table}_lookup_settings"))) {
-					$vs_lookup_delimiter = $this->getAppConfig()->getList("{$ps_related_table}_lookup_delimiter");
+					if (!($vs_lookup_delimiter = $this->getAppConfig()->get("{$ps_related_table}_lookup_delimiter"))) { $vs_lookup_delimiter = ''; }
 					$va_opts['template'] = join($vs_lookup_delimiter, $va_lookup_settings);
 				}
 			}
@@ -2150,7 +2150,6 @@ class BundlableLabelableBaseModelWithAttributes extends LabelableBaseModelWithAt
 			if (!$va_opts['template']) {
 				$va_opts['template'] = "^preferred_labels";
 			}
-			
 			$va_initial_values = caProcessRelationshipLookupLabel($qr_rel_items, $t_rel, $va_opts);
 			
 		}
