@@ -71,13 +71,31 @@
 		public function getSubjectTableName() {
 			return $this->LABEL_SUBJECT_TABLE;
 		}
+		# -------------------------------------------------------
+		/**
+		 * Returns name of field that is foreign key of subject
+		 */
+		public function getSubjectKey() {
+			if (!($t_subject = $this->getSubjectTableInstance())) { return null; }
+			return $t_subject->primaryKey();
+		}
 		# ------------------------------------------------------------------
 		/**
 		 * Returns instance of table this table contains label for
+		 *
+		 * @param array $pa_options Options are.
+		 *		dontLoadInstance = If set returned instance is not preloaded with subject. Default is false - load subject data
+		 *
+		 * @return BaseModel Instance of subject table
 		 */
-		public function getSubjectTableInstance() {
+		public function getSubjectTableInstance($pa_options=null) {
 			if ($vs_subject_table_name = $this->getSubjectTableName()) {
-				return $this->_DATAMODEL->getInstanceByTableName($vs_subject_table_name, true);
+				$t_subject =  $this->_DATAMODEL->getInstanceByTableName($vs_subject_table_name, true);
+				
+				if (!caGetOption("dontLoadInstance", $pa_options, false) && ($vn_id = $this->get($t_subject->primaryKey()))) {
+					$t_subject->load($vn_id);
+				}
+				return $t_subject;
 			}
 			return null;
 		}
