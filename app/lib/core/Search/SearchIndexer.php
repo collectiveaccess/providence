@@ -302,7 +302,7 @@ class SearchIndexer extends SearchBase {
 	}
 	# ------------------------------------------------
 	/**
-	 * //INDEX_ANCESTORS_START_AT_LEVEL = 3, INDEX_ANCESTORS_MAX_NUMBER_OF_LEVELS = 3, INDEX_ANCESTORS_AS_PATH_WITH_DELIMITER = .
+	 * Generate hierarchical values for using in indexing of hierarchical values with INDEX_ANCESTORS enabled
 	 */
 	private function _genHierarchicalPath($pn_subject_row_id, $ps_field, $t_subject, $pa_options=null) {
 		$va_ids = $t_subject->getHierarchyAncestors($pn_subject_row_id, array('idsOnly' => true, 'includeSelf' => true));
