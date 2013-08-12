@@ -1562,6 +1562,38 @@ require_once(__CA_LIB_DIR__."/ca/ApplicationPluginManager.php");
 	/**
 	  *
 	  */
+	function caTableIsActive($pm_table) {
+		$o_dm = Datamodel::load();
+		$t_instance = is_numeric($pm_table) ? $o_dm->getInstanceByTableNum($pm_table, true) : $o_dm->getInstanceByTableName($pm_table, true);
+		if (!$t_instance) { return null; }
+		
+		$vs_table_name = $t_instance->tableName();
+		
+		$o_config = Configuration::load();
+		if (is_subclass_of($t_instance, "BaseRelationshipModel")) {
+			$vs_left_table_name = $t_instance->getLeftTableName();
+			if ($vs_left_table_name == 'ca_tour_stops') { $vs_left_table_name = 'ca_tours'; }
+			$vs_right_table_name = $t_instance->getRightTableName();
+			if ($vs_right_table_name == 'ca_tour_stops') { $vs_right_table_name = 'ca_tours'; }
+			
+			if ((int)($o_config->get("{$vs_left_table_name}_disable"))) { return false; }
+			if ((int)($o_config->get("{$vs_right_table_name}_disable"))) { return false; }
+		} else {
+			if ((int)($o_config->get($vs_table_name.'_disable'))) { return false; }
+		}
+		
+		switch($vs_table_name) {
+			case 'ca_tour_stops':
+				if ((int)($o_config->get('ca_tours_disable'))) { return false; }
+				break;
+		}
+		
+		return true;
+	}
+	# ------------------------------------------------------------------------------------------------
+	/**
+	  *
+	  */
 	function caFilterTableList($pa_tables, $pa_options=null) {
 		require_once(__CA_MODELS_DIR__.'/ca_occurrences.php');
 		$o_config = Configuration::load();
@@ -1571,25 +1603,10 @@ require_once(__CA_LIB_DIR__."/ca/ApplicationPluginManager.php");
 		$va_filtered_tables = array();
 		foreach($pa_tables as $vs_display_name => $vn_table_num) {
 			$vs_display_name = mb_strtolower($vs_display_name, 'UTF-8');
-			$t_instance = $o_dm->getInstanceByTableNum($vn_table_num, true);
-			$vs_table_name = $t_instance->tableName();
 			
-			if (is_subclass_of($t_instance, "BaseRelationshipModel")) {
-				$vs_left_table_name = $t_instance->getLeftTableName();
-				if ($vs_left_table_name == 'ca_tour_stops') { $vs_left_table_name = 'ca_tours'; }
-				$vs_right_table_name = $t_instance->getRightTableName();
-				if ($vs_right_table_name == 'ca_tour_stops') { $vs_right_table_name = 'ca_tours'; }
-				
-				if ((int)($o_config->get("{$vs_left_table_name}_disable"))) { continue; }
-				if ((int)($o_config->get("{$vs_right_table_name}_disable"))) { continue; }
-			} else {
-				if ((int)($o_config->get($vs_table_name.'_disable'))) { continue; }
-			}
+			if (!caTableIsActive($vn_table_num)) { continue; }
 			
 			switch($vs_table_name) {
-				case 'ca_tour_stops':
-					if ((int)($o_config->get('ca_tours_disable'))) { continue(2); }
-					break;
 				case 'ca_occurrences':
 					$t_occ = new ca_occurrences();	
 					$va_types = $t_occ->getTypeList();
@@ -1744,22 +1761,26 @@ require_once(__CA_LIB_DIR__."/ca/ApplicationPluginManager.php");
 			return $vb_return_as_array ? array() : "";
 		}
 		unset($pa_options['returnAsArray']);
-		
-		$va_related_values = (isset($pa_options['relatedValues']) && is_array($pa_options['relatedValues'])) ? $pa_options['relatedValues'] : array();		
-		$va_relationship_values = (isset($pa_options['relationshipValues']) && is_array($pa_options['relationshipValues'])) ? $pa_options['relationshipValues'] : array();
-		
-		$vs_delimiter = (isset($pa_options['delimiter'])) ? $pa_options['delimiter'] : '; ';
-		
-		$va_tags = array();
-		if (preg_match_all("!\^([A-Za-z0-9_\.]+[^ \^\t\r\n\"\'<>\(\)\{\}\/,\[\]]*)!", $ps_template, $va_matches)) {
-			$va_tags = $va_matches[1];
-		}
+		if(!isset($pa_options['requireLinkTags'])) { $pa_options['requireLinkTags'] = true; }
 		
 		$o_dm = Datamodel::load();
 		$ps_tablename = is_numeric($pm_tablename_or_num) ? $o_dm->getTableName($pm_tablename_or_num) : $pm_tablename_or_num;
 
 		$t_instance = $o_dm->getInstanceByTableName($ps_tablename, true);
 		$vs_pk = $t_instance->primaryKey();
+		
+		$ps_template = str_replace("^_parent", "^{$ps_tablename}.parent.preferred_labels", $ps_template);
+		$ps_template = str_replace("^_hierarchy", "^{$ps_tablename}.hierarchy.preferred_labels%top=1%removeFirstItems=1", $ps_template);
+
+		$va_related_values = (isset($pa_options['relatedValues']) && is_array($pa_options['relatedValues'])) ? $pa_options['relatedValues'] : array();		
+		$va_relationship_values = (isset($pa_options['relationshipValues']) && is_array($pa_options['relationshipValues'])) ? $pa_options['relationshipValues'] : array();
+		
+		$vs_delimiter = (isset($pa_options['delimiter'])) ? $pa_options['delimiter'] : '; ';
+		
+		$va_tags = array();
+		if (preg_match_all("!\^([A-Za-z0-9_\.]+[%]{1}[^ \^\t\r\n\"\'<>\(\)\{\}\/,\[\]]*|[A-Za-z0-9_\.]+)!", $ps_template, $va_matches)) {
+			$va_tags = $va_matches[1];
+		}
 		
 		$qr_res = $t_instance->makeSearchResult($ps_tablename, $pa_row_ids);
 		if(!$qr_res) { return ''; }
@@ -1819,7 +1840,7 @@ require_once(__CA_LIB_DIR__."/ca/ApplicationPluginManager.php");
 			$vs_content = preg_replace("!<[^\>]+>$!", "", $vs_content);
 			$va_betweens[] = array('directive' => $vs_html, 'content' => $vs_content);
 		}
-		
+	
 		$va_tag_val_list = $va_defined_tag_list = array();
 		while($qr_res->nextHit()) {
 			$vs_pk_val = $qr_res->get($vs_pk);
@@ -1834,7 +1855,7 @@ require_once(__CA_LIB_DIR__."/ca/ApplicationPluginManager.php");
 				$vs_last_element = $va_tmp[sizeof($va_tmp)-1];
 				$va_tag_opt_tmp = explode("%", $vs_last_element);
 				if (sizeof($va_tag_opt_tmp) > 1) {
-					array_shift($va_tag_opt_tmp); // get rid of getspec
+					$vs_tag_bit = array_shift($va_tag_opt_tmp); // get rid of getspec
 					foreach($va_tag_opt_tmp as $vs_tag_opt_raw) {
 						$va_tag_tmp = explode("=", $vs_tag_opt_raw);
 						$va_tag_tmp[0] = trim($va_tag_tmp[0]);
@@ -1848,10 +1869,13 @@ require_once(__CA_LIB_DIR__."/ca/ApplicationPluginManager.php");
 							$va_tag_opts[trim($va_tag_tmp[0])] = $va_tag_tmp[1];
 						}
 					}
+					
+					$va_tmp[sizeof($va_tmp)-1] = $vs_tag_bit;	// remove option from tag-part array
 				}
-				
+			
 				$pa_options = array_merge($pa_options, $va_tag_opts);
 				
+				// Default label tag to hierarchies
 				if (isset($pa_options['showHierarchicalLabels']) && $pa_options['showHierarchicalLabels'] && ($vs_tag == 'label')) {
 					unset($va_related_values[$vs_pk_val][$vs_tag]);
 					unset($va_relationship_values[$vs_pk_val][$vs_tag]);
@@ -1892,7 +1916,7 @@ require_once(__CA_LIB_DIR__."/ca/ApplicationPluginManager.php");
 								if (($va_spec_bits[1] == 'hierarchy') || (($va_spec_bits[1] == 'related') && ($va_spec_bits[1] == 'hierarchy'))) {
 									$va_val_proc = array();
 									foreach($va_val as $vn_i => $va_hier) {
-										$va_val_proc[] = join(isset($va_tag_opts['delimiter']) ? $va_tag_opts['delimiter'] :  "; ", $va_hier);
+										$va_val_proc[] = join(caGetOption("delimiter", $va_tag_opts, "; "), $va_hier);
 									}
 									$va_val = $va_val_proc;
 								}
@@ -1901,6 +1925,11 @@ require_once(__CA_LIB_DIR__."/ca/ApplicationPluginManager.php");
 								$vb_is_related = true;
 								$va_related_ids = $qr_res->get($va_tmp[0].".".$o_dm->getTablePrimaryKeyName($va_tmp[0]), array('returnAsArray' => true));
 							} else {
+							
+								// Default specifiers that end with a modifier to preferred labels
+								if ((sizeof($va_tmp) == 2) && (in_array($va_tmp[1], array('hierarchy', 'children', 'parent', 'related')))) {
+									array_push($va_tmp, 'preferred_labels');
+								}
 								if ($va_tmp[0] == $ps_tablename) { array_shift($va_tmp); }	// get rid of primary table if it's in the field spec
 							
 								if (!sizeof($va_tmp)) {
@@ -1908,7 +1937,7 @@ require_once(__CA_LIB_DIR__."/ca/ApplicationPluginManager.php");
 								}
 							
 								if (isset($pa_options['showHierarchicalLabels']) && $pa_options['showHierarchicalLabels']) {
-									if ($va_tmp[1] == 'preferred_labels') {
+									if ((!in_array($va_tmp[0], array('hierarchy', 'children', 'parent', 'related'))) && ($va_tmp[1] == 'preferred_labels')) {
 										array_unshift($va_tmp, 'hierarchy');
 									}
 								}
@@ -1918,22 +1947,35 @@ require_once(__CA_LIB_DIR__."/ca/ApplicationPluginManager.php");
 								}
 								
 								$vs_get_spec = "{$ps_tablename}.".join(".", $va_tmp);
-								$va_val_tmp = $qr_res->get($vs_get_spec, array_merge($pa_options, array('returnAsArray' => true)));
 								
-								$va_val = array();
+								if (in_array($va_tmp[0], array('parent'))) {
+									$va_val[] = $qr_res->get($vs_get_spec, array_merge($pa_options, array('returnAsArray' => false)));
+								} else {
+									$va_val_tmp = $qr_res->get($vs_get_spec, array_merge($pa_options, array('returnAsArray' => true)));
 								
-								if (is_array($va_val_tmp)) {
-									foreach($va_val_tmp as $vn_attr_id => $vm_attr_val) {
-										if(is_array($vm_attr_val)) {
-											foreach($vm_attr_val as $vs_k => $vs_v) {
-												$va_val[] = $vs_v;
+									$va_val = array();
+								
+									if (is_array($va_val_tmp)) {
+										foreach($va_val_tmp as $vn_attr_id => $vm_attr_val) {
+											if(is_array($vm_attr_val)) {
+												if($va_tmp[0] == 'hierarchy') {
+													if ($vs_delimiter_tmp = caGetOption('hierarchicalDelimiter', $va_tag_opts)) {
+														$vs_tag_val_delimiter = $vs_delimiter_tmp;
+													} elseif ($vs_delimiter_tmp = caGetOption('hierarchicalDelimiter', $pa_options)) {
+														$vs_tag_val_delimiter = $vs_delimiter_tmp;
+													} else {
+														$vs_tag_val_delimiter = caGetOption('delimiter', $va_tag_opts, $vs_delimiter);
+													}
+												} else {
+													$vs_tag_val_delimiter = caGetOption('delimiter', $va_tag_opts, $vs_delimiter);
+												}
+												$va_val[] = join($vs_tag_val_delimiter, $vm_attr_val);
+											} else {
+												$va_val[] = $vm_attr_val;
 											}
-										} else {
-											$va_val[] = $vm_attr_val;
 										}
 									}
 								}
-								
 							}
 						}
 					}
@@ -1941,7 +1983,7 @@ require_once(__CA_LIB_DIR__."/ca/ApplicationPluginManager.php");
 				
 					if (is_array($va_val)) {
 						if($vb_is_related) { 
-							$va_val = caCreateLinksFromText($va_val, $va_tmp[0], $va_related_ids, null, null, $pa_options); 
+						//	$va_val = caCreateLinksFromText($va_val, $va_tmp[0], $va_related_ids, null, null, $pa_options); 
 						}
 						
 						if (sizeof($va_val) > 0) {
@@ -2451,7 +2493,7 @@ $ca_relationship_lookup_parse_cache = array();
 					}
 					
 					if ($vs_template) {
-						$va_item['_display'] = caProcessTemplateForIDs($vs_template, $vs_rel_table, array($vn_id), array('returnAsArray' => false, 'returnAsLink' => true));
+						$va_item['_display'] = caProcessTemplateForIDs($vs_template, $vs_rel_table, array($vn_id), array('returnAsArray' => false, 'returnAsLink' => true, 'delimiter' => caGetOption('delimiter', $pa_options, ';')));
 					}
 					
 					$va_items[$vn_id] = $va_item;

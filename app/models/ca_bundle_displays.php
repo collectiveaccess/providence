@@ -722,7 +722,7 @@ class ca_bundle_displays extends BundlableLabelableBaseModelWithAttributes {
 	 	if (!($vn_table_num = $o_dm->getTableNum($pm_table_name_or_num))) { return null; }
 		
 		$t_instance = $o_dm->getInstanceByTableNum($vn_table_num, true);
-		
+		if (!$t_instance) { return null; }
 		return (isset($pa_options['number']) && ($pa_options['number'] == 'plural')) ? $t_instance->getProperty('NAME_PLURAL') : $t_instance->getProperty('NAME_SINGULAR');
 
 	}
