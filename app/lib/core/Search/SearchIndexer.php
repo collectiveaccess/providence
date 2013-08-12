@@ -411,7 +411,7 @@ class SearchIndexer extends SearchBase {
 		// 
 		// If location in hierarchy has changed we need to reindex this record and all of its children
 		//
-		if ($t_subject->isHierarchical() && isset($pa_changed_fields['parent_id']) && $pa_changed_fields['parent_id']) {
+		if ($t_subject->isHierarchical() && isset($pa_changed_fields['parent_id']) && $pa_changed_fields['parent_id'] && method_exists($t_subject, "makeSearchResult")) {
 			$pb_reindex_mode = true;
 			$vb_reindex_children = true;
 		}
@@ -986,7 +986,7 @@ if (!$vb_can_do_incremental_indexing || $pb_reindex_mode) {
 			}
 		} 
 		
-		if ($vb_reindex_children) {
+		if ($vb_reindex_children && method_exists($t_subject, "makeSearchResult")) {
 			//
 			// Force reindexing of children of this record, typically because the record has shifted location in the hierarchy and is hierarchically indexed
 			//
