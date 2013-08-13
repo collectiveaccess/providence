@@ -3440,7 +3440,7 @@ if (!$vb_batch) {
 				}
 				
 				$vs_effective_daterange = $po_request->getParameter($ps_form_prefix.'_'.$ps_bundlename.'_effective_date'.$va_rel_item[$vs_key], pString);
-				$this->editRelationship($ps_bundlename, $va_rel_item[$vs_key], $vn_id, $vn_type_id, $vs_effective_daterange, null, $vs_direction, $vn_rank);	
+				$this->editRelationship($ps_bundlename, $va_rel_item[$vs_key], $vn_id, $vn_type_id, null, null, $vs_direction, $vn_rank);	
 					
 				if ($this->numErrors()) {
 					$po_request->addActionErrors($this->errors(), $ps_bundlename);
