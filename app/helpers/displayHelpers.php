@@ -1747,7 +1747,7 @@ require_once(__CA_LIB_DIR__."/ca/ApplicationPluginManager.php");
 	 *		delimiter = value to string together template values with when returnAsArray is false. Default is ';' (semicolon)
 	 *		relatedValues = array of field values to return in template when directly referenced. Array should be indexed numerically in parallel with $pa_row_ids
 	 *		relationshipValues = array of field values to return in template for relationship when directly referenced. Should be indexed by row_id and then by relation_id
-	 *		placeholderPrefix = 
+	 *		placeholderPrefix = attribute container to implicitly place primary record fields into. Ex. if the table is "ca_entities" and the placeholder is "address" then tags like ^city will resolve to ca_entities.address.city
 	 *		requireLinkTags = if set then links are only added when explicitly defined with <l> tags. Default is to make the entire text a link in the absence of <l> tags.
 	 * @return mixed Output of processed templates
 	 */
@@ -1898,7 +1898,7 @@ require_once(__CA_LIB_DIR__."/ca/ApplicationPluginManager.php");
 							// see if this is a reference to a related table
 							if (($ps_tablename != $va_tmp[0]) && ($t_tmp = $o_dm->getInstanceByTableName($va_tmp[0], true))) {	// if the part of the tag before a "." (or the tag itself if there are no periods) is a related table then try to fetch it as related to the current record
 								
-								if (isset($pa_options['placeholderPrefix']) && $pa_options['placeholderPrefix']) {
+								if (isset($pa_options['placeholderPrefix']) && $pa_options['placeholderPrefix'] && ($va_tmp[0] != $pa_options['placeholderPrefix'])) {
 									$vs_get_spec = array_shift($va_tmp).".".$pa_options['placeholderPrefix'];
 									if(sizeof($va_tmp) > 0) {
 										$vs_get_spec .= ".".join(".", $va_tmp);
@@ -1942,7 +1942,7 @@ require_once(__CA_LIB_DIR__."/ca/ApplicationPluginManager.php");
 									}
 								}
 							
-								if (isset($pa_options['placeholderPrefix']) && $pa_options['placeholderPrefix']) {
+								if (isset($pa_options['placeholderPrefix']) && $pa_options['placeholderPrefix'] && ($va_tmp[0] != $pa_options['placeholderPrefix'])) {
 									array_unshift($va_tmp, $pa_options['placeholderPrefix']);
 								}
 								
