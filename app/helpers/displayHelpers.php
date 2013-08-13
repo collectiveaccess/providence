@@ -1913,14 +1913,18 @@ require_once(__CA_LIB_DIR__."/ca/ApplicationPluginManager.php");
 								}
 								$va_val = $qr_res->get($vs_get_spec, array_merge($pa_options, array('returnAsArray' => true)));
 								
+								$va_val_proc = array();
 								if (($va_spec_bits[1] == 'hierarchy') || (($va_spec_bits[1] == 'related') && ($va_spec_bits[1] == 'hierarchy'))) {
-									$va_val_proc = array();
 									foreach($va_val as $vn_i => $va_hier) {
 										$va_val_proc[] = join(caGetOption("delimiter", $va_tag_opts, "; "), $va_hier);
 									}
-									$va_val = $va_val_proc;
+								} else {
+									$vs_terminal = end($va_spec_bits);
+									foreach($va_val as $vn_i => $va_val_container) {
+										$va_val_proc[] = $va_val_container[$vs_terminal];
+									}
 								}
-								
+								$va_val = $va_val_proc;
 								
 								$vb_is_related = true;
 								$va_related_ids = $qr_res->get($va_tmp[0].".".$o_dm->getTablePrimaryKeyName($va_tmp[0]), array('returnAsArray' => true));
@@ -1982,9 +1986,9 @@ require_once(__CA_LIB_DIR__."/ca/ApplicationPluginManager.php");
 					
 				
 					if (is_array($va_val)) {
-						if($vb_is_related) { 
+						//if($vb_is_related) { 
 						//	$va_val = caCreateLinksFromText($va_val, $va_tmp[0], $va_related_ids, null, null, $pa_options); 
-						}
+						//}
 						
 						if (sizeof($va_val) > 0) {
 							foreach($va_val as $vn_j => $vs_val) {
