@@ -38,14 +38,14 @@
   * Plugin for processing QuicktimeVR files
   */
 
-include_once(__CA_LIB_DIR__."/core/Plugins/WLPlug.php");
+include_once(__CA_LIB_DIR__."/core/Plugins/Media/BaseMediaPlugin.php");
 include_once(__CA_LIB_DIR__."/core/Plugins/IWLPlugMedia.php");
 include_once(__CA_LIB_DIR__."/core/Parsers/getid3/getid3.php");
 include_once(__CA_LIB_DIR__."/core/Parsers/TimecodeParser.php");
 include_once(__CA_LIB_DIR__."/core/Configuration.php");
 include_once(__CA_APP_DIR__."/helpers/mediaPluginHelpers.php");
 
-class WLPlugMediaQuicktimeVR Extends WLPlug Implements IWLPlugMedia {
+class WLPlugMediaQuicktimeVR Extends BaseMediaPlugin Implements IWLPlugMedia {
 
 	var $errors = array();
 
@@ -191,15 +191,6 @@ class WLPlugMediaQuicktimeVR Extends WLPlug Implements IWLPlugMedia {
 		} else {
 			return '';
 		}
-	}
-	# ------------------------------------------------
-	/**
-	 * Returns text content for indexing, or empty string if plugin doesn't support text extraction
-	 *
-	 * @return String Extracted text
-	 */
-	public function getExtractedText() {
-		return '';
 	}
 	# ------------------------------------------------
 	/**

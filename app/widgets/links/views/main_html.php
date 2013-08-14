@@ -32,7 +32,7 @@
 <div class="dashboardWidgetContentContainer">
 	<ul>
 		<li><a href="http://www.collectiveaccess.org"><?php print _t("Project website"); ?>: http://www.collectiveaccess.org</a></li>
-		<li><a href="http://docs.collectiveaccess.org"><?php print _t("Documentation wiki"); ?>: http://docs.collectiveaccess.org</a></li>
-		<li><a href="http://www.collectiveaccess.org/forum/"><?php print _t("Support forum"); ?>: http://www.collectiveaccess.org/forum/</a></li>
+		<li><a href="http://docs.collectiveaccess.org"><?php print _t("Documentation"); ?>: http://docs.collectiveaccess.org</a></li>
+		<li><a href="http://www.collectiveaccess.org/forum/"><?php print _t("Forum"); ?>: http://www.collectiveaccess.org/forum/</a></li>
 	</ul>
 </div>

@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2008-2012 Whirl-i-Gig
+ * Copyright 2008-2013 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -205,7 +205,6 @@
  			
  			if ($va_settings['regex'] && !preg_match("!".$va_settings['regex']."!", $ps_value)) {
  				// regex failed
- 				// TODO: need more descriptive error message
 				$this->postError(1970, _t('%1 does not conform to required format', $pa_element_info['displayLabel']), 'TextAttributeValue->parseValue()');
 				return false;
  			}
@@ -243,24 +242,20 @@
  				$o_config = Configuration::load();
  				if (!is_array($va_toolbar_config = $o_config->getAssoc('wysiwyg_editor_toolbar'))) { $va_toolbar_config = array(); }
  				JavascriptLoadManager::register("ckeditor");
- 				$vs_class = 'jqueryCkeditor';
  				
  				$vs_element = "<script type='text/javascript'>jQuery(document).ready(function() {
- 			var e = CKEDITOR.instances['{fieldNamePrefix}".$pa_element_info['element_id']."_{n}'];
-    		if (e) { e.destroy(true); }
-			jQuery('#{fieldNamePrefix}".$pa_element_info['element_id']."_{n}').ckeditor(function() {
-				this.on( 'change', function(e) { 
-					if (caUI && caUI.utils) { caUI.utils.showUnsavedChangesWarning(true);  }
-				 });
-			},
-			{
-				toolbar: ".json_encode(array_values($va_toolbar_config)).",
-				width: '{$vs_width}',
-				height: '{$vs_height}',
-				toolbarLocation: 'top',
-				enterMode: CKEDITOR.ENTER_BR
-			}
-		);
+						var ckEditor = CKEDITOR.replace( '{fieldNamePrefix}".$pa_element_info['element_id']."_{n}',
+						{
+							toolbar : ".json_encode(array_values($va_toolbar_config)).", /* this does the magic */
+							width: '{$vs_width}',
+							height: '{$vs_height}',
+							toolbarLocation: 'top',
+							enterMode: CKEDITOR.ENTER_BR
+						});
+						
+						ckEditor.on('instanceReady', function(){ 
+							 ckEditor.document.on( 'keydown', function(e) {if (caUI && caUI.utils) { caUI.utils.showUnsavedChangesWarning(true); } });
+						});
  	});									
 </script>";
 			}
@@ -272,7 +267,7 @@
  					'height' => $vs_height, 
  					'value' => '{{'.$pa_element_info['element_id'].'}}', 
  					'maxlength' => $va_settings['maxChars'],
- 					'id' => '{fieldNamePrefix}'.$pa_element_info['element_id'].'_{n}', 'class' => $vs_class
+ 					'id' => '{fieldNamePrefix}'.$pa_element_info['element_id'].'_{n}', 'class' => "{$vs_class}".($va_settings['usewysiwygeditor'] ? " ckeditor" : '')
  				)
  			);
  			
@@ -280,19 +275,23 @@
  			if (isset($pa_options['t_subject']) && is_object($pa_options['t_subject'])) {
  				$vs_bundle_name = $pa_options['t_subject']->tableName().'.'.$pa_element_info['element_code'];
  				
- 				if ($pa_options['po_request']) {
+ 				if ($pa_options['request']) {
  					if (isset($pa_options['lookupUrl']) && $pa_options['lookupUrl']) {
  						$vs_lookup_url = $pa_options['lookupUrl'];
  					} else {
- 						$vs_lookup_url	= caNavUrl($pa_options['po_request'], 'lookup', 'AttributeValue', 'Get', array());
+ 						$vs_lookup_url	= caNavUrl($pa_options['request'], 'lookup', 'AttributeValue', 'Get', array('max' => 500, 'bundle' => $vs_bundle_name));
  					}
  				}
  			}
  			
  			if ($va_settings['suggestExistingValues'] && $vs_lookup_url && $vs_bundle_name) { 
  				$vs_element .= "<script type='text/javascript'>
- 					jQuery('#{fieldNamePrefix}".$pa_element_info['element_id']."_{n}').autocomplete('".$vs_lookup_url."', 
-								{ minChars: 3, matchSubset: 1, matchContains: 1, delay: 800, scroll: true, max: 500, extraParams: { bundle: '".$vs_bundle_name."'}});
+ 					jQuery('#{fieldNamePrefix}".$pa_element_info['element_id']."_{n}').autocomplete( 
+						{ 
+							source: '{$vs_lookup_url}',
+							minLength: 3, delay: 800
+						}
+					);
  				</script>\n";
  			}
  			

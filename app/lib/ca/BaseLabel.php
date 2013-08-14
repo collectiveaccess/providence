@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2008-2011 Whirl-i-Gig
+ * Copyright 2008-2013 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -41,14 +41,14 @@
 		# -------------------------------------------------------
 		
 		# -------------------------------------------------------
-		public function insert() {
+		public function insert($pa_options=null) {
 			$this->_generateSortableValue();	// populate sort field
-			return parent::insert();
+			return parent::insert($pa_options);
 		}
 		# -------------------------------------------------------
-		public function update() {
+		public function update($pa_options=null) {
 			$this->_generateSortableValue();	// populate sort field
-			return parent::update();
+			return parent::update($pa_options);
 		}
 		# -------------------------------------------------------
 		/**
@@ -71,13 +71,31 @@
 		public function getSubjectTableName() {
 			return $this->LABEL_SUBJECT_TABLE;
 		}
+		# -------------------------------------------------------
+		/**
+		 * Returns name of field that is foreign key of subject
+		 */
+		public function getSubjectKey() {
+			if (!($t_subject = $this->getSubjectTableInstance())) { return null; }
+			return $t_subject->primaryKey();
+		}
 		# ------------------------------------------------------------------
 		/**
 		 * Returns instance of table this table contains label for
+		 *
+		 * @param array $pa_options Options are.
+		 *		dontLoadInstance = If set returned instance is not preloaded with subject. Default is false - load subject data
+		 *
+		 * @return BaseModel Instance of subject table
 		 */
-		public function getSubjectTableInstance() {
+		public function getSubjectTableInstance($pa_options=null) {
 			if ($vs_subject_table_name = $this->getSubjectTableName()) {
-				return $this->_DATAMODEL->getInstanceByTableName($vs_subject_table_name, true);
+				$t_subject =  $this->_DATAMODEL->getInstanceByTableName($vs_subject_table_name, true);
+				
+				if (!caGetOption("dontLoadInstance", $pa_options, false) && ($vn_id = $this->get($t_subject->primaryKey()))) {
+					$t_subject->load($vn_id);
+				}
+				return $t_subject;
 			}
 			return null;
 		}
@@ -104,11 +122,8 @@
 				$vs_display_field = $this->getProperty('LABEL_DISPLAY_FIELD');
 				
 				$o_tep = new TimeExpressionParser();
-				$vn_locale_id = $this->get('locale_id');
 				
-				$t_locale = new ca_locales($vn_locale_id);
-				
-				$o_tep->setLanguage($t_locale->getCode());
+				$o_tep->setLanguage(ca_locales::localeIDToCode($this->get('locale_id')));
 				$o_lang_settings = $o_tep->getLanguageSettings();
 				$vs_display_value = trim(preg_replace('![^\p{L}0-9 ]+!u', ' ', $this->get($vs_display_field)));
 				

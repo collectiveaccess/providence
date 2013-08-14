@@ -61,6 +61,7 @@ nowDate = [nu]
 todayDate = [idag]
 yesterdayDate = [igår]
 tomorrowDate = [imorgon]
+undatedDate = [undated, unknown]
 
 presentDate = [pågående, ?, ??, ???, ????]
 beforeQualifier = [före]

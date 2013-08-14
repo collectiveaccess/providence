@@ -1,0 +1,102 @@
+# *** use ONLY lowercase letters in lists: input will be forced to lowercase for comparison ***
+
+# List month names; used whenever name of month needs to be displayed
+monthList = [january, february, march, april, may, june, july, august, september, october, november, december]
+
+# *** the following list of months is for display and *SHOULD* be capitalized where appropriate
+monthListDisplay = [January, February, March, April, May, June, July, August, September, October, November, December]
+
+# Hash table mapping acceptable month names to the display names defined in 'monthList'
+monthTable = {
+	jan = january, jan. = january,
+	feb = february, feb. = february,
+	mar = march, mar. = march,
+	apr = april, apr. = april,
+	ma = may,
+	jun = june, jun. = june,
+	jul = july, jul. = july,
+	aug = august, aug. = august,
+	sep = september, sep. = september,
+	sept = september, sept. = september,
+	oct = october, oct. = october,
+	nov = november, nov. = november,
+	dec = december, dec. = december
+}
+
+# List of day names, starting with Sunday
+dayListDisplay = [Sunday, Monday, Tuesday, Wednesday, Thursday, Friday, Saturday]
+
+rangePreConjunctions = [from, between]
+rangeConjunctions = [to, -, and, .., through]
+
+dateTimeConjunctions = [at,@]
+
+dateDelimiters = [/,-,.]
+timeDelimiters = [:,.]
+
+timeAMMeridian = am
+timePMMeridian = pm
+
+meridianTable = {
+	a.m. = am,
+	p.m. = pm
+}
+
+dateCircaIndicator = [circa, c, c., ca, ca.]
+dateUncertaintyIndicator = [~]
+dateUncertaintyYearIndicator = [y]
+dateUncertaintyDayIndicator = [d]
+
+# What to use to indicate a geological date ("millions of years ago")
+dateMYA = [mya]
+
+dateADIndicator = ad
+dateBCIndicator = bc
+ADBCTable = {
+	a.d. = ad,
+	b.c. = bc
+}
+
+nowDate = [now]
+todayDate = [today]
+yesterdayDate = [yesterday]
+tomorrowDate = [tomorrow]
+undatedDate = [undated, unknown]
+
+presentDate = [present, ?, ??, ???, ????]
+beforeQualifier = [before, prior to]
+diedQualifier = [d., d, died]
+afterQualifier = [after, later than]
+bornQualifier = [b., b, born]
+
+# Text to indicate century (as in "20th century")
+centuryIndicator = [century, cent]
+
+# Text to indicate decdae (as in "1920s")
+decadeIndicator = [s]
+
+# list of numeric suffixes, starting with the one for zero
+# (eg. 0th, 1st, 2nd, 3rd would be a list like so: [th, st, nd, rd])
+ordinalSuffixes = [th, st, nd, rd]
+ordinalSuffixDefault = th
+
+# in delimited dates (ex. 12/10/2009) is the first number a month or a day?
+# set to "0" for European style dates (day comes first); "1" for American-style dates (month comes first)
+monthComesFirstInDelimitedDate = 0
+
+# character(s) to append to day in full (not delimited) date
+# eg. in the date "1. February 2009", "." is the daySuffix
+# Note: you can put arbitrary text here - only punctuation
+daySuffix = 
+
+# Definite articles
+definiteArticles = [the]
+
+# Indefinite articles
+indefiniteArticles = [a, an]
+
+# Seasons
+winterSeason = [winter]
+springSeason = [spring]
+summerSeason = [summer]
+autumnSeason = [autumn, fall]

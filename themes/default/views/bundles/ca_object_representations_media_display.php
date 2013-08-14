@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2011-2012 Whirl-i-Gig
+ * Copyright 2011-2013 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -34,9 +34,10 @@
 	
 	$vb_allow_fetching_from_urls = $this->request->getAppConfig()->get('allow_fetching_of_media_from_remote_urls');
 	$vb_media_is_set = is_array($t_subject->getMediaInfo('media'));
+	
+	print caEditorBundleShowHideControl($this->request, $vs_id_prefix.'MediaDisplay');
 ?>
-
-<div id="<?php print $vs_id_prefix.'_media_display'; ?>">
+<div id="<?php print $vs_id_prefix.'MediaDisplay'; ?>">
 	<div class="bundleContainer">
 		<table  style="width: 100%;">
 			<tr>

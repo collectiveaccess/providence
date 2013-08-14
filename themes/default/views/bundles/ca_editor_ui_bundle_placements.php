@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2011 Whirl-i-Gig
+ * Copyright 2011-2013 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -36,8 +36,10 @@
 	}
 	
 	$va_to_display_items  				= $t_screen->getPlacementsInScreen(array('noCache' => true));
+	
+	print caEditorBundleShowHideControl($this->request, $vs_id_prefix.'UIEditorBundlePlacements');
 ?>
-<div class="bundleDisplayPlacementEditorContainer">
+<div class="bundleDisplayPlacementEditorContainer" id="<?php print $vs_id_prefix; ?>UIEditorBundlePlacements">
 	<div id="bundleDisplayPlacementEditor" class="bundleDisplayPlacementEditor">
 		<div class="bundleDisplayPlacementEditorHelpText"><?php print _t("Drag your selection from column to column to edit the contents of the screen."); ?></div>
 		<table>

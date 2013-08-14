@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2008-2012 Whirl-i-Gig
+ * Copyright 2008-2013 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -27,12 +27,19 @@
  */
 	define("__CA_MICROTIME_START_OF_REQUEST__", microtime());
 	define("__CA_BASE_MEMORY_USAGE__", memory_get_usage(true));
+	define("__CA_APP_TYPE__", "PROVIDENCE");
 	
 	if (!file_exists('./setup.php')) { print "No setup.php file found!"; exit; }
 	require('./setup.php');
 	
+	caWriteServerConfigHints();
 	// connect to database
 	$o_db = new Db(null, null, false);
+	if (!$o_db->connected()) {
+		$opa_error_messages = array("Could not connect to database. Check your database configuration in <em>setup.php</em>.");
+		require_once(__CA_BASE_DIR__."/themes/default/views/system/configuration_error_html.php");
+		exit();
+	}
 	$g_monitor = new ApplicationMonitor();
 	if ($g_monitor->isEnabled()) { $o_db->setMonitor($g_monitor); }
 	
@@ -77,16 +84,13 @@
 	$g_ui_locale = $req->user->getPreferredUILocale();				// get current UI locale as locale string 			(available as global)
 	$g_ui_units_pref = $req->user->getPreference('units');			// user's selected display units for measurements 	(available as global)
 	
-	if(!file_exists($vs_locale_path = __CA_APP_DIR__.'/locale/user/'.$g_ui_locale.'/messages.mo')) {
-		$vs_locale_path = __CA_APP_DIR__.'/locale/'.$g_ui_locale.'/messages.mo';
+	if((!isset($_locale)) || ($g_ui_locale != $_COOKIE['CA_'.__CA_APP_NAME__.'_ui_locale'])) {
+		if(!initializeLocale($g_ui_locale)) die("Error loading locale ".$g_ui_locale);
+		$req->reloadAppConfig();
 	}
-	$_ = new Zend_Translate('gettext',$vs_locale_path, $g_ui_locale);
-	$_locale = new Zend_Locale($g_ui_locale);
-	Zend_Registry::set('Zend_Locale', $_locale);
+
 	global $ca_translation_cache;
 	$ca_translation_cache = array();
-	
-	$req->reloadAppConfig();	// need to reload app config to reflect current locale
 	
 	//
 	// PageFormat plug-in generates header/footer shell around page content
@@ -106,4 +110,5 @@
 	//
 	$resp->sendResponse();
 	$req->close();
+	
 ?>

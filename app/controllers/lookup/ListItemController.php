@@ -125,7 +125,8 @@
 							if (!$va_item[$vs_label_display_field_name]) { $va_item[$vs_label_display_field_name] = $va_item['idno']; }
 							if (!$va_item[$vs_label_display_field_name]) { $va_item[$vs_label_display_field_name] = '???'; }
 							
-							$va_item['name'] = caProcessTemplateForIDs($vs_template, 'ca_list_items', array($vn_item_id));
+							$va_item['name'] = caProcessTemplateForIDs($vs_template, 'ca_list_items', array($vn_item_id), array('requireLinkTags' => true));
+							$va_item['table'] = 'ca_list_items';
 							
 							// Child count is only valid if has_children is not null
 							$va_item['children'] = 0;
@@ -138,7 +139,7 @@
 								SELECT count(*) c, parent_id
 								FROM ca_list_items
 								WHERE 
-									parent_id IN (".join(",", array_keys($va_list_items)).")
+									parent_id IN (".join(",", array_keys($va_list_items)).") AND deleted = 0
 								GROUP BY parent_id
 							");
 							while($qr_res->nextRow()) {

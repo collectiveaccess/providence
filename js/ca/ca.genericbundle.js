@@ -6,7 +6,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2008-2012 Whirl-i-Gig
+ * Copyright 2008-2013 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -34,6 +34,7 @@ var caUI = caUI || {};
 			addMode: 'append',
 			templateValues: [],
 			initialValues: {},
+			initialValueOrder: [],
 			forceNewValues: [],
 			errors: {},
 			itemID: '',
@@ -41,6 +42,7 @@ var caUI = caUI || {};
 			templateClassName: 'caItemTemplate',
 			initialValueTemplateClassName: 'caItemTemplate',
 			itemListClassName: 'caItemList',
+			listItemClassName: 'caRelatedItem',
 			itemClassName: 'labelInfo',
 			localeClassName: 'labelLocale',
 			addButtonClassName: 'caAddItemButton',
@@ -60,6 +62,10 @@ var caUI = caUI || {};
 			defaultValues: {},
 			readonly: 0,
 			
+			sortInitialValuesBy: null,
+			firstItemColor: null,
+			lastItemColor: null,
+			
 			isSortable: false,
 			listSortOrderID: null,
 			listSortItems: null // if set, limits sorting to items specified by selector
@@ -78,7 +84,7 @@ var caUI = caUI || {};
 		}
 		
 		that.showUnsavedChangesWarning = function(b) {
-			if(typeof caUI.utils.showUnsavedChangesWarning === 'function') {
+			if(caUI && caUI.utils && typeof caUI.utils.showUnsavedChangesWarning === 'function') {
 				if (b === undefined) { b = true; }
 				caUI.utils.showUnsavedChangesWarning(b);
 			}
@@ -184,7 +190,7 @@ var caUI = caUI || {};
 					if (typeof(this.initialValues[id][info[1]]) == 'boolean') {
 						this.initialValues[id][info[1]] = (this.initialValues[id][info[1]]) ? '1' : '0';
 					}
-					jQuery(this.container + " #" + element_id + " option[value=" + this.initialValues[id][info[1]] +"]").attr('selected', true);
+					jQuery(this.container + " #" + element_id + " option[value=" + this.initialValues[id][info[1]] +"]").prop('selected', true);
 				}
 			}
 			
@@ -258,6 +264,21 @@ var caUI = caUI || {};
 				}
 			}
 		
+			// attach interstitial edit button
+			if (this.interstitialButtonClassName) {
+				if (!this.readonly) {
+					jQuery(this.container + " #" +this.itemID + templateValues.n + " ." + this.interstitialButtonClassName).click(function() { 
+						// Trigger interstitial edit panel
+						console.log( initialValues);
+						options.interstitialPanel.showPanel(options.interstitialUrl + "/relation_id/" + initialValues['relation_id']);
+						jQuery('#' + options.interstitialPanel.getPanelContentID()).data('panel', options.interstitialPanel);
+						return false; 
+					});
+				} else {
+					jQuery(this.container + " #" +this.itemID + templateValues.n + " ." + this.interstitialButtonClassName).css("display", "none");
+				}
+			}
+		
 			// attach delete button
 			if (!this.readonly) {
 				jQuery(this.container + " #" +this.itemID + templateValues.n + " ." + this.deleteButtonClassName).click(function() { that.deleteFromBundle(templateValues.n); return false; });
@@ -270,7 +291,7 @@ var caUI = caUI || {};
 				if (defaultLocaleSelectedIndex !== false) {
 					if (jQuery(this.container + " #" + this.fieldNamePrefix + "locale_id_" + templateValues.n +" option:eq(" + defaultLocaleSelectedIndex + ")").length) {
 						// There's a locale drop-dow to mess with
-						jQuery(this.container + " #" + this.fieldNamePrefix + "locale_id_" + templateValues.n +" option:eq(" + defaultLocaleSelectedIndex + ")").attr('selected', true);
+						jQuery(this.container + " #" + this.fieldNamePrefix + "locale_id_" + templateValues.n +" option:eq(" + defaultLocaleSelectedIndex + ")").prop('selected', true);
 					} else {
 						// No locale drop-down, or it somehow doesn't include the locale we want
 						jQuery(this.container + " #" + this.fieldNamePrefix + "locale_id_" + templateValues.n).after("<input type='hidden' name='" + this.fieldNamePrefix + "locale_id_" + templateValues.n + "' value='" + that.defaultLocaleID + "'/>");
@@ -279,7 +300,7 @@ var caUI = caUI || {};
 				} else {
 					if (jQuery(this.container + " #" + this.fieldNamePrefix + "locale_id_" + templateValues.n +" option[value=" + that.defaultLocaleID + "]").length) {
 						// There's a locale drop-dow to mess with
-						jQuery(this.container + " #" + this.fieldNamePrefix + "locale_id_" + templateValues.n +" option[value=" + that.defaultLocaleID + "]").attr('selected', true);
+						jQuery(this.container + " #" + this.fieldNamePrefix + "locale_id_" + templateValues.n +" option[value=" + that.defaultLocaleID + "]").prop('selected', true);
 					} else {
 						// No locale drop-down, or it somehow doesn't include the locale we want
 						jQuery(this.container + " #" + this.fieldNamePrefix + "locale_id_" + templateValues.n).after("<input type='hidden' name='" + this.fieldNamePrefix + "locale_id_" + templateValues.n + "' value='" + that.defaultLocaleID + "'/>");
@@ -320,7 +341,18 @@ var caUI = caUI || {};
 			if (this.getCount() >= this.maxRepeats) {
 				jQuery(this.container + " ." + this.addButtonClassName).hide();	
 			} else {
-				jQuery(this.container + " ." + this.addButtonClassName).show(200);
+				jQuery(this.container + " ." + this.addButtonClassName).show();
+			}
+			
+			// colorize
+			if ((options.firstItemColor) || (options.lastItemColor)) {
+				jQuery(this.container + " ." + options.listItemClassName).css('background-color', '');
+				if (options.firstItemColor) {
+					jQuery(this.container + " ." + options.listItemClassName + ":first").css('background-color', '#' + options.firstItemColor);
+				}
+				if (options.lastItemColor) {
+					jQuery(this.container + " ." + options.listItemClassName + ":last").css('background-color', '#' + options.lastItemColor);
+				}
 			}
 			return this;
 		};
@@ -362,8 +394,30 @@ var caUI = caUI || {};
 		
 		// create initial values
 		var initalizedCount = 0;
-		jQuery.each(that.initialValues, function(k, v) {
-			that.addToBundle(k, v, true);
+		var initialValuesSorted = [];
+		
+		// create an array so we can sort
+		if (!that.initialValueOrder || !that.initialValueOrder.length) {
+			jQuery.each(that.initialValues, function(k, v) {	
+				that.initialValueOrder.push(k);
+			});
+		}
+		jQuery.each(that.initialValueOrder, function(i, k) {
+			var v = that.initialValues[k];
+			v['_key'] = k;
+			initialValuesSorted.push(v);
+		});
+		
+		// perform configured sort
+		if (that.sortInitialValuesBy) {
+			initialValuesSorted.sort(function(a, b) { 
+				return a[that.sortInitialValuesBy] - b[that.sortInitialValuesBy];
+			});
+		}
+		
+		// create the bundles
+		jQuery.each(initialValuesSorted, function(k, v) {
+			that.addToBundle(v['_key'], v, true);
 			initalizedCount++;
 		});
 		
@@ -409,8 +463,11 @@ var caUI = caUI || {};
 			if (that.listSortItems) {
 				opts['items'] = that.listSortItems;
 			}
-			jQuery(that.container + " .caItemList").sortable(opts);
+			opts['stop'] = function(e, ui) {
+				that.updateBundleFormState();
+			};
 			
+			jQuery(that.container + " .caItemList").sortable(opts);
 			that._updateSortOrderListIDFormElement();
 		}
 		

@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2009-2012 Whirl-i-Gig
+ * Copyright 2009-2013 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -242,6 +242,13 @@ class ca_representation_annotations extends BundlableLabelableBaseModelWithAttri
 	protected $opo_type_config = null;
 	
 	# ------------------------------------------------------
+	# Search
+	# ------------------------------------------------------
+	protected $SEARCH_CLASSNAME = 'RepresentationAnnotationSearch';
+	protected $SEARCH_RESULT_CLASSNAME = 'RepresentationAnnotationSearchResult';
+	
+	
+	# ------------------------------------------------------
 	# ACL
 	# ------------------------------------------------------
 	protected $SUPPORTS_ACL = true;
@@ -281,8 +288,8 @@ class ca_representation_annotations extends BundlableLabelableBaseModelWithAttri
 		$this->BUNDLES['ca_list_items'] = array('type' => 'related_table', 'repeating' => true, 'label' => _t('Related vocabulary terms'));
 	}
  	# ------------------------------------------------------
-	public function load($pm_id=null) {
-		$vn_rc = parent::load($pm_id);
+	public function load($pm_id=null, $pb_use_cache=true) {
+		$vn_rc = parent::load($pm_id, $pb_use_cache);
 		
 		$vs_type = $this->getAnnotationType();
 		$this->opo_annotations_properties = $this->loadProperties($vs_type);
@@ -293,6 +300,10 @@ class ca_representation_annotations extends BundlableLabelableBaseModelWithAttri
 	public function insert($pa_options=null) {
 		$this->set('type_code', $vs_type = $this->getAnnotationType());
 		$this->opo_annotations_properties = $this->loadProperties($vs_type);
+		if (!$this->opo_annotations_properties) {
+			$this->postError(1101, _t('No type code set'), 'ca_representation_annotations->insert');
+			return false;
+		}
 		if (!$this->opo_annotations_properties->validate()) {
 			$this->errors = $this->opo_annotations_properties->errors;
 			return false;
@@ -319,7 +330,7 @@ class ca_representation_annotations extends BundlableLabelableBaseModelWithAttri
 		}
 		$this->set('props', $this->opo_annotations_properties->getPropertyValues());
 		
-		if ($this->getPrimaryKey() && ($this->changed('props') || (isset($pa_options['forcePreviewGeneration']) && $pa_options['forcePreviewGeneration']))) {
+		if (!$this->getAppConfig()->get('dont_generate_annotation_previews') && $this->getPrimaryKey() && ($this->changed('props') || (isset($pa_options['forcePreviewGeneration']) && $pa_options['forcePreviewGeneration']))) {
 			$vs_start = $this->getPropertyValue('startTimecode');
 			$vs_end = $this->getPropertyValue('endTimecode');
 			
@@ -345,8 +356,8 @@ class ca_representation_annotations extends BundlableLabelableBaseModelWithAttri
 		return $vn_rc;
 	}
 	# ------------------------------------------------------
-	public function delete($delete_related=0, $pa_fields=null, $pa_table_list=null) {
-		$vn_rc = parent::delete($delete_related, $pa_fields, $pa_table_list);
+	public function delete($pb_delete_related=false, $pa_options=null, $pa_fields=null, $pa_table_list=null) {
+		$vn_rc = parent::delete($pb_delete_related, $pa_options, $pa_fields, $pa_table_list);
 		
 		if (!$this->numErrors()) {
 			$this->opo_annotations_properties = null;
@@ -367,7 +378,7 @@ class ca_representation_annotations extends BundlableLabelableBaseModelWithAttri
 	}
 	# ------------------------------------------------------
  	public function getPropertyList() {
- 		return $this->opo_annotations_properties->getPropertyList();
+ 		return is_object($this->opo_annotations_properties) ? $this->opo_annotations_properties->getPropertyList() : array();
  	}
  	# ------------------------------------------------------
  	public function getPropertyHTMLFormElement($ps_property, $pa_attributes=null) {

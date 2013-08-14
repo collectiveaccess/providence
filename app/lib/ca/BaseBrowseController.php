@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2009-2012 Whirl-i-Gig
+ * Copyright 2009-2013 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -82,8 +82,14 @@
 			}
  		}
  		# -------------------------------------------------------
- 		function Index($pb_dont_render_view=false, $pa_options=null) {
- 			parent::Index($po_search, $pa_options);
+ 		/**
+ 		 *
+ 		 */
+ 		public function Index($pa_options=null) {
+ 			$po_search = isset($pa_options['search']) ? $pa_options['search'] : null;
+ 			$pb_dont_render_view = (isset($pa_options['dontRenderView']) && (bool)$pa_options['dontRenderView']) ? true : false;
+ 			
+ 			parent::Index($pa_options);
  			JavascriptLoadManager::register('browsable');
 			JavascriptLoadManager::register('hierBrowser');
  			
@@ -116,12 +122,19 @@
  			}
  			
  			if (!($vs_view 			= $this->opo_result_context->getCurrentView())) { 
- 				$vs_view = $this->ops_view_default ? $this->ops_view_default : array_shift(array_keys($this->opa_views)); 
+ 				$va_tmp = array_keys($this->opa_views);
+ 				$vs_view = $this->ops_view_default ? $this->ops_view_default : array_shift($va_tmp); 
  				$this->opo_result_context->setCurrentView($vs_view);
  			}
- 			if (!isset($this->opa_views[$vs_view])) { $vs_view = array_shift(array_keys($this->opa_views)); }
+ 			if (!isset($this->opa_views[$vs_view])) { 
+ 				$va_tmp = array_keys($this->opa_views);
+ 				$vs_view = array_shift($va_tmp); 
+ 			}
  			
- 			if (!($vs_sort 	= $this->opo_result_context->getCurrentSort())) { $vs_sort = array_shift(array_keys($this->opa_sorts)); }
+ 			if (!($vs_sort 	= $this->opo_result_context->getCurrentSort())) { 
+ 				$va_tmp = array_keys($this->opa_sorts);
+ 				$vs_sort = array_shift($va_tmp); 
+ 			}
 			$vs_sort_direction = $this->opo_result_context->getCurrentSortDirection();
 			
  			if (!$vn_page_num || $vb_criteria_have_changed) { $vn_page_num = 1; }
@@ -240,6 +253,7 @@
 				if ($vb_criteria_have_changed) {
 					// Put the results id list into the results context - we used this for previous/next navigation
 					$this->opo_result_context->setResultList($vo_result->getPrimaryKeyValues());
+					$this->opo_result_context->setParameter('availableVisualizationChecked', 0);
 				}
 				
 				$vo_result->seek(0);	
@@ -348,7 +362,9 @@
  			$this->view->setVar('facet_name', $ps_facet_name);
  			
  			$this->view->setVar('individual_group_display', isset($va_facet_info['individual_group_display']) ? (bool)$va_facet_info['individual_group_display'] : false);
- 			
+
+ 			// this should be 'facet' but we don't want to render all old 'ajax_browse_facet_html' views (pawtucket themes) unusable
+ 			$this->view->setVar('grouped_facet',$this->opo_browse->getFacetWithGroups($ps_facet_name, $va_facet_info["group_mode"], $vs_grouping, array('sort' => 'name', 'checkAccess' => $va_access_values)));
  			
  			// generate type menu and type value list for related authority table facet
  			if ($va_facet_info['type'] === 'authority') {
@@ -396,7 +412,7 @@
 			}
 						
  			foreach($pa_ids as $pn_id) {
- 				$va_json_data = array('_primaryKey' => 'id');
+ 				$va_json_data = array('_primaryKey' => 'item_id');
 				
 				$va_tmp = explode(":", $pn_id);
 				$vn_id = $va_tmp[0];
@@ -415,11 +431,13 @@
 								}
 								foreach($va_facet as $vn_i => $va_item) {
 									if ($va_item['parent_id'] == $vn_id) {
+										$va_item['item_id'] = $va_item['id'];
 										$va_item['name'] = $va_item['label'];
 										$va_item['children'] = $va_item['child_count'];
 										unset($va_item['label']);
 										unset($va_item['child_count']);
-										$va_json_data[$va_item['id']] = $va_item;
+										unset($va_item['id']);
+										$va_json_data[$va_item['item_id']] = $va_item;
 									}
 								}
 							}
@@ -442,12 +460,12 @@
 							foreach($va_hierarchy_list as $vn_i => $va_item) {
 								if (!in_array($vn_i, $va_hier_ids)) { continue; }	// only show hierarchies that have items in browse result
 								if ($vn_start <= $vn_c) {
-									$va_item['id'] = $va_item[$t_item->primaryKey()];
-									if (!isset($va_facet[$va_item['id']]) && ($vn_root == $va_item['id'])) { continue; }
+									$va_item['item_id'] = $va_item[$t_item->primaryKey()];
+									if (!isset($va_facet[$va_item['item_id']]) && ($vn_root == $va_item['item_id'])) { continue; }
 									unset($va_item['parent_id']);
 									unset($va_item['label']);
-									$va_json_data[$va_item['id']] = $va_item;
-									$vn_last_id = $va_item['id'];
+									$va_json_data[$va_item['item_id']] = $va_item;
+									$vn_last_id = $va_item['item_id'];
 								}
 								$vn_c++;
 								if (!is_null($vn_max_items_per_page) && ($vn_c >= ($vn_max_items_per_page + $vn_start))) { break; }
@@ -462,11 +480,13 @@
 							foreach($va_facet as $vn_i => $va_item) {
 								if ($va_item['parent_id'] == $vn_id) {
 									if ($vn_start <= $vn_c) {
+										$va_item['item_id'] = $va_item['id'];
 										$va_item['name'] = $va_item['label'];
 										$va_item['children'] = $va_item['child_count'];
 										unset($va_item['label']);
 										unset($va_item['child_count']);
-										$va_json_data[$va_item['id']] = $va_item;
+										unset($va_item['id']);
+										$va_json_data[$va_item['item_id']] = $va_item;
 									}									
 									$vn_c++;
 									if (!is_null($vn_max_items_per_page) && ($vn_c >= ($vn_max_items_per_page + $vn_start))) { break; }
@@ -616,10 +636,18 @@
  			return join("; ", $va_buf);
   		}
  		# -------------------------------------------------------
+ 		/**
+ 		 *
+ 		 */ 
+ 		public function getPartialResult($pa_options=null) {
+ 			$pa_options['search'] = $this->opo_browse;
+ 			return parent::getPartialResult($pa_options);
+ 		}
+ 		# -------------------------------------------------------
  		# Sidebar info handler
  		# -------------------------------------------------------
  		public function Tools($pa_parameters) {
- 			parent::Tools($pa_parameters, $po_search);
+ 			parent::Tools($pa_parameters);
 			
 			$this->view->setVar('mode_type_singular', $this->browseName('singular'));
 			$this->view->setVar('mode_type_plural', $this->browseName('plural'));

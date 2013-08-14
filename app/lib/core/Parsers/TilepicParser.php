@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2004-2011 Whirl-i-Gig
+ * Copyright 2004-2013 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -1717,6 +1717,7 @@ class TilepicParser {
 		#
 		try {
 			$h = new Gmagick($ps_filepath);
+			$h->setimageindex(0);	// force use of first image in multi-page TIFF
 		} catch (Exception $e){
 			$this->error = "Couldn't open image $ps_filepath";
 			return false;

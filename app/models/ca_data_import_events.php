@@ -272,13 +272,16 @@ class ca_data_import_events extends BaseModel {
 	 */
 	public function endItem($pn_row_id, $pn_success, $ps_message) {
 		if (!($vn_event_id = $this->getPrimaryKey())) { return null; } 
+		if (!$this->opo_data_import_item) { 
+			throw new Exception("Must call ca_data_import_events::beginItem before ca_data_import_events::endItem");
+		}
 		
 		$this->opo_data_import_item->setMode(ACCESS_WRITE);
 		$this->opo_data_import_item->set('event_id', $vn_event_id);
-		$this->opo_data_import_item->set('completed_on', "now");
+		$this->opo_data_import_item->set('completed_on', _t("now"));
 		$this->opo_data_import_item->set('elapsed_time', (microtime(true) - $this->opn_start_time));
 	
-		$this->opo_data_import_item->set('success', (bool)$pb_success ? 1 : 0);
+		$this->opo_data_import_item->set('success', (int)$pn_success);
 		$this->opo_data_import_item->set('message', $ps_message);
 		$this->opo_data_import_item->set('row_id', $pn_row_id);
 		

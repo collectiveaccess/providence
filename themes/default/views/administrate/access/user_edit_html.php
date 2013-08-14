@@ -113,14 +113,17 @@
 	
 <script type='text/javascript'>
 	jQuery(document).ready(function() {
- 		jQuery('#ca_users_entity_id_lookup').autocomplete('<?php print caNavUrl($this->request, 'lookup', 'Entity', 'Get', array()); ?>', 
-				{ minChars: 3, matchSubset: 1, matchContains: 1, delay: 800, scroll: true, max: 500, extraParams: { }});
-				
-		jQuery('#ca_users_entity_id_lookup').result(function(event, data, formatted) {
-			if (parseInt(data[1]) >= 0) {
-				jQuery('#ca_users_entity_id_value').val(parseInt(data[1]));
+ 		jQuery('#ca_users_entity_id_lookup').autocomplete( 
+			{ 
+				minLength: 3, delay: 800,
+				source: '<?php print caNavUrl($this->request, 'lookup', 'Entity', 'Get', array()); ?>',	
+				select: function(event,ui) {
+					if (parseInt(ui.item.id) >= 0) {
+						jQuery('#ca_users_entity_id_value').val(parseInt(ui.item.id));
+					}
+				}
 			}
-		});
+		);
 	});
 	
 	function caClearUserEntityID() {

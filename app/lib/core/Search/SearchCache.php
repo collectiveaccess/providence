@@ -72,7 +72,7 @@
 				'file_locking' => true,				/* cache corruption avoidance */
 				'read_control' => false,			/* no read control */
 				'file_name_prefix' => 'ca_search_'.$o_config->get('app_name'),	/* prefix of cache files */
-				'cache_file_umask' => 0700			/* permissions of cache files */
+				'cache_file_perm' => 0700			/* permissions of cache files */
 			);
 
 

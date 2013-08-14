@@ -1,92 +1,246 @@
 /**
- * Cookie plugin
+ * jQuery Extended Cookie Plugin
  *
- * Copyright (c) 2006 Klaus Hartl (stilbuero.de)
+ * Author: Frederick Giasson
+ * 
+ * Copyright (c) 2012 Structured Dynamics LLC 
  * Dual licensed under the MIT and GPL licenses:
  * http://www.opensource.org/licenses/mit-license.php
  * http://www.gnu.org/licenses/gpl.html
  *
  */
 
-/**
- * Create a cookie with the given name and value and other optional parameters.
- *
- * @example $.cookie('the_cookie', 'the_value');
- * @desc Set the value of a cookie.
- * @example $.cookie('the_cookie', 'the_value', {expires: 7, path: '/', domain: 'jquery.com', secure: true});
- * @desc Create a cookie with all available options.
- * @example $.cookie('the_cookie', 'the_value');
- * @desc Create a session cookie.
- * @example $.cookie('the_cookie', null);
- * @desc Delete a cookie by passing null as value.
- *
- * @param String name The name of the cookie.
- * @param String value The value of the cookie.
- * @param Object options An object literal containing key/value pairs to provide optional cookie attributes.
- * @option Number|Date expires Either an integer specifying the expiration date from now on in days or a Date object.
- *                             If a negative value is specified (e.g. a date in the past), the cookie will be deleted.
- *                             If set to null or omitted, the cookie will be a session cookie and will not be retained
- *                             when the the browser exits.
- * @option String path The value of the path atribute of the cookie (default: path of page that created the cookie).
- * @option String domain The value of the domain attribute of the cookie (default: domain of page that created the cookie).
- * @option Boolean secure If true, the secure attribute of the cookie will be set and the cookie transmission will
- *                        require a secure protocol (like HTTPS).
- * @type undefined
- *
- * @name $.cookie
- * @cat Plugins/Cookie
- * @author Klaus Hartl/klaus.hartl@stilbuero.de
- */
+jQuery.cookie = function (key, value, options) {
+  
+  // Check if localStorage of HTML5 exists in this browser
+  var isStorageAvailable = false;
+  if ("localStorage" in window)
+  {
+    try {
+      window.localStorage.setItem("isStorageAvailable", "true");
+      isStorageAvailable = true;
+      window.localStorage.removeItem("isStorageAvailable", "true");
+    } catch (PrivateBrowsingError) {
+      // iOS Private Browsing mode will throw a "QUOTA_EXCEEDED_ERRROR DOM Exception 22" error
+    }
+  }
+  
+  // Check if the user wants to create or delete a cookie.
+  if (arguments.length > 1 && String(value) !== "[object Object]") 
+  {
+    options = jQuery.extend({}, options);
+    
+    // Set the default value of the maxChunkSize option if it is not yet defined.
+    if(options.maxChunkSize == undefined)
+    {
+      options.maxChunkSize = 3000;
+    }
+    
+    // Set the default value of the maxNumberOfCookies option if it is not yet defined.
+    if(options.maxNumberOfCookies == undefined)
+    {
+      options.maxNumberOfCookies = 20;
+    }
+    
+    // Set the usage of the local storage to true by default
+    if(options.useLocalStorage == undefined)
+    {
+      options.useLocalStorage = true;
+    }    
+    
+    // Check if the user tries to delete the cookie
+    if(value === null || value === undefined)
+    {
+      // If the localStorage is available, and if the user requested its usage, then we first
+      // try to delete it from that place
+      if(options.useLocalStorage && isStorageAvailable != false)
+      {
+        localStorage.removeItem(key);
+      }
+      
+      // Even if the localStora was used, we try to remove some possible old cookies
+      // Delete all possible chunks for that cookie
+      for(var i = 0; i < options.maxNumberOfCookies; i++)
+      {
+        if(i == 0)
+        {
+          // The first chunk doesn't have the chunk indicator "---"
+          var exists = $.chunkedcookie(key);
+        }
+        else
+        {
+          var exists = $.chunkedcookie(key + "---" + i);
+        }
+        
+        if(exists != null)
+        {
+          $.chunkedcookie(key + "---" + i, null, options);
+        }
+        else
+        {
+          break;
+        }
+      }    
+    }  
+    else
+    {
+      // If the localStorage is available, and if the user requested its usage, 
+      // then we create that value in the localStorage of the browser (and not in a cookie)
+      if(options.useLocalStorage && isStorageAvailable != false)
+      {
+        localStorage.setItem(key, value);
+      }
+      else
+      {
+        // The user tries to create a new cookie
+        
+        // Chunk the input content
+        var exp = new RegExp(".{1,"+options.maxChunkSize+"}","g");
+
+        if(value.match != undefined)
+        {
+          var chunks = value.match(exp);
+          
+          // Create one cookie per chunk
+          for(var i = 0; i < chunks.length; i++)
+          {
+            if(i == 0)
+            {
+              $.chunkedcookie(key, chunks[i], options);
+            }
+            else
+            {
+              $.chunkedcookie(key + "---" + i, chunks[i], options);
+            }
+          }       
+        }
+        else
+        {
+          // The value is probably a number, so we add it to a single cookie
+          $.chunkedcookie(key, value, options); 
+        }      
+      }      
+    }
+    
+    return(null);
+  }
+
+  // Check if options have been given for a cookie retreival operation  
+  if(options == undefined) 
+  {
+    var options;
+    
+    if(arguments.length > 1 && String(value) === "[object Object]")
+    {
+      options = value;
+    }
+    else
+    {
+      options = {};
+    }
+    
+    if(options.maxNumberOfCookies == undefined)
+    {
+      options.maxNumberOfCookies = 20;
+    }    
+    
+    if(options.useLocalStorage == undefined)
+    {
+      options.useLocalStorage = true;
+    }    
+  }
+
+  // If localStorage is available, we first check if there exists a value for that name.
+  // If no value exists in the localStorage, then we continue by checking in the cookies
+  // This second checkup is needed in case that a cookie has been created in the past, 
+  // using the old cookie jQuery plugin.
+  if(isStorageAvailable != false)
+  {
+    var value = localStorage.getItem(key);
+    
+    if(value != undefined && value != null)
+    {
+      return(value); 
+    }    
+  }
+
+  var value = "";
+  
+  // The user tries to get the value of a cookie
+  for(var i = 0; i < options.maxNumberOfCookies; i++)
+  {
+    // Check if the next chunk exists in the browser
+    if(i == 0)
+    {
+      var val = $.chunkedcookie(key);  
+    }
+    else
+    {
+      var val = $.chunkedcookie(key + "---" + i);
+    }
+    
+    // Append the value
+    if(val != null)
+    {
+      value += val;
+    }
+    else
+    {
+      // If the value is null, and we are looking at the first chunk, then
+      // it means that the cookie simply doesn't exist
+      if(i == 0)
+      {
+        return(null);
+      }
+      
+      break;
+    }
+  } 
+  
+  // Return the entire content from all the cookies that may have been used for that value.
+  return(value);  
+};
 
 /**
- * Get the value of a cookie with the given name.
+ * The chunkedcookie function comes from the jQuery Cookie plugin available here:
+ * 
+ *   https://github.com/carhartl/jquery-cookie
  *
- * @example $.cookie('the_cookie');
- * @desc Get the value of a cookie.
+ * Copyright (c) 2010 Klaus Hartl (stilbuero.de)
+ * Dual licensed under the MIT and GPL licenses:
+ * http://www.opensource.org/licenses/mit-license.php
+ * http://www.gnu.org/licenses/gpl.html
  *
- * @param String name The name of the cookie.
- * @return The value of the cookie.
- * @type String
- *
- * @name $.cookie
- * @cat Plugins/Cookie
- * @author Klaus Hartl/klaus.hartl@stilbuero.de
  */
-jQuery.cookie = function(name, value, options) {
-    if (typeof value != 'undefined') { // name and value given, set cookie
-        options = options || {};
-        if (value === null) {
-            value = '';
+jQuery.chunkedcookie = function (key, value, options) {
+
+    // key and at least value given, set cookie...
+    if (arguments.length > 1 && String(value) !== "[object Object]") {
+        options = jQuery.extend({}, options);
+
+        if (value === null || value === undefined) {
             options.expires = -1;
         }
-        var expires = '';
-        if (options.expires && (typeof options.expires == 'number' || options.expires.toUTCString)) {
-            var date;
-            if (typeof options.expires == 'number') {
-                date = new Date();
-                date.setTime(date.getTime() + (options.expires * 24 * 60 * 60 * 1000));
-            } else {
-                date = options.expires;
-            }
-            expires = '; expires=' + date.toUTCString(); // use expires attribute, max-age is not supported by IE
+
+        if (typeof options.expires === 'number') {
+            var days = options.expires, t = options.expires = new Date();
+            t.setDate(t.getDate() + days);
         }
-        var path = options.path ? '; path=' + options.path : '';
-        var domain = options.domain ? '; domain=' + options.domain : '';
-        var secure = options.secure ? '; secure' : '';
-        document.cookie = [name, '=', encodeURIComponent(value), expires, path, domain, secure].join('');
-    } else { // only name given, get cookie
-        var cookieValue = null;
-        if (document.cookie && document.cookie != '') {
-            var cookies = document.cookie.split(';');
-            for (var i = 0; i < cookies.length; i++) {
-                var cookie = jQuery.trim(cookies[i]);
-                // Does this cookie string begin with the name we want?
-                if (cookie.substring(0, name.length + 1) == (name + '=')) {
-                    cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
-                    break;
-                }
-            }
-        }
-        return cookieValue;
+
+        value = String(value);
+
+        return (document.cookie = [
+            encodeURIComponent(key), '=',
+            options.raw ? value : encodeURIComponent(value),
+            options.expires ? '; expires=' + options.expires.toUTCString() : '', // use expires attribute, max-age is not supported by IE
+            options.path ? '; path=' + options.path : '',
+            options.domain ? '; domain=' + options.domain : '',
+            options.secure ? '; secure' : ''
+        ].join(''));
     }
+
+    // key and possibly options given, get cookie...
+    options = value || {};
+    var result, decode = options.raw ? function (s) { return s; } : decodeURIComponent;
+    return (result = new RegExp('(?:^|; )' + encodeURIComponent(key) + '=([^;]*)').exec(document.cookie)) ? decode(result[1]) : null;
 };

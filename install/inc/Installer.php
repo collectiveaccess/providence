@@ -529,7 +529,7 @@ class Installer {
 					$t_restriction->insert();
 
 					if ($t_restriction->numErrors()) {
-						$this->addError("There was an error while inserting type restriction $vs_restriction_code for metadata element $vs_element_code: ".join("; ",$t_restriction->getErrors()));
+						$this->addError("There was an error while inserting type restriction {$vs_restriction_code} for metadata element {$vs_element_code}: ".join("; ",$t_restriction->getErrors()));
 					}
 				}
 			}
@@ -935,7 +935,7 @@ class Installer {
 		$o_config = Configuration::load();
 		$va_available_bundles = $t_display->getAvailableBundles(null, array('no_cache' => true));
 		
-		$vn_i = 0;
+		$vn_i = 1;
 		foreach($po_placements->children() as $vo_placement){
 			$vs_code = self::getAttribute($vo_item, "code");
 			$vs_bundle = (string)$vo_placement->bundle;

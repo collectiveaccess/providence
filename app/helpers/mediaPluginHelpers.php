@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2010 Whirl-i-Gig
+ * Copyright 2010-2013 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -266,6 +266,27 @@
 			return $_MEDIAHELPER_PLUGIN_CACHE_MEDIAINFO[$ps_mediainfo_path] = true;
 		}
 		return $_MEDIAHELPER_PLUGIN_CACHE_MEDIAINFO[$ps_mediainfo_path] = false;
+	}
+	# ------------------------------------------------------------------------------------------------
+	/**
+	 * Detects if PDFMiner (http://www.unixuser.org/~euske/python/pdfminer/index.html) is installed in the given path.
+	 * @param string $ps_pdfminer_path path to PDFMiner
+	 */
+	function caPDFMinerInstalled($ps_pdfminer_path) {
+		global $_MEDIAHELPER_PLUGIN_CACHE_MEDIAINFO;
+		if (isset($_MEDIAHELPER_PLUGIN_CACHE_MEDIAINFO[$ps_pdfminer_path])) {
+			return $_MEDIAHELPER_PLUGIN_CACHE_MEDIAINFO[$ps_pdfminer_path];
+		} else {
+			$_MEDIAHELPER_PLUGIN_CACHE_MEDIAINFO = array();
+		}
+		if (!trim($ps_pdfminer_path) || (preg_match("/[^\/A-Za-z0-9\.:]+/", $ps_pdfminer_path)) || !file_exists($ps_pdfminer_path)) { return false; }
+		
+		if (!file_exists($ps_pdfminer_path."/pdf2txt.py")) { return $_MEDIAHELPER_PLUGIN_CACHE_MEDIAINFO[$ps_pdfminer_path] = false; }
+		exec($ps_pdfminer_path."/pdf2txt.py > /dev/null",$va_output,$vn_return);
+		if($vn_return == 100) {
+			return $_MEDIAHELPER_PLUGIN_CACHE_MEDIAINFO[$ps_pdfminer_path] = true;
+		}
+		return $_MEDIAHELPER_PLUGIN_CACHE_MEDIAINFO[$ps_pdfminer_path] = false;
 	}
 	# ------------------------------------------------------------------------------------------------
 	/**
@@ -691,7 +712,10 @@
 					$vs_selected_size = $vs_size;
 				}
 			}
-			if (!$vs_selected_size) { $vs_selected_size = array_shift(array_keys($va_icons)); }
+			if (!$vs_selected_size) { 
+				$va_tmp = array_keys($va_icons);
+				$vs_selected_size = array_shift($va_tmp); 
+			}
 		}
 		$va_tmp = explode('x', $vs_selected_size);
 		return array('size' => $vs_selected_size, 'width' => $va_tmp[0], 'height' => $va_tmp[1]);

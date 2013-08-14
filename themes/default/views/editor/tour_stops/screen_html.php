@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2011 Whirl-i-Gig
+ * Copyright 2011-2013 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -52,7 +52,7 @@
 									'request' => $this->request, 
 									'formName' => 'TourStopEditorForm',
 									'context_id' => $vs_context_id
-								));
+								), $va_bundle_list);
 			
 			print join("\n", $va_form_elements);
 			
@@ -65,3 +65,5 @@
 	</div>
 
 	<div class="editorBottomPadding"><!-- empty --></div>
+	
+	<?php print caSetupEditorScreenOverlays($this->request, $t_stop, $va_bundle_list); ?>

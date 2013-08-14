@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2012 Whirl-i-Gig
+ * Copyright 2012-2013 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -68,9 +68,9 @@
  			list($t_subject, $t_ui, $vn_parent_id, $vn_above_id) = $this->_initView($pa_options);
  			$vs_field_name_prefix = $this->request->getParameter('fieldNamePrefix', pString);
  			$vs_n = $this->request->getParameter('n', pString);
- 			
+ 		
  			// Is user allowed to quickadd?
- 			if (!$this->request->user->canDoAction('can_quickadd_'.$t_subject->tableName())) {
+ 			if (!(is_array($pa_options) && isset($pa_options['dontCheckQuickAddAction']) && (bool)$pa_options['dontCheckQuickAddAction']) && (!$this->request->user->canDoAction('can_quickadd_'.$t_subject->tableName()))) {
  				$this->response->setRedirect($this->request->config->get('error_display_url').'/n/2585?r='.urlencode($this->request->getFullUrlPath()));
 				return;
  			}
@@ -86,7 +86,8 @@
  			if ($t_subject->getAppConfig()->get('perform_type_access_checking')) {
  				$va_restrict_to_types = caGetTypeRestrictionsForUser($this->ops_table_name, array('access' => __CA_BUNDLE_ACCESS_EDIT__));
  			}
- 			if (is_array($va_restrict_to_types) && !in_array($t_subject->get('type_id'), $va_restrict_to_types)) {
+ 			
+ 			if (($vn_type_id = $t_subject->get('type_id')) && is_array($va_restrict_to_types) && !in_array($vn_type_id, $va_restrict_to_types)) {
  				$this->response->setRedirect($this->request->config->get('error_display_url').'/n/2560?r='.urlencode($this->request->getFullUrlPath()));
  				return;
  			}
@@ -111,10 +112,12 @@
  			if (!($vn_type_id = $t_subject->getTypeID())) {
  				if (!($vn_type_id = $this->request->getParameter($t_subject->getTypeFieldName(), pString))) {
  					if ($vs_type = $this->request->config->get('quickadd_'.$t_subject->tableName().'_default_type')) {
- 						$vn_type_id = array_shift(caMakeTypeIDList($t_subject->tableName(), array($vs_type)));
+ 						$va_tmp = caMakeTypeIDList($t_subject->tableName(), array($vs_type));
+ 						$vn_type_id = array_shift($va_tmp);
  					}
  					if (!$vn_type_id) {
- 						$vn_type_id = array_shift(array_keys($t_subject->getTypeList()));
+ 						$va_tmp = array_keys($t_subject->getTypeList());
+ 						$vn_type_id = array_shift($va_tmp);
  					}
  				}
  			}
@@ -141,7 +144,7 @@
 			$this->view->setVar('t_ui', $t_ui);
 			$this->view->setVar('screen', $va_nav['defaultScreen']);
 			
-			$va_field_values = $t_subject->extractValuesFromRequest($va_nav['defaultScreen'], $this->request, array('ui_instance' => $t_ui));
+			$va_field_values = $t_subject->extractValuesFromRequest($va_nav['defaultScreen'], $this->request, array('ui_instance' => $t_ui, 'dontReturnSerialIdno' => true));
 			
 			// Set intrinsics
 			if (is_array($va_field_values['intrinsic'])) {
@@ -163,7 +166,7 @@
 			}
 			
 			
-			// Set preferred labels
+			// Set nonpreferred labels
 			if (is_array($va_field_values['nonpreferred_label'])) {
 				$t_subject->setFailedNonPreferredLabelInserts($va_field_values['nonpreferred_label']);		
 			}
@@ -197,11 +200,12 @@
  			if (!is_array($pa_options)) { $pa_options = array(); }
  			
  			// Is user allowed to quickadd?
- 			if (!$this->request->user->canDoAction('can_quickadd_'.$t_subject->tableName())) {
+ 			if (!(is_array($pa_options) && isset($pa_options['dontCheckQuickAddAction']) && (bool)$pa_options['dontCheckQuickAddAction']) && (!$this->request->user->canDoAction('can_quickadd_'.$t_subject->tableName()))) {
  				$va_response = array(
 					'status' => 30,
 					'id' => null,
 					'table' => $t_subject->tableName(),
+					'type_id' => null,
 					'display' => null,
 					'errors' => array(_t("You are not allowed to quickadd %1", $t_subject->getProperty('NAME_PLURAL')) => _t("You are not allowed to quickadd %1", $t_subject->getProperty('NAME_PLURAL')))
 				);
@@ -230,6 +234,7 @@
 					'status' => 20,
 					'id' => null,
 					'table' => $t_subject->tableName(),
+					'type_id' => null,
 					'display' => null,
 					'errors' => array(_t("Cannot save using empty request. Are you using a bookmark?") => _t("Cannot save using empty request. Are you using a bookmark?"))
 				);
@@ -269,7 +274,8 @@
  			$t_subject->set('parent_id', $vn_parent_id);
  			$this->opo_result_context->setParameter($t_subject->tableName().'_last_parent_id', $vn_parent_id);
  			
- 			$vb_save_rc = $t_subject->saveBundlesForScreen($this->request->getParameter('screen', pString), $this->request, array_merge($pa_options, array('ui_instance' => $t_ui)));
+ 			$va_opts = array_merge($pa_options, array('ui_instance' => $t_ui));
+ 			$vb_save_rc = $t_subject->saveBundlesForScreen($this->request->getParameter('screen', pString), $this->request, $va_opts);
 			$this->view->setVar('t_ui', $t_ui);
 		
 			if(!$vn_subject_id) {
@@ -322,7 +328,8 @@
  			$vn_id = $t_subject->getPrimaryKey();
  			
  			if ($vn_id) {
- 				$va_name = array_pop(caProcessRelationshipLookupLabel($t_subject->makeSearchResult($t_subject->tableName(), array($vn_id)), $t_subject));
+ 				$va_tmp = caProcessRelationshipLookupLabel($t_subject->makeSearchResult($t_subject->tableName(), array($vn_id)), $t_subject);
+ 				$va_name = array_pop($va_tmp);
  			} else {
  				$va_name = array();
  			}
@@ -330,7 +337,8 @@
  				'status' => sizeof($va_error_list) ? 10 : 0,
  				'id' => $vn_id,
  				'table' => $t_subject->tableName(),
- 				'display' => $va_name['_display'],
+				'type_id' => method_exists($t_subject, "getTypeID") ? $t_subject->getTypeID() : null,
+ 				'display' => $va_name['label'],
  				'errors' => $va_error_list
  			);
  			
@@ -352,6 +360,15 @@
  			JavascriptLoadManager::register('ckeditor');
  			
  			$t_subject = $this->opo_datamodel->getInstanceByTableName($this->ops_table_name);
+ 			
+ 			if (is_array($pa_options) && isset($pa_options['loadSubject']) && (bool)$pa_options['loadSubject'] && ($vn_subject_id = (int)$this->request->getParameter($t_subject->primaryKey(), pInteger))) {
+ 				$t_subject->load($vn_subject_id);
+ 			}
+ 			if (is_array($pa_options) && isset($pa_options['forceSubjectValues']) && is_array($pa_options['forceSubjectValues'])) {
+				foreach($pa_options['forceSubjectValues'] as $vs_f => $vs_v) {
+					$t_subject->set($vs_f, $vs_v);
+				}
+			}
  			
 			// empty (ie. new) rows don't have a type_id set, which means we'll have no idea which attributes to display
 			// so we get the type_id off of the request
@@ -380,8 +397,8 @@
  				$t_ui = ca_editor_uis::loadDefaultUI($this->ops_table_name, $this->request, $t_subject->getTypeID(), array('editorPref' => 'quickadd'));
  			}
  			
- 			$this->view->setVar($t_subject->primaryKey(), null);
- 			$this->view->setVar('subject_id', null);
+ 			$this->view->setVar($t_subject->primaryKey(), $t_subject->getPrimaryKey());
+ 			$this->view->setVar('subject_id', $t_subject->getPrimaryKey());
  			$this->view->setVar('t_subject', $t_subject);
  			
  			//MetaTagManager::setWindowTitle(_t("Editing %1 : %2", ($vs_type = $t_subject->getTypeName()) ? $vs_type : $t_subject->getProperty('NAME_SINGULAR'), ($vn_subject_id) ? $t_subject->getLabelForDisplay(true) : _t('new %1', $t_subject->getTypeName())));

@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2008-2012 Whirl-i-Gig
+ * Copyright 2008-2013 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -260,7 +260,6 @@ class ca_editor_ui_screens extends BundlableLabelableBaseModelWithAttributes {
 			$this->errors = array_merge($this->errors, $t_placement->errors);
 			return false;
 		}
-		unset($_SESSION['screen_cache']);
 		return $t_placement->getPrimaryKey();
 	}
 	# ------------------------------------------------------
@@ -290,7 +289,6 @@ class ca_editor_ui_screens extends BundlableLabelableBaseModelWithAttributes {
 			}
 			
 			unset(ca_editor_ui_screens::$s_placement_list_cache[$vn_screen_id]);
-			unset($_SESSION['screen_cache']);
 			return true;
 		}
 		return false;
@@ -408,31 +406,69 @@ class ca_editor_ui_screens extends BundlableLabelableBaseModelWithAttributes {
 				case 'intrinsic':
 					$va_field_info = $t_instance->getFieldInfo($vs_bundle);
 					if (isset($va_field_info['DONT_ALLOW_IN_UI']) && $va_field_info['DONT_ALLOW_IN_UI']) { continue(2); }
+					if (is_subclass_of($t_instance, 'BaseRelationshipModel')) {
+						if (isset($va_field_info['IDENTITY']) && $va_field_info['IDENTITY']) { continue(2); }
+						if ($t_instance->getTypeFieldName() == $vs_bundle) { continue(2); }
+						if ($t_instance->getLeftTableFieldName() == $vs_bundle) { continue(2); }
+						if ($t_instance->getRightTableFieldName() == $vs_bundle) { continue(2); }
+					}
 					break;
 				case 'preferred_label':
 				case 'nonpreferred_label':
 					$va_additional_settings = array(
 						'usewysiwygeditor' => array(
 							'formatType' => FT_NUMBER,
-							'displayType' => DT_CHECKBOXES,
-							'default' => 0,
-							'width' => 1, 'height' => 1,
+							'displayType' => DT_SELECT,
+							'options' => array(
+								_t('yes') => 1,
+								_t('no') => 0
+							),
+							'default' => '',
+							'width' => "100px", 'height' => 1,
 							'label' => _t('Use rich text editor'),
 							'description' => _t('Check this option if you want to use a word-processor like editor with this text field. If you expect users to enter rich text (italic, bold, underline) then you might want to enable this.')
 						)
 					);
 					break;
 				case 'attribute':
+					$va_additional_settings = array(
+						'sort' => array(
+							'formatType' => FT_TEXT,
+							'displayType' => DT_SELECT,
+							'width' => "200px", 'height' => "1",
+							'takesLocale' => false,
+							'default' => '1',
+							'label' => _t('Sort using'),
+							'showSortableElementsFor' => $va_elements[preg_replace('!ca_attribute_!', '', $vs_bundle)]['element_id'],
+							'description' => _t('Method used to sort repeating values.')
+						),
+						'sortDirection' => array(
+							'formatType' => FT_TEXT,
+							'displayType' => DT_SELECT,
+							'width' => "200px", 'height' => "1",
+							'takesLocale' => false,
+							'default' => 'ASC',
+							'options' => array(
+								_t('Ascending') => 'ASC',
+								_t('Descending') => 'DESC'
+							),
+							'label' => _t('Sort direction'),
+							'description' => _t('Direction of sort.')
+						)
+					);
 					if ($va_elements[preg_replace('!ca_attribute_!', '', $vs_bundle)]['datatype'] == 1) {		// 1=text
-						$va_additional_settings = array(
-							'usewysiwygeditor' => array(
-								'formatType' => FT_NUMBER,
-								'displayType' => DT_CHECKBOXES,
-								'default' => 0,
-								'width' => 1, 'height' => 1,
-								'label' => _t('Use rich text editor'),
-								'description' => _t('Check this option if you want to use a word-processor like editor with this text field. If you expect users to enter rich text (italic, bold, underline) then you might want to enable this.')
-							)
+						$va_additional_settings['usewysiwygeditor'] = array(
+							'formatType' => FT_TEXT,
+							'displayType' => DT_SELECT,
+							'options' => array(
+								_t('yes') => 1,
+								_t('no') => 0,
+								_t('use default') => null
+							),
+							'default' => '',
+							'width' => "100px", 'height' => 1,
+							'label' => _t('Use rich text editor'),
+							'description' => _t('Check this option if you want to use a word-processor like editor with this text field. If you expect users to enter rich text (italic, bold, underline) then you might want to enable this.')
 						);
 					}
 					break;
@@ -468,8 +504,79 @@ class ca_editor_ui_screens extends BundlableLabelableBaseModelWithAttributes {
 							'default' => '0',
 							'label' => _t('Do not include sub-types in type restriction'),
 							'description' => _t('Normally restricting to type(s) automatically includes all sub-(child) types. If this option is checked then the lookup results will include items with the selected type(s) <b>only</b>.')
+						),
+						'list_format' => array(
+							'formatType' => FT_TEXT,
+							'displayType' => DT_SELECT,
+							'options' => array(
+								_t('bubbles (draggable)') => 'bubbles',
+								_t('list (not draggable)') => 'list'
+							),
+							'default' => 'bubbles',
+							'width' => "200px", 'height' => 1,
+							'label' => _t('Format of relationship list'),
+							'description' => _t('.')
+						),
+						'sort' => array(
+							'formatType' => FT_TEXT,
+							'displayType' => DT_SELECT,
+							'width' => "200px", 'height' => "1",
+							'takesLocale' => false,
+							'default' => '1',
+							'label' => _t('Sort using'),
+							'showSortableBundlesFor' => $t_rel->tableName(),
+							'description' => _t('Method used to sort related items.')
+						),
+						'sortDirection' => array(
+							'formatType' => FT_TEXT,
+							'displayType' => DT_SELECT,
+							'width' => "200px", 'height' => "1",
+							'takesLocale' => false,
+							'default' => 'ASC',
+							'options' => array(
+								_t('Ascending') => 'ASC',
+								_t('Descending') => 'DESC'
+							),
+							'label' => _t('Sort direction'),
+							'description' => _t('Direction of sort, when not in a user-specified order.')
+						),
+						'colorFirstItem' => array(
+							'formatType' => FT_TEXT,
+							'displayType' => DT_COLORPICKER,
+							'width' => "10", 'height' => "1",
+							'takesLocale' => false,
+							'default' => '',
+							'label' => _t('First item color'),
+							'description' => _t('If set first item in list will use this color.')
+						),
+						'colorLastItem' => array(
+							'formatType' => FT_TEXT,
+							'displayType' => DT_COLORPICKER,
+							'width' => "10", 'height' => "1",
+							'takesLocale' => false,
+							'default' => '',
+							'label' => _t('Last item color'),
+							'description' => _t('If set last item in list will use this color.')
+						),
+						'dontShowDeleteButton' => array(
+							'formatType' => FT_TEXT,
+							'displayType' => DT_CHECKBOXES,
+							'width' => "10", 'height' => "1",
+							'takesLocale' => false,
+							'default' => '0',
+							'label' => _t('Do not show delete button'),
+							'description' => _t('If checked the delete relationship control will not be provided.')
+						),
+						'display_template' => array(
+							'formatType' => FT_TEXT,
+							'displayType' => DT_FIELD,
+							'default' => '^'.$t_rel->tableName().'.preferred_labels',
+							'width' => "275px", 'height' => 4,
+							'label' => _t('Relationship display template'),
+							'description' => _t('Layout for relationship when displayed in list (can include HTML). Element code tags prefixed with the ^ character can be used to represent the value in the template. For example: <i>^my_element_code</i>.')
 						)
 					);
+					
 					if ($vs_bundle == 'ca_list_items') {
 						$va_additional_settings['restrict_to_lists'] = array(
 							'formatType' => FT_TEXT,
@@ -480,7 +587,6 @@ class ca_editor_ui_screens extends BundlableLabelableBaseModelWithAttributes {
 							'default' => '',
 							'label' => _t('Restrict to list'),
 							'description' => _t('Restricts display to items from the specified list(s). Leave all unselected for no restriction.')
-						
 						);
 					}
 					if (in_array($vs_bundle, array('ca_places', 'ca_list_items', 'ca_storage_locations'))) {
@@ -492,7 +598,6 @@ class ca_editor_ui_screens extends BundlableLabelableBaseModelWithAttributes {
 							'default' => '1',
 							'label' => _t('Use hierarchy browser?'),
 							'description' => _t('If checked a hierarchical browser will be used to select related items instead of an auto-complete lookup.')
-						
 						);
 						
 						$va_additional_settings['hierarchicalBrowserHeight'] = array(
@@ -506,11 +611,43 @@ class ca_editor_ui_screens extends BundlableLabelableBaseModelWithAttributes {
 						
 						);
 					}
+					if (($t_instance->tableName() == 'ca_objects') && in_array($vs_bundle, array('ca_list_items'))) {
+						$va_additional_settings['restrictToTermsRelatedToCollection'] = array(
+							'formatType' => FT_TEXT,
+							'displayType' => DT_CHECKBOXES,
+							'width' => "10", 'height' => "1",
+							'takesLocale' => false,
+							'default' => '0',
+							'label' => _t('Restrict to checklist of terms from related collections?'),
+							'description' => _t('Will restrict checklist to those terms applied to related collections.')
+						);
+						$va_additional_settings['restrictToTermsOnCollectionWithRelationshipType'] = array(
+							'formatType' => FT_TEXT,
+							'displayType' => DT_SELECT,
+							'useRelationshipTypeList' => 'ca_objects_x_collections',
+							'width' => "275px", 'height' => "75px",
+							'takesLocale' => false,
+							'default' => '',
+							'label' => _t('Restrict checklist to terms related to collection as'),
+							'description' => _t('Will restrict checklist to terms related to collections with the specified relationship type. Leave all unselected for no restriction.')
+						);
+						$va_additional_settings['restrictToTermsOnCollectionUseRelationshipType'] =  array(
+							'formatType' => FT_TEXT,
+							'displayType' => DT_SELECT,
+							'useRelationshipTypeList' => 'ca_objects_x_vocabulary_terms',
+							'width' => "275px", 'height' => "1",
+							'takesLocale' => false,
+							'default' => '',
+							'label' => _t('Checked collection term relationship type'),
+							'description' => _t('Specified the relationship used to relate collection-restricted terms to this object.')
+						);
+					}
 					if (!$t_rel->hasField('type_id')) { unset($va_additional_settings['restrict_to_types']); }
 					if (sizeof($va_path) == 3) {
 						if ($t_link = $this->_DATAMODEL->getInstanceByTableName($va_path[1], true)) {
 							if (!$t_link->hasField('type_id')) {
 								unset($va_additional_settings['restrict_to_relationship_types']);
+								unset($va_additional_settings['useFixedRelationshipType']);
 							}
 						}
 					}
@@ -616,7 +753,6 @@ class ca_editor_ui_screens extends BundlableLabelableBaseModelWithAttributes {
 			$this->errors = $t_restriction->errors();
 			return false;
 		}
-		unset($_SESSION['screen_cache']);
 		return true;
 	}
 	# ----------------------------------------
@@ -662,7 +798,6 @@ class ca_editor_ui_screens extends BundlableLabelableBaseModelWithAttributes {
 				}
 			}
 		}
-		unset($_SESSION['screen_cache']);
 		return true;
 	}
 	# ----------------------------------------
@@ -778,7 +913,8 @@ class ca_editor_ui_screens extends BundlableLabelableBaseModelWithAttributes {
 			
 			$vs_label = ($vs_label = ($t_instance->getDisplayLabel($t_instance->tableName().'.'.$vs_bundle_proc))) ? $vs_label : $va_placement['bundle_name'];
 			if(is_array($va_placement['settings']['label'])){
-				if ($vs_user_set_label = array_shift(caExtractValuesByUserLocale(array($va_placement['settings']['label'])))) {
+				$va_tmp = caExtractValuesByUserLocale(array($va_placement['settings']['label']));
+				if ($vs_user_set_label = array_shift($va_tmp)) {
 					$vs_label = "{$vs_label} (<em>{$vs_user_set_label}</em>)";
 				}
 			}

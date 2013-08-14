@@ -84,7 +84,7 @@
 					
 					if (sizeof($va_labels)) {
 						$va_label = array_pop($va_labels);
-						$va_options['_user_id_display'] = $va_label['_display'];
+						$va_options['_user_id_display'] = $va_label['label'];
 					}
 				}
 				if ($vs_f != 'search') { $t_comm->set($vs_f, $vm_v); }

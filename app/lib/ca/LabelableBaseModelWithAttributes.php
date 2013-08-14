@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2008-2012 Whirl-i-Gig
+ * Copyright 2008-2013 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -85,7 +85,8 @@
 		
 			if (!($t_label = $this->_DATAMODEL->getInstanceByTableName($this->getLabelTableName()))) { return null; }
 			if ($this->inTransaction()) {
-				$t_label->setTransaction($this->getTransaction());
+				$o_trans = $this->getTransaction();
+				$t_label->setTransaction($o_trans);
 			}
 			
 			$t_label->purify($this->purify());
@@ -127,7 +128,8 @@
 			
 			if (!($t_label = $this->_DATAMODEL->getInstanceByTableName($this->getLabelTableName()))) { return null; }
 			if ($this->inTransaction()) {
-				$t_label->setTransaction($this->getTransaction());
+				$o_trans = $this->getTransaction();
+				$t_label->setTransaction($o_trans);
 			}
 			
 			$t_label->purify($this->purify());
@@ -185,7 +187,8 @@
  			
  			if (!($t_label = $this->_DATAMODEL->getInstanceByTableName($this->getLabelTableName()))) { return null; }
  			if ($this->inTransaction()) {
-				$t_label->setTransaction($this->getTransaction());
+ 				$o_trans = $this->getTransaction();
+				$t_label->setTransaction($o_trans);
 			}
 			
  			if (!$t_label->load($pn_label_id)) { return null; }
@@ -207,24 +210,42 @@
  		}
 		# ------------------------------------------------------------------
 		/**
-		 * Remove all labels, preferred and non-preferred, attached to this row
+		 * Remove all labels attached to this row. By default both preferred and non-preferred are removed.
+		 * The $pn_mode parameter can be used to restrict removal to preferred or non-preferred if needed.
+		 *
+		 * @param int $pn_mode Set to __CA_LABEL_TYPE_PREFERRED__ or __CA_LABEL_TYPE_NONPREFERRED__ to restrict removal. Default is __CA_LABEL_TYPE_ANY__ (no restriction)
+		 *
+		 * @return bool True on success, false on error
 		 */
- 		public function removeAllLabels() {
+ 		public function removeAllLabels($pn_mode=__CA_LABEL_TYPE_ANY__) {
  			if (!$this->getPrimaryKey()) { return null; }
  			
  			if (!($t_label = $this->_DATAMODEL->getInstanceByTableName($this->getLabelTableName()))) { return null; }
  			if ($this->inTransaction()) {
-				$t_label->setTransaction($this->getTransaction());
+ 				$o_trans = $this->getTransaction();
+				$t_label->setTransaction($o_trans);
 			}
  			
+ 			$vb_ret = true;
  			$va_labels = $this->getLabels();
  			foreach($va_labels as $vn_id => $va_labels_by_locale) {
  				foreach($va_labels_by_locale as $vn_locale_id => $va_labels) {
  					foreach($va_labels as $vn_i => $va_label) {
- 						$this->removeLabel($va_label['label_id']);
+ 						if (isset($va_label['is_preferred'])) {
+							switch($pn_mode) {
+								case __CA_LABEL_TYPE_PREFERRED__:
+									if (!(bool)$va_label['is_preferred']) { continue(2); }
+									break;
+								case __CA_LABEL_TYPE_NONPREFERRED__:
+									if ((bool)$va_label['is_preferred']) { continue(2); }
+									break;
+							}
+						}
+ 						$vb_ret &= $this->removeLabel($va_label['label_id']);
  					}
  				}
  			}
+ 			return $vb_ret;
  		}
  		# ------------------------------------------------------------------
 		/**
@@ -255,7 +276,8 @@
  		public function loadByLabel($pa_label_values, $pa_table_values=null) {
  			$t_label = $this->getLabelTableInstance();
  			if ($this->inTransaction()) {
-				$t_label->setTransaction($this->getTransaction());
+ 				$o_trans = $this->getTransaction();
+				$t_label->setTransaction($o_trans);
 			}
 			
  			$o_db = $this->getDb();
@@ -406,6 +428,8 @@
 						$vs_label_table_name = $this->getLabelTableName();
 						$t_label_instance = $this->getLabelTableInstance();
 						$vs_display_field = ($t_label_instance->hasField($va_tmp[2])) ? $va_tmp[2] : $this->getLabelDisplayField();
+						
+						$vn_top_id = null;
 						if (!($va_ancestor_list = $this->getHierarchyAncestors(null, array(
 							'additionalTableToJoin' => $vs_label_table_name, 
 							'additionalTableJoinType' => 'LEFT',
@@ -414,6 +438,40 @@
 							'includeSelf' => true
 						)))) {
 							$va_ancestor_list = array();
+						} else {
+							foreach($va_ancestor_list as $vn_i => $va_node) {
+								$va_ancestor_list[$vn_i]['NODE']['id'] = $vn_top_id = $va_node['NODE'][$vs_pk];
+							}
+						}
+						
+						if (($this->tableName() == 'ca_objects') && $this->getAppConfig()->get('ca_objects_x_collections_hierarchy_enabled') && ($vs_coll_rel_type = $this->getAppConfig()->get('ca_objects_x_collections_hierarchy_relationship_type'))) {
+							require_once(__CA_MODELS_DIR__.'/ca_objects.php');
+							if ($this->getPrimaryKey() == $vn_top_id) {
+								$t_object = $this;
+							} else {
+								$t_object = new ca_objects($vn_top_id);
+							}
+							
+							if (is_array($va_collections = $t_object->getRelatedItems('ca_collections', array('restrictToRelationshipTypes' => $vs_coll_rel_type)))) {
+								require_once(__CA_MODELS_DIR__.'/ca_collections.php');
+								$t_collection = new ca_collections();
+								foreach($va_collections as $vn_i => $va_collection) {
+									if (($va_collections_ancestor_list = $t_collection->getHierarchyAncestors($va_collection['collection_id'], array(
+										'additionalTableToJoin' => 'ca_collection_labels', 
+										'additionalTableJoinType' => 'INNER',
+										'additionalTableSelectFields' => array('*'),
+										'additionalTableWheres' => array('(ca_collection_labels.is_preferred = 1)'),
+										'includeSelf' => true
+									)))) {
+										foreach($va_collections_ancestor_list as $vn_i => $va_node) {
+											$va_collections_ancestor_list[$vn_i]['NODE']['id'] = $va_node['NODE']['collection_id'];
+										}
+										$va_ancestor_list = array_merge($va_ancestor_list, $va_collections_ancestor_list);
+									}
+									
+									break; // for now only process first collection (no polyhierarchies)
+								}
+							}
 						}
 						
 						// remove root and children if so desired
@@ -434,10 +492,10 @@
 						foreach($va_ancestor_list as $vn_i => $va_item) {
 							if ($vb_check_access && !in_array($va_item['NODE']['access'], $pa_options['checkAccess'])) { continue; }
 							if ($vs_template) {
-								$va_tmp[$va_item['NODE'][$vs_pk]] = caProcessTemplate($vs_template, $va_item['NODE'], array('removePrefix' => 'preferred_labels.'));
+								$va_tmp[$va_item['NODE']['id']] = caProcessTemplate($vs_template, $va_item['NODE'], array('removePrefix' => 'preferred_labels.'));
 							} else {
 								if ($vs_label = $va_item['NODE'][$vs_display_field]) {
-									$va_tmp[$va_item['NODE'][$vs_pk]] = $vs_label;
+									$va_tmp[$va_item['NODE']['id']] = $vs_label;
 								}
 							}
 						}
@@ -452,7 +510,7 @@
 						}
 						
 						if ($vs_direction == 'ASC') {
-							$va_tmp = array_reverse($va_tmp);
+							$va_tmp = array_reverse($va_tmp, true);
 						}
 						
 						if ($vb_return_as_array) {
@@ -749,7 +807,8 @@
  		public function getLabelForDisplay($pb_dont_cache=true, $pm_locale=null, $pa_options=null) {
 			if (!($t_label = $this->_DATAMODEL->getInstanceByTableName($this->getLabelTableName(), true))) { return null; }
 			if ($this->inTransaction()) {
-				$t_label->setTransaction($this->getTransaction());
+				$o_trans = $this->getTransaction();
+				$t_label->setTransaction($o_trans);
 			}
 			
 			$va_preferred_locales = null;
@@ -888,7 +947,8 @@
  			}
 			if (!($t_label = $this->_DATAMODEL->getInstanceByTableName($this->getLabelTableName(), true))) { return null; }
 			if ($this->inTransaction()) {
-				$t_label->setTransaction($this->getTransaction());
+				$o_trans = $this->getTransaction();
+				$t_label->setTransaction($o_trans);
 			}
  			
  			$vs_label_where_sql = 'WHERE (l.'.$this->primaryKey().' = ?)';
@@ -999,7 +1059,8 @@
  			if (!$this->getPrimaryKey()) { return null; }
 			if (!($t_label = $this->_DATAMODEL->getInstanceByTableName($this->getLabelTableName(), true))) { return null; }
 			if ($this->inTransaction()) {
-				$t_label->setTransaction($this->getTransaction());
+				$o_trans = $this->getTransaction();
+				$t_label->setTransaction($o_trans);
 			}
 			$o_db = $this->getDb();
  			
@@ -1040,7 +1101,8 @@
 					if ($g_ui_locale_id) { 
 						$vn_locale_id = $g_ui_locale_id;
 					} else {
-						$vn_locale_id = array_shift(array_keys($va_locale_list));
+						$va_tmp = array_keys($va_locale_list);
+						$vn_locale_id = array_shift($va_tmp);
 					}
 				}
 				
@@ -1065,6 +1127,25 @@
 		 */
  		public function getPreferredLabels($pa_locale_ids=null, $pb_dont_cache=true, $pa_options=null) {
 			return $this->getLabels($pa_locale_ids, __CA_LABEL_TYPE_PREFERRED__, $pb_dont_cache, $pa_options);
+		}
+		# ------------------------------------------------------------------
+		/**
+		 * Returns label_id for preferred label with given locale attached to currently loaded row
+		 *
+		 * @param int locale_id 
+		 * @return int The label_id
+		 */
+ 		public function getPreferredLabelID($pn_locale_id) {
+			$va_labels = $this->getLabels(array($pn_locale_id), __CA_LABEL_TYPE_PREFERRED__);
+			foreach($va_labels as $vn_id => $va_labels_by_locale) {
+				foreach($va_labels_by_locale as $vn_locale_id => $va_label_list) {
+					foreach($va_label_list as $vn_i => $va_label) {
+						return $va_label['label_id'];
+					}
+				}
+			}
+			
+			return null;
 		}
 		# ------------------------------------------------------------------
 		/** 
@@ -1210,7 +1291,8 @@
 			if (is_array($this->opa_failed_preferred_label_inserts) && sizeof($this->opa_failed_preferred_label_inserts)) {
 				$va_new_labels_to_force_due_to_error = $this->opa_failed_preferred_label_inserts;
 			}
-
+			
+			$o_view->setVar('batch', (bool)(isset($pa_options['batch']) && $pa_options['batch']));
 			$o_view->setVar('new_labels', $va_new_labels_to_force_due_to_error);
 			$o_view->setVar('label_initial_values', $va_inital_values);
 			
@@ -1289,6 +1371,7 @@
 			
 			$o_view->setVar('new_labels', $va_new_labels_to_force_due_to_error);
 			$o_view->setVar('label_initial_values', $va_inital_values);
+			$o_view->setVar('batch', (bool)(isset($pa_options['batch']) && $pa_options['batch']));
 			
 			return $o_view->render($this->getLabelTableName().'_nonpreferred.php');
 		}
@@ -1511,7 +1594,7 @@
 				} 
 				
 				if ($vb_return_for_bundle) {
-					$va_row['_display'] = $va_initial_values[$va_row['group_id']]['_display'];
+					$va_row['label'] = $va_initial_values[$va_row['group_id']]['label'];
 					$va_row['id'] = $va_row['group_id'];
 					$va_groups[(int)$qr_res->get('relation_id')] = $va_row;
 				} else {
@@ -1747,7 +1830,7 @@
 				} 
 				
 				if ($vb_return_for_bundle) {
-					$va_row['_display'] = $va_initial_values[$va_row['user_id']]['_display'];
+					$va_row['label'] = $va_initial_values[$va_row['user_id']]['label'];
 					$va_row['id'] = $va_row['user_id'];
 					$va_users[(int)$qr_res->get('relation_id')] = $va_row;
 				} else {

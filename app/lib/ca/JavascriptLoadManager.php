@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2009-2012 Whirl-i-Gig
+ * Copyright 2009-2013 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -98,7 +98,7 @@
 					$va_list = $va_list[$vs_pack];
 					
 				}
-				if ($va_list[$ps_library]) {
+				if (isset($va_list[$ps_library]) && $va_list[$ps_library]) {
 					$g_javascript_load_list[$ps_package.'/'.$va_list[$ps_library]] = true;
 					return true;
 				}
@@ -158,6 +158,8 @@
 					
 					if (preg_match('!\.css$!', $vs_lib)) {
 						$vs_buf .= "<link rel='stylesheet' href='{$vs_url}' type='text/css' media='screen'/>\n";
+					} elseif(preg_match('!\.properties$!', $vs_lib)) {
+						$vs_buf .= "<link rel='resource' href='{$vs_url}' type='application/l10n' />\n";
 					} else {
 						$vs_buf .= "<script src='{$vs_url}' type='text/javascript'></script>\n";
 					}

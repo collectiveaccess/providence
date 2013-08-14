@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2008-2012 Whirl-i-Gig
+ * Copyright 2008-2013 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -235,6 +235,23 @@ class ca_relationship_types extends BundlableLabelableBaseModelWithAttributes {
 
 	protected $FIELDS;
 	
+	/**
+	 * @var cached relationship type_ids as loaded/created by getRelationshipTypeID()
+	 */
+	static $s_relationship_type_id_cache = array();
+	
+	
+	/**
+	 * @var cached relationship type_ids as loaded/created by getRelationshipTypeID()
+	 */
+	//static $s_relationship_type_id_cache = array();
+	
+	
+	/**
+	 * @var cached relationship tables; used by getRelationshipTypeTable()
+	 */
+	static $s_relationship_type_table_cache = array();
+	
 	# ------------------------------------------------------
 	# --- Constructor
 	#
@@ -253,7 +270,7 @@ class ca_relationship_types extends BundlableLabelableBaseModelWithAttributes {
 		if ($pn_id) { $this->loadSubtypeLists();}
 	}
 	# ------------------------------------------------------
-	public function load($pm_id=null) {
+	public function load($pm_id = NULL, $pb_use_cache = true) {
 		if ($vn_rc = parent::load($pm_id)) {
 			$this->loadSubtypeLists();
 			return $vn_rc;
@@ -339,28 +356,87 @@ class ca_relationship_types extends BundlableLabelableBaseModelWithAttributes {
 		
 		$va_relationships = array();
 		while ($qr_res->nextRow()) {
-			$va_relationships[$qr_res->get('type_id')][$qr_res->get('locale_id')] = $qr_res->getRow();
+			$va_row = $qr_res->getRow();
+			$va_row['type_code'] = mb_strtolower($va_row['type_code']);
+			$va_relationships[$qr_res->get('type_id')][$qr_res->get('locale_id')] = $va_row;
 		}
 		return caExtractValuesByUserLocale($va_relationships);
 	}
 	# ------------------------------------------------------
 	/**
-	 *
+	 * @param array $pa_options Option are
+	 *		create = create relationship type using parameters if one with the specified type code or type_id doesn't exist already [default=false]
+	 *		cache = cache relationship types as they are referenced and return cached value if possible [default=true]
 	 */
-	public function getRelationshipTypeID($pm_table_name_or_num, $pm_type_code_or_id) {
+	public function getRelationshipTypeID($pm_table_name_or_num, $pm_type_code_or_id, $pn_locale_id=null, $pa_values=null, $pa_options=null) {
+		if (!is_array($pa_options)) { $pa_options = array(); }
+		if (!isset($pa_options['create'])) { $pa_options['create'] = false; }
+		if (!isset($pa_options['cache'])) { $pa_options['cache'] = true; }
+		
+		$pm_type_code_or_id = mb_strtolower($pm_type_code_or_id);
+		
+		if (!is_numeric($pm_table_name_or_num)) {
+			$vn_table_num = $this->getAppDatamodel()->getTableNum($pm_table_name_or_num);
+		} else {
+			$vn_table_num = $pm_table_name_or_num;
+		}
+		if ($pa_options['cache'] && isset(ca_relationship_types::$s_relationship_type_id_cache[$vn_table_num.'/'.$pm_type_code_or_id])) {
+			return ca_relationship_types::$s_relationship_type_id_cache[$vn_table_num.'/'.$pm_type_code_or_id];
+		}
+		
 		if (is_numeric($pm_type_code_or_id)) {
 			if ($va_relationships = $this->getRelationshipInfo($pm_table_name_or_num)) {
-				if (isset($va_relationships[$pm_type_code_or_id])) { return $pm_type_code_or_id; }
+				if (isset($va_relationships[$pm_type_code_or_id])) { 
+					return ca_relationship_types::$s_relationship_type_id_cache[$vn_table_num.'/'.$pm_type_code_or_id] = $pm_type_code_or_id; 
+				}
 			}
 		} else {
 			if ($va_relationships = $this->getRelationshipInfo($pm_table_name_or_num, $ps_type_code)) {
 				foreach($va_relationships as $vn_type_id => $va_type_info) {
 					if ($va_type_info['type_code'] == $pm_type_code_or_id) {
-						return $vn_type_id;
+						return ca_relationship_types::$s_relationship_type_id_cache[$vn_table_num.'/'.$pm_type_code_or_id] = $vn_type_id;
 					}
 				}
 			}
 		}
+		
+		if (isset($pa_options['create']) && $pa_options['create'] && $pn_locale_id && is_array($pa_values)) {
+			$t_rel = new ca_relationship_types();
+			$t_rel->setMode(ACCESS_WRITE);
+			$t_rel->set('type_code', $pm_type_code_or_id);
+			$t_rel->set('table_num', $vn_table_num);
+			$t_rel->set('sub_type_left_id', isset($pa_values['sub_type_left_id']) ? (int)$pa_values['sub_type_left_id'] : null);
+			$t_rel->set('sub_type_right_id', isset($pa_values['sub_type_right_id']) ? (int)$pa_values['sub_type_right_id'] : null);
+			$t_rel->set('parent_id', isset($pa_values['parent_id']) ? (int)$pa_values['parent_id'] : null);
+			$t_rel->set('rank', isset($pa_values['rank']) ? (int)$pa_values['rank'] : 0);
+			$t_rel->set('is_default', isset($pa_values['is_default']) ? (int)$pa_values['is_default'] : 0);
+			
+			$t_rel->insert();
+			
+			if ($t_rel->numErrors()) {
+				$this->errors = $t_rel->errors;
+				return false;
+			}
+			
+			if (!isset($pa_values['typename_reverse']) || !$pa_values['typename_reverse']) { $pa_values['typename_reverse'] = $pa_values['typename']; }
+			
+			$t_rel->addLabel(
+				array(
+					'typename' => isset($pa_values['typename']) ? $pa_values['typename'] : $pm_type_code_or_id,
+					'typename_reverse' => isset($pa_values['typename_reverse']) ? $pa_values['typename_reverse'] : $pm_type_code_or_id,
+					
+					'description' => isset($pa_values['description']) ? $pa_values['description'] : '',
+					'description_reverse' => isset($pa_values['description_reverse']) ? $pa_values['description_reverse'] : ''
+				),
+				$pn_locale_id, null, true
+			);
+			if ($t_rel->numErrors()) {
+				$this->errors = $t_rel->errors;
+				return false;
+			}
+			return ca_relationship_types::$s_relationship_type_id_cache[$vn_table_num.'/'.$pm_type_code_or_id] = $t_rel->getPrimaryKey();
+		}
+		
 		return null;
 	}
 	# ------------------------------------------------------
@@ -375,7 +451,7 @@ class ca_relationship_types extends BundlableLabelableBaseModelWithAttributes {
 	 	foreach($va_tables as $vs_table) {
 	 		if (preg_match('!_x_!', $vs_table)) {
 	 			$t_instance = $this->_DATAMODEL->getInstanceByTableName($vs_table, true);
-	 			if (!$t_instance->hasField('type_id')) { continue; }	// some relationships don't use types (eg. ca_users_x_roles)
+	 			if (!$t_instance || !$t_instance->hasField('type_id')) { continue; }	// some relationships don't use types (eg. ca_users_x_roles)
 	 			$vs_name = $t_instance->getProperty('NAME_PLURAL');
 	 			$va_relationship_tables[$t_instance->tableNum()] = array('name' => $vs_name);
 	 		}
@@ -391,30 +467,46 @@ class ca_relationship_types extends BundlableLabelableBaseModelWithAttributes {
 	 * @return string The name of a table relating the specified tables 
 	 */
 	 public function getRelationshipTypeTable($ps_table1, $ps_table2) {
+	 	if (isset(ca_relationship_types::$s_relationship_type_table_cache[$ps_table1][$ps_table2])) { return ca_relationship_types::$s_relationship_type_table_cache[$ps_table1][$ps_table2]; }
 	 	$va_path = array_keys($this->getAppDatamodel()->getPath($ps_table1, $ps_table2));
 	 	switch(sizeof($va_path)) {
 	 		case 2:
 			case 3:
-				return $va_path[1];
+				return ca_relationship_types::$s_relationship_type_table_cache[$ps_table1][$ps_table2] = $va_path[1];
 				break;
 		}
 		
-		return null;
+		return ca_relationship_types::$s_relationship_type_table_cache[$ps_table1][$ps_table2] = null;
+	 }
+	 # ------------------------------------------------------
+	/**
+	 * Returns instance of many-to-many table using relationship types between two tables
+	 *
+	 * @param string $ps_table1 A valid table name
+	 * @param string $ps_table2 A valid table name
+	 * @return BaseRelationshipModel An model instance for the table relating the specified tables 
+	 */
+	 static public function getRelationshipTypeInstance($ps_table1, $ps_table2) {
+	 	$t_rel = new ca_relationship_types();
+	 	if ($vs_table = $t_rel->getRelationshipTypeTable($ps_table1, $ps_table2)) {
+	 		return $t_rel->getAppDatamodel()->getInstanceByTableName($vs_table);
+	 	}
+	 	return null;
 	 }
 	 # ------------------------------------------------------
 	/**
 	 * Converts a list of relationship type_code string and/or numeric type_ids to a list of numeric type_ids
 	 *
-	 * @param string $ps_relationship_table The name of the relationship table that the types are valid for (Eg. ca_objects_x_entities)
+	 * @param mixed $pm_table_name_or_num The name or number of the relationship table that the types are valid for (Eg. ca_objects_x_entities)
 	 * @param array $pa_list A list of relationship type_code string and/or numeric type_ids
 	 * @param array $pa_options Optional array of options. Support options are:
 	 *			includeChildren = If set to true, ids of children of relationship types are included in the returned values
 	 * @return array A list of corresponding type_ids 
 	 */
-	 public function relationshipTypeListToIDs($ps_relationship_table, $pa_list, $pa_options=null) {
+	 public function relationshipTypeListToIDs($pm_table_name_or_num, $pa_list, $pa_options=null) {
 	 	$va_rel_ids = array();
 		foreach($pa_list as $vm_type) {
-			if ($vn_type_id = $this->getRelationshipTypeID($ps_relationship_table, $vm_type)) {
+			if ($vn_type_id = $this->getRelationshipTypeID($pm_table_name_or_num, $vm_type)) {
 				$va_rel_ids[] = $vn_type_id;
 			}
 		}
@@ -434,17 +526,17 @@ class ca_relationship_types extends BundlableLabelableBaseModelWithAttributes {
 	/**
 	 * Converts a list of relationship type_code string and/or numeric type_ids to a list of  type_code strings
 	 *
-	 * @param string $ps_relationship_table The name of the relationship table that the types are valid for (Eg. ca_objects_x_entities)
+	 * @param mixed $pm_table_name_or_num The name or number of the relationship table that the types are valid for (Eg. ca_objects_x_entities)
 	 * @param array $pa_list A list of relationship type_code string and/or numeric type_ids
 	 * @param array $pa_options Optional array of options. Support options are:
 	 *			includeChildren = If set to true, ids of children of relationship types are included in the returned values
 	 * @return array A list of corresponding type_codes 
 	 */
-	 public function relationshipTypeListToTypeCodes($ps_relationship_table, $pa_list, $pa_options=null) {
-	 	if (!is_numeric($ps_relationship_table)) {
-			$vn_table_num = $this->getAppDatamodel()->getTableNum($ps_relationship_table);
+	 public function relationshipTypeListToTypeCodes($pm_table_name_or_num, $pa_list, $pa_options=null) {
+	 	if (!is_numeric($pm_table_name_or_num)) {
+			$vn_table_num = $this->getAppDatamodel()->getTableNum($pm_table_name_or_num);
 		} else {
-			$vn_table_num = $ps_relationship_table;
+			$vn_table_num = $pm_table_name_or_num;
 		}
 		
 		if (!is_array($pa_list)) { $pa_list = array($pa_list); }
@@ -506,7 +598,7 @@ class ca_relationship_types extends BundlableLabelableBaseModelWithAttributes {
 		while ($qr_res->nextRow()) {
 			$vn_type_id = $qr_res->get('type_id');
 			//$va_hierarchies[$vn_type_id]['table_num'] = $qr_res->get('table_num');	
-			$va_hierarchies[$vn_type_id]['type_id'] = $vn_type_id;	
+			$va_hierarchies[$vn_type_id]['type_id'] = $va_hierarchies[$vn_type_id]['item_id'] = $vn_type_id;	
 			$va_hierarchies[$vn_type_id]['name'] = $va_relationship_tables[$qr_res->get('table_num')]['name'];	
 			
 			$qr_children = $o_db->query("
@@ -549,13 +641,21 @@ class ca_relationship_types extends BundlableLabelableBaseModelWithAttributes {
 	 * Override insert() to set table_num to whatever the parent is
 	 */
 	public function insert($pa_options=null) {
-		$t_root_rel_type = new ca_relationship_types($this->get('parent_id'));
+		if ($vn_parent_id = $this->get('parent_id')) {
+			$t_root_rel_type = new ca_relationship_types($vn_parent_id);
 		
-		if ($t_root_rel_type->get('table_num')) {
-			$this->set('table_num', $t_root_rel_type->get('table_num'));
+			if ($vn_table_num = $t_root_rel_type->get('table_num')) {
+				$this->set('table_num', $vn_table_num);
+			}
 		}
+		
+		$vb_we_set_transaction = false;
 		if (!$this->inTransaction()) {
-			$this->setTransaction(new Transaction());
+			$o_trans = new Transaction();
+			$this->setTransaction($o_trans);
+			$vb_we_set_transaction = true;
+		} else {
+			$o_trans = $this->getTransaction();
 		}
 		if ($this->get('is_default')) {
 			$this->getDb()->query("
@@ -564,13 +664,14 @@ class ca_relationship_types extends BundlableLabelableBaseModelWithAttributes {
 				WHERE table_num = ?
 			", (int)$t_root_rel_type->get('table_num'));
 		}
-		$vn_rc = parent::insert($pa_options);
-		
-		
-		if ($this->numErrors()) {
-			$this->getTransaction()->rollback();
+		if (!($vn_rc = parent::insert($pa_options))) {
+			if ($vb_we_set_transaction) {
+				$o_trans->rollback();
+			}
 		} else {
-			$this->getTransaction()->commit();
+			if ($vb_we_set_transaction) {
+				$o_trans->commit();
+			}
 		}
 		return $vn_rc;
 	}
@@ -579,12 +680,22 @@ class ca_relationship_types extends BundlableLabelableBaseModelWithAttributes {
 	 * Override update() to set table_num to whatever the parent is
 	 */
 	public function update($pa_options=null) {
-		$t_root_rel_type = new ca_relationship_types($this->get('parent_id'));
-		$this->set('table_num', $t_root_rel_type->get('table_num'));
-		
-		if (!$this->inTransaction()) {
-			$this->setTransaction(new Transaction());
+		if ($vn_parent_id = $this->get('parent_id')) {
+			$t_root_rel_type = new ca_relationship_types($vn_parent_id);
+			if ($vn_table_num = $t_root_rel_type->get('table_num')) {
+				$this->set('table_num', $vn_table_num);
+			}
 		}
+		
+		$vb_we_set_transaction = false;
+		if (!$this->inTransaction()) {
+			$o_trans = new Transaction();
+			$this->setTransaction($o_trans);
+			$vb_we_set_transaction = true;
+		} else {
+			$o_trans = $this->getTransaction();
+		}
+		
 		if ($this->get('is_default')) {
 			$this->getDb()->query("
 				UPDATE ca_relationship_types 
@@ -592,13 +703,16 @@ class ca_relationship_types extends BundlableLabelableBaseModelWithAttributes {
 				WHERE table_num = ?
 			", (int)$t_root_rel_type->get('table_num'));
 		}
-		$vn_rc = parent::update($pa_options);
-		
-		if ($this->numErrors()) {
-			$this->getTransaction()->rollback();
+		if (!($vn_rc = parent::update($pa_options))) {
+			if ($vb_we_set_transaction) {
+				$o_trans->rollback();
+			}
 		} else {
-			$this->getTransaction()->commit();
+			if ($vb_we_set_transaction) {
+				$o_trans->commit();
+			}
 		}
+		
 		return $vn_rc;
 	}
 	# ------------------------------------------------------

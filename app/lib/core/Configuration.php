@@ -147,7 +147,7 @@ class Configuration {
 					'file_locking' => true,				/* cache corruption avoidance */
 					'read_control' => false,			/* no read control */
 					'file_name_prefix' => 'ca_cache',	/* prefix of cache files */
-					'cache_file_umask' => 0700			/* permissions of cache files */
+					'cache_file_perm' => 0700			/* permissions of cache files */
 				);
 
 				$vs_path_as_md5 = md5($_SERVER['HTTP_HOST'].$this->ops_config_file_path.'/'.$g_ui_locale.(isset($g_configuration_cache_suffix) ? '/'.$g_configuration_cache_suffix : ''));
@@ -757,7 +757,7 @@ class Configuration {
  * kind of configuration value was found.
  */
 	function get($ps_key) {
-		if (Configuration::$s_get_cache[$this->ops_md5_path][$ps_key]) { return Configuration::$s_get_cache[$this->ops_md5_path][$ps_key]; } 
+		if (isset(Configuration::$s_get_cache[$this->ops_md5_path][$ps_key]) && Configuration::$s_get_cache[$this->ops_md5_path][$ps_key]) { return Configuration::$s_get_cache[$this->ops_md5_path][$ps_key]; } 
 		$this->ops_error = "";
 
 		$vs_tmp = $this->getScalar($ps_key);
@@ -957,7 +957,7 @@ class Configuration {
 			'file_locking' => true,				/* cache corruption avoidance */
 			'read_control' => false,			/* no read control */
 			'file_name_prefix' => 'ca_cache',	/* prefix of cache files */
-			'cache_file_umask' => 0700			/* permissions of cache files */
+			'cache_file_perm' => 0700			/* permissions of cache files */
 		);
 
 		try {

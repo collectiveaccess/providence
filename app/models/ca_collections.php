@@ -175,7 +175,7 @@ BaseModel::$s_ca_models_definitions['ca_collections'] =  array(
 				'FIELD_TYPE' => FT_NUMBER, 'DISPLAY_TYPE' => DT_SELECT, 
 				'DISPLAY_WIDTH' => 100, 'DISPLAY_HEIGHT' => 1,
 				'IS_NULL' => false, 
-				'DEFAULT' => 0,
+				'DEFAULT' => null,
 				'ALLOW_BUNDLE_ACCESS_CHECK' => true,
 				'BOUNDS_CHOICE_LIST' => array(
 					_t('Do not inherit access settings from parent') => 0,
@@ -327,6 +327,11 @@ class ca_collections extends BundlableLabelableBaseModelWithAttributes implement
 	#
 	# ------------------------------------------------------
 	public function __construct($pn_id=null) {
+		
+		if (!is_null(BaseModel::$s_ca_models_definitions['ca_collections']['FIELDS']['acl_inherit_from_parent']['DEFAULT'])) {
+			$o_config = Configuration::load();
+			BaseModel::$s_ca_models_definitions['ca_collections']['FIELDS']['acl_inherit_from_parent']['DEFAULT'] = (int)$o_config->get('ca_collections_acl_inherit_from_parent_default');
+		}
 		parent::__construct($pn_id);	# call superclass constructor
 	}
 	# ------------------------------------------------------
@@ -350,21 +355,51 @@ class ca_collections extends BundlableLabelableBaseModelWithAttributes implement
 		$this->BUNDLES['hierarchy_location'] = array('type' => 'special', 'repeating' => false, 'label' => _t('Location in hierarchy'));
 	}
 	# ------------------------------------------------------
-	public function getCollectionIDsByName($ps_name) {
+	/**
+	 * Finds collections with a label that matches $ps_name exactly
+	 *
+	 * @param string $ps_name The name to search for
+	 * @return array A list of collection_ids with the specified label
+	 */
+	public function getCollectionIDsByName($ps_name, $pn_parent_id=null, $pn_type_id=null) {
 		$o_db = $this->getDb();
+		
+		$va_params = array((string)$ps_name);
+		
+		$vs_type_sql = '';
+		if ($pn_type_id) {
+			if(sizeof($va_type_ids = caMakeTypeIDList('ca_collections', array($pn_type_id)))) {
+				$vs_type_sql = " AND cae.type_id in (?)";
+				$va_params[] = $va_type_ids;
+			}
+		}
+		
+		if ($pn_parent_id) {
+			$vs_parent_sql = " AND cae.parent_id = ?";
+			$va_params[] = (int)$pn_parent_id;
+		} 
+		
+		
 		$qr_res = $o_db->query("
 			SELECT DISTINCT cae.collection_id
 			FROM ca_collections cae
 			INNER JOIN ca_collection_labels AS cael ON cael.collection_id = cae.collection_id
 			WHERE
-				cael.name = ?
-		", (string)$ps_name);
+				cael.name = ? {$vs_type_sql} {$vs_parent_sql} AND cae.deleted = 0
+			", $va_params);
 		
 		$va_collection_ids = array();
 		while($qr_res->nextRow()) {
 			$va_collection_ids[] = $qr_res->get('collection_id');
 		}
 		return $va_collection_ids;
+	}
+	# ------------------------------------------------------
+	/**
+	 *
+	 */
+	public function getIDsByLabel($pa_label_values, $pn_parent_id=null, $pn_type_id=null) {
+		return $this->getCollectionIDsByName($pa_label_values['name'], $pn_parent_id, $pn_type_id);
 	}
 	# ------------------------------------------------------
 	/**
@@ -405,6 +440,7 @@ class ca_collections extends BundlableLabelableBaseModelWithAttributes implement
 	 		$va_labels = $this->getPreferredDisplayLabelsForIDs($va_collection_ids);
 	 		while($qr_res->nextRow()) {
 	 			$va_hiers[$vn_collection_id = $qr_res->get('collection_id')] = array(
+	 				'item_id' => $vn_collection_id,
 	 				'collection_id' => $vn_collection_id,
 	 				'name' => caProcessTemplateForIDs($vs_template, 'ca_collections', array($vn_collection_id)),
 	 				'hierarchy_id' => $vn_collection_id,
@@ -431,11 +467,13 @@ class ca_collections extends BundlableLabelableBaseModelWithAttributes implement
 			$va_children = $t_collection->getHierarchyChildren(null, array('idsOnly' => true));
 			$va_collection_hierarchy_root = array(
 				$t_collection->get($vs_hier_fld) => array(
+					'item_id' => $vn_pk,
 					'collection_id' => $vn_pk,
 					'name' => caProcessTemplateForIDs($vs_template, 'ca_collections', array($vn_pk)),
 					'hierarchy_id' => $vn_hier_id,
 					'children' => sizeof($va_children)
 				),
+				'item_id' => $vn_pk,
 				'collection_id' => $vn_pk,
 				'name' => $vs_label,
 				'hierarchy_id' => $vn_hier_id,

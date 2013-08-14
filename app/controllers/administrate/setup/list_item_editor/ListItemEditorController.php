@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2008-2009 Whirl-i-Gig
+ * Copyright 2008-2013 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -37,7 +37,7 @@
  			parent::__construct($po_request, $po_response, $pa_view_paths);
  		}
  		# -------------------------------------------------------
- 		public function Edit() {
+ 		public function Edit($pa_values=null, $pa_options=null) {
  			$o_result_context = new ResultContext($this->request, 'ca_list_items', 'basic_search');
  			
  			$va_cur_result = $o_result_context->getResultList();
@@ -54,7 +54,7 @@
 					$o_result_context->saveContext();
 				}
 			}
- 			parent::Edit();
+ 			parent::Edit($pa_values, $pa_options);
  		}
  		# -------------------------------------------------------
  		# Sidebar info handler

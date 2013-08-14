@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2006-2012 Whirl-i-Gig
+ * Copyright 2006-2013 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -38,7 +38,7 @@
  * Plugin for processing audio media using ffmpeg
  */
 
-include_once(__CA_LIB_DIR__."/core/Plugins/WLPlug.php");
+include_once(__CA_LIB_DIR__."/core/Plugins/Media/BaseMediaPlugin.php");
 include_once(__CA_LIB_DIR__."/core/Plugins/IWLPlugMedia.php");
 include_once(__CA_LIB_DIR__."/core/Parsers/getid3/getid3.php");
 include_once(__CA_LIB_DIR__."/core/Configuration.php");
@@ -46,7 +46,7 @@ include_once(__CA_APP_DIR__."/helpers/mediaPluginHelpers.php");
 include_once(__CA_APP_DIR__."/helpers/utilityHelpers.php");
 include_once(__CA_LIB_DIR__."/core/Parsers/OggParser.php");
 
-class WLPlugMediaAudio Extends WLPlug Implements IWLPlugMedia {
+class WLPlugMediaAudio Extends BaseMediaPlugin Implements IWLPlugMedia {
 
 	var $errors = array();
 
@@ -238,15 +238,6 @@ class WLPlugMediaAudio Extends WLPlug Implements IWLPlugMedia {
 		} else {
 			return "";
 		}
-	}
-	# ------------------------------------------------
-	/**
-	 * Returns text content for indexing, or empty string if plugin doesn't support text extraction
-	 *
-	 * @return String Extracted text
-	 */
-	public function getExtractedText() {
-		return '';
 	}
 	# ------------------------------------------------
 	/**
@@ -768,59 +759,6 @@ class WLPlugMediaAudio Extends WLPlug Implements IWLPlugMedia {
 					case 'text':
 						return "<a href='$ps_url'>".(($pa_options["text_only"]) ? $pa_options["text_only"] : "Listen to MP3")."</a>";
 						break;
-					case 'jplayer':
-						JavascriptLoadManager::register("jplayer");
-						$vn_width = ($pa_options["viewer_width"] > 0) ? $pa_options["viewer_width"] : 400;
-						$vn_height = ($pa_options["viewer_height"] > 0) ? $pa_options["viewer_height"] : 95;
-						ob_start();
-?>
-			<div style="width: <?php print $vn_width; ?>px; height: <?php print $vn_height; ?>px;">
-			<div id="<?php print $vs_id; ?>" class="jp-jplayer"></div>
-			  <div class="jp-audio">
-				<div class="jp-type-single">
-				  <div id="jp_interface_1" class="jp-interface">
-					<ul class="jp-controls">
-					  <li><a href="#" class="jp-play" tabindex="1">play</a></li>
-					  <li><a href="#" class="jp-pause" tabindex="1">pause</a></li>
-					  <li><a href="#" class="jp-stop" tabindex="1">stop</a></li>
-					  <li><a href="#" class="jp-mute" tabindex="1">mute</a></li>
-					  <li><a href="#" class="jp-unmute" tabindex="1">unmute</a></li>
-					</ul>
-					<div class="jp-progress">
-					  <div class="jp-seek-bar">
-						<div class="jp-play-bar"></div>
-					  </div>
-					</div>
-					<div class="jp-volume-bar">
-					  <div class="jp-volume-bar-value"></div>
-					</div>
-					<div class="jp-current-time"></div>
-					<div class="jp-duration"></div>
-				  </div>
-				  <div id="jp_playlist_1" class="jp-playlist">
-					<ul>
-					  <li></li>
-					</ul>
-				  </div>
-				</div>
-			  </div>
-			</div>
-			
-				<script type="text/javascript">
-					jQuery(document).ready(function() {
-						jQuery("#<?php print $vs_id; ?>").jPlayer( {
-							ready: function () {
-								jQuery(this).jPlayer("setMedia", { mp3: "<?php print $ps_url; ?>" });
-							},
-							swfPath: "<?php print $viewer_base_url; ?>/js/jquery/jquery-jplayer",
-							supplied: "mp3",
-							solution: "html,flash"
-						});
-					});
-				</script>
-<?php
-						return ob_get_clean();
-						break;
 					default:
 						JavascriptLoadManager::register("mediaelement");
 						
@@ -828,7 +766,7 @@ class WLPlugMediaAudio Extends WLPlug Implements IWLPlugMedia {
 						$vn_height = ($pa_options["viewer_height"] > 0) ? $pa_options["viewer_height"] : 95;
 						ob_start();
 ?>
-					<div class="<?php print (isset($pa_options["viewer_width"])) ? $pa_options["viewer_width"] : "caAudioPlayer"; ?>">
+					<div class="<?php print (isset($pa_options["class"])) ? $pa_options["class"] : "caAudioPlayer"; ?>">
 						<audio id="<?php print $vs_id; ?>" src="<?php print $ps_url; ?>" type="audio/mp3" controls="controls"></audio>
 					</div>	
 					<script type="text/javascript">

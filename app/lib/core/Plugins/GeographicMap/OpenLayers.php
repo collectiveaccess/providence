@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2012 Whirl-i-Gig
+ * Copyright 2012-2013 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -74,10 +74,15 @@ class WLPlugGeographicMapOpenLayers Extends BaseGeographicMapPlugIn Implements I
 		$o_config = Configuration::load();
 		
 		list($vn_width, $vn_height) = $this->getDimensions();
-		$vn_width = intval($vn_width);
-		$vn_height = intval($vn_height);
-		if ($vn_width < 1) { $vn_width = 690; }
-		if ($vn_height < 1) { $vn_height = 300; }
+		
+		if (!preg_match('!^[\d]+%$!', $vn_width)) {
+			$vn_width = intval($vn_width)."px";
+			if ($vn_width < 1) { $vn_width = 690; }
+		}
+		if (!preg_match('!^[\d]+%$!', $vn_height)) {
+			$vn_height = intval($vn_height)."px";
+			if ($vn_height < 1) { $vn_height = 300; }
+		}
 		
 		$va_options = caGetOptions($pa_options, array());
 		
@@ -134,7 +139,8 @@ class WLPlugGeographicMapOpenLayers Extends BaseGeographicMapPlugIn Implements I
 			case 'HTML':
 			default:
 				
-				$vs_buf = "
+				$vs_buf = "<div style='width:{$vn_width}; height:{$vn_height}' id='{$vs_id}' ".((isset($pa_options['classname']) && $pa_options['classname']) ? "class='".$pa_options['classname']."'" : "")."> </div>\n";
+				$vs_buf .= "
 <script type='text/javascript'>;
 	jQuery(document).ready(function() {
 		var map_{$vs_id} = new OpenLayers.Map({
@@ -170,7 +176,7 @@ class WLPlugGeographicMapOpenLayers Extends BaseGeographicMapPlugIn Implements I
 			})
 		});
 ";
-
+		
 		$va_locs = $va_paths = array();
 		foreach($va_map_items as $o_map_item) {
 			$va_coords = $o_map_item->getCoordinates();
@@ -231,8 +237,8 @@ class WLPlugGeographicMapOpenLayers Extends BaseGeographicMapPlugIn Implements I
 			$va_buf = array();
 			$va_ajax_ids = array();
 				
-			$vs_label = $va_path['label'];
-			$vs_content = $va_path['content'];
+			$vs_label = preg_replace("![\n\r]+!", " ", addslashes($va_path['label']));
+			$vs_content = preg_replace("![\n\r]+!", " ", addslashes($va_path['content']));
 			$vs_ajax_url = preg_replace("![\n\r]+!", " ", ($va_path['ajaxContentUrl'] ? addslashes($va_path['ajaxContentUrl']."/id/".$va_path['ajaxContentID']) : ''));
 	
 			
@@ -261,7 +267,7 @@ class WLPlugGeographicMapOpenLayers Extends BaseGeographicMapPlugIn Implements I
 					popup_{$vs_id} = new OpenLayers.Popup.AnchoredBubble('infoBubble', 
 						 feature.geometry.getBounds().getCenterLonLat(),
 						 null,
-						 feature.data.label,
+						 feature.data.label + feature.data.content,
 						 null, true, onPopupClose);
 					feature.popup = popup_{$vs_id};
 					map_{$vs_id}.addPopup(popup_{$vs_id});
@@ -401,7 +407,8 @@ class WLPlugGeographicMapOpenLayers Extends BaseGeographicMapPlugIn Implements I
 		$vs_element .='</div>';
 		$vs_element .= "<script type='text/javascript'>
 		
-			var map_{$vs_id};
+	var map_{$vs_id};
+	var points_{$vs_id};
 	jQuery(document).ready(function() {
 		// Styles
 		var styles_{$vs_id} = new OpenLayers.StyleMap({
@@ -436,11 +443,12 @@ class WLPlugGeographicMapOpenLayers Extends BaseGeographicMapPlugIn Implements I
 				if ((pl.length > 1) && (geometry_type == 'OpenLayers.Geometry.Polygon')) { pl.push(pl[0]); } // close polygons
 				features.push(pl.join(';'));
 			}
-			jQuery('input[name={fieldNamePrefix}".$pa_element_info['element_id']."_{n}]').val('[' + features.join(':') + ']');
+			
+			jQuery('#{fieldNamePrefix}".$pa_element_info['element_id']."_{n}').val('[' + features.join(':') + ']');
 		}
 		
 		// Set up layer for added points/paths
-		var points_{$vs_id} = new OpenLayers.Layer.Vector('Points', {
+		points_{$vs_id} = new OpenLayers.Layer.Vector('Points', {
 			styleMap: styles_{$vs_id},
 			rendererOptions: {zIndexing: true},
 			eventListeners: {
@@ -561,17 +569,18 @@ class WLPlugGeographicMapOpenLayers Extends BaseGeographicMapPlugIn Implements I
 			var geocoder = new google.maps.Geocoder();
 			geocoder.geocode( { 'address': t}, function(results, status) {
 				jQuery('#{fieldNamePrefix}".$pa_element_info['element_id']."_{n}_search_button').attr('src', '".$po_request->getThemeUrlPath()."/graphics/buttons/glass.png');
-				console.log(results);
 				if (status == google.maps.GeocoderStatus.OK) {
 					var loc = results[0]['geometry']['location'];
-					map_{$vs_id}.panTo(new OpenLayers.LonLat(loc.lng(), loc.lat()).transform(new OpenLayers.Projection('EPSG:4326'),map_{$vs_id}.getProjectionObject()));
+					var pt = new OpenLayers.LonLat(loc.lng(), loc.lat()).transform(new OpenLayers.Projection('EPSG:4326'),map_{$vs_id}.getProjectionObject());
+					map_{$vs_id}.panTo(pt);
 					map_{$vs_id}.zoomTo((results[0]['geometry']['location_type'] == 'APPROXIMATE') ? 10 : 14);
+					points_{$vs_id}.addFeatures([new OpenLayers.Feature.Vector(new OpenLayers.Geometry.Point(loc.lng(), loc.lat()).transform(new OpenLayers.Projection('EPSG:4326'),map_{$vs_id}.getProjectionObject()))]);
 				}
 			});
 			return false;
 		}
 	</script>";
-		$vs_element .= '<input class="coordinates mapCoordinateDisplay" type="hidden" name="{fieldNamePrefix}'.$pa_element_info['element_id'].'_{n}" size="30"/>';
+		$vs_element .= '<input class="coordinates mapCoordinateDisplay" type="hidden" name="{fieldNamePrefix}'.$pa_element_info['element_id'].'_{n}" id="{fieldNamePrefix}'.$pa_element_info['element_id'].'_{n}"/>';
 		
 		return $vs_element;
 	}
