@@ -2855,6 +2855,7 @@ class BaseModel extends BaseObject {
 					BaseModel::$search_indexer->commitRowUnIndexing($this->tableNum(), $vn_id);
 				}
 			}
+			$this->logChange("D");
 			return $vn_rc;
 		}
 		$this->clearErrors();
