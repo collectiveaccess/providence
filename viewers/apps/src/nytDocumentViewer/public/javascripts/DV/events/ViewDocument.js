@@ -1,5 +1,5 @@
 DV.Schema.events.ViewDocument = {
-  next: function(){
+  next: function(e){
     var nextPage = this.models.document.nextPage();
     this.helpers.jump(nextPage);
 
@@ -13,8 +13,9 @@ DV.Schema.events.ViewDocument = {
   },
   search: function(e){
     e.preventDefault();
+ 	this.helpers.getSearchResponse(this.elements.searchInput.val());
 
-    this.viewer.open('ViewSearch');
+    //this.viewer.open('ViewSearch');
     return false;
   }
 }

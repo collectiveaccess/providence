@@ -60,6 +60,7 @@
  	define('__CA_NAV_BUTTON_PAN__', 21);
  	define('__CA_NAV_BUTTON_CHANGE__', 22);
  	define('__CA_NAV_BUTTON_BATCH_EDIT__', 23);
+ 	define('__CA_NAV_BUTTON_INTERSTITIAL_EDIT_BUNDLE__', 24);
  		
  	define('__CA_NAV_BUTTON_ICON_POS_LEFT__', 0);
  	define('__CA_NAV_BUTTON_ICON_POS_RIGHT__', 1);
@@ -539,6 +540,9 @@
 				break;
 			case __CA_NAV_BUTTON_CHANGE__:
 				$vs_img_name = 'change';
+				break;
+			case __CA_NAV_BUTTON_INTERSTITIAL_EDIT_BUNDLE__:
+				$vs_img_name = 'interstitial';
 				break;
 			default:
 				$vs_img_name = '';

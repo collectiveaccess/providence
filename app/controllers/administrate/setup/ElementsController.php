@@ -64,14 +64,13 @@ class ElementsController extends BaseEditorController {
 		
 		
 		$t_element = $this->getElementObject();
-		$t_restriction = new ca_metadata_type_restrictions();
+		$t_restriction = new ca_metadata_type_restrictions(null, true);
 		
 		$this->view->setVar('available_settings',$t_element->getAvailableSettings());
 		$this->view->setVar('type_list', $t_restriction->getTypeListsForTables());
 			
 		$va_initial_values = array();
 		if($t_element->getPrimaryKey()){
-			//$t_element->getHierarchyChildrenAsQuery();
 			$va_sub_elements = array();
 			/* BaseModel::getHierarchyChildren orders by PK, but we need to order by rank */
 			$vo_db = new Db();
@@ -258,7 +257,7 @@ class ElementsController extends BaseEditorController {
 			}
 			
 			/* process type restrictions */
-			$t_restriction = new ca_metadata_type_restrictions();
+			$t_restriction = new ca_metadata_type_restrictions(null, true);
 			$va_settings = array_keys($t_restriction->getAvailableSettings());
 
 			foreach($_REQUEST as $vs_key => $vs_value) {

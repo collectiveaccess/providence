@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2007-2012 Whirl-i-Gig
+ * Copyright 2007-2013 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -297,9 +297,10 @@ function caFileIsIncludable($ps_file) {
 	 * @param bool $pb_recursive Optional. By default caGetDirectoryContentsAsList() will recurse through all sub-directories of $dir; set this to false to only consider files that are in $dir itself.
 	 * @param bool $pb_include_hidden_files Optional. By default caGetDirectoryContentsAsList() does not consider hidden files (files starting with a '.') when calculating file counts. Set this to true to include hidden files in counts. Note that the special UNIX '.' and '..' directory entries are *never* counted as files.
 	 * @param bool $pb_sort Optional. If set paths are returns sorted alphabetically. Default is false.
+	 * @param bool $pb_include_directories. If set paths to directories are included. Default is false (only files are returned).
 	 * @return array An array of file paths.
 	 */
-	function &caGetDirectoryContentsAsList($dir, $pb_recursive=true, $pb_include_hidden_files=false, $pb_sort=false) {
+	function &caGetDirectoryContentsAsList($dir, $pb_recursive=true, $pb_include_hidden_files=false, $pb_sort=false, $pb_include_directories=false) {
 		$va_file_list = array();
 		if(substr($dir, -1, 1) == "/"){
 			$dir = substr($dir, 0, strlen($dir) - 1);
@@ -309,8 +310,11 @@ function caFileIsIncludable($ps_file) {
 			foreach($va_paths as $item) {
 				if ($item != "." && $item != ".." && ($pb_include_hidden_files || (!$pb_include_hidden_files && $item{0} !== '.'))) {
 					$vb_is_dir = is_dir("{$dir}/{$item}");
+					if ($pb_include_directories && $vb_is_dir) {
+						$va_file_list["{$dir}/{$item}"] = true;
+					}
 					if ($pb_recursive && $vb_is_dir) { 
-						$va_file_list = array_merge($va_file_list, array_flip(caGetDirectoryContentsAsList("{$dir}/{$item}", true, $pb_include_hidden_files)));
+						$va_file_list = array_merge($va_file_list, array_flip(caGetDirectoryContentsAsList("{$dir}/{$item}", true, $pb_include_hidden_files, false, $pb_include_directories)));
 					} else { 
 						if (!$vb_is_dir) { 
 							$va_file_list["{$dir}/{$item}"] = true;
@@ -708,7 +712,7 @@ function caFileIsIncludable($ps_file) {
 			if(isset($pa_options['html']) && $pa_options['html']) {
 				$va_buf[] = array($va_line['file'], $va_line['class'], $va_line['function'], $va_line['line']);
 			} else {
-				$va_buf[] = $va_line['file'].':'.($va_line['class'] ? $va_line['class'].':' : '').$va_line['function'].'@'.$va_line['line'];
+				$va_buf[] = $va_line['file'].':'.($va_line['class'] ? $va_line['class'].':' : '').$va_line['function'].'@'.$va_line['line']."<br/>\n";
 			}
 		}
 		
@@ -1022,7 +1026,7 @@ function caFileIsIncludable($ps_file) {
 			'file_locking' => true,				/* cache corruption avoidance */
 			'read_control' => false,			/* no read control */
 			'file_name_prefix' => $ps_prefix,	/* prefix of cache files */
-			'cache_file_umask' => 0700			/* permissions of cache files */
+			'cache_file_perm' => 0700			/* permissions of cache files */
 		);
 
 
@@ -1509,6 +1513,18 @@ function caFileIsIncludable($ps_file) {
 	/**
 	 * 
 	 *
+	 * @param mixed $ps_options
+	 * @param array $pa_options
+	 * @param mixed $pm_default
+	 * @return mixed
+	 */
+	function caGetOption($ps_option, $pa_options, $pm_default=null) {
+		return (isset($pa_options[$ps_option]) && !is_null($pa_options[$ps_option])) ? $pa_options[$ps_option] : $pm_default;
+	}
+	# ---------------------------------------
+	/**
+	 * 
+	 *
 	 * @param array $pa_options
 	 * @param array $pa_defaults
 	 * @return array
@@ -1738,6 +1754,77 @@ function caFileIsIncludable($ps_file) {
 		}
 		
 		return $va_extracted_values;
+	}
+	# ----------------------------------------
+	/**
+	 *
+	 */
+	function caIsAssociativeArray($pa_array) {
+	  return (bool)count(array_filter(array_keys($pa_array), 'is_string'));
+	}
+	# ----------------------------------------
+	/**
+	 *
+	 */
+	function caGetProcessUserID() {
+	  if (function_exists("posix_geteuid")) {
+	  	return posix_geteuid();
+	  }
+	  return null;
+	}
+	# ----------------------------------------
+	/**
+	 *
+	 */
+	function caGetProcessUserName() {
+	  if (function_exists("posix_getpwuid")) {
+	  	if (is_array($va_user = posix_getpwuid(caGetProcessUserID()))) {
+	  		return $va_user['name'];
+	  	}
+	  }
+	  return null;
+	}
+	# ----------------------------------------
+	/**
+	 *
+	 */
+	function caGetProcessGroupID() {
+	  if (function_exists("posix_getegid")) {
+	  	return posix_geteuid();
+	  }
+	  return null;
+	}
+	# ----------------------------------------
+	/**
+	 *
+	 */
+	function caGetProcessGroupName() {
+	  if (function_exists("posix_getgrgid")) {
+	  	if (is_array($va_group = posix_getgrgid(caGetProcessGroupID()))) {
+	  		return $va_group['name'];
+	  	}
+	  }
+	  return null;
+	}
+	# ----------------------------------------
+	/**
+	 *
+	 */
+	function caDetermineWebServerUser() {
+	  if (!caIsRunFromCLI() && ($vs_user = caGetProcessUserName())) {	// we're running on the web server
+	  	return $vs_user;
+	  }
+	  
+	  if(function_exists("posix_getpwnam")) {
+		  // Not running in web server so try to guess
+		  foreach(array('apache', 'www-data', 'www', 'httpd', 'nobody') as $vs_possible_user) {
+			if (posix_getpwnam($vs_possible_user)) {
+				return $vs_possible_user;
+			}
+		  }
+	  }
+	  
+	  return null;
 	}
 	# ----------------------------------------
 ?>

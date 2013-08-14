@@ -94,29 +94,44 @@
 		/**
 		 *
 		 */
-		public static function parsePlaceholder($ps_placeholder, $pa_source_data, $pa_item, $ps_delimiter=null, $pn_index=0) {
+		public static function parsePlaceholder($ps_placeholder, $pa_source_data, $pa_item, $ps_delimiter=null, $pn_index=0, $pa_options=null) {
 			$ps_placeholder = trim($ps_placeholder);
 			if ($ps_placeholder[0] == '^') {
-				$vs_val = $pa_source_data[substr($ps_placeholder, 1)];
+				$vm_val = $pa_source_data[substr($ps_placeholder, 1)];
 			} else {
-				$vs_val = $ps_placeholder;
+				$vm_val = $ps_placeholder;
+			}
+			
+			if(is_array($vm_val)) {
+				foreach($vm_val as $vn_i => $vs_val) {
+					if (is_array($pa_item['settings']['original_values']) && (($vn_i = array_search(mb_strtolower($vs_val), $pa_item['settings']['original_values'])) !== false)) {
+						$vs_val = $pa_item['settings']['replacement_values'][$vn_i];
+					}
+					$vm_val[$vn_i] = trim($vs_val);
+				}
+				
+				if (caGetOption("returnAsString", $pa_options, false)) {
+					$vs_delimiter = caGetOption("delimiter", $pa_options, '');
+					return join($vs_delimiter, $vm_val);
+				}
+				return $vm_val;
 			}
 			
 			if ($ps_delimiter) {
-				$va_val = explode($ps_delimiter, $vs_val);
+				$va_val = explode($ps_delimiter, $vm_val);
 				if ($pn_index < sizeof($va_val)) {
-					if (!($vs_val = $va_val[$pn_index])) { $vs_val = ''; }
+					if (!($vm_val = $va_val[$pn_index])) { $vm_val = ''; }
 				} else {
-					$vs_val = array_shift($va_val);
+					$vm_val = array_shift($va_val);
 				}
 			}
-			$vs_val = trim($vs_val);
+			$vm_val = trim($vm_val);
 			
-			if (is_array($pa_item['settings']['original_values']) && (($vn_i = array_search(mb_strtolower($vs_val), $pa_item['settings']['original_values'])) !== false)) {
-				$vs_val = $pa_item['settings']['replacement_values'][$vn_i];
+			if (is_array($pa_item['settings']['original_values']) && (($vn_i = array_search(mb_strtolower($vm_val), $pa_item['settings']['original_values'])) !== false)) {
+				$vm_val = $pa_item['settings']['replacement_values'][$vn_i];
 			}
 			
-			return trim($vs_val);
+			return trim($vm_val);
 		}
 		# -------------------------------------------------------
 		/**

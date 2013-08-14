@@ -537,6 +537,7 @@
 			$va_mimetypes = ($vs_mimetypes = $po_opts->getOption("mimetypes")) ? explode(",", $vs_mimetypes) : array();
 			$va_versions = ($vs_versions = $po_opts->getOption("versions")) ? explode(",", $vs_versions) : array();
 			$va_kinds = ($vs_kinds = $po_opts->getOption("kinds")) ? explode(",", $vs_kinds) : array();
+			
 			if (!is_array($va_kinds) || !sizeof($va_kinds)) {
 				$va_kinds = array('all');
 			}
@@ -1186,6 +1187,90 @@
 		 */
 		public static function sync_dataHelp() {
 			return _t("Synchronizes data in one CollectiveAccess instance based upon data in another instance, subject to configuration in synchronization.conf.");
+		}
+		# -------------------------------------------------------
+		/**
+		 * Process queued tasks
+		 */
+		public static function fix_permissions($po_opts=null) {
+			// Guess web server user
+			if (!($vs_user = $po_opts->getOption("user"))) {
+				$vs_user = caDetermineWebServerUser();
+				if (!$po_opts->getOption("quiet") && $vs_user) { CLIUtils::addMessage(_t("Determined web server user to be \"%1\"", $vs_user)); }
+			}
+			
+			if (!$vs_user) {
+				$vs_user = caGetProcessUserName();
+				CLIUtils::addError(_t("Cannot determine web server user. Using %1 instead.", $vs_user));
+			}
+			
+			if (!$vs_user) {
+				CLIUtils::addError(_t("Cannot determine the user. Please specify one with the --user option."));
+				return false;
+			}
+			
+			if (!($vs_group = $po_opts->getOption("group"))) {
+				$vs_group = caGetProcessGroupName();
+				if (!$po_opts->getOption("quiet") && $vs_group) { CLIUtils::addMessage(_t("Determined web server group to be \"%1\"", $vs_group)); }
+			}
+			
+			if (!$vs_group) {
+				CLIUtils::addError(_t("Cannot determine the group. Please specify one with the --group option."));
+				return false;
+			}
+			
+			if (!$po_opts->getOption("quiet")) { CLIUtils::addMessage(_t("Fixing permissions for the temporary directory (app/tmp) for ownership by \"%1\"...", $vs_user)); }
+			$va_files = caGetDirectoryContentsAsList($vs_path = __CA_APP_DIR__.'/tmp', true, false, false, true);
+		
+			foreach($va_files as $vs_path) {
+				chown($vs_path, $vs_user);
+				chgrp($vs_path, $vs_group);
+				chmod($vs_path, 0770);
+			}
+			if (!$po_opts->getOption("quiet")) { CLIUtils::addMessage(_t("Fixing permissions for the media directory (media) for ownership by \"%1\"...", $vs_user)); }
+			$va_files = caGetDirectoryContentsAsList($vs_path = __CA_BASE_DIR__.'/media', true, false, false, true);
+			
+			foreach($va_files as $vs_path) {
+				chown($vs_path, $vs_user);
+				chgrp($vs_path, $vs_group);
+				chmod($vs_path, 0775);
+			}
+		
+			if (!$po_opts->getOption("quiet")) { CLIUtils::addMessage(_t("Fixing permissions for the HTMLPurifier definition cache directory (app/lib/core/Parsers/htmlpurifier/standalone/HTMLPurifier/DefinitionCache) for ownership by \"%1\"...", $vs_user)); }
+			$va_files = caGetDirectoryContentsAsList($vs_path = __CA_LIB_DIR__.'/core/Parsers/htmlpurifier/standalone/HTMLPurifier/DefinitionCache', true, false, false, true);
+			
+			foreach($va_files as $vs_path) {
+				chown($vs_path, $vs_user);
+				chgrp($vs_path, $vs_group);
+				chmod($vs_path, 0770);
+			}
+			
+			return true;
+		}
+		# -------------------------------------------------------
+		/**
+		 *posix_getpwnam
+		 */
+		public static function fix_permissionsParamList() {
+			return array(
+				"user|u=s" => _t("Set ownership of directories to specifed user. If not set, an attempt will be made to determine the name of the web server user automatically. If the web server user cannot be determined the current user will be used."),
+				"group|g=s" => _t("Set ownership of directories to specifed group. If not set, the current group will be used."),
+				"quiet|q" => _t("Run without outputting progress information.")
+			);
+		}
+		# -------------------------------------------------------
+		/**
+		 *
+		 */
+		public static function fix_permissionsShortHelp() {
+			return _t("Fix folder permissions. MUST BE RUN WHILE LOGGED IN WITH ADMINSTRATIVE/ROOT PERMISSIONS. You are currently logged in as %1 (uid %2)", caGetProcessUserName(), caGetProcessUserID());
+		}
+		# -------------------------------------------------------
+		/**
+		 *
+		 */
+		public static function fix_permissionsHelp() {
+			return _t("CollectiveAccess must have both read and write access to the temporary storage directory (app/tmp), media directory (media) and HTMLPurifier definition cache (app/lib/core/Parsers/htmlpurifier/standalone/HTMLPurifier/DefinitionCache). A run-time error will be displayed if any of these locations is not accessible to the application. To change these permissions to allow CollectiveAccess to run normally run this command while logged in with administrative/root privileges. You are currently logged in as %1 (uid %2). You can specify which user will be given ownership of the directories using the --user option. If you do not specify a user, the web server user for your server will be automatically determined and used.", caGetProcessUserName(), caGetProcessUserID());
 		}
 		# -------------------------------------------------------
 	}

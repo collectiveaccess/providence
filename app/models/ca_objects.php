@@ -73,7 +73,7 @@ BaseModel::$s_ca_models_definitions['ca_objects'] = array(
 				'FIELD_TYPE' => FT_NUMBER, 'DISPLAY_TYPE' => DT_HIDDEN, 
 				'DISPLAY_WIDTH' => 10, 'DISPLAY_HEIGHT' => 1,
 				'IS_NULL' => true, 
-				'ALLOW_BUNDLE_ACCESS_CHECK' => true,
+				'ALLOW_BUNDLE_ACCESS_CHECK' => true, 'DONT_ALLOW_IN_UI' => true,
 				'DEFAULT' => '',
 				'LABEL' => _t('Lot'), 'DESCRIPTION' => _t('Lot this object belongs to; is null if object is not part of a lot.')
 		),
@@ -490,15 +490,18 @@ class ca_objects extends BundlableLabelableBaseModelWithAttributes implements IB
 					
 					if ($t_object_x_rep->numErrors()) {
 						$this->errors = $t_object_x_rep->errors;
-						if ($vb_we_set_transaction) { $this->removeTransaction(false);}
+						if ($vb_we_set_transaction) { $o_t->rollback();}
 						return false;
 					}
 				}
 			}
+		} else {
+			if ($vb_we_set_transaction) { $o_t->rollback(); }
+			return false;
 		}
 		
 		
-		if ($vb_we_set_transaction) { $this->removeTransaction(true);}
+		if ($vb_we_set_transaction) { $o_t->commit();}
 		return $t_dupe;
 	}
 	# ------------------------------------------------------
@@ -665,7 +668,7 @@ class ca_objects extends BundlableLabelableBaseModelWithAttributes implements IB
  	# Representations
  	# ------------------------------------------------------
  	/**
- 	 * Returns array containing representation_ids for all representations linked to the currently loaded ca_objects row
+ 	 * Returns array with keys for representation_ids for all representations linked to the currently loaded ca_objects row
  	 *
  	 * @param array $pa_options An array of options. Supported options are:
  	 *		return_primary_only - If true then only the primary representation will be returned
@@ -1326,7 +1329,14 @@ class ca_objects extends BundlableLabelableBaseModelWithAttributes implements IB
 			}
 			$va_media[$qr_res->get('object_id')] = $va_media_tags;
 		}
-		return $va_media;
+		
+		// Preserve order of input ids
+		$va_media_sorted = array();
+		foreach($pa_ids as $vn_object_id) {
+			$va_media_sorted[$vn_object_id] = $va_media[$vn_object_id];
+		} 
+		
+		return $va_media_sorted;
 	}
 	# ------------------------------------------------------------------
 	/**

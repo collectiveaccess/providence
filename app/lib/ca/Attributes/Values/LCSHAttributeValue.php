@@ -186,6 +186,9 @@
  			// Try to convert LCSH display format into parse-able format, to avoid unwanted lookups
  			if(preg_match("!^([^\[]+)[ ]*\[(info:lc[^\]]+)\]!", $ps_value, $va_matches)) {
  				$ps_value = $va_matches[0]."|".$va_matches[1];
+ 			} elseif (preg_match("!^([^\[]+)[ ]*\[(sh[^\]]+)\]!", $ps_value, $va_matches)) {
+ 				// Convert old-style "[sh*]" format identifiers
+ 				$ps_value = $va_matches[0]."|".$va_matches[1];
  			}
  			
 			if (trim($ps_value)) {
@@ -272,8 +275,8 @@
 					)
 				);
 				
-			if ($pa_options['po_request']) {
-				$vs_url = caNavUrl($pa_options['po_request'], 'lookup', 'LCSH', 'Get', array('max' => 100, 'element_id' => (int)$pa_element_info['element_id']));
+			if ($pa_options['request']) {
+				$vs_url = caNavUrl($pa_options['request'], 'lookup', 'LCSH', 'Get', array('max' => 100, 'element_id' => (int)$pa_element_info['element_id']));
 			} else {
 				// hardcoded default for testing.
 				$vs_url = '/index.php/lookup/LCSH/Get';	

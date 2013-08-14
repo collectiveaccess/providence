@@ -76,7 +76,7 @@
 ?>
 				
 						<div class="quickSearchResultHeader rounded">
-							<div class="quickSearchFullResultsLink"><?php print caNavLink($this->request, _t("Full Results &rsaquo;"), null, $va_info['searchModule'], $va_info['searchController'], $va_info['searchAction'], array("search" => $ps_search, "type_id" => $vn_type_id)); ?></div>
+							<div class="quickSearchFullResultsLink"><?php print caNavLink($this->request, _t("Full Results &rsaquo;"), null, $va_info['searchModule'], $va_info['searchController'], $va_info['searchAction'], array("search" => urlencode($ps_search), "type_id" => $vn_type_id)); ?></div>
 							<a href='#' style="text-decoration:none; color:#333;" id='show<?php print $vs_table.$vn_type_id; ?>' onclick='$("#<?php print $vs_table.$vn_type_id; ?>_results").slideDown(250); $("#show<?php print $vs_table.$vn_type_id; ?>").hide(); $("#hide<?php print $vs_table.$vn_type_id; ?>").show(); return false; '><?php print unicode_ucfirst($va_type_info['name_plural'])." (".sizeof($va_occurrences_by_type[$vn_type_id]).")"; ?> <img src="<?php print $this->request->getThemeUrlPath(); ?>/graphics/icons/expand.gif" width="11" height="11" border="0"></a>
 							<a href='#' id='hide<?php print $vs_table.$vn_type_id; ?>' style='display:none; text-decoration:none; color:#333;' onclick='$("#<?php print $vs_table.$vn_type_id; ?>_results").slideUp(250); $("#show<?php print $vs_table.$vn_type_id; ?>").slideDown(1); $("#hide<?php print $vs_table.$vn_type_id; ?>").hide(); return false;'><?php print unicode_ucfirst($va_type_info['name_plural'])." (".sizeof($va_occurrences_by_type[$vn_type_id]).")"; ?> <img src="<?php print $this->request->getThemeUrlPath(); ?>/graphics/icons/collapse.gif" width="11" height="11" border="0"></a>
 						</div>
@@ -110,7 +110,7 @@
 		if ($o_res->numHits() >= 1) { 
 ?>
 			<div class="quickSearchResultHeader rounded" >
-				<div class="quickSearchFullResultsLink"><?php print caNavLink($this->request, _t("Full Results &rsaquo;"), null, $va_info['searchModule'], $va_info['searchController'], $va_info['searchAction'], array("search" => $ps_search)); ?></div>
+				<div class="quickSearchFullResultsLink"><?php print caNavLink($this->request, _t("Full Results &rsaquo;"), null, $va_info['searchModule'], $va_info['searchController'], $va_info['searchAction'], array("search" => urlencode($ps_search))); ?></div>
 				<a href='#' style="text-decoration:none; color:#333;" id='show<?php print $vs_table; ?>' onclick='$("#<?php print $vs_table; ?>_results").slideDown(250); $("#show<?php print $vs_table; ?>").hide(); $("#hide<?php print $vs_table; ?>").show(); return false; '><?php print $va_info['displayname']." (".$o_res->numHits().")"; ?> <img src="<?php print $this->request->getThemeUrlPath(); ?>/graphics/icons/expand.gif" width="11" height="11" border="0"></a>
 				<a href='#' id='hide<?php print $vs_table; ?>' style='display:none; text-decoration:none; color:#333;' onclick='$("#<?php print $vs_table; ?>_results").slideUp(250); $("#show<?php print $vs_table; ?>").slideDown(1); $("#hide<?php print $vs_table; ?>").hide(); return false;'><?php print $va_info['displayname']." (".$o_res->numHits().")"; ?> <img src="<?php print $this->request->getThemeUrlPath(); ?>/graphics/icons/collapse.gif" width="11" height="11" border="0"></a>
 			</div>

@@ -51,9 +51,11 @@
 	}
 ?>
 	</div>
+	
+	<div class="quickAddErrorContainer" id="<?php print $vs_form_name; ?>Errors<?php print $vs_field_name_prefix.$vs_n; ?>"> </div>
+	
 	<div class="quickAddSectionBox" id="{$vs_form_name}Container<?php print $vs_field_name_prefix.$vs_n; ?>">
 		<div class="quickAddFormTopPadding"><!-- empty --></div>
-			<div class="quickAddErrorContainer" id="<?php print $vs_form_name; ?>Errors<?php print $vs_field_name_prefix.$vs_n; ?>"> </div>
 <?php
 
 			$va_force_new_label = array();

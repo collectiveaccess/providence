@@ -93,6 +93,7 @@
 		fieldNamePrefix: '<?php print $vs_id_prefix; ?>_',
 		templateValues: ['name', 'locale_id', 'rank', 'stop_id', 'typename'],
 		initialValues: <?php print json_encode($va_initial_values); ?>,
+		initialValueOrder: <?php print json_encode(array_keys($va_initial_values)); ?>,
 		errors: <?php print json_encode($va_errors); ?>,
 		forceNewValues: <?php print json_encode($va_failed_inserts); ?>,
 		itemID: '<?php print $vs_id_prefix; ?>Item_',

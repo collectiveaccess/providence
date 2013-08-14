@@ -152,6 +152,7 @@
 		fieldNamePrefix: '<?php print $vs_id_prefix; ?>_',
 		templateValues: ['status', 'access', 'locale_id', 'label', <?php print join(',', $va_prop_list); ?>],
 		initialValues: <?php print json_encode($va_inital_values); ?>,
+		initialValueOrder: <?php print json_encode(array_keys($va_initial_values)); ?>,
 		sortInitialValuesBy: 'startTimecode_raw',
 		errors: <?php print json_encode($va_errors); ?>,
 		forceNewValues: <?php print json_encode($va_failed_inserts); ?>,

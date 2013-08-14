@@ -60,6 +60,7 @@ nowDate = [nu]
 todayDate = [vandaag]
 yesterdayDate = [gisteren]
 tomorrowDate = [morgen]
+undatedDate = [undated, unknown]
 
 presentDate = [heden, ?, ??, ???, ????]
 beforeQualifier = [voor]

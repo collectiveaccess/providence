@@ -116,7 +116,6 @@
 			}
 			if (!$vb_exists) {
 				if (isset($pa_options['dontCreate']) && $pa_options['dontCreate']) { return false; }
-				
 				if ($o_event) { $o_event->beginItem($vs_event_source, 'ca_entities', 'I'); }
 				
 				$t_entity->setMode(ACCESS_WRITE);
@@ -140,6 +139,7 @@
 				unset($pa_values['idno']);
 				unset($pa_values['source_id']);
 				unset($pa_values['lifespan']);
+				unset($pa_values['_interstitial']);
 				
 				$t_entity->insert();
 				
@@ -257,6 +257,7 @@
 
 			if (sizeof($va_place_ids = $t_place->getPlaceIDsByName($ps_place_name, $pn_parent_id)) == 0) {
 				if (isset($pa_options['dontCreate']) && $pa_options['dontCreate']) { return false; }
+				if ($o_event) { $o_event->beginItem($vs_event_source, 'ca_places', 'I'); }
 				
 				$t_place->setMode(ACCESS_WRITE);
 				$t_place->set('locale_id', $pn_locale_id);
@@ -668,8 +669,9 @@
 			$vs_event_source = (isset($pa_options['importEventSource']) && $pa_options['importEventSource']) ? $pa_options['importEventSource'] : "?";
 			$o_log = (isset($pa_options['log']) && $pa_options['log'] instanceof KLogger) ? $pa_options['log'] : null;
 
-			if (sizeof($va_collection_ids = $t_collection->getCollectionIDsByName($ps_collection_name)) == 0) {
+			if (sizeof($va_collection_ids = $t_collection->getCollectionIDsByName($ps_collection_name, isset($pa_values['parent_id']) ? $pa_values['parent_id'] : null)) == 0) {
 				if (isset($pa_options['dontCreate']) && $pa_options['dontCreate']) { return false; }
+				if ($o_event) { $o_event->beginItem($vs_event_source, 'ca_collections', 'I'); }
 				
 				$t_collection->setMode(ACCESS_WRITE);
 				$t_collection->set('locale_id', $pn_locale_id);
@@ -797,7 +799,7 @@
 		 */
 		static function getStorageLocationID($ps_location_name, $pn_parent_id, $pn_type_id, $pn_locale_id, $pa_values=null, $pa_options=null) {
 			if (!is_array($pa_options)) { $pa_options = array(); }
-			if(!isset($pa_options['outputErrors'])) { $pa_options['outputErrors'] = false; }
+			if(!isset($pa_options['outputErrors'])) { $pa_options['outputErrors'] = true; }
 			
 			$t_location = new ca_storage_locations();
 			if (isset($pa_options['transaction']) && $pa_options['transaction'] instanceof Transaction){
@@ -810,6 +812,7 @@
 			
 			if (sizeof($va_location_ids = $t_location->getLocationIDsByName($ps_location_name, $pn_parent_id)) == 0) {
 				if (isset($pa_options['dontCreate']) && $pa_options['dontCreate']) { return false; }
+				if ($o_event) { $o_event->beginItem($vs_event_source, 'ca_storage_locations', 'I'); }
 				
 				$t_location->setMode(ACCESS_WRITE);
 				$t_location->set('locale_id', $pn_locale_id);
@@ -947,6 +950,7 @@
 
 			if (sizeof($va_object_ids = $t_object->getObjectIDsByName($ps_object_name, $pn_parent_id, $pn_type_id)) == 0) {
 				if (isset($pa_options['dontCreate']) && $pa_options['dontCreate']) { return false; }
+				if ($o_event) { $o_event->beginItem($vs_event_source, 'ca_objects', 'I'); }
 				
 				$t_object->setMode(ACCESS_WRITE);
 				$t_object->set('locale_id', $pn_locale_id);
@@ -1089,6 +1093,7 @@
 
 			if (sizeof($va_loan_ids = $t_loan->getLoanIDsByName($ps_loan_name)) == 0) {
 				if (isset($pa_options['dontCreate']) && $pa_options['dontCreate']) { return false; }
+				if ($o_event) { $o_event->beginItem($vs_event_source, 'ca_loans', 'I'); }
 				
 				$t_loan->setMode(ACCESS_WRITE);
 				$t_loan->set('locale_id', $pn_locale_id);
@@ -1246,7 +1251,7 @@
 				}
 			} else {
 				// check for titles
-				$ps_text = preg_replace('![^A-Za-z0-9 \-]+!', '', $ps_text);
+				$ps_text = preg_replace('/[^\p{L}\p{N} \-]+/u', '', $ps_text);
 				foreach($va_titles as $vs_title) {
 					if (preg_match("!^({$vs_title})!", $ps_text, $va_matches)) {
 						$va_name['prefix'] = $va_matches[1];

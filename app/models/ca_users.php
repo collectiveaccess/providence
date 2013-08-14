@@ -1351,16 +1351,72 @@ class ca_users extends BaseModel {
 			$va_pref_info = $this->getPreferenceInfo($ps_pref);
 			
 			if (!isset($va_prefs)) {
-				return isset($va_pref_info["default"]) ? $va_pref_info["default"] : null;
+				return $this->getPreferenceDefault($ps_pref);
 			}
 			if(isset($va_prefs[$ps_pref])) {
-				return (!is_null($va_prefs[$ps_pref])) ? $va_prefs[$ps_pref] : ($va_pref_info["default"] ? $va_pref_info["default"] : null);
+				return (!is_null($va_prefs[$ps_pref])) ? $va_prefs[$ps_pref] : $this->getPreferenceDefault($ps_pref);
 			}
-			return ($va_pref_info["default"] ? $va_pref_info["default"] : null);
+			return $this->getPreferenceDefault($ps_pref);
 		} else {
 			$this->postError(920, _t("%1 is not a valid user preference", $ps_pref),"User->getPreference()");
 			return null;
 		}
+	}
+	# ----------------------------------------
+	/**
+	 * Returns default value for a preference
+	 *
+	 * @param string $ps_pref Preference code
+	 * @param array $pa_options No options supported yet
+	 * @return mixed Type returned varies by preference
+	 */
+	public function getPreferenceDefault($ps_pref, $pa_options=null) {
+		if (!is_array($va_pref_info = $this->getPreferenceInfo($ps_pref))) { return null; }
+		
+		switch($va_pref_info["formatType"]) {
+				# ---------------------------------
+				case 'FT_OBJECT_EDITOR_UI':
+				case 'FT_OBJECT_LOT_EDITOR_UI':
+				case 'FT_ENTITY_EDITOR_UI':
+				case 'FT_PLACE_EDITOR_UI':
+				case 'FT_OCCURRENCE_EDITOR_UI':
+				case 'FT_COLLECTION_EDITOR_UI':
+				case 'FT_STORAGE_LOCATION_EDITOR_UI':
+				case 'FT_OBJECT_REPRESENTATION_EDITOR_UI':
+				case 'FT_REPRESENTATION_ANNOTATION_EDITOR_UI':
+				case 'FT_SET_EDITOR_UI':
+				case 'FT_SET_ITEM_EDITOR_UI':
+				case 'FT_LIST_EDITOR_UI':
+				case 'FT_LIST_ITEM_EDITOR_UI':
+				case 'FT_LOAN_EDITOR_UI':
+				case 'FT_MOVEMENT_EDITOR_UI':
+				case 'FT_TOUR_EDITOR_UI':
+				case 'FT_TOUR_STOP_EDITOR_UI':
+				case 'FT_SEARCH_FORM_EDITOR_UI':
+				case 'FT_BUNDLE_DISPLAY_EDITOR_UI':
+				case 'FT_RELATIONSHIP_TYPE_EDITOR_UI':
+				case 'FT_USER_INTERFACE_EDITOR_UI':
+				case 'FT_USER_INTERFACE_SCREEN_EDITOR_UI':
+				case 'FT_IMPORT_EXPORT_MAPPING_EDITOR_UI':
+				case 'FT_IMPORT_EXPORT_MAPPING_GROUP_EDITOR_UI':
+					$vn_type_id = (is_array($pa_options) && isset($pa_options['type_id']) && (int)$pa_options['type_id']) ? (int)$pa_options['type_id'] : null;
+					$vn_table_num = $this->_editorPrefFormatTypeToTableNum($va_pref_info["formatType"]);
+					$va_uis = $this->_getUIListByType($vn_table_num);
+					
+					$va_defaults = array();
+					foreach($va_uis as $vn_type_id => $va_editor_info) {
+						foreach($va_editor_info as $vn_ui_id => $va_editor_labels) {
+							$va_defaults[$vn_type_id] = $vn_ui_id;
+						}
+					}
+					return $va_defaults;
+					break;
+				# ---------------------------------
+				default:
+					return $va_pref_info["default"] ? $va_pref_info["default"] : null;
+					break;
+				# ---------------------------------
+			}
 	}
 	# ----------------------------------------
 	/**

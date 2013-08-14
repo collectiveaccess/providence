@@ -166,7 +166,7 @@
 			}
 			
 			
-			// Set preferred labels
+			// Set nonpreferred labels
 			if (is_array($va_field_values['nonpreferred_label'])) {
 				$t_subject->setFailedNonPreferredLabelInserts($va_field_values['nonpreferred_label']);		
 			}

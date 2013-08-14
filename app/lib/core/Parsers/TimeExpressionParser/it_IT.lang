@@ -67,6 +67,7 @@ todayDate = [oggi]
 yesterdayDate = [ieri]
 #tomorrowDate = [tomorrow]
 tomorrowDate = [domani]
+undatedDate = [undated, unknown]
 
 #presentDate = [present, ?, ??, ???, ????]
 presentDate = [presente, ?, ??, ???, ????]

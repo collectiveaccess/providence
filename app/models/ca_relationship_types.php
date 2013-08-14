@@ -451,7 +451,7 @@ class ca_relationship_types extends BundlableLabelableBaseModelWithAttributes {
 	 	foreach($va_tables as $vs_table) {
 	 		if (preg_match('!_x_!', $vs_table)) {
 	 			$t_instance = $this->_DATAMODEL->getInstanceByTableName($vs_table, true);
-	 			if (!$t_instance->hasField('type_id')) { continue; }	// some relationships don't use types (eg. ca_users_x_roles)
+	 			if (!$t_instance || !$t_instance->hasField('type_id')) { continue; }	// some relationships don't use types (eg. ca_users_x_roles)
 	 			$vs_name = $t_instance->getProperty('NAME_PLURAL');
 	 			$va_relationship_tables[$t_instance->tableNum()] = array('name' => $vs_name);
 	 		}
@@ -480,18 +480,33 @@ class ca_relationship_types extends BundlableLabelableBaseModelWithAttributes {
 	 }
 	 # ------------------------------------------------------
 	/**
+	 * Returns instance of many-to-many table using relationship types between two tables
+	 *
+	 * @param string $ps_table1 A valid table name
+	 * @param string $ps_table2 A valid table name
+	 * @return BaseRelationshipModel An model instance for the table relating the specified tables 
+	 */
+	 static public function getRelationshipTypeInstance($ps_table1, $ps_table2) {
+	 	$t_rel = new ca_relationship_types();
+	 	if ($vs_table = $t_rel->getRelationshipTypeTable($ps_table1, $ps_table2)) {
+	 		return $t_rel->getAppDatamodel()->getInstanceByTableName($vs_table);
+	 	}
+	 	return null;
+	 }
+	 # ------------------------------------------------------
+	/**
 	 * Converts a list of relationship type_code string and/or numeric type_ids to a list of numeric type_ids
 	 *
-	 * @param string $ps_relationship_table The name of the relationship table that the types are valid for (Eg. ca_objects_x_entities)
+	 * @param mixed $pm_table_name_or_num The name or number of the relationship table that the types are valid for (Eg. ca_objects_x_entities)
 	 * @param array $pa_list A list of relationship type_code string and/or numeric type_ids
 	 * @param array $pa_options Optional array of options. Support options are:
 	 *			includeChildren = If set to true, ids of children of relationship types are included in the returned values
 	 * @return array A list of corresponding type_ids 
 	 */
-	 public function relationshipTypeListToIDs($ps_relationship_table, $pa_list, $pa_options=null) {
+	 public function relationshipTypeListToIDs($pm_table_name_or_num, $pa_list, $pa_options=null) {
 	 	$va_rel_ids = array();
 		foreach($pa_list as $vm_type) {
-			if ($vn_type_id = $this->getRelationshipTypeID($ps_relationship_table, $vm_type)) {
+			if ($vn_type_id = $this->getRelationshipTypeID($pm_table_name_or_num, $vm_type)) {
 				$va_rel_ids[] = $vn_type_id;
 			}
 		}
@@ -511,17 +526,17 @@ class ca_relationship_types extends BundlableLabelableBaseModelWithAttributes {
 	/**
 	 * Converts a list of relationship type_code string and/or numeric type_ids to a list of  type_code strings
 	 *
-	 * @param string $ps_relationship_table The name of the relationship table that the types are valid for (Eg. ca_objects_x_entities)
+	 * @param mixed $pm_table_name_or_num The name or number of the relationship table that the types are valid for (Eg. ca_objects_x_entities)
 	 * @param array $pa_list A list of relationship type_code string and/or numeric type_ids
 	 * @param array $pa_options Optional array of options. Support options are:
 	 *			includeChildren = If set to true, ids of children of relationship types are included in the returned values
 	 * @return array A list of corresponding type_codes 
 	 */
-	 public function relationshipTypeListToTypeCodes($ps_relationship_table, $pa_list, $pa_options=null) {
-	 	if (!is_numeric($ps_relationship_table)) {
-			$vn_table_num = $this->getAppDatamodel()->getTableNum($ps_relationship_table);
+	 public function relationshipTypeListToTypeCodes($pm_table_name_or_num, $pa_list, $pa_options=null) {
+	 	if (!is_numeric($pm_table_name_or_num)) {
+			$vn_table_num = $this->getAppDatamodel()->getTableNum($pm_table_name_or_num);
 		} else {
-			$vn_table_num = $ps_relationship_table;
+			$vn_table_num = $pm_table_name_or_num;
 		}
 		
 		if (!is_array($pa_list)) { $pa_list = array($pa_list); }

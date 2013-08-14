@@ -30,12 +30,12 @@
  
 	class listItemSplitterRefinery extends BaseRefinery {
 		# -------------------------------------------------------
-		
+		private $opb_returns_multiple_values = true;
 		# -------------------------------------------------------
 		public function __construct() {
 			$this->ops_name = 'listItemSplitter';
 			$this->ops_title = _t('List item splitter');
-			$this->ops_description = _t('Splits list items');
+			$this->ops_description = _t('Provides several list item-related import functions: splitting of many items in a string into separate names, and merging entity data with item names.');
 			
 			parent::__construct();
 		}
@@ -56,8 +56,8 @@
 		 *
 		 */
 		public function refine(&$pa_destination_data, $pa_group, $pa_item, $pa_source_data, $pa_options=null) {
+			$this->opb_returns_multiple_values = true;
 			global $g_ui_locale_id;
-			
 			$o_log = (isset($pa_options['log']) && is_object($pa_options['log'])) ? $pa_options['log'] : null;
 			
 			$va_group_dest = explode(".", $pa_group['destination']);
@@ -66,10 +66,14 @@
 			
 			$pm_value = $pa_source_data[$pa_item['source']];
 			
-			if ($vs_delimiter = $pa_item['settings']['listItemSplitter_delimiter']) {
-				$va_list_items = explode($vs_delimiter, $pm_value);
+			if (is_array($pm_value)) {
+				$va_list_items = $pm_value;	// for input formats that support repeating values
 			} else {
-				$va_list_items = array($pm_value);
+				if ($vs_delimiter = $pa_item['settings']['listItemSplitter_delimiter']) {
+					$va_list_items = explode($vs_delimiter, $pm_value);
+				} else {
+					$va_list_items = array($pm_value);
+				}
 			}
 			
 			$va_vals = array();
@@ -78,13 +82,13 @@
 			foreach($va_list_items as $vn_i => $vs_list_item) {
 				if (!$vs_list_item = trim($vs_list_item)) { continue; }
 				
-				
 				if(in_array($vs_terminal, array('name_singular', 'name_plural'))) {
+					$this->opb_returns_multiple_values = false;
 					return $vs_list_item;
 				}
 			
 				if (in_array($vs_terminal, array('preferred_labels', 'nonpreferred_labels'))) {
-					return array('name_singular' => $vs_list_item, 'name_plural' => $vs_list_item);	
+					return array(0 => array('name_singular' => $vs_list_item, 'name_plural' => $vs_list_item));	
 				}
 			
 				// Set label
@@ -94,11 +98,11 @@
 				if (
 					($vs_type_opt = $pa_item['settings']['listItemSplitter_listItemType'])
 				) {
-					if (!($va_val['_type'] = BaseRefinery::parsePlaceholder($vs_type_opt, $pa_source_data, $pa_item, $vs_delimiter, $vn_c))) {
-						if($vs_type_opt = $pa_item['settings']['listItemSplitter_listItemTypeDefault']) {
-							$va_val['_type'] = BaseRefinery::parsePlaceholder($vs_type_opt, $pa_source_data, $pa_item, $vs_delimiter, $vn_c);
-						}
-					}
+					$va_val['_type'] = BaseRefinery::parsePlaceholder($vs_type_opt, $pa_source_data, $pa_item, $vs_delimiter, $vn_c);
+				}
+				
+				if((!isset($va_val['_type']) || !$va_val['_type']) && ($vs_type_opt = $pa_item['settings']['listItemSplitter_listItemTypeDefault'])) {
+					$va_val['_type'] = BaseRefinery::parsePlaceholder($vs_type_opt, $pa_source_data, $pa_item, $vs_delimiter, $vn_c);
 				}
 				
 				// Set list 
@@ -108,7 +112,7 @@
 				}
 				if (!$vn_list_id) {
 					// No list = bail!
-					// TODO: log this
+					if ($o_log) { $o_log->logError(_t('[listItemSplitterRefinery] Could not find list %1 for item %2; item was skipped', $vs_list, $vs_list_item)); }
 					return array();
 				} 
 				
@@ -127,8 +131,13 @@
 					foreach($pa_item['settings']['listItemSplitter_attributes'] as $vs_element_code => $va_attrs) {
 						if(is_array($va_attrs)) {
 							foreach($va_attrs as $vs_k => $vs_v) {
-								$va_attr_vals[$vs_element_code][$vs_k] = BaseRefinery::parsePlaceholder($vs_v, $pa_source_data, $pa_item);
+								// BaseRefinery::parsePlaceholder may return an array if the input format supports repeated values (as XML does)
+								// DataMigrationUtils::getItemID(), which ca_data_importers::importDataFromSource() uses to create related list items
+								// only supports non-repeating attribute values, so we join any values here and call it a day.
+								$va_attr_vals[$vs_element_code][$vs_k] = (is_array($vm_v = BaseRefinery::parsePlaceholder($vs_v, $pa_source_data, $pa_item, $vs_delimiter, $vn_c))) ? join(" ", $vm_v) : $vm_v;
 							}
+						} else {
+							$va_attr_vals[$vs_element_code][$vs_element_code] = (is_array($vm_v = BaseRefinery::parsePlaceholder($va_attrs, $pa_source_data, $pa_item, $vs_delimiter, $vn_c))) ? join(" ", $vm_v) : $vm_v;
 						}
 					}
 					$va_val = array_merge($va_val, $va_attr_vals);
@@ -141,21 +150,24 @@
 					if (
 						($vs_rel_type_opt = $pa_item['settings']['listItemSplitter_relationshipType'])
 					) {
-						if (!($va_val['_relationship_type'] = BaseRefinery::parsePlaceholder($vs_rel_type_opt, $pa_source_data, $pa_item, $vs_delimiter, $vn_c))) {
-							if ($vs_rel_type_opt = $pa_item['settings']['listItemSplitter_relationshipTypeDefault']) {
-								$va_val['_relationship_type'] = BaseRefinery::parsePlaceholder($vs_rel_type_opt, $pa_source_data, $pa_item, $vs_delimiter, $vn_c);
-							}
-						}
+						$va_val['_relationship_type'] = BaseRefinery::parsePlaceholder($vs_rel_type_opt, $pa_source_data, $pa_item, $vs_delimiter, $vn_c);
 					}
+					
+					if ((!isset($va_val['_relationship_type']) || !$va_val['_relationship_type']) && ($vs_rel_type_opt = $pa_item['settings']['listItemSplitter_relationshipTypeDefault'])) {
+						$va_val['_relationship_type'] = BaseRefinery::parsePlaceholder($vs_rel_type_opt, $pa_source_data, $pa_item, $vs_delimiter, $vn_c);
+					}
+					
+					if ((!isset($va_val['_relationship_type']) || !$va_val['_relationship_type']) && $o_log) {
+						$o_log->logWarn(_t('[listItemSplitterRefinery] No relationship type is set for item %1', $vs_list_item));
+					}
+					
 					$va_vals[] = $va_val;
 				} else {							
 	// list item in an attribute
 					if ($vn_item_id = DataMigrationUtils::getListItemID($va_val['list_id'], $vs_list_item, $va_element_data['_type'], $g_ui_locale_id, array_merge($va_attr_vals, array('parent_id' => $va_val['_parent_id'], 'is_enabled' => true), $pa_options))) {
 						$va_vals[] = array($vs_terminal => array($vs_terminal => $vn_item_id));
 					} else {
-						if ($o_log) {
-							$o_log->logError(_t('[listItemSplitterRefinery] Could not add list item %1 to list %2', $vs_list_item, $va_val['list_id']));
-						}
+						if ($o_log) { $o_log->logError(_t('[listItemSplitterRefinery] Could not add list item %1 to list %2', $vs_list_item, $va_val['list_id'])); }
 					}
 				}
 				
@@ -168,10 +180,10 @@
 		/**
 		 * listItemSplitter returns multiple values
 		 *
-		 * @return bool Always true
+		 * @return bool
 		 */
 		public function returnsMultipleValues() {
-			return true;
+			return $this->opb_returns_multiple_values;
 		}
 		# -------------------------------------------------------
 	}
