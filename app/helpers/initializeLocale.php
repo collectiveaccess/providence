@@ -45,10 +45,12 @@
 			$_locale = new Zend_Locale($g_ui_locale);
 			Zend_Registry::set('Zend_Locale', $_locale);
 			
-			if (!($o_cache = caGetCacheObject('ca_translation', 3600 * 24))) {
-				die("Could not write to cache\n");
+			if (!caIsRunFromCLI()) {
+				if (!($o_cache = caGetCacheObject('ca_translation', 3600 * 24))) {
+					die("Could not write to cache\n");
+				}
+				Zend_Translate::setCache($o_cache);
 			}
-			Zend_Translate::setCache($o_cache);
 			$_ = new Zend_Translate(array(
 				'adapter' => 'gettext',
 				'content' => $vs_locale_path,
