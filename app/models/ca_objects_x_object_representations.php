@@ -192,15 +192,25 @@ class ca_objects_x_object_representations extends BaseRelationshipModel {
 	}
 	# ------------------------------------------------------
 	public function insert($pa_options=null) {
+		$vb_we_set_transaction = false;
+		if (!$this->inTransaction()) {
+			$vb_we_set_transaction = true;
+			$o_trans = new Transaction();
+			$this->setTransaction($o_trans);
+		} else {
+			$o_trans = $this->getTransaction();
+		}
 		$t_object = new ca_objects();
-		$o_trans = new Transaction();
 		$o_db = $o_trans->getDb();
-		$this->setTransaction($o_trans);
+		$t_object->setTransaction($o_trans);
 		
 		$vn_object_id = $this->get('object_id');
 		if (!$t_object->load($vn_object_id)) { 
 			// invalid object
 			$this->postError(720, _t("Related object does not exist"), "ca_objects_x_object_representations->insert()");
+			if ($vb_we_set_transaction) {
+				$o_trans->rollbackTransaction();
+			}
 			return false;
 		}
 		if (!$this->get('is_primary')) {
@@ -220,12 +230,16 @@ class ca_objects_x_object_representations extends BaseRelationshipModel {
 			}
 			
 			$vb_rc = parent::insert($pa_options);
-			$o_trans->commitTransaction();
+			if ($vb_we_set_transaction) {
+				if ($vb_rc) {
+					$o_trans->commitTransaction();
+				} else {
+					$o_trans->rollbackTransaction();
+				}
+			}
 			return $vb_rc;
 		} else {
 			// unset other reps is_primary field
-			//$o_db->beginTransaction();
-			
 			$o_db->query("
 				UPDATE ca_objects_x_object_representations
 				SET is_primary = 0
@@ -234,9 +248,13 @@ class ca_objects_x_object_representations extends BaseRelationshipModel {
 			", (int)$vn_object_id);
 			
 			if (!$vb_rc = parent::insert($pa_options)) {
-				$o_trans->rollbackTransaction();
+				if ($vb_we_set_transaction) {
+					$o_trans->rollbackTransaction();
+				}
 			} else {
-				$o_trans->commitTransaction();
+				if ($vb_we_set_transaction) {
+					$o_trans->commitTransaction();
+				}
 			}
 			
 			return $vb_rc;
@@ -244,15 +262,25 @@ class ca_objects_x_object_representations extends BaseRelationshipModel {
 	}
 	# ------------------------------------------------------
 	public function update($pa_options=null) {
+		$vb_we_set_transaction = false;
+		if (!$this->inTransaction()) {
+			$vb_we_set_transaction = true;
+			$o_trans = new Transaction();
+			$this->setTransaction($o_trans);
+		} else {
+			$o_trans = $this->getTransaction();
+		}
 		$t_object = new ca_objects();
-		$o_trans = new Transaction();
 		$o_db = $o_trans->getDb();
-		$this->setTransaction($o_trans);
+		$t_object->setTransaction($o_trans);
 		
 		$vn_object_id = $this->get('object_id');
 		if (!$t_object->load($vn_object_id)) { 
 			// invalid object
 			$this->postError(720, _t("Related object does not exist"), "ca_objects_x_object_representations->update()");
+			if ($vb_we_set_transaction) {
+				$o_trans->rollbackTransaction();
+			}
 			return false;
 		}
 		
@@ -287,9 +315,9 @@ class ca_objects_x_object_representations extends BaseRelationshipModel {
 								relation_id = ?
 						", (int)$qr_res->get('relation_id'));
 						if (!($vb_rc = parent::update($pa_options))) {
-							$o_trans->rollbackTransaction();
+							if ($vb_we_set_transaction) { $o_trans->rollbackTransaction(); }
 						} else {
-							$o_trans->commitTransaction();
+							if ($vb_we_set_transaction) { $o_trans->commitTransaction(); }
 						}
 					}
 				}
@@ -304,19 +332,25 @@ class ca_objects_x_object_representations extends BaseRelationshipModel {
 						object_id = ?
 				", (int)$vn_object_id);
 				if (!($vb_rc = parent::update($pa_options))) {
-					$o_trans->rollbackTransaction();
+					if ($vb_we_set_transaction) { $o_trans->rollbackTransaction(); }
 				} else {
-					$o_trans->commitTransaction();
+					if ($vb_we_set_transaction) { $o_trans->commitTransaction(); }
 				}
 				return $vb_rc;
 			}
 		} else {
-			$vb_rc = parent::update($pa_options);
-			$o_trans->commitTransaction();
+			if ($vb_rc = parent::update($pa_options)) {
+				if ($vb_we_set_transaction) { $o_trans->commitTransaction(); }
+			} else {
+				if ($vb_we_set_transaction) { $o_trans->rollbackTransaction(); }
+			}
 			return $vb_rc;
 		}
 	}
 	# ------------------------------------------------------
+	/**
+	 *
+	 */
 	public function delete($pb_delete_related=false, $pa_options=null, $pa_fields=null, $pa_table_list=null) {
 		$t_object = new ca_objects();
 		
@@ -327,12 +361,18 @@ class ca_objects_x_object_representations extends BaseRelationshipModel {
 			return false;
 		}
 		
-		$o_trans = new Transaction();
-		$this->setTransaction($o_trans);
+		$vb_we_set_transaction = false;
+		if (!$this->inTransaction()) {
+			$vb_we_set_transaction = true;
+			$o_trans = new Transaction();
+			$this->setTransaction($o_trans);
+		} else {
+			$o_trans = $this->getTransaction();
+		}
 		if($vb_rc = parent::delete($pb_delete_related, $pa_options, $pa_fields, $pa_table_list)) {
 		
 			if ($this->get('is_primary')) {
-				$o_db = $this->getDb();
+				$o_db = $o_trans->getDb();
 			
 				// make some other row primary
 				$qr_res = $o_db->query("
@@ -355,19 +395,19 @@ class ca_objects_x_object_representations extends BaseRelationshipModel {
 					
 						if ($t_rep_link->numErrors()) {
 							$this->postError(2700, _t('Could not update primary flag for representation: %1', join('; ', $t_rep_link->getErrors())), 'ca_objects_x_object_representations->delete()');
-							$o_trans->rollbackTransaction();
+							if($vb_we_set_transaction) { $o_trans->rollbackTransaction(); }
 							return false;
 						}
 					} else {
 						$this->postError(2700, _t('Could not load object-representation link'), 'ca_objects_x_object_representations->delete()');
-						$o_trans->rollbackTransaction();
+						if($vb_we_set_transaction) { $o_trans->rollbackTransaction(); }
 						return false;
 					}				
 				}
 			} 
-			$o_trans->commitTransaction();
+			if($vb_we_set_transaction) { $o_trans->commitTransaction(); }
 		} else {
-			$o_trans->rollbackTransaction();
+			if($vb_we_set_transaction) { $o_trans->rollbackTransaction(); }
 		}
 		
 		return $vb_rc;
