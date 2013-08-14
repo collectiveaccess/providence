@@ -182,11 +182,19 @@
  		 * Options:
  		 * 		rawDate - if true, returns date as an array of start and end historic timestames
  		 *		sortable - if true a language-independent sortable representation is returned.
+ 		 *		getDirectDate - get underlying historic timestamp (floatval)
  		 */
 		public function getDisplayValue($pa_options=null) {
 			if (!is_array($pa_options)) { $pa_options = array(); }
 			if (isset($pa_options['rawDate']) && $pa_options['rawDate']) {
 				return array(0 => $this->opn_start_date, 1 =>$this->opn_end_date, 'start' => $this->opn_start_date, 'end' =>$this->opn_end_date);
+			}
+			if (	
+				(isset($pa_options['GET_DIRECT_DATE']) && $pa_options['GET_DIRECT_DATE'])
+				||
+				(isset($pa_options['getDirectDate']) && $pa_options['getDirectDate'])
+			) {
+				return $this->opn_start_date;
 			}
 			
 			if (isset($pa_options['sortable']) && $pa_options['sortable']) {
