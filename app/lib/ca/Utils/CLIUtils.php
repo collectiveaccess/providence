@@ -37,6 +37,7 @@
  	require_once(__CA_LIB_DIR__.'/core/Utils/CLIProgressBar.php');
  	require_once(__CA_APP_DIR__.'/helpers/CLIHelpers.php');
 	require_once(__CA_LIB_DIR__."/core/Zend/Console/Getopt.php");
+	require_once(__CA_MODELS_DIR__."/ca_metadata_elements.php");
  
 	class CLIUtils {
 		# -------------------------------------------------------
@@ -533,85 +534,133 @@
 			$t_rep = new ca_object_representations();
 			$t_rep->setMode(ACCESS_WRITE);
 	
-			$va_mimetypes = explode(",", $po_opts->getOption("mimetypes"));
-			$va_versions = explode(",", $po_opts->getOption("versions"));
-			
-			if (!($vn_start = (int)$po_opts->getOption('start_id'))) { $vn_start = null; }
-			if (!($vn_end = (int)$po_opts->getOption('end_id'))) { $vn_end = null; }
-			
-			
-			if ($vn_id = (int)$po_opts->getOption('id')) { 
-				$vn_start = $vn_id; 
-				$vn_end = $vn_id; 
+			$va_mimetypes = ($vs_mimetypes = $po_opts->getOption("mimetypes")) ? explode(",", $vs_mimetypes) : array();
+			$va_versions = ($vs_versions = $po_opts->getOption("versions")) ? explode(",", $vs_versions) : array();
+			$va_kinds = ($vs_kinds = $po_opts->getOption("kinds")) ? explode(",", $vs_kinds) : array();
+			if (!is_array($va_kinds) || !sizeof($va_kinds)) {
+				$va_kinds = array('all');
 			}
+			$va_kinds = array_map('strtolower', $va_kinds);
 			
-			$va_ids = array();
-			if ($vs_ids = (string)$po_opts->getOption('ids')) { 
-				if (sizeof($va_tmp = explode(",", $vs_ids))) {
-					foreach($va_tmp as $vn_id) {
-						if ((int)$vn_id > 0) {
-							$va_ids[] = (int)$vn_id;
+			if (in_array('all', $va_kinds) || in_array('ca_object_representations', $va_kinds)) { 
+				if (!($vn_start = (int)$po_opts->getOption('start_id'))) { $vn_start = null; }
+				if (!($vn_end = (int)$po_opts->getOption('end_id'))) { $vn_end = null; }
+			
+			
+				if ($vn_id = (int)$po_opts->getOption('id')) { 
+					$vn_start = $vn_id; 
+					$vn_end = $vn_id; 
+				}
+			
+				$va_ids = array();
+				if ($vs_ids = (string)$po_opts->getOption('ids')) { 
+					if (sizeof($va_tmp = explode(",", $vs_ids))) {
+						foreach($va_tmp as $vn_id) {
+							if ((int)$vn_id > 0) {
+								$va_ids[] = (int)$vn_id;
+							}
 						}
 					}
 				}
-			}
 			
-			$vs_sql_where = null;
-			$va_params = array();
+				$vs_sql_where = null;
+				$va_params = array();
 			
-			if (sizeof($va_ids)) {
-				$vs_sql_where = "WHERE representation_id IN (?)";
-				$va_params[] = $va_ids;
-			} else {
-				if (
-					(($vn_start > 0) && ($vn_end > 0) && ($vn_start <= $vn_end)) || (($vn_start > 0) && ($vn_end == null))
-				) {
-					$vs_sql_where = "WHERE representation_id >= ?";
-					$va_params[] = $vn_start;
-					if ($vn_end) {
-						$vs_sql_where .= " AND representation_id <= ?";
-						$va_params[] = $vn_end;
-					}
-				}
-			}
-	
-			$qr_reps = $o_db->query("
-				SELECT * 
-				FROM ca_object_representations 
-				{$vs_sql_where}
-				ORDER BY representation_id
-			", $va_params);
-			
-			print CLIProgressBar::start($qr_reps->numRows(), _t('Re-processing media'));
-			while($qr_reps->nextRow()) {
-				$va_media_info = $qr_reps->getMediaInfo('media');
-				$vs_original_filename = $va_media_info['ORIGINAL_FILENAME'];
-				
-				print CLIProgressBar::next(1, _t("Re-processing %1", ($vs_original_filename ? $vs_original_filename." (".$qr_reps->get('representation_id').")" : $qr_reps->get('representation_id'))));
-		
-				$vs_mimetype = $qr_reps->getMediaInfo('media', 'original', 'MIMETYPE');
-				if(sizeof($va_mimetypes)) {
-					foreach($va_mimetypes as $vs_mimetype_pattern) {
-						if(!preg_match("!^{$vs_mimetype_pattern}!", $vs_mimetype)) {
-							continue(2);
-						}
-					}
-				}
-				
-				$t_rep->load($qr_reps->get('representation_id'));
-				$t_rep->set('media', $p =$qr_reps->getMediaPath('media', 'original'), array('original_filename' => $vs_original_filename));
-
-				if (sizeof($va_versions)) {
-					$t_rep->update(array('updateOnlyMediaVersions' =>$va_versions));
+				if (sizeof($va_ids)) {
+					$vs_sql_where = "WHERE representation_id IN (?)";
+					$va_params[] = $va_ids;
 				} else {
-					$t_rep->update();
+					if (
+						(($vn_start > 0) && ($vn_end > 0) && ($vn_start <= $vn_end)) || (($vn_start > 0) && ($vn_end == null))
+					) {
+						$vs_sql_where = "WHERE representation_id >= ?";
+						$va_params[] = $vn_start;
+						if ($vn_end) {
+							$vs_sql_where .= " AND representation_id <= ?";
+							$va_params[] = $vn_end;
+						}
+					}
 				}
+	
+				$qr_reps = $o_db->query("
+					SELECT * 
+					FROM ca_object_representations 
+					{$vs_sql_where}
+					ORDER BY representation_id
+				", $va_params);
+			
+				print CLIProgressBar::start($qr_reps->numRows(), _t('Re-processing representation media'));
+				while($qr_reps->nextRow()) {
+					$va_media_info = $qr_reps->getMediaInfo('media');
+					$vs_original_filename = $va_media_info['ORIGINAL_FILENAME'];
+				
+					print CLIProgressBar::next(1, _t("Re-processing %1", ($vs_original_filename ? $vs_original_filename." (".$qr_reps->get('representation_id').")" : $qr_reps->get('representation_id'))));
 		
-				if ($t_rep->numErrors()) {
-					CLIUtils::addError(_t("Error processing media: %1", join('; ', $t_rep->getErrors())));
+					$vs_mimetype = $qr_reps->getMediaInfo('media', 'original', 'MIMETYPE');
+					if(sizeof($va_mimetypes)) {
+						foreach($va_mimetypes as $vs_mimetype_pattern) {
+							if(!preg_match("!^{$vs_mimetype_pattern}!", $vs_mimetype)) {
+								continue(2);
+							}
+						}
+					}
+				
+					$t_rep->load($qr_reps->get('representation_id'));
+					$t_rep->set('media', $qr_reps->getMediaPath('media', 'original'), array('original_filename' => $vs_original_filename));
+
+					if (sizeof($va_versions)) {
+						$t_rep->update(array('updateOnlyMediaVersions' =>$va_versions));
+					} else {
+						$t_rep->update();
+					}
+		
+					if ($t_rep->numErrors()) {
+						CLIUtils::addError(_t("Error processing representation media: %1", join('; ', $t_rep->getErrors())));
+					}
 				}
+				print CLIProgressBar::finish();
 			}
-			print CLIProgressBar::finish();
+			
+			if (in_array('all', $va_kinds)  || in_array('ca_attributes', $va_kinds)) { 
+				// get all Media elements
+				$va_elements = ca_metadata_elements::getElementsAsList(false, null, null, true, false, true, array(16)); // 16=media
+				
+				$qr_c = $o_db->query("
+					SELECT count(*) c 
+					FROM ca_attribute_values
+					WHERE
+						element_id in (?)
+				", caExtractValuesFromArrayList($va_elements, 'element_id', array('preserveKeys' => false)));
+				if ($qr_c->nextRow()) { $vn_count = $qr_c->get('c'); } else { $vn_count = 0; }
+				
+				print CLIProgressBar::start($vn_count, _t('Re-processing attribute media'));
+				foreach($va_elements as $vs_element_code => $va_element_info) {
+					$qr_vals = $o_db->query("SELECT value_id FROM ca_attribute_values WHERE element_id = ?", (int)$va_element_info['element_id']);
+					$va_vals = $qr_vals->getAllFieldValues('value_id');
+					foreach($va_vals as $vn_value_id) {
+						$t_attr_val = new ca_attribute_values($vn_value_id);
+						if ($t_attr_val->getPrimaryKey()) {
+							$t_attr_val->setMode(ACCESS_WRITE);
+							$t_attr_val->useBlobAsMediaField(true);
+							
+							$va_media_info = $t_attr_val->getMediaInfo('value_blob');
+							$vs_original_filename = $va_media_info['ORIGINAL_FILENAME'];
+							
+							print CLIProgressBar::next(1, _t("Re-processing %1", ($vs_original_filename ? $vs_original_filename." ({$vn_value_id})" : $vn_value_id)));
+		
+							
+							$t_attr_val->set('value_blob', $t_attr_val->getMediaPath('value_blob', 'original'), array('original_filename' => $vs_original_filename));
+							
+							$t_attr_val->update();	
+							if ($t_attr_val->numErrors()) {
+								CLIUtils::addError(_t("Error processing attribute media: %1", join('; ', $t_attr_val->getErrors())));
+							}
+						}
+					}
+				}
+				print CLIProgressBar::finish();
+			}
+			
 			
 			return true;
 		}
@@ -626,7 +675,8 @@
 				"start_id|s-n" => _t('Representation id to start reloading at'),
 				"end_id|e-n" => _t('Representation id to end reloading at'),
 				"id|i-n" => _t('Representation id reloading'),
-				"ids|l-s" => _t('Comma separated list of representation ids to reload')
+				"ids|l-s" => _t('Comma separated list of representation ids to reload'),
+				"kinds|k-s" => _t('Comma separated list of kind of media to reprocess. Valid kinds are ca_object_representations (object representations), and ca_attributes (metadata elements). You may also specify "all" to reprocess both kinds of media. Default is "all"')
 			);
 		}
 		# -------------------------------------------------------
