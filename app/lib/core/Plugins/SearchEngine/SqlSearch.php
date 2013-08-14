@@ -352,12 +352,12 @@ class WLPlugSearchEngineSqlSearch extends BaseSearchPlugin implements IWLPlugSea
 		
 		$va_hits = array();
 		while($qr_res->nextRow()) {
+			$va_row = $qr_res->getRow();
 			$va_hits[] = array(
 				'subject_id' => $pn_subject_tablenum,
-				'subject_row_id' => $qr_res->get('row_id', array('binary' => true)),
+				'subject_row_id' => $va_row['row_id']
 			);
 		}
-
 		return new WLPlugSearchEngineSqlSearchResult($va_hits, $pn_subject_tablenum);
 	}
 	# -------------------------------------------------------
@@ -404,13 +404,16 @@ class WLPlugSearchEngineSqlSearch extends BaseSearchPlugin implements IWLPlugSea
 					case 4:	// geocode
 					case 8:	// length
 					case 9:	// weight
-						return array('table_num' => $vs_table_num, 'element_id' => $t_element->getPrimaryKey(), 'datatype' => $t_element->get('datatype'), 'element_info' => $t_element->getFieldValuesArray());
+						// noop
+						break;
+					default:
+						return array('table_num' => $vs_table_num, 'element_id' => $t_element->getPrimaryKey(), 'field_num' => 'A'.$t_element->getPrimaryKey(), 'datatype' => $t_element->get('datatype'), 'element_info' => $t_element->getFieldValuesArray());
 						break;
 				
 				}
 			}
 		} else {
-			return array('table_num' => $vs_table_num, 'field_num' => $vs_fld_num, 'datatype' => null);
+			return array('table_num' => $vs_table_num, 'field_num' => 'I'.$vs_fld_num, 'field_num_raw' => $vs_fld_num, 'datatype' => null);
 		}
 
 		return null;
@@ -637,9 +640,10 @@ class WLPlugSearchEngineSqlSearch extends BaseSearchPlugin implements IWLPlugSea
 							$va_ap_tmp = explode(".", $vs_access_point);
 							$vn_fld_table = $vn_fld_num = null;
 							if(sizeof($va_ap_tmp) == 2) {
-								$vn_fld_table = (int)$this->opo_datamodel->getTableNum($va_ap_tmp[0]);
-								$vn_fld_num = (int)$this->opo_datamodel->getFieldNum($va_ap_tmp[0], $va_ap_tmp[1]);
-								$vs_fld_limit_sql = " AND (ca.field_table_num = {$vn_fld_table} AND ca.field_num = 'I{$vn_fld_num}')";
+								$va_element = $this->_getElementIDForAccessPoint($vs_access_point);
+								$vs_fld_num = $va_element['field_num'];
+								$vs_fld_table_num = $va_element['table_num'];
+								$vs_fld_limit_sql = " AND (ca.field_table_num = {$vs_fld_table_num} AND ca.field_num = '{$vs_fld_num}')";
 							}
 							
 							$vs_direct_sql_query = "
@@ -772,10 +776,10 @@ class WLPlugSearchEngineSqlSearch extends BaseSearchPlugin implements IWLPlugSea
 										$vs_fld_num = 'I'.$vs_field;
 										$vn_fld_num = (int)$vs_field;
 									} else {
-										$vn_fld_num = (int)$this->getFieldNum($vs_table, $vs_field);
+										$vn_fld_num = $this->getFieldNum($vs_table, $vs_field);
 										$vs_fld_num = 'I'.$vn_fld_num;
 										
-										if (is_null($vn_fld_num)) {
+										if (!strlen($vn_fld_num)) {
 											$t_element = new ca_metadata_elements();
 											if ($t_element->load(array('element_code' => ($vs_sub_field ? $vs_sub_field : $vs_field)))) {
 												$vn_fld_num = $t_element->getPrimaryKey();
@@ -962,7 +966,7 @@ class WLPlugSearchEngineSqlSearch extends BaseSearchPlugin implements IWLPlugSea
 															break;
 													}
 												}	
-											} else { // neither table fields nor elements, i.e. 'virtual' fields like _count or _hier_ancestors, should 
+											} else { // neither table fields nor elements, i.e. 'virtual' fields like _count should 
 												$vn_fld_num = false;
 												$vs_fld_num = $vs_field;
 											}
@@ -1164,7 +1168,7 @@ class WLPlugSearchEngineSqlSearch extends BaseSearchPlugin implements IWLPlugSea
 		}
 		
 		if ($this->debug) { print "[SqlSearchDebug] indexField: $pn_content_tablenum/$ps_content_fieldname [$pn_content_row_id] =&gt; $pm_content<br>\n"; }
-		
+	
 		if (in_array((string)'DONT_TOKENIZE', array_values($pa_options), true)) { 
 			$pa_options['DONT_TOKENIZE'] = true;  
 		} else {
@@ -1203,9 +1207,6 @@ class WLPlugSearchEngineSqlSearch extends BaseSearchPlugin implements IWLPlugSea
 			}
 		} else {
 			switch((string)$ps_content_fieldname) {
-				case '_hier_ancestors':
-					$vn_field_num = '_hier_ancestors';
-					break;
 				case '_count':
 					$vn_field_num = '_count';
 					break;
@@ -1222,7 +1223,6 @@ class WLPlugSearchEngineSqlSearch extends BaseSearchPlugin implements IWLPlugSea
 		}
 		
 		if (strlen((string)$pm_content) == 0) { 
-			//print "BLANK FOR ".$pn_content_tablenum.'/'.$vn_field_num.'/'.$pn_content_row_id.'/'.$vn_boost."\n";
 			$va_words = null;
 		} else {
 			// Tokenize string
@@ -1233,8 +1233,7 @@ class WLPlugSearchEngineSqlSearch extends BaseSearchPlugin implements IWLPlugSea
 				$va_words = preg_split("![ ]+!", (string)$pm_content);
 			}
 		}
-		
-		WLPlugSearchEngineSqlSearch::$s_doc_content_buffer[$this->opn_indexing_subject_tablenum.'/'.$this->opn_indexing_subject_row_id.'/'.$pn_content_tablenum.'/'.$vn_field_num.'/'.$pn_content_row_id.'/'.$vn_boost.'/'.$vn_private] = $va_words;
+		WLPlugSearchEngineSqlSearch::$s_doc_content_buffer[$this->opn_indexing_subject_tablenum.'/'.$this->opn_indexing_subject_row_id.'/'.$pn_content_tablenum.'/'.$vn_field_num.'/'.$pn_content_row_id.'/'.$vn_boost.'/'.$vn_private][] = $va_words;
 	}
 	# ------------------------------------------------
 	public function commitRowIndexing() {
@@ -1248,39 +1247,41 @@ class WLPlugSearchEngineSqlSearch extends BaseSearchPlugin implements IWLPlugSea
 		$va_row_sql = array();
 		$vn_segment = 0;
 		
-		foreach(WLPlugSearchEngineSqlSearch::$s_doc_content_buffer as $vs_key => $va_content) {
-			$vn_seq = 0;
-			$va_word_list = is_array($va_content) ? array_flip($va_content) : null;
+		foreach(WLPlugSearchEngineSqlSearch::$s_doc_content_buffer as $vs_key => $va_content_list) {
+			foreach($va_content_list as $vn_i => $va_content) {
+				$vn_seq = 0;
+				$va_word_list = is_array($va_content) ? array_flip($va_content) : null;
 			
-			$va_tmp = explode('/', $vs_key);
-			$vn_table_num= (int)$va_tmp[0];
-			$vn_row_id= (int)$va_tmp[1];
-			$vn_content_table_num = (int)$va_tmp[2];
-			$vn_content_field_num = $va_tmp[3];
-			$vn_content_row_id = (int)$va_tmp[4];
-			$vn_boost= (int)$va_tmp[5];
-			$vn_access= (int)$va_tmp[6];
+				$va_tmp = explode('/', $vs_key);
+				$vn_table_num= (int)$va_tmp[0];
+				$vn_row_id= (int)$va_tmp[1];
+				$vn_content_table_num = (int)$va_tmp[2];
+				$vn_content_field_num = $va_tmp[3];
+				$vn_content_row_id = (int)$va_tmp[4];
+				$vn_boost= (int)$va_tmp[5];
+				$vn_access= (int)$va_tmp[6];
 			
-			if (!defined("__CollectiveAccess_IS_REINDEXING__") && $this->can('incremental_reindexing')) {
-				$this->removeRowIndexing($vn_table_num, $vn_row_id, $vn_content_table_num, $vn_content_field_num);
-			}
+				if (!defined("__CollectiveAccess_IS_REINDEXING__") && $this->can('incremental_reindexing')) {
+					$this->removeRowIndexing($vn_table_num, $vn_row_id, $vn_content_table_num, $vn_content_field_num);
+				}
 			
-			if (is_array($va_word_list)) {
-				foreach($va_word_list as $vs_word => $vn_x) {
-					if(!strlen((string)$vs_word)) { continue; }
-					if (!($vn_word_id = (int)$this->getWordID((string)$vs_word))) { continue; }
+				if (is_array($va_word_list)) {
+					foreach($va_word_list as $vs_word => $vn_x) {
+						if(!strlen((string)$vs_word)) { continue; }
+						if (!($vn_word_id = (int)$this->getWordID((string)$vs_word))) { continue; }
 				
-					$va_row_sql[$vn_segment][] = '('.$vn_table_num.','.$vn_row_id.','.$vn_content_table_num.',\''.$vn_content_field_num.'\','.$vn_content_row_id.','.$vn_word_id.','.$vn_boost.','.$vn_access.')';	
+						$va_row_sql[$vn_segment][] = '('.$vn_table_num.','.$vn_row_id.','.$vn_content_table_num.',\''.$vn_content_field_num.'\','.$vn_content_row_id.','.$vn_word_id.','.$vn_boost.','.$vn_access.')';	
+						$vn_seq++;
+				
+						if (sizeof($va_row_sql[$vn_segment]) > $this->getOption('maxWordIndexInsertSegmentSize')) { $vn_segment++; }
+					}
+				} else {
+					// index blank value
+					$va_row_sql[$vn_segment][] = '('.$vn_table_num.','.$vn_row_id.','.$vn_content_table_num.',\''.$vn_content_field_num.'\','.$vn_content_row_id.',0,0,'.$vn_access.')';	
 					$vn_seq++;
 				
 					if (sizeof($va_row_sql[$vn_segment]) > $this->getOption('maxWordIndexInsertSegmentSize')) { $vn_segment++; }
 				}
-			} else {
-				// index blank value
-				$va_row_sql[$vn_segment][] = '('.$vn_table_num.','.$vn_row_id.','.$vn_content_table_num.',\''.$vn_content_field_num.'\','.$vn_content_row_id.',0,0,'.$vn_access.')';	
-				$vn_seq++;
-				
-				if (sizeof($va_row_sql[$vn_segment]) > $this->getOption('maxWordIndexInsertSegmentSize')) { $vn_segment++; }
 			}
 		}
 		

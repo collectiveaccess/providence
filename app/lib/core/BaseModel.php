@@ -3375,9 +3375,9 @@ class BaseModel extends BaseObject {
 	 * @return mixed media information
 	 */
 	public function &getMediaInfo($ps_field, $ps_version=null, $ps_property=null) {
-		$va_media_info = $this->get($ps_field, array('USE_MEDIA_FIELD_VALUES' => true));
+		$va_media_info = self::get($ps_field, array('USE_MEDIA_FIELD_VALUES' => true));
 		if (!is_array($va_media_info)) {
-			return "";
+			return '';
 		}
 		
 		#
@@ -6171,15 +6171,18 @@ class BaseModel extends BaseObject {
 	 *		returnDeleted = return deleted records in list (def. false)
 	 *		maxLevels = 
 	 *		dontIncludeRoot = 
+	 *		includeSelf = 
 	 * 
 	 * @return array
 	 */
 	public function &getHierarchyAsList($pn_id=null, $pa_options=null) {
-		$pb_ids_only = (isset($pa_options['idsOnly']) && $pa_options['idsOnly']) ? true : false;
-		$pn_max_levels = isset($pa_options['maxLevels']) ? intval($pa_options['maxLevels']) : null;
-		$ps_additional_table_to_join = isset($pa_options['additionalTableToJoin']) ? $pa_options['additionalTableToJoin'] : null;
-		$pb_dont_include_root = (isset($pa_options['dontIncludeRoot']) && $pa_options['dontIncludeRoot']) ? true : false;
+		$pb_ids_only 					= caGetOption('idsOnly', $pa_options, false);
+		$pn_max_levels 					= caGetOption('maxLevels', $pa_options, null, array('cast' => 'int'));
+		$ps_additional_table_to_join 	= caGetOption('additionalTableToJoin', $pa_options, null);
+		$pb_dont_include_root 			= caGetOption('dontIncludeRoot', $pa_options, false);
+		$pb_include_self 				= caGetOption('includeSelf', $pa_options, false);
 		
+		if ($pn_id && $pb_include_self) { $pb_dont_include_root = false; }
 		
 		if ($qr_hier = $this->getHierarchy($pn_id, $pa_options)) {
 			$vs_hier_right_fld 			= $this->getProperty("HIERARCHY_RIGHT_INDEX_FLD");
