@@ -829,7 +829,7 @@ class SearchResult extends BaseObject {
 					$va_values_tmp = array();
 					foreach($va_values as $vn_i => $va_value_list) {
 						foreach($va_value_list as $vn_attr_id => $va_attr_data) {
-							$va_values_tmp[] = caProcessTemplateForIDs($vs_template, $va_path_components['table_name'], array($vn_row_id), array('placeholderPrefix' => $va_path_components['field_name']));
+							$va_values_tmp[] = caProcessTemplateForIDs($vs_template, $va_path_components['table_name'], array($vn_row_id), array_merge($pa_options, array('placeholderPrefix' => $va_path_components['field_name'])));
 						}
 					}
 					
@@ -913,7 +913,7 @@ class SearchResult extends BaseObject {
 					}
 				}
 			}
-
+			 
 			if ($vb_return_as_array || $vb_return_all_locales) {
 // return array
 				if ($vb_return_as_link && $vb_is_related) {
@@ -922,8 +922,11 @@ class SearchResult extends BaseObject {
 					if (!$vb_return_all_locales) {
 						$va_return_values_tmp = array();
 						foreach($va_return_values as $vn_i => $va_value) {
-							$vs_value = $va_value[$vs_fld_key];
-							$vs_value = caProcessTemplateForIDs($vs_template, $va_path_components['table_name'], array($va_ids[$vn_i][$vs_pk]), array('returnAsArray' => false));
+							if ($vs_template) {
+								$vs_value = caProcessTemplateForIDs($vs_template, $va_path_components['table_name'], array($va_ids[$vn_i][$vs_pk]), array('returnAsArray' => false));
+							} else {
+								$vs_value = $va_value[$vs_fld_key];
+							}
 							
 							if ($vb_return_as_link) {
 								$va_return_values_tmp[$vn_i] = array_pop(caCreateLinksFromText(array($vs_value), $va_original_path_components['table_name'], array($va_ids[$vn_i]), $vs_return_as_link_class, $vs_return_as_link_target));
