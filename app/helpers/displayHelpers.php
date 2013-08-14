@@ -1755,7 +1755,6 @@ require_once(__CA_LIB_DIR__."/ca/ApplicationPluginManager.php");
 		unset($pa_options['request']);
 		unset($pa_options['template']);	// we pass through options to get() and don't want templates 
 		if (!isset($pa_options['convertCodesToDisplayText'])) { $pa_options['convertCodesToDisplayText'] = true; }
-		
 		$vb_return_as_array = (isset($pa_options['returnAsArray'])) ? (bool)$pa_options['returnAsArray'] : false;
 		if (!is_array($pa_row_ids) || !sizeof($pa_row_ids) || !$ps_template) {
 			return $vb_return_as_array ? array() : "";
@@ -1897,8 +1896,7 @@ require_once(__CA_LIB_DIR__."/ca/ApplicationPluginManager.php");
 						} else {
 							// see if this is a reference to a related table
 							if (($ps_tablename != $va_tmp[0]) && ($t_tmp = $o_dm->getInstanceByTableName($va_tmp[0], true))) {	// if the part of the tag before a "." (or the tag itself if there are no periods) is a related table then try to fetch it as related to the current record
-								
-								if (isset($pa_options['placeholderPrefix']) && $pa_options['placeholderPrefix'] && ($va_tmp[0] != $pa_options['placeholderPrefix'])) {
+								if (isset($pa_options['placeholderPrefix']) && $pa_options['placeholderPrefix'] && ($va_tmp[0] != $pa_options['placeholderPrefix']) && (sizeof($va_tmp) == 1)) {
 									$vs_get_spec = array_shift($va_tmp).".".$pa_options['placeholderPrefix'];
 									if(sizeof($va_tmp) > 0) {
 										$vs_get_spec .= ".".join(".", $va_tmp);
@@ -1911,8 +1909,8 @@ require_once(__CA_LIB_DIR__."/ca/ApplicationPluginManager.php");
 								if ((sizeof($va_spec_bits) == 1) && ($o_dm->getTableNum($va_spec_bits[0]))) { 
 									$vs_get_spec .= ".preferred_labels";
 								}
-								$va_val = $qr_res->get($vs_get_spec, array_merge($pa_options, array('returnAsArray' => true)));
 								
+								$va_val = $qr_res->get($vs_get_spec, array_merge($pa_options, array('returnAsArray' => true)));
 								$va_val_proc = array();
 								if (($va_spec_bits[1] == 'hierarchy') || (($va_spec_bits[1] == 'related') && ($va_spec_bits[1] == 'hierarchy'))) {
 									foreach($va_val as $vn_i => $va_hier) {
@@ -1921,6 +1919,10 @@ require_once(__CA_LIB_DIR__."/ca/ApplicationPluginManager.php");
 								} else {
 									$vs_terminal = end($va_spec_bits);
 									foreach($va_val as $vn_i => $va_val_container) {
+										if(!is_array($va_val_container)) { 
+											if ($va_val_container) { $va_val_proc[] = $va_val_container; }
+											continue; 
+										}
 										$va_val_proc[] = $va_val_container[$vs_terminal];
 									}
 								}
@@ -1956,7 +1958,7 @@ require_once(__CA_LIB_DIR__."/ca/ApplicationPluginManager.php");
 									$va_val[] = $qr_res->get($vs_get_spec, array_merge($pa_options, array('returnAsArray' => false)));
 								} else {
 									$va_val_tmp = $qr_res->get($vs_get_spec, array_merge($pa_options, array('returnAsArray' => true)));
-								
+									
 									$va_val = array();
 								
 									if (is_array($va_val_tmp)) {

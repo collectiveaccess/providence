@@ -759,9 +759,7 @@
 									if ($vs_template) {
 										$va_values_tmp = array();
 										foreach($va_values as $vn_i => $va_value_list) {
-											foreach($va_value_list as $vn_attr_id => $va_attr_data) {
-												$va_values_tmp[] = caProcessTemplateForIDs($vs_template, $va_tmp[0], array($vn_row_id), array_merge($pa_options, array('returnAsArray' => false, 'placeholderPrefix' => $va_tmp[1])));
-											}
+											$va_values_tmp[] = caProcessTemplateForIDs($vs_template, $va_tmp[0], array($vn_row_id), array_merge($pa_options, array('returnAsArray' => false, 'placeholderPrefix' => $va_tmp[1])));
 										}
 				
 										$va_values = $va_values_tmp;
@@ -803,7 +801,7 @@
 													if ($vs_template) { 
 														$va_subvalues[$vn_attribute_id] = caProcessTemplateForIDs($vs_template, $va_tmp[0], array($vn_row_id), array_merge($pa_options, array('requireLinkTags' => true, 'returnAsArray' => false, 'placeholderPrefix' => $va_tmp[1])));
 													} else {
-														$va_subvalues[$vn_attribute_id] = $va_data;
+														$va_subvalues[$vn_attribute_id] = $va_data[$va_tmp[2]];
 													}
 												}
 											}
