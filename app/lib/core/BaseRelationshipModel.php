@@ -42,6 +42,16 @@
  
 	class BaseRelationshipModel extends BundlableLabelableBaseModelWithAttributes implements IRelationshipModel {
 		# ------------------------------------------------------
+		
+		# ------------------------------------------------------
+		# Search
+		# ------------------------------------------------------
+		//
+		// We use a single search class for all relationship tables
+		//
+		protected $SEARCH_CLASSNAME = 'InterstitialSearch';
+		protected $SEARCH_RESULT_CLASSNAME = 'InterstitialSearchResult';
+		# ------------------------------------------------------
 		/**
 		 * 
 		 */

@@ -545,7 +545,10 @@ class SearchResult extends BaseObject {
 				$va_related_items = caSortArrayByKeyInValue($va_related_items, $va_sort_fields);
 			}
 	
-// Return as array		
+// Return as array	
+			if($vs_template) {
+				return caProcessTemplateForIDs($vs_template, $this->opo_subject_instance->tableName(), array($vn_row_id), array_merge($pa_options, array('placeholderPrefix' => $va_path_components['field_name'])));
+			}	
 			if($vb_return_as_array || $vb_return_all_locales) {
 				 if ($vb_return_all_locales) {
 					$va_related_tmp = array();
@@ -871,7 +874,6 @@ class SearchResult extends BaseObject {
 		
 		$va_return_values = array();
 		if (($va_path_components['table_name'] !== $this->ops_table_name) && ($va_path_components['field_name'] !== 'relationship_typename') && !$t_instance->hasField($va_path_components['field_name']) && method_exists($t_instance, 'getAttributes')) {
-			
 //
 // Return metadata attributes in a related table
 //
@@ -951,6 +953,9 @@ class SearchResult extends BaseObject {
 			}
 		} else {
 
+			if ($vs_template) {
+				return caProcessTemplateForIDs($vs_template, $this->opo_subject_instance->tableName(), array($vn_row_id), array_merge($pa_options, array('placeholderPrefix' => $va_path_components['field_name'])));
+			}	
 //
 // Return fields (intrinsics, labels) in primary or related table
 //
@@ -1287,7 +1292,6 @@ class SearchResult extends BaseObject {
 						$va_return_values = caCreateLinksFromText($va_return_values, $va_original_path_components['table_name'], $va_ids, $vs_return_as_link_class, $vs_return_as_link_target);
 					}
 				}
-				
 				return $va_return_values;
 			} else {
 // Return scalar (intrinsics or labels in primary or related table)
