@@ -240,7 +240,7 @@
 		jQuery(document).ready(function() {
 			jQuery.getScript('<?php print $this->request->getBaseUrlPath(); ?>/js/pdfjs/viewer.js', function() {
 				PDFJS.workerSrc = '<?php print $this->request->getBaseUrlPath(); ?>/js/pdfjs/pdf.js';
-				PDFJS.webViewerLoad('<?php print $t_value->getMediaUrl('value_blob', 'pdf'); ?>'); 
+				PDFJS.webViewerLoad('<?php print $t_value->getMediaUrl('value_blob', ($this->getVar('mimetype') ==  'application/pdf') ? 'original' : 'pdf'); ?>'); 
 			});
 		});
 	</script>

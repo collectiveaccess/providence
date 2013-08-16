@@ -1127,7 +1127,6 @@
 			$o_view->setVar('versions', $va_versions = $t_attr_val->getMediaVersions('value_blob'));
 			
 			$t_media = new Media();
-			$o_view->setVar('version_type', $t_media->getMimetypeTypename($t_attr_val->getMediaInfo('value_blob', 'original', 'MIMETYPE')));
 	
 			$ps_version 	= $po_request->getParameter('version', pString);
 			if (!in_array($ps_version, $va_versions)) { 
@@ -1135,7 +1134,8 @@
 			}
 			$o_view->setVar('version', $ps_version);
 			$o_view->setVar('version_info', $t_attr_val->getMediaInfo('value_blob', $ps_version));
-			$o_view->setVar('mimetype', $t_attr_val->getMediaInfo('value_blob', $ps_version, 'MIMETYPE'));			
+			$o_view->setVar('version_type', $t_media->getMimetypeTypename($t_attr_val->getMediaInfo('value_blob', $ps_version, 'MIMETYPE')));
+			$o_view->setVar('mimetype', $t_attr_val->getMediaInfo('value_blob', 'INPUT', 'MIMETYPE'));			
 			
 			
 			return $o_view->render('media_attribute_viewer_html.php');
