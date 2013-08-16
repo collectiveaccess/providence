@@ -534,9 +534,10 @@
 			$t_rep = new ca_object_representations();
 			$t_rep->setMode(ACCESS_WRITE);
 	
-			$va_mimetypes = explode(",", $po_opts->getOption("mimetypes"));
-			$va_versions = explode(",", $po_opts->getOption("versions"));
-			$va_kinds = explode(",", $po_opts->getOption("kinds"));
+			$va_mimetypes = ($vs_mimetypes = $po_opts->getOption("mimetypes")) ? explode(",", $vs_mimetypes) : array();
+			$va_versions = ($vs_versions = $po_opts->getOption("versions")) ? explode(",", $vs_versions) : array();
+			$va_kinds = ($vs_kinds = $po_opts->getOption("kinds")) ? explode(",", $vs_kinds) : array();
+			
 			if (!is_array($va_kinds) || !sizeof($va_kinds)) {
 				$va_kinds = array('all');
 			}

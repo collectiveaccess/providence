@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2008-2010 Whirl-i-Gig
+ * Copyright 2008-2013 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -27,12 +27,20 @@
  */
 
  	require_once(__CA_MODELS_DIR__.'/ca_users.php');
+ 	require_once(__CA_LIB_DIR__."/ca/ApplicationPluginManager.php");
 
  	class UsersController extends ActionController {
  		# -------------------------------------------------------
  		private $pt_user;
+ 		private $opo_app_plugin_manager;
  		# -------------------------------------------------------
  		#
+ 		# -------------------------------------------------------
+ 		public function __construct(&$po_request, &$po_response, $pa_view_paths=null) {
+ 			parent::__construct($po_request, $po_response, $pa_view_paths);
+			
+ 			$this->opo_app_plugin_manager = new ApplicationPluginManager();
+ 		}
  		# -------------------------------------------------------
  		public function Edit() {
  			JavascriptLoadManager::register("bundleableEditor");
@@ -56,6 +64,9 @@
  			JavascriptLoadManager::register('tableList');
  			
  			$t_user = $this->getUserObject();
+ 			
+ 			$this->opo_app_plugin_manager->hookBeforeUserSaveData(array('user_id' => $t_user->getPrimaryKey(), 'instance' => $t_user));
+ 			
  			$t_user->setMode(ACCESS_WRITE);
  			foreach($t_user->getFormFields() as $vs_f => $va_field_info) {
  				$t_user->set($vs_f, $_REQUEST[$vs_f]);
@@ -83,6 +94,8 @@
 					$vs_message = _t("Saved changes to user");
 				}
 				
+ 				$this->opo_app_plugin_manager->hookAfterUserSaveData(array('user_id' => $t_user->getPrimaryKey(), 'instance' => $t_user));
+ 			
 				if ($t_user->numErrors()) {
 					foreach ($t_user->errors() as $o_e) {
 						$this->request->addActionError($o_e, 'general');
@@ -136,11 +149,19 @@
 					$va_profile_prefs = $t_user->getValidPreferences('profile');
 					if (is_array($va_profile_prefs) && sizeof($va_profile_prefs)) {
 						
+ 						$this->opo_app_plugin_manager->hookBeforeUserSavePrefs(array('user_id' => $t_user->getPrimaryKey(), 'instance' => $t_user));
+ 						
+ 						$va_changed_prefs = array();
 						foreach($va_profile_prefs as $vs_pref) {
+							if ($this->request->getParameter('pref_'.$vs_pref, pString) != $t_user->getPreference($vs_pref)) {
+								$va_changed_prefs[$vs_pref] = true;
+							}
 							$t_user->setPreference($vs_pref, $this->request->getParameter('pref_'.$vs_pref, pString));
 						}
 						
 						$t_user->update();
+						
+ 						$this->opo_app_plugin_manager->hookAfterUserSavePrefs(array('user_id' => $t_user->getPrimaryKey(), 'instance' => $t_user, 'modified_prefs' => $va_changed_prefs));
 					}
 					
 

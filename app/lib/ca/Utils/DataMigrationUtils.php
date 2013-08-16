@@ -34,11 +34,15 @@
   *
   */
 
+ 	require_once(__CA_MODELS_DIR__.'/ca_objects.php');
  	require_once(__CA_MODELS_DIR__.'/ca_entities.php');
- 	require_once(__CA_MODELS_DIR__.'/ca_entity_labels.php');
  	require_once(__CA_MODELS_DIR__.'/ca_places.php');
+ 	require_once(__CA_MODELS_DIR__.'/ca_occurrences.php');
  	require_once(__CA_MODELS_DIR__.'/ca_collections.php');
  	require_once(__CA_MODELS_DIR__.'/ca_lists.php');
+ 	require_once(__CA_MODELS_DIR__.'/ca_list_items.php');
+ 	require_once(__CA_MODELS_DIR__.'/ca_loans.php');
+ 	require_once(__CA_MODELS_DIR__.'/ca_movements.php');
  	require_once(__CA_MODELS_DIR__.'/ca_storage_locations.php');
  	require_once(__CA_MODELS_DIR__.'/ca_data_import_events.php');
  	
@@ -83,6 +87,7 @@
 		 * @param array $pa_options An optional array of options, which include:
 		 *				outputErrors - if true, errors will be printed to console [default=false]
 		 *				dontCreate - if true then new entities will not be created [default=false]
+		 *				matchOnIdno - try to match on idno if name match fails [default=false]
 		 *				matchOnDisplayName  if true then entities are looked up exclusively using displayname, otherwise forename and surname fields are used [default=false]
 		 * 				transaction - if Transaction instance is passed, use it for all Db-related tasks [default=null]
 		 *				returnInstance = return ca_entities instance rather than entity_id. Default is false. 
@@ -95,6 +100,9 @@
 			if (!is_array($pa_options)) { $pa_options = array(); }
 			if(!isset($pa_options['outputErrors'])) { $pa_options['outputErrors'] = false; }
 			
+			$pb_match_on_displayname = caGetOption('matchOnDisplayName', $pa_options, false);
+			$pb_match_on_idno = caGetOption('matchOnIdno', $pa_options, false);
+			
 			$t_entity = new ca_entities();
 			if (isset($pa_options['transaction']) && $pa_options['transaction'] instanceof Transaction){
 				$t_entity->setTransaction($pa_options['transaction']);
@@ -104,17 +112,25 @@
 			$vs_event_source = (isset($pa_options['importEventSource']) && $pa_options['importEventSource']) ? $pa_options['importEventSource'] : "?";
 			$o_log = (isset($pa_options['log']) && $pa_options['log'] instanceof KLogger) ? $pa_options['log'] : null;
 			
-			$vb_exists = false;
-			if (isset($pa_options['matchOnDisplayName']) && $pa_options['matchOnDisplayName']) {
-				$t_entity_label = new ca_entity_labels();
-				if ($t_entity_label->load(array('displayname' => $pa_entity_name['displayname']))) {
-					$va_entity_ids = array($t_entity_label->get('entity_id'));
-					$vb_exists = true;
+			$va_find_arr = array();
+			if ($pn_type_id) { $va_find_arr['type_id'] = $pn_type_id; }			
+			if (!($vs_idno = isset($pa_values['idno']) ? (string)$pa_values['idno'] : null)) {
+				if(isset($pa_options['generateIdnoWithTemplate']) && $pa_options['generateIdnoWithTemplate']) {
+					$vs_idno = $t_entity->setIdnoTWithTemplate($pa_options['generateIdnoWithTemplate'], array('dontSetValue' => true));
 				}
-			} else {
-				$vb_exists = (sizeof($va_entity_ids = $t_entity->getEntityIDsByName($pa_entity_name['forename'], $pa_entity_name['surname'])) > 0);
 			}
-			if (!$vb_exists) {
+			
+			if ($pb_match_on_displayname) {
+				$vn_id = ca_entities::find(array_merge(array('preferred_labels' => array('displayname' => $pa_entity_name['displayname']), $va_find_arr)), array('returnAs' => 'firstId', 'transaction' => $pa_options['transaction']));
+			} else {
+				$vn_id = ca_entities::find(array_merge(array('preferred_labels' => array('forename' => $pa_entity_name['forename'], 'surname' => $pa_entity_name['surname']), $va_find_arr)), array('returnAs' => 'firstId', 'transaction' => $pa_options['transaction']));
+			}
+			if (!$vn_id && $pb_match_on_idno) {
+				$va_find_arr['idno'] = $vs_idno;
+				$vn_id = (ca_entities::find($va_find_arr, array('returnAs' => 'firstId', 'transaction' => $pa_options['transaction'])));
+			}
+			
+			if (!$vn_id) {
 				if (isset($pa_options['dontCreate']) && $pa_options['dontCreate']) { return false; }
 				if ($o_event) { $o_event->beginItem($vs_event_source, 'ca_entities', 'I'); }
 				
@@ -124,12 +140,6 @@
 				$t_entity->set('source_id', isset($pa_values['source_id']) ? $pa_values['source_id'] : null);
 				$t_entity->set('access', isset($pa_values['access']) ? $pa_values['access'] : 0);
 				$t_entity->set('status', isset($pa_values['status']) ? $pa_values['status'] : 0);
-				
-				if (!($vs_idno = isset($pa_values['idno']) ? (string)$pa_values['idno'] : null)) {
-					if(isset($pa_options['generateIdnoWithTemplate']) && $pa_options['generateIdnoWithTemplate']) {
-						$vs_idno = $t_entity->setIdnoTWithTemplate($pa_options['generateIdnoWithTemplate'], array('dontSetValue' => true));
-					}
-				}
 				
 				$t_entity->set('idno', $vs_idno);
 				$t_entity->set('lifespan', isset($pa_values['lifespan']) ? $pa_values['lifespan'] : null);
@@ -210,7 +220,7 @@
 				}
 			} else {
 				if ($o_event) { $o_event->beginItem($vs_event_source, 'ca_entities', 'U'); }
-				$vn_entity_id = array_shift($va_entity_ids);
+				$vn_entity_id = $vn_id;
 				if ($o_event) { $o_event->endItem($vn_entity_id, __CA_DATA_IMPORT_ITEM_SUCCESS__, ''); }
 				if ($o_log) { $o_log->logDebug(_t("Found existing entity %1 in DataMigrationUtils::getEntityID(); total of %2 entities were found", $pa_entity_name['forename']."/".$pa_entity_name['surname'], sizeof($va_entity_ids) + 1)); }
 				
@@ -234,6 +244,7 @@
 		 * @param array $pa_values An optional array of additional values to populate newly created place records with. These values are *only* used for newly created places; they will not be applied if the place named already exists. The array keys should be names of ca_places fields or valid entity attributes. Values should be either a scalar (for single-value attributes) or an array of values for (multi-valued attributes)
 		 * @param array $pa_options An optional array of options, which include:
 		 *				outputErrors - if true, errors will be printed to console [default=false]
+		 *				matchOnIdno - try to match on idno if name match fails [default=false]
 		 *				dontCreate - if true then new entities will not be created [default=false]
 		 * 				transaction - if Transaction object is passed, use it for all Db-related tasks [default=null]
 		 *				returnInstance = return ca_places instance rather than place_id. Default is false. 
@@ -246,6 +257,8 @@
 			if (!is_array($pa_options)) { $pa_options = array(); }
 			if(!isset($pa_options['outputErrors'])) { $pa_options['outputErrors'] = false; }
 			
+			$pb_match_on_idno = caGetOption('matchOnIdno', $pa_options, false);
+			
 			$t_place = new ca_places();
 			if (isset($pa_options['transaction']) && $pa_options['transaction'] instanceof Transaction){
 				$t_place->setTransaction($pa_options['transaction']);
@@ -255,7 +268,25 @@
 			$vs_event_source = (isset($pa_options['importEventSource']) && $pa_options['importEventSource']) ? $pa_options['importEventSource'] : "?";
 			$o_log = (isset($pa_options['log']) && $pa_options['log'] instanceof KLogger) ? $pa_options['log'] : null;
 
-			if (sizeof($va_place_ids = $t_place->getPlaceIDsByName($ps_place_name, $pn_parent_id)) == 0) {
+			if (!($vs_idno = isset($pa_values['idno']) ? (string)$pa_values['idno'] : null)) {
+				if(isset($pa_options['generateIdnoWithTemplate']) && $pa_options['generateIdnoWithTemplate']) {
+					$vs_idno = $t_place->setIdnoTWithTemplate($pa_options['generateIdnoWithTemplate'], array('dontSetValue' => true));
+				}
+			}
+			
+			$va_find_arr = array();
+			if ($pn_type_id) { $va_find_arr['type_id'] = $pn_type_id; }
+			if ($pn_parent_id) { $va_find_arr['parent_id'] = $pn_parent_id; }
+			
+			if (!($vn_id = (ca_places::find(array_merge(array('preferred_labels' => array('name' => $ps_place_name)), $va_find_arr), array('returnAs' => 'firstId', 'transaction' => $pa_options['transaction']))))) {
+				if ($pb_match_on_idno && $vs_idno) { 
+					$va_find_arr['idno'] = $vs_idno;
+					$vn_id = (ca_places::find($va_find_arr, array('returnAs' => 'firstId', 'transaction' => $pa_options['transaction'])));
+				}
+			}
+			
+			
+			if (!$vn_id) {
 				if (isset($pa_options['dontCreate']) && $pa_options['dontCreate']) { return false; }
 				if ($o_event) { $o_event->beginItem($vs_event_source, 'ca_places', 'I'); }
 				
@@ -267,11 +298,6 @@
 				$t_place->set('access', isset($pa_values['access']) ? $pa_values['access'] : 0);
 				$t_place->set('status', isset($pa_values['status']) ? $pa_values['status'] : 0);
 				
-				if (!($vs_idno = isset($pa_values['idno']) ? (string)$pa_values['idno'] : null)) {
-					if(isset($pa_options['generateIdnoWithTemplate']) && $pa_options['generateIdnoWithTemplate']) {
-						$vs_idno = $t_entity->setIdnoTWithTemplate($pa_options['generateIdnoWithTemplate'], array('dontSetValue' => true));
-					}
-				}
 				$t_place->set('idno',$vs_idno);
 				
 				$t_place->set('lifespan', isset($pa_values['lifespan']) ? $pa_values['lifespan'] : null);
@@ -355,7 +381,7 @@
 				}
 			} else {
 				if ($o_event) { $o_event->beginItem($vs_event_source, 'ca_places', 'U'); }
-				$vn_place_id = array_shift($va_place_ids);
+				$vn_place_id = $vn_id;
 				if ($o_event) { $o_event->endItem($vn_place_id, __CA_DATA_IMPORT_ITEM_SUCCESS__, ''); }
 				
 				if ($o_log) { $o_log->logDebug(_t("Found existing place %1 in DataMigrationUtils::getPlaceID(); total of %2 places were found", $ps_place_name, sizeof($va_place_ids) + 1)); }
@@ -379,6 +405,7 @@
 		 * @param array $pa_values An optional array of additional values to populate newly created occurrence records with. These values are *only* used for newly created occurrences; they will not be applied if the occurrence named already exists. The array keys should be names of ca_occurrences fields or valid entity attributes. Values should be either a scalar (for single-value attributes) or an array of values for (multi-valued attributes)
 		 * @param array $pa_options An optional array of options, which include:
 		 *				outputErrors - if true, errors will be printed to console [default=false]
+		 *				matchOnIdno - try to match on idno if name match fails [default=false]
 		 *				dontCreate - if true then new entities will not be created [default=false]
 		 * 				transaction - if Transaction object is passed, use it for all Db-related tasks [default=null]
 		 *				returnInstance = return ca_occurrences instance rather than occurrence_id. Default is false. 
@@ -391,6 +418,8 @@
 			if (!is_array($pa_options)) { $pa_options = array(); }
 			if(!isset($pa_options['outputErrors'])) { $pa_options['outputErrors'] = false; }
 			
+			$pb_match_on_idno = caGetOption('matchOnIdno', $pa_options, false);
+			
 			$t_occurrence = new ca_occurrences();
 			if (isset($pa_options['transaction']) && $pa_options['transaction'] instanceof Transaction){
 				$t_occurrence->setTransaction($pa_options['transaction']);
@@ -400,7 +429,24 @@
 			$vs_event_source = (isset($pa_options['importEventSource']) && $pa_options['importEventSource']) ? $pa_options['importEventSource'] : "?";
 			$o_log = (isset($pa_options['log']) && $pa_options['log'] instanceof KLogger) ? $pa_options['log'] : null;
 
-			if (sizeof($va_occurrence_ids = $t_occurrence->getOccurrenceIDsByName($ps_occ_name, $pn_parent_id, $pn_type_id)) == 0) {
+			if (!($vs_idno = isset($pa_values['idno']) ? (string)$pa_values['idno'] : null)) {
+				if(isset($pa_options['generateIdnoWithTemplate']) && $pa_options['generateIdnoWithTemplate']) {
+					$vs_idno = $t_occurrence->setIdnoTWithTemplate($pa_options['generateIdnoWithTemplate'], array('dontSetValue' => true));
+				}
+			}
+			
+			$va_find_arr = array();
+			if ($pn_type_id) { $va_find_arr['type_id'] = $pn_type_id; }
+			if ($pn_parent_id) { $va_find_arr['parent_id'] = $pn_parent_id; }
+			
+			if (!($vn_id = (ca_occurrences::find(array_merge(array('preferred_labels' => array('name' => $ps_occ_name)), $va_find_arr), array('returnAs' => 'firstId', 'transaction' => $pa_options['transaction']))))) {
+				if ($pb_match_on_idno && $vs_idno) { 
+					$va_find_arr['idno'] = $vs_idno;
+					$vn_id = (ca_occurrences::find($va_find_arr, array('returnAs' => 'firstId', 'transaction' => $pa_options['transaction'])));
+				}
+			}
+			
+			if (!$vn_id) {
 				if (isset($pa_options['dontCreate']) && $pa_options['dontCreate']) { return false; }
 				
 				if ($o_event) { $o_event->beginItem($vs_event_source, 'ca_occurrences', 'I'); }
@@ -412,12 +458,6 @@
 				$t_occurrence->set('source_id', isset($pa_values['source_id']) ? $pa_values['source_id'] : null);
 				$t_occurrence->set('access', isset($pa_values['access']) ? $pa_values['access'] : 0);
 				$t_occurrence->set('status', isset($pa_values['status']) ? $pa_values['status'] : 0);
-				
-				if (!($vs_idno = isset($pa_values['idno']) ? (string)$pa_values['idno'] : null)) {
-					if(isset($pa_options['generateIdnoWithTemplate']) && $pa_options['generateIdnoWithTemplate']) {
-						$vs_idno = $t_occurrence->setIdnoTWithTemplate($pa_options['generateIdnoWithTemplate'], array('dontSetValue' => true));
-					}
-				}
 				
 				$t_occurrence->set('idno', $vs_idno);
 				$t_occurrence->set('hier_occurrence_id', isset($pa_values['hier_occurrence_id']) ? $pa_values['hier_occurrence_id'] : null);
@@ -499,7 +539,7 @@
 				}
 			} else {
 				if ($o_event) { $o_event->beginItem($vs_event_source, 'ca_occurrences', 'U'); }
-				$vn_occurrence_id = array_shift($va_occurrence_ids);
+				$vn_occurrence_id = $vn_id;
 				if ($o_event) { $o_event->endItem($vn_occurrence_id, __CA_DATA_IMPORT_ITEM_SUCCESS__, ''); }
 				if ($o_log) { $o_log->logDebug(_t("Found existing occurrence %1 in DataMigrationUtils::getOccurrenceID(); total of %2 occurrences were found", $ps_occ_name, sizeof($va_occurrence_ids) + 1)); }
 				
@@ -517,6 +557,7 @@
 		 *				outputErrors - if true, errors will be printed to console [default=false]
 		 *				dontCreate - if true then new items will not be created [default=false]
 		 *				matchOnLabel =  if true then list items are looked up exclusively using labels [default=false]
+		 *				matchOnIdno - try to match on idno if name match fails [default=false]
 		 *				cache = cache item_ids of previously created/loaded items [default=true]
 		 *				returnInstance = return ca_occurrences instance rather than occurrence_id. Default is false. 
 		 *				importEvent = if ca_data_import_events instance is passed then the insert/update of the list item will be logged as part of the import
@@ -526,6 +567,10 @@
 		static function getListItemID($pm_list_code_or_id, $ps_item_idno, $pn_type_id, $pn_locale_id, $pa_values=null, $pa_options=null) {
 			if (!is_array($pa_options)) { $pa_options = array(); }
 			if(!isset($pa_options['outputErrors'])) { $pa_options['outputErrors'] = false; }
+			
+			$pb_match_on_label = caGetOption('matchOnLabel', $pa_options, false);
+			$pb_match_on_idno = caGetOption('matchOnIdno', $pa_options, false);
+			
 			if(!isset($pa_options['cache'])) { $pa_options['cache'] = true; }
 			
 			$o_event = (isset($pa_options['importEvent']) && $pa_options['importEvent'] instanceof ca_data_import_events) ? $pa_options['importEvent'] : null;
@@ -560,7 +605,8 @@
 				$t_item->setTransaction($pa_options['transaction']);
 			}
 			
-			if (isset($pa_options['matchOnLabel']) && $pa_options['matchOnLabel']) {
+			$vn_item_id = null;
+			if ($pb_match_on_label) {
 				if ($vn_item_id = $t_list->getItemIDFromListByLabel($pm_list_code_or_id, $vs_label = $pa_values['name_singular'] ? $pa_values['name_singular'] : $ps_item_idno)) {
 					DataMigrationUtils::$s_cached_list_item_ids[$pm_list_code_or_id.'/'.$ps_item_idno] = $vn_item_id;
 					
@@ -574,7 +620,8 @@
 					if ($o_log) { $o_log->logDebug(_t("Found existing list item %1 (member of list %2) in DataMigrationUtils::getListID() using label %3", $ps_item_idno, $pm_list_code_or_id, $vs_label)); }
 					return DataMigrationUtils::$s_cached_list_item_ids[$pm_list_code_or_id.'/'.$ps_item_idno];
 				}
-			} else {
+			} 
+			if (!$pb_match_on_label || $pb_match_on_idno) {
 				if ($t_item->load(array('list_id' => $vn_list_id, 'idno' => $ps_item_idno))) {
 					DataMigrationUtils::$s_cached_list_item_ids[$pm_list_code_or_id.'/'.$ps_item_idno] = $t_item->getPrimaryKey();
 					
@@ -648,6 +695,7 @@
 		 * @param array $pa_values An optional array of additional values to populate newly created collection records with. These values are *only* used for newly created collections; they will not be applied if the collection named already exists. The array keys should be names of collection fields or valid collection attributes. Values should be either a scalar (for single-value attributes) or an array of values for (multi-valued attributes)
 		 * @param array $pa_options An optional array of options, which include:
 		 *				outputErrors - if true, errors will be printed to console [default=false]
+		 *				matchOnIdno - try to match on idno if name match fails [default=false]
 		 *				dontCreate - if true then new collections will not be created [default=false]
 		 * 				transaction - if Transaction object is passed, use it for all Db-related tasks [default=null]
 		 *				returnInstance = return ca_collections instance rather than collection_id. Default is false. 
@@ -660,6 +708,8 @@
 			if (!is_array($pa_options)) { $pa_options = array(); }
 			if(!isset($pa_options['outputErrors'])) { $pa_options['outputErrors'] = false; }
 			
+			$pb_match_on_idno = caGetOption('matchOnIdno', $pa_options, false);
+			
 			$t_collection = new ca_collections();
 			if (isset($pa_options['transaction']) && $pa_options['transaction'] instanceof Transaction){
 				$t_collection->setTransaction($pa_options['transaction']);
@@ -669,7 +719,24 @@
 			$vs_event_source = (isset($pa_options['importEventSource']) && $pa_options['importEventSource']) ? $pa_options['importEventSource'] : "?";
 			$o_log = (isset($pa_options['log']) && $pa_options['log'] instanceof KLogger) ? $pa_options['log'] : null;
 
-			if (sizeof($va_collection_ids = $t_collection->getCollectionIDsByName($ps_collection_name, isset($pa_values['parent_id']) ? $pa_values['parent_id'] : null)) == 0) {
+			if (!($vs_idno = isset($pa_values['idno']) ? (string)$pa_values['idno'] : null)) {
+				if(isset($pa_options['generateIdnoWithTemplate']) && $pa_options['generateIdnoWithTemplate']) {
+					$vs_idno = $t_collection->setIdnoTWithTemplate($pa_options['generateIdnoWithTemplate'], array('dontSetValue' => true));
+				}
+			}
+			
+			$va_find_arr = array();
+			if ($pn_type_id) { $va_find_arr['type_id'] = $pn_type_id; }
+			if ($pn_parent_id) { $va_find_arr['parent_id'] = $pn_parent_id; }
+			
+			if (!($vn_id = (ca_collections::find(array_merge(array('preferred_labels' => array('name' => $ps_collection_name)), $va_find_arr), array('returnAs' => 'firstId', 'transaction' => $pa_options['transaction']))))) {
+				if ($pb_match_on_idno && $vs_idno) { 
+					$va_find_arr['idno'] = $vs_idno;
+					$vn_id = (ca_collections::find($va_find_arr, array('returnAs' => 'firstId', 'transaction' => $pa_options['transaction'])));
+				}
+			}
+			
+			if (!$vn_id) {
 				if (isset($pa_options['dontCreate']) && $pa_options['dontCreate']) { return false; }
 				if ($o_event) { $o_event->beginItem($vs_event_source, 'ca_collections', 'I'); }
 				
@@ -679,12 +746,6 @@
 				$t_collection->set('source_id', isset($pa_values['source_id']) ? $pa_values['source_id'] : null);
 				$t_collection->set('access', isset($pa_values['access']) ? $pa_values['access'] : 0);
 				$t_collection->set('status', isset($pa_values['status']) ? $pa_values['status'] : 0);
-				
-				if (!($vs_idno = isset($pa_values['idno']) ? (string)$pa_values['idno'] : null)) {
-					if(isset($pa_options['generateIdnoWithTemplate']) && $pa_options['generateIdnoWithTemplate']) {
-						$vs_idno = $t_collection->setIdnoTWithTemplate($pa_options['generateIdnoWithTemplate'], array('dontSetValue' => true));
-					}
-				}
 				
 				$t_collection->set('idno', $vs_idno);
 				$t_collection->set('parent_id', isset($pa_values['parent_id']) ? $pa_values['parent_id'] : null);
@@ -765,7 +826,7 @@
 				}
 			} else {
 				if ($o_event) { $o_event->beginItem($vs_event_source, 'ca_collections', 'U'); }
-				$vn_collection_id = array_shift($va_collection_ids);
+				$vn_collection_id = $vn_id;
 				if ($o_event) { $o_event->endItem($vn_collection_id, __CA_DATA_IMPORT_ITEM_SUCCESS__, ''); }
 				if ($o_log) { $o_log->logDebug(_t("Found existing collection %1 in DataMigrationUtils::getCollectionID(); total of %2 collections were found", $ps_collection_name, sizeof($va_collection_ids) + 1)); }
 				
@@ -789,6 +850,7 @@
 		 * @param array $pa_values An optional array of additional values to populate newly created location records with. These values are *only* used for newly created locations; they will not be applied if the location named already exists. The array keys should be names of ca_storage_locations fields or valid storage location attributes. Values should be either a scalar (for single-value attributes) or an array of values for (multi-valued attributes)
 		 * @param array $pa_options An optional array of options, which include:
 		 *				outputErrors - if true, errors will be printed to console [default=false]
+		 *				matchOnIdno - try to match on idno if name match fails [default=false]
 		 *				dontCreate - if true then new entities will not be created [default=false]
 		 * 				transaction - if Transaction object is passed, use it for all Db-related tasks [default=null]
 		 *				returnInstance = return ca_storage_locations instance rather than location_id. Default is false. 
@@ -801,6 +863,8 @@
 			if (!is_array($pa_options)) { $pa_options = array(); }
 			if(!isset($pa_options['outputErrors'])) { $pa_options['outputErrors'] = true; }
 			
+			$pb_match_on_idno = caGetOption('matchOnIdno', $pa_options, false);
+			
 			$t_location = new ca_storage_locations();
 			if (isset($pa_options['transaction']) && $pa_options['transaction'] instanceof Transaction){
 				$t_location->setTransaction($pa_options['transaction']);
@@ -810,7 +874,25 @@
 			$vs_event_source = (isset($pa_options['importEventSource']) && $pa_options['importEventSource']) ? $pa_options['importEventSource'] : "?";
 			$o_log = (isset($pa_options['log']) && $pa_options['log'] instanceof KLogger) ? $pa_options['log'] : null;
 			
-			if (sizeof($va_location_ids = $t_location->getLocationIDsByName($ps_location_name, $pn_parent_id)) == 0) {
+			
+			if (!($vs_idno = isset($pa_values['idno']) ? (string)$pa_values['idno'] : null)) {
+				if(isset($pa_options['generateIdnoWithTemplate']) && $pa_options['generateIdnoWithTemplate']) {
+					$vs_idno = $t_location->setIdnoTWithTemplate($pa_options['generateIdnoWithTemplate'], array('dontSetValue' => true));
+				}
+			}
+			
+			$va_find_arr = array();
+			if ($pn_type_id) { $va_find_arr['type_id'] = $pn_type_id; }
+			if ($pn_parent_id) { $va_find_arr['parent_id'] = $pn_parent_id; }
+			
+			if (!($vn_id = (ca_storage_locations::find(array_merge(array('preferred_labels' => array('name' => $ps_location_name)), $va_find_arr), array('returnAs' => 'firstId', 'transaction' => $pa_options['transaction']))))) {
+				if ($pb_match_on_idno && $vs_idno) { 
+					$va_find_arr['idno'] = $vs_idno;
+					$vn_id = (ca_storage_locations::find($va_find_arr, array('returnAs' => 'firstId', 'transaction' => $pa_options['transaction'])));
+				}
+			}
+			
+			if (!$vn_id) {
 				if (isset($pa_options['dontCreate']) && $pa_options['dontCreate']) { return false; }
 				if ($o_event) { $o_event->beginItem($vs_event_source, 'ca_storage_locations', 'I'); }
 				
@@ -821,11 +903,6 @@
 				$t_location->set('access', isset($pa_values['access']) ? $pa_values['access'] : 0);
 				$t_location->set('status', isset($pa_values['status']) ? $pa_values['status'] : 0);
 				
-				if (!($vs_idno = isset($pa_values['idno']) ? (string)$pa_values['idno'] : null)) {
-					if(isset($pa_options['generateIdnoWithTemplate']) && $pa_options['generateIdnoWithTemplate']) {
-						$vs_idno = $t_entity->setIdnoTWithTemplate($pa_options['generateIdnoWithTemplate'], array('dontSetValue' => true));
-					}
-				}
 				$t_location->set('idno', $vs_idno);
 				
 				$t_location->insert();
@@ -903,7 +980,7 @@
 				}
 			} else {
 				if ($o_event) { $o_event->beginItem($vs_event_source, 'ca_storage_locations', 'U'); }
-				$vn_location_id = array_shift($va_location_ids);
+				$vn_location_id = $vn_id;
 				if ($o_event) { $o_event->endItem($vn_location_id, __CA_DATA_IMPORT_ITEM_SUCCESS__, ''); }
 				if ($o_log) { $o_log->logDebug(_t("Found existing storage location %1 in DataMigrationUtils::getStorageLocationID(); total of %2 storage locations were found", $ps_location_name, sizeof($va_location_ids) + 1)); }
 				
@@ -927,6 +1004,7 @@
 		 * @param array $pa_values An optional array of additional values to populate newly created object records with. These values are *only* used for newly created objects; they will not be applied if the object named already exists. The array keys should be names of ca_objects fields or valid object attributes. Values should be either a scalar (for single-value attributes) or an array of values for (multi-valued attributes)
 		 * @param array $pa_options An optional array of options, which include:
 		 *				outputErrors - if true, errors will be printed to console [default=false]
+		 *				matchOnIdno - try to match on idno if name match fails [default=false]
 		 *				dontCreate - if true then new entities will not be created [default=false]
 		 * 				transaction - if Transaction object is passed, use it for all Db-related tasks [default=null]
 		 *				returnInstance = return ca_objects instance rather than object_id. Default is false. 
@@ -939,6 +1017,8 @@
 			if (!is_array($pa_options)) { $pa_options = array(); }
 			if(!isset($pa_options['outputErrors'])) { $pa_options['outputErrors'] = false; }
 			
+			$pb_match_on_idno = caGetOption('matchOnIdno', $pa_options, false);
+			
 			$t_object = new ca_objects();
 			if (isset($pa_options['transaction']) && $pa_options['transaction'] instanceof Transaction){
 				$t_object->setTransaction($pa_options['transaction']);
@@ -948,7 +1028,24 @@
 			$vs_event_source = (isset($pa_options['importEventSource']) && $pa_options['importEventSource']) ? $pa_options['importEventSource'] : "?";
 			$o_log = (isset($pa_options['log']) && $pa_options['log'] instanceof KLogger) ? $pa_options['log'] : null;
 
-			if (sizeof($va_object_ids = $t_object->getObjectIDsByName($ps_object_name, $pn_parent_id, $pn_type_id)) == 0) {
+			if (!($vs_idno = isset($pa_values['idno']) ? (string)$pa_values['idno'] : null)) {
+				if(isset($pa_options['generateIdnoWithTemplate']) && $pa_options['generateIdnoWithTemplate']) {
+					$vs_idno = $t_object->setIdnoTWithTemplate($pa_options['generateIdnoWithTemplate'], array('dontSetValue' => true));
+				}
+			}
+			
+			$va_find_arr = array();
+			if ($pn_type_id) { $va_find_arr['type_id'] = $pn_type_id; }
+			if ($pn_parent_id) { $va_find_arr['parent_id'] = $pn_parent_id; }
+			
+			if (!($vn_id = (ca_objects::find(array_merge(array('preferred_labels' => array('name' => $ps_object_name)), $va_find_arr), array('returnAs' => 'firstId', 'transaction' => $pa_options['transaction']))))) {
+				if ($pb_match_on_idno && $vs_idno) { 
+					$va_find_arr['idno'] = $vs_idno;
+					$vn_id = (ca_objects::find($va_find_arr, array('returnAs' => 'firstId', 'transaction' => $pa_options['transaction'])));
+				}
+			}
+			
+			if (!$vn_id) {
 				if (isset($pa_options['dontCreate']) && $pa_options['dontCreate']) { return false; }
 				if ($o_event) { $o_event->beginItem($vs_event_source, 'ca_objects', 'I'); }
 				
@@ -960,11 +1057,6 @@
 				$t_object->set('access', isset($pa_values['access']) ? $pa_values['access'] : 0);
 				$t_object->set('status', isset($pa_values['status']) ? $pa_values['status'] : 0);
 				
-				if (!($vs_idno = isset($pa_values['idno']) ? (string)$pa_values['idno'] : null)) {
-					if(isset($pa_options['generateIdnoWithTemplate']) && $pa_options['generateIdnoWithTemplate']) {
-						$vs_idno = $t_entity->setIdnoTWithTemplate($pa_options['generateIdnoWithTemplate'], array('dontSetValue' => true));
-					}
-				}
 				$t_object->set('idno', $vs_idno);
 				
 				$t_object->set('hier_object_id', isset($pa_values['hier_object_id']) ? $pa_values['hier_object_id'] : null);
@@ -1047,7 +1139,7 @@
 				}
 			} else {
 				if ($o_event) { $o_event->beginItem($vs_event_source, 'ca_objects', 'U'); }
-				$vn_object_id = array_shift($va_object_ids);
+				$vn_object_id = $vn_id;
 				if ($o_event) { $o_event->endItem($vn_object_id, __CA_DATA_IMPORT_ITEM_SUCCESS__, ''); }
 				if ($o_log) { $o_log->logDebug(_t("Found existing object %1 in DataMigrationUtils::getObjectID(); total of %2 objects were found", $ps_collection_name, sizeof($va_object_ids) + 1)); }
 				
@@ -1070,6 +1162,7 @@
 		 * @param array $pa_values An optional array of additional values to populate newly created loan records with. These values are *only* used for newly created loans; they will not be applied if the loan named already exists. The array keys should be names of loan fields or valid loan attributes. Values should be either a scalar (for single-value attributes) or an array of values for (multi-valued attributes)
 		 * @param array $pa_options An optional array of options, which include:
 		 *				outputErrors - if true, errors will be printed to console [default=false]
+		 *				matchOnIdno - try to match on idno if name match fails [default=false]
 		 *				dontCreate - if true then new loans will not be created [default=false]
 		 * 				transaction - if Transaction object is passed, use it for all Db-related tasks [default=null]
 		 *				returnInstance = return ca_loans instance rather than loan_id. Default is false. 
@@ -1082,6 +1175,8 @@
 			if (!is_array($pa_options)) { $pa_options = array(); }
 			if(!isset($pa_options['outputErrors'])) { $pa_options['outputErrors'] = false; }
 			
+			$pb_match_on_idno = caGetOption('matchOnIdno', $pa_options, false);
+			
 			$t_loan = new ca_loans();
 			if (isset($pa_options['transaction']) && $pa_options['transaction'] instanceof Transaction){
 				$t_loan->setTransaction($pa_options['transaction']);
@@ -1091,7 +1186,24 @@
 			$vs_event_source = (isset($pa_options['importEventSource']) && $pa_options['importEventSource']) ? $pa_options['importEventSource'] : "?";
 			$o_log = (isset($pa_options['log']) && $pa_options['log'] instanceof KLogger) ? $pa_options['log'] : null;
 
-			if (sizeof($va_loan_ids = $t_loan->getLoanIDsByName($ps_loan_name)) == 0) {
+			$va_find_arr = array();
+			if ($pn_type_id) { $va_find_arr['type_id'] = $pn_type_id; }
+			if ($pn_parent_id) { $va_find_arr['parent_id'] = $pn_parent_id; }
+						
+			if (!($vs_idno = isset($pa_values['idno']) ? (string)$pa_values['idno'] : null)) {
+				if(isset($pa_options['generateIdnoWithTemplate']) && $pa_options['generateIdnoWithTemplate']) {
+					$vs_idno = $t_loan->setIdnoTWithTemplate($pa_options['generateIdnoWithTemplate'], array('dontSetValue' => true));
+				}
+			}
+			
+			if (!($vn_id = (ca_loans::find(array_merge(array('preferred_labels' => array('name' => $ps_loan_name)), $va_find_arr), array('returnAs' => 'firstId', 'transaction' => $pa_options['transaction']))))) {
+				if ($pb_match_on_idno && $vs_idno) { 
+					$va_find_arr['idno'] = $vs_idno;
+					$vn_id = (ca_loans::find($va_find_arr, array('returnAs' => 'firstId', 'transaction' => $pa_options['transaction'])));
+				}
+			}
+			
+			if (!$vn_id) {
 				if (isset($pa_options['dontCreate']) && $pa_options['dontCreate']) { return false; }
 				if ($o_event) { $o_event->beginItem($vs_event_source, 'ca_loans', 'I'); }
 				
@@ -1100,12 +1212,6 @@
 				$t_loan->set('type_id', $pn_type_id);
 				$t_loan->set('access', isset($pa_values['access']) ? $pa_values['access'] : 0);
 				$t_loan->set('status', isset($pa_values['status']) ? $pa_values['status'] : 0);
-				
-				if (!($vs_idno = isset($pa_values['idno']) ? (string)$pa_values['idno'] : null)) {
-					if(isset($pa_options['generateIdnoWithTemplate']) && $pa_options['generateIdnoWithTemplate']) {
-						$vs_idno = $t_loan->setIdnoTWithTemplate($pa_options['generateIdnoWithTemplate'], array('dontSetValue' => true));
-					}
-				}
 				
 				$t_loan->set('idno', $vs_idno);
 				$t_loan->set('parent_id', isset($pa_values['parent_id']) ? $pa_values['parent_id'] : null);
@@ -1186,7 +1292,7 @@
 				}
 			} else {
 				if ($o_event) { $o_event->beginItem($vs_event_source, 'ca_loans', 'U'); }
-				$vn_loan_id = array_shift($va_loan_ids);
+				$vn_loan_id = $vn_id;
 				if ($o_event) { $o_event->endItem($vn_loan_id, __CA_DATA_IMPORT_ITEM_SUCCESS__, ''); }
 				if ($o_log) { $o_log->logDebug(_t("Found existing loan %1 in DataMigrationUtils::getLoanID(); total of %2 loans were found", $ps_loan_name, sizeof($va_loan_ids) + 1)); }
 				
@@ -1196,6 +1302,159 @@
 			}
 				
 			return $vn_loan_id;
+		}
+		# -------------------------------------------------------
+		/** 
+		 * Returns movement_id for the movement with the specified name, regardless of specified type. If the movement does not already 
+		 * exist then it will be created with the specified name, type and locale, as well as with any specified values in the $pa_values array.
+		 * $pa_values keys should be either valid movement fields or attributes.
+		 *
+		 * @param string $ps_movement_name movement label name
+		 * @param int $pn_type_id The type_id of the movement type to use if the movement needs to be created
+		 * @param int $pn_locale_id The locale_id to use if the movement needs to be created (will be used for both the movement locale as well as the label locale)
+		 * @param array $pa_values An optional array of additional values to populate newly created movement records with. These values are *only* used for newly created movements; they will not be applied if the movement named already exists. The array keys should be names of movement fields or valid movement attributes. Values should be either a scalar (for single-value attributes) or an array of values for (multi-valued attributes)
+		 * @param array $pa_options An optional array of options, which include:
+		 *				outputErrors - if true, errors will be printed to console [default=false]
+		 *				matchOnIdno - try to match on idno if name match fails [default=false]
+		 *				dontCreate - if true then new movements will not be created [default=false]
+		 * 				transaction - if Transaction object is passed, use it for all Db-related tasks [default=null]
+		 *				returnInstance = return ca_movements instance rather than movement_id. Default is false. 
+		 *				generateIdnoWithTemplate = A template to use when setting the idno. The template is a value with automatically-set SERIAL values replaced with % characters. Eg. 2012.% will set the created row's idno value to 2012.121 (assuming that 121 is the next number in the serial sequence.) The template is NOT used if idno is passed explicitly as a value in $pa_values.
+		 *				importEvent = if ca_data_import_events instance is passed then the insert/update of the movement will be logged as part of the import
+		 *				importEventSource = if importEvent is passed, then the value set for importEventSource is used in the import event log as the data source. If omitted a default value of "?" is used
+		 *				log = if KLogger instance is passed then actions will be logged
+		 */
+		static function getMovementID($ps_movement_name, $pn_type_id, $pn_locale_id, $pa_values=null, $pa_options=null) {
+			if (!is_array($pa_options)) { $pa_options = array(); }
+			if(!isset($pa_options['outputErrors'])) { $pa_options['outputErrors'] = false; }
+			
+			$pb_match_on_idno = caGetOption('matchOnIdno', $pa_options, false);
+			
+			$t_movement = new ca_movements();
+			if (isset($pa_options['transaction']) && $pa_options['transaction'] instanceof Transaction){
+				$t_movement->setTransaction($pa_options['transaction']);
+			}
+			
+			$o_event = (isset($pa_options['importEvent']) && $pa_options['importEvent'] instanceof ca_data_import_events) ? $pa_options['importEvent'] : null;
+			$vs_event_source = (isset($pa_options['importEventSource']) && $pa_options['importEventSource']) ? $pa_options['importEventSource'] : "?";
+			$o_log = (isset($pa_options['log']) && $pa_options['log'] instanceof KLogger) ? $pa_options['log'] : null;
+
+			$va_find_arr = array();
+			if ($pn_type_id) { $va_find_arr['type_id'] = $pn_type_id; }
+			if ($pn_parent_id) { $va_find_arr['parent_id'] = $pn_parent_id; }
+						
+			if (!($vs_idno = isset($pa_values['idno']) ? (string)$pa_values['idno'] : null)) {
+				if(isset($pa_options['generateIdnoWithTemplate']) && $pa_options['generateIdnoWithTemplate']) {
+					$vs_idno = $t_movement->setIdnoTWithTemplate($pa_options['generateIdnoWithTemplate'], array('dontSetValue' => true));
+				}
+			}
+			
+			if (!($vn_id = (ca_movements::find(array_merge(array('preferred_labels' => array('name' => $ps_movement_name)), $va_find_arr), array('returnAs' => 'firstId', 'transaction' => $pa_options['transaction']))))) {
+				if ($pb_match_on_idno && $vs_idno) { 
+					$va_find_arr['idno'] = $vs_idno;
+					$vn_id = (ca_movements::find($va_find_arr, array('returnAs' => 'firstId', 'transaction' => $pa_options['transaction'])));
+				}
+			}
+			
+			if (!$vn_id) {
+				if (isset($pa_options['dontCreate']) && $pa_options['dontCreate']) { return false; }
+				if ($o_event) { $o_event->beginItem($vs_event_source, 'ca_movements', 'I'); }
+				
+				$t_movement->setMode(ACCESS_WRITE);
+				$t_movement->set('locale_id', $pn_locale_id);
+				$t_movement->set('type_id', $pn_type_id);
+				$t_movement->set('access', isset($pa_values['access']) ? $pa_values['access'] : 0);
+				$t_movement->set('status', isset($pa_values['status']) ? $pa_values['status'] : 0);
+				
+				$t_movement->set('idno', $vs_idno);
+				$t_movement->set('parent_id', isset($pa_values['parent_id']) ? $pa_values['parent_id'] : null);
+				
+				$t_movement->insert();
+				
+				if ($t_movement->numErrors()) {
+					if(isset($pa_options['outputErrors']) && $pa_options['outputErrors']) {
+						print "[Error] "._t("Could not insert movement %1: %2", $ps_movement_name, join('; ', $t_movement->getErrors()))."\n";
+					}
+					
+					if ($o_log) { $o_log->logError(_t("Could not insert movement %1: %2", $ps_movement_name, join('; ', $t_movement->getErrors()))); }
+					return null;
+				}
+				
+				$vb_label_errors = false;
+				$t_movement->addLabel(array('name' => $ps_movement_name), $pn_locale_id, null, true);
+				
+				if ($t_movement->numErrors()) {
+					if(isset($pa_options['outputErrors']) && $pa_options['outputErrors']) {
+						print "[Error] "._t("Could not set preferred label for movement %1: %2", $ps_movement_name, join('; ', $t_movement->getErrors()))."\n";
+					}
+					if ($o_log) { $o_log->logError(_t("Could not set preferred label for movement %1: %2", $ps_movement_name, join('; ', $t_movement->getErrors()))); }
+				
+					$vb_label_errors = true;
+				}
+				
+				unset($pa_values['access']);	
+				unset($pa_values['status']);
+				unset($pa_values['idno']);
+				
+				$vb_attr_errors = false;
+				if (is_array($pa_values)) {
+					foreach($pa_values as $vs_element => $va_value) { 					
+						if (is_array($va_value)) {
+							// array of values (complex multi-valued attribute)
+							$t_movement->addAttribute(
+								array_merge($va_value, array(
+									'locale_id' => $pn_locale_id
+								)), $vs_element);
+						} else {
+							// scalar value (simple single value attribute)
+							if ($va_value) {
+								$t_movement->addAttribute(array(
+									'locale_id' => $pn_locale_id,
+									$vs_element => $va_value
+								), $vs_element);
+							}
+						}
+					}
+				}
+				
+				$t_movement->update();
+				
+				if ($t_movement->numErrors()) {
+					if(isset($pa_options['outputErrors']) && $pa_options['outputErrors']) {
+						print "[Error] "._t("Could not set values for movement %1: %2", $ps_movement_name, join('; ', $t_movement->getErrors()))."\n";
+					}
+					if ($o_log) { $o_log->logError(_t("Could not set values for movement %1: %2", $ps_movement_name, join('; ', $t_movement->getErrors()))); }
+				
+					$vb_attr_errors = true;
+				}
+				
+				$vn_movement_id = $t_movement->getPrimaryKey();
+				
+				if ($o_event) { 
+					if ($vb_attr_errors || $vb_label_errors) {
+						$o_event->endItem($vn_movement_id, __CA_DATA_IMPORT_ITEM_PARTIAL_SUCCESS__, _t("Errors setting field values: %1", join('; ', $t_movement->getErrors()))); 
+					} else {
+						$o_event->endItem($vn_movement_id, __CA_DATA_IMPORT_ITEM_SUCCESS__, ''); 
+					}
+				}
+				
+				if ($o_log) { $o_log->logInfo(_t("Created new movement %1", $ps_movement_name)); }
+			
+				if (isset($pa_options['returnInstance']) && $pa_options['returnInstance']) {
+					return $t_movement;
+				}
+			} else {
+				if ($o_event) { $o_event->beginItem($vs_event_source, 'ca_movements', 'U'); }
+				$vn_movement_id = $vn_id;
+				if ($o_event) { $o_event->endItem($vn_movement_id, __CA_DATA_IMPORT_ITEM_SUCCESS__, ''); }
+				if ($o_log) { $o_log->logDebug(_t("Found existing movement %1 in DataMigrationUtils::getMovementID(); total of %2 movements were found", $ps_movement_name, sizeof($va_movement_ids) + 1)); }
+				
+				if (isset($pa_options['returnInstance']) && $pa_options['returnInstance']) {
+					return new ca_movements($vn_load_id);
+				}
+			}
+				
+			return $vn_movement_id;
 		}
 		# -------------------------------------------------------
 		/**
