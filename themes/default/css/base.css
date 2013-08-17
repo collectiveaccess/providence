@@ -1801,6 +1801,10 @@ td.objectRepresentationListItemImage {
 }
 .objectRepresentationListItemImageThumb {
 	float:left;
+	width: 120px;
+}
+.objectRepresentationListItemImageThumb a img {
+	margin-left: auto; margin-right: auto; display: block;
 }
 
 select.objectRepresentationStatus {
@@ -1811,6 +1815,10 @@ select.objectRepresentationStatus {
 select.objectRepresentationType {
 	width: 80px;
 	font-size: 11px;
+}
+
+table.objectRepresentationUploadOptions {
+	width: 100%;
 }
 
 /* object representation scroll window in object editor info widget */
@@ -2162,7 +2170,7 @@ table.attributeListItem {
 	
 	-moz-border-radius-: 10px; 
 	-webkit-border-radius: 10px;
-	-moz-border-radius: 10px; 
+	border-radius: 10px;	
 }
 
 a.editorFieldListLink {
@@ -2222,7 +2230,7 @@ a.editorFieldListLink {
 	
 	-moz-border-radius-: 10px; 
 	-webkit-border-radius: 10px;
-	-moz-border-radius: 10px; 
+	border-radius: 10px;	
 }
 
 a.caHierarchyOverviewLink {
@@ -2259,15 +2267,32 @@ a.caHierarchyOverviewLink {
 /*** EDITOR FORMS ***/
 
 /* formats object representation extracted metadata in a ca_object_representations bundle */
+div.editorObjectRepresentationMetadataButton {
+	float: right;
+}
+
+a.editorObjectRepresentationMetadataButton {
+	text-decoration: none;
+	font-size: 11px;
+	font-weight: bold;
+	margin-right: 20px;
+}
+
 div.editorObjectRepresentationMetadata {
 	background: #fbfbfb;
 	font-size: 10px;
 	width: 680px;
+	height: 200px;
 	overflow: auto;
-	padding: 12px;
+	padding: 8px;
 	line-height: 14px;
 	font-weight: normal;
 	color: #000000;
+	
+	background-color: #eee;
+	-moz-border-radius-: 10px; 
+	-webkit-border-radius: 10px;
+	border-radius: 10px;	
 }
 
 /* formats object representation extracted metadata for multifile metadata display */
@@ -4181,7 +4206,7 @@ div.roundedRel {
 	min-height: 18px;
 	-moz-border-radius: 10px; 
 	-webkit-border-radius: 10px;
-	-moz-border-radius: 10px; 
+	border-radius: 10px; 
 	-webkit-border-bottom-right-radius: 10px;
 	border-radius: 10px;
 }
@@ -4193,7 +4218,7 @@ div.listRel {
 	margin-bottom: 5px;
 	-moz-border-radius: 5px; 
 	-webkit-border-radius: 5px;
-	-moz-border-radius: 5px; 
+	border-radius: 5px; 
 	-webkit-border-bottom-right-radius: 5px;
 	width: 690px;	
 	border: 1px solid #ccc;
@@ -4233,7 +4258,7 @@ div.listRel {
 	
 	-moz-border-radius: 6px; 
 	-webkit-border-radius: 6px;
-	-moz-border-radius: 6px; 
+	border-radius: 6px; 
 	-webkit-border-bottom-right-radius: 6px;
 	border-radius: 6px;
 }
@@ -4369,8 +4394,6 @@ a.caDeleteLabelButton {
 	top: 100px; left: 50%; margin: 0 0 0 -450px;
 	background: #ffffff;
 	padding: 15px;
-	-moz-border-radius: 10px; 
-	-webkit-border-radius: 10px;
 	-moz-border-radius: 10px; 
 	-webkit-border-radius: 10px;
 	border-radius: 10px;

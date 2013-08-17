@@ -364,6 +364,7 @@ class ca_lists extends BundlableLabelableBaseModelWithAttributes {
 	 *			item_id =		optional item_id to use as root of hierarchy for returned items; if this is not set (the default) then all items in the list are returned
 	 *			sort =			if set to a __CA_LISTS_SORT_BY_*__ constant, will force the list to be sorted by that criteria overriding the sort order set in the ca_lists.default_sort field
 	 *			idsOnly = 		if true, only the primary key id values of the list items are returned
+	 *			enabledOnly =	return only enabled list items [default=false]
 	 *			labelsOnly = 	if true only labels in the current locale are returns in an array key'ed on item_id
 	 *
 	 * @return array List of items indexed first on item_id and then on locale_id of label
@@ -373,6 +374,8 @@ class ca_lists extends BundlableLabelableBaseModelWithAttributes {
 		if (!is_array($pa_options)) { $pa_options = array(); }
 		if (!isset($pa_options['returnHierarchyLevels'])) { $pa_options['returnHierarchyLevels'] = false; }
 		if ((isset($pa_options['directChildrenOnly']) && $pa_options['directChildrenOnly'])) { $pa_options['returnHierarchyLevels'] = false; }
+	
+		$vb_enabled_only = caGetOption('enabledOnly', $pa_options, false);
 	
 		$vb_labels_only = false;
 		if (isset($pa_options['labelsOnly']) && $pa_options['labelsOnly']) {
@@ -429,6 +432,9 @@ class ca_lists extends BundlableLabelableBaseModelWithAttributes {
 				$vs_order_by = "ORDER BY {$vs_order_by}";
 			}
 			
+			$vs_enabled_sql = '';
+			if ($vb_enabled_only) { $vs_enabled_sql = ' AND (cli.is_enabled = 1)'; }
+			
 			$vs_direct_children_sql = '';
 			if ((isset($pa_options['directChildrenOnly']) && $pa_options['directChildrenOnly'])) {
 				$vs_direct_children_sql = " AND cli.parent_id = ".(int)$pn_item_id;
@@ -439,7 +445,7 @@ class ca_lists extends BundlableLabelableBaseModelWithAttributes {
 				FROM ca_list_items cli
 				INNER JOIN ca_list_item_labels AS clil ON clil.item_id = cli.item_id
 				WHERE
-					(cli.deleted = 0) AND (clil.is_preferred = 1) AND (cli.list_id = ?) {$vs_type_sql} {$vs_direct_children_sql} {$vs_hier_sql}
+					(cli.deleted = 0) AND (clil.is_preferred = 1) AND (cli.list_id = ?) {$vs_type_sql} {$vs_direct_children_sql} {$vs_hier_sql} {$vs_enabled_sql}
 				{$vs_order_by}
 			";
 			//print $vs_sql;
@@ -498,6 +504,7 @@ class ca_lists extends BundlableLabelableBaseModelWithAttributes {
 			
 			foreach($va_list_items as $vn_i => $va_item) {
 				if ($pn_type_id && $va_item['NODE']['type_id'] != $pn_type_id) { continue; }
+				if ($vb_enabled_only && !$va_item['NODE']['is_enabled']) { continue; }
 				
 				$vn_item_id = $va_item['NODE']['item_id'];
 				$vn_parent_id = $va_item['NODE']['parent_id'];

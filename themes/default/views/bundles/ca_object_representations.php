@@ -39,6 +39,10 @@
 	$vb_read_only		=	(isset($va_settings['readonly']) && $va_settings['readonly']);
 	$vb_batch			=	$this->getVar('batch');
 	
+	if (!in_array($vs_default_upload_type = $this->getVar('defaultRepresentationUploadType'), array('upload', 'url', 'search'))) {
+		$vs_default_upload_type = 'upload';
+	}
+	
 	$vb_allow_fetching_from_urls = $this->request->getAppConfig()->get('allow_fetching_of_media_from_remote_urls');
 	
 	// generate list of inital form values; the bundle Javascript call will
@@ -124,97 +128,144 @@
 <div id="<?php print $vs_id_prefix.$t_item->tableNum().'_rel'; ?>" <?php print $vb_batch ? "class='editorBatchBundleContent'" : ''; ?>>
 <?php
 	//
-	// The bundle template - used to generate each bundle in the form
+	// Template to generate display for existing items
 	//
 ?>
 	<textarea class='caItemTemplate' style='display: none;'>
 		<div id="<?php print $vs_id_prefix; ?>Item_{n}" class="labelInfo">
+
 			<span class="formLabelError">{error}</span>
-			<table class="objectRepresentationListItem">
-				<tr >
-					<td width="90px"><?php print $t_item->htmlFormElement('type_id', null, array('classname' => '{fieldNamePrefix}type_id_select objectRepresentationType', 'id' => "{fieldNamePrefix}type_id_{n}", 'name' => "{fieldNamePrefix}type_id_{n}", "value" => "", 'no_tooltips' => false, 'tooltip_namespace' => 'bundle_ca_object_representations',  'hide_select_if_only_one_option' => true)); ?>
-					<?php print $t_item_rel->htmlFormElement('is_primary', null, array('classname' => 'objectRepresentationType', 'id' => "{fieldNamePrefix}is_primary_{n}", 'name' => "{fieldNamePrefix}is_primary_{n}", "value" => "", 'no_tooltips' => false, 'tooltip_namespace' => 'bundle_ca_object_representations')); ?></td>
-					<td><?php print $t_item->htmlFormElement('status', null, array('classname' => 'objectRepresentationStatus', 'id' => "{fieldNamePrefix}status_{n}", 'name' => "{fieldNamePrefix}status_{n}", "value" => "", 'no_tooltips' => false, 'tooltip_namespace' => 'bundle_ca_object_representations')); ?>
-					<?php print $t_item->htmlFormElement('access', null, array('classname' => 'objectRepresentationStatus', 'id' => "{fieldNamePrefix}access_{n}", 'name' => "{fieldNamePrefix}access_{n}", "value" => "", 'no_tooltips' => false, 'tooltip_namespace' => 'bundle_ca_object_representations')); ?></td>
-					<td colspan="1" align="right" valign="bottom" width="300px" style="padding: 5px 20px 0px 0px;">
-						<div style="width:300px; overflow:hidden; padding:0px; margin:0px;"><a title="{filename}" style="font-weight:bold; color:#000000;"><em>{filename}</em></a></div>{type} {dimensions} {num_multifiles}
 <?php 
 	if (!$vb_read_only) {
 ?>
-						<div style="width:110px; ">
-								<a href="#" onclick="jQuery('#{fieldNamePrefix}media_{n}').toggle(200); jQuery('#{fieldNamePrefix}media_show_update_{n}').hide(); return false;" id="{fieldNamePrefix}media_show_update_{n}"><div style="margin-top:2px; width:16px; float:left;"><?php print "<img src='".$this->request->getThemeUrlPath()."/graphics/icons/updatemedia.png' border='0' height='16px' width='16px'/>";?></div><?php print _t('Update media'); ?></a>
-						</div>
-						<div id="{fieldNamePrefix}media_{n}" style="display: none; width:210px; margin-top:5px; float:right; clear:right; text-align:left;">
-							<div id="{fieldNamePrefix}media_upload_control_{n}">
-								<?php print $t_item->htmlFormElement('media', null, array('name' => "{fieldNamePrefix}media_{n}", 'id' => "{fieldNamePrefix}media_{n}", "value" => "", 'no_tooltips' => false, 'tooltip_namespace' => 'bundle_ca_object_representations')); ?>
+	<div style="float: right;">
+		<div style="margin: 0 0 10px 5px;"><a href="#" class="caDeleteItemButton"><?php print caNavIcon($this->request, __CA_NAV_BUTTON_DEL_BUNDLE__); ?></a></div>
+	</div>
 <?php
-		if ($vb_allow_fetching_from_urls) {
+	}
+?>	
+			<div style="width: 680px;">
+				<div style="float: left;">
+					<div class="objectRepresentationListItemImageThumb"><a href="#" onclick="caMediaPanel.showPanel('<?php print urldecode(caNavUrl($this->request, 'editor/objects', 'ObjectEditor', 'GetRepresentationEditor', array('object_id' => $t_subject->getPrimaryKey(), 'representation_id' => '{n}'))); ?>'); return false;">{icon}</a></div>
+				</div>
+				<div style="float: right; width: 550px;">
+					<div style="float: left; width: 80%;">
+						<div style="width:100%; overflow:hidden; padding:0px; margin:0px;"><a title="{filename}" style="font-weight:bold; color:#000000;"><em>{filename}</em></a></div>{type} {dimensions} {num_multifiles}
+					</div>
+					<div style="float: right; width: 20%;">
+						<div style="margin: 10px 0 0 0; font-weight: normal; font-size: 10px;">
+							<span id="{fieldNamePrefix}download_{n}"><?php print urldecode(caNavButton($this->request, __CA_NAV_BUTTON_DOWNLOAD__, 'Download', 'editor/objects', 'ObjectEditor', 'DownloadRepresentation', array('version' => 'original', 'representation_id' => "{n}", 'object_id' => $t_subject->getPrimaryKey(), 'download' => 1), array('id' => "{fieldNamePrefix}download_button_{n}"), array('no_background' => true, 'dont_show_content' => true))).' '._t('Download'); ?></span>
+						</div>
+						<div style="margin: 10px 0 0 0; font-weight: normal; font-size: 10px;">
+							<span id="{fieldNamePrefix}edit_{n}"><?php print urldecode(caNavLink($this->request, caNavIcon($this->request, __CA_NAV_BUTTON_EDIT__), '', 'editor/object_representations', 'ObjectRepresentationEditor', 'Edit', array('representation_id' => "{n}"), array('id' => "{fieldNamePrefix}edit_button_{n}"))).' '._t('Edit'); ?></span>
+						</div>
+		
+						<div style="margin: 10px 0 0 0; font-weight: normal; font-size: 10px;" class="caAnnotationEditorLaunchButton annotationType{annotation_type}">
+							<span id="{fieldNamePrefix}edit_annotations_{n}"><a href="#" onclick="caAnnotationEditor<?php print $vs_id_prefix; ?>.showPanel('<?php print urldecode(caNavUrl($this->request, 'editor/object_representations', 'ObjectRepresentationEditor', 'GetAnnotationEditor', array('representation_id' => '{n}'))); ?>'); return false;" id="{fieldNamePrefix}edit_annotations_button_{n}"><img src='<?php print $this->request->getThemeUrlPath()."/graphics/buttons/clock.png"; ?>' border='0' height='16px' width='16px'/></a> <?php print _t('Annotations'); ?></span>
+						</div>
+					</div>	
+				</div>
+			</div>
+			<div id="{fieldNamePrefix}media_metadata_container_{n}" >	
+				<div class="editorObjectRepresentationMetadataButton">
+					<a href="#" id="{fieldNamePrefix}editorObjectRepresentationMetadataButton_{n}" onclick="caToggleDisplayObjectRepresentationMetadata('{fieldNamePrefix}media_metadata_{n}', '{fieldNamePrefix}editorObjectRepresentationMetadataButton_{n}'); return false;" class="editorObjectRepresentationMetadataButton"><?php print "<img src='".$this->request->getThemeUrlPath()."/graphics/icons/downarrow.jpg' border='0' height='11px' width='11px'/>"; ?><?php print _t('Additional Information'); ?></a>
+				</div>
+				<div>
+					<div style="text-align:left; display: none;" id="{fieldNamePrefix}media_metadata_{n}" class="editorObjectRepresentationMetadata">
+<?php
+		if ($va_rep['fetched_from']) {
 ?>
-							
-								<a href='#' onclick='jQuery("#{fieldNamePrefix}media_url_control_{n}").slideDown(200); jQuery("#{fieldNamePrefix}media_upload_control_{n}").slideUp(200); return false'><?php print _t('or fetch from a URL'); ?></a>
+					<div><?php print _t("Fetched from URL %1 on %2", '<a href="{fetched_from}" target="_ext" title="{fetched_from}">{fetched_from}</a>', '{fetched_on}') ?></div>
 <?php
 		}
 ?>
-							</div>
-<?php
-		if ($vb_allow_fetching_from_urls) {
-?>
-							<div id="{fieldNamePrefix}media_url_control_{n}" style="display: none;">
-								<?php print _t('Fetch from URL'); ?>: <textentry cols="25" rows="3" name="{fieldNamePrefix}media_url_{n}" id="{fieldNamePrefix}media_url_{n}"></textentry>
-								<br/>
-								<a href='#' onclick='jQuery("#{fieldNamePrefix}media_url_control_{n}").slideUp(200); jQuery("#{fieldNamePrefix}media_upload_control_{n}").slideDown(200); return false'><?php print _t('or upload a file'); ?></a>
-							</div>
-<?php
-		}
-?>
-						</div>
-<?php
-	}
-?>
-					</td>
-					<td rowspan="1" class="objectRepresentationListItemImage" >
-						<div class="objectRepresentationListItemImageThumb"><a href="#" onclick="caMediaPanel.showPanel('<?php print urldecode(caNavUrl($this->request, 'editor/objects', 'ObjectEditor', 'GetRepresentationEditor', array('object_id' => $t_subject->getPrimaryKey(), 'representation_id' => '{n}'))); ?>'); return false;">{icon}</a></div>
-						<div style="float:right; margin:5px 0px 0px 125px; position:absolute;">
-<?php 
-	if (!$vb_read_only) {
-?>
-							<div style="margin: 0 0 10px 0;"><a href="#" class="caDeleteItemButton"><?php print caNavIcon($this->request, __CA_NAV_BUTTON_DEL_BUNDLE__); ?></a></div>
-<?php
-	}
-?>
-							<div style="margin: 10px 0 0 0;"><?php print urldecode(caNavButton($this->request, __CA_NAV_BUTTON_DOWNLOAD__, 'Download', 'editor/objects', 'ObjectEditor', 'DownloadRepresentation', array('version' => 'original', 'representation_id' => "{n}", 'object_id' => $t_subject->getPrimaryKey(), 'download' => 1), array('id' => "{fieldNamePrefix}download_{n}"), array('no_background' => true, 'dont_show_content' => true))); ?></div>
-						
-							<div style="margin: 10px 0 0 0;"><?php print urldecode(caNavLink($this->request, caNavIcon($this->request, __CA_NAV_BUTTON_EDIT__), '', 'editor/object_representations', 'ObjectRepresentationEditor', 'Edit', array('representation_id' => "{n}"), array('id' => "{fieldNamePrefix}edit_{n}"))); ?></div>
-							
-							<div style="margin: 10px 0 0 0;" class="caAnnotationEditorLaunchButton annotationType{annotation_type}"><a href="#" onclick="caAnnotationEditor<?php print $vs_id_prefix; ?>.showPanel('<?php print urldecode(caNavUrl($this->request, 'editor/object_representations', 'ObjectRepresentationEditor', 'GetAnnotationEditor', array('representation_id' => '{n}'))); ?>'); return false;"><img src='<?php print $this->request->getThemeUrlPath()."/graphics/buttons/clock.png"; ?>' border='0' height='16px' width='16px'/></a></div>
-						</div>
-					</td>
-
-				</tr>
-
-				<tr>
-					<td colspan="6">
-						<div id="{fieldNamePrefix}media_metadata_container_{n}" >
-							<a href="#" onclick="jQuery('#{fieldNamePrefix}media_metadata_{n}').slideToggle(300); return false;"><?php print "<div style='margin-top:5px; width:11px; float:left;'><img src='".$this->request->getThemeUrlPath()."/graphics/icons/downarrow.jpg' border='0' height='11px' width='11px'/></div>"?><?php print _t('Additional Information'); ?></a>
-							<div style="text-align:left; display: none;" id="{fieldNamePrefix}media_metadata_{n}" class="editorObjectRepresentationMetadata">
-<?php
-	if ($va_rep['fetched_from']) {
-?>
-								<div><?php print _t("Fetched from URL %1 on %2", '<a href="{fetched_from}" target="_ext" title="{fetched_from}">{fetched_from}</a>', '{fetched_on}') ?></div>
-<?php
-	}
-?>
-								{md5}
-								{metadata}
-							</div>
-						</div>
-					</td>
-				</tr>
-			</table>
+						{md5}
+						{metadata}
+					</div>
+				</div>
+			</div>
+	
+			<br style="clear: both;"/>
 		</div>
 <?php
-	print TooltipManager::getLoadHTML('bundle_ca_object_representations');
+		print TooltipManager::getLoadHTML('bundle_ca_object_representations');
 ?>
+	</textarea>
+<?php
+	//
+	// Template to generate controls for creating new relationship
+	//
+?>
+	<textarea class='caNewItemTemplate' style='display: none;'>	
+		<div id="<?php print $vs_id_prefix; ?>Item_{n}" class="labelInfo">
+			<h2><?php print _t('Add representation'); ?></h2>
+			<span class="formLabelError">{error}</span>
+			<div style="float: right;">
+				<div style="margin: 0 0 10px 5px;"><a href="#" class="caDeleteItemButton"><?php print caNavIcon($this->request, __CA_NAV_BUTTON_DEL_BUNDLE__); ?></a></div>
+			</div>
+			
+			<table id="{fieldNamePrefix}upload_options{n}">
+				<tr>
+					<td class='formLabel'><?php print caHTMLRadioButtonInput('{fieldNamePrefix}upload_type{n}', array('id' => '{fieldNamePrefix}upload_type_upload{n}', 'value' => 'upload'), array('checked' => ($vs_default_upload_type == 'upload') ? 1 : 0)).' '._t('using uploaded file'); ?></td>
+					<td class='formLabel'><?php print $t_item->htmlFormElement('media', '^ELEMENT', array('name' => "{fieldNamePrefix}media_{n}", 'id' => "{fieldNamePrefix}media_{n}", "value" => "", 'no_tooltips' => false, 'tooltip_namespace' => 'bundle_ca_object_representations', 'class' => 'uploadInput')); ?></td>
+				</tr>
+<?php
+		if ($vb_allow_fetching_from_urls) {
+?>
+				<tr>
+					<td class='formLabel'><?php print caHTMLRadioButtonInput('{fieldNamePrefix}upload_type{n}', array('id' => '{fieldNamePrefix}upload_type_url{n}', 'value' => 'url'), array('checked' => ($vs_default_upload_type == 'url') ? 1 : 0)).' '._t('from URL'); ?></td>
+					<td class='formLabel'><?php print caHTMLTextInput("{fieldNamePrefix}media_url_{n}", array('id' => '{fieldNamePrefix}media_url_{n}', 'class' => 'urlBg uploadInput'), array('width' => 50)); ?></td>
+				</tr>
+<?php
+		}
+		
+		if ((bool)$this->request->getAppConfig()->get($t_subject->tableName().'_allow_relationships_to_existing_representations')) {
+?>
+				<tr>
+					<td class='formLabel'><?php print caHTMLRadioButtonInput('{fieldNamePrefix}upload_type{n}', array('id' => '{fieldNamePrefix}upload_type_search{n}', 'value' => 'search'), array('checked' => ($vs_default_upload_type == 'search') ? 1 : 0)).' '._t('using existing'); ?></td>
+					<td class='formLabel'>
+						<input type="text" size="50" name="<?php print $vs_id_prefix; ?>_autocomplete{n}" value="{{label}}" id="<?php print $vs_id_prefix; ?>_autocomplete{n}" class="lookupBg uploadInput"/>
+<?php
+	if ($t_item_rel && $t_item_rel->hasField('type_id')) {
+?>
+						<select name="<?php print $vs_id_prefix; ?>_type_id{n}" id="<?php print $vs_id_prefix; ?>_type_id{n}" style="display: none;"></select>
+<?php
+	}
+?>
+						<input type="hidden" name="<?php print $vs_id_prefix; ?>_id{n}" id="<?php print $vs_id_prefix; ?>_id{n}" value="{id}"/>
+					</td>
+				</tr>
+<?php
+		}
+?>
+			</table>
+			
+			<script type="text/javascript">
+				jQuery(document).ready(function() {
+					jQuery("#{fieldNamePrefix}upload_options{n} tr td .uploadInput").prop('disabled', true);
+					jQuery("#{fieldNamePrefix}upload_type_upload{n}").click(function() {
+						jQuery("#{fieldNamePrefix}media_{n}").prop('disabled', false);
+						jQuery("#{fieldNamePrefix}media_url_{n}").prop('disabled', true);
+						jQuery("#{fieldNamePrefix}autocomplete{n}").prop('disabled', true);
+					});
+					jQuery("#{fieldNamePrefix}upload_type_url{n}").click(function() {
+						jQuery("#{fieldNamePrefix}media_{n}").prop('disabled', true);
+						jQuery("#{fieldNamePrefix}media_url_{n}").prop('disabled', false);
+						jQuery("#{fieldNamePrefix}autocomplete{n}").prop('disabled', true);
+					});
+					jQuery("#{fieldNamePrefix}upload_type_search{n}").click(function() {
+						jQuery("#{fieldNamePrefix}media_{n}").prop('disabled', true);
+						jQuery("#{fieldNamePrefix}media_url_{n}").prop('disabled', true);
+						jQuery("#{fieldNamePrefix}autocomplete{n}").prop('disabled', false);
+					});
+					
+					jQuery("#{fieldNamePrefix}upload_type{n}").find("input:checked").click();
+				});
+			</script>
+	</div>
+			
+	<br style="clear: both;"/>
+</div>
 	</textarea>
 	
 	<div class="bundleContainer">
@@ -234,32 +285,43 @@
 <input type="hidden" id="<?php print $vs_id_prefix; ?>_ObjectRepresentationBundleList" name="<?php print $vs_id_prefix; ?>_ObjectRepresentationBundleList" value=""/>
 <?php
 	// order element
-?>
-			
+?>		
 <script type="text/javascript">
+	function caToggleDisplayObjectRepresentationMetadata (media_metadata_id, media_metadata_button_id) {
+		var m = jQuery('#' + media_metadata_id).is(':hidden');
+		jQuery('#' + media_metadata_id).slideToggle(300);
+		jQuery('#' + media_metadata_button_id + ' img').rotate({ duration:500, angle: m ? 0 : 180, animateTo: m ? 180 : 0 });
+	}
 	var caAnnotationEditor<?php print $vs_id_prefix; ?>;
 	jQuery(document).ready(function() {
-		caUI.initBundle('#<?php print $vs_id_prefix.$t_item->tableNum().'_rel'; ?>', {
+		caUI.initRelationBundle('#<?php print $vs_id_prefix.$t_item->tableNum().'_rel'; ?>', {
 			fieldNamePrefix: '<?php print $vs_id_prefix; ?>_',
-			templateValues: ['status', 'access', 'is_primary', 'media', 'locale_id', 'icon', 'type', 'dimensions', 'filename', 'num_multifiles', 'metadata', 'type_id', 'typename', 'fetched_from'],
+			templateValues: ['status', 'access', 'is_primary', 'media', 'locale_id', 'icon', 'type', 'dimensions', 'filename', 'num_multifiles', 'metadata', 'rep_type_id', 'type_id', 'typename', 'fetched_from', 'label', 'id'],
 			initialValues: <?php print json_encode($va_inital_values); ?>,
 			errors: <?php print json_encode($va_errors); ?>,
 			forceNewValues: <?php print json_encode($va_failed_inserts); ?>,
 			itemID: '<?php print $vs_id_prefix; ?>Item_',
-			templateClassName: 'caItemTemplate',
+			templateClassName: 'caNewItemTemplate',
+			initialValueTemplateClassName: 'caItemTemplate',
 			itemListClassName: 'caItemList',
 			itemClassName: 'labelInfo',
 			addButtonClassName: 'caAddItemButton',
 			deleteButtonClassName: 'caDeleteItemButton',
-			showOnNewIDList: ['<?php print $vs_id_prefix; ?>_media_', '<?php print $vs_id_prefix; ?>_type_id_div_'],
-			hideOnNewIDList: ['<?php print $vs_id_prefix; ?>_media_show_update_', '<?php print $vs_id_prefix; ?>_edit_','<?php print $vs_id_prefix; ?>_download_', '<?php print $vs_id_prefix; ?>_media_metadata_container_'],
-			enableOnNewIDList: ['<?php print $vs_id_prefix; ?>_type_id_'],
-			disableOnExistingIDList: ['<?php print $vs_id_prefix; ?>_type_id_'],
+			showOnNewIDList: ['<?php print $vs_id_prefix; ?>_media_', '<?php print $vs_id_prefix; ?>_rep_type_id_div_'],
+			hideOnNewIDList: ['<?php print $vs_id_prefix; ?>_media_show_update_', '<?php print $vs_id_prefix; ?>_edit_','<?php print $vs_id_prefix; ?>_download_', '<?php print $vs_id_prefix; ?>_media_metadata_container_', '<?php print $vs_id_prefix; ?>_edit_annotations_'],
+			enableOnNewIDList: ['<?php print $vs_id_prefix; ?>_rep_type_id_'],
+			//disableOnExistingIDList: ['<?php print $vs_id_prefix; ?>_rep_type_id_'],
 			showEmptyFormsOnLoad: 1,
 			readonly: <?php print $vb_read_only ? "true" : "false"; ?>,
 			isSortable: <?php print !$vb_read_only ? "true" : "false"; ?>,
 			listSortOrderID: '<?php print $vs_id_prefix; ?>_ObjectRepresentationBundleList',
-			defaultLocaleID: <?php print ca_locales::getDefaultCataloguingLocaleID(); ?>
+			defaultLocaleID: <?php print ca_locales::getDefaultCataloguingLocaleID(); ?>,
+			
+			relationshipTypes: <?php print json_encode($this->getVar('relationship_types_by_sub_type')); ?>,
+			autocompleteUrl: '<?php print caNavUrl($this->request, 'lookup', 'ObjectRepresentation', 'Get', $va_lookup_params); ?>',
+			autocompleteInputID: '<?php print $vs_id_prefix; ?>_autocomplete',
+			
+			extraParams: { exact: 1 }
 		
 		});
 		if (caUI.initPanel) {
@@ -284,6 +346,6 @@
 	
 		// Hide annotation editor links for non-timebased media
 		jQuery(".caAnnotationEditorLaunchButton").hide();
-		jQuery(".annotationTypeTimeBasedAudio, .annotationTypeTimeBasedAudio").show();
+		jQuery(".annotationTypeTimeBasedVideo, .annotationTypeTimeBasedAudio").show();
 	});
 </script>
