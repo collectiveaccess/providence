@@ -33,7 +33,7 @@
  /**
    *
    */
-require_once(__CA_LIB_DIR__.'/core/BaseRelationshipModel.php');
+require_once(__CA_LIB_DIR__.'/ca/BaseRepresentationRelationship.php');
 
 
 BaseModel::$s_ca_models_definitions['ca_object_representations_x_vocabulary_terms'] = array(
@@ -101,7 +101,7 @@ BaseModel::$s_ca_models_definitions['ca_object_representations_x_vocabulary_term
  	)
 );
 
-class ca_object_representations_x_vocabulary_terms extends BaseRelationshipModel {
+class ca_object_representations_x_vocabulary_terms extends BaseRepresentationRelationship {
 	# ---------------------------------
 	# --- Object attribute properties
 	# ---------------------------------

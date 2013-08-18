@@ -1,6 +1,6 @@
 <?php
 /** ---------------------------------------------------------------------
- * app/lib/core/RepresentableBaseModel.php :
+ * app/lib/ca/RepresentableBaseModel.php :
  * ----------------------------------------------------------------------
  * CollectiveAccess
  * Open-source collections management software
@@ -406,8 +406,6 @@
 		 * @return mixed Returns primary key (link_id) of the relatipnship row linking the newly created representation to the item; if the 'returnRepresentation' is set then an instance for the newly created ca_object_representations is returned instead; boolean false is returned on error
 		 */
 		public function addRepresentation($ps_media_path, $pn_type_id, $pn_locale_id, $pn_status, $pn_access, $pb_is_primary, $pa_values=null, $pa_options=null) {
-			
-		print "[0]<br>";
 			if (!($vn_id = $this->getPrimaryKey())) { return null; }
 			if (!$pn_locale_id) { $pn_locale_id = ca_locales::getDefaultCataloguingLocaleID(); }
 		
@@ -417,7 +415,7 @@
 				$o_trans = $this->getTransaction();
 				$t_rep->setTransaction($o_trans);
 			}
-		print "[1]<br>";
+		
 			$t_rep->setMode(ACCESS_WRITE);
 			$t_rep->set('type_id', $pn_type_id);
 			$t_rep->set('locale_id', $pn_locale_id);
@@ -455,7 +453,7 @@
 				$this->errors = array_merge($this->errors, $t_rep->errors());
 				return false;
 			}
-			print "[2]<br>";
+			
 			if ($t_rep->getPreferredLabelCount() == 0) {
 				$vs_label = (isset($pa_values['name']) && $pa_values['name']) ? $pa_values['name'] : '['._t('BLANK').']';
 			
@@ -465,7 +463,6 @@
 					return false;
 				}
 			}
-				print "[3]<br>";
 			
 			if (!($t_oxor = $this->_getRepresentationRelationshipTableInstance())) { return null; }
 			$vs_pk = $this->primaryKey();
@@ -479,6 +476,7 @@
 			$t_oxor->set('representation_id', $t_rep->getPrimaryKey());
 			$t_oxor->set('is_primary', $pb_is_primary ? 1 : 0);
 			$t_oxor->set('rank', isset($pa_options['rank']) ? (int)$pa_options['rank'] : null);
+			if ($t_oxor->hasField('type_id')) { $t_oxor->set('type_id', isset($pa_options['type_id']) ? (int)$pa_options['type_id'] : null); }
 			$t_oxor->insert();
 		
 		
@@ -490,7 +488,7 @@
 				}
 				return false;
 			}
-	print "[4]<br>";
+			
 			//
 			// Perform mapping of embedded metadata for newly uploaded representation with respect
 			// to ca_objects and ca_object_representation records
@@ -514,13 +512,13 @@
 		 * @param int $pn_locale_id
 		 * @param int $pn_status
 		 * @param int $pn_access
-		 * @param bool $pb_is_primary
+		 * @param bool $pb_is_primary Sets 'primaryness' of representation. If you wish to leave the primary setting to its current value set this null or omit the parameter.
 		 * @param array $pa_values
 		 * @param array $pa_options
 		 *
 		 * @return bool True on success, false on failure, null if no row has been loaded into the object model 
 		 */
-		public function editRepresentation($pn_representation_id, $ps_media_path, $pn_locale_id, $pn_status, $pn_access, $pb_is_primary, $pa_values=null, $pa_options=null) {
+		public function editRepresentation($pn_representation_id, $ps_media_path, $pn_locale_id, $pn_status, $pn_access, $pb_is_primary=null, $pa_values=null, $pa_options=null) {
 			if (!($vn_id = $this->getPrimaryKey())) { return null; }
 		
 			$t_rep = new ca_object_representations();
@@ -579,8 +577,9 @@
 					return false;
 				} else {
 					$t_oxor->setMode(ACCESS_WRITE);
-					$t_oxor->set('is_primary', $pb_is_primary ? 1 : 0);
-				
+					if (!is_null($pb_is_primary)) {
+						$t_oxor->set('is_primary', (bool)$pb_is_primary ? 1 : 0);
+					}
 					if (isset($pa_options['rank']) && ($vn_rank = (int)$pa_options['rank'])) {
 						$t_oxor->set('rank', $vn_rank);
 					}
@@ -608,17 +607,37 @@
 		public function removeRepresentation($pn_representation_id, $pa_options=null) {
 			if(!$this->getPrimaryKey()) { return null; }
 		
+			$va_path = array_keys($this->getAppDatamodel()->getPath($this->tableName(), 'ca_object_representations'));
+			if (is_array($va_path) && sizeof($va_path) == 3) {
+				$vs_rel_table = $va_path[1];
+				if ($t_rel = $this->getAppDatamodel()->getInstanceByTableName($vs_rel_table)) {
+					if ($t_rel->load(array($this->primaryKey() => $this->getPrimaryKey(), 'representation_id' => $pn_representation_id))) {
+						$t_rel->setMode(ACCESS_WRITE);
+						$t_rel->delete();
+						if ($t_rel->numErrors()) {
+							$this->errors = array_merge($this->errors, $t_rel->errors());
+							return false;
+						}
+						
+					}
+				}
+			}
 			$t_rep = new ca_object_representations();
 			if (!$t_rep->load($pn_representation_id)) {
 				$this->postError(750, _t("Representation id=%1 does not exist", $pn_representation_id), "RepresentableBaseModel->removeRepresentation()");
 				return false;
 			} else {
-				$t_rep->setMode(ACCESS_WRITE);
-				$t_rep->delete(true, $pa_options);
-			
-				if ($t_rep->numErrors()) {
-					$this->errors = array_merge($this->errors, $t_rep->errors());
-					return false;
+				if (!($va_rels = $t_rep->hasRelationships()) || !is_array($va_rels) || !sizeof($va_rels)) {
+					//
+					// Only delete the related representation if nothing else is related to it
+					//
+					$t_rep->setMode(ACCESS_WRITE);
+					$t_rep->delete(false, $pa_options);
+				
+					if ($t_rep->numErrors()) {
+						$this->errors = array_merge($this->errors, $t_rep->errors());
+						return false;
+					}
 				}
 			
 				return true;

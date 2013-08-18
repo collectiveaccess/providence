@@ -2912,9 +2912,10 @@ if (!$vb_batch) {
 						$va_reps = $this->getRepresentations();
 						
 						if (!$vb_batch && is_array($va_reps)) {
-							foreach($va_reps as $va_rep) {
+							foreach($va_reps as $vn_i => $va_rep) {
 								$this->clearErrors();
-								if (($vn_status = $po_request->getParameter($vs_prefix_stub.'status_'.$va_rep['representation_id'], pInteger)) != '') {
+								
+								if (strlen($po_request->getParameter($vs_prefix_stub.'access_'.$va_rep['representation_id'], pInteger)) > 0) {
 									if ($vb_allow_fetching_of_urls && ($vs_path = $_REQUEST[$vs_prefix_stub.'media_url_'.$va_rep['representation_id']])) {
 										$va_tmp = explode('/', $vs_path);
 										$vs_original_name = array_pop($va_tmp);
@@ -2923,9 +2924,12 @@ if (!$vb_batch) {
 										$vs_original_name = $_FILES[$vs_prefix_stub.'media_'.$va_rep['representation_id']]['name'];
 									}
 									
+									$vn_is_primary = ($po_request->getParameter($vs_prefix_stub.'is_primary_'.$va_rep['representation_id'], pString) != '') ? $po_request->getParameter($vs_prefix_stub.'is_primary_'.$va_rep['representation_id'], pInteger) : null;
 									$vn_locale_id = $po_request->getParameter($vs_prefix_stub.'locale_id_'.$va_rep['representation_id'], pInteger);
 									$vn_access = $po_request->getParameter($vs_prefix_stub.'access_'.$va_rep['representation_id'], pInteger);
-									$vn_is_primary = $po_request->getParameter($vs_prefix_stub.'is_primary_'.$va_rep['representation_id'], pInteger);
+									$vn_status = $po_request->getParameter($vs_prefix_stub.'status_'.$va_rep['representation_id'], pInteger);
+									$vs_rep_label = trim($po_request->getParameter($vs_prefix_stub.'rep_label_'.$va_rep['representation_id'], pString));
+									//$vn_rep_type_id = $po_request->getParameter($vs_prefix_stub.'rep_type_id'.$va_rep['representation_id'], pInteger);
 									
 									$vn_rank = null;
 									if (($vn_rank_index = array_search($va_rep['representation_id'], $va_rep_sort_order)) !== false) {
@@ -2948,6 +2952,22 @@ if (!$vb_batch) {
 										}
 									}
 									
+									if ($vs_rep_label) {
+										//
+										// Set representation label
+										//
+										$t_rep_label = new ca_object_representation_labels();
+										global $g_ui_locale_id;
+										if ($t_rep_label->load(array('representation_id' => $va_rep['representation_id'], 'locale_id' => $g_ui_locale_id))) {
+											$t_rep_label->setMode(ACCESS_WRITE);
+											$t_rep_label->set('name', $vs_rep_label);
+											$t_rep_label->update();
+											
+											if ($t_rep_label->numErrors()) {
+												$po_request->addActionErrors($t_rep_label->errors(), $vs_f, $va_rep['representation_id']);
+											}
+										}
+									}
 								} else {
 									// is it a delete key?
 									$this->clearErrors();
@@ -2976,10 +2996,12 @@ if (!$vb_batch) {
 							
 							if (!preg_match('/^'.$vs_prefix_stub.'media_new_([\d]+)$/', $vs_key, $va_matches)) { continue; }
 							
+							if($vs_upload_type = $po_request->getParameter($vs_prefix_stub.'upload_typenew_'.$va_matches[1], pString)) {
+								$po_request->user->setVar('defaultRepresentationUploadType', $vs_upload_type);
+							}
+							
+							$vn_type_id = $po_request->getParameter($vs_prefix_stub.'type_id_new_'.$va_matches[1], pInteger);
 							if ($vn_existing_rep_id = $po_request->getParameter($vs_prefix_stub.'idnew_'.$va_matches[1], pInteger)) {
-								//$vn_type_id = $po_request->getParameter($vs_prefix_stub.'type_idnew_'.$va_matches[1], pInteger);
-								
-								
 								$this->addRelationship('ca_object_representations', $vn_existing_rep_id, $vn_type_id);
 							} else {
 								if ($vb_allow_fetching_of_urls && ($vs_path = $_REQUEST[$vs_prefix_stub.'media_url_new_'.$va_matches[1]])) {
@@ -2991,18 +3013,15 @@ if (!$vb_batch) {
 								}
 								if (!$vs_path) { continue; }
 							
-								//$vn_type_id = $po_request->getParameter($vs_prefix_stub.'rep_type_id_new_'.$va_matches[1], pInteger);
-								if(!($vn_type_id = caGetDefaultItemID('object_representation_types'))) {
+								$vn_rep_type_id = $po_request->getParameter($vs_prefix_stub.'rep_type_id_new_'.$va_matches[1], pInteger);
+								if(!$vn_rep_type_id && !($vn_rep_type_id = caGetDefaultItemID('object_representation_types'))) {
 									require_once(__CA_MODELS_DIR__.'/ca_lists.php');
 									$t_list = new ca_lists();
-									if (is_array($va_type_ids = $t_list->getItemsForList('object_representation_types', array('idsOnly' => true, 'enabledOnly' => true)))) {
-										$vn_type_id = array_shift($va_type_ids);
+									if (is_array($va_rep_type_ids = $t_list->getItemsForList('object_representation_types', array('idsOnly' => true, 'enabledOnly' => true)))) {
+										$vn_rep_type_id = array_shift($va_rep_type_ids);
 									}
 								}
-								if($vs_upload_type = $po_request->getParameter($vs_prefix_stub.'upload_typenew_'.$va_matches[1], pString)) {
-									$po_request->user->setVar('defaultRepresentationUploadType', $vs_upload_type);
-									print "got upload type $vs_upload_type";
-								}
+						
 								if (is_array($pa_options['existingRepresentationMap']) && isset($pa_options['existingRepresentationMap'][$vs_path]) && $pa_options['existingRepresentationMap'][$vs_path]) {
 									$this->addRelationship('ca_object_representations', $pa_options['existingRepresentationMap'][$vs_path], $vn_type_id);
 									break;
@@ -3012,7 +3031,8 @@ if (!$vb_batch) {
 								$vn_status = $po_request->getParameter($vs_prefix_stub.'status_new_'.$va_matches[1], pInteger);
 								$vn_access = $po_request->getParameter($vs_prefix_stub.'access_new_'.$va_matches[1], pInteger);
 								$vn_is_primary = $po_request->getParameter($vs_prefix_stub.'is_primary_new_'.$va_matches[1], pInteger);
-								$t_rep = $this->addRepresentation($vs_path, $vn_type_id, $vn_locale_id, $vn_status, $vn_access, $vn_is_primary, array(), array('original_filename' => $vs_original_name, 'returnRepresentation' => true));
+						
+								$t_rep = $this->addRepresentation($vs_path, $vn_rep_type_id, $vn_locale_id, $vn_status, $vn_access, $vn_is_primary, array(), array('original_filename' => $vs_original_name, 'returnRepresentation' => true, 'type_id' => $vn_type_id));	// $vn_type_id = *relationship* type_id (as opposed to representation type)
 								if ($this->numErrors()) {
 									$po_request->addActionErrors($this->errors(), $vs_f, 'new_'.$va_matches[1]);
 								} else {

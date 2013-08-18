@@ -48,6 +48,12 @@
 		# -------------------------------------------------------
 		public function update($pa_options=null) {
 			$this->_generateSortableValue();	// populate sort field
+			
+			// Invalid entire labels-by-id cache since we can't know what entries pertain to the label we just changed
+			LabelableBaseModelWithAttributes::$s_labels_by_id_cache = array();		
+			
+			// Unset label cache entry for modified label only
+			unset(LabelableBaseModelWithAttributes::$s_label_cache[$this->getSubjectTableName()][$this->get($this->getSubjectKey())]);
 			return parent::update($pa_options);
 		}
 		# -------------------------------------------------------

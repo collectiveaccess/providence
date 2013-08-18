@@ -1785,42 +1785,6 @@ input.searchSetsTextInput {
 	overflow:auto;
 }
 
-/*** OBJECT REPRESENTATION FORM ELEMENTS ***/
-table.objectRepresentationListItem {
-	width: 100%;
-}
-
-.objectRepresentationListItem a {
-	font-weight:normal;
-	text-decoration:none;
-
-}
-
-td.objectRepresentationListItemImage {
-	width: 190px;
-}
-.objectRepresentationListItemImageThumb {
-	float:left;
-	width: 120px;
-}
-.objectRepresentationListItemImageThumb a img {
-	margin-left: auto; margin-right: auto; display: block;
-}
-
-select.objectRepresentationStatus {
-	width: 100px;
-	font-size: 11px;
-}
-
-select.objectRepresentationType {
-	width: 80px;
-	font-size: 11px;
-}
-
-table.objectRepresentationUploadOptions {
-	width: 100%;
-}
-
 /* object representation scroll window in object editor info widget */
 #inspectorInfoRepScrollingViewer {
 	width:170px;
@@ -2267,18 +2231,55 @@ a.caHierarchyOverviewLink {
 /*** EDITOR FORMS ***/
 
 /* formats object representation extracted metadata in a ca_object_representations bundle */
-div.editorObjectRepresentationMetadataButton {
-	float: right;
+
+div.caObjectRepresentationMetadata {
+	text-align:left; 
+	display: none;
+	padding: 3px;
 }
 
-a.editorObjectRepresentationMetadataButton {
+div.caObjectRepresentationMetadata h3 {
+	font-size: 12px;
+	font-weight: bold;
+	display: inline;
+}
+
+div.caObjectRepresentationMD5Display h3 {
+	font-size: 12px;
+	font-weight: bold;
+	display: inline;
+}
+
+div.caObjectRepresentationSourceDisplay h3 {
+	font-size: 12px;
+	font-weight: bold;
+	display: inline;
+}
+
+div.caObjectRepresentationListAccessDisplay {
+	font-size: 12px;
+	font-weight: normal;
+}
+
+div.caObjectRepresentationListAccessDisplay h3 {
+	font-size: 12px;
+	font-weight: bold;
+	display: inline;
+}
+
+div.caObjectRepresentationMetadataDisplay {
+	font-size: 10px;
+	font-weight: normal;
+}
+
+a.caObjectRepresentationMetadataButton {
 	text-decoration: none;
 	font-size: 11px;
 	font-weight: bold;
 	margin-right: 20px;
 }
 
-div.editorObjectRepresentationMetadata {
+div.caObjectRepresentationMetadata {
 	background: #fbfbfb;
 	font-size: 10px;
 	width: 680px;
@@ -2293,6 +2294,61 @@ div.editorObjectRepresentationMetadata {
 	-moz-border-radius-: 10px; 
 	-webkit-border-radius: 10px;
 	border-radius: 10px;	
+}
+
+div.caObjectRepresentationPrimaryDisplay {
+	color: #cc0000;
+	font-size: 10px;
+	font-weight: bold;
+}
+
+div.caObjectRepresentationPrimaryIndicator {
+	color: #cc0000;
+	font-size: 10px;
+	font-weight: bold;
+	display: none;
+}
+
+.caObjectRepresentationListItemImageThumb {
+	float:left;
+	width: 120px;
+}
+.caObjectRepresentationListItemImageThumb a img {
+	margin-left: auto; margin-right: auto; display: block;
+}
+
+div.caObjectRepresentationListInfo {
+	width:100%; 
+	overflow:hidden; 
+	padding:0px; 
+	margin:0px;
+	
+	font-weight:bold; 
+	font-size: 12px;
+	color:#000000;
+}
+
+div.caObjectRepresentationListInfo a {
+	font-weight:bold; 
+	font-size: 12px;
+	color:#000000;
+	text-decoration: none;
+}
+
+div.caObjectRepresentationListActionButton {
+	margin: 10px 0 0 0; 
+	font-weight: normal; 
+	font-size: 10px;
+}
+
+div.caObjectRepresentationDetailEditorElement {
+	float: left;
+	font-size: 10px;
+	margin-right: 5px;
+}
+
+div.caObjectRepresentationDetailEditorElement div select{
+	font-size: 10px;
 }
 
 /* formats object representation extracted metadata for multifile metadata display */
