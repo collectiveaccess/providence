@@ -182,6 +182,44 @@
 							<br class="clear"/>
 							<div class="caObjectRepresentationDetailEditorElement"><?php print $t_item->htmlFormElement('access', null, array('classname' => 'caObjectRepresentationDetailEditorElement', 'id' => "{fieldNamePrefix}access_{n}", 'name' => "{fieldNamePrefix}access_{n}", "value" => "{access}", 'no_tooltips' => false, 'tooltip_namespace' => 'bundle_ca_object_representations')); ?></div>
 							<div class="caObjectRepresentationDetailEditorElement"><?php print $t_item->htmlFormElement('status', '<div>^LABEL<br/>^ELEMENT</div>', array('classname' => 'caObjectRepresentationDetailEditorElement', 'id' => "{fieldNamePrefix}status_{n}", 'name' => "{fieldNamePrefix}status_{n}", "value" => "{status}", 'no_tooltips' => false, 'tooltip_namespace' => 'bundle_ca_object_representations')); ?></div>
+						
+							<br class="clear"/>
+							
+							<table id="{fieldNamePrefix}upload_options{n}">
+								<tr>
+									<td class='formLabel'><?php print caHTMLRadioButtonInput('{fieldNamePrefix}upload_type{n}', array('id' => '{fieldNamePrefix}upload_type_upload{n}', 'class' => '{fieldNamePrefix}upload_type{n}', 'value' => 'upload'), array('checked' => ($vs_default_upload_type == 'upload') ? 1 : 0)).' '._t('using uploaded file'); ?></td>
+									<td class='formLabel'><?php print $t_item->htmlFormElement('media', '^ELEMENT', array('name' => "{fieldNamePrefix}media_{n}", 'id' => "{fieldNamePrefix}media_{n}", "value" => "", 'no_tooltips' => false, 'tooltip_namespace' => 'bundle_ca_object_representations', 'class' => 'uploadInput')); ?></td>
+								</tr>
+<?php
+						if ($vb_allow_fetching_from_urls) {
+?>
+								<tr>
+									<td class='formLabel'><?php print caHTMLRadioButtonInput('{fieldNamePrefix}upload_type{n}', array('id' => '{fieldNamePrefix}upload_type_url{n}', 'class' => '{fieldNamePrefix}upload_type{n}', 'value' => 'url'), array('checked' => ($vs_default_upload_type == 'url') ? 1 : 0)).' '._t('from URL'); ?></td>
+									<td class='formLabel'><?php print caHTMLTextInput("{fieldNamePrefix}media_url_{n}", array('id' => '{fieldNamePrefix}media_url_{n}', 'class' => 'urlBg uploadInput'), array('width' => '235px')); ?></td>
+								</tr>
+<?php
+						}
+		
+?>
+							</table>
+			
+							<script type="text/javascript">
+								jQuery(document).ready(function() {
+									jQuery("#{fieldNamePrefix}upload_options{n} tr td .uploadInput").prop('disabled', true);
+									jQuery("#{fieldNamePrefix}upload_type_upload{n}").click(function() {
+										jQuery("#{fieldNamePrefix}media_{n}").prop('disabled', false);
+										jQuery("#{fieldNamePrefix}media_url_{n}").prop('disabled', true);
+										jQuery("#{fieldNamePrefix}autocomplete{n}").prop('disabled', true);
+									});
+									jQuery("#{fieldNamePrefix}upload_type_url{n}").click(function() {
+										jQuery("#{fieldNamePrefix}media_{n}").prop('disabled', true);
+										jQuery("#{fieldNamePrefix}media_url_{n}").prop('disabled', false);
+										jQuery("#{fieldNamePrefix}autocomplete{n}").prop('disabled', true);
+									});
+					
+									jQuery("input.{fieldNamePrefix}upload_type{n}:checked").click();
+								});
+							</script>
 						</div>
 						
 					</div>
@@ -252,7 +290,7 @@
 ?>
 				<tr>
 					<td class='formLabel'><?php print caHTMLRadioButtonInput('{fieldNamePrefix}upload_type{n}', array('id' => '{fieldNamePrefix}upload_type_url{n}', 'class' => '{fieldNamePrefix}upload_type{n}', 'value' => 'url'), array('checked' => ($vs_default_upload_type == 'url') ? 1 : 0)).' '._t('from URL'); ?></td>
-					<td class='formLabel'><?php print caHTMLTextInput("{fieldNamePrefix}media_url_{n}", array('id' => '{fieldNamePrefix}media_url_{n}', 'class' => 'urlBg uploadInput'), array('width' => '450px')); ?></td>
+					<td class='formLabel'><?php print caHTMLTextInput("{fieldNamePrefix}media_url_{n}", array('id' => '{fieldNamePrefix}media_url_{n}', 'class' => 'urlBg uploadInput'), array('width' => '410px')); ?></td>
 				</tr>
 <?php
 		}
@@ -262,11 +300,11 @@
 				<tr>
 					<td class='formLabel'><?php print caHTMLRadioButtonInput('{fieldNamePrefix}upload_type{n}', array('id' => '{fieldNamePrefix}upload_type_search{n}', 'class' => '{fieldNamePrefix}upload_type{n}', 'value' => 'search'), array('checked' => ($vs_default_upload_type == 'search') ? 1 : 0)).' '._t('using existing'); ?></td>
 					<td class='formLabel'>
-						<?php print caHTMLTextInput('{fieldNamePrefix}autocomplete{n}', array('value' => '{{label}}', 'id' => '{fieldNamePrefix}autocomplete{n}', 'class' => 'lookupBg uploadInput'), array('width' => '465px')); ?>
+						<?php print caHTMLTextInput('{fieldNamePrefix}autocomplete{n}', array('value' => '{{label}}', 'id' => '{fieldNamePrefix}autocomplete{n}', 'class' => 'lookupBg uploadInput'), array('width' => '425px')); ?>
 <?php
 	if ($t_item_rel && $t_item_rel->hasField('type_id')) {
 ?>
-						<select name="<?php print $vs_id_prefix; ?>_type_id{n}" id="<?php print $vs_id_prefix; ?>_type_id{n}" style="display: none;"></select>
+						<select name="<?php print $vs_id_prefix; ?>_type_id{n}" id="<?php print $vs_id_prefix; ?>_type_id{n}" style="display: none; width: 72px;"></select>
 <?php
 	}
 ?>
@@ -359,9 +397,9 @@
 			itemClassName: 'labelInfo',
 			addButtonClassName: 'caAddItemButton',
 			deleteButtonClassName: 'caDeleteItemButton',
-			showOnNewIDList: ['<?php print $vs_id_prefix; ?>_media_', '<?php print $vs_id_prefix; ?>_rep_type_id_div_'],
-			hideOnNewIDList: ['<?php print $vs_id_prefix; ?>_media_show_update_', '<?php print $vs_id_prefix; ?>_edit_','<?php print $vs_id_prefix; ?>_download_', '<?php print $vs_id_prefix; ?>_media_metadata_container_', '<?php print $vs_id_prefix; ?>_edit_annotations_'],
-			enableOnNewIDList: ['<?php print $vs_id_prefix; ?>_rep_type_id_'],
+			showOnNewIDList: ['<?php print $vs_id_prefix; ?>_media_'],
+			hideOnNewIDList: ['<?php print $vs_id_prefix; ?>_edit_','<?php print $vs_id_prefix; ?>_download_', '<?php print $vs_id_prefix; ?>_media_metadata_container_', '<?php print $vs_id_prefix; ?>_edit_annotations_'],
+			enableOnNewIDList: [],
 			showEmptyFormsOnLoad: 1,
 			readonly: <?php print $vb_read_only ? "true" : "false"; ?>,
 			isSortable: <?php print !$vb_read_only ? "true" : "false"; ?>,
