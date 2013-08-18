@@ -405,7 +405,7 @@ class WLPlugSearchEngineSqlSearch extends BaseSearchPlugin implements IWLPlugSea
 					case 8:	// length
 					case 9:	// weight
 						// noop
-						break;
+						// break;
 					default:
 						return array('table_num' => $vs_table_num, 'element_id' => $t_element->getPrimaryKey(), 'field_num' => 'A'.$t_element->getPrimaryKey(), 'datatype' => $t_element->get('datatype'), 'element_info' => $t_element->getFieldValuesArray());
 						break;
