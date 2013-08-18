@@ -187,7 +187,7 @@
 			
 			$t_target = $this->getAppDatamodel()->getInstanceByTableName($vs_target_table);
 			
-			$vn_target_id = $this->get('object_id');
+			$vn_target_id = $this->get($vs_target_key);
 			if (!$t_target->load($vn_target_id)) { 
 				// invalid object
 				$this->postError(720, _t("Related %1 does not exist", $t_target->getProperty('NAME_SINGULAR')), "BaseRepresentationRelationship->delete()");
