@@ -42,7 +42,7 @@ include_once(__CA_LIB_DIR__."/core/Zend/Gdata.php");
 include_once(__CA_LIB_DIR__."/core/Zend/Gdata/ClientLogin.php");
 include_once(__CA_LIB_DIR__."/core/Zend/Gdata/YouTube.php");
 
-class WLPlugMediaReplicationYouTube Extends BaseMediaReplicationPlugin Implements IWLPlugMediaReplication {
+class WLPlugMediaReplicationYouTube Extends BaseMediaReplicationPlugin {
 	# ------------------------------------------------
 	/**
 	 *
@@ -255,6 +255,17 @@ class WLPlugMediaReplicationYouTube Extends BaseMediaReplicationPlugin Implement
 		//$this->opo_client->setMajorProtocolVersion(2);
 		
     	return $this->opo_client;
+	}
+	# ------------------------------------------------
+	/**
+	 *
+	 */
+	public function getUrl($ps_key, $pa_options=null) {
+		$va_tmp = explode("://", $ps_key);
+		if((sizeof($va_tmp) == 2) && (strtolower($va_tmp[0]) == 'youtube')) {
+			return "http://www.youtube.com/watch?v=".$va_tmp[1];
+		}
+		return null;
 	}
 	# ------------------------------------------------
 }

@@ -49,11 +49,11 @@
 		print "<table class='caRepresentationMediaReplicationStatusTable'>\n<tr><th>"._t('Replication target')."</th><th>"._t('Status')."</th></tr>\n";
 		foreach($va_replications as $vs_target => $va_target_info) {
 			$va_status = $t_rep->getReplicationStatus('media', $vs_target);
-			print "<tr><td>{$va_target_info['name']} (<em>{$va_target_info['type']}</em>)</td><td>{$va_status['status']}</td></tr>\n";
+			print "<tr><td>".(($vs_url = $t_rep->getReplicatedMediaUrl('media', $vs_target)) ? "<a href='{$vs_url}' target='_ext'>{$va_target_info['name']}</a>" : $va_target_info['name'])." (<em>{$va_target_info['type']}</em>)</td><td>{$va_status['status']}</td></tr>\n";
 		}
 		print "</table>\n";
 	} else {
-		print _t('No replication targets are available')."\n";
+		//print _t('No replication targets are available')."\n";
 	}
 ?>
 	</div>

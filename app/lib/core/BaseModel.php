@@ -2024,7 +2024,6 @@ class BaseModel extends BaseObject {
 								return false;
 							}
 							if (!is_numeric($this->_FIELD_VALUES[$start_field_name]) && !($va_attr["IS_NULL"] && is_null($this->_FIELD_VALUES[$start_field_name]))) {
-								print_r($this->_FIELD_VALUES); print "f=$start_field_name"; print_R($va_attr); print json_encode($this->_FIELD_VALUES);
 								$this->postError(1100, _t("Starting date is invalid"),"BaseModel->insert()");
 								if ($vb_we_set_transaction) { $this->removeTransaction(false); }
 								return false;
@@ -4759,6 +4758,27 @@ class BaseModel extends BaseObject {
 			}
 		}
 		return $vs_key;
+	}
+	# --------------------------------------------------------------------------------
+	/**
+	 * 
+	 *
+	 * @param string $ps_field
+	 * @param 
+	 */
+	public function getReplicatedMediaUrl($ps_field, $ps_target, $pa_options=null) {
+		$va_media_info = $this->getMediaInfo($ps_field); 
+		if (!isset($va_media_info['REPLICATION_STATUS'][$ps_target])) { return null; }
+		if ($va_media_info['REPLICATION_STATUS'][$ps_target] != __CA_MEDIA_REPLICATION_STATE_COMPLETE__) { return false; }
+		
+		$va_targets = $this->getMediaReplicationTargets($ps_field, 'original');
+		$va_target_info = $va_targets[$ps_target];
+		
+		if ($vs_replication_key = $va_media_info['REPLICATION_KEYS'][$ps_target]) {
+			$o_replicator = new MediaReplicator();
+			return $o_replicator->getUrl($vs_replication_key, $va_target_info, $pa_options);
+		}
+		return null;
 	}
 	# --------------------------------------------------------------------------------
 	/**

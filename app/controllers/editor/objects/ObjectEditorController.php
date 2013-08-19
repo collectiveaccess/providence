@@ -471,6 +471,8 @@
  			$this->view->setVar('representation_id', $pn_representation_id);
  			$this->view->setVar('t_representation', $t_rep);
  			
+ 				//$t_rep->removeMediaReplication('media', 'youtube_channel1');
+ 		
  			$this->render('object_representation_media_replication_controls_html.php');
  		}
  		# -------------------------------------------------------

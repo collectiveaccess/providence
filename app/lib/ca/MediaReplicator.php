@@ -86,6 +86,20 @@ define("__CA_MEDIA_REPLICATION_STATE_ERROR__", 5);	// replication failed
 		 * @param string $ps_field
 		 * @param 
 		 */
+		public function getUrl($ps_replication_key, $pa_target_info, $pa_options=null) {
+			if(!($o_plugin = $this->getMediaReplicationPlugin($pa_target_info['type']))) {
+				throw new Exception(_t("Replication plugin %1 does not exist", $pa_target_info['type']));
+			}
+			
+			return $o_plugin->getUrl($ps_replication_key, $pa_options);
+		}
+		# --------------------------------------------------------------------------------
+		/**
+		 * 
+		 *
+		 * @param string $ps_field
+		 * @param 
+		 */
 		public function getReplicationStatus($pa_target_info, $ps_request_token, $pa_options=null) {
 			if(!($o_plugin = $this->getMediaReplicationPlugin($pa_target_info['type']))) {
 				throw new Exception(_t("Replication plugin %1 does not exist", $pa_target_info['type']));
