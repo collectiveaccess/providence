@@ -70,8 +70,10 @@
 			}
 			$va_inital_values[$va_rep['representation_id']] = array(
 				'status' => $va_rep['status'], 
+				'status_display' => $t_item->getChoiceListValue('status', $va_rep['status']), 
 				'access_display' => $t_item->getChoiceListValue('access', $va_rep['access']), 
 				'access' => $va_rep['access'],
+				'rep_type' => $t_item->getTypeName($va_rep['type_id']), 
 				'rep_label' => $va_rep['label'],
 				'is_primary' => (int)$va_rep['is_primary'],
 				'is_primary_display' => ($va_rep['is_primary'] == 1) ? "<div class='caObjectRepresentationPrimaryDisplay'>"._t('PRIMARY')."</div>" : '', 
@@ -161,23 +163,36 @@
 				</div>
 				<div style="float: right; width: 550px;">
 					<div style="float: left; width: 80%;">
+				<div id='{fieldNamePrefix}rep_info_ro{n}'>
 						<div class='caObjectRepresentationListInfo'>
-							<a title="{filename}"><?php print _t('Original file name: <em>{filename}</em>'); ?></a>
+							<a title="{filename}">{rep_label}</a>
+							<span id="{fieldNamePrefix}change_{n}" class="caObjectRepresentationListInfoSubDisplayUpdate"><a href='#' onclick="caOpenRepresentationDetailEditor('{n}'); return false;"><?php print caNavIcon($this->request, __CA_NAV_BUTTON_UPDATE__, null, array('width' => '16', 'height' => '16')).'</a>'; ?></span>
 						</div>
-						<div class='caObjectRepresentationListInfo'>
-							{type}; {dimensions} {num_multifiles}
+						<div class='caObjectRepresentationListInfoSubDisplay'>
+							<h3><?php print _t('File name'); ?></h3> <span class="caObjectRepresentationListInfoSubDisplayFilename" id="{fieldNamePrefix}filename_display_{n}">{filename}</span>
+<?php
+	TooltipManager::add("#{$vs_id_prefix}_filename_display_{n}", _t('File name: %1', "{filename}"), 'bundle_ca_object_representations');
+?>
+						</div>
+						<div class='caObjectRepresentationListInfoSubDisplay'>
+							<h3><?php print _t('Format'); ?></h3> {type};
+							<h3><?php print _t('Dimensions'); ?></h3> {dimensions}; {num_multifiles}
+							
+							{is_primary_display}
 						</div>
 						
-						{is_primary_display}
-						<div id='{fieldNamePrefix}is_primary_indicator_{n}' class='caObjectRepresentationPrimaryIndicator' style='display: none; color: #cc0000; font-style: italic;'><?php print _t('Will be primary after save'); ?></div>
-						<input type="hidden" name="{fieldNamePrefix}is_primary_{n}" id="{fieldNamePrefix}is_primary_{n}" class="{fieldNamePrefix}is_primary" value=""/>
-					
-						<div class='caObjectRepresentationListAccessDisplay'>
-							<h3>Access:</h3> {access_display}
-							<span id="{fieldNamePrefix}change_{n}"><a href='#' onclick='caOpenRepresentationDetailEditor("{n}"); return false;'><?php print caNavIcon($this->request, __CA_NAV_BUTTON_UPDATE__, null, array('width' => '16', 'height' => '16')).'</a>'; ?></span>
+						<div class='caObjectRepresentationListInfoSubDisplay'>
+							<h3><?php print _t('Type'); ?></h3> {rep_type};
+							<h3><?php print _t('Access'); ?></h3> {access_display};
+							<h3><?php print _t('Status'); ?></h3> {status_display}
 						</div>
+						
+						<div id='{fieldNamePrefix}is_primary_indicator_{n}' class='caObjectRepresentationPrimaryIndicator' style='display: none; color: #cc0000; font-style: italic;'><?php print _t('Will be primary after save'); ?></div>
+						<div id='{fieldNamePrefix}change_indicator_{n}' class='caObjectRepresentationPrimaryIndicator' style='display: none; color: #cc0000; font-style: italic;'><?php print _t('Changes will be applied when you save'); ?></div>
+						<input type="hidden" name="{fieldNamePrefix}is_primary_{n}" id="{fieldNamePrefix}is_primary_{n}" class="{fieldNamePrefix}is_primary" value=""/>
+				</div>		
 			
-						<div id='{fieldNamePrefix}detail_editor_{n}' style='display: none; width: 100%;'>
+						<div id='{fieldNamePrefix}detail_editor_{n}' class="caObjectRepresentationDetailEditorContainer">
 							<div class="caObjectRepresentationDetailEditorElement"><?php print $t_item_label->htmlFormElement('name', '<div>^LABEL<br/>^ELEMENT</div>', array('classname' => 'caObjectRepresentationDetailEditorElement', 'id' => "{fieldNamePrefix}rep_label_{n}", 'name' => "{fieldNamePrefix}rep_label_{n}", "value" => "{rep_label}", 'no_tooltips' => false, 'tooltip_namespace' => 'bundle_ca_object_representations', 'textAreaTagName' => 'textentry', 'width' => 60)); ?></div>
 							<br class="clear"/>
 							<div class="caObjectRepresentationDetailEditorElement"><?php print $t_item->htmlFormElement('access', null, array('classname' => 'caObjectRepresentationDetailEditorElement', 'id' => "{fieldNamePrefix}access_{n}", 'name' => "{fieldNamePrefix}access_{n}", "value" => "{access}", 'no_tooltips' => false, 'tooltip_namespace' => 'bundle_ca_object_representations')); ?></div>
@@ -185,6 +200,7 @@
 						
 							<br class="clear"/>
 							
+							<div class="caObjectRepresentationDetailEditorHeading"><?php print _t('Update media'); ?></div>
 							<table id="{fieldNamePrefix}upload_options{n}">
 								<tr>
 									<td class='formLabel'><?php print caHTMLRadioButtonInput('{fieldNamePrefix}upload_type{n}', array('id' => '{fieldNamePrefix}upload_type_upload{n}', 'class' => '{fieldNamePrefix}upload_type{n}', 'value' => 'upload'), array('checked' => ($vs_default_upload_type == 'upload') ? 1 : 0)).' '._t('using uploaded file'); ?></td>
@@ -202,7 +218,13 @@
 		
 ?>
 							</table>
-			
+							
+							<div class='caObjectRepresentationDetailEditorDoneButton'>
+<?php 
+								print caJSButton($this->request, __CA_NAV_BUTTON_SAVE__, 'Done', '{fieldNamePrefix}detail_editor_save_button{n}', array('onclick' => 'caCloseRepresentationDetailEditor("{n}"); return false;')); 
+?>
+							</div>	
+							
 							<script type="text/javascript">
 								jQuery(document).ready(function() {
 									jQuery("#{fieldNamePrefix}upload_options{n} tr td .uploadInput").prop('disabled', true);
@@ -226,16 +248,16 @@
 					
 					<div style="float: right; width: 20%;">						
 						<div class='caObjectRepresentationListActionButton'>
-							<span id="{fieldNamePrefix}primary_{n}"><a href='#' onclick='caSetRepresentationAsPrimary("{n}"); return false;'><?php print caNavIcon($this->request, __CA_NAV_BUTTON_MAKE_PRIMARY__, null, array('width' => '16', 'height' => '16')).'</a> '._t('Make primary'); ?></span>
+							<span id="{fieldNamePrefix}primary_{n}"><a href='#' onclick='caSetRepresentationAsPrimary("{n}"); return false;'><?php print caNavIcon($this->request, __CA_NAV_BUTTON_MAKE_PRIMARY__, null, array('width' => '16', 'height' => '16')).' '._t('Make primary'); ?></a></span>
 						</div>
 						<div class='caObjectRepresentationListActionButton'>
-							<span id="{fieldNamePrefix}edit_{n}"><?php print urldecode(caNavLink($this->request, caNavIcon($this->request, __CA_NAV_BUTTON_EDIT__), '', 'editor/object_representations', 'ObjectRepresentationEditor', 'Edit', array('representation_id' => "{n}"), array('id' => "{fieldNamePrefix}edit_button_{n}"))).' '._t('Edit full record'); ?></span>
+							<span id="{fieldNamePrefix}edit_{n}"><?php print urldecode(caNavLink($this->request, caNavIcon($this->request, __CA_NAV_BUTTON_EDIT__).' '._t('Edit full record'), '', 'editor/object_representations', 'ObjectRepresentationEditor', 'Edit', array('representation_id' => "{n}"), array('id' => "{fieldNamePrefix}edit_button_{n}"))); ?></span>
 						</div>
 						<div class='caObjectRepresentationListActionButton'>
-							<span id="{fieldNamePrefix}download_{n}"><?php print urldecode(caNavButton($this->request, __CA_NAV_BUTTON_DOWNLOAD__, 'Download', 'editor/objects', 'ObjectEditor', 'DownloadRepresentation', array('version' => 'original', 'representation_id' => "{n}", 'object_id' => $t_subject->getPrimaryKey(), 'download' => 1), array('id' => "{fieldNamePrefix}download_button_{n}"), array('no_background' => true, 'dont_show_content' => true))).' '._t('Download'); ?></span>
+							<span id="{fieldNamePrefix}download_{n}"><?php print urldecode(caNavLink($this->request, caNavIcon($this->request, __CA_NAV_BUTTON_DOWNLOAD__).' '._t('Download'), '', 'editor/objects', 'ObjectEditor', 'DownloadRepresentation', array('version' => 'original', 'representation_id' => "{n}", 'object_id' => $t_subject->getPrimaryKey(), 'download' => 1), array('id' => "{fieldNamePrefix}download_button_{n}"))); ?></span>
 						</div>
 						<div class="caAnnotationEditorLaunchButton annotationType{annotation_type} caObjectRepresentationListActionButton">
-							<span id="{fieldNamePrefix}edit_annotations_{n}"><a href="#" onclick="caAnnotationEditor<?php print $vs_id_prefix; ?>.showPanel('<?php print urldecode(caNavUrl($this->request, 'editor/object_representations', 'ObjectRepresentationEditor', 'GetAnnotationEditor', array('representation_id' => '{n}'))); ?>'); return false;" id="{fieldNamePrefix}edit_annotations_button_{n}"><img src='<?php print $this->request->getThemeUrlPath()."/graphics/buttons/clock.png"; ?>' border='0' height='16px' width='16px'/></a> <?php print _t('Annotations'); ?></span>
+							<span id="{fieldNamePrefix}edit_annotations_{n}"><a href="#" onclick="caAnnotationEditor<?php print $vs_id_prefix; ?>.showPanel('<?php print urldecode(caNavUrl($this->request, 'editor/object_representations', 'ObjectRepresentationEditor', 'GetAnnotationEditor', array('representation_id' => '{n}'))); ?>'); return false;" id="{fieldNamePrefix}edit_annotations_button_{n}"><img src='<?php print $this->request->getThemeUrlPath()."/graphics/buttons/clock.png"; ?>' border='0' height='16px' width='16px'/> <?php print _t('Annotations'); ?></a></span>
 						</div>
 					</div>	
 				</div>
@@ -370,7 +392,14 @@
 	}
 	
 	function caOpenRepresentationDetailEditor(id) {
-		jQuery('#<?php print $vs_id_prefix; ?>_detail_editor_' + id).slideToggle(250);
+		jQuery('#<?php print $vs_id_prefix; ?>_detail_editor_' + id).slideDown(250);
+		jQuery('#<?php print $vs_id_prefix; ?>_rep_info_ro' + id).slideUp(250);
+	}
+	
+	function caCloseRepresentationDetailEditor(id) {
+		jQuery('#<?php print $vs_id_prefix; ?>_detail_editor_' + id).slideUp(250);
+		jQuery('#<?php print $vs_id_prefix; ?>_rep_info_ro' + id).slideDown(250);
+		jQuery('#<?php print $vs_id_prefix; ?>_change_indicator_' + id).show();
 	}
 	
 	function caSetRepresentationAsPrimary(id) {

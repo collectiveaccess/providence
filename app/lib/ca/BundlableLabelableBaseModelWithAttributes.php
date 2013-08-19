@@ -2956,15 +2956,13 @@ if (!$vb_batch) {
 										//
 										// Set representation label
 										//
-										$t_rep_label = new ca_object_representation_labels();
+										$t_rep = new ca_object_representations();
 										global $g_ui_locale_id;
-										if ($t_rep_label->load(array('representation_id' => $va_rep['representation_id'], 'locale_id' => $g_ui_locale_id))) {
-											$t_rep_label->setMode(ACCESS_WRITE);
-											$t_rep_label->set('name', $vs_rep_label);
-											$t_rep_label->update();
-											
-											if ($t_rep_label->numErrors()) {
-												$po_request->addActionErrors($t_rep_label->errors(), $vs_f, $va_rep['representation_id']);
+										if ($t_rep->load($va_rep['representation_id'])) {
+											$t_rep->setMode(ACCESS_WRITE);
+											$t_rep->replaceLabel(array('name' => $vs_rep_label), $g_ui_locale_id, null, true);
+											if ($t_rep->numErrors()) {
+												$po_request->addActionErrors($t_rep->errors(), $vs_f, $va_rep['representation_id']);
 											}
 										}
 									}
