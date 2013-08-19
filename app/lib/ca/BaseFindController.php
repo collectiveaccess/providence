@@ -242,6 +242,14 @@
 				array(
 					'name' => _t('PDF (Thumbnails)'),
 					'code' => '_pdfthumb' 
+				),
+				array(
+					'name' => _t('PDF (ArtForm)'),
+					'code' => '_pdf_artform' 
+				),
+				array(
+					'name' => _t('PDF (Condition Report)'),
+					'code' => '_pdf_condition' 
 				)
 			);
 			
@@ -318,7 +326,7 @@
 			
 			
 			// be sure to seek to the beginning when running labels
-			$po_result->seek(0);
+			$po_result->seek(0); 
 			while($po_result->nextHit()) {
 				$t_subject->load($po_result->get($t_subject->primaryKey()));
 				
@@ -618,20 +626,48 @@
 					}
 					return;
 					break;	
-// 				case '_pdflong':
-// 			header("Content-Disposition: attachment; filename=export_results.pdf");
-// 			header("Content-type: application/pdf");
-// 					$vs_content = $this->render('Results/'.$this->ops_tablename.'_pdf_results_long_html.php');
-// 				
-// 					$o_pdf = new DOMPDF();
-// 					// Page sizes: 'letter', 'legal', 'A4'
-// 					// Orientation:  'portrait' or 'landscape'
-// 					$o_pdf->set_paper("letter", "landscape");
-// 					$o_pdf->load_html($vs_content, 'utf-8');
-// 					$o_pdf->render();
-// 					$o_pdf->stream("results.pdf");
+				case '_pdf_artform':
+					require_once(__CA_LIB_DIR__."/core/Print/html2pdf/html2pdf.class.php");
+					
+					try {
+						$vs_content = $this->render('Results/'.$this->ops_tablename.'_pdf_results_artform_html.php');
+						$vo_html2pdf = new HTML2PDF('P','letter','en');
+						$vo_html2pdf->setDefaultFont("dejavusans");
+						$vo_html2pdf->setTestIsImage(false);
+						$vo_html2pdf->WriteHTML($vs_content);
+						
+			header("Content-Disposition: attachment; filename=export_results.pdf");
+			header("Content-type: application/pdf");
+			
+						$vo_html2pdf->Output('artform_results.pdf');
+						$vb_printed_properly = true;
+					} catch (Exception $e) {
+						$vb_printed_properly = false;
+						$this->postError(3100, _t("Could not generate PDF"),"BaseEditorController->PrintSummary()");
+					}
 					return;
-					break;					
+					break;	
+				case '_pdf_condition':
+					require_once(__CA_LIB_DIR__."/core/Print/html2pdf/html2pdf.class.php");
+					
+					try {
+						$vs_content = $this->render('Results/'.$this->ops_tablename.'_pdf_results_condition_html.php');
+						$vo_html2pdf = new HTML2PDF('P','letter','en');
+						$vo_html2pdf->setDefaultFont("dejavusans");
+						$vo_html2pdf->setTestIsImage(false);
+						$vo_html2pdf->WriteHTML($vs_content);
+						
+			header("Content-Disposition: attachment; filename=export_results.pdf");
+			header("Content-type: application/pdf");
+			
+						$vo_html2pdf->Output('condition_report.pdf');
+						$vb_printed_properly = true;
+					} catch (Exception $e) {
+						$vb_printed_properly = false;
+						$this->postError(3100, _t("Could not generate PDF"),"BaseEditorController->PrintSummary()");
+					}
+					return;
+					break;														
 				case '_csv':
 					$vs_delimiter = ",";
 					$vs_output_file_name = mb_substr(preg_replace("/[^A-Za-z0-9\-]+/", '_', $ps_output_filename.'_csv'), 0, 30);
