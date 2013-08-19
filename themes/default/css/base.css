@@ -2304,7 +2304,7 @@ div.caObjectRepresentationMetadata {
 	border-radius: 10px;	
 }
 
-div.caObjectRepresentationPrimaryDisplay {
+span.caObjectRepresentationPrimaryDisplay {
 	color: #cc0000;
 	font-size: 10px;
 	font-weight: bold;
@@ -2347,7 +2347,7 @@ div.caObjectRepresentationListInfo {
 
 div.caObjectRepresentationListInfo a {
 	font-weight:bold; 
-	font-size: 12px;
+	font-size: 14px;
 	color:#000000;
 	text-decoration: none;
 }
@@ -2386,6 +2386,17 @@ div.caObjectRepresentationDetailEditorContainer{
 	-moz-border-radius-: 10px; 
 	-webkit-border-radius: 10px;
 	border-radius: 10px;	
+}
+
+div.caObjectRepresentationNewDetailEditorContainer {
+	display: none; 
+	width: 540px;
+	padding: 10px;
+	background-color: #dedede;
+	
+	-moz-border-radius-: 10px; 
+	-webkit-border-radius: 10px;
+	border-radius: 10px;
 }
 
 div.caObjectRepresentationDetailEditorDoneButton {
