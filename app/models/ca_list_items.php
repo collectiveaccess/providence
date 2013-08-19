@@ -34,7 +34,7 @@
    *
    */
  
-require_once(__CA_LIB_DIR__.'/ca/BundlableLabelableBaseModelWithAttributes.php');
+require_once(__CA_LIB_DIR__.'/ca/RepresentableBaseModel.php');
 require_once(__CA_LIB_DIR__.'/ca/IHierarchy.php');
 require_once(__CA_MODELS_DIR__.'/ca_lists.php');
 require_once(__CA_MODELS_DIR__.'/ca_locales.php');
@@ -194,10 +194,10 @@ BaseModel::$s_ca_models_definitions['ca_list_items'] = array(
  	)
 );
 
-class ca_list_items extends BundlableLabelableBaseModelWithAttributes implements IHierarchy {
-	# ---------------------------------
+class ca_list_items extends RepresentableBaseModel implements IHierarchy {
+	# ------------------------------------------------------
 	# --- Object attribute properties
-	# ---------------------------------
+	# ------------------------------------------------------
 	# Describe structure of content object's properties - eg. database fields and their
 	# associated types, what modes are supported, et al.
 	#
@@ -333,6 +333,7 @@ class ca_list_items extends BundlableLabelableBaseModelWithAttributes implements
 	# ------------------------------------------------------
 	protected function initLabelDefinitions() {
 		parent::initLabelDefinitions();
+		$this->BUNDLES['ca_object_representations'] = array('type' => 'related_table', 'repeating' => true, 'label' => _t('Media representations'));
 		$this->BUNDLES['ca_objects'] = array('type' => 'related_table', 'repeating' => true, 'label' => _t('Related objects'));
 		$this->BUNDLES['ca_object_lots'] = array('type' => 'related_table', 'repeating' => true, 'label' => _t('Related lots'));
 		$this->BUNDLES['ca_entities'] = array('type' => 'related_table', 'repeating' => true, 'label' => _t('Related entities'));

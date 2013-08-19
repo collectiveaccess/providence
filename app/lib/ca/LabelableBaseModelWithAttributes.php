@@ -1172,7 +1172,7 @@
  			
  			if (!is_array($pa_options)) { $pa_options = array(); }
  			$vs_cache_key = caMakeCacheKeyFromOptions(array_merge($pa_options, array('table_name' => $this->tableName(), 'id' => $vn_id, 'mode' => (int)$pn_mode)));
- 			if (!$pb_dont_cache && is_array($va_tmp = LabelableBaseModelWithAttributes::$s_label_cache[$vs_cache_key])) {
+ 			if (!$pb_dont_cache && is_array($va_tmp = LabelableBaseModelWithAttributes::$s_label_cache[$this->tableName()][$vn_id][$vs_cache_key])) {
  				return $va_tmp;
  			}
 			if (!($t_label = $this->_DATAMODEL->getInstanceByTableName($this->getLabelTableName(), true))) { return null; }
@@ -1275,7 +1275,7 @@
  				$va_labels = $va_flattened_labels;
  			}
  			
- 			LabelableBaseModelWithAttributes::$s_label_cache[$vs_cache_key] = $va_labels;
+ 			LabelableBaseModelWithAttributes::$s_label_cache[$this->tableName()][$vn_id][$vs_cache_key] = $va_labels;
  			
  			return $va_labels;
  		}

@@ -35,7 +35,7 @@
    */
 
 require_once(__CA_LIB_DIR__."/ca/IBundleProvider.php");
-require_once(__CA_LIB_DIR__."/ca/BundlableLabelableBaseModelWithAttributes.php");
+require_once(__CA_LIB_DIR__."/ca/RepresentableBaseModel.php");
 require_once(__CA_MODELS_DIR__."/ca_objects.php");
 
 
@@ -149,7 +149,7 @@ BaseModel::$s_ca_models_definitions['ca_object_lots'] = array(
  	)
 );
 
-class ca_object_lots extends BundlableLabelableBaseModelWithAttributes {
+class ca_object_lots extends RepresentableBaseModel {
 	# ---------------------------------
 	# --- Object attribute properties
 	# ---------------------------------
@@ -286,6 +286,7 @@ class ca_object_lots extends BundlableLabelableBaseModelWithAttributes {
 	# ------------------------------------------------------
 	protected function initLabelDefinitions() {
 		parent::initLabelDefinitions();
+		$this->BUNDLES['ca_object_representations'] = array('type' => 'related_table', 'repeating' => true, 'label' => _t('Media representations'));
 		$this->BUNDLES['ca_entities'] = array('type' => 'related_table', 'repeating' => true, 'label' => _t('Related entities'));
 		$this->BUNDLES['ca_places'] = array('type' => 'related_table', 'repeating' => true, 'label' => _t('Related places'));
 		$this->BUNDLES['ca_occurrences'] = array('type' => 'related_table', 'repeating' => true, 'label' => _t('Related occurrences'));
@@ -300,7 +301,6 @@ class ca_object_lots extends BundlableLabelableBaseModelWithAttributes {
 		$this->BUNDLES['ca_sets'] = array('type' => 'special', 'repeating' => true, 'label' => _t('Sets'));
 		
 		$this->BUNDLES['ca_objects'] = array('type' => 'related_table', 'repeating' => true, 'label' => _t('Related objects'));
-		$this->BUNDLES['ca_object_lot_events'] = array('type' => 'related_table', 'repeating' => true, 'label' => _t('Related events'));
 	}
  	# ------------------------------------------------------
  	/**
