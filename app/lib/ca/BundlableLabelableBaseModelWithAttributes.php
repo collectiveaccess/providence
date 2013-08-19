@@ -2313,8 +2313,6 @@ class BundlableLabelableBaseModelWithAttributes extends LabelableBaseModelWithAt
 		if (is_array($va_bundle_lists['fields_by_type']['preferred_label'])) {
 			foreach($va_bundle_lists['fields_by_type']['preferred_label'] as $vs_placement_code => $vs_f) {
 				foreach($_REQUEST as $vs_key => $vs_value ) {
-				///	print "$vs_key<br>";
-				//	print $vs_placement_code.$vs_form_prefix.'_Pref'.'locale_id_new_([\d]+)<br>';
 					if (
 						!preg_match('/'.$vs_placement_code.$vs_form_prefix.'_Pref'.'locale_id_(new_[\d]+)/', $vs_key, $va_matches)
 						&&
@@ -3481,7 +3479,7 @@ if (!$vb_batch) {
 				}
 				
 				$vs_effective_daterange = $po_request->getParameter($ps_form_prefix.'_'.$ps_bundlename.'_effective_date'.$va_rel_item[$vs_key], pString);
-				$this->editRelationship($ps_bundlename, $va_rel_item[$vs_key], $vn_id, $vn_type_id, $vs_effective_daterange, null, $vs_direction, $vn_rank);	
+				$this->editRelationship($ps_bundlename, $va_rel_item[$vs_key], $vn_id, $vn_type_id, null, null, $vs_direction, $vn_rank);	
 					
 				if ($this->numErrors()) {
 					$po_request->addActionErrors($this->errors(), $ps_bundlename);
@@ -4358,7 +4356,7 @@ $pa_options["display_form_field_tips"] = true;
 		if (!($vs_search_result_class = $t_instance->getProperty('SEARCH_RESULT_CLASSNAME'))) { return null; }
 		require_once(__CA_LIB_DIR__.'/ca/Search/'.$vs_search_result_class.'.php');
 		$o_data = new WLPlugSearchEngineCachedResult($va_ids, $t_instance->tableNum());
-		$o_res = new $vs_search_result_class();
+		$o_res = new $vs_search_result_class($t_instance->tableName());	// we pass the table name here so generic multi-table search classes such as InterstitialSearch know what table they're operating over
 		$o_res->init($o_data, array());
 		
 		return $o_res;

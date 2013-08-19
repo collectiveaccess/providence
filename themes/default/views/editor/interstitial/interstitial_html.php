@@ -109,6 +109,15 @@
 					}
 				}, "json");
 			}
+			
+			jQuery(document).ready(function() {
+				jQuery('#<?php print $vs_form_name; ?>').bind('keydown', 
+				function(e){
+					e = e || event;
+					var txtArea = /textarea/i.test((e.target || e.srcElement).tagName);
+					return txtArea || (e.keyCode || e.which || e.charCode || 0) !== 13;
+				});
+			});
 		</script>
 	</div>
 </form>

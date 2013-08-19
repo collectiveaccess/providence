@@ -313,15 +313,18 @@ class SearchIndexer extends SearchBase {
 		
 			$va_hier_values = array();
 			while($qr_hier_res->nextHit()) {
-				$va_hier_values[] = $qr_hier_res->get($vs_subject_tablename.".".$ps_field);
+				if ($vs_v = $qr_hier_res->get($vs_subject_tablename.".".$ps_field)) {
+					$va_hier_values[] = $vs_v;
+				}
 			}
+			$va_hier_values = array_reverse($va_hier_values);
 			
 			$pn_start = caGetOption('INDEX_ANCESTORS_START_AT_LEVEL', $pa_options, 0);
 			$pn_max_levels = caGetOption('INDEX_ANCESTORS_MAX_NUMBER_OF_LEVELS', $pa_options, null);
 			$ps_delimiter = caGetOption('INDEX_ANCESTORS_AS_PATH_WITH_DELIMITER', $pa_options, '; ');
 			
 			if ($pn_start > 0) {
-				$va_hier_values = array_reverse(array_slice(array_reverse($va_hier_values), $pn_start));
+				$va_hier_values = array_slice($va_hier_values, $pn_start);
 			}
 			if ($pn_max_levels > 0) {
 				$va_hier_values = array_slice($va_hier_values, 0, $pn_max_levels);
@@ -411,7 +414,7 @@ class SearchIndexer extends SearchBase {
 		// 
 		// If location in hierarchy has changed we need to reindex this record and all of its children
 		//
-		if ($t_subject->isHierarchical() && isset($pa_changed_fields['parent_id']) && $pa_changed_fields['parent_id']) {
+		if ($t_subject->isHierarchical() && isset($pa_changed_fields['parent_id']) && $pa_changed_fields['parent_id'] && method_exists($t_subject, "makeSearchResult")) {
 			$pb_reindex_mode = true;
 			$vb_reindex_children = true;
 		}
@@ -533,7 +536,7 @@ class SearchIndexer extends SearchBase {
 							$vn_fld_num = $t_subject->fieldNum($vs_field);
 							if ($va_hier_values = $this->_genHierarchicalPath($pn_subject_row_id, $vs_field, $t_subject, $va_data)) {
 								$this->opo_engine->indexField($pn_subject_tablenum, $vn_fld_num, $pn_subject_row_id, join(" ", $va_hier_values['values']), $va_data);
-								if(caGetOption('INDEX_ANCESTORS_AS_PATH_WITH_DELIMITER', $va_rel_field_info, false) !== false) {
+								if(caGetOption('INDEX_ANCESTORS_AS_PATH_WITH_DELIMITER', $va_data, false) !== false) {
 									$this->opo_engine->indexField($pn_subject_tablenum, $vn_fld_num, $pn_subject_row_id, $va_hier_values['path'], array_merge($va_data, array('DONT_TOKENIZE' => 1)));
 								}
 							}
@@ -986,7 +989,7 @@ if (!$vb_can_do_incremental_indexing || $pb_reindex_mode) {
 			}
 		} 
 		
-		if ($vb_reindex_children) {
+		if ($vb_reindex_children && method_exists($t_subject, "makeSearchResult")) {
 			//
 			// Force reindexing of children of this record, typically because the record has shifted location in the hierarchy and is hierarchically indexed
 			//

@@ -403,7 +403,7 @@ class ca_lists extends BundlableLabelableBaseModelWithAttributes {
 
 		$vs_hier_sql = '';
 		if ($t_list_item->getPrimaryKey()) {
-			$vs_hier_sql = " AND ((cli.hier_left >= ".((int)$t_list_item->get('hier_left')).") AND (cli.hier_right <= ".((int)$t_list_item->get('hier_right'))."))";
+			$vs_hier_sql = " AND ((cli.hier_left >= ".(floatval($t_list_item->get('hier_left'))).") AND (cli.hier_right <= ".(floatval($t_list_item->get('hier_right')))."))";
 		}
 		
 		if (!isset($pa_options['returnHierarchyLevels']) || !$pa_options['returnHierarchyLevels']) {
