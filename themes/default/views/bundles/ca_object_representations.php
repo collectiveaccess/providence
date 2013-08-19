@@ -168,6 +168,9 @@
 							<a title="{filename}">{rep_label}</a>
 							<span id="{fieldNamePrefix}change_{n}" class="caObjectRepresentationListInfoSubDisplayUpdate"><a href='#' onclick="caOpenRepresentationDetailEditor('{n}'); return false;"><?php print caNavIcon($this->request, __CA_NAV_BUTTON_UPDATE__, null, array('width' => '16', 'height' => '16')).'</a>'; ?></span>
 						</div>
+							
+						{is_primary_display}
+							
 						<div class='caObjectRepresentationListInfoSubDisplay'>
 							<h3><?php print _t('File name'); ?></h3> <span class="caObjectRepresentationListInfoSubDisplayFilename" id="{fieldNamePrefix}filename_display_{n}">{filename}</span>
 <?php
@@ -177,8 +180,6 @@
 						<div class='caObjectRepresentationListInfoSubDisplay'>
 							<h3><?php print _t('Format'); ?></h3> {type};
 							<h3><?php print _t('Dimensions'); ?></h3> {dimensions}; {num_multifiles}
-							
-							{is_primary_display}
 						</div>
 						
 						<div class='caObjectRepresentationListInfoSubDisplay'>
@@ -187,8 +188,8 @@
 							<h3><?php print _t('Status'); ?></h3> {status_display}
 						</div>
 						
-						<div id='{fieldNamePrefix}is_primary_indicator_{n}' class='caObjectRepresentationPrimaryIndicator' style='display: none; color: #cc0000; font-style: italic;'><?php print _t('Will be primary after save'); ?></div>
-						<div id='{fieldNamePrefix}change_indicator_{n}' class='caObjectRepresentationPrimaryIndicator' style='display: none; color: #cc0000; font-style: italic;'><?php print _t('Changes will be applied when you save'); ?></div>
+						<div id='{fieldNamePrefix}is_primary_indicator_{n}' class='caObjectRepresentationPrimaryIndicator'><?php print _t('Will be primary after save'); ?></div>
+						<div id='{fieldNamePrefix}change_indicator_{n}' class='caObjectRepresentationChangeIndicator'><?php print _t('Changes will be applied when you save'); ?></div>
 						<input type="hidden" name="{fieldNamePrefix}is_primary_{n}" id="{fieldNamePrefix}is_primary_{n}" class="{fieldNamePrefix}is_primary" value=""/>
 				</div>		
 			
@@ -203,7 +204,7 @@
 							<div class="caObjectRepresentationDetailEditorHeading"><?php print _t('Update media'); ?></div>
 							<table id="{fieldNamePrefix}upload_options{n}">
 								<tr>
-									<td class='formLabel'><?php print caHTMLRadioButtonInput('{fieldNamePrefix}upload_type{n}', array('id' => '{fieldNamePrefix}upload_type_upload{n}', 'class' => '{fieldNamePrefix}upload_type{n}', 'value' => 'upload'), array('checked' => ($vs_default_upload_type == 'upload') ? 1 : 0)).' '._t('using uploaded file'); ?></td>
+									<td class='formLabel'><?php print caHTMLRadioButtonInput('{fieldNamePrefix}upload_type{n}', array('id' => '{fieldNamePrefix}upload_type_upload{n}', 'class' => '{fieldNamePrefix}upload_type{n}', 'value' => 'upload'), array('checked' => ($vs_default_upload_type == 'upload') ? 1 : 0)).' '._t('using upload'); ?></td>
 									<td class='formLabel'><?php print $t_item->htmlFormElement('media', '^ELEMENT', array('name' => "{fieldNamePrefix}media_{n}", 'id' => "{fieldNamePrefix}media_{n}", "value" => "", 'no_tooltips' => false, 'tooltip_namespace' => 'bundle_ca_object_representations', 'class' => 'uploadInput')); ?></td>
 								</tr>
 <?php
@@ -304,7 +305,7 @@
 			
 			<table id="{fieldNamePrefix}upload_options{n}">
 				<tr>
-					<td class='formLabel'><?php print caHTMLRadioButtonInput('{fieldNamePrefix}upload_type{n}', array('id' => '{fieldNamePrefix}upload_type_upload{n}', 'class' => '{fieldNamePrefix}upload_type{n}', 'value' => 'upload'), array('checked' => ($vs_default_upload_type == 'upload') ? 1 : 0)).' '._t('using uploaded file'); ?></td>
+					<td class='formLabel'><?php print caHTMLRadioButtonInput('{fieldNamePrefix}upload_type{n}', array('id' => '{fieldNamePrefix}upload_type_upload{n}', 'class' => '{fieldNamePrefix}upload_type{n}', 'value' => 'upload'), array('checked' => ($vs_default_upload_type == 'upload') ? 1 : 0)).' '._t('using upload'); ?></td>
 					<td class='formLabel'><?php print $t_item->htmlFormElement('media', '^ELEMENT', array('name' => "{fieldNamePrefix}media_{n}", 'id' => "{fieldNamePrefix}media_{n}", "value" => "", 'no_tooltips' => false, 'tooltip_namespace' => 'bundle_ca_object_representations', 'class' => 'uploadInput')); ?></td>
 				</tr>
 <?php
