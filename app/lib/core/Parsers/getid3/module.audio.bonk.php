@@ -16,7 +16,7 @@
 
 class getid3_bonk extends getid3_handler
 {
-	function Analyze() {
+	public function Analyze() {
 		$info = &$this->getid3->info;
 
 		// shortcut
@@ -113,7 +113,7 @@ class getid3_bonk extends getid3_handler
 
 	}
 
-	function HandleBonkTags($BonkTagName) {
+	public function HandleBonkTags($BonkTagName) {
 		$info = &$this->getid3->info;
 		switch ($BonkTagName) {
 			case 'BONK':
@@ -177,7 +177,7 @@ class getid3_bonk extends getid3_handler
 				$BonkData = "\x00".'META'.fread($this->getid3->fp, $info['bonk']['META']['size'] - 5);
 				$info['bonk']['META']['version'] = getid3_lib::LittleEndian2Int(substr($BonkData,  5, 1));
 
-				$MetaTagEntries = floor(((strlen($BonkData) - 8) - 6) / 8); // BonkData - xxxxmeta - ØMETA
+				$MetaTagEntries = floor(((strlen($BonkData) - 8) - 6) / 8); // BonkData - xxxxmeta - Ã˜META
 				$offset = 6;
 				for ($i = 0; $i < $MetaTagEntries; $i++) {
 					$MetaEntryTagName   =                              substr($BonkData, $offset, 4);
@@ -212,7 +212,7 @@ class getid3_bonk extends getid3_handler
 		}
 	}
 
-	static function BonkIsValidTagName($PossibleBonkTag, $ignorecase=false) {
+	public static function BonkIsValidTagName($PossibleBonkTag, $ignorecase=false) {
 		static $BonkIsValidTagName = array('BONK', 'INFO', ' ID3', 'META');
 		foreach ($BonkIsValidTagName as $validtagname) {
 			if ($validtagname == $PossibleBonkTag) {
@@ -225,6 +225,3 @@ class getid3_bonk extends getid3_handler
 	}
 
 }
-
-
-?>
