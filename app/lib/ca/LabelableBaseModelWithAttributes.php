@@ -489,7 +489,7 @@
 			$qr_res = $o_db->query($vs_sql);
 			$vn_c = 0;
 		
-			$vs_pk = $t_label->primaryKey();
+			$vs_pk = $t_instance->primaryKey();
 		
 			
 			switch($ps_return_as) {
