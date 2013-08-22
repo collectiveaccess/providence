@@ -42,6 +42,9 @@
 		case 'ca_relationship_types':
 			$vb_has_privs = $this->request->user->canDoAction('can_configure_relationship_types');
 			break;
+		case 'ca_tour_stops':
+			$vb_has_privs = $this->request->user->canDoAction('can_create_ca_tours');
+			break;
 		default:
 			$vb_has_privs = $this->request->user->canDoAction('can_create_'.$vs_priv_table);
 			break;
