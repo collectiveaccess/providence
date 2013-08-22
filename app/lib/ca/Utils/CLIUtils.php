@@ -645,7 +645,7 @@
 							$t_attr_val->useBlobAsMediaField(true);
 							
 							$va_media_info = $t_attr_val->getMediaInfo('value_blob');
-							$vs_original_filename = $va_media_info['ORIGINAL_FILENAME'];
+							$vs_original_filename = is_array($va_media_info) ? $va_media_info['ORIGINAL_FILENAME'] : '';
 							
 							print CLIProgressBar::next(1, _t("Re-processing %1", ($vs_original_filename ? $vs_original_filename." ({$vn_value_id})" : $vn_value_id)));
 		
