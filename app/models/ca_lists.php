@@ -1461,6 +1461,9 @@ class ca_lists extends BundlableLabelableBaseModelWithAttributes {
 				);
 				return $vs_buf;
 				break;
+			case 'options':
+				return $va_options;
+				break;
 			default:
 				if (!sizeof($va_options)) { return ''; }	// return empty string if list has no values
 				if (isset($pa_options['readonly']) && ($pa_options['readonly'])) {
