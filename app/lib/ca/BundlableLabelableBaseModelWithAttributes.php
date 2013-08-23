@@ -2388,7 +2388,7 @@ class BundlableLabelableBaseModelWithAttributes extends LabelableBaseModelWithAt
 		
 		$va_bundles = $va_bundle_lists['bundles'];
 		$va_fields_by_type = $va_bundle_lists['fields_by_type'];
-		
+	
 		// save intrinsic fields
 		if (is_array($va_fields_by_type['intrinsic'])) {
 			$vs_idno_field = $this->getProperty('ID_NUMBERING_ID_FIELD');
@@ -2896,6 +2896,15 @@ if (!$vb_batch) {
 				$vn_table_num = $this->_DATAMODEL->getTableNum($vs_f);
 				$vs_prefix_stub = $vs_placement_code.$vs_form_prefix.'_'.$vs_f.'_';
 				
+				// get settings
+				$va_bundle_settings = array();
+				foreach($va_bundles as $va_bundle_info) {
+					if ($va_bundle_info['placement_code'] == $vs_placement_code) {
+						$va_bundle_settings = $va_bundle_info['settings'];
+						break;
+					}
+				}
+				
 				switch($vs_f) {
 					# -------------------------------------
 					case 'ca_object_representations':
@@ -3051,7 +3060,7 @@ if (!$vb_batch) {
 					case 'ca_loans':
 					case 'ca_movements':
 					case 'ca_tour_stops':
-						$this->_processRelated($po_request, $vs_f, $vs_placement_code.$vs_form_prefix, array('batch' => $vb_batch));
+						$this->_processRelated($po_request, $vs_f, $vs_placement_code.$vs_form_prefix, array('batch' => $vb_batch, 'settings' => $va_bundle_settings));
 						break;
 					# -------------------------------------
 					case 'ca_representation_annotations':
@@ -3451,12 +3460,18 @@ if (!$vb_batch) {
  	 *
  	 */
  	private function _processRelated($po_request, $ps_bundlename, $ps_form_prefix, $pa_options=null) {
-		$vb_batch = (isset($pa_options['batch']) && $pa_options['batch']) ? true : false;
+ 		$pa_settings = caGetOption('settings', $pa_options, array());
+ 		$vb_batch = caGetOption('batch', $pa_options, false);
+		
+		$vn_min_relationships = caGetOption('minRelationshipsPerRow', $pa_settings, 0);
+		$vn_max_relationships = caGetOption('maxRelationshipsPerRow', $pa_settings, 65535);
 		
  		$va_rel_ids_sorted = $va_rel_sort_order = explode(';',$po_request->getParameter($ps_form_prefix.'_'.$ps_bundlename.'BundleList', pString));
 		sort($va_rel_ids_sorted, SORT_NUMERIC);
 						
  		$va_rel_items = $this->getRelatedItems($ps_bundlename);
+ 		
+ 		$va_rels_to_add = $va_rels_to_delete = array();
  
  if(!$vb_batch) {	
 		foreach($va_rel_items as $va_rel_item) {
@@ -3487,11 +3502,7 @@ if (!$vb_batch) {
 				// is it a delete key?
 				$this->clearErrors();
 				if (($po_request->getParameter($ps_form_prefix.'_'.$ps_bundlename.'_'.$va_rel_item[$vs_key].'_delete', pInteger)) > 0) {
-					// delete!
-					$this->removeRelationship($ps_bundlename, $va_rel_item[$vs_key]);
-					if ($this->numErrors()) {
-						$po_request->addActionErrors($this->errors(), $ps_bundlename, $va_rel_item[$vs_key]);
-					}
+					$va_rels_to_delete[] = array('bundle' => $ps_bundlename, 'relation_id' => $va_rel_item[$vs_key]);
 				}
 			}
 		}
@@ -3521,10 +3532,9 @@ if (!$vb_batch) {
 						$vs_direction = $va_tmp[0];
 					}
 				
-					$this->addRelationship($ps_bundlename, $vn_new_id, (int)$vn_new_type_id, null, null, $vs_direction);	
-					if ($this->numErrors()) {
-						$po_request->addActionErrors($this->errors(), $ps_bundlename);
-					}
+					$va_rels_to_add[] = array(
+						'bundle' => $ps_bundlename, 'row_id' => $vn_new_id, 'type_id' => $vn_new_type_id, 'direction' => $vs_direction
+					);
 				}
 			}
 			
@@ -3533,22 +3543,43 @@ if (!$vb_batch) {
 				if (preg_match('/^'.$ps_form_prefix.'_'.$ps_bundlename.'_item_id_new_([\d]+)/', $vs_key, $va_matches)) { 
 					if ($vn_rel_type_id = $po_request->getParameter($ps_form_prefix.'_'.$ps_bundlename.'_type_idchecklist', pInteger)) {
 						if ($vn_item_id = $po_request->getParameter($vs_key, pInteger)) {
-							$this->addRelationship($ps_bundlename, $vn_item_id, (int)$vn_rel_type_id);	
-							if ($this->numErrors()) {
-								$po_request->addActionErrors($this->errors(), $ps_bundlename);
-							}
+							$va_rels_to_add[] = array(
+								'bundle' => $ps_bundlename, 'row_id' => $vn_item_id, 'type_id' => $vn_rel_type_id, 'direction' => null
+							);
 						}
 					}
 				}
 				
 				if (preg_match('/^'.$ps_form_prefix.'_'.$ps_bundlename.'_item_id_([\d]+)_delete/', $vs_key, $va_matches)) { 
 					if ($po_request->getParameter($vs_key, pInteger)) {
-						$this->removeRelationship($ps_bundlename, $va_matches[1]);	
-						if ($this->numErrors()) {
-							$po_request->addActionErrors($this->errors(), $ps_bundlename);
-						}
+						$va_rels_to_delete[] = array('bundle' => $ps_bundlename, 'relation_id' => $va_matches[1]);
 					}
 				}
+			}
+		}
+		
+		// Check min/max
+		$vn_total_rel_count = (sizeof($va_rel_items) + sizeof($va_rels_to_add) - sizeof($va_rels_to_delete));
+		if ($vn_min_relationships && ($vn_total_rel_count < $vn_min_relationships)) {
+			$po_request->addActionErrors(array(new Error(2590, ($vn_min_relationships == 1) ? _t('There must be at least %1 relationship for %2', $vn_min_relationships, $this->getAppDatamodel()->getTableProperty($ps_bundlename, 'NAME_PLURAL')) : _t('There must be at least %1 relationships for %2', $vn_min_relationships, $this->getAppDatamodel()->getTableProperty($ps_bundlename, 'NAME_PLURAL')), 'BundleableLabelableBaseModelWithAttributes::_processRelated()', null, null, false, false)), $ps_bundlename);
+			return false;
+		}
+		if ($vn_max_relationships && ($vn_total_rel_count > $vn_max_relationships)) {
+			$po_request->addActionErrors(array(new Error(2590, ($vn_max_relationships == 1) ? _t('There must no more than least %1 relationship for %2', $vn_min_relationships, $this->getAppDatamodel()->getTableProperty($ps_bundlename, 'NAME_PLURAL')) : _t('There must be no more than %1 relationships for %2', $vn_max_relationships, $this->getAppDatamodel()->getTableProperty($ps_bundlename, 'NAME_PLURAL')), 'BundleableLabelableBaseModelWithAttributes::_processRelated()', null, null, false, false)), $ps_bundlename);
+			return false;
+		}
+		
+		// Process relationships
+		foreach($va_rels_to_delete as $va_rel_to_delete) {
+			$this->removeRelationship($va_rel_to_delete['bundle'], $va_rel_to_delete['relation_id']);
+			if ($this->numErrors()) {
+				$po_request->addActionErrors($this->errors(), $ps_bundlename);
+			}
+		}
+		foreach($va_rels_to_add as $va_rel_to_add) {
+			$this->addRelationship($va_rel_to_add['bundle'], $va_rel_to_add['row_id'], $va_rel_to_add['type_id'], null, null, $va_rel_to_add['direction']);
+			if ($this->numErrors()) {
+				$po_request->addActionErrors($this->errors(), $ps_bundlename);
 			}
 		}
 		

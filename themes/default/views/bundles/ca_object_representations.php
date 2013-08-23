@@ -464,7 +464,10 @@
 			autocompleteUrl: '<?php print caNavUrl($this->request, 'lookup', 'ObjectRepresentation', 'Get', $va_lookup_params); ?>',
 			autocompleteInputID: '<?php print $vs_id_prefix; ?>_autocomplete',
 			
-			extraParams: { exact: 1 }
+			extraParams: { exact: 1 },
+			
+			minRepeats: <?php print caGetOption('minRelationshipsPerRow', $va_settings, 0); ?>,
+			maxRepeats: <?php print caGetOption('maxRelationshipsPerRow', $va_settings, 65535); ?>
 		
 		});
 		if (caUI.initPanel) {
