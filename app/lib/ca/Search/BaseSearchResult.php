@@ -71,21 +71,7 @@
 		 * @return array List of labels ready for display
 		 */
 		public function getDisplayLabels($pb_has_preferred_flag=true) {
-			$va_labels = $this->get($this->ops_label_table_name.'.'.$this->ops_label_display_field, array('returnAsArray' => true));
-			if ($pb_has_preferred_flag && ($t_label = $this->opo_datamodel->getInstanceByTableName($this->ops_label_table_name, true)) && ($t_label->hasField('is_preferred'))) {
-				$va_is_preferred = $this->get($this->ops_label_table_name.'.is_preferred', array('returnAsArray' => true));
-			} else {
-				$pb_has_preferred_flag = false;
-			}
-			$va_locales = $this->get($this->ops_label_table_name.'.locale_id', array('returnAsArray' => true));
-			$va_display_labels = array();
-			
-			$vn_num_locales = sizeof($va_locales);
-			for($vn_i=0; $vn_i < $vn_num_locales; $vn_i++) {
-				if ($pb_has_preferred_flag && !$va_is_preferred[$vn_i]) { continue; }
-				$va_display_labels[0][$va_locales[$vn_i]] = $va_labels[$vn_i];
-			}
-			return caExtractValuesByUserLocale($va_display_labels);
+			return $this->get($this->ops_table_name.'.preferred_labels.'.$this->ops_label_display_field, array('returnAsArray' => true));
 		}
 		# -------------------------------------------------------
 		/**
