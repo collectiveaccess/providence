@@ -337,12 +337,14 @@ class ca_tours extends BundlableLabelableBaseModelWithAttributes {
 	/**
 	 * Returns list of stops for a given tour. 
 	 */
-	public function getStops($po_request=null) {
+	public function getStops($po_request=null, $pa_options=null) {
 		if (!$this->getPrimaryKey()) { return false; }
 		if (ca_tours::$s_stop_info_cache[$this->getPrimaryKey()]) { return ca_tours::$s_stop_info_cache[$this->getPrimaryKey()]; }
 		
 		$o_db = $this->getDb();
 		
+		$va_bundles_to_return =  (isset($pa_options['bundles']) && is_array($pa_options['bundles'])) ? $pa_options['bundles'] : array();
+
 		$qr_res = $o_db->query("
 			SELECT ts.*, tsl.*
 			FROM ca_tour_stops ts
@@ -357,12 +359,40 @@ class ca_tours extends BundlableLabelableBaseModelWithAttributes {
 		
 		$t_list = new ca_lists();
 		
-		while($qr_res->nextRow()) {
-			if (!$va_stops[$vn_stop_id = $qr_res->get('stop_id')][$vn_screen_locale_id = $qr_res->get('locale_id')]) {
-				$va_tmp =  $qr_res->getRow();
-				$va_tmp['typename'] = $t_list->getItemForDisplayByItemID($va_tmp['type_id'], false);
-				$va_stops[$vn_stop_id][$vn_screen_locale_id] = $va_tmp;
+		$t_stop = new ca_tour_stops();
+		
+		if (is_array($va_bundles_to_return)) {
+			foreach($va_bundles_to_return as $vs_k => $vs_v) {
+				$va_tmp = explode(".", $vs_v);
+				$vs_tmp = array_pop($va_tmp);
+				unset($va_bundles_to_return[$vs_k]);
+				$va_bundles_to_return[$vs_tmp] = $vs_v;
 			}
+		}
+		
+		$va_bundles_to_return += array("stop_id" => "ca_tour_stops.stop_id", "tour_id" => "ca_tour_stops.tour_id", "idno" => "ca_tour_stops.idno", "name" => "ca_tour_stops.preferred_labels.name", "locale_id" => "ca_tour_stops.preferred_labels.locale_id", "parent_id" => "ca_tour_stops.parent_id");
+		
+		$va_stop_ids = $qr_res->getAllFieldValues("stop_id");
+		
+		if (is_array($va_stop_ids) && sizeof($va_stop_ids) > 0) {
+			$qr_stops = $t_stop->makeSearchResult("ca_tour_stops", $va_stop_ids);
+			while($qr_stops->nextHit()) {
+				if (!$va_stops[$vn_stop_id = $qr_stops->get('stop_id')][$vn_screen_locale_id = $qr_stops->get('locale_id')]) {
+					//$va_tmp =  $qr_res->getRow();
+					//$va_tmp['typename'] = $t_list->getItemForDisplayByItemID($va_tmp['type_id'], false);
+			
+					if ($va_bundles_to_return) {
+						foreach($va_bundles_to_return as $vs_fld_name => $vs_bundle) {
+							$va_tmp[$vs_fld_name] = $qr_stops->get($vs_bundle, array('convertValueToDisplayText' => true));
+						}
+					}
+				
+				
+					$va_stops[$vn_stop_id][$vn_screen_locale_id] = $va_tmp;
+				}
+			}
+		} else {
+			$va_stops = array();
 		}
 		return ca_tours::$s_stop_info_cache[$this->getPrimaryKey()] = caExtractValuesByUserLocale($va_stops);
 	}
