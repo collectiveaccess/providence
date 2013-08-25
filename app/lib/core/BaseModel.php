@@ -2855,6 +2855,7 @@ class BaseModel extends BaseObject {
 					BaseModel::$search_indexer->commitRowUnIndexing($this->tableNum(), $vn_id);
 				}
 			}
+			$this->logChange("D");
 			return $vn_rc;
 		}
 		$this->clearErrors();
@@ -8576,6 +8577,49 @@ $pa_options["display_form_field_tips"] = true;
 	}
 	# --------------------------------------------------------------------------------------------
 	/**
+	 * Checks if any relationships exists between the currently loaded row and any other record.
+	 * Returns a list of tables for which relationships exist.
+	 *
+	 * @param array $pa_options Options are:
+	 *		None yet
+	 *
+	 * @return mixed Array of table names for which this row has at least one relationship, with keys set to table names and values set to the number of relationships per table.
+	 */
+	public function hasRelationships($pa_options=null) {
+		$va_one_to_many_relations = $this->_DATAMODEL->getOneToManyRelations($this->tableName());
+
+		if (is_array($va_one_to_many_relations)) {
+			$o_db = $this->getDb();
+			$vn_id = $this->getPrimaryKey();
+			$o_trans = $this->getTransaction();
+			
+			$va_tables = array();
+			foreach($va_one_to_many_relations as $vs_many_table => $va_info) {
+				foreach($va_info as $va_relationship) {
+					# do any records exist?
+					$t_related = $this->_DATAMODEL->getInstanceByTableName($vs_many_table, true);
+					$t_related->setTransaction($o_trans);
+					$vs_rel_pk = $t_related->primaryKey();
+					
+					$qr_record_check = $o_db->query($x="
+						SELECT {$vs_rel_pk}
+						FROM {$vs_many_table}
+						WHERE
+							({$va_relationship['many_table_field']} = ?)"
+					, (int)$vn_id);
+					
+					if (($vn_count = $qr_record_check->numRows()) > 0) {
+						$va_tables[$vs_many_table] = $vn_count;	
+					}
+				}
+			}
+			return $va_tables;
+		}
+		
+		return null;
+	}
+	# --------------------------------------------------------------------------------------------
+	/**
 	 *
 	 */
 	public function getDefaultLocaleList() {
@@ -9808,60 +9852,87 @@ $pa_options["display_form_field_tips"] = true;
 	}
 	# --------------------------------------------------------------------------------------------
 	/**
-	 * Find row(s) with fields having values matching specific values. By default a model instance for the
-	 * first row matching the criteria is returned. A list of all matches can be optionally returned using the returnAsArray option.
+	 * Find row(s) with fields having values matching specific values. 
+	 * Results can be returned as model instances, numeric ids or search results (when possible).
+	 *
+	 * Exact matching is performed using values in $pa_values. Partial and pattern matching are not supported. Searches may include
+	 * multiple fields with boolean AND and OR. For example, you can find ca_objects rows with idno = 2012.001 and access = 1 by passing the
+	 * "boolean" option as "AND" and $pa_values set to array("idno" => "2012.001", "access" => 1).
+	 * You could find all rows with either the idno or the access values by setting "boolean" to "OR"
+	 *
+	 * BaseModel::find() is not a replacement for the SearchEngine. It is intended as a quick and convenient way to programatically fetch rows using
+	 * simple, clear cut criteria. If you need to fetch rows based upon an identifer or status value BaseModel::find() will be quicker and less code than
+	 * using the SearchEngine. For full-text searches, searches on attributes, or searches that require transformations or complex boolean operations use
+	 * the SearchEngine.
 	 *
 	 * @param array $pa_values An array of values to match. Keys are field names. This must be an array with at least one key-value pair where the key is a valid field name for the model.
 	 * @param array $pa_options Options are:
 	 *		transaction = optional Transaction instance. If set then all database access is done within the context of the transaction
-	 *		returnAsArray = if set an array of instances is returned with all matches, or matches up to the specified limit
-	 *		limit = if returnAsArray is set, limits number of returned matches
+	 *		returnAs = what to return; possible values are:
+	 *			searchResult			= a search result instance (aka. a subclass of BaseSearchResult), when the calling subclass is searchable (ie. <classname>Search and <classname>SearchResult classes are defined) 
+	 *			ids						= an array of ids (aka. primary keys)
+	 *			modelInstances			= an array of instances, one for each match. Each instance is the same class as the caller, a subclass of BaseModel 
+	 *			firstId					= the id (primary key) of the first match. This is the same as the first item in the array returned by 'ids'
+	 *			firstModelInstance		= the instance of the first match. This is the same as the first instance in the array returned by 'modelInstances'
+	 *			count					= the number of matches
 	 *
-	 * @return mixed An instance of the model with the first found match; if returnAsArray option is set then an array with some or all matches, subject to the limit option, is returned.
+	 *			The default is ids
+	 *	
+	 *		limit = if searchResult, ids or modelInstances is set, limits number of returned matches. Default is no limit
+	 *		boolean = determines how multiple field values in $pa_values are combined to produce the final result. Possible values are:
+	 *			AND						= find rows that match all criteria in $pa_values
+	 *			OR						= find rows that match any criteria in $pa_values
+	 *
+	 *			The default is AND
+	 *
+	 * @return mixed Depending upon the returnAs option setting, an array, subclass of BaseModel or integer may be returned.
 	 */
 	public static function find($pa_values, $pa_options=null) {
 		if (!is_array($pa_values) || (sizeof($pa_values) == 0)) { return null; }
-		
+		$ps_return_as = caGetOption('returnAs', $pa_options, 'ids', array('forceLowercase' => true, 'validValues' => array('searchResult', 'ids', 'modelInstances', 'firstId', 'firstModelInstance', 'count')));
+		$ps_boolean = caGetOption('boolean', $pa_options, 'and', array('forceLowercase' => true, 'validValues' => array('and', 'or')));
+			
 		$vs_table = get_called_class();
-		$o_instance = new $vs_table;
+		$t_instance = new $vs_table;
 		
 		$va_sql_wheres = array();
 		foreach ($pa_values as $vs_field => $vm_value) {
+			if (is_array($vm_value)) { continue; }
+			
 			# support case where fieldname is in format table.fieldname
 			if (preg_match("/([\w_]+)\.([\w_]+)/", $vs_field, $va_matches)) {
 				if ($va_matches[1] != $vs_table) {
-					if ($o_instance->_DATAMODEL->tableExists($va_matches[1])) {
-						//$this->postError(715,_t("BaseModel '%1' cannot be accessed with this class", $matches[1]), "BaseModel->load()");
+					if ($t_instance->_DATAMODEL->tableExists($va_matches[1])) {
 						return false;
 					} else {
-						//$this->postError(715, _t("BaseModel '%1' does not exist", $matches[1]), "BaseModel->load()");
 						return false;
 					}
 				}
 				$vs_field = $matches[2]; # get field name alone
 			}
 
-			if (!$o_instance->hasField($vs_field)) {
-				//$this->postError(716,_t("Field '%1' does not exist", $vs_field), "BaseModel->load()");
+			if (!$t_instance->hasField($vs_field)) {
 				return false;
 			}
 
-			if ($o_instance->_getFieldTypeType($vs_field) == 0) {
+			if ($t_instance->_getFieldTypeType($vs_field) == 0) {
 				if (!is_numeric($vm_value) && !is_null($vm_value)) {
 					$vm_value = intval($vm_value);
 				}
 			} else {
-				$vm_value = $o_instance->quote($vs_field, is_null($vm_value) ? '' : $vm_value);
+				$vm_value = $t_instance->quote($vs_field, is_null($vm_value) ? '' : $vm_value);
 			}
 
 			if (is_null($vm_value)) {
-				$va_sql_wheres[] = "($vs_field IS NULL)";
+				$va_sql_wheres[] = "({$vs_field} IS NULL)";
 			} else {
 				if ($vm_value === '') { continue; }
-				$va_sql_wheres[] = "($vs_field = $vm_value)";
+				$va_sql_wheres[] = "({$vs_field} = {$vm_value})";
 			}
 		}
-		$vs_sql = "SELECT * FROM {$vs_table} WHERE ".join(" AND ", $va_sql_wheres);
+		if(!sizeof($va_sql_wheres)) { return null; }
+		$vs_deleted_sql = ($t_instance->hasField('deleted')) ? '(deleted = 0) AND ' : '';
+		$vs_sql = "SELECT * FROM {$vs_table} WHERE {$vs_deleted_sql} (".join(" {$ps_boolean} ", $va_sql_wheres).")";
 		
 		if (isset($pa_options['transaction']) && ($pa_options['transaction'] instanceof Transaction)) {
 			$o_db = $pa_options['transaction']->getDb();
@@ -9872,26 +9943,60 @@ $pa_options["display_form_field_tips"] = true;
 		$vn_limit = (isset($pa_options['limit']) && ((int)$pa_options['limit'] > 0)) ? (int)$pa_options['limit'] : null;
 		
 		$qr_res = $o_db->query($vs_sql);
-		
 		$vn_c = 0;
-		$va_instances = array();
+	
+		$vs_pk = $t_instance->primaryKey();
 		
-		$vs_pk = $o_instance->primaryKey();
-		
-		while($qr_res->nextRow()) {
-			$o_instance = new $vs_table;
-			if ($o_instance->load($qr_res->get($vs_pk))) {
-				$va_instances[] = $o_instance;
-				$vn_c++;
-				if ($vn_limit && ($vn_c >= $vn_limit)) { break; }
-			}
+		switch($ps_return_as) {
+			case 'firstmodelinstance':
+				while($qr_res->nextRow()) {
+					$t_instance = new $vs_table;
+					if ($t_instance->load($qr_res->get($vs_pk))) {
+						return $t_instance;
+					}
+				}
+				return null;
+				break;
+			case 'modelinstances':
+				$va_instances = array();
+				while($qr_res->nextRow()) {
+					$t_instance = new $vs_table;
+					if ($t_instance->load($qr_res->get($vs_pk))) {
+						$va_instances[] = $t_instance;
+						$vn_c++;
+						if ($vn_limit && ($vn_c >= $vn_limit)) { break; }
+					}
+				}
+				break;
+			case 'firstid':
+				if($qr_res->nextRow()) {
+					return $qr_res->get($vs_pk);
+				}
+				return null;
+				break;
+			case 'count':
+				return $qr_res->numRows();
+				break;
+			default:
+			case 'ids':
+			case 'searchresult':
+				$va_ids = array();
+				while($qr_res->nextRow()) {
+					$va_ids[] = $qr_res->get($vs_pk);
+					$vn_c++;
+					if ($vn_limit && ($vn_c >= $vn_limit)) { break; }
+				}
+				if ($ps_return_as == 'searchresult') {
+					if (sizeof($va_ids) > 0) {
+						return $t_instance->makeSearchResult($t_instance->tableName(), $va_ids);
+					}
+					return null;
+				} else {
+					return $va_ids;
+				}
+				break;
 		}
-		
-		if (isset($pa_options['returnAsArray']) && $pa_options['returnAsArray']) {
-			return $va_instances;
-		} else {
-			return array_shift($va_instances);
-		}
+		return null;
 	}
 	# --------------------------------------------------------------------------------------------
 	/**

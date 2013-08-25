@@ -35,7 +35,7 @@
    */
 
 require_once(__CA_LIB_DIR__."/ca/IBundleProvider.php");
-require_once(__CA_LIB_DIR__."/ca/BundlableLabelableBaseModelWithAttributes.php");
+require_once(__CA_LIB_DIR__."/ca/RepresentableBaseModel.php");
 
 
 BaseModel::$s_ca_models_definitions['ca_occurrences'] = array(
@@ -173,10 +173,10 @@ BaseModel::$s_ca_models_definitions['ca_occurrences'] = array(
  	)
 );
 
-class ca_occurrences extends BundlableLabelableBaseModelWithAttributes implements IBundleProvider {
-	# ---------------------------------
+class ca_occurrences extends RepresentableBaseModel implements IBundleProvider {
+	# ------------------------------------------------------
 	# --- Object attribute properties
-	# ---------------------------------
+	# ------------------------------------------------------
 	# Describe structure of content object's properties - eg. database fields and their
 	# associated types, what modes are supported, et al.
 	#
@@ -310,6 +310,7 @@ class ca_occurrences extends BundlableLabelableBaseModelWithAttributes implement
 	# ------------------------------------------------------
 	protected function initLabelDefinitions() {
 		parent::initLabelDefinitions();
+		$this->BUNDLES['ca_object_representations'] = array('type' => 'related_table', 'repeating' => true, 'label' => _t('Media representations'));
 		$this->BUNDLES['ca_entities'] = array('type' => 'related_table', 'repeating' => true, 'label' => _t('Related entities'));
 		$this->BUNDLES['ca_objects'] = array('type' => 'related_table', 'repeating' => true, 'label' => _t('Related objects'));
 		$this->BUNDLES['ca_object_lots'] = array('type' => 'related_table', 'repeating' => true, 'label' => _t('Related lot'));

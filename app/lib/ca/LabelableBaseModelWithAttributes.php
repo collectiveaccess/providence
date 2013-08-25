@@ -312,6 +312,236 @@
  			}
  			return false;
  		}
+ 		# --------------------------------------------------------------------------------------------
+		/**
+		 * Find row(s) with fields having values matching specific values. 
+		 * Results can be returned as model instances, numeric ids or search results (when possible).
+		 *
+		 * Exact matching is performed using values in $pa_values. Partial and pattern matching are not supported. Searches may include
+		 * multiple fields with boolean AND and OR. For example, you can find ca_objects rows with idno = 2012.001 and access = 1 by passing the
+		 * "boolean" option as "AND" and $pa_values set to array("idno" => "2012.001", "access" => 1).
+		 * You could find all rows with either the idno or the access values by setting "boolean" to "OR"
+		 *
+		 * Keys in the $pa_values parameters must be valid fields in the table which the model sub-class represents. You may also search on preferred and
+		 * non-preferred labels by specified keys and values for label table fields in "preferred_labels" and "nonpreferred_labels" sub-arrays. For example:
+		 *
+		 * array("idno" => 2012.001", "access" => 1, "preferred_labels" => array("name" => "Luna Park at Night"))
+		 *
+		 * will find rows with the idno, access and preferred label values.
+		 *
+		 * LabelableBaseModelWithAttributes::find() is not a replacement for the SearchEngine. It is intended as a quick and convenient way to programatically fetch rows using
+		 * simple, clear cut criteria. If you need to fetch rows based upon an identifer or status value LabelableBaseModelWithAttributes::find() will be quicker and less code than
+		 * using the SearchEngine. For full-text searches, searches on attributes, or searches that require transformations or complex boolean operations use
+		 * the SearchEngine.
+		 *
+		 * @param array $pa_values An array of values to match. Keys are field names. This must be an array with at least one key-value pair where the key is a valid field name for the model.
+		 * @param array $pa_options Options are:
+		 *		transaction = optional Transaction instance. If set then all database access is done within the context of the transaction
+		 *		returnAs = what to return; possible values are:
+		 *			searchResult			= a search result instance (aka. a subclass of BaseSearchResult), when the calling subclass is searchable (ie. <classname>Search and <classname>SearchResult classes are defined) 
+		 *			ids						= an array of ids (aka. primary keys)
+		 *			modelInstances			= an array of instances, one for each match. Each instance is the same class as the caller, a subclass of BaseModel 
+		 *			firstId					= the id (primary key) of the first match. This is the same as the first item in the array returned by 'ids'
+		 *			firstModelInstance		= the instance of the first match. This is the same as the first instance in the array returned by 'modelInstances'
+		 *			count					= the number of matches
+		 *		
+		 *			The default is ids
+		 *	
+		 *		limit = if searchResult, ids or modelInstances is set, limits number of returned matches. Default is no limit
+		 *		boolean = determines how multiple field values in $pa_values are combined to produce the final result. Possible values are:
+		 *			AND						= find rows that match all criteria in $pa_values
+		 *			OR						= find rows that match any criteria in $pa_values
+		 *
+		 *			The default is AND
+		 *
+		 *		labelBoolean = determines how multiple field values in $pa_values['preferred_labels'] and $pa_values['nonpreferred_labels'] are combined to produce the final result. Possible values are:
+		 *			AND						= find rows that match all criteria in $pa_values['preferred_labels']/$pa_values['nonpreferred_labels']
+		 *			OR						= find rows that match any criteria in $pa_values['preferred_labels']/$pa_values['nonpreferred_labels']
+		 *
+		 *			The default is AND
+		 *
+		 * @return mixed Depending upon the returnAs option setting, an array, subclass of LabelableBaseModelWithAttributes or integer may be returned.
+		 */
+		public static function find($pa_values, $pa_options=null) {
+			if (!is_array($pa_values) || (sizeof($pa_values) == 0)) { return null; }
+			
+			$ps_return_as = caGetOption('returnAs', $pa_options, 'ids', array('forceLowercase' => true, 'validValues' => array('searchResult', 'ids', 'modelInstances', 'firstId', 'firstModelInstance', 'count')));
+	
+			$ps_boolean = caGetOption('boolean', $pa_options, 'and', array('forceLowercase' => true, 'validValues' => array('and', 'or')));
+			$ps_label_boolean = caGetOption('labelBoolean', $pa_options, 'and', array('forceLowercase' => true, 'validValues' => array('and', 'or')));
+		
+			$vs_table = get_called_class();
+			$t_instance = new $vs_table;
+			$vs_table_pk = $t_instance->primaryKey();
+			
+			$t_label = $t_instance->getLabelTableInstance();
+			$vs_label_table = $t_label->tableName();
+			$vs_label_table_pk = $t_label->primaryKey();
+			
+			
+			$vb_has_simple_fields = false;
+			foreach ($pa_values as $vs_field => $vm_value) {
+				if (!is_array($vm_value) && $vm_value) { $vb_has_simple_fields = true; break; }
+			}
+		
+			$va_sql_wheres = array();
+			if (
+				(!isset($pa_values['preferred_labels']) || !is_array($pa_values['preferred_labels']))
+				&&
+				(!isset($pa_values['nonpreferred_labels']) || !is_array($pa_values['nonpreferred_labels']))
+			
+			) {
+				return parent::find($pa_values, $pa_options);
+			}
+			
+			$va_label_sql = array();
+			if (isset($pa_values['preferred_labels']) && is_array($pa_values['preferred_labels'])) {
+				$va_sql_wheres[] = "({$vs_label_table}.is_preferred = 1)";
+				foreach ($pa_values['preferred_labels'] as $vs_field => $vm_value) {
+					if (!$t_label->hasField($vs_field)) {
+						return false;
+					}
+
+					if ($t_label->_getFieldTypeType($vs_field) == 0) {
+						if (!is_numeric($vm_value) && !is_null($vm_value)) {
+							$vm_value = intval($vm_value);
+						}
+					} else {
+						$vm_value = $t_label->quote($vs_field, is_null($vm_value) ? '' : $vm_value);
+					}
+
+					if (is_null($vm_value)) {
+						$va_sql_wheres[] = "({$vs_label_table}.{$vs_field} IS NULL)";
+					} else {
+						if ($vm_value === '') { continue; }
+						$va_sql_wheres[] = "({$vs_label_table}.{$vs_field} = {$vm_value})";
+					}
+				}
+				
+				$va_label_sql[] = "(".join(" {$ps_label_boolean} ", $va_sql_wheres).")";
+				$va_sql_wheres = array();
+			}
+			if (isset($pa_values['nonpreferred_labels']) && is_array($pa_values['nonpreferred_labels'])) {
+				$va_sql_wheres[] = "({$vs_label_table}.is_preferred = 0)";
+				foreach ($pa_values['nonpreferred_labels'] as $vs_field => $vm_value) {
+					if (!$t_label->hasField($vs_field)) {
+						return false;
+					}
+
+					if ($t_label->_getFieldTypeType($vs_field) == 0) {
+						if (!is_numeric($vm_value) && !is_null($vm_value)) {
+							$vm_value = intval($vm_value);
+						}
+					} else {
+						$vm_value = $t_label->quote($vs_field, is_null($vm_value) ? '' : $vm_value);
+					}
+
+					if (is_null($vm_value)) {
+						$va_sql_wheres[] = "({$vs_label_table}.{$vs_field} IS NULL)";
+					} else {
+						if ($vm_value === '') { continue; }
+						$va_sql_wheres[] = "({$vs_label_table}.{$vs_field} = {$vm_value})";
+					}
+				}
+				
+				$va_label_sql[] = "(".join(" {$ps_label_boolean} ", $va_sql_wheres).")";
+				$va_sql_wheres = array();
+			}
+			
+			if ($vb_has_simple_fields) {
+				foreach ($pa_values as $vs_field => $vm_value) {
+					if (is_array($vm_value)) { continue; }
+
+					if (!$t_instance->hasField($vs_field)) {
+						return false;
+					}
+
+					if ($t_instance->_getFieldTypeType($vs_field) == 0) {
+						if (!is_numeric($vm_value) && !is_null($vm_value)) {
+							$vm_value = intval($vm_value);
+						}
+					} else {
+						$vm_value = $t_instance->quote($vs_field, is_null($vm_value) ? '' : $vm_value);
+					}
+
+					if (is_null($vm_value)) {
+						$va_label_sql[] = "({$vs_table}.{$vs_field} IS NULL)";
+					} else {
+						if ($vm_value === '') { continue; }
+						$va_label_sql[] = "({$vs_table}.{$vs_field} = {$vm_value})";
+					}
+				}
+			}
+		
+			$vs_deleted_sql = ($t_instance->hasField('deleted')) ? "({$vs_table}.deleted = 0) AND " : '';
+			$vs_sql = "SELECT * FROM {$vs_label_table}";
+			$vs_sql .= " INNER JOIN {$vs_table} ON {$vs_label_table}.{$vs_table_pk} = {$vs_table}.{$vs_table_pk} ";
+			$vs_sql .=" WHERE {$vs_deleted_sql} ".join(" {$ps_boolean} ", $va_label_sql);
+
+			if (isset($pa_options['transaction']) && ($pa_options['transaction'] instanceof Transaction)) {
+				$o_db = $pa_options['transaction']->getDb();
+			} else {
+				$o_db = new Db();
+			}
+		
+			$vn_limit = (isset($pa_options['limit']) && ((int)$pa_options['limit'] > 0)) ? (int)$pa_options['limit'] : null;
+		
+			$qr_res = $o_db->query($vs_sql);
+			$vn_c = 0;
+		
+			$vs_pk = $t_instance->primaryKey();
+		
+			
+			switch($ps_return_as) {
+				case 'firstmodelinstance':
+					while($qr_res->nextRow()) {
+						$o_instance = new $vs_table;
+						if ($o_instance->load($qr_res->get($vs_pk))) {
+							return $o_instance;
+						}
+					}
+					return null;
+					break;
+				case 'modelinstances':
+					$va_instances = array();
+					while($qr_res->nextRow()) {
+						$o_instance = new $vs_table;
+						if ($o_instance->load($qr_res->get($vs_pk))) {
+							$va_instances[] = $o_instance;
+							$vn_c++;
+							if ($vn_limit && ($vn_c >= $vn_limit)) { break; }
+						}
+					}
+					break;
+				case 'firstid':
+					if($qr_res->nextRow()) {
+						return $qr_res->get($vs_pk);
+					}
+					return null;
+					break;
+				case 'count':
+					return $qr_res->numRows();
+					break;
+				default:
+				case 'ids':
+				case 'searchresult':
+					$va_ids = array();
+					while($qr_res->nextRow()) {
+						$va_ids[] = $qr_res->get($vs_pk);
+						$vn_c++;
+						if ($vn_limit && ($vn_c >= $vn_limit)) { break; }
+					}
+					if ($ps_return_as == 'searchresult') {
+						if (sizeof($va_ids) > 0) {
+							return $t_instance->makeSearchResult($t_instance->tableName(), $va_ids);
+						}
+						return null;
+					} else {
+						return $va_ids;
+					}
+					break;
+			}
+		}
  		# ------------------------------------------------------------------
  		/**
  		 *
@@ -942,7 +1172,7 @@
  			
  			if (!is_array($pa_options)) { $pa_options = array(); }
  			$vs_cache_key = caMakeCacheKeyFromOptions(array_merge($pa_options, array('table_name' => $this->tableName(), 'id' => $vn_id, 'mode' => (int)$pn_mode)));
- 			if (!$pb_dont_cache && is_array($va_tmp = LabelableBaseModelWithAttributes::$s_label_cache[$vs_cache_key])) {
+ 			if (!$pb_dont_cache && is_array($va_tmp = LabelableBaseModelWithAttributes::$s_label_cache[$this->tableName()][$vn_id][$vs_cache_key])) {
  				return $va_tmp;
  			}
 			if (!($t_label = $this->_DATAMODEL->getInstanceByTableName($this->getLabelTableName(), true))) { return null; }
@@ -1045,7 +1275,7 @@
  				$va_labels = $va_flattened_labels;
  			}
  			
- 			LabelableBaseModelWithAttributes::$s_label_cache[$vs_cache_key] = $va_labels;
+ 			LabelableBaseModelWithAttributes::$s_label_cache[$this->tableName()][$vn_id][$vs_cache_key] = $va_labels;
  			
  			return $va_labels;
  		}

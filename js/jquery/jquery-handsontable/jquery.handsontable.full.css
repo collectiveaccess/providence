@@ -372,8 +372,9 @@ ul.context-menu-list li {
   background: #F8F8F8;
   border: 1px solid #DDD;
   
-  -moz-border-radius: 6px;
-  border-radius: 6px;
+  -moz-border-radius: 4px;
+  border-radius: 4px;
+  border-radius: 4px;
 }
 
 .handsontable .dragdealer .handle {
@@ -381,6 +382,10 @@ ul.context-menu-list li {
   width: 9px;
   height: 9px;
   background: #C5C5C5;
+  
+  -moz-border-radius: 4px;
+  border-radius: 4px;
+  border-radius: 4px;
 }
 
 .handsontable .dragdealer .disabled {

@@ -1054,7 +1054,6 @@
  			}
  			
  			$t_attr_val->useBlobAsMediaField(true);
- 			
  			if (!in_array($ps_version, $t_attr_val->getMediaVersions('value_blob'))) { $ps_version = 'original'; }
  			
  			$o_view = new View($this->request, $this->request->getViewsDirectoryPath().'/bundles/');
@@ -1067,8 +1066,17 @@
  				return;
  			}
  			
- 			$o_view->setVar('file_path', $t_attr_val->getMediaPath('value_blob', $ps_version));
- 			$o_view->setVar('file_name', ($vs_name = trim($t_attr_val->get('value_longtext2'))) ? $vs_name : _t("downloaded_file"));
+ 			$vs_path = $t_attr_val->getMediaPath('value_blob', $ps_version);
+ 			$vs_path_ext = pathinfo($vs_path, PATHINFO_EXTENSION);
+ 			if ($vs_name = trim($t_attr_val->get('value_longtext2'))) {
+ 				$vs_file_name = pathinfo($vs_name, PATHINFO_FILENAME);
+ 				$vs_name = "{$vs_file_name}.{$vs_path_ext}";
+ 			} else {
+ 				$vs_name = _t("downloaded_file.%1", $vs_path_ext);
+ 			}
+ 			
+ 			$o_view->setVar('file_path', $vs_path);
+ 			$o_view->setVar('file_name', $vs_name);
  			
  			// send download
  			$this->response->addContent($o_view->render('ca_attributes_download_media.php'));
@@ -1112,14 +1120,13 @@
 			
 			$va_rep_display_info = caGetMediaDisplayInfo('media_overlay', $t_attr_val->getMediaInfo('value_blob', 'INPUT', 'MIMETYPE'));
 			$va_rep_display_info['poster_frame_url'] = $t_attr_val->getMediaUrl('value_blob', $va_rep_display_info['poster_frame_version']);
-						
+			
 			$o_view->setVar('display_options', $va_rep_display_info);
 			$o_view->setVar('representation_id', $pn_representation_id);
 			$o_view->setVar('t_attribute_value', $t_attr_val);
 			$o_view->setVar('versions', $va_versions = $t_attr_val->getMediaVersions('value_blob'));
 			
 			$t_media = new Media();
-			$o_view->setVar('version_type', $t_media->getMimetypeTypename($t_attr_val->getMediaInfo('value_blob', 'original', 'MIMETYPE')));
 	
 			$ps_version 	= $po_request->getParameter('version', pString);
 			if (!in_array($ps_version, $va_versions)) { 
@@ -1127,6 +1134,9 @@
 			}
 			$o_view->setVar('version', $ps_version);
 			$o_view->setVar('version_info', $t_attr_val->getMediaInfo('value_blob', $ps_version));
+			$o_view->setVar('version_type', $t_media->getMimetypeTypename($t_attr_val->getMediaInfo('value_blob', $ps_version, 'MIMETYPE')));
+			$o_view->setVar('mimetype', $t_attr_val->getMediaInfo('value_blob', 'INPUT', 'MIMETYPE'));			
+			
 			
 			return $o_view->render('media_attribute_viewer_html.php');
 		}

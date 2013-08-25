@@ -357,12 +357,14 @@ class ca_object_representations extends BundlableLabelableBaseModelWithAttribute
 		
 		// do insert
 		if ($vn_rc = parent::insert($pa_options)) {
-			$va_media_info = $this->getMediaInfo('media', 'original');
-			$this->set('md5', $va_media_info['MD5']);
-			$this->set('mimetype', $va_media_info['MIMETYPE']);
-			$va_media_info = $this->getMediaInfo('media');
-			$this->set('original_filename', $va_media_info['ORIGINAL_FILENAME']);
+			if (is_array($va_media_info = $this->getMediaInfo('media', 'original'))) {
+				$this->set('md5', $va_media_info['MD5']);
+				$this->set('mimetype', $va_media_info['MIMETYPE']);
 			
+				if(is_array($va_media_info = $this->getMediaInfo('media'))) {
+					$this->set('original_filename', $va_media_info['ORIGINAL_FILENAME']);
+				}
+			}
 			$va_metadata = $this->get('media_metadata', array('binary' => true));
 			caExtractEmbeddedMetadata($this, $va_metadata, $this->get('locale_id'));
 			
@@ -375,12 +377,13 @@ class ca_object_representations extends BundlableLabelableBaseModelWithAttribute
 	public function update($pa_options=null) {
 		$vb_media_has_changed = $this->changed('media');
 		if ($vn_rc = parent::update($pa_options)) {
-			$va_media_info = $this->getMediaInfo('media', 'original');
-			$this->set('md5', $va_media_info['MD5']);
-			$this->set('mimetype', $va_media_info['MIMETYPE']);
-			$va_media_info = $this->getMediaInfo('media');
-			$this->set('original_filename', $va_media_info['ORIGINAL_FILENAME']);
-			
+			if(is_array($va_media_info = $this->getMediaInfo('media', 'original'))) {
+				$this->set('md5', $va_media_info['MD5']);
+				$this->set('mimetype', $va_media_info['MIMETYPE']);
+				if (is_array($va_media_info = $this->getMediaInfo('media'))) {
+					$this->set('original_filename', $va_media_info['ORIGINAL_FILENAME']);
+				}
+			}
 			if ($vb_media_has_changed) {
 				$va_metadata = $this->get('media_metadata', array('binary' => true));
 				caExtractEmbeddedMetadata($this, $va_metadata, $this->get('locale_id'));
