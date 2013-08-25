@@ -148,31 +148,23 @@
 					$o_log->logWarn(_t('[storageLocationSplitterRefinery] No storage location type is set for location %1', $vs_location));
 				}
 				
+				
+				// Set list item parents
+				if ($va_parents = $pa_item['settings']['storageLocationSplitter_parents']) {
+					$va_val['parent_id'] = caProcessRefineryParents('storageLocationSplitterRefinery', 'ca_storage_locations', $va_parents, $pa_source_data, $pa_item, $vs_delimiter, $vn_c, $o_log);
+				}
+			
+				// Set attributes
+				if (is_array($va_attr_vals = caProcessRefineryAttributes($pa_item['settings']['storageLocationSplitter_attributes'], $pa_source_data, $pa_item, $vs_delimiter, $vn_c, $o_log))) {
+					$va_val = array_merge($va_val, $va_attr_vals);
+				}
+				
 				$t_location = new ca_storage_locations();
 				$t_location->load(array('parent_id' => $va_val['parent_id'], 'hierarchy_id' => $vn_hierarchy_id, 'deleted' => 0));
 				$va_val['_parent_id'] = $va_val['parent_id'];
 				
 				if ($o_log && !$va_val['_parent_id']) { $o_log->logError(_t('[storageLocationSplitterRefinery] No parent found or location %1 in hierarchy %2', $vs_location, $vs_hierarchy)); return array(); }
-				
-				
-				// Set attributes
-				if (is_array($pa_item['settings']['storageLocationSplitter_attributes'])) {
-					$va_attr_vals = array();
-					foreach($pa_item['settings']['storageLocationSplitter_attributes'] as $vs_element_code => $va_attrs) {
-						if(is_array($va_attrs)) {
-							foreach($va_attrs as $vs_k => $vs_v) {
-								// BaseRefinery::parsePlaceholder may return an array if the input format supports repeated values (as XML does)
-								// DataMigrationUtils::getLocationID(), which ca_data_importers::importDataFromSource() uses to create related storage locations
-								// only supports non-repeating attribute values, so we join any values here and call it a day.
-								$va_attr_vals[$vs_element_code][$vs_k] = (is_array($vm_v = BaseRefinery::parsePlaceholder($vs_v, $pa_source_data, $pa_item, $vs_delimiter, $vn_c))) ? join(" ", $vm_v) : $vm_v;
-							}
-						} else {
-							$va_attr_vals[$vs_element_code][$vs_element_code] = (is_array($vm_v = BaseRefinery::parsePlaceholder($va_attrs, $pa_source_data, $pa_item, $vs_delimiter, $vn_c))) ? join(" ", $vm_v) : $vm_v;
-						}
-					}
-					$va_val = array_merge($va_val, $va_attr_vals);
-				}
-				
+							
 				$va_vals[] = $va_val;
 				$vn_c++;
 			}
@@ -245,6 +237,15 @@
 				'default' => '',
 				'label' => _t('Attributes'),
 				'description' => _t('Sets or maps metadata for the storage location record by referencing the metadataElement code and the location in the data source where the data values can be found.')
+			),
+			'storageLocationSplitter_parents' => array(
+				'formatType' => FT_TEXT,
+				'displayType' => DT_SELECT,
+				'width' => 10, 'height' => 1,
+				'takesLocale' => false,
+				'default' => '',
+				'label' => _t('Parents'),
+				'description' => _t('Storage location parents to create, if required')
 			),
 			'storageLocationSplitter_relationshipTypeDefault' => array(
 				'formatType' => FT_TEXT,
