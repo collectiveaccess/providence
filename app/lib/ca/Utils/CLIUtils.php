@@ -534,9 +534,10 @@
 			$t_rep = new ca_object_representations();
 			$t_rep->setMode(ACCESS_WRITE);
 	
-			$va_mimetypes = explode(",", $po_opts->getOption("mimetypes"));
-			$va_versions = explode(",", $po_opts->getOption("versions"));
-			$va_kinds = explode(",", $po_opts->getOption("kinds"));
+			$va_mimetypes = ($vs_mimetypes = $po_opts->getOption("mimetypes")) ? explode(",", $vs_mimetypes) : array();
+			$va_versions = ($vs_versions = $po_opts->getOption("versions")) ? explode(",", $vs_versions) : array();
+			$va_kinds = ($vs_kinds = $po_opts->getOption("kinds")) ? explode(",", $vs_kinds) : array();
+			
 			if (!is_array($va_kinds) || !sizeof($va_kinds)) {
 				$va_kinds = array('all');
 			}
@@ -644,7 +645,7 @@
 							$t_attr_val->useBlobAsMediaField(true);
 							
 							$va_media_info = $t_attr_val->getMediaInfo('value_blob');
-							$vs_original_filename = $va_media_info['ORIGINAL_FILENAME'];
+							$vs_original_filename = is_array($va_media_info) ? $va_media_info['ORIGINAL_FILENAME'] : '';
 							
 							print CLIProgressBar::next(1, _t("Re-processing %1", ($vs_original_filename ? $vs_original_filename." ({$vn_value_id})" : $vn_value_id)));
 		

@@ -574,6 +574,22 @@ class ca_editor_ui_screens extends BundlableLabelableBaseModelWithAttributes {
 							'width' => "275px", 'height' => 4,
 							'label' => _t('Relationship display template'),
 							'description' => _t('Layout for relationship when displayed in list (can include HTML). Element code tags prefixed with the ^ character can be used to represent the value in the template. For example: <i>^my_element_code</i>.')
+						),
+						'minRelationshipsPerRow' => array(
+							'formatType' => FT_NUMBER,
+							'displayType' => DT_FIELD,
+							'width' => 5, 'height' => 1,
+							'default' => '',
+							'label' => _t('Minimum number of relationships of this kind to be associated with an item. '),
+							'description' => _t('If set to 0 a delete button will allow a cataloguer to clear all relationships.  If set to 1 or more, it will not be possible to delete all relationships once the minimum is established. Note that this is only a user interface limitations rather than constraints on the underlying data model.')
+						),
+						'maxRelationshipsPerRow' => array(
+							'formatType' => FT_NUMBER,
+							'displayType' => DT_FIELD,
+							'width' => 5, 'height' => 1,
+							'default' => '',
+							'label' => _t('Maximum number of relationships of this kind that can be associated with an item'),
+							'description' => _t('The extent of repeatability for the relationship will match the number entered here. Note that this is only a user interface limitations rather than constraints on the underlying data model.')
 						)
 					);
 					

@@ -759,9 +759,7 @@
 									if ($vs_template) {
 										$va_values_tmp = array();
 										foreach($va_values as $vn_i => $va_value_list) {
-											foreach($va_value_list as $vn_attr_id => $va_attr_data) {
-												$va_values_tmp[] = caProcessTemplateForIDs($vs_template, $va_tmp[0], array($vn_row_id), array_merge($pa_options, array('returnAsArray' => false, 'placeholderPrefix' => $va_tmp[1])));
-											}
+											$va_values_tmp[] = caProcessTemplateForIDs($vs_template, $va_tmp[0], array($vn_row_id), array_merge($pa_options, array('returnAsArray' => false, 'placeholderPrefix' => $va_tmp[1])));
 										}
 				
 										$va_values = $va_values_tmp;
@@ -803,7 +801,7 @@
 													if ($vs_template) { 
 														$va_subvalues[$vn_attribute_id] = caProcessTemplateForIDs($vs_template, $va_tmp[0], array($vn_row_id), array_merge($pa_options, array('requireLinkTags' => true, 'returnAsArray' => false, 'placeholderPrefix' => $va_tmp[1])));
 													} else {
-														$va_subvalues[$vn_attribute_id] = $va_data;
+														$va_subvalues[$vn_attribute_id] = $va_data[$va_tmp[2]];
 													}
 												}
 											}
@@ -842,8 +840,8 @@
 			return isset($this->ATTRIBUTE_TYPE_LIST_CODE) ? $this->ATTRIBUTE_TYPE_LIST_CODE : null;
 		}
 		# ------------------------------------------------------------------
-		public function getTypeName() {
-			if ($t_list_item = $this->getTypeInstance()) {
+		public function getTypeName($pn_type_id=null) {
+			if ($t_list_item = $this->getTypeInstance($pn_type_id)) {
 				return $t_list_item->getLabelForDisplay(false);
 			}
 			return null;
@@ -898,9 +896,13 @@
 		/**
 		 * Return ca_list_item instance for the type of the currently loaded row
 		 */ 
-		public function getTypeInstance() {
+		public function getTypeInstance($pn_type_id=null) {
 			if (!isset($this->ATTRIBUTE_TYPE_ID_FLD) || !$this->ATTRIBUTE_TYPE_ID_FLD) { return null; }
-			if (!($vn_type_id = $this->get($this->ATTRIBUTE_TYPE_ID_FLD))) { return null; }
+			if ($pn_type_id) { 
+				$vn_type_id = $pn_type_id; 
+			} else {
+				if (!($vn_type_id = $this->get($this->ATTRIBUTE_TYPE_ID_FLD))) { return null; }
+			}
 			
 			$t_list_item = new ca_list_items($vn_type_id);
 			return ($t_list_item->getPrimaryKey()) ? $t_list_item : null;
@@ -1545,7 +1547,7 @@
 			
 			$va_tmp = $this->getAttributeDisplayValues($pm_element_code_or_id, $vn_row_id, array_merge($pa_options, array('returnAllLocales' => false)));
 		
-			if ($vs_template_tmp = $t_element->getSetting('displayTemplate', true)) {
+			if (!$ps_template && ($vs_template_tmp = $t_element->getSetting('displayTemplate', true))) {	// grab template from metadata element if none is passed in $ps_template
 				$ps_template = $vs_template_tmp;
 			}
 			$vs_delimiter = $t_element->getSetting('displayDelimiter', true);

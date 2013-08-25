@@ -34,6 +34,7 @@
 	$va_settings 		= $this->getVar('settings');
 	$vs_add_label 		= $this->getVar('add_label');
 	$va_rel_types		= $this->getVar('relationship_types');
+	$vs_placement_code 	= $this->getVar('placement_code');
 	$vb_batch			= $this->getVar('batch');
 	
 	$vb_read_only		=	((isset($va_settings['readonly']) && $va_settings['readonly'])  || ($this->request->user->getBundleAccessLevel($t_instance->tableName(), 'ca_object_lots') == __CA_BUNDLE_ACCESS_READONLY__));
@@ -65,6 +66,11 @@
 		print caBatchEditorRelationshipModeControl($t_item, $vs_id_prefix);
 	} else {
 		print caEditorBundleShowHideControl($this->request, $vs_id_prefix.$t_item->tableNum().'_rel');
+	}
+	
+	$va_errors = array();
+	foreach($va_action_errors = $this->request->getActionErrors($vs_placement_code) as $o_error) {
+		$va_errors[] = $o_error->getErrorDescription();
 	}
 ?>
 <div id="<?php print $vs_id_prefix.$t_item->tableNum().'_rel'; ?>" <?php print $vb_batch ? "class='editorBatchBundleContent'" : ''; ?>>
@@ -186,6 +192,13 @@
 	}
 ?>
 		<div class="caItemList">
+<?php
+	if (sizeof($va_errors)) {
+?>
+		<span class="formLabelError"><?php print join("; ", $va_errors); ?><br class="clear"/></span>
+<?php
+	}
+?>
 		
 		</div>
 		
@@ -296,7 +309,10 @@
 			listSortOrderID: '<?php print $vs_id_prefix; ?>BundleList',
 			listSortItems: 'div.roundedRel',
 			quickaddPanel: caRelationQuickAddPanel<?php print $vs_id_prefix; ?>,
-			quickaddUrl: '<?php print caNavUrl($this->request, 'editor/object_lots', 'ObjectLotQuickAdd', 'Form', array('lot_id' => 0)); ?>'
+			quickaddUrl: '<?php print caNavUrl($this->request, 'editor/object_lots', 'ObjectLotQuickAdd', 'Form', array('lot_id' => 0)); ?>',
+			
+			minRepeats: <?php print caGetOption('minRelationshipsPerRow', $va_settings, 0); ?>,
+			maxRepeats: <?php print caGetOption('maxRelationshipsPerRow', $va_settings, 65535); ?>
 		});
 	});
 </script>

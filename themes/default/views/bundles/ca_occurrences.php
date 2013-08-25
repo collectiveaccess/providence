@@ -33,6 +33,7 @@
 	$va_settings 		= $this->getVar('settings');		// bundle settings
 	$vs_add_label 		= $this->getVar('add_label');
 	$va_rel_types		= $this->getVar('relationship_types');
+	$vs_placement_code 	= $this->getVar('placement_code');
 	
 	$vb_read_only		=	((isset($va_settings['readonly']) && $va_settings['readonly'])  || ($this->request->user->getBundleAccessLevel($t_instance->tableName(), 'ca_occurrences') == __CA_BUNDLE_ACCESS_READONLY__));
 	$vb_dont_show_del	=	((isset($va_settings['dontShowDeleteButton']) && $va_settings['dontShowDeleteButton'])) ? true : false;
@@ -53,6 +54,11 @@
 		print caBatchEditorRelationshipModeControl($t_item, $vs_id_prefix);
 	} else {
 		print caEditorBundleShowHideControl($this->request, $vs_id_prefix.$t_item->tableNum().'_rel');
+	}
+	
+	$va_errors = array();
+	foreach($va_action_errors = $this->request->getActionErrors($vs_placement_code) as $o_error) {
+		$va_errors[] = $o_error->getErrorDescription();
 	}
 ?>
 <div id="<?php print $vs_id_prefix.$t_item->tableNum().'_rel'; ?>" <?php print $vb_batch ? "class='editorBatchBundleContent'" : ''; ?>>
@@ -154,6 +160,13 @@
 ?>
 
 		<div class="caItemList">
+<?php
+	if (sizeof($va_errors)) {
+?>
+		<span class="formLabelError"><?php print join("; ", $va_errors); ?><br class="clear"/></span>
+<?php
+	}
+?>
 		
 		</div>
 		<input type="hidden" name="<?php print $vs_id_prefix; ?>BundleList" id="<?php print $vs_id_prefix; ?>BundleList" value=""/>
@@ -251,7 +264,10 @@
 			interstitialPanel: caRelationEditorPanel<?php print $vs_id_prefix; ?>,
 			interstitialUrl: '<?php print caNavUrl($this->request, 'editor', 'Interstitial', 'Form', array('t' => $t_item_rel->tableName())); ?>',
 			firstItemColor: '<?php print $vs_first_color; ?>',
-			lastItemColor: '<?php print $vs_last_color; ?>'
+			lastItemColor: '<?php print $vs_last_color; ?>',
+			
+			minRepeats: <?php print caGetOption('minRelationshipsPerRow', $va_settings, 0); ?>,
+			maxRepeats: <?php print caGetOption('maxRelationshipsPerRow', $va_settings, 65535); ?>
 		});
 	});
 </script>

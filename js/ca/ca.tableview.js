@@ -45,6 +45,7 @@ var caUI = caUI || {};
 			rowHeaders: null,
 			colHeaders: null,
 			columns: null,
+			colWidths: null,
 			
 			currentRowClassName: 'caResultsEditorCurrentRow',
 			currentColClassName: 'caResultsEditorCurrentCol',
@@ -112,7 +113,9 @@ var caUI = caUI || {};
 		}
 		// --------------------------------------------------------------------------------
 		
+		that.colWidths = [];
 		jQuery.each(that.columns, function(i, v) {
+			that.colWidths.push(200);
 			switch(that.columns[i]['type']) {
 				case 'DT_SELECT':
 					that.columns[i]['type'] = { renderer: that.autocompleteRenderer, editor: Handsontable.AutocompleteEditor, options: { items: 100 } };
@@ -219,6 +222,7 @@ var caUI = caUI || {};
 			
 			stretchH: "all",
 			columns: that.columns,
+			colWidths: that.colWidths,
 			
 			dataLoadUrl: that.dataLoadUrl,
 			editLinkFormat: that.editLinkFormat,
@@ -230,8 +234,7 @@ var caUI = caUI || {};
 				}
 				jQuery("." + that.statusDisplayClassName).html(that.saveMessage).fadeIn(500);
 				
-				var ht = jQuery(this).data('handsontable');
-				var item_id = ht.getDataAtRowProp(parseInt(change[0]), 'item_id');
+				var item_id = this.getDataAtRowProp(parseInt(change[0]), 'item_id');
 				
 				var pieces = change[0][1].split("-");
 				var table = pieces.shift();

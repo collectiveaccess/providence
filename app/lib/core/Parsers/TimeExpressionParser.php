@@ -2679,16 +2679,16 @@ class TimeExpressionParser {
 		}
 		
 		if ($vb_month_comes_first) {
-			if ($vs_month) { $va_date[] = $vs_month; }
+			if ($vs_month) { $va_date[] = (($pa_options['dateFormat'] == 'delimited') ? sprintf("%02d", $vs_month) : $vs_month); }
 			if ($vs_day) { 
 				if (((bool)$this->opo_datetime_settings->get('showCommaAfterDayForTextDates')) && ($pa_options['dateFormat'] == 'text') && $vs_year) {
 					$vs_day .= ",";
 				}
-				$va_date[] = $vs_day;
+				$va_date[] = (($pa_options['dateFormat'] == 'delimited') ? sprintf("%02d", $vs_day) : $vs_day);
 			}
 		} else {
-			if ($vs_day) { $va_date[] = $vs_day; }
-			if ($vs_month) { $va_date[] = $vs_month; }
+			if ($vs_day) { $va_date[] = (($pa_options['dateFormat'] == 'delimited') ? sprintf("%02d", $vs_day) : $vs_day); }
+			if ($vs_month) { $va_date[] = (($pa_options['dateFormat'] == 'delimited') ? sprintf("%02d", $vs_month)  : $vs_month); }
 		}
 		if ($vs_year) { $va_date[] = $vs_year; }
 		

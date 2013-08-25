@@ -34,6 +34,7 @@
 	$va_settings 		= $this->getVar('settings');
 	$vs_add_label 		= $this->getVar('add_label');
 	$va_rel_types		= $this->getVar('relationship_types');
+	$vs_placement_code 	= $this->getVar('placement_code');
 	$vb_batch			= $this->getVar('batch');
 
 	$vs_sort			=	((isset($va_settings['sort']) && $va_settings['sort'])) ? $va_settings['sort'] : '';
@@ -50,6 +51,11 @@
 		print caBatchEditorRelationshipModeControl($t_item, $vs_id_prefix);
 	} else {
 		print caEditorBundleShowHideControl($this->request, $vs_id_prefix.$t_item->tableNum().'_rel');
+	}
+	
+	$va_errors = array();
+	foreach($va_action_errors = $this->request->getActionErrors($vs_placement_code) as $o_error) {
+		$va_errors[] = $o_error->getErrorDescription();
 	}
 ?>
 <div id="<?php print $vs_id_prefix.$t_item->tableNum().'_rel'; ?>" <?php print $vb_batch ? "class='editorBatchBundleContent'" : ''; ?>>
@@ -205,6 +211,13 @@
 	}
 ?>
 		<div class="caItemList">
+<?php
+	if (sizeof($va_errors)) {
+?>
+		<span class="formLabelError"><?php print join("; ", $va_errors); ?><br class="clear"/></span>
+<?php
+	}
+?>
 		
 		</div>
 		<input type="hidden" name="<?php print $vs_id_prefix; ?>BundleList" id="<?php print $vs_id_prefix; ?>BundleList" value=""/>
@@ -284,7 +297,10 @@
 	} else {
 ?>
 			relationshipTypes: <?php print json_encode($this->getVar('relationship_types_by_sub_type')); ?>,
-			templateValues: ['label', 'id', 'type_id']
+			templateValues: ['label', 'id', 'type_id'],
+			
+			minRepeats: <?php print caGetOption('minRelationshipsPerRow', $va_settings, 0); ?>,
+			maxRepeats: <?php print caGetOption('maxRelationshipsPerRow', $va_settings, 65535); ?>
 <?php
 	}
 ?>

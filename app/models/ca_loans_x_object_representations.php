@@ -33,7 +33,7 @@
  /**
    *
    */
-require_once(__CA_LIB_DIR__.'/core/BaseRelationshipModel.php');
+require_once(__CA_LIB_DIR__.'/ca/BaseRepresentationRelationship.php');
 
 
 BaseModel::$s_ca_models_definitions['ca_loans_x_object_representations'] = array(
@@ -94,7 +94,7 @@ BaseModel::$s_ca_models_definitions['ca_loans_x_object_representations'] = array
  	)
 );
 
-class ca_loans_x_object_representations extends BaseRelationshipModel {
+class ca_loans_x_object_representations extends BaseRepresentationRelationship {
 	# ---------------------------------
 	# --- Object attribute properties
 	# ---------------------------------

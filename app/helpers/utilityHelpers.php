@@ -1511,15 +1511,48 @@ function caFileIsIncludable($ps_file) {
 	}
 	# ---------------------------------------
 	/**
-	 * 
+	 * Extract specified option from an options array. 
+	 * An options array is simply an associative array where keys are option names and values are option values.
+	 * caGetOption() provides a simple interface to grab values, force default values for non-existent settings and enforce simple validation rules.
 	 *
-	 * @param mixed $ps_options
-	 * @param array $pa_options
-	 * @param mixed $pm_default
+	 * @param mixed $ps_option The option to extract
+	 * @param array $pa_options The options array to extract values from
+	 * @param mixed $pm_default An optional default value to return if $ps_option is not set in $pa_options 
+	 * @param array $pa_parse_options Option parser options (cross your eyes now) include:
+	 *		forceLowercase = transform option value to all lowercase [default=false]
+	 *		forceUppercase = transform option value to all uppercase [default=false]
+	 *		validValues = array of values that are possible for this option. If the option value is not in the list then the default is returned. If no default is set then the first value in the validValues list is returned. Note that by default all comparisons are case-insensitive. 
+	 *		caseSensitive = do case sensitive comparisons when checking the option value against the validValues list [default=false]
 	 * @return mixed
 	 */
-	function caGetOption($ps_option, $pa_options, $pm_default=null) {
-		return (isset($pa_options[$ps_option]) && !is_null($pa_options[$ps_option])) ? $pa_options[$ps_option] : $pm_default;
+	function caGetOption($ps_option, $pa_options, $pm_default=null, $pa_parse_options=null) {
+		$va_valid_values = null;
+		$vb_case_insensitive = false;
+		if (isset($pa_parse_options['validValues']) && is_array($pa_parse_options['validValues'])) {
+			$va_valid_values = $pa_parse_options['validValues'];
+			if (!isset($pa_parse_options['caseSensitive']) || !$pa_parse_options['caseSensitive']) {
+				$va_valid_values = array_map(function($v) { return mb_strtolower($v); }, $va_valid_values);
+				$vb_case_insensitive = true;
+			}
+		}
+		$vm_val = (isset($pa_options[$ps_option]) && !is_null($pa_options[$ps_option])) ? $pa_options[$ps_option] : $pm_default;
+		
+		if(is_array($va_valid_values)) {
+			if (!in_array($vb_case_insensitive ? mb_strtolower($vm_val) : $vm_val, $va_valid_values)) {
+				$vm_val = $pm_default;
+				if (!in_array($vb_case_insensitive ? mb_strtolower($vm_val) : $vm_val, $va_valid_values)) {
+					$vm_val = array_shift($va_valid_values);
+				}
+			}
+		}
+		
+		if (isset($pa_parse_options['forceLowercase']) && $pa_parse_options['forceLowercase']) {
+			$vm_val = mb_strtolower($vm_val);
+		} elseif (isset($pa_parse_options['forceUppercase']) && $pa_parse_options['forceUppercase']) {
+			$vm_val = mb_strtoupper($vm_val);
+		}
+		
+		return $vm_val;
 	}
 	# ---------------------------------------
 	/**
