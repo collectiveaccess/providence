@@ -148,22 +148,24 @@
 					$o_log->logWarn(_t('[storageLocationSplitterRefinery] No storage location type is set for location %1', $vs_location));
 				}
 				
-				
-				// Set list item parents
+				// Set location parents
 				if ($va_parents = $pa_item['settings']['storageLocationSplitter_parents']) {
-					$va_val['parent_id'] = caProcessRefineryParents('storageLocationSplitterRefinery', 'ca_storage_locations', $va_parents, $pa_source_data, $pa_item, $vs_delimiter, $vn_c, $o_log);
-				}
+					$va_val['parent_id'] = $va_val['_parent_id'] = caProcessRefineryParents('storageLocationSplitterRefinery', 'ca_storage_locations', $va_parents, $pa_source_data, $pa_item, $vs_delimiter, $vn_c, $o_log);
+				} 
 			
 				// Set attributes
 				if (is_array($va_attr_vals = caProcessRefineryAttributes($pa_item['settings']['storageLocationSplitter_attributes'], $pa_source_data, $pa_item, $vs_delimiter, $vn_c, $o_log))) {
 					$va_val = array_merge($va_val, $va_attr_vals);
 				}
 				
-				$t_location = new ca_storage_locations();
-				$t_location->load(array('parent_id' => $va_val['parent_id'], 'hierarchy_id' => $vn_hierarchy_id, 'deleted' => 0));
-				$va_val['_parent_id'] = $va_val['parent_id'];
-				
-				if ($o_log && !$va_val['_parent_id']) { $o_log->logError(_t('[storageLocationSplitterRefinery] No parent found or location %1 in hierarchy %2', $vs_location, $vs_hierarchy)); return array(); }
+				if (!$va_val['_parent_id']) {
+					$t_location = new ca_storage_locations();
+					$va_val['_parent_id'] = $va_val['parent_id'] = $t_location->getHierarchyRootID();
+				}
+				if (!$va_val['_parent_id']) { 
+					if ($o_log) { $o_log->logError(_t('[storageLocationSplitterRefinery] No parent found or location %1 in hierarchy %2', $vs_location, $vs_hierarchy)); }
+					return array(); 
+				}
 							
 				$va_vals[] = $va_val;
 				$vn_c++;

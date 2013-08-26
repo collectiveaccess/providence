@@ -126,56 +126,20 @@
 				if ((!isset($va_val['_type']) || !$va_val['_type']) && $o_log) {
 					$o_log->logWarn(_t('[entitySplitterRefinery] No entity type is set for entity %1', $vs_entity));
 				}
+				
+				// Set entity parents
+				if ($va_parents = $pa_item['settings']['entitySplitter_parents']) {
+					$va_val['parent_id'] = $va_val['_parent_id'] = caProcessRefineryParents('entitySplitterRefinery', 'ca_entities', $va_parents, $pa_source_data, $pa_item, $vs_delimiter, $vn_c, $o_log);
+				}
 			
 				// Set attributes
-				if (is_array($pa_item['settings']['entitySplitter_attributes'])) {
-					$va_attr_vals = array();
-					foreach($pa_item['settings']['entitySplitter_attributes'] as $vs_element_code => $va_attrs) {
-						if(is_array($va_attrs)) {
-							foreach($va_attrs as $vs_k => $vs_v) {
-								// BaseRefinery::parsePlaceholder may return an array if the input format supports repeated values (as XML does)
-								// DataMigrationUtils::getEntityID(), which ca_data_importers::importDataFromSource() uses to create related entities
-								// only supports non-repeating attribute values, so we join any values here and call it a day.
-								$va_attr_vals[$vs_element_code][$vs_k] = (is_array($vm_v = BaseRefinery::parsePlaceholder($vs_v, $pa_source_data, $pa_item, $vs_delimiter, $vn_c))) ? join(" ", $vm_v) : $vm_v;
-							}
-						} else {
-							$va_attr_vals[$vs_element_code][$vs_element_code] = (is_array($vm_v = BaseRefinery::parsePlaceholder($va_attrs, $pa_source_data, $pa_item, $vs_delimiter, $vn_c))) ? join(" ", $vm_v) : $vm_v;
-						}
-					}
+				if (is_array($va_attr_vals = caProcessRefineryAttributes($pa_item['settings']['entitySplitter_attributes'], $pa_source_data, $pa_item, $vs_delimiter, $vn_c, $o_log))) {
 					$va_val = array_merge($va_val, $va_attr_vals);
 				}
 				
-				if (is_array($pa_item['settings']['entitySplitter_interstitial'])) {
-					$o_dm = Datamodel::load();
-					
-					// What is the relationship table?
-					if ($t_mapping = (isset($pa_options['mapping'])) ? $pa_options['mapping'] : null) {
-						$vs_dest_table = $o_dm->getTableName($t_mapping->get('table_num'));
-						
-						$vs_linking_table = null;
-						if ($vs_dest_table != 'ca_entities') {
-							$va_path = $o_dm->getPath($vs_dest_table, 'ca_entities');
-							$vs_linking_table = $va_path[1];
-						} else {
-							$vs_linking_table = 'ca_entities_x_entities';
-						}
-						if ($vs_linking_table) {
-							$va_attr_vals = array();
-							foreach($pa_item['settings']['entitySplitter_interstitial'] as $vs_element_code => $va_attrs) {
-								if(!is_array($va_attrs)) { 
-									$va_attr_vals['_interstitial'][$vs_element_code] = BaseRefinery::parsePlaceholder($va_attrs, $pa_source_data, $pa_item, $vs_delimiter, $vn_c);
-								} else {
-									foreach($va_attrs as $vs_k => $vs_v) {
-										$va_attr_vals['_interstitial'][$vs_element_code][$vs_k] = BaseRefinery::parsePlaceholder($vs_v, $pa_source_data, $pa_item, $vs_delimiter, $vn_c);
-									}
-								}
-							}
-							if (is_array($va_attr_vals['_interstitial']) && sizeof($va_attr_vals['_interstitial'])) { 
-								$va_attr_vals['_interstitial_table'] = $vs_linking_table;
-							}
-							$va_val = array_merge($va_val, $va_attr_vals);
-						}
-					}
+				// Set interstitials
+				if (isset($pa_options['mapping']) && is_array($va_attr_vals = caProcessInterstitialAttributes('entitySplitter', $pa_options['mapping']->get('table_num'), 'ca_entities', $pa_source_data, $pa_item, $vs_delimiter, $vn_c, $o_log))) {
+					$va_val = array_merge($va_val, $va_attr_vals);
 				}
 				
 				$va_vals[] = $va_val;
@@ -232,6 +196,15 @@
 				'default' => '',
 				'label' => _t('Attributes'),
 				'description' => _t('Sets or maps metadata for the entity record by referencing the metadataElement code and the location in the data source where the data values can be found.')
+			),
+			'entitySplitter_parents' => array(
+				'formatType' => FT_TEXT,
+				'displayType' => DT_SELECT,
+				'width' => 10, 'height' => 1,
+				'takesLocale' => false,
+				'default' => '',
+				'label' => _t('Parents'),
+				'description' => _t('Entity parents to create, if required')
 			),
 			'entitySplitter_relationshipTypeDefault' => array(
 				'formatType' => FT_TEXT,

@@ -128,7 +128,7 @@
 				
 				// Set collection parents
 				if ($va_parents = $pa_item['settings']['collectionSplitter_parents']) {
-					$va_val['parent_id'] = caProcessRefineryParents('collectionSplitterRefinery', 'ca_collections', $va_parents, $pa_source_data, $pa_item, $vs_delimiter, $vn_c, $o_log);
+					$va_val['parent_id'] = $va_val['_parent_id'] = caProcessRefineryParents('collectionSplitterRefinery', 'ca_collections', $va_parents, $pa_source_data, $pa_item, $vs_delimiter, $vn_c, $o_log);
 				}
 			
 				// Set attributes
