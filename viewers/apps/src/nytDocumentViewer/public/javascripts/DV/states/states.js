@@ -34,6 +34,8 @@ DV.Schema.states = {
     this.helpers.startCheckTimer();
     this.helpers.handleInitialState();
     _.defer(_.bind(this.helpers.autoZoomPage, this.helpers));
+    
+    this.api.setState('ViewDocument'); // MOD
   },
 
   ViewAnnotation: function(){
