@@ -98,10 +98,16 @@
  			$t_list = new ca_lists();
  			$this->view->setVar('occurrence_types', caExtractValuesByUserLocale($t_list->getItemsForList('occurrence_types')));
  			
+ 			if(sizeof($va_aps_in_search = caSearchGetAccessPoints($ps_search))) {
+ 				$va_aps = caSearchGetTablesForAccessPoints($va_aps_in_search);
+ 				$vb_uses_aps = true;
+ 			} else {
+ 				$vb_uses_aps = false;
+ 			}
  			$va_single_results = array();
  			$pn_multiple_results = 0;
  			foreach($va_searches as $vs_table => $va_sorts) {
- 				if (($o_config->get($vs_table.'_disable')) || (($vs_table == 'ca_tour_stops') && $o_config->get('ca_tours_disable'))) { 
+ 				if (($o_config->get($vs_table.'_disable')) || (($vs_table == 'ca_tour_stops') && $o_config->get('ca_tours_disable')) || ($vb_uses_aps && (!in_array($vs_table, $va_aps)))) { 
  					unset($va_searches[$vs_table]);
  					continue;
  				}

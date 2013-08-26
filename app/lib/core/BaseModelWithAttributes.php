@@ -1152,6 +1152,7 @@
 				}
 			}
 			
+			$o_view->setVar('t_element', $t_element);
 			$o_view->setVar('t_instance', $this);
 			$o_view->setVar('request', $po_request);
 			$o_view->setVar('id_prefix', $ps_form_name.'_attribute_'.$t_element->get('element_id'));

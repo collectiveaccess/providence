@@ -30,6 +30,7 @@
 	$vs_error_source_code 		= 	$this->getVar('error_source_code');
 	$vs_render_mode 			=	$this->getVar('render_mode');
 	
+	$t_element					=	$this->getVar('t_element');
 	$va_elements 				=	$this->getVar('elements');
 	$va_element_ids 			= 	$this->getVar('element_ids');
 	$va_element_info 			= 	$this->getVar('element_info');
@@ -136,6 +137,11 @@
 			</div>				
 <?php
 	}
+		
+	if (!$vb_batch && ($vs_presets = $t_element->getPresetsAsHTMLFormElement(array('width' => '100px')))) {
+		print "<div style='float: right; margin-right: 10px;'>{$vs_presets}</div>\n";
+	}
+	
 			foreach($va_elements as $vn_container_id => $va_element_list) {
 				if ($vn_container_id === '_locale_id') { continue; }
 ?>
@@ -151,6 +157,7 @@
 				</table>
 <?php
 			}
+		
 
 			if (isset($va_elements['_locale_id'])) {
 				print ($va_elements['_locale_id']['hidden']) ? $va_elements['_locale_id']['element'] : '<div class="formLabel">'._t('Locale').' '.$va_elements['_locale_id']['element'].'</div>';
@@ -175,6 +182,9 @@
 			
 <script type="text/javascript">
 <?php
+	if (!$vb_batch) {
+		print $t_element->getPresetsJavascript($vs_id_prefix);
+	}
 	if ($vs_render_mode === 'checklist') {
 ?>
 	caUI.initChecklistBundle('#<?php print $vs_id_prefix; ?>', {
