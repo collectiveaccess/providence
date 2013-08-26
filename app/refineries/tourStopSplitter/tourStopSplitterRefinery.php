@@ -132,27 +132,20 @@
 				} 
 				
 				$va_val['tour_id'] = $vn_tour_id;
-				
-				$t_item = new ca_tour_stops();
-				$t_item->load(array('parent_id' => null, 'tour_id' => $vn_tour_id));	// get root
-				$va_val['_parent_id'] = $t_item->getPrimaryKey();
-				
+							
+				// Set stop parents
+				if ($va_parents = $pa_item['settings']['tourStopSplitter_parents']) {
+					$va_val['parent_id'] = $va_val['_parent_id'] = caProcessRefineryParents('tourStopSplitterRefinery', 'ca_tour_stops', $va_parents, $pa_source_data, $pa_item, $vs_delimiter, $vn_c, $o_log);
+				}
+			
 				// Set attributes
-				if (is_array($pa_item['settings']['tourStopSplitter_attributes'])) {
-					$va_attr_vals = array();
-					foreach($pa_item['settings']['tourStopSplitter_attributes'] as $vs_element_code => $va_attrs) {
-						if(is_array($va_attrs)) {
-							foreach($va_attrs as $vs_k => $vs_v) {
-								// BaseRefinery::parsePlaceholder may return an array if the input format supports repeated values (as XML does)
-								// DataMigrationUtils::getTourStopID(), which ca_data_importers::importDataFromSource() uses to create related tour stops
-								// only supports non-repeating attribute values, so we join any values here and call it a day.
-								$va_attr_vals[$vs_element_code][$vs_k] = (is_array($vm_v = BaseRefinery::parsePlaceholder($vs_v, $pa_source_data, $pa_item, $vs_delimiter, $vn_c))) ? join(" ", $vm_v) : $vm_v;
-							}
-						} else {
-							$va_attr_vals[$vs_element_code][$vs_element_code] = (is_array($vm_v = BaseRefinery::parsePlaceholder($va_attrs, $pa_source_data, $pa_item, $vs_delimiter, $vn_c))) ? join(" ", $vm_v) : $vm_v;
-						}
-					}
+				if (is_array($va_attr_vals = caProcessRefineryAttributes($pa_item['settings']['tourStopSplitter_attributes'], $pa_source_data, $pa_item, $vs_delimiter, $vn_c, $o_log))) {
 					$va_val = array_merge($va_val, $va_attr_vals);
+				}
+				
+				if (!$va_val['_parent_id']) { 
+					if ($o_log) { $o_log->logError(_t('[tourStopSplitterRefinery] No parent found for %1', $vs_tour_stop)); }
+					return array(); 
 				}
 				
 				$va_vals[] = $va_val;

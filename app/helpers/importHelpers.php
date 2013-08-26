@@ -50,7 +50,7 @@
 	 * 
 	 * @return int
 	 */
-	function caProcessRefineryParents($ps_refinery_name, $ps_table, $pa_parents, $pa_source_data, $pa_item, $ps_delimiter, $pn_c, $o_log=null) {
+	function caProcessRefineryParents($ps_refinery_name, $ps_table, $pa_parents, $pa_source_data, $pa_item, $ps_delimiter, $pn_c, $o_log=null, $pa_options=null) {
 		global $g_ui_locale_id;
 		
 		if (!is_array($pa_parents)) { $pa_parents = array($pa_parents); }
@@ -63,6 +63,8 @@
 			$vs_type = BaseRefinery::parsePlaceholder($va_parent['type'], $pa_source_data, $pa_item, $ps_delimiter, $pn_c, array('returnAsString' => true, 'delimiter' => ' '));
 			if (!$vs_name && !$vs_idno) { continue; }
 			if (!$vs_name) { $vs_name = $vs_idno; }
+			
+			$vn_list_id = caGetOption('list_id', $pa_options, null);
 			
 			$va_attributes = (isset($va_parent['attributes']) && is_array($va_parent['attributes'])) ? $va_parent['attributes'] : array();
 			
@@ -120,15 +122,39 @@
 			
 			
 			switch($ps_table) {
+				case 'ca_objects':
+					$vn_id = DataMigrationUtils::getObjectID($vs_name, $vn_id, $vs_type, $g_ui_locale_id, $va_attributes, $pa_options);
+					break;
+				case 'ca_entities':
+					$vn_id = DataMigrationUtils::getEntityID($vs_name, $vs_type, $g_ui_locale_id, $va_attributes, $pa_options);
+					break;
+				case 'ca_places':
+					$vn_id = DataMigrationUtils::getPlaceID($vs_name, $vn_id, $vs_type, $g_ui_locale_id, $va_attributes, $pa_options);
+					break;
+				case 'ca_occurrences':
+					$vn_id = DataMigrationUtils::getOccurrenceID($vs_name, $vn_id, $vs_type, $g_ui_locale_id, $va_attributes, $pa_options);
+					break;
 				case 'ca_collections':
 					$vn_id = DataMigrationUtils::getCollectionID($vs_name, $vs_type, $g_ui_locale_id, $va_attributes, $pa_options);
+					break;
+				case 'ca_loans':
+					$vn_id = DataMigrationUtils::getLoanID($vs_name, $vs_type, $g_ui_locale_id, $va_attributes, $pa_options);
+					break;
+				case 'ca_movements':
+					$vn_id = DataMigrationUtils::getMovementID($vs_name, $vs_type, $g_ui_locale_id, $va_attributes, $pa_options);
+					break;
+				case 'ca_list_items':
+					$vn_id = DataMigrationUtils::getListItemID($vn_list_id, $vs_name, $vs_type, $g_ui_locale_id, $va_attributes, $pa_options);
+					break;
+				case 'ca_storage_locations':
+					$vn_id = DataMigrationUtils::getStorageLocationID($vs_name, $vn_id, $vs_type, $g_ui_locale_id, $va_attributes, $pa_options);
 					break;
 				default:
 					if ($o_log) { $o_log->logDebug(_t('[importHelpers:caProcessRefineryParents] Invalid table %1', $ps_table)); }
 					return null;
 					break;	
 			}
-			if ($o_log) { $o_log->logDebug(_t('[%6] Got parent %1 (%2) with collection_id %3 and type %4 for %5', $vs_name, $vs_idno, $vn_id, $vs_type, $vs_name, $ps_refinery_name)); }
+			if ($o_log) { $o_log->logDebug(_t('[%6] Got parent %1 (%2) with id %3 and type %4 for %5', $vs_name, $vs_idno, $vn_id, $vs_type, $vs_name, $ps_refinery_name)); }
 		}
 		return $vn_id;
 	}
@@ -163,6 +189,59 @@
 			return $va_attr_vals;
 		}
 		return null;
+	}
+	# ---------------------------------------
+	/**
+	 * 
+	 *
+	 * @param string $ps_refinery_name 
+	 * @param mixed $pm_import_tablename_or_num 
+	 * @param mixed $pm_target_tablename_or_num 
+	 * @param array $pa_source_data
+	 * @param array $pa_item
+	 * @param string $ps_delimiter
+	 * @param int $pn_c
+	 * @param KLogger $o_log
+	 * 
+	 * @return array
+	 */
+	function caProcessInterstitialAttributes($ps_refinery_name, $pm_import_tablename_or_num, $pm_target_tablename_or_num, $pa_source_data, $pa_item, $ps_delimiter, $pn_c, $o_log=null) {
+		if (is_array($pa_item['settings']['entitySplitter_interstitial'])) {
+			$o_dm = Datamodel::load();
+			$ps_import_tablename = $o_dm->getTableName($pm_import_tablename_or_num);
+			$ps_target_tablename = $o_dm->getTableName($pm_target_tablename_or_num);
+			$t_target = $o_db->getInstanceByTableName($ps_target_tablename, true);
+			
+			$va_attr_vals = array();
+					
+			// What is the relationship table?
+			if ($ps_table_name) {
+				$vs_dest_table = $ps_import_tablename;
+				
+				$vs_linking_table = null;
+				if ($vs_dest_table != $ps_target_tablename) {
+					$va_path = $o_dm->getPath($vs_dest_table, $ps_target_tablename);
+					$vs_linking_table = $va_path[1];
+				} else {
+					$vs_linking_table = $t_target->getSelfRelationTableName();
+				}
+				if ($vs_linking_table) {
+					foreach($pa_item['settings'][$ps_refinery_name.'_interstitial'] as $vs_element_code => $va_attrs) {
+						if(!is_array($va_attrs)) { 
+							$va_attr_vals['_interstitial'][$vs_element_code] = BaseRefinery::parsePlaceholder($va_attrs, $pa_source_data, $pa_item, $ps_delimiter, $pn_c);
+						} else {
+							foreach($va_attrs as $vs_k => $vs_v) {
+								$va_attr_vals['_interstitial'][$vs_element_code][$vs_k] = BaseRefinery::parsePlaceholder($vs_v, $pa_source_data, $pa_item, $ps_delimiter, $pn_c);
+							}
+						}
+					}
+					if (is_array($va_attr_vals['_interstitial']) && sizeof($va_attr_vals['_interstitial'])) { 
+						$va_attr_vals['_interstitial_table'] = $vs_linking_table;
+					}
+				}
+			}
+		}
+		return $va_attr_vals;
 	}
 	# ---------------------------------------
 ?>

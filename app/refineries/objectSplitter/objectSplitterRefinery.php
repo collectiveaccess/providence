@@ -116,27 +116,12 @@
 				}
 				
 				// Set object parents
-				global $g_ui_locale_id;
 				if ($va_parents = $pa_item['settings']['objectSplitter_parents']) {
-					if (!is_array($va_parents)) { $va_parents = array($va_parents); }
-					$vn_object_id = null;
-						
-					foreach($va_parents as $vn_i => $vs_parent) {
-						$vn_object_id = DataMigrationUtils::getObjectID($vs_parent, $va_val['_type'], $g_ui_locale_id, array('idno' => $vs_parent, 'parent_id' => $vn_object_id), $pa_options);
-					}
-					$va_val['parent_id'] = $vn_object_id;
+					$va_val['parent_id'] = $va_val['_parent_id'] = caProcessRefineryParents('objectSplitterRefinery', 'ca_objects', $va_parents, $pa_source_data, $pa_item, $vs_delimiter, $vn_c, $o_log);
 				}
 			
 				// Set attributes
-				if (is_array($pa_item['settings']['objectSplitter_attributes'])) {
-					$va_attr_vals = array();
-					foreach($pa_item['settings']['objectSplitter_attributes'] as $vs_element_code => $va_attrs) {
-						if(is_array($va_attrs)) {
-							foreach($va_attrs as $vs_k => $vs_v) {
-								$va_attr_vals[$vs_element_code][$vs_k] = BaseRefinery::parsePlaceholder($vs_v, $pa_source_data, $pa_item);
-							}
-						}
-					}
+				if (is_array($va_attr_vals = caProcessRefineryAttributes($pa_item['settings']['objectSplitter_attributes'], $pa_source_data, $pa_item, $vs_delimiter, $vn_c, $o_log))) {
 					$va_val = array_merge($va_val, $va_attr_vals);
 				}
 				
