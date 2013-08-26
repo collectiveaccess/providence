@@ -47,6 +47,7 @@ require_once(__CA_LIB_DIR__.'/core/Parsers/PHPExcel/PHPExcel/IOFactory.php');
 require_once(__CA_LIB_DIR__.'/core/Logging/KLogger/KLogger.php');
 require_once(__CA_LIB_DIR__.'/core/Parsers/ExpressionParser.php');
 require_once(__CA_LIB_DIR__.'/core/Db/Transaction.php');
+require_once(__CA_LIB_DIR__.'/core/Parsers/jsonlint/src/Seld/JsonLint/JsonParser.php');
 
 BaseModel::$s_ca_models_definitions['ca_data_importers'] = array(
  	'NAME_SINGULAR' 	=> _t('data importer'),
@@ -687,7 +688,7 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 		$pa_errors = array();
 		
 		
-		$o_log = new KLogger($pa_options['logDirectory'], $pa_options['logLevel']);
+		$o_log = (is_writable($pa_options['logDirectory'])) ? new KLogger($pa_options['logDirectory'], $pa_options['logLevel']) : null;
 		
 		$o_excel = PHPExcel_IOFactory::load($ps_source);
 		//$o_excel->setActiveSheet(1);
@@ -790,10 +791,21 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 						$vs_refinery = $va_refinery_options = null;
 					}
 					
-					$va_original_values = preg_split("![\n\r]{1}!", mb_strtolower((string)$o_orig_values->getValue()));
-					array_walk($va_original_values, function(&$v) { $v = trim($v); });
-					$va_replacement_values = preg_split("![\n\r]{1}!", mb_strtolower((string)$o_replacement_values->getValue()));
-					array_walk($va_replacement_values, function(&$v) { $v = trim($v); });
+					if ($va_options && is_array($va_options) && isset($va_options['transformValuesUsingWorksheet']) && $va_options['transformValuesUsingWorksheet']) {
+						if ($o_opt_sheet = $o_excel->getSheetByName($va_options['transformValuesUsingWorksheet'])) {
+							foreach ($o_opt_sheet->getRowIterator() as $o_sheet_row) {
+								if (!trim($vs_original_value = (string)$o_opt_sheet->getCellByColumnAndRow(0, $o_sheet_row->getRowIndex()))) { continue; }
+								$vs_replacement_value = trim((string)$o_opt_sheet->getCellByColumnAndRow(1, $o_sheet_row->getRowIndex()));
+								$va_original_values[] = $vs_original_value;
+								$va_replacement_values[] = $vs_replacement_value;
+							}
+						}
+					} else {
+						$va_original_values = preg_split("![\n\r]{1}!", mb_strtolower((string)$o_orig_values->getValue()));
+						array_walk($va_original_values, function(&$v) { $v = trim($v); });
+						$va_replacement_values = preg_split("![\n\r]{1}!", mb_strtolower((string)$o_replacement_values->getValue()));
+						array_walk($va_replacement_values, function(&$v) { $v = trim($v); });
+					}
 					
 					$va_mapping[$vs_group][$vs_source][] = array(
 						'destination' => $vs_destination,
@@ -805,7 +817,6 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 						'original_values' => $va_original_values,
 						'replacement_values' => $va_replacement_values
 					);
-					
 					break;
 				case 'setting':
 					$o_setting_name = $o_sheet->getCellByColumnAndRow(1, $o_row->getRowIndex());
@@ -869,7 +880,7 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 			if ($t_importer->numErrors()) {
 				$pa_errors[] = _t("Could not delete existing mapping for %1: %2", $va_settings['code'], join("; ", $t_importer->getErrors()))."\n";
 				if ($o_log) { $o_log->logError(_t("[loadImporterFromFile:%1] Could not delete existing mapping for %2: %3", $ps_source, $va_settings['code'], join("; ", $t_importer->getErrors()))); }
-				return;
+				return null;
 			}
 		}
 		
@@ -888,7 +899,7 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 		if ($t_importer->numErrors()) {
 			$pa_errors[] = _t("Error creating mapping: %1", join("; ", $t_importer->getErrors()))."\n";
 			if ($o_log) { $o_log->logError(_t("[loadImporterFromFile:%1] Error creating mapping: %2", $ps_source, join("; ", $t_importer->getErrors()))); }
-			return;
+			return null;
 		}
 		
 		$t_importer->addLabel(array('name' => $va_settings['name']), $vn_locale_id, null, true);
@@ -896,7 +907,7 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 		if ($t_importer->numErrors()) {
 			$pa_errors[] = _t("Error creating mapping name: %1", join("; ", $t_importer->getErrors()))."\n";
 			if ($o_log) {  $o_log->logError(_t("[loadImporterFromFile:%1] Error creating mapping: %2", $ps_source, join("; ", $t_importer->getErrors()))); }
-			return;
+			return null;
 		}
 		
 		foreach($va_mapping as $vs_group => $va_mappings_for_group) {
@@ -932,6 +943,12 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 					
 					$t_group->addItem($vs_source, $va_row['destination'], $va_item_settings, array('returnInstance' => true));
 				}
+			}
+		}
+		
+		if(sizeof($pa_errors)) {
+			foreach($pa_errors as $vs_error) {
+				$t_importer->postError(1100, $vs_error, 'ca_data_importers::loadImporterFromFile');
 			}
 		}
 		
