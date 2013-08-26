@@ -106,7 +106,7 @@
               <labels>
                 <label locale="en_US" preferred="1">
                   <name_singular>Brochure</name_singular>
-                  <name_plural>Brochure</name_plural>
+                  <name_plural>Brochures</name_plural>
                 </label>
               </labels>
             </item>
@@ -114,7 +114,7 @@
               <labels>
                 <label locale="en_US" preferred="1">
                   <name_singular>Tournament Brochure</name_singular>
-                  <name_plural>Tournament Brochure</name_plural>
+                  <name_plural>Tournament Brochures</name_plural>
                 </label>
               </labels>
             </item>
@@ -122,7 +122,7 @@
               <labels>
                 <label locale="en_US" preferred="1">
                   <name_singular>Letter</name_singular>
-                  <name_plural>Letter</name_plural>
+                  <name_plural>Letters</name_plural>
                 </label>
               </labels>
             </item>
@@ -130,7 +130,7 @@
               <labels>
                 <label locale="en_US" preferred="1">
                   <name_singular>Newspaper Article</name_singular>
-                  <name_plural>Newspaper Article</name_plural>
+                  <name_plural>Newspaper Articles</name_plural>
                 </label>
               </labels>
             </item>
@@ -138,7 +138,7 @@
               <labels>
                 <label locale="en_US" preferred="1">
                   <name_singular>Magazine</name_singular>
-                  <name_plural>Magazine</name_plural>
+                  <name_plural>Magazines</name_plural>
                 </label>
               </labels>
             </item>
@@ -146,7 +146,15 @@
               <labels>
                 <label locale="en_US" preferred="1">
                   <name_singular>Magazine Article</name_singular>
-                  <name_plural>Magazine Article</name_plural>
+                  <name_plural>Magazine Articles</name_plural>
+                </label>
+              </labels>
+            </item>
+            <item idno="Article" enabled="1" default="0">
+              <labels>
+                <label locale="en_US" preferred="1">
+                  <name_singular>Article</name_singular>
+                  <name_plural>Articles</name_plural>
                 </label>
               </labels>
             </item>
@@ -154,7 +162,23 @@
               <labels>
                 <label locale="en_US" preferred="1">
                   <name_singular>Book</name_singular>
-                  <name_plural>Book</name_plural>
+                  <name_plural>Books</name_plural>
+                </label>
+              </labels>
+            </item>
+            <item idno="Booklet" enabled="1" default="0">
+              <labels>
+                <label locale="en_US" preferred="1">
+                  <name_singular>Booklet</name_singular>
+                  <name_plural>Booklets</name_plural>
+                </label>
+              </labels>
+            </item>
+            <item idno="Cartoon" enabled="1" default="0">
+              <labels>
+                <label locale="en_US" preferred="1">
+                  <name_singular>Cartoon</name_singular>
+                  <name_plural>Cartoons</name_plural>
                 </label>
               </labels>
             </item>
@@ -162,7 +186,7 @@
               <labels>
                 <label locale="en_US" preferred="1">
                   <name_singular>Document</name_singular>
-                  <name_plural>Document</name_plural>
+                  <name_plural>Documents</name_plural>
                 </label>
               </labels>
             </item>
@@ -170,7 +194,7 @@
               <labels>
                 <label locale="en_US" preferred="1">
                   <name_singular>Drawsheet</name_singular>
-                  <name_plural>Drawsheet</name_plural>
+                  <name_plural>Drawsheets</name_plural>
                 </label>
               </labels>
             </item>
@@ -178,7 +202,7 @@
               <labels>
                 <label locale="en_US" preferred="1">
                   <name_singular>Map</name_singular>
-                  <name_plural>Map</name_plural>
+                  <name_plural>Maps</name_plural>
                 </label>
               </labels>
             </item>
@@ -186,7 +210,7 @@
               <labels>
                 <label locale="en_US" preferred="1">
                   <name_singular>News Release</name_singular>
-                  <name_plural>News Release</name_plural>
+                  <name_plural>News Releases</name_plural>
                 </label>
               </labels>
             </item>
@@ -194,7 +218,7 @@
               <labels>
                 <label locale="en_US" preferred="1">
                   <name_singular>Newsletter</name_singular>
-                  <name_plural>Newsletter</name_plural>
+                  <name_plural>Newsletters</name_plural>
                 </label>
               </labels>
             </item>
@@ -212,7 +236,7 @@
               <labels>
                 <label locale="en_US" preferred="1">
                   <name_singular>Original Framed Oil</name_singular>
-                  <name_plural>Original Framed Oil</name_plural>
+                  <name_plural>Original Framed Oils</name_plural>
                 </label>
               </labels>
             </item>
@@ -220,7 +244,7 @@
               <labels>
                 <label locale="en_US" preferred="1">
                   <name_singular>Drawing</name_singular>
-                  <name_plural>Drawing</name_plural>
+                  <name_plural>Drawings</name_plural>
                 </label>
               </labels>
             </item>
@@ -228,7 +252,7 @@
               <labels>
                 <label locale="en_US" preferred="1">
                   <name_singular>Poem</name_singular>
-                  <name_plural>Poem</name_plural>
+                  <name_plural>Poems</name_plural>
                 </label>
               </labels>
             </item>
@@ -250,6 +274,14 @@
             </label>
           </labels>
         </item>               
+        <item idno="sponsor_jacket" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>Sponsor Jacket</name_singular>
+              <name_plural>Sponsor Jackets</name_plural>
+            </label>
+          </labels>
+        </item>                      
       </items>
     </list>
     <list code="entity_types" hierarchical="1" system="0" vocabulary="0">
