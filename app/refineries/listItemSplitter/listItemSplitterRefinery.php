@@ -123,7 +123,7 @@
 					$va_val['_parent_id'] = $t_item->getPrimaryKey();
 				} else {
 					$va_val['_parent_id'] = null;
-				} else {
+				
 					// Set list item parents
 					if ($va_parents = $pa_item['settings']['listItemSplitter_parents']) {
 						$va_val['parent_id'] = $va_val['_parent_id'] = caProcessRefineryParents('listItemSplitterRefinery', 'ca_list_items', $va_parents, $pa_source_data, $pa_item, $vs_delimiter, $vn_c, $o_log, array('list_id' => $vn_list_id));
