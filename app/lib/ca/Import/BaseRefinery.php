@@ -57,6 +57,11 @@
 		 *
 		 */
 		protected $ops_description = null;
+		
+		/**
+		 *
+		 */
+		protected $opb_returns_multiple_values;
 		# -------------------------------------------------------
 		public function __construct() {
 		
@@ -155,6 +160,17 @@
 		 * @return bool True if refinery returns multiple values, false if it returns a single value
 		 */
 		abstract function returnsMultipleValues();
+		# -------------------------------------------------------	
+		/**
+		 * 
+		 *
+		 * @return bool Always returns true
+		 */
+		public function setReturnsMultipleValues($pb_returns_multiple_values) {
+			$this->opb_returns_multiple_values = (bool)$pb_returns_multiple_values;
+			
+			return true;
+		}
 		# -------------------------------------------------------	
 	}
 ?>
