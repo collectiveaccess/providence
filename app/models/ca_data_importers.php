@@ -793,7 +793,7 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 					if ($va_options && is_array($va_options) && isset($va_options['transformValuesUsingWorksheet']) && $va_options['transformValuesUsingWorksheet']) {
 						if ($o_opt_sheet = $o_excel->getSheetByName($va_options['transformValuesUsingWorksheet'])) {
 							foreach ($o_opt_sheet->getRowIterator() as $o_sheet_row) {
-								if (!trim($vs_original_value = (string)$o_opt_sheet->getCellByColumnAndRow(0, $o_sheet_row->getRowIndex()))) { continue; }
+								if (!trim($vs_original_value = mb_strtolower((string)$o_opt_sheet->getCellByColumnAndRow(0, $o_sheet_row->getRowIndex())))) { continue; }
 								$vs_replacement_value = trim((string)$o_opt_sheet->getCellByColumnAndRow(1, $o_sheet_row->getRowIndex()));
 								$va_original_values[] = $vs_original_value;
 								$va_replacement_values[] = $vs_replacement_value;
@@ -802,7 +802,7 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 					} else {
 						$va_original_values = preg_split("![\n\r]{1}!", mb_strtolower((string)$o_orig_values->getValue()));
 						array_walk($va_original_values, function(&$v) { $v = trim($v); });
-						$va_replacement_values = preg_split("![\n\r]{1}!", mb_strtolower((string)$o_replacement_values->getValue()));
+						$va_replacement_values = preg_split("![\n\r]{1}!", (string)$o_replacement_values->getValue());
 						array_walk($va_replacement_values, function(&$v) { $v = trim($v); });
 					}
 					
@@ -1590,7 +1590,7 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 						}
 					
 						if (isset($va_item['settings']['formatWithTemplate']) && strlen($va_item['settings']['formatWithTemplate'])) {
-							$vm_val = caProcessTemplate($va_item['settings']['formatWithTemplate'], $va_row);
+							$vm_val = caProcessTemplate($va_item['settings']['formatWithTemplate'], array_replace($va_row, array((string)$va_item['source'] => ca_data_importers::replaceValue($vm_val, $va_item))));
 						}
 					
 					
