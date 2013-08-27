@@ -30,12 +30,12 @@
  
 	class objectSplitterRefinery extends BaseRefinery {
 		# -------------------------------------------------------
-		
-		# -------------------------------------------------------
 		public function __construct() {
 			$this->ops_name = 'objectSplitter';
 			$this->ops_title = _t('Object splitter');
 			$this->ops_description = _t('Splits objects');
+			
+			$this->opb_returns_multiple_values = true;
 			
 			parent::__construct();
 		}
@@ -56,80 +56,7 @@
 		 *
 		 */
 		public function refine(&$pa_destination_data, $pa_group, $pa_item, $pa_source_data, $pa_options=null) {
-			$va_group_dest = explode(".", $pa_group['destination']);
-			$vs_terminal = array_pop($va_group_dest);
-			$pm_value = $pa_source_data[$pa_item['source']];
-			
-			if ($vs_delimiter = $pa_item['settings']['objectSplitter_delimiter']) {
-				$va_objects = explode($vs_delimiter, $pm_value);
-			} else {
-				$va_objects = array($pm_value);
-			}
-			
-			$va_vals = array();
-			$vn_c = 0;
-			foreach($va_objects as $vn_i => $vs_object) {
-				if (!$vs_object = trim($vs_object)) { continue; }
-				
-				
-				if($vs_terminal == 'name') {
-					return $vs_object;
-				}
-			
-				if (in_array($vs_terminal, array('preferred_labels', 'nonpreferred_labels'))) {
-					return array('name' => $vs_object);	
-				}
-			
-				// Set label
-				$va_val = array('preferred_labels' => array('name' => $vs_object));
-			
-				// Set relationship type
-				if (
-					($vs_rel_type_opt = $pa_item['settings']['objectSplitter_relationshipType'])
-				) {
-					if (!($va_val['_relationship_type'] = BaseRefinery::parsePlaceholder($vs_rel_type_opt, $pa_source_data, $pa_item, $vs_delimiter, $vn_c))) {
-						if ($vs_rel_type_opt = $pa_item['settings']['objectSplitter_relationshipTypeDefault']) {
-							$va_val['_relationship_type'] = BaseRefinery::parsePlaceholder($vs_rel_type_opt, $pa_source_data, $pa_item, $vs_delimiter, $vn_c);
-						}
-					}
-				}
-			
-				// Set object_type
-				if (
-					($vs_type_opt = $pa_item['settings']['objectSplitter_objectType'])
-				) {
-					
-					if (!($va_val['_type'] = BaseRefinery::parsePlaceholder($vs_type_opt, $pa_source_data, $pa_item, $vs_delimiter, $vn_c))) {
-						if($vs_type_opt = $pa_item['settings']['objectSplitter_objectTypeDefault']) {
-							$va_val['_type'] = BaseRefinery::parsePlaceholder($vs_type_opt, $pa_source_data, $pa_item, $vs_delimiter, $vn_c);
-						}
-					}
-				}
-				// Set relationship type
-				if ($vs_rel_type_opt = $pa_item['settings']['objectSplitter_relationshipType']) {
-					$va_val['_relationship_type'] = BaseRefinery::parsePlaceholder($vs_rel_type_opt, $pa_source_data, $pa_item, $vs_delimiter, $vn_i);
-				}
-			
-				// Set object type
-				if ($vs_type_opt = $pa_item['settings']['objectSplitter_objectType']) {
-					$va_val['_type'] = BaseRefinery::parsePlaceholder($vs_type_opt, $pa_source_data, $pa_item);
-				}
-				
-				// Set object parents
-				if ($va_parents = $pa_item['settings']['objectSplitter_parents']) {
-					$va_val['parent_id'] = $va_val['_parent_id'] = caProcessRefineryParents('objectSplitterRefinery', 'ca_objects', $va_parents, $pa_source_data, $pa_item, $vs_delimiter, $vn_c, $o_log);
-				}
-			
-				// Set attributes
-				if (is_array($va_attr_vals = caProcessRefineryAttributes($pa_item['settings']['objectSplitter_attributes'], $pa_source_data, $pa_item, $vs_delimiter, $vn_c, $o_log))) {
-					$va_val = array_merge($va_val, $va_attr_vals);
-				}
-				
-				$va_vals[] = $va_val;
-				$vn_c++;
-			}
-			
-			return $va_vals;
+			return caGenericImportSplitter('objectSplitter', 'object', 'ca_objects', $this, $pa_destination_data, $pa_group, $pa_item, $pa_source_data, $pa_options);
 		}
 		# -------------------------------------------------------	
 		/**
@@ -206,6 +133,15 @@
 				'default' => '',
 				'label' => _t('Object type default'),
 				'description' => _t('Sets the default object type that will be used if none are defined or if the data source values do not match any values in the CollectiveAccess list object_types.')
+			),
+			'objectSplitter_interstitial' => array(
+				'formatType' => FT_TEXT,
+				'displayType' => DT_SELECT,
+				'width' => 10, 'height' => 1,
+				'takesLocale' => false,
+				'default' => '',
+				'label' => _t('Interstitial attributes'),
+				'description' => _t('Sets or maps metadata for the interstitial object <em>relationship</em> record by referencing the metadataElement code and the location in the data source where the data values can be found.')
 			)
 		);
 ?>

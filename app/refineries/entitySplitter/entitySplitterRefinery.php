@@ -30,12 +30,12 @@
  
 	class entitySplitterRefinery extends BaseRefinery {
 		# -------------------------------------------------------
-		private $opb_returns_multiple_values = true;
-		# -------------------------------------------------------
 		public function __construct() {
 			$this->ops_name = 'entitySplitter';
 			$this->ops_title = _t('Entity splitter');
 			$this->ops_description = _t('Provides several entity-related import functions: splitting of entity names into component names (forename, surname, Etc.), splitting of many names in a string into separate names, and merging entity data with entity names (life dates, nationality, Etc.).');
+			
+			$this->opb_returns_multiple_values = true;
 			
 			parent::__construct();
 		}
@@ -56,97 +56,7 @@
 		 *
 		 */
 		public function refine(&$pa_destination_data, $pa_group, $pa_item, $pa_source_data, $pa_options=null) {
-			$this->opb_returns_multiple_values = true;
-			$o_log = (isset($pa_options['log']) && is_object($pa_options['log'])) ? $pa_options['log'] : null;
-		
-			$va_group_dest = explode(".", $pa_group['destination']);
-			$vs_terminal = array_pop($va_group_dest);
-			$pm_value = $pa_source_data[$pa_item['source']];
-			
-			if (is_array($pm_value)) {
-				$va_entities = $pm_value;	// for input formats that support repeating values
-			} else {
-				if ($vs_delimiter = $pa_item['settings']['entitySplitter_delimiter']) {
-					$va_entities = explode($vs_delimiter, $pm_value);
-				} else {
-					$va_entities = array($pm_value);
-				}
-			}
-			
-			$va_vals = array();
-			$vn_c = 0;
-			foreach($va_entities as $vn_i => $vs_entity) {
-				if (!($vs_entity = trim($vs_entity))) { continue; }				
-			
-				if (is_array($va_skip_values = $pa_item['settings']['entitySplitter_skipIfValue']) && in_array($vs_entity, $va_skip_values)) {
-					if ($o_log) { $o_log->logDebug(_t('[entitySplitterRefinery] Skipped %1 because it was in the skipIfValue list', $vs_entity)); }
-					continue;
-				}
-			
-				$va_split_name = DataMigrationUtils::splitEntityName($vs_entity);
-		
-				if(isset($va_split_name[$vs_terminal])) {
-					$this->opb_returns_multiple_values = false;
-					return $va_split_name[$vs_terminal];
-				}
-			
-				if (in_array($vs_terminal, array('preferred_labels', 'nonpreferred_labels'))) {
-					return array(0 => array($vs_terminal => $va_split_name));	
-				}
-			
-				// Set label
-				$va_val = array('preferred_labels' => $va_split_name);
-			
-				// Set relationship type
-				if (
-					($vs_rel_type_opt = $pa_item['settings']['entitySplitter_relationshipType'])
-				) {
-					$va_val['_relationship_type'] = BaseRefinery::parsePlaceholder($vs_rel_type_opt, $pa_source_data, $pa_item, $vs_delimiter, $vn_c);
-				}
-			
-				if ((!isset($va_val['_relationship_type']) || !$va_val['_relationship_type']) && ($vs_rel_type_opt = $pa_item['settings']['entitySplitter_relationshipTypeDefault'])) {
-					$va_val['_relationship_type'] = BaseRefinery::parsePlaceholder($vs_rel_type_opt, $pa_source_data, $pa_item, $vs_delimiter, $vn_c);
-				}
-				
-				if ((!isset($va_val['_relationship_type']) || !$va_val['_relationship_type']) && $o_log) {
-					$o_log->logWarn(_t('[entitySplitterRefinery] No relationship type is set for entity %1', $vs_entity));
-				}
-				
-				// Set entity_type
-				if (
-					($vs_type_opt = $pa_item['settings']['entitySplitter_entityType'])
-				) {
-					$va_val['_type'] = BaseRefinery::parsePlaceholder($vs_type_opt, $pa_source_data, $pa_item, $vs_delimiter, $vn_c);
-				}
-				
-				if((!isset($va_val['_type']) || !$va_val['_type']) && ($vs_type_opt = $pa_item['settings']['entitySplitter_entityTypeDefault'])) {
-					$va_val['_type'] = BaseRefinery::parsePlaceholder($vs_type_opt, $pa_source_data, $pa_item, $vs_delimiter, $vn_c);
-				}
-				
-				if ((!isset($va_val['_type']) || !$va_val['_type']) && $o_log) {
-					$o_log->logWarn(_t('[entitySplitterRefinery] No entity type is set for entity %1', $vs_entity));
-				}
-				
-				// Set entity parents
-				if ($va_parents = $pa_item['settings']['entitySplitter_parents']) {
-					$va_val['parent_id'] = $va_val['_parent_id'] = caProcessRefineryParents('entitySplitterRefinery', 'ca_entities', $va_parents, $pa_source_data, $pa_item, $vs_delimiter, $vn_c, $o_log);
-				}
-			
-				// Set attributes
-				if (is_array($va_attr_vals = caProcessRefineryAttributes($pa_item['settings']['entitySplitter_attributes'], $pa_source_data, $pa_item, $vs_delimiter, $vn_c, $o_log))) {
-					$va_val = array_merge($va_val, $va_attr_vals);
-				}
-				
-				// Set interstitials
-				if (isset($pa_options['mapping']) && is_array($va_attr_vals = caProcessInterstitialAttributes('entitySplitter', $pa_options['mapping']->get('table_num'), 'ca_entities', $pa_source_data, $pa_item, $vs_delimiter, $vn_c, $o_log))) {
-					$va_val = array_merge($va_val, $va_attr_vals);
-				}
-				
-				$va_vals[] = $va_val;
-				$vn_c++;
-			}
-			
-			return $va_vals;
+			return caGenericImportSplitter('entitySplitter', 'entity', 'ca_entities', $this, $pa_destination_data, $pa_group, $pa_item, $pa_source_data, $pa_options);
 		}
 		# -------------------------------------------------------	
 		/**
