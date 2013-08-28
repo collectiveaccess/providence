@@ -1427,7 +1427,13 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 			// get preferred labels
 			$va_pref_label_values = array();
 			foreach($va_preferred_label_mapping_ids as $vn_preferred_label_mapping_id => $vs_preferred_label_mapping_fld) {
-				$va_pref_label_values[$vs_preferred_label_mapping_fld] = ca_data_importers::getValueFromSource($va_mapping_items[$vn_preferred_label_mapping_id], $o_reader);
+				$vs_label_val = ca_data_importers::getValueFromSource($va_mapping_items[$vn_preferred_label_mapping_id], $o_reader);
+				
+				// If a template is specified format the label value with it so merge-on-preferred_label doesn't fail
+				if (isset($va_mapping_items[$vn_preferred_label_mapping_id]['settings']['formatWithTemplate']) && strlen($va_mapping_items[$vn_preferred_label_mapping_id]['settings']['formatWithTemplate'])) {
+					$vs_label_val = caProcessTemplate($va_mapping_items[$vn_preferred_label_mapping_id]['settings']['formatWithTemplate'], $va_row);
+				}
+				$va_pref_label_values[$vs_preferred_label_mapping_fld] = $vs_label_val;
 			}
 			$vs_display_label = isset($va_pref_label_values[$vs_label_display_fld]) ? $va_pref_label_values[$vs_label_display_fld] : $vs_idno;
 			
