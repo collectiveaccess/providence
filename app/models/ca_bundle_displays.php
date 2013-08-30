@@ -1343,7 +1343,7 @@ class ca_bundle_displays extends BundlableLabelableBaseModelWithAttributes {
 		
 		if ($vb_show_tooltips) {
 			TooltipManager::add(
-				"#bundleDisplayEditorBundle_{$vs_table}_lastModified}",
+				"#bundleDisplayEditorBundle_{$vs_table}_lastModified",
 				$this->_formatBundleTooltip($vs_label, $vs_bundle, $vs_description)
 			);
 		}
