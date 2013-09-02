@@ -1001,7 +1001,7 @@ class SearchResult extends BaseObject {
 						foreach($va_value_list as $vn_id => $va_by_locale) {
 							foreach($va_by_locale as $vn_locale_id => $va_values) {
 								foreach($va_values as $vn_i => $va_value) {
-									if (in_array($va_value['rel_type_id'], $va_rel_types)) {
+									if (!$va_value['rel_type_id'] || in_array($va_value['rel_type_id'], $va_rel_types)) {
 										$va_tmp[$vn_id][$vn_locale_id][$vn_i] = $va_value;
 									}
 								}
@@ -1066,7 +1066,7 @@ class SearchResult extends BaseObject {
 				foreach($va_value_list as $vn_id => $va_by_locale) {
 					foreach($va_by_locale as $vn_locale_id => $va_values) {
 						foreach($va_values as $vn_i => $va_value) {
-							if (in_array($va_value[$vs_type_fld ? $vs_type_fld : 'item_type_id'], $va_type_ids)) {
+							if (!$va_value[$vs_type_fld ? $vs_type_fld : 'item_type_id'] || in_array($va_value[$vs_type_fld ? $vs_type_fld : 'item_type_id'], $va_type_ids)) {
 								$va_tmp[$vn_id][$vn_locale_id][$vn_i] = $va_value;
 							}
 						}
