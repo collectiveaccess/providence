@@ -552,7 +552,7 @@
                 </label>
               </labels>
             </item> 
-            <item idno="70plus" enabled="1" default="0">
+            <item idno="70" enabled="1" default="0">
               <labels>
                 <label locale="en_US" preferred="1">
                   <name_singular>Men's 70+</name_singular>
