@@ -19,7 +19,7 @@ msgstr ""
 #: c:\providence/app/conf/annotation_types.conf:11
 #: c:\providence/app/conf/annotation_types.conf:35
 msgid "Start"
-msgstr ""
+msgstr "Start"
 
 #: c:\providence/app/conf/annotation_types.conf:12
 #: c:\providence/app/conf/annotation_types.conf:36
