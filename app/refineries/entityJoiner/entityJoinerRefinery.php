@@ -132,6 +132,16 @@
 					$va_val = array_merge($va_val, $va_attr_vals);
 				}
 				
+				// Set interstitials
+				if (isset($pa_options['mapping']) && is_array($va_attr_vals = caProcessInterstitialAttributes('entityJoiner', $pa_options['mapping']->get('table_num'), 'ca_entities', $pa_source_data, $pa_item, $vs_delimiter, $vn_c, $o_log))) {
+					$va_val = array_merge($va_val, $va_attr_vals);
+				}
+				
+				// Set relatedEntities
+				if (is_array($va_attr_vals = caProcessRefineryRelated("entityJoiner", "ca_entities", $pa_item['settings']['entityJoiner_relatedEntities'], $pa_source_data, $pa_item, null, $vn_c, $o_log))) {
+					$va_val = array_merge($va_val, $va_attr_vals);
+				}
+				
 				// nonpreferred labels
 				if (is_array($pa_item['settings']['entityJoiner_nonpreferred_labels'])) {
 					$va_non_preferred_labels = array();
@@ -306,5 +316,23 @@
 				'label' => _t('Non-preferred labels to process'),
 				'description' => _t('List of non-preferred label values or references to locations in the data source where nonpreferred label values can be found. Use the <em>split</em> value for a label to indicate a value that should be split into entity label components before import.')
 			),
+			'entityJoiner_interstitial' => array(
+				'formatType' => FT_TEXT,
+				'displayType' => DT_SELECT,
+				'width' => 10, 'height' => 1,
+				'takesLocale' => false,
+				'default' => '',
+				'label' => _t('Interstitial attributes'),
+				'description' => _t('Sets or maps metadata for the interstitial entity <em>relationship</em> record by referencing the metadataElement code and the location in the data source where the data values can be found.')
+			),
+			'entityJoiner_relatedEntities' => array(
+				'formatType' => FT_TEXT,
+				'displayType' => DT_SELECT,
+				'width' => 10, 'height' => 1,
+				'takesLocale' => false,
+				'default' => '',
+				'label' => _t('Related entities'),
+				'description' => _t('Entities related to the entity being created.')
+			)
 		);
 ?>
