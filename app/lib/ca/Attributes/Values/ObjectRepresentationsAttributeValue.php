@@ -128,6 +128,7 @@
  		 * @param array Optional array of options. Support options are:
  		 *			template = 
  		 *			includeID = 
+ 		 *			idsOnly = 
  		 * @return string The value
  		 */
 		public function getDisplayValue($pa_options=null) {
@@ -139,7 +140,9 @@
 			}			
 			$ps_template = (string)caGetOption('template', $pa_options, $vs_default_template);
 			$vb_include_id = (bool)caGetOption('includeID', $pa_options, true);
+			$vb_ids_only = (bool)caGetOption('idsOnly', $pa_options, false);
 			
+			if ($vb_ids_only) { return $this->opn_representation_id; }
 			return caProcessTemplateForIDs($ps_template, 'ca_object_representations', array($this->opn_representation_id), array()).($vb_include_id ? " [".$this->opn_representation_id."]" : '');
 		}
  		# ------------------------------------------------------------------

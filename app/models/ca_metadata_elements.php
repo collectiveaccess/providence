@@ -545,10 +545,10 @@ class ca_metadata_elements extends LabelableBaseModelWithAttributes implements I
 	public static function getElementsAsList($pb_root_elements_only=false, $pm_table_name_or_num=null, $pm_type_name_or_id=null, $pb_use_cache=true, $pb_return_stats=false, $pb_index_by_element_code=false, $pa_data_types=null){
 		$o_dm = Datamodel::load();
 		$vn_table_num = $o_dm->getTableNum($pm_table_name_or_num);
-		
-		if ($pb_use_cache && ca_metadata_elements::$s_element_list_cache[$pm_table_name_or_num.'/'.$pm_type_name_or_id.'/'.($pb_root_elements_only ? '1' : '0')]) {
-			if (($pb_return_stats && isset(ca_metadata_elements::$s_element_list_cache[$pm_table_name_or_num.'/'.$pm_type_name_or_id.'/'.($pb_root_elements_only ? '1' : '0')]['ui_counts'])) || !$pb_return_stats) {
-				return ca_metadata_elements::$s_element_list_cache[$pm_table_name_or_num.'/'.$pm_type_name_or_id.'/'.($pb_root_elements_only ? '1' : '0')];
+		$vs_cache_key = md5($pm_table_name_or_num.'/'.$pm_type_name_or_id.'/'.($pb_root_elements_only ? '1' : '0').'/'.($pb_index_by_element_code ? '1' : '0').print_R($pa_data_types, true));
+		if ($pb_use_cache && ca_metadata_elements::$s_element_list_cache[$vs_cache_key]) {
+			if (($pb_return_stats && isset(ca_metadata_elements::$s_element_list_cache[$vs_cache_key]['ui_counts'])) || !$pb_return_stats) {
+				return ca_metadata_elements::$s_element_list_cache[$vs_cache_key];
 			}
 		}
 		
@@ -628,8 +628,7 @@ class ca_metadata_elements extends LabelableBaseModelWithAttributes implements I
 				$va_record['ui_counts'] = $va_counts_by_attribute[$vs_code = $qr_tmp->get('element_code')];
 				$va_record['restrictions'] = $va_restrictions_by_attribute[$vs_code];
 			}
-			
-			$va_return[($pb_index_by_element_code) ? $vs_element_code : $vn_element_id] = $va_record;
+			$va_return[$vn_element_id] = $va_record;
 		}
 		
 		// Get labels
@@ -637,8 +636,15 @@ class ca_metadata_elements extends LabelableBaseModelWithAttributes implements I
 		foreach($va_labels as $vn_id => $vs_label) {
 			$va_return[$vn_id]['display_label'] = $vs_label;
 		}
+		if ($pb_index_by_element_code) {
+			$va_return_proc = array();
+			foreach($va_return as $vn_id => $va_element) {
+				$va_return_proc[$va_element['element_code']] = $va_element;
+			}
+			$va_return = $va_return_proc;
+		}
 		
-		return ca_metadata_elements::$s_element_list_cache[$pm_table_name_or_num.'/'.$pm_type_name_or_id.'/'.($pb_root_elements_only ? '1' : '0')] = sizeof($va_return) > 0 ? $va_return : false;
+		return ca_metadata_elements::$s_element_list_cache[$vs_cache_key] = sizeof($va_return) > 0 ? $va_return : false;
 	}
 	# ------------------------------------------------------
 	/**
@@ -1140,7 +1146,7 @@ class ca_metadata_elements extends LabelableBaseModelWithAttributes implements I
 		
 		if ($va_presets = $o_presets->getAssoc($this->get('element_code'))) {
 			$va_elements = $this->getElementsInSet();
-			//print_R($va_elements);
+		
 			$va_element_code_to_ids = $va_element_info = array();
 			foreach($va_elements as $va_element) {
 				$va_element_code_to_ids[$va_element['element_code']] = $va_element['element_id'];

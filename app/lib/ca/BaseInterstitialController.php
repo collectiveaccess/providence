@@ -68,7 +68,7 @@
  			if(!is_array($pa_options)) { $pa_options = array(); }
  			list($t_subject, $t_ui, $vn_parent_id, $vn_above_id) = $this->_initView(array_merge($pa_options, array('loadSubject' => true)));
  			
- 			if (!($t_subject = $this->opo_datamodel->getInstanceByTableName($this->ops_table_name))) {
+ 			if (!$t_subject) {
 				$this->postError(1220, _t('Invalid table %1', $this->ops_table_name),"BaseInterstitalController->Edit()");
 				return false;
  			}
@@ -125,12 +125,13 @@
  		public function Save($pa_options=null) {
  			if(!is_array($pa_options)) { $pa_options = array(); }
  			list($t_subject, $t_ui, $vn_parent_id, $vn_above_id) = $this->_initView(array_merge($pa_options, array('loadSubject' => true)));
- 			if (!is_array($pa_options)) { $pa_options = array(); }
-			
- 			if (!($t_subject = $this->opo_datamodel->getInstanceByTableName($this->ops_table_name))) {
+ 			
+ 			if (!$t_subject) {
 				$this->postError(1220, _t('Invalid table %1', $this->ops_table_name),"BaseInterstitalController->Edit()");
 				return false;
  			}
+ 			
+ 			if (!is_array($pa_options)) { $pa_options = array(); }
  			
  			//
  			// Is record of correct type?
@@ -228,10 +229,8 @@
  			JavascriptLoadManager::register('bundleableEditor');
  			JavascriptLoadManager::register('imageScroller');
  			JavascriptLoadManager::register('ckeditor');
- 			
- 			if (!($t_subject = $this->opo_datamodel->getInstanceByTableName($this->ops_table_name))) {
-				return false;
- 			}
+
+ 			if (!($t_subject = $this->opo_datamodel->getInstanceByTableName($this->ops_table_name))) { return null; }
  			
  			if (is_array($pa_options) && isset($pa_options['loadSubject']) && (bool)$pa_options['loadSubject'] && ($vn_subject_id = (int)$this->request->getParameter($t_subject->primaryKey(), pInteger))) {
  				$t_subject->load($vn_subject_id);
@@ -242,7 +241,9 @@
 					$t_subject->set($vs_f, $vs_v);
 				}
 			}
-			// reload the definitions (which includes bundle specs)
+
+			// then reload the definitions (which includes bundle specs)
+
 			$t_subject->reloadLabelDefinitions();
 
  			
