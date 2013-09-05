@@ -697,7 +697,7 @@ if (!$vb_can_do_incremental_indexing || $pb_reindex_mode) {
 							continue; 
 						}
 						if (substr($va_field_list[$vn_i], 0, 14) === '_ca_attribute_') { continue; }
-						
+						if (!trim($va_field_list[$vn_i])) { continue; }
 						$va_proc_field_list[$vn_i] = $vs_related_table.'.'.$va_field_list[$vn_i];
 					}
 					$va_proc_field_list[] = $vs_related_table.'.'.$vs_related_pk;
@@ -1221,13 +1221,21 @@ if (!$vb_can_do_incremental_indexing || $pb_reindex_mode) {
 	private function _getRelatedRows($pa_tables, $pa_table_keys, $ps_subject_tablename, $pn_row_id) {
 		if (!in_array($ps_subject_tablename, $pa_tables)) { $pa_tables[] = $ps_subject_tablename; }
 		$vs_key = md5(print_r($pa_tables, true)."/".print_r($pa_table_keys, true)."/".$ps_subject_tablename);
-
+		
+		$va_flds = array();
+		
 		if (!isset(SearchIndexer::$s_related_rows_joins_cache[$vs_key]) || !(SearchIndexer::$s_related_rows_joins_cache[$vs_key])) {
 			$vs_left_table = $vs_select_tablename = array_shift($pa_tables);
 	
 			$t_subject = $this->opo_datamodel->getInstanceByTableName($ps_subject_tablename, true);
 			$vs_subject_pk = $t_subject->primaryKey();
 			
+			
+			$va_tmp = array_keys($t_subject->getFormFields(true));
+			foreach($va_tmp as $vn_i => $vs_v) {
+				if (in_array($t_subject->getFieldInfo($vs_v, 'FIELD_TYPE'), array(FT_MEDIA, FT_FILE, FT_VARS))) { continue; }
+				$va_flds[$ps_subject_tablename.".".$vs_v] = true;
+			}
 			$va_joins = array();
 			foreach($pa_tables as $vs_right_table) {
 				if ($vs_right_table == $vs_select_tablename) { continue; }
@@ -1239,8 +1247,10 @@ if (!$vb_can_do_incremental_indexing || $pb_reindex_mode) {
 						if ($va_key_spec['left_table_num'] || $va_key_spec['right_table_num']) {
 							if ($va_key_spec['right_table_num']) {
 								$vs_join .= ' AND '.$vs_right_table.'.'.$va_key_spec['right_table_num'].' = '.$this->opo_datamodel->getTableNum($vs_left_table);
+								$vs_t = $vs_right_table;
 							} else {
 								$vs_join .= ' AND '.$vs_left_table.'.'.$va_key_spec['left_table_num'].' = '.$this->opo_datamodel->getTableNum($vs_right_table);
+								$vs_t = $vs_left_table;
 							}
 						}
 						$vs_join .= ')';
@@ -1251,8 +1261,10 @@ if (!$vb_can_do_incremental_indexing || $pb_reindex_mode) {
 						if ($va_key_spec['left_table_num'] || $va_key_spec['right_table_num']) {
 							if ($va_key_spec['right_table_num']) {
 								$vs_join .= ' AND '.$vs_left_table.'.'.$va_key_spec['right_table_num'].' = '.$this->opo_datamodel->getTableNum($vs_right_table);
+								$vs_t = $vs_left_table;
 							} else {
 								$vs_join .= ' AND '.$vs_right_table.'.'.$va_key_spec['left_table_num'].' = '.$this->opo_datamodel->getTableNum($vs_left_table);
+								$vs_t = $vs_right_table;
 							}
 						}
 						$vs_join .= ')';
@@ -1262,13 +1274,22 @@ if (!$vb_can_do_incremental_indexing || $pb_reindex_mode) {
 				} else {
 					if ($va_rel = $this->opo_datamodel->getOneToManyRelations($vs_left_table, $vs_right_table)) {
 						$va_joins[] = 'INNER JOIN '.$va_rel['many_table'].' ON '.$va_rel['one_table'].'.'.$va_rel['one_table_field'].' = '.$va_rel['many_table'].'.'.$va_rel['many_table_field'];
+						$vs_t = $va_rel['many_table'];
 					} else {
 						if ($va_rel = $this->opo_datamodel->getOneToManyRelations($vs_right_table, $vs_left_table)) {
 							$va_joins[] = 'INNER JOIN '.$va_rel['one_table'].' ON '.$va_rel['one_table'].'.'.$va_rel['one_table_field'].' = '.$va_rel['many_table'].'.'.$va_rel['many_table_field'];
+							$vs_t = $va_rel['one_table'];
 						}
 					}
 				}
 				$vs_left_table = $vs_right_table;
+				
+				$t_instance = $this->opo_datamodel->getInstanceByTableName($vs_t, true);
+				$va_tmp = array_keys($t_instance->getFormFields(true));
+				foreach($va_tmp as $vn_i => $vs_v) {
+					if (in_array($t_instance->getFieldInfo($vs_v, 'FIELD_TYPE'), array(FT_MEDIA, FT_FILE, FT_VARS))) { continue; }
+					$va_flds[$vs_t.".".$vs_v] = true;
+				}
 			}
 		
 			SearchIndexer::$s_related_rows_joins_cache[$vs_key] = $va_joins;
@@ -1277,10 +1298,16 @@ if (!$vb_can_do_incremental_indexing || $pb_reindex_mode) {
 			$vs_select_tablename = array_shift($pa_tables);
 			$t_subject = $this->opo_datamodel->getInstanceByTableName($ps_subject_tablename, true);
 			$vs_subject_pk = $t_subject->primaryKey();
+			
+			$va_tmp = array_keys($t_subject->getFormFields(true));
+			foreach($va_tmp as $vn_i => $vs_v) {
+				if (in_array($t_subject->getFieldInfo($vs_v, 'FIELD_TYPE'), array(FT_MEDIA, FT_FILE, FT_VARS))) { continue; }
+				$va_flds[$ps_subject_tablename.".".$vs_v] = true;
+			}
 		}
-
+		
 		$vs_sql = "
-			SELECT *
+			SELECT ".join(", ", $va_flds)."
 			FROM ".$vs_select_tablename."
 			".join("\n", $va_joins)."
 			WHERE
