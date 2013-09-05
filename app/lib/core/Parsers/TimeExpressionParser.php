@@ -2283,7 +2283,7 @@ class TimeExpressionParser {
 		// catch 'present' date
 		if (($va_start_pieces['year'] == TEP_START_OF_UNIVERSE) && ($va_end_pieces['year'] == TEP_END_OF_UNIVERSE)) {
 			$va_present_date = $this->opo_language_settings->getList('presentDate');
-			if ($pa_options['presentDate'] && in_array($pa_options['presentDate'], $va_present_date)) {
+			if (isset($pa_options['presentDate']) && in_array($pa_options['presentDate'], $va_present_date)) {
 				$vs_present_date = $pa_options['presentDate'] ;
 			} else {
 				$vs_present_date = $va_present_date[0];
