@@ -1121,7 +1121,7 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 		if (!is_array($pa_options) || !isset($pa_options['logLevel']) || !$pa_options['logLevel']) {
 			$pa_options['logLevel'] = KLogger::INFO;
 		}
-
+$pa_options['logLevel'] = KLogger::DEBUG;
 		if (!is_array($pa_options) || !isset($pa_options['logDirectory']) || !$pa_options['logDirectory'] || !file_exists($pa_options['logDirectory'])) {
 			if (!($pa_options['logDirectory'] = $o_config->get('batch_metadata_import_log_directory'))) {
 				$pa_options['logDirectory'] = ".";
@@ -1366,6 +1366,9 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 				$vm_ret = ExpressionParser::evaluate($va_rule['trigger'], $va_row);
 				if (!ExpressionParser::hadError() && (bool)$vm_ret) {
 					foreach($va_rule['actions'] as $va_action) {
+						if (!is_array($va_action) && (strtolower($va_action) == 'skip')) {
+							$va_action = array('action' => 'skip');
+						}
 						switch($vs_action_code = strtolower($va_action['action'])) {
 							case 'set':
 								$va_row[$va_action['target']] = $va_action['value']; // TODO: transform value using mapping rules?
@@ -1375,7 +1378,7 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 								if ($vs_action_code != 'skip') {
 									$o_log->logInfo(_t('Row was skipped using rule "%1" with default action because an invalid action ("%2") was specified', $va_rule['trigger'], $vs_action_code));
 								} else {
-									$o_log->logDebug(_t('Row was skipped using rule "%1" with action"%2"', $va_rule['trigger'], $vs_action_code));
+									$o_log->logDebug(_t('Row was skipped using rule "%1" with action "%2"', $va_rule['trigger'], $vs_action_code));
 								}
 								continue(4);
 								break;
@@ -1389,7 +1392,6 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 			//
 			
 			// Get minimal info for imported row (type_id, idno, label)
-			
 			// Get type
 			if ($vn_type_id_mapping_item_id) {
 				// Type is specified in row
