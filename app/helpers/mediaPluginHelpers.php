@@ -477,6 +477,7 @@
 							if(sizeof($va_tmp2)==2){ // format ca_objects.foo, we only want "foo"
 								$po_instance->replaceAttribute(array(
 									$va_tmp2[1] => $va_metadata,
+									'locale_id' => $pn_locale_id
 								),$va_tmp2[1]);
 							}
 						}
