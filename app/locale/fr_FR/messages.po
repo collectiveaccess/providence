@@ -1,21 +1,25 @@
+#
+# Translators:
+# gautiermichelin <gm@ideesculture.com>, 2013
+# gautiermichelin <gm@ideesculture.com>, 2013
 msgid ""
 msgstr ""
-"Project-Id-Version: CollectiveAccess\n"
+"Project-Id-Version: CollectiveAccess Providence\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2013-08-19 08:03-0800\n"
-"PO-Revision-Date: 2013-08-19 08:03-0800\n"
+"POT-Creation-Date: 2013-08-19 07:58-0800\n"
+"PO-Revision-Date: 2013-09-04 13:34+0100\n"
 "Last-Translator: gautiermichelin <gm@ideesculture.com>\n"
-"Language-Team: francais <ideesculture@gmail.com>\n"
-"Language: fr_FR\n"
+"Language-Team: French (France) (http://www.transifex.com/projects/p/"
+"collectiveaccess-providence/language/fr_FR/)\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"X-Poedit-SourceCharset: UTF-8\n"
+"Language: fr_FR\n"
+"Plural-Forms: nplurals=2; plural=(n > 1);\n"
+"X-Generator: Poedit 1.5.7\n"
 "X-Poedit-Basepath: c:\\providence\n"
 "X-Poedit-KeywordsList: _t;_p;_\n"
-"Plural-Forms: nplurals=2; plural=(n > 1);\n"
-"X-Poedit-Bookmarks: 324,373,564,610,1014,1337,1638,1913,2388,-1\n"
-"X-Generator: Poedit 1.5.7\n"
+"X-Poedit-SourceCharset: utf-8\n"
 "X-Poedit-SearchPath-0: c:\\providence\n"
 
 #: c:\providence/app/conf/annotation_types.conf:11
@@ -85,11 +89,11 @@ msgstr "Coordonnées du coin inférieur droit de la région rectangulaire"
 
 #: c:\providence/app/conf/annotation_types.conf:118
 msgid "Annotation label"
-msgstr ""
+msgstr "Ajouter un titre"
 
 #: c:\providence/app/conf/annotation_types.conf:125
 msgid "Annotation description"
-msgstr ""
+msgstr "Ajouter un titre"
 
 #: c:\providence/app/conf/annotation_types.conf:126
 #: c:\providence/app/models/ca_bundle_display_labels.php:79
@@ -120,6 +124,8 @@ msgid ""
 "X coordinate (as percentage of image width) of upper left corner of active "
 "region"
 msgstr ""
+"Coordonnée X (en pourcentage de la largeur de l'image) du coin supérieur "
+"gauche de la région active"
 
 #: c:\providence/app/conf/annotation_types.conf:141
 msgid "Y"
@@ -130,6 +136,8 @@ msgid ""
 "Y coordinate (as percentage of image height) of upper left corner of active "
 "region"
 msgstr ""
+"Coordonnée Y (en pourcentage de la hauteur de l'image) du coin supérieur "
+"gauche de la région active"
 
 #: c:\providence/app/conf/annotation_types.conf:149
 #: c:\providence/app/conf/bundle_types.conf:21
@@ -141,7 +149,7 @@ msgstr "Largeur"
 
 #: c:\providence/app/conf/annotation_types.conf:150
 msgid "Width (as percentage of image width) of active region"
-msgstr ""
+msgstr "Largeur (en pourcentage de la largeur de l'image) de la région active"
 
 #: c:\providence/app/conf/annotation_types.conf:157
 #: c:\providence/app/conf/bundle_types.conf:28
@@ -151,7 +159,7 @@ msgstr "Hauteur"
 
 #: c:\providence/app/conf/annotation_types.conf:158
 msgid "Height (as percentage of image height) of active region"
-msgstr ""
+msgstr "Hauteur (en pourcentage de la hauteur de l'image) de la région active"
 
 #: c:\providence/app/conf/annotation_types.conf:165
 #: c:\providence/app/conf/browse.conf:50
@@ -215,7 +223,7 @@ msgstr "Options"
 
 #: c:\providence/app/conf/annotation_types.conf:178
 msgid "Type-specific annnotation options"
-msgstr ""
+msgstr "Options d'annotation spécifiques pour ce type"
 
 #: c:\providence/app/conf/browse.conf:19
 #: c:\providence/app/models/ca_object_labels.php:40
@@ -360,7 +368,7 @@ msgstr "lieux"
 #: c:\providence/app/controllers/find/SearchCollectionsController.php:96
 #: c:\providence/app/models/ca_collections.php:43
 msgid "collection"
-msgstr "collection"
+msgstr "Ajouter un titre"
 
 #: c:\providence/app/conf/browse.conf:97
 #: c:\providence/app/conf/browse.conf:300
@@ -1503,7 +1511,7 @@ msgstr "Export"
 
 #: c:\providence/app/conf/navigation.conf:2471
 msgid "Exporter list"
-msgstr ""
+msgstr "Une liste de %1 liés"
 
 #: c:\providence/app/conf/navigation.conf:2480
 msgid "Access control"
@@ -1621,7 +1629,7 @@ msgstr "Communications client"
 #: c:\providence/themes/default/views/client/library/order_communications_html.php:85
 #: c:\providence/themes/default/views/client/orders/order_communications_html.php:85
 msgid "Messages"
-msgstr "Messages"
+msgstr "Nom d'utilisateur"
 
 #: c:\providence/app/conf/navigation.conf:2768
 msgid "Sales orders"
@@ -1745,11 +1753,11 @@ msgstr "Données"
 
 #: c:\providence/app/conf/navigation.conf:3181
 msgid "Importer list"
-msgstr ""
+msgstr "Liste d'imports"
 
 #: c:\providence/app/conf/navigation.conf:3195
 msgid "Run import"
-msgstr ""
+msgstr "import de données"
 
 #: c:\providence/app/conf/user_actions.conf:7
 msgid "System administration"
@@ -1951,19 +1959,19 @@ msgstr "Autoriser l'utilisateur à importer des répertoires de médias"
 
 #: c:\providence/app/conf/user_actions.conf:96
 msgid "Batch import data"
-msgstr ""
+msgstr "import de données"
 
 #: c:\providence/app/conf/user_actions.conf:97
 msgid "Allow user to data in various formats"
-msgstr ""
+msgstr "Autorise l'utilisateur à exporter des données dans des formats divers"
 
 #: c:\providence/app/conf/user_actions.conf:102
 msgid "Batch export"
-msgstr ""
+msgstr "Export de métadonnées en lot"
 
 #: c:\providence/app/conf/user_actions.conf:103
 msgid "Actions allowing batch export of records."
-msgstr ""
+msgstr "Actions autorisant l'export de données"
 
 #: c:\providence/app/conf/user_actions.conf:106
 #: c:\providence/app/helpers/displayHelpers.php:1554
@@ -1974,6 +1982,8 @@ msgstr "Export de métadonnées en lot"
 msgid ""
 "Allow user to create export mappings and export arbitrary sets of records."
 msgstr ""
+"Autorise l'utilisateur à créer des correspondances d'export et à exporter "
+"des sélections arbitraires d'enregistrements."
 
 #: c:\providence/app/conf/user_actions.conf:113
 msgid "Personalization"
@@ -2253,7 +2263,7 @@ msgstr "Exporter les objets"
 
 #: c:\providence/app/conf/user_actions.conf:243
 msgid "Allow user to export objects"
-msgstr ""
+msgstr "Autoriser l'utilisateur à supprimer des objets"
 
 #: c:\providence/app/conf/user_actions.conf:246
 #: c:\providence/app/conf/user_actions.conf:293
@@ -2363,11 +2373,11 @@ msgstr "Autoriser l'utilisateur à dupliquer des représentations d'objets"
 
 #: c:\providence/app/conf/user_actions.conf:289
 msgid "Export object representations"
-msgstr ""
+msgstr "Rechercher des représentations d'objets"
 
 #: c:\providence/app/conf/user_actions.conf:290
 msgid "Allow user to export object representations"
-msgstr ""
+msgstr "Autoriser l'utilisateur à supprimer des représentations d'objets"
 
 #: c:\providence/app/conf/user_actions.conf:294
 msgid "Allow user to change types of existing object representations"
@@ -2526,7 +2536,7 @@ msgstr "Exporter les lots d'objets"
 
 #: c:\providence/app/conf/user_actions.conf:372
 msgid "Allow user to export object lots"
-msgstr ""
+msgstr "Autoriser l'utilisateur à supprimer des lots d'objets"
 
 #: c:\providence/app/conf/user_actions.conf:375
 msgid "Quick add object lots"
@@ -2537,6 +2547,8 @@ msgid ""
 "Allow user to add object lots not already present while creating "
 "relationships"
 msgstr ""
+"Autorise l'utilisateur à ajouter des lots d'objets pas encore présents lors "
+"de l'ajout de relations"
 
 #: c:\providence/app/conf/user_actions.conf:380
 msgid "Allow user to change types of existing object lots"
@@ -2618,7 +2630,7 @@ msgstr "Exporter les entités"
 
 #: c:\providence/app/conf/user_actions.conf:423
 msgid "Allow user to export entities"
-msgstr ""
+msgstr "Autoriser l'utilisateur à effacer des entités"
 
 #: c:\providence/app/conf/user_actions.conf:426
 msgid "Quick add entities"
@@ -2808,7 +2820,7 @@ msgstr "Exporter les occurrences"
 
 #: c:\providence/app/conf/user_actions.conf:525
 msgid "Allow user to export occurrences"
-msgstr ""
+msgstr "Autoriser l'utilisateur à supprimer des occurrences"
 
 #: c:\providence/app/conf/user_actions.conf:528
 msgid "Quick add occurrences"
@@ -3001,7 +3013,7 @@ msgstr "Exporter les emplacements de stockage"
 
 #: c:\providence/app/conf/user_actions.conf:627
 msgid "Allow user to export storage locations"
-msgstr ""
+msgstr "Autoriser l'utilisateur à supprimer des emplacements"
 
 #: c:\providence/app/conf/user_actions.conf:630
 msgid "Quick add storage locations"
@@ -3107,6 +3119,8 @@ msgstr "Ajout rapide de prêts"
 msgid ""
 "Allow user to add loans not already present while creating relationships"
 msgstr ""
+"Autoriser l'utilisateur à ajouter des entités lors de l'ajout de la création "
+"de relations"
 
 #: c:\providence/app/conf/user_actions.conf:686
 msgid "Allow user to change types of existing loans"
@@ -3199,6 +3213,8 @@ msgstr "Ajout rapide de mouvements"
 msgid ""
 "Allow user to add movements not already present while creating relationships"
 msgstr ""
+"Autoriser l'utilisateur à ajouter des entités lors de l'ajout de la création "
+"de relations"
 
 #: c:\providence/app/conf/user_actions.conf:737
 msgid "Allow user to change types of existing movements"
@@ -3306,11 +3322,11 @@ msgstr ""
 
 #: c:\providence/app/conf/user_actions.conf:795
 msgid "Batch edit tours"
-msgstr ""
+msgstr "[%1] Modification par lot terminée"
 
 #: c:\providence/app/conf/user_actions.conf:796
 msgid "Allow user to edit batches of tours"
-msgstr ""
+msgstr "Autoriser l'utilisateur à modifier les parcours existants"
 
 #: c:\providence/app/conf/user_actions.conf:799
 msgid "Batch edit tour stops"
@@ -3318,7 +3334,7 @@ msgstr "Modification par lots des points du parcours"
 
 #: c:\providence/app/conf/user_actions.conf:800
 msgid "Allow user to edit batches of tour stops"
-msgstr ""
+msgstr "Autorise l'utilisateur à modifier des lots de points d'arrêts"
 
 #: c:\providence/app/conf/user_actions.conf:806
 msgid "List &amp; vocabulary editing"
@@ -3373,11 +3389,11 @@ msgstr "Autoriser l'utilisateur à dupliquer des éléments de liste"
 
 #: c:\providence/app/conf/user_actions.conf:830
 msgid "Export list items"
-msgstr ""
+msgstr "Duplique les éléments de liste"
 
 #: c:\providence/app/conf/user_actions.conf:831
 msgid "Allow user to export list items"
-msgstr ""
+msgstr "Autoriser l'utilisateur à dupliquer des éléments de liste"
 
 #: c:\providence/app/conf/user_actions.conf:834
 msgid "Change type for list items"
@@ -3410,11 +3426,11 @@ msgstr ""
 
 #: c:\providence/app/conf/user_actions.conf:846
 msgid "Batch edit list items"
-msgstr ""
+msgstr "Modifier des listes et des éléments de liste"
 
 #: c:\providence/app/conf/user_actions.conf:847
 msgid "Allow user to edit batches of list items"
-msgstr ""
+msgstr "Autorise l'utilisateur à modifier par lot des éléments de liste"
 
 #: c:\providence/app/conf/user_actions.conf:853
 msgid "Web service API access"
@@ -3535,6 +3551,8 @@ msgid ""
 "Actions allowing access, sharing and modification of content on the front-"
 "end interface."
 msgstr ""
+"Actions autorisant l'accès, le partage et la modification de contenu dans "
+"l'interface publique."
 
 #: c:\providence/app/conf/user_actions.conf:906
 msgid "Can Download Media"
@@ -3553,24 +3571,28 @@ msgstr "Permet de partager des objets par email"
 #: c:\providence/app/conf/user_actions.conf:911
 msgid "Allow user to share objects with other via email in Pawtucket."
 msgstr ""
+"Autorise l'utilisateur à partager des objets par email depuis Pawtucket."
 
 #: c:\providence/app/conf/user_actions.conf:914
 msgid "Can Share Objects via Facebook"
-msgstr ""
+msgstr "Permet de partager des objets par email"
 
 #: c:\providence/app/conf/user_actions.conf:915
 msgid "Allow user to share objects with other via email in Facebook."
-msgstr ""
+msgstr "Autorise l'utilisateur à partage des objets via Facebook"
 
 #: c:\providence/app/conf/user_actions.conf:918
 msgid "Can Inititate Replication of Object Media to External Repositories"
 msgstr ""
+"Peut lancer la réplication de média d'objet sur des entreprôts externes"
 
 #: c:\providence/app/conf/user_actions.conf:919
 msgid ""
 "Allow user to initiate replication of object media to external repositories "
 "such as YouTube."
 msgstr ""
+"Autorise l'utilisateur à lancer la réplication de médias vers des entrepôts "
+"externes comme YouTube."
 
 #: c:\providence/app/conf/user_pref_defs.conf:87
 msgid "Duplication tools"
@@ -3716,7 +3738,7 @@ msgstr "Afficheur préféré pour les PDF"
 
 #: c:\providence/app/conf/user_pref_defs.conf:202
 msgid "Determines technique used to display PDF files."
-msgstr ""
+msgstr "Détermine la méthode utilisée pour l'affichage de fichiers PDF."
 
 #: c:\providence/app/conf/user_pref_defs.conf:207
 msgid "Use system default"
@@ -3725,18 +3747,23 @@ msgstr "Utiliser le choix par défaut du système"
 #: c:\providence/app/conf/user_pref_defs.conf:208
 msgid "Use document viewer interface (JPEG page previews)"
 msgstr ""
+"Utilise l'interface de visionnage de documents (aperçus JPEG de chaque page)"
 
 #: c:\providence/app/conf/user_pref_defs.conf:209
 msgid "Use PDFJS viewer (no plugin required)"
-msgstr ""
+msgstr "Utilise la visionneuse PDFJS (aucun plugin n'est nécessaire)"
 
 #: c:\providence/app/conf/user_pref_defs.conf:210
 msgid "Use browser PDF plugin with fallback to PDFJS"
 msgstr ""
+"Utilise le plugin PDF du navigateur avec un retour en cas de problème sur "
+"PDFJS"
 
 #: c:\providence/app/conf/user_pref_defs.conf:211
 msgid "Use browser PDF plugin with fallback to document viewer"
 msgstr ""
+"Utilise le plugin PDF du navigateur avec un retour en cas de problème sur "
+"l'interface de visionnage de documents"
 
 #: c:\providence/app/conf/user_pref_defs.conf:219
 msgid "Default cataloguing locale"
@@ -3999,7 +4026,7 @@ msgstr "Interface utilisateur de parcours"
 
 #: c:\providence/app/conf/user_pref_defs.conf:476
 msgid "Tour stop editor user interface"
-msgstr ""
+msgstr "Interface utilisateur d'édition de point du parcours"
 
 #: c:\providence/app/conf/user_pref_defs.conf:488
 msgid "Selects which user interface to use when quick-adding entities."
@@ -4656,7 +4683,7 @@ msgstr "pertinence"
 #: c:\providence/themes/default/views/bundles/ca_storage_locations.php:217
 #: c:\providence/themes/default/views/find/Results/quick_search_results_html.php:31
 msgid "name"
-msgstr "nom"
+msgstr "Nom d'utilisateur"
 
 #: c:\providence/app/controllers/administrate/setup/ListsController.php:73
 #: c:\providence/app/controllers/find/BrowseCollectionsController.php:76
@@ -4815,7 +4842,7 @@ msgstr "%1 feuilles de calcul passées"
 #: c:\providence/app/controllers/batch/MetadataImportController.php:199
 #: c:\providence/app/controllers/manage/MetadataExportController.php:169
 msgid "Deleted importer"
-msgstr "Importeur supprimé"
+msgstr "Import supprimé"
 
 #: c:\providence/app/controllers/client/library/CheckInController.php:108
 msgid "Overdue by %1"
@@ -7473,18 +7500,21 @@ msgid ""
 "[%3] Parent was skipped using rule \"%1\" with default action because an "
 "invalid action (\"%2\") was specified"
 msgstr ""
+"[%3] Le parent a été ignoré lors de l'application de la règle \"%1\" parce "
+"qu'une action invalide (\"%2\") a été spécifiée"
 
 #: c:\providence/app/helpers/importHelpers.php:110
 msgid "[%3] Parent was skipped using rule \"%1\" with action\"%2\""
-msgstr ""
+msgstr "[%3] Le parent a été ignoré par la règle \"%1\" avec l'action \"%2\""
 
 #: c:\providence/app/helpers/importHelpers.php:127
 msgid "[importHelpers:caProcessRefineryParents] Invalid table %1"
-msgstr ""
+msgstr "[importHelpers:caProcessRefineryParents] Table invalide %1"
 
 #: c:\providence/app/helpers/importHelpers.php:131
 msgid "[%6] Got parent %1 (%2) with collection_id %3 and type %4 for %5"
 msgstr ""
+"[%6] Parent %1 trouvé (%2) avec %3 comme collection_id et le type %4 pour %5"
 
 #: c:\providence/app/helpers/mailHelpers.php:181
 msgid "Registration confirmation email was sent to %1"
@@ -7828,10 +7858,14 @@ msgid ""
 "Cannot edit <em>%1</em> here because it has multiple values. Try editing it "
 "directly."
 msgstr ""
+"Impossible de modifier <em>%1</em> ici parce qu'il a de multiples valeurs. "
+"Essayez de le modifier directement."
 
 #: c:\providence/app/lib/ca/BaseFindController.php:1280
 msgid "Cannot edit <em>%1</em> here. Try editing it directly."
 msgstr ""
+"Impossible de modifier <em>%1</em> ici. Veuillez essayer de le modifier "
+"directement."
 
 #: c:\providence/app/lib/ca/BaseFindController.php:1325
 msgid "Invalid bundle: %1"
@@ -7848,7 +7882,6 @@ msgstr "Vous n'êtes pas autorisé à faire un ajout rapide de %1"
 #: c:\providence/app/lib/ca/BaseRepresentationRelationship.php:62
 #: c:\providence/app/lib/ca/BaseRepresentationRelationship.php:118
 #: c:\providence/app/lib/ca/BaseRepresentationRelationship.php:193
-#, fuzzy
 msgid "Related %1 does not exist"
 msgstr "L'objet lié n'existe pas"
 
@@ -7859,7 +7892,6 @@ msgstr ""
 "Impossible de mettre à jour le drapeau primaire pour la représentation : %1"
 
 #: c:\providence/app/lib/ca/BaseRepresentationRelationship.php:229
-#, fuzzy
 msgid "Could not load %1-representation link"
 msgstr "Impossible de charger le lien de représentation de l'objet"
 
@@ -7956,11 +7988,12 @@ msgstr "%1 importé en tant que %2"
 
 #: c:\providence/app/lib/ca/BatchProcessor.php:632
 msgid "Added relationship between <em>%1</em> and %2 <em>%3</em>"
-msgstr ""
+msgstr "Relation ajoutée entre <em>%1</em> et %2 <em>%3</em>"
 
 #: c:\providence/app/lib/ca/BatchProcessor.php:639
 msgid "Could not add relationship between <em>%1</em> and %2 <em>%3</em>: %4"
 msgstr ""
+"Impossible d'ajouter la relation entre <em>%1</em> et %2 <em>%3</em>: %4"
 
 #: c:\providence/app/lib/ca/BatchProcessor.php:651
 msgid "Skipped %1 from %2 because it could not be matched"
@@ -7998,7 +8031,7 @@ msgstr ""
 
 #: c:\providence/app/lib/ca/BatchProcessor.php:733
 msgid "Importer %1 does not exist"
-msgstr "L'importeur %1 n'existe pas"
+msgstr "L'import %1 n'existe pas"
 
 #: c:\providence/app/lib/ca/BatchProcessor.php:771
 #: c:\providence/app/lib/ca/Utils/CLIUtils.php:852
@@ -8012,7 +8045,7 @@ msgstr "Données importées depuis la %1"
 
 #: c:\providence/app/lib/ca/BatchProcessor.php:790
 msgid "[%1] Batch metadata import completed"
-msgstr ""
+msgstr "[%1] Import des médias par lot terminé"
 
 #: c:\providence/app/lib/ca/BatchProcessor.php:794
 msgid "row"
@@ -8024,7 +8057,7 @@ msgstr "lignes"
 
 #: c:\providence/app/lib/ca/BatchProcessor.php:805
 msgid "[%1] Metadata import processing for begun at %2 is complete"
-msgstr ""
+msgstr "[%1] Le traitement de l'import de métadonnées est complété à %2"
 
 #: c:\providence/app/lib/ca/BundlableLabelableBaseModelWithAttributes.php:115
 msgid "Type must be specified"
@@ -8165,7 +8198,7 @@ msgstr ""
 
 #: c:\providence/app/lib/ca/BundlableLabelableBaseModelWithAttributes.php:2614
 msgid "Could not move object under collection: %1"
-msgstr ""
+msgstr "Impossible de déplacer l'objet sous la collection : %1"
 
 #: c:\providence/app/lib/ca/BundlableLabelableBaseModelWithAttributes.php:2726
 #: c:\providence/app/lib/ca/BundlableLabelableBaseModelWithAttributes.php:2779
@@ -8631,7 +8664,6 @@ msgid "Representation id=%1 does not exist"
 msgstr "La représentation '%1' n'existe pas"
 
 #: c:\providence/app/lib/ca/RepresentableBaseModel.php:576
-#, fuzzy
 msgid "Representation id=%1 is not related to %3 id=%2"
 msgstr "La représentation id=%1 n'est pas liée à l'objet id=%2"
 
@@ -9074,7 +9106,7 @@ msgstr ""
 
 #: c:\providence/app/lib/ca/Attributes/Values/CurrencyAttributeValue.php:219
 msgid "%1 does not use a valid decimal notation for your locale"
-msgstr ""
+msgstr "%1 n'utilise pas une notation décimale valide pour votre locale"
 
 #: c:\providence/app/lib/ca/Attributes/Values/CurrencyAttributeValue.php:243
 msgid "Currency specified for %1 does not appear to be valid"
@@ -9294,6 +9326,8 @@ msgid ""
 "Determines the maximum number of results returned by GeoNames. Tweak this "
 "number if you want to speed up lookups."
 msgstr ""
+"Détermine le nombre maximum de résultats retournés par GeoNames. Modifiez ce "
+"nombre si vous voulez accélerer les recherches."
 
 #: c:\providence/app/lib/ca/Attributes/Values/GeoNamesAttributeValue.php:143
 msgid "GeoNames elements"
@@ -9307,6 +9341,12 @@ msgid ""
 "the available element names. Note that latitude and longitude are always "
 "added to the text value to enable map display."
 msgstr ""
+"Liste séparée par des virgules d'attributs GeoNames qui doivent être "
+"récupérés sur le service pour construire la présentation textuelle. "
+"Consulter http://www.geonames.org/export/geonames-search.html pour plus "
+"d'informations, dont la liste des noms d'éléments disponibles. A noter, la "
+"latitude et la longitude sont systématiquement ajoutées à la valeur texte "
+"pour permettre l'affichage sur une carte."
 
 #: c:\providence/app/lib/ca/Attributes/Values/GeoNamesAttributeValue.php:152
 msgid "GeoNames element delimiter"
@@ -9315,6 +9355,8 @@ msgstr "Délimiteur d'élément GeoNames"
 #: c:\providence/app/lib/ca/Attributes/Values/GeoNamesAttributeValue.php:154
 msgid "Delimiter to use between multiple values pulled from GeoNames service."
 msgstr ""
+"Délimiteur à utiliser entre des valeurs différentes rapatriées du service "
+"GeoNames."
 
 #: c:\providence/app/lib/ca/Attributes/Values/GeoNamesAttributeValue.php:217
 #: c:\providence/app/lib/ca/Attributes/Values/GeoNamesAttributeValue.php:230
@@ -9705,7 +9747,7 @@ msgstr ""
 
 #: c:\providence/app/lib/ca/Attributes/Values/ListAttributeValue.php:213
 msgid "Item_id %2 is not valid for element %1"
-msgstr ""
+msgstr "item_id n'est pas valide pour l'élément %1"
 
 #: c:\providence/app/lib/ca/Attributes/Values/ListAttributeValue.php:219
 msgid "%1 is not a valid list item_id for %2 [%3]"
@@ -9929,7 +9971,7 @@ msgstr "Type "
 
 #: c:\providence/app/lib/ca/Export/ExportFormats/ExportCSV.php:41
 msgid "Values are column numbers (indexing starts at 1)."
-msgstr ""
+msgstr "Les valeurs sont des numéros de colonnes (l'index démarre à 1)."
 
 #: c:\providence/app/lib/ca/Export/ExportFormats/ExportCSV.php:91
 msgid "Element %1 is not numeric"
@@ -9937,11 +9979,11 @@ msgstr "Elément %1 n'est pas numérique"
 
 #: c:\providence/app/lib/ca/Export/ExportFormats/ExportCSV.php:94
 msgid "Element %1 is not a positive number"
-msgstr ""
+msgstr "L'élément %1 n'est pas un nombre positif"
 
 #: c:\providence/app/lib/ca/Export/ExportFormats/ExportCSV.php:98
 msgid "CSV exports can't be hierarchical"
-msgstr ""
+msgstr "Les exports CSV ne peuvent pas être hiérarchiques"
 
 #: c:\providence/app/lib/ca/Export/ExportFormats/ExportCSV.php:114
 #: c:\providence/app/models/ca_bundle_displays.php:918
@@ -9967,16 +10009,20 @@ msgid ""
 "Character used to separate values. Typical values include commas, semicolons "
 "or tabs."
 msgstr ""
+"Caractère séparateur de valeurs (souvent virgule (,), point-virgule (;) ou "
+"tabulation)."
 
 #: c:\providence/app/lib/ca/Export/ExportFormats/ExportCSV.php:123
 msgid "Enclosure"
-msgstr ""
+msgstr "Encapsulage"
 
 #: c:\providence/app/lib/ca/Export/ExportFormats/ExportCSV.php:124
 msgid ""
 "Character used to enclose the text content in the export. Typical values are "
 "single or double quotes."
 msgstr ""
+"Caractère utilisé pour encapsuler le contenu texte à l'export. Les valeurs "
+"fréquentes sont les apostrophes (') ou les guillemets (\")."
 
 #: c:\providence/app/lib/ca/Export/ExportFormats/ExportMARC.php:43
 msgid ""
@@ -9985,34 +10031,38 @@ msgid ""
 "further information on how to create a MARC mapping, please refer to the "
 "CollectiveAccess online documentation."
 msgstr ""
+"Les valeurs se réfèrent à une combinaison de champs MARC21  et leurs "
+"indicateurs associés, séparés par un slash (\"/\"), par exemple \"300/##\". "
+"Pour davantage d'informations sur la création d'une correspondance MARC, "
+"veuillez consulter la documentation en ligne de CollectiveAccess."
 
 #: c:\providence/app/lib/ca/Export/ExportFormats/ExportMARC.php:145
 msgid "Invalid MARC element definition %1"
-msgstr ""
+msgstr "%1 est une définition d'élément MARC invalide"
 
 #: c:\providence/app/lib/ca/Export/ExportFormats/ExportMARC.php:154
 msgid "Invalid tag for MARC data field definition %1"
-msgstr ""
+msgstr "%1 est un tag invalide pour la définition de champ MARC"
 
 #: c:\providence/app/lib/ca/Export/ExportFormats/ExportMARC.php:157
 msgid "Invalid indicator definition for MARC field %1"
-msgstr ""
+msgstr "Définition d'indicateur invalide pour le champ MARC %1"
 
 #: c:\providence/app/lib/ca/Export/ExportFormats/ExportMARC.php:166
 msgid "Invalid tag for MARC control field definition %1"
-msgstr ""
+msgstr "%1 est un tag invalide pour la définition de champ de contrôle MARC"
 
 #: c:\providence/app/lib/ca/Export/ExportFormats/ExportMARC.php:171
 msgid "Invalid top-level MARC element definition %1"
-msgstr ""
+msgstr "%1 est une définition invalide d'élément MARC de premier niveau"
 
 #: c:\providence/app/lib/ca/Export/ExportFormats/ExportMARC.php:185
 msgid "Mapping element %1 can't have subfields"
-msgstr ""
+msgstr "Les éléments de correspondance %1 ne peuvent avoir de sous-champs"
 
 #: c:\providence/app/lib/ca/Export/ExportFormats/ExportMARC.php:194
 msgid "Subfield definition %1 is invalid"
-msgstr ""
+msgstr "La définition de sous-champ %1 est invalide"
 
 #: c:\providence/app/lib/ca/Export/ExportFormats/ExportMARC.php:218
 msgid "MARC export output format"
@@ -10023,6 +10073,8 @@ msgid ""
 "Set output format. Currently supported: human-readable MARC21, raw MARC for "
 "saving into MARC files and MARCXML."
 msgstr ""
+"Définit le format de sortie. Actuellement supporté : MARC21 lisible à l'oeil "
+"nu, format MARC binaire et MARCXML."
 
 #: c:\providence/app/lib/ca/Export/ExportFormats/ExportXML.php:43
 msgid ""
@@ -10030,22 +10082,25 @@ msgid ""
 "elements. The usual restrictions and naming conventions for XML elements and "
 "attributes apply."
 msgstr ""
+"Les valeurs à préfixer avec la référence XML @. Toutes les autres valeurs "
+"définissent des éléments XML. Les restrictions habituelles et les "
+"conventions de nommage pour les éléments et les attributs s'appliquent."
 
 #: c:\providence/app/lib/ca/Export/ExportFormats/ExportXML.php:121
 msgid "XML documents must have exactly one root element"
-msgstr ""
+msgstr "Les documents XML doivent avoir exactement un seul élément racine"
 
 #: c:\providence/app/lib/ca/Export/ExportFormats/ExportXML.php:142
 msgid "Invalid XML attribute name '%1'"
-msgstr ""
+msgstr "Nom d'attribut XML invalide '%1'"
 
 #: c:\providence/app/lib/ca/Export/ExportFormats/ExportXML.php:148
 msgid "XML attribute '%1' doesn't have a valid parent element"
-msgstr ""
+msgstr "L'attribut XML '%1' n'a pas d'élément parent valide"
 
 #: c:\providence/app/lib/ca/Export/ExportFormats/ExportXML.php:152
 msgid "Invalid XML element name '%1'"
-msgstr ""
+msgstr "Nom d'élément XML invalide '%1'"
 
 #: c:\providence/app/lib/ca/IDNumbering/MultipartIDNumber.php:256
 msgid "'%1' is not valid for %2"
@@ -10142,10 +10197,11 @@ msgstr "Lecture de données XML"
 #: c:\providence/app/lib/ca/Import/DataReaders/BaseXMLDataReader.php:77
 msgid "Provides basic XML functions for all XML-format data readers"
 msgstr ""
+"Fournit des fonctions XML basiques pour tous les lecteurs de données XML"
 
 #: c:\providence/app/lib/ca/Import/DataReaders/CollectiveAccessDataReader.php:62
 msgid "CollectiveAccess data reader"
-msgstr ""
+msgstr "Lecteur de données MySQL"
 
 #: c:\providence/app/lib/ca/Import/DataReaders/CollectiveAccessDataReader.php:63
 msgid "CollectiveAccess database"
@@ -10154,6 +10210,7 @@ msgstr "Base de données CollectiveAccess"
 #: c:\providence/app/lib/ca/Import/DataReaders/CollectiveAccessDataReader.php:64
 msgid "Reads data from CollectiveAccess databases via web services"
 msgstr ""
+"Lit les données de bases de données CollectiveAccess depuis des web services"
 
 #: c:\providence/app/lib/ca/Import/DataReaders/ExcelDataReader.php:55
 msgid "Excel XLSX data reader"
@@ -10177,7 +10234,7 @@ msgstr "FMPro DSOResult"
 
 #: c:\providence/app/lib/ca/Import/DataReaders/FMPDSOResultReader.php:86
 msgid "Reads Filemaker Pro DSOResult-format XML files"
-msgstr ""
+msgstr "Lit les fichiers XML Filemaker Pro DSOResult"
 
 #: c:\providence/app/lib/ca/Import/DataReaders/InmagicReader.php:83
 msgid "Inmagic XML Reader"
@@ -10189,7 +10246,7 @@ msgstr "Inmagic XML"
 
 #: c:\providence/app/lib/ca/Import/DataReaders/InmagicReader.php:85
 msgid "Reads Inmagic XML files"
-msgstr ""
+msgstr "Lit les fichiers XML Inmagic"
 
 #: c:\providence/app/lib/ca/Import/DataReaders/MARCDataReader.php:54
 msgid "MARC data reader"
@@ -10341,7 +10398,7 @@ msgstr "Format %1 inconnu"
 
 #: c:\providence/app/lib/ca/Service/OAIPMHService.php:754
 msgid "Selected mapping %1 is invalid"
-msgstr ""
+msgstr "La correspondance sélectionnée %1 est invalide"
 
 #: c:\providence/app/lib/ca/Utils/CLIUtils.php:253
 msgid ""
@@ -10496,7 +10553,7 @@ msgstr "Texte d'aide ici prochainement"
 
 #: c:\providence/app/lib/ca/Utils/CLIUtils.php:435
 msgid "The PHP DOM extension is required to export profiles"
-msgstr ""
+msgstr "Désolé, l'extension PHP DOM est requise pour exporter les profils."
 
 #: c:\providence/app/lib/ca/Utils/CLIUtils.php:462
 msgid ""
@@ -10563,7 +10620,7 @@ msgstr "Traitement de la file d'attente."
 
 #: c:\providence/app/lib/ca/Utils/CLIUtils.php:593
 msgid "Re-processing representation media"
-msgstr ""
+msgstr "Retraitement des médias des représentations"
 
 #: c:\providence/app/lib/ca/Utils/CLIUtils.php:598
 #: c:\providence/app/lib/ca/Utils/CLIUtils.php:650
@@ -10572,15 +10629,15 @@ msgstr "Traitement de %1"
 
 #: c:\providence/app/lib/ca/Utils/CLIUtils.php:619
 msgid "Error processing representation media: %1"
-msgstr ""
+msgstr "Erreur dans le traitement de la représentation : %1"
 
 #: c:\providence/app/lib/ca/Utils/CLIUtils.php:637
 msgid "Re-processing attribute media"
-msgstr ""
+msgstr "Retraitement du média"
 
 #: c:\providence/app/lib/ca/Utils/CLIUtils.php:657
 msgid "Error processing attribute media: %1"
-msgstr ""
+msgstr "Erreur lors du traitement du média : %1"
 
 #: c:\providence/app/lib/ca/Utils/CLIUtils.php:674
 msgid ""
@@ -10600,19 +10657,20 @@ msgstr ""
 
 #: c:\providence/app/lib/ca/Utils/CLIUtils.php:676
 msgid "Representation id to start reloading at"
-msgstr ""
+msgstr "Identifiant de représentation pour le début du retraitement"
 
 #: c:\providence/app/lib/ca/Utils/CLIUtils.php:677
 msgid "Representation id to end reloading at"
-msgstr ""
+msgstr "Identifiant de représentation pour la fin du retraitement"
 
 #: c:\providence/app/lib/ca/Utils/CLIUtils.php:678
 msgid "Representation id reloading"
-msgstr ""
+msgstr "Identifiant de représentation invalide"
 
 #: c:\providence/app/lib/ca/Utils/CLIUtils.php:679
 msgid "Comma separated list of representation ids to reload"
 msgstr ""
+"Liste d'identifiants de représentations, séparés par une virgule, à recharger"
 
 #: c:\providence/app/lib/ca/Utils/CLIUtils.php:680
 msgid ""
@@ -10621,6 +10679,11 @@ msgid ""
 "(metadata elements). You may also specify \"all\" to reprocess both kinds of "
 "media. Default is \"all\""
 msgstr ""
+"Liste de type de média à retraiter, séparés par des virgules. Les types de "
+"valeurs valides sont \"ca_object_representations\" (représentations objets) "
+"et \"ca_attributes\" (éléments de métadonnées). Vous pouvez également "
+"spécifier \"all\" pour retraiter tous les types de média. La valeur par "
+"défaut est \"all\"."
 
 #: c:\providence/app/lib/ca/Utils/CLIUtils.php:688
 msgid "Re-process existing media using current media processing configuration."
@@ -10744,12 +10807,17 @@ msgid ""
 "Path to directory in which to log import details. If not set no logs will be "
 "recorded."
 msgstr ""
+"Chemin vers le répertoire dans lequel doivent être loggées les informations "
+"importantes. Si indéfini, aucun log ne sera enregistré."
 
 #: c:\providence/app/lib/ca/Utils/CLIUtils.php:869
 msgid ""
 "Logging threshold. Possible values are, in ascending order of important: "
 "DEBUG, INFO, NOTICE, WARN, ERR, CRIT, ALERT. Default is INFO."
 msgstr ""
+"Sensibilité du log. Les valeurs possibles sont, par ordre croissant "
+"d'importance : DEBUG, INFO, NOTICE, WARN, ERR, CRIT, ALERT. La valeur par "
+"défaut est INFO."
 
 #: c:\providence/app/lib/ca/Utils/CLIUtils.php:870
 msgid ""
@@ -10764,6 +10832,9 @@ msgid ""
 "If set import is performed without data actually being saved to the "
 "database. This is useful for previewing an import for errors."
 msgstr ""
+"Si défini, l'import est réalisé sans que les données soient effectivement "
+"enregistrées dans la base. Ceci est très utile pour tester un import à la "
+"recherche d'erreurs éventuelles."
 
 #: c:\providence/app/lib/ca/Utils/CLIUtils.php:879
 msgid ""
@@ -10801,36 +10872,45 @@ msgstr "Attention"
 
 #: c:\providence/app/lib/ca/Utils/CLIUtils.php:938
 msgid "Load export mapping from Excel XLSX format file."
-msgstr ""
+msgstr "Chargement de correspondance depuis un fichier Excel XLSX"
 
 #: c:\providence/app/lib/ca/Utils/CLIUtils.php:945
 msgid "Loads export mapping from Excel XLSX format file. More here..."
 msgstr ""
+"Chargement de la correspondance depuis un fichier Excel XLSX. Plus "
+"d'informations ici…"
 
 #: c:\providence/app/lib/ca/Utils/CLIUtils.php:956
 msgid ""
 "You must specify either an idno or a search expression to select a record or "
 "record set for export or activate RDF mode."
 msgstr ""
+"Vous devez spécifier soit un identifiant soit une expression de recherche "
+"pour sélectionner un enregistrement ou un ensemble d'enregistrements à "
+"exporter ou activer le mode RDF."
 
 #: c:\providence/app/lib/ca/Utils/CLIUtils.php:960
 msgid "You must specify a file to write export output to."
-msgstr ""
+msgstr "Vous devez spécifier un fichier pour y écrire les données de l'export."
 
 #: c:\providence/app/lib/ca/Utils/CLIUtils.php:966
 msgid "Can't write to file %1. Check the permissions."
 msgstr ""
+"Impossible d'écrire le fichier %1. Veuillez vérifier les permissions "
+"d'écriture."
 
 #: c:\providence/app/lib/ca/Utils/CLIUtils.php:973
 msgid ""
 "You must specify a configuration file that contains the export definition "
 "for the RDF mode."
 msgstr ""
+"Vous devez spécifier un fichier de configuration qui contienne la définition "
+"de l'export pour le mode RDF."
 
 #: c:\providence/app/lib/ca/Utils/CLIUtils.php:979
 #, php-format
 msgid "Syntax error in configuration file %s."
-msgstr ""
+msgstr "Erreur de syntaxe dans le fichier de configuration %s."
 
 #: c:\providence/app/lib/ca/Utils/CLIUtils.php:984
 #: c:\providence/app/lib/ca/Utils/CLIUtils.php:1014
@@ -10865,11 +10945,11 @@ msgstr "Clé primaire identifiant l'élément à exporter."
 
 #: c:\providence/app/lib/ca/Utils/CLIUtils.php:1031
 msgid "Required. File to save export to."
-msgstr ""
+msgstr "Requis. Fichier de destination pour l'export."
 
 #: c:\providence/app/lib/ca/Utils/CLIUtils.php:1032
 msgid "Mapping to export data with."
-msgstr ""
+msgstr "Correspondance pour l'import de données"
 
 #: c:\providence/app/lib/ca/Utils/CLIUtils.php:1033
 msgid ""
@@ -10877,15 +10957,19 @@ msgid ""
 "exports across authorities with multiple mappings in a single export "
 "(usually an RDF graph). -s, -i and -m are ignored and -c is required."
 msgstr ""
+"Bascule vers le mode d'export RDF. Vous pouvez utiliser ceci pour assembler "
+"les exports d'autorités avec de multiples correspondances dans un seul "
+"export (habituellement un graphe RDF). -s, -i et -m sont ignorés ; -c est "
+"requis."
 
 #: c:\providence/app/lib/ca/Utils/CLIUtils.php:1034
 msgid "Configuration file for RDF export mode."
-msgstr ""
+msgstr "Fichier de configuration pour le mode d'export RDF."
 
 #: c:\providence/app/lib/ca/Utils/CLIUtils.php:1039
 #: c:\providence/app/lib/ca/Utils/CLIUtils.php:1043
 msgid "Export data to a MARC or XML file."
-msgstr ""
+msgstr "Export de données vers un fichier XML ou MARC."
 
 #: c:\providence/app/lib/ca/Utils/CLIUtils.php:1081
 msgid "Finding annotations"
@@ -10897,11 +10981,11 @@ msgstr "Annotation %1"
 
 #: c:\providence/app/lib/ca/Utils/CLIUtils.php:1099
 msgid "Annotation id to start reloading at"
-msgstr ""
+msgstr "ID d'annotation pour le début du rechargement"
 
 #: c:\providence/app/lib/ca/Utils/CLIUtils.php:1100
 msgid "Annotation id to end reloading at"
-msgstr ""
+msgstr "ID d'annotation pour la fin du rechargement"
 
 #: c:\providence/app/lib/ca/Utils/CLIUtils.php:1108
 #: c:\providence/app/lib/ca/Utils/CLIUtils.php:1115
@@ -10909,6 +10993,8 @@ msgid ""
 "Regenerates annotation preview media for some or all object representation "
 "annotations."
 msgstr ""
+"Regénère les aperçus médias pour les annotations pour certaines annotations "
+"ou pour toute la base"
 
 #: c:\providence/app/lib/ca/Utils/CLIUtils.php:1136
 msgid "Path to AAT XML file."
@@ -10917,6 +11003,7 @@ msgstr "Chemin vers le fichier XML AAT"
 #: c:\providence/app/lib/ca/Utils/CLIUtils.php:1144
 msgid "Load Getty Art & Architecture Thesaurus (AAT) into CollectiveAccess."
 msgstr ""
+"Charge le Getty Art & Architecture Thesaurus (AAT) dans CollectiveAccess."
 
 #: c:\providence/app/lib/ca/Utils/CLIUtils.php:1151
 msgid "Loads the AAT from a Getty-provided XML file."
@@ -10931,6 +11018,9 @@ msgid ""
 "Synchronizes data in one CollectiveAccess instance based upon data in "
 "another instance, subject to configuration in synchronization.conf."
 msgstr ""
+"Synchronise les données d'une instance CollectiveAccess à partir des données "
+"d'une autre instance, en fonction du paramétrage du fichier synchronization."
+"conf."
 
 #: c:\providence/app/lib/ca/Utils/CLIUtils.php:1199
 msgid "Determined web server user to be \"%1\""
@@ -10939,29 +11029,39 @@ msgstr "Définit l'utilisateur du serveur web à \"%1\""
 #: c:\providence/app/lib/ca/Utils/CLIUtils.php:1204
 msgid "Cannot determine web server user. Using %1 instead."
 msgstr ""
+"Impossible de déterminer l'utilisateur du serveur web. Utilisation de %1 par "
+"défaut."
 
 #: c:\providence/app/lib/ca/Utils/CLIUtils.php:1208
 msgid "Cannot determine the user. Please specify one with the --user option."
 msgstr ""
+"Impossible de déterminer l'utilisateur. Veuillez en spécifier un à l'aide de "
+"l'option --user"
 
 #: c:\providence/app/lib/ca/Utils/CLIUtils.php:1214
 msgid "Determined web server group to be \"%1\""
-msgstr ""
+msgstr "Définit l'utilisateur du serveur web à \"%1\""
 
 #: c:\providence/app/lib/ca/Utils/CLIUtils.php:1218
 msgid "Cannot determine the group. Please specify one with the --group option."
 msgstr ""
+"Impossible de déterminer le groupe. Veuillez en spécifier un à l'aide de "
+"l'option --group"
 
 #: c:\providence/app/lib/ca/Utils/CLIUtils.php:1222
 msgid ""
 "Fixing permissions for the temporary directory (app/tmp) for ownership by "
 "\"%1\"..."
 msgstr ""
+"Modification des permissions pour le répertoire temp (app/tmp) pour fixer %1 "
+"comme propriétaire..."
 
 #: c:\providence/app/lib/ca/Utils/CLIUtils.php:1230
 msgid ""
 "Fixing permissions for the media directory (media) for ownership by \"%1\"..."
 msgstr ""
+"Modification des permissions pour le répertoire média (media) pour fixer %1 "
+"comme propriétaire..."
 
 #: c:\providence/app/lib/ca/Utils/CLIUtils.php:1239
 msgid ""
@@ -10969,6 +11069,9 @@ msgid ""
 "core/Parsers/htmlpurifier/standalone/HTMLPurifier/DefinitionCache) for "
 "ownership by \"%1\"..."
 msgstr ""
+"Modification des permissions pour le répertoire de cache des définitions de "
+"HTMLPurifier (app/lib/core/Parsers/htmlpurifier/standalone/HTMLPurifier/"
+"DefinitionCache) pour fixer %1 comme propriétaire..."
 
 #: c:\providence/app/lib/ca/Utils/CLIUtils.php:1256
 msgid ""
@@ -10976,18 +11079,27 @@ msgid ""
 "be made to determine the name of the web server user automatically. If the "
 "web server user cannot be determined the current user will be used."
 msgstr ""
+"Définit le propriétaire des répertoires à l'utilisateur spécifié. Si "
+"indéfini, une tentative aura lieu pour déterminer l'utilisateur du serveur "
+"web. Si e serveur web ne peut être déterminé, l'utilisateur courant sera "
+"utilisé."
 
 #: c:\providence/app/lib/ca/Utils/CLIUtils.php:1257
 msgid ""
 "Set ownership of directories to specifed group. If not set, the current "
 "group will be used."
 msgstr ""
+"Définit le groupe spécifié comme propriétaire des répertoires. Si indéfini, "
+"le groupe de l'utilisateur courant sera utilisé."
 
 #: c:\providence/app/lib/ca/Utils/CLIUtils.php:1266
 msgid ""
 "Fix folder permissions. MUST BE RUN WHILE LOGGED IN WITH ADMINSTRATIVE/ROOT "
 "PERMISSIONS. You are currently logged in as %1 (uid %2)"
 msgstr ""
+"Réparer les permissions des répertoires. DOIT ÊTRE EXÉCUTÉ AVEC DES "
+"PERMISSIONS ADMINISTRATION/ROOT. Vous êtes actuellement identifié en tant "
+"que %1 (uid %2)"
 
 #: c:\providence/app/lib/ca/Utils/CLIUtils.php:1273
 msgid ""
@@ -11002,6 +11114,17 @@ msgid ""
 "using the --user option. If you do not specify a user, the web server user "
 "for your server will be automatically determined and used."
 msgstr ""
+"CollectiveAccess doit avoir les droits à la fois pour lire et pour écrire "
+"dans son répertoire temp (app/tmp), le répertoire média (media) et le cache "
+"HTMLPurifier (app/lib/core/Parsers/htmlpurifier/standalone/HTMLPurifier/"
+"DefinitionCache). Une erreur sera affichée si un de ces emplacements n'est "
+"pas accessible pour l'application. Pour changer ces permissions pour "
+"permettre à CollectiveAccess de fonctionner normalement, lancez cette "
+"commande en étant connecté avec des privilèges d'administrateur/root. Vous "
+"êtes actuellement connecté en tant que %1 (uid %2). Vous pouvez spécifier à "
+"quel utilisateur doit être donnée la propriété des répertoires à l'aide de "
+"l'option --user option. Si vous ne définissez pas d'utilisateur, "
+"l'utilisateur du serveur web sera automatiquement choisi."
 
 #: c:\providence/app/lib/ca/Utils/DataMigrationUtils.php:158
 #: c:\providence/app/lib/ca/Utils/DataMigrationUtils.php:161
@@ -11011,12 +11134,12 @@ msgstr "Impossible d'insérer l'entité %1 : %2"
 #: c:\providence/app/lib/ca/Utils/DataMigrationUtils.php:170
 #: c:\providence/app/lib/ca/Utils/DataMigrationUtils.php:172
 msgid "Could not set preferred label for entity %1: %2"
-msgstr ""
+msgstr "Impossible de définir un label préféré pour l'entité %1 : %2"
 
 #: c:\providence/app/lib/ca/Utils/DataMigrationUtils.php:200
 #: c:\providence/app/lib/ca/Utils/DataMigrationUtils.php:202
 msgid "Could not set values for entity %1: %2"
-msgstr ""
+msgstr "Impossible de définir les valeurs pour l'entité : %1 : %2"
 
 #: c:\providence/app/lib/ca/Utils/DataMigrationUtils.php:211
 #: c:\providence/app/lib/ca/Utils/DataMigrationUtils.php:371
@@ -11038,6 +11161,8 @@ msgid ""
 "Found existing entity %1 in DataMigrationUtils::getEntityID(); total of %2 "
 "entities were found"
 msgstr ""
+"Entité %1 trouvée par DataMigrationUtils::getEntityID() ; au total %2 "
+"entités ont été trouvées"
 
 #: c:\providence/app/lib/ca/Utils/DataMigrationUtils.php:310
 #: c:\providence/app/lib/ca/Utils/DataMigrationUtils.php:313
@@ -11047,12 +11172,12 @@ msgstr "Impossible d'insérer le lieu %1 : %2"
 #: c:\providence/app/lib/ca/Utils/DataMigrationUtils.php:322
 #: c:\providence/app/lib/ca/Utils/DataMigrationUtils.php:324
 msgid "Could not set preferred label for place %1: %2"
-msgstr ""
+msgstr "Impossible de définir un label préféré pour le lieu %1 : %2"
 
 #: c:\providence/app/lib/ca/Utils/DataMigrationUtils.php:360
 #: c:\providence/app/lib/ca/Utils/DataMigrationUtils.php:362
 msgid "Could not set values for place %1: %2"
-msgstr ""
+msgstr "Impossible de définir les valeurs pour le lieu %1 : %2"
 
 #: c:\providence/app/lib/ca/Utils/DataMigrationUtils.php:377
 msgid "Created new place %1"
@@ -11063,6 +11188,8 @@ msgid ""
 "Found existing place %1 in DataMigrationUtils::getPlaceID(); total of %2 "
 "places were found"
 msgstr ""
+"Lieu %1 trouvé par DataMigrationUtils::getPlaceID() ; au total %2 lieux ont "
+"été trouvés"
 
 #: c:\providence/app/lib/ca/Utils/DataMigrationUtils.php:469
 #: c:\providence/app/lib/ca/Utils/DataMigrationUtils.php:472
@@ -11072,12 +11199,12 @@ msgstr "Impossible d'insérer l'occurrence %1 : %2"
 #: c:\providence/app/lib/ca/Utils/DataMigrationUtils.php:481
 #: c:\providence/app/lib/ca/Utils/DataMigrationUtils.php:483
 msgid "Could not set preferred label for occurrence %1: %2"
-msgstr ""
+msgstr "Impossible de définir un label préféré pour l'occurrence %1 : %2"
 
 #: c:\providence/app/lib/ca/Utils/DataMigrationUtils.php:518
 #: c:\providence/app/lib/ca/Utils/DataMigrationUtils.php:520
 msgid "Could not set values for occurrence %1: %2"
-msgstr ""
+msgstr "Impossible de définir les valeurs pour l'occurrence %1 : %2"
 
 #: c:\providence/app/lib/ca/Utils/DataMigrationUtils.php:535
 msgid "Created new occurrence %1"
@@ -11088,6 +11215,8 @@ msgid ""
 "Found existing occurrence %1 in DataMigrationUtils::getOccurrenceID(); total "
 "of %2 occurrences were found"
 msgstr ""
+"Occurrence existante %1 trouvée par DataMigrationUtils::getOccurrenceID(); "
+"au total %2 occurrences ont été trouvées"
 
 #: c:\providence/app/lib/ca/Utils/DataMigrationUtils.php:588
 #: c:\providence/app/lib/ca/Utils/DataMigrationUtils.php:632
@@ -11095,26 +11224,30 @@ msgid ""
 "Found existing list item %1 (member of list %2) in DataMigrationUtils::"
 "getListID() using idno"
 msgstr ""
+"Elément de liste %1 trouvé (appartenant à la liste %2) par "
+"DataMigrationUtils::getListID() à l'aide de l'identifiant"
 
 #: c:\providence/app/lib/ca/Utils/DataMigrationUtils.php:595
 #: c:\providence/app/lib/ca/Utils/DataMigrationUtils.php:597
 msgid "Could not find list with list code %1"
-msgstr ""
+msgstr "Impossible de trouver la liste correspondante au code %1"
 
 #: c:\providence/app/lib/ca/Utils/DataMigrationUtils.php:620
 msgid ""
 "Found existing list item %1 (member of list %2) in DataMigrationUtils::"
 "getListID() using label %3"
 msgstr ""
+"Elément de liste %1 trouvé (partie de la liste %2) par DataMigrationUtils::"
+"getListID() avec le titre %3"
 
 #: c:\providence/app/lib/ca/Utils/DataMigrationUtils.php:660
 #: c:\providence/app/lib/ca/Utils/DataMigrationUtils.php:662
 msgid "Could not set preferred label for list item %1: %2"
-msgstr ""
+msgstr "Impossible de définir un label préféré pour l'élément de liste %1 : %2"
 
 #: c:\providence/app/lib/ca/Utils/DataMigrationUtils.php:671
 msgid "Errors setting preferred labels: %1"
-msgstr ""
+msgstr "Erreurs lors de la définition du label préféré : %1"
 
 #: c:\providence/app/lib/ca/Utils/DataMigrationUtils.php:677
 msgid "Created new list item %1 in list %2"
@@ -11123,17 +11256,17 @@ msgstr "Nouvel item de liste %1 créé dans la liste %2"
 #: c:\providence/app/lib/ca/Utils/DataMigrationUtils.php:757
 #: c:\providence/app/lib/ca/Utils/DataMigrationUtils.php:760
 msgid "Could not insert collection %1: %2"
-msgstr ""
+msgstr "Impossible d'insérer l'entité %1 : %2"
 
 #: c:\providence/app/lib/ca/Utils/DataMigrationUtils.php:769
 #: c:\providence/app/lib/ca/Utils/DataMigrationUtils.php:771
 msgid "Could not set preferred label for collection %1: %2"
-msgstr ""
+msgstr "Impossible de définir le label pour la collection %1 : %2"
 
 #: c:\providence/app/lib/ca/Utils/DataMigrationUtils.php:805
 #: c:\providence/app/lib/ca/Utils/DataMigrationUtils.php:807
 msgid "Could not set values for collection %1: %2"
-msgstr ""
+msgstr "Impossible de définir les valeurs pour la collection %1 : %2"
 
 #: c:\providence/app/lib/ca/Utils/DataMigrationUtils.php:822
 msgid "Created new collection %1"
@@ -11144,21 +11277,25 @@ msgid ""
 "Found existing collection %1 in DataMigrationUtils::getCollectionID(); total "
 "of %2 collections were found"
 msgstr ""
+"Collection %1 trouvée par DataMigrationUtils::getCollectionID() ; au total "
+"%2 collections ont été trouvées"
 
 #: c:\providence/app/lib/ca/Utils/DataMigrationUtils.php:912
 #: c:\providence/app/lib/ca/Utils/DataMigrationUtils.php:915
 msgid "Could not insert storage location %1: %2"
-msgstr ""
+msgstr "Impossible de définir l'emplacement de stockage %1 : %2"
 
 #: c:\providence/app/lib/ca/Utils/DataMigrationUtils.php:924
 #: c:\providence/app/lib/ca/Utils/DataMigrationUtils.php:926
 msgid "Could not set preferred label for storage location %1: %2"
 msgstr ""
+"Impossible de définir le label préféré pour l'emplacement de stockage %1 : %2"
 
 #: c:\providence/app/lib/ca/Utils/DataMigrationUtils.php:959
 #: c:\providence/app/lib/ca/Utils/DataMigrationUtils.php:961
 msgid "Could not set values for storage location %1: %2"
 msgstr ""
+"Impossible de définir les valeurs pour l'emplacement de stockage %1 : %2"
 
 #: c:\providence/app/lib/ca/Utils/DataMigrationUtils.php:976
 msgid "Created new storage location %1"
@@ -11169,6 +11306,8 @@ msgid ""
 "Found existing storage location %1 in DataMigrationUtils::"
 "getStorageLocationID(); total of %2 storage locations were found"
 msgstr ""
+"Emplacement de stockage %1 trouvé par DataMigrationUtils::"
+"getStorageLocationID() ; au total %2 emplacements de stockage ont été trouvés"
 
 #: c:\providence/app/lib/ca/Utils/DataMigrationUtils.php:1068
 #: c:\providence/app/lib/ca/Utils/DataMigrationUtils.php:1071
@@ -11178,12 +11317,12 @@ msgstr "Impossible d'insérer l'objet %1 : %2"
 #: c:\providence/app/lib/ca/Utils/DataMigrationUtils.php:1080
 #: c:\providence/app/lib/ca/Utils/DataMigrationUtils.php:1082
 msgid "Could not set preferred label for object %1: %2"
-msgstr ""
+msgstr "Impossible de définir le label préféré pour l'objet %1 : %2"
 
 #: c:\providence/app/lib/ca/Utils/DataMigrationUtils.php:1118
 #: c:\providence/app/lib/ca/Utils/DataMigrationUtils.php:1120
 msgid "Could not set values for object %1: %2"
-msgstr ""
+msgstr "Impossible de définir les valeurs pour l'objet %1 : %2"
 
 #: c:\providence/app/lib/ca/Utils/DataMigrationUtils.php:1135
 msgid "Created new object %1"
@@ -11194,6 +11333,8 @@ msgid ""
 "Found existing object %1 in DataMigrationUtils::getObjectID(); total of %2 "
 "objects were found"
 msgstr ""
+"Objet %1 trouvé par DataMigrationUtils::getObjectID() ; au total %2 objets "
+"ont été trouvés"
 
 #: c:\providence/app/lib/ca/Utils/DataMigrationUtils.php:1223
 #: c:\providence/app/lib/ca/Utils/DataMigrationUtils.php:1226
@@ -11203,12 +11344,12 @@ msgstr "Impossible d'insérer le prêt %1 : %2"
 #: c:\providence/app/lib/ca/Utils/DataMigrationUtils.php:1235
 #: c:\providence/app/lib/ca/Utils/DataMigrationUtils.php:1237
 msgid "Could not set preferred label for loan %1: %2"
-msgstr ""
+msgstr "Impossible de définir le label préféré pour le prêt %1 : %2"
 
 #: c:\providence/app/lib/ca/Utils/DataMigrationUtils.php:1271
 #: c:\providence/app/lib/ca/Utils/DataMigrationUtils.php:1273
 msgid "Could not set values for loan %1: %2"
-msgstr ""
+msgstr "Impossible de définir les valeurs pour le prêt %1: %2"
 
 #: c:\providence/app/lib/ca/Utils/DataMigrationUtils.php:1288
 msgid "Created new loan %1"
@@ -11219,21 +11360,23 @@ msgid ""
 "Found existing loan %1 in DataMigrationUtils::getLoanID(); total of %2 loans "
 "were found"
 msgstr ""
+"Prêt %1 trouvé par DataMigrationUtils::getLoanID() ; au total %2 prêts ont "
+"été trouvés"
 
 #: c:\providence/app/lib/ca/Utils/DataMigrationUtils.php:1376
 #: c:\providence/app/lib/ca/Utils/DataMigrationUtils.php:1379
 msgid "Could not insert movement %1: %2"
-msgstr ""
+msgstr "Impossible d'insérer l'entité %1 : %2"
 
 #: c:\providence/app/lib/ca/Utils/DataMigrationUtils.php:1388
 #: c:\providence/app/lib/ca/Utils/DataMigrationUtils.php:1390
 msgid "Could not set preferred label for movement %1: %2"
-msgstr ""
+msgstr "Impossible de définir le label préféré pour le mouvement %1: %2"
 
 #: c:\providence/app/lib/ca/Utils/DataMigrationUtils.php:1424
 #: c:\providence/app/lib/ca/Utils/DataMigrationUtils.php:1426
 msgid "Could not set values for movement %1: %2"
-msgstr ""
+msgstr "Impossible de définir les valeurs pour le mouvement %1: %2"
 
 #: c:\providence/app/lib/ca/Utils/DataMigrationUtils.php:1441
 msgid "Created new movement %1"
@@ -11244,6 +11387,8 @@ msgid ""
 "Found existing movement %1 in DataMigrationUtils::getMovementID(); total of "
 "%2 movements were found"
 msgstr ""
+"Mouvement %1 trouvé par DataMigrationUtils::getLoanID() ; au total %2 "
+"mouvements ont été trouvés"
 
 #: c:\providence/app/lib/ca/Utils/DataMigrationUtils.php:1549
 msgid "and"
@@ -11572,6 +11717,9 @@ msgid ""
 "Couldn't extract first file from archive. There is probably a invalid "
 "character in a directory or file name inside the archive"
 msgstr ""
+"Impossible d'extraire le premier fichier de l'archive. Il y a probablement "
+"un caractère invalide dans le nom d'un répertoire ou d'un fichier au sein de "
+"l'archive."
 
 #: c:\providence/app/lib/core/BaseModel.php:3877
 msgid "File type %1 not accepted by %2"
@@ -12599,6 +12747,9 @@ msgid ""
 "be performed; you can obtain PDFMiner at http://www.unixuser.org/~euske/"
 "python/pdfminer/index.html"
 msgstr ""
+"PDFMiner n'a pas été trouvé : l'indexation du positionnement des textes dans "
+"les fichiers PDF ne peut être réalisé. Vous pouvez télécharger PDFMiner "
+"depuis http://www.unixuser.org/~euske/python/pdfminer/index.html"
 
 #: c:\providence/app/lib/core/Plugins/Media/PDFWand.php:373
 msgid "File %1 is not a PDF"
@@ -12644,10 +12795,14 @@ msgid ""
 "Couldn't convert file to MPEG4 format [%1]; does the ffmpeg preset '%2' "
 "exist? (command was %3)"
 msgstr ""
+"Impossible de convertir le fichier au format MPEG4 [%1] : est-ce que le "
+"preset '%2' existe ? (la commande était : %3)"
 
 #: c:\providence/app/lib/core/Plugins/Media/Video.php:858
 msgid "Couldn't convert file to MPEG4 format [%1] (command was %2)"
 msgstr ""
+"Impossible de convertir le fichier au format MPEG4 [%1] ; la commande était "
+"%2"
 
 #: c:\providence/app/lib/core/Plugins/Media/XMLDoc.php:112
 msgid "Accepts and processes XML-format documents"
@@ -13098,16 +13253,16 @@ msgstr "Fichier %1 traité"
 
 #: c:\providence/app/lib/core/Plugins/Visualizer/Map.php:51
 msgid "Visualizes data as a map"
-msgstr ""
+msgstr "Affiche les données sur une carte"
 
 #: c:\providence/app/lib/core/Plugins/Visualizer/Timeline.php:50
 msgid "Visualizes data as a timeline"
-msgstr ""
+msgstr "Affiche les données sur une frise chronologique"
 
 #: c:\providence/app/lib/core/Plugins/Visualizer/Timeline.php:103
 #: c:\providence/app/lib/core/Plugins/Visualizer/Timeline.php:105
 msgid "today"
-msgstr ""
+msgstr "aujourd'hui"
 
 #: c:\providence/app/lib/core/Print/PrintForms.php:99
 msgid "Form styles configuration file '%1' does not exist"
@@ -15725,6 +15880,8 @@ msgid ""
 "Unique numeric identifier used by CollectiveAccess internally to identify "
 "this exporter"
 msgstr ""
+"Identifiant numérique unique utilisé par CollectiveAccess de manière interne "
+"pour identifier ce favori"
 
 #: c:\providence/app/models/ca_data_exporters.php:68
 msgid "exporter code"
@@ -15732,7 +15889,7 @@ msgstr "Code de l'export"
 
 #: c:\providence/app/models/ca_data_exporters.php:68
 msgid "Unique alphanumeric identifier for this exporter."
-msgstr ""
+msgstr "Identifiant alphanumérique unique pour cet affichage."
 
 #: c:\providence/app/models/ca_data_exporters.php:78
 msgid "exporter type"
@@ -15740,7 +15897,7 @@ msgstr "Type d'export"
 
 #: c:\providence/app/models/ca_data_exporters.php:78
 msgid "Indicates type of item exporter is used for."
-msgstr ""
+msgstr "Indique le type d'item pour lequel cet affichage est utilisé."
 
 #: c:\providence/app/models/ca_data_exporters.php:93
 #: c:\providence/app/models/ca_data_importers.php:92
@@ -15770,10 +15927,12 @@ msgid ""
 "Set exporter type, i.e. the format of the exported data. Currently "
 "supported: XML, MARC21 and CSV."
 msgstr ""
+"Définit le type d'exporteur, par exemple le format des données exportées. "
+"Actuellement supporté : XML, MARC21 et CSV."
 
 #: c:\providence/app/models/ca_data_exporters.php:250
 msgid "Wrapping text before export"
-msgstr ""
+msgstr "Entoure le texte après l'export"
 
 #: c:\providence/app/models/ca_data_exporters.php:251
 msgid ""
@@ -15782,6 +15941,10 @@ msgid ""
 "for instance be used to wrap a repeating set of XML elements in a single "
 "global element. The text has to be valid for the current exporter format."
 msgstr ""
+"Si cet export est utilisé pour un export par lot (par opposition à un export "
+"unique), le texte défini ici sera inséré avant le premier élément. Ceci peut "
+"être utilisé pour rassembler un ensemble d'éléments XML dans un seul élément "
+"global. Le texte doit être valide pour le format de l'export choisi."
 
 #: c:\providence/app/models/ca_data_exporters.php:260
 msgid "Wrapping text after export"
@@ -15794,18 +15957,27 @@ msgid ""
 "instance be used to wrap a repeating set of XML elements in a single global "
 "element. The text has to be valid for the current exporter format."
 msgstr ""
+"Si cet export est utilisé pour un export par lot (par opposition à un export "
+"unique), le texte défini ici sera inséré après le dernier élément. Ceci peut "
+"être utilisé pour rassembler un ensemble d'éléments XML dans un seul élément "
+"global. Le texte doit être valide pour le format de l'export choisi."
 
 #: c:\providence/app/models/ca_data_exporters.php:648
 msgid "Warning: skipped mapping at row %1 because parent id was invalid"
 msgstr ""
+"Attention : correspondance ignorée à la ligne %1 parce que l'identifiant du "
+"parent était invalide"
 
 #: c:\providence/app/models/ca_data_exporters.php:654
 msgid "Warning: skipped mapping at row %1 because element was not defined"
 msgstr ""
+"Attention : correspondance ignorée à la ligne %1 parce que l'élément n'était "
+"pas défini."
 
 #: c:\providence/app/models/ca_data_exporters.php:670
 msgid "Warning: options for element %1 are not in proper JSON"
 msgstr ""
+"Attention : les options de l'élément %1 sont dans un format JSON invalide"
 
 #: c:\providence/app/models/ca_data_exporters.php:696
 msgid "Couldn't repeat mapping item %1"
@@ -15816,16 +15988,20 @@ msgid ""
 "Warning: Replacement sheet references invalid mapping number '%1'. Ignoring "
 "row."
 msgstr ""
+"Attention : la feuille de remplacement définit un numéro de correspondance "
+"invalide '%1'. Ligne ignorée."
 
 #: c:\providence/app/models/ca_data_exporters.php:767
 msgid ""
 "Warning: Search must be set for each row in the replacement sheet. Ignoring "
 "row for mapping '%1'"
 msgstr ""
+"Attention : la recherche doit être définie pour chaque ligne dans la feuille "
+"de remplacement. Ligne ignorée pour la correspondance '%1'."
 
 #: c:\providence/app/models/ca_data_exporters.php:793
 msgid "Error: You must set a code for your mapping!"
-msgstr ""
+msgstr "Erreur : Vous devez définir un code pour votre correspondance !"
 
 #: c:\providence/app/models/ca_data_exporters.php:799
 msgid "Error: Mapping target table %1 is invalid!"
@@ -15846,7 +16022,7 @@ msgstr "Erreur lors de la création du nom de l'export : %1"
 
 #: c:\providence/app/models/ca_data_exporters.php:873
 msgid "Error adding item to exporter: %1"
-msgstr ""
+msgstr "Erreur lors de l'ajout de l'enregistrement pour l'export : %1"
 
 #: c:\providence/app/models/ca_data_exporters.php:923
 msgid "Invalid mapping %1"
@@ -15854,7 +16030,7 @@ msgstr "Correspondance %1 invalide"
 
 #: c:\providence/app/models/ca_data_exporters.php:936
 msgid "Adding %1 mapping records to set"
-msgstr ""
+msgstr "Ajout de %1 correspondances à l'ensemble"
 
 #: c:\providence/app/models/ca_data_exporters.php:977
 msgid "Exporting record set"
@@ -15870,19 +16046,19 @@ msgstr "Traitement du résultat de la recherche"
 
 #: c:\providence/app/models/ca_data_exporters.php:1054
 msgid "Exporting result for search expression '%1'"
-msgstr ""
+msgstr "Export des résultats de la recherche '%1'"
 
 #: c:\providence/app/models/ca_data_exporters.php:1056
 msgid "Found no records to export"
-msgstr ""
+msgstr "Aucun enregistrement à exporter n'a été trouvé "
 
 #: c:\providence/app/models/ca_data_exporters.php:1065
 msgid "Exporting records ..."
-msgstr ""
+msgstr "Enregistrements à modifier"
 
 #: c:\providence/app/models/ca_data_exporters.php:1071
 msgid "Exporting ... [%1/%2]"
-msgstr ""
+msgstr "Export en cours... [%1/%2]"
 
 #: c:\providence/app/models/ca_data_exporters.php:1084
 msgid "Export completed"
@@ -15894,7 +16070,7 @@ msgstr "Code de correspondance invalide"
 
 #: c:\providence/app/models/ca_data_exporters.php:1159
 msgid "Invalid exporter format"
-msgstr ""
+msgstr "Configuration invalide"
 
 #: c:\providence/app/models/ca_data_exporter_items.php:41
 msgid "data exporter item"
@@ -15909,6 +16085,8 @@ msgid ""
 "Unique numeric identifier used by CollectiveAccess internally to identify "
 "this exporter item"
 msgstr ""
+"Identifiant numérique unique utilisé par CollectiveAccess de manière interne "
+"pour identifier cet élément de l'import"
 
 #: c:\providence/app/models/ca_data_exporter_items.php:70
 #: c:\providence/app/models/ca_data_importer_groups.php:73
@@ -15921,11 +16099,13 @@ msgid ""
 "Name of the target element. For XML exports this would be the XML element or "
 "attribute name."
 msgstr ""
+"Nom de l'élément cible. Pour les exports XML, ceci sera l'élément XML ou le "
+"nom de l'attribut."
 
 #: c:\providence/app/models/ca_data_exporter_items.php:78
 #: c:\providence/app/models/ca_data_exporter_items.php:373
 msgid "Export context"
-msgstr ""
+msgstr "notes historiques"
 
 #: c:\providence/app/models/ca_data_exporter_items.php:78
 #: c:\providence/app/models/ca_data_exporter_items.php:374
@@ -15935,12 +16115,19 @@ msgid ""
 "related entities. The element is automatically repeated for all selected "
 "related records. Leave empty to inherit context from parent item."
 msgstr ""
+"Ce paramètre peut être utilisé pour basculer le contexte de cet export pour "
+"cet élément d'export et tous ses enfants vers une table différente, par "
+"exemple pour des entités liées. L'élément est automatiquement répété pour "
+"tous les enregistrements liés. Laisser vide pour hériter le contexte de "
+"l'élément parent."
 
 #: c:\providence/app/models/ca_data_exporter_items.php:86
 msgid ""
 "Determines where the exported data is taken from. This will typically be a "
 "bundle name."
 msgstr ""
+"Détermine d'où les données exportées sont extraites. Ce sera généralement le "
+"nom d'un bundle."
 
 #: c:\providence/app/models/ca_data_exporter_items.php:94
 msgid "exporter item settings"
@@ -15953,7 +16140,7 @@ msgstr "Valeur à utiliser si la valeur de la source de données est vide."
 
 #: c:\providence/app/models/ca_data_exporter_items.php:250
 msgid "Delimiter to use to concatenate repeating values."
-msgstr ""
+msgstr "Délimiteur à utiliser pour concaténer les valeurs multiples."
 
 #: c:\providence/app/models/ca_data_exporter_items.php:258
 #: c:\providence/app/models/ca_data_importer_items.php:320
@@ -15963,7 +16150,7 @@ msgstr "Préfixe"
 
 #: c:\providence/app/models/ca_data_exporter_items.php:259
 msgid "Text to prepend to value prior to export."
-msgstr ""
+msgstr "Texte à ajouter à la valeur avant l'export."
 
 #: c:\providence/app/models/ca_data_exporter_items.php:267
 #: c:\providence/app/models/ca_data_importer_items.php:329
@@ -15981,31 +16168,39 @@ msgid ""
 "prefixed placeholders that refer to data source values. This setting can "
 "also be used to set static values for exporter items without data source."
 msgstr ""
+"Formate la valeur exportée avec le template fourni. Le template peut inclure "
+"des accents circonflexes (^) pour définir des emplacements correspondant à "
+"des valeurs de la source de données. Ce paramètre peut être aussi utilisé "
+"pour définir des valeurs constantes pour des éléments hors correspondance "
+"dans la source de données."
 
 #: c:\providence/app/models/ca_data_exporter_items.php:286
 #: c:\providence/app/models/ca_data_importer_items.php:348
 msgid "Truncate to specified length if value exceeds that length."
-msgstr ""
+msgstr "Tronquer à la longueur spécifiée si la valeur dépasse cette longueur."
 
 #: c:\providence/app/models/ca_data_exporter_items.php:299
 msgid "Repeat element for multiple values"
-msgstr ""
+msgstr "Répéter l'élément pour les valeurs multiples"
 
 #: c:\providence/app/models/ca_data_exporter_items.php:300
 msgid ""
 "If the current selector/template returns multiple values, this setting "
 "determines if the element is repeated for each value."
 msgstr ""
+"Si le sélecteur/template courant renvoie des valeurs multiples, ce paramètre"
 
 #: c:\providence/app/models/ca_data_exporter_items.php:313
 msgid "Convert codes to display text"
-msgstr ""
+msgstr "Convertir les codes en texte à afficher"
 
 #: c:\providence/app/models/ca_data_exporter_items.php:314
 msgid ""
 "If set, id values refering to foreign keys are returned as preferred label "
 "text in the current locale."
 msgstr ""
+"Si défini, les id pour des clés étrangères sont renvoyées sous la forme des "
+"labels préférés qui leur sont liés."
 
 #: c:\providence/app/models/ca_data_exporter_items.php:323
 msgid "Regular expression filter"
@@ -16016,6 +16211,8 @@ msgid ""
 "Any value that does NOT match this PCRE regular expression is filtered and "
 "not exported. Insert expression without delimiters."
 msgstr ""
+"Toute valeur qui NE correspond PAS à cette expression régulière PCRE est "
+"filtrée et n'est pas exportée. Saisir l'expression sans délimiteur."
 
 #: c:\providence/app/models/ca_data_exporter_items.php:333
 #: c:\providence/app/models/ca_data_importer_items.php:213
@@ -16027,6 +16224,9 @@ msgid ""
 "Return-separated list of values from the CollectiveAccess source to be "
 "replaced. PCRE-style regular expressions are allowed (without delimiters)."
 msgstr ""
+"Liste de valeurs de la source CollectiveAccess à remplacer, séparées par des "
+"sauts de ligne. Les expressions régulières de type PCRE sont autorisées "
+"(sans délimiteur)."
 
 #: c:\providence/app/models/ca_data_exporter_items.php:343
 #: c:\providence/app/models/ca_data_importer_items.php:222
@@ -16038,34 +16238,46 @@ msgid ""
 "Return-separated list of replacement values that correspond to the mapped "
 "values from the original data source."
 msgstr ""
+"Liste des valeurs de remplacements, séparées par des sauts de lignes, qui "
+"correspondent aux valeurs de correspondances de la source de données "
+"d'origine."
 
 #: c:\providence/app/models/ca_data_exporter_items.php:354
 msgid ""
 "Locale code to use to get the field values. If not set, the system/user "
 "default is used."
 msgstr ""
+"Code de la locale à utiliser pour les valeurs des champs. Si non défini, la "
+"locale du système/de l'utilisateur par défaut est utilisée."
 
 #: c:\providence/app/models/ca_data_exporter_items.php:363
 msgid "Omit if empty"
-msgstr ""
+msgstr "Passer le groupe si vide"
 
 #: c:\providence/app/models/ca_data_exporter_items.php:364
 msgid ""
 "Omit this item and all its children if this CollectiveAccess bundle "
 "specifier returns an empty result."
 msgstr ""
+"Désactiver ceci pour que tous les éléments enfants de ce bundle "
+"CollectiveAccess retournent un résultat vide."
 
 #: c:\providence/app/models/ca_data_exporter_items.php:384
 msgid ""
 "Restricts the context of the mapping to only records of the designated type. "
 "Only valid when context is set."
 msgstr ""
+"Restreint le contexte de correspondance aux seuls enregistrements du type "
+"indiqué. Valide uniquement lorsque le contexte est défini."
 
 #: c:\providence/app/models/ca_data_exporter_items.php:394
 msgid ""
 "Restricts the context of the mapping to only records related with the "
 "designated relationship type. Only valid when context is set."
 msgstr ""
+"Restreint le contexte de la correspondance uniquement aux enregistrements "
+"liés par la relation indiquée. Valide uniquement lorsque le contexte est "
+"défini."
 
 #: c:\providence/app/models/ca_data_exporter_items.php:403
 msgid "Check access"
@@ -16076,14 +16288,16 @@ msgid ""
 "Restricts the context of the mapping to only records with one of the "
 "designated access values. Only valid when context is set."
 msgstr ""
+"Restreint le contexte de la correspondance aux seuls enregistrements ayant "
+"le type d'accès indiqué. Valide uniquement lorsque le contexte est défini."
 
 #: c:\providence/app/models/ca_data_exporter_labels.php:41
 msgid "exporter name"
-msgstr "nom de l'export"
+msgstr "nom de l'exporteur"
 
 #: c:\providence/app/models/ca_data_exporter_labels.php:42
 msgid "exporter names"
-msgstr "noms de l'export"
+msgstr "noms d'export"
 
 #: c:\providence/app/models/ca_data_exporter_labels.php:63
 msgid "Name of exporter"
@@ -16148,12 +16362,11 @@ msgstr "Feuille de données de l'import"
 
 #: c:\providence/app/models/ca_data_importers.php:115
 msgid "Archived copy of worksheet used to create the importer."
-msgstr ""
-"Copie archivé de la feuille de calcul utilisée pour créer le module d'import."
+msgstr "Copie archivé de la feuille de calcul utilisée pour créer l'import."
 
 #: c:\providence/app/models/ca_data_importers.php:122
 msgid "Indicates if the importer is deleted or not."
-msgstr "Indique si la fonction d'import a été supprimée."
+msgstr "Indique si l'import a été supprimé."
 
 #: c:\providence/app/models/ca_data_importers.php:255
 msgid "Importer formats"
@@ -16164,6 +16377,8 @@ msgid ""
 "Set data formats for which this importer is usable.  Currently supported: "
 "XLSX, XLS and MYSQL"
 msgstr ""
+"Définit le format de données pour lequel cet import est utilisable. "
+"Actuellement supporté : XLSX, XLS et MySQL"
 
 #: c:\providence/app/models/ca_data_importers.php:264
 msgid "Record type"
@@ -16241,7 +16456,7 @@ msgstr "overwrite_on_idno"
 
 #: c:\providence/app/models/ca_data_importers.php:314
 msgid "skip_on_preferred_labels"
-msgstr ""
+msgstr "merge_on_preferred_labels"
 
 #: c:\providence/app/models/ca_data_importers.php:315
 msgid "merge_on_preferred_labels"
@@ -16316,35 +16531,47 @@ msgid ""
 "error, stop the import when an error is encountered and to receive a prompt "
 "when the error is encountered."
 msgstr ""
+"Détermine comment sont traitées les erreurs d'import. Les options sont : "
+"ignorer l'erreur, stopper l'import quand une erreur est rencontrée et "
+"afficher un avertissement lorsqu'une erreur est rencontrée."
 
 #: c:\providence/app/models/ca_data_importers.php:753
 msgid "Warning: skipped mapping at row %1 because source was not defined"
 msgstr ""
+"Attention : correspondance ignorée à la ligne %1 parce que la source est "
+"indéfinie"
 
 #: c:\providence/app/models/ca_data_importers.php:754
 msgid ""
 "[loadImporterFromFile:%1] Skipped mapping at row %2 because source was not "
 "defined"
 msgstr ""
+"[loadImporterFromFile:%1] Correspondance ignorée à la ligne %2 parce que la "
+"source n'était pas définie"
 
 #: c:\providence/app/models/ca_data_importers.php:758
 msgid "Warning: skipped mapping at row %1 because destination was not defined"
 msgstr ""
+"Attention : correspondance ignorée à la ligne %1 parce que la destination "
+"n'a pas été définie"
 
 #: c:\providence/app/models/ca_data_importers.php:759
 msgid ""
 "[loadImporterFromFile:%1] Skipped mapping at row %2 because destination was "
 "not defined"
 msgstr ""
+"[loadImporterFromFile:%1] Correspondance ignorée à la ligne %2 parce que la "
+"destination n'était pas définie."
 
 #: c:\providence/app/models/ca_data_importers.php:768
 msgid "Warning: invalid options for group %1/source %2"
-msgstr ""
+msgstr "Attention : options invalides pour le groupe %1/source %2"
 
 #: c:\providence/app/models/ca_data_importers.php:769
 #: c:\providence/app/models/ca_data_importers.php:780
 msgid "[loadImporterFromFile:%1] Invalid options for group %2/source %3"
 msgstr ""
+"[loadImporterFromFile : %1] Options invalides pour le groupe %2/source %3"
 
 #: c:\providence/app/models/ca_data_importers.php:779
 msgid "Warning: refinery %1 does not exist"
@@ -16353,20 +16580,26 @@ msgstr "Attention : le traitement complémentaire %1 n'existe pas"
 #: c:\providence/app/models/ca_data_importers.php:783
 msgid "Warning: invalid refinery options for group %1/source %2 = %3"
 msgstr ""
+"Warning: options invalides pour le traitement d'affinage, groupe %1/source "
+"%2 = %3"
 
 #: c:\providence/app/models/ca_data_importers.php:784
 msgid ""
 "[loadImporterFromFile:%1] Invalid refinery options for group %2/source %3 = "
 "%4"
 msgstr ""
+"[loadImporterFromFile:%1] Options invalide de traitement pour le groupe %2/"
+"source %3 = %4"
 
 #: c:\providence/app/models/ca_data_importers.php:840
 msgid "You must set a code for your mapping!"
-msgstr ""
+msgstr "Vous devez définir un code pour votre correspondance !"
 
 #: c:\providence/app/models/ca_data_importers.php:841
 msgid "[loadImporterFromFile:%1] You must set a code for your mapping!"
 msgstr ""
+"[loadImporterFromFile:%1] Vous devez définir un code pour votre "
+"correspondance !"
 
 #: c:\providence/app/models/ca_data_importers.php:852
 msgid "Mapping target table %1 is invalid\n"
@@ -16375,10 +16608,14 @@ msgstr "La table %1 est invalide\n"
 #: c:\providence/app/models/ca_data_importers.php:853
 msgid "[loadImporterFromFile:%1] Mapping target table %2 is invalid\n"
 msgstr ""
+"[loadImporterFromFile:%1] La table cible de la correspondance %2 est "
+"invalide\n"
 
 #: c:\providence/app/models/ca_data_importers.php:871
 msgid "[loadImporterFromFile:%1] Could not delete existing mapping for %2: %3"
 msgstr ""
+"[loadImporterFromFile:%1] Impossible de supprimer la correspondance "
+"existante pour %2 : %3"
 
 #: c:\providence/app/models/ca_data_importers.php:889
 msgid "Error creating mapping: %1"
@@ -16387,7 +16624,7 @@ msgstr "Erreur lors de la création de la correspondance : %1"
 #: c:\providence/app/models/ca_data_importers.php:890
 #: c:\providence/app/models/ca_data_importers.php:898
 msgid "[loadImporterFromFile:%1] Error creating mapping: %2"
-msgstr ""
+msgstr "Erreur lors de la création du nom de la correspondance : %1"
 
 #: c:\providence/app/models/ca_data_importers.php:897
 msgid "Error creating mapping name: %1"
@@ -16402,6 +16639,8 @@ msgid ""
 "[loadImporterFromFile:%1] Skipped items for %2 because no common grouping "
 "could be found"
 msgstr ""
+"[loadImporterFromFile:%1] Eléments ignorés pour %2 parce qu'aucun "
+"regroupement n'a été trouvé"
 
 #: c:\providence/app/models/ca_data_importers.php:1136
 msgid " Recent errors "
@@ -16417,7 +16656,7 @@ msgstr "Statut d'import"
 
 #: c:\providence/app/models/ca_data_importers.php:1159
 msgid "Started import of %1 using mapping %2"
-msgstr ""
+msgstr "Import démarré pour %1 avec la correspondance %2"
 
 #: c:\providence/app/models/ca_data_importers.php:1173
 #: c:\providence/app/models/ca_data_importers.php:1177
@@ -16434,7 +16673,7 @@ msgstr "Impossible de lire la source %1 (formation = %2)"
 
 #: c:\providence/app/models/ca_data_importers.php:1195
 msgid "Finished reading input source at %1 seconds"
-msgstr ""
+msgstr "Fin de lecture de la source à %1 secondes"
 
 #: c:\providence/app/models/ca_data_importers.php:1199
 #: c:\providence/app/models/ca_data_importers.php:1202
@@ -16443,73 +16682,91 @@ msgstr "Import depuis %1"
 
 #: c:\providence/app/models/ca_data_importers.php:1297
 msgid "Finished analyzing mapping at %1 seconds"
-msgstr ""
+msgstr "Fin de l'analyse de correspondance à %1 secondes"
 
 #: c:\providence/app/models/ca_data_importers.php:1317
 msgid "Started reading row %1 at %2 seconds"
-msgstr ""
+msgstr "Début de lecture de la ligne %1 à %2 secondes"
 
 #: c:\providence/app/models/ca_data_importers.php:1326
 msgid "Items processed/skipped: %1/%2"
-msgstr ""
+msgstr "Eléments traités/ignorés : %1/%2"
 
 #: c:\providence/app/models/ca_data_importers.php:1327
 msgid "Errors: %1 (%2)"
-msgstr ""
+msgstr "Erreurs survenues : %1"
 
 #: c:\providence/app/models/ca_data_importers.php:1328
 msgid "Mapping: %1"
-msgstr ""
+msgstr "nom de correspondance"
 
 #: c:\providence/app/models/ca_data_importers.php:1329
 msgid "Source: %1"
-msgstr ""
+msgstr "Source"
 
 #: c:\providence/app/models/ca_data_importers.php:1360
 msgid ""
 "Row was skipped using rule \"%1\" with default action because an invalid "
 "action (\"%2\") was specified"
 msgstr ""
+"La ligne a été ignorée par la règle \"%1\" avec l'action par défaut parce "
+"qu'une action invalide (\"%2\") a été spécifiée. "
 
 #: c:\providence/app/models/ca_data_importers.php:1362
 msgid "Row was skipped using rule \"%1\" with action\"%2\""
-msgstr ""
+msgstr "La ligne a été ignorée par la règle \"%1\" avec l'action \"%2\""
 
 #: c:\providence/app/models/ca_data_importers.php:1425
 msgid ""
 "[%1] Skipped import because of existing record matched on identifier by "
 "policy %2"
 msgstr ""
+"[%1] Import ignoré parce qu'un enregistrement existant a été reconnu par son "
+"identifiant suivant la règle %2"
 
 #: c:\providence/app/models/ca_data_importers.php:1432
 msgid ""
 "[%1] Skipped import because of existing record matched on label by policy %2"
 msgstr ""
+"[%1] Import ignoré parce qu'un enregistrement existant a été reconnu par son "
+"label suivant la règle %2"
 
 #: c:\providence/app/models/ca_data_importers.php:1440
 msgid "[%1] Merged with existing record matched on identifer by policy %2"
 msgstr ""
+"[%1] Fusionné avec l'enregistrement existant trouvé par son identifiant "
+"suivant la règle %2"
 
 #: c:\providence/app/models/ca_data_importers.php:1447
 msgid "[%1] Merged with existing record matched on label by policy %2"
 msgstr ""
+"[%1] Fusionné avec un enregistrement existant trouvé par son label suivant "
+"la règle %2"
 
 #: c:\providence/app/models/ca_data_importers.php:1457
 msgid ""
 "[%1] Could not delete existing record matched on identifier by policy %2"
 msgstr ""
+"[%1] Impossible de supprimer l'enregistrement existant trouvé par son "
+"identifiant suivant la règle %2"
 
 #: c:\providence/app/models/ca_data_importers.php:1460
 msgid "[%1] Overwrote existing record matched on identifier by policy %2"
 msgstr ""
+"[%1] L'enregistrement existant trouvé par son identifiant a été écrasé "
+"suivant la règle %2"
 
 #: c:\providence/app/models/ca_data_importers.php:1473
 msgid "[%1] Could not delete existing record matched on label by policy %2"
 msgstr ""
+"[%1] Impossible de supprimer l'enregistrement existant trouvé par son label "
+"suivant la règle %2"
 
 #: c:\providence/app/models/ca_data_importers.php:1476
 msgid "[%1] Overwrote existing record matched on label by policy %2"
 msgstr ""
+"[%1] L'enregistrement existant trouvé par son label a été écrasé suivant la "
+"règle %2"
 
 #: c:\providence/app/models/ca_data_importers.php:1487
 msgid "Importing %1"
@@ -16517,45 +16774,52 @@ msgstr "Import de %1"
 
 #: c:\providence/app/models/ca_data_importers.php:1506
 msgid "[%1] Skipped group %2 because target %3 is invalid"
-msgstr ""
+msgstr "[%1] Groupe %2 ignoré parce que la cible %3 est invalide"
 
 #: c:\providence/app/models/ca_data_importers.php:1529
 msgid "[%1] Skipped row %2 because of type restriction"
-msgstr ""
+msgstr "[%1] Ligne %2 ignorée suivant la restriction définie sur le type"
 
 #: c:\providence/app/models/ca_data_importers.php:1533
 msgid "[%1] Skipped group %2 because value for %3 is empty"
-msgstr ""
+msgstr "[%1] Groupe %2 ignoré parce que la valeur %3 est vide"
 
 #: c:\providence/app/models/ca_data_importers.php:1537
 msgid "[%1] Skipped group %2 because value for %3 matches value %4"
-msgstr ""
+msgstr "[%1] Groupe %2 ignoré parce que la valeur de %3 correspond à %4"
 
 #: c:\providence/app/models/ca_data_importers.php:1541
 msgid ""
 "[%1] Skipped group %2 because value for %3 matches is not in list of values"
 msgstr ""
+"[%1] Groupe %2 ignoré parce que la valeur de %3 ne correspond pas aux "
+"valeurs autorisées"
 
 #: c:\providence/app/models/ca_data_importers.php:1545
 msgid "[%1] Skipped row %2 because value for %3 in group %4 is empty"
 msgstr ""
+"[%1] Ligne %2 ignorée parce que la valeur de %3 dans le groupe %4 est vide"
 
 #: c:\providence/app/models/ca_data_importers.php:1549
 msgid "[%1] Skipped row %2 because value for %3 in group %4 matches value %5"
 msgstr ""
+"[%1] Ligne %2 ignorée parce que la valeur pour %3 dans le groupe %4 "
+"correspond à %5"
 
 #: c:\providence/app/models/ca_data_importers.php:1553
 msgid ""
 "[%1] Skipped row %2 because value for %3 in group %4 is not in list of values"
 msgstr ""
+"[%1] Ligne %2 ignorée parce que la valeur pour %3 dans le groupe %4 n'est "
+"pas dans la liste des valeurs autorisées"
 
 #: c:\providence/app/models/ca_data_importers.php:1628
 msgid "[%1] Invalid refinery %2 specified"
-msgstr ""
+msgstr "Requête OAI (verb) spécifiée invalide."
 
 #: c:\providence/app/models/ca_data_importers.php:1717
 msgid "Finished building content tree for %1 at %2 seconds"
-msgstr ""
+msgstr "Arbre du contenu pour %1 complété à %2 secondes"
 
 #: c:\providence/app/models/ca_data_importers.php:1718
 msgid ""
@@ -16567,14 +16831,14 @@ msgstr ""
 
 #: c:\providence/app/models/ca_data_importers.php:1742
 msgid "Could not insert new record"
-msgstr ""
+msgstr "Impossible d'insérer le nouvel enregistrement"
 
 #: c:\providence/app/models/ca_data_importers.php:1745
 #: c:\providence/app/models/ca_data_importers.php:1770
 #: c:\providence/app/models/ca_data_importers.php:1786
 #: c:\providence/app/models/ca_data_importers.php:2100
 msgid "Import stopped due to import error policy"
-msgstr ""
+msgstr "L'import s'est arrêté suite à une erreur (voir paramétrage)"
 
 #: c:\providence/app/models/ca_data_importers.php:1748
 #: c:\providence/app/models/ca_data_importers.php:1773
@@ -16588,7 +16852,7 @@ msgstr "Impossible de créer l'import %1"
 
 #: c:\providence/app/models/ca_data_importers.php:1755
 msgid "Created idno %1 at %2 seconds"
-msgstr ""
+msgstr "idno %1 mis à jour à %2 secondes"
 
 #: c:\providence/app/models/ca_data_importers.php:1767
 msgid "Could not update matched record"
@@ -16597,6 +16861,7 @@ msgstr "Impossible de mettre à jour l'enregistrement correspondant"
 #: c:\providence/app/models/ca_data_importers.php:1783
 msgid "Could not update remove preferred labels from matched record"
 msgstr ""
+"Impossible de mettre à jour les labels préférés des enregistrements trouvés"
 
 #: c:\providence/app/models/ca_data_importers.php:1797
 msgid "Updated idno %1 at %2 seconds"
@@ -16607,10 +16872,12 @@ msgid ""
 "[%1] Could not add preferred label. Record was deleted because no preferred "
 "label could be applied: "
 msgstr ""
+"[%1] Impossible d'ajouter le label préféré. L'enregistrement a été supprimé "
+"parce qu'aucun label préféré n'a pu être appliqué :"
 
 #: c:\providence/app/models/ca_data_importers.php:1826
 msgid "Import stopped due to import error policy %1"
-msgstr ""
+msgstr "Import interrompu suite à une erreur (voir paramétrage) %1"
 
 #: c:\providence/app/models/ca_data_importers.php:1835
 #: c:\providence/app/models/ca_data_importers.php:1851
@@ -16627,62 +16894,66 @@ msgstr ""
 #: c:\providence/app/models/ca_data_importers.php:2061
 msgid "Import stopped due to mapping error policy"
 msgstr ""
+"Import interrompu suite à une erreur de correspondance (voir paramétrage)"
 
 #: c:\providence/app/models/ca_data_importers.php:1848
 msgid "[%1] Could not add non-preferred label:"
-msgstr ""
+msgstr "[%1] Impossible d'ajouter un label secondaire :"
 
 #: c:\providence/app/models/ca_data_importers.php:1875
 msgid "[%1] Invalid %2; values were %3: "
-msgstr ""
+msgstr "Date non valide"
 
 #: c:\providence/app/models/ca_data_importers.php:1911
 msgid "[%1] Could not add related object with relationship %2"
-msgstr ""
+msgstr "[%1] Impossible d'ajouter l'objet lié avec la relation %2"
 
 #: c:\providence/app/models/ca_data_importers.php:1927
 msgid "[%1] Could not add related entity with relationship %2"
-msgstr ""
+msgstr "[%1] Impossible d'ajouter l'entité liée avec la relation %2"
 
 #: c:\providence/app/models/ca_data_importers.php:1943
 msgid "[%1] Could not add related place with relationship %2:"
-msgstr ""
+msgstr "[%1] Impossible d'ajouter le lieu lié avec la relation %2:"
 
 #: c:\providence/app/models/ca_data_importers.php:1960
 msgid "[%1] Could not add related collection with relationship %2:"
-msgstr ""
+msgstr "[%1] Impossible d'ajouter la collection liée avec la relation %2:"
 
 #: c:\providence/app/models/ca_data_importers.php:1976
 msgid "[%1] Could not add related occurrence with relationship %2:"
-msgstr ""
+msgstr "[%1] Impossible d'ajouter l'occurrence liée avec la relation %2:"
 
 #: c:\providence/app/models/ca_data_importers.php:1992
 msgid "[%1] Could not add related storage location with relationship %2:"
 msgstr ""
+"[%1] Impossible d'ajouter l'emplacement de stockage lié avec la relation %2:"
 
 #: c:\providence/app/models/ca_data_importers.php:2010
 msgid "[%1] Could not add related list item with relationship %2:"
-msgstr ""
+msgstr "[%1] Impossible d'ajouter l'élément de liste lié avec la relation %2:"
 
 #: c:\providence/app/models/ca_data_importers.php:2042
 msgid "[%1] Could not add related loan with relationship %2:"
-msgstr ""
+msgstr "[%1] Impossible d'ajouter le prêt lié avec la relation %2:"
 
 #: c:\providence/app/models/ca_data_importers.php:2058
 msgid "[%1] Could not add related movement with relationship %2:"
-msgstr ""
+msgstr "[%1] Impossible d'ajouter le mouvement lié avec la relation %2 :"
 
 #: c:\providence/app/models/ca_data_importers.php:2090
 msgid "Finished inserting content tree for %1 at %2 seconds into database"
 msgstr ""
+"Insertion de l'arbre du contenu dans la base de données pour %1 terminée à "
+"%2 seconds"
 
 #: c:\providence/app/models/ca_data_importers.php:2097
 msgid "[%1] Could not add default label"
-msgstr ""
+msgstr "[%1] Impossible d'ajouter le label par défaut"
 
 #: c:\providence/app/models/ca_data_importers.php:2109
 msgid "[%1] Imported %2 as %3 "
-msgstr ""
+msgstr "%1 importé en tant que %2"
 
 #: c:\providence/app/models/ca_data_importers.php:2110
 msgid "Imported %1"
@@ -16692,6 +16963,8 @@ msgstr "%1 importés"
 msgid ""
 "Import of %1 completed using mapping %2: %3 imported/%4 skipped/%5 errors"
 msgstr ""
+"Import de %1 terminé à l'aide de la correspondance %2 : %3 importés/%4 "
+"ignorés/%5 erreurs"
 
 #: c:\providence/app/models/ca_data_importers.php:2121
 msgid "Import completed"
@@ -16699,11 +16972,11 @@ msgstr "Import terminé"
 
 #: c:\providence/app/models/ca_data_importer_groups.php:42
 msgid "data importer group"
-msgstr "groupe d'import de données"
+msgstr "groupe d'imports de données"
 
 #: c:\providence/app/models/ca_data_importer_groups.php:43
 msgid "data importer groups"
-msgstr "groupes d'import de données"
+msgstr "groupes d'imports de données"
 
 #: c:\providence/app/models/ca_data_importer_groups.php:50
 msgid ""
@@ -16711,7 +16984,7 @@ msgid ""
 "this importer group"
 msgstr ""
 "Identifiant numérique unique utilisé par CollectiveAccess de manière interne "
-"pour identifier ce groupe d'import"
+"pour identifier ce groupe d'imports"
 
 #: c:\providence/app/models/ca_data_importer_groups.php:64
 msgid "Group code"
@@ -16719,7 +16992,7 @@ msgstr "Code du groupe"
 
 #: c:\providence/app/models/ca_data_importer_groups.php:64
 msgid "Unique alphanumeric identifier for this importer group."
-msgstr "Identifiant alphanumérique unique pour ce groupe d'import."
+msgstr "Identifiant alphanumérique unique pour ce groupe d'imports."
 
 #: c:\providence/app/models/ca_data_importer_groups.php:73
 #: c:\providence/app/models/ca_data_importer_items.php:85
@@ -16728,7 +17001,7 @@ msgstr "Nom du bloc CollectiveAccess à mapper."
 
 #: c:\providence/app/models/ca_data_importer_groups.php:81
 msgid "Importer group settings"
-msgstr "Paramètres du groupe d'import"
+msgstr "Paramètres du groupe d'imports"
 
 #: c:\providence/app/models/ca_data_importer_items.php:48
 msgid "data importer item"
@@ -16807,6 +17080,9 @@ msgid ""
 "For example, a field called Description Type would be irrelevant if the "
 "Description field is empty."
 msgstr ""
+"Passe tous les éléments de traitement du groupe si la valeur de cet élément "
+"est vide. Par exemple, un champ appelé Type de Description devrait être "
+"ignoré si le champ Description est vide."
 
 #: c:\providence/app/models/ca_data_importer_items.php:244
 msgid "Skip group if value"
@@ -16817,6 +17093,8 @@ msgid ""
 "Skip all of the elements in the group if value for this element is equal to "
 "the specified value(s)."
 msgstr ""
+"Ignorer tous les éléments du groupe si la valeur de cet élément est égal à "
+"la valeur spécifiée."
 
 #: c:\providence/app/models/ca_data_importer_items.php:253
 msgid "Skip group if not value"
@@ -16827,6 +17105,8 @@ msgid ""
 "Skip all of the elements in the group if value for this element is not equal "
 "to any of the specified values(s)."
 msgstr ""
+"Ignore tous les éléments du groupe si la valeur de cet élément n'est pas "
+"égal à une des valeurs indiquées."
 
 #: c:\providence/app/models/ca_data_importer_items.php:266
 msgid "Skip row if empty"
@@ -16837,6 +17117,8 @@ msgid ""
 "Skip row if value for this element is empty.  For example, do not import the "
 "row if the Description field is empty."
 msgstr ""
+"Ignore la ligne si la valeur de cet élément est vide. Par exemple, ne pas "
+"importer la ligne si le champ Description est vide."
 
 #: c:\providence/app/models/ca_data_importer_items.php:275
 msgid "Skip row if value"
@@ -16846,6 +17128,7 @@ msgstr "Passer la ligne si la valeur est"
 msgid ""
 "Skip the row if value for this element is equal to the specified value(s)."
 msgstr ""
+"Ignorer la ligne si la valeur de cet élément est égale à la valeur spécifiée."
 
 #: c:\providence/app/models/ca_data_importer_items.php:284
 msgid "Skip row if value is not"
@@ -16856,6 +17139,8 @@ msgid ""
 "Skip the row if value for this element is not equal to any of the specified "
 "value(s)."
 msgstr ""
+"Ignorer la ligne si la valeur de cet élément n'est égale à aucune des "
+"valeurs spécifiées"
 
 #: c:\providence/app/models/ca_data_importer_items.php:303
 msgid "Delimiter to split repeating values on."
@@ -16888,6 +17173,9 @@ msgid ""
 "Format imported value with provided template. Template may include caret (^) "
 "prefixed placeholders that refer to data source values."
 msgstr ""
+"Formate la valeur importée avec le template fourni. Le template peut inclure "
+"des accents circonflexes (^) pour définir des emplacements correspondant à "
+"des valeurs de la source de données."
 
 #: c:\providence/app/models/ca_data_importer_items.php:361
 msgid ""
@@ -16895,6 +17183,9 @@ msgid ""
 "the error, stop the import when an error is encountered and to receive a "
 "prompt when the error is encountered."
 msgstr ""
+"Détermine comment sont traitées les erreurs pour la correspondance. Les "
+"options sont : ignorer l'erreur, stopper l'import quand une erreur est "
+"rencontrée et afficher un avertissement lorsqu'une erreur est rencontrée."
 
 #: c:\providence/app/models/ca_data_importer_items.php:369
 #: c:\providence/app/refineries/ATEntityGetter/ATEntityGetterRefinery.php:207
@@ -16914,6 +17205,8 @@ msgstr "Type de relation"
 #: c:\providence/app/models/ca_data_importer_items.php:370
 msgid "Relationship type to use when linking to a related record."
 msgstr ""
+"Type de relation à utiliser lors de la création d'un lien à un "
+"enregistrement existant."
 
 #: c:\providence/app/models/ca_data_importer_items.php:378
 msgid "Convert newlines to HTML"
@@ -16921,7 +17214,7 @@ msgstr "Convertit les sauts de ligne en HTML"
 
 #: c:\providence/app/models/ca_data_importer_items.php:379
 msgid "Convert newline characters in text to HTML &lt;BR/&gt; tags."
-msgstr ""
+msgstr "Convertit les sauts de lignes du text en balises HTML &lt;BR/&gt;"
 
 #: c:\providence/app/models/ca_data_importer_labels.php:41
 msgid "importer name"
@@ -17503,7 +17796,7 @@ msgstr "Trier par"
 
 #: c:\providence/app/models/ca_editor_ui_screens.php:443
 msgid "Method used to sort repeating values."
-msgstr ""
+msgstr "Méthode utilisée pour trier les valeurs multiples."
 
 #: c:\providence/app/models/ca_editor_ui_screens.php:452
 #: c:\providence/app/models/ca_editor_ui_screens.php:537
@@ -17588,7 +17881,7 @@ msgstr "Couleur du premier item"
 
 #: c:\providence/app/models/ca_editor_ui_screens.php:550
 msgid "If set first item in list will use this color."
-msgstr ""
+msgstr "Si défini, le premier élément de liste utilisera cette couleur."
 
 #: c:\providence/app/models/ca_editor_ui_screens.php:558
 msgid "Last item color"
@@ -17596,7 +17889,7 @@ msgstr "Couleur du dernier item"
 
 #: c:\providence/app/models/ca_editor_ui_screens.php:559
 msgid "If set last item in list will use this color."
-msgstr ""
+msgstr "Si défini, le dernier élément de la liste utilisera cette couleur."
 
 #: c:\providence/app/models/ca_editor_ui_screens.php:567
 msgid "Do not show delete button"
@@ -17604,7 +17897,7 @@ msgstr "Ne pas afficher le bouton supprimer"
 
 #: c:\providence/app/models/ca_editor_ui_screens.php:568
 msgid "If checked the delete relationship control will not be provided."
-msgstr ""
+msgstr "Si coché, le contrôle de suppression de relation ne sera pas effectué."
 
 #: c:\providence/app/models/ca_editor_ui_screens.php:575
 msgid "Relationship display template"
@@ -19378,11 +19671,11 @@ msgstr "relations lot d'objets ⇔ entité"
 
 #: c:\providence/app/models/ca_object_lots_x_object_lots.php:40
 msgid "object lot ⇔ object lot relationship"
-msgstr ""
+msgstr "relation lot d'objets ⇔ collection"
 
 #: c:\providence/app/models/ca_object_lots_x_object_lots.php:41
 msgid "object lot ⇔ object lot relationships"
-msgstr ""
+msgstr "relations lot d'objets ⇔ collection"
 
 #: c:\providence/app/models/ca_object_lots_x_object_representations.php:40
 msgid "object lot ⇔ representation relationship"
@@ -19540,14 +19833,13 @@ msgstr "Le fichier ne fait pas partie de cette représentation"
 
 #: c:\providence/app/models/ca_object_representations_x_collections.php:32
 msgid "object representation ⇔ collection relationship"
-msgstr ""
+msgstr "relation lot d'objets ⇔ collection"
 
 #: c:\providence/app/models/ca_object_representations_x_collections.php:33
 msgid "object representation ⇔ collection relationships"
-msgstr ""
+msgstr "relations lot d'objets ⇔ collection"
 
 #: c:\providence/app/models/ca_object_representations_x_collections.php:84
-#, fuzzy
 msgid ""
 "Indicates that the representation should be used to depict the collection is "
 "situations where only a single representation can be displayed (eg. search "
@@ -19566,7 +19858,6 @@ msgid "object representation ⇔ entity relationships"
 msgstr "relations représentation d'objet ⇔ personne"
 
 #: c:\providence/app/models/ca_object_representations_x_entities.php:92
-#, fuzzy
 msgid ""
 "Indicates that the representation should be used to depict the entity is "
 "situations where only a single representation can be displayed (eg. search "
@@ -19586,14 +19877,13 @@ msgstr "relations représentation d'objet ⇔ représentation d'objet"
 
 #: c:\providence/app/models/ca_object_representations_x_occurrences.php:40
 msgid "object representation ⇔ occurrence relationship"
-msgstr ""
+msgstr "relation annotation de la représentation ⇔ occurrence"
 
 #: c:\providence/app/models/ca_object_representations_x_occurrences.php:41
 msgid "object representation ⇔ occurrence relationships"
-msgstr ""
+msgstr "relations annotation de la représentation ⇔ occurrence"
 
 #: c:\providence/app/models/ca_object_representations_x_occurrences.php:92
-#, fuzzy
 msgid ""
 "Indicates that the representation should be used to depict the occurrence is "
 "situations where only a single representation can be displayed (eg. search "
@@ -19605,14 +19895,13 @@ msgstr ""
 
 #: c:\providence/app/models/ca_object_representations_x_places.php:40
 msgid "object representation ⇔ place relationship"
-msgstr ""
+msgstr "relation annotation de la représentation ⇔ lieu"
 
 #: c:\providence/app/models/ca_object_representations_x_places.php:41
 msgid "object representation ⇔ place relationships"
-msgstr ""
+msgstr "relations annotation de la représentation ⇔ lieu"
 
 #: c:\providence/app/models/ca_object_representations_x_places.php:92
-#, fuzzy
 msgid ""
 "Indicates that the representation should be used to depict the place is "
 "situations where only a single representation can be displayed (eg. search "
@@ -19624,22 +19913,22 @@ msgstr ""
 
 #: c:\providence/app/models/ca_object_representations_x_storage_locations.php:40
 msgid "object representation ⇔ storage location relationship"
-msgstr ""
+msgstr "relation événement d'objet ⇔ emplacement"
 
 #: c:\providence/app/models/ca_object_representations_x_storage_locations.php:41
 msgid "object representation ⇔ storage location relationships"
-msgstr ""
+msgstr "relations événement d'objet ⇔ emplacement"
 
 #: c:\providence/app/models/ca_object_representations_x_storage_locations.php:92
-#, fuzzy
 msgid ""
 "Indicates that the representation should be used to depict the storage "
 "location is situations where only a single representation can be displayed "
 "(eg. search results)."
 msgstr ""
-"Indique si la représentation qui doit être utilisée pour décrire l'objet "
-"consiste en une situation où une représentation unique peut être affichée "
-"(par exemple, des résultats de recherche)."
+"Indique si la représentation doit être utilisée uniquement pour indiquer "
+"l'emplacement doit être utilisée dans les situations où une seule "
+"représentation peut être affichée (par exemple dans les résultats de "
+"recherche)."
 
 #: c:\providence/app/models/ca_object_representations_x_vocabulary_terms.php:40
 msgid "object representations ⇔ vocabulary term relationship"
@@ -19650,15 +19939,14 @@ msgid "object representations ⇔ vocabulary term relationships"
 msgstr "relations représentation d'objet ⇔ terme du vocabulaire"
 
 #: c:\providence/app/models/ca_object_representations_x_vocabulary_terms.php:92
-#, fuzzy
 msgid ""
 "Indicates that the representation should be used to depict the list item is "
 "situations where only a single representation can be displayed (eg. search "
 "results)."
 msgstr ""
-"Indique si la représentation qui doit être utilisée pour décrire l'objet "
-"consiste en une situation où une représentation unique peut être affichée "
-"(par exemple, des résultats de recherche)."
+"Indique que la représentation doit être utilisée pour définir la liste dans "
+"des situations où une seule représentation peut être affichée (par exemple "
+"dans les résultats de recherche)."
 
 #: c:\providence/app/models/ca_object_representation_labels.php:40
 msgid "object representation caption"
@@ -19669,14 +19957,12 @@ msgid "object representation captions"
 msgstr "légendes de représentations d'objet"
 
 #: c:\providence/app/models/ca_object_representation_labels.php:79
-#, fuzzy
 msgid "Representation label"
-msgstr "Représentation"
+msgstr "Label préféré"
 
 #: c:\providence/app/models/ca_object_representation_labels.php:79
-#, fuzzy
 msgid "Label/caption for representation."
-msgstr "représentation d'objet"
+msgstr "Label/légende pour la représentation."
 
 #: c:\providence/app/models/ca_object_representation_multifiles.php:42
 msgid "object representation multifile"
@@ -20974,18 +21260,24 @@ msgid ""
 "Could not login user %1 after authentication from external database because "
 "creation of user record failed: %2 [%3]"
 msgstr ""
+"Impossible de connecter l'utilisateur %1 après authentification de la base "
+"de données externe parce que la création de l'utilisateur a échoué : %2"
 
 #: c:\providence/app/models/ca_users.php:2788
 msgid ""
 "Created new login for user %1 after authentication from external database "
 "[%2]"
 msgstr ""
+"Création du login utilisateur pour %1 après authentification dans la base de "
+"données externe"
 
 #: c:\providence/app/models/ca_users.php:2801
 msgid ""
 "Could not login user %1 using external database because login to external "
 "database failed [%2]"
 msgstr ""
+"Impossible de connecter l'utilisateur %1 à l'aide de la base de données "
+"externe parce que la connexion à la base d'authentification a échoué"
 
 #: c:\providence/app/models/ca_users_x_groups.php:40
 msgid "user-group assocation"
@@ -21399,17 +21691,19 @@ msgstr "L'intégration Twitter est maintenant configurée !"
 
 #: c:\providence/app/refineries/ATEntityGetter/ATEntityGetterRefinery.php:37
 msgid "Archivists Toolkit Entity getting"
-msgstr ""
+msgstr "Extraction du sujet Archivists Toolkit"
 
 #: c:\providence/app/refineries/ATEntityGetter/ATEntityGetterRefinery.php:38
 msgid "Imported related entities (aka names) from Archivists Toolkit"
-msgstr ""
+msgstr "Entités liées importées depuis Archivists Toolkit"
 
 #: c:\providence/app/refineries/ATEntityGetter/ATEntityGetterRefinery.php:199
 msgid ""
 "Foreign key in ArchDescriptionNames to select on (eg. ResourceID, "
 "resourceComponentId, accessionId, digitalObjectId."
 msgstr ""
+"Clé étrangère dans ArchDescriptionNames à utiliser (par exemple ResourceID, "
+"resourceComponentId, accessionId, digitalObjectId)"
 
 #: c:\providence/app/refineries/ATEntityGetter/ATEntityGetterRefinery.php:208
 #: c:\providence/app/refineries/ATSubjectGetter/ATSubjectGetterRefinery.php:226
@@ -21428,13 +21722,16 @@ msgstr ""
 
 #: c:\providence/app/refineries/ATEntityGetter/ATEntityGetterRefinery.php:216
 msgid "Entity types"
-msgstr ""
+msgstr "types de relation"
 
 #: c:\providence/app/refineries/ATEntityGetter/ATEntityGetterRefinery.php:217
 msgid ""
 "Map equating three AT name types (personal, family and corporate) with CA "
 "entity_types. Keys are AT types, values are CA types."
 msgstr ""
+"Correspondance de trois types de noms dans ArchivistsToolkit (noms de "
+"personnes, noms de famille et noms de société) avec les entity_types de "
+"CollectiveAccess. Les clés sont les types AT, les valeurs sont les types CA."
 
 #: c:\providence/app/refineries/ATEntityGetter/ATEntityGetterRefinery.php:225
 #: c:\providence/app/refineries/ATSubjectGetter/ATSubjectGetterRefinery.php:261
@@ -21524,7 +21821,7 @@ msgstr "Passer si la valeur est"
 #: c:\providence/app/refineries/entityJoiner/entityJoinerRefinery.php:298
 #: c:\providence/app/refineries/entitySplitter/entitySplitterRefinery.php:261
 msgid "Skip if imported value is in the specified list of values."
-msgstr ""
+msgstr "Ignorer si la valeur importée fait partie de la liste prédéfinie."
 
 #: c:\providence/app/refineries/ATRelatedGetter/ATRelatedGetterRefinery.php:38
 msgid "AT Related Getter"
@@ -21571,10 +21868,15 @@ msgid ""
 "we are getting from. Values are foreign keys IN the related table we are "
 "getting from."
 msgstr ""
+"Correspondance des tables et des clés étrangères correspondant aux tables "
+"liées dont nous importons les données. Les clés sont sous la forme [table]."
+"[field] dans les TABLES LIEES à la table dont nous importons les données. "
+"Les valeurs sous les clés étrangères DANS la table dont nous importons les "
+"données."
 
 #: c:\providence/app/refineries/ATRelatedGetter/ATRelatedGetterRefinery.php:262
 msgid "Default values for mapped values."
-msgstr ""
+msgstr "Valeurs par défaut pour les valeurs correspondantes"
 
 #: c:\providence/app/refineries/ATSubjectGetter/ATSubjectGetterRefinery.php:37
 msgid "Archivists Toolkit Subkect getting"
@@ -21582,21 +21884,23 @@ msgstr "Extraction du sujet Archivists Toolkit"
 
 #: c:\providence/app/refineries/ATSubjectGetter/ATSubjectGetterRefinery.php:38
 msgid "Imported related subject from Archivists Toolkit"
-msgstr ""
+msgstr "Sujet lié importé depuis Archivists Toolkit"
 
 #: c:\providence/app/refineries/ATSubjectGetter/ATSubjectGetterRefinery.php:118
 msgid "[ATSubjectGetterRefinery] No target for %1"
-msgstr ""
+msgstr "[ATSubjectGetterRefinery] Pas de cible pour %1"
 
 #: c:\providence/app/refineries/ATSubjectGetter/ATSubjectGetterRefinery.php:217
 msgid ""
 "Foreign key in ArchDescriptionSubjects to select on (eg. ResourceID, "
 "resourceComponentId, accessionId, digitalObjectId."
 msgstr ""
+"La clé étrangère de ArchDescriptionSubjects à sélectionner (par exemple "
+"ResourceID, resourceComponentId, accessionId, digitalObjectId)"
 
 #: c:\providence/app/refineries/ATSubjectGetter/ATSubjectGetterRefinery.php:235
 msgid "Character(s) to break subject names on."
-msgstr ""
+msgstr "Caractères pour séparer les noms du sujet."
 
 #: c:\providence/app/refineries/ATSubjectGetter/ATSubjectGetterRefinery.php:243
 msgid "Targets"
@@ -21607,6 +21911,8 @@ msgid ""
 "List of CA metadata elements or vocabulary lists to target for imported "
 "subjects. The target is determined by the AT subjectSource."
 msgstr ""
+"Liste des éléments de métadonnées ou de listes de vocabulaire pour cibler "
+"les sujets importés. La cible est déterminée par le champ AT subjectSource."
 
 #: c:\providence/app/refineries/ATSubjectGetter/ATSubjectGetterRefinery.php:252
 msgid "Item types"
@@ -21617,16 +21923,22 @@ msgid ""
 "Map equating three AT name types (personal, family and corporate) with CA "
 "list_item_types. Keys are AT types, values are CA types."
 msgstr ""
+"Correspondance de trois types de noms dans ArchivistsToolkit (noms de "
+"personnes, noms de famille et noms de société) avec les list_item_types de "
+"CollectiveAccess. Les clés sont les types AT, les valeurs sont les types CA."
 
 #: c:\providence/app/refineries/ATSubjectGetter/ATSubjectGetterRefinery.php:262
 msgid ""
 "Sets or maps metadata for the item record by referencing the metadataElement "
 "code and the location in the data source where the data values can be found."
 msgstr ""
+"Défini ou fait correspondre les métadonnées de la collection en fonction du "
+"code metadataElement et de l'emplacement dans les données source où les "
+"valeurs peuvent être trouvées."
 
 #: c:\providence/app/refineries/ATSubjectGetter/ATSubjectGetterRefinery.php:279
 msgid "Item type default"
-msgstr ""
+msgstr "Type de relation défaut"
 
 #: c:\providence/app/refineries/ATSubjectGetter/ATSubjectGetterRefinery.php:280
 msgid ""
@@ -21634,6 +21946,9 @@ msgid ""
 "data source values do not match any values in the CollectiveAccess list "
 "list_item_types."
 msgstr ""
+"Définit le type de collection par défaut qui sera utilisé si aucun n'est "
+"défini ou si les valeurs de la source de données ne correspondent à aucune "
+"des valeurs de la liste collection_types de CollectiveAccess."
 
 #: c:\providence/app/refineries/collectionHierarchyBuilder/collectionHierarchyBuilderRefinery.php:39
 msgid "Collection hierarchy builder"
@@ -21647,6 +21962,10 @@ msgid ""
 "relationship type for related collections, and merging collection data with "
 "names."
 msgstr ""
+"Fournit différentes fonctions d'import liées aux collections : séparation de "
+"multiples collections dans une chaîne en valeurs individuelles, "
+"correspondance de type et de type de relation pour les collections liées et "
+"fusion des données des collections en fonction du nom."
 
 #: c:\providence/app/refineries/collectionHierarchyBuilder/collectionHierarchyBuilderRefinery.php:96
 #: c:\providence/app/refineries/collectionSplitter/collectionSplitterRefinery.php:200
@@ -21666,11 +21985,15 @@ msgstr "Séparateur de collection"
 msgid ""
 "[collectionSplitterRefinery] No relationship type is set for collection %1"
 msgstr ""
+"[collectionSplitterRefinery] Aucun type de relation n'est défini pour la  "
+"collection %1"
 
 #: c:\providence/app/refineries/collectionSplitter/collectionSplitterRefinery.php:126
 msgid ""
 "[collectionSplitterRefinery] No collection type is set for collection %1"
 msgstr ""
+"[collectionSplitterRefinery] Aucun type de collection n'est défini pour la "
+"collection %1"
 
 #: c:\providence/app/refineries/collectionSplitter/collectionSplitterRefinery.php:165
 #: c:\providence/app/refineries/loanSplitter/loanSplitterRefinery.php:167
@@ -21745,18 +22068,24 @@ msgid ""
 "Joins data with partial date values into a single valid date expression for "
 "import."
 msgstr ""
+"Rassemble des données avec des valeurs de dates partielles dans une seule "
+"expression de date valide pour l'import."
 
 #: c:\providence/app/refineries/dateJoiner/dateJoinerRefinery.php:81
 #: c:\providence/app/refineries/dateJoiner/dateJoinerRefinery.php:93
 msgid ""
 "[dateJoinerRefinery] Could not parse date expression %1 assembled from range"
 msgstr ""
+"[dateJoinerRefinery] Impossible de traiter l'expression de date %1 assemblée "
+"à partir de la plage de dates indiquée"
 
 #: c:\providence/app/refineries/dateJoiner/dateJoinerRefinery.php:115
 msgid ""
 "[dateJoinerRefinery] Could not parse date expression %1 assembled from "
 "multiColumnDate"
 msgstr ""
+"[dateJoinerRefinery] Impossible de traiter l'expression de date %1 assemblée "
+"par multiColumnDate"
 
 #: c:\providence/app/refineries/dateJoiner/dateJoinerRefinery.php:139
 #: c:\providence/app/refineries/dateJoiner/dateJoinerRefinery.php:158
@@ -21764,6 +22093,8 @@ msgid ""
 "[dateJoinerRefinery] Could not parse date expression %1 assembled from "
 "multiColumnRange"
 msgstr ""
+"[dateJoinerRefinery] Impossible de traiter l'expression de date %1 assemblée "
+"par multiColumnRange"
 
 #: c:\providence/app/refineries/dateJoiner/dateJoinerRefinery.php:190
 msgid "Two-column range"
@@ -21779,13 +22110,15 @@ msgstr "Date sur plusieurs colonnes"
 
 #: c:\providence/app/refineries/dateJoiner/dateJoinerRefinery.php:194
 msgid "Join mode"
-msgstr ""
+msgstr "Mode de sortie"
 
 #: c:\providence/app/refineries/dateJoiner/dateJoinerRefinery.php:195
 msgid ""
 "Determines how dateJoiner joins date values together. Two-column range is "
 "the default if mode is not specified."
 msgstr ""
+"Détermine comment dateJoiner rassemble les dates ensembles. Le mode par "
+"défaut est une plage de dates sur 2 colonnes."
 
 #: c:\providence/app/refineries/dateJoiner/dateJoinerRefinery.php:203
 msgid "Date expression"
@@ -21793,7 +22126,7 @@ msgstr "Expression de date"
 
 #: c:\providence/app/refineries/dateJoiner/dateJoinerRefinery.php:204
 msgid "Date expression (For Two-column range)"
-msgstr ""
+msgstr "Expression de date (pour une plage de dates sur 2 colonnes)"
 
 #: c:\providence/app/refineries/dateJoiner/dateJoinerRefinery.php:212
 msgid "Date start"
@@ -21804,6 +22137,8 @@ msgid ""
 "Maps the date from the data source that is the beginning of the conjoined "
 "date range. (For Two-column range)."
 msgstr ""
+"Définit la date qui est le début de la plage de dates une fois fusionnées "
+"(pour une plage de dates sur 2 colonnes)."
 
 #: c:\providence/app/refineries/dateJoiner/dateJoinerRefinery.php:221
 msgid "Date end"
@@ -21814,6 +22149,8 @@ msgid ""
 "Maps the date from the data source that is the end of the conjoined date "
 "range. (For Two-column range)"
 msgstr ""
+"Définit la date qui est la fin de la plage de dates fusionnée (pour une "
+"plage de dates sur 2 colonnes)"
 
 #: c:\providence/app/refineries/dateJoiner/dateJoinerRefinery.php:230
 msgid "Date start day"
@@ -21824,6 +22161,8 @@ msgid ""
 "Maps the day value for the start date from the data source. (For Multi-"
 "column range)"
 msgstr ""
+"Définit la valeur du jour pour la date de début depuis la source de données "
+"(pour une plage de dates multi-colonnes)"
 
 #: c:\providence/app/refineries/dateJoiner/dateJoinerRefinery.php:239
 msgid "Date start month"
@@ -21834,6 +22173,8 @@ msgid ""
 "Maps the month value for the start date from the data source. (For Multi-"
 "column range)"
 msgstr ""
+"Définit la valeur du mois pour la date de début depuis la source de données "
+"(pour une plage de dates multi-colonnes)"
 
 #: c:\providence/app/refineries/dateJoiner/dateJoinerRefinery.php:248
 msgid "Date start year"
@@ -21844,6 +22185,8 @@ msgid ""
 "Maps the year value for the start date from the data source. (For Multi-"
 "column range)"
 msgstr ""
+"Définit la valeur de l'année pour la date de début depuis la source de "
+"données (pour une plage de dates multi-colonnes)"
 
 #: c:\providence/app/refineries/dateJoiner/dateJoinerRefinery.php:257
 msgid "Date end day"
@@ -21854,6 +22197,8 @@ msgid ""
 "Maps the day value for the end date from the data source. (For Multi-column "
 "range)"
 msgstr ""
+"Définit la valeur du jour pour la date de fin depuis la source de données "
+"(pour une plage de dates multi-colonnes)"
 
 #: c:\providence/app/refineries/dateJoiner/dateJoinerRefinery.php:266
 msgid "Date end month"
@@ -21864,6 +22209,8 @@ msgid ""
 "Maps the month value for the end date from the data source. (For Multi-"
 "column range)"
 msgstr ""
+"Définit la valeur du mois pour la date de fin depuis la source de données "
+"(pour une plage de dates multi-colonnes)"
 
 #: c:\providence/app/refineries/dateJoiner/dateJoinerRefinery.php:275
 msgid "Date end year"
@@ -21874,6 +22221,8 @@ msgid ""
 "Maps the year value for the end date from the data source. (For Multi-column "
 "range)"
 msgstr ""
+"Définit la valeur de l'année pour la date de fin depuis la source de données "
+"(pour une plage de dates multi-colonnes)"
 
 #: c:\providence/app/refineries/dateJoiner/dateJoinerRefinery.php:284
 msgid "Date day"
@@ -21883,6 +22232,8 @@ msgstr "Jour"
 msgid ""
 "Maps the day value for the date from the data source. (For Multi-column date)"
 msgstr ""
+"Définit la valeur du jour depuis la source de données (pour une plage de "
+"dates multi-colonnes)"
 
 #: c:\providence/app/refineries/dateJoiner/dateJoinerRefinery.php:293
 msgid "Date month"
@@ -21893,6 +22244,8 @@ msgid ""
 "Maps the month value for the date from the data source. (For Multi-column "
 "date)"
 msgstr ""
+"Définit la valeur du mois depuis la source de données (pour une plage de "
+"dates multi-colonnes)"
 
 #: c:\providence/app/refineries/dateJoiner/dateJoinerRefinery.php:302
 msgid "Date year"
@@ -21903,35 +22256,46 @@ msgid ""
 "Maps the year value for the date from the data source. (For Multi-column "
 "date)"
 msgstr ""
+"Définit la valeur de l'année depuis la source de données (pour une plage de "
+"dates multi-colonnes)"
 
 #: c:\providence/app/refineries/entityJoiner/entityJoinerRefinery.php:38
 msgid "Entity joiner"
-msgstr ""
+msgstr "Joindre les dates avec"
 
 #: c:\providence/app/refineries/entityJoiner/entityJoinerRefinery.php:39
 msgid ""
 "Converts data with partial entity names into a valid entities for import."
 msgstr ""
+"Convertit les données avec des noms d'entités partiels dans des entités "
+"valides pour l'import"
 
 #: c:\providence/app/refineries/entityJoiner/entityJoinerRefinery.php:112
 msgid "[entityJoinerRefinery] No relationship type is set for entity %1"
 msgstr ""
+"[entityJoinerRefinery] Aucun type de relation n'est défini pour l'entité %1"
 
 #: c:\providence/app/refineries/entityJoiner/entityJoinerRefinery.php:127
 msgid "[entityJoinerRefinery] No entity type is set for entity %1"
 msgstr ""
+"[entityJoinerRefinery] Aucun type d'entité n'est défini pour l'entité %1"
 
 #: c:\providence/app/refineries/entityJoiner/entityJoinerRefinery.php:190
 msgid ""
 "Accepts a constant value for the forename or a reference to the location in "
 "the data source where the forename can be found."
 msgstr ""
+"Accepte une valeur constante pour le prénom ou une référence à l'emplacement "
+"dans les sources de données où le prénom peut être trouvé."
 
 #: c:\providence/app/refineries/entityJoiner/entityJoinerRefinery.php:199
 msgid ""
 "Accepts a constant value for the entity's other forenames or a reference to "
 "the location in the data source where the other forenames can be found."
 msgstr ""
+"Accepte une valeur constante pour les autres prénoms de l'entité ou une "
+"référence à l'emplacement dans les sources de données où les autres prénoms "
+"peuvent être trouvés."
 
 #: c:\providence/app/refineries/entityJoiner/entityJoinerRefinery.php:207
 msgid "Middle name"
@@ -21942,34 +22306,49 @@ msgid ""
 "Accepts a constant value for the middle name or a reference to the location "
 "in the data source where the middle name can be found."
 msgstr ""
+"Accepte une valeur constante pour les autres noms (surnoms ou npms "
+"intermédiaires) ou une référence à l'emplacement dans les sources de données "
+"où les autres noms peuvent être trouvés."
 
 #: c:\providence/app/refineries/entityJoiner/entityJoinerRefinery.php:216
 msgid "Surname"
-msgstr ""
+msgstr "nom de famille, prénom"
 
 #: c:\providence/app/refineries/entityJoiner/entityJoinerRefinery.php:217
 msgid ""
 "Accepts a constant value for the surname or a reference to the location in "
 "the data source where the surname can be found."
 msgstr ""
+"Accepte une valeur constant pour le nom de famile ou une référence à "
+"l'emplacement dans les sources de données où le nom de famille peut être "
+"trouvé."
 
 #: c:\providence/app/refineries/entityJoiner/entityJoinerRefinery.php:226
 msgid ""
 "Accepts a constant value for the display name or a reference to the location "
 "in the data source where the display name can be found."
 msgstr ""
+"Accepte une valeur constante pour le nom affiché à l'écran (nom entier) ou "
+"une référence à l'emplacement dans les sources de données où le nom affiché "
+"à l'écran peut être trouvé."
 
 #: c:\providence/app/refineries/entityJoiner/entityJoinerRefinery.php:235
 msgid ""
 "Accepts a constant value for the entity prefix or a reference to the "
 "location in the data source where the prefix can be found."
 msgstr ""
+"Accepte une valeur constant pour le préfixe du nom de l'entité ou une "
+"référence à l'emplacement dans les sources de données où ce préfixe peut "
+"être trouvé."
 
 #: c:\providence/app/refineries/entityJoiner/entityJoinerRefinery.php:244
 msgid ""
 "Accepts a constant value for the entity suffix or a reference to the "
 "location in the data source where the suffix can be found."
 msgstr ""
+"Accepte une valeur constant pour le suffixe du nom de l'entité ou une "
+"référence à l'emplacement dans les sources de données où ce suffixe peut "
+"être trouvé."
 
 #: c:\providence/app/refineries/entityJoiner/entityJoinerRefinery.php:262
 #: c:\providence/app/refineries/entitySplitter/entitySplitterRefinery.php:225
@@ -21992,6 +22371,10 @@ msgid ""
 "value for a label to indicate a value that should be split into entity label "
 "components before import."
 msgstr ""
+"Liste des valeurs de labels secondaires ou références à leur emplacement "
+"dans la source de données où ces labels secondaires peuvent être trouvés. "
+"Utilisez la fonction <em>split</em> pour un label pour indiquer que celui-ci "
+"doit être décomposé en différents labels secondaires avant l'import."
 
 #: c:\providence/app/refineries/entitySplitter/entitySplitterRefinery.php:37
 msgid "Entity splitter"
@@ -22004,19 +22387,27 @@ msgid ""
 "string into separate names, and merging entity data with entity names (life "
 "dates, nationality, Etc.)."
 msgstr ""
+"Fournit différentes fonctions d'import liées aux entités : séparation des "
+"noms d'entité en différentes composantes du nom (prénom, nom de famille, "
+"etc.), séparation de différents noms présent dans une seule chaîne de "
+"caractères en noms distincts, et fusion de données des entités avec des noms "
+"d'entités (dates de naissance/de décès, nationalité...)"
 
 #: c:\providence/app/refineries/entitySplitter/entitySplitterRefinery.php:82
 msgid ""
 "[entitySplitterRefinery] Skipped %1 because it was in the skipIfValue list"
 msgstr ""
+"[entitySplitterRefinery] %1 ignoré parce qu'il était dans la liste "
+"skipIfValue "
 
 #: c:\providence/app/refineries/entitySplitter/entitySplitterRefinery.php:112
 msgid "[entitySplitterRefinery] No relationship type is set for entity %1"
 msgstr ""
+"[entitySplitterRefinery] Aucun type de relation défini pour l'entité %1"
 
 #: c:\providence/app/refineries/entitySplitter/entitySplitterRefinery.php:127
 msgid "[entitySplitterRefinery] No entity type is set for entity %1"
-msgstr ""
+msgstr "[entitySplitterRefinery] Aucun type d'entité défini pour l'entité %1"
 
 #: c:\providence/app/refineries/entitySplitter/entitySplitterRefinery.php:207
 #: c:\providence/app/refineries/listItemSplitter/listItemSplitterRefinery.php:199
@@ -22039,30 +22430,41 @@ msgid ""
 "record by referencing the metadataElement code and the location in the data "
 "source where the data values can be found."
 msgstr ""
+"Définit ou fait correspondre les métadonnées de la relation en référençant "
+"le code de la métadonnée et l'emplacement dans la source de données où les "
+"valeurs peuvent être trouvées."
 
 #: c:\providence/app/refineries/listItemSplitter/listItemSplitterRefinery.php:37
 msgid "List item splitter"
-msgstr ""
+msgstr "nom d'élément de liste"
 
 #: c:\providence/app/refineries/listItemSplitter/listItemSplitterRefinery.php:38
 msgid ""
 "Provides several list item-related import functions: splitting of many items "
 "in a string into separate names, and merging entity data with item names."
 msgstr ""
+"Fournit différentes fonctionnalités pour l'import d'éléments de liste : "
+"séparation de plusieurs éléments rassemblés dans une chaîne de caractères en "
+"plusieurs éléments distincts, et fusion des données de l'élément de liste en "
+"fonction du nom."
 
 #: c:\providence/app/refineries/listItemSplitter/listItemSplitterRefinery.php:115
 msgid ""
 "[listItemSplitterRefinery] Could not find list %1 for item %2; item was "
 "skipped"
 msgstr ""
+"[listItemSplitterRefinery] Impossible de trouver la liste %1 pour l'élément "
+"%2; l'élément a été ignoré"
 
 #: c:\providence/app/refineries/listItemSplitter/listItemSplitterRefinery.php:161
 msgid "[listItemSplitterRefinery] No relationship type is set for item %1"
 msgstr ""
+"[listItemSplitterRefinery] Aucun type de relation défini pour l'élément  %1"
 
 #: c:\providence/app/refineries/listItemSplitter/listItemSplitterRefinery.php:170
 msgid "[listItemSplitterRefinery] Could not add list item %1 to list %2"
 msgstr ""
+"[listItemSplitterRefinery] Impossible d'ajouter l'élément %1 à la liste %2"
 
 #: c:\providence/app/refineries/listItemSplitter/listItemSplitterRefinery.php:216
 msgid "List item type"
@@ -22073,6 +22475,9 @@ msgid ""
 "Accepts a constant list item idno from the list list_item_types or a "
 "reference to the location in the data source where the type can be found."
 msgstr ""
+"Accepte un élément sous la forme d'une constante pour le type de collection "
+"ou la référence à un emplacement dans les données d'origine ou le type peut "
+"être trouvé."
 
 #: c:\providence/app/refineries/listItemSplitter/listItemSplitterRefinery.php:226
 #: c:\providence/app/refineries/measurementsSplitter/measurementsSplitterRefinery.php:159
@@ -22081,10 +22486,15 @@ msgid ""
 "metadataElement code and the location in the data source where the data "
 "values can be found."
 msgstr ""
+"Défini ou fait correspondre les métadonnées de l'élément de liste en "
+"fonction du code metadataElement et de l'emplacement dans les données source "
+"où les valeurs peuvent être trouvées."
 
 #: c:\providence/app/refineries/listItemSplitter/listItemSplitterRefinery.php:235
 msgid "Identifies the root node of the list item list to add items to."
 msgstr ""
+"Identifie le noeud racine (root) de la liste dans laquelle les éléments "
+"doivent être ajoutés."
 
 #: c:\providence/app/refineries/listItemSplitter/listItemSplitterRefinery.php:244
 #: c:\providence/app/refineries/placeSplitter/placeSplitterRefinery.php:232
@@ -22101,7 +22511,7 @@ msgstr ""
 
 #: c:\providence/app/refineries/listItemSplitter/listItemSplitterRefinery.php:252
 msgid "List item type default"
-msgstr ""
+msgstr "Indique le type de l'élément de liste."
 
 #: c:\providence/app/refineries/listItemSplitter/listItemSplitterRefinery.php:253
 msgid ""
@@ -22109,6 +22519,9 @@ msgid ""
 "the data source values do not match any values in the CollectiveAccess list "
 "list_item_types"
 msgstr ""
+"Définit le type de collection par défaut qui sera utilisé si aucun n'est "
+"défini ou si les valeurs de la source de données ne correspondent à aucune "
+"des valeurs de la liste collection_types de CollectiveAccess."
 
 #: c:\providence/app/refineries/listItemSplitter/listItemSplitterRefinery.php:262
 msgid "Parent list item"
@@ -22116,7 +22529,7 @@ msgstr "Elément de liste parent"
 
 #: c:\providence/app/refineries/loanSplitter/loanSplitterRefinery.php:37
 msgid "Loan splitter"
-msgstr ""
+msgstr "Séparateur de collection"
 
 #: c:\providence/app/refineries/loanSplitter/loanSplitterRefinery.php:38
 msgid ""
@@ -22124,14 +22537,19 @@ msgid ""
 "in a string into individual values, mapping of type and relationship type "
 "for related loans, and merging loan data with loan names."
 msgstr ""
+"Fournit différentes fonctions d'import liées aux prêts : séparation d'une "
+"chaîne contenant différents prêts en valeurs individuelles, correspondance "
+"de type et de type de relation pour les prêts liés, et fusion des données de "
+"prêt selon le nom du prêt."
 
 #: c:\providence/app/refineries/loanSplitter/loanSplitterRefinery.php:105
 msgid "[loanSplitterRefinery] No relationship type is set for loan %1"
 msgstr ""
+"[loanSplitterRefinery] Aucun type de relation n'est défini pour le prêt %1"
 
 #: c:\providence/app/refineries/loanSplitter/loanSplitterRefinery.php:120
 msgid "[loanSplitterRefinery] No loan type is set for loan %1"
-msgstr ""
+msgstr "[loanSplitterRefinery] Aucun type de prêt n'est défini pour le prêt %1"
 
 #: c:\providence/app/refineries/loanSplitter/loanSplitterRefinery.php:176
 msgid ""
@@ -22140,18 +22558,29 @@ msgid ""
 "data: if the relationship type matches that set as the hierarchy control, "
 "the object will be pulled in as a \"child\" element in the loan hierarchy."
 msgstr ""
+"Accepte un code sous la forme d'une constante pour le type de relation ou "
+"une référence à l'emplacement dans les données source ou le type peut être "
+"trouvé. Note pour les données : si le type de relation correspond à celui "
+"qui est défini pour le contrôle de hiérarchie, l'objet sera rangé en tant "
+"qu'élément \"enfant\" dans la hiérarchie des collections."
 
 #: c:\providence/app/refineries/loanSplitter/loanSplitterRefinery.php:185
 msgid ""
 "Accepts a constant list item idno from the list loan_types or a reference to "
 "the location in the data source where the type can be found."
 msgstr ""
+"Accepte un élément sous la forme d'une constante pour le type de collection "
+"ou la référence à un emplacement dans les données d'origine ou le type peut "
+"être trouvé."
 
 #: c:\providence/app/refineries/loanSplitter/loanSplitterRefinery.php:194
 msgid ""
 "Sets or maps metadata for the loan record by referencing the metadataElement "
 "code and the location in the data source where the data values can be found."
 msgstr ""
+"Défini ou fait correspondre les métadonnées de la collection en fonction du "
+"code metadataElement et de l'emplacement dans les données source où les "
+"valeurs peuvent être trouvées."
 
 #: c:\providence/app/refineries/loanSplitter/loanSplitterRefinery.php:211
 msgid "Loan type default"
@@ -22163,6 +22592,9 @@ msgid ""
 "data source values do not match any values in the CollectiveAccess list "
 "loan_types."
 msgstr ""
+"Définit le type de collection par défaut qui sera utilisé si aucun n'est "
+"défini ou si les valeurs de la source de données ne correspondent à aucune "
+"des valeurs de la liste collection_types de CollectiveAccess."
 
 #: c:\providence/app/refineries/measurementsSplitter/measurementsSplitterRefinery.php:37
 msgid "Measurement splitter"
@@ -22172,6 +22604,8 @@ msgstr "Séparateur pour les dimensions"
 msgid ""
 "Splits strings representing physical measurements into individual quantities."
 msgstr ""
+"Découpe les chaines représentant des mesures physiques en valeurs "
+"individuelles"
 
 #: c:\providence/app/refineries/measurementsSplitter/measurementsSplitterRefinery.php:140
 msgid "Units"
@@ -22191,7 +22625,7 @@ msgstr "Liste d'élément"
 
 #: c:\providence/app/refineries/occurrenceSplitter/occurrenceSplitterRefinery.php:37
 msgid "Occurrence splitter"
-msgstr ""
+msgstr "Séparateur de collection"
 
 #: c:\providence/app/refineries/occurrenceSplitter/occurrenceSplitterRefinery.php:38
 msgid ""
@@ -22200,16 +22634,25 @@ msgid ""
 "relationship type for related occurrences, building occurrence hierarchies "
 "and merging occurrence data with names."
 msgstr ""
+"Fournit différentes fonctions d'import liées aux occurrences : séparation de "
+"multiples occurrences dans une chaîne en valeurs individuelles, "
+"correspondance de type et de type de relation pour les occurrences liées, "
+"construction des hiérarchies d'occurrences et fusion des données des "
+"occurrences en fonction du nom."
 
 #: c:\providence/app/refineries/occurrenceSplitter/occurrenceSplitterRefinery.php:105
 msgid ""
 "[occurrenceSplitterRefinery] No relationship type is set for occurrence %1"
 msgstr ""
+"[occurrenceSplitterRefinery] Aucun type de relation n'est défini pour "
+"l'occurrence %1"
 
 #: c:\providence/app/refineries/occurrenceSplitter/occurrenceSplitterRefinery.php:120
 msgid ""
 "[occurrenceSplitterRefinery] No occurrence type is set for occurrence %1"
 msgstr ""
+"[occurrenceSplitterRefinery] Aucun type d'occurrence n'est défini pour "
+"l'occurrence %1"
 
 #: c:\providence/app/refineries/occurrenceSplitter/occurrenceSplitterRefinery.php:188
 msgid ""
@@ -22219,6 +22662,11 @@ msgid ""
 "the object will be pulled in as a \"child\" element in the occurrence "
 "hierarchy."
 msgstr ""
+"Accepte un code sous la forme d'une constante pour le type de relation ou "
+"une référence à l'emplacement dans les données source ou le type peut être "
+"trouvé. Note pour les données : si le type de relation correspond à celui "
+"qui est défini pour le contrôle de hiérarchie, l'objet sera rangé en tant "
+"qu'élément \"enfant\" dans la hiérarchie des collections."
 
 #: c:\providence/app/refineries/occurrenceSplitter/occurrenceSplitterRefinery.php:196
 msgid "Occurrence type"
@@ -22229,6 +22677,9 @@ msgid ""
 "Accepts a constant list item idno from the list occurrence_types or a "
 "reference to the location in the data source where the type can be found."
 msgstr ""
+"Accepte un élément sous la forme d'une constante pour le type de collection "
+"ou la référence à un emplacement dans les données d'origine ou le type peut "
+"être trouvé."
 
 #: c:\providence/app/refineries/occurrenceSplitter/occurrenceSplitterRefinery.php:206
 msgid ""
@@ -22236,10 +22687,13 @@ msgid ""
 "metadataElement code and the location in the data source where the data "
 "values can be found."
 msgstr ""
+"Défini ou fait correspondre les métadonnées de la collection en fonction du "
+"code metadataElement et de l'emplacement dans les données source où les "
+"valeurs peuvent être trouvées."
 
 #: c:\providence/app/refineries/occurrenceSplitter/occurrenceSplitterRefinery.php:215
 msgid "Occurrence parents to create, if required"
-msgstr ""
+msgstr "Parents de la collection à créer, si requis"
 
 #: c:\providence/app/refineries/occurrenceSplitter/occurrenceSplitterRefinery.php:232
 msgid "Occurrence type default"
@@ -22251,6 +22705,9 @@ msgid ""
 "the data source values do not match any values in the CollectiveAccess list "
 "occurrence_types."
 msgstr ""
+"Définit le type de collection par défaut qui sera utilisé si aucun n'est "
+"défini ou si les valeurs de la source de données ne correspondent à aucune "
+"des valeurs de la liste collection_types de CollectiveAccess."
 
 #: c:\providence/app/refineries/placeSplitter/placeSplitterRefinery.php:37
 msgid "Place splitter"
@@ -22263,22 +22720,32 @@ msgid ""
 "type for related places, building place hierarchies and merging place data "
 "with names."
 msgstr ""
+"Fournit différentes fonctions d'import liées aux lieux : séparation d'une "
+"chaîne contenant différents lieux en valeurs individuelles, correspondance "
+"de type et de type de relation pour les lieux liés, construction de la "
+"hiérarchie des lieux et fusion des informations des lieux en fonction du nom "
+"de lieu."
 
 #: c:\providence/app/refineries/placeSplitter/placeSplitterRefinery.php:106
 msgid "[placeSplitterRefinery] No relationship type is set for place %1"
 msgstr ""
+"[placeSplitterRefinery] Aucun type de relation n'est défini pour le lieu %1"
 
 #: c:\providence/app/refineries/placeSplitter/placeSplitterRefinery.php:121
 msgid "[placeSplitterRefinery] No place type is set for place %1"
 msgstr ""
+"[placeSplitterRefinery] Aucun type de lieu n'est défini pour le lieu %1"
 
 #: c:\providence/app/refineries/placeSplitter/placeSplitterRefinery.php:134
 msgid "[placeSplitterRefinery] No place hierarchies are defined for %1"
 msgstr ""
+"[placeSplitterRefinery] Aucune hiérarchie de lieu n'est définie pour  %1"
 
 #: c:\providence/app/refineries/placeSplitter/placeSplitterRefinery.php:141
 msgid "[placeSplitterRefinery] No parent found or place %1 in hierarchy %2"
 msgstr ""
+"[placeSplitterRefinery] Aucun parent trouvé pour lieu %1 dans la hiérarchie "
+"%2"
 
 #: c:\providence/app/refineries/placeSplitter/placeSplitterRefinery.php:204
 msgid "Place type"
@@ -22330,7 +22797,7 @@ msgstr ""
 
 #: c:\providence/app/refineries/storageLocationSplitter/storageLocationSplitterRefinery.php:38
 msgid "Storage location splitter"
-msgstr ""
+msgstr "nom de l'emplacement"
 
 #: c:\providence/app/refineries/storageLocationSplitter/storageLocationSplitterRefinery.php:39
 msgid ""
@@ -22339,37 +22806,53 @@ msgid ""
 "relationship type for related locations, building location hierarchies and "
 "merging location data with names."
 msgstr ""
+"Fournit différentes fonctions d'import liées aux emplacements de stockage : "
+"séparation d'une chaîne contenant plusieurs emplacements en valeurs "
+"individuelles, correspondance de type et de type de relation pour les "
+"emplacements liés, construction de la hiérarchie des emplacements de "
+"stockage et fusion des données des emplacements en fonction d'un nom "
+"d'emplacement."
 
 #: c:\providence/app/refineries/storageLocationSplitter/storageLocationSplitterRefinery.php:133
 msgid ""
 "[storageLocationSplitterRefinery] No relationship type is set for location %1"
 msgstr ""
+"[storageLocationSplitterRefinery] Aucun type de relation n'est défini pour "
+"l'emplacement %1"
 
 #: c:\providence/app/refineries/storageLocationSplitter/storageLocationSplitterRefinery.php:148
 msgid ""
 "[storageLocationSplitterRefinery] No storage location type is set for "
 "location %1"
 msgstr ""
+"[storageLocationSplitterRefinery] Aucun type d'emplacement de stockage n'est "
+"défini pour l'emplacement %1"
 
 #: c:\providence/app/refineries/storageLocationSplitter/storageLocationSplitterRefinery.php:155
 msgid ""
 "[storageLocationSplitterRefinery] No parent found or location %1 in "
 "hierarchy %2"
 msgstr ""
+"[storageLocationSplitterRefinery] Aucun parent trouvé pour l'emplacement %1 "
+"dans la hiérarchie %2"
 
 #: c:\providence/app/refineries/storageLocationSplitter/storageLocationSplitterRefinery.php:211
 msgid "Sets the value of the delimiter to break hierarchical values on."
 msgstr ""
+"Définit la valeur du délimiteur pour séparer les valeurs hiérarchiques."
 
 #: c:\providence/app/refineries/storageLocationSplitter/storageLocationSplitterRefinery.php:219
 msgid "Hierarchical storage location types"
-msgstr ""
+msgstr "Type d'emplacement de stockage hiérarchique"
 
 #: c:\providence/app/refineries/storageLocationSplitter/storageLocationSplitterRefinery.php:220
 msgid ""
 "A semicolon-delimited list of storage location types to apply to "
 "hierarchical storage locations extracted using the hierarchical delimiter."
 msgstr ""
+"Une liste séparée par des points-virgule (\";\") de types d'emplacements de "
+"stockage à appliquer aux emplacements extraits à l'aide du séparateur pour "
+"la hiérarchie."
 
 #: c:\providence/app/refineries/storageLocationSplitter/storageLocationSplitterRefinery.php:237
 msgid "Storage location type"
@@ -22380,6 +22863,9 @@ msgid ""
 "Accepts a constant list item idno from the list storage_location_types or a "
 "reference to the location in the data source where the type can be found."
 msgstr ""
+"Accepte un élément sous la forme d'une constante pour le type de collection "
+"ou la référence à un emplacement dans les données d'origine ou le type peut "
+"être trouvé."
 
 #: c:\providence/app/refineries/storageLocationSplitter/storageLocationSplitterRefinery.php:247
 msgid ""
@@ -22387,10 +22873,13 @@ msgid ""
 "metadataElement code and the location in the data source where the data "
 "values can be found."
 msgstr ""
+"Défini ou fait correspondre les métadonnées de la collection en fonction du "
+"code metadataElement et de l'emplacement dans les données source où les "
+"valeurs peuvent être trouvées."
 
 #: c:\providence/app/refineries/storageLocationSplitter/storageLocationSplitterRefinery.php:264
 msgid "Storage location type default"
-msgstr ""
+msgstr "Emplacement de stockage par défaut"
 
 #: c:\providence/app/refineries/storageLocationSplitter/storageLocationSplitterRefinery.php:265
 msgid ""
@@ -22398,46 +22887,59 @@ msgid ""
 "or if the data source values do not match any values in the CollectiveAccess "
 "list storage_location_types"
 msgstr ""
+"Définit le type d'emplacement de stockage qui sera utilisé si aucun n'est "
+"défini ou si les valeurs de la source de données ne correspondent à aucune "
+"valeur dans la liste storage_location_types de CollectiveAccess"
 
 #: c:\providence/app/refineries/tourMaker/tourMakerRefinery.php:39
 msgid "Tour maker"
-msgstr ""
+msgstr "point du parcours"
 
 #: c:\providence/app/refineries/tourMaker/tourMakerRefinery.php:40
 msgid "Creates tour records as required during import."
-msgstr ""
+msgstr "Crée des enregistrements de parcours si nécessaire durant l'import."
 
 #: c:\providence/app/refineries/tourMaker/tourMakerRefinery.php:77
 msgid "[tourMakerRefinery] No value set for tour"
-msgstr ""
+msgstr "[tourMakerRefinery] Aucune valeur définie pour le parcours"
 
 #: c:\providence/app/refineries/tourMaker/tourMakerRefinery.php:96
 msgid "[tourMakerRefinery] No tour type is set for tour %1"
 msgstr ""
+"[tourMakerRefinery] Aucun type de parcours spécifié pour le parcours %1"
 
 #: c:\providence/app/refineries/tourMaker/tourMakerRefinery.php:115
 msgid "[tourMakerRefinery] Could not create tour %1: %2"
-msgstr ""
+msgstr "[tourMakerRefinery] Impossible de créer le parcours %1: %2"
 
 #: c:\providence/app/refineries/tourMaker/tourMakerRefinery.php:123
 msgid "[tourMakerRefinery] Could not add label for tour %1: %2"
 msgstr ""
+"[tourMakerRefinery] Impossible d'ajouter un label pour le parcours %1: %2"
 
 #: c:\providence/app/refineries/tourMaker/tourMakerRefinery.php:142
 msgid "[tourMakerRefinery] Could not save data for tour %1: %2"
 msgstr ""
+"[tourMakerRefinery] Impossible d'enregistrer les données pour le parcours "
+"%1: %2"
 
 #: c:\providence/app/refineries/tourMaker/tourMakerRefinery.php:170
 msgid ""
 "Accepts a constant list item idno from the list tour_types or a reference to "
 "the location in the data source where the type can be found."
 msgstr ""
+"Accepte un élément sous la forme d'une constante pour le type de collection "
+"ou la référence à un emplacement dans les données d'origine ou le type peut "
+"être trouvé."
 
 #: c:\providence/app/refineries/tourMaker/tourMakerRefinery.php:179
 msgid ""
 "Sets or maps metadata for the tour record by referencing the metadataElement "
 "code or the location in the data source where the data values can be found."
 msgstr ""
+"Défini ou fait correspondre les métadonnées de la collection en fonction du "
+"code metadataElement et de l'emplacement dans les données source où les "
+"valeurs peuvent être trouvées."
 
 #: c:\providence/app/refineries/tourMaker/tourMakerRefinery.php:188
 msgid ""
@@ -22445,10 +22947,13 @@ msgid ""
 "data source values do not match any values in the CollectiveAccess list "
 "tour_types."
 msgstr ""
+"Définit le type de collection par défaut qui sera utilisé si aucun n'est "
+"défini ou si les valeurs de la source de données ne correspondent à aucune "
+"des valeurs de la liste collection_types de CollectiveAccess."
 
 #: c:\providence/app/refineries/tourStopSplitter/tourStopSplitterRefinery.php:37
 msgid "Tour stop splitter"
-msgstr ""
+msgstr "nom du point du parcours"
 
 #: c:\providence/app/refineries/tourStopSplitter/tourStopSplitterRefinery.php:38
 msgid ""
@@ -22457,29 +22962,43 @@ msgid ""
 "relationship type for related locations, building location hierarchies and "
 "merging location data with names."
 msgstr ""
+"Fournit différentes fonctions d'import liées aux arrêts d'un parcours : "
+"séparation de multiples arrêts du parcours dans une chaîne en valeurs "
+"individuelles, correspondance de type et de type de relation pour les arrêts "
+"liés, construction de la hiérarchie des arrêts du parcours  et fusion des "
+"données des arrêts en fonction du nom."
 
 #: c:\providence/app/refineries/tourStopSplitter/tourStopSplitterRefinery.php:105
 msgid "[tourStopSplitterRefinery] No relationship type is set for tour stop %1"
 msgstr ""
+"[tourStopSplitterRefinery] Aucun type de relation défini pour le point du "
+"parcours %1"
 
 #: c:\providence/app/refineries/tourStopSplitter/tourStopSplitterRefinery.php:120
 msgid "[tourStopSplitterRefinery] No collection type is set for tour stop %1"
 msgstr ""
+"[tourStopSplitterRefinery] Aucun type de collection défini pour le point du "
+"parcours %1"
 
 #: c:\providence/app/refineries/tourStopSplitter/tourStopSplitterRefinery.php:130
 msgid ""
 "[tourStopSplitterRefinery] Could not find tour %1 to relate stop stops to."
 msgstr ""
+"[tourStopSplitterRefinery] Impossible de trouver le parcours %1 pour y "
+"rattacher les points du parcours."
 
 #: c:\providence/app/refineries/tourStopSplitter/tourStopSplitterRefinery.php:201
 msgid "Tour stop type"
-msgstr ""
+msgstr "Indique le type de point du parcours."
 
 #: c:\providence/app/refineries/tourStopSplitter/tourStopSplitterRefinery.php:202
 msgid ""
 "Accepts a constant list item idno from the list tour_stop_types or a "
 "reference to the location in the data source where the type can be found."
 msgstr ""
+"Accepte une liste constante d'identifiant de la liste tour_stop_types ou une "
+"référence à l'emplacement dans les données source où le type peut être "
+"trouvé."
 
 #: c:\providence/app/refineries/tourStopSplitter/tourStopSplitterRefinery.php:211
 msgid ""
@@ -22487,14 +23006,17 @@ msgid ""
 "metadataElement code and the location in the data source where the data "
 "values can be found."
 msgstr ""
+"Défini ou fait correspondre les métadonnées de l'arrêt du parcours en "
+"fonction du code metadataElement et de l'emplacement dans les données source "
+"où les valeurs peuvent être trouvées."
 
 #: c:\providence/app/refineries/tourStopSplitter/tourStopSplitterRefinery.php:220
 msgid "Identifies the tour to add the stop to."
-msgstr ""
+msgstr "Identifie le parcours auquel ajouter l'arrêt."
 
 #: c:\providence/app/refineries/tourStopSplitter/tourStopSplitterRefinery.php:237
 msgid "Tour stop type default"
-msgstr ""
+msgstr "Valeur par défaut pour le type de point d'arrêt du parcours"
 
 #: c:\providence/app/refineries/tourStopSplitter/tourStopSplitterRefinery.php:238
 msgid ""
@@ -22502,6 +23024,9 @@ msgid ""
 "the data source values do not match any values in the CollectiveAccess list "
 "tour_stop_types"
 msgstr ""
+"Définit le type d'arrêt du parcours par défaut qui sera utilisé si aucun "
+"n'est défini ou si les valeurs de la source de données ne correspondent à "
+"aucune des valeurs de la liste tour_stop_types de CollectiveAccess."
 
 #: c:\providence/app/widgets/advancedSearchForm/advancedSearchFormWidget.php:43
 msgid "Advanced search form"
@@ -24314,7 +24839,7 @@ msgstr "Identifiant d'item"
 #: c:\providence/themes/default/views/find/Results/ca_tours_results_editable_html.php:47
 #: c:\providence/themes/default/views/find/Results/ca_tour_stops_results_editable_html.php:47
 msgid "Full screen"
-msgstr ""
+msgstr "nouvel écran"
 
 #: c:\providence/themes/default/views/administrate/setup/Results/ca_list_items_editable_html.php:80
 #: c:\providence/themes/default/views/find/Results/ca_collections_results_editable_html.php:80
@@ -24330,7 +24855,7 @@ msgstr ""
 #: c:\providence/themes/default/views/find/Results/ca_tours_results_editable_html.php:80
 #: c:\providence/themes/default/views/find/Results/ca_tour_stops_results_editable_html.php:80
 msgid "Saving..."
-msgstr ""
+msgstr "Enregistrement..."
 
 #: c:\providence/themes/default/views/administrate/setup/Results/ca_list_items_editable_html.php:81
 #: c:\providence/themes/default/views/find/Results/ca_collections_results_editable_html.php:81
@@ -24346,7 +24871,7 @@ msgstr ""
 #: c:\providence/themes/default/views/find/Results/ca_tours_results_editable_html.php:81
 #: c:\providence/themes/default/views/find/Results/ca_tour_stops_results_editable_html.php:81
 msgid "[Error]"
-msgstr ""
+msgstr "ERREUR"
 
 #: c:\providence/themes/default/views/administrate/setup/Results/ca_list_items_list_html.php:87
 #: c:\providence/themes/default/views/administrate/setup/Results/ca_relationship_types_list_html.php:107
@@ -24746,7 +25271,7 @@ msgstr "Répertoire pour l'import de média"
 
 #: c:\providence/themes/default/views/batch/mediaimport/import_options_html.php:77
 msgid "Upload progress: %1"
-msgstr ""
+msgstr "Modification en cours"
 
 #: c:\providence/themes/default/views/batch/mediaimport/import_options_html.php:107
 msgid "Include all sub-directories"
@@ -24754,7 +25279,7 @@ msgstr "Inclure tous les sous-répertoires"
 
 #: c:\providence/themes/default/views/batch/mediaimport/import_options_html.php:109
 msgid "Delete media after import"
-msgstr ""
+msgstr "Supprimer les médias après l'import"
 
 #: c:\providence/themes/default/views/batch/mediaimport/import_options_html.php:115
 msgid "Import mode"
@@ -24762,7 +25287,7 @@ msgstr "Mode d'import"
 
 #: c:\providence/themes/default/views/batch/mediaimport/import_options_html.php:127
 msgid "Matching"
-msgstr ""
+msgstr "Correspondance"
 
 #: c:\providence/themes/default/views/batch/mediaimport/import_options_html.php:147
 msgid "Type used for newly created objects"
@@ -24794,7 +25319,7 @@ msgstr "Utiliser le nom de fichier pour l'identifiant de l'objet"
 
 #: c:\providence/themes/default/views/batch/mediaimport/import_options_html.php:249
 msgid "Set object identifier to directory and file name"
-msgstr ""
+msgstr "Définit l'identifiant de l'objet au nom et au répertoire du fichier"
 
 #: c:\providence/themes/default/views/batch/mediaimport/import_options_html.php:273
 msgid "Status &amp; access"
@@ -24818,17 +25343,19 @@ msgstr "Accès de la représentation<br/>%1"
 
 #: c:\providence/themes/default/views/batch/mediaimport/import_options_html.php:301
 msgid "Relationships"
-msgstr ""
+msgstr "relations collection ⇔ collection"
 
 #: c:\providence/themes/default/views/batch/mediaimport/import_options_html.php:306
 msgid ""
 "Relationships will be created by matching the identifier extracted from the "
 "media file name with identifiers in related records."
 msgstr ""
+"Les relations seront créées en faisant correspondre l'identifiant extrait du "
+"fichier média avec les identifiants des enregistrements liés."
 
 #: c:\providence/themes/default/views/batch/mediaimport/import_options_html.php:322
 msgid "to %1 with relationship type"
-msgstr ""
+msgstr "Relation transférée vers le type <em>%2</em>"
 
 #: c:\providence/themes/default/views/batch/mediaimport/import_options_html.php:340
 msgid "Skip files"
@@ -24841,6 +25368,11 @@ msgid ""
 "enclosed in \"/\" characters will be treated as <a href=\"http://www.pcre."
 "org/pcre.txt\" target=\"_new\">Perl-compatible regular expressions</a>."
 msgstr ""
+"Liste de noms de fichiers que vous voulez ignorer durant l'import, un par "
+"ligne. Vous pouvez utiliser des astérisques (\"*\") comme joker pour faire "
+"des correspondances partielles. Les valeurs comprises en les caractères "
+"slash (\"/\") seront traitées comme des  <a href=\"http://www.pcre.org/pcre."
+"txt\" target=\"_new\">expressions régulières PCRE</a>."
 
 #: c:\providence/themes/default/views/batch/mediaimport/import_options_html.php:370
 msgid "You are about to import files from <em>%1</em>"
@@ -24848,19 +25380,19 @@ msgstr "Vous êtes en train d'importer les fichiers pour <em>%1</em>"
 
 #: c:\providence/themes/default/views/batch/metadataimport/batch_results_html.php:33
 msgid "Metadata import processing status"
-msgstr ""
+msgstr "Statut de l'import des médias"
 
 #: c:\providence/themes/default/views/batch/metadataimport/batch_results_html.php:34
 msgid "Importing <em>%1</em> using <em>%2</em>"
-msgstr ""
+msgstr "Import de <em>%1</em> à l'aide de <em>%2</em>"
 
 #: c:\providence/themes/default/views/batch/metadataimport/batch_results_html.php:50
 msgid "Perform another metadata import"
-msgstr ""
+msgstr "Réaliser un autre import de médias"
 
 #: c:\providence/themes/default/views/batch/metadataimport/batch_results_html.php:79
 msgid "Errors during import"
-msgstr ""
+msgstr "Erreurs durant l'import"
 
 #: c:\providence/themes/default/views/batch/metadataimport/confirm_html.php:61
 #: c:\providence/themes/default/views/batch/metadataimport/importer_list_html.php:108
@@ -24869,7 +25401,7 @@ msgstr "Importer des données"
 
 #: c:\providence/themes/default/views/batch/metadataimport/confirm_html.php:66
 msgid "You are about to import data."
-msgstr ""
+msgstr "Vous êtes sur le point d'importer des données."
 
 #: c:\providence/themes/default/views/batch/metadataimport/confirm_html.php:118
 #: c:\providence/themes/default/views/batch/metadataimport/importer_run_html.php:32
@@ -24878,7 +25410,7 @@ msgstr "Réalise un import de données"
 
 #: c:\providence/themes/default/views/batch/metadataimport/importer_list_html.php:43
 msgid "Add importers"
-msgstr ""
+msgstr "imports de données"
 
 #: c:\providence/themes/default/views/batch/metadataimport/importer_list_html.php:44
 #: c:\providence/themes/default/views/bundles/bookviewer_html.php:51
@@ -24888,6 +25420,8 @@ msgstr "Fermer"
 #: c:\providence/themes/default/views/batch/metadataimport/importer_list_html.php:55
 msgid "Drag importer worksheets here to add or update"
 msgstr ""
+"Glissez les feuilles de calculs de l'import ici pour les ajouter ou les "
+"mettre à jour"
 
 #: c:\providence/themes/default/views/batch/metadataimport/importer_list_html.php:74
 #: c:\providence/themes/default/views/manage/export/exporter_list_html.php:77
@@ -24896,7 +25430,7 @@ msgstr "Dernière modification"
 
 #: c:\providence/themes/default/views/batch/metadataimport/importer_list_html.php:85
 msgid "No importers defined"
-msgstr ""
+msgstr "%1 imports sont définis"
 
 #: c:\providence/themes/default/views/batch/metadataimport/importer_list_html.php:184
 #: c:\providence/themes/default/views/manage/export/exporter_list_html.php:158
@@ -24918,6 +25452,8 @@ msgstr "URL des données"
 #: c:\providence/themes/default/views/batch/metadataimport/importer_run_html.php:60
 msgid "You are about to import data using the <em>%1</em> importer"
 msgstr ""
+"Vous êtes sur le point d'importer des données à l'aide de l'import <em>%1</"
+"em>"
 
 #: c:\providence/themes/default/views/batch/metadataimport/widget_importer_info_html.php:34
 msgid "Importers"
@@ -25135,7 +25671,7 @@ msgstr "Ajout rapide"
 #: c:\providence/themes/default/views/bundles/ca_places.php:261
 #: c:\providence/themes/default/views/bundles/ca_storage_locations.php:249
 msgid "Relation editor"
-msgstr ""
+msgstr "Nom de l'éditeur"
 
 #: c:\providence/themes/default/views/bundles/ca_commerce_order_history.php:52
 msgid "No loans have been made"
@@ -25212,16 +25748,15 @@ msgstr "Ajouter un écran"
 
 #: c:\providence/themes/default/views/bundles/ca_list_items.php:104
 msgid "No collection terms selected"
-msgstr ""
+msgstr "Aucun terme de collection sélectionné"
 
 #: c:\providence/themes/default/views/bundles/ca_object_lots.php:197
 msgid "Add lot"
 msgstr "Ajouter un lot"
 
 #: c:\providence/themes/default/views/bundles/ca_object_representations.php:64
-#, fuzzy
 msgid "Extracted metadata"
-msgstr "Métadonnée du média"
+msgstr "élément de métadonnée"
 
 #: c:\providence/themes/default/views/bundles/ca_object_representations.php:66
 msgid "MD5 signature"
@@ -25229,7 +25764,7 @@ msgstr "signature MD5"
 
 #: c:\providence/themes/default/views/bundles/ca_object_representations.php:80
 msgid "PRIMARY"
-msgstr ""
+msgstr "Est primaire ?"
 
 #: c:\providence/themes/default/views/bundles/ca_object_representations.php:88
 #: c:\providence/themes/default/views/bundles/ca_object_representations_media_display.php:33
@@ -25242,33 +25777,28 @@ msgid "+ %1 additional previews"
 msgstr "+ %1 aperçus supplémentaires"
 
 #: c:\providence/themes/default/views/bundles/ca_object_representations.php:94
-#, fuzzy
 msgid "<h3>Fetched from:</h3> URL %1 on %2"
-msgstr "Téléchargé de l'URL %1 sur %2"
+msgstr "<h3>Téléchargé de : </h3> URL %1 sur %2"
 
 #: c:\providence/themes/default/views/bundles/ca_object_representations.php:180
-#, fuzzy
 msgid "File name"
-msgstr "Surnom ou autre nom"
+msgstr "nom du type"
 
 #: c:\providence/themes/default/views/bundles/ca_object_representations.php:182
-#, fuzzy
 msgid "File name: %1"
-msgstr "Surnom ou autre nom"
+msgstr "nom du type"
 
 #: c:\providence/themes/default/views/bundles/ca_object_representations.php:187
 msgid "Dimensions"
-msgstr ""
+msgstr "Dimensions"
 
 #: c:\providence/themes/default/views/bundles/ca_object_representations.php:196
-#, fuzzy
 msgid "Will be primary after save"
-msgstr "Fera partie d'un lot"
+msgstr "Sera défini par défaut après l'enregistrement"
 
 #: c:\providence/themes/default/views/bundles/ca_object_representations.php:197
-#, fuzzy
 msgid "Changes will be applied when you save"
-msgstr "%1 sera affecté après enregistrement"
+msgstr "Les modifications seront appliquées lorsque vous enregistrerez"
 
 #: c:\providence/themes/default/views/bundles/ca_object_representations.php:211
 msgid "Update media"
@@ -25277,33 +25807,28 @@ msgstr "Mise à jour du média"
 #: c:\providence/themes/default/views/bundles/ca_object_representations.php:214
 #: c:\providence/themes/default/views/bundles/ca_object_representations.php:326
 msgid "using upload"
-msgstr ""
+msgstr "Interface à utiliser"
 
 #: c:\providence/themes/default/views/bundles/ca_object_representations.php:221
 #: c:\providence/themes/default/views/bundles/ca_object_representations.php:333
-#, fuzzy
 msgid "from URL"
 msgstr "Télécharger depuis l'URL"
 
 #: c:\providence/themes/default/views/bundles/ca_object_representations.php:260
-#, fuzzy
 msgid "Make primary"
 msgstr "Est primaire ?"
 
 #: c:\providence/themes/default/views/bundles/ca_object_representations.php:263
-#, fuzzy
 msgid "Edit full record"
-msgstr "Modifier une collection"
+msgstr "Modifier l'enregistrement en entier"
 
 #: c:\providence/themes/default/views/bundles/ca_object_representations.php:269
-#, fuzzy
 msgid "Annotations"
-msgstr "Annotation %1"
+msgstr "annotations pour la représentation"
 
 #: c:\providence/themes/default/views/bundles/ca_object_representations.php:307
-#, fuzzy
 msgid "Add representation with relationship type %1"
-msgstr "relation représentation d'objet ⇔ personne"
+msgstr "Ajouter une représentation avec le type de relation %1"
 
 #: c:\providence/themes/default/views/bundles/ca_object_representations.php:307
 #: c:\providence/themes/default/views/bundles/ca_object_representations.php:401
@@ -25311,9 +25836,8 @@ msgid "Add representation"
 msgstr "Ajouter une représentation"
 
 #: c:\providence/themes/default/views/bundles/ca_object_representations.php:342
-#, fuzzy
 msgid "using existing"
-msgstr "Modifier un parcours"
+msgstr "Interface à utiliser"
 
 #: c:\providence/themes/default/views/bundles/ca_object_representations_media_display.php:50
 msgid "or fetch from a URL"
@@ -25520,10 +26044,12 @@ msgstr "Ajouter un nouveau %1 %2 <em>%3</em>"
 msgid ""
 "Use the controls below to create new %1 relative to this %2 in the hierarchy."
 msgstr ""
+"Utiliser les contrôles ci-dessous pour créer un nouveau %1 relatif à cet "
+"enregistrement "
 
 #: c:\providence/themes/default/views/bundles/hierarchy_location.php:312
 msgid "Add a new %1 under <em>%2</em>"
-msgstr ""
+msgstr "Ajouter un nouveau %1 sous <em>%2</em>"
 
 #: c:\providence/themes/default/views/bundles/hierarchy_location.php:358
 #: c:\providence/themes/default/views/bundles/hierarchy_navigation.php:134
@@ -25545,7 +26071,7 @@ msgstr ""
 
 #: c:\providence/themes/default/views/bundles/hierarchy_location.php:464
 msgid "Cannot move collection under object"
-msgstr ""
+msgstr "Impossible de déplacer la collection sous l'objet"
 
 #: c:\providence/themes/default/views/bundles/hierarchy_navigation.php:64
 #: c:\providence/themes/default/views/bundles/hierarchy_navigation.php:134
@@ -25557,6 +26083,8 @@ msgid ""
 "Use the browser to explore the hierarchy. You may edit other hierarchy items "
 "by clicking on the arrows."
 msgstr ""
+"Utiliser le navigateur pour explorer la hiérarchie. Vous pouvez modifier "
+"d'autres éléments de hiérarchie en cliquant sur les flèches."
 
 #: c:\providence/themes/default/views/bundles/relationship.php:112
 msgid "Add "
@@ -26688,11 +27216,11 @@ msgstr "Entité créée"
 
 #: c:\providence/themes/default/views/editor/interstitial/interstitial_html.php:50
 msgid "Edit %1 relationship"
-msgstr ""
+msgstr "type de relation"
 
 #: c:\providence/themes/default/views/editor/interstitial/interstitial_html.php:77
 msgid "No user interface defined"
-msgstr ""
+msgstr "1 interface utilisateur est définie"
 
 #: c:\providence/themes/default/views/editor/interstitial/interstitial_html.php:92
 msgid "Saved changes to"
@@ -26769,11 +27297,11 @@ msgstr "Editeur d'annotation"
 
 #: c:\providence/themes/default/views/editor/object_representations/ajax_representation_annotation_editor_html.php:50
 msgid "Clips"
-msgstr ""
+msgstr "Clips"
 
 #: c:\providence/themes/default/views/editor/object_representations/ajax_representation_annotation_editor_html.php:54
 msgid "%1 clips"
-msgstr ""
+msgstr "Clips"
 
 #: c:\providence/themes/default/views/editor/places/quickadd_html.php:154
 msgid "Created place "
@@ -26789,15 +27317,15 @@ msgstr "Supprimer l'annotation"
 
 #: c:\providence/themes/default/views/editor/representation_annotations/quickadd_html.php:49
 msgid "Save annotation"
-msgstr ""
+msgstr "annotation de représentation"
 
 #: c:\providence/themes/default/views/editor/representation_annotations/quickadd_html.php:94
 msgid "Saved annotation"
-msgstr ""
+msgstr "annotation de représentation"
 
 #: c:\providence/themes/default/views/editor/representation_annotations/quickadd_html.php:131
 msgid "Really delete annotation? %1 %2"
-msgstr ""
+msgstr "Confirmer la suppression de l'annotation : %1 %2"
 
 #: c:\providence/themes/default/views/editor/storage_locations/quickadd_html.php:154
 msgid "Created storage location "
@@ -26889,7 +27417,7 @@ msgstr "Page [[page_cu]]/[[page_nb]]"
 #: c:\providence/themes/default/views/find/Results/ca_tours_results_list_html.php:56
 #: c:\providence/themes/default/views/find/Results/ca_tour_stops_results_list_html.php:55
 msgid "Currently sorting by "
-msgstr ""
+msgstr "Tri actuel par"
 
 #: c:\providence/themes/default/views/find/Results/ca_collections_results_list_html.php:59
 #: c:\providence/themes/default/views/find/Results/ca_entities_results_list_html.php:59
@@ -26904,7 +27432,7 @@ msgstr ""
 #: c:\providence/themes/default/views/find/Results/ca_tours_results_list_html.php:59
 #: c:\providence/themes/default/views/find/Results/ca_tour_stops_results_list_html.php:58
 msgid "Click to sort by "
-msgstr ""
+msgstr "Cliquer pour trier par"
 
 #: c:\providence/themes/default/views/find/Results/ca_objects_results_map_html.php:45
 msgid ""
@@ -26994,15 +27522,15 @@ msgstr "Créer l'ensemble"
 
 #: c:\providence/themes/default/views/find/Search/search_sets_html.php:67
 msgid "from_results"
-msgstr ""
+msgstr "%1 résultats trouvés."
 
 #: c:\providence/themes/default/views/find/Search/search_sets_html.php:68
 msgid "from_checked"
-msgstr ""
+msgstr "Emprunté : %1"
 
 #: c:\providence/themes/default/views/find/Search/search_sets_html.php:77
 msgid "Open set for batch editing"
-msgstr ""
+msgstr "Ouverture de l'ensemble pour une modification par lot"
 
 #: c:\providence/themes/default/views/find/Search/search_sets_html.php:161
 msgid "Created set <i>^set_name</i> with ^num_items ^item_type_name"
@@ -27357,11 +27885,13 @@ msgstr "Paramètres invalides"
 
 #: c:\providence/themes/default/views/manage/export/exporter_list_html.php:47
 msgid "Add exporters"
-msgstr ""
+msgstr "Exports de données"
 
 #: c:\providence/themes/default/views/manage/export/exporter_list_html.php:58
 msgid "Drag exporter worksheets here to add or update"
 msgstr ""
+"Glisser les feuilles de calculs de l'export pour les ajouter ou les mettre à "
+"jour"
 
 #: c:\providence/themes/default/views/manage/export/exporter_list_html.php:102
 msgid "Export data"
@@ -27375,14 +27905,16 @@ msgstr "Réalise un export de données"
 msgid ""
 "You are about to export a set of <em>%1</em> using the <em>%2</em> exporter"
 msgstr ""
+"Vous êtes sur le point d'exporter un ensemble de <em>%1</em> à l'aide de "
+"l'export <em>%2</em>"
 
 #: c:\providence/themes/default/views/manage/export/exporter_run_html.php:46
 msgid "Search expression"
-msgstr ""
+msgstr "Expression non valide"
 
 #: c:\providence/themes/default/views/manage/export/export_results_html.php:30
 msgid "Execute batch data export"
-msgstr ""
+msgstr "Exécuter l'export de données"
 
 #: c:\providence/themes/default/views/manage/export/export_results_html.php:60
 msgid "%1 processed"
@@ -27402,11 +27934,11 @@ msgstr "Vos exports de données"
 
 #: c:\providence/themes/default/views/manage/export/widget_exporter_list_html.php:34
 msgid "1 mapping is available for export"
-msgstr ""
+msgstr "1 correspondance est disponible pour l'export"
 
 #: c:\providence/themes/default/views/manage/export/widget_exporter_list_html.php:36
 msgid "%1 mappings are available for export"
-msgstr ""
+msgstr "%1 correspondances sont disponibles pour l'export"
 
 #: c:\providence/themes/default/views/manage/Results/ca_item_comments_list_html.php:124
 msgid "Approved"
@@ -27603,1016 +28135,3 @@ msgstr ""
 "Le traitement par lot de l'ensemble %1 est terminé (%2).\n"
 "%3 de %4 %5 ont été traités. %6 ont rencontré des erreurs. Voici la liste "
 "des %7 traités :<br/><br/>"
-
-#~ msgid "Related events"
-#~ msgstr "Evénements liés"
-
-#~ msgid "Name of representation"
-#~ msgstr "Nom de la représentation"
-
-#~ msgid "Additional Information"
-#~ msgstr "Information complémentaire"
-
-#~ msgid "Item_id is not valid for element %1"
-#~ msgstr "item_id n'est pas valide pour l'élément %1"
-
-#~ msgid "Value %1 [%2] cannot be blank"
-#~ msgstr "La valeur %1 [%2] ne peut pas être vide"
-
-#~ msgid "Encoded Archival Description format"
-#~ msgstr "Format EAD (Encoded Archival Description)"
-
-#~ msgid "NewsML"
-#~ msgstr "NewsML"
-
-#~ msgid ""
-#~ "NewsML is designed to provide a media-type-independent, structural "
-#~ "framework for multi-media news. Beyond exchanging single items it can "
-#~ "also convey packages of multiple items in a structures layout."
-#~ msgstr ""
-#~ "NewsML a été conçu pour fournir un framework structurel, indépendant d'un "
-#~ "type de média, pour des informations multi-média. Au delà de l'échange de "
-#~ "simples éléments, NewsML peut aussi être utilisé pour transmettre des "
-#~ "packages d'éléments multiples dans un formatage structuré."
-
-#~ msgid "OAI DublinCore"
-#~ msgstr "OAI DublinCore"
-
-#~ msgid ""
-#~ "Public Broadcasting Core data format; used for data interchange between "
-#~ "audio/video archives"
-#~ msgstr ""
-#~ "Format de donnée PBC (Public Broadcasting Core) ; utilisé pour des "
-#~ "échanges de données entre archives audio/vidéo"
-
-#~ msgid "Tab delimited text"
-#~ msgstr "Texte délimité par des tabulations"
-
-#~ msgid "Sorry, the PHP DOM extension is required to export profiles."
-#~ msgstr "Désolé, l'extension PHP DOM est requise pour exporter les profils."
-
-#~ msgid "Sorry, cannot write profile to %1."
-#~ msgstr "Impossible d'écrire le profil vers %1"
-
-#~ msgid "Re-processing media"
-#~ msgstr "Traitement des médias"
-
-#~ msgid "[ERROR] Error processing media: %1"
-#~ msgstr "[ERREUR] Erreur lors du traitement du média : %1"
-
-#~ msgid "Created mapping from '%1'"
-#~ msgstr "Création d'une correspondance pour '%1'"
-
-#~ msgid ""
-#~ "Couldn't convert file to MPEG4 format [%1]; does the ffmpeg preset '%2' "
-#~ "exist?"
-#~ msgstr ""
-#~ "Impossible de convertir le fichier au format MPEG4 [%1] : est-ce que le "
-#~ "profil ffmpeg '%2' existe bien ?"
-
-#~ msgid "Couldn't convert file to MPEG4 format [%1]"
-#~ msgstr "Impossible de convertir le fichier au format MPEG4 [%1]"
-
-#~ msgid "mapping unit name"
-#~ msgstr "nom d'unité de correspondance"
-
-#~ msgid "mapping unit names"
-#~ msgstr "noms d'unité de correspondance"
-
-#~ msgid "Name of mapping unit"
-#~ msgstr "Nom d'unité de correspondance"
-
-#~ msgid "Description of mapping unit name"
-#~ msgstr "Description du nom de l'unité de correspondance"
-
-#~ msgid "Locale of mapping unit name"
-#~ msgstr "Locale du nom de l'unité de correspondance"
-
-#~ msgid "bundle mapping group"
-#~ msgstr "groupe de correspondances"
-
-#~ msgid "bundle mapping groups"
-#~ msgstr "groupes de correspondances"
-
-#~ msgid "Unit code"
-#~ msgstr "Code d'unité"
-
-#~ msgid "Unique alphanumeric identifier for this unit."
-#~ msgstr "Identifiant alphanumérique unique pour cette unité."
-
-#~ msgid "Base path for CollectiveAccess target"
-#~ msgstr "Emplacement de base pour le CollectiveAccess cible"
-
-#~ msgid ""
-#~ "Path to CollectiveAccess bundle being mapped by this unit. The "
-#~ "CollectiveAccess portion of all rules in this unit will be applied "
-#~ "relative to this base path."
-#~ msgstr ""
-#~ "Chemin du paquet CollectiveAccess à laquelle cette unité correspond. La "
-#~ "partie des règles de correspondances de CollectiveAccess sera appliquée "
-#~ "par rapport à ce chemin de base."
-
-#~ msgid "Base path for external target"
-#~ msgstr "Emplacement pour cible externe"
-
-#~ msgid ""
-#~ "Path to element in external format being mapped by this unit. All "
-#~ "elements in the external file format being mapped to by this unit will be "
-#~ "created relative to this base path. The format of the base path is "
-#~ "determined by the format. For XML-based formats this will typically be an "
-#~ "XPath specification; for delimited targets this will be a column number."
-#~ msgstr ""
-#~ "Chemin vers l'élément dans le format externe dont la correspondance est "
-#~ "gérée par cette unité. Tous les éléments du format de fichier externe "
-#~ "dont la correspondance est traitée par cette unité sera créé par rapport "
-#~ "à ce chemin. Le format du chemin est déterminé par le format du fichier. "
-#~ "Pour les formats basés sur du XML ce sera typiquement une spécification "
-#~ "XPath ; pour les textes délimités ce sera un numéro de colonne."
-
-#~ msgid "Unit settings"
-#~ msgstr "Paramètres d'unités"
-
-#~ msgid "Notes and remarks relating to the mapping unit"
-#~ msgstr "Notes et remarques sur l'unité de correspondance"
-
-#~ msgid "Unit rules"
-#~ msgstr "Règles d'unité"
-
-#~ msgid "Type to use when creating new records via import."
-#~ msgstr ""
-#~ "Type à utiliser lors de la création de nouveaux enregistrements par "
-#~ "import."
-
-#~ msgid "Restrict use of mapping to specific types of relationships."
-#~ msgstr ""
-#~ "Restriction d'usage pour la correspondance de certains types spécifiques "
-#~ "dans les relations."
-
-#~ msgid "List to add items to."
-#~ msgstr "Liste pour y ajouter les éléments."
-
-#~ msgid ""
-#~ "If mandatory then a record will fail to import if any of the values "
-#~ "mapped in this unit are invalid."
-#~ msgstr ""
-#~ "Si obligatoire alors un enregistrement ne sera pas importé si une des "
-#~ "valeurs de correspondances dans cette unité est invalide."
-
-#~ msgid "Restrict use of mapping to specific types of item."
-#~ msgstr ""
-#~ "Usage restreint des correspondances avec des types spécifiques "
-#~ "d'enregistrement."
-
-#~ msgid "Force output?"
-#~ msgstr "Forcer la sortie ?"
-
-#~ msgid ""
-#~ "Normally rules in a group are only applied if there is at least one "
-#~ "mapping to a non-static value and that value is set. If \"forceOutput\" "
-#~ "is checked then these rules will be applied even if no non-static values "
-#~ "are set."
-#~ msgstr ""
-#~ "Normalement les règles d'un groupe sont uniquement appliquées si il y a "
-#~ "au moins une correspondance avec une valeur non-statique et que cette "
-#~ "valeur est définie. Si \"forceOutput\" est coché alors ces règles seront "
-#~ "appliquées même si aucun valeur non-statique n'est définie."
-
-#~ msgid "Base path for %1 target"
-#~ msgstr "Emplacement pour la cible %1"
-
-#~ msgid "Could not reorder rule %1: %2"
-#~ msgstr "Impossible de ré-ordonner la règle %1 : %2"
-
-#~ msgid "mapping name"
-#~ msgstr "nom de correspondance"
-
-#~ msgid "mapping names"
-#~ msgstr "noms de correspondance"
-
-#~ msgid "Name of mapping"
-#~ msgstr "Nom du mapping"
-
-#~ msgid "Description of mapping"
-#~ msgstr "Description du mapping"
-
-#~ msgid "Locale of mapping name"
-#~ msgstr "Locale du nom du mapping"
-
-#~ msgid "mapping rule"
-#~ msgstr "règle de correspondance"
-
-#~ msgid "mapping rules"
-#~ msgstr "règles de correspondance"
-
-#~ msgid "CollectiveAccess bundle"
-#~ msgstr "Groupe d'éléments CollectiveAccess"
-
-#~ msgid "Name of CollectiveAccess bundle to map."
-#~ msgstr "Nom du paquet CollectiveAccess à mapper."
-
-#~ msgid ""
-#~ "Destination in external format to map CollectiveAccess path to. The "
-#~ "format of the external element  is determined by the target. For XML-"
-#~ "based formats this will typically be an XPath specification; for "
-#~ "delimited targets this will be a column number."
-#~ msgstr ""
-#~ "Destination dans le format externe pour effectuer la correspondance avec "
-#~ "CollectiveAccess. Le format de l'élément externe est défini par la cible. "
-#~ "Pour des formats basés sur XML ce sera typiquement une spécification au "
-#~ "format XPath ; pour les formats texte délimités ce sera un numéro de "
-#~ "colonne."
-
-#~ msgid "Rule settings"
-#~ msgstr "Paramètres de règle"
-
-#~ msgid "Notes and remarks relating to the mapping rule"
-#~ msgstr "Notes et remarques sur la règle de correspondance"
-
-#~ msgid "Split value on"
-#~ msgstr "Diviser la valeur sur"
-
-#~ msgid ""
-#~ "Delimiter to use when splitting value into pieces. Should be blank if "
-#~ "value is not to be split."
-#~ msgstr ""
-#~ "Délimiteur à utiliser lorsque la valeur est à séparer en différents "
-#~ "éléments. Doit être laissé vide si la valeur ne doit pas être séparée en "
-#~ "plusieurs éléments."
-
-#~ msgid "Part to use"
-#~ msgstr "Partie à utiliser"
-
-#~ msgid ""
-#~ "Part of split value to use, starting from 1 (eg. 1 is the first part, 2 "
-#~ "is the second part, etc.). Should be blank if value is not to be split."
-#~ msgstr ""
-#~ "Partie de valeur de division à utiliser, à partir de 1 (par exemple, 1 "
-#~ "est la première partie, 2 est la 2e partie, etc.). Doit être laissé vide "
-#~ "si la valeur ne doit pas être divisée."
-
-#~ msgid ""
-#~ "Custom format for output of this rule when exporting. Preface individual "
-#~ "values with a caret (^) in the format string to embed values."
-#~ msgstr ""
-#~ "Format personnalisé pour l'application de cette règle à l'export. "
-#~ "Préfacer les valeurs individuelles avec un accent circonflexe (^) dans la "
-#~ "chaîne de mise en forme pour intégrer les valeurs."
-
-#~ msgid "bundle mapping"
-#~ msgstr "bundle mapping"
-
-#~ msgid "bundle mappings"
-#~ msgstr "bundle mappings"
-
-#~ msgid "Direction"
-#~ msgstr "Direction"
-
-#~ msgid ""
-#~ "Direction of mapping. \"Import\" indicates the mapping is <i>from</i> an "
-#~ "external source into CollectiveAccess; \"export\" means the mapping is "
-#~ "from CollectiveAccess to an external target."
-#~ msgstr ""
-#~ "Direction du mapping. \"Import\" indique que le mapping est fait "
-#~ "<i>depuis</i> une source externe vers CollectiveAccess ; \"export\" "
-#~ "signifie que le mapping est fait de CollectiveAccess vers une cible "
-#~ "externe."
-
-#~ msgid "import"
-#~ msgstr "import"
-
-#~ msgid "export"
-#~ msgstr "export"
-
-#~ msgid "fragment"
-#~ msgstr "fragment"
-
-#~ msgid "Code indicating import/export data format (Ex. EAD, METS)"
-#~ msgstr "Code du format d'import/d'export (ex. EAD, METS)"
-
-#~ msgid "Mapping code"
-#~ msgstr "Code de mapping"
-
-#~ msgid "Unique identifer for this mapping."
-#~ msgstr "Identifiant unique pour ce mapping."
-
-#~ msgid "Item type"
-#~ msgstr "Type d'item"
-
-#~ msgid "Type of item for which data is being imported or exported."
-#~ msgstr ""
-#~ "Type d'enregistrement pour lequel les données sont exportées ou importées."
-
-#~ msgid "object events"
-#~ msgstr "événements d'objets"
-
-#~ msgid "Indicates if mapping is accessible to the public or not. "
-#~ msgstr "Indique si la correspondance est visible par le public ou non."
-
-#~ msgid "Mapping settings"
-#~ msgstr "Paramètres de cartographie"
-
-#~ msgid "Mapping units"
-#~ msgstr "Unités de correspondance"
-
-#~ msgid "Default locale"
-#~ msgstr "Locale par défaut"
-
-#~ msgid "Sets locale used for all newly imported data."
-#~ msgstr ""
-#~ "Défini la locale utilisée pour toutes les nouvelles données importées."
-
-#~ msgid "Path to identifier in import data"
-#~ msgstr "Chemin vers l'identifiant dans les données d'import"
-
-#~ msgid ""
-#~ "Specifies value in import data set to use as identifier when attempting "
-#~ "to match with existing data. For XML data sets, specify the key as a tag "
-#~ "path (ex. /record/head/identifier). For delimited data specify a column "
-#~ "number."
-#~ msgstr ""
-#~ "Définit la valeur dans les données à importer qui doit être utilisée "
-#~ "comme identifiant lors de la correspondance avec des données existantes. "
-#~ "Pour des données XML, spécifier la clé en indiquant son chemin (par "
-#~ "exemple /enregistrement/entête/identifiant). Pour les données texte "
-#~ "délimité, spécifier un numéro de colonne."
-
-#~ msgid "Remove existing relationships on update?"
-#~ msgstr "Retirer les relations existantes lors de la mise à jour ?"
-
-#~ msgid ""
-#~ "If checked all existing relationships will be removed before record is "
-#~ "updated. Otherwise any newly imported relationships will be added to "
-#~ "existing ones."
-#~ msgstr ""
-#~ "Si coché, toutes les relations existantes seront supprimées avant que "
-#~ "l'enregistrement ne soit mis à jour. Dans le cas contraire, toutes les "
-#~ "nouvelles relations importées seront ajoutées aux relations préexistantes."
-
-#~ msgid "Remove existing data on update?"
-#~ msgstr "Retirer les données existantes lors de la mise à jour ?"
-
-#~ msgid ""
-#~ "If checked field values will be replaced with newly imported data when "
-#~ "the record is updated."
-#~ msgstr ""
-#~ "Si coché, les valeurs des champs seront remplacées avec les nouvelles "
-#~ "données importées lors de la mise à jour de l'enregistrement."
-
-#~ msgid "Could not reorder group %1: %2"
-#~ msgstr "Impossible de ré-ordonner le groupe %1 : %2"
-
-#~ msgid ""
-#~ "Skip all of the proceeding elements in the group if value for this "
-#~ "element is empty.  For example, a field called Description Type would be "
-#~ "irrelevant if the Description field is empty."
-#~ msgstr ""
-#~ "Passe tous les éléments de traitement du groupe si la valeur de cet "
-#~ "élément est vide. Par exemple, un champ appelé Type de Description "
-#~ "devrait être ignoré si le champ Description est vide."
-
-#~ msgid ""
-#~ "Set importer type, i.e. the format of the source data.  Currently "
-#~ "supported: XLSX, XLS, and MYSQL"
-#~ msgstr ""
-#~ "Définit le type de fonction d'import, par exemple le format de source de "
-#~ "données. Actuellement supporté : XLSX, XLS et MySQL"
-
-#~ msgid "prompt"
-#~ msgstr "demander"
-
-#~ msgid ""
-#~ "Determines how errors are handled for the mapping.  Options are to ignore "
-#~ "the error, stop the import when an error is encountered and to receive a "
-#~ "prompt when the error is encountered.  Pending implementation."
-#~ msgstr ""
-#~ "Détermine le traitement d'erreur pour les correspondances. Les options "
-#~ "possibles sont d'ignorer les erreurs, d'arrêter l'import lorsqu'une "
-#~ "erreur est rencontrée et d'avoir une alerte lorsque l'erreur est "
-#~ "rencontrée. Implémentation en cours."
-
-#~ msgid "skip"
-#~ msgstr "passer"
-
-#~ msgid "While inserting imported subject"
-#~ msgstr "Lors de l'insertion de l'enregistrement importé"
-
-#~ msgid "While adding preferred label to imported subject: %1"
-#~ msgstr "Lors de l'ajout du label préféré pour l'enregistrement importé : %1"
-
-#~ msgid "While adding non-preferred label to imported subject"
-#~ msgstr "Lors de l'ajout d'autres labels pour l'enregistrement importé"
-
-#~ msgid ""
-#~ "While updating imported subject with data for attribute %1 with values %2"
-#~ msgstr ""
-#~ "Lors de la mise à jour de l'enregistrement importé pour l'attribut %1 "
-#~ "avec la valeur %2"
-
-#~ msgid "While adding entity: %1"
-#~ msgstr "Lors de l'ajout de l'entité : %1"
-
-#~ msgid "While adding place: %1"
-#~ msgstr "Lors de l'ajout du lieu : %1"
-
-#~ msgid "While adding collection: %1"
-#~ msgstr "Lors de l'ajout de la collection : %1"
-
-#~ msgid "While adding label to imported subject"
-#~ msgstr "Lors de l'ajout du label à l'enregistrement du sujet"
-
-#~ msgid "object lot events"
-#~ msgstr "Événements pour un lot d'objet"
-
-#~ msgid "import/export mappings"
-#~ msgstr "importer/exporter des correspondances"
-
-#~ msgid "import/export mapping groups"
-#~ msgstr "importer/exporter des groupes de correspondances"
-
-#~ msgid "object event"
-#~ msgstr "événement d'objet"
-
-#~ msgid ""
-#~ "Unique numeric identifier used by CollectiveAccess internally to identify "
-#~ "this event"
-#~ msgstr ""
-#~ "Identifiant numérique unique utilisé par CollectiveAccess de manière "
-#~ "interne pour identifier cet événement"
-
-#~ msgid "Event type"
-#~ msgstr "Type d'événement"
-
-#~ msgid "Planned date"
-#~ msgstr "Date planifiée"
-
-#~ msgid "Event date"
-#~ msgstr "Date de l'événement"
-
-#~ msgid "object event ⇔ entity relationship"
-#~ msgstr "relations événement d'objet ⇔ entité"
-
-#~ msgid "object event ⇔ entity relationships"
-#~ msgstr "relation événement d'objet ⇔ entité"
-
-#~ msgid "object event ⇔ occurrence relationship"
-#~ msgstr "relation événement d'objet ⇔ occurrence"
-
-#~ msgid "object event ⇔ occurrence relationships"
-#~ msgstr "relations événement d'objet ⇔ occurrence"
-
-#~ msgid "object event ⇔ place relationship"
-#~ msgstr "relation événement d'objet ⇔ lieu"
-
-#~ msgid "object event ⇔ place relationships"
-#~ msgstr "relations événement d'objet ⇔ lieu"
-
-#~ msgid "object event ⇔ storage location relationship"
-#~ msgstr "relation événement d'objet ⇔ emplacement"
-
-#~ msgid "object event ⇔ storage location relationships"
-#~ msgstr "relations événement d'objet ⇔ emplacement"
-
-#~ msgid "object event ⇔ vocabulary term relationship"
-#~ msgstr "relation événement d'objet ⇔ terme du vocabulaire"
-
-#~ msgid "object event ⇔ vocabulary term relationships"
-#~ msgstr "relations événement d'objet ⇔ vocabulaire"
-
-#~ msgid "object lot event"
-#~ msgstr "événement pour un lot d'objet"
-
-#~ msgid "Planned date for event"
-#~ msgstr "Date planifiée pour l'événement"
-
-#~ msgid "Date (or range of dates) on which the event is planned to occur."
-#~ msgstr "Date (ou plage de dates) à laquelle l'événement est planifié."
-
-#~ msgid "Date event occurred on"
-#~ msgstr "Date de l'événement"
-
-#~ msgid "Date (or range of dates) on which the event actually occurred."
-#~ msgstr "Date (ou plage de dates) à laquelle l'événement a eu lieu."
-
-#~ msgid "object lot event ⇔ storage location relationship"
-#~ msgstr "relation événement de lot d'objet ⇔ emplacement"
-
-#~ msgid "object lot event ⇔ storage location relationships"
-#~ msgstr "relations événement de lot d'objet ⇔ emplacement"
-
-#~ msgid "object lot event ⇔ vocabulary term relationship"
-#~ msgstr "relation événement de lot d'objet ⇔ terme du vocabulaire"
-
-#~ msgid "object lot event ⇔ vocabulary term relationships"
-#~ msgstr "relations événement de lot d'objet ⇔ terme du vocabulaire"
-
-#~ msgid "representation ⇔ collection relationship"
-#~ msgstr "relation représentation ⇔ occurrence"
-
-#~ msgid "representation ⇔ collection relationships"
-#~ msgstr "relations représentation ⇔ collection"
-
-#~ msgid "representation ⇔ occurrence relationship"
-#~ msgstr "relation représentation ⇔ occurrence"
-
-#~ msgid "representation ⇔ occurrence relationships"
-#~ msgstr "relations représentation ⇔ occurrence"
-
-#~ msgid "representation ⇔ place relationship"
-#~ msgstr "relation représentation ⇔ occurrence"
-
-#~ msgid "representation ⇔ place relationships"
-#~ msgstr "relation représentation ⇔ lieu"
-
-#~ msgid "representation ⇔ storage location relationship"
-#~ msgstr "relation représentation d'objet ⇔ emplacement"
-
-#~ msgid "representation ⇔ storage location relationships"
-#~ msgstr "relations représentation d'objet ⇔ emplacement"
-
-#~ msgid ""
-#~ "Could not login user %1 after authentication from external database "
-#~ "because creation of user record failed: %2"
-#~ msgstr ""
-#~ "Impossible de connecter l'utilisateur %1 après authentification de la "
-#~ "base de données externe parce que la création de l'utilisateur a échoué : "
-#~ "%2"
-
-#~ msgid ""
-#~ "Created new login for user %1 after authentication from external database"
-#~ msgstr ""
-#~ "Création du login utilisateur pour %1 après authentification dans la base "
-#~ "de données externe"
-
-#~ msgid ""
-#~ "Could not login user %1 using external database because external "
-#~ "authentication failed"
-#~ msgstr ""
-#~ "Impossible de connecter l'utilisateur %1 à l'aide de la base de données "
-#~ "externe parce que l'authentification externe a échoué"
-
-#~ msgid ""
-#~ "Could not login user %1 using external database because login to external "
-#~ "database failed"
-#~ msgstr ""
-#~ "Impossible de connecter l'utilisateur %1 à l'aide de la base de données "
-#~ "externe parce que la connexion à la base d'authentification a échoué"
-
-#~ msgid "Permet de générer les PV de récolement."
-#~ msgstr "Permet de générer les PV de récolement."
-
-#~ msgid "PV de récolement"
-#~ msgstr "PV de récolement"
-
-#~ msgid "SMF"
-#~ msgstr "SMF"
-
-#~ msgid "plugin Récolement SMF"
-#~ msgstr "plugin Récolement SMF"
-
-#~ msgid "Actions pour le plugin Récolement SMF"
-#~ msgstr "Actions pour le plugin Récolement SMF"
-
-#~ msgid "Peut utiliser les fonctions du plugin Récolement SMF"
-#~ msgstr "Peut utiliser les fonctions du plugin Récolement SMF"
-
-#~ msgid "L'utilisateur peut utiliser les fonctions du plugin Récolement SMF."
-#~ msgstr "L'utilisateur peut utiliser les fonctions du plugin Récolement SMF."
-
-#~ msgid "Splits collections"
-#~ msgstr "Séparer les collections"
-
-#~ msgid "Joins date fields"
-#~ msgstr "Joindre "
-
-#~ msgid ""
-#~ "Maps the date from the data source that is the beginning of the conjoined "
-#~ "date range."
-#~ msgstr ""
-#~ "Fait correspondre la date de la source de données qui est le début d'une "
-#~ "plage de dates."
-
-#~ msgid ""
-#~ "Maps the date from the data source that is the end of the conjoined date "
-#~ "range."
-#~ msgstr ""
-#~ "Fait correspondre la date de la source de données qui est la fin d'une "
-#~ "plage de dates."
-
-#~ msgid "Splits entities"
-#~ msgstr "Sépare les entités"
-
-#~ msgid "Splits measurements"
-#~ msgstr "Sépare les dimensions"
-
-#~ msgid "Splits places"
-#~ msgstr "Séparer les lieux"
-
-#~ msgid "[Error] No place hierarchies are defined"
-#~ msgstr "[Erreur] Pas de hiérarchie définie pour les lieux"
-
-#~ msgid "Cheat sheets"
-#~ msgstr "Astuces"
-
-#~ msgid "No rules are configured"
-#~ msgstr "Aucune règle n'est configurée"
-
-#~ msgid "Unit name"
-#~ msgstr "Nom d'unité"
-
-#~ msgid "Show configured rules (%1)"
-#~ msgstr "Afficher les règles configurées (%1)"
-
-#~ msgid "Hide configured rules (%1)"
-#~ msgstr "Masquer les règles configurées (%2)"
-
-#~ msgid "Edit unit"
-#~ msgstr "Modifier l'unité"
-
-#~ msgid "Add unit"
-#~ msgstr "Ajouter une unité"
-
-#~ msgid "Edit settings"
-#~ msgstr "Modifier les paramètres"
-
-#~ msgid "Add rule"
-#~ msgstr "Ajouter une règle"
-
-#~ msgid "No collection subjects"
-#~ msgstr "Sujet hors de la collection"
-
-#~ msgid ""
-#~ "Use the browser to explore the hierarchy. You can edit other hierarchy "
-#~ "items by clicking on the arrow."
-#~ msgstr ""
-#~ "Utiliser le navigateur pour explorer la hiérarchie. Vous pouvez modifier "
-#~ "d'autres objets de la hiérarchie en cliquant sur la flèche."
-
-#~ msgid "Display %1 version"
-#~ msgstr "Afficher la version %1"
-
-#~ msgid "Create set from results"
-#~ msgstr "Créer des ensembles avec les résultats"
-
-#~ msgid "Create set and batch edit results"
-#~ msgstr "Créer un ensemble et modifier par lots les résultats"
-
-#~ msgid "Create set from result"
-#~ msgstr "Créer des ensembles avec le résultat"
-
-#~ msgid ""
-#~ "Actions allowing access and modification of content on the front-end "
-#~ "interface."
-#~ msgstr ""
-#~ "Actions autorisant l'accès et la modification de contenu depuis "
-#~ "l'interface publique."
-
-#~ msgid "map"
-#~ msgstr "Carte"
-
-#~ msgid ""
-#~ "Installation requires the PHP memory_limit directive must be set to at "
-#~ "least 32 megabytes. Check your php.ini configuration file. If the "
-#~ "memory_limit setting is not increased installation may unexpectedly abort."
-#~ msgstr ""
-#~ "L'installation nécessite que la directive PHP memory_limit soit définie "
-#~ "au moins à 32 MO. Vérifiez votre fichier de configuration php.ini. Si le "
-#~ "paramètre memory_limit n'est pas augmenté, l'installation peut échouer."
-
-#~ msgid ""
-#~ "Installation would like the PHP memory_limit directive must be set to at "
-#~ "least 128 megabytes, just to be safe. Check your php.ini configuration "
-#~ "file. If the memory_limit setting is not increased installation can "
-#~ "unexpectedly abort."
-#~ msgstr ""
-#~ "L'installation vous recommande que la directive PHP memory_limit soit "
-#~ "définie au moins à 128 MO, pour être sûr que tout se passe bien. Vérifiez "
-#~ "votre fichier de configuration php.ini. Si le paramètre memory_limit "
-#~ "n'est pas augmenté, l'installation peut échouer."
-
-#~ msgid "PDF (Long)"
-#~ msgstr "PDF (Long)"
-
-#~ msgid "Remarks"
-#~ msgstr "Remarques"
-
-#~ msgid "Remarks relating to change"
-#~ msgstr "Remarques sur la modification"
-
-#~ msgid "xxx."
-#~ msgstr "xxx."
-
-#~ msgid "xxx. Leave all unselected for no restriction."
-#~ msgstr "xxx. Laisser tout désélectionné pour ne mettre aucune restriction."
-
-#~ msgid "No default UI locale is available"
-#~ msgstr "Pas de locale pour l'interface utilisateur par défaut"
-
-#~ msgid "Invalid matching mode"
-#~ msgstr "Mode de correspondance invalide"
-
-#~ msgid "Invalid directory"
-#~ msgstr "Répertoire non valide"
-
-#~ msgid "Invalid object type value"
-#~ msgstr "Valeur de type d'objet invalide"
-
-#~ msgid "Invalid object representation type value"
-#~ msgstr "Valeur de type de représentation d'objet invalide"
-
-#~ msgid "Invalid object status value"
-#~ msgstr "Valeur de statut d'objet invalide"
-
-#~ msgid "Invalid object representation status value"
-#~ msgstr "Valeur de statut de représentation d'objet invalide"
-
-#~ msgid "Invalid object access value"
-#~ msgstr "Valeur d'accès objet invalide"
-
-#~ msgid "Invalid object representation access value"
-#~ msgstr "Valeur d'accès aux représentations objets invalide"
-
-#~ msgid "Invalid import mode"
-#~ msgstr "Mode d'import invalide"
-
-#~ msgid "Invalid identifier option"
-#~ msgstr "Option d'identification invalide"
-
-#~ msgid "Invalid object locale_id"
-#~ msgstr "Locale_id d'objet invalide"
-
-#~ msgid "Invalid object representation locale_id"
-#~ msgstr "Locale_id de représentation d'objet invalide"
-
-#~ msgid "Provides media import services."
-#~ msgstr "Fournit des services d'import de média."
-
-#~ msgid "Media Import plugin"
-#~ msgstr "Plugin d'import de médias"
-
-#~ msgid "Actions for media import plugin"
-#~ msgstr "Actions pour le plugin d'import de médias"
-
-#~ msgid "Can use media import plugin functions"
-#~ msgstr "Peut utiliser les fonctions du plugin d'import de médias"
-
-#~ msgid ""
-#~ "User can use all media import plugin functionality, including batch media "
-#~ "import."
-#~ msgstr ""
-#~ "L'utilisateur peut utiliser toutes les fonctionnalités du plugin "
-#~ "d'import, incluant l'import de médias en série."
-
-#~ msgid "Deleted file %1 from %2"
-#~ msgstr "Fichier %1 supprimé de %2"
-
-#~ msgid "CollectiveAccess batch media import processing report"
-#~ msgstr "Rapport de traitement de fichier média en série CollectiveAccess"
-
-#~ msgid "Media file: %1"
-#~ msgstr "Fichier média : %1"
-
-#~ msgid "Media import request could not be submitted due to errors"
-#~ msgstr ""
-#~ "La demande d'import de médias ne peut être lancée suite à des erreurs."
-
-#~ msgid "The following errors occurred"
-#~ msgstr "Les erreurs suivantes sont survenues "
-
-#~ msgid "Media import request submitted"
-#~ msgstr "La demande d'import de médias a été soumise"
-
-#~ msgid "There is no media available for import"
-#~ msgstr "Il n'y a pas de média disponible pour l'import"
-
-#~ msgid "Upload media into the <em>%1</em> server directory and retry"
-#~ msgstr "Uploader les médias dans <em>%1</em> puis réessayer"
-
-#~ msgid "Start import"
-#~ msgstr "Lancer l'import"
-
-#~ msgid ""
-#~ "Create new object record for media if a matching one does not already "
-#~ "exist"
-#~ msgstr ""
-#~ "Créer un nouvel enregistrement d'objet pour le média si aucun objet "
-#~ "correspondant n'existe déjà"
-
-#~ msgid "Delete media from directory after it is imported"
-#~ msgstr "Supprimer les médias du répertoire après leur import"
-
-#~ msgid "Object identifer-to-filename matching mode"
-#~ msgstr "Mode de correspondance identifiant objet/nom de fichier"
-
-#~ msgid "[Try each mode until match is found]"
-#~ msgstr "[Essayer chaque mode jusqu'à trouver une correspondance]"
-
-#~ msgid "Create new object records with type"
-#~ msgstr "Créer de nouveaux enregistrements objet avec le type"
-
-#~ msgid "Create new object records with status"
-#~ msgstr "Créer de nouveaux enregistrements objet avec le statut"
-
-#~ msgid "Create new object records with access"
-#~ msgstr "Créer de nouveaux enregistrements objet avec l'accès"
-
-#~ msgid "Create new object records with locale"
-#~ msgstr "Créer de nouveaux enregistrements objet avec la langue"
-
-#~ msgid "Option for object identifer"
-#~ msgstr "Option pour l'identifiant objet"
-
-#~ msgid "Use filename as identifier rather than set value"
-#~ msgstr ""
-#~ "Utiliser le nom de fichier comme identifiant plutôt que définir une valeur"
-
-#~ msgid "Create object representation (media) records with type"
-#~ msgstr ""
-#~ "Créer des enregistrements représentation d'objet (média) avec le type"
-
-#~ msgid "Create object representation (media) records with status"
-#~ msgstr ""
-#~ "Créer des enregistrements représentation d'objet (média) avec le statut"
-
-#~ msgid "Create object representation (media) records with access"
-#~ msgstr ""
-#~ "Créer des enregistrements représentation d'objet (média) avec l'accès"
-
-#~ msgid "Create object representation (media) records with locale"
-#~ msgstr ""
-#~ "Créer des enregistrements représentation d'objet (média) avec la locale"
-
-#~ msgid "Download Media"
-#~ msgstr "Télécharger le média"
-
-#~ msgid "Object event identifier"
-#~ msgstr "Identifiant d'événement objet"
-
-#~ msgid ""
-#~ "<div class='error'>An error in your system configuration has been "
-#~ "detected</div>\n"
-#~ "\t\t\tGeneral installation instructions can be found\n"
-#~ "\t\t\t<a href='http://wiki.collectiveaccess.org/index.php?"
-#~ "title=Installation_(Providence)' target='_blank'>here</a>.\n"
-#~ "\t\t\tFor more specific hints on the existing issues please have a look "
-#~ "at the messages below."
-#~ msgstr ""
-#~ "<div class='error'>Une erreur dans votre configuration système a été "
-#~ "détectée.\n"
-#~ "\t\t\tDes informations d'installation sont disponibles \n"
-#~ "\t\t\t<a href='http://wiki.collectiveaccess.org/index.php?"
-#~ "title=Installation_(Providence)' target='_blank'>ici</a>.\n"
-#~ "\t\t\tPour des informations plus spécifiques sur les problèmes détectés, "
-#~ "veuillez consulter les messages ci-dessous."
-
-#~ msgid ""
-#~ "An error will occur if an attempt is made to save an item with fewer than "
-#~ "this number of attributes of this type. Set to &gt; 1 to make this "
-#~ "attribute effectively mandatory. Set to zero if you don't wish to set a "
-#~ "limit."
-#~ msgstr ""
-#~ "Une erreur se produira si une tentative d'enregistrement se fait pour un "
-#~ "item avec moins du nombre requis d'attributs de ce type. Définir à &gt; 1 "
-#~ "pour rendre cet attribut réellement obligatoire. Définir à 0 si vous ne "
-#~ "voulez pas fixer une limite."
-
-#~ msgid ""
-#~ "An error will occur if an attempt is made to save an item with more than "
-#~ "this number of attributes of this type. Set to &gt; 1 to make this "
-#~ "attribute single-value. Otherwise set it to an appropriately high value."
-#~ msgstr ""
-#~ "Une erreur se produira si une tentative d'enregistrement se fait pour un "
-#~ "item avec plus du nombre requis d'attributs de ce type. Définir à 1 pour "
-#~ "rendre cet attribut unique. Sinon définir à la valeur maximum appropriée."
-
-#~ msgid ""
-#~ "The minimum number of attribute bundles to show in an editing form. If "
-#~ "the number of actual attributes is less than this number then the user "
-#~ "interface will show empty form bundles to reach this number. This number "
-#~ "should be less than or equal to the maximum number of attributes per row."
-#~ msgstr ""
-#~ "Le nombre minimum de groupes d'attributs qui doivent être affichés dans "
-#~ "un formulaire de modification. Si le nombre d'attributs actuels est "
-#~ "inférieur à ce nombre, l'interface utilisateur affichera le nombre requis "
-#~ "de paquets d'attributs pour atteindre ce nombre. Ce nombre devrait être "
-#~ "inférieur ou égal ou nombre maximum d'attributs par ligne."
-
-#~ msgid "Wiki"
-#~ msgstr "Wiki"
-
-#~ msgid "Add %1 to set"
-#~ msgstr "Ajouter %1 à l'ensemble"
-
-#~ msgid "There are no items in this set"
-#~ msgstr "Aucun élément dans cet ensemble"
-
-#~ msgid "Please wait..."
-#~ msgstr "Veuillez patienter..."
-
-#~ msgid "Cataloguing"
-#~ msgstr "Catalogage"
-
-#~ msgid "Import/export mapping editor"
-#~ msgstr "Import/export éditeur de correspondance"
-
-#~ msgid "Import/export mapping group editor"
-#~ msgstr "Import/export éditeur de groupe de correspondance"
-
-#~ msgid ""
-#~ "%1 items will be available for download once digitization is completed"
-#~ msgstr ""
-#~ "%1 éléments seront disponibles au téléchargement lorsque la numérisation "
-#~ "sera achevée"
-
-#~ msgid "%1 items will be available for download when order is paid for"
-#~ msgstr ""
-#~ "%1 éléments seront disponibles au téléchargement lorsque la commande sera "
-#~ "payée"
-
-#~ msgid "%1' does not exist in this object"
-#~ msgstr "%1 n'existe pas pour cet objet"
-
-#~ msgid "<a href='%2'>%1 item</a>"
-#~ msgstr "<a href='%2'>%1 élément</a>"
-
-#~ msgid "<a href='%2'>%1 items</a>"
-#~ msgstr "<a href='%2'>%1 élément</a>"
-
-#~ msgid "Can't copy icon file for [%1] from %2 to %3"
-#~ msgstr "Impossible de copier le fichier d'icône pour [%1] de %2 vers %3"
-
-#~ msgid "Can't copy icon file from %1 to %2"
-#~ msgstr "Impossible de copier le fichier d'icône de %1 vers %2"
-
-#~ msgid "Can't copy icon file from %1/%2 to %3"
-#~ msgstr "Impossible de copier le fichier d'icône de %1/%2 vers %3"
-
-#~ msgid "Cost"
-#~ msgstr "Coût"
-
-#~ msgid "Edit representation"
-#~ msgstr "Modifier la représentation"
-
-#~ msgid ""
-#~ "Icon for version %1 available for this media type (system "
-#~ "misconfiguration)"
-#~ msgstr ""
-#~ "Icône pour la version %1 disponible pour ce type de média (problème de "
-#~ "configuration système)"
-
-#~ msgid "MysqlFulltext database tables exist"
-#~ msgstr "Les tables de la base MysqlFullText existent"
-
-#~ msgid "No icon available for media type '%1' (system misconfiguration)"
-#~ msgstr ""
-#~ "Aucune icône disponible pour le type de média '%1' (problème de "
-#~ "configuration système)"
-
-#~ msgid "No icon available for this media type (system misconfiguration)"
-#~ msgstr ""
-#~ "Aucune icône disponible pour le type de média (problème de configuration "
-#~ "système)"
-
-#~ msgid "No icon available for this media type [%1] (system misconfiguration)"
-#~ msgstr ""
-#~ "Aucune icône disponible pour ce type de média [%1] (problème de "
-#~ "configuration système)"
-
-#~ msgid "No icons available (system misconfiguration)"
-#~ msgstr "Aucune icône disponible (problème de configuration du système)"
-
-#~ msgid "No icons available for this media type (system misconfiguration)"
-#~ msgstr ""
-#~ "Aucune icône disponible pour le type de média (problème de configuration "
-#~ "système)"
-
-#~ msgid "Order #%1 – %2 – from %3"
-#~ msgstr "Commande %1 - %2 de %3"
-
-#~ msgid "Orders"
-#~ msgstr "Commandes"
-
-#~ msgid "Override current order status"
-#~ msgstr "Ecraser le statut courant"
-
-#~ msgid "Printable PDF"
-#~ msgstr "PDF imprimable"
-
-#~ msgid ""
-#~ "The MysqlFulltext search engine requires that MySQL be the back-end "
-#~ "database for your CollectiveAccess installation."
-#~ msgstr ""
-#~ "Le moteur de recherche MysqlFullText nécessite que MySQL soit l'interface "
-#~ "de base de données de votre installation CollectiveAccess."
-
-#~ msgid ""
-#~ "The MysqlFulltext search engine requires that certain tables be present "
-#~ "in your database. They are installed by default and should be present, "
-#~ "but if they are not MysqlFulltext will not be able to operate."
-#~ msgstr ""
-#~ "Le moteur de recherche MysqlFullText requiert que certaines tables soient "
-#~ "présentes dans votre base de données. Elles sont installées par défaut et "
-#~ "devraient être présentes, mais si elles ne sont pas présentes "
-#~ "MysqlFullText ne sera pas capable de fonctionner."
-
-#~ msgid "Total Items"
-#~ msgstr "Quantité"
