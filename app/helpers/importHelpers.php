@@ -88,6 +88,9 @@
 					$vm_ret = ExpressionParser::evaluate($va_rule['trigger'], $pa_source_data);
 					if (!ExpressionParser::hadError() && (bool)$vm_ret) {
 						foreach($va_rule['actions'] as $va_action) {
+							if (!is_array($va_action) && (strtolower($va_action) == 'skip')) {
+								$va_action = array('action' => 'skip');
+							}
 							switch($vs_action_code = strtolower($va_action['action'])) {
 								case 'set':
 									switch($va_action['target']) {
@@ -108,7 +111,7 @@
 										if ($vs_action_code != 'skip') {
 											$o_log->logInfo(_t('[%3] Parent was skipped using rule "%1" with default action because an invalid action ("%2") was specified', $va_rule['trigger'], $vs_action_code, $ps_refinery_name));
 										} else {
-											$o_log->logDebug(_t('[%3] Parent was skipped using rule "%1" with action"%2"', $va_rule['trigger'], $vs_action_code, $ps_refinery_name));
+											$o_log->logDebug(_t('[%3] Parent was skipped using rule "%1" with action "%2"', $va_rule['trigger'], $vs_action_code, $ps_refinery_name));
 										}
 									}
 									continue(4);
