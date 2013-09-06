@@ -60,6 +60,17 @@
 		public function refine(&$pa_destination_data, $pa_group, $pa_item, $pa_source_data, $pa_options=null) {
 			$o_log = (isset($pa_options['log']) && is_object($pa_options['log'])) ? $pa_options['log'] : null;
 			
+			$t_mapping = caGetOption('mapping', $pa_options, null);
+			if ($t_mapping) {
+				$o_dm = Datamodel::load();
+				if ($t_mapping->get('table_num') != $o_dm->getTableNum('ca_collections')) { 
+					if ($o_log) {
+						$o_log->logError(_t("collectionHierarchyBuilder refinery may only be used in imports to ca_collections"));
+					}
+					return null; 
+				}
+			}
+			
 			$va_group_dest = explode(".", $pa_group['destination']);
 			$vs_terminal = array_pop($va_group_dest);
 			$pm_value = $pa_source_data[$pa_item['source']];
