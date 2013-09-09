@@ -1307,7 +1307,7 @@ if (!$vb_can_do_incremental_indexing || $pb_reindex_mode) {
 		}
 		
 		$vs_sql = "
-			SELECT ".join(", ", $va_flds)."
+			SELECT ".join(", ", array_keys($va_flds))."
 			FROM ".$vs_select_tablename."
 			".join("\n", $va_joins)."
 			WHERE
