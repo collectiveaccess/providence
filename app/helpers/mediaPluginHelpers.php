@@ -384,7 +384,7 @@
 			}
 			
 			if (is_array($va_date_elements)) {
-				if ($vs_raw_date = $va_exif_data['IFD0']['DateTime']) {
+				if (($vs_raw_date = $va_exif_data['IFD0']['DateTime']) || ($vs_raw_date = $va_exif_data['EXIF']['DateTime'])) {
 					$va_date_tmp = preg_split('![: ]+!', $vs_raw_date); 
 					$vs_date = 	$va_date_tmp[0].'-'.$va_date_tmp[1].'-'.$va_date_tmp[2].'T'.$va_date_tmp[3].':'.$va_date_tmp[4].':'.$va_date_tmp[5];
 					foreach($va_date_elements as $vs_element) {
@@ -452,10 +452,11 @@
 					if (isset($va_metadata[$vs_el])) {
 						$va_metadata =& $va_metadata[$vs_el];
 					} else {
+
 						continue(2);
 					}
 				}
-				
+
 				if(is_array($va_metadata)) { $va_metadata = join(";", $va_metadata); }
 				if (!trim($va_metadata)) { continue(2); }
 				
@@ -472,12 +473,14 @@
 						if($po_instance->hasField($vs_attr)) {
 							$po_instance->set($vs_attr, $va_metadata);
 						} else {
-							$po_instance->replaceAttribute(
-								array(	'locale_id' => $pn_locale_id, 
-										$vs_attr => $va_metadata),
-								$vs_attr);
+							// try as attribute
+							if(sizeof($va_tmp2)==2){ // format ca_objects.foo, we only want "foo"
+								$po_instance->replaceAttribute(array(
+									$va_tmp2[1] => $va_metadata,
+									'locale_id' => $pn_locale_id
+								),$va_tmp2[1]);
+							}
 						}
-						
 				}
 				$vb_did_mapping = true;
 			}
