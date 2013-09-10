@@ -452,13 +452,14 @@
 					if (isset($va_metadata[$vs_el])) {
 						$va_metadata =& $va_metadata[$vs_el];
 					} else {
-
 						continue(2);
 					}
 				}
 
 				if(is_array($va_metadata)) { $va_metadata = join(";", $va_metadata); }
-				if (!trim($va_metadata)) { continue(2); }
+				if(!is_int($va_metadata)){ // pass ints through for values like WhiteBalance = 0
+					if (!trim($va_metadata)) { continue(2); }
+				}
 				
 				$va_tmp2 = explode(".", $vs_attr);
 				
