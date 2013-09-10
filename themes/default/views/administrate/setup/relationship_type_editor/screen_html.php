@@ -32,12 +32,17 @@
 	
 	$t_ui = $this->getVar('t_ui');
 	
-	print $vs_control_box = caFormControlBox(
-		caFormSubmitButton($this->request, __CA_NAV_BUTTON_SAVE__, _t("Save"), 'RelationshipTypeEditorForm').' '.
-		caNavButton($this->request, __CA_NAV_BUTTON_CANCEL__, _t("Cancel"), 'administrate/setup/relationship_type_editor', 'RelationshipTypeEditor', 'Edit/'.$this->request->getActionExtra(), array('type_id' => $vn_type_id)), 
-		'', 
-		(intval($vn_type_id) > 0) ? caNavButton($this->request, __CA_NAV_BUTTON_DELETE__, _t("Delete"), 'administrate/setup/relationship_type_editor', 'RelationshipTypeEditor', 'Delete/'.$this->request->getActionExtra(), array('type_id' => $vn_type_id)) : ''
-	);
+	$vb_can_edit	 	= $t_item->isSaveable($this->request);
+	$vb_can_delete		= $t_item->isDeletable($this->request);
+	
+	if ($vb_can_edit) {
+		print $vs_control_box = caFormControlBox(
+			caFormSubmitButton($this->request, __CA_NAV_BUTTON_SAVE__, _t("Save"), 'RelationshipTypeEditorForm').' '.
+			caNavButton($this->request, __CA_NAV_BUTTON_CANCEL__, _t("Cancel"), 'administrate/setup/relationship_type_editor', 'RelationshipTypeEditor', 'Edit/'.$this->request->getActionExtra(), array('type_id' => $vn_type_id)), 
+			'', 
+			(intval($vn_type_id) > 0) ? caNavButton($this->request, __CA_NAV_BUTTON_DELETE__, _t("Delete"), 'administrate/setup/relationship_type_editor', 'RelationshipTypeEditor', 'Delete/'.$this->request->getActionExtra(), array('type_id' => $vn_type_id)) : ''
+		);
+	}
 ?>
 	<div class="sectionBox">
 <?php
@@ -49,7 +54,7 @@
 			
 			print join("\n", $va_form_elements);
 			
-			print $vs_control_box;
+			if ($vb_can_edit) { print $vs_control_box; }
 ?>
 			<input type='hidden' name='_context_id' value='<?php print $this->getVar('_context_id'); ?>'/>
 			<input type='hidden' name='type_id' value='<?php print $vn_type_id; ?>'/>
@@ -59,4 +64,4 @@
 
 	<div class="editorBottomPadding"><!-- empty --></div>
 	
-	<?php print caEditorFieldList($va_bundle_list); ?>
+	<?php print caSetupEditorScreenOverlays($this->request, $t_item, $va_bundle_list); ?>
