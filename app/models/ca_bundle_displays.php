@@ -502,7 +502,10 @@ class ca_bundle_displays extends BundlableLabelableBaseModelWithAttributes {
 								case 'DT_SELECT':
 									if (($vs_list_code = $t_subject->getFieldInfo($va_bundle_name[1], 'LIST')) || ($vs_list_code = $t_subject->getFieldInfo($va_bundle_name[1], 'LIST_CODE'))) {
 										$va_placements[$vn_placement_id]['inlineEditingType'] = DT_SELECT;
-										$va_placements[$vn_placement_id]['inlineEditingListValues'] = array_values($t_list->getItemsForList($vs_list_code, array('labelsOnly' => true)));
+										if (!is_array($va_list_labels = $t_list->getItemsForList($vs_list_code, array('labelsOnly' => true)))) {
+											$va_list_labels = array();
+										}
+										$va_placements[$vn_placement_id]['inlineEditingListValues'] = array_values($va_list_labels);
 									} else {
 										$va_placements[$vn_placement_id]['inlineEditingType'] = DT_FIELD;
 									}
