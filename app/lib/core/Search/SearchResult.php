@@ -269,14 +269,17 @@ class SearchResult extends BaseObject {
 			$vs_order_by = " ORDER BY ".$t_rel_instance->tableName().".idno_sort";
 		}
 	
+		$vs_deleted_sql = '';
 		$vs_rel_pk = $t_rel_instance->primaryKey();
-		
+		if ($t_rel_instance->hasField('deleted')) {
+			$vs_deleted_sql = " AND (".$t_rel_instance->tableName().".deleted = 0)";
+		}
 		$vs_sql = "
 			SELECT ".join(',', $va_fields)."
 			FROM ".$this->ops_table_name."
 			".join("\n", $va_joins)."
 			WHERE
-				".$this->ops_table_name.'.'.$this->ops_table_pk." IN (".join(',', $va_row_ids).") $vs_criteria_sql
+				".$this->ops_table_name.'.'.$this->ops_table_pk." IN (".join(',', $va_row_ids).") {$vs_criteria_sql} {$vs_deleted_sql}
 			{$vs_order_by}
 		";
 		//print "<pre>$vs_sql</pre>";
