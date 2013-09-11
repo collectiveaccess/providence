@@ -68,11 +68,14 @@ class Installer {
 
 		$this->opa_locales = array();
 
-		$this->loadProfile($ps_profile_dir, $ps_profile_name);
-		$this->extractAndLoadBase();
+		if($this->loadProfile($ps_profile_dir, $ps_profile_name)){
+			$this->extractAndLoadBase();
 
-		if(!$this->validateProfile()){
-			$this->addError("Profile validation failed. Your profile doesn't conform to the required XML schema.");
+			if(!$this->validateProfile()){
+				$this->addError("Profile validation failed. Your profile doesn't conform to the required XML schema.");
+			}
+		} else {
+			$this->addError("Could not read profile '{$ps_profile_name}'. Please check the file permissions.");
 		}
 	}
 	# --------------------------------------------------
@@ -122,7 +125,14 @@ class Installer {
 	}
 	# --------------------------------------------------
 	private function loadProfile($ps_profile_dir, $ps_profile_name) {
-		$this->opo_profile = simplexml_load_file($ps_profile_dir."/".$ps_profile_name.".xml");
+		$vs_file = $ps_profile_dir."/".$ps_profile_name.".xml";
+
+		if(is_readable($vs_file)){
+			$this->opo_profile = simplexml_load_file($vs_file);	
+			return true;
+		} else {
+			return false;
+		}
 	}
 	# --------------------------------------------------
 	private function extractAndLoadBase(){
