@@ -502,10 +502,7 @@ create table ca_media_content_locations
    row_id                         int unsigned                not null,
    content                        text                        not null,
    page                           int unsigned                not null,
-   x1                             decimal(6,2)                not null,
-   y1                             decimal(6,2)                not null,
-   x2                             decimal(6,2)                not null,
-   y2                             decimal(6,2)                not null
+   loc                            longtext                    not null
 ) engine=myisam CHARACTER SET utf8 COLLATE utf8_general_ci;
 
 create index i_row_id on ca_media_content_locations(row_id, table_num, page);
@@ -1034,6 +1031,7 @@ create table ca_object_representations_x_occurrences
    label_left_id                  int unsigned                   null,
    label_right_id                 int unsigned                   null,
    rank                           int unsigned                   not null default 0,
+   is_primary                     tinyint                        not null,
    primary key (relation_id),
    constraint fk_ca_object_representations_x_occurrences_representation_id foreign key (representation_id)
       references ca_object_representations (representation_id) on delete restrict on update restrict,
@@ -1078,6 +1076,7 @@ create table ca_object_representations_x_places
    label_left_id                  int unsigned                   null,
    label_right_id                 int unsigned                   null,
    rank                           int unsigned                   not null default 0,
+   is_primary                     tinyint                        not null,
    primary key (relation_id),
    constraint fk_ca_object_representations_x_places_representation_id foreign key (representation_id)
       references ca_object_representations (representation_id) on delete restrict on update restrict,
@@ -1123,6 +1122,7 @@ create table ca_object_representations_x_collections
    label_left_id                  int unsigned                   null,
    label_right_id                 int unsigned                   null,
    rank                           int unsigned                   not null default 0,
+   is_primary                     tinyint                        not null,
    primary key (relation_id),
    constraint fk_ca_object_representations_x_collections_representation_id foreign key (representation_id)
       references ca_object_representations (representation_id) on delete restrict on update restrict,
@@ -1168,6 +1168,7 @@ create table ca_object_representations_x_storage_locations
    label_left_id                  int unsigned                   null,
    label_right_id                 int unsigned                   null,
    rank                           int unsigned                   not null default 0,
+   is_primary                     tinyint                        not null,
    primary key (relation_id),
    constraint fk_ca_object_representations_x_storage_loc_rep_id foreign key (representation_id)
       references ca_object_representations (representation_id) on delete restrict on update restrict,
@@ -1330,113 +1331,6 @@ create table ca_user_roles
 create unique index u_name on ca_user_roles(name);
 create unique index u_code on ca_user_roles(code);
 
-
-/*==========================================================================*/
-create table ca_object_lot_events
-(
-   event_id                       int unsigned                   not null AUTO_INCREMENT,
-   lot_id                         int unsigned                   not null,
-   type_id                        int unsigned                   not null,
-   is_template                    tinyint unsigned               not null default 0,
-   planned_sdatetime              decimal(30,20)                 not null,
-   planned_edatetime              decimal(30,20)                 not null,
-   event_sdatetime                decimal(30,20),
-   event_edatetime                decimal(30,20),
-   primary key (event_id),
-   constraint fk_ca_object_lot_events_lot_id foreign key (lot_id)
-      references ca_object_lots (lot_id) on delete restrict on update restrict,
-      
-   constraint fk_ca_object_lot_events_type_id foreign key (type_id)
-      references ca_list_items (item_id) on delete restrict on update restrict
-) engine=innodb CHARACTER SET utf8 COLLATE utf8_general_ci;
-
-create index i_lot_id on ca_object_lot_events(lot_id);
-create index i_type_id on ca_object_lot_events(type_id);
-create index i_planned_sdatetime on ca_object_lot_events(planned_sdatetime);
-create index i_planned_edatetime on ca_object_lot_events(planned_edatetime);
-create index i_event_sdatetime on ca_object_lot_events(event_sdatetime);
-create index i_event_edatetime on ca_object_lot_events(event_edatetime);
-
-
-/*==========================================================================*/
-create table ca_object_lot_event_labels
-(
-   label_id                       int unsigned                   not null AUTO_INCREMENT,
-   event_id                       int unsigned               not null,
-   locale_id                      smallint unsigned              not null,
-   type_id                        int unsigned                   null,
-   name                           varchar(1024)                  not null,
-   name_sort                      varchar(1024)                  not null,
-   source_info                    longtext                       not null,
-   is_preferred                   tinyint unsigned               not null,
-   primary key (label_id),
-   constraint fk_ca_object_lot_event_labels_event_id foreign key (event_id)
-      references ca_object_lot_events (event_id) on delete restrict on update restrict,
-   constraint fk_ca_object_lot_event_labels_locale_id foreign key (locale_id)
-      references ca_locales (locale_id) on delete restrict on update restrict,
-   constraint fk_ca_object_lot_event_labels_type_id foreign key (type_id)
-      references ca_list_items (item_id) on delete restrict on update restrict
-) engine=innodb CHARACTER SET utf8 COLLATE utf8_general_ci;
-
-create index i_name on ca_object_lot_event_labels(name(128));
-create index i_event_id on ca_object_lot_event_labels(event_id);
-create unique index u_all on ca_object_lot_event_labels
-(
-   event_id,
-   name(255),
-   type_id,
-   locale_id
-);
-create index i_name_sort on ca_object_lot_event_labels(name_sort(128));
-create index i_type_id on ca_object_lot_event_labels(type_id);
-create index i_locale_id on ca_object_lot_event_labels(locale_id);
-
-
-
-
-/*==========================================================================*/
-create table ca_object_lot_events_x_storage_locations
-(
-   relation_id                    int unsigned                   not null AUTO_INCREMENT,
-   event_id                       int unsigned                   not null,
-   location_id                    int unsigned               not null,
-   type_id                        smallint unsigned              not null,
-   source_info                    longtext                       not null,
-   sdatetime                      decimal(30,20),
-   edatetime                      decimal(30,20),
-   label_left_id                  int unsigned                   null,
-   label_right_id                 int unsigned                   null,
-   rank                           int unsigned                   not null default 0,
-   primary key (relation_id),
-   constraint fk_ca_object_lot_events_x_storage_locations_location_id foreign key (location_id)
-      references ca_storage_locations (location_id) on delete restrict on update restrict,
-      
-   constraint fk_ca_object_lot_events_x_storage_locations_event_id foreign key (event_id)
-      references ca_object_lot_events (event_id) on delete restrict on update restrict,
-      
-   constraint fk_ca_object_lot_events_x_storage_locations_type_id foreign key (type_id)
-      references ca_relationship_types (type_id) on delete restrict on update restrict,
-      
-   constraint fk_ca_object_lot_events_x_storage_locations_label_left_id foreign key (label_left_id)
-      references ca_object_lot_event_labels (label_id) on delete restrict on update restrict,
-      
-   constraint fk_ca_object_lot_events_x_storage_locations_label_right_id foreign key (label_right_id)
-      references ca_storage_location_labels (label_id) on delete restrict on update restrict
-) engine=innodb CHARACTER SET utf8 COLLATE utf8_general_ci;
-
-create index i_event_id on ca_object_lot_events_x_storage_locations(event_id);
-create index i_location_id on ca_object_lot_events_x_storage_locations(location_id);
-create index i_type_id on ca_object_lot_events_x_storage_locations(type_id);
-create unique index u_all on ca_object_lot_events_x_storage_locations
-(
-   type_id,
-   event_id,
-   location_id,
-   sdatetime,
-   edatetime
-);
-create index i_label_left_id on ca_object_lot_events_x_storage_locations(label_left_id);
-create index i_label_right_id on ca_object_lot_events_x_storage_locations(label_right_id);
 
 /*==========================================================================*/
 create table ca_object_lot_labels
@@ -1675,69 +1569,6 @@ create index i_type_id on ca_object_labels(type_id);
 create index i_locale_id on ca_object_labels(locale_id);
 
 
-/*==========================================================================*/
-create table ca_object_events
-(
-   event_id                       int unsigned                   not null AUTO_INCREMENT,
-   type_id                        int unsigned                   not null,
-   object_id                      int unsigned                   not null,
-   is_template                    tinyint unsigned               not null default 0,
-   planned_sdatetime              decimal(30,20)                 not null,
-   planned_edatetime              decimal(30,20)                 not null,
-   event_sdatetime                decimal(30,20),
-   event_edatetime                decimal(30,20),
-   primary key (event_id),
-   
-   constraint fk_ca_object_events_object_id foreign key (object_id)
-      references ca_objects (object_id) on delete restrict on update restrict,
-      
-   constraint fk_ca_object_events_type_id foreign key (type_id)
-      references ca_list_items (item_id) on delete restrict on update restrict
-) engine=innodb CHARACTER SET utf8 COLLATE utf8_general_ci;
-
-create index i_object_id on ca_object_events(object_id);
-create index i_type_id on ca_object_events(type_id);
-create index i_planned_sdatetime on ca_object_events(planned_sdatetime);
-create index i_planned_edatetime on ca_object_events(planned_edatetime);
-create index i_event_sdatetime on ca_object_events(event_sdatetime);
-create index i_event_edatetime on ca_object_events(event_edatetime);
-
-
-/*==========================================================================*/
-create table ca_object_event_labels
-(
-   label_id                       int unsigned                   not null AUTO_INCREMENT,
-   event_id                       int unsigned               not null,
-   locale_id                      smallint unsigned              not null,
-   type_id                        int unsigned                   null,
-   name                           varchar(1024)                  not null,
-   name_sort                      varchar(1024)                  not null,
-   source_info                    longtext                       not null,
-   is_preferred                   tinyint unsigned               not null,
-   primary key (label_id),
-   constraint fk_ca_object_event_labels_event_id foreign key (event_id)
-      references ca_object_events (event_id) on delete restrict on update restrict,
-   constraint fk_ca_object_event_labels_locale_id foreign key (locale_id)
-      references ca_locales (locale_id) on delete restrict on update restrict,
-   constraint fk_ca_object_event_labels_type_id foreign key (type_id)
-      references ca_list_items (item_id) on delete restrict on update restrict
-) engine=innodb CHARACTER SET utf8 COLLATE utf8_general_ci;
-
-create index i_name on ca_object_event_labels(name(128));
-create index i_event_id on ca_object_event_labels(event_id);
-create unique index u_all on ca_object_event_labels
-(
-   event_id,
-   name(255),
-   type_id,
-   locale_id
-);
-create index i_name_sort on ca_object_event_labels(name_sort(128));
-create index i_type_id on ca_object_event_labels(type_id);
-create index i_locale_id on ca_object_event_labels(locale_id);
-
-
-
 
 /*==========================================================================*/
 create table ca_objects_x_collections
@@ -1961,141 +1792,6 @@ create index i_locale_id on ca_attributes(locale_id);
 create index i_row_id on ca_attributes(row_id);
 create index i_table_num on ca_attributes(table_num);
 create index i_element_id on ca_attributes(element_id);
-
-
-/*==========================================================================*/
-create table ca_object_events_x_occurrences
-(
-   relation_id                    int unsigned                   not null AUTO_INCREMENT,
-   event_id                       int unsigned                   not null,
-   occurrence_id                  int unsigned               not null,
-   type_id                        smallint unsigned              not null,
-   source_info                    longtext                       not null,
-   sdatetime                      decimal(30,20),
-   edatetime                      decimal(30,20),
-   label_left_id                  int unsigned                   null,
-   label_right_id                 int unsigned                   null,
-   rank                           int unsigned                   not null default 0,
-   primary key (relation_id),
-   constraint fk_ca_object_events_x_occurrences_event_id foreign key (event_id)
-      references ca_object_events (event_id) on delete restrict on update restrict,
-      
-   constraint fk_ca_object_events_x_occurrences_occurrence_id foreign key (occurrence_id)
-      references ca_occurrences (occurrence_id) on delete restrict on update restrict,
-      
-   constraint fk_ca_object_events_x_occurrences_type_id foreign key (type_id)
-      references ca_relationship_types (type_id) on delete restrict on update restrict,
-      
-   constraint fk_ca_object_events_x_occurrences_label_left_id foreign key (label_left_id)
-      references ca_object_event_labels (label_id) on delete restrict on update restrict,
-      
-   constraint fk_ca_object_events_x_occurrences_label_right_id foreign key (label_right_id)
-      references ca_occurrence_labels (label_id) on delete restrict on update restrict
-) engine=innodb CHARACTER SET utf8 COLLATE utf8_general_ci;
-
-create index i_event_id on ca_object_events_x_occurrences(event_id);
-create index i_occurrence_id on ca_object_events_x_occurrences(occurrence_id);
-create index i_type_id on ca_object_events_x_occurrences(type_id);
-create unique index u_all on ca_object_events_x_occurrences
-(
-   type_id,
-   event_id,
-   occurrence_id,
-   sdatetime,
-   edatetime
-);
-create index i_label_left_id on ca_object_events_x_occurrences(label_left_id);
-create index i_label_right_id on ca_object_events_x_occurrences(label_right_id);
-
-
-/*==========================================================================*/
-create table ca_object_events_x_places
-(
-   relation_id                    int unsigned                   not null AUTO_INCREMENT,
-   event_id                       int unsigned                   not null,
-   place_id                       int unsigned               not null,
-   type_id                        smallint unsigned              not null,
-   source_info                    longtext                       not null,
-   sdatetime                      decimal(30,20),
-   edatetime                      decimal(30,20),
-   label_left_id                  int unsigned                   null,
-   label_right_id                 int unsigned                   null,
-   rank                           int unsigned                   not null default 0,
-   primary key (relation_id),
-   constraint fk_ca_object_events_x_places_event_id foreign key (event_id)
-      references ca_object_events (event_id) on delete restrict on update restrict,
-      
-   constraint fk_ca_object_events_x_places_place_id foreign key (place_id)
-      references ca_places (place_id) on delete restrict on update restrict,
-      
-   constraint fk_ca_object_events_x_places_type_id foreign key (type_id)
-      references ca_relationship_types (type_id) on delete restrict on update restrict,
-      
-   constraint fk_ca_object_events_x_places_label_left_id foreign key (label_left_id)
-      references ca_object_event_labels (label_id) on delete restrict on update restrict,
-      
-   constraint fk_ca_object_events_x_places_label_right_id foreign key (label_right_id)
-      references ca_place_labels (label_id) on delete restrict on update restrict
-) engine=innodb CHARACTER SET utf8 COLLATE utf8_general_ci;
-
-create index i_event_id on ca_object_events_x_places(event_id);
-create index i_place_id on ca_object_events_x_places(place_id);
-create index i_type_id on ca_object_events_x_places(type_id);
-create unique index u_all on ca_object_events_x_places
-(
-   type_id,
-   event_id,
-   place_id,
-   sdatetime,
-   edatetime
-);
-create index i_label_left_id on ca_object_events_x_places(label_left_id);
-create index i_label_right_id on ca_object_events_x_places(label_right_id);
-
-
-/*==========================================================================*/
-create table ca_object_events_x_storage_locations
-(
-   relation_id                    int unsigned                   not null AUTO_INCREMENT,
-   event_id                       int unsigned                   not null,
-   location_id                    int unsigned               not null,
-   type_id                        smallint unsigned              not null,
-   source_info                    longtext                       not null,
-   sdatetime                      decimal(30,20),
-   edatetime                      decimal(30,20),
-   label_left_id                  int unsigned                   null,
-   label_right_id                 int unsigned                   null,
-   rank                           int unsigned                   not null default 0,
-   primary key (relation_id),
-   constraint fk_ca_object_events_x_storage_locations_location_id foreign key (location_id)
-      references ca_storage_locations (location_id) on delete restrict on update restrict,
-      
-   constraint fk_ca_object_events_x_storage_locations_event_id foreign key (event_id)
-      references ca_object_events (event_id) on delete restrict on update restrict,
-      
-   constraint fk_ca_object_events_x_storage_locations_type_id foreign key (type_id)
-      references ca_relationship_types (type_id) on delete restrict on update restrict,
-      
-   constraint fk_ca_object_events_x_storage_locations_left_id foreign key (label_left_id)
-      references ca_object_event_labels (label_id) on delete restrict on update restrict,
-      
-   constraint fk_ca_object_events_x_storage_locations_label_right_id foreign key (label_right_id)
-      references ca_storage_location_labels (label_id) on delete restrict on update restrict
-) engine=innodb CHARACTER SET utf8 COLLATE utf8_general_ci;
-
-create index i_event_id on ca_object_events_x_storage_locations(event_id);
-create index i_location_id on ca_object_events_x_storage_locations(location_id);
-create index i_type_id on ca_object_events_x_storage_locations(type_id);
-create unique index u_all on ca_object_events_x_storage_locations
-(
-   type_id,
-   event_id,
-   location_id,
-   sdatetime,
-   edatetime
-);
-create index i_label_left_id on ca_object_events_x_storage_locations(label_left_id);
-create index i_label_right_id on ca_object_events_x_storage_locations(label_right_id);
 
 
 /*==========================================================================*/
@@ -2969,6 +2665,7 @@ create table ca_object_representations_x_entities
    label_left_id                  int unsigned                   null,
    label_right_id                 int unsigned                   null,
    rank                           int unsigned                   not null default 0,
+   is_primary                     tinyint                        not null,
    primary key (relation_id),
    constraint fk_ca_object_representations_x_entities_representation_id foreign key (representation_id)
       references ca_object_representations (representation_id) on delete restrict on update restrict,
@@ -3552,6 +3249,7 @@ create table ca_object_representations_x_vocabulary_terms (
    label_left_id                  int unsigned                   null,
    label_right_id                 int unsigned                   null,
    rank                           int unsigned                   not null default 0,
+   is_primary                     tinyint                        not null,
    primary key (relation_id),
    constraint fk_ca_obj_rep_x_voc_terms_item_id foreign key (item_id)
       references ca_list_items (item_id) on delete restrict on update restrict,
@@ -3581,92 +3279,6 @@ create unique index u_all on ca_object_representations_x_vocabulary_terms (
 );
 create index i_label_left_id on ca_object_representations_x_vocabulary_terms(label_left_id);
 create index i_label_right_id on ca_object_representations_x_vocabulary_terms(label_right_id);
-
-
-/*==========================================================================*/
-create table ca_object_events_x_vocabulary_terms (
-   relation_id                    int unsigned                   not null AUTO_INCREMENT,
-   event_id                         int unsigned               not null,
-   type_id                        smallint unsigned              not null,
-   item_id                        int unsigned                   not null,
-   source_info                    longtext                       not null,
-   sdatetime                      decimal(30,20),
-   edatetime                      decimal(30,20),
-   label_left_id                  int unsigned                   null,
-   label_right_id                 int unsigned                   null,
-   rank                           int unsigned                   not null default 0,
-   primary key (relation_id),
-   constraint fk_ca_object_events_x_vocabulary_terms_item_id foreign key (item_id)
-      references ca_list_items (item_id) on delete restrict on update restrict,
-      
-   constraint fk_ca_object_events_x_vocabulary_terms_type_id foreign key (type_id)
-      references ca_relationship_types (type_id) on delete restrict on update restrict,
-      
-   constraint fk_ca_object_events_x_vocabulary_terms_event_id foreign key (event_id)
-      references ca_object_events (event_id) on delete restrict on update restrict,
-      
-   constraint fk_ca_object_events_x_vocabulary_terms_label_left_id foreign key (label_left_id)
-      references ca_object_event_labels (label_id) on delete restrict on update restrict,
-      
-   constraint fk_ca_object_events_x_vocabulary_terms_label_right_id foreign key (label_right_id)
-      references ca_list_item_labels (label_id) on delete restrict on update restrict
-) engine=innodb CHARACTER SET utf8 COLLATE utf8_general_ci;
-
-create index i_event_id on ca_object_events_x_vocabulary_terms (event_id);
-create index i_item_id on ca_object_events_x_vocabulary_terms (item_id);
-create index i_type_id on ca_object_events_x_vocabulary_terms (type_id);
-create unique index u_all on ca_object_events_x_vocabulary_terms (
-   event_id,
-   type_id,
-   sdatetime,
-   edatetime,
-   item_id
-);
-create index i_label_left_id on ca_object_events_x_vocabulary_terms(label_left_id);
-create index i_label_right_id on ca_object_events_x_vocabulary_terms(label_right_id);
-
-
-/*==========================================================================*/
-create table ca_object_lot_events_x_vocabulary_terms (
-   relation_id                    int unsigned                   not null AUTO_INCREMENT,
-   event_id                         int unsigned               not null,
-   type_id                        smallint unsigned              not null,
-   item_id                        int unsigned                   not null,
-   source_info                    longtext                       not null,
-   sdatetime                      decimal(30,20),
-   edatetime                      decimal(30,20),
-   label_left_id                  int unsigned                   null,
-   label_right_id                 int unsigned                   null,
-   rank                           int unsigned                   not null default 0,
-   primary key (relation_id),
-   constraint fk_ca_object_lot_events_x_vocabulary_terms_item_id foreign key (item_id)
-      references ca_list_items (item_id) on delete restrict on update restrict,
-      
-   constraint fk_ca_object_lot_events_x_vocabulary_terms_type_id foreign key (type_id)
-      references ca_relationship_types (type_id) on delete restrict on update restrict,
-      
-   constraint fk_ca_object_lot_events_x_vocabulary_terms_event_id foreign key (event_id)
-      references ca_object_lot_events (event_id) on delete restrict on update restrict,
-      
-   constraint fk_ca_object_lot_events_x_vocabulary_terms_label_left_id foreign key (label_left_id)
-      references ca_object_lot_event_labels (label_id) on delete restrict on update restrict,
-      
-   constraint fk_ca_object_lot_events_x_vocabulary_terms_label_right_id foreign key (label_right_id)
-      references ca_list_item_labels (label_id) on delete restrict on update restrict
-) engine=innodb CHARACTER SET utf8 COLLATE utf8_general_ci;
-
-create index i_event_id on ca_object_lot_events_x_vocabulary_terms (event_id);
-create index i_item_id on ca_object_lot_events_x_vocabulary_terms (item_id);
-create index i_type_id on ca_object_lot_events_x_vocabulary_terms (type_id);
-create unique index u_all on ca_object_lot_events_x_vocabulary_terms (
-   event_id,
-   type_id,
-   sdatetime,
-   edatetime,
-   item_id
-);
-create index i_label_left_id on ca_object_lot_events_x_vocabulary_terms(label_left_id);
-create index i_label_right_id on ca_object_lot_events_x_vocabulary_terms(label_right_id);
 
 
 /*==========================================================================*/
@@ -4335,51 +3947,6 @@ create unique index u_all on ca_occurrences_x_vocabulary_terms
 );
 create index i_label_left_id on ca_occurrences_x_vocabulary_terms(label_left_id);
 create index i_label_right_id on ca_occurrences_x_vocabulary_terms(label_right_id);
-
-
-/*==========================================================================*/
-create table ca_object_events_x_entities
-(
-   relation_id                    int unsigned                   not null AUTO_INCREMENT,
-   event_id                       int unsigned                   not null,
-   entity_id                      int unsigned               not null,
-   type_id                        smallint unsigned              not null,
-   source_info                    longtext                       not null,
-   sdatetime                      decimal(30,20),
-   edatetime                      decimal(30,20),
-   label_left_id                  int unsigned                   null,
-   label_right_id                 int unsigned                   null,
-   rank                           int unsigned                   not null default 0,
-   primary key (relation_id),
-   constraint fk_ca_object_events_x_entities_event_id foreign key (event_id)
-      references ca_object_events (event_id) on delete restrict on update restrict,
-      
-   constraint fk_ca_object_events_x_entities_entity_id foreign key (entity_id)
-      references ca_entities (entity_id) on delete restrict on update restrict,
-      
-   constraint fk_ca_object_events_x_entities_type_id foreign key (type_id)
-      references ca_relationship_types (type_id) on delete restrict on update restrict,
-      
-   constraint fk_ca_object_events_x_entities_label_left_id foreign key (label_left_id)
-      references ca_object_event_labels (label_id) on delete restrict on update restrict,
-      
-   constraint fk_ca_object_events_x_entities_label_right_id foreign key (label_right_id)
-      references ca_entity_labels (label_id) on delete restrict on update restrict
-) engine=innodb CHARACTER SET utf8 COLLATE utf8_general_ci;
-
-create index i_event_id on ca_object_events_x_entities(event_id);
-create index i_entity_id on ca_object_events_x_entities(entity_id);
-create index i_type_id on ca_object_events_x_entities(type_id);
-create unique index u_all on ca_object_events_x_entities
-(
-   type_id,
-   event_id,
-   entity_id,
-   sdatetime,
-   edatetime
-);
-create index i_label_left_id on ca_object_events_x_entities(label_left_id);
-create index i_label_right_id on ca_object_events_x_entities(label_right_id);
 
 
 /*==========================================================================*/
@@ -6266,6 +5833,7 @@ create table ca_object_lots_x_object_representations
    label_left_id                  int unsigned                   null,
    label_right_id                 int unsigned                   null,
    rank                           int unsigned                   not null default 0,
+   is_primary                     tinyint                        not null,
    primary key (relation_id),
    constraint fk_ca_object_lots_x_object_representations_representation_id foreign key (representation_id)
       references ca_object_representations (representation_id) on delete restrict on update restrict,
@@ -6311,6 +5879,7 @@ create table ca_loans_x_object_representations
    label_left_id                  int unsigned                   null,
    label_right_id                 int unsigned                   null,
    rank                           int unsigned                   not null default 0,
+   is_primary                     tinyint                        not null,
    primary key (relation_id),
    constraint fk_ca_loans_x_object_representations_representation_id foreign key (representation_id)
       references ca_object_representations (representation_id) on delete restrict on update restrict,
@@ -6356,6 +5925,7 @@ create table ca_movements_x_object_representations
    label_left_id                  int unsigned                   null,
    label_right_id                 int unsigned                   null,
    rank                           int unsigned                   not null default 0,
+   is_primary                     tinyint                        not null,
    primary key (relation_id),
    constraint fk_ca_movements_x_object_representations_representation_id foreign key (representation_id)
       references ca_object_representations (representation_id) on delete restrict on update restrict,
@@ -6807,5 +6377,5 @@ create table ca_schema_updates (
 ) engine=innodb CHARACTER SET utf8 COLLATE utf8_general_ci;
 
 /* Indicate up to what migration this schema definition covers */
-/* CURRENT MIGRATION: 89 */
-INSERT IGNORE INTO ca_schema_updates (version_num, datetime) VALUES (89, unix_timestamp());
+/* CURRENT MIGRATION: 92 */
+INSERT IGNORE INTO ca_schema_updates (version_num, datetime) VALUES (92, unix_timestamp());

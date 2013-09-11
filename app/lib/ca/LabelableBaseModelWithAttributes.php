@@ -383,6 +383,30 @@
 			foreach ($pa_values as $vs_field => $vm_value) {
 				if (!is_array($vm_value) && $vm_value) { $vb_has_simple_fields = true; break; }
 			}
+			
+			if ($vb_has_simple_fields) {				
+				//
+				// Convert type id
+				//
+				if ($t_instance->ATTRIBUTE_TYPE_LIST_CODE) {
+					if (isset($pa_values[$t_instance->ATTRIBUTE_TYPE_ID_FLD]) && !is_numeric($pa_values[$t_instance->ATTRIBUTE_TYPE_ID_FLD])) {
+						if ($vn_id = ca_lists::getItemID($t_instance->ATTRIBUTE_TYPE_LIST_CODE, $pa_values[$t_instance->ATTRIBUTE_TYPE_ID_FLD])) {
+							$pa_values[$t_instance->ATTRIBUTE_TYPE_ID_FLD] = $vn_id;
+						}
+					}
+				}
+
+				//
+				// Convert other intrinsic list references
+				//
+				foreach($pa_values as $vs_field => $vm_value) {
+					if($vs_list_code = $t_instance->getFieldInfo($vs_field, 'LIST_CODE')) {
+						if ($vn_id = ca_lists::getItemID($vs_list_code, $vm_value)) {
+							$pa_values[$vs_field] = $vn_id;
+						}
+					}
+				}
+			}
 		
 			$va_sql_wheres = array();
 			if (
@@ -489,7 +513,7 @@
 			$qr_res = $o_db->query($vs_sql);
 			$vn_c = 0;
 		
-			$vs_pk = $t_label->primaryKey();
+			$vs_pk = $t_instance->primaryKey();
 		
 			
 			switch($ps_return_as) {
@@ -1172,7 +1196,7 @@
  			
  			if (!is_array($pa_options)) { $pa_options = array(); }
  			$vs_cache_key = caMakeCacheKeyFromOptions(array_merge($pa_options, array('table_name' => $this->tableName(), 'id' => $vn_id, 'mode' => (int)$pn_mode)));
- 			if (!$pb_dont_cache && is_array($va_tmp = LabelableBaseModelWithAttributes::$s_label_cache[$vs_cache_key])) {
+ 			if (!$pb_dont_cache && is_array($va_tmp = LabelableBaseModelWithAttributes::$s_label_cache[$this->tableName()][$vn_id][$vs_cache_key])) {
  				return $va_tmp;
  			}
 			if (!($t_label = $this->_DATAMODEL->getInstanceByTableName($this->getLabelTableName(), true))) { return null; }
@@ -1275,7 +1299,7 @@
  				$va_labels = $va_flattened_labels;
  			}
  			
- 			LabelableBaseModelWithAttributes::$s_label_cache[$vs_cache_key] = $va_labels;
+ 			LabelableBaseModelWithAttributes::$s_label_cache[$this->tableName()][$vn_id][$vs_cache_key] = $va_labels;
  			
  			return $va_labels;
  		}

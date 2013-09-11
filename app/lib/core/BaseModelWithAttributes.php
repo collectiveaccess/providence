@@ -840,8 +840,8 @@
 			return isset($this->ATTRIBUTE_TYPE_LIST_CODE) ? $this->ATTRIBUTE_TYPE_LIST_CODE : null;
 		}
 		# ------------------------------------------------------------------
-		public function getTypeName() {
-			if ($t_list_item = $this->getTypeInstance()) {
+		public function getTypeName($pn_type_id=null) {
+			if ($t_list_item = $this->getTypeInstance($pn_type_id)) {
 				return $t_list_item->getLabelForDisplay(false);
 			}
 			return null;
@@ -896,9 +896,13 @@
 		/**
 		 * Return ca_list_item instance for the type of the currently loaded row
 		 */ 
-		public function getTypeInstance() {
+		public function getTypeInstance($pn_type_id=null) {
 			if (!isset($this->ATTRIBUTE_TYPE_ID_FLD) || !$this->ATTRIBUTE_TYPE_ID_FLD) { return null; }
-			if (!($vn_type_id = $this->get($this->ATTRIBUTE_TYPE_ID_FLD))) { return null; }
+			if ($pn_type_id) { 
+				$vn_type_id = $pn_type_id; 
+			} else {
+				if (!($vn_type_id = $this->get($this->ATTRIBUTE_TYPE_ID_FLD))) { return null; }
+			}
 			
 			$t_list_item = new ca_list_items($vn_type_id);
 			return ($t_list_item->getPrimaryKey()) ? $t_list_item : null;
@@ -1148,6 +1152,7 @@
 				}
 			}
 			
+			$o_view->setVar('t_element', $t_element);
 			$o_view->setVar('t_instance', $this);
 			$o_view->setVar('request', $po_request);
 			$o_view->setVar('id_prefix', $ps_form_name.'_attribute_'.$t_element->get('element_id'));

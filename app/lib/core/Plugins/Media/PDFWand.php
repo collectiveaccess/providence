@@ -395,7 +395,7 @@ class WLPlugMediaPDFWand Extends BaseMediaPlugin implements IWLPlugMedia {
 			exec($this->ops_pdfminer_path.'/pdf2txt.py -t xml '.caEscapeShellArg($ps_filepath).' > '.caEscapeShellArg($vs_tmp_filename));
 			
 			$xml = new XMLReader();
-			$xml->open($vs_tmp_filename);
+			if ($xml->open($vs_tmp_filename)) {
 			
 			// Structure of locations array is [<word>][] = array(page, x1, y1, x2, y2, size)
 			$va_locations = array();
@@ -407,79 +407,80 @@ class WLPlugMediaPDFWand Extends BaseMediaPlugin implements IWLPlugMedia {
 			$va_current_text_loc = null;
 			
 			$vs_indexing_regex = $this->opo_search_config->get('indexing_tokenizer_regex');
-			while ($xml->read()) {
-				switch ($xml->name) {
-					case 'page':		// new page
-						if ($xml->nodeType == XMLReader::END_ELEMENT) { 
-							//$va_locations['__pages__'][$vn_current_page] = $vs_page_content;
-							$vs_page_content = '';
-							continue; 
-						}
-						$vs_text_line_content = '';
-						$vn_current_page = (int)$xml->getAttribute('id');
-						break;
-					case 'textline':
-						if ($xml->nodeType == XMLReader::END_ELEMENT) { 
-							// end of line
-							
-							$vn_start = $vn_end = null;
-							$vs_acc = '';
-							for($vn_i=0; $vn_i < mb_strlen($vs_text_line_content); $vn_i++) {
-								if (preg_match("![{$vs_indexing_regex}]!", $vs_text_line_content[$vn_i])) {
-									// word boundary
-									if ($vs_acc) {
-										$vs_acc = mb_strtolower($vs_acc);
-										$va_start = $va_text_line_locs[$vn_start];
-										$va_end = $va_text_line_locs[$vn_end];
-										$va_locations[$vs_acc][] = array(
-											'p' => $vn_current_page,
-											'x1' => $va_start['x1'], 'y1' => $va_start['y1'],
-											'x2' => $va_end['x2'], 'y2' => $va_end['y2']
-											//'size' => $va_start['size']
-										);
-									}
-									$vn_start = $vn_end = null;
-									$vs_acc = '';
-								} else {
-									if(is_null($vn_start)) { $vn_start = $vn_i; }
-									$vn_end = $vn_i;
-									$vs_acc .= ($vs_c = mb_substr($vs_text_line_content, $vn_i, 1));
-								}
+			while (@$xml->read()) {
+					switch ($xml->name) {
+						case 'page':		// new page
+							if ($xml->nodeType == XMLReader::END_ELEMENT) { 
+								//$va_locations['__pages__'][$vn_current_page] = $vs_page_content;
+								$vs_page_content = '';
+								continue; 
 							}
-						} else {
-							// new line of text
-							$vs_page_content .= $vs_text_line_content;
 							$vs_text_line_content = '';
-							$va_text_line_locs = array();
-						}
-						break;
-					case 'textbox':
-						if ($xml->nodeType == XMLReader::END_ELEMENT) {
-							$vs_page_content .= "\n";
-						}
-						break;
-					case 'text':
-						if ($vb_in_text_element = ($xml->nodeType == XMLReader::ELEMENT)) {
-							$va_tmp = explode(",", (string)$xml->getAttribute('bbox'));
-							$va_current_text_loc = array(
-								'x1' => $va_tmp[0],
-								'y1' => $va_tmp[1],
-								'x2' => $va_tmp[2],
-								'y2' => $va_tmp[3]
-								//'font' => $xml->getAttribute('font'),
-								//'size' => $xml->getAttribute('size')
-							);	
-						} else {
-							$va_current_text_loc = null;
-						}
-						break;
-					case '#text':		// bit of text to record (usually a single character)
-						if ($vb_in_text_element) {
-							$va_current_text_loc['chars'] = mb_strlen((string)$xml->value);
-							$va_text_line_locs[mb_strlen($vs_text_line_content)] = $va_current_text_loc;
-							$vs_text_line_content .= (string)$xml->value;
-						}
-						break;
+							$vn_current_page = (int)$xml->getAttribute('id');
+							break;
+						case 'textline':
+							if ($xml->nodeType == XMLReader::END_ELEMENT) { 
+								// end of line
+							
+								$vn_start = $vn_end = null;
+								$vs_acc = '';
+								for($vn_i=0; $vn_i < mb_strlen($vs_text_line_content); $vn_i++) {
+									if (preg_match("![{$vs_indexing_regex}]!", $vs_text_line_content[$vn_i])) {
+										// word boundary
+										if ($vs_acc) {
+											$vs_acc = mb_strtolower($vs_acc);
+											$va_start = $va_text_line_locs[$vn_start];
+											$va_end = $va_text_line_locs[$vn_end];
+											$va_locations[$vs_acc][] = array(
+												'p' => $vn_current_page,
+												'x1' => $va_start['x1'], 'y1' => $va_start['y1'],
+												'x2' => $va_end['x2'], 'y2' => $va_end['y2']
+												//'size' => $va_start['size']
+											);
+										}
+										$vn_start = $vn_end = null;
+										$vs_acc = '';
+									} else {
+										if(is_null($vn_start)) { $vn_start = $vn_i; }
+										$vn_end = $vn_i;
+										$vs_acc .= ($vs_c = mb_substr($vs_text_line_content, $vn_i, 1));
+									}
+								}
+							} else {
+								// new line of text
+								$vs_page_content .= $vs_text_line_content;
+								$vs_text_line_content = '';
+								$va_text_line_locs = array();
+							}
+							break;
+						case 'textbox':
+							if ($xml->nodeType == XMLReader::END_ELEMENT) {
+								$vs_page_content .= "\n";
+							}
+							break;
+						case 'text':
+							if ($vb_in_text_element = ($xml->nodeType == XMLReader::ELEMENT)) {
+								$va_tmp = explode(",", (string)$xml->getAttribute('bbox'));
+								$va_current_text_loc = array(
+									'x1' => $va_tmp[0],
+									'y1' => $va_tmp[1],
+									'x2' => $va_tmp[2],
+									'y2' => $va_tmp[3]
+									//'font' => $xml->getAttribute('font'),
+									//'size' => $xml->getAttribute('size')
+								);	
+							} else {
+								$va_current_text_loc = null;
+							}
+							break;
+						case '#text':		// bit of text to record (usually a single character)
+							if ($vb_in_text_element) {
+								$va_current_text_loc['chars'] = mb_strlen((string)$xml->value);
+								$va_text_line_locs[mb_strlen($vs_text_line_content)] = $va_current_text_loc;
+								$vs_text_line_content .= (string)$xml->value;
+							}
+							break;
+					}
 				}
 			}
 			

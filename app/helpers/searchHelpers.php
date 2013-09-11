@@ -269,4 +269,42 @@ require_once(__CA_MODELS_DIR__.'/ca_lists.php');
 		}
 	}
 	# ---------------------------------------
+	/**
+	 * 
+	 *
+	 * @return array 
+	 */
+	function caSearchGetAccessPoints($ps_search_expression) {
+		if(preg_match("!\b([A-Za-z0-9\-\_]+):!", $ps_search_expression, $va_matches)) {
+			array_shift($va_matches);
+			return $va_matches;
+		}
+		return array();
+	}
+	# ---------------------------------------
+	/**
+	 * 
+	 *
+	 * @return array 
+	 */
+	function caSearchGetTablesForAccessPoints($pa_access_points) {
+		$o_config = Configuration::load();
+		$o_search_config = Configuration::load($o_config->get("search_config"));
+		$o_search_indexing_config = Configuration::load($o_search_config->get("search_indexing_config"));	
+			
+		$va_tables = $o_search_indexing_config->getAssocKeys();
+		
+		$va_aps = array();
+		foreach($va_tables as $vs_table) {
+			$va_config = $o_search_indexing_config->getAssoc($vs_table);
+			if(is_array($va_config) && is_array($va_config['_access_points'])) {
+				if (array_intersect($pa_access_points, array_keys($va_config['_access_points']))) {
+					$va_aps[$vs_table] = true;	
+				}
+			}
+		}
+		
+		return array_keys($va_aps);
+	}
+	# ---------------------------------------
 ?>

@@ -7,7 +7,7 @@
 // See readme.txt for more details                             //
 /////////////////////////////////////////////////////////////////
 //                                                             //
-// module.archive.doc.php                                      //
+// module.misc.msoffice.php                                    //
 // module for analyzing MS Office (.doc, .xls, etc) files      //
 // dependencies: NONE                                          //
 //                                                            ///
@@ -17,7 +17,7 @@
 class getid3_msoffice extends getid3_handler
 {
 
-	function Analyze() {
+	public function Analyze() {
 		$info = &$this->getid3->info;
 
 		fseek($this->getid3->fp, $info['avdataoffset'], SEEK_SET);
@@ -35,6 +35,3 @@ return false;
 	}
 
 }
-
-
-?>

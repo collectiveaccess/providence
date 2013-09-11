@@ -2855,6 +2855,7 @@ class BaseModel extends BaseObject {
 					BaseModel::$search_indexer->commitRowUnIndexing($this->tableNum(), $vn_id);
 				}
 			}
+			$this->logChange("D");
 			return $vn_rc;
 		}
 		$this->clearErrors();
@@ -8576,6 +8577,49 @@ $pa_options["display_form_field_tips"] = true;
 	}
 	# --------------------------------------------------------------------------------------------
 	/**
+	 * Checks if any relationships exists between the currently loaded row and any other record.
+	 * Returns a list of tables for which relationships exist.
+	 *
+	 * @param array $pa_options Options are:
+	 *		None yet
+	 *
+	 * @return mixed Array of table names for which this row has at least one relationship, with keys set to table names and values set to the number of relationships per table.
+	 */
+	public function hasRelationships($pa_options=null) {
+		$va_one_to_many_relations = $this->_DATAMODEL->getOneToManyRelations($this->tableName());
+
+		if (is_array($va_one_to_many_relations)) {
+			$o_db = $this->getDb();
+			$vn_id = $this->getPrimaryKey();
+			$o_trans = $this->getTransaction();
+			
+			$va_tables = array();
+			foreach($va_one_to_many_relations as $vs_many_table => $va_info) {
+				foreach($va_info as $va_relationship) {
+					# do any records exist?
+					$t_related = $this->_DATAMODEL->getInstanceByTableName($vs_many_table, true);
+					$t_related->setTransaction($o_trans);
+					$vs_rel_pk = $t_related->primaryKey();
+					
+					$qr_record_check = $o_db->query($x="
+						SELECT {$vs_rel_pk}
+						FROM {$vs_many_table}
+						WHERE
+							({$va_relationship['many_table_field']} = ?)"
+					, (int)$vn_id);
+					
+					if (($vn_count = $qr_record_check->numRows()) > 0) {
+						$va_tables[$vs_many_table] = $vn_count;	
+					}
+				}
+			}
+			return $va_tables;
+		}
+		
+		return null;
+	}
+	# --------------------------------------------------------------------------------------------
+	/**
 	 *
 	 */
 	public function getDefaultLocaleList() {
@@ -9852,9 +9896,33 @@ $pa_options["display_form_field_tips"] = true;
 		$t_instance = new $vs_table;
 		
 		$va_sql_wheres = array();
+		
+		//
+		// Convert type id
+		//
+		if (method_exists($this, "getTypeFieldName")) {
+			$vs_type_field_name = $this->getTypeFieldName();
+			if (isset($pa_values[$vs_type_field_name]) && !is_numeric($pa_values[$vs_type_field_name])) {
+				if ($vn_id = ca_lists::getItemID($this->getTypeListCode(), $pa_values[$vs_type_field_name])) {
+					$pa_values[$vs_type_field_name] = $vn_id;
+				}
+			}
+		}
+		
+		//
+		// Convert other intrinsic list references
+		//
+		foreach($pa_values as $vs_field => $vm_value) {
+			if($vs_list_code = $t_instance->getFieldInfo($vs_field, 'LIST_CODE')) {
+				if ($vn_id = ca_lists::getItemID($vs_list_code, $vm_value)) {
+					$pa_values[$vs_field] = $vn_id;
+				}
+			}
+		}
+		
 		foreach ($pa_values as $vs_field => $vm_value) {
 			if (is_array($vm_value)) { continue; }
-			
+		
 			# support case where fieldname is in format table.fieldname
 			if (preg_match("/([\w_]+)\.([\w_]+)/", $vs_field, $va_matches)) {
 				if ($va_matches[1] != $vs_table) {

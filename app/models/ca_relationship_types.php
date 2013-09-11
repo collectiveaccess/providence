@@ -786,5 +786,35 @@ class ca_relationship_types extends BundlableLabelableBaseModelWithAttributes {
 		return $vn_num_rows;
 	}
 	# ------------------------------------------------------
+ 	/**
+ 	 * Check if currently loaded row is save-able
+ 	 *
+ 	 * @param RequestHTTP $po_request
+ 	 * @return bool True if record can be saved, false if not
+ 	 */
+ 	public function isSaveable($po_request) {
+ 		// Check actions
+ 		if ($po_request->user->canDoAction('is_administrator')) {
+ 			return true;
+ 		}
+ 		
+ 		return false;
+ 	}
+ 	# ------------------------------------------------------
+ 	/**
+ 	 * Check if currently loaded row is deletable
+ 	 */
+ 	public function isDeletable($po_request) {
+ 		// Is row loaded?
+ 		if (!$this->getPrimaryKey()) { return false; }
+ 			
+ 		// Check actions
+ 		if ($this->getPrimaryKey() && $po_request->user->canDoAction('is_administrator')) {
+ 			return true;
+ 		}
+ 		
+ 		return false;
+ 	}
+	# ------------------------------------------------------
 }
 ?>

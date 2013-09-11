@@ -33,6 +33,7 @@
 	$va_settings 		= $this->getVar('settings');
 	$vs_add_label 		= $this->getVar('add_label');
 	$va_rel_types		= $this->getVar('relationship_types');
+	$vs_placement_code 	= $this->getVar('placement_code');
 	
 	$vs_sort			=	((isset($va_settings['sort']) && $va_settings['sort'])) ? $va_settings['sort'] : '';
 	$vb_read_only		=	((isset($va_settings['readonly']) && $va_settings['readonly'])  || ($this->request->user->getBundleAccessLevel($t_instance->tableName(), 'ca_entities') == __CA_BUNDLE_ACCESS_READONLY__));
@@ -51,15 +52,20 @@
 	} else {
 		print caEditorBundleShowHideControl($this->request, $vs_id_prefix.$t_item->tableNum().'_rel');
 	}
+	
+	$va_errors = array();
+	foreach($va_action_errors = $this->request->getActionErrors($vs_placement_code) as $o_error) {
+		$va_errors[] = $o_error->getErrorDescription();
+	}
 ?>
 <div id="<?php print $vs_id_prefix.$t_item->tableNum().'_rel'; ?>" <?php print $vb_batch ? "class='editorBatchBundleContent'" : ''; ?>>
 <?php
-
 	//
 	// Template to generate display for existing items
 	//
 ?>
 	<textarea class='caItemTemplate' style='display: none;'>
+		<span class="formLabelError">{error}</span>
 <?php
 	switch($va_settings['list_format']) {
 		case 'list':
@@ -113,6 +119,7 @@
 	//
 ?>
 	<textarea class='caNewItemTemplate' style='display: none;'>
+		<span class="formLabelError">{error}</span>
 		<div style="clear: both; width: 1px; height: 1px;"><!-- empty --></div>
 		<div id="<?php print $vs_id_prefix; ?>Item_{n}" class="labelInfo">
 			<table class="caListItem">
@@ -152,6 +159,13 @@
 	}
 ?>
 		<div class="caItemList">
+<?php
+	if (sizeof($va_errors)) {
+?>
+		<span class="formLabelError"><?php print join("; ", $va_errors); ?><br class="clear"/></span>
+<?php
+	}
+?>
 		
 		</div>
 		<input type="hidden" name="<?php print $vs_id_prefix; ?>BundleList" id="<?php print $vs_id_prefix; ?>BundleList" value=""/>
@@ -249,7 +263,10 @@
 			interstitialPanel: caRelationEditorPanel<?php print $vs_id_prefix; ?>,
 			interstitialUrl: '<?php print caNavUrl($this->request, 'editor', 'Interstitial', 'Form', array('t' => $t_item_rel->tableName())); ?>',
 			firstItemColor: '<?php print $vs_first_color; ?>',
-			lastItemColor: '<?php print $vs_last_color; ?>'
+			lastItemColor: '<?php print $vs_last_color; ?>',
+			
+			minRepeats: <?php print caGetOption('minRelationshipsPerRow', $va_settings, 0); ?>,
+			maxRepeats: <?php print caGetOption('maxRelationshipsPerRow', $va_settings, 65535); ?>
 		});
 	});
 </script>

@@ -32,12 +32,12 @@
  
 	class collectionHierarchyBuilderRefinery extends BaseRefinery {
 		# -------------------------------------------------------
-		private $opb_returns_multiple_values = true;
-		# -------------------------------------------------------
 		public function __construct() {
 			$this->ops_name = 'collectionHierarchyBuilder';
 			$this->ops_title = _t('Collection hierarchy builder');
 			$this->ops_description = _t('Provides several collection-related import functions: splitting of multiple collections in a string into individual values, mapping of type and relationship type for related collections, and merging collection data with names.');
+			
+			$this->opb_returns_multiple_values = true;
 			
 			parent::__construct();
 		}
@@ -59,6 +59,17 @@
 		 */
 		public function refine(&$pa_destination_data, $pa_group, $pa_item, $pa_source_data, $pa_options=null) {
 			$o_log = (isset($pa_options['log']) && is_object($pa_options['log'])) ? $pa_options['log'] : null;
+			
+			$t_mapping = caGetOption('mapping', $pa_options, null);
+			if ($t_mapping) {
+				$o_dm = Datamodel::load();
+				if ($t_mapping->get('table_num') != $o_dm->getTableNum('ca_collections')) { 
+					if ($o_log) {
+						$o_log->logError(_t("collectionHierarchyBuilder refinery may only be used in imports to ca_collections"));
+					}
+					return null; 
+				}
+			}
 			
 			$va_group_dest = explode(".", $pa_group['destination']);
 			$vs_terminal = array_pop($va_group_dest);

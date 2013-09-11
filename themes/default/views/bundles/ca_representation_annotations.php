@@ -47,6 +47,7 @@
 	$o_properties 		= $t_subject->getAnnotationPropertyCoderInstance($vs_annotation_type);
 	$vs_goto_property 	= $o_properties->getAnnotationGotoProperty();
 	$va_prop_list 		= $va_init_props = array();
+	if(!is_array($va_initial_values	= $this->getVar('initialValues'))) { $va_initial_values = array(); }
 	
 	foreach(($va_properties = $o_properties->getPropertyList()) as $vs_property) { 
 		$va_prop_list[] = "'".$vs_property."'"; $va_init_props[$vs_property] = ''; 

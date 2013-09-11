@@ -947,7 +947,7 @@ class SearchEngine extends SearchBase {
 					$vs_query .= '(' . $subquery->__toString() . ')';
 					break;	
 				case 'Zend_Search_Lucene_Search_Query_Range':
-					$vs_query = $subquery;
+					$vs_query .= '(' . $subquery->__toString() . ')';
 					break;
 				default:
 					$vs_query .= '(' . $this->_queryToString($subquery) . ')';
