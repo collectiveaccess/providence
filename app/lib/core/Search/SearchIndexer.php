@@ -47,6 +47,7 @@ class SearchIndexer extends SearchBase {
 	private $opa_dependencies_to_update;
 	
 	static public $s_related_rows_joins_cache = array();
+	static public $s_related_fields_joins_cache = array();	
 	
 	/** 
 	 * Global cache array for ca_metadata_element element_code => element_id conversions
@@ -1253,7 +1254,7 @@ if (!$vb_can_do_incremental_indexing || $pb_reindex_mode) {
 								$vs_t = $vs_left_table;
 							}
 						}
-						$vs_join .= ')';
+						$vs_join .= ')';						
 					} else {
 						$va_key_spec = $pa_table_keys[$vs_right_table][$vs_left_table];
 						$vs_join = 'INNER JOIN '.$vs_right_table.' ON ('.$vs_right_table.'.'.$va_key_spec['left_key'].' = '.$vs_left_table.'.'.$va_key_spec['right_key'];
@@ -1269,16 +1270,23 @@ if (!$vb_can_do_incremental_indexing || $pb_reindex_mode) {
 						}
 						$vs_join .= ')';
 					}
+					
+					$va_flds["{$vs_left_table}.".$this->opo_datamodel->getTablePrimaryKeyName($vs_left_table)] = true;
+					$va_flds["{$vs_right_table}.".$this->opo_datamodel->getTablePrimaryKeyName($vs_right_table)] = true;
+					
 					$va_joins[] = $vs_join;
 	
 				} else {
 					if ($va_rel = $this->opo_datamodel->getOneToManyRelations($vs_left_table, $vs_right_table)) {
 						$va_joins[] = 'INNER JOIN '.$va_rel['many_table'].' ON '.$va_rel['one_table'].'.'.$va_rel['one_table_field'].' = '.$va_rel['many_table'].'.'.$va_rel['many_table_field'];
 						$vs_t = $va_rel['many_table'];
+						$va_flds[$va_rel['many_table'].".".$this->opo_datamodel->getTablePrimaryKeyName($va_rel['many_table'])] = true;
 					} else {
 						if ($va_rel = $this->opo_datamodel->getOneToManyRelations($vs_right_table, $vs_left_table)) {
 							$va_joins[] = 'INNER JOIN '.$va_rel['one_table'].' ON '.$va_rel['one_table'].'.'.$va_rel['one_table_field'].' = '.$va_rel['many_table'].'.'.$va_rel['many_table_field'];
 							$vs_t = $va_rel['one_table'];
+							
+							$va_flds[$va_rel['one_table'].".".$this->opo_datamodel->getTablePrimaryKeyName($va_rel['one_table'])] = true;
 						}
 					}
 				}
@@ -1293,17 +1301,15 @@ if (!$vb_can_do_incremental_indexing || $pb_reindex_mode) {
 			}
 		
 			SearchIndexer::$s_related_rows_joins_cache[$vs_key] = $va_joins;
+			SearchIndexer::$s_related_fields_joins_cache[$vs_key] = $va_flds;
 		} else {
 			$va_joins = SearchIndexer::$s_related_rows_joins_cache[$vs_key];
+			$va_flds = SearchIndexer::$s_related_fields_joins_cache[$vs_key];
+			
 			$vs_select_tablename = array_shift($pa_tables);
 			$t_subject = $this->opo_datamodel->getInstanceByTableName($ps_subject_tablename, true);
 			$vs_subject_pk = $t_subject->primaryKey();
 			
-			$va_tmp = array_keys($t_subject->getFormFields(true));
-			foreach($va_tmp as $vn_i => $vs_v) {
-				if (in_array($t_subject->getFieldInfo($vs_v, 'FIELD_TYPE'), array(FT_MEDIA, FT_FILE, FT_VARS))) { continue; }
-				$va_flds[$ps_subject_tablename.".".$vs_v] = true;
-			}
 		}
 		
 		$vs_sql = "
@@ -1313,6 +1319,7 @@ if (!$vb_can_do_incremental_indexing || $pb_reindex_mode) {
 			WHERE
 			{$ps_subject_tablename}.{$vs_subject_pk} = ?
 		";
+		
 		return $this->opo_db->query($vs_sql, $pn_row_id);
 	}
 	# ------------------------------------------------
