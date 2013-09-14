@@ -66,7 +66,6 @@
 				if ($o_log) { $o_log->logError(_t('[listItemSplitterRefinery] Could not find list %1 for item %2; item was skipped', $vs_list, $vs_list_item)); }
 				return array();
 			} 
-		
 			$pa_options['list_id'] = $vn_list_id;
 			
 			return caGenericImportSplitter('listItemSplitter', 'listItem', 'ca_list_items', $this, $pa_destination_data, $pa_group, $pa_item, $pa_source_data, $pa_options);

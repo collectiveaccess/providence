@@ -415,7 +415,7 @@
 			(($vs_terminal != $ps_table) && (sizeof($va_group_dest) > 1))
 		) {			
 			foreach($va_items as $vn_i => $vs_item) {
-				if (!$vs_item = trim($vs_item)) { continue; }
+				if (!($vs_item = trim($vs_item))) { continue; }
 				if (is_array($va_skip_values = $pa_item['settings']["{$ps_refinery_name}_skipIfValue"]) && in_array($vs_item, $va_skip_values)) {
 					if ($o_log) { $o_log->logDebug(_t('[{$ps_refinery_name}] Skipped %1 because it was in the skipIfValue list', $vs_item)); }
 					continue;
@@ -433,6 +433,16 @@
 			
 				if((!isset($va_val['_type']) || !$va_val['_type']) && ($vs_type_opt = $pa_item['settings']["{$ps_refinery_name}_{$ps_item_prefix}TypeDefault"])) {
 					$va_val['_type'] = BaseRefinery::parsePlaceholder($vs_type_opt, $pa_source_data, $pa_item, $vs_delimiter, $vn_c);
+				}
+				
+				// Set lot_status
+				if (
+					($vs_type_opt = $pa_item['settings']["{$ps_refinery_name}_{$ps_item_prefix}Status"])
+				) {
+					$va_val['_status'] = BaseRefinery::parsePlaceholder($vs_type_opt, $pa_source_data, $pa_item, $vs_delimiter, $vn_c);
+				}
+				if((!isset($va_val['_status']) || !$va_val['_status']) && ($vs_type_opt = $pa_item['settings']["{$ps_refinery_name}_{$ps_item_prefix}StatusDefault"])) {
+					$va_val['_status'] = BaseRefinery::parsePlaceholder($vs_type_opt, $pa_source_data, $pa_item, $vs_delimiter, $vn_c);
 				}
 			
 				if ((!isset($va_val['_type']) || !$va_val['_type']) && $o_log) {
@@ -480,6 +490,10 @@
 							$vn_item_id = DataMigrationUtils::getObjectID($vs_item, $va_val['parent_id'], $va_val['_type'], $g_ui_locale_id, $va_attr_vals_with_parent, $pa_options);
 							break;
 						case 'ca_object_lots':
+							if (isset($va_val['_status'])) {
+								$va_attr_vals['lot_status_id'] = $va_val['_status'];
+							}
+							unset($va_val['_status']);
 							$vn_item_id = DataMigrationUtils::getObjectLotID($vs_item, $vs_item, $va_val['_type'], $g_ui_locale_id, $va_attr_vals, $pa_options);
 							break;
 						case 'ca_entities':
@@ -543,6 +557,7 @@
 							break;
 						case 'ca_list_items':
 							$va_val['preferred_labels'] = array('name_singular' => $vs_item, 'name_plural' => $vs_item);
+							$va_val['_list'] = $pa_options['list_id'];
 							break;
 						case 'ca_storage_locations':
 						case 'ca_movements':
@@ -553,13 +568,21 @@
 						case 'ca_objects':
 							$va_val['preferred_labels'] = array('name' => $vs_item);
 							break;
+						case 'ca_object_lots':
+							$va_val['preferred_labels'] = array('name' => $vs_item);
+							$va_val['idno_stub'] = $vs_item;
+							if (isset($va_val['_status'])) {
+								$va_val['lot_status_id'] = $va_val['_status'];
+							}
+							unset($va_val['_status']);
+							break;
 						default:
 							if ($o_log) { $o_log->logDebug(_t('[importHelpers:caGenericImportSplitter] Invalid table %1', $ps_table)); }
 							continue(2);
 							break;	
 					}
 				} else {
-					if ($o_log) { $o_log->logError(_t("[{$ps_refinery_name}Refinery] Could not add %2 %1", $vs_item, $ps_item_prefix)); }
+					if ($o_log) { $o_log->logError(_t("[{$ps_refinery_name}Refinery] Could not add %2 %1: cannot map %3 using %1", $vs_item, $ps_item_prefix, join(".", $va_group_dest))); }
 				}
 					
 				$va_vals[] = $va_val;

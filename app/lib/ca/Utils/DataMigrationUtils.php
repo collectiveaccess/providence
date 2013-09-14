@@ -116,7 +116,7 @@
 			if ($pn_type_id) { $va_find_arr['type_id'] = $pn_type_id; }			
 			if (!($vs_idno = isset($pa_values['idno']) ? (string)$pa_values['idno'] : null)) {
 				if(isset($pa_options['generateIdnoWithTemplate']) && $pa_options['generateIdnoWithTemplate']) {
-					$vs_idno = $t_entity->setIdnoTWithTemplate($pa_options['generateIdnoWithTemplate'], array('dontSetValue' => true));
+					$vs_idno = $t_entity->setIdnoWithTemplate($pa_options['generateIdnoWithTemplate'], array('dontSetValue' => true));
 				}
 			}
 			
@@ -270,7 +270,7 @@
 
 			if (!($vs_idno = isset($pa_values['idno']) ? (string)$pa_values['idno'] : null)) {
 				if(isset($pa_options['generateIdnoWithTemplate']) && $pa_options['generateIdnoWithTemplate']) {
-					$vs_idno = $t_place->setIdnoTWithTemplate($pa_options['generateIdnoWithTemplate'], array('dontSetValue' => true));
+					$vs_idno = $t_place->setIdnoWithTemplate($pa_options['generateIdnoWithTemplate'], array('dontSetValue' => true));
 				}
 			}
 			
@@ -431,7 +431,7 @@
 
 			if (!($vs_idno = isset($pa_values['idno']) ? (string)$pa_values['idno'] : null)) {
 				if(isset($pa_options['generateIdnoWithTemplate']) && $pa_options['generateIdnoWithTemplate']) {
-					$vs_idno = $t_occurrence->setIdnoTWithTemplate($pa_options['generateIdnoWithTemplate'], array('dontSetValue' => true));
+					$vs_idno = $t_occurrence->setIdnoWithTemplate($pa_options['generateIdnoWithTemplate'], array('dontSetValue' => true));
 				}
 			}
 			
@@ -572,6 +572,15 @@
 			$pb_match_on_idno = caGetOption('matchOnIdno', $pa_options, false);
 			$vn_parent_id = caGetOption('parent_id', $pa_values, null);
 			
+			$vs_singular_label = (isset($pa_values['preferred_labels']['name_singular']) && $pa_values['preferred_labels']['name_singular']) ? $pa_values['preferred_labels']['name_singular'] : '';
+			if (!$vs_singular_label) { $vs_singular_label = (isset($pa_values['name_singular']) && $pa_values['name_singular']) ? $pa_values['name_singular'] : $ps_item_idno; }
+			$vs_plural_label = (isset($pa_values['preferred_labels']['name_plural']) && $pa_values['preferred_labels']['name_plural']) ? $pa_values['preferred_labels']['name_plural'] : $ps_item_idno;
+			if (!$vs_plural_label) { $vs_plural_label = (isset($pa_values['name_plural']) && $pa_values['name_plural']) ? $pa_values['name_plural'] : $ps_item_idno; }
+			
+			if (!$vs_singular_label) { $vs_singular_label = $vs_plural_label; }
+			if (!$vs_plural_label) { $vs_plural_label = $vs_singular_label; }
+			if (!$ps_item_idno) { $ps_item_idno = $vs_plural_label; }
+			
 			if(!isset($pa_options['cache'])) { $pa_options['cache'] = true; }
 			
 			$o_event = (isset($pa_options['importEvent']) && $pa_options['importEvent'] instanceof ca_data_import_events) ? $pa_options['importEvent'] : null;
@@ -596,6 +605,7 @@
 					print "[Error] "._t("Could not find list with list code %1", $pm_list_code_or_id)."\n";
 				}
 				if ($o_log) { $o_log->logError(_t("Could not find list with list code %1", $pm_list_code_or_id)); }
+					print caPrintStackTrace();
 				return DataMigrationUtils::$s_cached_list_item_ids[$pm_list_code_or_id.'/'.$ps_item_idno.'/'.$vn_parent_id] = null; 
 			}
 			
@@ -612,8 +622,8 @@
 				
 			$vn_item_id = null;
 			if ($pb_match_on_label) {
-				if (!($vn_item_id = (ca_list_items::find(array_merge(array('preferred_labels' => array('name_singular' => $ps_item_idno)), $va_find_arr), array('returnAs' => 'firstId', 'transaction' => $pa_options['transaction']))))) {
-					$vn_item_id = (ca_list_items::find(array_merge(array('preferred_labels' => array('name_plural' => $ps_item_idno)), $va_find_arr), array('returnAs' => 'firstId', 'transaction' => $pa_options['transaction'])));
+				if (!($vn_item_id = (ca_list_items::find(array_merge(array('preferred_labels' => array('name_singular' => $vs_singular_label)), $va_find_arr), array('returnAs' => 'firstId', 'transaction' => $pa_options['transaction']))))) {
+					$vn_item_id = (ca_list_items::find(array_merge(array('preferred_labels' => array('name_plural' => $vs_plural_label)), $va_find_arr), array('returnAs' => 'firstId', 'transaction' => $pa_options['transaction'])));
 				}
 				
 				if ($vn_item_id) {
@@ -632,7 +642,7 @@
 			}
 			
 			if (!$pb_match_on_label || $pb_match_on_idno) {
-				if ($vn_item_id = (ca_list_items::find(array_merge(array('idno' => $vs_idno), $va_find_arr), array('returnAs' => 'firstId', 'transaction' => $pa_options['transaction'])))) {
+				if ($vn_item_id = (ca_list_items::find(array_merge(array('idno' => $ps_item_idno), $va_find_arr), array('returnAs' => 'firstId', 'transaction' => $pa_options['transaction'])))) {
 					DataMigrationUtils::$s_cached_list_item_ids[$pm_list_code_or_id.'/'.$ps_item_idno.'/'.$vn_parent_id] = $vn_item_id; 
 					
 					if ($o_event) { 
@@ -661,16 +671,16 @@
 				$vb_label_errors = false;
 				$t_item->addLabel(
 					array(
-						'name_singular' => $pa_values['name_singular'] ? $pa_values['name_singular'] : $ps_item_idno,
-						'name_plural' => $pa_values['name_plural'] ? $pa_values['name_plural'] : $ps_item_idno
+						'name_singular' => $vs_singular_label,
+						'name_plural' => $vs_plural_label
 					), $pn_locale_id, null, true
 				);
 				
 				if ($t_item->numErrors()) {
 					if(isset($pa_options['outputErrors']) && $pa_options['outputErrors']) {
-						print "[Error] "._t("Could not set preferred label for list item %1: %2", $pa_values['name_singular']."/".$pa_values['name_plural']."/{$ps_item_idno}", join('; ', $t_item->getErrors()))."\n";
+						print "[Error] "._t("Could not set preferred label for list item %1: %2", "{$vs_singular_label}/{$vs_plural_label}/{$ps_item_idno}", join('; ', $t_item->getErrors()))."\n";
 					}
-					if ($o_log) { $o_log->logError(_t("Could not set preferred label for list item %1: %2", $pa_values['name_singular']."/".$pa_values['name_plural']."/{$ps_item_idno}", join('; ', $t_item->getErrors()))); }
+					if ($o_log) { $o_log->logError(_t("Could not set preferred label for list item %1: %2", "{$vs_singular_label}/{$vs_plural_label}/{$ps_item_idno}", join('; ', $t_item->getErrors()))); }
 				
 					$vb_label_errors = true;
 				}
@@ -685,7 +695,7 @@
 					}
 				}
 				
-				if ($o_log) { $o_log->logInfo(_t("Created new list item %1 in list %2", $pa_values['name_singular']."/".$pa_values['name_plural']."/{$ps_item_idno}", $pm_list_code_or_id)); }
+				if ($o_log) { $o_log->logInfo(_t("Created new list item %1 in list %2", "{$vs_singular_label}/{$vs_plural_label}/{$ps_item_idno}", $pm_list_code_or_id)); }
 				
 				if (isset($pa_options['returnInstance']) && $pa_options['returnInstance']) {
 					return $t_item;
@@ -734,7 +744,7 @@
 
 			if (!($vs_idno = isset($pa_values['idno']) ? (string)$pa_values['idno'] : null)) {
 				if(isset($pa_options['generateIdnoWithTemplate']) && $pa_options['generateIdnoWithTemplate']) {
-					$vs_idno = $t_collection->setIdnoTWithTemplate($pa_options['generateIdnoWithTemplate'], array('dontSetValue' => true));
+					$vs_idno = $t_collection->setIdnoWithTemplate($pa_options['generateIdnoWithTemplate'], array('dontSetValue' => true));
 				}
 			}
 			
@@ -890,7 +900,7 @@
 			
 			if (!($vs_idno = isset($pa_values['idno']) ? (string)$pa_values['idno'] : null)) {
 				if(isset($pa_options['generateIdnoWithTemplate']) && $pa_options['generateIdnoWithTemplate']) {
-					$vs_idno = $t_location->setIdnoTWithTemplate($pa_options['generateIdnoWithTemplate'], array('dontSetValue' => true));
+					$vs_idno = $t_location->setIdnoWithTemplate($pa_options['generateIdnoWithTemplate'], array('dontSetValue' => true));
 				}
 			}
 			
@@ -1006,7 +1016,7 @@
 		}
 		# -------------------------------------------------------
 		/** 
-		 * Returns object_id for the object_id with the specified name, regardless of specified type. If the object does not already 
+		 * Returns object_id for the object with the specified name, regardless of specified type. If the object does not already 
 		 * exist then it will be created with the specified name, type and locale, as well as with any specified values in the $pa_values array.
 		 * $pa_values keys should be either valid object fields or attributes.
 		 *
@@ -1043,7 +1053,7 @@
 
 			if (!($vs_idno = isset($pa_values['idno']) ? (string)$pa_values['idno'] : null)) {
 				if(isset($pa_options['generateIdnoWithTemplate']) && $pa_options['generateIdnoWithTemplate']) {
-					$vs_idno = $t_object->setIdnoTWithTemplate($pa_options['generateIdnoWithTemplate'], array('dontSetValue' => true));
+					$vs_idno = $t_object->setIdnoWithTemplate($pa_options['generateIdnoWithTemplate'], array('dontSetValue' => true));
 				}
 			}
 			
@@ -1154,7 +1164,7 @@
 				if ($o_event) { $o_event->beginItem($vs_event_source, 'ca_objects', 'U'); }
 				$vn_object_id = $vn_id;
 				if ($o_event) { $o_event->endItem($vn_object_id, __CA_DATA_IMPORT_ITEM_SUCCESS__, ''); }
-				if ($o_log) { $o_log->logDebug(_t("Found existing object %1 in DataMigrationUtils::getObjectID(); total of %2 objects were found", $ps_collection_name, sizeof($va_object_ids) + 1)); }
+				if ($o_log) { $o_log->logDebug(_t("Found existing object %1 in DataMigrationUtils::getObjectID(); total of %2 objects were found", $ps_object_name, sizeof($va_object_ids) + 1)); }
 				
 				if (isset($pa_options['returnInstance']) && $pa_options['returnInstance']) {
 					return new ca_objects($vn_object_id);
@@ -1162,6 +1172,145 @@
 			}
 				
 			return $vn_object_id;
+		}
+		# -------------------------------------------------------
+		/** 
+		 * Returns lot_id for the lot with the specified idno, regardless of specified type. If the lot does not already 
+		 * exist then it will be created with the specified idno, name, type and locale, as well as with any specified values in the $pa_values array.
+		 * $pa_values keys should be either valid lot fields or attributes.
+		 *
+		 * @param string $ps_idno_stub Lot identifier
+		 * @param string $ps_lot_name Lot name
+		 * @param int $pn_type_id The type_id of the object type to use if the object needs to be created
+		 * @param int $pn_locale_id The locale_id to use if the object needs to be created (will be used for both the object locale as well as the label locale)
+		 * @param array $pa_values An optional array of additional values to populate newly created object records with. These values are *only* used for newly created objects; they will not be applied if the object named already exists. The array keys should be names of ca_object_lots fields or valid object attributes. Values should be either a scalar (for single-value attributes) or an array of values for (multi-valued attributes)
+		 * @param array $pa_options An optional array of options, which include:
+		 *				outputErrors - if true, errors will be printed to console [default=false]
+		 *				dontCreate - if true then new entities will not be created [default=false]
+		 * 				transaction - if Transaction object is passed, use it for all Db-related tasks [default=null]
+		 *				returnInstance = return ca_object_lots instance rather than object_id. Default is false. 
+		 *				importEvent = if ca_data_import_events instance is passed then the insert/update of the object will be logged as part of the import
+		 *				importEventSource = if importEvent is passed, then the value set for importEventSource is used in the import event log as the data source. If omitted a default value of "?" is used
+		 *				log = if KLogger instance is passed then actions will be logged
+		 */
+		static function getObjectLotID($ps_idno_stub, $ps_lot_name, $pn_type_id, $pn_locale_id, $pa_values=null, $pa_options=null) {
+			if (!is_array($pa_options)) { $pa_options = array(); }
+			if(!isset($pa_options['outputErrors'])) { $pa_options['outputErrors'] = false; }
+			
+			$t_lot = new ca_object_lots();
+			if (isset($pa_options['transaction']) && $pa_options['transaction'] instanceof Transaction){
+				$t_lot->setTransaction($pa_options['transaction']);
+			}
+			
+			$o_event = (isset($pa_options['importEvent']) && $pa_options['importEvent'] instanceof ca_data_import_events) ? $pa_options['importEvent'] : null;
+			$vs_event_source = (isset($pa_options['importEventSource']) && $pa_options['importEventSource']) ? $pa_options['importEventSource'] : "?";
+			$o_log = (isset($pa_options['log']) && $pa_options['log'] instanceof KLogger) ? $pa_options['log'] : null;
+			
+			$va_find_arr = array();
+			if ($pn_type_id) { $va_find_arr['type_id'] = $pn_type_id; }
+			
+			$vn_id = (ca_object_lots::find(array_merge(array('idno_stub' => $ps_idno_stub), $va_find_arr), array('returnAs' => 'firstId', 'transaction' => $pa_options['transaction'])));
+
+			if (!$vn_id) {
+				if (isset($pa_options['dontCreate']) && $pa_options['dontCreate']) { return false; }
+				if ($o_event) { $o_event->beginItem($vs_event_source, 'ca_object_lots', 'I'); }
+				
+				$t_lot->setMode(ACCESS_WRITE);
+				$t_lot->set('locale_id', $pn_locale_id);
+				$t_lot->set('type_id', $pn_type_id);
+				$t_lot->set('lot_status_id', isset($pa_values['lot_status_id']) ? $pa_values['lot_status_id'] : null);
+				$t_lot->set('access', isset($pa_values['access']) ? $pa_values['access'] : 0);
+				$t_lot->set('status', isset($pa_values['status']) ? $pa_values['status'] : 0);
+				
+				$t_lot->set('idno_stub', $ps_idno_stub);
+				
+				$t_lot->insert();
+				
+				if ($t_lot->numErrors()) {
+					if(isset($pa_options['outputErrors']) && $pa_options['outputErrors']) {
+						print "[Error] "._t("Could not insert lot %1: %2", $ps_lot_name, join('; ', $t_lot->getErrors()))."\n";
+					}
+					
+					if ($o_log) { $o_log->logError(_t("Could not insert lot %1: %2", $ps_lot_name, join('; ', $t_lot->getErrors()))); }
+					return null;
+				}
+				
+				$vb_label_errors = false;
+				$t_lot->addLabel(array('name' => $ps_lot_name), $pn_locale_id, null, true);
+				
+				if ($t_lot->numErrors()) {
+					if(isset($pa_options['outputErrors']) && $pa_options['outputErrors']) {
+						print "[Error] "._t("Could not set preferred label for lot %1: %2", $ps_lot_name, join('; ', $t_lot->getErrors()))."\n";
+					}
+					if ($o_log) { $o_log->logError(_t("Could not set preferred label for lot %1: %2", $ps_lot_name, join('; ', $t_lot->getErrors()))); }
+				
+					$vb_label_errors = true;
+				}
+				
+				unset($pa_values['access']);	
+				unset($pa_values['status']);
+				unset($pa_values['idno_stub']);
+				unset($pa_values['lot_status_id']);
+				
+				$vb_attr_errors = false;
+				if (is_array($pa_values)) {
+					foreach($pa_values as $vs_element => $va_value) { 					
+						if (is_array($va_value)) {
+							// array of values (complex multi-valued attribute)
+							$t_lot->addAttribute(
+								array_merge($va_value, array(
+									'locale_id' => $pn_locale_id
+								)), $vs_element);
+						} else {
+							// scalar value (simple single value attribute)
+							if ($va_value) {
+								$t_lot->addAttribute(array(
+									'locale_id' => $pn_locale_id,
+									$vs_element => $va_value
+								), $vs_element);
+							}
+						}
+					}
+				}
+				
+				$t_lot->update();
+				
+				if ($t_lot->numErrors()) {
+					if(isset($pa_options['outputErrors']) && $pa_options['outputErrors']) {
+						print "[Error] "._t("Could not set values for lot %1: %2", $ps_lot_name, join('; ', $t_lot->getErrors()))."\n";
+					}
+					if ($o_log) { $o_log->logError(_t("Could not set values for lot %1: %2", $ps_lot_name, join('; ', $t_lot->getErrors()))); }
+				
+					$vb_attr_errors = true;
+				}
+				
+				$vn_lot_id = $t_lot->getPrimaryKey();
+				
+				if ($o_event) { 
+					if ($vb_attr_errors || $vb_label_errors) {
+						$o_event->endItem($vn_lot_id, __CA_DATA_IMPORT_ITEM_PARTIAL_SUCCESS__, _t("Errors setting field values: %1", join('; ', $t_lot->getErrors()))); 
+					} else {
+						$o_event->endItem($vn_lot_id, __CA_DATA_IMPORT_ITEM_SUCCESS__, ''); 
+					}
+				}
+				
+				if ($o_log) { $o_log->logInfo(_t("Created new lot %1", $ps_lot_name)); }
+				
+				if (isset($pa_options['returnInstance']) && $pa_options['returnInstance']) {
+					return $t_lot;
+				}
+			} else {
+				if ($o_event) { $o_event->beginItem($vs_event_source, 'ca_object_lots', 'U'); }
+				$vn_lot_id = $vn_id;
+				if ($o_event) { $o_event->endItem($vn_lot_id, __CA_DATA_IMPORT_ITEM_SUCCESS__, ''); }
+				if ($o_log) { $o_log->logDebug(_t("Found existing lot %1 in DataMigrationUtils::getObjectLotID(); total of %2 lots were found", $ps_lot_name, sizeof($va_lot_ids) + 1)); }
+				
+				if (isset($pa_options['returnInstance']) && $pa_options['returnInstance']) {
+					return new ca_object_lots($vn_lot_id);
+				}
+			}
+				
+			return $vn_lot_id;
 		}
 		# -------------------------------------------------------
 		/** 
@@ -1205,7 +1354,7 @@
 						
 			if (!($vs_idno = isset($pa_values['idno']) ? (string)$pa_values['idno'] : null)) {
 				if(isset($pa_options['generateIdnoWithTemplate']) && $pa_options['generateIdnoWithTemplate']) {
-					$vs_idno = $t_loan->setIdnoTWithTemplate($pa_options['generateIdnoWithTemplate'], array('dontSetValue' => true));
+					$vs_idno = $t_loan->setIdnoWithTemplate($pa_options['generateIdnoWithTemplate'], array('dontSetValue' => true));
 				}
 			}
 			
@@ -1358,7 +1507,7 @@
 						
 			if (!($vs_idno = isset($pa_values['idno']) ? (string)$pa_values['idno'] : null)) {
 				if(isset($pa_options['generateIdnoWithTemplate']) && $pa_options['generateIdnoWithTemplate']) {
-					$vs_idno = $t_movement->setIdnoTWithTemplate($pa_options['generateIdnoWithTemplate'], array('dontSetValue' => true));
+					$vs_idno = $t_movement->setIdnoWithTemplate($pa_options['generateIdnoWithTemplate'], array('dontSetValue' => true));
 				}
 			}
 			

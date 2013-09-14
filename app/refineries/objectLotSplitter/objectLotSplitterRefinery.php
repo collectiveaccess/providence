@@ -56,7 +56,7 @@
 		 *
 		 */
 		public function refine(&$pa_destination_data, $pa_group, $pa_item, $pa_source_data, $pa_options=null) {
-			return caGenericImportSplitter('objectLotSplitter', 'lot', 'ca_object_lots', $this, $pa_destination_data, $pa_group, $pa_item, $pa_source_data, $pa_options);
+			return caGenericImportSplitter('objectLotSplitter', 'objectLot', 'ca_object_lots', $this, $pa_destination_data, $pa_group, $pa_item, $pa_source_data, $pa_options);
 		}
 		# -------------------------------------------------------	
 		/**
@@ -89,7 +89,7 @@
 				'label' => _t('Relationship type'),
 				'description' => _t('Accepts a constant type code for the relationship type or a reference to the location in the data source where the type can be found.')
 			),
-			'objectLotSplitter_lotType' => array(
+			'objectLotSplitter_objectLotType' => array(
 				'formatType' => FT_TEXT,
 				'displayType' => DT_SELECT,
 				'width' => 10, 'height' => 1,
@@ -97,6 +97,15 @@
 				'default' => '',
 				'label' => _t('Lot type'),
 				'description' => _t('Accepts a constant list item idno from the list object_lot_types or a reference to the location in the data source where the type can be found.')
+			),
+			'objectLotSplitter_objectLotStatus' => array(
+				'formatType' => FT_TEXT,
+				'displayType' => DT_SELECT,
+				'width' => 10, 'height' => 1,
+				'takesLocale' => false,
+				'default' => '',
+				'label' => _t('Lot status'),
+				'description' => _t('Accepts a constant list item idno from the list object_lot_statuses or a reference to the location in the data source where the status can be found.')
 			),
 			'objectLotSplitter_attributes' => array(
 				'formatType' => FT_TEXT,
@@ -116,7 +125,7 @@
 				'label' => _t('Relationship type default'),
 				'description' => _t('Sets the default relationship type that will be used if none are defined or if the data source values do not match any values in the CollectiveAccess system.')
 			),
-			'objectLotSplitter_lotTypeDefault' => array(
+			'objectLotSplitter_objectLotTypeDefault' => array(
 				'formatType' => FT_TEXT,
 				'displayType' => DT_FIELD,
 				'width' => 10, 'height' => 1,
@@ -124,6 +133,15 @@
 				'default' => '',
 				'label' => _t('Lot type default'),
 				'description' => _t('Sets the default lot type that will be used if none are defined or if the data source values do not match any values in the CollectiveAccess list object_lot_types.')
+			),
+			'objectLotSplitter_objectLotStatusDefault' => array(
+				'formatType' => FT_TEXT,
+				'displayType' => DT_FIELD,
+				'width' => 10, 'height' => 1,
+				'takesLocale' => false,
+				'default' => '',
+				'label' => _t('Lot status default'),
+				'description' => _t('Sets the default lot status that will be used if none are defined or if the data source values do not match any values in the CollectiveAccess list object_lot_statuses.')
 			),
 			'objectLotSplitter_interstitial' => array(
 				'formatType' => FT_TEXT,
