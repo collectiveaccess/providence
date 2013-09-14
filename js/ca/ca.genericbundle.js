@@ -71,6 +71,8 @@ var caUI = caUI || {};
 			listSortItems: null // if set, limits sorting to items specified by selector
 		}, options);
 		
+		if (that.maxRepeats == 0) { that.maxRepeats = 65535; }
+		
 		if (!that.readonly) {
 			jQuery(container + " ." + that.addButtonClassName).click(function() {
 				that.addToBundle();

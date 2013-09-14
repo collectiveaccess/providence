@@ -3465,6 +3465,7 @@ if (!$vb_batch) {
 		
 		$vn_min_relationships = caGetOption('minRelationshipsPerRow', $pa_settings, 0);
 		$vn_max_relationships = caGetOption('maxRelationshipsPerRow', $pa_settings, 65535);
+		if ($vn_max_relationships == 0) { $vn_max_relationships = 65535; }
 		
  		$va_rel_ids_sorted = $va_rel_sort_order = explode(';',$po_request->getParameter($ps_form_prefix.'_'.$ps_bundlename.'BundleList', pString));
 		sort($va_rel_ids_sorted, SORT_NUMERIC);
