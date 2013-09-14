@@ -33,7 +33,7 @@
  /**
    *
    */
-   
+   require_once(__CA_LIB_DIR__.'/core/Logging/KLogger/KLogger.php');
 
 	# ---------------------------------------
 	/**
@@ -593,6 +593,21 @@
 			return array();
 		}
 		return $va_vals;
+	}
+	# ---------------------------------------
+	/**
+	 * Returns array of valid importer logging levels. Keys of array are display names for levels, values are KLogger integer log-level constants
+	 *
+	 * @return array
+	 */
+	function caGetLogLevels() {
+		return array(
+			_t('Errors') => KLogger::ERR,
+			_t('Warnings') => KLogger::WARN,
+			_t('Alerts') => KLogger::NOTICE,
+			_t('Infomational messages') => KLogger::INFO,
+			_t('Debugging messages') => KLogger::DEBUG
+		);
 	}
 	# ---------------------------------------
 ?>

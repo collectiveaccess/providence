@@ -252,8 +252,8 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 			'takesLocale' => false,
 			'default' => '',
 			'options' => ca_data_importers::getAvailableInputFormats(),
-			'label' => _t('Importer formats'),
-			'description' => _t('Set data formats for which this importer is usable.  Currently supported: XLSX, XLS and MYSQL')
+			'label' => _t('Importer data types'),
+			'description' => _t('Set data types for which this importer is usable.  Ex. XLSX, XLS, MYSQL')
 		);
 		$va_settings['type'] = array(
 			'formatType' => FT_TEXT,
@@ -822,7 +822,9 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 					$o_setting_value = $o_sheet->getCellByColumnAndRow(2, $o_row->getRowIndex());
 					
 					switch($vs_setting_name = (string)$o_setting_name->getValue()) {
+						case 'inputTypes':		// older mapping worksheets use "inputTypes" instead of the preferred "inputFormats"
 						case 'inputFormats':
+							$vs_setting_name = 'inputFormats'; // force to preferrened "inputFormats"
 							$va_settings[$vs_setting_name] = preg_split("![ ]*;[ ]*!", (string)$o_setting_value->getValue());
 							break;
 						default:
@@ -1096,6 +1098,7 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 	 *			KLogger::NOTICE = Notices (normal but significant conditions)
 	 *			KLogger::INFO = Informational messages
 	 *			KLogger::DEBUG = Debugging messages
+	 *		dryRun = do import but don't actually save data
 	 */
 	static public function importDataFromSource($ps_source, $ps_mapping, $pa_options=null) {
 		ca_data_importers::$s_num_import_errors = 0;
@@ -1114,14 +1117,15 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 		$o_trans = new Transaction();
 		$t_mapping->setTransaction($o_trans);
 		
-		$po_request = isset($pa_options['request']) ? $pa_options['request'] : null;
+		$po_request = caGetOption('request', $pa_options, null);
+		$pb_dry_run = caGetOption('dryRun', $pa_options, false);
 		
 		$o_config = Configuration::load();
 		
 		if (!is_array($pa_options) || !isset($pa_options['logLevel']) || !$pa_options['logLevel']) {
 			$pa_options['logLevel'] = KLogger::INFO;
 		}
-$pa_options['logLevel'] = KLogger::DEBUG;
+		
 		if (!is_array($pa_options) || !isset($pa_options['logDirectory']) || !$pa_options['logDirectory'] || !file_exists($pa_options['logDirectory'])) {
 			if (!($pa_options['logDirectory'] = $o_config->get('batch_metadata_import_log_directory'))) {
 				$pa_options['logDirectory'] = ".";
@@ -2194,7 +2198,13 @@ $pa_options['logLevel'] = KLogger::DEBUG;
 		}
 		
 		if($vb_use_ncurses) { ncurses_end(); }
-		$o_trans->commit();
+		
+		if ($pb_dry_run) {
+			$o_trans->rollback();
+			$o_log->logInfo(_t('Rollback successful import run in "dry run" mode'));
+		} else {
+			$o_trans->commit();
+		}
 		return true;
 	}
 	# ------------------------------------------------------

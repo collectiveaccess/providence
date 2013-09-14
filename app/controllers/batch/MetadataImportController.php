@@ -144,6 +144,7 @@
  			$t_importer = $this->getImporterInstance();
  			
  			$this->view->setVar('t_importer', $t_importer);
+ 			$this->view->setVar('last_settings', $this->request->user->getVar('batch_metadata_last_settings'));
  			
 			$this->render('metadataimport/importer_run_html.php');
  		}
@@ -165,12 +166,17 @@
  				'sendSMS' => (bool)$this->request->getParameter('send_sms_when_done', pInteger), 
  				
  				'locale_id' => $g_ui_locale_id,
- 				'user_id' => $this->request->getUserID()
+ 				'user_id' => $this->request->getUserID(),
+ 				
+ 				'logLevel' => $this->request->getParameter("logLevel", pInteger),
+ 				'dryRun' => $this->request->getParameter("dryRun", pInteger)
  			);
  			
  			$va_last_settings = $va_options;
  			$va_last_settings['importer_id'] = $this->request->getParameter("importer_id", pInteger); 
  			$va_last_settings['inputFormat'] = $this->request->getParameter("inputFormat", pString); 
+ 			$va_last_settings['logLevel'] = $this->request->getParameter("logLevel", pInteger); 
+ 			$va_last_settings['dryRun'] = $this->request->getParameter("dryRun", pInteger); 
  			$this->request->user->setVar('batch_metadata_last_settings', $va_last_settings);
  			
  			$this->view->setVar("t_subject", $t_subject);

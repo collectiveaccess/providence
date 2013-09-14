@@ -34,6 +34,7 @@
   *
   */
  	require_once(__CA_APP_DIR__."/helpers/batchHelpers.php");
+ 	require_once(__CA_APP_DIR__."/helpers/importHelpers.php");
  	require_once(__CA_APP_DIR__."/helpers/configurationHelpers.php");
  	require_once(__CA_APP_DIR__."/helpers/mailHelpers.php");
  	require_once(__CA_MODELS_DIR__."/ca_sets.php");
@@ -736,35 +737,41 @@
 				return false;
 			}
 			
-			$vs_log_dir = isset($pa_options['log']) ? $pa_options['log'] : null;
+			$vs_log_dir = caGetOptions('log', $pa_options, null); 
+			$vs_log_level = caGetOptions('logLevel', $pa_options, "INFO"); 
 			
-			$vn_log_level = KLogger::INFO;
-			switch($vs_log_level = isset($pa_options['logLevel']) ? $pa_options['logLevel'] : "INFO") {
-				case 'DEBUG':
-					$vn_log_level = KLogger::DEBUG;
-					break;
-				case 'NOTICE':
-					$vn_log_level = KLogger::NOTICE;
-					break;
-				case 'WARN':
-					$vn_log_level = KLogger::WARN;
-					break;
-				case 'ERR':
-					$vn_log_level = KLogger::ERR;
-					break;
-				case 'CRIT':
-					$vn_log_level = KLogger::CRIT;
-					break;
-				case 'ALERT':
-					$vn_log_level = KLogger::ALERT;
-					break;
-				default:
-				case 'INFO':
-					$vn_log_level = KLogger::INFO;
-					break;
+			$vb_dry_run = caGetOptions('dryRun', $pa_options, false); 
+			
+			if (is_numeric($vs_log_level)) {
+				$vn_log_level = (int)$vs_log_level;
+			} else {
+				switch($vs_log_level) {
+					case 'DEBUG':
+						$vn_log_level = KLogger::DEBUG;
+						break;
+					case 'NOTICE':
+						$vn_log_level = KLogger::NOTICE;
+						break;
+					case 'WARN':
+						$vn_log_level = KLogger::WARN;
+						break;
+					case 'ERR':
+						$vn_log_level = KLogger::ERR;
+						break;
+					case 'CRIT':
+						$vn_log_level = KLogger::CRIT;
+						break;
+					case 'ALERT':
+						$vn_log_level = KLogger::ALERT;
+						break;
+					default:
+					case 'INFO':
+						$vn_log_level = KLogger::INFO;
+						break;
+				}
 			}
-		
-			if (!ca_data_importers::importDataFromSource($ps_source, $ps_importer, array('logDirectory' => $o_config->get('batch_metadata_import_log_directory'), 'request' => $po_request,'format' => $ps_input_format, 'showCLIProgressBar' => false, 'useNcurses' => false, 'progressCallback' => isset($pa_options['progressCallback']) ? $pa_options['progressCallback'] : null, 'reportCallback' => isset($pa_options['reportCallback']) ? $pa_options['reportCallback'] : null,  'logDirectory' => $vs_log_dir, 'logLevel' => $vn_log_level))) {
+
+			if (!ca_data_importers::importDataFromSource($ps_source, $ps_importer, array('logDirectory' => $o_config->get('batch_metadata_import_log_directory'), 'request' => $po_request,'format' => $ps_input_format, 'showCLIProgressBar' => false, 'useNcurses' => false, 'progressCallback' => isset($pa_options['progressCallback']) ? $pa_options['progressCallback'] : null, 'reportCallback' => isset($pa_options['reportCallback']) ? $pa_options['reportCallback'] : null,  'logDirectory' => $vs_log_dir, 'logLevel' => $vn_log_level, 'dryRun' => $vb_dry_run))) {
 				$va_errors['general'] = array(
 					'idno' => "*",
 					'label' => "*",
