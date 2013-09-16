@@ -45,8 +45,9 @@
 			$_locale = new Zend_Locale($g_ui_locale);
 			Zend_Registry::set('Zend_Locale', $_locale);
 			
-			$o_cache = caGetCacheObject('ca_translation', 3600 * 24);
-			Zend_Translate::setCache($o_cache);
+			if(!caIsRunFromCLI() && ($o_cache = caGetCacheObject('ca_translation', 3600 * 24))) {
+				Zend_Translate::setCache($o_cache);
+			}
 			$_ = new Zend_Translate(array(
 				'adapter' => 'gettext',
 				'content' => $vs_locale_path,

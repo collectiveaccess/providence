@@ -32,6 +32,7 @@
  	require_once(__CA_LIB_DIR__."/core/Media.php");
  	require_once(__CA_LIB_DIR__."/core/Media/MediaProcessingSettings.php");
  	require_once(__CA_LIB_DIR__."/ca/BaseEditorController.php");
+	require_once(__CA_LIB_DIR__."/ca/MediaContentLocationIndexer.php");
  	
  
  	class ObjectEditorController extends BaseEditorController {
@@ -133,6 +134,77 @@
  			if (strlen($vs_use_book_viewer = $this->request->getParameter('use_book_viewer', pInteger))) { $va_opts['use_book_viewer'] = (bool)$vs_use_book_viewer; }
  
  			$this->response->addContent($t_rep->getRepresentationViewerHTMLBundle($this->request, $va_opts));
+ 		}
+ 		# -------------------------------------------------------
+ 		/**
+ 		 *
+ 		 */ 
+ 		public function GetAnnotations() {
+ 			$pn_representation_id = $this->request->getParameter('representation_id', pInteger);
+ 			$t_rep = new ca_object_representations($pn_representation_id);
+ 			
+ 			$va_annotations_raw = $t_rep->getAnnotations();
+ 			$va_annotations = array();
+ 			
+ 			foreach($va_annotations_raw as $vn_annotation_id => $va_annotation) {
+ 				$va_annotations[] = array(
+ 					'annotation_id' => $va_annotation['annotation_id'],
+ 					'x' => (float)$va_annotation['x'],
+ 					'y' => (float)$va_annotation['y'],
+ 					'w' => (float)$va_annotation['w'],
+ 					'h' => (float)$va_annotation['h'],
+ 					'label' => (string)$va_annotation['label'],
+ 					'description' => (string)$va_annotation['description'],
+ 					'type' => (string)$va_annotation['type_raw'],
+ 					'options' => $va_annotation['options']
+ 				);
+ 			}
+ 			
+ 			$this->view->setVar('annotations', $va_annotations);
+ 			$this->render('ajax_representation_annotations_json.php');
+ 		}
+ 		# -------------------------------------------------------
+ 		/**
+ 		 *
+ 		 */ 
+ 		public function SaveAnnotations() {
+ 			global $g_ui_locale_id;
+ 			$pn_representation_id = $this->request->getParameter('representation_id', pInteger);
+ 			$t_rep = new ca_object_representations($pn_representation_id);
+ 			
+ 			$pa_annotations = $this->request->getParameter('save', pArray);
+ 		
+ 			$va_annotation_ids = array();
+ 			if (is_array($pa_annotations)) {
+ 				foreach($pa_annotations as $vn_i => $va_annotation) {
+ 					$vs_label = (isset($va_annotation['label']) && ($va_annotation['label'])) ? $va_annotation['label'] : "???";
+ 					if (isset($va_annotation['annotation_id']) && ($vn_annotation_id = $va_annotation['annotation_id'])) {
+ 						// edit existing annotation
+ 						$t_rep->editAnnotation($vn_annotation_id, $g_ui_locale_id, $va_annotation, 0, 0);
+ 						$va_annotation_ids[$va_annotation['index']] = $vn_annotation_id;
+ 						// TODO: allow editing of label
+ 					} else {
+ 						// new annotation
+ 						$va_annotation_ids[$va_annotation['index']] = $t_rep->addAnnotation($vs_label, $g_ui_locale_id, $this->request->getUserID(), $va_annotation, 0, 0);
+ 					}
+ 				}
+ 			}
+ 			$va_annotations = array(
+ 				'error' => $t_rep->numErrors() ? join("; ", $t_rep->getErrors()) : null,
+ 				'annotation_ids' => $va_annotation_ids
+ 			);
+ 			
+ 			$pa_annotations = $this->request->getParameter('delete', pArray);
+ 			
+ 			if (is_array($pa_annotations)) {
+ 				foreach($pa_annotations as $vn_to_delete_annotation_id) {
+ 					$t_rep->removeAnnotation($vn_to_delete_annotation_id);
+ 				}
+ 			}
+ 			
+ 			
+ 			$this->view->setVar('annotations', $va_annotations);
+ 			$this->render('ajax_representation_annotations_json.php');
  		}
  		# -------------------------------------------------------
  		/**
@@ -387,6 +459,64 @@
  			$this->view->setVar('sections', $va_section_cache[$pn_object_id.'/'.$pn_representation_id]);
  			
  			$this->render('object_representation_page_list_json.php');
+ 		}
+ 		# -------------------------------------------------------
+ 		/**
+ 		 * 
+ 		 */ 
+ 		public function SearchWithinMedia() {
+ 			$pn_object_id = $this->request->getParameter('object_id', pInteger);
+ 			$pn_representation_id = $this->request->getParameter('representation_id', pInteger);
+ 			$ps_q = $this->request->getParameter('q', pString);
+ 			
+ 			
+			$o_search_config = Configuration::load($this->request->config->get('search_config'));
+ 			$vs_indexing_regex = $o_search_config->get('indexing_tokenizer_regex');
+ 			$va_words = preg_split("![{$vs_indexing_regex}]!", $ps_q);
+ 			$va_hits = array();
+ 			
+ 			foreach($va_words as $vs_word) {
+ 				$va_hits =  array_merge($va_hits, MediaContentLocationIndexer::find('ca_object_representations', $pn_representation_id, $vs_word));
+ 			}
+ 			$va_results = array(
+ 				'matches' => 0,
+ 				'results' => array(),
+ 				'locations' => array(),
+ 				'query' => $ps_q
+ 			);
+ 			$t_rep = new ca_object_representations($pn_representation_id);
+ 			$va_media_info = $t_rep->getMediaInfo('media');
+ 	
+ 			if (is_array($va_hits) && sizeof($va_hits)) {
+ 				$vn_page_width = $va_media_info['INPUT']['WIDTH'];
+ 				$vn_page_height = $va_media_info['INPUT']['HEIGHT'];
+ 			
+ 				$vn_page_image_width = $va_media_info['large']['WIDTH'];
+ 				$vn_page_image_height = $va_media_info['large']['HEIGHT'];
+ 			
+ 				$va_pages = array();
+ 				foreach($va_hits as $va_hit) {
+ 					$va_results['results'][] = $va_hit['p'];
+ 					
+ 					$x1_percent = $va_hit['x1']/$vn_page_width;
+ 					$x2_percent = $va_hit['x2']/$vn_page_width;
+ 					$y1_percent = ($vn_page_height-$va_hit['y2']) / $vn_page_height;
+ 					$y2_percent = ($vn_page_height-$va_hit['y1']) / $vn_page_height;
+ 					
+ 					$x1r = ($x1_percent * $vn_page_image_width) + 2;
+ 					$x2r = ($x2_percent * $vn_page_image_width) + 12;
+ 					
+ 					$y1r = $y1_percent * $vn_page_image_height;
+ 					$y2r = $y2_percent * $vn_page_image_height;
+ 					
+ 					$va_results['locations'][$va_hit['p']][] = array('x1' => $x1r, 'y1' => $y1r, 'x2' => $x2r, 'y2' => $y2r);
+ 				}
+ 				$va_results['matches'] = sizeof($va_results['results']);
+ 			}
+ 			
+ 			$this->view->setVar('results', $va_results);
+ 			
+ 			$this->render('object_representation_within_media_search_results_json.php');
  		}
  		# -------------------------------------------------------
  		# Sidebar info handler

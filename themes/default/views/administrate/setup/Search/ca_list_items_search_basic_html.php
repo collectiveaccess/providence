@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2009 Whirl-i-Gig
+ * Copyright 2009-2013 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -44,6 +44,9 @@
 		switch($vs_view) {
 			case 'no_results':
 				print $this->render('Results/no_results_html.php');
+				break;
+			case 'editable':
+				print $this->render('Results/ca_list_items_editable_html.php');
 				break;
 			case 'list':
 			default:

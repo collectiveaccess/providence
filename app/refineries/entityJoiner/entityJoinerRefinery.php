@@ -36,7 +36,7 @@
 		public function __construct() {
 			$this->ops_name = 'entityJoiner';
 			$this->ops_title = _t('Entity joiner');
-			$this->ops_description = _t('Join entity names from separate fields into a single record');
+			$this->ops_description = _t('Converts data with partial entity names into a valid entities for import.');
 			
 			parent::__construct();
 		}
@@ -57,14 +57,24 @@
 		 *
 		 */
 		public function refine(&$pa_destination_data, $pa_group, $pa_item, $pa_source_data, $pa_options=null) {
+			$o_log = (isset($pa_options['log']) && is_object($pa_options['log'])) ? $pa_options['log'] : null;
+			
 			$va_group_dest = explode(".", $pa_group['destination']);
 			$vs_terminal = array_pop($va_group_dest);
 			$pm_value = $pa_source_data[$pa_item['source']];
-					
-			//print_R($pa_item);
 			
+			if (is_array($pm_value)) {
+				$va_entities = $pm_value;	// for input formats that support repeating values
+			} else {
+				$va_entities = array($pm_value);
+			}
+					
 			$va_vals = array();
 			$vn_c = 0;
+			
+			$t_entity = new ca_entities();
+				
+			foreach($va_entities as $pm_value) {
 				if (!($vs_entity = trim($pm_value))) { return array(); }				
 			
 				if (is_array($va_skip_values = $pa_item['settings']['entityJoiner_skipIfValue']) && in_array($vs_entity, $va_skip_values)) {
@@ -72,7 +82,6 @@
 				}
 			
 				$va_name = array();
-				$t_entity = new ca_entities();
 				foreach($t_entity->getLabelUIFields() as $vs_fld) {
 					$va_name[$vs_fld] = BaseRefinery::parsePlaceholder($pa_item['settings']['entityJoiner_'.$vs_fld], $pa_source_data, $pa_item);
 				};
@@ -92,34 +101,44 @@
 				if (
 					($vs_rel_type_opt = $pa_item['settings']['entityJoiner_relationshipType'])
 				) {
-					if (!($va_val['_relationship_type'] = BaseRefinery::parsePlaceholder($vs_rel_type_opt, $pa_source_data, $pa_item))) {
-						if ($vs_rel_type_opt = $pa_item['settings']['entityJoiner_relationshipTypeDefault']) {
-							$va_val['_relationship_type'] = BaseRefinery::parsePlaceholder($vs_rel_type_opt, $pa_source_data, $pa_item);
-						}
-					}
+					$va_val['_relationship_type'] = BaseRefinery::parsePlaceholder($vs_rel_type_opt, $pa_source_data, $pa_item);
+				}
+				
+				if ((!isset($va_val['_relationship_type']) || !$va_val['_relationship_type']) && ($vs_rel_type_opt = $pa_item['settings']['entityJoiner_relationshipTypeDefault'])) {
+					$va_val['_relationship_type'] = BaseRefinery::parsePlaceholder($vs_rel_type_opt, $pa_source_data, $pa_item);
+				}
+				
+				if ((!isset($va_val['_relationship_type']) || !$va_val['_relationship_type']) && $o_log) {
+					$o_log->logWarn(_t('[entityJoinerRefinery] No relationship type is set for entity %1', $vs_entity));
 				}
 			
 				// Set entity_type
 				if (
 					($vs_type_opt = $pa_item['settings']['entityJoiner_entityType'])
 				) {
-					if (!($va_val['_type'] = BaseRefinery::parsePlaceholder($vs_type_opt, $pa_source_data, $pa_item))) {
-						if($vs_type_opt = $pa_item['settings']['entityJoiner_entityTypeDefault']) {
-							$va_val['_type'] = BaseRefinery::parsePlaceholder($vs_type_opt, $pa_source_data, $pa_item);
-						}
-					}
+					$va_val['_type'] = BaseRefinery::parsePlaceholder($vs_type_opt, $pa_source_data, $pa_item);
+				}
+				
+				if((!isset($va_val['_type']) || !$va_val['_type']) && ($vs_type_opt = $pa_item['settings']['entityJoiner_entityTypeDefault'])) {
+					$va_val['_type'] = BaseRefinery::parsePlaceholder($vs_type_opt, $pa_source_data, $pa_item);
+				}
+				
+				if ((!isset($va_val['_type']) || !$va_val['_type']) && $o_log) {
+					$o_log->logWarn(_t('[entityJoinerRefinery] No entity type is set for entity %1', $vs_entity));
 				}
 			
 				// Set attributes
-				if (is_array($pa_item['settings']['entityJoiner_attributes'])) {
-					$va_attr_vals = array();
-					foreach($pa_item['settings']['entityJoiner_attributes'] as $vs_element_code => $va_attrs) {
-						if(is_array($va_attrs)) {
-							foreach($va_attrs as $vs_k => $vs_v) {
-								$va_attr_vals[$vs_element_code][$vs_k] = BaseRefinery::parsePlaceholder($vs_v, $pa_source_data, $pa_item);
-							}
-						}
-					}
+				if (is_array($va_attr_vals = caProcessRefineryAttributes($pa_item['settings']['entityJoiner_attributes'], $pa_source_data, $pa_item, null, $vn_c, $o_log))) {
+					$va_val = array_merge($va_val, $va_attr_vals);
+				}
+				
+				// Set interstitials
+				if (isset($pa_options['mapping']) && is_array($va_attr_vals = caProcessInterstitialAttributes('entityJoiner', $pa_options['mapping']->get('table_num'), 'ca_entities', $pa_source_data, $pa_item, $vs_delimiter, $vn_c, $o_log))) {
+					$va_val = array_merge($va_val, $va_attr_vals);
+				}
+				
+				// Set relatedEntities
+				if (is_array($va_attr_vals = caProcessRefineryRelated("entityJoiner", "ca_entities", $pa_item['settings']['entityJoiner_relatedEntities'], $pa_source_data, $pa_item, null, $vn_c, $o_log))) {
 					$va_val = array_merge($va_val, $va_attr_vals);
 				}
 				
@@ -154,6 +173,7 @@
 				
 				$va_vals[] = $va_val;
 				$vn_c++;
+			}
 			
 			return $va_vals;
 		}
@@ -296,5 +316,23 @@
 				'label' => _t('Non-preferred labels to process'),
 				'description' => _t('List of non-preferred label values or references to locations in the data source where nonpreferred label values can be found. Use the <em>split</em> value for a label to indicate a value that should be split into entity label components before import.')
 			),
+			'entityJoiner_interstitial' => array(
+				'formatType' => FT_TEXT,
+				'displayType' => DT_SELECT,
+				'width' => 10, 'height' => 1,
+				'takesLocale' => false,
+				'default' => '',
+				'label' => _t('Interstitial attributes'),
+				'description' => _t('Sets or maps metadata for the interstitial entity <em>relationship</em> record by referencing the metadataElement code and the location in the data source where the data values can be found.')
+			),
+			'entityJoiner_relatedEntities' => array(
+				'formatType' => FT_TEXT,
+				'displayType' => DT_SELECT,
+				'width' => 10, 'height' => 1,
+				'takesLocale' => false,
+				'default' => '',
+				'label' => _t('Related entities'),
+				'description' => _t('Entities related to the entity being created.')
+			)
 		);
 ?>

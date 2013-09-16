@@ -56,34 +56,30 @@
 ?>
 	<div class="col">
 <?php
-		print _t("Create set from results").":<br/>";
+		print _t("Create set").":<br/>";
 ?>
 		<form id="caCreateSetFromResults">
 <?php
-		
-		print caHTMLTextInput('set_name', array('id' => 'caCreateSetFromResultsInput', 'class' => 'searchSetsTextInput', 'value' => $o_result_context->getSearchExpression()), array('width' => '150px'));
+			print caHTMLTextInput('set_name', array('id' => 'caCreateSetFromResultsInput', 'class' => 'searchSetsTextInput', 'value' => $o_result_context->getSearchExpression()), array('width' => '150px'));
+			print " ";
+			print caHTMLSelect('set_create_mode', 
+				array(
+					'from results' => _t('from_results'),
+					'from checked' => _t('from_checked')
+				), 
+				array('id' => 'caCreateSetFromResultsMode', 'class' => 'searchSetsSelect'),
+				array('value' => null, 'width' => '170px')
+			);
 ?>
 			<a href='#' onclick="caCreateSetFromResults(); return false;" class="button"><?php print _t('Create'); ?> &rsaquo;</a>
+<?php		
+		if ($this->request->user->canDoAction('can_batch_edit_'.$t_subject->tableName())) {
+			print '<div class="searchSetsBatchEdit">'.caHTMLCheckboxInput('batch_edit', array('id' => 'caCreateSetBatchEdit', 'value' => 1))." "._t('Open set for batch editing')."</div>\n";
+		}
+?>
 		</form>
 	</div>
-<?php
-	if ($this->request->user->canDoAction('can_batch_edit_'.$t_subject->tableName())) {
-?>
-	<div class="col">
-<?php
-		print _t("Create set and batch edit results").":<br/>";
-?>
-		<form id="caBatchEditResults">
-<?php
-		
-		print caHTMLTextInput('set_name', array('id' => 'caCreateSetFromResultsInputAndEdit', 'class' => 'searchSetsTextInput', 'value' => $o_result_context->getSearchExpression()), array('width' => '150px'));
-?>
-			<a href='#' onclick="caCreateSetFromResults(true); return false;" class="button"><?php print _t('Edit'); ?> &rsaquo;</a>
-		</form>
-	</div>
-<?php
-	}
-?>
+
 
 		<a href='#' id='hideSets' onclick='return caHandleResultsUIBoxes("sets", "hide");'><img src="<?php print $this->request->getThemeUrlPath(); ?>/graphics/icons/collapse.gif" width="11" height="11" border="0"></a>
 		<div style='clear:both;height:1px;'>&nbsp;</div>
@@ -146,11 +142,13 @@
 		);
 	}
 	
-	function caCreateSetFromResults(batchEdit) {
+	function caCreateSetFromResults() {
 		jQuery.post(
 			'<?php print caNavUrl($this->request, $this->request->getModulePath(), $this->request->getController(), 'createSetFromResult'); ?>', 
 			{ 
-				set_name: jQuery('#' + (batchEdit ? 'caCreateSetFromResultsInputAndEdit' : 'caCreateSetFromResultsInput')).val()
+				set_name: jQuery('#caCreateSetFromResultsInput').val(),
+				mode: jQuery('#caCreateSetFromResultsMode').val(),
+				item_ids: caGetSelectedItemIDsToAddToSet().join(';')
 			}, 
 			function(res) {
 				if (res['status'] === 'ok') { 
@@ -165,13 +163,25 @@
 					msg = msg.replace('^item_type_name', item_type_name);
 					msg = msg.replace('^set_name', res['set_name']);
 					
-					if (batchEdit) {
+					if (jQuery('#caCreateSetBatchEdit').prop('checked')) {
 						window.location = '<?php print caNavUrl($this->request, 'batch', 'Editor', 'Edit', array()); ?>/set_id/' + res['set_id'];
 					} else {
-						jQuery.jGrowl(msg, { header: '<?php print addslashes(_t('Create set from result')); ?>' }); 
+						jQuery.jGrowl(msg, { header: '<?php print addslashes(_t('Create set')); ?>' }); 
+						// add new set to "add to set" list
+						jQuery('#caAddToSetID').append($("<option/>", {
+							value: res['set_id'],
+							text: res['set_name'],
+							selected: 1
+						}));
+						console.log(res);
+						// add new set to search by set drop-down
+						jQuery("select.searchSetSelect").append($("<option/>", {
+							value: 'set:"' + res['set_code'] + '"',
+							text: res['set_name']
+						}));
 					}
 				} else { 
-					jQuery.jGrowl(res['error'], { header: '<?php print addslashes(_t('Create set from result')); ?>' });
+					jQuery.jGrowl(res['error'], { header: '<?php print addslashes(_t('Create set')); ?>' });
 				};
 			},
 			'json'

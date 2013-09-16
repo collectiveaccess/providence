@@ -357,12 +357,14 @@ class ca_object_representations extends BundlableLabelableBaseModelWithAttribute
 		
 		// do insert
 		if ($vn_rc = parent::insert($pa_options)) {
-			$va_media_info = $this->getMediaInfo('media', 'original');
-			$this->set('md5', $va_media_info['MD5']);
-			$this->set('mimetype', $va_media_info['MIMETYPE']);
-			$va_media_info = $this->getMediaInfo('media');
-			$this->set('original_filename', $va_media_info['ORIGINAL_FILENAME']);
+			if (is_array($va_media_info = $this->getMediaInfo('media', 'original'))) {
+				$this->set('md5', $va_media_info['MD5']);
+				$this->set('mimetype', $va_media_info['MIMETYPE']);
 			
+				if(is_array($va_media_info = $this->getMediaInfo('media'))) {
+					$this->set('original_filename', $va_media_info['ORIGINAL_FILENAME']);
+				}
+			}
 			$va_metadata = $this->get('media_metadata', array('binary' => true));
 			caExtractEmbeddedMetadata($this, $va_metadata, $this->get('locale_id'));
 			
@@ -375,12 +377,13 @@ class ca_object_representations extends BundlableLabelableBaseModelWithAttribute
 	public function update($pa_options=null) {
 		$vb_media_has_changed = $this->changed('media');
 		if ($vn_rc = parent::update($pa_options)) {
-			$va_media_info = $this->getMediaInfo('media', 'original');
-			$this->set('md5', $va_media_info['MD5']);
-			$this->set('mimetype', $va_media_info['MIMETYPE']);
-			$va_media_info = $this->getMediaInfo('media');
-			$this->set('original_filename', $va_media_info['ORIGINAL_FILENAME']);
-			
+			if(is_array($va_media_info = $this->getMediaInfo('media', 'original'))) {
+				$this->set('md5', $va_media_info['MD5']);
+				$this->set('mimetype', $va_media_info['MIMETYPE']);
+				if (is_array($va_media_info = $this->getMediaInfo('media'))) {
+					$this->set('original_filename', $va_media_info['ORIGINAL_FILENAME']);
+				}
+			}
 			if ($vb_media_has_changed) {
 				$va_metadata = $this->get('media_metadata', array('binary' => true));
 				caExtractEmbeddedMetadata($this, $va_metadata, $this->get('locale_id'));
@@ -392,36 +395,49 @@ class ca_object_representations extends BundlableLabelableBaseModelWithAttribute
 		return $vn_rc;
 	}
 	# ------------------------------------------------------
+	/**
+	 *
+	 *
+	 * @param bool $pb_delete_related
+	 * @param array $pa_options
+	 *		dontCheckPrimaryValue = if set the is_primary state of other related representations is not considered during the delete
+	 * @param array $pa_fields
+	 * @param array $pa_table_list
+	 *
+	 * @return bool
+	 */
 	public function delete($pb_delete_related=false, $pa_options=null, $pa_fields=null, $pa_table_list=null) {
-		// make some other row primary
-		$o_db = $this->getDb();
-		if ($vn_representation_id = $this->getPrimaryKey()) {
-			$qr_res = $o_db->query("
-				SELECT oxor.relation_id
-				FROM ca_objects_x_object_representations oxor
-				INNER JOIN ca_object_representations AS o_r ON o_r.representation_id = oxor.representation_id
-				WHERE
-					oxor.representation_id = ? AND oxor.is_primary = 1 AND o_r.deleted = 0
-				ORDER BY
-					oxor.rank, oxor.relation_id
-			", (int)$vn_representation_id);
-			while($qr_res->nextRow()) {
-				// nope - force this one to be primary
-				$t_rep_link = new ca_objects_x_object_representations();
-				$t_rep_link->setTransaction($this->getTransaction());
-				if ($t_rep_link->load($qr_res->get('relation_id'))) {
-					$t_rep_link->setMode(ACCESS_WRITE);
-					$t_rep_link->set('is_primary', 0);
-					$t_rep_link->update();
+		if (!isset($pa_options['dontCheckPrimaryValue']) && !$pa_options['dontCheckPrimaryValue']) {
+			// make some other row primary
+			$o_db = $this->getDb();
+			if ($vn_representation_id = $this->getPrimaryKey()) {
+				$qr_res = $o_db->query("
+					SELECT oxor.relation_id
+					FROM ca_objects_x_object_representations oxor
+					INNER JOIN ca_object_representations AS o_r ON o_r.representation_id = oxor.representation_id
+					WHERE
+						oxor.representation_id = ? AND oxor.is_primary = 1 AND o_r.deleted = 0
+					ORDER BY
+						oxor.rank, oxor.relation_id
+				", (int)$vn_representation_id);
+				while($qr_res->nextRow()) {
+					// nope - force this one to be primary
+					$t_rep_link = new ca_objects_x_object_representations();
+					$t_rep_link->setTransaction($this->getTransaction());
+					if ($t_rep_link->load($qr_res->get('relation_id'))) {
+						$t_rep_link->setMode(ACCESS_WRITE);
+						$t_rep_link->set('is_primary', 0);
+						$t_rep_link->update();
 			
-					if ($t_rep_link->numErrors()) {
-						$this->postError(2700, _t('Could not update primary flag for representation: %1', join('; ', $t_rep_link->getErrors())), 'ca_objects_x_object_representations->delete()');
+						if ($t_rep_link->numErrors()) {
+							$this->postError(2700, _t('Could not update primary flag for representation: %1', join('; ', $t_rep_link->getErrors())), 'ca_objects_x_object_representations->delete()');
+							return false;
+						}
+					} else {
+						$this->postError(2700, _t('Could not load object-representation link'), 'ca_objects_x_object_representations->delete()');
 						return false;
-					}
-				} else {
-					$this->postError(2700, _t('Could not load object-representation link'), 'ca_objects_x_object_representations->delete()');
-					return false;
-				}				
+					}				
+				}
 			}
 		}
 
@@ -632,7 +648,7 @@ class ca_object_representations extends BundlableLabelableBaseModelWithAttribute
 			$this->errors = $o_coder->errors;
 			return false;
 		}
- 		
+		
  		$t_annotation = new ca_representation_annotations();
  		$t_annotation->setMode(ACCESS_WRITE);
  		

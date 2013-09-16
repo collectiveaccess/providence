@@ -64,19 +64,35 @@
 			$this->init();
 		}
 		# ------------------------------------------------------------------
+		/**
+		 *
+		 */
+		public function clear() {
+			parent::clear();
+			$this->init();
+		}
+		# ------------------------------------------------------------------
+		/**
+		 *
+		 */
 		public function init() {
 			$this->opa_failed_attribute_inserts = array();
 			$this->opa_failed_attribute_updates = array();
 			$this->_initAttributeQueues();
 		}
 		# ------------------------------------------------------------------
+		/**
+		 *
+		 */
 		private function _initAttributeQueues() {
 			$this->opa_attributes_to_add = array();
 			$this->opa_attributes_to_edit = array();
 			$this->opa_attributes_to_remove = array();
 		}
 		# ------------------------------------------------------------------
-		// create an attribute linked to the current row using values in $pa_values
+		/**
+		 * create an attribute linked to the current row using values in $pa_values
+		 */
 		public function addAttribute($pa_values, $pm_element_code_or_id, $ps_error_source=null) {
 			if (!($t_element = $this->_getElementInstance($pm_element_code_or_id))) { return false; }
 			if ($t_element->get('parent_id') > 0) { return false; }
@@ -447,7 +463,7 @@
 				// set the field values array for this instance
 				$this->setFieldValuesArray($va_field_values_with_updated_attributes);
 				
-				$this->doSearchIndexing($va_fields_changed_array, true);
+				$this->doSearchIndexing($va_fields_changed_array);	// TODO: SHOULD SECOND PARAM (REINDEX) BE "TRUE"?
 				
 				
 				if ($vb_web_set_change_log_unit_id) { BaseModel::unsetChangeLogUnitID(); }
@@ -743,9 +759,7 @@
 									if ($vs_template) {
 										$va_values_tmp = array();
 										foreach($va_values as $vn_i => $va_value_list) {
-											foreach($va_value_list as $vn_attr_id => $va_attr_data) {
-												$va_values_tmp[] = caProcessTemplateForIDs($vs_template, $va_tmp[0], array($vn_row_id), array_merge($pa_options, array('returnAsArray' => false, 'placeholderPrefix' => $va_tmp[1])));
-											}
+											$va_values_tmp[] = caProcessTemplateForIDs($vs_template, $va_tmp[0], array($vn_row_id), array_merge($pa_options, array('returnAsArray' => false, 'placeholderPrefix' => $va_tmp[1])));
 										}
 				
 										$va_values = $va_values_tmp;
@@ -785,9 +799,9 @@
 											foreach($va_attribute_values as $vn_attribute_id => $va_data) {
 												if(isset($va_data[$va_tmp[2]])) {
 													if ($vs_template) { 
-														$va_subvalues[$vn_attribute_id] = caProcessTemplateForIDs($vs_template, $va_tmp[0], array($vn_row_id), array_merge($pa_options, array('returnAsArray' => false, 'placeholderPrefix' => $va_tmp[1])));
+														$va_subvalues[$vn_attribute_id] = caProcessTemplateForIDs($vs_template, $va_tmp[0], array($vn_row_id), array_merge($pa_options, array('requireLinkTags' => true, 'returnAsArray' => false, 'placeholderPrefix' => $va_tmp[1])));
 													} else {
-														$va_subvalues[$vn_attribute_id] = $va_data;
+														$va_subvalues[$vn_attribute_id] = $va_data[$va_tmp[2]];
 													}
 												}
 											}
@@ -826,8 +840,8 @@
 			return isset($this->ATTRIBUTE_TYPE_LIST_CODE) ? $this->ATTRIBUTE_TYPE_LIST_CODE : null;
 		}
 		# ------------------------------------------------------------------
-		public function getTypeName() {
-			if ($t_list_item = $this->getTypeInstance()) {
+		public function getTypeName($pn_type_id=null) {
+			if ($t_list_item = $this->getTypeInstance($pn_type_id)) {
 				return $t_list_item->getLabelForDisplay(false);
 			}
 			return null;
@@ -882,9 +896,13 @@
 		/**
 		 * Return ca_list_item instance for the type of the currently loaded row
 		 */ 
-		public function getTypeInstance() {
+		public function getTypeInstance($pn_type_id=null) {
 			if (!isset($this->ATTRIBUTE_TYPE_ID_FLD) || !$this->ATTRIBUTE_TYPE_ID_FLD) { return null; }
-			if (!($vn_type_id = $this->get($this->ATTRIBUTE_TYPE_ID_FLD))) { return null; }
+			if ($pn_type_id) { 
+				$vn_type_id = $pn_type_id; 
+			} else {
+				if (!($vn_type_id = $this->get($this->ATTRIBUTE_TYPE_ID_FLD))) { return null; }
+			}
 			
 			$t_list_item = new ca_list_items($vn_type_id);
 			return ($t_list_item->getPrimaryKey()) ? $t_list_item : null;
@@ -1109,7 +1127,7 @@
 					'label' => (sizeof($va_element_set) > 1) ? $va_label['name'] : '',
 					'description' => $va_label['description'],
 					't_subject' => $this,
-					'po_request' => $po_request,
+					'request' => $po_request,
 					'ps_form_name' => $ps_form_name,
 					'format' => ''
 				))));
@@ -1134,6 +1152,7 @@
 				}
 			}
 			
+			$o_view->setVar('t_element', $t_element);
 			$o_view->setVar('t_instance', $this);
 			$o_view->setVar('request', $po_request);
 			$o_view->setVar('id_prefix', $ps_form_name.'_attribute_'.$t_element->get('element_id'));
@@ -1231,7 +1250,7 @@
 					'label' => $va_label['name'],
 					'description' => $va_label['description'],
 					't_subject' => $this,
-					'po_request' => $po_request,
+					'request' => $po_request,
 					'nullOption' => '-',
 					'value' => $vs_value,
 					'forSearch' => true
@@ -1528,7 +1547,7 @@
 			
 			$va_tmp = $this->getAttributeDisplayValues($pm_element_code_or_id, $vn_row_id, array_merge($pa_options, array('returnAllLocales' => false)));
 		
-			if ($vs_template_tmp = $t_element->getSetting('displayTemplate', true)) {
+			if (!$ps_template && ($vs_template_tmp = $t_element->getSetting('displayTemplate', true))) {	// grab template from metadata element if none is passed in $ps_template
 				$ps_template = $vs_template_tmp;
 			}
 			$vs_delimiter = $t_element->getSetting('displayDelimiter', true);
@@ -1539,7 +1558,7 @@
 			
 			if ($ps_template) {
 				unset($pa_options['template']);
-				return caProcessTemplateForIDs($ps_template, $this->tableNum(), array($vn_row_id), array_merge($pa_options, array('placeholderPrefix' => $t_element->get('element_code'))));
+				return caProcessTemplateForIDs($ps_template, $this->tableNum(), array($vn_row_id), array_merge($pa_options, array('requireLinkTags' => true, 'placeholderPrefix' => $t_element->get('element_code'))));
 			} else {
 				// no template
 				$va_attribute_list = array();
@@ -1642,7 +1661,9 @@
 				$t_dupe->setTransaction($this->getTransaction());
 			}
 			
-			return $t_dupe->copyAttributesTo($this->getPrimaryKey());
+			$vn_rc = $t_dupe->copyAttributesTo($this->getPrimaryKey());
+			$this->errors = $t_dupe->errors;
+			return $vn_rc;
 		}
 		# ------------------------------------------------------------------
 		// --- Methods to manage bindings between elements and tables
@@ -1691,7 +1712,15 @@
 		}
 		# ------------------------------------------------------------------
 		/**
-		 * Returns list of metdata element codes applicable to the current row. If there is no loaded row and $pn_type_id
+		 *
+		 */
+		public function hasElement($ps_element_code) {
+			$va_codes = $this->getApplicableElementCodes(null, false, false);
+			return (in_array($ps_element_code, $va_codes));
+		}
+		# ------------------------------------------------------------------
+		/**
+		 * Returns list of metadata element codes applicable to the current row. If there is no loaded row and $pn_type_id
 		 * is not set then all attributes applicable to the model as a whole (regardless of type restrictions) are returned.
 		 *
 		 * Normally only top-level attribute codes are returned. This is good: in general you should only be dealing with attributes
@@ -1704,7 +1733,10 @@
  			 	return $va_tmp;
  			 }
  			
- 			if (isset($this->ATTRIBUTE_TYPE_ID_FLD) && (($pn_type_id) || (($pn_type_id = $this->get($this->ATTRIBUTE_TYPE_ID_FLD)) > 0))) {
+ 			$vs_type_sql = '';
+ 			if (
+ 				(isset($this->ATTRIBUTE_TYPE_ID_FLD) && (($pn_type_id) || (($pn_type_id = $this->get($this->ATTRIBUTE_TYPE_ID_FLD)) > 0)))
+ 			) {
  				$va_ancestors = array();
  				if ($t_type_instance = $this->getTypeInstance()) {
  					$va_ancestors = $t_type_instance->getHierarchyAncestors(null, array('idsOnly' => true, 'includeSelf' => true));
@@ -1716,9 +1748,10 @@
  				} else {
  					$vs_type_sql = '((camtr.type_id = '.intval($pn_type_id).') OR (camtr.type_id IS NULL)) AND ';
  				}
- 			} else {
- 				$vs_type_sql = '';
- 			}
+ 			} elseif (is_subclass_of($this, "BaseRelationshipModel")) {
+ 				if (!$pn_type_id) { $pn_type_id = self::get('type_id'); }
+ 				if ($pn_type_id > 0) { $vs_type_sql = '((camtr.type_id = '.intval($pn_type_id).') OR (camtr.type_id IS NULL)) AND '; }
+			} 
  			
  			$o_db = $this->getDb();
  			
@@ -1787,12 +1820,12 @@
 		 */
 		public function getTypeRestrictionInstance($pn_element_id) {
 			$t_restriction = new ca_metadata_type_restrictions();
-			if ($t_restriction->load(array('element_id' => (int)$pn_element_id, 'table_num' => (int)$this->tableNum(), 'type_id' => $this->get($this->ATTRIBUTE_TYPE_ID_FLD)))) {
+			if (is_subclass_of($this, 'BaseRelationshipModel') && ($t_restriction->load(array('element_id' => (int)$pn_element_id, 'table_num' => (int)$this->tableNum(), 'type_id' => $this->get('type_id'))))) {
 				return $t_restriction;
-			} else {
-				if ($t_restriction->load(array('element_id' => (int)$pn_element_id, 'table_num' => (int)$this->tableNum(), 'type_id' => null))) {
-					return $t_restriction;
-				}
+			} elseif ($t_restriction->load(array('element_id' => (int)$pn_element_id, 'table_num' => (int)$this->tableNum(), 'type_id' => $this->get($this->ATTRIBUTE_TYPE_ID_FLD)))) {
+				return $t_restriction;
+			} elseif ($t_restriction->load(array('element_id' => (int)$pn_element_id, 'table_num' => (int)$this->tableNum(), 'type_id' => null))) {
+				return $t_restriction;
 			}
 			
 			// try going up the hierarchy to find one that we can inherit from

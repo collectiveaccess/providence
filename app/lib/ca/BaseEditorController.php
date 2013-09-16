@@ -38,12 +38,10 @@
  	require_once(__CA_MODELS_DIR__."/ca_metadata_elements.php");
  	require_once(__CA_MODELS_DIR__."/ca_attributes.php");
  	require_once(__CA_MODELS_DIR__."/ca_attribute_values.php");
- 	require_once(__CA_MODELS_DIR__."/ca_bundle_mappings.php");
  	require_once(__CA_MODELS_DIR__."/ca_bundle_displays.php");
  	require_once(__CA_LIB_DIR__."/core/Datamodel.php");
  	require_once(__CA_LIB_DIR__."/ca/ApplicationPluginManager.php");
  	require_once(__CA_LIB_DIR__."/ca/ResultContext.php");
-	require_once(__CA_LIB_DIR__."/ca/ImportExport/DataExporter.php");
 	require_once(__CA_LIB_DIR__."/core/Logging/Eventlog.php");
  
  	class BaseEditorController extends ActionController {
@@ -59,7 +57,7 @@
  			
  			JavascriptLoadManager::register('bundleListEditorUI');
  			JavascriptLoadManager::register('panel');
-			
+ 			
  			$this->opo_datamodel = Datamodel::load();
  			$this->opo_app_plugin_manager = new ApplicationPluginManager();
  			$this->opo_result_context = new ResultContext($po_request, $this->ops_table_name, ResultContext::getLastFind($po_request, $this->ops_table_name));
@@ -73,6 +71,8 @@
  		 *
  		 */
  		public function Edit($pa_values=null, $pa_options=null) {
+ 			JavascriptLoadManager::register('panel');
+ 			
  			list($vn_subject_id, $t_subject, $t_ui, $vn_parent_id, $vn_above_id) = $this->_initView($pa_options);
  			$vs_mode = $this->request->getParameter('mode', pString);
  			
@@ -1054,7 +1054,6 @@
  			}
  			
  			$t_attr_val->useBlobAsMediaField(true);
- 			
  			if (!in_array($ps_version, $t_attr_val->getMediaVersions('value_blob'))) { $ps_version = 'original'; }
  			
  			$o_view = new View($this->request, $this->request->getViewsDirectoryPath().'/bundles/');
@@ -1067,8 +1066,17 @@
  				return;
  			}
  			
- 			$o_view->setVar('file_path', $t_attr_val->getMediaPath('value_blob', $ps_version));
- 			$o_view->setVar('file_name', ($vs_name = trim($t_attr_val->get('value_longtext2'))) ? $vs_name : _t("downloaded_file"));
+ 			$vs_path = $t_attr_val->getMediaPath('value_blob', $ps_version);
+ 			$vs_path_ext = pathinfo($vs_path, PATHINFO_EXTENSION);
+ 			if ($vs_name = trim($t_attr_val->get('value_longtext2'))) {
+ 				$vs_file_name = pathinfo($vs_name, PATHINFO_FILENAME);
+ 				$vs_name = "{$vs_file_name}.{$vs_path_ext}";
+ 			} else {
+ 				$vs_name = _t("downloaded_file.%1", $vs_path_ext);
+ 			}
+ 			
+ 			$o_view->setVar('file_path', $vs_path);
+ 			$o_view->setVar('file_name', $vs_name);
  			
  			// send download
  			$this->response->addContent($o_view->render('ca_attributes_download_media.php'));
@@ -1112,21 +1120,25 @@
 			
 			$va_rep_display_info = caGetMediaDisplayInfo('media_overlay', $t_attr_val->getMediaInfo('value_blob', 'INPUT', 'MIMETYPE'));
 			$va_rep_display_info['poster_frame_url'] = $t_attr_val->getMediaUrl('value_blob', $va_rep_display_info['poster_frame_version']);
-						
+			
 			$o_view->setVar('display_options', $va_rep_display_info);
 			$o_view->setVar('representation_id', $pn_representation_id);
 			$o_view->setVar('t_attribute_value', $t_attr_val);
 			$o_view->setVar('versions', $va_versions = $t_attr_val->getMediaVersions('value_blob'));
 			
 			$t_media = new Media();
-			$o_view->setVar('version_type', $t_media->getMimetypeTypename($t_attr_val->getMediaInfo('value_blob', 'original', 'MIMETYPE')));
 	
 			$ps_version 	= $po_request->getParameter('version', pString);
 			if (!in_array($ps_version, $va_versions)) { 
 				if (!($ps_version = $va_rep_display_info['display_version'])) { $ps_version = null; }
 			}
+			print "v=$ps_version";
 			$o_view->setVar('version', $ps_version);
 			$o_view->setVar('version_info', $t_attr_val->getMediaInfo('value_blob', $ps_version));
+			$o_view->setVar('version_type', $t_media->getMimetypeTypename($t_attr_val->getMediaInfo('value_blob', $ps_version, 'MIMETYPE')));
+			$o_view->setVar('version_mimetype', $t_attr_val->getMediaInfo('value_blob', $ps_version, 'MIMETYPE'));
+			$o_view->setVar('mimetype', $t_attr_val->getMediaInfo('value_blob', 'INPUT', 'MIMETYPE'));			
+			
 			
 			return $o_view->render('media_attribute_viewer_html.php');
 		}
@@ -1191,9 +1203,10 @@
  			if (is_array($va_hier)) {
  				
  				$va_types_by_parent_id = array();
- 				$vn_root_id = null;
+ 				$vn_root_id = $t_list->getRootItemIDForList($t_subject->getTypeListCode());
+
 				foreach($va_hier as $vn_item_id => $va_item) {
-					if (!$vn_root_id) { $vn_root_id = $va_item['parent_id']; continue; }
+					if ($vn_item_id == $vn_root_id) { continue; } // skip root
 					$va_types_by_parent_id[$va_item['parent_id']][] = $va_item;
 				}
 				foreach($va_hier as $vn_item_id => $va_item) {
@@ -1324,10 +1337,10 @@
  			list($vn_subject_id, $t_subject) = $this->_initView();
 			$pn_mapping_id = $this->request->getParameter('mapping_id', pInteger);
 			
-			$o_export = new DataExporter();
-			$this->view->setVar('export_mimetype', $o_export->exportMimetype($pn_mapping_id));
-			$this->view->setVar('export_data', $o_export->export($pn_mapping_id, $t_subject, null, array('returnOutput' => true, 'returnAsString' => true)));
-			$this->view->setVar('export_filename', preg_replace('![\W]+!', '_', substr($t_subject->getLabelForDisplay(), 0, 40).'_'.$o_export->exportTarget($pn_mapping_id)).'.'.$o_export->exportFileExtension($pn_mapping_id));
+			//$o_export = new DataExporter();
+			//$this->view->setVar('export_mimetype', $o_export->exportMimetype($pn_mapping_id));
+			//$this->view->setVar('export_data', $o_export->export($pn_mapping_id, $t_subject, null, array('returnOutput' => true, 'returnAsString' => true)));
+			//$this->view->setVar('export_filename', preg_replace('![\W]+!', '_', substr($t_subject->getLabelForDisplay(), 0, 40).'_'.$o_export->exportTarget($pn_mapping_id)).'.'.$o_export->exportFileExtension($pn_mapping_id));
 			
 			$this->render('../generic/export_xml.php');
 		}
@@ -1461,8 +1474,8 @@
 			$this->view->setVar('screen', $this->request->getActionExtra());						// name of screen
 			$this->view->setVar('result_context', $this->getResultContext());
 			
-			$t_mappings = new ca_bundle_mappings();
-			$va_mappings = $t_mappings->getAvailableMappings($t_item->tableNum(), array('E', 'X'));
+//			$t_mappings = new ca_bundle_mappings();
+			$va_mappings = array(); //$t_mappings->getAvailableMappings($t_item->tableNum(), array('E', 'X'));
 			
 			$va_export_options = array();
 			foreach($va_mappings as $vn_mapping_id => $va_mapping_info) {

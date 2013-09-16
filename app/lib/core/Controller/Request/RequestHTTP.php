@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2007-2012 Whirl-i-Gig
+ * Copyright 2007-2013 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -695,6 +695,7 @@ class RequestHTTP extends Request {
 			
 			$this->session->setVar("screen_width",isset($_REQUEST["_screen_width"]) ? intval($_REQUEST["_screen_width"]): 0);
 			$this->session->setVar("screen_height",isset($_REQUEST["_screen_height"]) ? intval($_REQUEST["_screen_height"]) : 0);
+			$this->session->setVar("has_pdf_plugin",isset($_REQUEST["_has_pdf_plugin"]) ? intval($_REQUEST["_has_pdf_plugin"]) : 0);
 			
 			$this->user->setVar('last_login', time(), array('volatile' => true));
 			$this->user->setLastLogout($this->user->getLastPing(), array('volatile' => true));
@@ -784,24 +785,6 @@ class RequestHTTP extends Request {
 		}
 		
 		return false;
-	}
-	# ----------------------------------------
-	# Authorization
-	# ----------------------------------------
-	public function userActionIsAllowed($ps_user_action) {
-	
-	}
-	# ----------------------------------------
-	public function fieldAccessIsAllowed($pm_table, $pm_field) {
-	
-	}
-	# ----------------------------------------
-	public function rowAccessIsAllowed($pm_table, $pm_field, $pn_row_id) {
-	
-	}
-	# ----------------------------------------
-	public function canAccessTab($ps_tabname) {
-	
 	}
 	# ----------------------------------------
  }

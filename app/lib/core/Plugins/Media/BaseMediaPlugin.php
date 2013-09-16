@@ -80,5 +80,23 @@ class BaseMediaPlugin Extends WLPlug  {
 		return array_keys($this->info['EXPORT']);
 	}
 	# ------------------------------------------------
+	/**
+	 * Returns text content for indexing, or empty string if plugin doesn't support text extraction
+	 *
+	 * @return String Extracted text
+	 */
+	public function getExtractedText() {
+		return '';
+	}
+	# ------------------------------------------------
+	/**
+	 * Returns array of locations of text within document, or null if plugin doesn't support text location extraction
+	 *
+	 * @return Array Extracted text locations or null if not supported
+	 */
+	public function getExtractedTextLocations() {
+		return null;
+	}
+	# ------------------------------------------------
 }
 ?>

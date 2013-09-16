@@ -62,6 +62,8 @@
  		# AJAX handlers
  		# -------------------------------------------------------
 		public function Get($pa_additional_query_params=null, $pa_options=null) {
+			header("Content-type: application/json");
+			
 			if (!$this->ops_search_class) { return null; }
 			$ps_query = $this->request->getParameter('term', pString); 
 			
@@ -167,6 +169,11 @@
 				$va_items = caProcessRelationshipLookupLabel($qr_res, $this->opo_item_instance, $va_opts);
 			}
 			if (!is_array($va_items)) { $va_items = array(); }
+			
+			// Optional output simple list of labels instead of full data format
+			if ((bool)$this->request->getParameter('simple', pInteger)) { 
+				$va_items = caExtractValuesFromArrayList($va_items, 'label', array('preserveKeys' => false)); 
+			}
 			$this->view->setVar(str_replace(' ', '_', $this->ops_name_singular).'_list', $va_items);
  			return $this->render(str_replace(' ', '_', 'ajax_'.$this->ops_name_singular.'_list_html.php'));
 		}
@@ -176,6 +183,8 @@
  		 * Returned data is JSON format
  		 */
  		public function GetHierarchyLevel() {
+ 			header("Content-type: application/json");
+ 			
 			$ps_bundle = (string)$this->request->getParameter('bundle', pString);
 			$pa_ids = explode(";", $ps_ids = $this->request->getParameter('id', pString));
 			if (!sizeof($pa_ids)) { $pa_ids = array(null); }
@@ -254,7 +263,7 @@
 								if (!$va_tmp[$vs_label_display_field_name]) { $va_tmp[$vs_label_display_field_name] = $va_tmp['idno']; }
 								if (!$va_tmp[$vs_label_display_field_name]) { $va_tmp[$vs_label_display_field_name] = '???'; }
 							
-								$va_tmp['name'] = caProcessTemplateForIDs($vs_item_template, $vs_table_name, array($va_tmp[$vs_pk]));
+								$va_tmp['name'] = caProcessTemplateForIDs($vs_item_template, $vs_table_name, array($va_tmp[$vs_pk]), array('requireLinkTags' => true));
 							
 								// Child count is only valid if has_children is not null
 								$va_tmp['children'] = isset($va_child_counts[$vn_id]) ? (int)$va_child_counts[$vn_id] : 0;
@@ -332,6 +341,8 @@
  		 * Returned data is JSON format
  		 */
  		public function GetHierarchyAncestorList() {
+ 			header("Content-type: application/json");
+ 			
  			$pn_id = $this->request->getParameter('id', pInteger);
  			$t_item = new $this->ops_table_name($pn_id);
  			
@@ -339,6 +350,11 @@
  			if ($t_item->getPrimaryKey()) { 
  				$va_ancestors = array_reverse($t_item->getHierarchyAncestors(null, array('includeSelf' => true, 'idsOnly' => true)));
  			}
+ 			
+ 			// Force ids to ints to prevent jQuery from getting confused
+ 			// (jQuery.getJSON() incorrectly parses arrays of numbers-as-strings)
+ 			$va_ancestors = array_map('intval', $va_ancestors);
+ 			
  			$this->view->setVar('ancestors', $va_ancestors);
  			return $this->render(str_replace(' ', '_', $this->ops_name_singular).'_hierarchy_ancestors_json.php');
  		}
@@ -347,6 +363,8 @@
  		 *
  		 */
 		public function IDNo() {
+			header("Content-type: application/json");
+			
 			$va_ids = array();
 			if ($vs_idno_field = $this->opo_item_instance->getProperty('ID_NUMBERING_ID_FIELD')) {
 				$pn_id =  $this->request->getParameter('id', pInteger);
@@ -371,6 +389,8 @@
  		 * Can be used to determine if a value that needs to be unique is actually unique.
  		 */
 		public function Intrinsic() {
+			header("Content-type: application/json");
+			
 			$pn_table_num 	=  $this->request->getParameter('table_num', pInteger);
 			$ps_field 				=  $this->request->getParameter('field', pString);
 			$ps_val 				=  $this->request->getParameter('n', pString);
@@ -423,3 +443,4 @@
 		}
  		# -------------------------------------------------------
  	}
+?>

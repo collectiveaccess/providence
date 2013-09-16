@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2007-2012 Whirl-i-Gig
+ * Copyright 2007-2013 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -297,9 +297,10 @@ function caFileIsIncludable($ps_file) {
 	 * @param bool $pb_recursive Optional. By default caGetDirectoryContentsAsList() will recurse through all sub-directories of $dir; set this to false to only consider files that are in $dir itself.
 	 * @param bool $pb_include_hidden_files Optional. By default caGetDirectoryContentsAsList() does not consider hidden files (files starting with a '.') when calculating file counts. Set this to true to include hidden files in counts. Note that the special UNIX '.' and '..' directory entries are *never* counted as files.
 	 * @param bool $pb_sort Optional. If set paths are returns sorted alphabetically. Default is false.
+	 * @param bool $pb_include_directories. If set paths to directories are included. Default is false (only files are returned).
 	 * @return array An array of file paths.
 	 */
-	function &caGetDirectoryContentsAsList($dir, $pb_recursive=true, $pb_include_hidden_files=false, $pb_sort=false) {
+	function &caGetDirectoryContentsAsList($dir, $pb_recursive=true, $pb_include_hidden_files=false, $pb_sort=false, $pb_include_directories=false) {
 		$va_file_list = array();
 		if(substr($dir, -1, 1) == "/"){
 			$dir = substr($dir, 0, strlen($dir) - 1);
@@ -309,8 +310,11 @@ function caFileIsIncludable($ps_file) {
 			foreach($va_paths as $item) {
 				if ($item != "." && $item != ".." && ($pb_include_hidden_files || (!$pb_include_hidden_files && $item{0} !== '.'))) {
 					$vb_is_dir = is_dir("{$dir}/{$item}");
+					if ($pb_include_directories && $vb_is_dir) {
+						$va_file_list["{$dir}/{$item}"] = true;
+					}
 					if ($pb_recursive && $vb_is_dir) { 
-						$va_file_list = array_merge($va_file_list, array_flip(caGetDirectoryContentsAsList("{$dir}/{$item}", true, $pb_include_hidden_files)));
+						$va_file_list = array_merge($va_file_list, array_flip(caGetDirectoryContentsAsList("{$dir}/{$item}", true, $pb_include_hidden_files, false, $pb_include_directories)));
 					} else { 
 						if (!$vb_is_dir) { 
 							$va_file_list["{$dir}/{$item}"] = true;
@@ -708,7 +712,7 @@ function caFileIsIncludable($ps_file) {
 			if(isset($pa_options['html']) && $pa_options['html']) {
 				$va_buf[] = array($va_line['file'], $va_line['class'], $va_line['function'], $va_line['line']);
 			} else {
-				$va_buf[] = $va_line['file'].':'.($va_line['class'] ? $va_line['class'].':' : '').$va_line['function'].'@'.$va_line['line'];
+				$va_buf[] = $va_line['file'].':'.($va_line['class'] ? $va_line['class'].':' : '').$va_line['function'].'@'.$va_line['line']."<br/>\n";
 			}
 		}
 		
@@ -1022,7 +1026,7 @@ function caFileIsIncludable($ps_file) {
 			'file_locking' => true,				/* cache corruption avoidance */
 			'read_control' => false,			/* no read control */
 			'file_name_prefix' => $ps_prefix,	/* prefix of cache files */
-			'cache_file_umask' => 0700			/* permissions of cache files */
+			'cache_file_perm' => 0700			/* permissions of cache files */
 		);
 
 
@@ -1507,6 +1511,51 @@ function caFileIsIncludable($ps_file) {
 	}
 	# ---------------------------------------
 	/**
+	 * Extract specified option from an options array. 
+	 * An options array is simply an associative array where keys are option names and values are option values.
+	 * caGetOption() provides a simple interface to grab values, force default values for non-existent settings and enforce simple validation rules.
+	 *
+	 * @param mixed $ps_option The option to extract
+	 * @param array $pa_options The options array to extract values from
+	 * @param mixed $pm_default An optional default value to return if $ps_option is not set in $pa_options 
+	 * @param array $pa_parse_options Option parser options (cross your eyes now) include:
+	 *		forceLowercase = transform option value to all lowercase [default=false]
+	 *		forceUppercase = transform option value to all uppercase [default=false]
+	 *		validValues = array of values that are possible for this option. If the option value is not in the list then the default is returned. If no default is set then the first value in the validValues list is returned. Note that by default all comparisons are case-insensitive. 
+	 *		caseSensitive = do case sensitive comparisons when checking the option value against the validValues list [default=false]
+	 * @return mixed
+	 */
+	function caGetOption($ps_option, $pa_options, $pm_default=null, $pa_parse_options=null) {
+		$va_valid_values = null;
+		$vb_case_insensitive = false;
+		if (isset($pa_parse_options['validValues']) && is_array($pa_parse_options['validValues'])) {
+			$va_valid_values = $pa_parse_options['validValues'];
+			if (!isset($pa_parse_options['caseSensitive']) || !$pa_parse_options['caseSensitive']) {
+				$va_valid_values = array_map(function($v) { return mb_strtolower($v); }, $va_valid_values);
+				$vb_case_insensitive = true;
+			}
+		}
+		$vm_val = (isset($pa_options[$ps_option]) && !is_null($pa_options[$ps_option])) ? $pa_options[$ps_option] : $pm_default;
+		
+		if(is_array($va_valid_values)) {
+			if (!in_array($vb_case_insensitive ? mb_strtolower($vm_val) : $vm_val, $va_valid_values)) {
+				$vm_val = $pm_default;
+				if (!in_array($vb_case_insensitive ? mb_strtolower($vm_val) : $vm_val, $va_valid_values)) {
+					$vm_val = array_shift($va_valid_values);
+				}
+			}
+		}
+		
+		if (isset($pa_parse_options['forceLowercase']) && $pa_parse_options['forceLowercase']) {
+			$vm_val = mb_strtolower($vm_val);
+		} elseif (isset($pa_parse_options['forceUppercase']) && $pa_parse_options['forceUppercase']) {
+			$vm_val = mb_strtoupper($vm_val);
+		}
+		
+		return $vm_val;
+	}
+	# ---------------------------------------
+	/**
 	 * 
 	 *
 	 * @param array $pa_options
@@ -1718,6 +1767,97 @@ function caFileIsIncludable($ps_file) {
 			return $t_instance->makeSearchResult($ps_table, $pa_ids);
 		}
 		return null;
+	}
+	# ----------------------------------------
+	/**
+	 *
+	 */
+	function caExtractValuesFromArrayList($pa_array, $ps_key, $pa_options=null) {
+		$vb_preserve_keys = (isset($pa_options['preserveKeys'])) ? (bool)$pa_options['preserveKeys'] : true;
+		$vb_include_blanks = (isset($pa_options['includeBlanks'])) ? (bool)$pa_options['includeBlanks'] : false;
+		
+		$va_extracted_values = array();
+		foreach($pa_array as $vs_k => $va_v) {
+			if (!$vb_include_blanks && (!isset($va_v[$ps_key]) ||(strlen($va_v[$ps_key]) == 0))) { continue; }
+			if ($vb_preserve_keys) {
+				$va_extracted_values[$vs_k] = $va_v[$ps_key];
+			} else {
+				$va_extracted_values[] = $va_v[$ps_key];
+			}
+		}
+		
+		return $va_extracted_values;
+	}
+	# ----------------------------------------
+	/**
+	 *
+	 */
+	function caIsAssociativeArray($pa_array) {
+	  return (bool)count(array_filter(array_keys($pa_array), 'is_string'));
+	}
+	# ----------------------------------------
+	/**
+	 *
+	 */
+	function caGetProcessUserID() {
+	  if (function_exists("posix_geteuid")) {
+	  	return posix_geteuid();
+	  }
+	  return null;
+	}
+	# ----------------------------------------
+	/**
+	 *
+	 */
+	function caGetProcessUserName() {
+	  if (function_exists("posix_getpwuid")) {
+	  	if (is_array($va_user = posix_getpwuid(caGetProcessUserID()))) {
+	  		return $va_user['name'];
+	  	}
+	  }
+	  return null;
+	}
+	# ----------------------------------------
+	/**
+	 *
+	 */
+	function caGetProcessGroupID() {
+	  if (function_exists("posix_getegid")) {
+	  	return posix_geteuid();
+	  }
+	  return null;
+	}
+	# ----------------------------------------
+	/**
+	 *
+	 */
+	function caGetProcessGroupName() {
+	  if (function_exists("posix_getgrgid")) {
+	  	if (is_array($va_group = posix_getgrgid(caGetProcessGroupID()))) {
+	  		return $va_group['name'];
+	  	}
+	  }
+	  return null;
+	}
+	# ----------------------------------------
+	/**
+	 *
+	 */
+	function caDetermineWebServerUser() {
+	  if (!caIsRunFromCLI() && ($vs_user = caGetProcessUserName())) {	// we're running on the web server
+	  	return $vs_user;
+	  }
+	  
+	  if(function_exists("posix_getpwnam")) {
+		  // Not running in web server so try to guess
+		  foreach(array('apache', 'www-data', 'www', 'httpd', 'nobody') as $vs_possible_user) {
+			if (posix_getpwnam($vs_possible_user)) {
+				return $vs_possible_user;
+			}
+		  }
+	  }
+	  
+	  return null;
 	}
 	# ----------------------------------------
 ?>

@@ -55,4 +55,4 @@
 
 	<div class="editorBottomPadding"><!-- empty --></div>
 	
-	<?php print caEditorFieldList($va_bundle_list); ?>
+	<?php print caEditorFieldList($this->request, $va_bundle_list); ?>

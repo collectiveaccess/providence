@@ -260,7 +260,6 @@ class ca_editor_ui_screens extends BundlableLabelableBaseModelWithAttributes {
 			$this->errors = array_merge($this->errors, $t_placement->errors);
 			return false;
 		}
-		unset($_SESSION['screen_cache']);
 		return $t_placement->getPrimaryKey();
 	}
 	# ------------------------------------------------------
@@ -290,7 +289,6 @@ class ca_editor_ui_screens extends BundlableLabelableBaseModelWithAttributes {
 			}
 			
 			unset(ca_editor_ui_screens::$s_placement_list_cache[$vn_screen_id]);
-			unset($_SESSION['screen_cache']);
 			return true;
 		}
 		return false;
@@ -408,6 +406,12 @@ class ca_editor_ui_screens extends BundlableLabelableBaseModelWithAttributes {
 				case 'intrinsic':
 					$va_field_info = $t_instance->getFieldInfo($vs_bundle);
 					if (isset($va_field_info['DONT_ALLOW_IN_UI']) && $va_field_info['DONT_ALLOW_IN_UI']) { continue(2); }
+					if (is_subclass_of($t_instance, 'BaseRelationshipModel')) {
+						if (isset($va_field_info['IDENTITY']) && $va_field_info['IDENTITY']) { continue(2); }
+						if ($t_instance->getTypeFieldName() == $vs_bundle) { continue(2); }
+						if ($t_instance->getLeftTableFieldName() == $vs_bundle) { continue(2); }
+						if ($t_instance->getRightTableFieldName() == $vs_bundle) { continue(2); }
+					}
 					break;
 				case 'preferred_label':
 				case 'nonpreferred_label':
@@ -570,6 +574,22 @@ class ca_editor_ui_screens extends BundlableLabelableBaseModelWithAttributes {
 							'width' => "275px", 'height' => 4,
 							'label' => _t('Relationship display template'),
 							'description' => _t('Layout for relationship when displayed in list (can include HTML). Element code tags prefixed with the ^ character can be used to represent the value in the template. For example: <i>^my_element_code</i>.')
+						),
+						'minRelationshipsPerRow' => array(
+							'formatType' => FT_NUMBER,
+							'displayType' => DT_FIELD,
+							'width' => 5, 'height' => 1,
+							'default' => '',
+							'label' => _t('Minimum number of relationships of this kind to be associated with an item. '),
+							'description' => _t('If set to 0 a delete button will allow a cataloguer to clear all relationships.  If set to 1 or more, it will not be possible to delete all relationships once the minimum is established. Note that this is only a user interface limitations rather than constraints on the underlying data model.')
+						),
+						'maxRelationshipsPerRow' => array(
+							'formatType' => FT_NUMBER,
+							'displayType' => DT_FIELD,
+							'width' => 5, 'height' => 1,
+							'default' => '',
+							'label' => _t('Maximum number of relationships of this kind that can be associated with an item'),
+							'description' => _t('The extent of repeatability for the relationship will match the number entered here. Note that this is only a user interface limitations rather than constraints on the underlying data model.')
 						)
 					);
 					
@@ -749,7 +769,6 @@ class ca_editor_ui_screens extends BundlableLabelableBaseModelWithAttributes {
 			$this->errors = $t_restriction->errors();
 			return false;
 		}
-		unset($_SESSION['screen_cache']);
 		return true;
 	}
 	# ----------------------------------------
@@ -795,7 +814,6 @@ class ca_editor_ui_screens extends BundlableLabelableBaseModelWithAttributes {
 				}
 			}
 		}
-		unset($_SESSION['screen_cache']);
 		return true;
 	}
 	# ----------------------------------------

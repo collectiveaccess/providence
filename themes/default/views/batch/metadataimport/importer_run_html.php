@@ -26,7 +26,8 @@
  * ----------------------------------------------------------------------
  */
 
-$t_importer = $this->getVar('t_importer');
+$t_importer 			= $this->getVar('t_importer');
+$va_last_settings 		= $this->getVar('last_settings');
 
 print $vs_control_box = caFormControlBox(
 		caJSButton($this->request, __CA_NAV_BUTTON_SAVE__, _t("Execute data import"), 'caBatchMetadataImportForm', array('onclick' => 'caShowConfirmBatchExecutionPanel(); return false;')).' '.
@@ -45,7 +46,12 @@ print $vs_control_box = caFormControlBox(
 		print "<div class='formLabel' id='caSourceFileContainer'>"._t('Data file')."<br>\n"."<input type='file' name='sourceFile' id='caSourceFile'/>"."</div>\n";
 		print "<div class='formLabel' id='caSourceUrlContainer'>"._t('Data URL')."<br>\n".caHTMLTextInput('sourceUrl', array('id' => 'caSourceUrl', 'class' => 'urlBg'), array('width' => '300px'))."</div>\n";
 
-
+		print "<div class='formLabel'>"._t('Log level')."<br>\n".caHTMLSelect('logLevel', caGetLogLevels(), array('id' => 'caLogLevel'), array('value' => $va_last_settings['logLevel']))."</div>\n";
+		
+		$va_attr = array('id' => 'caDryRun', 'value' => 1);
+		if ($va_last_settings['dryRun'] == 1) { $va_attr['checked'] = 1; }
+		print "<div class='formLabel'>"._t('Dry run')."<br>\n".caHTMLCheckboxInput('dryRun', $va_attr)."</div>\n";
+	
 		print $this->render("metadataimport/confirm_html.php");	
 ?>
 		</form>

@@ -40,7 +40,8 @@ if (!$this->request->isAjax()) {
 		print caFormControlBox(
 			'<div class="list-filter">'._t('Filter').': <input type="text" name="filter" value="" onkeyup="jQuery(\'#caImporterList\').caFilterTable(this.value); return false;" size="20"/></div>',
 			'',
-			caJSButton($this->request, __CA_NAV_BUTTON_ADD_LARGE__, _t("Add importers"), 'caAddImportersButton', array('onclick' => 'jQuery("#importerUploadArea").slideToggle(150); return false;'))
+			caJSButton($this->request, __CA_NAV_BUTTON_ADD_LARGE__, _t("Add importers"), 'caAddImportersButton', array('onclick' => 'caOpenImporterUploadArea(true, true); return false;', 'id' => 'caAddImportersButton')).
+			caJSButton($this->request, __CA_NAV_BUTTON_ADD_LARGE__, _t("Close"), 'caCloseImportersButton', array('onclick' => 'caOpenImporterUploadArea(false, true); return false;', 'id' => 'caCloseImportersButton'))
 		);
 	?>
 	
@@ -77,7 +78,16 @@ if (!$this->request->isAjax()) {
 			</thead>
 			<tbody>
 <?php
-	foreach($va_importer_list as $va_importer) {
+	if(sizeof($va_importer_list) == 0) {
+?>
+			<tr>
+				<td colspan='5'>
+					<div align="center"><?php print _t('No importers defined'); ?></div>
+				</td>
+			</tr>
+<?php
+	} else {
+		foreach($va_importer_list as $va_importer) {
 ?>
 			<tr>
 				<td>
@@ -99,6 +109,7 @@ if (!$this->request->isAjax()) {
 				</td>
 			</tr>
 <?php
+		}
 	}
 ?>
 			</tbody>
@@ -111,6 +122,25 @@ if (!$this->request->isAjax()) {
 <div class="editorBottomPadding"><!-- empty --></div>
 
 <script type="text/javascript">
+	var batchCookieJar = jQuery.cookieJar('caCookieJar');
+		
+	function caOpenImporterUploadArea(open, animate) {
+		batchCookieJar.set('importerUploadAreaIsOpen', open);
+		if (open) {
+			jQuery("#importerUploadArea").slideDown(animate ? 150 : 0);
+			jQuery("#caCloseImportersButton").show();
+			jQuery("#caAddImportersButton").hide();
+		} else {
+			jQuery("#importerUploadArea").slideUp(animate ? 150 : 0);
+			jQuery("#caCloseImportersButton").hide();
+			jQuery("#caAddImportersButton").show();
+		}
+	}
+	
+	function caImporterUploadAreaIsOpen() {
+		return batchCookieJar.get('importerUploadAreaIsOpen');
+	}
+	
 	jQuery(document).ready(function() {
 		jQuery('#progressbar').progressbar({ value: 0 });
 		
@@ -120,7 +150,6 @@ if (!$this->request->isAjax()) {
 			dropZone: jQuery('#importerUploadArea'),
 			singleFileUploads: false,
 			done: function (e, data) {
-				jQuery("#importerUploadArea").hide(150);
 				if (data.result.error) {
 					jQuery("#batchProcessingTableProgressGroup").show(250);
 					jQuery("#batchProcessingTableStatus").html(data.result.error);
@@ -139,6 +168,7 @@ if (!$this->request->isAjax()) {
 					jQuery("#batchProcessingTableStatus").html(msg.join('; '));
 					setTimeout(function() {
 							jQuery("#batchProcessingTableProgressGroup").hide(250);
+							jQuery("#importerUploadArea").show(150);
 						}, 3000);
 				}
 				jQuery("#caImporterListContainer").load("<?php print caNavUrl($this->request, 'batch', 'MetadataImport', 'Index'); ?>");
@@ -156,6 +186,8 @@ if (!$this->request->isAjax()) {
 				
 			}
 		});
+		
+		caOpenImporterUploadArea(batchCookieJar.get('importerUploadAreaIsOpen'), false);
 	});
 </script>
 <?php

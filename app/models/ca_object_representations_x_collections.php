@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2011 Whirl-i-Gig
+ * Copyright 2011-2013 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -25,12 +25,12 @@
  *
  * ----------------------------------------------------------------------
  */
-require_once(__CA_LIB_DIR__.'/core/BaseRelationshipModel.php');
+require_once(__CA_LIB_DIR__.'/ca/BaseRepresentationRelationship.php');
 
 
 BaseModel::$s_ca_models_definitions['ca_object_representations_x_collections'] = array(
- 	'NAME_SINGULAR' 	=> _t('representation ⇔ collection relationship'),
- 	'NAME_PLURAL' 		=> _t('representation ⇔ collection relationships'),
+ 	'NAME_SINGULAR' 	=> _t('object representation ⇔ collection relationship'),
+ 	'NAME_PLURAL' 		=> _t('object representation ⇔ collection relationships'),
  	'FIELDS' 			=> array(
  		'relation_id' => array(
 				'FIELD_TYPE' => FT_NUMBER, 'DISPLAY_TYPE' => DT_HIDDEN, 
@@ -76,6 +76,13 @@ BaseModel::$s_ca_models_definitions['ca_object_representations_x_collections'] =
 				'START' => 'sdatetime', 'END' => 'edatetime',
 				'LABEL' => _t('Effective dates'), 'DESCRIPTION' => _t('Period of time for which this relationship was in effect. This is an option qualification for the relationship. If left blank, this relationship is implied to have existed for as long as the related items have existed.')
 		),
+		'is_primary' => array(
+				'FIELD_TYPE' => FT_BIT, 'DISPLAY_TYPE' => DT_SELECT, 
+				'DISPLAY_WIDTH' => 10, 'DISPLAY_HEIGHT' => 1,
+				'IS_NULL' => false, 
+				'DEFAULT' => '',
+				'LABEL' => _t('Is primary?'), 'DESCRIPTION' => _t('Indicates that the representation should be used to depict the collection is situations where only a single representation can be displayed (eg. search results).')
+		),
 		'rank' => array(
 				'FIELD_TYPE' => FT_NUMBER, 'DISPLAY_TYPE' => DT_OMIT, 
 				'DISPLAY_WIDTH' => 10, 'DISPLAY_HEIGHT' => 1,
@@ -86,7 +93,7 @@ BaseModel::$s_ca_models_definitions['ca_object_representations_x_collections'] =
  	)
 );
 
-class ca_object_representations_x_collections extends BaseRelationshipModel {
+class ca_object_representations_x_collections extends BaseRepresentationRelationship {
 	# ---------------------------------
 	# --- Object attribute properties
 	# ---------------------------------

@@ -34,6 +34,7 @@ var caUI = caUI || {};
 			addMode: 'append',
 			templateValues: [],
 			initialValues: {},
+			initialValueOrder: [],
 			forceNewValues: [],
 			errors: {},
 			itemID: '',
@@ -69,6 +70,8 @@ var caUI = caUI || {};
 			listSortOrderID: null,
 			listSortItems: null // if set, limits sorting to items specified by selector
 		}, options);
+		
+		if (that.maxRepeats == 0) { that.maxRepeats = 65535; }
 		
 		if (!that.readonly) {
 			jQuery(container + " ." + that.addButtonClassName).click(function() {
@@ -263,6 +266,20 @@ var caUI = caUI || {};
 				}
 			}
 		
+			// attach interstitial edit button
+			if (this.interstitialButtonClassName) {
+				if (!this.readonly) {
+					jQuery(this.container + " #" +this.itemID + templateValues.n + " ." + this.interstitialButtonClassName).click(function() { 
+						// Trigger interstitial edit panel
+						options.interstitialPanel.showPanel(options.interstitialUrl + "/relation_id/" + initialValues['relation_id']);
+						jQuery('#' + options.interstitialPanel.getPanelContentID()).data('panel', options.interstitialPanel);
+						return false; 
+					});
+				} else {
+					jQuery(this.container + " #" +this.itemID + templateValues.n + " ." + this.interstitialButtonClassName).css("display", "none");
+				}
+			}
+		
 			// attach delete button
 			if (!this.readonly) {
 				jQuery(this.container + " #" +this.itemID + templateValues.n + " ." + this.deleteButtonClassName).click(function() { that.deleteFromBundle(templateValues.n); return false; });
@@ -381,7 +398,13 @@ var caUI = caUI || {};
 		var initialValuesSorted = [];
 		
 		// create an array so we can sort
-		jQuery.each(that.initialValues, function(k, v) {
+		if (!that.initialValueOrder || !that.initialValueOrder.length) {
+			jQuery.each(that.initialValues, function(k, v) {	
+				that.initialValueOrder.push(k);
+			});
+		}
+		jQuery.each(that.initialValueOrder, function(i, k) {
+			var v = that.initialValues[k];
 			v['_key'] = k;
 			initialValuesSorted.push(v);
 		});
@@ -446,7 +469,6 @@ var caUI = caUI || {};
 			};
 			
 			jQuery(that.container + " .caItemList").sortable(opts);
-			
 			that._updateSortOrderListIDFormElement();
 		}
 		

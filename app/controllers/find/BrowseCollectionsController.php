@@ -66,7 +66,8 @@
  			$this->opo_browse = new CollectionBrowse($this->opo_result_context->getSearchExpression(), 'providence');
  			
  			$this->opa_views = array(
-				'list' => _t('list')
+				'list' => _t('list'),
+				'editable' => _t('editable')
 			);
 			 
 			$this->opa_sorts = array_merge(array(

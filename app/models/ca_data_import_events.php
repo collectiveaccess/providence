@@ -272,6 +272,9 @@ class ca_data_import_events extends BaseModel {
 	 */
 	public function endItem($pn_row_id, $pn_success, $ps_message) {
 		if (!($vn_event_id = $this->getPrimaryKey())) { return null; } 
+		if (!$this->opo_data_import_item) { 
+			throw new Exception("Must call ca_data_import_events::beginItem before ca_data_import_events::endItem");
+		}
 		
 		$this->opo_data_import_item->setMode(ACCESS_WRITE);
 		$this->opo_data_import_item->set('event_id', $vn_event_id);

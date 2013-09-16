@@ -269,6 +269,27 @@
 	}
 	# ------------------------------------------------------------------------------------------------
 	/**
+	 * Detects if PDFMiner (http://www.unixuser.org/~euske/python/pdfminer/index.html) is installed in the given path.
+	 * @param string $ps_pdfminer_path path to PDFMiner
+	 */
+	function caPDFMinerInstalled($ps_pdfminer_path) {
+		global $_MEDIAHELPER_PLUGIN_CACHE_MEDIAINFO;
+		if (isset($_MEDIAHELPER_PLUGIN_CACHE_MEDIAINFO[$ps_pdfminer_path])) {
+			return $_MEDIAHELPER_PLUGIN_CACHE_MEDIAINFO[$ps_pdfminer_path];
+		} else {
+			$_MEDIAHELPER_PLUGIN_CACHE_MEDIAINFO = array();
+		}
+		if (!trim($ps_pdfminer_path) || (preg_match("/[^\/A-Za-z0-9\.:]+/", $ps_pdfminer_path)) || !file_exists($ps_pdfminer_path)) { return false; }
+		
+		if (!file_exists($ps_pdfminer_path."/pdf2txt.py")) { return $_MEDIAHELPER_PLUGIN_CACHE_MEDIAINFO[$ps_pdfminer_path] = false; }
+		exec($ps_pdfminer_path."/pdf2txt.py > /dev/null",$va_output,$vn_return);
+		if($vn_return == 100) {
+			return $_MEDIAHELPER_PLUGIN_CACHE_MEDIAINFO[$ps_pdfminer_path] = true;
+		}
+		return $_MEDIAHELPER_PLUGIN_CACHE_MEDIAINFO[$ps_pdfminer_path] = false;
+	}
+	# ------------------------------------------------------------------------------------------------
+	/**
 	 * Extracts media metadata using "mediainfo"
 	 * @param string $ps_mediainfo_path path to mediainfo binary
 	 * @param string $ps_filepath file path
@@ -363,7 +384,7 @@
 			}
 			
 			if (is_array($va_date_elements)) {
-				if ($vs_raw_date = $va_exif_data['IFD0']['DateTime']) {
+				if (($vs_raw_date = $va_exif_data['IFD0']['DateTimeOriginal']) || ($vs_raw_date = $va_exif_data['EXIF']['DateTimeOriginal'])) {
 					$va_date_tmp = preg_split('![: ]+!', $vs_raw_date); 
 					$vs_date = 	$va_date_tmp[0].'-'.$va_date_tmp[1].'-'.$va_date_tmp[2].'T'.$va_date_tmp[3].':'.$va_date_tmp[4].':'.$va_date_tmp[5];
 					foreach($va_date_elements as $vs_element) {
@@ -376,7 +397,7 @@
 			
 			if (is_array($va_date_containers)) {
 				$t_list = new ca_lists();
-				if ($vs_raw_date = $va_exif_data['IFD0']['DateTime']) {
+				if (($vs_raw_date = $va_exif_data['IFD0']['DateTimeOriginal']) || ($vs_raw_date = $va_exif_data['EXIF']['DateTimeOriginal'])) {
 					$va_date_tmp = preg_split('![: ]+!', $vs_raw_date); 
 					$vs_date = 	$va_date_tmp[0].'-'.$va_date_tmp[1].'-'.$va_date_tmp[2].'T'.$va_date_tmp[3].':'.$va_date_tmp[4].':'.$va_date_tmp[5];
 					foreach($va_date_containers as $vs_container => $va_info) {
@@ -434,9 +455,11 @@
 						continue(2);
 					}
 				}
-				
+
 				if(is_array($va_metadata)) { $va_metadata = join(";", $va_metadata); }
-				if (!trim($va_metadata)) { continue(2); }
+				if(!is_int($va_metadata)){ // pass ints through for values like WhiteBalance = 0
+					if (!trim($va_metadata)) { continue(2); }
+				}
 				
 				$va_tmp2 = explode(".", $vs_attr);
 				
@@ -451,12 +474,14 @@
 						if($po_instance->hasField($vs_attr)) {
 							$po_instance->set($vs_attr, $va_metadata);
 						} else {
-							$po_instance->replaceAttribute(
-								array(	'locale_id' => $pn_locale_id, 
-										$vs_attr => $va_metadata),
-								$vs_attr);
+							// try as attribute
+							if(sizeof($va_tmp2)==2){ // format ca_objects.foo, we only want "foo"
+								$po_instance->replaceAttribute(array(
+									$va_tmp2[1] => $va_metadata,
+									'locale_id' => $pn_locale_id
+								),$va_tmp2[1]);
+							}
 						}
-						
 				}
 				$vb_did_mapping = true;
 			}

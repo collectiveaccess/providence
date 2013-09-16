@@ -198,6 +198,8 @@
 2570 = Can't change access control list for this item
 2580 = You do not have access to this item
 2585 = You cannot quickadd
+2590 = Item does not have the minimum number of relationships specified
+2591 = Item has more than the maximum number of relationships specified
 
 # --- Object representation errors
 2700 = Could not update primary flag for representation

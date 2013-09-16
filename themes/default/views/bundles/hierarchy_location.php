@@ -42,6 +42,9 @@
 		case 'ca_relationship_types':
 			$vb_has_privs = $this->request->user->canDoAction('can_configure_relationship_types');
 			break;
+		case 'ca_tour_stops':
+			$vb_has_privs = $this->request->user->canDoAction('can_create_ca_tours');
+			break;
 		default:
 			$vb_has_privs = $this->request->user->canDoAction('can_create_'.$vs_priv_table);
 			break;
@@ -220,7 +223,7 @@
 	}
 	if ((!$vb_read_only && $vb_has_privs) && (!$vb_strict_type_hierarchy || ($vb_strict_type_hierarchy && $vs_type_selector))) {
 ?>
-					<li><a href="#<?php print $ps_id_prefix; ?>HierarchyBrowserTabs-add" onclick='_init<?php print $ps_id_prefix; ?>AddHierarchyBrowser();'><span><?php print ($vb_objects_x_collections_hierarchy_enabled && ($t_subject->tableName() == 'ca_collections')) ? _t('Add container') : _t('Add'); ?></span></a></li>
+					<li><a href="#<?php print $ps_id_prefix; ?>HierarchyBrowserTabs-add" onclick='_init<?php print $ps_id_prefix; ?>AddHierarchyBrowser();'><span><?php print ($vb_objects_x_collections_hierarchy_enabled && ($t_subject->tableName() == 'ca_collections')) ? _t('Add level') : _t('Add'); ?></span></a></li>
 <?php
 	}
 	if ((!$vb_read_only && $vb_has_privs) && $vb_objects_x_collections_hierarchy_enabled && ($t_subject->tableName() == 'ca_collections')) {

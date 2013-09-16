@@ -35,6 +35,7 @@ DV.Schema.events = {
     var first = index == 0;
     var last  = index == this.models.document.totalPages - 1;
     if (first) index += 1;
+    //console.log(pageIds, index);
     var pages = [
       { label: pageIds[0], index: index - 1 },
       { label: pageIds[1], index: index },
@@ -57,6 +58,13 @@ DV.Schema.events = {
   },
 
   loadText: function(pageIndex,afterLoad){
+  	//
+	// TODO: Are we going to totally rip out the text panel?
+	//
+	return null; // don't actually try to load text any longer... (we're going to get rid of the notion of the text layer)
+	//
+	//
+	//
 
     pageIndex = (!pageIndex) ? this.models.document.currentIndex() : parseInt(pageIndex,10);
     this._previousTextIndex = pageIndex;
