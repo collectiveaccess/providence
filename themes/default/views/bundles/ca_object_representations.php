@@ -179,7 +179,7 @@
 							<div class='caObjectRepresentationListInfoSubDisplay'>
 								<h3><?php print _t('File name'); ?></h3> <span class="caObjectRepresentationListInfoSubDisplayFilename" id="{fieldNamePrefix}filename_display_{n}">{filename}</span>
 <?php
-	TooltipManager::add("#{$vs_id_prefix}_filename_display_{n}", _t('File name: %1', "{filename}"), 'bundle_ca_object_representations');
+	TooltipManager::add("#{$vs_id_prefix}_filename_display_{n}", _t('File name: %1', "{{filename}}"), 'bundle_ca_object_representations');
 ?>
 								</div>
 								<div class='caObjectRepresentationListInfoSubDisplay'>
