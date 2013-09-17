@@ -2188,7 +2188,11 @@ require_once(__CA_LIB_DIR__."/ca/ApplicationPluginManager.php");
 	function caGetRelationDisplayString($po_request, $ps_table, $pa_attributes=null, $pa_options=null) {
 		$o_config = Configuration::load();
 		$o_dm = Datamodel::load();
-		$vs_relationship_type_display_position = strtolower($o_config->get($ps_table.'_lookup_relationship_type_position'));
+		
+		if (!($vs_relationship_type_display_position = caGetOption('relationshipTypeDisplayPosition', $pa_options, null))) {
+			$vs_relationship_type_display_position = strtolower($o_config->get($ps_table.'_lookup_relationship_type_position'));
+		}
+		
 		$vs_attr_str = _caHTMLMakeAttributeString(is_array($pa_attributes) ? $pa_attributes : array());
 		$vs_display = "{".((isset($pa_options['display']) && $pa_options['display']) ? $pa_options['display'] : "_display")."}";
 		if (isset($pa_options['makeLink']) && $pa_options['makeLink']) {
