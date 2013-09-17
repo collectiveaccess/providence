@@ -687,6 +687,7 @@ class WLPlugMediaPDFWand Extends BaseMediaPlugin implements IWLPlugMedia {
 									
 								$o_media->transform('SCALE', array('mode' => 'bounding_box', 'antialiasing' => 0.5, 'width' => $vn_w, 'height' => $vn_h));
 								$o_media->transform('UNSHARPEN_MASK', array('sigma' => 0.5, 'radius' => 1, 'threshold' => 1.0, 'amount' => 0.1));
+								$o_media->set('quality',$vn_quality);
 								
 								$o_media->write($ps_filepath, $ps_mimetype, array());
 								if (!$o_media->numErrors()) {
