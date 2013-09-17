@@ -332,7 +332,7 @@ class Installer {
 			}
 			$vo_db->query($vs_statement);
 			if ($vo_db->numErrors()) {
-				$this->addError("There were errors while loading the database schema: ".join("; ",$o_db->getErrors()));
+				$this->addError("Error while loading the database schema: ".join("; ",$o_db->getErrors()));
 				return false;
 			}
 		}
@@ -637,7 +637,7 @@ class Installer {
 			$t_ui->insert();
 
 			if ($t_ui->numErrors()) {
-				$this->addError("There were errors inserting UI {$vs_ui_code}: ".join("; ",$t_ui->getErrors()));
+				$this->addError("Errors inserting UI {$vs_ui_code}: ".join("; ",$t_ui->getErrors()));
 				return false;
 			}
 
@@ -661,7 +661,7 @@ class Installer {
 				$t_ui_screens->insert();
 
 				if ($t_ui_screens->numErrors()) {
-					$this->addError("There were errors inserting UI screen {$vs_screen_idno} for UI {$vs_ui_code}: ".join("; ",$t_ui_screens->getErrors()));
+					$this->addError("Errors inserting UI screen {$vs_screen_idno} for UI {$vs_ui_code}: ".join("; ",$t_ui_screens->getErrors()));
 					return false;
 				}
 
@@ -758,7 +758,7 @@ class Installer {
 			$t_rel_type->insert();
 
 			if ($t_rel_type->numErrors()) {
-				$this->addError("There were errors inserting relationship root for {$vs_table}: ".join("; ",$t_rel_type->getErrors()));
+				$this->addError("Errors inserting relationship root for {$vs_table}: ".join("; ",$t_rel_type->getErrors()));
 				return false;
 			}
 
@@ -815,7 +815,7 @@ class Installer {
 			$t_rel_type->insert();
 
 			if ($t_rel_type->numErrors()) {
-				$this->addError("There were errors inserting relationship {$vs_type_code}: ".join("; ",$t_rel_type->getErrors()));
+				$this->addError("Errors inserting relationship {$vs_type_code}: ".join("; ",$t_rel_type->getErrors()));
 				return false;
 			}
 
@@ -868,7 +868,7 @@ class Installer {
 			$t_role->insert();
 
 			if ($t_role->numErrors()) {
-				$this->addError("There were errors inserting access role {$vs_role_code}: ".join("; ",$t_role->getErrors()));
+				$this->addError("Errors inserting access role {$vs_role_code}: ".join("; ",$t_role->getErrors()));
 				return false;
 			}
 		}
@@ -1061,7 +1061,7 @@ class Installer {
 		$t_user_group->insert();
 		
 		if ($t_user_group->numErrors()) {
-			$this->addError("There were errors creating root user group {$vs_group_code}: ".join("; ",$t_user_group->getErrors()));
+			$this->addError("Errors creating root user group {$vs_group_code}: ".join("; ",$t_user_group->getErrors()));
 			return false;
 		}
 		if($this->ops_base_name){ // "merge" profile and its base
@@ -1105,7 +1105,7 @@ class Installer {
 				$t_group->addRoles($va_roles);
 	
 				if ($t_group->numErrors()) {
-					$this->addError("There were errors inserting user group {$vs_group_code}: ".join("; ",$t_group->getErrors()));
+					$this->addError("Errors inserting user group {$vs_group_code}: ".join("; ",$t_group->getErrors()));
 					return false;
 				}
 			}
@@ -1179,7 +1179,7 @@ class Installer {
 			if (sizeof($va_groups)) { $t_user->addToGroups($va_groups); }
 
 			if ($t_user->numErrors()) {
-				$this->addError("There were errors adding login {$vs_user_name}: ".join("; ",$t_user->getErrors()));
+				$this->addError("Errors adding login {$vs_user_name}: ".join("; ",$t_user->getErrors()));
 				return false;
 			}
 			
@@ -1202,7 +1202,7 @@ class Installer {
 		$t_storage_location->insert();
 		
 		if ($t_storage_location->numErrors()) {
-			$this->addError("There were errors inserting the storage location root: ".join("; ",$t_storage_location->getErrors()));
+			$this->addError("Errors inserting the storage location root: ".join("; ",$t_storage_location->getErrors()));
 			return;
 		}
 	}
@@ -1223,7 +1223,7 @@ class Installer {
 		$t_user->insert();
 
 		if ($t_user->numErrors()) {
-			$this->addError("There were errors while adding the default administrator account: ".join("; ",$t_user->getErrors()));
+			$this->addError("Errors while adding the default administrator account: ".join("; ",$t_user->getErrors()));
 			return false;
 		}
 

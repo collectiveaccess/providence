@@ -119,7 +119,11 @@
 			
 			$vs_time =  "(Installation took ".$t_total->getTime(0)." seconds)";
 			if($vo_installer->numErrors()){
-				caSetMessage("<div class='contentFailure'>There were errors during installation: ".join("; ", $vo_installer->getErrors())."<br/>{$vs_time}</div>");
+				$va_errors = array();
+				foreach($vo_installer->getErrors() as $vs_err) {
+					$va_errors[] = "<li>{$vs_err}</li>";
+				}
+				caSetMessage("<div class='contentFailure'><div class='contentFailureHead'>There were errors during installation:</div><ul>".join("", $va_errors)."</ul><br/>{$vs_time}</div>");
 			} else {
 				$vs_message = "<div class='contentSuccess'><span style='font-size:18px;'><b>Installation was successful!</b></span><br/>You can now <a href='../index.php?action=login'>login</a> with ";
 				
