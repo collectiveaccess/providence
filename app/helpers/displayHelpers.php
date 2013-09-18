@@ -850,10 +850,14 @@ require_once(__CA_LIB_DIR__."/ca/ApplicationPluginManager.php");
 				foreach(array('ca_objects', 'ca_object_lots', 'ca_entities', 'ca_places', 'ca_occurrences', 'ca_collections', 'ca_storage_locations', 'ca_loans', 'ca_movements') as $vs_rel_table) {
 					if (sizeof($va_objects = $t_item->getRelatedItems($vs_rel_table))) {
 						$vs_buf .= "<div><strong>"._t("Related %1", $o_dm->getTableProperty($vs_rel_table, 'NAME_PLURAL'))."</strong>: <br/>\n";
-				
+						
+						$vs_screen = '';
+						if ($t_ui = ca_editor_uis::loadDefaultUI($vs_rel_table, $po_request, null)) {
+							$vs_screen = $t_ui->getScreenWithBundle('ca_object_representations', $po_request);
+						}
 						foreach($va_objects as $vn_rel_id => $va_rel_info) {
 							if ($vs_label = array_shift($va_rel_info['labels'])) {
-								$vs_buf .= caEditorLink($po_view->request, '&larr; '.$vs_label.' ('.$va_rel_info['idno'].')', '', $vs_rel_table, $va_rel_info[$o_dm->getTablePrimaryKeyName($vs_rel_table)], array(), array(), array())."<br/>\n";
+								$vs_buf .= caEditorLink($po_view->request, '&larr; '.$vs_label.' ('.$va_rel_info['idno'].')', '', $vs_rel_table, $va_rel_info[$o_dm->getTablePrimaryKeyName($vs_rel_table)], array(), array(), array('action' => 'Edit'.($vs_screen ? "/{$vs_screen}" : "")))."<br/>\n";
 							}
 						}
 						$vs_buf .= "</div>\n";
