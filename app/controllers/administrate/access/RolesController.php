@@ -142,7 +142,7 @@
 				$va_type_access_settings = array();
 				
 				foreach($this->opa_bundleable_tables as $vs_table) {
-					if (!caTableIsActive($vs_table)) { continue; }
+					if ((!caTableIsActive($vs_table)) && ($vs_table != 'ca_object_representations')) { continue; }
 					$t_instance = $o_dm->getInstanceByTableName($vs_table, true);
 					if (!($vs_list_code = $t_instance->getTypeListCode())) { continue; }
 					$va_type_ids = $t_list->getItemsForList($vs_list_code, array('idsOnly' => true));
@@ -166,7 +166,7 @@
 			$va_new_role_action_settings = array();
 			
 			foreach($va_role_action_list as $vs_group => $va_group_info) {
-				if (caTableIsActive($vs_group) === false) { continue; }		// will return null if group name is not a table name; true if it's an enabled table and false if it's a disabled table
+				if ((caTableIsActive($vs_group) === false) && ($vs_group != 'ca_object_representations')) { continue; }		// will return null if group name is not a table name; true if it's an enabled table and false if it's a disabled table
 			
 				foreach($va_group_info['actions'] as $vs_action => $va_action_info) {
 					if ($this->request->getParameter($vs_action, pInteger) > 0) {
