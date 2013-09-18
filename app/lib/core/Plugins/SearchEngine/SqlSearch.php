@@ -395,9 +395,9 @@ class WLPlugSearchEngineSqlSearch extends BaseSearchPlugin implements IWLPlugSea
 		if (is_numeric($vs_field)) {
 			$vs_fld_num = $vs_field;
 		} else {
-			$vs_fld_num = $this->getFieldNum($vs_table, $vs_field);
+			$vs_fld_num = (int)$this->getFieldNum($vs_table, $vs_field);
 		}
-		if (!$vs_fld_num) {
+		if (!strlen($vs_fld_num)) {
 			$t_element = new ca_metadata_elements();
 			if ($t_element->load(array('element_code' => $vs_field))) {
 				switch ($t_element->get('datatype')) {
@@ -641,9 +641,11 @@ class WLPlugSearchEngineSqlSearch extends BaseSearchPlugin implements IWLPlugSea
 							$vn_fld_table = $vn_fld_num = null;
 							if(sizeof($va_ap_tmp) == 2) {
 								$va_element = $this->_getElementIDForAccessPoint($vs_access_point);
-								$vs_fld_num = $va_element['field_num'];
-								$vs_fld_table_num = $va_element['table_num'];
-								$vs_fld_limit_sql = " AND (ca.field_table_num = {$vs_fld_table_num} AND ca.field_num = '{$vs_fld_num}')";
+								if ($va_element) {
+									$vs_fld_num = $va_element['field_num'];
+									$vs_fld_table_num = $va_element['table_num'];
+									$vs_fld_limit_sql = " AND (ca.field_table_num = {$vs_fld_table_num} AND ca.field_num = '{$vs_fld_num}')";
+								}
 							}
 							
 							$vs_direct_sql_query = "
@@ -1057,6 +1059,7 @@ class WLPlugSearchEngineSqlSearch extends BaseSearchPlugin implements IWLPlugSea
 						}
 						
 						if ($this->debug) { print 'FIRST: '.$vs_sql." [$pn_subject_tablenum]<hr>\n"; }
+						//print $vs_sql;
 						$qr_res = $this->opo_db->query($vs_sql, (int)$pn_subject_tablenum);
 					} else {
 						switch($vs_op) {
