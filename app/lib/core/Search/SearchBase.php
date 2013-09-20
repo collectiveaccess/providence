@@ -83,6 +83,9 @@ require_once(__CA_LIB_DIR__."/core/Db.php");
 		# ------------------------------------------------
 		# Utils
 		# ------------------------------------------------
+		/**
+		 *
+		 */
 		public function getFieldsToIndex($pm_subject_table, $pm_content_table=null) {
 			if (isset(SearchBase::$s_fields_to_index_cache[$pm_subject_table.'/'.$pm_content_table])) {
 				return SearchBase::$s_fields_to_index_cache[$pm_subject_table.'/'.$pm_content_table];

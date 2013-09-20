@@ -1159,7 +1159,7 @@ if (!$vb_can_do_incremental_indexing || $pb_reindex_mode) {
 			}			
 						$va_full_path = $va_table_list;
 						array_unshift($va_full_path, $vs_dep_table);
-						$qr_rel_rows = $this->_getRelatedRows(array_reverse($va_full_path), isset($va_table_key_list[$vs_list_name]) ? $va_table_key_list[$vs_list_name] : null, $vs_subject_tablename, $pn_subject_row_id);
+						$qr_rel_rows = $this->_getRelatedRows(array_reverse($va_full_path), isset($va_table_key_list[$vs_list_name]) ? $va_table_key_list[$vs_list_name] : null, $vs_subject_tablename, $pn_subject_row_id, $vs_rel_table ? $vs_rel_table : $vs_dep_table, $va_fields_to_index);
 						
 						if ($qr_rel_rows) {
 							while($qr_rel_rows->nextRow()) {
@@ -1219,11 +1219,19 @@ if (!$vb_can_do_incremental_indexing || $pb_reindex_mode) {
 	 * Returns query result with rows related via tables specified in $pa_tables to the specified subject; used by
 	 * _getDependentRowsForSubject() to generate dependent row set
 	 */
-	private function _getRelatedRows($pa_tables, $pa_table_keys, $ps_subject_tablename, $pn_row_id) {
+	private function _getRelatedRows($pa_tables, $pa_table_keys, $ps_subject_tablename, $pn_row_id, $ps_table_to_index, $pa_fields_to_index) {
 		if (!in_array($ps_subject_tablename, $pa_tables)) { $pa_tables[] = $ps_subject_tablename; }
 		$vs_key = md5(print_r($pa_tables, true)."/".print_r($pa_table_keys, true)."/".$ps_subject_tablename);
 		
 		$va_flds = array();
+		
+		// Add fields being indexed 
+		if ($t_indexed_table = $this->opo_datamodel->getInstanceByTableName($ps_table_to_index, true)) {
+			foreach($pa_fields_to_index as $vs_f => $va_field_info) {
+				if (!$t_indexed_table->hasField($vs_f)) { continue; }
+				$va_flds[$ps_table_to_index.".".$vs_f] = true;
+			}
+		}
 		
 		if (!isset(SearchIndexer::$s_related_rows_joins_cache[$vs_key]) || !(SearchIndexer::$s_related_rows_joins_cache[$vs_key])) {
 			$vs_left_table = $vs_select_tablename = array_shift($pa_tables);
