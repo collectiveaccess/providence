@@ -475,7 +475,7 @@
 			$t_oxor->set($vs_pk, $vn_id);
 			$t_oxor->set('representation_id', $t_rep->getPrimaryKey());
 			$t_oxor->set('is_primary', $pb_is_primary ? 1 : 0);
-			$t_oxor->set('rank', isset($pa_options['rank']) ? (int)$pa_options['rank'] : null);
+			$t_oxor->set('rank', isset($pa_options['rank']) ? (int)$pa_options['rank'] : $t_rep->getPrimaryKey());
 			if ($t_oxor->hasField('type_id')) { $t_oxor->set('type_id', isset($pa_options['type_id']) ? (int)$pa_options['type_id'] : null); }
 			$t_oxor->insert();
 		
