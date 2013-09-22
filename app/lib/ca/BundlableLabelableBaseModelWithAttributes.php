@@ -2073,10 +2073,12 @@ class BundlableLabelableBaseModelWithAttributes extends LabelableBaseModelWithAt
 		
 		$t_item = $this->getAppDatamodel()->getTableInstance($ps_related_table);
 		
+		$vb_is_many_many = false;
 		switch(sizeof($va_path = array_keys($this->getAppDatamodel()->getPath($this->tableName(), $ps_related_table)))) {
 			case 3:
 				// many-many relationship
 				$t_item_rel = $this->getAppDatamodel()->getTableInstance($va_path[1]);
+				$vb_is_many_many = true;
 				break;
 			case 2:
 				// many-one relationship
@@ -2129,11 +2131,18 @@ class BundlableLabelableBaseModelWithAttributes extends LabelableBaseModelWithAt
 		if (sizeof($va_items = $this->getRelatedItems($ps_related_table, $va_get_related_opts))) {
 			$t_rel = $this->getAppDatamodel()->getInstanceByTableName($ps_related_table, true);
 			$vs_rel_pk = $t_rel->primaryKey();
-			$va_ids = caExtractArrayValuesFromArrayOfArrays($va_items, $vs_rel_pk);
-			$qr_rel_items = $t_item->makeSearchResult($t_rel->tableNum(), $va_ids);	
-			
 			
 			$va_opts = array('relatedItems' => $va_items, 'stripTags' => true);
+			if ($vb_is_many_many) {
+				$va_ids = caExtractArrayValuesFromArrayOfArrays($va_items, 'relation_id');
+				$qr_rel_items = $t_item->makeSearchResult($t_item_rel->tableNum(), $va_ids);
+				$va_opts['table'] = $t_rel->tableName();
+				$va_opts['primaryKey'] = $t_rel->primaryKey();
+			} else {
+				$va_ids = caExtractArrayValuesFromArrayOfArrays($va_items, $vs_rel_pk);
+				$qr_rel_items = $t_item->makeSearchResult($t_rel->tableNum(), $va_ids);	
+			}
+				
 			if(strlen(trim($pa_bundle_settings['display_template']))) {
 				$va_opts['template'] = trim($pa_bundle_settings['display_template']);
 			} 
@@ -2150,7 +2159,7 @@ class BundlableLabelableBaseModelWithAttributes extends LabelableBaseModelWithAt
 			if (!$va_opts['template']) {
 				$va_opts['template'] = "^preferred_labels";
 			}
-			$va_initial_values = caProcessRelationshipLookupLabel($qr_rel_items, $t_rel, $va_opts);
+			$va_initial_values = caProcessRelationshipLookupLabel($qr_rel_items, $t_item_rel, $va_opts);
 		}
 		
 		$va_force_new_values = array();
