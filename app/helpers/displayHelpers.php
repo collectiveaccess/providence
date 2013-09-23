@@ -1899,6 +1899,7 @@ require_once(__CA_LIB_DIR__."/ca/ApplicationPluginManager.php");
 					$va_tmp[sizeof($va_tmp)-1] = $vs_tag_bit;	// remove option from tag-part array
 					$vs_tag_proc = join(".", $va_tmp);
 					$va_proc_templates[$vn_i] = str_replace($vs_tag, $vs_tag_proc, $va_proc_templates[$vn_i]);
+					
 					$vs_tag = $vs_tag_proc;
 				}
 			
@@ -1979,7 +1980,7 @@ require_once(__CA_LIB_DIR__."/ca/ApplicationPluginManager.php");
 								}
 							
 								if (isset($pa_options['placeholderPrefix']) && $pa_options['placeholderPrefix'] && ($va_tmp[0] != $pa_options['placeholderPrefix'])) {
-									array_unshift($va_tmp, $pa_options['placeholderPrefix']);
+									array_splice($va_tmp, -1, 0, $pa_options['placeholderPrefix']);
 								}
 								
 								$vs_get_spec = "{$ps_tablename}.".join(".", $va_tmp);
