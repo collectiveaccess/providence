@@ -2074,19 +2074,27 @@ class BundlableLabelableBaseModelWithAttributes extends LabelableBaseModelWithAt
 		$t_item = $this->getAppDatamodel()->getTableInstance($ps_related_table);
 		
 		$vb_is_many_many = false;
-		switch(sizeof($va_path = array_keys($this->getAppDatamodel()->getPath($this->tableName(), $ps_related_table)))) {
-			case 3:
-				// many-many relationship
-				$t_item_rel = $this->getAppDatamodel()->getTableInstance($va_path[1]);
-				$vb_is_many_many = true;
-				break;
-			case 2:
-				// many-one relationship
-				$t_item_rel = $this->getAppDatamodel()->getTableInstance($va_path[1]);
-				break;
-			default:
-				$t_item_rel = null;
-				break;
+		
+		$va_path = array_keys($this->getAppDatamodel()->getPath($this->tableName(), $ps_related_table));
+		if ($this->tableName() == $ps_related_table) {
+			// self relationship
+			$t_item_rel = $this->getAppDatamodel()->getTableInstance($va_path[1]);
+			$vb_is_many_many = true;
+		} else {
+			switch(sizeof($va_path)) {
+				case 3:
+					// many-many relationship
+					$t_item_rel = $this->getAppDatamodel()->getTableInstance($va_path[1]);
+					$vb_is_many_many = true;
+					break;
+				case 2:
+					// many-one relationship
+					$t_item_rel = $this->getAppDatamodel()->getTableInstance($va_path[1]);
+					break;
+				default:
+					$t_item_rel = null;
+					break;
+			}
 		}
 	
 		$o_view->setVar('id_prefix', $ps_form_name);

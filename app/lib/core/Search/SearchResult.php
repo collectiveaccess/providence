@@ -741,7 +741,7 @@ class SearchResult extends BaseObject {
 					if ($t_instance->isHierarchical()) {
 						$vs_field_spec = join('.', array_values($va_path_components['components']));
 						$vs_hier_pk_fld = $t_instance->primaryKey();
-						if ($va_ids = $this->get($va_path_components['table_name'].'.'.$vs_hier_pk_fld, array_merge($pa_options, array('returnAsArray' => true)))) {
+						if ($va_ids = $this->get($va_path_components['table_name'].'.'.$vs_hier_pk_fld, array_merge($pa_options, array('returnAsArray' => true, 'returnAsLink'=> false)))) {
 							if ($va_path_components['field_name'] == $vs_hier_pk_fld) {
 								$va_vals = $va_ids;
 							} else {
