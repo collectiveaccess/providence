@@ -1625,6 +1625,49 @@ class ca_lists extends BundlableLabelableBaseModelWithAttributes {
 	}
 	# ---------------------------------------------------------------------------------------------
 	/**
+	 * Overrides BundlableLabelableBaseModelWithAttributes:isSaveable to implement system list access restrictions
+	 */
+	public function isSaveable($po_request) {
+		if(parent::isSaveable($po_request)){ // user could save this list
+			if($this->getPrimaryKey()){
+				if($this->get('is_system_list')){
+					if(!$po_request->user->canDoAction('can_edit_system_lists')){
+						return false;
+					}
+				}
+			}
+
+			return true;
+		} else {
+			// BundlableLabelableBaseModelWithAttributes:isSaveable returned false
+			// => user can't edit this list at all, no matter how is_system_list is set
+			return false;
+		}
+	}
+	# ---------------------------------------------------------------------------------------------
+	/**
+	 * Overrides BundlableLabelableBaseModelWithAttributes:isDeletable to implement system list access restrictions
+	 */
+	public function isDeletable($po_request) {
+
+		if(parent::isDeletable($po_request)){ // user could delete this list
+			if($this->getPrimaryKey()){
+				if($this->get('is_system_list')){
+					if(!$po_request->user->canDoAction('can_delete_system_lists')){
+						return false;
+					}
+				}
+			}
+
+			return true;
+		} else {
+			// BundlableLabelableBaseModelWithAttributes:isDeletable returned false
+			// => user can't delete this list at all, no matter how is_system_list is set
+			return false;
+		}
+	}
+	# ---------------------------------------------------------------------------------------------
+	/**
 	 * Converts the given list of list item idnos or item_ids into an expanded list of numeric item_ids. Processing
 	 * includes expansion of items to include sub-items and conversion of any idnos to item_ids.
 	 *
