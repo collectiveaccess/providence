@@ -1509,9 +1509,26 @@ require_once(__CA_LIB_DIR__."/ca/ApplicationPluginManager.php");
 		// -------------------------------------------------------------------------------------
 	
 		$vs_buf .= "<div>"._t('Set contains <em>%1</em>', join(", ", $t_set->getTypesForItems()))."</div>\n";
+
+		$vs_buf .= "<div class='button' style='text-align:right;'><a href='#' id='inspectorMoreInfo'>"._t("More options")."</a> &rsaquo;</div>
+			<div id='inspectorInfo' style='background-color:#f9f9f9; border: 1px solid #eee; margin:3px 0px -3px 0px;'>";
+		$vs_buf .= caNavLink($po_view->request, _t("Batch delete all records in set"), null, 'batch', 'Editor', 'Delete', array('set_id' => $t_set->getPrimaryKey()));
+		$vs_buf .= "</div>\n";
+
+		// -------------------------------------------------------------------------------------
+
+		$vs_buf .= "<script type='text/javascript'>
+			jQuery('#inspectorMoreInfo').click(function() {
+				jQuery('#inspectorInfo').slideToggle(350, function() { 
+					jQuery('#inspectorMoreInfo').html((this.style.display == 'block') ? '".addslashes(_t('Close options'))."' : '".addslashes(_t('More options'))."');
+				}); 
+				return false;
+			});
+		</script>";
+
+		// -------------------------------------------------------------------------------------
 		
 		$vs_buf .= "</div></h4>\n";
-		
 	
 		return $vs_buf;
 	}
