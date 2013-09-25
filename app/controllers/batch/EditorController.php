@@ -166,7 +166,7 @@
  			list($vn_set_id, $t_set, $t_subject, $t_ui) = $this->_initView($pa_options);
 
  			if (!$this->request->user->canDoAction('can_batch_delete_'.$t_set->getAppDatamodel()->getTableName($t_set->get('table_num')))) {
- 				$this->response->setRedirect($this->request->config->get('error_display_url').'/n/3210?r='.urlencode($this->request->getFullUrlPath()));
+ 				$this->response->setRedirect($this->request->config->get('error_display_url').'/n/3230?r='.urlencode($this->request->getFullUrlPath()));
  				return;
  			}
 
