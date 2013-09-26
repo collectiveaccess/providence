@@ -1783,8 +1783,8 @@ require_once(__CA_LIB_DIR__."/ca/ApplicationPluginManager.php");
 		}
 		$vs_pk = $t_instance->primaryKey();
 		
-		$ps_template = str_replace("^_parent", "^{$ps_tablename}.parent.preferred_labels", $ps_template);
-		$ps_template = str_replace("^_hierarchy", "^{$ps_tablename}.hierarchy.preferred_labels%top=1%removeFirstItems=1", $ps_template);
+		$ps_template = str_replace("^_parent", "^{$ps_resolve_links_using}.parent.preferred_labels", $ps_template);
+		$ps_template = str_replace("^_hierarchy", "^{$ps_resolve_links_using}.hierarchy.preferred_labels%top=1%removeFirstItems=1", $ps_template);
 
 		$va_related_values = (isset($pa_options['relatedValues']) && is_array($pa_options['relatedValues'])) ? $pa_options['relatedValues'] : array();		
 		$va_relationship_values = (isset($pa_options['relationshipValues']) && is_array($pa_options['relationshipValues'])) ? $pa_options['relationshipValues'] : array();
