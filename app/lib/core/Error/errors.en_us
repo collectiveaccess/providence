@@ -233,4 +233,5 @@
 3200 = Invalid set
 3210 = Batch editing is not allowed
 3220 = Set is empty
+3230 = Batch deleting is not allowed
 3250 = Invalid directory
