@@ -147,7 +147,7 @@ class Configuration {
 					'file_locking' => true,				/* cache corruption avoidance */
 					'read_control' => false,			/* no read control */
 					'file_name_prefix' => 'ca_cache',	/* prefix of cache files */
-					'cache_file_umask' => 0700			/* permissions of cache files */
+					'cache_file_perm' => 0700			/* permissions of cache files */
 				);
 
 				$vs_path_as_md5 = md5($_SERVER['HTTP_HOST'].$this->ops_config_file_path.'/'.$g_ui_locale.(isset($g_configuration_cache_suffix) ? '/'.$g_configuration_cache_suffix : ''));
@@ -492,7 +492,7 @@ class Configuration {
 							# -------------------
 							case '}':
 								if ($vn_in_quote) {
-									$vs_scalar_value .= "}";
+									$vs_assoc_key .= "}";
 								} else {
 									if ($this->opb_debug) { print "CONFIG DEBUG: STATE=40; Got close }; KEY IS '$vs_assoc_key'\n"; }
 									if (sizeof($va_assoc_pointer_stack) > 1) {
@@ -957,7 +957,7 @@ class Configuration {
 			'file_locking' => true,				/* cache corruption avoidance */
 			'read_control' => false,			/* no read control */
 			'file_name_prefix' => 'ca_cache',	/* prefix of cache files */
-			'cache_file_umask' => 0700			/* permissions of cache files */
+			'cache_file_perm' => 0700			/* permissions of cache files */
 		);
 
 		try {

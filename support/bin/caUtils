@@ -17,6 +17,7 @@
 	$g_ui_locale = $o_config->get('locale_default');
 	$t_locale = new ca_locales();
 	$g_ui_locale_id = $t_locale->localeCodeToID($g_ui_locale);		// get current UI locale as locale_id	  (available as global)
+	initializeLocale($g_ui_locale);
 
 	$vs_cmd = strtolower(str_replace("-", "_", $argv[1]));
 	

@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <profile xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="profile.xsd" useForConfiguration="1" base="base" infoUrl="http://providence.collectiveaccess.org/wiki/DublinCoreInstallationProfile">
-  <profileName>Vancouver Maritime Museum</profileName>
-  <profileDescription>Use this profile if you want a system that is compliant with simple DublinCore</profileDescription>
+  <profileName>Vancouver Maritime Museum (Latest)</profileName>
+  <profileDescription>Archives and Museum Collection of the Vancouver Maritime Museum</profileDescription>
   <locales>
     <locale lang="en" country="US">English</locale>
   </locales>
@@ -251,6 +251,15 @@
             </label>
           </labels>
         </item>
+        <item idno="drawer" rank="9" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>drawer</name_singular>
+              <name_plural>drawers</name_plural>
+            </label>
+          </labels>
+        </item>
+        
         <item idno="box" rank="10" enabled="1" default="0">
           <labels>
             <label locale="en_US" preferred="1">
@@ -264,6 +273,14 @@
             <label locale="en_US" preferred="1">
               <name_singular>tray</name_singular>
               <name_plural>trays</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="folder" rank="9" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>folder</name_singular>
+              <name_plural>folders</name_plural>
             </label>
           </labels>
         </item>
@@ -1294,6 +1311,14 @@
             <label locale="en_US" preferred="1">
               <name_singular>Flora</name_singular>
               <name_plural>Flora</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="ashore" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>Equipment - Ashore</name_singular>
+              <name_plural>Equipment - Ashore</name_plural>
             </label>
           </labels>
         </item>
@@ -2594,14 +2619,6 @@
             <setting name="minimumAttributeBundlesToDisplay">1</setting>
           </settings>
         </restriction>
-        <restriction code="r7">
-          <table>ca_object_events</table>
-          <settings>
-            <setting name="minAttributesPerRow">0</setting>
-            <setting name="maxAttributesPerRow">100</setting>
-            <setting name="minimumAttributeBundlesToDisplay">1</setting>
-          </settings>
-        </restriction>
       </typeRestrictions>
     </metadataElement>
     <metadataElement code="event_description" datatype="Text">
@@ -3477,7 +3494,7 @@
         <metadataElement code="catalog_card" datatype="List" list="catalog_card">
           <labels>
             <label locale="en_US">
-              <name>Catalog Card</name>
+              <name>Catalogue Card</name>
             </label>
           </labels>
           <settings>
@@ -5332,7 +5349,72 @@
         </restriction>
       </typeRestrictions>
     </metadataElement>
-    
+    <metadataElement code="appraisal_info_charts" datatype="Container">
+      <labels>
+        <label locale="en_US">
+          <name>Appraisals</name>
+          
+        </label>
+      </labels>
+      <settings>
+        <setting name="lineBreakAfterNumberOfElements">2</setting>
+      </settings>
+      <elements>
+        
+        <metadataElement code="appraisal_date_chart" datatype="DateRange">
+          <labels>
+            <label locale="en_US">
+              <name>Appraisal date</name>
+            </label>
+          </labels>
+          <settings>
+            <setting name="fieldWidth">40</setting>
+            <setting name="fieldHeight">1</setting>
+            <setting name="minChars">0</setting>
+            <setting name="maxChars">65535</setting>
+            <setting name="useDatePicker">1</setting>
+          </settings>
+        </metadataElement>
+        <metadataElement code="appraisal_value_chart" datatype="Currency">
+          <labels>
+            <label locale="en_US">
+              <name>Appraisal value</name>
+            </label>
+          </labels>
+          <settings>
+            <setting name="fieldWidth">40</setting>
+            <setting name="fieldHeight">1</setting>
+            <setting name="minChars">0</setting>
+            <setting name="maxChars">65535</setting>
+            <setting name="useDatePicker">1</setting>
+          </settings>
+        </metadataElement>
+        <metadataElement code="appraiser_name_chart" datatype="Text">
+          <labels>
+            <label locale="en_US">
+              <name>Appraiser name</name>
+            </label>
+          </labels>
+          <settings>
+            <setting name="fieldWidth">90</setting>
+            <setting name="fieldHeight">1</setting>
+            <setting name="minChars">0</setting>
+            <setting name="maxChars">65535</setting>
+          </settings>
+        </metadataElement>
+        
+      </elements>
+      <typeRestrictions>
+        <restriction code="objects">
+          <table>ca_objects</table>
+          <settings>
+            <setting name="minAttributesPerRow">0</setting>
+            <setting name="maxAttributesPerRow">1</setting>
+            <setting name="minimumAttributeBundlesToDisplay">1</setting>
+          </settings>
+        </restriction>
+      </typeRestrictions>
+    </metadataElement>
     <metadataElement code="appraisal_note" datatype="Text">
       <labels>
         <label locale="en_US">
@@ -6127,8 +6209,7 @@
             <placement code="ca_object_lots">
               <bundle>ca_object_lots</bundle>
               <settings>
-                <setting name="label" locale="en_US">Related Accessions</setting>
-                <setting name="add_label" locale="en_US">Add related accessions</setting>
+                <setting name="label" locale="en_US">Accession</setting>
               </settings>
             </placement>
             <placement code="ca_attribute_categories">
@@ -7330,7 +7411,7 @@
         <screen idno="contents" default="0">
           <labels>
             <label locale="en_US">
-              <name>Contents</name>
+              <name>Objects</name>
             </label>
           </labels>
           <bundlePlacements>
@@ -7789,6 +7870,9 @@
             <placement code="ca_attribute_measurements">
               <bundle>ca_attribute_measurements</bundle>
             </placement>
+            <placement code="ca_attribute_appraisal_info_charts">
+              <bundle>ca_attribute_appraisal_info_charts</bundle>
+            </placement>
             <placement code="ca_attribute_ship_plan_note">
               <bundle>ca_attribute_ship_plan_note</bundle>
             </placement>
@@ -8195,6 +8279,20 @@
           <subTypeLeft> </subTypeLeft>
           <subTypeRight></subTypeRight>
         </type>
+      </types>
+    </relationshipTable>
+    <relationshipTable name="ca_collections_x_storage_locations">
+      <types>
+        <type code="home" default="1">
+          <labels>
+            <label locale="en_US">
+              <typename>has as home location</typename>
+              <typename_reverse>is home location for</typename_reverse>
+            </label>
+          </labels>
+          <subTypeLeft> </subTypeLeft>
+          <subTypeRight></subTypeRight>
+        </type> 
       </types>
     </relationshipTable>
     <relationshipTable name="ca_objects_x_occurrences">
@@ -9086,12 +9184,26 @@
         </type>
       </types>
     </relationshipTable>
+    <relationshipTable name="ca_object_lots_x_object_lots">
+      <types>
+        <type code="related" default="1">
+          <labels>
+            <label locale="en_US">
+              <typename>is related to</typename>
+              <typename_reverse>is related to</typename_reverse>
+            </label>
+          </labels>
+          <subTypeLeft> </subTypeLeft>
+          <subTypeRight></subTypeRight>
+        </type>
+      </types>
+    </relationshipTable>
   </relationshipTypes>
   <displays>
     <display code="archive_report" type="ca_collections" system="1">
       <labels>
         <label locale="en_US">
-          <name>W.B. and M.H. Chung Maritime History Collection Report</name>
+          <name>Archives Finding Aid</name>
         </label>
       </labels>
       <bundlePlacements>
@@ -9128,11 +9240,11 @@
         <placement code="Object_ID">
           <bundle>ca_objects.idno</bundle>
         </placement>
-        <placement code="preferred_labels">
-          <bundle>ca_objects.preferred_labels</bundle>
-        </placement>
-        <placement code="previous_number">
-          <bundle>ca_objects.previous_number</bundle>
+        <placement code="ca_object_lots">
+          <bundle>ca_object_lots</bundle>
+          <settings>
+            <setting name="label" locale="en_US">Accession</setting>
+          </settings>
         </placement>
         <placement code="object_type">
           <bundle>ca_objects.type</bundle>
@@ -9140,16 +9252,104 @@
         <placement code="category">
           <bundle>ca_objects.categories</bundle>
         </placement>
-        <placement code="measurements">
-          <bundle>ca_objects.measurements</bundle>
+        <placement code="maker">
+          <bundle>ca_entities</bundle>
+          <settings>
+            <setting name="restrict_to_relationship_types">creator</setting>
+            
+            <setting name="render">makeEditorLink</setting>
+            <setting name="delimiter"><![CDATA[<br/><br/>]]></setting>
+            <setting name="label" locale="en_US">Artist/Maker</setting>
+            <setting name="format">^preferred_labels.surname,^preferred_labels.forename</setting>
+          </settings>
         </placement>
+        <placement code="manufacturer">
+          <bundle>ca_entities</bundle>
+          <settings>
+            
+            <setting name="restrict_to_relationship_types">manufacturer</setting>
+            <setting name="render">makeEditorLink</setting>
+            <setting name="delimiter"><![CDATA[<br/><br/>]]></setting>
+            <setting name="label" locale="en_US">Manufacturer</setting>
+            <setting name="format">^preferred_labels.surname,^preferred_labels.forename</setting>
+          </settings>
+        </placement>
+        <placement code="date">
+          <bundle>ca_objects.date</bundle>
+        </placement> 
+        
         <placement code="materials">
           <bundle>ca_objects.materials</bundle>
         </placement>
         <placement code="description">
           <bundle>ca_objects.description</bundle>
         </placement>
-        
+        <placement code="measurements">
+          <bundle>ca_objects.measurements</bundle>
+          <settings>
+            <setting name="format"><![CDATA[^width <ifdef code="width">Width;</ifdef> ^length <ifdef code="length">Length;</ifdef> ^height <ifdef code="height">Height;</ifdef>
+              ^depth <ifdef code="depth">Depth;</ifdef> ^diameter <ifdef code="diameter">Diameter;</ifdef>]]> 
+            </setting>
+          </settings>
+        </placement>
+        <placement code="donor">
+          <bundle>ca_entities</bundle>
+          <settings>
+            <setting name="restrict_to_relationship_types">donor</setting>
+            <setting name="render">makeEditorLink</setting>
+            <setting name="delimiter"><![CDATA[<br/><br/>]]></setting>
+            <setting name="label" locale="en_US">Donor</setting>
+            <setting name="format">^relationship_typename ^preferred_labels.surname,^preferred_labels.forename</setting>
+          </settings>
+        </placement>
+        <placement code="cataloguer">
+          <bundle>ca_objects.museum_cataloguer</bundle>
+          <settings>
+            <setting name="format"><![CDATA[<ifdef code="cataloguers_museum"><font size=2><b>Catalogued by:</b></font></ifdef> ^cataloguers_museum </ifdef> <ifdef code="dates_catalogued"><font size=2><b>Date:</b></font></ifdef> ^dates_catalogued <ifdef code="cataloguer_notes"><br><br><font size=2><b><Cataloguer Notes:</b></font></ifdef> ^cataloguer_notes]]>
+          </setting>
+          </settings>
+        </placement>
+        <placement code="ca_home_location">
+          <bundle>ca_storage_locations</bundle>
+          <settings>
+            <setting name="label" locale="en_US">Permanent Location</setting>
+            <setting name="restrict_to_relationship_types">home</setting>
+          </settings>
+        </placement>
+        <placement code="ca_temp_location">
+          <bundle>ca_storage_locations</bundle>
+          <settings>
+            <setting name="label" locale="en_US">Temporary Location</setting>
+            <setting name="restrict_to_relationship_types">temp</setting>
+          </settings>
+        </placement>
+        <placement code="ca_attribute_current_condition">
+          <bundle>ca_objects.current_condition</bundle>
+          <settings>
+            <setting name="format"><![CDATA[<ifdef code="museum_condition"><font size=2><b>Current Condition:</b></font></ifdef> ^museum_condition <ifdef code="condition_date"><font size=2><b>Date:</b></font></ifdef> ^condition_date]]>
+            </setting>
+          </settings>
+        </placement>
+        <placement code="ca_exhibits">
+          <bundle>ca_occurrences</bundle>
+          <settings>
+            <setting name="render">makeEditorLink</setting>
+            <setting name="label" locale="en_US">Related Exhibitions</setting>
+            <setting name="restrict_to_types">exhibitions</setting>
+            <setting name="delimiter"><![CDATA[<br/><br/>]]></setting>
+            <setting name="format">Exhibit Title:^preferred_labels, <![CDATA[<ifdef code="start"><font size=2><b>Exhibit Date:</b></font></ifdef> ^start <ifdef code="start">-</ifdef> ^exhibit_date.end]]></setting>
+          </settings>
+        </placement>
+        <placement code="ca_vessels">
+          <bundle>ca_occurrences</bundle>
+          <settings>
+            <setting name="render">makeEditorLink</setting>
+            <setting name="label" locale="en_US">Related Vessels</setting>
+            <setting name="restrict_to_types">vessel</setting>
+            <setting name="delimiter"><![CDATA[<br/><br/>]]></setting>
+            <setting name="format">Vessel Name:^preferred_labels</setting>
+          </settings>
+        </placement>
       </bundlePlacements>
     </display>
   </displays>

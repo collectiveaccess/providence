@@ -763,9 +763,9 @@ class SearchEngine extends SearchBase {
 		if (sizeof($va_access_points = $this->getAccessPoints($this->opn_tablenum))) {
 			// if field is access point then do rewrite
 			if (
-				isset($va_access_points[$vs_fld]) 
+				isset($va_access_points[$vs_fld_lc = mb_strtolower($vs_fld)]) 
 				&&
-				($va_ap_info = $va_access_points[$vs_fld])
+				($va_ap_info = $va_access_points[$vs_fld_lc])
 			) {
 				$va_fields = isset($va_ap_info['fields']) ? $va_ap_info['fields'] : null;
 				if (!in_array($vs_bool = strtoupper($va_ap_info['boolean']), array('AND', 'OR'))) {
@@ -947,7 +947,7 @@ class SearchEngine extends SearchBase {
 					$vs_query .= '(' . $subquery->__toString() . ')';
 					break;	
 				case 'Zend_Search_Lucene_Search_Query_Range':
-					$vs_query = $subquery;
+					$vs_query .= '(' . $subquery->__toString() . ')';
 					break;
 				default:
 					$vs_query .= '(' . $this->_queryToString($subquery) . ')';

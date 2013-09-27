@@ -87,7 +87,6 @@ class BaseXMLDataReader extends BaseDataReader {
 	 * @return bool
 	 */
 	public function read($ps_source, $pa_options=null) {
-		//die("read source $ps_source");
 		$this->opo_xml = DOMDocument::load($ps_source);
 		$this->opo_xpath = new DOMXPath($this->opo_xml);
 		
@@ -101,6 +100,40 @@ class BaseXMLDataReader extends BaseDataReader {
 	}
 	# -------------------------------------------------------
 	/**
+	 * Extract XML values recursively
+	 */
+	private function _extractXMLValues($o_row, $ps_base_key='') {
+		$vn_l = (int)$o_row->childNodes->length;
+		
+		for($vn_i=0; $vn_i < $vn_l; $vn_i++) {
+			$o_node = $o_row->childNodes->item($vn_i);
+			$vs_key = $ps_base_key.'/'.$o_node->nodeName;
+			$this->opa_row_buf[$vs_key][] = (string)$o_node->nodeValue;
+			if ($this->opb_tag_names_as_case_insensitive && (strtolower($vs_key) != $vs_key)) { 
+				$this->opa_row_buf[strtolower($vs_key)][] = (string)$o_node->nodeValue; 
+			}
+			
+			if ($o_node->hasChildNodes()) {
+				$this->_extractXMLValues($o_node, $vs_key);
+			}
+		}
+
+		 if ($this->opb_use_row_tag_attributes_as_row_level_values && $o_row->hasAttributes()) {
+		 	$o_attributes = $o_row->attributes;
+		 	$vn_l = $o_attributes->length;
+		 	
+			for($vn_i=0; $vn_i < $vn_l; $vn_i++) {
+				$o_node = $o_attributes->item($vn_i);
+				$vs_key = $ps_base_key.'/'.$o_node->nodeName;
+ 				$this->opa_row_buf[$vs_key] = (string)$o_node->nodeValue;
+ 				if ($this->opb_tag_names_as_case_insensitive && (strtolower($vs_key) != $vs_key)) { 
+ 					$this->opa_row_buf[strtolower($vs_key)][] = (string)$o_node->nodeValue;
+ 				}
+ 			}
+ 		}
+	}
+	# -------------------------------------------------------
+	/**
 	 * 
 	 * 
 	 * @param string $ps_source
@@ -111,30 +144,7 @@ class BaseXMLDataReader extends BaseDataReader {
 		if (!($o_row = $this->opo_handle->item($this->opn_current_row))) { return false; }
 		
 		$this->opa_row_buf = array();
-		$vn_l = (int)$o_row->childNodes->length;
-		
-		for($vn_i=0; $vn_i < $vn_l; $vn_i++) {
-			$o_node = $o_row->childNodes->item($vn_i);
-			$vs_key = $o_node->nodeName;
-			$this->opa_row_buf[$vs_key] = (string)$o_node->nodeValue;
-			if ($this->opb_tag_names_as_case_insensitive) { 
-				$this->opa_row_buf[strtolower($vs_key)] = $this->opa_row_buf[$vs_key];
-			}
-		}
-
-		 if ($this->opb_use_row_tag_attributes_as_row_level_values && $o_row->hasAttributes()) {
-		 	$o_attributes = $o_row->attributes;
-		 	$vn_l = $o_attributes->length;
-		 	
-			for($vn_i=0; $vn_i < $vn_l; $vn_i++) {
-				$o_node = $o_attributes->item($vn_i);
-				$vs_key = $o_node->nodeName;
- 				$this->opa_row_buf[$vs_key] = (string)$o_node->nodeValue;
- 				if ($this->opb_tag_names_as_case_insensitive) { 
- 					$this->opa_row_buf[strtolower($vs_key)] = $this->opa_row_buf[$vs_key];
- 				}
- 			}
- 		}
+		$this->_extractXMLValues($o_row);
 		
 		$this->opn_current_row++;
 		if ($this->opn_current_row > $this->numRows()) { return false; }
@@ -163,10 +173,17 @@ class BaseXMLDataReader extends BaseDataReader {
 	 * @return mixed
 	 */
 	public function get($ps_spec, $pa_options=null) {
-		$ps_spec = str_replace("/", "", $ps_spec);
+		$vb_return_as_array = caGetOption('returnAsArray', $pa_options, false);
+		$vs_delimiter = caGetOption('delimiter', $pa_options, ';');
+		
+		//$ps_spec = str_replace("/", "", $ps_spec);
 		if ($this->opb_tag_names_as_case_insensitive) { $ps_spec = strtolower($ps_spec); }
 		if (is_array($this->opa_row_buf) && ($ps_spec) && (isset($this->opa_row_buf[$ps_spec]))) {
-			return $this->opa_row_buf[$ps_spec];
+			if($vb_return_as_array) {
+				return $this->opa_row_buf[$ps_spec];
+			} else {
+				return join($vs_delimiter, $this->opa_row_buf[$ps_spec]);
+			}
 		}
 		return null;	
 	}
@@ -204,6 +221,15 @@ class BaseXMLDataReader extends BaseDataReader {
 	 */
 	public function getInputType() {
 		return __CA_DATA_READER_INPUT_FILE__;
+	}
+	# -------------------------------------------------------
+	/**
+	 * Values can repeat for XML files
+	 * 
+	 * @return bool
+	 */
+	public function valuesCanRepeat() {
+		return true;
 	}
 	# -------------------------------------------------------
 }

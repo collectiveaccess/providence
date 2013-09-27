@@ -610,7 +610,7 @@
 		
 			$vn_i = 0;
 			
-			$va_output = array();
+			$va_output = array(join($vs_separator, $va_element_vals));
 			$vn_max_value_count = 0;
 			
 			// element-specific processing
@@ -698,6 +698,13 @@
 				}
 				$va_output_values[] = $vs_value_proc;
 			}
+			
+			// generate version without trailing letters after number (eg. KHF-134b => KHF-134)
+			$va_tmp = $va_output_values;
+			foreach($va_tmp as $vs_value_proc) {
+				$va_output_values[] = preg_replace("!([\d]+)[A-Za-z]+$!", "$1", $vs_value_proc);
+			}
+			
 			return array_unique($va_output_values);
 		}
 		# -------------------------------------------------------

@@ -38,4 +38,6 @@ CKEDITOR.editorConfig = function( config ) {
 	
 	// Force editor to float in front of top-of-window menu bar
 	CKEDITOR.config.baseFloatZIndex = 60000;
+	
+	config.disableNativeSpellChecker = false;
 };

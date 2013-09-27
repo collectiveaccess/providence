@@ -93,7 +93,6 @@ BaseModel::$s_ca_models_definitions['ca_bundle_displays'] = array(
 					_t('movements') => 137,
 					_t('tours') => 153,
 					_t('tour stops') => 155,
-					//_t('object events') => 45,
 					_t('object representations') => 56,
 					_t('representation annotations') => 82,
 					//_t('lists') => 36,
@@ -503,7 +502,10 @@ class ca_bundle_displays extends BundlableLabelableBaseModelWithAttributes {
 								case 'DT_SELECT':
 									if (($vs_list_code = $t_subject->getFieldInfo($va_bundle_name[1], 'LIST')) || ($vs_list_code = $t_subject->getFieldInfo($va_bundle_name[1], 'LIST_CODE'))) {
 										$va_placements[$vn_placement_id]['inlineEditingType'] = DT_SELECT;
-										$va_placements[$vn_placement_id]['inlineEditingListValues'] = array_values($t_list->getItemsForList($vs_list_code, array('labelsOnly' => true)));
+										if (!is_array($va_list_labels = $t_list->getItemsForList($vs_list_code, array('labelsOnly' => true)))) {
+											$va_list_labels = array();
+										}
+										$va_placements[$vn_placement_id]['inlineEditingListValues'] = array_values($va_list_labels);
 									} else {
 										$va_placements[$vn_placement_id]['inlineEditingType'] = DT_FIELD;
 									}
@@ -723,7 +725,7 @@ class ca_bundle_displays extends BundlableLabelableBaseModelWithAttributes {
 	 	if (!($vn_table_num = $o_dm->getTableNum($pm_table_name_or_num))) { return null; }
 		
 		$t_instance = $o_dm->getInstanceByTableNum($vn_table_num, true);
-		
+		if (!$t_instance) { return null; }
 		return (isset($pa_options['number']) && ($pa_options['number'] == 'plural')) ? $t_instance->getProperty('NAME_PLURAL') : $t_instance->getProperty('NAME_SINGULAR');
 
 	}
@@ -1344,7 +1346,7 @@ class ca_bundle_displays extends BundlableLabelableBaseModelWithAttributes {
 		
 		if ($vb_show_tooltips) {
 			TooltipManager::add(
-				"#bundleDisplayEditorBundle_{$vs_table}_lastModified}",
+				"#bundleDisplayEditorBundle_{$vs_table}_lastModified",
 				$this->_formatBundleTooltip($vs_label, $vs_bundle, $vs_description)
 			);
 		}
@@ -1653,7 +1655,6 @@ class ca_bundle_displays extends BundlableLabelableBaseModelWithAttributes {
 			$pa_options['asHTML'] = true;
 		}
 		
-	
 		if (!$pa_options['forReport'] && isset($pa_options['makeEditorLink']) && $pa_options['makeEditorLink'] && isset($pa_options['request']) && $pa_options['request']) {
 			if ($t_instance = $this->getAppDatamodel()->getInstanceByTableName($va_tmp[0], true)) {
 				$va_tmp2 = $va_tmp;

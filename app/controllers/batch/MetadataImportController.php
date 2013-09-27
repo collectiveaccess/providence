@@ -54,6 +54,10 @@
  		#
  		# -------------------------------------------------------
  		public function __construct(&$po_request, &$po_response, $pa_view_paths=null) {
+ 			if (!$po_request->user->canDoAction('can_batch_import_metadata')) {
+ 				$po_response->setRedirect($po_request->config->get('error_display_url').'/n/3210?r='.urlencode($po_request->getFullUrlPath()));
+ 				return;
+ 			}
  			
  			JavascriptLoadManager::register('bundleableEditor');
  			JavascriptLoadManager::register('panel');
@@ -112,7 +116,7 @@
  			
 				foreach($_FILES as $vs_param => $va_file) {
 					foreach($va_file['name'] as $vn_i => $vs_name) {
-						if ($t_importer = ca_data_importers::loadImporterFromFile($va_file['tmp_name'][$vn_i], $va_errors)) {
+						if ($t_importer = ca_data_importers::loadImporterFromFile($va_file['tmp_name'][$vn_i], $va_errors, array('logDirectory' => $this->request->config->get('batch_metadata_import_log_directory'), 'logLevel' => KLogger::INFO))) {
 							$va_response['copied'][$vs_name] = true;
 						} else {
 							$va_response['skipped'][$vs_name] = true;
@@ -140,6 +144,7 @@
  			$t_importer = $this->getImporterInstance();
  			
  			$this->view->setVar('t_importer', $t_importer);
+ 			$this->view->setVar('last_settings', $this->request->user->getVar('batch_metadata_last_settings'));
  			
 			$this->render('metadataimport/importer_run_html.php');
  		}
@@ -152,10 +157,8 @@
  		public function ImportData() {
  			$t_importer = $this->getImporterInstance();
  			
- 			// Can user batch import media?
- 			if (!$this->request->user->canDoAction('can_batch_import_media')) {
- 			//	$this->response->setRedirect($this->request->config->get('error_display_url').'/n/3210?r='.urlencode($this->request->getFullUrlPath()));
- 			//	return;
+ 			if (!$t_subject = $t_importer->getAppDatamodel()->getInstanceByTableNum($t_importer->get('table_num'), true)) {
+ 				return $this->Index();
  			}
  			
  			$va_options = array(
@@ -163,15 +166,20 @@
  				'sendSMS' => (bool)$this->request->getParameter('send_sms_when_done', pInteger), 
  				
  				'locale_id' => $g_ui_locale_id,
- 				'user_id' => $this->request->getUserID()
+ 				'user_id' => $this->request->getUserID(),
+ 				
+ 				'logLevel' => $this->request->getParameter("logLevel", pInteger),
+ 				'dryRun' => $this->request->getParameter("dryRun", pInteger)
  			);
  			
  			$va_last_settings = $va_options;
  			$va_last_settings['importer_id'] = $this->request->getParameter("importer_id", pInteger); 
  			$va_last_settings['inputFormat'] = $this->request->getParameter("inputFormat", pString); 
+ 			$va_last_settings['logLevel'] = $this->request->getParameter("logLevel", pInteger); 
+ 			$va_last_settings['dryRun'] = $this->request->getParameter("dryRun", pInteger); 
  			$this->request->user->setVar('batch_metadata_last_settings', $va_last_settings);
  			
- 			$this->view->setVar("t_subject", $t_importer->getAppDatamodel()->getInstanceByTableNum($t_importer->get('table_num'), true));
+ 			$this->view->setVar("t_subject", $t_subject);
  		
 			// run now
 			$app = AppController::getInstance();

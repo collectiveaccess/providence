@@ -121,6 +121,7 @@ require_once(__CA_APP_DIR__."/helpers/utilityHelpers.php");
 require_once(__CA_APP_DIR__."/helpers/gisHelpers.php");
 require_once(__CA_LIB_DIR__."/ca/ApplicationPluginManager.php");
 require_once(__CA_LIB_DIR__."/core/Parsers/htmlpurifier/HTMLPurifier.standalone.php");
+require_once(__CA_LIB_DIR__."/ca/MediaContentLocationIndexer.php");
 
 /**
  * Base class for all database table classes. Implements database insert/update/delete
@@ -1184,7 +1185,7 @@ class BaseModel extends BaseObject {
 					case (FT_HISTORIC_DATERANGE):
 						$vs_start_field_name = $this->getFieldInfo($vs_field,"START");
 						$vs_end_field_name = $this->getFieldInfo($vs_field,"END");
-												
+						
 						$vn_start_date = isset($this->_FIELD_VALUES[$vs_start_field_name]) ? $this->_FIELD_VALUES[$vs_start_field_name] : null;
 						$vn_end_date = isset($this->_FIELD_VALUES[$vs_end_field_name]) ? $this->_FIELD_VALUES[$vs_end_field_name] : null;
 						if (($this->DIRECT_DATETIMES) || ($pa_options["SET_DIRECT_DATE"])) {
@@ -2225,7 +2226,6 @@ class BaseModel extends BaseObject {
 					}
 					// Update instance cache
 					BaseModel::$s_instance_cache[$vs_table_name][$vn_id] = $this->_FIELD_VALUES;
-					
 					return $vn_id;
 				} else {
 					foreach($o_db->errors() as $o_e) {
@@ -2855,6 +2855,7 @@ class BaseModel extends BaseObject {
 					BaseModel::$search_indexer->commitRowUnIndexing($this->tableNum(), $vn_id);
 				}
 			}
+			$this->logChange("D");
 			return $vn_rc;
 		}
 		$this->clearErrors();
@@ -3375,9 +3376,9 @@ class BaseModel extends BaseObject {
 	 * @return mixed media information
 	 */
 	public function &getMediaInfo($ps_field, $ps_version=null, $ps_property=null) {
-		$va_media_info = $this->get($ps_field, array('USE_MEDIA_FIELD_VALUES' => true));
+		$va_media_info = self::get($ps_field, array('USE_MEDIA_FIELD_VALUES' => true));
 		if (!is_array($va_media_info)) {
-			return "";
+			return '';
 		}
 		
 		#
@@ -4449,10 +4450,19 @@ class BaseModel extends BaseObject {
 						$vs_sql .= " ".$vs_metadata_field_name." = ".$this->quote(caSerializeForDatabase($media_metadata, true)).",";
 					}
 				
-					
 					if (($vs_content_field_name = $o_media_proc_settings->getMetadataContentName()) && $this->hasField($vs_content_field_name)) {
 						$this->_FIELD_VALUES[$vs_content_field_name] = $this->quote($m->getExtractedText());
 						$vs_sql .= " ".$vs_content_field_name." = ".$this->_FIELD_VALUES[$vs_content_field_name].",";
+					}
+					
+					if(is_array($va_locs = $m->getExtractedTextLocations())) {
+						MediaContentLocationIndexer::clear($this->tableNum(), $this->getPrimaryKey());
+						foreach($va_locs as $vs_content => $va_loc_list) {
+							foreach($va_loc_list as $va_loc) {
+								MediaContentLocationIndexer::index($this->tableNum(), $this->getPrimaryKey(), $vs_content, $va_loc['p'], $va_loc['x1'], $va_loc['y1'], $va_loc['x2'], $va_loc['y2']);
+							}
+						}
+						MediaContentLocationIndexer::write();
 					}
 				} else {
 					# error - invalid media
@@ -5002,7 +5012,14 @@ class BaseModel extends BaseObject {
 		$this->clearErrors();
 		reset($this->FIELDS);
 		while (list($field, $attr) = each($this->FIELDS)) {
-			echo "{$field} = ".$this->_FIELD_VALUES[$field]."<BR>\n";
+			switch($attr['FIELD_TYPE']) {
+				case FT_HISTORIC_DATERANGE:
+					echo "{$field} = ".$this->_FIELD_VALUES[$attr['START']]."/".$this->_FIELD_VALUES[$attr['END']]."<BR>\n";
+					break;
+				default:
+					echo "{$field} = ".$this->_FIELD_VALUES[$field]."<BR>\n";
+					break;
+			}
 		}
 	}
 	# --------------------------------------------------------------------------------
@@ -6155,15 +6172,18 @@ class BaseModel extends BaseObject {
 	 *		returnDeleted = return deleted records in list (def. false)
 	 *		maxLevels = 
 	 *		dontIncludeRoot = 
+	 *		includeSelf = 
 	 * 
 	 * @return array
 	 */
 	public function &getHierarchyAsList($pn_id=null, $pa_options=null) {
-		$pb_ids_only = (isset($pa_options['idsOnly']) && $pa_options['idsOnly']) ? true : false;
-		$pn_max_levels = isset($pa_options['maxLevels']) ? intval($pa_options['maxLevels']) : null;
-		$ps_additional_table_to_join = isset($pa_options['additionalTableToJoin']) ? $pa_options['additionalTableToJoin'] : null;
-		$pb_dont_include_root = (isset($pa_options['dontIncludeRoot']) && $pa_options['dontIncludeRoot']) ? true : false;
+		$pb_ids_only 					= caGetOption('idsOnly', $pa_options, false);
+		$pn_max_levels 					= caGetOption('maxLevels', $pa_options, null, array('cast' => 'int'));
+		$ps_additional_table_to_join 	= caGetOption('additionalTableToJoin', $pa_options, null);
+		$pb_dont_include_root 			= caGetOption('dontIncludeRoot', $pa_options, false);
+		$pb_include_self 				= caGetOption('includeSelf', $pa_options, false);
 		
+		if ($pn_id && $pb_include_self) { $pb_dont_include_root = false; }
 		
 		if ($qr_hier = $this->getHierarchy($pn_id, $pa_options)) {
 			$vs_hier_right_fld 			= $this->getProperty("HIERARCHY_RIGHT_INDEX_FLD");
@@ -7403,20 +7423,21 @@ $pa_options["display_form_field_tips"] = true;
 									$vs_height = ((int)$vs_height * 16)."px";
 								}
 								
+								if(!is_array($va_toolbar_config = $this->getAppConfig()->getAssoc('wysiwyg_editor_toolbar'))) { $va_toolbar_config = array(); }
+								
 								$vs_element .= "<script type='text/javascript'>jQuery(document).ready(function() {
-		jQuery('#".$pa_options["id"]."').ckeditor(function() {
-				this.on( 'change', function(e) { 
-					if (caUI && caUI.utils) { caUI.utils.showUnsavedChangesWarning(true);  }
-				 });
-			},
-			{
-				toolbar: ".json_encode(array_values($this->getAppConfig()->getAssoc('wysiwyg_editor_toolbar'))).",
-				width: '{$vs_width}',
-				height: '{$vs_height}',
-				toolbarLocation: 'top',
-				enterMode: CKEDITOR.ENTER_BR
-			}
-		);
+								var ckEditor = CKEDITOR.replace( '".$pa_options['id']."',
+								{
+									toolbar : ".json_encode(array_values($va_toolbar_config)).",
+									width: '{$vs_width}',
+									height: '{$vs_height}',
+									toolbarLocation: 'top',
+									enterMode: CKEDITOR.ENTER_BR
+								});
+						
+								ckEditor.on('instanceReady', function(){ 
+									 ckEditor.document.on( 'keydown', function(e) {if (caUI && caUI.utils) { caUI.utils.showUnsavedChangesWarning(true); } });
+								});
  	});									
 </script>";
 							}
@@ -7758,7 +7779,7 @@ $pa_options["display_form_field_tips"] = true;
 	 * @param array $pa_options Array of additional options:
 	 *		allowDuplicates = if set to true, attempts to add a relationship that already exists will succeed. Default is false – duplicate relationships will not be created.
 	 *		setErrorOnDuplicate = if set to true, an error will be set if an attempt is made to add a duplicate relationship. Default is false – don't set error. addRelationship() will always return false when creation of a duplicate relationship fails, no matter how the setErrorOnDuplicate option is set.
-	 * @return boolean True on success, false on error.
+	 * @return BaseRelationshipModel Loaded relationship model instance on success, false on error.
 	 */
 	public function addRelationship($pm_rel_table_name_or_num, $pn_rel_id, $pm_type_id=null, $ps_effective_date=null, $ps_source_info=null, $ps_direction=null, $pn_rank=null, $pa_options=null) {
 		if(!($va_rel_info = $this->_getRelationshipInfo($pm_rel_table_name_or_num))) { 
@@ -7766,6 +7787,10 @@ $pa_options["display_form_field_tips"] = true;
 			return false; 
 		}
 		$t_item_rel = $va_rel_info['t_item_rel'];
+		$t_item_rel->clear();
+		//if ($this->inTransaction()) {
+		//	$t_item_rel->setTransaction($this->getTransaction());
+		//}
 		
 		if ($pm_type_id && !is_numeric($pm_type_id)) {
 			$t_rel_type = new ca_relationship_types();
@@ -7813,6 +7838,7 @@ $pa_options["display_form_field_tips"] = true;
 				$this->errors = $t_item_rel->errors;
 				return false;
 			}
+			return $t_item_rel;
 		} else {
 			switch(sizeof($va_rel_info['path'])) {
 				case 3:		// many-to-many relationship
@@ -7841,6 +7867,8 @@ $pa_options["display_form_field_tips"] = true;
 						$this->errors = $t_item_rel->errors;
 						return false;
 					}
+					
+					return $t_item_rel;
 					break;
 				case 2:		// many-to-one relationship
 					if ($this->tableName() == $va_rel_info['rel_keys']['one_table']) {
@@ -7865,6 +7893,7 @@ $pa_options["display_form_field_tips"] = true;
 								return false;
 							}
 						}
+						return $t_item_rel;
 					} else {
 						$this->setMode(ACCESS_WRITE);
 						$this->set($va_rel_info['rel_keys']['many_table_field'], $pn_rel_id);
@@ -7873,6 +7902,7 @@ $pa_options["display_form_field_tips"] = true;
 						if ($this->numErrors()) {
 							return false;
 						}
+						return $this;
 					}
 					break;
 				default:
@@ -7880,7 +7910,7 @@ $pa_options["display_form_field_tips"] = true;
 					break;
 			}
 		}		
-		return true;
+		return false;
 	}
 	# --------------------------------------------------------------------------------------------
 	/**
@@ -7896,7 +7926,7 @@ $pa_options["display_form_field_tips"] = true;
 	 * @param array $pa_options Array of additional options:
 	 *		allowDuplicates = if set to true, attempts to edit a relationship to match one that already exists will succeed. Default is false – duplicate relationships will not be created.
 	 *		setErrorOnDuplicate = if set to true, an error will be set if an attempt is made to create a duplicate relationship. Default is false – don't set error. editRelationship() will always return false when editing of a relationship fails, no matter how the setErrorOnDuplicate option is set.
-	 * @return boolean True on success, false on error.
+	 * @return BaseRelationshipModel Loaded relationship model instance on success, false on error.
 	 */
 	public function editRelationship($pm_rel_table_name_or_num, $pn_relation_id, $pn_rel_id, $pm_type_id=null, $ps_effective_date=null, $pa_source_info=null, $ps_direction=null, $pn_rank=null, $pa_options=null) {
 		if(!($va_rel_info = $this->_getRelationshipInfo($pm_rel_table_name_or_num))) { 
@@ -7951,6 +7981,7 @@ $pa_options["display_form_field_tips"] = true;
 					$this->errors = $t_item_rel->errors;
 					return false;
 				}
+				return $t_item_rel;
 			}
 		} else {
 			switch(sizeof($va_rel_info['path'])) {
@@ -7980,7 +8011,7 @@ $pa_options["display_form_field_tips"] = true;
 							return false;
 						}
 						
-						return true;
+						return $t_item_rel;
 					}
 				case 2:		// many-to-one relations
 					if ($this->tableName() == $va_rel_info['rel_keys']['one_table']) {
@@ -7993,6 +8024,7 @@ $pa_options["display_form_field_tips"] = true;
 								$this->errors = $t_item_rel->errors;
 								return false;
 							}
+							return $t_item_rel;
 						}
 						
 						if ($t_item_rel->load($pn_rel_id)) {
@@ -8004,6 +8036,7 @@ $pa_options["display_form_field_tips"] = true;
 								$this->errors = $t_item_rel->errors;
 								return false;
 							}
+							return $t_item_rel;
 						}
 					} else {
 						$this->setMode(ACCESS_WRITE);
@@ -8013,6 +8046,7 @@ $pa_options["display_form_field_tips"] = true;
 						if ($this->numErrors()) {
 							return false;
 						}
+						return $this;
 					}
 					break;
 				default:
@@ -8541,6 +8575,49 @@ $pa_options["display_form_field_tips"] = true;
 		}
 		
 		return false;
+	}
+	# --------------------------------------------------------------------------------------------
+	/**
+	 * Checks if any relationships exists between the currently loaded row and any other record.
+	 * Returns a list of tables for which relationships exist.
+	 *
+	 * @param array $pa_options Options are:
+	 *		None yet
+	 *
+	 * @return mixed Array of table names for which this row has at least one relationship, with keys set to table names and values set to the number of relationships per table.
+	 */
+	public function hasRelationships($pa_options=null) {
+		$va_one_to_many_relations = $this->_DATAMODEL->getOneToManyRelations($this->tableName());
+
+		if (is_array($va_one_to_many_relations)) {
+			$o_db = $this->getDb();
+			$vn_id = $this->getPrimaryKey();
+			$o_trans = $this->getTransaction();
+			
+			$va_tables = array();
+			foreach($va_one_to_many_relations as $vs_many_table => $va_info) {
+				foreach($va_info as $va_relationship) {
+					# do any records exist?
+					$t_related = $this->_DATAMODEL->getInstanceByTableName($vs_many_table, true);
+					$t_related->setTransaction($o_trans);
+					$vs_rel_pk = $t_related->primaryKey();
+					
+					$qr_record_check = $o_db->query($x="
+						SELECT {$vs_rel_pk}
+						FROM {$vs_many_table}
+						WHERE
+							({$va_relationship['many_table_field']} = ?)"
+					, (int)$vn_id);
+					
+					if (($vn_count = $qr_record_check->numRows()) > 0) {
+						$va_tables[$vs_many_table] = $vn_count;	
+					}
+				}
+			}
+			return $va_tables;
+		}
+		
+		return null;
 	}
 	# --------------------------------------------------------------------------------------------
 	/**
@@ -9776,60 +9853,111 @@ $pa_options["display_form_field_tips"] = true;
 	}
 	# --------------------------------------------------------------------------------------------
 	/**
-	 * Find row(s) with fields having values matching specific values. By default a model instance for the
-	 * first row matching the criteria is returned. A list of all matches can be optionally returned using the returnAsArray option.
+	 * Find row(s) with fields having values matching specific values. 
+	 * Results can be returned as model instances, numeric ids or search results (when possible).
+	 *
+	 * Exact matching is performed using values in $pa_values. Partial and pattern matching are not supported. Searches may include
+	 * multiple fields with boolean AND and OR. For example, you can find ca_objects rows with idno = 2012.001 and access = 1 by passing the
+	 * "boolean" option as "AND" and $pa_values set to array("idno" => "2012.001", "access" => 1).
+	 * You could find all rows with either the idno or the access values by setting "boolean" to "OR"
+	 *
+	 * BaseModel::find() is not a replacement for the SearchEngine. It is intended as a quick and convenient way to programatically fetch rows using
+	 * simple, clear cut criteria. If you need to fetch rows based upon an identifer or status value BaseModel::find() will be quicker and less code than
+	 * using the SearchEngine. For full-text searches, searches on attributes, or searches that require transformations or complex boolean operations use
+	 * the SearchEngine.
 	 *
 	 * @param array $pa_values An array of values to match. Keys are field names. This must be an array with at least one key-value pair where the key is a valid field name for the model.
 	 * @param array $pa_options Options are:
 	 *		transaction = optional Transaction instance. If set then all database access is done within the context of the transaction
-	 *		returnAsArray = if set an array of instances is returned with all matches, or matches up to the specified limit
-	 *		limit = if returnAsArray is set, limits number of returned matches
+	 *		returnAs = what to return; possible values are:
+	 *			searchResult			= a search result instance (aka. a subclass of BaseSearchResult), when the calling subclass is searchable (ie. <classname>Search and <classname>SearchResult classes are defined) 
+	 *			ids						= an array of ids (aka. primary keys)
+	 *			modelInstances			= an array of instances, one for each match. Each instance is the same class as the caller, a subclass of BaseModel 
+	 *			firstId					= the id (primary key) of the first match. This is the same as the first item in the array returned by 'ids'
+	 *			firstModelInstance		= the instance of the first match. This is the same as the first instance in the array returned by 'modelInstances'
+	 *			count					= the number of matches
 	 *
-	 * @return mixed An instance of the model with the first found match; if returnAsArray option is set then an array with some or all matches, subject to the limit option, is returned.
+	 *			The default is ids
+	 *	
+	 *		limit = if searchResult, ids or modelInstances is set, limits number of returned matches. Default is no limit
+	 *		boolean = determines how multiple field values in $pa_values are combined to produce the final result. Possible values are:
+	 *			AND						= find rows that match all criteria in $pa_values
+	 *			OR						= find rows that match any criteria in $pa_values
+	 *
+	 *			The default is AND
+	 *
+	 * @return mixed Depending upon the returnAs option setting, an array, subclass of BaseModel or integer may be returned.
 	 */
 	public static function find($pa_values, $pa_options=null) {
 		if (!is_array($pa_values) || (sizeof($pa_values) == 0)) { return null; }
-		
+		$ps_return_as = caGetOption('returnAs', $pa_options, 'ids', array('forceLowercase' => true, 'validValues' => array('searchResult', 'ids', 'modelInstances', 'firstId', 'firstModelInstance', 'count')));
+		$ps_boolean = caGetOption('boolean', $pa_options, 'and', array('forceLowercase' => true, 'validValues' => array('and', 'or')));
+			
 		$vs_table = get_called_class();
-		$o_instance = new $vs_table;
+		$t_instance = new $vs_table;
 		
 		$va_sql_wheres = array();
+		
+		//
+		// Convert type id
+		//
+		if (method_exists($this, "getTypeFieldName")) {
+			$vs_type_field_name = $this->getTypeFieldName();
+			if (isset($pa_values[$vs_type_field_name]) && !is_numeric($pa_values[$vs_type_field_name])) {
+				if ($vn_id = ca_lists::getItemID($this->getTypeListCode(), $pa_values[$vs_type_field_name])) {
+					$pa_values[$vs_type_field_name] = $vn_id;
+				}
+			}
+		}
+		
+		//
+		// Convert other intrinsic list references
+		//
+		foreach($pa_values as $vs_field => $vm_value) {
+			if($vs_list_code = $t_instance->getFieldInfo($vs_field, 'LIST_CODE')) {
+				if ($vn_id = ca_lists::getItemID($vs_list_code, $vm_value)) {
+					$pa_values[$vs_field] = $vn_id;
+				}
+			}
+		}
+		
 		foreach ($pa_values as $vs_field => $vm_value) {
+			if (is_array($vm_value)) { continue; }
+		
 			# support case where fieldname is in format table.fieldname
 			if (preg_match("/([\w_]+)\.([\w_]+)/", $vs_field, $va_matches)) {
 				if ($va_matches[1] != $vs_table) {
-					if ($o_instance->_DATAMODEL->tableExists($va_matches[1])) {
-						//$this->postError(715,_t("BaseModel '%1' cannot be accessed with this class", $matches[1]), "BaseModel->load()");
+					if ($t_instance->_DATAMODEL->tableExists($va_matches[1])) {
 						return false;
 					} else {
-						//$this->postError(715, _t("BaseModel '%1' does not exist", $matches[1]), "BaseModel->load()");
 						return false;
 					}
 				}
 				$vs_field = $matches[2]; # get field name alone
 			}
 
-			if (!$o_instance->hasField($vs_field)) {
-				//$this->postError(716,_t("Field '%1' does not exist", $vs_field), "BaseModel->load()");
+			if (!$t_instance->hasField($vs_field)) {
 				return false;
 			}
 
-			if ($o_instance->_getFieldTypeType($vs_field) == 0) {
+			if ($t_instance->_getFieldTypeType($vs_field) == 0) {
 				if (!is_numeric($vm_value) && !is_null($vm_value)) {
 					$vm_value = intval($vm_value);
 				}
 			} else {
-				$vm_value = $o_instance->quote($vs_field, is_null($vm_value) ? '' : $vm_value);
+				$vm_value = $t_instance->quote($vs_field, is_null($vm_value) ? '' : $vm_value);
 			}
 
 			if (is_null($vm_value)) {
-				$va_sql_wheres[] = "($vs_field IS NULL)";
+				$va_sql_wheres[] = "({$vs_field} IS NULL)";
 			} else {
 				if ($vm_value === '') { continue; }
-				$va_sql_wheres[] = "($vs_field = $vm_value)";
+				$va_sql_wheres[] = "({$vs_field} = {$vm_value})";
 			}
 		}
-		$vs_sql = "SELECT * FROM {$vs_table} WHERE ".join(" AND ", $va_sql_wheres);
+		if(!sizeof($va_sql_wheres)) { return null; }
+		$vs_deleted_sql = ($t_instance->hasField('deleted')) ? '(deleted = 0) AND ' : '';
+		$vs_sql = "SELECT * FROM {$vs_table} WHERE {$vs_deleted_sql} (".join(" {$ps_boolean} ", $va_sql_wheres).")";
 		
 		if (isset($pa_options['transaction']) && ($pa_options['transaction'] instanceof Transaction)) {
 			$o_db = $pa_options['transaction']->getDb();
@@ -9840,26 +9968,60 @@ $pa_options["display_form_field_tips"] = true;
 		$vn_limit = (isset($pa_options['limit']) && ((int)$pa_options['limit'] > 0)) ? (int)$pa_options['limit'] : null;
 		
 		$qr_res = $o_db->query($vs_sql);
-		
 		$vn_c = 0;
-		$va_instances = array();
+	
+		$vs_pk = $t_instance->primaryKey();
 		
-		$vs_pk = $o_instance->primaryKey();
-		
-		while($qr_res->nextRow()) {
-			$o_instance = new $vs_table;
-			if ($o_instance->load($qr_res->get($vs_pk))) {
-				$va_instances[] = $o_instance;
-				$vn_c++;
-				if ($vn_limit && ($vn_c >= $vn_limit)) { break; }
-			}
+		switch($ps_return_as) {
+			case 'firstmodelinstance':
+				while($qr_res->nextRow()) {
+					$t_instance = new $vs_table;
+					if ($t_instance->load($qr_res->get($vs_pk))) {
+						return $t_instance;
+					}
+				}
+				return null;
+				break;
+			case 'modelinstances':
+				$va_instances = array();
+				while($qr_res->nextRow()) {
+					$t_instance = new $vs_table;
+					if ($t_instance->load($qr_res->get($vs_pk))) {
+						$va_instances[] = $t_instance;
+						$vn_c++;
+						if ($vn_limit && ($vn_c >= $vn_limit)) { break; }
+					}
+				}
+				break;
+			case 'firstid':
+				if($qr_res->nextRow()) {
+					return $qr_res->get($vs_pk);
+				}
+				return null;
+				break;
+			case 'count':
+				return $qr_res->numRows();
+				break;
+			default:
+			case 'ids':
+			case 'searchresult':
+				$va_ids = array();
+				while($qr_res->nextRow()) {
+					$va_ids[] = $qr_res->get($vs_pk);
+					$vn_c++;
+					if ($vn_limit && ($vn_c >= $vn_limit)) { break; }
+				}
+				if ($ps_return_as == 'searchresult') {
+					if (sizeof($va_ids) > 0) {
+						return $t_instance->makeSearchResult($t_instance->tableName(), $va_ids);
+					}
+					return null;
+				} else {
+					return $va_ids;
+				}
+				break;
 		}
-		
-		if (isset($pa_options['returnAsArray']) && $pa_options['returnAsArray']) {
-			return $va_instances;
-		} else {
-			return array_shift($va_instances);
-		}
+		return null;
 	}
 	# --------------------------------------------------------------------------------------------
 	/**

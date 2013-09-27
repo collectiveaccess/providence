@@ -355,6 +355,9 @@ class ca_tour_stops extends BundlableLabelableBaseModelWithAttributes {
 	 	if (!$vn_pk) { return null; }		// have to load a row first
 	 	
 	 	$vs_template = $this->getAppConfig()->get('ca_tour_stops_hierarchy_browser_display_settings');
+	 	if (!$vs_template) {
+	 		$vs_template = "^ca_tour_stops.preferred_labels.name"; 
+	 	}
 	 	
 	 	$vs_label = $this->getLabelForDisplay(false);
 	 	$vs_hier_fld = $this->getProperty('HIERARCHY_ID_FLD');
@@ -373,12 +376,12 @@ class ca_tour_stops extends BundlableLabelableBaseModelWithAttributes {
 	 	$va_children = $t_stop->getHierarchyChildren(null, array('idsOnly' => true));
 	 	$va_stop_hierarchy_root = array(
 	 		$t_stop->get($vs_hier_fld) => array(
-	 			'stop_id' => $vn_pk,
+	 			'item_id' => $vn_pk,
 	 			'name' => $vs_name = caProcessTemplateForIDs($vs_template, 'ca_tour_stops', array($vn_pk)),
 	 			'hierarchy_id' => $vn_hier_id,
 	 			'children' => sizeof($va_children)
 	 		),
-	 		'stop_id' => $vn_pk,
+	 		'item_id' => $vn_pk,
 			'name' => $vs_name,
 			'hierarchy_id' => $vn_hier_id,
 			'children' => sizeof($va_children)

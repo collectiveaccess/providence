@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2008-2012 Whirl-i-Gig
+ * Copyright 2008-2013 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -35,7 +35,7 @@
    */
 
 require_once(__CA_LIB_DIR__."/ca/IBundleProvider.php");
-require_once(__CA_LIB_DIR__."/ca/BundlableLabelableBaseModelWithAttributes.php");
+require_once(__CA_LIB_DIR__."/ca/RepresentableBaseModel.php");
 
 
 BaseModel::$s_ca_models_definitions['ca_entities'] = array(
@@ -182,10 +182,10 @@ BaseModel::$s_ca_models_definitions['ca_entities'] = array(
  	)
 );
 
-class ca_entities extends BundlableLabelableBaseModelWithAttributes implements IBundleProvider {
-	# ---------------------------------
+class ca_entities extends RepresentableBaseModel implements IBundleProvider {
+	# ------------------------------------------------------
 	# --- Object attribute properties
-	# ---------------------------------
+	# ------------------------------------------------------
 	# Describe structure of content object's properties - eg. database fields and their
 	# associated types, what modes are supported, et al.
 	#
@@ -319,6 +319,7 @@ class ca_entities extends BundlableLabelableBaseModelWithAttributes implements I
 	# ------------------------------------------------------
 	protected function initLabelDefinitions() {
 		parent::initLabelDefinitions();
+		$this->BUNDLES['ca_object_representations'] = array('type' => 'related_table', 'repeating' => true, 'label' => _t('Media representations'));
 		$this->BUNDLES['ca_entities'] = array('type' => 'related_table', 'repeating' => true, 'label' => _t('Related entities'));
 		$this->BUNDLES['ca_places'] = array('type' => 'related_table', 'repeating' => true, 'label' => _t('Related places'));
 		$this->BUNDLES['ca_objects'] = array('type' => 'related_table', 'repeating' => true, 'label' => _t('Related objects'));
@@ -381,6 +382,9 @@ class ca_entities extends BundlableLabelableBaseModelWithAttributes implements I
 	 *
 	 */
 	public function getIDsByLabel($pa_label_values, $pn_parent_id=null, $pn_type_id=null) {
+		if (!isset($pa_label_values['forename']) && !isset($pa_label_values['surname']) && isset($pa_label_values['displayname'])) {
+			$pa_label_values = DataMigrationUtils::splitEntityName($pa_label_values['displayname']);
+		}
 		return $this->getEntityIDsByName($pa_label_values['forename'], $pa_label_values['surname'], $pn_parent_id, $pn_type_id);
 	}
 	# ------------------------------------------------------

@@ -37,7 +37,7 @@
 		public function __construct() {
 			$this->ops_name = 'tourMaker';
 			$this->ops_title = _t('Tour maker');
-			$this->ops_description = _t('Created tours as required');
+			$this->ops_description = _t('Creates tour records as required during import.');
 			
 			parent::__construct();
 		}
@@ -59,75 +59,88 @@
 		 */
 		public function refine(&$pa_destination_data, $pa_group, $pa_item, $pa_source_data, $pa_options=null) {
 			global $g_ui_locale_id;
+			$o_log = (isset($pa_options['log']) && is_object($pa_options['log'])) ? $pa_options['log'] : null;
+			$o_trans = (isset($pa_options['transaction']) && ($pa_options['transaction'] instanceof Transaction)) ? $pa_options['transaction'] : null;
 				
 			$va_group_dest = explode(".", $pa_group['destination']);
 			$vs_terminal = array_pop($va_group_dest);
 			$pm_value = trim($pa_source_data[$pa_item['source']]);	// tour name
 			
-			$o_trans = (isset($pa_options['transaction']) && ($pa_options['transaction'] instanceof Transaction)) ? $pa_options['transaction'] : null;
-			
-			if (!$pm_value) { 
-				// TODO: log this
-				return null;
+			if (is_array($pm_value)) {
+				$va_tours = $pm_value;	// for input formats that support repeating values
+			} else {
+				$va_tours = array($pm_value);
 			}
 			
-			// Does tour already exist?
-			if ($vn_tour_id = caGetTourID($pm_value)) { return $vn_tour_id; }
-			
-			// Set tour_type
-			if (
-				($vs_type_opt = $pa_item['settings']['tourMaker_tourType'])
-			) {
-				
-				if (!($vs_type = BaseRefinery::parsePlaceholder($vs_type_opt, $pa_source_data, $pa_item))) {
-					if($vs_type_opt = $pa_item['settings']['tourMaker_tourTypeDefault']) {
-						$vs_type = BaseRefinery::parsePlaceholder($vs_type_opt, $pa_source_data, $pa_item);
-					}
+			foreach($va_tours as $pm_value) {
+				if (!$pm_value) { 
+					if ($o_log) { $o_log->logWarn(_t('[tourMakerRefinery] No value set for tour')); }
+					return null;
 				}
-			}
 			
-			// Create tour
-			$t_tour = new ca_tours();
-			$t_tour->setMode(ACCESS_WRITE);
-			if ($o_trans) { $t_tour->setTransaction($o_trans); }
-			$t_tour->set('type_id', $vs_type);
-			if (is_array($pa_item['settings']['tourMaker_attributes'])) {
-				foreach($pa_item['settings']['tourMaker_attributes'] as $vs_fld => $vs_val) {
-					if (is_array($vs_val)) { continue; }
-					if ($t_tour->hasField($vs_fld)) {
-						$t_tour->set($vs_fld, BaseRefinery::parsePlaceholder($vs_val, $pa_source_data, $pa_item));
-						unset($pa_item['settings']['tourMaker_attributes'][$vs_fld]);
-					}
+				// Does tour already exist?
+				if ($vn_tour_id = caGetTourID($pm_value)) { return $vn_tour_id; }
+			
+				// Set tour_type
+				$vs_type = null;
+				if (
+					($vs_type_opt = $pa_item['settings']['tourMaker_tourType'])
+				) {
+					$vs_type = BaseRefinery::parsePlaceholder($vs_type_opt, $pa_source_data, $pa_item);
 				}
-			}
+				if((is_null($vs_type) || !$vs_type) && ($vs_type_opt = $pa_item['settings']['tourMaker_tourTypeDefault'])) {
+					$vs_type = BaseRefinery::parsePlaceholder($vs_type_opt, $pa_source_data, $pa_item);
+				}
 			
-			if (!$t_tour->insert()) {
-				// TODO: log this
-				return null;
-			}
+				if ((!isset($vs_type) || !$vs_type) && $o_log) {
+					$o_log->logWarn(_t('[tourMakerRefinery] No tour type is set for tour %1', $pm_value));
+				}
 			
-			$t_tour->addLabel(
-				array('name' => $pm_value), $g_ui_locale_id, null, true
-			);
-			
-			if (is_array($pa_item['settings']['tourMaker_attributes'])) {
-				foreach($pa_item['settings']['tourMaker_attributes'] as $vs_element => $va_attr) {
-					if (!is_array($va_attr)) {
-						$va_attr = array(
-							$vs_element => BaseRefinery::parsePlaceholder($va_attr, $pa_source_data, $pa_item),
-							'locale_id' => $g_ui_locale_id
-						);
-					} else {
-						foreach($va_attrs as $vs_k => $vs_v) {
-							$va_attr[$vs_k] = BaseRefinery::parsePlaceholder($vs_v, $pa_source_data, $pa_item);
+				// Create tour
+				$t_tour = new ca_tours();
+				$t_tour->setMode(ACCESS_WRITE);
+				if ($o_trans) { $t_tour->setTransaction($o_trans); }
+				$t_tour->set('type_id', $vs_type);
+				if (is_array($pa_item['settings']['tourMaker_attributes'])) {
+					foreach($pa_item['settings']['tourMaker_attributes'] as $vs_fld => $vs_val) {
+						if (is_array($vs_val)) { continue; }
+						if ($t_tour->hasField($vs_fld)) {
+							$t_tour->set($vs_fld, BaseRefinery::parsePlaceholder($vs_val, $pa_source_data, $pa_item));
+							unset($pa_item['settings']['tourMaker_attributes'][$vs_fld]);
 						}
-						$va_attr['locale_id'] = $g_ui_locale_id;
 					}
-					$t_tour->addAttribute($va_attr, $vs_element);
 				}
-				if (!$t_tour->update()) {
-					// TODO: log this
-					print_R($t_tour->getErrors());
+			
+				if (!$t_tour->insert()) {
+					if ($o_log) { $o_log->logError(_t('[tourMakerRefinery] Could not create tour %1: %2', $pm_value, join("; ", $t_tour->getErrors()))); }
+					return null;
+				}
+			
+				$t_tour->addLabel(
+					array('name' => $pm_value), $g_ui_locale_id, null, true
+				);
+				if ($t_tour->numErrors() > 0) {
+					if ($o_log) { $o_log->logError(_t('[tourMakerRefinery] Could not add label for tour %1: %2', $pm_value, join("; ", $t_tour->getErrors()))); }
+				}
+			
+				if (is_array($pa_item['settings']['tourMaker_attributes'])) {
+					foreach($pa_item['settings']['tourMaker_attributes'] as $vs_element => $va_attr) {
+						if (!is_array($va_attr)) {
+							$va_attr = array(
+								$vs_element => BaseRefinery::parsePlaceholder($va_attr, $pa_source_data, $pa_item),
+								'locale_id' => $g_ui_locale_id
+							);
+						} else {
+							foreach($va_attrs as $vs_k => $vs_v) {
+								$va_attr[$vs_k] = BaseRefinery::parsePlaceholder($vs_v, $pa_source_data, $pa_item);
+							}
+							$va_attr['locale_id'] = $g_ui_locale_id;
+						}
+						$t_tour->addAttribute($va_attr, $vs_element);
+					}
+					if (!$t_tour->update()) {
+						if ($o_log) { $o_log->logError(_t('[tourMakerRefinery] Could not save data for tour %1: %2', $pm_value, join("; ", $t_tour->getErrors()))); }
+					}
 				}
 			}
 			

@@ -216,7 +216,7 @@ class SolrConfigurationSettings extends ASearchConfigurationSettings {
 			'file_locking' => true,				/* cache corruption avoidance */
 			'read_control' => false,			/* no read control */
 			'file_name_prefix' => 'ca_cache',	/* prefix of cache files */
-			'cache_file_umask' => 0777			/* permissions of cache files */
+			'cache_file_perm' => 0777			/* permissions of cache files */
 		);
 
 		$vo_cache = Zend_Cache::factory('Core', 'File', $va_frontend_options, $va_backend_options);

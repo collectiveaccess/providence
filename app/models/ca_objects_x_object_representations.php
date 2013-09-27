@@ -33,7 +33,7 @@
  /**
    *
    */
-require_once(__CA_LIB_DIR__.'/core/BaseRelationshipModel.php');
+require_once(__CA_LIB_DIR__.'/ca/BaseRepresentationRelationship.php');
 require_once(__CA_MODELS_DIR__."/ca_objects.php");
 require_once(__CA_LIB_DIR__."/core/Db/Transaction.php");
 
@@ -80,7 +80,7 @@ BaseModel::$s_ca_models_definitions['ca_objects_x_object_representations'] = arr
  	)
 );
 
-class ca_objects_x_object_representations extends BaseRelationshipModel {
+class ca_objects_x_object_representations extends BaseRepresentationRelationship {
 	# ---------------------------------
 	# --- Object attribute properties
 	# ---------------------------------
@@ -189,188 +189,6 @@ class ca_objects_x_object_representations extends BaseRelationshipModel {
 	# ------------------------------------------------------
 	public function __construct($pn_id=null) {
 		parent::__construct($pn_id);	# call superclass constructor
-	}
-	# ------------------------------------------------------
-	public function insert($pa_options=null) {
-		$t_object = new ca_objects();
-		$o_trans = new Transaction();
-		$o_db = $o_trans->getDb();
-		$this->setTransaction($o_trans);
-		
-		$vn_object_id = $this->get('object_id');
-		if (!$t_object->load($vn_object_id)) { 
-			// invalid object
-			$this->postError(720, _t("Related object does not exist"), "ca_objects_x_object_representations->insert()");
-			return false;
-		}
-		if (!$this->get('is_primary')) {
-			// force is_primary to be set if no other represention is so marked 
-		
-			// is there another rep for this object marked is_primary?
-			$qr_res = $o_db->query("
-				SELECT oxor.relation_id
-				FROM ca_objects_x_object_representations oxor
-				INNER JOIN ca_object_representations AS o_r ON o_r.representation_id = oxor.representation_id
-				WHERE
-					oxor.object_id = ? AND oxor.is_primary = 1 AND o_r.deleted = 0
-			", (int)$vn_object_id);
-			if(!$qr_res->nextRow()) {
-				// nope - force this one to be primary
-				$this->set('is_primary', 1);
-			}
-			
-			$vb_rc = parent::insert($pa_options);
-			$o_trans->commitTransaction();
-			return $vb_rc;
-		} else {
-			// unset other reps is_primary field
-			//$o_db->beginTransaction();
-			
-			$o_db->query("
-				UPDATE ca_objects_x_object_representations
-				SET is_primary = 0
-				WHERE
-					object_id = ?
-			", (int)$vn_object_id);
-			
-			if (!$vb_rc = parent::insert($pa_options)) {
-				$o_trans->rollbackTransaction();
-			} else {
-				$o_trans->commitTransaction();
-			}
-			
-			return $vb_rc;
-		}
-	}
-	# ------------------------------------------------------
-	public function update($pa_options=null) {
-		$t_object = new ca_objects();
-		$o_trans = new Transaction();
-		$o_db = $o_trans->getDb();
-		$this->setTransaction($o_trans);
-		
-		$vn_object_id = $this->get('object_id');
-		if (!$t_object->load($vn_object_id)) { 
-			// invalid object
-			$this->postError(720, _t("Related object does not exist"), "ca_objects_x_object_representations->update()");
-			return false;
-		}
-		
-		if ($this->changed('is_primary')) {
-			if (!$this->get('is_primary')) {
-				
-				// force is_primary to be set if no other represention is so marked 
-				// is there another rep for this object marked is_primary?
-				$qr_res = $o_db->query("
-					SELECT oxor.relation_id
-					FROM ca_objects_x_object_representations oxor
-					INNER JOIN ca_object_representations AS o_r ON o_r.representation_id = oxor.representation_id
-					WHERE
-						oxor.object_id = ? AND oxor.is_primary = 1 AND o_r.deleted = 0 AND oxor.relation_id <> ?
-				", (int)$vn_object_id, (int)$this->getPrimaryKey());
-				if(!$qr_res->nextRow()) {
-					// nope - force one to be primary
-					//$this->set('is_primary', 1);
-					$qr_res = $o_db->query("
-						SELECT oxor.relation_id
-						FROM ca_objects_x_object_representations oxor
-						INNER JOIN ca_object_representations AS o_r ON o_r.representation_id = oxor.representation_id
-						WHERE
-							oxor.object_id = ? AND oxor.is_primary = 0 AND o_r.deleted = 0 AND oxor.relation_id <> ?
-						ORDER BY oxor.rank, oxor.relation_id
-					", (int)$vn_object_id, (int)$this->getPrimaryKey());
-					if ($qr_res->nextRow()) {
-						$o_db->query("
-							UPDATE ca_objects_x_object_representations
-							SET is_primary = 1
-							WHERE
-								relation_id = ?
-						", (int)$qr_res->get('relation_id'));
-						if (!($vb_rc = parent::update($pa_options))) {
-							$o_trans->rollbackTransaction();
-						} else {
-							$o_trans->commitTransaction();
-						}
-					}
-				}
-				
-				return parent::update($pa_options);
-			} else {
-				// unset other reps is_primary field
-				$o_db->query("
-					UPDATE ca_objects_x_object_representations
-					SET is_primary = 0
-					WHERE
-						object_id = ?
-				", (int)$vn_object_id);
-				if (!($vb_rc = parent::update($pa_options))) {
-					$o_trans->rollbackTransaction();
-				} else {
-					$o_trans->commitTransaction();
-				}
-				return $vb_rc;
-			}
-		} else {
-			$vb_rc = parent::update($pa_options);
-			$o_trans->commitTransaction();
-			return $vb_rc;
-		}
-	}
-	# ------------------------------------------------------
-	public function delete($pb_delete_related=false, $pa_options=null, $pa_fields=null, $pa_table_list=null) {
-		$t_object = new ca_objects();
-		
-		$vn_object_id = $this->get('object_id');
-		if (!$t_object->load($vn_object_id)) { 
-			// invalid object
-			$this->postError(720, _t("Related object does not exist"), "ca_objects_x_object_representations->delete()");
-			return false;
-		}
-		
-		$o_trans = new Transaction();
-		$this->setTransaction($o_trans);
-		if($vb_rc = parent::delete($pb_delete_related, $pa_options, $pa_fields, $pa_table_list)) {
-		
-			if ($this->get('is_primary')) {
-				$o_db = $this->getDb();
-			
-				// make some other row primary
-				$qr_res = $o_db->query("
-					SELECT oxor.relation_id
-					FROM ca_objects_x_object_representations oxor
-					INNER JOIN ca_object_representations AS o_r ON o_r.representation_id = oxor.representation_id
-					WHERE
-						oxor.object_id = ? AND oxor.is_primary = 0 AND o_r.deleted = 0 AND oxor.relation_id <> ?
-					ORDER BY
-						oxor.rank, oxor.relation_id
-				", (int)$vn_object_id, (int)$this->getPrimaryKey());
-				if($qr_res->nextRow()) {
-					// nope - force this one to be primary
-					$t_rep_link = new ca_objects_x_object_representations();
-					$t_rep_link->setTransaction($o_trans);
-					if ($t_rep_link->load($qr_res->get('relation_id'))) {
-						$t_rep_link->setMode(ACCESS_WRITE);
-						$t_rep_link->set('is_primary', 1);
-						$t_rep_link->update();
-					
-						if ($t_rep_link->numErrors()) {
-							$this->postError(2700, _t('Could not update primary flag for representation: %1', join('; ', $t_rep_link->getErrors())), 'ca_objects_x_object_representations->delete()');
-							$o_trans->rollbackTransaction();
-							return false;
-						}
-					} else {
-						$this->postError(2700, _t('Could not load object-representation link'), 'ca_objects_x_object_representations->delete()');
-						$o_trans->rollbackTransaction();
-						return false;
-					}				
-				}
-			} 
-			$o_trans->commitTransaction();
-		} else {
-			$o_trans->rollbackTransaction();
-		}
-		
-		return $vb_rc;
 	}
 	# ------------------------------------------------------
 }

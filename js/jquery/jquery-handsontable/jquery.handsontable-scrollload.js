@@ -146,5 +146,5 @@ function HandsontableScrollLoad() {
 }
 var htScrollLoad = new HandsontableScrollLoad();
 
-Handsontable.PluginHooks.push('afterInit', htScrollLoad.afterInit);
-Handsontable.PluginHooks.push('scrollDone', htScrollLoad.scrollDone);
+Handsontable.PluginHooks.add('afterInit', htScrollLoad.afterInit);
+Handsontable.PluginHooks.add('scrollDone', htScrollLoad.scrollDone);

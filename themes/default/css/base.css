@@ -1379,11 +1379,13 @@ div.search-hier-browser-box {
 .labelInfo div{
 	margin-top:5px;
 }
-.labelInfo .form-button{
+/* 
+	.labelInfo .form-button{
 	float:right;
 	margin: 0px;
 	padding: 0px;
 }
+*/
 
 .labelLocale {
 	font-size: 8px;
@@ -1785,34 +1787,6 @@ input.searchSetsTextInput {
 	overflow:auto;
 }
 
-/*** OBJECT REPRESENTATION FORM ELEMENTS ***/
-table.objectRepresentationListItem {
-	width: 100%;
-}
-
-.objectRepresentationListItem a {
-	font-weight:normal;
-	text-decoration:none;
-
-}
-
-td.objectRepresentationListItemImage {
-	width: 190px;
-}
-.objectRepresentationListItemImageThumb {
-	float:left;
-}
-
-select.objectRepresentationStatus {
-	width: 100px;
-	font-size: 11px;
-}
-
-select.objectRepresentationType {
-	width: 80px;
-	font-size: 11px;
-}
-
 /* object representation scroll window in object editor info widget */
 #inspectorInfoRepScrollingViewer {
 	width:170px;
@@ -2162,7 +2136,7 @@ table.attributeListItem {
 	
 	-moz-border-radius-: 10px; 
 	-webkit-border-radius: 10px;
-	-moz-border-radius: 10px; 
+	border-radius: 10px;	
 }
 
 a.editorFieldListLink {
@@ -2222,7 +2196,7 @@ a.editorFieldListLink {
 	
 	-moz-border-radius-: 10px; 
 	-webkit-border-radius: 10px;
-	-moz-border-radius: 10px; 
+	border-radius: 10px;	
 }
 
 a.caHierarchyOverviewLink {
@@ -2259,15 +2233,177 @@ a.caHierarchyOverviewLink {
 /*** EDITOR FORMS ***/
 
 /* formats object representation extracted metadata in a ca_object_representations bundle */
-div.editorObjectRepresentationMetadata {
+
+div.caObjectRepresentationMetadata {
+	text-align:left; 
+	display: none;
+	padding: 3px;
+}
+
+div.caObjectRepresentationMetadata h3 {
+	font-size: 12px;
+	font-weight: bold;
+	display: inline;
+}
+
+div.caObjectRepresentationMD5Display h3 {
+	font-size: 12px;
+	font-weight: bold;
+	display: inline;
+}
+
+div.caObjectRepresentationSourceDisplay h3 {
+	font-size: 12px;
+	font-weight: bold;
+	display: inline;
+}
+
+div.caObjectRepresentationListInfoSubDisplay {
+	font-size: 10px;
+	font-weight: normal;
+	padding-top: 3px;
+}
+
+div.caObjectRepresentationListInfoSubDisplay h3 {
+	font-size: 10px;
+	font-weight: bold;
+	display: inline;
+}
+
+a.caObjectRepresentationListInfoSubDisplayFilename {
+	text-decoration: none;
+	font-style: italic;
+}
+
+div.caObjectRepresentationMetadataDisplay {
+	font-size: 10px;
+	font-weight: normal;
+}
+
+a.caObjectRepresentationMetadataButton {
+	text-decoration: none;
+	font-size: 11px;
+	font-weight: bold;
+	margin-right: 20px;
+}
+
+div.caObjectRepresentationMetadata {
 	background: #fbfbfb;
 	font-size: 10px;
 	width: 680px;
+	height: 200px;
 	overflow: auto;
-	padding: 12px;
+	padding: 8px;
 	line-height: 14px;
 	font-weight: normal;
 	color: #000000;
+	
+	background-color: #eee;
+	-moz-border-radius-: 10px; 
+	-webkit-border-radius: 10px;
+	border-radius: 10px;	
+}
+
+span.caObjectRepresentationPrimaryDisplay {
+	color: #cc0000;
+	font-size: 10px;
+	font-weight: bold;
+}
+
+div.caObjectRepresentationPrimaryIndicator {
+	color: #cc0000;
+	font-size: 10px;
+	font-weight: bold;
+	font-style: italic;
+	display: none;
+}
+
+div.caObjectRepresentationChangeIndicator {
+	color: #cc0000;
+	font-size: 10px;
+	font-weight: bold;
+	font-style: italic;
+	display: none;
+}
+
+.caObjectRepresentationListItemImageThumb {
+	float:left;
+	width: 120px;
+}
+.caObjectRepresentationListItemImageThumb a img {
+	margin-left: auto; margin-right: auto; display: block;
+}
+
+div.caObjectRepresentationListInfo {
+	width:100%; 
+	overflow:hidden; 
+	padding:0px; 
+	margin:0px;
+	
+	font-weight:bold; 
+	font-size: 12px;
+	color:#000000;
+}
+
+div.caObjectRepresentationListInfo a {
+	font-weight:bold; 
+	font-size: 14px;
+	color:#000000;
+	text-decoration: none;
+}
+
+div.caObjectRepresentationListActionButton {
+	margin: 10px 0 0 0; 
+	font-weight: normal; 
+	font-size: 10px;
+}
+
+div.caObjectRepresentationListActionButton span a {
+	text-decoration: none;
+}
+
+div.caObjectRepresentationDetailEditorElement {
+	float: left;
+	font-size: 10px;
+	margin-right: 5px;
+}
+
+div.caObjectRepresentationDetailEditorElement div select{
+	font-size: 10px;
+}
+
+div.caObjectRepresentationDetailEditorHeading {
+	font-size: 11px;
+	font-weight: bold;
+}
+
+div.caObjectRepresentationDetailEditorContainer{
+	display: none; 
+	width: 400px;
+	padding: 10px;
+	background-color: #dedede;
+	
+	-moz-border-radius-: 10px; 
+	-webkit-border-radius: 10px;
+	border-radius: 10px;	
+}
+
+div.caObjectRepresentationNewDetailEditorContainer {
+	display: none; 
+	width: 540px;
+	padding: 10px;
+	background-color: #dedede;
+	
+	-moz-border-radius-: 10px; 
+	-webkit-border-radius: 10px;
+	border-radius: 10px;
+}
+
+div.caObjectRepresentationDetailEditorDoneButton {
+	float: none;
+	clear: both;
+	width: 100%;
+	text-align: center;
 }
 
 /* formats object representation extracted metadata for multifile metadata display */
@@ -4181,7 +4317,7 @@ div.roundedRel {
 	min-height: 18px;
 	-moz-border-radius: 10px; 
 	-webkit-border-radius: 10px;
-	-moz-border-radius: 10px; 
+	border-radius: 10px; 
 	-webkit-border-bottom-right-radius: 10px;
 	border-radius: 10px;
 }
@@ -4193,7 +4329,7 @@ div.listRel {
 	margin-bottom: 5px;
 	-moz-border-radius: 5px; 
 	-webkit-border-radius: 5px;
-	-moz-border-radius: 5px; 
+	border-radius: 5px; 
 	-webkit-border-bottom-right-radius: 5px;
 	width: 690px;	
 	border: 1px solid #ccc;
@@ -4233,17 +4369,21 @@ div.listRel {
 	
 	-moz-border-radius: 6px; 
 	-webkit-border-radius: 6px;
-	-moz-border-radius: 6px; 
+	border-radius: 6px; 
 	-webkit-border-bottom-right-radius: 6px;
 	border-radius: 6px;
 }
 
-.roundedRel .caDeleteItemButton {
+.roundedRel .caDeleteItemButton, .roundedRel .caInterstitialEditButton {
 	position: relative;
 	top: 3px;
 }
 
-.listRel .caDeleteItemButton {
+.listRel .caDeleteItemButton, .listRel .caInterstitialEditButton {
+	float: right;
+}
+
+.listRel .caInterstitialEditButton {
 	float: right;
 }
 
@@ -4331,6 +4471,12 @@ div.preferenceSectionDivider {
 	font-size: 12px;
 }
 
+.batchProcessingReportSectionWarning {
+	font-style: italic;
+	font-size: 11px;
+	margin: 10px 0 10px 0;
+}
+
 #batchProcessingReport ol, #batchProcessingReport ul {
 	line-height: 1.3em;
 }
@@ -4365,8 +4511,6 @@ a.caDeleteLabelButton {
 	top: 100px; left: 50%; margin: 0 0 0 -450px;
 	background: #ffffff;
 	padding: 15px;
-	-moz-border-radius: 10px; 
-	-webkit-border-radius: 10px;
 	-moz-border-radius: 10px; 
 	-webkit-border-radius: 10px;
 	border-radius: 10px;
@@ -5209,14 +5353,16 @@ div.quickAddFormTopPadding {
 	height: 40px;
 }
 
-div.quickAddErrorContainer {
-	width: 860px;
-	display: none;
-}
-
 div.quickAddDialogHeader {
 	position: fixed; 
 	width: 890px; 
+	z-index:33000;
+}
+
+div.quickAddErrorContainer {
+	position: fixed; 
+	width: 890px;
+	display: none;
 	z-index:33000;
 }
 

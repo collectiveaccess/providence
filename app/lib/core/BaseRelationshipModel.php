@@ -34,13 +34,23 @@
   *
   */
  
- require_once(__CA_LIB_DIR__.'/core/BaseModel.php');
+ require_once(__CA_LIB_DIR__.'/ca/BundlableLabelableBaseModelWithAttributes.php');
  require_once(__CA_LIB_DIR__.'/core/IRelationshipModel.php');
  require_once(__CA_APP_DIR__.'/helpers/htmlFormHelpers.php');
  require_once(__CA_MODELS_DIR__.'/ca_relationship_types.php');
  require_once(__CA_MODELS_DIR__.'/ca_acl.php');
  
-	class BaseRelationshipModel extends BaseModel implements IRelationshipModel {
+	class BaseRelationshipModel extends BundlableLabelableBaseModelWithAttributes implements IRelationshipModel {
+		# ------------------------------------------------------
+		
+		# ------------------------------------------------------
+		# Search
+		# ------------------------------------------------------
+		//
+		// We use a single search class for all relationship tables
+		//
+		protected $SEARCH_CLASSNAME = 'InterstitialSearch';
+		protected $SEARCH_RESULT_CLASSNAME = 'InterstitialSearchResult';
 		# ------------------------------------------------------
 		/**
 		 * 
@@ -241,7 +251,7 @@
 		/**
 		 * Returns an HTML <select> element of relationship types with values=type_id and option text = to the typename
 		 */
-		public function getRelationshipTypesAsHTMLSelect($ps_orientation, $pn_sub_type_left_id=null, $pn_sub_type_right_id=null) {
+		public function getRelationshipTypesAsHTMLSelect($ps_orientation, $pn_sub_type_left_id=null, $pn_sub_type_right_id=null, $pa_options=null) {
 			$vs_left_table_name = $this->getLeftTableName();
 			$vs_right_table_name = $this->getRightTableName();
 			if (!in_array($ps_orientation, array($vs_left_table_name, $vs_right_table_name))) { $ps_orientation = $vs_left_table_name; }
@@ -264,7 +274,9 @@
 				$va_options[str_repeat("&#160;&#160;&#160;", $vn_l-1).(($ps_orientation == $vs_left_table_name) ? $va_type['typename'] : $va_type['typename_reverse'])] = $va_type['type_id'];
 			}
 			
-			return caHTMLSelect('type_id', $va_options);
+			$vs_name = caGetOption('name', $pa_options, 'type_id');
+			
+			return caHTMLSelect($vs_name, $va_options, $pa_options);
 		}
 		# ------------------------------------------------------
 		/**
@@ -558,6 +570,38 @@
 			}
 			
 			return $va_types_to_return;
+		}
+		
+		# ------------------------------------------------------
+		/**
+		 * 
+		 */
+		public function getLeftTableInstance() {
+			$t_left = $this->getAppDatamodel()->getInstanceByTableName($this->RELATIONSHIP_LEFT_TABLENAME, true);
+			
+			if ($t_left && $t_left->load($this->get($this->getLeftTableFieldName()))) {
+				return $t_left;
+			}
+			return null;
+		}
+		# ------------------------------------------------------
+		/**
+		 * 
+		 */
+		public function getRightTableInstance() {
+			$t_right = $this->getAppDatamodel()->getInstanceByTableName($this->RELATIONSHIP_RIGHT_TABLENAME, true);
+			
+			if ($t_right && $t_right->load($this->get($this->getRightTableFieldName()))) {
+				return $t_right;
+			}
+			return null;
+		}
+		# ------------------------------------------------------
+		/**
+		 * 
+		 */
+		public function getTypeID() {
+			return BaseModel::get('type_id');
 		}
 		# ------------------------------------------------------
 	}

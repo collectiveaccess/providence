@@ -184,12 +184,12 @@ class WLPlugMediaOffice Extends BaseMediaPlugin Implements IWLPlugMedia {
 			$va_status['available'] = true;
 		}
 		
-		if (!($this->opb_abiword_installed)) { 
-			$va_status['warnings'][] = _t("ABIWord cannot be found: indexing of text in non-XML Microsoft Word files will not be performed; you can obtain ABIWord at http://www.abisource.com/");
-		}
-		
 		if (!($this->opb_libre_office_installed)) { 
 			$va_status['warnings'][] = _t("LibreOffice cannot be found: conversion to PDF and generation of page previews will not be performed; you can obtain LibreOffice at http://www.libreoffice.org/");
+		}
+		
+		if (!$this->opb_libre_office_installed && !$this->opb_abiword_installed) { 
+			$va_status['warnings'][] = _t("ABIWord cannot be found: indexing of text in non-XML Microsoft Word files will not be performed; you can obtain ABIWord at http://www.abisource.com/");
 		}
 		
 		return $va_status;

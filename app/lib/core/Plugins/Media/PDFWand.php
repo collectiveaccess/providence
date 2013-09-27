@@ -54,8 +54,10 @@ class WLPlugMediaPDFWand Extends BaseMediaPlugin implements IWLPlugMedia {
 	
 	var $opo_config;
 	var $opo_external_app_config;
+	var $opo_search_config;
 	var $ops_ghostscript_path;
 	var $ops_pdftotext_path;
+	var $ops_pdfminer_path;
 	
 	var $ops_imagemagick_path;
 	var $ops_graphicsmagick_path;
@@ -138,10 +140,13 @@ class WLPlugMediaPDFWand Extends BaseMediaPlugin implements IWLPlugMedia {
 	# for import and export
 	public function register() {
 		$this->opo_config = Configuration::load();
-		$vs_external_app_config_path = $this->opo_config->get('external_applications');
-		$this->opo_external_app_config = Configuration::load($vs_external_app_config_path);
+		
+		$this->opo_search_config = Configuration::load($this->opo_config->get('search_config'));
+		$this->opo_external_app_config = Configuration::load($this->opo_config->get('external_applications'));
+		
 		$this->ops_ghostscript_path = $this->opo_external_app_config->get('ghostscript_app');
 		$this->ops_pdftotext_path = $this->opo_external_app_config->get('pdftotext_app');
+		$this->ops_pdfminer_path = $this->opo_external_app_config->get('pdfminer_app');
 		$this->ops_imagemagick_path = $this->opo_external_app_config->get('imagemagick_path');
 		$this->ops_graphicsmagick_path = $this->opo_external_app_config->get('graphicsmagick_app');
 
@@ -162,6 +167,9 @@ class WLPlugMediaPDFWand Extends BaseMediaPlugin implements IWLPlugMedia {
 		}
 		if (!caMediaPluginPdftotextInstalled($this->ops_pdftotext_path)) { 
 			$va_status['warnings'][] = _t("PDFToText cannot be found: indexing of text in PDF files will not be performed; you can obtain PDFToText at http://www.foolabs.com/xpdf/download.html");
+		}
+		if (!caPDFMinerInstalled($this->ops_pdfminer_path)) { 
+			$va_status['warnings'][] = _t("PDFMiner cannot be found: indexing of text locations in PDF files will not be performed; you can obtain PDFMiner at http://www.unixuser.org/~euske/python/pdfminer/index.html");
 		}
 		
 		return $va_status;
@@ -218,7 +226,8 @@ class WLPlugMediaPDFWand Extends BaseMediaPlugin implements IWLPlugMedia {
 				"page" => 			1,
 				"quality" => 		75,
 				"filesize" =>		filesize($ps_filepath),
-				"content" =>		''
+				"content" =>		'',
+				"content_by_location" => array()
 			);
 			
 			$this->properties = array(
@@ -333,6 +342,15 @@ class WLPlugMediaPDFWand Extends BaseMediaPlugin implements IWLPlugMedia {
 	}
 	# ------------------------------------------------
 	/**
+	 * Returns array of locations of text within document, or null if plugin doesn't support text location extraction
+	 *
+	 * @return Array Extracted text locations
+	 */
+	public function getExtractedTextLocations() {
+		return isset($this->handle['content_by_location']) ? $this->handle['content_by_location'] : '';
+	}
+	# ------------------------------------------------
+	/**
 	 * Returns array of extracted metadata, key'ed by metadata type or empty array if plugin doesn't support metadata extraction
 	 *
 	 * @return Array Extracted metadata
@@ -361,13 +379,122 @@ class WLPlugMediaPDFWand Extends BaseMediaPlugin implements IWLPlugMedia {
 		
 		$this->filepath = $ps_filepath;
 		
-		//try to extract text
-		if (caMediaPluginPdftotextInstalled($this->ops_pdftotext_path)) {
+		
+		// Try to extract positions of text using PDFMiner (http://www.unixuser.org/~euske/python/pdfminer/index.html)
+		if (caPDFMinerInstalled($this->ops_pdfminer_path)) { 
+		
+			
+			// Try to extract text
 			$vs_tmp_filename = tempnam('/tmp', 'CA_PDF_TEXT');
-			exec($this->ops_pdftotext_path.' -q -enc UTF-8 '.caEscapeShellArg($ps_filepath).' '.caEscapeShellArg($vs_tmp_filename));
+			exec($this->ops_pdfminer_path.'/pdf2txt.py -t text '.caEscapeShellArg($ps_filepath).' > '.caEscapeShellArg($vs_tmp_filename));
 			$vs_extracted_text = file_get_contents($vs_tmp_filename);
 			$this->handle['content'] = $this->ohandle['content'] = $vs_extracted_text;
 			@unlink($vs_tmp_filename);
+	
+			$vs_tmp_filename = tempnam('/tmp', 'CA_PDF_TEXT_LOCATIONS');
+			exec($this->ops_pdfminer_path.'/pdf2txt.py -t xml '.caEscapeShellArg($ps_filepath).' > '.caEscapeShellArg($vs_tmp_filename));
+			
+			$xml = new XMLReader();
+			if ($xml->open($vs_tmp_filename)) {
+			
+			// Structure of locations array is [<word>][] = array(page, x1, y1, x2, y2, size)
+			$va_locations = array();
+			$vn_current_page = null;
+			$vs_text_line_content = '';
+			$vs_page_content = '';
+			$va_text_line_locs = array();
+			$vb_in_text_element = false;
+			$va_current_text_loc = null;
+			
+			$vs_indexing_regex = $this->opo_search_config->get('indexing_tokenizer_regex');
+			while (@$xml->read()) {
+					switch ($xml->name) {
+						case 'page':		// new page
+							if ($xml->nodeType == XMLReader::END_ELEMENT) { 
+								//$va_locations['__pages__'][$vn_current_page] = $vs_page_content;
+								$vs_page_content = '';
+								continue; 
+							}
+							$vs_text_line_content = '';
+							$vn_current_page = (int)$xml->getAttribute('id');
+							break;
+						case 'textline':
+							if ($xml->nodeType == XMLReader::END_ELEMENT) { 
+								// end of line
+							
+								$vn_start = $vn_end = null;
+								$vs_acc = '';
+								for($vn_i=0; $vn_i < mb_strlen($vs_text_line_content); $vn_i++) {
+									if (preg_match("![{$vs_indexing_regex}]!", $vs_text_line_content[$vn_i])) {
+										// word boundary
+										if ($vs_acc) {
+											$vs_acc = mb_strtolower($vs_acc);
+											$va_start = $va_text_line_locs[$vn_start];
+											$va_end = $va_text_line_locs[$vn_end];
+											$va_locations[$vs_acc][] = array(
+												'p' => $vn_current_page,
+												'x1' => $va_start['x1'], 'y1' => $va_start['y1'],
+												'x2' => $va_end['x2'], 'y2' => $va_end['y2']
+												//'size' => $va_start['size']
+											);
+										}
+										$vn_start = $vn_end = null;
+										$vs_acc = '';
+									} else {
+										if(is_null($vn_start)) { $vn_start = $vn_i; }
+										$vn_end = $vn_i;
+										$vs_acc .= ($vs_c = mb_substr($vs_text_line_content, $vn_i, 1));
+									}
+								}
+							} else {
+								// new line of text
+								$vs_page_content .= $vs_text_line_content;
+								$vs_text_line_content = '';
+								$va_text_line_locs = array();
+							}
+							break;
+						case 'textbox':
+							if ($xml->nodeType == XMLReader::END_ELEMENT) {
+								$vs_page_content .= "\n";
+							}
+							break;
+						case 'text':
+							if ($vb_in_text_element = ($xml->nodeType == XMLReader::ELEMENT)) {
+								$va_tmp = explode(",", (string)$xml->getAttribute('bbox'));
+								$va_current_text_loc = array(
+									'x1' => $va_tmp[0],
+									'y1' => $va_tmp[1],
+									'x2' => $va_tmp[2],
+									'y2' => $va_tmp[3]
+									//'font' => $xml->getAttribute('font'),
+									//'size' => $xml->getAttribute('size')
+								);	
+							} else {
+								$va_current_text_loc = null;
+							}
+							break;
+						case '#text':		// bit of text to record (usually a single character)
+							if ($vb_in_text_element) {
+								$va_current_text_loc['chars'] = mb_strlen((string)$xml->value);
+								$va_text_line_locs[mb_strlen($vs_text_line_content)] = $va_current_text_loc;
+								$vs_text_line_content .= (string)$xml->value;
+							}
+							break;
+					}
+				}
+			}
+			
+			$this->handle['content_by_location'] = $this->ohandle['content_by_location'] = $va_locations;
+			@unlink($vs_tmp_filename);	
+		} else {			
+			// Try to extract text
+			if (caMediaPluginPdftotextInstalled($this->ops_pdftotext_path)) {
+				$vs_tmp_filename = tempnam('/tmp', 'CA_PDF_TEXT');
+				exec($this->ops_pdftotext_path.' -q -enc UTF-8 '.caEscapeShellArg($ps_filepath).' '.caEscapeShellArg($vs_tmp_filename));
+				$vs_extracted_text = file_get_contents($vs_tmp_filename);
+				$this->handle['content'] = $this->ohandle['content'] = $vs_extracted_text;
+				@unlink($vs_tmp_filename);
+			}
 		}
 			
 		return true;	
@@ -560,6 +687,7 @@ class WLPlugMediaPDFWand Extends BaseMediaPlugin implements IWLPlugMedia {
 									
 								$o_media->transform('SCALE', array('mode' => 'bounding_box', 'antialiasing' => 0.5, 'width' => $vn_w, 'height' => $vn_h));
 								$o_media->transform('UNSHARPEN_MASK', array('sigma' => 0.5, 'radius' => 1, 'threshold' => 1.0, 'amount' => 0.1));
+								$o_media->set('quality',$vn_quality);
 								
 								$o_media->write($ps_filepath, $ps_mimetype, array());
 								if (!$o_media->numErrors()) {

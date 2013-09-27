@@ -121,6 +121,7 @@ class VictimService extends NS11mmService {
 			'pregnant' => ($t_entity->get('ca_entities.pregnant') == $vn_yes_id) ? 1 : 0,
 			'final_text_bio' => $t_entity->get('ca_entities.final_text_bio'),
 			'lifespan' => $t_entity->get('ca_entities.lifespan', array('dateFormat' => 'iso8601')),
+			'lifespan_as_text' => $t_entity->get('ca_entities.lifetime_text'),
 			'last_modification' => $t_entity->get('ca_entities.lastModified', array("dateFormat" => 'iso8601'))
 		);
 		
@@ -218,7 +219,7 @@ class VictimService extends NS11mmService {
 		$vn_id = $t_entity->getPrimaryKey();
 		
 		$t_list = new ca_lists();
-		$vn_exhibition_audio_type_id = $t_list->getItemIDFromList('object_types', 'memorial_exhibition_audio');
+		$vn_exhibition_audio_type_id = $t_list->getItemIDFromList('object_types', 'MemEx_Audio');
 		
 		
 		$vs_filter = $this->opo_request->getParameter('filter', pString);
@@ -243,7 +244,7 @@ class VictimService extends NS11mmService {
 		$t_list = new ca_lists();
 		$va_pub_target_values = $t_list->getItemsForList('object_publication_targets', array('extractValuesByUserLocale' => true));
 		$va_audio_target_values = $t_list->getItemsForList('audio_publication_targets', array('extractValuesByUserLocale' => true));
-		$vn_memorial_exhibition_audio_type_id = $t_list->getItemIDFromList('object_types', 'memorial_exhibition_audio');
+		$vn_memorial_exhibition_audio_type_id = $t_list->getItemIDFromList('object_types', 'MemEx_Audio');
 		
 		$vn_publish_annotation_id = $t_list->getItemIDFromList('annotation_publication_targets', 'interactive_tables');
 
@@ -254,7 +255,7 @@ class VictimService extends NS11mmService {
 			$va_timestamp = $t_object->getLastChangeTimestamp($va_object_info['object_id']);
 			if ($vb_parsed_date && (($va_timestamp['timestamp'] <= $va_range['start']) || ($va_timestamp['timestamp'] >= $va_range['end']))) { continue; }
 			if ($t_object->load($va_object_info['object_id'])) {
-				$va_reps = $t_object->getRepresentations(array("preview", "preview170", "icon", "small", "medium", "large", "original", "h264_hi", "mp3"));
+				$va_reps = $t_object->getRepresentations(array("preview", "preview170", "icon", "small", "medium", "large", "large_png", "original", "h264_hi", "mp3"));
 				if (!is_array($va_reps) || !sizeof($va_reps)) { continue; }
 				
 				$va_filtered_reps = array();

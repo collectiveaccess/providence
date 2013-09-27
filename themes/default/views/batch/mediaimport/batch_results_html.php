@@ -93,6 +93,7 @@
 						break;
 					case 'SKIPPED':
 					case 'MATCHED':
+					case 'RELATED':
 						$vs_buf .= "<li><em>".$va_notice['label']."</em>: ".$va_notice['message']."</li>";
 						break;
 					default:

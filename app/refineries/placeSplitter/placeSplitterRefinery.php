@@ -30,12 +30,12 @@
  
 	class placeSplitterRefinery extends BaseRefinery {
 		# -------------------------------------------------------
-		
-		# -------------------------------------------------------
 		public function __construct() {
 			$this->ops_name = 'placeSplitter';
 			$this->ops_title = _t('Place splitter');
-			$this->ops_description = _t('Splits places');
+			$this->ops_description = _t('Provides several place-related import functions: splitting of multiple places in a string into individual values, mapping of type and relationship type for related places, building place hierarchies and merging place data with names.');
+			
+			$this->opb_returns_multiple_values = true;
 			
 			parent::__construct();
 		}
@@ -56,100 +56,36 @@
 		 *
 		 */
 		public function refine(&$pa_destination_data, $pa_group, $pa_item, $pa_source_data, $pa_options=null) {
-			$va_group_dest = explode(".", $pa_group['destination']);
-			$vs_terminal = array_pop($va_group_dest);
-			$pm_value = $pa_source_data[$pa_item['source']];
-			
-			if ($vs_delimiter = $pa_item['settings']['placeSplitter_delimiter']) {
-				$va_places = explode($vs_delimiter, $pm_value);
+			// Set place hierarchy
+			if ($vs_hierarchy = $pa_item['settings']['placeSplitter_hierarchy']) {
+				$vn_hierarchy_id = caGetListItemID('place_hierarchies', $vs_hierarchy);
 			} else {
-				$va_places = array($pm_value);
+				// Default to first place hierarchy
+				$t_list = new ca_lists();
+				$va_hierarchy_ids = $t_list->getItemsForList('place_hierarchies', array('idsOnly' => true));
+				$vn_hierarchy_id = array_shift($va_hierarchy_ids);
 			}
-			
-			$va_vals = array();
-			$vn_c = 0;
-			foreach($va_places as $vn_i => $vs_place) {
-				if (!$vs_place = trim($vs_place)) { continue; }
-				
-				
-				if($vs_terminal == 'name') {
-					return $vs_place;
-				}
-			
-				if (in_array($vs_terminal, array('preferred_labels', 'nonpreferred_labels'))) {
-					return array('name' => $vs_place);	
-				}
-			
-				// Set label
-				$va_val = array('preferred_labels' => array('name' => $vs_place));
-			
-				// Set relationship type
-				if (
-					($vs_rel_type_opt = $pa_item['settings']['placeSplitter_relationshipType'])
-				) {
-					if (!($va_val['_relationship_type'] = BaseRefinery::parsePlaceholder($vs_rel_type_opt, $pa_source_data, $pa_item, $vs_delimiter, $vn_c))) {
-						if ($vs_rel_type_opt = $pa_item['settings']['placeSplitter_relationshipTypeDefault']) {
-							$va_val['_relationship_type'] = BaseRefinery::parsePlaceholder($vs_rel_type_opt, $pa_source_data, $pa_item, $vs_delimiter, $vn_c);
-						}
-					}
-				}
-			
-				// Set place_type
-				if (
-					($vs_type_opt = $pa_item['settings']['placeSplitter_placeType'])
-				) {
-					if (!($va_val['_type'] = BaseRefinery::parsePlaceholder($vs_type_opt, $pa_source_data, $pa_item, $vs_delimiter, $vn_c))) {
-						if($vs_type_opt = $pa_item['settings']['placeSplitter_placeTypeDefault']) {
-							$va_val['_type'] = BaseRefinery::parsePlaceholder($vs_type_opt, $pa_source_data, $pa_item, $vs_delimiter, $vn_c);
-						}
-					}
-				}
-				
-				// Set place hierarchy
-				if ($vs_hierarchy = $pa_item['settings']['placeSplitter_hierarchy']) {
-					$vn_hierarchy_id = caGetListItemID('place_hierarchies', $vs_hierarchy);
-					
-				} else {
-					// Default to first place hierarchy
-					$t_list = new ca_lists();
-					$va_hierarchy_ids = $t_list->getItemsForList('place_hierarchies', array('idsOnly' => true));
-					$vn_hierarchy_id = array_shift($va_hierarchy_ids);
-				}
-				if (!$vn_hierarchy_id) {
-					print _t("[Error] No place hierarchies are defined")."\n";
-					return array();
-				}
-				$t_place = new ca_places();
-				$t_place->load(array('parent_id' => null, 'hierarchy_id' => $vn_hierarchy_id));
-				$va_val['_parent_id'] = $t_place->getPrimaryKey();
-				
-				// Set attributes
-				if (is_array($pa_item['settings']['placeSplitter_attributes'])) {
-					$va_attr_vals = array();
-					foreach($pa_item['settings']['placeSplitter_attributes'] as $vs_element_code => $va_attrs) {
-						if(is_array($va_attrs)) {
-							foreach($va_attrs as $vs_k => $vs_v) {
-								$va_attr_vals[$vs_element_code][$vs_k] = BaseRefinery::parsePlaceholder($vs_v, $pa_source_data, $pa_item);
-							}
-						}
-					}
-					$va_val = array_merge($va_val, $va_attr_vals);
-				}
-				
-				$va_vals[] = $va_val;
-				$vn_c++;
+			if (!$vn_hierarchy_id) {
+				if ($o_log) { $o_log->logError(_t('[placeSplitterRefinery] No place hierarchies are defined for %1', $vs_place)); }
+				return array();
 			}
+			$pa_options['hierarchyID'] = $vn_hierarchy_id;
 			
-			return $va_vals;
+			$t_place = new ca_places();
+			if ($t_place->load(array('parent_id' => null, 'hierarchy_id' => $vn_hierarchy_id))) {
+				$pa_options['defaultParentID'] = $t_place->getPrimaryKey();
+			}
+		
+			return caGenericImportSplitter('placeSplitter', 'place', 'ca_places', $this, $pa_destination_data, $pa_group, $pa_item, $pa_source_data, $pa_options);
 		}
 		# -------------------------------------------------------	
 		/**
 		 * placeSplitter returns multiple values
 		 *
-		 * @return bool Always true
+		 * @return bool
 		 */
 		public function returnsMultipleValues() {
-			return true;
+			return $this->opb_returns_multiple_values;
 		}
 		# -------------------------------------------------------
 	}
@@ -191,6 +127,15 @@
 				'label' => _t('Attributes'),
 				'description' => _t('Sets or maps metadata for the place record by referencing the metadataElement code and the location in the data source where the data values can be found.')
 			),
+			'placeSplitter_parents' => array(
+				'formatType' => FT_TEXT,
+				'displayType' => DT_SELECT,
+				'width' => 10, 'height' => 1,
+				'takesLocale' => false,
+				'default' => '',
+				'label' => _t('Parents'),
+				'description' => _t('Place parents to create, if required')
+			),
 			'placeSplitter_hierarchy' => array(
 				'formatType' => FT_TEXT,
 				'displayType' => DT_SELECT,
@@ -217,6 +162,15 @@
 				'default' => '',
 				'label' => _t('Place type default'),
 				'description' => _t('Sets the default place type that will be used if none are defined or if the data source values do not match any values in the CollectiveAccess list place_types')
+			),
+			'placeSplitter_interstitial' => array(
+				'formatType' => FT_TEXT,
+				'displayType' => DT_SELECT,
+				'width' => 10, 'height' => 1,
+				'takesLocale' => false,
+				'default' => '',
+				'label' => _t('Interstitial attributes'),
+				'description' => _t('Sets or maps metadata for the interstitial place <em>relationship</em> record by referencing the metadataElement code and the location in the data source where the data values can be found.')
 			)
 		);
 ?>

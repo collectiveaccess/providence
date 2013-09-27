@@ -106,6 +106,7 @@ class WLPlugVisualizerTimeline Extends BaseVisualizerPlugIn Implements IWLPlugVi
 					$vn_end = $va_historic['end'];
 				}
 				if (!$vs_start || !$vs_end) { continue; }
+				if (($vs_start == _t('undated')) || ($vs_end == _t('undated'))) { continue; }
 				
 				if (is_null($vn_first_date) || ($vn_first_date > $vn_start)) { 
 					$vn_first_date = $vn_start; 

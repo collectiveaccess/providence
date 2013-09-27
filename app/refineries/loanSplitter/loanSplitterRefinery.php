@@ -30,12 +30,12 @@
  
 	class loanSplitterRefinery extends BaseRefinery {
 		# -------------------------------------------------------
-		
-		# -------------------------------------------------------
 		public function __construct() {
 			$this->ops_name = 'loanSplitter';
 			$this->ops_title = _t('Loan splitter');
-			$this->ops_description = _t('Splits loans');
+			$this->ops_description = _t('Provides several loan-related import functions: splitting of multiple loans in a string into individual values, mapping of type and relationship type for related loans, and merging loan data with loan names.');
+
+			$this->opb_returns_multiple_values = true;
 			
 			parent::__construct();
 		}
@@ -56,92 +56,16 @@
 		 *
 		 */
 		public function refine(&$pa_destination_data, $pa_group, $pa_item, $pa_source_data, $pa_options=null) {
-			$va_group_dest = explode(".", $pa_group['destination']);
-			$vs_terminal = array_pop($va_group_dest);
-			$pm_value = $pa_source_data[$pa_item['source']];
-			
-			if ($vs_delimiter = $pa_item['settings']['loanSplitter_delimiter']) {
-				$va_loan = explode($vs_delimiter, $pm_value);
-			} else {
-				$va_loan = array($pm_value);
-			}
-			
-			$va_vals = array();
-			$vn_c = 0;
-			foreach($va_loan as $vn_i => $vs_loan) {
-				if (!$vs_loan = trim($vs_loan)) { continue; }
-				
-				
-				if($vs_terminal == 'name') {
-					return $vs_loan;
-				}
-			
-				if (in_array($vs_terminal, array('preferred_labels', 'nonpreferred_labels'))) {
-					return array('name' => $vs_loan);	
-				}
-			
-				// Set label
-				$va_val = array('preferred_labels' => array('name' => $vs_loan));
-			
-				// Set relationship type
-				if (
-					($vs_rel_type_opt = $pa_item['settings']['loanSplitter_relationshipType'])
-				) {
-					if (!($va_val['_relationship_type'] = BaseRefinery::parsePlaceholder($vs_rel_type_opt, $pa_source_data, $pa_item, $vs_delimiter, $vn_c))) {
-						if ($vs_rel_type_opt = $pa_item['settings']['loanSplitter_relationshipTypeDefault']) {
-							$va_val['_relationship_type'] = BaseRefinery::parsePlaceholder($vs_rel_type_opt, $pa_source_data, $pa_item, $vs_delimiter, $vn_c);
-						}
-					}
-				}
-			
-				// Set loan_type
-				if (
-					($vs_type_opt = $pa_item['settings']['loanSplitter_loanType'])
-				) {
-					
-					if (!($va_val['_type'] = BaseRefinery::parsePlaceholder($vs_type_opt, $pa_source_data, $pa_item, $vs_delimiter, $vn_c))) {
-						if($vs_type_opt = $pa_item['settings']['loanSplitter_loanTypeDefault']) {
-							$va_val['_type'] = BaseRefinery::parsePlaceholder($vs_type_opt, $pa_source_data, $pa_item, $vs_delimiter, $vn_c);
-						}
-					}
-				}
-				// Set relationship type
-				if ($vs_rel_type_opt = $pa_item['settings']['loanSplitter_relationshipType']) {
-					$va_val['_relationship_type'] = BaseRefinery::parsePlaceholder($vs_rel_type_opt, $pa_source_data, $pa_item, $vs_delimiter, $vn_i);
-				}
-			
-				// Set loan type
-				if ($vs_type_opt = $pa_item['settings']['loanSplitter_loanType']) {
-					$va_val['_type'] = BaseRefinery::parsePlaceholder($vs_type_opt, $pa_source_data, $pa_item);
-				}
-			
-				// Set attributes
-				if (is_array($pa_item['settings']['loanSplitter_attributes'])) {
-					$va_attr_vals = array();
-					foreach($pa_item['settings']['loanSplitter_attributes'] as $vs_element_code => $va_attrs) {
-						if(is_array($va_attrs)) {
-							foreach($va_attrs as $vs_k => $vs_v) {
-								$va_attr_vals[$vs_element_code][$vs_k] = BaseRefinery::parsePlaceholder($vs_v, $pa_source_data, $pa_item);
-							}
-						}
-					}
-					$va_val = array_merge($va_val, $va_attr_vals);
-				}
-				
-				$va_vals[] = $va_val;
-				$vn_c++;
-			}
-			
-			return $va_vals;
+			return caGenericImportSplitter('loanSplitter', 'loan', 'ca_loans', $this, $pa_destination_data, $pa_group, $pa_item, $pa_source_data, $pa_options);
 		}
 		# -------------------------------------------------------	
 		/**
 		 * loanSplitter returns multiple values
 		 *
-		 * @return bool Always true
+		 * @return bool
 		 */
 		public function returnsMultipleValues() {
-			return true;
+			return $this->opb_returns_multiple_values;
 		}
 		# -------------------------------------------------------
 	}
@@ -183,15 +107,15 @@
 				'label' => _t('Attributes'),
 				'description' => _t('Sets or maps metadata for the loan record by referencing the metadataElement code and the location in the data source where the data values can be found.')
 			),
-			// 'loanSplitter_parents' => array(
-// 				'formatType' => FT_TEXT,
-// 				'displayType' => DT_SELECT,
-// 				'width' => 10, 'height' => 1,
-// 				'takesLocale' => false,
-// 				'default' => '',
-// 				'label' => _t('Parents'),
-// 				'description' => _t('Loan parents to create, if required')
-// 			),
+			'loanSplitter_parents' => array(
+				'formatType' => FT_TEXT,
+				'displayType' => DT_SELECT,
+				'width' => 10, 'height' => 1,
+				'takesLocale' => false,
+				'default' => '',
+				'label' => _t('Parents'),
+				'description' => _t('Loan parents to create, if required')
+			),
 			'loanSplitter_relationshipTypeDefault' => array(
 				'formatType' => FT_TEXT,
 				'displayType' => DT_FIELD,
@@ -209,6 +133,15 @@
 				'default' => '',
 				'label' => _t('Loan type default'),
 				'description' => _t('Sets the default loan type that will be used if none are defined or if the data source values do not match any values in the CollectiveAccess list loan_types.')
+			),
+			'loanSplitter_interstitial' => array(
+				'formatType' => FT_TEXT,
+				'displayType' => DT_SELECT,
+				'width' => 10, 'height' => 1,
+				'takesLocale' => false,
+				'default' => '',
+				'label' => _t('Interstitial attributes'),
+				'description' => _t('Sets or maps metadata for the interstitial loan <em>relationship</em> record by referencing the metadataElement code and the location in the data source where the data values can be found.')
 			)
 		);
 ?>

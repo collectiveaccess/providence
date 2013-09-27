@@ -279,6 +279,7 @@
 						} 
 						$vb_use_book_reader = true;
 				
+						$vn_object_id = $t_object->getPrimaryKey();
 						foreach($t_rep->getFileList(null, 0, null, array('preview', 'large_preview', 'page_preview')) as $vn_id => $va_file) {
 							$va_pages[] = array(
 								'object_id' => $vn_object_id, 'representation_id' => $t_rep->getPrimaryKey(),

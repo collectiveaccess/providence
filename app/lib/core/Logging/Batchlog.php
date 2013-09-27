@@ -61,7 +61,7 @@ class Batchlog extends BaseLogger {
 			if (isset($pa_entry['transaction']) && $pa_entry['transaction']) {
 				$this->o_db = $pa_entry['transaction']->getDb();
 			}
-			if (!in_array($pa_entry['batch_type'], array("SR", "BE", "MI"))) {	// batch types are "SR" (search/replace), "BE" (batch editor), "MI" (media import)
+			if (!in_array($pa_entry['batch_type'], array("SR", "BE", "BD", "MI"))) {	// batch types are "SR" (search/replace), "BE" (batch editor), "BD" (batch delete), "MI" (media import)
 				return false;
 			}
 			$this->o_db->query("
