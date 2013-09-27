@@ -1052,6 +1052,7 @@ if (!$vb_can_do_incremental_indexing || $pb_reindex_mode) {
 				// incremental indexing engines delete dependent rows here
 				// delete from index where other subjects reference it 
 				$this->opo_engine->removeRowIndexing(null, null, $pn_subject_tablenum, null, $pn_subject_row_id);
+				
 				foreach($this->opa_dependencies_to_update as $va_item) {
 					$this->opo_engine->removeRowIndexing($va_item['table_num'], $va_item['row_id'], $va_item['field_table_num'], null, $va_item['field_row_id']); 
 				}
@@ -1159,8 +1160,8 @@ if (!$vb_can_do_incremental_indexing || $pb_reindex_mode) {
 			}			
 						$va_full_path = $va_table_list;
 						array_unshift($va_full_path, $vs_dep_table);
-						$qr_rel_rows = $this->_getRelatedRows(array_reverse($va_full_path), isset($va_table_key_list[$vs_list_name]) ? $va_table_key_list[$vs_list_name] : null, $vs_subject_tablename, $pn_subject_row_id);
-						
+						$qr_rel_rows = $this->_getRelatedRows(array_reverse($va_full_path), isset($va_table_key_list[$vs_list_name]) ? $va_table_key_list[$vs_list_name] : null, $vs_subject_tablename, $pn_subject_row_id, $vs_rel_table ? $vs_rel_table : $vs_dep_table, $va_fields_to_index);
+							
 						if ($qr_rel_rows) {
 							while($qr_rel_rows->nextRow()) {
 								foreach($va_fields_to_index as $vs_field => $va_indexing_info) {
@@ -1219,11 +1220,24 @@ if (!$vb_can_do_incremental_indexing || $pb_reindex_mode) {
 	 * Returns query result with rows related via tables specified in $pa_tables to the specified subject; used by
 	 * _getDependentRowsForSubject() to generate dependent row set
 	 */
-	private function _getRelatedRows($pa_tables, $pa_table_keys, $ps_subject_tablename, $pn_row_id) {
+	private function _getRelatedRows($pa_tables, $pa_table_keys, $ps_subject_tablename, $pn_row_id, $ps_table_to_index, $pa_fields_to_index) {
 		if (!in_array($ps_subject_tablename, $pa_tables)) { $pa_tables[] = $ps_subject_tablename; }
 		$vs_key = md5(print_r($pa_tables, true)."/".print_r($pa_table_keys, true)."/".$ps_subject_tablename);
 		
 		$va_flds = array();
+		$va_fld_names = array();
+		
+		// Add fields being indexed 
+		if ($t_indexed_table = $this->opo_datamodel->getInstanceByTableName($ps_table_to_index, true)) {
+			foreach($pa_fields_to_index as $vs_f => $va_field_info) {
+				if (!$t_indexed_table->hasField($vs_f)) { continue; }
+				if (in_array($t_indexed_table->getFieldInfo($vs_f, 'FIELD_TYPE'), array(FT_MEDIA, FT_FILE, FT_VARS, FT_DATERANGE, FT_HISTORIC_DATERANGE, FT_TIMERANGE))) { continue; }
+				if (isset($va_fld_names[$vs_f]) && $va_fld_names[$vs_f]) { continue; }
+				
+				$va_flds[$ps_table_to_index.".".$vs_f] = true;
+				$va_fld_names[$vs_f] = true;
+			}
+		}
 		
 		if (!isset(SearchIndexer::$s_related_rows_joins_cache[$vs_key]) || !(SearchIndexer::$s_related_rows_joins_cache[$vs_key])) {
 			$vs_left_table = $vs_select_tablename = array_shift($pa_tables);
@@ -1231,13 +1245,29 @@ if (!$vb_can_do_incremental_indexing || $pb_reindex_mode) {
 			$t_subject = $this->opo_datamodel->getInstanceByTableName($ps_subject_tablename, true);
 			$vs_subject_pk = $t_subject->primaryKey();
 			
-			
 			$va_tmp = array_keys($t_subject->getFormFields(true));
 			foreach($va_tmp as $vn_i => $vs_v) {
-				if (in_array($t_subject->getFieldInfo($vs_v, 'FIELD_TYPE'), array(FT_MEDIA, FT_FILE, FT_VARS))) { continue; }
+				if (in_array($t_subject->getFieldInfo($vs_v, 'FIELD_TYPE'), array(FT_MEDIA, FT_FILE, FT_VARS, FT_DATERANGE, FT_HISTORIC_DATERANGE, FT_TIMERANGE))) { continue; }
+				if(isset($va_fld_names[$vs_v]) && $va_fld_names[$vs_v]) { continue; }
+				
 				$va_flds[$ps_subject_tablename.".".$vs_v] = true;
+				$va_fld_names[$vs_v] = true;
 			}
+			
+			$t_select = $this->opo_datamodel->getInstanceByTableName($vs_select_tablename, true);
+			$vs_select_pk = $t_subject->primaryKey();
+			
+			$va_tmp = array_keys($t_select->getFormFields(true));
+			foreach($va_tmp as $vn_i => $vs_v) {
+				if (in_array($t_select->getFieldInfo($vs_v, 'FIELD_TYPE'), array(FT_MEDIA, FT_FILE, FT_VARS, FT_DATERANGE, FT_HISTORIC_DATERANGE, FT_TIMERANGE))) { continue; }
+				if(isset($va_fld_names[$vs_v]) && $va_fld_names[$vs_v]) { continue; }
+				
+				$va_flds[$vs_select_tablename.".".$vs_v] = true;
+				$va_fld_names[$vs_v] = true;
+			}
+			
 			$va_joins = array();
+			
 			foreach($pa_tables as $vs_right_table) {
 				if ($vs_right_table == $vs_select_tablename) { continue; }
 				if (is_array($pa_table_keys) && (isset($pa_table_keys[$vs_right_table][$vs_left_table]) || isset($pa_table_keys[$vs_left_table][$vs_right_table]))) {		// are the keys for this join specified in the indexing config?
@@ -1295,8 +1325,11 @@ if (!$vb_can_do_incremental_indexing || $pb_reindex_mode) {
 				$t_instance = $this->opo_datamodel->getInstanceByTableName($vs_t, true);
 				$va_tmp = array_keys($t_instance->getFormFields(true));
 				foreach($va_tmp as $vn_i => $vs_v) {
-					if (in_array($t_instance->getFieldInfo($vs_v, 'FIELD_TYPE'), array(FT_MEDIA, FT_FILE, FT_VARS))) { continue; }
+					if (in_array($t_instance->getFieldInfo($vs_v, 'FIELD_TYPE'), array(FT_MEDIA, FT_FILE, FT_VARS, FT_DATERANGE, FT_HISTORIC_DATERANGE, FT_TIMERANGE))) { continue; }
+					if(isset($va_fld_names[$vs_v]) && $va_fld_names[$vs_v]) { continue; }
+				
 					$va_flds[$vs_t.".".$vs_v] = true;
+					$va_fld_names[$vs_v] = true;
 				}
 			}
 		
@@ -1311,7 +1344,6 @@ if (!$vb_can_do_incremental_indexing || $pb_reindex_mode) {
 			$vs_subject_pk = $t_subject->primaryKey();
 			
 		}
-		
 		$vs_sql = "
 			SELECT ".join(", ", array_keys($va_flds))."
 			FROM ".$vs_select_tablename."
@@ -1319,8 +1351,14 @@ if (!$vb_can_do_incremental_indexing || $pb_reindex_mode) {
 			WHERE
 			{$ps_subject_tablename}.{$vs_subject_pk} = ?
 		";
+		//print $vs_sql;
 		
-		return $this->opo_db->query($vs_sql, $pn_row_id);
+		$qr_res = $this->opo_db->query($vs_sql, $pn_row_id);
+		if (!$qr_res) { 
+			throw new Exception(_t("Invalid _getRelatedRows query: %1", join("; ", $this->opo_db->getErrors())));
+		}
+		
+		return $qr_res;
 	}
 	# ------------------------------------------------
 	/**

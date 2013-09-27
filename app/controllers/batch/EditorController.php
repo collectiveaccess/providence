@@ -162,6 +162,30 @@
  
  		}
  		# -------------------------------------------------------
+ 		public function Delete() {
+ 			list($vn_set_id, $t_set, $t_subject, $t_ui) = $this->_initView($pa_options);
+
+ 			if (!$this->request->user->canDoAction('can_batch_delete_'.$t_set->getAppDatamodel()->getTableName($t_set->get('table_num')))) {
+ 				$this->response->setRedirect($this->request->config->get('error_display_url').'/n/3230?r='.urlencode($this->request->getFullUrlPath()));
+ 				return;
+ 			}
+
+ 			if ($t_set->getItemCount(array('user_id' => $this->request->getUserID())) <= 0) { 
+ 				$this->response->setRedirect($this->request->config->get('error_display_url').'/n/3220?r='.urlencode($this->request->getFullUrlPath()));
+ 				return;
+ 			}
+
+ 			if ($vb_confirm = ($this->request->getParameter('confirm', pInteger) == 1) ? true : false) {
+ 				$this->view->setVar('confirmed',true);
+
+ 				// run now
+				$app = AppController::getInstance();
+				$app->registerPlugin(new BatchEditorProgress($this->request, $t_set, $t_subject, array('isBatchDelete' => true)));
+ 			}
+
+ 			$this->render('editor/delete_html.php');
+ 		}
+ 		# -------------------------------------------------------
  		/**
  		 * Initializes editor view with core set of values, loads model with record to be edited and selects user interface to use.
  		 *

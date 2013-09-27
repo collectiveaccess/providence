@@ -667,7 +667,11 @@ class ca_list_items extends RepresentableBaseModel implements IHierarchy {
  	 */
  	public function isSaveable($po_request) {
  		// Is row loaded?
- 		if (!($vn_list_id = $this->get('list_id'))) { return false; }
+ 		if (!($vn_list_id = $this->get('list_id'))) { // this happens when a new list item is about to be created. in those cases we extract the list from the request.
+ 			$vn_list_id = $this->_getListIDFromRequest($po_request);
+ 		}
+
+ 		if(!$vn_list_id) { return false; }
  		
  		$t_list = new ca_lists($vn_list_id);
  		if (!$t_list->getPrimaryKey()) { return false; }
@@ -679,13 +683,34 @@ class ca_list_items extends RepresentableBaseModel implements IHierarchy {
  	 */
  	public function isDeletable($po_request) {
  		// Is row loaded?
- 		if (!$this->getPrimaryKey()) { return false; }
+ 		if (!$this->getPrimaryKey()) { // this happens when a new list item is about to be created. in those cases we extract the list from the request.
+ 			$vn_list_id = $this->_getListIDFromRequest($po_request);
+ 		}
+
+ 		if(!$vn_list_id) { return false; }
  		
  		$t_list = new ca_lists($this->get('list_id'));
  		if (!$t_list->getPrimaryKey()) { return false; }
  		
  		return $t_list->isDeletable($po_request);
  	}
+	# ------------------------------------------------------
+	/**
+	 * Helper to extract the list a new item is about to be inserted in from the request.
+	 * This is usually not passed as simple list_id parameter by the UI but through the parent_id.
+	 */
+	private function _getListIDFromRequest($po_request){
+		if($vn_list_id = $po_request->getParameter('list_id',pInteger)){ return $vn_list_id; }
+
+		if($vn_parent_id = $po_request->getParameter('parent_id',pInteger)){
+			$t_item = new ca_list_items($vn_parent_id);
+			if($t_item->getPrimaryKey()){
+				return $t_item->get('list_id');	
+			}
+		}
+
+		return false;
+	}
 	# ------------------------------------------------------
 }
 ?>
