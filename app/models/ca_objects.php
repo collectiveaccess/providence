@@ -419,21 +419,28 @@ class ca_objects extends RepresentableBaseModel implements IBundleProvider {
 	/**
 	 * Override set() to do idno_stub lookups on lots
 	 *
+	 * @param mixed $pm_fields
+	 * @param mixed $pm_value
+	 * @param array $pa_options Most options are handled by subclasses. Options defined here include:
+	 *		assumeIdnoStubForLotID = set to force lookup of lot_id values as ca_object_lots.idno_stub values first not matter what, before consideration as a numeric lot_id. The default is false, in which case integer values are considered lot_ids and non-numeric values possible idno_stubs.
+	 *		
+	 * @return int 
 	 */
-	public function set($pa_fields, $pm_value="", $pa_options=null) {
-		if (!is_array($pa_fields)) {
-			$pa_fields = array($pa_fields => $pm_value);
+	public function set($pm_fields, $pm_value="", $pa_options=null) {
+		if (!is_array($pm_fields)) {
+			$pm_fields = array($pm_fields => $pm_value);
 		}
-		foreach($pa_fields as $vs_fld => $vs_val) {
-			if (($vs_fld == 'lot_id') && (preg_match("![^\d]+!", $vs_val))) {
+		$pb_assume_idno_stub_for_lot_id = caGetOption('assumeIdnoStubForLotID', $pa_options, false);
+		foreach($pm_fields as $vs_fld => $vs_val) {
+			if (($vs_fld == 'lot_id') && ($pb_assume_idno_stub_for_lot_id || preg_match("![^\d]+!", $vs_val))) {
 				$t_lot = new ca_object_lots();
 				if ($t_lot->load(array('idno_stub' => $vs_val))) {
 					$vn_lot_id = (int)$t_lot->getPrimaryKey();
-					$pa_fields[$vs_fld] = $vn_lot_id;
+					$pm_fields[$vs_fld] = $vn_lot_id;
 				}
 			}
 		}
-		return parent::set($pa_fields, null, $pa_options);
+		return parent::set($pm_fields, null, $pa_options);
 	}
 	# ------------------------------------------------------
 	public function delete($pb_delete_related=false, $pa_options=null, $pa_fields=null, $pa_table_list=null){

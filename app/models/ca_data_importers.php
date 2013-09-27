@@ -1768,7 +1768,7 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 				if ($vb_idno_is_template) {
 					$t_subject->setIdnoTWithTemplate($vs_idno);
 				} else {
-					$t_subject->set($vs_idno_fld, $vs_idno);
+					$t_subject->set($vs_idno_fld, $vs_idno, array('assumeIdnoStubForLotID' => true));	// assumeIdnoStubForLotID forces ca_objects.lot_id values to always be considered as a potential idno_stub first, before use as a ca_objects.lot_di
 				}
 				
 				foreach($va_mandatory_field_mapping_ids as $vs_mandatory_field => $vn_mandatory_mapping_item_id) {
@@ -1797,7 +1797,7 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 				if ($vb_idno_is_template) {
 					$t_subject->setIdnoTWithTemplate($vs_idno);
 				} else {
-					$t_subject->set($vs_idno_fld, $vs_idno);
+					$t_subject->set($vs_idno_fld, $vs_idno, array('assumeIdnoStubForLotID' => true));	// assumeIdnoStubForLotID forces ca_objects.lot_id values to always be considered as a potential idno_stub first, before use as a ca_objects.lot_di
 				}
 				
 				$t_subject->update();
