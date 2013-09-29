@@ -661,7 +661,7 @@ class WLPlugMediaGmagick Extends BaseMediaPlugin Implements IWLPlugMedia {
 							break;
 						case 'south':
 							$vn_watermark_x = ($cw - $vn_watermark_width)/2;
-							$vn_watermark_y = $cw - $vn_watermark_height;
+							$vn_watermark_y = $ch - $vn_watermark_height;
 							break;
 						case 'center':
 							$vn_watermark_x = ($cw - $vn_watermark_width)/2;
