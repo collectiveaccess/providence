@@ -32,8 +32,10 @@
 	$vs_show_version 			= $this->getVar('version') ? $this->getVar('version') : "medium";
 	
 	$vs_container_id 			= $this->getVar('containerID');
+	$vs_display_mimetype		= $this->getVar('version_mimetype');
+	$vs_original_mimetype		= $this->getVar('mimetype');
 	
-	if ($this->getVar('mimetype') ==  'application/pdf') {
+	if ($vs_display_mimetype ==  'application/pdf') {
 		switch($vs_pdf_pref = $this->request->user->getPreference('pdf_viewer')) {
 			case 'pdfjs':
 				$vb_should_use_pdfjs_viewer = true;
@@ -62,10 +64,7 @@
 				break;
 		}
 	} else {
-		if (!($vb_should_use_pdfjs_viewer = isset($va_display_options['use_book_viewer']) && (bool)$va_display_options['use_book_viewer'])) {
-			$vb_should_use_pdfjs_viewer = isset($va_display_options['use_pdfjs_viewer']) && (bool)$va_display_options['use_pdfjs_viewer'];
-		}
-		$vb_should_use_native_pdf_viewer = false;
+		$vb_should_use_pdfjs_viewer = $vb_should_use_native_pdf_viewer = false;
 	}	
 	
 	if ($vb_should_use_pdfjs_viewer && $this->request->config->get('use_pdfjs_viewer')) {

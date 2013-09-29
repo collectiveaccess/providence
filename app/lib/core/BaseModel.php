@@ -7423,20 +7423,21 @@ $pa_options["display_form_field_tips"] = true;
 									$vs_height = ((int)$vs_height * 16)."px";
 								}
 								
+								if(!is_array($va_toolbar_config = $this->getAppConfig()->getAssoc('wysiwyg_editor_toolbar'))) { $va_toolbar_config = array(); }
+								
 								$vs_element .= "<script type='text/javascript'>jQuery(document).ready(function() {
-		jQuery('#".$pa_options["id"]."').ckeditor(function() {
-				this.on( 'change', function(e) { 
-					if (caUI && caUI.utils) { caUI.utils.showUnsavedChangesWarning(true);  }
-				 });
-			},
-			{
-				toolbar: ".json_encode(array_values($this->getAppConfig()->getAssoc('wysiwyg_editor_toolbar'))).",
-				width: '{$vs_width}',
-				height: '{$vs_height}',
-				toolbarLocation: 'top',
-				enterMode: CKEDITOR.ENTER_BR
-			}
-		);
+								var ckEditor = CKEDITOR.replace( '".$pa_options['id']."',
+								{
+									toolbar : ".json_encode(array_values($va_toolbar_config)).",
+									width: '{$vs_width}',
+									height: '{$vs_height}',
+									toolbarLocation: 'top',
+									enterMode: CKEDITOR.ENTER_BR
+								});
+						
+								ckEditor.on('instanceReady', function(){ 
+									 ckEditor.document.on( 'keydown', function(e) {if (caUI && caUI.utils) { caUI.utils.showUnsavedChangesWarning(true); } });
+								});
  	});									
 </script>";
 							}
@@ -9896,9 +9897,33 @@ $pa_options["display_form_field_tips"] = true;
 		$t_instance = new $vs_table;
 		
 		$va_sql_wheres = array();
+		
+		//
+		// Convert type id
+		//
+		if (method_exists($this, "getTypeFieldName")) {
+			$vs_type_field_name = $this->getTypeFieldName();
+			if (isset($pa_values[$vs_type_field_name]) && !is_numeric($pa_values[$vs_type_field_name])) {
+				if ($vn_id = ca_lists::getItemID($this->getTypeListCode(), $pa_values[$vs_type_field_name])) {
+					$pa_values[$vs_type_field_name] = $vn_id;
+				}
+			}
+		}
+		
+		//
+		// Convert other intrinsic list references
+		//
+		foreach($pa_values as $vs_field => $vm_value) {
+			if($vs_list_code = $t_instance->getFieldInfo($vs_field, 'LIST_CODE')) {
+				if ($vn_id = ca_lists::getItemID($vs_list_code, $vm_value)) {
+					$pa_values[$vs_field] = $vn_id;
+				}
+			}
+		}
+		
 		foreach ($pa_values as $vs_field => $vm_value) {
 			if (is_array($vm_value)) { continue; }
-			
+		
 			# support case where fieldname is in format table.fieldname
 			if (preg_match("/([\w_]+)\.([\w_]+)/", $vs_field, $va_matches)) {
 				if ($va_matches[1] != $vs_table) {

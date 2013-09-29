@@ -502,10 +502,7 @@ create table ca_media_content_locations
    row_id                         int unsigned                not null,
    content                        text                        not null,
    page                           int unsigned                not null,
-   x1                             decimal(6,2)                not null,
-   y1                             decimal(6,2)                not null,
-   x2                             decimal(6,2)                not null,
-   y2                             decimal(6,2)                not null
+   loc                            longtext                    not null
 ) engine=myisam CHARACTER SET utf8 COLLATE utf8_general_ci;
 
 create index i_row_id on ca_media_content_locations(row_id, table_num, page);
@@ -5836,6 +5833,7 @@ create table ca_object_lots_x_object_representations
    label_left_id                  int unsigned                   null,
    label_right_id                 int unsigned                   null,
    rank                           int unsigned                   not null default 0,
+   is_primary                     tinyint                        not null,
    primary key (relation_id),
    constraint fk_ca_object_lots_x_object_representations_representation_id foreign key (representation_id)
       references ca_object_representations (representation_id) on delete restrict on update restrict,
@@ -5881,6 +5879,7 @@ create table ca_loans_x_object_representations
    label_left_id                  int unsigned                   null,
    label_right_id                 int unsigned                   null,
    rank                           int unsigned                   not null default 0,
+   is_primary                     tinyint                        not null,
    primary key (relation_id),
    constraint fk_ca_loans_x_object_representations_representation_id foreign key (representation_id)
       references ca_object_representations (representation_id) on delete restrict on update restrict,
@@ -5926,6 +5925,7 @@ create table ca_movements_x_object_representations
    label_left_id                  int unsigned                   null,
    label_right_id                 int unsigned                   null,
    rank                           int unsigned                   not null default 0,
+   is_primary                     tinyint                        not null,
    primary key (relation_id),
    constraint fk_ca_movements_x_object_representations_representation_id foreign key (representation_id)
       references ca_object_representations (representation_id) on delete restrict on update restrict,
@@ -6377,5 +6377,5 @@ create table ca_schema_updates (
 ) engine=innodb CHARACTER SET utf8 COLLATE utf8_general_ci;
 
 /* Indicate up to what migration this schema definition covers */
-/* CURRENT MIGRATION: 90 */
-INSERT IGNORE INTO ca_schema_updates (version_num, datetime) VALUES (90, unix_timestamp());
+/* CURRENT MIGRATION: 92 */
+INSERT IGNORE INTO ca_schema_updates (version_num, datetime) VALUES (92, unix_timestamp());

@@ -67,44 +67,19 @@
  		public function Form($pa_values=null, $pa_options=null) {
  			if(!is_array($pa_options)) { $pa_options = array(); }
  			list($t_subject, $t_ui, $vn_parent_id, $vn_above_id) = $this->_initView(array_merge($pa_options, array('loadSubject' => true)));
- 			$vs_field_name_prefix = $this->request->getParameter('fieldNamePrefix', pString);
  			
- 			//
- 			// Is record of correct type?
- 			// 
- 	// 		$va_restrict_to_types = null;
-//  			if ($t_subject->getAppConfig()->get('perform_type_access_checking')) {
-//  				$va_restrict_to_types = caGetTypeRestrictionsForUser($this->ops_table_name, array('access' => __CA_BUNDLE_ACCESS_EDIT__));
-//  			}
-//  			
-//  			if (($vn_type_id = $t_subject->get('type_id')) && is_array($va_restrict_to_types) && !in_array($vn_type_id, $va_restrict_to_types)) {
-//  				$this->response->setRedirect($this->request->config->get('error_display_url').'/n/2560?r='.urlencode($this->request->getFullUrlPath()));
-//  				return;
-//  			}
+ 			if (!$t_subject) {
+				$this->postError(1220, _t('Invalid table %1', $this->ops_table_name),"BaseInterstitalController->Edit()");
+				return false;
+ 			}
+ 			
+ 			$vs_field_name_prefix = $this->request->getParameter('fieldNamePrefix', pString);
  			
  			if(is_array($pa_values)) {
  				foreach($pa_values as $vs_key => $vs_val) {
  					$t_subject->set($vs_key, $vs_val);
  				}
  			}
- 			
- 			// Get type
- 			// if (!($vn_type_id = $t_subject->getTypeID())) {
-//  				if (!($vn_type_id = $this->request->getParameter($t_subject->getTypeFieldName(), pString))) {
-//  					if ($vs_type = $this->request->config->get('quickadd_'.$t_subject->tableName().'_default_type')) {
-//  						$va_tmp = caMakeTypeIDList($t_subject->tableName(), array($vs_type));
-//  						$vn_type_id = array_shift($va_tmp);
-//  					}
-//  					if (!$vn_type_id) {
-//  						$va_tmp = array_keys($t_subject->getTypeList());
-//  						$vn_type_id = array_shift($va_tmp);
-//  					}
-//  				}
-//  			}
- 			
- 			
- 			//$this->request->setParameter('type_id', $vn_type_id);
- 			//$t_subject->set('type_id', $vn_type_id);
  			
  			$t_ui = ca_editor_uis::loadDefaultUI($this->ops_table_name, $this->request, null, array('editorPref' => 'interstitial'));
  			
@@ -150,24 +125,14 @@
  		public function Save($pa_options=null) {
  			if(!is_array($pa_options)) { $pa_options = array(); }
  			list($t_subject, $t_ui, $vn_parent_id, $vn_above_id) = $this->_initView(array_merge($pa_options, array('loadSubject' => true)));
+ 			
+ 			if (!$t_subject) {
+				$this->postError(1220, _t('Invalid table %1', $this->ops_table_name),"BaseInterstitalController->Edit()");
+				return false;
+ 			}
+ 			
  			if (!is_array($pa_options)) { $pa_options = array(); }
- 			// Is user allowed to quickadd?
- 			// if (!(is_array($pa_options) && isset($pa_options['dontCheckQuickAddAction']) && (bool)$pa_options['dontCheckQuickAddAction']) && (!$this->request->user->canDoAction('can_quickadd_'.$t_subject->tableName()))) {
-//  				$va_response = array(
-// 					'status' => 30,
-// 					'id' => null,
-// 					'table' => $t_subject->tableName(),
-// 					'type_id' => null,
-// 					'display' => null,
-// 					'errors' => array(_t("You are not allowed to quickadd %1", $t_subject->getProperty('NAME_PLURAL')) => _t("You are not allowed to quickadd %1", $t_subject->getProperty('NAME_PLURAL')))
-// 				);
-// 				
-// 				$this->view->setVar('response', $va_response);
-// 				
-// 				$this->render('interstitial/interstitial_result_json.php');
-// 				return;
-//  			}
-//  			
+ 			
  			//
  			// Is record of correct type?
  			// 
@@ -205,10 +170,6 @@
  			# trigger "BeforeSaveItem" hook 
 			$this->opo_app_plugin_manager->hookBeforeSaveItem(array('id' => null, 'table_num' => $t_subject->tableNum(), 'table_name' => $t_subject->tableName(), 'instance' => $t_subject, 'is_insert' => true));
  			
- 			//$vn_parent_id = $this->request->getParameter('parent_id', pInteger);
- 			//$t_subject->set('parent_id', $vn_parent_id);
- 			//$this->opo_result_context->setParameter($t_subject->tableName().'_last_parent_id', $vn_parent_id);
- 			
  			$va_opts = array_merge($pa_options, array('ui_instance' => $t_ui));
  			$vb_save_rc = $t_subject->saveBundlesForScreen($this->request->getParameter('screen', pString), $this->request, $va_opts);
 			$this->view->setVar('t_ui', $t_ui);
@@ -243,12 +204,6 @@
  			
  			$vn_id = $t_subject->getPrimaryKey();
  			
- 			//if ($vn_id) {
- 				//$va_tmp = caProcessRelationshipLookupLabel($t_subject->makeSearchResult($t_subject->tableName(), array($vn_id)), $t_subject);
- 				//$va_name = array_pop($va_tmp);
- 			//} else {
- 				//$va_name = array();
- 			//}
  			$va_response = array(
  				'status' => sizeof($va_error_list) ? 10 : 0,
  				'id' => $vn_id,
@@ -274,8 +229,8 @@
  			JavascriptLoadManager::register('bundleableEditor');
  			JavascriptLoadManager::register('imageScroller');
  			JavascriptLoadManager::register('ckeditor');
- 			
- 			$t_subject = $this->opo_datamodel->getInstanceByTableName($this->ops_table_name);
+
+ 			if (!($t_subject = $this->opo_datamodel->getInstanceByTableName($this->ops_table_name))) { return null; }
  			
  			if (is_array($pa_options) && isset($pa_options['loadSubject']) && (bool)$pa_options['loadSubject'] && ($vn_subject_id = (int)$this->request->getParameter($t_subject->primaryKey(), pInteger))) {
  				$t_subject->load($vn_subject_id);
@@ -286,17 +241,9 @@
 					$t_subject->set($vs_f, $vs_v);
 				}
 			}
- 			
-			// empty (ie. new) rows don't have a type_id set, which means we'll have no idea which attributes to display
-			// so we get the type_id off of the request
-			//if (!$vn_type_id = $this->request->getParameter($t_subject->getTypeFieldName(), pString)) {
-			//	$vn_type_id = null;
-			//}
-			
-			// then set the empty row's type_id
-			//$t_subject->set($t_subject->getTypeFieldName(), $vn_type_id);
-			
+
 			// then reload the definitions (which includes bundle specs)
+
 			$t_subject->reloadLabelDefinitions();
 
  			

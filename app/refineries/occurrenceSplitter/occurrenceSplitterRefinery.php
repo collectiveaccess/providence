@@ -30,12 +30,12 @@
  
 	class occurrenceSplitterRefinery extends BaseRefinery {
 		# -------------------------------------------------------
-		private $opb_returns_multiple_values = true;
-		# -------------------------------------------------------
 		public function __construct() {
 			$this->ops_name = 'occurrenceSplitter';
 			$this->ops_title = _t('Occurrence splitter');
 			$this->ops_description = _t('Provides several occurrence-related import functions: splitting of multiple occurrences in a string into individual values, mapping of type and relationship type for related occurrences, building occurrence hierarchies and merging occurrence data with names.');
+			
+			$this->opb_returns_multiple_values = true;
 			
 			parent::__construct();
 		}
@@ -56,105 +56,7 @@
 		 *
 		 */
 		public function refine(&$pa_destination_data, $pa_group, $pa_item, $pa_source_data, $pa_options=null) {
-			$this->opb_returns_multiple_values = true;
-			$o_log = (isset($pa_options['log']) && is_object($pa_options['log'])) ? $pa_options['log'] : null;
-			
-			$va_group_dest = explode(".", $pa_group['destination']);
-			$vs_terminal = array_pop($va_group_dest);
-			$pm_value = $pa_source_data[$pa_item['source']];
-			
-			if (is_array($pm_value)) {
-				$va_occurrences = $pm_value;	// for input formats that support repeating values
-			} else {
-				if ($vs_delimiter = $pa_item['settings']['occurrenceSplitter_delimiter']) {
-					$va_occurrences = explode($vs_delimiter, $pm_value);
-				} else {
-					$va_occurrences = array($pm_value);
-				}
-			}
-			
-			$va_vals = array();
-			$vn_c = 0;
-			foreach($va_occurrences as $vn_i => $vs_occurrence) {
-				if (!$vs_occurrence = trim($vs_occurrence)) { continue; }
-				
-				if($vs_terminal == 'name') {
-					$this->opb_returns_multiple_values = false;
-					return $vs_occurrence;
-				}
-			
-				if (in_array($vs_terminal, array('preferred_labels', 'nonpreferred_labels'))) {
-					return array(0 => array('name' => $vs_occurrence));	
-				}
-			
-				// Set label
-				$va_val = array('preferred_labels' => array('name' => $vs_occurrence));
-			
-				// Set relationship type
-				if (
-					($vs_rel_type_opt = $pa_item['settings']['occurrenceSplitter_relationshipType'])
-				) {
-					$va_val['_relationship_type'] = BaseRefinery::parsePlaceholder($vs_rel_type_opt, $pa_source_data, $pa_item, $vs_delimiter, $vn_c);
-				}
-				
-				if ((!isset($va_val['_relationship_type']) || !$va_val['_relationship_type']) && ($vs_rel_type_opt = $pa_item['settings']['occurrenceSplitter_relationshipTypeDefault'])) {
-					$va_val['_relationship_type'] = BaseRefinery::parsePlaceholder($vs_rel_type_opt, $pa_source_data, $pa_item, $vs_delimiter, $vn_c);
-				}
-				
-				if ((!isset($va_val['_relationship_type']) || !$va_val['_relationship_type']) && $o_log) {
-					$o_log->logWarn(_t('[occurrenceSplitterRefinery] No relationship type is set for occurrence %1', $vs_occurrence));
-				}
-			
-				// Set occurrence_type
-				if (
-					($vs_type_opt = $pa_item['settings']['occurrenceSplitter_occurrenceType'])
-				) {
-					$va_val['_type'] = BaseRefinery::parsePlaceholder($vs_type_opt, $pa_source_data, $pa_item, $vs_delimiter, $vn_c);
-				}
-				
-				if((!isset($va_val['_type']) && !$va_val['_type']) && ($vs_type_opt = $pa_item['settings']['occurrenceSplitter_occurrenceTypeDefault'])) {
-					$va_val['_type'] = BaseRefinery::parsePlaceholder($vs_type_opt, $pa_source_data, $pa_item, $vs_delimiter, $vn_c);
-				}
-				
-				if ((!isset($va_val['_type']) || !$va_val['_type']) && $o_log) {
-					$o_log->logWarn(_t('[occurrenceSplitterRefinery] No occurrence type is set for occurrence %1', $vs_occurrence));
-				}
-				
-				// Set occurrence parents
-				if ($va_parents = $pa_item['settings']['occurrenceSplitter_parents']) {
-					print "parents: ";
-					print_R($va_parents);
-				
-					//$vn_hierarchy_id = caGetListItemID('place_hierarchies', $vs_hierarchy);
-
-					//$t_place = new ca_places();
-					//$t_place->load(array('parent_id' => null, 'hierarchy_id' => $vn_hierarchy_id));
-					//$va_val['_parent_id'] = $t_collection->getPrimaryKey();
-				}
-			
-				// Set attributes
-				if (is_array($pa_item['settings']['occurrenceSplitter_attributes'])) {
-					$va_attr_vals = array();
-					foreach($pa_item['settings']['occurrenceSplitter_attributes'] as $vs_element_code => $va_attrs) {
-						if(is_array($va_attrs)) {
-							foreach($va_attrs as $vs_k => $vs_v) {
-								// BaseRefinery::parsePlaceholder may return an array if the input format supports repeated values (as XML does)
-								// DataMigrationUtils::getOccurrenceID(), which ca_data_importers::importDataFromSource() uses to create related occurrence
-								// only supports non-repeating attribute values, so we join any values here and call it a day.
-								$va_attr_vals[$vs_element_code][$vs_k] = (is_array($vm_v = BaseRefinery::parsePlaceholder($vs_v, $pa_source_data, $pa_item, $vs_delimiter, $vn_c))) ? join(" ", $vm_v) : $vm_v;
-							}
-						} else {
-							$va_attr_vals[$vs_element_code][$vs_element_code] = (is_array($vm_v = BaseRefinery::parsePlaceholder($va_attrs, $pa_source_data, $pa_item, $vs_delimiter, $vn_c))) ? join(" ", $vm_v) : $vm_v;
-						}
-					}
-					$va_val = array_merge($va_val, $va_attr_vals);
-				}
-				
-				$va_vals[] = $va_val;
-				$vn_c++;
-			}
-			
-			return $va_vals;
+			return caGenericImportSplitter('occurrenceSplitter', 'occurrence', 'ca_occurrences', $this, $pa_destination_data, $pa_group, $pa_item, $pa_source_data, $pa_options);
 		}
 		# -------------------------------------------------------	
 		/**
@@ -231,6 +133,15 @@
 				'default' => '',
 				'label' => _t('Occurrence type default'),
 				'description' => _t('Sets the default occurrence type that will be used if none are defined or if the data source values do not match any values in the CollectiveAccess list occurrence_types.')
+			),
+			'occurrenceSplitter_interstitial' => array(
+				'formatType' => FT_TEXT,
+				'displayType' => DT_SELECT,
+				'width' => 10, 'height' => 1,
+				'takesLocale' => false,
+				'default' => '',
+				'label' => _t('Interstitial attributes'),
+				'description' => _t('Sets or maps metadata for the interstitial occurrence <em>relationship</em> record by referencing the metadataElement code and the location in the data source where the data values can be found.')
 			)
 		);
 ?>

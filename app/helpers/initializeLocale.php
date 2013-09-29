@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2008-2012 Whirl-i-Gig
+ * Copyright 2008-2013 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -33,6 +33,7 @@
   /**
    *
    */
+	require_once(__CA_LIB_DIR__.'/core/Zend/Locale.php');
 	
    function initializeLocale($g_ui_locale) {
    		global $_, $_locale;
@@ -44,7 +45,7 @@
 			// If the locale is valid, locale is set
 			$_locale = new Zend_Locale($g_ui_locale);
 			Zend_Registry::set('Zend_Locale', $_locale);
-			
+				
 			if(!caIsRunFromCLI() && ($o_cache = caGetCacheObject('ca_translation', 3600 * 24))) {
 				Zend_Translate::setCache($o_cache);
 			}

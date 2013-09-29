@@ -74,7 +74,7 @@
 			$va_current_actions = $t_role->getRoleActions();
 			
 			foreach($va_actions as $vs_group => $va_group_info) {
-				if (caTableIsActive($vs_group) === false) { continue; }		// will return null if group name is not a table name; true if it's an enabled table and false if it's a disabled table
+				if ((caTableIsActive($vs_group) === false) && ($vs_group != 'ca_object_representations')) { continue; }		// will return null if group name is not a table name; true if it's an enabled table and false if it's a disabled table
 				$vs_check_all_link = '<a href="#" onclick="jQuery(\'.role_action_group_'.$vs_group.'\').attr(\'checked\', true); return false;" class="roleCheckAllNoneButton">'._t('All').'</a>';
 				$vs_check_none_link = '<a href="#" onclick="jQuery(\'.role_action_group_'.$vs_group.'\').attr(\'checked\', false); return false;" class="roleCheckAllNoneButton">'._t('None').'</a>';
 				
@@ -114,7 +114,7 @@
 <?php
 	$o_dm = Datamodel::load();
 	foreach($va_bundle_list as $vs_table => $va_bundles_by_table) {
-		if (!caTableIsActive($vs_table)) { continue; }
+		if (!caTableIsActive($vs_table) && ($vs_table != 'ca_object_representations')) { continue; }
 		print "<table width='100%'>\n";
 		print "<tr><td colspan='4'><h1>".$va_table_names[$vs_table]."</h1></td></tr>\n";				
 		print "<tr align='center' valign='middle'><th width='180' align='left'>"._t('Element')."</th><th width='180'><a href='#' onclick='jQuery(\".{$vs_table}_bundle_access_none\").prop(\"checked\", 1); return false;'>"._t('No access')."</a></th><th width='180'><a href='#' onclick='jQuery(\".{$vs_table}_bundle_access_readonly\").prop(\"checked\", 1); return false;'>"._t('Read-only access')."</a></th><th><a href='#' onclick='jQuery(\".{$vs_table}_bundle_access_edit\").prop(\"checked\", 1); return false;'>"._t('Read/edit access')."</a></th></tr>\n";

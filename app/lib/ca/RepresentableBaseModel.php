@@ -475,7 +475,7 @@
 			$t_oxor->set($vs_pk, $vn_id);
 			$t_oxor->set('representation_id', $t_rep->getPrimaryKey());
 			$t_oxor->set('is_primary', $pb_is_primary ? 1 : 0);
-			$t_oxor->set('rank', isset($pa_options['rank']) ? (int)$pa_options['rank'] : null);
+			$t_oxor->set('rank', isset($pa_options['rank']) ? (int)$pa_options['rank'] : $t_rep->getPrimaryKey());
 			if ($t_oxor->hasField('type_id')) { $t_oxor->set('type_id', isset($pa_options['type_id']) ? (int)$pa_options['type_id'] : null); }
 			$t_oxor->insert();
 		
@@ -627,10 +627,17 @@
 				$this->postError(750, _t("Representation id=%1 does not exist", $pn_representation_id), "RepresentableBaseModel->removeRepresentation()");
 				return false;
 			} else {
-				if (!($va_rels = $t_rep->hasRelationships()) || !is_array($va_rels) || !sizeof($va_rels)) {
-					//
-					// Only delete the related representation if nothing else is related to it
-					//
+				//
+				// Only delete the related representation if nothing else is related to it
+				//
+
+				$va_rels = $t_rep->hasRelationships();
+
+				if(is_array($va_rels) && isset($va_rels['ca_object_representation_labels'])){ // labels don't count as relationships in this case
+					unset($va_rels['ca_object_representation_labels']);
+				}
+
+				if (!is_array($va_rels) || (sizeof($va_rels) == 0)) {
 					$t_rep->setMode(ACCESS_WRITE);
 					$t_rep->delete(false, $pa_options);
 				

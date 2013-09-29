@@ -81,6 +81,8 @@
 				$vs_buf .= "<li><em>".caEditorLink($po_request, $va_error['label'], '', $pa_general['table'], $vn_id)."</em> (".$va_error['idno']."): ".join("; ", $va_error_list)."</li>";
 			}
 			$vs_buf .= "</ul>";
+			
+			$vs_buf .= '<div class="batchProcessingReportSectionWarning">'.((sizeof($pa_errors) == 1) ? _t('Note: <strong>NO</strong> batch changes were saved due to the error.') : _t('Note: <strong>NO</strong> batch changes were saved due to %1 errors.', sizeof($pa_errors)))."</div>";
 		}
 		if (is_array($pa_notices) && sizeof($pa_notices)) {
 			$vs_buf .= '<div class="batchProcessingReportSectionHead">'._t('Processed successfully').':</div><ol>';

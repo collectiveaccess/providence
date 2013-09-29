@@ -795,6 +795,8 @@ final class ConfigurationExporter {
 			$qr_placements = $this->opo_db->query("SELECT * FROM ca_search_form_placements WHERE form_id=? ORDER BY placement_id",$qr_forms->get("form_id"));
 			while($qr_placements->nextRow()){
 				$vo_placement = $this->opo_dom->createElement("placement");
+				$vo_placement->setAttribute("code", "p".$qr_placements->get('placement_id'));
+
 				$vo_placements->appendChild($vo_placement);
 				$vo_placement->appendChild($this->opo_dom->createElement("bundle",caEscapeForXML($qr_placements->get("bundle_name"))));
 

@@ -290,7 +290,7 @@ class Db_mysql extends DbDriverBase {
 			//print "<pre>".caPrintStacktrace()."</pre>\n";
 			//print $vs_sql;
 			//print mysql_error($this->opr_db);
-			$opo_statement->postError($this->nativeToDbError(mysql_errno($this->opr_db)), mysql_error($this->opr_db)."\n<pre>".caPrintStacktrace()."</pre>", "Db->mysql->execute()");
+			$opo_statement->postError($this->nativeToDbError(mysql_errno($this->opr_db)), mysql_error($this->opr_db).((__CA_ENABLE_DEBUG_OUTPUT__) ? "\n<pre>".caPrintStacktrace()."</pre>" : ""), "Db->mysql->execute()");
 			return false;
 		}
 		if (Db::$monitor) {
