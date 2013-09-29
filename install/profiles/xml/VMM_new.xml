@@ -122,6 +122,14 @@
                 </label>
               </labels>
               <items>
+                <item idno="sous_fonds" enabled="1" default="0">
+                  <labels>
+                    <label locale="en_US" preferred="1">
+                      <name_singular>sous-fonds</name_singular>
+                      <name_plural>sous-fonds</name_plural>
+                    </label>
+                  </labels>
+                  <items>
                 <item idno="series" enabled="1" default="0">
                   <labels>
                     <label locale="en_US" preferred="1">
@@ -130,6 +138,14 @@
                     </label>
                   </labels>
                   <items>
+                    <item idno="sub_series" enabled="1" default="0">
+                      <labels>
+                        <label locale="en_US" preferred="1">
+                          <name_singular>subseries</name_singular>
+                          <name_plural>subseries</name_plural>
+                        </label>
+                      </labels>
+                      <items>
                     <item idno="file" enabled="1" default="0">
                       <labels>
                         <label locale="en_US" preferred="1">
@@ -138,6 +154,10 @@
                         </label>
                       </labels>
                     </item>
+                  </items>
+                    </item>
+                  </items>
+                </item>
                   </items>
                 </item>
               </items>
@@ -1463,7 +1483,6 @@
         </item>
       </items>
     </list>
-    
     <list code="arch_vessel_types" hierarchical="0" system="0" vocabulary="1">
       <labels>
         <label locale="en_US">
@@ -1471,7 +1490,7 @@
         </label>
       </labels>
       <items>
-        <item idno="option0" enabled="1" default="1">
+        <item idno="unknown" enabled="1" default="1">
           <labels>
             <label locale="en_US" preferred="1">
               <name_singular>unknown</name_singular>
@@ -1526,12 +1545,62 @@
                   <name_plural>seiner</name_plural>
                 </label>
               </labels>
+              <items>
+                <item idno="seiner_drum" enabled="1" default="0">
+                  <labels>
+                    <label locale="en_US" preferred="1">
+                      <name_singular>seiner, drum</name_singular>
+                      <name_plural>seiner, drum</name_plural>
+                    </label>
+                  </labels>
+                </item>
+                <item idno="seiner_mack" enabled="1" default="0">
+                  <labels>
+                    <label locale="en_US" preferred="1">
+                      <name_singular>seiner, mackarel</name_singular>
+                      <name_plural>seiner, mackarel</name_plural>
+                    </label>
+                  </labels>
+                </item>
+                <item idno="seiner_purse" enabled="1" default="0">
+                  <labels>
+                    <label locale="en_US" preferred="1">
+                      <name_singular>seiner, purse</name_singular>
+                      <name_plural>seiner, purse</name_plural>
+                    </label>
+                  </labels>
+                </item>
+                <item idno="seiner_trawler" enabled="1" default="0">
+                  <labels>
+                    <label locale="en_US" preferred="1">
+                      <name_singular>seiner/trawler</name_singular>
+                      <name_plural>seiner/trawler</name_plural>
+                    </label>
+                  </labels>
+                </item>
+                <item idno="seiner_tuna" enabled="1" default="0">
+                  <labels>
+                    <label locale="en_US" preferred="1">
+                      <name_singular>seiner, tuna</name_singular>
+                      <name_plural>seiner, tuna</name_plural>
+                    </label>
+                  </labels>
+                </item>
+              </items>
             </item>
             <item idno="sealer" enabled="1" default="0">
               <labels>
                 <label locale="en_US" preferred="1">
                   <name_singular>sealer</name_singular>
                   <name_plural>sealer</name_plural>
+                </label>
+              </labels>
+            </item>
+            <item idno="training" enabled="1" default="0">
+              <labels>
+                <label locale="en_US" preferred="1">
+                  <name_singular>training vessel</name_singular>
+                  <name_plural>training vessel</name_plural>
                 </label>
               </labels>
             </item>
@@ -1542,6 +1611,24 @@
                   <name_plural>trawler</name_plural>
                 </label>
               </labels>
+              <items>
+                <item idno="trawler_hal" enabled="1" default="0">
+                  <labels>
+                    <label locale="en_US" preferred="1">
+                      <name_singular>trawler, halibut</name_singular>
+                      <name_plural>trawler, halibut</name_plural>
+                    </label>
+                  </labels>
+                </item>
+                <item idno="trawler_shrimp" enabled="1" default="0">
+                  <labels>
+                    <label locale="en_US" preferred="1">
+                      <name_singular>trawler, shrimp</name_singular>
+                      <name_plural>trawler, shrimp</name_plural>
+                    </label>
+                  </labels>
+                </item>
+              </items>
             </item>
             <item idno="whaler" enabled="1" default="0">
               <labels>
@@ -1551,7 +1638,7 @@
                 </label>
               </labels>
             </item>
-            <item idno="freighter" enabled="1" default="0">
+            <item idno="freighter_fish" enabled="1" default="0">
               <labels>
                 <label locale="en_US" preferred="1">
                   <name_singular>freighter</name_singular>
@@ -1566,6 +1653,40 @@
                   <name_plural>container</name_plural>
                 </label>
               </labels>
+            </item>
+            <item idno="fishing_cutter" enabled="1" default="0">
+              <labels>
+                <label locale="en_US" preferred="1">
+                  <name_singular>cutter</name_singular>
+                  <name_plural>cutter</name_plural>
+                </label>
+              </labels>
+            </item>
+            <item idno="fishing_military" enabled="1" default="0">
+              <labels>
+                <label locale="en_US" preferred="1">
+                  <name_singular>military conversion</name_singular>
+                  <name_plural>military conversion</name_plural>
+                </label>
+              </labels>
+            </item>
+            <item idno="fishing_schooner" enabled="1" default="0">
+              <labels>
+                <label locale="en_US" preferred="1">
+                  <name_singular>schooner</name_singular>
+                  <name_plural>schooner</name_plural>
+                </label>
+              </labels>
+              <items>
+                <item idno="topsail" enabled="1" default="0">
+                  <labels>
+                    <label locale="en_US" preferred="1">
+                      <name_singular>topsail</name_singular>
+                      <name_plural>topsail</name_plural>
+                    </label>
+                  </labels>
+                </item>
+              </items>
             </item>
             <item idno="break_bulk" enabled="1" default="0">
               <labels>
@@ -1601,6 +1722,74 @@
             </item>
           </items>
         </item>
+        <item idno="freighter" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>freighter</name_singular>
+              <name_plural>sfreighter</name_plural>
+            </label>
+          </labels>
+          <items>
+            <item idno="freight_coastal" enabled="1" default="0">
+              <labels>
+                <label locale="en_US" preferred="1">
+                  <name_singular>coastal</name_singular>
+                  <name_plural>coastal</name_plural>
+                </label>
+              </labels>
+            </item>
+            <item idno="freight_container" enabled="1" default="0">
+              <labels>
+                <label locale="en_US" preferred="1">
+                  <name_singular>container</name_singular>
+                  <name_plural>container</name_plural>
+                </label>
+              </labels>
+            </item>
+            <item idno="freight_breakbulk" enabled="1" default="0">
+              <labels>
+                <label locale="en_US" preferred="1">
+                  <name_singular>break-bulk</name_singular>
+                  <name_plural>break-bulk</name_plural>
+                </label>
+              </labels>
+            </item>
+            <item idno="freight_bulk" enabled="1" default="0">
+              <labels>
+                <label locale="en_US" preferred="1">
+                  <name_singular>bulk</name_singular>
+                  <name_plural>bulk</name_plural>
+                </label>
+              </labels>
+              <items>
+                <item idno="bulk_tanker" enabled="1" default="0">
+                  <labels>
+                    <label locale="en_US" preferred="1">
+                      <name_singular>bulk (tanker)</name_singular>
+                      <name_plural>bulk (tanker)</name_plural>
+                    </label>
+                  </labels>
+                </item>
+              </items>
+            </item>
+            <item idno="freight_sail" enabled="1" default="0">
+              <labels>
+                <label locale="en_US" preferred="1">
+                  <name_singular>sail</name_singular>
+                  <name_plural>sail</name_plural>
+                </label>
+              </labels>
+            </item>
+            <item idno="freight_cargo" enabled="1" default="0">
+              <labels>
+                <label locale="en_US" preferred="1">
+                  <name_singular>Cargo - cranes</name_singular>
+                  <name_plural>Cargo - cranes</name_plural>
+                </label>
+              </labels>
+            </item>
+          </items>
+        </item>
         <item idno="naval" enabled="1" default="0">
           <labels>
             <label locale="en_US" preferred="1">
@@ -1629,7 +1818,15 @@
               <labels>
                 <label locale="en_US" preferred="1">
                   <name_singular>auxiliary</name_singular>
-                  <name_plural>auxiliar</name_plural>
+                  <name_plural>auxiliary</name_plural>
+                </label>
+              </labels>
+            </item>
+            <item idno="battleship" enabled="1" default="0">
+              <labels>
+                <label locale="en_US" preferred="1">
+                  <name_singular>battleship</name_singular>
+                  <name_plural>battleship</name_plural>
                 </label>
               </labels>
             </item>
@@ -1640,6 +1837,16 @@
                   <name_plural>corvette</name_plural>
                 </label>
               </labels>
+              <items>
+                <item idno="flower_class" enabled="1" default="0">
+                  <labels>
+                    <label locale="en_US" preferred="1">
+                      <name_singular>corvette, flower class</name_singular>
+                      <name_plural>corvette, flower class</name_plural>
+                    </label>
+                  </labels>
+                </item>
+              </items>
             </item>
             <item idno="cruiser" enabled="1" default="0">
               <labels>
@@ -1648,6 +1855,48 @@
                   <name_plural>cruiser</name_plural>
                 </label>
               </labels>
+              <items>
+                <item idno="cruiser_armed" enabled="1" default="0">
+                  <labels>
+                    <label locale="en_US" preferred="1">
+                      <name_singular>cruiser, armed merchant</name_singular>
+                      <name_plural>cruiser, armed merchant</name_plural>
+                    </label>
+                  </labels>
+                </item>
+                <item idno="cruiser_battle" enabled="1" default="0">
+                  <labels>
+                    <label locale="en_US" preferred="1">
+                      <name_singular>cruiser, battle</name_singular>
+                      <name_plural>cruiser, battle</name_plural>
+                    </label>
+                  </labels>
+                </item>
+                <item idno="cruiser_crown" enabled="1" default="0">
+                  <labels>
+                    <label locale="en_US" preferred="1">
+                      <name_singular>cruiser, crown colony class</name_singular>
+                      <name_plural>cruiser, crown colony class</name_plural>
+                    </label>
+                  </labels>
+                </item>
+                <item idno="cruiser_diadem" enabled="1" default="0">
+                  <labels>
+                    <label locale="en_US" preferred="1">
+                      <name_singular>cruiser, diadem class</name_singular>
+                      <name_plural>cruiser, diadem class</name_plural>
+                    </label>
+                  </labels>
+                </item>
+                <item idno="cruiser_minotaur" enabled="1" default="0">
+                  <labels>
+                    <label locale="en_US" preferred="1">
+                      <name_singular>cruiser, minotaur class</name_singular>
+                      <name_plural>cruiser, minotaur class</name_plural>
+                    </label>
+                  </labels>
+                </item>
+              </items>
             </item>
             <item idno="destroyer" enabled="1" default="0">
               <labels>
@@ -1656,6 +1905,40 @@
                   <name_plural>destroyer</name_plural>
                 </label>
               </labels>
+              <items>
+                <item idno="destroyer_air" enabled="1" default="0">
+                  <labels>
+                    <label locale="en_US" preferred="1">
+                      <name_singular>destroyer, air-defense</name_singular>
+                      <name_plural>destroyer, air-defense</name_plural>
+                    </label>
+                  </labels>
+                </item>
+                <item idno="destroyer_escort" enabled="1" default="0">
+                  <labels>
+                    <label locale="en_US" preferred="1">
+                      <name_singular>destroyer escort</name_singular>
+                      <name_plural>estroyer escort</name_plural>
+                    </label>
+                  </labels>
+                </item>
+                <item idno="destroyer_heli" enabled="1" default="0">
+                  <labels>
+                    <label locale="en_US" preferred="1">
+                      <name_singular>destroyer, helicopter</name_singular>
+                      <name_plural>destroyer, helicopter</name_plural>
+                    </label>
+                  </labels>
+                </item>
+                <item idno="destroyer_torpedo" enabled="1" default="0">
+                  <labels>
+                    <label locale="en_US" preferred="1">
+                      <name_singular>destroyer, torpedo boat</name_singular>
+                      <name_plural>destroyer, torpedo boat</name_plural>
+                    </label>
+                  </labels>
+                </item>
+              </items>
             </item>
             <item idno="diving" enabled="1" default="0">
               <labels>
@@ -1688,6 +1971,24 @@
                   <name_plural>minesweeper</name_plural>
                 </label>
               </labels>
+              <items>
+                <item idno="bangor" enabled="1" default="0">
+                  <labels>
+                    <label locale="en_US" preferred="1">
+                      <name_singular>minesweeper, Bangor class</name_singular>
+                      <name_plural>minesweeper, Bangor class</name_plural>
+                    </label>
+                  </labels>
+                </item>
+              </items>
+            </item>
+            <item idno="pass_launch" enabled="1" default="0">
+              <labels>
+                <label locale="en_US" preferred="1">
+                  <name_singular>passenger launch</name_singular>
+                  <name_plural>passenger launch</name_plural>
+                </label>
+              </labels>
             </item>
             <item idno="patrol_boat" enabled="1" default="0">
               <labels>
@@ -1696,8 +1997,26 @@
                   <name_plural>patrol boat</name_plural>
                 </label>
               </labels>
+              <items>
+                <item idno="patrol_sub" enabled="1" default="0">
+                  <labels>
+                    <label locale="en_US" preferred="1">
+                      <name_singular>patrol (submarine chaser)</name_singular>
+                      <name_plural>patrol (submarine chaser)</name_plural>
+                    </label>
+                  </labels>
+                </item>
+              </items>
             </item>
-            <item idno="sail" enabled="1" default="0">
+            <item idno="royal_yacht" enabled="1" default="0">
+              <labels>
+                <label locale="en_US" preferred="1">
+                  <name_singular>royal yacht</name_singular>
+                  <name_plural>royal yacht</name_plural>
+                </label>
+              </labels>
+            </item>
+            <item idno="naval_sail" enabled="1" default="0">
               <labels>
                 <label locale="en_US" preferred="1">
                   <name_singular>sail</name_singular>
@@ -1705,11 +2024,53 @@
                 </label>
               </labels>
             </item>
-            <item idno="submarine" enabled="1" default="0">
+            <item idno="naval_sub" enabled="1" default="0">
               <labels>
                 <label locale="en_US" preferred="1">
                   <name_singular>submarine</name_singular>
                   <name_plural>submarine</name_plural>
+                </label>
+              </labels>
+            </item>
+            <item idno="training_yard" enabled="1" default="0">
+              <labels>
+                <label locale="en_US" preferred="1">
+                  <name_singular>training yard boat</name_singular>
+                  <name_plural>training yard boat</name_plural>
+                </label>
+              </labels>
+            </item>
+            <item idno="armed_transport" enabled="1" default="0">
+              <labels>
+                <label locale="en_US" preferred="1">
+                  <name_singular>armed transport</name_singular>
+                  <name_plural>armed transport</name_plural>
+                </label>
+              </labels>
+            </item>
+            <item idno="carrier" enabled="1" default="0">
+              <labels>
+                <label locale="en_US" preferred="1">
+                  <name_singular>carrier</name_singular>
+                  <name_plural>carrier</name_plural>
+                </label>
+              </labels>
+              <items>
+                <item idno="carrier_bulk" enabled="1" default="0">
+                  <labels>
+                    <label locale="en_US" preferred="1">
+                      <name_singular>bulk</name_singular>
+                      <name_plural>bulk</name_plural>
+                    </label>
+                  </labels>
+                </item>
+              </items>
+            </item>
+            <item idno="ocean_liner" enabled="1" default="0">
+              <labels>
+                <label locale="en_US" preferred="1">
+                  <name_singular>ocean_liner</name_singular>
+                  <name_plural>ocean_liner</name_plural>
                 </label>
               </labels>
             </item>
@@ -1746,6 +2107,16 @@
                   <name_plural>ferry</name_plural>
                 </label>
               </labels>
+              <items>
+                <item idno="ferry_freight" enabled="1" default="0">
+                  <labels>
+                    <label locale="en_US" preferred="1">
+                      <name_singular>ferry, freight car</name_singular>
+                      <name_plural>ferry, freight car</name_plural>
+                    </label>
+                  </labels>
+                </item>
+              </items>
             </item>
             <item idno="viking" enabled="1" default="0">
               <labels>
@@ -1755,14 +2126,49 @@
                 </label>
               </labels>
             </item>
-            <item idno="patrol" enabled="1" default="0">
+            <item idno="ice_breaker" enabled="1" default="0">
               <labels>
                 <label locale="en_US" preferred="1">
-                  <name_singular>patrol</name_singular>
-                  <name_plural>patrol</name_plural>
+                  <name_singular>ice breaker</name_singular>
+                  <name_plural>ice breaker</name_plural>
                 </label>
               </labels>
             </item>
+            <item idno="oceanographic" enabled="1" default="0">
+              <labels>
+                <label locale="en_US" preferred="1">
+                  <name_singular>oceanographic</name_singular>
+                  <name_plural>oceanographic</name_plural>
+                </label>
+              </labels>
+            </item>
+            <item idno="hovercraft" enabled="1" default="0">
+              <labels>
+                <label locale="en_US" preferred="1">
+                  <name_singular>hovercraft</name_singular>
+                  <name_plural>hovercraft</name_plural>
+                </label>
+              </labels>
+            </item>
+            <item idno="weathership" enabled="1" default="0">
+              <labels>
+                <label locale="en_US" preferred="1">
+                  <name_singular>weathership</name_singular>
+                  <name_plural>weathership</name_plural>
+                </label>
+              </labels>
+            </item>
+            
+          </items>
+        </item>
+        <item idno="patrol" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>patrol</name_singular>
+              <name_plural>patrol</name_plural>
+            </label>
+          </labels>
+          <items>
             <item idno="coast_guard" enabled="1" default="0">
               <labels>
                 <label locale="en_US" preferred="1">
@@ -1787,11 +2193,45 @@
                 </label>
               </labels>
             </item>
-            <item idno="recreational" enabled="1" default="0">
+            <item idno="dept_fish" enabled="1" default="0">
               <labels>
                 <label locale="en_US" preferred="1">
-                  <name_singular>recreational</name_singular>
-                  <name_plural>recreational</name_plural>
+                  <name_singular>Department of Fisheries</name_singular>
+                  <name_plural>Department of Fisheries</name_plural>
+                </label>
+              </labels>
+            </item>
+            <item idno="harbour" enabled="1" default="0">
+              <labels>
+                <label locale="en_US" preferred="1">
+                  <name_singular>Harbour Commission</name_singular>
+                  <name_plural>Harbour Commission</name_plural>
+                </label>
+              </labels>
+            </item>
+            <item idno="rcmp" enabled="1" default="0">
+              <labels>
+                <label locale="en_US" preferred="1">
+                  <name_singular>RCMP</name_singular>
+                  <name_plural>RCMP</name_plural>
+                </label>
+              </labels>
+            </item>
+          </items>
+        </item>
+        <item idno="rec" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>recreational</name_singular>
+              <name_plural>recreational</name_plural>
+            </label>
+          </labels>
+          <items>
+            <item idno="motor_yacht" enabled="1" default="0">
+              <labels>
+                <label locale="en_US" preferred="1">
+                  <name_singular>motor yacht</name_singular>
+                  <name_plural>motor yacht</name_plural>
                 </label>
               </labels>
             </item>
@@ -1803,27 +2243,21 @@
                 </label>
               </labels>
             </item>
-            <item idno="motor_yacht" enabled="1" default="0">
+          </items>
+        </item>
+        <item idno="research" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>research/survey/exploration</name_singular>
+              <name_plural>research/survey/exploration</name_plural>
+            </label>
+          </labels>
+          <items>
+            <item idno="exploration" enabled="1" default="0">
               <labels>
                 <label locale="en_US" preferred="1">
-                  <name_singular>motor yacht</name_singular>
-                  <name_plural>motor yacht</name_plural>
-                </label>
-              </labels>
-            </item>
-            <item idno="research" enabled="1" default="0">
-              <labels>
-                <label locale="en_US" preferred="1">
-                  <name_singular>research/survey/exploration</name_singular>
-                  <name_plural>research/survey/exploration</name_plural>
-                </label>
-              </labels>
-            </item>
-            <item idno="ice_breaker" enabled="1" default="0">
-              <labels>
-                <label locale="en_US" preferred="1">
-                  <name_singular>ice breaker</name_singular>
-                  <name_plural>ice breaker</name_plural>
+                  <name_singular>exploration</name_singular>
+                  <name_plural>exploration</name_plural>
                 </label>
               </labels>
             </item>
@@ -1835,43 +2269,11 @@
                 </label>
               </labels>
             </item>
-            <item idno="oceanographic" enabled="1" default="0">
-              <labels>
-                <label locale="en_US" preferred="1">
-                  <name_singular>oceanographic</name_singular>
-                  <name_plural>oceanographic</name_plural>
-                </label>
-              </labels>
-            </item>
-            <item idno="submarine" enabled="1" default="0">
+            <item idno="sub1" enabled="1" default="0">
               <labels>
                 <label locale="en_US" preferred="1">
                   <name_singular>submarine</name_singular>
                   <name_plural>submarine</name_plural>
-                </label>
-              </labels>
-            </item>
-            <item idno="hovercraft" enabled="1" default="0">
-              <labels>
-                <label locale="en_US" preferred="1">
-                  <name_singular>hovercraft</name_singular>
-                  <name_plural>hovercraft</name_plural>
-                </label>
-              </labels>
-            </item>
-            <item idno="weathership" enabled="1" default="0">
-              <labels>
-                <label locale="en_US" preferred="1">
-                  <name_singular>weathership</name_singular>
-                  <name_plural>weathership</name_plural>
-                </label>
-              </labels>
-            </item>
-            <item idno="exploration" enabled="1" default="0">
-              <labels>
-                <label locale="en_US" preferred="1">
-                  <name_singular>exploration</name_singular>
-                  <name_plural>exploration</name_plural>
                 </label>
               </labels>
             </item>
@@ -1933,14 +2335,6 @@
                 </label>
               </labels>
             </item>
-            <item idno="kayak" enabled="1" default="0">
-              <labels>
-                <label locale="en_US" preferred="1">
-                  <name_singular>kayak</name_singular>
-                  <name_plural>kayak</name_plural>
-                </label>
-              </labels>
-            </item>
             <item idno="gig_captain" enabled="1" default="0">
               <labels>
                 <label locale="en_US" preferred="1">
@@ -1957,6 +2351,14 @@
                 </label>
               </labels>
             </item>
+            <item idno="kayak" enabled="1" default="0">
+              <labels>
+                <label locale="en_US" preferred="1">
+                  <name_singular>kayak</name_singular>
+                  <name_plural>kayak</name_plural>
+                </label>
+              </labels>
+            </item>
             <item idno="launch" enabled="1" default="0">
               <labels>
                 <label locale="en_US" preferred="1">
@@ -1964,15 +2366,25 @@
                   <name_plural>launch</name_plural>
                 </label>
               </labels>
-            </item>
-            <item idno="launch_steam" enabled="1" default="0">
-              <labels>
-                <label locale="en_US" preferred="1">
-                  <name_singular>launch, steam</name_singular>
-                  <name_plural>launch, steam</name_plural>
-                </label>
-              </labels>
-            </item>
+              <items>
+                <item idno="launch_steam" enabled="1" default="0">
+                  <labels>
+                    <label locale="en_US" preferred="1">
+                      <name_singular>launch, steam</name_singular>
+                      <name_plural>launch, steam</name_plural>
+                    </label>
+                  </labels>
+                </item>
+                <item idno="launch_naval" enabled="1" default="0">
+                  <labels>
+                    <label locale="en_US" preferred="1">
+                      <name_singular>launch, naval</name_singular>
+                      <name_plural>launch, naval</name_plural>
+                    </label>
+                  </labels>
+                </item>
+              </items>
+            </item> 
             <item idno="lifeboat" enabled="1" default="0">
               <labels>
                 <label locale="en_US" preferred="1">
@@ -1989,6 +2401,14 @@
                 </label>
               </labels>
             </item>
+            <item idno="workboat" enabled="1" default="0">
+              <labels>
+                <label locale="en_US" preferred="1">
+                  <name_singular>workboat</name_singular>
+                  <name_plural>workboat</name_plural>
+                </label>
+              </labels>
+            </item>
             <item idno="tender" enabled="1" default="0">
               <labels>
                 <label locale="en_US" preferred="1">
@@ -1996,6 +2416,32 @@
                   <name_plural>tender</name_plural>
                 </label>
               </labels>
+              <items>
+                <item idno="aircraft" enabled="1" default="0">
+                  <labels>
+                    <label locale="en_US" preferred="1">
+                      <name_singular>tender, aircraft</name_singular>
+                      <name_plural>tender, aircraft</name_plural>
+                    </label>
+                  </labels>
+                </item>
+                <item idno="lighthouse" enabled="1" default="0">
+                  <labels>
+                    <label locale="en_US" preferred="1">
+                      <name_singular>tender, lighthouse</name_singular>
+                      <name_plural>tender, lighthouse</name_plural>
+                    </label>
+                  </labels>
+                </item>
+                <item idno="refuelling" enabled="1" default="0">
+                  <labels>
+                    <label locale="en_US" preferred="1">
+                      <name_singular>tender, refuelling</name_singular>
+                      <name_plural>tender, refuelling</name_plural>
+                    </label>
+                  </labels>
+                </item>
+              </items>
             </item>
           </items>
         </item>
@@ -2028,6 +2474,14 @@
                 <label locale="en_US" preferred="1">
                   <name_singular>lighthouse tender</name_singular>
                   <name_plural>lighthouse tender</name_plural>
+                </label>
+              </labels>
+            </item>
+            <item idno="water_taxi" enabled="1" default="0">
+              <labels>
+                <label locale="en_US" preferred="1">
+                  <name_singular>water taxi</name_singular>
+                  <name_plural>water taxi</name_plural>
                 </label>
               </labels>
             </item>
@@ -2072,6 +2526,72 @@
                   <name_plural>tug</name_plural>
                 </label>
               </labels>
+              <items>
+                <item idno="boom" enabled="1" default="0">
+                  <labels>
+                    <label locale="en_US" preferred="1">
+                      <name_singular>tug boom boat</name_singular>
+                      <name_plural>tug boom boat</name_plural>
+                    </label>
+                  </labels>
+                </item>
+                <item idno="diesel" enabled="1" default="0">
+                  <labels>
+                    <label locale="en_US" preferred="1">
+                      <name_singular>tug, diesel tunnel</name_singular>
+                      <name_plural>tug, diesel tunnel</name_plural>
+                    </label>
+                  </labels>
+                </item>
+                <item idno="river" enabled="1" default="0">
+                  <labels>
+                    <label locale="en_US" preferred="1">
+                      <name_singular>tug, river</name_singular>
+                      <name_plural>tug, river</name_plural>
+                    </label>
+                  </labels>
+                </item>
+                <item idno="steam" enabled="1" default="0">
+                  <labels>
+                    <label locale="en_US" preferred="1">
+                      <name_singular>tug, steam</name_singular>
+                      <name_plural>tug, steam</name_plural>
+                    </label>
+                  </labels>
+                </item>
+                <item idno="steel" enabled="1" default="0">
+                  <labels>
+                    <label locale="en_US" preferred="1">
+                      <name_singular>tug, steel</name_singular>
+                      <name_plural>tug, steel</name_plural>
+                    </label>
+                  </labels>
+                </item>
+                <item idno="tunnel" enabled="1" default="0">
+                  <labels>
+                    <label locale="en_US" preferred="1">
+                      <name_singular>tug, tunnel</name_singular>
+                      <name_plural>tug, tunnel</name_plural>
+                    </label>
+                  </labels>
+                </item>
+                <item idno="twin" enabled="1" default="0">
+                  <labels>
+                    <label locale="en_US" preferred="1">
+                      <name_singular>tug, twin screw</name_singular>
+                      <name_plural>tug, twin screw</name_plural>
+                    </label>
+                  </labels>
+                </item>
+                <item idno="work" enabled="1" default="0">
+                  <labels>
+                    <label locale="en_US" preferred="1">
+                      <name_singular>tug, work boat</name_singular>
+                      <name_plural>tug, work boat</name_plural>
+                    </label>
+                  </labels>
+                </item>
+              </items>
             </item>
             <item idno="barge" enabled="1" default="0">
               <labels>
@@ -2081,9 +2601,178 @@
                 </label>
               </labels>
             </item>
+            <item idno="lighter" enabled="1" default="0">
+              <labels>
+                <label locale="en_US" preferred="1">
+                  <name_singular>lighter</name_singular>
+                  <name_plural>lighter</name_plural>
+                </label>
+              </labels>
+            </item>
+            <item idno="scow" enabled="1" default="0">
+              <labels>
+                <label locale="en_US" preferred="1">
+                  <name_singular>scow</name_singular>
+                  <name_plural>scow</name_plural>
+                </label>
+              </labels>
+            </item>
           </items>
         </item>
-        
+        <item idno="armed" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>armed vessel</name_singular>
+              <name_plural>armed vessel</name_plural>
+            </label>
+          </labels>
+          <items>
+            <item idno="armed_explore" enabled="1" default="0">
+              <labels>
+                <label locale="en_US" preferred="1">
+                  <name_singular>armed exploration</name_singular>
+                  <name_plural>armed exploration</name_plural>
+                </label>
+              </labels>
+        </item>
+          </items>
+        </item>
+        <item idno="barque" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>barque</name_singular>
+              <name_plural>barque</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="cableship" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>cableship</name_singular>
+              <name_plural>cableship</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="clipper" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>clipper</name_singular>
+              <name_plural>clipper</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="galleon" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>galleon</name_singular>
+              <name_plural>galleon</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="light_cruiser" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>light cruiser</name_singular>
+              <name_plural>light cruiser</name_plural>
+            </label>
+          </labels>
+          <items>
+            <item idno="town_class" enabled="1" default="0">
+              <labels>
+                <label locale="en_US" preferred="1">
+                  <name_singular>town class</name_singular>
+                  <name_plural>town class</name_plural>
+                </label>
+              </labels>
+            </item>
+          </items>
+        </item>
+        <item idno="paddlewheeler" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>paddlewheeler</name_singular>
+              <name_plural>paddlewheeler</name_plural>
+            </label>
+          </labels>
+          <items>
+            <item idno="flat_bottom" enabled="1" default="0">
+              <labels>
+                <label locale="en_US" preferred="1">
+                  <name_singular>flat-bottomed</name_singular>
+                  <name_plural>flat_bottomed</name_plural>
+                </label>
+              </labels>
+            </item>
+          </items>
+        </item>
+        <item idno="racing_punt" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>racing punt</name_singular>
+              <name_plural>racing punt</name_plural>
+            </label>
+          </labels>
+          <items>
+            <item idno="thames" enabled="1" default="0">
+              <labels>
+                <label locale="en_US" preferred="1">
+                  <name_singular>Thames river</name_singular>
+                  <name_plural>Thames river</name_plural>
+                </label>
+              </labels>
+            </item>
+          </items>
+        </item>
+        <item idno="rowboat" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>rowboat</name_singular>
+              <name_plural>rowboat</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="ship_line" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>ship of the line</name_singular>
+              <name_plural>ship of the line</name_plural>
+            </label>
+          </labels>
+          <items>
+            <item idno="first_rate" enabled="1" default="0">
+              <labels>
+                <label locale="en_US" preferred="1">
+                  <name_singular>first rate</name_singular>
+                  <name_plural>first rate</name_plural>
+                </label>
+              </labels>
+            </item>
+          </items>
+        </item>
+        <item idno="steamer" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>steamer</name_singular>
+              <name_plural>steamer</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="steamship" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>steamship</name_singular>
+              <name_plural>steamship</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="yacht" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>yacht</name_singular>
+              <name_plural>yacht</name_plural>
+            </label>
+          </labels>
+        </item>
       </items>
     </list>
     <list code="object_lot_statuses" hierarchical="0" system="0" vocabulary="0">
@@ -6935,6 +7624,80 @@
             </placement>
           </bundlePlacements>
         </screen>
+        <screen idno="basic_sousfonds" default="1">
+          <labels>
+            <label locale="en_US">
+              <name>Basic Info</name>
+            </label>
+          </labels>
+          <typeRestrictions>
+            <restriction code="sous_fonds" type="sous_fonds"/>
+          </typeRestrictions>
+          <bundlePlacements>
+            <placement code="hierarchy_location">
+              <bundle>hierarchy_location</bundle>
+            </placement>
+            <placement code="idno">
+              <bundle>idno</bundle>
+              <settings>
+                <setting name="label" locale="en_US">Sous-Fonds Number</setting>
+                <setting name="add_label" locale="en_US">Add Sous-Fonds Number</setting>
+              </settings>
+            </placement>
+       <placement code="preferred_labels">
+              <bundle>preferred_labels</bundle>
+              <settings>
+                <setting name="label" locale="en_US">Title</setting>
+                <setting name="add_label" locale="en_US">Add Title</setting>
+              </settings>
+            </placement>
+            <placement code="ca_accessions">
+              <bundle>ca_object_lots</bundle>
+              <settings>
+                <setting name="label" locale="en_US">Accession number</setting>
+                <setting name="add_label" locale="en_US">Add Accession number</setting>
+              </settings>
+            </placement>
+            <placement code="ca_attribute_creator_name">
+              <bundle>ca_attribute_creator_name</bundle>
+            </placement>
+            <placement code="ca_attribute_GMD">
+              <bundle>ca_attribute_GMD</bundle>
+            </placement>
+            <placement code="ca_home_location">
+              <bundle>ca_storage_locations</bundle>
+              <settings>
+                <setting name="label" locale="en_US">Home Location</setting>
+                <setting name="restrict_to_relationship_types">home</setting>
+              </settings>
+            </placement>
+            <placement code="ca_temp_location">
+              <bundle>ca_storage_locations</bundle>
+              <settings>
+                <setting name="label" locale="en_US">Temporary Location</setting>
+                <setting name="restrict_to_relationship_types">temp</setting>
+              </settings>
+            </placement>
+            <placement code="ca_attribute_storage_note">
+              <bundle>ca_attribute_storage_note</bundle>
+            </placement>
+            <placement code="ca_attribute_format_text">
+              <bundle>ca_attribute_format_text</bundle>
+            </placement>
+            <placement code="ca_attribute_coverage">
+              <bundle>ca_attribute_coverage</bundle>
+            </placement>
+            <placement code="ca_attribute_rights">
+              <bundle>ca_attribute_rights</bundle>
+            </placement>
+            <placement code="ca_attribute_relation">
+              <bundle>ca_attribute_relation</bundle>
+            </placement>
+            <placement code="ca_attribute_dc_type">
+              <bundle>ca_attribute_dc_type</bundle>
+            </placement>
+          </bundlePlacements>
+        </screen>
         <screen idno="basic_series" default="1">
           <labels>
             <label locale="en_US">
@@ -6953,6 +7716,80 @@
               <settings>
                 <setting name="label" locale="en_US">Series Number</setting>
                 <setting name="add_label" locale="en_US">Add Series Number</setting>
+              </settings>
+            </placement>
+       <placement code="preferred_labels">
+              <bundle>preferred_labels</bundle>
+              <settings>
+                <setting name="label" locale="en_US">Title</setting>
+                <setting name="add_label" locale="en_US">Add Title</setting>
+              </settings>
+            </placement>
+            <placement code="ca_accessions">
+              <bundle>ca_object_lots</bundle>
+              <settings>
+                <setting name="label" locale="en_US">Accession number</setting>
+                <setting name="add_label" locale="en_US">Add Accession number</setting>
+              </settings>
+            </placement>
+            <placement code="ca_attribute_creator_name">
+              <bundle>ca_attribute_creator_name</bundle>
+            </placement>
+            <placement code="ca_attribute_GMD">
+              <bundle>ca_attribute_GMD</bundle>
+            </placement>
+            <placement code="ca_home_location">
+              <bundle>ca_storage_locations</bundle>
+              <settings>
+                <setting name="label" locale="en_US">Home Location</setting>
+                <setting name="restrict_to_relationship_types">home</setting>
+              </settings>
+            </placement>
+            <placement code="ca_temp_location">
+              <bundle>ca_storage_locations</bundle>
+              <settings>
+                <setting name="label" locale="en_US">Temporary Location</setting>
+                <setting name="restrict_to_relationship_types">temp</setting>
+              </settings>
+            </placement>
+            <placement code="ca_attribute_storage_note">
+              <bundle>ca_attribute_storage_note</bundle>
+            </placement>
+            <placement code="ca_attribute_format_text">
+              <bundle>ca_attribute_format_text</bundle>
+            </placement>
+            <placement code="ca_attribute_coverage">
+              <bundle>ca_attribute_coverage</bundle>
+            </placement>
+            <placement code="ca_attribute_rights">
+              <bundle>ca_attribute_rights</bundle>
+            </placement>
+            <placement code="ca_attribute_relation">
+              <bundle>ca_attribute_relation</bundle>
+            </placement>
+            <placement code="ca_attribute_dc_type">
+              <bundle>ca_attribute_dc_type</bundle>
+            </placement>
+          </bundlePlacements>
+        </screen>
+        <screen idno="basic_subseries" default="1">
+          <labels>
+            <label locale="en_US">
+              <name>Basic Info</name>
+            </label>
+          </labels>
+          <typeRestrictions>
+            <restriction code="sub_series" type="sub_series"/>
+          </typeRestrictions>
+          <bundlePlacements>
+            <placement code="hierarchy_location">
+              <bundle>hierarchy_location</bundle>
+            </placement>
+            <placement code="idno">
+              <bundle>idno</bundle>
+              <settings>
+                <setting name="label" locale="en_US">Subseries Number</setting>
+                <setting name="add_label" locale="en_US">Add Subseries Number</setting>
               </settings>
             </placement>
        <placement code="preferred_labels">
@@ -7104,6 +7941,9 @@
             <placement code="ca_attribute_archive_dates">
               <bundle>ca_attribute_archive_dates</bundle>
             </placement>  
+            <placement code="ca_attribute_history_bio">
+              <bundle>ca_attribute_history_bio</bundle>
+            </placement>
              <placement code="ca_attribute_physical_content">
               <bundle>ca_attribute_physical_content</bundle>
             </placement>
@@ -7139,9 +7979,6 @@
             </placement>
             <placement code="ca_attribute_archive_cataloguer">
               <bundle>ca_attribute_archive_cataloguer</bundle>
-            </placement>
-            <placement code="ca_attribute_history_bio">
-              <bundle>ca_attribute_history_bio</bundle>
             </placement>
           </bundlePlacements>
         </screen>
