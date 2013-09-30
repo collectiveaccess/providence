@@ -343,12 +343,20 @@ final class ConfigurationExporter {
 					$vo_restriction->appendChild($vo_type);
 				}
 
-				if(is_array($t_restriction->getSettings())){
+				if(is_array($va_restriction_settings = $t_restriction->getSettings()) || ((isset($va_restriction['include_subtypes']) && (bool)$va_restriction['include_subtypes']))){
 					$vo_settings = $this->opo_dom->createElement("settings");
-
-					foreach($t_restriction->getSettings() as $vs_setting => $vs_value){
-						$vo_setting = $this->opo_dom->createElement("setting",$vs_value);
-						$vo_setting->setAttribute("name", $vs_setting);
+					
+					if (is_array($va_restriction_settings)) {
+						foreach($va_restriction_settings as $vs_setting => $vs_value){
+							$vo_setting = $this->opo_dom->createElement("setting",$vs_value);
+							$vo_setting->setAttribute("name", $vs_setting);
+							$vo_settings->appendChild($vo_setting);
+						}
+					}
+					
+					if (isset($va_restriction['include_subtypes']) && (bool)$va_restriction['include_subtypes']) {
+						$vo_setting = $this->opo_dom->createElement("setting", '1');
+						$vo_setting->setAttribute("name", 'includeSubtypes');
 						$vo_settings->appendChild($vo_setting);
 					}
 
