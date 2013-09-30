@@ -1563,7 +1563,7 @@ function caFileIsIncludable($ps_file) {
 	 * @return array
 	 */
 	function caGetOptions($pa_options, $pa_defaults) {
-		$va_proc_options = $pa_options;
+		$va_proc_options = is_array($pa_options) ? $pa_options : array();
 		
 		foreach($pa_defaults as $vs_opt => $vs_opt_default_val) {
 			if (!isset($va_proc_options[$vs_opt])) { $va_proc_options[$vs_opt] = $vs_opt_default_val; }
