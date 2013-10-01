@@ -164,6 +164,7 @@
  		 * 			list_id = if set then the numeric item_id value is translated into label text in the current locale. If not set then the numeric item_id is returned.
  		 *			useSingular = If list_id is set then by default the returned text is the plural label. Setting this option to true will force use of the singular label.
  		 *			showHierarchy = If true then hierarchical parents of list item will be returned and hierarchical options described below will be used to control the output
+ 		 *			returnIdno = If true list item idno is returned rather than preferred label
  		 *			HIERARCHICAL OPTIONS: 
  		 *				direction - For hierarchy specifications (eg. ca_objects.hierarchy) this determines the order in which the hierarchy is returned. ASC will return the hierarchy root first while DESC will return it with the lowest node first. Default is ASC.
  		 *				top - For hierarchy specifications (eg. ca_objects.hierarchy) this option, if set, will limit the returned hierarchy to the first X nodes from the root down. Default is to not limit.
@@ -178,11 +179,19 @@
 			if ($vn_list_id > 0) {
 				$t_list = new ca_lists();
 				
+				$vb_return_idno = ((isset($pa_options['returnIdno']) && (bool)$pa_options['returnIdno']));
+				if ($vb_return_idno) {
+					$vs_get_spec = 'idno';
+				} else {
+					$vs_get_spec = ((isset($pa_options['useSingular']) && $pa_options['useSingular']) ? 'name_singular' : 'name_plural');
+				}
 				// do we need to get the hierarchy?
 				if ($pa_options['showHierarchy']) {
 					$t_item = new ca_list_items($this->ops_text_value);
-					
-					return $t_item->get('ca_list_items.hierarchy.'.((isset($pa_options['useSingular']) && $pa_options['useSingular']) ? 'name_singular' : 'name_plural'), $pa_options);
+					return $t_item->get('ca_list_items.hierarchy.'.$vs_get_spec, $pa_options);
+				} elseif($vb_return_idno) {
+					$t_item = new ca_list_items($this->ops_text_value);
+					return $t_item->get('ca_list_items.'.$vs_get_spec, $pa_options);
 				}
 				
 				return $t_list->getItemFromListForDisplayByItemID($vn_list_id, $this->ops_text_value, (isset($pa_options['useSingular']) && $pa_options['useSingular']) ? false : true);
