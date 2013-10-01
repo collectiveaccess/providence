@@ -1556,39 +1556,39 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 					
 						if (isset($va_item['settings']['restrictToTypes']) && is_array($va_item['settings']['restrictToTypes']) && !in_array($vs_type, $va_item['settings']['restrictToTypes'])) {
 							$o_log->logInfo(_t('[%1] Skipped row %2 because of type restriction', $vs_idno, $vn_row));
-							continue(2);
+							continue(4);
 						}
 						
 						if (isset($va_item['settings']['skipGroupIfExpression']) && strlen(trim($va_item['settings']['skipGroupIfExpression']))) {
 							if($vm_ret = ExpressionParser::evaluate($va_item['settings']['skipGroupIfExpression'], $va_row)) {
 								$o_log->logInfo(_t('[%1] Skipped group %2 because expression %3 is true', $vs_idno, $vn_group_id, $va_item['settings']['skipGroupIfExpression']));
-								continue(2);
+								continue(3);
 							}
 						}
 						
 						if (isset($va_item['settings']['skipGroupIfEmpty']) && (bool)$va_item['settings']['skipGroupIfEmpty'] && !strlen($vm_val)) {
 							$o_log->logInfo(_t('[%1] Skipped group %2 because value for %3 is empty', $vs_idno, $vn_group_id, $vs_item_terminal));
-							continue(2);
+							continue(3);
 						}
 						if (isset($va_item['settings']['skipGroupIfValue']) && is_array($va_item['settings']['skipGroupIfValue']) && strlen($vm_val) && in_array($vm_val, $va_item['settings']['skipGroupIfValue'])) {
 							$o_log->logInfo(_t('[%1] Skipped group %2 because value for %3 matches value %4', $vs_idno, $vn_group_id, $vs_item_terminal, $vm_val));
-							continue(2);
+							continue(3);
 						}
 						if (isset($va_item['settings']['skipGroupIfNotValue']) && is_array($va_item['settings']['skipGroupIfNotValue']) && strlen($vm_val) && !in_array($vm_val, $va_item['settings']['skipGroupIfNotValue'])) {
 							$o_log->logInfo(_t('[%1] Skipped group %2 because value for %3 matches is not in list of values', $vs_idno, $vn_group_id, $vs_item_terminal));
-							continue(2);
+							continue(3);
 						}
 						if (isset($va_item['settings']['skipRowIfEmpty']) && (bool)$va_item['settings']['skipRowIfEmpty'] && !strlen($vm_val)) {
 							$o_log->logInfo(_t('[%1] Skipped row %2 because value for %3 in group %4 is empty', $vs_idno, $vn_row, $vs_item_terminal, $vn_group_id));
-							continue(3);
+							continue(4);
 						}
 						if (isset($va_item['settings']['skipRowIfValue']) && is_array($va_item['settings']['skipRowIfValue']) && strlen($vm_val) && in_array($vm_val, $va_item['settings']['skipRowIfValue'])) {
 							$o_log->logInfo(_t('[%1] Skipped row %2 because value for %3 in group %4 matches value %5', $vs_idno, $vn_row, $vs_item_terminal, $vn_group_id));
-							continue(3);
+							continue(4);
 						}
 						if (isset($va_item['settings']['skipRowIfNotValue']) && is_array($va_item['settings']['skipRowIfNotValue']) && strlen($vm_val) && !in_array($vm_val, $va_item['settings']['skipRowIfNotValue'])) {
 							$o_log->logInfo(_t('[%1] Skipped row %2 because value for %3 in group %4 is not in list of values', $vs_idno, $vn_row, $vs_item_terminal, $vn_group_id, $vm_val));
-							continue(3);
+							continue(4);
 						}
 						if (isset($va_item['settings']['default']) && strlen($va_item['settings']['default']) && !strlen($vm_val)) {
 							$vm_val = $va_item['settings']['default'];
@@ -1772,7 +1772,7 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 				}
 				
 				foreach($va_mandatory_field_mapping_ids as $vs_mandatory_field => $vn_mandatory_mapping_item_id) {
-					$t_subject->set($vs_mandatory_field, $va_mandatory_field_values[$vs_mandatory_field]);
+					$t_subject->set($vs_mandatory_field, $va_mandatory_field_values[$vs_mandatory_field], array('assumeIdnoStubForLotID' => true));
 				}
 				
 				$t_subject->insert();
@@ -1898,7 +1898,7 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 										break;
 									default:
 										if ($t_subject->hasField($vs_element)) {
-											$t_subject->set($vs_element, $va_element_content[$vs_element]);
+											$t_subject->set($vs_element, $va_element_content[$vs_element], array('assumeIdnoStubForLotID' => true));
 											$t_subject->update();
 											break;
 										}
