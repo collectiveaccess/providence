@@ -211,7 +211,13 @@
 					$o_client->setConfig(array(
 						'maxredirects' => 0,
 						'timeout'      => 30));
-					$o_response = $o_client->request(Zend_Http_Client::HEAD);
+						
+					try {
+						$o_response = $o_client->request(Zend_Http_Client::HEAD);
+					} catch (Exception $e) {
+						$this->postError(1970, _t('Could not connect to LCSH service for %1: %2', $ps_value, $e->getMessage()), 'LCSHAttributeValue->parseValue()');
+						return false;
+					}
 	
 					$vn_status = $o_response->getStatus();
 					$va_headers = $o_response->getHeaders();
