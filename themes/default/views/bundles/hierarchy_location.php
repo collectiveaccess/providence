@@ -195,7 +195,8 @@
 						if (($va_item['table'] != $t_subject->tableName()) || ($va_item['item_id'] && ($va_item['item_id'] != $pn_id))) {
 							$va_path[] = '<a href="'.caEditorUrl($this->request, $va_item['table'], $va_item['item_id']).'">'.$vs_label.'</a>';
 						} else {
-							$va_path[] = "<a href='#' onclick='jQuery(\"#{$ps_id_prefix}HierarchyBrowserContainer\").slideDown(250); o{$ps_id_prefix}ExploreHierarchyBrowser.setUpHierarchy(\"{$vs_item_id}\"); return false;'>{$vs_label}</a>";
+							$vn_item_id = array_pop(explode("-", $vs_item_id));
+							$va_path[] = "<a href='#' onclick='jQuery(\"#{$ps_id_prefix}HierarchyBrowserContainer\").slideDown(250); o{$ps_id_prefix}ExploreHierarchyBrowser.setUpHierarchy(\"{$vn_item_id}\"); return false;'>{$vs_label}</a>";
 						}
 					}
 				}

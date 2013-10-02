@@ -615,6 +615,32 @@
 							continue(2);
 							break;	
 					}
+				} elseif ((sizeof($va_group_dest) == 2) && ($vs_terminal == 'preferred_labels')) {
+					
+					switch($ps_table) {
+						case 'ca_entities':
+							$va_val = DataMigrationUtils::splitEntityName($vs_item);
+							break;
+						case 'ca_list_items':
+							$va_val = array('name_singular' => $vs_item, 'name_plural' => $vs_item);
+							break;
+						case 'ca_storage_locations':
+						case 'ca_movements':
+						case 'ca_loans':
+						case 'ca_collections':
+						case 'ca_occurrences':
+						case 'ca_places':
+						case 'ca_objects':
+							$va_val = array('name' => $vs_item);
+							break;
+						case 'ca_object_lots':
+							$va_val = array('name' => $vs_item);
+							break;
+						default:
+							if ($o_log) { $o_log->logDebug(_t('[importHelpers:caGenericImportSplitter] Invalid table %1', $ps_table)); }
+							continue(2);
+							break;	
+					}
 				} else {
 					if ($o_log) { $o_log->logError(_t("[{$ps_refinery_name}Refinery] Could not add %2 %1: cannot map %3 using %1", $vs_item, $ps_item_prefix, join(".", $va_group_dest))); }
 				}

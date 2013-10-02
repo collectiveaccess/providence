@@ -1971,10 +1971,31 @@ class BundlableLabelableBaseModelWithAttributes extends LabelableBaseModelWithAt
 		
 		$va_ancestors_by_locale = array();
 		$vs_pk = $this->primaryKey();
-		
 		$vs_idno_field = $this->getProperty('ID_NUMBERING_ID_FIELD');
+		
+		$vs_hierarchy_type = $this->getProperty('HIERARCHY_TYPE');
 		foreach($va_ancestor_list as $vn_ancestor_id => $va_info) {
-			//if (!$va_info['NODE']['parent_id']) { continue; }
+			switch($vs_hierarchy_type) {
+				case __CA_HIER_TYPE_SIMPLE_MONO__:
+					if (!$va_info['NODE']['parent_id']) { continue(2); }
+					break;
+				case __CA_HIER_TYPE_MULTI_MONO__:
+					if (!$va_info['NODE']['parent_id']) {
+						$vn_item_id = $va_info['NODE'][$vs_pk];
+						$va_ancestors_by_locale[$vn_item_id][$vn_locale_id] = array(
+							'item_id' => $vn_item_id,
+							'parent_id' => $va_info['NODE']['parent_id'],
+							'label' => $this->getHierarchyName($vn_item_id),
+							'idno' => $va_info['NODE'][$vs_idno_field],
+							'locale_id' => null,
+							'table' => $this->tableName()
+				
+						);
+						continue(2);
+					}
+					break;
+			}
+			if (!$va_info['NODE']['parent_id'] && $vb_dont_show_root) { continue; }
 			
 			$vn_locale_id = isset($va_info['NODE']['locale_id']) ? $va_info['NODE']['locale_id'] : null;
 			$va_ancestor = array(
