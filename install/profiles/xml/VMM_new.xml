@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <profile xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="profile.xsd" useForConfiguration="1" base="base" infoUrl="http://providence.collectiveaccess.org/wiki/DublinCoreInstallationProfile">
-  <profileName>Vancouver Maritime Museum (Most recent)</profileName>
+  <profileName>Vancouver Maritime Museum (Latest)</profileName>
   <profileDescription>Archives and Museum Collection of the Vancouver Maritime Museum</profileDescription>
   <locales>
     <locale lang="en" country="US">English</locale>
@@ -122,6 +122,14 @@
                 </label>
               </labels>
               <items>
+                <item idno="sous_fonds" enabled="1" default="0">
+                  <labels>
+                    <label locale="en_US" preferred="1">
+                      <name_singular>sous-fonds</name_singular>
+                      <name_plural>sous-fonds</name_plural>
+                    </label>
+                  </labels>
+                  <items>
                 <item idno="series" enabled="1" default="0">
                   <labels>
                     <label locale="en_US" preferred="1">
@@ -130,6 +138,14 @@
                     </label>
                   </labels>
                   <items>
+                    <item idno="sub_series" enabled="1" default="0">
+                      <labels>
+                        <label locale="en_US" preferred="1">
+                          <name_singular>subseries</name_singular>
+                          <name_plural>subseries</name_plural>
+                        </label>
+                      </labels>
+                      <items>
                     <item idno="file" enabled="1" default="0">
                       <labels>
                         <label locale="en_US" preferred="1">
@@ -138,6 +154,10 @@
                         </label>
                       </labels>
                     </item>
+                  </items>
+                    </item>
+                  </items>
+                </item>
                   </items>
                 </item>
               </items>
@@ -978,14 +998,6 @@
             <label locale="en_US" preferred="1">
               <name_singular>Budden, Diane</name_singular>
               <name_plural>Budden, Diane</name_plural>
-            </label>
-          </labels>
-        </item>
-        <item idno="former" enabled="1" default="0">
-          <labels>
-            <label locale="en_US" preferred="1">
-              <name_singular>former employee</name_singular>
-              <name_plural>former employee</name_plural>
             </label>
           </labels>
         </item>
@@ -7612,6 +7624,80 @@
             </placement>
           </bundlePlacements>
         </screen>
+        <screen idno="basic_sousfonds" default="1">
+          <labels>
+            <label locale="en_US">
+              <name>Basic Info</name>
+            </label>
+          </labels>
+          <typeRestrictions>
+            <restriction code="sous_fonds" type="sous_fonds"/>
+          </typeRestrictions>
+          <bundlePlacements>
+            <placement code="hierarchy_location">
+              <bundle>hierarchy_location</bundle>
+            </placement>
+            <placement code="idno">
+              <bundle>idno</bundle>
+              <settings>
+                <setting name="label" locale="en_US">Sous-Fonds Number</setting>
+                <setting name="add_label" locale="en_US">Add Sous-Fonds Number</setting>
+              </settings>
+            </placement>
+       <placement code="preferred_labels">
+              <bundle>preferred_labels</bundle>
+              <settings>
+                <setting name="label" locale="en_US">Title</setting>
+                <setting name="add_label" locale="en_US">Add Title</setting>
+              </settings>
+            </placement>
+            <placement code="ca_accessions">
+              <bundle>ca_object_lots</bundle>
+              <settings>
+                <setting name="label" locale="en_US">Accession number</setting>
+                <setting name="add_label" locale="en_US">Add Accession number</setting>
+              </settings>
+            </placement>
+            <placement code="ca_attribute_creator_name">
+              <bundle>ca_attribute_creator_name</bundle>
+            </placement>
+            <placement code="ca_attribute_GMD">
+              <bundle>ca_attribute_GMD</bundle>
+            </placement>
+            <placement code="ca_home_location">
+              <bundle>ca_storage_locations</bundle>
+              <settings>
+                <setting name="label" locale="en_US">Home Location</setting>
+                <setting name="restrict_to_relationship_types">home</setting>
+              </settings>
+            </placement>
+            <placement code="ca_temp_location">
+              <bundle>ca_storage_locations</bundle>
+              <settings>
+                <setting name="label" locale="en_US">Temporary Location</setting>
+                <setting name="restrict_to_relationship_types">temp</setting>
+              </settings>
+            </placement>
+            <placement code="ca_attribute_storage_note">
+              <bundle>ca_attribute_storage_note</bundle>
+            </placement>
+            <placement code="ca_attribute_format_text">
+              <bundle>ca_attribute_format_text</bundle>
+            </placement>
+            <placement code="ca_attribute_coverage">
+              <bundle>ca_attribute_coverage</bundle>
+            </placement>
+            <placement code="ca_attribute_rights">
+              <bundle>ca_attribute_rights</bundle>
+            </placement>
+            <placement code="ca_attribute_relation">
+              <bundle>ca_attribute_relation</bundle>
+            </placement>
+            <placement code="ca_attribute_dc_type">
+              <bundle>ca_attribute_dc_type</bundle>
+            </placement>
+          </bundlePlacements>
+        </screen>
         <screen idno="basic_series" default="1">
           <labels>
             <label locale="en_US">
@@ -7630,6 +7716,80 @@
               <settings>
                 <setting name="label" locale="en_US">Series Number</setting>
                 <setting name="add_label" locale="en_US">Add Series Number</setting>
+              </settings>
+            </placement>
+       <placement code="preferred_labels">
+              <bundle>preferred_labels</bundle>
+              <settings>
+                <setting name="label" locale="en_US">Title</setting>
+                <setting name="add_label" locale="en_US">Add Title</setting>
+              </settings>
+            </placement>
+            <placement code="ca_accessions">
+              <bundle>ca_object_lots</bundle>
+              <settings>
+                <setting name="label" locale="en_US">Accession number</setting>
+                <setting name="add_label" locale="en_US">Add Accession number</setting>
+              </settings>
+            </placement>
+            <placement code="ca_attribute_creator_name">
+              <bundle>ca_attribute_creator_name</bundle>
+            </placement>
+            <placement code="ca_attribute_GMD">
+              <bundle>ca_attribute_GMD</bundle>
+            </placement>
+            <placement code="ca_home_location">
+              <bundle>ca_storage_locations</bundle>
+              <settings>
+                <setting name="label" locale="en_US">Home Location</setting>
+                <setting name="restrict_to_relationship_types">home</setting>
+              </settings>
+            </placement>
+            <placement code="ca_temp_location">
+              <bundle>ca_storage_locations</bundle>
+              <settings>
+                <setting name="label" locale="en_US">Temporary Location</setting>
+                <setting name="restrict_to_relationship_types">temp</setting>
+              </settings>
+            </placement>
+            <placement code="ca_attribute_storage_note">
+              <bundle>ca_attribute_storage_note</bundle>
+            </placement>
+            <placement code="ca_attribute_format_text">
+              <bundle>ca_attribute_format_text</bundle>
+            </placement>
+            <placement code="ca_attribute_coverage">
+              <bundle>ca_attribute_coverage</bundle>
+            </placement>
+            <placement code="ca_attribute_rights">
+              <bundle>ca_attribute_rights</bundle>
+            </placement>
+            <placement code="ca_attribute_relation">
+              <bundle>ca_attribute_relation</bundle>
+            </placement>
+            <placement code="ca_attribute_dc_type">
+              <bundle>ca_attribute_dc_type</bundle>
+            </placement>
+          </bundlePlacements>
+        </screen>
+        <screen idno="basic_subseries" default="1">
+          <labels>
+            <label locale="en_US">
+              <name>Basic Info</name>
+            </label>
+          </labels>
+          <typeRestrictions>
+            <restriction code="sub_series" type="sub_series"/>
+          </typeRestrictions>
+          <bundlePlacements>
+            <placement code="hierarchy_location">
+              <bundle>hierarchy_location</bundle>
+            </placement>
+            <placement code="idno">
+              <bundle>idno</bundle>
+              <settings>
+                <setting name="label" locale="en_US">Subseries Number</setting>
+                <setting name="add_label" locale="en_US">Add Subseries Number</setting>
               </settings>
             </placement>
        <placement code="preferred_labels">
@@ -7781,6 +7941,9 @@
             <placement code="ca_attribute_archive_dates">
               <bundle>ca_attribute_archive_dates</bundle>
             </placement>  
+            <placement code="ca_attribute_history_bio">
+              <bundle>ca_attribute_history_bio</bundle>
+            </placement>
              <placement code="ca_attribute_physical_content">
               <bundle>ca_attribute_physical_content</bundle>
             </placement>
@@ -7816,9 +7979,6 @@
             </placement>
             <placement code="ca_attribute_archive_cataloguer">
               <bundle>ca_attribute_archive_cataloguer</bundle>
-            </placement>
-            <placement code="ca_attribute_history_bio">
-              <bundle>ca_attribute_history_bio</bundle>
             </placement>
           </bundlePlacements>
         </screen>

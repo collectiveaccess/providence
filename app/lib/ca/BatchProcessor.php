@@ -857,10 +857,10 @@
 				return false;
 			}
 			
-			$vs_log_dir = caGetOptions('log', $pa_options, null); 
-			$vs_log_level = caGetOptions('logLevel', $pa_options, "INFO"); 
+			$vs_log_dir = caGetOption('log', $pa_options, null); 
+			$vs_log_level = caGetOption('logLevel', $pa_options, "INFO"); 
 			
-			$vb_dry_run = caGetOptions('dryRun', $pa_options, false); 
+			$vb_dry_run = caGetOption('dryRun', $pa_options, false); 
 			
 			if (is_numeric($vs_log_level)) {
 				$vn_log_level = (int)$vs_log_level;

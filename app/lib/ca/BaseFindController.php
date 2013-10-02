@@ -918,7 +918,7 @@
 						if (!($vn_limit = ini_get('max_execution_time'))) { $vn_limit = 30; }
 						set_time_limit($vn_limit * 2);
 						while($qr_res->nextHit()) {
-							if (!in_array($ps_version, $qr_res->getMediaVersions('ca_object_representations.media'))) {
+							if (!is_array($va_version_list = $qr_res->getMediaVersions('ca_object_representations.media')) || !in_array($ps_version, $va_version_list)) {
 								$vs_version = 'original';
 							} else {
 								$vs_version = $ps_version;
