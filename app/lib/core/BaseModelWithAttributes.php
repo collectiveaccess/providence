@@ -36,6 +36,7 @@
  
  require_once(__CA_LIB_DIR__.'/core/ITakesAttributes.php');
  require_once(__CA_LIB_DIR__.'/core/BaseModel.php');
+ require_once(__CA_LIB_DIR__.'/core/Parsers/ExpressionParser.php');
  require_once(__CA_APP_DIR__.'/models/ca_attributes.php');
  require_once(__CA_APP_DIR__.'/models/ca_attribute_values.php');
  require_once(__CA_APP_DIR__.'/models/ca_metadata_type_restrictions.php');
@@ -1430,21 +1431,28 @@
 		 * @param $pm_element_code_or_id string|integer -
 		 * @param $pn_row_id integer -
 		 * @param $pa_options array -
-		 *				convertLineBreaks - if set to true, will attempt to convert line break characters to HTML <p> and <br> tags; default is false.
-		 *				locale - if set to a valid locale_id or locale code, values will be returned in locale *if available*, otherwise will fallback to values in languages that are available using the standard fallback mechanism. Default is to use user's current locale.
-		 *				returnAllLocales - if set to true, values for all locales are returned, locale option is ignored and the returned array is indexed first by attribute_id and then by locale_id. Default is false.
-		 *				indexByRowID - if true first index of returned array is $pn_row_id, otherwise it is the element_id of the retrieved metadata element	
-		 *				convertCodesToDisplayText - 
+		 *				convertLineBreaks = if set to true, will attempt to convert line break characters to HTML <p> and <br> tags; default is false.
+		 *				locale = if set to a valid locale_id or locale code, values will be returned in locale *if available*, otherwise will fallback to values in languages that are available using the standard fallback mechanism. Default is to use user's current locale.
+		 *				returnAllLocales = if set to true, values for all locales are returned, locale option is ignored and the returned array is indexed first by attribute_id and then by locale_id. Default is false.
+		 *				indexByRowID = if true first index of returned array is $pn_row_id, otherwise it is the element_id of the retrieved metadata element	
+		 *				convertCodesToDisplayText =
+		 *				filter =
 		 * @return array
 		 */
 		public function getAttributeDisplayValues($pm_element_code_or_id, $pn_row_id, $pa_options=null) {
 			if (!is_array($pa_options)) { $pa_options = array(); }
+			$ps_filter_expression = caGetOption('filter', $pa_options, null);
+			
 			$va_attribute_list = $this->getAttributesByElement($pm_element_code_or_id, array('row_id' => $pn_row_id));
 			if (!is_array($va_attribute_list)) { return array(); }
 			$va_attributes = array();
 			
+			$vs_table_name = $this->tableName();
+			$vs_container_element_code = $this->_getElementCode($pm_element_code_or_id);
+			
 			foreach($va_attribute_list as $o_attribute) {
 				$va_values = $o_attribute->getValues();
+				$va_raw_values = array();
 				
 				$va_display_values = array();
 				foreach($va_values as $o_value) {
@@ -1457,6 +1465,10 @@
 						$vn_list_id = null;
 					}
 					
+					if ($ps_filter_expression) { 
+						$va_raw_values[($vs_container_element_code == $vs_element_code) ? "{$vs_table_name}.{$vs_element_code}" : "{$vs_table_name}.{$vs_container_element_code}.{$vs_element_code}"] = $va_raw_values[$vs_element_code] = $o_value->getDisplayValue(array('list_id' => $vn_list_id, 'returnIdno' => true));
+					}
+					
 					if (isset($pa_options['convertLineBreaks']) && $pa_options['convertLineBreaks']) {
 						$vs_converted_value = preg_replace("!(\n|\r\n){2}!","<p/>",$o_value->getDisplayValue(array_merge($pa_options, array('list_id' => $vn_list_id))));
 						$va_display_values[$vs_element_code] = preg_replace("![\n]{1}!","<br/>",$vs_converted_value);
@@ -1464,6 +1476,9 @@
 						$va_display_values[$vs_element_code] = $o_value->getDisplayValue(array_merge($pa_options, array('list_id' => $vn_list_id)));
 					}
 				}
+				
+				// Process filter if defined
+				if ($ps_filter_expression && !ExpressionParser::evaluate($ps_filter_expression, $va_raw_values)) { continue; }
 				
 				if (isset($pa_options['indexByRowID']) && $pa_options['indexByRowID']) {
 					$vs_index = $pn_row_id;

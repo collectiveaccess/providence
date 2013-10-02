@@ -929,6 +929,15 @@ class ca_bundle_displays extends BundlableLabelableBaseModelWithAttributes {
 				'default' => 2048,
 				'label' => _t('Maximum length'),
 				'description' => _t('Maximum length, in characters, of displayed information.')
+			),
+			'filter' => array(
+				'formatType' => FT_TEXT,
+				'displayType' => DT_FIELD,
+				'width' => 35, 'height' => 5,
+				'takesLocale' => false,
+				'default' => '',
+				'label' => _t('Filter using expression'),
+				'description' => _t('Expression to filter values with. Leave blank if you do not wish to filter values.')
 			)
 		);
 		foreach($va_element_codes as $vn_element_id => $vs_element_code) {
@@ -1619,6 +1628,11 @@ class ca_bundle_displays extends BundlableLabelableBaseModelWithAttributes {
 		
 		if (!isset($pa_options['maximumLength'])) {
 			$pa_options['maximumLength'] =  ($va_placement['settings']['maximum_length']) ? $va_placement['settings']['maximum_length'] : null;
+		}
+		
+		
+		if (!isset($pa_options['filter'])) {
+			$pa_options['filter'] = caGetOption('filter', $va_placement['settings'], null);
 		}
 		
 		$pa_options['makeEditorLink'] = ($va_placement['settings']['makeEditorLink']) ? $va_placement['settings']['makeEditorLink'] : $pa_options['makeEditorLink'];
