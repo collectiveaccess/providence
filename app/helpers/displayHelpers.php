@@ -2046,7 +2046,7 @@ require_once(__CA_LIB_DIR__."/ca/ApplicationPluginManager.php");
 								
 								if ($va_tmp[0] == $ps_tablename) { array_shift($va_tmp); }	// get rid of primary table if it's in the field spec
 							
-								if (!sizeof($va_tmp)) {
+								if (!sizeof($va_tmp) && $t_instance->getProperty('LABEL_TABLE_NAME')) {
 									$va_tmp[] = "preferred_labels";
 								}
 							
