@@ -616,5 +616,32 @@
 			return BaseModel::get('type_id');
 		}
 		# ------------------------------------------------------
+		/**
+		 * Returns relationship type name for the currently loaded row. Directionality of the type name can be controlled using the $ps_direction parameter.
+		 *
+		 * @param string $ps_direction Determines the reading direction of the relationship. Possible values are 'ltor' (left-to-right) and 'rtol' (right-to-left). Default value is ltor.
+		 * @return string Type name or null if no row is loaded.
+		 */
+		public function getRelationshipTypename($ps_direction='ltor') {
+			if ($vn_type_id = $this->getTypeID()) {
+				$t_rel_type = new ca_relationship_types($vn_type_id);
+				return ($ps_direction == 'ltor') ? $t_rel_type->get('ca_relationship_types.preferred_labels.typename') : $t_rel_type->get('ca_relationship_types.preferred_labels.typename_reverse');
+			}
+			return null;
+		}
+		# ------------------------------------------------------
+		/**
+		 * Returns relationship type code for the currently loaded row.
+		 *
+		 * @return string The relationship type code
+		 */
+		public function getRelationshipTypeCode() {
+			if ($vn_type_id = $this->getTypeID()) {
+				$t_rel_type = new ca_relationship_types($vn_type_id);
+				return $t_rel_type->get('ca_relationship_types.type_code');
+			}
+			return null;
+		}
+		# ------------------------------------------------------
 	}
 ?>
