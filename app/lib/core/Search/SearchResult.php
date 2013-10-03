@@ -923,7 +923,7 @@ class SearchResult extends BaseObject {
 // return array
 				if ($vb_return_as_link && $vb_is_related) {
 					$vs_table_name = $t_instance->tableName();
-					$vs_fld_key = ($va_path_components['subfield_name']) ? $va_path_components['field_name'] : $va_path_components['field_name'];
+					$vs_fld_key = ($va_path_components['subfield_name']) ? $va_path_components['subfield_name'] : $va_path_components['field_name'];
 					if (!$vb_return_all_locales) {
 						$va_return_values_tmp = array();
 						foreach($va_return_values as $vn_i => $va_value) {
