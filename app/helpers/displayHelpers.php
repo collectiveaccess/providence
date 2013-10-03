@@ -2046,7 +2046,7 @@ require_once(__CA_LIB_DIR__."/ca/ApplicationPluginManager.php");
 								
 								if ($va_tmp[0] == $ps_tablename) { array_shift($va_tmp); }	// get rid of primary table if it's in the field spec
 							
-								if (!sizeof($va_tmp)) {
+								if (!sizeof($va_tmp) && $t_instance->getProperty('LABEL_TABLE_NAME')) {
 									$va_tmp[] = "preferred_labels";
 								}
 							
@@ -2911,6 +2911,38 @@ $ca_relationship_lookup_parse_cache = array();
 			}
 		}
 		return $va_links;
+	}
+	# ------------------------------------------------------------------
+	/**
+	 * 
+	 *
+	 * @param BaseModel $pt_subject 
+	 * @param string $ps_related_table
+	 * @param array $pa_bundle_settings 
+	 * @param array $pa_options Supported options are:
+	 *		
+	 *
+	 * @return string
+	 */
+	function caGetBundleDisplayTemplate($pt_subject, $ps_related_table, $pa_bundle_settings, $pa_options=null) {
+		$vs_template = null;
+		if(strlen(trim($pa_bundle_settings['display_template']))) {
+			$vs_template = trim($pa_bundle_settings['display_template']);
+		} 
+		
+		// If no display_template set try to get a default out of the app.conf file
+		if (!$vs_template) {
+			if (is_array($va_lookup_settings = $pt_subject->getAppConfig()->getList("{$ps_related_table}_lookup_settings"))) {
+				if (!($vs_lookup_delimiter = $pt_subject->getAppConfig()->get("{$ps_related_table}_lookup_delimiter"))) { $vs_lookup_delimiter = ''; }
+				$vs_template = join($vs_lookup_delimiter, $va_lookup_settings);
+			}
+		}
+		
+		// If no app.conf default then just show preferred_labels
+		if (!$vs_template) {
+			$vs_template = "^preferred_labels";
+		}
+		return $vs_template;
 	}
 	# ---------------------------------------
 	/**

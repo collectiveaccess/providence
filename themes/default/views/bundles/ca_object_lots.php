@@ -35,6 +35,7 @@
 	$vs_add_label 		= $this->getVar('add_label');
 	$va_rel_types		= $this->getVar('relationship_types');
 	$vs_placement_code 	= $this->getVar('placement_code');
+	$vn_placement_id	= (int)$va_settings['placement_id'];
 	$vb_batch			= $this->getVar('batch');
 	
 	$vb_read_only		=	((isset($va_settings['readonly']) && $va_settings['readonly'])  || ($this->request->user->getBundleAccessLevel($t_instance->tableName(), 'ca_object_lots') == __CA_BUNDLE_ACCESS_READONLY__));
@@ -127,9 +128,11 @@
 ?>
 	<textarea class='caItemTemplate' style='display: none;'>
 		<div id="<?php print $vs_id_prefix; ?>Item_{n}" class="labelInfo roundedRel">
+			<span id='<?php print $vs_id_prefix; ?>_BundleTemplateDisplay{n}'>
 <?php
 			print caGetRelationDisplayString($this->request, 'ca_object_lots', array('class' => 'caEditItemButton', 'id' => "{$vs_id_prefix}_edit_related_{n}"), array('display' => 'label', 'makeLink' => true));
 ?>
+			</span>
 			<input type="hidden" name="<?php print $vs_id_prefix; ?>_type_id{n}" id="<?php print $vs_id_prefix; ?>_type_id{n}" value="{type_id}"/>
 			<input type="hidden" name="<?php print $vs_id_prefix; ?>_id{n}" id="<?php print $vs_id_prefix; ?>_id{n}" value="{id}"/>
 <?php
@@ -225,6 +228,10 @@
 	<div class='dialogHeader'><?php print _t('Relation editor', $t_item->getProperty('NAME_SINGULAR')); ?></div>
 		
 	</div>
+	
+	<textarea class='caBundleDisplayTemplate' style='display: none;'>
+		<?php print caGetRelationDisplayString($this->request, 'ca_object_lots', array(), array('display' => '_display', 'makeLink' => false)); ?>
+	</textarea>
 </div>	
 
 <script type="text/javascript">
@@ -273,6 +280,7 @@
 			initialValueOrder: <?php print json_encode(array_keys($va_initial_values)); ?>,
 			forceNewValues: <?php print json_encode($va_force_new_values); ?>,
 			itemID: '<?php print $vs_id_prefix; ?>Item_',
+			placementID: '<?php print $vn_placement_id; ?>',
 			templateClassName: 'caNewItemTemplate',
 			initialValueTemplateClassName: 'caItemTemplate',
 			itemListClassName: 'caItemList',

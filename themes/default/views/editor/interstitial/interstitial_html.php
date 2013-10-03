@@ -83,6 +83,8 @@
 		<input type='hidden' name='t' value='<?php print $t_subject->tableName(); ?>'/>
 		<input type='hidden' name='relation_id' value='<?php print $t_subject->getPrimaryKey(); ?>'/>
 		<input type='hidden' name='type_id' value='<?php print $t_subject->get('type_id'); ?>'/>
+		<input type='hidden' name='placement_id' value='<?php print $this->getVar('placement_id'); ?>'/>
+		<input type='hidden' name='n' value='<?php print $this->getVar('n'); ?>'/>
 		
 		<script type="text/javascript">
 			function caSave<?php print $vs_form_name.$vs_field_name_prefix.$vs_n; ?>(e) {
@@ -91,6 +93,8 @@
 					if (resp.status == 0) {
 						jQuery.jGrowl('<?php print addslashes(_t('Saved changes to')); ?> <em>' + resp.display + '</em>', { header: '<?php print addslashes(_t('Edit %1', $t_subject->getProperty('NAME_SINGULAR'))); ?>' }); 
 						jQuery("#<?php print $vs_form_name.$vs_field_name_prefix.$vs_n; ?>").parent().data('panel').hidePanel();
+						var displayContent = jQuery('#caRelationEditorPanel<?php print substr($vs_field_name_prefix, 0, strlen($vs_field_name_prefix)-1); ?> .caBundleDisplayTemplate').template(resp.bundleDisplay);
+						jQuery("#<?php print $vs_field_name_prefix; ?>BundleTemplateDisplay<?php print $this->getVar('n'); ?>").empty().append(displayContent);
 					} else {
 						// error
 						var content = '<div class="notification-error-box rounded"><ul class="notification-error-box">';
