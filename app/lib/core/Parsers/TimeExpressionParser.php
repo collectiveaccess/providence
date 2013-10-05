@@ -2061,6 +2061,7 @@ class TimeExpressionParser {
 	#	beforeQualifier	(string) [default is first indicator in language config file]
 	#	afterQualifier	(string) [default is first indicator in language config file]
 	#	presentDate		(string) [default is first indicator in language config file]
+	#	showUndated		(true|false) [default is false; if true empty dates are output with the first undated specified for the current language]
 	#	isLifespan		(true|false) [default is false; if true, date is output with 'born' and 'died' syntax if appropriate]
 	#   useQuarterCenturySyntaxForDisplay (true|false) [default is false; if true dates ranging over uniform quarter centuries (eg. 1900 - 1925, 1925 - 1950, 1950 - 1975, 1975-2000) will be output in the format "20 Q1" (eg. 1st quarter of 20th century... 1900 - 1925)
 	#   useRomanNumeralsForCenturies (true|false) [default is false; if true century only dates (eg 18th century) will be output in roman numerals like "XVIIIth century"
@@ -2075,7 +2076,7 @@ class TimeExpressionParser {
 			'showADEra', 'timeFormat', 'timeDelimiter', 
 			'circaIndicator', 'beforeQualifier', 'afterQualifier', 
 			'presentDate', 'useQuarterCenturySyntaxForDisplay', 'timeOmit', 'useRomanNumeralsForCenturies', 
-			'rangePreConjunction', 'rangeConjunction', 'timeRangeConjunction', 'dateTimeConjunction'
+			'rangePreConjunction', 'rangeConjunction', 'timeRangeConjunction', 'dateTimeConjunction', 'showUndated'
 		) as $vs_opt) {
 			if (!isset($pa_options[$vs_opt]) && ($vs_opt_val = $this->opo_datetime_settings->get($vs_opt))) {
 				$pa_options[$vs_opt] = $vs_opt_val;
@@ -2144,7 +2145,7 @@ class TimeExpressionParser {
 		}
 		
 		// is it undated?
-		if (($va_dates['start'] === null) && ($va_dates['end'] === null)) {
+		if (($va_dates['start'] === null) && ($va_dates['end'] === null) && $pa_options['showUndated']) {
 			if (is_array($va_undated = $this->opo_language_settings->getList('undatedDate'))) {
 				return array_shift($va_undated);
 			} 
