@@ -37,11 +37,14 @@
 require_once(__CA_LIB_DIR__."/ca/Service/BaseJSONService.php"); 
 
 class SearchJSONService extends BaseJSONService {
+	# -------------------------------------------------------
 	private $ops_query;
+	private $opb_deleted_only = false;
 	# -------------------------------------------------------
 	public function __construct($po_request,$ps_table=""){
 		$this->ops_query = $po_request->getParameter("q",pString);
-
+		$this->opb_deleted_only = (bool)$po_request->getParameter("deleted",pInteger);
+		
 		parent::__construct($po_request,$ps_table);
 	}
 	# -------------------------------------------------------
@@ -76,7 +79,7 @@ class SearchJSONService extends BaseJSONService {
 		$t_instance = $this->_getTableInstance($this->getTableName());
 
 		$va_return = array();
-		$vo_result = $vo_search->search($this->ops_query);
+		$vo_result = $vo_search->search($this->ops_query, array('deletedOnly' => $this->opb_deleted_only));
 
 		while($vo_result->nextHit()){
 			$va_item = array();
