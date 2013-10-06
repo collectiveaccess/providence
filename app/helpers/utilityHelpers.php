@@ -1316,6 +1316,7 @@ function caFileIsIncludable($ps_file) {
 				caEncodeUTF8Deep($pm_input->$vs_key);
 			}
 		}
+		return $pm_input;
 	}
 	# ---------------------------------------
 	/**
