@@ -69,7 +69,7 @@ class MediaContentLocationIndexer  {
 		foreach(MediaContentLocationIndexer::$s_data as $vn_table_num => $va_rows) {
 			foreach($va_rows as $vn_row_id => $va_content) {
 				foreach($va_content as $vs_content => $va_locs) {
-					MediaContentLocationIndexer::$s_index_insert->execute((int)$vn_table_num, (int)$vn_row_id, (string)trim($vs_content), serialize($va_locs));	
+					MediaContentLocationIndexer::$s_index_insert->execute((int)$vn_table_num, (int)$vn_row_id, (string)caEncodeUTF8Deep(trim($vs_content)), serialize($va_locs));	
 				}
 			}
 		}
