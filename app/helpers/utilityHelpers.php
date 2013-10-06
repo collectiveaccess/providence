@@ -38,6 +38,7 @@ require_once(__CA_LIB_DIR__.'/core/Datamodel.php');
 require_once(__CA_LIB_DIR__.'/core/Configuration.php');
 require_once(__CA_LIB_DIR__.'/core/Parsers/ZipFile.php');
 require_once(__CA_LIB_DIR__.'/core/Logging/Eventlog.php');
+require_once(__CA_LIB_DIR__.'/core/Utils/Encoding.php');
 
 
 # ----------------------------------------------------------------------
@@ -1291,6 +1292,30 @@ function caFileIsIncludable($ps_file) {
 			}
 		}
 		return true;
+	}
+	# ---------------------------------------
+	/**
+	 * Recursively encode array (or string) as UTF8 text
+	 *
+	 * @param mixed $pm_input Array or string to encode
+	 * @return mixed Encoded array or string
+	 */
+	function caEncodeUTF8Deep(&$pm_input) {
+		if (is_string($pm_input)) {
+			$pm_input = Encoding::toUTF8($pm_input);
+		} else if (is_array($pm_input)) {
+			foreach ($pm_input as &$vm_value) {
+				caEncodeUTF8Deep($vm_value);
+			}
+
+			unset($vm_value);
+		} else if (is_object($pm_input)) {
+			$va_keys = array_keys(get_object_vars($pm_input));
+
+			foreach ($va_keys as $vs_key) {
+				caEncodeUTF8Deep($pm_input->$vs_key);
+			}
+		}
 	}
 	# ---------------------------------------
 	/**
