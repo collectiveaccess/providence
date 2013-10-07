@@ -458,6 +458,8 @@
  			$this->view->setVar('pages', $va_pages);
  			$this->view->setVar('sections', $va_section_cache[$pn_object_id.'/'.$pn_representation_id]);
  			
+ 			$this->view->setVar('is_searchable', MediaContentLocationIndexer::hasIndexing('ca_object_representations', $pn_representation_id));
+ 			
  			$this->render('object_representation_page_list_json.php');
  		}
  		# -------------------------------------------------------

@@ -47,6 +47,7 @@ class MediaContentLocationIndexer  {
 	static $s_index_insert;
 	static $s_index_delete;
 	static $s_index_find;
+	static $s_index_check;
 	static $s_data = array();
 	# ------------------------------------------------
 	/**
@@ -104,6 +105,20 @@ class MediaContentLocationIndexer  {
 	/**
 	 *
 	 */
+	static function hasIndexing($pm_table, $pn_row_id) {
+		MediaContentLocationIndexer::_init();
+		if (!($pn_table = MediaContentLocationIndexer::_getTableNum($pm_table))) { return null; }
+		$qr_res = MediaContentLocationIndexer::$s_index_check->execute($pn_table, $pn_row_id);
+		
+		if($qr_res->nextRow()) {
+			return true;
+		}
+		return false;
+	}
+	# ------------------------------------------------
+	/**
+	 *
+	 */
 	static public function _getTableNum($pm_table) {
 		if(!is_numeric($pm_table)) { 
 			if (!isset(MediaContentLocationIndexer::$s_table_num_cache[$pm_table])) {
@@ -127,6 +142,7 @@ class MediaContentLocationIndexer  {
 			MediaContentLocationIndexer::$s_index_delete = MediaContentLocationIndexer::$s_db->prepare("DELETE FROM ca_media_content_locations WHERE table_num = ? AND row_id = ?");
 			
 			MediaContentLocationIndexer::$s_index_find = MediaContentLocationIndexer::$s_db->prepare("SELECT * FROM ca_media_content_locations WHERE table_num = ? AND row_id = ? AND content like ?");
+			MediaContentLocationIndexer::$s_index_check = MediaContentLocationIndexer::$s_db->prepare("SELECT row_id FROM ca_media_content_locations WHERE table_num = ? AND row_id = ? LIMIT 1");
 		}
 	}
 	# ------------------------------------------------

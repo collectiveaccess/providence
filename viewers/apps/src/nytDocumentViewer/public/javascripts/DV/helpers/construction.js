@@ -23,6 +23,7 @@ _.extend(DV.Schema.helpers, {
       id          : doc.id,
       story_url   : storyURL,
       downloadUrl : downloadUrl,
+      searchUrl	  : doc.resources.search,
       downloadButton : this.viewer.options.downloadButton,
       closeButton : this.viewer.options.closeButton,
       title       : doc.title || ''
