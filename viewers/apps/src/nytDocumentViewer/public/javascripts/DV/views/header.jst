@@ -24,7 +24,7 @@
 	  <div class="DV-close">
       	<span class="DV-closeLabel"><a href="#" onclick="caMediaPanel.hidePanel(); return false;"><%= closeButton %></a></span>
       </div>
-      
+<% if (searchUrl) { %>        
       <div class="DV-searchBox DV-clearfix">
         <form action="#" method="get" class="DV-searchDocument">
           <div class="DV-searchInputWrap">
@@ -33,6 +33,7 @@
           </div>
         </form>
       </div>
+<% } %>
       
       <div class="DV-zoomControls">
         <span class="DV-zoomLabel">Zoom</span>

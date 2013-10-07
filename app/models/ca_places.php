@@ -463,7 +463,7 @@ class ca_places extends RepresentableBaseModel implements IBundleProvider, IHier
 	 * Returns name of hierarchy for currently loaded place or, if specified, place with place_id = to optional $pn_id parameter
 	 */
 	 public function getHierarchyName($pn_id=null) {
-	 	$t_list = new ca_lists();
+	 	$t_list = new ca_list_items();
 	 	if ($pn_id) {
 	 		$t_place = new ca_places($pn_id);
 	 		$vn_hierarchy_id = $t_place->get('hierarchy_id');
@@ -471,7 +471,6 @@ class ca_places extends RepresentableBaseModel implements IBundleProvider, IHier
 	 		$vn_hierarchy_id = $this->get('hierarchy_id');
 	 	}
 	 	$t_list->load($vn_hierarchy_id);
-	 	
 	 	return $t_list->getLabelForDisplay(false);
 	 }
 	# ------------------------------------------------------

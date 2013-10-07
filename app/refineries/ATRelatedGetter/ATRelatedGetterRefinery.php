@@ -190,7 +190,7 @@
 					}
 					if (!strlen($va_val[$vs_ca_key])) { $va_val[$vs_ca_key] = $va_defaults[$vs_ca_key]; }
 				}
-				$va_vals[] = array($vs_terminal => $va_val);
+				$va_vals[] = $va_val;
 			}
 			
 			return $va_vals;

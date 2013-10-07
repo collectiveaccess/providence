@@ -39,12 +39,27 @@
 
 	# ------------------------------------------------------------------------------------------------
 	/**
+	 * Get path in external_applications.conf for specified application
+	 * 
+	 * @param string $ps_application_name The name of the application. This is the same as the relevant entry in external_applications.conf without the trailing "_app" (Ex. pdfminer, dcraw, ffmpeg)
+	 * @return string Path to application as defined in external_applications.conf
+	 */
+	function caGetExternalApplicationPath($ps_application_name) {
+		$o_config = Configuration::load();
+		if (!($o_ext_app_config = Configuration::load($o_config->get('external_applications')))) { return null; }
+		
+		return $o_ext_app_config->get($ps_application_name.'_app');
+	}
+	# ------------------------------------------------------------------------------------------------
+	/**
 	 * Detects if CoreImageTool executable is available at specified path
 	 * 
-	 * @param $ps_path_to_coreimage - full path to CoreImageTool including executable name
+	 * @param string $ps_path_to_coreimage - full path to CoreImageTool including executable name
 	 * @return boolean - true if available, false if not
 	 */
-	function caMediaPluginCoreImageInstalled($ps_path_to_coreimage) {
+	function caMediaPluginCoreImageInstalled($ps_path_to_coreimage=null) {
+		if(!$ps_path_to_coreimage) { $ps_path_to_coreimage = caGetExternalApplicationPath('coreimagetool'); }
+		
 		global $_MEDIAHELPER_PLUGIN_CACHE_COREIMAGE;
 		if (isset($_MEDIAHELPER_PLUGIN_CACHE_COREIMAGE[$ps_path_to_coreimage])) {
 			return $_MEDIAHELPER_PLUGIN_CACHE_COREIMAGE[$ps_path_to_coreimage];
@@ -66,7 +81,9 @@
 	 * @param $ps_imagemagick_path - path to directory containing ImageMagick executables
 	 * @return boolean - true if available, false if not
 	 */
-	function caMediaPluginImageMagickInstalled($ps_imagemagick_path) {
+	function caMediaPluginImageMagickInstalled($ps_imagemagick_path=null) {
+		if(!$ps_imagemagick_path) { $ps_imagemagick_path = caGetExternalApplicationPath('imagemagick'); }
+		
 		global $_MEDIAHELPER_PLUGIN_CACHE_IMAGEMAGICK;
 		if (isset($_MEDIAHELPER_PLUGIN_CACHE_IMAGEMAGICK[$ps_imagemagick_path])) {
 			return $_MEDIAHELPER_PLUGIN_CACHE_IMAGEMAGICK[$ps_imagemagick_path];
@@ -88,7 +105,9 @@
 	 * @param $ps_graphicsmagick_path - path to directory containing GraphicsMagick executables
 	 * @return boolean - true if available, false if not
 	 */
-	function caMediaPluginGraphicsMagickInstalled($ps_graphicsmagick_path) {
+	function caMediaPluginGraphicsMagickInstalled($ps_graphicsmagick_path=null) {
+		if(!$ps_graphicsmagick_path) { $ps_graphicsmagick_path = caGetExternalApplicationPath('graphicsmagick'); }
+		
 		global $_MEDIAHELPER_PLUGIN_CACHE_GRAPHICSMAGICK;
 		if (isset($_MEDIAHELPER_PLUGIN_CACHE_GRAPHICSMAGICK[$ps_graphicsmagick_path])) {
 			return $_MEDIAHELPER_PLUGIN_CACHE_GRAPHICSMAGICK[$ps_graphicsmagick_path];
@@ -110,7 +129,9 @@
 	 * @param $ps_path_to_dcraw - full path to dcraw including executable name
 	 * @return boolean - true if available, false if not
 	 */
-	function caMediaPluginDcrawInstalled($ps_path_to_dcraw) {
+	function caMediaPluginDcrawInstalled($ps_path_to_dcraw=null) {
+		if(!$ps_path_to_dcraw) { $ps_path_to_dcraw = caGetExternalApplicationPath('dcraw'); }
+		
 		global $_MEDIAHELPER_PLUGIN_CACHE_DCRAW;
 		if (isset($_MEDIAHELPER_PLUGIN_CACHE_DCRAW[$ps_path_to_dcraw])) {
 			return $_MEDIAHELPER_PLUGIN_CACHE_DCRAW[$ps_path_to_dcraw];
@@ -132,7 +153,9 @@
 	 * @param $ps_path_to_ffmpeg - full path to ffmpeg including executable name
 	 * @return boolean - true if available, false if not
 	 */
-	function caMediaPluginFFfmpegInstalled($ps_path_to_ffmpeg) {
+	function caMediaPluginFFfmpegInstalled($ps_path_to_ffmpeg=null) {
+		if(!$ps_path_to_ffmpeg) { $ps_path_to_ffmpeg = caGetExternalApplicationPath('ffmpeg'); }
+		
 		global $_MEDIAHELPER_PLUGIN_CACHE_FFMPEG;
 		if (isset($_MEDIAHELPER_PLUGIN_CACHE_FFMPEG[$ps_path_to_ffmpeg])) {
 			return $_MEDIAHELPER_PLUGIN_CACHE_FFMPEG[$ps_path_to_ffmpeg];
@@ -154,7 +177,9 @@
 	 * @param $ps_path_to_ghostscript - full path to Ghostscript including executable name
 	 * @return boolean - true if available, false if not
 	 */
-	function caMediaPluginGhostscriptInstalled($ps_path_to_ghostscript) {
+	function caMediaPluginGhostscriptInstalled($ps_path_to_ghostscript=null) {
+		if(!$ps_path_to_ghostscript) { $ps_path_to_ghostscript = caGetExternalApplicationPath('ghostscript'); }
+		
 		global $_MEDIAHELPER_PLUGIN_CACHE_GHOSTSCRIPT;
 		if (isset($_MEDIAHELPER_PLUGIN_CACHE_GHOSTSCRIPT[$ps_path_to_ghostscript])) {
 			return $_MEDIAHELPER_PLUGIN_CACHE_GHOSTSCRIPT[$ps_path_to_ghostscript];
@@ -175,7 +200,9 @@
 	 * @param $ps_path_to_pdf_to_text - full path to PdfToText including executable name
 	 * @return boolean - true if available, false if not
 	 */
-	function caMediaPluginPdftotextInstalled($ps_path_to_pdf_to_text) {
+	function caMediaPluginPdftotextInstalled($ps_path_to_pdf_to_text=null) {
+		if(!$ps_path_to_pdf_to_text) { $ps_path_to_pdf_to_text = caGetExternalApplicationPath('pdftotext'); }
+		
 		if (!trim($ps_path_to_pdf_to_text) || (preg_match("/[^\/A-Za-z0-9\.:]+/", $ps_path_to_pdf_to_text))  || !file_exists($ps_path_to_pdf_to_text)) { return false; }
 		exec($ps_path_to_pdf_to_text." -v 2> /dev/null", $va_output, $vn_return);
 		if (($vn_return >= 0) && ($vn_return < 127)) {
@@ -190,7 +217,9 @@
 	 * @param $ps_path_to_abiword - full path to AbiWord including executable name
 	 * @return boolean - true if available, false if not
 	 */
-	function caMediaPluginAbiwordInstalled($ps_path_to_abiword) {
+	function caMediaPluginAbiwordInstalled($ps_path_to_abiword=null) {
+		if(!$ps_path_to_abiword) { $ps_path_to_abiword = caGetExternalApplicationPath('abiword'); }
+		
 		if (!trim($ps_path_to_abiword) || (preg_match("/[^\/A-Za-z0-9\.:]+/", $ps_path_to_abiword)) || !file_exists($ps_path_to_abiword)) { return false; }
 		exec($ps_path_to_abiword." --version 2> /dev/null", $va_output, $vn_return);
 		if (($vn_return >= 0) && ($vn_return < 127)) {
@@ -205,7 +234,9 @@
 	 * @param $ps_path_to_libreoffice - full path to LibreOffice including executable name
 	 * @return boolean - true if available, false if not
 	 */
-	function caMediaPluginLibreOfficeInstalled($ps_path_to_libreoffice) {
+	function caMediaPluginLibreOfficeInstalled($ps_path_to_libreoffice=null) {
+		if(!$ps_path_to_libreoffice) { $ps_path_to_libreoffice = caGetExternalApplicationPath('libreoffice'); }
+		
 		if (!trim($ps_path_to_libreoffice) || (preg_match("/[^\/A-Za-z0-9\.:]+/", $ps_path_to_libreoffice)) || !file_exists($ps_path_to_libreoffice)) { return false; }
 		exec($ps_path_to_libreoffice." --version 2> /dev/null", $va_output, $vn_return);
 		if (($vn_return >= 0) && ($vn_return < 127)) {
@@ -253,7 +284,9 @@
 	 * Detects if mediainfo is installed in the given path.
 	 * @param string $ps_mediainfo_path path to mediainfo
 	 */
-	function caMediaInfoInstalled($ps_mediainfo_path) {
+	function caMediaInfoInstalled($ps_mediainfo_path=null) {
+		if(!$ps_mediainfo_path) { $ps_mediainfo_path = caGetExternalApplicationPath('mediainfo'); }
+		
 		global $_MEDIAHELPER_PLUGIN_CACHE_MEDIAINFO;
 		if (isset($_MEDIAHELPER_PLUGIN_CACHE_MEDIAINFO[$ps_mediainfo_path])) {
 			return $_MEDIAHELPER_PLUGIN_CACHE_MEDIAINFO[$ps_mediainfo_path];
@@ -271,8 +304,11 @@
 	/**
 	 * Detects if PDFMiner (http://www.unixuser.org/~euske/python/pdfminer/index.html) is installed in the given path.
 	 * @param string $ps_pdfminer_path path to PDFMiner
+	 * @return boolean 
 	 */
-	function caPDFMinerInstalled($ps_pdfminer_path) {
+	function caPDFMinerInstalled($ps_pdfminer_path=null) {
+		if(!$ps_pdfminer_path) { $ps_pdfminer_path = caGetExternalApplicationPath('pdfminer'); }
+		
 		global $_MEDIAHELPER_PLUGIN_CACHE_MEDIAINFO;
 		if (isset($_MEDIAHELPER_PLUGIN_CACHE_MEDIAINFO[$ps_pdfminer_path])) {
 			return $_MEDIAHELPER_PLUGIN_CACHE_MEDIAINFO[$ps_pdfminer_path];
