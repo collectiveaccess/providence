@@ -93,7 +93,6 @@
  			
  			$this->view->setVar('batch_editor_last_settings', $va_last_settings = is_array($va_last_settings = $this->request->user->getVar('batch_editor_last_settings')) ? $va_last_settings : array());
  			
- 			
  			$va_nav = $t_ui->getScreensAsNavConfigFragment($this->request, $vn_type_id, $this->request->getModulePath(), $this->request->getController(), $this->request->getAction(),
 				array(),
 				array(),
@@ -215,9 +214,9 @@
  			$t_subject = $this->opo_datamodel->getInstanceByTableNum($t_set->get('table_num'));
  			$t_ui = new ca_editor_uis();
  			if (!isset($pa_options['ui']) && !$pa_options['ui']) {
- 				$pa_options['ui'] = $this->request->user->getPreference("batch_".$t_subject->tableName()."_editor_ui");
+ 				$t_ui->load($this->request->user->getPreference("batch_".$t_subject->tableName()."_editor_ui"));
  			}
- 			if (isset($pa_options['ui']['__all__']) && $pa_options['ui']['__all__']) {
+ 			if (!$t_ui->getPrimaryKey() && isset($pa_options['ui']['__all__']) && $pa_options['ui']['__all__']) {
  				if (is_numeric($pa_options['ui']['__all__'])) {
  					$t_ui->load((int)$pa_options['ui']['__all__']);
  				}

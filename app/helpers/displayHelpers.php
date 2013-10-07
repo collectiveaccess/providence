@@ -852,7 +852,7 @@ require_once(__CA_LIB_DIR__."/ca/ApplicationPluginManager.php");
 						$vs_buf .= "<div><strong>"._t("Related %1", $o_dm->getTableProperty($vs_rel_table, 'NAME_PLURAL'))."</strong>: <br/>\n";
 						
 						$vs_screen = '';
-						if ($t_ui = ca_editor_uis::loadDefaultUI($vs_rel_table, $po_request, null)) {
+						if ($t_ui = ca_editor_uis::loadDefaultUI($vs_rel_table, $po_view->request, null)) {
 							$vs_screen = $t_ui->getScreenWithBundle('ca_object_representations', $po_request);
 						}
 						foreach($va_objects as $vn_rel_id => $va_rel_info) {
