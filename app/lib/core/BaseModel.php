@@ -9991,6 +9991,7 @@ $pa_options["display_form_field_tips"] = true;
 						if ($vn_limit && ($vn_c >= $vn_limit)) { break; }
 					}
 				}
+				return $va_instances;
 				break;
 			case 'firstid':
 				if($qr_res->nextRow()) {
