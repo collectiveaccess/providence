@@ -6061,12 +6061,14 @@ class BaseModel extends BaseObject {
 					return null;
 				}
 			}
-			$vn_hierarchy_id = $this->get($vs_hier_id_fld);
 			
 			$vs_hier_id_sql = "";
-			if ($vn_hierarchy_id) {
-				// TODO: verify hierarchy_id exists
-				$vs_hier_id_sql = " AND (".$vs_hier_id_fld." = ".$vn_hierarchy_id.")";
+			if ($vs_hier_id_fld) {
+				$vn_hierarchy_id = $this->get($vs_hier_id_fld);
+				if ($vn_hierarchy_id) {
+					// TODO: verify hierarchy_id exists
+					$vs_hier_id_sql = " AND (".$vs_hier_id_fld." = ".$vn_hierarchy_id.")";
+				}
 			}
 			
 			
