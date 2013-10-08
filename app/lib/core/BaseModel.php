@@ -2024,7 +2024,6 @@ class BaseModel extends BaseObject {
 								return false;
 							}
 							if (!is_numeric($this->_FIELD_VALUES[$start_field_name]) && !($va_attr["IS_NULL"] && is_null($this->_FIELD_VALUES[$start_field_name]))) {
-								print_r($this->_FIELD_VALUES); print "f=$start_field_name"; print_R($va_attr); print json_encode($this->_FIELD_VALUES);
 								$this->postError(1100, _t("Starting date is invalid"),"BaseModel->insert()");
 								if ($vb_we_set_transaction) { $this->removeTransaction(false); }
 								return false;
@@ -8019,7 +8018,7 @@ $pa_options["display_form_field_tips"] = true;
 					if ($this->tableName() == $va_rel_info['rel_keys']['one_table']) {
 						if ($t_item_rel->load($pn_relation_id)) {
 							$t_item_rel->setMode(ACCESS_WRITE);
-							$t_item_rel->set($va_rel_info['rel_keys']['many_table_field'], null);
+							$t_item_rel->set($va_rel_info['rel_keys']['many_table_field'], $this->getPrimaryKey());
 							$t_item_rel->update();
 							
 							if ($t_item_rel->numErrors()) {
@@ -9994,6 +9993,7 @@ $pa_options["display_form_field_tips"] = true;
 						if ($vn_limit && ($vn_c >= $vn_limit)) { break; }
 					}
 				}
+				return $va_instances;
 				break;
 			case 'firstid':
 				if($qr_res->nextRow()) {

@@ -107,7 +107,6 @@ BaseModel::$s_ca_models_definitions['ca_sets'] = array(
 				'IS_NULL' => false, 
 				'DEFAULT' => '',
 				'LIST_CODE' => 'set_types',
-				'BOUNDS_VALUE' => array(1,255),
 				'LABEL' => _t('Type'), 'DESCRIPTION' => _t('The type of the set determines what sorts of information the set and each item in the set can have associated with them.')
 		),
 		'set_code' => array(

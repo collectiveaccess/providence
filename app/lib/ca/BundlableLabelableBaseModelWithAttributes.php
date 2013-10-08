@@ -1853,6 +1853,7 @@ class BundlableLabelableBaseModelWithAttributes extends LabelableBaseModelWithAt
 				}
 				if (!$vb_output_bundle) { continue; }
 				
+				$va_bundle['settings']['placement_id'] = $va_bundle['placement_id'];
 				if ($vs_bundle_form_html = $this->getBundleFormHTML($va_bundle['bundle_name'], $va_bundle['placement_code'], $va_bundle['settings'], $pa_options, $vs_bundle_display_name)) {
 					$va_bundle_html[$va_bundle['placement_code']] = "<a name=\"{$pm_screen}_{$vn_c}\"></a>{$vs_bundle_form_html}";
 					$va_bundles_present[$va_bundle['bundle_name']] = true;
@@ -1971,10 +1972,31 @@ class BundlableLabelableBaseModelWithAttributes extends LabelableBaseModelWithAt
 		
 		$va_ancestors_by_locale = array();
 		$vs_pk = $this->primaryKey();
-		
 		$vs_idno_field = $this->getProperty('ID_NUMBERING_ID_FIELD');
+		
+		$vs_hierarchy_type = $this->getProperty('HIERARCHY_TYPE');
 		foreach($va_ancestor_list as $vn_ancestor_id => $va_info) {
-			//if (!$va_info['NODE']['parent_id']) { continue; }
+			switch($vs_hierarchy_type) {
+				case __CA_HIER_TYPE_SIMPLE_MONO__:
+					if (!$va_info['NODE']['parent_id']) { continue(2); }
+					break;
+				case __CA_HIER_TYPE_MULTI_MONO__:
+					if (!$va_info['NODE']['parent_id']) {
+						$vn_item_id = $va_info['NODE'][$vs_pk];
+						$va_ancestors_by_locale[$vn_item_id][$vn_locale_id] = array(
+							'item_id' => $vn_item_id,
+							'parent_id' => $va_info['NODE']['parent_id'],
+							'label' => $this->getHierarchyName($vn_item_id),
+							'idno' => $va_info['NODE'][$vs_idno_field],
+							'locale_id' => null,
+							'table' => $this->tableName()
+				
+						);
+						continue(2);
+					}
+					break;
+			}
+			if (!$va_info['NODE']['parent_id'] && $vb_dont_show_root) { continue; }
 			
 			$vn_locale_id = isset($va_info['NODE']['locale_id']) ? $va_info['NODE']['locale_id'] : null;
 			$va_ancestor = array(
@@ -2118,7 +2140,6 @@ class BundlableLabelableBaseModelWithAttributes extends LabelableBaseModelWithAt
 		if ($t_item->getLabelTableName()) {
 			$t_label = $this->_DATAMODEL->getInstanceByTableName($t_item->getLabelTableName(), true);
 		}
-		
 		if (method_exists($t_item_rel, 'getRelationshipTypes')) {
 			$o_view->setVar('relationship_types', $t_item_rel->getRelationshipTypes(null, null,  array_merge($pa_options, $pa_bundle_settings)));
 			$o_view->setVar('relationship_types_by_sub_type', $t_item_rel->getRelationshipTypesBySubtype($this->tableName(), $this->get('type_id'),  array_merge($pa_options, $pa_bundle_settings)));
@@ -2151,22 +2172,7 @@ class BundlableLabelableBaseModelWithAttributes extends LabelableBaseModelWithAt
 				$qr_rel_items = $t_item->makeSearchResult($t_rel->tableNum(), $va_ids);	
 			}
 				
-			if(strlen(trim($pa_bundle_settings['display_template']))) {
-				$va_opts['template'] = trim($pa_bundle_settings['display_template']);
-			} 
-			
-			// If no display_template set try to get a default out of the app.conf file
-			if (!$va_opts['template']) {
-				if (is_array($va_lookup_settings = $this->getAppConfig()->getList("{$ps_related_table}_lookup_settings"))) {
-					if (!($vs_lookup_delimiter = $this->getAppConfig()->get("{$ps_related_table}_lookup_delimiter"))) { $vs_lookup_delimiter = ''; }
-					$va_opts['template'] = join($vs_lookup_delimiter, $va_lookup_settings);
-				}
-			}
-			
-			// If no app.conf default then just show preferred_labels
-			if (!$va_opts['template']) {
-				$va_opts['template'] = "^preferred_labels";
-			}
+			$va_opts['template'] = caGetBundleDisplayTemplate($this, $ps_related_table, $pa_bundle_settings);
 			$va_initial_values = caProcessRelationshipLookupLabel($qr_rel_items, $t_item_rel, $va_opts);
 		}
 		
@@ -3487,7 +3493,7 @@ if (!$vb_batch) {
  		$va_rel_ids_sorted = $va_rel_sort_order = explode(';',$po_request->getParameter($ps_form_prefix.'_'.$ps_bundlename.'BundleList', pString));
 		sort($va_rel_ids_sorted, SORT_NUMERIC);
 						
- 		$va_rel_items = $this->getRelatedItems($ps_bundlename);
+ 		$va_rel_items = $this->getRelatedItems($ps_bundlename, $pa_settings);
  		
  		$va_rels_to_add = $va_rels_to_delete = array();
  

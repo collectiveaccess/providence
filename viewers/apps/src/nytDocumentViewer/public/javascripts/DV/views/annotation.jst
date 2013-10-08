@@ -31,7 +31,7 @@
         <span class="DV-trigger DV-annotationNext" title="Next Annotation">Next</span>
       </div>
       <div class="DV-annotationGoto DV-editHidden"><div class="DV-trigger">p. <%= pageNumber %></div></div>
-      <div class="DV-annotationTitle DV-editHidden"><%= title %></div>
+      <div class="DV-annotationTitle DV-editHidden"><div class="DV-trigger"><%= title %></div></div>
       <input class="DV-annotationTitleInput DV-editVisible" type="text" placeholder="Annotation Title" value="<%= title.replace(/"/g, '&quot;') %>" />
       <% if (access == 'exclusive') { %>
         <div class="DV-annotationDraftLabel DV-editHidden DV-interface">Draft</div>

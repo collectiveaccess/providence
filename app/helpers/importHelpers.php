@@ -448,14 +448,48 @@
 				if ((!isset($va_val['_type']) || !$va_val['_type']) && $o_log) {
 					$o_log->logWarn(_t("[{$ps_refinery_name}] No %2 type is set for %2 %1", $vs_item, $ps_item_prefix));
 				}
-			
-				// Set parents
-				if ($va_parents = $pa_item['settings']["{$ps_refinery_name}_parents"]) {
-					$va_val['parent_id'] = $va_val['_parent_id'] = caProcessRefineryParents($ps_refinery_name, $ps_table, $va_parents, $pa_source_data, $pa_item, $vs_delimiter, $vn_c, $o_log, $pa_options);
-				}
 				
-				if (isset($pa_options['defaultParentID']) && (!isset($va_val['parent_id']) || !$va_val['parent_id'])) {
-					$va_val['parent_id'] = $va_val['_parent_id'] = $pa_options['defaultParentID'];
+				//
+				// Storage location specific options
+				//
+				if (($ps_refinery_name == 'storageLocationSplitter') && ($vs_hier_delimiter = $pa_item['settings']['storageLocationSplitter_hierarchicalDelimiter'])) {
+					$va_location_hier = explode($vs_hier_delimiter, $vs_item);
+					if (sizeof($va_location_hier) > 1) {
+					
+						$vn_location_id = null;
+				
+						if (!is_array($va_types = $pa_item['settings']['storageLocationSplitter_hierarchicalStorageLocationTypes'])) {
+							$va_types = array();
+						}
+						
+						$vs_item = array_pop($va_location_hier);
+						if (!($va_val['_type'] = array_pop($va_types))) {
+							$va_val['_type'] = $pa_item['settings']['storageLocationSplitter_storageLocationTypeDefault'];
+						}
+					
+						foreach($va_location_hier as $vn_i => $vs_parent) {
+							if (sizeof($va_types) > 0)  { 
+								$vs_type = array_shift($va_types); 
+							} else { 
+								if (!($vs_type = $pa_item['settings']['storageLocationSplitter_storageLocationType'])) {
+									$vs_type = $pa_item['settings']['storageLocationSplitter_storageLocationTypeDefault'];
+								}
+							}
+							if (!$vs_type) { break; }
+							$vn_location_id = DataMigrationUtils::getStorageLocationID($vs_parent, $vn_location_id, $vs_type, $g_ui_locale_id, array('idno' => $vs_parent, 'parent_id' => $vn_location_id), $pa_options);
+						}
+						$va_val['parent_id'] = $va_val['_parent_id'] = $vn_location_id;
+					}
+				} else {
+					// Set parents
+					if ($va_parents = $pa_item['settings']["{$ps_refinery_name}_parents"]) {
+						$va_val['parent_id'] = $va_val['_parent_id'] = caProcessRefineryParents($ps_refinery_name, $ps_table, $va_parents, $pa_source_data, $pa_item, $vs_delimiter, $vn_c, $o_log, $pa_options);
+					}
+				
+					if (isset($pa_options['defaultParentID']) && (!isset($va_val['parent_id']) || !$va_val['parent_id'])) {
+						$va_val['parent_id'] = $va_val['_parent_id'] = $pa_options['defaultParentID'];
+					}
+				
 				}
 				
 				if(isset($pa_options['hierarchyID']) && $pa_options['hierarchyID'] && ($vs_hier_id_fld = $t_instance->getProperty('HIERARCHY_ID_FLD'))) {
@@ -575,6 +609,32 @@
 								$va_val['lot_status_id'] = $va_val['_status'];
 							}
 							unset($va_val['_status']);
+							break;
+						default:
+							if ($o_log) { $o_log->logDebug(_t('[importHelpers:caGenericImportSplitter] Invalid table %1', $ps_table)); }
+							continue(2);
+							break;	
+					}
+				} elseif ((sizeof($va_group_dest) == 2) && ($vs_terminal == 'preferred_labels')) {
+					
+					switch($ps_table) {
+						case 'ca_entities':
+							$va_val = DataMigrationUtils::splitEntityName($vs_item);
+							break;
+						case 'ca_list_items':
+							$va_val = array('name_singular' => $vs_item, 'name_plural' => $vs_item);
+							break;
+						case 'ca_storage_locations':
+						case 'ca_movements':
+						case 'ca_loans':
+						case 'ca_collections':
+						case 'ca_occurrences':
+						case 'ca_places':
+						case 'ca_objects':
+							$va_val = array('name' => $vs_item);
+							break;
+						case 'ca_object_lots':
+							$va_val = array('name' => $vs_item);
 							break;
 						default:
 							if ($o_log) { $o_log->logDebug(_t('[importHelpers:caGenericImportSplitter] Invalid table %1', $ps_table)); }

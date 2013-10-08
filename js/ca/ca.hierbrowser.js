@@ -362,7 +362,7 @@ if (that.uiStyle == 'horizontal') {
 								);
 							} else {
 								jQuery('#' + newLevelListID).append(
-									"<li class='" + that.className + "'>" + moreButton + item.name + "</li>"
+									"<li class='" + that.className + "'>" + moreButton + "<a href='#' id='hierBrowser_" + that.name + '_level_' + level + '_item_' + item['item_id'] + "' class='" + that.className + "'>"  +  item.name + "</a></li>"
 								);
 							}
 							

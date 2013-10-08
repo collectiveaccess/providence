@@ -259,6 +259,29 @@ class ca_editor_ui_bundle_placements extends BaseModel {
 		return true;
 	}
 	# ------------------------------------------------------
+	/** 
+	 * Returns type of editor this placement is part of
+	 *
+	 * @return string Table name for editor, or null if placement_id is invalid
+	 */
+	public function getEditorType() {
+		if (!($vn_placement_id = $this->getPrimaryKey())) { return null; }
+		$o_db = $this->getDb();
+		$qr_res = $o_db->query("
+			SELECT ui.editor_type 
+			FROM ca_editor_uis ui
+			INNER JOIN ca_editor_ui_screens AS s ON s.ui_id = ui.ui_id
+			WHERE
+				s.screen_id = ?
+		", array((int)$this->get('screen_id')));
+		
+		if ($qr_res->nextRow()) {
+			if (!($vn_table_num = $qr_res->get('editor_type'))) { return null; }
+			return $this->getAppDatamodel()->getTableName($vn_table_num);
+		}
+		return null;	
+	}
+	# ----------------------------------------
 	public function __destruct() {
 		unset($this->SETTINGS);
 	}

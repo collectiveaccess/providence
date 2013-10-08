@@ -197,6 +197,7 @@ class SearchResult extends BaseObject {
 	 * Because this can be done in a single query it'll presumably be faster than lazy loading lots of rows
 	 */
 	public function prefetch($ps_tablename, $pn_start, $pn_num_rows, $pa_element_ids=null, $pa_options=null) {
+		if (!$ps_tablename ) { return; }
 		//print "PREFETCH: ".$ps_tablename.' - '. $pn_start.' - '. $pn_num_rows."<br>";
 		
 		// get row_ids to fetch
@@ -206,6 +207,7 @@ class SearchResult extends BaseObject {
 		$va_joins = array();
 		
 		$t_rel_instance = $this->opo_datamodel->getInstanceByTableName($ps_tablename, true);
+		if (!$t_rel_instance) { return; }
 		
 		if ($ps_tablename != $this->ops_table_name) {
 			$va_fields = $this->opa_tables[$ps_tablename]['fieldList'];
@@ -627,7 +629,7 @@ class SearchResult extends BaseObject {
 //
 		$vb_is_get_for_labels = $vb_return_all_label_values = $vb_get_preferred_labels_only = $vb_get_nonpreferred_labels_only = false;
 		if(in_array($va_path_components['field_name'], array('preferred_labels', 'nonpreferred_labels'))) {
-			if (is_subclass_of($t_instance, 'LabelableBaseModelWithAttributes')) {
+			if ($t_instance->getProperty('LABEL_TABLE_NAME')) {
 				
 				$vb_get_preferred_labels_only = ($va_path_components['field_name'] == 'preferred_labels') ? true : false;
 				$vb_get_nonpreferred_labels_only = ($va_path_components['field_name'] == 'nonpreferred_labels') ? true : false;
@@ -923,7 +925,7 @@ class SearchResult extends BaseObject {
 // return array
 				if ($vb_return_as_link && $vb_is_related) {
 					$vs_table_name = $t_instance->tableName();
-					$vs_fld_key = ($va_path_components['subfield_name']) ? $va_path_components['field_name'] : $va_path_components['field_name'];
+					$vs_fld_key = ($va_path_components['subfield_name']) ? $va_path_components['subfield_name'] : $va_path_components['field_name'];
 					if (!$vb_return_all_locales) {
 						$va_return_values_tmp = array();
 						foreach($va_return_values as $vn_i => $va_value) {

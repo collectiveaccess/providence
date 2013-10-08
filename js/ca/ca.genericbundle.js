@@ -62,6 +62,8 @@ var caUI = caUI || {};
 			defaultValues: {},
 			readonly: 0,
 			
+			placementID: null,
+			
 			sortInitialValuesBy: null,
 			firstItemColor: null,
 			lastItemColor: null,
@@ -271,7 +273,7 @@ var caUI = caUI || {};
 				if (!this.readonly) {
 					jQuery(this.container + " #" +this.itemID + templateValues.n + " ." + this.interstitialButtonClassName).click(function() { 
 						// Trigger interstitial edit panel
-						options.interstitialPanel.showPanel(options.interstitialUrl + "/relation_id/" + initialValues['relation_id']);
+						options.interstitialPanel.showPanel(options.interstitialUrl + "/relation_id/" + initialValues['relation_id'] + "/placement_id/" + that.placementID + "/n/" + templateValues.n + "/field_name_prefix/" + that.fieldNamePrefix);
 						jQuery('#' + options.interstitialPanel.getPanelContentID()).data('panel', options.interstitialPanel);
 						return false; 
 					});

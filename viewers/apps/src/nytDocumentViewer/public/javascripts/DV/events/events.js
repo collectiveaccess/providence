@@ -8,6 +8,7 @@ DV.Schema.events = {
       var ranges = viewer.models.document.ZOOM_RANGES;
       viewer.dragReporter.sensitivity = ranges[ranges.length-1] == level ? 1.5 : 1;
       viewer.notifyChangedState();
+      viewer.api.redraw(true);	// need to do this so annotations are in the correct location after the change in zoom
       return true;
     };
     viewer.confirmStateChange ? viewer.confirmStateChange(continuation) : continuation();

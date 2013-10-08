@@ -35,6 +35,7 @@
   */
  
  	require_once(__CA_MODELS_DIR__."/ca_editor_uis.php");
+ 	require_once(__CA_MODELS_DIR__."/ca_editor_ui_bundle_placements.php");
  	require_once(__CA_LIB_DIR__."/core/Datamodel.php");
  	require_once(__CA_LIB_DIR__."/ca/ApplicationPluginManager.php");
  	require_once(__CA_LIB_DIR__."/ca/ResultContext.php");
@@ -73,7 +74,9 @@
 				return false;
  			}
  			
- 			$vs_field_name_prefix = $this->request->getParameter('fieldNamePrefix', pString);
+ 			$ps_field_name_prefix = 	$this->request->getParameter('field_name_prefix', pString);
+ 			$pn_placement_id = 			$this->request->getParameter('placement_id', pInteger);		// placement_id of bundle that launched interstitial editor
+ 			$pn_n =			 			$this->request->getParameter('n', pInteger);				// index of bundle that launched interstitial editor
  			
  			if(is_array($pa_values)) {
  				foreach($pa_values as $vs_key => $vs_val) {
@@ -107,12 +110,13 @@
 		
 			// Set form unique identifiers
 			$this->view->setVar('fieldNamePrefix', $_REQUEST['_formName']);
-			$this->view->setVar('n', $vs_n);
+			$this->view->setVar('n', $pn_n);
 		
 			$this->view->setVar('q', $this->request->getParameter('q', pString));
 		
 			$this->view->setVar('default_parent_id', $this->opo_result_context->getParameter($t_subject->tableName().'_last_parent_id'));
-		
+			$this->view->setVar('placement_id', $pn_placement_id);
+			$this->view->setVar('field_name_prefix', $ps_field_name_prefix);
 			
 			$this->render('interstitial/interstitial_html.php');
  		}
@@ -145,6 +149,8 @@
  				return;
  			}
  			
+ 			$pn_placement_id = 			$this->request->getParameter('placement_id', pInteger);		// placement_id of bundle that launched interstitial editor
+ 			
  			// Make sure request isn't empty
  			if(!sizeof($_POST)) {
  				$va_response = array(
@@ -170,13 +176,31 @@
  			# trigger "BeforeSaveItem" hook 
 			$this->opo_app_plugin_manager->hookBeforeSaveItem(array('id' => null, 'table_num' => $t_subject->tableNum(), 'table_name' => $t_subject->tableName(), 'instance' => $t_subject, 'is_insert' => true));
  			
+ 			$t_placement = new ca_editor_ui_bundle_placements($pn_placement_id);
+ 			
+ 			$pa_bundle_settings = $t_placement->getSettings();
  			$va_opts = array_merge($pa_options, array('ui_instance' => $t_ui));
  			$vb_save_rc = $t_subject->saveBundlesForScreen($this->request->getParameter('screen', pString), $this->request, $va_opts);
 			$this->view->setVar('t_ui', $t_ui);
 		
  			$vs_message = _t("Saved changes to %1", $vs_type_name);
  		
+ 			//
+ 			// Regenerate display template for bundle that launched the interstitial editor so it will reflect any changes
+ 			//
+ 			$vs_related_table = $t_placement->getEditorType();
+ 			$vs_template = caGetBundleDisplayTemplate($t_subject, $vs_related_table, $pa_bundle_settings);
+		
+ 			$qr_rel_items = caMakeSearchResult($t_subject->tableName(), array($t_subject->getPrimaryKey()));
+ 			$va_bundle_values = array_shift(caProcessRelationshipLookupLabel($qr_rel_items, $t_subject, array('template' => $vs_template)));
+ 			if ($t_subject->hasField('type_id')) {
+				$va_bundle_values['relationship_typename'] = $t_subject->getRelationshipTypename(($t_subject->getLeftTableFieldName() == $vs_related_table) ? 'rtol' : 'ltor');
+				$va_bundle_values['relationship_type_code'] = $t_subject->getRelationshipTypeCode();
+			}
  			
+ 			//
+ 			// Report errors
+ 			//
  			$va_errors = $this->request->getActionErrors();							// all errors from all sources
  			$va_general_errors = $this->request->getActionErrors('general');		// just "general" errors - ones that are not attached to a specific part of the form
  			
@@ -210,6 +234,7 @@
  				'table' => $t_subject->tableName(),
 				'type_id' => method_exists($t_subject, "getTypeID") ? $t_subject->getTypeID() : null,
  				'display' => 'relation',
+ 				'bundleDisplay' => $va_bundle_values,
  				'errors' => $va_error_list
  			);
  			
