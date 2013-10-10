@@ -62,6 +62,8 @@ var caUI = caUI || {};
 			defaultValues: {},
 			readonly: 0,
 			
+			placementID: null,
+			
 			sortInitialValuesBy: null,
 			firstItemColor: null,
 			lastItemColor: null,
@@ -70,6 +72,8 @@ var caUI = caUI || {};
 			listSortOrderID: null,
 			listSortItems: null // if set, limits sorting to items specified by selector
 		}, options);
+		
+		if (that.maxRepeats == 0) { that.maxRepeats = 65535; }
 		
 		if (!that.readonly) {
 			jQuery(container + " ." + that.addButtonClassName).click(function() {
@@ -269,7 +273,7 @@ var caUI = caUI || {};
 				if (!this.readonly) {
 					jQuery(this.container + " #" +this.itemID + templateValues.n + " ." + this.interstitialButtonClassName).click(function() { 
 						// Trigger interstitial edit panel
-						options.interstitialPanel.showPanel(options.interstitialUrl + "/relation_id/" + initialValues['relation_id']);
+						options.interstitialPanel.showPanel(options.interstitialUrl + "/relation_id/" + initialValues['relation_id'] + "/placement_id/" + that.placementID + "/n/" + templateValues.n + "/field_name_prefix/" + that.fieldNamePrefix);
 						jQuery('#' + options.interstitialPanel.getPanelContentID()).data('panel', options.interstitialPanel);
 						return false; 
 					});

@@ -41,7 +41,8 @@
   top:0;
   margin-top:5px;
   margin-left:-5px;
-  background: transparent url(../../../images/DV/embed/slider.png) no-repeat 0 0;
+  background: transparent url(../../../images/DV/embed/slider.png) no-repeat 0 0 !important;
+  border: 0px solid #333 !important;
   outline: none;
 }
 

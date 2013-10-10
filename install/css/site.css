@@ -95,15 +95,34 @@ H2{
 	padding: 20px;
 	line-height:1.3em;
 	overflow: hidden;
-	height: 90px;
+	height: 200px;
 }
-.contentFailure, .contentSuccess{
+.contentSuccess{
 	color: #333333;
 	font-size:14px;
 	text-align: center;
 	text-decoration: none;
 	margin: 20px 0px 20px 0px;
 }
+
+.contentFailureHead {
+	color: #333333;
+	font-size:14px;
+	text-align: center;
+	text-decoration: none;
+	margin: 10px 0px 10px 0px;
+}
+
+.contentFailure{
+	color: #333333;
+	font-size:12px;
+	text-align: left;
+	text-decoration: none;
+	margin: 20px 0px 20px 0px;
+	height: 100%;
+	overflow: auto;
+}
+
 .contentHighlight {
 	color: #1FAA99;
 }

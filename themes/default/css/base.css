@@ -4471,6 +4471,12 @@ div.preferenceSectionDivider {
 	font-size: 12px;
 }
 
+.batchProcessingReportSectionWarning {
+	font-style: italic;
+	font-size: 11px;
+	margin: 10px 0 10px 0;
+}
+
 #batchProcessingReport ol, #batchProcessingReport ul {
 	line-height: 1.3em;
 }

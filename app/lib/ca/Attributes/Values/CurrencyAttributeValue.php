@@ -39,6 +39,7 @@
  	require_once(__CA_LIB_DIR__.'/core/BaseModel.php');	// we use the BaseModel field type (FT_*) and display type (DT_*) constants
 
  	require_once(__CA_LIB_DIR__.'/core/Zend/Currency.php');
+ 	require_once(__CA_LIB_DIR__.'/core/Zend/Locale.php');
  	require_once(__CA_LIB_DIR__.'/core/Zend/Locale/Data.php');
  	require_once(__CA_LIB_DIR__.'/core/Zend/Locale/Format.php');
  
@@ -153,7 +154,12 @@
  		# ------------------------------------------------------------------
 		public function getDisplayValue($pa_options=null) {
 
-			$o_locale = Zend_Registry::get('Zend_Locale');
+			if(Zend_Registry::isRegistered("Zend_Locale")) {
+				$o_locale = Zend_Registry::get('Zend_Locale');
+			} else {
+				$o_locale = new Zend_Locale('en_US');
+			}
+			
 			$vs_format = Zend_Locale_Data::getContent($o_locale, 'currencynumber');
 
 			// this returns a string like '50,00 ¤' for locale de_DE
@@ -212,7 +218,11 @@
 
  			// get UI locale from registry and convert string to actual php float
  			// based on rules for this locale (e.g. most non-US locations use 10.000,00 as notation)
- 			$o_locale = Zend_Registry::get('Zend_Locale');
+ 			if(Zend_Registry::isRegistered("Zend_Locale")) {
+ 				$o_locale = Zend_Registry::get('Zend_Locale');
+ 			} else {
+ 				$o_locale = new Zend_Locale('en_US');
+ 			}
  			try {
  				$vn_value = Zend_Locale_Format::getNumber($vs_decimal_value, array('locale' => $o_locale, 'precision' => 2));
  			} catch (Zend_Locale_Exception $e){

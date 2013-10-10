@@ -35,6 +35,7 @@
 	$vs_add_label 		= $this->getVar('add_label');
 	$va_rel_types		= $this->getVar('relationship_types');
 	$vs_placement_code 	= $this->getVar('placement_code');
+	$vn_placement_id	= (int)$va_settings['placement_id'];
 	$vb_batch			= $this->getVar('batch');
 
 	$vs_sort			=	((isset($va_settings['sort']) && $va_settings['sort'])) ? $va_settings['sort'] : '';
@@ -80,9 +81,11 @@
 	}
 ?>
 			<a href="<?php print urldecode(caEditorUrl($this->request, 'ca_occurrences', '{occurrence_id}')); ?>" class="caEditItemButton" id="<?php print $vs_id_prefix; ?>_edit_related_{n}"></a>
+			<span id='<?php print $vs_id_prefix; ?>_BundleTemplateDisplay{n}'>
 <?php
 			print caGetRelationDisplayString($this->request, 'ca_objects', array(), array('display' => '_display', 'makeLink' => false));
 ?>
+			</span>
 			<input type="hidden" name="<?php print $vs_id_prefix; ?>_type_id{n}" id="<?php print $vs_id_prefix; ?>_type_id{n}" value="{type_id}"/>
 			<input type="hidden" name="<?php print $vs_id_prefix; ?>_id{n}" id="<?php print $vs_id_prefix; ?>_id{n}" value="{id}"/>
 		</div>
@@ -92,9 +95,11 @@
 		default:
 ?>
 		<div id="<?php print $vs_id_prefix; ?>Item_{n}" class="labelInfo roundedRel caRelatedItem">
+			<span id='<?php print $vs_id_prefix; ?>_BundleTemplateDisplay{n}'>
 <?php
-			print caGetRelationDisplayString($this->request, 'ca_objects', array('class' => 'caEditItemButton', 'id' => "{$vs_id_prefix}_edit_related_{n}"), array('display' => '_display', 'makeLink' => true));
+			print caGetRelationDisplayString($this->request, 'ca_objects', array('class' => 'caEditItemButton', 'id' => "{$vs_id_prefix}_edit_related_{n}"), array('display' => '_display', 'makeLink' => true, 'relationshipTypeDisplayPosition' => (($t_subject->tableName() == 'ca_object_lots') ? 'none' : null)));
 ?>
+			</span>
 			<input type="hidden" name="<?php print $vs_id_prefix; ?>_type_id{n}" id="<?php print $vs_id_prefix; ?>_type_id{n}" value="{type_id}"/>
 			<input type="hidden" name="<?php print $vs_id_prefix; ?>_id{n}" id="<?php print $vs_id_prefix; ?>_id{n}" value="{id}"/>
 <?php
@@ -127,9 +132,11 @@
 <?php
 	}
 ?>
-			<a href="<?php print urldecode(caEditorUrl($this->request, 'ca_occurrences', '{occurrence_id}')); ?>" class="caEditItemButton" id="<?php print $vs_id_prefix; ?>_edit_related_{n}"></a>
-			{_display}
-			({{relationship_typename}})
+			<span id='<?php print $vs_id_prefix; ?>_BundleTemplateDisplay{n}'>
+<?php
+			print caGetRelationDisplayString($this->request, 'ca_objects', array('class' => 'caEditItemButton', 'id' => "{$vs_id_prefix}_edit_related_{n}"), array('display' => '_display', 'makeLink' => true, 'relationshipTypeDisplayPosition' => (($t_subject->tableName() == 'ca_object_lots') ? 'none' : null)));
+?>
+			</span>
 			<input type="hidden" name="<?php print $vs_id_prefix; ?>_type_id{n}" id="<?php print $vs_id_prefix; ?>_type_id{n}" value="{type_id}"/>
 			<input type="hidden" name="<?php print $vs_id_prefix; ?>_id{n}" id="<?php print $vs_id_prefix; ?>_id{n}" value="{id}"/>
 		</div>
@@ -139,8 +146,11 @@
 		default:
 ?>
 		<div id="<?php print $vs_id_prefix; ?>Item_{n}" class="labelInfo roundedRel caRelatedItem">
-			<a href="<?php print urldecode(caEditorUrl($this->request, 'ca_objects', '{object_id}')); ?>" class="caEditItemButton" id="<?php print $vs_id_prefix; ?>_edit_related_{n}">{{{{_display}}}}</a>
-			({{relationship_typename}})
+			<span id='<?php print $vs_id_prefix; ?>_BundleTemplateDisplay{n}'>
+<?php
+			print caGetRelationDisplayString($this->request, 'ca_objects', array('class' => 'caEditItemButton', 'id' => "{$vs_id_prefix}_edit_related_{n}"), array('display' => '_display', 'makeLink' => true, 'relationshipTypeDisplayPosition' => (($t_subject->tableName() == 'ca_object_lots') ? 'none' : null)));
+?>
+			</span>
 			<input type="hidden" name="<?php print $vs_id_prefix; ?>_type_id{n}" id="<?php print $vs_id_prefix; ?>_type_id{n}" value="{type_id}"/>
 			<input type="hidden" name="<?php print $vs_id_prefix; ?>_id{n}" id="<?php print $vs_id_prefix; ?>_id{n}" value="{id}"/>
 <?php
@@ -231,12 +241,22 @@
 ?>
 	</div>
 </div>
+
+<div id="caRelationQuickAddPanel<?php print $vs_id_prefix; ?>" class="caRelationQuickAddPanel"> 
+	<div id="caRelationQuickAddPanel<?php print $vs_id_prefix; ?>ContentArea">
+	<div class='dialogHeader'><?php print _t('Quick Add', $t_item->getProperty('NAME_SINGULAR')); ?></div>
 		
+	</div>
+</div>
 <div id="caRelationEditorPanel<?php print $vs_id_prefix; ?>" class="caRelationQuickAddPanel"> 
 	<div id="caRelationEditorPanel<?php print $vs_id_prefix; ?>ContentArea">
 	<div class='dialogHeader'><?php print _t('Relation editor', $t_item->getProperty('NAME_SINGULAR')); ?></div>
 		
 	</div>
+	
+	<textarea class='caBundleDisplayTemplate' style='display: none;'>
+		<?php print caGetRelationDisplayString($this->request, 'ca_objects', array(), array('display' => '_display', 'makeLink' => false)); ?>
+	</textarea>
 </div>			
 	
 <script type="text/javascript">
@@ -246,6 +266,21 @@
 		jQuery('#<?php print $vs_id_prefix; ?>caItemListSortControls a.caItemListSortControl').click(function() {jQuery('#<?php print $vs_id_prefix; ?>caItemListSortControls').slideUp(200); });
 		
 		if (caUI.initPanel) {
+			caRelationQuickAddPanel<?php print $vs_id_prefix; ?> = caUI.initPanel({ 
+				panelID: "caRelationQuickAddPanel<?php print $vs_id_prefix; ?>",						/* DOM ID of the <div> enclosing the panel */
+				panelContentID: "caRelationQuickAddPanel<?php print $vs_id_prefix; ?>ContentArea",		/* DOM ID of the content area <div> in the panel */
+				exposeBackgroundColor: "#000000",				
+				exposeBackgroundOpacity: 0.7,					
+				panelTransitionSpeed: 400,						
+				closeButtonSelector: ".close",
+				center: true,
+				onOpenCallback: function() {
+				jQuery("#topNavContainer").hide(250);
+				},
+				onCloseCallback: function() {
+					jQuery("#topNavContainer").show(250);
+				}
+			});
 			caRelationEditorPanel<?php print $vs_id_prefix; ?> = caUI.initPanel({ 
 				panelID: "caRelationEditorPanel<?php print $vs_id_prefix; ?>",						/* DOM ID of the <div> enclosing the panel */
 				panelContentID: "caRelationEditorPanel<?php print $vs_id_prefix; ?>ContentArea",		/* DOM ID of the content area <div> in the panel */
@@ -268,6 +303,7 @@
 			initialValues: <?php print json_encode($this->getVar('initialValues')); ?>,
 			initialValueOrder: <?php print json_encode(array_keys($this->getVar('initialValues'))); ?>,
 			itemID: '<?php print $vs_id_prefix; ?>Item_',
+			placementID: '<?php print $vn_placement_id; ?>',
 			templateClassName: 'caNewItemTemplate',
 			initialValueTemplateClassName: 'caItemTemplate',
 			itemListClassName: 'caItemList',
@@ -284,6 +320,8 @@
 			listSortItems: 'div.roundedRel',
 			firstItemColor: '<?php print $vs_first_color; ?>',
 			lastItemColor: '<?php print $vs_last_color; ?>',
+			quickaddPanel: caRelationQuickAddPanel<?php print $vs_id_prefix; ?>,
+			quickaddUrl: '<?php print caNavUrl($this->request, 'editor/objects', 'ObjectQuickAdd', 'Form', array('object_id' => 0)); ?>',
 			
 			interstitialButtonClassName: 'caInterstitialEditButton',
 			interstitialPanel: caRelationEditorPanel<?php print $vs_id_prefix; ?>,

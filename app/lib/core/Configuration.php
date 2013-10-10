@@ -492,7 +492,7 @@ class Configuration {
 							# -------------------
 							case '}':
 								if ($vn_in_quote) {
-									$vs_scalar_value .= "}";
+									$vs_assoc_key .= "}";
 								} else {
 									if ($this->opb_debug) { print "CONFIG DEBUG: STATE=40; Got close }; KEY IS '$vs_assoc_key'\n"; }
 									if (sizeof($va_assoc_pointer_stack) > 1) {

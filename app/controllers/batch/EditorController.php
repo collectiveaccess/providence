@@ -93,7 +93,6 @@
  			
  			$this->view->setVar('batch_editor_last_settings', $va_last_settings = is_array($va_last_settings = $this->request->user->getVar('batch_editor_last_settings')) ? $va_last_settings : array());
  			
- 			
  			$va_nav = $t_ui->getScreensAsNavConfigFragment($this->request, $vn_type_id, $this->request->getModulePath(), $this->request->getController(), $this->request->getAction(),
 				array(),
 				array(),
@@ -162,6 +161,30 @@
  
  		}
  		# -------------------------------------------------------
+ 		public function Delete() {
+ 			list($vn_set_id, $t_set, $t_subject, $t_ui) = $this->_initView($pa_options);
+
+ 			if (!$this->request->user->canDoAction('can_batch_delete_'.$t_set->getAppDatamodel()->getTableName($t_set->get('table_num')))) {
+ 				$this->response->setRedirect($this->request->config->get('error_display_url').'/n/3230?r='.urlencode($this->request->getFullUrlPath()));
+ 				return;
+ 			}
+
+ 			if ($t_set->getItemCount(array('user_id' => $this->request->getUserID())) <= 0) { 
+ 				$this->response->setRedirect($this->request->config->get('error_display_url').'/n/3220?r='.urlencode($this->request->getFullUrlPath()));
+ 				return;
+ 			}
+
+ 			if ($vb_confirm = ($this->request->getParameter('confirm', pInteger) == 1) ? true : false) {
+ 				$this->view->setVar('confirmed',true);
+
+ 				// run now
+				$app = AppController::getInstance();
+				$app->registerPlugin(new BatchEditorProgress($this->request, $t_set, $t_subject, array('isBatchDelete' => true)));
+ 			}
+
+ 			$this->render('editor/delete_html.php');
+ 		}
+ 		# -------------------------------------------------------
  		/**
  		 * Initializes editor view with core set of values, loads model with record to be edited and selects user interface to use.
  		 *
@@ -191,9 +214,9 @@
  			$t_subject = $this->opo_datamodel->getInstanceByTableNum($t_set->get('table_num'));
  			$t_ui = new ca_editor_uis();
  			if (!isset($pa_options['ui']) && !$pa_options['ui']) {
- 				$pa_options['ui'] = $this->request->user->getPreference("batch_".$t_subject->tableName()."_editor_ui");
+ 				$t_ui->load($this->request->user->getPreference("batch_".$t_subject->tableName()."_editor_ui"));
  			}
- 			if (isset($pa_options['ui']['__all__']) && $pa_options['ui']['__all__']) {
+ 			if (!$t_ui->getPrimaryKey() && isset($pa_options['ui']['__all__']) && $pa_options['ui']['__all__']) {
  				if (is_numeric($pa_options['ui']['__all__'])) {
  					$t_ui->load((int)$pa_options['ui']['__all__']);
  				}

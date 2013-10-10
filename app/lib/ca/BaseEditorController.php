@@ -1132,9 +1132,11 @@
 			if (!in_array($ps_version, $va_versions)) { 
 				if (!($ps_version = $va_rep_display_info['display_version'])) { $ps_version = null; }
 			}
+			print "v=$ps_version";
 			$o_view->setVar('version', $ps_version);
 			$o_view->setVar('version_info', $t_attr_val->getMediaInfo('value_blob', $ps_version));
 			$o_view->setVar('version_type', $t_media->getMimetypeTypename($t_attr_val->getMediaInfo('value_blob', $ps_version, 'MIMETYPE')));
+			$o_view->setVar('version_mimetype', $t_attr_val->getMediaInfo('value_blob', $ps_version, 'MIMETYPE'));
 			$o_view->setVar('mimetype', $t_attr_val->getMediaInfo('value_blob', 'INPUT', 'MIMETYPE'));			
 			
 			

@@ -2024,7 +2024,6 @@ class BaseModel extends BaseObject {
 								return false;
 							}
 							if (!is_numeric($this->_FIELD_VALUES[$start_field_name]) && !($va_attr["IS_NULL"] && is_null($this->_FIELD_VALUES[$start_field_name]))) {
-								print_r($this->_FIELD_VALUES); print "f=$start_field_name"; print_R($va_attr); print json_encode($this->_FIELD_VALUES);
 								$this->postError(1100, _t("Starting date is invalid"),"BaseModel->insert()");
 								if ($vb_we_set_transaction) { $this->removeTransaction(false); }
 								return false;
@@ -6061,12 +6060,14 @@ class BaseModel extends BaseObject {
 					return null;
 				}
 			}
-			$vn_hierarchy_id = $this->get($vs_hier_id_fld);
 			
 			$vs_hier_id_sql = "";
-			if ($vn_hierarchy_id) {
-				// TODO: verify hierarchy_id exists
-				$vs_hier_id_sql = " AND (".$vs_hier_id_fld." = ".$vn_hierarchy_id.")";
+			if ($vs_hier_id_fld) {
+				$vn_hierarchy_id = $this->get($vs_hier_id_fld);
+				if ($vn_hierarchy_id) {
+					// TODO: verify hierarchy_id exists
+					$vs_hier_id_sql = " AND (".$vs_hier_id_fld." = ".$vn_hierarchy_id.")";
+				}
 			}
 			
 			
@@ -7423,20 +7424,21 @@ $pa_options["display_form_field_tips"] = true;
 									$vs_height = ((int)$vs_height * 16)."px";
 								}
 								
+								if(!is_array($va_toolbar_config = $this->getAppConfig()->getAssoc('wysiwyg_editor_toolbar'))) { $va_toolbar_config = array(); }
+								
 								$vs_element .= "<script type='text/javascript'>jQuery(document).ready(function() {
-		jQuery('#".$pa_options["id"]."').ckeditor(function() {
-				this.on( 'change', function(e) { 
-					if (caUI && caUI.utils) { caUI.utils.showUnsavedChangesWarning(true);  }
-				 });
-			},
-			{
-				toolbar: ".json_encode(array_values($this->getAppConfig()->getAssoc('wysiwyg_editor_toolbar'))).",
-				width: '{$vs_width}',
-				height: '{$vs_height}',
-				toolbarLocation: 'top',
-				enterMode: CKEDITOR.ENTER_BR
-			}
-		);
+								var ckEditor = CKEDITOR.replace( '".$pa_options['id']."',
+								{
+									toolbar : ".json_encode(array_values($va_toolbar_config)).",
+									width: '{$vs_width}',
+									height: '{$vs_height}',
+									toolbarLocation: 'top',
+									enterMode: CKEDITOR.ENTER_BR
+								});
+						
+								ckEditor.on('instanceReady', function(){ 
+									 ckEditor.document.on( 'keydown', function(e) {if (caUI && caUI.utils) { caUI.utils.showUnsavedChangesWarning(true); } });
+								});
  	});									
 </script>";
 							}
@@ -8016,7 +8018,7 @@ $pa_options["display_form_field_tips"] = true;
 					if ($this->tableName() == $va_rel_info['rel_keys']['one_table']) {
 						if ($t_item_rel->load($pn_relation_id)) {
 							$t_item_rel->setMode(ACCESS_WRITE);
-							$t_item_rel->set($va_rel_info['rel_keys']['many_table_field'], null);
+							$t_item_rel->set($va_rel_info['rel_keys']['many_table_field'], $this->getPrimaryKey());
 							$t_item_rel->update();
 							
 							if ($t_item_rel->numErrors()) {
@@ -9896,9 +9898,33 @@ $pa_options["display_form_field_tips"] = true;
 		$t_instance = new $vs_table;
 		
 		$va_sql_wheres = array();
+		
+		//
+		// Convert type id
+		//
+		if (method_exists($this, "getTypeFieldName")) {
+			$vs_type_field_name = $this->getTypeFieldName();
+			if (isset($pa_values[$vs_type_field_name]) && !is_numeric($pa_values[$vs_type_field_name])) {
+				if ($vn_id = ca_lists::getItemID($this->getTypeListCode(), $pa_values[$vs_type_field_name])) {
+					$pa_values[$vs_type_field_name] = $vn_id;
+				}
+			}
+		}
+		
+		//
+		// Convert other intrinsic list references
+		//
+		foreach($pa_values as $vs_field => $vm_value) {
+			if($vs_list_code = $t_instance->getFieldInfo($vs_field, 'LIST_CODE')) {
+				if ($vn_id = ca_lists::getItemID($vs_list_code, $vm_value)) {
+					$pa_values[$vs_field] = $vn_id;
+				}
+			}
+		}
+		
 		foreach ($pa_values as $vs_field => $vm_value) {
 			if (is_array($vm_value)) { continue; }
-			
+		
 			# support case where fieldname is in format table.fieldname
 			if (preg_match("/([\w_]+)\.([\w_]+)/", $vs_field, $va_matches)) {
 				if ($va_matches[1] != $vs_table) {
@@ -9967,6 +9993,7 @@ $pa_options["display_form_field_tips"] = true;
 						if ($vn_limit && ($vn_c >= $vn_limit)) { break; }
 					}
 				}
+				return $va_instances;
 				break;
 			case 'firstid':
 				if($qr_res->nextRow()) {

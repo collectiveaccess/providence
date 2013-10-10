@@ -197,6 +197,7 @@ class SearchResult extends BaseObject {
 	 * Because this can be done in a single query it'll presumably be faster than lazy loading lots of rows
 	 */
 	public function prefetch($ps_tablename, $pn_start, $pn_num_rows, $pa_element_ids=null, $pa_options=null) {
+		if (!$ps_tablename ) { return; }
 		//print "PREFETCH: ".$ps_tablename.' - '. $pn_start.' - '. $pn_num_rows."<br>";
 		
 		// get row_ids to fetch
@@ -206,6 +207,7 @@ class SearchResult extends BaseObject {
 		$va_joins = array();
 		
 		$t_rel_instance = $this->opo_datamodel->getInstanceByTableName($ps_tablename, true);
+		if (!$t_rel_instance) { return; }
 		
 		if ($ps_tablename != $this->ops_table_name) {
 			$va_fields = $this->opa_tables[$ps_tablename]['fieldList'];
@@ -269,14 +271,17 @@ class SearchResult extends BaseObject {
 			$vs_order_by = " ORDER BY ".$t_rel_instance->tableName().".idno_sort";
 		}
 	
+		$vs_deleted_sql = '';
 		$vs_rel_pk = $t_rel_instance->primaryKey();
-		
+		if ($t_rel_instance->hasField('deleted')) {
+			$vs_deleted_sql = " AND (".$t_rel_instance->tableName().".deleted = 0)";
+		}
 		$vs_sql = "
 			SELECT ".join(',', $va_fields)."
 			FROM ".$this->ops_table_name."
 			".join("\n", $va_joins)."
 			WHERE
-				".$this->ops_table_name.'.'.$this->ops_table_pk." IN (".join(',', $va_row_ids).") $vs_criteria_sql
+				".$this->ops_table_name.'.'.$this->ops_table_pk." IN (".join(',', $va_row_ids).") {$vs_criteria_sql} {$vs_deleted_sql}
 			{$vs_order_by}
 		";
 		//print "<pre>$vs_sql</pre>";
@@ -624,7 +629,7 @@ class SearchResult extends BaseObject {
 //
 		$vb_is_get_for_labels = $vb_return_all_label_values = $vb_get_preferred_labels_only = $vb_get_nonpreferred_labels_only = false;
 		if(in_array($va_path_components['field_name'], array('preferred_labels', 'nonpreferred_labels'))) {
-			if (is_subclass_of($t_instance, 'LabelableBaseModelWithAttributes')) {
+			if ($t_instance->getProperty('LABEL_TABLE_NAME')) {
 				
 				$vb_get_preferred_labels_only = ($va_path_components['field_name'] == 'preferred_labels') ? true : false;
 				$vb_get_nonpreferred_labels_only = ($va_path_components['field_name'] == 'nonpreferred_labels') ? true : false;
@@ -738,7 +743,7 @@ class SearchResult extends BaseObject {
 					if ($t_instance->isHierarchical()) {
 						$vs_field_spec = join('.', array_values($va_path_components['components']));
 						$vs_hier_pk_fld = $t_instance->primaryKey();
-						if ($va_ids = $this->get($va_path_components['table_name'].'.'.$vs_hier_pk_fld, array_merge($pa_options, array('returnAsArray' => true)))) {
+						if ($va_ids = $this->get($va_path_components['table_name'].'.'.$vs_hier_pk_fld, array_merge($pa_options, array('returnAsArray' => true, 'returnAsLink'=> false)))) {
 							if ($va_path_components['field_name'] == $vs_hier_pk_fld) {
 								$va_vals = $va_ids;
 							} else {
@@ -920,7 +925,7 @@ class SearchResult extends BaseObject {
 // return array
 				if ($vb_return_as_link && $vb_is_related) {
 					$vs_table_name = $t_instance->tableName();
-					$vs_fld_key = ($va_path_components['subfield_name']) ? $va_path_components['field_name'] : $va_path_components['field_name'];
+					$vs_fld_key = ($va_path_components['subfield_name']) ? $va_path_components['subfield_name'] : $va_path_components['field_name'];
 					if (!$vb_return_all_locales) {
 						$va_return_values_tmp = array();
 						foreach($va_return_values as $vn_i => $va_value) {
@@ -1108,11 +1113,12 @@ class SearchResult extends BaseObject {
 			}
 	
 			if ($vb_return_as_array) {
+			
 // return array (intrinsics or labels in primary or related table)
-				if ($t_instance->hasField($va_path_components['field_name'])) {// && ($va_path_components['table_name'] === $this->ops_table_name)) {
+				if ($t_instance->hasField($va_path_components['field_name']) && ($va_path_components['table_name'] === $t_instance->tableName())) {
 					// Intrinsic
 					$va_field_info = $t_instance->getFieldInfo($va_path_components['field_name']);
-					
+					$vs_pk = $t_original_instance->primaryKey();
 					// Handle specific intrinsic types
 					switch($va_field_info['FIELD_TYPE']) {
 						case FT_DATERANGE:
@@ -1120,6 +1126,8 @@ class SearchResult extends BaseObject {
 							foreach($va_value_list as $vn_id => $va_values_by_locale) {
 								foreach($va_values_by_locale as $vn_locale_id => $va_values) {
 									foreach($va_values as $vn_i => $va_value) {
+										$va_ids[] = $va_value[$vs_pk];
+					
 										$this->opo_tep->init();
 										if ($va_field_info['FIELD_TYPE'] == FT_DATERANGE) {
 											$this->opo_tep->setUnixTimestamps($va_value[$va_field_info['START']], $va_value[$va_field_info['END']]);
@@ -1142,6 +1150,8 @@ class SearchResult extends BaseObject {
 							foreach($va_value_list as $vn_id => $va_values_by_locale) {
 								foreach($va_values_by_locale as $vn_locale_id => $va_values) {
 									foreach($va_values as $vn_i => $va_value) {
+										$va_ids[] = $va_value[$vs_pk];
+					
 										if (isset($pa_options['unserialize']) && $pa_options['unserialize']) {
 											$vs_prop = caUnserializeForDatabase($va_value[$va_path_components['field_name']]);
 											if ($vb_return_all_locales) {
@@ -1182,6 +1192,8 @@ class SearchResult extends BaseObject {
 							foreach($va_value_list as $vn_id => $va_values_by_locale) {
 								foreach($va_values_by_locale as $vn_locale_id => $va_values) {
 									foreach($va_values as $vn_i => $va_value) {
+										$va_ids[] = $va_value[$vs_pk];
+					
 										if (($vb_get_preferred_labels_only) && ($vb_supports_preferred) && (!$va_value['is_preferred'])) { continue; }
 										if (($vb_get_nonpreferred_labels_only) && ($vb_supports_preferred) && ($va_value['is_preferred'])) { continue; }
 										
@@ -1287,11 +1299,12 @@ class SearchResult extends BaseObject {
 						}
 					}
 				}
-				if ($vb_return_as_link && $vb_is_related) {
+				if ($vb_return_as_link) {
 					if (!$vb_return_all_locales) {
 						$va_return_values = caCreateLinksFromText($va_return_values, $va_original_path_components['table_name'], $va_ids, $vs_return_as_link_class, $vs_return_as_link_target);
 					}
 				}
+				
 				return $va_return_values;
 			} else {
 // Return scalar (intrinsics or labels in primary or related table)

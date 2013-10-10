@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <profile xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="profile.xsd" useForConfiguration="1" base="base" infoUrl="http://providence.collectiveaccess.org/wiki/DublinCoreInstallationProfile">
-  <profileName>Vancouver Maritime Museum</profileName>
+  <profileName>Vancouver Maritime Museum (Latest)</profileName>
   <profileDescription>Archives and Museum Collection of the Vancouver Maritime Museum</profileDescription>
   <locales>
     <locale lang="en" country="US">English</locale>
@@ -2613,14 +2613,6 @@
         </restriction>
         <restriction code="r6">
           <table>ca_object_lots</table>
-          <settings>
-            <setting name="minAttributesPerRow">0</setting>
-            <setting name="maxAttributesPerRow">100</setting>
-            <setting name="minimumAttributeBundlesToDisplay">1</setting>
-          </settings>
-        </restriction>
-        <restriction code="r7">
-          <table>ca_object_events</table>
           <settings>
             <setting name="minAttributesPerRow">0</setting>
             <setting name="maxAttributesPerRow">100</setting>
@@ -8289,6 +8281,20 @@
         </type>
       </types>
     </relationshipTable>
+    <relationshipTable name="ca_collections_x_storage_locations">
+      <types>
+        <type code="home" default="1">
+          <labels>
+            <label locale="en_US">
+              <typename>has as home location</typename>
+              <typename_reverse>is home location for</typename_reverse>
+            </label>
+          </labels>
+          <subTypeLeft> </subTypeLeft>
+          <subTypeRight></subTypeRight>
+        </type> 
+      </types>
+    </relationshipTable>
     <relationshipTable name="ca_objects_x_occurrences">
       <types>
         <type code="depicts" default="1">
@@ -9299,7 +9305,7 @@
         <placement code="cataloguer">
           <bundle>ca_objects.museum_cataloguer</bundle>
           <settings>
-            <setting name="format"><![CDATA[<ifdef code="cataloguers_museum">Catalogued by:</ifdef> ^cataloguers_museum </ifdef> <ifdef code="dates_catalogued">Date:</ifdef> ^dates_catalogued <ifdef code="cataloguer_notes">Cataloguer Notes:</ifdef> ^cataloguer_notes]]>
+            <setting name="format"><![CDATA[<ifdef code="cataloguers_museum"><font size=2><b>Catalogued by:</b></font></ifdef> ^cataloguers_museum </ifdef> <ifdef code="dates_catalogued"><font size=2><b>Date:</b></font></ifdef> ^dates_catalogued <ifdef code="cataloguer_notes"><br><br><font size=2><b><Cataloguer Notes:</b></font></ifdef> ^cataloguer_notes]]>
           </setting>
           </settings>
         </placement>
@@ -9320,7 +9326,7 @@
         <placement code="ca_attribute_current_condition">
           <bundle>ca_objects.current_condition</bundle>
           <settings>
-            <setting name="format"><![CDATA[<ifdef code="museum_condition">Current Condition:</ifdef> ^museum_condition <ifdef code="condition_date">Date:</ifdef> ^condition_date]]>
+            <setting name="format"><![CDATA[<ifdef code="museum_condition"><font size=2><b>Current Condition:</b></font></ifdef> ^museum_condition <ifdef code="condition_date"><font size=2><b>Date:</b></font></ifdef> ^condition_date]]>
             </setting>
           </settings>
         </placement>
@@ -9331,7 +9337,7 @@
             <setting name="label" locale="en_US">Related Exhibitions</setting>
             <setting name="restrict_to_types">exhibitions</setting>
             <setting name="delimiter"><![CDATA[<br/><br/>]]></setting>
-            <setting name="format">Exhibit Title:^preferred_labels, <![CDATA[<ifdef code="start">Exhibit Date:</ifdef> ^start <ifdef code="start">-</ifdef> ^exhibit_date.end]]></setting>
+            <setting name="format">Exhibit Title:^preferred_labels, <![CDATA[<ifdef code="start"><font size=2><b>Exhibit Date:</b></font></ifdef> ^start <ifdef code="start">-</ifdef> ^exhibit_date.end]]></setting>
           </settings>
         </placement>
         <placement code="ca_vessels">

@@ -383,6 +383,30 @@
 			foreach ($pa_values as $vs_field => $vm_value) {
 				if (!is_array($vm_value) && $vm_value) { $vb_has_simple_fields = true; break; }
 			}
+			
+			if ($vb_has_simple_fields) {				
+				//
+				// Convert type id
+				//
+				if ($t_instance->ATTRIBUTE_TYPE_LIST_CODE) {
+					if (isset($pa_values[$t_instance->ATTRIBUTE_TYPE_ID_FLD]) && !is_numeric($pa_values[$t_instance->ATTRIBUTE_TYPE_ID_FLD])) {
+						if ($vn_id = ca_lists::getItemID($t_instance->ATTRIBUTE_TYPE_LIST_CODE, $pa_values[$t_instance->ATTRIBUTE_TYPE_ID_FLD])) {
+							$pa_values[$t_instance->ATTRIBUTE_TYPE_ID_FLD] = $vn_id;
+						}
+					}
+				}
+
+				//
+				// Convert other intrinsic list references
+				//
+				foreach($pa_values as $vs_field => $vm_value) {
+					if($vs_list_code = $t_instance->getFieldInfo($vs_field, 'LIST_CODE')) {
+						if ($vn_id = ca_lists::getItemID($vs_list_code, $vm_value)) {
+							$pa_values[$vs_field] = $vn_id;
+						}
+					}
+				}
+			}
 		
 			$va_sql_wheres = array();
 			if (
@@ -512,6 +536,7 @@
 							if ($vn_limit && ($vn_c >= $vn_limit)) { break; }
 						}
 					}
+					return $va_instances;
 					break;
 				case 'firstid':
 					if($qr_res->nextRow()) {
