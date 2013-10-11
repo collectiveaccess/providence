@@ -1592,7 +1592,13 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 						}
 						if (isset($va_item['settings']['default']) && strlen($va_item['settings']['default']) && !strlen($vm_val)) {
 							$vm_val = $va_item['settings']['default'];
+							// Parse placeholder when it's at the beginning of the value
+							if (!is_array($vm_val) && ($vm_val[0] == '^') && preg_match("!^\^[^ ]+$!", $vm_val)) {
+								$vm_val = BaseRefinery::parsePlaceholder($vm_val, $va_row, $va_item, $vs_delimiter, $vn_c, array('returnAsString' => true));
+							}
 						}
+						
+						
 				
 						if (($vn_type_id_mapping_item_id && ($vn_item_id == $vn_type_id_mapping_item_id))) {
 							continue; 
