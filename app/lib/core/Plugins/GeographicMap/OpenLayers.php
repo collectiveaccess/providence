@@ -574,11 +574,7 @@ class WLPlugGeographicMapOpenLayers Extends BaseGeographicMapPlugIn Implements I
 					var pt = new OpenLayers.LonLat(loc.lng(), loc.lat()).transform(new OpenLayers.Projection('EPSG:4326'),map_{$vs_id}.getProjectionObject());
 					map_{$vs_id}.panTo(pt);
 					map_{$vs_id}.zoomTo((results[0]['geometry']['location_type'] == 'APPROXIMATE') ? 10 : 14);
-					if(confirm('Would you like to remove existing points and add a new point at this location?')){
-						points_{$vs_id}.removeAllFeatures();
-						points_{$vs_id}.addFeatures([new OpenLayers.Feature.Vector(new OpenLayers.Geometry.Point(loc.lng(), loc.lat()).transform(new OpenLayers.Projection('EPSG:4326'),map_{$vs_id}.getProjectionObject()))]);	
-					}
-					
+					points_{$vs_id}.addFeatures([new OpenLayers.Feature.Vector(new OpenLayers.Geometry.Point(loc.lng(), loc.lat()).transform(new OpenLayers.Projection('EPSG:4326'),map_{$vs_id}.getProjectionObject()))]);
 				}
 			});
 			return false;
