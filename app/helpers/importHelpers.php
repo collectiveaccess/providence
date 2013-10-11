@@ -527,6 +527,7 @@
 					(($vs_dest_table != $ps_table) && (sizeof($va_group_dest) > 1))
 				) {	
 				
+					$vs_item = BaseRefinery::parsePlaceholder($vs_item, $pa_source_data, $pa_item, $ps_delimiter, $pn_c, array('returnAsString' => true, 'delimiter' => ' '));
 					if(!is_array($va_attr_vals)) { $va_attr_vals = array(); }
 					$va_attr_vals_with_parent = array_merge($va_attr_vals, array('parent_id' => $va_val['_parent_id']));
 					
@@ -560,6 +561,7 @@
 							$vn_item_id = DataMigrationUtils::getMovementID($vs_item, $va_val['_type'], $g_ui_locale_id, $va_attr_vals_with_parent, $pa_options);
 							break;
 						case 'ca_list_items':
+							print "got $vs_item";
 							$va_attr_vals_with_parent['is_enabled'] = 1;
 							$vn_item_id = DataMigrationUtils::getListItemID($pa_options['list_id'], $vs_item, $va_val['_type'], $g_ui_locale_id, $va_attr_vals_with_parent, $pa_options);
 							break;
