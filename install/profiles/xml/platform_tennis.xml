@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <profile xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="profile.xsd" useForConfiguration="1" base="base" infoUrl="http://providence.collectiveaccess.org/wiki/DublinCoreInstallationProfile">
-  <profileName>Platform Tennis Museum and Hall of Fame </profileName>
+  <profileName>Platform Tennis Museum and Hall of Fame</profileName>
   <profileDescription>Configuration Profile for the Platform Tennis Museum and Hall of Fame.</profileDescription>
   <locales>
     <locale lang="en" country="US">English</locale>
@@ -94,7 +94,7 @@
                 </label>
               </labels>
             </item>
-            <item idno="HOF_Induction_Material" enabled="1" default="0">
+            <item idno="HOF_Induction" enabled="1" default="0">
               <labels>
                 <label locale="en_US" preferred="1">
                   <name_singular>HOF Induction Material</name_singular>
@@ -496,376 +496,14 @@
         </label>
       </labels>
       <items>
-        <item idno="mens" enabled="1" default="0">
+        <item idno="null" enabled="1" default="0">
           <labels>
             <label locale="en_US" preferred="1">
-              <name_singular>Men's</name_singular>
-              <name_plural>Men's</name_plural>
+              <name_singular>-</name_singular>
+              <name_plural>-</name_plural>
             </label>
           </labels>
-          <items>
-            <item idno="open" enabled="1" default="0">
-              <labels>
-                <label locale="en_US" preferred="1">
-                  <name_singular>Men's Open</name_singular>
-                  <name_plural>Men's Open</name_plural>
-                </label>
-              </labels>
-            </item> 
-            <item idno="45plus" enabled="1" default="0">
-              <labels>
-                <label locale="en_US" preferred="1">
-                  <name_singular>Men's 45+</name_singular>
-                  <name_plural>Men's 45+</name_plural>
-                </label>
-              </labels>
-            </item> 
-            <item idno="50plus" enabled="1" default="0">
-              <labels>
-                <label locale="en_US" preferred="1">
-                  <name_singular>Men's 50+</name_singular>
-                  <name_plural>Men's 50+</name_plural>
-                </label>
-              </labels>
-            </item> 
-            <item idno="55plus" enabled="1" default="0">
-              <labels>
-                <label locale="en_US" preferred="1">
-                  <name_singular>Men's 55+</name_singular>
-                  <name_plural>Men's 55+</name_plural>
-                </label>
-              </labels>
-            </item>
-            <item idno="60plus" enabled="1" default="0">
-              <labels>
-                <label locale="en_US" preferred="1">
-                  <name_singular>Men's 60+</name_singular>
-                  <name_plural>Men's 60+</name_plural>
-                </label>
-              </labels>
-            </item> 
-            <item idno="65plus" enabled="1" default="0">
-              <labels>
-                <label locale="en_US" preferred="1">
-                  <name_singular>Men's 65+</name_singular>
-                  <name_plural>Men's 65+</name_plural>
-                </label>
-              </labels>
-            </item> 
-            <item idno="70" enabled="1" default="0">
-              <labels>
-                <label locale="en_US" preferred="1">
-                  <name_singular>Men's 70+</name_singular>
-                  <name_plural>Men's 70+</name_plural>
-                </label>
-              </labels>
-            </item> 
-            <item idno="145plus" enabled="1" default="0">
-              <labels>
-                <label locale="en_US" preferred="1">
-                  <name_singular>Men's 145+</name_singular>
-                  <name_plural>Men's 145+</name_plural>
-                </label>
-              </labels>
-            </item>             
-          </items>
-        </item>
-        <item idno="mensSingles" enabled="1" default="0">
-          <labels>
-            <label locale="en_US" preferred="1">
-              <name_singular>Men's Singles</name_singular>
-              <name_plural>Men's Singles</name_plural>
-            </label>
-          </labels>
-          <items>
-            <item idno="open" enabled="1" default="0">
-              <labels>
-                <label locale="en_US" preferred="1">
-                  <name_singular>Men's Singles Open</name_singular>
-                  <name_plural>Men's Singles Open</name_plural>
-                </label>
-              </labels>
-            </item> 
-          </items>          
-        </item>        
-        <item idno="womens" enabled="1" default="1">
-          <labels>
-            <label locale="en_US" preferred="1">
-              <name_singular>Women's</name_singular>
-              <name_plural>Women's</name_plural>
-            </label>
-          </labels>
-          <items>
-            <item idno="open" enabled="1" default="0">
-              <labels>
-                <label locale="en_US" preferred="1">
-                  <name_singular>Women's Open</name_singular>
-                  <name_plural>Women's Open</name_plural>
-                </label>
-              </labels>
-            </item> 
-            <item idno="40plus" enabled="1" default="0">
-              <labels>
-                <label locale="en_US" preferred="1">
-                  <name_singular>Women's 40+</name_singular>
-                  <name_plural>Women's 40+</name_plural>
-                </label>
-              </labels>
-            </item> 
-            <item idno="50plus" enabled="1" default="0">
-              <labels>
-                <label locale="en_US" preferred="1">
-                  <name_singular>Women's 50+</name_singular>
-                  <name_plural>Women's 50+</name_plural>
-                </label>
-              </labels>
-            </item> 
-            <item idno="60plus" enabled="1" default="0">
-              <labels>
-                <label locale="en_US" preferred="1">
-                  <name_singular>Women's 60+</name_singular>
-                  <name_plural>Women's 60+</name_plural>
-                </label>
-              </labels>
-            </item> 
-            <item idno="70plus" enabled="1" default="0">
-              <labels>
-                <label locale="en_US" preferred="1">
-                  <name_singular>Women's 70+</name_singular>
-                  <name_plural>Women's 70+</name_plural>
-                </label>
-              </labels>
-            </item>             
-          </items>
-        </item>
-        <item idno="womensSingles" enabled="1" default="1">
-          <labels>
-            <label locale="en_US" preferred="1">
-              <name_singular>Women's Singles</name_singular>
-              <name_plural>Women's Singles</name_plural>
-            </label>
-          </labels>
-          <items>
-            <item idno="open" enabled="1" default="0">
-              <labels>
-                <label locale="en_US" preferred="1">
-                  <name_singular>Women's Singles Open</name_singular>
-                  <name_plural>Women's Singles Open</name_plural>
-                </label>
-              </labels>
-            </item> 
-          </items>          
-        </item> 
-        <item idno="mixed" enabled="1" default="1">
-          <labels>
-            <label locale="en_US" preferred="1">
-              <name_singular>Mixed</name_singular>
-              <name_plural>Mixed</name_plural>
-            </label>
-          </labels>
-          <items>
-            <item idno="open" enabled="1" default="0">
-              <labels>
-                <label locale="en_US" preferred="1">
-                  <name_singular>Mixed Open</name_singular>
-                  <name_plural>Mixed Open</name_plural>
-                </label>
-              </labels>
-            </item>
-            <item idno="50plus" enabled="1" default="0">
-              <labels>
-                <label locale="en_US" preferred="1">
-                  <name_singular>Mixed 50+</name_singular>
-                  <name_plural>Mixed 50+</name_plural>
-                </label>
-              </labels>
-            </item> 
-            <item idno="60plus" enabled="1" default="0">
-              <labels>
-                <label locale="en_US" preferred="1">
-                  <name_singular>Mixed 60+</name_singular>
-                  <name_plural>Mixed 60+</name_plural>
-                </label>
-              </labels>
-            </item>             
-          </items>
-        </item> 
-        <item idno="husbandWife" enabled="1" default="1">
-          <labels>
-            <label locale="en_US" preferred="1">
-              <name_singular>Husband and Wife</name_singular>
-              <name_plural>Husband and Wife</name_plural>
-            </label>
-          </labels>
-          <items>
-            <item idno="open" enabled="1" default="0">
-              <labels>
-                <label locale="en_US" preferred="1">
-                  <name_singular>Husband and Wife Open</name_singular>
-                  <name_plural>Husband and Wife Open</name_plural>
-                </label>
-              </labels>
-            </item> 
-            <item idno="50plus" enabled="1" default="0">
-              <labels>
-                <label locale="en_US" preferred="1">
-                  <name_singular>Husband and Wife 50+</name_singular>
-                  <name_plural>Husband and Wife 50+</name_plural>
-                </label>
-              </labels>
-            </item>            
-          </items>
-        </item>         
-        <item idno="boys" enabled="1" default="0">
-          <labels>
-            <label locale="en_US" preferred="1">
-              <name_singular>Boy's</name_singular>
-              <name_plural>Boy's</name_plural>
-            </label>
-          </labels>
-          <items>
-            <item idno="18under" enabled="1" default="0">
-              <labels>
-                <label locale="en_US" preferred="1">
-                  <name_singular>Boy's 18 and under</name_singular>
-                  <name_plural>Boy's 18 and under</name_plural>
-                </label>
-              </labels>
-            </item>
-            <item idno="15under" enabled="1" default="0">
-              <labels>
-                <label locale="en_US" preferred="1">
-                  <name_singular>Boy's 15 and under</name_singular>
-                  <name_plural>Boy's 15 and under</name_plural>
-                </label>
-              </labels>
-            </item> 
-            <item idno="14under" enabled="1" default="0">
-              <labels>
-                <label locale="en_US" preferred="1">
-                  <name_singular>Boy's 14 and under</name_singular>
-                  <name_plural>Boy's 14 and under</name_plural>
-                </label>
-              </labels>
-            </item>   
-            <item idno="12under" enabled="1" default="0">
-              <labels>
-                <label locale="en_US" preferred="1">
-                  <name_singular>Boy's 12 and under</name_singular>
-                  <name_plural>Boy's 12 and under</name_plural>
-                </label>
-              </labels>
-            </item>
-            <item idno="10under" enabled="1" default="0">
-              <labels>
-                <label locale="en_US" preferred="1">
-                  <name_singular>Boy's 10 and under</name_singular>
-                  <name_plural>Boy's 10 and under</name_plural>
-                </label>
-              </labels>
-            </item>            
-          </items>
-        </item>
-        <item idno="girls" enabled="1" default="0">
-          <labels>
-            <label locale="en_US" preferred="1">
-              <name_singular>Girl's</name_singular>
-              <name_plural>Girl's</name_plural>
-            </label>
-          </labels>
-          <items>
-            <item idno="18under" enabled="1" default="0">
-              <labels>
-                <label locale="en_US" preferred="1">
-                  <name_singular>Girl's 18 and under</name_singular>
-                  <name_plural>Girl's 18 and under</name_plural>
-                </label>
-              </labels>
-            </item>
-            <item idno="15under" enabled="1" default="0">
-              <labels>
-                <label locale="en_US" preferred="1">
-                  <name_singular>Girl's 15 and under</name_singular>
-                  <name_plural>Girl's 15 and under</name_plural>
-                </label>
-              </labels>
-            </item> 
-            <item idno="14under" enabled="1" default="0">
-              <labels>
-                <label locale="en_US" preferred="1">
-                  <name_singular>Girl's 14 and under</name_singular>
-                  <name_plural>Girl's 14 and under</name_plural>
-                </label>
-              </labels>
-            </item>   
-            <item idno="12under" enabled="1" default="0">
-              <labels>
-                <label locale="en_US" preferred="1">
-                  <name_singular>Girl's 12 and under</name_singular>
-                  <name_plural>Girl's 12 and under</name_plural>
-                </label>
-              </labels>
-            </item>
-            <item idno="10under" enabled="1" default="0">
-              <labels>
-                <label locale="en_US" preferred="1">
-                  <name_singular>Girl's 10 and under</name_singular>
-                  <name_plural>Girl's 10 and under</name_plural>
-                </label>
-              </labels>
-            </item>            
-          </items>          
-        </item>
-        <item idno="combined" enabled="1" default="0">
-          <labels>
-            <label locale="en_US" preferred="1">
-              <name_singular>Combined</name_singular>
-              <name_plural>Combined</name_plural>
-            </label>
-          </labels>
-          <items>
-            <item idno="18under" enabled="1" default="0">
-              <labels>
-                <label locale="en_US" preferred="1">
-                  <name_singular>Combined 18 and under</name_singular>
-                  <name_plural>Combined 18 and under</name_plural>
-                </label>
-              </labels>
-            </item>
-            <item idno="15under" enabled="1" default="0">
-              <labels>
-                <label locale="en_US" preferred="1">
-                  <name_singular>Combined 15 and under</name_singular>
-                  <name_plural>Combined 15 and under</name_plural>
-                </label>
-              </labels>
-            </item> 
-            <item idno="14under" enabled="1" default="0">
-              <labels>
-                <label locale="en_US" preferred="1">
-                  <name_singular>Combined 14 and under</name_singular>
-                  <name_plural>Combined 14 and under</name_plural>
-                </label>
-              </labels>
-            </item>   
-            <item idno="12under" enabled="1" default="0">
-              <labels>
-                <label locale="en_US" preferred="1">
-                  <name_singular>Combined 12 and under</name_singular>
-                  <name_plural>Combined 12 and under</name_plural>
-                </label>
-              </labels>
-            </item>
-            <item idno="10under" enabled="1" default="0">
-              <labels>
-                <label locale="en_US" preferred="1">
-                  <name_singular>Combined 10 and under</name_singular>
-                  <name_plural>Combined 10 and under</name_plural>
-                </label>
-              </labels>
-            </item>            
-          </items>          
-        </item>      
+        </item>   
       </items>
     </list>
     <list code="yes_no" hierarchical="0" system="0" vocabulary="0">
@@ -1719,6 +1357,7 @@
       <typeRestrictions>
         <restriction code="r1">
           <table>ca_entities</table>
+          <type>ind</type>
           <settings>
             <setting name="minAttributesPerRow">0</setting>
             <setting name="maxAttributesPerRow">1</setting>
@@ -1727,10 +1366,35 @@
         </restriction>
       </typeRestrictions>
     </metadataElement>
+    <metadataElement code="hof_induction_date" datatype="DateRange">
+      <labels>
+        <label locale="en_US">
+          <name>Hall Of Fame Induction Date</name>
+        </label>
+      </labels>
+      <settings>
+        <setting name="fieldWidth">40</setting>
+        <setting name="fieldHeight">1</setting>
+        <setting name="minChars">0</setting>
+        <setting name="maxChars">65535</setting>
+      </settings>
+      <typeRestrictions>
+        <restriction code="r1">
+          <table>ca_entities</table>
+          <type>ind</type>
+          <settings>
+            <setting name="minAttributesPerRow">0</setting>
+            <setting name="maxAttributesPerRow">1</setting>
+            <setting name="minimumAttributeBundlesToDisplay">1</setting>
+          </settings>
+        </restriction>
+      </typeRestrictions>      
+    </metadataElement>  
+    
     <metadataElement code="event_division" datatype="List" list="event_division">
       <labels>
         <label locale="en_US">
-          <name>Event/Division</name>
+          <name>Division/Event</name>
         </label>
       </labels>
       <settings>
@@ -2042,6 +1706,13 @@
             <placement code="preferred_labels">
               <bundle>preferred_labels</bundle>
             </placement>
+            <placement code="nonpreferred_labels">
+              <bundle>nonpreferred_labels</bundle>
+              <settings>
+                <setting name="label" locale="en_US">Alternate names</setting>
+                <setting name="add_label" locale="en_US">Add name</setting>
+              </settings>
+            </placement>
             <placement code="ca_attribute_gender">
               <bundle>ca_attribute_gender</bundle>
             </placement>
@@ -2063,6 +1734,9 @@
             <placement code="ca_attribute_hof_inductee">
               <bundle>ca_attribute_hof_inductee</bundle>
             </placement>
+            <placement code="ca_attribute_hof_induction_date">
+              <bundle>ca_attribute_hof_induction_date</bundle>
+            </placement>                       
             <placement code="ca_attribute_biography">
               <bundle>ca_attribute_biography</bundle>
             </placement>
