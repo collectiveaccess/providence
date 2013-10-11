@@ -5053,7 +5053,7 @@ $pa_options["display_form_field_tips"] = true;
 	 *		dontSetValue = The template will be processed and the idno value generated but not actually set for the current row if this option is set. Default is false.
 	 * @return mixed The processed template value set as the idno, or false if the model doesn't support id numbering
 	 */
-	public function setIdnoTWithTemplate($ps_template_value=null, $pa_options=null) {
+	public function setIdnoWithTemplate($ps_template_value=null, $pa_options=null) {
 		if (($vs_idno_field = $this->getProperty('ID_NUMBERING_ID_FIELD')) && $this->opo_idno_plugin_instance) {
 			$pb_dont_set_value = (bool)(isset($pa_options['dontSetValue']) && $pa_options['dontSetValue']);
 		

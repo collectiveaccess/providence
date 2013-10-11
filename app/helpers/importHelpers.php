@@ -511,7 +511,18 @@
 				if (is_array($va_attr_vals = caProcessRefineryRelated($ps_refinery_name, "ca_entities", $pa_item['settings']["{$ps_refinery_name}_relatedEntities"], $pa_source_data, $pa_item, null, $vn_c, $o_log))) {
 					$va_val = array_merge($va_val, $va_attr_vals);
 				}
-			
+				
+				// Set nonpreferred labels
+				if (is_array($va_non_preferred_labels = $pa_item['settings']["{$ps_refinery_name}_nonPreferredLabels"])) {
+					$pa_options['nonPreferredLabels'] = array();
+					foreach($va_non_preferred_labels as $va_label) {
+						foreach($va_label as $vs_k => $vs_v) {
+							$va_label[$vs_k] = BaseRefinery::parsePlaceholder($vs_v, $pa_source_data, $pa_item, $ps_delimiter, $pn_c, array('returnAsString' => true, 'delimiter' => ' '));
+						}
+						$pa_options['nonPreferredLabels'][] = $va_label;
+					}
+				}
+				
 				if (
 					(($vs_dest_table != $ps_table) && (sizeof($va_group_dest) > 1))
 				) {	
@@ -549,6 +560,7 @@
 							$vn_item_id = DataMigrationUtils::getMovementID($vs_item, $va_val['_type'], $g_ui_locale_id, $va_attr_vals_with_parent, $pa_options);
 							break;
 						case 'ca_list_items':
+							$va_attr_vals_with_parent['is_enabled'] = 1;
 							$vn_item_id = DataMigrationUtils::getListItemID($pa_options['list_id'], $vs_item, $va_val['_type'], $g_ui_locale_id, $va_attr_vals_with_parent, $pa_options);
 							break;
 						case 'ca_storage_locations':
@@ -614,6 +626,9 @@
 							if ($o_log) { $o_log->logDebug(_t('[importHelpers:caGenericImportSplitter] Invalid table %1', $ps_table)); }
 							continue(2);
 							break;	
+					}
+					if (isset($pa_options['nonPreferredLabels']) && is_array($pa_options['nonPreferredLabels'])) {
+						$va_val['nonpreferred_labels'] = $pa_options['nonPreferredLabels'];
 					}
 				} elseif ((sizeof($va_group_dest) == 2) && ($vs_terminal == 'preferred_labels')) {
 					
