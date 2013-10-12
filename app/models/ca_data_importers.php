@@ -1415,6 +1415,12 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 				if (isset($va_mapping_items[$vn_idno_mapping_item_id]['settings']['default']) && strlen($va_mapping_items[$vn_idno_mapping_item_id]['settings']['default']) && !strlen($vs_idno)) {
 					$vs_idno = $va_mapping_items[$vn_idno_mapping_item_id]['settings']['default'];
 				}
+				if (!is_array($vs_idno) && ($vs_idno[0] == '^') && preg_match("!^\^[^ ]+$!", $vs_idno)) {
+					// Parse placeholder when it's at the beginning of the value
+					if (!is_null($vm_parsed_val = BaseRefinery::parsePlaceholder($vs_idno, $va_row, $va_item, $vs_delimiter, $vn_c, array('returnAsString' => true)))) {
+						$vs_idno = $vm_parsed_val;
+					}
+				}
 				// Apply prefix/suffix *AFTER* setting default
 				if (isset($va_mapping_items[$vn_idno_mapping_item_id]['settings']['prefix']) && strlen($va_mapping_items[$vn_idno_mapping_item_id]['settings']['prefix'])) {
 					$vs_idno = $va_mapping_items[$vn_idno_mapping_item_id]['settings']['prefix'].$vs_idno;
@@ -1592,8 +1598,15 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 						}
 						if (isset($va_item['settings']['default']) && strlen($va_item['settings']['default']) && !strlen($vm_val)) {
 							$vm_val = $va_item['settings']['default'];
+							
 						}
-				
+						if (!is_array($vm_val) && ($vm_val[0] == '^') && preg_match("!^\^[^ ]+$!", $vm_val)) {
+							// Parse placeholder when it's at the beginning of the value
+							if (!is_null($vm_parsed_val = BaseRefinery::parsePlaceholder($vm_val, $va_row, $va_item, $vs_delimiter, $vn_c, array('returnAsString' => true)))) {
+								$vm_val = $vm_parsed_val;
+							}
+						}
+						
 						if (($vn_type_id_mapping_item_id && ($vn_item_id == $vn_type_id_mapping_item_id))) {
 							continue; 
 						}
@@ -1666,7 +1679,6 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 								}
 							}
 						}
-					
 					
 						if (($vs_target_table == $vs_subject_table_name) && (($vs_k =array_search($vn_item_id, $va_mandatory_field_mapping_ids)) !== false)) {
 							$va_mandatory_field_values[$vs_k] = $vm_val;

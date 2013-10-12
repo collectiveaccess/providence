@@ -527,6 +527,7 @@
 					(($vs_dest_table != $ps_table) && (sizeof($va_group_dest) > 1))
 				) {	
 				
+					$vs_item = BaseRefinery::parsePlaceholder($vs_item, $pa_source_data, $pa_item, $ps_delimiter, $pn_c, array('returnAsString' => true, 'delimiter' => ' '));
 					if(!is_array($va_attr_vals)) { $va_attr_vals = array(); }
 					$va_attr_vals_with_parent = array_merge($va_attr_vals, array('parent_id' => $va_val['_parent_id']));
 					
