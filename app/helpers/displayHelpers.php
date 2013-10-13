@@ -1810,7 +1810,7 @@ require_once(__CA_LIB_DIR__."/ca/ApplicationPluginManager.php");
 		$vs_pk = $t_instance->primaryKey();
 		
 		$vs_delimiter = (isset($pa_options['delimiter'])) ? $pa_options['delimiter'] : '; ';
-		
+	
 		$ps_template = str_replace("^_parent", "^{$ps_resolve_links_using}.parent.preferred_labels", $ps_template);
 		$ps_template = str_replace("^_hierarchy", "^{$ps_resolve_links_using}._hierarchyName", $ps_template);
 
@@ -1830,6 +1830,7 @@ require_once(__CA_LIB_DIR__."/ca/ApplicationPluginManager.php");
 		
 		// Parse template
 		$o_dom = new DOMDocument('1.0', 'utf-8');
+		$o_dom->preserveWhiteSpace = true;
 		libxml_use_internal_errors(true);								// don't reported mangled HTML errors
 		$o_dom->loadHTML('<?xml encoding="utf-8">'.$ps_template);
 		libxml_clear_errors();
@@ -1850,6 +1851,15 @@ require_once(__CA_LIB_DIR__."/ca/ApplicationPluginManager.php");
 			$vs_content = preg_replace("!^<[^\>]+>!", "", $vs_html);
 			$vs_content = preg_replace("!<[^\>]+>$!", "", $vs_content);
 			
+			//
+			// Hack to get around DomDocument trimming leading spaces off of parsed HTML
+			// We try here to detect the trimming and shunt those spaces back where they belong. Seems to work :-)
+			//
+			if (preg_match("!([ ]+){$vs_content}!", $ps_template, $va_match_spaces)) {
+				$vs_html = preg_replace("!{$vs_content}!", $va_match_spaces[1].$vs_content, $vs_html);
+				$vs_content = $va_match_spaces[1].$vs_content;
+			}
+			
 			$va_ifdefs[$vs_code = (string)$o_ifdef->getAttribute('code')][] = array('directive' => $vs_html, 'content' => $vs_content);
 			
 			$vs_code = preg_replace("!%(.*)$!", '', $vs_code);
@@ -1863,6 +1873,15 @@ require_once(__CA_LIB_DIR__."/ca/ApplicationPluginManager.php");
 			$vs_html = $o_dom->saveXML($o_ifnotdef);
 			$vs_content = preg_replace("!^<[^\>]+>!", "", $vs_html);
 			$vs_content = preg_replace("!<[^\>]+>$!", "", $vs_content);
+			
+			//
+			// Hack to get around DomDocument trimming leading spaces off of parsed HTML
+			// We try here to detect the trimming and shunt those spaces back where they belong. Seems to work :-)
+			//
+			if (preg_match("!([ ]+){$vs_content}!", $ps_template, $va_match_spaces)) {
+				$vs_html = preg_replace("!{$vs_content}!", $va_match_spaces[1].$vs_content, $vs_html);
+				$vs_content = $va_match_spaces[1].$vs_content;
+			}
 			
 			$va_ifnotdefs[$vs_code = (string)$o_ifnotdef->getAttribute('code')][] = array('directive' => $vs_html, 'content' => $vs_content);
 		
@@ -2139,9 +2158,33 @@ require_once(__CA_LIB_DIR__."/ca/ApplicationPluginManager.php");
 						$va_tag_list = explode("|", $vs_code);
 						$vb_output = false;
 					} else {
-						$vs_bool = 'AND';
-						$va_tag_list = explode(",", $vs_code);
-						$vb_output = true;
+						$vs_template = str_replace($va_ifdef['directive'], '', $vs_template);
+					}
+				}
+			}
+		
+			// Process <ifnotdef> (IF NOT DEFined)
+			foreach($va_ifnotdefs as $vs_code => $va_notdef_con) { 
+				if (strpos($vs_code, "|") !== false) {
+					$vs_bool = 'OR';
+					$va_tag_list = explode("|", $vs_code);
+					$vb_output = false;
+				} else {
+					$vs_bool = 'AND';
+					$va_tag_list = explode(",", $vs_code);
+					$vb_output = true;
+				}
+				$vb_output = true;
+				foreach($va_tag_list as $vs_tag_to_test) {
+					$vb_value_is_set = (bool)(isset($va_tags[$vs_tag_to_test]) && (sizeof($va_tags[$vs_tag_to_test]) > 1) || ((sizeof($va_tags[$vs_tag_to_test]) == 1) && (strlen($va_tags[$vs_tag_to_test][0]) > 0)));
+					switch($vs_bool) {
+						case 'OR':
+							if (!$vb_value_is_set) { $vb_output = true; break(2); }		// any must be not defined; if anything is not set output
+							break;
+						case 'AND':
+						default:
+							if ($vb_value_is_set) { $vb_output = false; break(2); }	// all must be not defined; if anything is set don't output
+							break;
 					}
 				
 					foreach($va_tag_list as $vs_tag_to_test) {
