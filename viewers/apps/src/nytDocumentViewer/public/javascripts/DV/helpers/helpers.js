@@ -52,6 +52,7 @@ DV.Schema.helpers = {
         context.open('ViewText');
       });
       viewer.$('.DV-allAnnotations').delegate('.DV-annotationGoto .DV-trigger','click', DV.jQuery.proxy(this.gotoPage, this));
+      viewer.$('.DV-allAnnotations').delegate('.DV-annotationTitle .DV-trigger','click', DV.jQuery.proxy(this.gotoPage, this));
 
       viewer.$('form.DV-searchDocument').submit(this.events.compile('search'));
       viewer.$('.DV-searchBar').delegate('.DV-closeSearch','click',function(e){

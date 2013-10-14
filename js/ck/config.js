@@ -35,9 +35,4 @@ CKEDITOR.editorConfig = function( config ) {
 
 	// Make dialogs simpler.
 	config.removeDialogTabs = 'image:advanced;link:advanced';
-	
-	// Force editor to float in front of top-of-window menu bar
-	CKEDITOR.config.baseFloatZIndex = 60000;
-	
-	config.disableNativeSpellChecker = false;
 };

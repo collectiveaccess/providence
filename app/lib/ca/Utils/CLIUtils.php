@@ -36,8 +36,10 @@
 
  	require_once(__CA_LIB_DIR__.'/core/Utils/CLIProgressBar.php');
  	require_once(__CA_APP_DIR__.'/helpers/CLIHelpers.php');
+ 	require_once(__CA_APP_DIR__.'/helpers/mediaPluginHelpers.php');
 	require_once(__CA_LIB_DIR__."/core/Zend/Console/Getopt.php");
 	require_once(__CA_MODELS_DIR__."/ca_metadata_elements.php");
+	require_once(__CA_LIB_DIR__."/ca/MediaContentLocationIndexer.php");
  
 	class CLIUtils {
 		# -------------------------------------------------------
@@ -675,7 +677,7 @@
 				"versions|v-s" => _t("Limit re-processing to specified versions. Separate multiple versions with commas."),
 				"start_id|s-n" => _t('Representation id to start reloading at'),
 				"end_id|e-n" => _t('Representation id to end reloading at'),
-				"id|i-n" => _t('Representation id reloading'),
+				"id|i-n" => _t('Representation id to reload'),
 				"ids|l-s" => _t('Comma separated list of representation ids to reload'),
 				"kinds|k-s" => _t('Comma separated list of kind of media to reprocess. Valid kinds are ca_object_representations (object representations), and ca_attributes (metadata elements). You may also specify "all" to reprocess both kinds of media. Default is "all"')
 			);
@@ -693,6 +695,191 @@
 		 */
 		public static function reprocess_mediaHelp() {
 			return _t("CollectiveAccess generates derivatives for all uploaded media. More here...");
+		}
+		# -------------------------------------------------------
+		/**
+		 * Reindex PDF media by content for in-PDF search
+		 */
+		public static function reindex_pdfs($po_opts=null) {
+			require_once(__CA_LIB_DIR__."/core/Db.php");
+			require_once(__CA_MODELS_DIR__."/ca_object_representations.php");
+	
+			if (!caPDFMinerInstalled()) { 
+				CLIUtils::addError(_t("Can't reindex PDFs: PDFMiner is not installed.")); 
+				return false;
+			}
+			
+			$o_db = new Db();
+	
+			$t_rep = new ca_object_representations();
+			$t_rep->setMode(ACCESS_WRITE);
+			
+			$va_versions = array("original");
+			$va_kinds = ($vs_kinds = $po_opts->getOption("kinds")) ? explode(",", $vs_kinds) : array();
+			
+			if (!is_array($va_kinds) || !sizeof($va_kinds)) {
+				$va_kinds = array('all');
+			}
+			$va_kinds = array_map('strtolower', $va_kinds);
+			
+			if (in_array('all', $va_kinds) || in_array('ca_object_representations', $va_kinds)) { 
+				if (!($vn_start = (int)$po_opts->getOption('start_id'))) { $vn_start = null; }
+				if (!($vn_end = (int)$po_opts->getOption('end_id'))) { $vn_end = null; }
+			
+			
+				if ($vn_id = (int)$po_opts->getOption('id')) { 
+					$vn_start = $vn_id; 
+					$vn_end = $vn_id; 
+				}
+			
+				$va_ids = array();
+				if ($vs_ids = (string)$po_opts->getOption('ids')) { 
+					if (sizeof($va_tmp = explode(",", $vs_ids))) {
+						foreach($va_tmp as $vn_id) {
+							if ((int)$vn_id > 0) {
+								$va_ids[] = (int)$vn_id;
+							}
+						}
+					}
+				}
+			
+				$vs_sql_where = null;
+				$va_params = array();
+			
+				if (sizeof($va_ids)) {
+					$vs_sql_where = "WHERE representation_id IN (?)";
+					$va_params[] = $va_ids;
+				} else {
+					if (
+						(($vn_start > 0) && ($vn_end > 0) && ($vn_start <= $vn_end)) || (($vn_start > 0) && ($vn_end == null))
+					) {
+						$vs_sql_where = "WHERE representation_id >= ?";
+						$va_params[] = $vn_start;
+						if ($vn_end) {
+							$vs_sql_where .= " AND representation_id <= ?";
+							$va_params[] = $vn_end;
+						}
+					}
+				}
+				
+				if ($vs_sql_where) { $vs_sql_where .= " AND mimetype = 'application/pdf'"; } else { $vs_sql_where = " WHERE mimetype = 'application/pdf'"; }
+	
+				$qr_reps = $o_db->query("
+					SELECT * 
+					FROM ca_object_representations 
+					{$vs_sql_where}
+					ORDER BY representation_id
+				", $va_params);
+			
+				print CLIProgressBar::start($qr_reps->numRows(), _t('Reindexing PDF representations'));
+				
+				$vn_rep_table_num = $t_rep->tableNum();
+				while($qr_reps->nextRow()) {
+					$va_media_info = $qr_reps->getMediaInfo('media');
+					$vs_original_filename = $va_media_info['ORIGINAL_FILENAME'];
+					
+					print CLIProgressBar::next(1, _t("Reindexing PDF %1", ($vs_original_filename ? $vs_original_filename." (".$qr_reps->get('representation_id').")" : $qr_reps->get('representation_id'))));
+		
+					$t_rep->load($qr_reps->get('representation_id'));
+					
+					$vn_rep_id = $t_rep->getPrimaryKey();
+					
+					$m = new Media();
+					if(($m->read($vs_path = $t_rep->getMediaPath('media', 'original'))) && is_array($va_locs = $m->getExtractedTextLocations())) {
+						MediaContentLocationIndexer::clear($vn_rep_table_num, $vn_rep_id);
+						foreach($va_locs as $vs_content => $va_loc_list) {
+							foreach($va_loc_list as $va_loc) {
+								MediaContentLocationIndexer::index($vn_rep_table_num, $vn_rep_id, $vs_content, $va_loc['p'], $va_loc['x1'], $va_loc['y1'], $va_loc['x2'], $va_loc['y2']);
+							}
+						}
+						MediaContentLocationIndexer::write();
+					} else {
+						//CLIUtils::addError(_t("[Warning] No content to reindex for PDF representation: %1", $vs_path));
+					}
+				}
+				print CLIProgressBar::finish();
+			}
+			
+			if (in_array('all', $va_kinds)  || in_array('ca_attributes', $va_kinds)) { 
+				// get all Media elements
+				$va_elements = ca_metadata_elements::getElementsAsList(false, null, null, true, false, true, array(16)); // 16=media
+				
+				$qr_c = $o_db->query("
+					SELECT count(*) c 
+					FROM ca_attribute_values
+					WHERE
+						element_id in (?)
+				", caExtractValuesFromArrayList($va_elements, 'element_id', array('preserveKeys' => false)));
+				if ($qr_c->nextRow()) { $vn_count = $qr_c->get('c'); } else { $vn_count = 0; }
+				
+				
+				$t_attr_val = new ca_attribute_values();
+				$vn_attr_table_num = $t_attr_val->tableNum();
+				
+				print CLIProgressBar::start($vn_count, _t('Reindexing metadata attribute media'));
+				foreach($va_elements as $vs_element_code => $va_element_info) {
+					$qr_vals = $o_db->query("SELECT value_id FROM ca_attribute_values WHERE element_id = ?", (int)$va_element_info['element_id']);
+					$va_vals = $qr_vals->getAllFieldValues('value_id');
+					foreach($va_vals as $vn_value_id) {
+						$t_attr_val = new ca_attribute_values($vn_value_id);
+						if ($t_attr_val->getPrimaryKey()) {
+							$t_attr_val->setMode(ACCESS_WRITE);
+							$t_attr_val->useBlobAsMediaField(true);
+							
+							$va_media_info = $t_attr_val->getMediaInfo('value_blob');
+							$vs_original_filename = $va_media_info['ORIGINAL_FILENAME'];
+							
+							if ($va_media_info['MIMETYPE'] !== 'application/pdf') { continue; }
+					
+							print CLIProgressBar::next(1, _t("Reindexing %1", ($vs_original_filename ? $vs_original_filename." ({$vn_value_id})" : $vn_value_id)));
+		
+							$m = new Media();
+							if(($m->read($vs_path = $t_attr_val->getMediaPath('value_blob', 'original'))) && is_array($va_locs = $m->getExtractedTextLocations())) {
+								MediaContentLocationIndexer::clear($vn_attr_table_num, $vn_attr_table_num);
+								foreach($va_locs as $vs_content => $va_loc_list) {
+									foreach($va_loc_list as $va_loc) {
+										MediaContentLocationIndexer::index($vn_attr_table_num, $vn_value_id, $vs_content, $va_loc['p'], $va_loc['x1'], $va_loc['y1'], $va_loc['x2'], $va_loc['y2']);
+									}
+								}
+								MediaContentLocationIndexer::write();
+							} else {
+								//CLIUtils::addError(_t("[Warning] No content to reindex for PDF in metadata attribute: %1", $vs_path));
+							}
+						}
+					}
+				}
+				print CLIProgressBar::finish();
+			}
+			
+			
+			return true;
+		}
+		# -------------------------------------------------------
+		/**
+		 *
+		 */
+		public static function reindex_pdfsParamList() {
+			return array(
+				"start_id|s-n" => _t('Representation id to start reindexing at'),
+				"end_id|e-n" => _t('Representation id to end reindexing at'),
+				"id|i-n" => _t('Representation id to reindex'),
+				"ids|l-s" => _t('Comma separated list of representation ids to reindex'),
+				"kinds|k-s" => _t('Comma separated list of kind of media to reindex. Valid kinds are ca_object_representations (object representations), and ca_attributes (metadata elements). You may also specify "all" to reindex both kinds of media. Default is "all"')
+			);
+		}
+		# -------------------------------------------------------
+		/**
+		 *
+		 */
+		public static function reindex_pdfsShortHelp() {
+			return _t("Reindex PDF media for in-viewer content search.");
+		}
+		# -------------------------------------------------------
+		/**
+		 *
+		 */
+		public static function reindex_pdfsHelp() {
+			return _t("The CollectiveAccess document viewer can search text within PDFs and highlight matches. To enable this feature PDF content must be analyzed and indexed. If your database predates the introduction of in-viewer PDF search in CollectiveAccess 1.4, or search is otherwise failing to work properly, you can use this command to analyze and index PDFs in the database.");
 		}
 		# -------------------------------------------------------
 		/**

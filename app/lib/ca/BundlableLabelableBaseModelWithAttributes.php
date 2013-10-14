@@ -1485,6 +1485,12 @@ class BundlableLabelableBaseModelWithAttributes extends LabelableBaseModelWithAt
 						$vs_element .= $this->getCommerceOrderHistoryHTMLFormBundle($pa_options['request'], $pa_options['formName'].'_'.$ps_bundle_name, $ps_placement_code, $pa_bundle_settings, $pa_options);
 						break;
 					# -------------------------------
+					// This bundle is only available for relationships that include an object on one end
+					case 'ca_object_representation_chooser':
+						if ($vb_batch) { return null; } // not supported in batch mode
+						$vs_element .= $this->getRepresentationChooserHTMLFormBundle($pa_options['request'], $pa_options['formName'].'_'.$ps_bundle_name, $ps_placement_code, $pa_bundle_settings, $pa_options);
+						break;
+					# -------------------------------
 					default:
 						$vs_element = "'{$ps_bundle_name}' is not a valid bundle name";
 						break;
@@ -1853,6 +1859,7 @@ class BundlableLabelableBaseModelWithAttributes extends LabelableBaseModelWithAt
 				}
 				if (!$vb_output_bundle) { continue; }
 				
+				$va_bundle['settings']['placement_id'] = $va_bundle['placement_id'];
 				if ($vs_bundle_form_html = $this->getBundleFormHTML($va_bundle['bundle_name'], $va_bundle['placement_code'], $va_bundle['settings'], $pa_options, $vs_bundle_display_name)) {
 					$va_bundle_html[$va_bundle['placement_code']] = "<a name=\"{$pm_screen}_{$vn_c}\"></a>{$vs_bundle_form_html}";
 					$va_bundles_present[$va_bundle['bundle_name']] = true;
@@ -1971,10 +1978,31 @@ class BundlableLabelableBaseModelWithAttributes extends LabelableBaseModelWithAt
 		
 		$va_ancestors_by_locale = array();
 		$vs_pk = $this->primaryKey();
-		
 		$vs_idno_field = $this->getProperty('ID_NUMBERING_ID_FIELD');
+		
+		$vs_hierarchy_type = $this->getProperty('HIERARCHY_TYPE');
 		foreach($va_ancestor_list as $vn_ancestor_id => $va_info) {
-			//if (!$va_info['NODE']['parent_id']) { continue; }
+			switch($vs_hierarchy_type) {
+				case __CA_HIER_TYPE_SIMPLE_MONO__:
+					if (!$va_info['NODE']['parent_id']) { continue(2); }
+					break;
+				case __CA_HIER_TYPE_MULTI_MONO__:
+					if (!$va_info['NODE']['parent_id']) {
+						$vn_item_id = $va_info['NODE'][$vs_pk];
+						$va_ancestors_by_locale[$vn_item_id][$vn_locale_id] = array(
+							'item_id' => $vn_item_id,
+							'parent_id' => $va_info['NODE']['parent_id'],
+							'label' => $this->getHierarchyName($vn_item_id),
+							'idno' => $va_info['NODE'][$vs_idno_field],
+							'locale_id' => null,
+							'table' => $this->tableName()
+				
+						);
+						continue(2);
+					}
+					break;
+			}
+			if (!$va_info['NODE']['parent_id'] && $vb_dont_show_root) { continue; }
 			
 			$vn_locale_id = isset($va_info['NODE']['locale_id']) ? $va_info['NODE']['locale_id'] : null;
 			$va_ancestor = array(
@@ -2118,7 +2146,6 @@ class BundlableLabelableBaseModelWithAttributes extends LabelableBaseModelWithAt
 		if ($t_item->getLabelTableName()) {
 			$t_label = $this->_DATAMODEL->getInstanceByTableName($t_item->getLabelTableName(), true);
 		}
-		
 		if (method_exists($t_item_rel, 'getRelationshipTypes')) {
 			$o_view->setVar('relationship_types', $t_item_rel->getRelationshipTypes(null, null,  array_merge($pa_options, $pa_bundle_settings)));
 			$o_view->setVar('relationship_types_by_sub_type', $t_item_rel->getRelationshipTypesBySubtype($this->tableName(), $this->get('type_id'),  array_merge($pa_options, $pa_bundle_settings)));
@@ -2151,22 +2178,7 @@ class BundlableLabelableBaseModelWithAttributes extends LabelableBaseModelWithAt
 				$qr_rel_items = $t_item->makeSearchResult($t_rel->tableNum(), $va_ids);	
 			}
 				
-			if(strlen(trim($pa_bundle_settings['display_template']))) {
-				$va_opts['template'] = trim($pa_bundle_settings['display_template']);
-			} 
-			
-			// If no display_template set try to get a default out of the app.conf file
-			if (!$va_opts['template']) {
-				if (is_array($va_lookup_settings = $this->getAppConfig()->getList("{$ps_related_table}_lookup_settings"))) {
-					if (!($vs_lookup_delimiter = $this->getAppConfig()->get("{$ps_related_table}_lookup_delimiter"))) { $vs_lookup_delimiter = ''; }
-					$va_opts['template'] = join($vs_lookup_delimiter, $va_lookup_settings);
-				}
-			}
-			
-			// If no app.conf default then just show preferred_labels
-			if (!$va_opts['template']) {
-				$va_opts['template'] = "^preferred_labels";
-			}
+			$va_opts['template'] = caGetBundleDisplayTemplate($this, $ps_related_table, $pa_bundle_settings);
 			$va_initial_values = caProcessRelationshipLookupLabel($qr_rel_items, $t_item_rel, $va_opts);
 		}
 		
@@ -3094,6 +3106,16 @@ if (!$vb_batch) {
 
 		if (isset($va_fields_by_type['special']) && is_array($va_fields_by_type['special'])) {
 			foreach($va_fields_by_type['special'] as $vs_placement_code => $vs_f) {
+				
+				// get settings
+				$va_bundle_settings = array();
+				foreach($va_bundles as $va_bundle_info) {
+					if ($va_bundle_info['placement_code'] == $vs_placement_code) {
+						$va_bundle_settings = $va_bundle_info['settings'];
+						break;
+					}
+				}
+			
 				switch($vs_f) {
 					# -------------------------------------
 					// This bundle is only available when editing objects of type ca_representation_annotations
@@ -3460,6 +3482,29 @@ if (!$vb_batch) {
 							}
 						}
 						
+						break;
+					# -------------------------------
+					// This bundle is only available for relationships that include an object on one end
+					case 'ca_object_representation_chooser':
+						if ($vb_batch) { return null; } // not supported in batch mode
+						if (!is_array($va_rep_ids = $po_request->getParameter($vs_placement_code.$vs_form_prefix.'_ca_object_representation_chooser', pArray))) { $va_rep_ids = array(); }
+									
+						if ($vs_element_code = caGetOption('element_code', $va_bundle_settings, null)) {
+							if (!is_array($va_current_rep_ids = $this->get($vs_element_code, array('returnAsArray' => true, 'idsOnly' => true)))) { $va_current_rep_ids = array(); }
+							$va_current_rep_ids = caExtractValuesFromArrayList($va_current_rep_ids, $vs_element_code, array('preserveKeys' => true));
+						
+							foreach($va_rep_ids as $vn_rep_id) {
+								if (in_array($vn_rep_id, $va_current_rep_ids)) { continue; }
+								$this->addAttribute(array($vs_element_code => $vn_rep_id), $vs_element_code);
+							}
+							foreach($va_current_rep_ids as $vn_attribute_id => $vn_current_rep_id) {
+								if (!in_array($vn_current_rep_id, $va_rep_ids)) {
+									$this->removeAttribute($vn_attribute_id);
+								}
+							}
+						
+							$this->update();
+						}
 						break;
 					# -------------------------------------
 				}
@@ -5008,7 +5053,7 @@ $pa_options["display_form_field_tips"] = true;
 	 *		dontSetValue = The template will be processed and the idno value generated but not actually set for the current row if this option is set. Default is false.
 	 * @return mixed The processed template value set as the idno, or false if the model doesn't support id numbering
 	 */
-	public function setIdnoTWithTemplate($ps_template_value=null, $pa_options=null) {
+	public function setIdnoWithTemplate($ps_template_value=null, $pa_options=null) {
 		if (($vs_idno_field = $this->getProperty('ID_NUMBERING_ID_FIELD')) && $this->opo_idno_plugin_instance) {
 			$pb_dont_set_value = (bool)(isset($pa_options['dontSetValue']) && $pa_options['dontSetValue']);
 		

@@ -128,6 +128,18 @@
 		}
 		# ------------------------------------------------------
 		/**
+		 * Returns name of the table in the relationship that is not the specified one.
+		 * (eg. if the table name passed is ca_objects and the relationship is ca_objects_x_entities then the "other" name is ca_entities)
+		 *
+		 * @param string $ps_tablename A table name that is part of the relationship the model represents
+		 * @return string The name of the table in the relationship that is not the specified table. If the specified table is not part of the relationship null is returned.
+		 */
+		public function getOtherTableName($ps_tablename) {
+			if (!in_array($ps_tablename, array($this->RELATIONSHIP_LEFT_TABLENAME, $this->RELATIONSHIP_RIGHT_TABLENAME))) { return null; }
+			return ($ps_tablename == $this->RELATIONSHIP_LEFT_TABLENAME) ? $this->RELATIONSHIP_RIGHT_TABLENAME : $this->RELATIONSHIP_LEFT_TABLENAME;
+		}
+		# ------------------------------------------------------
+		/**
 		 * Returns table number of the "left" table (by convention the table mentioned first in the relationship table name)
 		 * (eg. if the table name is ca_objects_x_entities then the "left" number corresponds to ca_objects)
 		 */
@@ -602,6 +614,33 @@
 		 */
 		public function getTypeID() {
 			return BaseModel::get('type_id');
+		}
+		# ------------------------------------------------------
+		/**
+		 * Returns relationship type name for the currently loaded row. Directionality of the type name can be controlled using the $ps_direction parameter.
+		 *
+		 * @param string $ps_direction Determines the reading direction of the relationship. Possible values are 'ltor' (left-to-right) and 'rtol' (right-to-left). Default value is ltor.
+		 * @return string Type name or null if no row is loaded.
+		 */
+		public function getRelationshipTypename($ps_direction='ltor') {
+			if ($vn_type_id = $this->getTypeID()) {
+				$t_rel_type = new ca_relationship_types($vn_type_id);
+				return ($ps_direction == 'ltor') ? $t_rel_type->get('ca_relationship_types.preferred_labels.typename') : $t_rel_type->get('ca_relationship_types.preferred_labels.typename_reverse');
+			}
+			return null;
+		}
+		# ------------------------------------------------------
+		/**
+		 * Returns relationship type code for the currently loaded row.
+		 *
+		 * @return string The relationship type code
+		 */
+		public function getRelationshipTypeCode() {
+			if ($vn_type_id = $this->getTypeID()) {
+				$t_rel_type = new ca_relationship_types($vn_type_id);
+				return $t_rel_type->get('ca_relationship_types.type_code');
+			}
+			return null;
 		}
 		# ------------------------------------------------------
 	}

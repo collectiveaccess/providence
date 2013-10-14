@@ -171,6 +171,15 @@
 				'default' => '',
 				'label' => _t('Interstitial attributes'),
 				'description' => _t('Sets or maps metadata for the interstitial place <em>relationship</em> record by referencing the metadataElement code and the location in the data source where the data values can be found.')
+			),
+			'placeSplitter_nonPreferredLabels' => array(
+				'formatType' => FT_TEXT,
+				'displayType' => DT_SELECT,
+				'width' => 10, 'height' => 1,
+				'takesLocale' => false,
+				'default' => '',
+				'label' => _t('Non-preferred labels'),
+				'description' => _t('List of non-preferred labels to apply to places.')
 			)
 		);
 ?>

@@ -38,7 +38,10 @@ _.extend(DV.Schema.helpers, {
 	
 		this.viewer.api.setCurrentPage(firstPage);
       } else {
-        this.highlightSearchResponses();
+//
+// No results found
+//
+        this.viewer.api.removeAllAnnotations();
       }
       
 	  this.viewer.api.redraw(true);

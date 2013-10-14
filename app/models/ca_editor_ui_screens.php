@@ -682,21 +682,37 @@ class ca_editor_ui_screens extends BundlableLabelableBaseModelWithAttributes {
 							)
 						);
 					} else {
-						if ($vs_bundle == 'ca_commerce_order_history') {
-							$va_additional_settings = array(
-								'order_type' => array(
-									'formatType' => FT_TEXT,
-									'displayType' => DT_SELECT,
-									'takesLocale' => false,
-									'default' => '',
-									'options' => array(
-										_t('Sales order') => 'O',
-										_t('Loan') => 'L'
-									),
-									'label' => _t('Type of order'),
-									'description' => _t('Determines which type of order is displayed.')
-								)		
-							);
+						switch($vs_bundle) {
+							case 'ca_commerce_order_history':
+								$va_additional_settings = array(
+									'order_type' => array(
+										'formatType' => FT_TEXT,
+										'displayType' => DT_SELECT,
+										'takesLocale' => false,
+										'default' => '',
+										'options' => array(
+											_t('Sales order') => 'O',
+											_t('Loan') => 'L'
+										),
+										'label' => _t('Type of order'),
+										'description' => _t('Determines which type of order is displayed.')
+									)		
+								);
+								break;
+							case 'ca_object_representation_chooser':
+								$va_additional_settings = array(
+									'element_code' => array(
+										'formatType' => FT_TEXT,
+										'displayType' => DT_SELECT,
+										'takesLocale' => false,
+										'default' => '',
+										'showMetadataElementsWithDataType' => 21, // 21="ObjectRepresentation" metadata elements
+										'table' => $pm_table_name_or_num,
+										'label' => _t('Metadata element'),
+										'description' => _t('Metadata element to store representation selection in. Must be of type ObjectRepresentation.')
+									)		
+								);
+								break;
 						}
 					}
 					break;

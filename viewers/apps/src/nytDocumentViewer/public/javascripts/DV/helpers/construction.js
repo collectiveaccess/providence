@@ -23,6 +23,7 @@ _.extend(DV.Schema.helpers, {
       id          : doc.id,
       story_url   : storyURL,
       downloadUrl : downloadUrl,
+      searchUrl	  : doc.resources.search,
       downloadButton : this.viewer.options.downloadButton,
       closeButton : this.viewer.options.closeButton,
       title       : doc.title || ''
@@ -208,9 +209,9 @@ _.extend(DV.Schema.helpers, {
     // Hide and show navigation flags:
     var showAnnotations = this.showAnnotations();
     var showPages       = this.models.document.totalPages > 1;
-    var showSearch      = (this.viewer.options.search !== false) &&
+    var showSearch      = (this.viewer.options.search !== false)// &&
                           //(this.viewer.options.text !== false) &&
-                          (!this.viewer.options.width || (this.viewer.options.width >= 540) || (this.viewer.options.width == '100%'));
+                         // (!this.viewer.options.width || (this.viewer.options.width >= 540) || (this.viewer.options.width == '100%'));
     var noFooter = (!showAnnotations && !showPages && !showSearch && !this.viewer.options.sidebar);
     // Hide annotations, if there are none:
     var $annotationsView = this.viewer.$('.DV-annotationView');

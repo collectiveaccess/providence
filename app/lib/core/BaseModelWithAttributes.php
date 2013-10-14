@@ -36,6 +36,7 @@
  
  require_once(__CA_LIB_DIR__.'/core/ITakesAttributes.php');
  require_once(__CA_LIB_DIR__.'/core/BaseModel.php');
+ require_once(__CA_LIB_DIR__.'/core/Parsers/ExpressionParser.php');
  require_once(__CA_APP_DIR__.'/models/ca_attributes.php');
  require_once(__CA_APP_DIR__.'/models/ca_attribute_values.php');
  require_once(__CA_APP_DIR__.'/models/ca_metadata_type_restrictions.php');
