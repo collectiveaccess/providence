@@ -176,6 +176,7 @@
  			# trigger "BeforeSaveItem" hook 
 			$this->opo_app_plugin_manager->hookBeforeSaveItem(array('id' => null, 'table_num' => $t_subject->tableNum(), 'table_name' => $t_subject->tableName(), 'instance' => $t_subject, 'is_insert' => true));
  			
+
  			$t_placement = new ca_editor_ui_bundle_placements($pn_placement_id);
  			
  			$pa_bundle_settings = $t_placement->getSettings();

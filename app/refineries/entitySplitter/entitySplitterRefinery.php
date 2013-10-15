@@ -160,6 +160,15 @@
 				'default' => '',
 				'label' => _t('Related entities'),
 				'description' => _t('Entities related to the entity being created.')
+			),
+			'entitySplitter_nonPreferredLabels' => array(
+				'formatType' => FT_TEXT,
+				'displayType' => DT_SELECT,
+				'width' => 10, 'height' => 1,
+				'takesLocale' => false,
+				'default' => '',
+				'label' => _t('Non-preferred labels'),
+				'description' => _t('List of non-preferred labels to apply to entities.')
 			)
 		);
 ?>
