@@ -130,7 +130,7 @@
 		<div id="<?php print $vs_id_prefix; ?>Item_{n}" class="labelInfo roundedRel">
 			<span id='<?php print $vs_id_prefix; ?>_BundleTemplateDisplay{n}'>
 <?php
-			print caGetRelationDisplayString($this->request, 'ca_object_lots', array('class' => 'caEditItemButton', 'id' => "{$vs_id_prefix}_edit_related_{n}"), array('display' => 'label', 'makeLink' => true));
+			print caGetRelationDisplayString($this->request, 'ca_object_lots', array('class' => 'caEditItemButton', 'id' => "{$vs_id_prefix}_edit_related_{n}"), array('display' => '_display', 'makeLink' => true));
 ?>
 			</span>
 			<input type="hidden" name="<?php print $vs_id_prefix; ?>_type_id{n}" id="<?php print $vs_id_prefix; ?>_type_id{n}" value="{type_id}"/>

@@ -2151,6 +2151,7 @@ require_once(__CA_LIB_DIR__."/ca/ApplicationPluginManager.php");
 				$va_pt_vals = array();
 			
 				$vs_template = $va_proc_templates[$vn_i];
+				
 				// Process <ifdef> (IF DEFined)
 				foreach($va_ifdefs as $vs_code => $va_def_con) { 
 					if (strpos($vs_code, "|") !== false) {
@@ -2158,35 +2159,11 @@ require_once(__CA_LIB_DIR__."/ca/ApplicationPluginManager.php");
 						$va_tag_list = explode("|", $vs_code);
 						$vb_output = false;
 					} else {
-						$vs_template = str_replace($va_ifdef['directive'], '', $vs_template);
+						$vs_bool = 'AND';
+						$va_tag_list = explode(",", $vs_code);
+						$vb_output = true;
 					}
-				}
-			}
-		
-			// Process <ifnotdef> (IF NOT DEFined)
-			foreach($va_ifnotdefs as $vs_code => $va_notdef_con) { 
-				if (strpos($vs_code, "|") !== false) {
-					$vs_bool = 'OR';
-					$va_tag_list = explode("|", $vs_code);
-					$vb_output = false;
-				} else {
-					$vs_bool = 'AND';
-					$va_tag_list = explode(",", $vs_code);
-					$vb_output = true;
-				}
-				$vb_output = true;
-				foreach($va_tag_list as $vs_tag_to_test) {
-					$vb_value_is_set = (bool)(isset($va_tags[$vs_tag_to_test]) && (sizeof($va_tags[$vs_tag_to_test]) > 1) || ((sizeof($va_tags[$vs_tag_to_test]) == 1) && (strlen($va_tags[$vs_tag_to_test][0]) > 0)));
-					switch($vs_bool) {
-						case 'OR':
-							if (!$vb_value_is_set) { $vb_output = true; break(2); }		// any must be not defined; if anything is not set output
-							break;
-						case 'AND':
-						default:
-							if ($vb_value_is_set) { $vb_output = false; break(2); }	// all must be not defined; if anything is set don't output
-							break;
-					}
-				
+			
 					foreach($va_tag_list as $vs_tag_to_test) {
 						$vb_value_is_set = (bool)(isset($va_tags[$vs_tag_to_test]) && (sizeof($va_tags[$vs_tag_to_test]) > 1) || ((sizeof($va_tags[$vs_tag_to_test]) == 1) && (strlen($va_tags[$vs_tag_to_test][0]) > 0)));
 						switch($vs_bool) {
@@ -2199,7 +2176,7 @@ require_once(__CA_LIB_DIR__."/ca/ApplicationPluginManager.php");
 								break;
 						}
 					}
-			
+		
 					foreach($va_def_con as $va_ifdef) {
 						if ($vb_output) {
 							$vs_template = str_replace($va_ifdef['directive'], $va_ifdef['content'], $vs_template);
@@ -2208,7 +2185,7 @@ require_once(__CA_LIB_DIR__."/ca/ApplicationPluginManager.php");
 						}
 					}
 				}
-		
+	
 				// Process <ifnotdef> (IF NOT DEFined)
 				foreach($va_ifnotdefs as $vs_code => $va_notdef_con) { 
 					if (strpos($vs_code, "|") !== false) {
@@ -2232,9 +2209,9 @@ require_once(__CA_LIB_DIR__."/ca/ApplicationPluginManager.php");
 								if ($vb_value_is_set) { $vb_output = false; break(2); }	// all must be not defined; if anything is set don't output
 								break;
 						}
-				
-					}
 			
+					}
+		
 					foreach($va_notdef_con as $va_ifnotdef) {
 						if ($vb_output) {
 							$vs_template = str_replace($va_ifnotdef['directive'], $va_ifnotdef['content'], $vs_template);
@@ -2243,7 +2220,7 @@ require_once(__CA_LIB_DIR__."/ca/ApplicationPluginManager.php");
 						}
 					}
 				}
-		
+	
 				// Process <more> tags
 				foreach($va_mores as $vn_more_index => $va_more) {
 					if (($vn_pos = strpos($vs_template, $va_more['directive'])) !== false) {
@@ -2268,24 +2245,24 @@ require_once(__CA_LIB_DIR__."/ca/ApplicationPluginManager.php");
 						}
 					}
 				} 
-		
+	
 				// Process <between> tags - text to be output if it is between two defined values
 				$va_between_positions = array();
 				foreach($va_betweens as $vn_between_index => $va_between) {
 					$vb_output_before = $vb_output_after = false;
 					if (($vn_cur_pos = strpos($vs_template, $va_between['directive'])) !== false) {
 						$va_between_positions[$vn_between_index] = $vn_cur_pos;
-				
+			
 						// Get parts of template before tag and after tag 
 						$vs_partial_template_before = substr($vs_template, 0, $vn_cur_pos );
-				
+			
 						$vs_partial_template_after = substr($vs_template, $vn_cur_pos + strlen($va_between['directive']));
-				
+			
 						// Only get the template between our current position and the next <between> tag
 						if (isset($va_betweens[$vn_between_index + 1]) && (($vn_after_pos_relative = strpos($vs_partial_template_after, $va_betweens[$vn_between_index + 1]['directive'])) !== false)) {
 							$vs_partial_template_after = substr($vs_partial_template_after, 0, $vn_after_pos_relative);
 						}
-				
+			
 						// Check for defined value before and after tag
 						foreach(array_keys($va_defined_tag_list[$vn_i][$vn_j]) as $vs_defined_tag) {
 							if (strpos($vs_partial_template_before, $vs_defined_tag) !== false) {
@@ -2300,7 +2277,7 @@ require_once(__CA_LIB_DIR__."/ca/ApplicationPluginManager.php");
 							if ($vb_output_before && $vb_output_after) { break; }
 						}
 					}
-			
+		
 					if ($vb_output_before && $vb_output_after) {
 						$vs_template = preg_replace('!'.$va_between['directive'].'!', $va_between['content'], $vs_template, 1);
 					} else {
