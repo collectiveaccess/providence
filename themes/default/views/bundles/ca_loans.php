@@ -64,6 +64,7 @@
 	// Template to generate display for existing items
 	//
 ?>
+	<textarea class='caItemTemplate' style='display: none;'>
 <?php
 	switch($va_settings['list_format']) {
 		case 'list':

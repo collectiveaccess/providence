@@ -83,6 +83,29 @@
 	if ($t_subject->tableName() == 'ca_objects') {
 ?>
 	<textarea class='caItemTemplate' style='display: none;'>
+<?php
+	switch($va_settings['list_format']) {
+		case 'list':
+?>
+		<div id="<?php print $vs_id_prefix; ?>Item_{n}" class="labelInfo listRel caRelatedItem">
+<?php
+	if (!$vb_read_only && !$vb_dont_show_del) {
+?><a href="#" class="caDeleteItemButton listRelDeleteButton"><?php print caNavIcon($this->request, __CA_NAV_BUTTON_DEL_BUNDLE__); ?></a><?php
+	}
+?>
+			<a href="<?php print urldecode(caEditorUrl($this->request, 'ca_object_lots', '{lot_id}')); ?>" class="caEditItemButton" id="<?php print $vs_id_prefix; ?>_edit_related_{n}"></a>
+			<span id='<?php print $vs_id_prefix; ?>_BundleTemplateDisplay{n}'>
+<?php
+			print caGetRelationDisplayString($this->request, 'ca_object_lots', array(), array('display' => '_display', 'makeLink' => false, 'relationshipTypeDisplayPosition' => 'none'));
+?>
+			</span>
+			<input type="hidden" name="<?php print $vs_id_prefix; ?>_id{n}" id="<?php print $vs_id_prefix; ?>_id{n}" value="{id}"/>
+		</div>
+<?php
+			break;
+		case 'bubbles':
+		default:
+?>
 		<div id="<?php print $vs_id_prefix; ?>Item_{n}" class="labelInfo roundedRel">
 			<a href="<?php print urldecode(caEditorUrl($this->request, 'ca_object_lots', '{lot_id}')); ?>" class="caEditItemButton" id="<?php print $vs_id_prefix; ?>_edit_related_{n}">{{label}}</a>
 
@@ -98,6 +121,10 @@
 			<div style="display: none;" class="itemName">{label}</div>
 			<div style="display: none;" class="itemIdno">{idno_stub_sort}</div>
 		</div>
+<?php
+		break;
+	}
+?>
 	</textarea>
 <?php
 	//
@@ -127,6 +154,33 @@
 	} else {
 ?>
 	<textarea class='caItemTemplate' style='display: none;'>
+<?php
+	switch($va_settings['list_format']) {
+		case 'list':
+?>
+		<div id="<?php print $vs_id_prefix; ?>Item_{n}" class="labelInfo listRel caRelatedItem">
+<?php
+	if (!$vb_read_only && ca_editor_uis::loadDefaultUI($t_item_rel->tableNum(), $this->request)) {
+?><a href="#" class="caInterstitialEditButton listRelEditButton"><?php print caNavIcon($this->request, __CA_NAV_BUTTON_INTERSTITIAL_EDIT_BUNDLE__); ?></a><?php
+	}
+	if (!$vb_read_only && !$vb_dont_show_del) {
+?><a href="#" class="caDeleteItemButton listRelDeleteButton"><?php print caNavIcon($this->request, __CA_NAV_BUTTON_DEL_BUNDLE__); ?></a><?php
+	}
+?>
+			<a href="<?php print urldecode(caEditorUrl($this->request, 'ca_object_lots', '{lot_id}')); ?>" class="caEditItemButton" id="<?php print $vs_id_prefix; ?>_edit_related_{n}"></a>
+			<span id='<?php print $vs_id_prefix; ?>_BundleTemplateDisplay{n}'>
+<?php
+			print caGetRelationDisplayString($this->request, 'ca_object_lots', array(), array('display' => '_display', 'makeLink' => false));
+?>
+			</span>
+			<input type="hidden" name="<?php print $vs_id_prefix; ?>_type_id{n}" id="<?php print $vs_id_prefix; ?>_type_id{n}" value="{type_id}"/>
+			<input type="hidden" name="<?php print $vs_id_prefix; ?>_id{n}" id="<?php print $vs_id_prefix; ?>_id{n}" value="{id}"/>
+		</div>
+<?php
+			break;
+		case 'bubbles':
+		default:
+?>
 		<div id="<?php print $vs_id_prefix; ?>Item_{n}" class="labelInfo roundedRel">
 			<span id='<?php print $vs_id_prefix; ?>_BundleTemplateDisplay{n}'>
 <?php
@@ -146,6 +200,9 @@
 			<div style="display: none;" class="itemName">{label}</div>
 			<div style="display: none;" class="itemIdno">{idno_stub_sort}</div>
 		</div>
+<?php
+	}
+?>
 	</textarea>
 <?php
 	//
@@ -310,6 +367,8 @@
 			interstitialUrl: '<?php print caNavUrl($this->request, 'editor', 'Interstitial', 'Form', array('t' => $t_item_rel->tableName())); ?>',
 			interstitialPrimaryTable: '<?php print $t_instance->tableName(); ?>',
 			interstitialPrimaryID: <?php print $t_instance->getPrimaryKey(); ?>,
+			minRepeats: <?php print caGetOption('minRelationshipsPerRow', $va_settings, 0); ?>,
+			maxRepeats: <?php print caGetOption('maxRelationshipsPerRow', $va_settings, 65535); ?>,
 <?php
 	}
 ?>
@@ -319,10 +378,7 @@
 			listSortOrderID: '<?php print $vs_id_prefix; ?>BundleList',
 			listSortItems: 'div.roundedRel',
 			quickaddPanel: caRelationQuickAddPanel<?php print $vs_id_prefix; ?>,
-			quickaddUrl: '<?php print caNavUrl($this->request, 'editor/object_lots', 'ObjectLotQuickAdd', 'Form', array('lot_id' => 0)); ?>',
-			
-			minRepeats: <?php print caGetOption('minRelationshipsPerRow', $va_settings, 0); ?>,
-			maxRepeats: <?php print caGetOption('maxRelationshipsPerRow', $va_settings, 65535); ?>
+			quickaddUrl: '<?php print caNavUrl($this->request, 'editor/object_lots', 'ObjectLotQuickAdd', 'Form', array('lot_id' => 0)); ?>'
 		});
 	});
 </script>
