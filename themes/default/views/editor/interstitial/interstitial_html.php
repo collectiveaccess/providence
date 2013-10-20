@@ -82,6 +82,8 @@
 		<input type='hidden' name='screen' value='<?php print htmlspecialchars($this->getVar('screen')); ?>'/>
 		<input type='hidden' name='t' value='<?php print $t_subject->tableName(); ?>'/>
 		<input type='hidden' name='relation_id' value='<?php print $t_subject->getPrimaryKey(); ?>'/>
+		<input type='hidden' name='primary' value='<?php print $this->getVar('primary_table'); ?>'/>
+		<input type='hidden' name='primary_id' value='<?php print $this->getVar('primary_id'); ?>'/>
 		<input type='hidden' name='type_id' value='<?php print $t_subject->get('type_id'); ?>'/>
 		<input type='hidden' name='placement_id' value='<?php print $this->getVar('placement_id'); ?>'/>
 		<input type='hidden' name='n' value='<?php print $this->getVar('n'); ?>'/>

@@ -114,6 +114,8 @@
 		/**
 		 * Returns name of the "left" table (by convention the table mentioned first in the relationship table name)
 		 * (eg. if the table name is ca_objects_x_entities then the "left" name is ca_objects)
+		 *
+		 * @return string
 		 */
 		public function getLeftTableName() {
 			return $this->RELATIONSHIP_LEFT_TABLENAME;
@@ -122,6 +124,8 @@
  		/**
 		 * Returns name of the "right" table (by convention the table mentioned second in the relationship table name)
 		 * (eg. if the table name is ca_objects_x_entities then the "right" name is ca_entities)
+		 *
+		 * @return string
 		 */
 		public function getRightTableName() {
 			return $this->RELATIONSHIP_RIGHT_TABLENAME;
@@ -142,6 +146,8 @@
 		/**
 		 * Returns table number of the "left" table (by convention the table mentioned first in the relationship table name)
 		 * (eg. if the table name is ca_objects_x_entities then the "left" number corresponds to ca_objects)
+		 *
+		 * @return int
 		 */
 		public function getLeftTableNum() {
 			return $this->getAppDatamodel()->getTableNum($this->getLeftTableName());
@@ -150,6 +156,8 @@
 		/**
 		 * Returns table number of the "right" table (by convention the table mentioned second in the relationship table name)
 		 * (eg. if the table name is ca_objects_x_entities then the "right" number corresponds to ca_entities)
+		 *
+		 * @return int
 		 */
 		public function getRightTableNum() {
 			return $this->getAppDatamodel()->getTableNum($this->getRightTableName());
@@ -158,6 +166,8 @@
 		/**
 		 * Returns name of the "left" table (by convention the table mentioned first in the relationship table name) field name
 		 * (eg. if the table name is ca_objects_x_entities then the "left" name is ca_objects)
+		 *
+		 * @return string
 		 */
 		public function getLeftTableFieldName() {
 			return $this->RELATIONSHIP_LEFT_FIELDNAME;
@@ -166,6 +176,8 @@
 		/**
 		 * Returns name of the "right" table (by convention the table mentioned first in the relationship table name) field name
 		 * (eg. if the table name is ca_objects_x_entities then the "left" name is ca_objects)
+		 *
+		 * @return string
 		 */
 		public function getRightTableFieldName() {
 			return $this->RELATIONSHIP_RIGHT_FIELDNAME;
@@ -173,9 +185,20 @@
  		# ------------------------------------------------------
 		/**
 		 * Returns name of the foreign key pointing to ca_relationship_types (typically = 'type_id')
+		 *
+		 * @return string
 		 */
 		public function getTypeFieldName() {
 			return $this->RELATIONSHIP_TYPE_FIELDNAME;
+		}
+		# ------------------------------------------------------
+		/**
+		 * Returns true if relationship relates two records in the same table
+		 *
+		 * @return bool
+		 */
+		public function isSelfRelationship() {
+			return (bool)($this->getLeftTableNum() == $this->getRightTableNum());
 		}
  		# ------------------------------------------------------
 		/**
