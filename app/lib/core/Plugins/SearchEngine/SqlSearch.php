@@ -1378,14 +1378,30 @@ class WLPlugSearchEngineSqlSearch extends BaseSearchPlugin implements IWLPlugSea
 		}
 	}
 	# ------------------------------------------------
-	public function updateIndexingInPlace($pn_subject_tablenum, $pa_subject_row_ids, $pn_content_tablenum, $ps_content_fieldnum, $pn_content_row_id, $pm_content, $pa_options=null) {
+	/**
+	 *
+	 *
+	 * @param int $pn_subject_tablenum
+	 * @param array $pa_subject_row_ids
+	 * @param int $pn_content_tablenum
+	 * @param string $ps_content_fieldnum
+	 * @param int $pn_content_row_id
+	 * @param string $ps_content
+	 * @param array $pa_options
+	 *		literalContent = array of text content to be applied without tokenization
+	 *		BOOST = Indexing boost to apply
+	 *		PRIVATE = Set indexing to private
+	 */
+	public function updateIndexingInPlace($pn_subject_tablenum, $pa_subject_row_ids, $pn_content_tablenum, $ps_content_fieldnum, $pn_content_row_id, $ps_content, $pa_options=null) {
 		
 		// Find existing indexing for this subject and content 	
 		foreach($pa_subject_row_ids as $vn_subject_row_id) {
 			$this->removeRowIndexing($pn_subject_tablenum, $vn_subject_row_id, $pn_content_tablenum, $ps_content_fieldnum, $pn_content_row_id);
 		}
 		
-		$va_words = $this->_tokenize($pm_content);
+		$va_words = $this->_tokenize($ps_content);
+		$va_literal_content = caGetOption("literalContent", $pa_options, null);
+		if ($va_literal_content && !is_array($va_literal_content)) { $va_literal_content = array($va_literal_content); }
 		
 		$vn_boost = 1;
 		if (isset($pa_options['BOOST'])) {
@@ -1417,6 +1433,14 @@ class WLPlugSearchEngineSqlSearch extends BaseSearchPlugin implements IWLPlugSea
 				if (!($vn_word_id = $this->getWordID($vs_word))) { continue; }
 				$va_row_insert_sql[] = "({$pn_subject_tablenum}, {$vn_row_id}, {$pn_content_tablenum}, '{$ps_content_fieldnum}', {$pn_content_row_id}, {$vn_word_id}, {$vn_boost}, {$vn_private})";
 				$vn_seq++;
+			}
+			
+			if (is_array($va_literal_content)) {
+				foreach($va_literal_content as $vs_literal) {
+					if (!($vn_word_id = $this->getWordID($vs_literal))) { continue; }
+					$va_row_insert_sql[] = "({$pn_subject_tablenum}, {$vn_row_id}, {$pn_content_tablenum}, '{$ps_content_fieldnum}', {$pn_content_row_id}, {$vn_word_id}, {$vn_boost}, {$vn_private})";
+					$vn_seq++;
+				}
 			}
 		}
 		
