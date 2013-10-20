@@ -196,7 +196,7 @@ class SearchResult extends BaseObject {
 	 * prefetch() will allow you to tell SearchResult to preload values for a set of hits starting at $pn_start 
 	 * Because this can be done in a single query it'll presumably be faster than lazy loading lots of rows
 	 */
-	public function prefetch($ps_tablename, $pn_start, $pn_num_rows, $pa_element_ids=null, $pa_options=null) {
+	public function prefetch($ps_tablename, $pn_start, $pn_num_rows, $pa_options=null) {
 		if (!$ps_tablename ) { return; }
 		//print "PREFETCH: ".$ps_tablename.' - '. $pn_start.' - '. $pn_num_rows."<br>";
 		
@@ -232,19 +232,32 @@ class SearchResult extends BaseObject {
 			array_push($va_linking_tables, $ps_tablename);
 			
 			$vs_left_table = $this->ops_table_name;
-	
+
 			foreach($va_linking_tables as $vs_right_table) {
-				if ($va_rel = $this->opo_datamodel->getOneToManyRelations($vs_left_table, $vs_right_table)) {
-					$va_joins[] = 'INNER JOIN '.$va_rel['many_table'].' ON '.$va_rel['one_table'].'.'.$va_rel['one_table_field'].' = '.$va_rel['many_table'].'.'.$va_rel['many_table_field'];
+				$vs_join_eq = '';
+				if (($va_rels = $this->opo_datamodel->getOneToManyRelations($vs_left_table)) && is_array($va_rels[$vs_right_table])) {
+					$va_acc = array();
+					foreach($va_rels[$vs_right_table] as $va_rel) {
+						$va_acc[] =	$va_rel['one_table'].'.'.$va_rel['one_table_field'].' = '.$va_rel['many_table'].'.'.$va_rel['many_table_field'];
+					}
+					$vs_join_eq = join(" OR ", $va_acc);
+					$va_joins[] = 'INNER JOIN '.$vs_right_table.' ON '.$vs_join_eq; 
+					
 					$t_link = $this->opo_datamodel->getInstanceByTableName($va_rel['many_table'], true);
 					if (is_a($t_link, 'BaseRelationshipModel') && $t_link->hasField('type_id')) {
 						$va_fields[] = $va_rel['many_table'].'.type_id rel_type_id';
 					}
 				} else {
-					if ($va_rel = $this->opo_datamodel->getOneToManyRelations($vs_right_table, $vs_left_table)) {
-						$va_joins[] = 'INNER JOIN '.$va_rel['one_table'].' ON '.$va_rel['one_table'].'.'.$va_rel['one_table_field'].' = '.$va_rel['many_table'].'.'.$va_rel['many_table_field'];
+					if (($va_rels = $this->opo_datamodel->getOneToManyRelations($vs_right_table)) && is_array($va_rels[$vs_left_table])) {
+						$va_acc = array();
+						foreach($va_rels[$vs_left_table] as $va_rel) {
+							$va_acc[] = $va_rel['one_table'].'.'.$va_rel['one_table_field'].' = '.$va_rel['many_table'].'.'.$va_rel['many_table_field'];
+						}
+						$vs_join_eq = join(" OR ", $va_acc);
+						$va_joins[] = 'INNER JOIN '.$vs_right_table.' ON '.$vs_join_eq; 
 					}
 				}
+				
 				$vs_left_table = $vs_right_table;
 			}
 		} else {
@@ -872,7 +885,7 @@ class SearchResult extends BaseObject {
 		} else {
 			// Prefetch intrinsic fields in primary and related tables
 			if (!isset($this->opa_prefetch_cache[$va_path_components['table_name']][$vn_row_id])) {
-				$this->prefetch($va_path_components['table_name'], $this->opo_engine_result->currentRow(), $this->getOption('prefetch'), null, $pa_options);	// try to prefetch ahead (usually doesn't hurt and very often helps performance)
+				$this->prefetch($va_path_components['table_name'], $this->opo_engine_result->currentRow(), $this->getOption('prefetch'), $pa_options);	// try to prefetch ahead (usually doesn't hurt and very often helps performance)
 			}
 		}
 		
@@ -1113,7 +1126,6 @@ class SearchResult extends BaseObject {
 			}
 	
 			if ($vb_return_as_array) {
-			
 // return array (intrinsics or labels in primary or related table)
 				if ($t_instance->hasField($va_path_components['field_name']) && ($va_path_components['table_name'] === $t_instance->tableName())) {
 					// Intrinsic
@@ -1192,7 +1204,7 @@ class SearchResult extends BaseObject {
 							foreach($va_value_list as $vn_id => $va_values_by_locale) {
 								foreach($va_values_by_locale as $vn_locale_id => $va_values) {
 									foreach($va_values as $vn_i => $va_value) {
-										$va_ids[] = $va_value[$vs_pk];
+										$va_ids[] = $vn_id = $va_value[$vs_pk];
 					
 										if (($vb_get_preferred_labels_only) && ($vb_supports_preferred) && (!$va_value['is_preferred'])) { continue; }
 										if (($vb_get_nonpreferred_labels_only) && ($vb_supports_preferred) && ($va_value['is_preferred'])) { continue; }
@@ -1221,13 +1233,14 @@ class SearchResult extends BaseObject {
 										}
 										
 										if ($vb_return_all_locales) {
-											$va_return_values[$vn_row_id][$vn_locale_id][] = $vs_prop; //$va_value[$va_path_components['field_name']];
+											$va_return_values[$vn_id][$vn_locale_id][] = $vs_prop;
 										} else {
-											$va_return_values[$vn_row_id][$vn_locale_id] = $vs_prop; //$va_value[$va_path_components['field_name']];
+											$va_return_values[$vn_id][$vn_locale_id] = $vs_prop;
 										}
 									}
 								}
 							}
+							
 							if (!$vb_return_all_locales) {
 								$va_return_values = array_values(caExtractValuesByUserLocale($va_return_values));
 							}

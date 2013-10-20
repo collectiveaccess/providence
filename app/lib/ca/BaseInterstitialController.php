@@ -78,6 +78,11 @@
  			$pn_placement_id = 			$this->request->getParameter('placement_id', pInteger);		// placement_id of bundle that launched interstitial editor
  			$pn_n =			 			$this->request->getParameter('n', pInteger);				// index of bundle that launched interstitial editor
  			
+ 			$ps_primary_table = 		$this->request->getParameter('primary', pString);			// table name for item from which the interstitial editor was launched
+ 			$pn_primary_id = 			$this->request->getParameter('primary_id', pInteger);		// row_id of item from which the interstitial editor was launched
+ 			$this->view->setVar('primary_table', $ps_primary_table);
+ 			$this->view->setVar('primary_id', $pn_primary_id);
+ 			
  			if(is_array($pa_values)) {
  				foreach($pa_values as $vs_key => $vs_val) {
  					$t_subject->set($vs_key, $vs_val);
@@ -151,6 +156,9 @@
  			
  			$pn_placement_id = 			$this->request->getParameter('placement_id', pInteger);		// placement_id of bundle that launched interstitial editor
  			
+ 			$ps_primary_table = 		$this->request->getParameter('primary', pString);	
+ 			$pn_primary_id = 			$this->request->getParameter('primary_id', pInteger);	
+ 			
  			// Make sure request isn't empty
  			if(!sizeof($_POST)) {
  				$va_response = array(
@@ -193,7 +201,8 @@
  			$vs_template = caGetBundleDisplayTemplate($t_subject, $vs_related_table, $pa_bundle_settings);
 		
  			$qr_rel_items = caMakeSearchResult($t_subject->tableName(), array($t_subject->getPrimaryKey()));
- 			$va_bundle_values = array_shift(caProcessRelationshipLookupLabel($qr_rel_items, $t_subject, array('template' => $vs_template)));
+ 			$va_bundle_values = array_shift(caProcessRelationshipLookupLabel($qr_rel_items, $t_subject, array('template' => $vs_template, 'primaryIDs' => array($ps_primary_table => array($pn_primary_id)))));
+ 	
  			if ($t_subject->hasField('type_id')) {
 				$va_bundle_values['relationship_typename'] = $t_subject->getRelationshipTypename(($t_subject->getLeftTableFieldName() == $vs_related_table) ? 'rtol' : 'ltor');
 				$va_bundle_values['relationship_type_code'] = $t_subject->getRelationshipTypeCode();

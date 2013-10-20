@@ -63,6 +63,8 @@ var caUI = caUI || {};
 			readonly: 0,
 			
 			placementID: null,
+			interstitialPrimaryTable: null,	/* table and id for record from which interstitial was launched */
+			interstitialPrimaryID: null,
 			
 			sortInitialValuesBy: null,
 			firstItemColor: null,
@@ -273,7 +275,11 @@ var caUI = caUI || {};
 				if (!this.readonly) {
 					jQuery(this.container + " #" +this.itemID + templateValues.n + " ." + this.interstitialButtonClassName).click(function() { 
 						// Trigger interstitial edit panel
-						options.interstitialPanel.showPanel(options.interstitialUrl + "/relation_id/" + initialValues['relation_id'] + "/placement_id/" + that.placementID + "/n/" + templateValues.n + "/field_name_prefix/" + that.fieldNamePrefix);
+						var u = options.interstitialUrl + "/relation_id/" + initialValues['relation_id'] + "/placement_id/" + that.placementID + "/n/" + templateValues.n + "/field_name_prefix/" + that.fieldNamePrefix;
+						if (that.interstitialPrimaryTable && that.interstitialPrimaryID) {	// table and id for record from which interstitial was launched
+							u +=  "/primary/" + that.interstitialPrimaryTable + "/primary_id/" + that.interstitialPrimaryID;
+						}
+						options.interstitialPanel.showPanel(u);
 						jQuery('#' + options.interstitialPanel.getPanelContentID()).data('panel', options.interstitialPanel);
 						return false; 
 					});

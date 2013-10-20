@@ -1783,6 +1783,10 @@ require_once(__CA_LIB_DIR__."/ca/ApplicationPluginManager.php");
 	 *		placeholderPrefix = attribute container to implicitly place primary record fields into. Ex. if the table is "ca_entities" and the placeholder is "address" then tags like ^city will resolve to ca_entities.address.city
 	 *		requireLinkTags = if set then links are only added when explicitly defined with <l> tags. Default is to make the entire text a link in the absence of <l> tags.
 	 *		resolveLinksUsing = 
+	 *		primaryIDs = row_ids for primary rows in related table, keyed by table name; when resolving ambiguous relationships the row_ids will be excluded from consideration. This option is rarely used and exists primarily to take care of a single
+	 *						edge case: you are processing a template relative to a self-relationship such as ca_entities_x_entities that includes references to the subject table (ca_entities, in the case of ca_entities_x_entities). There are
+	 *						two possible paths to take in this situations; primaryIDs lets you specify which ones you *don't* want to take by row_id. For interstitial editors, the ids will be set to a single id: that of the subject (Eg. ca_entities) row
+	 *						from which the interstitial was launched.
 	 * @return mixed Output of processed templates
 	 */
 	function caProcessTemplateForIDs($ps_template, $pm_tablename_or_num, $pa_row_ids, $pa_options=null) {
@@ -1796,6 +1800,8 @@ require_once(__CA_LIB_DIR__."/ca/ApplicationPluginManager.php");
 		}
 		unset($pa_options['returnAsArray']);
 		if(!isset($pa_options['requireLinkTags'])) { $pa_options['requireLinkTags'] = true; }
+		
+		$va_primary_ids = caGetOption("primaryIDs", $pa_options, null);
 		
 		$o_dm = Datamodel::load();
 		$ps_tablename = is_numeric($pm_tablename_or_num) ? $o_dm->getTableName($pm_tablename_or_num) : $pm_tablename_or_num;
@@ -1962,7 +1968,6 @@ require_once(__CA_LIB_DIR__."/ca/ApplicationPluginManager.php");
 				
 				foreach($va_relationship_values[$vs_pk_val] as $vn_relation_id => $va_relationship_value_array) {
 					$vb_is_related = false;
-					$va_related_ids = array();
 					$va_val = null;
 					
 					if (isset($va_relationship_value_array[$vs_tag]) && !(isset($pa_options['showHierarchicalLabels']) && $pa_options['showHierarchicalLabels'] && ($vs_tag == 'label'))) {
@@ -1971,7 +1976,9 @@ require_once(__CA_LIB_DIR__."/ca/ApplicationPluginManager.php");
 						if (isset($va_related_values[$vs_pk_val][$vs_tag])) {
 							$va_val = array($vs_val = $va_related_values[$vs_pk_val][$vs_tag]);
 						} else {
+							//
 							// see if this is a reference to a related table
+							//
 							if (($ps_tablename != $va_tmp[0]) && ($t_tmp = $o_dm->getInstanceByTableName($va_tmp[0], true))) {	// if the part of the tag before a "." (or the tag itself if there are no periods) is a related table then try to fetch it as related to the current record
 								if (isset($pa_options['placeholderPrefix']) && $pa_options['placeholderPrefix'] && ($va_tmp[0] != $pa_options['placeholderPrefix']) && (sizeof($va_tmp) == 1)) {
 									$vs_get_spec = array_shift($va_tmp).".".$pa_options['placeholderPrefix'];
@@ -2009,6 +2016,17 @@ require_once(__CA_LIB_DIR__."/ca/ApplicationPluginManager.php");
 									$va_val = array();
 								}
 								
+								if(is_array($va_primary_ids) && isset($va_primary_ids[$va_spec_bits[0]]) && is_array($va_primary_ids[$va_spec_bits[0]])) {
+									$t_rel = $o_dm->getInstanceByTableName($va_spec_bits[0], true);
+									$va_val_ids = $qr_res->get($va_spec_bits[0].".".$t_rel->primaryKey(), array("returnAsArray" => true));
+									foreach($va_primary_ids[$va_spec_bits[0]] as $vn_primary_id) {
+										if (($vn_index = array_search($vn_primary_id, $va_val_ids)) !== false) {
+											unset($va_val[$vn_index]);
+										}
+									}
+								}
+								
+								
 								$va_val_proc = array();
 								
 								switch($va_spec_bits[1]) {
@@ -2041,7 +2059,6 @@ require_once(__CA_LIB_DIR__."/ca/ApplicationPluginManager.php");
 								}
 								$va_val = $va_val_proc;
 								$vb_is_related = true;
-								$va_related_ids = $qr_res->get($va_tmp[0].".".$o_dm->getTablePrimaryKeyName($va_tmp[0]), array('returnAsArray' => true));
 							} else {
 								//
 								// Handle non-related gets
@@ -2477,6 +2494,10 @@ require_once(__CA_LIB_DIR__."/ca/ApplicationPluginManager.php");
 	 *		inlineCreateMessage = 
 	 *		inlineCreateQuery =
 	 *		template = 
+	 *		primaryIDs = row_ids for primary rows in related table, keyed by table name; when resolving ambiguous relationships the row_ids will be excluded from consideration. This option is rarely used and exists primarily to take care of a single
+	 *						edge case: you are processing a template relative to a self-relationship such as ca_entities_x_entities that includes references to the subject table (ca_entities, in the case of ca_entities_x_entities). There are
+	 *						two possible paths to take in this situations; primaryIDs lets you specify which ones you *don't* want to take by row_id. For interstitial editors, the ids will be set to a single id: that of the subject (Eg. ca_entities) row
+	 *						from which the interstitial was launched.
 	 * @return mixed 
 	 */
 global $ca_relationship_lookup_parse_cache;
@@ -2580,6 +2601,8 @@ $ca_relationship_lookup_parse_cache = array();
 			} else {
 				$vs_table = $qr_rel_items->tableName();
 				$vs_pk = $qr_rel_items->primaryKey();
+				
+				$va_primary_ids = (method_exists($pt_rel, "isSelfRelationship") && ($vb_is_self_rel = $pt_rel->isSelfRelationship())) ? caGetOption("primaryIDs", $pa_options, null) : null;
 				while($qr_rel_items->nextHit()) {
 					$vn_id = $qr_rel_items->get("{$vs_rel_table}.{$vs_rel_pk}");
 					if(in_array($vn_id, $va_exclude)) { continue; }
@@ -2642,7 +2665,7 @@ $ca_relationship_lookup_parse_cache = array();
 					}
 					
 					if ($vs_template) {
-						$va_item['_display'] = caProcessTemplateForIDs($vs_template, $vs_table, array($qr_rel_items->get("{$vs_table}.{$vs_pk}")), array('returnAsArray' => false, 'returnAsLink' => true, 'delimiter' => caGetOption('delimiter', $pa_options, $vs_display_delimiter), 'resolveLinksUsing' => $vs_rel_table));
+						$va_item['_display'] = caProcessTemplateForIDs($vs_template, $vs_table, array($qr_rel_items->get("{$vs_table}.{$vs_pk}")), array('returnAsArray' => false, 'returnAsLink' => true, 'delimiter' => caGetOption('delimiter', $pa_options, $vs_display_delimiter), 'resolveLinksUsing' => $vs_rel_table, 'primaryIDs' => $va_primary_ids));
 					}
 					
 					$va_items[$vn_id] = $va_item;
