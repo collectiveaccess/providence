@@ -460,6 +460,19 @@
 							
 							$va_opts = array('id' => $vs_input_id, 'width' => $vn_width, 'height' => $vn_height, 'value' => is_array($vs_value) ? $vs_value[0] : $vs_value, 'values' => is_array($vs_value) ? $vs_value : array($vs_value));
 							$vs_select_element = caHTMLSelect($vs_input_name, $va_select_opts, array(), $va_opts);
+						} elseif ((int)$va_properties['showMetadataElementsWithDataType'] > 0) {
+							require_once(__CA_MODELS_DIR__.'/ca_metadata_elements.php');
+							
+							$va_rep_elements = ca_metadata_elements::getElementsAsList(true, $va_properties['table'], null, true, false, true, array($va_properties['showMetadataElementsWithDataType']));
+							
+							if (is_array($va_rep_elements)) {
+								$va_select_opts = array();
+								foreach($va_rep_elements as $vs_element_code => $va_element_info) {
+									$va_select_opts[$va_element_info['display_label']] = $vs_element_code;
+								}
+								$va_opts = array('id' => $vs_input_id, 'width' => $vn_width, 'height' => $vn_height, 'value' => is_array($vs_value) ? $vs_value[0] : $vs_value, 'values' => is_array($vs_value) ? $vs_value : array($vs_value));
+								$vs_select_element = caHTMLSelect($vs_input_name, $va_select_opts, array(), $va_opts);
+							}
 						} else {
 							// Regular drop-down with configured options
 							if ($vn_height > 1) { $va_attr['multiple'] = 1; $vs_input_name .= '[]'; }

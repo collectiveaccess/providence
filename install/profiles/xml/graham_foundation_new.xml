@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <profile xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="profile.xsd" useForConfiguration="1" base="base" infoUrl="http://providence.collectiveaccess.org/wiki/DublinCoreInstallationProfile">
-  <profileName>Graham Foundation, Chicago, IL</profileName>
-  <profileDescription>A custom profile for a philanthropic arts organization.</profileDescription>
+  <profileName>Graham Foundation (New)</profileName>
+  <profileDescription>Graham Foundation Profile</profileDescription>
   <locales>
     <locale lang="en" country="US">English</locale>
   </locales>
@@ -16,16 +16,16 @@
         <item idno="art" enabled="1" default="1">
           <labels>
             <label locale="en_US" preferred="1">
-              <name_singular>art object</name_singular>
-              <name_plural>art object</name_plural>
+              <name_singular>Madlener House Collection</name_singular>
+              <name_plural>Madlener House Collection</name_plural>
             </label>
           </labels>
         </item>
         <item idno="media" enabled="1" default="1">
           <labels>
             <label locale="en_US" preferred="1">
-              <name_singular>media</name_singular>
-              <name_plural>media</name_plural>
+              <name_singular>Grants and Public Program Objects/Media</name_singular>
+              <name_plural>Grants and Public Program Objects/Media</name_plural>
             </label>
           </labels>
         </item>
@@ -107,8 +107,8 @@
                 <item idno="book" enabled="1" default="0">
                   <labels>
                     <label locale="en_US" preferred="1">
-                      <name_singular>Book/Chapter/Essay</name_singular>
-                      <name_plural>Book/Chapter/Essay</name_plural>
+                      <name_singular>Book/Chapter/Essay/Catalog</name_singular>
+                      <name_plural>Book/Chapter/Essay/Catalog</name_plural>
                     </label>
                   </labels>
                 </item>
@@ -642,7 +642,7 @@
       </labels>
       <items>
         
-        <item idno="yes" rank="2" enabled="1" default="0">
+        <item idno="yes" rank="2" enabled="1" default="1">
           <labels>
             <label locale="en_US" preferred="1">
               <name_singular>yes</name_singular>
@@ -650,7 +650,7 @@
             </label>
           </labels>
         </item>
-        <item idno="no" rank="1" enabled="1" default="1">
+        <item idno="no" rank="1" enabled="1" default="0">
           <labels>
             <label locale="en_US" preferred="1">
               <name_singular>no</name_singular>
@@ -1580,6 +1580,138 @@
         </item>
       </items>
     </list>
+    <list code="file_content_grant" hierarchical="0" system="0" vocabulary="1">
+      <labels>
+        <label locale="en_US">
+          <name>File Contents</name>
+        </label>
+      </labels>
+      <items>
+        <item idno="correspondence" enabled="1" default="1">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>Correspondence</name_singular>
+              <name_plural>Correspondence</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="images" enabled="1" default="1">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>Images</name_singular>
+              <name_plural>Images</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="press_c" enabled="1" default="1">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>Press coverage</name_singular>
+              <name_plural>Press coverage</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="press_r" enabled="1" default="1">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>Press release</name_singular>
+              <name_plural>Press release</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="printed" enabled="1" default="1">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>Printed material</name_singular>
+              <name_plural>Printed material</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="report" enabled="1" default="1">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>Project report or GF paperwork</name_singular>
+              <name_plural>Project report or GF paperwork</name_plural>
+            </label>
+          </labels>
+        </item>
+      </items>
+    </list>
+    <list code="file_prog" hierarchical="0" system="0" vocabulary="1">
+      <labels>
+        <label locale="en_US">
+          <name>File Contents</name>
+        </label>
+      </labels>
+      <items>
+        <item idno="correspondence" enabled="1" default="1">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>Correspondence</name_singular>
+              <name_plural>Correspondence</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="contract" enabled="1" default="1">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>Contract</name_singular>
+              <name_plural>Contract</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="budget" enabled="1" default="1">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>Budget</name_singular>
+              <name_plural>Budget</name_plural>
+            </label>
+          </labels>
+        </item>
+      </items>
+    </list>
+    <!-- Emily requested below list as a way of handling grant types -->
+    <list code="grantee_type" hierarchical="0" system="0" vocabulary="1">
+      <labels>
+        <label locale="en_US">
+          <name>Grantee Type</name>
+        </label>
+      </labels>
+      <items>
+        <item idno="null" enabled="1" default="1">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular> </name_singular>
+              <name_plural> </name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="organization" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>Organization</name_singular>
+              <name_plural>Organization</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="individual" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>Individual</name_singular>
+              <name_plural>Individual</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="carter" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>Carter Manny</name_singular>
+              <name_plural>Carter Manny</name_plural>
+            </label>
+          </labels>
+        </item>
+      </items>
+    </list>
     <list code="av_type" hierarchical="0" system="0" vocabulary="1">
       <labels>
         <label locale="en_US">
@@ -1886,6 +2018,14 @@
             </label>
           </labels>
         </item>
+        <item idno="museum" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>Museum</name_singular>
+              <name_plural>Museum</name_plural>
+            </label>
+          </labels>
+        </item>
       </items>
     </list>
     <list code="final_result" hierarchical="0" system="0" vocabulary="1">
@@ -1953,7 +2093,7 @@
         </label>
       </labels>
       <items>
-        <item idno="yes" enabled="1" default="0">
+        <item idno="yes" enabled="1" default="0" rank="2">
           <labels>
             <label locale="en_US" preferred="1">
               <name_singular>yes</name_singular>
@@ -1961,7 +2101,7 @@
             </label>
           </labels>
         </item>
-        <item idno="no" enabled="1" default="1">
+        <item idno="no" enabled="1" default="1" rank="1">
           <labels>
             <label locale="en_US" preferred="1">
               <name_singular>no</name_singular>
@@ -2383,6 +2523,31 @@
         </item>
       </items>
     </list>
+    <list code="time_type" hierarchical="0" system="0" vocabulary="1">
+      <labels>
+        <label locale="en_US">
+          <name>Time Type</name>
+        </label>
+      </labels>
+      <items>
+        <item idno="start" enabled="1" default="1">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>start</name_singular>
+              <name_plural>start</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="end" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>end</name_singular>
+              <name_plural>end</name_plural>
+            </label>
+          </labels>
+        </item>
+      </items>
+    </list>
     <list code="condition_report" hierarchical="0" system="0" vocabulary="1">
       <labels>
         <label locale="en_US">
@@ -2585,7 +2750,7 @@
     <metadataElement code="external_link" datatype="Container">
       <labels>
         <label locale="en_US">
-          <name>Related websites</name>
+          <name>Websites</name>
         </label>
       </labels>
       <settings>
@@ -2642,7 +2807,7 @@
           <table>ca_objects</table>
           <settings>
             <setting name="minAttributesPerRow">1</setting>
-            <setting name="maxAttributesPerRow">1</setting>
+            <setting name="maxAttributesPerRow">5</setting>
             <setting name="minimumAttributeBundlesToDisplay">1</setting>
           </settings>
         </restriction>
@@ -2650,7 +2815,7 @@
           <table>ca_entities</table>
           <settings>
             <setting name="minAttributesPerRow">1</setting>
-            <setting name="maxAttributesPerRow">1</setting>
+            <setting name="maxAttributesPerRow">5</setting>
             <setting name="minimumAttributeBundlesToDisplay">1</setting>
           </settings>
         </restriction>
@@ -2658,7 +2823,7 @@
           <table>ca_occurrences</table>
           <settings>
             <setting name="minAttributesPerRow">1</setting>
-            <setting name="maxAttributesPerRow">1</setting>
+            <setting name="maxAttributesPerRow">5</setting>
             <setting name="minimumAttributeBundlesToDisplay">1</setting>
           </settings>
         </restriction>
@@ -2666,16 +2831,15 @@
           <table>ca_places</table>
           <settings>
             <setting name="minAttributesPerRow">0</setting>
-            <setting name="maxAttributesPerRow">1</setting>
+            <setting name="maxAttributesPerRow">5</setting>
             <setting name="minimumAttributeBundlesToDisplay">1</setting>
           </settings>
         </restriction>
         <restriction code="ca_collections">
-          <table>ca_collections</table>
-          
+          <table>ca_collections</table> 
           <settings>
             <setting name="minAttributesPerRow">0</setting>
-            <setting name="maxAttributesPerRow">1</setting>
+            <setting name="maxAttributesPerRow">5</setting>
             <setting name="minimumAttributeBundlesToDisplay">1</setting>
           </settings>
         </restriction>
@@ -2810,7 +2974,7 @@
       <labels>
         <label locale="en_US">
           <name>Date</name>
-          <description>A point or period of time associated with an event in the life cycle of the resource.</description>
+          <description>express as: mm/dd/yy</description>
         </label>
       </labels>
       <elements>
@@ -2944,6 +3108,7 @@
           <labels>
             <label locale="en_US">
               <name>Date</name>
+              <description>mm/dd/yyyy</description>
             </label>
           </labels>
           <settings>
@@ -2951,6 +3116,7 @@
             <setting name="fieldHeight">1</setting>
             <setting name="minChars">0</setting>
             <setting name="maxChars">65535</setting>
+            <setting name="useDatePicker">1</setting>
           </settings>
         </metadataElement>  
       </elements>
@@ -3000,6 +3166,7 @@
           <labels>
             <label locale="en_US">
               <name>Date</name>
+              <description>mm/dd/yyyy</description>
             </label>
           </labels>
           <settings>
@@ -3007,6 +3174,7 @@
             <setting name="fieldHeight">1</setting>
             <setting name="minChars">0</setting>
             <setting name="maxChars">65535</setting>
+            <setting name="useDatePicker">1</setting>
           </settings>
         </metadataElement>  
       </elements>
@@ -3113,7 +3281,7 @@
     <metadataElement code="grant_related" datatype="List" list="grant_related">
       <labels>
         <label locale="en_US">
-          <name>Final Grant Product?</name>
+          <name>Final or Related Grant Project?</name>
           <description>Is the item or event the final product of the project, or a related product?</description>
         </label>
       </labels>
@@ -3212,7 +3380,7 @@
     <metadataElement code="funded" datatype="List" list="funded">
       <labels>
         <label locale="en_US">
-          <name>GF Funded?</name>
+          <name>Graham Foundation Funded?</name>
           
         </label>
       </labels>
@@ -3221,7 +3389,7 @@
         <setting name="fieldHeight">1</setting>
         <setting name="minChars">0</setting>
         <setting name="maxChars">65535</setting>
-        <setting name="render">yes_no_checkboxes</setting>
+        <setting name="render">select</setting>
       </settings>
       <typeRestrictions>
         <restriction code="r1">
@@ -3663,6 +3831,7 @@
           <labels>
             <label locale="en_US">
               <name>Publication Year</name>
+              <description>express as: yyyy</description>
             </label>
           </labels>
           <settings>
@@ -3670,6 +3839,7 @@
             <setting name="fieldHeight">1</setting>
             <setting name="minChars">0</setting>
             <setting name="maxChars">255</setting>
+            <setting name="useDatePicker">1</setting>
           </settings>
         </metadataElement>
         <metadataElement code="ISBN" datatype="Text">
@@ -3777,6 +3947,7 @@
               <labels>
                 <label locale="en_US">
                   <name>Publication Year</name>
+                  <description>express as: yyyy</description>
                 </label>
               </labels>
               <settings>
@@ -3784,6 +3955,7 @@
                 <setting name="fieldHeight">1</setting>
                 <setting name="minChars">0</setting>
                 <setting name="maxChars">255</setting>
+                <setting name="useDatePicker">1</setting>
               </settings>
             </metadataElement>
         <metadataElement code="ISSN" datatype="Text">
@@ -3880,6 +4052,7 @@
             <setting name="fieldHeight">1</setting>
             <setting name="minChars">0</setting>
             <setting name="maxChars">255</setting>
+            <setting name="useDatePicker">1</setting>
           </settings>
         </metadataElement>
       </elements>
@@ -3933,7 +4106,13 @@
                   <name>Obituary File</name>
                   <description>Upload file (if available)</description>
                 </label>
-              </labels> 
+              </labels>
+          <settings>
+          <setting name="fieldWidth">60</setting>
+          <setting name="fieldHeight">1</setting>
+          <setting name="minChars">0</setting>
+          <setting name="maxChars">65535</setting>
+          </settings>
             </metadataElement>
           </elements>
         </metadataElement>
@@ -3947,7 +4126,7 @@
             <metadataElement code="obituary_source" datatype="Text">
               <labels>
                 <label locale="en_US">
-                  <name>Obituary Source</name>
+                  <name>Obituary Source (citation)</name>
                 </label>
               </labels>
               <settings>
@@ -4111,55 +4290,6 @@
         </restriction>
       </typeRestrictions>
     </metadataElement>
-    <metadataElement code="org_names" datatype="Container">
-      <labels>
-        <label locale="en_US">
-          <name>Grantee Organization Subdivision and Subsidiary Names</name>
-        </label>
-      </labels>
-      <settings>
-        <setting name="lineBreakAfterNumberOfElements">1</setting>
-      </settings>
-      <elements>
-        <metadataElement code="subsidiary_name" datatype="Text">
-          <labels>
-            <label locale="en_US">
-              <name>Organization Subsidiary Name</name>
-            </label>
-          </labels>
-          <settings>
-            <setting name="fieldWidth">90</setting>
-            <setting name="fieldHeight">1</setting>
-            <setting name="minChars">0</setting>
-            <setting name="maxChars">255</setting>
-          </settings>
-        </metadataElement>
-        <metadataElement code="subdivision_name" datatype="Text">
-          <labels>
-            <label locale="en_US">
-              <name>Organization Subdivision Name</name>
-            </label>
-          </labels>
-          <settings>
-            <setting name="fieldWidth">90</setting>
-            <setting name="fieldHeight">1</setting>
-            <setting name="minChars">0</setting>
-            <setting name="maxChars">255</setting>
-          </settings>
-        </metadataElement>
-      </elements>
-      <typeRestrictions>
-        <restriction code="r1">
-          <table>ca_entities</table>
-          <type>org</type>
-          <settings>
-            <setting name="minAttributesPerRow">0</setting>
-            <setting name="maxAttributesPerRow">1</setting>
-            <setting name="minimumAttributeBundlesToDisplay">1</setting>
-          </settings>
-        </restriction>
-      </typeRestrictions>
-    </metadataElement>
     <metadataElement code="publication_notes" datatype="Text">
       <labels>
         <label locale="en_US">
@@ -4248,6 +4378,7 @@
       <labels>
         <label locale="en_US">
           <name>Event Date Range</name>
+          <description>express as: mm/dd/yy</description>
         </label>
       </labels> 
       <settings>
@@ -4313,6 +4444,7 @@
       <labels>
         <label locale="en_US">
           <name>Grant Award Year</name>
+          <description>Express in "yyyy" format</description>
         </label>
       </labels> 
       <settings>
@@ -4320,7 +4452,7 @@
         <setting name="fieldHeight">1</setting>
         <setting name="minChars">0</setting>
         <setting name="maxChars">65535</setting>
-        <setting name="useDatePicker">0</setting>
+        <setting name="useDatePicker">1</setting>
       </settings>
       <typeRestrictions>
         <restriction code="r1">
@@ -4457,7 +4589,7 @@
     <metadataElement code="abstract" datatype="Container">
       <labels>
         <label locale="en_US">
-          <name>Abstract (current)</name>
+          <name>Abstract</name>
         </label>
       </labels>
       <settings>
@@ -4552,7 +4684,7 @@
         <metadataElement code="abstract_source_app" datatype="Text">
           <labels>
             <label locale="en_US">
-              <name>Project Abstract Source (Application Stage)</name>
+              <name>Project Abstract Source Citation (Application Stage)</name>
             </label>
           </labels>
           <settings>
@@ -4565,32 +4697,6 @@
       </elements>
       <typeRestrictions>
         <restriction code="collections">
-          <table>ca_collections</table>
-          <type>grant</type>
-          <includeSubtypes>0</includeSubtypes>
-          <settings>
-            <setting name="minAttributesPerRow">0</setting>
-            <setting name="maxAttributesPerRow">1</setting>
-            <setting name="minimumAttributeBundlesToDisplay">1</setting>
-          </settings>
-        </restriction>
-      </typeRestrictions>
-    </metadataElement>
-    <metadataElement code="Project_Title_App" datatype="Text">
-      <labels>
-        <label locale="en_US">
-          <name>Project Title (Application Status)</name>
-          <description>Initial proposed title for project.</description>
-        </label>
-      </labels>
-      <settings>
-        <setting name="fieldWidth">100</setting>
-        <setting name="fieldHeight">3</setting>
-        <setting name="minChars">0</setting>
-        <setting name="maxChars">65535</setting>
-      </settings>
-      <typeRestrictions>
-        <restriction code="r1">
           <table>ca_collections</table>
           <type>grant</type>
           <includeSubtypes>0</includeSubtypes>
@@ -4706,35 +4812,61 @@
         </restriction>
       </typeRestrictions>
     </metadataElement>
-    <metadataElement code="mark_x" datatype="List" list="mark_x">
+    <metadataElement code="mark_x" datatype="Container">
       <labels>
         <label locale="en_US">
-          <name>Mark as notable Grant?</name>
+          <name>Notable</name>
         </label>
       </labels>
       <settings>
-        <setting name="fieldWidth">80</setting>
-        <setting name="fieldHeight">1</setting>
-        <setting name="minChars">0</setting>
-        <setting name="maxChars">65535</setting>
-        <setting name="render">yes_no_checkboxes</setting>
+        <setting name="lineBreakAfterNumberOfElements">1</setting>
       </settings>
+      <elements>
+        <metadataElement code="notable" datatype="List" list="mark_x">
+          <labels>
+            <label locale="en_US">
+              <name>Mark as notable?</name>
+            </label>
+          </labels>
+          <settings>
+            <setting name="fieldWidth">20</setting>
+            <setting name="fieldHeight">1</setting>
+            <setting name="minChars">0</setting>
+            <setting name="maxChars">65535</setting>
+            <setting name="render">yes_no_checkboxes</setting>
+          </settings>
+        </metadataElement>
+        <metadataElement code="notable_notes" datatype="Text">
+          <labels>
+            <label locale="en_US">
+              <name>Explanation</name>
+            </label>
+          </labels>
+          <settings>
+            <setting name="fieldWidth">70</setting>
+            <setting name="fieldHeight">2</setting>
+            <setting name="minChars">0</setting>
+            <setting name="maxChars">65535</setting>
+          </settings>
+        </metadataElement>
+      </elements>
       <typeRestrictions>
-        <restriction code="r1">
+        <restriction code="collections">
           <table>ca_collections</table>
           <type>grant</type>
           <includeSubtypes>0</includeSubtypes>
           <settings>
             <setting name="minAttributesPerRow">0</setting>
-            <setting name="maxAttributesPerRow">255</setting>
+            <setting name="maxAttributesPerRow">1</setting>
             <setting name="minimumAttributeBundlesToDisplay">1</setting>
           </settings>
         </restriction>
-        <restriction code="r2">
+        <restriction code="occurrences">
           <table>ca_occurrences</table>
+          <includeSubtypes>0</includeSubtypes>
           <settings>
             <setting name="minAttributesPerRow">0</setting>
-            <setting name="maxAttributesPerRow">255</setting>
+            <setting name="maxAttributesPerRow">1</setting>
             <setting name="minimumAttributeBundlesToDisplay">1</setting>
           </settings>
         </restriction>
@@ -4758,7 +4890,7 @@
         <setting name="fieldHeight">1</setting>
         <setting name="minChars">0</setting>
         <setting name="maxChars">65535</setting>
-        <setting name="render">yes_no_checkboxes</setting>
+        <setting name="render">select</setting>
       </settings>
     </metadataElement>
         <metadataElement code="file_condition" datatype="List" list="file_condition">
@@ -4814,7 +4946,7 @@
             </label>
           </labels>
           <settings>
-            <setting name="fieldWidth">40</setting>
+            <setting name="fieldWidth">45</setting>
             <setting name="fieldHeight">1</setting>
             <setting name="minChars">0</setting>
             <setting name="maxChars">65535</setting>
@@ -4827,21 +4959,8 @@
             </label>
           </labels>
           <settings>
-            <setting name="fieldWidth">40</setting>
+            <setting name="fieldWidth">45</setting>
             <setting name="fieldHeight">1</setting>
-            <setting name="minChars">0</setting>
-            <setting name="maxChars">65535</setting>
-          </settings>
-        </metadataElement>
-        <metadataElement code="research_other" datatype="Text">
-          <labels>
-            <label locale="en_US">
-              <name>If "other" research product, describe:</name> 
-            </label>
-          </labels>
-          <settings>
-            <setting name="fieldWidth">90</setting>
-            <setting name="fieldHeight">3</setting>
             <setting name="minChars">0</setting>
             <setting name="maxChars">65535</setting>
           </settings>
@@ -5101,7 +5220,7 @@
     <metadataElement code="file_media" datatype="Container">
       <labels>
         <label locale="en_US">
-          <name>Upload Content</name>
+          <name>Upload Internal GF Documents</name>
         </label>
       </labels>
       <elements>
@@ -5115,7 +5234,7 @@
         <metadataElement code="upload_file" datatype="Media">
           <labels>
             <label locale="en_US">
-              <name>File</name>
+              <name>Upload</name>
             </label>
           </labels>
           <settings>
@@ -5138,19 +5257,12 @@
         </restriction>
       </typeRestrictions>
     </metadataElement>
-    <metadataElement code="event_list" datatype="Container">
+    <metadataElement code="event_list" datatype="List" list="event_type">
       <labels>
         <label locale="en_US">
           <name>Event Type</name>
         </label>
       </labels>
-      <elements>
-        <metadataElement code="event_type" datatype="List" list="event_type">
-          <labels>
-            <label locale="en_US">
-              <name>Choose Event Type</name>
-            </label>
-          </labels>
           <settings>
             <setting name="fieldWidth">30</setting>
             <setting name="fieldHeight">1</setting>
@@ -5158,22 +5270,7 @@
             <setting name="maxChars">65535</setting>
             <setting name="render">select</setting>
           </settings>
-        </metadataElement>
-        <metadataElement code="describe_other" datatype="Text">
-          <labels>
-            <label locale="en_US">
-              <name>If "other," describe:</name>
-            </label>
-          </labels>
-          <settings>
-            <setting name="fieldWidth">70</setting>
-            <setting name="fieldHeight">3</setting>
-            <setting name="minChars">0</setting>
-            <setting name="maxChars">65535</setting>
-          </settings>
-        </metadataElement>
-      </elements>
-      <typeRestrictions>
+    <typeRestrictions>
         <restriction code="r1">
           <table>ca_collections</table>
           <type>event</type>
@@ -5194,42 +5291,19 @@
         </restriction>
       </typeRestrictions>
     </metadataElement>
-    <metadataElement code="project_area" datatype="Container">
+    <metadataElement code="project_area" datatype="List" list="program_area">
       <labels>
         <label locale="en_US">
           <name>Project Area</name>
         </label>
       </labels>
-      
-      <elements>
-        <metadataElement code="project_area_list" datatype="List" list="program_area">
-          <labels>
-            <label locale="en_US">
-              <name>Project Area</name>
-            </label>
-          </labels>
           <settings>
             <setting name="fieldWidth">30</setting>
             <setting name="fieldHeight">1</setting>
             <setting name="minChars">0</setting>
             <setting name="maxChars">65535</setting>
-            <setting name="render">checklist</setting>
+            <setting name="render">select</setting>
           </settings>
-        </metadataElement>
-        <metadataElement code="if_other_project" datatype="Text">
-          <labels>
-            <label locale="en_US">
-              <name>Description of "other"</name>
-            </label>
-          </labels>
-          <settings>
-            <setting name="fieldWidth">70</setting>
-            <setting name="fieldHeight">3</setting>
-            <setting name="minChars">0</setting>
-            <setting name="maxChars">65535</setting>
-          </settings>
-        </metadataElement>
-      </elements>
       <typeRestrictions>
         <restriction code="collections">
           <table>ca_collections</table>
@@ -5242,8 +5316,7 @@
           </settings>
         </restriction>
         <restriction code="programs">
-          <table>ca_occurrences</table>
-          
+          <table>ca_occurrences</table>  
           <settings>
             <setting name="minAttributesPerRow">0</setting>
             <setting name="maxAttributesPerRow">255</setting>
@@ -5252,42 +5325,19 @@
         </restriction>
       </typeRestrictions>
     </metadataElement>
-    <metadataElement code="subject_area" datatype="Container">
+    <metadataElement code="subject_area" datatype="List" list="subject_area">
       <labels>
         <label locale="en_US">
           <name>Subject Area</name>
         </label>
       </labels>
-      
-      <elements>
-        <metadataElement code="subject_area_list" datatype="List" list="subject_area">
-          <labels>
-            <label locale="en_US">
-              <name>Subject Area</name>
-            </label>
-          </labels>
           <settings>
             <setting name="fieldWidth">30</setting>
             <setting name="fieldHeight">1</setting>
             <setting name="minChars">0</setting>
             <setting name="maxChars">65535</setting>
-            <setting name="render">checklist</setting>
+            <setting name="render">select</setting>
           </settings>
-        </metadataElement>
-        <metadataElement code="if_other_subject" datatype="Text">
-          <labels>
-            <label locale="en_US">
-              <name>Description of "other"</name>
-            </label>
-          </labels>
-          <settings>
-            <setting name="fieldWidth">70</setting>
-            <setting name="fieldHeight">3</setting>
-            <setting name="minChars">0</setting>
-            <setting name="maxChars">65535</setting>
-          </settings>
-        </metadataElement>
-      </elements>
       <typeRestrictions>
         <restriction code="collections">
           <table>ca_collections</table>
@@ -5357,6 +5407,15 @@
         </restriction>
         <restriction code="programs">
           <table>ca_occurrences</table>
+          <settings>
+            <setting name="minAttributesPerRow">0</setting>
+            <setting name="maxAttributesPerRow">255</setting>
+            <setting name="minimumAttributeBundlesToDisplay">1</setting>
+          </settings>
+        </restriction>
+        <restriction code="objects">
+          <table>ca_objects</table>
+          <type>art</type>
           <settings>
             <setting name="minAttributesPerRow">0</setting>
             <setting name="maxAttributesPerRow">255</setting>
@@ -5682,6 +5741,7 @@
       <labels>
         <label locale="en_US">
           <name>Date Produced</name>
+          <description>express as: mm/dd/yyyy</description>
         </label>
       </labels>
       <settings>
@@ -5707,6 +5767,7 @@
       <labels>
         <label locale="en_US">
           <name>Year Published</name>
+          <description>express as: mm/dd/yyyy</description>
         </label>
       </labels>
       <settings>
@@ -5732,6 +5793,7 @@
       <labels>
         <label locale="en_US">
           <name>Research Dates</name>
+          <description>express as: mm/dd/yyyy - mm/dd/yyyy</description>
         </label>
       </labels>
       <settings>
@@ -5745,6 +5807,63 @@
         <restriction code="r1">
           <table>ca_collections</table>
           <type>research</type>
+          <settings>
+            <setting name="minAttributesPerRow">0</setting>
+            <setting name="maxAttributesPerRow">255</setting>
+            <setting name="minimumAttributeBundlesToDisplay">1</setting>
+          </settings>
+        </restriction>
+      </typeRestrictions>
+    </metadataElement>
+    <metadataElement code="event_time" datatype="Container">
+      <labels>
+        <label locale="en_US">
+          <name>Event Time</name>
+        </label>
+      </labels>
+      <elements>
+        <metadataElement code="time" datatype="TimeCode">
+          <labels>
+            <label locale="en_US">
+              <name>Event time</name>
+            </label>
+          </labels>
+          <settings>
+            <setting name="fieldWidth">40</setting>
+            <setting name="fieldHeight">1</setting>
+            <setting name="minChars">0</setting>
+            <setting name="maxChars">65535</setting>
+            <setting name="useDatePicker">1</setting>
+          </settings>
+        </metadataElement>
+        <metadataElement code="time_type" datatype="List" list="time_type">
+          <labels>
+            <label locale="en_US">
+              <name>Type</name>
+            </label>
+          </labels>
+          <settings>
+            <setting name="fieldWidth">40</setting>
+            <setting name="fieldHeight">1</setting>
+            <setting name="minChars">0</setting>
+            <setting name="maxChars">65535</setting>
+            <setting name="useDatePicker">1</setting>
+          </settings>
+        </metadataElement>
+      </elements>
+      <typeRestrictions>
+        <restriction code="r1">
+          <table>ca_collections</table>
+          <type>event</type>
+          <settings>
+            <setting name="minAttributesPerRow">0</setting>
+            <setting name="maxAttributesPerRow">255</setting>
+            <setting name="minimumAttributeBundlesToDisplay">1</setting>
+          </settings>
+        </restriction>
+        <restriction code="r2">
+          <table>ca_occurrences</table>
+          <type>event</type>
           <settings>
             <setting name="minAttributesPerRow">0</setting>
             <setting name="maxAttributesPerRow">255</setting>
@@ -5804,7 +5923,7 @@
     <metadataElement code="event_venue" datatype="Text">
       <labels>
         <label locale="en_US">
-          <name>Event Venue (display name)</name>
+          <name>Event Venue Name (display name)</name>
           <description>The specific venue that housed the event/exhibition (as distinct from the umbrella organization.)</description>
         </label>
       </labels>
@@ -5920,6 +6039,7 @@
       <typeRestrictions>
         <restriction code="r1">
           <table>ca_entities_x_collections</table>
+          <type>grantee_org</type>
           <settings>
             <setting name="minAttributesPerRow">0</setting>
             <setting name="maxAttributesPerRow">5</setting>
@@ -5931,8 +6051,7 @@
     <metadataElement code="orig_grant_id" datatype="Text">
       <labels>
         <label locale="en_US">
-          <name>Original Grant ID</name>
-          
+          <name>Historic Grant ID</name>  
         </label>
       </labels>
       <settings>
@@ -6085,6 +6204,60 @@
         </restriction>
       </typeRestrictions>
     </metadataElement>
+    <metadataElement code="grantee_type" datatype="List" list="grantee_type">
+      <labels>
+        <label locale="en_US">
+          <name>Grantee Type</name>
+          <description></description>
+        </label>
+      </labels>
+      <documentationUrl></documentationUrl>
+      <settings>
+        <setting name="render">select</setting>
+        <setting name="fieldWidth">90</setting>
+        <setting name="fieldHeight">1</setting>
+        <setting name="minChars">0</setting>
+        <setting name="maxChars">65535</setting>
+      </settings>
+      <typeRestrictions>
+        <restriction code="r1">
+          <table>ca_collections</table>
+          <type>grant</type>
+          <settings>
+            <setting name="minAttributesPerRow">1</setting>
+            <setting name="maxAttributesPerRow">1</setting>
+            <setting name="minimumAttributeBundlesToDisplay">1</setting>
+          </settings>
+        </restriction>
+      </typeRestrictions>
+    </metadataElement>
+    <metadataElement code="file_content_grant" datatype="List" list="file_content_grant">
+      <labels>
+        <label locale="en_US">
+          <name>File Contents</name>
+          <description></description>
+        </label>
+      </labels>
+      <documentationUrl></documentationUrl>
+      <settings>
+        <setting name="render">checklist</setting>
+        <setting name="fieldWidth">90</setting>
+        <setting name="fieldHeight">1</setting>
+        <setting name="minChars">0</setting>
+        <setting name="maxChars">65535</setting>
+      </settings>
+      <typeRestrictions>
+        <restriction code="r1">
+          <table>ca_collections</table>
+          <type>grant</type>
+          <settings>
+            <setting name="minAttributesPerRow">0</setting>
+            <setting name="maxAttributesPerRow">10</setting>
+            <setting name="minimumAttributeBundlesToDisplay">1</setting>
+          </settings>
+        </restriction>
+      </typeRestrictions>
+    </metadataElement>
     <metadataElement code="biography" datatype="Container">
       <labels>
         <label locale="en_US">
@@ -6110,7 +6283,7 @@
                 <setting name="fieldWidth">100</setting>
                 <setting name="fieldHeight">5</setting>
                 <setting name="minChars">0</setting>
-                <setting name="maxChars">255</setting>
+                <setting name="maxChars">2255</setting>
               </settings>
             </metadataElement>
           </elements>
@@ -6285,6 +6458,7 @@
       <labels>
         <label locale="en_US">
           <name>Employment dates</name>
+          <description>(mm/dd/yyyy - mm/dd/yyyy)</description>
         </label>
       </labels> 
       <settings>
@@ -6323,6 +6497,55 @@
           <settings>
             <setting name="minAttributesPerRow">0</setting>
             <setting name="maxAttributesPerRow">1</setting>
+            <setting name="minimumAttributeBundlesToDisplay">1</setting>
+          </settings>
+        </restriction>
+      </typeRestrictions>
+    </metadataElement>
+    <metadataElement code="prog_file_notes" datatype="Text">
+      <labels>
+        <label locale="en_US">
+          <name>Additional Planning Notes</name>
+        </label>
+      </labels>
+      <settings>
+        <setting name="fieldWidth">90</setting>
+        <setting name="fieldHeight">4</setting>
+        <setting name="minChars">0</setting>
+        <setting name="maxChars">65535</setting>
+      </settings>
+      <typeRestrictions>
+        <restriction code="r1">
+          <table>ca_occurrences</table>
+          <settings>
+            <setting name="minAttributesPerRow">0</setting>
+            <setting name="maxAttributesPerRow">1</setting>
+            <setting name="minimumAttributeBundlesToDisplay">1</setting>
+          </settings>
+        </restriction>
+      </typeRestrictions>
+    </metadataElement>
+    <metadataElement code="file_prog" datatype="List" list="file_prog">
+      <labels>
+        <label locale="en_US">
+          <name>File Contents</name>
+          <description></description>
+        </label>
+      </labels>
+      <documentationUrl></documentationUrl>
+      <settings>
+        <setting name="render">checklist</setting>
+        <setting name="fieldWidth">90</setting>
+        <setting name="fieldHeight">1</setting>
+        <setting name="minChars">0</setting>
+        <setting name="maxChars">65535</setting>
+      </settings>
+      <typeRestrictions>
+        <restriction code="r1">
+          <table>ca_occurrences</table>
+          <settings>
+            <setting name="minAttributesPerRow">0</setting>
+            <setting name="maxAttributesPerRow">10</setting>
             <setting name="minimumAttributeBundlesToDisplay">1</setting>
           </settings>
         </restriction>
@@ -6507,7 +6730,7 @@
         <metadataElement code="upload_file_prog" datatype="Media">
           <labels>
             <label locale="en_US">
-              <name>File</name>
+              <name>Upload internal GF documents</name>
             </label>
           </labels>
           <settings>
@@ -6530,10 +6753,11 @@
         </restriction>
       </typeRestrictions>
     </metadataElement>
-    <metadataElement code="program_year" datatype="DateRange">
+    <metadataElement code="series_year" datatype="DateRange">
       <labels>
         <label locale="en_US">
-          <name>Public Program Year</name>
+          <name>Series Year</name>
+          <description>express as: yyyy</description>
         </label>
       </labels> 
       <settings>
@@ -6541,19 +6765,70 @@
         <setting name="fieldHeight">1</setting>
         <setting name="minChars">0</setting>
         <setting name="maxChars">65535</setting>
-        <setting name="useDatePicker">0</setting>
+        <setting name="useDatePicker">1</setting>
       </settings>
       <typeRestrictions>
         <restriction code="r1">
           <table>ca_occurrences</table>
+          <type>series</type>
           <settings>
             <setting name="minAttributesPerRow">0</setting>
             <setting name="maxAttributesPerRow">1</setting>
             <setting name="minimumAttributeBundlesToDisplay">1</setting>
           </settings>
-        </restriction>
-        
-        
+        </restriction>   
+      </typeRestrictions>
+    </metadataElement>
+    <metadataElement code="exh_year" datatype="DateRange">
+      <labels>
+        <label locale="en_US">
+          <name>Exhibition Year</name>
+          <description>express as: yyyy</description>
+        </label>
+      </labels> 
+      <settings>
+        <setting name="fieldWidth">40</setting>
+        <setting name="fieldHeight">1</setting>
+        <setting name="minChars">0</setting>
+        <setting name="maxChars">65535</setting>
+        <setting name="useDatePicker">1</setting>
+      </settings>
+      <typeRestrictions>
+        <restriction code="r1">
+          <table>ca_occurrences</table>
+          <type>exh</type>
+          <settings>
+            <setting name="minAttributesPerRow">0</setting>
+            <setting name="maxAttributesPerRow">1</setting>
+            <setting name="minimumAttributeBundlesToDisplay">1</setting>
+          </settings>
+        </restriction>  
+      </typeRestrictions>
+    </metadataElement>
+    <metadataElement code="event_year" datatype="DateRange">
+      <labels>
+        <label locale="en_US">
+          <name>Event Year</name>
+          <description>express as: yyyy</description>
+        </label>
+      </labels> 
+      <settings>
+        <setting name="fieldWidth">40</setting>
+        <setting name="fieldHeight">1</setting>
+        <setting name="minChars">0</setting>
+        <setting name="maxChars">65535</setting>
+        <setting name="useDatePicker">1</setting>
+      </settings>
+      <typeRestrictions>
+        <restriction code="r1">
+          <table>ca_occurrences</table>
+          <type>event</type>
+          <settings>
+            <setting name="minAttributesPerRow">0</setting>
+            <setting name="maxAttributesPerRow">1</setting>
+            <setting name="minimumAttributeBundlesToDisplay">1</setting>
+          </settings>
+        </restriction>  
       </typeRestrictions>
     </metadataElement>
     <!--madlener house elements -->
@@ -6666,6 +6941,30 @@
       <settings>
         <setting name="fieldWidth">90</setting>
         <setting name="fieldHeight">4</setting>
+        <setting name="minChars">0</setting>
+        <setting name="maxChars">65535</setting>
+      </settings>
+      <typeRestrictions>
+        <restriction code="r1">
+          <table>ca_objects</table>
+          <type>art</type>
+          <settings>
+            <setting name="minAttributesPerRow">0</setting>
+            <setting name="maxAttributesPerRow">255</setting>
+            <setting name="minimumAttributeBundlesToDisplay">1</setting>
+          </settings>
+        </restriction>
+      </typeRestrictions>
+    </metadataElement>
+    <metadataElement code="current_loc" datatype="Text">
+      <labels>
+        <label locale="en_US">
+          <name>Current Location at the Graham Foundation</name>
+        </label>
+      </labels>
+      <settings>
+        <setting name="fieldWidth">90</setting>
+        <setting name="fieldHeight">3</setting>
         <setting name="minChars">0</setting>
         <setting name="maxChars">65535</setting>
       </settings>
@@ -6795,7 +7094,7 @@
         <metadataElement code="condition_report" datatype="List" list="condition_report">
           <labels>
             <label locale="en_US">
-              <name>Does this work have condition report?</name>
+              <name>Does this work have a condition report?</name>
             </label>
           </labels>
           <settings>
@@ -6891,7 +7190,7 @@
             </label>
           </labels>
           <settings>
-            <setting name="fieldWidth">30</setting>
+            <setting name="fieldWidth">60</setting>
             <setting name="fieldHeight">1</setting>
             <setting name="minChars">0</setting>
             <setting name="maxChars">65535</setting>
@@ -6902,10 +7201,25 @@
           <labels>
             <label locale="en_US">
               <name>Valued at:</name>
+              <description>Value in USD</description>
             </label>
           </labels>
           <settings>
-            <setting name="fieldWidth">90</setting>
+            <setting name="fieldWidth">30</setting>
+            <setting name="fieldHeight">1</setting>
+            <setting name="minChars">0</setting>
+            <setting name="maxChars">65535</setting>
+          </settings>
+        </metadataElement>
+        <metadataElement code="appraiser_name" datatype="Text">
+          <labels>
+            <label locale="en_US">
+              <name>Appraiser</name>
+              <description>Name of appraiser</description>
+            </label>
+          </labels>
+          <settings>
+            <setting name="fieldWidth">60</setting>
             <setting name="fieldHeight">1</setting>
             <setting name="minChars">0</setting>
             <setting name="maxChars">65535</setting>
@@ -6990,6 +7304,21 @@
             <setting name="useDatePicker">1</setting>
           </settings>
         </metadataElement>
+        <metadataElement code="purchase_amount" datatype="Currency">
+          <labels>
+            <label locale="en_US">
+              <name>Purchase amount</name>
+              <description>if object was purchased, not donated</description>
+            </label>
+          </labels>
+          <settings>
+            <setting name="fieldWidth">45</setting>
+            <setting name="fieldHeight">1</setting>
+            <setting name="minChars">0</setting>
+            <setting name="maxChars">65535</setting>
+            <setting name="useDatePicker">1</setting>
+          </settings>
+        </metadataElement>
         <metadataElement code="acquisition_value" datatype="Currency">
           <labels>
             <label locale="en_US">
@@ -6998,7 +7327,7 @@
             </label>
           </labels>
           <settings>
-            <setting name="fieldWidth">90</setting>
+            <setting name="fieldWidth">45</setting>
             <setting name="fieldHeight">1</setting>
             <setting name="minChars">0</setting>
             <setting name="maxChars">65535</setting>
@@ -7030,7 +7359,7 @@
         <screen idno="basic" default="1">
           <labels>
             <label locale="en_US">
-              <name>Basic info</name>
+              <name>General Information</name>
             </label>
           </labels>
           <bundlePlacements>
@@ -7070,6 +7399,9 @@
             <placement code="ca_attribute_description">
               <bundle>ca_attribute_description</bundle>
             </placement>
+            <placement code="ca_object_representations">
+              <bundle>ca_object_representations</bundle>
+            </placement>
             <placement code="ca_attribute_credit_line">
               <bundle>ca_attribute_credit_line</bundle>
             </placement>
@@ -7082,6 +7414,18 @@
             <placement code="ca_attribute_internal_notes">
               <bundle>ca_attribute_internal_notes</bundle>
             </placement>
+            <placement code="ca_attribute_revisit_notes">
+              <bundle>ca_attribute_revisit_notes</bundle>
+            </placement>
+            <placement code="status">
+              <bundle>status</bundle>
+              <settings>
+                <setting name="label" locale="en_US">Status of Entry</setting>
+              </settings>
+            </placement>
+            <placement code="access">
+              <bundle>access</bundle>
+            </placement>
           </bundlePlacements>
         </screen>
         <screen idno="history" default="0">
@@ -7091,25 +7435,17 @@
             </label>
           </labels>
           <typeRestrictions>
-            <restriction code="art_object" type="art_object"/>
+            <restriction code="art_object" type="art"/>
           </typeRestrictions>
           <bundlePlacements>
-            <placement code="ca_attribute_display">
-              <bundle>ca_attribute_display</bundle>
+            <placement code="ca_attribute_current_loc">
+              <bundle>ca_attribute_current_loc</bundle>
             </placement>
             <placement code="ca_attribute_condition_object">
               <bundle>ca_attribute_condition_object</bundle>
             </placement>
             <placement code="ca_attribute_appraisal_object">
               <bundle>ca_attribute_appraisal_object</bundle>
-            </placement>
-            <placement code="ca_appraiser">
-              <bundle>ca_entities</bundle>
-              <settings>
-                <setting name="label" locale="en_US">Appraised By</setting>
-                <setting name="restrict_to_relationship_types">appraiser</setting>
-                <setting name="restrict_to_types">ind</setting>
-              </settings>
             </placement>
             <placement code="ca_attribute_acquisition_info">
               <bundle>ca_attribute_acquisition_info</bundle>
@@ -7122,51 +7458,56 @@
                 <setting name="restrict_to_relationship_types">seller</setting>  
               </settings>
             </placement>
-            <placement code="ca_loans">
-              <bundle>ca_loans</bundle>
-            </placement>
-          </bundlePlacements>
-        </screen> 
-        <screen idno="media" default="0">
-          <labels>
-            <label locale="en_US">
-              <name>Media</name>
-            </label>
-          </labels>
-          <bundlePlacements>
-            <placement code="ca_object_representations">
-              <bundle>ca_object_representations</bundle>
-            </placement>
           </bundlePlacements>
         </screen>
         <screen idno="relationships" default="0">
           <labels>
             <label locale="en_US">
-              <name>Relationships</name>
+              <name>Related</name>
             </label>
           </labels>
           <bundlePlacements>
+            <placement code="hierarchy_navigation">
+              <bundle>hierarchy_navigation</bundle>
+            </placement>
             <placement code="ca_objects">
               <bundle>ca_objects</bundle>
               <settings>
-              <setting name="label" locale="en_US">Related objects</setting>
+              <setting name="label" locale="en_US">Related objects/media</setting>
                 </settings>
             </placement>
             <placement code="ca_program">
               <bundle>ca_occurrences</bundle>
               <settings>
-                <setting name="restrict_to_types">exhibition</setting>
-                <setting name="restrict_to_types">event</setting>
-                <setting name="label" locale="en_US">Related Public Program</setting>
+                <setting name="label" locale="en_US">Related public programs</setting>
               </settings>
             </placement>
             <placement code="ca_grants">
               <bundle>ca_collections</bundle>
               <settings>
                 <setting name="restrict_to_types">grant</setting>
+                <setting name="includeSubTypes">0</setting>
                 <setting name="label" locale="en_US">Related grants</setting>
               </settings>
-            </placement>  
+            </placement> 
+            <placement code="ca_projects">
+              <bundle>ca_collections</bundle>
+              <settings>
+                <setting name="restrict_to_types">exh</setting>
+                <setting name="restrict_to_types">book</setting>
+                <setting name="restrict_to_types">aj</setting>
+                <setting name="restrict_to_types">thesis</setting>
+                <setting name="restrict_to_types">research</setting>
+                <setting name="restrict_to_types">film</setting>
+                <setting name="restrict_to_types">new_media</setting>
+                <setting name="restrict_to_types">website</setting>
+                <setting name="restrict_to_types">database</setting>
+                <setting name="restrict_to_types">other_media</setting>
+                <setting name="restrict_to_types">event</setting>
+                <setting name="restrict_to_types">other</setting>
+                <setting name="label" locale="en_US">Related grant projects</setting>
+              </settings>
+            </placement>
           </bundlePlacements>
         </screen>   
       </screens>
@@ -7238,19 +7579,92 @@
             </placement>
             <placement code="ca_attribute_external_link">
               <bundle>ca_attribute_external_link</bundle>
+              <settings>
+              <setting name="label" locale="en_US">Website(s)</setting>
+                </settings>
             </placement>
             <placement code="ca_entities">
               <bundle>ca_entities</bundle>
               <settings>
                 <setting name="label" locale="en_US">Affiliated Organization(s)</setting>
                 <setting name="add_label" locale="en_US">Add organizations</setting>
+                <setting name="restrict_to_type">org</setting>
+                <setting name="restrict_to_relationship_types">assistant</setting>
+                <setting name="restrict_to_relationship_types">board</setting>
+                <setting name="restrict_to_relationship_types">chair</setting>
+                <setting name="restrict_to_relationship_types">curator</setting>
+                <setting name="restrict_to_relationship_types">dean</setting>
+                <setting name="restrict_to_relationship_types">director</setting>
+                <setting name="restrict_to_relationship_types">head</setting>
+                <setting name="restrict_to_relationship_types">president</setting>
+                <setting name="restrict_to_relationship_types">professor</setting>
               </settings>
             </placement>
             <placement code="ca_grants">
               <bundle>ca_collections</bundle>
               <settings>
                 <setting name="restrict_to_type">grant</setting>
+                <setting name="restrict_to_relationship_types">grantee</setting>
+                <setting name="restrict_to_relationship_types">contact</setting>
                 <setting name="label" locale="en_US">Related Grants</setting>
+              </settings>
+            </placement>
+            <placement code="ca_products">
+              <bundle>ca_collections</bundle>
+              <settings>
+                <setting name="restrict_to_relationship_types">author</setting>
+                <setting name="restrict_to_relationship_types">artist</setting>
+                <setting name="restrict_to_relationship_types">collaborator</setting>
+                <setting name="restrict_to_relationship_types">consultant</setting>
+                <setting name="restrict_to_relationship_types">contributor</setting>
+                <setting name="restrict_to_relationship_types">creator</setting>
+                <setting name="restrict_to_relationship_types">curator</setting>
+                <setting name="restrict_to_relationship_types">editor</setting>
+                <setting name="restrict_to_relationship_types">producer</setting>
+                <setting name="restrict_to_relationship_types">publisher</setting>
+                <setting name="restrict_to_relationship_types">subject</setting>
+                <setting name="restrict_to_relationship_types">photographer</setting>
+                <setting name="restrict_to_relationship_types">translator</setting>
+                <setting name="restrict_to_relationship_types">compiler</setting>
+                <setting name="restrict_to_relationship_types">designer</setting>
+                <setting name="restrict_to_types">exh</setting>
+                <setting name="restrict_to_types">event</setting>
+                <setting name="restrict_to_types">research</setting>
+                <setting name="restrict_to_types">book</setting>
+                <setting name="restrict_to_types">aj</setting>
+                <setting name="restrict_to_types">other_media</setting>
+                <setting name="restrict_to_types">new_media</setting>
+                <setting name="restrict_to_types">database</setting>
+                <setting name="restrict_to_types">website</setting>
+                <setting name="restrict_to_types">other</setting>
+                <setting name="restrict_to_types">film</setting>
+                <setting name="restrict_to_types">thesis</setting>
+                <setting name="label" locale="en_US">Related Grant Projects</setting>
+              </settings>
+            </placement>
+            <placement code="ca_programs">
+              <bundle>ca_occurrences</bundle>
+              <settings>
+                <setting name="restrict_to_relationship_types">performer</setting>
+                <setting name="restrict_to_relationship_types">lecturer</setting>
+                <setting name="restrict_to_relationship_types">speaker</setting>
+                <setting name="restrict_to_relationship_types">organizer</setting>
+                <setting name="restrict_to_relationship_types">sponsor</setting>
+                <setting name="restrict_to_relationship_types">subject</setting>
+                <setting name="restrict_to_relationship_types">curator</setting>
+                <setting name="restrict_to_relationship_types">panelist</setting>
+                <setting name="restrict_to_relationship_types">participant</setting>
+                <setting name="restrict_to_relationship_types">artist</setting>
+                <setting name="restrict_to_relationship_types">moderator</setting>
+                <setting name="restrict_to_relationship_types">curator</setting>
+                <setting name="restrict_to_relationship_types">architect</setting>
+                <setting name="label" locale="en_US">Related Public Programs</setting>
+              </settings>
+            </placement>  
+            <placement code="ca_objects">
+              <bundle>ca_objects</bundle>
+              <settings>
+                <setting name="label" locale="en_US">Related Objects/Media</setting>
               </settings>
             </placement>
           </bundlePlacements>
@@ -7296,13 +7710,17 @@
             <placement code="ca_grants">
               <bundle>ca_collections</bundle>
               <settings>
+                <setting name="restrict_to_relationship_types">grantee_org</setting>
                 <setting name="restrict_to_type">grant</setting>
+                <setting name="includeSubTypes">0</setting>
                 <setting name="label" locale="en_US">Related Grants</setting>
               </settings>
             </placement>
             <placement code="ca_entities">
               <bundle>ca_entities</bundle>
               <settings>
+                <setting name="restrict_to_relationship_types">contact</setting>
+                <setting name="restrict_to_types">ind</setting>
                 <setting name="label" locale="en_US">Primary Contact</setting>
                 <setting name="add_label" locale="en_US">Add primary contact</setting>
                 <setting name="list_format">list</setting>
@@ -7312,9 +7730,21 @@
             <placement code="ca_individuals">
               <bundle>ca_entities</bundle>
               <settings>
+                <setting name="restrict_to_relationship_types">board</setting>
+                <setting name="restrict_to_relationship_types">chair</setting>
+                <setting name="restrict_to_relationship_types">curator</setting>
+                <setting name="restrict_to_relationship_types">dean</setting>
+                <setting name="restrict_to_relationship_types">director</setting>
+                <setting name="restrict_to_relationship_types">head</setting>
+                <setting name="restrict_to_relationship_types">president</setting>
+                <setting name="restrict_to_relationship_types">professor</setting>
+                <setting name="restrict_to_types">ind</setting>
                 <setting name="label" locale="en_US">Related Individual(s)</setting>
                 <setting name="add_label" locale="en_US">Add related individual(s)</setting>
               </settings>
+            </placement>
+            <placement code="ca_objects">
+              <bundle>ca_objects</bundle>
             </placement>
           </bundlePlacements>
         </screen>
@@ -7467,7 +7897,7 @@
         <screen idno="basic_info" default="1">
           <labels>
             <label locale="en_US">
-              <name>Basic info</name>
+              <name>General Public Programs Info</name>
             </label>
           </labels>
           <bundlePlacements>
@@ -7477,18 +7907,24 @@
                 <setting name="label" locale="en_US">Public Programs Number</setting>
               </settings>
             </placement>
+            <placement code="ca_attribute_program_ref">
+              <bundle>ca_attribute_program_ref</bundle>
+            </placement>
+            <placement code="ca_attribute_series_year">
+              <bundle>ca_attribute_series_year</bundle>
+            </placement>
+            <placement code="ca_attribute_exh_year">
+              <bundle>ca_attribute_exh_year</bundle>
+            </placement>
+            <placement code="ca_attribute_event_year">
+              <bundle>ca_attribute_event_year</bundle>
+            </placement>
             <placement code="preferred_labels">
               <bundle>preferred_labels</bundle>
               <settings>
                 <setting name="label" locale="en_US">Title</setting>
                 <setting name="add_label" locale="en_US">Add title</setting>
               </settings>
-            </placement>
-            <placement code="ca_attribute_program_ref">
-              <bundle>ca_attribute_program_ref</bundle>
-            </placement>
-            <placement code="ca_attribute_program_year">
-              <bundle>ca_attribute_program_year</bundle>
             </placement>
             <placement code="ca_attribute_abstract">
               <bundle>ca_attribute_abstract</bundle>
@@ -7505,21 +7941,27 @@
             <placement code="ca_attribute_cancelled">
               <bundle>ca_attribute_cancelled</bundle>
             </placement>
+            <placement code="ca_attribute_internal_notes">
+              <bundle>ca_attribute_internal_notes</bundle>
+            </placement>
             <placement code="status">
               <bundle>status</bundle>
+              <settings>
+                <setting name="label" locale="en_US">Status of Entry</setting>
+              </settings>
             </placement> 
             <placement code="ca_attribute_revisit_notes">
               <bundle>ca_attribute_revisit_notes</bundle>
             </placement>
-            <placement code="ca_attribute_internal_notes">
-              <bundle>ca_attribute_internal_notes</bundle>
+            <placement code="access">
+              <bundle>access</bundle>
             </placement>
           </bundlePlacements>
         </screen>
         <screen idno="program_details_exh" default="0">
           <labels>
             <label locale="en_US">
-              <name>Program Details</name>
+              <name>Exhibition Details</name>
             </label>
           </labels>
           <typeRestrictions>
@@ -7529,13 +7971,13 @@
             <placement code="ca_attribute_event_venue">
               <bundle>ca_attribute_event_venue</bundle>
               <settings>
-                <setting name="label" locale="en_US">Exhibition Venue (display name)</setting>
+                <setting name="label" locale="en_US">Exhibition Venue Name (display name)</setting>
               </settings>
             </placement>
             <placement code="ca_venue">
               <bundle>ca_entities</bundle>
               <settings>
-                <setting name="label" locale="en_US">Venue Organization</setting>
+                <setting name="label" locale="en_US">Exhibition Venue Organization Name</setting>
                 <setting name="restrict_to_types">org</setting>
                 <setting name="restrict_to_relationship_types">venue_regular</setting>
               </settings>
@@ -7566,7 +8008,7 @@
             <placement code="ca_originating">
               <bundle>ca_entities</bundle>
               <settings>
-                <setting name="label" locale="en_US">Originating Venue Organization</setting>
+                <setting name="label" locale="en_US">Originating Exhibition Venue Organization Name</setting>
                 <setting name="restrict_to_types">org</setting>
                 <setting name="restrict_to_relationship_types">venue_original</setting>
               </settings>
@@ -7577,37 +8019,26 @@
             <placement code="ca_traveling">
               <bundle>ca_entities</bundle>
               <settings>
-                <setting name="label" locale="en_US">Traveling Venue Organization</setting>
+                <setting name="label" locale="en_US">Traveling Exhibition Venue Organization Name</setting>
                 <setting name="restrict_to_types">org</setting>
                 <setting name="restrict_to_relationship_types">venue_traveling</setting>
-              </settings>
-            </placement>
-            <placement code="ca_contact">
-              <bundle>ca_entities</bundle>
-              <settings>
-                <setting name="label" locale="en_US">Traveling Venue Primary Contact</setting>
-                <setting name="add_label" locale="en_US">Add contact</setting>
-                <setting name="restrict_to_relationship_types">contact</setting>
-                <setting name="restrict_to_types">ind</setting>
               </settings>
             </placement>
             <placement code="ca_attribute_funded">
               <bundle>ca_attribute_funded</bundle>
             </placement>
+            <placement code="ca_attribute_external_link">
+              <bundle>ca_attribute_external_link</bundle>
+            </placement>
             <placement code="ca_attribute_exhibition_notes">
               <bundle>ca_attribute_exhibition_notes</bundle>
-            </placement>
-            
-            
-            <placement code="ca_attribute_internal_notes">
-              <bundle>ca_attribute_internal_notes</bundle>
-            </placement>
+            </placement> 
           </bundlePlacements>
         </screen>
         <screen idno="program_details_ev" default="0">
           <labels>
             <label locale="en_US">
-              <name>Program Details</name>
+              <name>Event Details</name>
             </label>
           </labels>
           <typeRestrictions>
@@ -7620,19 +8051,22 @@
             <placement code="ca_attribute_event_venue">
               <bundle>ca_attribute_event_venue</bundle>
               <settings>
-                <setting name="label" locale="en_US">Event Venue (display name)</setting>
+                <setting name="label" locale="en_US">Event Venue Name (display name)</setting>
               </settings>
             </placement>
             <placement code="ca_venue">
               <bundle>ca_entities</bundle>
               <settings>
-                <setting name="label" locale="en_US">Venue Organization</setting>
+                <setting name="label" locale="en_US">Event Venue Organization Name</setting>
                 <setting name="restrict_to_types">org</setting>
                 <setting name="restrict_to_relationship_types">venue_regular</setting>
               </settings>
             </placement>
             <placement code="ca_attribute_event_dates">
               <bundle>ca_attribute_event_dates</bundle>
+            </placement>
+            <placement code="ca_attribute_event_time">
+              <bundle>ca_attribute_event_time</bundle>
             </placement>
             <placement code="ca_curator">
               <bundle>ca_entities</bundle>
@@ -7647,12 +8081,15 @@
                 <setting name="restrict_to_relationship_types">subject</setting>
                 <setting name="restrict_to_relationship_types">panelist</setting>
                 <setting name="restrict_to_relationship_types">moderator</setting>
-                <setting name="restrict_to_relationship_types">related</setting>
+                <setting name="restrict_to_relationship_types">architect</setting>
                 <setting name="restrict_to_types">ind</setting>
               </settings>
             </placement>
             <placement code="ca_attribute_funded">
               <bundle>ca_attribute_funded</bundle>
+            </placement>
+            <placement code="ca_attribute_external_link">
+              <bundle>ca_attribute_external_link</bundle>
             </placement>
             <placement code="ca_sponsor">
               <bundle>ca_entities</bundle>
@@ -7663,13 +8100,6 @@
                 <setting name="restrict_to_types">ind</setting>
               </settings>
             </placement>
-            <placement code="ca_attribute_external_link">
-              <bundle>ca_attribute_external_link</bundle>
-              <settings>
-              <setting name="label" locale="en_US">Related websites</setting>
-                <setting name="add_label" locale="en_US">Add related websites</setting>
-                </settings>
-            </placement>
             <placement code="ca_attribute_internal_notes">
               <bundle>ca_attribute_internal_notes</bundle>
             </placement>
@@ -7678,7 +8108,7 @@
         <screen idno="program_details_ser" default="0">
           <labels>
             <label locale="en_US">
-              <name>Program Details</name>
+              <name>Series Details</name>
             </label>
           </labels>
           <typeRestrictions>
@@ -7696,27 +8126,23 @@
             <placement code="ca_attribute_event_venue">
               <bundle>ca_attribute_event_venue</bundle>
               <settings>
-                <setting name="label" locale="en_US">Series Venue (display name)</setting>
+                <setting name="label" locale="en_US">Series Venue Name (display name)</setting>
               </settings>
             </placement>
             <placement code="ca_venue">
               <bundle>ca_entities</bundle>
               <settings>
-                <setting name="label" locale="en_US">Venue Organization</setting>
+                <setting name="label" locale="en_US">Venue Organization Name</setting>
                 <setting name="restrict_to_types">org</setting>
-                <setting name="restrict_to_relationship_types">venue</setting>
+                <setting name="restrict_to_relationship_types">venue_regular</setting>
               </settings>
             </placement>
-            
             <placement code="ca_attribute_event_dates">
               <bundle>ca_attribute_event_dates</bundle>
               <settings>
                 <setting name="label" locale="en_US">Series dates</setting>
               </settings>
-            </placement>
-            
-            
-            
+            </placement>  
             <placement code="ca_attribute_internal_notes">
               <bundle>ca_attribute_internal_notes</bundle>
             </placement>
@@ -7733,13 +8159,13 @@
           </typeRestrictions>
           <bundlePlacements>
             <placement code="ca_attribute_physical_file">
-              <bundle>ca_attribute_file_condition</bundle>
+              <bundle>ca_attribute_physical_file</bundle>
             </placement>
-            <placement code="ca_attribute_contents_program_file">
-              <bundle>ca_attribute_contents_program_file</bundle>
+            <placement code="ca_attribute_file_prog">
+              <bundle>ca_attribute_file_prog</bundle>
             </placement>
-            <placement code="ca_loans">
-              <bundle>ca_loans</bundle>
+            <placement code="ca_attribute_file_media_prog">
+              <bundle>ca_attribute_file_media_prog</bundle>
             </placement>
             <placement code="ca_attribute_ref_material">
               <bundle>ca_attribute_ref_material</bundle>
@@ -7752,16 +8178,16 @@
               <settings>
                 <setting name="label" locale="en_US">Mark as notable Public Program?</setting>
               </settings>
+            </placement> 
+            <placement code="ca_attribute_prog_file_notes">
+              <bundle>ca_attribute_prog_file_notes</bundle>
             </placement>
-            <placement code="ca_attribute_file_media_prog">
-              <bundle>ca_attribute_file_media_prog</bundle>
-            </placement>
-          </bundlePlacements>
+          </bundlePlacements>  
         </screen>
         <screen idno="relationships" default="0">
           <labels>
             <label locale="en_US">
-              <name>Relationships</name>
+              <name>Related</name>
             </label>
           </labels>
           <bundlePlacements>
@@ -7778,14 +8204,14 @@
               <bundle>ca_collections</bundle>
               <settings>
                 <setting name="restrict_to_types">grant</setting>
+                <setting name="includeSubTypes">0</setting>
                 <setting name="label" locale="en_US">Related grants</setting>
               </settings>
             </placement>
             <placement code="ca_products">
               <bundle>ca_collections</bundle>
               <settings>
-                <setting name="label" locale="en_US">Related grant products</setting>
-                <setting name="restrict_to_types">grant</setting>
+                <setting name="label" locale="en_US">Related grant projects</setting>
                 <setting name="restrict_to_types">exh</setting>
                 <setting name="restrict_to_types">book</setting>
                 <setting name="restrict_to_types">aj</setting>
@@ -7814,17 +8240,20 @@
         <screen idno="basic_grant" default="1">
           <labels>
             <label locale="en_US">
-              <name>Basic info</name>
+              <name>General Grant Information</name>
             </label>
           </labels>
           <typeRestrictions>
             <restriction code="grant" type="grant"/>
           </typeRestrictions>
           <bundlePlacements>
+            <placement code="hierarchy_navigation">
+              <bundle>hierarchy_navigation</bundle>
+            </placement>
             <placement code="idno">
               <bundle>idno</bundle>
               <settings>
-                <setting name="label" locale="en_US">Current Grant ID</setting>
+                <setting name="label" locale="en_US">Grant Number (current convention)</setting>
                 <setting name="add_label" locale="en_US">Add Grant ID</setting>
                 <setting name="height">1</setting>
                 <setting name="width">90</setting>
@@ -7832,13 +8261,6 @@
             </placement>
             <placement code="ca_attribute_orig_grant_id">
               <bundle>ca_attribute_orig_grant_id</bundle>
-            </placement>
-            <placement code="preferred_labels">
-              <bundle>preferred_labels</bundle>
-              <settings>
-                <setting name="label" locale="en_US">Project Title (current)</setting>
-                <setting name="add_label" locale="en_US">Add title</setting>
-              </settings>
             </placement>
             <placement code="ca_attribute_award_year">
               <bundle>ca_attribute_award_year</bundle>
@@ -7849,8 +8271,33 @@
             <placement code="ca_attribute_grantStatus">
               <bundle>ca_attribute_grantStatus</bundle>
             </placement>
+            <placement code="ca_attribute_grantee_type">
+              <bundle>ca_attribute_grantee_type</bundle>
+            </placement>
             <placement code="ca_attribute_grant_type">
               <bundle>ca_attribute_grant_type</bundle>
+            </placement>
+            <placement code="ca_grantee">
+              <bundle>ca_entities</bundle>
+              <settings>
+                <setting name="label" locale="en_US">Grantee (Individual)</setting>
+                  <setting name="add_label" locale="en_US">Add Grantee Legal Name</setting>
+                <setting name="restrict_to_relationship_types">grantee</setting> 
+                <setting name="restrict_to_types">ind</setting>
+                <setting name="description">Use this field for grants to individuals only</setting>
+              </settings>
+            </placement>
+            <placement code="ca_grantee_org">
+              <bundle>ca_entities</bundle>
+              <settings>
+                <setting name="label" locale="en_US">Grantee Organization</setting>
+                  <setting name="add_label" locale="en_US">Add Grantee Organization</setting>
+                <setting name="restrict_to_relationship_types">grantee_org</setting>
+                <setting name="restrict_to_types">org</setting> 
+                <setting name="list_format">list</setting>
+                <setting name="description">Use this field for grants to organizations only</setting>
+                <setting name="display_template"><![CDATA[<l>^ca_entities.preferred_labels</l><ifdef code="ca_entities_x_collections.subsidiary_name"> <b>Subsidiary Name:</b></ifdef> ^ca_entities_x_collections.subsidiary_name]]></setting>
+              </settings>
             </placement>
             <placement code="ca_attribute_project_area">
               <bundle>ca_attribute_project_area</bundle>
@@ -7858,8 +8305,12 @@
             <placement code="ca_attribute_subject_area">
               <bundle>ca_attribute_subject_area</bundle>
             </placement>
-            <placement code="ca_attribute_Project_Title_App">
-              <bundle>ca_attribute_Project_Title_App</bundle>
+            <placement code="preferred_labels">
+              <bundle>preferred_labels</bundle>
+              <settings>
+                <setting name="label" locale="en_US">Grant Title (current)</setting>
+                <setting name="add_label" locale="en_US">Add title</setting>
+              </settings>
             </placement>
             <placement code="ca_attribute_abstract">
               <bundle>ca_attribute_abstract</bundle>
@@ -7878,40 +8329,28 @@
                 <setting name="restrict_to_types">ind</setting>
               </settings>
             </placement>
-            <placement code="status">
-              <bundle>status</bundle>
-            </placement> 
+             <placement code="ca_attribute_internal_notes">
+              <bundle>ca_attribute_internal_notes</bundle>
+            </placement>
             <placement code="ca_attribute_revisit_notes">
               <bundle>ca_attribute_revisit_notes</bundle>
             </placement>
-            <placement code="ca_attribute_internal_notes">
-              <bundle>ca_attribute_internal_notes</bundle>
+            <placement code="status">
+              <bundle>status</bundle>
+              <settings>
+                <setting name="label" locale="en_US">Status of Entry</setting>
+              </settings>
             </placement>
             <placement code="access">
               <bundle>access</bundle>
             </placement>
           </bundlePlacements>
         </screen>
-        <screen idno="products" default="0">
-          <labels>
-            <label locale="en_US">
-              <name>Grant Products</name>
-            </label>
-          </labels>
-          <typeRestrictions>
-            <restriction code="grant" type="grant"/>
-          </typeRestrictions>
-          <bundlePlacements>
-            <placement code="hierarchy_navigation">
-              <bundle>hierarchy_navigation</bundle>
-            </placement> 
-          </bundlePlacements>
-        </screen>
-        <!-- Each grant product type has different relationship types on basic info -->
+        <!-- Each grant project type has different relationship types on basic info -->
         <screen idno="basic_exhibition" default="1">
           <labels>
             <label locale="en_US">
-              <name>Basic info</name>
+              <name>General Exhibition Info</name>
             </label>
           </labels>
           <typeRestrictions>
@@ -7926,36 +8365,28 @@
               <settings>
                 <setting name="label" locale="en_US">Project ID</setting>
                 <setting name="add_label" locale="en_US">Add Project ID</setting>
+                <setting name="description" locale="en_US">Use two-letter codes to specify project type: EX (exhibition), PB (book/chapter/essay/catalog), AJ (article/journal), EV (event), AV (film/video), WB (website), RE (research), OT (other), TH (thesis/dissertation), NM (new media), DB (database), OM (other media)</setting>
                 <setting name="height">1</setting>
                 <setting name="width">90</setting>
-              </settings>
-            </placement>
-            <placement code="preferred_labels">
-              <bundle>preferred_labels</bundle>
-              <settings>
-                <setting name="label" locale="en_US">Project Title (final)</setting>
-                <setting name="add_label" locale="en_US">Add title</setting>
               </settings>
             </placement>
             <placement code="ca_attribute_grant_related">
               <bundle>ca_attribute_grant_related</bundle>
             </placement>
-            <placement code="ca_attribute_description">
-              <bundle>ca_attribute_description</bundle>
+            <placement code="ca_attribute_funded">
+              <bundle>ca_attribute_funded</bundle>
             </placement>
-            <placement code="ca_contributor">
-              <bundle>ca_entities</bundle>
+            <placement code="preferred_labels">
+              <bundle>preferred_labels</bundle>
               <settings>
-                <setting name="label" locale="en_US">Contributors</setting>
-                <setting name="restrict_to_types">ind</setting>
-                <setting name="restrict_to_relationship_types">curator</setting>
-                <setting name="restrict_to_relationship_types">artist</setting>
+                <setting name="label" locale="en_US">Exhibition Title (final)</setting>
+                <setting name="add_label" locale="en_US">Add title</setting>
               </settings>
             </placement>
             <placement code="ca_attribute_event_venue">
               <bundle>ca_attribute_event_venue</bundle>
               <settings>
-                <setting name="label" locale="en_US">Exhibition Venue</setting>
+                <setting name="label" locale="en_US">Exhibition Venue Name</setting>
                 <setting name="add_label" locale="en_US">Add exhibition venue</setting>
               </settings>
             </placement>
@@ -7977,17 +8408,6 @@
             <placement code="ca_attribute_traveling">
               <bundle>ca_attribute_traveling</bundle>
             </placement>
-            <placement code="ca_attribute_originating_venue">
-              <bundle>ca_attribute_originating_venue</bundle>
-            </placement>
-            <placement code="ca_originating">
-              <bundle>ca_entities</bundle>
-              <settings>
-                <setting name="label" locale="en_US">Originating Venue Organization</setting>
-                <setting name="restrict_to_types">org</setting>
-                <setting name="restrict_to_relationship_types">venue_original</setting>
-              </settings>
-            </placement>
             <placement code="ca_attribute_traveling_venues">
               <bundle>ca_attribute_traveling_venues</bundle>
             </placement>
@@ -7999,27 +8419,58 @@
                 <setting name="restrict_to_relationship_types">venue_traveling</setting>
               </settings>
             </placement>
-            <placement code="ca_attribute_exh_notes">
-              <bundle>ca_attribute_exh_notes</bundle>
+            <placement code="ca_attribute_originating_venue">
+              <bundle>ca_attribute_originating_venue</bundle>
             </placement>
-           <placement code="ca_attribute_funded">
-              <bundle>ca_attribute_funded</bundle>
-            </placement>
+            <placement code="ca_originating">
+              <bundle>ca_entities</bundle>
+              <settings>
+                <setting name="label" locale="en_US">Originating Venue Organization</setting>
+                <setting name="restrict_to_types">org</setting>
+                <setting name="restrict_to_relationship_types">venue_original</setting>
+              </settings>
+            </placement>   
             <placement code="ca_attribute_external_link">
               <bundle>ca_attribute_external_link</bundle>
               <settings>
               <setting name="label" locale="en_US">Related Websites</setting>
                 </settings>
             </placement>
-            <placement code="ca_attribute_internal_notes">
-              <bundle>ca_attribute_internal_notes</bundle>
+            <placement code="ca_contributor">
+              <bundle>ca_entities</bundle>
+              <settings>
+                <setting name="label" locale="en_US">Contributors</setting>
+                <setting name="restrict_to_types">ind</setting>
+                <setting name="restrict_to_relationship_types">curator</setting>
+                <setting name="restrict_to_relationship_types">artist</setting>
+              </settings>
+            </placement>
+            <placement code="ca_sponsors">
+              <bundle>ca_entities</bundle>
+              <settings>
+                <setting name="label" locale="en_US">Co-sponsor (organization)</setting>
+                <setting name="restrict_to_relationship_types">sponsor</setting>
+                <setting name="restrict_to_types">org</setting>
+              </settings>
+            </placement>
+            <placement code="ca_attribute_exh_notes">
+              <bundle>ca_attribute_exh_notes</bundle>
+            </placement>
+            <placement code="status">
+              <bundle>status</bundle>
+              <settings>
+                <setting name="label" locale="en_US">Status of Entry</setting>
+              </settings>
+            </placement>  
+            <placement code="access">
+              <bundle>access</bundle>
             </placement>
           </bundlePlacements>
         </screen>
         <screen idno="basic_publication" default="1">
           <labels>
             <label locale="en_US">
-              <name>Basic info</name>
+              <name>General Publication Info</name>
             </label>
           </labels>
           <typeRestrictions>
@@ -8035,14 +8486,14 @@
               <settings>
                 <setting name="label" locale="en_US">Project ID</setting>
                 <setting name="add_label" locale="en_US">Add Project ID</setting>
+                <setting name="description" locale="en_US">Use two-letter codes to specify project type: EX (exhibition), PB (book/chapter/essay/catalog), AJ (article/journal), EV (event), AV (film/video), WB (website), RE (research), OT (other), TH (thesis/dissertation), NM (new media), DB (database), OM (other media)</setting>
               </settings>
             </placement>
-            <placement code="preferred_labels">
-              <bundle>preferred_labels</bundle>
-              <settings>
-                <setting name="label" locale="en_US">Project Title (final)</setting>
-                <setting name="add_label" locale="en_US">Add title</setting>
-              </settings>
+            <placement code="ca_attribute_grant_related">
+              <bundle>ca_attribute_grant_related</bundle>
+            </placement>
+            <placement code="ca_attribute_funded">
+              <bundle>ca_attribute_funded</bundle>
             </placement>
             <placement code="ca_attribute_pub_type_main">
               <bundle>ca_attribute_pub_type_main</bundle>
@@ -8050,20 +8501,11 @@
             <placement code="ca_attribute_pub_type_aj">
               <bundle>ca_attribute_pub_type_aj</bundle>
             </placement>
-            <placement code="ca_attribute_grant_related">
-              <bundle>ca_attribute_grant_related</bundle>
-            </placement>
-            <placement code="ca_contributor">
-              <bundle>ca_entities</bundle>
+            <placement code="preferred_labels">
+              <bundle>preferred_labels</bundle>
               <settings>
-                <setting name="label" locale="en_US">Contributors</setting>
-                <setting name="restrict_to_types">ind</setting>
-                <setting name="restrict_to_relationship_types">author</setting>
-                <setting name="restrict_to_relationship_types">compiler</setting>
-                <setting name="restrict_to_relationship_types">contributor</setting>
-                <setting name="restrict_to_relationship_types">editor</setting>
-                <setting name="restrict_to_relationship_types">photo</setting>
-                <setting name="restrict_to_relationship_types">translator</setting>
+                <setting name="label" locale="en_US">Publication Title</setting>
+                <setting name="add_label" locale="en_US">Add title</setting>
               </settings>
             </placement>
             <placement code="ca_attribute_book_pub">
@@ -8075,24 +8517,40 @@
             <placement code="ca_attribute_external_link">
               <bundle>ca_attribute_external_link</bundle>
             </placement>
-            <placement code="ca_attribute_description">
-              <bundle>ca_attribute_description</bundle>
-            </placement>
-            <placement code="ca_attribute_funded">
-              <bundle>ca_attribute_funded</bundle>
-            </placement>
+            <placement code="ca_contributor">
+              <bundle>ca_entities</bundle>
+              <settings>
+                <setting name="label" locale="en_US">Contributors</setting>
+                <setting name="restrict_to_types">ind</setting>
+                <setting name="restrict_to_relationship_types">author</setting>
+                <setting name="restrict_to_relationship_types">compiler</setting>
+                <setting name="restrict_to_relationship_types">contributor</setting>
+                <setting name="restrict_to_relationship_types">editor</setting>
+                <setting name="restrict_to_relationship_types">photographer</setting>
+                <setting name="restrict_to_relationship_types">translator</setting>
+              </settings>
+            </placement> 
             <placement code="ca_attribute_publication_copy">
               <bundle>ca_attribute_publication_copy</bundle>
             </placement>
             <placement code="ca_attribute_internal_notes">
               <bundle>ca_attribute_internal_notes</bundle>
             </placement>
+            <placement code="status">
+              <bundle>status</bundle>
+              <settings>
+                <setting name="label" locale="en_US">Status of Entry</setting>
+              </settings>
+            </placement> 
+            <placement code="access">
+              <bundle>access</bundle>
+            </placement>
           </bundlePlacements>
         </screen>
         <screen idno="basic_thesis" default="1">
           <labels>
             <label locale="en_US">
-              <name>Basic info</name>
+              <name>General Thesis Info</name>
             </label>
           </labels>
           <typeRestrictions>
@@ -8107,17 +8565,32 @@
               <settings>
                 <setting name="label" locale="en_US">Project ID</setting>
                 <setting name="add_label" locale="en_US">Add Project ID</setting>
-              </settings>
-            </placement>
-            <placement code="preferred_labels">
-              <bundle>preferred_labels</bundle>
-              <settings>
-                <setting name="label" locale="en_US">Project Title (final)</setting>
-                <setting name="add_label" locale="en_US">Add title</setting>
+                <setting name="description" locale="en_US">Use two-letter codes to specify project type: EX (exhibition), PB (book/chapter/essay/catalog), AJ (article/journal), EV (event), AV (film/video), WB (website), RE (research), OT (other), TH (thesis/dissertation), NM (new media), DB (database), OM (other media)</setting>
               </settings>
             </placement>
             <placement code="ca_attribute_grant_related">
               <bundle>ca_attribute_grant_related</bundle>
+            </placement>
+            <placement code="ca_attribute_funded">
+              <bundle>ca_attribute_funded</bundle>
+            </placement>
+            <placement code="preferred_labels">
+              <bundle>preferred_labels</bundle>
+              <settings>
+                <setting name="label" locale="en_US">Dissertation/Thesis Title (final)</setting>
+                <setting name="add_label" locale="en_US">Add title</setting>
+              </settings>
+            </placement>
+            <placement code="ca_attribute_thesis_year">
+              <bundle>ca_attribute_thesis_year</bundle>
+            </placement>
+            <placement code="ca_university">
+              <bundle>ca_entities</bundle>
+              <settings>
+              <setting name="label" locale="en_US">Associated University</setting>
+                <setting name="restrict_to_types">org</setting>
+                <setting name="restrict_to_relationship_types">university</setting>
+              </settings>
             </placement>
             <placement code="ca_contributor">
               <bundle>ca_entities</bundle>
@@ -8129,48 +8602,33 @@
                 <setting name="restrict_to_relationship_types">editor</setting>
               </settings>
             </placement>
-            <placement code="ca_university">
-              <bundle>ca_entities</bundle>
-              <settings>
-              <setting name="label" locale="en_US">Associated University</setting>
-                <setting name="restrict_to_types">org</setting>
-                <setting name="restrict_to_relationship_types">university</setting>
-              </settings>
-            </placement>
-            <placement code="ca_attribute_thesis_year">
-              <bundle>ca_attribute_thesis_year</bundle>
-            </placement>
-            <placement code="ca_attribute_description">
-              <bundle>ca_attribute_description</bundle>
-            </placement>
-            <placement code="ca_attribute_funded">
-              <bundle>ca_attribute_funded</bundle>
-            </placement>
             <placement code="ca_attribute_publication_copy">
               <bundle>ca_attribute_publication_copy</bundle>
             </placement>
             <placement code="ca_attribute_external_link">
               <bundle>ca_attribute_external_link</bundle>
             </placement>
-            <placement code="access">
-              <bundle>access</bundle>
+            <placement code="ca_attribute_internal_notes">
+              <bundle>ca_attribute_internal_notes</bundle>
             </placement>
             <placement code="status">
               <bundle>status</bundle>
+              <settings>
+                <setting name="label" locale="en_US">Status of Entry</setting>
+              </settings>
             </placement> 
-            <placement code="ca_attribute_internal_notes">
-              <bundle>ca_attribute_internal_notes</bundle>
+            <placement code="access">
+              <bundle>access</bundle>
             </placement>
           </bundlePlacements>
         </screen>
         <screen idno="basic_other_media" default="1">
           <labels>
             <label locale="en_US">
-              <name>Basic info</name>
+              <name>General "Other Media" Info</name>
             </label>
           </labels>
           <typeRestrictions>
-            <restriction code="database" type="database"/>
             <restriction code="other" type="other_media"/>
           </typeRestrictions>
           <bundlePlacements>
@@ -8182,20 +8640,21 @@
               <settings>
                 <setting name="label" locale="en_US">Project ID</setting>
                 <setting name="add_label" locale="en_US">Add Project ID</setting>
-              </settings>
-            </placement>
-            <placement code="preferred_labels">
-              <bundle>preferred_labels</bundle>
-              <settings>
-                <setting name="label" locale="en_US">Project Title (final)</setting>
-                <setting name="add_label" locale="en_US">Add title</setting>
+                <setting name="description" locale="en_US">Use two-letter codes to specify project type: EX (exhibition), PB (book/chapter/essay/catalog), AJ (article/journal), EV (event), AV (film/video), WB (website), RE (research), OT (other), TH (thesis/dissertation), NM (new media), DB (database), OM (other media)</setting>
               </settings>
             </placement>
             <placement code="ca_attribute_grant_related">
               <bundle>ca_attribute_grant_related</bundle>
             </placement>
-            <placement code="ca_attribute_description">
-              <bundle>ca_attribute_description</bundle>
+            <placement code="ca_attribute_funded">
+              <bundle>ca_attribute_funded</bundle>
+            </placement>
+            <placement code="preferred_labels">
+              <bundle>preferred_labels</bundle>
+              <settings>
+                <setting name="label" locale="en_US">Other Media Project Title (final)</setting>
+                <setting name="add_label" locale="en_US">Add title</setting>
+              </settings>
             </placement>
             <placement code="ca_contributor">
               <bundle>ca_entities</bundle>
@@ -8205,8 +8664,62 @@
                 <setting name="restrict_to_types">ind</setting>
               </settings>
             </placement>
+          <placement code="ca_attribute_internal_notes">
+              <bundle>ca_attribute_internal_notes</bundle>
+            </placement>
+            <placement code="status">
+              <bundle>status</bundle>
+              <settings>
+                <setting name="label" locale="en_US">Status of Entry</setting>
+              </settings>
+            </placement>
+            <placement code="access">
+              <bundle>access</bundle>
+            </placement>
+          </bundlePlacements>
+        </screen>
+        <screen idno="basic_database" default="1">
+          <labels>
+            <label locale="en_US">
+              <name>General Database Info</name>
+            </label>
+          </labels>
+          <typeRestrictions>
+            <restriction code="database" type="database"/>
+          </typeRestrictions>
+          <bundlePlacements>
+            <placement code="hierarchy_navigation">
+              <bundle>hierarchy_navigation</bundle>
+            </placement>
+            <placement code="idno">
+              <bundle>idno</bundle>
+              <settings>
+                <setting name="label" locale="en_US">Project ID</setting>
+                <setting name="add_label" locale="en_US">Add Project ID</setting>
+                <setting name="description" locale="en_US">Use two-letter codes to specify project type: EX (exhibition), PB (book/chapter/essay/catalog), AJ (article/journal), EV (event), AV (film/video), WB (website), RE (research), OT (other), TH (thesis/dissertation), NM (new media), DB (database), OM (other media)</setting>
+              </settings>
+            </placement>
+            <placement code="ca_attribute_grant_related">
+              <bundle>ca_attribute_grant_related</bundle>
+            </placement>
             <placement code="ca_attribute_funded">
               <bundle>ca_attribute_funded</bundle>
+            </placement>
+            <placement code="preferred_labels">
+              <bundle>preferred_labels</bundle>
+              <settings>
+                <setting name="label" locale="en_US">Database Title (final)</setting>
+                <setting name="add_label" locale="en_US">Add title</setting>
+              </settings>
+            </placement>
+            <placement code="ca_contributor">
+              <bundle>ca_entities</bundle>
+              <settings>
+                <setting name="label" locale="en_US">Contributors</setting>
+                <setting name="restrict_to_relationship_types">contributor</setting>
+                <setting name="restrict_to_relationship_types">designer</setting>
+                <setting name="restrict_to_types">ind</setting>
+              </settings>
             </placement>
           <placement code="ca_attribute_internal_notes">
               <bundle>ca_attribute_internal_notes</bundle>
@@ -8216,7 +8729,7 @@
         <screen idno="basic_web" default="1">
           <labels>
             <label locale="en_US">
-              <name>Basic info</name>
+              <name>General Web Info</name>
             </label>
           </labels>
           <typeRestrictions>
@@ -8231,23 +8744,28 @@
               <settings>
                 <setting name="label" locale="en_US">Project ID</setting>
                 <setting name="add_label" locale="en_US">Add Project ID</setting>
-              </settings>
-            </placement>
-            <placement code="preferred_labels">
-              <bundle>preferred_labels</bundle>
-              <settings>
-                <setting name="label" locale="en_US">Project Title (final)</setting>
-                <setting name="add_label" locale="en_US">Add title</setting>
+                <setting name="description" locale="en_US">Use two-letter codes to specify project type: EX (exhibition), PB (book/chapter/essay/catalog), AJ (article/journal), EV (event), AV (film/video), WB (website), RE (research), OT (other), TH (thesis/dissertation), NM (new media), DB (database), OM (other media)</setting>
               </settings>
             </placement>
             <placement code="ca_attribute_grant_related">
               <bundle>ca_attribute_grant_related</bundle>
             </placement>
-            <placement code="ca_attribute_description">
-              <bundle>ca_attribute_description</bundle>
+            <placement code="ca_attribute_funded">
+              <bundle>ca_attribute_funded</bundle>
             </placement>
+            <placement code="preferred_labels">
+              <bundle>preferred_labels</bundle>
+              <settings>
+                <setting name="label" locale="en_US">Website Title (final)</setting>
+                <setting name="add_label" locale="en_US">Add title</setting>
+              </settings>
+            </placement>
+            
             <placement code="ca_attribute_web_year">
               <bundle>ca_attribute_web_year</bundle>
+            </placement>
+            <placement code="ca_attribute_web_proj_url">
+              <bundle>ca_attribute_web_proj_url</bundle>
             </placement>
             <placement code="ca_contributor">
               <bundle>ca_entities</bundle>
@@ -8258,17 +8776,17 @@
                 <setting name="restrict_to_types">ind</setting>
               </settings>
             </placement>
-            <placement code="ca_attribute_web_proj_url">
-              <bundle>ca_attribute_web_proj_url</bundle>
-            </placement>
-            <placement code="ca_attribute_funded">
-              <bundle>ca_attribute_funded</bundle>
-            </placement>
             <placement code="ca_attribute_publication_copy">
               <bundle>ca_attribute_publication_copy</bundle>
             </placement>  
             <placement code="ca_attribute_internal_notes">
               <bundle>ca_attribute_internal_notes</bundle>
+            </placement>
+            <placement code="status">
+              <bundle>status</bundle>
+              <settings>
+                <setting name="label" locale="en_US">Status of Entry</setting>
+              </settings>
             </placement>
             <placement code="access">
               <bundle>access</bundle>
@@ -8278,7 +8796,7 @@
         <screen idno="basic_new_media" default="1">
           <labels>
             <label locale="en_US">
-              <name>Basic info</name>
+              <name>General Media Project Info</name>
             </label>
           </labels>
           <typeRestrictions>
@@ -8293,21 +8811,22 @@
               <settings>
                 <setting name="label" locale="en_US">Project ID</setting>
                 <setting name="add_label" locale="en_US">Add Project ID</setting>
-              </settings>
-            </placement>
-            <placement code="preferred_labels">
-              <bundle>preferred_labels</bundle>
-              <settings>
-                <setting name="label" locale="en_US">Project Title (final)</setting>
-                <setting name="add_label" locale="en_US">Add title</setting>
+                <setting name="description" locale="en_US">Use two-letter codes to specify project type: EX (exhibition), PB (book/chapter/essay/catalog), AJ (article/journal), EV (event), AV (film/video), WB (website), RE (research), OT (other), TH (thesis/dissertation), NM (new media), DB (database), OM (other media)</setting>
               </settings>
             </placement>
             <placement code="ca_attribute_grant_related">
               <bundle>ca_attribute_grant_related</bundle>
             </placement>
-            <placement code="ca_attribute_description">
-              <bundle>ca_attribute_description</bundle>
+            <placement code="ca_attribute_funded">
+              <bundle>ca_attribute_funded</bundle>
             </placement>
+            <placement code="preferred_labels">
+              <bundle>preferred_labels</bundle>
+              <settings>
+                <setting name="label" locale="en_US">Media Project Title (final)</setting>
+                <setting name="add_label" locale="en_US">Add title</setting>
+              </settings>
+            </placement> 
             <placement code="ca_contributor">
               <bundle>ca_entities</bundle>
               <settings>
@@ -8319,14 +8838,17 @@
                 <setting name="restrict_to_types">ind</setting>
               </settings>
             </placement>
-            <placement code="ca_attribute_funded">
-              <bundle>ca_attribute_funded</bundle>
-            </placement>
             <placement code="ca_attribute_publication_copy">
               <bundle>ca_attribute_publication_copy</bundle>
             </placement>
             <placement code="ca_attribute_internal_notes">
               <bundle>ca_attribute_internal_notes</bundle>
+            </placement>
+            <placement code="status">
+              <bundle>status</bundle>
+              <settings>
+                <setting name="label" locale="en_US">Status of Entry</setting>
+              </settings>
             </placement>
             <placement code="access">
               <bundle>access</bundle>
@@ -8336,7 +8858,7 @@
         <screen idno="basic_film" default="1">
           <labels>
             <label locale="en_US">
-              <name>Basic info</name>
+              <name>General Film/Video Info</name>
             </label>
           </labels>
           <typeRestrictions>
@@ -8351,7 +8873,14 @@
               <settings>
                 <setting name="label" locale="en_US">Project ID</setting>
                 <setting name="add_label" locale="en_US">Add Project ID</setting>
+                <setting name="description" locale="en_US">Use two-letter codes to specify project type: EX (exhibition), PB (book/chapter/essay/catalog), AJ (article/journal), EV (event), AV (film/video), WB (website), RE (research), OT (other), TH (thesis/dissertation), NM (new media), DB (database), OM (other media)</setting>
               </settings>
+            </placement>
+            <placement code="ca_attribute_grant_related">
+              <bundle>ca_attribute_grant_related</bundle>
+            </placement>
+            <placement code="ca_attribute_funded">
+              <bundle>ca_attribute_funded</bundle>
             </placement>
             <placement code="ca_attribute_av_type">
               <bundle>ca_attribute_av_type</bundle>
@@ -8359,15 +8888,32 @@
             <placement code="preferred_labels">
               <bundle>preferred_labels</bundle>
               <settings>
-                <setting name="label" locale="en_US">Project Title (final)</setting>
+                <setting name="label" locale="en_US">Film/Video Title (final)</setting>
                 <setting name="add_label" locale="en_US">Add title</setting>
               </settings>
             </placement>
-            <placement code="ca_attribute_grant_related">
-              <bundle>ca_attribute_grant_related</bundle>
+            <placement code="ca_attribute_film_venue">
+              <bundle>ca_attribute_film_venue</bundle>
             </placement>
-            <placement code="ca_attribute_description">
-              <bundle>ca_attribute_description</bundle>
+            <placement code="ca_venue">
+              <bundle>ca_entities</bundle>
+              <settings>
+                <setting name="label" locale="en_US">Premiere Venue Organization</setting>
+                <setting name="restrict_to_types">org</setting>
+                <setting name="restrict_to_relationship_types">venue_regular</setting>
+              </settings>
+            </placement>
+            <placement code="ca_attribute_film_date">
+              <bundle>ca_attribute_film_date</bundle>
+            </placement>
+            <placement code="ca_attribute_av_distributor">
+              <bundle>ca_attribute_av_distributor</bundle>
+            </placement>
+            <placement code="ca_attribute_film_duration">
+              <bundle>ca_attribute_film_duration</bundle>
+            </placement>
+            <placement code="ca_attribute_external_link">
+              <bundle>ca_attribute_external_link</bundle>
             </placement>
             <placement code="ca_contributor">
               <bundle>ca_entities</bundle>
@@ -8379,36 +8925,27 @@
                 <setting name="restrict_to_types">ind</setting>
               </settings>
             </placement>
-            <placement code="ca_attribute_av_distributor">
-              <bundle>ca_attribute_av_distributor</bundle>
-            </placement>
-            <placement code="ca_attribute_film_date">
-              <bundle>ca_attribute_film_date</bundle>
-            </placement>
-            <placement code="ca_attribute_film_duration">
-              <bundle>ca_attribute_film_duration</bundle>
-            </placement>
-            <placement code="ca_attribute_film_venue">
-              <bundle>ca_attribute_film_venue</bundle>
-            </placement>
-            <placement code="ca_attribute_funded">
-              <bundle>ca_attribute_funded</bundle>
-            </placement>
             <placement code="ca_attribute_publication_copy">
               <bundle>ca_attribute_publication_copy</bundle>
             </placement>
-            <placement code="ca_attribute_external_link">
-              <bundle>ca_attribute_external_link</bundle>
-            </placement>
             <placement code="ca_attribute_internal_notes">
               <bundle>ca_attribute_internal_notes</bundle>
+            </placement>
+            <placement code="status">
+              <bundle>status</bundle>
+              <settings>
+                <setting name="label" locale="en_US">Status of Entry</setting>
+              </settings>
+            </placement>
+            <placement code="access">
+              <bundle>access</bundle>
             </placement>
           </bundlePlacements>
         </screen>
         <screen idno="basic_event" default="1">
           <labels>
             <label locale="en_US">
-              <name>Basic info</name>
+              <name>General Event Info</name>
             </label>
           </labels>
           <typeRestrictions>
@@ -8423,22 +8960,26 @@
               <settings>
                 <setting name="label" locale="en_US">Project ID</setting>
                 <setting name="add_label" locale="en_US">Add Project ID</setting>
+                <setting name="description" locale="en_US">Use two-letter codes to specify project type: EX (exhibition), PB (book/chapter/essay/catalog), AJ (article/journal), EV (event), AV (film/video), WB (website), RE (research), OT (other), TH (thesis/dissertation), NM (new media), DB (database), OM (other media)</setting>
                 <setting name="height">1</setting>
                 <setting name="width">90</setting>
               </settings>
             </placement>
-            <placement code="preferred_labels">
-              <bundle>preferred_labels</bundle>
-              <settings>
-                <setting name="label" locale="en_US">Project Title (final)</setting>
-                <setting name="add_label" locale="en_US">Add title</setting>
-              </settings>
+            <placement code="ca_attribute_grant_related">
+              <bundle>ca_attribute_grant_related</bundle>
+            </placement>
+            <placement code="ca_attribute_funded">
+              <bundle>ca_attribute_funded</bundle>
             </placement>
             <placement code="ca_attribute_event_list">
               <bundle>ca_attribute_event_list</bundle>
             </placement>
-            <placement code="ca_attribute_description">
-              <bundle>ca_attribute_description</bundle>
+            <placement code="preferred_labels">
+              <bundle>preferred_labels</bundle>
+              <settings>
+                <setting name="label" locale="en_US">Event Title (final)</setting>
+                <setting name="add_label" locale="en_US">Add title</setting>
+              </settings>
             </placement>
             <placement code="ca_attribute_event_venue">
               <bundle>ca_attribute_event_venue</bundle>
@@ -8453,6 +8994,16 @@
             </placement>
             <placement code="ca_attribute_event_dates">
               <bundle>ca_attribute_event_dates</bundle>
+            </placement>
+            <placement code="ca_attribute_event_time">
+              <bundle>ca_attribute_event_time</bundle>
+            </placement>
+            <placement code="ca_attribute_external_link">
+              <bundle>ca_attribute_external_link</bundle>
+              <settings>
+                <setting name="label" locale="en_US">Websites</setting>
+                <setting name="add_label" locale="en_US">Add website</setting>
+              </settings>
             </placement>
             <placement code="ca_contributor">
               <bundle>ca_entities</bundle>
@@ -8471,28 +9022,15 @@
                 <setting name="restrict_to_relationship_types">related</setting>
               </settings>
             </placement>
-            <placement code="ca_attribute_grant_related">
-              <bundle>ca_attribute_grant_related</bundle>
-            </placement>
-            <placement code="ca_attribute_funded">
-              <bundle>ca_attribute_funded</bundle>
-            </placement>
-            <placement code="ca_attribute_web_proj_url">
-              <bundle>ca_attribute_web_proj_url</bundle>
-            </placement>
-            <placement code="ca_attribute_external_link">
-              <bundle>ca_attribute_external_link</bundle>
-              <settings>
-                <setting name="label" locale="en_US">Related Website</setting>
-                <setting name="add_label" locale="en_US">Add related website</setting>
-              </settings>
-            </placement>
-            <placement code="ca_sponsors">
+          <placement code="ca_sponsors">
               <bundle>ca_entities</bundle>
               <settings>
                 <setting name="label" locale="en_US">Co-sponsor</setting>
                 <setting name="restrict_to_relationship_types">sponsor</setting>
               </settings>
+            </placement>
+            <placement code="ca_attribute_internal_notes">
+              <bundle>ca_attribute_internal_notes</bundle>
             </placement>
             <placement code="access">
               <bundle>access</bundle>
@@ -8500,19 +9038,85 @@
             <placement code="status">
               <bundle>status</bundle>
             </placement> 
-            <placement code="ca_attribute_internal_notes">
-              <bundle>ca_attribute_internal_notes</bundle>
-            </placement>
+            
           </bundlePlacements>
         </screen>
         <screen idno="basic_other" default="1">
           <labels>
             <label locale="en_US">
-              <name>Basic info</name>
+              <name>General Project Info (Other)</name>
             </label>
           </labels>
           <typeRestrictions>
             <restriction code="other" type="other"/>
+          </typeRestrictions>
+          <bundlePlacements>
+            <placement code="hierarchy_navigation">
+              <bundle>hierarchy_navigation</bundle>
+            </placement>
+            <placement code="ca_attribute_grant_related">
+              <bundle>ca_attribute_grant_related</bundle>
+            </placement>
+            <placement code="ca_attribute_funded">
+              <bundle>ca_attribute_funded</bundle>
+            </placement>
+            <placement code="idno">
+              <bundle>idno</bundle>
+              <settings>
+                <setting name="label" locale="en_US">Project ID</setting>
+                <setting name="add_label" locale="en_US">Add Project ID</setting>
+                <setting name="description" locale="en_US">Use two-letter codes to specify project type: EX (exhibition), PB (book/chapter/essay/catalog), AJ (article/journal), EV (event), AV (film/video), WB (website), RE (research), OT (other), TH (thesis/dissertation), NM (new media), DB (database), OM (other media)</setting>
+              </settings>
+            </placement>
+            <placement code="ca_attribute_other_type">
+              <bundle>ca_attribute_other_type</bundle>
+            </placement>
+            <placement code="preferred_labels">
+              <bundle>preferred_labels</bundle>
+              <settings>
+                <setting name="label" locale="en_US">Project Title (final)</setting>
+                <setting name="add_label" locale="en_US">Add title</setting>
+              </settings>
+            </placement>
+            <placement code="ca_attribute_external_link">
+              <bundle>ca_attribute_external_link</bundle>
+              <settings>
+                <setting name="label" locale="en_US">Website</setting>
+                <setting name="add_label" locale="en_US">Add website</setting>
+              </settings>
+            </placement>
+            <placement code="ca_contributor">
+              <bundle>ca_entities</bundle>
+              <settings>
+                <setting name="label" locale="en_US">Contributors</setting>
+                <setting name="restrict_to_types">ind</setting>
+                <setting name="restrict_to_relationship_types">contributor</setting> 
+              </settings>
+            </placement>
+            <placement code="ca_attribute_publication_copy">
+              <bundle>ca_attribute_publication_copy</bundle>
+            </placement>
+            <placement code="ca_attribute_internal_notes">
+              <bundle>ca_attribute_internal_notes</bundle>
+            </placement>
+            <placement code="status">
+              <bundle>status</bundle>
+              <settings>
+                <setting name="label" locale="en_US">Status of Entry</setting>
+              </settings>
+            </placement>
+            <placement code="access">
+              <bundle>access</bundle>
+            </placement> 
+          </bundlePlacements>
+        </screen>
+        <screen idno="basic_research" default="1">
+          <labels>
+            <label locale="en_US">
+              <name>General Research Info</name>
+            </label>
+          </labels>
+          <typeRestrictions>
             <restriction code="research" type="research"/>
           </typeRestrictions>
           <bundlePlacements>
@@ -8524,34 +9128,40 @@
               <settings>
                 <setting name="label" locale="en_US">Project ID</setting>
                 <setting name="add_label" locale="en_US">Add Project ID</setting>
-              </settings>
-            </placement>
-            <placement code="preferred_labels">
-              <bundle>preferred_labels</bundle>
-              <settings>
-                <setting name="label" locale="en_US">Project Title (final)</setting>
-                <setting name="add_label" locale="en_US">Add title</setting>
+                <setting name="description" locale="en_US">Use two-letter codes to specify project type: EX (exhibition), PB (book/chapter/essay/catalog), AJ (article/journal), EV (event), AV (film/video), WB (website), RE (research), OT (other), TH (thesis/dissertation), NM (new media), DB (database), OM (other media)</setting>
               </settings>
             </placement>
             <placement code="ca_attribute_grant_related">
               <bundle>ca_attribute_grant_related</bundle>
             </placement>
-            
-            <placement code="ca_attribute_other_type">
-              <bundle>ca_attribute_other_type</bundle>
+            <placement code="ca_attribute_funded">
+              <bundle>ca_attribute_funded</bundle>
             </placement>
-            
             <placement code="ca_attribute_res_type_prod">
               <bundle>ca_attribute_res_type_prod</bundle>
             </placement>
             <placement code="ca_attribute_research_other">
               <bundle>ca_attribute_dresearch_other</bundle>
             </placement>
-            <placement code="ca_attribute_description">
-              <bundle>ca_attribute_description</bundle>
+            <placement code="preferred_labels">
+              <bundle>preferred_labels</bundle>
+              <settings>
+                <setting name="label" locale="en_US">Research Title (final)</setting>
+                <setting name="add_label" locale="en_US">Add title</setting>
+              </settings>
             </placement>
             <placement code="ca_attribute_research_dates">
               <bundle>ca_attribute_research_dates</bundle>
+            </placement>
+            <placement code="ca_attribute_research_location">
+              <bundle>ca_attribute_research_location</bundle>
+            </placement>
+            <placement code="ca_attribute_external_link">
+              <bundle>ca_attribute_external_link</bundle>
+              <settings>
+                <setting name="label" locale="en_US">Website</setting>
+                <setting name="add_label" locale="en_US">Add website</setting>
+              </settings>
             </placement>
             <placement code="ca_contributor">
               <bundle>ca_entities</bundle>
@@ -8561,38 +9171,21 @@
                 <setting name="restrict_to_relationship_types">contributor</setting> 
               </settings>
             </placement>
-            <placement code="ca_attribute_research_location">
-              <bundle>ca_attribute_research_location</bundle>
-            </placement>
-            <placement code="ca_attribute_research_dates">
-              <bundle>ca_attribute_research_dates</bundle>
-            </placement>
-            <placement code="ca_attribute_research_notes">
-              <bundle>ca_attribute_research_notes</bundle>
-            </placement>
-            <placement code="ca_attribute_funded">
-              <bundle>ca_attribute_funded</bundle>
-            </placement>
-            <placement code="ca_attribute_other_notes">
-              <bundle>ca_attribute_other_notes</bundle>
-            </placement>
             <placement code="ca_attribute_publication_copy">
               <bundle>ca_attribute_publication_copy</bundle>
             </placement>
-            
-            <placement code="ca_attribute_external_link">
-              <bundle>ca_attribute_external_link</bundle>
+            <placement code="ca_attribute_internal_notes">
+              <bundle>ca_attribute_internal_notes</bundle>
+            </placement>
+            <placement code="status">
+              <bundle>status</bundle>
               <settings>
-                <setting name="label" locale="en_US">Related Website</setting>
-                <setting name="add_label" locale="en_US">Add related website</setting>
+                <setting name="label" locale="en_US">Status of Entry</setting>
               </settings>
             </placement>
             <placement code="access">
               <bundle>access</bundle>
             </placement> 
-            <placement code="ca_attribute_internal_notes">
-              <bundle>ca_attribute_internal_notes</bundle>
-            </placement>
           </bundlePlacements>
         </screen>
         <screen idno="production" default="0">
@@ -8608,8 +9201,8 @@
             <placement code="ca_attribute_physical_file">
               <bundle>ca_attribute_physical_file</bundle>
             </placement>
-            <placement code="ca_attribute_contents_file">
-              <bundle>ca_attribute_contents_file</bundle>
+            <placement code="ca_attribute_file_content_grant">
+              <bundle>ca_attribute_file_content_grant</bundle>
             </placement>
             <placement code="ca_attribute_file_notes">
               <bundle>ca_attribute_file_notes</bundle>
@@ -8622,6 +9215,9 @@
             </placement>
             <placement code="ca_attribute_mark_x">
               <bundle>ca_attribute_mark_x</bundle>
+              <settings>
+                <setting name="label" locale="en_US">Mark as Notable Grant?</setting>
+              </settings>
             </placement>
             <placement code="ca_attribute_file_internal">
               <bundle>ca_attribute_file_internal</bundle>
@@ -8632,49 +9228,32 @@
         <screen idno="grantee_contact" default="0">
           <labels>
             <label locale="en_US">
-              <name>Grantee and Contact</name>
+              <name>Grantee Details</name>
             </label>
           </labels>
           <typeRestrictions>
             <restriction code="grant" type="grant"/>
           </typeRestrictions>
           <bundlePlacements>
-            <placement code="ca_grantee">
-              <bundle>ca_entities</bundle>
-              <settings>
-                <setting name="label" locale="en_US">Grantee (Individual)</setting>
-                  <setting name="add_label" locale="en_US">Add Grantee Legal Name</setting>
-                <setting name="restrict_to_relationship_types">grantee</setting> 
-                <setting name="restrict_to_types">ind</setting>
-              </settings>
-            </placement>
             <placement code="ca_attribute_biography">
               <bundle>ca_attribute_biography</bundle>
               <settings>
                 <setting name="label" locale="en_US">Grantee Biography (at time of grant)</setting>
+                <setting name="description" locale="en_US">For grants to individuals</setting>
               </settings>
-            </placement>
-            <placement code="ca_grantee_org">
-              <bundle>ca_entities</bundle>
-              <settings>
-                <setting name="label" locale="en_US">Grantee Organization</setting>
-                  <setting name="add_label" locale="en_US">Add Grantee Organization</setting>
-                <setting name="restrict_to_relationship_types">grantee</setting>
-                <setting name="restrict_to_types">org</setting> 
-                <setting name="list_format">list</setting>
-                <setting name="display_template"><![CDATA[<l>^ca_entities.preferred_labels</l><ifdef code="ca_entities_x_collections.subsidiary_name">Subsidiary Name:</ifdef>^ca_entities_x_collections.subsidiary_name]]></setting>
-              </settings>
-            </placement>
+            </placement> 
             <placement code="ca_attribute_address">
               <bundle>ca_attribute_address</bundle>
               <settings>
               <setting name="label" locale="en_US">Address (at time of grant)</setting>
+                <setting name="description" locale="en_US">For grants to individuals or organizations</setting>
               </settings>
             </placement>
             <placement code="ca_attribute_mission_statement">
               <bundle>ca_attribute_mission_statement</bundle>
               <settings>
               <setting name="label" locale="en_US">Mission Statement (at time of grant)</setting>
+                <setting name="description" locale="en_US">For grants to organizations</setting>
               </settings>
             </placement>
             <placement code="ca_contact">
@@ -8686,39 +9265,34 @@
                  <setting name="restrict_to_types">ind</setting>
               </settings>
             </placement>
-            <placement code="ca_contact_org">
-              <bundle>ca_entities</bundle>
-              <settings>
-                <setting name="label" locale="en_US">Primary Contact Organization (if Different from Grantee Organization)</setting>
-                  <setting name="add_label" locale="en_US">Add Primary Contact Organization</setting>
-                <setting name="restrict_to_relationship_types">contact</setting>
-                 <setting name="restrict_to_types">org</setting>
-              </settings>
-            </placement>
           </bundlePlacements>
         </screen>
         <!-- relationships might need to be restricted to just grants, not sure -->
         <screen idno="relationships" default="0">
           <labels>
             <label locale="en_US">
-              <name>Relationships</name>
+              <name>Related</name>
             </label>
           </labels>
           <bundlePlacements>
             <placement code="ca_objects">
               <bundle>ca_objects</bundle>
+              <settings>
+              <setting name="label" locale="en_US">Related objects/media</setting>
+              </settings>
             </placement>
             <placement code="ca_grants">
               <bundle>ca_collections</bundle>
               <settings>
                 <setting name="label" locale="en_US">Related grants</setting>
                 <setting name="restrict_to_types">grant</setting>
+                <setting name="includeSubTypes">0</setting>
               </settings>
             </placement>
             <placement code="ca_products">
               <bundle>ca_collections</bundle>
               <settings>
-                <setting name="label" locale="en_US">Related grant products</setting>
+                <setting name="label" locale="en_US">Related grant projects</setting>
                 <setting name="restrict_to_types">exh</setting>
                 <setting name="restrict_to_types">book</setting>
                 <setting name="restrict_to_types">aj</setting>
@@ -9474,8 +10048,8 @@
         <type code="collaborator" default="0">
           <labels>
             <label locale="en_US">
-              <typename>collaborated with</typename>
-              <typename_reverse>collaborated with</typename_reverse>
+              <typename>collaborator</typename>
+              <typename_reverse>collaborator</typename_reverse>
             </label>
           </labels>
           <subTypeLeft> </subTypeLeft>
@@ -9485,7 +10059,7 @@
           <labels>
             <label locale="en_US">
               <typename>is employed by</typename>
-              <typename_reverse>is employer of</typename_reverse>
+              <typename_reverse>employee</typename_reverse>
             </label>
           </labels>
           <subTypeLeft>ind</subTypeLeft>
@@ -9495,7 +10069,97 @@
           <labels>
             <label locale="en_US">
               <typename>is director of</typename>
-              <typename_reverse>has as director</typename_reverse>
+              <typename_reverse>director</typename_reverse>
+            </label>
+          </labels>
+          <subTypeLeft>ind</subTypeLeft>
+          <subTypeRight>org</subTypeRight>
+        </type>
+        <type code="board" default="0">
+          <labels>
+            <label locale="en_US">
+              <typename>board member/trustee of</typename>
+              <typename_reverse>board member/trustee</typename_reverse>
+            </label>
+          </labels>
+          <subTypeLeft>ind</subTypeLeft>
+          <subTypeRight>org</subTypeRight>
+        </type>
+        <type code="chair" default="0">
+          <labels>
+            <label locale="en_US">
+              <typename>chair of</typename>
+              <typename_reverse>chair</typename_reverse>
+            </label>
+          </labels>
+          <subTypeLeft>ind</subTypeLeft>
+          <subTypeRight>org</subTypeRight>
+        </type>
+        <type code="curator" default="0">
+          <labels>
+            <label locale="en_US">
+              <typename>curator for</typename>
+              <typename_reverse>curator</typename_reverse>
+            </label>
+          </labels>
+          <subTypeLeft>ind</subTypeLeft>
+          <subTypeRight>org</subTypeRight>
+        </type>
+        <type code="dean" default="0">
+          <labels>
+            <label locale="en_US">
+              <typename>dean of</typename>
+              <typename_reverse>dean</typename_reverse>
+            </label>
+          </labels>
+          <subTypeLeft>ind</subTypeLeft>
+          <subTypeRight>org</subTypeRight>
+        </type>
+        <type code="head" default="0">
+          <labels>
+            <label locale="en_US">
+              <typename>head of</typename>
+              <typename_reverse>head</typename_reverse>
+            </label>
+          </labels>
+          <subTypeLeft>ind</subTypeLeft>
+          <subTypeRight>org</subTypeRight>
+        </type>
+        <type code="professor" default="0">
+          <labels>
+            <label locale="en_US">
+              <typename>professor at</typename>
+              <typename_reverse>professor</typename_reverse>
+            </label>
+          </labels>
+          <subTypeLeft>ind</subTypeLeft>
+          <subTypeRight>org</subTypeRight>
+        </type>
+        <type code="assistant" default="0">
+          <labels>
+            <label locale="en_US">
+              <typename>assistant professor at</typename>
+              <typename_reverse>assistant professor</typename_reverse>
+            </label>
+          </labels>
+          <subTypeLeft>ind</subTypeLeft>
+          <subTypeRight>org</subTypeRight>
+        </type>
+        <type code="president" default="0">
+          <labels>
+            <label locale="en_US">
+              <typename>president of</typename>
+              <typename_reverse>president</typename_reverse>
+            </label>
+          </labels>
+          <subTypeLeft>ind</subTypeLeft>
+          <subTypeRight>org</subTypeRight>
+        </type>
+        <type code="contact" default="0">
+          <labels>
+            <label locale="en_US">
+              <typename>contact for</typename>
+              <typename_reverse>contact</typename_reverse>
             </label>
           </labels>
           <subTypeLeft>ind</subTypeLeft>
@@ -9559,107 +10223,57 @@
     </relationshipTable>
     <relationshipTable name="ca_entities_x_occurrences">
       <types>
-        <type code="attended" default="1">
+        <type code="attended" default="0">
           <labels>
             <label locale="en_US">
               <typename>attended</typename>
-              <typename_reverse>was attended by</typename_reverse>
+              <typename_reverse>attended by</typename_reverse>
             </label>
           </labels>
           <subTypeLeft> </subTypeLeft>
           <subTypeRight></subTypeRight>
         </type>
-        <type code="contact" default="1">
+        <type code="contact" default="0">
           <labels>
             <label locale="en_US">
-              <typename>contact for</typename>
-              <typename_reverse>primary contact</typename_reverse>
+              <typename>contact</typename>
+              <typename_reverse>contact</typename_reverse>
             </label>
           </labels>
           <subTypeLeft> </subTypeLeft>
           <subTypeRight></subTypeRight>
         </type>
-        <type code="author" default="1">
-          <labels>
-            <label locale="en_US">
-              <typename>was author of</typename>
-              <typename_reverse>was authored by</typename_reverse>
-            </label>
-          </labels>
-          <subTypeLeft> </subTypeLeft>
-          <subTypeRight></subTypeRight>
-        </type>
-        <type code="compiler" default="1">
-          <labels>
-            <label locale="en_US">
-              <typename>compiled</typename>
-              <typename_reverse>was compiled by</typename_reverse>
-            </label>
-          </labels>
-          <subTypeLeft> </subTypeLeft>
-          <subTypeRight></subTypeRight>
-        </type>
-        <type code="contributor" default="1">
-          <labels>
-            <label locale="en_US">
-              <typename>contributed to</typename>
-              <typename_reverse>has as contributor</typename_reverse>
-            </label>
-          </labels>
-          <subTypeLeft> </subTypeLeft>
-          <subTypeRight></subTypeRight>
-        </type>
-        <type code="editor" default="1">
-          <labels>
-            <label locale="en_US">
-              <typename>edited</typename>
-              <typename_reverse>was edited by</typename_reverse>
-            </label>
-          </labels>
-          <subTypeLeft> </subTypeLeft>
-          <subTypeRight></subTypeRight>
-        </type>
-        <type code="performer" default="1">
+        <type code="performer" default="0">
           <labels>
             <label locale="en_US">
               <typename>performed in</typename>
-              <typename_reverse>featured performer</typename_reverse>
+              <typename_reverse>performer</typename_reverse>
             </label>
           </labels>
           <subTypeLeft> </subTypeLeft>
           <subTypeRight></subTypeRight>
         </type>
-        <type code="curator" default="1">
-          <labels>
-            <label locale="en_US">
-              <typename>curated</typename>
-              <typename_reverse>curated by</typename_reverse>
-            </label>
-          </labels>
-          <subTypeLeft> </subTypeLeft>
-          <subTypeRight></subTypeRight>
-        </type>
-        <type code="lecturer" default="1">
+        <type code="lecturer" default="0">
           <labels>
             <label locale="en_US">
               <typename>lectured in</typename>
-              <typename_reverse>featured lecturer</typename_reverse>
+              <typename_reverse>lecturer</typename_reverse>
             </label>
           </labels>
           <subTypeLeft> </subTypeLeft>
           <subTypeRight></subTypeRight>
         </type>
-        <type code="speaker" default="1">
+        <type code="speaker" default="0">
           <labels>
             <label locale="en_US">
               <typename>spoke in</typename>
-              <typename_reverse>featured speaker</typename_reverse>
+              <typename_reverse>speaker</typename_reverse>
             </label>
           </labels>
           <subTypeLeft> </subTypeLeft>
           <subTypeRight></subTypeRight>
         </type>
-        <type code="organizer" default="1">
+        <type code="organizer" default="0">
           <labels>
             <label locale="en_US">
               <typename>organized</typename>
@@ -9669,17 +10283,37 @@
           <subTypeLeft> </subTypeLeft>
           <subTypeRight></subTypeRight>
         </type>
-        <type code="subject" default="1">
+        <type code="sponsor" default="0">
           <labels>
             <label locale="en_US">
-              <typename>featured as subject</typename>
+              <typename>co-sponsored</typename>
+              <typename_reverse>co-sponsor</typename_reverse>
+            </label>
+          </labels>
+          <subTypeLeft> </subTypeLeft>
+          <subTypeRight></subTypeRight>
+        </type>
+        <type code="subject" default="0">
+          <labels>
+            <label locale="en_US">
+              <typename>subject of</typename>
               <typename_reverse>subject</typename_reverse>
             </label>
           </labels>
           <subTypeLeft> </subTypeLeft>
           <subTypeRight></subTypeRight>
         </type>
-        <type code="panelist" default="1">
+        <type code="curator" default="0">
+          <labels>
+            <label locale="en_US">
+              <typename>curated</typename>
+              <typename_reverse>curator</typename_reverse>
+            </label>
+          </labels>
+          <subTypeLeft> </subTypeLeft>
+          <subTypeRight></subTypeRight>
+        </type>
+        <type code="panelist" default="0">
           <labels>
             <label locale="en_US">
               <typename>panelist in</typename>
@@ -9689,7 +10323,27 @@
           <subTypeLeft> </subTypeLeft>
           <subTypeRight></subTypeRight>
         </type>
-        <type code="moderator" default="1">
+        <type code="participant" default="0">
+          <labels>
+            <label locale="en_US">
+              <typename>participated in</typename>
+              <typename_reverse>participant</typename_reverse>
+            </label>
+          </labels>
+          <subTypeLeft> </subTypeLeft>
+          <subTypeRight></subTypeRight>
+        </type>
+        <type code="artist" default="0">
+          <labels>
+            <label locale="en_US">
+              <typename>featured art by</typename>
+              <typename_reverse>artist</typename_reverse>
+            </label>
+          </labels>
+          <subTypeLeft> </subTypeLeft>
+          <subTypeRight></subTypeRight>
+        </type>
+        <type code="moderator" default="0">
           <labels>
             <label locale="en_US">
               <typename>moderated</typename>
@@ -9699,67 +10353,17 @@
           <subTypeLeft> </subTypeLeft>
           <subTypeRight></subTypeRight>
         </type>
-        <type code="related" default="1">
+        <type code="architect" default="0">
           <labels>
             <label locale="en_US">
-              <typename>related</typename>
-              <typename_reverse>related</typename_reverse>
+              <typename>featured architecture by</typename>
+              <typename_reverse>architect</typename_reverse>
             </label>
           </labels>
           <subTypeLeft> </subTypeLeft>
           <subTypeRight></subTypeRight>
         </type>
-        <type code="photographer" default="1">
-          <labels>
-            <label locale="en_US">
-              <typename>photographed</typename>
-              <typename_reverse>photographed by</typename_reverse>
-            </label>
-          </labels>
-          <subTypeLeft> </subTypeLeft>
-          <subTypeRight></subTypeRight>
-        </type>
-        <type code="translator" default="1">
-          <labels>
-            <label locale="en_US">
-              <typename>translated</typename>
-              <typename_reverse>was translated by</typename_reverse>
-            </label>
-          </labels>
-          <subTypeLeft> </subTypeLeft>
-          <subTypeRight></subTypeRight>
-        </type>
-        <type code="curator" default="1">
-          <labels>
-            <label locale="en_US">
-              <typename>curated</typename>
-              <typename_reverse>curated by</typename_reverse>
-            </label>
-          </labels>
-          <subTypeLeft> </subTypeLeft>
-          <subTypeRight>exhibition</subTypeRight>
-        </type>
-        <type code="artist" default="1">
-          <labels>
-            <label locale="en_US">
-              <typename>featured art by</typename>
-              <typename_reverse>featured artist</typename_reverse>
-            </label>
-          </labels>
-          <subTypeLeft> </subTypeLeft>
-          <subTypeRight>exhibition</subTypeRight>
-        </type>
-        <type code="sponsor" default="1">
-          <labels>
-            <label locale="en_US">
-              <typename>co-sponsored</typename>
-              <typename_reverse>co-sponsor</typename_reverse>
-            </label>
-          </labels>
-          <subTypeLeft> </subTypeLeft>
-          <subTypeRight> </subTypeRight>
-        </type>
-        <type code="venue_regular" default="1">
+        <type code="venue_regular" default="0">
           <labels>
             <label locale="en_US">
               <typename>venue organization for</typename>
@@ -9769,7 +10373,7 @@
           <subTypeLeft> </subTypeLeft>
           <subTypeRight> </subTypeRight>
         </type>
-        <type code="venue_original" default="1">
+        <type code="venue_original" default="0">
           <labels>
             <label locale="en_US">
               <typename>venue organization for</typename>
@@ -9779,7 +10383,7 @@
           <subTypeLeft> </subTypeLeft>
           <subTypeRight> </subTypeRight>
         </type>
-        <type code="venue_traveling" default="1">
+        <type code="venue_traveling" default="0">
           <labels>
             <label locale="en_US">
               <typename>venue organization for</typename>
@@ -9845,56 +10449,6 @@
     </relationshipTable>
     <relationshipTable name="ca_entities_x_collections">
       <types>
-        <type code="related" default="1">
-          <labels>
-            <label locale="en_US">
-              <typename>is related to</typename>
-              <typename_reverse>is related to</typename_reverse>
-            </label>
-          </labels>
-          <subTypeLeft> </subTypeLeft>
-          <subTypeRight></subTypeRight>
-        </type>
-        <type code="grantee" default="1">
-          <labels>
-            <label locale="en_US">
-              <typename>is grant</typename>
-              <typename_reverse>is grantee</typename_reverse>
-            </label>
-          </labels>
-          <subTypeLeft> </subTypeLeft>
-          <subTypeRight></subTypeRight>
-        </type>
-        <type code="contact" default="1">
-          <labels>
-            <label locale="en_US">
-              <typename>is contact for</typename>
-              <typename_reverse>contact</typename_reverse>
-            </label>
-          </labels>
-          <subTypeLeft> </subTypeLeft>
-          <subTypeRight></subTypeRight>
-        </type>
-        <type code="artist" default="1">
-          <labels>
-            <label locale="en_US">
-              <typename>featured art by</typename>
-              <typename_reverse>featured artist</typename_reverse>
-            </label>
-          </labels>
-          <subTypeLeft> </subTypeLeft>
-          <subTypeRight></subTypeRight>
-        </type>
-        <type code="compiler" default="1">
-          <labels>
-            <label locale="en_US">
-              <typename>compiled</typename>
-              <typename_reverse>compiled by</typename_reverse>
-            </label>
-          </labels>
-          <subTypeLeft> </subTypeLeft>
-          <subTypeRight></subTypeRight>
-        </type>
         <type code="author" default="1">
           <labels>
             <label locale="en_US">
@@ -9905,17 +10459,57 @@
           <subTypeLeft> </subTypeLeft>
           <subTypeRight></subTypeRight>
         </type>
-        <type code="board_trustee" default="1">
+        <type code="sponsor" default="1">
           <labels>
             <label locale="en_US">
-              <typename>is associated board member/trustee for</typename>
-              <typename_reverse>is associated board member/trustee</typename_reverse>
+              <typename>co-sponsored</typename>
+              <typename_reverse>co-sponsor</typename_reverse>
             </label>
           </labels>
           <subTypeLeft> </subTypeLeft>
           <subTypeRight></subTypeRight>
         </type>
-        <type code="collaborator" default="1">
+        <type code="grantee" default="0">
+          <labels>
+            <label locale="en_US">
+              <typename>grant</typename>
+              <typename_reverse>grantee</typename_reverse>
+            </label>
+          </labels>
+          <subTypeLeft> </subTypeLeft>
+          <subTypeRight></subTypeRight>
+        </type>
+        <type code="grantee_org" default="0">
+          <labels>
+            <label locale="en_US">
+              <typename>grant</typename>
+              <typename_reverse>grantee</typename_reverse>
+            </label>
+          </labels>
+          <subTypeLeft> </subTypeLeft>
+          <subTypeRight></subTypeRight>
+        </type>
+        <type code="contact" default="0">
+          <labels>
+            <label locale="en_US">
+              <typename>contact for</typename>
+              <typename_reverse>contact</typename_reverse>
+            </label>
+          </labels>
+          <subTypeLeft> </subTypeLeft>
+          <subTypeRight></subTypeRight>
+        </type>
+        <type code="artist" default="0">
+          <labels>
+            <label locale="en_US">
+              <typename>features art by</typename>
+              <typename_reverse>artist</typename_reverse>
+            </label>
+          </labels>
+          <subTypeLeft> </subTypeLeft>
+          <subTypeRight></subTypeRight>
+        </type>
+        <type code="collaborator" default="0">
           <labels>
             <label locale="en_US">
               <typename>collaborated on</typename>
@@ -9925,31 +10519,31 @@
           <subTypeLeft> </subTypeLeft>
           <subTypeRight></subTypeRight>
         </type>
-        <type code="producer" default="0">
-          <labels>
-            <label locale="en_US">
-              <typename>produced</typename>
-              <typename_reverse>producer</typename_reverse>
-            </label>
-          </labels>
-          <subTypeLeft> </subTypeLeft>
-          <subTypeRight></subTypeRight>
-        </type>
-        <type code="director" default="0">
-          <labels>
-            <label locale="en_US">
-              <typename>directed</typename>
-              <typename_reverse>director</typename_reverse>
-            </label>
-          </labels>
-          <subTypeLeft> </subTypeLeft>
-          <subTypeRight></subTypeRight>
-        </type>
         <type code="consultant" default="0">
           <labels>
             <label locale="en_US">
-              <typename>is associated consultant for</typename>
-              <typename_reverse>is associated consultant</typename_reverse>
+              <typename>consulted</typename>
+              <typename_reverse>consultant</typename_reverse>
+            </label>
+          </labels>
+          <subTypeLeft> </subTypeLeft>
+          <subTypeRight></subTypeRight>
+        </type>
+        <type code="contributor" default="0">
+          <labels>
+            <label locale="en_US">
+              <typename>contributed to</typename>
+              <typename_reverse>contributor</typename_reverse>
+            </label>
+          </labels>
+          <subTypeLeft> </subTypeLeft>
+          <subTypeRight></subTypeRight>
+        </type>
+        <type code="creator" default="0">
+          <labels>
+            <label locale="en_US">
+              <typename>creator</typename>
+              <typename_reverse>created</typename_reverse>
             </label>
           </labels>
           <subTypeLeft> </subTypeLeft>
@@ -9965,86 +10559,6 @@
           <subTypeLeft> </subTypeLeft>
           <subTypeRight></subTypeRight>
         </type>
-        <type code="performer" default="0">
-          <labels>
-            <label locale="en_US">
-              <typename>performed in</typename>
-              <typename_reverse>performer</typename_reverse>
-            </label>
-          </labels>
-          <subTypeLeft> </subTypeLeft>
-          <subTypeRight></subTypeRight>
-        </type>
-        <type code="lecturer" default="0">
-          <labels>
-            <label locale="en_US">
-              <typename>lectured in</typename>
-              <typename_reverse>lecturer</typename_reverse>
-            </label>
-          </labels>
-          <subTypeLeft> </subTypeLeft>
-          <subTypeRight></subTypeRight>
-        </type>
-        <type code="speaker" default="0">
-          <labels>
-            <label locale="en_US">
-              <typename>spoke in</typename>
-              <typename_reverse>speaker</typename_reverse>
-            </label>
-          </labels>
-          <subTypeLeft> </subTypeLeft>
-          <subTypeRight></subTypeRight>
-        </type>
-        <type code="organizer" default="0">
-          <labels>
-            <label locale="en_US">
-              <typename>organized</typename>
-              <typename_reverse>organizer</typename_reverse>
-            </label>
-          </labels>
-          <subTypeLeft> </subTypeLeft>
-          <subTypeRight></subTypeRight>
-        </type>
-        <type code="subject" default="0">
-          <labels>
-            <label locale="en_US">
-              <typename>was subject of</typename>
-              <typename_reverse>subject</typename_reverse>
-            </label>
-          </labels>
-          <subTypeLeft> </subTypeLeft>
-          <subTypeRight></subTypeRight>
-        </type>
-        <type code="panelist" default="0">
-          <labels>
-            <label locale="en_US">
-              <typename>panelist in</typename>
-              <typename_reverse>panelist</typename_reverse>
-            </label>
-          </labels>
-          <subTypeLeft> </subTypeLeft>
-          <subTypeRight></subTypeRight>
-        </type>
-        <type code="moderator" default="0">
-          <labels>
-            <label locale="en_US">
-              <typename>moderated</typename>
-              <typename_reverse>moderator</typename_reverse>
-            </label>
-          </labels>
-          <subTypeLeft> </subTypeLeft>
-          <subTypeRight></subTypeRight>
-        </type>
-        <type code="contributor" default="0">
-          <labels>
-            <label locale="en_US">
-              <typename>contribuetd to</typename>
-              <typename_reverse>contributor</typename_reverse>
-            </label>
-          </labels>
-          <subTypeLeft> </subTypeLeft>
-          <subTypeRight></subTypeRight>
-        </type>
         <type code="editor" default="0">
           <labels>
             <label locale="en_US">
@@ -10055,7 +10569,47 @@
           <subTypeLeft> </subTypeLeft>
           <subTypeRight></subTypeRight>
         </type>
-        <type code="photo" default="0">
+        <type code="producer" default="0">
+          <labels>
+            <label locale="en_US">
+              <typename>produced</typename>
+              <typename_reverse>producer</typename_reverse>
+            </label>
+          </labels>
+          <subTypeLeft> </subTypeLeft>
+          <subTypeRight></subTypeRight>
+        </type>
+        <type code="publisher" default="0">
+          <labels>
+            <label locale="en_US">
+              <typename>published</typename>
+              <typename_reverse>publisher</typename_reverse>
+            </label>
+          </labels>
+          <subTypeLeft> </subTypeLeft>
+          <subTypeRight></subTypeRight>
+        </type>
+        <type code="subject" default="0">
+          <labels>
+            <label locale="en_US">
+              <typename>subject of</typename>
+              <typename_reverse>subject</typename_reverse>
+            </label>
+          </labels>
+          <subTypeLeft> </subTypeLeft>
+          <subTypeRight></subTypeRight>
+        </type>
+        <type code="compiler" default="0">
+          <labels>
+            <label locale="en_US">
+              <typename>compiled</typename>
+              <typename_reverse>compiler</typename_reverse>
+            </label>
+          </labels>
+          <subTypeLeft> </subTypeLeft>
+          <subTypeRight></subTypeRight>
+        </type>
+        <type code="photographer" default="0">
           <labels>
             <label locale="en_US">
               <typename>photographed</typename>
@@ -10070,16 +10624,6 @@
             <label locale="en_US">
               <typename>translated</typename>
               <typename_reverse>translator</typename_reverse>
-            </label>
-          </labels>
-          <subTypeLeft> </subTypeLeft>
-          <subTypeRight></subTypeRight>
-        </type>
-        <type code="publisher" default="0">
-          <labels>
-            <label locale="en_US">
-              <typename>published</typename>
-              <typename_reverse>publisher</typename_reverse>
             </label>
           </labels>
           <subTypeLeft> </subTypeLeft>
@@ -10100,16 +10644,6 @@
             <label locale="en_US">
               <typename>designed</typename>
               <typename_reverse>designer</typename_reverse>
-            </label>
-          </labels>
-          <subTypeLeft> </subTypeLeft>
-          <subTypeRight></subTypeRight>
-        </type>
-        <type code="sponsor" default="0">
-          <labels>
-            <label locale="en_US">
-              <typename>sponsored</typename>
-              <typename_reverse>sponsor</typename_reverse>
             </label>
           </labels>
           <subTypeLeft> </subTypeLeft>
@@ -10425,14 +10959,26 @@
             <setting name="label" locale="en_US">Grant Number (current convention)</setting>
           </settings>
         </placement>
-        <placement code="grantee">
+        <placement code="individual">
           <bundle>ca_entities</bundle>
           <settings>
             <setting name="restrict_to_relationship_types">grantee</setting>
+            <setting name="restrict_to_types">ind</setting>
             <setting name="render">makeEditorLink</setting>
             <setting name="delimiter">;</setting>
-            <setting name="label" locale="en_US">Artist/Maker</setting>
-            <setting name="format">^preferred_labels.surname,^preferred_labels.forename (^type_id)</setting>
+            <setting name="label" locale="en_US">Grantee</setting>
+            <setting name="format">^preferred_labels.surname,^preferred_labels.forename</setting>
+          </settings>
+        </placement>
+        <placement code="organization">
+          <bundle>ca_entities</bundle>
+          <settings>
+            <setting name="restrict_to_relationship_types">grantee</setting>
+            <setting name="restrict_to_types">org</setting>
+            <setting name="render">makeEditorLink</setting>
+            <setting name="delimiter">;</setting>
+            <setting name="label" locale="en_US">Grantee</setting>
+            <setting name="format">^preferred_labels.display_name</setting>
           </settings>
         </placement>
         <placement code="ca_attribute_biography">
@@ -10447,11 +10993,11 @@
             <setting name="label" locale="en_US">Current Project Title</setting>
           </settings>
         </placement>
+        <placement code="ca_attribute_grantee_type">
+          <bundle>ca_collections.grantee_type</bundle>
+        </placement>
         <placement code="ca_attribute_subject_area">
           <bundle>ca_collections.subject_area</bundle>
-          <settings>
-            <setting name="format">^subject_area_list <![CDATA[<ifdef code="if_other_subject"><b>Description of Other</b></ifdef> ^if_other_subject]]></setting>
-          </settings>
         </placement>
         <placement code="ca_attribute_abstract">
           <bundle>ca_collections.abstract</bundle>
@@ -10463,12 +11009,24 @@
           <bundle>ca_collections.mission_statement</bundle>
           <settings>
             <setting name="label" locale="en_US">Organization Mission Statement (at time of grant)</setting>
+            <setting name="format">^mission_text</setting>
           </settings>
         </placement>
-        <placement code="ca_attribute_contents_file">
-          <bundle>ca_collections.contents_file</bundle>
+        <!-- does this work (below)? -->
+        <placement code="products">
+          <bundle>ca_collections.children.preferred_labels</bundle>
+        </placement>
+        <placement code="ca_attribute_file_content">
+          <bundle>ca_collections.file_content_grant</bundle>
+        </placement>
+        <placement code="ca_attribute_file_notes">
+          <bundle>ca_collections.file_notes</bundle>
+        </placement>
+        <placement code="ca_attribute_revisit_notes">
+          <bundle>ca_collections.revisit_notes</bundle>
           <settings>
-            <setting name="format">correspondence: ^correspondence, images: ^file_images, press coverage: ^press_coverage, press release: ^press_release, printed material: ^printed_material, project reports: ^project_report</setting>
+            <setting name="label" locale="en_US">Needs to be revisited?</setting>
+            <setting name="format">^revisit</setting>
           </settings>
         </placement>
       </bundlePlacements>
@@ -10486,33 +11044,31 @@
             <setting name="label" locale="en_US">Public Programs Number</setting>
           </settings>
         </placement>
-        <placement code="preferred_labels">
-          <bundle>ca_occurrences.preferred_labels</bundle>
-          <settings>
-            <setting name="label" locale="en_US">Public Program Title</setting>
-          </settings>
-        </placement>
         <placement code="ca_attribute_event_dates">
           <bundle>ca_occurrences.event_dates</bundle>
           <settings>
             <setting name="label" locale="en_US">Public program year</setting>
           </settings>
         </placement>
+        <placement code="type">
+          <bundle>ca_occurrences.type_id</bundle>
+          <settings>
+            <setting name="label" locale="en_US">Public Program Type</setting>
+          </settings>
+        </placement>
         <placement code="ca_attribute_subject_area">
           <bundle>ca_occurrences.subject_area</bundle>
-          <settings>
-            <setting name="format">^subject_area_list <![CDATA[<ifdef code="if_other_subject"><b>Description of Other</b></ifdef> ^if_other_subject]]></setting>
-          </settings>
         </placement>
         <placement code="ca_attribute_abstract">
           <bundle>ca_occurrences.abstract</bundle>
           <settings>
-            <setting name="format">^project_abstract, ^abstract_source</setting>
+            <setting name="format">^project_abstract<![CDATA[<ifdef code="abstract_source"> <b>Source:</b> ^abstract_source</ifdef>]]></setting>
           </settings>
         </placement>
         <placement code="contributor">
           <bundle>ca_entities</bundle>
           <settings>
+            <setting name="restrict_to_relationship_types">architect</setting>
             <setting name="restrict_to_relationship_types">curator</setting>
             <setting name="restrict_to_relationship_types">artist</setting>
             <setting name="restrict_to_relationship_types">performer</setting>
@@ -10525,15 +11081,53 @@
             <setting name="render">makeEditorLink</setting>
             <setting name="delimiter"><![CDATA[<br/><br/>]]></setting>
             <setting name="label" locale="en_US">Contributors</setting>
-            <setting name="format">^preferred_labels.surname,^preferred_labels.forename (^relationship_typename)</setting>
+            <setting name="format">^preferred_labels.surname, ^preferred_labels.forename (^relationship_typename)</setting>
           </settings>
         </placement>
-        <placement code="ca_attribute_contents_program_file">
-          <bundle>ca_occurrences.contents_program_file</bundle>
+        <placement code="ca_attribute_file_prog">
+          <bundle>ca_occurrences.file_prog</bundle>
+        </placement> 
+        <placement code="grants">
+          <bundle>ca_collections</bundle>
           <settings>
-            <setting name="format">correspondence: ^correspondence_program, contract: ^contract, budget: ^budget</setting>
+            <setting name="restrict_to_types">grant</setting>
+            <setting name="render">makeEditorLink</setting>
+            <setting name="delimiter"><![CDATA[<br/><br/>]]></setting>
+            <setting name="label" locale="en_US">Related Grants</setting>
+            <setting name="format">^preferred_labels</setting>
           </settings>
-        </placement>  
+        </placement>
+        <placement code="grant_products">
+          <bundle>ca_collections</bundle>
+          <settings>
+            <setting name="restrict_to_types">book</setting>
+            <setting name="restrict_to_types">exh</setting>
+            <setting name="restrict_to_types">aj</setting>
+            <setting name="restrict_to_types">thesis</setting>
+            <setting name="restrict_to_types">research</setting>
+            <setting name="restrict_to_types">film</setting>
+            <setting name="restrict_to_types">new_media</setting>
+            <setting name="restrict_to_types">website</setting>
+            <setting name="restrict_to_types">database</setting>
+            <setting name="restrict_to_types">other_media</setting>
+            <setting name="restrict_to_types">event</setting>
+            <setting name="restrict_to_types">other</setting>
+            <setting name="render">makeEditorLink</setting>
+            <setting name="delimiter"><![CDATA[<br/><br/>]]></setting>
+            <setting name="label" locale="en_US">Related Projects</setting>
+            <setting name="format">^preferred_labels ^idno</setting>
+          </settings>
+        </placement>
+        <placement code="ca_attribute_prog_file_notes">
+          <bundle>ca_occurrences.prog_file_notes</bundle>
+        </placement>
+        <placement code="ca_attribute_revisit_notes">
+          <bundle>ca_occurrences.revisit_notes</bundle>
+          <settings>
+            <setting name="label" locale="en_US">Needs to be revisited?</setting>
+            <setting name="format">^revisit</setting>
+          </settings>
+        </placement>
       </bundlePlacements>
     </display>
     <display code="art_object_summ" type="ca_objects" system="1">
@@ -10576,9 +11170,214 @@
         </placement>
         <placement code="ca_attribute_dimensions">
           <bundle>ca_objects.dimensions</bundle>
+          <settings>
+            <setting name="format"><![CDATA[<ifdef code="length"> ^length </ifdef><ifdef code="height">X ^height</ifdef><ifdef code="width"> X ^width </ifdef>]]></setting>
+          </settings>
         </placement>
-        
-           
+        <placement code="ca_attribute_description">
+          <bundle>ca_objects.description</bundle>
+        </placement>
+        <placement code="ca_attribute_credit_line">
+          <bundle>ca_objects.credit_line</bundle>
+        </placement>
+        <placement code="ca_attribute_rights_repro">
+          <bundle>ca_objects.rights_repro</bundle>
+        </placement>
+        <placement code="ca_attribute_condition_object">
+          <bundle>ca_objects.condition_objects</bundle>
+          <settings>
+            <setting name="label" locale="en_US">Overall Condition</setting>
+            <setting name="format">^overall</setting>
+          </settings>
+        </placement>
+        <placement code="ca_attribute_revisit_notes">
+          <bundle>ca_objects.revisit_notes</bundle>
+          <settings>
+            <setting name="label" locale="en_US">Needs to be revisited?</setting>
+            <setting name="format">^revisit</setting>
+          </settings>
+        </placement>
+        <placement code="ca_attribute_acquisition_info">
+          <bundle>ca_objects.acquisition_info</bundle>
+          <settings>
+            <setting name="label" locale="en_US">Acquisition Type</setting>
+            <setting name="format">^acquisition_type</setting>
+          </settings>
+        </placement>
+      </bundlePlacements>
+    </display>
+    <display code="entity_summ" type="ca_entities" system="1">
+      <labels>
+        <label locale="en_US">
+          <name>Entity Summary</name>
+        </label>
+      </labels>
+      <bundlePlacements>
+        <placement code="preferred_labels">
+          <bundle>ca_entities.preferred_labels</bundle>
+          <settings>
+            <setting name="label" locale="en_US">Legal Name</setting>
+          </settings>
+        </placement>
+        <placement code="nonpreferred_labels">
+          <bundle>ca_entities.nonpreferred_labels</bundle>
+          <settings>
+            <setting name="label" locale="en_US">Published Name</setting>
+          </settings>
+        </placement>
+        <placement code="ca_attribute_birth">
+          <bundle>ca_entities.birth_date</bundle>
+        </placement>
+        <placement code="ca_attribute_death">
+          <bundle>ca_entities.obit_info.death_date</bundle>
+          <settings>
+            <setting name="label" locale="en_US">Death Date</setting>
+          </settings>
+        </placement>
+        <placement code="ca_attribute_bio">
+          <bundle>ca_entities.biography.bio_text</bundle>
+          <settings>
+            <setting name="label" locale="en_US">Biography</setting>
+          </settings>
+        </placement>
+        <placement code="ca_attribute_bio_date">
+          <bundle>ca_entities.biography.bio_date</bundle>
+          <settings>
+            <setting name="label" locale="en_US">Biography Date</setting>
+          </settings>
+        </placement>
+        <placement code="ca_attribute_bio_cite">
+          <bundle>ca_entities.biography.bio_citation</bundle>
+          <settings>
+            <setting name="label" locale="en_US">Biography Citation</setting>
+          </settings>
+        </placement>
+        <placement code="ca_attribute_obit">
+          <bundle>ca_entities.obit_info</bundle>
+          <settings>
+            <setting name="label" locale="en_US">Obituary</setting>
+            <setting name="format">^obituary_text ^obituary_source</setting>
+          </settings>
+        </placement>
+        <placement code="address">
+          <bundle>ca_entities.address</bundle>
+          <settings>
+            <setting name="delimiter">, </setting>
+          </settings>
+        </placement>
+        <placement code="ca_attribute_email">
+          <bundle>ca_entities.email</bundle>
+        </placement>
+        <placement code="ca_attribute_web">
+          <bundle>ca_entities.external_link</bundle>
+        </placement>
+        <placement code="ca_attribute_org_type">
+          <bundle>ca_entities.org_type</bundle>
+        </placement>
+        <placement code="ca_attribute_mission">
+          <bundle>ca_entities.mission_statement</bundle>
+          <settings>
+            <setting name="format">^mission_text<![CDATA[<ifdef code="mission_date"><b>Date:</b>^mission_date</ifdef><ifdef code="mission_citation"><b>Citation:</b> ^mission_citation</ifdef>]]></setting>
+          </settings>
+        </placement>
+        <placement code="grant">
+          <bundle>ca_collections</bundle>
+          <settings>
+            <setting name="restrict_to_relationship_types">grantee</setting>
+            <setting name="restrict_to_types">grant</setting>
+            <setting name="render">makeEditorLink</setting>
+            <setting name="delimiter">;</setting>
+            <setting name="label" locale="en_US">Grants</setting>
+            <setting name="format">^preferred_labels</setting>
+          </settings>
+        </placement>
+        <placement code="project">
+          <bundle>ca_collections</bundle>
+          <settings>
+            <setting name="restrict_to_relationship_types">author</setting>
+            <setting name="restrict_to_relationship_types">artist</setting>
+            <setting name="restrict_to_relationship_types">collaborator</setting>
+            <setting name="restrict_to_relationship_types">consultant</setting>
+            <setting name="restrict_to_relationship_types">contributor</setting>
+            <setting name="restrict_to_relationship_types">creator</setting>
+            <setting name="restrict_to_relationship_types">curator</setting>
+            <setting name="restrict_to_relationship_types">editor</setting>
+            <setting name="restrict_to_relationship_types">producer</setting>
+            <setting name="restrict_to_relationship_types">publisher</setting>
+            <setting name="restrict_to_relationship_types">subject</setting>
+            <setting name="restrict_to_relationship_types">photographer</setting>
+            <setting name="restrict_to_relationship_types">translator</setting>
+            <setting name="restrict_to_relationship_types">compiler</setting>
+            <setting name="restrict_to_relationship_types">designer</setting>
+            <setting name="restrict_to_types">exh</setting>
+            <setting name="restrict_to_types">event</setting>
+            <setting name="restrict_to_types">research</setting>
+            <setting name="restrict_to_types">book</setting>
+            <setting name="restrict_to_types">aj</setting>
+            <setting name="restrict_to_types">other_media</setting>
+            <setting name="restrict_to_types">new_media</setting>
+            <setting name="restrict_to_types">database</setting>
+            <setting name="restrict_to_types">website</setting>
+            <setting name="restrict_to_types">other</setting>
+            <setting name="restrict_to_types">film</setting>
+            <setting name="restrict_to_types">thesis</setting>
+            <setting name="render">makeEditorLink</setting>
+            <setting name="delimiter">;</setting>
+            <setting name="label" locale="en_US">Related Grant Projects</setting>
+            <setting name="format">^preferred_labels (^type_id)</setting>
+          </settings>
+        </placement>
+        <placement code="programs">
+          <bundle>ca_occurrences</bundle>
+          <settings>
+            <setting name="restrict_to_relationship_types">performer</setting>
+            <setting name="restrict_to_relationship_types">lecturer</setting>
+            <setting name="restrict_to_relationship_types">speaker</setting>
+            <setting name="restrict_to_relationship_types">organizer</setting>
+            <setting name="restrict_to_relationship_types">sponsor</setting>
+            <setting name="restrict_to_relationship_types">subject</setting>
+            <setting name="restrict_to_relationship_types">curator</setting>
+            <setting name="restrict_to_relationship_types">panelist</setting>
+            <setting name="restrict_to_relationship_types">participant</setting>
+            <setting name="restrict_to_relationship_types">artist</setting>
+            <setting name="restrict_to_relationship_types">moderator</setting>
+            <setting name="restrict_to_relationship_types">curator</setting>
+            <setting name="restrict_to_relationship_types">architect</setting>
+            <setting name="render">makeEditorLink</setting>
+            <setting name="delimiter">;</setting>
+            <setting name="label" locale="en_US">Related Public Programs</setting>
+            <setting name="format">^preferred_labels (^type_id)</setting>
+          </settings>
+        </placement>
+        <placement code="individuals">
+          <bundle>ca_entities.related</bundle>
+          <settings>
+            <setting name="restrict_to_relationship_types">board</setting>
+            <setting name="restrict_to_relationship_types">chair</setting>
+            <setting name="restrict_to_relationship_types">curator</setting>
+            <setting name="restrict_to_relationship_types">dean</setting>
+            <setting name="restrict_to_relationship_types">director</setting>
+            <setting name="restrict_to_relationship_types">head</setting>
+            <setting name="restrict_to_relationship_types">president</setting>
+            <setting name="restrict_to_relationship_types">professor</setting>
+            <setting name="restrict_to_types">ind</setting>
+            <setting name="label" locale="en_US">Related Individual(s)</setting>
+            <setting name="render">makeEditorLink</setting>
+            <setting name="delimiter">;</setting>
+            <setting name="format">^preferred_labels.surname, ^preferred_labels.forename (^relationship_typename)</setting>
+          </settings>
+        </placement>
+        <placement code="contacts">
+          <bundle>ca_entities.related</bundle>
+          <settings>
+            <setting name="restrict_to_relationship_types">contact</setting>
+            <setting name="restrict_to_types">ind</setting>
+            <setting name="label" locale="en_US">Related Contacts</setting>
+            <setting name="render">makeEditorLink</setting>
+            <setting name="delimiter">;</setting>
+            <setting name="format">^preferred_labels.surname, ^preferred_labels.forename (^relationship_typename)</setting>
+          </settings>
+        </placement>
       </bundlePlacements>
     </display>
   </displays>

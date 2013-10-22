@@ -1569,6 +1569,51 @@ class BaseModel extends BaseObject {
 		return false;
 	}
 	# --------------------------------------------------------------------------------
+	/**
+	 * Returns array of intrinsic field value arrays for the specified rows
+	 *
+	 * @param array $pa_ids An array of row_ids to get field values for
+	 * @param $ps_table_name string The table to fetch values from. If omitted the name of the subclass through which the method was invoked is uses. This means that, for example, ca_entities::getFieldValueArraysForIDs(array(1,2,3)) and BaseModel::getFieldValueArraysForIDs(array(1,2,3), "ca_entities") are the same thing.
+	 * @return array An array of value arrays indexed by row_id
+	 */
+	static function getFieldValueArraysForIDs($pa_ids, $ps_table_name=null) {
+		if(!is_array($pa_ids) && is_numeric($pa_ids)) {
+			$pa_ids = array($pa_ids);
+		}
+		if (!sizeof($pa_ids)) { return array(); }
+		$va_value_arrays = array();
+		
+		$o_dm = Datamodel::load();
+		
+		$vs_table_name = $ps_table_name ? $ps_table_name : get_called_class();
+		if (!($t_instance = $o_dm->getInstanceByTableName($vs_table_name, true))) { return false; }
+		$vs_pk = $t_instance->primaryKey();
+		
+		// first check cache
+		foreach($pa_ids as $vn_i => $vn_id) {
+			if (isset(BaseModel::$s_instance_cache[$vs_table_name][$vn_id])) {
+				$va_value_arrays[$vn_id] = BaseModel::$s_instance_cache[$vs_table_name][$vn_id];
+				unset($pa_ids[$vn_i]);
+			}
+		}
+		
+		if (!sizeof($pa_ids)) { return $va_value_arrays; }
+		
+		$o_db = $t_instance->getDb();
+		
+		$qr_res = $o_db->query("
+			SELECT * FROM {$vs_table_name} WHERE {$vs_pk} IN (?)
+		", array($pa_ids));
+		
+		// pull values from database
+		while($qr_res->nextRow()) {
+			$va_row = $qr_res->getRow();
+			$va_value_arrays[$va_row[$vs_pk]] = $va_row;
+		}
+		
+		return $va_value_arrays;
+	}
+	# --------------------------------------------------------------------------------
 	# --- Content methods (just your standard Create, Return, Update, Delete methods)
 	# --------------------------------------------------------------------------------
 	/**
@@ -6060,12 +6105,14 @@ class BaseModel extends BaseObject {
 					return null;
 				}
 			}
-			$vn_hierarchy_id = $this->get($vs_hier_id_fld);
 			
 			$vs_hier_id_sql = "";
-			if ($vn_hierarchy_id) {
-				// TODO: verify hierarchy_id exists
-				$vs_hier_id_sql = " AND (".$vs_hier_id_fld." = ".$vn_hierarchy_id.")";
+			if ($vs_hier_id_fld) {
+				$vn_hierarchy_id = $this->get($vs_hier_id_fld);
+				if ($vn_hierarchy_id) {
+					// TODO: verify hierarchy_id exists
+					$vs_hier_id_sql = " AND (".$vs_hier_id_fld." = ".$vn_hierarchy_id.")";
+				}
 			}
 			
 			
@@ -9991,6 +10038,7 @@ $pa_options["display_form_field_tips"] = true;
 						if ($vn_limit && ($vn_c >= $vn_limit)) { break; }
 					}
 				}
+				return $va_instances;
 				break;
 			case 'firstid':
 				if($qr_res->nextRow()) {

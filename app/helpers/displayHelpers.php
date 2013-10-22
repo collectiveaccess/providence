@@ -852,7 +852,7 @@ require_once(__CA_LIB_DIR__."/ca/ApplicationPluginManager.php");
 						$vs_buf .= "<div><strong>"._t("Related %1", $o_dm->getTableProperty($vs_rel_table, 'NAME_PLURAL'))."</strong>: <br/>\n";
 						
 						$vs_screen = '';
-						if ($t_ui = ca_editor_uis::loadDefaultUI($vs_rel_table, $po_request, null)) {
+						if ($t_ui = ca_editor_uis::loadDefaultUI($vs_rel_table, $po_view->request, null)) {
 							$vs_screen = $t_ui->getScreenWithBundle('ca_object_representations', $po_request);
 						}
 						foreach($va_objects as $vn_rel_id => $va_rel_info) {
@@ -1783,6 +1783,10 @@ require_once(__CA_LIB_DIR__."/ca/ApplicationPluginManager.php");
 	 *		placeholderPrefix = attribute container to implicitly place primary record fields into. Ex. if the table is "ca_entities" and the placeholder is "address" then tags like ^city will resolve to ca_entities.address.city
 	 *		requireLinkTags = if set then links are only added when explicitly defined with <l> tags. Default is to make the entire text a link in the absence of <l> tags.
 	 *		resolveLinksUsing = 
+	 *		primaryIDs = row_ids for primary rows in related table, keyed by table name; when resolving ambiguous relationships the row_ids will be excluded from consideration. This option is rarely used and exists primarily to take care of a single
+	 *						edge case: you are processing a template relative to a self-relationship such as ca_entities_x_entities that includes references to the subject table (ca_entities, in the case of ca_entities_x_entities). There are
+	 *						two possible paths to take in this situations; primaryIDs lets you specify which ones you *don't* want to take by row_id. For interstitial editors, the ids will be set to a single id: that of the subject (Eg. ca_entities) row
+	 *						from which the interstitial was launched.
 	 * @return mixed Output of processed templates
 	 */
 	function caProcessTemplateForIDs($ps_template, $pm_tablename_or_num, $pa_row_ids, $pa_options=null) {
@@ -1791,12 +1795,13 @@ require_once(__CA_LIB_DIR__."/ca/ApplicationPluginManager.php");
 		if (!isset($pa_options['convertCodesToDisplayText'])) { $pa_options['convertCodesToDisplayText'] = true; }
 		$pb_return_as_array = (bool)caGetOption('returnAsArray', $pa_options, false);
 		
-		
 		if (!is_array($pa_row_ids) || !sizeof($pa_row_ids) || !$ps_template) {
 			return $pb_return_as_array ? array() : "";
 		}
 		unset($pa_options['returnAsArray']);
 		if(!isset($pa_options['requireLinkTags'])) { $pa_options['requireLinkTags'] = true; }
+		
+		$va_primary_ids = caGetOption("primaryIDs", $pa_options, null);
 		
 		$o_dm = Datamodel::load();
 		$ps_tablename = is_numeric($pm_tablename_or_num) ? $o_dm->getTableName($pm_tablename_or_num) : $pm_tablename_or_num;
@@ -1811,7 +1816,7 @@ require_once(__CA_LIB_DIR__."/ca/ApplicationPluginManager.php");
 		$vs_pk = $t_instance->primaryKey();
 		
 		$vs_delimiter = (isset($pa_options['delimiter'])) ? $pa_options['delimiter'] : '; ';
-		
+	
 		$ps_template = str_replace("^_parent", "^{$ps_resolve_links_using}.parent.preferred_labels", $ps_template);
 		$ps_template = str_replace("^_hierarchy", "^{$ps_resolve_links_using}._hierarchyName", $ps_template);
 
@@ -1831,6 +1836,7 @@ require_once(__CA_LIB_DIR__."/ca/ApplicationPluginManager.php");
 		
 		// Parse template
 		$o_dom = new DOMDocument('1.0', 'utf-8');
+		$o_dom->preserveWhiteSpace = true;
 		libxml_use_internal_errors(true);								// don't reported mangled HTML errors
 		$o_dom->loadHTML('<?xml encoding="utf-8">'.$ps_template);
 		libxml_clear_errors();
@@ -1842,6 +1848,8 @@ require_once(__CA_LIB_DIR__."/ca/ApplicationPluginManager.php");
 		
 		$o_options = $o_dom->getElementsByTagName("options");
 		
+		$o_units = $o_dom->getElementsByTagName("unit");
+		
 		
 		$va_ifdefs = array();
 		foreach($o_ifdefs as $o_ifdef) {
@@ -1850,6 +1858,15 @@ require_once(__CA_LIB_DIR__."/ca/ApplicationPluginManager.php");
 			$vs_html = $o_dom->saveXML($o_ifdef);
 			$vs_content = preg_replace("!^<[^\>]+>!", "", $vs_html);
 			$vs_content = preg_replace("!<[^\>]+>$!", "", $vs_content);
+			
+			//
+			// Hack to get around DomDocument trimming leading spaces off of parsed HTML
+			// We try here to detect the trimming and shunt those spaces back where they belong. Seems to work :-)
+			//
+			if (preg_match("!([ ]+){$vs_content}!", $ps_template, $va_match_spaces)) {
+				$vs_html = preg_replace("!{$vs_content}!", $va_match_spaces[1].$vs_content, $vs_html);
+				$vs_content = $va_match_spaces[1].$vs_content;
+			}
 			
 			$va_ifdefs[$vs_code = (string)$o_ifdef->getAttribute('code')][] = array('directive' => $vs_html, 'content' => $vs_content);
 			
@@ -1864,6 +1881,15 @@ require_once(__CA_LIB_DIR__."/ca/ApplicationPluginManager.php");
 			$vs_html = $o_dom->saveXML($o_ifnotdef);
 			$vs_content = preg_replace("!^<[^\>]+>!", "", $vs_html);
 			$vs_content = preg_replace("!<[^\>]+>$!", "", $vs_content);
+			
+			//
+			// Hack to get around DomDocument trimming leading spaces off of parsed HTML
+			// We try here to detect the trimming and shunt those spaces back where they belong. Seems to work :-)
+			//
+			if (preg_match("!([ ]+){$vs_content}!", $ps_template, $va_match_spaces)) {
+				$vs_html = preg_replace("!{$vs_content}!", $va_match_spaces[1].$vs_content, $vs_html);
+				$vs_content = $va_match_spaces[1].$vs_content;
+			}
 			
 			$va_ifnotdefs[$vs_code = (string)$o_ifnotdef->getAttribute('code')][] = array('directive' => $vs_html, 'content' => $vs_content);
 		
@@ -1888,13 +1914,43 @@ require_once(__CA_LIB_DIR__."/ca/ApplicationPluginManager.php");
 			$vs_content = preg_replace("!<[^\>]+>$!", "", $vs_content);
 			$va_betweens[] = array('directive' => $vs_html, 'content' => $vs_content);
 		}
-	
+		
+		$va_units = array();
+		foreach($o_units as $o_unit) {
+			if (!$o_unit) { continue; }
+			
+			$vs_html = $o_dom->saveXML($o_unit);
+			$vs_content = preg_replace("!^<[^\>]+>!", "", $vs_html);
+			$vs_content = preg_replace("!<[^\>]+>$!", "", $vs_content);
+			$va_units[] = array('directive' => $vs_html, 'content' => $vs_content, 'relativeTo' => (string)$o_unit->getAttribute("relativeto"), 'delimiter' => (string)$o_unit->getAttribute("delimiter"));
+		}
+		
 		$va_resolve_links_using_row_ids = array();
 		
 		$va_tag_val_list = $va_defined_tag_list = array();
 		while($qr_res->nextHit()) {
 			$vs_pk_val = $qr_res->get($vs_pk);
 			$va_proc_templates[$vn_i] = $ps_template;
+			
+			foreach($va_units as $va_unit) {
+				if (!$va_unit['content']) { continue; }
+				$va_relative_to_tmp = $va_unit['relativeTo'] ? explode(".", $va_unit['relativeTo']) : array($ps_tablename);
+				if (!($t_instance = $o_dm->getInstanceByTableName($va_relative_to_tmp[0], true))) { print "nothing for ".$va_relative_to_tmp[0]; continue; }
+				$vs_unit_delimiter = caGetOption('delimiter', $va_unit, '; ');
+			
+				if (
+					((sizeof($va_relative_to_tmp) == 1) && ($va_relative_to_tmp[0] == $ps_tablename))
+					||
+					((sizeof($va_relative_to_tmp) >= 1) && ($va_relative_to_tmp[0] == $ps_tablename) && ($va_relative_to_tmp[1] != 'related'))
+				) {
+					$va_relative_ids = $pa_row_ids;
+				} else { 
+					$va_relative_ids = $qr_res->get($t_instance->tableName().".".$t_instance->primaryKey(), array('returnAsArray' => true));
+				}
+				
+				$vs_tmpl_val = caProcessTemplateForIDs($va_unit['content'], $va_relative_to_tmp[0], $va_relative_ids, array_merge($pa_options, array('delimiter' => $vs_unit_delimiter)));
+				$va_proc_templates[$vn_i] = preg_replace("!".preg_quote($va_unit['directive'], "!")."!i", $vs_tmpl_val, $va_proc_templates[$vn_i]);
+			}
 			
 			if ($ps_resolve_links_using != $ps_tablename) {
 				$va_resolve_links_using_row_ids[] = $qr_res->get("{$ps_resolve_links_using}.{$vs_resolve_links_using_pk}");
@@ -1944,7 +2000,6 @@ require_once(__CA_LIB_DIR__."/ca/ApplicationPluginManager.php");
 				
 				foreach($va_relationship_values[$vs_pk_val] as $vn_relation_id => $va_relationship_value_array) {
 					$vb_is_related = false;
-					$va_related_ids = array();
 					$va_val = null;
 					
 					if (isset($va_relationship_value_array[$vs_tag]) && !(isset($pa_options['showHierarchicalLabels']) && $pa_options['showHierarchicalLabels'] && ($vs_tag == 'label'))) {
@@ -1953,7 +2008,9 @@ require_once(__CA_LIB_DIR__."/ca/ApplicationPluginManager.php");
 						if (isset($va_related_values[$vs_pk_val][$vs_tag])) {
 							$va_val = array($vs_val = $va_related_values[$vs_pk_val][$vs_tag]);
 						} else {
+							//
 							// see if this is a reference to a related table
+							//
 							if (($ps_tablename != $va_tmp[0]) && ($t_tmp = $o_dm->getInstanceByTableName($va_tmp[0], true))) {	// if the part of the tag before a "." (or the tag itself if there are no periods) is a related table then try to fetch it as related to the current record
 								if (isset($pa_options['placeholderPrefix']) && $pa_options['placeholderPrefix'] && ($va_tmp[0] != $pa_options['placeholderPrefix']) && (sizeof($va_tmp) == 1)) {
 									$vs_get_spec = array_shift($va_tmp).".".$pa_options['placeholderPrefix'];
@@ -1991,6 +2048,17 @@ require_once(__CA_LIB_DIR__."/ca/ApplicationPluginManager.php");
 									$va_val = array();
 								}
 								
+								if(is_array($va_primary_ids) && isset($va_primary_ids[$va_spec_bits[0]]) && is_array($va_primary_ids[$va_spec_bits[0]])) {
+									$t_rel = $o_dm->getInstanceByTableName($va_spec_bits[0], true);
+									$va_val_ids = $qr_res->get($va_spec_bits[0].".".$t_rel->primaryKey(), array("returnAsArray" => true));
+									foreach($va_primary_ids[$va_spec_bits[0]] as $vn_primary_id) {
+										if (($vn_index = array_search($vn_primary_id, $va_val_ids)) !== false) {
+											unset($va_val[$vn_index]);
+										}
+									}
+								}
+								
+								
 								$va_val_proc = array();
 								
 								switch($va_spec_bits[1]) {
@@ -2023,9 +2091,11 @@ require_once(__CA_LIB_DIR__."/ca/ApplicationPluginManager.php");
 								}
 								$va_val = $va_val_proc;
 								$vb_is_related = true;
-								$va_related_ids = $qr_res->get($va_tmp[0].".".$o_dm->getTablePrimaryKeyName($va_tmp[0]), array('returnAsArray' => true));
 							} else {
-							
+								//
+								// Handle non-related gets
+								//
+								
 								// Default specifiers that end with a modifier to preferred labels
 								if ((sizeof($va_tmp) == 2) && (in_array($va_tmp[1], array('hierarchy', 'children', 'parent', 'related')))) {
 									array_push($va_tmp, 'preferred_labels');
@@ -2094,7 +2164,7 @@ require_once(__CA_LIB_DIR__."/ca/ApplicationPluginManager.php");
 										}
 									}
 									
-									if (sizeof($va_val) > 1) {
+									if ((sizeof($va_val) > 1) && ($va_tmp[0] == 'hierarchy')) {
 										$vs_tag_val_delimiter = caGetOption('delimiter', $va_tag_opts, $vs_delimiter);
 										$va_val = array(join($vs_tag_val_delimiter, $va_val));
 									}
@@ -2451,6 +2521,10 @@ require_once(__CA_LIB_DIR__."/ca/ApplicationPluginManager.php");
 	 *		inlineCreateMessage = 
 	 *		inlineCreateQuery =
 	 *		template = 
+	 *		primaryIDs = row_ids for primary rows in related table, keyed by table name; when resolving ambiguous relationships the row_ids will be excluded from consideration. This option is rarely used and exists primarily to take care of a single
+	 *						edge case: you are processing a template relative to a self-relationship such as ca_entities_x_entities that includes references to the subject table (ca_entities, in the case of ca_entities_x_entities). There are
+	 *						two possible paths to take in this situations; primaryIDs lets you specify which ones you *don't* want to take by row_id. For interstitial editors, the ids will be set to a single id: that of the subject (Eg. ca_entities) row
+	 *						from which the interstitial was launched.
 	 * @return mixed 
 	 */
 global $ca_relationship_lookup_parse_cache;
@@ -2554,6 +2628,8 @@ $ca_relationship_lookup_parse_cache = array();
 			} else {
 				$vs_table = $qr_rel_items->tableName();
 				$vs_pk = $qr_rel_items->primaryKey();
+				
+				$va_primary_ids = (method_exists($pt_rel, "isSelfRelationship") && ($vb_is_self_rel = $pt_rel->isSelfRelationship())) ? caGetOption("primaryIDs", $pa_options, null) : null;
 				while($qr_rel_items->nextHit()) {
 					$vn_id = $qr_rel_items->get("{$vs_rel_table}.{$vs_rel_pk}");
 					if(in_array($vn_id, $va_exclude)) { continue; }
@@ -2616,7 +2692,7 @@ $ca_relationship_lookup_parse_cache = array();
 					}
 					
 					if ($vs_template) {
-						$va_item['_display'] = caProcessTemplateForIDs($vs_template, $vs_table, array($qr_rel_items->get("{$vs_table}.{$vs_pk}")), array('returnAsArray' => false, 'returnAsLink' => true, 'delimiter' => caGetOption('delimiter', $pa_options, $vs_display_delimiter), 'resolveLinksUsing' => $vs_rel_table));
+						$va_item['_display'] = caProcessTemplateForIDs($vs_template, $vs_table, array($qr_rel_items->get("{$vs_table}.{$vs_pk}")), array('returnAsArray' => false, 'returnAsLink' => true, 'delimiter' => caGetOption('delimiter', $pa_options, $vs_display_delimiter), 'resolveLinksUsing' => $vs_rel_table, 'primaryIDs' => $va_primary_ids));
 					}
 					
 					$va_items[$vn_id] = $va_item;

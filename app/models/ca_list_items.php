@@ -685,11 +685,13 @@ class ca_list_items extends RepresentableBaseModel implements IHierarchy {
  		// Is row loaded?
  		if (!$this->getPrimaryKey()) { // this happens when a new list item is about to be created. in those cases we extract the list from the request.
  			$vn_list_id = $this->_getListIDFromRequest($po_request);
+ 		} else {
+ 			$vn_list_id = $this->get('list_id');
  		}
 
  		if(!$vn_list_id) { return false; }
  		
- 		$t_list = new ca_lists($this->get('list_id'));
+ 		$t_list = new ca_lists($vn_list_id);
  		if (!$t_list->getPrimaryKey()) { return false; }
  		
  		return $t_list->isDeletable($po_request);

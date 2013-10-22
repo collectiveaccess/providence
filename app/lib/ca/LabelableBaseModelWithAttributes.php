@@ -536,6 +536,7 @@
 							if ($vn_limit && ($vn_c >= $vn_limit)) { break; }
 						}
 					}
+					return $va_instances;
 					break;
 				case 'firstid':
 					if($qr_res->nextRow()) {

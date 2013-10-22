@@ -95,7 +95,7 @@
 		// OK, what's next is a very stupid way of coding
 		$htmlResult .= "
 		<a href='#' id='showExports' onclick='jQuery(\"#layoutOptionsBox\").hide();  jQuery(\"#showLayoutOptions\").slideDown(1); jQuery(\"#exportsBox\").slideDown(250); jQuery(\"#showExports\").hide();  return false;'>Exports <img src=\"/providence/themes/default/graphics/arrows/arrow_right_gray.gif\" width=\"6\" height=\"7\" border=\"0\"></a>
-		<a href='#' id='showLayoutOptions' onclick='jQuery(\"#exportsBox\").hide();  jQuery(\"#showExports\").slideDown(1); jQuery(\"#layoutOptionsBox\").slideDown(250); jQuery(\"#showLayoutOptions\").hide();  return false;'>Options d'affichage <img src=\"/providence/themes/default/graphics/arrows/arrow_right_gray.gif\" width=\"6\" height=\"7\" border=\"0\"></a>
+		<a href='#' id='showLayoutOptions' onclick='jQuery(\"#exportsBox\").hide();  jQuery(\"#showExports\").slideDown(1); jQuery(\"#layoutOptionsBox\").slideDown(250); jQuery(\"#showLayoutOptions\").hide();  return false;'>" . _('Display Options') . "<img src=\"/providence/themes/default/graphics/arrows/arrow_right_gray.gif\" width=\"6\" height=\"7\" border=\"0\"></a>
  		<div id=\"layoutOptionsBox\" onLoad='jQuery(\"#layoutOptionsBox\").hide()'>
 		<form action='".$_SERVER['REQUEST_URI']."' method='post' id='caSearchOptionsForm' target='_top' enctype='multipart/form-data'>
 		<div class=\"bg\">

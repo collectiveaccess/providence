@@ -94,6 +94,7 @@
 		 *				generateIdnoWithTemplate = A template to use when setting the idno. The template is a value with automatically-set SERIAL values replaced with % characters. Eg. 2012.% will set the created row's idno value to 2012.121 (assuming that 121 is the next number in the serial sequence.) The template is NOT used if idno is passed explicitly as a value in $pa_values.
 		 *				importEvent = if ca_data_import_events instance is passed then the insert/update of the entity will be logged as part of the import
 		 *				importEventSource = if importEvent is passed, then the value set for importEventSource is used in the import event log as the data source. If omitted a default value of "?" is used
+		 *				nonPreferredLabels = an optional array of nonpreferred labels to add to any newly created entities. Each label in the array is an array with required entity label values.
 		 *				log = if KLogger instance is passed then actions will be logged
 		 */
 		static function getEntityID($pa_entity_name, $pn_type_id, $pn_locale_id, $pa_values=null, $pa_options=null) {
@@ -113,8 +114,15 @@
 			$o_log = (isset($pa_options['log']) && $pa_options['log'] instanceof KLogger) ? $pa_options['log'] : null;
 			
 			$va_find_arr = array();
-			if ($pn_type_id) { $va_find_arr['type_id'] = $pn_type_id; }			
-			if (!($vs_idno = isset($pa_values['idno']) ? (string)$pa_values['idno'] : null)) {
+			if ($pn_type_id) { $va_find_arr['type_id'] = $pn_type_id; }		
+			
+			$vs_idno = isset($pa_values['idno']) ? (string)$pa_values['idno'] : null;
+			
+			if (preg_match("!\%!", $vs_idno)) {
+				$pa_options['generateIdnoWithTemplate'] = $vs_idno;
+				$vs_idno = null;
+			}
+			if (!$vs_idno) {
 				if(isset($pa_options['generateIdnoWithTemplate']) && $pa_options['generateIdnoWithTemplate']) {
 					$vs_idno = $t_entity->setIdnoWithTemplate($pa_options['generateIdnoWithTemplate'], array('dontSetValue' => true));
 				}
@@ -205,6 +213,26 @@
 					}
 				}
 				
+				if(is_array($va_nonpreferred_labels = caGetOption("nonPreferredLabels", $pa_options, null))) {
+					if (caIsAssociativeArray($va_nonpreferred_labels)) {
+						// single non-preferred label
+						$va_labels = array($va_nonpreferred_labels);
+					} else {
+						// list of non-preferred labels
+						$va_labels = $va_nonpreferred_labels;
+					}
+					foreach($va_labels as $va_label) {
+						$t_entity->addLabel($va_label, $pn_locale_id, null, false);
+						
+						if ($t_entity->numErrors()) {
+							if(isset($pa_options['outputErrors']) && $pa_options['outputErrors']) {
+								print "[Error] "._t("Could not set non-preferred label for entity %1: %2", $va_label['forename']."/".$va_label['surname'], join('; ', $t_entity->getErrors()))."\n";
+							}
+							if ($o_log) { $o_log->logError(_t("Could not set non-preferred label for entity %1: %2", $va_label['forename']."/".$va_label['surname'], join('; ', $t_entity->getErrors()))); }
+						}
+					}
+				}
+				
 				$vn_entity_id = $t_entity->getPrimaryKey();
 				if ($o_event) { 
 					if ($vb_attr_errors || $vb_label_errors) {
@@ -251,6 +279,7 @@
 		 *				generateIdnoWithTemplate = A template to use when setting the idno. The template is a value with automatically-set SERIAL values replaced with % characters. Eg. 2012.% will set the created row's idno value to 2012.121 (assuming that 121 is the next number in the serial sequence.) The template is NOT used if idno is passed explicitly as a value in $pa_values.
 		 *				importEvent = if ca_data_import_events instance is passed then the insert/update of the place will be logged as part of the import
 		 *				importEventSource = if importEvent is passed, then the value set for importEventSource is used in the import event log as the data source. If omitted a default value of "?" is used
+		 *				nonPreferredLabels = an optional array of nonpreferred labels to add to any newly created places. Each label in the array is an array with required place label values.
 		 *				log = if KLogger instance is passed then actions will be logged
 		 */
 		static function getPlaceID($ps_place_name, $pn_parent_id, $pn_type_id, $pn_locale_id, $pa_values=null, $pa_options=null) {
@@ -268,7 +297,13 @@
 			$vs_event_source = (isset($pa_options['importEventSource']) && $pa_options['importEventSource']) ? $pa_options['importEventSource'] : "?";
 			$o_log = (isset($pa_options['log']) && $pa_options['log'] instanceof KLogger) ? $pa_options['log'] : null;
 
-			if (!($vs_idno = isset($pa_values['idno']) ? (string)$pa_values['idno'] : null)) {
+			$vs_idno = isset($pa_values['idno']) ? (string)$pa_values['idno'] : null;
+			
+			if (preg_match("!\%!", $vs_idno)) {
+				$pa_options['generateIdnoWithTemplate'] = $vs_idno;
+				$vs_idno = null;
+			}
+			if (!$vs_idno) {
 				if(isset($pa_options['generateIdnoWithTemplate']) && $pa_options['generateIdnoWithTemplate']) {
 					$vs_idno = $t_place->setIdnoWithTemplate($pa_options['generateIdnoWithTemplate'], array('dontSetValue' => true));
 				}
@@ -352,16 +387,36 @@
 							}
 						}
 					}
-				}
-				$t_place->insert();
+					$t_place->update();
 				
-				if ($t_place->numErrors()) {
-					if(isset($pa_options['outputErrors']) && $pa_options['outputErrors']) {
-						print "[Error] "._t("Could not set values for place %1: %2", $ps_place_name, join('; ', $t_place->getErrors()))."\n";
+					if ($t_place->numErrors()) {
+						if(isset($pa_options['outputErrors']) && $pa_options['outputErrors']) {
+							print "[Error] "._t("Could not set values for place %1: %2", $ps_place_name, join('; ', $t_place->getErrors()))."\n";
+						}
+						if ($o_log) { $o_log->logError(_t("Could not set values for place %1: %2", $ps_place_name, join('; ', $t_place->getErrors()))); }
+				
+						$vb_attr_errors = true;
 					}
-					if ($o_log) { $o_log->logError(_t("Could not set values for place %1: %2", $ps_place_name, join('; ', $t_place->getErrors()))); }
+				}
 				
-					$vb_attr_errors = true;
+				if(is_array($va_nonpreferred_labels = caGetOption("nonPreferredLabels", $pa_options, null))) {
+					if (caIsAssociativeArray($va_nonpreferred_labels)) {
+						// single non-preferred label
+						$va_labels = array($va_nonpreferred_labels);
+					} else {
+						// list of non-preferred labels
+						$va_labels = $va_nonpreferred_labels;
+					}
+					foreach($va_labels as $va_label) {
+						$t_place->addLabel($va_label, $pn_locale_id, null, false);
+						
+						if ($t_place->numErrors()) {
+							if(isset($pa_options['outputErrors']) && $pa_options['outputErrors']) {
+								print "[Error] "._t("Could not set non-preferred label for place %1: %2", $ps_place_name, join('; ', $t_place->getErrors()))."\n";
+							}
+							if ($o_log) { $o_log->logError(_t("Could not set non-preferred label for place %1: %2", $ps_place_name, join('; ', $t_place->getErrors()))); }
+						}
+					}
 				}
 				
 				$vn_place_id = $t_place->getPrimaryKey();
@@ -412,6 +467,7 @@
 		 *				generateIdnoWithTemplate = A template to use when setting the idno. The template is a value with automatically-set SERIAL values replaced with % characters. Eg. 2012.% will set the created row's idno value to 2012.121 (assuming that 121 is the next number in the serial sequence.) The template is NOT used if idno is passed explicitly as a value in $pa_values.
 		 *				importEvent = if ca_data_import_events instance is passed then the insert/update of the occurrence will be logged as part of the import
 		 *				importEventSource = if importEvent is passed, then the value set for importEventSource is used in the import event log as the data source. If omitted a default value of "?" is used
+		 *				nonPreferredLabels = an optional array of nonpreferred labels to add to any newly created occurrences. Each label in the array is an array with required occurrence label values.
 		 *				log = if KLogger instance is passed then actions will be logged
 		 */
 		static function getOccurrenceID($ps_occ_name, $pn_parent_id, $pn_type_id, $pn_locale_id, $pa_values=null, $pa_options=null) {
@@ -429,7 +485,14 @@
 			$vs_event_source = (isset($pa_options['importEventSource']) && $pa_options['importEventSource']) ? $pa_options['importEventSource'] : "?";
 			$o_log = (isset($pa_options['log']) && $pa_options['log'] instanceof KLogger) ? $pa_options['log'] : null;
 
-			if (!($vs_idno = isset($pa_values['idno']) ? (string)$pa_values['idno'] : null)) {
+			$vs_idno = isset($pa_values['idno']) ? (string)$pa_values['idno'] : null;
+			
+			if (preg_match("!\%!", $vs_idno)) {
+				$pa_options['generateIdnoWithTemplate'] = $vs_idno;
+				$vs_idno = null;
+			}
+			
+			if (!$vs_idno) {
 				if(isset($pa_options['generateIdnoWithTemplate']) && $pa_options['generateIdnoWithTemplate']) {
 					$vs_idno = $t_occurrence->setIdnoWithTemplate($pa_options['generateIdnoWithTemplate'], array('dontSetValue' => true));
 				}
@@ -510,16 +573,36 @@
 							}
 						}
 					}
-				}
-				$t_occurrence->update();
+					$t_occurrence->update();
+								
+					if ($t_occurrence->numErrors()) {
+						if(isset($pa_options['outputErrors']) && $pa_options['outputErrors']) {
+							print "[Error] "._t("Could not set values for occurrence %1: %2", $ps_occ_name, join('; ', $t_occurrence->getErrors()))."\n";
+						}
+						if ($o_log) { $o_log->logError(_t("Could not set values for occurrence %1: %2", $ps_occ_name, join('; ', $t_occurrence->getErrors()))); }
 				
-				if ($t_occurrence->numErrors()) {
-					if(isset($pa_options['outputErrors']) && $pa_options['outputErrors']) {
-						print "[Error] "._t("Could not set values for occurrence %1: %2", $ps_occ_name, join('; ', $t_occurrence->getErrors()))."\n";
+						$vb_attr_errors = true;
 					}
-					if ($o_log) { $o_log->logError(_t("Could not set values for occurrence %1: %2", $ps_occ_name, join('; ', $t_occurrence->getErrors()))); }
+				}
 				
-					$vb_attr_errors = true;
+				if(is_array($va_nonpreferred_labels = caGetOption("nonPreferredLabels", $pa_options, null))) {
+					if (caIsAssociativeArray($va_nonpreferred_labels)) {
+						// single non-preferred label
+						$va_labels = array($va_nonpreferred_labels);
+					} else {
+						// list of non-preferred labels
+						$va_labels = $va_nonpreferred_labels;
+					}
+					foreach($va_labels as $va_label) {
+						$t_occurrence->addLabel($va_label, $pn_locale_id, null, false);
+						
+						if ($t_occurrence->numErrors()) {
+							if(isset($pa_options['outputErrors']) && $pa_options['outputErrors']) {
+								print "[Error] "._t("Could not set non-preferred label for occurrence %1: %2", $ps_occ_name, join('; ', $t_occurrence->getErrors()))."\n";
+							}
+							if ($o_log) { $o_log->logError(_t("Could not set non-preferred label for occurrence %1: %2", $ps_occ_name, join('; ', $t_occurrence->getErrors()))); }
+						}
+					}
 				}
 				
 				$vn_occurrence_id = $t_occurrence->getPrimaryKey();
@@ -562,6 +645,7 @@
 		 *				returnInstance = return ca_occurrences instance rather than occurrence_id. Default is false. 
 		 *				importEvent = if ca_data_import_events instance is passed then the insert/update of the list item will be logged as part of the import
 		 *				importEventSource = if importEvent is passed, then the value set for importEventSource is used in the import event log as the data source. If omitted a default value of "?" is used
+		 *				nonPreferredLabels = an optional array of nonpreferred labels to add to any newly created list items. Each label in the array is an array with required list item label values.
 		 *				log = if KLogger instance is passed then actions will be logged
 		 */
 		static function getListItemID($pm_list_code_or_id, $ps_item_idno, $pn_type_id, $pn_locale_id, $pa_values=null, $pa_options=null) {
@@ -574,7 +658,7 @@
 			
 			$vs_singular_label = (isset($pa_values['preferred_labels']['name_singular']) && $pa_values['preferred_labels']['name_singular']) ? $pa_values['preferred_labels']['name_singular'] : '';
 			if (!$vs_singular_label) { $vs_singular_label = (isset($pa_values['name_singular']) && $pa_values['name_singular']) ? $pa_values['name_singular'] : $ps_item_idno; }
-			$vs_plural_label = (isset($pa_values['preferred_labels']['name_plural']) && $pa_values['preferred_labels']['name_plural']) ? $pa_values['preferred_labels']['name_plural'] : $ps_item_idno;
+			$vs_plural_label = (isset($pa_values['preferred_labels']['name_plural']) && $pa_values['preferred_labels']['name_plural']) ? $pa_values['preferred_labels']['name_plural'] : '';
 			if (!$vs_plural_label) { $vs_plural_label = (isset($pa_values['name_plural']) && $pa_values['name_plural']) ? $pa_values['name_plural'] : $ps_item_idno; }
 			
 			if (!$vs_singular_label) { $vs_singular_label = $vs_plural_label; }
@@ -684,6 +768,26 @@
 					$vb_label_errors = true;
 				}
 				
+				if(is_array($va_nonpreferred_labels = caGetOption("nonPreferredLabels", $pa_options, null))) {
+					if (caIsAssociativeArray($va_nonpreferred_labels)) {
+						// single non-preferred label
+						$va_labels = array($va_nonpreferred_labels);
+					} else {
+						// list of non-preferred labels
+						$va_labels = $va_nonpreferred_labels;
+					}
+					foreach($va_labels as $va_label) {
+						$t_item->addLabel($va_label, $pn_locale_id, null, false);
+						
+						if ($t_item->numErrors()) {
+							if(isset($pa_options['outputErrors']) && $pa_options['outputErrors']) {
+								print "[Error] "._t("Could not set non-preferred label for list item %1: %2", "{$vs_singular_label}/{$vs_plural_label}/{$ps_item_idno}", join('; ', $t_item->getErrors()))."\n";
+							}
+							if ($o_log) { $o_log->logError(_t("Could not set non-preferred label for list item %1: %2", "{$vs_singular_label}/{$vs_plural_label}/{$ps_item_idno}", join('; ', $t_item->getErrors()))); }
+						}
+					}
+				}
+				
 				$vn_item_id = DataMigrationUtils::$s_cached_list_item_ids[$pm_list_code_or_id.'/'.$ps_item_idno.'/'.$vn_parent_id] = $t_item->getPrimaryKey();
 				
 				if ($o_event) {
@@ -724,6 +828,7 @@
 		 *				generateIdnoWithTemplate = A template to use when setting the idno. The template is a value with automatically-set SERIAL values replaced with % characters. Eg. 2012.% will set the created row's idno value to 2012.121 (assuming that 121 is the next number in the serial sequence.) The template is NOT used if idno is passed explicitly as a value in $pa_values.
 		 *				importEvent = if ca_data_import_events instance is passed then the insert/update of the collection will be logged as part of the import
 		 *				importEventSource = if importEvent is passed, then the value set for importEventSource is used in the import event log as the data source. If omitted a default value of "?" is used
+		 *				nonPreferredLabels = an optional array of nonpreferred labels to add to any newly created collections. Each label in the array is an array with required collection label values.
 		 *				log = if KLogger instance is passed then actions will be logged
 		 */
 		static function getCollectionID($ps_collection_name, $pn_type_id, $pn_locale_id, $pa_values=null, $pa_options=null) {
@@ -741,7 +846,13 @@
 			$vs_event_source = (isset($pa_options['importEventSource']) && $pa_options['importEventSource']) ? $pa_options['importEventSource'] : "?";
 			$o_log = (isset($pa_options['log']) && $pa_options['log'] instanceof KLogger) ? $pa_options['log'] : null;
 
-			if (!($vs_idno = isset($pa_values['idno']) ? (string)$pa_values['idno'] : null)) {
+			$vs_idno = isset($pa_values['idno']) ? (string)$pa_values['idno'] : null;
+			
+			if (preg_match("!\%!", $vs_idno)) {
+				$pa_options['generateIdnoWithTemplate'] = $vs_idno;
+				$vs_idno = null;
+			}
+			if (!$vs_idno) {
 				if(isset($pa_options['generateIdnoWithTemplate']) && $pa_options['generateIdnoWithTemplate']) {
 					$vs_idno = $t_collection->setIdnoWithTemplate($pa_options['generateIdnoWithTemplate'], array('dontSetValue' => true));
 				}
@@ -819,16 +930,36 @@
 							}
 						}
 					}
-				}
-				$t_collection->update();
+					$t_collection->update();
+									
+					if ($t_collection->numErrors()) {
+						if(isset($pa_options['outputErrors']) && $pa_options['outputErrors']) {
+							print "[Error] "._t("Could not set values for collection %1: %2", $ps_collection_name, join('; ', $t_collection->getErrors()))."\n";
+						}
+						if ($o_log) { $o_log->logError(_t("Could not set values for collection %1: %2", $ps_collection_name, join('; ', $t_collection->getErrors()))); }
 				
-				if ($t_collection->numErrors()) {
-					if(isset($pa_options['outputErrors']) && $pa_options['outputErrors']) {
-						print "[Error] "._t("Could not set values for collection %1: %2", $ps_collection_name, join('; ', $t_collection->getErrors()))."\n";
+						$vb_attr_errors = true;
 					}
-					if ($o_log) { $o_log->logError(_t("Could not set values for collection %1: %2", $ps_collection_name, join('; ', $t_collection->getErrors()))); }
+				}
 				
-					$vb_attr_errors = true;
+				if(is_array($va_nonpreferred_labels = caGetOption("nonPreferredLabels", $pa_options, null))) {
+					if (caIsAssociativeArray($va_nonpreferred_labels)) {
+						// single non-preferred label
+						$va_labels = array($va_nonpreferred_labels);
+					} else {
+						// list of non-preferred labels
+						$va_labels = $va_nonpreferred_labels;
+					}
+					foreach($va_labels as $va_label) {
+						$t_collection->addLabel($va_label, $pn_locale_id, null, false);
+						
+						if ($t_collection->numErrors()) {
+							if(isset($pa_options['outputErrors']) && $pa_options['outputErrors']) {
+								print "[Error] "._t("Could not set non-preferred label for collection %1: %2", $ps_collection_name, join('; ', $t_collection->getErrors()))."\n";
+							}
+							if ($o_log) { $o_log->logError(_t("Could not set non-preferred label for collection %1: %2", $ps_collection_name, join('; ', $t_collection->getErrors()))); }
+						}
+					}
 				}
 				
 				$vn_collection_id = $t_collection->getPrimaryKey();
@@ -879,6 +1010,7 @@
 		 *				generateIdnoWithTemplate = A template to use when setting the idno. The template is a value with automatically-set SERIAL values replaced with % characters. Eg. 2012.% will set the created row's idno value to 2012.121 (assuming that 121 is the next number in the serial sequence.) The template is NOT used if idno is passed explicitly as a value in $pa_values.
 		 *				importEvent = if ca_data_import_events instance is passed then the insert/update of the storage location will be logged as part of the import
 		 *				importEventSource = if importEvent is passed, then the value set for importEventSource is used in the import event log as the data source. If omitted a default value of "?" is used
+		 *				nonPreferredLabels = an optional array of nonpreferred labels to add to any newly created storage locations. Each label in the array is an array with required storage location label values.
 		 *				log = if KLogger instance is passed then actions will be logged
 		 */
 		static function getStorageLocationID($ps_location_name, $pn_parent_id, $pn_type_id, $pn_locale_id, $pa_values=null, $pa_options=null) {
@@ -897,7 +1029,13 @@
 			$o_log = (isset($pa_options['log']) && $pa_options['log'] instanceof KLogger) ? $pa_options['log'] : null;
 			
 			
-			if (!($vs_idno = isset($pa_values['idno']) ? (string)$pa_values['idno'] : null)) {
+			$vs_idno = isset($pa_values['idno']) ? (string)$pa_values['idno'] : null;
+			
+			if (preg_match("!\%!", $vs_idno)) {
+				$pa_options['generateIdnoWithTemplate'] = $vs_idno;
+				$vs_idno = null;
+			}
+			if (!$vs_idno) {
 				if(isset($pa_options['generateIdnoWithTemplate']) && $pa_options['generateIdnoWithTemplate']) {
 					$vs_idno = $t_location->setIdnoWithTemplate($pa_options['generateIdnoWithTemplate'], array('dontSetValue' => true));
 				}
@@ -973,16 +1111,36 @@
 							}
 						}
 					}
-				}
-				$t_location->update();
+					$t_location->update();
+									
+					if ($t_location->numErrors()) {
+						if(isset($pa_options['outputErrors']) && $pa_options['outputErrors']) {
+							print "[Error] "._t("Could not set values for storage location %1: %2", $ps_location_name, join('; ', $t_location->getErrors()))."\n";
+						}
+						if ($o_log) { $o_log->logError(_t("Could not set values for storage location %1: %2", $ps_location_name, join('; ', $t_location->getErrors()))); }
 				
-				if ($t_location->numErrors()) {
-					if(isset($pa_options['outputErrors']) && $pa_options['outputErrors']) {
-						print "[Error] "._t("Could not set values for storage location %1: %2", $ps_location_name, join('; ', $t_location->getErrors()))."\n";
+						$vb_attr_errors = true;
 					}
-					if ($o_log) { $o_log->logError(_t("Could not set values for storage location %1: %2", $ps_location_name, join('; ', $t_location->getErrors()))); }
+				}
 				
-					$vb_attr_errors = true;
+				if(is_array($va_nonpreferred_labels = caGetOption("nonPreferredLabels", $pa_options, null))) {
+					if (caIsAssociativeArray($va_nonpreferred_labels)) {
+						// single non-preferred label
+						$va_labels = array($va_nonpreferred_labels);
+					} else {
+						// list of non-preferred labels
+						$va_labels = $va_nonpreferred_labels;
+					}
+					foreach($va_labels as $va_label) {
+						$t_location->addLabel($va_label, $pn_locale_id, null, false);
+						
+						if ($t_location->numErrors()) {
+							if(isset($pa_options['outputErrors']) && $pa_options['outputErrors']) {
+								print "[Error] "._t("Could not set non-preferred label for location %1: %2", $ps_location_name, join('; ', $t_location->getErrors()))."\n";
+							}
+							if ($o_log) { $o_log->logError(_t("Could not set non-preferred label for location %1: %2", $ps_location_name, join('; ', $t_location->getErrors()))); }
+						}
+					}
 				}
 				
 				$vn_location_id = $t_location->getPrimaryKey();
@@ -1033,6 +1191,7 @@
 		 *				generateIdnoWithTemplate = A template to use when setting the idno. The template is a value with automatically-set SERIAL values replaced with % characters. Eg. 2012.% will set the created row's idno value to 2012.121 (assuming that 121 is the next number in the serial sequence.) The template is NOT used if idno is passed explicitly as a value in $pa_values.
 		 *				importEvent = if ca_data_import_events instance is passed then the insert/update of the object will be logged as part of the import
 		 *				importEventSource = if importEvent is passed, then the value set for importEventSource is used in the import event log as the data source. If omitted a default value of "?" is used
+		 *				nonPreferredLabels = an optional array of nonpreferred labels to add to any newly created objects. Each label in the array is an array with required object label values.
 		 *				log = if KLogger instance is passed then actions will be logged
 		 */
 		static function getObjectID($ps_object_name, $pn_parent_id, $pn_type_id, $pn_locale_id, $pa_values=null, $pa_options=null) {
@@ -1050,7 +1209,13 @@
 			$vs_event_source = (isset($pa_options['importEventSource']) && $pa_options['importEventSource']) ? $pa_options['importEventSource'] : "?";
 			$o_log = (isset($pa_options['log']) && $pa_options['log'] instanceof KLogger) ? $pa_options['log'] : null;
 
-			if (!($vs_idno = isset($pa_values['idno']) ? (string)$pa_values['idno'] : null)) {
+			$vs_idno = isset($pa_values['idno']) ? (string)$pa_values['idno'] : null;
+			
+			if (preg_match("!\%!", $vs_idno)) {
+				$pa_options['generateIdnoWithTemplate'] = $vs_idno;
+				$vs_idno = null;
+			}
+			if (!$vs_idno) {
 				if(isset($pa_options['generateIdnoWithTemplate']) && $pa_options['generateIdnoWithTemplate']) {
 					$vs_idno = $t_object->setIdnoWithTemplate($pa_options['generateIdnoWithTemplate'], array('dontSetValue' => true));
 				}
@@ -1131,17 +1296,36 @@
 							}
 						}
 					}
+					$t_object->update();
+										
+					if ($t_object->numErrors()) {
+						if(isset($pa_options['outputErrors']) && $pa_options['outputErrors']) {
+							print "[Error] "._t("Could not set values for object %1: %2", $ps_object_name, join('; ', $t_object->getErrors()))."\n";
+						}
+						if ($o_log) { $o_log->logError(_t("Could not set values for object %1: %2", $ps_object_name, join('; ', $t_object->getErrors()))); }
+				
+						$vb_attr_errors = true;
+					}
 				}
 				
-				$t_object->update();
-				
-				if ($t_object->numErrors()) {
-					if(isset($pa_options['outputErrors']) && $pa_options['outputErrors']) {
-						print "[Error] "._t("Could not set values for object %1: %2", $ps_object_name, join('; ', $t_object->getErrors()))."\n";
+				if(is_array($va_nonpreferred_labels = caGetOption("nonPreferredLabels", $pa_options, null))) {
+					if (caIsAssociativeArray($va_nonpreferred_labels)) {
+						// single non-preferred label
+						$va_labels = array($va_nonpreferred_labels);
+					} else {
+						// list of non-preferred labels
+						$va_labels = $va_nonpreferred_labels;
 					}
-					if ($o_log) { $o_log->logError(_t("Could not set values for object %1: %2", $ps_object_name, join('; ', $t_object->getErrors()))); }
-				
-					$vb_attr_errors = true;
+					foreach($va_labels as $va_label) {
+						$t_object->addLabel($va_label, $pn_locale_id, null, false);
+						
+						if ($t_object->numErrors()) {
+							if(isset($pa_options['outputErrors']) && $pa_options['outputErrors']) {
+								print "[Error] "._t("Could not set non-preferred label for object %1: %2", $ps_object_name, join('; ', $t_object->getErrors()))."\n";
+							}
+							if ($o_log) { $o_log->logError(_t("Could not set non-preferred label for object %1: %2", $ps_object_name, join('; ', $t_object->getErrors()))); }
+						}
+					}
 				}
 				
 				$vn_object_id = $t_object->getPrimaryKey();
@@ -1190,6 +1374,7 @@
 		 *				returnInstance = return ca_object_lots instance rather than object_id. Default is false. 
 		 *				importEvent = if ca_data_import_events instance is passed then the insert/update of the object will be logged as part of the import
 		 *				importEventSource = if importEvent is passed, then the value set for importEventSource is used in the import event log as the data source. If omitted a default value of "?" is used
+		 *				nonPreferredLabels = an optional array of nonpreferred labels to add to any newly created lots. Each label in the array is an array with required lot label values.
 		 *				log = if KLogger instance is passed then actions will be logged
 		 */
 		static function getObjectLotID($ps_idno_stub, $ps_lot_name, $pn_type_id, $pn_locale_id, $pa_values=null, $pa_options=null) {
@@ -1270,17 +1455,36 @@
 							}
 						}
 					}
+					$t_lot->update();
+				
+					if ($t_lot->numErrors()) {
+						if(isset($pa_options['outputErrors']) && $pa_options['outputErrors']) {
+							print "[Error] "._t("Could not set values for lot %1: %2", $ps_lot_name, join('; ', $t_lot->getErrors()))."\n";
+						}
+						if ($o_log) { $o_log->logError(_t("Could not set values for lot %1: %2", $ps_lot_name, join('; ', $t_lot->getErrors()))); }
+				
+						$vb_attr_errors = true;
+					}
 				}
 				
-				$t_lot->update();
-				
-				if ($t_lot->numErrors()) {
-					if(isset($pa_options['outputErrors']) && $pa_options['outputErrors']) {
-						print "[Error] "._t("Could not set values for lot %1: %2", $ps_lot_name, join('; ', $t_lot->getErrors()))."\n";
+				if(is_array($va_nonpreferred_labels = caGetOption("nonPreferredLabels", $pa_options, null))) {
+					if (caIsAssociativeArray($va_nonpreferred_labels)) {
+						// single non-preferred label
+						$va_labels = array($va_nonpreferred_labels);
+					} else {
+						// list of non-preferred labels
+						$va_labels = $va_nonpreferred_labels;
 					}
-					if ($o_log) { $o_log->logError(_t("Could not set values for lot %1: %2", $ps_lot_name, join('; ', $t_lot->getErrors()))); }
-				
-					$vb_attr_errors = true;
+					foreach($va_labels as $va_label) {
+						$t_lot->addLabel($va_label, $pn_locale_id, null, false);
+						
+						if ($t_lot->numErrors()) {
+							if(isset($pa_options['outputErrors']) && $pa_options['outputErrors']) {
+								print "[Error] "._t("Could not set non-preferred label for lot %1: %2", $ps_lot_name, join('; ', $t_lot->getErrors()))."\n";
+							}
+							if ($o_log) { $o_log->logError(_t("Could not set non-preferred label for lot %1: %2", $ps_lot_name, join('; ', $t_lot->getErrors()))); }
+						}
+					}
 				}
 				
 				$vn_lot_id = $t_lot->getPrimaryKey();
@@ -1330,6 +1534,7 @@
 		 *				generateIdnoWithTemplate = A template to use when setting the idno. The template is a value with automatically-set SERIAL values replaced with % characters. Eg. 2012.% will set the created row's idno value to 2012.121 (assuming that 121 is the next number in the serial sequence.) The template is NOT used if idno is passed explicitly as a value in $pa_values.
 		 *				importEvent = if ca_data_import_events instance is passed then the insert/update of the loan will be logged as part of the import
 		 *				importEventSource = if importEvent is passed, then the value set for importEventSource is used in the import event log as the data source. If omitted a default value of "?" is used
+		 *				nonPreferredLabels = an optional array of nonpreferred labels to add to any newly created loans. Each label in the array is an array with required loan label values.
 		 *				log = if KLogger instance is passed then actions will be logged
 		 */
 		static function getLoanID($ps_loan_name, $pn_type_id, $pn_locale_id, $pa_values=null, $pa_options=null) {
@@ -1350,8 +1555,14 @@
 			$va_find_arr = array();
 			if ($pn_type_id) { $va_find_arr['type_id'] = $pn_type_id; }
 			if ($pn_parent_id) { $va_find_arr['parent_id'] = $pn_parent_id; }
-						
-			if (!($vs_idno = isset($pa_values['idno']) ? (string)$pa_values['idno'] : null)) {
+				
+			$vs_idno = isset($pa_values['idno']) ? (string)$pa_values['idno'] : null;
+			
+			if (preg_match("!\%!", $vs_idno)) {
+				$pa_options['generateIdnoWithTemplate'] = $vs_idno;
+				$vs_idno = null;
+			}		
+			if (!$vs_idno) {
 				if(isset($pa_options['generateIdnoWithTemplate']) && $pa_options['generateIdnoWithTemplate']) {
 					$vs_idno = $t_loan->setIdnoWithTemplate($pa_options['generateIdnoWithTemplate'], array('dontSetValue' => true));
 				}
@@ -1423,17 +1634,36 @@
 							}
 						}
 					}
+					$t_loan->update();
+			
+					if ($t_loan->numErrors()) {
+						if(isset($pa_options['outputErrors']) && $pa_options['outputErrors']) {
+							print "[Error] "._t("Could not set values for loan %1: %2", $ps_loan_name, join('; ', $t_loan->getErrors()))."\n";
+						}
+						if ($o_log) { $o_log->logError(_t("Could not set values for loan %1: %2", $ps_loan_name, join('; ', $t_loan->getErrors()))); }
+				
+						$vb_attr_errors = true;
+					}
 				}
 				
-				$t_loan->update();
-				
-				if ($t_loan->numErrors()) {
-					if(isset($pa_options['outputErrors']) && $pa_options['outputErrors']) {
-						print "[Error] "._t("Could not set values for loan %1: %2", $ps_loan_name, join('; ', $t_loan->getErrors()))."\n";
+				if(is_array($va_nonpreferred_labels = caGetOption("nonPreferredLabels", $pa_options, null))) {
+					if (caIsAssociativeArray($va_nonpreferred_labels)) {
+						// single non-preferred label
+						$va_labels = array($va_nonpreferred_labels);
+					} else {
+						// list of non-preferred labels
+						$va_labels = $va_nonpreferred_labels;
 					}
-					if ($o_log) { $o_log->logError(_t("Could not set values for loan %1: %2", $ps_loan_name, join('; ', $t_loan->getErrors()))); }
-				
-					$vb_attr_errors = true;
+					foreach($va_labels as $va_label) {
+						$t_loan->addLabel($va_label, $pn_locale_id, null, false);
+						
+						if ($t_loan->numErrors()) {
+							if(isset($pa_options['outputErrors']) && $pa_options['outputErrors']) {
+								print "[Error] "._t("Could not set non-preferred label for loan %1: %2", $ps_loan_name, join('; ', $t_loan->getErrors()))."\n";
+							}
+							if ($o_log) { $o_log->logError(_t("Could not set non-preferred label for loan %1: %2", $ps_loan_name, join('; ', $t_loan->getErrors()))); }
+						}
+					}
 				}
 				
 				$vn_loan_id = $t_loan->getPrimaryKey();
@@ -1483,6 +1713,7 @@
 		 *				generateIdnoWithTemplate = A template to use when setting the idno. The template is a value with automatically-set SERIAL values replaced with % characters. Eg. 2012.% will set the created row's idno value to 2012.121 (assuming that 121 is the next number in the serial sequence.) The template is NOT used if idno is passed explicitly as a value in $pa_values.
 		 *				importEvent = if ca_data_import_events instance is passed then the insert/update of the movement will be logged as part of the import
 		 *				importEventSource = if importEvent is passed, then the value set for importEventSource is used in the import event log as the data source. If omitted a default value of "?" is used
+		 *				nonPreferredLabels = an optional array of nonpreferred labels to add to any newly created movements. Each label in the array is an array with required movement label values.
 		 *				log = if KLogger instance is passed then actions will be logged
 		 */
 		static function getMovementID($ps_movement_name, $pn_type_id, $pn_locale_id, $pa_values=null, $pa_options=null) {
@@ -1503,8 +1734,14 @@
 			$va_find_arr = array();
 			if ($pn_type_id) { $va_find_arr['type_id'] = $pn_type_id; }
 			if ($pn_parent_id) { $va_find_arr['parent_id'] = $pn_parent_id; }
-						
-			if (!($vs_idno = isset($pa_values['idno']) ? (string)$pa_values['idno'] : null)) {
+			
+			$vs_idno = isset($pa_values['idno']) ? (string)$pa_values['idno'] : null;
+			
+			if (preg_match("!\%!", $vs_idno)) {
+				$pa_options['generateIdnoWithTemplate'] = $vs_idno;
+				$vs_idno = null;
+			}
+			if (!$vs_idno) {
 				if(isset($pa_options['generateIdnoWithTemplate']) && $pa_options['generateIdnoWithTemplate']) {
 					$vs_idno = $t_movement->setIdnoWithTemplate($pa_options['generateIdnoWithTemplate'], array('dontSetValue' => true));
 				}
@@ -1576,17 +1813,37 @@
 							}
 						}
 					}
+				
+					$t_movement->update();
+				
+					if ($t_movement->numErrors()) {
+						if(isset($pa_options['outputErrors']) && $pa_options['outputErrors']) {
+							print "[Error] "._t("Could not set values for movement %1: %2", $ps_movement_name, join('; ', $t_movement->getErrors()))."\n";
+						}
+						if ($o_log) { $o_log->logError(_t("Could not set values for movement %1: %2", $ps_movement_name, join('; ', $t_movement->getErrors()))); }
+				
+						$vb_attr_errors = true;
+					}
 				}
 				
-				$t_movement->update();
-				
-				if ($t_movement->numErrors()) {
-					if(isset($pa_options['outputErrors']) && $pa_options['outputErrors']) {
-						print "[Error] "._t("Could not set values for movement %1: %2", $ps_movement_name, join('; ', $t_movement->getErrors()))."\n";
+				if(is_array($va_nonpreferred_labels = caGetOption("nonPreferredLabels", $pa_options, null))) {
+					if (caIsAssociativeArray($va_nonpreferred_labels)) {
+						// single non-preferred label
+						$va_labels = array($va_nonpreferred_labels);
+					} else {
+						// list of non-preferred labels
+						$va_labels = $va_nonpreferred_labels;
 					}
-					if ($o_log) { $o_log->logError(_t("Could not set values for movement %1: %2", $ps_movement_name, join('; ', $t_movement->getErrors()))); }
-				
-					$vb_attr_errors = true;
+					foreach($va_labels as $va_label) {
+						$t_movement->addLabel($va_label, $pn_locale_id, null, false);
+						
+						if ($t_movement->numErrors()) {
+							if(isset($pa_options['outputErrors']) && $pa_options['outputErrors']) {
+								print "[Error] "._t("Could not set non-preferred label for movement %1: %2", $ps_movement_name, join('; ', $t_movement->getErrors()))."\n";
+							}
+							if ($o_log) { $o_log->logError(_t("Could not set non-preferred label for movement %1: %2", $ps_movement_name, join('; ', $t_movement->getErrors()))); }
+						}
+					}
 				}
 				
 				$vn_movement_id = $t_movement->getPrimaryKey();
