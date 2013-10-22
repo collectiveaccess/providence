@@ -1848,6 +1848,8 @@ require_once(__CA_LIB_DIR__."/ca/ApplicationPluginManager.php");
 		
 		$o_options = $o_dom->getElementsByTagName("options");
 		
+		$o_units = $o_dom->getElementsByTagName("unit");
+		
 		
 		$va_ifdefs = array();
 		foreach($o_ifdefs as $o_ifdef) {
@@ -1912,13 +1914,43 @@ require_once(__CA_LIB_DIR__."/ca/ApplicationPluginManager.php");
 			$vs_content = preg_replace("!<[^\>]+>$!", "", $vs_content);
 			$va_betweens[] = array('directive' => $vs_html, 'content' => $vs_content);
 		}
-	
+		
+		$va_units = array();
+		foreach($o_units as $o_unit) {
+			if (!$o_unit) { continue; }
+			
+			$vs_html = $o_dom->saveXML($o_unit);
+			$vs_content = preg_replace("!^<[^\>]+>!", "", $vs_html);
+			$vs_content = preg_replace("!<[^\>]+>$!", "", $vs_content);
+			$va_units[] = array('directive' => $vs_html, 'content' => $vs_content, 'relativeTo' => (string)$o_unit->getAttribute("relativeto"), 'delimiter' => (string)$o_unit->getAttribute("delimiter"));
+		}
+		
 		$va_resolve_links_using_row_ids = array();
 		
 		$va_tag_val_list = $va_defined_tag_list = array();
 		while($qr_res->nextHit()) {
 			$vs_pk_val = $qr_res->get($vs_pk);
 			$va_proc_templates[$vn_i] = $ps_template;
+			
+			foreach($va_units as $va_unit) {
+				if (!$va_unit['content']) { continue; }
+				$va_relative_to_tmp = $va_unit['relativeTo'] ? explode(".", $va_unit['relativeTo']) : array($ps_tablename);
+				if (!($t_instance = $o_dm->getInstanceByTableName($va_relative_to_tmp[0], true))) { print "nothing for ".$va_relative_to_tmp[0]; continue; }
+				$vs_unit_delimiter = caGetOption('delimiter', $va_unit, '; ');
+			
+				if (
+					((sizeof($va_relative_to_tmp) == 1) && ($va_relative_to_tmp[0] == $ps_tablename))
+					||
+					((sizeof($va_relative_to_tmp) >= 1) && ($va_relative_to_tmp[0] == $ps_tablename) && ($va_relative_to_tmp[1] != 'related'))
+				) {
+					$va_relative_ids = $pa_row_ids;
+				} else { 
+					$va_relative_ids = $qr_res->get($t_instance->tableName().".".$t_instance->primaryKey(), array('returnAsArray' => true));
+				}
+				
+				$vs_tmpl_val = caProcessTemplateForIDs($va_unit['content'], $va_relative_to_tmp[0], $va_relative_ids, array_merge($pa_options, array('delimiter' => $vs_unit_delimiter)));
+				$va_proc_templates[$vn_i] = preg_replace("!".preg_quote($va_unit['directive'], "!")."!i", $vs_tmpl_val, $va_proc_templates[$vn_i]);
+			}
 			
 			if ($ps_resolve_links_using != $ps_tablename) {
 				$va_resolve_links_using_row_ids[] = $qr_res->get("{$ps_resolve_links_using}.{$vs_resolve_links_using_pk}");
@@ -2145,14 +2177,14 @@ require_once(__CA_LIB_DIR__."/ca/ApplicationPluginManager.php");
 					if (is_array($va_val)) {
 						if (sizeof($va_val) > 0) {
 							foreach($va_val as $vn_j => $vs_val) {
-								$va_tag_val_list[$vn_i][$vn_j][$vs_tag][] = $vs_val;
+								$va_tag_val_list[$vn_i][$vs_tag][] = $vs_val;
 								if ((is_array($vs_val) && (sizeof($vs_val))) || (strlen($vs_val) > 0)) {
-									$va_defined_tag_list[$vn_i][$vn_j][$vs_tag] = true;
+									$va_defined_tag_list[$vn_i][$vs_tag] = true;
 								}
 							}
 						} else {
-							$va_tag_val_list[$vn_i][0][$vs_tag] = null;
-							$va_defined_tag_list[$vn_i][0][$vs_tag] = false;
+							$va_tag_val_list[$vn_i][$vs_tag] = null;
+							$va_defined_tag_list[$vn_i][$vs_tag] = false;
 						}
 					} 
 				}
@@ -2161,166 +2193,161 @@ require_once(__CA_LIB_DIR__."/ca/ApplicationPluginManager.php");
 			$vn_i++;
 		}
 		
-		foreach($va_tag_val_list as $vn_i => $va_tags_list) {
-			$va_acc = array();
-			foreach($va_tags_list as $vn_j => $va_tags) {
-				$va_tag_list = array();
-				$va_pt_vals = array();
+		foreach($va_tag_val_list as $vn_i => $va_tags) {
+			$va_tag_list = array();
+			$va_pt_vals = array();
 			
-				$vs_template = $va_proc_templates[$vn_i];
-				
-				// Process <ifdef> (IF DEFined)
-				foreach($va_ifdefs as $vs_code => $va_def_con) { 
-					if (strpos($vs_code, "|") !== false) {
-						$vs_bool = 'OR';
-						$va_tag_list = explode("|", $vs_code);
-						$vb_output = false;
-					} else {
-						$vs_bool = 'AND';
-						$va_tag_list = explode(",", $vs_code);
-						$vb_output = true;
-					}
-			
-					foreach($va_tag_list as $vs_tag_to_test) {
-						$vb_value_is_set = (bool)(isset($va_tags[$vs_tag_to_test]) && (sizeof($va_tags[$vs_tag_to_test]) > 1) || ((sizeof($va_tags[$vs_tag_to_test]) == 1) && (strlen($va_tags[$vs_tag_to_test][0]) > 0)));
-						switch($vs_bool) {
-							case 'OR':
-								if ($vb_value_is_set) { $vb_output = true; break(2); }			// any must be defined; if any is defined output
-								break;
-							case 'AND':
-							default:
-								if (!$vb_value_is_set) { $vb_output = false; break(2); }		// all must be defined; if any is not defined don't output
-								break;
-						}
-					}
-		
-					foreach($va_def_con as $va_ifdef) {
-						if ($vb_output) {
-							$vs_template = str_replace($va_ifdef['directive'], $va_ifdef['content'], $vs_template);
-						} else {
-							$vs_template = str_replace($va_ifdef['directive'], '', $vs_template);
-						}
-					}
-				}
-	
-				// Process <ifnotdef> (IF NOT DEFined)
-				foreach($va_ifnotdefs as $vs_code => $va_notdef_con) { 
-					if (strpos($vs_code, "|") !== false) {
-						$vs_bool = 'OR';
-						$va_tag_list = explode("|", $vs_code);
-						$vb_output = false;
-					} else {
-						$vs_bool = 'AND';
-						$va_tag_list = explode(",", $vs_code);
-						$vb_output = true;
-					}
+			$vs_template = $va_proc_templates[$vn_i];
+			// Process <ifdef> (IF DEFined)
+			foreach($va_ifdefs as $vs_code => $va_def_con) { 
+				if (strpos($vs_code, "|") !== false) {
+					$vs_bool = 'OR';
+					$va_tag_list = explode("|", $vs_code);
+					$vb_output = false;
+				} else {
+					$vs_bool = 'AND';
+					$va_tag_list = explode(",", $vs_code);
 					$vb_output = true;
-					foreach($va_tag_list as $vs_tag_to_test) {
-						$vb_value_is_set = (bool)(isset($va_tags[$vs_tag_to_test]) && (sizeof($va_tags[$vs_tag_to_test]) > 1) || ((sizeof($va_tags[$vs_tag_to_test]) == 1) && (strlen($va_tags[$vs_tag_to_test][0]) > 0)));
-						switch($vs_bool) {
-							case 'OR':
-								if (!$vb_value_is_set) { $vb_output = true; break(2); }		// any must be not defined; if anything is not set output
-								break;
-							case 'AND':
-							default:
-								if ($vb_value_is_set) { $vb_output = false; break(2); }	// all must be not defined; if anything is set don't output
-								break;
-						}
-			
-					}
-		
-					foreach($va_notdef_con as $va_ifnotdef) {
-						if ($vb_output) {
-							$vs_template = str_replace($va_ifnotdef['directive'], $va_ifnotdef['content'], $vs_template);
-						} else {
-							$vs_template = str_replace($va_ifnotdef['directive'], '', $vs_template);
-						}
+				}
+				
+				foreach($va_tag_list as $vs_tag_to_test) {
+					$vb_value_is_set = (bool)(isset($va_tags[$vs_tag_to_test]) && (sizeof($va_tags[$vs_tag_to_test]) > 1) || ((sizeof($va_tags[$vs_tag_to_test]) == 1) && (strlen($va_tags[$vs_tag_to_test][0]) > 0)));
+					switch($vs_bool) {
+						case 'OR':
+							if ($vb_value_is_set) { $vb_output = true; break(2); }			// any must be defined; if any is defined output
+							break;
+						case 'AND':
+						default:
+							if (!$vb_value_is_set) { $vb_output = false; break(2); }		// all must be defined; if any is not defined don't output
+							break;
 					}
 				}
-	
-				// Process <more> tags
-				foreach($va_mores as $vn_more_index => $va_more) {
-					if (($vn_pos = strpos($vs_template, $va_more['directive'])) !== false) {
-						if (isset($va_mores[$vn_more_index + 1]) && (($vn_next_more_pos = strpos(substr($vs_template, $vn_pos + strlen($va_more['directive'])), $va_mores[$vn_more_index + 1]['directive'])) !== false)) {
-							$vn_next_more_pos += $vn_pos ;
-							$vs_partial_template = substr($vs_template, $vn_pos + strlen($va_more['directive']), ($vn_next_more_pos - $vn_pos));
-						} else {
-							$vs_partial_template = substr($vs_template, $vn_pos + strlen($va_more['directive']));
-						}
-						$vb_output = false;
-						foreach(array_keys($va_defined_tag_list[$vn_i][$vn_j]) as $vs_defined_tag) {
-							if (strpos($vs_partial_template, $vs_defined_tag) !== false) {
-								// content is defined
-								$vb_output = true;
-								break;
-							}
-						}
-						if ($vb_output) {
-							$vs_template = preg_replace('!'.$va_more['directive'].'!', $va_more['content'], $vs_template, 1);
-						} else {
-							$vs_template = preg_replace('!'.$va_more['directive'].'!', '', $vs_template, 1);
-						}
-					}
-				} 
-	
-				// Process <between> tags - text to be output if it is between two defined values
-				$va_between_positions = array();
-				foreach($va_betweens as $vn_between_index => $va_between) {
-					$vb_output_before = $vb_output_after = false;
-					if (($vn_cur_pos = strpos($vs_template, $va_between['directive'])) !== false) {
-						$va_between_positions[$vn_between_index] = $vn_cur_pos;
 			
-						// Get parts of template before tag and after tag 
-						$vs_partial_template_before = substr($vs_template, 0, $vn_cur_pos );
-			
-						$vs_partial_template_after = substr($vs_template, $vn_cur_pos + strlen($va_between['directive']));
-			
-						// Only get the template between our current position and the next <between> tag
-						if (isset($va_betweens[$vn_between_index + 1]) && (($vn_after_pos_relative = strpos($vs_partial_template_after, $va_betweens[$vn_between_index + 1]['directive'])) !== false)) {
-							$vs_partial_template_after = substr($vs_partial_template_after, 0, $vn_after_pos_relative);
-						}
-			
-						// Check for defined value before and after tag
-						foreach(array_keys($va_defined_tag_list[$vn_i][$vn_j]) as $vs_defined_tag) {
-							if (strpos($vs_partial_template_before, $vs_defined_tag) !== false) {
-								// content is defined
-								$vb_output_after = true;
-							}
-							if (strpos($vs_partial_template_after, $vs_defined_tag) !== false) {
-								// content is defined
-								$vb_output_before = true;
-								break;
-							}
-							if ($vb_output_before && $vb_output_after) { break; }
-						}
-					}
-		
-					if ($vb_output_before && $vb_output_after) {
-						$vs_template = preg_replace('!'.$va_between['directive'].'!', $va_between['content'], $vs_template, 1);
+				foreach($va_def_con as $va_ifdef) {
+					if ($vb_output) {
+						$vs_template = str_replace($va_ifdef['directive'], $va_ifdef['content'], $vs_template);
 					} else {
-						$vs_template = preg_replace('!'.$va_between['directive'].'!', '', $vs_template, 1);
+						$vs_template = str_replace($va_ifdef['directive'], '', $vs_template);
 					}
 				}
-				//
-				// Need to sort tags by length descending (longest first)
-				// so that when we go to substitute and you have a tag followed by itself with a suffix
-				// (ex. ^measurements and ^measurements2) we don't substitute both for the stub (ex. ^measurements)
-				//
-				$va_tags_tmp = array_keys($va_tags);
-				usort($va_tags_tmp, function($a, $b) {
-					return strlen($b) - strlen($a);
-				});
-	
-				$vs_pt = $vs_template;
-				foreach($va_tags_tmp as $vs_tag) {
-					$vs_pt = str_replace('^'.$vs_tag, is_array($va_tags[$vs_tag]) ? join(" | ", $va_tags[$vs_tag]) : $va_tags[$vs_tag] , $vs_pt);
-				}
-				$va_pt_vals[] = $vs_pt;
-			
-			
-				$va_acc[] = join(isset($pa_options['delimiter']) ? $pa_options['delimiter'] : $vs_delimiter, $va_pt_vals);
 			}
-			$va_proc_templates[$vn_i] = join($vs_delimiter, $va_acc);
+		
+			// Process <ifnotdef> (IF NOT DEFined)
+			foreach($va_ifnotdefs as $vs_code => $va_notdef_con) { 
+				if (strpos($vs_code, "|") !== false) {
+					$vs_bool = 'OR';
+					$va_tag_list = explode("|", $vs_code);
+					$vb_output = false;
+				} else {
+					$vs_bool = 'AND';
+					$va_tag_list = explode(",", $vs_code);
+					$vb_output = true;
+				}
+				$vb_output = true;
+				foreach($va_tag_list as $vs_tag_to_test) {
+					$vb_value_is_set = (bool)(isset($va_tags[$vs_tag_to_test]) && (sizeof($va_tags[$vs_tag_to_test]) > 1) || ((sizeof($va_tags[$vs_tag_to_test]) == 1) && (strlen($va_tags[$vs_tag_to_test][0]) > 0)));
+					switch($vs_bool) {
+						case 'OR':
+							if (!$vb_value_is_set) { $vb_output = true; break(2); }		// any must be not defined; if anything is not set output
+							break;
+						case 'AND':
+						default:
+							if ($vb_value_is_set) { $vb_output = false; break(2); }	// all must be not defined; if anything is set don't output
+							break;
+					}
+				
+				}
+			
+				foreach($va_notdef_con as $va_ifnotdef) {
+					if ($vb_output) {
+						$vs_template = str_replace($va_ifnotdef['directive'], $va_ifnotdef['content'], $vs_template);
+					} else {
+						$vs_template = str_replace($va_ifnotdef['directive'], '', $vs_template);
+					}
+				}
+			}
+		
+			// Process <more> tags
+			foreach($va_mores as $vn_more_index => $va_more) {
+				if (($vn_pos = strpos($vs_template, $va_more['directive'])) !== false) {
+					if (isset($va_mores[$vn_more_index + 1]) && (($vn_next_more_pos = strpos(substr($vs_template, $vn_pos + strlen($va_more['directive'])), $va_mores[$vn_more_index + 1]['directive'])) !== false)) {
+						$vn_next_more_pos += $vn_pos ;
+						$vs_partial_template = substr($vs_template, $vn_pos + strlen($va_more['directive']), ($vn_next_more_pos - $vn_pos));
+					} else {
+						$vs_partial_template = substr($vs_template, $vn_pos + strlen($va_more['directive']));
+					}
+					$vb_output = false;
+					foreach(array_keys($va_defined_tag_list[$vn_i]) as $vs_defined_tag) {
+						if (strpos($vs_partial_template, $vs_defined_tag) !== false) {
+							// content is defined
+							$vb_output = true;
+							break;
+						}
+					}
+					if ($vb_output) {
+						$vs_template = preg_replace('!'.$va_more['directive'].'!', $va_more['content'], $vs_template, 1);
+					} else {
+						$vs_template = preg_replace('!'.$va_more['directive'].'!', '', $vs_template, 1);
+					}
+				}
+			} 
+		
+			// Process <between> tags - text to be output if it is between two defined values
+			$va_between_positions = array();
+			foreach($va_betweens as $vn_between_index => $va_between) {
+				$vb_output_before = $vb_output_after = false;
+				if (($vn_cur_pos = strpos($vs_template, $va_between['directive'])) !== false) {
+					$va_between_positions[$vn_between_index] = $vn_cur_pos;
+				
+					// Get parts of template before tag and after tag 
+					$vs_partial_template_before = substr($vs_template, 0, $vn_cur_pos );
+				
+					$vs_partial_template_after = substr($vs_template, $vn_cur_pos + strlen($va_between['directive']));
+				
+					// Only get the template between our current position and the next <between> tag
+					if (isset($va_betweens[$vn_between_index + 1]) && (($vn_after_pos_relative = strpos($vs_partial_template_after, $va_betweens[$vn_between_index + 1]['directive'])) !== false)) {
+						$vs_partial_template_after = substr($vs_partial_template_after, 0, $vn_after_pos_relative);
+					}
+				
+					// Check for defined value before and after tag
+					foreach(array_keys($va_defined_tag_list[$vn_i]) as $vs_defined_tag) {
+						if (strpos($vs_partial_template_before, $vs_defined_tag) !== false) {
+							// content is defined
+							$vb_output_after = true;
+						}
+						if (strpos($vs_partial_template_after, $vs_defined_tag) !== false) {
+							// content is defined
+							$vb_output_before = true;
+							break;
+						}
+						if ($vb_output_before && $vb_output_after) { break; }
+					}
+				}
+			
+				if ($vb_output_before && $vb_output_after) {
+					$vs_template = preg_replace('!'.$va_between['directive'].'!', $va_between['content'], $vs_template, 1);
+				} else {
+					$vs_template = preg_replace('!'.$va_between['directive'].'!', '', $vs_template, 1);
+				}
+			}
+			//
+			// Need to sort tags by length descending (longest first)
+			// so that when we go to substitute and you have a tag followed by itself with a suffix
+			// (ex. ^measurements and ^measurements2) we don't substitute both for the stub (ex. ^measurements)
+			//
+			$va_tags_tmp = array_keys($va_tags);
+			usort($va_tags_tmp, function($a, $b) {
+				return strlen($b) - strlen($a);
+			});
+	
+			$vs_pt = $vs_template;
+			foreach($va_tags_tmp as $vs_tag) {
+				$vs_pt = str_replace('^'.$vs_tag, is_array($va_tags[$vs_tag]) ? join(" | ", $va_tags[$vs_tag]) : $va_tags[$vs_tag] , $vs_pt);
+			}
+			$va_pt_vals[] = $vs_pt;
+			
+			
+			$va_proc_templates[$vn_i] = join(isset($pa_options['delimiter']) ? $pa_options['delimiter'] : $vs_delimiter, $va_pt_vals);
 		}
 		
 		// Transform links
