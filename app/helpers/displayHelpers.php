@@ -2272,7 +2272,7 @@ require_once(__CA_LIB_DIR__."/ca/ApplicationPluginManager.php");
 	
 			$vs_pt = $vs_template;
 			foreach($va_tags_tmp as $vs_tag) {
-				$vs_pt = str_replace('^'.$vs_tag, is_array($va_tags[$vs_tag]) ? join(" | ", $va_tags[$vs_tag]) : $va_tags[$vs_tag] , $vs_pt);
+				$vs_pt = str_replace('^'.$vs_tag, is_array($va_tags[$vs_tag]) ? join($pa_options['delimiter'], $va_tags[$vs_tag]) : $va_tags[$vs_tag] , $vs_pt);
 			}
 			$va_pt_vals[] = $vs_pt;
 			
