@@ -1773,6 +1773,8 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 			//die("END\n\n");
 			//continue;
 			
+			if (!sizeof($va_content_tree) && !str_replace("%", "", $vs_idno)) { continue; }
+			
 			if (!$t_subject->getPrimaryKey()) {
 				$o_event->beginItem($vn_row, $t_subject->tableNum(), 'I') ;
 				$t_subject->setMode(ACCESS_WRITE);
