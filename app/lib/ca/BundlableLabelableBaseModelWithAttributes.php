@@ -3706,6 +3706,8 @@ if (!$vb_batch) {
  	 *		showDeleted = if set to true, related items that have been deleted are returned. Default is false.
 	 *		where = optional array of fields and field values to filter returned values on. The fields must be intrinsic and in the same table as the field being "get()'ed" Can be used to filter returned values from primary and related tables. This option can be useful when you want to fetch certain values from a related table. For example, you want to get the relationship source_info values, but only for relationships going to a specific related record. Note that multiple fields/values are effectively AND'ed together - all must match for a row to be returned - and that only equivalence is supported (eg. field equals value).
  	 *		user_id = If set item level access control is performed relative to specified user_id, otherwise defaults to logged in user
+ 	 *		groupFields = Groups together fields in an arrangement that is easier for import to another system. Used by the ItemInfo web service when in "import" mode. Default is false.
+ 	 *		returnLocaleCodes = Return locale values as codes (Ex. en_US) rather than numeric database-specific locale_ids. Default is false.
  	 * @return array - list of related items
  	 */
 	 public function getRelatedItems($pm_rel_table_name_or_num, $pa_options=null) {
@@ -3724,8 +3726,10 @@ if (!$vb_batch) {
 	 	if(isset($pa_options['returnNonPreferredLabels']) && (!isset($pa_options['return_non_preferred_labels']) || !$pa_options['return_non_preferred_labels'])) { $pa_options['return_non_preferred_labels'] = $pa_options['returnNonPreferredLabels']; }
 	 	if(isset($pa_options['returnLabelsAsArray']) && (!isset($pa_options['return_labels_as_array']) || !$pa_options['return_labels_as_array'])) { $pa_options['return_labels_as_array'] = $pa_options['returnLabelsAsArray']; }
 		if(isset($pa_options['restrictToLists']) && (!isset($pa_options['restrict_to_lists']) || !$pa_options['restrict_to_lists'])) { $pa_options['restrict_to_lists'] = $pa_options['restrictToLists']; }
+	 	if(isset($pa_options['groupFields'])) { $pa_options['groupFields'] = (bool)$pa_options['groupFields']; } else { $pa_options['groupFields'] = false; }
 	 	
 		$o_db = $this->getDb();
+		$t_locale = new ca_locales();
 		$o_tep = new TimeExpressionParser();
 		$vb_uses_effective_dates = false;
 		
@@ -4047,7 +4051,12 @@ if (!$vb_batch) {
 						}
 					}
 					
-					$va_rels[$vs_sort_key][$vn_id]['labels'][$qr_res->get('locale_id')] =  ($vb_return_labels_as_array) ? $va_row : $vs_display_label;
+					$vn_locale_id = $qr_res->get('locale_id');
+					if (isset($pa_options['returnLocaleCodes']) && $pa_options['returnLocaleCodes']) {
+						$va_rels[$vs_v]['locale_id'] = $vn_locale_id = $t_locale->localeIDToCode($vn_locale_id);
+					}
+					
+					$va_rels[$vs_sort_key][$vn_id]['labels'][$vn_locale_id] =  ($vb_return_labels_as_array) ? $va_row : $vs_display_label;
 					$va_rels[$vs_sort_key][$vn_id]['_key'] = $vs_key;
 					$va_rels[$vs_sort_key][$vn_id]['direction'] = $vs_direction;
 					
@@ -4055,6 +4064,27 @@ if (!$vb_batch) {
 					if ($vb_uses_relationship_types) {
 						$va_rels[$vs_sort_key][$vn_id]['relationship_typename'] = ($vs_direction == 'ltor') ? $va_rel_types[$va_row['relationship_type_id']]['typename'] : $va_rel_types[$va_row['relationship_type_id']]['typename_reverse'];
 						$va_rels[$vs_sort_key][$vn_id]['relationship_type_code'] = $va_rel_types[$va_row['relationship_type_id']]['type_code'];
+					}
+					
+					//
+					// Return data in an arrangement more convenient for the data importer 
+					//
+					if ($pa_options['groupFields']) {
+						$vs_rel_pk = $t_rel_item->primaryKey();
+						if ($t_rel_item_label) {
+							foreach($t_rel_item_label->getFormFields() as $vs_field => $va_field_info) {
+								if (!isset($va_rels[$vs_v][$vs_field]) || ($vs_field == $vs_rel_pk)) { continue; }
+								$va_rels[$vs_v]['preferred_labels'][$vs_field] = $va_rels[$vs_v][$vs_field];
+								unset($va_rels[$vs_v][$vs_field]);
+							}
+						}
+						foreach($t_rel_item->getFormFields() as $vs_field => $va_field_info) {
+							if (!isset($va_rels[$vs_v][$vs_field]) || ($vs_field == $vs_rel_pk)) { continue; }
+							$va_rels[$vs_v]['intrinsic'][$vs_field] = $va_rels[$vs_v][$vs_field];
+							unset($va_rels[$vs_v][$vs_field]);
+						}
+						unset($va_rels[$vs_v]['_key']);
+						unset($va_rels[$vs_v]['row_id']);
 					}
 				};
 				$vn_i++;
@@ -4165,7 +4195,12 @@ if (!$vb_batch) {
 					}
 				}
 				
-				$va_rels[$vs_v]['labels'][$qr_res->get('locale_id')] =  ($vb_return_labels_as_array) ? $va_row : $vs_display_label;
+				$vn_locale_id = $qr_res->get('locale_id');
+				if (isset($pa_options['returnLocaleCodes']) && $pa_options['returnLocaleCodes']) {
+					$va_rels[$vs_v]['locale_id'] = $vn_locale_id = $t_locale->localeIDToCode($vn_locale_id);
+				}
+				
+				$va_rels[$vs_v]['labels'][$vn_locale_id] =  ($vb_return_labels_as_array) ? $va_row : $vs_display_label;
 				
 				$va_rels[$vs_v]['_key'] = $vs_key;
 				$va_rels[$vs_v]['direction'] = $vs_direction;
@@ -4174,6 +4209,24 @@ if (!$vb_batch) {
 				if ($vb_uses_relationship_types) {
 					$va_rels[$vs_v]['relationship_typename'] = ($vs_direction == 'ltor') ? $va_rel_types[$va_row['relationship_type_id']]['typename'] : $va_rel_types[$va_row['relationship_type_id']]['typename_reverse'];
 					$va_rels[$vs_v]['relationship_type_code'] = $va_rel_types[$va_row['relationship_type_id']]['type_code'];
+				}
+				
+				if ($pa_options['groupFields']) {
+					$vs_rel_pk = $t_rel_item->primaryKey();
+					if ($t_rel_item_label) {
+						foreach($t_rel_item_label->getFormFields() as $vs_field => $va_field_info) {
+							if (!isset($va_rels[$vs_v][$vs_field]) || ($vs_field == $vs_rel_pk)) { continue; }
+							$va_rels[$vs_v]['preferred_labels'][$vs_field] = $va_rels[$vs_v][$vs_field];
+							unset($va_rels[$vs_v][$vs_field]);
+						}
+					}
+					foreach($t_rel_item->getFormFields() as $vs_field => $va_field_info) {
+						if (!isset($va_rels[$vs_v][$vs_field]) || ($vs_field == $vs_rel_pk)) { continue; }
+						$va_rels[$vs_v]['intrinsic'][$vs_field] = $va_rels[$vs_v][$vs_field];
+						unset($va_rels[$vs_v][$vs_field]);
+					}
+					unset($va_rels[$vs_v]['_key']);
+					unset($va_rels[$vs_v]['row_id']);
 				}
 			}
 			
