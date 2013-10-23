@@ -395,21 +395,16 @@ class WLPlugSearchEngineSqlSearch extends BaseSearchPlugin implements IWLPlugSea
 		if (is_numeric($vs_field)) {
 			$vs_fld_num = $vs_field;
 		} else {
-			$vs_fld_num = (int)$this->getFieldNum($vs_table, $vs_field);
+			$vs_fld_num = $this->getFieldNum($vs_table, $vs_field);
 		}
+		
 		if (!strlen($vs_fld_num)) {
 			$t_element = new ca_metadata_elements();
 			if ($t_element->load(array('element_code' => $vs_field))) {
 				switch ($t_element->get('datatype')) {
-					case 4:	// geocode
-					case 8:	// length
-					case 9:	// weight
-						// noop
-						// break;
 					default:
 						return array('table_num' => $vs_table_num, 'element_id' => $t_element->getPrimaryKey(), 'field_num' => 'A'.$t_element->getPrimaryKey(), 'datatype' => $t_element->get('datatype'), 'element_info' => $t_element->getFieldValuesArray());
 						break;
-				
 				}
 			}
 		} else {

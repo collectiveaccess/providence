@@ -122,6 +122,8 @@
 						// output
 						foreach($va_list_items as $vn_item_id => $va_item) {
 							unset($va_item['description']);
+							unset($va_item['icon']);
+							
 							if (!$va_item[$vs_label_display_field_name]) { $va_item[$vs_label_display_field_name] = $va_item['idno']; }
 							if (!$va_item[$vs_label_display_field_name]) { $va_item[$vs_label_display_field_name] = '???'; }
 							
