@@ -166,6 +166,7 @@ class RequestHTTP extends Request {
 			$this->ops_script_name = array_pop($va_tmp);
 		}
 		
+		/* allow authentication via URL for web service API like so: http://user:pw@example.com/ */
 		if($this->ops_script_name=="service.php"){
 			$this->ops_raw_post_data = file_get_contents("php://input");
 

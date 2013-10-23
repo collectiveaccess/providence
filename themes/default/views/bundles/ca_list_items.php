@@ -374,7 +374,7 @@
 			interstitialPanel: caRelationEditorPanel<?php print $vs_id_prefix; ?>,
 			interstitialUrl: '<?php print caNavUrl($this->request, 'editor', 'Interstitial', 'Form', array('t' => $t_item_rel->tableName())); ?>',
 			interstitialPrimaryTable: '<?php print $t_instance->tableName(); ?>',
-			interstitialPrimaryID: <?php print $t_instance->getPrimaryKey(); ?>,
+			interstitialPrimaryID: <?php print (int)$t_instance->getPrimaryKey(); ?>,
 			
 			minRepeats: <?php print caGetOption('minRelationshipsPerRow', $va_settings, 0); ?>,
 			maxRepeats: <?php print caGetOption('maxRelationshipsPerRow', $va_settings, 65535); ?>
