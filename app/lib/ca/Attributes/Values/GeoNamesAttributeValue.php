@@ -206,7 +206,7 @@ class GeoNamesAttributeValue extends AttributeValue implements IAttributeValue {
 	/**
 	 *
 	 */
-	public function parseValue($ps_value, $pa_element_info) {
+	public function parseValue($ps_value, $pa_element_info, $pa_options=null) {
  		$ps_value = trim(preg_replace("![\t\n\r]+!", ' ', $ps_value));
 		$vo_conf = Configuration::load();
 		$vs_user = trim($vo_conf->get("geonames_user"));
