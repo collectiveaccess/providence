@@ -80,6 +80,17 @@ require_once(__CA_MODELS_DIR__.'/ca_list_items.php');
 	}
 	# ---------------------------------------
 	/**
+	 * Fetch idno for item with specified item_id in list
+	 *
+	 * @param int $pn_item_id item_id to get idno for
+	 * @return string idno of list item or null if no matching item was found
+	 */
+	function caGetListItemIdno($pn_item_id) {
+		$t_item = new ca_list_items($pn_item_id);
+		return $t_item->get('idno');
+	}
+	# ---------------------------------------
+	/**
 	 * Fetch display label in current locale for item with specified idno in list
 	 *
 	 * @param string $ps_list_code List code
