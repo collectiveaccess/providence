@@ -107,7 +107,7 @@
 					$va_val = array_merge($va_val, $va_attr_vals);
 				}
 			}
-			return array(0 => array($vs_terminal => $va_val));
+			return array(0 => $va_val);
 		}
 		# -------------------------------------------------------	
 		/**
