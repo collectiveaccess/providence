@@ -241,7 +241,7 @@ class ca_attribute_values extends BaseModel {
 	 *
 	 * @return int Returns the value_id of the newly created value. If the value cannot be added due to an error, false is returned. "Silent" failures, for which the user should not see an error message, are indicated by a null return value.
 	 */
-	public function addValue($ps_value, $pa_element_info, $pn_attribute_id) {
+	public function addValue($ps_value, $pa_element_info, $pn_attribute_id, $pa_options=null) {
 		$this->clear();
 		
 		//$t_element = new ca_metadata_elements($pa_element_info['element_id']);
@@ -253,7 +253,7 @@ class ca_attribute_values extends BaseModel {
 		
 		$o_attr_value = Attribute::getValueInstance($pa_element_info['datatype']);
 		$pa_element_info['displayLabel'] = $t_element->getLabelForDisplay(false);
-		$va_values = $o_attr_value->parseValue($ps_value, $pa_element_info);
+		$va_values = $o_attr_value->parseValue($ps_value, $pa_element_info, $pa_options);
 		
 		if (is_array($va_values)) {
 			$this->useBlobAsFileField(false);
@@ -299,7 +299,7 @@ class ca_attribute_values extends BaseModel {
 	 *
 	 * @return int Returns the value_id of the value on success. If the value cannot be edited due to an error, false is returned. "Silent" failures, for which the user should not see an error message, are indicated by a null return value.
 	 */
-	public function editValue($ps_value) {
+	public function editValue($ps_value, $pa_options=null) {
 		if (!$this->getPrimaryKey()) { return null; }
 		
 		//$t_element = new ca_metadata_elements($this->get('element_id'));
@@ -310,7 +310,7 @@ class ca_attribute_values extends BaseModel {
 		
 		$o_attr_value = Attribute::getValueInstance($t_element->get('datatype'));
 		$pa_element_info['displayLabel'] = $t_element->getLabelForDisplay(false);
-		$va_values = $o_attr_value->parseValue($ps_value, $pa_element_info);
+		$va_values = $o_attr_value->parseValue($ps_value, $pa_element_info, $pa_options);
 		if (isset($va_values['_dont_save']) && $va_values['_dont_save']) { return true; }
 		
 		if (is_array($va_values)) {

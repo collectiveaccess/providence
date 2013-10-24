@@ -154,7 +154,7 @@
 			return $this->ops_text_value;
 		}
  		# ------------------------------------------------------------------
- 		public function parseValue($ps_value, $pa_element_info) {
+ 		public function parseValue($ps_value, $pa_element_info, $pa_options=null) {
  			global $g_ui_locale;
  			$ps_value = caConvertFractionalNumberToDecimal(trim($ps_value), $g_ui_locale);
  			

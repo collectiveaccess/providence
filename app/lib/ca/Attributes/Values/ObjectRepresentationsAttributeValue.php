@@ -156,7 +156,7 @@
  		/**
  		 *
  		 */
- 		public function parseValue($ps_value, $pa_element_info) {
+ 		public function parseValue($ps_value, $pa_element_info, $pa_options=null) {
  			$vb_require_value = (is_null($pa_element_info['settings']['requireValue'])) ? true : (bool)$pa_element_info['settings']['requireValue'];
  			
  			if (preg_match('![^\d]+!', $ps_value)) {

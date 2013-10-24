@@ -79,7 +79,7 @@
  		 * @param array An array of information about the attribute for which we are parsing the value, including settings
  		 * @param mixed An array of parsed component values on success, false on failure and null on "silent" failure (eg. failed but don't show an error message to the user)
  		 */
- 		public function parseValue($ps_value, $pa_element_info) {
+ 		public function parseValue($ps_value, $pa_element_info, $pa_options=null) {
  			return null;
  		}
  		# ------------------------------------------------------------------
