@@ -99,7 +99,7 @@
 		/**
 		 * Add data to be rendered.
 		 *
-		 * @param mixed $po_data An model instance subclassed from BundlableLabelableBaseModelWithAttributes or a subclass of SearchResult
+		 * @param mixed $po_data An model instance subclassed from BundlableLabelableBaseModelWithAttributes, a subclass of SearchResult or an array of numeric ids
 		 * @param bool $pb_reset If true, any previously set data set is removed prior to addition of $po_data. Default is false.
 		 *
 		 * @return bool True on success, false on failure
@@ -107,7 +107,7 @@
 		public function addData($po_data, $pb_reset=false) {
 			if ($pb_reset) { $this->reset(); }
 			
-			if (!is_subclass_of($po_data, 'SearchResult') && !is_subclass_of($po_data, 'BundlableLabelableBaseModelWithAttributes')) {
+			if (!is_array($po_data) && !is_subclass_of($po_data, 'SearchResult') && !is_subclass_of($po_data, 'BundlableLabelableBaseModelWithAttributes')) {
 				return false;
 			}
 			$this->opa_data[] = $po_data;
@@ -125,6 +125,59 @@
 		 */
 		public function render($ps_visualization, $ps_format='HTML', $pa_options=null) {
 			$this->opn_num_items_rendered = 0;
+			if (!is_array($pa_options)) { $pa_options = array(); }
+			
+			if (!($vs_table = $this->getTable())) { return null; }
+			$va_viz_list = Visualizer::getAvailableVisualizations($vs_table);
+			
+			if (!isset($va_viz_list[$ps_visualization]) || !is_array($va_viz_settings = $va_viz_list[$ps_visualization])) {
+				return null;
+			}
+			$vs_viz_plugin = $va_viz_settings['plugin'];
+			if($o_viz = $this->getVisualizationPlugin($vs_viz_plugin)) {
+			
+				$va_ids = array();
+				$o_dm = Datamodel::load();
+				$t_instance = $o_dm->getInstanceByTableName($vs_table, true);
+				$vs_pk = $t_instance->primaryKey();
+				
+				foreach($this->opa_data as $o_data) {
+					if (is_array($o_data)) {
+						foreach($o_data as $vn_id) {
+							if ((int)$vn_id > 0) {
+								$va_ids[] = (int)$vn_id;
+							}
+						}
+					} elseif (is_subclass_of($o_data, 'SearchResult')) {
+						while($o_data->nextHit()) {
+							$va_ids[] = $o_data->get("{$vs_table}.{$vs_pk}");
+						}
+					} elseif (is_subclass_of($o_data, 'BundlableLabelableBaseModelWithAttributes')) {
+						$va_ids[] = $o_data->get("{$vs_table}.{$vs_pk}");
+					}
+				}
+				
+				if (sizeof($va_ids)) {
+					$o_viz->setData(caMakeSearchResult($vs_table, $va_ids));
+					
+					$vs_html = $o_viz->render(array_merge($va_viz_settings, array('code' => $ps_visualization)), $ps_format, array_merge($va_viz_settings['options'], $pa_options));
+					$this->opn_num_items_rendered = $this->opn_num_items_rendered + $o_viz->numItemsRendered();
+					
+					return $vs_html;
+				} else {
+					return null;
+				}
+			} else {
+				return null;
+			}
+		}
+		# --------------------------------------------------------------------------------
+		/**
+		 * Get JSON data feed for visualization
+		 */
+		public function getDataForVisualization($ps_visualization, $pa_options=null) {
+			$this->opn_num_items_rendered = 0;
+			if (!is_array($pa_options)) { $pa_options = array(); }
 			
 			if (!($vs_table = $this->getTable())) { return null; }
 			$va_viz_list = Visualizer::getAvailableVisualizations($vs_table);
@@ -141,22 +194,30 @@
 				$vs_pk = $t_instance->primaryKey();
 				
 				foreach($this->opa_data as $o_data) {
-					if (is_subclass_of($o_data, 'SearchResult')) {
+					if (is_array($o_data)) {
+						foreach($o_data as $vn_id) {
+							if ((int)$vn_id > 0) {
+								$va_ids[] = (int)$vn_id;
+							}
+						}
+					} elseif (is_subclass_of($o_data, 'SearchResult')) {
 						while($o_data->nextHit()) {
 							$va_ids[] = $o_data->get("{$vs_table}.{$vs_pk}");
 						}
-					}
-					if (is_subclass_of($o_data, 'BundlableLabelableBaseModelWithAttributes')) {
+					} elseif (is_subclass_of($o_data, 'BundlableLabelableBaseModelWithAttributes')) {
 						$va_ids[] = $o_data->get("{$vs_table}.{$vs_pk}");
 					}
-					
+				}
+				
+				if (sizeof($va_ids)) {
 					$o_viz->setData(caMakeSearchResult($vs_table, $va_ids));
 					
-					
-					$vs_html = $o_viz->render($va_viz_settings, $ps_format, array_merge($pa_options, $va_viz_settings['options']));
+					$va_data = $o_viz->getDataForVisualization($va_viz_settings, array_merge($pa_options, $va_viz_settings['options']));
 					$this->opn_num_items_rendered = $this->opn_num_items_rendered + $o_viz->numItemsRendered();
 					
-					return $vs_html;
+					return $va_data;
+				} else {
+					return null;
 				}
 			} else {
 				return null;
