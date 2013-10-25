@@ -2203,7 +2203,7 @@ require_once(__CA_LIB_DIR__."/ca/ApplicationPluginManager.php");
 					if (is_array($va_val)) {
 						if (sizeof($va_val) > 0) {
 							foreach($va_val as $vn_j => $vs_val) {
-								if (!in_array($vs_val, $va_tag_val_list[$vn_i][$vn_j][$vs_tag])) {
+								if (!is_array($va_tag_val_list[$vn_i][$vn_j][$vs_tag]) || !in_array($vs_val, $va_tag_val_list[$vn_i][$vn_j][$vs_tag])) {
 									$va_tag_val_list[$vn_i][$vn_j][$vs_tag][] = $vs_val;
 									if ((is_array($vs_val) && (sizeof($vs_val))) || (strlen($vs_val) > 0)) {
 										$va_defined_tag_list[$vn_i][$vn_j][$vs_tag] = true;
