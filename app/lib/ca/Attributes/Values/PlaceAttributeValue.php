@@ -140,7 +140,7 @@ class PlaceAttributeValue extends AttributeValue implements IAttributeValue {
 		return $this->opn_place_id;
 	}
  	# ------------------------------------------------------------------
- 	public function parseValue($ps_value, $pa_element_info) {
+ 	public function parseValue($ps_value, $pa_element_info, $pa_options=null) {
 		$va_settings = $this->getSettingValuesFromElementArray($pa_element_info, array('canBeEmpty'));
 
 		$ps_value = trim(preg_replace("![\t\n\r]+!", ' ', $ps_value));

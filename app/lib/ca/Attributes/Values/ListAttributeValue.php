@@ -203,10 +203,20 @@
 			return $this->opn_item_id;
 		}
  		# ------------------------------------------------------------------
- 		public function parseValue($ps_value, $pa_element_info) {
- 			$vb_require_value = (is_null($pa_element_info['settings']['requireValue'])) ? true : (bool)$pa_element_info['settings']['requireValue'];
+ 		/**
+ 		 * @param mixed $ps_value
+ 		 * @param array $pa_element_info
+ 		 * @param array $pa_options Options are:
+ 		 *		alwaysTreatValueAsIdno = Always try to convert $ps_value to a list idno value, even if it is numeric
+ 		 *
+ 		 * @return array
+ 		 */
+ 		public function parseValue($ps_value, $pa_element_info, $pa_options=null) {
+ 			$vb_treat_value_as_idno = caGetOption('alwaysTreatValueAsIdno', $pa_options, false);
  			
- 			if (preg_match('![^\d]+!', $ps_value)) {
+ 			$vb_require_value = (is_null($pa_element_info['settings']['requireValue'])) ? true : (bool)$pa_element_info['settings']['requireValue'];
+
+ 			if ($vb_treat_value_as_idno || preg_match('![^\d]+!', $ps_value)) {
  				// try to convert idno to item_id
  				if ($vn_id = ca_lists::getItemID($pa_element_info['list_id'], $ps_value)) {
  					$ps_value = $vn_id;
@@ -233,7 +243,7 @@
 				return false;
  			}
  			if ((int)$t_item->get('list_id') != (int)$pa_element_info['list_id']) {
- 				$this->postError(1970, _t('Item is not in the correct list'), 'ListAttributeValue->parseValue()');
+ 				$this->postError(1970, _t('Item is not in the correct list for element %1. List id is %2 but should be %3', $pa_element_info["element_code"], $t_item->get('list_id'), $pa_element_info['list_id']), 'ListAttributeValue->parseValue()');
 				return false;
  			}
  			return array(

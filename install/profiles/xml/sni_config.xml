@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
 <profile xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
   xsi:noNamespaceSchemaLocation="profile.xsd" useForConfiguration="1" base="base" infoUrl="">
-  <profileName>sni</profileName>
-  <profileDescription>Profile created on August 8 2013 at 15:15:24 by CollectiveAccess Administrator</profileDescription>
+  <profileName>Smithsonian Channel</profileName>
+  <profileDescription>A video production and broadcast archive in Washington DC, USA.</profileDescription>
   <locales>
     <locale lang="en" country="US">English</locale>
     <locale lang="en" country="CA" dontUseForCataloguing="1">English (Canadian)</locale>
@@ -1935,87 +1935,6 @@
         </item>
       </items>
     </list>
-    <list code="genre_terms" hierarchical="0" system="0" vocabulary="1">
-      <labels>
-        <label locale="en_US">
-          <name>Genre terms</name>
-        </label>
-      </labels>
-      <items>
-        <item idno="experimental" enabled="1" default="1">
-          <labels>
-            <label locale="en_US" preferred="1">
-              <name_singular>Experimental</name_singular>
-              <name_plural>Experimental</name_plural>
-            </label>
-          </labels>
-        </item>
-        <item idno="raw" enabled="1" default="0">
-          <labels>
-            <label locale="en_US" preferred="1">
-              <name_singular>Raw footage</name_singular>
-              <name_plural>Raw footage</name_plural>
-            </label>
-          </labels>
-        </item>
-        <item idno="tv" enabled="1" default="0">
-          <labels>
-            <label locale="en_US" preferred="1">
-              <name_singular>TV broadcast</name_singular>
-              <name_plural>TV broadcasts</name_plural>
-            </label>
-          </labels>
-        </item>
-        <item idno="documentary" enabled="1" default="0">
-          <labels>
-            <label locale="en_US" preferred="1">
-              <name_singular>Documentary</name_singular>
-              <name_plural>Documentary</name_plural>
-            </label>
-          </labels>
-        </item>
-        <item idno="interview" enabled="1" default="0">
-          <labels>
-            <label locale="en_US" preferred="1">
-              <name_singular>Interview</name_singular>
-              <name_plural>Interview</name_plural>
-            </label>
-          </labels>
-        </item>
-        <item idno="animation" enabled="1" default="0">
-          <labels>
-            <label locale="en_US" preferred="1">
-              <name_singular>Animation</name_singular>
-              <name_plural>Animation</name_plural>
-            </label>
-          </labels>
-        </item>
-        <item idno="music_video" enabled="1" default="0">
-          <labels>
-            <label locale="en_US" preferred="1">
-              <name_singular>Music video</name_singular>
-              <name_plural>Music videos</name_plural>
-            </label>
-          </labels>
-        </item>
-        <item idno="performance" enabled="1" default="0">
-          <labels>
-            <label locale="en_US" preferred="1">
-              <name_singular>Performance</name_singular>
-              <name_plural>Performance</name_plural>
-            </label>
-          </labels>
-        </item>
-        <item idno="commercial" enabled="1" default="0">
-          <labels>
-            <label locale="en_US" preferred="1">
-              <name_singular>Commercial</name_singular>
-              <name_plural>Commercial</name_plural>
-            </label>
-          </labels>
-        </item>
-      </items>
-    </list>
     <list code="asset_type" hierarchical="0" system="0" vocabulary="0">
       <labels>
         <label locale="en_US">
@@ -3330,6 +3249,63 @@
         </item>
       </items>
     </list>
+    <list code="awards" hierarchical="0" system="0" vocabulary="0">
+      <labels>
+        <label locale="en_US">
+          <name>Genre</name>
+        </label>
+      </labels>
+      <items/>
+    </list>
+    <list code="award_types" hierarchical="0" system="0" vocabulary="0">
+      <labels>
+        <label locale="en_US">
+          <name>Award Type</name>
+        </label>
+      </labels>
+      <items>
+        <item idno="null" enabled="1" default="1">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular> </name_singular>
+              <name_plural> </name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="submitted" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>Submitted</name_singular>
+              <name_plural>Submitted</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="nominated" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>Nominated</name_singular>
+              <name_plural>Nominated</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="winner" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>Winner</name_singular>
+              <name_plural>Winner</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="selected" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>Selected</name_singular>
+              <name_plural>Selected</name_plural>
+            </label>
+          </labels>
+        </item>
+      </items>
+    </list>
     <!-- New Item lists -->
     <list code="media_asset_type" hierarchical="0" system="0" vocabulary="0">
       <labels>
@@ -3777,6 +3753,14 @@
                 <label locale="en_US" preferred="1">
                   <name_singular>RAW</name_singular>
                   <name_plural>RAW</name_plural>
+                </label>
+              </labels>
+            </item>
+            <item idno="tif" enabled="1" default="0">
+              <labels>
+                <label locale="en_US" preferred="1">
+                  <name_singular>TIF</name_singular>
+                  <name_plural>TIF</name_plural>
                 </label>
               </labels>
             </item>
@@ -4709,7 +4693,7 @@
             </label>
           </labels>
         </item>
-        <item idno="graphics" enabled="1" default="1">
+        <item idno="graphics" enabled="1" default="0">
           <labels>
             <label locale="en_US" preferred="1">
               <name_singular>Graphic</name_singular>
@@ -4717,7 +4701,7 @@
             </label>
           </labels>
           <items>
-        <item idno="animation" enabled="1" default="1">
+        <item idno="animation" enabled="1" default="0">
           <labels>
             <label locale="en_US" preferred="1">
               <name_singular>Animation</name_singular>
@@ -4727,7 +4711,7 @@
         </item>
           </items>
         </item>
-        <item idno="text" enabled="0" default="1">
+        <item idno="text" enabled="0" default="0">
           <labels>
             <label locale="en_US" preferred="1">
               <name_singular>Text</name_singular>
@@ -4881,7 +4865,7 @@
             </item>
           </items>
         </item>
-        <item idno="photo" enabled="0" default="1">
+        <item idno="photo" enabled="0" default="0">
           <labels>
             <label locale="en_US" preferred="1">
               <name_singular>Photo</name_singular>
@@ -4889,7 +4873,7 @@
             </label>
           </labels>
           <items>
-        <item idno="photo_contact" enabled="1" default="0">
+        <item idno="contact_sheet" enabled="1" default="0">
           <labels>
             <label locale="en_US" preferred="1">
               <name_singular>Contact sheet</name_singular>
@@ -4907,11 +4891,11 @@
             </item>
           </items>
         </item>
-        <item idno="sound" enabled="0" default="1">
+        <item idno="audio" enabled="0" default="0">
           <labels>
             <label locale="en_US" preferred="1">
-              <name_singular>Sound</name_singular>
-              <name_plural>Sound</name_plural>
+              <name_singular>Audio</name_singular>
+              <name_plural>Audio</name_plural>
             </label>
           </labels>
           <items>
@@ -5373,24 +5357,24 @@
         <item idno="30" enabled="1" default="0">
           <labels>
             <label locale="en_US" preferred="1">
-              <name_singular>30 FPS (aka 29.97)s</name_singular>
-              <name_plural>30 FPS (aka 29.97)s</name_plural>
+              <name_singular>30 fps (aka 29.97)</name_singular>
+              <name_plural>30 fps (aka 29.97)</name_plural>
             </label>
           </labels>
         </item>
         <item idno="24" enabled="1" default="0">
           <labels>
             <label locale="en_US" preferred="1">
-              <name_singular>24 FPS (aka 23.98)s</name_singular>
-              <name_plural>24 FPS (aka 23.98)s</name_plural>
+              <name_singular>24 fps (aka 23.98)</name_singular>
+              <name_plural>24 fps (aka 23.98)</name_plural>
             </label>
           </labels>
         </item>
         <item idno="25" enabled="1" default="0">
           <labels>
             <label locale="en_US" preferred="1">
-              <name_singular>25 Fps</name_singular>
-              <name_plural>25 Fps</name_plural>
+              <name_singular>25 fps</name_singular>
+              <name_plural>25 fps</name_plural>
             </label>
           </labels>
         </item>
@@ -5405,8 +5389,8 @@
         <item idno="60" enabled="1" default="0">
           <labels>
             <label locale="en_US" preferred="1">
-              <name_singular>60 FPS (aka 59.94)s</name_singular>
-              <name_plural>60 FPS (aka 59.94)s</name_plural>
+              <name_singular>60 fps (aka 59.94)</name_singular>
+              <name_plural>60 fps (aka 59.94)</name_plural>
             </label>
           </labels>
         </item>
@@ -5430,24 +5414,24 @@
         <item idno="yes" enabled="1" default="0">
           <labels>
             <label locale="en_US" preferred="1">
-              <name_singular>yes</name_singular>
-              <name_plural>yes</name_plural>
+              <name_singular>Yes</name_singular>
+              <name_plural>Yes</name_plural>
             </label>
           </labels>
         </item>
         <item idno="no" enabled="1" default="0">
           <labels>
             <label locale="en_US" preferred="1">
-              <name_singular>no</name_singular>
-              <name_plural>no</name_plural>
+              <name_singular>No</name_singular>
+              <name_plural>No</name_plural>
             </label>
           </labels>
         </item>
         <item idno="needed" enabled="1" default="0">
           <labels>
             <label locale="en_US" preferred="1">
-              <name_singular>needed</name_singular>
-              <name_plural>needed</name_plural>
+              <name_singular>Needed</name_singular>
+              <name_plural>Needed</name_plural>
             </label>
           </labels>
         </item>
@@ -5493,27 +5477,19 @@
             </label>
           </labels>
         </item>
-        <item idno="sound" enabled="1" default="0">
+        <item idno="audio" enabled="1" default="0">
           <labels>
             <label locale="en_US" preferred="1">
-              <name_singular>Sound</name_singular>
-              <name_plural>Sound</name_plural>
+              <name_singular>Audio</name_singular>
+              <name_plural>Audio</name_plural>
             </label>
           </labels>
         </item>
         <item idno="still" enabled="1" default="0">
           <labels>
             <label locale="en_US" preferred="1">
-              <name_singular>Still Graphics</name_singular>
-              <name_plural>Sill Graphics</name_plural>
-            </label>
-          </labels>
-        </item>
-        <item idno="animation" enabled="1" default="0">
-          <labels>
-            <label locale="en_US" preferred="1">
-              <name_singular>Animation</name_singular>
-              <name_plural>Animation</name_plural>
+              <name_singular>Graphics</name_singular>
+              <name_plural>Graphics</name_plural>
             </label>
           </labels>
         </item>
@@ -5521,7 +5497,7 @@
           <labels>
             <label locale="en_US" preferred="1">
               <name_singular>Photograph</name_singular>
-              <name_plural>Photograph</name_plural>
+              <name_plural>Photographs</name_plural>
             </label>
           </labels>
         </item>
@@ -5537,7 +5513,7 @@
           <labels>
             <label locale="en_US" preferred="1">
               <name_singular>Production Asset</name_singular>
-              <name_plural>Production Asset</name_plural>
+              <name_plural>Production Assets</name_plural>
             </label>
           </labels>
         </item>
@@ -6843,26 +6819,6 @@
         </restriction>
       </typeRestrictions>
     </metadataElement>
-    <metadataElement code="genre" datatype="List" list="genre_terms">
-      <labels>
-        <label locale="en_US">
-          <name>Genre</name>
-        </label>
-      </labels>
-      <settings>
-        <setting name="render">checklist</setting>
-      </settings>
-      <typeRestrictions>
-        <restriction>
-          <table>ca_objects</table>
-          <settings>
-            <setting name="minAttributesPerRow">0</setting>
-            <setting name="maxAttributesPerRow">255</setting>
-            <setting name="minimumAttributeBundlesToDisplay">1</setting>
-          </settings>
-        </restriction>
-      </typeRestrictions>
-    </metadataElement>
     <metadataElement code="objectFormat" datatype="List" list="object_format_types">
       <labels>
         <label locale="en_US">
@@ -7295,6 +7251,7 @@
       <typeRestrictions>
         <restriction>
           <table>ca_objects</table>
+          <type>moving_image</type>
           <settings>
             <setting name="minAttributesPerRow">1</setting>
             <setting name="maxAttributesPerRow">1</setting>
@@ -7911,6 +7868,17 @@
             <setting name="maxChars">65535</setting>
           </settings>
         </metadataElement>
+        <metadataElement code="essenceTrackFrameSize" datatype="List" list="video_dimensions">
+          <labels>
+            <label locale="en_US">
+              <name>essenceTrackFrameSize</name>
+            </label>
+          </labels>
+          <settings>
+            <setting name="fieldWidth">100</setting>
+            <setting name="fieldHeight">1</setting>
+          </settings>
+        </metadataElement>
         <metadataElement code="ScanType" datatype="List" list="essence_track_scan">
           <labels>
             <label locale="en_US">
@@ -8015,7 +7983,6 @@
       <typeRestrictions>
         <restriction code="objects">
           <table>ca_objects</table>
-          <type>moving_image</type>
           <settings>
             <setting name="minAttributesPerRow">0</setting>
             <setting name="maxAttributesPerRow">3</setting>
@@ -8367,6 +8334,7 @@
       <typeRestrictions>
         <restriction>
           <table>ca_objects</table>
+          <type>supporting</type>
           <settings>
             <setting name="minAttributesPerRow">0</setting>
             <setting name="maxAttributesPerRow">1</setting>
@@ -8376,14 +8344,38 @@
       </typeRestrictions>
     </metadataElement>
     <!-- New Work fields -->
-    <metadataElement code="lcsh_terms" datatype="LCSH">
+    <metadataElement code="lcsh_names" datatype="LCSH">
       <labels>
         <label locale="en_US">
-          <name>Library of Congress Authorities</name>
+          <name>LC Names Authority File</name>
           <description>Library of Congress terms describing this object. To add a new heading simply type the first few letters of the heading and choose the desired one from the displayed list of possible matches.</description>
         </label>
       </labels>
       <settings>
+        <setting name="vocabulary">cs:http://id.loc.gov/authorities/names</setting>
+        <setting name="fieldWidth">50</setting>
+        <setting name="fieldHeight">1</setting>
+      </settings>
+      <typeRestrictions>
+        <restriction code="ca_occurrences">
+          <table>ca_occurrences</table>
+          <settings>
+            <setting name="minAttributesPerRow">0</setting>
+            <setting name="maxAttributesPerRow">100</setting>
+            <setting name="minimumAttributeBundlesToDisplay">1</setting>
+          </settings>
+        </restriction>
+      </typeRestrictions>
+    </metadataElement>
+    <metadataElement code="lcsh_subjects" datatype="LCSH">
+      <labels>
+        <label locale="en_US">
+          <name>LC Subject Headings</name>
+          <description>Library of Congress terms describing this object. To add a new heading simply type the first few letters of the heading and choose the desired one from the displayed list of possible matches.</description>
+        </label>
+      </labels>
+      <settings>
+        <setting name="vocabulary">cs:http://id.loc.gov/authorities/subjects</setting>
         <setting name="fieldWidth">50</setting>
         <setting name="fieldHeight">1</setting>
       </settings>
@@ -8466,7 +8458,7 @@
             <setting name="maxChars">65535</setting>
           </settings>
         </metadataElement>
-        <metadataElement code="dates_types" datatype="List" list="date_types">
+        <metadataElement code="work_dates_types" datatype="List" list="date_types">
           <labels>
             <label locale="en_US">
               <name>Type</name>
@@ -8526,7 +8518,7 @@
             <setting name="maxChars">65535</setting>
           </settings>
         </metadataElement>
-        <metadataElement code="dates_types" datatype="List" list="date_types">
+        <metadataElement code="mission_dates_types" datatype="List" list="date_types">
           <labels>
             <label locale="en_US">
               <name>Type</name>
@@ -8553,6 +8545,7 @@
       <labels>
         <label locale="en_US">
           <name>Production Type</name>
+          <description>Use only for completed programs/series</description>
         </label>
       </labels>
       <settings>
@@ -8564,29 +8557,6 @@
           <type>work</type>
           <settings>
             <setting name="minAttributesPerRow">0</setting>
-            <setting name="maxAttributesPerRow">1</setting>
-            <setting name="minimumAttributeBundlesToDisplay">1</setting>
-          </settings>
-        </restriction>
-      </typeRestrictions>
-    </metadataElement>
-    <metadataElement code="awards" datatype="Text">
-      <labels>
-        <label locale="en_US">
-          <name>Awards</name>
-          <description/>
-        </label>
-      </labels>
-      <settings>
-        <setting name="fieldWidth">90</setting>
-        <setting name="fieldHeight">3</setting>
-      </settings>
-      <typeRestrictions>
-        <restriction code="r1">
-          <table>ca_occurrences</table>
-          <type>work</type>
-          <settings>
-            <setting name="minAttributesPerRow">1</setting>
             <setting name="maxAttributesPerRow">1</setting>
             <setting name="minimumAttributeBundlesToDisplay">1</setting>
           </settings>
@@ -8619,6 +8589,7 @@
       <labels>
         <label locale="en_US">
           <name>Genre</name>
+          <description>Use only for completed programs/series</description>
         </label>
       </labels>
       <settings>
@@ -8631,6 +8602,74 @@
           <settings>
             <setting name="minAttributesPerRow">0</setting>
             <setting name="maxAttributesPerRow">1</setting>
+            <setting name="minimumAttributeBundlesToDisplay">1</setting>
+          </settings>
+        </restriction>
+      </typeRestrictions>
+    </metadataElement>
+    <metadataElement code="awards" datatype="Container">
+      <labels>
+        <label locale="en_US">
+          <name>Awards</name>
+        </label>
+      </labels>
+      <settings>
+        <setting name="lineBreakAfterNumberOfElements">1</setting>
+      </settings>
+      <elements>
+        <metadataElement code="award_event" datatype="List" list="awards">
+          <labels>
+            <label locale="en_US">
+              <name>Award Event, Category &amp; Designation</name>
+            </label>
+          </labels>
+          <settings>
+            <setting name="render">horiz_hierbrowser</setting>
+          </settings>
+        </metadataElement>
+        <metadataElement code="award_year" datatype="DateRange">
+          <labels>
+            <label locale="en_US">
+              <name>Award Year</name>
+            </label>
+          </labels>
+          <settings>
+            <setting name="fieldWidth">70</setting>
+            <setting name="fieldHeight">1</setting>
+          </settings>
+        </metadataElement>
+        <metadataElement code="award_types" datatype="List" list="award_types">
+          <labels>
+            <label locale="en_US">
+              <name>Award Type</name>
+            </label>
+          </labels>
+          <settings>
+            <setting name="fieldWidth">100</setting>
+            <setting name="fieldHeight">1</setting>
+            <setting name="minChars">0</setting>
+            <setting name="maxChars">65535</setting>
+          </settings>
+        </metadataElement>
+        <metadataElement code="award_notes" datatype="Text">
+          <labels>
+            <label locale="en_US">
+              <name>Award Notes</name>
+            </label>
+          </labels>
+          <settings>
+            <setting name="fieldWidth">100</setting>
+            <setting name="fieldHeight">3</setting>
+          </settings>
+        </metadataElement>
+      </elements>
+      <typeRestrictions>
+        <restriction code="r1">
+          <table>ca_occurrences</table>
+          <type>work</type>
+          <settings>
+            <setting name="minAttributesPerRow">1</setting>
+            <setting name="maxAttributesPerRow">10</setting>
             <setting name="minimumAttributeBundlesToDisplay">1</setting>
           </settings>
         </restriction>
@@ -9637,9 +9676,6 @@
             </placement>
             <placement code="ca_attribute_essenceTrack">
               <bundle>ca_attribute_essenceTrack</bundle>
-              <settings>
-                <setting name="readonly" locale="0">0</setting>
-              </settings>
             </placement>
             <placement code="ca_attribute_alt_modes">
               <bundle>ca_attribute_alt_modes</bundle> 
@@ -9725,6 +9761,9 @@
           <bundlePlacements>
             <placement code="ca_object_representations">
               <bundle>ca_object_representations</bundle>
+            </placement>
+             <placement code="ca_attribute_logged">
+              <bundle>ca_attribute_logged</bundle>
             </placement>
           </bundlePlacements>
         </screen>
@@ -10038,7 +10077,7 @@
                 <setting name="label" locale="en_US">Related instantiations</setting>
                 <setting name="restrict_to_relationship_types">instantiation</setting>
                 <setting name="restrict_to_types">moving_image</setting>
-                <setting name="restrict_to_types">sound</setting>
+                <setting name="restrict_to_types">supporting</setting>
                 <setting name="list_format">list</setting> 
                 <setting name="display_template"><![CDATA[<l>^ca_objects.preferred_labels</l> <b>(^type_id)</b>]]></setting>
               </settings>
@@ -10051,16 +10090,13 @@
                 <setting name="restrict_to_relationship_types">supporting</setting>
                 <setting name="restrict_to_relationship_types">used</setting>
                 <setting name="restrict_to_relationship_types">describes</setting>
-                <setting name="restrict_to_types">still</setting>
-                <setting name="restrict_to_types">assets</setting>
-                <setting name="restrict_to_types">software</setting>
-                <setting name="restrict_to_types">animation</setting>
-                <setting name="restrict_to_types">photograph</setting>
+                <setting name="restrict_to_types">supporting</setting>
               </settings>
             </placement>
             <placement code="preferred_labels">
               <bundle>preferred_labels</bundle>
               <settings>
+                <setting name="label" locale="en_US">Preferred Title</setting>
                 <setting name="readonly" locale="0">0</setting>
                 <setting name="usewysiwygeditor" locale="0">0</setting>
                 <setting name="description" locale="en_US">Final title for series and programs; assigned title for raw footage and supporting materials.</setting>
@@ -10069,7 +10105,7 @@
             <placement code="nonpreferred_labels">
               <bundle>nonpreferred_labels</bundle>
               <settings>
-                <setting name="label" locale="en_US">Alternate titles</setting>
+                <setting name="label" locale="en_US">Alternate Titles</setting>
                 <setting name="add_label" locale="en_US">Add name</setting>
               </settings>
             </placement>
@@ -10144,7 +10180,7 @@
                 <setting name="label" locale="en_US">Related instantiations</setting>
                 <setting name="restrict_to_relationship_types">instantiation</setting>
                 <setting name="restrict_to_types">moving_image</setting>
-                <setting name="restrict_to_types">sound</setting>
+                <setting name="restrict_to_types">supporting</setting>
                 <setting name="list_format">list</setting> 
                 <setting name="display_template"><![CDATA[<l>^ca_objects.preferred_labels</l> <b>(^type_id)</b>]]></setting>
               </settings>
@@ -10157,16 +10193,13 @@
                 <setting name="restrict_to_relationship_types">supporting</setting>
                 <setting name="restrict_to_relationship_types">used</setting>
                 <setting name="restrict_to_relationship_types">describes</setting>
-                <setting name="restrict_to_types">still</setting>
-                <setting name="restrict_to_types">assets</setting>
-                <setting name="restrict_to_types">software</setting>
-                <setting name="restrict_to_types">animation</setting>
-                <setting name="restrict_to_types">photograph</setting>
+                <setting name="restrict_to_types">supporting</setting>
               </settings>
             </placement>
             <placement code="preferred_labels">
               <bundle>preferred_labels</bundle>
               <settings>
+                <setting name="label" locale="en_US">Preferred Title</setting>
                 <setting name="readonly" locale="0">0</setting>
                 <setting name="usewysiwygeditor" locale="0">0</setting>
                 <setting name="description" locale="en_US">Final title for series and programs; assigned title for raw footage and supporting materials.</setting>
@@ -10175,7 +10208,7 @@
             <placement code="nonpreferred_labels">
               <bundle>nonpreferred_labels</bundle>
               <settings>
-                <setting name="label" locale="en_US">Alternate titles</setting>
+                <setting name="label" locale="en_US">Alternate Titles</setting>
                 <setting name="add_label" locale="en_US">Add name</setting>
               </settings>
             </placement>
@@ -10243,11 +10276,11 @@
             </label>
           </labels>
           <bundlePlacements>
-             <placement code="ca_attribute_lcsh_terms">
-              <bundle>ca_attribute_lcsh_terms</bundle>
-               <settings>
-                <setting name="add_label" locale="en_US">Add Library of Congress Authority</setting>
-              </settings>
+             <placement code="ca_attribute_lcsh_names">
+              <bundle>ca_attribute_lcsh_names</bundle>
+            </placement>
+            <placement code="ca_attribute_lcsh_subjects">
+              <bundle>ca_attribute_lcsh_subjects</bundle>
             </placement>
             <placement code="ca_entities">
               <bundle>ca_entities</bundle>
@@ -10255,6 +10288,7 @@
                 <setting name="label" locale="en_US">Related Entities</setting>
                 <setting name="restrict_to_relationship_types">subject</setting>
                 <setting name="restrict_to_relationship_types">interviewee</setting>
+                <setting name="description" locale="en_US">Use for subjects and interviewees</setting>
               </settings>
             </placement>
             <placement code="ca_places">
