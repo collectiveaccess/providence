@@ -1503,6 +1503,7 @@
 			$o_view->setVar('placement_code', $ps_placement_code);		// pass placement code
 			
 			$o_view->setVar('labels', $va_labels = $this->getPreferredLabels(null, $pa_options['dontCache']));
+			$o_view->setVar('t_subject', $this);
 			$o_view->setVar('t_label', $t_label);
 			$o_view->setVar('add_label', isset($pa_bundle_settings['add_label'][$g_ui_locale]) ? $pa_bundle_settings['add_label'][$g_ui_locale] : null);
 			$o_view->setVar('graphicsPath', $pa_options['graphicsPath']);
@@ -1583,6 +1584,7 @@
 			$o_view->setVar('placement_code', $ps_placement_code);		// pass placement code
 		
 			$o_view->setVar('labels', $va_labels = $this->getNonPreferredLabels(null, $pa_options['dontCache']));
+			$o_view->setVar('t_subject', $this);
 			$o_view->setVar('t_label', $t_label);
 			$o_view->setVar('add_label', isset($pa_bundle_settings['add_label'][$g_ui_locale]) ? $pa_bundle_settings['add_label'][$g_ui_locale] : null);
 			$o_view->setVar('graphicsPath', $pa_options['graphicsPath']);

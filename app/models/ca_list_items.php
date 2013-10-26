@@ -34,6 +34,7 @@
    *
    */
  
+require_once(__CA_LIB_DIR__.'/core/ModelSettings.php');
 require_once(__CA_LIB_DIR__.'/ca/RepresentableBaseModel.php');
 require_once(__CA_LIB_DIR__.'/ca/IHierarchy.php');
 require_once(__CA_MODELS_DIR__.'/ca_lists.php');
@@ -169,6 +170,13 @@ BaseModel::$s_ca_models_definitions['ca_list_items'] = array(
 				'LIST' => 'access_statuses',
 				'LABEL' => _t('Access'), 'DESCRIPTION' => _t('Indicates if the list item is accessible to the public or not. ')
 		),
+		'settings' => array(
+				'FIELD_TYPE' => FT_VARS, 'DISPLAY_TYPE' => DT_OMIT, 
+				'DISPLAY_WIDTH' => 88, 'DISPLAY_HEIGHT' => 15,
+				'IS_NULL' => false, 
+				'DEFAULT' => '',
+				'LABEL' => _t('Settings'), 'DESCRIPTION' => _t('List item settings')
+		),
 		'status' => array(
 				'FIELD_TYPE' => FT_NUMBER, 'DISPLAY_TYPE' => DT_SELECT, 
 				'DISPLAY_WIDTH' => 40, 'DISPLAY_HEIGHT' => 1,
@@ -192,6 +200,27 @@ BaseModel::$s_ca_models_definitions['ca_list_items'] = array(
  				'LABEL' => _t('Is deleted?'), 'DESCRIPTION' => _t('Indicates if list item is deleted or not.')
 		)
  	)
+);
+
+global $_ca_list_items_settings;
+
+// These are settings per-list. They do not apply to lists universally.
+$_ca_list_items_settings = array(
+	'entity_types' => array(		// global
+		'entity_class' => array(
+			'formatType' => FT_TEXT,
+			'displayType' => DT_SELECT,
+			'options' => array(
+				_t('Individual person') => 'IND',
+				_t('Organization') => 'ORG',
+			),
+			'width' => 40, 'height' => 1,
+			'takesLocale' => false,
+			'default' => 'IND',
+			'label' => _t('Entity class'),
+			'description' => _t('The class of entity the type represents. Use <em>Individual person</em> for entities that require a fully articulated personal name. Use <em>organization</em> for group entities such as corporations, clubs and families.')
+		)
+	)
 );
 
 class ca_list_items extends RepresentableBaseModel implements IHierarchy {
@@ -316,6 +345,12 @@ class ca_list_items extends RepresentableBaseModel implements IHierarchy {
 
 	protected $FIELDS;
 	
+	
+	/**
+	 * Settings delegate - implements methods for setting, getting and using 'settings' var field
+	 */
+	public $SETTINGS;
+	
 	# ------------------------------------------------------
 	# --- Constructor
 	#
@@ -328,6 +363,7 @@ class ca_list_items extends RepresentableBaseModel implements IHierarchy {
 	#
 	# ------------------------------------------------------
 	public function __construct($pn_id=null) {
+		$this->SETTINGS = new ModelSettings($this, 'settings', array());
 		parent::__construct($pn_id);	# call superclass constructor
 	}
 	# ------------------------------------------------------
@@ -349,6 +385,22 @@ class ca_list_items extends RepresentableBaseModel implements IHierarchy {
 		
 		$this->BUNDLES['hierarchy_navigation'] = array('type' => 'special', 'repeating' => false, 'label' => _t('Hierarchy navigation'));
 		$this->BUNDLES['hierarchy_location'] = array('type' => 'special', 'repeating' => false, 'label' => _t('Location in hierarchy'));
+		
+		$this->BUNDLES['settings'] = array('type' => 'special', 'repeating' => false, 'label' => _t('List item settings'));
+	}
+	# ------------------------------------------------------
+	public function load($pm_id=null, $pb_use_cache=true) {
+		if ($vn_rc = parent::load($pm_id, $pb_use_cache)) {
+			$this->_setSettingsForList();
+		}
+		return $vn_rc;
+	}
+	# ------------------------------------------------------
+	private function _setSettingsForList() {
+		global $_ca_list_items_settings;
+		if (isset($_ca_list_items_settings[$vs_list_code = caGetListCode($this->get('list_id'))])) {
+			$this->SETTINGS = new ModelSettings($this, 'settings', $_ca_list_items_settings[$vs_list_code]);
+		}
 	}
  	# ------------------------------------------------------
 	public function insert($pa_options=null) {
@@ -406,6 +458,7 @@ class ca_list_items extends RepresentableBaseModel implements IHierarchy {
 			$this->getTransaction()->rollback();
 		} else {
 			$this->getTransaction()->commit();
+			$this->_setSettingsForList();
 		}
 		return $vn_rc;
 	}
@@ -427,6 +480,7 @@ class ca_list_items extends RepresentableBaseModel implements IHierarchy {
 			$this->getTransaction()->rollback();
 		} else {
 			$this->getTransaction()->commit();
+			$this->_setSettingsForList();
 		}
 		return $vn_rc;
 	}
@@ -712,6 +766,19 @@ class ca_list_items extends RepresentableBaseModel implements IHierarchy {
 		}
 
 		return false;
+	}
+	
+	# ------------------------------------------------------
+	# Settings
+	# ------------------------------------------------------
+	/**
+	 * Reroutes calls to method implemented by settings delegate to the delegate class
+	 */
+	public function __call($ps_name, $pa_arguments) {
+		if (method_exists($this->SETTINGS, $ps_name)) {
+			return call_user_func_array(array($this->SETTINGS, $ps_name), $pa_arguments);
+		}
+		die($this->tableName()." does not implement method {$ps_name}");
 	}
 	# ------------------------------------------------------
 }
