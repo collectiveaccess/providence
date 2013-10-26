@@ -1696,6 +1696,7 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 									$vs_list_val = mb_substr($vs_list_val, 0, $vn_max_length);
 								}
 								$va_group_buf[$vn_c] = array($vs_item_terminal => $vs_list_val, '_errorPolicy' => $vs_item_error_policy);
+								$vn_c++;
 							}
 						
 							$vn_row++;
