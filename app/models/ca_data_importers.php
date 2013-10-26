@@ -1920,7 +1920,7 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 									
 										if (is_array($va_element_content)) { $va_element_content['locale_id'] = $vn_locale_id; }
 										
-										$t_subject->addAttribute($va_element_content, $vs_element);
+										$t_subject->addAttribute($va_element_content, $vs_element, null, array('alwaysTreatValueAsIdno' => true));
 										
 										$t_subject->update();
 

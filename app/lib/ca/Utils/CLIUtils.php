@@ -829,7 +829,7 @@
 							$va_media_info = $t_attr_val->getMediaInfo('value_blob');
 							$vs_original_filename = $va_media_info['ORIGINAL_FILENAME'];
 							
-							if ($va_media_info['MIMETYPE'] !== 'application/pdf') { continue; }
+							if (!is_array($va_media_info) || ($va_media_info['MIMETYPE'] !== 'application/pdf')) { continue; }
 					
 							print CLIProgressBar::next(1, _t("Reindexing %1", ($vs_original_filename ? $vs_original_filename." ({$vn_value_id})" : $vn_value_id)));
 		
