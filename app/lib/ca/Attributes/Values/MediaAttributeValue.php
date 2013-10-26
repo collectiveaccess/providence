@@ -258,10 +258,10 @@
  		}
  		# ------------------------------------------------------------------
  		public function htmlFormElement($pa_element_info, $pa_options=null) {
- 			$vs_element = '<table><tr>';
- 			$vs_element .= '<td><div id="{fieldNamePrefix}upload_control_{n}" class="attributeMediaDownloadControl">'._t("Select a media file").': <input type="file" name="{fieldNamePrefix}'.$pa_element_info['element_id'].'_{n}"></div></td>' ;
- 			$vs_element .= '<td>{'.$pa_element_info['element_id'].'}</td>';
- 			$vs_element .= '</tr></table>';
+ 			$vs_element = '<div>';
+ 			$vs_element .= '<div>{'.$pa_element_info['element_id'].'}</div>';
+ 			$vs_element .= '<div id="{fieldNamePrefix}upload_control_{n}" class="attributeMediaDownloadControl">'._t("Set media").': <input type="file" name="{fieldNamePrefix}'.$pa_element_info['element_id'].'_{n}"></div>' ;
+ 			$vs_element .= '</div>';
  			return $vs_element;
  		}
  		# ------------------------------------------------------------------
