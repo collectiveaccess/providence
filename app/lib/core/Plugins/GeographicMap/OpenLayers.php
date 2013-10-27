@@ -580,7 +580,7 @@ class WLPlugGeographicMapOpenLayers Extends BaseGeographicMapPlugIn Implements I
 			return false;
 		}
 	</script>";
-		$vs_element .= '<input class="coordinates mapCoordinateDisplay" type="hidden" name="{fieldNamePrefix}'.$pa_element_info['element_id'].'_{n}" id="{fieldNamePrefix}'.$pa_element_info['element_id'].'_{n}"/>';
+		$vs_element .= '<input class="coordinates mapCoordinateDisplay" type="text" name="{fieldNamePrefix}'.$pa_element_info['element_id'].'_{n}" id="{fieldNamePrefix}'.$pa_element_info['element_id'].'_{n}"/>';
 		
 		return $vs_element;
 	}
