@@ -93,28 +93,35 @@ class WLPlugMediaReplicationVimeo Extends BaseMediaReplicationPlugin {
 	public function initiateReplication($ps_filepath, $pa_data, $pa_options=null) {
 		$o_client = $this->getClient();
 
-		// upload video to vimeo, set properties afterwards
-		if($vs_video_id = $o_client->upload($ps_filepath)) {
-			// Vimeo's privacy settings are string values like 'nobody' or 'anybody'.
-			$vs_privacy_setting = caGetOption('privacy', $pa_options, 'nobody');
-			// this, however, is 1 or 0
-			$vn_dl_privacy = caGetOption('downloadPrivacy', $pa_options, 0);
-			// by, by-sa, by-nd, by-nc, by-nc-sa, or by-nc-nd. Set to 0 for no CC license.
-			$vs_license = caGetOption('license',$pa_options,0);
+		try {
+			// upload video to vimeo, set properties afterwards
+			if($vs_video_id = $o_client->upload($ps_filepath)) {
+				// Vimeo's privacy settings are string values like 'nobody' or 'anybody'.
+				$vs_privacy_setting = caGetOption('privacy', $pa_options, 'nobody');
+				// this, however, is 1 or 0
+				$vn_dl_privacy = caGetOption('downloadPrivacy', $pa_options, 0);
+				// by, by-sa, by-nd, by-nc, by-nc-sa, or by-nc-nd. Set to 0 for no CC license.
+				$vs_license = caGetOption('license',$pa_options,0);
 
-			$o_client->call('vimeo.videos.setPrivacy', array('privacy' => $vs_privacy_setting, 'video_id' => $video_id));
-			$o_client->call('vimeo.videos.setTitle', array('title' => $pa_data['title'], 'video_id' => $video_id));
-			$o_client->call('vimeo.videos.setDescription', array('description' => $pa_data['description'], 'video_id' => $video_id));
-			$o_client->call('vimeo.videos.setDownloadPrivacy', array('download' => $vn_dl_privacy, 'video_id' => $video_id));
-			$o_client->call('vimeo.videos.setLicense', array('license' => $vs_license, 'video_id' => $video_id));
+				$o_client->call('vimeo.videos.setPrivacy', array('privacy' => $vs_privacy_setting, 'video_id' => $vs_video_id));
+				$o_client->call('vimeo.videos.setTitle', array('title' => $pa_data['title'], 'video_id' => $vs_video_id));
+				$o_client->call('vimeo.videos.setDescription', array('description' => $pa_data['description'], 'video_id' => $vs_video_id));
+				$o_client->call('vimeo.videos.setDownloadPrivacy', array('download' => $vn_dl_privacy, 'video_id' => $vs_video_id));
+				$o_client->call('vimeo.videos.setLicense', array('license' => $vs_license, 'video_id' => $vs_video_id));
 
-			if(isset($pa_data['tags']) && is_array($pa_data['tags'])) {
-				$o_client->call('vimeo.videos.addTags', array('tags' => join(',',$pa_data['tags']), 'video_id' => $video_id));
+				if(isset($pa_data['tags']) && is_array($pa_data['tags'])) {
+					$o_client->call('vimeo.videos.addTags', array('tags' => join(',',$pa_data['tags']), 'video_id' => $vs_video_id));
+				}
+			} else {
+				// upload() and all other phpVimeo methods throw their
+				// own exceptions if something goes wrong, except in this case
+				throw new VimeoAPIException(_t("File for replication doesn't exist"));
 			}
-		} else {
-			// upload() and all other phpVimeo methods throw their
-			// own exceptions if something goes wrong, except in this case
-			throw new VimeoAPIException(_t("File for replication doesn't exist"));
+		} catch (VimeoAPIException $e){
+			if($vs_video_id){
+				$va_errors[$vs_video_id][] = $e->getMessage();	
+			}
+			return false;
 		}
 		
 		return $this->info['NAME']."://".$vs_video_id;
@@ -182,9 +189,9 @@ class WLPlugMediaReplicationVimeo Extends BaseMediaReplicationPlugin {
 	 */
 	public function removeReplication($ps_request_token, $pa_options=null) {
 		$o_client = $this->getClient();
-		$video_id = preg_replace("!^".$this->info['NAME']."://!", "", $ps_request_token); // remove plugin identifier to obtain raw video ID
+		$vs_video_id = preg_replace("!^".$this->info['NAME']."://!", "", $ps_request_token); // remove plugin identifier to obtain raw video ID
 
-		//$o_client->call('vimeo.videos.delete', array('video_id' => $video_id));
+		//$o_client->call('vimeo.videos.delete', array('video_id' => $vs_video_id));
 	}
 	# ------------------------------------------------
 	/**
