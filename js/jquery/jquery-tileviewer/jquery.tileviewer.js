@@ -117,7 +117,7 @@ var methods = {
             
                 var view = {
                     canvas: document.createElement("canvas"),
-                    status: document.createElement("p"),
+                    //status: document.createElement("p"),
                     controls: document.createElement("div"),
                     annotationTextBlocks: [],
                     annotationTextEditor: document.createElement("div"),
@@ -284,7 +284,7 @@ var methods = {
                     		return false;
                     	}
                     	view.isSavingAnnotations = true;
-                    	//console.log("Commit annotations to " + options.annotationSaveUrl);
+                    	console.log("Commit " + view.annotationsToSave.length + " annotations to " + options.annotationSaveUrl);
                     	
                     	// strip out textBlock pointer because it causes jQuery errors with getJSON
                     	var annotationsToSave = [];
@@ -308,7 +308,7 @@ var methods = {
                     			for(var i in annotationsToSave) {
                     				var index = annotationsToSave[i]['index'];
                     				if (data['annotation_ids'][index]) {
-                    					jQuery("#tileviewerAnnotationTextBlock_" + index).html(annotationsToSave[i]['label'] ? annotationsToSave[i]['label'] : options.empty_annotation_label_tex);
+                    					jQuery("#tileviewerAnnotationTextBlock_" + index).html(annotationsToSave[i]['label'] ? annotationsToSave[i]['label'] : options.empty_annotation_label_text);
                     				}
                     			}
                     		}
@@ -328,7 +328,10 @@ var methods = {
 // Begin ANNOTATIONS: draw outlines
 //                 
                     draw_annotations: function() {
-                    	if (!options.use_annotations || !options.display_annotations) { return; }
+                    	if (!options.use_annotations || !options.display_annotations) { 
+                    		jQuery(".tileviewerAnnotationTextBlock").fadeOut(100);
+                    		return; 
+                    	}
                     	var ctx = view.canvas.getContext("2d");
                         
                         var factor = Math.pow(2,layer.level);
@@ -339,9 +342,9 @@ var methods = {
 						var layerHeight = layer.info.height/factor;		// The actual height of the layer on-screen
 						var layerMag =  layer.tilesize/256;				// Current layer magnification factor
 						
-                        ctx.shadowOffsetX = 0;
-                        ctx.shadowOffsetY = 0;
-                        ctx.shadowBlur    = 2;
+                        ctx.shadowOffsetX = 1;
+                        ctx.shadowOffsetY = 1;
+                        ctx.shadowBlur    = 3;
                         ctx.shadowColor   = 'rgba(255,255, 255, 0.8)';
                         ctx.lineWidth   = 2;
                         ctx.fillStyle = '#0c0';
@@ -521,7 +524,6 @@ var methods = {
                     			a.endY += (dh/2);
                     		};
                     		view.annotationAreas.push(a);
-                    		//console.log(view.annotationAreas);
                        		view.update_textbox_position();
                         }
                     },
@@ -623,20 +625,23 @@ var methods = {
  if (view.annotations[i]['type'] == 'rect') { // only rects allow resizing                   	
                 
                 // Scaling	
-                var rMinAllowedWidth = 0.2;
-                var rMinAllowedHeight = 0.2;	
+                var rMinAllowedWidth = 0.5;
+                var rMinAllowedHeight = 0.5;	
                 
+                if(!view.isAnnotationTranslation) {
                     	if (((Math.abs(clickX - annotationX) < 5) && (Math.abs(clickY - annotationY) < 5)) || (view.isAnnotationResize == 'LU')) {
                     		view.isAnnotationResize = 'LU';
                     		var d = view.annotations[i].x - rClickX;
                     		if(view.annotations[i].w + d < rMinAllowedWidth) { return; }
                     		view.annotations[i].x = rClickX;
+                    		view.annotations[i].tx = rClickX;
                     		view.annotations[i].w += d;
                     		
                     		d = view.annotations[i].y - rClickY;
                     		if((d == 0) || (view.annotations[i].h + d < rMinAllowedHeight)) { return; }
                     		view.annotations[i].y = rClickY;
                     		view.annotations[i].h += d;
+                    		view.annotations[i].ty = view.annotations[i].y + view.annotations[i].h;
                     		jQuery("body").css('cursor', 'nw-resize');
                     		
                     		view.make_annotation_dirty(i);
@@ -654,6 +659,7 @@ var methods = {
                     		if((d==0) || (view.annotations[i].h + d < rMinAllowedHeight)) { return; }
                     		view.annotations[i].y = rClickY;
                     		view.annotations[i].h += d;
+                    		view.annotations[i].ty = view.annotations[i].y + view.annotations[i].h;
                     		jQuery("body").css('cursor', 'ne-resize');
                     		
                     		view.make_annotation_dirty(i);
@@ -666,11 +672,13 @@ var methods = {
                     		var d = view.annotations[i].x - rClickX;
                     		if(view.annotations[i].w + d < rMinAllowedWidth) { return; }
                     		view.annotations[i].x = rClickX;
+                    		view.annotations[i].tx = rClickX;
                     		view.annotations[i].w += d;
                     		
                     		d = rClickY - (view.annotations[i].y + view.annotations[i].h);
                     		if((d==0) || (view.annotations[i].h + d < rMinAllowedHeight)) { return; }
                     		view.annotations[i].h += d;
+                    		view.annotations[i].ty = view.annotations[i].y + view.annotations[i].h;
                     		jQuery("body").css('cursor', 'sw-resize');
                     		
                     		view.make_annotation_dirty(i);
@@ -688,6 +696,7 @@ var methods = {
                     		if((d==0) || (view.annotations[i].h + d < rMinAllowedHeight)) { return; }
                     		var b= view.annotations[i].h;
                     		view.annotations[i].h += d;
+                    		view.annotations[i].ty = view.annotations[i].y + view.annotations[i].h;
                     		jQuery("body").css('cursor', 'se-resize');
                     		
                     		view.make_annotation_dirty(i);
@@ -700,6 +709,7 @@ var methods = {
                     		var d = view.annotations[i].x - rClickX;
                     		if((d==0) || (view.annotations[i].w + d < rMinAllowedWidth)) { return; }
                     		view.annotations[i].x = rClickX;
+                    		view.annotations[i].tx = rClickX;
                     		view.annotations[i].w += d;
                     		jQuery("body").css('cursor', 'w-resize');
                     		
@@ -726,6 +736,7 @@ var methods = {
                     		if((d==0) || (view.annotations[i].h + d < rMinAllowedHeight)) { return; }
                     		view.annotations[i].y = rClickY;
                     		view.annotations[i].h += d;
+                    		view.annotations[i].ty = view.annotations[i].y + view.annotations[i].h;
                     		jQuery("body").css('cursor', 'n-resize');
                     		
                     		view.make_annotation_dirty(i);
@@ -738,14 +749,17 @@ var methods = {
                     		var d = rClickY - (view.annotations[i].y + view.annotations[i].h);
                     		if((d==0) || (view.annotations[i].h + d < rMinAllowedHeight)) { return; }
                     		view.annotations[i].h += d;
+                    		view.annotations[i].ty = view.annotations[i].y + view.annotations[i].h;
                     		jQuery("body").css('cursor', 's-resize');
                     		
                     		view.make_annotation_dirty(i);
 							view.draw();
                     		return;
                     	}
+            }
  }                   	
                 // Translation 
+            if (!view.isAnnotationResize) {
                 		var origX = view.annotations[i].x;
                 		var origY = view.annotations[i].y;
 						view.annotations[i].x = (((view.dragAnnotationLastCoords.x - layer.xpos)/((layer.info.width/factor) * (layer.tilesize/256))) * 100) - (view.annotations[i].w/2);
@@ -756,6 +770,8 @@ var methods = {
 						
 						view.make_annotation_dirty(i);
 						view.draw();
+						view.isAnnotationTranslation = true;
+			}
 						return;
                     },
                     
@@ -773,7 +789,7 @@ var methods = {
                     		default:
                     		case 'rect':
 								view.annotations.push({
-									type: type, x: x, y: y, w: 10, h: 10, index: view.annotations.length,
+									type: type, x: x, y: y, w: (1-view.current_zoom()) * 10, h: (1-view.current_zoom()) * 10, index: view.annotations.length,
 									tx: x, ty: y + 10, tw: 10, th: (120/layer.info.width) * 100,
 									label: options.default_annotation_label, textBlock: textBlock
 								});
@@ -852,7 +868,7 @@ var methods = {
                     },
                     
                     openAnnotationTextEditor: function(inAnnotation) {
-                    	if (!inAnnotation) { return; }
+                    	if (!inAnnotation || !options.display_annotations) { return; }
 						var sx = ((inAnnotation['tstartX']/100) * ((layer.info.width/factor) * (layer.tilesize/256))) + layer.xpos;
 						var sy = ((inAnnotation['tendY']/100) * ((layer.info.height/factor) * (layer.tilesize/256))) + layer.ypos;
 						
@@ -909,6 +925,17 @@ var methods = {
                    	
                    	clear_dirty_annotation_list: function(i) {
                    	 	view.changedAnnotations = [];
+                   	},
+                   	
+                   	show_controls: function(s) {
+                   		options.display_annotations = s;
+                   		if (!s) {
+                   			jQuery(view.controls).fadeOut(100);
+                   		} else {
+                   			jQuery(view.controls).fadeIn(100);
+                   		}
+                   		view.needdraw = true;
+                   		view.draw();
                    	},
                     
                     update_controls: function() {
@@ -1071,10 +1098,24 @@ var methods = {
 					// center it
 					jQuery(z).css("left", ((jQuery(window).width() - 500)/2) + "px");
 					
-					z.append("<a href='#' id='" + options.id + "ControlZoomIn' class='tileviewerControlZoom' style='float:left;'><img src='" + options.buttonUrlPath + "/zoom_in.png' width='20' height='20'/></a>");
-					z.append("<a href='#' id='" + options.id + "ControlZoomOut' class='tileviewerControlZoom' style='float:right;'><img src='" + options.buttonUrlPath + "/zoom_out.png' width='20' height='20'/></a>");
+					z.append("<a href='#' id='" + options.id + "ControlZoomIn' class='tileviewerControlZoomIn'><img src='" + options.buttonUrlPath + "/zoom_in.png' width='20' height='20'/></a>");
+					z.append("<a href='#' id='" + options.id + "ControlZoomOut' class='tileviewerControlZoomOut'><img src='" + options.buttonUrlPath + "/zoom_out.png' width='20' height='20'/></a>");
+					z.append("<div id='" + options.id + "ZoomSlider' class='tileViewToolbarZoomSlider'></div>");
 					jQuery("#" + options.id + "ControlZoomIn").css("opacity", 0.5);
 					jQuery("#" + options.id + "ControlZoomOut").css("opacity", 0.5);
+					
+			
+					var minZoom = (jQuery(window).width()/layer.info.width);
+					if (minZoom > (jQuery(window).height()/layer.info.height)) {
+						minZoom = (jQuery(window).height()/layer.info.height);
+					}
+					
+					jQuery("#" + options.id + "ZoomSlider").slider({ min: minZoom * 100, max: 100, slide: function(e, ui) {
+						var w = jQuery(view.canvas).width();
+						var h = jQuery(view.canvas).height();
+						view.zoom(ui.value/100, w/2, h/2);
+					}});
+					
 					
 					jQuery("#" + options.id + "ControlZoomIn").mousedown(function() {
 						view.mousedown = true;
@@ -1121,11 +1162,13 @@ var methods = {
 								var w = jQuery(view.canvas).width();
 								var h = jQuery(view.canvas).height();
 								view.change_zoom(15, w/2, h/2); 
+								return false;
 							});
 							jQuery(document).bind('keypress.[ keypress.-', function() { 	// zoom out using keyboard "[" or "-"						
 								var w = jQuery(view.canvas).width();
 								var h = jQuery(view.canvas).height();
 								view.change_zoom(-15, w/2, h/2); 
+								return false;
 							});
 							
 							jQuery(document).bind('keydown.left', function() { 	
@@ -1134,6 +1177,7 @@ var methods = {
 								view.pan.ydest = p.y;
 								view.pan.level = layer.level;
 								view.pan(); 
+								return false;
 							});
 							jQuery(document).bind('keydown.right', function() { 	
 								var p = view.center_pixelpos();
@@ -1141,6 +1185,7 @@ var methods = {
 								view.pan.ydest = p.y;
 								view.pan.level = layer.level;
 								view.pan(); 
+								return false;
 							});
 							jQuery(document).bind('keydown.up', function() { 	
 								var p = view.center_pixelpos();
@@ -1148,10 +1193,12 @@ var methods = {
 								view.pan.ydest = p.y - 50;
 								view.pan.level = layer.level;
 								view.pan(); 
+								return false;
 							});
 							
 							jQuery(document).bind('keydown.c', function() { // show/hide controls	
 								jQuery(view.controls).fadeToggle(100);
+								return false;
 							});
 							
 							jQuery(document).bind('keydown.down', function() { 	
@@ -1160,6 +1207,7 @@ var methods = {
 								view.pan.ydest = p.y + 50;
 								view.pan.level = layer.level;
 								view.pan(); 
+								return false;
 							});
 							
 							jQuery(document).bind('keydown.d', function() { 
@@ -1169,13 +1217,32 @@ var methods = {
 									view.selectedAnnotation = null;
 									view.draw();
 								}
+								return false;
+							});
+							
+							jQuery(document).bind('keydown.n', function() { 
+								jQuery("#" + options.id + "ControlOverview").click();
+								return false;
+							});
+							
+							jQuery(document).bind('keydown.h', function() { 
+								jQuery("#" + options.id + "ControlFitToScreen").click();
+								return false;
+							});
+							
+							jQuery(document).bind('keydown.tab', function() { 
+								view.show_controls(!options.display_annotations);
+								return false;
 							});
 							
 							//
 							// Touch events
 							//
 							
-							jQuery(view.canvas).bind('swipemove', function(e, m) {
+							// TODO: "swipemove" event causes problems because some mouse actions related to resizing of annotations are 
+							// incorrectly interpreted as swipes. Not sure if swipeone will actually work as of this writing (10.28.2013).
+							//
+							jQuery(view.canvas).bind('swipeone', function(e, m) {
                 				var offset = $(view.canvas).offset();
 								var desc = m.description.split(/:/);
 								if ((desc[0] != 'swipemove') || (desc[1] != '1')) {
@@ -1262,11 +1329,9 @@ var methods = {
                         ctx.shadowColor   = 'rgba(0,0,0,1)';
                      
                      	var vOffset = 0;
+                     	var hOffset = jQuery(window).width() - layer.thumb.width;
                      	if (options.magnifier) { vOffset = options.magnifier_view_size + 5; }
 
-                        var windowWidth = jQuery(window).width();
-						var hOffset = (windowWidth - layer.thumb.width);
-						
                         //draw thumbnail image
                         ctx.drawImage(layer.thumb, hOffset, vOffset, layer.thumb.width, layer.thumb.height);
 
@@ -1276,20 +1341,20 @@ var methods = {
                         ctx.strokeStyle = '#ff0000'; 
                         ctx.lineWidth   = 1;
                         
-                        var x = hOffset + (rect.x*factor);
+                        var x = rect.x*factor;
                         var y = rect.y*factor;
                         var w = rect.width*factor;
                         var h = rect.height*factor;
                         
                         // Don't let highlight rect extend past thumbnail 'cos that'd be ugly
-                        if (x < hOffset) { w = w + x; x = hOffset; }
+                        if (x < 0) { w = w + x; x = 0; }
                         if (y < 0) { h = h + y; y = 0; }
-                        if ((x + w) > layer.thumb.width) { w = (hOffset + layer.thumb.width) - x; }
+                        if ((x + w) > layer.thumb.width) { w = layer.thumb.width - x; }
                         if ((y + h) > layer.thumb.height) { h = layer.thumb.height - y; }
                         
                         y += vOffset;
                         
-                        ctx.strokeRect(x, y, w, h);
+                        ctx.strokeRect(hOffset + x, y, w, h);
                     },
 
                     draw_tile: function(ctx,x,y) {
@@ -1481,6 +1546,58 @@ var methods = {
                         return view.client2pixel(view.canvas.clientWidth/2, view.canvas.clientHeight/2);
                     },
 
+					zoom: function(zoom, x, y) {
+						var maxZoom = options.maximum_pixelsize;
+						if (zoom < 0) { return; }
+						if (zoom > maxZoom) { return; }
+						
+						var w = jQuery(view.canvas).width();
+						var h = jQuery(view.canvas).height();
+						
+						var targetWidth = layer.info.width * zoom;	// effective width we want
+						
+						var l = 0;									// level 0 = full resolution
+						var s = layer.info.width;					// The width at level 0
+						
+						// Find first level with resolution lower than our target
+						while((s > targetWidth) && (l<=layer.info._maxlevel)) {
+							s /= 2;
+							l++;
+						}
+						if (l > 0) { l--; s *= 2; }
+						var f = targetWidth/s;
+						
+						//*before* changing tilesize, adjust offset so that we will zoom into where the cursor is
+                        
+                        var dist_from_x0 = x - layer.xpos;
+                        var dist_from_y0 = y - layer.ypos;
+                        
+                        var delta_zoom = zoom - (view.current_zoom());
+                        var lw = (layer.tilesize * layer.xtilenum) + layer.tilesize_xlast;
+                        var lh = (layer.tilesize * layer.ytilenum) + layer.tilesize_ylast;
+                        var dlw = layer.info.width * delta_zoom;
+                        var dlh = layer.info.height * delta_zoom;
+                        
+                        layer.xpos -= (dist_from_x0/lw) * dlw;
+                        layer.ypos -= (dist_from_y0/lh) * dlh;
+                        
+						layer.level = l;
+						layer.tilesize = layer.info.tilesize * f;
+						view.recalc_viewparams();
+						
+                        
+						jQuery("#" + options.id + "ZoomSlider").slider({value: view.current_zoom() * 100});
+                        view.needdraw = true;
+					},
+					
+					current_zoom: function() {
+						var tw = layer.info.width;
+						var cw = (layer.tilesize * layer.xtilenum) + layer.tilesize_xlast;
+						
+						var x = (100 - (100/(Math.pow(2, layer.level))))/100;
+						return (1-x)*layer.tilesize/256;
+					},
+
                     change_zoom: function(delta, x, y) {
 						var w = jQuery(view.canvas).width();
 						var h = jQuery(view.canvas).height();
@@ -1493,17 +1610,17 @@ var methods = {
 						var cypos = layer.ypos;
                         
                         //ignore if we've reached min/max zoom
-                        if(layer.level == 0 && layer.tilesize+delta > layer.info.tilesize*options.maximum_pixelsize) { return false; }
+                        if(layer.level == 0 && layer.tilesize+delta > layer.info.tilesize*options.maximum_pixelsize) { console.log("no zoom because max hit"); return false; }
 						
 						// Don't allow zooming smaller than window
-						if ((delta < 0) && (((layer.tilesize + delta) * (layer.xtilenum)) <= w) && (((layer.tilesize + delta) * (layer.ytilenum)) <= h)) { return false; }
+						if ((delta < 0) && (((layer.tilesize + delta) * (layer.xtilenum)) <= w) && (((layer.tilesize + delta) * (layer.ytilenum)) <= h)) { console.log("no zoom because min hit", delta, layer);  return false; }
 								
                         //*before* changing tilesize, adjust offset so that we will zoom into where the cursor is
                         var dist_from_x0 = x - layer.xpos;
                         var dist_from_y0 = y - layer.ypos;
                     
-                        layer.xpos -= dist_from_x0/layer.tilesize*delta;
-                        layer.ypos -= dist_from_y0/layer.tilesize*delta;
+                        layer.xpos -= (dist_from_x0/layer.tilesize)*delta;
+                        layer.ypos -= (dist_from_y0/layer.tilesize)*delta;
                         
                         // Don't allow scrolling offscreen
                         if (
@@ -1548,7 +1665,7 @@ var methods = {
 							}
 						}
 
-                        //view.update_textbox_position(); 
+						jQuery("#" + options.id + "ZoomSlider").slider({value: view.current_zoom() * 100});
                         view.needdraw = true;
                     },
 
@@ -1595,12 +1712,6 @@ var methods = {
                 
                 $(view.controls).addClass("viewerControls");
                 $this.append(view.controls);
-                //$(view.controls).mouseover(function() {
-                //	jQuery(this).animate({'opacity': 1.0}, { queue: false, duration: 300});
-               // });
-                // $(view.controls).mouseout(function() {
-                //	jQuery(this).animate({'opacity': 0.5}, { queue: false, duration: 300});
-                //});
                 
                 // 
             	// Begin ANNOTATIONS: init text editor
@@ -1627,6 +1738,7 @@ var methods = {
                 	
                 		view.draw();
                 	}
+                //	e.preventDefault();
                 }, stop: function(e) {
 					var pos = jQuery(view.annotationTextEditor).position();
 			
@@ -1636,9 +1748,15 @@ var methods = {
 					view.annotations[i].ty = ((pos.top - layer.ypos)/((layer.info.height/factor) * (layer.tilesize/256))) * 100;
 					//console.log("save annotation " + i, view.annotations[i], pos, layer);
 					
-					view.make_annotation_dirty(i);
+					view.save_annotations([view.selectedAnnotation], []);
+                    view.commit_annotation_changes();
 					view.draw();
-				}});
+					//e.preventDefault();
+				}}).mouseup(function(e) {
+					//console.log("mouseup");
+					//e.preventDefault();
+					view.isAnnotationResize = view.isAnnotationTransformation = view.mousedown = view.dragAnnotation = null;
+				});
                 
                 // Add click handler for textBlocks
                 $(document).on("click", "div.tileviewerAnnotationTextBlock", function(e) {
@@ -1719,7 +1837,9 @@ var methods = {
                 var draw_thread = function() {
                     requestAnimFrame(draw_thread);
                     if(view.pan.xdest) {
-                        view.pan();
+                    	if (!view.isAnnotationResize && !view.isAnnotationTranslation) {
+                       	 view.pan();
+                       	}
                     }
 
                     if(view.needdraw) {
@@ -1746,7 +1866,7 @@ var methods = {
 						//
 						// Handle annotations
 						//
-						view.dragAnnotation = view.isAnnotationResize = null;
+						view.dragAnnotation = view.isAnnotationResize = view.isAnnotationTranslation = null;
 						jQuery("body").css('cursor', 'auto');
 						var curAnnotation = null;
 					
@@ -1781,12 +1901,11 @@ var methods = {
 
 					if (options.thumbnail) {
 						// Handle scrolling due to click on the overview
-						// TODO: this is broken
 						var tw = layer.thumb.width;
 						var th = layer.thumb.height;
 						var hOffset = jQuery(window).width() - tw;
 						if ((x >= hOffset) && (x <= (hOffset + tw)) && (y <= th)) {
-							view.pan.xdest = (((x - hOffset)/tw) * layer.info.width);
+							view.pan.xdest = hOffset + (((x - hOffset)/tw) * layer.info.width);
 							view.pan.ydest = ((y/th) * layer.info.height);
 							view.pan.level = layer.level;
 							view.needdraw = true;
@@ -1864,9 +1983,10 @@ var methods = {
 //
 // Begin ANNOTATIONS: mouseup handler
 // 
-                    view.dragAnnotation = view.isAnnotationResize = null;
+                    view.dragAnnotation = view.isAnnotationResize = view.isAnnotationTranslation = null;
                     if(view.annotation_is_dirty(view.selectedAnnotation)) {
                     	view.save_annotations([view.selectedAnnotation], []);
+                    	view.commit_annotation_changes();
                     }
 //
 // End ANNOTATIONS: mouseup handler
@@ -1881,7 +2001,6 @@ var methods = {
                     
                     view.xnow = x;
                     view.ynow = y;
-                    
                     
                     var factor = Math.pow(2,layer.level);
                     var x_relative = ((x - layer.xpos)/((layer.info.width/factor) * (layer.tilesize/256))) * 100;

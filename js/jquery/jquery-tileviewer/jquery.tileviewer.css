@@ -148,6 +148,28 @@ div.tileviewerAnnotationTextSaveContainer {
 	width: 500px;
 }
 
+.tileviewerControlZoomOut {
+	position: absolute;
+	left: 2px;
+	top: 3px;
+
+}
+
+.tileviewerControlZoomIn {
+	position: absolute;
+	right: 2px;
+	top: 3px;
+}
+
+.tileViewToolbarZoomSlider {
+	position: absolute;
+	width: 420px;
+	
+	left: 40px;
+	top: 7px;
+}
+
+.ui-slider a {outline:none;}
 /*
 .tileviewer canvas.mode_pan:active {
 cursor: pointer;
