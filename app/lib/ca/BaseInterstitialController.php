@@ -201,7 +201,21 @@
  			$vs_template = caGetBundleDisplayTemplate($t_subject, $vs_related_table, $pa_bundle_settings);
 		
  			$qr_rel_items = caMakeSearchResult($t_subject->tableName(), array($t_subject->getPrimaryKey()));
- 			$va_bundle_values = array_shift(caProcessRelationshipLookupLabel($qr_rel_items, $t_subject, array('template' => $vs_template, 'primaryIDs' => array($ps_primary_table => array($pn_primary_id)))));
+ 			
+ 			//
+ 			// Handle case of self relationships where we need to figure out which direction things are going in
+ 			// 
+ 			if (method_exists($t_subject, "isSelfRelationship") && $t_subject->isSelfRelationship()) {
+ 				if ($t_instance = $t_subject->getLeftTableInstance()) {
+ 					if ($t_subject->get($vn_instance_id = $t_subject->getLeftTableFieldName()) == $pn_primary_id) {
+ 						$t_instance->load($vn_instance_id);
+ 					} else {
+ 						$t_instance->load($t_subject->getRightTableFieldName());
+ 					}
+ 					$va_items = $t_instance->getRelatedItems($ps_related_table);
+ 				}
+ 			}
+ 			$va_bundle_values = array_shift(caProcessRelationshipLookupLabel($qr_rel_items, $t_subject, array('template' => $vs_template, 'primaryIDs' => array($ps_primary_table => array($pn_primary_id)), 'relatedItems' => $va_items)));
  	
  			if ($t_subject->hasField('type_id')) {
 				$va_bundle_values['relationship_typename'] = $t_subject->getRelationshipTypename(($t_subject->getLeftTableFieldName() == $vs_related_table) ? 'rtol' : 'ltor');

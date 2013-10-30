@@ -1802,7 +1802,7 @@ require_once(__CA_LIB_DIR__."/ca/ApplicationPluginManager.php");
 		if(!isset($pa_options['requireLinkTags'])) { $pa_options['requireLinkTags'] = true; }
 		
 		$va_primary_ids = caGetOption("primaryIDs", $pa_options, null);
-		
+
 		$o_dm = Datamodel::load();
 		$ps_tablename = is_numeric($pm_tablename_or_num) ? $o_dm->getTableName($pm_tablename_or_num) : $pm_tablename_or_num;
 		
