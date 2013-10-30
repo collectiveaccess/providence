@@ -136,10 +136,6 @@ span.tileviewerAnnotationDefaultText {
 	border: none;
 }
 
-div.tileviewerAnnotationTextSaveContainer {
-	margin-top: 2px;
-}
-
 .tileViewToolbarZoom {
 	position: absolute;
 	border: 0px solid #cc0000;

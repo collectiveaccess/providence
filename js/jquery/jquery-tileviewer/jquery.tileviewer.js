@@ -2,10 +2,12 @@
 
 TileViewer HTML5 client
 
-    Version: 2.0.0
+    Version: 3.0.0
 
     This plugin is tested with following dependencies
-    * JQuery 1.3.2
+    * JQuery 1.7
+    * JQuery UI 1.9
+    * JQuery.HotKeys
     * Brandon Aaron's (http://brandonaaron.net) mousewheel jquery plugin 3.0.3
 
 The MIT License
@@ -51,7 +53,7 @@ var methods = {
             zoom_sensitivity: 16, 
             thumbnail: false,//display thumbnail
             magnifier: false,//display magnifier
-            debug: false,
+            debug: true,
             pixel: true,
             magnifier_view_size: 196, //view size
             magnifier_view_area: 48, //pixel w/h sizes to zoom
@@ -247,8 +249,6 @@ var methods = {
                     			
                     			view.annotations.push(v);
                     		});
-                    		
-                    		//console.log(view.annotations);
                     	});
                     },
                     
@@ -276,15 +276,15 @@ var methods = {
                     	if (!options.use_annotations) { return; }
                     	
                     	if (view.isSavingAnnotations) { 
-                    		//console.log("Cannot commit now; save is pending");
+                    		if (options.debug) { console.log("Cannot commit now; save is pending"); }
                     		return false; 
                     	}
                     	if ((view.annotationsToSave.length == 0) && (view.annotationsToDelete.length == 0)) {
-                    		//console.log("Cannot commit now; nothing to save");
+                    		if (options.debug) { console.log("Cannot commit now; nothing to save"); }
                     		return false;
                     	}
                     	view.isSavingAnnotations = true;
-                    	console.log("Commit " + view.annotationsToSave.length + " annotations to " + options.annotationSaveUrl);
+                    	if (options.debug) { console.log("Commit " + view.annotationsToSave.length + " annotations to " + options.annotationSaveUrl, view.annotationsToSave, view.annotationsToDelete); }
                     	
                     	// strip out textBlock pointer because it causes jQuery errors with getJSON
                     	var annotationsToSave = [];
@@ -297,6 +297,7 @@ var methods = {
                     	jQuery.getJSON(options.annotationSaveUrl, { save: annotationsToSave, delete: view.annotationsToDelete }, function(data) {
                     		if (data['annotation_ids']) {
                     			for(var index in data['annotation_ids']) {
+                    				if (!view.annotations[index]) { continue; }
                     				view.annotations[index]['annotation_id'] = data['annotation_ids'][index];
                     				var i = view.changedAnnotations.indexOf(index);
                     				if (i !== -1) {
@@ -319,6 +320,7 @@ var methods = {
                     		view.isSavingAnnotations = false;
                     		view.commit_annotation_changes();
                     		
+                    		view.needdraw = true;
                     		jQuery("#tileviewerAnnotationTextSave").fadeOut(250);	// hide save button
                     	});
                     },
@@ -344,9 +346,9 @@ var methods = {
 						
                         ctx.shadowOffsetX = 1;
                         ctx.shadowOffsetY = 1;
-                        ctx.shadowBlur    = 3;
-                        ctx.shadowColor   = 'rgba(255,255, 255, 0.8)';
-                        ctx.lineWidth   = 2;
+                        ctx.shadowBlur    = 2;
+                        ctx.shadowColor   = 'rgba(255,255, 255, 1.0)';
+                        ctx.lineWidth   = 1;
                         ctx.fillStyle = '#0c0';
                          
                         // draw annotations
@@ -359,7 +361,7 @@ var methods = {
                        // if ((selectedAnnotation !== null) && (annotationsToDraw.length > 0)) {
                        // 	selectedAnnotation = annotationsToDraw[annotationsToDraw.length - 1].index;
                        // }
-                      //  console.log(view.annotations, view.annotationAreas);
+                       
                         for(var i in annotationsToDraw) {
                         	var annotation = annotationsToDraw[i];
                         	if (!annotation) { continue; }
@@ -424,8 +426,8 @@ var methods = {
 									// circle around point
 									ctx.beginPath();
 									
-									x = (((parseFloat(annotation.x) + (annotation.w/2))/100) * layerWidth * layerMag) + layer.xpos;
-									y = (((parseFloat(annotation.y) + (annotation.h/2))/100) * layerHeight * layerMag) + layer.ypos;
+									x = (((parseFloat(annotation.x))/100) * layerWidth * layerMag) + layer.xpos;
+									y = (((parseFloat(annotation.y))/100) * layerHeight * layerMag) + layer.ypos;
 									r = (((annotation.w)/100) * layerWidth * layerMag);
 									
 									// Optionally draw circles around end of stick 
@@ -461,23 +463,22 @@ var methods = {
 									}
 									
 									// is text for selected annotation off screen?
-									if(view.selectedAnnotation != null) {
-										
+									if((view.selectedAnnotation != null) && view.annotations[view.selectedAnnotation]) {
 										var sx = ((view.annotations[view.selectedAnnotation].tx/100) * ((layer.info.width/factor) * (layer.tilesize/256))) + layer.xpos;
 										var sy = ((view.annotations[view.selectedAnnotation].ty/100) * ((layer.info.height/factor) * (layer.tilesize/256))) + layer.ypos;
 										if (sx < 0) { 
 											tx += (Math.abs(sx) / ((layer.info.width/factor) * (layer.tilesize/256)));
 										}
-										if (sx >  jQuery(window).width()) { 
-											tx += (Math.abs(jQuery(window).width()) / ((layer.info.width/factor) * (layer.tilesize/256))); 
+										if (sx >  jQuery($this).width()) { 
+											tx += (Math.abs(jQuery($this).width()) / ((layer.info.width/factor) * (layer.tilesize/256))); 
 										}
 										if (sy < 0) { 
 											tx += (Math.abs(sy) / ((layer.info.height/factor) * (layer.tilesize/256)));
 										}
-										if (sy >  jQuery(window).width()) { 
-											ty += (Math.abs(jQuery(window).height()) / ((layer.info.height/factor) * (layer.tilesize/256))); 
+										if (sy >  jQuery($this).width()) { 
+											ty += (Math.abs(jQuery($this).height()) / ((layer.info.height/factor) * (layer.tilesize/256))); 
 										}
-										//console.log("xy", sx, sy, tx, ty, jQuery(window).width(), jQuery(window).height());
+										//console.log("xy", sx, sy, tx, ty, jQuery($this).width(), jQuery($this).height());
 									}
 									
 									
@@ -523,7 +524,7 @@ var methods = {
                     			a.startY -= (dh/2);
                     			a.endY += (dh/2);
                     		};
-                    		view.annotationAreas.push(a);
+                    		view.annotationAreas[i] = a;
                        		view.update_textbox_position();
                         }
                     },
@@ -536,7 +537,10 @@ var methods = {
 //                     
                     update_textbox_position: function(e) {
                     	if (!options.use_annotations || !options.display_annotations) { return; }
-                    	
+                    	if (view.selectedAnnotation == null) {
+							$(view.annotationTextEditor).css("display", "none").blur();
+						}
+						
                     	var offset = $(view.canvas).offset();
                     	if (!e) { e = { pageX:0, pageY: 0 }; }
 						var x = e.pageX - offset.left;
@@ -551,6 +555,7 @@ var methods = {
 						
 						for(var i in view.annotationAreas) {
 							var inAnnotation = view.annotationAreas[i];
+							if(!inAnnotation) { continue; }
 							var sx = ((inAnnotation['tstartX']/100) * ((layer.info.width/factor) * (layer.tilesize/256))) + layer.xpos;
 							var sy = ((inAnnotation['tstartY']/100) * ((layer.info.height/factor) * (layer.tilesize/256))) + layer.ypos;
 							
@@ -560,6 +565,10 @@ var methods = {
 							
 							if (view.annotations[i] && (view.annotations[i].type == 'point')) {
 								w = ((10/100) * ((layer.info.width/factor) * (layer.tilesize/256)));
+							}
+							
+							if (view.annotations[i] && (view.annotations[i].type == 'rect')) {
+								sy += 3;	// add gutter between rect annotation and its text block
 							}
 							
 							// Is it off screen?
@@ -586,7 +595,6 @@ var methods = {
 						}
 						
 						if (view.selectedAnnotation == null) {
-							$(view.annotationTextEditor).css("display", "none");
 							
 							if (options.annotation_text_display_mode == 'simultaneous') { 
 								$(".tileviewerAnnotationTextBlock").css("display", "block");
@@ -762,8 +770,13 @@ var methods = {
             if (!view.isAnnotationResize) {
                 		var origX = view.annotations[i].x;
                 		var origY = view.annotations[i].y;
-						view.annotations[i].x = (((view.dragAnnotationLastCoords.x - layer.xpos)/((layer.info.width/factor) * (layer.tilesize/256))) * 100) - (view.annotations[i].w/2);
-						view.annotations[i].y = (((view.dragAnnotationLastCoords.y - layer.ypos)/((layer.info.height/factor) * (layer.tilesize/256))) * 100) - (view.annotations[i].h/2);
+						view.annotations[i].x = (((view.dragAnnotationLastCoords.x - layer.xpos)/((layer.info.width/factor) * (layer.tilesize/256))) * 100);
+						view.annotations[i].y = (((view.dragAnnotationLastCoords.y - layer.ypos)/((layer.info.height/factor) * (layer.tilesize/256))) * 100);
+						
+						if (view.annotations[i].type == 'rect') {
+							view.annotations[i].x -= (view.annotations[i].w/2);
+							view.annotations[i].y -= (view.annotations[i].h/2);
+						}
 						
 						view.annotations[i].tx += (view.annotations[i].x - origX);
 						view.annotations[i].ty += (view.annotations[i].y - origY);
@@ -785,18 +798,37 @@ var methods = {
 						$this.append(textBlock);
 						if (options.annotation_text_display_mode == 'simultaneous') { jQuery(textBlock).show(); }
 						
+						var w = jQuery($this).width();
+						var h = jQuery($this).height();
+						
                     	switch(type) {
                     		default:
                     		case 'rect':
-								view.annotations.push({
-									type: type, x: x, y: y, w: (1-view.current_zoom()) * 10, h: (1-view.current_zoom()) * 10, index: view.annotations.length,
-									tx: x, ty: y + 10, tw: 10, th: (120/layer.info.width) * 100,
+                    			var lw = w/((layer.info.tilesize * layer.xtilenum) + layer.tilesize_xlast);
+                    			var defaultWidth = 0.20 * lw * 100;			// default width of rect is 20% of visible screen width
+                    			if (defaultWidth <= 0) { defaultWidth = 10; }
+                    			
+                    			var lh = h/((layer.info.tilesize * layer.ytilenum) + layer.tilesize_ylast);
+                    			var defaultHeight = 0.2 * lh * 100;			// default width of rect is 20% of visible screen height
+                    			if (defaultHeight <= 0) { defaultHeight = 10; }
+                    			 
+                    			view.annotations.push({
+									type: type, x: x, y: y, w: defaultWidth, h: defaultHeight, index: view.annotations.length,
+									tx: x, ty: y + defaultHeight, tw: defaultWidth, th: (120/layer.info.width) * 100,
 									label: options.default_annotation_label, textBlock: textBlock
 								});
 								break;
 							case 'point':
+								var lw = w/((layer.info.tilesize * layer.xtilenum) + layer.tilesize_xlast);
+                    			var defaultWidth = 0.01 * lw * 100;			// default width of rect is 10% of visible screen width
+                    			if (defaultWidth <= 0) { defaultWidth = 10; }
+                    			
+                    			var lh = h/((layer.info.tilesize * layer.ytilenum) + layer.tilesize_ylast);
+                    			var defaultHeight = 0.01 * lh * 100;			// default width of rect is 10% of visible screen height
+                    			if (defaultHeight <= 0) { defaultHeight = 10; }
+                    			console.log("pt", defaultWidth, defaultHeight);
 								view.annotations.push({
-									type: type, x: x, y: y, w: 1, h: 1, index: view.annotations.length,
+									type: type, x: x, y: y, w: defaultWidth, h: defaultHeight, index: view.annotations.length,
 									tx: x + 3, ty: y + 3, tw: 10, th: (120/layer.info.width) * 100,
 									label: options.default_annotation_label, textBlock: textBlock
 								});
@@ -804,6 +836,9 @@ var methods = {
 						}
 						view.save_annotations([view.annotations.length-1], []);
 						view.draw_annotations();
+						
+						// Select just-created annotation
+						jQuery('#tileviewerAnnotationTextBlock_' + (view.annotations.length-1)).click();
 						
 						// Revert current tool to pan
 						jQuery("#" + options.id + "ControlPanImage").click();
@@ -822,7 +857,7 @@ var methods = {
                     	
                     	// Hide any annotation text boxes
                     	if (options.annotation_text_display_mode != 'simultaneous') { jQuery('.tileviewerAnnotationTextBlock').css("display", "none"); }
-                    	jQuery(view.annotationTextEditor).css("display", "none");
+                    	jQuery(view.annotationTextEditor).css("display", "none").blur();
                     	
                     	view.needdraw = true;
                     },
@@ -833,6 +868,7 @@ var methods = {
                     	
                     	var foundAnnotation = false;
                     	jQuery.each(view.annotationAreas, function(k, v) {
+                    		if(!v) { return true; }
                     		if (
                     			(v['startX'] <= mX) && (v['endX'] >= mX)
                     			&&	
@@ -868,14 +904,14 @@ var methods = {
                     },
                     
                     openAnnotationTextEditor: function(inAnnotation) {
-                    	if (!inAnnotation || !options.display_annotations) { return; }
+                    	if (!inAnnotation || !options.display_annotations) { console.log("failed to open annotation text editor"); return; }
 						var sx = ((inAnnotation['tstartX']/100) * ((layer.info.width/factor) * (layer.tilesize/256))) + layer.xpos;
 						var sy = ((inAnnotation['tendY']/100) * ((layer.info.height/factor) * (layer.tilesize/256))) + layer.ypos;
 						
 						var sw = (((inAnnotation['tendX']/100) * ((layer.info.width/factor) * (layer.tilesize/256))) + layer.xpos) - sx - 10;	// 10 = 2 * 5px padding
 						
 						// Set editing form
-						t = "<form><textarea id='tileviewerAnnotationTextLabel'>" + view.annotations[inAnnotation['index']]['label'] + "</textarea><div class='tileviewerAnnotationTextSaveContainer'><a href='#' id='tileviewerAnnotationTextSave'>Save</a></div></form>";
+						t = "<form><textarea id='tileviewerAnnotationTextLabel'>" + view.annotations[inAnnotation['index']]['label'] + "</textarea></form>";
 					
 					
                 $(view.annotationTextEditor).draggable();
@@ -890,10 +926,9 @@ var methods = {
 						// Position text editor box, set text and make visible
 						$(view.annotationTextEditor).css("left", sx + 'px').css('top', sy + 'px').html("<div class='textContentDeleteButton' id='tileviewerAnnotationDeleteButton'><img src='" + options.buttonUrlPath + "/x.png' alt='Delete'/></div><div class='textContent'>" + t + "</div>").css('width', sw + 'px').css("display", "block");
 							
-						jQuery("#tileviewerAnnotationTextSave").css("display", "none");		// Text editor "save" button hidden on set
 						
-						$('#tileviewerAnnotationTextLabel').on("keydown", function(e) {		// Make "save" button appear when text is changed 
-							jQuery("#tileviewerAnnotationTextSave").fadeIn(250);
+						$('#tileviewerAnnotationTextLabel').on("keydown", function(e) {		// Mark as needing to be saved
+							jQuery(view.annotationTextEditor).data('dirty', inAnnotation);
 						});
 							
 						$('#tileviewerAnnotationDeleteButton').on("click", function(e) {
@@ -902,6 +937,7 @@ var methods = {
 							
 						$('#tileviewerAnnotationTextSave').on("click", function(e) {
 							// Save annotation text
+							if(!view.annotations[inAnnotation['index']]) { console.log("Could not save text; no annotation at index ", inAnnotation['index'], inAnnotation); }
 							view.annotations[inAnnotation['index']]['label'] = jQuery('#tileviewerAnnotationTextLabel').val();
 							view.make_annotation_dirty(inAnnotation['index']);
 							view.save_annotations([inAnnotation['index']], []);
@@ -976,7 +1012,10 @@ var methods = {
 								jQuery("#" + options.id + "ControlPanImage").css("opacity", 0.5);
 								jQuery("#" + options.id + "ControlAddPointAnnotation").css("opacity", 0.5);
 								
-								jQuery("#" + options.id + "ControlLabelSubToolbar").html("<img src='" + options.buttonUrlPath + "/rectnote.png' width='24' height='24'/>");
+								
+								if (!options.add_rect_annotation_mode) {
+									jQuery("#" + options.id + "ControlPanImage").click();
+								}
 							});
 					
 							//
@@ -997,7 +1036,9 @@ var methods = {
 								jQuery("#" + options.id + "ControlPanImage").css("opacity", 0.5);
 								jQuery("#" + options.id + "ControlAddRectAnnotation").css("opacity", 0.5);
 								
-								jQuery("#" + options.id + "ControlLabelSubToolbar").html("<img src='" + options.buttonUrlPath + "/pin.png' width='17' height='25'/>");
+								if (!options.add_point_annotation_mode) {
+									jQuery("#" + options.id + "ControlPanImage").click();
+								}
 							});
 							
 							//
@@ -1096,7 +1137,7 @@ var methods = {
 					var z = $(view.controls).find(".tileViewToolbarZoom");
 					
 					// center it
-					jQuery(z).css("left", ((jQuery(window).width() - 500)/2) + "px");
+					jQuery(z).css("left", ((jQuery($this).width() - 500)/2) + "px");
 					
 					z.append("<a href='#' id='" + options.id + "ControlZoomIn' class='tileviewerControlZoomIn'><img src='" + options.buttonUrlPath + "/zoom_in.png' width='20' height='20'/></a>");
 					z.append("<a href='#' id='" + options.id + "ControlZoomOut' class='tileviewerControlZoomOut'><img src='" + options.buttonUrlPath + "/zoom_out.png' width='20' height='20'/></a>");
@@ -1105,12 +1146,13 @@ var methods = {
 					jQuery("#" + options.id + "ControlZoomOut").css("opacity", 0.5);
 					
 			
-					var minZoom = (jQuery(window).width()/layer.info.width);
-					if (minZoom > (jQuery(window).height()/layer.info.height)) {
-						minZoom = (jQuery(window).height()/layer.info.height);
+					view.minZoom = (jQuery($this).width()/layer.info.width);
+					if (view.minZoom > (t = jQuery($this).height()/layer.info.height)) {
+						view.minZoom = t;
 					}
+					t *= 0.8;
 					
-					jQuery("#" + options.id + "ZoomSlider").slider({ min: minZoom * 100, max: 100, slide: function(e, ui) {
+					jQuery("#" + options.id + "ZoomSlider").slider({ min: view.minZoom * 100, max: 100, slide: function(e, ui) {
 						var w = jQuery(view.canvas).width();
 						var h = jQuery(view.canvas).height();
 						view.zoom(ui.value/100, w/2, h/2);
@@ -1133,7 +1175,7 @@ var methods = {
 								jQuery('#' + options.id + "ControlZoomIn").css("opacity", 0.5);
 								jQuery('#' + options.id + "ControlZoomOut").css("opacity", 0.5);
 							}
-							view.change_zoom(30, w/2, h/2);
+							view.change_zoom(20, w/2, h/2);
 						}, 50);
 					});
 					
@@ -1153,7 +1195,7 @@ var methods = {
 								jQuery('#' + options.id + "ControlZoomIn").css("opacity", 0.5);
 								jQuery('#' + options.id + "ControlZoomOut").css("opacity", 0.5);
 							}
-							view.change_zoom(-30, w/2, h/2);
+							view.change_zoom(-20, w/2, h/2);
 						}, 50);
 					});
 							
@@ -1232,6 +1274,21 @@ var methods = {
 							
 							jQuery(document).bind('keydown.tab', function() { 
 								view.show_controls(!options.display_annotations);
+								return false;
+							});
+							
+							jQuery(document).bind('keydown.r', function() { 
+								jQuery("#" + options.id + "ControlAddRectAnnotation").click();
+								return false;
+							});
+							
+							jQuery(document).bind('keydown.p', function() { 
+								jQuery("#" + options.id + "ControlAddPointAnnotation").click();
+								return false;
+							});
+							
+							jQuery(document).bind('keydown.space', function() { 
+								jQuery("#" + options.id + "ControlPanImage").click();
 								return false;
 							});
 							
@@ -1329,7 +1386,7 @@ var methods = {
                         ctx.shadowColor   = 'rgba(0,0,0,1)';
                      
                      	var vOffset = 0;
-                     	var hOffset = jQuery(window).width() - layer.thumb.width;
+                     	var hOffset = jQuery($this).width() - layer.thumb.width;
                      	if (options.magnifier) { vOffset = options.magnifier_view_size + 5; }
 
                         //draw thumbnail image
@@ -1610,10 +1667,11 @@ var methods = {
 						var cypos = layer.ypos;
                         
                         //ignore if we've reached min/max zoom
-                        if(layer.level == 0 && layer.tilesize+delta > layer.info.tilesize*options.maximum_pixelsize) { console.log("no zoom because max hit"); return false; }
+                        if(layer.level == 0 && layer.tilesize+delta > layer.info.tilesize*options.maximum_pixelsize) { return false; }
 						
 						// Don't allow zooming smaller than window
-						if ((delta < 0) && (((layer.tilesize + delta) * (layer.xtilenum)) <= w) && (((layer.tilesize + delta) * (layer.ytilenum)) <= h)) { console.log("no zoom because min hit", delta, layer);  return false; }
+						var ts = ((layer.tilesize + delta) > 16) ? layer.tilesize + delta : layer.tilesize;
+						if ((delta < 0) && ((ts * (layer.xtilenum)) < w) && ((ts * (layer.ytilenum)) < h)) { return false; }
 								
                         //*before* changing tilesize, adjust offset so that we will zoom into where the cursor is
                         var dist_from_x0 = x - layer.xpos;
@@ -1718,6 +1776,22 @@ var methods = {
             	//
                 $(view.annotationTextEditor).addClass("tileviewerAnnotationTextEditor");
                 
+						
+				$(view.annotationTextEditor).on("blur", function(e) {
+					var inAnnotation;
+					if(inAnnotation = jQuery(view.annotationTextEditor).data('dirty')) {
+						console.log("Save label text");
+						// Save changed text label
+						jQuery(view.annotationTextEditor).data('dirty', null);
+						
+						if(!view.annotations[inAnnotation['index']]) { console.log("Could not save text; no annotation at index ", inAnnotation['index'], inAnnotation); }
+						view.annotations[inAnnotation['index']]['label'] = jQuery('#tileviewerAnnotationTextLabel').val();
+						view.make_annotation_dirty(inAnnotation['index']);
+						view.save_annotations([inAnnotation['index']], []);
+						view.draw();
+					}
+				});
+                
                 $this.append(view.annotationTextEditor);
                 $(view.annotationTextEditor).draggable();
                 
@@ -1746,18 +1820,15 @@ var methods = {
 					var i = view.selectedAnnotation;
 					view.annotations[i].tx = ((pos.left - layer.xpos)/((layer.info.width/factor) * (layer.tilesize/256))) * 100;
 					view.annotations[i].ty = ((pos.top - layer.ypos)/((layer.info.height/factor) * (layer.tilesize/256))) * 100;
-					//console.log("save annotation " + i, view.annotations[i], pos, layer);
 					
 					view.save_annotations([view.selectedAnnotation], []);
                     view.commit_annotation_changes();
 					view.draw();
 					//e.preventDefault();
 				}}).mouseup(function(e) {
-					//console.log("mouseup");
-					//e.preventDefault();
 					view.isAnnotationResize = view.isAnnotationTransformation = view.mousedown = view.dragAnnotation = null;
 				});
-                
+				
                 // Add click handler for textBlocks
                 $(document).on("click", "div.tileviewerAnnotationTextBlock", function(e) {
                 	
@@ -1903,7 +1974,7 @@ var methods = {
 						// Handle scrolling due to click on the overview
 						var tw = layer.thumb.width;
 						var th = layer.thumb.height;
-						var hOffset = jQuery(window).width() - tw;
+						var hOffset = jQuery($this).width() - tw;
 						if ((x >= hOffset) && (x <= (hOffset + tw)) && (y <= th)) {
 							view.pan.xdest = hOffset + (((x - hOffset)/tw) * layer.info.width);
 							view.pan.ydest = ((y/th) * layer.info.height);
