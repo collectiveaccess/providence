@@ -182,10 +182,14 @@ class WLPlugSearchEngineSqlSearch extends BaseSearchPlugin implements IWLPlugSea
 	/**
 	 * Completely clear index (usually in preparation for a full reindex)
 	 */
-	public function truncateIndex() {
-		$this->opo_db->query("TRUNCATE TABLE ca_sql_search_word_index");
-		$this->opo_db->query("TRUNCATE TABLE ca_sql_search_words");
-		$this->opo_db->query("TRUNCATE TABLE ca_sql_search_ngrams");
+	public function truncateIndex($pn_table_num=null) {
+		if ($pn_table_num > 0) {
+			$this->opo_db->query("DELETE FROM ca_sql_search_word_index WHERE table_num = ?", array((int)$pn_table_num));
+		} else {
+			$this->opo_db->query("TRUNCATE TABLE ca_sql_search_word_index");
+			$this->opo_db->query("TRUNCATE TABLE ca_sql_search_words");
+			$this->opo_db->query("TRUNCATE TABLE ca_sql_search_ngrams");
+		}
 		return true;
 	}
 	# -------------------------------------------------------
