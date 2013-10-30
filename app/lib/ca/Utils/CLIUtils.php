@@ -228,13 +228,18 @@
 		/**
 		 * Rebuild search indices
 		 */
-		public static function rebuild_search_index() {
+		public static function rebuild_search_index($po_opts=null) {
 			require_once(__CA_LIB_DIR__."/core/Search/SearchIndexer.php");
 			ini_set('memory_limit', '4000m');
 			set_time_limit(24 * 60 * 60 * 7); /* maximum indexing time: 7 days :-) */
 			
 			$o_si = new SearchIndexer();
-			$o_si->reindex(null, array('showProgress' => true, 'interactiveProgressDisplay' => true));
+			
+			$va_tables = null;
+			if ($vs_tables = (string)$po_opts->getOption('tables')) {
+				$va_tables = preg_split("![;,]+!", $vs_tables);
+			}
+			$o_si->reindex($va_tables, array('showProgress' => true, 'interactiveProgressDisplay' => true));
 			
 			return true;
 		}
@@ -244,7 +249,7 @@
 		 */
 		public static function rebuild_search_indexParamList() {
 			return array(
-			
+				"tables|t-s" => _t('Specific tables to reindex, separated by commas or semicolons. If omitted all tables will be reindexed.')
 			);
 		}
 		# -------------------------------------------------------
