@@ -94,7 +94,7 @@
 		/**
 		 * create an attribute linked to the current row using values in $pa_values
 		 */
-		public function addAttribute($pa_values, $pm_element_code_or_id, $ps_error_source=null) {
+		public function addAttribute($pa_values, $pm_element_code_or_id, $ps_error_source=null, $pa_options=null) {
 			if (!($t_element = $this->_getElementInstance($pm_element_code_or_id))) { return false; }
 			if ($t_element->get('parent_id') > 0) { return false; }
 			$vn_element_id = $t_element->getPrimaryKey();
@@ -124,7 +124,8 @@
 			$this->opa_attributes_to_add[] = array(
 				'values' => $pa_values,
 				'element' => $pm_element_code_or_id,
-				'error_source' => $ps_error_source.'/'.sizeof($this->opa_attributes_to_add)
+				'error_source' => $ps_error_source.'/'.sizeof($this->opa_attributes_to_add),
+				'options' => $pa_options
 			);
 			$this->_FIELD_VALUE_CHANGED['_ca_attribute_'.$vn_element_id] = true;
 			
@@ -132,14 +133,14 @@
 		}
 		# ------------------------------------------------------------------
 		// create an attribute linked to the current row using values in $pa_values
-		public function _addAttribute($pa_values, $pm_element_code_or_id, $po_trans=null, $pa_options=null) {
+		public function _addAttribute($pa_values, $pm_element_code_or_id, $po_trans=null, $pa_info=null) {
 			if (!($t_element = $this->_getElementInstance($pm_element_code_or_id))) { return false; }
 			if ($t_element->get('parent_id') > 0) { return false; }
 			
 			$t_attr = new ca_attributes();
 			$t_attr->purify($this->purify());
 			if ($po_trans) { $t_attr->setTransaction($po_trans); }
-			$vn_attribute_id = $t_attr->addAttribute($this->tableNum(), $this->getPrimaryKey(), $t_element->getPrimaryKey(), $pa_values);
+			$vn_attribute_id = $t_attr->addAttribute($this->tableNum(), $this->getPrimaryKey(), $t_element->getPrimaryKey(), $pa_values, $pa_info['options']);
 			if ($t_attr->numErrors()) {
 				foreach($t_attr->errors as $o_error) {
 					$this->postError($o_error->getErrorNumber(), $o_error->getErrorDescription(), $o_error->getErrorContext(), $pa_options['error_source']);
@@ -150,7 +151,7 @@
 			return $vn_attribute_id;
 		}
 		# ------------------------------------------------------------------
-		public function editAttribute($pn_attribute_id, $pm_element_code_or_id, $pa_values, $ps_error_source=null) {
+		public function editAttribute($pn_attribute_id, $pm_element_code_or_id, $pa_values, $ps_error_source=null, $pa_options=null) {
 			$t_attr = new ca_attributes($pn_attribute_id);
 			$t_attr->purify($this->purify());
 			if (!$t_attr->getPrimaryKey()) { return false; }
@@ -192,13 +193,14 @@
 					'values' => $pa_values,
 					'attribute_id' => $pn_attribute_id,
 					'element' => $pm_element_code_or_id,
-					'error_source' => $ps_error_source.'/'.$pn_attribute_id
+					'error_source' => $ps_error_source.'/'.$pn_attribute_id,
+					'options' => $pa_options
 				);
 			}
 		}
 		# ------------------------------------------------------------------
 		// edit attribute from current row
-		public function _editAttribute($pn_attribute_id, $pa_values, $po_trans=null, $pa_options=null) {
+		public function _editAttribute($pn_attribute_id, $pa_values, $po_trans=null, $pa_info=null) {
 			$t_attr = new ca_attributes($pn_attribute_id);
 			$t_attr->purify($this->purify());
 			if ($po_trans) { $t_attr->setTransaction($po_trans); }
@@ -207,7 +209,7 @@
 				return false;
 			}
 			
-			if (!$t_attr->editAttribute($pa_values)) {
+			if (!$t_attr->editAttribute($pa_values, $pa_info['options'])) {
 				foreach($t_attr->errors as $o_error) {
 					$this->postError($o_error->getErrorNumber(), $o_error->getErrorDescription(), $o_error->getErrorContext(), $pa_options['error_source']);
 				}
@@ -907,6 +909,16 @@
 			
 			$t_list_item = new ca_list_items($vn_type_id);
 			return ($t_list_item->getPrimaryKey()) ? $t_list_item : null;
+		}
+		# ------------------------------------------------------------------
+		/**
+		 * Return setting, if defined, from list item for type in the currently loaded row
+		 */ 
+		public function getTypeSetting($ps_setting, $pn_type_id=null) {
+			if ($t_type = $this->getTypeInstance($pn_type_id)) {
+				return $t_type->getSetting($ps_setting);
+			}
+			return null;
 		}
 		# ------------------------------------------------------------------
 		/**

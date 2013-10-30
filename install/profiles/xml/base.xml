@@ -3149,6 +3149,9 @@
             <placement code="validation_format">
               <bundle>validation_format</bundle>
             </placement>
+            <placement code="ca_settings">
+              <bundle>settings</bundle>
+            </placement>
             <placement code="access">
               <bundle>access</bundle>
             </placement>

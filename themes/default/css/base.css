@@ -2455,30 +2455,14 @@ a.attributeDownloadButton {
 	padding: 10px;
 }
 
-div.attributeFileInfoContainer {
-	
-}
-
 div.attributeFileFileName {
 	margin-bottom: 5px;
 	font-style: italic;
 }
 
-div.attributeFileFileInfo {
-	
-}
-
-div.attributeFileDownloadControl {
-	display: none;
-}
-
-div.attributeMediaInfoContainer {
-
-}
-
 div.attributeMediaThumbnail {
 	width: 160px;
-	float: left;
+	/* float: left; */
 }
 
 div.attributeMediaFileName {
@@ -2488,10 +2472,6 @@ div.attributeMediaFileName {
 
 div.attributeMediaInfo {
 	float: right;
-}
-
-div.attributeMediaDownloadControl {
-	display: none;
 }
 
 .caMappingBase {

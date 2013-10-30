@@ -181,7 +181,7 @@
 			return $this->ops_path_value;
 		}
  		# ------------------------------------------------------------------
- 		public function parseValue($ps_value, $pa_element_info) {	
+ 		public function parseValue($ps_value, $pa_element_info, $pa_options=null) {	
  			$va_settings = $this->getSettingValuesFromElementArray(
  				$pa_element_info, 
  				array('mustNotBeBlank')
@@ -224,6 +224,7 @@
 					return null;
 				}
  			}
+ 			
 
  			// is it direct input (decimal lat, decimal long)?
  			if(
@@ -239,24 +240,32 @@
  					$va_point_list = preg_split("/[;]+/", $vs_feature);
 					$va_parsed_points = array();
 					$vs_first_lat = $vs_first_long = '';
+					
 					foreach($va_point_list as $vs_point) {
-						$va_tmp = preg_split("/[ ]*[,\/][ ]*/", $vs_point);
-						
-						// convert from degrees minutes seconds to decimal format
-						if (caGISisDMS($va_tmp[0])) {
-							$va_tmp[0] = caGISminutesToSignedDecimal($va_tmp[0]);
+						// is it UTM?
+						if (is_array($va_utm_to_latlong = caGISUTMToSignedDecimals($vs_point))) {
+							$va_parsed_points[] = $va_utm_to_latlong['latitude'].','.$va_utm_to_latlong['longitude'];
+							if (!$vs_first_lat) { $vs_first_lat = $va_utm_to_latlong['latitude']; }
+							if (!$vs_first_long) { $vs_first_long = $va_utm_to_latlong['longitude']; }
 						} else {
-							$va_tmp[0] = caGISDecimalToSignedDecimal($va_tmp[0]);
-						}
-						if (caGISisDMS($va_tmp[1])) {
-							$va_tmp[1] = caGISminutesToSignedDecimal($va_tmp[1]);
-						} else {
-							$va_tmp[1] = caGISDecimalToSignedDecimal($va_tmp[1]);
-						}
+							$va_tmp = preg_split("/[ ]*[,\/][ ]*/", $vs_point);
 						
-						$va_parsed_points[] = $va_tmp[0].','.$va_tmp[1];
-						if (!$vs_first_lat) { $vs_first_lat = $va_tmp[0]; }
-						if (!$vs_first_long) { $vs_first_long = $va_tmp[1]; }
+							// convert from degrees minutes seconds to decimal format
+							if (caGISisDMS($va_tmp[0])) {
+								$va_tmp[0] = caGISminutesToSignedDecimal($va_tmp[0]);
+							} else {
+								$va_tmp[0] = caGISDecimalToSignedDecimal($va_tmp[0]);
+							}
+							if (caGISisDMS($va_tmp[1])) {
+								$va_tmp[1] = caGISminutesToSignedDecimal($va_tmp[1]);
+							} else {
+								$va_tmp[1] = caGISDecimalToSignedDecimal($va_tmp[1]);
+							}
+						
+							$va_parsed_points[] = $va_tmp[0].','.$va_tmp[1];
+							if (!$vs_first_lat) { $vs_first_lat = $va_tmp[0]; }
+							if (!$vs_first_long) { $vs_first_long = $va_tmp[1]; }
+						}
 					}
 					$va_feature_list_proc[] = join(';', $va_parsed_points);
 				}

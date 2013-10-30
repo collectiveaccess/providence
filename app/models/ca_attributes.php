@@ -198,7 +198,7 @@ class ca_attributes extends BaseModel {
 	/**
 	 *
 	 */
-	public function addAttribute($pn_table_num, $pn_row_id, $pm_element_code_or_id, $pa_values) {
+	public function addAttribute($pn_table_num, $pn_row_id, $pm_element_code_or_id, $pa_values, $pa_options=null) {
 		require_once(__CA_MODELS_DIR__.'/ca_metadata_elements.php');	// defer inclusion until runtime to ensure baseclasses are already loaded, otherwise you get circular dependencies
 		
 		unset(ca_attributes::$s_get_attributes_cache[$pn_table_num.'/'.$pn_row_id]);
@@ -250,7 +250,7 @@ class ca_attributes extends BaseModel {
 			} else {
 				$vm_value = isset($pa_values[$va_element['element_code']]) ? $pa_values[$va_element['element_code']] : null;
 			}
-			if (($vb_status = $t_attr_val->addValue($vm_value, $va_element, $vn_attribute_id)) === false) {
+			if (($vb_status = $t_attr_val->addValue($vm_value, $va_element, $vn_attribute_id, $pa_options)) === false) {
 				$this->postError(1972, join('; ', $t_attr_val->getErrors()), 'ca_attributes->addAttribute()');
 				$vb_dont_create_attribute = false;	// this causes an error to be displayed to the user, which is what we want here
 				break;
@@ -294,7 +294,7 @@ class ca_attributes extends BaseModel {
 	/**
 	 *
 	 */
-	public function editAttribute($pa_values) {
+	public function editAttribute($pa_values, $pa_options=null) {
 		if (!$this->getPrimaryKey()) { return null; }
 		
 		$vb_already_in_transaction = $this->inTransaction();
@@ -338,7 +338,7 @@ class ca_attributes extends BaseModel {
 				} else {
 					$vm_value = $pa_values[$o_attr_val->getElementCode()];
 				}
-				if ($t_attr_val->editValue($vm_value) === false) {
+				if ($t_attr_val->editValue($vm_value, $pa_options) === false) {
 					$this->postError(1973, join('; ', $t_attr_val->getErrors()), 'ca_attributes->editAttribute()');
 				}
 				
@@ -364,7 +364,7 @@ class ca_attributes extends BaseModel {
 				$vm_value = $pa_values[$va_element['element_code']];
 			}
 			
-			if ($t_attr_val->addValue($vm_value, $va_element, $vn_attribute_id) === false) {
+			if ($t_attr_val->addValue($vm_value, $va_element, $vn_attribute_id, $pa_options) === false) {
 				$this->postError(1972, join('; ', $t_attr_val->getErrors()), 'ca_attributes->editAttribute()');
 				break;
 			}
