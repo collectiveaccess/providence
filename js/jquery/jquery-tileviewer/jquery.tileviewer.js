@@ -53,7 +53,7 @@ var methods = {
             zoom_sensitivity: 16, 
             thumbnail: false,//display thumbnail
             magnifier: false,//display magnifier
-            debug: true,
+            debug: false,
             pixel: true,
             magnifier_view_size: 196, //view size
             magnifier_view_area: 48, //pixel w/h sizes to zoom
@@ -577,19 +577,20 @@ var methods = {
 							
 							
 							// update position live on scroll
+							var mw = (w > 100) ? w :  100;
 							if (inAnnotation['tendY'] < inAnnotation['endY']) {
 								if ((inAnnotation.index == view.selectedAnnotation) && !options.lock_annotation_text) {
 									$(view.annotationTextEditor).css("display", "block").css("left", sx + 'px').css('top', sy + 'px');
 									$(inAnnotation['textBlock']).css("display", "none");
 								} else {
-									$(inAnnotation['textBlock']).css("display", "block").css("left", sx + 'px').css('top', sy + 'px').css('max-width', w + 'px');
+									$(inAnnotation['textBlock']).css("display", "block").css("left", sx + 'px').css('top', sy + 'px').css('max-width', mw + 'px');
 								}
 							} else {
 								if ((inAnnotation.index == view.selectedAnnotation) && !options.lock_annotation_text) {
 									$(view.annotationTextEditor).css("display", "block").css("left", sx + 'px').css('top', sy + 'px');
 									$(inAnnotation['textBlock']).css("display", "none");
 								} else {
-									$(inAnnotation['textBlock']).css("display", "block").css("left", sx + 'px').css('top', sy + 'px').css('max-width', w + 'px');
+									$(inAnnotation['textBlock']).css("display", "block").css("left", sx + 'px').css('top', sy + 'px').css('max-width', mw + 'px');
 								}
 							}
 						}
@@ -979,7 +980,7 @@ var methods = {
                         	jQuery(view.controls).append("<div class='tileViewToolbarCol'> </div>");
                         	
                         	var d = $(view.controls).find(".tileViewToolbarCol");
-                        	
+                     	
 					
 					//
 					// Tools
@@ -1000,7 +1001,7 @@ var methods = {
 							//
 							// Rectangular annotation
 							//
-							d.append("<a href='#' id='" + options.id + "ControlAddRectAnnotation' class='tileviewerControl'><img src='" + options.buttonUrlPath + "/rect.png' width='25' height='32'/></a>");
+							d.append("<a href='#' id='" + options.id + "ControlAddRectAnnotation' class='tileviewerControl'><img src='" + options.buttonUrlPath + "/rect.png' width='25' height='24'/></a>");
 							
 							jQuery("#" + options.id + "ControlAddRectAnnotation").click(function() {
 								if (!options.display_annotations || options.lock_annotations) { return; }
@@ -1021,7 +1022,7 @@ var methods = {
 							//
 							// Point annotation
 							//
-							d.append("<a href='#' id='" + options.id + "ControlAddPointAnnotation' class='tileviewerControl'><img src='" + options.buttonUrlPath + "/point.png' width='25' height='25'/></a>");		
+							d.append("<a href='#' id='" + options.id + "ControlAddPointAnnotation' class='tileviewerControl'><img src='" + options.buttonUrlPath + "/point.png' width='26' height='25'/></a>");		
 														
 							jQuery("#" + options.id + "ControlAddRectAnnotation").css("opacity", 0.5);
 							jQuery("#" + options.id + "ControlAddPointAnnotation").css("opacity", 0.5);
@@ -1075,7 +1076,7 @@ var methods = {
 					//
 					// Overview
 					// 
-					d.append("<a href='#' id='" + options.id + "ControlOverview' class='tileviewerControl'><img src='" + options.buttonUrlPath + "/navigator.png' width='33' height='24'/></a>");	
+					d.append("<a href='#' id='" + options.id + "ControlOverview' class='tileviewerControl'><img src='" + options.buttonUrlPath + "/navigator.png' width='27' height='23'/></a>");	
 					jQuery("#" + options.id + "ControlOverview").css("opacity", 0.5);
 					
 					jQuery("#" + options.id + "ControlOverview").click(function() {
@@ -1084,7 +1085,9 @@ var methods = {
 						jQuery(this).css("opacity", options.thumbnail ? 1.0 : 0.5);
 					});
 					
-					//
+					
+					
+                    //
 					// Fit to screen
 					// 
 					d.append("<a href='#' id='" + options.id + "ControlFitToScreen' class='tileviewerControl'><img src='" + options.buttonUrlPath + "/expand.png' width='25' height='25'/></a>");	
@@ -1117,7 +1120,9 @@ var methods = {
 						jQuery(this).css("opacity", 1.0);
 					}).mouseleave(function() {
 						jQuery(this).css("opacity", 0.5);
-					});
+					}); 
+					
+					
 						
 					//
 					// Magnfier (deprecated)
