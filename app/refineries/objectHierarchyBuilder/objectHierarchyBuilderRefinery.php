@@ -1,6 +1,6 @@
 <?php
 /* ----------------------------------------------------------------------
- * storageLocationHierarchyBuilderRefinery.php : 
+ * objectHierarchyBuilderRefinery.php : 
  * ----------------------------------------------------------------------
  * CollectiveAccess
  * Open-source collections management software
@@ -30,12 +30,12 @@
 	require_once(__CA_LIB_DIR__.'/core/Parsers/ExpressionParser.php');
 	require_once(__CA_APP_DIR__.'/helpers/importHelpers.php');
  
-	class storageLocationHierarchyBuilderRefinery extends BaseRefinery {
+	class objectHierarchyBuilderRefinery extends BaseRefinery {
 		# -------------------------------------------------------
 		public function __construct() {
-			$this->ops_name = 'storageLocationHierarchyBuilder';
-			$this->ops_title = _t('Storage location hierarchy builder');
-			$this->ops_description = _t('Builds a storage location hierarchy.');
+			$this->ops_name = 'objectHierarchyBuilder';
+			$this->ops_title = _t('object hierarchy builder');
+			$this->ops_description = _t('Builds an object hierarchy.');
 			
 			$this->opb_returns_multiple_values = true;
 			
@@ -63,9 +63,9 @@
 			$t_mapping = caGetOption('mapping', $pa_options, null);
 			if ($t_mapping) {
 				$o_dm = Datamodel::load();
-				if ($t_mapping->get('table_num') != $o_dm->getTableNum('ca_storage_locations')) { 
+				if ($t_mapping->get('table_num') != $o_dm->getTableNum('ca_objects')) { 
 					if ($o_log) {
-						$o_log->logError(_t("storageLocationHierarchyBuilder refinery may only be used in imports to ca_storage_locations"));
+						$o_log->logError(_t("objectHierarchyBuilder refinery may only be used in imports to ca_objects"));
 					}
 					return null; 
 				}
@@ -78,16 +78,16 @@
 			
 			$vn_parent_id = null;
 			
-			// Set storage location parents
-			if ($va_parents = $pa_item['settings']['storageLocationHierarchyBuilder_parents']) {
-				$vn_parent_id = caProcessRefineryParents('storageLocationHierarchyBuilderRefinery', 'ca_storage_locations', $va_parents, $pa_source_data, $pa_item, null, null, $o_log);
+			// Set object parents
+			if ($va_parents = $pa_item['settings']['objectHierarchyBuilder_parents']) {
+				$vn_parent_id = caProcessRefineryParents('objectHierarchyBuilderRefinery', 'ca_objects', $va_parents, $pa_source_data, $pa_item, null, null, $o_log);
 			}
 			
 			return $vn_parent_id;
 		}
 		# -------------------------------------------------------	
 		/**
-		 * storageLocationHierarchyBuilder returns multiple values
+		 * objectHierarchyBuilder returns multiple values
 		 *
 		 * @return bool
 		 */
@@ -97,15 +97,15 @@
 		# -------------------------------------------------------
 	}
 	
-	BaseRefinery::$s_refinery_settings['storageLocationHierarchyBuilder'] = array(	
-		'storageLocationHierarchyBuilder_parents' => array(
+	BaseRefinery::$s_refinery_settings['objectHierarchyBuilder'] = array(	
+		'objectHierarchyBuilder_parents' => array(
 			'formatType' => FT_TEXT,
 			'displayType' => DT_SELECT,
 			'width' => 10, 'height' => 1,
 			'takesLocale' => false,
 			'default' => '',
 			'label' => _t('Parents'),
-			'description' => _t('Storage location parents to create')
+			'description' => _t('object parents to create')
 		)
 	);
 ?>

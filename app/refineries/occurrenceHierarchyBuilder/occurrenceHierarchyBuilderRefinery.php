@@ -35,7 +35,7 @@
 		public function __construct() {
 			$this->ops_name = 'occurrenceHierarchyBuilder';
 			$this->ops_title = _t('Occurrence hierarchy builder');
-			$this->ops_description = _t('Builds a storage location hierarchy.');
+			$this->ops_description = _t('Builds an occurrence hierarchy.');
 			
 			$this->opb_returns_multiple_values = true;
 			
@@ -97,15 +97,15 @@
 		# -------------------------------------------------------
 	}
 	
-	 BaseRefinery::$s_refinery_settings['occurrenceHierarchyBuilder'] = array(	
-			'occurrenceHierarchyBuilder_parents' => array(
-				'formatType' => FT_TEXT,
-				'displayType' => DT_SELECT,
-				'width' => 10, 'height' => 1,
-				'takesLocale' => false,
-				'default' => '',
-				'label' => _t('Parents'),
-				'description' => _t('Occurrence parents to create')
-			)
-		);
+	BaseRefinery::$s_refinery_settings['occurrenceHierarchyBuilder'] = array(	
+		'occurrenceHierarchyBuilder_parents' => array(
+			'formatType' => FT_TEXT,
+			'displayType' => DT_SELECT,
+			'width' => 10, 'height' => 1,
+			'takesLocale' => false,
+			'default' => '',
+			'label' => _t('Parents'),
+			'description' => _t('Occurrence parents to create')
+		)
+	);
 ?>
