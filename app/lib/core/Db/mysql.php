@@ -287,10 +287,38 @@ class Db_mysql extends DbDriverBase {
 			$t = new Timer();
 		}
 		if (!($r_res = mysql_query($vs_sql, $this->opr_db))) {
-			//print "<pre>".caPrintStacktrace()."</pre>\n";
-			//print $vs_sql;
-			//print mysql_error($this->opr_db);
-			$opo_statement->postError($this->nativeToDbError(mysql_errno($this->opr_db)), mysql_error($this->opr_db).((__CA_ENABLE_DEBUG_OUTPUT__) ? "\n<pre>".caPrintStacktrace()."</pre>" : ""), "Db->mysql->execute()");
+			$vn_mysql_err = (int)mysql_errno($this->opr_db);
+			switch($vn_mysql_err) {
+				case 1216:		// deadlock
+					$vn_tries = 0;
+					// wait a bit and try the query again (up to 10 times)
+					while($vn_tries < 10) {
+						usleep(500);
+						if ($r_res = mysql_query($vs_sql, $this->opr_db)) {
+							break;
+						}
+						$vn_tries++;
+					}
+					
+					if (!$r_res) {
+						$opo_statement->postError($this->nativeToDbError($vn_mysql_err), mysql_error($this->opr_db).((__CA_ENABLE_DEBUG_OUTPUT__) ? "\n<pre>".caPrintStacktrace()."</pre>" : ""), "Db->mysql->execute()");
+						return false;
+					}
+					return new DbResult($this, $r_res);
+					break;
+				case 2006:		// gone away
+					// reconnect
+					if ($po_caller->connect()) {
+						if ($r_res = mysql_query($vs_sql, $this->opr_db)) {
+							return new DbResult($this, $r_res);
+						}
+					}
+					$opo_statement->postError($this->nativeToDbError($vn_mysql_err), mysql_error($this->opr_db).((__CA_ENABLE_DEBUG_OUTPUT__) ? "\n<pre>".caPrintStacktrace()."</pre>" : ""), "Db->mysql->execute()");
+					break;
+				default:
+					$opo_statement->postError($this->nativeToDbError($vn_mysql_err), mysql_error($this->opr_db).((__CA_ENABLE_DEBUG_OUTPUT__) ? "\n<pre>".caPrintStacktrace()."</pre>" : ""), "Db->mysql->execute()");
+					break;
+			}
 			return false;
 		}
 		if (Db::$monitor) {
