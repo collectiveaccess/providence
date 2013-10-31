@@ -1099,20 +1099,27 @@ class WLPlugSearchEngineSqlSearch extends BaseSearchPlugin implements IWLPlugSea
 								if ($vs_direct_sql_query) {
 									$vs_direct_sql_query = str_replace('^JOIN', "", $vs_direct_sql_query);
 								}
+								
 								$vs_sql = "
-									DELETE FROM {$ps_dest_table} 
-									USING {$ps_dest_table}, ca_sql_search_words sw, ca_sql_search_word_index swi
+									SELECT row_id
+									FROM ca_sql_search_words sw
+									INNER JOIN ca_sql_search_word_index AS swi ON sw.word_id = swi.word_id
 									WHERE 
-										".($vs_sql_where ? "{$vs_sql_where} AND " : "")."
-										{$ps_dest_table}.row_id = swi.row_id AND
-										sw.word_id = swi.word_id
-										AND
-										swi.table_num = ?
-										".($this->getOption('omitPrivateIndexing') ? " AND swi.access = 0" : '')."
-								";
-							
+										".($vs_sql_where ? "{$vs_sql_where} AND " : "")." swi.table_num = ? 
+										".($this->getOption('omitPrivateIndexing') ? " AND swi.access = 0" : '');
+								
 								//print "$vs_sql<hr>";
 								$qr_res = $this->opo_db->query($vs_sql, (int)$pn_subject_tablenum);
+								$va_ids = $qr_res->getAllFieldValues("row_id");
+								
+								$vs_sql = "
+									DELETE FROM {$ps_dest_table} 
+									WHERE 
+										row_id IN (?)
+								";
+							
+								$qr_res = $this->opo_db->query($vs_sql, array($va_ids));
+								//print "$vs_sql<hr>";
 								break;
 							default:
 							case 'OR':
