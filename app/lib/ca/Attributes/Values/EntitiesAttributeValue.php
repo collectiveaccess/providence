@@ -123,7 +123,7 @@
  		}
  		# ------------------------------------------------------------------
  		/**
- 		 * Will return plural value of list item unless useSingular option is set to true, in which case singular version of list item label will be used.
+ 		 * 
  		 *
  		 * @param array Optional array of options. Support options are:
  		 *			template = 
@@ -136,10 +136,10 @@
 			if(is_array($va_lookup_template = $o_config->getList('ca_entities_lookup_settings'))) {
 				$vs_default_template = join($o_config->get('ca_entities_lookup_delimiter'), $va_lookup_template);
 			} else {
-				$vs_default_template = "^ca_entities.preferred_labels.name ^ca_entities.media.icon";
+				$vs_default_template = "^ca_entities.preferred_labels.displayname";
 			}			
 			$ps_template = (string)caGetOption('template', $pa_options, $vs_default_template);
-			$vb_include_id = (bool)caGetOption('includeID', $pa_options, true);
+			$vb_include_id = (bool)caGetOption('includeID', $pa_options, false);
 			$vb_ids_only = (bool)caGetOption('idsOnly', $pa_options, false);
 			
 			if ($vb_ids_only) { return $this->opn_entity_id; }
@@ -158,10 +158,10 @@
  		 */
  		public function parseValue($ps_value, $pa_element_info, $pa_options=null) {
  			$vb_require_value = (is_null($pa_element_info['settings']['requireValue'])) ? true : (bool)$pa_element_info['settings']['requireValue'];
- 			
+ 		
  			if (preg_match('![^\d]+!', $ps_value)) {
- 				// try to convert idno to item_id
- 				if ($vn_id = ca_lists::getItemID($pa_element_info['list_id'], $ps_value)) {
+ 				// try to convert idno to entity_id
+ 				if ($vn_id = ca_entities::find(array('idno' => $ps_value), array('returnAs' => 'firstId'))) {
  					$ps_value = $vn_id;
  				}
  			}
@@ -180,15 +180,11 @@
  				if ($ps_value) {
  					$this->postError(1970, _t('%1 is not a valid entity_id for %2 [%3]', $ps_value, $pa_element_info['displayLabel'], $pa_element_info['element_code']), 'EntitiesAttributeValue->parseValue()');
  				} else {
- 					//$this->postError(1970, _t('Value %1 [%2] cannot be blank', $pa_element_info['displayLabel'], $pa_element_info['element_code']), 'EntitiesAttributeValue->parseValue()');
  					return null;
  				}
 				return false;
  			}
- 			//if ((int)$t_item->get('list_id') != (int)$pa_element_info['list_id']) {
- 			//	$this->postError(1970, _t('Item is not in the correct list'), 'EntitiesAttributeValue->parseValue()');
-			//	return false;
- 			//}
+ 			
  			return array(
  				'value_longtext1' => $ps_value,
  				'value_integer1' => (int)$ps_value
