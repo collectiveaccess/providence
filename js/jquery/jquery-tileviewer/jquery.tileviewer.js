@@ -932,7 +932,7 @@ var methods = {
 						});
 							
 						$('#tileviewerAnnotationDeleteButton').on("click", function(e) {
-							if (view.selectedAnnotation) { view.delete_annotation(view.selectedAnnotation); }
+							if (view.selectedAnnotation !== null) { view.delete_annotation(view.selectedAnnotation); }
 						});
 							
 						$('#tileviewerAnnotationTextSave').on("click", function(e) {
