@@ -2766,7 +2766,7 @@ $ca_relationship_lookup_parse_cache = array();
 		}
 		
 			
-		if (isset($pa_options['relatedItems']) && is_array($pa_options['relatedItems'])) {
+		if (isset($pa_options['relatedItems']) && is_array($pa_options['relatedItems']) && sizeof($pa_options['relatedItems'])) {
 			$va_tmp = array();
 			foreach ($pa_options['relatedItems'] as $vn_relation_id => $va_relation) {
 				$va_items[$va_relation[$vs_rel_pk]]['relation_id'] = $va_relation['relation_id'];
