@@ -970,7 +970,7 @@ class ca_bundle_displays extends BundlableLabelableBaseModelWithAttributes {
 			$vs_bundle = $vs_table.'.'.$vs_element_code;
 			
 			$va_even_more_settings['format'] = $va_additional_settings['format'];
-			$va_even_more_settings['format']['helpText'] = $this->getTemplatePlaceholderDisplayListForBundle($vs_bundle);
+			//$va_even_more_settings['format']['helpText'] = $this->getTemplatePlaceholderDisplayListForBundle($vs_bundle);
 			
 			$t_placement = new ca_bundle_display_placements(null, array_merge($va_additional_settings, $va_even_more_settings));
 			
@@ -1026,7 +1026,7 @@ class ca_bundle_displays extends BundlableLabelableBaseModelWithAttributes {
 			$t_placement = new ca_bundle_display_placements(null, $va_additional_settings);
 			
 			$vs_bundle = $vs_table.'.preferred_labels';
-			$va_additional_settings['format']['helpText'] = $this->getTemplatePlaceholderDisplayListForBundle($vs_bundle);
+			//$va_additional_settings['format']['helpText'] = $this->getTemplatePlaceholderDisplayListForBundle($vs_bundle);
 			
 			$vs_display = "<div id='bundleDisplayEditorBundle_{$vs_table}_preferred_labels'><span class='bundleDisplayEditorPlacementListItemTitle'>".caUcFirstUTF8Safe($t_instance->getProperty('NAME_SINGULAR'))."</span> ".($vs_label = $t_instance->getDisplayLabel($vs_bundle))."</div>";
 			$va_available_bundles[strip_tags($vs_display)][$vs_bundle] = array(
@@ -1050,7 +1050,7 @@ class ca_bundle_displays extends BundlableLabelableBaseModelWithAttributes {
 			$t_placement = new ca_bundle_display_placements(null, $va_additional_settings);
 			
 			$vs_bundle = $vs_table.'.nonpreferred_labels';
-			$va_additional_settings['format']['helpText'] = $this->getTemplatePlaceholderDisplayListForBundle($vs_bundle);
+			//$va_additional_settings['format']['helpText'] = $this->getTemplatePlaceholderDisplayListForBundle($vs_bundle);
 			$vs_display = "<div id='bundleDisplayEditorBundle_{$vs_table}_nonpreferred_labels'><span class='bundleDisplayEditorPlacementListItemTitle'>".caUcFirstUTF8Safe($t_instance->getProperty('NAME_SINGULAR'))."</span> ".($vs_label = $t_instance->getDisplayLabel($vs_bundle))."</div>";
 			$va_available_bundles[strip_tags($vs_display)][$vs_bundle] = array(
 				'bundle' => $vs_bundle,
@@ -1286,7 +1286,7 @@ class ca_bundle_displays extends BundlableLabelableBaseModelWithAttributes {
 				)
 			);
 			
-			$va_additional_settings['format']['helpText'] = $this->getTemplatePlaceholderDisplayListForBundle($vs_bundle);
+			//$va_additional_settings['format']['helpText'] = $this->getTemplatePlaceholderDisplayListForBundle($vs_bundle);
 		
 			$t_placement = new ca_bundle_display_placements(null, $va_additional_settings);
 			
