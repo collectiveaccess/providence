@@ -2068,21 +2068,16 @@ require_once(__CA_LIB_DIR__."/ca/ApplicationPluginManager.php");
 								}
 								
 								if ($va_spec_bits[1] != '_hierarchyName') {
-									$va_val = $qr_res->get($vs_get_spec, array_merge($pa_options, $va_additional_options));
+									$va_val = $qr_res->get($vs_get_spec, array_merge($pa_options, $va_additional_options, arraY("returnAllLocales" => true)));
 								} else {
 									$va_val = array();
 								}
-								
 								if(is_array($va_primary_ids) && isset($va_primary_ids[$va_spec_bits[0]]) && is_array($va_primary_ids[$va_spec_bits[0]])) {
-									$t_rel = $o_dm->getInstanceByTableName($va_spec_bits[0], true);
-									$va_val_ids = $qr_res->get($va_spec_bits[0].".".$t_rel->primaryKey(), array("returnAsArray" => true));
 									foreach($va_primary_ids[$va_spec_bits[0]] as $vn_primary_id) {
-										if (($vn_index = array_search($vn_primary_id, $va_val_ids)) !== false) {
-											unset($va_val[$vn_index]);
-										}
+										unset($va_val[$vn_primary_id]);
 									}
 								}
-								
+								$va_val = caExtractValuesByUserLocale($va_val);
 								
 								$va_val_proc = array();
 								
@@ -2094,13 +2089,17 @@ require_once(__CA_LIB_DIR__."/ca/ApplicationPluginManager.php");
 										break;
 									case 'hierarchy':
 										if ($vs_hierarchy_name) { array_unshift($va_val[0], $vs_hierarchy_name); }
-										foreach($va_val as $vn_x => $va_hier) {
-											$va_val_proc[] = join(caGetOption("delimiter", $va_tag_opts, "; "), $va_hier);
+										if (is_array($va_val)) {
+											foreach($va_val as $vn_x => $va_hier) {
+												$va_val_proc[] = join(caGetOption("delimiter", $va_tag_opts, "; "), $va_hier);
+											}
 										}
 										break;
 									case 'parent':
-										foreach($va_val as $vn_x => $va_label) {
-											$va_val_proc[] = $va_label['name'];
+										if (is_array($va_val)) {
+											foreach($va_val as $vn_x => $va_label) {
+												$va_val_proc[] = $va_label['name'];
+											}
 										}
 										break;
 									default:
