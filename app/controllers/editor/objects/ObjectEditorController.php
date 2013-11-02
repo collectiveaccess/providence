@@ -213,6 +213,13 @@
  		/**
  		 *
  		 */ 
+ 		public function ViewerHelp() {
+ 			$this->render('viewer_help_html.php');
+ 		}
+ 		# -------------------------------------------------------
+ 		/**
+ 		 *
+ 		 */ 
  		public function ProcessMedia() {
  			list($vn_object_id, $t_object) = $this->_initView();
  			$pn_representation_id 	= $this->request->getParameter('representation_id', pInteger);

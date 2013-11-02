@@ -166,6 +166,66 @@ span.tileviewerAnnotationDefaultText {
 }
 
 .ui-slider a {outline:none;}
+
+#tileviewerHelpPanel {
+	position: absolute;
+	top: 0px; left: 0px;
+	width: 750px;
+	height: 425px;
+	
+	overflow: auto;
+	line-height: 12px;
+	padding: 5px;
+	border: 1px solid #999;
+	background: #f0f0f0;
+	opacity: 0.85;
+	
+	-webkit-border-radius: 5px;
+	-moz-border-radius: 5px;
+	border-radius: 5px;
+	
+	-webkit-box-shadow: 4px 4px 5px rgba(50, 50, 50, 0.75);
+	-moz-box-shadow:    4px 4px 5px rgba(50, 50, 50, 0.75);
+	box-shadow:         4px 4px 5px rgba(50, 50, 50, 0.75);
+}
+
+#tileviewerHelpPanel div.content {
+	padding: 0 10px 0 10px;
+}
+#tileviewerHelpPanel div.close {
+	float: right;
+}
+
+ul.tileviewerHelpList {
+	list-style-type: none;
+	text-align: left;
+}
+
+.tileviewerHelpList li {
+	padding: 2px;
+}
+
+.tileviewerHelpText {
+	text-align: left;
+}
+
+code {
+    margin: 0 2px;
+    padding: 0px 5px;
+    border: 1px solid #ddd;
+    background-color: #f8f8f8;
+    border-radius: 3px;
+     white-space: nowrap;
+}
+
+pre>code {
+    margin: 0;
+    padding: 0;
+    white-space: pre;
+    border: none;
+    background: transparent
+}
+
 /*
 .tileviewer canvas.mode_pan:active {
 cursor: pointer;
