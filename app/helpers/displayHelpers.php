@@ -1969,10 +1969,14 @@ require_once(__CA_LIB_DIR__."/ca/ApplicationPluginManager.php");
 					switch(strtolower($va_relative_to_tmp[1])) {
 						case 'hierarchy':
 							$va_relative_ids = $qr_res->get($t_instance->tableName().".hierarchy.".$t_instance->primaryKey(), array('returnAsArray' => true));
-							$va_relative_ids = array_values(array_shift($va_relative_ids));
+							$va_relative_ids = array_values($va_relative_ids);
 							break;
 						case 'parent':
 							$va_relative_ids = $qr_res->get($t_instance->tableName().".parent.".$t_instance->primaryKey(), array('returnAsArray' => true));
+							$va_relative_ids = array_values($va_relative_ids);
+							break;
+						case 'children':
+							$va_relative_ids = $qr_res->get($t_instance->tableName().".children.".$t_instance->primaryKey(), array('returnAsArray' => true));
 							$va_relative_ids = array_values($va_relative_ids);
 							break;
 						default:
