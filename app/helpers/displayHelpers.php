@@ -2068,7 +2068,7 @@ require_once(__CA_LIB_DIR__."/ca/ApplicationPluginManager.php");
 								}
 								
 								if ($va_spec_bits[1] != '_hierarchyName') {
-									$va_val = $qr_res->get($vs_get_spec, array_merge($pa_options, $va_additional_options, arraY("returnAllLocales" => true)));
+									$va_val = $qr_res->get($vs_get_spec, array_merge($pa_options, $va_additional_options, array("returnAllLocales" => true)));
 								} else {
 									$va_val = array();
 								}
@@ -2078,6 +2078,11 @@ require_once(__CA_LIB_DIR__."/ca/ApplicationPluginManager.php");
 									}
 								}
 								$va_val = caExtractValuesByUserLocale($va_val);
+								$va_val_tmp = array();
+								foreach($va_val as $vn_d => $va_vals) {
+									$va_val_tmp += $va_vals;
+								}
+								$va_val = $va_val_tmp;
 								
 								$va_val_proc = array();
 								
