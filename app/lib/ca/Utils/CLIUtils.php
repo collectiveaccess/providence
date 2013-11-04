@@ -633,40 +633,44 @@
 				// get all Media elements
 				$va_elements = ca_metadata_elements::getElementsAsList(false, null, null, true, false, true, array(16)); // 16=media
 				
-				$qr_c = $o_db->query("
-					SELECT count(*) c 
-					FROM ca_attribute_values
-					WHERE
-						element_id in (?)
-				", caExtractValuesFromArrayList($va_elements, 'element_id', array('preserveKeys' => false)));
-				if ($qr_c->nextRow()) { $vn_count = $qr_c->get('c'); } else { $vn_count = 0; }
+				if (is_array($va_elements) && sizeof($va_elements)) {
+					if (is_array($va_element_ids = caExtractValuesFromArrayList($va_elements, 'element_id', array('preserveKeys' => false))) && sizeof($va_element_ids)) {
+						$qr_c = $o_db->query("
+							SELECT count(*) c 
+							FROM ca_attribute_values
+							WHERE
+								element_id in (?)
+						", $va_element_ids);
+						if ($qr_c->nextRow()) { $vn_count = $qr_c->get('c'); } else { $vn_count = 0; }
 				
-				print CLIProgressBar::start($vn_count, _t('Re-processing attribute media'));
-				foreach($va_elements as $vs_element_code => $va_element_info) {
-					$qr_vals = $o_db->query("SELECT value_id FROM ca_attribute_values WHERE element_id = ?", (int)$va_element_info['element_id']);
-					$va_vals = $qr_vals->getAllFieldValues('value_id');
-					foreach($va_vals as $vn_value_id) {
-						$t_attr_val = new ca_attribute_values($vn_value_id);
-						if ($t_attr_val->getPrimaryKey()) {
-							$t_attr_val->setMode(ACCESS_WRITE);
-							$t_attr_val->useBlobAsMediaField(true);
+						print CLIProgressBar::start($vn_count, _t('Re-processing attribute media'));
+						foreach($va_elements as $vs_element_code => $va_element_info) {
+							$qr_vals = $o_db->query("SELECT value_id FROM ca_attribute_values WHERE element_id = ?", (int)$va_element_info['element_id']);
+							$va_vals = $qr_vals->getAllFieldValues('value_id');
+							foreach($va_vals as $vn_value_id) {
+								$t_attr_val = new ca_attribute_values($vn_value_id);
+								if ($t_attr_val->getPrimaryKey()) {
+									$t_attr_val->setMode(ACCESS_WRITE);
+									$t_attr_val->useBlobAsMediaField(true);
 							
-							$va_media_info = $t_attr_val->getMediaInfo('value_blob');
-							$vs_original_filename = is_array($va_media_info) ? $va_media_info['ORIGINAL_FILENAME'] : '';
+									$va_media_info = $t_attr_val->getMediaInfo('value_blob');
+									$vs_original_filename = is_array($va_media_info) ? $va_media_info['ORIGINAL_FILENAME'] : '';
 							
-							print CLIProgressBar::next(1, _t("Re-processing %1", ($vs_original_filename ? $vs_original_filename." ({$vn_value_id})" : $vn_value_id)));
+									print CLIProgressBar::next(1, _t("Re-processing %1", ($vs_original_filename ? $vs_original_filename." ({$vn_value_id})" : $vn_value_id)));
 		
 							
-							$t_attr_val->set('value_blob', $t_attr_val->getMediaPath('value_blob', 'original'), array('original_filename' => $vs_original_filename));
+									$t_attr_val->set('value_blob', $t_attr_val->getMediaPath('value_blob', 'original'), array('original_filename' => $vs_original_filename));
 							
-							$t_attr_val->update();	
-							if ($t_attr_val->numErrors()) {
-								CLIUtils::addError(_t("Error processing attribute media: %1", join('; ', $t_attr_val->getErrors())));
+									$t_attr_val->update();	
+									if ($t_attr_val->numErrors()) {
+										CLIUtils::addError(_t("Error processing attribute media: %1", join('; ', $t_attr_val->getErrors())));
+									}
+								}
 							}
 						}
+						print CLIProgressBar::finish();
 					}
 				}
-				print CLIProgressBar::finish();
 			}
 			
 			
