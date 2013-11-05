@@ -6,7 +6,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2010-2011 Whirl-i-Gig
+ * Copyright 2010-2013 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -38,11 +38,12 @@ var caUI = caUI || {};
 			
 			navigationControl: true,
   			mapTypeControl: true,
- 			scaleControl: true
+ 			scaleControl: true,
+ 			zoomControl: true
 		}, options);
 		
-		that.infoWindow = new google.maps.InfoWindow();
-		that.map = new google.maps.Map(document.getElementById(that.id), { disableDefaultUI: true, mapTypeId: google.maps.MapTypeId[that.mapType], navigationControl: that.navigationControl, mapTypeControl: that.mapTypeControl, scaleControl: true });
+		that.infoWindow = new google.maps.InfoWindow({ disableAutoPan: false, maxWidth: 300 } );
+		that.map = new google.maps.Map(document.getElementById(that.id), { disableDefaultUI: true, mapTypeId: google.maps.MapTypeId[that.mapType], navigationControl: that.navigationControl, mapTypeControl: that.mapTypeControl, scaleControl: true, zoomControl: that.zoomControl });
 		
 		// --------------------------------------------------------------------------------
 		// Define methods
@@ -51,7 +52,8 @@ var caUI = caUI || {};
 			var markerLatLng = marker.getPosition();
 			
 			if(marker.ajaxContentUrl.length > 0) {
-				jQuery.ajax(marker.ajaxContentUrl, { success: function(data, textStatus, jqXHR) { that.infoWindow.setContent(data); }})
+				that.infoWindow.setContent('Loading...');
+				jQuery.ajax(marker.ajaxContentUrl, { success: function(data, textStatus, jqXHR) { that.infoWindow.setContent(data); that.infoWindow.open(that.map, marker); }})
 			} else {
 				that.infoWindow.setContent(marker.content);
 			}
@@ -64,16 +66,18 @@ var caUI = caUI || {};
 			that.infoWindow.open(that.map);
 		};
 		// --------------------------------------------------------------------------------
-		that.makeMarker = function(lat, lng, label, content, ajaxContentUrl) {
+		that.makeMarker = function(lat, lng, label, content, ajaxContentUrl, options) {
 			var pt = new google.maps.LatLng(lat, lng);
 		
-			var marker = new google.maps.Marker({
+			var opts = {
 				position: pt,
 				map: that.map,
 				title: label + ' ',
 				content: content + ' ',
 				ajaxContentUrl: ajaxContentUrl
-			});
+			};
+			if (options && options.icon) { opts['icon'] = options.icon; }
+			var marker = new google.maps.Marker(opts);
 			
 			google.maps.event.addListener(marker, 'click', function(e) { that.openMarkerInfoWindow(marker); });
 			
