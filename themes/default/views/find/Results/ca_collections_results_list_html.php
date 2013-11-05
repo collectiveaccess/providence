@@ -73,11 +73,13 @@
 			while(($vn_item_count < $vn_items_per_page) && $vo_result->nextHit()) {
 				$vn_collection_id = $vo_result->get('collection_id');
 	
+				
 				if($vo_ar->userCanAccess($this->request->user->getUserID(), array("editor","collections"), "CollectionEditor", "Edit", array("collection_id" => $vn_collection_id))){
 					$vs_action = "Edit";
 				} else {
 					$vs_action = "Summary";
 				}
+				
 				
 				($i == 2) ? $i = 0 : "";
 	?>
@@ -87,7 +89,7 @@
 						<input type='checkbox' name='add_to_set_ids' value='<?php print (int)$vn_collection_id; ?>' class="addItemToSetControl" />
 					</td>
 	<?php
-					print "<td style='width:5%;'>".caNavLink($this->request, caNavIcon($this->request, __CA_NAV_BUTTON_EDIT__), '', 'editor/collections', 'CollectionEditor', $vs_action, array('collection_id' => $vn_collection_id))."</td>";
+					print "<td style='width:5%;'>".caEditorLink($this->request, caNavIcon($this->request, __CA_NAV_BUTTON_EDIT__), '', 'ca_collections', $vn_collection_id, array())."</td>";
 					foreach($va_display_list as $vn_placement_id => $va_display_item) {
 						print "<td>".$t_display->getDisplayValue($vo_result, $vn_placement_id, array('request' => $this->request))."</td>";
 					}

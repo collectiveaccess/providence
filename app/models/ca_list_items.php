@@ -467,12 +467,12 @@ class ca_list_items extends RepresentableBaseModel implements IHierarchy {
 		if (!$this->inTransaction()) {
 			$this->setTransaction(new Transaction());
 		}
-		if ($this->get('is_default')) {
+		if ($this->get('is_default') == 1) {
 			$this->getDb()->query("
 				UPDATE ca_list_items 
 				SET is_default = 0 
-				WHERE list_id = ?
-			", (int)$this->get('list_id'));
+				WHERE list_id = ? AND item_id <> ?
+			", (int)$this->get('list_id'), $this->getPrimaryKey());
 		}
 		$vn_rc = parent::update($pa_options);
 		

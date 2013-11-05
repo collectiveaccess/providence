@@ -87,10 +87,10 @@ class WLPlugVisualizerMap Extends BaseVisualizerPlugIn Implements IWLPlugVisuali
 			
 			$va_opts = array('renderLabelAsLink' => false, 'request' => $po_request, 'color' => $vs_color);
 			
+			$va_opts['labelTemplate'] = $va_source_info['display']['title_template'];
 			if(isset($va_source_info['display']['ajax_content_url']) && ($va_source_info['display']['ajax_content_url'])) {
 				$va_opts['ajaxContentUrl'] = $va_source_info['display']['ajax_content_url'];
 			} else {
-				$va_opts['labelTemplate'] = $va_source_info['display']['title_template'];
 				$va_opts['contentTemplate'] = $va_source_info['display']['description_template'];
 			}
 			

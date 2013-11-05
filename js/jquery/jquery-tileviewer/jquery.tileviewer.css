@@ -40,13 +40,13 @@
 .tileviewer div a.tileviewerControl {
 	position: relative;
 	display: block;
-	margin:0 0 10px 0;
+	margin:5px 0 8px 0;
 }
 
 .tileviewerControlDivider {
 	border-bottom: 2px #fff solid;
 	margin: 7px 0 12px 0;
-	opacity: 0.5;
+	opacity: 0.25;
 }
 
 .tileviewer div.tileviewerAnnotationTextBlock {
@@ -139,7 +139,7 @@ span.tileviewerAnnotationDefaultText {
 .tileViewToolbarZoom {
 	position: absolute;
 	border: 0px solid #cc0000;
-	top: 2px;
+	top: 0px;
 	left: 200px;
 	width: 500px;
 }
@@ -147,14 +147,14 @@ span.tileviewerAnnotationDefaultText {
 .tileviewerControlZoomOut {
 	position: absolute;
 	left: 2px;
-	top: 3px;
+	top: 2px;
 
 }
 
 .tileviewerControlZoomIn {
 	position: absolute;
 	right: 2px;
-	top: 3px;
+	top: 2px;
 }
 
 .tileViewToolbarZoomSlider {
@@ -162,10 +162,72 @@ span.tileviewerAnnotationDefaultText {
 	width: 420px;
 	
 	left: 40px;
-	top: 7px;
+	top: 6px;
 }
 
 .ui-slider a {outline:none;}
+
+#tileviewerHelpPanel {
+	position: absolute;
+	top: 0px; left: 0px;
+	width: 750px;
+	height: 425px;
+	
+	overflow: auto;
+	line-height: 12px;
+	padding: 5px;
+	border: 1px solid #999;
+	background: #f0f0f0;
+	opacity: 0.85;
+	
+	z-index: 999999;
+	
+	-webkit-border-radius: 5px;
+	-moz-border-radius: 5px;
+	border-radius: 5px;
+	
+	-webkit-box-shadow: 4px 4px 5px rgba(50, 50, 50, 0.75);
+	-moz-box-shadow:    4px 4px 5px rgba(50, 50, 50, 0.75);
+	box-shadow:         4px 4px 5px rgba(50, 50, 50, 0.75);
+}
+
+#tileviewerHelpPanel div.content {
+	padding: 0 10px 0 10px;
+}
+#tileviewerHelpPanel div.close {
+	float: right;
+}
+
+ul.tileviewerHelpList {
+	list-style-type: none;
+	text-align: left;
+}
+
+.tileviewerHelpList li {
+	padding: 2px;
+}
+
+.tileviewerHelpText {
+	text-align: left;
+}
+
+code {
+    margin: 0 2px;
+    padding: 0px 5px;
+    border: 1px solid #ddd;
+    background-color: #f8f8f8;
+    border-radius: 3px;
+     white-space: nowrap;
+}
+
+pre>code {
+    margin: 0;
+    padding: 0;
+    white-space: pre;
+    border: none;
+    background: transparent
+}
+
 /*
 .tileviewer canvas.mode_pan:active {
 cursor: pointer;

@@ -1412,18 +1412,6 @@ class BundlableLabelableBaseModelWithAttributes extends LabelableBaseModelWithAt
 						$vs_element .= $this->getTourStopHTMLFormBundle($pa_options['request'], $pa_options['formName'].'_'.$ps_bundle_name, $pa_options);
 						break;
 					# -------------------------------
-					// This bundle is only available when editing objects of type ca_bundle_mappings
-					case 'ca_bundle_mapping_groups':
-						if ($vb_batch) { return null; } // not supported in batch mode
-						$vs_element .= $this->getGroupHTMLFormBundle($pa_options['request'], $pa_options['formName'].'_'.$ps_bundle_name, $pa_options);
-						break;
-					# -------------------------------
-					// This bundle is only available when editing objects of type ca_bundle_mapping_groups
-					case 'ca_bundle_mapping_rules':
-						if ($vb_batch) { return null; } // not supported in batch mode
-						$vs_element .= $this->getRuleHTMLFormBundle($pa_options['request'], $pa_options['formName'].'_'.$ps_bundle_name, $pa_options);
-						break;
-					# -------------------------------
 					// Hierarchy navigation bar for hierarchical tables
 					case 'hierarchy_navigation':
 						if ($vb_batch) { return null; } // not supported in batch mode
@@ -1452,6 +1440,11 @@ class BundlableLabelableBaseModelWithAttributes extends LabelableBaseModelWithAt
 						if ($vb_batch) { return null; } // not supported in batch mode
 						//if (!$this->getPrimaryKey()) { return ''; }
 						$vs_element .= $this->getBundleDisplayHTMLFormBundle($pa_options['request'], $pa_options['formName'].'_'.$ps_bundle_name, $pa_options);
+						break;
+					# -------------------------------
+					// This bundle is only available when editing objects of type ca_bundle_displays
+					case 'ca_bundle_display_type_restrictions':
+						$vs_element .= $this->getTypeRestrictionsHTMLFormBundle($pa_options['request'], $pa_options['formName'].'_'.$ps_bundle_name, $pa_options);
 						break;
 					# -------------------------------
 					// 
@@ -2179,9 +2172,10 @@ class BundlableLabelableBaseModelWithAttributes extends LabelableBaseModelWithAt
 			}
 				
 			$va_opts['template'] = caGetBundleDisplayTemplate($this, $ps_related_table, $pa_bundle_settings);
+			$va_opts['primaryIDs'] = array($this->tableName() => array($this->getPrimaryKey()));
 			$va_initial_values = caProcessRelationshipLookupLabel($qr_rel_items, $t_item_rel, $va_opts);
 		}
-		
+
 		$va_force_new_values = array();
 		if (isset($pa_options['force']) && is_array($pa_options['force'])) {
 			foreach($pa_options['force'] as $vn_id) {
@@ -3203,6 +3197,12 @@ if (!$vb_batch) {
 					case 'ca_bundle_display_placements':
 						if ($vb_batch) { break; } // not supported in batch mode
 						$this->savePlacementsFromHTMLForm($po_request, $vs_form_prefix);
+						break;
+					# -------------------------------------
+					// This bundle is only available for ca_bundle_displays 
+					case 'ca_bundle_display_type_restrictions':
+						if ($vb_batch) { break; } // not supported in batch mode
+						$this->saveTypeRestrictionsFromHTMLForm($po_request, $vs_form_prefix);
 						break;
 					# -------------------------------------
 					// This bundle is only available for ca_search_forms 

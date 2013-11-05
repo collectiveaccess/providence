@@ -97,15 +97,15 @@
 		# -------------------------------------------------------
 	}
 	
-	 BaseRefinery::$s_refinery_settings['occurrenceHierarchyBuilder'] = array(	
-			'occurrenceHierarchyBuilder_parents' => array(
-				'formatType' => FT_TEXT,
-				'displayType' => DT_SELECT,
-				'width' => 10, 'height' => 1,
-				'takesLocale' => false,
-				'default' => '',
-				'label' => _t('Parents'),
-				'description' => _t('Occurrence parents to create')
-			)
-		);
+	BaseRefinery::$s_refinery_settings['occurrenceHierarchyBuilder'] = array(	
+		'occurrenceHierarchyBuilder_parents' => array(
+			'formatType' => FT_TEXT,
+			'displayType' => DT_SELECT,
+			'width' => 10, 'height' => 1,
+			'takesLocale' => false,
+			'default' => '',
+			'label' => _t('Parents'),
+			'description' => _t('Occurrence parents to create')
+		)
+	);
 ?>

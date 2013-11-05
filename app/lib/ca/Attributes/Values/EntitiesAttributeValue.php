@@ -35,18 +35,18 @@
   */
  	require_once(__CA_LIB_DIR__.'/ca/Attributes/Values/IAttributeValue.php');
  	require_once(__CA_LIB_DIR__.'/ca/Attributes/Values/AttributeValue.php');
- 	require_once(__CA_MODELS_DIR__.'/ca_object_representations.php');
+ 	require_once(__CA_MODELS_DIR__.'/ca_entities.php');
  
  	global $_ca_attribute_settings;
  	
- 	$_ca_attribute_settings['ObjectRepresentationsAttributeValue'] = array(		// global
+ 	$_ca_attribute_settings['EntitiesAttributeValue'] = array(		// global
 		'requireValue' => array(
 			'formatType' => FT_NUMBER,
 			'displayType' => DT_CHECKBOXES,
 			'default' => 1,
 			'width' => 1, 'height' => 1,
 			'label' => _t('Require value'),
-			'description' => _t('Check this option if you want to require that an object representation be selected.')
+			'description' => _t('Check this option if you want to require that an entity be selected.')
 		),
 		'fieldWidth' => array(
 			'formatType' => FT_NUMBER,
@@ -108,10 +108,10 @@
 		)
 	);
  
-	class ObjectRepresentationsAttributeValue extends AttributeValue implements IAttributeValue {
+	class EntitiesAttributeValue extends AttributeValue implements IAttributeValue {
  		# ------------------------------------------------------------------
  		private $ops_text_value;
- 		private $opn_representation_id;
+ 		private $opn_entity_id;
  		# ------------------------------------------------------------------
  		public function __construct($pa_value_array=null) {
  			parent::__construct($pa_value_array);
@@ -119,7 +119,7 @@
  		# ------------------------------------------------------------------
  		public function loadTypeSpecificValueFromRow($pa_value_array) {
  			$this->ops_text_value = $pa_value_array['value_longtext1'];
- 			$this->opn_representation_id = $pa_value_array['value_integer1'];
+ 			$this->opn_entity_id = $pa_value_array['value_integer1'];
  		}
  		# ------------------------------------------------------------------
  		/**
@@ -133,24 +133,24 @@
  		 */
 		public function getDisplayValue($pa_options=null) {
 			$o_config = Configuration::load();
-			if(is_array($va_lookup_template = $o_config->getList('ca_object_representations_lookup_settings'))) {
-				$vs_default_template = join($o_config->get('ca_object_representations_lookup_delimiter'), $va_lookup_template);
+			if(is_array($va_lookup_template = $o_config->getList('ca_entities_lookup_settings'))) {
+				$vs_default_template = join($o_config->get('ca_entities_lookup_delimiter'), $va_lookup_template);
 			} else {
-				$vs_default_template = "^ca_object_representations.preferred_labels.name ^ca_object_representations.media.icon";
+				$vs_default_template = "^ca_entities.preferred_labels.displayname";
 			}			
 			$ps_template = (string)caGetOption('template', $pa_options, $vs_default_template);
 			$vb_include_id = (bool)caGetOption('includeID', $pa_options, false);
 			$vb_ids_only = (bool)caGetOption('idsOnly', $pa_options, false);
 			
-			if ($vb_ids_only) { return $this->opn_representation_id; }
-			return caProcessTemplateForIDs($ps_template, 'ca_object_representations', array($this->opn_representation_id), array()).($vb_include_id ? " [".$this->opn_representation_id."]" : '');
+			if ($vb_ids_only) { return $this->opn_entity_id; }
+			return caProcessTemplateForIDs($ps_template, 'ca_entities', array($this->opn_entity_id), array()).($vb_include_id ? " [".$this->opn_entity_id."]" : '');
 		}
  		# ------------------------------------------------------------------
  		/**
  		 *
  		 */
-		public function getRepresentationID() {
-			return $this->opn_representation_id;
+		public function getEntityID() {
+			return $this->opn_entity_id;
 		}
  		# ------------------------------------------------------------------
  		/**
@@ -158,10 +158,10 @@
  		 */
  		public function parseValue($ps_value, $pa_element_info, $pa_options=null) {
  			$vb_require_value = (is_null($pa_element_info['settings']['requireValue'])) ? true : (bool)$pa_element_info['settings']['requireValue'];
- 			
+ 		
  			if (preg_match('![^\d]+!', $ps_value)) {
- 				// try to convert idno to representation_id
- 				if ($vn_id = ca_object_representations::find(array('idno' => $ps_value), array('returnAs' => 'firstId'))) {
+ 				// try to convert idno to entity_id
+ 				if ($vn_id = ca_entities::find(array('idno' => $ps_value), array('returnAs' => 'firstId'))) {
  					$ps_value = $vn_id;
  				}
  			}
@@ -172,13 +172,13 @@
 				);
  			} 
  			if (strlen($ps_value) && !is_numeric($ps_value)) { 
- 				$this->postError(1970, _t('Item_id %2 is not valid for element %1',$pa_element_info["element_code"], $ps_value), 'ObjectRepresentationsAttributeValue->parseValue()');
+ 				$this->postError(1970, _t('Item_id %2 is not valid for element %1',$pa_element_info["element_code"], $ps_value), 'EntitiesAttributeValue->parseValue()');
 				return false;
 			}
- 			$t_item = new ca_object_representations((int)$ps_value);
+ 			$t_item = new ca_entities((int)$ps_value);
  			if (!$t_item->getPrimaryKey()) {
  				if ($ps_value) {
- 					$this->postError(1970, _t('%1 is not a valid representation_id for %2 [%3]', $ps_value, $pa_element_info['displayLabel'], $pa_element_info['element_code']), 'ObjectRepresentationsAttributeValue->parseValue()');
+ 					$this->postError(1970, _t('%1 is not a valid entity_id for %2 [%3]', $ps_value, $pa_element_info['displayLabel'], $pa_element_info['element_code']), 'EntitiesAttributeValue->parseValue()');
  				} else {
  					return null;
  				}
@@ -228,12 +228,12 @@
 
 			$va_params = array('max' => 50);
 			if ($pa_options['request']) {
-				if($vs_restrict_to_type = caGetOption('restrictToRepresentationTypeIdno', $pa_element_info['settings'], null)) { 
+				if($vs_restrict_to_type = caGetOption('restrictToEntityTypeIdno', $pa_element_info['settings'], null)) { 
 					$va_params = array("type" => $vs_restrict_to_type);
 				} else {
 					$va_params = null;
 				}
-				$vs_url = caNavUrl($pa_options['request'], 'lookup', 'ObjectRepresentation', 'Get', $va_params);
+				$vs_url = caNavUrl($pa_options['request'], 'lookup', 'Entity', 'Get', $va_params);
 			} else {
 				// no lookup is possible
 				return $this->getDisplayValue();
@@ -278,7 +278,7 @@
 									event.preventDefault();
 								},
 								change: function( event, ui ) {
-									//If nothing has been selected remove all content from autocompleter text input
+									//If nothing has been selected remove all content from  text input
 									if(!jQuery('#{fieldNamePrefix}{$pa_element_info['element_id']}_{n}').val()) {
 										jQuery('#{fieldNamePrefix}{$pa_element_info['element_id']}_autocomplete{n}').val('');
 									}
@@ -295,7 +295,7 @@
  		public function getAvailableSettings() {
  			global $_ca_attribute_settings;
  			
- 			return $_ca_attribute_settings['ObjectRepresentationsAttributeValue'];
+ 			return $_ca_attribute_settings['EntitiesAttributeValue'];
  		}
  		# ------------------------------------------------------------------
 		/**

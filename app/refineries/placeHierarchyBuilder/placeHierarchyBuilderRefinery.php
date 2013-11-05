@@ -97,15 +97,15 @@
 		# -------------------------------------------------------
 	}
 	
-	 BaseRefinery::$s_refinery_settings['placeHierarchyBuilder'] = array(	
-			'placeHierarchyBuilder_parents' => array(
-				'formatType' => FT_TEXT,
-				'displayType' => DT_SELECT,
-				'width' => 10, 'height' => 1,
-				'takesLocale' => false,
-				'default' => '',
-				'label' => _t('Parents'),
-				'description' => _t('Place parents to create')
-			)
-		);
+	BaseRefinery::$s_refinery_settings['placeHierarchyBuilder'] = array(	
+		'placeHierarchyBuilder_parents' => array(
+			'formatType' => FT_TEXT,
+			'displayType' => DT_SELECT,
+			'width' => 10, 'height' => 1,
+			'takesLocale' => false,
+			'default' => '',
+			'label' => _t('Parents'),
+			'description' => _t('Place parents to create')
+		)
+	);
 ?>

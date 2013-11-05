@@ -633,7 +633,8 @@
 		'id' => ($vs_display_type == 'media_overlay') ? 'caMediaOverlayContentMedia' : 'caMediaDisplayContentMedia', 
 		'viewer_base_url' => $this->request->getBaseUrlPath(),
 		'annotation_load_url' => caNavUrl($this->request, 'editor/objects', 'ObjectEditor', 'GetAnnotations', array('representation_id' => (int)$t_rep->getPrimaryKey(), 'object_id' => (int)$t_object->getPrimaryKey())),
-		'annotation_save_url' => caNavUrl($this->request, 'editor/objects', 'ObjectEditor', 'SaveAnnotations', array('representation_id' => (int)$t_rep->getPrimaryKey(), 'object_id' => (int)$t_object->getPrimaryKey()))
+		'annotation_save_url' => caNavUrl($this->request, 'editor/objects', 'ObjectEditor', 'SaveAnnotations', array('representation_id' => (int)$t_rep->getPrimaryKey(), 'object_id' => (int)$t_object->getPrimaryKey())),
+		'help_load_url' => caNavUrl($this->request, 'editor/objects', 'ObjectEditor', 'ViewerHelp', array())
 	)));
 	# --- should the media be clickable to open the overlay?
 	if($va_display_options['no_overlay'] || ($vs_display_type == 'media_overlay') || ($vs_display_type == 'media_editor')){

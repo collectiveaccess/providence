@@ -153,6 +153,12 @@ class SearchIndexer extends SearchBase {
 	public function reindex($pa_table_names=null, $pa_options=null) {
 		define('__CollectiveAccess_IS_REINDEXING__', 1);
 		$t_timer = new Timer();
+		
+		
+		$pb_display_progress = isset($pa_options['showProgress']) ? (bool)$pa_options['showProgress'] : true;
+		$pb_interactive_display = isset($pa_options['interactiveProgressDisplay']) ? (bool)$pa_options['interactiveProgressDisplay'] : false;
+		$ps_callback = isset($pa_options['callback']) ? (string)$pa_options['callback'] : false;
+		
 		if ($pa_table_names) {
 			if (!is_array($pa_table_names)) { $pa_table_names = array($pa_table_names); }
 			
@@ -160,6 +166,8 @@ class SearchIndexer extends SearchBase {
 			foreach($pa_table_names as $vs_table) {
 				if ($this->opo_datamodel->tableExists($vs_table)) {
 					$vn_num = $this->opo_datamodel->getTableNum($vs_table);
+					print "\nTRUNCATING {$vs_table}\n\n";
+					$this->opo_engine->truncateIndex($vn_num);
 					$t_instance = $this->opo_datamodel->getInstanceByTableName($vs_table, true);
 					$va_table_names[$vn_num] = array('name' => $vs_table, 'num' => $vn_num, 'displayName' => $t_instance->getProperty('NAME_PLURAL'));
 				}
@@ -171,10 +179,6 @@ class SearchIndexer extends SearchBase {
 			$va_table_names = $this->getIndexedTables();
 		}
 		
-		$pb_display_progress = isset($pa_options['showProgress']) ? (bool)$pa_options['showProgress'] : true;
-		$pb_interactive_display = isset($pa_options['interactiveProgressDisplay']) ? (bool)$pa_options['interactiveProgressDisplay'] : false;
-		$ps_callback = isset($pa_options['callback']) ? (string)$pa_options['callback'] : false;
-		
 		$o_db = $this->opo_db;
 		
 		if ($pb_display_progress || $ps_callback) {
@@ -184,14 +188,12 @@ class SearchIndexer extends SearchBase {
 			}
 			if ($pb_display_progress) {
 				print "\nWILL INDEX [".join(", ", $va_names)."]\n\n";
-				$vn_last_message_length = 0;
 			}
 		}
 		
 		$vn_tc = 0;
 		foreach($va_table_names as $vn_table_num => $va_table_info) {
 			$vs_table = $va_table_info['name'];
-			
 			$t_table_timer = new Timer();
 			$t_instance = $this->opo_datamodel->getInstanceByTableName($vs_table, true);
 			$vs_table_pk = $t_instance->primaryKey();
@@ -967,7 +969,8 @@ if (!$vb_can_do_incremental_indexing || $pb_reindex_mode) {
 						if (!is_array($va_row_to_reindex['row_ids'])) { continue; }
 						
 						$va_content = $this->_genHierarchicalPath($va_row_to_reindex['field_row_id'], $va_row_to_reindex['field_name'], $this->opo_datamodel->getInstanceByTableNum($va_row_to_reindex['field_table_num'], true), array());
-						$vs_content = join(" ", $va_content['values']);
+						
+						$vs_content = is_array($va_content['values']) ? join(" ", $va_content['values']) : "";
 						
 						$this->opo_engine->updateIndexingInPlace($va_row_to_reindex['table_num'], $va_row_to_reindex['row_ids'], $va_row_to_reindex['field_table_num'], $va_row_to_reindex['field_num'], $va_row_to_reindex['field_row_id'], $vs_content, array_merge($va_row_to_reindex['indexing_info'], array('literalContent' => $va_content['path'])));
 			

@@ -76,12 +76,6 @@ if (!$this->getVar('no_hierarchies_defined')) {
 			$vn_w = floor(100/sizeof($va_display_list));
 			while(($vn_item_count < $vn_items_per_page) && $vo_result->nextHit()) {
 				$vn_place_id = $vo_result->get('place_id');
-	
-				if($vo_ar->userCanAccess($this->request->user->getUserID(), array("editor","places"), "PlaceEditor", "Edit", array("place_id" => $vn_place_id))){
-					$vs_action = "Edit";
-				} else {
-					$vs_action = "Summary";
-				}
 				
 				($i == 2) ? $i = 0 : "";
 ?>
@@ -90,7 +84,7 @@ if (!$this->getVar('no_hierarchies_defined')) {
 						<input type='checkbox' name='add_to_set_ids' value='<?php print (int)$vn_place_id; ?>' class="addItemToSetControl" />
 					</td>
 <?php
-					print "<td style='width:17%;'>".caNavLink($this->request, caNavIcon($this->request, __CA_NAV_BUTTON_EDIT__), '', 'editor/places', 'PlaceEditor', $vs_action, array('place_id' => $vn_place_id));
+					print "<td style='width:5%;'>".caEditorLink($this->request, caNavIcon($this->request, __CA_NAV_BUTTON_EDIT__), '', 'ca_places', $vn_place_id, array())."</td>";
 					if ($vs_mode == 'search') { 
 						print " <a href='#' onclick='caOpenBrowserWith(".$vn_place_id.");'>".caNavIcon($this->request, __CA_NAV_BUTTON_HIER__)."</a>";
 					}

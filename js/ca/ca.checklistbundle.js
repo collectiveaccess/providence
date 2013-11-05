@@ -89,10 +89,10 @@ var caUI = caUI || {};
 				var boundsViolation = !that.checkMaxMin();
 				
 				if (boundsViolation) {
-					jQuery(this).attr('checked', !jQuery(this).attr('checked'));
+					jQuery(this).prop('checked', !jQuery(this).prop('checked'));
 				} else {
 					that.showUnsavedChangesWarning(true);
-					if (jQuery(this).attr('checked')) {
+					if (jQuery(this).prop('checked')) {
 						jQuery(jQuery(this).attr('id') + "_delete").remove();
 					} else {
 						that.deleteValue(jQuery(this).attr('id'));
@@ -109,12 +109,12 @@ var caUI = caUI || {};
 			// check current values
 			jQuery.each(initialValues, function(i, v) {
 				// If they are current rename them to be active values (eg. as if they were separate generic bundle values)
-				jQuery(that.container + " input[value=" + (v[that.templateValues[0]]) + "]").attr('checked', true).attr('id', that.fieldNamePrefix + (that.templateValues[0]) + "_" + i).attr('name', that.fieldNamePrefix + (that.templateValues[0]) + "_" + i);
+				jQuery(that.container + " input[value=" + (v[that.templateValues[0]]) + "]").prop('checked', true).attr('id', that.fieldNamePrefix + (that.templateValues[0]) + "_" + i).attr('name', that.fieldNamePrefix + (that.templateValues[0]) + "_" + i);
 			});
 			
 			if (this.readonly) {
-				jQuery(this.container + " input").attr("disabled", true);
-				jQuery(this.container + " select").attr("disabled", true);
+				jQuery(this.container + " input").prop("disabled", true);
+				jQuery(this.container + " select").prop("disabled", true);
 			}
 		}
 		
