@@ -688,7 +688,6 @@ class SearchResult extends BaseObject {
 				case 'children':
 					if ($t_instance->isHierarchical()) {
 						//unset($va_path_components['components'][1]);	// remove 'children' from field path
-						
 						$vs_field_spec = join('.', array_values($va_path_components['components']));
 						if ($vn_id = $this->get($va_path_components['table_name'].'.'.$t_instance->primaryKey(), array('returnAsArray' => false))) {
 							if($t_instance->load($vn_id)) {
@@ -757,11 +756,18 @@ class SearchResult extends BaseObject {
 						$vs_field_spec = join('.', array_values($va_path_components['components']));
 						$vs_hier_pk_fld = $t_instance->primaryKey();
 						if ($va_ids = $this->get($va_path_components['table_name'].'.'.$vs_hier_pk_fld, array_merge($pa_options, array('returnAsArray' => true, 'returnAsLink'=> false)))) {
-							if ($va_path_components['field_name'] == $vs_hier_pk_fld) {
-								$va_vals = $va_ids;
-							} else {
-								$va_vals = array();
+						
+							$va_vals = array();
+							if ($va_path_components['subfield_name'] == $vs_hier_pk_fld) {
 								foreach($va_ids as $vn_id) {
+									// TODO: This is too slow
+									if($t_instance->load($vn_id)) {
+										$va_vals = array_merge($va_vals, $t_instance->get($va_path_components['table_name'].".hierarchy.".$vs_hier_pk_fld, $pa_options));
+									}
+								}
+							} else {
+								foreach($va_ids as $vn_id) {
+									// TODO: This is too slow
 									if($t_instance->load($vn_id)) {
 										$va_vals[] = $t_instance->get($vs_field_spec.".preferred_labels", $pa_options);
 									}
