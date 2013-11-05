@@ -6869,7 +6869,7 @@
       </settings>
       <typeRestrictions>
         <restriction>
-          <table>ca_objects</table>
+          <table>ca_occurrences</table>
           <settings>
             <setting name="minAttributesPerRow">0</setting>
             <setting name="maxAttributesPerRow">255</setting>
@@ -7923,8 +7923,7 @@
             <setting name="fieldHeight">1</setting>
           </settings>
         </metadataElement>
-        <metadataElement code="essenceTrackSamplingRate" datatype="List"
-          list="essence_track_sampling">
+        <metadataElement code="essenceTrackSamplingRate" datatype="List" list="essence_track_sampling">
           <labels>
             <label locale="en_US">
               <name>essenceTrackSamplingRate</name>
@@ -10264,6 +10263,9 @@
             </label>
           </labels>
           <bundlePlacements>
+             <placement code="ca_attribute_legacyLocation">
+              <bundle>ca_attribute_legacyLocation</bundle>
+            </placement>
             <placement code="ca_attribute_georeference">
               <bundle>ca_attribute_georeference</bundle>
             </placement>
