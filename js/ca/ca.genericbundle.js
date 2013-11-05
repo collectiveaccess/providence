@@ -212,11 +212,11 @@ var caUI = caUI || {};
 				
 				var info = element_id.match(fieldRegex);
 				if (info && info[2] && (parseInt(info[2]) == id)) {
-					jQuery(this.container + " #" + element_id).attr('checked', false);
+					jQuery(this.container + " #" + element_id).prop('checked', false);
 					if (typeof(this.initialValues[id][info[1]]) == 'boolean') {
 						this.initialValues[id][info[1]] = (this.initialValues[id][info[1]]) ? '1' : '0';
 					}
-					jQuery(this.container + " #" + element_id + "[value=" + this.initialValues[id][info[1]] +"]").attr('checked', true);
+					jQuery(this.container + " #" + element_id + "[value=" + this.initialValues[id][info[1]] +"]").prop('checked', true);
 				}
 			}
 			
@@ -234,7 +234,7 @@ var caUI = caUI || {};
 					if (typeof(this.initialValues[id][info[1]]) == 'boolean') {
 						this.initialValues[id][info[1]] = (this.initialValues[id][info[1]]) ? '1' : '0';
 					}
-					jQuery(this.container + " #" + element_id + "[value=" + this.initialValues[id][info[1]] +"]").attr('checked', true);
+					jQuery(this.container + " #" + element_id + "[value=" + this.initialValues[id][info[1]] +"]").prop('checked', true);
 				}
 			}
 			
@@ -330,9 +330,9 @@ var caUI = caUI || {};
 			}
 			
 			if (this.readonly) {
-				jQuery(this.container + " input").attr("disabled", true);
-				jQuery(this.container + " textarea").attr("disabled", true);
-				jQuery(this.container + " select").attr("disabled", true);
+				jQuery(this.container + " input").prop("disabled", true);
+				jQuery(this.container + " textarea").prop("disabled", true);
+				jQuery(this.container + " select").prop("disabled", true);
 			}
 			
 			return this;

@@ -22,46 +22,210 @@
 	color: #cc0000
 }
 
-.tileviewer p.viewerControls {
-	width: 160px;
-	height: 24px;
+.tileviewer div.viewerControls {
+	width: 36px;
 	position: absolute;
-	top: 8px;
-	right: 7px;
-	border: solid 1px #000000;
-	padding: 5px;
-	background-color: rgba(255, 255, 255, 0.7);
-	
-	opacity: 0.7;
-	
-	-moz-border-radius: 8px; 
-	-webkit-border-radius: 8px;
-}
-
-.tileviewer p.viewerControlsWithAnnotations .tileViewToolbarRow {
-	margin-bottom: 5px;
-	padding: 0px;
-}
-
-.tileviewer p.viewerControlsWithAnnotations {
-	width: 150px;
-	height: 62px;
-	position: absolute;
-	top: 8px;
-	right: 7px;
-	border: solid 1px #000000;
+	top: 0px;
+	left: 0px;
 	padding: 3px;
-	background-color: rgba(255, 255, 255, 0.7);
+	background-color: rgba(0, 0, 0, 0.5);
 	
-	opacity: 0.7;
+	opacity: 0.85;
 	
-	-moz-border-radius: 8px; 
-	-webkit-border-radius: 8px;
+	-webkit-border-bottom-right-radius: 6px;
+	-moz-border-radius-bottomright: 6px;
+	border-bottom-right-radius: 6px;
 }
 
-.tileviewer p a.tileviewerControl {
-	margin:0 5px 0 5px;
-	opacity: 0.5;
+.tileviewer div a.tileviewerControl {
+	position: relative;
+	display: block;
+	margin:5px 0 8px 0;
+}
+
+.tileviewerControlDivider {
+	border-bottom: 2px #fff solid;
+	margin: 7px 0 12px 0;
+	opacity: 0.25;
+}
+
+.tileviewer div.tileviewerAnnotationTextBlock {
+	position: absolute;
+	
+	display: none;
+	
+	min-width: 30px;
+	min-height: 10px;
+	max-height: 30px;
+	overflow: auto;
+	line-height: 12px;
+	padding: 5px;
+	border: 1px solid #999;
+	background: #f0f0f0;
+	opacity: 0.85;
+	
+	-webkit-border-radius: 5px;
+	-moz-border-radius: 5px;
+	border-radius: 5px;
+	
+	-webkit-box-shadow: 4px 4px 5px rgba(50, 50, 50, 0.75);
+	-moz-box-shadow:    4px 4px 5px rgba(50, 50, 50, 0.75);
+	box-shadow:         4px 4px 5px rgba(50, 50, 50, 0.75);
+}
+
+.tileviewer div.tileviewerAnnotationTextEditor {
+	position: absolute;
+	top: 0px;
+	left: 0px;
+	
+	display: none;
+	
+	min-width: 120px;
+	border: 0px solid #cc0000;
+	background: #ccc;
+	opacity: 0.7;
+	padding: 0px;
+	min-height: 30px;
+	
+	-webkit-border-radius: 5px;
+	-moz-border-radius: 5px;
+	border-radius: 5px;
+	
+	-webkit-box-shadow: 4px 4px 5px rgba(50, 50, 50, 0.75);
+	-moz-box-shadow:    4px 4px 5px rgba(50, 50, 50, 0.75);
+	box-shadow:         4px 4px 5px rgba(50, 50, 50, 0.75);
+}
+
+.tileviewer div.tileviewerAnnotationTextBlock div.textContent {
+	font-size: 10px;
+	padding: 0px;
+	line-height: 12px;
+	text-align: center;	
+	width: 90%;
+	height: 90%;
+	margin: 5% 5% 5% 5%;
+}
+
+.tileviewer div.tileviewerAnnotationTextEditor div.textContent {
+	font-size: 10px;
+	padding: 0px;
+	line-height: 12px;
+	margin: 3% 0% 3% 5%;
+	width: 120px;
+}
+
+span.tileviewerAnnotationDefaultText {
+	font-size: 10px;
+	font-style: italic;
+	color: #999;
+}
+
+.tileviewer div.tileviewerAnnotationTextEditor div.textContentDeleteButton {
+	float: right;
+	width: 16px;
+	height: 16px;
+}
+
+#tileviewerAnnotationTextLabel {
+	font-size: 10px;
+	line-height: 12px;
+	width: 90px;
+	height: 75%;
+	
+	padding: 0px;
+	border: none;
+}
+
+.tileViewToolbarZoom {
+	position: absolute;
+	border: 0px solid #cc0000;
+	top: 0px;
+	left: 200px;
+	width: 500px;
+}
+
+.tileviewerControlZoomOut {
+	position: absolute;
+	left: 2px;
+	top: 2px;
+
+}
+
+.tileviewerControlZoomIn {
+	position: absolute;
+	right: 2px;
+	top: 2px;
+}
+
+.tileViewToolbarZoomSlider {
+	position: absolute;
+	width: 420px;
+	
+	left: 40px;
+	top: 6px;
+}
+
+.ui-slider a {outline:none;}
+
+#tileviewerHelpPanel {
+	position: absolute;
+	top: 0px; left: 0px;
+	width: 750px;
+	height: 425px;
+	
+	overflow: auto;
+	line-height: 12px;
+	padding: 5px;
+	border: 1px solid #999;
+	background: #f0f0f0;
+	opacity: 0.85;
+	
+	z-index: 999999;
+	
+	-webkit-border-radius: 5px;
+	-moz-border-radius: 5px;
+	border-radius: 5px;
+	
+	-webkit-box-shadow: 4px 4px 5px rgba(50, 50, 50, 0.75);
+	-moz-box-shadow:    4px 4px 5px rgba(50, 50, 50, 0.75);
+	box-shadow:         4px 4px 5px rgba(50, 50, 50, 0.75);
+}
+
+#tileviewerHelpPanel div.content {
+	padding: 0 10px 0 10px;
+}
+#tileviewerHelpPanel div.close {
+	float: right;
+}
+
+ul.tileviewerHelpList {
+	list-style-type: none;
+	text-align: left;
+}
+
+.tileviewerHelpList li {
+	padding: 2px;
+}
+
+.tileviewerHelpText {
+	text-align: left;
+}
+
+code {
+    margin: 0 2px;
+    padding: 0px 5px;
+    border: 1px solid #ddd;
+    background-color: #f8f8f8;
+    border-radius: 3px;
+     white-space: nowrap;
+}
+
+pre>code {
+    margin: 0;
+    padding: 0;
+    white-space: pre;
+    border: none;
+    background: transparent
 }
 
 /*

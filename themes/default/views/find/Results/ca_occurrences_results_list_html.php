@@ -73,12 +73,6 @@
 			$vn_w = floor(100/sizeof($va_display_list));
 			while(($vn_item_count < $vn_items_per_page) && $vo_result->nextHit()) {
 				$vn_occurrence_id = $vo_result->get('occurrence_id');
-	
-				if($vo_ar->userCanAccess($this->request->user->getUserID(), array("editor","occurrences"), "OccurrenceEditor", "Edit", array("occurrence_id" => $vn_occurrence_id))){
-					$vs_action = "Edit";
-				} else {
-					$vs_action = "Summary";
-				}
 				
 				($i == 2) ? $i = 0 : "";
 	?>
@@ -87,7 +81,7 @@
 						<input type='checkbox' name='add_to_set_ids' value='<?php print (int)$vn_occurrence_id; ?>' class="addItemToSetControl" />
 					</td>
 	<?php
-					print "<td style='width:5%;'>".caNavLink($this->request, caNavIcon($this->request, __CA_NAV_BUTTON_EDIT__), '', 'editor/occurrences', 'OccurrenceEditor', $vs_action, array('occurrence_id' => $vn_occurrence_id))."</td>";
+					print "<td style='width:5%;'>".caEditorLink($this->request, caNavIcon($this->request, __CA_NAV_BUTTON_EDIT__), '', 'ca_occurrences', $vn_occurrence_id, array())."</td>";
 					foreach($va_display_list as $vn_placement_id => $va_display_item) {
 						print "<td>".$t_display->getDisplayValue($vo_result, $vn_placement_id, array('request' => $this->request))."</td>";
 					}

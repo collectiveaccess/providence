@@ -123,7 +123,7 @@
  		}
  		# ------------------------------------------------------------------
  		/**
- 		 * Will return plural value of list item unless useSingular option is set to true, in which case singular version of list item label will be used.
+ 		 * 
  		 *
  		 * @param array Optional array of options. Support options are:
  		 *			template = 
@@ -139,7 +139,7 @@
 				$vs_default_template = "^ca_object_representations.preferred_labels.name ^ca_object_representations.media.icon";
 			}			
 			$ps_template = (string)caGetOption('template', $pa_options, $vs_default_template);
-			$vb_include_id = (bool)caGetOption('includeID', $pa_options, true);
+			$vb_include_id = (bool)caGetOption('includeID', $pa_options, false);
 			$vb_ids_only = (bool)caGetOption('idsOnly', $pa_options, false);
 			
 			if ($vb_ids_only) { return $this->opn_representation_id; }
@@ -160,8 +160,8 @@
  			$vb_require_value = (is_null($pa_element_info['settings']['requireValue'])) ? true : (bool)$pa_element_info['settings']['requireValue'];
  			
  			if (preg_match('![^\d]+!', $ps_value)) {
- 				// try to convert idno to item_id
- 				if ($vn_id = ca_lists::getItemID($pa_element_info['list_id'], $ps_value)) {
+ 				// try to convert idno to representation_id
+ 				if ($vn_id = ca_object_representations::find(array('idno' => $ps_value), array('returnAs' => 'firstId'))) {
  					$ps_value = $vn_id;
  				}
  			}
@@ -180,15 +180,11 @@
  				if ($ps_value) {
  					$this->postError(1970, _t('%1 is not a valid representation_id for %2 [%3]', $ps_value, $pa_element_info['displayLabel'], $pa_element_info['element_code']), 'ObjectRepresentationsAttributeValue->parseValue()');
  				} else {
- 					//$this->postError(1970, _t('Value %1 [%2] cannot be blank', $pa_element_info['displayLabel'], $pa_element_info['element_code']), 'ObjectRepresentationsAttributeValue->parseValue()');
  					return null;
  				}
 				return false;
  			}
- 			//if ((int)$t_item->get('list_id') != (int)$pa_element_info['list_id']) {
- 			//	$this->postError(1970, _t('Item is not in the correct list'), 'ObjectRepresentationsAttributeValue->parseValue()');
-			//	return false;
- 			//}
+ 			
  			return array(
  				'value_longtext1' => $ps_value,
  				'value_integer1' => (int)$ps_value
@@ -264,7 +260,7 @@
 									$.ajax({
 										url: '{$vs_url}',
 										dataType: 'json',
-										data: { term: request.term },
+										data: { term: request.term, quickadd: 0, noInline: 1 },
 										success: function( data ) {
 											response(data);
 										}
@@ -272,19 +268,19 @@
 								}, 
 								select: function( event, ui ) {
 									if(!parseInt(ui.item.id) || (ui.item.id <= 0)) {
-										jQuery('#' + autocompleter_id).val('');  // no matches so clear text input
+										jQuery('#{fieldNamePrefix}{$pa_element_info['element_id']}_autocomplete{n}').val('');  // no matches so clear text input
 										event.preventDefault();
 										return;
 									}
 						
 									jQuery('#{fieldNamePrefix}{$pa_element_info['element_id']}_{n}').val(ui.item.id);
-									jQuery('#{fieldNamePrefix}{$pa_element_info['element_id']}__autocomplete{n}').val(jQuery.trim(ui.item.label.replace(/<\/?[^>]+>/gi, '')));
+									jQuery('#{fieldNamePrefix}{$pa_element_info['element_id']}_autocomplete{n}').val(jQuery.trim(ui.item.label.replace(/<\/?[^>]+>/gi, '')));
 									event.preventDefault();
 								},
 								change: function( event, ui ) {
 									//If nothing has been selected remove all content from autocompleter text input
-									if(!jQuery('#' + options.itemID + id + ' #' + options.fieldNamePrefix + 'id' + id).val()) {
-										jQuery('#' + autocompleter_id).val('');
+									if(!jQuery('#{fieldNamePrefix}{$pa_element_info['element_id']}_{n}').val()) {
+										jQuery('#{fieldNamePrefix}{$pa_element_info['element_id']}_autocomplete{n}').val('');
 									}
 								}
 							}

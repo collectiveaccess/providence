@@ -32,7 +32,7 @@
 	$vn_items_per_page 		= $this->getVar('current_items_per_page');
 	$vs_current_sort 		= $this->getVar('current_sort');
 	$vs_default_action		= $this->getVar('default_action');
-	$vo_ar				= $this->getVar('access_restrictions');
+	$vo_ar					= $this->getVar('access_restrictions');
 	
 ?>
 <div id="scrollingResults">
@@ -80,11 +80,8 @@
 						<input type='checkbox' name='add_to_set_ids' value='<?php print (int)$vn_object_id; ?>' class="addItemToSetControl" />
 					</td>
 	<?php
-					if($vo_ar->userCanAccess($this->request->user->getUserID(), array("editor","objects"), "ObjectEditor", "Edit", array("object_id" => $vn_object_id))){
-						print "<td style='width:5%;'>".caNavLink($this->request, caNavIcon($this->request, __CA_NAV_BUTTON_EDIT__), '', 'editor/objects', 'ObjectEditor', "Edit", array('object_id' => $vn_object_id))."</td>";
-					} else {
-						print "<td style='width:5%;'>".caNavLink($this->request, caNavIcon($this->request, __CA_NAV_BUTTON_EDIT__), '', 'editor/objects', 'ObjectEditor', "Summary", array('object_id' => $vn_object_id))."</td>";
-					}
+					print "<td style='width:5%;'>".caEditorLink($this->request, caNavIcon($this->request, __CA_NAV_BUTTON_EDIT__), '', 'ca_objects', $vn_object_id, array(), array())."</td>";;
+		
 					
 					foreach($va_display_list as $vn_placement_id => $va_display_item) {
 						print "<td>".$t_display->getDisplayValue($vo_result, $vn_placement_id, array('request' => $this->request))."</td>";

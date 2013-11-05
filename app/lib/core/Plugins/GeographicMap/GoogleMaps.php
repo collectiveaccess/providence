@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2010-2011 Whirl-i-Gig
+ * Copyright 2010-2013 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -48,6 +48,8 @@ class WLPlugGeographicMapGoogleMaps Extends BaseGeographicMapPlugIn Implements I
 		$this->info['NAME'] = 'GoogleMaps';
 		
 		$this->description = _t('Generates maps using the GoogleMaps API');
+		
+		JavascriptLoadManager::register("maps");
 	}
 	# ------------------------------------------------
 	/**
@@ -66,11 +68,14 @@ class WLPlugGeographicMapGoogleMaps Extends BaseGeographicMapPlugIn Implements I
 	 *		minZoomLevel - Minimum zoom level to allow; leave null if you don't want to enforce a limit
 	 *		maxZoomLevel - Maximum zoom level to allow; leave null if you don't want to enforce a limit
 	 *		zoomLevel - Zoom map to specified level rather than fitting all markers into view; leave null if you don't want to specify a zoom level. IF this option is set minZoomLevel and maxZoomLevel will be ignored.
+	 *		balloonView -
 	 *		pathColor - 
 	 *		pathWeight -
 	 *		pathOpacity - 
 	 */
 	public function render($ps_format, $pa_options=null) {
+		$o_config = Configuration::load();
+		
 		list($vn_width, $vn_height) = $this->getDimensions();
 		$vn_width = intval($vn_width);
 		$vn_height = intval($vn_height);
@@ -85,15 +90,17 @@ class WLPlugGeographicMapGoogleMaps Extends BaseGeographicMapPlugIn Implements I
 		$vn_min_zoom_level = (isset($pa_options['minZoomLevel']) && ((int)$pa_options['minZoomLevel'] > 0)) ? (int)$pa_options['minZoomLevel'] : null;
 		$vn_max_zoom_level = (isset($pa_options['maxZoomLevel']) && ((int)$pa_options['maxZoomLevel'] > 0)) ? (int)$pa_options['maxZoomLevel'] : null;
 		
-		$vs_path_color = (isset($pa_options['pathColor'])) ? $pa_options['pathColor'] : '#cc0000';
+		$vs_path_color = (isset($pa_options['pathColor'])) ? $pa_options['pathColor'] : $this->opo_config->get('google_maps_path_color');
 		$vn_path_weight = (isset($pa_options['pathWeight']) && ((int)$pa_options['pathWeight'] > 0)) ? (int)$pa_options['pathWeight'] : 2;
 		$vn_path_opacity = (isset($pa_options['pathOpacity']) && ((int)$pa_options['pathOpacity'] >= 0)  && ((int)$pa_options['pathOpacity'] <= 1)) ? (int)$pa_options['pathOpacity'] : 0.5;
 		
+		$vs_balloon_view = (isset($pa_options['balloonView'])) ? $pa_options['balloonView'] : null;
 		
 		$vs_type = (isset($pa_options['mapType'])) ? strtoupper($pa_options['mapType']) : strtoupper($this->opo_config->get('google_maps_default_type'));
 		if (!in_array($vs_type, array('ROADMAP', 'SATELLITE', 'HYBRID', 'TERRAIN'))) {
 			$vs_type = 'SATELLITE';
 		}
+		$vs_type = strtolower($vs_type);
 		if (!$vs_id = trim($this->get('id'))) { $vs_id = 'map'; }
 		
 		switch(strtoupper($ps_format)) {
@@ -150,10 +157,35 @@ class WLPlugGeographicMapGoogleMaps Extends BaseGeographicMapPlugIn Implements I
 				
 				$vs_buf = "<div style='width:{$vn_width}px; height:{$vn_height}px' id='{$vs_id}'> </div>\n
 <script type='text/javascript'>
+	var caMap_{$vs_id};
+	var GeoMarker_{$vs_id};
 jQuery(document).ready(function() {
-	var caMap_{$vs_id} = caUI.initGoogleMap({id: '{$vs_id}', mapType: '{$vs_type}', navigationControl: {$vb_show_navigation_control} , mapTypeControl: {$vb_show_map_type_control}, scaleControl: {$vb_show_scale_control}});
+	caMap_{$vs_id} = caUI.initGoogleMap({id: '{$vs_id}', mapType: '{$vs_type}', zoomControl: true, navigationControl: {$vb_show_navigation_control} , mapTypeControl: {$vb_show_map_type_control}, scaleControl: {$vb_show_scale_control}});
 	var caMap_{$vs_id}_markers = [];
 	var caMap_{$vs_id}_current_marker = -1;
+
+		var styles = [
+		  {
+			stylers: [
+
+			  { saturation: -100 },
+
+			]
+		  },{
+			featureType: 'road',
+			elementType: 'geometry',
+			stylers: [
+			  { lightness: 100 },
+			  { visibility: 'simplified' }
+			]
+		  }
+		];
+		
+
+			caMap_{$vs_id}.map.setOptions({styles: styles});
+			var mc_{$vs_id} = new MarkerClusterer(caMap_{$vs_id}.map, [], {maxZoom: 14});
+			GeoMarker_{$vs_id} = new GeolocationMarker(caMap_{$vs_id}.map);
+			GeoMarker_{$vs_id}.setCircleOptions({ fillColor: 'red', radius: '100', visible: true, map: caMap_{$vs_id}.map});
 ";
 	
 	if ($vn_zoom_level > 0) {
@@ -212,7 +244,20 @@ jQuery(document).ready(function() {
 					$va_buf[md5($va_marker_content_item['content'])] = $va_marker_content_item['content'];	// md5 is to ensure there is no duplicate content (eg. if something is mapped to the same location twice)
 				}	
 				if (!($vn_latitude && $vn_longitude)) { continue; }
-				$vs_buf .= "	caMap_{$vs_id}_markers.push(caMap_{$vs_id}.makeMarker(".$vn_latitude.", ".$vn_longitude.", '".preg_replace("![\n\r]+!", " ", addslashes($vs_label))."', '".preg_replace("![\n\r]+!", " ", addslashes(join($vs_delimiter, $va_buf)))."', '".preg_replace("![\n\r]+!", " ", ($vs_ajax_content_url ? addslashes($vs_ajax_content_url."/id/".join(';', $va_ajax_ids)) : ''))."'));\n";
+				
+				if ($vs_balloon_view && isset($pa_options['request']) && $pa_options['request']) {
+					$o_view = new View($pa_options['request'],(isset($pa_options['viewPath']) && $pa_options['viewPath']) ? $pa_options['viewPath'] : $pa_options['request']->getViewsDirectoryPath());
+					$o_view->setVar("content", join($vs_delimiter, $va_buf));
+					$o_view->setVar("contentList", $va_buf);
+					$o_view->setVar("ids", $va_ajax_ids);
+					$vs_balloon_content = $o_view->render($vs_balloon_view);
+				} else {
+					$vs_balloon_content = join($vs_delimiter, $va_buf);
+				}
+				
+				$vs_buf .= "	var m = caMap_{$vs_id}.makeMarker(".$vn_latitude.", ".$vn_longitude.", '".preg_replace("![\n\r]+!", " ", addslashes($vs_label))."', '".preg_replace("![\n\r]+!", " ", addslashes($vs_balloon_content))."', '".preg_replace("![\n\r]+!", " ", ($vs_ajax_content_url ? addslashes($vs_ajax_content_url."/_ajax/1/id/".join(';', $va_ajax_ids)) : ''))."', {icon: '".$o_config->get("themes_url")."/".(defined("__CA_THEME__") ? __CA_THEME__ : $o_config->get('theme'))."/graphics/blu-pointer.png'} );\n";
+				$vs_buf .= "	caMap_{$vs_id}_markers.push(m);\n";
+				$vs_buf .= "	mc_{$vs_id}.addMarker(m);\n";
 			}
 		}
 		
@@ -220,7 +265,7 @@ jQuery(document).ready(function() {
 			$vs_buf .= "caMap_{$vs_id}.makePath([".join(',', $va_path['pathJS'])."], '".preg_replace("![\n\r]+!", " ", addslashes($va_path['label']))."','".preg_replace("![\n\r]+!", " ", addslashes($va_path['content']))."', {strokeColor: '{$vs_path_color}', strokeWeight: {$vn_path_weight}, strokeOpacity: {$vn_path_opacity}});\n";
 		}
 		
-			$vs_buf .= "
+		$vs_buf .= "
 				caMap_{$vs_id}.fitBounds(".$va_extents['north'].",".$va_extents['south'].",".$va_extents['east'].",".$va_extents['west'].");";
 	
 	if (isset($pa_options['cycleRandomly']) && $pa_options['cycleRandomly']) {
@@ -254,8 +299,16 @@ jQuery(document).ready(function() {
 	}
 	
 $vs_buf .= "
-});
-</script>\n";
+	});
+	function clickroute() { 
+		var latLng = GeoMarker_{$vs_id}.getPosition();
+		if (typeof latLng === 'undefined' ) {
+			document.getElementById('helpDiv').style.display = 'block';
+		} else {
+			caMap_{$vs_id}.map.panTo(latLng);
+		}
+	}
+</script>\n"; 
 				break;
 			# ---------------------------------
 		}

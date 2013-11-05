@@ -666,6 +666,7 @@ class ca_object_representations extends BundlableLabelableBaseModelWithAttribute
 			return false;
 		}
 		
+		if (!$ps_title) { $ps_title = "[BLANK]"; }
 		$t_annotation->addLabel(array('name' => $ps_title), $pn_locale_id, null, true);
 		if ($t_annotation->numErrors()) {
 			$this->errors = $t_annotation->errors;
@@ -784,7 +785,9 @@ class ca_object_representations extends BundlableLabelableBaseModelWithAttribute
 				$this->errors = $t_annotation->errors;
 				return false;
 			}
-			
+			if (is_array($pa_properties) && isset($pa_properties['label'])) {
+				$t_annotation->replaceLabel(array('name' => $pa_properties['label']), $pn_locale_id, null, true);
+			}
 			if (isset($pa_options['returnAnnotation']) && (bool)$pa_options['returnAnnotation']) {
 				return $t_annotation;
 			}

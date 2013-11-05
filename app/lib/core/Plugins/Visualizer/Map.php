@@ -82,7 +82,19 @@ class WLPlugVisualizerMap Extends BaseVisualizerPlugIn Implements IWLPlugVisuali
 		$this->opn_num_items_rendered = 0;
 		
 		foreach($pa_viz_settings['sources'] as $vs_source_code => $va_source_info) {
-			$va_ret = $o_map->mapFrom($vo_data, $va_source_info['data'], array('request' => $po_request, 'labelTemplate' => "<p class='vizTitle'>".$va_source_info['display']['title_template']."</div>", 'renderLabelAsLink' => true, 'contentTemplate' => "<p>".$va_source_info['display']['description_template']."</p>"));
+			$vs_color = $va_source_info['color']; 
+			if (method_exists($vo_data, "seek")) { $vo_data->seek(0); }
+			
+			$va_opts = array('renderLabelAsLink' => false, 'request' => $po_request, 'color' => $vs_color);
+			
+			$va_opts['labelTemplate'] = $va_source_info['display']['title_template'];
+			if(isset($va_source_info['display']['ajax_content_url']) && ($va_source_info['display']['ajax_content_url'])) {
+				$va_opts['ajaxContentUrl'] = $va_source_info['display']['ajax_content_url'];
+			} else {
+				$va_opts['contentTemplate'] = $va_source_info['display']['description_template'];
+			}
+			
+			$va_ret = $o_map->mapFrom($vo_data, $va_source_info['data'], $va_opts);
 			if (is_array($va_ret) && isset($va_ret['items'])) {
 				$this->opn_num_items_rendered += (int)$va_ret['items'];
 			}
