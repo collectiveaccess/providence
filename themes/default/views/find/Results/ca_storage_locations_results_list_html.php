@@ -74,12 +74,6 @@ if (!$this->getVar('no_hierarchies_defined')) {
 			
 			while(($vn_item_count < $vn_items_per_page) && $vo_result->nextHit()) {
 				$vn_location_id = $vo_result->get('location_id');
-	
-				if($vo_ar->userCanAccess($this->request->user->getUserID(), array("editor","storage_locations"), "StorageLocationEditor", "Edit", array("location_id" => $vn_location_id))){
-					$vs_action = "Edit";
-				} else {
-					$vs_action = "Summary";
-				}
 				
 				($i == 2) ? $i = 0 : "";
 ?>
@@ -88,7 +82,7 @@ if (!$this->getVar('no_hierarchies_defined')) {
 						<input type='checkbox' name='add_to_set_ids' value='<?php print (int)$vn_location_id; ?>' class="addItemToSetControl" />
 					</td>
 <?php
-					print "<td style='width:17%;'>".caNavLink($this->request, caNavIcon($this->request, __CA_NAV_BUTTON_EDIT__), '', 'editor/storage_locations', 'StorageLocationEditor', $vs_action, array('location_id' => $vn_location_id));
+					print "<td style='width:17%;'>".caEditorLink($this->request, caNavIcon($this->request, __CA_NAV_BUTTON_EDIT__), '', 'ca_storage_locations', $vn_location_id, array())."</td>";
 					if ($vs_mode == 'search') { 
 						print " <a href='#' onclick='caOpenBrowserWith(".$vn_location_id.");'>".caNavIcon($this->request, __CA_NAV_BUTTON_HIER__)."</a>";
 					}

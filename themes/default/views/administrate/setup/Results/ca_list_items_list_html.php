@@ -83,7 +83,7 @@ if (!$this->getVar('no_hierarchies_defined')) {
 				foreach($va_display_list as $vn_placement_id => $va_display_item) {
 					print "<td>".$t_display->getDisplayValue($vo_result, $vn_placement_id)."</td>";
 				}
-				print "<td style='width:5%;'>".caNavLink($this->request, caNavIcon($this->request, __CA_NAV_BUTTON_EDIT__), '', 'administrate/setup/list_item_editor', 'ListItemEditor', 'Edit', array('item_id' => $vn_item_id));
+				print "<td style='width:5%;'>".caEditorLink($this->request, caNavIcon($this->request, __CA_NAV_BUTTON_EDIT__), '', 'ca_list_items', $vn_item_id, array())."</td>";
 				print " <a href='#' onclick='caOpenBrowserWith(".$vn_item_id.");'>".caNavIcon($this->request, __CA_NAV_BUTTON_GO__, null, array('title' => _t('View in hierarchy')))."</a>";
 				print "</td>";		
 ?>	

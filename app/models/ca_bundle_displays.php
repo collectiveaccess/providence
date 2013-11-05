@@ -39,6 +39,7 @@ require_once(__CA_LIB_DIR__.'/ca/BundlableLabelableBaseModelWithAttributes.php')
 require_once(__CA_MODELS_DIR__.'/ca_bundle_displays.php'); 
 require_once(__CA_MODELS_DIR__.'/ca_bundle_display_placements.php'); 
 require_once(__CA_MODELS_DIR__.'/ca_bundle_displays_x_user_groups.php'); 
+require_once(__CA_MODELS_DIR__.'/ca_bundle_display_type_restrictions.php'); 
 require_once(__CA_MODELS_DIR__.'/ca_metadata_elements.php'); 
 require_once(__CA_MODELS_DIR__.'/ca_lists.php'); 
 require_once(__CA_LIB_DIR__."/core/Parsers/htmlpurifier/HTMLPurifier.standalone.php");
@@ -330,6 +331,7 @@ class ca_bundle_displays extends BundlableLabelableBaseModelWithAttributes {
 		$this->BUNDLES['ca_user_groups'] = array('type' => 'special', 'repeating' => true, 'label' => _t('Group access'));
 		$this->BUNDLES['ca_bundle_display_placements'] = array('type' => 'special', 'repeating' => false, 'label' => _t('Display list contents'));
 		$this->BUNDLES['settings'] = array('type' => 'special', 'repeating' => false, 'label' => _t('Display settings'));
+		$this->BUNDLES['ca_bundle_display_type_restrictions'] = array('type' => 'special', 'repeating' => false, 'label' => _t('Type restrictions'));
 	}
 	# ------------------------------------------------------
 	# Display settings
@@ -583,17 +585,20 @@ class ca_bundle_displays extends BundlableLabelableBaseModelWithAttributes {
 	 * Returns list of bundle displays subject to options
 	 * 
 	 * @param array $pa_options Optional array of options. Supported options are:
-	 *			table - if set, list is restricted to displays that pertain to the specified table. You can pass a table name or number. If omitted displays for all tables will be returned.
-	 *			user_id - Restricts returned displays to those accessible by the current user. If omitted then all displays, regardless of access are returned.
-	 *			access - Restricts returned displays to those with at least the specified access level for the specified user. If user_id is omitted then this option has no effect. If user_id is set and this option is omitted, then displays where the user has at least read access will be returned. 
+	 *			table = If set, list is restricted to displays that pertain to the specified table. You can pass a table name or number. If omitted displays for all tables will be returned.
+	 *			user_id = Restricts returned displays to those accessible by the current user. If omitted then all displays, regardless of access are returned.
+	 *			restrictToTypes = Restricts returned displays to those bound to the specified type. Default is to not restrict by type.
+	 *			dontIncludeSubtypesInTypeRestriction = If restrictToTypes is set, controls whether or not subtypes are automatically included in the restriction. Default is false – subtypes are included.
+	 *			access = Restricts returned displays to those with at least the specified access level for the specified user. If user_id is omitted then this option has no effect. If user_id is set and this option is omitted, then displays where the user has at least read access will be returned. 
 	 * @return array Array of displays keyed on display_id and then locale_id. Keys for the per-locale value array include: display_id,  display_code, user_id, table_num,  label_id, name (display name of display), locale_id (locale of display name), bundle_display_content_type (display name of content this display pertains to)
 	 */
 	 public function getBundleDisplays($pa_options=null) {
 		if (!is_array($pa_options)) { $pa_options = array(); }
-		$pm_table_name_or_num = isset($pa_options['table']) ? $pa_options['table'] : null;
-		$pn_user_id = isset($pa_options['user_id']) ? $pa_options['user_id'] : null;
-		$pn_access = isset($pa_options['access']) ? $pa_options['access'] : null;
-		
+		$pm_table_name_or_num = 							caGetOption('table', $pa_options, null);
+		$pn_user_id = 										caGetOption('user_id', $pa_options, null);
+		$pn_access = 										caGetOption('access', $pa_options, null); 
+		$pa_restrict_to_types = 							caGetOption('restrictToTypes', $pa_options, null);
+		$pb_dont_include_subtypes_in_type_restriction = 	caGetOption('dontIncludeSubtypesInTypeRestriction', $pa_options, false);
 		
 	 	$o_dm = $this->getAppDatamodel();
 	 	if ($pm_table_name_or_num && !($vn_table_num = $o_dm->getTableNum($pm_table_name_or_num))) { return array(); }
@@ -601,12 +606,18 @@ class ca_bundle_displays extends BundlableLabelableBaseModelWithAttributes {
 		$o_db = $this->getDb();
 		
 		$va_sql_wheres = array(
-			'((bdl.is_preferred = 1) or (bdl.is_preferred is null))'
+			'((bdl.is_preferred = 1) OR (bdl.is_preferred is null))'
 		);
 		if ($vn_table_num > 0) {
 			$va_sql_wheres[] = "(bd.table_num = ".intval($vn_table_num).")";
 		}
 		
+		if(is_array($pa_restrict_to_types) && sizeof($pa_restrict_to_types)) {
+			$va_type_list = caMakeTypeIDList($pm_table_name_or_num, $pa_restrict_to_types, array('dontIncludeSubtypesInTypeRestriction' => $pb_dont_include_subtypes_in_type_restriction));
+			if (sizeof($va_type_list) > 0) {
+				$va_sql_wheres[] = "(cbdtr.type_id IS NULL OR cbdtr.type_id IN (".join(",", $va_type_list)."))";
+			}
+		}
 		$va_sql_access_wheres = array();
 		if ($pn_user_id) {
 			$t_user = $o_dm->getInstanceByTableName('ca_users', true);
@@ -659,10 +670,13 @@ class ca_bundle_displays extends BundlableLabelableBaseModelWithAttributes {
 			FROM ca_bundle_displays bd
 			LEFT JOIN ca_bundle_display_labels AS bdl ON bd.display_id = bdl.display_id
 			LEFT JOIN ca_locales AS l ON bdl.locale_id = l.locale_id
+			LEFT JOIN ca_bundle_display_type_restrictions AS cbdtr ON bd.display_id = cbdtr.display_id
 			INNER JOIN ca_users AS u ON bd.user_id = u.user_id
 			".(sizeof($va_sql_wheres) ? 'WHERE ' : '')."
 			".join(' AND ', $va_sql_wheres)."
+			ORDER BY -cbdtr.display_id DESC, bdl.name ASC
 		");
+		//print "got $vs_sql";
 		$va_displays = array();
 		
 		$t_list = new ca_lists();
@@ -1802,6 +1816,201 @@ class ca_bundle_displays extends BundlableLabelableBaseModelWithAttributes {
 				}
 			}
 		} 
+	}
+	# ----------------------------------------
+	# Type restrictions
+	# ----------------------------------------
+	/**
+	 * Adds restriction (a binding between the display and item type)
+	 *
+	 * @param int $pn_type_id the type
+	 * @param array $pa_settings Array of options for the restriction. (No options are currently implemented).
+	 * @return bool True on success, false on error, null if no screen is loaded
+	 * 
+	 */
+	public function addTypeRestriction($pn_type_id, $va_settings=null) {
+		if (!($vn_display_id = $this->getPrimaryKey())) { return null; }		// display must be loaded
+		if (!is_array($va_settings)) { $va_settings = array(); }
+		
+		if (!($t_instance = $this->_DATAMODEL->getInstanceByTableNum($this->get('table_num')))) { return false; }
+		
+		$va_type_list = $t_instance->getTypeList();
+		if (!isset($va_type_list[$pn_type_id])) { return false; }
+		
+		$t_restriction = new ca_bundle_display_type_restrictions();
+		$t_restriction->setMode(ACCESS_WRITE);
+		$t_restriction->set('table_num', $this->get('table_num'));
+		$t_restriction->set('type_id', $pn_type_id);
+		$t_restriction->set('display_id', $this->getPrimaryKey());
+		foreach($va_settings as $vs_setting => $vs_setting_value) {
+			$t_restriction->setSetting($vs_setting, $vs_setting_value);
+		}
+		$t_restriction->insert();
+		
+		if ($t_restriction->numErrors()) {
+			$this->errors = $t_restriction->errors();
+			return false;
+		}
+		return true;
+	}
+	# ----------------------------------------
+	/**
+	 * Sets restrictions for currently loaded display
+	 *
+	 * @param array $pa_type_ids list of types to restrict to
+	 * @return bool True on success, false on error, null if no screen is loaded
+	 * 
+	 */
+	public function setTypeRestrictions($pa_type_ids) {
+		if (!($vn_display_id = $this->getPrimaryKey())) { return null; }		// display must be loaded
+		if (!is_array($pa_type_ids)) {
+			if (is_numeric($pa_type_ids)) { 
+				$pa_type_ids = array($pa_type_ids); 
+			} else {
+				$pa_type_ids = array();
+			}
+		}
+		
+		if (!($t_instance = $this->_DATAMODEL->getInstanceByTableNum($this->get('table_num')))) { return false; }
+		
+		$va_type_list = $t_instance->getTypeList();
+		$va_current_restrictions = $this->getTypeRestrictions();
+		$va_current_type_ids = array();
+		foreach($va_current_restrictions as $vn_i => $va_restriction) {
+			$va_current_type_ids[$va_restriction['type_id']] = true;
+		}
+		
+		foreach($va_type_list as $vn_type_id => $va_type_info) {
+			if(in_array($vn_type_id, $pa_type_ids)) {
+				// need to set
+				if(!isset($va_current_type_ids[$vn_type_id])) {
+					$this->addTypeRestriction($vn_type_id);
+				}
+			} else {
+				// need to unset
+				if(isset($va_current_type_ids[$vn_type_id])) {
+					$this->removeTypeRestriction($vn_type_id);
+				}
+			}
+		}
+		return true;
+	}
+	# ----------------------------------------
+	/**
+	 * Remove restriction from currently loaded display for specified type
+	 *
+	 * @param int $pn_type_id The type of the restriction
+	 * @return bool True on success, false on error, null if no screen is loaded
+	 */
+	public function removeTypeRestriction($pn_type_id) {
+		if (!($vn_display_id = $this->getPrimaryKey())) { return null; }		// display must be loaded
+		
+		$o_db = $this->getDb();
+		
+		$qr_res = $o_db->query("
+			DELETE FROM ca_bundle_display_type_restrictions
+			WHERE
+				display_id = ? AND type_id = ?
+		", (int)$this->getPrimaryKey(), (int)$pn_type_id);
+		
+		if ($o_db->numErrors()) {
+			$this->errors = $o_db->errors();
+			return false;
+		}
+		return true;
+	}
+	# ----------------------------------------
+	/**
+	 * Remove all type restrictions from loaded display
+	 *
+	 * @return bool True on success, false on error, null if no screen is loaded 
+	 */
+	public function removeAllTypeRestrictions() {
+		if (!($vn_display_id = $this->getPrimaryKey())) { return null; }		// display must be loaded
+		
+		$o_db = $this->getDb();
+		
+		$qr_res = $o_db->query("
+			DELETE FROM ca_bundle_display_type_restrictions
+			WHERE
+				display_id = ?
+		", (int)$this->getPrimaryKey());
+		
+		if ($o_db->numErrors()) {
+			$this->errors = $o_db->errors();
+			return false;
+		}
+		return true;
+	}
+	# ----------------------------------------
+	/**
+	 * Return restrictions for currently loaded display
+	 *
+	 * @param int $pn_type_id Type to limit returned restrictions to; if omitted or null then all restrictions are returned
+	 * @return array A list of restrictions, false on error or null if no ui is loaded
+	 */
+	public function getTypeRestrictions($pn_type_id=null) {
+		if (!($vn_display_id = $this->getPrimaryKey())) { return null; }		// display must be loaded
+		
+		$o_db = $this->getDb();
+		
+		$vs_table_type_sql = '';
+		if ($pn_type_id > 0) {
+			$vs_table_type_sql .= ' AND type_id = '.intval($pn_type_id);
+		}
+		$qr_res = $o_db->query("
+			SELECT *
+			FROM ca_bundle_display_type_restrictions
+			WHERE
+				display_id = ? {$vs_table_type_sql}
+		", (int)$this->getPrimaryKey());
+		
+		if ($o_db->numErrors()) {
+			$this->errors = $o_db->errors();
+			return false;
+		}
+		
+		$va_restrictions = array();
+		while($qr_res->nextRow()) {
+			$va_restrictions[] = $qr_res->getRow();
+		}
+		return $va_restrictions;
+	}
+	# ----------------------------------------
+	/**
+	 * Renders and returns HTML form bundle for management of type restriction in the currently loaded display
+	 * 
+	 * @param object $po_request The current request object
+	 * @param string $ps_form_name The name of the form in which the bundle will be rendered
+	 *
+	 * @return string Rendered HTML bundle for display
+	 */
+	public function getTypeRestrictionsHTMLFormBundle($po_request, $ps_form_name) {
+		$o_view = new View($po_request, $po_request->getViewsDirectoryPath().'/bundles/');
+		
+		$o_view->setVar('t_display', $this);			
+		$o_view->setVar('id_prefix', $ps_form_name);		
+		$o_view->setVar('request', $po_request);
+		
+		$va_type_restrictions = $this->getTypeRestrictions();
+		$va_restriction_type_ids = array();
+		if (is_array($va_type_restrictions)) {
+			foreach($va_type_restrictions as $vn_i => $va_restriction) {
+				$va_restriction_type_ids[] = $va_restriction['type_id'];
+			}
+		}
+		
+		if (!($t_instance = $this->_DATAMODEL->getInstanceByTableNum($vn_table_num = $this->get('table_num')))) { return null; }
+		
+		$o_view->setVar('type_restrictions', $t_instance->getTypeListAsHTMLFormElement('type_restrictions[]', array('multiple' => 1, 'height' => 5), array('value' => 0, 'values' => $va_restriction_type_ids)));
+	
+		return $o_view->render('ca_bundle_display_type_restrictions.php');
+	}
+	# ----------------------------------------
+	public function saveTypeRestrictionsFromHTMLForm($po_request, $ps_form_prefix) {
+		if (!$this->getPrimaryKey()) { return null; }
+		
+		return $this->setTypeRestrictions($po_request->getParameter('type_restrictions', pArray));
 	}
 	# ------------------------------------------------------
 }
