@@ -188,7 +188,12 @@
 							$va_trail[] = $va_dyn_menu[0]['displayName'];
 						}
 					} else {
-						if (isset($va_node['submenu']) && $va_node['submenu']) {
+						if ($vb_submenu_set = isset($va_node['submenu']) && $va_node['submenu']) {
+							if (isset($va_node['submenu']['requires'])) {
+								$vb_submenu_set = $this->_evaluateRequirements($va_node['submenu']['requires']);
+							}
+						}
+						if ($vb_submenu_set) {
 							if (isset($va_node['submenu']['type']) && ($va_node['submenu']['type'] == 'dynamic') && is_array($va_sub_menu = $this->getDynamicSubmenu($va_node['submenu']))) {
 								if (isset($va_node['submenu']['breadcrumbHints']) && is_array($va_node['submenu']['breadcrumbHints'])) {
 									if ($vs_trail_item = $this->_getBreadcrumbHint($va_node['submenu']['breadcrumbHints'])) {
@@ -280,8 +285,8 @@
 			$vn_i = 0;
 			while(sizeof($va_path) && ($vn_i < $pn_level)) {
 				$vs_path_element = array_shift($va_path);
-				$x = null;
-				if (!$vs_path_element) { return $x; }							// don't try to return menu if none exists
+				$n = null;
+				if (!$vs_path_element) { return $n; }							// don't try to return menu if none exists
 				$va_nav_info = isset($va_nav_info[$vs_path_element]['navigation']) ? $va_nav_info[$vs_path_element]['navigation'] : null;
 				
 				
@@ -290,8 +295,8 @@
 			
 			$vs_selected_element = array_shift($va_path);
 		
-			$x = null;
-			if ((!is_array($va_nav_info)) || (!sizeof($va_nav_info))) { return $x; }
+			$n = null;
+			if ((!is_array($va_nav_info)) || (!sizeof($va_nav_info))) { return $n; }
 
 			return $va_nav_info;
 		}
@@ -589,8 +594,9 @@
 						$vs_buf .= $this->_genDynamicTopLevelMenuItems($va_submenu_nav, $vs_cur_selection, $va_additional_params, $ps_base_path, $va_defaults);
 					}
 				} else {
-				
-					if (isset($pa_navinfo[$vs_nav]) && isset($pa_navinfo[$vs_nav]['submenu']) && $pa_navinfo[$vs_nav]['submenu']) {
+					$va_req = $pa_navinfo[$vs_nav]['submenu']['requires'];
+					$vb_submenu_set = $this->_evaluateRequirements($va_req);
+					if ($vb_submenu_set && isset($pa_navinfo[$vs_nav]) && isset($pa_navinfo[$vs_nav]['submenu']) && $pa_navinfo[$vs_nav]['submenu']) {
 						if ($pa_navinfo[$vs_nav]['submenu']['type'] == 'dynamic') {
 							$vs_buf .= "<li>".caHTMLLink($vs_display_name, array('class' => (($vs_cur_selection == $ps_base_path.'/'.$vs_nav) ? 'sf-menu-selected' : ''), 'href' => '#'));
 							$va_submenu_nav = $this->getDynamicSubmenu($pa_navinfo[$vs_nav]['submenu']);
