@@ -69,14 +69,17 @@ var methods = {
             
             deleteButtonUrl: "/admin/themes/default/graphics/buttons/x.png",
             
+            annotation_prefix_text: '',
+            default_annotation_text: '',					// initial value for newly created annotations
+			empty_annotation_label_text: "<span class='tileviewerAnnotationDefaultText'>Enter your annotation</span>", // text to display when there is no annotation text
+			show_empty_annotation_label_text_in_text_boxes: true,
+            
             /* functional options */
             use_annotations: true,							// display annotation tools + annotations
             display_annotations: true,						// display annotations on load
             lock_annotations: false,						// lock annotations on load - will display but cannot add, remove or drag existing annotations
             lock_annotation_text: false,					// lock annotation text on load - will display text but not be editable
             annotation_text_display_mode: 'simultaneous',	// how to display annotation text: 'simultaneous' = show all annotation text all the time [DEFAULT]; 'mouseover' = show annotation text only when mouse is over the annotation or it is selected; 'selected' = show annotation text only when it is selected
-			default_annotation_label: '',					// initial value for newly created annotations
-			empty_annotation_label_text: "<span class='tileviewerAnnotationDefaultText'>Enter your annotation</span>", // text to display when there is no annotation text
 			annotation_color: "000000", //"EE7B19",
 			annotation_color_selected: "CC0000",
 			highlight_points_with_circles: false,			// draw circles around point label locations?
@@ -244,45 +247,11 @@ var methods = {
                     			
                     			// create text block
                     			var textBlock = document.createElement("div");
-                    			jQuery(textBlock).attr('id', 'tileviewerAnnotationTextBlock_' + k).addClass("tileviewerAnnotationTextBlock").data("annotationIndex", k).html(v['label'] ? v['label'] : options.empty_annotation_label_text);
+                    			jQuery(textBlock).attr('id', 'tileviewerAnnotationTextBlock_' + k).addClass("tileviewerAnnotationTextBlock").data("annotationIndex", k).html(options.annotation_prefix_text + (v['label'] ? v['label'] : (options.show_empty_annotation_label_text_in_text_boxes ? options.empty_annotation_label_text : '')));
 								jQuery('#tileviewerAnnotationTextBlock_' + k).remove();
 								$this.append(textBlock)
 								if (options.annotation_text_display_mode == 'simultaneous') { 
-									jQuery('#tileviewerAnnotationTextBlock_' + k).show().draggable({ drag: function(e) {
-                    					var index = jQuery(this).data('annotationIndex');
-										if(
-											index != null
-											&&
-											view.annotations[index]
-											&& 
-											(
-												(view.annotations[index].type == 'point')
-												||
-												((view.annotations[index].type == 'rect') && options.allow_draggable_text_boxes_for_rects)
-											)
-										) {
-											var pos = jQuery('#tileviewerAnnotationTextBlock_' +index).position();
-			
-											var factor = Math.pow(2,layer.level);
-											view.annotations[index].tx = ((pos.left - layer.xpos)/((layer.info.width/factor) * (layer.tilesize/256))) * 100;
-											view.annotations[index].ty = ((pos.top - layer.ypos)/((layer.info.height/factor) * (layer.tilesize/256))) * 100;
-					
-											view.draw();
-										}
-									}, stop: function(e) {
-                    					var index = jQuery(this).data('annotationIndex');
-										var pos = jQuery('#tileviewerAnnotationTextBlock_' + index).position();
-			
-										var factor = Math.pow(2,layer.level);
-										view.annotations[index].tx = ((pos.left - layer.xpos)/((layer.info.width/factor) * (layer.tilesize/256))) * 100;
-										view.annotations[index].ty = ((pos.top - layer.ypos)/((layer.info.height/factor) * (layer.tilesize/256))) * 100;
-					
-										view.save_annotations([index], []);
-										view.commit_annotation_changes();
-										view.draw();
-									}}).mouseup(function(e) {
-										view.isAnnotationResize = view.isAnnotationTransformation = view.mousedown = view.dragAnnotation = null;
-									});
+									view._makeAnnotationTextBlockDraggable('#tileviewerAnnotationTextBlock_' + k);
 								}
 								v['textBlock'] = textBlock;
 							
@@ -348,7 +317,7 @@ var methods = {
                     			for(var i in annotationsToSave) {
                     				var index = annotationsToSave[i]['index'];
                     				if (data['annotation_ids'][index]) {
-                    					jQuery("#tileviewerAnnotationTextBlock_" + index).html(annotationsToSave[i]['label'] ? annotationsToSave[i]['label'] : options.empty_annotation_label_text);
+                    					jQuery("#tileviewerAnnotationTextBlock_" + index).html(options.annotation_prefix_text + (annotationsToSave[i]['label'] ? annotationsToSave[i]['label'] : (options.show_empty_annotation_label_text_in_text_boxes ? options.empty_annotation_label_text : '')));
                     				}
                     			}
                     		}
@@ -364,7 +333,44 @@ var methods = {
                     	});
                     },
 
+					_makeAnnotationTextBlockDraggable: function(id) {
+						jQuery(id).show().draggable({ drag: function(e) {
+							var index = jQuery(this).data('annotationIndex');
+							if(
+								index != null
+								&&
+								view.annotations[index]
+								&& 
+								(
+									(view.annotations[index].type == 'point')
+									||
+									((view.annotations[index].type == 'rect') && options.allow_draggable_text_boxes_for_rects)
+								)
+							) {
+								var pos = jQuery('#tileviewerAnnotationTextBlock_' +index).position();
 
+								var factor = Math.pow(2,layer.level);
+								view.annotations[index].tx = ((pos.left - layer.xpos)/((layer.info.width/factor) * (layer.tilesize/256))) * 100;
+								view.annotations[index].ty = ((pos.top - layer.ypos)/((layer.info.height/factor) * (layer.tilesize/256))) * 100;
+		
+								view.draw();
+							}
+						}, stop: function(e) {
+							var index = jQuery(this).data('annotationIndex');
+							var pos = jQuery('#tileviewerAnnotationTextBlock_' + index).position();
+
+							var factor = Math.pow(2,layer.level);
+							view.annotations[index].tx = ((pos.left - layer.xpos)/((layer.info.width/factor) * (layer.tilesize/256))) * 100;
+							view.annotations[index].ty = ((pos.top - layer.ypos)/((layer.info.height/factor) * (layer.tilesize/256))) * 100;
+		
+							view.save_annotations([index], []);
+							view.commit_annotation_changes();
+							view.draw();
+						}}).mouseup(function(e) {
+							view.isAnnotationResize = view.isAnnotationTransformation = view.mousedown = view.dragAnnotation = null;
+						});
+					},
+					
 //
 // Begin ANNOTATIONS: draw outlines
 //                 
@@ -849,7 +855,10 @@ var methods = {
                     	
                     	// create text block
 						var textBlock = document.createElement("div");
-						jQuery(textBlock).attr('id', 'tileviewerAnnotationTextBlock_' + view.annotations.length).addClass("tileviewerAnnotationTextBlock").data("annotationIndex", view.annotations.length).html(options.default_annotation_label ? options.default_annotation_label : options.empty_annotation_label_text);
+						
+						
+						var t = options.annotation_prefix_text + (options.default_annotation_text ? options.default_annotation_text : (options.show_empty_annotation_label_text_in_text_boxes ? options.empty_annotation_label_text : ''));
+						jQuery(textBlock).attr('id', 'tileviewerAnnotationTextBlock_' + view.annotations.length).addClass("tileviewerAnnotationTextBlock").data("annotationIndex", view.annotations.length).html(t);
 						jQuery('#tileviewerAnnotationTextBlock_' + view.annotations.length).remove();
 						$this.append(textBlock);
 						if (options.annotation_text_display_mode == 'simultaneous') { jQuery(textBlock).show(); }
@@ -871,7 +880,7 @@ var methods = {
                     			view.annotations.push({
 									type: type, x: x, y: y, w: defaultWidth, h: defaultHeight, index: view.annotations.length,
 									tx: x, ty: y + defaultHeight, tw: defaultWidth, th: (120/layer.info.width) * 100,
-									label: options.default_annotation_label, textBlock: textBlock
+									label: options.default_annotation_text, textBlock: textBlock
 								});
 								break;
 							case 'point':
@@ -886,12 +895,18 @@ var methods = {
 								view.annotations.push({
 									type: type, x: x, y: y, w: defaultWidth, h: defaultHeight, index: view.annotations.length,
 									tx: x + 3, ty: y + 3, tw: 10, th: (120/layer.info.width) * 100,
-									label: options.default_annotation_label, textBlock: textBlock
+									label: options.default_annotation_text, textBlock: textBlock
 								});
 								break;
 						}
 						view.save_annotations([view.annotations.length-1], []);
+						
+						if (options.annotation_text_display_mode == 'simultaneous') { 
+							// Make just-created annotation text block draggable
+							view._makeAnnotationTextBlockDraggable('#tileviewerAnnotationTextBlock_' + (view.annotations.length-1));
+						}
 						view.draw_annotations();
+						
 						
 						// Select just-created annotation
 						jQuery('#tileviewerAnnotationTextBlock_' + (view.annotations.length-1)).click();
@@ -1854,7 +1869,6 @@ var methods = {
 				$(view.annotationTextEditor).on("blur", function(e) {
 					var inAnnotation;
 					if(inAnnotation = jQuery(view.annotationTextEditor).data('dirty')) {
-						console.log("Save label text");
 						// Save changed text label
 						jQuery(view.annotationTextEditor).data('dirty', null);
 						
