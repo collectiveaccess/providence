@@ -3091,8 +3091,8 @@
 					//
 					// Convert related item type_code specs in restrict_to_types and exclude_types lists to numeric type_ids we need for the query
 					//
-					$va_restrict_to_types = $this->_convertTypeCodesToIDs($va_restrict_to_types, array('instance' => $t_rel_item, 'dontExpandHierarchically' => true));
-					$va_exclude_types = $this->_convertTypeCodesToIDs($va_exclude_types, array('instance' => $t_rel_item, 'dontExpandHierarchically' => true));
+					$va_restrict_to_types = $this->_convertTypeCodesToIDs($va_restrict_to_types, array('instance' => $t_rel_item, 'includeSubtypes' => true));
+					$va_exclude_types = $this->_convertTypeCodesToIDs($va_exclude_types, array('instance' => $t_rel_item, 'includeSubtypes' => true));
 					
 					$va_restrict_to_types_expanded = $this->_convertTypeCodesToIDs($va_restrict_to_types, array('instance' => $t_rel_item));
 					$va_exclude_types_expanded = $this->_convertTypeCodesToIDs($va_exclude_types, array('instance' => $t_rel_item));
@@ -4001,9 +4001,11 @@ if (!$va_facet_info['show_all_when_first_facet'] || ($this->numCriteria() > 0)) 
 		 * in the restriction. You may pass numeric type_id and alphanumeric type codes interchangeably.
 		 *
 		 * @param array $pa_type_codes_or_ids List of type_id or code values to filter browse by. When set, the browse will only consider items of the specified types. Using a hierarchical parent type will automatically include its children in the restriction. 
+		 * @param array $pa_options Options include
+	 	 *		includeSubtypes = include any child types in the restriction. Default is true.
 		 * @return boolean True on success, false on failure
 		 */
-		public function setTypeRestrictions($pa_type_codes_or_ids) {
+		public function setTypeRestrictions($pa_type_codes_or_ids, $pa_options=null) {
 			$this->opa_browse_type_ids = $this->_convertTypeCodesToIDs($pa_type_codes_or_ids);
 			$this->opo_ca_browse_cache->setTypeRestrictions($this->opa_browse_type_ids);
 			return true;
@@ -4014,7 +4016,7 @@ if (!$va_facet_info['show_all_when_first_facet'] || ($this->numCriteria() > 0)) 
 		 *
 		 * @param array $pa_type_codes_or_ids List of type codes or ids 
 		 * @param array $pa_options Options include
-		 *		dontExpandHierarchically =
+		 *		includeSubtypes = include any child types in the restriction. Default is true.
 		 * @return array List of type_ids
 		 */
 		private function _convertTypeCodesToIDs($pa_type_codes_or_ids, $pa_options=null) {
@@ -4050,7 +4052,7 @@ if (!$va_facet_info['show_all_when_first_facet'] || ($this->numCriteria() > 0)) 
 
 				if (isset($va_type_list[$vn_type_id]) && $va_type_list[$vn_type_id]) {	// is valid type for this subject
 					// See if there are any child types
-					if ((!isset($pa_options['dontExpandHierarchically']) && !$pa_options['dontExpandHierarchically']) && !$this->opb_dont_expand_type_restrictions) {
+					if (caGetOption('includeSubtypes', $pa_options, true) && $this->opb_dont_expand_type_restrictions) {
 						$t_item = new ca_list_items($vn_type_id);
 						$va_ids = $t_item->getHierarchyChildren(null, array('idsOnly' => true));
 					}

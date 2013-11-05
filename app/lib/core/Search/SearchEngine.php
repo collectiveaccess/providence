@@ -1021,9 +1021,11 @@ class SearchEngine extends SearchBase {
 	 * in the restriction. You may pass numeric type_id and alphanumeric type codes interchangeably.
 	 *
 	 * @param array $pa_type_codes_or_ids List of type_id or code values to filter search by. When set, the search will only consider items of the specified types. Using a hierarchical parent type will automatically include its children in the restriction. 
+	 * @param array $pa_options Options include
+	 *		includeSubtypes = include any child types in the restriction. Default is true.
 	 * @return boolean True on success, false on failure
 	 */
-	public function setTypeRestrictions($pa_type_codes_or_ids) {
+	public function setTypeRestrictions($pa_type_codes_or_ids, $pa_options=null) {
 		$t_instance = $this->opo_datamodel->getInstanceByTableName($this->ops_tablename, true);
 		
 		if (!$pa_type_codes_or_ids) { return false; }
@@ -1047,11 +1049,13 @@ class SearchEngine extends SearchBase {
 			if (!$vn_type_id) { return false; }
 			
 			if (isset($va_type_list[$vn_type_id]) && $va_type_list[$vn_type_id]) {	// is valid type for this subject
-				// See if there are any child types
-				$t_item = new ca_list_items($vn_type_id);
-				$va_ids = $t_item->getHierarchyChildren(null, array('idsOnly' => true));
-				$va_ids[] = $vn_type_id;
-				$this->opa_search_type_ids = array_merge($this->opa_search_type_ids, $va_ids);
+				if (caGetOption('includeSubtypes', $pa_options, true)) {
+					// See if there are any child types
+					$t_item = new ca_list_items($vn_type_id);
+					$va_ids = $t_item->getHierarchyChildren(null, array('idsOnly' => true));
+					$va_ids[] = $vn_type_id;
+					$this->opa_search_type_ids = array_merge($this->opa_search_type_ids, $va_ids);
+				}
 			}
 		}
 		return true;
