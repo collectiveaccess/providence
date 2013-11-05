@@ -155,6 +155,15 @@
 				'label' => _t('Parents'),
 				'description' => _t('List item parents to create, if required')
 			),
+			'listItemSplitter_hierarchy' => array(
+				'formatType' => FT_TEXT,
+				'displayType' => DT_SELECT,
+				'width' => 10, 'height' => 1,
+				'takesLocale' => false,
+				'default' => '',
+				'label' => _t('Hierarchy'),
+				'description' => _t('List hierarchy to create, if required')
+			),
 			'listItemSplitter_interstitial' => array(
 				'formatType' => FT_TEXT,
 				'displayType' => DT_SELECT,

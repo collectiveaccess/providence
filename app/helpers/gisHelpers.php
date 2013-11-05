@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2009-2012 Whirl-i-Gig
+ * Copyright 2009-2013 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -34,6 +34,7 @@
    *
    */
     require_once(__CA_LIB_DIR__.'/ca/Attributes/Values/LengthAttributeValue.php');
+    require_once(__CA_LIB_DIR__.'/core/Parsers/gPoint.php');
     
     /**
      * List of countries used for drop-down list
@@ -413,11 +414,41 @@
 		return floatval($vn_left_of_decimal.'.'.$vn_right_of_decimal) * $vn_pos;
 	}
 	# --------------------------------------------------------------------------------------------
+ 	/**
+ 	 * Converts $ps_value from UTM format to decimal latitude and longitude
+ 	 *
+ 	 * @param string $ps_value The UTM expression in the format <zone><hemisphere> <easting> <northing>. Example:  17N 630084 4833438
+ 	 * @return array Array with 'latitude' and 'longitude' keys and decimal values. Return null if value cannot be converted. 
+ 	 */
+	function caGISUTMToSignedDecimals($ps_value){
+		$ps_value = trim($ps_value);
+		if(preg_match('!^([0-9]{1,2}[NSns]{1})[ ]+([0-9]{1,9})[ ]+([0-9]{1,9})$!', $ps_value, $va_matches)) {
+			$o_gpoint = new gPoint();
+			$o_gpoint->setUTM($va_matches[2], $va_matches[3], $va_matches[1]);
+			$o_gpoint->convertTMtoLL();
+			return array('latitude' => $o_gpoint->Lat(), 'longitude' => $o_gpoint->Long());
+		} 
+		return null;
+	}
+	# --------------------------------------------------------------------------------------------
 	/**
 	 * Returns true if $ps_value is in degrees minutes seconds format
 	 */ 
 	function caGISisDMS($ps_value){
 		if(preg_match('/[^0-9A-Za-z\.\- ]+/', $ps_value)) {
+			return true;
+		}
+		return false;
+	}
+	# --------------------------------------------------------------------------------------------
+	/**
+	 * Returns true if $ps_value is in UTM format
+	 *
+	 * @param string $ps_value The UTM expression in the format <zone><hemisphere> <easting> <northing>. Example:  17N 630084 4833438
+	 * @return bool True if expression is UTM.
+	 */ 
+	function caGISisUTM($ps_value){
+		if(preg_match('/^[0-9]{1,2}[NS].[ ]+[0-9]{1,6}[ ]+[0-9]{1,6}$/', $ps_value)) {
 			return true;
 		}
 		return false;

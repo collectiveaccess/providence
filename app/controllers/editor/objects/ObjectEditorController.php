@@ -153,6 +153,10 @@
  					'y' => (float)$va_annotation['y'],
  					'w' => (float)$va_annotation['w'],
  					'h' => (float)$va_annotation['h'],
+ 					'tx' => (float)$va_annotation['tx'],
+ 					'ty' => (float)$va_annotation['ty'],
+ 					'tw' => (float)$va_annotation['tw'],
+ 					'th' => (float)$va_annotation['th'],
  					'label' => (string)$va_annotation['label'],
  					'description' => (string)$va_annotation['description'],
  					'type' => (string)$va_annotation['type_raw'],
@@ -177,12 +181,11 @@
  			$va_annotation_ids = array();
  			if (is_array($pa_annotations)) {
  				foreach($pa_annotations as $vn_i => $va_annotation) {
- 					$vs_label = (isset($va_annotation['label']) && ($va_annotation['label'])) ? $va_annotation['label'] : "???";
+ 					$vs_label = (isset($va_annotation['label']) && ($va_annotation['label'])) ? $va_annotation['label'] : '';
  					if (isset($va_annotation['annotation_id']) && ($vn_annotation_id = $va_annotation['annotation_id'])) {
  						// edit existing annotation
  						$t_rep->editAnnotation($vn_annotation_id, $g_ui_locale_id, $va_annotation, 0, 0);
  						$va_annotation_ids[$va_annotation['index']] = $vn_annotation_id;
- 						// TODO: allow editing of label
  					} else {
  						// new annotation
  						$va_annotation_ids[$va_annotation['index']] = $t_rep->addAnnotation($vs_label, $g_ui_locale_id, $this->request->getUserID(), $va_annotation, 0, 0);
@@ -205,6 +208,13 @@
  			
  			$this->view->setVar('annotations', $va_annotations);
  			$this->render('ajax_representation_annotations_json.php');
+ 		}
+ 		# -------------------------------------------------------
+ 		/**
+ 		 *
+ 		 */ 
+ 		public function ViewerHelp() {
+ 			$this->render('viewer_help_html.php');
  		}
  		# -------------------------------------------------------
  		/**

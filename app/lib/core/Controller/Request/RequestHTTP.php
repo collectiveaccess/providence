@@ -184,7 +184,8 @@ class RequestHTTP extends Request {
 		
 		$this->ops_base_path = join('/', $va_tmp);
 		$this->ops_full_path = isset($_SERVER['REQUEST_URI']) ? $_SERVER['REQUEST_URI'] : null;
-		$this->ops_path_info = isset($_SERVER['PATH_INFO']) ? $_SERVER['PATH_INFO'] : '';
+		$vs_path_info = str_replace($_SERVER['SCRIPT_NAME'], "", str_replace("?".$_SERVER['QUERY_STRING'], "", $_SERVER['REQUEST_URI']));
+		$this->ops_path_info = $vs_path_info ? $vs_path_info : (isset($_SERVER['PATH_INFO']) ? $_SERVER['PATH_INFO'] : '');
 	}
 	# -------------------------------------------------------
 	/** 
@@ -467,6 +468,20 @@ class RequestHTTP extends Request {
 		}
 		
 		die("Invalid parameter type for $ps_name\n");
+	}
+	# -------------------------------------------------------
+	/**
+	 *
+	 */
+	public function getParameters($pa_http_methods=null) {
+		if($pa_http_methods && !is_array($pa_http_methods)) { $pa_http_methods = array($pa_http_methods); }
+		$va_params = array();
+		foreach($pa_http_methods as $vs_http_method) {
+			if (isset($this->opa_params[$vs_http_method]) && is_array($this->opa_params[$vs_http_method])) {
+				$va_params = array_merge($va_params, $this->opa_params[$vs_http_method]);
+			}
+		}
+		return $va_params;
 	}
 	# -------------------------------------------------------
 	function setParameter($ps_name, $pm_value, $ps_http_method='GET') {

@@ -542,6 +542,11 @@ class ItemService extends BaseJSONService {
 				} else {
 					$va_return['representations'] = $t_instance->getRepresentations($va_versions);
 				}
+				
+				foreach($va_return['representations'] as $vn_i => $va_rep) {
+					unset($va_return['representations'][$vn_i]['media']);
+					unset($va_return['representations'][$vn_i]['media_metadata']);
+				}
 			}
 			
 			if(is_array($va_related_items) && sizeof($va_related_items)>0){
@@ -573,7 +578,7 @@ class ItemService extends BaseJSONService {
 				}
 			}
 		}
-
+		
 		return $va_return;
 	}
 	# -------------------------------------------------------

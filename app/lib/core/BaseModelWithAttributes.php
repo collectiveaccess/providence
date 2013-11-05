@@ -912,6 +912,16 @@
 		}
 		# ------------------------------------------------------------------
 		/**
+		 * Return setting, if defined, from list item for type in the currently loaded row
+		 */ 
+		public function getTypeSetting($ps_setting, $pn_type_id=null) {
+			if ($t_type = $this->getTypeInstance($pn_type_id)) {
+				return $t_type->getSetting($ps_setting);
+			}
+			return null;
+		}
+		# ------------------------------------------------------------------
+		/**
 		 * Returns HTML <select> form element with type list
 		 *
 		 * @param string $ps_name The name of the returned form element
