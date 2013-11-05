@@ -73,13 +73,7 @@
 			
 			while(($vn_item_count < $vn_items_per_page) && $vo_result->nextHit()) {
 				$vn_loan_id = $vo_result->get('loan_id');
-	
-				if($vo_ar->userCanAccess($this->request->user->getUserID(), array("editor","loans"), "LoanEditor", "Edit", array("loan_id" => $vn_loan_id))){
-					$vs_action = "Edit";
-				} else {
-					$vs_action = "Summary";
-				}
-				
+			
 				($i == 2) ? $i = 0 : "";
 	?>
 				<tr <?php print ($i ==1) ? "class='odd'" : ""; ?>>
@@ -87,7 +81,7 @@
 						<input type='checkbox' name='add_to_set_ids' value='<?php print (int)$vn_loan_id; ?>' class="addItemToSetControl" />
 					</td>
 	<?php
-					print "<td style='width:5%;'>".caNavLink($this->request, caNavIcon($this->request, __CA_NAV_BUTTON_EDIT__), '', 'editor/loans', 'LoanEditor', $vs_action, array('loan_id' => $vn_loan_id))."</td>";
+					print "<td style='width:5%;'>".caEditorLink($this->request, caNavIcon($this->request, __CA_NAV_BUTTON_EDIT__), '', 'ca_loans', $vn_loan_id, array())."</td>";
 					foreach($va_display_list as $vn_placement_id => $va_display_item) {
 						print "<td>".$t_display->getDisplayValue($vo_result, $vn_placement_id, array('request' => $this->request))."</td>";
 					}

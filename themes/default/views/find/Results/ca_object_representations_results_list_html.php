@@ -72,12 +72,6 @@
 	
 			while(($vn_item_count < $vn_items_per_page) && $vo_result->nextHit()) {
 				$vn_representation_id = $vo_result->get('representation_id');
-	
-				if($vo_ar->userCanAccess($this->request->user->getUserID(), array("editor","objects"), "ObjectRepresentationEditor", "Edit", array("representation_id" => $vn_representation_id))){
-					$vs_action = "Edit";
-				} else {
-					$vs_action = "Summary";
-				}
 				
 				($i == 2) ? $i = 0 : "";
 	?>
@@ -87,7 +81,7 @@
 						<input type='checkbox' name='add_to_set_ids' value='<?php print (int)$vn_representation_id; ?>' class="addItemToSetControl" />
 					</td>
 	<?php
-					print "<td style='width:5%;'>".caNavLink($this->request, caNavIcon($this->request, __CA_NAV_BUTTON_EDIT__), '', 'editor/object_representations', 'ObjectRepresentationEditor', $vs_action, array('representation_id' => $vn_representation_id))."</td>";
+					print "<td style='width:5%;'>".caEditorLink($this->request, caNavIcon($this->request, __CA_NAV_BUTTON_EDIT__), '', 'ca_object_representations', $vn_representation_id, array())."</td>";
 					foreach($va_display_list as $vn_placement_id => $va_display_item) {
 						print "<td>".$t_display->getDisplayValue($vo_result, $vn_placement_id, array('request' => $this->request))."</td>";
 					}

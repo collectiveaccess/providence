@@ -969,7 +969,8 @@ if (!$vb_can_do_incremental_indexing || $pb_reindex_mode) {
 						if (!is_array($va_row_to_reindex['row_ids'])) { continue; }
 						
 						$va_content = $this->_genHierarchicalPath($va_row_to_reindex['field_row_id'], $va_row_to_reindex['field_name'], $this->opo_datamodel->getInstanceByTableNum($va_row_to_reindex['field_table_num'], true), array());
-						$vs_content = join(" ", $va_content['values']);
+						
+						$vs_content = is_array($va_content['values']) ? join(" ", $va_content['values']) : "";
 						
 						$this->opo_engine->updateIndexingInPlace($va_row_to_reindex['table_num'], $va_row_to_reindex['row_ids'], $va_row_to_reindex['field_table_num'], $va_row_to_reindex['field_num'], $va_row_to_reindex['field_row_id'], $vs_content, array_merge($va_row_to_reindex['indexing_info'], array('literalContent' => $va_content['path'])));
 			

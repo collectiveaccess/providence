@@ -71,12 +71,6 @@
 			
 			while(($vn_item_count < $vn_items_per_page) && $vo_result->nextHit()) {
 				$vn_stop_id = $vo_result->get('stop_id');
-	
-				if($vo_ar->userCanAccess($this->request->user->getUserID(), array("editor","tour_stops"), "TourStopEditor", "Edit", array("stop_id" => $vn_stop_id))){
-					$vs_action = "Edit";
-				} else {
-					$vs_action = "Summary";
-				}
 				
 				($i == 2) ? $i = 0 : "";
 ?>
@@ -85,7 +79,7 @@
 						<input type='checkbox' name='add_to_set_ids' value='<?php print (int)$vn_stop_id; ?>' class="addItemToSetControl" />
 					</td>
 <?php
-					print "<td style='width:5%;'>".caNavLink($this->request, caNavIcon($this->request, __CA_NAV_BUTTON_EDIT__), '', 'editor/tour_stops', 'TourStopEditor', $vs_action, array('stop_id' => $vn_stop_id))."</td>";
+					print "<td style='width:5%;'>".caEditorLink($this->request, caNavIcon($this->request, __CA_NAV_BUTTON_EDIT__), '', 'ca_tour_stops', $vn_stop_id, array())."</td>";
 					foreach($va_display_list as $vn_placement_id => $va_display_item) {
 						print "<td>".$t_display->getDisplayValue($vo_result, $vn_placement_id, array('request' => $this->request))."</td>";
 					}
