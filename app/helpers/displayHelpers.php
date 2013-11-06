@@ -1979,6 +1979,10 @@ require_once(__CA_LIB_DIR__."/ca/ApplicationPluginManager.php");
 							$va_relative_ids = $qr_res->get($t_instance->tableName().".children.".$t_instance->primaryKey(), array('returnAsArray' => true));
 							$va_relative_ids = array_values($va_relative_ids);
 							break;
+						case 'related':
+							$va_relative_ids = $qr_res->get($t_instance->tableName().".related.".$t_instance->primaryKey(), array('returnAsArray' => true));
+							$va_relative_ids = array_values($va_relative_ids);
+							break;
 						default:
 							$va_relative_ids = $qr_res->get($t_instance->tableName().".".$t_instance->primaryKey(), array('returnAsArray' => true));
 							break;
