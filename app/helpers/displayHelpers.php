@@ -2143,10 +2143,8 @@ require_once(__CA_LIB_DIR__."/ca/ApplicationPluginManager.php");
 										break;
 									case 'parent':
 										if (is_array($va_val)) {
-											foreach($va_val as $vn_x => $va_labels) {
-												foreach($va_labels as $vn_y => $va_label) {
-													$va_val_proc[] = $va_label['name'];
-												}
+											foreach($va_val as $vn_x => $va_label) {
+												$va_val_proc[] = $va_label['name'];
 											}
 										}
 										break;
