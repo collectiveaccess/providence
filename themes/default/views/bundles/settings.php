@@ -47,3 +47,8 @@
 		</div>
 	</div>
 </div>
+<script type="text/javascript">
+	jQuery(document).ready(function() {
+		jQuery("#<?php print $vs_id_prefix.$vn_table_num.'Settings'; ?> input").change();
+	});
+</script>
