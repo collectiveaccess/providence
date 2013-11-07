@@ -1641,7 +1641,7 @@ class ca_bundle_displays extends BundlableLabelableBaseModelWithAttributes {
 		}
 		
 		$va_tmp = explode('.', $vs_bundle_name);
-		print_r($va_tmp);
+		
 		if ($va_placement['settings']['show_hierarchy'] || $pa_options['show_hierarchy']) {
 			if ($va_tmp[1] == 'related') {
 				array_splice($va_tmp, 2, 0, 'hierarchy');
