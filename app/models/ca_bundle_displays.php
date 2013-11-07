@@ -1641,7 +1641,7 @@ class ca_bundle_displays extends BundlableLabelableBaseModelWithAttributes {
 		}
 		
 		$va_tmp = explode('.', $vs_bundle_name);
-		
+		print_r($va_tmp);
 		if ($va_placement['settings']['show_hierarchy'] || $pa_options['show_hierarchy']) {
 			if ($va_tmp[1] == 'related') {
 				array_splice($va_tmp, 2, 0, 'hierarchy');
@@ -1663,19 +1663,24 @@ class ca_bundle_displays extends BundlableLabelableBaseModelWithAttributes {
 			$pa_options['template'] = ($va_placement['settings']['format']) ? $va_placement['settings']['format'] : null;
 		}
 		
-		$vs_val = '';
-		if ($t_instance = $this->getAppDatamodel()->getInstanceByTableName($va_tmp[0], true)) {
-			$va_tmp2 = $va_tmp;
-			if ((sizeof($va_tmp2) > 1) && (in_array($vs_tmp = array_pop($va_tmp2), array('related')))) {
-				$va_tmp2[] = $vs_tmp;
-			}
-			$va_tmp2[] = $t_instance->primaryKey();
 		
-			$va_ids = $po_result->get(join('.', $va_tmp2), array('returnAsArray' => true));
-			$va_links = array();
-			if (is_array($va_ids)) {
-				$vs_val = caProcessTemplateForIDs($pa_options['template'], $va_tmp2[0], $va_ids, array_merge($pa_options, array('returnAsArray' => false)));
+		$vs_val = '';
+		if($pa_options['template']) { 
+			if ($t_instance = $this->getAppDatamodel()->getInstanceByTableName($va_tmp[0], true)) {
+				$va_tmp2 = $va_tmp;
+				if ((sizeof($va_tmp2) > 1) && (in_array($vs_tmp = array_pop($va_tmp2), array('related')))) {
+					$va_tmp2[] = $vs_tmp;
+				}
+				$va_tmp2[] = $t_instance->primaryKey();
+		
+				$va_ids = $po_result->get(join('.', $va_tmp2), array('returnAsArray' => true));
+				$va_links = array();
+				if (is_array($va_ids)) {
+					$vs_val = caProcessTemplateForIDs($pa_options['template'], $va_tmp2[0], $va_ids, array_merge($pa_options, array('returnAsArray' => false)));
+				}
 			}
+		} else {
+			$vs_val = $po_result->get(join(".", $va_tmp), $pa_options);
 		}
 		
 		if (isset($pa_options['purify']) && $pa_options['purify']) {
