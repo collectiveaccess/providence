@@ -3541,6 +3541,9 @@
             <placement code="settings">
               <bundle>settings</bundle>
             </placement>
+            <placement code="ca_bundle_display_type_restrictions">
+              <bundle>ca_bundle_display_type_restrictions</bundle>
+            </placement>
             <placement code="ca_users">
               <bundle>ca_users</bundle>
             </placement>
