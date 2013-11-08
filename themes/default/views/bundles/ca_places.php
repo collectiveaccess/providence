@@ -349,7 +349,7 @@
 			listSortItems: 'div.roundedRel',
 			autocompleteInputID: '<?php print $vs_id_prefix; ?>_autocomplete',
 			quickaddPanel: caRelationQuickAddPanel<?php print $vs_id_prefix; ?>,
-			quickaddUrl: '<?php print caNavUrl($this->request, 'editor/places', 'PlaceQuickAdd', 'Form', array('place_id' => 0)); ?>',
+			quickaddUrl: '<?php print caNavUrl($this->request, 'editor/places', 'PlaceQuickAdd', 'Form', array('place_id' => 0, 'dont_include_subtypes_in_type_restriction' => (int)$va_settings['dont_include_subtypes_in_type_restriction'])); ?>',
 			
 			interstitialButtonClassName: 'caInterstitialEditButton',
 			interstitialPanel: caRelationEditorPanel<?php print $vs_id_prefix; ?>,
