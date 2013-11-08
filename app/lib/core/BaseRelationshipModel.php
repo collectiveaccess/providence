@@ -495,7 +495,11 @@
 				foreach($va_types as $vs_subtype => $va_types_by_subtype) {
 					$va_types_by_locale = array();
 					foreach($va_types_by_subtype as $vs_key => $va_types_by_key) {
-						$va_types_by_locale += $va_types_by_key;
+						foreach($va_types_by_key as $vs_k => $va_v) {
+							foreach($va_v as $vs_k2 => $vs_v2) {
+								$va_types_by_locale[$vs_k][$vs_k2] = $vs_v2;
+							}
+						}
 					}
 				
 					// include mapping from parent type used in restriction to child types that inherit the binding
@@ -506,7 +510,7 @@
 						}
 						$va_subtype_lookups[$vs_subtype] = true;
 					}
-					$va_processed_types[$vs_subtype] = caExtractValuesByUserLocale($va_types_by_locale, null, null, array('returnList' => true));					
+					$va_processed_types[$vs_subtype] = caExtractValuesByUserLocale($va_types_by_locale, null, null, array('returnList' => true));
 				}
 				
 			} else {
