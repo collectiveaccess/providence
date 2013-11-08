@@ -1989,7 +1989,24 @@ require_once(__CA_LIB_DIR__."/ca/ApplicationPluginManager.php");
 					||
 					((sizeof($va_relative_to_tmp) >= 1) && ($va_relative_to_tmp[0] == $ps_tablename) && ($va_relative_to_tmp[1] != 'related'))
 				) {
-					$va_relative_ids = $pa_row_ids;
+					
+					switch(strtolower($va_relative_to_tmp[1])) {
+						case 'hierarchy':
+							$va_relative_ids = $qr_res->get($t_instance->tableName().".hierarchy.".$t_instance->primaryKey(), array('returnAsArray' => true));
+							$va_relative_ids = array_values($va_relative_ids);
+							break;
+						case 'parent':
+							$va_relative_ids = $qr_res->get($t_instance->tableName().".parent.".$t_instance->primaryKey(), array('returnAsArray' => true));
+							$va_relative_ids = array_values($va_relative_ids);
+							break;
+						case 'children':
+							$va_relative_ids = $qr_res->get($t_instance->tableName().".children.".$t_instance->primaryKey(), array('returnAsArray' => true));
+							$va_relative_ids = array_values($va_relative_ids);
+							break;
+						default:
+							$va_relative_ids = $pa_row_ids;
+							break;
+					}
 				} else { 
 					switch(strtolower($va_relative_to_tmp[1])) {
 						case 'hierarchy':
@@ -2002,6 +2019,10 @@ require_once(__CA_LIB_DIR__."/ca/ApplicationPluginManager.php");
 							break;
 						case 'children':
 							$va_relative_ids = $qr_res->get($t_instance->tableName().".children.".$t_instance->primaryKey(), array('returnAsArray' => true));
+							$va_relative_ids = array_values($va_relative_ids);
+							break;
+						case 'related':
+							$va_relative_ids = $qr_res->get($t_instance->tableName().".related.".$t_instance->primaryKey(), array('returnAsArray' => true));
 							$va_relative_ids = array_values($va_relative_ids);
 							break;
 						default:

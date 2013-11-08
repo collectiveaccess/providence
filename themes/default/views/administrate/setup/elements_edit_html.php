@@ -88,13 +88,13 @@
 				<table class="objectRepresentationListItem">
 					<tr valign="top">
 						<td><?php 
-								print $t_restriction->htmlFormElement('table_num', null, array('classname' => '', 'id' => "{fieldNamePrefix}table_num_{n}", 'name' => "{fieldNamePrefix}table_num_{n}", "value" => "", 'no_tooltips' => false, 'hide_select_if_only_one_option' => false, 'onchange' => 'caSetTypeMenu("{fieldNamePrefix}table_num_{n}")'));	 
+								print $t_restriction->htmlFormElement('table_num', null, array('classname' => '', 'id' => "{fieldNamePrefix}table_num_{n}", 'name' => "{fieldNamePrefix}table_num_{n}", "value" => "", 'no_tooltips' => true, 'hide_select_if_only_one_option' => false, 'onchange' => 'caSetTypeMenu("{fieldNamePrefix}table_num_{n}")'));	 
 ?>
 								<select id="{fieldNamePrefix}type_id_{n}" name="{fieldNamePrefix}type_id_{n}">
 									<option value=''>-</option>
 								</select>
 <?php
-								print $t_restriction->htmlFormElement('include_subtypes', null, array('classname' => '', 'id' => "{fieldNamePrefix}include_subtypes_{n}", 'name' => "{fieldNamePrefix}include_subtypes_{n}", "value" => "", 'no_tooltips' => false, 'hide_select_if_only_one_option' => false));
+								print $t_restriction->htmlFormElement('include_subtypes', null, array('classname' => '', 'id' => "{fieldNamePrefix}include_subtypes_{n}", 'name' => "{fieldNamePrefix}include_subtypes_{n}", "value" => "", 'no_tooltips' => true, 'hide_select_if_only_one_option' => false));
 ?>
 						</td>
 						<td><?php 
@@ -190,12 +190,20 @@ endif;
 <div class="editorBottomPadding"><!-- empty --></div>
 
 <script type="text/javascript">
-	jQuery(document).ready(function() {
-		jQuery("#datatype").change(function() {
-			jQuery("#elementSettingsForm").load('<?php print caNavUrl($this->request, 'administrate/setup', 'Elements', 'getElementSettingsForm'); ?>', { datatype: jQuery("#datatype").val(), element_id: <?php print (int)$vn_element_id; ?>});
+	function caSetElementsSettingsForm(opts) {
+		if (!opts) { opts = {}; }
+		opts['datatype'] = jQuery("#datatype").val();
+		opts['element_id'] = <?php print (int)$vn_element_id; ?>;
+		console.log('opts', opts);
+		jQuery("#elementSettingsForm").load('<?php print caNavUrl($this->request, 'administrate/setup', 'Elements', 'getElementSettingsForm'); ?>', opts, function() {
+		
 			// list drop-down is only enabled when datatype is set to list (datatype=3)
 			(jQuery("#datatype").val() == 3) ? jQuery("#list_id").attr('disabled', false) : jQuery("#list_id").attr('disabled', true);
 		});
+	}
+	jQuery(document).ready(function() {
+		jQuery("#datatype").change(function() { caSetElementsSettingsForm(); });
+		
 		// initial state of form
 		(jQuery("#datatype").val() == 3) ? jQuery("#list_id").attr('disabled', false) : jQuery("#list_id").attr('disabled', true);
 	});

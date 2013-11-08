@@ -878,6 +878,7 @@ class Installer {
 	public function processDisplays(){
 		require_once(__CA_MODELS_DIR__."/ca_bundle_displays.php");
 		require_once(__CA_MODELS_DIR__."/ca_bundle_display_placements.php");
+		require_once(__CA_MODELS_DIR__."/ca_bundle_display_type_restrictions.php");
 		
 		$o_config = Configuration::load();
 
@@ -916,7 +917,7 @@ class Installer {
 			$t_display = new ca_bundle_displays();
 			$t_display->setMode(ACCESS_WRITE);
 
-			$t_display->set("display_code",$vs_display_code);
+			$t_display->set("display_code", $vs_display_code);
 			$t_display->set("is_system",$vb_system);
 			$t_display->set("table_num",$vo_dm->getTableNum($vs_table));
 			$t_display->set("user_id", 1);		// let administrative user own these
@@ -934,6 +935,35 @@ class Installer {
 				}
 				if(!$this->processDisplayPlacements($t_display, $vo_display->bundlePlacements, null)){
 					return false;
+				}
+			}
+			
+			if ($vo_display->typeRestrictions) {
+				foreach($vo_display->typeRestrictions->children() as $vo_restriction){
+					$t_list = new ca_lists();
+					$t_list_item = new ca_list_items();
+					$vs_restriction_code = trim((string)self::getAttribute($vo_restriction, "code"));
+					$vs_type = trim((string)self::getAttribute($vo_restriction, "type"));
+					
+					$t_instance = $vo_dm->getInstanceByTableNum($vn_table_num = $vo_dm->getTableNum($vs_table));
+					$vs_type_list_name = $t_instance->getFieldListCode($t_instance->getTypeFieldName());
+					if ($vs_type) {
+						$t_list->load(array('list_code' => $vs_type_list_name));
+						$t_list_item->load(array('list_id' => $t_list->getPrimaryKey(), 'idno' => $vs_type));
+					}
+					$t_restriction = new ca_bundle_display_type_restrictions();
+					$t_restriction->setMode(ACCESS_WRITE);
+					$t_restriction->set('table_num', $vn_table_num);
+					$t_restriction->set('include_subtypes', (bool)$vo_restriction->includeSubtypes ? 1 : 0);
+					$t_restriction->set('type_id', ($vs_type) ? $t_list_item->getPrimaryKey(): null);
+					$t_restriction->set('display_id', $t_display->getPrimaryKey());
+				
+					$this->_processSettings($t_restriction, $vo_restriction->settings);
+					$t_restriction->insert();
+
+					if ($t_restriction->numErrors()) {
+						$this->addError("There was an error while inserting type restriction {$vs_restriction_code} in display {$vs_display_code}: ".join("; ",$t_restriction->getErrors()));
+					}
 				}
 			}
 		}
