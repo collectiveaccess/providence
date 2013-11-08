@@ -326,13 +326,16 @@
 		 *
 		 */
 		public function getRelationshipTypesBySubtype($ps_orientation, $pn_type_id, $pa_options=null) {
+			unset($pa_options['request']);
 			if (!$this->hasField('type_id')) { return array(); }
 			$vs_left_table_name = $this->getLeftTableName();
 			$vs_right_table_name = $this->getRightTableName();
 			
+			$vb_dont_include_subtypes_in_type_restriction = caGetOptions('dont_include_subtypes_in_type_restriction', $pa_options, false);
+			
 			$o_db = $this->getDb();
 			$t_rel_type = new ca_relationship_types();
-					
+			
 			$vs_restrict_to_relationship_type_sql = '';
 			if (isset($pa_options['restrict_to_relationship_types']) && $pa_options['restrict_to_relationship_types']) {
 				if(!is_array($pa_options['restrict_to_relationship_types'])) {
@@ -372,13 +375,19 @@
 			
 			// Support hierarchical subtypes - if the subtype restriction is a type with parents then include those as well
 			// Allows subtypes to "inherit" bindings from parent types
+			
 			$t_list_item = new ca_list_items($pn_type_id);
-			if (!is_array($va_ancestor_ids = $t_list_item->getHierarchyAncestors(null, array('idsOnly' => true, 'includeSelf' => true)))) {
-				$va_ancestor_ids = array();
+			
+			if (!$vb_dont_include_subtypes_in_type_restriction) {
+				if (!is_array($va_ancestor_ids = $t_list_item->getHierarchyAncestors(null, array('idsOnly' => true, 'includeSelf' => true)))) {
+					$va_ancestor_ids = array();
+				}
+				// remove hierarchy root from ancestor list, otherwise invalid bindings 
+				// from root nodes (which are not "real" rel types) may be inherited
+				array_pop($va_ancestor_ids);
+			} else {
+				$va_ancestor_ids = array($pn_type_id);
 			}
-			// remove hierarchy root from ancestor list, otherwise invalid bindings 
-			// from root nodes (which are not "real" rel types) may be inherited
-			array_pop($va_ancestor_ids);
 			
 			$va_types = array();
 			$va_parent_ids = array();
@@ -392,7 +401,6 @@
 				// self relationship
 				while($qr_res->nextRow()) {
 					$va_row = $qr_res->getRow();
-					
 					$vn_parent_id = $va_row['parent_id'];
 					$va_hier[$vn_parent_id][] = $va_row['type_id'];
 					
@@ -441,7 +449,7 @@
 							$va_tmp = $va_row;
 							
 							$vs_key = (strlen($va_tmp['rank']) > 0)  ? sprintf("%08d", (int)$va_tmp['rank']).preg_replace('![^A-Za-z0-9_]+!', '_', $va_tmp['typename']) : preg_replace('![^A-Za-z0-9_]+!', '_', $va_tmp['typename']);
-							//$va_tmp['typename'] = $va_tmp['typename'];
+						
 							unset($va_tmp['typename_reverse']);		// we pass the typename adjusted for direction in 'typename', so there's no need to include typename_reverse in the returned values
 
 							$va_types[$vn_parent_id][$vs_subtype][$vs_key][$va_row['type_id']][$va_row['locale_id']] = $va_tmp;
@@ -466,7 +474,6 @@
 								// indicate the directionality of the typename (ltor = left to right = "typename"; rtor = right to left = "typename_reverse")
 								//
 								$va_tmp = $va_row;
-								//$va_tmp['typename'] =  $va_tmp['typename'];
 								unset($va_tmp['typename_reverse']);		// we pass the typename adjusted for direction in 'typename', so there's no need to include typename_reverse in the returned values
 	
 								$vs_key = (strlen($va_tmp['rank']) > 0)  ? sprintf("%08d", (int)$va_tmp['rank']).preg_replace('![^A-Za-z0-9_]+!', '_', $va_tmp['typename']) : preg_replace('![^A-Za-z0-9_]+!', '_', $va_tmp['typename']);
@@ -502,13 +509,15 @@
 						}
 					}
 				
-					// include mapping from parent type used in restriction to child types that inherit the binding
-					if (($vs_subtype != 'NULL') && (!isset($va_subtype_lookups[$vs_subtype]) || !$va_subtype_lookups[$vs_subtype])) {
-						$va_children = $t_list_item->getHierarchyChildren($vs_subtype, array('idsOnly' => true));
-						foreach($va_children as $vn_child) {
-							$va_processed_types['_type_map'][$vn_child] = $vs_subtype;
+					if (!$vb_dont_include_subtypes_in_type_restriction) {
+						// include mapping from parent type used in restriction to child types that inherit the binding
+						if (($vs_subtype != 'NULL') && (!isset($va_subtype_lookups[$vs_subtype]) || !$va_subtype_lookups[$vs_subtype])) {
+							$va_children = $t_list_item->getHierarchyChildren($vs_subtype, array('idsOnly' => true));
+							foreach($va_children as $vn_child) {
+								$va_processed_types['_type_map'][$vn_child] = $vs_subtype;
+							}
+							$va_subtype_lookups[$vs_subtype] = true;
 						}
-						$va_subtype_lookups[$vs_subtype] = true;
 					}
 					$va_processed_types[$vs_subtype] = caExtractValuesByUserLocale($va_types_by_locale, null, null, array('returnList' => true));
 				}
@@ -564,13 +573,15 @@
 						}
 					}
 					
-					// include mapping from parent type used in restriction to child types that inherit the binding
-					if (($vs_subtype != 'NULL') && (!isset($va_subtype_lookups[$vs_subtype]) || !$va_subtype_lookups[$vs_subtype])) {
-						$va_children = $t_list_item->getHierarchyChildren($vs_subtype, array('idsOnly' => true));
-						foreach($va_children as $vn_child) {
-							$va_processed_types['_type_map'][$vn_child] = $vs_subtype;
+					if (!$vb_dont_include_subtypes_in_type_restriction) {
+						// include mapping from parent type used in restriction to child types that inherit the binding
+						if (($vs_subtype != 'NULL') && (!isset($va_subtype_lookups[$vs_subtype]) || !$va_subtype_lookups[$vs_subtype])) {
+							$va_children = $t_list_item->getHierarchyChildren($vs_subtype, array('idsOnly' => true));
+							foreach($va_children as $vn_child) {
+								$va_processed_types['_type_map'][$vn_child] = $vs_subtype;
+							}
+							$va_subtype_lookups[$vs_subtype] = true;
 						}
-						$va_subtype_lookups[$vs_subtype] = true;
 					}
 					
 					$va_processed_types[$vs_subtype] = caExtractValuesByUserLocale($va_types_by_locale, null, null, array('returnList' => true));					
