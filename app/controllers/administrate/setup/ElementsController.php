@@ -241,6 +241,18 @@ class ElementsController extends BaseEditorController {
 	
 			/* process settings */
 			if (is_array($va_settings = $t_element->getAvailableSettings())) {
+				$vb_need_to_update = false;
+				foreach($va_settings as $vs_setting_key => $va_setting_info) {
+					if (isset($va_setting_info['refreshOnChange']) && (bool)$va_setting_info['refreshOnChange']) {
+						$t_element->setSetting($vs_setting_key, $va_request['setting_'.$vs_setting_key]);
+						$vb_need_to_update = true;
+					}
+				}
+				if ($vb_need_to_update) { 
+					$t_element->update(); 
+					$va_settings = $t_element->getAvailableSettings();
+				}
+				
 				foreach($va_settings as $vs_setting_key => $va_setting_info) {
 					if (isset($va_request['setting_'.$vs_setting_key.'[]'])) {
 						$vs_val = $va_request['setting_'.$vs_setting_key.'[]'];
@@ -249,7 +261,7 @@ class ElementsController extends BaseEditorController {
 					}
 					
 					if (!($t_element->setSetting($vs_setting_key, $vs_val, $vs_error))) {
-						$this->notification->addNotification(_t("Setting is not valid: %1", $vs_error), __NOTIFICATION_TYPE_ERROR__);
+						$this->notification->addNotification(_t("Setting %2 is not valid: %1", $vs_error, $vs_setting_key), __NOTIFICATION_TYPE_ERROR__);
 						continue;
 					}
 					$t_element->update();
@@ -508,8 +520,15 @@ class ElementsController extends BaseEditorController {
 		$t_element = $this->getElementObject();
 		$pn_datatype = $this->request->getParameter('datatype', pInteger);
 		
-		$t_element->set('datatype', $pn_datatype);
-		$this->view->setVar('available_settings',$t_element->getAvailableSettings());
+		$t_element->set('datatype', $pn_datatype); 
+		
+		foreach($_REQUEST as $vs_k => $vs_v) {
+			if (substr($vs_k, 0, 8) == 'setting_') {
+				$t_element->setSetting(substr($vs_k, 8), $y=$this->request->getParameter($vs_k, pString));
+			}
+		}
+		
+		$this->view->setVar('available_settings',$t_element->getAvailableSettings($ps_service));
 		$this->render("ajax_elements_settings_form_html.php");
 	}
 	# -------------------------------------------------------

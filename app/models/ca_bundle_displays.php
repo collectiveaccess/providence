@@ -1202,15 +1202,6 @@ class ca_bundle_displays extends BundlableLabelableBaseModelWithAttributes {
 			if ((sizeof($va_path) < 2) || (sizeof($va_path) > 3)) { continue; }		// only use direct relationships (one-many or many-many)
 			
 			$va_additional_settings = array(
-				'makeEditorLink' => array(
-					'formatType' => FT_NUMBER,
-					'displayType' => DT_CHECKBOXES,
-					'width' => 35, 'height' => 5,
-					'takesLocale' => false,
-					'default' => '0',
-					'label' => _t('Display as link to editor'),
-					'description' => _t('If set name of related item will be displayed as a link to edit the item.')
-				),
 				'format' => array(
 					'formatType' => FT_TEXT,
 					'displayType' => DT_FIELD,
@@ -1253,6 +1244,7 @@ class ca_bundle_displays extends BundlableLabelableBaseModelWithAttributes {
 					'formatType' => FT_NUMBER,
 					'displayType' => DT_CHECKBOXES,
 					'width' => 10, 'height' => 1,
+					'hideOnSelect' => array('format'),
 					'takesLocale' => false,
 					'default' => '0',
 					'label' => _t('Show hierarchy?'),
@@ -1612,11 +1604,10 @@ class ca_bundle_displays extends BundlableLabelableBaseModelWithAttributes {
 	 * @param object $po_result A sub-class of SearchResult or BaseModel to extract data out of
 	 * @param int $pn_placement_id 
 	 * @param array Optional array of options. Supported options include:
-	 *		request = The current RequestHTTP object; required if using the makeEditorLink option
+	 *		request = The current RequestHTTP object
 	 *		convertCodesToDisplayText = If true numeric list id's and value lists are converted to display text. Default is true. If false then all such values are returned as the original integer codes.
 	 *		forReport = If true then certain values are transformed for display in a report. Namely, all media output is forced to use the version specified by the app.conf 'representation_version_for_report' directive, no matter the setting in the display.
 	 *		purify = if true then value is run through HTMLPurifier (http://htmlpurifier.org) before being returned; this is useful when you want to make sure any HTML in the value is valid, particularly when converting HTML to a PDF as invalid markup will cause an exception. Default is false as HTMLPurify can significantly slow down things if used everywhere.
-	 *		makeEditorLink = if true will attempt to return value in a link to edit the value's record. Is ignored if 'forReport' is set or 'request' is not set
 	 *		delimiter = character(s) to place between repeating values
 	 *
 	 * @return string The processed value ready for display
@@ -1625,9 +1616,20 @@ class ca_bundle_displays extends BundlableLabelableBaseModelWithAttributes {
 		if (!is_array($pa_options)) { $pa_options = array(); }
 		if (!isset($pa_options['convertCodesToDisplayText'])) { $pa_options['convertCodesToDisplayText'] = true; }
 		if (!isset($pa_options['delimiter'])) { $pa_options['delimiter'] = ";\n\n"; }
-		if (!isset($pa_options['makeEditorLink'])) { $pa_options['makeEditorLink'] = false; }
 		if (!isset($pa_options['forReport'])) { $pa_options['forReport'] = false; }
 		if (!isset($pa_options['purify'])) { $pa_options['purify'] = false; }
+		if (!isset($pa_options['asHTML'])) { $pa_options['asHTML'] = true; }
+		
+		if (!isset($pa_options['maximumLength'])) { $pa_options['maximumLength'] =  ($va_placement['settings']['maximum_length']) ? $va_placement['settings']['maximum_length'] : null; }
+		if (!isset($pa_options['filter'])) { $pa_options['filter'] = caGetOption('filter', $va_placement['settings'], null); }
+		
+		$pa_options['delimiter'] = ($va_placement['settings']['delimiter']) ? $va_placement['settings']['delimiter'] : $pa_options['delimiter'];
+		$pa_options['useSingular'] = (isset($va_placement['settings']['sense']) && ($va_placement['settings']['sense'] == 'singular')) ? true : false;
+		$pa_options['returnURL'] = (isset($va_placement['settings']['display_mode']) && ($va_placement['settings']['display_mode'] == 'url'))  ? true : false;
+		$pa_options['dateFormat'] = (isset($va_placement['settings']['dateFormat']) && ($va_placement['settings']['dateFormat'])) ? $va_placement['settings']['dateFormat'] : $pa_options['dateFormat'];
+		
+		
+		$pa_options['hierarchicalDelimiter'] = '';
 		
 		if (!is_numeric($pn_placement_id)) {
 			$vs_bundle_name = $pn_placement_id;
@@ -1640,24 +1642,6 @@ class ca_bundle_displays extends BundlableLabelableBaseModelWithAttributes {
 		
 		$va_tmp = explode('.', $vs_bundle_name);
 		
-		if (!isset($pa_options['maximumLength'])) {
-			$pa_options['maximumLength'] =  ($va_placement['settings']['maximum_length']) ? $va_placement['settings']['maximum_length'] : null;
-		}
-		
-		
-		if (!isset($pa_options['filter'])) {
-			$pa_options['filter'] = caGetOption('filter', $va_placement['settings'], null);
-		}
-		
-		$pa_options['makeEditorLink'] = ($va_placement['settings']['makeEditorLink']) ? $va_placement['settings']['makeEditorLink'] : $pa_options['makeEditorLink'];
-		$pa_options['delimiter'] = ($va_placement['settings']['delimiter']) ? $va_placement['settings']['delimiter'] : $pa_options['delimiter'];
-		$pa_options['useSingular'] = (isset($va_placement['settings']['sense']) && ($va_placement['settings']['sense'] == 'singular')) ? true : false;
-		
-		$pa_options['returnURL'] = (isset($va_placement['settings']['display_mode']) && ($va_placement['settings']['display_mode'] == 'url'))  ? true : false;
-		
-		$pa_options['dateFormat'] = (isset($va_placement['settings']['dateFormat']) && ($va_placement['settings']['dateFormat'])) ? $va_placement['settings']['dateFormat'] : $pa_options['dateFormat'];
-		
-		$pa_options['hierarchicalDelimiter'] = '';
 		if ($va_placement['settings']['show_hierarchy'] || $pa_options['show_hierarchy']) {
 			if ($va_tmp[1] == 'related') {
 				array_splice($va_tmp, 2, 0, 'hierarchy');
@@ -1679,57 +1663,24 @@ class ca_bundle_displays extends BundlableLabelableBaseModelWithAttributes {
 			$pa_options['template'] = ($va_placement['settings']['format']) ? $va_placement['settings']['format'] : null;
 		}
 		
-		if (!isset($pa_options['asHTML'])) {
-			$pa_options['asHTML'] = true;
-		}
 		
-		if (!$pa_options['forReport'] && isset($pa_options['makeEditorLink']) && $pa_options['makeEditorLink'] && isset($pa_options['request']) && $pa_options['request']) {
+		$vs_val = '';
+		if($pa_options['template']) { 
 			if ($t_instance = $this->getAppDatamodel()->getInstanceByTableName($va_tmp[0], true)) {
 				$va_tmp2 = $va_tmp;
 				if ((sizeof($va_tmp2) > 1) && (in_array($vs_tmp = array_pop($va_tmp2), array('related')))) {
 					$va_tmp2[] = $vs_tmp;
 				}
 				$va_tmp2[] = $t_instance->primaryKey();
-			
+		
 				$va_ids = $po_result->get(join('.', $va_tmp2), array('returnAsArray' => true));
 				$va_links = array();
 				if (is_array($va_ids)) {
-					$va_display_texts = caProcessTemplateForIDs($pa_options['template'], $va_tmp2[0], $va_ids, array_merge($pa_options, array('returnAsArray' => true)));
-					foreach($va_display_texts as $vn_i => $va_text) {
-						
-						if (is_array($va_text)) {
-							if (in_array('hierarchy', $va_tmp2)) {
-								$vs_text = array_pop($va_text);
-								$vn_id = $po_result->get($va_tmp2[0].'.'.$t_instance->primaryKey());
-							} else {
-								if (in_array('related', $va_tmp2)) {
-									$vs_text = $va_text[$t_instance->getLabelDisplayField()];
-								} else {
-									if (is_array($va_text)) {
-										$vs_text = $va_text[$t_instance->getLabelDisplayField()];
-									}
-								}
-								$vn_id = $va_text[$t_instance->primaryKey()];
-							}
-						} else {
-							$vn_id = array_shift($va_ids);
-							$vs_text = $va_text;
-						}
-						
-						$va_links[] = caEditorLink($pa_options['request'], $vs_text, '', $va_tmp2[0], $vn_id);
-					}
+					$vs_val = caProcessTemplateForIDs($pa_options['template'], $va_tmp2[0], $va_ids, array_merge($pa_options, array('returnAsArray' => false)));
 				}
-				$vs_val = join($pa_options['delimiter'], $va_links);
 			}
 		} else {
-			$vs_val = $po_result->get($vs_bundle_name, $pa_options);
-		
-			if (isset($pa_options['maximumLength']) && ((int)$pa_options['maximumLength'] > 0)) {
-				$vs_stripped_val = strip_tags($vs_val);
-				if (mb_strlen($vs_stripped_val) > (int)$pa_options['maximumLength']) {
-					return mb_substr($vs_stripped_val, 0, (int)$pa_options['maximumLength']);
-				}
-			}
+			$vs_val = $po_result->get(join(".", $va_tmp), $pa_options);
 		}
 		
 		if (isset($pa_options['purify']) && $pa_options['purify']) {

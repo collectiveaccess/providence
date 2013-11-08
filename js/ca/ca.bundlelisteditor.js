@@ -63,17 +63,13 @@ var caUI = caUI || {};
 				usedBundles[v.bundle] = true;
 			});
 			
-			jQuery('#' + that.toDisplayListID).html(displayListText);
-			
-//			jQuery.each(that.toDisplayListID, function(k, v) {
-//				that._getTooltipForDisplay(v);
-//			});
+			jQuery('#' + that.toDisplayListID)
+				.html(displayListText)
+				.find("input:checked").change();	// trigger change handler to hide anything affected by hideOnSelect option for checkboxes
 			
 			displayListText = '';
 			jQuery.each(that.availableDisplayList, function(k, v) {
-				//if (!usedBundles[v.bundle]) {
-					displayListText += that._formatForDisplay(v);
-				//}
+				displayListText += that._formatForDisplay(v);
 			});
 			jQuery('#' + that.availableListID).html(displayListText);
 			
@@ -135,7 +131,6 @@ var caUI = caUI || {};
 			var description = placement_info.description;
 			var bundle;
 			if (placement_info.bundle) { bundle = placement_info.bundle.replace(/\./g, "\\."); }
-		//	jQuery('#displayElement_' + bundle).tooltip({ track: false, extraClass: 'tooltipFormat', showURL: false, bodyHandler: function() { return "<h3>" + label + "</h3>" + description; }});
 		}
 		// ------------------------------------------------------------------------------------
 		that._updateBundleListFormElement = function() {
