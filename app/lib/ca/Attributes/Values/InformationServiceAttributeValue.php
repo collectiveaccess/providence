@@ -159,15 +159,10 @@
 
 			if (trim($ps_value)) {
 				$va_tmp = explode('|', $ps_value);
-				
-				$vs_url = str_replace('info:lc/', 'http://id.loc.gov/authorities/', $va_tmp[1]);
-				
-				$va_tmp1 = explode('/', $va_tmp[1]);
-				$vs_id = array_pop($va_tmp1);
 				return array(
 					'value_longtext1' => $va_tmp[0],	// text
-					'value_longtext2' => $vs_url,		// uri
-					'value_decimal1' => $vs_id			// id
+					'value_longtext2' => $va_tmp[2],	// uri
+					'value_decimal1' => $va_tmp[1] 		// id
 				);
 			}
 			return array(
@@ -203,7 +198,7 @@
 				);
 				
 			if ($pa_options['request']) {
-				$vs_url = caNavUrl($pa_options['request'], 'lookup', 'InformationService', 'Get', array('max' => 100));
+				$vs_url = caNavUrl($pa_options['request'], 'lookup', 'InformationService', 'Get', array('max' => 100, 'element_id' => $pa_element_info['element_id']));
 			} else {
 				// hardcoded default for testing.
 				$vs_url = '/index.php/lookup/InformationService/Get';	
@@ -220,15 +215,14 @@
 								minLength: 3,delay: 800,
 								source: '{$vs_url}',
 								select: function(event, ui) {
-									jQuery('#{fieldNamePrefix}".$pa_element_info['element_id']."_{n}').val(ui.item.label + '|' + ui.item.id);
+									jQuery('#{fieldNamePrefix}".$pa_element_info['element_id']."_{n}').val(ui.item.label + '|' + ui.item.idno + '|' + ui.item.url);
+									
 								}
 							}
 						);
 						
 						if ('{{".$pa_element_info['element_id']."}}') {
-							var re = /\[sh([^\]]+)\]/; 
-							var infoservice_id = re.exec('{".$pa_element_info['element_id']."}')[1];
-							jQuery('#{fieldNamePrefix}".$pa_element_info['element_id']."_link{n}').css('display', 'inline').attr('href', 'http://id.loc.gov/authorities/sh' + infoservice_id);
+							jQuery('#{fieldNamePrefix}".$pa_element_info['element_id']."_link{n}').css('display', 'inline').attr('href', '".caNavUrl($pa_options['request'], 'lookup', 'InformationService', 'GetDetail', array())."/id/{n}');
 						}
 					});
 				</script>
