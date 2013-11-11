@@ -96,7 +96,7 @@ class WLPlugInformationServiceLCSH Extends BaseInformationServicePlugin Implemen
 	/** 
 	 *
 	 */
-	public function lookup($pa_settings, $ps_search) {
+	public function lookup($pa_settings, $ps_search, $pa_options=null) {
 	
 	}
 	# ------------------------------------------------

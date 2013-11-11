@@ -34,8 +34,12 @@
     *
     */ 
     
-include_once(__CA_LIB_DIR__."/core/Plugins/IWLPlugInformationService.php");
-include_once(__CA_LIB_DIR__."/core/Plugins/InformationService/BaseInformationServicePlugin.php");
+    
+require_once(__CA_LIB_DIR__."/core/Plugins/IWLPlugInformationService.php");
+require_once(__CA_LIB_DIR__."/core/Plugins/InformationService/BaseInformationServicePlugin.php");
+require_once(__CA_LIB_DIR__."/vendor/autoload.php");
+
+	use Guzzle\Http\Client;
 
 global $g_information_service_settings_CollectiveAccess;
 $g_information_service_settings_CollectiveAccess = array(
@@ -74,7 +78,15 @@ $g_information_service_settings_CollectiveAccess = array(
 			'width' => 30, 'height' => 1,
 			'label' => _t('Password'),
 			'description' => _t('Password to authenticate with on remote system.')
-		)
+		),
+		'labelFormat' => array(
+			'formatType' => FT_TEXT,
+			'displayType' => DT_FIELD,
+			'default' => '',
+			'width' => 90, 'height' => 2,
+			'label' => _t('Query result label format'),
+			'description' => _t('Display template to format query result labels with.')
+		),
 );
 
 class WLPlugInformationServiceCollectiveAccess Extends BaseInformationServicePlugin Implements IWLPlugInformationService {
@@ -91,7 +103,7 @@ class WLPlugInformationServiceCollectiveAccess Extends BaseInformationServicePlu
 		parent::__construct();
 		$this->info['NAME'] = 'CollectiveAccess';
 		
-		$this->description = _t('Accesses data services in remote CollectiveAccess databases');
+		$this->description = _t('Provides access to data services in remote CollectiveAccess databases');
 	}
 	# ------------------------------------------------
 	/** 
@@ -106,15 +118,46 @@ class WLPlugInformationServiceCollectiveAccess Extends BaseInformationServicePlu
 	/** 
 	 *
 	 */
-	public function lookup($pa_settings, $ps_search) {
+	public function lookup($pa_settings, $ps_search, $pa_options=null) {
+		$o_client = new Client($pa_settings['baseURL']);
+		
+		// Get sort field
+		$o_dm = Datamodel::load();
+		$t_instance = $o_dm->getInstanceByTableName($pa_settings['table'], true);
+		$vs_sort_field = $t_instance->getLabelTableName().".".$t_instance->getLabelSortField();
+		
+		// Create a request with basic Auth
+		$o_request = $o_client->get($vs_url = '/service.php/find/'.$pa_settings['table'].'?q='.urlencode($ps_search).'&sort='.$vs_sort_field.'&template='.urlencode($pa_settings['labelFormat']))->setAuth($pa_settings['user_name'], $pa_settings['password']);
 	
+		// Send the request and get the response
+		$o_response = $o_request->send();
+		$va_data = json_decode($o_response->getBody(), true);
+		
+		if (isset($va_data['results']) && is_array($va_data['results'])) {
+			foreach($va_data['results'] as $vs_k => $va_result) {
+				$va_data['results'][$vs_k]['label'] = $va_result['display_label'];
+				unset($va_result['display_label']);
+				$va_data['results'][$vs_k]['url'] = $pa_settings['baseURL'].'/service.php/item/'.$pa_settings['table'].'/id/'.$va_result['id'];
+			}
+		}
+		
+		return $va_data;
 	}
 	# ------------------------------------------------
 	/** 
 	 *
 	 */
 	public function getExtendedInformation($pa_settings, $ps_id) {
-	
+		$o_client = new Client($pa_settings['baseURL']);
+		
+		// Create a request with basic Auth
+		$o_request = $o_client->get($vs_url = '/service.php/item/'.$pa_settings['table'].'id/'.urlencode($ps_id).'?format=import&flatten=locales')->setAuth($pa_settings['user_name'], $pa_settings['password']);
+		
+		// Send the request and get the response
+		$o_response = $o_request->send();
+		$va_data = json_decode($o_response->getBody(), true);
+		
+		return $va_data;
 	}
 	# ------------------------------------------------
 }
