@@ -1,0 +1,1 @@
+ajax_information_service_detail_html goes here
