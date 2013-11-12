@@ -57,7 +57,15 @@ $g_information_service_settings_CollectiveAccess = array(
 			'default' => '',
 			'options' => array(
 				_t('objects') => 'ca_objects',
-				_t('entities') => 'ca_entities'
+				_t('lots') => 'ca_object_lots',
+				_t('entities') => 'ca_entities',
+				_t('places') => 'ca_places',
+				_t('occurrences') => 'ca_occurrences',
+				_t('collections') => 'ca_collections',
+				_t('storage locations') => 'ca_storage_locations',
+				_t('loans') => 'ca_loans',
+				_t('movements') => 'ca_movements',
+				_t('list items') => 'ca_list_items'
 			),
 			'width' => 50, 'height' => 1,
 			'label' => _t('Item type'),
