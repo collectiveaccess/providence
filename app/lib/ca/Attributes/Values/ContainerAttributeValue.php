@@ -120,7 +120,7 @@
  			return '';
  		}
  		# ------------------------------------------------------------------
- 		public function getAvailableSettings() {
+ 		public function getAvailableSettings($pa_element_info=null) {
  			global $_ca_attribute_settings;
  			return $_ca_attribute_settings['ContainerAttributeValue'];
  		}

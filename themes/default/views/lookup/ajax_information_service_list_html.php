@@ -1,13 +1,13 @@
 <?php
 /* ----------------------------------------------------------------------
- * bundles/settings.php : 
+ * lookup/ajax_information_service_list_list_html.php : 
  * ----------------------------------------------------------------------
  * CollectiveAccess
  * Open-source collections management software
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2011-2013 Whirl-i-Gig
+ * Copyright 2013 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -26,29 +26,5 @@
  * ----------------------------------------------------------------------
  */
  
- 
-	$vs_id_prefix 					= $this->getVar('placement_code').$this->getVar('id_prefix');
-	$vn_table_num 				= $this->getVar('table_num');
-	
-	$t_subject							= $this->getVar('t_subject');
-	
-	print caEditorBundleShowHideControl($this->request, $vs_id_prefix.$vn_table_num.'Settings');
+ 	print json_encode($this->getVar('information_service_list'));
 ?>
-<div id="<?php print $vs_id_prefix.$vn_table_num.'Settings'; ?>">
-	<div class="bundleContainer">
-		<div class="caItemList settingsBundle">
-<?php 
-				if ($vs_form = $t_subject->getHTMLSettingForm(array('id' => 'setting'))) {
-					print $vs_form;
-				} else {
-					print _t('No settings');
-				}	
-?>
-		</div>
-	</div>
-</div>
-<script type="text/javascript">
-	jQuery(document).ready(function() {
-		jQuery("#<?php print $vs_id_prefix.$vn_table_num.'Settings'; ?> input").change();
-	});
-</script>

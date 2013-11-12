@@ -37,6 +37,7 @@
 require_once(__CA_LIB_DIR__.'/core/Datamodel.php');
 require_once(__CA_LIB_DIR__.'/core/Configuration.php');
 require_once(__CA_LIB_DIR__.'/core/Parsers/TimeExpressionParser.php');
+require_once(__CA_LIB_DIR__.'/core/Parsers/ExpressionParser.php');
 require_once(__CA_LIB_DIR__."/ca/ApplicationPluginManager.php");
 	
 	# ------------------------------------------------------------------------------------------------
@@ -1872,6 +1873,7 @@ require_once(__CA_LIB_DIR__."/ca/ApplicationPluginManager.php");
 		$o_dom->loadHTML('<?xml encoding="utf-8">'.$ps_template);
 		libxml_clear_errors();
 		
+		$o_if = $o_dom->getElementsByTagName("if");						// if 
 		$o_ifdefs = $o_dom->getElementsByTagName("ifdef");				// if defined
 		$o_ifnotdefs = $o_dom->getElementsByTagName("ifnotdef");		// if not defined
 		$o_mores = $o_dom->getElementsByTagName("more");				// more tags – content suppressed if there are no defined values following the tag pair
@@ -1880,6 +1882,29 @@ require_once(__CA_LIB_DIR__."/ca/ApplicationPluginManager.php");
 		$o_options = $o_dom->getElementsByTagName("options");
 		
 		
+		$va_if = array();
+		foreach($o_if as $o_if) {
+			if (!$o_if) { continue; }
+			
+			$vs_html = $o_dom->saveXML($o_if);
+			$vs_content = preg_replace("!^<[^\>]+>!", "", $vs_html);
+			$vs_content = preg_replace("!<[^\>]+>$!", "", $vs_content);
+			
+			//
+			// Hack to get around DomDocument trimming leading spaces off of parsed HTML
+			// We try here to detect the trimming and shunt those spaces back where they belong. Seems to work :-)
+			//
+			if (preg_match("!([ ]+){$vs_content}!", $ps_template, $va_match_spaces)) {
+				$vs_html = preg_replace("!{$vs_content}!", $va_match_spaces[1].$vs_content, $vs_html);
+				$vs_content = $va_match_spaces[1].$vs_content;
+			}
+			
+			$va_if[] = array('directive' => $vs_html, 'content' => $vs_content, 'rule' => $vs_rule = (string)$o_if->getAttribute('rule'));
+			
+			//$vs_code = preg_replace("!%(.*)$!", '', $vs_code);
+			//if (!in_array($vs_code, $va_tags)) { $va_tags[] = $vs_code; }
+		}
+		//print_r($va_if);
 		
 		$va_ifdefs = array();
 		foreach($o_ifdefs as $o_ifdef) {
@@ -1964,7 +1989,24 @@ require_once(__CA_LIB_DIR__."/ca/ApplicationPluginManager.php");
 					||
 					((sizeof($va_relative_to_tmp) >= 1) && ($va_relative_to_tmp[0] == $ps_tablename) && ($va_relative_to_tmp[1] != 'related'))
 				) {
-					$va_relative_ids = $pa_row_ids;
+					
+					switch(strtolower($va_relative_to_tmp[1])) {
+						case 'hierarchy':
+							$va_relative_ids = $qr_res->get($t_instance->tableName().".hierarchy.".$t_instance->primaryKey(), array('returnAsArray' => true));
+							$va_relative_ids = array_values($va_relative_ids);
+							break;
+						case 'parent':
+							$va_relative_ids = $qr_res->get($t_instance->tableName().".parent.".$t_instance->primaryKey(), array('returnAsArray' => true));
+							$va_relative_ids = array_values($va_relative_ids);
+							break;
+						case 'children':
+							$va_relative_ids = $qr_res->get($t_instance->tableName().".children.".$t_instance->primaryKey(), array('returnAsArray' => true));
+							$va_relative_ids = array_values($va_relative_ids);
+							break;
+						default:
+							$va_relative_ids = $pa_row_ids;
+							break;
+					}
 				} else { 
 					switch(strtolower($va_relative_to_tmp[1])) {
 						case 'hierarchy':
@@ -1977,6 +2019,10 @@ require_once(__CA_LIB_DIR__."/ca/ApplicationPluginManager.php");
 							break;
 						case 'children':
 							$va_relative_ids = $qr_res->get($t_instance->tableName().".children.".$t_instance->primaryKey(), array('returnAsArray' => true));
+							$va_relative_ids = array_values($va_relative_ids);
+							break;
+						case 'related':
+							$va_relative_ids = $qr_res->get($t_instance->tableName().".related.".$t_instance->primaryKey(), array('returnAsArray' => true));
 							$va_relative_ids = array_values($va_relative_ids);
 							break;
 						default:
@@ -2118,10 +2164,8 @@ require_once(__CA_LIB_DIR__."/ca/ApplicationPluginManager.php");
 										break;
 									case 'parent':
 										if (is_array($va_val)) {
-											foreach($va_val as $vn_x => $va_labels) {
-												foreach($va_labels as $vn_y => $va_label) {
-													$va_val_proc[] = $va_label['name'];
-												}
+											foreach($va_val as $vn_x => $va_label) {
+												$va_val_proc[] = $va_label['name'];
 											}
 										}
 										break;
@@ -2250,6 +2294,15 @@ require_once(__CA_LIB_DIR__."/ca/ApplicationPluginManager.php");
 				$va_pt_vals = array();
 			
 				$vs_template = $va_proc_templates[$vn_i];
+				
+				// Process <if>
+				foreach($va_if as  $va_def_con) { 
+					if (ExpressionParser::evaluate($va_def_con['rule'], $va_tags)) {
+						$vs_template = str_replace($va_def_con['directive'], $va_def_con['content'], $vs_template);
+					} else {
+						$vs_template = str_replace($va_def_con['directive'], '', $vs_template);
+					}
+				}
 				
 				// Process <ifdef> (IF DEFined)
 				foreach($va_ifdefs as $vs_code => $va_def_con) { 

@@ -1099,6 +1099,7 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 	 *			KLogger::INFO = Informational messages
 	 *			KLogger::DEBUG = Debugging messages
 	 *		dryRun = do import but don't actually save data
+	 *		debug = output tons of debugging information
 	 */
 	static public function importDataFromSource($ps_source, $ps_mapping, $pa_options=null) {
 		ca_data_importers::$s_num_import_errors = 0;
@@ -1119,6 +1120,7 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 		
 		$po_request = caGetOption('request', $pa_options, null);
 		$pb_dry_run = caGetOption('dryRun', $pa_options, false);
+		$pb_debug = caGetOption('debug', $pa_options, false);
 		
 		$o_config = Configuration::load();
 		
@@ -1572,6 +1574,10 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 							}
 						}
 						
+						if (isset($va_item['settings']['skipIfEmpty']) && (bool)$va_item['settings']['skipIfEmpty'] && !strlen($vm_val)) {
+							$o_log->logInfo(_t('[%1] Skipped mapping because value for %3 is empty', $vs_idno, $vs_item_terminal));
+							continue(2);
+						}
 						if (isset($va_item['settings']['skipGroupIfEmpty']) && (bool)$va_item['settings']['skipGroupIfEmpty'] && !strlen($vm_val)) {
 							$o_log->logInfo(_t('[%1] Skipped group %2 because value for %3 is empty', $vs_idno, $vn_group_id, $vs_item_terminal));
 							continue(3);
@@ -1773,6 +1779,9 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 			//print_r($va_content_tree);
 			//die("END\n\n");
 			//continue;
+			//if ($pb_debug && $po_request && isset($pa_options['progressCallback']) && ($ps_callback = $pa_options['progressCallback'])) {
+				//$ps_callback($po_request, ca_data_importers::$s_num_records_processed, $vn_num_items, "<pre>".preg_replace("![\n\r\t ]+!", " ", print_r($va_content_tree, true))."</pre>", (time() - $vn_start_time), memory_get_usage(true), 0, ca_data_importers::$s_num_import_errors);
+			//}
 			
 			if (!sizeof($va_content_tree) && !str_replace("%", "", $vs_idno)) { continue; }
 			
@@ -1830,6 +1839,7 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 					continue;
 				}
 				
+				$t_subject->clearErrors();
 				if (sizeof($va_preferred_label_mapping_ids) && ($t_subject->getPreferredLabelCount() > 0)) {
 					$t_subject->removeAllLabels(__CA_LABEL_TYPE_PREFERRED__);
 					if ($vs_error = DataMigrationUtils::postError($t_subject, _t("Could not update remove preferred labels from matched record"), array('dontOutputLevel' => true, 'dontPrint' => true))) {
@@ -1860,6 +1870,7 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 									$vs_item_error_policy = null;
 								}
 								
+								$t_subject->clearErrors();
 								$t_subject->setMode(ACCESS_WRITE);
 								switch($vs_element) {
 									case 'preferred_labels':									

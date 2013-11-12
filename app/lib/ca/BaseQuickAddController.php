@@ -124,7 +124,7 @@
  			
  			// Set type restrictions of bundle that spawned quickadd form
  			if ($vs_restrict_to_types = trim($this->request->getParameter('types', pString))) {
- 				$this->view->setVar('restrict_to_types', $va_restrict_to_type_ids = caMakeTypeIDList($t_subject->tableName(), explode(',', $vs_restrict_to_types)));
+ 				$this->view->setVar('restrict_to_types', $va_restrict_to_type_ids = caMakeTypeIDList($t_subject->tableName(), explode(',', $vs_restrict_to_types), array('dont_include_subtypes_in_type_restriction' => (bool)$this->request->getParameter('dont_include_subtypes_in_type_restriction', pString))));
  				
  				if (!in_array($vn_type_id, $va_restrict_to_type_ids)) {
  					$vn_type_id = $va_restrict_to_type_ids[0];		// get first type on list since default isn't part of restriction
