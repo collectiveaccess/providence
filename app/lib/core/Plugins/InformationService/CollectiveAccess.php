@@ -83,10 +83,18 @@ $g_information_service_settings_CollectiveAccess = array(
 			'formatType' => FT_TEXT,
 			'displayType' => DT_FIELD,
 			'default' => '',
-			'width' => 90, 'height' => 2,
+			'width' => 90, 'height' => 3,
 			'label' => _t('Query result label format'),
 			'description' => _t('Display template to format query result labels with.')
 		),
+		'detailFormat' => array(
+			'formatType' => FT_TEXT,
+			'displayType' => DT_FIELD,
+			'default' => '',
+			'width' => 90, 'height' => 3,
+			'label' => _t('Query result label format'),
+			'description' => _t('Display template to format detailed information blocks with.')
+		)
 );
 
 class WLPlugInformationServiceCollectiveAccess Extends BaseInformationServicePlugin Implements IWLPlugInformationService {
@@ -107,7 +115,9 @@ class WLPlugInformationServiceCollectiveAccess Extends BaseInformationServicePlu
 	}
 	# ------------------------------------------------
 	/** 
+	 * Get all settings settings defined by this plugin as an array
 	 *
+	 * @return array
 	 */
 	public function getAvailableSettings() {
 		return WLPlugInformationServiceCollectiveAccess::$s_settings;
@@ -116,7 +126,11 @@ class WLPlugInformationServiceCollectiveAccess Extends BaseInformationServicePlu
 	# Data
 	# ------------------------------------------------
 	/** 
+	 * Perform lookup on CollectiveAccess-based data service
 	 *
+	 * @param array $pa_settings Plugin settings values
+	 * @param string $ps_search The expression with which to query the remote data service
+	 * @param array $pa_options Lookup options (none defined yet)
 	 */
 	public function lookup($pa_settings, $ps_search, $pa_options=null) {
 		$o_client = new Client($pa_settings['baseURL']);
@@ -133,11 +147,12 @@ class WLPlugInformationServiceCollectiveAccess Extends BaseInformationServicePlu
 		$o_response = $o_request->send();
 		$va_data = json_decode($o_response->getBody(), true);
 		
+		$vs_pk = $t_instance->primaryKey();
 		if (isset($va_data['results']) && is_array($va_data['results'])) {
 			foreach($va_data['results'] as $vs_k => $va_result) {
 				$va_data['results'][$vs_k]['label'] = $va_result['display_label'];
 				unset($va_result['display_label']);
-				$va_data['results'][$vs_k]['url'] = $pa_settings['baseURL'].'/service.php/item/'.$pa_settings['table'].'/id/'.$va_result['id'];
+				$va_data['results'][$vs_k]['url'] = $pa_settings['baseURL'].'/service.php/item/'.$pa_settings['table'].'/id/'.$va_result[$vs_pk];
 			}
 		}
 		
@@ -145,14 +160,25 @@ class WLPlugInformationServiceCollectiveAccess Extends BaseInformationServicePlu
 	}
 	# ------------------------------------------------
 	/** 
+	 * Fetch details about a specific item from a CollectiveAccess-based data service 
 	 *
+	 * @param array $pa_settings Plugin settings values
+	 * @param string $ps_url The URL originally returned by the data service uniquely identifying the item
+	 * @return array An array of data from the data server defining the item.
 	 */
-	public function getExtendedInformation($pa_settings, $ps_id) {
+	public function getExtendedInformation($pa_settings, $ps_url) {
 		$o_client = new Client($pa_settings['baseURL']);
 		
-		// Create a request with basic Auth
-		$o_request = $o_client->get($vs_url = '/service.php/item/'.$pa_settings['table'].'id/'.urlencode($ps_id).'?format=import&flatten=locales')->setAuth($pa_settings['user_name'], $pa_settings['password']);
+		$va_tmp = explode("/", $ps_url);
+		$ps_id = array_pop($va_tmp);
 		
+		if (!($vs_template = $pa_settings['detailFormat'])) {		// if no detailFormat options is set default to just outputting preferred labels
+			$vs_template = '^'.$pa_settings['table'].".preferred_labels";
+		}
+		
+		// Create a request with basic Auth
+		$o_request = $o_client->get($vs_url = '/service.php/item/'.$pa_settings['table'].'/id/'.urlencode($ps_id).'?format=import&flatten=locales&template='.urlencode($vs_template))->setAuth($pa_settings['user_name'], $pa_settings['password']);
+	
 		// Send the request and get the response
 		$o_response = $o_request->send();
 		$va_data = json_decode($o_response->getBody(), true);

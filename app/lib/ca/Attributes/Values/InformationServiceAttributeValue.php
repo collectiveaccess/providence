@@ -126,27 +126,51 @@
  		private $ops_uri_value;
  		private $opo_plugin;
  		# ------------------------------------------------------------------
+ 		/**
+ 		 *
+ 		 *
+ 		 */
  		public function __construct($pa_value_array=null) {
  			parent::__construct($pa_value_array);
  		}
  		# ------------------------------------------------------------------
+ 		/**
+ 		 *
+ 		 *
+ 		 */
  		public function loadTypeSpecificValueFromRow($pa_value_array) {
  			$this->ops_text_value = $pa_value_array['value_longtext1'];
  			$this->ops_uri_value =  $pa_value_array['value_longtext2'];
  		}
  		# ------------------------------------------------------------------
+ 		/**
+ 		 *
+ 		 *
+ 		 */
 		public function getDisplayValue($pa_options=null) {
-			return $this->ops_text_value;
+			return $this->ops_text_value.($this->ops_uri_value ? " [".$this->ops_uri_value."]" : "");
 		}
 		# ------------------------------------------------------------------
+		/**
+ 		 *
+ 		 *
+ 		 */
 		public function getTextValue(){
 			return $this->ops_text_value;
 		}
  		# ------------------------------------------------------------------
+ 		/**
+ 		 *
+ 		 *
+ 		 */
 		public function getUri(){
 			return $this->ops_uri_value;
 		}
  		# ------------------------------------------------------------------
+ 		/**
+ 		 *
+ 		 *
+ 		 */
  		public function parseValue($ps_value, $pa_element_info, $pa_options=null) {
  			$o_config = Configuration::load();
  			
@@ -159,6 +183,7 @@
 
 			if (trim($ps_value)) {
 				$va_tmp = explode('|', $ps_value);
+				if(sizeof($va_tmp) != 3) {  return array('_dont_save' => true); }	// don't save if value hasn't changed
 				return array(
 					'value_longtext1' => $va_tmp[0],	// text
 					'value_longtext2' => $va_tmp[2],	// uri
@@ -172,6 +197,10 @@
 			);
  		}
  		# ------------------------------------------------------------------
+ 		/**
+ 		 *
+ 		 *
+ 		 */
  		public function htmlFormElement($pa_element_info, $pa_options=null) {
  			$o_config = Configuration::load();
  			
@@ -199,14 +228,15 @@
 				
 			if ($pa_options['request']) {
 				$vs_url = caNavUrl($pa_options['request'], 'lookup', 'InformationService', 'Get', array('max' => 100, 'element_id' => $pa_element_info['element_id']));
+				$vs_detail_url = caNavUrl($pa_options['request'], 'lookup', 'InformationService', 'GetDetail', array('element_id' => $pa_element_info['element_id']));
 			} else {
 				// hardcoded default for testing.
 				$vs_url = '/index.php/lookup/InformationService/Get';	
+				$vs_detail_url = '/index.php/lookup/InformationService/GetDetail';
 			}
 			
-			$vs_element .= " <a href='#' style='display: none;' id='{fieldNamePrefix}".$pa_element_info['element_id']."_link{n}' target='_infoservice_details'>"._t("More")."</a>";
-		
-			$vs_element .= '</div>';
+			$vs_element .= " <a href='#' class='caInformationServiceMoreLink' id='{fieldNamePrefix}".$pa_element_info['element_id']."_link{n}'>"._t("More &rsaquo;")."</a>";
+			$vs_element .= "<div id='{fieldNamePrefix}".$pa_element_info['element_id']."_detail{n}' class='caInformationServiceDetail'>".($pa_options['request'] ? caBusyIndicatorIcon($pa_options['request']) : '')."</div></div>";
 			$vs_element .= "
 				<script type='text/javascript'>
 					jQuery(document).ready(function() {
@@ -219,10 +249,27 @@
 									
 								}
 							}
-						);
+						).click(function() { this.select(); });
 						
 						if ('{{".$pa_element_info['element_id']."}}') {
-							jQuery('#{fieldNamePrefix}".$pa_element_info['element_id']."_link{n}').css('display', 'inline').attr('href', '".caNavUrl($pa_options['request'], 'lookup', 'InformationService', 'GetDetail', array())."/id/{n}');
+							var re = /\[([A-Za-z]+:\/\/[^\]]+)\]/; 
+							var infoservice = re.exec('{{".$pa_element_info['element_id']."}}');
+							if (infoservice && infoservice.length > 1) { 
+								jQuery('#{fieldNamePrefix}".$pa_element_info['element_id']."_link{n}').css('display', 'inline').on('click', function(e) {
+									if (jQuery('#{fieldNamePrefix}".$pa_element_info['element_id']."_detail{n}').css('display') == 'none') {
+										jQuery('#{fieldNamePrefix}".$pa_element_info['element_id']."_detail{n}').slideToggle(250, function() { 
+											jQuery('#{fieldNamePrefix}".$pa_element_info['element_id']."_detail{n}').load('{$vs_detail_url}/id/{n}');
+										});
+										jQuery('#{fieldNamePrefix}".$pa_element_info['element_id']."_link{n}').html('".addslashes(_t("Less &rsaquo;"))."');
+									} else {
+										jQuery('#{fieldNamePrefix}".$pa_element_info['element_id']."_detail{n}').slideToggle(250);
+										jQuery('#{fieldNamePrefix}".$pa_element_info['element_id']."_link{n}').html('".addslashes(_t("More &rsaquo;"))."');
+									}
+									return false;
+								});
+							}
+							
+							
 						}
 					});
 				</script>
@@ -231,6 +278,10 @@
  			return $vs_element;
  		}
  		# ------------------------------------------------------------------
+ 		/**
+ 		 *
+ 		 *
+ 		 */
  		public function getAvailableSettings($pa_element_info=null) {
  			global $_ca_attribute_settings;
  			

@@ -39,15 +39,21 @@
  		# -------------------------------------------------------
  		# AJAX handlers
  		# -------------------------------------------------------
+ 		/**
+ 		 * Perform lookup on a remote data service and return matched values
+ 		 *
+ 		 * @param array $pa_additional_query_params
+ 		 * @param array $pa_options
+ 		 */
 		public function Get($pa_additional_query_params=null, $pa_options=null) {
 			$o_config = Configuration::load();
 			
 			if (!($ps_query = $this->request->getParameter('q', pString))) {
-				$ps_query = $this->request->getParameter('term', pString);
+				$ps_query =		$this->request->getParameter('term', pString);
 			}
-			$ps_type = $this->request->getParameter('type', pString);
-			$pn_element_id = $this->request->getParameter('element_id', pInteger);
-			$t_element = new ca_metadata_elements($pn_element_id);
+			$ps_type = 			$this->request->getParameter('type', pString);
+			$pn_element_id = 	$this->request->getParameter('element_id', pInteger);
+			$t_element = 		new ca_metadata_elements($pn_element_id);
 			
 			if (!$t_element->getPrimaryKey()) { 
 				// error
@@ -82,13 +88,41 @@
 		}
  		# -------------------------------------------------------
  		/**
+ 		 * Fetch details on an item from a remote data source and output results of the 'display' key in the response.
  		 *
  		 */
 		public function GetDetail() {
-			$pn_attribute_value_id = $this->request->getParameter('id', pInteger);
-			$t_value = new ca_attribute_values($pn_attribute_value_id);
-			$t_value->dump();
-			//$vs_url = 
+			$pn_element_id = $this->request->getParameter('element_id', pInteger);
+			$t_element = new ca_metadata_elements($pn_element_id);
+			$va_data = array();
+			if (!$t_element->getPrimaryKey()) { 
+				// error
+				$va_items['error'] = array('label' => _t('ERROR: Invalid element_id'), 'idno' => '');
+			} else {
+				$vs_service = $t_element->getSetting('service');
+				$va_settings = $t_element->getSettings();
+				
+				$pn_attribute_id = $this->request->getParameter('id', pInteger);
+				
+				$t_attr_val = new ca_attribute_values();
+				if ($t_attr_val->load(array('attribute_id' => $pn_attribute_id, 'element_id' => $pn_element_id))) {
+					$t_attr = new ca_attributes();
+					if ($t_attr->load($pn_attribute_id)) {
+						if (!caCanRead($this->request->getUserID(), $t_attr->get('table_num'), $t_attr->get('row_id'), $t_element->get('element_code'))) {
+							$va_items['error'] = array('label' => _t('ERROR: You do not have access to this item'), 'idno' => '');
+						} else {			
+							$vs_url = $t_attr_val->get('value_longtext2');
+							if (!($o_plugin = InformationServiceManager::getInformationServiceInstance($vs_service))) {
+								$va_items['error'] = array('label' => _t('ERROR: Invalid service'), 'idno' => '');
+							} else {
+								$va_data = $o_plugin->getExtendedInformation($va_settings, $vs_url);
+							}
+						}
+					}
+				}
+			}
+			
+			$this->view->setVar('detail', $va_data);
 			return $this->render('ajax_information_service_detail_html.php');
 		}
 		# -------------------------------------------------------
