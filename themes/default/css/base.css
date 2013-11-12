@@ -6004,3 +6004,9 @@ a.caInformationServiceMoreLink {
 	display: none; 
 	text-decoration: none;
 }
+
+/* LCSH attributes */
+a.caLCSHServiceMoreLink {
+	display: none; 
+	text-decoration: none;
+}
