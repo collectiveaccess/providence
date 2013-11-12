@@ -105,6 +105,13 @@ class ItemService extends BaseJSONService {
 		$va_post = $this->getRequestBodyArray();
 
 		$va_return = array();
+		
+		// allow user-defined template to be passed; allows flexible formatting of returned "display" value
+		if (!($vs_template = $this->opo_request->getParameter('template', pString))) { $vs_template = ''; }
+		if ($vs_template) {
+			$va_return['display'] = caProcessTemplateForIDs($vs_template, $this->ops_table, array($this->opn_id));
+		}
+		
 		if(!is_array($va_post["bundles"])){
 			return false;
 		}
@@ -137,6 +144,12 @@ class ItemService extends BaseJSONService {
 		
 		$va_return = array();
 
+		// allow user-defined template to be passed; allows flexible formatting of returned "display" value
+		if (!($vs_template = $this->opo_request->getParameter('template', pString))) { $vs_template = ''; }
+		if ($vs_template) {
+			$va_return['display'] = caProcessTemplateForIDs($vs_template, $this->ops_table, array($this->opn_id));
+		}
+		
 		// labels
 
 		$va_labels = $t_instance->get($this->ops_table.".preferred_labels",array("returnAllLocales" => true));
@@ -264,6 +277,12 @@ class ItemService extends BaseJSONService {
 		$va_locales = $t_locales->getLocaleList(array("available_for_cataloguing_only" => true));
 		
 		$va_return = array();
+		
+		// allow user-defined template to be passed; allows flexible formatting of returned "display" value
+		if (!($vs_template = $this->opo_request->getParameter('template', pString))) { $vs_template = ''; }
+		if ($vs_template) {
+			$va_return['display'] = caProcessTemplateForIDs($vs_template, $this->ops_table, array($this->opn_id));
+		}
 
 		// "intrinsic" fields
 		foreach($t_instance->getFieldsArray() as $vs_field_name => $va_field_info){
@@ -402,10 +421,16 @@ class ItemService extends BaseJSONService {
 		if (!($vs_flatten = $this->opo_request->getParameter('flatten', pString))) { $vs_flatten = null; }
 		$va_flatten = preg_split("![ ]*[;]+[ ]*!", $vs_flatten);
 		$va_flatten = array_flip($va_flatten);
-
+		
 		$va_locales = $t_locales->getLocaleList(array("available_for_cataloguing_only" => true));
 		
 		$va_return = array();
+		
+		// allow user-defined template to be passed; allows flexible formatting of returned "display" value
+		if (!($vs_template = $this->opo_request->getParameter('template', pString))) { $vs_template = ''; }
+		if ($vs_template) {
+			$va_return['display'] = caProcessTemplateForIDs($vs_template, $this->ops_table, array($this->opn_id));
+		}
 
 		// "intrinsic" fields
 		foreach($t_instance->getFieldsArray() as $vs_field_name => $va_field_info){
