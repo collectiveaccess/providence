@@ -1627,8 +1627,8 @@ class ca_lists extends BundlableLabelableBaseModelWithAttributes {
 	/**
 	 * Overrides BundlableLabelableBaseModelWithAttributes:isSaveable to implement system list access restrictions
 	 */
-	public function isSaveable($po_request) {
-		if(parent::isSaveable($po_request)){ // user could save this list
+	public function isSaveable($po_request, $ps_bundle_name=null) {
+		if(parent::isSaveable($po_request, $ps_bundle_name)){ // user could save this list
 			if($this->getPrimaryKey()){
 				if($this->get('is_system_list')){
 					if(!$po_request->user->canDoAction('can_edit_system_lists')){
