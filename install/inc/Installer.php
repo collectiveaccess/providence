@@ -645,6 +645,23 @@ class Installer {
 
 			self::addLabelsFromXMLElement($t_ui, $vo_ui->labels, $this->opa_locales);
 
+			// create ui type restrictions
+			if($vo_ui->typeRestrictions){
+				foreach($vo_ui->typeRestrictions->children() as $vo_restriction){
+					$vs_restriction_type = self::getAttribute($vo_restriction, "type");
+
+					$t_instance = $vo_dm->getInstanceByTableNum($vn_type);
+					$vs_type_list_name = $t_instance->getFieldListCode($t_instance->getTypeFieldName());
+
+					if(strlen($vs_restriction_type)>0){
+						$vn_item_id = $t_list->getItemIDFromList($vs_type_list_name,$vs_restriction_type);
+						if($vn_item_id){
+							 $t_ui->addTypeRestriction($vn_item_id);	
+						}
+					}
+				}
+			}
+
 			// create ui screens
 			$t_ui_screens = new ca_editor_ui_screens();
 			$va_available_bundles = $t_ui_screens->getAvailableBundles($vn_type);
@@ -682,14 +699,16 @@ class Installer {
 				if($vo_screen->typeRestrictions){
 					foreach($vo_screen->typeRestrictions->children() as $vo_restriction){
 						$vs_restriction_type = self::getAttribute($vo_restriction, "type");
+
 						$t_instance = $vo_dm->getInstanceByTableNum($vn_type);
 						$vs_type_list_name = $t_instance->getFieldListCode($t_instance->getTypeFieldName());
-						if (trim($vs_type)) {
-							$t_list->load(array('list_code' => $vs_type_list_name));
-							$t_list_item->load(array('list_id' => $t_list->getPrimaryKey(), 'idno' => $vs_restriction_type));
-						}
-						$t_ui_screens->addTypeRestriction(($vs_restriction_type ? $t_list_item->getPrimaryKey(): null), array());
 
+						if(strlen($vs_restriction_type)>0){
+							$vn_item_id = $t_list->getItemIDFromList($vs_type_list_name,$vs_restriction_type);
+							if($vn_item_id){
+								$t_ui_screens->addTypeRestriction($vn_item_id);
+							}
+						}
 					}
 				}
 			}
