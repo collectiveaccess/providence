@@ -46,7 +46,7 @@
 	
 		
 	// params to pass during tour stop lookup
-	$va_lookup_params = (isset($va_settings['restrict_to_type']) && $va_settings['restrict_to_type']) ? array('type' => $va_settings['restrict_to_type'], 'noSubtypes' => (int)$va_settings['dont_include_subtypes_in_type_restriction']) : array();
+	$va_lookup_params = array('type' => isset($va_settings['restrict_to_type']) ? $va_settings['restrict_to_type'] : '', 'noSubtypes' => (int)$va_settings['dont_include_subtypes_in_type_restriction']);
 
 	if ($vb_batch) {
 		print caBatchEditorRelationshipModeControl($t_item, $vs_id_prefix);
@@ -234,7 +234,7 @@
 			listSortItems: 'div.roundedRel',
 			autocompleteInputID: '<?php print $vs_id_prefix; ?>_autocomplete',
 			quickaddPanel: caRelationQuickAddPanel<?php print $vs_id_prefix; ?>,
-			quickaddUrl: '<?php print caNavUrl($this->request, 'editor/tour_stops', 'TourStopQuickAdd', 'Form', array('stop_id' => 0)); ?>',
+			quickaddUrl: '<?php print caNavUrl($this->request, 'editor/tour_stops', 'TourStopQuickAdd', 'Form', array('stop_id' => 0, 'dont_include_subtypes_in_type_restriction' => (int)$va_settings['dont_include_subtypes_in_type_restriction'])); ?>',
 			
 			interstitialButtonClassName: 'caInterstitialEditButton',
 			interstitialPanel: caRelationEditorPanel<?php print $vs_id_prefix; ?>,

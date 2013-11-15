@@ -645,6 +645,23 @@ class Installer {
 
 			self::addLabelsFromXMLElement($t_ui, $vo_ui->labels, $this->opa_locales);
 
+			// create ui type restrictions
+			if($vo_ui->typeRestrictions){
+				foreach($vo_ui->typeRestrictions->children() as $vo_restriction){
+					$vs_restriction_type = self::getAttribute($vo_restriction, "type");
+
+					$t_instance = $vo_dm->getInstanceByTableNum($vn_type);
+					$vs_type_list_name = $t_instance->getFieldListCode($t_instance->getTypeFieldName());
+
+					if(strlen($vs_restriction_type)>0){
+						$vn_item_id = $t_list->getItemIDFromList($vs_type_list_name,$vs_restriction_type);
+						if($vn_item_id){
+							 $t_ui->addTypeRestriction($vn_item_id);	
+						}
+					}
+				}
+			}
+
 			// create ui screens
 			$t_ui_screens = new ca_editor_ui_screens();
 			$va_available_bundles = $t_ui_screens->getAvailableBundles($vn_type);
@@ -682,14 +699,16 @@ class Installer {
 				if($vo_screen->typeRestrictions){
 					foreach($vo_screen->typeRestrictions->children() as $vo_restriction){
 						$vs_restriction_type = self::getAttribute($vo_restriction, "type");
+
 						$t_instance = $vo_dm->getInstanceByTableNum($vn_type);
 						$vs_type_list_name = $t_instance->getFieldListCode($t_instance->getTypeFieldName());
-						if (trim($vs_type)) {
-							$t_list->load(array('list_code' => $vs_type_list_name));
-							$t_list_item->load(array('list_id' => $t_list->getPrimaryKey(), 'idno' => $vs_restriction_type));
-						}
-						$t_ui_screens->addTypeRestriction(($vs_restriction_type ? $t_list_item->getPrimaryKey(): null), array());
 
+						if(strlen($vs_restriction_type)>0){
+							$vn_item_id = $t_list->getItemIDFromList($vs_type_list_name,$vs_restriction_type);
+							if($vn_item_id){
+								$t_ui_screens->addTypeRestriction($vn_item_id);
+							}
+						}
 					}
 				}
 			}
@@ -878,6 +897,7 @@ class Installer {
 	public function processDisplays(){
 		require_once(__CA_MODELS_DIR__."/ca_bundle_displays.php");
 		require_once(__CA_MODELS_DIR__."/ca_bundle_display_placements.php");
+		require_once(__CA_MODELS_DIR__."/ca_bundle_display_type_restrictions.php");
 		
 		$o_config = Configuration::load();
 
@@ -916,7 +936,7 @@ class Installer {
 			$t_display = new ca_bundle_displays();
 			$t_display->setMode(ACCESS_WRITE);
 
-			$t_display->set("display_code",$vs_display_code);
+			$t_display->set("display_code", $vs_display_code);
 			$t_display->set("is_system",$vb_system);
 			$t_display->set("table_num",$vo_dm->getTableNum($vs_table));
 			$t_display->set("user_id", 1);		// let administrative user own these
@@ -934,6 +954,35 @@ class Installer {
 				}
 				if(!$this->processDisplayPlacements($t_display, $vo_display->bundlePlacements, null)){
 					return false;
+				}
+			}
+			
+			if ($vo_display->typeRestrictions) {
+				foreach($vo_display->typeRestrictions->children() as $vo_restriction){
+					$t_list = new ca_lists();
+					$t_list_item = new ca_list_items();
+					$vs_restriction_code = trim((string)self::getAttribute($vo_restriction, "code"));
+					$vs_type = trim((string)self::getAttribute($vo_restriction, "type"));
+					
+					$t_instance = $vo_dm->getInstanceByTableNum($vn_table_num = $vo_dm->getTableNum($vs_table));
+					$vs_type_list_name = $t_instance->getFieldListCode($t_instance->getTypeFieldName());
+					if ($vs_type) {
+						$t_list->load(array('list_code' => $vs_type_list_name));
+						$t_list_item->load(array('list_id' => $t_list->getPrimaryKey(), 'idno' => $vs_type));
+					}
+					$t_restriction = new ca_bundle_display_type_restrictions();
+					$t_restriction->setMode(ACCESS_WRITE);
+					$t_restriction->set('table_num', $vn_table_num);
+					$t_restriction->set('include_subtypes', (bool)$vo_restriction->includeSubtypes ? 1 : 0);
+					$t_restriction->set('type_id', ($vs_type) ? $t_list_item->getPrimaryKey(): null);
+					$t_restriction->set('display_id', $t_display->getPrimaryKey());
+				
+					$this->_processSettings($t_restriction, $vo_restriction->settings);
+					$t_restriction->insert();
+
+					if ($t_restriction->numErrors()) {
+						$this->addError("There was an error while inserting type restriction {$vs_restriction_code} in display {$vs_display_code}: ".join("; ",$t_restriction->getErrors()));
+					}
 				}
 			}
 		}

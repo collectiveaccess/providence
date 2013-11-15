@@ -532,6 +532,22 @@
 									<xs:sequence>
 										<xs:element name="labels" type="userinterfaceLabels"
 											minOccurs="1" maxOccurs="1"/>
+									  <xs:element name="typeRestrictions" minOccurs="0" maxOccurs="1">
+									    <xs:complexType>
+									      <xs:sequence>
+									        <xs:element name="restriction" minOccurs="1" maxOccurs="unbounded">
+									          <xs:complexType>
+									            <xs:simpleContent>
+									              <xs:extension base="xs:string">
+									                <xs:attribute name="code" type="xs:string" use="optional"/>
+									                <xs:attribute name="type" type="xs:string" use="required"/>
+									              </xs:extension>
+									            </xs:simpleContent>
+									          </xs:complexType>
+									        </xs:element>
+									      </xs:sequence>
+									    </xs:complexType>
+									  </xs:element>
 										<xs:element name="screens" type="userinterfaceScreens"
 											minOccurs="1" maxOccurs="1"/>
 									</xs:sequence>
@@ -642,6 +658,23 @@
 												</xs:simpleContent>
 												</xs:complexType>
 												</xs:element>
+												</xs:sequence>
+											</xs:complexType>
+										</xs:element>
+										<xs:element name="typeRestrictions" minOccurs="0" maxOccurs="1">
+											<xs:complexType>
+												<xs:sequence>
+													<xs:element name="restriction" minOccurs="1"
+													maxOccurs="unbounded">
+													<xs:complexType>
+														<xs:simpleContent>
+															<xs:extension base="xs:string">
+															<xs:attribute name="code" type="xs:string" use="optional"/>
+															<xs:attribute name="type" type="xs:string" use="required"/>
+															</xs:extension>
+														</xs:simpleContent>
+													</xs:complexType>
+													</xs:element>
 												</xs:sequence>
 											</xs:complexType>
 										</xs:element>

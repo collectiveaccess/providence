@@ -51,7 +51,7 @@
 	$vn_browse_last_id = (int)$this->request->session->getVar('ca_list_items_'.$vs_id_prefix.'_browse_last_id');
 
 	// params to pass during occurrence lookup
-	$va_lookup_params = (isset($va_settings['restrict_to_type']) && $va_settings['restrict_to_type']) ? array('type' => $va_settings['restrict_to_type'], 'noSubtypes' => (int)$va_settings['dont_include_subtypes_in_type_restriction']) : array();
+	$va_lookup_params = array('type' => isset($va_settings['restrict_to_type']) ? $va_settings['restrict_to_type'] : '', 'noSubtypes' => (int)$va_settings['dont_include_subtypes_in_type_restriction']);
 
 	if ($vb_batch) {
 		print caBatchEditorRelationshipModeControl($t_item, $vs_id_prefix);

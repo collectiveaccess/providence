@@ -80,7 +80,7 @@
 			
 			// Set list item parents
 			if ($va_parents = $pa_item['settings']['listItemHierarchyBuilder_parents']) {
-				$vn_parent_id = caProcessRefineryParents('listItemHierarchyBuilderRefinery', 'ca_list_items', $va_parents, $pa_source_data, $pa_item, null, null, $o_log);
+				$vn_parent_id = caProcessRefineryParents('listItemHierarchyBuilderRefinery', 'ca_list_items', $va_parents, $pa_source_data, $pa_item, null, null, $o_log, array('list_id' => $pa_item['settings']['listItemHierarchyBuilder_list']));
 			}
 			
 			return $vn_parent_id;
@@ -97,7 +97,16 @@
 		# -------------------------------------------------------
 	}
 	
-	BaseRefinery::$s_refinery_settings['listItemHierarchyBuilder'] = array(	
+	BaseRefinery::$s_refinery_settings['listItemHierarchyBuilder'] = array(			
+		'listItemHierarchyBuilder_list' => array(
+			'formatType' => FT_TEXT,
+			'displayType' => DT_SELECT,
+			'width' => 10, 'height' => 1,
+			'takesLocale' => false,
+			'default' => '',
+			'label' => _t('List'),
+			'description' => _t('Identifies the root node of the list item list to add items to.')
+		),
 		'listItemHierarchyBuilder_parents' => array(
 			'formatType' => FT_TEXT,
 			'displayType' => DT_SELECT,

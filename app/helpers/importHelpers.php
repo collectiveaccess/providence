@@ -155,7 +155,7 @@
 					$va_attributes['preferred_labels']['name'] = $va_attributes['_preferred_labels'] = $vs_name;
 					break;
 				case 'ca_list_items':
-					$vn_id = DataMigrationUtils::getListItemID($vn_list_id, $vs_name, $vs_type, $g_ui_locale_id, $va_attributes, $pa_options);
+					$vn_id = DataMigrationUtils::getListItemID($vn_list_id, $vs_name, $vs_type, $g_ui_locale_id, $va_attributes, array_merge(array('matchOnLabel' => true, 'matchOnIdno' => true), $pa_options));
 					$va_attributes['preferred_labels']['name_singular'] = $va_attributes['preferred_labels']['name_plural'] = $vs_name;
 					break;
 				case 'ca_storage_locations':
@@ -369,7 +369,7 @@
 					$vn_id = DataMigrationUtils::getMovementID($vs_name, $vs_type, $g_ui_locale_id, $va_attributes, $pa_options);
 					break;
 				case 'ca_list_items':
-					$vn_id = DataMigrationUtils::getListItemID($vn_list_id, $vs_name, $vs_type, $g_ui_locale_id, $va_attributes, $pa_options);
+					$vn_id = DataMigrationUtils::getListItemID($vn_list_id, $vs_name, $vs_type, $g_ui_locale_id, $va_attributes, array_merge(array('matchOnLabel' => true, 'matchOnIdno' => true), $pa_options));
 					break;
 				case 'ca_storage_locations':
 					$vn_id = DataMigrationUtils::getStorageLocationID($vs_name, $vn_parent_id, $vs_type, $g_ui_locale_id, $va_attributes, $pa_options);
@@ -589,7 +589,7 @@
 							break;
 						case 'ca_list_items':
 							$va_attr_vals_with_parent['is_enabled'] = 1;
-							$vn_item_id = DataMigrationUtils::getListItemID($pa_options['list_id'], $vs_item, $va_val['_type'], $g_ui_locale_id, $va_attr_vals_with_parent, $pa_options);
+							$vn_item_id = DataMigrationUtils::getListItemID($pa_options['list_id'], $vs_item, $va_val['_type'], $g_ui_locale_id, $va_attr_vals_with_parent, array_merge(array('matchOnLabel' => true, 'matchOnIdno' => true), $pa_options));
 							
 							break;
 						case 'ca_storage_locations':

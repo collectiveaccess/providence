@@ -71,16 +71,23 @@ class SearchJSONService extends BaseJSONService {
 		}
 	}
 	# -------------------------------------------------------
+	/**
+	 *
+	 */
 	private function search($pa_bundles=null){
-		$ps_class = $this->mapTypeToSearchClassName($this->getTableName());
-		require_once(__CA_LIB_DIR__."/ca/Search/{$ps_class}.php");
-			
-		$vo_search = new $ps_class();
-		$t_instance = $this->_getTableInstance($this->getTableName());
+		if (!($vo_search = caGetSearchInstance($this->getTableName()))) { 
+			$this->addError(_t("Invalid table"));
+			return false; 
+		}
+		$t_instance = $this->_getTableInstance($vs_table_name = $this->getTableName());
 
 		$va_return = array();
-		$vo_result = $vo_search->search($this->ops_query, array('deletedOnly' => $this->opb_deleted_only));
+		$vo_result = $vo_search->search($this->ops_query, array(
+			'deletedOnly' => $this->opb_deleted_only, 
+			'sort' => $this->opo_request->getParameter('sort', pString))		// user-specified sort
+		);
 
+		$vs_template = $this->opo_request->getParameter('template', pString);		// allow user-defined template to be passed; allows flexible formatting of returned label
 		while($vo_result->nextHit()){
 			$va_item = array();
 
@@ -90,8 +97,12 @@ class SearchJSONService extends BaseJSONService {
 				$va_item["idno"] = $vs_idno;
 			}
 
-			if(is_array($va_display_labels = $vo_result->getDisplayLabels())){
-				$va_item["display_label"] = array_pop($va_display_labels);
+			if ($vs_template) {
+				$va_item["display_label"] = caProcessTemplateForIDs($vs_template, $vs_table_name, array($vn_id), array('convertCodesToDisplayText' => true));
+			} else {
+				if(is_array($va_display_labels = $vo_result->getDisplayLabels())){
+					$va_item["display_label"] = array_pop($va_display_labels);
+				}
 			}
 
 			if(is_array($pa_bundles)){
@@ -110,45 +121,6 @@ class SearchJSONService extends BaseJSONService {
 		}
 
 		return $va_return;
-	}
-	# -------------------------------------------------------
-	# Utilities
-	# -------------------------------------------------------
-	private function mapTypeToSearchClassName($ps_type){
-		switch($ps_type){
-			case "ca_objects":
-				return "ObjectSearch";
-			case "ca_object_lots":
-				return "ObjectLotSearch";
-			case "ca_entities":
-				return "EntitySearch";
-			case "ca_places":
-				return "PlaceSearch";
-			case "ca_occurrences":
-				return "OccurrenceSearch";
-			case "ca_collections":
-				return "CollectionSearch";
-			case "ca_lists":
-				return "ListSearch";
-			case "ca_list_items":
-				return "ListItemSearch";
-			case "ca_object_representations":
-				return "ObjectRepresentationSearch";
-			case "ca_storage_locations": 
-				return "StorageLocationSearch";
-			case "ca_movements":
-				return "MovementSearch";
-			case "ca_loans":
-				return "LoanSearch";
-			case "ca_tours":
-				return "TourSearch";
-			case "ca_tour_stops":
-				return "TourStopSearch";
-			case "ca_sets":
-				return "SetSearch";
-			default:
-				return false;
-		}
 	}
 	# -------------------------------------------------------
 }
