@@ -2155,8 +2155,8 @@ require_once(__CA_LIB_DIR__."/ca/ApplicationPluginManager.php");
 										}
 										break;
 									case 'hierarchy':
-										if ($vs_hierarchy_name) { array_unshift($va_val[0], $vs_hierarchy_name); }
 										if (is_array($va_val)) {
+											if ($vs_hierarchy_name) { array_unshift($va_val[0], $vs_hierarchy_name); }
 											foreach($va_val as $vn_x => $va_hier) {
 												$va_val_proc[] = join(caGetOption("delimiter", $va_tag_opts, "; "), $va_hier);
 											}
