@@ -124,6 +124,7 @@ require_once(__CA_LIB_DIR__."/ca/ApplicationPluginManager.php");
 				$va_values[$vm_id] = array_shift($va_value_list_by_locale);
 				continue;
 			}
+			if (!is_array($va_value_list_by_locale)) { print caPrintStackTrace(); }
 			foreach($va_value_list_by_locale as $pm_locale => $vm_value) {
 				// convert locale_id to locale string
 				if (is_numeric($pm_locale)) {

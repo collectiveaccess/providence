@@ -1026,6 +1026,78 @@ class BaseModel extends BaseObject {
 			return $vs_prop;
 		}
 	}
+	
+	/**
+	 * Fetches intrinsic field values from specified fields and rows. If field list is omitted
+	 * an array with all intrinsic fields is returned. Note that this method returns only those
+	 * fields that are present in the table underlying the model. Configured metadata attributes 
+	 * for the model are not returned. See BaseModelWithAttributes::getAttributeForIDs() if you 
+	 * need to fetch attribute values for several rows in a single pass.
+	 *
+	 * You can control which fields are returned using the $pa_fields parameter, an array of field names. If this
+	 * is empty or omitted all fields in the table will be returned. For best performance use as few fields as possible.
+	 *
+	 * Note that if you request only a single field value the returned array will have values set to the request field. If more
+	 * than one field is requested the values in the returned array will be arrays key'ed on field name.
+	 * 
+	 * The primary key for each row is always returned as a key in the returned array of values. The key will not be included 
+	 * with field values unless you explicitly request it in the $pa_fields array. 
+	 *
+	 * @param array $pa_ids List of primary keys to fetch field values for
+	 * @param array $pa_fields List of fields to return values for. 
+	 * @param array $pa_options options array; can be omitted:
+	 * 		There are no options yet.
+	 * @return array An array with keys set to primary keys of fetched rows and values set to either (a) a field value when
+	 * only a single field is requested or (b) an array key'ed on field name when more than one field is requested
+	 *
+	 * @SeeAlso BaseModelWithAttributes::getAttributeForIDs()
+	 */
+	public function getFieldValuesForIDs($pa_ids, $pa_fields=null, $pa_options=null) {
+		if ((!is_array($pa_ids) && (int)$pa_ids > 0)) { $pa_ids = array($pa_ids); }
+		if (!is_array($pa_ids) || !sizeof($pa_ids)) { return null; }
+		
+		$va_ids = array();
+		foreach($pa_ids as $vn_id) {
+			if ((int)$vn_id <= 0) { continue; }
+			$va_ids[] = (int)$vn_id;
+		}
+		if (!sizeof($va_ids)) { return null; }
+		
+		
+		$vs_table_name = $this->tableName();
+		$vs_pk = $this->primaryKey();
+		
+		$va_fld_list = array();
+		if (is_array($pa_fields) && sizeof($pa_fields)) {
+			foreach($pa_fields as $vs_fld) {
+				if ($this->hasField($vs_fld)) {
+					$va_fld_list[$vs_fld] = true;
+				}
+			}
+			$va_fld_list = array_keys($va_fld_list);
+		}
+		$vs_fld_list = (sizeof($va_fld_list)) ? join(", ", $va_fld_list) : "*";
+		
+		$o_db = $this->getDb();
+		
+		$qr_res = $o_db->query("
+			SELECT {$vs_pk}, {$vs_fld_list}
+			FROM {$vs_table_name}
+			WHERE
+				{$vs_pk} IN (?)
+		", array($va_ids));
+		
+		$va_vals = array();
+		$vs_single_fld = (sizeof($va_fld_list) == 1) ? $va_fld_list[0] : null;
+		while($qr_res->nextRow()) {
+			if ($vs_single_fld) {
+				$va_vals[(int)$qr_res->get($vs_pk)] = $qr_res->get($vs_single_fld);
+			} else {
+				$va_vals[(int)$qr_res->get($vs_pk)] = $qr_res->getRow();
+			}
+		}
+		return $va_vals;
+	}
 
 	/**
 	 * Set field value(s) for the table row represented by this object

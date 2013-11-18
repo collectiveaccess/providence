@@ -727,17 +727,18 @@
 						}
 						
 						$vb_check_access = is_array($pa_options['checkAccess']) && $this->hasField('access');
-						$va_tmp = array();
-						//foreach($va_ancestor_list as $vn_i => $va_item) {
-						//	if ($vb_check_access && !in_array($va_item['NODE']['access'], $pa_options['checkAccess'])) { continue; }
-						//	if ($vs_template) {
-						//		$va_tmp[$va_item['NODE']['id']] = caProcessTemplate($vs_template, $va_item['NODE'], array('removePrefix' => 'preferred_labels.'));
-						//	} else {
-						//		if ($vs_label = $va_item['NODE'][$vs_display_field]) {
-						//			$va_tmp[$va_item['NODE']['id']] = $vs_label;
-						//		}
-						//	}
-						//}
+						
+						if ($vb_check_access) {
+							$va_access_values = $this->getFieldValuesForIDs($va_ancestor_list, array('access'));
+							
+							$va_ancestor_list = array();
+							foreach ($va_access_values as $vn_ancestor_id => $vn_access_value) {
+								if (in_array($vn_access_value, $pa_options['checkAccess'])) {
+									$va_ancestor_list[] = $vn_ancestor_id;
+								}
+							}
+						}
+					
 						if ($vs_template) {
 							$va_tmp = caProcessTemplateForIDs($vs_template, $this->tableName(), $va_ancestor_list, array('returnAsArray'=> true));
 						} else {
@@ -1695,15 +1696,16 @@
 			
 			while($qr_res->nextRow()) {
 				if ($vb_return_all_locales) { 
-					$va_labels[$qr_res->get($vs_pk)][$qr_res->get('locale_id')][] = $qr_res->get($vs_display_field);
+					$va_labels[(int)$qr_res->get($vs_pk)][(int)$qr_res->get('locale_id')][] = $qr_res->get($vs_display_field);
 				} else {
-					$va_labels[$qr_res->get($vs_pk)][$qr_res->get('locale_id')] = $qr_res->get($vs_display_field);
+					$va_labels[(int)$qr_res->get($vs_pk)][(int)$qr_res->get('locale_id')] = $qr_res->get($vs_display_field);
 				}
 			}
 			
 			// make sure it's in same order the ids were passed in
 			$va_sorted_labels = array();
 			foreach($va_ids as $vn_id) {
+				if(!isset($va_labels[$vn_id]) || !$va_labels[$vn_id]) { continue; }
 				$va_sorted_labels[$vn_id] = $va_labels[$vn_id];
 			}
 			
