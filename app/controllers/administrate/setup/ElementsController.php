@@ -335,7 +335,7 @@ class ElementsController extends BaseEditorController {
  				$this->notification->addNotification(_t("Deleted metadata element"), __NOTIFICATION_TYPE_INFO__);
  			}
 
- 			$this->ListElements();
+ 			$this->Index();
  			return;
  		} else {
  			$this->render('elements_delete_html.php');

@@ -124,6 +124,7 @@ require_once(__CA_LIB_DIR__."/ca/ApplicationPluginManager.php");
 				$va_values[$vm_id] = array_shift($va_value_list_by_locale);
 				continue;
 			}
+			if (!is_array($va_value_list_by_locale)) { print caPrintStackTrace(); }
 			foreach($va_value_list_by_locale as $pm_locale => $vm_value) {
 				// convert locale_id to locale string
 				if (is_numeric($pm_locale)) {
@@ -2130,7 +2131,7 @@ require_once(__CA_LIB_DIR__."/ca/ApplicationPluginManager.php");
 								}
 								
 								if ($va_spec_bits[1] != '_hierarchyName') {
-									$va_val = $qr_res->get($vs_get_spec, array_merge($pa_options, $va_additional_options, array("returnAllLocales" => true)));
+									$va_val = $qr_res->get($vs_get_spec, array_merge($pa_options, $va_additional_options, array("returnAsArray" => true, "returnAllLocales" => true)));
 								} else {
 									$va_val = array();
 								}
@@ -2142,7 +2143,7 @@ require_once(__CA_LIB_DIR__."/ca/ApplicationPluginManager.php");
 								$va_val = caExtractValuesByUserLocale($va_val);
 								$va_val_tmp = array();
 								foreach($va_val as $vn_d => $va_vals) {
-									$va_val_tmp += $va_vals;
+									$va_val_tmp = array_merge($va_val_tmp, $va_vals);
 								}
 								$va_val = $va_val_tmp;
 								
@@ -2155,23 +2156,24 @@ require_once(__CA_LIB_DIR__."/ca/ApplicationPluginManager.php");
 										}
 										break;
 									case 'hierarchy':
-										if ($vs_hierarchy_name) { array_unshift($va_val[0], $vs_hierarchy_name); }
-										if (is_array($va_val)) {
-											foreach($va_val as $vn_x => $va_hier) {
+										if (is_array($va_val) && (sizeof($va_val) > 0)) {
+											if ($vs_hierarchy_name) { array_unshift($va_val, $vs_hierarchy_name); }
+											foreach($va_val as $va_hier) {
+												if (!is_array($va_hier)) { $va_hier = array($va_hier); }
 												$va_val_proc[] = join(caGetOption("delimiter", $va_tag_opts, "; "), $va_hier);
 											}
-										}
+										} 
 										break;
 									case 'parent':
 										if (is_array($va_val)) {
-											foreach($va_val as $vn_x => $va_label) {
+											foreach($va_val as $va_label) {
 												$va_val_proc[] = $va_label['name'];
 											}
 										}
 										break;
 									default:
 										$vs_terminal = end($va_spec_bits);
-										foreach($va_val as $vn_x => $va_val_container) {
+										foreach($va_val as $va_val_container) {
 											if(!is_array($va_val_container)) { 
 												if ($va_val_container) { $va_val_proc[] = $va_val_container; }
 												continue; 

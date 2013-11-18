@@ -46,7 +46,7 @@
 		# -------------------------------------------------------
 		# Data
 		# -------------------------------------------------------
-		public function lookup($pa_settings, $ps_search);
+		public function lookup($pa_settings, $ps_search, $pa_options=null);
 		public function getExtendedInformation($pa_settings, $ps_id);
 	}
 ?>

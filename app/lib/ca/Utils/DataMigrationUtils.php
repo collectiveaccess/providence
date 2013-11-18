@@ -316,6 +316,7 @@
 			if (!($vn_id = (ca_places::find(array_merge(array('preferred_labels' => array('name' => $ps_place_name)), $va_find_arr), array('returnAs' => 'firstId', 'transaction' => $pa_options['transaction']))))) {
 				if ($pb_match_on_idno && $vs_idno) { 
 					$va_find_arr['idno'] = $vs_idno;
+					unset($va_find_arr['parent_id']); // don't consider parent when matching on idno
 					$vn_id = (ca_places::find($va_find_arr, array('returnAs' => 'firstId', 'transaction' => $pa_options['transaction'])));
 				}
 			}
@@ -505,6 +506,7 @@
 			if (!($vn_id = (ca_occurrences::find(array_merge(array('preferred_labels' => array('name' => $ps_occ_name)), $va_find_arr), array('returnAs' => 'firstId', 'transaction' => $pa_options['transaction']))))) {
 				if ($pb_match_on_idno && $vs_idno) { 
 					$va_find_arr['idno'] = $vs_idno;
+					unset($va_find_arr['parent_id']); // don't consider parent when matching on idno
 					$vn_id = (ca_occurrences::find($va_find_arr, array('returnAs' => 'firstId', 'transaction' => $pa_options['transaction'])));
 				}
 			}
@@ -725,6 +727,7 @@
 			}
 			
 			if (!$pb_match_on_label || $pb_match_on_idno) {
+				unset($va_find_arr['parent_id']); // don't consider parent when matching on idno
 				if ($vn_item_id = (ca_list_items::find(array_merge(array('idno' => $ps_item_idno), $va_find_arr), array('returnAs' => 'firstId', 'transaction' => $pa_options['transaction'])))) {
 					DataMigrationUtils::$s_cached_list_item_ids[$pm_list_code_or_id.'/'.$ps_item_idno.'/'.$vn_parent_id] = $vn_item_id; 
 					
@@ -865,6 +868,7 @@
 			if (!($vn_id = (ca_collections::find(array_merge(array('preferred_labels' => array('name' => $ps_collection_name)), $va_find_arr), array('returnAs' => 'firstId', 'transaction' => $pa_options['transaction']))))) {
 				if ($pb_match_on_idno && $vs_idno) { 
 					$va_find_arr['idno'] = $vs_idno;
+					unset($va_find_arr['parent_id']); // don't consider parent when matching on idno
 					$vn_id = (ca_collections::find($va_find_arr, array('returnAs' => 'firstId', 'transaction' => $pa_options['transaction'])));
 				}
 			}
@@ -1048,6 +1052,7 @@
 			if (!($vn_id = (ca_storage_locations::find(array_merge(array('preferred_labels' => array('name' => $ps_location_name)), $va_find_arr), array('returnAs' => 'firstId', 'transaction' => $pa_options['transaction']))))) {
 				if ($pb_match_on_idno && $vs_idno) { 
 					$va_find_arr['idno'] = $vs_idno;
+					unset($va_find_arr['parent_id']); // don't consider parent when matching on idno
 					$vn_id = (ca_storage_locations::find($va_find_arr, array('returnAs' => 'firstId', 'transaction' => $pa_options['transaction'])));
 				}
 			}
@@ -1228,6 +1233,7 @@
 			if (!($vn_id = (ca_objects::find(array_merge(array('preferred_labels' => array('name' => $ps_object_name)), $va_find_arr), array('returnAs' => 'firstId', 'transaction' => $pa_options['transaction']))))) {
 				if ($pb_match_on_idno && $vs_idno) { 
 					$va_find_arr['idno'] = $vs_idno;
+					unset($va_find_arr['parent_id']); // don't consider parent when matching on idno
 					$vn_id = (ca_objects::find($va_find_arr, array('returnAs' => 'firstId', 'transaction' => $pa_options['transaction'])));
 				}
 			}
@@ -1571,6 +1577,7 @@
 			if (!($vn_id = (ca_loans::find(array_merge(array('preferred_labels' => array('name' => $ps_loan_name)), $va_find_arr), array('returnAs' => 'firstId', 'transaction' => $pa_options['transaction']))))) {
 				if ($pb_match_on_idno && $vs_idno) { 
 					$va_find_arr['idno'] = $vs_idno;
+					unset($va_find_arr['parent_id']); // don't consider parent when matching on idno
 					$vn_id = (ca_loans::find($va_find_arr, array('returnAs' => 'firstId', 'transaction' => $pa_options['transaction'])));
 				}
 			}
@@ -1750,6 +1757,7 @@
 			if (!($vn_id = (ca_movements::find(array_merge(array('preferred_labels' => array('name' => $ps_movement_name)), $va_find_arr), array('returnAs' => 'firstId', 'transaction' => $pa_options['transaction']))))) {
 				if ($pb_match_on_idno && $vs_idno) { 
 					$va_find_arr['idno'] = $vs_idno;
+					unset($va_find_arr['parent_id']); // don't consider parent when matching on idno
 					$vn_id = (ca_movements::find($va_find_arr, array('returnAs' => 'firstId', 'transaction' => $pa_options['transaction'])));
 				}
 			}

@@ -685,20 +685,11 @@
 						$vs_display_field = ($t_label_instance->hasField($va_tmp[2])) ? $va_tmp[2] : $this->getLabelDisplayField();
 						
 						$vn_top_id = null;
-						if (!($va_ancestor_list = $this->getHierarchyAncestors(null, array(
-							'additionalTableToJoin' => $vs_label_table_name, 
-							'additionalTableJoinType' => 'LEFT',
-							'additionalTableSelectFields' => array('*'),
-							'additionalTableWheres' => array('('.$vs_label_table_name.'.is_preferred = 1 OR '.$vs_label_table_name.'.is_preferred IS NULL)'),
-							'includeSelf' => true
-						)))) {
+						if (!($va_ancestor_list = $this->getHierarchyAncestors(null, array('idsOnly' => true, 'includeSelf' => true)))) {
 							$va_ancestor_list = array();
-						} else {
-							foreach($va_ancestor_list as $vn_i => $va_node) {
-								$va_ancestor_list[$vn_i]['NODE']['id'] = $vn_top_id = $va_node['NODE'][$vs_pk];
-							}
 						}
 						
+						// TODO: this should really be in a model subclass
 						if (($this->tableName() == 'ca_objects') && $this->getAppConfig()->get('ca_objects_x_collections_hierarchy_enabled') && ($vs_coll_rel_type = $this->getAppConfig()->get('ca_objects_x_collections_hierarchy_relationship_type'))) {
 							require_once(__CA_MODELS_DIR__.'/ca_objects.php');
 							if ($this->getPrimaryKey() == $vn_top_id) {
@@ -712,15 +703,8 @@
 								$t_collection = new ca_collections();
 								foreach($va_collections as $vn_i => $va_collection) {
 									if (($va_collections_ancestor_list = $t_collection->getHierarchyAncestors($va_collection['collection_id'], array(
-										'additionalTableToJoin' => 'ca_collection_labels', 
-										'additionalTableJoinType' => 'INNER',
-										'additionalTableSelectFields' => array('*'),
-										'additionalTableWheres' => array('(ca_collection_labels.is_preferred = 1)'),
-										'includeSelf' => true
+										'idsOnly' => true, 'includeSelf' => true
 									)))) {
-										foreach($va_collections_ancestor_list as $vn_i => $va_node) {
-											$va_collections_ancestor_list[$vn_i]['NODE']['id'] = $va_node['NODE']['collection_id'];
-										}
 										$va_ancestor_list = array_merge($va_ancestor_list, $va_collections_ancestor_list);
 									}
 									
@@ -743,18 +727,23 @@
 						}
 						
 						$vb_check_access = is_array($pa_options['checkAccess']) && $this->hasField('access');
-						$va_tmp = array();
-						foreach($va_ancestor_list as $vn_i => $va_item) {
-							if ($vb_check_access && !in_array($va_item['NODE']['access'], $pa_options['checkAccess'])) { continue; }
-							if ($vs_template) {
-								$va_tmp[$va_item['NODE']['id']] = caProcessTemplate($vs_template, $va_item['NODE'], array('removePrefix' => 'preferred_labels.'));
-							} else {
-								if ($vs_label = $va_item['NODE'][$vs_display_field]) {
-									$va_tmp[$va_item['NODE']['id']] = $vs_label;
+						
+						if ($vb_check_access) {
+							$va_access_values = $this->getFieldValuesForIDs($va_ancestor_list, array('access'));
+							
+							$va_ancestor_list = array();
+							foreach ($va_access_values as $vn_ancestor_id => $vn_access_value) {
+								if (in_array($vn_access_value, $pa_options['checkAccess'])) {
+									$va_ancestor_list[] = $vn_ancestor_id;
 								}
 							}
 						}
-							
+					
+						if ($vs_template) {
+							$va_tmp = caProcessTemplateForIDs($vs_template, $this->tableName(), $va_ancestor_list, array('returnAsArray'=> true));
+						} else {
+							$va_tmp = $this->getPreferredDisplayLabelsForIDs($va_ancestor_list, array('returnAsArray'=> true, 'returnAllLocales' => $vb_return_all_locales));
+						}
 						
 						if ($vn_top > 0) {
 							$va_tmp = array_slice($va_tmp, sizeof($va_tmp) - $vn_top, $vn_top, true);
@@ -1677,6 +1666,8 @@
 			}
 			if (!is_array($va_ids) || !sizeof($va_ids)) { return array(); }
 			
+			$vb_return_all_locales = caGetOption('returnAllLocales', $pa_options, false);
+			
 			$vs_cache_key = md5($this->tableName()."/".print_r($pa_ids, true).'/'.print_R($pa_options, true));
 			if (!isset($pa_options['noCache']) && !$pa_options['noCache'] && LabelableBaseModelWithAttributes::$s_labels_by_id_cache[$vs_cache_key]) {
 				return LabelableBaseModelWithAttributes::$s_labels_by_id_cache[$vs_cache_key];
@@ -1704,14 +1695,25 @@
 			
 			
 			while($qr_res->nextRow()) {
-				$va_labels[$qr_res->get($vs_pk)][$qr_res->get('locale_id')] = $qr_res->get($vs_display_field);
+				if ($vb_return_all_locales) { 
+					$va_labels[(int)$qr_res->get($vs_pk)][(int)$qr_res->get('locale_id')][] = $qr_res->get($vs_display_field);
+				} else {
+					$va_labels[(int)$qr_res->get($vs_pk)][(int)$qr_res->get('locale_id')] = $qr_res->get($vs_display_field);
+				}
 			}
 			
-			if (isset($pa_options['returnAllLocales']) && $pa_options['returnAllLocales']) {
-				return LabelableBaseModelWithAttributes::$s_labels_by_id_cache[$vs_cache_key] = $va_labels;
+			// make sure it's in same order the ids were passed in
+			$va_sorted_labels = array();
+			foreach($va_ids as $vn_id) {
+				if(!isset($va_labels[$vn_id]) || !$va_labels[$vn_id]) { continue; }
+				$va_sorted_labels[$vn_id] = $va_labels[$vn_id];
 			}
 			
-			return LabelableBaseModelWithAttributes::$s_labels_by_id_cache[$vs_cache_key] = caExtractValuesByUserLocale($va_labels);
+			if ($vb_return_all_locales) {
+				return LabelableBaseModelWithAttributes::$s_labels_by_id_cache[$vs_cache_key] = $va_sorted_labels;
+			}
+			
+			return LabelableBaseModelWithAttributes::$s_labels_by_id_cache[$vs_cache_key] = caExtractValuesByUserLocale($va_sorted_labels);
 		}
 		# ------------------------------------------------------------------
 		/**
@@ -1729,6 +1731,8 @@
 				if (intval($vn_id) > 0) { $va_ids[] = intval($vn_id); }
 			}
 			if (!is_array($va_ids) || !sizeof($va_ids)) { return array(); }
+			
+			$vb_return_all_locales = caGetOption('returnAllLocales', $pa_options, false);
 			
 			$vs_cache_key = md5($this->tableName()."/".print_r($pa_ids, true).'/'.print_R($pa_options, true).'_non_preferred');
 			if (!isset($pa_options['noCache']) && !$pa_options['noCache'] && LabelableBaseModelWithAttributes::$s_labels_by_id_cache[$vs_cache_key]) {
@@ -1760,11 +1764,17 @@
 				$va_labels[$qr_res->get($vs_pk)][$qr_res->get('locale_id')][] = $qr_res->get($vs_display_field);
 			}
 			
-			if (isset($pa_options['returnAllLocales']) && $pa_options['returnAllLocales']) {
-				return LabelableBaseModelWithAttributes::$s_labels_by_id_cache[$vs_cache_key] = $va_labels;
+			// make sure it's in same order the ids were passed in
+			$va_sorted_labels = array();
+			foreach($va_ids as $vn_id) {
+				$va_sorted_labels[$vn_id] = $va_labels[$vn_id];
 			}
 			
-			return LabelableBaseModelWithAttributes::$s_labels_by_id_cache[$vs_cache_key] = caExtractValuesByUserLocale($va_labels);
+			if ($vb_return_all_locales) {
+				return LabelableBaseModelWithAttributes::$s_labels_by_id_cache[$vs_cache_key] = $va_sorted_labels;
+			}
+			
+			return LabelableBaseModelWithAttributes::$s_labels_by_id_cache[$vs_cache_key] = caExtractValuesByUserLocale($va_sorted_labels);
 		}
 		# ------------------------------------------------------------------
 		# Hierarchies
