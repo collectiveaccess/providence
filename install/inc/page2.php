@@ -81,12 +81,12 @@
 			$vo_installer->processLists('caGetListToBeLoaded');
 			
 			$vn_progress += 7;
-			caIncrementProgress($vn_progress, "Processing metadata elements");
-			$vo_installer->processMetadataElements('caGetMetadataElementToBeLoaded');
-			
-			$vn_progress += 7;
 			caIncrementProgress($vn_progress, "Processing relationship types");
 			$vo_installer->processRelationshipTypes();
+
+			$vn_progress += 7;
+			caIncrementProgress($vn_progress, "Processing metadata elements");
+			$vo_installer->processMetadataElements('caGetMetadataElementToBeLoaded');
 			
 			$vn_progress += 7;
 			caIncrementProgress($vn_progress, "Processing user interfaces");
