@@ -96,17 +96,13 @@
 				foreach($pa_errors as $vn_id => $va_error) {
 					$va_error_list = array();
 					foreach($va_error['errors'] as $o_error) {
-						if($o_error instanceof Error){
-							$va_error_list[] = $o_error->getErrorDescription();
-						} else {
-							$va_error_list[] = (string) $o_error;
-						}
+						$va_error_list[] = $o_error->getErrorDescription();
 					}
 					$vs_buf .= "<li><em>".caEditorLink($po_request, $va_error['label'], '', $pa_general['table'], $vn_id)."</em> (".$va_error['idno']."): ".join("; ", $va_error_list)."</li>";
 				}
 				$vs_buf .= "</ul>";
 				
-				$vs_buf .= '<div class="batchProcessingReportSectionWarning">'.((sizeof($pa_errors) == 1) ? _t('Note: <strong>NO</strong> batch changes were saved due to the error.') : _t('Note: <strong>NO</strong> batch changes were saved due to %1 errors.', sizeof($pa_errors)))."</div>";
+				$vs_buf .= '<div class="batchProcessingReportSectionWarning">'._t('Note: The above record(s) were not deleted due to the errors.')."</div>";
 			}
 			if (is_array($pa_notices) && sizeof($pa_notices)) {
 				$vs_buf .= '<div class="batchProcessingReportSectionHead">'._t('Deleted successfully').':</div><ol>';

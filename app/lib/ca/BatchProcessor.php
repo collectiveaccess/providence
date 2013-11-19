@@ -217,7 +217,7 @@
 
  			// little trick to disable unsaved changes warning which 
  			// for some reason sometimes gets in our way here
- 			unset($_REQUEST['form_timestamp']);
+ 			//unset($_REQUEST['form_timestamp']);
  			
  			$va_notices = $va_errors = array();
  			
@@ -228,7 +228,7 @@
 
  			$vb_we_set_transaction = false;
  			$o_trans = (isset($pa_options['transaction']) && $pa_options['transaction']) ? $pa_options['transaction'] : null;
- 			if (!$o_trans) { 
+ 			if (!$o_trans) {
  				$vb_we_set_transaction = true;
  				$o_trans = new Transaction();
  			}
@@ -244,9 +244,8 @@
  			$vn_c = 0;
  			$vn_start_time = time();
  			foreach(array_keys($va_row_ids) as $vn_row_id) {
- 				$t_subject->setTransaction($o_trans);
-
- 				if ($t_subject->load($vn_row_id)) {	
+ 				if ($t_subject->load($vn_row_id)) {
+ 					$t_subject->setTransaction($o_trans);
  					$t_subject->setMode(ACCESS_WRITE);
 
 					// Is record deleted?
@@ -272,7 +271,7 @@
  					
  					$t_subject->delete();
  					
-					$o_log->addItem($vn_row_id, $va_record_errors = $t_subject->getErrors());
+					$o_log->addItem($vn_row_id, $va_record_errors = $t_subject->errors());
 
  					if (sizeof($va_record_errors) > 0) {
  						$va_errors[$vn_row_id] = array(
@@ -739,7 +738,7 @@
 					if ($vn_set_id) {
 						$t_set->addItem($t_object->getPrimaryKey(), null, $po_request->getUserID());
 					}
-					$o_log->addItem($t_object->getPrimaryKey(), $t_object->getErrors());
+					$o_log->addItem($t_object->getPrimaryKey(), $t_object->errors());
 					
 					// Create relationships?
 					if(is_array($va_create_relationship_for) && sizeof($va_create_relationship_for) && is_array($va_extracted_idnos_from_filename) && sizeof($va_extracted_idnos_from_filename)) {
