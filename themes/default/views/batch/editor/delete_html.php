@@ -96,7 +96,11 @@
 				foreach($pa_errors as $vn_id => $va_error) {
 					$va_error_list = array();
 					foreach($va_error['errors'] as $o_error) {
-						$va_error_list[] = $o_error->getErrorDescription();
+						if($o_error instanceof Error){
+							$va_error_list[] = $o_error->getErrorDescription();
+						} else {
+							$va_error_list[] = (string) $o_error;
+						}
 					}
 					$vs_buf .= "<li><em>".caEditorLink($po_request, $va_error['label'], '', $pa_general['table'], $vn_id)."</em> (".$va_error['idno']."): ".join("; ", $va_error_list)."</li>";
 				}
