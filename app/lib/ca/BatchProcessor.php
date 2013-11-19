@@ -214,10 +214,6 @@
 		public static function deleteBatchForSet($po_request, $t_set, $t_subject, $pa_options=null) {
 			$va_row_ids = $t_set->getItemRowIDs();
  			$vn_num_items = sizeof($va_row_ids);
-
- 			// little trick to disable unsaved changes warning which 
- 			// for some reason sometimes gets in our way here
- 			//unset($_REQUEST['form_timestamp']);
  			
  			$va_notices = $va_errors = array();
  			
@@ -227,26 +223,29 @@
  			$vb_perform_item_level_access_checking = (bool)$t_subject->getAppConfig()->get('perform_item_level_access_checking');
 
  			$vb_we_set_transaction = false;
- 			$o_trans = (isset($pa_options['transaction']) && $pa_options['transaction']) ? $pa_options['transaction'] : null;
- 			if (!$o_trans) {
+ 			$o_tx = caGetOption('transaction',$pa_options);
+
+ 			if (!$o_tx) {
  				$vb_we_set_transaction = true;
- 				$o_trans = new Transaction();
+ 				$o_db = new Db(); // open up a new connection?
+ 				$o_tx = new Transaction($o_db);
  			}
+
+ 			$t_subject->setTransaction($o_tx);
+ 			$t_subject->setMode(ACCESS_WRITE);
  			
  			$o_log = new Batchlog(array(
  				'user_id' => $po_request->getUserID(),
  				'batch_type' => 'BD',
  				'table_num' => (int)$t_set->get('table_num'),
  				'notes' => '',
- 				'transaction' => $o_trans
+ 				'transaction' => $o_tx
  			));
 
  			$vn_c = 0;
  			$vn_start_time = time();
  			foreach(array_keys($va_row_ids) as $vn_row_id) {
  				if ($t_subject->load($vn_row_id)) {
- 					$t_subject->setTransaction($o_trans);
- 					$t_subject->setMode(ACCESS_WRITE);
 
 					// Is record deleted?
 					if ($t_subject->hasField('deleted') && $t_subject->get('deleted')) { 
@@ -258,9 +257,7 @@
 						continue; // skip
 					}
 
-					//
 					// Does user have access to row?
-					//
 					if (($vb_perform_item_level_access_checking) && ($t_subject->checkACLAccessForUser($po_request->user) == __CA_ACL_READ_WRITE_ACCESS__)) {
 						continue; // skip
 					}
@@ -317,9 +314,9 @@
 			
 			if ($vb_we_set_transaction) {
 				if (sizeof($va_errors) > 0) {
-					$o_trans->rollback();
+					$o_tx->rollback();
 				} else {
-					$o_trans->commit();
+					$o_tx->commit();
 				}
 			}
 			
