@@ -119,7 +119,11 @@ class Batchlog extends BaseLogger {
 	 	if (sizeof($pa_errors)) {
 	 		$va_errors = array();
 	 		foreach($pa_errors as $o_error) {
-	 			$va_errors[$o_error->getErrorNumber()] = $o_error->getErrorDescription();
+	 			if($o_error instanceof Error){
+	 				$va_errors[$o_error->getErrorNumber()] = $o_error->getErrorDescription();
+	 			} else {
+	 				$va_errors[] = $o_error;
+	 			}
 	 		}
 	 	}
 	 	
