@@ -214,6 +214,10 @@
 		public static function deleteBatchForSet($po_request, $t_set, $t_subject, $pa_options=null) {
 			$va_row_ids = $t_set->getItemRowIDs();
  			$vn_num_items = sizeof($va_row_ids);
+
+ 			// little trick to disable unsaved changes warning which 
+ 			// for some reason sometimes gets in our way here
+ 			unset($_REQUEST['form_timestamp']);
  			
  			$va_notices = $va_errors = array();
  			
