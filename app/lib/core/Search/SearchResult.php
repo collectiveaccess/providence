@@ -755,8 +755,7 @@ class SearchResult extends BaseObject {
 					if ($t_instance->isHierarchical()) {
 						$vs_field_spec = join('.', array_values($va_path_components['components']));
 						$vs_hier_pk_fld = $t_instance->primaryKey();
-						if ($va_ids = $this->get($va_path_components['table_name'].'.'.$vs_hier_pk_fld, array_merge($pa_options, array('returnAsArray' => true, 'returnAsLink'=> false)))) {
-						
+						if ($va_ids = $this->get($va_path_components['table_name'].'.'.$vs_hier_pk_fld, array_merge($pa_options, array('returnAsArray' => true, 'returnAsLink'=> false, 'returnAllLocales' => false)))) {
 							$va_vals = array();
 							if ($va_path_components['subfield_name'] == $vs_hier_pk_fld) {
 								foreach($va_ids as $vn_id) {
@@ -769,7 +768,7 @@ class SearchResult extends BaseObject {
 								foreach($va_ids as $vn_id) {
 									// TODO: This is too slow
 									if($t_instance->load($vn_id)) {
-										$va_vals[] = $t_instance->get($vs_field_spec.".preferred_labels", $pa_options);
+										$va_vals = $t_instance->get($vs_field_spec.".preferred_labels", $pa_options);
 									}
 								}
 							}

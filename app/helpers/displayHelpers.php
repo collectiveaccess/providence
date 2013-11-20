@@ -124,6 +124,7 @@ require_once(__CA_LIB_DIR__."/ca/ApplicationPluginManager.php");
 				$va_values[$vm_id] = array_shift($va_value_list_by_locale);
 				continue;
 			}
+			if (!is_array($va_value_list_by_locale)) { print caPrintStackTrace(); }
 			foreach($va_value_list_by_locale as $pm_locale => $vm_value) {
 				// convert locale_id to locale string
 				if (is_numeric($pm_locale)) {
@@ -1839,6 +1840,8 @@ require_once(__CA_LIB_DIR__."/ca/ApplicationPluginManager.php");
 		
 		$ps_template = preg_replace("![\r\n\t]+!", "", html_entity_decode($ps_template));		//DomDocument kills newlines and tabs so we do the same to the template
 		$ps_template = preg_replace("!relativeTo[ ]*\=!i", "relativeto=", $ps_template);		//DomDocument forces attribute names to all lower case so we need to adjust the template to match 
+		$ps_template = preg_replace("!restrictToTypes[ ]*\=!i", "restricttotypes=", $ps_template);
+		$ps_template = preg_replace("!restrictToRelationshipTypes[ ]*\=!i", "restricttorelationshiptypes=", $ps_template);
 		$ps_template = preg_replace("!([A-Za-z0-9]+)='([^']*)'!", "$1=\"$2\"", $ps_template);	//DomDocument converts quotes around attributes from single to double quotes, so we need to normalize the template to match 
 		$ps_template = preg_replace("!\>[ ]+\<!", "><", $ps_template);
 			
@@ -1850,11 +1853,17 @@ require_once(__CA_LIB_DIR__."/ca/ApplicationPluginManager.php");
 			
 			$vs_content = preg_replace("!^<[^\>]+>!", "", $vs_html);
 			$vs_content = preg_replace("!<[^\>]+>$!", "", $vs_content);
-			
 			$vs_content = preg_replace("!>[ ]+<$!", "><", $vs_content);
 			
 			// DomDocument messes with white space and encodes entities so we normalize the directive here so the str_ireplace() replacement below doesn't fail
-			$va_units[] = $va_unit = array('tag' => $vs_unit_tag = "[[#{$vn_unit_id}]]", 'directive' => preg_replace("![\r\n\t]+!", "", html_entity_decode($vs_html)), 'content' => $vs_content, 'relativeTo' => (string)$o_unit->getAttribute("relativeto"), 'delimiter' => (string)$o_unit->getAttribute("delimiter"));
+			$va_units[] = $va_unit = array(
+				'tag' => $vs_unit_tag = "[[#{$vn_unit_id}]]",
+				'directive' => preg_replace("![\r\n\t]+!", "", html_entity_decode($vs_html)),
+				'content' => $vs_content, 'relativeTo' => (string)$o_unit->getAttribute("relativeto"),
+				'delimiter' => (string)$o_unit->getAttribute("delimiter"),
+				'restrictToTypes' => (string)$o_unit->getAttribute("restricttotypes"),
+				'restrictToRelationshipTypes' => (string)$o_unit->getAttribute("restricttorelationshiptypes")
+			);
 			$ps_template = str_ireplace($va_unit['directive'], $vs_unit_tag, $ps_template);
 			$vn_unit_id++;
 		}
@@ -1983,6 +1992,16 @@ require_once(__CA_LIB_DIR__."/ca/ApplicationPluginManager.php");
 				$va_relative_to_tmp = $va_unit['relativeTo'] ? explode(".", $va_unit['relativeTo']) : array($ps_tablename);
 				if (!($t_instance = $o_dm->getInstanceByTableName($va_relative_to_tmp[0], true))) { continue; }
 				$vs_unit_delimiter = caGetOption('delimiter', $va_unit, '; ');
+
+				// additional get options for pulling related records
+				$va_get_options = array('returnAsArray' => true);
+
+				if ($va_unit['restrictToTypes'] && strlen($va_unit['restrictToTypes'])>0) {
+					$va_get_options['restrictToTypes'] = explode('|', $va_unit['restrictToTypes']);
+				}
+				if ($va_unit['restrictToRelationshipTypes'] && strlen($va_unit['restrictToRelationshipTypes'])>0) {
+					$va_get_options['restrictToRelationshipTypes'] = explode('|', $va_unit['restrictToRelationshipTypes']);
+				}
 			
 				if (
 					((sizeof($va_relative_to_tmp) == 1) && ($va_relative_to_tmp[0] == $ps_tablename))
@@ -1992,15 +2011,15 @@ require_once(__CA_LIB_DIR__."/ca/ApplicationPluginManager.php");
 					
 					switch(strtolower($va_relative_to_tmp[1])) {
 						case 'hierarchy':
-							$va_relative_ids = $qr_res->get($t_instance->tableName().".hierarchy.".$t_instance->primaryKey(), array('returnAsArray' => true));
+							$va_relative_ids = $qr_res->get($t_instance->tableName().".hierarchy.".$t_instance->primaryKey(), $va_get_options);
 							$va_relative_ids = array_values($va_relative_ids);
 							break;
 						case 'parent':
-							$va_relative_ids = $qr_res->get($t_instance->tableName().".parent.".$t_instance->primaryKey(), array('returnAsArray' => true));
+							$va_relative_ids = $qr_res->get($t_instance->tableName().".parent.".$t_instance->primaryKey(), $va_get_options);
 							$va_relative_ids = array_values($va_relative_ids);
 							break;
 						case 'children':
-							$va_relative_ids = $qr_res->get($t_instance->tableName().".children.".$t_instance->primaryKey(), array('returnAsArray' => true));
+							$va_relative_ids = $qr_res->get($t_instance->tableName().".children.".$t_instance->primaryKey(), $va_get_options);
 							$va_relative_ids = array_values($va_relative_ids);
 							break;
 						default:
@@ -2010,23 +2029,23 @@ require_once(__CA_LIB_DIR__."/ca/ApplicationPluginManager.php");
 				} else { 
 					switch(strtolower($va_relative_to_tmp[1])) {
 						case 'hierarchy':
-							$va_relative_ids = $qr_res->get($t_instance->tableName().".hierarchy.".$t_instance->primaryKey(), array('returnAsArray' => true));
+							$va_relative_ids = $qr_res->get($t_instance->tableName().".hierarchy.".$t_instance->primaryKey(), $va_get_options);
 							$va_relative_ids = array_values($va_relative_ids);
 							break;
 						case 'parent':
-							$va_relative_ids = $qr_res->get($t_instance->tableName().".parent.".$t_instance->primaryKey(), array('returnAsArray' => true));
+							$va_relative_ids = $qr_res->get($t_instance->tableName().".parent.".$t_instance->primaryKey(), $va_get_options);
 							$va_relative_ids = array_values($va_relative_ids);
 							break;
 						case 'children':
-							$va_relative_ids = $qr_res->get($t_instance->tableName().".children.".$t_instance->primaryKey(), array('returnAsArray' => true));
+							$va_relative_ids = $qr_res->get($t_instance->tableName().".children.".$t_instance->primaryKey(), $va_get_options);
 							$va_relative_ids = array_values($va_relative_ids);
 							break;
 						case 'related':
-							$va_relative_ids = $qr_res->get($t_instance->tableName().".related.".$t_instance->primaryKey(), array('returnAsArray' => true));
+							$va_relative_ids = $qr_res->get($t_instance->tableName().".related.".$t_instance->primaryKey(), $va_get_options);
 							$va_relative_ids = array_values($va_relative_ids);
 							break;
 						default:
-							$va_relative_ids = $qr_res->get($t_instance->tableName().".".$t_instance->primaryKey(), array('returnAsArray' => true));
+							$va_relative_ids = $qr_res->get($t_instance->tableName().".".$t_instance->primaryKey(), $va_get_options);
 							break;
 					}
 				}
@@ -2130,7 +2149,7 @@ require_once(__CA_LIB_DIR__."/ca/ApplicationPluginManager.php");
 								}
 								
 								if ($va_spec_bits[1] != '_hierarchyName') {
-									$va_val = $qr_res->get($vs_get_spec, array_merge($pa_options, $va_additional_options, array("returnAllLocales" => true)));
+									$va_val = $qr_res->get($vs_get_spec, array_merge($pa_options, $va_additional_options, array("returnAsArray" => true, "returnAllLocales" => true)));
 								} else {
 									$va_val = array();
 								}
@@ -2142,7 +2161,7 @@ require_once(__CA_LIB_DIR__."/ca/ApplicationPluginManager.php");
 								$va_val = caExtractValuesByUserLocale($va_val);
 								$va_val_tmp = array();
 								foreach($va_val as $vn_d => $va_vals) {
-									$va_val_tmp += $va_vals;
+									$va_val_tmp = array_merge($va_val_tmp, $va_vals);
 								}
 								$va_val = $va_val_tmp;
 								
@@ -2155,23 +2174,24 @@ require_once(__CA_LIB_DIR__."/ca/ApplicationPluginManager.php");
 										}
 										break;
 									case 'hierarchy':
-										if ($vs_hierarchy_name) { array_unshift($va_val[0], $vs_hierarchy_name); }
-										if (is_array($va_val)) {
-											foreach($va_val as $vn_x => $va_hier) {
+										if (is_array($va_val) && (sizeof($va_val) > 0)) {
+											if ($vs_hierarchy_name) { array_unshift($va_val, $vs_hierarchy_name); }
+											foreach($va_val as $va_hier) {
+												if (!is_array($va_hier)) { $va_hier = array($va_hier); }
 												$va_val_proc[] = join(caGetOption("delimiter", $va_tag_opts, "; "), $va_hier);
 											}
-										}
+										} 
 										break;
 									case 'parent':
 										if (is_array($va_val)) {
-											foreach($va_val as $vn_x => $va_label) {
+											foreach($va_val as $va_label) {
 												$va_val_proc[] = $va_label['name'];
 											}
 										}
 										break;
 									default:
 										$vs_terminal = end($va_spec_bits);
-										foreach($va_val as $vn_x => $va_val_container) {
+										foreach($va_val as $va_val_container) {
 											if(!is_array($va_val_container)) { 
 												if ($va_val_container) { $va_val_proc[] = $va_val_container; }
 												continue; 
