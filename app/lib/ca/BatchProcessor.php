@@ -839,6 +839,8 @@
 		 *		progressCallback =
 		 *		reportCallback = 
 		 *		sendMail = 
+		 *		dryRun = 
+		 *		debug = output tons of debugging info during import
 		 *		log = log directory path
 		 * 		logLevel = KLogger loglevel. Default is "INFO"
 		 */
@@ -861,6 +863,7 @@
 			$vs_log_level = caGetOption('logLevel', $pa_options, "INFO"); 
 			
 			$vb_dry_run = caGetOption('dryRun', $pa_options, false); 
+			$vb_debug = caGetOption('debug', $pa_options, false); 
 			
 			if (is_numeric($vs_log_level)) {
 				$vn_log_level = (int)$vs_log_level;
@@ -891,7 +894,7 @@
 				}
 			}
 
-			if (!ca_data_importers::importDataFromSource($ps_source, $ps_importer, array('logDirectory' => $o_config->get('batch_metadata_import_log_directory'), 'request' => $po_request,'format' => $ps_input_format, 'showCLIProgressBar' => false, 'useNcurses' => false, 'progressCallback' => isset($pa_options['progressCallback']) ? $pa_options['progressCallback'] : null, 'reportCallback' => isset($pa_options['reportCallback']) ? $pa_options['reportCallback'] : null,  'logDirectory' => $vs_log_dir, 'logLevel' => $vn_log_level, 'dryRun' => $vb_dry_run))) {
+			if (!ca_data_importers::importDataFromSource($ps_source, $ps_importer, array('logDirectory' => $o_config->get('batch_metadata_import_log_directory'), 'request' => $po_request,'format' => $ps_input_format, 'showCLIProgressBar' => false, 'useNcurses' => false, 'progressCallback' => isset($pa_options['progressCallback']) ? $pa_options['progressCallback'] : null, 'reportCallback' => isset($pa_options['reportCallback']) ? $pa_options['reportCallback'] : null,  'logDirectory' => $vs_log_dir, 'logLevel' => $vn_log_level, 'dryRun' => $vb_dry_run, 'debug' => $vb_debug))) {
 				$va_errors['general'] = array(
 					'idno' => "*",
 					'label' => "*",

@@ -101,16 +101,27 @@ print $vs_control_box = caFormControlBox(
 			</div>
 		</div>
 		<div class='bundleLabel'>
-			<span class="formLabelText"><?php print _t('Dry run'); ?></span> 
+			<span class="formLabelText"><?php print _t('Testing options'); ?></span> 
 			<div class="bundleContainer">
 				<div class="caLabelList" >
 					<p>
+						<div style="float: left;" class="formLabelPlain">
 <?php	
 		$va_attr = array('id' => 'caDryRun', 'value' => 1);
 		if ($va_last_settings['dryRun'] == 1) { $va_attr['checked'] = 1; }
-		print caHTMLCheckboxInput('dryRun', $va_attr);
+		print caHTMLCheckboxInput('dryRun', $va_attr)." "._t('Dry run');
 ?>
+						</div>
+						<div style="float: left; margin-left: 15px;" class="formLabelPlain">
+<?php	
+		$va_attr = array('id' => 'caDebug', 'value' => 1);
+		if ($va_last_settings['debug'] == 1) { $va_attr['checked'] = 1; }
+		print caHTMLCheckboxInput('debug', $va_attr)." "._t('Debugging output');
+?>					
+						</div>
+						<br class="clear"/>
 					</p>
+					
 				</div>
 			</div>
 		</div>
