@@ -223,27 +223,29 @@
  			$vb_perform_item_level_access_checking = (bool)$t_subject->getAppConfig()->get('perform_item_level_access_checking');
 
  			$vb_we_set_transaction = false;
- 			$o_trans = (isset($pa_options['transaction']) && $pa_options['transaction']) ? $pa_options['transaction'] : null;
- 			if (!$o_trans) { 
+ 			$o_tx = caGetOption('transaction',$pa_options);
+
+ 			if (!$o_tx) {
  				$vb_we_set_transaction = true;
- 				$o_trans = new Transaction();
+ 				$o_db = new Db(); // open up a new connection?
+ 				$o_tx = new Transaction($o_db);
  			}
+
+ 			$t_subject->setTransaction($o_tx);
+ 			$t_subject->setMode(ACCESS_WRITE);
  			
  			$o_log = new Batchlog(array(
  				'user_id' => $po_request->getUserID(),
  				'batch_type' => 'BD',
  				'table_num' => (int)$t_set->get('table_num'),
  				'notes' => '',
- 				'transaction' => $o_trans
+ 				'transaction' => $o_tx
  			));
 
  			$vn_c = 0;
  			$vn_start_time = time();
  			foreach(array_keys($va_row_ids) as $vn_row_id) {
- 				$t_subject->setTransaction($o_trans);
-
- 				if ($t_subject->load($vn_row_id)) {	
- 					$t_subject->setMode(ACCESS_WRITE);
+ 				if ($t_subject->load($vn_row_id)) {
 
 					// Is record deleted?
 					if ($t_subject->hasField('deleted') && $t_subject->get('deleted')) { 
@@ -255,9 +257,7 @@
 						continue; // skip
 					}
 
-					//
 					// Does user have access to row?
-					//
 					if (($vb_perform_item_level_access_checking) && ($t_subject->checkACLAccessForUser($po_request->user) == __CA_ACL_READ_WRITE_ACCESS__)) {
 						continue; // skip
 					}
@@ -268,7 +268,7 @@
  					
  					$t_subject->delete();
  					
-					$o_log->addItem($vn_row_id, $va_record_errors = $t_subject->getErrors());
+					$o_log->addItem($vn_row_id, $va_record_errors = $t_subject->errors());
 
  					if (sizeof($va_record_errors) > 0) {
  						$va_errors[$vn_row_id] = array(
@@ -314,9 +314,9 @@
 			
 			if ($vb_we_set_transaction) {
 				if (sizeof($va_errors) > 0) {
-					$o_trans->rollback();
+					$o_tx->rollback();
 				} else {
-					$o_trans->commit();
+					$o_tx->commit();
 				}
 			}
 			
@@ -735,7 +735,7 @@
 					if ($vn_set_id) {
 						$t_set->addItem($t_object->getPrimaryKey(), null, $po_request->getUserID());
 					}
-					$o_log->addItem($t_object->getPrimaryKey(), $t_object->getErrors());
+					$o_log->addItem($t_object->getPrimaryKey(), $t_object->errors());
 					
 					// Create relationships?
 					if(is_array($va_create_relationship_for) && sizeof($va_create_relationship_for) && is_array($va_extracted_idnos_from_filename) && sizeof($va_extracted_idnos_from_filename)) {
