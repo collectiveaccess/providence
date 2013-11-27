@@ -518,7 +518,11 @@ require_once(__CA_LIB_DIR__."/ca/ApplicationPluginManager.php");
 				caHierarchyOverviewPanel.hidePanel({dontCloseMask:1});
 				caEditorFieldList.onOpenCallback = function(){
 					var selector = '#' + caEditorFieldList.panelID + ' a.editorFieldListLink:link';
+<<<<<<< HEAD
 					jQuery(selector).first().focus();
+=======
+					var link = jQuery(selector).first().focus();
+>>>>>>> 7de7b7e9d644d96143254bf4446fff1b8bc06ce9
 				};
 				caEditorFieldList.showPanel();
 			});
