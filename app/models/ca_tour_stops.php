@@ -380,11 +380,7 @@ class ca_tour_stops extends BundlableLabelableBaseModelWithAttributes {
 	 			'name' => $vs_name = caProcessTemplateForIDs($vs_template, 'ca_tour_stops', array($vn_pk)),
 	 			'hierarchy_id' => $vn_hier_id,
 	 			'children' => sizeof($va_children)
-	 		),
-	 		'item_id' => $vn_pk,
-			'name' => $vs_name,
-			'hierarchy_id' => $vn_hier_id,
-			'children' => sizeof($va_children)
+	 		)
 	 	);
 	 	
 	 	return $va_stop_hierarchy_root;
@@ -489,6 +485,5 @@ class ca_tour_stops extends BundlableLabelableBaseModelWithAttributes {
 		return $this->getTourStopIDsByName($pa_label_values['name'], $pn_parent_id, $pn_type_id);
 	}
 	# ------------------------------------------------------
-	 # ------------------------------------------------------
 }
 ?>

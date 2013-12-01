@@ -1613,6 +1613,16 @@ class ca_bundle_displays extends BundlableLabelableBaseModelWithAttributes {
 	 * @return string The processed value ready for display
 	 */
 	public function getDisplayValue($po_result, $pn_placement_id, $pa_options=null) {
+		
+		if (!is_numeric($pn_placement_id)) {
+			$vs_bundle_name = $pn_placement_id;
+			$va_placement = array();
+		} else {
+			$va_placements = $this->getPlacements();
+			$va_placement = $va_placements[$pn_placement_id];
+			$vs_bundle_name = $va_placement['bundle_name'];
+		}
+		
 		if (!is_array($pa_options)) { $pa_options = array(); }
 		if (!isset($pa_options['convertCodesToDisplayText'])) { $pa_options['convertCodesToDisplayText'] = true; }
 		if (!isset($pa_options['delimiter'])) { $pa_options['delimiter'] = ";\n\n"; }
@@ -1631,14 +1641,6 @@ class ca_bundle_displays extends BundlableLabelableBaseModelWithAttributes {
 		
 		$pa_options['hierarchicalDelimiter'] = '';
 		
-		if (!is_numeric($pn_placement_id)) {
-			$vs_bundle_name = $pn_placement_id;
-			$va_placement = array();
-		} else {
-			$va_placements = $this->getPlacements();
-			$va_placement = $va_placements[$pn_placement_id];
-			$vs_bundle_name = $va_placement['bundle_name'];
-		}
 		
 		$va_tmp = explode('.', $vs_bundle_name);
 		
