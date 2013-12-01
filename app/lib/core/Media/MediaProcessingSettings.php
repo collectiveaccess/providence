@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2006-2010 Whirl-i-Gig
+ * Copyright 2006-2013 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -258,6 +258,23 @@ class MediaProcessingSettings {
 		return null;
 	}
 	# ---------------------------------------------------
+	/**
+	 * Get list of mimetypes accepted by specified volume
+	 *
+	 * @param string $ps_volume The name of the volume
+	 * @return array List of mimetypes accepted by volume
+	 */
+	public function getMimetypesForVolume($ps_volume) {
+		$va_media_accept = $this->getAcceptedMediaTypes();
+		if(!is_array($va_media_accept)) { return null; }
+		
+		$va_mimetypes = array();
+		foreach($va_media_accept as $vs_mimetype => $vs_volume) {
+			if ($ps_volume != $vs_volume) { continue; }
+			$va_mimetypes[$vs_mimetype] = true;
+		}
+		return array_keys($va_mimetypes);
+	}
+	# ---------------------------------------------------
 }
-# ----------------------------------------------------------------------
 ?>

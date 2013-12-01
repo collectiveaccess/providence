@@ -978,8 +978,8 @@ class WLPlugMediaGmagick Extends BaseMediaPlugin Implements IWLPlugMedia {
 			// read original file
 			$vo_plugin->divineFileFormat($this->filepath);
 			$vo_plugin->read($this->filepath);
-
-			$va_return = $vo_plugin->writePreviews($ps_filepath,$pa_options);
+			$va_return = $vo_plugin->writePreviews($this->filepath,$pa_options);
+			
 			return $va_return;
 		} else {
 			return null;

@@ -497,6 +497,15 @@
 			if (caExtractEmbeddedMetadata($this, $va_metadata, $pn_locale_id)) {
 				$this->update();
 			}
+			
+			
+			// Trigger automatic replication
+			$va_auto_targets = $t_rep->getAvailableMediaReplicationTargets('media', 'original', array('trigger' => 'auto', 'access' => $t_rep->get('access')));
+			if(is_array($va_auto_targets)) {
+				foreach($va_auto_targets as $vs_target => $va_target_info) {
+					$t_rep->replicateMedia('media', $vs_target);
+				}
+			}
 		
 			if (isset($pa_options['returnRepresentation']) && (bool)$pa_options['returnRepresentation']) {
 				return $t_rep;
@@ -520,7 +529,8 @@
 		 */
 		public function editRepresentation($pn_representation_id, $ps_media_path, $pn_locale_id, $pn_status, $pn_access, $pb_is_primary=null, $pa_values=null, $pa_options=null) {
 			if (!($vn_id = $this->getPrimaryKey())) { return null; }
-		
+			$va_old_replication_keys = array();
+			
 			$t_rep = new ca_object_representations();
 			if ($this->inTransaction()) {
 				$o_trans = $this->getTransaction();
@@ -536,6 +546,11 @@
 				$t_rep->set('access', $pn_access);
 			
 				if ($ps_media_path) {
+					if(is_array($va_replication_targets = $t_rep->getUsedMediaReplicationTargets('media'))) {
+						foreach($va_replication_targets as $vs_target => $va_target_info) {
+							$va_old_replication_keys[$vs_target] = $t_rep->getMediaReplicationKey('media', $vs_target);
+						}
+					}
 					$t_rep->set('media', $ps_media_path, $pa_options);
 				}
 			
@@ -567,6 +582,21 @@
 				if ($t_rep->numErrors()) {
 					$this->errors = array_merge($this->errors, $t_rep->errors());
 					return false;
+				}
+					
+				if ($ps_media_path) {
+					// remove any replicated media
+					foreach($va_old_replication_keys as $vs_target => $vs_old_replication_key) {
+						$t_rep->removeMediaReplication('media', $vs_target, $vs_old_replication_key, array('force' => true));
+					}
+					
+					// Trigger automatic replication
+					$va_auto_targets = $t_rep->getAvailableMediaReplicationTargets('media', 'original', array('trigger' => 'auto', 'access' => $t_rep->get('access')));
+					if(is_array($va_auto_targets)) {
+						foreach($va_auto_targets as $vs_target => $va_target_info) {
+							$t_rep->replicateMedia('media', $vs_target);
+						}
+					}
 				}
 			
 				if (!($t_oxor = $this->_getRepresentationRelationshipTableInstance())) { return null; }
@@ -639,11 +669,18 @@
 
 				if (!is_array($va_rels) || (sizeof($va_rels) == 0)) {
 					$t_rep->setMode(ACCESS_WRITE);
-					$t_rep->delete(false, $pa_options);
+					$t_rep->delete(true, $pa_options);
 				
 					if ($t_rep->numErrors()) {
 						$this->errors = array_merge($this->errors, $t_rep->errors());
 						return false;
+					}
+				}
+						
+				// remove any replicated media
+				if(is_array($va_replication_targets = $t_rep->getUsedMediaReplicationTargets('media'))) {
+					foreach($va_replication_targets as $vs_target => $va_target_info) {
+						$t_rep->removeMediaReplication('media', $vs_target, $t_rep->getMediaReplicationKey('media', $vs_target));
 					}
 				}
 			

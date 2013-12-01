@@ -588,11 +588,7 @@ class ca_objects extends RepresentableBaseModel implements IBundleProvider {
 					'name' => $vs_name = caProcessTemplateForIDs($vs_template, 'ca_objects', array($vn_pk)),
 					'hierarchy_id' => $vn_hier_id,
 					'children' => sizeof($va_children)
-				),
-				'object_id' => $vn_pk,
-				'name' => $vs_name,
-				'hierarchy_id' => $vn_hier_id,
-				'children' => sizeof($va_children)
+				)
 			);
 				
 	 		return $va_object_hierarchy_root;
