@@ -616,9 +616,9 @@ class ca_object_representations extends BundlableLabelableBaseModelWithAttribute
  		
  		if (($vn_start > 0) || ($vn_max > 0)) {
  			if ($vn_max > 0) {
- 				$va_sorted_annotations = array_slice($va_sorted_annotations, (int)$vn_start, (int)$vn_max);
+ 				$va_sorted_annotations = array_slice($va_sorted_annotations, (int)$vn_start - 1, (int)$vn_max);
  			} else {
- 				$va_sorted_annotations = array_slice($va_sorted_annotations, (int)$vn_start);
+ 				$va_sorted_annotations = array_slice($va_sorted_annotations, (int)$vn_start - 1);
  			}
  		}
  		

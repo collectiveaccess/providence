@@ -6010,3 +6010,45 @@ a.caLCSHServiceMoreLink {
 	display: none; 
 	text-decoration: none;
 }
+
+/* Media replication */
+table.caRepresentationMediaReplicationStatusTable {
+	width: 75%;
+}
+
+div.caRepresentationMediaReplicationTargetList {
+	margin: 0 0 10px 0;
+}
+
+span.caRepresentationMediaReplicationLoadIcon {
+	display: none;
+}
+
+div.caRepresentationMediaReplication {
+	text-align:left; 
+	display: none;
+	padding: 3px;
+}
+
+a.caRepresentationMediaReplicationButton {
+	text-decoration: none;
+	font-size: 11px;
+	font-weight: bold;
+	margin-right: 20px;
+}
+
+div.caRepresentationMediaReplicationControls {
+	background: #fbfbfb;
+	font-size: 10px;
+	width: 680px;
+	overflow: auto;
+	padding: 8px;
+	line-height: 14px;
+	font-weight: normal;
+	color: #000000;
+	
+	background-color: #eee;
+	-moz-border-radius-: 10px; 
+	-webkit-border-radius: 10px;
+	border-radius: 10px;	
+}
