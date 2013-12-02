@@ -398,6 +398,8 @@
  		public function getFacetHierarchyLevel() {
  			$va_access_values = caGetUserAccessValues($this->request);
  			$ps_facet_name = $this->request->getParameter('facet', pString);
+ 			
+ 			$this->opo_browse->setTypeRestrictions(array($this->opn_type_restriction_id));
  			if(!is_array($va_facet_info = $this->opo_browse->getInfoForFacet($ps_facet_name))) { return null; }
  			
  			$va_facet = $this->opo_browse->getFacet($ps_facet_name, array('sort' => 'name', 'checkAccess' => $va_access_values));
