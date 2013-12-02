@@ -154,6 +154,49 @@
  			return $this->render('object_representation_download_binary.php');
  		}
  		# -------------------------------------------------------
+ 		public function downloadCaptionFile() {
+ 			list($pn_representation_id, $t_rep) = $this->_initView();
+ 			
+ 			$pn_caption_id = $this->request->getParameter('caption_id', pString);
+ 			
+ 			$this->view->setVar('representation_id', $pn_representation_id);
+ 			$this->view->setVar('caption_id', $pn_caption_id);
+ 			$this->view->setVar('t_object_representation', $t_rep);
+ 			
+ 			$t_caption = new ca_object_representation_captions($pn_caption_id);
+ 			if (!$t_caption->getPrimaryKey() || ((int)$t_caption->get('representation_id') !== (int)$pn_representation_id)) {
+ 				die(_t("Invalid caption file"));
+ 			}
+ 			
+ 			$t_locale = new ca_locales();
+ 			$vn_locale_id = $t_caption->get('locale_id');
+ 			$vs_locale = $t_locale->localeIDToCode($vn_locale_id);
+ 			$this->view->setVar('file_path', $t_caption->getFilePath('caption_file'));
+ 			$va_info = $t_caption->getFileInfo("caption_file");
+ 			
+ 			switch($this->request->user->getPreference('downloaded_file_naming')) {
+ 				case 'idno':
+ 					$this->view->setVar('download_name', (str_replace(' ', '_', $t_rep->get('idno')))."_captions_{$vs_locale}.vtt");
+ 					break;
+ 				case 'idno_and_version':
+ 					$this->view->setVar('download_name', (str_replace(' ', '_', $t_rep->get('idno')))."_captions_{$vs_locale}.vtt");
+ 					break;
+ 				case 'idno_and_rep_id_and_version':
+ 					$this->view->setVar('download_name', (str_replace(' ', '_', $t_rep->get('idno')))."_representation_{$pn_representation_id}_captions_{$vs_locale}.vtt");
+ 					break;
+ 				case 'original_name':
+ 				default:
+ 					if ($va_info['ORIGINAL_FILENAME']) {
+ 						$this->view->setVar('download_name', $va_info['ORIGINAL_FILENAME']."_captions_{$vs_locale}.vtt");
+ 					} else {
+ 						$this->view->setVar('download_name', (str_replace(' ', '_', $t_rep->get('idno')))."_representation_{$pn_representation_id}_captions_{$vs_locale}.vtt");
+ 					}
+ 					break;
+ 			} 
+ 			
+ 			return $this->render('caption_download_binary.php');
+ 		}
+ 		# -------------------------------------------------------
  		# Sidebar info handler
  		# -------------------------------------------------------
  		public function info($pa_parameters) {

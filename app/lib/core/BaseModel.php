@@ -4934,8 +4934,10 @@ class BaseModel extends BaseObject {
 			
 			try {
 				if ($vs_key = $o_replicator->replicateMedia($this->getMediaPath($ps_field, $vs_version), $va_target_info, $pa_data)) {
-					$va_media_info['REPLICATION_STATUS'][$ps_target] = __CA_MEDIA_REPLICATION_STATE_PROCESSING__;
-					$va_media_info['REPLICATION_LOG'][$ps_target][] = array('STATUS' => __CA_MEDIA_REPLICATION_STATE_PROCESSING__, 'DATETIME' => time());
+					$vn_status = $o_replicator->getReplicationStatus($va_target_info, $vs_key);
+					
+					$va_media_info['REPLICATION_STATUS'][$ps_target] = $vn_status;
+					$va_media_info['REPLICATION_LOG'][$ps_target][] = array('STATUS' => $vn_status, 'DATETIME' => time());
 					$va_media_info['REPLICATION_KEYS'][$ps_target] = $vs_key;
 					$this->setMediaInfo($ps_field, $va_media_info);
 					$this->update(array('processingMediaForReplication' => true));
@@ -5325,7 +5327,8 @@ class BaseModel extends BaseObject {
 					exit;
 				}
 
-				$properties = $ff->getProperties();
+				if(!is_array($properties = $ff->getProperties())) { $properties = array(); }
+				
 				if ($properties['dangerous'] > 0) { $vn_dangerous = 1; }
 
 				if (($dirhash = $this->_getDirectoryHash($vi["absolutePath"], $this->getPrimaryKey())) === false) {

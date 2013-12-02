@@ -1,13 +1,13 @@
 <?php
 /* ----------------------------------------------------------------------
- * app/views/object_representations/object_representation_download_binary.php : 
+ * app/views/object_representations/caption_download_binary.php : 
  * ----------------------------------------------------------------------
  * CollectiveAccess
  * Open-source collections management software
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2009-2012 Whirl-i-Gig
+ * Copyright 2013 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -26,8 +26,7 @@
  * ----------------------------------------------------------------------
  */
 	
-	$vs_show_version = $this->getVar('version');
-	$vs_file_path = $this->getVar('version_path');
+	$vs_file_path = $this->getVar('file_path');
 	
 	header("Content-type: application/octet-stream");
 	header("Last-Modified: " . gmdate("D, d M Y H:i:s") . " GMT");
@@ -36,7 +35,7 @@
 	header("Pragma: no-cache");
 	header("Cache-control: private");
 	
-	header("Content-Disposition: attachment; filename=".$this->getVar('version_download_name'));
+	header("Content-Disposition: attachment; filename=".$this->getVar('download_name'));
 	while(ob_get_level() > 0) { ob_end_flush(); }	// need to do this in order to not have read file use request memory due to buffering
 	readfile($vs_file_path);
 ?>
