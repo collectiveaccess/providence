@@ -447,7 +447,7 @@
 			$va_output = explode("/", $vs_output);
 			array_pop($va_output);
 			if ($vs_output && (!is_dir(join("/", $va_output)))) {
-				CLIUtils::addError(__t("Cannot write profile to '%1'", $vs_output));
+				CLIUtils::addError(_t("Cannot write profile to '%1'", $vs_output));
 				return false;
 			}
 			
