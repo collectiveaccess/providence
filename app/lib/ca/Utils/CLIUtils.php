@@ -957,8 +957,10 @@
 				CLIUtils::addError(_t("File '%1' does not exist", $vs_file_path));
 				return false;
 			}
-			
-			if (!($t_importer = ca_data_importers::loadImporterFromFile($vs_file_path, $va_errors))) {
+			$vs_log_dir = $po_opts->getOption('log');
+			$vn_log_level = CLIUtils::import_getLogLevel($po_opts);
+
+			if (!($t_importer = ca_data_importers::loadImporterFromFile($vs_file_path, $va_errors, array('logDirectory' => $vs_log_dir, 'logLevel' => $vn_log_level)))) {
 				CLIUtils::addError(_t("Could not import '%1': %2", $vs_file_path, join("; ", $va_errors)));
 				return false;
 			} else {
@@ -973,7 +975,9 @@
 		 */
 		public static function load_import_mappingParamList() {
 			return array(
-				"file|f=s" => _t('Excel XLSX file to load.')
+				"file|f=s" => _t('Excel XLSX file to load.'),
+				"log|l-s" => _t('Path to directory in which to log import details. If not set no logs will be recorded.'),
+				"log-level|d-s" => _t('Logging threshold. Possible values are, in ascending order of important: DEBUG, INFO, NOTICE, WARN, ERR, CRIT, ALERT. Default is INFO.'),
 			);
 		}
 		# -------------------------------------------------------
@@ -1018,7 +1022,21 @@
 			
 			$vs_format = $po_opts->getOption('format');
 			$vs_log_dir = $po_opts->getOption('log');
+			$vn_log_level = CLIUtils::import_getLogLevel($po_opts);
 			
+			
+			if (!ca_data_importers::importDataFromSource($vs_data_source, $vs_mapping, array('format' => $vs_format, 'showCLIProgressBar' => true, 'useNcurses' => !$vb_no_ncurses && caCLIUseNcurses(), 'logDirectory' => $vs_log_dir, 'logLevel' => $vn_log_level))) {
+				CLIUtils::addError(_t("Could not import source %1", $vs_data_source));
+				return false;
+			} else {
+				CLIUtils::addMessage(_t("Imported data from source %1", $vs_data_source));
+				return true;
+			}
+		}
+		/**
+		* Helper function to get log levels
+		*/
+		private static function import_getLogLevel($po_opts){
 			$vn_log_level = KLogger::INFO;
 			switch($vs_log_level = $po_opts->getOption('log-level')) {
 				case 'DEBUG':
@@ -1044,13 +1062,7 @@
 					$vn_log_level = KLogger::INFO;
 					break;
 			}
-			if (!ca_data_importers::importDataFromSource($vs_data_source, $vs_mapping, array('format' => $vs_format, 'showCLIProgressBar' => true, 'useNcurses' => !$vb_no_ncurses && caCLIUseNcurses(), 'logDirectory' => $vs_log_dir, 'logLevel' => $vn_log_level))) {
-				CLIUtils::addError(_t("Could not import source %1", $vs_data_source));
-				return false;
-			} else {
-				CLIUtils::addMessage(_t("Imported data from source %1", $vs_data_source));
-				return true;
-			}
+			return $vn_log_level;
 		}
 		# -------------------------------------------------------
 		/**
