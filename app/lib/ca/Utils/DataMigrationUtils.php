@@ -87,7 +87,7 @@
 		 * @param array $pa_options An optional array of options, which include:
 		 *				outputErrors - if true, errors will be printed to console [default=false]
 		 *				dontCreate - if true then new entities will not be created [default=false]
-		 *				matchOnIdno - try to match on idno if name match fails [default=false]
+		 *				matchOn = optional list indicating sequence of checks for an existing record; values of array can be "label" and "idno". Ex. array("idno", "label") will first try to match on idno and then label if the first match fails.
 		 *				matchOnDisplayName  if true then entities are looked up exclusively using displayname, otherwise forename and surname fields are used [default=false]
 		 * 				transaction - if Transaction instance is passed, use it for all Db-related tasks [default=null]
 		 *				returnInstance = return ca_entities instance rather than entity_id. Default is false. 
@@ -102,7 +102,7 @@
 			if(!isset($pa_options['outputErrors'])) { $pa_options['outputErrors'] = false; }
 			
 			$pb_match_on_displayname = caGetOption('matchOnDisplayName', $pa_options, false);
-			$pb_match_on_idno = caGetOption('matchOnIdno', $pa_options, false);
+			$pa_match_on = caGetOption('matchOn', $pa_options, array('label', 'idno'), array('castTo' => "array"));
 			
 			$t_entity = new ca_entities();
 			if (isset($pa_options['transaction']) && $pa_options['transaction'] instanceof Transaction){
@@ -112,10 +112,8 @@
 			$o_event = (isset($pa_options['importEvent']) && $pa_options['importEvent'] instanceof ca_data_import_events) ? $pa_options['importEvent'] : null;
 			$vs_event_source = (isset($pa_options['importEventSource']) && $pa_options['importEventSource']) ? $pa_options['importEventSource'] : "?";
 			$o_log = (isset($pa_options['log']) && $pa_options['log'] instanceof KLogger) ? $pa_options['log'] : null;
-			
-			$va_find_arr = array();
-			if ($pn_type_id) { $va_find_arr['type_id'] = $pn_type_id; }		
-			
+				
+			$vn_parent_id = (isset($pa_values['parent_id']) && $pa_values['parent_id']) ? $pa_values['parent_id'] : null;	
 			$vs_idno = isset($pa_values['idno']) ? (string)$pa_values['idno'] : null;
 			
 			if (preg_match("!\%!", $vs_idno)) {
@@ -128,14 +126,23 @@
 				}
 			}
 			
-			if ($pb_match_on_displayname) {
-				$vn_id = ca_entities::find(array_merge(array('preferred_labels' => array('displayname' => $pa_entity_name['displayname']), $va_find_arr)), array('returnAs' => 'firstId', 'transaction' => $pa_options['transaction']));
-			} else {
-				$vn_id = ca_entities::find(array_merge(array('preferred_labels' => array('forename' => $pa_entity_name['forename'], 'surname' => $pa_entity_name['surname']), $va_find_arr)), array('returnAs' => 'firstId', 'transaction' => $pa_options['transaction']));
-			}
-			if (!$vn_id && $pb_match_on_idno) {
-				$va_find_arr['idno'] = $vs_idno;
-				$vn_id = (ca_entities::find($va_find_arr, array('returnAs' => 'firstId', 'transaction' => $pa_options['transaction'])));
+			$vn_id = null;
+			foreach($pa_match_on as $vs_match_on) {
+				switch(strtolower($vs_match_on)) {
+					case 'label':
+						if ($pb_match_on_displayname) {
+							$vn_id = ca_entities::find(array('preferred_labels' => array('displayname' => $pa_entity_name['displayname']),'type_id' => $pn_type_id, 'parent_id' => $vn_parent_id), array('returnAs' => 'firstId', 'transaction' => $pa_options['transaction']));
+						} else {
+							$vn_id = ca_entities::find(array('preferred_labels' => array('forename' => $pa_entity_name['forename'], 'surname' => $pa_entity_name['surname']), 'type_id' => $pn_type_id, 'parent_id' => $vn_parent_id), array('returnAs' => 'firstId', 'transaction' => $pa_options['transaction']));
+						}
+						if ($vn_id) { break(2); }
+						break;
+					case 'idno':
+						if ($vn_id = (ca_entities::find(array('idno' => $vs_idno ? $vs_idno : $pa_entity_name['displayname']), array('returnAs' => 'firstId', 'transaction' => $pa_options['transaction'])))) {
+							break(2);
+						}
+						break;
+				}
 			}
 			
 			if (!$vn_id) {
@@ -272,7 +279,7 @@
 		 * @param array $pa_values An optional array of additional values to populate newly created place records with. These values are *only* used for newly created places; they will not be applied if the place named already exists. The array keys should be names of ca_places fields or valid entity attributes. Values should be either a scalar (for single-value attributes) or an array of values for (multi-valued attributes)
 		 * @param array $pa_options An optional array of options, which include:
 		 *				outputErrors - if true, errors will be printed to console [default=false]
-		 *				matchOnIdno - try to match on idno if name match fails [default=false]
+		 *				matchOn = optional list indicating sequence of checks for an existing record; values of array can be "label" and "idno". Ex. array("idno", "label") will first try to match on idno and then label if the first match fails.
 		 *				dontCreate - if true then new entities will not be created [default=false]
 		 * 				transaction - if Transaction object is passed, use it for all Db-related tasks [default=null]
 		 *				returnInstance = return ca_places instance rather than place_id. Default is false. 
@@ -286,7 +293,7 @@
 			if (!is_array($pa_options)) { $pa_options = array(); }
 			if(!isset($pa_options['outputErrors'])) { $pa_options['outputErrors'] = false; }
 			
-			$pb_match_on_idno = caGetOption('matchOnIdno', $pa_options, false);
+			$pa_match_on = caGetOption('matchOn', $pa_options, array('label', 'idno'), array('castTo' => "array"));
 			
 			$t_place = new ca_places();
 			if (isset($pa_options['transaction']) && $pa_options['transaction'] instanceof Transaction){
@@ -309,18 +316,21 @@
 				}
 			}
 			
-			$va_find_arr = array();
-			if ($pn_type_id) { $va_find_arr['type_id'] = $pn_type_id; }
-			if ($pn_parent_id) { $va_find_arr['parent_id'] = $pn_parent_id; }
-			
-			if (!($vn_id = (ca_places::find(array_merge(array('preferred_labels' => array('name' => $ps_place_name)), $va_find_arr), array('returnAs' => 'firstId', 'transaction' => $pa_options['transaction']))))) {
-				if ($pb_match_on_idno && $vs_idno) { 
-					$va_find_arr['idno'] = $vs_idno;
-					unset($va_find_arr['parent_id']); // don't consider parent when matching on idno
-					$vn_id = (ca_places::find($va_find_arr, array('returnAs' => 'firstId', 'transaction' => $pa_options['transaction'])));
+			$vn_id = null;
+			foreach($pa_match_on as $vs_match_on) {
+				switch(strtolower($vs_match_on)) {
+					case 'label':
+						if ($vn_id = (ca_places::find(array('preferred_labels' => array('name' => $ps_place_name), 'type_id' => $pn_type_id, 'parent_id' => $pn_parent_id), array('returnAs' => 'firstId', 'transaction' => $pa_options['transaction'])))) {
+							break(2);
+						}
+						break;
+					case 'idno':
+						if ($vn_id = (ca_places::find(array('idno' => $vs_idno ? $vs_idno  : $ps_place_name), array('returnAs' => 'firstId', 'transaction' => $pa_options['transaction'])))) {
+							break(2);
+						}
+						break;
 				}
 			}
-			
 			
 			if (!$vn_id) {
 				if (isset($pa_options['dontCreate']) && $pa_options['dontCreate']) { return false; }
@@ -461,7 +471,7 @@
 		 * @param array $pa_values An optional array of additional values to populate newly created occurrence records with. These values are *only* used for newly created occurrences; they will not be applied if the occurrence named already exists. The array keys should be names of ca_occurrences fields or valid entity attributes. Values should be either a scalar (for single-value attributes) or an array of values for (multi-valued attributes)
 		 * @param array $pa_options An optional array of options, which include:
 		 *				outputErrors - if true, errors will be printed to console [default=false]
-		 *				matchOnIdno - try to match on idno if name match fails [default=false]
+		 *				matchOn = optional list indicating sequence of checks for an existing record; values of array can be "label" and "idno". Ex. array("idno", "label") will first try to match on idno and then label if the first match fails.
 		 *				dontCreate - if true then new entities will not be created [default=false]
 		 * 				transaction - if Transaction object is passed, use it for all Db-related tasks [default=null]
 		 *				returnInstance = return ca_occurrences instance rather than occurrence_id. Default is false. 
@@ -475,7 +485,7 @@
 			if (!is_array($pa_options)) { $pa_options = array(); }
 			if(!isset($pa_options['outputErrors'])) { $pa_options['outputErrors'] = false; }
 			
-			$pb_match_on_idno = caGetOption('matchOnIdno', $pa_options, false);
+			$pa_match_on = caGetOption('matchOn', $pa_options, array('label', 'idno'), array('castTo' => "array"));
 			
 			$t_occurrence = new ca_occurrences();
 			if (isset($pa_options['transaction']) && $pa_options['transaction'] instanceof Transaction){
@@ -499,15 +509,20 @@
 				}
 			}
 			
-			$va_find_arr = array();
-			if ($pn_type_id) { $va_find_arr['type_id'] = $pn_type_id; }
-			if ($pn_parent_id) { $va_find_arr['parent_id'] = $pn_parent_id; }
-			
-			if (!($vn_id = (ca_occurrences::find(array_merge(array('preferred_labels' => array('name' => $ps_occ_name)), $va_find_arr), array('returnAs' => 'firstId', 'transaction' => $pa_options['transaction']))))) {
-				if ($pb_match_on_idno && $vs_idno) { 
-					$va_find_arr['idno'] = $vs_idno;
-					unset($va_find_arr['parent_id']); // don't consider parent when matching on idno
-					$vn_id = (ca_occurrences::find($va_find_arr, array('returnAs' => 'firstId', 'transaction' => $pa_options['transaction'])));
+			$vn_id = null;
+			foreach($pa_match_on as $vs_match_on) {
+				switch(strtolower($vs_match_on)) {
+					case 'label':
+						if ($vn_id = ca_occurrences::find(array('preferred_labels' => array('name' => $ps_occ_name), 'parent_id' => $pn_parent_id, 'type_id' => $pn_type_id), array('returnAs' => 'firstId', 'transaction' => $pa_options['transaction']))) {
+							break(2);
+						}
+						break;
+					case 'idno':
+						// TODO: should we filter on type_id here?
+						if ($vn_id = ca_occurrences::find(array('idno' => $vs_idno ?  $vs_idno : $ps_occ_name), array('returnAs' => 'firstId', 'transaction' => $pa_options['transaction']))) {
+							break(2);
+						}
+						break;
 				}
 			}
 			
@@ -641,8 +656,7 @@
 		 * @param array $pa_options An optional array of options, which include:
 		 *				outputErrors - if true, errors will be printed to console [default=false]
 		 *				dontCreate - if true then new items will not be created [default=false]
-		 *				matchOnLabel =  if true then list items are looked up exclusively using labels [default=false]
-		 *				matchOnIdno - try to match on idno if name match fails [default=false]
+		 *				matchOn = optional list indicating sequence of checks for an existing record; values of array can be "label" and "idno". Ex. array("idno", "label") will first try to match on idno and then label if the first match fails.
 		 *				cache = cache item_ids of previously created/loaded items [default=true]
 		 *				returnInstance = return ca_occurrences instance rather than occurrence_id. Default is false. 
 		 *				importEvent = if ca_data_import_events instance is passed then the insert/update of the list item will be logged as part of the import
@@ -654,8 +668,8 @@
 			if (!is_array($pa_options)) { $pa_options = array(); }
 			if(!isset($pa_options['outputErrors'])) { $pa_options['outputErrors'] = false; }
 			
-			$pb_match_on_label = caGetOption('matchOnLabel', $pa_options, false);
-			$pb_match_on_idno = caGetOption('matchOnIdno', $pa_options, false);
+			$pa_match_on = caGetOption('matchOn', $pa_options, array('label', 'idno'), array('castTo' => "array"));
+			
 			$vn_parent_id = caGetOption('parent_id', $pa_values, null);
 			
 			$vs_singular_label = (isset($pa_values['preferred_labels']['name_singular']) && $pa_values['preferred_labels']['name_singular']) ? $pa_values['preferred_labels']['name_singular'] : '';
@@ -702,46 +716,42 @@
 			}
 			
 			
-			$va_find_arr = array('list_id' => $vn_list_id);
-			if ($vn_parent_id) { $va_find_arr['parent_id'] = $vn_parent_id; }
-				
-			$vn_item_id = null;
-			if ($pb_match_on_label) {
-				if (!($vn_item_id = (ca_list_items::find(array_merge(array('preferred_labels' => array('name_singular' => $vs_singular_label)), $va_find_arr), array('returnAs' => 'firstId', 'transaction' => $pa_options['transaction']))))) {
-					$vn_item_id = (ca_list_items::find(array_merge(array('preferred_labels' => array('name_plural' => $vs_plural_label)), $va_find_arr), array('returnAs' => 'firstId', 'transaction' => $pa_options['transaction'])));
-				}
-				
-				if ($vn_item_id) {
-					DataMigrationUtils::$s_cached_list_item_ids[$pm_list_code_or_id.'/'.$ps_item_idno.'/'.$vn_parent_id] = $vn_item_id;
-					
-					if ($o_event) { 
-						$o_event->beginItem($vs_event_source, 'ca_list_items', 'U'); 
-						$o_event->endItem($vn_item_id, __CA_DATA_IMPORT_ITEM_SUCCESS__, '');
-					}
-					if (isset($pa_options['returnInstance']) && $pa_options['returnInstance']) {
-						return new ca_list_items($vn_item_id);
-					}
-					if ($o_log) { $o_log->logDebug(_t("Found existing list item %1 (member of list %2) in DataMigrationUtils::getListItemID() using label %3 and %4", $ps_item_idno, $pm_list_code_or_id, $vs_label, print_R($va_find_arr, true))); }
-					return DataMigrationUtils::$s_cached_list_item_ids[$pm_list_code_or_id.'/'.$ps_item_idno.'/'.$vn_parent_id];
+			
+			$vn_id = null;
+			foreach($pa_match_on as $vs_match_on) {
+				switch(strtolower($vs_match_on)) {
+					case 'label':
+						if ($vn_item_id = (ca_list_items::find(array('preferred_labels' => array('name_singular' => $vs_singular_label), 'parent_id' => $vn_parent_id, 'list_id' => $vn_list_id), array('returnAs' => 'firstId', 'transaction' => $pa_options['transaction'])))) {
+							if ($o_log) { $o_log->logDebug(_t("Found existing list item %1 (member of list %2) in DataMigrationUtils::getListItemID() using singular label %3", $ps_item_idno, $pm_list_code_or_id, $vs_singular_label)); }
+							break(2);
+						} else {
+							if ($vn_item_id = (ca_list_items::find(array('preferred_labels' => array('name_plural' => $vs_plural_label), 'parent_id' => $vn_parent_id, 'list_id' => $vn_list_id), array('returnAs' => 'firstId', 'transaction' => $pa_options['transaction'])))) {
+								if ($o_log) { $o_log->logDebug(_t("Found existing list item %1 (member of list %2) in DataMigrationUtils::getListItemID() using plural label %3", $ps_item_idno, $pm_list_code_or_id, $vs_plural_label)); }
+								break(2);
+							}
+						}
+						break;
+					case 'idno':
+						if ($vn_item_id = (ca_list_items::find(array('idno' => $ps_item_idno ? $ps_item_idno : $vs_plural_label, 'list_id' => $vn_list_id), array('returnAs' => 'firstId', 'transaction' => $pa_options['transaction'])))) {
+							if ($o_log) { $o_log->logDebug(_t("Found existing list item %1 (member of list %2) in DataMigrationUtils::getListItemID() using idno with %3", $ps_item_idno, $pm_list_code_or_id)); }
+							break(2);
+						}
+						break;
 				}
 			}
 			
-			if (!$pb_match_on_label || $pb_match_on_idno) {
-				unset($va_find_arr['parent_id']); // don't consider parent when matching on idno
-				if ($vn_item_id = (ca_list_items::find(array_merge(array('idno' => $ps_item_idno), $va_find_arr), array('returnAs' => 'firstId', 'transaction' => $pa_options['transaction'])))) {
-					DataMigrationUtils::$s_cached_list_item_ids[$pm_list_code_or_id.'/'.$ps_item_idno.'/'.$vn_parent_id] = $vn_item_id; 
-					
-					if ($o_event) { 
-						$o_event->beginItem($vs_event_source, 'ca_list_items', 'U'); 
-						$o_event->endItem(DataMigrationUtils::$s_cached_list_item_ids[$pm_list_code_or_id.'/'.$ps_item_idno.'/'.$vn_parent_id], __CA_DATA_IMPORT_ITEM_SUCCESS__, '');
-					}
-					if ($o_log) { $o_log->logDebug(_t("Found existing list item %1 (member of list %2) in DataMigrationUtils::getListItemID() using idno with %3", $ps_item_idno, $pm_list_code_or_id, print_R($va_find_arr, true))); }
-					
-					if (isset($pa_options['returnInstance']) && $pa_options['returnInstance']) {
-						return $t_item;
-					}
-					return DataMigrationUtils::$s_cached_list_item_ids[$pm_list_code_or_id.'/'.$ps_item_idno.'/'.$vn_parent_id];
+			if ($vn_item_id) {
+				DataMigrationUtils::$s_cached_list_item_ids[$pm_list_code_or_id.'/'.$ps_item_idno.'/'.$vn_parent_id] = $vn_item_id;
+				
+				if ($o_event) { 
+					$o_event->beginItem($vs_event_source, 'ca_list_items', 'U'); 
+					$o_event->endItem($vn_item_id, __CA_DATA_IMPORT_ITEM_SUCCESS__, '');
 				}
+				if (isset($pa_options['returnInstance']) && $pa_options['returnInstance']) {
+					return new ca_list_items($vn_item_id);
+				}
+				
+				return DataMigrationUtils::$s_cached_list_item_ids[$pm_list_code_or_id.'/'.$ps_item_idno.'/'.$vn_parent_id];
 			}
 				
 			if (isset($pa_options['dontCreate']) && $pa_options['dontCreate']) { return false; }
@@ -824,7 +834,7 @@
 		 * @param array $pa_values An optional array of additional values to populate newly created collection records with. These values are *only* used for newly created collections; they will not be applied if the collection named already exists. The array keys should be names of collection fields or valid collection attributes. Values should be either a scalar (for single-value attributes) or an array of values for (multi-valued attributes)
 		 * @param array $pa_options An optional array of options, which include:
 		 *				outputErrors - if true, errors will be printed to console [default=false]
-		 *				matchOnIdno - try to match on idno if name match fails [default=false]
+		 *				matchOn = optional list indicating sequence of checks for an existing record; values of array can be "label" and "idno". Ex. array("idno", "label") will first try to match on idno and then label if the first match fails.
 		 *				dontCreate - if true then new collections will not be created [default=false]
 		 * 				transaction - if Transaction object is passed, use it for all Db-related tasks [default=null]
 		 *				returnInstance = return ca_collections instance rather than collection_id. Default is false. 
@@ -838,7 +848,7 @@
 			if (!is_array($pa_options)) { $pa_options = array(); }
 			if(!isset($pa_options['outputErrors'])) { $pa_options['outputErrors'] = false; }
 			
-			$pb_match_on_idno = caGetOption('matchOnIdno', $pa_options, false);
+			$pa_match_on = caGetOption('matchOn', $pa_options, array('label', 'idno'), array('castTo' => "array"));
 			
 			$t_collection = new ca_collections();
 			if (isset($pa_options['transaction']) && $pa_options['transaction'] instanceof Transaction){
@@ -861,15 +871,19 @@
 				}
 			}
 			
-			$va_find_arr = array();
-			if ($pn_type_id) { $va_find_arr['type_id'] = $pn_type_id; }
-			if ($pn_parent_id) { $va_find_arr['parent_id'] = $pn_parent_id; }
-			
-			if (!($vn_id = (ca_collections::find(array_merge(array('preferred_labels' => array('name' => $ps_collection_name)), $va_find_arr), array('returnAs' => 'firstId', 'transaction' => $pa_options['transaction']))))) {
-				if ($pb_match_on_idno && $vs_idno) { 
-					$va_find_arr['idno'] = $vs_idno;
-					unset($va_find_arr['parent_id']); // don't consider parent when matching on idno
-					$vn_id = (ca_collections::find($va_find_arr, array('returnAs' => 'firstId', 'transaction' => $pa_options['transaction'])));
+			$vn_id = null;
+			foreach($pa_match_on as $vs_match_on) {
+				switch(strtolower($vs_match_on)) {
+					case 'label':
+						if ($vn_id = (ca_collections::find(array('preferred_labels' => array('name' => $ps_collection_name), 'parent_id' => $pn_parent_id, 'type_id' => $pn_type_id), array('returnAs' => 'firstId', 'transaction' => $pa_options['transaction'])))) {
+							break(2);
+						}
+						break;
+					case 'idno':
+						if ($vn_id = (ca_collections::find(array('idno' => $vs_idno ? $vs_idno : $ps_collection_name), array('returnAs' => 'firstId', 'transaction' => $pa_options['transaction'])))) {
+							break(2);
+						}
+						break;
 				}
 			}
 			
@@ -1007,7 +1021,7 @@
 		 * @param array $pa_values An optional array of additional values to populate newly created location records with. These values are *only* used for newly created locations; they will not be applied if the location named already exists. The array keys should be names of ca_storage_locations fields or valid storage location attributes. Values should be either a scalar (for single-value attributes) or an array of values for (multi-valued attributes)
 		 * @param array $pa_options An optional array of options, which include:
 		 *				outputErrors - if true, errors will be printed to console [default=false]
-		 *				matchOnIdno - try to match on idno if name match fails [default=false]
+		 *				matchOn = optional list indicating sequence of checks for an existing record; values of array can be "label" and "idno". Ex. array("idno", "label") will first try to match on idno and then label if the first match fails.
 		 *				dontCreate - if true then new entities will not be created [default=false]
 		 * 				transaction - if Transaction object is passed, use it for all Db-related tasks [default=null]
 		 *				returnInstance = return ca_storage_locations instance rather than location_id. Default is false. 
@@ -1021,7 +1035,7 @@
 			if (!is_array($pa_options)) { $pa_options = array(); }
 			if(!isset($pa_options['outputErrors'])) { $pa_options['outputErrors'] = true; }
 			
-			$pb_match_on_idno = caGetOption('matchOnIdno', $pa_options, false);
+			$pa_match_on = caGetOption('matchOn', $pa_options, array('label', 'idno'), array('castTo' => "array"));
 			
 			$t_location = new ca_storage_locations();
 			if (isset($pa_options['transaction']) && $pa_options['transaction'] instanceof Transaction){
@@ -1045,15 +1059,20 @@
 				}
 			}
 			
-			$va_find_arr = array();
-			if ($pn_type_id) { $va_find_arr['type_id'] = $pn_type_id; }
-			if ($pn_parent_id) { $va_find_arr['parent_id'] = $pn_parent_id; }
 			
-			if (!($vn_id = (ca_storage_locations::find(array_merge(array('preferred_labels' => array('name' => $ps_location_name)), $va_find_arr), array('returnAs' => 'firstId', 'transaction' => $pa_options['transaction']))))) {
-				if ($pb_match_on_idno && $vs_idno) { 
-					$va_find_arr['idno'] = $vs_idno;
-					unset($va_find_arr['parent_id']); // don't consider parent when matching on idno
-					$vn_id = (ca_storage_locations::find($va_find_arr, array('returnAs' => 'firstId', 'transaction' => $pa_options['transaction'])));
+			$vn_id = null;
+			foreach($pa_match_on as $vs_match_on) {
+				switch(strtolower($vs_match_on)) {
+					case 'label':
+						if ($vn_id = (ca_storage_locations::find(array('preferred_labels' => array('name' => $ps_location_name), 'parent_id' => $pn_parent_id, 'type_id' => $pn_type_id), array('returnAs' => 'firstId', 'transaction' => $pa_options['transaction'])))) {
+							break(2);
+						}
+						break;
+					case 'idno':
+						if ($vn_id = (ca_storage_locations::find(array('idno' => $vs_idno ? $vs_idno : $ps_location_name), array('returnAs' => 'firstId', 'transaction' => $pa_options['transaction'])))) {
+							break(2);
+						}
+						break;
 				}
 			}
 			
@@ -1189,7 +1208,7 @@
 		 * @param array $pa_values An optional array of additional values to populate newly created object records with. These values are *only* used for newly created objects; they will not be applied if the object named already exists. The array keys should be names of ca_objects fields or valid object attributes. Values should be either a scalar (for single-value attributes) or an array of values for (multi-valued attributes)
 		 * @param array $pa_options An optional array of options, which include:
 		 *				outputErrors - if true, errors will be printed to console [default=false]
-		 *				matchOnIdno - try to match on idno if name match fails [default=false]
+		 *				matchOn = optional list indicating sequence of checks for an existing record; values of array can be "label" and "idno". Ex. array("idno", "label") will first try to match on idno and then label if the first match fails.
 		 *				dontCreate - if true then new entities will not be created [default=false]
 		 * 				transaction - if Transaction object is passed, use it for all Db-related tasks [default=null]
 		 *				returnInstance = return ca_objects instance rather than object_id. Default is false. 
@@ -1203,7 +1222,7 @@
 			if (!is_array($pa_options)) { $pa_options = array(); }
 			if(!isset($pa_options['outputErrors'])) { $pa_options['outputErrors'] = false; }
 			
-			$pb_match_on_idno = caGetOption('matchOnIdno', $pa_options, false);
+			$pa_match_on = caGetOption('matchOn', $pa_options, array('label', 'idno'), array('castTo' => "array"));
 			
 			$t_object = new ca_objects();
 			if (isset($pa_options['transaction']) && $pa_options['transaction'] instanceof Transaction){
@@ -1226,15 +1245,19 @@
 				}
 			}
 			
-			$va_find_arr = array();
-			if ($pn_type_id) { $va_find_arr['type_id'] = $pn_type_id; }
-			if ($pn_parent_id) { $va_find_arr['parent_id'] = $pn_parent_id; }
-			
-			if (!($vn_id = (ca_objects::find(array_merge(array('preferred_labels' => array('name' => $ps_object_name)), $va_find_arr), array('returnAs' => 'firstId', 'transaction' => $pa_options['transaction']))))) {
-				if ($pb_match_on_idno && $vs_idno) { 
-					$va_find_arr['idno'] = $vs_idno;
-					unset($va_find_arr['parent_id']); // don't consider parent when matching on idno
-					$vn_id = (ca_objects::find($va_find_arr, array('returnAs' => 'firstId', 'transaction' => $pa_options['transaction'])));
+			$vn_id = null;
+			foreach($pa_match_on as $vs_match_on) {
+				switch(strtolower($vs_match_on)) {
+					case 'label':
+						if ($vn_id = (ca_objects::find(array('preferred_labels' => array('name' => $ps_object_name), 'parent_id' => $pn_parent_id, 'type_id' => $pn_type_id), array('returnAs' => 'firstId', 'transaction' => $pa_options['transaction'])))) {
+							break(2);
+						}
+						break;
+					case 'idno':
+						if ($vn_id = (ca_objects::find(array('idno' => $vs_idno ? $vs_idno : $ps_object_name), array('returnAs' => 'firstId', 'transaction' => $pa_options['transaction'])))) {
+							break(2);
+						}
+						break;
 				}
 			}
 			
@@ -1376,6 +1399,7 @@
 		 * @param array $pa_options An optional array of options, which include:
 		 *				outputErrors - if true, errors will be printed to console [default=false]
 		 *				dontCreate - if true then new entities will not be created [default=false]
+		 *				matchOn = optional list indicating sequence of checks for an existing record; values of array can be "label" and "idno". Ex. array("idno", "label") will first try to match on idno and then label if the first match fails.
 		 * 				transaction - if Transaction object is passed, use it for all Db-related tasks [default=null]
 		 *				returnInstance = return ca_object_lots instance rather than object_id. Default is false. 
 		 *				importEvent = if ca_data_import_events instance is passed then the insert/update of the object will be logged as part of the import
@@ -1396,10 +1420,21 @@
 			$vs_event_source = (isset($pa_options['importEventSource']) && $pa_options['importEventSource']) ? $pa_options['importEventSource'] : "?";
 			$o_log = (isset($pa_options['log']) && $pa_options['log'] instanceof KLogger) ? $pa_options['log'] : null;
 			
-			$va_find_arr = array();
-			if ($pn_type_id) { $va_find_arr['type_id'] = $pn_type_id; }
-			
-			$vn_id = (ca_object_lots::find(array_merge(array('idno_stub' => $ps_idno_stub), $va_find_arr), array('returnAs' => 'firstId', 'transaction' => $pa_options['transaction'])));
+			$vn_id = null;
+			foreach($pa_match_on as $vs_match_on) {
+				switch(strtolower($vs_match_on)) {
+					case 'label':
+						if ($vn_id = (ca_object_lots::find(array('preferred_labels' => array('name' => $ps_lot_name), 'type_id' => $pn_type_id), array('returnAs' => 'firstId', 'transaction' => $pa_options['transaction'])))) {
+							break(2);
+						}
+						break;
+					case 'idno':
+						if ($vn_id = (ca_object_lots::find(array('idno_stub' => $ps_idno_stub ? $ps_idno_stub : $ps_lot_name), array('returnAs' => 'firstId', 'transaction' => $pa_options['transaction'])))) {
+							break(2);
+						}
+						break;
+				}
+			}
 
 			if (!$vn_id) {
 				if (isset($pa_options['dontCreate']) && $pa_options['dontCreate']) { return false; }
@@ -1533,7 +1568,7 @@
 		 * @param array $pa_values An optional array of additional values to populate newly created loan records with. These values are *only* used for newly created loans; they will not be applied if the loan named already exists. The array keys should be names of loan fields or valid loan attributes. Values should be either a scalar (for single-value attributes) or an array of values for (multi-valued attributes)
 		 * @param array $pa_options An optional array of options, which include:
 		 *				outputErrors - if true, errors will be printed to console [default=false]
-		 *				matchOnIdno - try to match on idno if name match fails [default=false]
+		 *				matchOn = optional list indicating sequence of checks for an existing record; values of array can be "label" and "idno". Ex. array("idno", "label") will first try to match on idno and then label if the first match fails.
 		 *				dontCreate - if true then new loans will not be created [default=false]
 		 * 				transaction - if Transaction object is passed, use it for all Db-related tasks [default=null]
 		 *				returnInstance = return ca_loans instance rather than loan_id. Default is false. 
@@ -1547,7 +1582,7 @@
 			if (!is_array($pa_options)) { $pa_options = array(); }
 			if(!isset($pa_options['outputErrors'])) { $pa_options['outputErrors'] = false; }
 			
-			$pb_match_on_idno = caGetOption('matchOnIdno', $pa_options, false);
+			$pa_match_on = caGetOption('matchOn', $pa_options, array('label', 'idno'), array('castTo' => "array"));
 			
 			$t_loan = new ca_loans();
 			if (isset($pa_options['transaction']) && $pa_options['transaction'] instanceof Transaction){
@@ -1557,10 +1592,6 @@
 			$o_event = (isset($pa_options['importEvent']) && $pa_options['importEvent'] instanceof ca_data_import_events) ? $pa_options['importEvent'] : null;
 			$vs_event_source = (isset($pa_options['importEventSource']) && $pa_options['importEventSource']) ? $pa_options['importEventSource'] : "?";
 			$o_log = (isset($pa_options['log']) && $pa_options['log'] instanceof KLogger) ? $pa_options['log'] : null;
-
-			$va_find_arr = array();
-			if ($pn_type_id) { $va_find_arr['type_id'] = $pn_type_id; }
-			if ($pn_parent_id) { $va_find_arr['parent_id'] = $pn_parent_id; }
 				
 			$vs_idno = isset($pa_values['idno']) ? (string)$pa_values['idno'] : null;
 			
@@ -1574,11 +1605,19 @@
 				}
 			}
 			
-			if (!($vn_id = (ca_loans::find(array_merge(array('preferred_labels' => array('name' => $ps_loan_name)), $va_find_arr), array('returnAs' => 'firstId', 'transaction' => $pa_options['transaction']))))) {
-				if ($pb_match_on_idno && $vs_idno) { 
-					$va_find_arr['idno'] = $vs_idno;
-					unset($va_find_arr['parent_id']); // don't consider parent when matching on idno
-					$vn_id = (ca_loans::find($va_find_arr, array('returnAs' => 'firstId', 'transaction' => $pa_options['transaction'])));
+			$vn_id = null;
+			foreach($pa_match_on as $vs_match_on) {
+				switch(strtolower($vs_match_on)) {
+					case 'label':
+						if ($vn_id = (ca_loans::find(array('preferred_labels' => array('name' => $ps_loan_name), 'type_id' => $pn_type_id, 'parent_id' => $pn_parent_id), array('returnAs' => 'firstId', 'transaction' => $pa_options['transaction'])))) {
+							break(2);
+						}
+						break;
+					case 'idno':
+						if ($vn_id = (ca_loans::find(array('idno' => $vs_idno ? $vs_idno : $ps_loan_name), array('returnAs' => 'firstId', 'transaction' => $pa_options['transaction'])))) {
+							break(2);
+						}
+						break;
 				}
 			}
 			
@@ -1713,7 +1752,7 @@
 		 * @param array $pa_values An optional array of additional values to populate newly created movement records with. These values are *only* used for newly created movements; they will not be applied if the movement named already exists. The array keys should be names of movement fields or valid movement attributes. Values should be either a scalar (for single-value attributes) or an array of values for (multi-valued attributes)
 		 * @param array $pa_options An optional array of options, which include:
 		 *				outputErrors - if true, errors will be printed to console [default=false]
-		 *				matchOnIdno - try to match on idno if name match fails [default=false]
+		 *				matchOn = optional list indicating sequence of checks for an existing record; values of array can be "label" and "idno". Ex. array("idno", "label") will first try to match on idno and then label if the first match fails.
 		 *				dontCreate - if true then new movements will not be created [default=false]
 		 * 				transaction - if Transaction object is passed, use it for all Db-related tasks [default=null]
 		 *				returnInstance = return ca_movements instance rather than movement_id. Default is false. 
@@ -1727,7 +1766,7 @@
 			if (!is_array($pa_options)) { $pa_options = array(); }
 			if(!isset($pa_options['outputErrors'])) { $pa_options['outputErrors'] = false; }
 			
-			$pb_match_on_idno = caGetOption('matchOnIdno', $pa_options, false);
+			$pa_match_on = caGetOption('matchOn', $pa_options, array('label', 'idno'), array('castTo' => "array"));
 			
 			$t_movement = new ca_movements();
 			if (isset($pa_options['transaction']) && $pa_options['transaction'] instanceof Transaction){
@@ -1737,10 +1776,6 @@
 			$o_event = (isset($pa_options['importEvent']) && $pa_options['importEvent'] instanceof ca_data_import_events) ? $pa_options['importEvent'] : null;
 			$vs_event_source = (isset($pa_options['importEventSource']) && $pa_options['importEventSource']) ? $pa_options['importEventSource'] : "?";
 			$o_log = (isset($pa_options['log']) && $pa_options['log'] instanceof KLogger) ? $pa_options['log'] : null;
-
-			$va_find_arr = array();
-			if ($pn_type_id) { $va_find_arr['type_id'] = $pn_type_id; }
-			if ($pn_parent_id) { $va_find_arr['parent_id'] = $pn_parent_id; }
 			
 			$vs_idno = isset($pa_values['idno']) ? (string)$pa_values['idno'] : null;
 			
@@ -1754,11 +1789,19 @@
 				}
 			}
 			
-			if (!($vn_id = (ca_movements::find(array_merge(array('preferred_labels' => array('name' => $ps_movement_name)), $va_find_arr), array('returnAs' => 'firstId', 'transaction' => $pa_options['transaction']))))) {
-				if ($pb_match_on_idno && $vs_idno) { 
-					$va_find_arr['idno'] = $vs_idno;
-					unset($va_find_arr['parent_id']); // don't consider parent when matching on idno
-					$vn_id = (ca_movements::find($va_find_arr, array('returnAs' => 'firstId', 'transaction' => $pa_options['transaction'])));
+			$vn_id = null;
+			foreach($pa_match_on as $vs_match_on) {
+				switch(strtolower($vs_match_on)) {
+					case 'label':
+						if ($vn_id = (ca_movements::find(array('preferred_labels' => array('name' => $ps_movement_name), 'type_id' => $pn_type_id, 'parent_id' => $pn_parent_id), array('returnAs' => 'firstId', 'transaction' => $pa_options['transaction'])))) {
+							break(2);
+						}
+						break;
+					case 'idno':
+						if ($vn_id = (ca_movements::find(array('idno' => $vs_idno ? $vs_idno : $ps_movement_name), array('returnAs' => 'firstId', 'transaction' => $pa_options['transaction'])))) {
+							break(2);
+						}
+						break;
 				}
 			}
 			
