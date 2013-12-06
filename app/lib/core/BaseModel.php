@@ -6524,8 +6524,9 @@ class BaseModel extends BaseObject {
 	 * @param int $pn_id optional, id of record to be treated as root
 	 * @param array $pa_options
 	 *		returnDeleted = return deleted records in list (def. false)
-	 *		additionalTableToJoin: name of table to join to hierarchical table (and return fields from); only fields related many-to-one are currently supported
-	 *		
+	 *		additionalTableToJoin = name of table to join to hierarchical table (and return fields from); only fields related many-to-one are currently supported
+	 *		idsOnly = return simple array of primary key values for child records rather than full data array
+	 *
 	 * @return DbResult
 	 */
 	public function &getHierarchy($pn_id=null, $pa_options=null) {
@@ -6635,6 +6636,9 @@ class BaseModel extends BaseObject {
 						$this->errors = array_merge($this->errors, $o_db->errors());
 						return null;
 					} else {
+						if (caGetOption('idsOnly', $pa_options, false)) {
+							return $qr_hier->getAllFieldValues($this->primaryKey());
+						}
 						return $qr_hier;
 					}
 				} else {
@@ -6653,7 +6657,7 @@ class BaseModel extends BaseObject {
 	 * @param array $pa_options
 	 *
 	 *		additionalTableToJoin: name of table to join to hierarchical table (and return fields from); only fields related many-to-one are currently supported
-	 *		idsOnly: if true, only the primary key id values of the chidlren records are returned
+	 *		idsOnly = return simple array of primary key values for child records rather than full data array
 	 *		returnDeleted = return deleted records in list (def. false)
 	 *		maxLevels = 
 	 *		dontIncludeRoot = 
@@ -6752,7 +6756,7 @@ class BaseModel extends BaseObject {
 	 * 
 	 * @param array, optional associative array of options. Valid keys for the array are:
 	 *		returnDeleted = return deleted records in list (def. false)
-	 * @return DbRes
+	 * @return array
 	 */
 	public function &getHierarchyChildCountsForIDs($pa_ids, $pa_options=null) {
 		if (!$this->isHierarchical()) { return null; }
