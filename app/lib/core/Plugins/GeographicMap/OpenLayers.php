@@ -138,14 +138,26 @@ class WLPlugGeographicMapOpenLayers Extends BaseGeographicMapPlugIn Implements I
 			# ---------------------------------
 			case 'HTML':
 			default:
+				$va_layers = array();
 				
+				if ($vs_tileserver_url = caGetOption('tileServerURL', $pa_options, null)) {
+					if (!($vs_tile_layer_name = trim(caGetOption('tileLayerName', $pa_options, null)))) {
+						$vs_tile_layer_name = 'Custom layer';
+					}
+					$va_layers[] = "new OpenLayers.Layer.OSM('{$vs_tile_layer_name}', '{$vs_tileserver_url}',{ isBaseLayer: false, tileOptions : {crossOriginKeyword: null}})";
+				}
+		
+				$vs_layer_switcher_control = caGetOption('layerSwitcherControl', $pa_element_info['settings'], null) ? "map_{$vs_id}.addControl(new OpenLayers.Control.LayerSwitcher());" : "";
+		
+		
+				$va_layers[] = "new {$vs_base_layer}";
 				$vs_buf = "<div style='width:{$vn_width}; height:{$vn_height}' id='{$vs_id}' ".((isset($pa_options['classname']) && $pa_options['classname']) ? "class='".$pa_options['classname']."'" : "")."> </div>\n";
 				$vs_buf .= "
 <script type='text/javascript'>;
 	jQuery(document).ready(function() {
 		var map_{$vs_id} = new OpenLayers.Map({
 		div: '{$vs_id}',
-		layers: [new {$vs_base_layer}],
+		layers: [".join(",", $va_layers)."],
 		controls: [
 			new OpenLayers.Control.Navigation({
 				dragPanOptions: {
@@ -158,7 +170,7 @@ class WLPlugGeographicMapOpenLayers Extends BaseGeographicMapPlugIn Implements I
 		center: [0, 0],
 		zoom: 1
 	});
-
+	{$vs_layer_switcher_control}
 		var features_{$vs_id} = [];
 		
 		var styles_{$vs_id} = new OpenLayers.StyleMap({
@@ -383,8 +395,24 @@ class WLPlugGeographicMapOpenLayers Extends BaseGeographicMapPlugIn Implements I
  		
 		$po_request = isset($pa_options['request']) ? $pa_options['request'] : null;
 		
-		
 		$vs_id = $pa_element_info['element_id'];
+		
+		$vs_custom_tile_layer = '';
+		if ($vs_tileserver_url = caGetOption('tileServerURL', $pa_element_info['settings'], null)) {
+			if (!($vs_tile_layer_name = trim(caGetOption('tileLayerName', $pa_element_info['settings'], null)))) {
+				$vs_tile_layer_name = 'Custom layer';
+			}
+			$vs_custom_tile_layer = "	map_{$vs_id}.addLayer(
+		new OpenLayers.Layer.OSM('{$vs_tile_layer_name}', '{$vs_tileserver_url}', 
+			{
+				isBaseLayer: false,
+				tileOptions : {crossOriginKeyword: null}
+			}
+	));";
+		}
+		
+		$vs_layer_switcher_control = caGetOption('layerSwitcherControl', $pa_element_info['settings'], null) ? "map_{$vs_id}.addControl(new OpenLayers.Control.LayerSwitcher());" : "";
+		
 		
 		$vs_element = '<div id="{fieldNamePrefix}mapholder_'.$vs_id.'_{n}" class="mapholder" style="width:'.$vn_width.'spx; height:'.($vn_height + 40).'px; float: left; margin:-18px 0 0 0;">';
 
@@ -407,9 +435,14 @@ class WLPlugGeographicMapOpenLayers Extends BaseGeographicMapPlugIn Implements I
 		$vs_element .='</div>';
 		$vs_element .= "<script type='text/javascript'>
 		
+		
 	var map_{$vs_id};
 	var points_{$vs_id};
 	jQuery(document).ready(function() {
+		OpenLayers.Util.onImageLoadError = function(){
+    		this.src = 'images/blank.png';
+		};
+
 		// Styles
 		var styles_{$vs_id} = new OpenLayers.StyleMap({
 			'default': new OpenLayers.Style({
@@ -473,6 +506,9 @@ class WLPlugGeographicMapOpenLayers Extends BaseGeographicMapPlugIn Implements I
 			center: [0,0],
 			zoom: 1
 		});
+		
+		
+		{$vs_custom_tile_layer}		
 		
 		var map_{$vs_id}_drag_ctrl = new OpenLayers.Control.DragFeature(points_{$vs_id}, {
 			onComplete: function(f) { map_serialize_features_{$vs_id}(f); }
@@ -542,6 +578,7 @@ class WLPlugGeographicMapOpenLayers Extends BaseGeographicMapPlugIn Implements I
 		map_{$vs_id}_editing_toolbar.activate();
  
 		map_{$vs_id}.addLayer(points_{$vs_id});
+		{$vs_layer_switcher_control}
 		
 		if (c > 0) {
 			map_{$vs_id}.zoomToExtent(points_{$vs_id}.getDataExtent());
