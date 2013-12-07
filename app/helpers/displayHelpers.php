@@ -2639,13 +2639,36 @@ require_once(__CA_LIB_DIR__."/ca/ApplicationPluginManager.php");
 			$vn_filesize = @filesize($po_rep->getMediaPath('media', $ps_version));
 		}
 		if ($vn_filesize) {
-			$va_dimensions[] = sprintf("%4.1f", $vn_filesize/(1024*1024)).'mb';
+			$va_dimensions[] = caFormatFileSize($vn_filesize);
 		}
 		
 		if(isset($pa_options['returnAsArray']) && $pa_options['returnAsArray']) {
 			return $va_dimensions;
 		}
 		return join('; ', $va_dimensions);
+	}
+	# ------------------------------------------------------------------------------------------------
+	/**
+	 *
+	 * @return string 
+	 */
+	function caFormatFileSize($pn_bytes) {
+		if ($pn_bytes >= 1073741824) {
+			$pn_bytes = number_format($pn_bytes/1073741824, 2).'gb';
+		}
+		elseif ($pn_bytes >= 1048576) {
+			$pn_bytes = number_format($pn_bytes/1048576, 2).'mb';
+		} elseif ($pn_bytes >= 1024) {
+			$pn_bytes = number_format($pn_bytes/1024, 2).'kb';
+		} elseif ($pn_bytes > 1) {
+			$pn_bytes = $pn_bytes.'b';
+		} elseif ($pn_bytes == 1) {
+			$pn_bytes = $pn_bytes.'b';
+		} else {
+			$pn_bytes = '0b';
+		}
+
+		return $pn_bytes;
 	}
 	# ------------------------------------------------------------------------------------------------
 	/**

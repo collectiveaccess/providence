@@ -14,9 +14,9 @@
  *
  * @category   Zend
  * @package    Zend_Validate
- * @copyright  Copyright (c) 2005-2010 Zend Technologies USA Inc. (http://www.zend.com)
+ * @copyright  Copyright (c) 2005-2012 Zend Technologies USA Inc. (http://www.zend.com)
  * @license    http://framework.zend.com/license/new-bsd     New BSD License
- * @version    $Id: Isbn.php 22697 2010-07-26 21:14:47Z alexander $
+ * @version    $Id: Isbn.php 24593 2012-01-05 20:35:02Z matthew $
  */
 
 /**
@@ -27,7 +27,7 @@ require_once 'Zend/Validate/Abstract.php';
 /**
  * @category   Zend
  * @package    Zend_Validate
- * @copyright  Copyright (c) 2005-2010 Zend Technologies USA Inc. (http://www.zend.com)
+ * @copyright  Copyright (c) 2005-2012 Zend Technologies USA Inc. (http://www.zend.com)
  * @license    http://framework.zend.com/license/new-bsd     New BSD License
  */
 class Zend_Validate_Isbn extends Zend_Validate_Abstract
@@ -44,8 +44,8 @@ class Zend_Validate_Isbn extends Zend_Validate_Abstract
      * @var array
      */
     protected $_messageTemplates = array(
-        self::INVALID => "Invalid type given, value should be string or integer",
-        self::NO_ISBN => "'%value%' is no valid ISBN number",
+        self::INVALID => "Invalid type given. String or integer expected",
+        self::NO_ISBN => "'%value%' is not a valid ISBN number",
     );
 
     /**

@@ -15,8 +15,8 @@
  * @category   Zend
  * @package    Zend_View
  * @subpackage Helper
- * @copyright  Copyright (c) 2005-2010 Zend Technologies USA Inc. (http://www.zend.com)
- * @version    $Id: HeadTitle.php 22089 2010-05-04 11:49:03Z padraic $
+ * @copyright  Copyright (c) 2005-2012 Zend Technologies USA Inc. (http://www.zend.com)
+ * @version    $Id: HeadTitle.php 24593 2012-01-05 20:35:02Z matthew $
  * @license    http://framework.zend.com/license/new-bsd     New BSD License
  */
 
@@ -29,7 +29,7 @@ require_once 'Zend/View/Helper/Placeholder/Container/Standalone.php';
  * @uses       Zend_View_Helper_Placeholder_Container_Standalone
  * @package    Zend_View
  * @subpackage Helper
- * @copyright  Copyright (c) 2005-2010 Zend Technologies USA Inc. (http://www.zend.com)
+ * @copyright  Copyright (c) 2005-2012 Zend Technologies USA Inc. (http://www.zend.com)
  * @license    http://framework.zend.com/license/new-bsd     New BSD License
  */
 class Zend_View_Helper_HeadTitle extends Zend_View_Helper_Placeholder_Container_Standalone
@@ -65,15 +65,14 @@ class Zend_View_Helper_HeadTitle extends Zend_View_Helper_Placeholder_Container_
      *
      * @param  string $title
      * @param  string $setType
-     * @param  string $separator
      * @return Zend_View_Helper_HeadTitle
      */
     public function headTitle($title = null, $setType = null)
     {
-        if (is_null($setType) && is_null($this->getDefaultAttachOrder())) {
-            $setType = Zend_View_Helper_Placeholder_Container_Abstract::APPEND;
-        } elseif (is_null($setType) && !is_null($this->getDefaultAttachOrder())) {
-            $setType = $this->getDefaultAttachOrder();
+        if (null === $setType) {
+            $setType = (null === $this->getDefaultAttachOrder())
+                     ? Zend_View_Helper_Placeholder_Container_Abstract::APPEND
+                     : $this->getDefaultAttachOrder();
         }
         $title = (string) $title;
         if ($title !== '') {
@@ -104,7 +103,9 @@ class Zend_View_Helper_HeadTitle extends Zend_View_Helper_Placeholder_Container_
             require_once 'Zend/View/Exception.php';
             throw new Zend_View_Exception("You must use a valid attach order: 'PREPEND', 'APPEND' or 'SET'");
         }
+
         $this->_defaultAttachOrder = $setType;
+        return $this;
     }
 
     /**
@@ -138,7 +139,7 @@ class Zend_View_Helper_HeadTitle extends Zend_View_Helper_Placeholder_Container_
         return $this;
     }
 
-    /*
+    /**
      * Retrieve translation object
      *
      * If none is currently registered, attempts to pull it from the registry

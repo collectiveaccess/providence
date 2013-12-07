@@ -14,9 +14,9 @@
  *
  * @category  Zend
  * @package   Zend_Locale
- * @copyright  Copyright (c) 2005-2010 Zend Technologies USA Inc. (http://www.zend.com)
+ * @copyright  Copyright (c) 2005-2012 Zend Technologies USA Inc. (http://www.zend.com)
  * @license   http://framework.zend.com/license/new-bsd     New BSD License
- * @version   $Id: Locale.php 22536 2010-07-07 21:41:48Z thomas $
+ * @version   $Id: Locale.php 24593 2012-01-05 20:35:02Z matthew $
  */
 
 /**
@@ -24,7 +24,7 @@
  *
  * @category  Zend
  * @package   Zend_Locale
- * @copyright  Copyright (c) 2005-2010 Zend Technologies USA Inc. (http://www.zend.com)
+ * @copyright  Copyright (c) 2005-2012 Zend Technologies USA Inc. (http://www.zend.com)
  * @license   http://framework.zend.com/license/new-bsd     New BSD License
  */
 class Zend_Locale
@@ -666,7 +666,7 @@ class Zend_Locale
         require_once 'Zend/Locale/Data.php';
         $locale = self::findLocale($locale);
         $result = Zend_Locale_Data::getContent($locale, $path, $value);
-        if (empty($result) === true) {
+        if (empty($result) === true && '0' !== $result) {
             return false;
         }
 
@@ -931,9 +931,7 @@ class Zend_Locale
     public static function getCache()
     {
         require_once 'Zend/Locale/Data.php';
-        $cache = Zend_Locale_Data::getCache();
-
-        return $cache;
+        return Zend_Locale_Data::getCache();
     }
 
     /**
@@ -973,12 +971,13 @@ class Zend_Locale
     /**
      * Clears all set cache data
      *
+     * @param string $tag Tag to clear when the default tag name is not used
      * @return void
      */
-    public static function clearCache()
+    public static function clearCache($tag = null)
     {
         require_once 'Zend/Locale/Data.php';
-        Zend_Locale_Data::clearCache();
+        Zend_Locale_Data::clearCache($tag);
     }
 
     /**
