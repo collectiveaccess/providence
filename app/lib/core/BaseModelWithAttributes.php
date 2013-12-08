@@ -118,8 +118,15 @@
 				}
 			}
 			
-			$vn_count = $this->getAttributeCountByElement($vn_element_id)  + $vn_add_cnt - $vn_del_cnt;
-			if (($vn_max > 0) && $vn_count >= $vn_max) { return null; }	// # attributes is at upper limit
+			if (!caGetOption('dontCheckMinMax', $pa_options, false)) { 
+				$vn_count = $this->getAttributeCountByElement($vn_element_id)  + $vn_add_cnt - $vn_del_cnt;
+				if (($vn_max > 0) && $vn_count >= $vn_max) { 
+					if (caGetOption('showRepeatCountErrors', $pa_options, false)) {
+						$this->postError(1965, ($vn_max == 1) ? _t('Cannot add another value; only %1 value is allowed', $vn_max) : _t('Cannot add another value; only %1 values are allowed', $vn_max), 'BaseModelWithAttributes->addAttribute()', $ps_error_source);
+					}
+					return null; 
+				}	// # attributes is at upper limit
+			}
 			
 			$this->opa_attributes_to_add[] = array(
 				'values' => $pa_values,
@@ -259,7 +266,7 @@
 			
 			
 			// check restriction min/max settings
-			if (!isset($pa_options['dontCheckMinMax']) || !$pa_options['dontCheckMinMax']) { 
+			if (!caGetOption('dontCheckMinMax', $pa_options, false)) {
 				if (!($t_element = $this->_getElementInstance($t_attr->get('element_id')))) { return false; }
 				$t_restriction = $t_element->getTypeRestrictionInstanceForElement($this->tableNum(), $this->getTypeID());
 				if (!$t_restriction) { return null; }		// attribute not bound to this type
@@ -275,7 +282,12 @@
 				}
 				
 				$vn_count = $this->getAttributeCountByElement($t_element->getPrimaryKey())  + $vn_add_cnt - $vn_del_cnt;
-				if ($vn_count <= $vn_min) { return null; }	// # attributes is at lower limit
+				if ($vn_count <= $vn_min) { 
+					if (caGetOption('showRepeatCountErrors', $pa_options, false)) {
+						$this->postError(1967, ($vn_min == 1) ? _t('Cannot remove value; at least %1 value is required', $vn_min) : _t('Cannot remove value; at least %1 values are required', $vn_min), 'BaseModelWithAttributes->removeAttribute()', $ps_error_source);
+					}
+					return null; 
+				}	// # attributes is at lower limit
 			}
 			
 			$this->opa_attributes_to_remove[] = array(

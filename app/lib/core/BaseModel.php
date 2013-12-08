@@ -4934,8 +4934,10 @@ class BaseModel extends BaseObject {
 			
 			try {
 				if ($vs_key = $o_replicator->replicateMedia($this->getMediaPath($ps_field, $vs_version), $va_target_info, $pa_data)) {
-					$va_media_info['REPLICATION_STATUS'][$ps_target] = __CA_MEDIA_REPLICATION_STATE_PROCESSING__;
-					$va_media_info['REPLICATION_LOG'][$ps_target][] = array('STATUS' => __CA_MEDIA_REPLICATION_STATE_PROCESSING__, 'DATETIME' => time());
+					$vn_status = $o_replicator->getReplicationStatus($va_target_info, $vs_key);
+					
+					$va_media_info['REPLICATION_STATUS'][$ps_target] = $vn_status;
+					$va_media_info['REPLICATION_LOG'][$ps_target][] = array('STATUS' => $vn_status, 'DATETIME' => time());
 					$va_media_info['REPLICATION_KEYS'][$ps_target] = $vs_key;
 					$this->setMediaInfo($ps_field, $va_media_info);
 					$this->update(array('processingMediaForReplication' => true));
@@ -5325,7 +5327,8 @@ class BaseModel extends BaseObject {
 					exit;
 				}
 
-				$properties = $ff->getProperties();
+				if(!is_array($properties = $ff->getProperties())) { $properties = array(); }
+				
 				if ($properties['dangerous'] > 0) { $vn_dangerous = 1; }
 
 				if (($dirhash = $this->_getDirectoryHash($vi["absolutePath"], $this->getPrimaryKey())) === false) {
@@ -6521,8 +6524,9 @@ class BaseModel extends BaseObject {
 	 * @param int $pn_id optional, id of record to be treated as root
 	 * @param array $pa_options
 	 *		returnDeleted = return deleted records in list (def. false)
-	 *		additionalTableToJoin: name of table to join to hierarchical table (and return fields from); only fields related many-to-one are currently supported
-	 *		
+	 *		additionalTableToJoin = name of table to join to hierarchical table (and return fields from); only fields related many-to-one are currently supported
+	 *		idsOnly = return simple array of primary key values for child records rather than full data array
+	 *
 	 * @return DbResult
 	 */
 	public function &getHierarchy($pn_id=null, $pa_options=null) {
@@ -6632,6 +6636,9 @@ class BaseModel extends BaseObject {
 						$this->errors = array_merge($this->errors, $o_db->errors());
 						return null;
 					} else {
+						if (caGetOption('idsOnly', $pa_options, false)) {
+							return $qr_hier->getAllFieldValues($this->primaryKey());
+						}
 						return $qr_hier;
 					}
 				} else {
@@ -6650,7 +6657,7 @@ class BaseModel extends BaseObject {
 	 * @param array $pa_options
 	 *
 	 *		additionalTableToJoin: name of table to join to hierarchical table (and return fields from); only fields related many-to-one are currently supported
-	 *		idsOnly: if true, only the primary key id values of the chidlren records are returned
+	 *		idsOnly = return simple array of primary key values for child records rather than full data array
 	 *		returnDeleted = return deleted records in list (def. false)
 	 *		maxLevels = 
 	 *		dontIncludeRoot = 
@@ -6749,7 +6756,7 @@ class BaseModel extends BaseObject {
 	 * 
 	 * @param array, optional associative array of options. Valid keys for the array are:
 	 *		returnDeleted = return deleted records in list (def. false)
-	 * @return DbRes
+	 * @return array
 	 */
 	public function &getHierarchyChildCountsForIDs($pa_ids, $pa_options=null) {
 		if (!$this->isHierarchical()) { return null; }
