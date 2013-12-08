@@ -509,11 +509,7 @@ class ca_entities extends RepresentableBaseModel implements IBundleProvider {
 	 			'name' => $vs_name = caProcessTemplateForIDs($vs_template, 'ca_entities', array($vn_pk)),
 	 			'hierarchy_id' => $vn_hier_id,
 	 			'children' => sizeof($va_children)
-	 		),
-	 		'entity_id' => $vn_pk,
-			'name' => $vs_name,
-			'hierarchy_id' => $vn_hier_id,
-			'children' => sizeof($va_children)
+	 		)
 	 	);
 	 	
 	 	return $va_entity_hierarchy_root;

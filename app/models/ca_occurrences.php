@@ -399,12 +399,7 @@ class ca_occurrences extends RepresentableBaseModel implements IBundleProvider {
 					'name' => $vs_name = caProcessTemplateForIDs($vs_template, 'ca_occurrences', array($vn_pk)),
 					'hierarchy_id' => $vn_hier_id,
 					'children' => sizeof($va_children)
-				),
-				'occurrence_id' => $vn_pk,
-	 			'item_id' => $vn_pk,
-				'name' => $vs_name,
-				'hierarchy_id' => $vn_hier_id,
-				'children' => sizeof($va_children)
+				)
 			);
 				
 	 		return $va_occurrence_hierarchy_root;

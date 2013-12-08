@@ -14,9 +14,9 @@
  *
  * @category   Zend
  * @package    Zend_Pdf
- * @copyright  Copyright (c) 2005-2010 Zend Technologies USA Inc. (http://www.zend.com)
+ * @copyright  Copyright (c) 2005-2012 Zend Technologies USA Inc. (http://www.zend.com)
  * @license    http://framework.zend.com/license/new-bsd     New BSD License
- * @version    $Id: Jpeg.php 20096 2010-01-06 02:05:09Z bkarwin $
+ * @version    $Id: Jpeg.php 24593 2012-01-05 20:35:02Z matthew $
  */
 
 
@@ -32,7 +32,7 @@ require_once 'Zend/Pdf/Resource/Image.php';
  * JPEG image
  *
  * @package    Zend_Pdf
- * @copyright  Copyright (c) 2005-2010 Zend Technologies USA Inc. (http://www.zend.com)
+ * @copyright  Copyright (c) 2005-2012 Zend Technologies USA Inc. (http://www.zend.com)
  * @license    http://framework.zend.com/license/new-bsd     New BSD License
  */
 class Zend_Pdf_Resource_Image_Jpeg extends Zend_Pdf_Resource_Image
@@ -102,19 +102,30 @@ class Zend_Pdf_Resource_Image_Jpeg extends Zend_Pdf_Resource_Image
         }
         $byteCount = filesize($imageFileName);
         $this->_resource->value = '';
-        while ( $byteCount > 0 && ($nextBlock = fread($imageFile, $byteCount)) != false ) {
+
+        while ($byteCount > 0 && !feof($imageFile)) {
+            $nextBlock = fread($imageFile, $byteCount);
+            if ($nextBlock === false) {
+                require_once 'Zend/Pdf/Exception.php';
+                throw new Zend_Pdf_Exception( "Error occured while '$imageFileName' file reading." );
+            }
+
             $this->_resource->value .= $nextBlock;
             $byteCount -= strlen($nextBlock);
+        }
+        if ($byteCount != 0) {
+            require_once 'Zend/Pdf/Exception.php';
+            throw new Zend_Pdf_Exception( "Error occured while '$imageFileName' file reading." );
         }
         fclose($imageFile);
         $this->_resource->skipFilters();
 
-    $this->_width = $imageInfo[0];
-    $this->_height = $imageInfo[1];
-    $this->_imageProperties = array();
-    $this->_imageProperties['bitDepth'] = $imageInfo['bits'];
-    $this->_imageProperties['jpegImageType'] = $imageInfo[2];
-    $this->_imageProperties['jpegColorType'] = $imageInfo['channels'];
+        $this->_width  = $imageInfo[0];
+        $this->_height = $imageInfo[1];
+        $this->_imageProperties = array();
+        $this->_imageProperties['bitDepth'] = $imageInfo['bits'];
+        $this->_imageProperties['jpegImageType'] = $imageInfo[2];
+        $this->_imageProperties['jpegColorType'] = $imageInfo['channels'];
     }
 
     /**

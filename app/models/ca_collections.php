@@ -475,12 +475,7 @@ class ca_collections extends RepresentableBaseModel implements IBundleProvider {
 					'name' => caProcessTemplateForIDs($vs_template, 'ca_collections', array($vn_pk)),
 					'hierarchy_id' => $vn_hier_id,
 					'children' => sizeof($va_children)
-				),
-				'item_id' => $vn_pk,
-				'collection_id' => $vn_pk,
-				'name' => $vs_label,
-				'hierarchy_id' => $vn_hier_id,
-				'children' => sizeof($va_children)
+				)
 			);
 				
 	 		return $va_collection_hierarchy_root;

@@ -1071,9 +1071,9 @@
 											foreach($va_value as $vs_f => $vs_v) {
 												if ($vn_datatype == 3) {	// list
 													$t_list_item = new ca_list_items((int)$vs_v);
-													
 													// Include sub-items
-													$va_item_ids = $t_list_item->getHierarchyChildren(null, array('idsOnly' => true, 'includeSelf' => true));
+													$va_item_ids = $t_list_item->getHierarchy((int)$vs_v, array('idsOnly' => true, 'includeSelf' => true));
+													
 													$va_item_ids[] = (int)$vs_v;
 													$va_attr_sql[] = "(ca_attribute_values.{$vs_f} IN (?))";
 													$va_attr_values[] = $va_item_ids;
@@ -2498,6 +2498,10 @@
 							}
 						}
 						
+						if (is_array($va_criteria) && sizeof($va_criteria)) { 
+							$va_wheres[] = "(li.item_id NOT IN (".join(",", array_keys($va_criteria))."))";
+						}
+					
 						if ($this->opo_config->get('perform_item_level_access_checking')) {
 							if ($t_item = $this->opo_datamodel->getInstanceByTableName($vs_browse_table_name, true)) {
 								// Join to limit what browse table items are used to generate facet
@@ -2525,7 +2529,6 @@
 							$vs_sql = "
 								SELECT 1
 								FROM ca_list_items li
-								INNER JOIN ca_list_item_labels lil ON lil.item_id = li.item_id
 								{$vs_join_sql}
 								WHERE
 									ca_lists.list_code = ? {$vs_where_sql}

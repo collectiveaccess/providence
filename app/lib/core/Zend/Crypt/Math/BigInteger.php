@@ -15,9 +15,9 @@
  * @category   Zend
  * @package    Zend_Crypt
  * @subpackage Math
- * @copyright  Copyright (c) 2005-2010 Zend Technologies USA Inc. (http://www.zend.com)
+ * @copyright  Copyright (c) 2005-2012 Zend Technologies USA Inc. (http://www.zend.com)
  * @license    http://framework.zend.com/license/new-bsd     New BSD License
- * @version    $Id: BigInteger.php 20096 2010-01-06 02:05:09Z bkarwin $
+ * @version    $Id: BigInteger.php 24593 2012-01-05 20:35:02Z matthew $
  */
 
 /**
@@ -38,7 +38,7 @@
  *
  * @category   Zend
  * @package    Zend_Crypt
- * @copyright  Copyright (c) 2005-2010 Zend Technologies USA Inc. (http://www.zend.com)
+ * @copyright  Copyright (c) 2005-2012 Zend Technologies USA Inc. (http://www.zend.com)
  * @license    http://framework.zend.com/license/new-bsd     New BSD License
  */
 class Zend_Crypt_Math_BigInteger
@@ -61,7 +61,7 @@ class Zend_Crypt_Math_BigInteger
      */
     public function __construct($extension = null)
     {
-        if (!is_null($extension) && !in_array($extension, array('bcmath', 'gmp', 'bigint'))) {
+        if ($extension !== null && !in_array($extension, array('bcmath', 'gmp', 'bigint'))) {
             require_once('Zend/Crypt/Math/BigInteger/Exception.php');
             throw new Zend_Crypt_Math_BigInteger_Exception('Invalid extension type; please use one of bcmath, gmp or bigint');
         }
@@ -90,7 +90,7 @@ class Zend_Crypt_Math_BigInteger
      */
     protected function _loadAdapter($extension = null)
     {
-        if (is_null($extension)) {
+        if ($extension === null) {
             if (extension_loaded('gmp')) {
                 $extension = 'gmp';
             //} elseif (extension_loaded('big_int')) {
@@ -105,7 +105,7 @@ class Zend_Crypt_Math_BigInteger
         //} elseif($extension == 'bigint' && extension_loaded('big_int')) {
         //    require_once 'Zend/Crypt_Math/BigInteger/Bigint.php';
         //    $this->_math = new Zend_Crypt_Math_BigInteger_Bigint();
-        } elseif ($extension == 'bcmath') {
+        } elseif ($extension == 'bcmath' && extension_loaded('bcmath')) {
             require_once 'Zend/Crypt/Math/BigInteger/Bcmath.php';
             $this->_math = new Zend_Crypt_Math_BigInteger_Bcmath();
         } else {

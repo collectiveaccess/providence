@@ -765,14 +765,18 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 					
 					$va_options = null;
 					if ($vs_options_json = (string)$o_options->getValue()) { 
-						// encode newlines
-						$vs_options_json = preg_replace("![\r\n]!", "\\\\n", $vs_options_json);
+						
+						// Test whether the JSON is valid
+						json_decode($vs_options_json, TRUE);
+						if(json_last_error()){
+							// try encode newlines
+							$vs_options_json = preg_replace("![\r\n]!", "\\\\n", $vs_options_json);	
+						}
 						if (is_null($va_options = @json_decode($vs_options_json, true))) {
-							$pa_errors[] = _t("Warning: invalid options for group %1/source %2", $vs_group, $vs_source);
-							if ($o_log) { $o_log->logWarn(_t("[loadImporterFromFile:%1] Invalid options for group %2/source %3", $ps_source, $vs_group, $vs_source)); }
+							$pa_errors[] = _t("Warning: invalid options for group %1/source %2.", $vs_group, $vs_source);
+							if ($o_log) { $o_log->logWarn(_t("[loadImporterFromFile:%1] Invalid options for group %2/source %3. Options were: %4.", $ps_source, $vs_group, $vs_source, $vs_options_json)); }
 						}
 					}
-					
 					if ($vs_mode == 'Mapping') {
 						$vs_refinery = $va_refinery_ci_map[strtolower(trim((string)$o_refinery->getValue()))];
 					
@@ -792,7 +796,7 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 						// Constants don't use refineries
 						$vs_refinery = $va_refinery_options = null;
 					}
-					
+					$va_replacement_values = array();
 					if ($va_options && is_array($va_options) && isset($va_options['transformValuesUsingWorksheet']) && $va_options['transformValuesUsingWorksheet']) {
 						if ($o_opt_sheet = $o_excel->getSheetByName($va_options['transformValuesUsingWorksheet'])) {
 							foreach ($o_opt_sheet->getRowIterator() as $o_sheet_row) {

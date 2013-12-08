@@ -80,7 +80,7 @@
 			
 			// Set place parents
 			if ($va_parents = $pa_item['settings']['placeHierarchyBuilder_parents']) {
-				$vn_parent_id = caProcessRefineryParents('placeHierarchyBuilderRefinery', 'ca_places', $va_parents, $pa_source_data, $pa_item, null, null, $o_log);
+				$vn_parent_id = caProcessRefineryParents('placeHierarchyBuilderRefinery', 'ca_places', $va_parents, $pa_source_data, $pa_item, null, null, $o_log, array('hierarchy_id' => $pa_item['settings']['placeHierarchyBuilder_hierarchy']));
 			}
 			
 			return $vn_parent_id;
@@ -98,6 +98,15 @@
 	}
 	
 	BaseRefinery::$s_refinery_settings['placeHierarchyBuilder'] = array(	
+		'placeHierarchyBuilder_hierarchy' => array(
+			'formatType' => FT_TEXT,
+			'displayType' => DT_SELECT,
+			'width' => 10, 'height' => 1,
+			'takesLocale' => false,
+			'default' => '',
+			'label' => _t('Hierarchy'),
+			'description' => _t('Identifies the hierarchy (list_item id or idno) to add items to.')
+		),
 		'placeHierarchyBuilder_parents' => array(
 			'formatType' => FT_TEXT,
 			'displayType' => DT_SELECT,

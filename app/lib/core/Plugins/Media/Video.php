@@ -1245,6 +1245,9 @@ class WLPlugMediaVideo Extends BaseMediaPlugin Implements IWLPlugMedia {
 
 				$vn_width =				$pa_options["viewer_width"] ? $pa_options["viewer_width"] : $pa_properties["width"];
 				$vn_height =			$pa_options["viewer_height"] ? $pa_options["viewer_height"] : $pa_properties["height"];
+				
+				$va_captions = 			caGetOption("captions", $pa_options, array(), array('castTo' => 'array'));
+				
 				ob_start();
 	
 			$vs_config = 'config={"playlist":[{"url":"'.$vs_poster_frame_url.'", "scaling": "fit"}, {"url": "'.$ps_url.'","autoPlay":false,"autoBuffering":true, "scaling": "fit"}]};';
@@ -1296,6 +1299,13 @@ class WLPlugMediaVideo Extends BaseMediaPlugin Implements IWLPlugMedia {
 				  poster="<?php print $vs_poster_frame_url; ?>"  
 				  data-setup='{}'>  
 				 <source src="<?php print $ps_url; ?>" type='video/mp4' />  
+<?php
+	if(is_array($va_captions)) {
+		foreach($va_captions as $vn_locale_id => $va_caption_track) {
+			print "<track kind=\"captions\" src=\"".$va_caption_track['url']."\" srclang=\"".$va_caption_track["locale_code"]."\" label=\"".$va_caption_track['locale']."\">\n";	
+		}
+	}
+?>
 				</video>
 			<script type="text/javascript">
 				_V_.players["<?php print $vs_id; ?>"] = undefined;	// make sure VideoJS doesn't think it has already loaded the viewer

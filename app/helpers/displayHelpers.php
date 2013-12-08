@@ -516,6 +516,10 @@ require_once(__CA_LIB_DIR__."/ca/ApplicationPluginManager.php");
 		jQuery(document).ready(function() {
 			jQuery(document).bind('keydown.ctrl_f', function() {
 				caHierarchyOverviewPanel.hidePanel({dontCloseMask:1});
+				caEditorFieldList.onOpenCallback = function(){
+					var selector = '#' + caEditorFieldList.panelID + ' a.editorFieldListLink:link';
+					jQuery(selector).first().focus();
+				};
 				caEditorFieldList.showPanel();
 			});
 			jQuery('#editorFieldListContentArea').html(jQuery(\"#editorFieldListHTML\").html());
@@ -529,7 +533,7 @@ require_once(__CA_LIB_DIR__."/ca/ApplicationPluginManager.php");
 <div id=\"editorFieldListHTML\">";
 		if (is_array($pa_bundle_list)) { 
 			foreach($pa_bundle_list as $vs_anchor => $va_info) {
-				$vs_buf .= "<a href=\"#\" onclick=\"jQuery.scrollTo('a[name={$vs_anchor}]', {duration: 350, offset: -80 }); return false;\" class=\"editorFieldListLink\">".$va_info['name']."</a><br/>";
+				$vs_buf .= "<a href=\"#\" onclick=\"jQuery.scrollTo('a[name={$vs_anchor}]', {duration: 350, offset: -80 , onAfter : function(selector, data){jQuery(selector).parent('.bundleLabel').find('a:link').first().focus();}}); return false;\" class=\"editorFieldListLink\">".$va_info['name']."</a><br/>";
 			}	
 		}
 		$vs_buf .= "</div>\n";
@@ -2635,13 +2639,36 @@ require_once(__CA_LIB_DIR__."/ca/ApplicationPluginManager.php");
 			$vn_filesize = @filesize($po_rep->getMediaPath('media', $ps_version));
 		}
 		if ($vn_filesize) {
-			$va_dimensions[] = sprintf("%4.1f", $vn_filesize/(1024*1024)).'mb';
+			$va_dimensions[] = caFormatFileSize($vn_filesize);
 		}
 		
 		if(isset($pa_options['returnAsArray']) && $pa_options['returnAsArray']) {
 			return $va_dimensions;
 		}
 		return join('; ', $va_dimensions);
+	}
+	# ------------------------------------------------------------------------------------------------
+	/**
+	 *
+	 * @return string 
+	 */
+	function caFormatFileSize($pn_bytes) {
+		if ($pn_bytes >= 1073741824) {
+			$pn_bytes = number_format($pn_bytes/1073741824, 2).'gb';
+		}
+		elseif ($pn_bytes >= 1048576) {
+			$pn_bytes = number_format($pn_bytes/1048576, 2).'mb';
+		} elseif ($pn_bytes >= 1024) {
+			$pn_bytes = number_format($pn_bytes/1024, 2).'kb';
+		} elseif ($pn_bytes > 1) {
+			$pn_bytes = $pn_bytes.'b';
+		} elseif ($pn_bytes == 1) {
+			$pn_bytes = $pn_bytes.'b';
+		} else {
+			$pn_bytes = '0b';
+		}
+
+		return $pn_bytes;
 	}
 	# ------------------------------------------------------------------------------------------------
 	/**
