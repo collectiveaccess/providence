@@ -225,6 +225,8 @@
 			return "\033[".self::$ansiBackgroundColors[$ps_color].'m'.$ps_string."\033[0m";
 		}
 		# -------------------------------------------------------
+		# CLI utility implementations
+		# -------------------------------------------------------
 		/**
 		 * Rebuild search indices
 		 */
@@ -251,6 +253,13 @@
 			return array(
 				"tables|t-s" => _t('Specific tables to reindex, separated by commas or semicolons. If omitted all tables will be reindexed.')
 			);
+		}
+		# -------------------------------------------------------
+		/**
+		 *
+		 */
+		public static function rebuild_search_indexUtilityClass() {
+			return _t('Search');
 		}
 		# -------------------------------------------------------
 		/**
@@ -327,6 +336,13 @@
 		 */
 		public static function rebuild_sort_valuesParamList() {
 			return array();
+		}
+		# -------------------------------------------------------
+		/**
+		 *
+		 */
+		public static function rebuild_sort_valuesUtilityClass() {
+			return _t('Maintenance');
 		}
 		# -------------------------------------------------------
 		/**
@@ -421,6 +437,13 @@
 		/**
 		 *
 		 */
+		public static function remove_unused_mediaUtilityClass() {
+			return _t('Maintenance');
+		}
+		# -------------------------------------------------------
+		/**
+		 *
+		 */
 		public static function remove_unused_mediaShortHelp() {
 			return _t("Detects and, optionally, removes media present in the media directories but not referenced in the database.");
 		}
@@ -477,6 +500,13 @@
 		/**
 		 *
 		 */
+		public static function export_profileUtilityClass() {
+			return _t('Configuration');
+		}
+		# -------------------------------------------------------
+		/**
+		 *
+		 */
 		public static function export_profileShortHelp() {
 			return _t("Export current system configuration as an XML installation profile.");
 		}
@@ -513,6 +543,13 @@
 			return array(
 				"quiet|q" => _t("Run without outputting progress information.")
 			);
+		}
+		# -------------------------------------------------------
+		/**
+		 *
+		 */
+		public static function process_task_queueUtilityClass() {
+			return _t('Cron');
 		}
 		# -------------------------------------------------------
 		/**
@@ -690,6 +727,13 @@
 				"ids|l-s" => _t('Comma separated list of representation ids to reload'),
 				"kinds|k-s" => _t('Comma separated list of kind of media to reprocess. Valid kinds are ca_object_representations (object representations), and ca_attributes (metadata elements). You may also specify "all" to reprocess both kinds of media. Default is "all"')
 			);
+		}
+		# -------------------------------------------------------
+		/**
+		 *
+		 */
+		public static function reprocess_mediaUtilityClass() {
+			return _t('Media');
 		}
 		# -------------------------------------------------------
 		/**
@@ -880,6 +924,13 @@
 		/**
 		 *
 		 */
+		public static function reindex_pdfsUtilityClass() {
+			return _t('Media');
+		}
+		# -------------------------------------------------------
+		/**
+		 *
+		 */
 		public static function reindex_pdfsShortHelp() {
 			return _t("Reindex PDF media for in-viewer content search.");
 		}
@@ -932,6 +983,13 @@
 		/**
 		 *
 		 */
+		public static function update_database_schemaUtilityClass() {
+			return _t('Maintenance');
+		}
+		# -------------------------------------------------------
+		/**
+		 *
+		 */
 		public static function update_database_schemaShortHelp() {
 			return _t("Update database schema to the current version.");
 		}
@@ -979,6 +1037,13 @@
 				"log|l-s" => _t('Path to directory in which to log import details. If not set no logs will be recorded.'),
 				"log-level|d-s" => _t('Logging threshold. Possible values are, in ascending order of important: DEBUG, INFO, NOTICE, WARN, ERR, CRIT, ALERT. Default is INFO.'),
 			);
+		}
+		# -------------------------------------------------------
+		/**
+		 *
+		 */
+		public static function load_import_mappingUtilityClass() {
+			return _t('Import/Export');
 		}
 		# -------------------------------------------------------
 		/**
@@ -1083,6 +1148,13 @@
 		/**
 		 *
 		 */
+		public static function import_dataUtilityClass() {
+			return _t('Import/Export');
+		}
+		# -------------------------------------------------------
+		/**
+		 *
+		 */
 		public static function import_dataShortHelp() {
 			return _t("Import data from an Excel XLSX, tab or comma delimited text or XML file.");
 		}
@@ -1137,6 +1209,13 @@
 			return array(
 				"file|f=s" => _t('Excel XLSX file to load.')
 			);
+		}
+		# -------------------------------------------------------
+		/**
+		 *
+		 */
+		public static function load_export_mappingUtilityClass() {
+			return _t('Import/Export');
 		}
 		# -------------------------------------------------------
 		/**
@@ -1243,6 +1322,13 @@
 			);
 		}
 		# -------------------------------------------------------
+		/**
+		 *
+		 */
+		public static function export_dataUtilityClass() {
+			return _t('Import/Export');
+		}
+		# -------------------------------------------------------
 		public static function export_dataShortHelp() {
 			return _t("Export data to a MARC or XML file.");
 		}
@@ -1312,6 +1398,13 @@
 		/**
 		 *
 		 */
+		public static function regenerate_annotation_previewsUtilityClass() {
+			return _t('Media');
+		}
+		# -------------------------------------------------------
+		/**
+		 *
+		 */
 		public static function regenerate_annotation_previewsShortHelp() {
 			return _t("Regenerates annotation preview media for some or all object representation annotations.");
 		}
@@ -1343,6 +1436,13 @@
 			return array(
 				"file|f=s" => _t('Path to AAT XML file.')
 			);
+		}
+		# -------------------------------------------------------
+		/**
+		 *
+		 */
+		public static function load_AATUtilityClass() {
+			return _t('Import/Export');
 		}
 		# -------------------------------------------------------
 		/**
@@ -1381,6 +1481,13 @@
 			return array(
 				//"file|f=s" => _t('Path to AAT XML file.')
 			);
+		}
+		# -------------------------------------------------------
+		/**
+		 *
+		 */
+		public static function sync_dataUtilityClass() {
+			return _t('Import/Export');
 		}
 		# -------------------------------------------------------
 		/**
@@ -1465,6 +1572,13 @@
 				"group|g=s" => _t("Set ownership of directories to specifed group. If not set, the current group will be used."),
 				"quiet|q" => _t("Run without outputting progress information.")
 			);
+		}
+		# -------------------------------------------------------
+		/**
+		 *
+		 */
+		public static function fix_permissionsUtilityClass() {
+			return _t('Maintenance');
 		}
 		# -------------------------------------------------------
 		/**
