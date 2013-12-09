@@ -2721,8 +2721,8 @@ $ca_relationship_lookup_parse_cache = array();
 		$vs_hier_fld 					= $pt_rel->getProperty('HIERARCHY_ID_FLD');
 		$vs_idno_fld 					= $pt_rel->getProperty('ID_NUMBERING_ID_FIELD');
 		$vs_idno_sort_fld 				= $pt_rel->getProperty('ID_NUMBERING_SORT_FIELD');
-		$vs_rel_pk 						= $pt_rel->primaryKey();
-		$vs_rel_table					= $pt_rel->tableName();
+		$vs_rel_pk            			= caGetOption('primaryKey', $pa_options, $pt_rel->primaryKey());
+ 		$vs_rel_table         			= caGetOption('table', $pa_options, $pt_rel->tableName());
 		
 		if (!isset($pa_options['config']) || !is_object($pa_options['config'])) {
 			$o_config = Configuration::load();
