@@ -49,6 +49,7 @@ class Datamodel {
 	static $s_many_many_cache = array();
 	
 	static $s_datamodel_field_num_cache = array();
+	static $s_datamodel_field_name_cache = array();
 	static $s_datamodel_instance_cache = null;
 	static $s_datamodel_model_instance_cache = null;
 	# --------------------------------------------------------------------------------------------
@@ -189,16 +190,39 @@ class Datamodel {
 	}
 	# --------------------------------------------------------------------------------------------
 	/**
+	 * Get field number for specified field name
 	 *
+	 * @param string $ps_table The table name
+	 * @param string $ps_field The field name
+	 *
+	 * @return int The field number or null if the table or field are invalid
 	 */
 	function getFieldNum($ps_table, $ps_field) {
-		
 		if (isset(DataModel::$s_datamodel_field_num_cache[$ps_table.'/'.$ps_field])) { return DataModel::$s_datamodel_field_num_cache[$ps_table.'/'.$ps_field]; }
 		if ($t_table = $this->getInstanceByTableName($ps_table, true)) {
 			$va_fields = $t_table->getFieldsArray();
 			return DataModel::$s_datamodel_field_num_cache[$ps_table.'/'.$ps_field] = array_search($ps_field, array_keys($va_fields));
 		} else {
-			return false;
+			return null;
+		}
+	}
+	# --------------------------------------------------------------------------------------------
+	/**
+	 * Get field name for specified field number
+	 *
+	 * @param string $ps_table The table name
+	 * @param int $pn_field_num The field number
+	 *
+	 * @return int The field name or null if the table or field number are invalid
+	 */
+	function getFieldName($ps_table, $pn_field_num) {
+		if (isset(DataModel::$s_datamodel_field_name_cache[$ps_table.'/'.$pn_field_num])) { return DataModel::$s_datamodel_field_name_cache[$ps_table.'/'.$pn_field_num]; }
+		if ($t_table = $this->getInstanceByTableName($ps_table, true)) {
+			$va_fields = $t_table->getFieldsArray();
+			$va_field_list = array_keys($va_fields);
+			return DataModel::$s_datamodel_field_name_cache[$ps_table.'/'.$pn_field_num] = $va_field_list[(int)$pn_field_num];
+		} else {
+			return null;
 		}
 	}
 	# --------------------------------------------------------------------------------------------
