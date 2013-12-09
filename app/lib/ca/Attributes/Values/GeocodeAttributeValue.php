@@ -102,6 +102,32 @@
 			'label' => _t('Must not be blank'),
 			'description' => _t('Check this option if this attribute value must be set to some value - it must not be blank in other words. (The default is not to be.)')
 		),
+		'tileServerURL' => array(
+			'formatType' => FT_TEXT,
+			'displayType' => DT_FIELD,
+			'default' => '',
+			'width' => 90, 'height' => 1,
+			'label' => _t('Tile server URL'),
+			'validForRootOnly' => 1,
+			'description' => _t('URL for tileserver to load custom tiles from, with placeholders for X, Y and Z values in the format <em>${x}</em>. Ex. http://tileserver.net/maps/${z}/${x}/${y}.png. Leave blank if you do not wish to use custom map tiles.')
+		),
+		'tileLayerName' => array(
+			'formatType' => FT_TEXT,
+			'displayType' => DT_FIELD,
+			'default' => '',
+			'width' => 90, 'height' => 1,
+			'label' => _t('Tile layer name'),
+			'validForRootOnly' => 1,
+			'description' => _t('Display name for layer containing tiles loaded from tile server specified in the <em>tile server URL</em> setting.')
+		),
+		'layerSwitcherControl' => array(
+			'formatType' => FT_NUMBER,
+			'displayType' => DT_CHECKBOXES,
+			'default' => 0,
+			'width' => 1, 'height' => 1,
+			'label' => _t('Show layer switcher controls'),
+			'description' => _t('Check this option you want to include layer switching controls in the map.')
+		),
 		'displayTemplate' => array(
 			'formatType' => FT_TEXT,
 			'displayType' => DT_FIELD,
