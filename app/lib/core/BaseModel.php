@@ -6675,6 +6675,7 @@ class BaseModel extends BaseObject {
 		if ($pn_id && $pb_include_self) { $pb_dont_include_root = false; }
 		
 		if ($qr_hier = $this->getHierarchy($pn_id, $pa_options)) {
+			if ($pb_ids_only) { return $qr_hier; }
 			$vs_hier_right_fld 			= $this->getProperty("HIERARCHY_RIGHT_INDEX_FLD");
 			
 			$va_indent_stack = array();
