@@ -1193,9 +1193,8 @@ class WLPlugSearchEngineSqlSearch extends BaseSearchPlugin implements IWLPlugSea
 		
 		if (!isset($pa_options['datatype'])) { $pa_options['datatype'] = null; }
 		
-		if (preg_match("!^A([\d]+)$!", $ps_content_fieldname, $va_matches)) {
-			$vn_field_num_proc = $va_matches[1];
-			$vn_field_num = $ps_content_fieldname;
+		if ($ps_content_fieldname[0] == 'A') {
+			$vn_field_num_proc = (int)substr($ps_content_fieldname, 1);
 			
 			// do we need to index this (don't index attribute types that we'll search directly)
 			if (WLPlugSearchEngineSqlSearch::$s_metadata_elements[$vn_field_num_proc]) {
@@ -1214,22 +1213,7 @@ class WLPlugSearchEngineSqlSearch extends BaseSearchPlugin implements IWLPlugSea
 						return;
 				}
 			}
-		} else {
-			switch((string)$ps_content_fieldname) {
-				case '_count':
-					$vn_field_num = '_count';
-					break;
-				default:
-					// is regular field in some table
-					if (is_numeric($ps_content_fieldname)) {
-						$vn_field_num = $ps_content_fieldname;
-					} else {
-						$vn_field_num = $this->getFieldNum($pn_content_tablenum, $ps_content_fieldname);
-					}
-					$vn_field_num = "I{$vn_field_num}";
-					break;
-			}
-		}
+		} 
 		
 		if (strlen((string)$pm_content) == 0) { 
 			$va_words = null;
@@ -1242,7 +1226,7 @@ class WLPlugSearchEngineSqlSearch extends BaseSearchPlugin implements IWLPlugSea
 				$va_words = preg_split("![ ]+!", (string)$pm_content);
 			}
 		}
-		WLPlugSearchEngineSqlSearch::$s_doc_content_buffer[$this->opn_indexing_subject_tablenum.'/'.$this->opn_indexing_subject_row_id.'/'.$pn_content_tablenum.'/'.$vn_field_num.'/'.$pn_content_row_id.'/'.$vn_boost.'/'.$vn_private][] = $va_words;
+		WLPlugSearchEngineSqlSearch::$s_doc_content_buffer[$this->opn_indexing_subject_tablenum.'/'.$this->opn_indexing_subject_row_id.'/'.$pn_content_tablenum.'/'.$ps_content_fieldname.'/'.$pn_content_row_id.'/'.$vn_boost.'/'.$vn_private][] = $va_words;
 	}
 	# ------------------------------------------------
 	public function commitRowIndexing() {

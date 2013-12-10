@@ -1071,9 +1071,9 @@
 											foreach($va_value as $vs_f => $vs_v) {
 												if ($vn_datatype == 3) {	// list
 													$t_list_item = new ca_list_items((int)$vs_v);
-													
 													// Include sub-items
-													$va_item_ids = $t_list_item->getHierarchyChildren(null, array('idsOnly' => true, 'includeSelf' => true));
+													$va_item_ids = $t_list_item->getHierarchy((int)$vs_v, array('idsOnly' => true, 'includeSelf' => true));
+													
 													$va_item_ids[] = (int)$vs_v;
 													$va_attr_sql[] = "(ca_attribute_values.{$vs_f} IN (?))";
 													$va_attr_values[] = $va_item_ids;

@@ -1,4 +1,4 @@
-<?php
+ <?php
 /** ---------------------------------------------------------------------
  * app/lib/core/Plugins/MediaReplication/WLPlugMediaReplicationVimeo.php : replicates media to Vimeo
  * ----------------------------------------------------------------------
@@ -39,13 +39,12 @@ include_once(__CA_APP_DIR__."/helpers/utilityHelpers.php");
 include_once(__CA_LIB_DIR__."/core/Plugins/IWLPlugMediaReplication.php");
 include_once(__CA_LIB_DIR__."/core/Plugins/MediaReplication/BaseMediaReplicationPlugin.php");
 include_once(__CA_LIB_DIR__."/core/Vimeo/vimeo.php");
+require_once(__CA_LIB_DIR__.'/core/Logging/Eventlog.php');
 
 class WLPlugMediaReplicationVimeo Extends BaseMediaReplicationPlugin {
 	# ------------------------------------------------
 	/**
-	 * Keys given out by Vimeo for our app https://developer.vimeo.com/apps/30027.
-	 * In addition to that, we need an 'access token' and an 'access token secret'. 
-	 * Both are account-specific and should be entered by the user via config file.
+	 * Keys given out by Vimeo for our app https://developer.vimeo.com/apps/30027
 	 */
 	private $ops_client_id = 'b8e4648e40edfa71dbff90531c7c617d3e234b71';
 	private $ops_client_secret = '0cbddcf990344763cc4007c9c430fe6f3f150647';
@@ -92,35 +91,61 @@ class WLPlugMediaReplicationVimeo Extends BaseMediaReplicationPlugin {
 	 */
 	public function initiateReplication($ps_filepath, $pa_data, $pa_options=null) {
 		$o_client = $this->getClient();
+		$pa_target_options = $this->opa_target_info['options'];
 
 		try {
+			if(!$o_client) { throw new VimeoAPIException(_t("Initial connection to Vimeo failed. Did you authorize CollectiveAccess to use your Vimeo account? Enable the 'vimeo' application plugin and navigate to Manage > Vimeo integration to do so.")); }
+
 			// upload video to vimeo, set properties afterwards
 			if($vs_video_id = $o_client->upload($ps_filepath)) {
-				// Vimeo's privacy settings are string values like 'nobody' or 'anybody'.
-				$vs_privacy_setting = caGetOption('privacy', $pa_options, 'nobody');
-				// this, however, is 1 or 0
-				$vn_dl_privacy = caGetOption('downloadPrivacy', $pa_options, 0);
-				// by, by-sa, by-nd, by-nc, by-nc-sa, or by-nc-nd. Set to 0 for no CC license.
-				$vs_license = caGetOption('license',$pa_options,0);
 
-				$o_client->call('vimeo.videos.setPrivacy', array('privacy' => $vs_privacy_setting, 'video_id' => $vs_video_id));
+				// generic options (provided by media replication layer)
+				
 				$o_client->call('vimeo.videos.setTitle', array('title' => $pa_data['title'], 'video_id' => $vs_video_id));
 				$o_client->call('vimeo.videos.setDescription', array('description' => $pa_data['description'], 'video_id' => $vs_video_id));
+				if(isset($pa_data['tags'])) {
+					$o_client->call('vimeo.videos.addTags', array('tags' => $pa_data['tags'], 'video_id' => $vs_video_id));
+				}
+
+				// custom options for vimeo
+
+				// Vimeo's privacy settings are string values. possible values are anybody, nobody, contacts, users, password, or disable.
+				$vs_privacy_setting = caGetOption('privacy', $pa_target_options, 'nobody');
+				// this, however, is 1 or 0
+				$vn_dl_privacy = caGetOption('downloadPrivacy', $pa_target_options, 0);
+				// by, by-sa, by-nd, by-nc, by-nc-sa, or by-nc-nd. Set to 0 for no CC license.
+				$vs_license = caGetOption('license',$pa_target_options,0);
+
+				$o_client->call('vimeo.videos.setPrivacy', array('privacy' => $vs_privacy_setting, 'video_id' => $vs_video_id));
 				$o_client->call('vimeo.videos.setDownloadPrivacy', array('download' => $vn_dl_privacy, 'video_id' => $vs_video_id));
 				$o_client->call('vimeo.videos.setLicense', array('license' => $vs_license, 'video_id' => $vs_video_id));
 
-				if(isset($pa_data['tags']) && is_array($pa_data['tags'])) {
-					$o_client->call('vimeo.videos.addTags', array('tags' => join(',',$pa_data['tags']), 'video_id' => $vs_video_id));
+				if(isset($pa_target_options['channel'])) {
+					$o_client->call('vimeo.channels.addVideo', array('channel_id' => $pa_target_options['channel'], 'video_id' => $vs_video_id));
 				}
+				
 			} else {
 				// upload() and all other phpVimeo methods throw their
 				// own exceptions if something goes wrong, except in this case
 				throw new VimeoAPIException(_t("File for replication doesn't exist"));
 			}
 		} catch (VimeoAPIException $e){
-			if($vs_video_id){
-				$va_errors[$vs_video_id][] = $e->getMessage();	
+			// Let's put the error in the event log so you have some chance of knowing what's going on
+			$o_log = new Eventlog();
+			$o_log->log(array(
+				'SOURCE' => 'Vimeo replication plugin',
+				'MESSAGE' => _t('Upload to Vimeo failed. Code: %1, Message: %2', $e->getCode(), $e->getMessage()),
+				'CODE' => 'ERR')
+			);
+
+			// if we get a "Permission denied" exception, it's likely the OAuth privileges
+			// have been revoked by the user. In that case we can toss our access token
+			if($e->getCode() == 401){
+				if(file_exists(__CA_APP_DIR__.'/tmp/vimeo.token')){
+					@unlink(__CA_APP_DIR__.'/tmp/vimeo.token');
+				}
 			}
+
 			return false;
 		}
 		
@@ -188,9 +213,10 @@ class WLPlugMediaReplicationVimeo Extends BaseMediaReplicationPlugin {
 	 *
 	 */
 	public function removeReplication($ps_request_token, $pa_options=null) {
-		$o_client = $this->getClient();
-		$vs_video_id = preg_replace("!^".$this->info['NAME']."://!", "", $ps_request_token); // remove plugin identifier to obtain raw video ID
+		// our app is not allowed to delete videos on user accounts!
 
+		//$o_client = $this->getClient();
+		//$vs_video_id = preg_replace("!^".$this->info['NAME']."://!", "", $ps_request_token); // remove plugin identifier to obtain raw video ID
 		//$o_client->call('vimeo.videos.delete', array('video_id' => $vs_video_id));
 	}
 	# ------------------------------------------------
@@ -203,15 +229,20 @@ class WLPlugMediaReplicationVimeo Extends BaseMediaReplicationPlugin {
 		}
 		if ($this->opo_client) { return $this->opo_client; }
 
+		if(file_exists(__CA_APP_DIR__.'/tmp/vimeo.token')){
+ 			$va_token = unserialize(file_get_contents(__CA_APP_DIR__.'/tmp/vimeo.token'));
+ 			if($va_token['type'] == 'access'){
+ 				$this->opo_client = new phpVimeo(
+					$this->ops_client_id,
+					$this->ops_client_secret
+				);
 
-		$this->opo_client = new phpVimeo(
-			$this->ops_client_id,
-			$this->ops_client_secret,
-			$this->opa_target_info['access_token'],
-			$this->opa_target_info['access_token_secret']
-		);
-		
-    	return $this->opo_client;
+ 				$this->opo_client->setToken($va_token['oauth_token'], $va_token['oauth_token_secret']);
+ 				return $this->opo_client;
+ 			}
+ 		}
+
+		return false;
 	}
 	# ------------------------------------------------
 	/**

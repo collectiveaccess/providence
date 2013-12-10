@@ -124,7 +124,6 @@ require_once(__CA_LIB_DIR__."/ca/ApplicationPluginManager.php");
 				$va_values[$vm_id] = array_shift($va_value_list_by_locale);
 				continue;
 			}
-			if (!is_array($va_value_list_by_locale)) { print caPrintStackTrace(); }
 			foreach($va_value_list_by_locale as $pm_locale => $vm_value) {
 				// convert locale_id to locale string
 				if (is_numeric($pm_locale)) {
@@ -2596,6 +2595,26 @@ require_once(__CA_LIB_DIR__."/ca/ApplicationPluginManager.php");
 	}
 	# ------------------------------------------------------------------------------------------------
 	/**
+	 * Returns 
+	 *
+	 * @param int $pn_start_timestamp Start of date range, as Unix timestamp
+	 * @param array $pa_options All options supported by TimeExpressionParser::getText() are supported
+	 *
+	 * @return string Localized date range expression
+	 */
+	function caGetDateRangeForTimelineJS($pa_historic_timestamps, $pa_options=null) {
+		$o_tep = new TimeExpressionParser();
+		
+		$va_start = $o_tep->getHistoricDateParts($pa_historic_timestamps[0]);
+		$va_end = $o_tep->getHistoricDateParts($pa_historic_timestamps[1]);
+		
+		return array(
+			'start' => $va_start['year'].','.$va_start['month'].','.$va_start['day'],
+			'end' => $va_end['year'].','.$va_end['month'].','.$va_end['day'],
+		);
+	}
+	# ------------------------------------------------------------------------------------------------
+	/**
 	 * Returns text describing dimensions of object representation
 	 *
 	 * @param DbResult or ca_object_representations instance $po_rep An object containing representation data. Can be either a DbResult object (ie. a query result) or ca_object_representations instance (an instance representing a row in the ca_object_representation class)
@@ -2697,8 +2716,13 @@ $ca_relationship_lookup_parse_cache = array();
 		
 		$va_initial_values = array();
 		
-		$vs_rel_pk 						= caGetOption('primaryKey', $pa_options, $pt_rel->primaryKey());
-		$vs_rel_table					= caGetOption('table', $pa_options, $pt_rel->tableName());
+		$vb_is_hierarchical 			= $pt_rel->isHierarchical();
+		$vs_hier_parent_id_fld 			= $pt_rel->getProperty('HIERARCHY_PARENT_ID_FLD');
+		$vs_hier_fld 					= $pt_rel->getProperty('HIERARCHY_ID_FLD');
+		$vs_idno_fld 					= $pt_rel->getProperty('ID_NUMBERING_ID_FIELD');
+		$vs_idno_sort_fld 				= $pt_rel->getProperty('ID_NUMBERING_SORT_FIELD');
+		$vs_rel_pk            			= caGetOption('primaryKey', $pa_options, $pt_rel->primaryKey());
+ 		$vs_rel_table         			= caGetOption('table', $pa_options, $pt_rel->tableName());
 		
 		if (!isset($pa_options['config']) || !is_object($pa_options['config'])) {
 			$o_config = Configuration::load();
@@ -2770,12 +2794,6 @@ $ca_relationship_lookup_parse_cache = array();
 		$t_rel = $o_dm->getInstanceByTableName($vs_rel_table, true);
 		$vs_type_id_fld = method_exists($t_rel, 'getTypeFieldName') ? $t_rel->getTypeFieldName() : null;
 		
-		
-		$vs_hier_parent_id_fld 			= $t_rel->getProperty('HIERARCHY_PARENT_ID_FLD');
-		$vs_hier_fld 					= $t_rel->getProperty('HIERARCHY_ID_FLD');
-		$vs_idno_fld 					= $t_rel->getProperty('ID_NUMBERING_ID_FIELD');
-		$vs_idno_sort_fld 				= $t_rel->getProperty('ID_NUMBERING_SORT_FIELD');
-		
 		$vn_c = 0;
 		$vb_include_inline_add_message = $vb_include_empty_result_message = false;
 	
@@ -2835,7 +2853,11 @@ $ca_relationship_lookup_parse_cache = array();
 					if ($t_rel->isHierarchical()) {
 						if ($vn_parent_id = $qr_rel_items->get($x="{$vs_rel_table}.{$vs_hier_parent_id_fld}")) {
 							$va_parent_ids[$vn_id] = $vn_parent_id;
-						} 
+						} else {
+							if ($pt_rel->getHierarchyType() != __CA_HIER_TYPE_ADHOC_MONO__) {		// don't show root for hierarchies unless it's adhoc (where the root is a valid record)
+								continue;
+							}
+						}
 						
 						if ($vs_hier_fld) {
 							$va_hierarchy_ids[$vn_id] = $qr_rel_items->get("{$vs_rel_table}.{$vs_hier_fld}");
