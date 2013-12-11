@@ -435,6 +435,10 @@ class WLPlugSearchEngineSqlSearch extends BaseSearchPlugin implements IWLPlugSea
 			}
 			if ($vn_i == 0) { $vs_op = 'OR'; }
 			
+			
+			$va_direct_query_temp_tables = array();	// List of temporary tables created by direct search queries; tables listed here are dropped at the end of processing for the query element		
+			
+			
 			switch(get_class($o_lucene_query_element)) {
 				case 'Zend_Search_Lucene_Search_Query_Boolean':
 					$this->_createTempTable('ca_sql_search_temp_'.$pn_level);
@@ -508,6 +512,8 @@ class WLPlugSearchEngineSqlSearch extends BaseSearchPlugin implements IWLPlugSea
 					$va_ft_stem_terms = array();
 					
 					$vs_direct_sql_query = null;
+					$pa_direct_sql_query_params = null; // set to array with values to use with direct SQL query placeholders or null to pass single standard table_num value as param (most queries just need this single value)
+					
 					$va_tmp = array();
 					$vs_access_point = '';
 					$va_raw_terms = array();
@@ -631,7 +637,7 @@ class WLPlugSearchEngineSqlSearch extends BaseSearchPlugin implements IWLPlugSea
 								
 								$va_raw_terms[] = $vs_text = (string)$o_term->text;
 								if (strlen($vs_escaped_text = $this->opo_db->escape($vs_text))) {
-									$va_words["'{$vs_escaped_text}'"] = true;
+									$va_words[] = $vs_escaped_text;
 								}
 							}
 							if (!sizeof($va_words)) { continue(3); }
@@ -643,19 +649,46 @@ class WLPlugSearchEngineSqlSearch extends BaseSearchPlugin implements IWLPlugSea
 								if ($va_element) {
 									$vs_fld_num = $va_element['field_num'];
 									$vs_fld_table_num = $va_element['table_num'];
-									$vs_fld_limit_sql = " AND (ca.field_table_num = {$vs_fld_table_num} AND ca.field_num = '{$vs_fld_num}')";
+									$vs_fld_limit_sql = " AND (swi.field_table_num = {$vs_fld_table_num} AND swi.field_num = '{$vs_fld_num}')";
 								}
 							}
 							
-							$vs_direct_sql_query = "
-										SELECT ca.row_id, 1
-										FROM ca_sql_search_words sw 
-										INNER JOIN ca_sql_search_word_index ca ON sw.word_id = ca.word_id 
-										^JOIN
-										WHERE sw.word IN (".join(",", array_keys($va_words)).") AND ca.table_num = ? {$vs_fld_limit_sql}
-										".($this->getOption('omitPrivateIndexing') ? " AND ca.access = 0" : '')."
-										GROUP BY ca.row_id, ca.field_table_num, ca.field_num, ca.field_row_id 
-										HAVING count(distinct ca.word_id) = ".sizeof($va_words);
+							
+							$va_temp_tables = array();
+							foreach($va_words as $vs_word) {
+								$vs_temp_table = 'ca_sql_search_phrase_'.md5($vs_word);
+								$this->_createTempTable($vs_temp_table);
+								$vs_sql = "
+									INSERT INTO {$vs_temp_table}
+									SELECT swi.index_id + 1, 1
+									FROM ca_sql_search_words sw 
+									INNER JOIN ca_sql_search_word_index AS swi ON sw.word_id = swi.word_id 
+									".(sizeof($va_temp_tables) ? " INNER JOIN ".$va_temp_tables[sizeof($va_temp_tables) - 1]." AS tt ON swi.index_id = tt.row_id" : "")."
+									WHERE 
+										sw.word = ? AND swi.table_num = ? {$vs_fld_limit_sql}
+ 										".($this->getOption('omitPrivateIndexing') ? " AND swi.access = 0" : '')."
+								";
+								$qr_res = $this->opo_db->query($vs_sql, $vs_word, (int)$pn_subject_tablenum);
+								
+								$qr_count = $this->opo_db->query("SELECT count(*) c FROM {$vs_temp_table}");
+								if (!$qr_count->nextRow() || !(int)$qr_count->get('c')) { break(2); }
+								
+								$va_temp_tables[] = $vs_temp_table;	
+							}
+							
+							$vs_results_temp_table = array_pop($va_temp_tables);
+							
+							$va_direct_query_temp_tables[$vs_results_temp_table] = true;
+							$vs_direct_sql_query = "SELECT swi.row_id, ca.boost 
+													FROM {$vs_results_temp_table} ca
+													INNER JOIN ca_sql_search_word_index AS swi ON swi.index_id = ca.row_id 
+							";
+							$pa_direct_sql_query_params = array(); // don't pass any params
+							
+							foreach($va_temp_tables as $vs_temp_table) {
+								$this->_dropTempTable($vs_temp_table);
+							}
+							
 							break;
 						case 'Zend_Search_Lucene_Search_Query_MultiTerm':
 							$va_ft_like_term_list = array();
@@ -1059,7 +1092,7 @@ class WLPlugSearchEngineSqlSearch extends BaseSearchPlugin implements IWLPlugSea
 						
 						if ($this->debug) { print 'FIRST: '.$vs_sql." [$pn_subject_tablenum]<hr>\n"; }
 						//print $vs_sql;
-						$qr_res = $this->opo_db->query($vs_sql, (int)$pn_subject_tablenum);
+						$qr_res = $this->opo_db->query($vs_sql, is_array($pa_direct_sql_query_params) ? $pa_direct_sql_query_params : array((int)$pn_subject_tablenum));
 					} else {
 						switch($vs_op) {
 							case 'AND':
@@ -1087,7 +1120,7 @@ class WLPlugSearchEngineSqlSearch extends BaseSearchPlugin implements IWLPlugSea
 								}
 	
 								if ($this->debug) { print 'AND:'.$vs_sql."<hr>\n"; }
-								$qr_res = $this->opo_db->query($vs_sql, (int)$pn_subject_tablenum);
+								$qr_res = $this->opo_db->query($vs_sql, is_array($pa_direct_sql_query_params) ? $pa_direct_sql_query_params : array((int)$pn_subject_tablenum));
 								$qr_res = $this->opo_db->query("TRUNCATE TABLE {$ps_dest_table}");
 								$qr_res = $this->opo_db->query("INSERT INTO {$ps_dest_table} SELECT row_id, boost FROM {$ps_dest_table}_acc");
 								
@@ -1109,7 +1142,7 @@ class WLPlugSearchEngineSqlSearch extends BaseSearchPlugin implements IWLPlugSea
 										".($this->getOption('omitPrivateIndexing') ? " AND swi.access = 0" : '');
 								
 								//print "$vs_sql<hr>";
-								$qr_res = $this->opo_db->query($vs_sql, (int)$pn_subject_tablenum);
+								$qr_res = $this->opo_db->query($vs_sql, is_array($pa_direct_sql_query_params) ? $pa_direct_sql_query_params : array((int)$pn_subject_tablenum));
 								$va_ids = $qr_res->getAllFieldValues("row_id");
 								
 								$vs_sql = "
@@ -1141,9 +1174,14 @@ class WLPlugSearchEngineSqlSearch extends BaseSearchPlugin implements IWLPlugSea
 								";
 	
 								if ($this->debug) { print 'OR'.$vs_sql."<hr>\n"; }
-								$qr_res = $this->opo_db->query($vs_sql, (int)$pn_subject_tablenum);
+								$qr_res = $this->opo_db->query($vs_sql, is_array($pa_direct_sql_query_params) ? $pa_direct_sql_query_params : array((int)$pn_subject_tablenum));
 								break;
 						}
+					}
+
+					// Drop any temporary tables created by direct search queries					
+					foreach(array_keys($va_direct_query_temp_tables) as $vs_temp_table_to_drop) {
+						$this->_dropTempTable($vs_temp_table_to_drop);
 					}
 							
 					break;
@@ -1243,7 +1281,8 @@ class WLPlugSearchEngineSqlSearch extends BaseSearchPlugin implements IWLPlugSea
 		foreach(WLPlugSearchEngineSqlSearch::$s_doc_content_buffer as $vs_key => $va_content_list) {
 			foreach($va_content_list as $vn_i => $va_content) {
 				$vn_seq = 0;
-				$va_word_list = is_array($va_content) ? array_flip($va_content) : null;
+				//$va_word_list = is_array($va_content) ? array_flip($va_content) : null;
+				$va_word_list = is_array($va_content) ? $va_content : null;
 			
 				$va_tmp = explode('/', $vs_key);
 				$vn_table_num= (int)$va_tmp[0];
@@ -1259,7 +1298,8 @@ class WLPlugSearchEngineSqlSearch extends BaseSearchPlugin implements IWLPlugSea
 				}
 			
 				if (is_array($va_word_list)) {
-					foreach($va_word_list as $vs_word => $vn_x) {
+					//foreach($va_word_list as $vs_word => $vn_x) {
+					foreach($va_word_list as $vs_word) {
 						if(!strlen((string)$vs_word)) { continue; }
 						if (!($vn_word_id = (int)$this->getWordID((string)$vs_word))) { continue; }
 				
