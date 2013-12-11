@@ -680,29 +680,29 @@ var methods = {
 									showAnnotation = true;
 								}
 							}
-						}
 						
-						if (view.selectedAnnotation == null) {
-							if (options.annotation_text_display_mode == 'simultaneous') { 
-								//$(".tileviewerAnnotationTextBlock").css("display", "block");
-								showAnnotation = true;
+							if (view.selectedAnnotation == null) {
+								if (options.annotation_text_display_mode == 'simultaneous') { 
+									//$(".tileviewerAnnotationTextBlock").css("display", "block");
+									showAnnotation = true;
+								}
 							}
-						}
 						
-						// Is text box off screen?
-						if (sx > jQuery($this).width()) { 
-							showAnnotation = false;
-						} else {
-							if (sy > jQuery($this).height()) { 
+							// Is text box off screen?
+							if (sx > jQuery($this).width()) { 
 								showAnnotation = false;
-							} 
-						}
+							} else {
+								if (sy > jQuery($this).height()) { 
+									showAnnotation = false;
+								} 
+							}
 						
-						if (jQuery(inAnnotation['textBlock']).is(':visible') && !showAnnotation) { 
-							$(inAnnotation['textBlock']).fadeOut(250);
-						} else {
-							if (!jQuery(inAnnotation['textBlock']).is(':visible') && showAnnotation) { 
-								$(inAnnotation['textBlock']).fadeIn(250);
+							if (jQuery(inAnnotation['textBlock']).is(':visible') && !showAnnotation) { 
+								$(inAnnotation['textBlock']).fadeOut(250);
+							} else {
+								if (!jQuery(inAnnotation['textBlock']).is(':visible') && showAnnotation) { 
+									$(inAnnotation['textBlock']).fadeIn(250);
+								}
 							}
 						}
 					},
