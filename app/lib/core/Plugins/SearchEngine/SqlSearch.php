@@ -366,6 +366,7 @@ class WLPlugSearchEngineSqlSearch extends BaseSearchPlugin implements IWLPlugSea
 	}
 	# -------------------------------------------------------
 	private function _createTempTable($ps_name) {
+		$this->opo_db->query("DROP TABLE IF EXISTS {$ps_name}");
 		$this->opo_db->query("
 			CREATE TEMPORARY TABLE {$ps_name} (
 				row_id int unsigned not null,
@@ -383,7 +384,7 @@ class WLPlugSearchEngineSqlSearch extends BaseSearchPlugin implements IWLPlugSea
 	# -------------------------------------------------------
 	private function _dropTempTable($ps_name) {
 		$this->opo_db->query("
-			DROP TABLE {$ps_name};
+			DROP TABLE IF EXISTS {$ps_name};
 		");
 		if ($this->opo_db->numErrors()) {
 			return false;
@@ -656,7 +657,7 @@ class WLPlugSearchEngineSqlSearch extends BaseSearchPlugin implements IWLPlugSea
 							
 							$va_temp_tables = array();
 							foreach($va_words as $vs_word) {
-								$vs_temp_table = 'ca_sql_search_phrase_'.md5($vs_word);
+								$vs_temp_table = 'ca_sql_search_phrase_'.md5($pn_subject_tablenum."/".$vs_word);
 								$this->_createTempTable($vs_temp_table);
 								$vs_sql = "
 									INSERT INTO {$vs_temp_table}
@@ -671,7 +672,12 @@ class WLPlugSearchEngineSqlSearch extends BaseSearchPlugin implements IWLPlugSea
 								$qr_res = $this->opo_db->query($vs_sql, $vs_word, (int)$pn_subject_tablenum);
 								
 								$qr_count = $this->opo_db->query("SELECT count(*) c FROM {$vs_temp_table}");
-								if (!$qr_count->nextRow() || !(int)$qr_count->get('c')) { break(2); }
+								if (!$qr_count->nextRow() || !(int)$qr_count->get('c')) { 
+									foreach($va_temp_tables as $vs_temp_table) {
+										$this->_dropTempTable($vs_temp_table);
+									}
+									break(2); 
+								}
 								
 								$va_temp_tables[] = $vs_temp_table;	
 							}
