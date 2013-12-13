@@ -210,7 +210,7 @@
  				return;
  			}
  			
- 			$vn_new_type_id = $this->request->getParameter('type_id', pInteger);
+ 			$vn_new_type_id = $this->request->getParameter('new_type_id', pInteger);
  			$va_type_list = $t_subject->getTypeList();
  			if (!isset($va_type_list[$vn_new_type_id])) {
  				$this->response->setRedirect($this->request->config->get('error_display_url').'/n/3260?r='.urlencode($this->request->getFullUrlPath()));
@@ -232,7 +232,7 @@
  				$vs_row_key = $vs_entity_key = join("/", array($this->request->getUserID(), $t_set->getPrimaryKey(), time(), rand(1,999999)));
 				if (!$o_tq->addTask(
 					'batchEditor',
-					array_merge($va_last_settings, array('isBatchTypeChange' => true)),
+					array_merge($va_last_settings, array('isBatchTypeChange' => true, 'new_type_id' => $vn_new_type_id)),
 					array("priority" => 100, "entity_key" => $vs_entity_key, "row_key" => $vs_row_key, 'user_id' => $this->request->getUserID())))
 				{
 					//$this->postError(100, _t("Couldn't queue batch processing for"),"EditorContro->_processMedia()");
