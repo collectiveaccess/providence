@@ -53,13 +53,12 @@
  		#
  		# -------------------------------------------------------
  		public function __construct(&$po_request, &$po_response, $pa_view_paths=null) {
+ 			parent::__construct($po_request, $po_response, $pa_view_paths);
  			
  			JavascriptLoadManager::register('bundleListEditorUI');
  			JavascriptLoadManager::register('bundleableEditor');
  			JavascriptLoadManager::register('bundleListEditorUI');
  			JavascriptLoadManager::register('panel');
- 			
- 			parent::__construct($po_request, $po_response, $pa_view_paths);
  			
  			$this->opo_datamodel = Datamodel::load();
  			$this->opo_app_plugin_manager = new ApplicationPluginManager();

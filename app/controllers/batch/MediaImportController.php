@@ -55,6 +55,8 @@
  		#
  		# -------------------------------------------------------
  		public function __construct(&$po_request, &$po_response, $pa_view_paths=null) {
+ 			parent::__construct($po_request, $po_response, $pa_view_paths);
+ 			
  			// Can user batch import media?
  			if (!$po_request->user->canDoAction('can_batch_import_media')) {
  				$po_response->setRedirect($po_request->config->get('error_display_url').'/n/3210?r='.urlencode($po_request->getFullUrlPath()));
@@ -63,8 +65,6 @@
  			
  			JavascriptLoadManager::register('bundleableEditor');
  			JavascriptLoadManager::register('panel');
- 			
- 			parent::__construct($po_request, $po_response, $pa_view_paths);
  			
  			$this->opo_datamodel = Datamodel::load();
  			$this->opo_app_plugin_manager = new ApplicationPluginManager();
