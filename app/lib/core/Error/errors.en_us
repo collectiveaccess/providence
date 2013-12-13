@@ -240,3 +240,7 @@
 # --- Media replication errors
 3300 = Media replication failed
 3310 = Deletion of replicated media failed
+
+# --- Import/export errors
+3400 = Import of metadata is not allowed
+3410 = Import of media is not allowed

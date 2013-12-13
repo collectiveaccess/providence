@@ -59,7 +59,7 @@
  			
  			// Can user batch import media?
  			if (!$po_request->user->canDoAction('can_batch_import_media')) {
- 				$po_response->setRedirect($po_request->config->get('error_display_url').'/n/3210?r='.urlencode($po_request->getFullUrlPath()));
+ 				$po_response->setRedirect($po_request->config->get('error_display_url').'/n/3410?r='.urlencode($po_request->getFullUrlPath()));
  				return;
  			}
  			

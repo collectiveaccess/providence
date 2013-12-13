@@ -57,7 +57,7 @@
  			parent::__construct($po_request, $po_response, $pa_view_paths);
  			
  			if (!$po_request->user->canDoAction('can_batch_import_metadata')) {
- 				$po_response->setRedirect($po_request->config->get('error_display_url').'/n/3210?r='.urlencode($po_request->getFullUrlPath()));
+ 				$po_response->setRedirect($po_request->config->get('error_display_url').'/n/3400?r='.urlencode($po_request->getFullUrlPath()));
  				return;
  			}
  			
