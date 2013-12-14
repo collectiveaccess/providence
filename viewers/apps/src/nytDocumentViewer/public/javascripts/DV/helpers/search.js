@@ -277,7 +277,7 @@ _.extend(DV.Schema.helpers, {
   },
   cleanUpSearch: function(){
     var viewer            = this.viewer;
-    viewer.searchResponse = null;
+    //viewer.searchResponse = null;
     viewer.toHighLight    = null;
     if (this.elements) this.elements.searchInput.keyup().blur();
   }
