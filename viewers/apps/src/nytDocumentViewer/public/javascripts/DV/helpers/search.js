@@ -10,8 +10,8 @@ _.extend(DV.Schema.helpers, {
       this.viewer.$('span.DV-searchQuery').text(response.query);
       
       if (response.results.length > 1) {
-      	 $(".DV-resultPrevious").show().css('opacity', 0.3);;
-         $(".DV-resultNext").show();
+      	 $(".DV-resultPrevious").show().css('opacity', 0.3);
+         $(".DV-resultNext").show().css('opacity', 1.0);
       } else {
       	 $(".DV-resultPrevious").hide();
 		 $(".DV-resultNext").hide();
