@@ -535,8 +535,8 @@ class WLPlugMediaImagick Extends BaseMediaPlugin Implements IWLPlugMedia {
 									if ( $this->handle->writeImage($vs_tmp_basename) ) {
 										$va_tmp = $this->handle->getImageGeometry();
 										$this->properties["faces"] = $this->opa_faces = caDetectFaces($vs_tmp_basename, $va_tmp['width'], $va_tmp['height']);
-										@unlink($vs_tmp_basename);
 									}
+									@unlink($vs_tmp_basename);
 								}
 							}
 							$this->metadata['EXIF'] = $va_exif;

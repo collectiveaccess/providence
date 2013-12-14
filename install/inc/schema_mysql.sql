@@ -6372,6 +6372,7 @@ create index i_locale_id on ca_sql_search_words(locale_id);
 
 /*==========================================================================*/
 create table ca_sql_search_word_index (
+  index_id int unsigned not null auto_increment,
   table_num tinyint(3) unsigned not null,
   row_id int(10) unsigned not null,
   field_table_num tinyint(3) unsigned not null,
@@ -6380,7 +6381,9 @@ create table ca_sql_search_word_index (
   rel_type_id smallint unsigned not null default 0,
   word_id int(10) unsigned not null,
   boost tinyint unsigned not null default 1,
-  access tinyint unsigned not null default 1
+  access tinyint unsigned not null default 1,
+  
+  primary key (index_id)
 ) engine=innodb CHARACTER SET utf8 COLLATE utf8_general_ci;
 
 create index i_row_id on ca_sql_search_word_index(row_id, table_num);
@@ -6427,5 +6430,5 @@ create table ca_schema_updates (
 ) engine=innodb CHARACTER SET utf8 COLLATE utf8_general_ci;
 
 /* Indicate up to what migration this schema definition covers */
-/* CURRENT MIGRATION: 95 */
-INSERT IGNORE INTO ca_schema_updates (version_num, datetime) VALUES (95, unix_timestamp());
+/* CURRENT MIGRATION: 96 */
+INSERT IGNORE INTO ca_schema_updates (version_num, datetime) VALUES (96, unix_timestamp());

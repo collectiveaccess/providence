@@ -1472,6 +1472,10 @@ require_once(__CA_LIB_DIR__."/ca/ApplicationPluginManager.php");
 		
 		$t_set 					= $po_view->getVar('t_set');
 		$t_item 				= $po_view->getVar('t_item');
+		$vs_table_name = $t_item->tableName();
+		if (($vs_priv_table_name = $vs_table_name) == 'ca_list_items') {
+			$vs_priv_table_name = 'ca_lists';
+		}
 		
 		$o_result_context		= $po_view->getVar('result_context');
 		$t_ui 					= $po_view->getVar('t_ui');
@@ -1490,6 +1494,22 @@ require_once(__CA_LIB_DIR__."/ca/ApplicationPluginManager.php");
 		
 		$vs_buf .= "<h4><div id='caColorbox' style='border: 6px solid #{$vs_color}; padding-bottom:15px;'>\n";
 		
+		if($po_view->request->user->canDoAction("can_edit_".$vs_priv_table_name) && (sizeof($t_item->getTypeList()) > 1)){
+			if ($po_view->request->user->canDoAction("can_change_type_{$vs_table_name}")) {
+				
+				$vs_buf .= "<div id='inspectorChangeType'><div id='inspectorChangeTypeButton'><a href='#' onclick='caTypeChangePanel.showPanel(); return false;'>".caNavIcon($po_view->request, __CA_NAV_BUTTON_CHANGE__, null, array('title' => _t('Change type')))."</a></div></div>\n";
+				
+				$vo_change_type_view = new View($po_view->request, $po_view->request->getViewsDirectoryPath()."/bundles/");
+				$vo_change_type_view->setVar('t_item', $t_item);
+				$vo_change_type_view->setVar('t_set', $t_set);
+				$vo_change_type_view->setVar('set_id', $t_set->getPrimaryKey());
+				
+				FooterManager::add($vo_change_type_view->render("batch_change_type_html.php"));
+			}
+			$vs_buf .= "<strong>"._t("Editing %1", $vs_type_name).": </strong>\n";
+		}else{
+			$vs_buf .= "<strong>"._t("Viewing %1", $vs_type_name).": </strong>\n";
+		}
 		
 		$vn_item_count = $t_set->getItemCount(array('user_id' => $po_view->request->getUserID()));
 		$vs_item_name = ($vn_item_count == 1) ? $t_item->getProperty("NAME_SINGULAR"): $t_item->getProperty("NAME_PLURAL");
@@ -1524,7 +1544,7 @@ require_once(__CA_LIB_DIR__."/ca/ApplicationPluginManager.php");
 			$vs_buf .= "<div class='button' style='text-align:right;'><a href='#' id='inspectorMoreInfo'>"._t("More options")."</a> &rsaquo;</div>
 				<div id='inspectorInfo' style='background-color:#f9f9f9; border: 1px solid #eee;'>";
 			$vs_buf .= caNavLink($po_view->request, 
-				caNavIcon($po_view->request, __CA_NAV_BUTTON_DEL_BUNDLE__,null,array('style' => 'margin-bottom:-2px;'))."&nbsp;"._t("Batch delete all records")
+				caNavIcon($po_view->request, __CA_NAV_BUTTON_DEL_BUNDLE__, null, array('style' => 'margin-top:7px; vertical-align: text-bottom;'))." "._t("Delete <strong><em>all</em></strong> records in set")
 				, null, 'batch', 'Editor', 'Delete', array('set_id' => $t_set->getPrimaryKey())
 			);
 

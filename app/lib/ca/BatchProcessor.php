@@ -327,6 +327,135 @@
 		}
 		# ----------------------------------------
 		/**
+		 * @param array $pa_options
+		 *		progressCallback =
+		 *		reportCallback = 
+		 */
+		public static function changeTypeBatchForSet($po_request, $pn_type_id, $t_set, $t_subject, $pa_options=null) {
+			$va_row_ids = $t_set->getItemRowIDs();
+ 			$vn_num_items = sizeof($va_row_ids);
+ 			
+ 			if (!method_exists($t_subject, 'getTypeList')) {
+ 				return array('errors' => array(_t('Invalid subject')), 'notices' => array(), 'processing_time' => caFormatInterval(0));
+ 			}
+ 			$va_type_list = $t_subject->getTypeList();
+ 			if (!isset($va_type_list[$pn_type_id])) {
+ 				return array('errors' => array(_t('Invalid type_id')), 'notices' => array(), 'processing_time' => caFormatInterval(0));
+ 			}
+ 			
+ 			$va_notices = $va_errors = array();
+ 			
+ 			if ($vb_perform_type_access_checking = (bool)$t_subject->getAppConfig()->get('perform_type_access_checking')) {
+ 				$va_restrict_to_types = caGetTypeRestrictionsForUser($t_subject->tableName(), array('access' => __CA_BUNDLE_ACCESS_EDIT__));
+ 			}
+ 			$vb_perform_item_level_access_checking = (bool)$t_subject->getAppConfig()->get('perform_item_level_access_checking');
+
+ 			$vb_we_set_transaction = false;
+ 			$o_tx = caGetOption('transaction',$pa_options);
+
+ 			if (!$o_tx) {
+ 				$vb_we_set_transaction = true;
+ 				$o_db = new Db(); // open up a new connection?
+ 				$o_tx = new Transaction($o_db);
+ 			}
+
+ 			$t_subject->setTransaction($o_tx);
+ 			$t_subject->setMode(ACCESS_WRITE);
+ 			
+ 			$o_log = new Batchlog(array(
+ 				'user_id' => $po_request->getUserID(),
+ 				'batch_type' => 'TC',
+ 				'table_num' => (int)$t_set->get('table_num'),
+ 				'notes' => '',
+ 				'transaction' => $o_tx
+ 			));
+
+ 			$vn_c = 0;
+ 			$vn_start_time = time();
+ 			foreach(array_keys($va_row_ids) as $vn_row_id) {
+ 				if ($t_subject->load($vn_row_id)) {
+
+					// Is record deleted?
+					if ($t_subject->hasField('deleted') && $t_subject->get('deleted')) { 
+						continue; // skip
+					}
+
+					// Is record of correct type?
+					if (($vb_perform_type_access_checking) && (is_array($va_restrict_to_types) && !in_array($t_subject->get('type_id'), $va_restrict_to_types))) {
+						continue; // skip
+					}
+
+					// Does user have access to row?
+					if (($vb_perform_item_level_access_checking) && ($t_subject->checkACLAccessForUser($po_request->user) == __CA_ACL_READ_WRITE_ACCESS__)) {
+						continue; // skip
+					}
+
+					// get some data for reporting before delete
+					$vs_label = $t_subject->getLabelForDisplay();
+					$vs_idno = $t_subject->get($t_subject->getProperty('ID_NUMBERING_ID_FIELD'));
+ 					
+ 					$t_subject->set('type_id', $pn_type_id, array('allowSettingOfTypeID' => true));
+ 					$t_subject->update();
+ 					
+					$o_log->addItem($vn_row_id, $va_record_errors = $t_subject->errors());
+
+ 					if (sizeof($va_record_errors) > 0) {
+ 						$va_errors[$vn_row_id] = array(
+ 							'idno' => $vs_idno,
+ 							'label' => $vs_label,
+ 							'errors' => $va_record_errors,
+ 							'status' => 'ERROR'
+ 						);
+					} else {
+						$va_notices[$vn_row_id] = array(
+							'idno' => $vs_idno,
+ 							'label' => $vs_label,
+ 							'status' => 'SUCCESS'
+						);
+					}
+					
+					if (isset($pa_options['progressCallback']) && ($ps_callback = $pa_options['progressCallback'])) {
+						$ps_callback($po_request, $vn_c, $vn_num_items, _t("[%3/%4] Processing %1 (%2)", caTruncateStringWithEllipsis($vs_label, 50), $vs_idno, $vn_c, $vn_num_items), time() - $vn_start_time, memory_get_usage(true), sizeof($va_notices), sizeof($va_errors));
+					}
+					
+					$vn_c++;
+				}
+			}
+
+			if (isset($pa_options['progressCallback']) && ($ps_callback = $pa_options['progressCallback'])) {
+				$ps_callback($po_request, $vn_num_items, $vn_num_items, _t("Processing completed"), time() - $vn_start_time, memory_get_usage(true), sizeof($va_notices), sizeof($va_errors));
+			}
+			
+			$vn_elapsed_time = time() - $vn_start_time;
+			if (isset($pa_options['reportCallback']) && ($ps_callback = $pa_options['reportCallback'])) {
+				$va_general = array(
+					'elapsedTime' => $vn_elapsed_time,
+					'numErrors' => sizeof($va_errors),
+					'numProcessed' => sizeof($va_notices),
+					'batchSize' => $vn_num_items,
+					'table' => $t_subject->tableName(),
+					'set_id' => $t_set->getPrimaryKey(),
+					'set_name' => $t_set->getLabelForDisplay()
+				);
+				$ps_callback($po_request, $va_general, $va_notices, $va_errors);
+			}
+			$o_log->close();
+			
+			if ($vb_we_set_transaction) {
+				if (sizeof($va_errors) > 0) {
+					$o_tx->rollback();
+				} else {
+					$o_tx->commit();
+				}
+			}
+			
+			$vs_set_name = $t_set->getLabelForDisplay();
+			$vs_started_on = caGetLocalizedDate($vn_start_time);
+			
+			return array('errors' => $va_errors, 'notices' => $va_notices, 'processing_time' => caFormatInterval($vn_elapsed_time));
+		}
+		# ----------------------------------------
+		/**
 		 * Compare file name to entries in skip-file list and return true if file matches any entry.
 		 */
 		private static function _skipFile($ps_file, $pa_skip_list) {

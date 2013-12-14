@@ -34,7 +34,7 @@
 ?>
 
 <div id='box'>
-	<div id="logo"><img src="<?php print $vs_url_path; ?>/graphics/installLogo.gif"/></div><!-- end logo -->
+	<div id="logo"><img src="<?php print $vs_url_path; ?>/graphics/ca_logo.png"/></div><!-- end logo -->
 	<div id="content">
 	<H1>
 		<?php _p('Version %1 installer (XML)', constant('__CollectiveAccess__')); ?>
