@@ -56,9 +56,9 @@ DV.Schema.helpers = {
 
       viewer.$('form.DV-searchDocument').submit(this.events.compile('search'));
       viewer.$('.DV-searchBar').delegate('.DV-closeSearch','click',function(e){
+      	viewer.$('.DV-searchBar').fadeOut(250);
         e.preventDefault();
         // history.save('text/p'+context.models.document.currentPage());
-        context.open('ViewText');
       });
       viewer.$('.DV-searchBox').delegate('.DV-searchInput-cancel', 'click', DV.jQuery.proxy(this.clearSearch, this));
 

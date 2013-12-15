@@ -5,8 +5,8 @@
 				</div><!-- end mainContent -->
 				<div style="clear:both;"><!-- EMPTY --></div>
 			</div><!-- end main -->
-		<div id="footerContainer">
-			<div id="footer" style="background-color:#<?php print $vs_footer_color; ?>;"><div style="position: relative;">
+		<div id="footerContainer" style="background-color:#<?php print $vs_footer_color; ?>;">
+			<div id="footer" ><div style="position: relative;">
 <?php
 				if ($this->request->isLoggedIn()) {
 					print _p("User").': '.$this->request->user->getName().' &gt; '.caNavLink($this->request, _t('Preferences'), '', 'system', 'Preferences', 'EditUIPrefs').' &gt; '.caNavLink($this->request, _t('Logout'), '', 'system', 'auth', 'logout');
