@@ -773,7 +773,9 @@ require_once(__CA_LIB_DIR__."/ca/ApplicationPluginManager.php");
 				
 				$t_lot = new ca_object_lots($vn_lot_id);
 				if(!($vs_lot_displayname = $t_lot->get('idno_stub'))) {
-					$vs_lot_displayname = "Lot {$vn_lot_id}";	
+					if((!$vs_lot_displayname = $t_lot->getLabelForDisplay())){
+						$vs_lot_displayname = "Lot {$vn_lot_id}";		
+					}
 				}
 				if ($vs_lot_displayname) {
 					if(!($vs_part_of_lot_msg = $po_view->request->config->get("ca_objects_inspector_part_of_lot_msg"))){
