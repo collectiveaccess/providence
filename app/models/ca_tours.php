@@ -246,8 +246,8 @@ class ca_tours extends BundlableLabelableBaseModelWithAttributes {
 		parent::__construct($pn_id);
 	}
 	# ------------------------------------------------------
-	protected function initLabelDefinitions() {
-		parent::initLabelDefinitions();
+	protected function initLabelDefinitions($pa_options=null) {
+		parent::initLabelDefinitions($pa_options);
 		$this->BUNDLES['ca_tour_stops_list'] = array('type' => 'special', 'repeating' => false, 'label' => _t('Tour stops'));
 	}
 	# ------------------------------------------------------

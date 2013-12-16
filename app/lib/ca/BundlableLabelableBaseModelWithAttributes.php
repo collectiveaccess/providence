@@ -934,13 +934,15 @@ class BundlableLabelableBaseModelWithAttributes extends LabelableBaseModelWithAt
 	 *
 	 */
 	public function reloadLabelDefinitions() {
-		$this->initLabelDefinitions();
+		$this->initLabelDefinitions(array('dontCache' => true));
 	}
 	# ------------------------------------------------------
 	/**
 	 *
 	 */
-	protected function initLabelDefinitions() {
+	protected function initLabelDefinitions($pa_options=null) {
+		$pb_dont_cache = caGetOption('dontCache', $pa_options, false);
+
 		$this->BUNDLES = (is_subclass_of($this, "BaseRelationshipModel")) ? array() : array(
 			'preferred_labels' 			=> array('type' => 'preferred_label', 'repeating' => true, 'label' => _t("Preferred labels")),
 			'nonpreferred_labels' 		=> array('type' => 'nonpreferred_label', 'repeating' => true,  'label' => _t("Non-preferred labels")),
@@ -1004,7 +1006,7 @@ class BundlableLabelableBaseModelWithAttributes extends LabelableBaseModelWithAt
 		}
 		
 		// add metadata elements
-		foreach($this->getApplicableElementCodes($vn_type_id, false, false) as $vs_code) {
+		foreach($this->getApplicableElementCodes($vn_type_id, false, $pb_dont_cache) as $vs_code) {
 			$this->BUNDLES['ca_attribute_'.$vs_code] = array(
 				'type' => 'attribute', 'repeating' => false, 'label' => $vs_code
 			);

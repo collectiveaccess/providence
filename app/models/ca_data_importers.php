@@ -238,8 +238,8 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 		$this->initSettings();
 	}
 	# ------------------------------------------------------
-	protected function initLabelDefinitions() {
-		parent::initLabelDefinitions();
+	protected function initLabelDefinitions($pa_options=null) {
+		parent::initLabelDefinitions($pa_options);
 	}
 	# ------------------------------------------------------
 	protected function initSettings() {

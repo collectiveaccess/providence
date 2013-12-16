@@ -185,8 +185,8 @@ class ca_data_importer_items extends BaseModel {
 		$this->initSettings();
 	}
 	# ------------------------------------------------------
-	protected function initLabelDefinitions() {
-		parent::initLabelDefinitions();
+	protected function initLabelDefinitions($pa_options=null) {
+		parent::initLabelDefinitions($pa_options);
 		
 		// TODO
 	}
