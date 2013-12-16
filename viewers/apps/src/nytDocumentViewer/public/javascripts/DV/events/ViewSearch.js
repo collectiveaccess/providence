@@ -1,5 +1,6 @@
 DV.Schema.events.ViewSearch = {
   next: function(e){
+  	console.log("next!", e);
     var nextPage = this.models.document.nextPage();
     this.helpers.jump(nextPage);
 

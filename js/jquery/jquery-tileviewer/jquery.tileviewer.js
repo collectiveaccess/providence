@@ -1462,10 +1462,10 @@ var methods = {
 							// Touch events
 							//
 							
-							// TODO: "swipemove" event causes problems because some mouse actions related to resizing of annotations are 
-							// incorrectly interpreted as swipes. Not sure if swipeone will actually work as of this writing (10.28.2013).
+							// TODO: "swipemove" event seems to sometimes causes problems because some mouse actions related to resizing of annotations are 
+							// incorrectly interpreted as swipes. Not sure what to do as of this writing (12.13.2013).
 							//
-							jQuery(view.canvas).bind('swipeone', function(e, m) {
+							jQuery(view.canvas).bind('swipemove', function(e, m) {
                 				var offset = $(view.canvas).offset();
 								var desc = m.description.split(/:/);
 								if ((desc[0] != 'swipemove') || (desc[1] != '1')) {

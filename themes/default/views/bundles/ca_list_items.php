@@ -218,7 +218,7 @@
 						var init = true;
 						var <?php print $vs_id_prefix; ?>oHierBrowser{n} = caUI.initHierBrowser('<?php print $vs_id_prefix; ?>_hierarchyBrowser{n}', {
 							uiStyle: 'horizontal',
-							levelDataUrl: '<?php print caNavUrl($this->request, 'lookup', 'ListItem', 'GetHierarchyLevel', array('noSymbols' => 1, 'voc' => 1, 'lists' => join(';', $va_settings['restrict_to_lists']))); ?>',
+							levelDataUrl: '<?php print caNavUrl($this->request, 'lookup', 'ListItem', 'GetHierarchyLevel', array('noSymbols' => 1, 'voc' => 1, 'lists' => is_array($va_settings['restrict_to_lists']) ? join(';', $va_settings['restrict_to_lists']) : "")); ?>',
 							initDataUrl: '<?php print caNavUrl($this->request, 'lookup', 'ListItem', 'GetHierarchyAncestorList'); ?>',
 							
 							bundle: '<?php print $vs_id_prefix; ?>',

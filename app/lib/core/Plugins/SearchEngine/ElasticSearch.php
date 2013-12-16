@@ -628,7 +628,7 @@ class WLPlugSearchEngineElasticSearch extends BaseSearchPlugin implements IWLPlu
 				$this->opo_search_config->get('search_elasticsearch_index_name')."/".
 				$va_key[0]."/".$va_key[2]
 			);
-//print_R($va_post_json);
+
 			$vo_http_client->setRawData(json_encode($va_post_json))->setEncType('text/json')->request('POST');
 			try {
 				$vo_http_response = $vo_http_client->request();

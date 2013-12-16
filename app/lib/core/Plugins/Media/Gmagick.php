@@ -517,8 +517,8 @@ class WLPlugMediaGmagick Extends BaseMediaPlugin Implements IWLPlugMedia {
 									if ( $this->handle->writeimage($vs_tmp_basename) ) {
 										$va_tmp = $this->handle->getimagegeometry();
 										$this->properties["faces"] = $this->opa_faces = caDetectFaces($vs_tmp_basename, $va_tmp['width'], $va_tmp['height']);
-										@unlink($vs_tmp_basename);
 									}
+									@unlink($vs_tmp_basename);
 								}
 							}
 	

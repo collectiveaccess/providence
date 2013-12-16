@@ -25,12 +25,8 @@ a:hover{
 	margin:50px auto 50px auto;
 }
 #logo{
-	background-color: #134959;
 	text-align:center;
 	padding:5px 0px 5px 0px;
-	background-image: url("../graphics/corner.gif");
-	background-position: right bottom;
-	background-repeat:no-repeat;
 }
 #content{
 	padding:10px 20px 20px 20px;
