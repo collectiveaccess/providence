@@ -215,7 +215,6 @@
 				
 				<script type='text/javascript'>
 					jQuery(document).ready(function() { 
-						var init = true;
 						var <?php print $vs_id_prefix; ?>oHierBrowser{n} = caUI.initHierBrowser('<?php print $vs_id_prefix; ?>_hierarchyBrowser{n}', {
 							uiStyle: 'horizontal',
 							levelDataUrl: '<?php print caNavUrl($this->request, 'lookup', 'ListItem', 'GetHierarchyLevel', array('noSymbols' => 1, 'voc' => 1, 'lists' => is_array($va_settings['restrict_to_lists']) ? join(';', $va_settings['restrict_to_lists']) : "")); ?>',
@@ -240,10 +239,7 @@
 							displayCurrentSelectionOnLoad: false,
 							currentSelectionDisplayID: '<?php print $vs_id_prefix; ?>_browseCurrentSelectionText{n}',
 							onSelection: function(item_id, parent_id, name, display, type_id) {
-								if (!init) {	// Don't actually select the init value, otherwise if you save w/no selection you get "phantom" relationships
-									caRelationBundle<?php print $vs_id_prefix; ?>.select('{n}', {id: item_id, type_id: type_id}, display);
-								}
-								init = false;
+								caRelationBundle<?php print $vs_id_prefix; ?>.select('{n}', {id: item_id, type_id: type_id}, display);
 							}
 						});
 						
