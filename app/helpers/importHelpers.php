@@ -52,6 +52,7 @@
 	 */
 	function caProcessRefineryParents($ps_refinery_name, $ps_table, $pa_parents, $pa_source_data, $pa_item, $ps_delimiter, $pn_c, $o_log=null, $pa_options=null) {
 		global $g_ui_locale_id;
+		if (!is_array($pa_options)) { $pa_options = array(); }
 		
 		$vn_list_id = caGetOption('list_id', $pa_options, null);
 		$vb_hierarchy_mode = caGetOption('hierarchyMode', $pa_options, false);
@@ -137,6 +138,12 @@
 					$va_attributes['_preferred_labels'] = $vs_name;
 					break;
 				case 'ca_places':
+					if(!$vn_id) {	// get place hierarchy root
+						require_once(__CA_MODELS_DIR__."/ca_places.php");
+						$t_place = new ca_places();
+						$vn_id = $t_place->getHierarchyRootID($va_attributes['hierarchy_id']);
+						$va_attributes['parent_id'] = $vn_id;
+					}
 					$vn_id = DataMigrationUtils::getPlaceID($vs_name, $vn_id, $vs_type, $g_ui_locale_id, $va_attributes, $pa_options);
 					$va_attributes['preferred_labels']['name'] = $va_attributes['_preferred_labels'] = $vs_name;
 					break;
@@ -157,10 +164,22 @@
 					$va_attributes['preferred_labels']['name'] = $va_attributes['_preferred_labels'] = $vs_name;
 					break;
 				case 'ca_list_items':
+					if(!$vn_id) {	// get place hierarchy root
+						require_once(__CA_MODELS_DIR__."/ca_lists.php");
+						$t_list = new ca_lists();
+						$vn_id = $t_list->getRootItemIDForList($vn_list_id);
+						$va_attributes['parent_id'] = $vn_id;
+					}
 					$vn_id = DataMigrationUtils::getListItemID($vn_list_id, $vs_name, $vs_type, $g_ui_locale_id, $va_attributes, $pa_options);
 					$va_attributes['preferred_labels']['name_singular'] = $va_attributes['preferred_labels']['name_plural'] = $vs_name;
 					break;
 				case 'ca_storage_locations':
+					if(!$vn_id) {	// get storage location hierarchy root
+						require_once(__CA_MODELS_DIR__."/ca_storage_locations.php");
+						$t_loc = new ca_storage_locations();
+						$vn_id = $t_loc->getHierarchyRootID();
+						$va_attributes['parent_id'] = $vn_id;
+					}
 					$vn_id = DataMigrationUtils::getStorageLocationID($vs_name, $vn_id, $vs_type, $g_ui_locale_id, $va_attributes, $pa_options);
 					$va_attributes['preferred_labels']['name'] = $va_attributes['_preferred_labels'] = $vs_name;
 					break;
