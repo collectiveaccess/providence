@@ -322,8 +322,8 @@ class ca_relationship_types extends BundlableLabelableBaseModelWithAttributes {
 		$this->FIELDS['sub_type_right_id']['BOUNDS_CHOICE_LIST'] = $va_right_type_list;
 	}
 	# ------------------------------------------------------
-	protected function initLabelDefinitions() {
-		parent::initLabelDefinitions();
+	protected function initLabelDefinitions($pa_options=null) {
+		parent::initLabelDefinitions($pa_options);
 		$this->BUNDLES['hierarchy_navigation'] = array('type' => 'special', 'repeating' => false, 'label' => _t('Hierarchy navigation'));
 		$this->BUNDLES['hierarchy_location'] = array('type' => 'special', 'repeating' => false, 'label' => _t('Location in hierarchy'));
 	}
