@@ -893,6 +893,16 @@
 		}
 		# ------------------------------------------------------------------
 		/**
+		 * Returns default ca_list_items.item_id (aka "type_id") for this model
+		 *
+		 * @return int - item_id (aka "type_id") for default type
+		 */
+		public function getDefaultTypeID() {
+			$t_list = new ca_lists();
+			return $t_list->getDefaultItemID($this->getTypeListCode());
+		}
+		# ------------------------------------------------------------------
+		/**
 		 * Returns list of types for this table with locale-appropriate labels, keyed by type_id
 		 *
 		 * @param array $pa_options Array of options, passed as-is to ca_lists::getItemsForList() [the underlying implemenetation]
