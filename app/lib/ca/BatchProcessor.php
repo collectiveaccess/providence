@@ -702,14 +702,27 @@
 									$va_extracted_idnos_from_filename[] = $va_matches[1];
 								
 									if (in_array($vs_import_mode, array('TRY_TO_MATCH', 'ALWAYS_MATCH'))) {
-										if ($t_object->load(array('idno' => $va_matches[1], 'deleted' => 0))) {
-								
-											$va_notices[$vs_relative_directory.'/'.$vs_match_name.'_match'] = array(
-												'idno' => $t_object->get($t_object->getProperty('ID_NUMBERING_ID_FIELD')),
-												'label' => $t_object->getLabelForDisplay(),
-												'message' => _t('Matched media %1 from %2 to object using %2', $f, $vs_relative_directory, $vs_regex_name),
-												'status' => 'MATCHED'
-											);
+										if(!is_array($va_fields_to_match_on = $po_request->config->getList('batch_media_import_match_on')) || !sizeof($batch_media_import_match_on)) {
+											$batch_media_import_match_on = array('idno');
+										}
+										$va_values = array();
+										foreach($va_fields_to_match_on as $vs_fld) {
+											if (in_array($vs_fld, array('preferred_labels', 'nonpreferred_labels'))) {
+												$va_values[$vs_fld] = array($vs_fld => array('name' => $va_matches[1]));
+											} else {
+												$va_values[$vs_fld] = $va_matches[1];
+											}
+										}
+										
+										if ($vn_object_id = ca_objects::find($va_values, array('returnAs' => 'firstId', 'boolean' => 'OR'))) {
+											if ($t_object->load($vn_object_id)) {
+												$va_notices[$vs_relative_directory.'/'.$vs_match_name.'_match'] = array(
+													'idno' => $t_object->get($t_object->getProperty('ID_NUMBERING_ID_FIELD')),
+													'label' => $t_object->getLabelForDisplay(),
+													'message' => _t('Matched media %1 from %2 to object using %2', $f, $vs_relative_directory, $vs_regex_name),
+													'status' => 'MATCHED'
+												);
+											}
 											break(3);
 										}
 									}
