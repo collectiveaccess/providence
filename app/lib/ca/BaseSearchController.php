@@ -221,10 +221,11 @@
 					$this->view->setVar('show_type_id', $vn_show_type_id);
 					$vo_result->filterResult('ca_objects.type_id', $vn_show_type_id);
 				}
+		
  				if($vb_is_new_search || $vb_criteria_have_changed) {
 					$this->opo_result_context->setResultList($vo_result->getPrimaryKeyValues());
 					$this->opo_result_context->setParameter('availableVisualizationChecked', 0);
-					if ($ps_search) { $vn_page_num = 1; }
+					if ($vs_search) { $vn_page_num = 1; }
 				}
  				$this->view->setVar('num_hits', $vo_result->numHits());
  				$this->view->setVar('num_pages', $vn_num_pages = ceil($vo_result->numHits()/$vn_items_per_page));
