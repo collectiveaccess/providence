@@ -312,7 +312,7 @@
  			}
  			return false;
  		}
- 		# --------------------------------------------------------------------------------------------
+		# --------------------------------------------------------------------------------------------
 		/**
 		 * Find row(s) with fields having values matching specific values. 
 		 * Results can be returned as model instances, numeric ids or search results (when possible).
@@ -322,10 +322,9 @@
 		 * "boolean" option as "AND" and $pa_values set to array("idno" => "2012.001", "access" => 1).
 		 * You could find all rows with either the idno or the access values by setting "boolean" to "OR"
 		 *
-		 * Keys in the $pa_values parameters must be valid fields in the table which the model sub-class represents. You may also search on preferred and
-		 * non-preferred labels by specified keys and values for label table fields in "preferred_labels" and "nonpreferred_labels" sub-arrays. For example:
+		 * Keys in the $pa_values parameters must be valid fields in the table which the model sub-class represents, or valid attributes. For example:
 		 *
-		 * array("idno" => 2012.001", "access" => 1, "preferred_labels" => array("name" => "Luna Park at Night"))
+		 array("idno" => 2012.001", "access" => 1, "preferred_labels" => array("name" => "Luna Park at Night"))
 		 *
 		 * will find rows with the idno, access and preferred label values.
 		 *
@@ -334,7 +333,7 @@
 		 * using the SearchEngine. For full-text searches, searches on attributes, or searches that require transformations or complex boolean operations use
 		 * the SearchEngine.
 		 *
-		 * @param array $pa_values An array of values to match. Keys are field names. This must be an array with at least one key-value pair where the key is a valid field name for the model.
+		 * @param array $pa_values An array of values to match. Keys are field names, metadata element codes or preferred_labels and /or nonpreferred_labels. This must be an array with at least one key-value pair where the key is a valid field name for the model.
 		 * @param array $pa_options Options are:
 		 *		transaction = optional Transaction instance. If set then all database access is done within the context of the transaction
 		 *		returnAs = what to return; possible values are:
@@ -372,6 +371,7 @@
 		
 			$vs_table = get_called_class();
 			$t_instance = new $vs_table;
+			$vn_table_num = $t_instance->tableNum();
 			$vs_table_pk = $t_instance->primaryKey();
 			
 			$t_label = $t_instance->getLabelTableInstance();
@@ -381,8 +381,23 @@
 			
 			$vb_has_simple_fields = false;
 			foreach ($pa_values as $vs_field => $vm_value) {
-				if (!is_array($vm_value) && $vm_value) { $vb_has_simple_fields = true; break; }
+				if (!is_array($vm_value) && $t_instance->hasField($vs_field)) { $vb_has_simple_fields = true; break; }
 			}
+			
+			$vb_has_label_fields = false;
+			foreach ($pa_values as $vs_field => $vm_value) {
+				if (in_array($vs_field, array('preferred_labels', 'nonpreferred_labels')) && is_array($vm_value) && sizeof($vm_value)) { $vb_has_label_fields = true; break; }
+			}
+			
+			$vb_has_attributes = false;
+			$va_element_codes = $t_instance->getApplicableElementCodes(null, true, false);
+			foreach ($pa_values as $vs_field => $vm_value) {
+				if (!is_array($vm_value) && in_array($vs_field, $va_element_codes)) { $vb_has_attributes = true; break; }
+			}
+			
+			
+			$va_joins = array();
+			$va_sql_params = array();
 			
 			if ($vb_has_simple_fields) {				
 				//
@@ -410,66 +425,68 @@
 		
 			$va_sql_wheres = array();
 			if (
-				(!isset($pa_values['preferred_labels']) || !is_array($pa_values['preferred_labels']))
-				&&
-				(!isset($pa_values['nonpreferred_labels']) || !is_array($pa_values['nonpreferred_labels']))
-			
+				($vb_has_simple_fields && !$vb_has_attributes && !$vb_has_label_fields)
 			) {
 				return parent::find($pa_values, $pa_options);
 			}
 			
 			$va_label_sql = array();
-			if (isset($pa_values['preferred_labels']) && is_array($pa_values['preferred_labels'])) {
-				$va_sql_wheres[] = "({$vs_label_table}.is_preferred = 1)";
-				foreach ($pa_values['preferred_labels'] as $vs_field => $vm_value) {
-					if (!$t_label->hasField($vs_field)) {
-						return false;
-					}
-
-					if ($t_label->_getFieldTypeType($vs_field) == 0) {
-						if (!is_numeric($vm_value) && !is_null($vm_value)) {
-							$vm_value = intval($vm_value);
-						}
-					} else {
-						$vm_value = $t_label->quote($vs_field, is_null($vm_value) ? '' : $vm_value);
-					}
-
-					if (is_null($vm_value)) {
-						$va_sql_wheres[] = "({$vs_label_table}.{$vs_field} IS NULL)";
-					} else {
-						if ($vm_value === '') { continue; }
-						$va_sql_wheres[] = "({$vs_label_table}.{$vs_field} = {$vm_value})";
-					}
-				}
+			
+			if ($vb_has_label_fields) {
+				$va_joins[] = " INNER JOIN {$vs_label_table} ON {$vs_label_table}.{$vs_table_pk} = {$vs_table}.{$vs_table_pk} ";
 				
-				$va_label_sql[] = "(".join(" {$ps_label_boolean} ", $va_sql_wheres).")";
-				$va_sql_wheres = array();
-			}
-			if (isset($pa_values['nonpreferred_labels']) && is_array($pa_values['nonpreferred_labels'])) {
-				$va_sql_wheres[] = "({$vs_label_table}.is_preferred = 0)";
-				foreach ($pa_values['nonpreferred_labels'] as $vs_field => $vm_value) {
-					if (!$t_label->hasField($vs_field)) {
-						return false;
-					}
-
-					if ($t_label->_getFieldTypeType($vs_field) == 0) {
-						if (!is_numeric($vm_value) && !is_null($vm_value)) {
-							$vm_value = intval($vm_value);
+				if (isset($pa_values['preferred_labels']) && is_array($pa_values['preferred_labels'])) {
+					$va_sql_wheres[] = "({$vs_label_table}.is_preferred = 1)";
+					foreach ($pa_values['preferred_labels'] as $vs_field => $vm_value) {
+						if (!$t_label->hasField($vs_field)) {
+							return false;
 						}
-					} else {
-						$vm_value = $t_label->quote($vs_field, is_null($vm_value) ? '' : $vm_value);
-					}
 
-					if (is_null($vm_value)) {
-						$va_sql_wheres[] = "({$vs_label_table}.{$vs_field} IS NULL)";
-					} else {
-						if ($vm_value === '') { continue; }
-						$va_sql_wheres[] = "({$vs_label_table}.{$vs_field} = {$vm_value})";
+						if ($t_label->_getFieldTypeType($vs_field) == 0) {
+							if (!is_numeric($vm_value) && !is_null($vm_value)) {
+								$vm_value = intval($vm_value);
+							}
+						} else {
+							$vm_value = $t_label->quote($vs_field, is_null($vm_value) ? '' : $vm_value);
+						}
+
+						if (is_null($vm_value)) {
+							$va_sql_wheres[] = "({$vs_label_table}.{$vs_field} IS NULL)";
+						} else {
+							if ($vm_value === '') { continue; }
+							$va_sql_wheres[] = "({$vs_label_table}.{$vs_field} = {$vm_value})";
+						}
 					}
-				}
 				
-				$va_label_sql[] = "(".join(" {$ps_label_boolean} ", $va_sql_wheres).")";
-				$va_sql_wheres = array();
+					$va_label_sql[] = "(".join(" {$ps_label_boolean} ", $va_sql_wheres).")";
+					$va_sql_wheres = array();
+				}
+				if (isset($pa_values['nonpreferred_labels']) && is_array($pa_values['nonpreferred_labels'])) {
+					$va_sql_wheres[] = "({$vs_label_table}.is_preferred = 0)";
+					foreach ($pa_values['nonpreferred_labels'] as $vs_field => $vm_value) {
+						if (!$t_label->hasField($vs_field)) {
+							return false;
+						}
+
+						if ($t_label->_getFieldTypeType($vs_field) == 0) {
+							if (!is_numeric($vm_value) && !is_null($vm_value)) {
+								$vm_value = intval($vm_value);
+							}
+						} else {
+							$vm_value = $t_label->quote($vs_field, is_null($vm_value) ? '' : $vm_value);
+						}
+
+						if (is_null($vm_value)) {
+							$va_sql_wheres[] = "({$vs_label_table}.{$vs_field} IS NULL)";
+						} else {
+							if ($vm_value === '') { continue; }
+							$va_sql_wheres[] = "({$vs_label_table}.{$vs_field} = {$vm_value})";
+						}
+					}
+				
+					$va_label_sql[] = "(".join(" {$ps_label_boolean} ", $va_sql_wheres).")";
+					$va_sql_wheres = array();
+				}
 			}
 			
 			if ($vb_has_simple_fields) {
@@ -477,29 +494,74 @@
 					if (is_array($vm_value)) { continue; }
 
 					if (!$t_instance->hasField($vs_field)) {
-						return false;
+						continue;
 					}
 
 					if ($t_instance->_getFieldTypeType($vs_field) == 0) {
 						if (!is_numeric($vm_value) && !is_null($vm_value)) {
 							$vm_value = intval($vm_value);
 						}
-					} else {
-						$vm_value = $t_instance->quote($vs_field, is_null($vm_value) ? '' : $vm_value);
 					}
 
 					if (is_null($vm_value)) {
 						$va_label_sql[] = "({$vs_table}.{$vs_field} IS NULL)";
 					} else {
 						if ($vm_value === '') { continue; }
-						$va_label_sql[] = "({$vs_table}.{$vs_field} = {$vm_value})";
+						$va_label_sql[] = "({$vs_table}.{$vs_field} = ?)";
+						$va_sql_params[] = $vm_value;
 					}
 				}
 			}
+			
+			if ($vb_has_attributes) {
+				$va_joins[] = " INNER JOIN ca_attributes ON ca_attributes.row_id = {$vs_table}.{$vs_table_pk} AND ca_attributes.table_num = {$vn_table_num} ";
+				$va_joins[] = " INNER JOIN ca_attribute_values ON ca_attribute_values.attribute_id = ca_attributes.attribute_id ";
 		
+				foreach($pa_values as $vs_field => $vm_value) {
+					if (($vn_element_id = array_search($vs_field, $va_element_codes)) !== false) {
+						
+						$vs_q = " (ca_attribute_values.element_id = {$vn_element_id}) AND  ";
+						switch($vn_datatype = $t_instance->_getElementDatatype($vs_field)) {
+							case 0:	// continue
+							case 15: // media
+							case 16: // file
+								// SKIP
+								continue(2);
+								break;
+							case 2:	// date
+								if(is_array($va_date = caDateToHistoricTimestamps($vm_value))) {
+									$vs_q .= "((ca_attribute_values.value_decimal1 BETWEEN ? AND ?) OR (ca_attribute_values.value_decimal2 BETWEEN ? AND ?))";
+									array_push($va_sql_params, $va_date['start'], $va_date['end'], $va_date['start'], $va_date['end']);
+								} else {
+									continue(2);
+								}
+								break;
+							case 3:	// list
+								$vn_item_id = is_numeric($vm_value) ? (int)$vm_value : (int)caGetListItemID($vm_value);
+								
+								$vs_q .= "(ca_attribute_values.item_id = ?)";
+								$va_sql_params[] = $vn_item_id;
+								break;
+							default:
+								if (!($vs_fld = Attribute::getSortFieldForDatatype($vn_datatype))) { $vs_fld = 'value_longtext1'; }
+								
+								$vs_q .= "(ca_attribute_values.{$vs_fld} = ?)";
+								$va_sql_params[] = (string)$vm_value;
+								break;
+						}
+						
+						
+						$va_label_sql[] = "({$vs_q})";
+						
+					}
+				}
+			}
+			
+			if (!sizeof($va_label_sql)) { return null; }
+			
 			$vs_deleted_sql = ($t_instance->hasField('deleted')) ? "({$vs_table}.deleted = 0) AND " : '';
-			$vs_sql = "SELECT * FROM {$vs_label_table}";
-			$vs_sql .= " INNER JOIN {$vs_table} ON {$vs_label_table}.{$vs_table_pk} = {$vs_table}.{$vs_table_pk} ";
+			$vs_sql = "SELECT * FROM {$vs_table}";
+			$vs_sql .= join("\n", $va_joins);
 			$vs_sql .=" WHERE {$vs_deleted_sql} ".join(" {$ps_boolean} ", $va_label_sql);
 
 			if (isset($pa_options['transaction']) && ($pa_options['transaction'] instanceof Transaction)) {
@@ -510,7 +572,7 @@
 		
 			$vn_limit = (isset($pa_options['limit']) && ((int)$pa_options['limit'] > 0)) ? (int)$pa_options['limit'] : null;
 		
-			$qr_res = $o_db->query($vs_sql);
+			$qr_res = $o_db->query($vs_sql, $va_sql_params);
 			$vn_c = 0;
 		
 			$vs_pk = $t_instance->primaryKey();

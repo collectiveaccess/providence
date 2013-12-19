@@ -567,7 +567,7 @@ class ca_lists extends BundlableLabelableBaseModelWithAttributes {
 		$va_items = $pa_items[$pn_root_id];
 		if (!is_array($va_items)) { return; }
 		if (isset($pa_options['extractValuesByUserLocale']) && $pa_options['extractValuesByUserLocale']) {
-			ksort($va_items);
+			uksort($va_items, "strnatcasecmp");
 			foreach($va_items as $vs_key => $va_items_by_item_id) {
 				foreach($va_items_by_item_id as $vn_item_id => $va_item_level) {
 					// output this item

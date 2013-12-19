@@ -436,7 +436,7 @@ if (that.uiStyle == 'horizontal') {
 		}
 	}
 							// Pass item_id to caller if required
-							if (is_init && that.selectOnLoad && that.onSelection && is_init && item['item_id'] == selected_item_id) {
+							if (is_init && that.selectOnLoad && that.onSelection && item['item_id'] == selected_item_id) {
 								var formattedDisplayString = that.currentSelectionDisplayFormat.replace('%1', item.name);
 								that.onSelection(item['item_id'], item.parent_id, item.name, formattedDisplayString, item.type_id);
 							}
