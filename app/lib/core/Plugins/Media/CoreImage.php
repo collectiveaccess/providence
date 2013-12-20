@@ -917,7 +917,7 @@ class WLPlugMediaCoreImage Extends BaseMediaPlugin Implements IWLPlugMedia {
 			foreach($pa_handle['ops'] as $va_op) {
 				switch($va_op['op']) {
 					case 'annotation':
-						// TODO: watermarking and annotation is not currrently supported in this plugin
+						// TODO: annotation is not currrently supported in this plugin
 						
 						//$vs_op = '-gravity '.$va_op['position'].' -fill '.str_replace('#', '\\#', $va_op['color']).' -pointsize '.$va_op['size'].' -draw "text '.$va_op['inset'].','.$va_op['inset'].' \''.$va_op['text'].'\'"';
 						
@@ -927,10 +927,15 @@ class WLPlugMediaCoreImage Extends BaseMediaPlugin Implements IWLPlugMedia {
 						//$va_ops['convert'][] = $vs_op;
 						break;
 					case 'watermark':
-						// TODO: watermarking and annotation is not currrently supported in this plugin
-						
-						//$vs_op = "-dissolve ".($va_op['opacity'] * 100)." -gravity ".$va_op['position']." ".$va_op['watermark_image']; //"  -geometry ".$va_op['watermark_width']."x".$va_op['watermark_height']; [Seems to be interpreted as scaling the image being composited on as of at least v6.5.9; so we don't scale watermarks in CoreImage... we just use the native size]
-						//$va_ops['composite'][] = $vs_op;
+                        // TODO: watermark position is not currently handled in this plugin
+
+						if (is_array($va_ops) && sizeof($va_ops)) {
+							array_unshift($va_ops, "load watermark ".caEscapeShellArg($va_op['watermark_image']));
+						}
+						$va_ops[] = "filter watermark CIStretchCrop size=".$va_op['watermark_width'].",".$va_op['watermark_height'].":cropAmount=0:centerStretchAmount=0";
+						$va_ops[] = "filter watermark CIColorMatrix RVector=1,0,0,0:GVector=0,1,0,0:BVector=0,0,1,0:AVector=0,0,0,".$va_op['opacity'].":BiasVector=0,0,0,0";
+						$va_ops[] = "filter image CISoftLightBlendMode backgroundImage=watermark";
+
 						break;
 					case 'size':
 						if ($va_op['width'] < 1) { break; }
