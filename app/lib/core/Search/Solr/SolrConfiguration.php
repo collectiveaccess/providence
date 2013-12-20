@@ -365,7 +365,6 @@ class SolrConfiguration {
 								$vs_type = (isset($va_field_options['type']) && $va_field_options['type']) ? $va_field_options['type'] : 'text';
 							}
 							
-//							$vs_field_schema.=SolrConfiguration::tabs(2).'<field name="'.$vs_table.'.'.$vs_field_name.'" type="'.$vs_type;
 							$vs_field_schema.=SolrConfiguration::tabs(2).'<field name="'.$vs_table.'.'.SolrConfiguration::adjustFieldstoIndex($vs_field_name).'" type="'.$vs_type;
 
 							$vs_field_schema.='" indexed="true" ';
