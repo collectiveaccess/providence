@@ -656,8 +656,10 @@ class WLPlugSearchEngineSqlSearch extends BaseSearchPlugin implements IWLPlugSea
 							
 							
 							$va_temp_tables = array();
+							$vn_w = 0;
 							foreach($va_words as $vs_word) {
-								$vs_temp_table = 'ca_sql_search_phrase_'.md5($pn_subject_tablenum."/".$vs_word);
+								$vn_w++;
+								$vs_temp_table = 'ca_sql_search_phrase_'.md5($pn_subject_tablenum."/".$vs_word."/".$vn_w);
 								$this->_createTempTable($vs_temp_table);
 								$vs_sql = "
 									INSERT INTO {$vs_temp_table}
