@@ -232,6 +232,10 @@
 					'code' => '_csv'
 				),
 				array(
+					'name' => _t('Spreadsheet with media icons (XLSX)'),
+					'code' => '_xlsx'
+				),
+				array(
 					'name' => _t('PDF (Chart)'),
 					'code' => '_pdf'
 				),
@@ -667,7 +671,14 @@
 						$this->postError(3100, _t("Could not generate PDF"),"BaseEditorController->PrintSummary()");
 					}
 					return;
-					break;														
+					break;
+				case '_xlsx':
+					require_once(__CA_LIB_DIR__."/core/Parsers/PHPExcel/PHPExcel.php");
+					require_once(__CA_LIB_DIR__."/core/Parsers/PHPExcel/PHPExcel/Writer/Excel2007.php");
+					$vs_content = $this->render('Results/'.$this->ops_tablename.'_xlsx_results.php');
+					$vb_printed_properly = true;
+					return;
+					break;
 				case '_csv':
 					$vs_delimiter = ",";
 					$vs_output_file_name = mb_substr(preg_replace("/[^A-Za-z0-9\-]+/", '_', $ps_output_filename.'_csv'), 0, 30);
