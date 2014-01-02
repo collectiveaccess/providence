@@ -1061,6 +1061,17 @@
 		}
 		# ------------------------------------------------------------------
 		// get HTML form element bundle for metadata element
+		public function getAttributeDocumentationUrl($pm_element_code_or_id) {
+			if (!($t_element = $this->_getElementInstance($pm_element_code_or_id))) {
+				return false;
+			}
+			$va_documentation_url = $t_element->get("documentation_url");
+
+			return (isset($va_documentation_url) && $va_documentation_url) ? $va_documentation_url : false;
+		}
+
+		# ------------------------------------------------------------------
+		// get HTML form element bundle for metadata element
 		public function getAttributeLabelAndDescription($pm_element_code_or_id) {
 			if (isset(BaseModelWithAttributes::$s_element_label_cache[$pm_element_code_or_id])) {
 				$va_cached_labels = caExtractValuesByUserLocale(BaseModelWithAttributes::$s_element_label_cache);
