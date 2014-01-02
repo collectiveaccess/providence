@@ -1439,8 +1439,14 @@ require_once(__CA_LIB_DIR__."/ca/ApplicationPluginManager.php");
 
 			$vs_buf .= "</script>\n";
 		}
-		
-		return $vs_buf;
+
+        $o_app_plugin_manager = new ApplicationPluginManager();
+        $va_hookAppend = $o_app_plugin_manager->hookAppendToEditorInspector(array("t_item"=>$t_item));
+        if (is_string($va_hookAppend["caEditorInspectorAppend"])) {
+            $vs_buf .= $va_hookAppend["caEditorInspectorAppend"];
+        }
+
+        return $vs_buf;
 	}
 	# ------------------------------------------------------------------------------------------------
 	/**

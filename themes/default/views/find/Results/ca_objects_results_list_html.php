@@ -84,8 +84,8 @@
 		
 					
 					foreach($va_display_list as $vn_placement_id => $va_display_item) {
-						print "<td>".$t_display->getDisplayValue($vo_result, $vn_placement_id, array('request' => $this->request))."</td>";
-					}
+                        print "<td><span class=\"read-more\">".$t_display->getDisplayValue($vo_result, $vn_placement_id, array('request' => $this->request))."</span></td>";
+                    }
 ?>	
 				</tr>
 <?php
@@ -96,3 +96,13 @@
 		</tbody></table>
 	</form><!--end caFindResultsForm -->
 </div><!--end scrollingResults -->
+<script type="text/javascript">
+$('td span.read-more').expander({
+    slicePoint: 150,
+    widow: 2,
+    expandEffect: 'show',
+    userCollapseText: '[^]',
+    expandText: '[…]',
+    expandPrefix: ''
+});
+</script>
