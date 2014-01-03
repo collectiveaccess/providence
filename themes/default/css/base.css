@@ -812,7 +812,6 @@ div.notification-info-box {
     background-color: #eeeeee;
     padding: 5px;
     margin-bottom: 10px;
-    width:100%;
     clear:both;
 }
 
@@ -826,7 +825,6 @@ div.notification-error-box {
     background-color: #eeeeee;
     padding: 5px;
     margin-bottom: 10px;
-    width:100%;
 }
 
 * html div.notification-error-box {  /* IE6 fix */
@@ -839,7 +837,6 @@ div.notification-warning-box {
     background-color: #eeeeee;
     padding: 5px;
     margin-bottom: 10px;
-    width:100%;
 }
 
 * html div.notification-warning-box {  /* IE6 fix */
