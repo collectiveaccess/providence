@@ -3038,7 +3038,7 @@ $ca_relationship_lookup_parse_cache = array();
 			);
 		}
 		
-		if($vb_include_inline_add_message) {
+		if($vb_include_inline_add_message && $ps_inline_create_message) {
 			$va_initial_values[] = 
 				array(
 					'label' => $ps_inline_create_message,
@@ -3046,7 +3046,7 @@ $ca_relationship_lookup_parse_cache = array();
 					$vs_rel_pk => 0,
 					'_query' => $ps_inline_create_query
 				);
-		} elseif ($vb_include_inline_add_does_not_exist_message) {
+		} elseif ($vb_include_inline_add_does_not_exist_message && $ps_inline_create_does_not_exist_message) {
 			$va_initial_values[] = 
 				array(
 					'label' => $ps_inline_create_does_not_exist_message,
