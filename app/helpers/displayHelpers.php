@@ -2730,6 +2730,7 @@ require_once(__CA_LIB_DIR__."/ca/ApplicationPluginManager.php");
 	 *		limit = maximum number of items to return; if omitted all items are returned
 	 *		inlineCreateMessage = 
 	 *		inlineCreateQuery =
+	 *		inlineCreateMessageDoesNotExist =
 	 *		template = 
 	 *		primaryIDs = row_ids for primary rows in related table, keyed by table name; when resolving ambiguous relationships the row_ids will be excluded from consideration. This option is rarely used and exists primarily to take care of a single
 	 *						edge case: you are processing a template relative to a self-relationship such as ca_entities_x_entities that includes references to the subject table (ca_entities, in the case of ca_entities_x_entities). There are
@@ -2760,7 +2761,9 @@ $ca_relationship_lookup_parse_cache = array();
 		
 		$pn_limit = (isset($pa_options['limit']) && ((int)$pa_options['limit'] > 0)) ? (int)$pa_options['limit'] : null;
 		$ps_inline_create_message = (isset($pa_options['inlineCreateMessage'])) ? (string)$pa_options['inlineCreateMessage'] : null;
+		$ps_inline_create_does_not_exist_message = (isset($pa_options['inlineCreateMessageDoesNotExist'])) ? (string)$pa_options['inlineCreateMessageDoesNotExist'] : null;
 		$ps_inline_create_query = (isset($pa_options['inlineCreateQuery'])) ? (string)$pa_options['inlineCreateQuery'] : null;
+		$ps_inline_create_query_lc = mb_strtolower($ps_inline_create_query);
 		
 		$ps_empty_result_message = (isset($pa_options['emptyResultMessage'])) ? (string)$pa_options['emptyResultMessage'] : null;
 		$ps_empty_result_query = (isset($pa_options['emptyResultQuery'])) ? (string)$pa_options['emptyResultQuery'] : null;
@@ -2823,12 +2826,13 @@ $ca_relationship_lookup_parse_cache = array();
 		$vs_type_id_fld = method_exists($t_rel, 'getTypeFieldName') ? $t_rel->getTypeFieldName() : null;
 		
 		$vn_c = 0;
-		$vb_include_inline_add_message = $vb_include_empty_result_message = false;
-	
+		$vb_include_inline_add_does_not_exist_message = $vb_include_empty_result_message = false;
+		$vb_include_inline_add_message = true;
+		
 		if (is_object($qr_rel_items)) {
 			if (!$qr_rel_items->numHits()) {
 				if ($ps_inline_create_message) { 
-					$vb_include_inline_add_message = true;	
+					$vb_include_inline_add_does_not_exist_message = true;	
 				} else {
 					if ($ps_empty_result_message) { 
 						$vb_include_empty_result_message = true;	
@@ -2907,6 +2911,7 @@ $ca_relationship_lookup_parse_cache = array();
 					if ($vs_template) {
 						$va_item['_display'] = caProcessTemplateForIDs($vs_template, $vs_table, array($qr_rel_items->get("{$vs_table}.{$vs_pk}")), array('returnAsArray' => false, 'returnAsLink' => true, 'delimiter' => caGetOption('delimiter', $pa_options, $vs_display_delimiter), 'resolveLinksUsing' => $vs_rel_table, 'primaryIDs' => $va_primary_ids));
 					}
+					$va_item['_l'] = mb_strtolower($qr_rel_items->get("{$vs_table}.preferred_labels"));
 					
 					$va_items[$vn_id] = $va_item;
 					
@@ -3017,6 +3022,14 @@ $ca_relationship_lookup_parse_cache = array();
 				$va_item['label'] = trim(strip_tags($vs_label));
 				
 			}
+			
+			$vs_display_lc = mb_strtolower($vs_display);
+			if (($vs_display_lc == $ps_inline_create_query_lc) || (isset($va_item['_l']) && ($va_item['_l'] == $ps_inline_create_query_lc))) {
+				$vb_include_inline_add_message = false;
+			}
+			
+			unset($va_item['_l']);
+			
 			$va_initial_values[$va_item['relation_id'] ? (int)$va_item['relation_id'] : $va_item[$vs_rel_pk]] = array_merge(
 				$va_item,
 				array(
@@ -3026,26 +3039,32 @@ $ca_relationship_lookup_parse_cache = array();
 		}
 		
 		if($vb_include_inline_add_message) {
-			$va_initial_values[0] = 
+			$va_initial_values[] = 
 				array(
 					'label' => $ps_inline_create_message,
 					'id' => 0,
 					$vs_rel_pk => 0,
 					'_query' => $ps_inline_create_query
 				);
-		} else {
-			if ($vb_include_empty_result_message) {
-				$va_initial_values[0] = 
-					array(
-						'label' => $ps_empty_result_message,
-						'id' => -1,
-						$vs_rel_pk => -1,
-						'_query' => $ps_empty_result_query
-					);
-			}
+		} elseif ($vb_include_inline_add_does_not_exist_message) {
+			$va_initial_values[] = 
+				array(
+					'label' => $ps_inline_create_does_not_exist_message,
+					'id' => 0,
+					$vs_rel_pk => 0,
+					'_query' => $ps_inline_create_query
+				);
+		} elseif ($vb_include_empty_result_message) {
+			$va_initial_values[] = 
+				array(
+					'label' => $ps_empty_result_message,
+					'id' => -1,
+					$vs_rel_pk => -1,
+					'_query' => $ps_empty_result_query
+				);
 		}
 		
-		return $va_initial_values;		
+		return array_values($va_initial_values);		
 	}
 	# ------------------------------------------------------------------------------------------------
 	/**

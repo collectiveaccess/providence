@@ -4337,6 +4337,21 @@ div.jGrowl div.jGrowl-closer {
 .ui-progressbar .ui-progressbar-value {margin: -1px; height:100%; }
 
 /* Relationship display */
+
+li.quickaddMenuItem {
+	background-color: #eee;
+	border-top: 2px solid #aaa;
+	margin-top: 15px;
+}
+
+a.quickaddMenuItem {
+	font-style: italic;
+	-moz-border-radius: 0px; 
+	-webkit-border-radius: 0px; 
+	-khtml-border-radius: 0px; 
+	border-radius: 0px;
+}
+
 div.roundedRel {
     font-size: 10px;
     font-weight: normal;
