@@ -1014,7 +1014,7 @@ class ca_lists extends BundlableLabelableBaseModelWithAttributes {
 	 * If no list is specified the currently loaded list is used.
 	 *
 	 * @param mixed $pm_list_name_or_id List code or list_id of list to return default item_id for. If omitted the currently loaded list will be used.
-	 * @return int The item_id of the default element or null if no list was specified or loaded, or if no default is set for the list in question.
+	 * @return int The item_id of the default element or null if no list was specified or loaded. If no default is set for the list in question the first item found is returned.
 	 */
 	public function getDefaultItemID($pm_list_name_or_id=null) {
 		if($pm_list_name_or_id) {
@@ -1031,7 +1031,7 @@ class ca_lists extends BundlableLabelableBaseModelWithAttributes {
 			return $t_list_item->getPrimaryKey();
 		}
 		
-		return null;
+		return array_shift($this->getItemsForList($vn_list_id, array('idsOnly' => true)));
 	}
 	# ------------------------------------------------------
 	/**
