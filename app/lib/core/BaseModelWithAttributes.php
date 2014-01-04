@@ -1681,12 +1681,8 @@
 				$vb_we_set_transaction = true;
 			}
 
-			$va_restrictToAttributesByCodes = array();
-			$va_restrictToAttributesByIds = array();
-			if (is_array($pa_options)) {
-				if ($pa_options['restrictToAttributesByCodes']) { $va_restrictToAttributesByCodes = $pa_options['restrictToAttributesByCodes']; }
-				if ($pa_options['restrictToAttributesByIds']) { $va_restrictToAttributesByIds = $pa_options['restrictToAttributesByIds']; }
-			}
+			$va_restrictToAttributesByCodes = caGetOption('restrictToAttributesByCodes', $pa_options, null);
+			$va_restrictToAttributesByIds = caGetOption('restrictToAttributesByIds', $pa_options, null);
 
 			if (!($t_dupe = $this->_DATAMODEL->getInstanceByTableNum($this->tableNum()))) { return null; }
 			$t_dupe->purify($this->purify());
