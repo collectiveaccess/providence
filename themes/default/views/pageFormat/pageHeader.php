@@ -43,7 +43,13 @@
 
 		<title><?php print $this->appconfig->get("window_title").($vs_window_title ? " : {$vs_window_title}" : ''); ?></title>
 		<link rel="stylesheet" href="<?php print $this->request->getThemeUrlPath(); ?>/css/base.css" type="text/css" media="screen" />
+		<?php if (file_exists($this->request->getThemeDirectoryPath().'/css/local/base.css')) : ?>
+		<link rel="stylesheet" href="<?php print $this->request->getThemeUrlPath(); ?>/css/local/base.css" type="text/css" media="screen" />
+		<?php endif; ?>
 		<link rel="stylesheet" href="<?php print $this->request->getThemeUrlPath(); ?>/css/sets.css" type="text/css" media="screen" />
+		<?php if (file_exists($this->request->getThemeDirectoryPath().'/css/local/sets.css')) : ?>
+			<link rel="stylesheet" href="<?php print $this->request->getThemeUrlPath(); ?>/css/local/sets.css" type="text/css" media="screen" />
+		<?php endif; ?>
 
 		<script type="text/javascript">window.caBasePath = '<?php print $this->request->getBaseUrlPath(); ?>';</script>
 		<!--[if (!IE)|(gte IE 8)]><!-->
