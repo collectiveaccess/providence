@@ -40,7 +40,6 @@ require_once(__CA_LIB_DIR__.'/core/Parsers/ZipFile.php');
 require_once(__CA_LIB_DIR__.'/core/Logging/Eventlog.php');
 require_once(__CA_LIB_DIR__.'/core/Utils/Encoding.php');
 
-
 # ----------------------------------------------------------------------
 # String localization functions (getText)
 # ----------------------------------------------------------------------
@@ -1884,6 +1883,15 @@ function caFileIsIncludable($ps_file) {
 	  }
 	  
 	  return null;
+	}
+	# ----------------------------------------
+	/**
+	 *
+	 */
+	function caConvertCurrencyValue($ps_value, $ps_to) {
+		require_once(__CA_LIB_DIR__."/core/Plugins/CurrencyConversion/EuroBank.php");
+		
+		return WLPlugCurrencyConversionEuroBank::convert($ps_value, $ps_to);
 	}
 	# ----------------------------------------
 ?>
