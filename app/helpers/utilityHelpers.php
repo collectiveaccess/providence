@@ -1886,12 +1886,40 @@ function caFileIsIncludable($ps_file) {
 	}
 	# ----------------------------------------
 	/**
+	 * Convert currency value to another currency.
 	 *
+	 * @param $ps_value string Currency value with specifier (Ex. $500, USD 500, ¥1200, CAD 750)
+	 * @param $ps_to string Specifier of currency to convert value to (Ex. USD, CAD, EUR)
+	 * @param $pa_options array Options are:
+	 *		numericValue = return floating point numeric value only, without currency specifier. Default is false.
+	 *
+	 * @return string Converted value with currency specifier, unless numericValue option is set. Returns null if value could not be converted.
 	 */
-	function caConvertCurrencyValue($ps_value, $ps_to) {
+	function caConvertCurrencyValue($ps_value, $ps_to, $pa_options=null) {
 		require_once(__CA_LIB_DIR__."/core/Plugins/CurrencyConversion/EuroBank.php");
 		
-		return WLPlugCurrencyConversionEuroBank::convert($ps_value, $ps_to);
+		try {
+			return WLPlugCurrencyConversionEuroBank::convert($ps_value, $ps_to, $pa_options);
+		} catch (Exception $e) {
+			return null;
+		}
+	}
+	# ----------------------------------------
+	/**
+	 * Returns list of currencies for which conversion can be done.
+	 *
+	 * @return array List of three character currency codes, or null if conversion is not available.
+	 */
+	function caAvailableCurrenciesForConversion() {
+		require_once(__CA_LIB_DIR__."/core/Plugins/CurrencyConversion/EuroBank.php");
+		
+		try {
+			$va_currency_list = WLPlugCurrencyConversionEuroBank::getCurrencyList();
+			sort($va_currency_list);
+			return $va_currency_list;
+		} catch (Exception $e) {
+			return null;
+		}
 	}
 	# ----------------------------------------
 ?>

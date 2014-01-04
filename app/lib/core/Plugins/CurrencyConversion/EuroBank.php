@@ -93,7 +93,7 @@
 			
 			$vn_converted_value = $vn_value_in_euros * $va_currency_data[$ps_to];
 			
-			if (caGetOption($pa_options, 'numericValue', false)) {
+			if (caGetOption('numericValue', $pa_options, false)) {
 				return (float)sprintf("%01.2f", $vn_converted_value);
 			}
 			
