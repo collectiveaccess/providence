@@ -39,6 +39,7 @@ require_once(__CA_APP_DIR__.'/models/ca_user_roles.php');
 include_once(__CA_APP_DIR__."/helpers/utilityHelpers.php");
 require_once(__CA_APP_DIR__.'/models/ca_user_groups.php');
 require_once(__CA_APP_DIR__.'/models/ca_locales.php');
+require_once(__CA_LIB_DIR__.'/core/Zend/Currency.php');
 
 
 BaseModel::$s_ca_models_definitions['ca_users'] = array(
@@ -1411,6 +1412,13 @@ class ca_users extends BaseModel {
 					}
 					return $va_defaults;
 					break;
+				case 'FT_TEXT':
+					if ($va_pref_info['displayType'] == 'DT_CURRENCIES') {
+						// this respects the global UI locale which is set using Zend_Locale
+						$o_currency = new Zend_Currency();
+						return ($vs_currency_specifier = $o_currency->getShortName()) ? $vs_currency_specifier : "CAD";
+					}
+					break;
 				# ---------------------------------
 				default:
 					return $va_pref_info["default"] ? $va_pref_info["default"] : null;
@@ -1577,6 +1585,14 @@ class ca_users extends BaseModel {
 					break;
 				# ---------------------------------
 				case 'FT_TEXT':
+					if ($va_pref_info['displayType'] == 'DT_CURRENCIES') {
+						if (!is_array($va_currencies = caAvailableCurrenciesForConversion())) {
+							return false;
+						}
+						if (!in_array($ps_value, $va_currencies)) {
+							return false;
+						}	
+					}
 					if (isset($va_pref_info["length"]) && is_array($va_pref_info["length"])) { 
 						# make sure value within length bounds
 						
@@ -1917,6 +1933,10 @@ class ca_users extends BaseModel {
 						
 						$vs_output .="</script>\n";
 					}
+					break;
+				# ---------------------------------
+				case 'DT_CURRENCIES':
+					$vs_output .= caHTMLSelect("pref_{$ps_pref}", caAvailableCurrenciesForConversion(), array('id' => "pref_{$ps_pref}"), array('value' => $vs_current_value));
 					break;
 				# ---------------------------------
 				case 'DT_RADIO_BUTTONS':

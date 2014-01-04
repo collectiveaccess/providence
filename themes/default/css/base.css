@@ -1302,6 +1302,19 @@ table.listtable tbody tr.odd td {
     background-color:#f5f5f5;
 }
 
+/* table footer */
+table.listtable tfoot td {
+    padding: 4px;
+    background-color: #e5e5e5;
+    vertical-align: top;
+}
+
+td.listtableTotals {
+    vertical-align: top;
+	font-weight: bold;
+	text-align: right;
+}
+
 /* misc */
 
 div.control-box {

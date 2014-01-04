@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2010-2013 Whirl-i-Gig
+ * Copyright 2010-2014 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -961,24 +961,58 @@ class ca_bundle_displays extends BundlableLabelableBaseModelWithAttributes {
 				continue;	
 			}
 			
-			if ($va_all_elements[$vn_element_id]['datatype'] == 3) {	// list
-				$va_even_more_settings = array(
-					'sense' => array(
-						'formatType' => FT_TEXT,
-						'displayType' => DT_SELECT,
-						'width' => 20, 'height' => 1,
-						'takesLocale' => false,
-						'default' => 'singular',
-						'options' => array(
-							_t('Singular') => 'singular',
-							_t('Plural') => 'plural'
-						),
-						'label' => _t('Sense'),
-						'description' => _t('Determines if value used is singular or plural version.')
-					)		
-				);
-			} else {
-				$va_even_more_settings = array();
+			switch($va_all_elements[$vn_element_id]['datatype']) {
+				case 3:	// list
+					$va_even_more_settings = array(
+						'sense' => array(
+							'formatType' => FT_TEXT,
+							'displayType' => DT_SELECT,
+							'width' => 20, 'height' => 1,
+							'takesLocale' => false,
+							'default' => 'singular',
+							'options' => array(
+								_t('Singular') => 'singular',
+								_t('Plural') => 'plural'
+							),
+							'label' => _t('Sense'),
+							'description' => _t('Determines if value used is singular or plural version.')
+						)		
+					);
+					break;
+				case 0:	// container (allows sub-elements to be summarized)
+				case 6: // Currency
+				case 8: // Length
+				case 9:	// Weight
+				case 10: // Timecode
+				case 11: // Integer
+				case 12: // Numeric (decimal)
+					$va_even_more_settings = array(
+						'bottom_line' => array(
+							'formatType' => FT_TEXT,
+							'displayType' => DT_FIELD,
+							'width' => 35, 'height' => 5,
+							'takesLocale' => false,
+							'default' => '',
+							'label' => _t('Bottom line format'),
+							'description' => _t('Template to format aggregate data for display under this column. The template can include these aggregate data tags: ^PAGEAVG, ^AVG, ^PAGESUM, ^SUM, ^PAGEMin, ^MIN, ^PAGEMAX, ^MAX. For containers follow the tag with the element code of the subelement to aggregate. Ex. ^SUM:dimensions_width')
+						)		
+					);
+					
+					if ($va_all_elements[$vn_element_id]['datatype'] == 6) {
+						$va_even_more_settings['display_currency_conversion'] = array(
+							'formatType' => FT_NUMBER,
+							'displayType' => DT_CHECKBOXES,
+							'width' => 10, 'height' => 1,
+							'takesLocale' => false,
+							'default' => '0',
+							'label' => _t('Display currency conversion?'),
+							'description' => _t('Check this option if you want your currency values to be displayed in both the specified and local currency.')
+						);
+					}
+					break;
+				default:
+					$va_even_more_settings = array();
+					break;
 			}
 			
 			$vs_bundle = $vs_table.'.'.$vs_element_code;
@@ -1624,6 +1658,9 @@ class ca_bundle_displays extends BundlableLabelableBaseModelWithAttributes {
 		}
 		
 		if (!is_array($pa_options)) { $pa_options = array(); }
+		
+		$o_request = caGetOption('request', $pa_options, null);
+		
 		if (!isset($pa_options['convertCodesToDisplayText'])) { $pa_options['convertCodesToDisplayText'] = true; }
 		if (!isset($pa_options['delimiter'])) { $pa_options['delimiter'] = ";\n\n"; }
 		if (!isset($pa_options['forReport'])) { $pa_options['forReport'] = false; }
@@ -1638,6 +1675,9 @@ class ca_bundle_displays extends BundlableLabelableBaseModelWithAttributes {
 		$pa_options['returnURL'] = (isset($va_placement['settings']['display_mode']) && ($va_placement['settings']['display_mode'] == 'url'))  ? true : false;
 		$pa_options['dateFormat'] = (isset($va_placement['settings']['dateFormat']) && ($va_placement['settings']['dateFormat'])) ? $va_placement['settings']['dateFormat'] : $pa_options['dateFormat'];
 		
+		if(caGetOption('display_currency_conversion', $va_placement['settings'], false) && $o_request && $o_request->isLoggedIn()) {
+			$pa_options['displayCurrencyConversion'] = $o_request->user->getPreference('currency');
+		}
 		
 		$pa_options['hierarchicalDelimiter'] = '';
 		

@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2009-2012 Whirl-i-Gig
+ * Copyright 2009-2014 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -120,6 +120,7 @@
 	class WeightAttributeValue extends AttributeValue implements IAttributeValue {
  		# ------------------------------------------------------------------
  		private $ops_text_value;
+ 		private $opn_decimal_value;
  		# ------------------------------------------------------------------
  		public function __construct($pa_value_array=null) {
  			parent::__construct($pa_value_array);
@@ -147,9 +148,21 @@
  					$this->ops_text_value = $pa_value_array['value_longtext1'];
  					break;
  			}	
+ 			$this->opn_decimal_value = $pa_value_array['value_decimal1'];
  		}
  		# ------------------------------------------------------------------
+ 		/**
+ 		 * Returns value suitable for display
+ 		 *
+ 		 * @param $pa_options array Options are:
+ 		 *		returnAsDecimalMetric = return weight in kilograms as decimal number
+ 		 *
+ 		 * @return mixed Values as string or decimal
+ 		 */
 		public function getDisplayValue($pa_options=null) {
+			if (caGetOption('returnAsDecimalMetric', $pa_options, false)) {
+				return $this->opn_decimal_value;
+			}
 			return $this->ops_text_value;
 		}
  		# ------------------------------------------------------------------

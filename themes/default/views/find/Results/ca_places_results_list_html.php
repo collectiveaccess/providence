@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2009-2012 Whirl-i-Gig
+ * Copyright 2009-2014 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -99,7 +99,24 @@ if (!$this->getVar('no_hierarchies_defined')) {
 				$vn_item_count++;
 			}
 ?>
-			</tbody></table>
+		</tbody>
+<?php
+			if (is_array($va_bottom_line = $this->getVar('bottom_line'))) {
+?>
+				<tfoot>
+					<tr>
+						<td colspan="2" class="listtableTotals"><?php print _t('Totals'); ?></td>
+<?php
+						foreach($va_bottom_line as $vn_placement_id => $vs_bottom_line_value) {
+							print "<td>{$vs_bottom_line_value}</td>";
+						}
+?>
+					</tr>
+				</tfoot>
+<?php
+			}
+?>
+	</table>
 	</form>
 </div><!--end scrollingResults -->
 <?php

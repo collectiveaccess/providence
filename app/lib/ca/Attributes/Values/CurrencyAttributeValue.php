@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2009-2013 Whirl-i-Gig
+ * Copyright 2009-2014 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -142,6 +142,8 @@
  		# ------------------------------------------------------------------
  		private $ops_currency_specifier;
  		private $opn_value;
+ 		
+ 		private $opb_display_currency_conversion = false;
  		# ------------------------------------------------------------------
  		public function __construct($pa_value_array=null) {
  			parent::__construct($pa_value_array);
@@ -152,8 +154,13 @@
  			$this->opn_value = $pa_value_array['value_decimal1'];
  		}
  		# ------------------------------------------------------------------
+ 		/**
+ 		 *
+ 		 */
 		public function getDisplayValue($pa_options=null) {
-
+			if (caGetOption('returnAsDecimalWithCurrencySpecifier', $pa_options, false)) {
+				return $this->ops_currency_specifier.' '.$this->opn_value;
+			}
 			if(Zend_Registry::isRegistered("Zend_Locale")) {
 				$o_locale = Zend_Registry::get('Zend_Locale');
 			} else {
@@ -172,7 +179,11 @@
  			}
 
  			// insert currency which is not locale-dependent in our case
- 			return str_replace('¤', $this->ops_currency_specifier, $vs_decimal_with_placeholder);
+ 			$vs_val = str_replace('¤', $this->ops_currency_specifier, $vs_decimal_with_placeholder);
+ 			if (($vs_to_currency = caGetOption('displayCurrencyConversion', $pa_options, false)) && ($this->ops_currency_specifier != $vs_to_currency)) {
+ 				$vs_val .= " ("._t("~%1", caConvertCurrencyValue($this->ops_currency_specifier.' '.$this->opn_value, $vs_to_currency)).")";
+ 			}
+ 			return $vs_val;
 		}
  		# ------------------------------------------------------------------
  		public function parseValue($ps_value, $pa_element_info, $pa_options=null) {
@@ -277,9 +288,6 @@
  		# ------------------------------------------------------------------
  		public function htmlFormElement($pa_element_info, $pa_options=null) {
  			$va_settings = $this->getSettingValuesFromElementArray($pa_element_info, array('fieldWidth', 'fieldHeight', 'minValue', 'maxValue'));
- 			
- 			// try to get currency conversion
- 			
  			
  			return caHTMLTextInput(
  				'{fieldNamePrefix}'.$pa_element_info['element_id'].'_{n}', 

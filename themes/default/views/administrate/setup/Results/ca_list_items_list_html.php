@@ -93,7 +93,24 @@ if (!$this->getVar('no_hierarchies_defined')) {
 			$vn_item_count++;
 		}
 ?>
-	</tbody></table>
+		</tbody>
+<?php
+		if (is_array($va_bottom_line = $this->getVar('bottom_line'))) {
+?>
+			<tfoot>
+				<tr>
+					<td colspan="2" class="listtableTotals"><?php print _t('Totals'); ?></td>
+<?php
+					foreach($va_bottom_line as $vn_placement_id => $vs_bottom_line_value) {
+						print "<td>{$vs_bottom_line_value}</td>";
+					}
+?>
+				</tr>
+			</tfoot>
+<?php
+		}
+?>
+	</table>
 </form><!--end caFindResultsForm -->
 </div><!--end scrollingResults -->
 <?php
