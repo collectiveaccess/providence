@@ -1655,35 +1655,56 @@
 			return ca_attributes::getRawAttributeValuesForIDs($this->getDb(), $this->tableNum(), $pa_ids, $vn_element_id, $pa_options);
 		}
 		# ------------------------------------------------------------------
+		// --- Utilities
+		# ------------------------------------------------------------------
+		# ------------------------------------------------------------------
 		// --- Utilties
 		# ------------------------------------------------------------------
 		/**
 		 * Copies all attributes attached to the current row to the row specified by $pn_row_id
 		 *
 		 * @param int $pn_row_id
+		 * @param array $pa_options
 		 * @return bool True on success, false if an error occurred
+		 *
+		 * Supported options
+		 *	restrictToAttributesByCodes = array of attributes codes to restrict the duplication
+		 *	restrictToAttributesByIds = array of attributes ids to restrict the duplication
+		 *
 		 */
 		public function copyAttributesTo($pn_row_id, $pa_options=null) {
 			global $g_ui_locale_id;
-			
+
 			$vb_we_set_transaction = false;
 			if (!$this->inTransaction()) {
 				$this->setTransaction(new Transaction($this->getDb()));
 				$vb_we_set_transaction = true;
 			}
-			
+
+			$va_restrictToAttributesByCodes = array();
+			$va_restrictToAttributesByIds = array();
+			if (is_array($pa_options)) {
+				if ($pa_options['restrictToAttributesByCodes']) { $va_restrictToAttributesByCodes = $pa_options['restrictToAttributesByCodes']; }
+				if ($pa_options['restrictToAttributesByIds']) { $va_restrictToAttributesByIds = $pa_options['restrictToAttributesByIds']; }
+			}
+
 			if (!($t_dupe = $this->_DATAMODEL->getInstanceByTableNum($this->tableNum()))) { return null; }
 			$t_dupe->purify($this->purify());
 			if (!$this->getPrimaryKey()) { return null; }
 			if (!$t_dupe->load($pn_row_id)) { return null; }
 			$t_dupe->setTransaction($this->getTransaction());
-			
+
 			$va_elements = $this->getApplicableElementCodes($t_dupe->getTypeID(), false, true);
-			
+
 			$vs_table = $this->tableName();
 			foreach($va_elements as $vn_element_id => $vs_element_code) {
 				$va_vals = $this->get("{$vs_table}.{$vs_element_code}", array("returnAsArray" => true, "returnAllLocales" => true, 'forDuplication' => true));
 				if (!is_array($va_vals)) { continue; }
+				if (sizeof($va_restrictToAttributesByCodes)>0 || sizeof($va_restrictToAttributesByIds)>0) {
+					if (!(in_array($vs_element_code,$va_restrictToAttributesByCodes) || in_array($vn_element_id,$va_restrictToAttributesByIds))) {
+						continue;
+					}
+				}
 				foreach($va_vals as $vn_id => $va_vals_by_locale) {
 					foreach($va_vals_by_locale as $vn_locale_id => $va_vals_by_attr_id) {
 						foreach($va_vals_by_attr_id as $vn_attribute_id => $va_val) {
@@ -1695,7 +1716,7 @@
 			}
 			$t_dupe->setMode(ACCESS_WRITE);
 			$t_dupe->update();
-			
+
 			if($t_dupe->numErrors()) {
 				$this->errors = $t_dupe->errors;
 				if ($vb_we_set_transaction) { $this->removeTransaction(false);}
@@ -1709,19 +1730,24 @@
 		 * Copies all attributes attached from the row specified by $pn_row_id to the current row
 		 *
 		 * @param int $pn_row_id
+		 * @param array $pa_options
 		 * @return bool True on success, false if an error occurred
+		 *
+		 * Supported options
+		 *	restrictToAttributesByCodes = array of attributes codes to restrict the duplication
+		 *	restrictToAttributesByIds = array of attributes ids to restrict the duplication
 		 */
-		public function copyAttributesFrom($pn_row_id) {
+		public function copyAttributesFrom($pn_row_id, $pa_options=null) {
 			if (!($t_dupe = $this->_DATAMODEL->getInstanceByTableNum($this->tableNum()))) { return null; }
 			$t_dupe->purify($this->purify());
 			if (!$this->getPrimaryKey()) { return null; }
 			if (!$t_dupe->load($pn_row_id)) { return null; }
-			
+
 			if ($this->inTransaction()) {
 				$t_dupe->setTransaction($this->getTransaction());
 			}
-			
-			$vn_rc = $t_dupe->copyAttributesTo($this->getPrimaryKey());
+
+			$vn_rc = $t_dupe->copyAttributesTo($this->getPrimaryKey(), $pa_options);
 			$this->errors = $t_dupe->errors;
 			return $vn_rc;
 		}
