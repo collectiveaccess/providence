@@ -6,3 +6,6 @@ setup.php
 .DS_Store
 .settings
 .project
+.idea
+/app/plugins/museesDeFrance
+/themes/default/css/local/*
