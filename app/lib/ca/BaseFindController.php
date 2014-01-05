@@ -675,11 +675,30 @@
 				if (!($vs_font =  $va_settings['font'])) {
 					$vs_font = 'dejavusans';
 				}
+				if (!($vb_unicode =  $va_settings['unicode'])) {
+					$vb_unicode = true;
+				}
+				if (!($vs_enocoding =  $va_settings['encoding'])) {
+					$vs_enocoding = 'UTF-8';
+				}
+				if (!($vs_margin_left =  $va_settings['margin_left'])) {
+					$vs_margin_left = '5';
+				}
+				if (!($vs_margin_top =  $va_settings['margin_top'])) {
+					$vs_margin_top = '5';
+				}
+				if (!($vs_margin_right =  $va_settings['margin_right'])) {
+					$vs_margin_right = '5';
+				}
+				if (!($vs_margin_bottom =  $va_settings['margin_bottom'])) {
+					$vs_margin_bottom = '8';
+				}
 				
 				require_once(__CA_LIB_DIR__."/core/Print/html2pdf/html2pdf.class.php");
 				try {
 					$vs_content = $this->render('Results/'.str_replace("<tablename>", $this->ops_tablename, $va_settings['script_to_render']));
-					$vo_html2pdf = new HTML2PDF($vs_orientation,$vs_page_format,$vs_language);
+					$vo_html2pdf = new HTML2PDF($vs_orientation, $vs_page_format, $vs_language, $vb_unicode, $vs_enocoding, 
+						array($vs_margin_left, $vs_margin_top, $vs_margin_right, $vs_margin_bottom));
 					$vo_html2pdf->setDefaultFont($vs_font);
 					$vo_html2pdf->setTestIsImage(false);
 					$vo_html2pdf->WriteHTML($vs_content);
