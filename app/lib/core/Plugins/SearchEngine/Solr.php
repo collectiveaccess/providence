@@ -536,7 +536,7 @@ class WLPlugSearchEngineSolr extends BaseSearchPlugin implements IWLPlugSearchEn
 		$vo_http_client->request();
 
 		/* commit */
-		$vs_post_xml = '<commit waitFlush="false" waitSearcher="false" softCommit="true"/>';
+		$vs_post_xml = '<commit />';
 		$vo_http_client->setRawData($vs_post_xml)->setEncType('text/xml')->request('POST');
 		
 		try {
@@ -644,7 +644,7 @@ class WLPlugSearchEngineSolr extends BaseSearchPlugin implements IWLPlugSearchEn
 					} else {						
 						/* commit */
 						try {
-							$vs_post_xml = '<commit waitFlush="false" waitSearcher="false" softCommit="true"/>';
+							$vs_post_xml = '<commit />';
 							$vo_http_client->setRawData($vs_post_xml)->setEncType('text/xml')->request('POST');
 							$vo_http_response = $vo_http_client->request();
 							if ($o_resp = @new SimpleXMLElement($vo_http_response->getBody())) {
@@ -679,7 +679,7 @@ class WLPlugSearchEngineSolr extends BaseSearchPlugin implements IWLPlugSearchEn
 	# -------------------------------------------------------
 	public function optimizeIndex($pn_tablenum){
 		/* optimize */
-		$vs_post_xml = '<optimize waitFlush="false" waitSearcher="false"/>';
+		$vs_post_xml = '<optimize />';
 		$vo_http_client = new Zend_Http_Client();
 		$vo_http_client->setUri(
 			$this->opo_search_config->get('search_solr_url')."/". /* general url */
