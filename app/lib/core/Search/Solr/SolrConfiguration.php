@@ -153,12 +153,11 @@ class SolrConfiguration {
 					$vs_subject_table_copyfields.=SolrConfiguration::tabs(1).'<copyField source="'.$vs_table.'.'.
 						$t_instance->primaryKey().
 						'" dest="'.$t_instance->primaryKey().'" />'.SolrConfiguration::nl();
-					
-					/* get fields-to-index from search indexing configuration */
+
+                    /* get fields-to-index from search indexing configuration */
 					if (!is_array($va_table_fields = $po_search_base->getFieldsToIndex($vs_table))) {
 						$va_table_fields = array();
 					}
-
 					$vn_table_num = $po_datamodel->getTableNum($vs_table);
 					
 					/* replace virtual _metadata field with actual _ca_attribute_N type fields */
@@ -187,7 +186,8 @@ class SolrConfiguration {
 								'datatype' => $qr_type_restrictions->get('datatype')
 							);
 						}
-					}
+
+                    }
 					
 					if (is_array($va_table_fields)) {
 						foreach($va_table_fields as $vs_field_name => $va_field_options){ 
@@ -215,7 +215,6 @@ class SolrConfiguration {
 					if (is_array($va_attributes)) {
 						foreach($va_attributes as $vn_element_id => $va_element_info) {
 							$vs_element_code = $va_element_info['element_code'];
-							
 							$va_element_opts = array();
 							switch($va_element_info['datatype']) {
 							    case 0: //container
@@ -326,9 +325,9 @@ class SolrConfiguration {
 								$vb_field_is_tokenized = true;
 							}
 
-							$va_schema_fields[] = $vs_table.'.'.$vs_field_name;
-							
-							if (in_array($va_field_options['type'], array('text', 'string'))) {
+                            $va_schema_fields[] = $vs_table.'.'.SolrConfiguration::adjustFieldstoIndex($vs_field_name);
+
+                            if (in_array($va_field_options['type'], array('text', 'string'))) {
 								$vs_type = $vb_field_is_tokenized ? 'text' : 'string';
 							} else {
 								if (!isset($va_field_options['type']) && $t_instance->hasField($vs_field_name)) {
@@ -366,8 +365,8 @@ class SolrConfiguration {
 								$vs_type = (isset($va_field_options['type']) && $va_field_options['type']) ? $va_field_options['type'] : 'text';
 							}
 							
-							$vs_field_schema.=SolrConfiguration::tabs(2).'<field name="'.$vs_table.'.'.$vs_field_name.'" type="'.$vs_type;
-							
+							$vs_field_schema.=SolrConfiguration::tabs(2).'<field name="'.$vs_table.'.'.SolrConfiguration::adjustFieldstoIndex($vs_field_name).'" type="'.$vs_type;
+
 							$vs_field_schema.='" indexed="true" ';
 							$vb_field_is_stored ? $vs_field_schema.='stored="true" ' : $vs_field_schema.='stored="false" ';
 							$vs_field_schema.='/>'.SolrConfiguration::nl();
@@ -406,7 +405,7 @@ class SolrConfiguration {
 					$vs_copyfields = "";
 					foreach($va_schema_fields as $vs_schema_field){
 						$vs_copyfields.= SolrConfiguration::tabs(1).'<copyField source="'.$vs_schema_field.'" dest="text" />'.SolrConfiguration::nl();
-					}
+                    }
 					
 					
 					
@@ -420,7 +419,7 @@ class SolrConfiguration {
 					foreach($va_access_points as $vs_access_point => $va_access_point_info) {
 						foreach($va_access_point_info['fields'] as $vn_i => $vs_schema_field) {
 							$vs_copyfields.= SolrConfiguration::tabs(1).'<copyField source="'.$vs_schema_field.'" dest="'.$vs_access_point.'" />'.SolrConfiguration::nl();
-							
+
 						}
 						$vs_field_schema.=SolrConfiguration::tabs(2).'<field name="'.$vs_access_point.'" type="text" indexed="true" stored="true" multiValued="true"/>'.SolrConfiguration::nl();
 					}
@@ -465,6 +464,12 @@ class SolrConfiguration {
 		}
 		return $vs_return;
 	}
+    # ------------------------------------------------
+    private static  function adjustFieldstoIndex($field){
+            if (strpos($field,'_ca_attribute_') !== false)
+                $field = str_replace('_ca_attribute_','A',$field);
+        return $field;
+    }
 	# ------------------------------------------------
 }
 ?>
