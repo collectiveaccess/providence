@@ -198,10 +198,34 @@ class PrintFormTextElement extends PrintFormElements {
 				
 				
 				if ($vn_border > 0) {
-					$po_page->setLineWidth($vn_border);
-					$po_page->setDash(0, 0);
-					
-					$po_page->drawRectangle($vn_x, $vn_y + $vn_size, $vn_x + $vn_width, $vn_y - $vn_height + $vn_size);
+					// we need a float value in pt for setLineWidth
+					switch(substr($vn_border,-2)){
+						case 'px':
+							$vn_border_in_px = intval(substr($vn_border,0,-2));
+							$vn_border_in_pt = $vn_border_in_px * 0.75;
+							break;
+						case 'pt':
+							$vn_border_in_pt = intval(substr($vn_border,0,-2));
+							break;
+						default:
+							$vn_border_in_pt = intval($vn_border);
+							break;
+					}
+
+					$po_page->setLineWidth($vn_border_in_pt);
+
+					//$po_page->drawRectangle($vn_x, $vn_y + $vn_size, $vn_x + $vn_width, $vn_y - $vn_height + $vn_size);
+					//draw rectangle by drawing 4 lines so we don't have to worry about transparent filling of the whole box
+
+					// bottom left to bottom right _
+					$po_page->drawLine($vn_x,$vn_y,$vn_x + $vn_width,$vn_y);
+					// bottom left to top right |_
+					$po_page->drawLine($vn_x,$vn_y,$vn_x,$vn_y+$vn_size);
+					// bottom right to top right |_|
+					$po_page->drawLine($vn_x + $vn_width,$vn_y,$vn_x + $vn_width,$vn_y+$vn_size);
+					// top left to top right
+					$po_page->drawLine($vn_x,$vn_y+$vn_size,$vn_x + $vn_width,$vn_y+$vn_size);
+
 				} else {
 					if ($vn_border_bottom > 0) {
 						$po_page->setLineWidth($vn_border_bottom);
