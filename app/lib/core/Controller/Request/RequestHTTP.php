@@ -616,7 +616,7 @@ class RequestHTTP extends Request {
 					if (caFileIsIncludable($vs_user_class_name.".php")) {
 						require_once($vs_user_class_name.".php"); 
 						$va_options = $pa_options["options"];
-						eval("\$this->user = new $vs_user_class_name($vn_user_id,\$va_options);");			// add user object
+						$this->user = new $vs_user_class_name($vn_user_id, $va_options);		// add user object
 				
 						if ((!$this->user->isActive()) || ($this->user->numErrors()) || ($pa_options['noPublicUsers'] && $this->user->isPublicUser())) {			// error means user_id in session is invalid
 							$vb_login_successful = false;
@@ -643,7 +643,7 @@ class RequestHTTP extends Request {
 					if (!caFileIsIncludable($vs_user_class_name.".php")) { continue; }
 					
 					require_once($vs_user_class_name.".php");
-					 eval("\$this->user = new $vs_user_class_name();");						// add user object
+					$this->user = new $vs_user_class_name();		// add user object
 					
 					$vs_tmp1 = $vs_tmp2 = null;
 					if (($vn_auth_type = $this->user->authenticate($vs_tmp1, $vs_tmp2, $pa_options["options"]))) {	# error means user_id in session is invalid
@@ -678,7 +678,8 @@ class RequestHTTP extends Request {
 				
 				if (!caFileIsIncludable($vs_user_class_name.".php")) { continue; }
 				require_once($vs_user_class_name.".php");
-				 eval("\$this->user = new $vs_user_class_name();");		
+				$this->user = new $vs_user_class_name();
+					
 				if (($vn_auth_type = $this->user->authenticate($pa_options["user_name"], $pa_options["password"], $pa_options["options"]))) {	# error means user_id in session is invalid
 					if (($pa_options['noPublicUsers'] && $this->user->isPublicUser()) || !$this->user->isActive()) {
 						$vb_login_successful = false;

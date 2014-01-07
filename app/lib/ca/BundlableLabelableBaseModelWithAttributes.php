@@ -1557,7 +1557,13 @@ class BundlableLabelableBaseModelWithAttributes extends LabelableBaseModelWithAt
 			# -------------------------------------------------
 		}
 
-		if ($vs_documentation_url) $vs_documentation_link = "<a class='bundleDocumentationLink' href='$vs_documentation_url' target='_blank'>documentation</a>";
+		if ($vs_documentation_url) {
+			// catch doc URL without protocol aka starting with letters but not http/https
+			if(preg_match("!^[a-z]!",$vs_documentation_url) && !preg_match("!^http[s]?://!",$vs_documentation_url)) {
+				$vs_documentation_url = "http://".$vs_documentation_url;
+			}
+			$vs_documentation_link = "<a class='bundleDocumentationLink' href='$vs_documentation_url' target='_blank'>documentation</a>";
+		}
 
 		$vs_output = str_replace("^ELEMENT", $vs_element, $vs_display_format);
 		$vs_output = str_replace("^ERRORS", join('; ', $va_errors), $vs_output);

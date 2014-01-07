@@ -69,8 +69,9 @@ class File extends BaseObject {
 					if ($this->DEBUG) {	print "LOADING $plugin_name\n"; }
 				
 					# load the plugin
-					require_once("$plugin_dir/$plugin");
-					eval("\$p = new WLPlugFile".$plugin_name."();");
+					require_once("{$plugin_dir}/{$plugin}");
+					$plugin_class = "WLPlugFile{$plugin_name}";
+					$p = new $plugin_class();
 				
 					# register the plugin's capabilities
 					if ($vo_instance =& $p->register()) {
