@@ -150,10 +150,11 @@ class Db extends DbBase {
 			);
 		}
 		$vs_dbtype = $pa_options["type"];
-		if (!is_a($this->opo_db, "Db_".$vs_dbtype)) {
+		$vs_dbclass = "Db_$vs_dbtype";
+		if (!is_a($this->opo_db, $vs_dbclass)) {
 			@require_once(__CA_LIB_DIR__."/core/Db/".$vs_dbtype.".php");
-			if (class_exists("Db_".$vs_dbtype)) {
-				if ($this->opo_db = eval("return new Db_".$vs_dbtype."();")) {
+			if (class_exists($vs_dbclass)) {
+				if (($this->opo_db = new $vs_dbclass())) {
 					if ($this->opo_db->connect($this, $pa_options)) {
 						return true;
 					} else {
