@@ -285,7 +285,8 @@ class RequestHTTP extends Request {
 		if ($this->config->get('always_use_default_theme')) { $pb_use_default = true; }
 		if (!$pb_use_default && $this->isLoggedIn()) {
 			$vs_theme = $this->user->getPreference('ui_theme');
-		} else {
+		} 
+		if (!$vs_theme) {
 			$vs_theme = $this->config->get('theme');		// default theme
 		}
 		return $this->config->get('themes_url').'/'.$vs_theme;
@@ -295,7 +296,8 @@ class RequestHTTP extends Request {
 		if ($this->config->get('always_use_default_theme')) { $pb_use_default = true; }
 		if (!$pb_use_default && $this->isLoggedIn()) {
 			$vs_theme = $this->user->getPreference('ui_theme');
-		} else {
+		} 
+		if (!$vs_theme) {
 			$vs_theme = $this->config->get('theme');		// default theme
 		}
 		return $this->config->get('themes_directory').'/'.$vs_theme;
