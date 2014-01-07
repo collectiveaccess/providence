@@ -727,7 +727,7 @@ require_once(__CA_LIB_DIR__."/ca/ApplicationPluginManager.php");
 				if (in_array($vs_table_name, array('ca_objects', 'ca_object_lots', 'ca_entities', 'ca_places', 'ca_occurrences', 'ca_collections', 'ca_storage_locations'))) {
 					require_once(__CA_MODELS_DIR__.'/ca_watch_list.php');
 					$t_watch_list = new ca_watch_list();
-					$vs_watch = "<div style='float:right; width:25px; text-align:right; margin:0px; padding:0px;'><a href='#' title='"._t('Add/remove item to/from watch list.')."' onclick='caToggleItemWatch(); return false;' id='caWatchItemButton'>".caNavIcon($po_view->request, $t_watch_list->isItemWatched($vn_item_id, $t_item->tableNum(), $po_view->request->user->get("user_id")) ? __CA_NAV_BUTTON_UNWATCH__ : __CA_NAV_BUTTON_WATCH__)."</a></div>";
+					$vs_watch = "<div class='watchThis'><a href='#' title='"._t('Add/remove item to/from watch list.')."' onclick='caToggleItemWatch(); return false;' id='caWatchItemButton'>".caNavIcon($po_view->request, $t_watch_list->isItemWatched($vn_item_id, $t_item->tableNum(), $po_view->request->user->get("user_id")) ? __CA_NAV_BUTTON_UNWATCH__ : __CA_NAV_BUTTON_WATCH__)."</a></div>";
 					
 					$vs_buf .= "\n<script type='text/javascript'>
 		function caToggleItemWatch() {
@@ -3267,7 +3267,7 @@ $ca_relationship_lookup_parse_cache = array();
 	 */
 	function caEditorBundleShowHideControl($po_request, $ps_id_prefix) {
 		$vs_buf = "<span style='float:right; margin-right:7px;'>";
-		$vs_buf .= "<a href='#' onclick='caBundleVisibilityManager.toggle(\"{$ps_id_prefix}\");  return false;'><img src=\"".$po_request->getThemeUrlPath()."/graphics/arrows/expand.jpg\" border=\"0\" id=\"{$ps_id_prefix}VisToggleButton\"/></a>";
+		$vs_buf .= "<a href='#' class='expand' onclick='caBundleVisibilityManager.toggle(\"{$ps_id_prefix}\");  return false;'><img src=\"".$po_request->getThemeUrlPath()."/graphics/arrows/expand.png\" border=\"0\" id=\"{$ps_id_prefix}VisToggleButton\"/></a>";
 		$vs_buf .= "</span>\n";	
 		$vs_buf .= "<script type='text/javascript'>jQuery(document).ready(function() { caBundleVisibilityManager.registerBundle('{$ps_id_prefix}'); }); </script>";	
 		
