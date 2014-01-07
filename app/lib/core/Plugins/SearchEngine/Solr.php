@@ -521,6 +521,7 @@ class WLPlugSearchEngineSolr extends BaseSearchPlugin implements IWLPlugSearchEn
 			}
 		} else {
 			// Intrinsic field
+			$ps_content_tablename = $this->opo_datamodel->getTableName($pn_content_tablenum);
 			$vn_field_num_proc = (int)substr($ps_content_fieldname, 1);
 			$ps_content_fieldname = $this->opo_datamodel->getFieldName($ps_content_tablename, $vn_field_num_proc);
 		}
@@ -650,6 +651,9 @@ class WLPlugSearchEngineSolr extends BaseSearchPlugin implements IWLPlugSearchEn
 		/* send data */
 		$vo_http_client = new Zend_Http_Client();
 		foreach($va_post_xml as $vs_core => $vs_post_xml) {
+
+			//caDebug($vs_post_xml,$vs_core);
+
 			$vo_http_client->setUri(
 				$this->opo_search_config->get('search_solr_url')."/". /* general url */
 				$vs_core. /* core name (i.e. table name) */
