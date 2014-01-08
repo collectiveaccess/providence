@@ -3281,6 +3281,7 @@ $ca_relationship_lookup_parse_cache = array();
 		global $g_ui_units_pref, $g_ui_locale;
 		
 		if (!isset($pa_placement['settings']['bottom_line']) || !$pa_placement['settings']['bottom_line']) { return null; }
+		if (!$pr_res) { return null; }
 		
 		$vs_template = $pa_placement['settings']['bottom_line'];
 		$vs_bundle_name = $pa_placement['bundle_name'];
