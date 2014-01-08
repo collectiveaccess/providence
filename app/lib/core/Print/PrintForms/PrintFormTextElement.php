@@ -198,48 +198,50 @@ class PrintFormTextElement extends PrintFormElements {
 				
 				
 				if ($vn_border > 0) {
-					// we need a float value in pt for setLineWidth
-					switch(substr($vn_border,-2)){
-						case 'px':
-							$vn_border_in_px = intval(substr($vn_border,0,-2));
-							$vn_border_in_pt = $vn_border_in_px * 0.75;
-							break;
-						case 'pt':
-							$vn_border_in_pt = intval(substr($vn_border,0,-2));
-							break;
-						default:
-							$vn_border_in_pt = intval($vn_border);
-							break;
-					}
+					$vn_border = $this->opo_form->getValueInPoints($vn_border);
+					$po_page->setLineWidth($vn_border);
 
-					$po_page->setLineWidth($vn_border_in_pt);
-
-					//$po_page->drawRectangle($vn_x, $vn_y + $vn_size, $vn_x + $vn_width, $vn_y - $vn_height + $vn_size);
 					//draw rectangle by drawing 4 lines so we don't have to worry about transparent filling of the whole box
 
-					// bottom left to bottom right _
-					$po_page->drawLine($vn_x,$vn_y,$vn_x + $vn_width,$vn_y);
-					// bottom left to top right |_
-					$po_page->drawLine($vn_x,$vn_y,$vn_x,$vn_y+$vn_size);
-					// bottom right to top right |_|
-					$po_page->drawLine($vn_x + $vn_width,$vn_y,$vn_x + $vn_width,$vn_y+$vn_size);
-					// top left to top right
-					$po_page->drawLine($vn_x,$vn_y+$vn_size,$vn_x + $vn_width,$vn_y+$vn_size);
+					// top left point
+					$vn_tl_x = $vn_x;
+					$vn_tl_y = $vn_y + $vn_size;
 
+					// top right
+					$vn_tr_x = $vn_x + $vn_width;
+					$vn_tr_y = $vn_y + $vn_size;
+
+					// bottom left 
+					$vn_bl_x = $vn_x;
+					$vn_bl_y = $vn_y - $vn_height + $vn_size;
+
+					// bottom right
+					$vn_br_x = $vn_x + $vn_width;
+					$vn_br_y = $vn_y - $vn_height + $vn_size;
+
+					$po_page->drawLine($vn_tl_x, $vn_tl_y, $vn_tr_x, $vn_tr_y);
+					$po_page->drawLine($vn_tl_x, $vn_tl_y, $vn_bl_x, $vn_bl_y);
+					$po_page->drawLine($vn_bl_x, $vn_bl_y, $vn_br_x, $vn_br_y);
+					$po_page->drawLine($vn_tr_x, $vn_tr_y, $vn_br_x, $vn_br_y);
+					
 				} else {
 					if ($vn_border_bottom > 0) {
+						$vn_border_bottom = $this->opo_form->getValueInPoints($vn_border_bottom);
 						$po_page->setLineWidth($vn_border_bottom);
 						$po_page->drawLine($vn_x, $vn_y - $vn_height + $vn_size + $vn_padding, $vn_x + $vn_width, $vn_y - $vn_height + $vn_size + $vn_padding);
 					}
 					if ($vn_border_top > 0) {
+						$vn_border_top = $this->opo_form->getValueInPoints($vn_border_top);
 						$po_page->setLineWidth($vn_border_top);
 						$po_page->drawLine($vn_x, $vn_y + $vn_size - $vn_padding, $vn_x + $vn_width, $vn_y + $vn_size - $vn_padding);
 					}
 					if ($vn_border_left > 0) {
+						$vn_border_left = $this->opo_form->getValueInPoints($vn_border_left);
 						$po_page->setLineWidth($vn_border_left);
 						$po_page->drawLine($vn_x - $vn_padding, $vn_y + $vn_size, $vn_x - $vn_padding, $vn_y - $vn_height + $vn_size);
 					}
 					if ($vn_border_right > 0) {
+						$vn_border_right = $this->opo_form->getValueInPoints($vn_border_right);
 						$po_page->setLineWidth($vn_border_right);
 						$po_page->drawLine($vn_x + $vn_width + $vn_padding, $vn_y + $vn_size, $vn_x + $vn_width + $vn_padding, $vn_y - $vn_height + $vn_size);
 					}
