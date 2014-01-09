@@ -3039,32 +3039,35 @@ $ca_relationship_lookup_parse_cache = array();
 		}
 		
 		if($vb_include_inline_add_message && $ps_inline_create_message) {
-			$va_initial_values[] = 
-				array(
-					'label' => $ps_inline_create_message,
-					'id' => 0,
-					$vs_rel_pk => 0,
-					'_query' => $ps_inline_create_query
-				);
+			array_push($va_initial_values, 
+					array(
+						'label' => $ps_inline_create_message,
+						'id' => 0,
+						$vs_rel_pk => 0,
+						'_query' => $ps_inline_create_query
+					)
+			);
 		} elseif ($vb_include_inline_add_does_not_exist_message && $ps_inline_create_does_not_exist_message) {
-			$va_initial_values[] = 
-				array(
-					'label' => $ps_inline_create_does_not_exist_message,
-					'id' => 0,
-					$vs_rel_pk => 0,
-					'_query' => $ps_inline_create_query
-				);
+			array_push($va_initial_values, 
+					array(
+						'label' => $ps_inline_create_does_not_exist_message,
+						'id' => 0,
+						$vs_rel_pk => 0,
+						'_query' => $ps_inline_create_query
+					)
+			);
 		} elseif ($vb_include_empty_result_message) {
-			$va_initial_values[] = 
+			array_push($va_initial_values, 
 				array(
 					'label' => $ps_empty_result_message,
 					'id' => -1,
 					$vs_rel_pk => -1,
 					'_query' => $ps_empty_result_query
-				);
+				)
+			);
 		}
 		
-		return array_values($va_initial_values);		
+		return $va_initial_values;		
 	}
 	# ------------------------------------------------------------------------------------------------
 	/**
