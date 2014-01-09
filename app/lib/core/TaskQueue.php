@@ -120,7 +120,7 @@ class TaskQueue extends BaseObject {
 			foreach($this->opa_handler_plugin_dirs as $vs_handler_dir) {
 				if (file_exists("{$vs_handler_dir}/{$vs_handler}.php")) {
 					require_once("{$vs_handler_dir}/{$vs_handler}.php");					
-					$ps_handler_class = "WLPlugTaskQueueHandler{$ps_handler}";
+					$ps_handler_class = "WLPlugTaskQueueHandler{$vs_handler}";
 					$h = new $ps_handler_class();
 					
 					return $h->getParametersForDisplay($va_rec);
