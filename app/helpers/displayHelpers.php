@@ -3442,7 +3442,7 @@ $ca_relationship_lookup_parse_cache = array();
 			switch($vn_subelement_datatype) {
 				case 6:		// currency
 					$va_tag_values[$vs_subelement]['PAGEAVG'] = ($vn_page_len > 0) ? sprintf("%1.2f", $va_tag_values[$vs_subelement]['PAGESUM']/$vn_page_len) : 0;
-					$va_tag_values[$vs_subelement]['AVG'] = sprintf("%1.2f", $va_tag_values[$vs_subelement]['SUM']/$vn_c);
+					$va_tag_values[$vs_subelement]['AVG'] = ($vn_c > 0) ? sprintf("%1.2f", $va_tag_values[$vs_subelement]['SUM']/$vn_c) : "0.00";
 					
 					foreach($va_tag_values[$vs_subelement] as $vs_tag => $vn_val) {
 						$va_tag_values[$vs_subelement][$vs_tag] = "{$vs_user_currency} ".$va_tag_values[$vs_subelement][$vs_tag];
@@ -3451,7 +3451,7 @@ $ca_relationship_lookup_parse_cache = array();
 					break;
 				case 8:		// length
 					$va_tag_values[$vs_subelement]['PAGEAVG'] = ($vn_page_len > 0) ? sprintf("%1.2f", $va_tag_values[$vs_subelement]['PAGESUM']/$vn_page_len) : 0;
-					$va_tag_values[$vs_subelement]['AVG'] = sprintf("%1.2f", $va_tag_values[$vs_subelement]['SUM']/$vn_c);
+					$va_tag_values[$vs_subelement]['AVG'] = ($vn_c > 0) ? sprintf("%1.2f", $va_tag_values[$vs_subelement]['SUM']/$vn_c) : "0.00";
 					
 					foreach($va_tag_values[$vs_subelement] as $vs_tag => $vn_val) {
 						$vo_measurement = new Zend_Measure_Length((float)$vn_val, 'METER', $g_ui_locale);
@@ -3461,7 +3461,7 @@ $ca_relationship_lookup_parse_cache = array();
 					break;
 				case 9:		// weight
 					$va_tag_values[$vs_subelement]['PAGEAVG'] = ($vn_page_len > 0) ? sprintf("%1.2f", $va_tag_values[$vs_subelement]['PAGESUM']/$vn_page_len) : 0;
-					$va_tag_values[$vs_subelement]['AVG'] = sprintf("%1.2f", $va_tag_values[$vs_subelement]['SUM']/$vn_c);
+					$va_tag_values[$vs_subelement]['AVG'] = ($vn_c > 0) ? sprintf("%1.2f", $va_tag_values[$vs_subelement]['SUM']/$vn_c) : "0.00";
 					
 					foreach($va_tag_values[$vs_subelement] as $vs_tag => $vn_val) {
 						$vo_measurement = new Zend_Measure_Length((float)$vn_val, 'KILOGRAM', $g_ui_locale);
@@ -3471,7 +3471,7 @@ $ca_relationship_lookup_parse_cache = array();
 					break;
 				case 10:	// timecode
 					$va_tag_values[$vs_subelement]['PAGEAVG'] = ($vn_page_len > 0) ? sprintf("%1.2f", $va_tag_values[$vs_subelement]['PAGESUM']/$vn_page_len) : 0;
-					$va_tag_values[$vs_subelement]['AVG'] = sprintf("%1.2f", $va_tag_values[$vs_subelement]['SUM']/$vn_c);
+					$va_tag_values[$vs_subelement]['AVG'] = ($vn_c > 0) ? sprintf("%1.2f", $va_tag_values[$vs_subelement]['SUM']/$vn_c) : 0;
 					
 					foreach($va_tag_values[$vs_subelement] as $vs_tag => $vn_val) {
 						$o_tcp->setParsedValueInSeconds($vn_val);
