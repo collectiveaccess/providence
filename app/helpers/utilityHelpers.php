@@ -809,42 +809,43 @@ function caFileIsIncludable($ps_file) {
 		$vo_locale = new Zend_Locale($locale);
 
 		try {
-			$vn_return = Zend_Locale_Format::getNumber($ps_value, array('locale' => $locale));
-		} catch (Zend_Locale_Exception $e){ // happens when you enter 54.33 but 54,33 is expected in the current locale
-			$vn_return = floatval($ps_value);
+			return Zend_Locale_Format::getNumber($ps_value, array('locale' => $locale));
+		} catch (Zend_Locale_Exception $e) { // happens when you enter 54.33 but 54,33 is expected in the current locale
+			return floatval($ps_value);
 		}
-
-		return $vn_return;
 	}
 	# ---------------------------------------
 	/**
 	 * Takes a standard formatted float (eg. 54.33) and converts it to the locale
 	 * format needed for display (eg 54,33)
 	 *
-	 * @param string $ps_value The value to convert
+	 * @param string $pn_value The value to convert
 	 * @param string $locale Which locale is to be used to return the value
 	 * @return float The converted value
 	 */
-	function caConvertFloatToLocale($ps_value, $locale = "en_US") {
-		if (!class_exists("NumberFormatter")) { return $ps_value; }
-		$fmt = new NumberFormatter($locale, NumberFormatter::DECIMAL );
-		return $fmt->format($ps_value);
+	function caConvertFloatToLocale($pn_value, $locale = "en_US") {
+		$vo_locale = new Zend_Locale($locale);
+
+		try {
+			return Zend_Locale_Format::toNumber($pn_value, array('locale' => $locale));
+		} catch (Zend_Locale_Exception $e) {
+			return $pn_value;
+		}
 	}
 	# ---------------------------------------
 	/**
 	 * Get the decimal separator
 	 *
-	 * @param string $ps_value The value to convert
-	 * @param string $locale Which locale is to be used to return the value
-	 * @return float The converted value
+	 * @param string $locale Which locale is to be used to determine the value
+	 * @return string The separator
 	 */
 	function caGetDecimalSeparator($locale = "en_US") {
-		if (!class_exists("NumberFormatter")) { return $ps_value; }
-		if ($locale != "en_US") {
-			$fmt = new NumberFormatter($locale, NumberFormatter::DECIMAL );
-			return $fmt->getSymbol(NumberFormatter::DECIMAL_SEPARATOR_SYMBOL);
+		$va_symbols = Zend_Locale_Data::getList($locale,'symbols');
+		if(isset($va_symbols['decimal'])){
+			return $va_symbols['decimal'];
+		} else {
+			return '.';
 		}
-		return ".";
 	}
 	# ---------------------------------------
 	/**
