@@ -805,11 +805,12 @@ function caFileIsIncludable($ps_file) {
 	 * @return float The converted value
 	 */
 	function caConvertLocaleSpecificFloat($ps_value, $locale = "en_US") {
-		$fmt = new NumberFormatter($locale, NumberFormatter::DECIMAL );
-        if (strpos($ps_value,'.') !== false)
-            return floatval($ps_value);
-        else
-		    return (float)$fmt->parse($ps_value);
+		$fmt = new NumberFormatter($locale, NumberFormatter::DECIMAL);
+		if (strpos($ps_value,'.') !== false) {
+			return floatval($ps_value);
+		} else {
+			return (float)$fmt->parse($ps_value);
+		}
 	}
 	# ---------------------------------------
 	/**
