@@ -191,12 +191,12 @@
  					if ($vs_expression = trim(str_replace($va_matches[0], '', $vs_expression))) {
  						array_unshift($pa_values, $vs_expression);
  					}
- 					
- 					$vs_value  = 0;
+					
+					$vs_value  = 0;
  					foreach($va_values as $vs_v) {
  						$vs_value += caConvertLocaleSpecificFloat(trim($vs_v), $g_ui_locale);
-					}
-					
+ 					}
+
 					switch($vs_unit_expression) {
 						case "'":
 						case "’":
