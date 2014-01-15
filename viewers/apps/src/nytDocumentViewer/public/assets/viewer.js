@@ -1183,7 +1183,7 @@ DV.History = function(viewer) {
   this.URL_CHECK_INTERVAL = 500;
 
   // We need to use an iFrame to save history if we're in an old version of IE.
-  this.USE_IFRAME = DV.jQuery.browser.msie && DV.jQuery.browser.version < 8;
+  this.USE_IFRAME = false; //DV.jQuery.browser.msie && DV.jQuery.browser.version < 8;
 
   // The ordered list of history handlers matchers and callbacks.
   this.handlers = [];
@@ -3305,13 +3305,13 @@ DV.Schema.helpers = {
 
       var docId = viewer.schema.document.id;
 
-      if(DV.jQuery.browser.msie == true){
-        this.elements.browserDocument.bind('focus.' + docId, DV.jQuery.proxy(this.focusWindow,this));
-        this.elements.browserDocument.bind('focusout.' + docId, DV.jQuery.proxy(this.focusOut,this));
-      }else{
+      //if(DV.jQuery.browser.msie == true){
+      //  this.elements.browserDocument.bind('focus.' + docId, DV.jQuery.proxy(this.focusWindow,this));
+      //  this.elements.browserDocument.bind('focusout.' + docId, DV.jQuery.proxy(this.focusOut,this));
+     // }else{
         this.elements.browserWindow.bind('focus.' + docId, DV.jQuery.proxy(this.focusWindow,this));
         this.elements.browserWindow.bind('blur.' + docId, DV.jQuery.proxy(this.blurWindow,this));
-      }
+     // }
 
       // When the document is scrolled, even in the background, resume polling.
       this.elements.window.bind('scroll.' + docId, DV.jQuery.proxy(this.focusWindow, this));
@@ -4458,10 +4458,10 @@ DV.Schema.states = {
     this.activeAnnotationId = null;
     this.acceptInput.deny();
     // Nudge IE to force the annotations to repaint.
-    if (DV.jQuery.browser.msie) {
-      this.elements.annotations.css({zoom : 0});
-      this.elements.annotations.css({zoom : 1});
-    }
+   // if (DV.jQuery.browser.msie) {
+   //   this.elements.annotations.css({zoom : 0});
+   //   this.elements.annotations.css({zoom : 1});
+   // }
     
     this.helpers.toggleContent('viewAnnotations');
     this.compiled.next();

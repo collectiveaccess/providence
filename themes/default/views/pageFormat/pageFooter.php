@@ -24,14 +24,12 @@
 		
 		<!-- Activate super-roundiness technology - anything with the classname rounded gets rounded corners here -->
 		<script type="text/javascript">
-			if (!jQuery.browser.msie) { 
-				jQuery(document).ready(function() { jQuery('.rounded').corner('round 8px'); }); 
-			
-				// force content to fill window height
-				jQuery(document).ready(function() {
-					jQuery('#mainContent').css('min-height', (window.innerHeight - 40) + 'px');
-				});
-			}
+			jQuery(document).ready(function() { jQuery('.rounded').corner('round 8px'); }); 
+		
+			// force content to fill window height
+			jQuery(document).ready(function() {
+				jQuery('#mainContent').css('min-height', (window.innerHeight - 40) + 'px');
+			});
 		</script>
 <?php
 	print TooltipManager::getLoadHTML();
