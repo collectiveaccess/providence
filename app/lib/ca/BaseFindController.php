@@ -78,6 +78,8 @@
 		 * Set up basic "find" action
 		 */
  		public function Index($pa_options=null) {
+ 			JavascriptLoadManager::register('jquery', 'expander');
+            
  			$po_search = isset($pa_options['search']) ? $pa_options['search'] : null;
  			
  			$t_model 				= $this->opo_datamodel->getInstanceByTableName($this->ops_tablename, true);
