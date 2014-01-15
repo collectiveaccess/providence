@@ -192,7 +192,7 @@ class ca_editor_uis extends BundlableLabelableBaseModelWithAttributes {
 		
 		),
 		"RELATED_TABLES" => array(
-		
+			
 		)
 	);	
 	
