@@ -75,7 +75,7 @@ class WLPlugSearchEngineSolr extends BaseSearchPlugin implements IWLPlugSearchEn
 		$this->opa_options = array(
 				'start' => 0,
 				'limit' => 150000,							// maximum number of hits to return [default=10000],
-				'maxContentBufferSize' => 2000				// maximum number of indexed content items to accumulate before writing to the database
+				'maxContentBufferSize' => 100				// maximum number of indexed content items to accumulate before writing to the database
 		);
 
 		$this->opa_capabilities = array(
