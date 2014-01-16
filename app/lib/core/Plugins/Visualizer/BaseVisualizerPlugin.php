@@ -224,6 +224,15 @@ abstract class BaseVisualizerPlugin Extends WLPlug {
 	 */
 	public function numItemsRendered() {
 		return $this->opn_num_items_rendered;
+	}	
+	# --------------------------------------------------------------------------------
+	/**
+	 * Register any required javascript and CSS for loading
+	 *
+	 * @return void 
+	 */
+	public function registerDependencies() {
+		return;
 	}
 	# ------------------------------------------------
 }

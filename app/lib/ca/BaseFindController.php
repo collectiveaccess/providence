@@ -61,6 +61,7 @@
 		 *
 		 */
 		public function __construct(&$po_request, &$po_response, $pa_view_paths=null) {
+		JavascriptLoadManager::register("timelineJS");
  			parent::__construct($po_request, $po_response, $pa_view_paths);
  			$this->opo_datamodel = Datamodel::load();
  			
@@ -1041,6 +1042,7 @@
  		 */
  		public function Viz() {
  			$ps_viz = $this->request->getParameter('viz', pString);
+ 			$pb_render_data = (bool)$this->request->getParameter('renderData', pInteger);
  			
  			$o_viz = new Visualizer($this->ops_tablename);
  			$vo_result = caMakeSearchResult($this->ops_tablename, $this->opo_result_context->getResultList());
@@ -1055,6 +1057,10 @@
  			$this->view->setVar('t_item', $o_dm->getInstanceByTableName($this->ops_tablename, true));
  			$this->view->setVar('num_items_rendered', (int)$o_viz->numItemsRendered());
  			
+ 			if ($pb_render_data) {
+ 				$this->response->addContent($o_viz->getDataForVisualization($ps_viz, array('request' => $this->request)));
+ 				return;
+ 			}
  			$this->render('Results/viz_html.php');
  		}
  		# ------------------------------------------------------------------

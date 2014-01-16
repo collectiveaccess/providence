@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2013 Whirl-i-Gig
+ * Copyright 2013-2014 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -55,11 +55,6 @@
 			$this->reset();
 			
 			if ($ps_table) { $this->setTable($ps_table); }
-			
-			// Need to pull in Javascript for these in case they are loaded via AJAX
-			JavascriptLoadManager::register("openlayers");
-			JavascriptLoadManager::register("maps");
-			JavascriptLoadManager::register("timeline");
 		}
 		# --------------------------------------------------------------------------------
 		/**
@@ -201,6 +196,7 @@
 							}
 						}
 					} elseif (is_subclass_of($o_data, 'SearchResult')) {
+						$o_data->seek(0);
 						while($o_data->nextHit()) {
 							$va_ids[] = $o_data->get("{$vs_table}.{$vs_pk}");
 						}
@@ -376,6 +372,7 @@
 			foreach($va_viz_list as $vs_viz_code => $va_viz_settings) {
 				if ($o_plugin = $o_viz->getVisualizationPlugin($va_viz_settings['plugin'])) {
 					if ($o_plugin->canHandle($po_data, $va_viz_settings)) {
+						$o_plugin->registerDependencies();
 						$va_viz_for_data[] = $vs_viz_code;
 					}
 				}
@@ -391,7 +388,7 @@
 		 */
 		public function numItemsRendered() {
 			return $this->opn_num_items_rendered;
-		}	
+		}		
 		# --------------------------------------------------------------------------------
 	}
 ?>

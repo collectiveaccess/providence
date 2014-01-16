@@ -143,6 +143,17 @@ class WLPlugVisualizerMap Extends BaseVisualizerPlugIn Implements IWLPlugVisuali
 		$po_data->seek($vn_cur_pos);
 		return false;
 	}
-	# ------------------------------------------------
+	# --------------------------------------------------------------------------------
+	/**
+	 * Register any required javascript and CSS for loading
+	 *
+	 * @return void 
+	 */
+	public function registerDependencies() {
+		JavascriptLoadManager::register("openlayers");
+		JavascriptLoadManager::register("maps");
+		return;
+	}
+	# --------------------------------------------------------------------------------
 }
 ?>

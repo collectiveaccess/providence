@@ -1889,7 +1889,7 @@ require_once(__CA_LIB_DIR__."/ca/ApplicationPluginManager.php");
 			// DomDocument messes with white space and encodes entities so we normalize the directive here so the str_ireplace() replacement below doesn't fail
 			$va_units[] = $va_unit = array(
 				'tag' => $vs_unit_tag = "[[#{$vn_unit_id}]]",
-				'directive' => preg_replace("![\r\n\t]+!", "", html_entity_decode($vs_html)),
+				'directive' => preg_replace("![\r\n\t\"]+!", "", html_entity_decode($vs_html)),
 				'content' => $vs_content, 'relativeTo' => (string)$o_unit->getAttribute("relativeto"),
 				'delimiter' => (string)$o_unit->getAttribute("delimiter"),
 				'restrictToTypes' => (string)$o_unit->getAttribute("restricttotypes"),
@@ -2080,7 +2080,7 @@ require_once(__CA_LIB_DIR__."/ca/ApplicationPluginManager.php");
 							break;
 					}
 				}
-				$vs_tmpl_val = caProcessTemplateForIDs($va_unit['content'], $va_relative_to_tmp[0], $va_relative_ids, array_merge($pa_options, array('delimiter' => $vs_unit_delimiter, 'resolveLinksUsing' => null)));
+				$vs_tmpl_val = caProcessTemplateForIDs($va_unit['content'], $va_relative_to_tmp[0], $va_relative_ids, array_merge($pa_options, array('restrictToTypes' => caGetOption('restrictToTypes', $va_get_options, null), 'restrictToRelationshipTypes' => caGetOption('restrictToRelationshipTypes', $va_get_options, null)), array('delimiter' => $vs_unit_delimiter, 'resolveLinksUsing' => null)));
 				
 				$va_proc_templates[$vn_i] = str_ireplace($va_unit['tag'], $vs_tmpl_val, $va_proc_templates[$vn_i]);
 			}
