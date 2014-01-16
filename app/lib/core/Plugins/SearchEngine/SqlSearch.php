@@ -158,11 +158,15 @@ class WLPlugSearchEngineSqlSearch extends BaseSearchPlugin implements IWLPlugSea
 	# Initialization and capabilities
 	# -------------------------------------------------------
 	public function init() {
+		if(($vn_max_indexing_buffer_size = (int)$this->opo_search_config->get('max_indexing_buffer_size')) < 1) {
+			$vn_max_indexing_buffer_size = 5000;
+		}
+		
 		$this->opa_options = array(
-				'limit' => 2000,													// maximum number of hits to return [default=2000]  ** NOT CURRENTLY ENFORCED -- MAY BE DROPPED **
-				'maxContentBufferSize' => 5000,							// maximum number of indexed content items to accumulate before writing to the database
-				'maxWordIndexInsertSegmentSize' => 2500,		// maximum number of word index rows to put into a single insert
-				'maxWordCacheSize' => 3000,								// maximum number of words to cache while indexing before purging
+				'limit' => 2000,											// maximum number of hits to return [default=2000]  ** NOT CURRENTLY ENFORCED -- MAY BE DROPPED **
+				'maxIndexingBufferSize' => $vn_max_indexing_buffer_size,	// maximum number of indexed content items to accumulate before writing to the database
+				'maxWordIndexInsertSegmentSize' => 2500,					// maximum number of word index rows to put into a single insert
+				'maxWordCacheSize' => 3000,									// maximum number of words to cache while indexing before purging
 				'cacheCleanFactor' => 0.50,									// percentage of words retained when cleaning the cache
 				
 				'omitPrivateIndexing' => false								//
@@ -1276,7 +1280,7 @@ class WLPlugSearchEngineSqlSearch extends BaseSearchPlugin implements IWLPlugSea
 	}
 	# ------------------------------------------------
 	public function commitRowIndexing() {
-		if (sizeof(WLPlugSearchEngineSqlSearch::$s_doc_content_buffer) > $this->getOption('maxContentBufferSize')) {
+		if (sizeof(WLPlugSearchEngineSqlSearch::$s_doc_content_buffer) > $this->getOption('maxIndexingBufferSize')) {
 			$this->flushContentBuffer();
 		}
 	}

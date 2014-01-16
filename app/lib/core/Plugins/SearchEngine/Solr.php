@@ -60,10 +60,6 @@ class WLPlugSearchEngineSolr extends BaseSearchPlugin implements IWLPlugSearchEn
 	public function __construct(){
 		parent::__construct();
 		
-		//if($this->_SolrConfigIsOutdated()){
-		//	$this->_refreshSolrConfiguration();
-		//}
-		
 		$this->opo_db = new Db();
 
 		$this->opo_tep = new TimeExpressionParser();	
@@ -72,10 +68,14 @@ class WLPlugSearchEngineSolr extends BaseSearchPlugin implements IWLPlugSearchEn
 	}
 	# -------------------------------------------------------
 	public function init(){
+		if(($vn_max_indexing_buffer_size = (int)$this->opo_search_config->get('max_indexing_buffer_size')) < 1) {
+			$vn_max_indexing_buffer_size = 100;
+		}
+		
 		$this->opa_options = array(
 				'start' => 0,
-				'limit' => 150000,							// maximum number of hits to return [default=10000],
-				'maxContentBufferSize' => 100				// maximum number of indexed content items to accumulate before writing to the database
+				'limit' => 150000,													// maximum number of hits to return [default=10000],
+				'maxIndexingBufferSize' => $vn_max_indexing_buffer_size				// maximum number of indexed content items to accumulate before writing to the database
 		);
 
 		$this->opa_capabilities = array(
@@ -537,7 +537,7 @@ class WLPlugSearchEngineSolr extends BaseSearchPlugin implements IWLPlugSearchEn
 		unset($this->opn_indexing_subject_row_id);
 		unset($this->ops_indexing_subject_tablename);
 
-		if (sizeof(WLPlugSearchEngineSolr::$s_doc_content_buffer) > $this->getOption('maxContentBufferSize')) {
+		if (sizeof(WLPlugSearchEngineSolr::$s_doc_content_buffer) > $this->getOption('maxIndexingBufferSize')) {
 			$this->flushContentBuffer();
 		}
 	}
