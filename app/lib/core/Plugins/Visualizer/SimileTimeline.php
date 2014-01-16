@@ -67,18 +67,7 @@ class WLPlugVisualizerSimileTimeline Extends BaseVisualizerPlugIn Implements IWL
 		$this->opn_num_items_rendered = 0;
 		
 		$po_request = (isset($pa_options['request']) && $pa_options['request']) ? $pa_options['request'] : null;
-		$vn_width = (isset($pa_options['width']) && $pa_options['width']) ? $pa_options['width'] : 690;
-		$vn_height = (isset($pa_options['height']) && $pa_options['height']) ? $pa_options['height'] : 300;
-		
-		if (!preg_match('!^[\d]+%$!', $vn_width)) {
-			$vn_width = intval($vn_width);
-			if ($vn_width < 1) { $vn_width = 690; }
-		}
-		if (!preg_match('!^[\d]+%$!', $vn_height)) {
-			$vn_height = intval($vn_height);
-			if ($vn_height < 1) { $vn_height = 300; }
-		}
-		
+		list($vs_width, $vs_height) = $this->_parseDimensions(caGetOption('width', $pa_options, 500), caGetOption('height', $pa_options, 500));
 		
 		$o_dm = Datamodel::load();
 		
@@ -127,8 +116,8 @@ class WLPlugVisualizerSimileTimeline Extends BaseVisualizerPlugIn Implements IWL
 					'title' => caProcessTemplateForIDs(strip_tags($va_source_info['display']['title_template']), $vs_table, array($vn_id)),
 					'description' => caProcessTemplateForIDs($va_source_info['display']['description_template'], $vs_table, array($vn_id)),
 					'link' => $po_request ? caEditorUrl($po_request, $vo_data->tableName(), $vn_id) : null,
-					'image' => $va_source_info['display']['image'] ? $vo_data->get($va_source_info['display']['image'], array('returnURL' => true)) : null,
-					'icon' => $va_source_info['display']['icon'] ? $vo_data->get($va_source_info['display']['icon'], array('returnURL' => true)) : null
+					'image' => $va_source_info['display']['image'] ? $vo_data->getWithTemplate($va_source_info['display']['image'], array('returnURL' => true)) : null,
+					'icon' => $va_source_info['display']['icon'] ? $vo_data->getWithTemplate($va_source_info['display']['icon'], array('returnURL' => true)) : null
 				);
 			}
 		}
@@ -192,7 +181,7 @@ class WLPlugVisualizerSimileTimeline Extends BaseVisualizerPlugIn Implements IWL
 		}
 		
 		$vs_buf = "
-	<div id='caResultTimeline' style='width: {$vn_width}px; height: {$vn_height}px; border: 1px solid #aaa'></div>
+	<div id='caResultTimeline' style='width: {$vs_width}; height: {$vs_height}; border: 1px solid #aaa'></div>
 <script type='text/javascript'>
 	var caTimelineEventSource = new Timeline.DefaultEventSource();
 	var caTimelineEventJson = {

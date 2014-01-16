@@ -73,7 +73,7 @@ var caUI = caUI || {};
 				position: pt,
 				map: that.map,
 				title: label + ' ',
-				content: content + ' ',
+				content: label + ' ' + content + ' ',
 				ajaxContentUrl: ajaxContentUrl
 			};
 			if (options && options.icon) { opts['icon'] = options.icon; }

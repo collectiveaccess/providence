@@ -130,7 +130,6 @@
 			}
 			$vs_viz_plugin = $va_viz_settings['plugin'];
 			if($o_viz = $this->getVisualizationPlugin($vs_viz_plugin)) {
-			
 				$va_ids = array();
 				$o_dm = Datamodel::load();
 				$t_instance = $o_dm->getInstanceByTableName($vs_table, true);

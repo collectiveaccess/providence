@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2012-2013 Whirl-i-Gig
+ * Copyright 2012-2014 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -73,16 +73,8 @@ class WLPlugGeographicMapOpenLayers Extends BaseGeographicMapPlugIn Implements I
 	public function render($ps_format, $pa_options=null) {
 		$o_config = Configuration::load();
 		
-		list($vn_width, $vn_height) = $this->getDimensions();
-		
-		if (!preg_match('!^[\d]+%$!', $vn_width)) {
-			$vn_width = intval($vn_width)."px";
-			if ($vn_width < 1) { $vn_width = 690; }
-		}
-		if (!preg_match('!^[\d]+%$!', $vn_height)) {
-			$vn_height = intval($vn_height)."px";
-			if ($vn_height < 1) { $vn_height = 300; }
-		}
+		list($vs_width, $vs_height) = $this->getDimensions();
+		list($vn_width, $vn_height) = $this->getDimensions(array('returnPixelValues' => true));
 		
 		$va_options = caGetOptions($pa_options, array());
 		
@@ -151,7 +143,7 @@ class WLPlugGeographicMapOpenLayers Extends BaseGeographicMapPlugIn Implements I
 		
 		
 				$va_layers[] = "new {$vs_base_layer}";
-				$vs_buf = "<div style='width:{$vn_width}; height:{$vn_height}' id='{$vs_id}' ".((isset($pa_options['classname']) && $pa_options['classname']) ? "class='".$pa_options['classname']."'" : "")."> </div>\n";
+				$vs_buf = "<div style='width:{$vs_width}; height:{$vs_height}' id='{$vs_id}' ".((isset($pa_options['classname']) && $pa_options['classname']) ? "class='".$pa_options['classname']."'" : "")."> </div>\n";
 				$vs_buf .= "
 <script type='text/javascript'>;
 	jQuery(document).ready(function() {
@@ -276,7 +268,7 @@ class WLPlugGeographicMapOpenLayers Extends BaseGeographicMapPlugIn Implements I
 				selectedFeature_{$vs_id} = feature;
 				
 				if (!popup_{$vs_id}) {
-					popup_{$vs_id} = new OpenLayers.Popup.AnchoredBubble('infoBubble', 
+					popup_{$vs_id} = new OpenLayers.Popup.Anchored('infoBubble', 
 						 feature.geometry.getBounds().getCenterLonLat(),
 						 null,
 						 feature.data.label + feature.data.content,
@@ -414,7 +406,7 @@ class WLPlugGeographicMapOpenLayers Extends BaseGeographicMapPlugIn Implements I
 		$vs_layer_switcher_control = caGetOption('layerSwitcherControl', $pa_element_info['settings'], null) ? "map_{$vs_id}.addControl(new OpenLayers.Control.LayerSwitcher());" : "";
 		
 		
-		$vs_element = '<div id="{fieldNamePrefix}mapholder_'.$vs_id.'_{n}" class="mapholder" style="width:'.$vn_width.'spx; height:'.($vn_height + 40).'px; float: left; margin:-18px 0 0 0;">';
+		$vs_element = '<div id="{fieldNamePrefix}mapholder_'.$vs_id.'_{n}" class="mapholder" style="width:'.$vn_width.'px; height:'.($vn_height + 40).'px; float: left; margin:-18px 0 0 0;">';
 
 		$vs_element .= 		'<div class="olMapSearchControls" id="{fieldNamePrefix}Controls_{n}">';
 		if ($po_request) {

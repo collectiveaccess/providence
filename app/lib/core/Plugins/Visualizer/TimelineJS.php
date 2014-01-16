@@ -67,17 +67,7 @@ class WLPlugVisualizerTimelineJS Extends BaseVisualizerPlugIn Implements IWLPlug
 		$po_request = (isset($pa_options['request']) && $pa_options['request']) ? $pa_options['request'] : null;
 		if (!$po_request) { return ''; }
 		
-		$vn_width = (isset($pa_options['width']) && $pa_options['width']) ? $pa_options['width'] : 690;
-		$vn_height = (isset($pa_options['height']) && $pa_options['height']) ? $pa_options['height'] : 300;
-		
-		if (!preg_match('!^[\d]+%$!', $vn_width)) {
-			$vn_width = intval($vn_width);
-			if ($vn_width < 1) { $vn_width = 690; }
-		}
-		if (!preg_match('!^[\d]+%$!', $vn_height)) {
-			$vn_height = intval($vn_height);
-			if ($vn_height < 1) { $vn_height = 300; }
-		}
+		list($vs_width, $vs_height) = $this->_parseDimensions(caGetOption('width', $pa_options, 500), caGetOption('height', $pa_options, 500));
 		
 		// Calculate how many items will be rendered on the timeline
 		// from the entire data set
@@ -91,13 +81,13 @@ class WLPlugVisualizerTimelineJS Extends BaseVisualizerPlugIn Implements IWLPlug
 		}
 		
 		$vs_buf = "
-	<div id='timeline-embed' style='width: {$vn_width}; height: {$vn_height};'></div>
+	<div id='timeline-embed' style='width: {$vs_width}; height: {$vs_height};'></div>
     <script type='text/javascript'>
 		jQuery(document).ready(function() {
 			createStoryJS({
 				type:       'timeline',
-				width:      '{$vn_width}',
-				height:     '{$vn_height}',
+				width:      '{$vs_width}',
+				height:     '{$vs_height}',
 				source:     '".caNavUrl($po_request, '*', '*', '*', array('renderData' => '1', 'viz' => $pa_viz_settings['code']))."',
 				embed_id:   'timeline-embed'
 			});
