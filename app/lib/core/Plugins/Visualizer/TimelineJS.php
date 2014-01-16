@@ -211,8 +211,9 @@ class WLPlugVisualizerTimelineJS Extends BaseVisualizerPlugIn Implements IWLPlug
 	 * @return void 
 	 */
 	public function registerDependencies() {
-		JavascriptLoadManager::register("timelineJS");
-		return;
+		$va_packages = array("timelineJS");
+		foreach($va_packages as $vs_package) { JavascriptLoadManager::register($vs_package); }
+		return $va_packages;
 	}
 	# ------------------------------------------------
 }

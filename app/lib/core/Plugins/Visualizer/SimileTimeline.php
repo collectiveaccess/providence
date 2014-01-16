@@ -282,5 +282,16 @@ class WLPlugVisualizerSimileTimeline Extends BaseVisualizerPlugIn Implements IWL
 		return false;
 	}
 	# ------------------------------------------------
+	/**
+	 * Register any required javascript and CSS for loading
+	 *
+	 * @return void 
+	 */
+	public function registerDependencies() {
+		$va_packages = array("timelineSimile");
+		foreach($va_packages as $vs_package) { JavascriptLoadManager::register($vs_package); }
+		return $va_packages;
+	}
+	# -------------------------------------------------
 }
 ?>

@@ -269,6 +269,12 @@
 			$vo_result_context = (isset($pa_options['resultContext']) && ($pa_options['resultContext'] instanceOf ResultContext)) ? $pa_options['resultContext'] : null;
 			if ($vo_result_context && ($vo_result_context->getParameter('availableVisualizationChecked') > 0)) {
 				if ($vo_result_context->getParameter('availableVisualizationCount') > 0) {
+					if (is_array($va_dependencies = $vo_result_context->getParameter('availableVisualizationDependencies'))) {
+						foreach($va_dependencies as $vs_dependency) {
+							JavascriptLoadManager::register($vs_dependency);
+						}
+					}
+					
 					return $vo_result_context->getParameter('availableVisualizationHTMLSelect');
 				} else {
 					return null;
@@ -278,7 +284,7 @@
 			if (!is_array($va_viz) || !sizeof($va_viz)) { return null; }
 			$va_valid_viz_codes = null;
 			if (isset($pa_options['data']) && is_subclass_of($pa_options['data'], 'SearchResult')) {
-				$va_valid_viz_codes = Visualizer::getVisualizationsForData($pa_options['data']);
+				$va_valid_viz_codes = Visualizer::getVisualizationsForData($pa_options['data'], array('resultContext' => $vo_result_context));
 			}
 			
 			$va_options = array();
@@ -362,19 +368,25 @@
 		 *
 		 * @return array List of usable visualizations
 		 */
-		public static function getVisualizationsForData($po_data) {
+		public static function getVisualizationsForData($po_data, $pa_options=null) {
 			$va_viz_list = Visualizer::getAvailableVisualizations($po_data->tableName());
 			
 			$o_viz = new Visualizer();
 			
-			$va_viz_for_data = array();
+			$va_viz_for_data = $va_dependencies = array();
 			foreach($va_viz_list as $vs_viz_code => $va_viz_settings) {
 				if ($o_plugin = $o_viz->getVisualizationPlugin($va_viz_settings['plugin'])) {
 					if ($o_plugin->canHandle($po_data, $va_viz_settings)) {
-						$o_plugin->registerDependencies();
+						$va_dependencies += $o_plugin->registerDependencies();
+						
 						$va_viz_for_data[] = $vs_viz_code;
 					}
 				}
+			}
+			
+			if ($vo_result_context = caGetOption('resultContext', $pa_options, null)) {
+				$vo_result_context->setParameter('availableVisualizationDependencies', array_unique($va_dependencies));
+				$vo_result_context->saveContext();
 			}
 			
 			return $va_viz_for_data;
