@@ -112,15 +112,3 @@
 		</table>
 	</form><!--end caFindResultsForm -->
 </div><!--end scrollingResults -->
-<script type="text/javascript">
-	jQuery(document).ready(function() {
-		jQuery('td span.read-more').expander({
-			slicePoint: 150,
-			widow: 2,
-			expandEffect: 'show',
-			userCollapseText: '[^]',
-			expandText: '[…]',
-			expandPrefix: ''
-		});
-	});
-</script>
