@@ -1620,7 +1620,7 @@ function caFileIsIncludable($ps_file) {
 			if (is_array($vm_v)) {
 				$pa_array[$vn_k] = caSanitizeArray($vm_v);
 			} else {
-				if (!preg_match("!^[\p{L}\p{N}\p{P}]+!", $vm_v)) {
+				if ((!preg_match("!^[\p{L}\p{N}\p{P}]+!", $vm_v)) || (!mb_detect_encoding($vm_v))) {
 					unset($pa_array[$vn_k]);
 				}
 			}
