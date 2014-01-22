@@ -536,7 +536,7 @@ class Installer {
 							$vn_type_id = $t_rel_types->getRelationshipTypeID($t_instance->tableName(),$vs_type);
 						} else { // "normal" type restriction -> code is from actual type list
 							$vs_type_list_name = $t_instance->getFieldListCode($t_instance->getTypeFieldName());
-							$vn_item_id = $t_list->getItemIDFromList($vs_type_list_name,$vs_type);
+							$vn_type_id = $t_list->getItemIDFromList($vs_type_list_name,$vs_type);
 						}
 					}
 
@@ -550,7 +550,7 @@ class Installer {
 					
 					$this->_processSettings($t_restriction, $vo_restriction->settings);
 					$t_restriction->insert();
-
+					
 					if ($t_restriction->numErrors()) {
 						$this->addError("There was an error while inserting type restriction {$vs_restriction_code} for metadata element {$vs_element_code}: ".join("; ",$t_restriction->getErrors()));
 					}
