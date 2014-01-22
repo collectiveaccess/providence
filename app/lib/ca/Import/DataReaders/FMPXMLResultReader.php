@@ -161,8 +161,6 @@ class FMPXMLResultReader extends BaseXMLDataReader {
 				}
 			}
 		}
-		print_r($this->opa_row_buf);
-		die;
 	}
 	# -------------------------------------------------------
 }
