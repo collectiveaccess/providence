@@ -60,11 +60,11 @@ class BaseXMLDataReader extends BaseDataReader {
 	 */
 	protected $opb_tag_names_as_case_insensitive = true;
 	
-	private $opo_handle = null;
-	private $opo_xml = null;
-	private $opo_xpath = null;
-	private $opa_row_buf = array();
-	private $opn_current_row = 0;
+	protected $opo_handle = null;
+	protected $opo_xml = null;
+	protected $opo_xpath = null;
+	protected $opa_row_buf = array();
+	protected $opn_current_row = 0;
 	# -------------------------------------------------------
 	/**
 	 *
@@ -102,7 +102,7 @@ class BaseXMLDataReader extends BaseDataReader {
 	/**
 	 * Extract XML values recursively
 	 */
-	private function _extractXMLValues($o_row, $ps_base_key='') {
+	protected function _extractXMLValues($o_row, $ps_base_key='') {
 		$vn_l = (int)$o_row->childNodes->length;
 		
 		for($vn_i=0; $vn_i < $vn_l; $vn_i++) {
