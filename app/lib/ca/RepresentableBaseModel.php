@@ -133,6 +133,12 @@
 				}
 			
 				$va_tmp['num_multifiles'] = $t_rep->numFiles($vn_rep_id);
+
+				$va_captions = $t_rep->getCaptionFileList($vn_rep_id);
+				if(is_array($va_captions) && (sizeof($va_captions)>0)){
+					$va_tmp['captions'] = $va_captions;	
+				}
+
 				$va_reps[$vn_rep_id] = $va_tmp;
 			}
 		
