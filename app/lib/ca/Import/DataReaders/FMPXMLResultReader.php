@@ -128,10 +128,10 @@ class FMPXMLResultReader extends BaseXMLDataReader {
 		$this->opa_metadata = array();
 		foreach($this->opo_metadata as $o_field) {
 			$o_name = $o_field->attributes->getNamedItem('NAME');
-			$o_type = $o_field->attributes->getNamedItem('TYPE');
 			
+			// Normalize field names by replacing any run of characters that is not a letter, number,
+			// underscore, -, #, ?, :, % or & with a single underscore.
 			$vs_field_name = preg_replace("![^A-Za-z0-9_\-\:\#\?\%\&]+!", "_", (string)$o_name->nodeValue);
-			$vs_field_type = (string)$o_type->nodeValue;
 			
 			$this->opa_metadata[$vn_index] = $vs_field_name;
 			
