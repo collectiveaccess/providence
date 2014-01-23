@@ -1,13 +1,13 @@
 <?php
 /** ---------------------------------------------------------------------
- * FMPDSOResultReader.php : 
+ * TEIReader.php : 
  * ----------------------------------------------------------------------
  * CollectiveAccess
  * Open-source collections management software
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2013-2014 Whirl-i-Gig
+ * Copyright 2014 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -37,19 +37,19 @@
 require_once(__CA_LIB_DIR__.'/ca/Import/DataReaders/BaseXMLDataReader.php');
 require_once(__CA_APP_DIR__.'/helpers/displayHelpers.php');
 
-class FMPDSOResultReader extends BaseXMLDataReader {
+class TEIReader extends BaseXMLDataReader {
 	# -------------------------------------------------------
 	/**
 	 * Skip root tag when evaluating XPath?
 	 *
 	 * If set then the XPath used to select data to read can omit the root XML tag
 	 */
-	protected $opb_register_root_tag = true;
+	protected $opb_register_root_tag = false;
 	
 	/**
 	 * XML namespace URL used by data
 	 */
-	protected $ops_xml_namespace = 'http://www.filemaker.com/fmpdsoresult';
+	protected $ops_xml_namespace = 'http://www.tei-c.org/ns/1.0';
 	
 	/**
 	 * XML namespace prefix to pair with namespace URL
@@ -61,7 +61,7 @@ class FMPDSOResultReader extends BaseXMLDataReader {
 	/**
 	 * XPath to select data for reading
 	 */
-	protected $ops_xpath = '/n:FMPDSORESULT/n:ROW';
+	protected $ops_xpath = '//n:TEI';
 	
 	/**
 	 * Merge attributes of row-level tag into record as regular values?
@@ -70,7 +70,7 @@ class FMPDSOResultReader extends BaseXMLDataReader {
 	 * referred to in import mappings as plain old record values
 	 */
 	protected $opb_use_row_tag_attributes_as_row_level_values = true;
-
+	
 	/**
 	 * Treat tag names as case insensitive?
 	 *
@@ -86,11 +86,11 @@ class FMPDSOResultReader extends BaseXMLDataReader {
 	public function __construct($ps_source=null, $pa_options=null){
 		parent::__construct($ps_source, $pa_options);
 		
-		$this->ops_title = _t('FMPro DSOResult XML Reader');
-		$this->ops_display_name = _t('FMPro DSOResult');
-		$this->ops_description = _t('Reads Filemaker Pro DSOResult-format XML files');
+		$this->ops_title = _t('Text Encoding Initiative (TEI) XML Reader');
+		$this->ops_display_name = _t('Text Encoding Initiative (TEI) XML');
+		$this->ops_description = _t('Reads Text Encoding Initiative (TEI) XML files');
 		
-		$this->opa_formats = array('fmpdso');	// must be all lowercase to allow for case-insensitive matching
+		$this->opa_formats = array('tei');	// must be all lowercase to allow for case-insensitive matching
 	}
 	# -------------------------------------------------------
 }
