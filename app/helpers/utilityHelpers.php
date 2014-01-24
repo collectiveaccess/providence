@@ -39,7 +39,7 @@ require_once(__CA_LIB_DIR__.'/core/Configuration.php');
 require_once(__CA_LIB_DIR__.'/core/Parsers/ZipFile.php');
 require_once(__CA_LIB_DIR__.'/core/Logging/Eventlog.php');
 require_once(__CA_LIB_DIR__.'/core/Utils/Encoding.php');
-
+require_once(__CA_LIB_DIR__.'/core/Zend/Measure/Length.php');
 
 # ----------------------------------------------------------------------
 # String localization functions (getText)
@@ -806,39 +806,46 @@ function caFileIsIncludable($ps_file) {
 	 * @return float The converted value
 	 */
 	function caConvertLocaleSpecificFloat($ps_value, $locale = "en_US") {
-		if (!function_exists("NumberFormatter")) { return $ps_value; }
-		$fmt = new NumberFormatter($locale, NumberFormatter::DECIMAL );
-		return (float)$fmt->parse($ps_value);
+		$vo_locale = new Zend_Locale($locale);
+
+		try {
+			return Zend_Locale_Format::getNumber($ps_value, array('locale' => $locale));
+		} catch (Zend_Locale_Exception $e) { // happens when you enter 54.33 but 54,33 is expected in the current locale
+			return floatval($ps_value);
+		}
 	}
 	# ---------------------------------------
 	/**
 	 * Takes a standard formatted float (eg. 54.33) and converts it to the locale
 	 * format needed for display (eg 54,33)
 	 *
-	 * @param string $ps_value The value to convert
+	 * @param string $pn_value The value to convert
 	 * @param string $locale Which locale is to be used to return the value
 	 * @return float The converted value
 	 */
-	function caConvertFloatToLocale($ps_value, $locale = "en_US") {
-		if (!function_exists("NumberFormatter")) { return $ps_value; }
-		$fmt = new NumberFormatter($locale, NumberFormatter::DECIMAL );
-		return $fmt->format($ps_value);
+	function caConvertFloatToLocale($pn_value, $locale = "en_US") {
+		$vo_locale = new Zend_Locale($locale);
+
+		try {
+			return Zend_Locale_Format::toNumber($pn_value, array('locale' => $locale));
+		} catch (Zend_Locale_Exception $e) {
+			return $pn_value;
+		}
 	}
 	# ---------------------------------------
 	/**
 	 * Get the decimal separator
 	 *
-	 * @param string $ps_value The value to convert
-	 * @param string $locale Which locale is to be used to return the value
-	 * @return float The converted value
+	 * @param string $locale Which locale is to be used to determine the value
+	 * @return string The separator
 	 */
 	function caGetDecimalSeparator($locale = "en_US") {
-		if (!function_exists("NumberFormatter")) { return $ps_value; }
-		if ($locale != "en_US") {
-			$fmt = new NumberFormatter($locale, NumberFormatter::DECIMAL );
-			return $fmt->getSymbol(NumberFormatter::DECIMAL_SEPARATOR_SYMBOL);
+		$va_symbols = Zend_Locale_Data::getList($locale,'symbols');
+		if(isset($va_symbols['decimal'])){
+			return $va_symbols['decimal'];
+		} else {
+			return '.';
 		}
-		return ".";
 	}
 	# ---------------------------------------
 	/**
@@ -1613,7 +1620,7 @@ function caFileIsIncludable($ps_file) {
 			if (is_array($vm_v)) {
 				$pa_array[$vn_k] = caSanitizeArray($vm_v);
 			} else {
-				if (!preg_match("!^[\p{L}\p{N}\p{P}]+!", $vm_v)) {
+				if ((!preg_match("!^[\p{L}\p{N}\p{P}]+!", $vm_v)) || (!mb_detect_encoding($vm_v))) {
 					unset($pa_array[$vn_k]);
 				}
 			}
@@ -1884,6 +1891,43 @@ function caFileIsIncludable($ps_file) {
 	  }
 	  
 	  return null;
+	}
+	# ----------------------------------------
+	/**
+	 * Convert currency value to another currency.
+	 *
+	 * @param $ps_value string Currency value with specifier (Ex. $500, USD 500, ¥1200, CAD 750)
+	 * @param $ps_to string Specifier of currency to convert value to (Ex. USD, CAD, EUR)
+	 * @param $pa_options array Options are:
+	 *		numericValue = return floating point numeric value only, without currency specifier. Default is false.
+	 *
+	 * @return string Converted value with currency specifier, unless numericValue option is set. Returns null if value could not be converted.
+	 */
+	function caConvertCurrencyValue($ps_value, $ps_to, $pa_options=null) {
+		require_once(__CA_LIB_DIR__."/core/Plugins/CurrencyConversion/EuroBank.php");
+		
+		try {
+			return WLPlugCurrencyConversionEuroBank::convert($ps_value, $ps_to, $pa_options);
+		} catch (Exception $e) {
+			return null;
+		}
+	}
+	# ----------------------------------------
+	/**
+	 * Returns list of currencies for which conversion can be done.
+	 *
+	 * @return array List of three character currency codes, or null if conversion is not available.
+	 */
+	function caAvailableCurrenciesForConversion() {
+		require_once(__CA_LIB_DIR__."/core/Plugins/CurrencyConversion/EuroBank.php");
+		
+		try {
+			$va_currency_list = WLPlugCurrencyConversionEuroBank::getCurrencyList();
+			sort($va_currency_list);
+			return $va_currency_list;
+		} catch (Exception $e) {
+			return null;
+		}
 	}
 	# ----------------------------------------
 ?>

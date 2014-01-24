@@ -61,6 +61,7 @@
 		 *
 		 */
 		public function __construct(&$po_request, &$po_response, $pa_view_paths=null) {
+		JavascriptLoadManager::register("timelineJS");
  			parent::__construct($po_request, $po_response, $pa_view_paths);
  			$this->opo_datamodel = Datamodel::load();
  			
@@ -78,6 +79,7 @@
 		 * Set up basic "find" action
 		 */
  		public function Index($pa_options=null) {
+            
  			$po_search = isset($pa_options['search']) ? $pa_options['search'] : null;
  			
  			$t_model 				= $this->opo_datamodel->getInstanceByTableName($this->ops_tablename, true);
@@ -221,7 +223,8 @@
  			$vn_table_num = $this->opo_datamodel->getTableNum($this->ops_tablename);
  			//$t_mappings = new ca_bundle_mappings();
 			$va_mappings = array(); //$t_mappings->getAvailableMappings($vn_table_num, array('E', 'X'));
-			
+
+			//default export formats, not configureable
 			$va_export_options = array(
 				array(
 					'name' => _t('Tab delimited'),
@@ -232,27 +235,14 @@
 					'code' => '_csv'
 				),
 				array(
-					'name' => _t('PDF (Chart)'),
-					'code' => '_pdf'
+					'name' => _t('Spreadsheet with media icons (XLSX)'),
+					'code' => '_xlsx'
 				),
-			//	array(
-			//		'name' => _t('PDF (Long)'),
-			//		'code' => '_pdflong'
-			//	),				
-				array(
-					'name' => _t('PDF (Thumbnails)'),
-					'code' => '_pdfthumb' 
-				),
-				array(
-					'name' => _t('PDF (ArtForm)'),
-					'code' => '_pdf_artform' 
-				),
-				array(
-					'name' => _t('PDF (Condition Report)'),
-					'code' => '_pdf_condition' 
-				)
 			);
-			
+
+			//merge default formats with configureable ones
+			$va_export_options = array_merge($va_export_options, $this->getResultPrintForms());
+		
 			foreach($va_mappings as $vn_mapping_id => $va_mapping_info) {
 				$va_export_options[] = array(
 					'name' => $va_mapping_info['name'],
@@ -296,6 +286,56 @@
  		public function getPrintForms() {
  			require_once(__CA_LIB_DIR__.'/core/Print/PrintForms.php');
 			return PrintForms::getAvailableForms($this->request->config->get($this->ops_tablename.'_print_forms'));
+		}
+		# -------------------------------------------------------
+ 		/**
+ 		 * Returns list of available result print formats
+ 		 */
+ 		public function getResultPrintForms() {
+ 		
+			$o_print_tables = Configuration::load($this->request->config->get('find_results_download_config'));
+			$va_layout_settings = array();
+			$counter = 0;
+			
+			if (is_array($va_tables = $o_print_tables->getAssocKeys())) {
+				foreach($va_tables as $vs_table_id) {		
+					if($vs_table_id == $this->ops_tablename || $vs_table_id == 'all_tables') {
+						if(is_array($va_layouts = $o_print_tables->getAssoc($vs_table_id))) {
+							foreach($va_layouts as $va_layout_id => $vs_layout_values) {
+								$va_layout_settings[$counter]['code'] = $va_layout_id;
+								if(array_key_exists('name', $vs_layout_values)) {
+									$va_layout_settings[$counter]['name'] = $vs_layout_values['name'];
+								}
+								else {
+									$va_layout_settings[$counter]['name'] = $vs_layout_values['name'];
+								}
+								++$counter;
+							}
+						}
+					}
+				}
+			}
+			return $va_layout_settings;
+		}
+		# -------------------------------------------------------
+ 		/**
+ 		 * Returns the settings for the first print format with the specified id, returns null if no settings were found (e.g. default export formats)
+ 		 */
+ 		public function getResultPrintFormSetting($vs_layout_id) {
+			$o_print_tables = Configuration::load($this->request->config->get('find_results_download_config'));
+			
+			if (is_array($va_tables = $o_print_tables->getAssocKeys())) {
+				foreach($va_tables as $vs_table_id) {		
+					if($vs_table_id == $this->ops_tablename || $vs_table_id == 'all_tables') {
+						if(is_array($va_layouts = $o_print_tables->getAssoc($vs_table_id))) {
+							if(array_key_exists($vs_layout_id, $va_layouts)) {
+								return $va_layouts[$vs_layout_id];
+							}
+						}
+					}
+				}
+			}
+			return null;
 		}
 		# -------------------------------------------------------
 		/**
@@ -561,159 +601,120 @@
 			$this->view->setVar('criteria_summary', $vs_criteria_summary = $this->getCriteriaForDisplay());	// add displayable description of current search/browse parameters
 			$this->view->setVar('criteria_summary_truncated', mb_substr($vs_criteria_summary, 0, 60).((mb_strlen($vs_criteria_summary) > 60) ? '...' : ''));
 			
-			switch($ps_output_type) {
-				case '_pdf':
-// 			header("Content-Disposition: attachment; filename=export_results.pdf");
-// 			header("Content-type: application/pdf");
-// 					$vs_content = $this->render('Results/'.$this->ops_tablename.'_pdf_results_html.php');
-// 				
-// 					$o_pdf = new DOMPDF();
-// 					// Page sizes: 'letter', 'legal', 'A4'
-// 					// Orientation:  'portrait' or 'landscape'
-// 					$o_pdf->set_paper("letter", "landscape");
-// 					$o_pdf->load_html($vs_content, 'utf-8');
-// 					$o_pdf->render();
-// 					$o_pdf->stream("results.pdf");
-					require_once(__CA_LIB_DIR__."/core/Print/html2pdf/html2pdf.class.php");
-					
-					try {
-						$vs_content = $this->render('Results/'.$this->ops_tablename.'_pdf_results_html.php');
-						$vo_html2pdf = new HTML2PDF('L','letter','en');
-						$vo_html2pdf->setDefaultFont("dejavusans");
-						$vo_html2pdf->setTestIsImage(false);
-						$vo_html2pdf->WriteHTML($vs_content);
-						
-			header("Content-Disposition: attachment; filename=export_results.pdf");
-			header("Content-type: application/pdf");
-			
-						$vo_html2pdf->Output('results.pdf');
+			$va_settings = $this->getResultPrintFormSetting($ps_output_type);
+
+			if($va_settings == null)
+			{
+				switch($ps_output_type) {
+					case '_xlsx':
+						require_once(__CA_LIB_DIR__."/core/Parsers/PHPExcel/PHPExcel.php");
+						require_once(__CA_LIB_DIR__."/core/Parsers/PHPExcel/PHPExcel/Writer/Excel2007.php");
+						$vs_content = $this->render('Results/'.$this->ops_tablename.'_xlsx_results.php');
 						$vb_printed_properly = true;
-					} catch (Exception $e) {
-						$vb_printed_properly = false;
-						$this->postError(3100, _t("Could not generate PDF"),"BaseEditorController->PrintSummary()");
-					}
-					return;
-					break;
-				case '_pdfthumb':
-// 			header("Content-Disposition: attachment; filename=export_results.pdf");
-// 			header("Content-type: application/pdf");
-// 					$vs_content = $this->render('Results/'.$this->ops_tablename.'_pdf_results_thumb_html.php');
-// 				
-// 					$o_pdf = new DOMPDF();
-// 					// Page sizes: 'letter', 'legal', 'A4'
-// 					// Orientation:  'portrait' or 'landscape'
-// 					$o_pdf->set_paper("letter", "landscape");
-// 					$o_pdf->load_html($vs_content, 'utf-8');
-// 					$o_pdf->render();
-// 					$o_pdf->stream("results.pdf");
-					require_once(__CA_LIB_DIR__."/core/Print/html2pdf/html2pdf.class.php");
-					
-					try {
-						$vs_content = $this->render('Results/'.$this->ops_tablename.'_pdf_results_thumb_html.php');
-						$vo_html2pdf = new HTML2PDF('L','letter','en');
-						$vo_html2pdf->setDefaultFont("dejavusans");
-						$vo_html2pdf->setTestIsImage(false);
-						$vo_html2pdf->WriteHTML($vs_content);
-						
-			header("Content-Disposition: attachment; filename=export_results.pdf");
-			header("Content-type: application/pdf");
-			
-						$vo_html2pdf->Output('thumb_results.pdf');
-						$vb_printed_properly = true;
-					} catch (Exception $e) {
-						$vb_printed_properly = false;
-						$this->postError(3100, _t("Could not generate PDF"),"BaseEditorController->PrintSummary()");
-					}
-					return;
-					break;	
-				case '_pdf_artform':
-					require_once(__CA_LIB_DIR__."/core/Print/html2pdf/html2pdf.class.php");
-					
-					try {
-						$vs_content = $this->render('Results/'.$this->ops_tablename.'_pdf_results_artform_html.php');
-						$vo_html2pdf = new HTML2PDF('P','letter','en');
-						$vo_html2pdf->setDefaultFont("dejavusans");
-						$vo_html2pdf->setTestIsImage(false);
-						$vo_html2pdf->WriteHTML($vs_content);
-						
-			header("Content-Disposition: attachment; filename=export_results.pdf");
-			header("Content-type: application/pdf");
-			
-						$vo_html2pdf->Output('artform_results.pdf');
-						$vb_printed_properly = true;
-					} catch (Exception $e) {
-						$vb_printed_properly = false;
-						$this->postError(3100, _t("Could not generate PDF"),"BaseEditorController->PrintSummary()");
-					}
-					return;
-					break;	
-				case '_pdf_condition':
-					require_once(__CA_LIB_DIR__."/core/Print/html2pdf/html2pdf.class.php");
-					
-					try {
-						$vs_content = $this->render('Results/'.$this->ops_tablename.'_pdf_results_condition_html.php');
-						$vo_html2pdf = new HTML2PDF('P','letter','en');
-						$vo_html2pdf->setDefaultFont("dejavusans");
-						$vo_html2pdf->setTestIsImage(false);
-						$vo_html2pdf->WriteHTML($vs_content);
-						
-			header("Content-Disposition: attachment; filename=export_results.pdf");
-			header("Content-type: application/pdf");
-			
-						$vo_html2pdf->Output('condition_report.pdf');
-						$vb_printed_properly = true;
-					} catch (Exception $e) {
-						$vb_printed_properly = false;
-						$this->postError(3100, _t("Could not generate PDF"),"BaseEditorController->PrintSummary()");
-					}
-					return;
-					break;														
-				case '_csv':
-					$vs_delimiter = ",";
-					$vs_output_file_name = mb_substr(preg_replace("/[^A-Za-z0-9\-]+/", '_', $ps_output_filename.'_csv'), 0, 30);
-					$vs_file_extension = 'txt';
-					$vs_mimetype = "text/plain";
-					break;
-				case '_tab':
-					$vs_delimiter = "\t";	
-					$vs_output_file_name = mb_substr(preg_replace("/[^A-Za-z0-9\-]+/", '_', $ps_output_filename.'_tab'), 0, 30);
-					$vs_file_extension = 'txt';
-					$vs_mimetype = "text/plain";
-				default:
-					if ((int)$ps_output_type) {
-						// $o_exporter = new DataExporter();
-// 						if (!sizeof($va_buf = $o_exporter->export((int)$ps_output_type, $po_result, null, array('returnOutput' => true)))) {
-// 							$this->response->setHTTPResponseCode(206, 'No action');		// nothing to export
-// 							return;
-// 						}
-// 						$vs_export_target = $o_exporter->exportTarget((int)$ps_output_type);
-// 						$vs_file_extension = $o_exporter->exportFileExtension((int)$ps_output_type);
-// 						$vs_output_file_name = mb_substr(preg_replace("/[^A-Za-z0-9\-]+/", '_', $ps_output_filename.'_'.$vs_export_target), 0, 30);
-// 						if(sizeof($va_buf) == 1) {		// single record - output as file
-// 							header("Content-Disposition: attachment; filename=export_".$vs_output_file_name.".".$vs_file_extension);
-// 							header("Content-type: text/xml");
-// 							$this->opo_response->addContent($va_buf[0], 'view');	
-// 							return;
-// 						} else {		// more than one record... create a ZIP file
-// 							header("Content-Disposition: attachment; filename=export_".$vs_output_file_name.".zip");
-// 							header("Content-type: application/zip");
-// 							$o_zip = new ZipFile();
-// 							
-// 							$vn_i = 1;
-// 							foreach($va_buf as $vs_buf) {
-// 								$o_zip->addFile($vs_buf, $vs_export_target.'_'.$vn_i.'.'.$vs_file_extension);
-// 								$vn_i++;
-// 							}
-// 							$this->opo_response->addContent($o_zip->output(ZIPFILE_RETURN_STRING), 'view');	
-// 							return;
-// 						}
-					}
-					$vs_delimiter = "\t";	
-					break;
+						return;
+						break;
+					case '_csv':
+						$vs_delimiter = ",";
+						$vs_output_file_name = mb_substr(preg_replace("/[^A-Za-z0-9\-]+/", '_', $ps_output_filename.'_csv'), 0, 30);
+						$vs_file_extension = 'txt';
+						$vs_mimetype = "text/plain";
+						break;
+					case '_tab':
+						$vs_delimiter = "\t";	
+						$vs_output_file_name = mb_substr(preg_replace("/[^A-Za-z0-9\-]+/", '_', $ps_output_filename.'_tab'), 0, 30);
+						$vs_file_extension = 'txt';
+						$vs_mimetype = "text/plain";
+					default:
+						if ((int)$ps_output_type) {
+							// $o_exporter = new DataExporter();
+	// 						if (!sizeof($va_buf = $o_exporter->export((int)$ps_output_type, $po_result, null, array('returnOutput' => true)))) {
+	// 							$this->response->setHTTPResponseCode(206, 'No action');		// nothing to export
+	// 							return;
+	// 						}
+	// 						$vs_export_target = $o_exporter->exportTarget((int)$ps_output_type);
+	// 						$vs_file_extension = $o_exporter->exportFileExtension((int)$ps_output_type);
+	// 						$vs_output_file_name = mb_substr(preg_replace("/[^A-Za-z0-9\-]+/", '_', $ps_output_filename.'_'.$vs_export_target), 0, 30);
+	// 						if(sizeof($va_buf) == 1) {		// single record - output as file
+	// 							header("Content-Disposition: attachment; filename=export_".$vs_output_file_name.".".$vs_file_extension);
+	// 							header("Content-type: text/xml");
+	// 							$this->opo_response->addContent($va_buf[0], 'view');	
+	// 							return;
+	// 						} else {		// more than one record... create a ZIP file
+	// 							header("Content-Disposition: attachment; filename=export_".$vs_output_file_name.".zip");
+	// 							header("Content-type: application/zip");
+	// 							$o_zip = new ZipFile();
+	// 							
+	// 							$vn_i = 1;
+	// 							foreach($va_buf as $vs_buf) {
+	// 								$o_zip->addFile($vs_buf, $vs_export_target.'_'.$vn_i.'.'.$vs_file_extension);
+	// 								$vn_i++;
+	// 							}
+	// 							$this->opo_response->addContent($o_zip->output(ZIPFILE_RETURN_STRING), 'view');	
+	// 							return;
+	// 						}
+						}
+						$vs_delimiter = "\t";	
+						break;
+				}
+
+				header("Content-Disposition: attachment; filename=export_".$vs_output_file_name.".".$vs_file_extension);
+				header("Content-type: ".$vs_mimetype);
 			}
-			
-			header("Content-Disposition: attachment; filename=export_".$vs_output_file_name.".".$vs_file_extension);
-			header("Content-type: ".$vs_mimetype);
+			else
+			{
+				if (!($vs_filename =  $va_settings['filename'])) {
+					$vs_filename = 'export_results.pdf';
+				}
+				if (!($vs_orientation =  $va_settings['orientation'])) {
+					$vs_orientation = 'P';
+				}
+				if (!($vs_page_format =  $va_settings['page_format'])) {
+					$vs_page_format = 'letter';
+				}
+				if (!($vs_language =  $va_settings['language'])) {
+					$vs_language = 'en';
+				}
+				if (!($vs_font =  $va_settings['font'])) {
+					$vs_font = 'dejavusans';
+				}
+				if (!($vb_unicode =  $va_settings['unicode'])) {
+					$vb_unicode = true;
+				}
+				if (!($vs_enocoding =  $va_settings['encoding'])) {
+					$vs_enocoding = 'UTF-8';
+				}
+				if (!($vs_margin_left =  $va_settings['margin_left'])) {
+					$vs_margin_left = '5';
+				}
+				if (!($vs_margin_top =  $va_settings['margin_top'])) {
+					$vs_margin_top = '5';
+				}
+				if (!($vs_margin_right =  $va_settings['margin_right'])) {
+					$vs_margin_right = '5';
+				}
+				if (!($vs_margin_bottom =  $va_settings['margin_bottom'])) {
+					$vs_margin_bottom = '8';
+				}
+				
+				require_once(__CA_LIB_DIR__."/core/Print/html2pdf/html2pdf.class.php");
+				try {
+					$vs_content = $this->render('Results/'.str_replace("<tablename>", $this->ops_tablename, $va_settings['script_to_render']));
+					$vo_html2pdf = new HTML2PDF($vs_orientation, $vs_page_format, $vs_language, $vb_unicode, $vs_enocoding, 
+						array($vs_margin_left, $vs_margin_top, $vs_margin_right, $vs_margin_bottom));
+					$vo_html2pdf->setDefaultFont($vs_font);
+					$vo_html2pdf->setTestIsImage(false);
+					$vo_html2pdf->WriteHTML($vs_content);
+					
+					header("Content-Disposition: attachment; filename=".$vs_filename);
+					header("Content-type: application/pdf");
+		
+					$vo_html2pdf->Output($vs_filename);
+					$vb_printed_properly = true;
+				} catch (Exception $e) {
+					$vb_printed_properly = false;
+					$this->postError(3100, _t("Could not generate PDF"),"BaseEditorController->PrintSummary()");
+				}				
+			}
 			
 			// get display list
 			self::Index(null, null);
@@ -1028,6 +1029,7 @@
  		 */
  		public function Viz() {
  			$ps_viz = $this->request->getParameter('viz', pString);
+ 			$pb_render_data = (bool)$this->request->getParameter('renderData', pInteger);
  			
  			$o_viz = new Visualizer($this->ops_tablename);
  			$vo_result = caMakeSearchResult($this->ops_tablename, $this->opo_result_context->getResultList());
@@ -1042,6 +1044,10 @@
  			$this->view->setVar('t_item', $o_dm->getInstanceByTableName($this->ops_tablename, true));
  			$this->view->setVar('num_items_rendered', (int)$o_viz->numItemsRendered());
  			
+ 			if ($pb_render_data) {
+ 				$this->response->addContent($o_viz->getDataForVisualization($ps_viz, array('request' => $this->request)));
+ 				return;
+ 			}
  			$this->render('Results/viz_html.php');
  		}
  		# ------------------------------------------------------------------

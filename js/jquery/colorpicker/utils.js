@@ -36,10 +36,10 @@ EYE.extend({
 					el = el.offsetParent;
 				}
 			}
-			if (jQuery.browser.safari && jQuery.curCSS(e, 'position') == 'absolute' ) {
-				x -= document.body.offsetLeft;
-				y -= document.body.offsetTop;
-			}
+			//if (jQuery.browser.safari && jQuery.curCSS(e, 'position') == 'absolute' ) {
+			//	x -= document.body.offsetLeft;
+			//	y -= document.body.offsetTop;
+			//}
 			el = e.parentNode;
 			while (el && el.tagName.toUpperCase() != 'BODY' && el.tagName.toUpperCase() != 'HTML') 
 			{

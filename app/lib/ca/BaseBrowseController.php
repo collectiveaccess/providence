@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2009-2013 Whirl-i-Gig
+ * Copyright 2009-2014 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -283,6 +283,55 @@
 			$this->view->setVar('mode_type_plural', $this->browseName('plural'));
 			
 			$this->view->setVar('access_values', $va_access_values);
+			
+			$t_display = $this->view->getVar('t_display');
+			$va_display_list = $this->view->getVar('display_list');
+			if ($vs_view == 'editable') {
+				
+				$va_initial_data = array();
+				$va_row_headers = array();
+				
+ 				$vn_item_count = 0;
+ 				
+ 				if ($vo_result) {
+					$vs_pk = $vo_result->primaryKey();
+				
+					while(($vn_item_count < 100) && $vo_result->nextHit()) {
+						$va_result = array('item_id' => $vn_id = $vo_result->get($vs_pk));
+	
+						foreach($va_display_list as $vn_placement_id => $va_bundle_info) {
+							$va_result[str_replace(".", "-", $va_bundle_info['bundle_name'])] = $t_display->getDisplayValue($vo_result, $vn_placement_id, array('request' => $this->request));
+						}
+	
+						$va_initial_data[] = $va_result;
+	
+						$vn_item_count++;
+	
+						$va_row_headers[] = ($vn_item_count)." ".caEditorLink($this->request, caNavIcon($this->request, __CA_NAV_BUTTON_EDIT__), 'caResultsEditorEditLink', $vs_subject_table, $vn_id);
+	
+					}
+				}
+				
+				$this->view->setVar('initialData', $va_initial_data);
+				$this->view->setVar('rowHeaders', $va_row_headers);
+			}
+			
+			//
+			// Bottom line
+			//
+		
+			$va_bottom_line = array();
+			$vb_bottom_line_is_set = false;
+			foreach($va_display_list as $vn_placement_id => $va_placement) {
+				if(isset($va_placement['settings']['bottom_line']) && $va_placement['settings']['bottom_line']) {
+					$va_bottom_line[$vn_placement_id] = caProcessBottomLineTemplate($this->request, $va_placement, $vo_result, array('pageStart' => ($vn_page_num - 1) * $vn_items_per_page, 'pageEnd' => (($vn_page_num - 1) * $vn_items_per_page) + $vn_items_per_page));
+					$vb_bottom_line_is_set = true;
+				} else {
+					$va_bottom_line[$vn_placement_id] = '';
+				}
+			}
+			$this->view->setVar('bottom_line', $vb_bottom_line_is_set ? $va_bottom_line : null);
+			
  			switch($pa_options['output_format']) {
  				# ------------------------------------
  				case 'PDF':
@@ -398,6 +447,8 @@
  		public function getFacetHierarchyLevel() {
  			$va_access_values = caGetUserAccessValues($this->request);
  			$ps_facet_name = $this->request->getParameter('facet', pString);
+ 			
+ 			$this->opo_browse->setTypeRestrictions(array($this->opn_type_restriction_id));
  			if(!is_array($va_facet_info = $this->opo_browse->getInfoForFacet($ps_facet_name))) { return null; }
  			
  			$va_facet = $this->opo_browse->getFacet($ps_facet_name, array('sort' => 'name', 'checkAccess' => $va_access_values));
@@ -410,7 +461,21 @@
  			if ((($vn_max_items_per_page = $this->request->getParameter('max', pInteger)) < 1) || ($vn_max_items_per_page > 1000)) {
 				$vn_max_items_per_page = null;
 			}
-						
+			
+			$t_model = $this->opo_datamodel->getInstanceByTableName($this->ops_tablename, true);
+			
+			$va_expanded_facet = array();
+			$t_item = new ca_list_items();
+ 			foreach($va_facet as $vn_id => $va_facet_item) {
+ 				$va_expanded_facet[$vn_id] = true;
+ 				$va_ancestors = $t_item->getHierarchyAncestors($vn_id, array('idsOnly' => true));
+ 				if (is_array($va_ancestors)) {
+					foreach($va_ancestors as $vn_ancestor_id) {
+						$va_expanded_facet[$vn_ancestor_id] = true;
+					}
+				}
+ 			}
+ 				
  			foreach($pa_ids as $pn_id) {
  				$va_json_data = array('_primaryKey' => 'item_id');
 				
@@ -425,19 +490,29 @@
 						$t_element = new ca_metadata_elements();
 						if ($t_element->load(array('element_code' => $va_facet_info['element_code']))) {
 							if ($t_element->get('datatype') == 3) { // 3=list
-								if (!$vn_id) {
-									$t_list = new ca_lists();
+								
+								$t_list = new ca_lists();
+								if (!$vn_id) { 
 									$vn_id = $t_list->getRootListItemID($t_element->get('list_id'));
 								}
-								foreach($va_facet as $vn_i => $va_item) {
-									if ($va_item['parent_id'] == $vn_id) {
-										$va_item['item_id'] = $va_item['id'];
-										$va_item['name'] = $va_item['label'];
-										$va_item['children'] = $va_item['child_count'];
-										unset($va_item['label']);
-										unset($va_item['child_count']);
-										unset($va_item['id']);
-										$va_json_data[$va_item['item_id']] = $va_item;
+								$t_item = new ca_list_items($vn_id);
+								$va_children = $t_item->getHierarchyChildren(null, array('idsOnly' => true));
+								$va_child_counts = $t_item->getHierarchyChildCountsForIDs($va_children);
+								$qr_res = caMakeSearchResult('ca_list_items', $va_children);
+								
+								$vs_pk = $t_model->primaryKey();
+								
+								if ($qr_res) {
+									while($qr_res->nextHit()) {
+										$vn_parent_id = $qr_res->get('ca_list_items.parent_id');
+										$vn_item_id = $qr_res->get('ca_list_items.item_id');
+										if (!isset($va_expanded_facet[$vn_item_id])) { continue; }
+										
+										$va_item = array();
+										$va_item['item_id'] = $vn_item_id;
+										$va_item['name'] = $qr_res->get('ca_list_items.preferred_labels');
+										$va_item['children'] = (isset($va_child_counts[$vn_item_id]) && $va_child_counts[$vn_item_id]) ? $va_child_counts[$vn_item_id] : 0;
+										$va_json_data[$vn_item_id] = $va_item;
 									}
 								}
 							}
@@ -560,6 +635,7 @@
  				
 					if ($t_item->getPrimaryKey()) { 
 						$va_ancestors = array_reverse($t_item->getHierarchyAncestors(null, array('includeSelf' => true, 'idsOnly' => true)));
+						if (!is_array($va_ancestors)) { $va_ancestors = array(); }
 					}
 					if ($vn_hierarchies_in_use <= 1) {
 						array_shift($va_ancestors);

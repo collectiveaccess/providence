@@ -68,10 +68,14 @@ class WLPlugSearchEngineElasticSearch extends BaseSearchPlugin implements IWLPlu
 	}
 	# -------------------------------------------------------
 	public function init(){
+		if(($vn_max_indexing_buffer_size = (int)$this->opo_search_config->get('max_indexing_buffer_size')) < 1) {
+			$vn_max_indexing_buffer_size = 100;
+		}
+		
 		$this->opa_options = array(
 			'start' => 0,
-			'limit' => 10000,					// maximum number of hits to return [default=10000],
-			'maxContentBufferSize' => 100				// maximum number of indexed content items to accumulate before writing to the index
+			'limit' => 10000,												// maximum number of hits to return [default=10000],
+			'maxIndexingBufferSize' => $vn_max_indexing_buffer_size			// maximum number of indexed content items to accumulate before writing to the index
 		);
 
 		$this->opa_capabilities = array(
@@ -462,64 +466,68 @@ class WLPlugSearchEngineElasticSearch extends BaseSearchPlugin implements IWLPlu
 		if (is_array($pm_content)) {
 			$pm_content = serialize($pm_content);
 		}
-		
-		if ($pn_content_tablenum != 4) {
-			$ps_content_tablename = $this->opo_datamodel->getTableName($pn_content_tablenum);
-		} else {
-			$ps_content_tablename = $this->ops_indexing_subject_tablename;
-			if (preg_match('!^__ca_attribute_(.*)$!', $ps_content_fieldname, $va_matches)) {
-				if (!$va_element_info = $this->_getMetadataElement($va_matches[1])) { return null; }
-				switch($va_element_info['datatype']) {
-					case 1: // text
-					case 3:	// list
-					case 5:	// url
-					case 6: // currency
-					case 8: // length
-					case 9: // weight
-					case 13: // LCSH
-					case 14: // geonames
-					case 15: // file
-					case 16: // media
-					case 19: // taxonomy
-					case 20: // information service
-						// noop
-						break;
-					case 2:	// daterange
-						if (!is_array($pa_parsed_content = caGetISODates($pm_content))) { return null; }
-						$this->opa_doc_content_buffer[$ps_content_tablename.'.'.$va_element_info['element_code'].'_text'][] = $pm_content;
-						$ps_rewritten_start = $this->_rewriteDate($pa_parsed_content["start"],true);
-						$ps_rewritten_end = $this->_rewriteDate($pa_parsed_content["end"],false);
-						$pm_content = array($ps_rewritten_start,$ps_rewritten_end);
-						break;
-					case 4:	// geocode
-						if ($va_coords = $this->opo_geocode_parser->parseValue($pm_content, $va_element_info)) {
-							if (isset($va_coords['value_longtext2']) && $va_coords['value_longtext2']) {
-								$this->opa_doc_content_buffer[$ps_content_tablename.'.'.$va_element_info['element_code'].'_text'][] = $pm_content;
-								$va_coords = explode(':', $va_coords['value_longtext2']);
-								foreach($va_coords as $vs_point){
-									$this->opa_doc_content_buffer[$ps_content_tablename.'.'.$va_element_info['element_code']][] = $vs_point;
-								}
-								return;
-							} else {
-								break;
+	
+		$ps_content_tablename = $this->opo_datamodel->getTableName($pn_content_tablenum);
+		if ($ps_content_fieldname[0] === 'A') {
+			// Metadata attribute
+			
+			$vn_field_num_proc = (int)substr($ps_content_fieldname, 1);
+			
+			if (!$va_element_info = $this->_getMetadataElement($vn_field_num_proc)) { return null; }
+			switch($va_element_info['datatype']) {
+				case 1: // text
+				case 3:	// list
+				case 5:	// url
+				case 6: // currency
+				case 8: // length
+				case 9: // weight
+				case 13: // LCSH
+				case 14: // geonames
+				case 15: // file
+				case 16: // media
+				case 19: // taxonomy
+				case 20: // information service
+					// noop
+					break;
+				case 2:	// daterange
+					if (!is_array($pa_parsed_content = caGetISODates($pm_content))) { return null; }
+					$this->opa_doc_content_buffer[$ps_content_tablename.'.'.$va_element_info['element_code'].'_text'][] = $pm_content;
+					$ps_rewritten_start = $this->_rewriteDate($pa_parsed_content["start"],true);
+					$ps_rewritten_end = $this->_rewriteDate($pa_parsed_content["end"],false);
+					$pm_content = array($ps_rewritten_start,$ps_rewritten_end);
+					break;
+				case 4:	// geocode
+					if ($va_coords = $this->opo_geocode_parser->parseValue($pm_content, $va_element_info)) {
+						if (isset($va_coords['value_longtext2']) && $va_coords['value_longtext2']) {
+							$this->opa_doc_content_buffer[$ps_content_tablename.'.'.$va_element_info['element_code'].'_text'][] = $pm_content;
+							$va_coords = explode(':', $va_coords['value_longtext2']);
+							foreach($va_coords as $vs_point){
+								$this->opa_doc_content_buffer[$ps_content_tablename.'.'.$va_element_info['element_code']][] = $vs_point;
 							}
+							return;
 						} else {
 							break;
 						}
+					} else {
 						break;
-					case 10:	// timecode
-					case 12:	// numeric/float
-						$pm_content = (float)$pm_content;
-						break;
-					case 11:	// integer
-						$pm_content = (int)$pm_content;
-						break;
-					default:
-						// noop
-						break;
-				}
-				$ps_content_fieldname = $va_element_info['element_code'];
+					}
+					break;
+				case 10:	// timecode
+				case 12:	// numeric/float
+					$pm_content = (float)$pm_content;
+					break;
+				case 11:	// integer
+					$pm_content = (int)$pm_content;
+					break;
+				default:
+					// noop
+					break;
 			}
+			$ps_content_fieldname = $va_element_info['element_code'];
+		} else {
+			// Intrinsic field
+			$vn_field_num_proc = (int)substr($ps_content_fieldname, 1);
+			$ps_content_fieldname = $this->opo_datamodel->getFieldName($ps_content_tablename, $vn_field_num_proc);
 		}
 		$this->opa_doc_content_buffer[$ps_content_tablename.'.'.$ps_content_fieldname][] = $pm_content;
 	}
@@ -554,7 +562,7 @@ class WLPlugSearchEngineElasticSearch extends BaseSearchPlugin implements IWLPlu
 		unset($this->opn_indexing_subject_row_id);
 		unset($this->ops_indexing_subject_tablename);
 
-		if (sizeof(WLPlugSearchEngineElasticSearch::$s_doc_content_buffer) > $this->getOption('maxContentBufferSize')) {
+		if (sizeof(WLPlugSearchEngineElasticSearch::$s_doc_content_buffer) > $this->getOption('maxIndexingBufferSize')) {
 			$this->flushContentBuffer();
 		}
 	}

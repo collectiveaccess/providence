@@ -535,8 +535,11 @@
 					if ($ps_orientation == $vs_left_table_name) {
 						// right-to-left
 						
+						// expand subtype
+						$va_subtypes_to_check = ($va_row['sub_type_left_id'] > 0) ? caMakeTypeIDList($vs_left_table_name, array($va_row['sub_type_left_id'])) : null;
+						
 						// skip type if it has a subtype set and it's not in our list
-						if (!((!$va_row['sub_type_left_id'] || (in_array($va_row['sub_type_left_id'], $va_ancestor_ids))))) { continue; }
+						if (!((!$va_subtypes_to_check || sizeof(array_intersect($va_subtypes_to_check, $va_ancestor_ids))))) { continue; }
 						$vs_subtype = $va_row['sub_type_right_id'];
 						
 						$vs_key = (strlen($va_row['rank']) > 0)  ? sprintf("%08d", (int)$va_row['rank']).preg_replace('![^A-Za-z0-9_]+!', '_', $va_row['typename']) : preg_replace('![^A-Za-z0-9_]+!', '_', $va_row['typename']);
@@ -544,8 +547,11 @@
 					} else {
 						// left-to-right
 						
+						// expand subtype
+						$va_subtypes_to_check = ($va_row['sub_type_right_id'] > 0) ? caMakeTypeIDList($vs_right_table_name, array($va_row['sub_type_right_id'])) : null;
+						
 						// skip type if it has a subtype set and it's not in our list
-						if (!((!$va_row['sub_type_right_id'] || (in_array($va_row['sub_type_right_id'], $va_ancestor_ids))))) { continue; }
+						if (!((!$va_subtypes_to_check || sizeof(array_intersect($va_subtypes_to_check, $va_ancestor_ids))))) { continue; }
 						$vs_subtype = $va_row['sub_type_left_id'];	
 						
 						$va_row['typename'] = $va_row['typename_reverse'];

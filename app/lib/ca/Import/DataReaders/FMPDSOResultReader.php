@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2013 Whirl-i-Gig
+ * Copyright 2013-2014 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -40,22 +40,28 @@ require_once(__CA_APP_DIR__.'/helpers/displayHelpers.php');
 class FMPDSOResultReader extends BaseXMLDataReader {
 	# -------------------------------------------------------
 	/**
-	 * XPath to select
+	 * Skip root tag when evaluating XPath?
+	 *
+	 * If set then the XPath used to select data to read can omit the root XML tag
+	 */
+	protected $opb_register_root_tag = true;
+	
+	/**
+	 * XML namespace URL used by data
 	 */
 	protected $ops_xml_namespace = 'http://www.filemaker.com/fmpdsoresult';
 	
-	
 	/**
-	 * XPath to select
+	 * XML namespace prefix to pair with namespace URL
+	 * For files that use a namespace this should match that actually used in the file;
+	 * For files that don't use a namespace this should be set to *something* – doesn't really matter what
 	 */
 	protected $ops_xml_namespace_prefix = 'n';
 	
-	
 	/**
-	 * XPath to select
+	 * XPath to select data for reading
 	 */
 	protected $ops_xpath = '/n:FMPDSORESULT/n:ROW';
-	
 	
 	/**
 	 * Merge attributes of row-level tag into record as regular values?
@@ -65,7 +71,6 @@ class FMPDSOResultReader extends BaseXMLDataReader {
 	 */
 	protected $opb_use_row_tag_attributes_as_row_level_values = true;
 
-	
 	/**
 	 * Treat tag names as case insensitive?
 	 *
@@ -89,3 +94,4 @@ class FMPDSOResultReader extends BaseXMLDataReader {
 	}
 	# -------------------------------------------------------
 }
+?>

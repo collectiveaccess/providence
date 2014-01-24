@@ -44,10 +44,10 @@ DV.Schema.states = {
     this.activeAnnotationId = null;
     this.acceptInput.deny();
     // Nudge IE to force the annotations to repaint.
-    if (DV.jQuery.browser.msie) {
-      this.elements.annotations.css({zoom : 0});
-      this.elements.annotations.css({zoom : 1});
-    }
+   // if (DV.jQuery.browser.msie) {
+   //   this.elements.annotations.css({zoom : 0});
+   //   this.elements.annotations.css({zoom : 1});
+   // }
     
     this.helpers.toggleContent('viewAnnotations');
     this.compiled.next();

@@ -393,8 +393,8 @@ class ca_objects extends RepresentableBaseModel implements IBundleProvider {
 		parent::__construct($pn_id);
 	}
 	# ------------------------------------------------------
-	protected function initLabelDefinitions() {
-		parent::initLabelDefinitions();
+	protected function initLabelDefinitions($pa_options=null) {
+		parent::initLabelDefinitions($pa_options);
 		$this->BUNDLES['ca_object_representations'] = array('type' => 'related_table', 'repeating' => true, 'label' => _t('Media representations'));
 		$this->BUNDLES['ca_objects'] = array('type' => 'related_table', 'repeating' => true, 'label' => _t('Related objects'));
 		$this->BUNDLES['ca_entities'] = array('type' => 'related_table', 'repeating' => true, 'label' => _t('Related entities'));
@@ -588,11 +588,7 @@ class ca_objects extends RepresentableBaseModel implements IBundleProvider {
 					'name' => $vs_name = caProcessTemplateForIDs($vs_template, 'ca_objects', array($vn_pk)),
 					'hierarchy_id' => $vn_hier_id,
 					'children' => sizeof($va_children)
-				),
-				'object_id' => $vn_pk,
-				'name' => $vs_name,
-				'hierarchy_id' => $vn_hier_id,
-				'children' => sizeof($va_children)
+				)
 			);
 				
 	 		return $va_object_hierarchy_root;

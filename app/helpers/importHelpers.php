@@ -52,6 +52,7 @@
 	 */
 	function caProcessRefineryParents($ps_refinery_name, $ps_table, $pa_parents, $pa_source_data, $pa_item, $ps_delimiter, $pn_c, $o_log=null, $pa_options=null) {
 		global $g_ui_locale_id;
+		if (!is_array($pa_options)) { $pa_options = array(); }
 		
 		$vn_list_id = caGetOption('list_id', $pa_options, null);
 		$vb_hierarchy_mode = caGetOption('hierarchyMode', $pa_options, false);
@@ -124,6 +125,8 @@
 				}
 			}
 			
+			$pa_options = array_merge(array_merge(array('matchOn' => array('idno', 'label')), $pa_options));
+			
 			switch($ps_table) {
 				case 'ca_objects':
 					$vn_id = DataMigrationUtils::getObjectID($vs_name, $vn_id, $vs_type, $g_ui_locale_id, $va_attributes, $pa_options);
@@ -135,6 +138,12 @@
 					$va_attributes['_preferred_labels'] = $vs_name;
 					break;
 				case 'ca_places':
+					if(!$vn_id) {	// get place hierarchy root
+						require_once(__CA_MODELS_DIR__."/ca_places.php");
+						$t_place = new ca_places();
+						$vn_id = $t_place->getHierarchyRootID($va_attributes['hierarchy_id']);
+						$va_attributes['parent_id'] = $vn_id;
+					}
 					$vn_id = DataMigrationUtils::getPlaceID($vs_name, $vn_id, $vs_type, $g_ui_locale_id, $va_attributes, $pa_options);
 					$va_attributes['preferred_labels']['name'] = $va_attributes['_preferred_labels'] = $vs_name;
 					break;
@@ -155,10 +164,22 @@
 					$va_attributes['preferred_labels']['name'] = $va_attributes['_preferred_labels'] = $vs_name;
 					break;
 				case 'ca_list_items':
-					$vn_id = DataMigrationUtils::getListItemID($vn_list_id, $vs_name, $vs_type, $g_ui_locale_id, $va_attributes, array_merge(array('matchOnLabel' => true, 'matchOnIdno' => true), $pa_options));
+					if(!$vn_id) {	// get place hierarchy root
+						require_once(__CA_MODELS_DIR__."/ca_lists.php");
+						$t_list = new ca_lists();
+						$vn_id = $t_list->getRootItemIDForList($vn_list_id);
+						$va_attributes['parent_id'] = $vn_id;
+					}
+					$vn_id = DataMigrationUtils::getListItemID($vn_list_id, $vs_name, $vs_type, $g_ui_locale_id, $va_attributes, $pa_options);
 					$va_attributes['preferred_labels']['name_singular'] = $va_attributes['preferred_labels']['name_plural'] = $vs_name;
 					break;
 				case 'ca_storage_locations':
+					if(!$vn_id) {	// get storage location hierarchy root
+						require_once(__CA_MODELS_DIR__."/ca_storage_locations.php");
+						$t_loc = new ca_storage_locations();
+						$vn_id = $t_loc->getHierarchyRootID();
+						$va_attributes['parent_id'] = $vn_id;
+					}
 					$vn_id = DataMigrationUtils::getStorageLocationID($vs_name, $vn_id, $vs_type, $g_ui_locale_id, $va_attributes, $pa_options);
 					$va_attributes['preferred_labels']['name'] = $va_attributes['_preferred_labels'] = $vs_name;
 					break;
@@ -343,6 +364,9 @@
 			} else {
 				$vs_idno_stub = BaseRefinery::parsePlaceholder($pa_related_options['idno_stub'], $pa_source_data, $pa_item, $ps_delimiter, $pn_c, array('returnAsString' => true, 'delimiter' => ' '));	
 			}	
+			
+			$pa_options = array_merge(array_merge(array('matchOn' => array('idno', 'label')), $pa_options));
+			
 			switch($ps_related_table) {
 				case 'ca_objects':
 					$vn_id = DataMigrationUtils::getObjectID($vs_name, $vn_parent_id, $vs_type, $g_ui_locale_id, $va_attributes, $pa_options);
@@ -369,7 +393,7 @@
 					$vn_id = DataMigrationUtils::getMovementID($vs_name, $vs_type, $g_ui_locale_id, $va_attributes, $pa_options);
 					break;
 				case 'ca_list_items':
-					$vn_id = DataMigrationUtils::getListItemID($vn_list_id, $vs_name, $vs_type, $g_ui_locale_id, $va_attributes, array_merge(array('matchOnLabel' => true, 'matchOnIdno' => true), $pa_options));
+					$vn_id = DataMigrationUtils::getListItemID($vn_list_id, $vs_name, $vs_type, $g_ui_locale_id, $va_attributes, $pa_options);
 					break;
 				case 'ca_storage_locations':
 					$vn_id = DataMigrationUtils::getStorageLocationID($vs_name, $vn_parent_id, $vs_type, $g_ui_locale_id, $va_attributes, $pa_options);
@@ -558,6 +582,8 @@
 					if(!is_array($va_attr_vals)) { $va_attr_vals = array(); }
 					$va_attr_vals_with_parent = array_merge($va_attr_vals, array('parent_id' => $va_val['_parent_id']));
 					
+					$pa_options = array_merge(array_merge(array('matchOn' => array('idno', 'label')), $pa_options));
+					
 					switch($ps_table) {
 						case 'ca_objects':
 							$vn_item_id = DataMigrationUtils::getObjectID($vs_item, $va_val['parent_id'], $va_val['_type'], $g_ui_locale_id, $va_attr_vals_with_parent, $pa_options);
@@ -589,7 +615,7 @@
 							break;
 						case 'ca_list_items':
 							$va_attr_vals_with_parent['is_enabled'] = 1;
-							$vn_item_id = DataMigrationUtils::getListItemID($pa_options['list_id'], $vs_item, $va_val['_type'], $g_ui_locale_id, $va_attr_vals_with_parent, array_merge(array('matchOnLabel' => true, 'matchOnIdno' => true), $pa_options));
+							$vn_item_id = DataMigrationUtils::getListItemID($pa_options['list_id'], $vs_item, $va_val['_type'], $g_ui_locale_id, $va_attr_vals_with_parent, $pa_options);
 							
 							break;
 						case 'ca_storage_locations':

@@ -38,42 +38,45 @@
 	
 	$va_args = $o_opts->getRemainingArgs();
 	
-	$vs_app_heading = CLIUtils::textWithColor(_t("CollectiveAccess %1 (%2/%3) Utilities\n(c) 2013 Whirl-i-Gig",__CollectiveAccess__, __CollectiveAccess_Schema_Rev__, __CollectiveAccess_Release_Type__), "bold_blue")."\n\n";
+	$vs_app_heading = CLIUtils::textWithColor(_t("CollectiveAccess %1 (%2/%3) Utilities\n(c) 2013-2014 Whirl-i-Gig",__CollectiveAccess__, __CollectiveAccess_Schema_Rev__, __CollectiveAccess_Release_Type__), "bold_blue")."\n\n";
 	
 	print $vs_app_heading;
-	if (($vs_cmd == 'help') && (sizeof($va_args) > 1) && ($va_args[1])) {
-		//
-		// Full-length help for command
-		//
-		$vs_subcmd = $va_args[1];
-		$vs_subcmd_proc = strtolower(str_replace("-", "_", $vs_subcmd));
-		if (method_exists("CLIUtils", $vs_subcmd_proc)) {
-			
-			print CLIUtils::textWithColor("Help for \"{$vs_subcmd}\":", "bold_green")."\n\n";
-			print "\t".wordwrap(call_user_func_array("CLIUtils::{$vs_subcmd_proc}Help", array($o_opts)), 90, "\n\t")."\n\n";
-			
-			
-			$va_opts = call_user_func_array("CLIUtils::{$vs_subcmd_proc}ParamList", array($o_opts));
-			
-			if (is_array($va_opts) && sizeof($va_opts)) {
-				print CLIUtils::textWithColor("Options for {$vs_subcmd} are:", "bold_green")."\n\n";
-				foreach($va_opts as $vs_opt_format => $vs_opt_desc) {
-					$va_tmp = explode("|", $vs_opt_format);
-					$va_abbr = preg_split("![=\-]+!", $va_tmp[1]);
-				
-					print "\t".CLIUtils::textWithColor(str_pad("--".$va_tmp[0]." ".($va_abbr[0] ? "(-{$va_abbr[0]})" : ""), 20), "red").wordwrap($vs_opt_desc, 75, "\n\t".str_repeat(" ", 20))."\n\n";
-				}
+	
+	if (method_exists("CLIUtils", $vs_cmd) || ((strtolower($vs_cmd) === 'help') && (sizeof($va_args) > 1))) {
+		if ((sizeof($va_args) > 1) && ((strtolower($va_args[1]) === 'help') || (strtolower($vs_cmd) === 'help'))) {
+			//
+			// Full-length help for command
+			//
+			if (strtolower($vs_cmd) === 'help') {
+				$vs_cmd = $va_args[1];
 			}
+			$vs_cmd_proc = strtolower(str_replace("-", "_", $vs_cmd));
+			if (method_exists("CLIUtils", $vs_cmd_proc)) {
+			
+				print CLIUtils::textWithColor("Help for \"{$vs_cmd}\":", "bold_green")."\n\n";
+				print "\t".wordwrap(call_user_func_array("CLIUtils::{$vs_cmd_proc}Help", array($o_opts)), 90, "\n\t")."\n\n";
+			
+			
+				$va_opts = call_user_func_array("CLIUtils::{$vs_cmd_proc}ParamList", array($o_opts));
+			
+				if (is_array($va_opts) && sizeof($va_opts)) {
+					print CLIUtils::textWithColor("Options for {$vs_cmd_proc} are:", "bold_green")."\n\n";
+					foreach($va_opts as $vs_opt_format => $vs_opt_desc) {
+						$va_tmp = explode("|", $vs_opt_format);
+						$va_abbr = preg_split("![=\-]+!", $va_tmp[1]);
+				
+						print "\t".CLIUtils::textWithColor(str_pad("--".$va_tmp[0]." ".($va_abbr[0] ? "(-{$va_abbr[0]})" : ""), 20), "red").wordwrap($vs_opt_desc, 75, "\n\t".str_repeat(" ", 20))."\n\n";
+					}
+				}
+			} else {
+				print CLIUtils::textWithColor("No help is available for \"{$vs_subcmd}\"\n", "bold_red");
+			}
+			print "\nFor more information visit http://www.collectiveaccess.org\n\n"; 
 		} else {
-			print CLIUtils::textWithColor("No help is available for \"{$vs_subcmd}\"\n", "bold_red");
-		}
-		print "\nFor more information visit http://www.collectiveaccess.org\n\n"; 
-	} else {
-		if (method_exists("CLIUtils", $vs_cmd)) {
 			//
 			// Execute command
 			//
-			
+		
 			call_user_func_array("CLIUtils::{$vs_cmd}", array($o_opts));
 			print "\n";
 			if ($vn_n = CLIUtils::numErrors()) {
@@ -84,28 +87,40 @@
 				}
 			}
 			print "\n";
-		} else {
-			//
-			// List available commands
-			//
-			
-			$va_methods = get_class_methods("CLIUtils");
-		
-			if ($vs_cmd) {
-				print CLIUtils::textWithColor("\"{$vs_cmd}\" is an invalid command. Valid commands are:", "bold_green")."\n\n";
-			} else {
-				print CLIUtils::textWithColor("You must specify a valid command. Valid commands are:", "bold_red")."\n\n";
-			}
-		
-			foreach($va_methods as $vs_method) {
-				if (!CLIUtils::isCommand($vs_method)) { continue; }
-				if(preg_match("!Help$!", $vs_method)) { continue; }
-				if(preg_match("!ParamList$!", $vs_method)) { continue; }
-				print "\t".CLIUtils::textWithColor(str_pad(str_replace("_", "-", $vs_method), 30), "red")."\t".wordwrap(call_user_func("CLIUtils::{$vs_method}ShortHelp"), 75, "\n\t".str_repeat(" ", 30)."\t")."\n\n";
-			}
-			
-			print "\nFor more information visit http://www.collectiveaccess.org\n\n"; 
 		}
+	} else {
+		//
+		// List available commands
+		//
+		
+		$va_methods = get_class_methods("CLIUtils");
+	
+		if ($vs_cmd) {
+			print CLIUtils::textWithColor("\"{$vs_cmd}\" is an invalid command. Valid commands are:", "bold_green")."\n\n";
+		} else {
+			print CLIUtils::textWithColor("You must specify a valid command. Valid commands are:", "bold_red")."\n\n";
+		}
+	
+		$va_by_class = array();
+		foreach($va_methods as $vs_method) {
+			if (!CLIUtils::isCommand($vs_method)) { continue; }
+			if(preg_match("!Help$!", $vs_method)) { continue; }
+			if(preg_match("!ParamList$!", $vs_method)) { continue; }
+			if(preg_match("!UtilityClass$!", $vs_method)) { continue; }
+			$vs_class = call_user_func("CLIUtils::{$vs_method}UtilityClass");
+			$va_by_class[$vs_class][$vs_method] = CLIUtils::textWithColor(str_pad(str_replace("_", "-", $vs_method), 30), "red")."\t".wordwrap(call_user_func("CLIUtils::{$vs_method}ShortHelp"), 75, "\n\t".str_repeat(" ", 30)."\t");
+		}
+		
+		ksort($va_by_class);
+		foreach($va_by_class as $vs_class => $va_methods) {
+			print CLIUtils::textWithColor($vs_class, "bold_green")."\n\n";
+			ksort($va_methods);
+			foreach($va_methods as $vs_method => $vs_description) {
+				print "\t{$vs_description}\n\n";
+			}
+		}
+		
+		print "\nFor more information visit http://www.collectiveaccess.org\n\n"; 
 	}
 	
 	# --------------------------------------------------------

@@ -55,25 +55,27 @@ class WLPlugSearchEngineSolr extends BaseSearchPlugin implements IWLPlugSearchEn
 	
 	static $s_doc_content_buffer = array();			// content buffer used when indexing
 	static $s_element_code_cache = array();
+	static $s_fieldnum_cache = array();				// cached field name-to-number values used when indexing
 	# -------------------------------------------------------
 	public function __construct(){
 		parent::__construct();
 		
-		//if($this->_SolrConfigIsOutdated()){
-		//	$this->_refreshSolrConfiguration();
-		//}
-		
 		$this->opo_db = new Db();
+
 		$this->opo_tep = new TimeExpressionParser();	
 		
 		$this->opo_geocode_parser = new GeocodeAttributeValue();
 	}
 	# -------------------------------------------------------
 	public function init(){
+		if(($vn_max_indexing_buffer_size = (int)$this->opo_search_config->get('max_indexing_buffer_size')) < 1) {
+			$vn_max_indexing_buffer_size = 100;
+		}
+		
 		$this->opa_options = array(
 				'start' => 0,
-				'limit' => 150000,							// maximum number of hits to return [default=10000],
-				'maxContentBufferSize' => 2000				// maximum number of indexed content items to accumulate before writing to the database
+				'limit' => 150000,													// maximum number of hits to return [default=10000],
+				'maxIndexingBufferSize' => $vn_max_indexing_buffer_size				// maximum number of indexed content items to accumulate before writing to the database
 		);
 
 		$this->opa_capabilities = array(
@@ -197,14 +199,17 @@ class WLPlugSearchEngineSolr extends BaseSearchPlugin implements IWLPlugSearchEn
 								if ($t_table) {
 									$vs_table_num = $t_table->tableNum();
 									if (is_numeric($vs_field)) {
-										$vs_fld_num = $vs_field;
+										$vs_fld_num = 'I'.$vs_field;
+										$vn_fld_num = (int)$vs_field;
 									} else {
-										$vs_fld_num = $this->opo_datamodel->getFieldNum($vs_table, $vs_field);
+										$vn_fld_num = $this->getFieldNum($vs_table, $vs_field);
+										$vs_fld_num = 'I'.$vn_fld_num;
 										
-										if (!$vs_fld_num) {
+										if (!strlen($vn_fld_num)) {
 											$t_element = new ca_metadata_elements();
 											if ($t_element->load(array('element_code' => ($vs_sub_field ? $vs_sub_field : $vs_field)))) {
-												$vs_fld_num = $t_element->getPrimaryKey();
+												$vn_fld_num = $t_element->getPrimaryKey();
+												$vs_fld_num = 'A'.$vn_fld_num;
 												
 												//
 												// For certain types of attributes we can directly query the
@@ -220,20 +225,20 @@ class WLPlugSearchEngineSolr extends BaseSearchPlugin implements IWLPlugSearchEn
 															if ($this->opo_tep->parse($vs_term)) {
 																$va_dates = $this->opo_tep->getHistoricTimestamps();
 																// TODO: fix date handling to reflect distinctions in ranges
-																$o_lucene_query_element = new Zend_Search_Lucene_Search_Query_Term(new Zend_Search_Lucene_Index_Term('['.$this->opo_tep->getText(array('start_as_iso8601' => true))." TO ".$this->opo_tep->getText(array('end_as_iso8601' => true)).']', $vs_access_point));
+																$o_lucene_query_element = new Zend_Search_Lucene_Search_Query_Term(new Zend_Search_Lucene_Index_Term('['.$this->opo_tep->getText(array('start_as_iso8601' => true))." TO ".$this->opo_tep->getText(array('end_as_iso8601' => true)).']', $vs_table.'.'.$vs_fld_num));
 															}
 														} else {
 															if ($this->opo_tep->parse($vs_term)) {
 																$va_dates = $this->opo_tep->getHistoricTimestamps();
 																// TODO: fix date handling to reflect distinctions in ranges
-																$o_lucene_query_element = new Zend_Search_Lucene_Search_Query_Term(new Zend_Search_Lucene_Index_Term('['.$this->opo_tep->getText(array('start_as_iso8601' => true))." TO ".$this->opo_tep->getText(array('end_as_iso8601' => true)).']', $vs_access_point));
+																$o_lucene_query_element = new Zend_Search_Lucene_Search_Query_Term(new Zend_Search_Lucene_Index_Term('['.$this->opo_tep->getText(array('start_as_iso8601' => true))." TO ".$this->opo_tep->getText(array('end_as_iso8601' => true)).']', $vs_table.'.'.$vs_fld_num));
 															}
 														}
 														break;
 													case 4:		// geocode
 														$t_geocode = new GeocodeAttributeValue();
 														if ($va_coords = caParseGISSearch($vs_term)) {
-															$o_lucene_query_element = new Zend_Search_Lucene_Search_Query_Term(new Zend_Search_Lucene_Index_Term('['.$va_coords['min_latitude'].','.$va_coords['min_longitude']." TO ".$va_coords['max_latitude'].','.$va_coords['max_longitude'].']', $vs_access_point));
+															$o_lucene_query_element = new Zend_Search_Lucene_Search_Query_Term(new Zend_Search_Lucene_Index_Term('['.$va_coords['min_latitude'].','.$va_coords['min_longitude']." TO ".$va_coords['max_latitude'].','.$va_coords['max_longitude'].']', $vs_table.'.'.$vs_fld_num));
 														}
 														break;
 													case 6:		// currency
@@ -242,36 +247,42 @@ class WLPlugSearchEngineSolr extends BaseSearchPlugin implements IWLPlugSearchEn
 														$vn_amount = (float)$va_parsed_value['value_decimal1'];
 														$vs_currency = preg_replace('![^A-Z0-9]+!', '', $va_parsed_value['value_longtext1']);
 														
-														$o_lucene_query_element = new Zend_Search_Lucene_Search_Query_Term(new Zend_Search_Lucene_Index_Term($vn_amount, $vs_access_point));
+														$o_lucene_query_element = new Zend_Search_Lucene_Search_Query_Term(new Zend_Search_Lucene_Index_Term($vn_amount, $vs_table.'.'.$vs_fld_num));
 														break;
 													case 8:		// length
 														$t_len = new LengthAttributeValue();
 														$va_parsed_value = $t_len->parseValue($vs_term, $t_element->getFieldValuesArray());
 														$vn_len = (float)$va_parsed_value['value_decimal1'];	// this is always in meters so we can compare this value to the one in the database
 														
-														$o_lucene_query_element = new Zend_Search_Lucene_Search_Query_Term(new Zend_Search_Lucene_Index_Term($vn_len, $vs_access_point));
+														$o_lucene_query_element = new Zend_Search_Lucene_Search_Query_Term(new Zend_Search_Lucene_Index_Term($vn_len, $vs_table.'.'.$vs_fld_num));
 														break;
 													case 9:		// weight
 														$t_weight = new WeightAttributeValue();
 														$va_parsed_value = $t_weight->parseValue($vs_term, $t_element->getFieldValuesArray());
 														$vn_weight = (float)$va_parsed_value['value_decimal1'];	// this is always in kilograms so we can compare this value to the one in the database
 														
-														$o_lucene_query_element = new Zend_Search_Lucene_Search_Query_Term(new Zend_Search_Lucene_Index_Term($vn_weight, $vs_access_point));
+														$o_lucene_query_element = new Zend_Search_Lucene_Search_Query_Term(new Zend_Search_Lucene_Index_Term($vn_weight, $vs_table.'.'.$vs_fld_num));
 														break;
 													case 10:	// timecode
 														$t_timecode = new TimecodeAttributeValue();
 														$va_parsed_value = $t_timecode->parseValue($vs_term, $t_element->getFieldValuesArray());
 														$vn_timecode = (float)$va_parsed_value['value_decimal1'];
 														
-														$o_lucene_query_element = new Zend_Search_Lucene_Search_Query_Term(new Zend_Search_Lucene_Index_Term($vn_timecode, $vs_access_point));	
+														$o_lucene_query_element = new Zend_Search_Lucene_Search_Query_Term(new Zend_Search_Lucene_Index_Term($vn_timecode, $vs_table.'.'.$vs_fld_num));	
 														break;
 													case 11: 	// integer
-														$o_lucene_query_element = new Zend_Search_Lucene_Search_Query_Term(new Zend_Search_Lucene_Index_Term((float)$vs_term, $vs_access_point));
+														$o_lucene_query_element = new Zend_Search_Lucene_Search_Query_Term(new Zend_Search_Lucene_Index_Term((float)$vs_term, $vs_table.'.'.$vs_fld_num));
 														break;
 													case 12:	// decimal
-														$o_lucene_query_element = new Zend_Search_Lucene_Search_Query_Term(new Zend_Search_Lucene_Index_Term((float)$vs_term, $vs_access_point));
+														$o_lucene_query_element = new Zend_Search_Lucene_Search_Query_Term(new Zend_Search_Lucene_Index_Term((float)$vs_term, $vs_table.'.'.$vs_fld_num));
+														break;
+													default:	// everything else
+														$o_lucene_query_element->getTerm()->field = $vs_table.'.'.$vs_fld_num;
 														break;
 												}
+											} else {
+												$vn_fld_num = false;
+												$vs_fld_num = $vs_field;
 											}
 										}
 									}
@@ -302,8 +313,8 @@ class WLPlugSearchEngineSolr extends BaseSearchPlugin implements IWLPlugSearchEn
 			$this->opo_datamodel->getTableName($pn_subject_tablenum). /* core name (i.e. table name) */
 			"/select"//. /* standard request handler */
 		);
-		
-		$vo_http_client->setParameterGet(array(
+
+		$vo_http_client->setParameterGet($va_get = array(
 			'q'		=> utf8_decode($ps_search_expression),
 			'wt'	=> 'json',						// php fetching mode
 			'fl'	=> $this->opo_datamodel->getTablePrimaryKeyName($pn_subject_tablenum),
@@ -311,8 +322,12 @@ class WLPlugSearchEngineSolr extends BaseSearchPlugin implements IWLPlugSearchEn
 			'rows'	=> $this->getOption('limit')	// how many results to fetch
 		));
 		
+		//caDebug($va_get,'Solr GET parameters');
+
 		$vo_http_response = $vo_http_client->request();
 		$va_result = json_decode($vo_http_response->getBody(), true);
+		
+		//caDebug($va_result,'Result body');
 		
 		return new WLPlugSearchEngineSolrResult($va_result["response"]["docs"], $pn_subject_tablenum);
 	}
@@ -454,59 +469,63 @@ class WLPlugSearchEngineSolr extends BaseSearchPlugin implements IWLPlugSearchEn
 		if (is_array($pm_content)) {
 			$pm_content = serialize($pm_content);
 		}
-		
-		if ($pn_content_tablenum != 4) {
-			$ps_content_tablename = $this->opo_datamodel->getTableName($pn_content_tablenum);
-		} else {
-			$ps_content_tablename = $this->ops_indexing_subject_tablename;
-			if (preg_match('!^__ca_attribute_(.*)$!', $ps_content_fieldname, $va_matches)) {
-				if (!$va_element_info = $this->_getMetadataElement($va_matches[1])) { return null; }
-				switch($va_element_info['datatype']) {
-					case 1: // text
-					case 3:	// list
-					case 5:	// url
-					case 6: // currency
-					case 8: // length
-					case 9: // weight
-					case 13: // LCSH
-					case 14: // geonames
-					case 15: // file
-					case 16: // media
-					case 19: // taxonomy
-					case 20: // information service
-						// noop
-						break;
-					case 2:	// daterange
-						if (!is_array($pa_parsed_content = caGetISODates($pm_content))) { return null; }
-						$this->opa_doc_content_buffer[$ps_content_tablename.'.'.$va_element_info['element_code'].'_text'][] = $pm_content;
-						$pm_content = $pa_parsed_content;
-						break;
-					case 4:	// geocode
-						if ($va_coords = $this->opo_geocode_parser->parseValue($pm_content, $va_element_info)) {
-							if (isset($value_longtext2['value_longtext2']) && $value_longtext2['value_longtext2']) {
-								$this->opa_doc_content_buffer[$ps_content_tablename.'.'.$va_element_info['element_code'].'_text'][] = $pm_content;
-								$pm_content = explode(';', $value_longtext2['value_longtext2']);
-							} else {
-								return;
-							}
+
+		$ps_content_tablename = $this->ops_indexing_subject_tablename;
+		if ($ps_content_fieldname[0] === 'A') {
+			// attribute
+			$vn_field_num_proc = (int)substr($ps_content_fieldname, 1);
+
+			if (!$va_element_info = $this->_getMetadataElement($vn_field_num_proc)) { return null; }
+			switch($va_element_info['datatype']) {
+				case 1: // text
+				case 3:	// list
+				case 5:	// url
+				case 6: // currency
+				case 8: // length
+				case 9: // weight
+				case 13: // LCSH
+				case 14: // geonames
+				case 15: // file
+				case 16: // media
+				case 19: // taxonomy
+				case 20: // information service
+					// noop
+					break;
+				case 2:	// daterange
+					if (!is_array($pa_parsed_content = caGetISODates($pm_content))) { return null; }
+					$this->opa_doc_content_buffer[$ps_content_tablename.'.'.$ps_content_fieldname.'_text'][] = $pm_content;
+					$pm_content = $pa_parsed_content;
+					break;
+				case 4:	// geocode
+					if ($va_coords = $this->opo_geocode_parser->parseValue($pm_content, $va_element_info)) {
+						if (isset($va_coords['value_longtext2']) && $va_coords['value_longtext2']) {
+							$this->opa_doc_content_buffer[$ps_content_tablename.'.'.$ps_content_fieldname.'_text'][] = $pm_content;
+							$pm_content = explode(':', $va_coords['value_longtext2']);
 						} else {
 							return;
 						}
-						break;
-					case 10:	// timecode
-					case 12:	// numeric/float
-						$pm_content = (float)$pm_content;
-						break;
-					case 11:	// integer
-						$pm_content = (int)$pm_content;
-						break;
-					default:
-						// noop
-						break;
-				}
-				$ps_content_fieldname = $va_element_info['element_code'];
+					} else {
+						return;
+					}
+					break;
+				case 10:	// timecode
+				case 12:	// numeric/float
+					$pm_content = (float)$pm_content;
+					break;
+				case 11:	// integer
+					$pm_content = (int)$pm_content;
+					break;
+				default:
+					// noop
+					break;
 			}
+		} else {
+			// Intrinsic field
+			$ps_content_tablename = $this->opo_datamodel->getTableName($pn_content_tablenum);
+			$vn_field_num_proc = (int)substr($ps_content_fieldname, 1);
+			$ps_content_fieldname = $this->opo_datamodel->getFieldName($ps_content_tablename, $vn_field_num_proc);
 		}
+		
 		$this->opa_doc_content_buffer[$ps_content_tablename.'.'.$ps_content_fieldname][] = $pm_content;
 	}
 	# -------------------------------------------------------
@@ -518,7 +537,7 @@ class WLPlugSearchEngineSolr extends BaseSearchPlugin implements IWLPlugSearchEn
 		unset($this->opn_indexing_subject_row_id);
 		unset($this->ops_indexing_subject_tablename);
 
-		if (sizeof(WLPlugSearchEngineSolr::$s_doc_content_buffer) > $this->getOption('maxContentBufferSize')) {
+		if (sizeof(WLPlugSearchEngineSolr::$s_doc_content_buffer) > $this->getOption('maxIndexingBufferSize')) {
 			$this->flushContentBuffer();
 		}
 	}
@@ -536,7 +555,7 @@ class WLPlugSearchEngineSolr extends BaseSearchPlugin implements IWLPlugSearchEn
 		$vo_http_client->request();
 
 		/* commit */
-		$vs_post_xml = '<commit waitFlush="false" waitSearcher="false" softCommit="true"/>';
+		$vs_post_xml = '<commit />';
 		$vo_http_client->setRawData($vs_post_xml)->setEncType('text/xml')->request('POST');
 		
 		try {
@@ -602,7 +621,13 @@ class WLPlugSearchEngineSolr extends BaseSearchPlugin implements IWLPlugSearchEn
 					// document has a different unique key than the entry for the actual record. If we didn't do this then we'd overwrite
 					// the indexing for the record itself with indexing for successful log entries. Since the SearchEngine is looking for
 					// just the primary key, sans table name, it's ok to do this hack.
-					$va_post_xml[$va_key[0]].= "\t\t".'<field name="'.$va_key[0].".".$va_key[1].'">'.$qr_res->get('log_id').'</field>'."\n";
+					
+					// make (relatively) sure we don't overwrite actual index entries with the log entries (the above statement is not quite
+					// true as <table>.<primary_key> is defined as uniqueKey and used by Solr to determine if something is a new document or
+					// something old that has to be updated)
+					$vs_key = intval($va_key[2]."00000".$qr_res->get('log_id'));
+					
+					$va_post_xml[$va_key[0]].= "\t\t".'<field name="'.$va_key[0].".".$va_key[1].'">'.$vs_key.'</field>'."\n";
 					$va_post_xml[$va_key[0]].= "\t\t".'<field name="'.$va_key[1].'">'.$va_key[2].'</field>'."\n";
 					if ($qr_res->get('changetype') == 'I') {
 						$va_post_xml[$va_key[0]].="\t\t".'<field name="created"';
@@ -625,8 +650,10 @@ class WLPlugSearchEngineSolr extends BaseSearchPlugin implements IWLPlugSearchEn
 
 		/* send data */
 		$vo_http_client = new Zend_Http_Client();
-		
 		foreach($va_post_xml as $vs_core => $vs_post_xml) {
+
+			//caDebug($vs_post_xml,$vs_core);
+
 			$vo_http_client->setUri(
 				$this->opo_search_config->get('search_solr_url')."/". /* general url */
 				$vs_core. /* core name (i.e. table name) */
@@ -644,7 +671,7 @@ class WLPlugSearchEngineSolr extends BaseSearchPlugin implements IWLPlugSearchEn
 					} else {						
 						/* commit */
 						try {
-							$vs_post_xml = '<commit waitFlush="false" waitSearcher="false" softCommit="true"/>';
+							$vs_post_xml = '<commit />';
 							$vo_http_client->setRawData($vs_post_xml)->setEncType('text/xml')->request('POST');
 							$vo_http_response = $vo_http_client->request();
 							if ($o_resp = @new SimpleXMLElement($vo_http_response->getBody())) {
@@ -679,7 +706,7 @@ class WLPlugSearchEngineSolr extends BaseSearchPlugin implements IWLPlugSearchEn
 	# -------------------------------------------------------
 	public function optimizeIndex($pn_tablenum){
 		/* optimize */
-		$vs_post_xml = '<optimize waitFlush="false" waitSearcher="false"/>';
+		$vs_post_xml = '<optimize />';
 		$vo_http_client = new Zend_Http_Client();
 		$vo_http_client->setUri(
 			$this->opo_search_config->get('search_solr_url')."/". /* general url */
@@ -830,5 +857,14 @@ class WLPlugSearchEngineSolr extends BaseSearchPlugin implements IWLPlugSearchEn
 		return $va_hits;
 	}
 	# --------------------------------------------------
+	# Utils
+	# --------------------------------------------------
+	private function getFieldNum($pn_table_name_or_num, $ps_fieldname) {
+		if (isset(WLPlugSearchEngineSolr::$s_fieldnum_cache[$pn_table_name_or_num.'/'.$ps_fieldname])) { return WLPlugSearchEngineSolr::$s_fieldnum_cache[$pn_table_name_or_num.'/'.$ps_fieldname]; }
+		
+		$vs_table_name = is_numeric($pn_table_name_or_num) ? $this->opo_datamodel->getTableName((int)$pn_table_name_or_num) : (string)$pn_table_name_or_num;
+		return WLPlugSearchEngineSolr::$s_fieldnum_cache[$pn_table_name_or_num.'/'.$ps_fieldname] = $this->opo_datamodel->getFieldNum($vs_table_name, $ps_fieldname);
+	}
+	# -------------------------------------------------------
 }
 ?>

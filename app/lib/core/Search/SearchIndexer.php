@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2008-2013 Whirl-i-Gig
+ * Copyright 2008-2014 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -513,8 +513,10 @@ class SearchIndexer extends SearchBase {
 							$va_labels = $t_item->getPreferredDisplayLabelsForIDs($va_tmp, array('returnAllLocales' => true));
 							
 							foreach($va_labels as $vn_row_id => $va_labels_per_row) {
-								foreach($va_labels_per_row as $vn_locale_id => $vs_label) {
-									$va_new_values[$vn_row_id][$vs_label] = true;
+								foreach($va_labels_per_row as $vn_locale_id => $va_label_list) {
+									foreach($va_label_list as $vs_label) {
+										$va_new_values[$vn_row_id][$vs_label] = true;
+									}
 								}
 							}
 							
@@ -553,6 +555,8 @@ class SearchIndexer extends SearchBase {
 						continue;
 					}
 					
+					if (!($vn_fld_num = $t_subject->fieldNum($vs_field))) { continue; }
+					
 					//
 					// Hierarchical indexing in primary table
 					//
@@ -560,9 +564,9 @@ class SearchIndexer extends SearchBase {
 						if ($t_subject && $t_subject->isHierarchical()) {
 							$vn_fld_num = $t_subject->fieldNum($vs_field);
 							if ($va_hier_values = $this->_genHierarchicalPath($pn_subject_row_id, $vs_field, $t_subject, $va_data)) {
-								$this->opo_engine->indexField($pn_subject_tablenum, $vn_fld_num, $pn_subject_row_id, join(" ", $va_hier_values['values']), $va_data);
+								$this->opo_engine->indexField($pn_subject_tablenum, 'I'.$vn_fld_num, $pn_subject_row_id, join(" ", $va_hier_values['values']), $va_data);
 								if(caGetOption('INDEX_ANCESTORS_AS_PATH_WITH_DELIMITER', $va_data, false) !== false) {
-									$this->opo_engine->indexField($pn_subject_tablenum, $vn_fld_num, $pn_subject_row_id, $va_hier_values['path'], array_merge($va_data, array('DONT_TOKENIZE' => 1)));
+									$this->opo_engine->indexField($pn_subject_tablenum, 'I'.$vn_fld_num, $pn_subject_row_id, $va_hier_values['path'], array_merge($va_data, array('DONT_TOKENIZE' => 1)));
 								}
 							}
 							
@@ -583,7 +587,8 @@ class SearchIndexer extends SearchBase {
 					// specialized identifier (idno) processing; used IDNumbering plugin to generate searchable permutations of identifier
 					if (((isset($va_data['INDEX_AS_IDNO']) && $va_data['INDEX_AS_IDNO']) || in_array('INDEX_AS_IDNO', $va_data)) && method_exists($t_subject, "getIDNoPlugInInstance") && ($o_idno = $t_subject->getIDNoPlugInInstance())) {
 						$va_values = $o_idno->getIndexValues($pa_field_data[$vs_field]);
-						$this->opo_engine->indexField($pn_subject_tablenum, $vs_field, $pn_subject_row_id, join(" ", $va_values), $va_data);
+						$vn_fld_num = $t_subject->fieldNum($vs_field);
+						$this->opo_engine->indexField($pn_subject_tablenum, 'I'.$vn_fld_num, $pn_subject_row_id, join(" ", $va_values), $va_data);
 						continue;
 					}
 					
@@ -595,14 +600,17 @@ class SearchIndexer extends SearchBase {
 						$pn_content = $pa_field_data[$start_field] . " - " .$pa_field_data[$end_field];
 					} else {
 						$va_content = array();
-						 if (isset($va_field_list[$vs_field]['LIST_CODE']) && $va_field_list[$vs_field]['LIST_CODE']) {
+						
+						if (isset($va_field_list[$vs_field]['LIST_CODE']) && $va_field_list[$vs_field]['LIST_CODE']) {
 							// Is reference to list item so index preferred label values
 							$t_item = new ca_list_items((int)$pa_field_data[$vs_field]);
 							$va_labels = $t_item->getPreferredDisplayLabelsForIDs(array((int)$pa_field_data[$vs_field]), array('returnAllLocales' => true));
 							
 							foreach($va_labels as $vn_label_row_id => $va_labels_per_row) {
-								foreach($va_labels_per_row as $vn_locale_id => $vs_label) {
-									$va_content[$vs_label] = true;
+								foreach($va_labels_per_row as $vn_locale_id => $va_label_list) {
+									foreach($va_label_list as $vs_label) {
+										$va_content[$vs_label] = true;
+									}
 								}
 							}
 							$va_content[$t_item->get('idno')] = true;
@@ -614,15 +622,17 @@ class SearchIndexer extends SearchBase {
 										$pb_reindex_mode = true;	// trigger full reindex of record so it reflects text of related item (if so indexed)
 									}
 								}
-								$this->opo_engine->indexField($pn_subject_tablenum, $vs_field, $pn_subject_row_id, $pn_content, $va_data);
+								
+								$this->opo_engine->indexField($pn_subject_tablenum, 'I'.$vn_fld_num, $pn_subject_row_id, $pn_content, $va_data);
 							}
 						}
 						$va_content[$pa_field_data[$vs_field]] = true;
-						$this->opo_engine->indexField($pn_subject_tablenum, $vs_field, $pn_subject_row_id, join(" ", array_keys($va_content)), $va_data);
+						
+						$this->opo_engine->indexField($pn_subject_tablenum, 'I'.$vn_fld_num, $pn_subject_row_id, join(" ", array_keys($va_content)), $va_data);
 						continue;
 					}
 					
-					$this->opo_engine->indexField($pn_subject_tablenum, $vs_field, $pn_subject_row_id, $pn_content, $va_data);
+					$this->opo_engine->indexField($pn_subject_tablenum, 'I'.$vn_fld_num, $pn_subject_row_id, $pn_content, $va_data);
 				}
 			}
 		}
@@ -809,8 +819,10 @@ if (!$vb_can_do_incremental_indexing || $pb_reindex_mode) {
 										$va_labels = $t_item->getPreferredDisplayLabelsForIDs($va_tmp, array('returnAllLocales' => true));
 					
 										foreach($va_labels as $vn_label_row_id => $va_labels_per_row) {
-											foreach($va_labels_per_row as $vn_locale_id => $vs_label) {
-												$va_new_values[$vn_label_row_id][$vs_label] = true;
+											foreach($va_labels_per_row as $vn_locale_id => $va_label_list) {
+												foreach($va_label_list as $vs_label) {
+													$va_new_values[$vn_label_row_id][$vs_label] = true;
+												}
 											}
 										}
 					
@@ -860,14 +872,14 @@ if (!$vb_can_do_incremental_indexing || $pb_reindex_mode) {
 								if ($t_hier_rel && $t_hier_rel->isHierarchical()) {
 									// get hierarchy
 									if ($va_hier_values = $this->_genHierarchicalPath($vn_id, ($vb_is_label ? "preferred_labels.".$vs_rel_field : $vs_rel_field), $t_hier_rel, $va_rel_field_info)) {
-										$this->opo_engine->indexField($vn_related_tablenum, $vn_fld_num, $vn_id, $vs_fld_data.' '.join(" ", $va_hier_values['values']), $va_rel_field_info);
+										$this->opo_engine->indexField($vn_related_tablenum, 'I'.$vn_fld_num, $vn_id, $vs_fld_data.' '.join(" ", $va_hier_values['values']), $va_rel_field_info);
 										if(caGetOption('INDEX_ANCESTORS_AS_PATH_WITH_DELIMITER', $va_rel_field_info, false) !== false) {
-											$this->opo_engine->indexField($vn_related_tablenum, $vn_fld_num, $vn_id, $va_hier_values['path'], array_merge($va_rel_field_info, array('DONT_TOKENIZE' => 1)));
+											$this->opo_engine->indexField($vn_related_tablenum, 'I'.$vn_fld_num, $vn_id, $va_hier_values['path'], array_merge($va_rel_field_info, array('DONT_TOKENIZE' => 1)));
 										}
 									}
 									
 									$va_children_ids = $t_hier_rel->getHierarchyAsList($vn_row_id, array('idsOnly' => true));
-							
+								
 									if (!$pb_reindex_mode && is_array($va_children_ids) && sizeof($va_children_ids) > 0) {
 										// trigger reindexing of children
 										$o_indexer = new SearchIndexer($this->opo_db);
@@ -875,7 +887,9 @@ if (!$vb_can_do_incremental_indexing || $pb_reindex_mode) {
 										$vs_pk = $t_hier_rel->primaryKey();
 										$vn_table_num = $t_hier_rel->tableNum();
 										while($qr_children_res->nextHit()) {
-											$o_indexer->indexRow($vn_table_num, $vn_id=$qr_children_res->get($vs_pk), array($vs_pk => $vn_id, 'parent_id' => $qr_children_res->get('parent_id'), $vs_rel_field => $qr_children_res->get($vs_rel_field)), false, $pa_exclusion_list, array($vs_rel_field => true), null);
+											$vn_id=$qr_children_res->get($vs_pk);
+											if ($vn_id == $vn_row_id) { continue; }
+											$o_indexer->indexRow($vn_table_num, $vn_id, array($vs_pk => $vn_id, 'parent_id' => $qr_children_res->get('parent_id'), $vs_rel_field => $qr_children_res->get($vs_rel_field)), false, $pa_exclusion_list, array($vs_rel_field => true), null);
 										}
 									}
 									continue;
@@ -890,7 +904,7 @@ if (!$vb_can_do_incremental_indexing || $pb_reindex_mode) {
 									if ($vb_is_attr) {
 										$this->opo_engine->indexField($vn_related_tablenum, 'A'.$va_matches[1], $qr_res->get($vs_related_pk), $vs_fld_data, $va_rel_field_info);
 									} else {
-										$this->opo_engine->indexField($vn_related_tablenum, $this->opo_datamodel->getFieldNum($vs_related_table, $vs_rel_field), $qr_res->get($vs_related_pk), $vs_fld_data, $va_rel_field_info);
+										$this->opo_engine->indexField($vn_related_tablenum, 'I'.$this->opo_datamodel->getFieldNum($vs_related_table, $vs_rel_field), $qr_res->get($vs_related_pk), $vs_fld_data, $va_rel_field_info);
 									}
 									break;	
 							}
@@ -899,9 +913,9 @@ if (!$vb_can_do_incremental_indexing || $pb_reindex_mode) {
 //
 						}
 					}
-					if (isset($va_fields_to_index['_count'])) {
-						$this->opo_engine->indexField($pn_subject_tablenum, '_count', $pn_subject_row_id, $qr_res->numRows(), array());
-					}
+					//if (isset($va_fields_to_index['_count'])) {
+						//$this->opo_engine->indexField($pn_subject_tablenum, '_count', $pn_subject_row_id, $qr_res->numRows(), array());
+					//}
 				}
 			}
 		}

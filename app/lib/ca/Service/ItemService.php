@@ -199,9 +199,20 @@ class ItemService extends BaseJSONService {
 			}
 		}
 
-		// representations for objects
-		if($this->ops_table == "ca_objects"){
-			$va_return['representations'] = $t_instance->getRepresentations();
+		// representations for representable stuff
+		if($t_instance instanceof RepresentableBaseModel){
+			$va_reps = $t_instance->getRepresentations(array('preview170','original'));
+			if(is_array($va_reps) && (sizeof($va_reps)>0)){
+				$va_return['representations'] = $va_reps;	
+			}
+		}
+
+		// captions for representations
+		if($this->ops_table == "ca_object_representations"){
+			$va_captions = $t_instance->getCaptionFileList();
+			if(is_array($va_captions) && (sizeof($va_captions)>0)){
+				$va_return['captions'] = $va_captions;	
+			}
 		}
 
 		// attributes
@@ -250,10 +261,6 @@ class ItemService extends BaseJSONService {
 			//
 
 			$va_related_items = $t_instance->get($vs_rel_table,array("returnAsArray" => true));
-			
-			if($this->ops_table == "ca_objects" && $vs_rel_table=="ca_object_representations") {
-				$va_return['representations'] = $t_instance->getRepresentations(array('preview170', 'medium'));
-			}
 			
 			if(is_array($va_related_items) && sizeof($va_related_items)>0){
 				$va_return["related"][$vs_rel_table] = array_values($va_related_items);
@@ -333,9 +340,20 @@ class ItemService extends BaseJSONService {
 			}
 		}
 
-		// representations for objects
-		if($this->ops_table == "ca_objects"){
-			$va_return['representations'] = $t_instance->getRepresentations();
+		// representations for representable stuff
+		if($t_instance instanceof RepresentableBaseModel){
+			$va_reps = $t_instance->getRepresentations();
+			if(is_array($va_reps) && (sizeof($va_reps)>0)){
+				$va_return['representations'] = $va_reps;	
+			}
+		}
+
+		// captions for representations
+		if($this->ops_table == "ca_object_representations"){
+			$va_captions = $t_instance->getCaptionFileList();
+			if(is_array($va_captions) && (sizeof($va_captions)>0)){
+				$va_return['captions'] = $va_captions;	
+			}
 		}
 
 		// attributes
@@ -371,10 +389,6 @@ class ItemService extends BaseJSONService {
 			}
 
 			$va_related_items = $t_instance->get($vs_rel_table,array("returnAsArray" => true));
-			
-			if($this->ops_table == "ca_objects" && $vs_rel_table=="ca_object_representations") {
-				$va_return['representations'] = $t_instance->getRepresentations(array('preview170', 'medium'));
-			}
 			
 			if(is_array($va_related_items) && sizeof($va_related_items)>0){
 				// most of the fields are usually empty because they are not supported on UI level

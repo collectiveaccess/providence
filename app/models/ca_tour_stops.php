@@ -309,8 +309,8 @@ class ca_tour_stops extends BundlableLabelableBaseModelWithAttributes {
 		parent::__construct($pn_id);	# call superclass constructor
 	}
 	# ------------------------------------------------------
-	protected function initLabelDefinitions() {
-		parent::initLabelDefinitions();
+	protected function initLabelDefinitions($pa_options=null) {
+		parent::initLabelDefinitions($pa_options);
 		$this->BUNDLES['ca_objects'] = array('type' => 'related_table', 'repeating' => true, 'label' => _t('Related objects'));
 		$this->BUNDLES['ca_entities'] = array('type' => 'related_table', 'repeating' => true, 'label' => _t('Related entities'));
 		$this->BUNDLES['ca_places'] = array('type' => 'related_table', 'repeating' => true, 'label' => _t('Related places'));
@@ -380,11 +380,7 @@ class ca_tour_stops extends BundlableLabelableBaseModelWithAttributes {
 	 			'name' => $vs_name = caProcessTemplateForIDs($vs_template, 'ca_tour_stops', array($vn_pk)),
 	 			'hierarchy_id' => $vn_hier_id,
 	 			'children' => sizeof($va_children)
-	 		),
-	 		'item_id' => $vn_pk,
-			'name' => $vs_name,
-			'hierarchy_id' => $vn_hier_id,
-			'children' => sizeof($va_children)
+	 		)
 	 	);
 	 	
 	 	return $va_stop_hierarchy_root;
@@ -489,6 +485,5 @@ class ca_tour_stops extends BundlableLabelableBaseModelWithAttributes {
 		return $this->getTourStopIDsByName($pa_label_values['name'], $pn_parent_id, $pn_type_id);
 	}
 	# ------------------------------------------------------
-	 # ------------------------------------------------------
 }
 ?>

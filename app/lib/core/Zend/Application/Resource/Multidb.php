@@ -15,9 +15,9 @@
  * @category   Zend
  * @package    Zend_Application
  * @subpackage Resource
- * @copyright  Copyright (c) 2005-2010 Zend Technologies USA Inc. (http://www.zend.com)
+ * @copyright  Copyright (c) 2005-2012 Zend Technologies USA Inc. (http://www.zend.com)
  * @license    http://framework.zend.com/license/new-bsd     New BSD License
- * @version    $Id$
+ * @version    $Id: Multidb.php 24593 2012-01-05 20:35:02Z matthew $
  */
 
 require_once 'Zend/Application/Resource/ResourceAbstract.php';
@@ -32,6 +32,8 @@ require_once 'Zend/Db/Table.php';
  *
  * Example configuration:
  * <pre>
+ *   resources.multidb.defaultMetadataCache = "database"
+ *
  *   resources.multidb.db1.adapter = "pdo_mysql"
  *   resources.multidb.db1.host = "localhost"
  *   resources.multidb.db1.username = "webuser"
@@ -49,7 +51,7 @@ require_once 'Zend/Db/Table.php';
  * @category   Zend
  * @package    Zend_Application
  * @subpackage Resource
- * @copyright  Copyright (c) 2005-2010 Zend Technologies USA Inc. (http://www.zend.com)
+ * @copyright  Copyright (c) 2005-2012 Zend Technologies USA Inc. (http://www.zend.com)
  * @license    http://framework.zend.com/license/new-bsd     New BSD License
  */
 class Zend_Application_Resource_Multidb extends Zend_Application_Resource_ResourceAbstract
@@ -77,8 +79,13 @@ class Zend_Application_Resource_Multidb extends Zend_Application_Resource_Resour
     {
         $options = $this->getOptions();
 
+        if (isset($options['defaultMetadataCache'])) {
+            $this->_setDefaultMetadataCache($options['defaultMetadataCache']);
+            unset($options['defaultMetadataCache']);
+        }
+
         foreach ($options as $id => $params) {
-        	$adapter = $params['adapter'];
+            $adapter = $params['adapter'];
             $default = (int) (
                 isset($params['isDefaultTableAdapter']) && $params['isDefaultTableAdapter']
                 || isset($params['default']) && $params['default']
@@ -167,5 +174,37 @@ class Zend_Application_Resource_Multidb extends Zend_Application_Resource_Resour
     {
         Zend_Db_Table::setDefaultAdapter($adapter);
         $this->_defaultDb = $adapter;
+    }
+
+   /**
+     * Set the default metadata cache
+     *
+     * @param string|Zend_Cache_Core $cache
+     * @return Zend_Application_Resource_Multidb
+     */
+    protected function _setDefaultMetadataCache($cache)
+    {
+        $metadataCache = null;
+
+        if (is_string($cache)) {
+            $bootstrap = $this->getBootstrap();
+            if ($bootstrap instanceof Zend_Application_Bootstrap_ResourceBootstrapper &&
+                $bootstrap->hasPluginResource('CacheManager')
+            ) {
+                $cacheManager = $bootstrap->bootstrap('CacheManager')
+                    ->getResource('CacheManager');
+                if (null !== $cacheManager && $cacheManager->hasCache($cache)) {
+                    $metadataCache = $cacheManager->getCache($cache);
+                }
+            }
+        } else if ($cache instanceof Zend_Cache_Core) {
+            $metadataCache = $cache;
+        }
+
+        if ($metadataCache instanceof Zend_Cache_Core) {
+            Zend_Db_Table::setDefaultMetadataCache($metadataCache);
+        }
+
+        return $this;
     }
 }
