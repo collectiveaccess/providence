@@ -2353,7 +2353,7 @@ class ca_users extends BaseModel {
 	 * @return boolean True if user exists, false if not
 	 */
 	public function exists($ps_user_name_or_id) {
-		$t_user = new User();
+		$t_user = new ca_users();
 		if ($t_user->load($ps_user_name_or_id)) {
 			return true;
 		} else {
