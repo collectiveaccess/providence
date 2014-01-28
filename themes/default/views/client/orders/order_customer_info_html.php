@@ -59,14 +59,14 @@
 				select: function(event, ui) {
 					var user_id = ui.item.id;
 					jQuery('#transaction_user_id').val(user_id);
-					if(data[3]) {
-						jQuery('#caBillingFields input[name=billing_fname]').val(data[3]);
-						jQuery('#caBillingFields input[name=billing_lname]').val(data[4]);
-						jQuery('#caBillingFields input[name=billing_email]').val(data[5]);
+					if(user_id) {
+						jQuery('#caBillingFields input[name=billing_fname]').val(ui.item.fname);
+						jQuery('#caBillingFields input[name=billing_lname]').val(ui.item.lname);
+						jQuery('#caBillingFields input[name=billing_email]').val(ui.item.email);
 				
-						jQuery('#caShippingFields input[name=shipping_fname]').val(data[3]);
-						jQuery('#caShippingFields input[name=shipping_lname]').val(data[4]);
-						jQuery('#caShippingFields input[name=shipping_email]').val(data[5]);
+						jQuery('#caShippingFields input[name=shipping_fname]').val(ui.item.fname);
+						jQuery('#caShippingFields input[name=shipping_lname]').val(ui.item.lname);
+						jQuery('#caShippingFields input[name=shipping_email]').val(ui.item.email);
 				
 						// grab the user's profile information
 						jQuery.getJSON('<?php print caNavUrl($this->request, 'client/orders', 'OrderEditor', 'GetUserProfileInfo'); ?>', { user_id: user_id }, function(d, t, x) { 
