@@ -31,7 +31,6 @@
  */
 	define("__CA_DISABLE_CONFIG_CACHING__", true);
 	require_once('PHPUnit/Autoload.php');
-	require_once('./setup.php');
 	require_once(__CA_LIB_DIR__.'/core/Configuration.php');
 	
 	class ConfigurationTest extends PHPUnit_Framework_TestCase {
