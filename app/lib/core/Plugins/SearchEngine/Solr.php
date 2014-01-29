@@ -608,7 +608,39 @@ class WLPlugSearchEngineSolr extends BaseSearchPlugin implements IWLPlugSearchEn
 				
 			$va_post_xml[$va_key[0]] .= "\t</doc>\n";
 			
-			
+			// Output created on and modified on timestamps
+				$qr_res = $this->opo_db->query("	
+								SELECT ccl.log_id, ccl.log_datetime, ccl.changetype, ccl.user_id
+								FROM ca_change_log ccl
+								WHERE
+									(ccl.logged_table_num = ?) AND (ccl.logged_row_id = ?)
+									AND
+									(ccl.changetype <> 'D')
+				", $this->opo_datamodel->getTableNum($va_key[0]), (int)$va_key[2]);
+				while ($qr_res->nextRow()) {
+					$va_post_xml[$va_key[0]] .= "\t<doc>\n";
+					
+					// We "fake" the <table>.<primary key> value here to be the log_id of the change log entry to ensure that the log entry
+					// document has a different unique key than the entry for the actual record. If we didn't do this then we'd overwrite
+					// the indexing for the record itself with indexing for successful log entries. Since the SearchEngine is looking for
+					// just the primary key, sans table name, it's ok to do this hack.
+					$va_post_xml[$va_key[0]].= "\t\t".'<field name="'.$va_key[0].".".$va_key[1].'">'.$qr_res->get('log_id').'</field>'."\n";
+					$va_post_xml[$va_key[0]].= "\t\t".'<field name="'.$va_key[1].'">'.$va_key[2].'</field>'."\n";
+					if ($qr_res->get('changetype') == 'I') {
+						$va_post_xml[$va_key[0]].="\t\t".'<field name="created"';
+						$va_post_xml[$va_key[0]].='><![CDATA[';
+						$va_post_xml[$va_key[0]].= date("c", $qr_res->get('log_datetime')).'Z';
+						$va_post_xml[$va_key[0]].=']]></field>'."\n";
+						$va_post_xml[$va_key[0]].="\t\t".'<field name="created_user_id"><![CDATA['.$qr_res->get('user_id').']]></field>'."\n";
+					} else {
+						$va_post_xml[$va_key[0]].="\t\t".'<field name="modified"';
+						$va_post_xml[$va_key[0]].='><![CDATA[';
+						$va_post_xml[$va_key[0]].= date("c", $qr_res->get('log_datetime')).'Z';
+						$va_post_xml[$va_key[0]].=']]></field>'."\n";
+						$va_post_xml[$va_key[0]].="\t\t".'<field name="modified_user_id"><![CDATA['.$qr_res->get('user_id').']]></field>'."\n";
+					}
+					$va_post_xml[$va_key[0]] .= "\t</doc>\n";
+				}
 		}
 		
 		/* No delete of the old stuff needed. If the pk (defined as uniqueKey) already exists, it is automatically updated */
