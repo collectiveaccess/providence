@@ -30,7 +30,6 @@
  * ----------------------------------------------------------------------
  */
 	require_once('PHPUnit/Autoload.php');
-	require_once('./setup.php');
 	require_once(__CA_LIB_DIR__.'/core/Controller/AppController.php');
 	
 	class ControllerTest extends PHPUnit_Framework_TestCase {
