@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2010-2013 Whirl-i-Gig
+ * Copyright 2010-2014 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -191,20 +191,25 @@
 				
 				$vb_attr_errors = false;
 				if (is_array($pa_values)) {
-					foreach($pa_values as $vs_element => $va_value) { 					
-						if (is_array($va_value)) {
-							// array of values (complex multi-valued attribute)
-							$t_entity->addAttribute(
-								array_merge($va_value, array(
-									'locale_id' => $pn_locale_id
-								)), $vs_element);
-						} else {
-							// scalar value (simple single value attribute)
-							if ($va_value) {
-								$t_entity->addAttribute(array(
-									'locale_id' => $pn_locale_id,
-									$vs_element => $va_value
-								), $vs_element);
+					foreach($pa_values as $vs_element => $va_values) {
+						if (!caIsIndexedArray($va_values)) {
+							$va_values = array($va_values);
+						}	
+						foreach($va_values as $va_value) {			 					
+							if (is_array($va_value)) {
+								// array of values (complex multi-valued attribute)
+								$t_entity->addAttribute(
+									array_merge($va_value, array(
+										'locale_id' => $pn_locale_id
+									)), $vs_element);
+							} else {
+								// scalar value (simple single value attribute)
+								if ($va_value) {
+									$t_entity->addAttribute(array(
+										'locale_id' => $pn_locale_id,
+										$vs_element => $va_value
+									), $vs_element);
+								}
 							}
 						}
 					}
@@ -381,20 +386,25 @@
 				
 				$vb_attr_errors = false;
 				if (is_array($pa_values)) {
-					foreach($pa_values as $vs_element => $va_value) { 					
-						if (is_array($va_value)) {
-							// array of values (complex multi-valued attribute)
-							$t_place->addAttribute(
-								array_merge($va_value, array(
-									'locale_id' => $pn_locale_id
-								)), $vs_element);
-						} else {
-							// scalar value (simple single value attribute)
-							if ($va_value) {
-								$t_place->addAttribute(array(
-									'locale_id' => $pn_locale_id,
-									$vs_element => $va_value
-								), $vs_element);
+					foreach($pa_values as $vs_element => $va_values) { 
+						if (!caIsIndexedArray($va_values)) {
+							$va_values = array($va_values);
+						}	
+						foreach($va_values as $va_value) {					
+							if (is_array($va_value)) {
+								// array of values (complex multi-valued attribute)
+								$t_place->addAttribute(
+									array_merge($va_value, array(
+										'locale_id' => $pn_locale_id
+									)), $vs_element);
+							} else {
+								// scalar value (simple single value attribute)
+								if ($va_value) {
+									$t_place->addAttribute(array(
+										'locale_id' => $pn_locale_id,
+										$vs_element => $va_value
+									), $vs_element);
+								}
 							}
 						}
 					}
@@ -573,20 +583,25 @@
 				
 				$vb_attr_errors = false;
 				if (is_array($pa_values)) {
-					foreach($pa_values as $vs_element => $va_value) { 					
-						if (is_array($va_value)) {
-							// array of values (complex multi-valued attribute)
-							$t_occurrence->addAttribute(
-								array_merge($va_value, array(
-									'locale_id' => $pn_locale_id
-								)), $vs_element);
-						} else {
-							// scalar value (simple single value attribute)
-							if ($va_value) {
-								$t_occurrence->addAttribute(array(
-									'locale_id' => $pn_locale_id,
-									$vs_element => $va_value
-								), $vs_element);
+					foreach($pa_values as $vs_element => $va_values) { 	
+						if (!caIsIndexedArray($va_values)) {
+							$va_values = array($va_values);
+						}	
+						foreach($va_values as $va_value) {					
+							if (is_array($va_value)) {
+								// array of values (complex multi-valued attribute)
+								$t_occurrence->addAttribute(
+									array_merge($va_value, array(
+										'locale_id' => $pn_locale_id
+									)), $vs_element);
+							} else {
+								// scalar value (simple single value attribute)
+								if ($va_value) {
+									$t_occurrence->addAttribute(array(
+										'locale_id' => $pn_locale_id,
+										$vs_element => $va_value
+									), $vs_element);
+								}
 							}
 						}
 					}
@@ -931,20 +946,25 @@
 				
 				$vb_attr_errors = false;
 				if (is_array($pa_values)) {
-					foreach($pa_values as $vs_element => $va_value) { 					
-						if (is_array($va_value)) {
-							// array of values (complex multi-valued attribute)
-							$t_collection->addAttribute(
-								array_merge($va_value, array(
-									'locale_id' => $pn_locale_id
-								)), $vs_element);
-						} else {
-							// scalar value (simple single value attribute)
-							if ($va_value) {
-								$t_collection->addAttribute(array(
-									'locale_id' => $pn_locale_id,
-									$vs_element => $va_value
-								), $vs_element);
+					foreach($pa_values as $vs_element => $va_values) {
+						if (!caIsIndexedArray($va_values)) {
+							$va_values = array($va_values);
+						}	
+						foreach($va_values as $va_value) {	 					
+							if (is_array($va_value)) {
+								// array of values (complex multi-valued attribute)
+								$t_collection->addAttribute(
+									array_merge($va_value, array(
+										'locale_id' => $pn_locale_id
+									)), $vs_element);
+							} else {
+								// scalar value (simple single value attribute)
+								if ($va_value) {
+									$t_collection->addAttribute(array(
+										'locale_id' => $pn_locale_id,
+										$vs_element => $va_value
+									), $vs_element);
+								}
 							}
 						}
 					}
@@ -1118,20 +1138,25 @@
 				
 				$vb_attr_errors = false;
 				if (is_array($pa_values)) {
-					foreach($pa_values as $vs_element => $va_value) { 					
-						if (is_array($va_value)) {
-							// array of values (complex multi-valued attribute)
-							$t_location->addAttribute(
-								array_merge($va_value, array(
-									'locale_id' => $pn_locale_id
-								)), $vs_element);
-						} else {
-							// scalar value (simple single value attribute)
-							if ($va_value) {
-								$t_location->addAttribute(array(
-									'locale_id' => $pn_locale_id,
-									$vs_element => $va_value
-								), $vs_element);
+					foreach($pa_values as $vs_element => $va_values) {
+						if (!caIsIndexedArray($va_values)) {
+							$va_values = array($va_values);
+						}	
+						foreach($va_values as $va_value) {	 					
+							if (is_array($va_value)) {
+								// array of values (complex multi-valued attribute)
+								$t_location->addAttribute(
+									array_merge($va_value, array(
+										'locale_id' => $pn_locale_id
+									)), $vs_element);
+							} else {
+								// scalar value (simple single value attribute)
+								if ($va_value) {
+									$t_location->addAttribute(array(
+										'locale_id' => $pn_locale_id,
+										$vs_element => $va_value
+									), $vs_element);
+								}
 							}
 						}
 					}
@@ -1308,20 +1333,25 @@
 				
 				$vb_attr_errors = false;
 				if (is_array($pa_values)) {
-					foreach($pa_values as $vs_element => $va_value) { 					
-						if (is_array($va_value)) {
-							// array of values (complex multi-valued attribute)
-							$t_object->addAttribute(
-								array_merge($va_value, array(
-									'locale_id' => $pn_locale_id
-								)), $vs_element);
-						} else {
-							// scalar value (simple single value attribute)
-							if ($va_value) {
-								$t_object->addAttribute(array(
-									'locale_id' => $pn_locale_id,
-									$vs_element => $va_value
-								), $vs_element);
+					foreach($pa_values as $vs_element => $va_values) {
+						if (!caIsIndexedArray($va_values)) {
+							$va_values = array($va_values);
+						}	
+						foreach($va_values as $va_value) {	 					
+							if (is_array($va_value)) {
+								// array of values (complex multi-valued attribute)
+								$t_object->addAttribute(
+									array_merge($va_value, array(
+										'locale_id' => $pn_locale_id
+									)), $vs_element);
+							} else {
+								// scalar value (simple single value attribute)
+								if ($va_value) {
+									$t_object->addAttribute(array(
+										'locale_id' => $pn_locale_id,
+										$vs_element => $va_value
+									), $vs_element);
+								}
 							}
 						}
 					}
@@ -1410,6 +1440,7 @@
 		static function getObjectLotID($ps_idno_stub, $ps_lot_name, $pn_type_id, $pn_locale_id, $pa_values=null, $pa_options=null) {
 			if (!is_array($pa_options)) { $pa_options = array(); }
 			if(!isset($pa_options['outputErrors'])) { $pa_options['outputErrors'] = false; }
+			$pa_match_on = caGetOption('matchOn', $pa_options, array('label', 'idno'), array('castTo' => "array"));
 			
 			$t_lot = new ca_object_lots();
 			if (isset($pa_options['transaction']) && $pa_options['transaction'] instanceof Transaction){
@@ -1421,6 +1452,7 @@
 			$o_log = (isset($pa_options['log']) && $pa_options['log'] instanceof KLogger) ? $pa_options['log'] : null;
 			
 			$vn_id = null;
+			
 			foreach($pa_match_on as $vs_match_on) {
 				switch(strtolower($vs_match_on)) {
 					case 'label':
@@ -1479,20 +1511,25 @@
 				
 				$vb_attr_errors = false;
 				if (is_array($pa_values)) {
-					foreach($pa_values as $vs_element => $va_value) { 					
-						if (is_array($va_value)) {
-							// array of values (complex multi-valued attribute)
-							$t_lot->addAttribute(
-								array_merge($va_value, array(
-									'locale_id' => $pn_locale_id
-								)), $vs_element);
-						} else {
-							// scalar value (simple single value attribute)
-							if ($va_value) {
-								$t_lot->addAttribute(array(
-									'locale_id' => $pn_locale_id,
-									$vs_element => $va_value
-								), $vs_element);
+					foreach($pa_values as $vs_element => $va_values) { 
+						if (!caIsIndexedArray($va_values)) {
+							$va_values = array($va_values);
+						}	
+						foreach($va_values as $va_value) {		
+							if (is_array($va_value)) {
+								// array of values (complex multi-valued attribute)
+								$t_lot->addAttribute(
+									array_merge($va_value, array(
+										'locale_id' => $pn_locale_id
+									)), $vs_element);
+							} else {
+								// scalar value (simple single value attribute)
+								if ($va_value) {
+									$t_lot->addAttribute(array(
+										'locale_id' => $pn_locale_id,
+										$vs_element => $va_value
+									), $vs_element);
+								}
 							}
 						}
 					}
@@ -1663,20 +1700,25 @@
 				
 				$vb_attr_errors = false;
 				if (is_array($pa_values)) {
-					foreach($pa_values as $vs_element => $va_value) { 					
-						if (is_array($va_value)) {
-							// array of values (complex multi-valued attribute)
-							$t_loan->addAttribute(
-								array_merge($va_value, array(
-									'locale_id' => $pn_locale_id
-								)), $vs_element);
-						} else {
-							// scalar value (simple single value attribute)
-							if ($va_value) {
-								$t_loan->addAttribute(array(
-									'locale_id' => $pn_locale_id,
-									$vs_element => $va_value
-								), $vs_element);
+					foreach($pa_values as $vs_element => $va_values) {
+						if (!caIsIndexedArray($va_values)) {
+							$va_values = array($va_values);
+						}	
+						foreach($va_values as $va_value) {	 					
+							if (is_array($va_value)) {
+								// array of values (complex multi-valued attribute)
+								$t_loan->addAttribute(
+									array_merge($va_value, array(
+										'locale_id' => $pn_locale_id
+									)), $vs_element);
+							} else {
+								// scalar value (simple single value attribute)
+								if ($va_value) {
+									$t_loan->addAttribute(array(
+										'locale_id' => $pn_locale_id,
+										$vs_element => $va_value
+									), $vs_element);
+								}
 							}
 						}
 					}
@@ -1847,20 +1889,25 @@
 				
 				$vb_attr_errors = false;
 				if (is_array($pa_values)) {
-					foreach($pa_values as $vs_element => $va_value) { 					
-						if (is_array($va_value)) {
-							// array of values (complex multi-valued attribute)
-							$t_movement->addAttribute(
-								array_merge($va_value, array(
-									'locale_id' => $pn_locale_id
-								)), $vs_element);
-						} else {
-							// scalar value (simple single value attribute)
-							if ($va_value) {
-								$t_movement->addAttribute(array(
-									'locale_id' => $pn_locale_id,
-									$vs_element => $va_value
-								), $vs_element);
+					foreach($pa_values as $vs_element => $va_values) {
+						if (!caIsIndexedArray($va_values)) {
+							$va_values = array($va_values);
+						}	
+						foreach($va_values as $va_value) {	 					
+							if (is_array($va_value)) {
+								// array of values (complex multi-valued attribute)
+								$t_movement->addAttribute(
+									array_merge($va_value, array(
+										'locale_id' => $pn_locale_id
+									)), $vs_element);
+							} else {
+								// scalar value (simple single value attribute)
+								if ($va_value) {
+									$t_movement->addAttribute(array(
+										'locale_id' => $pn_locale_id,
+										$vs_element => $va_value
+									), $vs_element);
+								}
 							}
 						}
 					}

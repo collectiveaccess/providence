@@ -1832,6 +1832,13 @@ function caFileIsIncludable($ps_file) {
 	/**
 	 *
 	 */
+	function caIsIndexedArray($pa_array) {
+		return (is_array($pa_array) && !caIsAssociativeArray($pa_array));
+	}
+	# ----------------------------------------
+	/**
+	 *
+	 */
 	function caGetProcessUserID() {
 	  if (function_exists("posix_geteuid")) {
 	  	return posix_geteuid();
