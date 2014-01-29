@@ -61,7 +61,9 @@
 		 *
 		 */
 		public function __construct(&$po_request, &$po_response, $pa_view_paths=null) {
-		JavascriptLoadManager::register("timelineJS");
+			JavascriptLoadManager::register("timelineJS");
+ 			JavascriptLoadManager::register('panel');
+ 			
  			parent::__construct($po_request, $po_response, $pa_view_paths);
  			$this->opo_datamodel = Datamodel::load();
  			
