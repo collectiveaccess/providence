@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2008-2012 Whirl-i-Gig
+ * Copyright 2008-2014 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -499,8 +499,10 @@ class WLPlugSearchEngineSolr extends BaseSearchPlugin implements IWLPlugSearchEn
 				case 4:	// geocode
 					if ($va_coords = $this->opo_geocode_parser->parseValue($pm_content, $va_element_info)) {
 						if (isset($va_coords['value_longtext2']) && $va_coords['value_longtext2']) {
+							$va_coords['value_longtext2'] = str_replace("[", "", $va_coords['value_longtext2']);
+							$va_coords['value_longtext2'] = str_replace("]", "", $va_coords['value_longtext2']);
 							$this->opa_doc_content_buffer[$ps_content_tablename.'.'.$ps_content_fieldname.'_text'][] = $pm_content;
-							$pm_content = explode(':', $va_coords['value_longtext2']);
+							$pm_content = preg_split('![:;].!', $va_coords['value_longtext2']);
 						} else {
 							return;
 						}
@@ -535,6 +537,7 @@ class WLPlugSearchEngineSolr extends BaseSearchPlugin implements IWLPlugSearchEn
 		}
 		unset($this->opn_indexing_subject_tablenum);
 		unset($this->opn_indexing_subject_row_id);
+		unset($this->ops_indexing_subject_tablename);
 		unset($this->ops_indexing_subject_tablename);
 
 		if (sizeof(WLPlugSearchEngineSolr::$s_doc_content_buffer) > $this->getOption('maxIndexingBufferSize')) {
@@ -605,45 +608,7 @@ class WLPlugSearchEngineSolr extends BaseSearchPlugin implements IWLPlugSearchEn
 				
 			$va_post_xml[$va_key[0]] .= "\t</doc>\n";
 			
-			// Output created on and modified on timestamps
-				$qr_res = $this->opo_db->query("	
-								SELECT ccl.log_id, ccl.log_datetime, ccl.changetype, ccl.user_id
-								FROM ca_change_log ccl
-								WHERE
-									(ccl.logged_table_num = ?) AND (ccl.logged_row_id = ?)
-									AND
-									(ccl.changetype <> 'D')
-				", $this->opo_datamodel->getTableNum($va_key[0]), (int)$va_key[2]);
-				while ($qr_res->nextRow()) {
-					$va_post_xml[$va_key[0]] .= "\t<doc>\n";
-					
-					// We "fake" the <table>.<primary key> value here to be the log_id of the change log entry to ensure that the log entry
-					// document has a different unique key than the entry for the actual record. If we didn't do this then we'd overwrite
-					// the indexing for the record itself with indexing for successful log entries. Since the SearchEngine is looking for
-					// just the primary key, sans table name, it's ok to do this hack.
-					
-					// make (relatively) sure we don't overwrite actual index entries with the log entries (the above statement is not quite
-					// true as <table>.<primary_key> is defined as uniqueKey and used by Solr to determine if something is a new document or
-					// something old that has to be updated)
-					$vs_key = intval($va_key[2]."00000".$qr_res->get('log_id'));
-					
-					$va_post_xml[$va_key[0]].= "\t\t".'<field name="'.$va_key[0].".".$va_key[1].'">'.$vs_key.'</field>'."\n";
-					$va_post_xml[$va_key[0]].= "\t\t".'<field name="'.$va_key[1].'">'.$va_key[2].'</field>'."\n";
-					if ($qr_res->get('changetype') == 'I') {
-						$va_post_xml[$va_key[0]].="\t\t".'<field name="created"';
-						$va_post_xml[$va_key[0]].='><![CDATA[';
-						$va_post_xml[$va_key[0]].= date("c", $qr_res->get('log_datetime')).'Z';
-						$va_post_xml[$va_key[0]].=']]></field>'."\n";
-						$va_post_xml[$va_key[0]].="\t\t".'<field name="created_user_id"><![CDATA['.$qr_res->get('user_id').']]></field>'."\n";
-					} else {
-						$va_post_xml[$va_key[0]].="\t\t".'<field name="modified"';
-						$va_post_xml[$va_key[0]].='><![CDATA[';
-						$va_post_xml[$va_key[0]].= date("c", $qr_res->get('log_datetime')).'Z';
-						$va_post_xml[$va_key[0]].=']]></field>'."\n";
-						$va_post_xml[$va_key[0]].="\t\t".'<field name="modified_user_id"><![CDATA['.$qr_res->get('user_id').']]></field>'."\n";
-					}
-					$va_post_xml[$va_key[0]] .= "\t</doc>\n";
-				}
+			
 		}
 		
 		/* No delete of the old stuff needed. If the pk (defined as uniqueKey) already exists, it is automatically updated */
@@ -659,26 +624,26 @@ class WLPlugSearchEngineSolr extends BaseSearchPlugin implements IWLPlugSearchEn
 				$vs_core. /* core name (i.e. table name) */
 				"/update" /* updater */
 			);
-			$vo_http_client->setRawData("<add>{$vs_post_xml}</add>")->setEncType('text/xml')->request('POST');
+			$vo_http_client->setRawData($x="<add>{$vs_post_xml}</add>")->setEncType('text/xml')->request('POST');
 			
 			try {
 				$vo_http_response = $vo_http_client->request();
-				if ($o_resp = @new SimpleXMLElement($vo_http_response->getBody())) {
+				if ($o_resp = new SimpleXMLElement($vo_http_response->getBody())) {
 					$va_status = $o_resp->xpath("/response/lst/int[@name='status']");
 					$vn_status = (int)$va_status[0];
 					if ($vn_status > 0) { 
-						caLogEvent('ERR', _t('Indexing failed for %1: status %2', $vs_core, $vn_status), 'Solr->flushContentBuffer()');
+						caLogEvent('ERR', _t('Indexing failed for %1: status %2, msg %3', $vs_core, $vn_status, $o_resp->asXML()), 'Solr->flushContentBuffer()');
 					} else {						
 						/* commit */
 						try {
 							$vs_post_xml = '<commit />';
 							$vo_http_client->setRawData($vs_post_xml)->setEncType('text/xml')->request('POST');
 							$vo_http_response = $vo_http_client->request();
-							if ($o_resp = @new SimpleXMLElement($vo_http_response->getBody())) {
+							if ($o_resp = new SimpleXMLElement($vo_http_response->getBody())) {
 								$va_status = $o_resp->xpath("/response/lst/int[@name='status']");
 								$vn_status = (int)$va_status[0];
 								if ($vn_status > 0) { 
-									caLogEvent('ERR', _t('Indexing commit failed for %1: status %2', $vs_core, $vn_status), 'Solr->flushContentBuffer()');
+									caLogEvent('ERR', _t('Indexing commit failed for %1: status %2, msg %3', $vs_core, $vn_status, $o_resp->asXML()), 'Solr->flushContentBuffer()');
 								}
 							} else {
 								caLogEvent('ERR', _t('Indexing commit failed for %1: invalid response from SOLR %2', $vs_core, $vo_http_response->getBody()), 'Solr->flushContentBuffer()');

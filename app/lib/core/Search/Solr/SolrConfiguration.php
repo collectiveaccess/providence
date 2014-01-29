@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2009 Whirl-i-Gig
+ * Copyright 2009-2014 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -170,6 +170,7 @@ class SolrConfiguration {
 								$t_element->load($va_matches[1]);
 
 								$va_attributes[$t_element->getPrimaryKey()] = array(
+									'element_id' => $t_element->get('element_id'),
 									'element_code' => $t_element->get('element_code'),
 									'datatype' => $t_element->get('datatype')
 								);
@@ -179,62 +180,7 @@ class SolrConfiguration {
 					
 					if (is_array($va_attributes)) {
 						foreach($va_attributes as $vn_element_id => $va_element_info) {
-							$vs_element_code = $va_element_info['element_code'];
-							$va_element_opts = array();
-							switch($va_element_info['datatype']) {
-							    case 0: //container
-									/* Retrieve child elements of the container. */
-									$qr_container_elements = $o_db->query('
-										SELECT *
-										FROM ca_metadata_elements
-										WHERE parent_id = ?',$va_element_info['element_id']);		
-									
-									while($qr_container_elements->nextRow()){
-										/* For each child if it is a container itself, retrieve its own children elements, which are actuall elements*/
-										$qr_container_grand_children_elements = $o_db->query('
-											SELECT *
-											FROM ca_metadata_elements
-											WHERE parent_id = ?',$qr_container_elements -> get('element_id'));	
-										while($qr_container_grand_children_elements->nextRow()){
-											$container_element_code = $qr_container_grand_children_elements -> get('element_code');
-											$va_table_fields[$container_element_code] = array('type' => 'text');
-										}																			
-									}																	
-									break;							
-								case 1: // text
-								case 3:	// list
-								case 5:	// url
-								case 6: // currency
-								case 8: // length
-								case 9: // weight
-								case 13: // LCSH
-								case 14: // geonames
-								case 15: // file
-								case 16: // media
-								case 19: // taxonomy
-								case 20: // information service
-									$va_element_opts['type'] = 'text';
-									break;
-								case 2:	// daterange
-									$va_element_opts['type'] = 'daterange';
-									$va_table_fields['_ca_attribute_'.$vn_element_id.'_text'] = array('type' => 'text');
-									break;
-								case 4:	// geocode
-									$va_element_opts['type'] = 'geocode';
-									$va_table_fields['_ca_attribute_'.$vn_element_id.'_text'] = array('type' => 'text');
-									break;
-								case 10:	// timecode
-								case 12:	// numeric/float
-									$va_element_opts['type'] = 'float';
-									break;
-								case 11:	// integer
-									$va_element_opts['type'] = 'int';
-									break;
-								default:
-									$va_element_opts['type'] = 'text';
-									break;
-							}
-							$va_table_fields['_ca_attribute_'.$vn_element_id] = $va_element_opts;
+							$va_table_fields += SolrConfiguration::getElementType($va_element_info);
 						}
 					}
 
@@ -421,6 +367,60 @@ class SolrConfiguration {
 	}
 	# ------------------------------------------------
 	// formatting helpers
+	# ------------------------------------------------
+	private static function getElementType($pa_element_info) {
+		$va_table_fields = $va_element_opts = array();
+		
+		$vn_element_id = $pa_element_info['element_id'];
+		switch($pa_element_info['datatype']) {
+			case 0: //container
+				/* Retrieve child elements of the container. */
+				$t_element = new ca_metadata_elements((int)$pa_element_info['element_id']);
+				if ($t_element->getPrimaryKey()) {
+					$va_children = $t_element->getElementsInSet();
+					foreach($va_children as $va_child) {
+						if ($va_child['element_id'] == $vn_element_id) { continue; }
+						$va_table_fields += SolrConfiguration::getElementType($va_child);
+					}
+				}														
+				break;							
+			case 1: // text
+			case 3:	// list
+			case 5:	// url
+			case 6: // currency
+			case 8: // length
+			case 9: // weight
+			case 13: // LCSH
+			case 14: // geonames
+			case 15: // file
+			case 16: // media
+			case 19: // taxonomy
+			case 20: // information service
+				$va_element_opts['type'] = 'text';
+				break;
+			case 2:	// daterange
+				$va_element_opts['type'] = 'daterange';
+				$va_table_fields['_ca_attribute_'.$vn_element_id.'_text'] = array('type' => 'text');
+				break;
+			case 4:	// geocode
+				$va_element_opts['type'] = 'geocode';
+				$va_table_fields['_ca_attribute_'.$vn_element_id.'_text'] = array('type' => 'text');
+				break;
+			case 10:	// timecode
+			case 12:	// numeric/float
+				$va_element_opts['type'] = 'float';
+				break;
+			case 11:	// integer
+				$va_element_opts['type'] = 'int';
+				break;
+			default:
+				$va_element_opts['type'] = 'text';
+				break;
+		}
+		
+		$va_table_fields['_ca_attribute_'.$vn_element_id] = $va_element_opts;
+		return $va_table_fields;
+	}
 	# ------------------------------------------------
 	private static function nl(){
 		return "\n";
