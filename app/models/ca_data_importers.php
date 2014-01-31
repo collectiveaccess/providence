@@ -1642,6 +1642,7 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 					
 						if (isset($va_item['settings']['formatWithTemplate']) && strlen($va_item['settings']['formatWithTemplate'])) {
 							$vm_val = caProcessTemplate($va_item['settings']['formatWithTemplate'], array_replace($va_row, array((string)$va_item['source'] => ca_data_importers::replaceValue($vm_val, $va_item))));
+							$va_row[$va_item['source']] = $vm_val;	// copy formatted data into row so refineries can pick it up
 						}
 					
 					

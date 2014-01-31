@@ -156,20 +156,30 @@ class FMPXMLResultReader extends BaseXMLDataReader {
 			$o_node = $o_row->childNodes->item($vn_i);
 			if ($o_node->nodeName !== 'COL') { continue; }
 			
-			for($vn_j=0; $vn_j < $o_node->childNodes->length; $vn_j++) {
-				if ($o_node->childNodes->item($vn_j)->nodeName === 'DATA') {
-					$o_node = $o_node->childNodes->item($vn_j);
-					$vs_key = $ps_base_key.'/'.$this->opa_metadata[$vn_index];
-					$this->opa_row_buf[$vs_key][] = (string)$o_node->nodeValue;
+			$vb_found_data = false;
+			$vs_key = $ps_base_key.'/'.$this->opa_metadata[$vn_index];
+			
+			$vn_lx = $o_node->childNodes->length;
+			for($vn_j=0; $vn_j < $vn_lx; $vn_j++) {
+				if ((string)$o_node->childNodes->item($vn_j)->nodeName === 'DATA') {
+					$o_data = $o_node->childNodes->item($vn_j);
+					$this->opa_row_buf[$vs_key][] = (string)$o_data->nodeValue;
 					if ($this->opb_tag_names_as_case_insensitive && (strtolower($vs_key) != $vs_key)) { 
-						$this->opa_row_buf[strtolower($vs_key)][] = (string)$o_node->nodeValue; 
+						$this->opa_row_buf[strtolower($vs_key)][] = (string)$o_data->nodeValue; 
 					}
 			
-					$vn_index++;
+					$vb_found_data = true;
 					
-					break;
+					//break;
 				}
 			}
+			if (!$vb_found_data) {
+				$this->opa_row_buf[strtolower($vs_key)][] = '';
+				if ($this->opb_tag_names_as_case_insensitive && (strtolower($vs_key) != $vs_key)) { 
+					$this->opa_row_buf[strtolower($vs_key)][] = ''; 
+				}
+			}
+			$vn_index++;
 		}
 	}
 	# -------------------------------------------------------
