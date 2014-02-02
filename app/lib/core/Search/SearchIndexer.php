@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2008-2013 Whirl-i-Gig
+ * Copyright 2008-2014 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -879,7 +879,7 @@ if (!$vb_can_do_incremental_indexing || $pb_reindex_mode) {
 									}
 									
 									$va_children_ids = $t_hier_rel->getHierarchyAsList($vn_row_id, array('idsOnly' => true));
-							
+								
 									if (!$pb_reindex_mode && is_array($va_children_ids) && sizeof($va_children_ids) > 0) {
 										// trigger reindexing of children
 										$o_indexer = new SearchIndexer($this->opo_db);
@@ -887,7 +887,9 @@ if (!$vb_can_do_incremental_indexing || $pb_reindex_mode) {
 										$vs_pk = $t_hier_rel->primaryKey();
 										$vn_table_num = $t_hier_rel->tableNum();
 										while($qr_children_res->nextHit()) {
-											$o_indexer->indexRow($vn_table_num, $vn_id=$qr_children_res->get($vs_pk), array($vs_pk => $vn_id, 'parent_id' => $qr_children_res->get('parent_id'), $vs_rel_field => $qr_children_res->get($vs_rel_field)), false, $pa_exclusion_list, array($vs_rel_field => true), null);
+											$vn_id=$qr_children_res->get($vs_pk);
+											if ($vn_id == $vn_row_id) { continue; }
+											$o_indexer->indexRow($vn_table_num, $vn_id, array($vs_pk => $vn_id, 'parent_id' => $qr_children_res->get('parent_id'), $vs_rel_field => $qr_children_res->get($vs_rel_field)), false, $pa_exclusion_list, array($vs_rel_field => true), null);
 										}
 									}
 									continue;

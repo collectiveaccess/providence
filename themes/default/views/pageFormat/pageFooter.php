@@ -5,8 +5,8 @@
 				</div><!-- end mainContent -->
 				<div style="clear:both;"><!-- EMPTY --></div>
 			</div><!-- end main -->
-		<div id="footerContainer">
-			<div id="footer" style="background-color:#<?php print $vs_footer_color; ?>;"><div style="position: relative;">
+		<div id="footerContainer" style="background-color:#<?php print $vs_footer_color; ?>;">
+			<div id="footer" ><div style="position: relative;">
 <?php
 				if ($this->request->isLoggedIn()) {
 					print _p("User").': '.$this->request->user->getName().' &gt; '.caNavLink($this->request, _t('Preferences'), '', 'system', 'Preferences', 'EditUIPrefs').' &gt; '.caNavLink($this->request, _t('Logout'), '', 'system', 'auth', 'logout');
@@ -24,14 +24,12 @@
 		
 		<!-- Activate super-roundiness technology - anything with the classname rounded gets rounded corners here -->
 		<script type="text/javascript">
-			if (!jQuery.browser.msie) { 
-				jQuery(document).ready(function() { jQuery('.rounded').corner('round 8px'); }); 
-			
-				// force content to fill window height
-				jQuery(document).ready(function() {
-					jQuery('#mainContent').css('min-height', (window.innerHeight - 40) + 'px');
-				});
-			}
+			jQuery(document).ready(function() { jQuery('.rounded').corner('round 8px'); }); 
+		
+			// force content to fill window height
+			jQuery(document).ready(function() {
+				jQuery('#mainContent').css('min-height', (window.innerHeight - 40) + 'px');
+			});
 		</script>
 <?php
 	print TooltipManager::getLoadHTML();

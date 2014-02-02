@@ -116,8 +116,8 @@
  						$vn_type_id = array_shift($va_tmp);
  					}
  					if (!$vn_type_id) {
- 						$va_tmp = array_keys($t_subject->getTypeList());
- 						$vn_type_id = array_shift($va_tmp);
+ 						$vn_type_id = $t_subject->getDefaultTypeID();
+ 						$t_subject->set('type_id', $vn_type_id);
  					}
  				}
  			}

@@ -441,17 +441,32 @@
 		# -------------------------------------------------------
 		public function getHTMLWidgets() {
 			$vs_cur_selection = $this->getDestination();
-			foreach($this->opa_widgets_config as $vs_key => $va_info) {
+			$va_widgets_config = $this->opa_widgets_config;
+
+			// fire hook
+			$o_app_plugin_manager = new ApplicationPluginManager();
+			if ($va_revised_widgets_config = $o_app_plugin_manager->hookRenderWidgets($va_widgets_config)) {
+				$va_widgets_config = $va_revised_widgets_config;
+			}
+			foreach($va_widgets_config as $vs_key => $va_info) {
 				if(preg_match('!^/'.$va_info['domain']['module'].'/'.$va_info['domain']['controller'].'$!i', $vs_cur_selection)) {
 					$va_params = $this->_parseAdditionalParameters($va_info['parameters']);
 					
 					// invoke controller method
 					$vs_classname = ucfirst($va_info['handler']['controller']).'Controller';
-				
-					if (!include_once($this->ops_controller_path.'/'.$va_info['handler']['module'].'/'.$vs_classname.'.php')) {
-						// Invalid controller path
-						$this->postError(2300, _t("Invalid controller path"), "AppNavigation->getHTMLWidgets()");
-						return false;
+
+
+					if (!$va_info['handler']['isplugin']) {
+						if (!include_once($this->ops_controller_path.'/'.$va_info['handler']['module'].'/'.$vs_classname.'.php')) {
+							// Invalid controller path
+							$this->postError(2300, _t("Invalid controller path"), "AppNavigation->getHTMLWidgets()");
+							return false;
+						}
+					} else {
+						if (!include_once($this->opo_config->get('application_plugins').'/'.$va_info['handler']['module'].'/controllers/'.$vs_classname.'.php')) {
+							$this->postError(2300, _t("Invalid controller path"), "AppNavigation->getHTMLWidgets()");
+							return false;
+						}
 					}
 					
 					$o_action_controller = new $vs_classname($this->opo_request, $this->opo_response , $this->opo_request->config->get('views_directory').'/'.$va_info['handler']['module']);

@@ -9,12 +9,24 @@
 	'); ?>
 	</p>
 	<p class='tileviewerHelpText'>
-	<?php print _t('You may add text annotation to the image. Each annotation is associated with a point or rectangular area on the image. To create an annotation
-	select the point (line icon) or rectangle tool from the tool bar, then click on the location you wish to annotate. For point annotations a line will appear connecting 
-	the location with a text box. You may drag both the point of the line and the text box to adjust position. Click on the text box to add text. For rectangular annotations
-	a rectangle will appear. Drag on the edges at the highlighted locations to resize the rectangle. Drag the rectangle on its interior to reposition it. You may also drag
-	the text box into position. Click on the text box to add text. All changes to annotations are saved automatically as you work.
+	<?php print _t('You may add text annotations to the image. Each annotation is associated with a point, rectangular or polygon area on the image. To create an annotation
+	select the point (line icon), rectangle or polygon tool from the tool bar, then click on the location you wish to annotate. '); ?>
+	</p>
+	<p class='tileviewerHelpText'>
+	<?php print _t('For point annotations a line will appear connecting the location with a text box. The location will also be highlighted with a red translucent circle. You may drag both the point of the line and the text box to adjust position.'); ?>
+	</p>
+	<p class='tileviewerHelpText'>
+	<?php print _t('For rectangular annotations a rectangle will appear with a text box below and adjacent. Drag on the edges at the highlighted locations to resize the rectangle. Drag the rectangle on its interior to reposition it.'); ?>
+	</p>
+	<p class='tileviewerHelpText'>
+	<?php print _t('For polygon annotations click 
+	repeatedly on the image to establish line segments at various locations for the polygon shape. The shape may have any number of points, and consequently sides. To complete the shape double-click
+	when placing the final point or click on the pan, rectangle or point tools. You can adjust the shape by clicking and dragging on any point. To move the shape, click and drag on the outline,
+	away from any point. To remove a point click on it while holding down the option key. To add a point click on the outline, away from any point, while holding down the option key.
 	'); ?>
+	</p>
+	<p class='tileviewerHelpText'>
+	<?php print _t('You may also drag the text box into position. Click on the text box to add text. All changes to annotations are saved automatically as you work.'); ?>
 	</p>
 
 	<h3><?php print _t('Keyboard shortcuts'); ?></h3>

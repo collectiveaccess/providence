@@ -52,7 +52,7 @@
  				$va_token['type'] = 'request';
  			}
 
-			$this->view->setVar('authorize_link', $vs_authorize_link = $vo_vimeo->getAuthorizeUrl($va_token['oauth_token'], 'write'));
+			$this->view->setVar('authorize_link', $vs_authorize_link = $vo_vimeo->getAuthorizeUrl($va_token['oauth_token'], 'delete'));
  			$this->view->setVar('token',$va_token);
  			$this->view->setVar('had_stored_token', $vb_had_stored_token);
 

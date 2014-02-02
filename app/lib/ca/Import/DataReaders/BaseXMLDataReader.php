@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2013 Whirl-i-Gig
+ * Copyright 2013-2014 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -40,9 +40,16 @@ require_once(__CA_APP_DIR__.'/helpers/displayHelpers.php');
 class BaseXMLDataReader extends BaseDataReader {
 	# -------------------------------------------------------
 	/**
-	 * 
+	 * XPath to select data for reading
 	 */
 	protected $ops_xpath = null;
+	
+	/**
+	 * Skip root tag when evaluating XPath?
+	 *
+	 * If set then the XPath used to select data to read can omit the root XML tag
+	 */
+	protected $opb_register_root_tag = true;
 	
 	/**
 	 * Merge attributes of row-level tag into record as regular values?
@@ -60,11 +67,30 @@ class BaseXMLDataReader extends BaseDataReader {
 	 */
 	protected $opb_tag_names_as_case_insensitive = true;
 	
-	private $opo_handle = null;
-	private $opo_xml = null;
-	private $opo_xpath = null;
-	private $opa_row_buf = array();
-	private $opn_current_row = 0;
+	/**
+	 * Selected nodes for current row
+	 */
+	protected $opo_handle = null;
+	
+	/**
+	 * Parsed XML
+	 */
+	protected $opo_xml = null;
+	
+	/**
+	 * XPath object, used to select data for reading
+	 */
+	protected $opo_xpath = null;
+	
+	/**
+	 * Array containing data for current row
+	 */
+	protected $opa_row_buf = array();
+	
+	/**
+	 * Index of current row
+	 */
+	protected $opn_current_row = 0;
 	# -------------------------------------------------------
 	/**
 	 *
@@ -93,7 +119,7 @@ class BaseXMLDataReader extends BaseDataReader {
 		if ($this->ops_xml_namespace_prefix && $this->ops_xml_namespace) {
 			$this->opo_xpath->registerNamespace($this->ops_xml_namespace_prefix, $this->ops_xml_namespace);
 		}
-		$this->opo_handle = $this->opo_xpath->query($this->ops_xpath);
+		$this->opo_handle = $this->opo_xpath->query($this->ops_xpath, null, $this->opb_register_root_tag);
 
 		$this->opn_current_row = 0;
 		return $this->opo_handle ? true : false;
@@ -102,11 +128,12 @@ class BaseXMLDataReader extends BaseDataReader {
 	/**
 	 * Extract XML values recursively
 	 */
-	private function _extractXMLValues($o_row, $ps_base_key='') {
+	protected function _extractXMLValues($o_row, $ps_base_key='') {
 		$vn_l = (int)$o_row->childNodes->length;
 		
 		for($vn_i=0; $vn_i < $vn_l; $vn_i++) {
 			$o_node = $o_row->childNodes->item($vn_i);
+			if ($o_node->nodeName === '#text') { continue; }
 			$vs_key = $ps_base_key.'/'.$o_node->nodeName;
 			$this->opa_row_buf[$vs_key][] = (string)$o_node->nodeValue;
 			if ($this->opb_tag_names_as_case_insensitive && (strtolower($vs_key) != $vs_key)) { 

@@ -4,7 +4,7 @@
 	line-height: 0%; /*without this, there will be a weird bottom space..*/
 }
 .tileviewer #canvas {
-	
+
 }
 
 .tileviewer #annotationCanvas {
@@ -54,15 +54,19 @@
 	
 	display: none;
 	
+	font-size: 10px;
 	min-width: 30px;
 	min-height: 10px;
-	max-height: 30px;
+	max-width: 150px;
+	max-height: 150px;
 	overflow: auto;
 	line-height: 12px;
 	padding: 5px;
 	border: 1px solid #999;
 	background: #f0f0f0;
 	opacity: 0.85;
+	
+	text-align: left;	
 	
 	-webkit-border-radius: 5px;
 	-moz-border-radius: 5px;
@@ -80,12 +84,12 @@
 	
 	display: none;
 	
-	min-width: 120px;
+	min-width: 160px;
 	border: 0px solid #cc0000;
-	background: #ccc;
+	background: #f0f0f0;
 	opacity: 0.7;
 	padding: 0px;
-	min-height: 30px;
+	min-height: 45px;
 	
 	-webkit-border-radius: 5px;
 	-moz-border-radius: 5px;
@@ -100,7 +104,7 @@
 	font-size: 10px;
 	padding: 0px;
 	line-height: 12px;
-	text-align: center;	
+	text-align: left;	
 	width: 90%;
 	height: 90%;
 	margin: 5% 5% 5% 5%;
@@ -110,8 +114,8 @@
 	font-size: 10px;
 	padding: 0px;
 	line-height: 12px;
-	margin: 3% 0% 3% 5%;
-	width: 120px;
+	margin: 5px 0 5px 8px;
+	width: 160px;
 }
 
 span.tileviewerAnnotationDefaultText {
@@ -129,8 +133,8 @@ span.tileviewerAnnotationDefaultText {
 #tileviewerAnnotationTextLabel {
 	font-size: 10px;
 	line-height: 12px;
-	width: 90px;
-	height: 75%;
+	width: 130px;
+	height: 60px;
 	
 	padding: 0px;
 	border: none;
@@ -171,14 +175,14 @@ span.tileviewerAnnotationDefaultText {
 	position: absolute;
 	top: 0px; left: 0px;
 	width: 750px;
-	height: 425px;
+	height: 520px;
 	
 	overflow: auto;
 	line-height: 12px;
 	padding: 5px;
 	border: 1px solid #999;
 	background: #f0f0f0;
-	opacity: 0.85;
+	opacity: 0.9;
 	
 	z-index: 999999;
 	
@@ -207,9 +211,31 @@ ul.tileviewerHelpList {
 	padding: 2px;
 }
 
-.tileviewerHelpText {
+p.tileviewerHelpTextBlock {
+	clear: both;
+}
+
+p.tileviewerHelpText, div.tileviewerHelpText {
 	text-align: left;
 }
+
+h3.tileviewerHelpTitle {
+	clear: both;
+	margin: 20px 0 10px 0;
+}
+
+div.tileviewerHelpTextImage {
+	float: left;
+	width: 40px;
+	background-color: #000;
+	text-align: center;
+	margin: 0 10px 20px 10px;
+}
+
+img.tileviewerHelpTextImage {
+ 	background-color: #000;
+ 	padding: 3px;
+ }
 
 code {
     margin: 0 2px;

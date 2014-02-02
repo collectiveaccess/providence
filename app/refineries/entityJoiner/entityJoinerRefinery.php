@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2013 Whirl-i-Gig
+ * Copyright 2013-2014 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -83,7 +83,7 @@
 			
 				$va_name = array();
 				foreach($t_entity->getLabelUIFields() as $vs_fld) {
-					$va_name[$vs_fld] = BaseRefinery::parsePlaceholder($pa_item['settings']['entityJoiner_'.$vs_fld], $pa_source_data, $pa_item);
+					$va_name[$vs_fld] = BaseRefinery::parsePlaceholder($pa_item['settings']['entityJoiner_'.$vs_fld], $pa_source_data, $pa_item, ' ', $vn_c, array('returnAsString' => true, 'delimiter' => ' '));
 				};
 		
 				if(isset($va_name[$vs_terminal])) {
@@ -152,12 +152,12 @@
 								if (!trim($vs_v)) { continue; }
 								if ($vs_k == 'split') {
 									if (!is_array($va_non_preferred_labels[$vn_index] )) { $va_non_preferred_labels[$vn_index]  = array(); }
-									if ($vs_name = BaseRefinery::parsePlaceholder($vs_v, $pa_source_data, $pa_item)) {
+									if ($vs_name = BaseRefinery::parsePlaceholder($vs_v, $pa_source_data, $pa_item, ' ', $vn_c, array('returnAsString' => true, 'delimiter' => ' '))) {
 										$va_non_preferred_labels[$vn_index] = array_merge($va_non_preferred_labels[$vn_index], DataMigrationUtils::splitEntityName($vs_name));
 										$vb_non_pref_label_was_set = true;
 									}
 								} else {
-									if ($va_non_preferred_labels[$vn_index][$vs_k] = trim(BaseRefinery::parsePlaceholder($vs_v, $pa_source_data, $pa_item))) {
+									if ($va_non_preferred_labels[$vn_index][$vs_k] = trim(BaseRefinery::parsePlaceholder($vs_v, $pa_source_data, $pa_item, ' ', $vn_c, array('returnAsString' => true, 'delimiter' => ' ')))) {
 										$vb_non_pref_label_was_set = true;
 									}
 								}

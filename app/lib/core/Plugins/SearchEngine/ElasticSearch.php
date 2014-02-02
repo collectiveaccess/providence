@@ -68,10 +68,14 @@ class WLPlugSearchEngineElasticSearch extends BaseSearchPlugin implements IWLPlu
 	}
 	# -------------------------------------------------------
 	public function init(){
+		if(($vn_max_indexing_buffer_size = (int)$this->opo_search_config->get('max_indexing_buffer_size')) < 1) {
+			$vn_max_indexing_buffer_size = 100;
+		}
+		
 		$this->opa_options = array(
 			'start' => 0,
-			'limit' => 10000,					// maximum number of hits to return [default=10000],
-			'maxContentBufferSize' => 100				// maximum number of indexed content items to accumulate before writing to the index
+			'limit' => 10000,												// maximum number of hits to return [default=10000],
+			'maxIndexingBufferSize' => $vn_max_indexing_buffer_size			// maximum number of indexed content items to accumulate before writing to the index
 		);
 
 		$this->opa_capabilities = array(
@@ -558,7 +562,7 @@ class WLPlugSearchEngineElasticSearch extends BaseSearchPlugin implements IWLPlu
 		unset($this->opn_indexing_subject_row_id);
 		unset($this->ops_indexing_subject_tablename);
 
-		if (sizeof(WLPlugSearchEngineElasticSearch::$s_doc_content_buffer) > $this->getOption('maxContentBufferSize')) {
+		if (sizeof(WLPlugSearchEngineElasticSearch::$s_doc_content_buffer) > $this->getOption('maxIndexingBufferSize')) {
 			$this->flushContentBuffer();
 		}
 	}
@@ -628,7 +632,7 @@ class WLPlugSearchEngineElasticSearch extends BaseSearchPlugin implements IWLPlu
 				$this->opo_search_config->get('search_elasticsearch_index_name')."/".
 				$va_key[0]."/".$va_key[2]
 			);
-//print_R($va_post_json);
+
 			$vo_http_client->setRawData(json_encode($va_post_json))->setEncType('text/json')->request('POST');
 			try {
 				$vo_http_response = $vo_http_client->request();

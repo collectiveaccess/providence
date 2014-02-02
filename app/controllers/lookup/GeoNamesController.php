@@ -79,7 +79,8 @@ class GeoNamesController extends ActionController {
 
 					$va_context_options = array( 'http' => array(
 						'proxy' => $vs_proxy,
-						'request_fulluri' => true
+						'request_fulluri' => true,
+						'header' => 'User-agent: CollectiveAccess web service lookup',
 					));
 
 					if($vs_proxy_auth){

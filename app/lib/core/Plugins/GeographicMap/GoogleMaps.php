@@ -76,11 +76,9 @@ class WLPlugGeographicMapGoogleMaps Extends BaseGeographicMapPlugIn Implements I
 	public function render($ps_format, $pa_options=null) {
 		$o_config = Configuration::load();
 		
-		list($vn_width, $vn_height) = $this->getDimensions();
-		$vn_width = intval($vn_width);
-		$vn_height = intval($vn_height);
-		if ($vn_width < 1) { $vn_width = 200; }
-		if ($vn_height < 1) { $vn_height = 200; }
+		list($vs_width, $vs_height) = $this->getDimensions();
+		list($vn_width, $vn_height) = $this->getDimensions(array('returnPixelValues' => true));
+		
 		
 		$va_map_items = $this->getMapItems();
 		$va_extents = $this->getExtents();
@@ -155,7 +153,7 @@ class WLPlugGeographicMapGoogleMaps Extends BaseGeographicMapPlugIn Implements I
 					$vb_show_map_type_control 		= $this->opo_config->get('google_maps_show_map_type_controls') ? 'true' : 'false';
 				}
 				
-				$vs_buf = "<div style='width:{$vn_width}px; height:{$vn_height}px' id='{$vs_id}'> </div>\n
+				$vs_buf = "<div style='width:{$vs_width}; height:{$vs_height}' id='{$vs_id}'> </div>\n
 <script type='text/javascript'>
 	var caMap_{$vs_id};
 	var GeoMarker_{$vs_id};

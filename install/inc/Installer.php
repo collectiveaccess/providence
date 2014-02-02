@@ -536,7 +536,7 @@ class Installer {
 							$vn_type_id = $t_rel_types->getRelationshipTypeID($t_instance->tableName(),$vs_type);
 						} else { // "normal" type restriction -> code is from actual type list
 							$vs_type_list_name = $t_instance->getFieldListCode($t_instance->getTypeFieldName());
-							$vn_item_id = $t_list->getItemIDFromList($vs_type_list_name,$vs_type);
+							$vn_type_id = $t_list->getItemIDFromList($vs_type_list_name,$vs_type);
 						}
 					}
 
@@ -550,7 +550,7 @@ class Installer {
 					
 					$this->_processSettings($t_restriction, $vo_restriction->settings);
 					$t_restriction->insert();
-
+					
 					if ($t_restriction->numErrors()) {
 						$this->addError("There was an error while inserting type restriction {$vs_restriction_code} for metadata element {$vs_element_code}: ".join("; ",$t_restriction->getErrors()));
 					}
@@ -677,7 +677,6 @@ class Installer {
 
 			// create ui screens
 			$t_ui_screens = new ca_editor_ui_screens();
-			$va_available_bundles = $t_ui_screens->getAvailableBundles($vn_type);
 			foreach($vo_ui->screens->children() as $vo_screen) {
 				$vs_screen_idno = self::getAttribute($vo_screen, "idno");
 				$vn_is_default = self::getAttribute($vo_screen, "default");
@@ -699,13 +698,16 @@ class Installer {
 
 				self::addLabelsFromXMLElement($t_ui_screens, $vo_screen->labels, $this->opa_locales);
 
+				$va_available_bundles = $t_ui_screens->getAvailableBundles($pn_type,array('dontCache' => true));
+
 				// create ui bundle placements
-				
 				foreach($vo_screen->bundlePlacements->children() as $vo_placement) {
 					$vs_placement_code = self::getAttribute($vo_placement, "code");
+					$vs_bundle = trim((string)$vo_placement->bundle);
 					
 					$va_settings = $this->_processSettings(null, $vo_placement->settings);
-					$t_ui_screens->addPlacement((string)$vo_placement->bundle, $vs_placement_code, $va_settings, null, array('additional_settings' => $va_available_bundles[(string)$vo_placement->bundle]['settings']));
+
+					$t_ui_screens->addPlacement($vs_bundle, $vs_placement_code, $va_settings, null, array('additional_settings' => $va_available_bundles[$vs_bundle]['settings']));
 				}
 
 				// create ui screen type restrictions

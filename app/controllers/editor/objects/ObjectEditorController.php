@@ -157,9 +157,10 @@
  					'ty' => (float)$va_annotation['ty'],
  					'tw' => (float)$va_annotation['tw'],
  					'th' => (float)$va_annotation['th'],
+ 					'points' => $va_annotation['points'],
  					'label' => (string)$va_annotation['label'],
  					'description' => (string)$va_annotation['description'],
- 					'type' => (string)$va_annotation['type_raw'],
+ 					'type' => (string)$va_annotation['type'],
  					'options' => $va_annotation['options']
  				);
  			}

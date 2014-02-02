@@ -213,11 +213,9 @@ class WLPlugMediaReplicationVimeo Extends BaseMediaReplicationPlugin {
 	 *
 	 */
 	public function removeReplication($ps_request_token, $pa_options=null) {
-		// our app is not allowed to delete videos on user accounts!
-
-		//$o_client = $this->getClient();
-		//$vs_video_id = preg_replace("!^".$this->info['NAME']."://!", "", $ps_request_token); // remove plugin identifier to obtain raw video ID
-		//$o_client->call('vimeo.videos.delete', array('video_id' => $vs_video_id));
+		$o_client = $this->getClient();
+		$vs_video_id = preg_replace("!^".$this->info['NAME']."://!", "", $ps_request_token); // remove plugin identifier to obtain raw video ID
+		$o_client->call('vimeo.videos.delete', array('video_id' => $vs_video_id));
 	}
 	# ------------------------------------------------
 	/**

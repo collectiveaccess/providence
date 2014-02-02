@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2013 Whirl-i-Gig
+ * Copyright 2013-2014 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -1893,11 +1893,7 @@
 		 *
 		 */
 		public static function generate_elasticSearch_configurationParamList() {
-			return array(
-				"user|u=s" => _t("Set ownership of directories to specifed user. If not set, an attempt will be made to determine the name of the web server user automatically. If the web server user cannot be determined the current user will be used."),
-				"group|g=s" => _t("Set ownership of directories to specifed group. If not set, the current group will be used."),
-				"quiet|q" => _t("Run without outputting progress information.")
-			);
+			return array();
 		}
 		# -------------------------------------------------------
 		/**
@@ -1919,6 +1915,106 @@
 		 */
 		public static function generate_elasticSearch_configurationHelp() {
 			return _t('Configures ElasticSearch installation for use with CollectiveAccess, setting up indices and mappings. You must run this before reindexing your database.');
+		}
+		# -------------------------------------------------------
+		/**
+		 * Generate mappings for Solr based upon currently configured search indexing
+		 */
+		public static function generate_solr_configuration($po_opts=null) {
+				require_once(__CA_LIB_DIR__."/core/Search/Solr/SolrConfiguration.php");
+				SolrConfiguration::updateSolrConfiguration(true);
+
+				// @TODO what if something goes wrong!?
+				CLIUtils::addMessage(_t('Solr schema was created successfully!'), array('color' => 'bold_green'));
+				CLIUtils::addMessage(_t("Note that all data has been wiped from the index so you must issue a full reindex now, either using caUtils rebuild-search-index or the web-based tool under Manage > Administration > Maintenance."), array('color' => 'red'));
+		}
+		# -------------------------------------------------------
+		/**
+		 *
+		 */
+		public static function generate_solr_configurationParamList() {
+			return array();
+		}
+		# -------------------------------------------------------
+		/**
+		 *
+		 */
+		public static function generate_solr_configurationUtilityClass() {
+			return _t('Search');
+		}
+		# -------------------------------------------------------
+		/**
+		 *
+		 */
+		public static function generate_solr_configurationShortHelp() {
+			return _t('Configures Solr installation for use with CollectiveAccess');
+		}
+		# -------------------------------------------------------
+		/**
+		 *
+		 */
+		public static function generate_solr_configurationHelp() {
+			return _t('Configures Solr installation for use with CollectiveAccess, setting up indices and mappings. You must run this before reindexing your database.');
+		}
+		# -------------------------------------------------------
+		/**
+		 * Reset user password
+		 */
+		public static function reset_password($po_opts=null) {
+			if ($vs_user_name = (string)$po_opts->getOption('user')) {	
+				if (!($vs_password = (string)$po_opts->getOption('password'))) {	
+					CLIUtils::addError(_t("You must specify a password"));
+					return false;
+				}
+				$t_user = new ca_users();
+				if ((!$t_user->load(array("user_name" => $vs_user_name)))) {
+					CLIUtils::addError(_t("User name %1 does not exist", $vs_user_name));
+					return false;
+				}
+				$t_user->setMode(ACCESS_WRITE);
+				$t_user->set('password', $vs_password);
+				$t_user->update();
+				if ($t_user->numErrors()) {
+					CLIUtils::addError(_t("Password change for user %1 failed: %2", $vs_user_name, join("; ", $t_user->getErrors())));
+					return false;
+				}
+				CLIUtils::addMessage(_t('Changed password for user %1', $vs_user_name), array('color' => 'bold_green'));
+				return true;
+			}
+			CLIUtils::addError(_t("You must specify a user"));
+			return false;
+		}
+		# -------------------------------------------------------
+		/**
+		 *
+		 */
+		public static function reset_passwordParamList() {
+			return array(
+				"user|u=s" => _t("User name to reset password for."),
+				"password|p=s" => _t("New password for user")
+			);
+		}
+		# -------------------------------------------------------
+		/**
+		 *
+		 */
+		public static function reset_passwordUtilityClass() {
+			return _t('Maintenance');
+		}
+		
+		# -------------------------------------------------------
+		/**
+		 *
+		 */
+		public static function reset_passwordShortHelp() {
+			return _t('Reset a user\'s password');
+		}
+		# -------------------------------------------------------
+		/**
+		 *
+		 */
+		public static function reset_passwordHelp() {
+			return _t('Reset a user\'s password.');
 		}
 		# -------------------------------------------------------
 	}
