@@ -227,7 +227,7 @@
 							
 							$vn_c = 0;
 							foreach($va_vals as $vn_x => $va_v) {
-								$va_attr_vals[$vs_element_code][$vn_x][$vs_element_code][$vs_k] = $va_v;
+								$va_attr_vals[$vs_element_code][$vn_x][$vs_k] = $va_v;
 								$vn_c++;
 								if ($vn_c >= $vn_num_repeats) { break; }
 							}
