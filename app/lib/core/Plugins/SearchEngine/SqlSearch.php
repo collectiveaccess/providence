@@ -690,6 +690,7 @@ class WLPlugSearchEngineSqlSearch extends BaseSearchPlugin implements IWLPlugSea
 							
 							$vs_results_temp_table = array_pop($va_temp_tables);
 							
+							$this->opo_db->query("UPDATE {$vs_results_temp_table} SET row_id = row_id - 1");
 							$va_direct_query_temp_tables[$vs_results_temp_table] = true;
 							$vs_direct_sql_query = "SELECT swi.row_id, ca.boost 
 													FROM {$vs_results_temp_table} ca

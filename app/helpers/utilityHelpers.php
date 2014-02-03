@@ -1556,6 +1556,7 @@ function caFileIsIncludable($ps_file) {
 	 *		forceUppercase = transform option value to all uppercase [default=false]
 	 *		validValues = array of values that are possible for this option. If the option value is not in the list then the default is returned. If no default is set then the first value in the validValues list is returned. Note that by default all comparisons are case-insensitive. 
 	 *		caseSensitive = do case sensitive comparisons when checking the option value against the validValues list [default=false]
+	 *		castTo = array|int|string
 	 * @return mixed
 	 */
 	function caGetOption($ps_option, $pa_options, $pm_default=null, $pa_parse_options=null) {
@@ -1583,6 +1584,28 @@ function caFileIsIncludable($ps_file) {
 			$vm_val = mb_strtolower($vm_val);
 		} elseif (isset($pa_parse_options['forceUppercase']) && $pa_parse_options['forceUppercase']) {
 			$vm_val = mb_strtoupper($vm_val);
+		}
+		
+		$vs_cast_to = (isset($pa_parse_options['castTo']) && ($pa_parse_options['castTo'])) ? strtolower($pa_parse_options['castTo']) : '';
+		switch($vs_cast_to) {
+			case 'int':
+				$vm_val = (int)$vm_val;
+				break;
+			case 'float':
+				$vm_val = (float)$vm_val;
+				break;
+			case 'string':
+				$vm_val = (string)$vm_val;
+				break;
+			case 'array':
+				if(!is_array($vm_val)) {
+					if (strlen($vm_val)) {
+						$vm_val = array($vm_val);
+					} else {
+						$vm_val = array();
+					}
+				}
+				break;
 		}
 		
 		return $vm_val;
