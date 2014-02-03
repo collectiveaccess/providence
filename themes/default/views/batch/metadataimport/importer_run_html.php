@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2013 Whirl-i-Gig
+ * Copyright 2013-2014 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -177,9 +177,9 @@ print $vs_control_box = caFormControlBox(
 		jQuery("#caInputFormatList").html(opts.join("\n")).val(currentFormat);
 		
 		currentFormat = jQuery("#caInputFormatList").val();
+		if(!currentFormat) { currentFormat = relevantFormats[0]; jQuery("#caInputFormatList").val(currentFormat); }
 		
 		// Set visibility of source input field based upon format
-		
 		if (info = formatInfo[currentFormat.toLowerCase()]) {
 			if (info['inputType'] == 0) {
 				// file
