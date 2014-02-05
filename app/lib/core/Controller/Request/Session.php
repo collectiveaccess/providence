@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2000-2013 Whirl-i-Gig
+ * Copyright 2000-2014 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -78,7 +78,7 @@ class Session {
 			session_start();
 			session_write_close();
 			
-			$this->sessionData = caGetCacheObject("ca_session_".session_id(), ($this->lifetime > 0) ? $this->lifetime : 7 * 24 * 60 * 60);
+			$this->sessionData = caGetCacheObject("ca_session_".md5(session_id()), ($this->lifetime > 0) ? $this->lifetime : 7 * 24 * 60 * 60);
 		}
 	}
 
@@ -89,7 +89,7 @@ class Session {
 	 * Returns client's session_id. 
 	 */
 	public function getSessionID () {
-		return session_id();
+		return md5(session_id());
 	}
 	# ----------------------------------------
 	/**
