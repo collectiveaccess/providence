@@ -163,9 +163,14 @@ class FMPXMLResultReader extends BaseXMLDataReader {
 			for($vn_j=0; $vn_j < $vn_lx; $vn_j++) {
 				if ((string)$o_node->childNodes->item($vn_j)->nodeName === 'DATA') {
 					$o_data = $o_node->childNodes->item($vn_j);
-					$this->opa_row_buf[$vs_key][] = (string)$o_data->nodeValue;
+					$vs_val = trim((string)$o_data->nodeValue);
+					if (strlen($vs_val) == 0) { // && is_array($this->opa_row_buf[$vs_key]) && sizeof($this->opa_row_buf[$vs_key])) {
+						continue;
+					}
+					
+					$this->opa_row_buf[$vs_key][] = $vs_val;
 					if ($this->opb_tag_names_as_case_insensitive && (strtolower($vs_key) != $vs_key)) { 
-						$this->opa_row_buf[strtolower($vs_key)][] = (string)$o_data->nodeValue; 
+						$this->opa_row_buf[strtolower($vs_key)][] = $vs_val; 
 					}
 			
 					$vb_found_data = true;
@@ -174,7 +179,7 @@ class FMPXMLResultReader extends BaseXMLDataReader {
 				}
 			}
 			if (!$vb_found_data) {
-				$this->opa_row_buf[strtolower($vs_key)][] = '';
+				$this->opa_row_buf[$vs_key][] = '';
 				if ($this->opb_tag_names_as_case_insensitive && (strtolower($vs_key) != $vs_key)) { 
 					$this->opa_row_buf[strtolower($vs_key)][] = ''; 
 				}

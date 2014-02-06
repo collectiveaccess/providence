@@ -224,7 +224,8 @@ class BaseXMLDataReader extends BaseDataReader {
 		if (is_array($this->opa_row_buf)) {
 			$va_row = $this->opa_row_buf;
 			foreach($va_row as $vs_k => $vs_v) {
-				$va_row["/{$vs_k}"] = $vs_v;
+				if ($vs_k[0] == "/") { continue; }
+				$va_row[(($vs_k[0] == "/") ? '' : '/').$vs_k] = $vs_v;
 			}
 			return $va_row;
 		}

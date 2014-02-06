@@ -1391,10 +1391,19 @@
 				$va_tmp = array();
 				foreach($va_attribute_list as $vn_id => $o_attribute) {
 					$va_attribute_values = $o_attribute->getValues();
+					
+					$vb_isset = false;
 					foreach($va_attribute_values as $o_attribute_value) {
 						if ($o_attribute_value->getElementCode() == $vs_sort) {
 							$va_tmp[$o_attribute_value->getSortValue()][$vn_id] = $o_attribute;
+							$vb_isset = true;
 						}
+					}
+					
+					// If the sort key was not valid for some reason we default to using the first attribute value
+					// since if we don't then the attribute will disppear from the UI. We need to have *something* to order on...
+					if (!$vb_isset) {
+						$va_tmp[$va_attribute_values[0]->getSortValue()][$vn_id] = $o_attribute;
 					}
 				}
 				
