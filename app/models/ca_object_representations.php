@@ -569,8 +569,8 @@ class ca_object_representations extends BundlableLabelableBaseModelWithAttribute
  		$vs_sort_by_property = $this->getAnnotationSortProperty();
  		$va_annotations = array();
  		
- 		$vn_start = (is_array($pa_options) && isset($pa_options['start']) && ((int)$pa_options['start'] > 0)) ? (int)$pa_options['start'] : null;
- 		$vn_max = (is_array($pa_options) && isset($pa_options['max']) && ((int)$pa_options['max'] > 0)) ? (int)$pa_options['max'] : 0;
+ 		$vn_start = caGetOption('start', $pa_options, 0, array('castTo' => 'int'));
+ 		$vn_max = caGetOption('max', $pa_options, 100, array('castTo' => 'int'));
  		
  		while($qr_annotations->nextRow()) {
  			$va_tmp = $qr_annotations->getRow();
@@ -620,9 +620,9 @@ class ca_object_representations extends BundlableLabelableBaseModelWithAttribute
  		
  		if (($vn_start > 0) || ($vn_max > 0)) {
  			if ($vn_max > 0) {
- 				$va_sorted_annotations = array_slice($va_sorted_annotations, (int)$vn_start - 1, (int)$vn_max);
+ 				$va_sorted_annotations = array_slice($va_sorted_annotations, $vn_start, $vn_max);
  			} else {
- 				$va_sorted_annotations = array_slice($va_sorted_annotations, (int)$vn_start - 1);
+ 				$va_sorted_annotations = array_slice($va_sorted_annotations, $vn_start);
  			}
  		}
  		
