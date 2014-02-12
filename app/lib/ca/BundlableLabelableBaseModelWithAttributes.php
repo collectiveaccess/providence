@@ -2410,6 +2410,13 @@ class BundlableLabelableBaseModelWithAttributes extends LabelableBaseModelWithAt
 		}
 		$va_values['preferred_label'] = $va_preferred_labels;
 		
+		// Get annotation properties
+		if (method_exists($this, "getPropertyList")) {
+			foreach($this->getPropertyList() as $vs_property) {
+				$va_values['annotation_properties'][$vs_property] = $po_request->getParameter($vs_property, pString);
+			}
+		}
+		
 		return $va_values;
 	}
 	# ------------------------------------------------------

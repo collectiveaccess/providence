@@ -265,8 +265,8 @@
 							<div class='caObjectRepresentationListActionButton'>
 								<span id="{fieldNamePrefix}download_{n}"><?php print urldecode(caNavLink($this->request, caNavIcon($this->request, __CA_NAV_BUTTON_DOWNLOAD__).' '._t('Download'), '', 'editor/objects', 'ObjectEditor', 'DownloadRepresentation', array('version' => 'original', 'representation_id' => "{n}", 'object_id' => $t_subject->getPrimaryKey(), 'download' => 1), array('id' => "{fieldNamePrefix}download_button_{n}"))); ?></span>
 							</div>
-							<div class="caAnnotationEditorLaunchButton annotationType{annotation_type} caObjectRepresentationListActionButton">
-								<span id="{fieldNamePrefix}edit_annotations_{n}"><a href="#" onclick="caAnnotationEditor<?php print $vs_id_prefix; ?>.showPanel('<?php print urldecode(caNavUrl($this->request, 'editor/object_representations', 'ObjectRepresentationEditor', 'GetAnnotationEditor', array('representation_id' => '{n}'))); ?>'); return false;" id="{fieldNamePrefix}edit_annotations_button_{n}"><img src='<?php print $this->request->getThemeUrlPath()."/graphics/buttons/clock.png"; ?>' border='0'/> <?php print _t('Annotations'); ?></a></span>
+							<div class="caAnnoEditorLaunchButton annotationType{annotation_type} caObjectRepresentationListActionButton">
+								<span id="{fieldNamePrefix}edit_annotations_{n}"><a href="#" onclick="caAnnoEditor<?php print $vs_id_prefix; ?>.showPanel('<?php print urldecode(caNavUrl($this->request, 'editor/object_representations', 'ObjectRepresentationEditor', 'GetAnnotationEditor', array('representation_id' => '{n}'))); ?>'); return false;" id="{fieldNamePrefix}edit_annotations_button_{n}"><img src='<?php print $this->request->getThemeUrlPath()."/graphics/buttons/clock.png"; ?>' border='0'/> <?php print _t('Annotations'); ?></a></span>
 							</div>
 						</div>	
 					</div>
@@ -468,7 +468,7 @@
 	
 	var caMediaReplicationMimeTypes = <?php print json_encode(MediaReplicator::getMediaReplicationMimeTypes()); ?>;
 	
-	var caAnnotationEditor<?php print $vs_id_prefix; ?>;
+	var caAnnoEditor<?php print $vs_id_prefix; ?>;
 	jQuery(document).ready(function() {
 		caUI.initRelationBundle('#<?php print $vs_id_prefix.$t_item->tableNum().'_rel'; ?>', {
 			fieldNamePrefix: '<?php print $vs_id_prefix; ?>_',
@@ -503,9 +503,9 @@
 		
 		});
 		if (caUI.initPanel) {
-			caAnnotationEditor<?php print $vs_id_prefix; ?> = caUI.initPanel({ 
-				panelID: "caAnnotationEditor<?php print $vs_id_prefix; ?>",						/* DOM ID of the <div> enclosing the panel */
-				panelContentID: "caAnnotationEditor<?php print $vs_id_prefix; ?>ContentArea",		/* DOM ID of the content area <div> in the panel */
+			caAnnoEditor<?php print $vs_id_prefix; ?> = caUI.initPanel({ 
+				panelID: "caAnnoEditor<?php print $vs_id_prefix; ?>",						/* DOM ID of the <div> enclosing the panel */
+				panelContentID: "caAnnoEditor<?php print $vs_id_prefix; ?>ContentArea",		/* DOM ID of the content area <div> in the panel */
 				exposeBackgroundColor: "#000000",				
 				exposeBackgroundOpacity: 0.7,					
 				panelTransitionSpeed: 400,						
@@ -520,10 +520,10 @@
 			});
 		}
 		
-		jQuery("body").append('<div id="caAnnotationEditor<?php print $vs_id_prefix; ?>" class="caAnnotationEditorPanel"><div id="caAnnotationEditor<?php print $vs_id_prefix; ?>ContentArea" class="caAnnotationEditorPanelContentArea"></div></div>');
+		jQuery("body").append('<div id="caAnnoEditor<?php print $vs_id_prefix; ?>" class="caAnnoEditorPanel"><div id="caAnnoEditor<?php print $vs_id_prefix; ?>ContentArea" class="caAnnoEditorPanelContentArea"></div></div>');
 	
 		// Hide annotation editor links for non-timebased media
-		jQuery(".caAnnotationEditorLaunchButton").hide();
+		jQuery(".caAnnoEditorLaunchButton").hide();
 		jQuery(".annotationTypeTimeBasedVideo, .annotationTypeTimeBasedAudio").show();
 	});
 </script>
