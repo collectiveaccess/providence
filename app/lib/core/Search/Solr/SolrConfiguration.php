@@ -178,11 +178,19 @@ class SolrConfiguration {
 						}
 					}
 					
-					if (is_array($va_attributes)) {
-						foreach($va_attributes as $vn_element_id => $va_element_info) {
-							$va_table_fields += SolrConfiguration::getElementType($va_element_info);
-						}
-					}
+                    if (is_array($va_attributes)) {
+                        $va_metadata_fields = array();
+                        foreach($va_attributes as $vn_element_id => $va_element_info) {
+                            $va_metadata_fields += SolrConfiguration::getElementType($va_element_info);
+                        }
+
+                        /*set datatype for metadata elements in $va_table_fields array*/
+                        foreach($va_metadata_fields as $key => $value){
+                            if (array_key_exists($key, $va_table_fields))
+                                unset($va_table_fields[$key]);
+                            $va_table_fields[$key] = $value;
+                        }
+                    }
 
 					/* we now have the current configuration */
 
