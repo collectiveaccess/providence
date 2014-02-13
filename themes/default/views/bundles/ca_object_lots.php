@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2009-2013 Whirl-i-Gig
+ * Copyright 2009-2014 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -170,7 +170,7 @@
 			<a href="<?php print urldecode(caEditorUrl($this->request, 'ca_object_lots', '{lot_id}')); ?>" class="caEditItemButton" id="<?php print $vs_id_prefix; ?>_edit_related_{n}"></a>
 			<span id='<?php print $vs_id_prefix; ?>_BundleTemplateDisplay{n}'>
 <?php
-			print caGetRelationDisplayString($this->request, 'ca_object_lots', array(), array('display' => '_display', 'makeLink' => false));
+			print caGetRelationDisplayString($this->request, 'ca_object_lots', array(), array('display' => '_display', 'makeLink' => true));
 ?>
 			</span>
 			<input type="hidden" name="<?php print $vs_id_prefix; ?>_type_id{n}" id="<?php print $vs_id_prefix; ?>_type_id{n}" value="{type_id}"/>

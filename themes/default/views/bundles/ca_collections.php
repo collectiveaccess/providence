@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2009-2013 Whirl-i-Gig
+ * Copyright 2009-2014 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -30,6 +30,7 @@
 	$t_instance 		= $this->getVar('t_instance');
 	$t_item 			= $this->getVar('t_item');			// collection
 	$t_item_rel 		= $this->getVar('t_item_rel');
+	$t_subject 			= $this->getVar('t_subject');
 	$va_settings 		= $this->getVar('settings');
 	$vs_add_label 		= $this->getVar('add_label');
 	$va_rel_types		= $this->getVar('relationship_types');
@@ -65,6 +66,31 @@
 	//
 ?>
 	<textarea class='caItemTemplate' style='display: none;'>
+<?php
+	switch($va_settings['list_format']) {
+		case 'list':
+?>
+		<div id="<?php print $vs_id_prefix; ?>Item_{n}" class="labelInfo listRel caRelatedItem">
+<?php
+	if (!$vb_read_only && !$vb_dont_show_del) {
+?>				
+			<a href="#" class="caDeleteItemButton listRelDeleteButton"><?php print caNavIcon($this->request, __CA_NAV_BUTTON_DEL_BUNDLE__); ?></a>
+<?php
+	}
+?>
+			<span id='<?php print $vs_id_prefix; ?>_BundleTemplateDisplay{n}'>
+<?php
+			print caGetRelationDisplayString($this->request, 'ca_collections', array('class' => 'caEditItemButton', 'id' => "{$vs_id_prefix}_edit_related_{n}"), array('display' => '_display', 'makeLink' => true));
+?>
+			</span>
+			<input type="hidden" name="<?php print $vs_id_prefix; ?>_type_id{n}" id="<?php print $vs_id_prefix; ?>_type_id{n}" value="{type_id}"/>
+			<input type="hidden" name="<?php print $vs_id_prefix; ?>_id{n}" id="<?php print $vs_id_prefix; ?>_id{n}" value="{id}"/>
+		</div>
+<?php
+			break;
+		case 'bubbles':
+		default:
+?>
 		<div id="<?php print $vs_id_prefix; ?>Item_{n}" class="labelInfo roundedRel caRelatedItem">
 			<span id='<?php print $vs_id_prefix; ?>_BundleTemplateDisplay{n}'>
 <?php
@@ -84,6 +110,10 @@
 			<div style="display: none;" class="itemName">{label}</div>
 			<div style="display: none;" class="itemIdno">{idno_sort}</div>
 		</div>
+<?php
+			break;
+	}
+?>
 	</textarea>
 <?php
 	//
