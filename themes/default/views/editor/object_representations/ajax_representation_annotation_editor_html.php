@@ -193,7 +193,6 @@
 			var items = jQuery(itemList).find("li");
 			
 			var i = start;
-			console.log("load", data);
 			var list = jQuery(theCarousel).data("annotation_list");
 			if (!list) list = [];
 			
@@ -250,7 +249,6 @@
 	function caAnnoEditorTlReload(theCarousel, annotation_id) {
 		var data = jQuery('#caAnnoEditorTlCarousel').data("annotation_list");
 		var i = 0;
-		console.log("reload", data, annotation_id);
 		jQuery.each(data, function(k, v) {
 			if (v['annotation_id'] == annotation_id) {
 				caAnnoEditorTlLoad(theCarousel, i, 1);
@@ -264,7 +262,6 @@
 	function caAnnoEditorTlRemove(theCarousel, annotation_id) {
 		var data = jQuery('#caAnnoEditorTlCarousel').data("annotation_list");
 		var i = 0;
-		console.log("remove", data, annotation_id);
 		jQuery.each(data, function(k, v) {
 			if (v === null) { return true; }
 			if (v['annotation_id'] == annotation_id) {
