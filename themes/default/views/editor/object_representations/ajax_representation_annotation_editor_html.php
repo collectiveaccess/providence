@@ -50,7 +50,7 @@
 <div class="caAnnoEditorTlContainer">
 	<div class="caAnnoEditorTlInfo">
 		<div class="caAnnoEditorInfo"><?php print _t("%1 clips", $vn_annotation_count); ?></div>
-		<div class="caAnnoEditorAdd"><a href="#" class="caAnnoEditorAddButton" onclick="caAnnoEditorEdit(0); return false;"><?php print caNavIcon($this->request, __CA_NAV_BUTTON_ADD__).' '._t('Add'); ?></a></div><!-- end add -->
+		<div class="caAnnoEditorAdd"><a href="#" class="caAnnoEditorAddButton" onclick="caAnnoEditorEdit(0); return false;"><?php print caNavIcon($this->request, __CA_NAV_BUTTON_ADD__).' '._t('New clip'); ?></a></div><!-- end add -->
 		<div class="caAnnoEditorTlSyncControl">
 			<a href='#' id='caAnnoEditorTlSyncButton'><img src='<?php print __CA_URL_ROOT__; ?>/themes/default/graphics/buttons/clock.png' border='0' title='sync timelines'></a>
 		</div>
@@ -79,10 +79,13 @@
 <?php
 	print $this->getVar('player');
 ?>
-	<div>
-		<?php print caJSButton($this->request, __CA_NAV_BUTTON_ADD__, _t("New in"), "caAnnoEditorAddAtButton", array("id" => "caAnnoEditorNewInButton", "onclick" => "caAnnoEditorEdit(0, caAnnoEditorGetPlayerTime(), caAnnoEditorGetPlayerTime() + 10, true)")); ?>
-		<?php print caJSButton($this->request, __CA_NAV_BUTTON_ADD__, _t("In"), "caAnnoEditorAddAtButton", array("id" => "caAnnoEditorInButton", "onclick" => "caAnnoEditorSetInTime(caAnnoEditorGetPlayerTime(), true)")); ?>
-		<?php print caJSButton($this->request, __CA_NAV_BUTTON_ADD__, _t("Out"), "caAnnoEditorAddAtButton", array("id" => "caAnnoEditorOutPauseButton", "onclick" => "caAnnoEditorSetOutTime(caAnnoEditorGetPlayerTime(), true)")); ?>
+	<div class="caAnnoMediaPlayerControlsLeft">
+		<?php print caJSButton($this->request, __CA_NAV_BUTTON_ADD__, _t("New &amp; in"), "caAnnoEditorAddAtButton", array("id" => "caAnnoEditorNewInButton", "onclick" => "caAnnoEditorEdit(0, caAnnoEditorGetPlayerTime(), caAnnoEditorGetPlayerTime() + 10, false)")); ?>
+		<?php print caJSButton($this->request, __CA_NAV_BUTTON_ADD__, _t("In"), "caAnnoEditorAddAtButton", array("id" => "caAnnoEditorInButton", "onclick" => "caAnnoEditorSetInTime(caAnnoEditorGetPlayerTime(), false)")); ?>
+		<?php print caJSButton($this->request, __CA_NAV_BUTTON_ADD__, _t("Out"), "caAnnoEditorAddAtButton", array("id" => "caAnnoEditorOutPauseButton", "onclick" => "caAnnoEditorSetOutTime(caAnnoEditorGetPlayerTime(), false)")); ?>
+	</div>
+	<div class="caAnnoMediaPlayerControlsRight">
+		<?php print caJSButton($this->request, __CA_NAV_BUTTON_ADD__, _t("Out &amp; Save"), "caAnnoEditorAddAtButton", array("id" => "caAnnoEditorOutAndSavePauseButton", "onclick" => "caAnnoEditorSetOutTime(caAnnoEditorGetPlayerTime(), false, true)")); ?>
 	</div>
 </div>
 
@@ -98,7 +101,7 @@
 	
 		var visibleItems = Math.ceil(jQuery("#caAnnoEditorTlCarousel").width()/150);
 	
-		jQuery("#caAnnoEditorInButton, #caAnnoEditorOutPauseButton").hide();
+		jQuery("#caAnnoEditorInButton, #caAnnoEditorOutPauseButton, #caAnnoEditorOutAndSavePauseButton").hide();
 		
 		jQuery('#caAnnoEditorTlSyncSlider').slider({min:0, max:(<?php print (int)$vn_annotation_count + 1; ?> - visibleItems), animate: 'fast', 
 			start: function(event, ui) {
@@ -117,8 +120,7 @@
 			}
 		});
 	
-
-		caAnnoEditorTlLoad('#caAnnoEditorTlCarousel', 0, 10);
+		caAnnoEditorTlLoad('#caAnnoEditorTlCarousel', 0);
 
 		jQuery('#caAnnoEditorTlCarousel').data('annotation_map', <?php print json_encode($va_annotation_map); ?>);
 		var annotation_map = jQuery('#caAnnoEditorTlCarousel').data('annotation_map');
@@ -128,7 +130,6 @@
 	
 		// Update slider with current position
 		jQuery('#caAnnoEditorTlSyncSlider').slider("value", initIndex);
-	
 	
 		// Start polling to see if we're playing a clip	
 		var f = function() {
@@ -171,20 +172,36 @@
 			}
 		);
 		caAnnoEditorDisableAnnotationForm();
+		
+		// Toggle play/pause if content area is clicked
+		jQuery(".caAnnoMediaPlayerContainer").on("click", function(e) {
+			if (e.target != e.currentTarget) return; 
+			caAnnoEditorPlayerToggle();
+		});
 	});
 
 	function caAnnoEditorTlLoad(theCarousel, start, count) {
-		if (!count) count = 10;
+		if (!count) count = 0;
 		jQuery.getJSON('<?php print caNavUrl($this->request, '*', '*', 'getAnnotationList'); ?>', { representation_id: <?php print (int)$vn_representation_id; ?>, s: start, n: count}, function(data) {
+			
+			if ((start == 0) && (count == 0)) {
+				jQuery(theCarousel).find("ul").empty();
+				jQuery(theCarousel).jcarousel('reload');
+			}
+			
 			var itemList = jQuery(theCarousel).find("ul");
-		
+			var items = jQuery(itemList).find("li");
+			
 			var i = start;
+			console.log("load", data);
+			var list = jQuery(theCarousel).data("annotation_list");
+			if (!list) list = [];
+			
 			jQuery.each(data['list'], function(k, v) {
 				var annotation_id = v['annotation_id'];
 				var label = v['label'];
 				var timecode = v['startTimecode'] + " - " + v['endTimecode'];
 				var startTimecode = v['startTimecode_raw'];
-			
 			
 				var item = "<li><div id='caAnnoEditorTlAnnotationContainer" + annotation_id + "' class='caAnnoEditorTlAnnotationContainer'>" + 
 					"<div class='title'><a href='#' onclick='caAnnoEditorPlayerPlay(" + startTimecode + "); return false;'>" + label + "</a></div>" + 
@@ -192,47 +209,97 @@
 					"<div class='editAnnoButton'><a href='#' onclick='caAnnoEditorEdit(" + annotation_id + "); event.preventDefault(); return false;'><?php print caNavIcon($this->request, __CA_NAV_BUTTON_EDIT__); ?></a></div>";
 			
 				// does the item already exist?
-				if (itemList.eq(i).length > 0) {
-					itemList.eq(i).html(item);
+				if (items.eq(i).length > 0) {
+					items.eq(i).html(item);
 				} else {
 					itemList.append(item);
 				}
-			
+				list[i] = v;
 				i++;
 			});
+			
+			jQuery(theCarousel).data("annotation_list", list);
 			jQuery(theCarousel).jcarousel('reload');
 			
 			// Set clip count
 			var total = parseInt(data['total']);
-			var msg = (total == 1) ? '<?php print addslashes(_t("%1 clip")); ?>' : '<?php print addslashes(_t("%1 clips")); ?>';
-			msg = msg.replace("%1", total);
-			jQuery(".caAnnoEditorInfo").html(msg);
+			caAnnoEditorTlSetCount(total);
 			
 			// Do we need the slider?
-			var tlVisibleCount = jQuery("#caAnnoEditorTlCarousel").jcarousel('fullyvisible').length;
+			var tlFullyVisibleList = jQuery("#caAnnoEditorTlCarousel").jcarousel('fullyvisible');
+			var tlVisibleCount = tlFullyVisibleList ? tlFullyVisibleList.length : 0;
 			if (total > tlVisibleCount) {
-				jQuery("#caAnnoEditorTlSyncSlider").show();
+				jQuery("#caAnnoEditorTlSyncSlider, #caAnnoEditorTlSyncButton").show();
 			} else {
-				jQuery("#caAnnoEditorTlSyncSlider").hide();
+				jQuery("#caAnnoEditorTlSyncSlider, #caAnnoEditorTlSyncButton").hide();
 			}
-			console.log(total, x);
+		});
+	}
+	
+	function caAnnoEditorTlSetCount(total) {
+		jQuery("#caAnnoEditorTlCarousel").data('count', total);
+		var msg = (total == 1) ? '<?php print addslashes(_t("%1 clip")); ?>' : '<?php print addslashes(_t("%1 clips")); ?>';
+		msg = msg.replace("%1", total);
+		jQuery(".caAnnoEditorInfo").html(msg);
+	}
+	
+	function caAnnoEditorTlGetCount() {
+		return jQuery("#caAnnoEditorTlCarousel").data('count');
+	}
+	
+	function caAnnoEditorTlReload(theCarousel, annotation_id) {
+		var data = jQuery('#caAnnoEditorTlCarousel').data("annotation_list");
+		var i = 0;
+		console.log("reload", data, annotation_id);
+		jQuery.each(data, function(k, v) {
+			if (v['annotation_id'] == annotation_id) {
+				caAnnoEditorTlLoad(theCarousel, i, 1);
+				return false;
+			}
+			i++;
+			return true;
+		});
+	}
+	
+	function caAnnoEditorTlRemove(theCarousel, annotation_id) {
+		var data = jQuery('#caAnnoEditorTlCarousel').data("annotation_list");
+		var i = 0;
+		console.log("remove", data, annotation_id);
+		jQuery.each(data, function(k, v) {
+			if (v === null) { return true; }
+			if (v['annotation_id'] == annotation_id) {
+				var itemList = jQuery(theCarousel).find("ul");
+				var items = jQuery(itemList).find("li");
+				items.eq(i).remove();
+				data[k] = null;
+				jQuery('#caAnnoEditorTlCarousel').data("annotation_list", data);
+				var total = caAnnoEditorTlGetCount();
+				caAnnoEditorTlSetCount(total-1);
+				return false;
+			}
+			i++;
+			return true;
 		});
 	}
 
 	function caAnnoEditorEdit(annotation_id, inTime, outTime, pause) {
 		caAnnoEditorEnableAnnotationForm();
+		caAnnoSetEditFormSize();
 		jQuery("#caAnnoEditorEditorScreen").load("<?php print caNavUrl($this->request, 'editor/representation_annotations', 'RepresentationAnnotationQuickAdd', 'Form', array('representation_id' => $vn_representation_id, 'annotation_id' => '')); ?>" + annotation_id, {startTimecode: inTime, endTimecode: outTime}).show();
 		
 		if(annotation_id > 0) {
-			jQuery("#caAnnoEditorInButton, #caAnnoEditorOutPauseButton").show();
+			jQuery("#caAnnoEditorInButton, #caAnnoEditorOutPauseButton, #caAnnoEditorOutAndSavePauseButton").show();
 			jQuery("#caAnnoEditorNewInButton").hide();
 		} else {
-			jQuery("#caAnnoEditorInButton, #caAnnoEditorOutPauseButton").show();
+			jQuery("#caAnnoEditorInButton, #caAnnoEditorOutPauseButton, #caAnnoEditorOutAndSavePauseButton").show();
 			jQuery("#caAnnoEditorNewInButton").hide();
 		}
 		if (pause) caAnnoEditorPlayerPause();
-	
 		return false;
+	}
+	
+	function caAnnoSetEditFormSize() {
+		jQuery("#caAnnoEditorEditorScreen").css('height', (parseInt(jQuery(".caAnnoEditorPanel").height()) - 190) + "px");
 	}
 	
 	function caAnnoEditorSetInTime(inTime, pause) {
@@ -241,16 +308,34 @@
 		if (pause) caAnnoEditorPlayerPause();
 	}
 
-	function caAnnoEditorSetOutTime(outTime, pause) {
+	function caAnnoEditorSetOutTime(outTime, pause, save) {
 		caAnnoEditorEnableAnnotationForm();
 		jQuery("input[name=endTimecode]").val(caConvertSecondsToTimecode(outTime));
 		if (pause) caAnnoEditorPlayerPause();
+		if (save) {
+			jQuery("#caAnnoEditorScreenSaveButton").click();
+		}
 	}
 
 	function caAnnoEditorGetPlayer() {
-		if (jQuery('#caAnnoEditorMediaPlayer') && jQuery('#caAnnoEditorMediaPlayer')[0] && jQuery('#caAnnoEditorMediaPlayer')[0].player && jQuery('#caAnnoEditorMediaPlayer')[0].player.currentTime) {
-			return jQuery('#caAnnoEditorMediaPlayer')[0].player;
-		}
+		if (jQuery('#caAnnoEditorMediaPlayer') && jQuery('#caAnnoEditorMediaPlayer')[0] && jQuery('#caAnnoEditorMediaPlayer')[0].player) {
+			if (jQuery('#caAnnoEditorMediaPlayer')[0].player.currentTime) {
+				return jQuery('#caAnnoEditorMediaPlayer')[0].player;
+			} else if (jQuery('#caAnnoEditorMediaPlayer')[0].player.media) {
+				return jQuery('#caAnnoEditorMediaPlayer')[0].player.media;
+			}
+		} 
+		return null;
+	}
+	
+	function caAnnoEditorGetMediaType() {
+		if (jQuery('#caAnnoEditorMediaPlayer') && jQuery('#caAnnoEditorMediaPlayer')[0] && jQuery('#caAnnoEditorMediaPlayer')[0].player) {
+			if (jQuery('#caAnnoEditorMediaPlayer')[0].player.currentTime) {
+				return 'VIDEO'; // videojs
+			} else if (jQuery('#caAnnoEditorMediaPlayer')[0].player.media) {
+				return 'AUDIO';	// mediaelement
+			}
+		} 
 		return null;
 	}
 
@@ -258,14 +343,15 @@
 		var p = caAnnoEditorGetPlayer();
 		if (!p) { return false; }
 		
-		if (p.setCurrentTime) {
+		var mediaType = caAnnoEditorGetMediaType();
+		if (mediaType == 'AUDIO') {
 			// MediaElement audio player
 			if (!jQuery('#caAnnoEditorMediaPlayer').data('hasBeenPlayed')) { 
 				p.play(); 
 				jQuery('#caAnnoEditorMediaPlayer').data('hasBeenPlayed', true); 
 			} 
 			jQuery('#caAnnoEditorMediaPlayer')[0].player.setCurrentTime(s); 
-		} else if (p.currentTime) {
+		} else if (mediaType == 'VIDEO') {
 			// VideoJS video player
 			jQuery('#caAnnoEditorMediaPlayer').data('hasBeenPlayed', true); 
 			p.currentTime(s);
@@ -280,28 +366,34 @@
 	
 		p.pause();
 	}
-
-	function caAnnoEditorGetPlayerTime() {
+	
+	function caAnnoEditorPlayerToggle() {
 		var p = caAnnoEditorGetPlayer();
-		if (p) { return p.currentTime(); }
-		return null;
+		
+		p.paused ? p.play() : p.pause();
 	}
 
 	function caAnnoEditorGetPlayerTime() {
 		var p = caAnnoEditorGetPlayer();
-		if (p) { return p.currentTime(); }
+		var mediaType = caAnnoEditorGetMediaType();
+		
+		if (p) { return (mediaType == 'AUDIO') ? p.currentTime : p.currentTime(); }
 		return null;
 	}
 
 	function caAnnoEditorEnableAnnotationForm() {
-		jQuery("#caAnnoEditorEditorScreen").unblock();
-		return false;
+		jQuery(".caAnnoEditorPanel").css("overflow", "auto"); 
+		jQuery("#caAnnoEditorEditorScreen").css("overflow", "auto").unblock();
 	}
 			
 	function caAnnoEditorDisableAnnotationForm() {
-		jQuery("#caAnnoEditorEditorScreen").load('<?php print caNavUrl($this->request, 'editor/representation_annotations', 'RepresentationAnnotationQuickAdd', 'Form', array('representation_id' => $vn_representation_id, 'annotation_id' => '0')); ?>', {}, function() { jQuery(this).block({message: null, theme: true, css: { opacity: 0.5 }}); });
+		caAnnoSetEditFormSize();
+		jQuery("#caAnnoEditorEditorScreen").load('<?php print caNavUrl($this->request, 'editor/representation_annotations', 'RepresentationAnnotationQuickAdd', 'Form', array('representation_id' => $vn_representation_id, 'annotation_id' => '0')); ?>', {}, function() { 
+			jQuery(".caAnnoEditorPanel").css("overflow", "hidden"); 
+			jQuery(this).css("overflow", "hidden").block({message: null, theme: true, css: { opacity: 0.5 }}); 
+		});
 		jQuery("#caAnnoEditorNewInButton").show();
-		jQuery("#caAnnoEditorInButton, #caAnnoEditorOutPauseButton").hide();
+		jQuery("#caAnnoEditorInButton, #caAnnoEditorOutPauseButton, #caAnnoEditorOutAndSavePauseButton").hide();
 		return false;
 	}
 	

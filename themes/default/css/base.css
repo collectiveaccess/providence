@@ -5370,7 +5370,7 @@ div.dialogHeader {
     font-size: 13px;
     font-weight: bold !important;
     padding: 5px;
-    margin: 0px;
+    margin: 0 8px 3px 8px !important;
     
     -moz-border-radius-: 8px;
     -webkit-border-radius: 8px;
@@ -5804,18 +5804,39 @@ div.caRepresentationMediaReplicationControls {
 	bottom: 3px;
 }
 
-
 .caAnnoMediaPlayerContainer {	/*  media player container */
 	float: left;
     width: 500px;
     height: 375px;
+    
+	background-image: url(../graphics/icons/audio.png);
+	background-position: center center;
+	background-repeat:no-repeat;
+    background-color: #000;
 }
-.caAnnoMediaPlayer {
-    margin: 0 auto 0 auto;
+.caAnnoEditorMediaPlayer {
+	width: 500px;
+    margin: auto auto 0 auto;
 }
+.caAnnoEditorAudioMediaPlayer {
+	margin-top: 343px;
+}
+.caAnnoEditorVideoMediaPlayer {
+
+}
+.caAnnoMediaPlayerControlsLeft {
+	float: left;
+	padding: 10px;
+}
+.caAnnoMediaPlayerControlsRight {
+	float: right;
+	padding: 10px;
+}
+
 .caAnnoEditorEditorScreen {
 	float: right;
 	width: 720px;
+	height: 500px;
 	overflow: auto;
 	margin: 0 10px 0 0;
 	background-color: #ededed;

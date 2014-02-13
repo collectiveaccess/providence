@@ -89,7 +89,7 @@
  			
  			// Get player
  			$va_display_info = caGetMediaDisplayInfo('annotation_editor', $t_rep->getMediaInfo("media", "original", "MIMETYPE"));
- 			$this->view->setVar('player', $t_rep->getMediaTag('media', $va_display_info['display_version'], array('viewer_width' => $vn_player_width = $va_display_info['viewer_width'], 'viewer_height' => $vn_player_height = $va_display_info['viewer_height'], 'id' => 'caAnnoEditorMediaPlayer', 'class' => 'caAnnoEditorMediaPlayer')));
+ 			$this->view->setVar('player', $t_rep->getMediaTag('media', $va_display_info['display_version'], array('viewer_width' => $vn_player_width = $va_display_info['viewer_width'], 'viewer_height' => $vn_player_height = $va_display_info['viewer_height'], 'id' => 'caAnnoEditorMediaPlayer', 'class' => 'caAnnoEditorMediaPlayer'.((true) ? ' caAnnoEditorAudioMediaPlayer': ' caAnnoEditorVideoMediaPlayer'))));
  			$this->view->setVar('player_width', $vn_player_width);
  			$this->view->setVar('player_height', $vn_player_height);
  			
@@ -111,7 +111,7 @@
  			$vn_max = $this->request->getParameter('n', pInteger);
  		 	
  			$this->view->setVar('annotation_count', $vn_total =(int)$t_rep->getAnnotationCount());
- 			$this->view->setVar('annotation_list', array('start' => $vn_start, 'max' => $vn_max, 'total' => $vn_total, 'list' => $t_rep->getAnnotations(array('start' => $vn_start, 'max' => $vn_max))));
+ 			$this->view->setVar('annotation_list', array('start' => $vn_start, 'max' => $vn_max, 'total' => $vn_total, 'list' => array_values($t_rep->getAnnotations(array('start' => $vn_start, 'max' => $vn_max)))));
  			
  			return $this->render('ajax_representation_annotation_list_json.php');
  		}
