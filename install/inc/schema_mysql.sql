@@ -4349,8 +4349,9 @@ create table ca_item_comments (
 	
 	comment		text null,
 	rating		tinyint null,
-	email		varchar(255),
-	name		varchar(255),
+	email		varchar(255) null,
+	name		varchar(255) null,
+	location	varchar(255) null,
 	created_on	int unsigned not null,
 	access		tinyint unsigned not null default 0,
 	ip_addr		varchar(39) null,
@@ -6430,5 +6431,5 @@ create table ca_schema_updates (
 ) engine=innodb CHARACTER SET utf8 COLLATE utf8_general_ci;
 
 /* Indicate up to what migration this schema definition covers */
-/* CURRENT MIGRATION: 96 */
-INSERT IGNORE INTO ca_schema_updates (version_num, datetime) VALUES (96, unix_timestamp());
+/* CURRENT MIGRATION: 97 */
+INSERT IGNORE INTO ca_schema_updates (version_num, datetime) VALUES (97, unix_timestamp());
