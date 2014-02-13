@@ -133,7 +133,6 @@
 	
 		// Start polling to see if we're playing a clip	
 		var f = function() {
-			var p = jQuery('#caAnnoEditorMediaPlayer');
 			var ct;
 			if ((ct = caAnnoEditorGetPlayerTime()) != null) {
 				var map = jQuery('#caAnnoEditorTlCarousel').data('annotation_map');
