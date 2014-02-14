@@ -72,6 +72,7 @@ class Session {
 		$this->lifetime = $o_config->get("session_lifetime");
 		
 		if (!$pb_dont_create_new_session) {
+			session_save_path(__CA_APP_DIR__."/tmp");
 			session_name($this->name);
 			ini_set("session.gc_maxlifetime", $this->lifetime); 
 			session_set_cookie_params($this->lifetime, '/', $this->domain);
