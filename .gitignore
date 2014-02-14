@@ -3,8 +3,6 @@ app/tmp/*
 app/conf/local/*
 setup.php
 /media/*
-app/lib/core/Parsers/htmlpurifier/standalone/HTMLPurifier/DefinitionCache/Serializer/HTML
-app/lib/core/Parsers/htmlpurifier/standalone/HTMLPurifier/DefinitionCache/Serializer/HTML/*
 .DS_Store
 .settings
 .project
