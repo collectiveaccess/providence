@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2012-2013 Whirl-i-Gig
+ * Copyright 2012-2014 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -169,6 +169,13 @@
 			// Set nonpreferred labels
 			if (is_array($va_field_values['nonpreferred_label'])) {
 				$t_subject->setFailedNonPreferredLabelInserts($va_field_values['nonpreferred_label']);		
+			}
+			
+			// Set annotation properties
+			if (is_array($va_field_values['annotation_properties']) && method_exists($t_subject, 'setPropertyValue')) {
+				foreach($va_field_values['annotation_properties'] as $vs_property => $vs_property_value) {
+					$t_subject->setPropertyValue($vs_property, $vs_property_value);	
+				}	
 			}
 			
 			

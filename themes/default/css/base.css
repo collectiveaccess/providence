@@ -5370,7 +5370,11 @@ div.dialogHeader {
     font-size: 13px;
     font-weight: bold !important;
     padding: 5px;
-    margin: 0px;
+    margin: 0 8px 3px 8px !important;
+    
+    -moz-border-radius-: 8px;
+    -webkit-border-radius: 8px;
+    border-radius: 8px;
 }
 
 /* Quick add */
@@ -5457,425 +5461,6 @@ div.debugLabel {
 .vizTitle {
     font-weight: bold;
     margin-top: 5px;
-}
-
-/** 
- *
- * Annotation editor 
- *
- **/
-
-.caAnnotationEditorPanel {
-    position: fixed;
-    top: 25px;
-    left: 0px;
-    width: 952px;
-    height: 240px;
-    overflow: auto;
-    display: none;
-    padding:0px !important;
-    border: 2px solid #999999;
-    z-index: 31000;			/* needs to be on top of menu bar, which has z-index=30000 */
-    background-color: #FFFFFF;
-}
-
-.caAnnotationMediaPlayerContainer {
-    width: 952px;
-    height: 32px;
-}
-.caAnnotationMediaPlayer {
-    margin: 0 auto 0 auto;
-}
-
-#caAnnotationEditorTimelineContainer {
-
-}
-
-.caAnnotationEditorEditorScreen{
-    background-color: #ffffff;
-    padding: 0px;
-    width: 100%;
-}
-
-.caAnnotationEditorEditorScreen .quickAddSectionForm .quickAddSectionBox {
-    overflow: auto;
-    height: 350px;
-}
-
-div.caAnnotationEditorEditorErrorContainer {
-    width: 920px;
-    padding: 6px 10px 0px 10px;
-    display: none;
-}
-
-#caAnnotationEditorPanel .close a{
-    text-decoration:none;
-    font-size:16px;
-}
-
-.caAnnotationEditorPanelContentArea {
-    padding:0px;
-}
-
-#caAnnotationEditorPanelControlButtons {
-    width: 100%;
-    text-align: center;
-}
-
-#caAnnotationEditorPanelControlButtons table {
-    width: 100%;
-}
-
-.action {
-    margin: 0px 3px 0px 3px;
-    border: 1px solid #fff;
-    background-color:#FFFFFF;
-    height: 118px;
-}
-.action:hover, .action:focus {
-    border-color: #808080;
-}
-.actionHighlighted {
-    margin: 0px 3px 0px 3px;
-    border: 2px solid #cc0000;
-    border-collapse: collapse;
-    background-color:#FFFFFF;
-    height: 116px;
-}
-
-.actionTimecode{
-    font-size:9px;
-    font-weight:normal;
-    margin:5px 5px 0px 5px;
-    position:relative;
-}
-
-.actionTimecode a{
-    font-size:9px;
-    text-decoration: none;
-}
-
-.actionTitle{
-    font-size:12px;
-    margin:5px 5px 0px 5px;
-    height:30px;
-    overflow:hidden;
-}
-
-.actionTitle a{
-    font-size:12px;
-    text-decoration: none;
-}
-
-.caAnnotationEditorPlayButton {
-    position:absolute;
-    bottom:5px;
-    right:10px;
-}
-
-.caAnnotationEditorEditButton {
-    position:absolute;
-    bottom:5px;
-    right:5px;
-}
-
-div.dialogHeader .close {
-    float:right;
-    width:15px;
-    height:16px;
-    background-image:url("../graphics/buttons/x.png");
-    margin: 0px 5px 0px 10px;
-}
-
-div.dialogHeader div.close a {
-    text-decoration: none;
-}
-
-.caAnnotationEditorEditButton a {
-    font-size: 11px;
-}
-
-.caAnnotationEditorDeleteConfirm {
-    width: 920px;
-    padding: 6px 10px 0px 10px;
-    display: none;
-}
-
-.caAnnotationEditorAdd {
-    position: absolute;
-    bottom: 6px;
-    right: 3px;
-}
-
-.caAnnotationEditorAdd a {
-    font-weight: bold;
-    text-decoration: none;
-}
-
-.caAnnotationEditorInfo {
-    font-weight: bold;
-}
-
-.siloPlaceHolder{
-    display:none;
-    background-color:#EAEAEA;
-    border-bottom:1px solid #FFFFFF;
-    padding:15px 10px 15px 10px;
-    font-size:11px;
-}
-
-.siloPlaceHolder a{
-    font-size:13px;
-    font-family: ff-dagny-web-pro, 'Helvetica Neue', Arial, sans-serif;
-    font-weight:bold;
-}
-
-.siloContainer {
-    border-bottom:1px solid #FFFFFF;
-    height:170px;
-    background-color:#ededed;
-}
-
-.siloInfo {
-    float:left;
-    width: 100px;
-    background-color:#dedede;
-    height:170px;
-    clear:left;
-    position:relative;
-}
-
-.siloInfo div {
-    margin:10px 10px 0px 10px;
-}
-
-.siloInfo .siloTitle{
-    font-size:14px;
-    font-family: ff-dagny-web-pro, 'Helvetica Neue', Arial, sans-serif;
-    font-weight:bold;
-}
-
-.siloInfo .hide{
-    position:absolute;
-    bottom:5px;
-}
-.siloInfo .hide a{
-    color:#666666;
-    font-size:11px;
-}
-
-.timelineContainer{
-    float:left;
-    width:852px;
-    height:140px;
-}
-
-.sliderSynchContainer{
-    margin: 0px 0px 0px 33px;
-    width: 786px;
-}
-
-.sliderContainer{
-    margin: 10px 0px 0px 0px;
-    float:left;
-    width:740px;
-    height:18px;
-}
-
-.slider{
-    background-color:#DEDEDE;
-}
-
-.synchButton{
-    float:right;
-    padding:3px 0px 0px 10px;
-}
-
-.synchButton a, .synchButton a img{
-    text-decoration:none;
-    border:0px;
-}
-
-.siloMoreInfoContainer .siloMoreInfoContent{
-    background-color:#FFFFFF;
-    padding: 10px 3px 50px 3px;
-    border-right: 1px solid #EAEAEA;
-}
-
-.siloMoreInfoContainer .searchResultTd{
-    width:110px;
-    padding: 0px 0px 10px 0px;
-}
-
-.siloPrevious{
-    float:left;
-    text-align:left;
-    width: 20px;
-    padding: 200px 10px 100px 0px;
-}
-
-.siloNext{
-    float:right;
-    text-align:right;
-    width: 20px;
-    padding: 200px 0px 100px 10px;
-}
-
-.siloPrevious a, .siloNext a{
-    border:0px;
-}
-
-.siloMoreInfoContainer .hide{
-    float:right;
-}
-
-.siloMoreInfoContainer .hide a{
-    font-size:11px;
-}
-
-.siloMoreInfoContainer .actionText {
-    font-size:15px;
-}
-
-.siloMoreInfoContainer .leftCol{
-    float:left;
-    width:275px;
-}
-
-.siloMoreInfoContainer .rightCol{
-    float:right;
-    width:500px;
-    /*height:315px; */
-}
-
-.siloMoreInfoContainer .unit{
-    margin-bottom:15px;
-    line-height:1.5em;
-}
-
-.siloMoreInfoContainer .unit H3{
-    margin-top:0px;
-}
-
-.siloMoreInfoContainer .rightCol H3{
-    margin-top:0px;
-}
-
-.siloMoreInfoContainer .leftCol .scrollPane{
-    width:275px;
-    max-height: 315px;
-}
-
-.siloMoreInfoContainer .moreImagesLink{
-    text-align:right;
-}
-
-.sliderInfo {
-    display: none;
-    position: absolute;
-    top: -6px;
-    left: 15px;
-    min-width: 60px;
-    padding: 5px 5px 5px 10px;
-    font-size:12px;
-    line-height:1em;
-    white-space:nowrap;
-    color:#FFFFFF;
-    background-image: url(../graphics/backgrounds/bgSliderInfo.png);
-    background-position: left center;
-    background-repeat:no-repeat;
-}
-
-/**
- *  jcarousel classes
- */
-.jcarousel-skin-chronology .jcarousel-direction-rtl {
-    direction: rtl;
-}
-
-.jcarousel-skin-chronology .jcarousel-container-horizontal {
-    width: 792px;
-    padding: 10px 30px 0px 30px;
-}
-
-.jcarousel-skin-chronology .jcarousel-clip {
-    overflow: hidden;
-}
-
-.jcarousel-skin-chronology .jcarousel-clip-horizontal {
-    width:  792px;
-    height: 125px;
-}
-
-.jcarousel-skin-chronology .jcarousel-item {
-    width: 160px;
-    height: 120px;
-    position:relative;
-}
-
-.jcarousel-skin-chronology .jcarousel-item-horizontal {
-    margin-left: 0;
-}
-
-.jcarousel-skin-chronology .jcarousel-direction-rtl .jcarousel-item-horizontal {
-    margin-left: 7px;
-    margin-right: 0;
-}
-
-.jcarousel-skin-chronology .jcarousel-next-horizontal {
-    position: absolute;
-    top: 46px;
-    right: 4px;
-    width: 20px;
-    height: 39px;
-    cursor: pointer;
-    background: transparent url(../graphics/buttons/arrowRightChronoSmall.png) no-repeat 0 0;
-}
-
-.jcarousel-skin-chronology .jcarousel-direction-rtl .jcarousel-next-horizontal {
-    left: 5px;
-    right: auto;
-    background-image: url(../graphics/buttons/arrowRightChronoSmall.png);
-}
-
-.jcarousel-skin-chronology .jcarousel-next-horizontal:active {
-    background-image: url(../graphics/buttons/arrowRightChronoSmallOff.png);
-}
-
-.jcarousel-skin-chronology .jcarousel-next-disabled-horizontal,
-.jcarousel-skin-chronology .jcarousel-next-disabled-horizontal:hover,
-.jcarousel-skin-chronology .jcarousel-next-disabled-horizontal:focus,
-.jcarousel-skin-chronology .jcarousel-next-disabled-horizontal:active {
-    cursor: default;
-    background-image: url(../graphics/buttons/arrowRightChronoSmallOff.png);
-}
-
-.jcarousel-skin-chronology .jcarousel-prev-horizontal {
-    position: absolute;
-    top: 46px;
-    left: 5px;
-    width: 20px;
-    height: 39px;
-    cursor: pointer;
-    background: transparent url(../graphics/buttons/arrowLeftChronoSmall.png) no-repeat 0 0;
-}
-
-.jcarousel-skin-chronology .jcarousel-direction-rtl .jcarousel-prev-horizontal {
-    left: auto;
-    right: 5px;
-    background-image: url(../graphics/buttons/arrowLeftChronoSmall.png);
-}
-
-.jcarousel-skin-chronology .jcarousel-prev-horizontal:active {
-    background-image: url(../graphics/buttons/arrowLeftChronoSmallOff.png);
-}
-
-.jcarousel-skin-chronology .jcarousel-prev-disabled-horizontal,
-.jcarousel-skin-chronology .jcarousel-prev-disabled-horizontal:hover,
-.jcarousel-skin-chronology .jcarousel-prev-disabled-horizontal:focus,
-.jcarousel-skin-chronology .jcarousel-prev-disabled-horizontal:active {
-    cursor: default;
-    background-image: url(../graphics/buttons/arrowLeftChronoSmallOff.png);
 }
 
 /** 
@@ -6120,4 +5705,207 @@ div.caRepresentationMediaReplicationControls {
     -moz-border-radius-: 10px;
     -webkit-border-radius: 10px;
     border-radius: 10px;
+}
+
+
+/** 
+ *
+ * Annotation editor 
+ *
+ **/
+.caAnnoEditorPanel {			/* full-window panel */
+    position: fixed;
+    top: 0px;
+    left: 0px;
+    width: 100%;
+    height: 100%;
+    overflow: auto;
+    display: none;
+    padding:0px !important;
+    border: 2px solid #999999;
+    z-index: 31000;			/* needs to be on top of menu bar, which has z-index=30000 */
+    background-color: #ededed;
+}
+.caAnnoEditorTlContainer {		/* timeline container */
+    width:100%;
+    height: 130px;
+    border-bottom:1px solid #FFFFFF;
+    background-color:#ededed;
+}
+.caAnnoEditorTlInfo {
+    float:left;
+    width: 90px;
+    background-color:#dedede;
+    clear:left;
+    position:relative;
+}
+.caAnnoEditorTlInfo div.caAnnoEditorInfo {
+    margin:5px 5px 0px 5px;
+    height: 20px;
+}
+.caAnnoEditorTlInfo div.caAnnoEditorAdd {
+    margin:5px 5px 0px 5px;
+    height: 62px;
+}
+
+.caAnnoEditorTlSlider {
+	margin: 15px 0 0 0;
+}
+.caAnnoEditorTlSyncControl {
+    position:absolute;
+    right: 3px;
+    bottom: 3px;
+}
+.caAnnoEditorAddButton {
+	position:absolute;
+    left: 3px;
+    bottom: 3px;
+}
+.caAnnoEditorTl {
+    margin: 0 10px 0 95px;
+}
+.caAnnoEditorTlAnnotationContainer {
+	position: relative;
+    margin: 0px 3px 0px 3px;
+    border: 2px solid #fff;
+    background-color:#fff;
+    height: 88px;
+    
+    -webkit-border-radius: 3px;
+    -moz-border-radius: 3px;
+    border-radius: 3px;
+}
+
+.caAnnoEditorTlAnnotationContainer:hover, .caAnnoEditorTlAnnotationContainer:focus {
+    border-color: #808080;
+}
+.caAnnoEditorTlAnnotationContainerSelected {
+    border: 2px solid #cc0000;
+}
+.caAnnoEditorTlAnnotationContainer div.title {
+    font-size:12px;
+    margin:3px 3px 0px 3px;
+    height:35px;
+    overflow:hidden;
+}
+.caAnnoEditorTlAnnotationContainer div.title a {
+    font-size:12px;
+  	text-decoration: none;
+}
+.caAnnoEditorTlAnnotationContainer div.timecode a {
+    font-size:9px;
+    font-weight:normal;
+    margin:5px 5px 0px 5px;
+    position:relative;
+}
+.caAnnoEditorTlAnnotationContainer div.timecode a {
+    font-size:9px;
+    text-decoration: none;
+}
+.caAnnoEditorTlAnnotationContainer div.editAnnoButton {
+	position: absolute;
+	right: 3px;
+	bottom: 3px;
+}
+
+.caAnnoMediaPlayerContainer {	/*  media player container */
+	float: left;
+    width: 500px;
+    height: 375px;
+    
+	background-image: url(../graphics/icons/audio.png);
+	background-position: center center;
+	background-repeat:no-repeat;
+    background-color: #000;
+}
+.caAnnoEditorMediaPlayer {
+	width: 500px;
+    margin: auto auto 0 auto;
+}
+.caAnnoEditorAudioMediaPlayer {
+	margin-top: 343px;
+}
+.caAnnoEditorVideoMediaPlayer {
+
+}
+.caAnnoMediaPlayerControlsLeft {
+	float: left;
+	padding: 10px;
+}
+.caAnnoMediaPlayerControlsRight {
+	float: right;
+	padding: 10px;
+}
+
+.caAnnoEditorEditorScreen {
+	float: right;
+	width: 720px;
+	height: 500px;
+	overflow: auto;
+	margin: 0 10px 0 0;
+	background-color: #ededed;
+}
+
+
+.caAnnoEditorAdd {				/* full-window panel */
+    
+}
+.caAnnoEditorAdd a {
+    font-weight: bold;
+    text-decoration: none;
+}
+.caAnnoEditorInfo {
+    font-weight: bold;
+}
+.caAnnoEditorTlSliderInfo {
+	display: none;
+	position: absolute; 
+	top: -6px; 
+	left: 15px; 
+	min-width: 60px; 
+	padding: 5px 5px 5px 10px; 
+	font-size:12px;
+	line-height:1em;
+	white-space:nowrap;
+	color:#FFFFFF;
+	background-image: url(../graphics/backgrounds/bgSliderInfo.png);
+	background-position: left center;
+	background-repeat:no-repeat;
+}
+
+
+/** Carousel **/
+
+.jcarousel {
+    position: relative;
+    overflow: hidden;
+    /*
+    (4 * width: 150px) + (3 * margin-right: 1px) = 603px
+    */
+    width: 100%;
+    height: 92px;
+}
+
+.jcarousel ul {
+    width: 20000em;
+    position: relative;
+    list-style: none;
+    margin: 0;
+    padding: 0;
+}
+
+.jcarousel li {
+    float: left;
+    width: 150px;
+    height: 80px;
+    margin-right: 1px;
+}
+
+.jcarousel img {
+    max-height: 80px;
+}
+
+.jcarousel .loading {
+    text-align: center;
+    line-height: 70px; /* Fake vertical aligning */
 }

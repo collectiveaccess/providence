@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2013 Whirl-i-Gig
+ * Copyright 2013-2014 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -46,13 +46,13 @@
 		if ($vn_subject_id > 0) {
 			print "<div style='float: right;'>".caJSButton($this->request, __CA_NAV_BUTTON_DELETE__, _t("Delete annotation"), "{$vs_form_name}{$vs_field_name_prefix}{$vs_n}", array("onclick" => "caConfirmDeleteAnnotation(true);"))."</div>\n";
 		}
-		print "<div style='float: left;'>".caJSButton($this->request, __CA_NAV_BUTTON_SAVE__, _t("Save annotation"), "{$vs_form_name}{$vs_field_name_prefix}{$vs_n}", array("onclick" => "caSaveAnnotation{$vs_form_name}{$vs_field_name_prefix}{$vs_n}(event);"))
-			.' '.caJSButton($this->request, __CA_NAV_BUTTON_CANCEL__, _t("Cancel"), "{$vs_form_name}{$vs_field_name_prefix}{$vs_n}", array("onclick" => "jQuery(\".caAnnotationEditorPanel\").animate({ \"height\": \"240px\" }, function() { jQuery(\"#caAnnotationEditorEditorScreen\").html(\"\").hide(); });"))."</div><br style='clear: both;'/>\n";
+		print "<div style='float: left;'>".caJSButton($this->request, __CA_NAV_BUTTON_SAVE__, _t("Save annotation"), "{$vs_form_name}{$vs_field_name_prefix}{$vs_n}", array("id" => "caAnnoEditorScreenSaveButton", "onclick" => "caSaveAnnotation{$vs_form_name}{$vs_field_name_prefix}{$vs_n}(event);"))
+			.' '.caJSButton($this->request, __CA_NAV_BUTTON_CANCEL__, _t("Cancel"), "{$vs_form_name}{$vs_field_name_prefix}{$vs_n}", array("onclick" => "return caAnnoEditorDisableAnnotationForm();"))."</div><br style='clear: both;'/>\n";
 	}
 ?>
 	</div>
-	<div class="caAnnotationEditorEditorErrorContainer" id="<?php print $vs_form_name; ?>Errors<?php print $vs_field_name_prefix.$vs_n; ?>"></div>
-	<div class="quickAddSectionBox" id="{$vs_form_name}Container<?php print $vs_field_name_prefix.$vs_n; ?>">
+	<div class="caAnnoEditorEditorErrorContainer" id="<?php print $vs_form_name; ?>Errors<?php print $vs_field_name_prefix.$vs_n; ?>"></div>
+	<div class="quickAddSectionBox" id="<?php print $vs_form_name; ?>Container<?php print $vs_field_name_prefix.$vs_n; ?>">
 <?php
 
 			$va_force_new_label = array();
@@ -63,6 +63,7 @@
 			$va_force_new_label[$t_subject->getLabelDisplayField()] = $vs_q;				// query text is used for display field
 			
 			$va_form_elements = $t_subject->getBundleFormHTMLForScreen($this->getVar('screen'), array(
+					'width' => '625px',
 					'request' => $this->request, 
 					'formName' => $vs_form_name.$vs_field_name_prefix.$vs_n,
 					'forceLabelForNew' => $va_force_new_label							// force query text to be default in label fields
@@ -73,7 +74,7 @@
 		<input type='hidden' name='_formName' value='<?php print $vs_form_name.$vs_field_name_prefix.$vs_n; ?>'/>
 		<input type='hidden' name='q' value='<?php print htmlspecialchars($vs_q, ENT_QUOTES, 'UTF-8'); ?>'/>
 		
-		<input type='hidden' name='annotation_id' value='<?php print $vn_subject_id; ?>'/>
+		<input type='hidden' id='caAnnoEditorAnnotationID' name='annotation_id' value='<?php print $vn_subject_id; ?>'/>
 		<input type='hidden' name='representation_id' value='<?php print $t_subject->get('representation_id'); ?>'/>
 		<input type='hidden' name='type_code' value='<?php print $t_subject->get('type_code'); ?>'/>
 		
@@ -83,6 +84,7 @@
 			function caSaveAnnotation<?php print $vs_form_name.$vs_field_name_prefix.$vs_n; ?>(e) {
 				jQuery.post('<?php print caNavUrl($this->request, "editor/representation_annotations", "RepresentationAnnotationQuickAdd", "Save"); ?>', jQuery("#<?php print $vs_form_name.$vs_field_name_prefix.$vs_n; ?>").serialize(), function(resp, textStatus) {
 					if (resp.status == 0) {
+						
 						var inputID = jQuery("#<?php print $vs_form_name.$vs_field_name_prefix.$vs_n; ?>").parent().data('autocompleteInputID');
 						var itemIDID = jQuery("#<?php print $vs_form_name.$vs_field_name_prefix.$vs_n; ?>").parent().data('autocompleteItemIDID');
 					
@@ -95,17 +97,26 @@
 										'</ul></div>';
 						
 						jQuery("#<?php print $vs_form_name; ?>Errors<?php print $vs_field_name_prefix.$vs_n; ?>").html(content).slideDown(200);
-						jQuery('.rounded').corner('round 8px');
 						
 						var quickAddClearErrorInterval = setInterval(function() {
 							jQuery("#<?php print $vs_form_name; ?>Errors<?php print $vs_field_name_prefix.$vs_n; ?>").slideUp(500);
 							clearInterval(quickAddClearErrorInterval);
-							jQuery(".caAnnotationEditorPanel").animate({ "height": "240px" }, function() {
-								jQuery("#caAnnotationEditorEditorScreen").html('').hide();	// empty form area
-							});	// fold up form
 						}, 3000);
-						
-						loadActions(jQuery('#silo').data('jcarousel'), 'next', true);		// refresh timeline
+<?php
+	if ($vn_subject_id) {
+?>
+						// Reload the item that has changed
+						caAnnoEditorTlReload(jQuery("#caAnnoEditorTlCarousel"), resp.id);
+<?php
+	} else {	
+?>	
+						// Add the newly created item
+						caAnnoEditorTlLoad(jQuery("#caAnnoEditorTlCarousel"), 0);
+<?php
+	}
+?>					
+						jQuery("#caAnnoEditorNewInButton").show();		// show "new in" button
+						jQuery("#caAnnoEditorAnnotationID").val(resp.id);
 					} else {
 						// error
 						var content = '<div class="notification-error-box rounded"><ul class="notification-error-box">';
@@ -115,7 +126,6 @@
 						content += '</ul></div>';
 						
 						jQuery("#<?php print $vs_form_name; ?>Errors<?php print $vs_field_name_prefix.$vs_n; ?>").html(content).slideDown(200);
-						jQuery('.rounded').corner('round 8px');
 						
 						var quickAddClearErrorInterval = setInterval(function() {
 							jQuery("#<?php print $vs_form_name; ?>Errors<?php print $vs_field_name_prefix.$vs_n; ?>").slideUp(500);
@@ -134,7 +144,6 @@
 											)); ?></li>' +
 										'</ul></div>';
 					jQuery('#<?php print $vs_form_name; ?>Errors<?php print $vs_field_name_prefix.$vs_n; ?>').html(content).slideDown(200);
-					jQuery('.rounded').corner('round 8px');
 				} else {
 					jQuery('#<?php print $vs_form_name; ?>Errors<?php print $vs_field_name_prefix.$vs_n; ?>').slideUp(200, function() { jQuery(this).html(''); });
 				}
@@ -144,10 +153,8 @@
 				jQuery.getJSON('<?php print caNavUrl($this->request, $this->request->getModulePath(), $this->request->getController(), 'deleteAnnotation'); ?>', {annotation_id: <?php print (int)$vn_subject_id; ?>}, function(resp) {
 					if (resp.code == 0) {
 						// delete succeeded... so update clip list
-						loadActions(jQuery('#silo').data('jcarousel'), 'init', true);
-						
-						// ... and fold up form
-						jQuery(".caAnnotationEditorPanel").animate({ "height": "240px" }, function() { jQuery("#caAnnotationEditorEditorScreen").html("").hide(); });
+						caAnnoEditorTlRemove(jQuery("#caAnnoEditorTlCarousel"), <?php print (int)$vn_subject_id; ?>);
+						caAnnoEditorDisableAnnotationForm();
 					} else {
 						// error
 						var content = '<div class="notification-error-box rounded"><ul class="notification-error-box">';
@@ -157,7 +164,6 @@
 						content += '</ul></div>';
 						
 						jQuery("#<?php print $vs_form_name; ?>Errors<?php print $vs_field_name_prefix.$vs_n; ?>").html(content).slideDown(200);
-						jQuery('.rounded').corner('round 8px');
 					}
 				});
 			}
