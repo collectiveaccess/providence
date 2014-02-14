@@ -76,6 +76,7 @@ class Session {
 			ini_set("session.gc_maxlifetime", $this->lifetime); 
 			session_set_cookie_params($this->lifetime, '/', $this->domain);
 			session_start();
+			$_SESSION['last_activity'] = $this->start_time;
 			session_write_close();
 			
 			$this->sessionData = caGetCacheObject("ca_session_".md5(session_id()), ($this->lifetime > 0) ? $this->lifetime : 7 * 24 * 60 * 60);
