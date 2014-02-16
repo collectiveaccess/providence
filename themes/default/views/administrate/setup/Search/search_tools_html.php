@@ -89,7 +89,7 @@
 <?php
 	}
 ?>
-		<a href='#' id='hideTools' onclick='jQuery("#searchToolsBox").slideUp(250); jQuery("#showTools").slideDown(1); jQuery("input.addItemToSetControl").hide(); return false;'><img src="<?php print $this->request->getThemeUrlPath(); ?>/graphics/icons/collapse.gif" width="11" height="11" border="0"></a>
+		<a href='#' id='hideTools' onclick='jQuery("#searchToolsBox").slideUp(250); jQuery("#showTools").slideDown(1); jQuery("input.addItemToSetControl").hide(); return false;'><?php print caNavIcon($this->request, __CA_NAV_BUTTON_COLLAPSE__); ?></a>
 		<div style='clear:both;height:1px;'>&nbsp;</div>
 	</div><!-- end bg -->
 </div><!-- end searchToolsBox -->

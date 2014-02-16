@@ -36,7 +36,7 @@
  
 	print $vs_control_box = caFormControlBox(
 		caJSButton($this->request, __CA_NAV_BUTTON_SAVE__, _t("Execute media import"), 'caBatchMediaImportForm', array('onclick' => 'caShowConfirmBatchExecutionPanel(); return false;')).' '.
-		caNavButton($this->request, __CA_NAV_BUTTON_CANCEL__, _t("Cancel"), 'batch', 'MediaImport', 'Index/'.$this->request->getActionExtra(), array()),
+		caNavButton($this->request, __CA_NAV_BUTTON_CANCEL__, _t("Cancel"), '', 'batch', 'MediaImport', 'Index/'.$this->request->getActionExtra(), array()),
 		'', 
 		''
 	);
@@ -98,7 +98,7 @@
 		print caHTMLHiddenInput('directory', array('value' => '', 'id' => 'caDirectoryValue'));		
 ?>	
 				</div>
-				<div style="margin: 8px 0 5px 0;">
+				<div style="margin: 8px 0px 0px 0px; padding-bottom:5px;">
 <?php 
 				$va_opts = array('id' => 'caIncludeSubDirectories', 'value' => 1);
 				if (isset($va_last_settings['includeSubDirectories']) && $va_last_settings['includeSubDirectories']) {
@@ -139,7 +139,7 @@
 			<span class="formLabelText"><?php print _t('Type'); ?></span> 
 				<div class="bundleContainer">
 					<div class="caLabelList">
-						<p>
+						<div style='padding:10px 0px 10px 10px;'>
 							<table style="width: 100%;">
 								<tr>
 									<td class='formLabel'>
@@ -154,7 +154,7 @@
 									</td>
 								</tr>
 							</table>
-						<p>
+						</div>
 					</div>
 				</div>
 		</div>
@@ -162,7 +162,7 @@
 			<span class="formLabelText"><?php print _t('Set'); ?></span> 
 			<div class="bundleContainer">
 				<div class="caLabelList" id="caMediaImportSetControls">
-					<p>
+					<div style='padding:10px 0px 10px 10px;'>
 						<table>
 <?php
 	if (is_array($this->getVar('available_sets')) && sizeof($this->getVar('available_sets'))) {
@@ -214,7 +214,7 @@
 							});
 							
 						</script>
-					</p>
+					</div>
 				</div>
 			</div>
 		</div>
@@ -222,7 +222,7 @@
 			<span class="formLabelText"><?php print _t('Identifier'); ?></span> 
 			<div class="bundleContainer">
 				<div class="caLabelList" id="caMediaImportIdnoControls">
-					<p>
+					<div style='padding:10px 0px 10px 10px;'>
 						<table>
 							<tr>
 								<td><?php 
@@ -265,7 +265,7 @@
 							});
 							
 						</script>
-					</p>
+					</div>
 				</div>
 			</div>
 		</div>
@@ -273,7 +273,7 @@
 			<span class="formLabelText"><?php print _t('Status &amp; access'); ?></span> 
 				<div class="bundleContainer">
 					<div class="caLabelList" >
-						<p>
+						<div style='padding:10px 0px 10px 10px;'>
 							<table style="width: 100%;">
 								<tr>
 									<td class='formLabel'>
@@ -292,7 +292,7 @@
 									</td>								
 								</tr>
 							</table>
-						</p>
+						</div>
 					</div>
 				</div>
 		</div>
@@ -306,7 +306,7 @@
 	print _t('Relationships will be created by matching the identifier extracted from the media file name with identifiers in related records.');
 ?>
 						</p>
-						<p>
+						<div style='padding:10px 0px 10px 10px;'>
 							<table>
 <?php
 	foreach(array('ca_entities', 'ca_places', 'ca_occurrences', 'ca_collections') as $vs_rel_table) {
@@ -332,7 +332,7 @@
 	}
 ?>
 							</table>
-						</p>
+						</div>
 					</div>
 				</div>
 		</div>

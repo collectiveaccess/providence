@@ -40,7 +40,7 @@
 			
 			<table id="caSavedSearchesList" class="listtable" width="100%" border="0" cellpadding="0" cellspacing="1">
 				<div style="text-align:right;">
-					<?php print _t('Batch actions'); ?>: <a href='#' onclick='jQuery("#SavedSearchesListForm").attr("action", "<?php print caNavUrl($this->request, 'manage', 'SavedSearches', 'Delete'); ?>").submit();' class='form-button'><span class='form-button'>Delete</span></a>
+					<?php print _t('Batch actions'); ?>: <a href='#' onclick='jQuery("#SavedSearchesListForm").attr("action", "<?php print caNavUrl($this->request, 'manage', 'SavedSearches', 'Delete'); ?>").submit();' class='form-button'><span class='form-button'><?php print caNavIcon($this->request, __CA_NAV_BUTTON_DELETE__);?>Delete</span></a>
 				</div>
 				<thead>
 					<tr>

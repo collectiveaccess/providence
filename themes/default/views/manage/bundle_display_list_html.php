@@ -90,13 +90,13 @@
 <?php
 	if ($this->request->user->canDoAction('can_edit_ca_bundle_displays')) {
 ?>
-					<?php print caNavButton($this->request, __CA_NAV_BUTTON_EDIT__, _t("Edit"), 'manage/bundle_displays', 'BundleDisplayEditor', 'Edit', array('display_id' => $va_display['display_id']), array(), array('icon_position' => __CA_NAV_BUTTON_ICON_POS_LEFT__, 'use_class' => 'list-button', 'no_background' => true, 'dont_show_content' => true)); ?>
+					<?php print caNavButton($this->request, __CA_NAV_BUTTON_EDIT__, _t("Edit"), '', 'manage/bundle_displays', 'BundleDisplayEditor', 'Edit', array('display_id' => $va_display['display_id']), array(), array('icon_position' => __CA_NAV_BUTTON_ICON_POS_LEFT__, 'use_class' => 'list-button', 'no_background' => true, 'dont_show_content' => true)); ?>
 <?php
 	}
 	
 	if ($this->request->user->canDoAction('can_delete_ca_bundle_displays')) {
 ?>					
-					<?php print caNavButton($this->request, __CA_NAV_BUTTON_DELETE__, _t("Delete"), 'manage/bundle_displays', 'BundleDisplayEditor', 'Delete', array('display_id' => $va_display['display_id']), array(), array('icon_position' => __CA_NAV_BUTTON_ICON_POS_LEFT__, 'use_class' => 'list-button', 'no_background' => true, 'dont_show_content' => true)); ?>
+					<?php print caNavButton($this->request, __CA_NAV_BUTTON_DELETE__, _t("Delete"), '', 'manage/bundle_displays', 'BundleDisplayEditor', 'Delete', array('display_id' => $va_display['display_id']), array(), array('icon_position' => __CA_NAV_BUTTON_ICON_POS_LEFT__, 'use_class' => 'list-button', 'no_background' => true, 'dont_show_content' => true)); ?>
 <?php
 	}
 ?>

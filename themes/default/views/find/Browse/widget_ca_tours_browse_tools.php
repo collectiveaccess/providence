@@ -26,6 +26,6 @@
  * ----------------------------------------------------------------------
  */
 ?>
-<h3>
+<h3 class='searchTours'>
 	<?php print _t("Browse %1", $this->getVar('mode_type_plural'))."<br/>\n"; ?>
 </h3>

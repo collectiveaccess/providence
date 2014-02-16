@@ -35,14 +35,14 @@
 	<div id="summary" style="clear: both;">
 			<div id="printButton">
 			<a href="<?php print caNavUrl($this->request, $this->request->getModulePath(), $this->request->getController(), "PrintSummary", array($t_item->PrimaryKey() => $t_item->getPrimaryKey()))?>" target="_blank">
-				<img src="<?php print $this->request->getThemeUrlPath(); ?>/graphics/icons/print.gif" width="15" height="18" border="0" title="<?php print _t("print page"); ?>">
+	    		<?php print caNavIcon($this->request, __CA_NAV_BUTTON_PDF__); ?>
 			</a>
 			</div>
 <?php
 	if ($vs_display_select_html = $t_display->getBundleDisplaysAsHTMLSelect('display_id', array('onchange' => 'jQuery("#caSummaryDisplaySelectorForm").submit();',  'class' => 'searchFormSelector'), array('table' => $t_item->tableNum(), 'value' => $t_display->getPrimaryKey(), 'access' => __CA_BUNDLE_DISPLAY_READ_ACCESS__, 'user_id' => $this->request->getUserID(), 'restrictToTypes' => array($t_item->getTypeID())))) {
 			print caFormTag($this->request, 'Summary', 'caSummaryDisplaySelectorForm');
 ?>
-			<div class='searchFormSelector' style='float: right; margin-bottom: 3px; font-size: 9px;'>
+			<div class='searchFormSelector' style='float: right;'>
 <?php
 				print _t('Display').': '.$vs_display_select_html; 
 ?>
@@ -74,3 +74,9 @@
 		</tr>
 	</table>
 </div><!-- end summary -->
+
+<?php
+		TooltipManager::add('#printButton', _t("Download Summary as PDF"));
+		TooltipManager::add('a.downloadMediaContainer', _t("Download Media"));
+
+?>

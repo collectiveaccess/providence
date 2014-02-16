@@ -169,7 +169,7 @@
 <?php
 	if (!$vb_read_only) {
 ?>
-								<span id="{fieldNamePrefix}change_{n}" class="caObjectRepresentationListInfoSubDisplayUpdate"><a href='#' onclick="caOpenRepresentationDetailEditor('{n}'); return false;"><?php print caNavIcon($this->request, __CA_NAV_BUTTON_UPDATE__, null).'</a>'; ?></span>
+								<span id="{fieldNamePrefix}change_{n}" class="caObjectRepresentationListInfoSubDisplayUpdate"><a href='#' class='updateIcon' onclick="caOpenRepresentationDetailEditor('{n}'); return false;"><?php print caNavIcon($this->request, __CA_NAV_BUTTON_UPDATE__).'</a>'; ?></span>
 <?php
 	}
 ?>
@@ -257,7 +257,7 @@
 					
 						<div style="float: right; width: 20%;">						
 							<div class='caObjectRepresentationListActionButton'>
-								<span id="{fieldNamePrefix}primary_{n}"><a href='#' onclick='caSetRepresentationAsPrimary("{n}"); return false;'><?php print caNavIcon($this->request, __CA_NAV_BUTTON_MAKE_PRIMARY__, null, array('width' => '16', 'height' => '16')).' '._t('Make primary'); ?></a></span>
+								<span id="{fieldNamePrefix}primary_{n}"><a href='#' onclick='caSetRepresentationAsPrimary("{n}"); return false;'><?php print caNavIcon($this->request, __CA_NAV_BUTTON_MAKE_PRIMARY__).' '._t('Make primary'); ?></a></span>
 							</div>
 							<div class='caObjectRepresentationListActionButton'>
 								<span id="{fieldNamePrefix}edit_{n}"><?php print urldecode(caNavLink($this->request, caNavIcon($this->request, __CA_NAV_BUTTON_EDIT__).' '._t('Edit full record'), '', 'editor/object_representations', 'ObjectRepresentationEditor', 'Edit', array('representation_id' => "{n}"), array('id' => "{fieldNamePrefix}edit_button_{n}"))); ?></span>
@@ -427,6 +427,9 @@
 <input type="hidden" id="<?php print $vs_id_prefix; ?>_ObjectRepresentationBundleList" name="<?php print $vs_id_prefix; ?>_ObjectRepresentationBundleList" value=""/>
 <?php
 	// order element
+	
+	TooltipManager::add('.updateIcon', _t("Update Media"));
+
 ?>		
 <script type="text/javascript">
 	function caToggleDisplayObjectRepresentationMetadata(media_metadata_id, media_metadata_button_id) {

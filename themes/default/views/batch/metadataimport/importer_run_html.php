@@ -31,7 +31,7 @@ $va_last_settings 		= $this->getVar('last_settings');
 
 print $vs_control_box = caFormControlBox(
 		caJSButton($this->request, __CA_NAV_BUTTON_SAVE__, _t("Execute data import"), 'caBatchMetadataImportForm', array('onclick' => 'caShowConfirmBatchExecutionPanel(); return false;')).' '.
-		caNavButton($this->request, __CA_NAV_BUTTON_CANCEL__, _t("Cancel"), 'batch', 'MetadataImport', 'Index', array()),
+		caNavButton($this->request, __CA_NAV_BUTTON_CANCEL__, _t("Cancel"), '', 'batch', 'MetadataImport', 'Index', array()),
 		'', 
 		''
 	);

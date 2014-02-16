@@ -29,14 +29,17 @@
  	$t_subject = $this->getVar('t_subject');
  	$o_result_context = $this->getVar('result_context');
 ?>
-<div id="searchSetsBox">
-	<div class="bg">
+<div class='setTools'>
+	<a href="#" id='searchSetToolsShow' onclick="$('.setTools').hide(); return caShowSearchSetTools();"><?php print caNavIcon($this->request, __CA_NAV_BUTTON_SETS__); ?>Set Tools</a>
+</div><!-- end setTools -->
+
+<div id="searchSetTools">
 <?php
 	if (is_array($va_sets = $this->getVar('available_sets')) && sizeof($va_sets)) {
 ?>	
 	<div class="col">
 <?php
-		print _t("Add checked to set").":<br/>";
+		print "<span class='header'>"._t("Add checked to set").":</span><br/>";
 ?>
 		<form id="caAddToSet">
 <?php
@@ -56,7 +59,7 @@
 ?>
 	<div class="col">
 <?php
-		print _t("Create set").":<br/>";
+		print "<span class='header'>"._t("Create set").":</span><br/>";
 ?>
 		<form id="caCreateSetFromResults">
 <?php
@@ -81,12 +84,28 @@
 	</div>
 
 
-		<a href='#' id='hideSets' onclick='return caHandleResultsUIBoxes("sets", "hide");'><img src="<?php print $this->request->getThemeUrlPath(); ?>/graphics/icons/collapse.gif" width="11" height="11" border="0"></a>
+		<a href='#' id='hideSets' onclick='caHideSearchSetTools(); $(".setTools").slideDown(250); '><?php print caNavIcon($this->request, __CA_NAV_BUTTON_COLLAPSE__); ?></a>
 		<div style='clear:both;height:1px;'>&nbsp;</div>
-	</div><!-- end bg -->
-</div><!-- end searchSetsBox -->
+</div><!-- end searchSetTools -->
 
 <script type="text/javascript">
+	function caShowSearchSetTools() {
+		jQuery('#searchSetToolsShow').hide();
+		jQuery("#searchSetTools").slideDown(250);
+		
+		jQuery("input.addItemToSetControl").show(); 
+		return false;
+	}
+	
+	function caHideSearchSetTools() {
+	
+		jQuery('#searchSetToolsShow').show();
+		jQuery("#searchSetTools").slideUp(250);
+		
+		jQuery("input.addItemToSetControl").hide(); 
+		return false;
+	}
+	
 	//
 	// Find and return list of checked items to be added to set
 	// item_ids are returned in a simple array

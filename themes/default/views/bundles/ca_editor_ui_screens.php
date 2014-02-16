@@ -65,7 +65,7 @@
 					<td>
 						<div style="float:right;">
 							<span id="{fieldNamePrefix}edit_{n}"><?php print urldecode(caNavLink($this->request, caNavIcon($this->request, __CA_NAV_BUTTON_EDIT__), '', 'administrate/setup/interface_screen_editor', 'InterfaceScreenEditor', 'Edit', array('screen_id' => '{screen_id}'))); ?></span>
-							<a href="#" class="caDeleteItemButton"><?php print caNavIcon($this->request, __CA_NAV_BUTTON_DEL_BUNDLE__); ?></a>
+							<a href="#" class="caDeleteItemButton"><?php print caNavIcon($this->request, __CA_NAV_BUTTON_DELETE__); ?></a>
 						</div>
 					</td>
 				</tr>

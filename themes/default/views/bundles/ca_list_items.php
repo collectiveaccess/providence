@@ -167,7 +167,7 @@
 ?>
 
 	<textarea class='caNewItemTemplate' style='display: none;'>
-		<div style="clear: both; width: 1px; height: 1px;"><!-- empty --></div>
+		<div style="clear: both;"><!-- empty --></div>
 		<div id="<?php print $vs_id_prefix; ?>Item_{n}" class="labelInfo caRelatedItem">
 <?php
 		if (!(bool)$va_settings['useHierarchicalBrowser']) {
@@ -196,7 +196,7 @@
 ?>
 				<div style="float: right;"><a href="#" class="caDeleteItemButton"><?php print caNavIcon($this->request, __CA_NAV_BUTTON_DEL_BUNDLE__); ?></a></div>
 
-				<div style='width: 690px; height: <?php print $va_settings['hierarchicalBrowserHeight']; ?>;'>
+				<div style='width: 700px; height: <?php print $va_settings['hierarchicalBrowserHeight']; ?>;'>
 					
 					<div id='<?php print $vs_id_prefix; ?>_hierarchyBrowser{n}' style='width: 100%; height: 100%;' class='hierarchyBrowser'>
 						<!-- Content for hierarchy browser is dynamically inserted here by ca.hierbrowser -->
@@ -230,7 +230,7 @@
 							className: 'hierarchyBrowserLevel',
 							classNameContainer: 'hierarchyBrowserContainer',
 							
-							editButtonIcon: '<img src="<?php print $this->request->getThemeUrlPath(); ?>/graphics/buttons/arrow_grey_right.gif" border="0" title="Edit"/>',
+							editButtonIcon: "<?php print caNavIcon($this->request, __CA_NAV_BUTTON_RIGHT_ARROW__);?>",
 							
 							//initItemID: <?php print $vn_browse_last_id; ?>,
 							useAsRootID: <?php print $vn_use_as_root_id; ?>,

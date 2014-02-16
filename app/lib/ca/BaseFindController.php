@@ -1026,10 +1026,17 @@
  			// Available sets
  			//
  			$t_set = new ca_sets();
- 			$this->view->setVar('available_sets', caExtractValuesByUserLocale($t_set->getSets(array('table' => $this->ops_tablename, 'user_id' => $this->request->getUserID()))));
+ 			$this->view->setVar('available_sets', $x=caExtractValuesByUserLocale($t_set->getSets(array('table' => $this->ops_tablename, 'user_id' => $this->request->getUserID()))));
 
 			$this->view->setVar('last_search', $this->opo_result_context->getSearchExpression());
  			
+ 			$this->view->setVar('result_context', $this->opo_result_context);
+ 			$va_results_id_list = $this->opo_result_context->getResultList();
+ 			$this->view->setVar('result', (is_array($va_results_id_list) && sizeof($va_results_id_list) > 0) ? caMakeSearchResult($this->ops_tablename, $va_results_id_list) : null);
+ 			
+ 			
+ 			$t_model = $this->opo_datamodel->getInstanceByTableName($this->ops_tablename, true);
+ 			$this->view->setVar('t_subject', $t_model);
  		}
  		# ------------------------------------------------------------------
  		# Visualization

@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2011 Whirl-i-Gig
+ * Copyright 2011-2014 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -32,9 +32,9 @@
 	
 	print $vs_control_box = caFormControlBox(
 		caFormSubmitButton($this->request, __CA_NAV_BUTTON_SAVE__, _t("Save"), 'InterfaceEditorForm').' '.
-		caNavButton($this->request, __CA_NAV_BUTTON_CANCEL__, _t("Cancel"), 'administrate/setup/interface_editor', 'InterfaceEditor', 'Edit/'.$this->request->getActionExtra(), array('ui_id' => $vn_subject_id)), 
+		caNavButton($this->request, __CA_NAV_BUTTON_CANCEL__, _t("Cancel"), '',  'administrate/setup/interface_editor', 'InterfaceEditor', 'Edit/'.$this->request->getActionExtra(), array('ui_id' => $vn_subject_id)), 
 		'', 
-		(intval($vn_subject_id) > 0) ? caNavButton($this->request, __CA_NAV_BUTTON_DELETE__, _t("Delete"), 'administrate/setup/interface_editor', 'InterfaceEditor', 'Delete/'.$this->request->getActionExtra(), array('ui_id' => $vn_subject_id)) : ''
+		(intval($vn_subject_id) > 0) ? caNavButton($this->request, __CA_NAV_BUTTON_DELETE__, _t("Delete"), '', 'administrate/setup/interface_editor', 'InterfaceEditor', 'Delete/'.$this->request->getActionExtra(), array('ui_id' => $vn_subject_id)) : ''
 	);
 ?>
 	<div class="sectionBox">

@@ -124,7 +124,8 @@
 				dontAllowEditForFirstLevel: <?php print (in_array($t_subject->tableName(), array('ca_places', 'ca_storage_locations', 'ca_list_items', 'ca_relationship_types')) ? 'true' : 'false'); ?>,
 				
 				editUrl: '<?php print $vs_edit_url; ?>',
-				editButtonIcon: '<img src="<?php print $this->request->getThemeUrlPath(); ?>/graphics/buttons/arrow_grey_right.gif" border="0" title="Edit">',
+				editButtonIcon: "<?php print caNavIcon($this->request, __CA_NAV_BUTTON_RIGHT_ARROW__); ?>",
+				disabledButtonIcon: "<?php print caNavIcon($this->request, __CA_NAV_BUTTON_DOT__); ?>",
 				
 				currentSelectionDisplayID: 'browseCurrentSelection'
 			});

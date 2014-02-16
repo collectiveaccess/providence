@@ -40,7 +40,7 @@
 		print caFormControlBox(
 			'<div class="list-filter">'._t('Filter').': <input type="text" name="filter" value="" onkeyup="$(\'#caLocaleList\').caFilterTable(this.value); return false;" size="20"/></div>', 
 			'', 
-			caNavHeaderButton($this->request, __CA_NAV_BUTTON_ADD__, _t("New"), 'administrate/setup', 'Locales', 'Edit', array('locale_id' => 0))
+			caNavHeaderButton($this->request, __CA_NAV_BUTTON_ADD_LARGE__, _t("New"), 'administrate/setup', 'Locales', 'Edit', array('locale_id' => 0))
 		); 
 	?>
 	
@@ -74,12 +74,14 @@
 					<?php print (bool)$va_locale['dont_use_for_cataloguing'] ? _t('no') : _t('yes') ; ?>
 				</td>
 				<td>
-					<?php print caNavButton($this->request, __CA_NAV_BUTTON_EDIT__, _t("Edit"), 'administrate/setup', 'Locales', 'Edit', array('locale_id' => $va_locale['locale_id']), array(), array('icon_position' => __CA_NAV_BUTTON_ICON_POS_LEFT__, 'use_class' => 'list-button', 'no_background' => true, 'dont_show_content' => true)); ?>
+					<?php print caNavButton($this->request, __CA_NAV_BUTTON_EDIT__, _t("Edit"), 'editIcon', 'administrate/setup', 'Locales', 'Edit', array('locale_id' => $va_locale['locale_id']), array(), array('icon_position' => __CA_NAV_BUTTON_ICON_POS_LEFT__, 'use_class' => 'list-button', 'no_background' => true, 'dont_show_content' => true)); ?>
 					
-					<?php print caNavButton($this->request, __CA_NAV_BUTTON_DELETE__, _t("Delete"), 'administrate/setup', 'Locales', 'Delete', array('locale_id' => $va_locale['locale_id']), array(), array('icon_position' => __CA_NAV_BUTTON_ICON_POS_LEFT__, 'use_class' => 'list-button', 'no_background' => true, 'dont_show_content' => true)); ?>
+					<?php print caNavButton($this->request, __CA_NAV_BUTTON_DELETE__, _t("Delete"), 'deleteIcon', 'administrate/setup', 'Locales', 'Delete', array('locale_id' => $va_locale['locale_id']), array(), array('icon_position' => __CA_NAV_BUTTON_ICON_POS_LEFT__, 'use_class' => 'list-button', 'no_background' => true, 'dont_show_content' => true)); ?>
 				</td>
 			</tr>
 <?php
+		TooltipManager::add('.deleteIcon', _t("Delete"));
+		TooltipManager::add('.editIcon', _t("Edit"));
 	}
 ?>
 		</tbody>

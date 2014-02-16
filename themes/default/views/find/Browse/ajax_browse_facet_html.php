@@ -55,18 +55,8 @@
 		caUIBrowsePanel.showBrowsePanel('<?php print $vs_facet_name; ?>', <?php print ((intval($vm_modify_id) > 0) ? 'true' : 'false'); ?>, <?php print ((intval($vm_modify_id) > 0) ?  $vm_modify_id : 'null'); ?>, grouping);
 	}
 </script>
-<div style="float: right;" id='browseFacetGroupingControls'>
-<?php 
-	if (isset($va_facet_info['groupings']) && is_array($va_facet_info['groupings']) && sizeof($va_facet_info['groupings'] )) {
-		print _t('Group by').': '; 
-		
-		foreach($va_facet_info['groupings'] as $vs_grouping => $vs_grouping_label) {
-			print "<a href='#' onclick='caUpdateFacetDisplay(\"{$vs_grouping}\");' style='".(($vs_grouping == $vs_grouping_field) ? 'font-weight: bold; font-style: italic;' : '')."'>{$vs_grouping_label}</a> ";
-		}
-	}
-?>
-</div>
-<h2><?php print unicode_ucfirst($va_facet_info['label_plural']); ?></h2>
+
+
 
 
 <div class="browseSelectPanelContentArea" id="browseSelectPanelContentArea">
@@ -77,6 +67,8 @@
 		# ------------------------------------------------------------
 		case 'hierarchical';
 ?>
+	<h2 class='browse'><?php print unicode_ucfirst($va_facet_info['label_plural']); ?></h2>
+	<div class='clearDivide'></div>
 	<!--- BEGIN HIERARCHY BROWSER --->
 	<div id="hierarchyBrowser" class='hierarchyBrowser'>
 		<!-- Content for hierarchy browser is dynamically inserted here by ca.hierbrowser -->
@@ -102,7 +94,7 @@
 					initDataUrl: '<?php print caNavUrl($this->request, $this->request->getModulePath(), $this->request->getController(), 'getFacetHierarchyAncestorList', array('facet' => $vs_facet_name)); ?>',
 					
 					editUrl: '<?php print caNavUrl($this->request, $this->request->getModulePath(), $this->request->getController(), 'addCriteria', array('facet' => $vs_facet_name, 'id' => '')); ?>',
-					editButtonIcon: '<img src="<?php print $this->request->getThemeUrlPath(); ?>/graphics/buttons/arrow_grey_right.gif" border="0" title="<?php print _t("Browse with this term"); ?>">',
+					editButtonIcon: '<img src="<?php print $this->request->getThemeUrlPath(); ?>/graphics/buttons/glyphicons_223_chevron-right.png" border="0" title="<?php print _t("Browse with this term"); ?>">',
 					
 					initItemID: '<?php print $this->getVar('browse_last_id'); ?>',
 					indicatorUrl: '<?php print $this->request->getThemeUrlPath(); ?>/graphics/icons/indicator.gif',
@@ -116,6 +108,9 @@
 		# ------------------------------------------------------------
 		case 'none':
 ?>
+	<h2 class='browse'><?php print unicode_ucfirst($va_facet_info['label_plural']); ?></h2>
+	<div class='clearDivide'></div>
+
 	<div class="browseSelectPanelList">
 		<table class='browseSelectPanelListTable'>
 <?php
@@ -151,6 +146,8 @@
 ?>
 
 	<div class="browseSelectPanelHeader">
+	<h2 class='browse'><?php print unicode_ucfirst($va_facet_info['label_plural']); ?></h2>
+
 <?php 
 	$vs_g = null;
 	if($vb_individual_group_display) {
@@ -159,17 +156,28 @@
 			$vs_g = array_shift($va_tmp);
 		}
 	}
+		print "<div class='jumpToGroup'>";
 	
-	print _t("Jump to").': '; 
-	
-	foreach($va_groups as $vs_group) {
-		if ($vb_individual_group_display) {
-			print " <a href='#' onclick='loadFacetGroup(\"".(($vs_group === '~') ? '~' : $vs_group)."\"); return false;' ".(($vs_g == $vs_group) ? "class='browseSelectPanelFacetGroupSelected'" : "class='browseSelectPanelFacetGroup'").">{$vs_group}</a> ";
-		} else {
-			print " <a href='#".(($vs_group === '~') ? '~' : $vs_group)."'>{$vs_group}</a> ";
+		foreach($va_groups as $vs_group) {
+			if ($vb_individual_group_display) {
+				print " <a href='#' onclick='loadFacetGroup(\"".(($vs_group === '~') ? '~' : $vs_group)."\"); return false;' ".(($vs_g == $vs_group) ? "class='browseSelectPanelFacetGroupSelected'" : "class='browseSelectPanelFacetGroup'").">{$vs_group}</a> ";
+			} else {
+				print " <a href='#".(($vs_group === '~') ? '~' : $vs_group)."'>{$vs_group}</a> ";
+			}
 		}
-	}
-?>
+?>	
+		</div><!-- end jumpToGroup-->
+		<div style="float: right;" id='browseFacetGroupingControls'>
+		<?php 
+			if (isset($va_facet_info['groupings']) && is_array($va_facet_info['groupings']) && sizeof($va_facet_info['groupings'] )) {
+				print _t('Group by').': '; 
+		
+				foreach($va_facet_info['groupings'] as $vs_grouping => $vs_grouping_label) {
+					print "<a href='#' onclick='caUpdateFacetDisplay(\"{$vs_grouping}\");' style='".(($vs_grouping == $vs_grouping_field) ? 'color:#333; text-decoration:underline;' : '')."'>{$vs_grouping_label}</a> ";
+				}
+			}
+		?>
+		</div>		
 	</div>
 	<div class="browseSelectPanelList" id="browseSelectPanelList">
 <?php

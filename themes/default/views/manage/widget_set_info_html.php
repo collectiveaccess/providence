@@ -30,7 +30,7 @@
 	
 	if ($this->request->user->canDoAction("is_administrator")) {
 ?>
-<h3><?php print _t('Set Statistics'); ?>:
+<h3 class='setStats'><?php print _t('Set Statistics'); ?>:
 <div><?php
 		if (sizeof($va_sets['mine']) == 1) {
 			print _t("1 set available to you");

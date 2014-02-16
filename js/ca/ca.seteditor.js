@@ -98,7 +98,7 @@ var caUI = caUI || {};
 			}
 			var repHTML = valueArray.representation_url || '';
 			if (repHTML && that.editSetItemsURL && valueArray['item_id']) {
-				repHTML = '<div style="background-image: url(\'' +  repHTML + '\'); width: ' + valueArray.representation_width + 'px; height: ' + valueArray.representation_height + 'px;"> </div>';
+				repHTML = '<div style="margin-left: 25px; background-image: url(\'' +  repHTML + '\'); width: ' + valueArray.representation_width + 'px; height: ' + valueArray.representation_height + 'px;"> </div>';
 			}
 			
 			var editLinkHTML = '';
@@ -106,7 +106,7 @@ var caUI = caUI || {};
 				editLinkHTML = '<div style="float: left;"><a href="' + that.editSetItemsURL + '/item_id/' + valueArray['item_id'] + '" title="' + that.editSetItemToolTip +'" class="setItemEditButton">' + that.editSetItemButton + '</a></div> ';
 			}
 			
-			var itemHTML = "<li class='setItem' id='" + that.fieldNamePrefix + "setItem" + rowID +"'><div id='" + that.fieldNamePrefix + "setItemContainer" + rowID + "' class='imagecontainer'><div class='remove'><a href='#' class='setDeleteButton' id='" + that.fieldNamePrefix + "setItemDelete" + rowID + "'>X</a></div><div class='setItemThumbnail'>" + editLinkHTML + repHTML + "</div><div class='setItemCaption'>" + valueArray.set_item_label + " [<span class='setItemIdentifier'>" + valueArray.idno + "</span>]</div><div class='setItemIdentifierSortable'>" + valueArray.idno_sort + "</div></div><br style='clear: both;'/></li>";
+			var itemHTML = "<li class='setItem' id='" + that.fieldNamePrefix + "setItem" + rowID +"'><div id='" + that.fieldNamePrefix + "setItemContainer" + rowID + "' class='imagecontainer'><div class='remove'><a href='#' class='setDeleteButton' id='" + that.fieldNamePrefix + "setItemDelete" + rowID + "'>&nbsp;</a></div><div class='setItemThumbnail'>" + editLinkHTML + repHTML + "</div><div class='setItemCaption'>" + valueArray.set_item_label + " [<span class='setItemIdentifier'>" + valueArray.idno + "</span>]</div><div class='setItemIdentifierSortable'>" + valueArray.idno_sort + "</div></div><br style='clear: both;'/></li>";
 			
 			if (prepend) {
 				jQuery('#' + that.fieldNamePrefix + that.setItemListID).prepend(itemHTML);

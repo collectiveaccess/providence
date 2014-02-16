@@ -72,7 +72,7 @@
 ?>	
 	<div class="col">
 <?php
-		print _t("Download media").":<br/>";
+		print _t("Download media as").":<br/>";
 ?>
 		<form id="caDownloadMediaFromSearchResult">
 <?php
@@ -96,7 +96,7 @@
 <?php
 	}
 ?>
-		<a href='#' id='hideTools' onclick='return caHandleResultsUIBoxes("tools", "hide");'><img src="<?php print $this->request->getThemeUrlPath(); ?>/graphics/icons/collapse.gif" width="11" height="11" border="0"></a>
+		<a href='#' id='hideTools' onclick='return caHandleResultsUIBoxes("tools", "hide");'><?php print caNavIcon($this->request, __CA_NAV_BUTTON_COLLAPSE__); ?></a>
 		<div style='clear:both;height:1px;'>&nbsp;</div>
 	</div><!-- end bg -->
 </div><!-- end searchToolsBox -->

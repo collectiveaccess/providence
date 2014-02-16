@@ -41,7 +41,7 @@
 <?php
 		}
 ?>
-		<div class='searchFormSelector' style='float: right; margin-bottom: 3px; font-size: 9px;'>
+		<div class='searchFormSelector' style='float:right;' >
 			<form action='#' id='advancedSearchFormContainerFormSelector'><?php print ($vs_form_list_select) ? _t('Form').': '.$vs_form_list_select : ''; ?></form>
 		</div>
 		<div style="clear: both;"><!-- empty --></div>
