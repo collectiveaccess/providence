@@ -47,7 +47,7 @@ class ItemService extends BaseJSONService {
 	public function dispatch(){
 		switch($this->getRequestMethod()){
 			case "GET":
-				if($this->opn_id>0){
+				if($this->opn_id){	// we allow that this might be a string here for idno-based fetching
 					if(sizeof($this->getRequestBodyArray())==0){
 						return $this->getAllItemInfo();
 					} else {
@@ -84,7 +84,7 @@ class ItemService extends BaseJSONService {
 	}
 	# -------------------------------------------------------
 	protected function getSpecificItemInfo(){
-		if(!($t_instance = $this->_getTableInstance($this->ops_table,$this->opn_id))){
+		if(!($t_instance = $this->_getTableInstance($this->ops_table,$this->opn_id))){	// note that $this->opn_id might be a string if we're fetching by idno; you can only use an idno for getting an item, not for editing or deleting
 			return false;
 		}
 
@@ -113,7 +113,7 @@ class ItemService extends BaseJSONService {
 	 * Try to return everything useful for the specified record
 	 */
 	protected function getAllItemInfo(){
-		if(!($t_instance = $this->_getTableInstance($this->ops_table,$this->opn_id))){
+		if(!($t_instance = $this->_getTableInstance($this->ops_table,$this->opn_id))){	// note that $this->opn_id might be a string if we're fetching by idno; you can only use an idno for getting an item, not for editing or deleting
 			return false;
 		}
 		$t_list = new ca_lists();
