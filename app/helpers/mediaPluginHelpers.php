@@ -761,4 +761,22 @@
 		return array('size' => $vs_selected_size, 'width' => $va_tmp[0], 'height' => $va_tmp[1]);
 	}
 	# ------------------------------------------------------------------------------------------------
+	/**
+	 * Return height & width for a media version from media_processing conf
+	 *
+	 * @param string $ps_version Media version (icon, tiny, thumbnail...)
+	 *
+	 * @return array An array containing width and height.
+
+	 */
+	function caGetSizeForMediaIcon($ps_version, $pa_options=null) {
+		$o_config = Configuration::load();
+		$media_processing_config = Configuration::load($o_config->get('media_processing_settings'));
+		$or_media_processing = $media_processing_config->get("ca_object_representations");
+		$or_media_processing_rules = $or_media_processing["MEDIA_TRANSFORMATION_RULES"];
+
+		return array('width' => $or_media_processing_rules["rule_{$ps_version}_image"]["SCALE"]["width"], 'height' => $or_media_processing_rules["rule_{$ps_version}_image"]["SCALE"]["height"]);
+	}
+	# ------------------------------------------------------------------------------------------------
+
 ?>
